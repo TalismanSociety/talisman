@@ -13,6 +13,7 @@ import { useExtrinsic } from "@ui/hooks/useExtrinsic"
 import { useTokenRatesMap } from "@ui/hooks/useTokenRatesMap"
 import useTokens from "@ui/hooks/useTokens"
 import { useMemo } from "react"
+import { useTranslation } from "react-i18next"
 
 import { SignContainer } from "../../SignContainer"
 import { usePolkadotSigningRequest } from "../../SignRequestContext"
@@ -82,6 +83,7 @@ const getTargetAccount = (
 }
 
 export const SubSignXcmTransferAssets = () => {
+  const { t } = useTranslation("sign")
   const { chain, payload, account } = usePolkadotSigningRequest()
   const { data: extrinsic } = useExtrinsic(payload)
   const { tokensMap } = useTokens(true)
@@ -123,7 +125,7 @@ export const SubSignXcmTransferAssets = () => {
   return (
     <SignContainer
       networkType="substrate"
-      title="Transfer"
+      title={t("Transfer")}
       header={<SignViewIconHeader icon="transfer" />}
     >
       <SignViewXTokensTransfer {...props} />

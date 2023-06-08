@@ -7,6 +7,7 @@ import { Drawer } from "@talisman/components/Drawer"
 import { classNames } from "@talismn/util"
 import { useLedgerSubstrate } from "@ui/hooks/ledger/useLedgerSubstrate"
 import React, { useCallback, useEffect, useMemo, useState } from "react"
+import { useTranslation } from "react-i18next"
 import { Button } from "talisman-ui"
 
 import {
@@ -40,6 +41,7 @@ const LedgerSubstrate = ({
   payload,
   parent,
 }: Props): React.ReactElement<Props> => {
+  const { t } = useTranslation("sign")
   const [isSigning, setIsSigning] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [unsigned, setUnsigned] = useState<Uint8Array>()
@@ -49,23 +51,23 @@ const LedgerSubstrate = ({
   const connectionStatus: LedgerConnectionStatusProps = useMemo(
     () => ({
       status: status === "ready" ? "connecting" : status,
-      message: status === "ready" ? "Please approve from your Ledger." : message,
+      message: status === "ready" ? t("Please approve from your Ledger.") : message,
       refresh,
       requiresManualRetry,
     }),
-    [refresh, status, message, requiresManualRetry]
+    [refresh, status, message, requiresManualRetry, t]
   )
 
   useEffect(() => {
     if (isRawPayload(payload)) {
-      setError("Message signing is not supported for hardware wallets.")
+      setError(t("Message signing is not supported for hardware wallets."))
     } else {
       if (payload.signedExtensions) registry.setSignedExtensions(payload.signedExtensions)
       setUnsigned(
         registry.createType("ExtrinsicPayload", payload, { version: payload.version }).toU8a(true)
       )
     }
-  }, [payload])
+  }, [payload, t])
 
   const _onRefresh = useCallback(() => {
     refresh()
@@ -86,7 +88,9 @@ const LedgerSubstrate = ({
         if (e.message === "Transaction rejected") return onReject()
         if (e.message === "Txn version not supported")
           setError(
-            "This type of transaction is not supported on your ledger. You should check for firmware updates in Ledger Live before trying again."
+            t(
+              "This type of transaction is not supported on your ledger. You should check for firmware updates in Ledger Live before trying again."
+            )
           )
         else {
           log.error("ledger sign Substrate : " + e.message, { err: e })
@@ -94,7 +98,7 @@ const LedgerSubstrate = ({
         }
         setIsSigning(false)
       })
-  }, [account, ledger, onSignature, onReject, unsigned, setError])
+  }, [account, ledger, onSignature, onReject, unsigned, setError, t])
 
   useEffect(() => {
     if (isReady && !error && !isSigning) {
@@ -113,7 +117,7 @@ const LedgerSubstrate = ({
         />
       )}
       <Button className="w-full" onClick={onReject}>
-        Cancel
+        {t("Cancel")}
       </Button>
       {error && (
         <Drawer anchor="bottom" open={true} parent={parent}>

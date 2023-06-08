@@ -13,6 +13,7 @@ import useTokens from "@ui/hooks/useTokens"
 import { isEvmToken } from "@ui/util/isEvmToken"
 import { isSubToken } from "@ui/util/isSubToken"
 import { useEffect, useMemo, useState } from "react"
+import { useTranslation } from "react-i18next"
 
 export type NetworkOption = {
   id: string // here we'll merge all ids together
@@ -42,6 +43,7 @@ const getNetworkTokenSymbols = ({
 }
 
 const useAllNetworks = ({ balances, type }: { type?: AccountAddressType; balances?: Balances }) => {
+  const { t } = useTranslation("portfolio")
   const [useTestnets] = useSetting("useTestnets")
   const { chains } = useChains(useTestnets)
   const { tokens } = useTokens(useTestnets)
@@ -56,7 +58,7 @@ const useAllNetworks = ({ balances, type }: { type?: AccountAddressType; balance
         result.push({
           id,
           chainId: id,
-          name: name ?? "Unknown chain",
+          name: name ?? t("Unknown chain"),
           sortIndex,
         })
       )
@@ -68,7 +70,7 @@ const useAllNetworks = ({ balances, type }: { type?: AccountAddressType; balance
         else
           result.push({
             id: String(id),
-            name: name ?? "Unknown chain",
+            name: name ?? t("Unknown chain"),
             evmNetworkId: id,
             chainId: substrateChain?.id,
             sortIndex,
@@ -103,7 +105,7 @@ const useAllNetworks = ({ balances, type }: { type?: AccountAddressType; balance
         (a, b) =>
           (a.sortIndex ?? Number.MAX_SAFE_INTEGER) - (b.sortIndex ?? Number.MAX_SAFE_INTEGER)
       )
-  }, [balances, chains, evmNetworks, tokens, type])
+  }, [balances, chains, evmNetworks, tokens, type, t])
 
   useEffect(() => {
     if (networks.map(({ id }) => id).join(",") !== safeNetworks.map(({ id }) => id).join(",")) {

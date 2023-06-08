@@ -12,7 +12,7 @@ import { ethers } from "ethers"
 import { FC, useCallback, useEffect, useState } from "react"
 import { Drawer, PillButton } from "talisman-ui"
 
-import { FEE_PRIORITY_OPTIONS } from "./common"
+import { useFeePriorityOptionsUI } from "./common"
 import { CustomGasSettingsFormEip1559 } from "./CustomGasSettingsFormEip1559"
 import { CustomGasSettingsFormLegacy } from "./CustomGasSettingsFormLegacy"
 import { FeeOptionsSelectForm } from "./FeeOptionsForm"
@@ -54,6 +54,7 @@ export const EthFeeSelect: FC<EthFeeSelectProps> = ({
   networkUsage,
   className,
 }) => {
+  const options = useFeePriorityOptionsUI()
   const { genericEvent } = useAnalytics()
 
   const [showCustomSettings, setShowCustomSettings] = useState(false)
@@ -102,8 +103,8 @@ export const EthFeeSelect: FC<EthFeeSelectProps> = ({
         onClick={open}
         className={classNames("h-12 pl-4", className)}
       >
-        <img src={FEE_PRIORITY_OPTIONS[priority].icon} alt="" className="inline-block w-10" />{" "}
-        <span className="align-middle">{FEE_PRIORITY_OPTIONS[priority].label}</span>
+        <img src={options[priority].icon} alt="" className="inline-block w-10" />{" "}
+        <span className="align-middle">{options[priority].label}</span>
       </PillButton>
       <Drawer
         containerId={drawerContainerId}

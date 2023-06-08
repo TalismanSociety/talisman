@@ -6,7 +6,8 @@
 import { DEBUG } from "@core/constants"
 import type { KnownSubscriptionDataTypes, MessageTypesWithSubscriptions } from "@core/types"
 import type { Port } from "@core/types/base"
-import { Observable } from "rxjs"
+import { Observable, Subscription } from "rxjs"
+
 type Subscriptions = Record<string, Port>
 
 const subscriptions: Subscriptions = {} // return a subscription callback, that will send the data to the caller via the port
@@ -80,4 +81,52 @@ export function createSubscription<TMessageType extends MessageTypesWithSubscrip
 export function unsubscribe(id: string): void {
   // In the case that the subscription has already been closed, subscriptions[id] may not exist
   if (subscriptions[id]) delete subscriptions[id]
+}
+
+export class ObservableSubscriptions {
+  readonly #subscriptions = new Map<string, Subscription>()
+
+  public readonly subscriptions = this.#subscriptions as ReadonlyMap<
+    string,
+    Omit<Subscription, "unsubscribe">
+  >
+
+  public readonly subscribe = <
+    TMessageType extends MessageTypesWithSubscriptions,
+    TObservableValue,
+    TReturn extends KnownSubscriptionDataTypes<TMessageType>
+  >(
+    _message: TMessageType,
+    id: string,
+    port: Port,
+    observable: Observable<TObservableValue>,
+    ...rest: TObservableValue extends TReturn
+      ? []
+      : [transform: (value: TObservableValue) => TReturn]
+  ) => {
+    const [transform] = rest
+
+    this.unsubscribe(id)
+
+    const cb = createSubscription<TMessageType>(id, port)
+
+    const subscription = observable.subscribe((data) =>
+      cb(transform?.(data) ?? (data as any as TReturn))
+    )
+
+    const teardown = () => this.unsubscribe(id)
+
+    subscription.add(teardown)
+    port.onDisconnect.addListener(teardown)
+
+    this.#subscriptions.set(id, subscription)
+
+    return id
+  }
+
+  public readonly unsubscribe = (id: string) => {
+    unsubscribe(id)
+    this.#subscriptions.get(id)?.unsubscribe()
+    this.#subscriptions.delete(id)
+  }
 }

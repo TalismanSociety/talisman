@@ -12,7 +12,8 @@ import {
   TokenId,
   TokenList,
 } from "@talismn/chaindata-provider"
-import { PromiseExtended, Transaction, TransactionMode } from "dexie"
+import { PromiseExtended, Transaction, TransactionMode, liveQuery } from "dexie"
+import { Observable, from } from "rxjs"
 
 import { addCustomChainRpcs } from "./addCustomChainRpcs"
 import { fetchChains, fetchEvmNetwork, fetchEvmNetworks, fetchToken, fetchTokens } from "./graphql"
@@ -186,6 +187,28 @@ export class ChaindataProviderExtension implements ChaindataProvider {
     }
   }
 
+  subscribeCustomChains() {
+    return from(
+      liveQuery(() =>
+        this.#db.chains
+          .filter((chain): chain is CustomChain => "isCustom" in chain && chain.isCustom)
+          // @ts-expect-error Dexie can't do type assertion on filter
+          .toArray<CustomChain[]>((chains) => chains)
+      )
+    )
+  }
+
+  setCustomChains(chains: CustomChain[]) {
+    return this.#db.transaction("rw", this.#db.chains, async () => {
+      const keys = await this.#db.chains
+        .filter((chains) => "isCustom" in chains && Boolean(chains.isCustom))
+        .primaryKeys()
+
+      await this.#db.chains.bulkDelete(keys)
+      await this.#db.chains.bulkPut(chains.filter((network) => network.isCustom))
+    })
+  }
+
   async addCustomEvmNetwork(customEvmNetwork: CustomEvmNetwork) {
     try {
       if (!("isCustom" in customEvmNetwork)) return
@@ -194,6 +217,7 @@ export class ChaindataProviderExtension implements ChaindataProvider {
       throw new Error("Failed to add custom evm network", { cause })
     }
   }
+
   async removeCustomEvmNetwork(evmNetworkId: EvmNetworkId) {
     if (await this.getIsBuiltInEvmNetwork(evmNetworkId))
       throw new Error("Cannot remove built-in EVM network")
@@ -207,6 +231,31 @@ export class ChaindataProviderExtension implements ChaindataProvider {
       throw new Error("Failed to remove custom evm network", { cause })
     }
   }
+
+  subscribeCustomEvmNetworks() {
+    return from(
+      liveQuery(() =>
+        this.#db.evmNetworks
+          .filter(
+            (network): network is CustomEvmNetwork => "isCustom" in network && network.isCustom
+          )
+          // @ts-expect-error Dexie can't do type assertion on filter
+          .toArray<CustomEvmNetwork[]>((networks) => networks)
+      )
+    )
+  }
+
+  setCustomEvmNetworks(networks: CustomEvmNetwork[]) {
+    return this.#db.transaction("rw", this.#db.evmNetworks, async () => {
+      const keys = await this.#db.evmNetworks
+        .filter((network) => "isCustom" in network && Boolean(network.isCustom))
+        .primaryKeys()
+
+      await this.#db.evmNetworks.bulkDelete(keys)
+      await this.#db.evmNetworks.bulkPut(networks.filter((network) => network.isCustom))
+    })
+  }
+
   async resetEvmNetwork(evmNetworkId: EvmNetworkId) {
     const builtInEvmNetwork = await fetchEvmNetwork(evmNetworkId)
     if (!builtInEvmNetwork) throw new Error("Cannot reset non-built-in EVM network")
@@ -242,6 +291,7 @@ export class ChaindataProviderExtension implements ChaindataProvider {
       throw new Error("Failed to add custom token", { cause })
     }
   }
+
   async removeCustomToken(tokenId: TokenId) {
     try {
       return (
@@ -257,6 +307,31 @@ export class ChaindataProviderExtension implements ChaindataProvider {
       throw new Error("Failed to remove custom token", { cause })
     }
   }
+
+  // Need to explicitly type the return type
+  // else TypeScript will resolve it to `IToken` instead
+  subscribeCustomTokens(): Observable<Token[]> {
+    return from(
+      liveQuery(() =>
+        this.#db.tokens
+          .filter((token): token is Token => "isCustom" in token)
+          // Dexie can't do type assertion on filter
+          .toArray<Token[]>((tokens) => tokens)
+      )
+    )
+  }
+
+  setCustomTokens(tokens: Token[]) {
+    return this.#db.transaction("rw", this.#db.tokens, async () => {
+      const keys = await this.#db.tokens
+        .filter((token) => "isCustom" in token && Boolean(token.isCustom))
+        .primaryKeys()
+
+      await this.#db.tokens.bulkDelete(keys)
+      await this.#db.tokens.bulkPut(tokens.filter((token) => "isCustom" in token && token.isCustom))
+    })
+  }
+
   async removeToken(tokenId: TokenId) {
     try {
       return await this.#db.tokens.delete(tokenId)

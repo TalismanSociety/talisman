@@ -2,6 +2,7 @@ import { POLKADOT_VAULT_DOCS_URL } from "@core/constants"
 import HeaderBlock from "@talisman/components/HeaderBlock"
 import { useHasMnemonic } from "@ui/hooks/useHasMnemonic"
 import { ReactNode, useMemo } from "react"
+import { Trans, useTranslation } from "react-i18next"
 import { Button } from "talisman-ui"
 
 import { useAccountAddQr } from "./context"
@@ -15,6 +16,7 @@ const VerifierCertificateOption = ({ text, children }: { text: string; children:
 )
 
 export const ConfigureVerifierCertificateMnemonic = () => {
+  const { t } = useTranslation("account-add")
   const { dispatch, state, submit } = useAccountAddQr()
   const hasMnemonic = useHasMnemonic()
 
@@ -37,20 +39,24 @@ export const ConfigureVerifierCertificateMnemonic = () => {
     <div>
       <HeaderBlock
         className="mb-12"
-        title="Configure your Polkadot Vault Verifier Certificate Mnemonic"
-        text="To use your Polkadot Vault with Talisman, you need to configure your Polkadot Vault Verifier Certificate Mnemonic."
+        title={t("Configure your Polkadot Vault Verifier Certificate Mnemonic")}
+        text={t(
+          "To use your Polkadot Vault with Talisman, you need to configure your Polkadot Vault Verifier Certificate Mnemonic."
+        )}
       />
       {(!state.verifierCertificateConfig ||
         state.verifierCertificateConfig.verifierCertificateType !== "new") && (
         <div className="flex flex-col gap-8">
-          <span>Why do I need to do this?</span>
+          <span>{t("Why do I need to do this?")}</span>
           <div className="text-body-secondary text-sm">
-            Polkadot Vault requires that the specification and the metadata for each chain are
-            signed with a 'Verifier Certificate'. Talisman can generate its own Verifier Certificate
-            from a mnemonic, enabling you to add networks and update metadata on your Polkadot Vault
-            device without needing to trust an external source. If you prefer to use an external
-            Verifier Certificate, you can use the Parity or Nova Wallet metadata sources, simply by
-            selecting "Don't use a Verifier Certificate Mnemonic" below.
+            <Trans t={t}>
+              Polkadot Vault requires that the specification and the metadata for each chain are
+              signed with a 'Verifier Certificate'. Talisman can generate its own Verifier
+              Certificate from a mnemonic, enabling you to add networks and update metadata on your
+              Polkadot Vault device without needing to trust an external source. If you prefer to
+              use an external Verifier Certificate, you can use the Parity or Nova Wallet metadata
+              sources, simply by selecting "Don't use a Verifier Certificate Mnemonic" below.
+            </Trans>
           </div>
           <span className="text-body-secondary text-sm">
             <a
@@ -58,15 +64,16 @@ export const ConfigureVerifierCertificateMnemonic = () => {
               target="_blank"
               className="hover:text-primary text-grey-200"
             >
-              Read more about Talisman's Polkadot Vault integration here.
+              {t("Read more about Talisman's Polkadot Vault integration here.")}
             </a>
           </span>
-          <span>Choose an option</span>
+          <span>{t("Choose an option")}</span>
 
           {hasMnemonic && (
             <VerifierCertificateOption
-              text="Use this option to use your existing Talisman recovery phrase as your Polkadot Vault Verifier Certificate Mnemonic. Choose this option if you are not sure what to
-            do."
+              text={t(
+                "Use this option to use your existing Talisman recovery phrase as your Polkadot Vault Verifier Certificate Mnemonic. Choose this option if you are not sure what to do."
+              )}
             >
               <Button
                 className="secondary text-sm"
@@ -74,14 +81,14 @@ export const ConfigureVerifierCertificateMnemonic = () => {
                   dispatch({ method: "setVerifierCertType", verifierCertificateType: "talisman" })
                 }
               >
-                Use my existing Talisman mnemonic
+                {t("Use my existing Talisman mnemonic")}
               </Button>
             </VerifierCertificateOption>
           )}
           <VerifierCertificateOption
-            text="Import a new recovery phrase to use as your Polkadot Vault Verifier Certificate Mnemonic. You should use
-              this option if you already have a Polkadot Vault account in another instance of
-              Talisman, or you want to use a different mnemonic to your existing Talisman mnemonic."
+            text={t(
+              "Import a new recovery phrase to use as your Polkadot Vault Verifier Certificate Mnemonic. You should use this option if you already have a Polkadot Vault account in another instance of Talisman, or you want to use a different mnemonic to your existing Talisman mnemonic."
+            )}
           >
             <Button
               className="secondary text-sm"
@@ -89,12 +96,13 @@ export const ConfigureVerifierCertificateMnemonic = () => {
                 dispatch({ method: "setVerifierCertType", verifierCertificateType: "new" })
               }
             >
-              Import a new mnemonic
+              {t("Import a new mnemonic")}
             </Button>
           </VerifierCertificateOption>
           <VerifierCertificateOption
-            text="If you don't want to use a Verifier Certificate Mnemonic, you can still use your Polkadot
-              Vault account by leveraging the Parity and Nova Wallet metadata sources, but only on limited chains."
+            text={t(
+              "If you don't want to use a Verifier Certificate Mnemonic, you can still use your Polkadot Vault account by leveraging the Parity and Nova Wallet metadata sources, but only on limited chains."
+            )}
           >
             <Button
               className="secondary text-sm"
@@ -102,7 +110,7 @@ export const ConfigureVerifierCertificateMnemonic = () => {
                 dispatch({ method: "setVerifierCertType", verifierCertificateType: null })
               }
             >
-              Don't use a Verifier Certificate Mnemonic
+              {t("Don't use a Verifier Certificate Mnemonic")}
             </Button>
           </VerifierCertificateOption>
           <Button
@@ -113,7 +121,7 @@ export const ConfigureVerifierCertificateMnemonic = () => {
             disabled={!canSubmit}
             processing={state.submitting}
           >
-            Import
+            {t("Import")}
           </Button>
         </div>
       )}

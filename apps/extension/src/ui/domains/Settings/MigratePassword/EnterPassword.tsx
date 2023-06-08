@@ -3,6 +3,7 @@ import { ModalDialog } from "@talisman/components/ModalDialog"
 import { api } from "@ui/api"
 import { useCallback } from "react"
 import { useForm } from "react-hook-form"
+import { Trans, useTranslation } from "react-i18next"
 import { Button, FormFieldContainer, FormFieldInputText } from "talisman-ui"
 import * as yup from "yup"
 
@@ -19,6 +20,7 @@ const schema = yup
   .required()
 
 export const EnterPasswordForm = () => {
+  const { t } = useTranslation("settings")
   const { setPassword, setMnemonic } = useMigratePassword()
 
   const {
@@ -39,38 +41,40 @@ export const EnterPasswordForm = () => {
         if (mnemonic) {
           setPassword(password)
           setMnemonic(mnemonic)
-        } else throw new Error("Incorrect password")
+        } else throw new Error(t("Incorrect password"))
       } catch (err) {
         setError("password", {
           message: (err as Error)?.message ?? "",
         })
       }
     },
-    [setPassword, setMnemonic, setError]
+    [setPassword, setMnemonic, setError, t]
   )
 
   return (
     <ModalDialog title="Security Upgrade">
       <p className="text-body-secondary mb-10 text-sm">
-        We have upgraded our security measures, including an updated password policy and advanced
-        password encryption.{" "}
-        <a
-          href="https://medium.com/we-are-talisman/talismans-security-model-1e60391694c0"
-          target="_blank"
-          rel="noreferrer"
-          className="text-white opacity-100"
-        >
-          Learn more
-        </a>{" "}
-        about our new security features.
+        <Trans t={t}>
+          We have upgraded our security measures, including an updated password policy and advanced
+          password encryption.{" "}
+          <a
+            href="https://medium.com/we-are-talisman/talismans-security-model-1e60391694c0"
+            target="_blank"
+            rel="noreferrer"
+            className="text-white opacity-100"
+          >
+            Learn more
+          </a>{" "}
+          about our new security features.
+        </Trans>
       </p>
-      <p className="text-body-secondary text-sm">Enter your current password to continue</p>
+      <p className="text-body-secondary text-sm">{t("Enter your current password to continue")}</p>
       <form onSubmit={handleSubmit(submit)}>
         <FormFieldContainer error={errors.password?.message} className="mb-4">
           <FormFieldInputText
             {...register("password")}
             type="password"
-            placeholder="Enter your password"
+            placeholder={t("Enter your password")}
             spellCheck={false}
             autoComplete="off"
             data-lpignore
@@ -86,7 +90,7 @@ export const EnterPasswordForm = () => {
           disabled={!isValid}
           processing={isSubmitting}
         >
-          Continue
+          {t("Continue")}
         </Button>
       </form>
     </ModalDialog>

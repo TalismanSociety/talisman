@@ -1,5 +1,6 @@
 import { BigNumber } from "ethers"
 import { FC, useMemo } from "react"
+import { useTranslation } from "react-i18next"
 
 import { SignContainer } from "../../SignContainer"
 import { SignViewVotingDelegate } from "../../Views/convictionVoting/SignViewVotingDelegate"
@@ -8,6 +9,7 @@ import { getContractCallArg } from "../getContractCallArg"
 import { useEthSignKnownTransactionRequest } from "../shared/useEthSignKnownTransactionRequest"
 
 export const EthSignMoonVotingDelegate: FC = () => {
+  const { t } = useTranslation("sign")
   const { network, transactionInfo } = useEthSignKnownTransactionRequest()
 
   const { amount, representative, conviction, trackId } = useMemo(() => {
@@ -39,7 +41,7 @@ export const EthSignMoonVotingDelegate: FC = () => {
   return (
     <SignContainer
       networkType="ethereum"
-      title="Delegate vote"
+      title={t("Delegate vote")}
       header={<SignViewIconHeader icon="vote" />}
     >
       <SignViewVotingDelegate

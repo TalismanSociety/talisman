@@ -3,6 +3,7 @@ import { AlertCircleIcon, LoaderIcon } from "@talisman/theme/icons"
 import { classNames } from "@talismn/util"
 import { isEvmToken } from "@ui/util/isEvmToken"
 import { Suspense, lazy, useEffect, useMemo, useState } from "react"
+import { useTranslation } from "react-i18next"
 import { Button } from "talisman-ui"
 
 import { ChainLogo } from "../Asset/ChainLogo"
@@ -56,6 +57,7 @@ const NetworkDisplay = () => {
 }
 
 const TotalValueRow = () => {
+  const { t } = useTranslation("send-funds")
   const {
     sendMax,
     maxAmount,
@@ -90,7 +92,7 @@ const TotalValueRow = () => {
 
   return (
     <div className="mt-4 flex h-[1.7rem] justify-between text-xs">
-      <div className="text-body-secondary">Total Value</div>
+      <div className="text-body-secondary">{t("Total Value")}</div>
       <div className="text-body">
         {totalValue ? (
           <Fiat amount={totalValue} />
@@ -103,6 +105,7 @@ const TotalValueRow = () => {
 }
 
 const SendButton = () => {
+  const { t } = useTranslation("send-funds")
   const { signMethod, sendErrorMessage, send, isProcessing } = useSendFunds()
 
   const [isReady, setIsReady] = useState(false)
@@ -133,7 +136,7 @@ const SendButton = () => {
           onClick={send}
           processing={isProcessing}
         >
-          Confirm
+          {t("Confirm")}
         </Button>
       )}
       {signMethod === "qrSubstrate" && <SendFundsQrSubstrate />}
@@ -144,6 +147,7 @@ const SendButton = () => {
 }
 
 const EvmFeeSummary = () => {
+  const { t } = useTranslation("send-funds")
   const { token, evmNetwork, evmTransaction } = useSendFunds()
 
   if (!token || !evmTransaction) return null
@@ -162,7 +166,7 @@ const EvmFeeSummary = () => {
   return (
     <>
       <div className="flex h-12 items-center justify-between gap-8 text-xs">
-        <div className="text-body-secondary">Transaction Priority</div>
+        <div className="text-body-secondary">{t("Transaction Priority")}</div>
         <div>
           {evmNetwork?.nativeToken?.id && priority && tx && txDetails && (
             <EthFeeSelect
@@ -181,7 +185,7 @@ const EvmFeeSummary = () => {
       </div>
       <div className="mt-4 flex h-[1.7rem] items-center justify-between gap-8 text-xs">
         <div className="text-body-secondary">
-          Estimated Fee <SendFundsFeeTooltip />
+          {t("Estimated Fee")} <SendFundsFeeTooltip />
         </div>
         <div className="text-body">
           <div className="inline-flex h-[1.7rem] items-center">
@@ -202,6 +206,7 @@ const EvmFeeSummary = () => {
 }
 
 const SubFeeSummary = () => {
+  const { t } = useTranslation("send-funds")
   const { subTransaction, feeToken, tip, tipToken } = useSendFunds()
 
   if (!subTransaction) return null
@@ -212,7 +217,7 @@ const SubFeeSummary = () => {
     <>
       {!!tip && !!tipToken && tip.planck > 0n && (
         <div className="mt-4 flex h-[1.7rem] items-center justify-between gap-8 text-xs">
-          <div className="text-body-secondary">Tip</div>
+          <div className="text-body-secondary">{t("Tip")}</div>
           <div className="text-body">
             <div className={classNames("inline-flex h-[1.7rem] items-center")}>
               <TokensAndFiat planck={tip.planck} tokenId={tipToken.id} />
@@ -222,7 +227,7 @@ const SubFeeSummary = () => {
       )}
       <div className="mt-4 flex h-[1.7rem] items-center justify-between gap-8 text-xs">
         <div className="text-body-secondary">
-          Estimated Fee <SendFundsFeeTooltip />
+          {t("Estimated Fee")} <SendFundsFeeTooltip />
         </div>
         <div className="text-body">
           <div
@@ -238,7 +243,7 @@ const SubFeeSummary = () => {
               )}
               {error && (
                 <WithTooltip tooltip={(error as Error).message}>
-                  <span className="text-alert-warn">Failed to estimate fee</span>
+                  <span className="text-alert-warn">{t("Failed to estimate fee")}</span>
                 </WithTooltip>
               )}
             </>
@@ -257,21 +262,22 @@ const FeeSummary = () => {
 }
 
 export const SendFundsConfirmForm = () => {
+  const { t } = useTranslation("send-funds")
   const { from, to, chain, evmNetwork } = useSendFunds()
 
   return (
     <div className="flex h-full w-full flex-col items-center px-12 py-8">
-      <div className="text-lg font-bold">You are sending</div>
+      <div className="text-lg font-bold">{t("You are sending")}</div>
       <div className="mt-24 w-full grow">
         <div className="bg-grey-900 text-body-secondary flex flex-col rounded px-12 py-8 leading-[140%]">
           <div className="flex min-h-[32px] items-center justify-between gap-8">
-            <div className="text-body-secondary align-top">Amount</div>
+            <div className="text-body-secondary align-top">{t("Amount")}</div>
             <div className="text-body overflow-x-hidden">
               <AmountDisplay />
             </div>
           </div>
           <div className="flex min-h-[32px] items-center justify-between gap-8">
-            <div className="text-body-secondary">From</div>
+            <div className="text-body-secondary">{t("From")}</div>
             <div className="text-body overflow-x-hidden">
               <AddressDisplay
                 className="h-16"
@@ -282,7 +288,7 @@ export const SendFundsConfirmForm = () => {
             </div>
           </div>
           <div className="flex min-h-[32px] items-center justify-between gap-8">
-            <div className="text-body-secondary">To</div>
+            <div className="text-body-secondary">{t("To")}</div>
             <div className="text-body overflow-x-hidden">
               <AddressDisplay
                 className="h-16"
@@ -293,7 +299,7 @@ export const SendFundsConfirmForm = () => {
             </div>
           </div>
           <div className="flex min-h-[32px] items-center justify-between gap-8">
-            <div className="text-body-secondary align-top">Network</div>
+            <div className="text-body-secondary align-top">{t("Network")}</div>
             <div className="text-body overflow-x-hidden">
               <NetworkDisplay />
             </div>

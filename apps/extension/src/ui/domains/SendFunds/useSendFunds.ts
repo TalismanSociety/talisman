@@ -25,6 +25,7 @@ import { isSubToken } from "@ui/util/isSubToken"
 import { isTransferableToken } from "@ui/util/isTransferableToken"
 import { BigNumber, ethers } from "ethers"
 import { useCallback, useEffect, useMemo, useRef, useState } from "react"
+import { useTranslation } from "react-i18next"
 import { useLocation } from "react-router-dom"
 
 import { useEthTransaction } from "../Ethereum/useEthTransaction"
@@ -35,6 +36,7 @@ import { useSendFundsInputSize } from "./useSendFundsInputSize"
 type SignMethod = "normal" | "ledgerSubstrate" | "ledgerEthereum" | "qrSubstrate" | "unknown"
 
 const useRecipientBalance = (token?: Token, address?: Address | null) => {
+  const { t } = useTranslation("send-funds")
   const hydrate = useBalancesHydrate()
 
   return useQuery({
@@ -42,7 +44,7 @@ const useRecipientBalance = (token?: Token, address?: Address | null) => {
     queryFn: async () => {
       if (!token || !token.chain || !address || !hydrate) return null
       const storage = await api.getBalance({ chainId: token.chain.id, address, tokenId: token.id })
-      if (!storage) throw Error("Could not fetch recipient balance.")
+      if (!storage) throw Error(t("Could not fetch recipient balance."))
       return storage ? new Balance(storage, hydrate) : null
     },
     retry: false,
@@ -160,6 +162,7 @@ const useSubTransaction = (
 }
 
 const useSendFundsProvider = () => {
+  const { t } = useTranslation("send-funds")
   const { from, to, tokenId, amount, allowReap, sendMax, set, gotoProgress } = useSendFundsWizard()
   const [isLocked, setIsLocked] = useState(false)
 
@@ -373,27 +376,27 @@ const useSendFundsProvider = () => {
       if (token && !isTransferableToken(token))
         return {
           isValid: false,
-          error: `${token.symbol} transfers are not supported at this time`,
+          error: t("{{symbol}} transfers are not supported at this time", { symbol: token.symbol }),
         }
 
       if (evmInvalidTxError) {
         return {
           isValid: false,
-          error: "Invalid input",
+          error: t("Invalid input"),
           errorDetails: evmInvalidTxError.message,
         }
       }
 
       // some EVM networks will break on estimate fee if balance is insufficient, this simple check will prevent unfriendly error message
       if (token && balance && transfer && balance.transferable.planck < transfer.planck)
-        return { isValid: false, error: `Insufficient ${token.symbol}` }
+        return { isValid: false, error: t("Insufficient {{symbol}}", { symbol: token.symbol }) }
 
       const txError = evmTransaction?.error || subTransaction?.error
       if (txError)
         return {
           isValid: false,
-          error: "Failed to validate transaction",
-          errorDetails: (txError as Error)?.message ?? txError?.toString?.() ?? "Unknown error",
+          error: t("Failed to validate transaction"),
+          errorDetails: (txError as Error)?.message ?? txError?.toString?.() ?? t("Unknown error"),
         }
 
       if (
@@ -417,24 +420,33 @@ const useSendFundsProvider = () => {
         feeTokenBalance.transferable.planck - estimatedFee.planck <
           BigInt(feeToken.existentialDeposit)
       )
-        return { isValid: false, error: `Insufficient ${feeToken.symbol} to pay for fees` }
+        return {
+          isValid: false,
+          error: t("Insufficient {{symbol}} to pay for fees", { symbol: feeToken.symbol }),
+        }
 
       for (const cost of costBreakdown)
         if (cost.balance.planck < cost.cost.planck)
-          return { isValid: false, error: `Insufficient ${cost.token.symbol}` }
+          return {
+            isValid: false,
+            error: t("Insufficient {{symbol}}", { symbol: cost.token.symbol }),
+          }
 
       if (!isSendingEnough && isSubToken(token)) {
         const ed = new BalanceFormatter(token.existentialDeposit, token.decimals)
         return {
           isValid: false,
-          error: `Please send a minimum of ${formatDecimals(ed.tokens)} ${token.symbol}`,
+          error: t("Please send a minimum of {{value}} {{symbol}}", {
+            value: formatDecimals(ed.tokens),
+            symbol: token.symbol,
+          }),
         }
       }
 
       return { isValid: true, error: undefined }
     } catch (err) {
       log.error("checkIsValid", { err })
-      return { isValid: true, error: "Failed to validate" }
+      return { isValid: true, error: t("Failed to validate") }
     }
   }, [
     balance,
@@ -454,6 +466,7 @@ const useSendFundsProvider = () => {
     feeToken,
     feeTokenBalance,
     estimatedFee,
+    t,
   ])
 
   const isLoading = evmTransaction?.isLoading || subTransaction?.isLoading

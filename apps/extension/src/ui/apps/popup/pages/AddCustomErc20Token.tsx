@@ -10,6 +10,7 @@ import { CustomErc20TokenViewDetails } from "@ui/domains/Erc20Tokens/CustomErc20
 import { useEvmNetwork } from "@ui/hooks/useEvmNetwork"
 import { useRequest } from "@ui/hooks/useRequest"
 import { useCallback, useState } from "react"
+import { useTranslation } from "react-i18next"
 import { useParams } from "react-router-dom"
 import styled from "styled-components"
 
@@ -95,6 +96,7 @@ const ErrorMessage = styled.p`
 `
 
 export const AddCustomErc20Token = () => {
+  const { t } = useTranslation("request")
   const [error, setError] = useState<string>()
   const { id } = useParams() as WatchAssetRequestIdOnly
   const request = useRequest(id)
@@ -141,15 +143,15 @@ export const AddCustomErc20Token = () => {
             alt={request.token.symbol}
           />
         </div>
-        <h1>New Token</h1>
+        <h1>{t("New Token")}</h1>
         <p>
-          You are adding the token
+          {t("You are adding the token")}
           <br />
           <strong>
             <TokenLogoSmall src={request.token.image ?? unknownToken} alt="" />
             {request.token.symbol}
           </strong>{" "}
-          on{" "}
+          {t("on")}{" "}
           <strong>
             {"iconUrls" in network
               ? !!network.iconUrls.length && <TokenLogoSmall src={network.iconUrls[0]} alt="" />
@@ -165,9 +167,9 @@ export const AddCustomErc20Token = () => {
       <Footer>
         <ErrorMessage>{error}</ErrorMessage>
         <StyledGrid>
-          <SimpleButton onClick={cancel}>Reject</SimpleButton>
+          <SimpleButton onClick={cancel}>{t("Reject")}</SimpleButton>
           <SimpleButton primary onClick={approve}>
-            Approve
+            {t("Approve")}
           </SimpleButton>
         </StyledGrid>
       </Footer>

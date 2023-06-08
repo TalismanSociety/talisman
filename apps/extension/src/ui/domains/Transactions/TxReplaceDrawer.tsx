@@ -15,6 +15,7 @@ import { useEvmNetwork } from "@ui/hooks/useEvmNetwork"
 import { BigNumber } from "ethers"
 import { ethers } from "ethers"
 import { FC, lazy, useCallback, useMemo, useState } from "react"
+import { useTranslation } from "react-i18next"
 import { Button, Drawer, useOpenCloseWithData } from "talisman-ui"
 import { Tooltip, TooltipContent, TooltipTrigger } from "talisman-ui"
 
@@ -43,6 +44,7 @@ export const EvmEstimatedFeeTooltip: FC<{
   feeTokenId?: TokenId
   txDetails?: EthTransactionDetails
 }> = ({ account, feeTokenId, txDetails }) => {
+  const { t } = useTranslation("sign")
   const balance = useBalance(account, feeTokenId as string)
 
   if (!feeTokenId || !txDetails) return null
@@ -54,7 +56,7 @@ export const EvmEstimatedFeeTooltip: FC<{
       </TooltipTrigger>
       <TooltipContent>
         <div className="grid grid-cols-2 gap-2">
-          <div>Estimated fee:</div>
+          <div>{t("Estimated fee:")}</div>
           <div className="text-right">
             <TokensAndFiat
               planck={ethers.BigNumber.from(txDetails.estimatedFee).toBigInt()}
@@ -64,7 +66,7 @@ export const EvmEstimatedFeeTooltip: FC<{
           </div>
           {!!txDetails?.maxFee && (
             <>
-              <div>Max. fee:</div>
+              <div>{t("Max. fee:")}</div>
               <div className="text-right">
                 <TokensAndFiat
                   planck={ethers.BigNumber.from(txDetails.maxFee).toBigInt()}
@@ -76,7 +78,7 @@ export const EvmEstimatedFeeTooltip: FC<{
           )}
           {!!balance && (
             <>
-              <div>Balance:</div>
+              <div>{t("Balance:")}</div>
               <div className="text-right">
                 <TokensAndFiat
                   planck={balance.transferable.planck}
@@ -103,6 +105,7 @@ const EvmDrawerContent: FC<{
   type: TxReplaceType
   onClose?: (newTxHash?: HexString) => void
 }> = ({ tx, type, onClose }) => {
+  const { t } = useTranslation("sign")
   const analyticsProps = useMemo(
     () => ({
       evmNetworkId: tx.evmNetworkId,
@@ -152,12 +155,12 @@ const EvmDrawerContent: FC<{
         type: "error",
         subtitle:
           (err as Error)?.message === "nonce too low"
-            ? "Transaction already confirmed"
-            : `Failed to ${type}`,
+            ? t("Transaction already confirmed")
+            : t(`Failed to {{type}}`, { type }),
       })
     }
     setIsProcessing(false)
-  }, [onClose, transaction, tx, type])
+  }, [onClose, transaction, tx, type, t])
 
   const handleSendSigned = useCallback(
     async ({ signature }: { signature: `0x${string}` }) => {
@@ -178,17 +181,17 @@ const EvmDrawerContent: FC<{
         // eslint-disable-next-line no-console
         console.error("handleSend", { err })
         notify({
-          title: `Failed to ${type}`,
+          title: t(`Failed to {{type}}`, { type }),
           type: "error",
           subtitle:
             (err as Error)?.message === "nonce too low"
-              ? "Transaction already confirmed"
-              : `Failed to ${type}`,
+              ? t("Transaction already confirmed")
+              : t(`Failed to {{type}}`, { type }),
         })
       }
       setIsProcessing(false)
     },
-    [onClose, transaction, tx, type]
+    [onClose, t, transaction, tx, type]
   )
 
   const handleSendToLedger = useCallback(() => {
@@ -203,10 +206,11 @@ const EvmDrawerContent: FC<{
         canReplace,
         Icon: RocketIcon,
         iconClassName: "text-primary",
-        title: "Speed Up Transaction",
-        description:
-          "This will attempt to speed up your pending transaction by resubmitting it with a higher priority.",
-        approveText: "Speed Up",
+        title: t("Speed Up Transaction"),
+        description: t(
+          "This will attempt to speed up your pending transaction by resubmitting it with a higher priority."
+        ),
+        approveText: t("Speed Up"),
       }
 
     if (canReplace && type === "cancel")
@@ -214,21 +218,22 @@ const EvmDrawerContent: FC<{
         canReplace,
         Icon: XOctagonIcon,
         iconClassName: "text-brand-orange",
-        title: "Cancel Transaction",
-        description:
-          "This will attempt to cancel your pending transaction, by replacing it with a zero-balance transfer with a higher priority.",
-        approveText: "Try to Cancel",
+        title: t("Cancel Transaction"),
+        description: t(
+          "This will attempt to cancel your pending transaction, by replacing it with a zero-balance transfer with a higher priority."
+        ),
+        approveText: t("Try to Cancel"),
       }
 
     return {
       canReplace,
       Icon: AlertCircleIcon,
       iconClassName: "text-alert-warn",
-      title: "Transaction already confirmed",
-      description: "This transaction has already been confirmed and can no longer be replaced.",
+      title: t("Transaction already confirmed"),
+      description: t("This transaction has already been confirmed and can no longer be replaced."),
       approveText: undefined,
     }
-  }, [tx.status, type])
+  }, [tx.status, type, t])
 
   return (
     <>
@@ -243,14 +248,14 @@ const EvmDrawerContent: FC<{
       >
         <div className="flex w-full items-center justify-between">
           <div>
-            Estimated Fee{" "}
+            {t("Estimated Fee")}{" "}
             <EvmEstimatedFeeTooltip
               account={tx.account}
               feeTokenId={evmNetwork?.nativeToken?.id}
               txDetails={txDetails}
             />
           </div>
-          <div>Priority</div>
+          <div>{t("Priority")}</div>
         </div>
         <div className="flex h-12 w-full items-center justify-between">
           <div>
@@ -301,7 +306,7 @@ const EvmDrawerContent: FC<{
             )}
           >
             <Button className="h-24" onClick={() => onClose?.()}>
-              Close
+              {t("Close")}
             </Button>
             {canReplace && (
               <Button

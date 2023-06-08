@@ -9,6 +9,7 @@ import { useQrCodeAccounts } from "@ui/hooks/useQrCodeAccounts"
 import { useSelectAccountAndNavigate } from "@ui/hooks/useSelectAccountAndNavigate"
 import { useReducer } from "react"
 import { useCallback } from "react"
+import { useTranslation } from "react-i18next"
 
 type AccountConfigState = {
   name: string
@@ -123,6 +124,7 @@ export const reducer = (state: AddQrState, action: Action): AddQrState => {
 const initialState: AddQrState = { type: "SCAN", enable: false }
 
 const useAccountAddQrContext = () => {
+  const { t } = useTranslation("account-add")
   const [state, dispatch] = useReducer(reducer, initialState)
   const hasVerifierCertMnemonic = useHasVerifierCertificateMnemonic()
   const vaultAccounts = useQrCodeAccounts()
@@ -139,7 +141,7 @@ const useAccountAddQrContext = () => {
       const notificationId = notify(
         {
           type: "processing",
-          title: "Creating account",
+          title: t("Importing account"),
           subtitle: "Please wait",
         },
         { autoClose: false }
@@ -162,26 +164,26 @@ const useAccountAddQrContext = () => {
       try {
         setAddress(
           await api.accountCreateQr(
-            name || "My Polkadot Vault Account",
+            name || t("My Polkadot Vault Account"),
             address,
             lockToNetwork ? genesisHash : null
           )
         )
         notifyUpdate(notificationId, {
           type: "success",
-          title: "Account created",
+          title: t("Account imported"),
           subtitle: name,
         })
       } catch (error) {
         dispatch({ method: "setSubmittingFailed" })
         notifyUpdate(notificationId, {
           type: "error",
-          title: "Error creating account",
+          title: t("Error importing account"),
           subtitle: (error as Error)?.message,
         })
       }
     },
-    [setAddress, state]
+    [setAddress, state, t]
   )
 
   const submitConfigure = useCallback(

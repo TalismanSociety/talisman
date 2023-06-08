@@ -23,6 +23,7 @@ import useToken from "@ui/hooks/useToken"
 import { isCustomEvmNetwork } from "@ui/util/isCustomEvmNetwork"
 import { ChangeEventHandler, FC, useCallback, useEffect, useMemo, useRef, useState } from "react"
 import { FormProvider, useForm } from "react-hook-form"
+import { Trans, useTranslation } from "react-i18next"
 import { useNavigate } from "react-router-dom"
 import { useDebounce } from "react-use"
 import { Button, Checkbox, FormFieldContainer, FormFieldInputText } from "talisman-ui"
@@ -32,6 +33,7 @@ import { getRpcChainId } from "./helpers"
 import { NetworkRpcsListField } from "./NetworkRpcsListField"
 
 const ResetNetworkButton: FC<{ network: EvmNetwork | CustomEvmNetwork }> = ({ network }) => {
+  const { t } = useTranslation("settings")
   const navigate = useNavigate()
   const { isOpen, open, close } = useOpenClose()
 
@@ -41,29 +43,33 @@ const ResetNetworkButton: FC<{ network: EvmNetwork | CustomEvmNetwork }> = ({ ne
       navigate("/networks")
     } catch (err) {
       notify({
-        title: "Failed to reset",
+        title: t("Failed to reset"),
         subtitle: (err as Error).message,
         type: "error",
       })
     }
-  }, [navigate, network.id])
+  }, [navigate, network.id, t])
+
+  const networkName = network?.name ?? t("N/A")
 
   return (
     <>
       <Button type="button" className="mt-8" onClick={open}>
-        Reset to defaults
+        {t("Reset to defaults")}
       </Button>
       <Modal open={isOpen && !!network} onClose={close}>
-        <ModalDialog title="Reset Network" onClose={close}>
+        <ModalDialog title={t("Reset Network")} onClose={close}>
           <div className="text-body-secondary mt-4 space-y-16">
             <div className="text-base">
-              Network <span className="text-body">{network?.name}</span> will be reset to Talisman's
-              default settings.
+              <Trans t={t}>
+                Network <span className="text-body">{networkName}</span> will be reset to Talisman's
+                default settings.
+              </Trans>
             </div>
             <div className="grid grid-cols-2 gap-8">
-              <Button onClick={close}>Cancel</Button>
+              <Button onClick={close}>{t("Cancel")}</Button>
               <Button primary onClick={handleConfirmReset}>
-                Reset
+                {t("Reset")}
               </Button>
             </div>
           </div>
@@ -74,6 +80,7 @@ const ResetNetworkButton: FC<{ network: EvmNetwork | CustomEvmNetwork }> = ({ ne
 }
 
 const RemoveNetworkButton: FC<{ network: EvmNetwork | CustomEvmNetwork }> = ({ network }) => {
+  const { t } = useTranslation("settings")
   const navigate = useNavigate()
   const { isOpen, open, close } = useOpenClose()
 
@@ -84,29 +91,33 @@ const RemoveNetworkButton: FC<{ network: EvmNetwork | CustomEvmNetwork }> = ({ n
       navigate("/networks")
     } catch (err) {
       notify({
-        title: "Failed to remove",
+        title: t("Failed to remove"),
         subtitle: (err as Error).message,
         type: "error",
       })
     }
-  }, [network, navigate])
+  }, [network, navigate, t])
+
+  const networkName = network?.name ?? t("N/A")
 
   return (
     <>
       <Button type="button" className="mt-8" onClick={open}>
-        Remove Network
+        {t("Remove Network")}
       </Button>
       <Modal open={isOpen && !!network} onClose={close}>
-        <ModalDialog title="Remove Network" onClose={close}>
+        <ModalDialog title={t("Remove Network")} onClose={close}>
           <div className="text-body-secondary mt-4 space-y-16">
             <div className="text-base">
-              Network <span className="text-body">{network?.name}</span> and associated tokens will
-              be removed from Talisman.
+              <Trans t={t}>
+                Network <span className="text-body">{networkName}</span> and associated tokens will
+                be removed from Talisman.
+              </Trans>
             </div>
             <div className="grid grid-cols-2 gap-8">
-              <Button onClick={close}>Cancel</Button>
+              <Button onClick={close}>{t("Cancel")}</Button>
               <Button primary onClick={handleConfirmRemove}>
-                Remove
+                {t("Remove")}
               </Button>
             </div>
           </div>
@@ -180,6 +191,7 @@ const useEditMode = (evmNetworkId?: EvmNetworkId) => {
 }
 
 export const NetworkForm: FC<NetworkFormProps> = ({ evmNetworkId, onSubmitted }) => {
+  const { t } = useTranslation("settings")
   const schema = useMemo(() => getNetworkFormSchema(evmNetworkId), [evmNetworkId])
 
   const qIsBuiltInEvmNetwork = useIsBuiltInEvmNetwork(evmNetworkId)
@@ -273,12 +285,12 @@ export const NetworkForm: FC<NetworkFormProps> = ({ evmNetworkId, onSubmitted })
     if (evmNetworkId || !id) return
 
     if (evmNetworks?.some((n) => n.id === id)) {
-      if (!errors.id) setError("id", { message: "already exists" })
+      if (!errors.id) setError("id", { message: t("already exists") })
     } else {
       if (errors.id) clearErrors("id")
       autoFill()
     }
-  }, [autoFill, clearErrors, evmNetworkId, evmNetworks, id, setError, errors.id])
+  }, [autoFill, clearErrors, evmNetworkId, evmNetworks, id, setError, errors.id, t])
 
   const [showRemove, showReset] = useMemo(
     () =>
@@ -314,7 +326,7 @@ export const NetworkForm: FC<NetworkFormProps> = ({ evmNetworkId, onSubmitted })
       <FormProvider {...formProps}>
         <NetworkRpcsListField />
         <div className="grid grid-cols-3 gap-12">
-          <FormFieldContainer label="Chain ID" error={errors.id?.message}>
+          <FormFieldContainer label={t("Chain ID")} error={errors.id?.message}>
             <FormFieldInputText
               readOnly
               className="text-body-disabled cursor-not-allowed"
@@ -332,14 +344,17 @@ export const NetworkForm: FC<NetworkFormProps> = ({ evmNetworkId, onSubmitted })
           </FormFieldContainer>
           <FormFieldContainer
             className="col-span-2"
-            label="Network Name"
+            label={t("Network Name")}
             error={errors.name?.message}
           >
-            <FormFieldInputText placeholder="Paraverse" {...register("name")} />
+            <FormFieldInputText placeholder={t("Paraverse")} {...register("name")} />
           </FormFieldContainer>
         </div>
         <div className="grid grid-cols-3 gap-12">
-          <FormFieldContainer label="Token Coingecko ID" error={errors.tokenCoingeckoId?.message}>
+          <FormFieldContainer
+            label={t("Token Coingecko ID")}
+            error={errors.tokenCoingeckoId?.message}
+          >
             <FormFieldInputText
               before={
                 <AssetLogoBase
@@ -347,14 +362,14 @@ export const NetworkForm: FC<NetworkFormProps> = ({ evmNetworkId, onSubmitted })
                   className="ml-[-0.8rem] mr-[0.4rem] min-w-[3rem] text-[3rem]"
                 />
               }
-              placeholder="(optional)"
+              placeholder={t("(optional)")}
               {...register("tokenCoingeckoId")}
             />
           </FormFieldContainer>
-          <FormFieldContainer label="Token symbol" error={errors.tokenSymbol?.message}>
-            <FormFieldInputText placeholder="ABC" {...register("tokenSymbol")} />
+          <FormFieldContainer label={t("Token symbol")} error={errors.tokenSymbol?.message}>
+            <FormFieldInputText placeholder={"ABC"} {...register("tokenSymbol")} />
           </FormFieldContainer>
-          <FormFieldContainer label="Token decimals" error={errors.tokenDecimals?.message}>
+          <FormFieldContainer label={t("Token decimals")} error={errors.tokenDecimals?.message}>
             <FormFieldInputText
               placeholder="18"
               {...register("tokenDecimals", { valueAsNumber: true })}
@@ -362,24 +377,29 @@ export const NetworkForm: FC<NetworkFormProps> = ({ evmNetworkId, onSubmitted })
           </FormFieldContainer>
         </div>
         <div className="text-body-disabled mt-[-1.6rem] pb-8 text-xs">
-          Talisman uses CoinGecko as reference for fiat rates and token logos.
-          <br />
-          Find the API ID of the native token of this network on{" "}
-          <a
-            className="text-body-secondary hover:text-body"
-            href="https://coingecko.com"
-            target="_blank"
-          >
-            https://coingecko.com
-          </a>{" "}
-          and paste it here.
+          <Trans t={t}>
+            Talisman uses CoinGecko as reference for fiat rates and token logos.
+            <br />
+            Find the API ID of the native token of this network on{" "}
+            <a
+              className="text-body-secondary hover:text-body"
+              href="https://coingecko.com"
+              target="_blank"
+            >
+              https://coingecko.com
+            </a>{" "}
+            and paste it here.
+          </Trans>
         </div>
-        <FormFieldContainer label="Block explorer URL" error={errors.blockExplorerUrl?.message}>
+        <FormFieldContainer
+          label={t("Block explorer URL")}
+          error={errors.blockExplorerUrl?.message}
+        >
           <FormFieldInputText placeholder="https://" {...register("blockExplorerUrl")} />
         </FormFieldContainer>
         <div>
           <Checkbox checked={!!isTestnet} onChange={handleIsTestnetChange}>
-            <span className="text-body-secondary">Testnet</span>
+            <span className="text-body-secondary">{t("Testnet")}</span>
           </Checkbox>
         </div>
         <div className="text-alert-warn">{submitError}</div>
@@ -395,7 +415,7 @@ export const NetworkForm: FC<NetworkFormProps> = ({ evmNetworkId, onSubmitted })
             disabled={!isValid || !isDirty}
             processing={isSubmitting}
           >
-            {isEditMode ? "Update" : "Add"} Network
+            {isEditMode ? t("Update Network") : t("Add Network")}
             <ArrowRightIcon className="ml-4 inline text-lg" />
           </Button>
         </div>

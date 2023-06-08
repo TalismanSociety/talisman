@@ -2,24 +2,26 @@ import { POLKADOT_VAULT_DOCS_URL } from "@core/constants"
 import HeaderBlock from "@talisman/components/HeaderBlock"
 import { ExternalLinkIcon } from "@talisman/theme/icons"
 import { ScanQr } from "@ui/domains/Sign/Qr/ScanQr"
+import { useTranslation } from "react-i18next"
 
 import { useAccountAddQr } from "./context"
 
 export const Scan = () => {
+  const { t } = useTranslation("account-add")
   const { state, dispatch } = useAccountAddQr()
   if (state.type !== "SCAN") return null
   return (
     <>
-      <HeaderBlock className="mb-12" title="Import Polkadot Vault" />
+      <HeaderBlock className="mb-12" title={t("Import Polkadot Vault")} />
       <div className="grid grid-cols-2 gap-12">
         <div>
           <ol className="flex flex-col gap-12">
             {[
               {
-                title: "Open Polkadot Vault on your device",
+                title: t("Open Polkadot Vault on your device"),
                 body: (
                   <>
-                    <div>Select the ‘Key Sets’ tab from the bottom navigation bar</div>
+                    <div>{t("Select the ‘Key Sets’ tab from the bottom navigation bar")}</div>
                     <div className="mt-4">
                       <a
                         className="text-body-secondary hover:text-body"
@@ -27,7 +29,7 @@ export const Scan = () => {
                         target="_blank"
                       >
                         <span className="underline underline-offset-2">
-                          Instructions for setting up Polkadot Vault on a new device
+                          {t("Instructions for setting up Polkadot Vault on a new device")}
                         </span>{" "}
                         <ExternalLinkIcon className="inline" />
                       </a>
@@ -38,14 +40,16 @@ export const Scan = () => {
               state.cameraError
                 ? // CAMERA HAS ERROR
                   {
-                    title: "Approve camera permissions",
-                    body: "It looks like you’ve blocked permissions for Talisman to access your camera",
+                    title: t("Approve camera permissions"),
+                    body: t(
+                      "It looks like you’ve blocked permissions for Talisman to access your camera"
+                    ),
                     extra: (
                       <button
                         className="bg-primary/10 text-primary hover:bg-primary/20 mt-6 inline-block rounded-full px-6 text-sm font-light leading-[32px]"
                         onClick={() => dispatch({ method: "enableScan" })}
                       >
-                        Retry
+                        {t("Retry")}
                       </button>
                     ),
                     errorIcon: true,
@@ -53,26 +57,28 @@ export const Scan = () => {
                 : state.enable
                 ? // ENABLED AND NO ERROR
                   {
-                    title: "Approve camera permissions",
-                    body: "Allow Talisman to access your camera to scan QR codes",
+                    title: t("Approve camera permissions"),
+                    body: t("Allow Talisman to access your camera to scan QR codes"),
                   }
                 : // NOT ENABLED
                   {
-                    title: "Approve camera permissions",
-                    body: "Allow Talisman to access your camera to scan QR codes",
+                    title: t("Approve camera permissions"),
+                    body: t("Allow Talisman to access your camera to scan QR codes"),
                     extra: (
                       <button
                         className="bg-primary/10 text-primary hover:bg-primary/20 mt-6 inline-block rounded-full px-6 text-sm font-light leading-[32px]"
                         onClick={() => dispatch({ method: "enableScan" })}
                       >
-                        Turn on Camera
+                        {t("Turn on Camera")}
                       </button>
                     ),
                   },
 
               {
-                title: "Scan QR code",
-                body: "Bring the account QR code on the screen of the Polkadot Vault app in front of the camera on your computer. The preview image is blurred for security, but this does not affect the reading",
+                title: t("Scan QR code"),
+                body: t(
+                  "Bring the account QR code on the screen of the Polkadot Vault app in front of the camera on your computer. The preview image is blurred for security, but this does not affect the reading"
+                ),
               },
             ].map(({ title, body, extra, errorIcon }, index) => (
               <li className="relative ml-20" key={index}>
@@ -114,7 +120,7 @@ export const Scan = () => {
                 : dispatch({
                     method: "setScanError",
                     error: error.message.startsWith("Invalid prefix received")
-                      ? "QR code is not valid"
+                      ? t("QR code is not valid")
                       : error.message ?? "Unknown error",
                   })
             }

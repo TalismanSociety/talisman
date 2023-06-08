@@ -15,6 +15,7 @@ import { isCustomErc20Token } from "@ui/util/isCustomErc20Token"
 import { isErc20Token } from "@ui/util/isErc20Token"
 import sortBy from "lodash/sortBy"
 import { FC, useCallback, useMemo } from "react"
+import { useTranslation } from "react-i18next"
 import { useNavigate } from "react-router-dom"
 import { ListButton, PillButton } from "talisman-ui"
 
@@ -50,7 +51,7 @@ type NetworkTokensGroupProps = { network: EvmNetwork; tokens: Erc20Token[] }
 const NetworkTokensGroup: FC<NetworkTokensGroupProps> = ({ network, tokens }) => {
   return (
     <>
-      <div className="flex items-center gap-4 pt-8 pb-2">
+      <div className="flex items-center gap-4 pb-2 pt-8">
         <TokenLogo className="inline text-xl" tokenId={network.nativeToken?.id} />{" "}
         <span>{network.name}</span>
       </div>
@@ -69,6 +70,7 @@ const ANALYTICS_PAGE: AnalyticsPage = {
 }
 
 export const TokensPage = () => {
+  const { t } = useTranslation("settings")
   useAnalyticsPageView(ANALYTICS_PAGE)
   const navigate = useNavigate()
 
@@ -104,11 +106,11 @@ export const TokensPage = () => {
 
   return (
     <Layout analytics={ANALYTICS_PAGE} withBack centered backTo="/settings">
-      <HeaderBlock title="Ethereum Tokens" text="Add or delete custom ERC20 tokens" />
+      <HeaderBlock title={t("Ethereum Tokens")} text={t("Add or delete custom ERC20 tokens")} />
       <div className="mt-16 flex justify-end gap-4">
         <EnableTestnetPillButton className="h-16" />
         <PillButton icon={PlusIcon} size="xs" className="h-16" onClick={handleAddToken}>
-          Add token
+          {t("Add token")}
         </PillButton>
       </div>
       <div className="space-y-4">

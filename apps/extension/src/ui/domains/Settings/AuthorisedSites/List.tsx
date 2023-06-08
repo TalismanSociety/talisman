@@ -6,11 +6,13 @@ import Spacer from "@talisman/components/Spacer"
 import { ProviderTypeSwitch } from "@ui/domains/Site/ProviderTypeSwitch"
 import { useAuthorisedSites } from "@ui/hooks/useAuthorisedSites"
 import { useEffect, useMemo, useState } from "react"
+import { Trans, useTranslation } from "react-i18next"
 import styled from "styled-components"
 
 import Site from "./Site"
 
 const AuthorisedSitesList = () => {
+  const { t } = useTranslation("settings")
   const sites = useAuthorisedSites()
   const [providerType, setProviderType] = useState<ProviderType>("polkadot")
 
@@ -45,8 +47,8 @@ const AuthorisedSitesList = () => {
   return (
     <>
       <HeaderBlock
-        title="Trusted Sites"
-        text="Manage the sites that have access to your accounts"
+        title={t("Trusted Sites")}
+        text={t("Manage the sites that have access to your accounts")}
       />
       <Spacer />
       {hasEthereumTrustedSites ? (
@@ -60,16 +62,18 @@ const AuthorisedSitesList = () => {
         {!sites ||
           (Object.keys(sites).length === 0 && (
             <Panel>
-              You haven't connected to any sites yet. Why not start with the{" "}
-              <TSLink href="https://app.talisman.xyz" target="_blank" className="link">
-                Talisman Web App
-              </TSLink>
-              ?
+              <Trans t={t}>
+                You haven't connected to any sites yet. Why not start with the{" "}
+                <TSLink href="https://app.talisman.xyz" target="_blank" className="link">
+                  Talisman Web App
+                </TSLink>
+                ?
+              </Trans>
             </Panel>
           ))}
         {sites && !hasEthereumTrustedSites && providerType === "ethereum" && (
           // This should never be displayed unless we decide to display the provider switcher without check
-          <Panel>You haven't connected to any Ethereum sites yet.</Panel>
+          <Panel>{t("You haven't connected to any Ethereum sites yet.")}</Panel>
         )}
       </Grid>
     </>

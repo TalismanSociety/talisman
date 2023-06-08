@@ -3,11 +3,13 @@ import { HexString } from "@polkadot/util/types"
 import LedgerEthereum from "@ui/domains/Sign/LedgerEthereum"
 import { useAccountByAddress } from "@ui/hooks/useAccountByAddress"
 import { useCallback, useState } from "react"
+import { useTranslation } from "react-i18next"
 import { Button } from "talisman-ui"
 
 import { useSendFunds } from "./useSendFunds"
 
 const SendFundsLedgerEthereum = () => {
+  const { t } = useTranslation("send-funds")
   const { from, evmTransaction, sendWithSignature, isLocked, setIsLocked } = useSendFunds()
   const account = useAccountByAddress(from) as AccountJsonHardwareEthereum
 
@@ -44,7 +46,7 @@ const SendFundsLedgerEthereum = () => {
         onClick={sendToLedger(true)}
         processing={signed}
       >
-        Approve on Ledger
+        {t("Approve on Ledger")}
       </Button>
     )
 

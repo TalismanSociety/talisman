@@ -13,6 +13,7 @@ import {
   useMemo,
   useState,
 } from "react"
+import { useTranslation } from "react-i18next"
 import { Checkbox, Tooltip, TooltipContent, TooltipTrigger } from "talisman-ui"
 
 import { NetworkSelect } from "../Ethereum/NetworkSelect"
@@ -28,6 +29,7 @@ type ConnectedAccountsProps = {
 }
 
 export const ConnectedAccounts: FC<ConnectedAccountsProps> = ({ siteId }) => {
+  const { t } = useTranslation("sites")
   const { genericEvent } = useAnalytics()
   const { authorizedProviders, defaultProvider } = useAuthorisedSiteProviders(siteId)
   const [providerType, setProviderType] = useState<ProviderType>(defaultProvider)
@@ -45,13 +47,13 @@ export const ConnectedAccounts: FC<ConnectedAccountsProps> = ({ siteId }) => {
   const title = useMemo(() => {
     switch (providerType) {
       case "polkadot":
-        return "Active account(s)"
+        return t("Active account(s)")
       case "ethereum":
-        return "Active account"
+        return t("Active account")
       default:
         throw new Error(`Unknown provider type: ${providerType}`)
     }
-  }, [providerType])
+  }, [providerType, t])
 
   const handleShowEthAccountsChanged: ChangeEventHandler<HTMLInputElement> = useCallback(
     (e) => {
@@ -76,7 +78,7 @@ export const ConnectedAccounts: FC<ConnectedAccountsProps> = ({ siteId }) => {
       )}
       {providerType === "ethereum" ? (
         <>
-          <SectionTitle>Network</SectionTitle>
+          <SectionTitle>{t("Network")}</SectionTitle>
           <NetworkSelect
             className="!w-full [&>button]:!w-full"
             withTestnets
@@ -95,10 +97,10 @@ export const ConnectedAccounts: FC<ConnectedAccountsProps> = ({ siteId }) => {
           <Tooltip>
             <TooltipTrigger className="text-body-secondary mb-4 text-sm leading-10">
               <Checkbox onChange={handleShowEthAccountsChanged} defaultChecked={showEthAccounts}>
-                Show Eth accounts
+                {t("Show Eth accounts")}
               </Checkbox>
             </TooltipTrigger>
-            <TooltipContent>Some apps do not work with Ethereum accounts</TooltipContent>
+            <TooltipContent>{t("Some apps do not work with Ethereum accounts")}</TooltipContent>
           </Tooltip>
         )}
       </div>

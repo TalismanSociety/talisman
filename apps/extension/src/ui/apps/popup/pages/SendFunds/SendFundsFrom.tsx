@@ -1,5 +1,6 @@
 import { AnalyticsPage } from "@ui/api/analytics"
 import { SendFundsAccountPicker } from "@ui/domains/SendFunds/SendFundsAccountPicker"
+import { useTranslation } from "react-i18next"
 
 import { SendFundsLayout } from "./SendFundsLayout"
 
@@ -11,8 +12,9 @@ const ANALYTICS_PAGE: AnalyticsPage = {
 }
 
 export const SendFundsFrom = () => {
+  const { t } = useTranslation("send-funds")
   return (
-    <SendFundsLayout title="Send from" withBackLink analytics={ANALYTICS_PAGE}>
+    <SendFundsLayout title={t("Send from")} withBackLink analytics={ANALYTICS_PAGE}>
       <SendFundsAccountPicker />
     </SendFundsLayout>
   )

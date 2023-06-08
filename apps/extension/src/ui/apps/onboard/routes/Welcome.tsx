@@ -3,6 +3,7 @@ import { TalismanWhiteLogo } from "@talisman/theme/logos"
 import { AnalyticsPage, sendAnalyticsEvent } from "@ui/api/analytics"
 import { useAnalyticsPageView } from "@ui/hooks/useAnalyticsPageView"
 import { ReactNode, useCallback } from "react"
+import { Trans, useTranslation } from "react-i18next"
 import { useNavigate } from "react-router-dom"
 import styled from "styled-components"
 
@@ -145,6 +146,7 @@ const handleLinkClick = (action: string) => () => {
 }
 
 export const WelcomePage = () => {
+  const { t } = useTranslation("onboard")
   useAnalyticsPageView(ANALYTICS_PAGE)
   const { reset, updateData } = useOnboard()
   const navigate = useNavigate()
@@ -170,49 +172,51 @@ export const WelcomePage = () => {
           <div>
             <Logo />
           </div>
-          <Title className="text-[12rem] leading-none">Multi-chain made easy</Title>
+          <Title className="text-[12rem] leading-none">{t("Multi-chain made easy")}</Title>
           <div className="welcome-description text-xl">
-            Talisman supports Polkadot, Kusama, Ethereum, and more
+            {t("Talisman supports Polkadot, Kusama, Ethereum, and more")}
           </div>
         </div>
         <div className="welcome-buttons flex w-[38rem] flex-col gap-12">
           <WelcomeCta
-            title="New wallet"
+            title={t("New wallet")}
             icon={<PlusIcon />}
-            description="Create a new Talisman wallet"
+            description={t("Create a new Talisman wallet")}
             onClick={handleNextClick(false)}
           />
           <WelcomeCta
-            title="Import a wallet"
+            title={t("Import a wallet")}
             icon={<DownloadIcon />}
             description={
               <div>
-                <div>Import an existing wallet</div>
+                <div>{t("Import an existing wallet")}</div>
                 <ImportWalletIcons className="mt-8 h-12 w-auto" />
               </div>
             }
             onClick={handleNextClick(true)}
           />
           <div className="text-body-secondary text-sm leading-[2rem]">
-            By continuing, you agree to the{" "}
-            <a
-              href="https://docs.talisman.xyz/legal-and-security/terms-of-use"
-              target="_blank"
-              rel="noreferrer"
-              onClick={handleLinkClick("Terms of Service")}
-            >
-              Terms of Service
-            </a>
-            <br />
-            and{" "}
-            <a
-              href="https://docs.talisman.xyz/talisman/legal-and-security/privacy-policy"
-              target="_blank"
-              rel="noreferrer"
-              onClick={handleLinkClick("Privacy Policy")}
-            >
-              Privacy Policy
-            </a>
+            <Trans t={t}>
+              By continuing, you agree to the{" "}
+              <a
+                href="https://docs.talisman.xyz/legal-and-security/terms-of-use"
+                target="_blank"
+                rel="noreferrer"
+                onClick={handleLinkClick("Terms of Service")}
+              >
+                Terms of Service
+              </a>
+              <br />
+              and{" "}
+              <a
+                href="https://docs.talisman.xyz/talisman/legal-and-security/privacy-policy"
+                target="_blank"
+                rel="noreferrer"
+                onClick={handleLinkClick("Privacy Policy")}
+              >
+                Privacy Policy
+              </a>
+            </Trans>
           </div>
         </div>
       </div>

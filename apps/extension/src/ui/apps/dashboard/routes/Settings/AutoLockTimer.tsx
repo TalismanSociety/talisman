@@ -3,17 +3,12 @@ import { Dropdown, DropdownProps } from "@talisman/components/Dropdown"
 import HeaderBlock from "@talisman/components/HeaderBlock"
 import Layout from "@ui/apps/dashboard/layout"
 import { useSetting } from "@ui/hooks/useSettings"
+import { useMemo } from "react"
+import { useTranslation } from "react-i18next"
 import styled from "styled-components"
 
 type AllowedValues = SettingsStoreData["autoLockTimeout"]
 type Option = { value: AllowedValues; label: string }
-
-const OPTIONS: Record<AllowedValues, Option> = {
-  0: { value: 0, label: "Disabled" },
-  300: { value: 300, label: "5 minutes" },
-  1800: { value: 1800, label: "30 minutes" },
-  3600: { value: 3600, label: "60 minutes" },
-}
 
 const PickerItem = styled.div`
   display: flex;
@@ -50,7 +45,18 @@ const StyledDropdown = styled((props: DropdownProps<Option>) => Dropdown(props))
 `
 
 export const AutoLockTimer = () => {
+  const { t } = useTranslation("settings")
   const [autoLockTimeout, setAutoLockTimeout] = useSetting("autoLockTimeout")
+
+  const options: Record<AllowedValues, Option> = useMemo(
+    () => ({
+      0: { value: 0, label: t("Disabled") },
+      300: { value: 300, label: t("5 minutes") },
+      1800: { value: 1800, label: t("30 minutes") },
+      3600: { value: 3600, label: t("60 minutes") },
+    }),
+    [t]
+  )
 
   return (
     <Layout centered withBack>
@@ -63,8 +69,8 @@ export const AutoLockTimer = () => {
         className="autolock-dropdown"
         renderItem={renderOption}
         propertyKey="value"
-        defaultSelectedItem={autoLockTimeout ? OPTIONS[autoLockTimeout] : OPTIONS[0]}
-        items={Object.values(OPTIONS)}
+        defaultSelectedItem={autoLockTimeout ? options[autoLockTimeout] : options[0]}
+        items={Object.values(options)}
         onChange={(val) => {
           const newVal = val?.value || 0
           if (newVal !== autoLockTimeout) setAutoLockTimeout(newVal)

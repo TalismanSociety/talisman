@@ -1,6 +1,7 @@
 import Button from "@talisman/components/Button"
 import { Card } from "@talisman/components/Card"
 import { BraveIcon } from "@talisman/theme/icons"
+import { useTranslation } from "react-i18next"
 import styled from "styled-components"
 
 type Props = {
@@ -9,18 +10,21 @@ type Props = {
 }
 
 export const BraveWarningCard = styled(({ className, onLearnMoreClick }: Props) => {
+  const { t } = useTranslation("settings")
   return (
     <Card
       className={className}
       title={
         <>
-          <BraveIcon className="icon" /> Attention Brave users
+          <BraveIcon className="icon" /> {t("Attention Brave users")}
         </>
       }
       description={
-        <span>Due to a recent update, users may be experiencing issues loading balances.</span>
+        <span>
+          {t("Due to a recent update, users may be experiencing issues loading balances.")}
+        </span>
       }
-      cta={<Button onClick={onLearnMoreClick}>Learn more</Button>}
+      cta={<Button onClick={onLearnMoreClick}>{t("Learn more")}</Button>}
     />
   )
 })`

@@ -1,5 +1,13 @@
 # @talismn/chaindata-provider
 
+## 0.6.0
+
+## 0.5.0
+
+### Minor Changes
+
+- 1a2fdc73: feat: add isUnknownFeeToken on Chain
+
 ## 0.4.4
 
 ### Patch Changes

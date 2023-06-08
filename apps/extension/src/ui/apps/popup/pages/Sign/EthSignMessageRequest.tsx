@@ -6,6 +6,7 @@ import { Content, Footer, Header } from "@ui/apps/popup/Layout"
 import { EthSignBodyMessage } from "@ui/domains/Sign/Ethereum/EthSignBodyMessage"
 import { useEthSignMessageRequest } from "@ui/domains/Sign/SignRequestContext"
 import { Suspense, lazy, useEffect, useMemo } from "react"
+import { useTranslation } from "react-i18next"
 
 import { SignContainer } from "./common"
 import { SignAccountAvatar } from "./SignAccountAvatar"
@@ -13,6 +14,7 @@ import { SignAccountAvatar } from "./SignAccountAvatar"
 const LedgerEthereum = lazy(() => import("@ui/domains/Sign/LedgerEthereum"))
 
 export const EthSignMessageRequest = () => {
+  const { t } = useTranslation("sign")
   const { url, request, approve, approveHardware, reject, status, message, account, network } =
     useEthSignMessageRequest()
 
@@ -52,7 +54,7 @@ export const EthSignMessageRequest = () => {
               ) : (
                 <Grid>
                   <SimpleButton disabled={processing} onClick={reject}>
-                    Cancel
+                    {t("Cancel")}
                   </SimpleButton>
                   <SimpleButton
                     disabled={processing}
@@ -60,7 +62,7 @@ export const EthSignMessageRequest = () => {
                     primary
                     onClick={approve}
                   >
-                    Approve
+                    {t("Approve")}
                   </SimpleButton>
                 </Grid>
               )}

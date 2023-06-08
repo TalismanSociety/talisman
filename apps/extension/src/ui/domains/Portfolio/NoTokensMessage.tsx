@@ -3,6 +3,7 @@ import { useSelectedAccount } from "@ui/domains/Portfolio/SelectedAccountContext
 import { useAnalytics } from "@ui/hooks/useAnalytics"
 import { useIsFeatureEnabled } from "@ui/hooks/useFeatures"
 import { useCallback } from "react"
+import { useTranslation } from "react-i18next"
 import { PillButton } from "talisman-ui"
 
 import { useBuyTokensModal } from "../Asset/Buy/BuyTokensModalContext"
@@ -13,6 +14,7 @@ type NoTokensMessageProps = {
 }
 
 export const NoTokensMessage = ({ symbol }: NoTokensMessageProps) => {
+  const { t } = useTranslation("portfolio")
   const { genericEvent } = useAnalytics()
   const { account } = useSelectedAccount()
   const { open } = useCopyAddressModal()
@@ -31,15 +33,17 @@ export const NoTokensMessage = ({ symbol }: NoTokensMessageProps) => {
   return (
     <div className="bg-field text-body-secondary flex flex-col items-center justify-center rounded py-36">
       <div>
-        You don't have any {symbol} {account ? "in this account" : "in Talisman"}.
+        {account
+          ? t("You don't have any {{symbol}} in this account", { symbol })
+          : t("You don't have any {{symbol}} in Talisman", { symbol })}
       </div>
       <div className="mt-12 flex justify-center gap-4">
         <PillButton size="sm" icon={ArrowDownIcon} onClick={handleCopy}>
-          Receive
+          {t("Receive")}
         </PillButton>
         {showBuyCrypto && (
           <PillButton size="sm" icon={CreditCardIcon} onClick={handleBuyCryptoClick}>
-            Buy Crypto
+            {t("Buy Crypto")}
           </PillButton>
         )}
       </div>

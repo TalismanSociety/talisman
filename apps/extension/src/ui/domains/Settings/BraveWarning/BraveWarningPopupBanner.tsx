@@ -5,6 +5,7 @@ import { ModalDialog } from "@talisman/components/ModalDialog"
 import { useIsBrave } from "@talisman/hooks/useIsBrave"
 import { useOpenClose } from "@talisman/hooks/useOpenClose"
 import { useCallback, useEffect, useMemo, useState } from "react"
+import { useTranslation } from "react-i18next"
 import styled from "styled-components"
 
 import { BraveWarningCard } from "./BraveWarningCard"
@@ -17,6 +18,7 @@ const WarningCard = styled(BraveWarningCard)`
 `
 
 const BraveWarningPopupBanner = () => {
+  const { t } = useTranslation("settings")
   const { isOpen, open, close } = useOpenClose()
 
   const isBrave = useIsBrave()
@@ -52,7 +54,7 @@ const BraveWarningPopupBanner = () => {
         <WarningCard onLearnMoreClick={open} />
       </Drawer>
       <Modal open={isOpen} anchor="bottom" onClose={close}>
-        <ModalDialog centerTitle title="Attention Brave Users" onClose={close}>
+        <ModalDialog centerTitle title={t("Attention Brave Users")} onClose={close}>
           <BraveWarningModal popup />
         </ModalDialog>
       </Modal>

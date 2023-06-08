@@ -13,6 +13,7 @@ import { useAnalytics } from "@ui/hooks/useAnalytics"
 import { BigNumber, ethers } from "ethers"
 import { FC, FormEventHandler, useCallback, useEffect, useMemo, useRef, useState } from "react"
 import { useForm } from "react-hook-form"
+import { useTranslation } from "react-i18next"
 import { useDebounce } from "react-use"
 import { Button, FormFieldContainer, FormFieldInputText } from "talisman-ui"
 import * as yup from "yup"
@@ -122,6 +123,7 @@ export const CustomGasSettingsFormEip1559: FC<CustomGasSettingsFormEip1559Props>
   txDetails,
   onConfirm,
 }) => {
+  const { t } = useTranslation("sign")
   const { genericEvent } = useAnalytics()
 
   useEffect(() => {
@@ -215,8 +217,8 @@ export const CustomGasSettingsFormEip1559: FC<CustomGasSettingsFormEip1559Props>
     let warningFee = ""
     let errorGasLimit = ""
 
-    if (errors.maxBaseFee) warningFee = "Max Base Fee is invalid"
-    else if (errors.maxPriorityFee) warningFee = "Max Priority Fee is invalid"
+    if (errors.maxBaseFee) warningFee = t("Max Base Fee is invalid")
+    else if (errors.maxPriorityFee) warningFee = t("Max Priority Fee is invalid")
     // if lower than lowest possible fee after 20 blocks
     else if (
       maxBaseFee &&
@@ -225,7 +227,7 @@ export const CustomGasSettingsFormEip1559: FC<CustomGasSettingsFormEip1559Props>
         getMaxFeePerGas(txDetails.baseFeePerGas, 0, 20, false)
       )
     )
-      warningFee = "Max Base Fee seems too low for current network conditions"
+      warningFee = t("Max Base Fee seems too low for current network conditions")
     // if higher than highest possible fee after 20 blocks
     else if (
       txDetails.baseFeePerGas &&
@@ -234,19 +236,19 @@ export const CustomGasSettingsFormEip1559: FC<CustomGasSettingsFormEip1559Props>
         getMaxFeePerGas(txDetails.baseFeePerGas, 0, 20)
       )
     )
-      warningFee = "Max Base Fee seems higher than required"
+      warningFee = t("Max Base Fee seems higher than required")
     else if (
       maxPriorityFee &&
       BigNumber.from(ethers.utils.parseUnits(String(maxPriorityFee), "gwei")).gt(
         BigNumber.from(2).mul(highSettings?.maxPriorityFeePerGas)
       )
     )
-      warningFee = "Max Priority Fee seems higher than required"
+      warningFee = t("Max Priority Fee seems higher than required")
 
-    if (errors.gasLimit?.type === "min") errorGasLimit = "Gas Limit minimum value is 21000"
-    else if (errors.gasLimit) errorGasLimit = "Gas Limit is invalid"
+    if (errors.gasLimit?.type === "min") errorGasLimit = t("Gas Limit minimum value is 21000")
+    else if (errors.gasLimit) errorGasLimit = t("Gas Limit is invalid")
     else if (BigNumber.from(txDetails.estimatedGas).gt(gasLimit))
-      errorGasLimit = "Gas Limit too low, transaction likely to fail"
+      errorGasLimit = t("Gas Limit too low, transaction likely to fail")
 
     return {
       warningFee,
@@ -262,6 +264,7 @@ export const CustomGasSettingsFormEip1559: FC<CustomGasSettingsFormEip1559Props>
     maxPriorityFee,
     txDetails.baseFeePerGas,
     txDetails.estimatedGas,
+    t,
   ])
 
   const submit = useCallback(
@@ -309,29 +312,29 @@ export const CustomGasSettingsFormEip1559: FC<CustomGasSettingsFormEip1559Props>
             <ArrowRightIcon className="text-md rotate-180 text-white" onClick={onCancel} />
           </IconButton>
         </div>
-        <div className="mr-9 grow text-center">Custom Gas Fee</div>
+        <div className="mr-9 grow text-center">{t("Custom Gas Fee")}</div>
       </div>
       <div className="mb-16 mt-12">
-        Set your own custom gas fee to control the priority and cost of your transaction.
+        {"Set your own custom gas fee to control the priority and cost of your transaction."}
       </div>
       <div className="grid grid-cols-2 gap-8 gap-y-14">
         <Indicator label="Base Fee">
-          {baseFee} GWEI{" "}
+          {t("{{baseFee}} GWEI", { baseFee })}{" "}
           <WithTooltip
             className="inline-flex h-[1.5rem] flex-col justify-center align-text-top"
-            tooltip="The base fee is set by the network and changes depending on network usage"
+            tooltip={t("The base fee is set by the network and changes depending on network usage")}
           >
             <InfoIcon />
           </WithTooltip>
         </Indicator>
-        <Indicator label="Base Fee Trend">
+        <Indicator label={t("Base Fee Trend")}>
           <NetworkUsage baseFeeTrend={txDetails.baseFeeTrend} className="w-full justify-between" />
         </Indicator>
         <FormFieldContainer
           noErrorRow
           label={
             <span className="text-sm">
-              Max Base Fee{" "}
+              {t("Max Base Fee")}{" "}
               <WithTooltip tooltip="The maximum base fee you are willing to pay to have this transaction confirmed. Selecting a value that's too low could prevent your transaction from ever being included in a block.">
                 <InfoIcon className="inline align-text-top" />
               </WithTooltip>
@@ -339,7 +342,7 @@ export const CustomGasSettingsFormEip1559: FC<CustomGasSettingsFormEip1559Props>
           }
         >
           <FormFieldInputText
-            after={<span className="text-body-disabled text-sm">GWEI</span>}
+            after={<span className="text-body-disabled text-sm">{t("GWEI")}</span>}
             containerProps={INPUT_PROPS}
             {...register("maxBaseFee", {
               valueAsNumber: true,
@@ -350,15 +353,19 @@ export const CustomGasSettingsFormEip1559: FC<CustomGasSettingsFormEip1559Props>
           noErrorRow
           label={
             <span className="text-sm">
-              Max Priority Fee{" "}
-              <WithTooltip tooltip="This fee is paid directly to miners to incentivise them to include your transaction in a block. The higher the Max Priority Fee, the faster your transaction will be confirmed">
+              {t("Max Priority Fee")}{" "}
+              <WithTooltip
+                tooltip={t(
+                  "This fee is paid directly to miners to incentivise them to include your transaction in a block. The higher the Max Priority Fee, the faster your transaction will be confirmed"
+                )}
+              >
                 <InfoIcon className="inline align-text-top" />
               </WithTooltip>
             </span>
           }
         >
           <FormFieldInputText
-            after={<span className="text-body-disabled text-sm">GWEI</span>}
+            after={<span className="text-body-disabled text-sm">{t("GWEI")}</span>}
             containerProps={INPUT_PROPS}
             {...register("maxPriorityFee", {
               valueAsNumber: true,
@@ -372,8 +379,10 @@ export const CustomGasSettingsFormEip1559: FC<CustomGasSettingsFormEip1559Props>
         className="w-full"
         label={
           <span className="text-sm">
-            Gas Limit{" "}
-            <WithTooltip tooltip="The maximum amount of gas this transaction is allowed to consume ">
+            {t("Gas Limit")}{" "}
+            <WithTooltip
+              tooltip={t("The maximum amount of gas this transaction is allowed to consume")}
+            >
               <InfoIcon className="inline align-text-top" />
             </WithTooltip>
           </span>
@@ -390,8 +399,12 @@ export const CustomGasSettingsFormEip1559: FC<CustomGasSettingsFormEip1559Props>
 
       <div className="border-grey-700 text-body flex h-[5.2rem] w-full items-center justify-between rounded-sm border px-8 font-bold">
         <div>
-          Total Max Fee{" "}
-          <WithTooltip tooltip="The total maximum gas fee you are willing to pay for this transaction : (Max Base Fee + Max Priority Fee) * Gas Limit">
+          {t("Total Max Fee")}{" "}
+          <WithTooltip
+            tooltip={t(
+              "The total maximum gas fee you are willing to pay for this transaction : (Max Base Fee + Max Priority Fee) * Gas Limit"
+            )}
+          >
             <InfoIcon className="inline-block align-text-top" />
           </WithTooltip>
         </div>
@@ -401,7 +414,7 @@ export const CustomGasSettingsFormEip1559: FC<CustomGasSettingsFormEip1559Props>
           ) : isLoadingGasSettingsValid ? (
             <LoaderIcon className="animate-spin-slow text-body-secondary inline-block" />
           ) : (
-            <span className="text-alert-error">Invalid settings</span>
+            <span className="text-alert-error">{t("Invalid settings")}</span>
           )}
         </div>
       </div>
@@ -412,7 +425,7 @@ export const CustomGasSettingsFormEip1559: FC<CustomGasSettingsFormEip1559Props>
           disabled={!showMaxFeeTotal}
           primary={showMaxFeeTotal}
         >
-          Save
+          {t("Save")}
         </Button>
       </div>
     </form>

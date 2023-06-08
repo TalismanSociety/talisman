@@ -2,6 +2,7 @@ import { useCurrentSite } from "@ui/apps/popup/context/CurrentSiteContext"
 import useAccounts from "@ui/hooks/useAccounts"
 import { useAuthorisedSites } from "@ui/hooks/useAuthorisedSites"
 import { FC, Suspense, lazy, useMemo, useState } from "react"
+import { useTranslation } from "react-i18next"
 import styled from "styled-components"
 
 import { NetworkLogo } from "../Ethereum/NetworkLogo"
@@ -45,6 +46,7 @@ const Container = styled.button`
 `
 
 export const ConnectedAccountsPill: FC = () => {
+  const { t } = useTranslation("sites")
   const currentSite = useCurrentSite()
   const accounts = useAccounts()
   const authorisedSites = useAuthorisedSites()
@@ -60,13 +62,16 @@ export const ConnectedAccountsPill: FC = () => {
     const connected = [...new Set([...addresses, ...ethAddresses])]
 
     //if addresses is undefined or has length of 0, site has not been marked as trusted by the user
-    if (connected.length === 0) return { count: 0, label: "Not connected", ethChainId }
+    if (connected.length === 0) return { count: 0, label: t("Not connected"), ethChainId }
 
     const count = connected.filter((ca) => accounts.some(({ address }) => address === ca)).length
-    const label = accounts.length === 1 && count === 1 ? "Connected" : `${count} connected`
+    const label =
+      accounts.length === 1 && count === 1
+        ? t("Connected")
+        : t(`{{length}} connected`, { length: count })
 
     return { count, label, ethChainId }
-  }, [accounts, site])
+  }, [accounts, site, t])
 
   if (!site) return null
 

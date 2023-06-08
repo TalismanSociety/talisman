@@ -6,8 +6,10 @@ import { SignTypedDataVersion, TypedDataUtils } from "@metamask/eth-sig-util"
 import { Drawer } from "@talisman/components/Drawer"
 import { classNames } from "@talismn/util"
 import { useLedgerEthereum } from "@ui/hooks/ledger/useLedgerEthereum"
+import i18next from "@ui/i18nConfig"
 import { ethers } from "ethers"
 import { FC, useCallback, useEffect, useMemo, useState } from "react"
+import { useTranslation } from "react-i18next"
 import { Button } from "talisman-ui"
 
 import {
@@ -129,7 +131,7 @@ const signWithLedger = async (
   }
 
   // sign typed data v0, v1, v3...
-  throw new Error("This type of message cannot be signed with ledger.")
+  throw new Error(i18next.t("This type of message cannot be signed with ledger."))
 }
 
 const LedgerEthereum: FC<LedgerEthereumProps> = ({
@@ -143,6 +145,7 @@ const LedgerEthereum: FC<LedgerEthereumProps> = ({
   onSignature,
   onReject,
 }) => {
+  const { t } = useTranslation("sign")
   const [autoSend, setAutoSend] = useState(!manualSend)
   const [isSigning, setIsSigning] = useState(false)
   const [isSigned, setIsSigned] = useState(false)
@@ -157,11 +160,11 @@ const LedgerEthereum: FC<LedgerEthereumProps> = ({
   const connectionStatus: LedgerConnectionStatusProps = useMemo(
     () => ({
       status: status === "ready" ? "connecting" : status,
-      message: status === "ready" ? "Please approve from your Ledger." : message,
+      message: status === "ready" ? t("Please approve from your Ledger.") : message,
       refresh,
       requiresManualRetry,
     }),
-    [refresh, status, message, requiresManualRetry]
+    [refresh, status, message, requiresManualRetry, t]
   )
 
   const _onRefresh = useCallback(() => {
@@ -190,7 +193,7 @@ const LedgerEthereum: FC<LedgerEthereumProps> = ({
       // ETH ledger app requires EIP-1559 type 2 transactions
       if (error.reason === "invalid object key - maxPriorityFeePerGas")
         setError(
-          "Sorry, Talisman doesn't support signing transactions with Ledger on this network."
+          t("Sorry, Talisman doesn't support signing transactions with Ledger on this network.")
         )
       else setError(error.reason ?? error.message)
       setIsSigning(false)
@@ -206,6 +209,7 @@ const LedgerEthereum: FC<LedgerEthereumProps> = ({
     account.path,
     onReject,
     manualSend,
+    t,
   ])
 
   useEffect(() => {
@@ -229,7 +233,7 @@ const LedgerEthereum: FC<LedgerEthereumProps> = ({
         <>
           {isReady && !autoSend ? (
             <Button className="w-full" primary onClick={handleSendClick}>
-              Approve on Ledger
+              {t("Approve on Ledger")}
             </Button>
           ) : (
             !isSigned && (
@@ -239,7 +243,7 @@ const LedgerEthereum: FC<LedgerEthereumProps> = ({
         </>
       )}
       <Button className="w-full" onClick={handleCancelClick}>
-        Cancel
+        {t("Cancel")}
       </Button>
       {error && (
         <Drawer anchor="bottom" open={true} parent={parent}>

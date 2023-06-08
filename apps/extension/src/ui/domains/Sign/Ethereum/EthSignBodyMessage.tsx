@@ -7,6 +7,7 @@ import { Message } from "@ui/domains/Sign/Message"
 import { useEvmNetwork } from "@ui/hooks/useEvmNetwork"
 import { dump as convertToYaml } from "js-yaml"
 import { FC, useMemo } from "react"
+import { useTranslation } from "react-i18next"
 
 import { SignParamAccountButton, SignParamNetworkAddressButton } from "./shared"
 
@@ -59,21 +60,24 @@ export type EthSignBodyMessageProps = {
 }
 
 export const EthSignBodyMessage: FC<EthSignBodyMessageProps> = ({ account, request }) => {
+  const { t } = useTranslation("sign")
   const { isTypedData, text, verifyingAddress, ethChainId } = useEthSignMessage(request)
   const evmNetwork = useEvmNetwork(ethChainId)
 
   return (
     <div className="flex h-full w-full flex-col items-center">
-      <h1 className="!leading-base !my-0 font-sans !text-lg !font-bold">Sign Request</h1>
+      <h1 className="!leading-base !my-0 font-sans !text-lg !font-bold">{t("Sign Request")}</h1>
       <div className="leading-base my-12 flex w-full flex-col items-center">
-        <div className="p-2">You are signing{isTypedData ? " typed data " : " a message "}</div>
+        <div className="p-2">
+          {isTypedData ? t("You are signing typed data") : t("You are signing a message")}{" "}
+        </div>
         <div className="flex items-start p-1">
-          <div>with</div>
+          <div>{t("with")}</div>
           <SignParamAccountButton address={account.address} withIcon />
         </div>
         {!!verifyingAddress && !!evmNetwork && (
           <div className="flex items-start p-1">
-            <div>for contract</div>{" "}
+            <div>{t("for contract")}</div>{" "}
             <SignParamNetworkAddressButton address={verifyingAddress} network={evmNetwork} />
           </div>
         )}

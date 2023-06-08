@@ -16,6 +16,7 @@ import useChains from "@ui/hooks/useChains"
 import useTokens from "@ui/hooks/useTokens"
 import { useCallback, useEffect, useMemo, useState } from "react"
 import { useForm } from "react-hook-form"
+import { useTranslation } from "react-i18next"
 import styled from "styled-components"
 import * as yup from "yup"
 
@@ -196,6 +197,7 @@ const useSupportedTokenIds = (chains?: Chain[], tokens?: Token[], address?: stri
 }
 
 export const BuyTokensForm = () => {
+  const [t] = useTranslation()
   useAnalyticsPageView(ANALYTICS_PAGE)
   const { close } = useBuyTokensModal()
   const accounts = useAccounts()
@@ -223,18 +225,18 @@ export const BuyTokensForm = () => {
 
   const submit = useCallback(
     async (formData: FormData) => {
-      if (!formData.tokenId) throw new Error("Token not found")
-      if (!formData.address) throw new Error("Address not found")
+      if (!formData.tokenId) throw new Error(t("Token not found"))
+      if (!formData.address) throw new Error(t("Address not found"))
 
       const account = accounts.find(({ address }) => address === formData.address)
-      if (!account) throw new Error("Account not found")
+      if (!account) throw new Error(t("Account not found"))
 
       const token = tokensMap[formData.tokenId]
-      if (!token) throw new Error("Token not found")
+      if (!token) throw new Error(t("Token not found"))
 
       const chain = token.chain?.id ? chainsMap[token.chain?.id] : undefined
       const isEthereum = isEthereumAddress(account.address)
-      if (!isEthereum && !chain) throw new Error("Chain not found")
+      if (!isEthereum && !chain) throw new Error(t("Chain not found"))
 
       const walletAddress = isEthereum
         ? account.address
@@ -259,7 +261,7 @@ export const BuyTokensForm = () => {
       const redirectUrl = `${BANXA_URL}?${qs}`
       window.open(redirectUrl, "_blank")
     },
-    [accounts, chainsMap, close, tokensMap]
+    [accounts, chainsMap, close, tokensMap, t]
   )
 
   const handleAccountChange = useCallback(
@@ -327,7 +329,7 @@ export const BuyTokensForm = () => {
         propertyKey="address"
         renderItem={renderAccountItem}
         onChange={handleAccountChange}
-        placeholder="Select Account"
+        placeholder={t("Select Account")}
         defaultSelectedItem={selectedAccount}
         key={address} // uncontrolled component, will reset if value changes
       />
@@ -340,9 +342,9 @@ export const BuyTokensForm = () => {
         tokenId={tokenId}
       />
       <Button type="submit" primary disabled={!isValid}>
-        Continue
+        {t("Continue")}
       </Button>
-      <Caption>You will be taken to Banxa to complete this transaction</Caption>
+      <Caption>{t("You will be taken to Banxa to complete this transaction")}</Caption>
     </Form>
   )
 }

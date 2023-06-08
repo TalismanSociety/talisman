@@ -6,16 +6,23 @@ import imgFeePriorityLow from "@talisman/theme/images/fee-priority-low.png"
 import imgFeePriorityMedium from "@talisman/theme/images/fee-priority-medium.png"
 import imgFeePriorityRecommended from "@talisman/theme/images/fee-priority-recommended.png"
 import { classNames } from "@talismn/util"
-import { FC, PropsWithChildren } from "react"
+import { FC, PropsWithChildren, useMemo } from "react"
+import { useTranslation } from "react-i18next"
 
-export const FEE_PRIORITY_OPTIONS: Record<EthPriorityOptionName, { icon: string; label: string }> =
-  {
-    low: { icon: imgFeePriorityLow, label: "Low" },
-    medium: { icon: imgFeePriorityMedium, label: "Normal" },
-    high: { icon: imgFeePriorityHigh, label: "Urgent" },
-    custom: { icon: imgFeePriorityCustom, label: "Custom" },
-    recommended: { icon: imgFeePriorityRecommended, label: "Recommended" },
-  }
+export const useFeePriorityOptionsUI = () => {
+  const { t } = useTranslation("sign")
+
+  return useMemo<Record<EthPriorityOptionName, { icon: string; label: string }>>(
+    () => ({
+      low: { icon: imgFeePriorityLow, label: t("Low") },
+      medium: { icon: imgFeePriorityMedium, label: t("Normal") },
+      high: { icon: imgFeePriorityHigh, label: t("Urgent") },
+      custom: { icon: imgFeePriorityCustom, label: t("Custom") },
+      recommended: { icon: imgFeePriorityRecommended, label: t("Recommended") },
+    }),
+    [t]
+  )
+}
 
 type IndicatorProps = PropsWithChildren & {
   className?: string
@@ -44,7 +51,7 @@ export const MessageRow: FC<MessageRowProps> = ({ type, message }) => {
   return (
     <div
       className={classNames(
-        "mt-4 mb-6 h-8 w-full text-left text-xs",
+        "mb-6 mt-4 h-8 w-full text-left text-xs",
         type === "warning" && "text-alert-warn",
         type === "error" && "text-alert-error",
         message ? "visible" : "invisible"

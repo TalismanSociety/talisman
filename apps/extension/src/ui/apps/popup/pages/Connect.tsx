@@ -10,6 +10,7 @@ import useAccounts from "@ui/hooks/useAccounts"
 import { useAnalytics } from "@ui/hooks/useAnalytics"
 import { useRequest } from "@ui/hooks/useRequest"
 import { ChangeEventHandler, FC, useCallback, useEffect, useMemo, useState } from "react"
+import { Trans, useTranslation } from "react-i18next"
 import { useParams } from "react-router-dom"
 import { Button, Drawer, Tooltip, TooltipContent, TooltipTrigger } from "talisman-ui"
 import { Checkbox } from "talisman-ui"
@@ -22,29 +23,35 @@ const NoEthAccountWarning = ({
 }: {
   onIgnoreClick: () => void
   onAddAccountClick: () => void
-}) => (
-  <Drawer isOpen anchor="bottom">
-    <div className="bg-grey-800 flex flex-col gap-8 rounded-t-xl p-12">
-      <div className="w-full text-center">
-        <InfoIcon className="text-primary-500 inline-block text-[4rem]" />
+}) => {
+  const { t } = useTranslation("request")
+  return (
+    <Drawer isOpen anchor="bottom">
+      <div className="bg-grey-800 flex flex-col gap-8 rounded-t-xl p-12">
+        <div className="w-full text-center">
+          <InfoIcon className="text-primary-500 inline-block text-[4rem]" />
+        </div>
+        <p className="text-body-secondary text-center">
+          <Trans t={t}>
+            This application requires an <br />
+            <strong className="text-body">Ethereum account</strong> to connect.
+            <br />
+            Would you like to create or import one ?
+          </Trans>
+        </p>
+        <div className="mt-4 grid grid-cols-2 gap-8">
+          <Button onClick={onIgnoreClick}>No</Button>
+          <Button primary onClick={onAddAccountClick}>
+            Yes
+          </Button>
+        </div>
       </div>
-      <p className="text-body-secondary text-center">
-        This application requires an <br />
-        <strong className="text-body">Ethereum account</strong> to connect.
-        <br />
-        Would you like to create or import one ?
-      </p>
-      <div className="mt-4 grid grid-cols-2 gap-8">
-        <Button onClick={onIgnoreClick}>No</Button>
-        <Button primary onClick={onAddAccountClick}>
-          Yes
-        </Button>
-      </div>
-    </div>
-  </Drawer>
-)
+    </Drawer>
+  )
+}
 
 export const Connect: FC<{ className?: string }> = ({ className }) => {
+  const { t } = useTranslation("request")
   const { id } = useParams<"id">() as KnownRequestIdOnly<"auth">
   const authRequest = useRequest(id)
   const { popupOpenEvent } = useAnalytics()
@@ -86,9 +93,9 @@ export const Connect: FC<{ className?: string }> = ({ className }) => {
       await api.authrequestApprove(authRequest.id, connected)
       window.close()
     } catch (err) {
-      notify({ type: "error", title: "Failed to connect", subtitle: (err as Error).message })
+      notify({ type: "error", title: t("Failed to connect"), subtitle: (err as Error).message })
     }
-  }, [authRequest, connected])
+  }, [authRequest, connected, t])
 
   const reject = useCallback(() => {
     if (!authRequest) return
@@ -145,18 +152,18 @@ export const Connect: FC<{ className?: string }> = ({ className }) => {
       <Content>
         <h3 className="mb-12 mt-0 pt-10 text-center text-sm font-bold">
           {ethereum
-            ? "Choose the account you'd like to connect"
-            : "Choose the account(s) you'd like to connect"}
+            ? t("Choose the account you'd like to connect")
+            : t("Choose the account(s) you'd like to connect")}
         </h3>
         {!ethereum && (
           <div className="text-body-secondary my-4 text-sm">
             <Tooltip>
               <TooltipTrigger className="text-body-secondary mb-4 text-sm leading-10">
                 <Checkbox onChange={handleShowEthAccountsChanged} defaultChecked={showEthAccounts}>
-                  Show Eth accounts
+                  {t("Show Eth accounts")}
                 </Checkbox>
               </TooltipTrigger>
-              <TooltipContent>Some apps do not work with Ethereum accounts</TooltipContent>
+              <TooltipContent>{t("Some apps do not work with Ethereum accounts")}</TooltipContent>
             </Tooltip>
           </div>
         )}
@@ -180,9 +187,9 @@ export const Connect: FC<{ className?: string }> = ({ className }) => {
       </Content>
       <Footer>
         <div className="grid w-full grid-cols-2 gap-12">
-          <Button onClick={reject}>Reject</Button>
+          <Button onClick={reject}>{t("Reject")}</Button>
           <Button primary onClick={authorise} disabled={connected.length <= 0}>
-            Connect {connected.length > 0 && connected.length}
+            {t("Connect")} {connected.length > 0 && connected.length}
           </Button>
         </div>
       </Footer>

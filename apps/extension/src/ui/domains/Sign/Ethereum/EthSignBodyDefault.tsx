@@ -4,12 +4,14 @@ import useToken from "@ui/hooks/useToken"
 import { useTokenRates } from "@ui/hooks/useTokenRates"
 import { ethers } from "ethers"
 import { FC, useMemo } from "react"
+import { useTranslation } from "react-i18next"
 
 import { SignContainer } from "../SignContainer"
 import { SignParamAccountButton, SignParamNetworkAddressButton } from "./shared"
 import { SignParamTokensDisplay } from "./shared/SignParamTokensDisplay"
 
 export const EthSignBodyDefault: FC = () => {
+  const { t } = useTranslation("sign")
   const { network, transactionInfo, request } = useEthSignTransactionRequest()
 
   const nativeToken = useToken(network?.nativeToken?.id)
@@ -37,11 +39,11 @@ export const EthSignBodyDefault: FC = () => {
   return (
     <SignContainer
       networkType="ethereum"
-      title={amount && request.to ? "Transfer Request" : "Transaction Request"}
+      title={amount && request.to ? t("Transfer Request") : t("Transaction Request")}
     >
       {amount && request.to ? (
         <>
-          <div>You are transferring</div>
+          <div>{t("You are transferring")}</div>
           <div>
             <SignParamTokensDisplay
               withIcon
@@ -53,11 +55,11 @@ export const EthSignBodyDefault: FC = () => {
             />
           </div>
           <div className="flex">
-            <span>from </span>
+            <span>{t("from")} </span>
             <SignParamAccountButton address={from} withIcon />
           </div>
           <div className="flex">
-            <span>to {transactionInfo.isContractCall ? "contract" : "account"} </span>
+            <span>{transactionInfo.isContractCall ? t("to contract") : t("to account")} </span>
             {transactionInfo.isContractCall ? (
               <SignParamNetworkAddressButton network={network} address={request.to} />
             ) : (
@@ -71,14 +73,14 @@ export const EthSignBodyDefault: FC = () => {
         </>
       ) : (
         <>
-          <div>You are submitting a transaction</div>
+          <div>{t("You are submitting a transaction")}</div>
           <div className="flex">
-            <span>with</span>
+            <span>{t("with")}</span>
             <SignParamAccountButton address={from} withIcon />
           </div>
           {request.to ? (
             <div className="flex">
-              <span>on contract</span>
+              <span>{t("on contract")}</span>
               <SignParamNetworkAddressButton network={network} address={request.to} />
             </div>
           ) : null}
@@ -86,7 +88,7 @@ export const EthSignBodyDefault: FC = () => {
       )}
       {transactionInfo.contractCall?.name && (
         <div>
-          method: <span className="text-white">{transactionInfo.contractCall.name}</span>
+          {t("method:")} <span className="text-white">{transactionInfo.contractCall.name}</span>
         </div>
       )}
     </SignContainer>

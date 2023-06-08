@@ -1,5 +1,6 @@
 import { Balances } from "@core/domains/balances/types"
 import { useAccountByAddress } from "@ui/hooks/useAccountByAddress"
+import { useTranslation } from "react-i18next"
 
 import NamedAddress, { NamedAddressOptions } from "./NamedAddress"
 
@@ -10,13 +11,14 @@ export interface IAccountName extends NamedAddressOptions {
 }
 
 const AccountName = ({ address, ...props }: IAccountName) => {
+  const { t } = useTranslation()
   const account = useAccountByAddress(address)
   if (!account) return null
 
   return (
     <NamedAddress
       address={address}
-      name={account.name ?? "Unnamed Account"}
+      name={account.name ?? t("Unnamed Account")}
       genesisHash={account.genesisHash}
       {...props}
     />

@@ -21,21 +21,34 @@ type AccountTypeIconProps = {
 
 export const AccountTypeIcon: FC<AccountTypeIconProps> = ({ origin, linked, className }) => {
   const { t } = useTranslation()
+
   if (linked && ["SEED", "JSON"].includes(origin as string))
     return (
-      <WithTooltip as="div" className={`${className} source`} tooltip={`${origin} Import`}>
+      <WithTooltip
+        as="div"
+        className={`${className} source`}
+        tooltip={t("{{origin}} Import", { origin })}
+      >
         <LinkIcon />
       </WithTooltip>
     )
   if (origin === "HARDWARE")
     return (
-      <WithTooltip as="div" className={`${className} source`} tooltip={`${origin} Import`}>
+      <WithTooltip
+        as="div"
+        className={`${className} source`}
+        tooltip={t("{{origin}} Import", { origin })}
+      >
         <UsbIcon />
       </WithTooltip>
     )
   if (origin === "QR")
     return (
-      <WithTooltip as="div" className={`${className} source`} tooltip={`${origin} Import`}>
+      <WithTooltip
+        as="div"
+        className={`${className} source`}
+        tooltip={t("{{origin}} Import", { origin })}
+      >
         <PolkadotVaultIcon />
       </WithTooltip>
     )

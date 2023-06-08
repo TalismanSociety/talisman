@@ -184,7 +184,7 @@ const EvmTxActions: FC<{
     window.close()
   }, [hrefBlockExplorer])
 
-  const { t } = useTranslation("transactions")
+  const { t } = useTranslation("sign")
 
   return (
     <div
@@ -280,7 +280,7 @@ const EvmTxActions: FC<{
 }
 
 const TransactionStatusLabel: FC<{ status: TransactionStatus }> = ({ status }) => {
-  const { t } = useTranslation("transactions")
+  const { t } = useTranslation("sign")
 
   switch (status) {
     case "error":
@@ -357,7 +357,7 @@ const TransactionRowEvm: FC<TransactionRowEvmProps> = ({
     return () => setIsMounted(false)
   }, [])
 
-  const { t } = useTranslation("transactions")
+  const { t } = useTranslation("sign")
 
   return (
     <div
@@ -477,7 +477,7 @@ const SubTxActions: FC<{
     window.close()
   }, [hrefBlockExplorer])
 
-  const { t } = useTranslation("transactions")
+  const { t } = useTranslation("sign")
 
   return (
     <div
@@ -570,7 +570,7 @@ const TransactionRowSubstrate: FC<TransactionRowSubProps> = ({
     return () => setIsMounted(false)
   }, [])
 
-  const { t } = useTranslation("transactions")
+  const { t } = useTranslation("sign")
 
   return (
     <div
@@ -718,7 +718,7 @@ const DrawerContent: FC<{ transactions: WalletTransaction[]; onClose?: () => voi
     window.close()
   }, [account?.address])
 
-  const { t } = useTranslation("transactions")
+  const { t } = useTranslation("sign")
 
   return (
     <>

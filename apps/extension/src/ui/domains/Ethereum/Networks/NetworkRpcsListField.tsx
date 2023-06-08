@@ -21,6 +21,7 @@ import {
   useFieldArray,
   useFormContext,
 } from "react-hook-form"
+import { useTranslation } from "react-i18next"
 import { FormFieldContainer, FormFieldInputText } from "talisman-ui"
 
 import { useRegisterFieldWithDebouncedValidation } from "./useRegisterFieldWithDebouncedValidation"
@@ -98,6 +99,7 @@ const SortableRpcField: FC<SortableRpcItemProps> = ({
 }
 
 export const NetworkRpcsListField = () => {
+  const { t } = useTranslation("settings")
   const {
     register,
     trigger,
@@ -151,7 +153,7 @@ export const NetworkRpcsListField = () => {
   )
 
   return (
-    <FormFieldContainer label="RPC URLs">
+    <FormFieldContainer label={t("RPC URLs")}>
       <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
         <SortableContext items={rpcIds}>
           <div className="flex w-full flex-col gap-2">
@@ -176,7 +178,7 @@ export const NetworkRpcsListField = () => {
         className="text-body-secondary hover:text-body flex gap-2 self-start text-sm"
         onClick={handleAddRpc}
       >
-        <PlusIcon className="transition-none" /> Add another RPC
+        <PlusIcon className="transition-none" /> {t("Add another RPC")}
       </button>
     </FormFieldContainer>
   )

@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 // Adapted from https://github.com/polkadot-js/extension/packages/extension-base/src/background/handlers/State.ts
 
-import { UnknownJsonRpcResponse } from "@core/domains/rpc/types"
+import { UnknownJsonRpcResponse } from "@core/domains/talisman/types"
 import { Port } from "@core/types/base"
 import type {
   RequestRpcSend,

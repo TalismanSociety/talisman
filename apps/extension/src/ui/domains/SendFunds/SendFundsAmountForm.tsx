@@ -27,6 +27,7 @@ import {
   useState,
 } from "react"
 import { Container } from "react-dom"
+import { Trans, useTranslation } from "react-i18next"
 import { Button, PillButton } from "talisman-ui"
 
 import AccountAvatar from "../Account/Avatar"
@@ -323,6 +324,7 @@ const ErrorMessage = () => {
 }
 
 const AmountEdit = () => {
+  const { t } = useTranslation("send-funds")
   const [isTokenEdit, setIsTokenEdit] = useState(true)
   const { onSendMaxClick, tokenRates, isEstimatingMaxAmount, maxAmount, token } = useSendFunds()
 
@@ -361,7 +363,7 @@ const AmountEdit = () => {
               size="xs"
               className={classNames("h-[2.2rem] rounded-sm !px-4 !py-0")}
             >
-              Max
+              {t("Max")}
             </PillButton>
           </div>
           <div className="text-brand-orange mt-4 text-center text-xs">
@@ -404,6 +406,7 @@ const TokenRow = ({ onEditClick }: { onEditClick: () => void }) => {
 }
 
 const NetworkRow = () => {
+  const [t] = useTranslation()
   const { chain, evmNetwork } = useSendFunds()
 
   const { networkId, networkName } = useMemo(
@@ -411,14 +414,16 @@ const NetworkRow = () => {
       networkId: (chain ?? evmNetwork)?.id,
       networkName:
         chain?.name ??
-        (evmNetwork ? `${evmNetwork?.name}${evmNetwork?.substrateChain ? " (Ethereum)" : ""}` : ""),
+        (evmNetwork
+          ? `${evmNetwork?.name}${evmNetwork?.substrateChain ? ` (${t("Ethereum")})` : ""}`
+          : ""),
     }),
-    [chain, evmNetwork]
+    [chain, evmNetwork, t]
   )
 
   return (
     <div className="flex w-full items-center justify-between">
-      <div>Network</div>
+      <div>{t("Network")}</div>
       <div className="flex items-center gap-2">
         <ChainLogo id={networkId} className="inline-block text-base" />
         <div>{networkName}</div>
@@ -428,6 +433,7 @@ const NetworkRow = () => {
 }
 
 const EvmFeeSettingsRow = () => {
+  const { t } = useTranslation("send-funds")
   const { token, evmNetwork, evmTransaction } = useSendFunds()
 
   if (!token || !evmTransaction || !evmNetwork || !isEvmToken(token)) return null
@@ -444,7 +450,7 @@ const EvmFeeSettingsRow = () => {
 
   return (
     <div className="flex h-12 w-full items-center justify-between gap-4">
-      <div>Transaction Priority</div>
+      <div>{t("Transaction Priority")}</div>
       <div>
         {evmNetwork?.nativeToken?.id && priority && tx && txDetails && (
           <EthFeeSelect
@@ -465,6 +471,7 @@ const EvmFeeSettingsRow = () => {
 }
 
 const FeesSummary = () => {
+  const { t } = useTranslation("send-funds")
   const { feeToken, estimatedFee, isLoading } = useSendFunds()
 
   return (
@@ -475,7 +482,7 @@ const FeesSummary = () => {
       <EvmFeeSettingsRow />
       <div className="flex w-full items-center justify-between gap-4 ">
         <div className="whitespace-nowrap">
-          Estimated Fee <SendFundsFeeTooltip />
+          {t("Estimated Fee")} <SendFundsFeeTooltip />
         </div>
         <div
           className={classNames(
@@ -497,12 +504,13 @@ type ForfeitDetailsProps = {
   planck: string
 }
 const ForfeitDetails: FC<ForfeitDetailsProps> = ({ tokenId, planck }) => {
+  const { t } = useTranslation("send-funds")
   const token = useToken(tokenId)
 
   if (!isSubToken(token)) return null
 
   return (
-    <>
+    <Trans t={t}>
       This transaction will cause{" "}
       <Tokens
         amount={planckToTokens(planck, token.decimals)}
@@ -518,11 +526,12 @@ const ForfeitDetails: FC<ForfeitDetailsProps> = ({ tokenId, planck }) => {
         noCountUp
       />
       , any remaining tokens will be forfeited.
-    </>
+    </Trans>
   )
 }
 
 const ReviewButton = () => {
+  const { t } = useTranslation("send-funds")
   const { gotoReview } = useSendFundsWizard()
   const { isValid, tokensToBeReaped } = useSendFunds()
   const { open, close, isOpen } = useOpenClose()
@@ -545,7 +554,7 @@ const ReviewButton = () => {
         disabled={!isValid}
         onClick={handleClick}
       >
-        Review
+        {t("Review")}
       </Button>
       <Drawer
         anchor="bottom"
@@ -557,7 +566,7 @@ const ReviewButton = () => {
           <div>
             <InfoIcon className="text-primary-500 inline-block text-3xl" />
           </div>
-          <div className="mt-10 font-bold">Confirm forfeit</div>
+          <div className="mt-10 font-bold">{t("Confirm forfeit")}</div>
           <div className="text-body-secondary mt-5 text-sm">
             {tokensToBeReaped?.map(({ token, amount }) => (
               <ForfeitDetails key={token.id} tokenId={token.id} planck={amount.planck.toString()} />
@@ -568,14 +577,14 @@ const ReviewButton = () => {
                 target="_blank"
                 href="https://support.polkadot.network/support/solutions/articles/65000168651-what-is-the-existential-deposit-"
               >
-                Learn more
+                {t("Learn more")}
               </a>
             </div>
           </div>
           <div className="mt-10 grid grid-cols-2 gap-4">
-            <Button onClick={close}>Cancel</Button>
+            <Button onClick={close}>{t("Cancel")}</Button>
             <Button primary onClick={handleConfirmReap}>
-              Proceed
+              {t("Proceed")}
             </Button>
           </div>
         </div>
@@ -585,6 +594,7 @@ const ReviewButton = () => {
 }
 
 const AddContact = () => {
+  const { t } = useTranslation("send-funds")
   const { to } = useSendFunds()
   const account = useAccountByAddress(to)
   const { contacts } = useAddressBook()
@@ -608,7 +618,7 @@ const AddContact = () => {
   return (
     <>
       <PillButton onClick={open} size={"base"} className="h-16 !rounded !px-4" icon={UserPlusIcon}>
-        Add
+        {t("Add")}
       </PillButton>
       <AddToAddressBookDrawer
         isOpen={isOpen}
@@ -623,6 +633,7 @@ const AddContact = () => {
 }
 
 export const SendFundsAmountForm = () => {
+  const { t } = useTranslation("send-funds")
   const { from, to, goto } = useSendFundsWizard()
 
   const handleGotoClick = useCallback(
@@ -645,7 +656,7 @@ export const SendFundsAmountForm = () => {
     >
       <Container className="flex h-[9rem] w-full flex-col justify-center gap-5 px-8">
         <div className="flex w-full items-center justify-between gap-4">
-          <div>From</div>
+          <div>{t("From")}</div>
           <div>
             <AddressPillButton
               className="!max-w-[260px]"
@@ -655,7 +666,7 @@ export const SendFundsAmountForm = () => {
           </div>
         </div>
         <div className="flex w-full items-center justify-between gap-2">
-          <div>To</div>
+          <div>{t("To")}</div>
           <div className="flex items-center gap-4">
             <AddressPillButton
               className="!max-w-[260px]"

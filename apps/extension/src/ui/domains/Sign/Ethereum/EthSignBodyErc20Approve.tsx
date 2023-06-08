@@ -5,6 +5,7 @@ import { useTokenRates } from "@ui/hooks/useTokenRates"
 import useTokens from "@ui/hooks/useTokens"
 import { BigNumber } from "ethers"
 import { FC, useMemo } from "react"
+import { Trans, useTranslation } from "react-i18next"
 
 import { SignAlertMessage } from "../SignAlertMessage"
 import { SignContainer } from "../SignContainer"
@@ -21,6 +22,7 @@ import { useEthSignKnownTransactionRequest } from "./shared/useEthSignKnownTrans
 const ALLOWANCE_UNLIMITED = "0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"
 
 export const EthSignBodyErc20Approve: FC = () => {
+  const { t } = useTranslation("sign")
   const { account, network, transactionInfo } = useEthSignKnownTransactionRequest()
 
   const { tokens } = useTokens(true)
@@ -69,34 +71,35 @@ export const EthSignBodyErc20Approve: FC = () => {
     <SignContainer
       networkType="ethereum"
       title={
-        <>
+        <Trans t={t}>
           This app wants to
           <br />
           access your funds
-        </>
+        </Trans>
       }
       alert={
         <SignAlertMessage>
           <span className="text-body-secondary">
-            This contract will have permission to spend tokens on your behalf until manually
-            revoked.
+            {t(
+              "This contract will have permission to spend tokens on your behalf until manually revoked."
+            )}
           </span>{" "}
           <a
             className="text-white"
             href="https://docs.talisman.xyz/talisman/navigating-the-paraverse/ethereum-features/token-approvals"
             target="_blank"
           >
-            Learn more
+            {t("Learn more")}
           </a>
         </SignAlertMessage>
       }
     >
       <div className="flex">
-        <div>Allow</div>
+        <div>{t("Allow")}</div>
         <SignParamNetworkAddressButton network={network} address={spender} />
       </div>
       <div className="flex">
-        <div>to spend{isInfinite ? " infinite" : ""}</div>
+        <div>{isInfinite ? t("to spend infinite") : t("to spend")}</div>
         {allowance ? (
           <SignParamTokensButton
             address={transactionInfo.targetAddress}
@@ -119,7 +122,7 @@ export const EthSignBodyErc20Approve: FC = () => {
         )}
       </div>
       <div className="flex">
-        <div>from</div>
+        <div>{t("from")}</div>
         <SignParamAccountButton address={account.address} explorerUrl={network.explorerUrl} />
       </div>
     </SignContainer>

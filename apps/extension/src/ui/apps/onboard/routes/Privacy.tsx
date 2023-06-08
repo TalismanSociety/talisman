@@ -3,6 +3,7 @@ import imgAnalytics from "@talisman/theme/images/analytics.png"
 import { AnalyticsPage, sendAnalyticsEvent } from "@ui/api/analytics"
 import { useAnalyticsPageView } from "@ui/hooks/useAnalyticsPageView"
 import { useCallback } from "react"
+import { Trans, useTranslation } from "react-i18next"
 import { Navigate, useNavigate } from "react-router-dom"
 import styled from "styled-components"
 
@@ -44,6 +45,7 @@ const ANALYTICS_PAGE: AnalyticsPage = {
 }
 
 export const PrivacyPage = () => {
+  const { t } = useTranslation("onboard")
   useAnalyticsPageView(ANALYTICS_PAGE)
 
   const { updateData, data } = useOnboard()
@@ -80,26 +82,32 @@ export const PrivacyPage = () => {
       picture={<Picture src={imgAnalytics} alt="Analytics" />}
       analytics={ANALYTICS_PAGE}
     >
-      <Dialog title="Manage your privacy">
+      <Dialog title={t("Manage your privacy")}>
         <p className="mt-16">
-          To help improve Talisman we’d like to collect anonymous usage information and send
-          anonymized error reports. We respect your data and never record sensitive or identifying
-          information. You can always adjust these settings, or opt out completely at any time.
+          <Trans t={t}>
+            To help improve Talisman we’d like to collect anonymous usage information and send
+            anonymized error reports. We respect your data and never record sensitive or identifying
+            information. You can always adjust these settings, or opt out completely at any time.
+          </Trans>
           <br />
           <br />
-          <a
-            onClick={handleLearnMoreClick}
-            href="https://docs.talisman.xyz/talisman/legal-and-security/privacy-policy"
-            target="_blank"
-          >
-            Learn more
-          </a>{" "}
-          about what we track and how we use this data.
+          <Trans t={t}>
+            <a
+              onClick={handleLearnMoreClick}
+              href="https://docs.talisman.xyz/talisman/legal-and-security/privacy-policy"
+              target="_blank"
+            >
+              Learn more
+            </a>{" "}
+            about what we track and how we use this data.
+          </Trans>
         </p>
         <div className="mt-24 flex w-full gap-8">
-          <SimpleButtonTransparent onClick={handleClick(false)}>No thanks</SimpleButtonTransparent>
+          <SimpleButtonTransparent onClick={handleClick(false)}>
+            {t("No thanks")}
+          </SimpleButtonTransparent>
           <SimpleButton onClick={handleClick(true)} primary>
-            I agree
+            {t("I agree")}
           </SimpleButton>
         </div>
       </Dialog>

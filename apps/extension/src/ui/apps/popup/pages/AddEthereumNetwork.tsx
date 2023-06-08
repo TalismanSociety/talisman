@@ -9,6 +9,7 @@ import { api } from "@ui/api"
 import { NetworksDetailsButton } from "@ui/domains/Ethereum/NetworkDetailsButton"
 import { useRequest } from "@ui/hooks/useRequest"
 import { useCallback } from "react"
+import { Trans, useTranslation } from "react-i18next"
 import { useParams } from "react-router-dom"
 import styled from "styled-components"
 
@@ -73,6 +74,7 @@ const Container = styled(Layout)`
 `
 
 export const AddEthereumNetwork = () => {
+  const { t } = useTranslation("request")
   const { id } = useParams<"id">() as KnownRequestIdOnly<"eth-network-add">
   const request = useRequest(id)
 
@@ -82,9 +84,9 @@ export const AddEthereumNetwork = () => {
       await api.ethNetworkAddApprove(request.id)
       window.close()
     } catch (err) {
-      notify({ type: "error", title: "Failed to add network", subtitle: (err as Error).message })
+      notify({ type: "error", title: t("Failed to add network"), subtitle: (err as Error).message })
     }
-  }, [request])
+  }, [request, t])
 
   const cancel = useCallback(() => {
     if (!request) return
@@ -93,6 +95,8 @@ export const AddEthereumNetwork = () => {
   }, [request])
 
   if (!request) return null
+
+  const chainName = request.network.chainName
 
   return (
     <Container>
@@ -108,10 +112,11 @@ export const AddEthereumNetwork = () => {
         <div>
           <GlobeIcon className="globeIcon inline-block" />
         </div>
-        <h1>Add Network</h1>
+        <h1>{t("Add Network")}</h1>
         <p>
-          This app wants to connect Talisman to the <strong>{request.network.chainName}</strong>{" "}
-          network.
+          <Trans t={t}>
+            This app wants to connect Talisman to the <strong>{chainName}</strong> network.
+          </Trans>
         </p>
         <div className="grow"></div>
         <div>
@@ -120,9 +125,9 @@ export const AddEthereumNetwork = () => {
       </Content>
       <Footer>
         <StyledGrid>
-          <SimpleButton onClick={cancel}>Reject</SimpleButton>
+          <SimpleButton onClick={cancel}>{t("Reject")}</SimpleButton>
           <SimpleButton primary onClick={approve}>
-            Approve
+            {t("Approve")}
           </SimpleButton>
         </StyledGrid>
       </Footer>

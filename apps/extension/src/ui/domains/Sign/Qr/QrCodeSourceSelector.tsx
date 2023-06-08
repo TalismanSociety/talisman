@@ -5,6 +5,7 @@ import useChainByGenesisHash from "@ui/hooks/useChainByGenesisHash"
 import { useHasVerifierCertificateMnemonic } from "@ui/hooks/useHasVerifierCertificateMnemonic"
 import startCase from "lodash/startCase"
 import { useMemo, useState } from "react"
+import { useTranslation } from "react-i18next"
 import { Popover, PopoverContent, PopoverTrigger } from "talisman-ui"
 
 import { novaLogoSvg, parityLogoSvg, talismanRedHandSvg } from "./constants"
@@ -105,13 +106,14 @@ export const QrCodeSourceSelector = ({
   showPopover,
   togglePopover,
 }: QrCodeSourceSelectorProps) => {
+  const { t } = useTranslation("sign")
   return sources.length > 1 ? (
     <Popover placement="bottom-end" open={showPopover} onOpenChange={togglePopover}>
       <PopoverTrigger asChild>
         <div
           className={classNames("text-body-secondary flex items-center gap-3 text-sm", className)}
         >
-          QR Source:{" "}
+          {t("QR Source:")}{" "}
           <button
             className="text-body hover:bg-grey-750 flex cursor-pointer items-center gap-2 rounded-sm p-3"
             onClick={togglePopover}

@@ -9,7 +9,7 @@ import { formatDecimals } from "@talismn/util"
 import { Address } from "@ui/domains/Account/Address"
 import Fiat from "@ui/domains/Asset/Fiat"
 import Tokens from "@ui/domains/Asset/Tokens"
-import { FEE_PRIORITY_OPTIONS } from "@ui/domains/Ethereum/GasSettings/common"
+import { useFeePriorityOptionsUI } from "@ui/domains/Ethereum/GasSettings/common"
 import { NetworkUsage } from "@ui/domains/Ethereum/NetworkUsage"
 import { useAnalytics } from "@ui/hooks/useAnalytics"
 import useToken from "@ui/hooks/useToken"
@@ -17,6 +17,7 @@ import { useTokenRates } from "@ui/hooks/useTokenRates"
 import { BigNumber, BigNumberish } from "ethers"
 import { formatEther, formatUnits } from "ethers/lib/utils"
 import { FC, PropsWithChildren, ReactNode, useCallback, useEffect, useMemo } from "react"
+import { useTranslation } from "react-i18next"
 import styled from "styled-components"
 import { PillButton } from "talisman-ui"
 
@@ -111,11 +112,20 @@ const ViewDetailsAddress: FC<{ address?: string }> = ({ address }) => {
   )
 }
 
-const formatGwei = (value?: BigNumberish) => {
-  return value ? `${formatDecimals(formatUnits(value, "gwei"))} GWEI` : null
+const Gwei: FC<{ value: BigNumberish | null | undefined }> = ({ value }) => {
+  const { t } = useTranslation("sign")
+  return (
+    <>
+      {value
+        ? t("{{value}} GWEI", { value: formatDecimals(formatUnits(value, "gwei")) })
+        : t("N/A")}
+    </>
+  )
 }
 
 const ViewDetailsContent: FC<ViewDetailsContentProps> = ({ onClose }) => {
+  const { t } = useTranslation("sign")
+  const feePriorityOptions = useFeePriorityOptionsUI()
   const {
     request,
     network,
@@ -174,60 +184,60 @@ const ViewDetailsContent: FC<ViewDetailsContentProps> = ({ onClose }) => {
       notify(
         {
           type: "success",
-          title: "Byte code copied",
+          title: t("Byte code copied"),
         }
         // set an id to prevent multiple clicks to display multiple notifications
       )
     } catch (err) {
       notify({
         type: "error",
-        title: `Copy failed`,
+        title: t(`Copy failed`),
       })
     }
-  }, [request?.data])
+  }, [request?.data, t])
 
   if (!request) return null
 
   return (
     <ViewDetailsContainer>
       <div className="grow">
-        <div className="title">Details</div>
+        <div className="title">{t("Details")}</div>
         {!!txInfo?.isContractCall && (
-          <ViewDetailsField label="Contract type and method">
+          <ViewDetailsField label={t("Contract type and method")}>
             {txInfo?.contractType
-              ? `${txInfo?.contractType} : ${txInfo?.contractCall?.name ?? "N/A"}`
-              : "Unknown"}
+              ? `${txInfo?.contractType} : ${txInfo?.contractCall?.name ?? t("N/A")}`
+              : t("Unknown")}
           </ViewDetailsField>
         )}
-        <ViewDetailsField label="From" breakAll>
+        <ViewDetailsField label={t("From")} breakAll>
           <ViewDetailsAddress address={request.from} />
         </ViewDetailsField>
-        <ViewDetailsField label="To" breakAll>
-          {request.to ? <ViewDetailsAddress address={request.to} /> : "N/A"}
+        <ViewDetailsField label={t("To")} breakAll>
+          {request.to ? <ViewDetailsAddress address={request.to} /> : t("N/A")}
         </ViewDetailsField>
-        <ViewDetailsField label="Value to be transferred" breakAll>
+        <ViewDetailsField label={t("Value to be transferred")} breakAll>
           {formatEthValue(request.value)}
         </ViewDetailsField>
-        <ViewDetailsField label={"Network"}>
+        <ViewDetailsField label={t("Network")}>
           <ViewDetailsGrid>
             <ViewDetailsGridRow
-              left="Name"
+              left={t("Name")}
               right={network ? `${network.name} (${network.id})` : null}
             />
             <ViewDetailsGridRow
-              left="Usage"
+              left={t("Usage")}
               right={
-                typeof networkUsage === "number" ? `${Math.round(networkUsage * 100)}%` : "N/A"
+                typeof networkUsage === "number" ? `${Math.round(networkUsage * 100)}%` : t("N/A")
               }
             />
             {transaction?.type === 2 && (
               <>
                 <ViewDetailsGridRow
-                  left="Base fee per gas"
-                  right={txDetails?.baseFeePerGas ? formatGwei(txDetails.baseFeePerGas) : "N/A"}
+                  left={t("Base fee per gas")}
+                  right={<Gwei value={txDetails?.baseFeePerGas} />}
                 />
                 <ViewDetailsGridRow
-                  left="Base fee trend"
+                  left={t("Base fee trend")}
                   right={
                     <NetworkUsage
                       baseFeeTrend={txDetails?.baseFeeTrend}
@@ -240,54 +250,50 @@ const ViewDetailsContent: FC<ViewDetailsContentProps> = ({ onClose }) => {
           </ViewDetailsGrid>
         </ViewDetailsField>
         {!!priority && (
-          <ViewDetailsField label={`Gas settings (${FEE_PRIORITY_OPTIONS[priority].label})`}>
+          <ViewDetailsField label={`${t("Gas settings")} (${feePriorityOptions[priority].label})`}>
             {transaction ? (
               <ViewDetailsGrid>
                 {transaction?.type === 2 ? (
                   <>
-                    <ViewDetailsGridRow left="Type" right="EIP-1559" />
+                    <ViewDetailsGridRow left={t("Type")} right="EIP-1559" />
 
                     <ViewDetailsGridRow
-                      left="Max priority fee per gas"
-                      right={
-                        transaction.maxPriorityFeePerGas
-                          ? formatGwei(transaction.maxPriorityFeePerGas)
-                          : "N/A"
-                      }
+                      left={t("Max priority fee per gas")}
+                      right={<Gwei value={transaction.maxPriorityFeePerGas} />}
                     />
                     <ViewDetailsGridRow
-                      left="Max fee per gas"
-                      right={
-                        transaction.maxFeePerGas ? formatGwei(transaction.maxFeePerGas) : "N/A"
-                      }
+                      left={t("Max fee per gas")}
+                      right={<Gwei value={transaction.maxFeePerGas} />}
                     />
                   </>
                 ) : (
                   <>
-                    <ViewDetailsGridRow left="Type" right="Legacy" />
+                    <ViewDetailsGridRow left={t("Type")} right={t("Legacy")} />
                     <ViewDetailsGridRow
-                      left="Gas price"
-                      right={transaction?.gasPrice ? formatGwei(transaction.gasPrice) : "N/A"}
+                      left={t("Gas price")}
+                      right={<Gwei value={transaction?.gasPrice} />}
                     />
                   </>
                 )}
                 <ViewDetailsGridRow
-                  left="Gas limit"
+                  left={t("Gas limit")}
                   right={
-                    transaction?.gasLimit ? BigNumber.from(transaction.gasLimit)?.toNumber() : "N/A"
+                    transaction?.gasLimit
+                      ? BigNumber.from(transaction.gasLimit)?.toNumber()
+                      : t("N/A")
                   }
                 />
               </ViewDetailsGrid>
             ) : (
-              "N/A"
+              t("N/A")
             )}
           </ViewDetailsField>
         )}
-        <ViewDetailsField label="Total Fee">
+        <ViewDetailsField label={t("Total Fee")}>
           {transaction ? (
             <ViewDetailsGrid>
               <ViewDetailsGridRow
-                left="Estimated"
+                left={t("Estimated")}
                 right={
                   <>
                     {estimatedFee?.tokens ? (
@@ -297,7 +303,7 @@ const ViewDetailsContent: FC<ViewDetailsContentProps> = ({ onClose }) => {
                         symbol={nativeToken?.symbol}
                       />
                     ) : (
-                      "N/A"
+                      t("N/A")
                     )}
                     {estimatedFee && nativeTokenRates ? (
                       <>
@@ -309,7 +315,7 @@ const ViewDetailsContent: FC<ViewDetailsContentProps> = ({ onClose }) => {
                 }
               />
               <ViewDetailsGridRow
-                left="Maximum"
+                left={t("Maximum")}
                 right={
                   <>
                     {maximumFee?.tokens ? (
@@ -319,7 +325,7 @@ const ViewDetailsContent: FC<ViewDetailsContentProps> = ({ onClose }) => {
                         symbol={nativeToken?.symbol}
                       />
                     ) : (
-                      "N/A"
+                      t("N/A")
                     )}
                     {maximumFee && nativeTokenRates ? (
                       <>
@@ -332,11 +338,11 @@ const ViewDetailsContent: FC<ViewDetailsContentProps> = ({ onClose }) => {
               />
             </ViewDetailsGrid>
           ) : (
-            "N/A"
+            t("N/A")
           )}
         </ViewDetailsField>
         <ViewDetailsField
-          label="Error"
+          label={t("Error")}
           error={`${error ?? ""}${errorDetails ? `\n${errorDetails}` : ""}`}
         />
         {request.data && (
@@ -346,7 +352,7 @@ const ViewDetailsContent: FC<ViewDetailsContentProps> = ({ onClose }) => {
                 onClick={handleCopyByteCode}
                 className="text-body-secondary text-left hover:text-white"
               >
-                <CopyIcon className="inline transition-none" /> Copy byte code
+                <CopyIcon className="inline transition-none" /> {t("Copy byte code")}
               </button>
             }
           >
@@ -360,20 +366,21 @@ const ViewDetailsContent: FC<ViewDetailsContentProps> = ({ onClose }) => {
         )}
       </div>
       <Button className="shrink-0" onClick={onClose}>
-        Close
+        {t("Close")}
       </Button>
     </ViewDetailsContainer>
   )
 }
 
 export const ViewDetailsEth = () => {
+  const { t } = useTranslation("sign")
   const { isOpen, open, close } = useOpenClose()
   const { isLoading } = useEthSignTransactionRequest()
 
   return (
     <>
       <PillButton size="sm" onClick={open}>
-        View Details
+        {t("View Details")}
       </PillButton>
       <Drawer anchor="bottom" open={isOpen && !isLoading} onClose={close}>
         <ViewDetailsContent onClose={close} />

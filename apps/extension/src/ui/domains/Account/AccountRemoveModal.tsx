@@ -7,6 +7,7 @@ import { provideContext } from "@talisman/util/provideContext"
 import { api } from "@ui/api"
 import { useSelectedAccount } from "@ui/domains/Portfolio/SelectedAccountContext"
 import { useCallback, useEffect, useMemo, useState } from "react"
+import { useTranslation } from "react-i18next"
 
 const REMOVABLE_ORIGINS = ["DERIVED", "SEED", "JSON", "QR", "HARDWARE"]
 
@@ -37,12 +38,13 @@ export const [AccountRemoveModalProvider, useAccountRemoveModal] = provideContex
 )
 
 export const AccountRemoveModal = () => {
+  const { t } = useTranslation()
   const { account, close, isOpen } = useAccountRemoveModal()
 
   // persist in state so text doesn't disappear upon deletion
-  const [accountName, setAccountName] = useState<string>()
+  const [accountName, setAccountName] = useState<string>("")
   useEffect(() => {
-    if (account) setAccountName(account.name)
+    if (account) setAccountName(account.name ?? "")
   }, [account])
 
   const handleConfirm = useCallback(async () => {
@@ -53,13 +55,13 @@ export const AccountRemoveModal = () => {
 
   return (
     <Modal open={isOpen} onClose={close}>
-      <ModalDialog title={`Remove account ${accountName ?? ""}`} onClose={close}>
+      <ModalDialog title={t("Remove account {{accountName}}", { accountName })} onClose={close}>
         <StyledDialog
           icon={<IconAlert />}
-          title="Are you sure?"
-          text="Ensure you have backed up your recovery phrase or private key before removing."
-          confirmText="Remove"
-          cancelText="Cancel"
+          title={t("Are you sure?")}
+          text={t("Ensure you have backed up your recovery phrase or private key before removing.")}
+          confirmText={t("Remove")}
+          cancelText={t("Cancel")}
           onConfirm={handleConfirm}
           onCancel={close}
         />

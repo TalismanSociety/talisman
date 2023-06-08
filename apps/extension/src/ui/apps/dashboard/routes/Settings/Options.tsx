@@ -8,8 +8,10 @@ import Layout from "@ui/apps/dashboard/layout"
 import { AvatarTypeSelect } from "@ui/domains/Settings/AvatarTypeSelect"
 import { useAppState } from "@ui/hooks/useAppState"
 import { useSetting } from "@ui/hooks/useSettings"
+import { Trans, useTranslation } from "react-i18next"
 
 const Options = () => {
+  const { t } = useTranslation("settings")
   const [hasSpiritKey] = useAppState("hasSpiritKey")
   const [identiconType, setIdenticonType] = useSetting("identiconType")
   const [useTestnets, setUseTestnets] = useSetting("useTestnets")
@@ -19,31 +21,37 @@ const Options = () => {
 
   return (
     <Layout centered withBack backTo="/settings">
-      <HeaderBlock title="Extension options" text="Customise your extension experience" />
+      <HeaderBlock title={t("Extension options")} text={t("Customise your extension experience")} />
       <Spacer />
       <Grid columns={1}>
-        <Setting title="Enable Testnets" subtitle="Connect to test networks (Westend, Mandala)">
+        <Setting
+          title={t("Enable Testnets")}
+          subtitle={t("Connect to test networks (Westend, Mandala)")}
+        >
           <Field.Toggle value={useTestnets} onChange={setUseTestnets} />
         </Setting>
         <Setting
-          title="Allow notifications"
-          subtitle="Allow Talisman to send you notifications about transactions in progress"
+          title={t("Allow notifications")}
+          subtitle={t("Allow Talisman to send you notifications about transactions in progress")}
         >
           <Field.Toggle value={allowNotifications} onChange={setAllowNotifications} />
         </Setting>
-        <Setting title="Hide Balances" subtitle="Blurs your portfolio and account balances">
+        <Setting
+          title={t("Hide Balances")}
+          subtitle={t("Blurs your portfolio and account balances")}
+        >
           <Field.Toggle value={hideBalances} onChange={setHideBalances} />
         </Setting>
         <Setting
-          title="Account Avatars"
-          subtitle="Choose between the Talisman orbs or Polkadot.js identicons"
+          title={t("Account Avatars")}
+          subtitle={t("Choose between the Talisman orbs or Polkadot.js identicons")}
         >
           <AvatarTypeSelect selectedType={identiconType} onChange={setIdenticonType} />
         </Setting>
         <Setting
-          title="Pre-release features"
+          title={t("Pre-release features")}
           subtitle={
-            <>
+            <Trans t={t}>
               <a
                 href="https://docs.talisman.xyz/talisman/explore-the-paraverse/talisman-portal/spirit-keys-and-commendations#sprit-keys"
                 target="_blank"
@@ -52,11 +60,11 @@ const Options = () => {
                 Spirit Key NFT
               </a>{" "}
               holders get special early access to new features
-            </>
+            </Trans>
           }
         >
           <WithTooltip
-            tooltip={hasSpiritKey ? undefined : "You need a Spirit Key to enable this option"}
+            tooltip={hasSpiritKey ? undefined : t("You need a Spirit Key to enable this option")}
           >
             <Field.Toggle
               disabled={!hasSpiritKey}

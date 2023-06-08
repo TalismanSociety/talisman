@@ -15,6 +15,7 @@ import { useErc20TokenInfo } from "@ui/hooks/useErc20TokenInfo"
 import { useSortedEvmNetworks } from "@ui/hooks/useSortedEvmNetworks"
 import { useCallback, useEffect, useMemo, useState } from "react"
 import { useForm } from "react-hook-form"
+import { useTranslation } from "react-i18next"
 import { useNavigate } from "react-router-dom"
 import { Button, FormFieldContainer, FormFieldInputText } from "talisman-ui"
 import * as yup from "yup"
@@ -32,6 +33,7 @@ const ANALYTICS_PAGE: AnalyticsPage = {
 }
 
 export const AddCustomTokenPage = () => {
+  const { t } = useTranslation("settings")
   useAnalyticsPageView(ANALYTICS_PAGE)
   const navigate = useNavigate()
   const networks = useSortedEvmNetworks(true)
@@ -47,15 +49,15 @@ export const AddCustomTokenPage = () => {
             .required()
             .oneOf(
               networks.map(({ id }) => id),
-              "Invalid network"
+              t("Invalid network")
             ),
           contractAddress: yup
             .string()
             .required()
-            .matches(/^0x[0-9a-fA-F]{40}$/, "Invalid address"),
+            .matches(/^0x[0-9a-fA-F]{40}$/, t("Invalid address")),
         })
         .required(),
-    [networks]
+    [networks, t]
   )
 
   const {
@@ -115,21 +117,23 @@ export const AddCustomTokenPage = () => {
   return (
     <Layout analytics={ANALYTICS_PAGE} withBack centered>
       <HeaderBlock
-        title="Add custom token"
-        text="Tokens can be created by anyone and named however they like, even to imitate existing tokens. Always ensure you have verified the token address before adding a custom token."
+        title={t("Add custom token")}
+        text={t(
+          "Tokens can be created by anyone and named however they like, even to imitate existing tokens. Always ensure you have verified the token address before adding a custom token."
+        )}
       />
       <form className="my-20 space-y-4" onSubmit={handleSubmit(submit)}>
-        <FormFieldContainer label="Network" error={errors.evmNetworkId?.message}>
+        <FormFieldContainer label={t("Network")} error={errors.evmNetworkId?.message}>
           <NetworkSelect
             withTestnets
-            placeholder="Select a network"
+            placeholder={t("Select a network")}
             onChange={handleNetworkChange}
             className="w-full"
           />
         </FormFieldContainer>
         <FormFieldContainer
-          label="Contract Address"
-          error={errors.contractAddress?.message ?? (tokenInfoError && "Invalid address")}
+          label={t("Contract Address")}
+          error={errors.contractAddress?.message ?? (tokenInfoError && t("Invalid address"))}
         >
           <FormFieldInputText
             {...register("contractAddress")}
@@ -137,7 +141,7 @@ export const AddCustomTokenPage = () => {
             data-lpignore
             type="text"
             autoComplete="off"
-            placeholder="Paste token address"
+            placeholder={t("Paste token address")}
             after={
               <LoaderIcon
                 className={classNames(
@@ -150,7 +154,7 @@ export const AddCustomTokenPage = () => {
           />
         </FormFieldContainer>
         <div className="grid grid-cols-2 gap-12">
-          <FormFieldContainer label="Symbol" error={errors.symbol?.message}>
+          <FormFieldContainer label={t("Symbol")} error={errors.symbol?.message}>
             <FormFieldInputText
               {...register("symbol")}
               type="text"
@@ -159,13 +163,13 @@ export const AddCustomTokenPage = () => {
               disabled
               before={
                 tokenInfo && (
-                  <AssetLogoBase className="mr-2 ml-[-0.8rem] text-[3rem]" url={tokenInfo?.image} />
+                  <AssetLogoBase className="ml-[-0.8rem] mr-2 text-[3rem]" url={tokenInfo?.image} />
                 )
               }
               small
             />
           </FormFieldContainer>
-          <FormFieldContainer label="Decimals" error={errors.decimals?.message}>
+          <FormFieldContainer label={t("Decimals")} error={errors.decimals?.message}>
             <FormFieldInputText
               {...register("decimals", {
                 valueAsNumber: true,
@@ -188,7 +192,7 @@ export const AddCustomTokenPage = () => {
             disabled={!isValid || isLoading}
             processing={isSubmitting}
           >
-            Add Token
+            {t("Add Token")}
           </Button>
         </div>
       </form>

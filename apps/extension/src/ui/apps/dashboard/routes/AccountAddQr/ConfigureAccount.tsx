@@ -12,11 +12,13 @@ import useChainByGenesisHash from "@ui/hooks/useChainByGenesisHash"
 import useChains from "@ui/hooks/useChains"
 import { useSetting } from "@ui/hooks/useSettings"
 import { useMemo } from "react"
+import { Trans, useTranslation } from "react-i18next"
 import { Checkbox, FormFieldInputText } from "talisman-ui"
 
 import { useAccountAddQr } from "./context"
 
 export const ConfigureAccount = () => {
+  const { t } = useTranslation("account-add")
   const { state, dispatch, submitConfigure } = useAccountAddQr()
 
   const [useTestnets] = useSetting("useTestnets")
@@ -50,13 +52,15 @@ export const ConfigureAccount = () => {
     <>
       <HeaderBlock
         className="mb-12"
-        title="Name your account"
-        text="Help distinguish your account by giving it a name. This would ideally be the same as the name on your Polkadot Vault device to make it easy to identify when signing."
+        title={t("Name your account")}
+        text={t(
+          "Help distinguish your account by giving it a name. This would ideally be the same as the name on your Polkadot Vault device to make it easy to identify when signing."
+        )}
       />
       <form className="my-20 space-y-10" onSubmit={submitConfigure}>
         <FormFieldInputText
           type="text"
-          placeholder="My Polkadot Vault Account"
+          placeholder={t("My Polkadot Vault Account")}
           containerProps={{ className: "!h-28" }}
           small
           value={accountConfig.name}
@@ -73,7 +77,7 @@ export const ConfigureAccount = () => {
           <div className="flex flex-col !items-start gap-2 overflow-hidden leading-8">
             <div className="text-body flex w-full items-center gap-3 text-base leading-none">
               <div className="overflow-hidden text-ellipsis whitespace-nowrap text-base leading-8">
-                {accountConfig.name || "My Polkadot Vault Account"}
+                {accountConfig.name || t("My Polkadot Vault Account")}
               </div>
               <div>
                 <PolkadotVaultIcon className="text-primary" />
@@ -102,17 +106,19 @@ export const ConfigureAccount = () => {
             }
           >
             <span className="text-body-secondary inline-flex items-center gap-2">
-              <span>Restrict account to </span>
-              <ChainLogo id={chain.id} className="inline" />
-              <span className="text-body">{chain.name}</span>
-              <span>network</span>
+              <Trans t={t}>
+                <span>Restrict account to </span>
+                <ChainLogo id={chain.id} className="inline" />
+                <span className="text-body">{chain.name}</span>
+                <span>network</span>
+              </Trans>
             </span>
           </Checkbox>
         )}
 
         <div className="flex justify-end py-8">
           <SimpleButton type="submit" primary processing={state.submitting}>
-            Import <ArrowRightIcon />
+            {t("Import")} <ArrowRightIcon />
           </SimpleButton>
         </div>
       </form>

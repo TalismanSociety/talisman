@@ -1,4 +1,5 @@
 import { DEBUG } from "@core/constants"
+import { t } from "i18next"
 
 export const ERROR_LEDGER_EVM_CANNOT_SIGN_SUBSTRATE =
   "This transaction cannot be signed via an Ethereum Ledger account."
@@ -65,7 +66,7 @@ export type LedgerErrorProps = {
 
 const capitalize = (str: string) => (str.length > 1 ? str[0].toUpperCase() + str.slice(1) : str)
 
-export const getLedgerErrorProps = (err: Error, appName = "Unknown App"): LedgerErrorProps => {
+export const getLedgerErrorProps = (err: Error, appName: string): LedgerErrorProps => {
   const error = err as Error & { name?: string; statusCode?: number }
 
   // Generic errors
@@ -76,7 +77,7 @@ export const getLedgerErrorProps = (err: Error, appName = "Unknown App"): Ledger
       return {
         status: "error",
         requiresManualRetry: false,
-        message: "Failed to connect USB. Restart your browser and retry.",
+        message: t("Failed to connect USB. Restart your browser and retry."),
       }
 
     case "NotFoundError":
@@ -84,7 +85,7 @@ export const getLedgerErrorProps = (err: Error, appName = "Unknown App"): Ledger
     case "InvalidStateError": // while connecting
       return {
         status: "connecting",
-        message: `Connecting to Ledger...`,
+        message: t(`Connecting to Ledger...`),
         requiresManualRetry: false,
       }
 
@@ -94,7 +95,7 @@ export const getLedgerErrorProps = (err: Error, appName = "Unknown App"): Ledger
         case 27010:
           return {
             status: "warning",
-            message: "Please unlock your Ledger.",
+            message: t("Please unlock your Ledger."),
             requiresManualRetry: false,
           }
         case 28160: // non-compatible app
@@ -105,7 +106,9 @@ export const getLedgerErrorProps = (err: Error, appName = "Unknown App"): Ledger
         default:
           return {
             status: "warning",
-            message: `Please open <strong>${capitalize(appName)}</strong> app on your Ledger.`,
+            message: t(`Please open <strong>{{appName}}</strong> app on your Ledger.`, {
+              appName: capitalize(appName),
+            }),
             requiresManualRetry: false,
           }
       }
@@ -116,7 +119,7 @@ export const getLedgerErrorProps = (err: Error, appName = "Unknown App"): Ledger
     case "TransportInterfaceNotAvailable": // occurs after unlock, or if browser requires a click to connect usb (only on MacOS w/chrome)
       return {
         status: "error",
-        message: "Failed to connect to your Ledger. Click here to retry.",
+        message: t("Failed to connect to your Ledger. Click here to retry."),
         requiresManualRetry: true,
       }
   }
@@ -128,7 +131,7 @@ export const getLedgerErrorProps = (err: Error, appName = "Unknown App"): Ledger
     case "Failed to execute 'requestDevice' on 'USB': Must be handling a user gesture to show a permission request.":
       return {
         status: "error",
-        message: "Failed to connect to your Ledger. Click here to retry.",
+        message: t("Failed to connect to your Ledger. Click here to retry."),
         requiresManualRetry: true,
       }
 
@@ -137,14 +140,14 @@ export const getLedgerErrorProps = (err: Error, appName = "Unknown App"): Ledger
     case "Unknown Status Code: 38913": // just unlocked, didn't open kusama yet
       return {
         status: "warning",
-        message: `Please open <strong>${capitalize(appName)}</strong> app on your Ledger.`,
+        message: t(`Please open <strong>{{appName}}</strong> app on your Ledger.`, { appName }),
         requiresManualRetry: false,
       }
     case "Unknown Status Code: 26628":
     case "Transaction rejected": // unplugged then retry while on lock screen
       return {
         status: "warning",
-        message: "Please unlock your Ledger.",
+        message: t("Please unlock your Ledger."),
         requiresManualRetry: false,
       }
 
@@ -153,15 +156,23 @@ export const getLedgerErrorProps = (err: Error, appName = "Unknown App"): Ledger
     case "NetworkError: Failed to execute 'transferIn' on 'USBDevice': A transfer error has occurred.":
       return {
         status: "connecting",
-        message: `Connecting to Ledger...`,
+        message: t(`Connecting to Ledger...`),
         requiresManualRetry: false,
       }
 
     case ERROR_LEDGER_EVM_CANNOT_SIGN_SUBSTRATE:
+      return {
+        status: "error",
+        // can't reuse the const here because the i18n plugin wouldn't lookup the content
+        message: t("This transaction cannot be signed via an Ethereum Ledger account."),
+        requiresManualRetry: false,
+      }
+
     case ERROR_LEDGER_NO_APP:
       return {
         status: "error",
-        message: err.message,
+        // can't reuse the const here because we need i18n plugin to parse the text
+        message: t("There is no Ledger app available for this network."),
         requiresManualRetry: false,
       }
   }
@@ -172,7 +183,7 @@ export const getLedgerErrorProps = (err: Error, appName = "Unknown App"): Ledger
   // Fallback error message
   return {
     status: "error",
-    message: "Failed to connect to your Ledger. Click here to retry.",
+    message: t("Failed to connect to your Ledger. Click here to retry."),
     requiresManualRetry: true,
   }
 }

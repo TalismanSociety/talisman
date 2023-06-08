@@ -3,6 +3,7 @@ import { classNames } from "@talismn/util"
 import { AnalyticsPage, sendAnalyticsEvent } from "@ui/api/analytics"
 import { useAnalyticsPageView } from "@ui/hooks/useAnalyticsPageView"
 import { FC, useCallback, useRef } from "react"
+import { useTranslation } from "react-i18next"
 import { useNavigate } from "react-router-dom"
 import { useHoverDirty } from "react-use"
 
@@ -54,7 +55,7 @@ const WalletImportButton: FC<WalletImportButtonProps> = ({
         />
       </div>
       <img src={srcToken} alt="" className="absolute left-12 top-[130px]" />
-      <div className="flex flex-col gap-12 rounded-b bg-white/5 px-12 pt-24 pb-16">
+      <div className="flex flex-col gap-12 rounded-b bg-white/5 px-12 pb-16 pt-24">
         <div className="w-full text-xl">{title}</div>
         <div className="w-full">{subtitle}</div>
       </div>
@@ -70,6 +71,7 @@ const ANALYTICS_PAGE: AnalyticsPage = {
 }
 
 export const ImportPage = () => {
+  const { t } = useTranslation("onboard")
   useAnalyticsPageView(ANALYTICS_PAGE)
   const { updateData } = useOnboard()
   const navigate = useNavigate()
@@ -95,24 +97,26 @@ export const ImportPage = () => {
   return (
     <Layout withBack analytics={ANALYTICS_PAGE}>
       <div className="mx-0 w-full max-w-[87rem] self-center text-center">
-        <div className="my-[6rem] text-xl">Which type of wallet would you like to import?</div>
+        <div className="my-[6rem] text-xl">
+          {t("Which type of wallet would you like to import?")}
+        </div>
         <div className="flex flex-wrap justify-center gap-12">
           <WalletImportButton
             onClick={handleTypeClick("sr25519")}
-            title="Polkadot wallet"
-            subtitle="Polkadot.js, Subwallet, Nova or other"
+            title={t("Polkadot wallet")}
+            subtitle={t("Polkadot.js, Subwallet, Nova or other")}
             srcHeader={imgHeadPolkadot}
             srcToken={imgTokenPolkadot}
           />
           <WalletImportButton
             onClick={handleTypeClick("ethereum")}
-            title="Ethereum wallet"
-            subtitle="MetaMask, Coinbase, Rainbow or other"
+            title={t("Ethereum wallet")}
+            subtitle={t("MetaMask, Coinbase, Rainbow or other")}
             srcHeader={imgHeadEthereum}
             srcToken={imgTokenEthereum}
           />
         </div>
-        <div className="text-body-secondary my-24">You can always add another later</div>
+        <div className="text-body-secondary my-24">{t("You can always add another later")}</div>
       </div>
     </Layout>
   )

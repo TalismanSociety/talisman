@@ -2,6 +2,7 @@ import Spacer from "@talisman/components/Spacer"
 import { LedgerConnectionStatus } from "@ui/domains/Account/LedgerConnectionStatus"
 import { useLedgerEthereum } from "@ui/hooks/ledger/useLedgerEthereum"
 import { useEffect } from "react"
+import { Trans, useTranslation } from "react-i18next"
 
 export const ConnectLedgerEthereum = ({
   onReadyChanged,
@@ -10,6 +11,7 @@ export const ConnectLedgerEthereum = ({
   onReadyChanged?: (ready: boolean) => void
   className?: string
 }) => {
+  const { t } = useTranslation("account-add")
   const ledger = useLedgerEthereum(true)
 
   useEffect(() => {
@@ -23,8 +25,10 @@ export const ConnectLedgerEthereum = ({
   return (
     <div className={className}>
       <div className="text-body-secondary m-0">
-        Connect and unlock your Ledger, then open the <span className="text-body">Ethereum</span>{" "}
-        app on your Ledger.
+        <Trans t={t}>
+          Connect and unlock your Ledger, then open the <span className="text-body">Ethereum</span>{" "}
+          app on your Ledger.
+        </Trans>
       </div>
       <Spacer small />
       <LedgerConnectionStatus {...ledger} />

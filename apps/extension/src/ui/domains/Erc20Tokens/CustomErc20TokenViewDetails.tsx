@@ -5,6 +5,7 @@ import { SimpleButton } from "@talisman/components/SimpleButton"
 import { useOpenClose } from "@talisman/hooks/useOpenClose"
 import { scrollbarsStyle } from "@talisman/theme/styles"
 import { ReactNode, useMemo } from "react"
+import { useTranslation } from "react-i18next"
 import styled from "styled-components"
 
 const ViewDetailsContainer = styled.div`
@@ -109,6 +110,7 @@ export const CustomErc20TokenViewDetails = ({
   token,
   network,
 }: CustomErc20TokenViewDetailsProps) => {
+  const { t } = useTranslation()
   const { isOpen, open, close } = useOpenClose()
 
   const contractUrl = useMemo(() => {
@@ -118,15 +120,19 @@ export const CustomErc20TokenViewDetails = ({
 
   return (
     <>
-      <Button onClick={open}>View Details</Button>
+      <Button onClick={open}>{t("View Details")}</Button>
       <Drawer open={isOpen} onClose={close} anchor="bottom">
         <ViewDetailsContainer>
-          <h3>Token Details</h3>
+          <h3>{t("Token Details")}</h3>
           <div className="grow">
-            <ViewDetailsEntry title="Network" value={network.name} />
-            <ViewDetailsEntry title="Symbol" value={token.symbol} />
-            <ViewDetailsEntry title="Decimals" value={token.decimals} />
-            <ViewDetailsEntry title="Contract" value={token.contractAddress} href={contractUrl} />
+            <ViewDetailsEntry title={t("Network")} value={network.name} />
+            <ViewDetailsEntry title={t("Symbol")} value={token.symbol} />
+            <ViewDetailsEntry title={t("Decimals")} value={token.decimals} />
+            <ViewDetailsEntry
+              title={t("Contract")}
+              value={token.contractAddress}
+              href={contractUrl}
+            />
           </div>
           <div>
             <SimpleButton onClick={close}>Close</SimpleButton>

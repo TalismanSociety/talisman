@@ -1,8 +1,9 @@
 import { yupResolver } from "@hookform/resolvers/yup"
 import { ModalDialog } from "@talisman/components/ModalDialog"
 import { PasswordStrength } from "@talisman/components/PasswordStrength"
-import { useCallback } from "react"
+import { useCallback, useMemo } from "react"
 import { useForm } from "react-hook-form"
+import { useTranslation } from "react-i18next"
 import { Button, FormFieldContainer, FormFieldInputText } from "talisman-ui"
 import * as yup from "yup"
 
@@ -13,18 +14,23 @@ type FormData = {
   newPwConfirm: string
 }
 
-const schema = yup
-  .object({
-    newPw: yup.string().required("").min(6, "Password must be at least 6 characters long"),
-    newPwConfirm: yup
-      .string()
-      .required("")
-      .oneOf([yup.ref("newPw")], "Passwords must match!"),
-  })
-  .required()
-
 export const NewPasswordForm = () => {
+  const { t } = useTranslation("settings")
   const { setNewPassword } = useMigratePassword()
+
+  const schema = useMemo(
+    () =>
+      yup
+        .object({
+          newPw: yup.string().required("").min(6, t("Password must be at least 6 characters long")),
+          newPwConfirm: yup
+            .string()
+            .required("")
+            .oneOf([yup.ref("newPw")], t("Passwords must match!")),
+        })
+        .required(),
+    [t]
+  )
 
   const {
     register,
@@ -41,20 +47,21 @@ export const NewPasswordForm = () => {
   const submit = useCallback(({ newPw }: FormData) => setNewPassword(newPw), [setNewPassword])
 
   return (
-    <ModalDialog title="Enter new password">
+    <ModalDialog title={t("Enter new password")}>
       <p className="text-body-secondary mb-16 text-sm">
-        Your password is used to unlock your wallet and is stored securely on your device. We
-        recommend 12 characters, with uppercase and lowercase letters, symbols and numbers.
+        {t(
+          "Your password is used to unlock your wallet and is stored securely on your device. We recommend 12 characters, with uppercase and lowercase letters, symbols and numbers."
+        )}
       </p>
 
       <form onSubmit={handleSubmit(submit)}>
         <div className="text-body-disabled mb-12 text-sm">
-          Password strength: <PasswordStrength password={newPwWatch} />
+          {t("Password strength:")} <PasswordStrength password={newPwWatch} />
         </div>
         <FormFieldContainer error={errors.newPw?.message} className="mb-12">
           <FormFieldInputText
             {...register("newPw")}
-            placeholder="Enter New Password"
+            placeholder={t("Enter New Password")}
             spellCheck={false}
             autoComplete="new-password"
             data-lpignore
@@ -65,7 +72,7 @@ export const NewPasswordForm = () => {
         <FormFieldContainer error={errors.newPwConfirm?.message} className="mb-12">
           <FormFieldInputText
             {...register("newPwConfirm")}
-            placeholder="Confirm New Password"
+            placeholder={t("Confirm New Password")}
             spellCheck={false}
             autoComplete="off"
             data-lpignore
@@ -81,7 +88,7 @@ export const NewPasswordForm = () => {
           disabled={!isValid}
           processing={isSubmitting}
         >
-          Continue
+          {t("Continue")}
         </Button>
       </form>
     </ModalDialog>

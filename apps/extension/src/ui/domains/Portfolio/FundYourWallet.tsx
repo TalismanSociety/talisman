@@ -4,6 +4,7 @@ import { AnalyticsPage, sendAnalyticsEvent } from "@ui/api/analytics"
 import { useAnalyticsPageView } from "@ui/hooks/useAnalyticsPageView"
 import { useIsFeatureEnabled } from "@ui/hooks/useFeatures"
 import { useCallback } from "react"
+import { useTranslation } from "react-i18next"
 import styled from "styled-components"
 
 import { useBuyTokensModal } from "../Asset/Buy/BuyTokensModalContext"
@@ -65,6 +66,7 @@ const ANALYTICS_PAGE: AnalyticsPage = {
 }
 
 export const FundYourWallet = () => {
+  const { t } = useTranslation("portfolio")
   useAnalyticsPageView(ANALYTICS_PAGE)
   const showBuyCryptoButton = useIsFeatureEnabled("BUY_CRYPTO")
   const { open: openBuyModal } = useBuyTokensModal()
@@ -90,15 +92,17 @@ export const FundYourWallet = () => {
 
   return (
     <Container>
-      <div className="text-md text-white">Fund your wallet</div>
+      <div className="text-md text-white">{t("Fund your wallet")}</div>
       <div>
         <img height={124} src={imgFundWallet} alt="" />
       </div>
-      <div>This is where you'll see your balances.</div>
-      <div>Get started with some crypto so you can start using apps.</div>
+      <div>{t("This is where you'll see your balances.")}</div>
+      <div>{t("Get started with some crypto so you can start using apps.")}</div>
       <div className="flex w-full gap-4">
-        <DefaultButton onClick={handleReceiveClick}>Receive Funds</DefaultButton>
-        {showBuyCryptoButton && <PrimaryButton onClick={handleBuyClick}>Buy Crypto</PrimaryButton>}
+        <DefaultButton onClick={handleReceiveClick}>{t("Receive Funds")}</DefaultButton>
+        {showBuyCryptoButton && (
+          <PrimaryButton onClick={handleBuyClick}>{t("Buy Crypto")}</PrimaryButton>
+        )}
       </div>
     </Container>
   )
