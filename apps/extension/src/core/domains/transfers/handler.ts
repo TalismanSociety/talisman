@@ -116,7 +116,12 @@ export default class AssetTransferHandler extends ExtensionHandler {
       tokenType === "substrate-equilibrium"
     ) {
       const pair = getPairFromAddress(fromAddress) // no need for an unlocked pair for fee estimation
-      return AssetTransfersRpc.checkFee(chainId, tokenId, amount, pair, toAddress, tip, method)
+      try {
+        return AssetTransfersRpc.checkFee(chainId, tokenId, amount, pair, toAddress, tip, method)
+      } catch (error) {
+        log.error("Error checking substrate transaction fees: ", { cause: error })
+        throw new Error("Unable to estimate fees")
+      }
     }
 
     if (tokenType === "evm-native")
