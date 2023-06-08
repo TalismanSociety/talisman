@@ -302,7 +302,7 @@ export default class AccountsHandler extends ExtensionHandler {
     keyring.keyring.addPair(pair)
     keyring.saveAccount(pair)
 
-    talismanAnalytics.capture("account create", {
+    talismanAnalytics.capture("add watched account", {
       type: isEthereumAddress(safeAddress) ? "ethereum" : "substrate",
       method: "watched",
     })
