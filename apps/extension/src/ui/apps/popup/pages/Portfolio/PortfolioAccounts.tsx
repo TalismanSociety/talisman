@@ -180,6 +180,7 @@ const AccountsListView = ({ options }: { options: AccountOption[] }) => (
 )
 
 const AccountsList = ({ options }: { options: AccountOption[] }) => {
+  const { t } = useTranslation()
   const { myAccounts, watchedAccounts } = useMemo(
     () => ({
       myAccounts: options.filter(({ origin, isPortfolio }) => origin !== "WATCHED" || isPortfolio),
@@ -195,12 +196,12 @@ const AccountsList = ({ options }: { options: AccountOption[] }) => {
       <div className="py-12">
         <div className="text-body-secondary mb-6 flex items-center gap-4 font-bold">
           <TalismanHandIcon className="inline" />
-          <div>My portfolio</div>
+          <div>{t("My portfolio")}</div>
         </div>
         <AccountsListView options={myAccounts} />
         <div className="text-body-secondary mb-6 mt-8 flex items-center gap-4 font-bold">
           <EyeIcon className="inline " />
-          <div>Followed only</div>
+          <div>{t("Followed only")}</div>
         </div>
         <AccountsListView options={watchedAccounts} />
       </div>
