@@ -18,7 +18,6 @@ import {
   ZapIcon,
 } from "@talisman/theme/icons"
 import { FullColorLogo, FullColorVerticalLogo, HandRedLogo } from "@talisman/theme/logos"
-import { api } from "@ui/api"
 import { useBuyTokensModal } from "@ui/domains/Asset/Buy/BuyTokensModalContext"
 import Build from "@ui/domains/Build"
 import { useCopyAddressModal } from "@ui/domains/CopyAddress"
@@ -27,13 +26,14 @@ import { useSelectedAccount } from "@ui/domains/Portfolio/SelectedAccountContext
 import { useAnalytics } from "@ui/hooks/useAnalytics"
 import { useIsFeatureEnabled } from "@ui/hooks/useFeatures"
 import useMnemonicBackup from "@ui/hooks/useMnemonicBackup"
+import { useSendFundsPopup } from "@ui/hooks/useSendFundsPopup"
 import { getTransactionHistoryUrl } from "@ui/util/getTransactionHistoryUrl"
-import { ReactNode, useCallback } from "react"
+import { ButtonHTMLAttributes, FC, ReactNode, useCallback } from "react"
 import { useTranslation } from "react-i18next"
 import { useNavigate } from "react-router-dom"
 import { useWindowSize } from "react-use"
 import styled from "styled-components"
-import { PillButton } from "talisman-ui"
+import { PillButton, PillButtonProps, Tooltip, TooltipContent, TooltipTrigger } from "talisman-ui"
 
 const PaddedItem = styled.div`
   padding: 2.4rem;
@@ -255,19 +255,44 @@ const ExtLinkIcon = styled(({ className }: { className?: string }) => (
   vertical-align: text-top;
 `
 
+const SendPillButton: FC<PillButtonProps> = (props) => {
+  const { account } = useSelectedAccount()
+  const { canSendFunds, cannotSendFundsReason, openSendFundsPopup } = useSendFundsPopup(account)
+
+  return canSendFunds ? (
+    <PillButton onClick={openSendFundsPopup} {...props} />
+  ) : (
+    <Tooltip placement="bottom-start">
+      <TooltipTrigger>
+        <PillButton disabled {...props} />
+      </TooltipTrigger>
+      <TooltipContent>{cannotSendFundsReason}</TooltipContent>
+    </Tooltip>
+  )
+}
+
+const SendIconButton: FC<Omit<ButtonHTMLAttributes<HTMLButtonElement>, "ref">> = (props) => {
+  const { account } = useSelectedAccount()
+  const { canSendFunds, cannotSendFundsReason, openSendFundsPopup } = useSendFundsPopup(account)
+
+  return canSendFunds ? (
+    <IconButton onClick={openSendFundsPopup} {...props} />
+  ) : (
+    <Tooltip placement="bottom-start">
+      <TooltipTrigger>
+        <IconButton disabled {...props} />
+      </TooltipTrigger>
+      <TooltipContent>{cannotSendFundsReason}</TooltipContent>
+    </Tooltip>
+  )
+}
+
 export const SideBar = () => {
   const { account } = useSelectedAccount()
   const navigate = useNavigate()
   const { genericEvent } = useAnalytics()
   const showBuyCryptoButton = useIsFeatureEnabled("BUY_CRYPTO")
   const showStaking = useIsFeatureEnabled("LINK_STAKING")
-
-  const handleSendClick = useCallback(() => {
-    api.sendFundsOpen({
-      from: account?.address,
-    })
-    genericEvent("open send funds", { from: "sidebar" })
-  }, [account?.address, genericEvent])
 
   const { open: openCopyAddressModal } = useCopyAddressModal()
 
@@ -338,18 +363,18 @@ export const SideBar = () => {
         <AccountSelect responsive />
         {/* Pills for large screens */}
         <Pills>
-          <PillButton className="!px-4" icon={PaperPlaneIcon} onClick={handleSendClick}>
+          <SendPillButton className="!px-4" icon={PaperPlaneIcon}>
             {t("Send")}
-          </PillButton>
+          </SendPillButton>
           <PillButton className="!px-4" icon={ArrowDownIcon} onClick={handleCopyClick}>
             {t("Receive")}
           </PillButton>
         </Pills>
         {/* Buttons for small screens */}
         <Buttons>
-          <IconButton onClick={handleSendClick}>
+          <SendIconButton>
             <PaperPlaneIcon />
-          </IconButton>
+          </SendIconButton>
           <IconButton onClick={handleCopyClick}>
             <ArrowDownIcon />
           </IconButton>

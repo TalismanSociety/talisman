@@ -19,6 +19,7 @@ import { useDisplayBalances } from "@ui/domains/Portfolio/useDisplayBalances"
 import { useAccountToggleIsPortfolio } from "@ui/hooks/useAccountToggleIsPortfolio"
 import { useAnalytics } from "@ui/hooks/useAnalytics"
 import { useIsFeatureEnabled } from "@ui/hooks/useFeatures"
+import { useSendFundsPopup } from "@ui/hooks/useSendFundsPopup"
 import { getTransactionHistoryUrl } from "@ui/util/getTransactionHistoryUrl"
 import { ButtonHTMLAttributes, FC, useCallback, useEffect, useMemo } from "react"
 import { useTranslation } from "react-i18next"
@@ -44,12 +45,14 @@ const PageContent = ({ balances }: { balances: Balances }) => {
   const { open: openCopyAddressModal } = useCopyAddressModal()
   const { canToggleIsPortfolio, toggleIsPortfolio, toggleLabel } =
     useAccountToggleIsPortfolio(account)
+  const { canSendFunds, cannotSendFundsReason, openSendFundsPopup } = useSendFundsPopup(account)
+
   const { genericEvent } = useAnalytics()
 
   const sendFunds = useCallback(() => {
-    api.sendFundsOpen({ from: account?.address })
+    openSendFundsPopup()
     genericEvent("open send funds", { from: "popup portfolio" })
-  }, [account?.address, genericEvent])
+  }, [openSendFundsPopup, genericEvent])
 
   const copyAddress = useCallback(() => {
     openCopyAddressModal({
@@ -111,12 +114,15 @@ const PageContent = ({ balances }: { balances: Balances }) => {
           </Tooltip>
           <Tooltip placement="bottom">
             <TooltipTrigger
-              onClick={sendFunds}
-              className="hover:bg-grey-800 text-body-secondary hover:text-body text-md flex h-16 w-16 flex-col items-center justify-center rounded-full"
+              onClick={canSendFunds ? sendFunds : undefined}
+              className={classNames(
+                " text-body-secondary text-md flex h-16 w-16 flex-col items-center justify-center rounded-full",
+                canSendFunds ? "hover:bg-grey-800 hover:text-body" : "cursor-default opacity-50"
+              )}
             >
               <PaperPlaneIcon />
             </TooltipTrigger>
-            <TooltipContent>{t("Send")}</TooltipContent>
+            <TooltipContent>{canSendFunds ? t("Send") : cannotSendFundsReason}</TooltipContent>
           </Tooltip>
           {account && (
             <Popover placement="bottom-end">

@@ -76,7 +76,9 @@ const AddressBookContactItem = ({ contact, handleDelete, handleEdit }: ContactIt
   const handleSendClick = useCallback(() => {
     // set currently selected account as from, unless address type mismatch
     const from =
-      account && isEthereumAddress(account.address) === isEthereumAddress(contact.address)
+      account &&
+      account.origin !== "WATCHED" &&
+      isEthereumAddress(account.address) === isEthereumAddress(contact.address)
         ? account.address
         : undefined
     api.sendFundsOpen({ to: contact.address, from })

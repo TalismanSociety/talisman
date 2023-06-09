@@ -2,7 +2,6 @@ import { Balances } from "@core/domains/balances/types"
 import { isEthereumAddress } from "@polkadot/util-crypto"
 import { IconMore } from "@talisman/theme/icons"
 import { classNames } from "@talismn/util"
-import { api } from "@ui/api"
 import { useAccountExportModal } from "@ui/domains/Account/AccountExportModal"
 import { useAccountExportPrivateKeyModal } from "@ui/domains/Account/AccountExportPrivateKeyModal"
 import { useAccountRemoveModal } from "@ui/domains/Account/AccountRemoveModal"
@@ -19,6 +18,7 @@ import { useAccountToggleIsPortfolio } from "@ui/hooks/useAccountToggleIsPortfol
 import { useAnalytics } from "@ui/hooks/useAnalytics"
 import { useAppState } from "@ui/hooks/useAppState"
 import { useIsFeatureEnabled } from "@ui/hooks/useFeatures"
+import { useSendFundsPopup } from "@ui/hooks/useSendFundsPopup"
 import { getTransactionHistoryUrl } from "@ui/util/getTransactionHistoryUrl"
 import { ButtonHTMLAttributes, FC, MouseEvent, useCallback, useEffect, useMemo } from "react"
 import { useTranslation } from "react-i18next"
@@ -62,11 +62,12 @@ const PageContent = ({ balances }: { balances: Balances }) => {
   const { genericEvent } = useAnalytics()
   const { canToggleIsPortfolio, toggleIsPortfolio, toggleLabel } =
     useAccountToggleIsPortfolio(account)
+  const { canSendFunds, openSendFundsPopup } = useSendFundsPopup(account)
 
   const sendFunds = useCallback(() => {
-    api.sendFundsOpen({ from: account?.address })
+    openSendFundsPopup()
     genericEvent("open send funds", { from: "dashboard portfolio" })
-  }, [account?.address, genericEvent])
+  }, [openSendFundsPopup, genericEvent])
 
   const { portfolio, available, locked } = useMemo(() => {
     const { total, frozen, reserved, transferable } = balancesToDisplay.sum.fiat("usd")
@@ -129,7 +130,9 @@ const PageContent = ({ balances }: { balances: Balances }) => {
                     <IconMore />
                   </PopoverTrigger>
                   <PopoverContent className="border-grey-800 z-50 flex w-min flex-col whitespace-nowrap rounded-sm border bg-black px-2 py-3 text-left text-sm shadow-lg">
-                    <PopoverItem onClick={sendFunds}>{t("Send funds")}</PopoverItem>
+                    {canSendFunds && (
+                      <PopoverItem onClick={sendFunds}>{t("Send funds")}</PopoverItem>
+                    )}
                     <PopoverItem onClick={copyAddress}>{t("Copy address")}</PopoverItem>
                     {showTxHistory && (
                       <PopoverItem onClick={browseTxHistory}>

@@ -1,10 +1,11 @@
 import { PaperPlaneIcon } from "@talisman/theme/icons"
 import { ChainId, EvmNetworkId } from "@talismn/chaindata-provider"
-import { api } from "@ui/api"
+import { useSendFundsPopup } from "@ui/hooks/useSendFundsPopup"
 import { useSetting } from "@ui/hooks/useSettings"
 import useTokens from "@ui/hooks/useTokens"
 import { isTransferableToken } from "@ui/util/isTransferableToken"
 import { useCallback } from "react"
+import { Tooltip, TooltipContent, TooltipTrigger } from "talisman-ui"
 
 import { useSelectedAccount } from "../SelectedAccountContext"
 
@@ -28,16 +29,28 @@ export const SendFundsButton = ({
       (("evmNetwork" in t && t.evmNetwork?.id === networkId) || t.chain?.id === networkId)
   )
 
+  const { canSendFunds, cannotSendFundsReason, openSendFundsPopup } = useSendFundsPopup(
+    account,
+    token?.id
+  )
+
   const handleClick = useCallback(() => {
-    if (!token) return
-    api.sendFundsOpen({
-      from: account?.address,
-      tokenId: token.id,
-    })
+    if (!canSendFunds) return
+    openSendFundsPopup()
     if (shouldClose) window.close()
-  }, [account?.address, shouldClose, token])
+  }, [canSendFunds, openSendFundsPopup, shouldClose])
 
   if (!token) return null
+
+  if (!canSendFunds)
+    return (
+      <Tooltip>
+        <TooltipTrigger className="text-body-secondary focus:text-body hover:bg-grey-700 inline-flex h-9 w-9 cursor-default items-center justify-center rounded-full text-xs opacity-50">
+          <PaperPlaneIcon />
+        </TooltipTrigger>
+        <TooltipContent>{cannotSendFundsReason}</TooltipContent>
+      </Tooltip>
+    )
 
   return (
     <button
