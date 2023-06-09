@@ -170,10 +170,12 @@ export const AccountAddWatched = () => {
         <div className={classNames("hide", type && "show")}>
           <div>
             <p className="text-body-secondary">
-              Please enter the name and the wallet address you'll be watching.
+              {t("Please enter the name and the wallet address you'll be watching.")}
             </p>
             <p className="text-body-disabled text-xs">
-              Note that the address will be watch-only and will not be able to sign transactions.
+              {t(
+                "Note that the address will be watch-only and will not be able to sign transactions."
+              )}
             </p>
           </div>
           <Spacer small />
@@ -197,9 +199,11 @@ export const AccountAddWatched = () => {
           </FormFieldContainer>
           <div className="bg-grey-850 mt-4 flex h-[58px] w-full items-center rounded px-12">
             <div className="grow space-y-4">
-              <div className="text-body leading-none">Include in my portfolio</div>
+              <div className="text-body leading-none">{t("Include in my portfolio")}</div>
               <div className="text-body-disabled text-sm leading-none">
-                Add the watched account to the list of accounts in your portfolio
+                {t(
+                  "If toggled on, this account's balances will be included in your Total Portfolio"
+                )}
               </div>
             </div>
             <Field.Toggle value={isPortfolio} onChange={handleIsPortfolioChange} />
