@@ -1,3 +1,4 @@
+import { AccountType } from "@core/domains/accounts/types"
 import { isEthereumAddress } from "@polkadot/util-crypto"
 import { FadeIn } from "@talisman/components/FadeIn"
 import {
@@ -6,7 +7,9 @@ import {
   ChevronRightIcon,
   CopyIcon,
   CreditCardIcon,
+  EyeIcon,
   PaperPlaneIcon,
+  TalismanHandIcon,
 } from "@talisman/theme/icons"
 import { Balance, Balances } from "@talismn/balances"
 import { api } from "@ui/api"
@@ -38,7 +41,8 @@ type AccountOption = {
   name: string
   total?: number
   genesisHash?: string | null
-  origin?: string
+  origin?: AccountType
+  isPortfolio?: boolean
 }
 
 const AccountButton = ({ address, name, total, genesisHash, origin }: AccountOption) => {
@@ -167,15 +171,49 @@ const TopActions = () => {
   )
 }
 
+const AccountsListView = ({ options }: { options: AccountOption[] }) => (
+  <div className="flex w-full flex-col gap-4 ">
+    {options.map((option) => (
+      <AccountButton key={option.address ?? "all"} {...option} />
+    ))}
+  </div>
+)
+
+const AccountsList = ({ options }: { options: AccountOption[] }) => {
+  const { myAccounts, watchedAccounts } = useMemo(
+    () => ({
+      myAccounts: options.filter(({ origin, isPortfolio }) => origin !== "WATCHED" || isPortfolio),
+      watchedAccounts: options.filter(
+        ({ origin, isPortfolio }) => origin === "WATCHED" && !isPortfolio
+      ),
+    }),
+    [options]
+  )
+
+  if (watchedAccounts.length && myAccounts.length)
+    return (
+      <div className="py-12">
+        <div className="text-body-secondary mb-6 flex items-center gap-4 font-bold">
+          <TalismanHandIcon className="inline" />
+          <div>My portfolio</div>
+        </div>
+        <AccountsListView options={myAccounts} />
+        <div className="text-body-secondary mb-6 mt-8 flex items-center gap-4 font-bold">
+          <EyeIcon className="inline " />
+          <div>Followed only</div>
+        </div>
+        <AccountsListView options={watchedAccounts} />
+      </div>
+    )
+
+  return <AccountsListView options={options} />
+}
+
 const Accounts = ({ options }: { options: AccountOption[] }) => (
   <div className="flex w-full flex-col">
     <TotalFiatBalance />
     <TopActions />
-    <div className="flex w-full flex-col gap-4 py-12">
-      {options.map((option) => (
-        <AccountButton key={option.address ?? "all"} {...option} />
-      ))}
-    </div>
+    <AccountsList options={options} />
   </div>
 )
 
@@ -200,11 +238,12 @@ export const PortfolioAccounts = () => {
         name: t("All Accounts"),
         total: myBalances.sum.fiat("usd").total,
       },
-      ...accounts.map(({ address, name, genesisHash, origin }) => ({
+      ...accounts.map(({ address, name, genesisHash, origin, isPortfolio }) => ({
         address,
         genesisHash,
         name: name ?? t("Unknown Account"),
-        origin: typeof origin === "string" ? origin : undefined,
+        origin,
+        isPortfolio: !!isPortfolio,
         total: new Balances(balancesByAddress.get(address) ?? []).sum.fiat("usd").total,
       })),
     ]

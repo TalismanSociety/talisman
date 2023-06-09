@@ -1,6 +1,7 @@
+import { AccountType } from "@core/domains/accounts/types"
 import { isEthereumAddress } from "@polkadot/util-crypto"
 import { breakpoints } from "@talisman/theme/definitions"
-import { AllAccountsIcon, ChevronDownIcon } from "@talisman/theme/icons"
+import { AllAccountsIcon, ChevronDownIcon, EyeIcon, TalismanHandIcon } from "@talisman/theme/icons"
 import { scrollbarsStyle } from "@talisman/theme/styles"
 import { shortenAddress } from "@talisman/util/shortenAddress"
 import { classNames } from "@talismn/util"
@@ -287,7 +288,8 @@ type DropdownItem = {
   name?: string
   address?: string
   genesisHash?: string | null
-  origin?: string
+  origin?: AccountType
+  isPortfolio?: boolean
 }
 const OPTION_ALL_ACCOUNTS: DropdownItem = {}
 
@@ -297,6 +299,7 @@ type AccountSelectProps = {
 }
 
 export const AccountSelect = ({ responsive, className }: AccountSelectProps) => {
+  const { t } = useTranslation()
   const { account, accounts, select } = useSelectedAccount()
 
   const items = useMemo<DropdownItem[]>(
@@ -321,6 +324,11 @@ export const AccountSelect = ({ responsive, className }: AccountSelectProps) => 
     onSelectedItemChange: handleItemChange,
   })
 
+  const indexFirstWatchedOnlyAccount = useMemo(
+    () => items.findIndex((item) => item.origin === "WATCHED" && !item.isPortfolio),
+    [items]
+  )
+
   return (
     <Container
       className={classNames(isOpen && "open", responsive && "responsive", className)}
@@ -333,6 +341,12 @@ export const AccountSelect = ({ responsive, className }: AccountSelectProps) => 
       <ul {...getMenuProps()}>
         {isOpen && (
           <>
+            {indexFirstWatchedOnlyAccount > -1 && (
+              <li className="text-body-secondary !mb-2 !mt-6 flex !cursor-default gap-4 !px-6 font-bold hover:!bg-transparent">
+                <TalismanHandIcon />
+                <div>{t("My portfolio")}</div>
+              </li>
+            )}
             {/* This first item is hidden by default, displayed only on small screen, when button contains only the avatar */}
             <li className="current">
               <button onClick={closeMenu} className="w-full text-left">
@@ -340,13 +354,21 @@ export const AccountSelect = ({ responsive, className }: AccountSelectProps) => 
               </button>
             </li>
             {items.map((item, index) => (
-              <li key={item.address ?? "all"} {...getItemProps({ item, index })}>
-                {item.address ? (
-                  <SingleAccountOption {...item} address={item.address} withTrack />
-                ) : (
-                  <AllAccountsOption withTrack />
+              <>
+                {index === indexFirstWatchedOnlyAccount && (
+                  <li className="text-body-secondary !mb-2 !mt-6 flex !cursor-default gap-4 !px-6 font-bold hover:!bg-transparent">
+                    <EyeIcon />
+                    <div>{t("Followed only")}</div>
+                  </li>
                 )}
-              </li>
+                <li key={item.address ?? "all"} {...getItemProps({ item, index })}>
+                  {item.address ? (
+                    <SingleAccountOption {...item} address={item.address} withTrack />
+                  ) : (
+                    <AllAccountsOption withTrack />
+                  )}
+                </li>
+              </>
             ))}
           </>
         )}
