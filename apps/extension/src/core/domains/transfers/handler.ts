@@ -117,7 +117,15 @@ export default class AssetTransferHandler extends ExtensionHandler {
     ) {
       const pair = getPairFromAddress(fromAddress) // no need for an unlocked pair for fee estimation
       try {
-        return AssetTransfersRpc.checkFee(chainId, tokenId, amount, pair, toAddress, tip, method)
+        return await AssetTransfersRpc.checkFee(
+          chainId,
+          tokenId,
+          amount,
+          pair,
+          toAddress,
+          tip,
+          method
+        )
       } catch (error) {
         log.error("Error checking substrate transaction fees: ", { cause: error })
         throw new Error("Unable to estimate fees")
