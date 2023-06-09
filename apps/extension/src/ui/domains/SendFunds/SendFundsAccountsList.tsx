@@ -1,3 +1,4 @@
+import { AccountJsonAny } from "@core/domains/accounts/types"
 import { CheckCircleIcon } from "@talisman/theme/icons"
 import { shortenAddress } from "@talisman/util/shortenAddress"
 import { Balance } from "@talismn/balances"
@@ -8,12 +9,14 @@ import useToken from "@ui/hooks/useToken"
 import { FC, ReactNode, useCallback, useMemo } from "react"
 import { useTranslation } from "react-i18next"
 
-import AccountAvatar from "../Account/Avatar"
+import { AccountIcon } from "../Account/AccountIcon"
+import { AccountTypeIcon } from "../Account/AccountTypeIcon"
 import Fiat from "../Asset/Fiat"
 import Tokens from "../Asset/Tokens"
 
 type SendFundsAccount = {
   address: string
+  origin?: AccountJsonAny["origin"]
   name?: string
   genesisHash?: string | null
   balance?: Balance
@@ -74,14 +77,17 @@ const AccountRow: FC<AccountRowProps> = ({
       )}
       disabled={disabled}
     >
-      <AccountAvatar
+      <AccountIcon
         address={account.address}
         genesisHash={account.genesisHash}
         className="!text-lg"
       />
-      <div className="grow overflow-hidden text-ellipsis whitespace-nowrap">
-        {account.name ?? shortenAddress(account.address, 6, 6)}
-        {selected && <CheckCircleIcon className="ml-3 inline" />}
+      <div className="flex grow items-center overflow-hidden">
+        <div className="overflow-hidden text-ellipsis whitespace-nowrap">
+          {account.name ?? shortenAddress(account.address, 6, 6)}
+        </div>
+        <AccountTypeIcon origin={account.origin} className="text-primary ml-3 inline" />
+        {selected && <CheckCircleIcon className="ml-3 inline shrink-0" />}
       </div>
       {showBalances && <AccountTokenBalance token={token} balance={account.balance} />}
     </button>

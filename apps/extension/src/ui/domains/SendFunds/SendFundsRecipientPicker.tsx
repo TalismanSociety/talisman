@@ -1,7 +1,7 @@
 import { isEthereumAddress } from "@polkadot/util-crypto"
 import { ScrollContainer } from "@talisman/components/ScrollContainer"
 import { SearchInput } from "@talisman/components/SearchInput"
-import { TalismanHandIcon, UserIcon } from "@talisman/theme/icons"
+import { EyeIcon, TalismanHandIcon, UserIcon } from "@talisman/theme/icons"
 import { convertAddress } from "@talisman/util/convertAddress"
 import { isValidAddress } from "@talisman/util/isValidAddress"
 import { useSendFundsWizard } from "@ui/apps/popup/pages/SendFunds/context"
@@ -113,6 +113,16 @@ export const SendFundsRecipientPicker = () => {
     ]
   )
 
+  const { myAccounts, watchedAccounts } = useMemo(
+    () => ({
+      myAccounts: accounts.filter((account) => account.origin !== "WATCHED" || account.isPortfolio),
+      watchedAccounts: accounts.filter(
+        (account) => account.origin === "WATCHED" && !account.isPortfolio
+      ),
+    }),
+    [accounts]
+  )
+
   const handleSelect = useCallback(
     (address: string) => {
       set("to", address, true)
@@ -161,7 +171,7 @@ export const SendFundsRecipientPicker = () => {
         />
         <SendFundsAccountsList
           allowZeroBalance
-          accounts={accounts}
+          accounts={myAccounts}
           selected={to}
           onSelect={handleSelect}
           header={
@@ -173,6 +183,20 @@ export const SendFundsRecipientPicker = () => {
           showBalances
           tokenId={tokenId}
           showIfEmpty={!newAddresses.length}
+        />
+        <SendFundsAccountsList
+          allowZeroBalance
+          accounts={watchedAccounts}
+          selected={to}
+          onSelect={handleSelect}
+          header={
+            <>
+              <EyeIcon className="mr-2 inline-block align-text-top" />
+              {t("Followed only")}
+            </>
+          }
+          showBalances
+          tokenId={tokenId}
         />
       </ScrollContainer>
     </div>
