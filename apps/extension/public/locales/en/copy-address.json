@@ -3,6 +3,7 @@
   "Substrate (Generic)": "Substrate (Generic)",
   "Select network": "Select network",
   "Search by network name": "Search by network name",
+  "This address is an external account": "This address is an external account",
   "Copy Address": "Copy Address",
   "Sending from an exchange?": "Sending from an exchange?",
   "Generic substrate addresses are often incompatible with exchanges.": "Generic substrate addresses are often incompatible with exchanges.",

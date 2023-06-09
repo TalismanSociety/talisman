@@ -59,6 +59,7 @@
   "Decreasing": "Decreasing",
   "Very High": "Very High",
   "Failed to prepare transaction": "Failed to prepare transaction",
+  "Cannot sign transactions with a watched account": "Cannot sign transactions with a watched account",
   "Delegate vote": "Delegate vote",
   "Undelegate vote": "Undelegate vote",
   "Vote Yes": "Vote Yes",

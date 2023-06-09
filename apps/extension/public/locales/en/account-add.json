@@ -87,5 +87,17 @@
   "Import your Polkadot.js account": "Import your Polkadot.js account",
   "Connect your Ledger wallet": "Connect your Ledger wallet",
   "Connect your Ledger wallet (not supported on this browser)": "Connect your Ledger wallet (not supported on this browser)",
-  "Or Parity Signer (Legacy)": "Or Parity Signer (Legacy)"
+  "Or Parity Signer (Legacy)": "Or Parity Signer (Legacy)",
+  "Add Watched Account": "Add Watched Account",
+  "Add a watch only address": "Add a watch only address",
+  "Invalid address": "Invalid address",
+  "Adding account": "Adding account",
+  "Account added": "Account added",
+  "What type of account would you like to add?": "What type of account would you like to add?",
+  "Please enter the name and the wallet address you'll be watching.": "Please enter the name and the wallet address you'll be watching.",
+  "Note that the address will be watch-only and will not be able to sign transactions.": "Note that the address will be watch-only and will not be able to sign transactions.",
+  "Enter wallet address": "Enter wallet address",
+  "Include in my portfolio": "Include in my portfolio",
+  "If toggled on, this account's balances will be included in your Total Portfolio": "If toggled on, this account's balances will be included in your Total Portfolio",
+  "Add": "Add"
 }
