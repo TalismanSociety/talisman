@@ -8,7 +8,6 @@ import useBalances from "@ui/hooks/useBalances"
 import { useBalancesHydrate } from "@ui/hooks/useBalancesHydrate"
 import useChains from "@ui/hooks/useChains"
 import { useEvmNetworks } from "@ui/hooks/useEvmNetworks"
-import { useMyBalances } from "@ui/hooks/useMyBalances"
 import { useSetting } from "@ui/hooks/useSettings"
 import useTokens from "@ui/hooks/useTokens"
 import { isEvmToken } from "@ui/util/isEvmToken"
@@ -126,7 +125,7 @@ const usePortfolioProvider = () => {
   const { evmNetworks } = useEvmNetworks(useTestnets)
   const hydrate = useBalancesHydrate()
   const balances = useBalances()
-  const myBalances = useMyBalances()
+  const myBalances = useBalances("portfolio")
 
   const allBalances = useMemo(
     () => (account ? balances.find({ address: account.address }) : myBalances),

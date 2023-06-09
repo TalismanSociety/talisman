@@ -2,7 +2,7 @@ import { IconButton } from "@talisman/components/IconButton"
 import { EyeIcon, EyeOffIcon } from "@talisman/theme/icons"
 import Asset from "@ui/domains/Asset"
 import { useAnalytics } from "@ui/hooks/useAnalytics"
-import { useMyBalances } from "@ui/hooks/useMyBalances"
+import useBalances from "@ui/hooks/useBalances"
 import { useSetting } from "@ui/hooks/useSettings"
 import { FC, useCallback } from "react"
 import { useTranslation } from "react-i18next"
@@ -82,7 +82,7 @@ const TotalFiat = styled.div`
 
 export const TotalFiatBalance: FC<{ className?: string }> = ({ className }) => {
   const { t } = useTranslation("portfolio")
-  const balances = useMyBalances()
+  const balances = useBalances("portfolio")
 
   const [hideBalances, setHideBalances] = useSetting("hideBalances")
   const { genericEvent } = useAnalytics()
