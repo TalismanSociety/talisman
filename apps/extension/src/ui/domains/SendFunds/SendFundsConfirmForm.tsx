@@ -124,14 +124,6 @@ export const ExternalRecipientWarning = () => {
       <div>{t("You are sending funds to an external account")}</div>
     </div>
   )
-
-  // TODO remove ? waiting on Diogo to confirm
-  return (
-    <div className="text-alert-warn flex items-center justify-center text-xs">
-      <AlertCircleIcon />
-      <div>{t("You are sending funds to an account outside of Talisman")}</div>
-    </div>
-  )
 }
 
 const SendButton = () => {
