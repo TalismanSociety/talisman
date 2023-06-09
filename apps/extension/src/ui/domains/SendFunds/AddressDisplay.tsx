@@ -14,7 +14,8 @@ import { useTranslation } from "react-i18next"
 import { Tooltip, TooltipContent, TooltipTrigger } from "talisman-ui"
 import urlJoin from "url-join"
 
-import AccountAvatar from "../Account/Avatar"
+import { AccountIcon } from "../Account/AccountIcon"
+import { AccountTypeIcon } from "../Account/AccountTypeIcon"
 
 const useBlockExplorerUrl = (
   address?: Address | null,
@@ -87,7 +88,7 @@ export const AddressDisplay: FC<AddressDisplayProps> = ({
           className
         )}
       >
-        <AccountAvatar
+        <AccountIcon
           className="!text-lg"
           address={resolvedAddress}
           genesisHash={account?.genesisHash}
@@ -95,6 +96,7 @@ export const AddressDisplay: FC<AddressDisplayProps> = ({
         <div className="leading-base grow overflow-hidden text-ellipsis whitespace-nowrap">
           {text}
         </div>
+        <AccountTypeIcon origin={account?.origin} className="text-primary" />
         {blockExplorerUrl ? (
           <a href={blockExplorerUrl} target="_blank" className="text-grey-300 hover:text-white">
             <ExternalLinkIcon />

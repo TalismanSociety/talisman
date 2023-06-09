@@ -30,7 +30,8 @@ import { Container } from "react-dom"
 import { Trans, useTranslation } from "react-i18next"
 import { Button, PillButton } from "talisman-ui"
 
-import AccountAvatar from "../Account/Avatar"
+import { AccountIcon } from "../Account/AccountIcon"
+import { AccountTypeIcon } from "../Account/NamedAddress"
 import { ChainLogo } from "../Asset/ChainLogo"
 import Fiat from "../Asset/Fiat"
 import { AddToAddressBookDrawer } from "../Asset/Send/AddToAddressBookDrawer"
@@ -89,12 +90,11 @@ const AddressPillButton: FC<AddressPillButtonProps> = ({ address, className, onC
   return (
     <PillButton className={classNames("h-16 max-w-full !px-4", className)} onClick={onClick}>
       <div className="text-body flex h-16 max-w-full flex-nowrap items-center gap-4 overflow-x-hidden text-base">
-        <div>
-          <AccountAvatar className="!text-lg" address={address} genesisHash={genesisHash} />
-        </div>
+        <AccountIcon className="!text-lg" address={address} genesisHash={genesisHash} />
         <div className="leading-base grow overflow-hidden text-ellipsis whitespace-nowrap">
           {name ?? shortenAddress(address, 6, 6)}
         </div>
+        <AccountTypeIcon origin={account?.origin} className="text-primary-500" />
       </div>
     </PillButton>
   )
