@@ -64,11 +64,21 @@ export const sortAccounts = (accounts: SubjectInfo): AccountJsonAny[] => {
   // as well as QR (parity signer) and HARDWARE (ledger) accounts
   // should order these by created date? probably
   const imported = transformedAccounts.filter(({ origin }) =>
-    ["SEED", "JSON", "QR", "HARDWARE", "WATCHED"].includes(origin as string)
+    ["SEED", "JSON", "QR", "HARDWARE"].includes(origin as string)
   )
   const importedSorted = sortAccountsByWhenCreated(imported)
 
-  return [...ordered, ...importedSorted]
+  const watchedPortfolio = transformedAccounts.filter(
+    ({ origin, isPortfolio }) => origin === AccountTypes.WATCHED && isPortfolio
+  )
+  const watchedPortfolioSorted = sortAccountsByWhenCreated(watchedPortfolio)
+
+  const watchedFollowed = transformedAccounts.filter(
+    ({ origin, isPortfolio }) => origin === AccountTypes.WATCHED && !isPortfolio
+  )
+  const watchedFollowedSorted = sortAccountsByWhenCreated(watchedFollowed)
+
+  return [...ordered, ...importedSorted, ...watchedPortfolioSorted, ...watchedFollowedSorted]
 }
 
 export const getInjectedAccount = ({
