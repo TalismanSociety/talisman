@@ -36,19 +36,21 @@ const CelestialArtifact = memo(
           stopOpacity: 0.9,
           transitionProperty: "stop-color",
           transitionDuration: `${artifact.duration}ms`,
+          transitionDelay: "100ms", // prevents flickering on FF
         },
         {
           stopColor: artifact.color,
           stopOpacity: 0,
           transitionProperty: "stop-color",
           transitionDuration: `${artifact.duration}ms`,
+          transitionDelay: "100ms",
         },
       ],
       [artifact.color, artifact.duration]
     )
 
     return (
-      <>
+      <g>
         <defs>
           <radialGradient id={id} cx="50%" cy="50%" r="50%" fx="50%" fy="50%">
             <stop offset="0%" style={style1} />
@@ -56,10 +58,11 @@ const CelestialArtifact = memo(
           </radialGradient>
         </defs>
         <ellipse {...artifact.ellipsis} fill={`url(#${id})`}></ellipse>
-      </>
+      </g>
     )
   }
 )
+
 CelestialArtifact.displayName = "CelestialArtifact"
 
 const CelestialArtifacts: FC<{
@@ -67,11 +70,13 @@ const CelestialArtifacts: FC<{
   config: MysticalPhysicsV3
   acolyte?: { x: number; y: number }
 }> = ({ size, config, acolyte }) => {
+  const artifactKeys = useMemo(() => Array.from(Array(config.artifacts).keys()), [config.artifacts])
+
   if (!size.width || !size.height) return null
 
   return (
     <>
-      {[...Array(config.artifacts).keys()].map((i) => (
+      {artifactKeys.map((i) => (
         <CelestialArtifact key={i} parentSize={size} config={config} />
       ))}
       {config.withAcolyte && <CelestialArtifact parentSize={size} config={config} {...acolyte} />}
@@ -100,15 +105,18 @@ export const MysticalBackgroundV3 = ({
       ? { x: elX, y: elY }
       : undefined
 
+  const viewBox = useMemo(() => `0 0 ${size.width} ${size.height}`, [size.width, size.height])
+  const style = useMemo(() => ({ transform: `blur(${config.blur}ptx)` }), [config.blur])
+
   return (
     <div ref={refSize} className={className}>
       <svg
         ref={refMouseLocation}
         width={size.width}
         height={size.height}
-        viewBox={`0 0 ${size.width} ${size.height}`}
+        viewBox={viewBox}
         className={classNames(className)}
-        style={{ transform: `blur(${config.blur}ptx)` }}
+        style={style}
       >
         <CelestialArtifacts config={config} size={size} acolyte={acolyte} />
       </svg>

@@ -14,11 +14,6 @@ export type ArtifactCharacteristics = {
   color: string
 }
 
-const roundDecimal = (value: number, decimals: number) => {
-  const mult = Math.pow(10, decimals)
-  return Math.round(mult * value) / mult
-}
-
 const generateCharacteristics = (
   config: MysticalPhysicsV3,
   parentSize: ParentSize,
@@ -29,17 +24,16 @@ const generateCharacteristics = (
 ): ArtifactCharacteristics => {
   const color = Color.hsv(Math.random() * 360, 100, 100).hex()
   const maxSize = Math.min(parentSize.width, parentSize.height)
-  const rx = roundDecimal(
-    maxSize * (config.radiusMin + Math.random() * (config.radiusMax - config.radiusMin)),
-    2
+  const rx = Math.round(
+    maxSize * (config.radiusMin + Math.random() * (config.radiusMax - config.radiusMin))
   )
-  const ry = roundDecimal(rx * (1 - config.ellipsisRatio * Math.random()), 2)
+  const ry = Math.round(rx * (1 - config.ellipsisRatio * Math.random()))
 
   const forceTarget = !!targetX && !!targetY
-  const cx = forceTarget ? targetX : roundDecimal(Math.random() * parentSize.width, 2)
+  const cx = forceTarget ? targetX : Math.round(Math.random() * parentSize.width)
   const cy = forceTarget
     ? targetY
-    : roundDecimal(Math.random() * parentSize.height - Math.max(rx, ry) / 2, 2)
+    : Math.round(Math.random() * parentSize.height - Math.max(rx, ry) / 2)
 
   const ellipsis: SVGProps<SVGEllipseElement> = {
     cx,
@@ -47,11 +41,12 @@ const generateCharacteristics = (
     rx,
     ry,
     style: {
+      transitionProperty: "all",
       transformBox: "fill-box",
       transformOrigin: "center",
       transform: `rotate(${Math.round(Math.random() * 360)}deg)`,
       transitionDuration: `${duration}ms`,
-      transitionProperty: "all",
+      transitionDelay: "100ms", // prevents flickering on FF
       transitionTimingFunction: !forceTarget && initialized ? "ease-in-out" : "ease-out",
       opacity: Number(
         (config.opacityMin + Math.random() * (config.opacityMax - config.opacityMin)).toFixed(2)
@@ -75,10 +70,7 @@ export const useCelestialArtifact = (
   const refInitialized = useRef(false)
   const duration = useMemo(
     () =>
-      roundDecimal(
-        config.durationMin + Math.random() * (config.durationMax - config.durationMin),
-        2
-      ),
+      Math.round(config.durationMin + Math.random() * (config.durationMax - config.durationMin)),
     [config.durationMax, config.durationMin]
   )
 

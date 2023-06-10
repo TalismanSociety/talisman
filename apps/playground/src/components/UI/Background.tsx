@@ -36,7 +36,7 @@ export const Background = () => {
     try {
       return JSON.parse(strConfigV2) as MysticalPhysicsV2
     } catch (err) {
-      return null as unknown as MysticalPhysicsV2
+      return undefined
     }
   }, [strConfigV2])
 
@@ -44,7 +44,7 @@ export const Background = () => {
     try {
       return JSON.parse(strConfigV3) as MysticalPhysicsV3
     } catch (err) {
-      return null as unknown as MysticalPhysicsV3
+      return undefined
     }
   }, [strConfigV3])
 
