@@ -2,9 +2,9 @@ import { classNames } from "@talismn/util"
 import { useRef } from "react"
 import { useMeasure, useMouse } from "react-use"
 
+import { useWindowHovered } from "../MysticalBackgroundV3/useWindowHovered"
 import MysticalCanvas from "./MysticalCanvas"
 import { MYSTICAL_PHYSICS_V2, MysticalPhysicsV2 } from "./MysticalPhysicsV2"
-import { useWindowHovered } from "./useWindowHovered"
 
 export const MysticalBackgroundV2 = ({
   className,

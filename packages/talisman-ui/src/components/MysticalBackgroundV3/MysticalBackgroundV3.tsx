@@ -2,9 +2,9 @@ import { classNames } from "@talismn/util"
 import { CSSProperties, FC, memo, useEffect, useMemo, useRef, useState } from "react"
 import { useMeasure, useMouse } from "react-use"
 
-import { useWindowHovered } from "../MysticalBackgroundV2/useWindowHovered"
 import { MYSTICAL_PHYSICS_V3, MysticalPhysicsV3 } from "./MysticalPhysicsV3"
 import { ParentSize, useCelestialArtifact } from "./useCelestialArtifact"
+import { useWindowHovered } from "./useWindowHovered"
 
 const CelestialArtifact = memo(
   ({
