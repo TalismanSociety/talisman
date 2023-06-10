@@ -1,14 +1,14 @@
 import Color from "color"
 import React, { FC, useEffect, useRef } from "react"
 
-import { MysticalPhysics } from "./MysticalPhysics"
+import { MysticalPhysicsV2 } from "./MysticalPhysicsV2"
 import { ArtifactCharacteristics, ParentSize, useCelestialArtifact } from "./useCelestialArtifact"
 
 type MysticalCanvasProps = React.DetailedHTMLProps<
   React.CanvasHTMLAttributes<HTMLCanvasElement>,
   HTMLCanvasElement
 > & {
-  config: MysticalPhysics
+  config: MysticalPhysicsV2
   size: ParentSize
   cx?: number
   cy?: number

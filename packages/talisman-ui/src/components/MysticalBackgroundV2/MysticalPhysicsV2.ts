@@ -1,4 +1,4 @@
-export type MysticalPhysics = {
+export type MysticalPhysicsV2 = {
   blur: number
   minSizeArtifact: number
   minSizeAcolyte: number
@@ -16,7 +16,7 @@ export type MysticalPhysics = {
   durationAcolyte: number
 }
 
-export const MYSTICAL_PHYSICS: MysticalPhysics = {
+export const MYSTICAL_PHYSICS_V2: MysticalPhysicsV2 = {
   blur: 0,
   minSizeArtifact: 0,
   minSizeAcolyte: 0.1,
