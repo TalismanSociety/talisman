@@ -12,6 +12,8 @@ type TalismanWindow = Window &
     talismanEth?: any
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     web3?: any
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    evmproviders?: any
   }
 
 // checking BUILD instead of NODE_ENV because on some dapps we need to test with production builds
@@ -42,4 +44,8 @@ export const injectEthereum = (sendRequest: SendRequest) => {
   } else if (WITH_LOG_PROXY) {
     windowInject.ethereum = logProxy(windowInject.ethereum)
   }
+
+  // EIP-5749 injection
+  windowInject.evmproviders = windowInject.evmproviders || {}
+  windowInject.evmproviders["talisman"] = talismanEth
 }

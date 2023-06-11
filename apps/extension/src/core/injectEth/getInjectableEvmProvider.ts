@@ -4,6 +4,7 @@ import EventEmitter from "events"
 import { log } from "@core/log"
 import type { SendRequest } from "@core/types"
 
+import { EVMPROVIDER_INFO } from "./constants"
 import {
   ETH_ERROR_EIP1474_INTERNAL_ERROR,
   ETH_ERROR_EIP1993_USER_REJECTED,
@@ -71,6 +72,9 @@ export const getInjectableEvmProvider = (sendRequest: SendRequest) => {
     off: eventEmitter.off.bind(eventEmitter),
     removeListener: eventEmitter.removeListener.bind(eventEmitter),
     removeAllListeners: eventEmitter.removeAllListeners.bind(eventEmitter),
+
+    // describe the wallet (EIP 5749)
+    info: EVMPROVIDER_INFO,
   }
 
   const isConnected = () => {
