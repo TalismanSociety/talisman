@@ -41,6 +41,7 @@ export const CopyAddressButton = ({
 
   return (
     <button
+      type="button"
       onClick={handleClick}
       className="text-body-secondary hover:text-body focus:text-body focus:bg-grey-700 hover:bg-grey-700 inline-flex h-9 w-9 items-center justify-center rounded-full text-xs"
     >

@@ -142,6 +142,7 @@ const Login = ({ setShowResetWallet }: { setShowResetWallet: () => void }) => {
             {t("Unlock")}
           </Button>
           <button
+            type="button"
             className="text-body-disabled mt-2 cursor-pointer text-sm transition-colors hover:text-white"
             onClick={setShowResetWallet}
           >

@@ -80,6 +80,7 @@ const AccountButton = ({ address, name, total, genesisHash, origin }: AccountOpt
 
   return (
     <button
+      type="button"
       tabIndex={0}
       className="text-body-secondary bg-black-secondary hover:bg-grey-800 flex h-[5.9rem] w-full cursor-pointer items-center gap-6 overflow-hidden rounded-sm px-6 hover:text-white"
       onClick={handleAccountClick}

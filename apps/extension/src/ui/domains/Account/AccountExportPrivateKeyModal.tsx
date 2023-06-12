@@ -122,6 +122,7 @@ const ExportPrivateKeyResult = ({ onClose }: { onClose?: () => void }) => {
                 className="grow bg-transparent font-mono leading-none "
               />
               <button
+                type="button"
                 onClick={copyToClipboard}
                 className=" focus:text-grey-300 text-lg hover:text-white active:text-white"
               >

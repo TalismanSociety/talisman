@@ -46,6 +46,7 @@ export const Scan = () => {
                     ),
                     extra: (
                       <button
+                        type="button"
                         className="bg-primary/10 text-primary hover:bg-primary/20 mt-6 inline-block rounded-full px-6 text-sm font-light leading-[32px]"
                         onClick={() => dispatch({ method: "enableScan" })}
                       >
@@ -66,6 +67,7 @@ export const Scan = () => {
                     body: t("Allow Talisman to access your camera to scan QR codes"),
                     extra: (
                       <button
+                        type="button"
                         className="bg-primary/10 text-primary hover:bg-primary/20 mt-6 inline-block rounded-full px-6 text-sm font-light leading-[32px]"
                         onClick={() => dispatch({ method: "enableScan" })}
                       >

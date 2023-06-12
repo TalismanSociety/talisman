@@ -106,6 +106,7 @@ export const QrSubstrate = ({
       {scanState.page !== "UPDATE_METADATA" && (
         <header className="text-body-secondary flex h-32 min-h-[6.4rem] w-full items-center px-12">
           <button
+            type="button"
             className="flex h-16 w-16 cursor-pointer items-center p-2 text-lg hover:text-white"
             onClick={() => {
               setScanState((scanState) => {
@@ -276,12 +277,14 @@ const SendPage = ({
           <div className="flex flex-col items-center">
             <div className="flex items-center gap-4">
               <button
+                type="button"
                 className="text-grey-400 bg-grey-800 hover:bg-grey-750 inline-block rounded-full px-6 py-4 text-sm font-light"
                 onClick={() => setScanState({ page: "SEND", showChainspecDrawer: true })}
               >
                 {t("Add Network")}
               </button>
               <button
+                type="button"
                 className="bg-primary/10 text-primary hover:bg-primary/20 inline-block rounded-full px-6 py-4 text-sm font-light"
                 onClick={() => setScanState({ page: "UPDATE_METADATA" })}
               >
@@ -289,6 +292,7 @@ const SendPage = ({
               </button>
             </div>
             <button
+              type="button"
               className="text-grey-200 mt-8 text-xs font-light hover:text-white"
               onClick={() => setScanState({ page: "SEND", showUpdateMetadataDrawer: true })}
             >

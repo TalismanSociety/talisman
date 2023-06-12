@@ -18,6 +18,7 @@ const ObjectLabel: FC<ObjectLabelProps> = ({ label, displayAsJson, setDisplayAsJ
     <div>
       {t("{{label}} as :", { label })}{" "}
       <button
+        type="button"
         onClick={() => setDisplayAsJson(false)}
         className={classNames("decode-mode !w-auto", !displayAsJson && "decode-mode-active")}
       >
@@ -25,6 +26,7 @@ const ObjectLabel: FC<ObjectLabelProps> = ({ label, displayAsJson, setDisplayAsJ
       </button>{" "}
       /{" "}
       <button
+        type="button"
         onClick={() => setDisplayAsJson(true)}
         className={classNames("decode-mode !w-auto", displayAsJson && "decode-mode-active")}
       >

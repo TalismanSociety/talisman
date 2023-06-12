@@ -34,7 +34,11 @@ type SelectableAvatarProps = {
 
 const AvatarOption: FC<SelectableAvatarProps> = ({ address, type, selected, onClick }) => {
   return (
-    <button className={classNames("avatar-option", selected && "selected")} onClick={onClick}>
+    <button
+      type="button"
+      className={classNames("avatar-option", selected && "selected")}
+      onClick={onClick}
+    >
       <AccountIcon address={address} type={type} />
     </button>
   )

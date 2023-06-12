@@ -37,6 +37,7 @@ export const SendFundsLayout: FC<SendFundsLayoutProps> = ({
       <div className="text-body-secondary flex h-32 min-h-[6.4rem] w-full items-center px-12">
         {showBackButton ? (
           <button
+            type="button"
             className="text-body-secondary flex cursor-pointer items-center text-lg hover:text-white"
             onClick={handleBackClick}
           >
