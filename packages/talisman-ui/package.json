@@ -15,7 +15,7 @@
     "clean": "rm -rf dist && rm -rf .turbo rm -rf node_modules"
   },
   "devDependencies": {
-    "@floating-ui/react": "0.20.1",
+    "@floating-ui/react": "0.24.3",
     "@headlessui/react": "1.7.13",
     "@tailwindcss/forms": "^0.5.3",
     "@talismn/eslint-config": "workspace:*",
