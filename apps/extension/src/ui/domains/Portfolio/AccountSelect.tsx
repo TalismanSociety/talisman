@@ -11,7 +11,7 @@ import { useAnalytics } from "@ui/hooks/useAnalytics"
 import useBalances from "@ui/hooks/useBalances"
 import useBalancesByAddress from "@ui/hooks/useBalancesByAddress"
 import { UseSelectStateChange, useSelect } from "downshift"
-import { useCallback, useMemo } from "react"
+import { Fragment, useCallback, useMemo } from "react"
 import { useTranslation } from "react-i18next"
 import styled, { css } from "styled-components"
 
@@ -354,21 +354,21 @@ export const AccountSelect = ({ responsive, className }: AccountSelectProps) => 
               </button>
             </li>
             {items.map((item, index) => (
-              <>
+              <Fragment key={item.address}>
                 {index === indexFirstWatchedOnlyAccount && (
                   <li className="text-body-secondary !mb-2 !mt-6 flex !cursor-default gap-4 !px-6 font-bold hover:!bg-transparent">
                     <EyeIcon />
                     <div>{t("Followed only")}</div>
                   </li>
                 )}
-                <li key={item.address ?? "all"} {...getItemProps({ item, index })}>
+                <li {...getItemProps({ item, index })}>
                   {item.address ? (
                     <SingleAccountOption {...item} address={item.address} withTrack />
                   ) : (
                     <AllAccountsOption withTrack />
                   )}
                 </li>
-              </>
+              </Fragment>
             ))}
           </>
         )}
