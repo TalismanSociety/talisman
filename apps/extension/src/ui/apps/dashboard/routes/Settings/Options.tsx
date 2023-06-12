@@ -1,14 +1,13 @@
-import Field from "@talisman/components/Field"
 import Grid from "@talisman/components/Grid"
 import HeaderBlock from "@talisman/components/HeaderBlock"
 import Setting from "@talisman/components/Setting"
 import Spacer from "@talisman/components/Spacer"
-import { WithTooltip } from "@talisman/components/Tooltip"
 import Layout from "@ui/apps/dashboard/layout"
 import { AvatarTypeSelect } from "@ui/domains/Settings/AvatarTypeSelect"
 import { useAppState } from "@ui/hooks/useAppState"
 import { useSetting } from "@ui/hooks/useSettings"
 import { Trans, useTranslation } from "react-i18next"
+import { Toggle, Tooltip, TooltipContent, TooltipTrigger } from "talisman-ui"
 
 const Options = () => {
   const { t } = useTranslation("settings")
@@ -28,19 +27,22 @@ const Options = () => {
           title={t("Enable Testnets")}
           subtitle={t("Connect to test networks (Westend, Mandala)")}
         >
-          <Field.Toggle value={useTestnets} onChange={setUseTestnets} />
+          <Toggle checked={useTestnets} onChange={(e) => setUseTestnets(e.target.checked)} />
         </Setting>
         <Setting
           title={t("Allow notifications")}
           subtitle={t("Allow Talisman to send you notifications about transactions in progress")}
         >
-          <Field.Toggle value={allowNotifications} onChange={setAllowNotifications} />
+          <Toggle
+            checked={allowNotifications}
+            onChange={(e) => setAllowNotifications(e.target.checked)}
+          />
         </Setting>
         <Setting
           title={t("Hide Balances")}
           subtitle={t("Blurs your portfolio and account balances")}
         >
-          <Field.Toggle value={hideBalances} onChange={setHideBalances} />
+          <Toggle checked={hideBalances} onChange={(e) => setHideBalances(e.target.checked)} />
         </Setting>
         <Setting
           title={t("Account Avatars")}
@@ -63,15 +65,18 @@ const Options = () => {
             </Trans>
           }
         >
-          <WithTooltip
-            tooltip={hasSpiritKey ? undefined : t("You need a Spirit Key to enable this option")}
-          >
-            <Field.Toggle
-              disabled={!hasSpiritKey}
-              value={hasSpiritKey && spiritClanFeatures}
-              onChange={setSpiritClanFeatures}
-            />
-          </WithTooltip>
+          <Tooltip>
+            <TooltipTrigger>
+              <Toggle
+                disabled={!hasSpiritKey}
+                checked={hasSpiritKey && spiritClanFeatures}
+                onChange={(e) => setSpiritClanFeatures(e.target.checked)}
+              />
+            </TooltipTrigger>
+            {hasSpiritKey ? undefined : (
+              <TooltipContent>t("You need a Spirit Key to enable this option")</TooltipContent>
+            )}
+          </Tooltip>
         </Setting>
       </Grid>
     </Layout>

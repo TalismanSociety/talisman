@@ -1,10 +1,10 @@
 import { appStore } from "@core/domains/app/store.app"
 import Button from "@talisman/components/Button"
-import Field from "@talisman/components/Field"
 import imgBraveFlag from "@talisman/theme/images/brave_flag.gif"
 import { FC, useEffect, useState } from "react"
 import { useTranslation } from "react-i18next"
 import styled from "styled-components"
+import { Toggle } from "talisman-ui"
 import Browser from "webextension-polyfill"
 
 const ModalContainer = styled.div<{ small?: boolean }>`
@@ -87,12 +87,11 @@ export const BraveWarningModal: FC<BraveWarningModalProps> = ({ className, popup
       >
         {t("Read the docs")}
       </Button>
-      <div>
-        <Field.Toggle
-          className="toggle"
-          info={t("Don't prompt me again")}
-          value={hideBraveWarning}
-          onChange={(val: boolean) => appStore.set({ hideBraveWarning: val })}
+      <div className="text-body-secondary flex w-full items-center justify-center gap-4 text-sm">
+        <div>{t("Don't prompt me again")}</div>
+        <Toggle
+          checked={hideBraveWarning}
+          onChange={(e) => appStore.set({ hideBraveWarning: e.target.checked })}
         />
       </div>
     </ModalContainer>

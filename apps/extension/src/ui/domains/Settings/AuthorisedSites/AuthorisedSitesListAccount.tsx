@@ -1,16 +1,23 @@
-import Field from "@talisman/components/Field"
 import { AccountIcon } from "@ui/domains/Account/AccountIcon"
 import { AccountTypeIcon } from "@ui/domains/Account/AccountTypeIcon"
 import { Address } from "@ui/domains/Account/Address"
 import { useAccountByAddress } from "@ui/hooks/useAccountByAddress"
-import { FC } from "react"
+import { ChangeEventHandler, FC, useCallback } from "react"
+import { Toggle } from "talisman-ui"
 
 export const AuthorisedSitesListAccount: FC<{
   address: string
   isConnected: boolean
-  onChange: () => void
+  onChange: (val: boolean) => void
 }> = ({ address, isConnected, onChange }) => {
   const account = useAccountByAddress(address)
+
+  const handleChange: ChangeEventHandler<HTMLInputElement> = useCallback(
+    (e) => {
+      onChange(e.target.checked)
+    },
+    [onChange]
+  )
 
   if (!account) return null
 
@@ -28,7 +35,7 @@ export const AuthorisedSitesListAccount: FC<{
         <AccountTypeIcon origin={account.origin} className="text-primary-500 text-md" />
       </div>
       <div>
-        <Field.Toggle value={isConnected} onChange={onChange} />
+        <Toggle checked={isConnected} onChange={handleChange} />
       </div>
     </div>
   )
