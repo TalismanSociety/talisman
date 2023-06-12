@@ -19,7 +19,7 @@ module.exports = {
   pluralSeparator: "_pluralSeparator_",
 
   // make sure this is kept in sync with apps/extension/src/ui/i18nConfig.ts
-  locales: Object.keys(languages),
+  locales: ["en"], //Object.keys(languages),
   // this `languages` key isn't needed for i18n-parser,
   // it's just here so that we can import it from our UI and access those juicy human-readable names
   languages,

@@ -8,6 +8,7 @@ import i18nextParserConfig from "../../i18next-parser.config.cjs"
 
 // juicy human-readable names
 export const languages = i18nextParserConfig.languages
+const locales = Object.keys(i18nextParserConfig.languages)
 
 i18next
   .use(LanguageDetector)
@@ -34,13 +35,13 @@ i18next
 
       // the actual languages
       // imported from i18next-parser.config.cjs so that these two files are kept in sync
-      ...i18nextParserConfig.locales,
+      ...locales,
     ],
     // use natural language 'en' keys as fallback for languages with no
     // translation for a value
     fallbackLng:
       // should always be true, so 'en', but I added a check here just in case 'en' isn't in the list
-      i18nextParserConfig.locales.includes("en") ? "en" : "dev",
+      locales.includes("en") ? "en" : "dev",
 
     // the `t` funtion should always return a string or undefined
     returnNull: false,
