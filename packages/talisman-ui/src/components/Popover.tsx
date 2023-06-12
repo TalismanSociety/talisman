@@ -45,7 +45,9 @@ export function usePopover({
     middleware: [
       offset(5),
       flip({
+        crossAxis: placement.includes("-"),
         fallbackAxisSideDirection: "end",
+        padding: 5,
       }),
       shift({ padding: 5 }),
     ],
@@ -154,27 +156,24 @@ export const PopoverContent = React.forwardRef<HTMLDivElement, React.HTMLProps<H
     const { context: floatingContext, ...context } = usePopoverContext()
     const ref = useMergeRefs([context.refs.setFloating, propRef])
 
+    if (!floatingContext.open) return null
+
     return (
       <FloatingPortal>
-        {context.open && (
-          <FloatingFocusManager context={floatingContext} modal={context.modal}>
-            <div
-              ref={ref}
-              style={{
-                position: context.strategy,
-                top: context.y ?? 0,
-                left: context.x ?? 0,
-                width: "max-content",
-                ...props.style,
-              }}
-              aria-labelledby={context.labelId}
-              aria-describedby={context.descriptionId}
-              {...context.getFloatingProps(props)}
-            >
-              {props.children}
-            </div>
-          </FloatingFocusManager>
-        )}
+        <FloatingFocusManager context={floatingContext} modal={context.modal}>
+          <div
+            ref={ref}
+            style={{
+              ...context.floatingStyles,
+              ...props.style,
+            }}
+            aria-labelledby={context.labelId}
+            aria-describedby={context.descriptionId}
+            {...context.getFloatingProps(props)}
+          >
+            {props.children}
+          </div>
+        </FloatingFocusManager>
       </FloatingPortal>
     )
   }
