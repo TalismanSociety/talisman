@@ -45,6 +45,7 @@ export type FeatureVariants = Partial<{
   I18N: boolean
   USE_ONFINALITY_API_KEY_SUBSTRATE: boolean
   USE_ONFINALITY_API_KEY_EVM: boolean
+  I18N: boolean
   TEST_VARIANT: "VARIANT1" | "VARIANT2" // keep this one for string type checking
 }>
 export type FeatureFlag = keyof FeatureVariants
