@@ -53,7 +53,7 @@ jobs:
         uses: simplelocalize/github-action-cli@v1
         with:
           api-key: ${{ secrets.SIMPLELOCALIZE_API_KEY }}
-          command: 'extract'
+          command: 'upload'
           cli-version: '2.2.0'
           args: '--apiKey ${{ secrets.SIMPLELOCALIZE_API_KEY }}'
       - name: Build
