@@ -123,6 +123,7 @@
   "You are signing typed data": "You are signing typed data",
   "You are signing a message": "You are signing a message",
   "for contract": "for contract",
+  "Verifying contract's address is invalid.": "Verifying contract's address is invalid.",
   "Cancel activity": "Cancel activity",
   "Execute activity": "Execute activity",
   "Set auto-compounding": "Set auto-compounding",

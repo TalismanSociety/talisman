@@ -49,6 +49,12 @@ jobs:
           echo "sha_short=$sha_short" >> $GITHUB_OUTPUT
           npm_package_version=$(cat apps/extension/package.json | jq -r .version)
           echo "npm_package_version=$npm_package_version" >> $GITHUB_OUTPUT
+      - name: Extract translatable strings
+        uses: simplelocalize/github-action-cli@v1
+        with:
+          api-key: ${{ secrets.SIMPLELOCALIZE_API_KEY }}
+          command: 'extract'
+          cli-version: '2.2.0'
       - name: Build
         run: yarn run build:extension:ci
         env:

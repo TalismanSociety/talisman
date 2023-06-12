@@ -120,6 +120,8 @@ const config = (env) => ({
       "process.env.TXWRAPPER_METADATA_CACHE_MAX_AGE": JSON.stringify(
         process.env.TXWRAPPER_METADATA_CACHE_MAX_AGE || 1000
       ),
+      "process.env.LOCIZE_PROJECT_ID": JSON.stringify(process.env.LOCIZE_PROJECT_ID || ""),
+      "process.env.LOCIZE_API_KEY": JSON.stringify(process.env.LOCIZE_API_KEY || ""),
 
       // dev stuff, only pass through when env.build is undefined (running a development build)
       "process.env.PASSWORD": JSON.stringify(

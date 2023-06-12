@@ -1,7 +1,7 @@
 import { DEBUG } from "@core/constants"
 import i18next from "i18next"
 import LanguageDetector from "i18next-browser-languagedetector"
-import HttpBackend, { HttpBackendOptions } from "i18next-http-backend"
+import Locize, { LocizeBackendOptions } from "i18next-locize-backend"
 import { initReactI18next } from "react-i18next"
 
 import i18nextParserConfig from "../../i18next-parser.config.cjs"
@@ -10,10 +10,16 @@ import i18nextParserConfig from "../../i18next-parser.config.cjs"
 export const languages = i18nextParserConfig.languages
 
 i18next
-  .use(HttpBackend)
   .use(LanguageDetector)
   .use(initReactI18next)
-  .init<HttpBackendOptions>({
+  .use(Locize)
+  .init<LocizeBackendOptions>({
+    backend: {
+      projectId: process.env.LOCIZE_PROJECT_ID as string,
+      apiKey: process.env.LOCIZE_API_KEY,
+      version: process.env.VERSION,
+      private: true,
+    },
     // use 'common' as default and fallback namespace
     // imported from i18next-parser.config.cjs so that these two files are kept in sync
     ns: i18nextParserConfig.defaultNamespace,
