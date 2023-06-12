@@ -12,7 +12,6 @@ const defaultProps: IProps = {
   ...fieldDefaultProps,
 }
 
-// TODO focused button visual effect
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 const Toggle = ({ value, onChange, fieldProps, disabled, ...rest }: IProps) => {
   const handleToggle = useCallback(() => {
@@ -23,6 +22,7 @@ const Toggle = ({ value, onChange, fieldProps, disabled, ...rest }: IProps) => {
   return (
     <Field {...rest}>
       <button
+        type="button"
         className="toggle"
         data-on={(value as unknown as boolean) === true}
         onClick={handleToggle}
@@ -95,4 +95,7 @@ const StyledToggle = styled(Toggle)`
 
 StyledToggle.defaultProps = defaultProps
 
+/**
+ * @deprecated use Toggle from talisman-ui
+ */
 export default StyledToggle

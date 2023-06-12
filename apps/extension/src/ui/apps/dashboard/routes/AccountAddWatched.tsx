@@ -1,6 +1,5 @@
 import { AccountAddressType } from "@core/domains/accounts/types"
 import { yupResolver } from "@hookform/resolvers/yup"
-import Field from "@talisman/components/Field"
 import HeaderBlock from "@talisman/components/HeaderBlock"
 import { notify, notifyUpdate } from "@talisman/components/Notifications"
 import { ArrowRightIcon } from "@talisman/theme/icons"
@@ -15,7 +14,7 @@ import { useCallback, useEffect, useMemo, useRef } from "react"
 import { useForm } from "react-hook-form"
 import { useTranslation } from "react-i18next"
 import styled from "styled-components"
-import { Button, FormFieldContainer, FormFieldInputText } from "talisman-ui"
+import { Button, FormFieldContainer, FormFieldInputText, Toggle } from "talisman-ui"
 import * as yup from "yup"
 
 import Layout from "../layout"
@@ -140,14 +139,7 @@ export const AccountAddWatched = () => {
     [setValue, trigger]
   )
 
-  const { type, isPortfolio } = watch()
-
-  const handleIsPortfolioChange = useCallback(
-    (checked: boolean) => {
-      setValue("isPortfolio", checked, { shouldValidate: true })
-    },
-    [setValue]
-  )
+  const { type } = watch()
 
   const hasSetFocus = useRef(false)
   useEffect(() => {
@@ -206,7 +198,7 @@ export const AccountAddWatched = () => {
                 )}
               </div>
             </div>
-            <Field.Toggle value={isPortfolio} onChange={handleIsPortfolioChange} />
+            <Toggle {...register("isPortfolio")} />
           </div>
           <Spacer />
           <div className="buttons">
