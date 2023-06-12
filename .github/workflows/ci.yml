@@ -55,6 +55,7 @@ jobs:
           api-key: ${{ secrets.SIMPLELOCALIZE_API_KEY }}
           command: 'extract'
           cli-version: '2.2.0'
+          args: '--apiKey ${{ secrets.SIMPLELOCALIZE_API_KEY }}'
       - name: Build
         run: yarn run build:extension:ci
         env:
