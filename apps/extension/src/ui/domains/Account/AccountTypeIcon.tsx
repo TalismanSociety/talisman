@@ -1,4 +1,4 @@
-import { AccountJsonAny } from "@core/domains/accounts/types"
+import { AccountType } from "@core/domains/accounts/types"
 import { EyeIcon, LinkIcon, PolkadotVaultIcon, UsbIcon } from "@talisman/theme/icons"
 import { classNames } from "@talismn/util"
 import { FC, useMemo } from "react"
@@ -6,7 +6,7 @@ import { useTranslation } from "react-i18next"
 import { Tooltip, TooltipContent, TooltipTrigger } from "talisman-ui"
 
 type AccountTypeIconProps = {
-  origin?: AccountJsonAny["origin"] | null
+  origin?: AccountType | null
   showLinked?: boolean
   className?: string
 }

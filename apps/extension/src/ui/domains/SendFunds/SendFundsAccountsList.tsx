@@ -1,4 +1,4 @@
-import { AccountJsonAny } from "@core/domains/accounts/types"
+import { AccountType } from "@core/domains/accounts/types"
 import { CheckCircleIcon } from "@talisman/theme/icons"
 import { shortenAddress } from "@talisman/util/shortenAddress"
 import { Balance } from "@talismn/balances"
@@ -16,7 +16,7 @@ import Tokens from "../Asset/Tokens"
 
 type SendFundsAccount = {
   address: string
-  origin?: AccountJsonAny["origin"]
+  origin?: AccountType
   name?: string
   genesisHash?: string | null
   balance?: Balance

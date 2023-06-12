@@ -1,4 +1,4 @@
-import { AccountJsonAny } from "@core/domains/accounts/types"
+import { AccountType } from "@core/domains/accounts/types"
 import { yupResolver } from "@hookform/resolvers/yup"
 import { Modal } from "@talisman/components/Modal"
 import { ModalDialog } from "@talisman/components/ModalDialog"
@@ -16,7 +16,7 @@ import * as yup from "yup"
 import { useSelectedAccount } from "../Portfolio/SelectedAccountContext"
 import { PasswordUnlock, usePasswordUnlock } from "./PasswordUnlock"
 
-const EXPORTABLE_ORIGINS: AccountJsonAny["origin"][] = ["SEED", "JSON", "DERIVED"]
+const EXPORTABLE_ORIGINS: AccountType[] = ["SEED", "JSON", "DERIVED"]
 
 const useAccountExportModalProvider = () => {
   const { account } = useSelectedAccount()
@@ -27,7 +27,7 @@ const useAccountExportModalProvider = () => {
   }, [account, close])
 
   const canExportAccount = useMemo(
-    () => account && EXPORTABLE_ORIGINS.includes(account?.origin),
+    () => account?.origin && EXPORTABLE_ORIGINS.includes(account?.origin),
     [account]
   )
 

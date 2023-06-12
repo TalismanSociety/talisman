@@ -31,7 +31,7 @@ import { Trans, useTranslation } from "react-i18next"
 import { Button, PillButton } from "talisman-ui"
 
 import { AccountIcon } from "../Account/AccountIcon"
-import { AccountTypeIcon } from "../Account/NamedAddress"
+import { AccountTypeIcon } from "../Account/AccountTypeIcon"
 import { ChainLogo } from "../Asset/ChainLogo"
 import Fiat from "../Asset/Fiat"
 import { AddToAddressBookDrawer } from "../Asset/Send/AddToAddressBookDrawer"

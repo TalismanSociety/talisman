@@ -1,4 +1,4 @@
-import { AccountJsonAny } from "@core/domains/accounts/types"
+import { AccountType } from "@core/domains/accounts/types"
 import StyledDialog from "@talisman/components/Dialog"
 import { Modal } from "@talisman/components/Modal"
 import { ModalDialog } from "@talisman/components/ModalDialog"
@@ -10,20 +10,16 @@ import { useSelectedAccount } from "@ui/domains/Portfolio/SelectedAccountContext
 import { useCallback, useEffect, useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
 
-const REMOVABLE_ORIGINS: AccountJsonAny["origin"][] = [
-  "DERIVED",
-  "SEED",
-  "WATCHED",
-  "JSON",
-  "QR",
-  "HARDWARE",
-]
+const REMOVABLE_ORIGINS: AccountType[] = ["DERIVED", "SEED", "WATCHED", "JSON", "QR", "HARDWARE"]
 
 const useAccountRemoveModalProvider = () => {
   const { account } = useSelectedAccount()
   const { isOpen, open, close } = useOpenClose()
 
-  const canRemove = useMemo(() => REMOVABLE_ORIGINS.includes(account?.origin), [account?.origin])
+  const canRemove = useMemo(
+    () => account?.origin && REMOVABLE_ORIGINS.includes(account?.origin),
+    [account?.origin]
+  )
 
   useEffect(() => {
     close()

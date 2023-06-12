@@ -76,6 +76,7 @@ export const CtaButton: FC<CtaButton> = ({
 
   return (
     <button
+      type="button"
       {...props}
       className={classNames(
         "bg-grey-850 enabled:hover:bg-grey-800 text-body-disabled enabled:hover:text-body flex w-full cursor-pointer items-center gap-8 rounded-sm px-8 disabled:cursor-not-allowed disabled:opacity-50",

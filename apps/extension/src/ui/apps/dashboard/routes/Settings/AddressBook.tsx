@@ -74,7 +74,7 @@ const AddressBookContactItem = ({ contact, handleDelete, handleEdit }: ContactIt
   }, [contact.address, genericEvent, openCopyAddressModal])
 
   const handleSendClick = useCallback(() => {
-    // set currently selected account as from, unless address type mismatch
+    // set currently selected account as from, unless address type mismatch or watched account
     const from =
       account &&
       account.origin !== "WATCHED" &&

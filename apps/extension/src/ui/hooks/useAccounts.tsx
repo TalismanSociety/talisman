@@ -24,7 +24,7 @@ export const useAccounts = (filter: UseAccountsFilter = "all") => {
         return allAccounts.filter(({ origin }) => origin === "WATCHED")
       case "owned":
         return allAccounts.filter(({ origin }) => origin !== "WATCHED")
-      default:
+      case "all":
         return allAccounts
     }
   }, [allAccounts, filter])

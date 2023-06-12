@@ -5,7 +5,6 @@ import { AllAccountsIcon, ChevronDownIcon, EyeIcon, TalismanHandIcon } from "@ta
 import { scrollbarsStyle } from "@talisman/theme/styles"
 import { shortenAddress } from "@talisman/util/shortenAddress"
 import { classNames } from "@talismn/util"
-import { AccountTypeIcon } from "@ui/domains/Account/NamedAddress"
 import Fiat from "@ui/domains/Asset/Fiat"
 import { useSelectedAccount } from "@ui/domains/Portfolio/SelectedAccountContext"
 import { useAnalytics } from "@ui/hooks/useAnalytics"
@@ -17,6 +16,7 @@ import { useTranslation } from "react-i18next"
 import styled, { css } from "styled-components"
 
 import { AccountIcon } from "../Account/AccountIcon"
+import { AccountTypeIcon } from "../Account/AccountTypeIcon"
 
 const Button = styled.button`
   background: none;
@@ -221,7 +221,7 @@ type AccountOptionProps = AnyAccountOptionProps & {
   totalUsd: number
   genesisHash?: string | null
   name?: string
-  origin?: string
+  origin?: AccountType
 }
 
 type SingleAccountOptionProps = Omit<AccountOptionProps, "totalUsd"> & {

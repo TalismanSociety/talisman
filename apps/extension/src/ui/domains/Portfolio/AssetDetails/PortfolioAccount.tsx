@@ -1,6 +1,6 @@
 import { classNames } from "@talismn/util"
+import { AccountTypeIcon } from "@ui/domains/Account/AccountTypeIcon"
 import AccountAvatar from "@ui/domains/Account/Avatar"
-import { AccountTypeIcon } from "@ui/domains/Account/NamedAddress"
 import { useAccountByAddress } from "@ui/hooks/useAccountByAddress"
 import { useTranslation } from "react-i18next"
 
