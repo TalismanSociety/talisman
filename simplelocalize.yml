@@ -17,8 +17,8 @@ uploadFormat: multi-language-json
 
 # Upload options are options that are passed to the upload command.
 # Supported options: https://simplelocalize.io/docs/general/options/
-uploadOptions:
-#  - 'REPLACE_TRANSLATION_IF_FOUND' # overwrite translation for given a key and namespace if found
+# uploadOptions:
+# #  - 'REPLACE_TRANSLATION_IF_FOUND' # overwrite translation for given a key and namespace if found
 
 
 ###################################
