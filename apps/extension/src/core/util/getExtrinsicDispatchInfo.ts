@@ -23,13 +23,15 @@ export const getExtrinsicDispatchInfo = async (
 
   const len = signedExtrinsic.registry.createType("u32", signedExtrinsic.encodedLength)
 
-  const dispatchInfo = await stateCall(
+  const { err, val: dispatchInfo } = await stateCall(
     chainId,
     "TransactionPaymentApi_query_info",
     "RuntimeDispatchInfo",
     [signedExtrinsic, len],
     blockHash
   )
+
+  if (err) throw new Error(dispatchInfo)
 
   return {
     partialFee: dispatchInfo.partialFee.toString(),

@@ -7,7 +7,7 @@ import { ErrorBoundaryDatabaseMigration } from "@talisman/components/ErrorBounda
 import { NotificationsContainer } from "@talisman/components/Notifications/NotificationsContainer"
 import ThemeProvider from "@talisman/theme"
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query"
-import React, { ReactNode } from "react"
+import React, { ReactNode, Suspense } from "react"
 import { createRoot } from "react-dom/client"
 import { HashRouter } from "react-router-dom"
 import { RecoilRoot } from "recoil"
@@ -24,18 +24,20 @@ export const renderTalisman = (app: ReactNode) => {
   const root = createRoot(container)
   root.render(
     <React.StrictMode>
-      <ThemeProvider>
-        <ErrorBoundary>
-          <ErrorBoundaryDatabaseMigration>
-            <RecoilRoot>
-              <QueryClientProvider client={queryClient}>
-                <HashRouter>{app}</HashRouter>
-                <NotificationsContainer />
-              </QueryClientProvider>
-            </RecoilRoot>
-          </ErrorBoundaryDatabaseMigration>
-        </ErrorBoundary>
-      </ThemeProvider>
+      <Suspense fallback={null}>
+        <ThemeProvider>
+          <ErrorBoundary>
+            <ErrorBoundaryDatabaseMigration>
+              <RecoilRoot>
+                <QueryClientProvider client={queryClient}>
+                  <HashRouter>{app}</HashRouter>
+                  <NotificationsContainer />
+                </QueryClientProvider>
+              </RecoilRoot>
+            </ErrorBoundaryDatabaseMigration>
+          </ErrorBoundary>
+        </ThemeProvider>
+      </Suspense>
     </React.StrictMode>
   )
 }
