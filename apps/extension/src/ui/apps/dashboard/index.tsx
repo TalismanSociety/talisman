@@ -142,27 +142,29 @@ const PreventPhishing: FC<PropsWithChildren> = ({ children }) => {
 }
 
 const Dashboard = () => (
-  <FadeIn>
-    <PreventPhishing>
-      <SelectedAccountProvider>
-        <AccountRemoveModalProvider>
-          <AccountRenameModalProvider>
-            <AccountExportModalProvider>
-              <AccountExportPrivateKeyModalProvider>
-                <CopyAddressModalProvider>
-                  <SendTokensModalProvider>
-                    <BuyTokensModalProvider>
-                      <DashboardInner />
-                    </BuyTokensModalProvider>
-                  </SendTokensModalProvider>
-                </CopyAddressModalProvider>
-              </AccountExportPrivateKeyModalProvider>
-            </AccountExportModalProvider>
-          </AccountRenameModalProvider>
-        </AccountRemoveModalProvider>
-      </SelectedAccountProvider>
-    </PreventPhishing>
-  </FadeIn>
+  <Suspense fallback={<SuspenseTracker name="dashboard" />}>
+    <FadeIn>
+      <PreventPhishing>
+        <SelectedAccountProvider>
+          <AccountRemoveModalProvider>
+            <AccountRenameModalProvider>
+              <AccountExportModalProvider>
+                <AccountExportPrivateKeyModalProvider>
+                  <CopyAddressModalProvider>
+                    <SendTokensModalProvider>
+                      <BuyTokensModalProvider>
+                        <DashboardInner />
+                      </BuyTokensModalProvider>
+                    </SendTokensModalProvider>
+                  </CopyAddressModalProvider>
+                </AccountExportPrivateKeyModalProvider>
+              </AccountExportModalProvider>
+            </AccountRenameModalProvider>
+          </AccountRemoveModalProvider>
+        </SelectedAccountProvider>
+      </PreventPhishing>
+    </FadeIn>
+  </Suspense>
 )
 
 export default Dashboard

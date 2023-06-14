@@ -46,11 +46,7 @@ export const Portfolio = () => {
               </Routes>
               <Suspense>
                 <BraveWarningPopupBanner />
-              </Suspense>
-              <Suspense>
                 <MigratePasswordAlert />
-              </Suspense>
-              <Suspense>
                 <AnalyticsAlert />
               </Suspense>
             </NomPoolStakingBannerProvider>

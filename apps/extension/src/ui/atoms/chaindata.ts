@@ -69,8 +69,8 @@ export const evmNetworksWithoutTestnetsMapState = selector<EvmNetworkList>({
 })
 
 export const chainsWithTestnetsState = atom<(Chain | CustomChain)[]>({
-  default: [],
   key: "chainsWithTestnetsState",
+  default: [],
   effects: [
     // sync from db
     ({ setSelf }) => {

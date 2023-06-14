@@ -1,4 +1,5 @@
-import { useRef } from "react"
+import { SuspenseTracker } from "@talisman/components/SuspenseTracker"
+import { Suspense, useRef } from "react"
 import { useSearchParams } from "react-router-dom"
 import { MysticalBackground } from "talisman-ui"
 
@@ -12,10 +13,12 @@ const Onboarding = () => {
   const resetWalletRef = useRef(resetWallet === "true")
 
   return (
-    <Context resetWallet={resetWalletRef.current}>
-      <MysticalBackground className="fixed left-0 top-0 h-[100vh] w-[100vw]" />
-      <OnboardingRoutes />
-    </Context>
+    <Suspense fallback={<SuspenseTracker name="Onboard" />}>
+      <Context resetWallet={resetWalletRef.current}>
+        <MysticalBackground className="fixed left-0 top-0 h-[100vh] w-[100vw]" />
+        <OnboardingRoutes />
+      </Context>
+    </Suspense>
   )
 }
 export default Onboarding
