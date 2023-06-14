@@ -1,12 +1,13 @@
 import { AccountJsonAny } from "@core/domains/accounts/types"
 import { yupResolver } from "@hookform/resolvers/yup"
+import { SuspenseTracker } from "@talisman/components/SuspenseTracker"
 import { HandMonoTransparentLogo } from "@talisman/theme/logos"
 import { useTalismanOrb } from "@talismn/orb"
 import { classNames } from "@talismn/util"
 import { api } from "@ui/api"
 import { useAnalytics } from "@ui/hooks/useAnalytics"
 import { usePrimaryAccount } from "@ui/hooks/usePrimaryAccount"
-import { useCallback, useEffect, useRef, useState } from "react"
+import { Suspense, useCallback, useEffect, useRef, useState } from "react"
 import { SubmitHandler, useForm } from "react-hook-form"
 import { useTranslation } from "react-i18next"
 import { Button, FormFieldInputText } from "talisman-ui"
@@ -47,14 +48,20 @@ const LoginBackgroundWithAccount = ({ account }: { account: AccountJsonAny }) =>
   )
 }
 
-const LoginBackgroundDefault = () => (
-  <LoginBackground
-    width={400}
-    height={600}
-    colors={["#F48F45", "#C8EB46"]}
-    className="absolute left-0 top-0 m-0 block h-full w-full overflow-hidden "
-  />
-)
+const Background = () => {
+  const primaryAccount = usePrimaryAccount()
+
+  return primaryAccount ? (
+    <LoginBackgroundWithAccount account={primaryAccount} />
+  ) : (
+    <LoginBackground
+      width={400}
+      height={600}
+      colors={["#fd4848", "#d5ff5c"]}
+      className="absolute left-0 top-0 m-0 block h-full w-full overflow-hidden "
+    />
+  )
+}
 
 const Login = ({ setShowResetWallet }: { setShowResetWallet: () => void }) => {
   const { t } = useTranslation()
@@ -102,12 +109,11 @@ const Login = ({ setShowResetWallet }: { setShowResetWallet: () => void }) => {
     }
   }, [handleSubmit, setValue, submit])
 
-  const primaryAccount = usePrimaryAccount()
-
   return (
     <Layout className="pt-32">
-      {!!primaryAccount && <LoginBackgroundWithAccount account={primaryAccount} />}
-      {!primaryAccount && <LoginBackgroundDefault />}
+      <Suspense fallback={<SuspenseTracker name="Background" />}>
+        <Background />
+      </Suspense>
       <Content className={classNames("z-10 text-center", isSubmitting && "animate-pulse")}>
         <div className="mt-[60px]">
           <HandMonoTransparentLogo className="inline-block text-[64px]" />

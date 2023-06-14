@@ -4,6 +4,7 @@ import { METADATA_PREFIX } from "@core/domains/metadata/types"
 import { SIGNING_TYPES } from "@core/domains/signing/types"
 import { AUTH_PREFIX } from "@core/domains/sitesAuthorised/types"
 import { FadeIn } from "@talisman/components/FadeIn"
+import { SuspenseTracker } from "@talisman/components/SuspenseTracker"
 import { api } from "@ui/api"
 import { AccountExportModalProvider } from "@ui/domains/Account/AccountExportModal"
 import { AccountExportPrivateKeyModalProvider } from "@ui/domains/Account/AccountExportPrivateKeyModal"
@@ -13,7 +14,7 @@ import { CopyAddressModalProvider } from "@ui/domains/CopyAddress"
 import { SelectedAccountProvider } from "@ui/domains/Portfolio/SelectedAccountContext"
 import { useIsLoggedIn } from "@ui/hooks/useIsLoggedIn"
 import { useIsOnboarded } from "@ui/hooks/useIsOnboarded"
-import { useEffect, useMemo } from "react"
+import { Suspense, useEffect, useMemo } from "react"
 import { Navigate, Route, Routes } from "react-router-dom"
 
 import { BackupWarningDrawer } from "./components/BackupWarningDrawer"
@@ -56,56 +57,62 @@ const Popup = () => {
   if (isLoggedIn === "FALSE") return <LoginViewManager />
 
   return (
-    // TODO implement layout here to prevent container flickering on route change (some routes render null until loaded)
-    // workaround set size here
-    <FadeIn className="mx-auto h-[60rem] w-[40rem]">
-      <SelectedAccountProvider isPopup>
-        <AccountRemoveModalProvider>
-          <AccountRenameModalProvider>
-            <AccountExportPrivateKeyModalProvider>
-              <AccountExportModalProvider>
-                <CurrentSiteProvider>
-                  <NavigationProvider>
-                    <CopyAddressModalProvider>
-                      <Routes>
-                        <Route path="portfolio/*" element={<Portfolio />}></Route>
-                        <Route path={`${AUTH_PREFIX}/:id`} element={<Connect />}></Route>
-                        <Route
-                          path={`${SIGNING_TYPES.ETH_SIGN}/:id`}
-                          element={<EthereumSignRequest />}
-                        ></Route>
-                        <Route
-                          path={`${SIGNING_TYPES.ETH_SEND}/:id`}
-                          element={<EthereumSignRequest />}
-                        ></Route>
-                        <Route
-                          path={`${SIGNING_TYPES.SUBSTRATE_SIGN}/:id`}
-                          element={<SubstrateSignRequest />}
-                        ></Route>
-                        <Route path={`${METADATA_PREFIX}/:id`} element={<Metadata />}></Route>
-                        <Route path={`${ENCRYPT_ENCRYPT_PREFIX}/:id`} element={<Encrypt />}></Route>
-                        <Route path={`${ENCRYPT_DECRYPT_PREFIX}/:id`} element={<Encrypt />}></Route>
-                        <Route
-                          path={`${ETH_NETWORK_ADD_PREFIX}/:id`}
-                          element={<AddEthereumNetwork />}
-                        ></Route>
-                        <Route
-                          path={`${WATCH_ASSET_PREFIX}/:id`}
-                          element={<AddCustomErc20Token />}
-                        ></Route>
-                        <Route path="send/*" element={<SendFundsPage />} />
-                        <Route path="*" element={<Navigate to="/portfolio" replace />} />
-                      </Routes>
-                    </CopyAddressModalProvider>
-                  </NavigationProvider>
-                </CurrentSiteProvider>
-              </AccountExportModalProvider>
-            </AccountExportPrivateKeyModalProvider>
-          </AccountRenameModalProvider>
-        </AccountRemoveModalProvider>
-      </SelectedAccountProvider>
-      <BackupWarningDrawer />
-    </FadeIn>
+    <Suspense fallback={<SuspenseTracker name="Popup" />}>
+      <FadeIn className="mx-auto h-[60rem] w-[40rem]">
+        <SelectedAccountProvider isPopup>
+          <AccountRemoveModalProvider>
+            <AccountRenameModalProvider>
+              <AccountExportPrivateKeyModalProvider>
+                <AccountExportModalProvider>
+                  <CurrentSiteProvider>
+                    <NavigationProvider>
+                      <CopyAddressModalProvider>
+                        <Routes>
+                          <Route path="portfolio/*" element={<Portfolio />}></Route>
+                          <Route path={`${AUTH_PREFIX}/:id`} element={<Connect />}></Route>
+                          <Route
+                            path={`${SIGNING_TYPES.ETH_SIGN}/:id`}
+                            element={<EthereumSignRequest />}
+                          ></Route>
+                          <Route
+                            path={`${SIGNING_TYPES.ETH_SEND}/:id`}
+                            element={<EthereumSignRequest />}
+                          ></Route>
+                          <Route
+                            path={`${SIGNING_TYPES.SUBSTRATE_SIGN}/:id`}
+                            element={<SubstrateSignRequest />}
+                          ></Route>
+                          <Route path={`${METADATA_PREFIX}/:id`} element={<Metadata />}></Route>
+                          <Route
+                            path={`${ENCRYPT_ENCRYPT_PREFIX}/:id`}
+                            element={<Encrypt />}
+                          ></Route>
+                          <Route
+                            path={`${ENCRYPT_DECRYPT_PREFIX}/:id`}
+                            element={<Encrypt />}
+                          ></Route>
+                          <Route
+                            path={`${ETH_NETWORK_ADD_PREFIX}/:id`}
+                            element={<AddEthereumNetwork />}
+                          ></Route>
+                          <Route
+                            path={`${WATCH_ASSET_PREFIX}/:id`}
+                            element={<AddCustomErc20Token />}
+                          ></Route>
+                          <Route path="send/*" element={<SendFundsPage />} />
+                          <Route path="*" element={<Navigate to="/portfolio" replace />} />
+                        </Routes>
+                      </CopyAddressModalProvider>
+                    </NavigationProvider>
+                  </CurrentSiteProvider>
+                </AccountExportModalProvider>
+              </AccountExportPrivateKeyModalProvider>
+            </AccountRenameModalProvider>
+          </AccountRemoveModalProvider>
+        </SelectedAccountProvider>
+        <BackupWarningDrawer />
+      </FadeIn>
+    </Suspense>
   )
 }
 

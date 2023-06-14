@@ -1,6 +1,19 @@
-import { AccountType, storedSeedAccountTypes } from "@core/domains/accounts/types"
+import { AccountJsonAny, AccountType, storedSeedAccountTypes } from "@core/domains/accounts/types"
+import { api } from "@ui/api"
+import { useMemo } from "react"
+import { atom, useRecoilValue } from "recoil"
 
-import useAccounts from "./useAccounts"
+// only use for this purpose, to leverage suspense
+// do not use this in useAccounts as it raises performance issues
+const accountsState = atom<AccountJsonAny[]>({
+  key: "accountsState",
+  effects: [
+    ({ setSelf }) => {
+      const unsubscribe = api.accountsSubscribe(setSelf)
+      return () => unsubscribe()
+    },
+  ],
+})
 
 /**
  *
@@ -9,9 +22,11 @@ import useAccounts from "./useAccounts"
  * @returns an Account
  */
 export const usePrimaryAccount = (storedSeedOnly?: boolean) => {
-  const accounts = useAccounts()
-  const storedSeedAccount = accounts.find(({ origin }) =>
-    storedSeedAccountTypes.includes(origin as AccountType)
+  const accounts = useRecoilValue(accountsState)
+
+  const storedSeedAccount = useMemo(
+    () => accounts.find(({ origin }) => storedSeedAccountTypes.includes(origin as AccountType)),
+    [accounts]
   )
   if (storedSeedOnly) return storedSeedAccount
   if (accounts.length > 0) return accounts[0]
