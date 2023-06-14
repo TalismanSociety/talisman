@@ -1,28 +1,5 @@
-import { AccountJson } from "@polkadot/extension-base/background/types"
-import { encodeAnyAddress } from "@talismn/util"
-import { useMemo } from "react"
+import { accountQueryByAddress } from "@ui/atoms/accounts"
+import { useRecoilValue } from "recoil"
 
-import useAccounts from "./useAccounts"
-
-const filterByUnencodedAddress =
-  (address: string) =>
-  (account: AccountJson): boolean =>
-    account.address === address
-const filterByEncodedAddress = (address: string) =>
-  filterByUnencodedAddress(encodeAnyAddress(address, 42))
-
-export const useAccountByAddress = (address?: string | null) => {
-  const accounts = useAccounts()
-
-  const account = useMemo(() => {
-    if (!address || !accounts) return null
-
-    return (
-      accounts.find(filterByUnencodedAddress(address)) ??
-      accounts.find(filterByEncodedAddress(address)) ??
-      null
-    )
-  }, [accounts, address])
-
-  return account
-}
+export const useAccountByAddress = (address?: string | null) =>
+  useRecoilValue(accountQueryByAddress(address))
