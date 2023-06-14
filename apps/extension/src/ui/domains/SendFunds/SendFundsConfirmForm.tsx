@@ -121,7 +121,7 @@ const SendButton = () => {
   }, [])
 
   return (
-    <Suspense fallback={null}>
+    <Suspense>
       {sendErrorMessage && (
         <div className="text-alert-warn bg-grey-900 flex w-full items-center gap-5 rounded-sm px-5 py-6 text-xs">
           <AlertCircleIcon className="text-lg" />

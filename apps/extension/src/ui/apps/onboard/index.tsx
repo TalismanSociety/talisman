@@ -1,4 +1,4 @@
-import { Suspense, useRef } from "react"
+import { useRef } from "react"
 import { useSearchParams } from "react-router-dom"
 import { MysticalBackground } from "talisman-ui"
 
@@ -12,12 +12,10 @@ const Onboarding = () => {
   const resetWalletRef = useRef(resetWallet === "true")
 
   return (
-    <Suspense>
-      <Context resetWallet={resetWalletRef.current}>
-        <MysticalBackground className="fixed left-0 top-0 h-[100vh] w-[100vw]" />
-        <OnboardingRoutes />
-      </Context>
-    </Suspense>
+    <Context resetWallet={resetWalletRef.current}>
+      <MysticalBackground className="fixed left-0 top-0 h-[100vh] w-[100vw]" />
+      <OnboardingRoutes />
+    </Context>
   )
 }
 export default Onboarding

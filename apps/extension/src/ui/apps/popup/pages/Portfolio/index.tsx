@@ -42,13 +42,13 @@ export const Portfolio = () => {
               <Route path=":symbol" element={<PortfolioAsset />} />
               <Route path="" element={<PortfolioAccounts />} />
             </Routes>
-            <Suspense fallback={null}>
+            <Suspense>
               <BraveWarningPopupBanner />
             </Suspense>
-            <Suspense fallback={null}>
+            <Suspense>
               <MigratePasswordAlert />
             </Suspense>
-            <Suspense fallback={null}>
+            <Suspense>
               <AnalyticsAlert />
             </Suspense>
           </Content>

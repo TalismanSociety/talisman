@@ -124,7 +124,7 @@ export const PolkadotSignTransactionRequest: FC = () => {
                 </div>
               )}
               {account.origin === "HARDWARE" && (
-                <Suspense fallback={null}>
+                <Suspense>
                   <LedgerSubstrate
                     payload={request.payload}
                     account={account as AccountJsonHardwareSubstrate}
@@ -135,7 +135,7 @@ export const PolkadotSignTransactionRequest: FC = () => {
                 </Suspense>
               )}
               {account.origin === "QR" && (
-                <Suspense fallback={null}>
+                <Suspense>
                   <QrSubstrate
                     payload={request.payload}
                     account={account as AccountJsonQr}

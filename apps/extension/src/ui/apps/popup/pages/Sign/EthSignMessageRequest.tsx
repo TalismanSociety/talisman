@@ -39,7 +39,7 @@ export const EthSignMessageRequest = () => {
         )}
       </Content>
       <Footer>
-        <Suspense fallback={null}>
+        <Suspense>
           {errorMessage && <p className="error">{errorMessage}</p>}
           {account && request && (
             <>

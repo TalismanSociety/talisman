@@ -107,11 +107,11 @@ const PopupInner = () => {
   )
 }
 
-// Wrap into fixed sized container to prevent flickering on route change
+// Wrap into fixed sized container to prevent flickering
 const Popup = () => {
   return (
     <div className="h-[60rem] w-[40rem]">
-      <Suspense fallback={null}>
+      <Suspense>
         <PopupInner />
       </Suspense>
     </div>

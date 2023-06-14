@@ -56,7 +56,7 @@ export const Modal: FC<ModalProps> = ({ children, isOpen, className, containerId
           leaveFrom="opacity-100 scale-100"
           leaveTo="opacity-0 scale-95"
         >
-          <Suspense fallback={null}>{children}</Suspense>
+          <Suspense>{children}</Suspense>
         </Transition.Child>
       </div>
     </Transition>,

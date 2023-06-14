@@ -35,7 +35,7 @@ const UnstyledLayout: FC<LayoutProps> = ({ withBack, backTo, children, className
           {!!withBack && <BackButton analytics={analytics} className="back" to={backTo} />}
           {children}
         </div>
-        <Suspense fallback={null}>
+        <Suspense>
           <DashboardNotifications />
         </Suspense>
       </section>

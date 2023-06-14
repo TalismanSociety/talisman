@@ -390,6 +390,7 @@ export default class AccountsHandler extends ExtensionHandler {
       case "pri(accounts.rename)":
         return this.accountRename(request as RequestAccountRename)
       case "pri(accounts.subscribe)":
+        await sleep(2000)
         return this.accountsSubscribe(id, port)
       case "pri(accounts.validateMnemonic)":
         return this.accountValidateMnemonic(request as string)

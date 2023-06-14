@@ -244,7 +244,7 @@ export const EthSignTransactionRequest = () => {
               </SignAlertMessage>
             )}
           </div>
-          <Suspense fallback={null}>
+          <Suspense>
             {transaction && txDetails && network?.nativeToken ? (
               <div className="gasInfo mt-8">
                 <div>

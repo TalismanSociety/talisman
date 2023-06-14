@@ -24,15 +24,17 @@ export const renderTalisman = (app: ReactNode) => {
   const root = createRoot(container)
   root.render(
     <React.StrictMode>
-      <Suspense fallback={null}>
+      <Suspense>
         <ThemeProvider>
           <ErrorBoundary>
             <ErrorBoundaryDatabaseMigration>
               <RecoilRoot>
-                <QueryClientProvider client={queryClient}>
-                  <HashRouter>{app}</HashRouter>
-                  <NotificationsContainer />
-                </QueryClientProvider>
+                <Suspense>
+                  <QueryClientProvider client={queryClient}>
+                    <HashRouter>{app}</HashRouter>
+                    <NotificationsContainer />
+                  </QueryClientProvider>
+                </Suspense>
               </RecoilRoot>
             </ErrorBoundaryDatabaseMigration>
           </ErrorBoundary>

@@ -442,7 +442,7 @@ export const SendForm = () => {
             </span>
           )}
           {to && token?.chain && (
-            <Suspense fallback={null}>
+            <Suspense>
               <SendAddressConvertInfo address={to} chainId={token?.chain?.id} />
             </Suspense>
           )}

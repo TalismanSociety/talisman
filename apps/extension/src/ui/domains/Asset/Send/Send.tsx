@@ -14,7 +14,7 @@ export const Send = ({ ...initialValues }: Partial<SendTokensInputs>) => {
     <SendTokensProvider initialValues={initialValues}>
       <SendTokensModalDialog>
         <SendForm />
-        <Suspense fallback={null}>
+        <Suspense>
           <SendReview />
         </Suspense>
         <SendConfirmReap />

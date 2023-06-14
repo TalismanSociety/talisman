@@ -202,7 +202,7 @@ const SendReview = () => {
         </h2>
         <div>
           {!!chain && (
-            <Suspense fallback={null}>
+            <Suspense>
               <SendAddressConvertInfo review address={to} chainId={chain.id} />
             </Suspense>
           )}
@@ -211,7 +211,7 @@ const SendReview = () => {
       </article>
       <footer>
         {/* prevent flickering by hiding the whole footer while ledger is loading */}
-        <Suspense fallback={null}>
+        <Suspense>
           <div className="message">{error}</div>
           {!!fees && (
             <div className="info">
