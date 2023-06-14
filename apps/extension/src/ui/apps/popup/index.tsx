@@ -13,7 +13,7 @@ import { CopyAddressModalProvider } from "@ui/domains/CopyAddress"
 import { SelectedAccountProvider } from "@ui/domains/Portfolio/SelectedAccountContext"
 import { useIsLoggedIn } from "@ui/hooks/useIsLoggedIn"
 import { useIsOnboarded } from "@ui/hooks/useIsOnboarded"
-import { useEffect, useMemo } from "react"
+import { Suspense, useEffect, useMemo } from "react"
 import { Navigate, Route, Routes } from "react-router-dom"
 
 import { BackupWarningDrawer } from "./components/BackupWarningDrawer"
@@ -30,7 +30,7 @@ import { SendFundsPage } from "./pages/SendFunds"
 import { EthereumSignRequest } from "./pages/Sign/ethereum"
 import { SubstrateSignRequest } from "./pages/Sign/substrate"
 
-const Popup = () => {
+const PopupInner = () => {
   const isOnboarded = useIsOnboarded()
   const isLoggedIn = useIsLoggedIn()
 
@@ -56,8 +56,6 @@ const Popup = () => {
   if (isLoggedIn === "FALSE") return <LoginViewManager />
 
   return (
-    // TODO implement layout here to prevent container flickering on route change (some routes render null until loaded)
-    // workaround set size here
     <FadeIn className="mx-auto h-[60rem] w-[40rem]">
       <SelectedAccountProvider isPopup>
         <AccountRemoveModalProvider>
@@ -106,6 +104,17 @@ const Popup = () => {
       </SelectedAccountProvider>
       <BackupWarningDrawer />
     </FadeIn>
+  )
+}
+
+// Wrap into fixed sized container to prevent flickering on route change
+const Popup = () => {
+  return (
+    <div className="h-[60rem] w-[40rem]">
+      <Suspense fallback={null}>
+        <PopupInner />
+      </Suspense>
+    </div>
   )
 }
 
