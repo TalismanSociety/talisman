@@ -1,6 +1,7 @@
 import { TALISMAN_WEB_APP_DOMAIN } from "@core/constants"
 import { AuthorizedSiteId, ProviderType } from "@core/domains/sitesAuthorised/types"
 import { act, renderHook, waitFor } from "@testing-library/react"
+import { RecoilRoot } from "recoil"
 
 import { ADDRESSES } from "../../../../tests/constants"
 import useAuthorisedSiteById from "../useAuthorisedSiteById"
@@ -11,6 +12,7 @@ test("Can get Authorised Site by id", async () => {
   const { result, rerender } = renderHook(
     (props: RenderProps) => useAuthorisedSiteById(props.siteId, props.providerType),
     {
+      wrapper: RecoilRoot,
       initialProps: { siteId: TALISMAN_WEB_APP_DOMAIN, providerType: "polkadot" },
     }
   )

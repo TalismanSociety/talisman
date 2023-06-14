@@ -3,6 +3,7 @@ import { act, renderHook, waitFor } from "@testing-library/react"
 import { RecoilRoot } from "recoil"
 
 import { ADDRESSES } from "../../../../tests/constants"
+import { TestRecoilRoot } from "../../../../tests/TestRecoilRoot"
 import { addressBookState, useAddressBook } from "../useAddressBook"
 
 const VITALIK: AddressBookContact = {
@@ -13,7 +14,7 @@ const VITALIK: AddressBookContact = {
 
 test("Can add an address book contact", async () => {
   const { result } = renderHook(() => useAddressBook(), {
-    wrapper: RecoilRoot,
+    wrapper: TestRecoilRoot,
   })
   expect(result.current.contacts.length).toBe(0)
 
