@@ -9,7 +9,7 @@ interface UseAnySigningRequestProps<T extends AnySigningRequest> {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   approveSignFn: (requestId: T["id"], ...args: any[]) => Promise<boolean>
   cancelSignFn: (requestId: T["id"]) => Promise<boolean>
-  currentRequest?: T
+  currentRequest: T | null
 }
 
 type SignableRequest<T extends keyof SigningRequests> = Pick<

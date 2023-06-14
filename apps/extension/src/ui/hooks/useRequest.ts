@@ -1,10 +1,6 @@
-import type { KnownRequest, KnownRequestId, KnownRequestTypes } from "@core/libs/requests/types"
+import type { KnownRequestId, KnownRequestTypes } from "@core/libs/requests/types"
+import { requestQueryById } from "@ui/atoms/requests"
+import { useRecoilValue } from "recoil"
 
-import { useRequests } from "./useRequests"
-
-export const useRequest = <T extends KnownRequestTypes>(id: KnownRequestId<T>) => {
-  const requests = useRequests()
-  const request = requests.find((req) => req.id === id)
-  if (request) return request as KnownRequest<T>
-  return
-}
+export const useRequest = <T extends KnownRequestTypes>(id: KnownRequestId<T>) =>
+  useRecoilValue(requestQueryById(id))

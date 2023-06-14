@@ -5,7 +5,7 @@ import useStatus from "@talisman/hooks/useStatus"
 import { api } from "@ui/api"
 import { useCallback } from "react"
 
-export const useEncryptRequest = (currentRequest?: AnyEncryptRequest) => {
+export const useEncryptRequest = (currentRequest: AnyEncryptRequest | null) => {
   const { status, message, setStatus } = useStatus()
 
   const approve = useCallback(async () => {
