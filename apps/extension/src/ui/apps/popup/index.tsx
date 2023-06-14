@@ -70,7 +70,7 @@ const PopupInner = () => {
   if (isLoggedIn === "FALSE") return <LoginViewManager />
 
   return (
-    <FadeIn className="mx-auto h-[60rem] w-[40rem]">
+    <FadeIn>
       <SelectedAccountProvider isPopup>
         <AccountRemoveModalProvider>
           <AccountRenameModalProvider>
@@ -130,7 +130,7 @@ const PopupInner = () => {
 
 // Wrap into fixed sized container to prevent flickering
 const Popup = () => (
-  <div className="h-[60rem] w-[40rem]">
+  <div className="mx-auto h-[60rem] w-[40rem]">
     <Suspense fallback={<SuspenseTracker name="Popup" />}>
       <PopupInner />
     </Suspense>
