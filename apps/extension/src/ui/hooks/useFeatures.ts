@@ -1,9 +1,14 @@
-import { FeaturesStoreData, featuresStore } from "@core/domains/app/store.features"
+import {
+  FEATURE_STORE_INITIAL_DATA,
+  FeaturesStoreData,
+  featuresStore,
+} from "@core/domains/app/store.features"
 import { FeatureFlag, FeatureVariants } from "@core/domains/app/types"
 import { RecoilState, atom, selectorFamily, useRecoilValue } from "recoil"
 
 const featuresState = atom<FeaturesStoreData>({
   key: "featuresState",
+  default: FEATURE_STORE_INITIAL_DATA,
   effects: [
     ({ setSelf }) => {
       const sub = featuresStore.observable.subscribe(setSelf)

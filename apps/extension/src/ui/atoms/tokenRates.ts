@@ -8,6 +8,7 @@ import { atom, selector, selectorFamily } from "recoil"
 const NO_OP = () => {}
 export const tokenRatesState = atom<DbTokenRates[]>({
   key: "tokenRatesState",
+  default: [], // prevents suspense to delay rendering
   effects: [
     // sync from db
     ({ setSelf }) => {

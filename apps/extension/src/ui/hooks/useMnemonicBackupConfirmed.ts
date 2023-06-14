@@ -3,6 +3,7 @@ import { atom, useRecoilValue } from "recoil"
 
 const stateMnemonicBackupConfirmed = atom<"UNKNOWN" | "TRUE" | "FALSE">({
   key: "stateMnemonicBackupConfirmed",
+  default: "UNKNOWN",
   effects: [
     ({ setSelf }) => {
       const unsubscribe = api.mnemonicSubscribe(({ confirmed }) => {

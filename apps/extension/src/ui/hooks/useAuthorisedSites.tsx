@@ -10,6 +10,7 @@ const authorisedSitesOnly = (value: AuthorizedSites): AuthorizedSites => {
 
 const authorizedSitesState = atom<AuthorizedSites>({
   key: "authorizedSitesState",
+  default: {},
   effects: [
     ({ setSelf }) => {
       const unsubscribe = api.authorizedSitesSubscribe((sites) =>

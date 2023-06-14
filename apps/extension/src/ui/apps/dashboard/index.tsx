@@ -1,6 +1,7 @@
 import { PHISHING_PAGE_REDIRECT } from "@polkadot/extension-base/defaults"
 import { FadeIn } from "@talisman/components/FadeIn"
 import { FullScreenLoader } from "@talisman/components/FullScreenLoader"
+import { SuspenseTracker } from "@talisman/components/SuspenseTracker"
 import { api } from "@ui/api"
 import { AccountExportModalProvider } from "@ui/domains/Account/AccountExportModal"
 import { AccountExportPrivateKeyModalProvider } from "@ui/domains/Account/AccountExportPrivateKeyModal"
@@ -82,7 +83,14 @@ const DashboardInner = () => {
     <FullScreenLoader title={t("Waiting")} subtitle={t("Please unlock the Talisman")} />
   ) : (
     // use an empty layout as fallback to prevent flickering
-    <Suspense fallback={<Layout />}>
+    <Suspense
+      fallback={
+        <>
+          <SuspenseTracker name="DashboardInner" />
+          <Layout />
+        </>
+      }
+    >
       <Routes>
         <Route path="portfolio/*" element={<Portfolio />} />
         <Route path="accounts">

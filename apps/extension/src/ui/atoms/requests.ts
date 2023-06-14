@@ -10,6 +10,7 @@ import { atom, selectorFamily } from "recoil"
 
 export const requestsState = atom<ValidRequests[]>({
   key: "requestsState",
+  default: [],
   effects: [
     ({ setSelf }) => {
       const unsubscribe = api.subscribeRequests(setSelf)

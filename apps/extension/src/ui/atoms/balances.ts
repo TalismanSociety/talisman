@@ -24,6 +24,7 @@ const NO_OP = () => {}
 
 const rawBalancesState = atom<BalanceJson[]>({
   key: "rawBalancesState",
+  default: [], // prevents suspense to delay rendering
   effects: [
     // sync from db
     ({ setSelf }) => {

@@ -4,6 +4,7 @@ import { atom, useRecoilValue } from "recoil"
 
 const isLoggedInState = atom<LoggedinType>({
   key: "isLoggedInState",
+  default: "UNKNOWN",
   effects: [
     ({ setSelf }) => {
       const unsubscribe = api.authStatusSubscribe(setSelf)

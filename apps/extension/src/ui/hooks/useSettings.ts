@@ -1,8 +1,13 @@
-import { SettingsStoreData, settingsStore } from "@core/domains/app/store.settings"
+import {
+  DEFAULT_SETTINGS,
+  SettingsStoreData,
+  settingsStore,
+} from "@core/domains/app/store.settings"
 import { RecoilState, atom, selectorFamily, useRecoilState } from "recoil"
 
 const settingsState = atom<SettingsStoreData>({
   key: "settingsState",
+  default: DEFAULT_SETTINGS,
   effects: [
     ({ setSelf }) => {
       const sub = settingsStore.observable.subscribe(setSelf)

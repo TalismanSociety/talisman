@@ -7,6 +7,7 @@ import { atom, selectorFamily } from "recoil"
 
 export const accountsState = atom<AccountJsonAny[]>({
   key: "accountsState",
+  default: [],
   effects: [
     ({ setSelf }) => {
       const unsubscribe = api.accountsSubscribe(setSelf)

@@ -4,6 +4,7 @@ import { METADATA_PREFIX } from "@core/domains/metadata/types"
 import { SIGNING_TYPES } from "@core/domains/signing/types"
 import { AUTH_PREFIX } from "@core/domains/sitesAuthorised/types"
 import { FadeIn } from "@talisman/components/FadeIn"
+import { SuspenseTracker } from "@talisman/components/SuspenseTracker"
 import { api } from "@ui/api"
 import {
   AccountExportModal,
@@ -128,14 +129,12 @@ const PopupInner = () => {
 }
 
 // Wrap into fixed sized container to prevent flickering
-const Popup = () => {
-  return (
-    <div className="h-[60rem] w-[40rem]">
-      <Suspense>
-        <PopupInner />
-      </Suspense>
-    </div>
-  )
-}
+const Popup = () => (
+  <div className="h-[60rem] w-[40rem]">
+    <Suspense fallback={<SuspenseTracker name="Popup" />}>
+      <PopupInner />
+    </Suspense>
+  </div>
+)
 
 export default Popup

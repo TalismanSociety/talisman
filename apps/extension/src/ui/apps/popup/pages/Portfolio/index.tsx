@@ -1,3 +1,4 @@
+import { SuspenseTracker } from "@talisman/components/SuspenseTracker"
 import { CurrentAccountAvatar } from "@ui/domains/Account/CurrentAccountAvatar"
 import { PortfolioProvider } from "@ui/domains/Portfolio/context"
 import { NomPoolStakingBannerProvider } from "@ui/domains/Portfolio/NomPoolStakingContext"
@@ -30,30 +31,32 @@ const AccountAvatar = () => {
 }
 
 export const Portfolio = () => {
+  // share layout with all portfolio routes to prevent sidebar flickering when navigating between the pages
   return (
-    <PortfolioProvider>
-      <NomPoolStakingBannerProvider>
-        {/* share layout to prevent sidebar flickering when navigating between the 2 pages */}
-        <Layout withBottomNav>
-          <Header text={<Site.ConnectedAccountsPill />} nav={<AccountAvatar />} />
-          <Content>
-            <Routes>
-              <Route path="assets" element={<PortfolioAssets />} />
-              <Route path=":symbol" element={<PortfolioAsset />} />
-              <Route path="" element={<PortfolioAccounts />} />
-            </Routes>
-            <Suspense>
-              <BraveWarningPopupBanner />
-            </Suspense>
-            <Suspense>
-              <MigratePasswordAlert />
-            </Suspense>
-            <Suspense>
-              <AnalyticsAlert />
-            </Suspense>
-          </Content>
-        </Layout>
-      </NomPoolStakingBannerProvider>
-    </PortfolioProvider>
+    <Layout withBottomNav>
+      <Header text={<Site.ConnectedAccountsPill />} nav={<AccountAvatar />} />
+      <Content>
+        <Suspense fallback={<SuspenseTracker name="Portfolio" />}>
+          <PortfolioProvider>
+            <NomPoolStakingBannerProvider>
+              <Routes>
+                <Route path="assets" element={<PortfolioAssets />} />
+                <Route path=":symbol" element={<PortfolioAsset />} />
+                <Route path="" element={<PortfolioAccounts />} />
+              </Routes>
+              <Suspense>
+                <BraveWarningPopupBanner />
+              </Suspense>
+              <Suspense>
+                <MigratePasswordAlert />
+              </Suspense>
+              <Suspense>
+                <AnalyticsAlert />
+              </Suspense>
+            </NomPoolStakingBannerProvider>
+          </PortfolioProvider>
+        </Suspense>
+      </Content>
+    </Layout>
   )
 }

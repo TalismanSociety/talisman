@@ -5,6 +5,7 @@ import * as Sentry from "@sentry/react"
 import { ErrorBoundary } from "@talisman/components/ErrorBoundary"
 import { ErrorBoundaryDatabaseMigration } from "@talisman/components/ErrorBoundaryDatabaseMigration"
 import { NotificationsContainer } from "@talisman/components/Notifications/NotificationsContainer"
+import { SuspenseTracker } from "@talisman/components/SuspenseTracker"
 import ThemeProvider from "@talisman/theme"
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query"
 import React, { ReactNode, Suspense } from "react"
@@ -24,17 +25,15 @@ export const renderTalisman = (app: ReactNode) => {
   const root = createRoot(container)
   root.render(
     <React.StrictMode>
-      <Suspense>
+      <Suspense fallback={<SuspenseTracker name="Root" />}>
         <ThemeProvider>
           <ErrorBoundary>
             <ErrorBoundaryDatabaseMigration>
               <RecoilRoot>
-                <Suspense>
-                  <QueryClientProvider client={queryClient}>
-                    <HashRouter>{app}</HashRouter>
-                    <NotificationsContainer />
-                  </QueryClientProvider>
-                </Suspense>
+                <QueryClientProvider client={queryClient}>
+                  <HashRouter>{app}</HashRouter>
+                  <NotificationsContainer />
+                </QueryClientProvider>
               </RecoilRoot>
             </ErrorBoundaryDatabaseMigration>
           </ErrorBoundary>
