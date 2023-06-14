@@ -31,7 +31,7 @@ import { SendFundsPage } from "./pages/SendFunds"
 import { EthereumSignRequest } from "./pages/Sign/ethereum"
 import { SubstrateSignRequest } from "./pages/Sign/substrate"
 
-const Popup = () => {
+const InnerPopup = () => {
   const isOnboarded = useIsOnboarded()
   const isLoggedIn = useIsLoggedIn()
 
@@ -57,63 +57,63 @@ const Popup = () => {
   if (isLoggedIn === "FALSE") return <LoginViewManager />
 
   return (
-    <Suspense fallback={<SuspenseTracker name="Popup" />}>
-      <FadeIn className="mx-auto h-[60rem] w-[40rem]">
-        <SelectedAccountProvider isPopup>
-          <AccountRemoveModalProvider>
-            <AccountRenameModalProvider>
-              <AccountExportPrivateKeyModalProvider>
-                <AccountExportModalProvider>
-                  <CurrentSiteProvider>
-                    <NavigationProvider>
-                      <CopyAddressModalProvider>
-                        <Routes>
-                          <Route path="portfolio/*" element={<Portfolio />}></Route>
-                          <Route path={`${AUTH_PREFIX}/:id`} element={<Connect />}></Route>
-                          <Route
-                            path={`${SIGNING_TYPES.ETH_SIGN}/:id`}
-                            element={<EthereumSignRequest />}
-                          ></Route>
-                          <Route
-                            path={`${SIGNING_TYPES.ETH_SEND}/:id`}
-                            element={<EthereumSignRequest />}
-                          ></Route>
-                          <Route
-                            path={`${SIGNING_TYPES.SUBSTRATE_SIGN}/:id`}
-                            element={<SubstrateSignRequest />}
-                          ></Route>
-                          <Route path={`${METADATA_PREFIX}/:id`} element={<Metadata />}></Route>
-                          <Route
-                            path={`${ENCRYPT_ENCRYPT_PREFIX}/:id`}
-                            element={<Encrypt />}
-                          ></Route>
-                          <Route
-                            path={`${ENCRYPT_DECRYPT_PREFIX}/:id`}
-                            element={<Encrypt />}
-                          ></Route>
-                          <Route
-                            path={`${ETH_NETWORK_ADD_PREFIX}/:id`}
-                            element={<AddEthereumNetwork />}
-                          ></Route>
-                          <Route
-                            path={`${WATCH_ASSET_PREFIX}/:id`}
-                            element={<AddCustomErc20Token />}
-                          ></Route>
-                          <Route path="send/*" element={<SendFundsPage />} />
-                          <Route path="*" element={<Navigate to="/portfolio" replace />} />
-                        </Routes>
-                      </CopyAddressModalProvider>
-                    </NavigationProvider>
-                  </CurrentSiteProvider>
-                </AccountExportModalProvider>
-              </AccountExportPrivateKeyModalProvider>
-            </AccountRenameModalProvider>
-          </AccountRemoveModalProvider>
-        </SelectedAccountProvider>
-        <BackupWarningDrawer />
-      </FadeIn>
-    </Suspense>
+    <FadeIn>
+      <SelectedAccountProvider isPopup>
+        <AccountRemoveModalProvider>
+          <AccountRenameModalProvider>
+            <AccountExportPrivateKeyModalProvider>
+              <AccountExportModalProvider>
+                <CurrentSiteProvider>
+                  <NavigationProvider>
+                    <CopyAddressModalProvider>
+                      <Routes>
+                        <Route path="portfolio/*" element={<Portfolio />}></Route>
+                        <Route path={`${AUTH_PREFIX}/:id`} element={<Connect />}></Route>
+                        <Route
+                          path={`${SIGNING_TYPES.ETH_SIGN}/:id`}
+                          element={<EthereumSignRequest />}
+                        ></Route>
+                        <Route
+                          path={`${SIGNING_TYPES.ETH_SEND}/:id`}
+                          element={<EthereumSignRequest />}
+                        ></Route>
+                        <Route
+                          path={`${SIGNING_TYPES.SUBSTRATE_SIGN}/:id`}
+                          element={<SubstrateSignRequest />}
+                        ></Route>
+                        <Route path={`${METADATA_PREFIX}/:id`} element={<Metadata />}></Route>
+                        <Route path={`${ENCRYPT_ENCRYPT_PREFIX}/:id`} element={<Encrypt />}></Route>
+                        <Route path={`${ENCRYPT_DECRYPT_PREFIX}/:id`} element={<Encrypt />}></Route>
+                        <Route
+                          path={`${ETH_NETWORK_ADD_PREFIX}/:id`}
+                          element={<AddEthereumNetwork />}
+                        ></Route>
+                        <Route
+                          path={`${WATCH_ASSET_PREFIX}/:id`}
+                          element={<AddCustomErc20Token />}
+                        ></Route>
+                        <Route path="send/*" element={<SendFundsPage />} />
+                        <Route path="*" element={<Navigate to="/portfolio" replace />} />
+                      </Routes>
+                    </CopyAddressModalProvider>
+                  </NavigationProvider>
+                </CurrentSiteProvider>
+              </AccountExportModalProvider>
+            </AccountExportPrivateKeyModalProvider>
+          </AccountRenameModalProvider>
+        </AccountRemoveModalProvider>
+      </SelectedAccountProvider>
+      <BackupWarningDrawer />
+    </FadeIn>
   )
 }
+
+const Popup = () => (
+  <div className="mx-auto h-[60rem] w-[40rem]">
+    <Suspense fallback={<SuspenseTracker name="Popup" />}>
+      <InnerPopup />
+    </Suspense>
+  </div>
+)
 
 export default Popup
