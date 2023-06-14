@@ -56,7 +56,7 @@ const Background = () => {
     <LoginBackground
       width={400}
       height={600}
-      colors={["#F48F45", "#C8EB46"]}
+      colors={["#fd4848", "#d5ff5c"]}
       className="absolute left-0 top-0 m-0 block h-full w-full overflow-hidden "
     />
   )
