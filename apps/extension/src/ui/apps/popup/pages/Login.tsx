@@ -47,14 +47,20 @@ const LoginBackgroundWithAccount = ({ account }: { account: AccountJsonAny }) =>
   )
 }
 
-const LoginBackgroundDefault = () => (
-  <LoginBackground
-    width={400}
-    height={600}
-    colors={["#F48F45", "#C8EB46"]}
-    className="absolute left-0 top-0 m-0 block h-full w-full overflow-hidden "
-  />
-)
+const Background = () => {
+  const primaryAccount = usePrimaryAccount()
+
+  return primaryAccount ? (
+    <LoginBackgroundWithAccount account={primaryAccount} />
+  ) : (
+    <LoginBackground
+      width={400}
+      height={600}
+      colors={["#F48F45", "#C8EB46"]}
+      className="absolute left-0 top-0 m-0 block h-full w-full overflow-hidden "
+    />
+  )
+}
 
 const Login = ({ setShowResetWallet }: { setShowResetWallet: () => void }) => {
   const { t } = useTranslation()
@@ -102,12 +108,9 @@ const Login = ({ setShowResetWallet }: { setShowResetWallet: () => void }) => {
     }
   }, [handleSubmit, setValue, submit])
 
-  const primaryAccount = usePrimaryAccount()
-
   return (
     <Layout className="pt-32">
-      {!!primaryAccount && <LoginBackgroundWithAccount account={primaryAccount} />}
-      {!primaryAccount && <LoginBackgroundDefault />}
+      <Background />
       <Content className={classNames("z-10 text-center", isSubmitting && "animate-pulse")}>
         <div className="mt-[60px]">
           <HandMonoTransparentLogo className="inline-block text-[64px]" />
