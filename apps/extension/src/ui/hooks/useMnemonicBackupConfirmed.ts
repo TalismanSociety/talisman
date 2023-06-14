@@ -1,20 +1,17 @@
-import { MnemonicSubscriptionResult } from "@core/domains/accounts/types"
 import { api } from "@ui/api"
-import { BehaviorSubject } from "rxjs"
+import { atom, useRecoilValue } from "recoil"
 
-import { useMessageSubscription } from "./useMessageSubscription"
+const stateMnemonicBackupConfirmed = atom<"UNKNOWN" | "TRUE" | "FALSE">({
+  key: "stateMnemonicBackupConfirmed",
+  effects: [
+    ({ setSelf }) => {
+      const unsubscribe = api.mnemonicSubscribe(({ confirmed }) => {
+        if (confirmed === undefined) setSelf("UNKNOWN")
+        else setSelf(confirmed ? "TRUE" : "FALSE")
+      })
+      return () => unsubscribe()
+    },
+  ],
+})
 
-type MnemonicBackupConfirmed = "UNKNOWN" | "TRUE" | "FALSE"
-
-const INITIAL_VALUE: MnemonicSubscriptionResult = {}
-
-const subscribe = (subject: BehaviorSubject<MnemonicSubscriptionResult>) =>
-  api.mnemonicSubscribe((v) => subject.next(v))
-
-const transform = (value: MnemonicSubscriptionResult): MnemonicBackupConfirmed => {
-  if (value.confirmed === undefined) return "UNKNOWN"
-  return value.confirmed ? "TRUE" : "FALSE"
-}
-
-export const useMnemonicBackupConfirmed = () =>
-  useMessageSubscription("mnemonicSubscribe", INITIAL_VALUE, subscribe, transform)
+export const useMnemonicBackupConfirmed = () => useRecoilValue(stateMnemonicBackupConfirmed)
