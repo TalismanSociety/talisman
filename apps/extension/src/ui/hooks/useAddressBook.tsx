@@ -5,7 +5,6 @@ import { atom, useRecoilValue } from "recoil"
 
 export const addressBookState = atom<AddressBookContact[]>({
   key: "addressBookState",
-  default: [],
   effects: [
     ({ setSelf }) => {
       const sub = addressBookStore.observable.subscribe((data) => setSelf(Object.values(data)))

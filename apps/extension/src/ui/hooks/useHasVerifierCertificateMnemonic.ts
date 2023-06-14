@@ -3,7 +3,6 @@ import { atom, useRecoilValue } from "recoil"
 
 export const hasVerifierCertificateMnemonicState = atom<boolean>({
   key: "hasVerifierCertificateMnemonicState",
-  default: false,
   effects: [
     ({ setSelf }) => {
       const sub = verifierCertificateMnemonicStore.observable.subscribe(({ cipher }) =>

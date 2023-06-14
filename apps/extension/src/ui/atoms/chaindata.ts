@@ -21,7 +21,6 @@ const filterNoTestnet = ({ isTestnet }: { isTestnet?: boolean }) => isTestnet ==
 
 export const evmNetworksWithTestnetsState = atom<(EvmNetwork | CustomEvmNetwork)[]>({
   key: "evmNetworksWithTestnetsState",
-  default: [],
   effects: [
     // sync from db
     ({ setSelf }) => {
@@ -70,7 +69,6 @@ export const evmNetworksWithoutTestnetsMapState = selector<EvmNetworkList>({
 
 export const chainsWithTestnetsState = atom<(Chain | CustomChain)[]>({
   key: "chainsWithTestnetsState",
-  default: [],
   effects: [
     // sync from db
     ({ setSelf }) => {
@@ -119,7 +117,6 @@ export const chainsWithoutTestnetsMapState = selector<ChainList>({
 
 const rawTokenListState = atom<TokenList>({
   key: "rawTokenListState",
-  default: {},
   effects: [
     // sync from db
     ({ setSelf }) => {

@@ -3,7 +3,6 @@ import { atom, useRecoilValue } from "recoil"
 
 export const hasMnemonicState = atom<boolean>({
   key: "hasMnemonicState",
-  default: false,
   effects: [
     ({ setSelf }) => {
       const sub = seedStore.observable.subscribe(({ cipher }) => setSelf(!!cipher))
