@@ -9,7 +9,16 @@ export const accountsState = atom<AccountJsonAny[]>({
   key: "accountsState",
   effects: [
     ({ setSelf }) => {
-      const unsubscribe = api.accountsSubscribe(setSelf)
+      const key = "accountState" + crypto.randomUUID()
+      // TODO Cleanup
+      // eslint-disable-next-line no-console
+      console.time(key)
+      const unsubscribe = api.accountsSubscribe((v) => {
+        // TODO Cleanup
+        // eslint-disable-next-line no-console
+        console.timeEnd(key)
+        setSelf(v)
+      })
       return () => unsubscribe()
     },
   ],
@@ -30,4 +39,7 @@ export const accountQueryByAddress = selectorFamily({
       const encoded = encodeAnyAddress(address, 42)
       return accounts.find((a) => encodeAnyAddress(a.address, 42) === encoded) ?? null
     },
+  cachePolicy_UNSTABLE: {
+    eviction: "most-recent",
+  },
 })

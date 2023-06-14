@@ -1,16 +1,18 @@
+import {} from "@talisman/util/provideContext"
+
 import { Modal } from "@talisman/components/Modal"
 import { ModalDialog } from "@talisman/components/ModalDialog"
-import { useOpenClose } from "@talisman/hooks/useOpenClose"
-import { provideContext } from "@talisman/util/provideContext"
-import { useSelectedAccount } from "@ui/domains/Portfolio/SelectedAccountContext"
+import { useOpenCloseGlobal } from "@talisman/hooks/useOpenClose"
+import { selectedAccountQuery } from "@ui/domains/Portfolio/SelectedAccountContext"
 import { useEffect } from "react"
 import { useTranslation } from "react-i18next"
+import { useRecoilValue } from "recoil"
 
 import AccountRename from "./Rename"
 
-const useAccountRenameModalProvider = () => {
-  const { account } = useSelectedAccount()
-  const { isOpen, open, close } = useOpenClose()
+export const useAccountRenameModal = () => {
+  const account = useRecoilValue(selectedAccountQuery)
+  const { isOpen, open, close } = useOpenCloseGlobal("ACCOUNT_RENAME_MODAL")
 
   useEffect(() => {
     close()
@@ -24,10 +26,6 @@ const useAccountRenameModalProvider = () => {
     canRename: Boolean(account),
   }
 }
-
-export const [AccountRenameModalProvider, useAccountRenameModal] = provideContext(
-  useAccountRenameModalProvider
-)
 
 export const AccountRenameModal = () => {
   const { t } = useTranslation()

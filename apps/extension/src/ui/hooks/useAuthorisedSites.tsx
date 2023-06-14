@@ -13,9 +13,16 @@ const authorizedSitesState = atom<AuthorizedSites>({
   default: {},
   effects: [
     ({ setSelf }) => {
-      const unsubscribe = api.authorizedSitesSubscribe((sites) =>
+      const key = "authorizedSitesState" + crypto.randomUUID()
+      // TODO Cleanup
+      // eslint-disable-next-line no-console
+      console.time(key)
+      const unsubscribe = api.authorizedSitesSubscribe((sites) => {
+        // TODO Cleanup
+        // eslint-disable-next-line no-console
+        console.timeEnd(key)
         setSelf(authorisedSitesOnly(sites))
-      )
+      })
       return () => unsubscribe()
     },
   ],

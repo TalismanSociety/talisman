@@ -1,8 +1,5 @@
-import { useOpenClose } from "@talisman/hooks/useOpenClose"
-import { provideContext } from "@talisman/util/provideContext"
+import { useOpenCloseGlobal } from "@talisman/hooks/useOpenClose"
 
-const useBuyTokensProvider = () => {
-  return useOpenClose()
+export const useBuyTokensModal = () => {
+  return useOpenCloseGlobal("BUY_TOKENS_MODAL")
 }
-
-export const [BuyTokensModalProvider, useBuyTokensModal] = provideContext(useBuyTokensProvider)

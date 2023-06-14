@@ -7,7 +7,16 @@ const isLoggedInState = atom<LoggedinType>({
   default: "UNKNOWN",
   effects: [
     ({ setSelf }) => {
-      const unsubscribe = api.authStatusSubscribe(setSelf)
+      const key = "isLoggedInState" + crypto.randomUUID()
+      // TODO Cleanup
+      // eslint-disable-next-line no-console
+      console.time(key)
+      const unsubscribe = api.authStatusSubscribe((v) => {
+        // TODO Cleanup
+        // eslint-disable-next-line no-console
+        console.timeEnd(key)
+        setSelf(v)
+      })
       return () => unsubscribe()
     },
   ],

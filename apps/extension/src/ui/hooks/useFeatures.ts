@@ -1,17 +1,21 @@
-import {
-  FEATURE_STORE_INITIAL_DATA,
-  FeaturesStoreData,
-  featuresStore,
-} from "@core/domains/app/store.features"
+import { FeaturesStoreData, featuresStore } from "@core/domains/app/store.features"
 import { FeatureFlag, FeatureVariants } from "@core/domains/app/types"
 import { RecoilState, atom, selectorFamily, useRecoilValue } from "recoil"
 
 const featuresState = atom<FeaturesStoreData>({
   key: "featuresState",
-  default: FEATURE_STORE_INITIAL_DATA,
   effects: [
     ({ setSelf }) => {
-      const sub = featuresStore.observable.subscribe(setSelf)
+      const key = "featuresState" + crypto.randomUUID()
+      // TODO Cleanup
+      // eslint-disable-next-line no-console
+      console.time(key)
+      const sub = featuresStore.observable.subscribe((v) => {
+        // TODO Cleanup
+        // eslint-disable-next-line no-console
+        console.timeEnd(key)
+        setSelf(v)
+      })
       return () => {
         sub.unsubscribe()
       }
@@ -27,6 +31,9 @@ const featureVariantsQuery = selectorFamily({
       const features = get(featuresState)
       return features.variants[key] as FeatureVariants[K]
     },
+  cachePolicy_UNSTABLE: {
+    eviction: "most-recent",
+  },
 })
 
 const featureFlagsQuery = selectorFamily({
@@ -49,6 +56,9 @@ const featureFlagsQuery = selectorFamily({
       const exhaustiveCheck: never = variant
       throw new Error(`Unhandled feature variant type ${exhaustiveCheck}`)
     },
+  cachePolicy_UNSTABLE: {
+    eviction: "most-recent",
+  },
 })
 
 export const useFeatureVariant = <K extends FeatureFlag>(feature: K) => {

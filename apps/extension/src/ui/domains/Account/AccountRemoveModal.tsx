@@ -1,24 +1,31 @@
 import StyledDialog from "@talisman/components/Dialog"
 import { Modal } from "@talisman/components/Modal"
 import { ModalDialog } from "@talisman/components/ModalDialog"
-import { useOpenClose } from "@talisman/hooks/useOpenClose"
+import { useOpenCloseGlobal } from "@talisman/hooks/useOpenClose"
 import { IconAlert } from "@talisman/theme/icons"
-import { provideContext } from "@talisman/util/provideContext"
 import { api } from "@ui/api"
-import { useSelectedAccount } from "@ui/domains/Portfolio/SelectedAccountContext"
-import { useCallback, useEffect, useMemo, useState } from "react"
+import { selectedAccountQuery } from "@ui/domains/Portfolio/SelectedAccountContext"
+import { useCallback, useEffect, useState } from "react"
 import { useTranslation } from "react-i18next"
+import { selector, useRecoilValue } from "recoil"
 
 const REMOVABLE_ORIGINS = ["DERIVED", "SEED", "JSON", "QR", "HARDWARE"]
 
-const useAccountRemoveModalProvider = () => {
-  const { account } = useSelectedAccount()
-  const { isOpen, open, close } = useOpenClose()
+const canRemoveSelectedAccountQuery = selector({
+  key: "canRemoveSelectedAccountQuery",
+  get: ({ get }) => {
+    const account = get(selectedAccountQuery)
+    return REMOVABLE_ORIGINS.includes(account?.origin as string)
+  },
+  cachePolicy_UNSTABLE: {
+    eviction: "most-recent",
+  },
+})
 
-  const canRemove = useMemo(
-    () => REMOVABLE_ORIGINS.includes(account?.origin as string),
-    [account?.origin]
-  )
+export const useAccountRemoveModal = () => {
+  const account = useRecoilValue(selectedAccountQuery)
+  const canRemove = useRecoilValue(canRemoveSelectedAccountQuery)
+  const { isOpen, open, close } = useOpenCloseGlobal("ACCOUNT_REMOVE_MODAL")
 
   useEffect(() => {
     close()
@@ -32,10 +39,6 @@ const useAccountRemoveModalProvider = () => {
     canRemove,
   }
 }
-
-export const [AccountRemoveModalProvider, useAccountRemoveModal] = provideContext(
-  useAccountRemoveModalProvider
-)
 
 export const AccountRemoveModal = () => {
   const { t } = useTranslation()

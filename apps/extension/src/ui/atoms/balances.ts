@@ -24,16 +24,24 @@ const NO_OP = () => {}
 
 const rawBalancesState = atom<BalanceJson[]>({
   key: "rawBalancesState",
-  default: [], // prevents suspense to delay rendering
   effects: [
     // sync from db
     ({ setSelf }) => {
+      const key = "rawBalancesState" + crypto.randomUUID()
+      // TODO Cleanup
+      // eslint-disable-next-line no-console
+      console.time(key)
       const obs = from(liveQuery(() => balancesDb.balances.toArray()))
 
       // backend will do a lot of updates to the balances table
       // debounce to mitigate performance issues
       // also, we only need the first value to hydrate the atom
-      const sub = merge(obs.pipe(first()), obs.pipe(debounceTime(500))).subscribe(setSelf)
+      const sub = merge(obs.pipe(first()), obs.pipe(debounceTime(500))).subscribe((v) => {
+        // TODO Cleanup
+        // eslint-disable-next-line no-console
+        console.timeEnd(key)
+        setSelf(v)
+      })
 
       return () => sub.unsubscribe()
     },
@@ -50,6 +58,9 @@ const filteredRawBalancesState = selector({
 
     return balances.filter((b) => tokens[b.tokenId])
   },
+  cachePolicy_UNSTABLE: {
+    eviction: "most-recent",
+  },
 })
 
 export const balancesHydrateState = selector<HydrateDb>({
@@ -62,6 +73,9 @@ export const balancesHydrateState = selector<HydrateDb>({
 
     return { chains, evmNetworks, tokens, tokenRates }
   },
+  cachePolicy_UNSTABLE: {
+    eviction: "most-recent",
+  },
 })
 
 export const allBalancesState = selector({
@@ -71,6 +85,9 @@ export const allBalancesState = selector({
     const hydrate = get(balancesHydrateState)
 
     return new Balances(deriveStatuses([...getValidSubscriptionIds()], rawBalances), hydrate)
+  },
+  cachePolicy_UNSTABLE: {
+    eviction: "most-recent",
   },
 })
 
@@ -84,6 +101,9 @@ const rawBalancesQuery = selectorFamily({
         (b) => (!address || b.address === address) && (!tokenId || b.tokenId === tokenId)
       )
     },
+  cachePolicy_UNSTABLE: {
+    eviction: "most-recent",
+  },
 })
 
 export const balancesQuery = selectorFamily({
@@ -95,4 +115,7 @@ export const balancesQuery = selectorFamily({
       const hydrate = get(balancesHydrateState)
       return new Balances(deriveStatuses([...getValidSubscriptionIds()], rawBalances), hydrate)
     },
+  cachePolicy_UNSTABLE: {
+    eviction: "most-recent",
+  },
 })

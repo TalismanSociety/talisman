@@ -1,31 +1,40 @@
+import {} from "@talisman/util/provideContext"
+
 import { Modal } from "@talisman/components/Modal"
 import { ModalDialog } from "@talisman/components/ModalDialog"
 import { notify } from "@talisman/components/Notifications"
-import { useOpenClose } from "@talisman/hooks/useOpenClose"
+import { useOpenCloseGlobal } from "@talisman/hooks/useOpenClose"
 import { CopyIcon, LoaderIcon } from "@talisman/theme/icons"
-import { provideContext } from "@talisman/util/provideContext"
 import { useQuery } from "@tanstack/react-query"
 import { api } from "@ui/api"
-import { useCallback, useEffect, useMemo } from "react"
+import { useCallback, useEffect } from "react"
 import { useTranslation } from "react-i18next"
+import { selector, useRecoilValue } from "recoil"
 import { Button } from "talisman-ui"
 
-import { useSelectedAccount } from "../Portfolio/SelectedAccountContext"
+import { selectedAccountQuery } from "../Portfolio/SelectedAccountContext"
 import AccountAvatar from "./Avatar"
 import { PasswordUnlock, usePasswordUnlock } from "./PasswordUnlock"
 
-const useAccountExportPrivateKeyModalProvider = () => {
-  const { account } = useSelectedAccount()
-  const { isOpen, open, close } = useOpenClose()
+const canExportPrivateKeySelectedAccountQuery = selector({
+  key: "canExportPrivateKeySelectedAccountQuery",
+  get: ({ get }) => {
+    const account = get(selectedAccountQuery)
+    return account?.type === "ethereum" && !account.isExternal && !account.isHardware
+  },
+  cachePolicy_UNSTABLE: {
+    eviction: "most-recent",
+  },
+})
+
+export const useAccountExportPrivateKeyModal = () => {
+  const account = useRecoilValue(selectedAccountQuery)
+  const { isOpen, open, close } = useOpenCloseGlobal("ACCOUNT_EXPORT_PK_MODAL")
+  const canExportAccount = useRecoilValue(canExportPrivateKeySelectedAccountQuery)
 
   useEffect(() => {
     close()
   }, [account, close])
-
-  const canExportAccount = useMemo(
-    () => account?.type === "ethereum" && !account.isExternal && !account.isHardware,
-    [account]
-  )
 
   const exportAccount = useCallback(
     (password: string) => {
@@ -37,9 +46,6 @@ const useAccountExportPrivateKeyModalProvider = () => {
 
   return { account, canExportAccount, exportAccount, isOpen, open, close }
 }
-
-export const [AccountExportPrivateKeyModalProvider, useAccountExportPrivateKeyModal] =
-  provideContext(useAccountExportPrivateKeyModalProvider)
 
 const ExportPrivateKeyResult = ({ onClose }: { onClose?: () => void }) => {
   const { t } = useTranslation()

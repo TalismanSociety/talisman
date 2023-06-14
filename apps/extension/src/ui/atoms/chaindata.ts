@@ -21,12 +21,20 @@ const filterNoTestnet = ({ isTestnet }: { isTestnet?: boolean }) => isTestnet ==
 
 export const evmNetworksWithTestnetsState = atom<(EvmNetwork | CustomEvmNetwork)[]>({
   key: "evmNetworksWithTestnetsState",
-  default: [],
   effects: [
     // sync from db
     ({ setSelf }) => {
+      const key = "evmNetworksWithTestnetsState" + crypto.randomUUID()
+      // TODO Cleanup
+      // eslint-disable-next-line no-console
+      console.time(key)
       const obs = liveQuery(() => chaindataProvider.evmNetworksArray())
-      const sub = obs.subscribe(setSelf)
+      const sub = obs.subscribe((v) => {
+        // TODO Cleanup
+        // eslint-disable-next-line no-console
+        console.timeEnd(key)
+        setSelf(v)
+      })
       return () => sub.unsubscribe()
     },
     // instruct backend to keep db updated while this atom is in use
@@ -40,6 +48,9 @@ export const evmNetworksWithTestnetsMapState = selector<EvmNetworkList>({
     const evmNetworks = get(evmNetworksWithTestnetsState)
     return Object.fromEntries(evmNetworks.map((network) => [network.id, network]))
   },
+  cachePolicy_UNSTABLE: {
+    eviction: "most-recent",
+  },
 })
 
 export const evmNetworkQuery = selectorFamily({
@@ -50,6 +61,9 @@ export const evmNetworkQuery = selectorFamily({
       const networks = get(evmNetworksWithTestnetsMapState)
       return networks[evmNetworkId]
     },
+  cachePolicy_UNSTABLE: {
+    eviction: "most-recent",
+  },
 })
 
 export const evmNetworksWithoutTestnetsState = selector({
@@ -57,6 +71,9 @@ export const evmNetworksWithoutTestnetsState = selector({
   get: ({ get }) => {
     const evmNetworks = get(evmNetworksWithTestnetsState)
     return evmNetworks.filter(filterNoTestnet)
+  },
+  cachePolicy_UNSTABLE: {
+    eviction: "most-recent",
   },
 })
 
@@ -66,16 +83,27 @@ export const evmNetworksWithoutTestnetsMapState = selector<EvmNetworkList>({
     const evmNetworks = get(evmNetworksWithoutTestnetsState)
     return Object.fromEntries(evmNetworks.map((network) => [network.id, network]))
   },
+  cachePolicy_UNSTABLE: {
+    eviction: "most-recent",
+  },
 })
 
 export const chainsWithTestnetsState = atom<(Chain | CustomChain)[]>({
   key: "chainsWithTestnetsState",
-  default: [],
   effects: [
     // sync from db
     ({ setSelf }) => {
+      const key = "chainsWithTestnetsState" + crypto.randomUUID()
+      // TODO Cleanup
+      // eslint-disable-next-line no-console
+      console.time(key)
       const obs = liveQuery(() => chaindataProvider.chainsArray())
-      const sub = obs.subscribe(setSelf)
+      const sub = obs.subscribe((v) => {
+        // TODO Cleanup
+        // eslint-disable-next-line no-console
+        console.timeEnd(key)
+        setSelf(v)
+      })
       return () => sub.unsubscribe()
     },
     // instruct backend to keep db syncrhonized while this atom is in use
@@ -89,6 +117,9 @@ export const chainsWithTestnetsMapState = selector<ChainList>({
     const chains = get(chainsWithTestnetsState)
     return Object.fromEntries(chains.map((network) => [network.id, network]))
   },
+  cachePolicy_UNSTABLE: {
+    eviction: "most-recent",
+  },
 })
 
 export const chainQuery = selectorFamily({
@@ -99,6 +130,9 @@ export const chainQuery = selectorFamily({
       const networks = get(chainsWithTestnetsMapState)
       return networks[chainId]
     },
+  cachePolicy_UNSTABLE: {
+    eviction: "most-recent",
+  },
 })
 
 export const chainsWithoutTestnetsState = selector({
@@ -106,6 +140,9 @@ export const chainsWithoutTestnetsState = selector({
   get: ({ get }) => {
     const chains = get(chainsWithTestnetsState)
     return chains.filter(filterNoTestnet)
+  },
+  cachePolicy_UNSTABLE: {
+    eviction: "most-recent",
   },
 })
 
@@ -115,16 +152,27 @@ export const chainsWithoutTestnetsMapState = selector<ChainList>({
     const chains = get(chainsWithoutTestnetsState)
     return Object.fromEntries(chains.map((network) => [network.id, network]))
   },
+  cachePolicy_UNSTABLE: {
+    eviction: "most-recent",
+  },
 })
 
 const rawTokenListState = atom<TokenList>({
   key: "rawTokenListState",
-  default: {},
   effects: [
     // sync from db
     ({ setSelf }) => {
+      const key = "rawTokenListState" + crypto.randomUUID()
+      // TODO Cleanup
+      // eslint-disable-next-line no-console
+      console.time(key)
       const obs = liveQuery(() => chaindataProvider.tokens())
-      const sub = obs.subscribe(setSelf)
+      const sub = obs.subscribe((v) => {
+        // TODO Cleanup
+        // eslint-disable-next-line no-console
+        console.timeEnd(key)
+        setSelf(v)
+      })
 
       return () => sub.unsubscribe()
     },
@@ -145,6 +193,9 @@ export const tokensWithTestnetsState = selector<Token[]>({
         (token.evmNetwork && evmNetworksMap[token.evmNetwork.id])
     )
   },
+  cachePolicy_UNSTABLE: {
+    eviction: "most-recent",
+  },
 })
 
 export const tokensWithoutTestnetsState = selector<Token[]>({
@@ -161,6 +212,9 @@ export const tokensWithoutTestnetsState = selector<Token[]>({
           (token.evmNetwork && evmNetworksWithoutTestnetsMap[token.evmNetwork.id])
       )
   },
+  cachePolicy_UNSTABLE: {
+    eviction: "most-recent",
+  },
 })
 
 export const tokensWithTestnetsMapState = selector<TokenList>({
@@ -169,6 +223,9 @@ export const tokensWithTestnetsMapState = selector<TokenList>({
     const arTokens = get(tokensWithTestnetsState)
     return Object.fromEntries(arTokens.map((token) => [token.id, token]))
   },
+  cachePolicy_UNSTABLE: {
+    eviction: "most-recent",
+  },
 })
 
 export const tokensWithoutTestnetsMapState = selector<TokenList>({
@@ -176,6 +233,9 @@ export const tokensWithoutTestnetsMapState = selector<TokenList>({
   get: ({ get }) => {
     const arTokens = get(tokensWithTestnetsState)
     return Object.fromEntries(arTokens.map((token) => [token.id, token]))
+  },
+  cachePolicy_UNSTABLE: {
+    eviction: "most-recent",
   },
 })
 
@@ -187,4 +247,7 @@ export const tokenQuery = selectorFamily({
       const tokens = get(tokensWithTestnetsMapState)
       return tokenId ? tokens[tokenId] : undefined
     },
+  cachePolicy_UNSTABLE: {
+    eviction: "most-recent",
+  },
 })

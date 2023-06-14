@@ -5,7 +5,16 @@ export const hasMnemonicState = atom<boolean>({
   key: "hasMnemonicState",
   effects: [
     ({ setSelf }) => {
-      const sub = seedStore.observable.subscribe(({ cipher }) => setSelf(!!cipher))
+      const key = "hasMnemonicState" + crypto.randomUUID()
+      // TODO Cleanup
+      // eslint-disable-next-line no-console
+      console.time(key)
+      const sub = seedStore.observable.subscribe(({ cipher }) => {
+        // TODO Cleanup
+        // eslint-disable-next-line no-console
+        console.timeEnd(key)
+        setSelf(!!cipher)
+      })
       return () => sub.unsubscribe()
     },
   ],

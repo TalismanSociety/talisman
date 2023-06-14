@@ -5,9 +5,16 @@ export const hasVerifierCertificateMnemonicState = atom<boolean>({
   key: "hasVerifierCertificateMnemonicState",
   effects: [
     ({ setSelf }) => {
-      const sub = verifierCertificateMnemonicStore.observable.subscribe(({ cipher }) =>
+      const key = "hasVerifierCertificateMnemonicState" + crypto.randomUUID()
+      // TODO Cleanup
+      // eslint-disable-next-line no-console
+      console.time(key)
+      const sub = verifierCertificateMnemonicStore.observable.subscribe(({ cipher }) => {
+        // TODO Cleanup
+        // eslint-disable-next-line no-console
+        console.timeEnd(key)
         setSelf(!!cipher)
-      )
+      })
       return () => sub.unsubscribe()
     },
   ],

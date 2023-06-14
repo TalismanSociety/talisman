@@ -8,12 +8,20 @@ import { atom, selector, selectorFamily } from "recoil"
 const NO_OP = () => {}
 export const tokenRatesState = atom<DbTokenRates[]>({
   key: "tokenRatesState",
-  default: [], // prevents suspense to delay rendering
   effects: [
     // sync from db
     ({ setSelf }) => {
+      const key = "tokenRatesState" + crypto.randomUUID()
+      // TODO Cleanup
+      // eslint-disable-next-line no-console
+      console.time(key)
       const obs = liveQuery(() => db.tokenRates.toArray())
-      const sub = obs.subscribe(setSelf)
+      const sub = obs.subscribe((v) => {
+        // TODO Cleanup
+        // eslint-disable-next-line no-console
+        console.timeEnd(key)
+        setSelf(v)
+      })
       return () => sub.unsubscribe()
     },
     // instruct backend to keep db syncrhonized while this atom is in use
@@ -27,6 +35,9 @@ export const tokenRatesMapState = selector({
     const tokenRates = get(tokenRatesState)
     return Object.fromEntries(tokenRates.map(({ tokenId, rates }) => [tokenId, rates]))
   },
+  cachePolicy_UNSTABLE: {
+    eviction: "most-recent",
+  },
 })
 
 export const tokenRatesQuery = selectorFamily({
@@ -37,4 +48,7 @@ export const tokenRatesQuery = selectorFamily({
       const tokenRates = get(tokenRatesMapState)
       return tokenId ? tokenRates[tokenId] : undefined
     },
+  cachePolicy_UNSTABLE: {
+    eviction: "most-recent",
+  },
 })

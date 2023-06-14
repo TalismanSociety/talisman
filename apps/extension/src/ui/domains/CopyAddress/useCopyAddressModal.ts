@@ -1,19 +1,24 @@
-import { useOpenClose } from "@talisman/hooks/useOpenClose"
-import { provideContext } from "@talisman/util/provideContext"
-import { useCallback, useState } from "react"
+import { useOpenCloseGlobal } from "@talisman/hooks/useOpenClose"
+import { useCallback } from "react"
+import { atom, useRecoilState } from "recoil"
 
 import { CopyAddressWizardInputs } from "./types"
 
-const useCopyAddressModalProvider = () => {
-  const { open: innerOpen, close, isOpen } = useOpenClose()
-  const [inputs, setInputs] = useState<CopyAddressWizardInputs>()
+const copyAddressModalState = atom<CopyAddressWizardInputs | null>({
+  key: "copyAddressModalState",
+  default: null,
+})
+
+export const useCopyAddressModal = () => {
+  const { open: innerOpen, close, isOpen } = useOpenCloseGlobal("COPY_ADDRESS_MODAL")
+  const [inputs, setInputs] = useRecoilState(copyAddressModalState)
 
   const open = useCallback(
-    (opts: CopyAddressWizardInputs | undefined) => {
+    (opts: CopyAddressWizardInputs | null) => {
       setInputs(opts)
       innerOpen()
     },
-    [innerOpen]
+    [innerOpen, setInputs]
   )
 
   return {
@@ -23,7 +28,3 @@ const useCopyAddressModalProvider = () => {
     inputs,
   }
 }
-
-export const [CopyAddressModalProvider, useCopyAddressModal] = provideContext(
-  useCopyAddressModalProvider
-)

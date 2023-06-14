@@ -3,14 +3,6 @@ import { FadeIn } from "@talisman/components/FadeIn"
 import { FullScreenLoader } from "@talisman/components/FullScreenLoader"
 import { SuspenseTracker } from "@talisman/components/SuspenseTracker"
 import { api } from "@ui/api"
-import { AccountExportModalProvider } from "@ui/domains/Account/AccountExportModal"
-import { AccountExportPrivateKeyModalProvider } from "@ui/domains/Account/AccountExportPrivateKeyModal"
-import { AccountRemoveModalProvider } from "@ui/domains/Account/AccountRemoveModal"
-import { AccountRenameModalProvider } from "@ui/domains/Account/AccountRenameModal"
-import { BuyTokensModalProvider } from "@ui/domains/Asset/Buy/BuyTokensModalContext"
-import { SendTokensModalProvider } from "@ui/domains/Asset/Send/SendTokensModalContext"
-import { CopyAddressModalProvider } from "@ui/domains/CopyAddress"
-import { SelectedAccountProvider } from "@ui/domains/Portfolio/SelectedAccountContext"
 import { useAppState } from "@ui/hooks/useAppState"
 import { useIsFeatureEnabled } from "@ui/hooks/useFeatures"
 import { useIsLoggedIn } from "@ui/hooks/useIsLoggedIn"
@@ -145,23 +137,7 @@ const Dashboard = () => (
   <Suspense fallback={<SuspenseTracker name="dashboard" />}>
     <FadeIn>
       <PreventPhishing>
-        <SelectedAccountProvider>
-          <AccountRemoveModalProvider>
-            <AccountRenameModalProvider>
-              <AccountExportModalProvider>
-                <AccountExportPrivateKeyModalProvider>
-                  <CopyAddressModalProvider>
-                    <SendTokensModalProvider>
-                      <BuyTokensModalProvider>
-                        <DashboardInner />
-                      </BuyTokensModalProvider>
-                    </SendTokensModalProvider>
-                  </CopyAddressModalProvider>
-                </AccountExportPrivateKeyModalProvider>
-              </AccountExportModalProvider>
-            </AccountRenameModalProvider>
-          </AccountRemoveModalProvider>
-        </SelectedAccountProvider>
+        <DashboardInner />
       </PreventPhishing>
     </FadeIn>
   </Suspense>

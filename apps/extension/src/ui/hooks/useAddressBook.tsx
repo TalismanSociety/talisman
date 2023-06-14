@@ -5,10 +5,18 @@ import { atom, useRecoilValue } from "recoil"
 
 export const addressBookState = atom<AddressBookContact[]>({
   key: "addressBookState",
-  default: [],
   effects: [
     ({ setSelf }) => {
-      const sub = addressBookStore.observable.subscribe((data) => setSelf(Object.values(data)))
+      const key = "addressBookState" + crypto.randomUUID()
+      // TODO Cleanup
+      // eslint-disable-next-line no-console
+      console.time(key)
+      const sub = addressBookStore.observable.subscribe((data) => {
+        // TODO Cleanup
+        // eslint-disable-next-line no-console
+        console.timeEnd(key)
+        setSelf(Object.values(data))
+      })
       return () => sub.unsubscribe()
     },
   ],

@@ -1,23 +1,32 @@
-import { useCallback, useEffect, useMemo, useState } from "react"
-import { SendTokensInputs } from "./types"
-import { provideContext } from "@talisman/util/provideContext"
+import { useCallback, useEffect, useMemo } from "react"
 import { useLocation } from "react-router-dom"
+import { atom, useRecoilState } from "recoil"
 
-const useSendTokensModalProvider = () => {
-  const [config, setConfig] = useState<Partial<SendTokensInputs>>()
+import { SendTokensInputs } from "./types"
+
+const sendTokensModalState = atom<Partial<SendTokensInputs> | null>({
+  key: "sendTokensModalState",
+  default: null,
+})
+
+export const useSendTokensModal = () => {
+  const [config, setConfig] = useRecoilState(sendTokensModalState)
   const location = useLocation()
 
-  const open = useCallback((config: Partial<SendTokensInputs> = {}) => {
-    setConfig(config)
-  }, [])
+  const open = useCallback(
+    (config: Partial<SendTokensInputs> = {}) => {
+      setConfig(config)
+    },
+    [setConfig]
+  )
 
   const close = useCallback(() => {
-    setConfig(undefined)
-  }, [])
+    setConfig(null)
+  }, [setConfig])
 
   useEffect(() => {
-    setConfig(undefined)
-  }, [location])
+    setConfig(null)
+  }, [location, setConfig])
 
   const isOpen = useMemo(() => Boolean(config), [config])
 
@@ -28,7 +37,3 @@ const useSendTokensModalProvider = () => {
     close,
   }
 }
-
-export const [SendTokensModalProvider, useSendTokensModal] = provideContext(
-  useSendTokensModalProvider
-)

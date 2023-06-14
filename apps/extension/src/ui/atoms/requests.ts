@@ -10,10 +10,18 @@ import { atom, selectorFamily } from "recoil"
 
 export const requestsState = atom<ValidRequests[]>({
   key: "requestsState",
-  default: [],
   effects: [
     ({ setSelf }) => {
-      const unsubscribe = api.subscribeRequests(setSelf)
+      const key = "requestsState" + crypto.randomUUID()
+      // TODO Cleanup
+      // eslint-disable-next-line no-console
+      console.time(key)
+      const unsubscribe = api.subscribeRequests((v) => {
+        // TODO Cleanup
+        // eslint-disable-next-line no-console
+        console.timeEnd(key)
+        setSelf(v)
+      })
       return () => unsubscribe()
     },
   ],
@@ -28,4 +36,7 @@ export const requestQueryById = selectorFamily({
       const request = requests.find((req) => req.id === id)
       return request ? (request as KnownRequest<T>) : null
     },
+  cachePolicy_UNSTABLE: {
+    eviction: "most-recent",
+  },
 })

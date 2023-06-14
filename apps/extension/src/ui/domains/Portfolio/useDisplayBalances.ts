@@ -8,7 +8,7 @@ import { useSelectedAccount } from "@ui/domains/Portfolio/SelectedAccountContext
 import { useMemo } from "react"
 
 // TODO: default tokens should be controlled from chaindata
-const shouldDisplayBalance = (account: AccountJsonAny | undefined, balances: Balances) => {
+const shouldDisplayBalance = (account: AccountJsonAny | null, balances: Balances) => {
   const accountHasSomeBalance = balances.find({ address: account?.address }).sum.planck.total > 0n
 
   return (balance: Balance): boolean => {

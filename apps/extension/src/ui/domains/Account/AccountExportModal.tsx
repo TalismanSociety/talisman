@@ -2,33 +2,41 @@ import { yupResolver } from "@hookform/resolvers/yup"
 import { Modal } from "@talisman/components/Modal"
 import { ModalDialog } from "@talisman/components/ModalDialog"
 import { PasswordStrength } from "@talisman/components/PasswordStrength"
-import { useOpenClose } from "@talisman/hooks/useOpenClose"
+import { useOpenCloseGlobal } from "@talisman/hooks/useOpenClose"
 import downloadJson from "@talisman/util/downloadJson"
-import { provideContext } from "@talisman/util/provideContext"
 import { api } from "@ui/api"
 import { useCallback, useEffect, useMemo } from "react"
 import { useForm } from "react-hook-form"
 import { Trans, useTranslation } from "react-i18next"
+import { selector, useRecoilValue } from "recoil"
 import { Button, FormFieldContainer, FormFieldInputText } from "talisman-ui"
 import * as yup from "yup"
 
-import { useSelectedAccount } from "../Portfolio/SelectedAccountContext"
+import { selectedAccountQuery } from "../Portfolio/SelectedAccountContext"
 import { PasswordUnlock, usePasswordUnlock } from "./PasswordUnlock"
 
 const EXPORTABLE_ORIGINS = ["SEED", "JSON", "DERIVED"]
 
-const useAccountExportModalProvider = () => {
-  const { account } = useSelectedAccount()
-  const { isOpen, open, close } = useOpenClose()
+const canExportSelectedAccountQuery = selector({
+  key: "canExportSelectedAccountQuery",
+  get: ({ get }) => {
+    const account = get(selectedAccountQuery)
+    return EXPORTABLE_ORIGINS.includes(account?.origin as string)
+  },
+  cachePolicy_UNSTABLE: {
+    eviction: "most-recent",
+  },
+})
+
+export const useAccountExportModal = () => {
+  const account = useRecoilValue(selectedAccountQuery)
+  const { isOpen, open, close } = useOpenCloseGlobal("ACCOUNT_EXPORT_MODAL")
 
   useEffect(() => {
     close()
   }, [account, close])
 
-  const canExportAccount = useMemo(
-    () => account && EXPORTABLE_ORIGINS.includes(account?.origin as string),
-    [account]
-  )
+  const canExportAccount = useRecoilValue(canExportSelectedAccountQuery)
 
   const exportAccount = useCallback(
     async (password: string, newPw: string) => {
@@ -41,10 +49,6 @@ const useAccountExportModalProvider = () => {
 
   return { account, canExportAccount, exportAccount, isOpen, open, close }
 }
-
-export const [AccountExportModalProvider, useAccountExportModal] = provideContext(
-  useAccountExportModalProvider
-)
 
 type FormData = {
   newPw: string

@@ -1,4 +1,5 @@
 import { BackButton } from "@talisman/components/BackButton"
+import { SuspenseTracker } from "@talisman/components/SuspenseTracker"
 import { scrollbarsStyle } from "@talisman/theme/styles"
 import { AnalyticsPage } from "@ui/api/analytics"
 import { AccountExportModal } from "@ui/domains/Account/AccountExportModal"
@@ -35,18 +36,20 @@ const UnstyledLayout: FC<LayoutProps> = ({ withBack, backTo, children, className
           {!!withBack && <BackButton analytics={analytics} className="back" to={backTo} />}
           {children}
         </div>
-        <Suspense>
+        <Suspense fallback={<SuspenseTracker name="LayoutNotifications" />}>
           <DashboardNotifications />
         </Suspense>
       </section>
-      <SendTokensModal />
-      <BuyTokensModal />
-      <AccountRenameModal />
-      <AccountExportModal />
-      <AccountExportPrivateKeyModal />
-      <AccountRemoveModal />
-      <CopyAddressModal />
-      <OnboardingToast />
+      <Suspense fallback={<SuspenseTracker name="LayoutModals" />}>
+        <SendTokensModal />
+        <BuyTokensModal />
+        <AccountRenameModal />
+        <AccountExportModal />
+        <AccountExportPrivateKeyModal />
+        <AccountRemoveModal />
+        <CopyAddressModal />
+        <OnboardingToast />
+      </Suspense>
     </main>
   )
 }

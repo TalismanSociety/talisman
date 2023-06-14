@@ -7,7 +7,7 @@ import { useSelectedAccount } from "@ui/domains/Portfolio/SelectedAccountContext
 import { useMemo } from "react"
 import { useTranslation } from "react-i18next"
 
-const Avatar = ({ account, className }: { className?: string; account?: AccountJsonAny }) => {
+const Avatar = ({ account, className }: { className?: string; account: AccountJsonAny | null }) => {
   return account?.address ? (
     <AccountAvatar
       className={className}
