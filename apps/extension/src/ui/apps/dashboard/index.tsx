@@ -1,4 +1,5 @@
 import { PHISHING_PAGE_REDIRECT } from "@polkadot/extension-base/defaults"
+import { FadeIn } from "@talisman/components/FadeIn"
 import { FullScreenLoader } from "@talisman/components/FullScreenLoader"
 import { api } from "@ui/api"
 import { AccountExportModalProvider } from "@ui/domains/Account/AccountExportModal"
@@ -133,25 +134,29 @@ const PreventPhishing: FC<PropsWithChildren> = ({ children }) => {
 }
 
 const Dashboard = () => (
-  <PreventPhishing>
-    <SelectedAccountProvider>
-      <AccountRemoveModalProvider>
-        <AccountRenameModalProvider>
-          <AccountExportModalProvider>
-            <AccountExportPrivateKeyModalProvider>
-              <CopyAddressModalProvider>
-                <SendTokensModalProvider>
-                  <BuyTokensModalProvider>
-                    <DashboardInner />
-                  </BuyTokensModalProvider>
-                </SendTokensModalProvider>
-              </CopyAddressModalProvider>
-            </AccountExportPrivateKeyModalProvider>
-          </AccountExportModalProvider>
-        </AccountRenameModalProvider>
-      </AccountRemoveModalProvider>
-    </SelectedAccountProvider>
-  </PreventPhishing>
+  <Suspense fallback={null}>
+    <FadeIn>
+      <PreventPhishing>
+        <SelectedAccountProvider>
+          <AccountRemoveModalProvider>
+            <AccountRenameModalProvider>
+              <AccountExportModalProvider>
+                <AccountExportPrivateKeyModalProvider>
+                  <CopyAddressModalProvider>
+                    <SendTokensModalProvider>
+                      <BuyTokensModalProvider>
+                        <DashboardInner />
+                      </BuyTokensModalProvider>
+                    </SendTokensModalProvider>
+                  </CopyAddressModalProvider>
+                </AccountExportPrivateKeyModalProvider>
+              </AccountExportModalProvider>
+            </AccountRenameModalProvider>
+          </AccountRemoveModalProvider>
+        </SelectedAccountProvider>
+      </PreventPhishing>
+    </FadeIn>
+  </Suspense>
 )
 
 export default Dashboard

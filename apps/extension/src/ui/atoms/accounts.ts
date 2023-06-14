@@ -26,7 +26,7 @@ export const accountQueryByAddress = selectorFamily({
 
       const encoded = encodeAnyAddress(address, 42)
       return (
-        accounts.find((a) => [a.address, encodeAnyAddress(address, 42)].includes(encoded)) ?? null
+        accounts.find((a) => [a.address, encodeAnyAddress(a.address, 42)].includes(encoded)) ?? null
       )
     },
 })
