@@ -5,11 +5,23 @@ import { SIGNING_TYPES } from "@core/domains/signing/types"
 import { AUTH_PREFIX } from "@core/domains/sitesAuthorised/types"
 import { FadeIn } from "@talisman/components/FadeIn"
 import { api } from "@ui/api"
-import { AccountExportModalProvider } from "@ui/domains/Account/AccountExportModal"
-import { AccountExportPrivateKeyModalProvider } from "@ui/domains/Account/AccountExportPrivateKeyModal"
-import { AccountRemoveModalProvider } from "@ui/domains/Account/AccountRemoveModal"
-import { AccountRenameModalProvider } from "@ui/domains/Account/AccountRenameModal"
-import { CopyAddressModalProvider } from "@ui/domains/CopyAddress"
+import {
+  AccountExportModal,
+  AccountExportModalProvider,
+} from "@ui/domains/Account/AccountExportModal"
+import {
+  AccountExportPrivateKeyModal,
+  AccountExportPrivateKeyModalProvider,
+} from "@ui/domains/Account/AccountExportPrivateKeyModal"
+import {
+  AccountRemoveModal,
+  AccountRemoveModalProvider,
+} from "@ui/domains/Account/AccountRemoveModal"
+import {
+  AccountRenameModal,
+  AccountRenameModalProvider,
+} from "@ui/domains/Account/AccountRenameModal"
+import { CopyAddressModal, CopyAddressModalProvider } from "@ui/domains/CopyAddress"
 import { SelectedAccountProvider } from "@ui/domains/Portfolio/SelectedAccountContext"
 import { useIsLoggedIn } from "@ui/hooks/useIsLoggedIn"
 import { useIsOnboarded } from "@ui/hooks/useIsOnboarded"
@@ -17,6 +29,7 @@ import { Suspense, useEffect, useMemo } from "react"
 import { Navigate, Route, Routes } from "react-router-dom"
 
 import { BackupWarningDrawer } from "./components/BackupWarningDrawer"
+import { NavigationDrawer } from "./components/Navigation/NavigationDrawer"
 import { CurrentSiteProvider } from "./context/CurrentSiteContext"
 import { NavigationProvider } from "./context/NavigationContext"
 import { AddCustomErc20Token } from "./pages/AddCustomErc20Token"
@@ -94,6 +107,13 @@ const PopupInner = () => {
                         <Route path="send/*" element={<SendFundsPage />} />
                         <Route path="*" element={<Navigate to="/portfolio" replace />} />
                       </Routes>
+                      {/* NavigationDrawer here so user can see the drawer close smoothly in case he navigates from one page to another (as long as both page use this Layout) */}
+                      <NavigationDrawer />
+                      <AccountRenameModal />
+                      <AccountRemoveModal />
+                      <AccountExportModal />
+                      <AccountExportPrivateKeyModal />
+                      <CopyAddressModal />
                     </CopyAddressModalProvider>
                   </NavigationProvider>
                 </CurrentSiteProvider>
