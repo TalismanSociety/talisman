@@ -1,12 +1,6 @@
 import type { AuthorizedSites } from "@core/domains/sitesAuthorised/types"
 import { api } from "@ui/api"
-import { useMessageSubscription } from "@ui/hooks/useMessageSubscription"
-import { BehaviorSubject } from "rxjs"
-
-const INITIAL_VALUE: AuthorizedSites = {}
-
-const subscribe = (subject: BehaviorSubject<AuthorizedSites>) =>
-  api.authorizedSitesSubscribe((v) => subject.next(v))
+import { atom, useRecoilValue } from "recoil"
 
 const authorisedSitesOnly = (value: AuthorizedSites): AuthorizedSites => {
   const result = { ...value }
@@ -14,5 +8,16 @@ const authorisedSitesOnly = (value: AuthorizedSites): AuthorizedSites => {
   return result
 }
 
-export const useAuthorisedSites = () =>
-  useMessageSubscription("authorizedSitesSubscribe", INITIAL_VALUE, subscribe, authorisedSitesOnly)
+const authorizedSitesState = atom<AuthorizedSites>({
+  key: "authorizedSitesState",
+  effects: [
+    ({ setSelf }) => {
+      const unsubscribe = api.authorizedSitesSubscribe((sites) =>
+        setSelf(authorisedSitesOnly(sites))
+      )
+      return () => unsubscribe()
+    },
+  ],
+})
+
+export const useAuthorisedSites = () => useRecoilValue(authorizedSitesState)
