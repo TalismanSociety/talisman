@@ -52,7 +52,7 @@
   "Imported account": "",
   "Hardware wallet account": "",
   "Polkadot Vault account": "",
-  "Watched only account": "",
+  "Watched account": "",
   "Polkadot": "",
   "Polkadot, Kusama & Parachains": "",
   "Ethereum": "",
@@ -138,7 +138,7 @@
   "Parachain": "",
   "Relay Chain": "",
   "Blockchain": "",
-  "Watched only accounts cannot send funds": "",
+  "Watched accounts cannot send funds": "",
   "No tokens available to send": "",
   "Address copied": ""
 }

@@ -19,7 +19,7 @@ export const AccountTypeIcon: FC<AccountTypeIconProps> = ({ origin, showLinked, 
       return { Icon: LinkIcon, tooltip: t("Imported account") }
     if (origin === "HARDWARE") return { Icon: UsbIcon, tooltip: t("Hardware wallet account") }
     if (origin === "QR") return { Icon: PolkadotVaultIcon, tooltip: t("Polkadot Vault account") }
-    if (origin === "WATCHED") return { Icon: EyeIcon, tooltip: t("Watched only account") }
+    if (origin === "WATCHED") return { Icon: EyeIcon, tooltip: t("Watched account") }
 
     return {}
   }, [origin, showLinked, t])

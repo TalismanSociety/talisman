@@ -22,7 +22,7 @@ export const useSendFundsPopup = (account: AccountJsonAny | undefined, tokenId?:
     if (account?.origin === "WATCHED")
       return {
         canSendFunds: false,
-        cannotSendFundsReason: t("Watched only accounts cannot send funds"),
+        cannotSendFundsReason: t("Watched accounts cannot send funds"),
       }
     if (tokenId && transferableBalances.sum.planck.transferable === 0n)
       return {
