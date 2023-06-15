@@ -474,42 +474,57 @@ export class EthTabsHandler extends TabsHandler {
     if (!isValidWatchAssetRequestParam(request.params))
       throw new EthProviderRpcError("Invalid parameter", ETH_ERROR_EIP1474_INVALID_PARAMS)
 
-    const { symbol, address, decimals, image } = request.params.options
-    const ethChainId = await this.getChainId(url)
-    if (typeof ethChainId !== "number")
-      throw new EthProviderRpcError("Not connected", ETH_ERROR_EIP1993_CHAIN_DISCONNECTED)
+    const processRequest = async () => {
+      try {
+        const { symbol, address, decimals, image } = request.params.options
+        const ethChainId = await this.getChainId(url)
+        if (typeof ethChainId !== "number")
+          throw new EthProviderRpcError("Not connected", ETH_ERROR_EIP1993_CHAIN_DISCONNECTED)
 
-    const tokenId = getErc20TokenId(ethChainId.toString(), address)
-    const existing = await chaindataProvider.getToken(tokenId)
-    if (existing)
-      throw new EthProviderRpcError("Asset already exists", ETH_ERROR_EIP1474_INVALID_PARAMS)
+        const tokenId = getErc20TokenId(ethChainId.toString(), address)
+        const existing = await chaindataProvider.getToken(tokenId)
+        if (existing)
+          throw new EthProviderRpcError("Asset already exists", ETH_ERROR_EIP1474_INVALID_PARAMS)
 
-    const provider = await getProviderForEvmNetworkId(ethChainId.toString())
-    if (!provider)
-      throw new EthProviderRpcError("Network not supported", ETH_ERROR_EIP1993_CHAIN_DISCONNECTED)
+        const provider = await getProviderForEvmNetworkId(ethChainId.toString())
+        if (!provider)
+          throw new EthProviderRpcError(
+            "Network not supported",
+            ETH_ERROR_EIP1993_CHAIN_DISCONNECTED
+          )
 
-    try {
-      // eslint-disable-next-line no-var
-      var tokenInfo = await getErc20TokenInfo(provider, ethChainId.toString(), address)
-    } catch (err) {
-      throw new EthProviderRpcError("Asset not found", ETH_ERROR_EIP1474_INVALID_PARAMS)
+        try {
+          // eslint-disable-next-line no-var
+          var tokenInfo = await getErc20TokenInfo(provider, ethChainId.toString(), address)
+        } catch (err) {
+          throw new EthProviderRpcError("Asset not found", ETH_ERROR_EIP1474_INVALID_PARAMS)
+        }
+
+        const token: CustomErc20Token = {
+          id: tokenId,
+          type: "evm-erc20",
+          isTestnet: false,
+          symbol: symbol ?? tokenInfo.symbol,
+          decimals: decimals ?? tokenInfo.decimals,
+          logo: image ?? tokenInfo.image ?? githubUnknownTokenLogoUrl,
+          coingeckoId: tokenInfo.coingeckoId,
+          contractAddress: address,
+          evmNetwork: tokenInfo.evmNetworkId !== undefined ? { id: tokenInfo.evmNetworkId } : null,
+          isCustom: true,
+          image: image ?? tokenInfo.image,
+        }
+
+        await requestWatchAsset(url, request.params, token, port)
+      } catch (err) {
+        log.error("Failed to add watch asset", { err })
+      }
     }
 
-    const token: CustomErc20Token = {
-      id: tokenId,
-      type: "evm-erc20",
-      isTestnet: false,
-      symbol: symbol ?? tokenInfo.symbol,
-      decimals: decimals ?? tokenInfo.decimals,
-      logo: image ?? tokenInfo.image ?? githubUnknownTokenLogoUrl,
-      coingeckoId: tokenInfo.coingeckoId,
-      contractAddress: address,
-      evmNetwork: tokenInfo.evmNetworkId !== undefined ? { id: tokenInfo.evmNetworkId } : null,
-      isCustom: true,
-      image: image ?? tokenInfo.image,
-    }
+    // process request asynchronously to prevent dapp from knowing if user accepts or rejects
+    // see https://eips.ethereum.org/EIPS/eip-747
+    processRequest()
 
-    return requestWatchAsset(url, request.params, token, port)
+    return true
   }
 
   private async sendTransaction(
