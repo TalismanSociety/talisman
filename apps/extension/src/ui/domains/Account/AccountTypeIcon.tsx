@@ -28,8 +28,8 @@ export const AccountTypeIcon: FC<AccountTypeIconProps> = ({ origin, showLinked, 
 
   return (
     <Tooltip>
-      <TooltipTrigger>
-        <Icon className={classNames("inline shrink-0", className)} />
+      <TooltipTrigger className="flex flex-col justify-center">
+        <Icon className={classNames("shrink-0", className)} />
       </TooltipTrigger>
       <TooltipContent>{tooltip}</TooltipContent>
     </Tooltip>
