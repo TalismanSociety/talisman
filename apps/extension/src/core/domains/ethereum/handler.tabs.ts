@@ -52,6 +52,7 @@ import {
   isValidAddEthereumRequestParam,
   isValidRequestedPermissions,
   isValidWatchAssetRequestParam,
+  sanitizeWatchAssetRequestParam,
 } from "./helpers"
 import { requestAddNetwork, requestWatchAsset } from "./requests"
 import { getProviderForEthereumNetwork, getProviderForEvmNetworkId } from "./rpcProviders"
@@ -476,7 +477,10 @@ export class EthTabsHandler extends TabsHandler {
 
     const processRequest = async () => {
       try {
-        const { symbol, address, decimals, image } = request.params.options
+        const {
+          options: { symbol, address, decimals, image },
+        } = await sanitizeWatchAssetRequestParam(request.params)
+
         const ethChainId = await this.getChainId(url)
         if (typeof ethChainId !== "number")
           throw new EthProviderRpcError("Not connected", ETH_ERROR_EIP1993_CHAIN_DISCONNECTED)
