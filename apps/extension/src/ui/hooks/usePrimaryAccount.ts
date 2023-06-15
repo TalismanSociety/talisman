@@ -3,8 +3,7 @@ import { api } from "@ui/api"
 import { useMemo } from "react"
 import { atom, useRecoilValue } from "recoil"
 
-// only use for this purpose, to leverage suspense
-// do not use this in useAccounts as it raises performance issues
+// do not use this atom in useAccounts as it raises performance issues because of suspense
 const accountsState = atom<AccountJsonAny[]>({
   key: "accountsState",
   effects: [
@@ -16,6 +15,8 @@ const accountsState = atom<AccountJsonAny[]>({
 })
 
 /**
+ * Only use this for login screen, to leverage suspense
+ * If needed elsewhere, make a copy of it that uses useAccounts().
  *
  * @param storedSeedOnly causes the function to return only accounts derived from a seed stored in Talisman. Returns that account if it
  * exists, or the first account present if not, by default
