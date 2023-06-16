@@ -8,6 +8,7 @@ import {
   RequestAuthorizeTab,
 } from "@core/domains/sitesAuthorised/types"
 import { CustomErc20Token } from "@core/domains/tokens/types"
+import i18next from "@core/i18nConfig"
 import {
   ETH_ERROR_EIP1474_INVALID_INPUT,
   ETH_ERROR_EIP1474_INVALID_PARAMS,
@@ -504,6 +505,33 @@ export class EthTabsHandler extends TabsHandler {
           throw new EthProviderRpcError("Asset not found", ETH_ERROR_EIP1474_INVALID_PARAMS)
         }
 
+        const allTokens = await chaindataProvider.tokensArray()
+        const symbolFound = allTokens.some(
+          (token) =>
+            token.type === "evm-erc20" &&
+            token.evmNetwork?.id === ethChainId.toString() &&
+            token.symbol === symbol
+        )
+
+        const warnings: string[] = []
+        if (!tokenInfo) {
+          warnings.push(i18next.t("Failed to verify the contract information"))
+        } else {
+          if (tokenInfo.symbol !== symbol)
+            warnings.push(
+              i18next.t(
+                "Suggested symbol {{symbol}} is different from the one defined on the contract ({{contractSymbol}})",
+                { symbol, contractSymbol: tokenInfo.symbol }
+              )
+            )
+          if (!tokenInfo.coingeckoId)
+            warnings.push(i18next.t("This token's address is not registered on CoinGecko"))
+        }
+        if (symbolFound)
+          warnings.push(
+            i18next.t(`Another {{symbol}} token already exists on this network`, { symbol })
+          )
+
         const token: CustomErc20Token = {
           id: tokenId,
           type: "evm-erc20",
@@ -518,7 +546,7 @@ export class EthTabsHandler extends TabsHandler {
           image: image ?? tokenInfo.image,
         }
 
-        await requestWatchAsset(url, request.params, token, port)
+        await requestWatchAsset(url, request.params, token, warnings, port)
       } catch (err) {
         log.error("Failed to add watch asset", { err })
       }
