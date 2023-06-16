@@ -104,6 +104,12 @@ export const api: MessageTypes = {
       address,
       genesisHash,
     }),
+  accountCreateWatched: (name, address, isPortfolio) =>
+    messageService.sendMessage("pri(accounts.create.watched)", {
+      name,
+      address,
+      isPortfolio,
+    }),
   accountsSubscribe: (cb) => messageService.subscribe("pri(accounts.subscribe)", null, cb),
   accountForget: (address) => messageService.sendMessage("pri(accounts.forget)", { address }),
   accountExport: (address, password, exportPw) =>
@@ -112,6 +118,8 @@ export const api: MessageTypes = {
     messageService.sendMessage("pri(accounts.export.pk)", { address, password }),
   accountRename: (address, name) =>
     messageService.sendMessage("pri(accounts.rename)", { address, name }),
+  accountExternalSetIsPortfolio: (address, isPortfolio) =>
+    messageService.sendMessage("pri(accounts.external.setIsPortfolio)", { address, isPortfolio }),
   accountValidateMnemonic: (mnemonic) =>
     messageService.sendMessage("pri(accounts.validateMnemonic)", mnemonic),
   setVerifierCertMnemonic: (mnemonic) =>

@@ -67,9 +67,18 @@ export const sortAccounts = (accounts: SubjectInfo): AccountJsonAny[] => {
     ["SEED", "JSON", "QR", "HARDWARE"].includes(origin as string)
   )
   const importedSorted = sortAccountsByWhenCreated(imported)
-  ordered = [...ordered, ...importedSorted]
 
-  return ordered
+  const watchedPortfolio = transformedAccounts.filter(
+    ({ origin, isPortfolio }) => origin === AccountTypes.WATCHED && isPortfolio
+  )
+  const watchedPortfolioSorted = sortAccountsByWhenCreated(watchedPortfolio)
+
+  const watchedFollowed = transformedAccounts.filter(
+    ({ origin, isPortfolio }) => origin === AccountTypes.WATCHED && !isPortfolio
+  )
+  const watchedFollowedSorted = sortAccountsByWhenCreated(watchedFollowed)
+
+  return [...ordered, ...importedSorted, ...watchedPortfolioSorted, ...watchedFollowedSorted]
 }
 
 export const getInjectedAccount = ({
@@ -97,6 +106,7 @@ export const getPublicAccounts = (
   filterFn: (accounts: SingleAddress[]) => SingleAddress[] = (accounts) => accounts
 ) =>
   filterFn(accounts)
+    .filter((a) => a.json.meta.origin !== "WATCHED")
     .sort((a, b) => (a.json.meta.whenCreated || 0) - (b.json.meta.whenCreated || 0))
     .map(getInjectedAccount)
 

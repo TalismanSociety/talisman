@@ -258,6 +258,7 @@ const GenericPicker = ({
             </DivWithMount>
           )}
           <button
+            type="button"
             className="btn-picker-select"
             aria-label={t("Select")}
             {...getToggleButtonProps()}

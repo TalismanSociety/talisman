@@ -14,5 +14,5 @@ export const SendFundsTokenPicker = () => {
     [set]
   )
 
-  return <TokenPicker onSelect={handleTokenSelect} address={from} selected={tokenId} />
+  return <TokenPicker ownedOnly address={from} selected={tokenId} onSelect={handleTokenSelect} />
 }

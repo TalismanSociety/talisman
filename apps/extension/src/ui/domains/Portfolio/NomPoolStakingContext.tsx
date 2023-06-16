@@ -26,7 +26,7 @@ const useShowNomPoolStakingBannerProvider = () => {
   const accounts = useAccounts()
   // only balances on substrate accounts are eligible for nom pool staking
   const substrateAddresses = accounts
-    .filter(({ type }) => type === "sr25519")
+    .filter(({ type, origin }) => type === "sr25519" && origin !== "WATCHED")
     .map(({ address }) => address)
 
   const [showBannerSetting] = useAppState("showDotNomPoolStakingBanner")

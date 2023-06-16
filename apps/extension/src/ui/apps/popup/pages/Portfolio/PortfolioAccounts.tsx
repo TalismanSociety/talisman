@@ -1,3 +1,4 @@
+import { AccountType } from "@core/domains/accounts/types"
 import { isEthereumAddress } from "@polkadot/util-crypto"
 import { FadeIn } from "@talisman/components/FadeIn"
 import {
@@ -6,14 +7,16 @@ import {
   ChevronRightIcon,
   CopyIcon,
   CreditCardIcon,
+  EyeIcon,
   PaperPlaneIcon,
+  TalismanHandIcon,
 } from "@talisman/theme/icons"
 import { Balance, Balances } from "@talismn/balances"
 import { api } from "@ui/api"
 import { AnalyticsPage, sendAnalyticsEvent } from "@ui/api/analytics"
 import { TotalFiatBalance } from "@ui/apps/popup/components/TotalFiatBalance"
+import { AccountTypeIcon } from "@ui/domains/Account/AccountTypeIcon"
 import AccountAvatar from "@ui/domains/Account/Avatar"
-import { AccountTypeIcon } from "@ui/domains/Account/NamedAddress"
 import Fiat from "@ui/domains/Asset/Fiat"
 import { useCopyAddressModal } from "@ui/domains/CopyAddress"
 import { useSelectedAccount } from "@ui/domains/Portfolio/SelectedAccountContext"
@@ -38,7 +41,8 @@ type AccountOption = {
   name: string
   total?: number
   genesisHash?: string | null
-  origin?: string
+  origin?: AccountType
+  isPortfolio?: boolean
 }
 
 const AccountButton = ({ address, name, total, genesisHash, origin }: AccountOption) => {
@@ -76,6 +80,7 @@ const AccountButton = ({ address, name, total, genesisHash, origin }: AccountOpt
 
   return (
     <button
+      type="button"
       tabIndex={0}
       className="text-body-secondary bg-black-secondary hover:bg-grey-800 flex h-[5.9rem] w-full cursor-pointer items-center gap-6 overflow-hidden rounded-sm px-6 hover:text-white"
       onClick={handleAccountClick}
@@ -167,20 +172,56 @@ const TopActions = () => {
   )
 }
 
+const AccountsListView = ({ options }: { options: AccountOption[] }) => (
+  <div className="flex w-full flex-col gap-4 ">
+    {options.map((option) => (
+      <AccountButton key={option.address ?? "all"} {...option} />
+    ))}
+  </div>
+)
+
+const AccountsList = ({ options }: { options: AccountOption[] }) => {
+  const { t } = useTranslation()
+  const { myAccounts, watchedAccounts } = useMemo(
+    () => ({
+      myAccounts: options.filter(({ origin, isPortfolio }) => origin !== "WATCHED" || isPortfolio),
+      watchedAccounts: options.filter(
+        ({ origin, isPortfolio }) => origin === "WATCHED" && !isPortfolio
+      ),
+    }),
+    [options]
+  )
+
+  if (watchedAccounts.length && myAccounts.length)
+    return (
+      <div className="py-12">
+        <div className="text-body-secondary mb-6 flex items-center gap-4 font-bold">
+          <TalismanHandIcon className="inline" />
+          <div>{t("My portfolio")}</div>
+        </div>
+        <AccountsListView options={myAccounts} />
+        <div className="text-body-secondary mb-6 mt-8 flex items-center gap-4 font-bold">
+          <EyeIcon className="inline " />
+          <div>{t("Followed only")}</div>
+        </div>
+        <AccountsListView options={watchedAccounts} />
+      </div>
+    )
+
+  return <AccountsListView options={options} />
+}
+
 const Accounts = ({ options }: { options: AccountOption[] }) => (
   <div className="flex w-full flex-col">
     <TotalFiatBalance />
     <TopActions />
-    <div className="flex w-full flex-col gap-4 py-12">
-      {options.map((option) => (
-        <AccountButton key={option.address ?? "all"} {...option} />
-      ))}
-    </div>
+    <AccountsList options={options} />
   </div>
 )
 
 export const PortfolioAccounts = () => {
   const balances = useBalances()
+  const myBalances = useBalances("portfolio")
   const accounts = useAccounts()
   const { popupOpenEvent } = useAnalytics()
   const { t } = useTranslation("portfolio")
@@ -197,17 +238,18 @@ export const PortfolioAccounts = () => {
     return [
       {
         name: t("All Accounts"),
-        total: balances.sum.fiat("usd").total,
+        total: myBalances.sum.fiat("usd").total,
       },
-      ...accounts.map(({ address, name, genesisHash, origin }) => ({
+      ...accounts.map(({ address, name, genesisHash, origin, isPortfolio }) => ({
         address,
         genesisHash,
         name: name ?? t("Unknown Account"),
-        origin: typeof origin === "string" ? origin : undefined,
+        origin,
+        isPortfolio: !!isPortfolio,
         total: new Balances(balancesByAddress.get(address) ?? []).sum.fiat("usd").total,
       })),
     ]
-  }, [t, accounts, balances])
+  }, [t, accounts, balances, myBalances])
 
   useEffect(() => {
     popupOpenEvent("portfolio accounts")

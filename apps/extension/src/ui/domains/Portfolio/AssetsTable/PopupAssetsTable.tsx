@@ -269,6 +269,7 @@ const BalancesGroup = ({ label, fiatAmount, className, children }: GroupProps) =
   return (
     <div className="flex flex-col gap-6">
       <button
+        type="button"
         className={classNames("text-md flex cursor-pointer items-center gap-2", className)}
         onClick={toggle}
       >

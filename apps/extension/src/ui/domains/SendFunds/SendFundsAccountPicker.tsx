@@ -19,7 +19,7 @@ export const SendFundsAccountPicker = () => {
   const token = useToken(tokenId)
   const chain = useChain(token?.chain?.id)
 
-  const allAccounts = useAccounts()
+  const allAccounts = useAccounts("owned")
 
   const accounts = useMemo(
     () =>

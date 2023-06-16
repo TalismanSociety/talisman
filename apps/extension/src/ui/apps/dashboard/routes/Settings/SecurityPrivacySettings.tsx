@@ -1,4 +1,3 @@
-import Field from "@talisman/components/Field"
 import Grid from "@talisman/components/Grid"
 import HeaderBlock from "@talisman/components/HeaderBlock"
 import Setting from "@talisman/components/Setting"
@@ -8,6 +7,7 @@ import { useSetting } from "@ui/hooks/useSettings"
 import { Trans, useTranslation } from "react-i18next"
 import { useNavigate } from "react-router-dom"
 import styled from "styled-components"
+import { Toggle } from "talisman-ui"
 
 const LinkText = styled.span`
   color: var(--color-primary);
@@ -45,7 +45,10 @@ const SecurityPrivacySettings = () => {
               </Trans>
             }
           >
-            <Field.Toggle value={useErrorTracking} onChange={setUseErrorTracking} />
+            <Toggle
+              checked={useErrorTracking}
+              onChange={(e) => setUseErrorTracking(e.target.checked)}
+            />
           </Setting>
         )}
         {useAnalyticsTracking !== undefined && (
@@ -58,7 +61,10 @@ const SecurityPrivacySettings = () => {
               </Trans>
             }
           >
-            <Field.Toggle value={useAnalyticsTracking} onChange={setUseAnalyticsTracking} />
+            <Toggle
+              checked={useAnalyticsTracking}
+              onChange={(e) => setUseAnalyticsTracking(e.target.checked)}
+            />
           </Setting>
         )}
       </Grid>

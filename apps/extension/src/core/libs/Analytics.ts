@@ -101,11 +101,15 @@ class TalismanAnalytics {
           return result
         },
         {
+          talisman: 0,
           root: 0,
           derived: 0,
           hardware: 0,
           seed: 0,
+          seed_stored: 0,
           json: 0,
+          qr: 0,
+          watched: 0,
         } as Record<Lowercase<AccountType>, number>
       )
       posthog.capture("accounts breakdown", { accountBreakdown })
@@ -121,13 +125,21 @@ class TalismanAnalytics {
         ((await db.tokenRates.toArray()) || []).map(({ tokenId, rates }) => [tokenId, rates])
       )
 
+      // consider only accounts that are not watched accounts
+      const ownedAddresses = accounts
+        .filter((account) => account.meta.origin !== "WATCHED")
+        .map((account) => account.address)
+
       // balances + balances fiat sum estimate
-      var balances = new Balances(await balancesDb.balances.toArray(), {
-        chains,
-        evmNetworks,
-        tokens,
-        tokenRates,
-      })
+      var balances = new Balances(
+        await balancesDb.balances.filter((b) => ownedAddresses.includes(b.address)).toArray(),
+        {
+          chains,
+          evmNetworks,
+          tokens,
+          tokenRates,
+        }
+      )
       /* eslint-enable no-var */
     } catch (cause) {
       const error = new Error("Failed to access db to build general analyics report", { cause })

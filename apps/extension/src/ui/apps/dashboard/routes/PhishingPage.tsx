@@ -52,6 +52,7 @@ export const PhishingPage: FC<PhishingPageProps> = ({ url }) => {
                   </Button>
                 </a>
                 <button
+                  type="button"
                   className="text-grey-600 hover:text-body-secondary cursor-pointer text-sm leading-8"
                   onClick={allowSite}
                 >

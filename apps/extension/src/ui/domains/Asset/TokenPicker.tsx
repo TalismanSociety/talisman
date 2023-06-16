@@ -168,6 +168,7 @@ type TokensListProps = {
   search?: string
   showEmptyBalances?: boolean
   allowUntransferable?: boolean
+  ownedOnly?: boolean
   onSelect?: (tokenId: TokenId) => void
 }
 
@@ -177,6 +178,7 @@ const TokensList: FC<TokensListProps> = ({
   search,
   showEmptyBalances,
   allowUntransferable,
+  ownedOnly,
   onSelect,
 }) => {
   const { t } = useTranslation()
@@ -187,7 +189,7 @@ const TokensList: FC<TokensListProps> = ({
   const { tokens: allTokens } = useTokens(useTestnets)
   const tokenRatesMap = useTokenRatesMap()
 
-  const balances = useBalances()
+  const balances = useBalances(ownedOnly ? "owned" : "all")
 
   const accountBalances = useMemo(
     () => (address && !selected ? balances.find({ address: address ?? undefined }) : balances),
@@ -363,6 +365,7 @@ type TokenPickerProps = {
   selected?: TokenId
   showEmptyBalances?: boolean
   allowUntransferable?: boolean
+  ownedOnly?: boolean
   className?: string
   onSelect?: (tokenId: TokenId) => void
 }
@@ -372,6 +375,7 @@ export const TokenPicker: FC<TokenPickerProps> = ({
   selected,
   showEmptyBalances,
   allowUntransferable,
+  ownedOnly,
   onSelect,
 }) => {
   const { t } = useTranslation()
@@ -394,6 +398,7 @@ export const TokenPicker: FC<TokenPickerProps> = ({
           search={search}
           showEmptyBalances={showEmptyBalances}
           allowUntransferable={allowUntransferable}
+          ownedOnly={ownedOnly}
           onSelect={onSelect}
         />
       </ScrollContainer>

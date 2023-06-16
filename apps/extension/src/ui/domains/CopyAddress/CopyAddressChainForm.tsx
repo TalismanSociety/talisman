@@ -27,6 +27,7 @@ type ChainFormat = {
 const ChainFormatButton = ({ format, onClick }: { format: ChainFormat; onClick?: () => void }) => {
   return (
     <button
+      type="button"
       onClick={onClick}
       className="text-body-secondary hover:text-body hover:bg-grey-800 flex h-32 w-full items-center gap-4 px-8"
     >
