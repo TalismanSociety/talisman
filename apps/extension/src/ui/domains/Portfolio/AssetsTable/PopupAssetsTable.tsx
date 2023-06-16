@@ -131,9 +131,12 @@ const AssetRow = ({ balances, locked }: AssetRowProps) => {
   })
   const navigate = useNavigate()
   const handleClick = useCallback(() => {
-    navigate(`/portfolio/${token?.symbol}${token?.isTestnet ? "?testnet=true" : ""}`)
-    genericEvent("goto portfolio asset", { from: "popup", symbol: token?.symbol })
-  }, [genericEvent, navigate, token?.isTestnet, token?.symbol])
+    if (!token) return
+    navigate(
+      `/portfolio/${encodeURIComponent(token.symbol)}${token.isTestnet ? "?testnet=true" : ""}`
+    )
+    genericEvent("goto portfolio asset", { from: "popup", symbol: token.symbol })
+  }, [genericEvent, navigate, token])
 
   const handleClickStakingBanner = useCallback(() => {
     window.open("https://app.talisman.xyz/staking")
