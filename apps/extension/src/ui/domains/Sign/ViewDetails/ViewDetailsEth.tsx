@@ -349,6 +349,7 @@ const ViewDetailsContent: FC<ViewDetailsContentProps> = ({ onClose }) => {
           <ViewDetailsField
             label={
               <button
+                type="button"
                 onClick={handleCopyByteCode}
                 className="text-body-secondary text-left hover:text-white"
               >

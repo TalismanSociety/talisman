@@ -35,6 +35,7 @@ export const SignParamButton: FC<SignParamButtonProps> = ({
 
   return (
     <button
+      type="button"
       onClick={handleClick}
       className={classNames(
         "text-body-secondary inline-flex h-[1.2em] gap-3 px-4 text-base hover:text-white",

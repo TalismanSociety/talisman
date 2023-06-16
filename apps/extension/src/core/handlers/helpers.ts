@@ -30,10 +30,9 @@ export const getPairForAddressSafely = async <T>(
   let pair: KeyringPair | null = null
   try {
     try {
-      pair =
-        isHardwareAccount(address) || isQrAccount(address)
-          ? getPairFromAddress(address)
-          : getUnlockedPairFromAddress(address)
+      pair = hasPrivateKey(address)
+        ? getUnlockedPairFromAddress(address)
+        : getPairFromAddress(address)
     } catch (error) {
       passwordStore.clearPassword()
       throw error
@@ -54,4 +53,18 @@ export const isHardwareAccount = (address: Address) => {
 export const isQrAccount = (address: Address) => {
   const acc = keyring.getAccount(address)
   return acc?.meta?.origin === "QR" ?? false
+}
+
+export const isWatchedAccount = (address: Address) => {
+  const acc = keyring.getAccount(address)
+  return acc?.meta?.origin === "WATCHED" ?? false
+}
+
+export const hasPrivateKey = (address: Address) => {
+  const acc = keyring.getAccount(address)
+  if (!acc) return false
+  if (acc.meta?.isExternal) return false
+  if (acc.meta?.isHardware) return false
+  if (["QR", "WATCHED"].includes(acc.meta?.origin as string)) return false
+  return true
 }

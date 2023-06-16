@@ -12,7 +12,7 @@ import { FC, useCallback, useState } from "react"
 import { useTranslation } from "react-i18next"
 import styled from "styled-components"
 
-import Account from "./Account"
+import { AuthorisedSitesListAccount } from "./AuthorisedSitesListAccount"
 
 const Title: FC<{ name: string; domain: string; className?: string }> = ({
   name,
@@ -91,7 +91,7 @@ const ConnectedSite = ({ id, provider, className }: ConnectedSiteProps) => {
         )}
       </div>
       {availableAddresses.map((address) => (
-        <Account
+        <AuthorisedSitesListAccount
           key={address}
           address={address}
           isConnected={connected.includes(address)}

@@ -115,6 +115,7 @@ export const QrCodeSourceSelector = ({
         >
           {t("QR Source:")}{" "}
           <button
+            type="button"
             className="text-body hover:bg-grey-750 flex cursor-pointer items-center gap-2 rounded-sm p-3"
             onClick={togglePopover}
           >
@@ -131,6 +132,7 @@ export const QrCodeSourceSelector = ({
       >
         {sources.map((source) => (
           <button
+            type="button"
             key={source}
             onClick={() => setSource(source)}
             className="hover:bg-grey-800 rounded-xs h-20 p-6 text-left"

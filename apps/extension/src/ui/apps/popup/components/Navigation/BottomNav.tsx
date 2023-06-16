@@ -34,6 +34,7 @@ type BottomNavButtonProps = DetailedHTMLProps<
 const BottomNavButton = forwardRef<HTMLButtonElement, BottomNavButtonProps>(
   ({ current, className, children, ...props }, ref) => (
     <button
+      type="button"
       ref={ref}
       {...props}
       className={classNames(

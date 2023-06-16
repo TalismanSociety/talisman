@@ -1,6 +1,6 @@
 import { Balances } from "@core/domains/balances/types"
 import { ChevronLeftIcon, CopyIcon, PaperPlaneIcon } from "@talisman/theme/icons"
-import { api } from "@ui/api"
+import { classNames } from "@talismn/util"
 import { TokenLogo } from "@ui/domains/Asset/TokenLogo"
 import { useCopyAddressModal } from "@ui/domains/CopyAddress"
 import { DashboardAssetDetails } from "@ui/domains/Portfolio/AssetDetails"
@@ -10,6 +10,7 @@ import { Statistics } from "@ui/domains/Portfolio/Statistics"
 import { useDisplayBalances } from "@ui/domains/Portfolio/useDisplayBalances"
 import { useTokenBalancesSummary } from "@ui/domains/Portfolio/useTokenBalancesSummary"
 import { useAnalytics } from "@ui/hooks/useAnalytics"
+import { useSendFundsPopup } from "@ui/hooks/useSendFundsPopup"
 import { useCallback, useEffect, useMemo } from "react"
 import { useTranslation } from "react-i18next"
 import { Navigate, useNavigate, useParams, useSearchParams } from "react-router-dom"
@@ -23,15 +24,18 @@ const PageContent = ({ balances, symbol }: { balances: Balances; symbol: string 
   const { genericEvent } = useAnalytics()
   const { account } = useSelectedAccount()
 
+  // don't set the token id here because it could be one of many
+  const { canSendFunds, cannotSendFundsReason, openSendFundsPopup } = useSendFundsPopup(account)
+
   const handleCopyAddressClick = useCallback(() => {
     openCopyAddressModal({ mode: "copy", address: account?.address })
     genericEvent("open copy address", { from: "dashboard portfolio" })
   }, [account?.address, genericEvent, openCopyAddressModal])
 
   const handleSendFundsClick = useCallback(() => {
-    api.sendFundsOpen({ from: account?.address })
+    openSendFundsPopup()
     genericEvent("open send funds", { from: "dashboard portfolio" })
-  }, [account?.address, genericEvent])
+  }, [openSendFundsPopup, genericEvent])
 
   const handleBackBtnClick = useCallback(() => navigate("/portfolio"), [navigate])
   const { t } = useTranslation("portfolio")
@@ -65,12 +69,15 @@ const PageContent = ({ balances, symbol }: { balances: Balances; symbol: string 
               </Tooltip>
               <Tooltip>
                 <TooltipTrigger
-                  onClick={handleSendFundsClick}
-                  className="hover:bg-grey-800 text-body-secondary hover:text-body flex h-12 w-12 flex-col items-center justify-center rounded-full text-sm"
+                  onClick={canSendFunds ? handleSendFundsClick : undefined}
+                  className={classNames(
+                    "text-body-secondary flex h-12 w-12 flex-col items-center justify-center rounded-full text-sm",
+                    canSendFunds ? "hover:bg-grey-800 hover:text-body" : "cursor-default opacity-50"
+                  )}
                 >
                   <PaperPlaneIcon />
                 </TooltipTrigger>
-                <TooltipContent>{t("Send")}</TooltipContent>
+                <TooltipContent>{canSendFunds ? t("Send") : cannotSendFundsReason}</TooltipContent>
               </Tooltip>
             </div>
           </div>

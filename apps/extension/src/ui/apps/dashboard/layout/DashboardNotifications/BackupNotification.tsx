@@ -34,6 +34,7 @@ export const BackupWarningModal = ({ isOpen, snooze, openBackupModal }: BackupWa
             {t("Backup now")}
           </Button>
           <button
+            type="button"
             className="text-body-secondary hover:text-grey-200 cursor-pointer text-base"
             onClick={snooze}
           >

@@ -1,5 +1,4 @@
 import Checkbox from "./Checkbox"
-import Toggle from "./Toggle"
 
 // Legacy components barrel
 
@@ -7,7 +6,7 @@ import Toggle from "./Toggle"
 // @ts-nocheck
 const Field = () => {}
 
-Field.Toggle = Toggle
+// TODO migrate to tailwind
 Field.Checkbox = Checkbox
 
 export default Field

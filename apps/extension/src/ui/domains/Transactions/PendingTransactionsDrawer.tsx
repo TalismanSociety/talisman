@@ -244,12 +244,14 @@ const EvmTxActions: FC<{
             {isPending && (
               <>
                 <button
+                  type="button"
                   onClick={handleActionClick("cancel")}
                   className="hover:bg-grey-800 rounded-xs h-20 p-6 text-left"
                 >
                   {t("Cancel transaction")}
                 </button>
                 <button
+                  type="button"
                   onClick={handleActionClick("speed-up")}
                   className="hover:bg-grey-800 rounded-xs h-20 p-6 text-left"
                 >
@@ -259,6 +261,7 @@ const EvmTxActions: FC<{
             )}
             {hrefBlockExplorer && (
               <button
+                type="button"
                 onClick={handleBlockExplorerClick}
                 className="hover:bg-grey-800 rounded-xs h-20 p-6 text-left"
               >
@@ -266,6 +269,7 @@ const EvmTxActions: FC<{
               </button>
             )}
             <button
+              type="button"
               onClick={handleActionClick("dismiss")}
               className="hover:bg-grey-800 rounded-xs h-20 p-6 text-left"
             >
@@ -512,6 +516,7 @@ const SubTxActions: FC<{
           >
             {hrefBlockExplorer && (
               <button
+                type="button"
                 onClick={handleBlockExplorerClick}
                 className="hover:bg-grey-800 rounded-xs h-20 p-6 text-left"
               >
@@ -519,6 +524,7 @@ const SubTxActions: FC<{
               </button>
             )}
             <button
+              type="button"
               onClick={handleActionClick("dismiss")}
               className="hover:bg-grey-800 rounded-xs h-20 p-6 text-left"
             >

@@ -1,6 +1,7 @@
 import { WithTooltip } from "@talisman/components/Tooltip"
 import { AlertCircleIcon, LoaderIcon } from "@talisman/theme/icons"
-import { classNames } from "@talismn/util"
+import { classNames, encodeAnyAddress } from "@talismn/util"
+import useAccounts from "@ui/hooks/useAccounts"
 import { isEvmToken } from "@ui/util/isEvmToken"
 import { Suspense, lazy, useEffect, useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
@@ -104,6 +105,27 @@ const TotalValueRow = () => {
   )
 }
 
+export const ExternalRecipientWarning = () => {
+  const { t } = useTranslation()
+  const { to } = useSendFunds()
+  const accounts = useAccounts("owned")
+
+  const showWarning = useMemo(() => {
+    if (!to || !accounts) return false
+    const encoded = encodeAnyAddress(to)
+    return !accounts.some((account) => encodeAnyAddress(account.address) === encoded)
+  }, [accounts, to])
+
+  if (!showWarning) return null
+
+  return (
+    <div className="text-alert-warn bg-grey-900 flex w-full items-center gap-5 rounded-sm px-5 py-6 text-xs">
+      <AlertCircleIcon className="text-lg" />
+      <div>{t("You are sending funds to an external account")}</div>
+    </div>
+  )
+}
+
 const SendButton = () => {
   const { t } = useTranslation("send-funds")
   const { signMethod, sendErrorMessage, send, isProcessing } = useSendFunds()
@@ -122,15 +144,17 @@ const SendButton = () => {
 
   return (
     <Suspense fallback={null}>
-      {sendErrorMessage && (
+      {sendErrorMessage ? (
         <div className="text-alert-warn bg-grey-900 flex w-full items-center gap-5 rounded-sm px-5 py-6 text-xs">
           <AlertCircleIcon className="text-lg" />
           <div>{sendErrorMessage}</div>
         </div>
+      ) : (
+        <ExternalRecipientWarning />
       )}
       {signMethod === "normal" && (
         <Button
-          className="mt-12 w-full"
+          className="mt-6 w-full"
           primary
           disabled={!isReady}
           onClick={send}

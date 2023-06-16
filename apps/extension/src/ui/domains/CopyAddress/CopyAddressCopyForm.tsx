@@ -5,8 +5,9 @@ import { useOpenClose } from "@talisman/hooks/useOpenClose"
 import { AlertCircleIcon, CopyIcon, InfoIcon } from "@talisman/theme/icons"
 import { shortenAddress } from "@talisman/util/shortenAddress"
 import { Address } from "@talismn/balances"
-import { classNames } from "@talismn/util"
+import { classNames, encodeAnyAddress } from "@talismn/util"
 import { useAccountByAddress } from "@ui/hooks/useAccountByAddress"
+import useAccounts from "@ui/hooks/useAccounts"
 import useChain from "@ui/hooks/useChain"
 import { useContact } from "@ui/hooks/useContact"
 import { useEvmNetwork } from "@ui/hooks/useEvmNetwork"
@@ -17,6 +18,8 @@ import { FC, useCallback, useMemo } from "react"
 import { Trans, useTranslation } from "react-i18next"
 import { Button, PillButton, Tooltip, TooltipContent, TooltipTrigger } from "talisman-ui"
 
+import { AccountIcon } from "../Account/AccountIcon"
+import { AccountTypeIcon } from "../Account/AccountTypeIcon"
 import AccountAvatar from "../Account/Avatar"
 import { ChainLogo } from "../Asset/ChainLogo"
 import { TokenLogo } from "../Asset/TokenLogo"
@@ -46,12 +49,11 @@ const AddressPillButton: FC<AddressPillButtonProps> = ({ address, className, onC
   return (
     <PillButton className={classNames("h-16 max-w-[240px] !px-4", className)} onClick={onClick}>
       <div className="text-body flex h-16 max-w-full flex-nowrap items-center gap-4 overflow-x-hidden text-base">
-        <div>
-          <AccountAvatar className="!text-lg" address={address} genesisHash={genesisHash} />
-        </div>
+        <AccountIcon className="!text-lg" address={address} genesisHash={genesisHash} />
         <div className="leading-base grow overflow-hidden text-ellipsis whitespace-nowrap">
           {name ?? shortenAddress(address, 6, 6)}
         </div>
+        <AccountTypeIcon origin={account?.origin} className="text-primary" />
       </div>
     </PillButton>
   )
@@ -104,7 +106,7 @@ const NetworkPillButton: FC<NetworkPillButtonProps> = ({
       <PillButton className={classNames("h-16 !px-4 !py-2", className)} onClick={onClick}>
         <div className="text-body flex  flex-nowrap items-center gap-4 text-base">
           <div className="flex shrink-0 flex-col justify-center">
-            <AccountAvatar type="polkadot-identicon" className="!text-lg" address={address} />
+            <AccountIcon type="polkadot-identicon" className="!text-lg" address={address} />
           </div>
           <div>{t("Substrate (Generic)")}</div>
         </div>
@@ -122,6 +124,28 @@ const NetworkPillButton: FC<NetworkPillButtonProps> = ({
         <div>{chain.name}</div>
       </div>
     </PillButton>
+  )
+}
+
+const ExternalAddressWarning = () => {
+  const { t } = useTranslation("copy-address")
+  const { address } = useCopyAddressWizard()
+
+  const accounts = useAccounts("owned")
+
+  const showWarning = useMemo(() => {
+    if (!address || !accounts) return false
+    const encoded = encodeAnyAddress(address)
+    return !accounts.some((account) => encodeAnyAddress(account.address) === encoded)
+  }, [accounts, address])
+
+  if (!showWarning) return null
+
+  return (
+    <div className="text-alert-warn mb-6 flex items-center justify-center gap-4 text-xs">
+      <AlertCircleIcon />
+      <div>{t("This address is an external account")}</div>
+    </div>
   )
 }
 
@@ -144,6 +168,7 @@ const CopyButton = () => {
 
   return (
     <>
+      <ExternalAddressWarning />
       <Button fullWidth primary icon={CopyIcon} onClick={handleCopyClick}>
         {t("Copy Address")}
       </Button>
@@ -237,7 +262,7 @@ export const CopyAddressCopyForm = () => {
           )}
         </div>
         <div className="flex w-full grow flex-col items-center justify-center gap-12">
-          <div className="h-[24rem] w-[24rem] rounded-lg bg-[#ffffff] p-10 ">
+          <div className="h-[21rem] w-[21rem] rounded-lg bg-[#ffffff] p-8 ">
             {isLogoLoaded && (
               <FadeIn>
                 <TextQrCode data={formattedAddress} image={logo} imageOptions={QR_IMAGE_OPTIONS} />
@@ -282,7 +307,7 @@ export const CopyAddressCopyForm = () => {
               </div>
             </div>
           )}
-          {chainId === null && (
+          {!isEthereum && chainId === null && (
             <div className="text-body-secondary leading-paragraph flex flex-col items-center gap-1 text-center">
               <div>
                 <Trans

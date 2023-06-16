@@ -39,10 +39,15 @@ export interface AccountJsonQr extends AccountJson {
   isQr: true
 }
 
+export interface AccountJsonWatched extends AccountJson {
+  isPortfolio: boolean
+}
+
 export type AccountJsonAny = (
   | AccountJsonHardwareEthereum
   | AccountJsonHardwareSubstrate
   | AccountJsonQr
+  | AccountJsonWatched
   | AccountJson
 ) & { origin?: AccountType | undefined }
 
@@ -61,6 +66,7 @@ export const AccountTypes = {
   JSON: "JSON",
   QR: "QR",
   HARDWARE: "HARDWARE",
+  WATCHED: "WATCHED",
 } as const
 
 export const storedSeedAccountTypes: AccountType[] = [
@@ -111,6 +117,17 @@ export interface RequestAccountCreateQr {
   genesisHash: string | null
 }
 
+export interface RequestAccountCreateWatched {
+  name: string
+  address: string
+  isPortfolio: boolean
+}
+
+export interface RequestAccountExternalSetIsPortfolio {
+  address: string
+  isPortfolio: boolean
+}
+
 export interface RequestAccountForget {
   address: string
 }
@@ -146,10 +163,12 @@ export interface AccountsMessages {
   ]
   "pri(accounts.create.hardware.ethereum)": [RequestAccountCreateHardwareEthereum, string]
   "pri(accounts.create.qr.substrate)": [RequestAccountCreateQr, string]
+  "pri(accounts.create.watched)": [RequestAccountCreateWatched, string]
   "pri(accounts.forget)": [RequestAccountForget, boolean]
   "pri(accounts.export)": [RequestAccountExport, ResponseAccountExport]
   "pri(accounts.export.pk)": [RequestAccountExportPrivateKey, string]
   "pri(accounts.rename)": [RequestAccountRename, boolean]
+  "pri(accounts.external.setIsPortfolio)": [RequestAccountExternalSetIsPortfolio, boolean]
   "pri(accounts.subscribe)": [RequestAccountSubscribe, boolean, AccountJson[]]
   "pri(accounts.validateMnemonic)": [string, boolean]
   "pri(accounts.setVerifierCertMnemonic)": [string, boolean]
