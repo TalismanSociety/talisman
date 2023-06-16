@@ -2,6 +2,7 @@
   "Back": "",
   "Search": "",
   "Select": "",
+  "Suggested symbol {{symbol}} is different from the one defined on the contract ({{contractSymbol}})": "Le symbole suggéré {{symbol}} est différent de celui défini par le contrat ({{contractSymbol}})",
   "Loading": "",
   "Waiting": "",
   "Please unlock the Talisman": "",
