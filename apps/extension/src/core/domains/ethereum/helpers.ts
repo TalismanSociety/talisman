@@ -122,7 +122,8 @@ const TX_GAS_LIMIT_MIN = BigNumber.from("21000")
 export const getGasLimit = (
   blockGasLimit: BigNumberish,
   estimatedGas: BigNumberish,
-  tx?: ethers.providers.TransactionRequest
+  tx: ethers.providers.TransactionRequest | undefined,
+  boostGasLimit = false
 ) => {
   // some dapps use legacy gas field instead of gasLimit
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -144,6 +145,9 @@ export const getGasLimit = (
     // invalid, all chains use 21000 as minimum, fallback to default value
     gasLimit = TX_GAS_LIMIT_DEFAULT
   }
+
+  // apply 1% boost if requested
+  if (boostGasLimit) gasLimit = gasLimit.mul(101).div(100)
 
   return gasLimit
 }

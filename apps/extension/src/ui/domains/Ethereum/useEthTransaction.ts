@@ -19,6 +19,7 @@ import {
   GasSettingsByPriority,
 } from "@core/domains/signing/types"
 import { ETH_ERROR_EIP1474_METHOD_NOT_FOUND } from "@core/injectEth/EthProviderRpcError"
+import { log } from "@core/log"
 import { getEthTransactionInfo } from "@core/util/getEthTransactionInfo"
 import { FeeHistoryAnalysis, getFeeHistoryAnalysis } from "@core/util/getFeeHistoryAnalysis"
 import { useQuery } from "@tanstack/react-query"
@@ -224,6 +225,7 @@ const useGasSettings = ({
   priority,
   tx,
   isReplacement,
+  boostGasLimit,
 }: {
   hasEip1559Support?: boolean
   baseFeePerGas?: BigNumber | null
@@ -234,6 +236,7 @@ const useGasSettings = ({
   priority?: EthPriorityOptionName
   tx?: ethers.providers.TransactionRequest
   isReplacement?: boolean
+  boostGasLimit?: boolean
 }) => {
   // TODO init with values from tx (supplied by dapp)
   const [customSettings, setCustomSettings] = useState<EthGasSettings>()
@@ -241,7 +244,7 @@ const useGasSettings = ({
   const gasSettingsByPriority: GasSettingsByPriority | undefined = useMemo(() => {
     if (hasEip1559Support === undefined || !estimatedGas || !gasPrice || !blockGasLimit || !tx)
       return undefined
-    const gasLimit = getGasLimit(blockGasLimit, estimatedGas, tx)
+    const gasLimit = getGasLimit(blockGasLimit, estimatedGas, tx, boostGasLimit)
     const suggestedSettings = getEthGasSettingsFromTransaction(
       tx,
       hasEip1559Support,
@@ -319,15 +322,16 @@ const useGasSettings = ({
       custom,
     }
   }, [
-    baseFeePerGas,
-    blockGasLimit,
-    customSettings,
-    estimatedGas,
-    feeHistoryAnalysis,
-    gasPrice,
     hasEip1559Support,
+    estimatedGas,
+    gasPrice,
+    blockGasLimit,
     tx,
+    boostGasLimit,
     isReplacement,
+    customSettings,
+    feeHistoryAnalysis,
+    baseFeePerGas,
   ])
 
   const gasSettings = useMemo(() => {
@@ -358,6 +362,10 @@ export const useEthTransaction = (
     tx?.chainId?.toString(),
     isReplacement && tx?.nonce ? BigNumber.from(tx.nonce).toNumber() : undefined
   )
+
+  // if rpc's estimateGas is to low to be used as gasLimit, add 1%
+  // only boost if necessary as it raises the maxFee, and could make impossible to submit tx if balance is low
+  const [boostGasLimit, setBoostGasLimit] = useState(false)
 
   const {
     gasPrice,
@@ -393,6 +401,7 @@ export const useEthTransaction = (
     blockGasLimit,
     feeHistoryAnalysis,
     isReplacement,
+    boostGasLimit,
   })
 
   const liveUpdatingTransaction = useMemo(() => {
@@ -432,6 +441,16 @@ export const useEthTransaction = (
 
   // use staleIsValid to prevent disabling approve button each time there is a new block (triggers gas check)
   const { isValid, error: isValidError } = useIsValidEthTransaction(provider, transaction, priority)
+
+  useEffect(() => {
+    if (!isValidError || boostGasLimit) return
+
+    const ethersError = isValidError as { code: ethers.errors }
+    if (ethersError.code === ethers.errors.UNPREDICTABLE_GAS_LIMIT) {
+      log.log("Boosting gas limit")
+      setBoostGasLimit(true)
+    }
+  }, [isValidError, boostGasLimit])
 
   const { t } = useTranslation("sign")
   const { error, errorDetails } = useMemo(() => {
