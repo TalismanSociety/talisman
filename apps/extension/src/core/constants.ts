@@ -41,3 +41,4 @@ export const POLKADOT_VAULT_DOCS_URL =
   "https://docs.talisman.xyz/talisman/navigating-the-paraverse/account-management/import-from-parity-signer-or-polkadot-vault"
 
 export const UNKNOWN_TOKEN_URL = "/images/unknown-token.svg"
+export const UNKNOWN_NETWORK_URL = "/images/unknown-network.svg"

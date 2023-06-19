@@ -1,10 +1,9 @@
+import { UNKNOWN_NETWORK_URL } from "@core/constants"
 import { ChainId, EvmNetworkId } from "@talismn/chaindata-provider"
 import { classNames } from "@talismn/util"
 import useChain from "@ui/hooks/useChain"
 import { useEvmNetwork } from "@ui/hooks/useEvmNetwork"
 import { FC, useCallback, useEffect, useMemo, useState } from "react"
-
-export const GLOBE_ICON_URL = "/images/unknown-token.svg"
 
 type ChainLogoBaseProps = {
   id?: ChainId | EvmNetworkId
@@ -15,14 +14,14 @@ type ChainLogoBaseProps = {
 }
 
 export const ChainLogoBase: FC<ChainLogoBaseProps> = ({ id, logo, className }) => {
-  const [src, setSrc] = useState(() => logo ?? GLOBE_ICON_URL)
+  const [src, setSrc] = useState(() => logo ?? UNKNOWN_NETWORK_URL)
 
   // reset
   useEffect(() => {
-    setSrc(logo ?? GLOBE_ICON_URL)
+    setSrc(logo ?? UNKNOWN_NETWORK_URL)
   }, [logo])
 
-  const handleError = useCallback(() => setSrc(GLOBE_ICON_URL), [])
+  const handleError = useCallback(() => setSrc(UNKNOWN_NETWORK_URL), [])
 
   const imgClassName = useMemo(
     () => classNames("relative block h-[1em] w-[1em] shrink-0", className),
