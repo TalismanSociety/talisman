@@ -45,21 +45,6 @@ export const getPairForAddressSafely = async <T>(
   }
 }
 
-export const isHardwareAccount = (address: Address) => {
-  const acc = keyring.getAccount(address)
-  return acc?.meta?.isHardware ?? false
-}
-
-export const isQrAccount = (address: Address) => {
-  const acc = keyring.getAccount(address)
-  return acc?.meta?.origin === "QR" ?? false
-}
-
-export const isWatchedAccount = (address: Address) => {
-  const acc = keyring.getAccount(address)
-  return acc?.meta?.origin === "WATCHED" ?? false
-}
-
 export const hasPrivateKey = (address: Address) => {
   const acc = keyring.getAccount(address)
 
