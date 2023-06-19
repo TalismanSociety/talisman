@@ -366,6 +366,7 @@ export const useEthTransaction = (
   // if rpc's estimateGas is to low to be used as gasLimit, add 1%
   // only boost if necessary as it raises the maxFee, and could make impossible to submit tx if balance is low
   const [boostGasLimit, setBoostGasLimit] = useState(false)
+  const [isGasLimitChecked, setIsGasLimitChecked] = useState(false)
 
   const {
     gasPrice,
@@ -440,17 +441,24 @@ export const useEthTransaction = (
   }, [baseFeePerGas, estimatedGas, feeHistoryAnalysis, gasPrice, gasSettings, transaction])
 
   // use staleIsValid to prevent disabling approve button each time there is a new block (triggers gas check)
-  const { isValid, error: isValidError } = useIsValidEthTransaction(provider, transaction, priority)
+  const {
+    isValid,
+    error: isValidError,
+    isLoading: isValidLoading,
+  } = useIsValidEthTransaction(provider, transaction, priority)
 
   useEffect(() => {
-    if (!isValidError || boostGasLimit) return
+    if (isValidLoading || isGasLimitChecked) return
 
-    const ethersError = isValidError as { code: ethers.errors }
-    if (ethersError.code === ethers.errors.UNPREDICTABLE_GAS_LIMIT) {
-      log.log("Boosting gas limit")
-      setBoostGasLimit(true)
+    if (isValidError && !boostGasLimit) {
+      const ethersError = isValidError as { code: ethers.errors }
+      if (ethersError.code === ethers.errors.UNPREDICTABLE_GAS_LIMIT) {
+        log.log("Boosting gas limit")
+        setBoostGasLimit(true)
+      }
     }
-  }, [isValidError, boostGasLimit])
+    setIsGasLimitChecked(true)
+  }, [isValidError, boostGasLimit, isValidLoading, isGasLimitChecked])
 
   const { t } = useTranslation("sign")
   const { error, errorDetails } = useMemo(() => {
@@ -475,8 +483,8 @@ export const useEthTransaction = (
   }, [blockFeeDataError, isValidError, errorEip1559Support, errorTransactionInfo, nonceError, t])
 
   const isLoading = useMemo(
-    () => tx && !transactionInfo && !txDetails && !error,
-    [tx, transactionInfo, txDetails, error]
+    () => tx && !transactionInfo && !txDetails && !error && !isGasLimitChecked,
+    [tx, transactionInfo, txDetails, error, isGasLimitChecked]
   )
 
   return {
