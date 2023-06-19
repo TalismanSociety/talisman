@@ -96,7 +96,7 @@ const PersonalSignInner = () => {
         </div>
         <div>
           <Button small type="submit" processing={isLoading} disabled={!isValid || isSubmitting}>
-            Sign message
+            Sign this message
           </Button>
         </div>
       </form>

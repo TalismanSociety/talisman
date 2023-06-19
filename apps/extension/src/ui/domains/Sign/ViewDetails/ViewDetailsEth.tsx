@@ -358,10 +358,9 @@ const ViewDetailsContent: FC<ViewDetailsContentProps> = ({ onClose }) => {
             }
           >
             <Message
-              readOnly
               rows={6}
               className="bg-grey-800 w-full rounded-sm"
-              value={request.data?.toString()}
+              text={request.data?.toString()}
             />
           </ViewDetailsField>
         )}

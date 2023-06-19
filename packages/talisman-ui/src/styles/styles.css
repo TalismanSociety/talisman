@@ -98,10 +98,11 @@
     border-radius: 25px;
     cursor: pointer;
   }
-  .scrollable:-webkit-scrollbar-corner {
-    background-color: transparent;
+  .scrollable::-webkit-scrollbar-corner {
+    background: transparent;
   }
   .scrollable::-webkit-resizer {
+    appearance: none;
     display: none;
   }
   .scrollable {
