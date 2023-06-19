@@ -141,6 +141,7 @@ export const AddCustomErc20Token = () => {
             className="inline-block"
             src={request.token.image ?? UNKNOWN_TOKEN_URL}
             alt={request.token.symbol}
+            crossOrigin="anonymous"
           />
         </div>
         <h1>{t("New Token")}</h1>
@@ -148,7 +149,11 @@ export const AddCustomErc20Token = () => {
           {t("You are adding the token")}
           <br />
           <strong>
-            <TokenLogoSmall src={request.token.image ?? UNKNOWN_TOKEN_URL} alt="" />
+            <TokenLogoSmall
+              src={request.token.image ?? UNKNOWN_TOKEN_URL}
+              crossOrigin="anonymous"
+              alt=""
+            />
             {request.token.symbol}
           </strong>{" "}
           {t("on")}{" "}

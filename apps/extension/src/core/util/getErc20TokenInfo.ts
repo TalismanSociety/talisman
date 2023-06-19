@@ -15,14 +15,12 @@ export const getErc20TokenInfo = async (
     getCoinGeckoErc20Coin(evmNetworkId, contractAddress),
   ])
 
-  const image = coinGeckoData?.image?.small
-
   return {
     evmNetworkId,
     contractAddress,
     decimals,
     symbol,
-    image,
+    image: coinGeckoData?.image.small,
     coingeckoId: coinGeckoData?.id,
   }
 }
