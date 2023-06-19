@@ -75,7 +75,6 @@
     "babel-eslint": "^10.1.0",
     "bcryptjs": "^2.4.3",
     "bignumber.js": "^9.1.1",
-    "blob-util": "2.0.2",
     "blueimp-md5": "2.19.0",
     "buffer": "^6.0.3",
     "case-sensitive-paths-webpack-plugin": "^2.4.0",
