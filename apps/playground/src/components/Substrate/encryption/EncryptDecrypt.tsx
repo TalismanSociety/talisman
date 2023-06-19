@@ -10,9 +10,7 @@ import { useWallet } from "../shared/useWallet"
 import { DecryptResult, EncryptResult, TalismanSigner } from "./types"
 
 const DATA_TO_ENCRYPT =
-  "This is a secret message that will be encrypted and then decrypted using the Talisman signer".repeat(
-    10000
-  )
+  "This is a secret message that will be encrypted and then decrypted using the Talisman signer"
 
 const getPublicKeyFromAddress = (address: string) => u8aToHex(decodeAddress(address))
 
