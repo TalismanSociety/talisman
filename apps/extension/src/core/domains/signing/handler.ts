@@ -14,6 +14,7 @@ import type { MessageTypes, RequestType, ResponseType } from "@core/types"
 import { Port } from "@core/types/base"
 import { getTypeRegistry } from "@core/util/getTypeRegistry"
 import { isJsonPayload } from "@core/util/isJsonPayload"
+import { encodeAddress } from "@polkadot/keyring"
 import { TypeRegistry } from "@polkadot/types"
 import keyring from "@polkadot/ui-keyring"
 import { assert } from "@polkadot/util"
@@ -28,7 +29,9 @@ export default class SigningHandler extends ExtensionHandler {
 
     const { reject, request, resolve, url } = queued
 
-    const result = await getPairForAddressSafely(queued.account.address, async (pair) => {
+    const address = encodeAddress(queued.account.address)
+
+    const result = await getPairForAddressSafely(address, async (pair) => {
       const { payload } = request
       const { ok, val: hostName } = getHostName(url)
       const analyticsProperties: { dapp: string; chain?: string; hostName?: string } = {
@@ -88,7 +91,8 @@ export default class SigningHandler extends ExtensionHandler {
     })
     if (!result.ok) {
       if (result.val === "Unauthorised") reject(new Error(result.val))
-      else result.unwrap() // Throws error
+      else if (typeof result.val === "string") throw new Error(result.val)
+      else throw result.val
     }
     return true
   }

@@ -26,7 +26,7 @@ const getUnlockedPairFromAddress = (address: Address) => {
 export const getPairForAddressSafely = async <T>(
   address: Address,
   cb: (pair: KeyringPair) => T | Promise<T>
-): Promise<Result<T, "Unauthorised" | unknown>> => {
+): Promise<Result<T, "Unauthorised" | Error>> => {
   let pair: KeyringPair | null = null
   try {
     try {
@@ -39,7 +39,7 @@ export const getPairForAddressSafely = async <T>(
     }
     return Ok(await cb(pair))
   } catch (error) {
-    return new Err(error)
+    return new Err(error as Error)
   } finally {
     if (!!pair && !pair.isLocked) pair.lock()
   }
@@ -62,6 +62,7 @@ export const isWatchedAccount = (address: Address) => {
 
 export const hasPrivateKey = (address: Address) => {
   const acc = keyring.getAccount(address)
+
   if (!acc) return false
   if (acc.meta?.isExternal) return false
   if (acc.meta?.isHardware) return false
