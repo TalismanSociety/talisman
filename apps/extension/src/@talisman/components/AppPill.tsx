@@ -8,7 +8,15 @@ const Favicon: FC<{ url: string }> = ({ url }) => {
 
   return (
     <span className="flex h-10 w-10 shrink-0 items-center justify-center overflow-hidden rounded-full bg-black">
-      {!!iconUrl && <img className="h-8 w-8" loading="lazy" src={iconUrl} alt={`favicon ${url}`} />}
+      {!!iconUrl && (
+        <img
+          className="h-8 w-8"
+          loading="lazy"
+          crossOrigin="anonymous"
+          src={iconUrl}
+          alt={`favicon ${url}`}
+        />
+      )}
     </span>
   )
 }

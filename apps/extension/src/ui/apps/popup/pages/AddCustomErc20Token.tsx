@@ -4,7 +4,6 @@ import StyledGrid from "@talisman/components/Grid"
 import { IconButton } from "@talisman/components/IconButton"
 import { SimpleButton } from "@talisman/components/SimpleButton"
 import { XIcon } from "@talisman/theme/icons"
-import unknownToken from "@talisman/theme/icons/custom-token-generic.svg?url"
 import { api } from "@ui/api"
 import { CustomErc20TokenViewDetails } from "@ui/domains/Erc20Tokens/CustomErc20TokenViewDetails"
 import { useEvmNetwork } from "@ui/hooks/useEvmNetwork"
@@ -15,6 +14,8 @@ import { useParams } from "react-router-dom"
 import styled from "styled-components"
 
 import Layout, { Content, Footer, Header } from "../Layout"
+
+const FALLBACK_LOGO_URL = "/images/unknown-token.svg"
 
 const TokenLogo = styled.img`
   width: 5.4rem;
@@ -139,7 +140,7 @@ export const AddCustomErc20Token = () => {
         <div>
           <TokenLogo
             className="inline-block"
-            src={request.token.image ?? unknownToken}
+            src={request.token.image ?? FALLBACK_LOGO_URL}
             alt={request.token.symbol}
           />
         </div>
@@ -148,7 +149,7 @@ export const AddCustomErc20Token = () => {
           {t("You are adding the token")}
           <br />
           <strong>
-            <TokenLogoSmall src={request.token.image ?? unknownToken} alt="" />
+            <TokenLogoSmall src={request.token.image ?? FALLBACK_LOGO_URL} alt="" />
             {request.token.symbol}
           </strong>{" "}
           {t("on")}{" "}

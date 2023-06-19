@@ -78,7 +78,16 @@ const Favicon: FC<{ siteUrl: string; className?: string }> = ({ siteUrl, classNa
   if (!iconUrl) return null
   if (isError) return <NetworkLogo className={className} />
 
-  return <img loading="lazy" src={iconUrl} className={className} alt="" onError={handleError} />
+  return (
+    <img
+      loading="lazy"
+      src={iconUrl}
+      crossOrigin="anonymous"
+      className={className}
+      alt=""
+      onError={handleError}
+    />
+  )
 }
 
 const TxIconContainer: FC<

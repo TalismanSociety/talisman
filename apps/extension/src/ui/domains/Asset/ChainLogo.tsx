@@ -1,12 +1,10 @@
-import globeIcon from "@talisman/theme/icons/globe.white.svg?url"
 import { ChainId, EvmNetworkId } from "@talismn/chaindata-provider"
 import { classNames } from "@talismn/util"
-import { getBase64ImageUrl } from "@talismn/util"
 import useChain from "@ui/hooks/useChain"
 import { useEvmNetwork } from "@ui/hooks/useEvmNetwork"
 import { FC, useCallback, useEffect, useMemo, useState } from "react"
 
-export const GLOBE_ICON_URL = getBase64ImageUrl(globeIcon) as string
+export const GLOBE_ICON_URL = "/images/unknown-token.svg"
 
 type ChainLogoBaseProps = {
   id?: ChainId | EvmNetworkId
@@ -39,6 +37,7 @@ export const ChainLogoBase: FC<ChainLogoBaseProps> = ({ id, logo, className }) =
       src={src}
       className={imgClassName}
       alt=""
+      crossOrigin="anonymous"
       loading="lazy" // defers download, helps performance especially in chain lists
       onError={handleError}
     />
