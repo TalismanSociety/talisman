@@ -67,8 +67,9 @@ const useIsSendingEnough = (
         case "substrate-native":
         case "substrate-orml":
         case "substrate-assets":
-        case "substrate-equilibrium":
-        case "substrate-tokens": {
+        case "substrate-tokens":
+        case "substrate-psp22":
+        case "substrate-equilibrium": {
           const existentialDeposit = new BalanceFormatter(
             token.existentialDeposit ?? "0",
             token.decimals

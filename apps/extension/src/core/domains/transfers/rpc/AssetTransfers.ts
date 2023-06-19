@@ -196,6 +196,7 @@ export default class AssetTransfersRpc {
         "substrate-orml" === palletModule.type ||
         "substrate-assets" === palletModule.type ||
         "substrate-tokens" === palletModule.type ||
+        "substrate-psp22" === palletModule.type ||
         "substrate-equilibrium" === palletModule.type
       )
     )

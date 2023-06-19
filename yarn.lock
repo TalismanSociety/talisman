@@ -5442,6 +5442,23 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@polkadot/api-contract@npm:10.9.1":
+  version: 10.9.1
+  resolution: "@polkadot/api-contract@npm:10.9.1"
+  dependencies:
+    "@polkadot/api": 10.9.1
+    "@polkadot/api-augment": 10.9.1
+    "@polkadot/types": 10.9.1
+    "@polkadot/types-codec": 10.9.1
+    "@polkadot/types-create": 10.9.1
+    "@polkadot/util": ^12.3.1
+    "@polkadot/util-crypto": ^12.3.1
+    rxjs: ^7.8.1
+    tslib: ^2.5.3
+  checksum: 2a4b4818e5fd4ef1b385a0ad1144d986b449b531c278ccc3a441770c1e95a2fd24cd5da401d56040dcd594254e2a5c2e4a09a9de5827ee8bb951e3aad9558bed
+  languageName: node
+  linkType: hard
+
 "@polkadot/api-derive@npm:10.9.1":
   version: 10.9.1
   resolution: "@polkadot/api-derive@npm:10.9.1"
@@ -7297,6 +7314,7 @@ __metadata:
     "@talismn/balances-substrate-equilibrium": "workspace:*"
     "@talismn/balances-substrate-native": "workspace:*"
     "@talismn/balances-substrate-orml": "workspace:*"
+    "@talismn/balances-substrate-psp22": "workspace:*"
     "@talismn/balances-substrate-tokens": "workspace:*"
     "@talismn/eslint-config": "workspace:*"
     "@talismn/tsconfig": "workspace:*"
@@ -7487,6 +7505,36 @@ __metadata:
     ts-jest: ^28.0.2
     typescript: ^4.6.4
   peerDependencies:
+    "@polkadot/types": 10.x
+    "@polkadot/util": 11.x
+    "@substrate/txwrapper-core": 4.x
+  languageName: unknown
+  linkType: soft
+
+"@talismn/balances-substrate-psp22@workspace:*, @talismn/balances-substrate-psp22@workspace:packages/balances-substrate-psp22":
+  version: 0.0.0-use.local
+  resolution: "@talismn/balances-substrate-psp22@workspace:packages/balances-substrate-psp22"
+  dependencies:
+    "@polkadot/api-contract": ^10.1.4
+    "@polkadot/types": ^10.1.4
+    "@polkadot/util": ^11.1.1
+    "@substrate/txwrapper-core": "*"
+    "@talismn/balances": "workspace:*"
+    "@talismn/chaindata-provider": "workspace:*"
+    "@talismn/eslint-config": "workspace:*"
+    "@talismn/mutate-metadata": "workspace:*"
+    "@talismn/tsconfig": "workspace:*"
+    "@talismn/util": "workspace:*"
+    "@types/jest": ^27.5.1
+    "@types/lodash": ^4.14.180
+    anylogger: ^1.0.11
+    eslint: ^8.4.0
+    jest: ^28.1.0
+    lodash: 4.17.21
+    ts-jest: ^28.0.2
+    typescript: ^4.6.4
+  peerDependencies:
+    "@polkadot/api-contract": ^10.x
     "@polkadot/types": 10.x
     "@polkadot/util": 11.x
     "@substrate/txwrapper-core": 4.x
