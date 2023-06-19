@@ -1,3 +1,4 @@
+import { UNKNOWN_TOKEN_URL } from "@core/constants"
 import { WatchAssetRequestIdOnly } from "@core/domains/ethereum/types"
 import { AppPill } from "@talisman/components/AppPill"
 import StyledGrid from "@talisman/components/Grid"
@@ -14,8 +15,6 @@ import { useParams } from "react-router-dom"
 import styled from "styled-components"
 
 import Layout, { Content, Footer, Header } from "../Layout"
-
-const FALLBACK_LOGO_URL = "/images/unknown-token.svg"
 
 const TokenLogo = styled.img`
   width: 5.4rem;
@@ -140,7 +139,7 @@ export const AddCustomErc20Token = () => {
         <div>
           <TokenLogo
             className="inline-block"
-            src={request.token.image ?? FALLBACK_LOGO_URL}
+            src={request.token.image ?? UNKNOWN_TOKEN_URL}
             alt={request.token.symbol}
           />
         </div>
@@ -149,7 +148,7 @@ export const AddCustomErc20Token = () => {
           {t("You are adding the token")}
           <br />
           <strong>
-            <TokenLogoSmall src={request.token.image ?? FALLBACK_LOGO_URL} alt="" />
+            <TokenLogoSmall src={request.token.image ?? UNKNOWN_TOKEN_URL} alt="" />
             {request.token.symbol}
           </strong>{" "}
           {t("on")}{" "}

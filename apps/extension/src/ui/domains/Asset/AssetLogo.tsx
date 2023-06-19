@@ -1,3 +1,4 @@
+import { UNKNOWN_TOKEN_URL } from "@core/constants"
 import { getCoinGeckoErc20Coin } from "@core/util/coingecko/getCoinGeckoErc20Coin"
 import { EvmNetworkId } from "@talismn/chaindata-provider"
 import { TokenId } from "@talismn/chaindata-provider"
@@ -6,8 +7,6 @@ import { useQuery } from "@tanstack/react-query"
 import useToken from "@ui/hooks/useToken"
 import { isCustomErc20Token } from "@ui/util/isCustomErc20Token"
 import { FC, useCallback, useEffect, useMemo, useState } from "react"
-
-const FALLBACK_LOGO_URL = "/images/unknown-token.svg"
 
 const isTalismanLogo = (url?: string | null) => {
   if (!url) return false
@@ -22,14 +21,14 @@ type AssetLogoBaseProps = {
 }
 
 export const AssetLogoBase = ({ id, className, url, rounded }: AssetLogoBaseProps) => {
-  const [src, setSrc] = useState(() => url ?? FALLBACK_LOGO_URL)
+  const [src, setSrc] = useState(() => url ?? UNKNOWN_TOKEN_URL)
 
   // reset
   useEffect(() => {
-    setSrc(url ?? FALLBACK_LOGO_URL)
+    setSrc(url ?? UNKNOWN_TOKEN_URL)
   }, [url])
 
-  const handleError = useCallback(() => setSrc(FALLBACK_LOGO_URL), [])
+  const handleError = useCallback(() => setSrc(UNKNOWN_TOKEN_URL), [])
 
   const imgClassName = useMemo(
     () =>
