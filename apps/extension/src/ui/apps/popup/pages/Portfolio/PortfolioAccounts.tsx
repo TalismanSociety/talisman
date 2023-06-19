@@ -208,7 +208,11 @@ const AccountsList = ({ options }: { options: AccountOption[] }) => {
       </div>
     )
 
-  return <AccountsListView options={options} />
+  return (
+    <div className="py-12">
+      <AccountsListView options={options} />
+    </div>
+  )
 }
 
 const Accounts = ({ options }: { options: AccountOption[] }) => (

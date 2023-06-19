@@ -10,7 +10,7 @@ export const useAccountToggleIsPortfolio = (account?: AccountJsonAny) => {
   const { canToggleIsPortfolio, toggleLabel } = useMemo(
     () => ({
       canToggleIsPortfolio: account?.origin === "WATCHED",
-      toggleLabel: account?.isPortfolio ? t("Remove from portfolio") : t("Add to portfolio"),
+      toggleLabel: account?.isPortfolio ? t("Make followed-only account") : t("Add to portfolio"),
     }),
     [account, t]
   )
