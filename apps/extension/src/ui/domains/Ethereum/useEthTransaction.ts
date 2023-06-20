@@ -238,7 +238,6 @@ const useGasSettings = ({
   isReplacement?: boolean
   boostGasLimit?: boolean
 }) => {
-  // TODO init with values from tx (supplied by dapp)
   const [customSettings, setCustomSettings] = useState<EthGasSettings>()
 
   const gasSettingsByPriority: GasSettingsByPriority | undefined = useMemo(() => {
@@ -281,6 +280,8 @@ const useGasSettings = ({
           ? suggestedSettings
           : {
               ...low,
+              // original gas limit (no boost)
+              gasLimit: getGasLimit(blockGasLimit, estimatedGas, tx),
               // if network is idle, it makes sense to use baseFee as maxFee
               maxFeePerGas: feeHistoryAnalysis.isBaseFeeIdle ? baseFeePerGas : low.maxFeePerGas,
             }
@@ -314,7 +315,11 @@ const useGasSettings = ({
         ? customSettings
         : suggestedSettings?.type === 0
         ? suggestedSettings
-        : recommendedSettings
+        : {
+            ...recommendedSettings,
+            // original gas limit (no boost)
+            gasLimit: getGasLimit(blockGasLimit, estimatedGas, tx),
+          }
 
     return {
       type: "legacy",
