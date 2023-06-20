@@ -134,7 +134,11 @@ export class PasswordStore extends StorageProvider<PasswordStoreData> {
 
   async checkPassword(password: string) {
     assert(this.isLoggedIn.value === TRUE, "Unauthorised")
-    const isMatch = await compare(password, this.getPassword() ?? "UNAVAILABLE")
+
+    const encrypted = this.getPassword()
+    assert(encrypted, "Unauthorised")
+
+    const isMatch = await compare(password, encrypted)
     assert(isMatch, "Incorrect password")
   }
 
