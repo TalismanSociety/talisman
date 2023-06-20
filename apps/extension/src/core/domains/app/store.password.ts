@@ -135,10 +135,13 @@ export class PasswordStore extends StorageProvider<PasswordStoreData> {
   async checkPassword(password: string) {
     assert(this.isLoggedIn.value === TRUE, "Unauthorised")
 
-    const encrypted = this.getPassword()
-    assert(encrypted, "Unauthorised")
+    const hash = this.getPassword()
+    assert(hash, "Unauthorised")
 
-    const isMatch = await compare(password, encrypted)
+    const { isTrimmed } = await this.get()
+    const clear = isTrimmed ? password.trim() : password
+
+    const isMatch = await compare(clear, hash)
     assert(isMatch, "Incorrect password")
   }
 
