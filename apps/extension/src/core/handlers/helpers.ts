@@ -1,3 +1,4 @@
+import { hasPrivateKey } from "@core/domains/accounts/helpers"
 import { passwordStore } from "@core/domains/app"
 import type { Address } from "@core/types/base"
 import { KeyringPair } from "@polkadot/keyring/types"
@@ -43,14 +44,4 @@ export const getPairForAddressSafely = async <T>(
   } finally {
     if (!!pair && !pair.isLocked) pair.lock()
   }
-}
-
-export const hasPrivateKey = (address: Address) => {
-  const acc = keyring.getAccount(address)
-
-  if (!acc) return false
-  if (acc.meta?.isExternal) return false
-  if (acc.meta?.isHardware) return false
-  if (["QR", "WATCHED"].includes(acc.meta?.origin as string)) return false
-  return true
 }
