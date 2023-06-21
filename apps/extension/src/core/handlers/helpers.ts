@@ -1,3 +1,4 @@
+import { hasPrivateKey } from "@core/domains/accounts/helpers"
 import { passwordStore } from "@core/domains/app"
 import type { Address } from "@core/types/base"
 import { KeyringPair } from "@polkadot/keyring/types"
@@ -26,7 +27,7 @@ const getUnlockedPairFromAddress = (address: Address) => {
 export const getPairForAddressSafely = async <T>(
   address: Address,
   cb: (pair: KeyringPair) => T | Promise<T>
-): Promise<Result<T, "Unauthorised" | unknown>> => {
+): Promise<Result<T, "Unauthorised" | Error>> => {
   let pair: KeyringPair | null = null
   try {
     try {
@@ -39,32 +40,8 @@ export const getPairForAddressSafely = async <T>(
     }
     return Ok(await cb(pair))
   } catch (error) {
-    return new Err(error)
+    return new Err(error as Error)
   } finally {
     if (!!pair && !pair.isLocked) pair.lock()
   }
-}
-
-export const isHardwareAccount = (address: Address) => {
-  const acc = keyring.getAccount(address)
-  return acc?.meta?.isHardware ?? false
-}
-
-export const isQrAccount = (address: Address) => {
-  const acc = keyring.getAccount(address)
-  return acc?.meta?.origin === "QR" ?? false
-}
-
-export const isWatchedAccount = (address: Address) => {
-  const acc = keyring.getAccount(address)
-  return acc?.meta?.origin === "WATCHED" ?? false
-}
-
-export const hasPrivateKey = (address: Address) => {
-  const acc = keyring.getAccount(address)
-  if (!acc) return false
-  if (acc.meta?.isExternal) return false
-  if (acc.meta?.isHardware) return false
-  if (["QR", "WATCHED"].includes(acc.meta?.origin as string)) return false
-  return true
 }
