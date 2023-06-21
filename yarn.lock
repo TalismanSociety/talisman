@@ -10583,13 +10583,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"blob-util@npm:2.0.2":
-  version: 2.0.2
-  resolution: "blob-util@npm:2.0.2"
-  checksum: d543e6b92e4ca715ca33c78e89a07a2290d43e5b2bc897d7ec588c5c7bbf59df93e45225ac0c9258aa6ce4320358990f99c9288f1c48280f8ec5d7a2e088d19b
-  languageName: node
-  linkType: hard
-
 "blueimp-md5@npm:2.19.0":
   version: 2.19.0
   resolution: "blueimp-md5@npm:2.19.0"
@@ -14257,7 +14250,6 @@ __metadata:
     babel-plugin-module-extension-resolver: ^1.0.0
     bcryptjs: ^2.4.3
     bignumber.js: ^9.1.1
-    blob-util: 2.0.2
     blueimp-md5: 2.19.0
     browserify-zlib: ^0.2.0
     buffer: ^6.0.3
