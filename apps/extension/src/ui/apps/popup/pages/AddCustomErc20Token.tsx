@@ -7,6 +7,7 @@ import { SimpleButton } from "@talisman/components/SimpleButton"
 import { XIcon } from "@talisman/theme/icons"
 import { api } from "@ui/api"
 import { CustomErc20TokenViewDetails } from "@ui/domains/Erc20Tokens/CustomErc20TokenViewDetails"
+import { SignAlertMessage } from "@ui/domains/Sign/SignAlertMessage"
 import { useEvmNetwork } from "@ui/hooks/useEvmNetwork"
 import { useRequest } from "@ui/hooks/useRequest"
 import { useCallback, useState } from "react"
@@ -168,6 +169,16 @@ export const AddCustomErc20Token = () => {
         <div>
           <CustomErc20TokenViewDetails token={request.token} network={network} />
         </div>
+        {!!request.warnings?.length && (
+          <SignAlertMessage type="error" className="mt-8">
+            {request.warnings.map((warning, i) => (
+              <div key={i}>
+                {request.warnings.length > 1 ? "- " : ""}
+                {warning}
+              </div>
+            ))}
+          </SignAlertMessage>
+        )}
       </Content>
       <Footer>
         <ErrorMessage>{error}</ErrorMessage>

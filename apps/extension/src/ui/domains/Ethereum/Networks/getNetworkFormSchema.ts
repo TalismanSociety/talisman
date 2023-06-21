@@ -1,4 +1,4 @@
-import i18next from "@ui/i18nConfig"
+import i18next from "@core/i18nConfig"
 import * as yup from "yup"
 
 import { getRpcChainId } from "./helpers"

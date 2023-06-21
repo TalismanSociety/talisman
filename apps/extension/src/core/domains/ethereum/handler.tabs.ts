@@ -8,6 +8,7 @@ import {
   RequestAuthorizeTab,
 } from "@core/domains/sitesAuthorised/types"
 import { CustomErc20Token } from "@core/domains/tokens/types"
+import i18next from "@core/i18nConfig"
 import {
   ETH_ERROR_EIP1474_INVALID_INPUT,
   ETH_ERROR_EIP1474_INVALID_PARAMS,
@@ -52,6 +53,7 @@ import {
   isValidAddEthereumRequestParam,
   isValidRequestedPermissions,
   isValidWatchAssetRequestParam,
+  sanitizeWatchAssetRequestParam,
 } from "./helpers"
 import { requestAddNetwork, requestWatchAsset } from "./requests"
 import { getProviderForEthereumNetwork, getProviderForEvmNetworkId } from "./rpcProviders"
@@ -474,42 +476,87 @@ export class EthTabsHandler extends TabsHandler {
     if (!isValidWatchAssetRequestParam(request.params))
       throw new EthProviderRpcError("Invalid parameter", ETH_ERROR_EIP1474_INVALID_PARAMS)
 
-    const { symbol, address, decimals, image } = request.params.options
-    const ethChainId = await this.getChainId(url)
-    if (typeof ethChainId !== "number")
-      throw new EthProviderRpcError("Not connected", ETH_ERROR_EIP1993_CHAIN_DISCONNECTED)
+    const processRequest = async () => {
+      try {
+        const {
+          options: { symbol, address, decimals, image },
+        } = await sanitizeWatchAssetRequestParam(request.params)
 
-    const tokenId = getErc20TokenId(ethChainId.toString(), address)
-    const existing = await chaindataProvider.getToken(tokenId)
-    if (existing)
-      throw new EthProviderRpcError("Asset already exists", ETH_ERROR_EIP1474_INVALID_PARAMS)
+        const ethChainId = await this.getChainId(url)
+        if (typeof ethChainId !== "number")
+          throw new EthProviderRpcError("Not connected", ETH_ERROR_EIP1993_CHAIN_DISCONNECTED)
 
-    const provider = await getProviderForEvmNetworkId(ethChainId.toString())
-    if (!provider)
-      throw new EthProviderRpcError("Network not supported", ETH_ERROR_EIP1993_CHAIN_DISCONNECTED)
+        const tokenId = getErc20TokenId(ethChainId.toString(), address)
+        const existing = await chaindataProvider.getToken(tokenId)
+        if (existing)
+          throw new EthProviderRpcError("Asset already exists", ETH_ERROR_EIP1474_INVALID_PARAMS)
 
-    try {
-      // eslint-disable-next-line no-var
-      var tokenInfo = await getErc20TokenInfo(provider, ethChainId.toString(), address)
-    } catch (err) {
-      throw new EthProviderRpcError("Asset not found", ETH_ERROR_EIP1474_INVALID_PARAMS)
+        const provider = await getProviderForEvmNetworkId(ethChainId.toString())
+        if (!provider)
+          throw new EthProviderRpcError(
+            "Network not supported",
+            ETH_ERROR_EIP1993_CHAIN_DISCONNECTED
+          )
+
+        try {
+          // eslint-disable-next-line no-var
+          var tokenInfo = await getErc20TokenInfo(provider, ethChainId.toString(), address)
+        } catch (err) {
+          throw new EthProviderRpcError("Asset not found", ETH_ERROR_EIP1474_INVALID_PARAMS)
+        }
+
+        const allTokens = await chaindataProvider.tokensArray()
+        const symbolFound = allTokens.some(
+          (token) =>
+            token.type === "evm-erc20" &&
+            token.evmNetwork?.id === ethChainId.toString() &&
+            token.symbol === symbol
+        )
+
+        const warnings: string[] = []
+        if (!tokenInfo) {
+          warnings.push(i18next.t("Failed to verify the contract information"))
+        } else {
+          if (tokenInfo.symbol !== symbol)
+            warnings.push(
+              i18next.t(
+                "Suggested symbol {{symbol}} is different from the one defined on the contract ({{contractSymbol}})",
+                { symbol, contractSymbol: tokenInfo.symbol }
+              )
+            )
+          if (!tokenInfo.coingeckoId)
+            warnings.push(i18next.t("This token's address is not registered on CoinGecko"))
+        }
+        if (symbolFound)
+          warnings.push(
+            i18next.t(`Another {{symbol}} token already exists on this network`, { symbol })
+          )
+
+        const token: CustomErc20Token = {
+          id: tokenId,
+          type: "evm-erc20",
+          isTestnet: false,
+          symbol: symbol ?? tokenInfo.symbol,
+          decimals: decimals ?? tokenInfo.decimals,
+          logo: image ?? tokenInfo.image ?? githubUnknownTokenLogoUrl,
+          coingeckoId: tokenInfo.coingeckoId,
+          contractAddress: address,
+          evmNetwork: tokenInfo.evmNetworkId !== undefined ? { id: tokenInfo.evmNetworkId } : null,
+          isCustom: true,
+          image: image ?? tokenInfo.image,
+        }
+
+        await requestWatchAsset(url, request.params, token, warnings, port)
+      } catch (err) {
+        log.error("Failed to add watch asset", { err })
+      }
     }
 
-    const token: CustomErc20Token = {
-      id: tokenId,
-      type: "evm-erc20",
-      isTestnet: false,
-      symbol: symbol ?? tokenInfo.symbol,
-      decimals: decimals ?? tokenInfo.decimals,
-      logo: image ?? tokenInfo.image ?? githubUnknownTokenLogoUrl,
-      coingeckoId: tokenInfo.coingeckoId,
-      contractAddress: address,
-      evmNetwork: tokenInfo.evmNetworkId !== undefined ? { id: tokenInfo.evmNetworkId } : null,
-      isCustom: true,
-      image: image ?? tokenInfo.image,
-    }
+    // process request asynchronously to prevent dapp from knowing if user accepts or rejects
+    // see https://eips.ethereum.org/EIPS/eip-747
+    processRequest()
 
-    return requestWatchAsset(url, request.params, token, port)
+    return true
   }
 
   private async sendTransaction(

@@ -1,8 +1,8 @@
+import { languages } from "@core/i18nConfig"
 import HeaderBlock from "@talisman/components/HeaderBlock"
 import Spacer from "@talisman/components/Spacer"
 import { CheckIcon } from "@talisman/theme/icons"
 import Layout from "@ui/apps/dashboard/layout"
-import { languages } from "@ui/i18nConfig"
 import { useTranslation } from "react-i18next"
 
 const LanguageButton = ({

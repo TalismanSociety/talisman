@@ -1,6 +1,6 @@
+import i18next from "@core/i18nConfig"
 import { notify } from "@talisman/components/Notifications"
 import { shortenAddress } from "@talisman/util/shortenAddress"
-import i18next from "@ui/i18nConfig"
 
 export const copyAddress = async (address: string, title?: string) => {
   if (!address) return
