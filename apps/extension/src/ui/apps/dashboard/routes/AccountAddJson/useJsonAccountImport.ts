@@ -1,4 +1,4 @@
-import { DEBUG } from "@core/constants"
+//import { DEBUG } from "@core/constants"
 import { AccountType } from "@core/domains/accounts/types"
 import { log } from "@core/log"
 import { createPair } from "@polkadot/keyring"
@@ -13,7 +13,7 @@ import useAccounts from "@ui/hooks/useAccounts"
 import useChains from "@ui/hooks/useChains"
 import { useCallback, useEffect, useMemo, useState } from "react"
 
-import testImport from "./GITIGNORE.json"
+//import testImport from "./GITIGNORE.json"
 import { JsonImportAccount } from "./JsonAccountsList"
 
 // let DO_NOT_MERGE_ABOVE_IMPORT: any
@@ -50,8 +50,8 @@ const createPairFromJson = ({ encoded, encoding, address, meta }: KeyringPair$Js
 
 export const useJsonAccountImport = () => {
   // TODO REMOVE BEFORE MERGE
-  const [fileContent, setFileContent] = useState(DEBUG ? JSON.stringify(testImport) : undefined)
-  //  const [fileContent, setFileContent] = useState<string>()
+  // const [fileContent, setFileContent] = useState(DEBUG ? JSON.stringify(testImport) : undefined)
+  const [fileContent, setFileContent] = useState<string>()
   // do we really need to save this ?
   const [masterPassword, setMasterPassword] = useState<string>()
   const [selectedAccounts, setSelectedAccounts] = useState<string[]>([])
