@@ -36,6 +36,7 @@ const AccountJson = () => {
     requiresAccountUnlock,
     canImport,
     isMultiAccounts,
+    unlockAttemptProgress,
     importAccounts,
     selectAccount,
     selectAll,
@@ -113,9 +114,10 @@ const AccountJson = () => {
             <div className="mt-16 flex w-full justify-end gap-8">
               {isMultiAccounts && (
                 <UnlockJsonAccountsButton
-                  requiresAccountUnlock={requiresAccountUnlock}
-                  unlockAccounts={unlockAccounts}
                   accounts={accounts}
+                  requiresAccountUnlock={requiresAccountUnlock}
+                  unlockAttemptProgress={unlockAttemptProgress}
+                  unlockAccounts={unlockAccounts}
                 />
               )}
               <Button

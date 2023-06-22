@@ -2,12 +2,14 @@ import { FilePlusIcon, XIcon } from "@talisman/theme/icons"
 import { classNames } from "@talismn/util"
 import { FC, MouseEventHandler, useCallback, useMemo, useState } from "react"
 import { DropzoneOptions, useDropzone } from "react-dropzone"
+import { Trans, useTranslation } from "react-i18next"
 
 type JsonFileDropProps = {
   onChange?: (file?: File) => void
 }
 
 export const JsonFileDrop: FC<JsonFileDropProps> = ({ onChange }) => {
+  const { t } = useTranslation("account-add")
   const [file, setFile] = useState<File>()
 
   const onDrop = useCallback(
@@ -24,9 +26,8 @@ export const JsonFileDrop: FC<JsonFileDropProps> = ({ onChange }) => {
       onDrop,
       accept: { "application/json": [".json"] },
       maxFiles: 1,
-      disabled: !!file,
     }
-  }, [file, onDrop])
+  }, [onDrop])
 
   const handleForgetFileClick: MouseEventHandler<HTMLButtonElement> = useCallback(
     (e) => {
@@ -43,7 +44,7 @@ export const JsonFileDrop: FC<JsonFileDropProps> = ({ onChange }) => {
     <div
       {...getRootProps()}
       className={classNames(
-        "border-grey-700 hover:bg-grey-900 flex  h-[16rem] cursor-pointer flex-col items-center gap-8 rounded border border-dashed p-8",
+        "border-grey-700 hover:bg-grey-900 flex h-[16rem] cursor-pointer flex-col items-center gap-8 rounded border border-dashed p-8",
         isDragAccept && "bg-primary/10",
         isDragReject && "bg-alert-error/10"
       )}
@@ -66,15 +67,16 @@ export const JsonFileDrop: FC<JsonFileDropProps> = ({ onChange }) => {
           </div>
         ) : (
           <div>
-            <span className="">Drop your JSON file or </span>
-            <span className="text-primary font-bold">Browse</span>
+            <Trans t={t}>
+              Drop your JSON file or <span className="text-primary font-bold">Browse</span>
+            </Trans>
           </div>
         )}
         {isDragReject ? (
-          <div className="text-alert-warn text-xs">Invalid JSON file</div>
+          <div className="text-alert-warn text-xs">{t("Invalid JSON file")}</div>
         ) : (
           <div className="text-grey-500 text-xs">
-            {file ? "Replace File" : "Talisman supports the import of multiple accounts"}
+            {file ? t("Replace File") : t("Talisman supports the import of multiple accounts")}
           </div>
         )}
       </div>

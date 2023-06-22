@@ -110,6 +110,8 @@
   "OK": "OK",
   "Message signing is not supported for hardware wallets.": "Message signing is not supported for hardware wallets.",
   "This type of transaction is not supported on your ledger. You should check for firmware updates in Ledger Live before trying again.": "This type of transaction is not supported on your ledger. You should check for firmware updates in Ledger Live before trying again.",
+  "Displaying first 1000 characters only": "Displaying first 1000 characters only",
+  "Show all": "Show all",
   "Updating network metadata, please wait.": "Updating network metadata, please wait.",
   "Failed to update metadata. Please update metadata manually from the <2>Polkadot.js portal</2> or your transaction may fail.": "Failed to update metadata. Please update metadata manually from the <2>Polkadot.js portal</2> or your transaction may fail.",
   "Failed to update metadata. Please update metadata manually or your transaction may fail.": "Failed to update metadata. Please update metadata manually or your transaction may fail.",

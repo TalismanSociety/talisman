@@ -19,8 +19,9 @@ type FormData = {
 export const UnlockJsonAccountsButton: FC<{
   accounts: JsonImportAccount[]
   requiresAccountUnlock: boolean
+  unlockAttemptProgress: number
   unlockAccounts: (password: string) => void
-}> = ({ accounts, requiresAccountUnlock, unlockAccounts }) => {
+}> = ({ accounts, requiresAccountUnlock, unlockAttemptProgress, unlockAccounts }) => {
   const { t } = useTranslation("account-add")
   const { open, isOpen, close } = useOpenClose()
 
@@ -35,6 +36,7 @@ export const UnlockJsonAccountsButton: FC<{
     handleSubmit,
     reset,
     resetField,
+    setFocus,
     setError,
     clearErrors,
     formState: { errors, isValid, isSubmitting },
@@ -63,19 +65,36 @@ export const UnlockJsonAccountsButton: FC<{
     [clearErrors, resetField, setError, t, unlockAccounts]
   )
 
-  const { unlockedCount, selectedCount, progressStyle } = useMemo(() => {
-    const selected = accounts.filter((a) => a.selected)
-    const selectedCount = selected.length
-    const unlockedCount = selected.filter((a) => !a.isLocked).length
-    const progressStyle: CSSProperties = selectedCount
-      ? { width: `${Math.round((unlockedCount / selectedCount) * 100)}%` }
-      : {}
-    return { unlockedCount, selectedCount, progressStyle }
-  }, [accounts])
+  const { unlockedCount, selectedCount, progressStyle, unlockAttemptProgressStyle } =
+    useMemo(() => {
+      const selected = accounts.filter((a) => a.selected)
+      const selectedCount = selected.length
+      const unlockedCount = selected.filter((a) => !a.isLocked).length
+      const unlockProgressStyle: CSSProperties = selectedCount
+        ? { transform: `translateX(-${100 - Math.round((unlockedCount / selectedCount) * 100)}%)` }
+        : {}
+      const unlockAttemptProgressStyle: CSSProperties = selectedCount
+        ? {
+            transform: `translateX(-${
+              100 - Math.round((unlockAttemptProgress / selectedCount) * 100)
+            }%)`,
+          }
+        : {}
+      return {
+        unlockedCount,
+        selectedCount,
+        progressStyle: unlockProgressStyle,
+        unlockAttemptProgressStyle,
+      }
+    }, [accounts, unlockAttemptProgress])
 
   useEffect(() => {
     if (unlockedCount === selectedCount) close()
   })
+
+  useEffect(() => {
+    if (isOpen) setTimeout(() => setFocus("password"), 50)
+  }, [isOpen, setFocus])
 
   return (
     <>
@@ -86,13 +105,17 @@ export const UnlockJsonAccountsButton: FC<{
         <ModalDialog title={t("Unlock accounts")} onClose={close}>
           <div className="text-body-secondary flex w-full justify-between">
             <div className={classNames(!!unlockedCount && "text-primary")}>
-              {unlockedCount} unlocked
+              {t("{{unlockedCount}} unlocked", { unlockedCount })}
             </div>
-            <div>{selectedCount} selected</div>
+            <div>{t("{{selectedCount}} selected", { selectedCount })}</div>
           </div>
-          <div className="bg-grey-800 my-4 flex h-5 rounded-lg">
+          <div className="bg-grey-800 relative my-4 flex h-5 overflow-hidden rounded-lg">
             <div
-              className="bg-primary-500 h-5 rounded-lg transition-all"
+              className="bg-grey-700 absolute left-0 top-0 h-5 w-full rounded-lg transition-transform ease-out"
+              style={unlockAttemptProgressStyle}
+            ></div>
+            <div
+              className="bg-primary-500 absolute left-0 top-0 h-5 w-full rounded-lg transition-transform duration-300 ease-out"
               style={progressStyle}
             ></div>
           </div>
@@ -106,8 +129,7 @@ export const UnlockJsonAccountsButton: FC<{
                 placeholder={t("Enter password")}
                 spellCheck={false}
                 data-lpignore
-                // eslint-disable-next-line jsx-a11y/no-autofocus
-                autoFocus
+                readOnly={isSubmitting}
               />
             </FormFieldContainer>
             <div className="mt-8">

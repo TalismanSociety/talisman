@@ -1,3 +1,4 @@
+import { DEBUG } from "@core/constants"
 import { AccountType } from "@core/domains/accounts/types"
 import { log } from "@core/log"
 import { createPair } from "@polkadot/keyring"
@@ -12,9 +13,8 @@ import useAccounts from "@ui/hooks/useAccounts"
 import useChains from "@ui/hooks/useChains"
 import { useCallback, useEffect, useMemo, useState } from "react"
 
+import testImport from "./GITIGNORE.json"
 import { JsonImportAccount } from "./JsonAccountsList"
-
-//import testImport from "./GITIGNORE.json"
 
 // let DO_NOT_MERGE_ABOVE_IMPORT: any
 
@@ -50,8 +50,8 @@ const createPairFromJson = ({ encoded, encoding, address, meta }: KeyringPair$Js
 
 export const useJsonAccountImport = () => {
   // TODO REMOVE BEFORE MERGE
-  //const [fileContent, setFileContent] = useState(DEBUG ? JSON.stringify(testImport) : undefined)
-  const [fileContent, setFileContent] = useState<string>()
+  const [fileContent, setFileContent] = useState(DEBUG ? JSON.stringify(testImport) : undefined)
+  //const [fileContent, setFileContent] = useState<string>()
   // do we really need to save this ?
   const [masterPassword, setMasterPassword] = useState<string>()
   const [selectedAccounts, setSelectedAccounts] = useState<string[]>([])
@@ -178,36 +178,67 @@ export const useJsonAccountImport = () => {
     [accounts]
   )
 
+  const [unlockAttemptProgress, setUnlockAttemptProgress] = useState(0)
+
   const unlockAccounts = useCallback(
     async (password: string) => {
       if (!pairs || !accounts) return
 
-      // hangs UI, do asynchronously
-      return await new Promise<boolean>((resolve, reject) => {
-        setTimeout(() => {
-          try {
-            let unlocked = false
-            for (const account of accounts.filter((a) => a.selected && a.isLocked)) {
-              const pair = pairs.find((p) => p.address === account.id)
-              if (!pair) continue
-              try {
-                pair.unlock(password)
+      setUnlockAttemptProgress(accounts.filter((a) => a.selected && !a.isLocked).length)
 
-                // TODO react18 transition so UI updates as soon as one is unlocked
-                // update state so UI updates
-                setPairs([...pairs])
-                unlocked = true
-              } catch (err) {
-                // ignore
-              }
+      for (const account of accounts.filter((a) => a.selected && a.isLocked)) {
+        setUnlockAttemptProgress((prev) => prev + 1)
+
+        const pair = pairs.find((p) => p.address === account.id)
+        if (!pair) continue
+
+        const unlocked = await new Promise((resolve) => {
+          setTimeout(() => {
+            let unlocked = false
+
+            try {
+              pair.unlock(password)
+              unlocked = true
+            } catch (err) {
+              // ignore
             }
 
             resolve(unlocked)
-          } catch (err) {
-            reject(err)
-          }
-        }, 1)
-      })
+          }, 50)
+        })
+
+        if (unlocked) {
+          setPairs([...pairs])
+        }
+      }
+
+      setUnlockAttemptProgress(0)
+      // // hangs UI, do asynchronously
+      // return await new Promise<boolean>((resolve, reject) => {
+      //   setTimeout(() => {
+      //     try {
+      //       let unlocked = false
+      //       for (const account of accounts.filter((a) => a.selected && a.isLocked)) {
+      //         const pair = pairs.find((p) => p.address === account.id)
+      //         if (!pair) continue
+      //         try {
+      //           pair.unlock(password)
+
+      //           // TODO react18 transition so UI updates as soon as one is unlocked
+      //           // update state so UI updates
+      //           setPairs([...pairs])
+      //           unlocked = true
+      //         } catch (err) {
+      //           // ignore
+      //         }
+      //       }
+
+      //       resolve(unlocked)
+      //     } catch (err) {
+      //       reject(err)
+      //     }
+      //   }, 1)
+      // })
     },
     [accounts, pairs]
   )
@@ -265,6 +296,7 @@ export const useJsonAccountImport = () => {
     requiresFilePassword,
     requiresAccountUnlock,
     canImport,
+    unlockAttemptProgress,
     setFileContent,
     selectAccount,
     unlockFile,
