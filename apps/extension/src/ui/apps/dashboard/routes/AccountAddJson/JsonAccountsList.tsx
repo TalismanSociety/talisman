@@ -5,7 +5,7 @@ import { classNames } from "@talismn/util"
 import { AccountIcon } from "@ui/domains/Account/AccountIcon"
 import { AccountTypeIcon } from "@ui/domains/Account/AccountTypeIcon"
 import { FC, useCallback, useMemo } from "react"
-import { useTranslation } from "react-i18next"
+import { Trans, useTranslation } from "react-i18next"
 import { Checkbox, Tooltip, TooltipContent, TooltipTrigger } from "talisman-ui"
 
 export type JsonImportAccount = {
@@ -90,6 +90,8 @@ export const JsonImportAccountsList: FC<{
   onSelectAll: () => void
   onSelectNone: () => void
 }> = ({ accounts, onSelectAccount, onSelectAll, onSelectNone }) => {
+  const { t } = useTranslation("account-add")
+
   const { selected, total } = useMemo(() => {
     const selected = accounts.filter((a) => a.selected).length
     const total = accounts.length
@@ -107,17 +109,19 @@ export const JsonImportAccountsList: FC<{
     <div>
       <div className={classNames("flex px-8", accounts.length > 4 && "pr-12")}>
         <div className="grow">
-          Selected Accounts <span className="text-primary ml-4">{selected}</span>
-          <span className="text-grey-500 text-sm">/{total}</span>
+          <Trans t={t}>
+            Selected Accounts <span className="text-primary ml-4">{selected}</span>
+            <span className="text-grey-500 text-sm">/{total}</span>
+          </Trans>
         </div>
         {accounts.length > 1 && (
           <div className="text-grey-500 flex gap-4">
             <button type="button" className="hover:text-grey-400" onClick={onSelectNone}>
-              Clear
+              {t("Clear")}
             </button>
             <div>|</div>
             <button type="button" className="hover:text-grey-400" onClick={onSelectAll}>
-              Select all
+              {t("Select all")}
             </button>
           </div>
         )}
