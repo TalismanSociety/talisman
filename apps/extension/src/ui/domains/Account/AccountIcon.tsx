@@ -52,7 +52,7 @@ export const AccountIcon: FC<AccountIconProps> = ({ address, className, genesisH
   const displayType = useMemo(() => type ?? identiconType ?? "talisman-orb", [identiconType, type])
 
   return (
-    <div className={classNames("relative shrink-0", className)}>
+    <div className={classNames("relative inline-block shrink-0", className)}>
       {displayType === "polkadot-identicon" ? (
         <PolkadotAvatar seed={address} />
       ) : (

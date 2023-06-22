@@ -55,7 +55,7 @@ const AccountAddTypePicker = () => {
           iconLeft={FileTextIcon}
           iconRight={ChevronRightIcon}
           title={t("Import via JSON file")}
-          subtitle={t("Import your Polkadot.js account")}
+          subtitle={t("Import your Polkadot.js account(s)")}
           to={`/accounts/add/json`}
         />
         <CtaButton
