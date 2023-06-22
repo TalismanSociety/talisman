@@ -256,6 +256,26 @@ const schemaAddEthereumRequest = yup.object().shape({
 export const isValidAddEthereumRequestParam = (obj: unknown) =>
   schemaAddEthereumRequest.isValidSync(obj)
 
+// Function used to check url for token & network icons, when provided by dapps
+// It is recommended to sanitize the URI by whitelisting specific schemes, ports and file extensions.
+// For example, only the HTTPS protocol scheme should be used.
+// Furthermore, private IP ranges and hostnames should be forbidden.
+// Finally, only specific whitelisted image extensions should be allowed.
+export const isSafeImageUrl = (url?: string) => {
+  if (!url) return true
+  try {
+    const urlObj = new URL(url)
+    if (urlObj.protocol !== "https:") return false
+    if (urlObj.port) return false
+    if (urlObj.hostname.match(/^(10\.|172\.(1[6-9]|2[0-9]|3[01])\.|192\.168\.)/)) return false
+    if (urlObj.hostname.match(/^(localhost|127\.0\.0\.1)$/)) return false
+    if (!urlObj.pathname.match(/\.(jpeg|jpg|gif|png|svg|webp)$/)) return false
+    return true
+  } catch (e) {
+    return false
+  }
+}
+
 const schemaWatchAssetRequest = yup.object().shape({
   type: yup.string().oneOf(["ERC20"]).required(),
   options: yup
@@ -264,13 +284,17 @@ const schemaWatchAssetRequest = yup.object().shape({
       address: yup.string().required(),
       symbol: yup.string().min(2).max(11),
       decimals: yup.number(),
-      image: yup.string(),
+      // ignore image if it doesn't pass security checks
+      image: yup.string().transform((value) => (isSafeImageUrl(value) ? value : undefined)),
     })
     .required(),
 })
 
 export const isValidWatchAssetRequestParam = (obj: unknown) =>
   schemaWatchAssetRequest.isValidSync(obj)
+
+export const sanitizeWatchAssetRequestParam = (obj: unknown) =>
+  schemaWatchAssetRequest.validate(obj)
 
 // for now, only allow eth_accounts property with an empty object
 const schemaRequestedPermissions = yup

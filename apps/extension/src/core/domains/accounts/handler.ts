@@ -312,7 +312,8 @@ export default class AccountsHandler extends ExtensionHandler {
   }
 
   private accountForget({ address }: RequestAccountForget): boolean {
-    const account = keyring.getAccount(address)
+    const encodedAddress = encodeAnyAddress(address)
+    const account = keyring.getAccount(encodedAddress)
     assert(account, "Unable to find account")
 
     const { type } = keyring.getPair(account?.address)

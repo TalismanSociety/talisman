@@ -3,6 +3,7 @@ import { EthSignRequest } from "@core/domains/signing/types"
 import { log } from "@core/log"
 import { isHexString, stripHexPrefix } from "@ethereumjs/util"
 import * as Sentry from "@sentry/browser"
+import { classNames } from "@talismn/util"
 import { Message } from "@ui/domains/Sign/Message"
 import { useEvmNetwork } from "@ui/hooks/useEvmNetwork"
 import { dump as convertToYaml } from "js-yaml"
@@ -82,7 +83,10 @@ export const EthSignBodyMessage: FC<EthSignBodyMessageProps> = ({ account, reque
           </div>
         )}
       </div>
-      <Message className="w-full grow" readOnly defaultValue={text} smallText={isTypedData} />
+      <Message
+        className={classNames("w-full grow", isTypedData && "whitespace-pre text-xs")}
+        text={text}
+      />
     </div>
   )
 }

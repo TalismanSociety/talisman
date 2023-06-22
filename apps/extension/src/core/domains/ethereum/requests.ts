@@ -47,6 +47,7 @@ export const requestWatchAsset = async (
   url: string,
   request: WatchAssetBase,
   token: CustomErc20Token,
+  warnings: string[],
   port: Port
 ) => {
   const address = request.options.address
@@ -59,6 +60,9 @@ export const requestWatchAsset = async (
       "Pending watch asset request already exists. Please accept or reject the request."
     )
   }
-  await requestStore.createRequest({ type: WATCH_ASSET_PREFIX, url, request, token }, port)
+  await requestStore.createRequest(
+    { type: WATCH_ASSET_PREFIX, url, request, token, warnings },
+    port
+  )
   return true
 }

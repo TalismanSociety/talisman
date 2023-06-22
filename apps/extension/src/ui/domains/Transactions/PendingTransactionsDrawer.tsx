@@ -5,6 +5,7 @@ import {
   WalletTransaction,
 } from "@core/domains/transactions/types"
 import { TransactionStatus } from "@core/domains/transactions/types"
+import i18next from "@core/i18nConfig"
 import { LoaderIcon, MoreHorizontalIcon, RocketIcon, XOctagonIcon } from "@talisman/theme/icons"
 import { convertAddress } from "@talisman/util/convertAddress"
 import { BalanceFormatter } from "@talismn/balances"
@@ -18,7 +19,6 @@ import { useFaviconUrl } from "@ui/hooks/useFaviconUrl"
 import { useIsFeatureEnabled } from "@ui/hooks/useFeatures"
 import useToken from "@ui/hooks/useToken"
 import { useTokenRates } from "@ui/hooks/useTokenRates"
-import i18next from "@ui/i18nConfig"
 import { getTransactionHistoryUrl } from "@ui/util/getTransactionHistoryUrl"
 import formatDistanceToNowStrict from "date-fns/formatDistanceToNowStrict"
 import { useLiveQuery } from "dexie-react-hooks"
@@ -78,7 +78,16 @@ const Favicon: FC<{ siteUrl: string; className?: string }> = ({ siteUrl, classNa
   if (!iconUrl) return null
   if (isError) return <NetworkLogo className={className} />
 
-  return <img loading="lazy" src={iconUrl} className={className} alt="" onError={handleError} />
+  return (
+    <img
+      loading="lazy"
+      src={iconUrl}
+      crossOrigin="anonymous"
+      className={className}
+      alt=""
+      onError={handleError}
+    />
+  )
 }
 
 const TxIconContainer: FC<

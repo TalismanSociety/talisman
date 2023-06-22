@@ -4,6 +4,7 @@ import { METADATA_PREFIX } from "@core/domains/metadata/types"
 import { SIGNING_TYPES } from "@core/domains/signing/types"
 import { AUTH_PREFIX } from "@core/domains/sitesAuthorised/types"
 import { FadeIn } from "@talisman/components/FadeIn"
+import { SuspenseTracker } from "@talisman/components/SuspenseTracker"
 import { api } from "@ui/api"
 import { AccountExportModalProvider } from "@ui/domains/Account/AccountExportModal"
 import { AccountExportPrivateKeyModalProvider } from "@ui/domains/Account/AccountExportPrivateKeyModal"
@@ -13,7 +14,7 @@ import { CopyAddressModalProvider } from "@ui/domains/CopyAddress"
 import { SelectedAccountProvider } from "@ui/domains/Portfolio/SelectedAccountContext"
 import { useIsLoggedIn } from "@ui/hooks/useIsLoggedIn"
 import { useIsOnboarded } from "@ui/hooks/useIsOnboarded"
-import { useEffect, useMemo } from "react"
+import { Suspense, useEffect, useMemo } from "react"
 import { Navigate, Route, Routes } from "react-router-dom"
 
 import { BackupWarningDrawer } from "./components/BackupWarningDrawer"
@@ -30,7 +31,7 @@ import { SendFundsPage } from "./pages/SendFunds"
 import { EthereumSignRequest } from "./pages/Sign/ethereum"
 import { SubstrateSignRequest } from "./pages/Sign/substrate"
 
-const Popup = () => {
+const InnerPopup = () => {
   const isOnboarded = useIsOnboarded()
   const isLoggedIn = useIsLoggedIn()
 
@@ -56,9 +57,7 @@ const Popup = () => {
   if (isLoggedIn === "FALSE") return <LoginViewManager />
 
   return (
-    // TODO implement layout here to prevent container flickering on route change (some routes render null until loaded)
-    // workaround set size here
-    <FadeIn className="mx-auto h-[60rem] w-[40rem]">
+    <FadeIn>
       <SelectedAccountProvider isPopup>
         <AccountRemoveModalProvider>
           <AccountRenameModalProvider>
@@ -108,5 +107,13 @@ const Popup = () => {
     </FadeIn>
   )
 }
+
+const Popup = () => (
+  <div className="mx-auto h-[60rem] w-[40rem]">
+    <Suspense fallback={<SuspenseTracker name="Popup" />}>
+      <InnerPopup />
+    </Suspense>
+  </div>
+)
 
 export default Popup

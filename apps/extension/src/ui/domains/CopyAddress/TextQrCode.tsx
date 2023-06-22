@@ -69,5 +69,6 @@ export const TextQrCode = ({
     )
   if (!qrCode) return null
 
-  return <img className="relative h-full w-full" src={qrCode} alt="" />
+  // apply a key to prevent flickering of inner icon if changing chain
+  return <img key={`${data}-${image}`} className="relative h-full w-full" src={qrCode} alt="" />
 }

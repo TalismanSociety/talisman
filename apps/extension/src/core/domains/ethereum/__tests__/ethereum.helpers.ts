@@ -5,6 +5,7 @@ import {
   getEthLedgerDerivationPath,
   getMaxFeePerGas,
   getTotalFeesFromGasSettings,
+  isSafeImageUrl,
 } from "../helpers"
 
 const baseFeePerGas = ethers.utils.parseUnits("2", "gwei")
@@ -95,5 +96,17 @@ describe("Test ethereum helpers", () => {
 
     expect(getEthLedgerDerivationPath("BIP44")).toEqual("m/44'/60'/0'/0/0")
     expect(getEthLedgerDerivationPath("BIP44", 3)).toEqual("m/44'/60'/0'/0/3")
+  })
+
+  test("isSafeImageUrl", () => {
+    expect(isSafeImageUrl("https://localhost/evilsvgfile_(1).svg")).toEqual(false)
+    expect(isSafeImageUrl("https://127.0.0.1/evilsvgfile_(1).svg")).toEqual(false)
+    expect(isSafeImageUrl("https://192.168.0.1/evilsvgfile_(1).svg")).toEqual(false)
+    expect(isSafeImageUrl("https://172.19.0.1/evilsvgfile_(1).svg")).toEqual(false)
+    expect(isSafeImageUrl("https://10.0.0.1/evilsvgfile_(1).svg")).toEqual(false)
+    expect(isSafeImageUrl("https://legit-domain:666/evilsvgfile_(1).svg")).toEqual(false)
+    expect(isSafeImageUrl("http://legit-domain/evilsvgfile_(1).svg")).toEqual(false)
+    expect(isSafeImageUrl("https://legit-domain/evilsvgfile_(1).js")).toEqual(false)
+    expect(isSafeImageUrl("https://legit-domain/chadsvgfile_(1).svg")).toEqual(true)
   })
 })

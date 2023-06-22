@@ -171,6 +171,7 @@ export type WatchAssetRequest = BaseRequest<WATCH_ASSET_PREFIX> & {
   url: string
   request: WatchAssetBase
   token: CustomErc20Token
+  warnings: string[]
 }
 
 export type EthRequests = {
