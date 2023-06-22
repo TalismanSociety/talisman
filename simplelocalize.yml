@@ -13,7 +13,7 @@ uploadPath: ./apps/extension/public/locales/{lang}/{ns}.json
 
 # Upload format is a format of the file(s) with translations.
 # Supported formats: https://simplelocalize.io/docs/general/file-formats/
-uploadFormat: multi-language-json
+uploadFormat: single-language-json
 
 # Upload options are options that are passed to the upload command.
 # Supported options: https://simplelocalize.io/docs/general/options/
