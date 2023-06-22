@@ -51,7 +51,7 @@ const createPairFromJson = ({ encoded, encoding, address, meta }: KeyringPair$Js
 export const useJsonAccountImport = () => {
   // TODO REMOVE BEFORE MERGE
   const [fileContent, setFileContent] = useState(DEBUG ? JSON.stringify(testImport) : undefined)
-  //const [fileContent, setFileContent] = useState<string>()
+  //  const [fileContent, setFileContent] = useState<string>()
   // do we really need to save this ?
   const [masterPassword, setMasterPassword] = useState<string>()
   const [selectedAccounts, setSelectedAccounts] = useState<string[]>([])

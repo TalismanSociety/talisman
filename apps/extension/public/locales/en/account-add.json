@@ -18,7 +18,7 @@
   "Import": "Import",
   "This account already exists.": "This account already exists.",
   "Private key is not available.": "Private key is not available.",
-  "Selected Accounts <1>{selected}</1><2>/{total}</2>": "Selected Accounts <1>{selected}</1><2>/{total}</2>",
+  "Selected Accounts <1>{selectedCount}</1><2>/{totalCount}</2>": "Selected Accounts <1>{selectedCount}</1><2>/{totalCount}</2>",
   "Clear": "Clear",
   "Select all": "Select all",
   "Drop your JSON file or <1>Browse</1>": "Drop your JSON file or <1>Browse</1>",

@@ -92,10 +92,10 @@ export const JsonImportAccountsList: FC<{
 }> = ({ accounts, onSelectAccount, onSelectAll, onSelectNone }) => {
   const { t } = useTranslation("account-add")
 
-  const { selected, total } = useMemo(() => {
-    const selected = accounts.filter((a) => a.selected).length
-    const total = accounts.length
-    return { selected, total }
+  const { selectedCount, totalCount } = useMemo(() => {
+    const selectedCount = accounts.filter((a) => a.selected).length.toString()
+    const totalCount = accounts.length.toString()
+    return { selectedCount, totalCount }
   }, [accounts])
 
   const handleSelect = useCallback(
@@ -107,19 +107,19 @@ export const JsonImportAccountsList: FC<{
 
   return (
     <div>
-      <div className={classNames("flex px-8", accounts.length > 4 && "pr-12")}>
+      <div className={classNames("flex items-center px-8", accounts.length > 4 && "pr-12")}>
         <div className="grow">
           <Trans t={t}>
-            Selected Accounts <span className="text-primary ml-4">{selected}</span>
-            <span className="text-grey-500 text-sm">/{total}</span>
+            Selected Accounts <span className="text-primary ml-4">{selectedCount}</span>
+            <span className="text-grey-500 text-sm">/{totalCount}</span>
           </Trans>
         </div>
         {accounts.length > 1 && (
-          <div className="text-grey-500 flex gap-4">
+          <div className="text-grey-500 flex items-center gap-4">
             <button type="button" className="hover:text-grey-400" onClick={onSelectNone}>
               {t("Clear")}
             </button>
-            <div>|</div>
+            <div className="bg-grey-500 h-6 w-0.5"></div>
             <button type="button" className="hover:text-grey-400" onClick={onSelectAll}>
               {t("Select all")}
             </button>
