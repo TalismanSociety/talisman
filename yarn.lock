@@ -14302,7 +14302,7 @@ __metadata:
     react-app-polyfill: 3.0.0
     react-countup: ^6.4.2
     react-dom: 18.2.0
-    react-dropzone: ^12.1.0
+    react-dropzone: 14.2.3
     react-hook-form: 7.43.9
     react-i18next: ^12.3.1
     react-is: 17.0.2
@@ -14584,12 +14584,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"file-selector@npm:^0.5.0":
-  version: 0.5.0
-  resolution: "file-selector@npm:0.5.0"
+"file-selector@npm:^0.6.0":
+  version: 0.6.0
+  resolution: "file-selector@npm:0.6.0"
   dependencies:
-    tslib: ^2.0.3
-  checksum: f95a06938123a2b765d136a4430cc8b19165f06a53e7ae1dcca4947716d61e9181453fcfeb2358c2660cbcecf96d7334f0528ba60071fed81f8bd358ea08454a
+    tslib: ^2.4.0
+  checksum: 7d051b6e5d793f3c6e2ab287ba5e7c2c6a0971bccc9d56e044c8047ba483e18f60fc0b5771c951dc707c0d15f4f36ccb4f1f1aaf385d21ec8f7700dadf8325ba
   languageName: node
   linkType: hard
 
@@ -21498,16 +21498,16 @@ __metadata:
   languageName: node
   linkType: hard
 
-"react-dropzone@npm:^12.1.0":
-  version: 12.1.0
-  resolution: "react-dropzone@npm:12.1.0"
+"react-dropzone@npm:14.2.3":
+  version: 14.2.3
+  resolution: "react-dropzone@npm:14.2.3"
   dependencies:
     attr-accept: ^2.2.2
-    file-selector: ^0.5.0
+    file-selector: ^0.6.0
     prop-types: ^15.8.1
   peerDependencies:
-    react: ">= 16.8"
-  checksum: 1be37433cf42b8a9f98c8f59678e30fffc1e9b8e3fdb20f3a376557948f727156123ca0a7e45cd3882606184d945ea1139f17da0e1e5ba0b646a23be0ed65fb3
+    react: ">= 16.8 || 18.0.0"
+  checksum: 174b744d5ca898cf3d84ec1aeb6cef5211c446697e45dc8ece8287a03d291f8d07253206d5a1247ef156fd385d65e7de666d4d5c2986020b8543b8f2434e8b40
   languageName: node
   linkType: hard
 
@@ -23735,6 +23735,7 @@ __metadata:
     postcss: ^8.4.20
     react: 18.2.0
     react-dom: 18.2.0
+    react-dropzone: 14.2.3
     react-router-dom: 6.9.0
     react-use: 17.4.0
     tailwindcss: ^3.3.2
@@ -23751,6 +23752,7 @@ __metadata:
     postcss: "*"
     react: ">=18.2.0"
     react-dom: ">=18.2.0"
+    react-dropzone: ">=14.2.0"
     react-router-dom: ">=6.3.0"
     react-use: ">=17.4.0"
     tailwindcss: ">=3.1.8"

@@ -1,7 +1,6 @@
 import { DEBUG } from "@core/constants"
 import { log } from "@core/log"
 import HeaderBlock from "@talisman/components/HeaderBlock"
-import { InputFileDrop } from "@talisman/components/InputFileDrop"
 import { notify, notifyUpdate } from "@talisman/components/Notifications"
 import Spacer from "@talisman/components/Spacer"
 import { ArrowRightIcon } from "@talisman/theme/icons"
@@ -9,10 +8,11 @@ import { api } from "@ui/api"
 import { useSelectAccountAndNavigate } from "@ui/hooks/useSelectAccountAndNavigate"
 import { useCallback, useState } from "react"
 import { useTranslation } from "react-i18next"
-import { Button, FormFieldContainer } from "talisman-ui"
+import { Button } from "talisman-ui"
 
 import Layout from "../../layout"
 import { JsonImportAccountsList } from "./JsonAccountsList"
+import { JsonFileDrop } from "./JsonFileDrop"
 import { UnlockJsonAccountsButton } from "./UnlockJsonAccountsButton"
 import { UnlockJsonFileForm } from "./UnlockJsonFileForm"
 import { useJsonAccountImport } from "./useJsonAccountImport"
@@ -81,7 +81,8 @@ const AccountJson = () => {
   const handleFileChange = useCallback(
     async (file?: File) => {
       try {
-        setFileContent(await getFileContent(file))
+        if (file) setFileContent(await getFileContent(file))
+        else setFileContent(undefined)
       } catch (err) {
         // TODO error management
         setFileContent(undefined)
@@ -98,16 +99,7 @@ const AccountJson = () => {
       />
       <Spacer />
       <div data-button-pull-left>
-        {/* // TODO error */}
-        <FormFieldContainer error={""}>
-          <InputFileDrop
-            onChange={handleFileChange}
-            inputProps={{
-              accept: "application/json",
-              placeholder: t("Choose a .json file"),
-            }}
-          />
-        </FormFieldContainer>
+        <JsonFileDrop onChange={handleFileChange} />
         <Spacer />
         {requiresFilePassword && <UnlockJsonFileForm unlockFile={unlockFile} />}
         {accounts && (
