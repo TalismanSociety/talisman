@@ -159,7 +159,7 @@ function useExtensionChaindataSyncEffect() {
   useEffect(
     () =>
       windowInject.talismanSub?.subscribeCustomSubstrateChains?.((chains) =>
-        chaindata.syncCustomChains(chains)
+        chaindata.setCustomChains(chains)
       ),
     [chaindata]
   )
@@ -167,7 +167,7 @@ function useExtensionChaindataSyncEffect() {
   useEffect(
     () =>
       windowInject.talismanSub?.subscribeCustomEvmNetworks?.((networks) =>
-        chaindata.syncCustomEvmNetworks(networks)
+        chaindata.setCustomEvmNetworks(networks)
       ),
     [chaindata]
   )
@@ -175,7 +175,7 @@ function useExtensionChaindataSyncEffect() {
   useEffect(
     () =>
       windowInject.talismanSub?.subscribeCustomTokens?.((tokens) =>
-        chaindata.syncCustomTokens(tokens)
+        chaindata.setCustomTokens(tokens)
       ),
     [chaindata]
   )
