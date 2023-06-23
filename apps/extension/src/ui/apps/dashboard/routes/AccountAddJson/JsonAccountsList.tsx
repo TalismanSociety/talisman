@@ -55,7 +55,6 @@ const JsonAccount: FC<{ account: JsonImportAccount; onSelect: (select: boolean) 
             {account.isExisting || !account.isPrivateKeyAvailable ? (
               <div className="w-8 shrink-0"></div>
             ) : account.isLocked ? (
-              // text-brand-orange
               <LockIcon className="text-alert-warn shrink-0" />
             ) : (
               <UnlockIcon className="text-primary shrink-0" />
@@ -65,12 +64,14 @@ const JsonAccount: FC<{ account: JsonImportAccount; onSelect: (select: boolean) 
               <div className="w-[1.92rem] shrink-0 text-center">
                 <CheckCircleIcon className="text-primary-500" />
               </div>
-            ) : (
+            ) : account.isPrivateKeyAvailable ? (
               <Checkbox
                 readOnly
                 checked={account.selected}
                 disabled={!account.isPrivateKeyAvailable || account.isExisting}
               />
+            ) : (
+              <div className="w-[1.92rem] shrink-0"></div>
             )}
           </button>
         </div>
@@ -109,10 +110,15 @@ export const JsonImportAccountsList: FC<{
     <div>
       <div className={classNames("flex items-center px-8", accounts.length > 4 && "pr-12")}>
         <div className="grow">
-          <Trans t={t}>
-            Selected Accounts <span className="text-primary ml-4">{selectedCount}</span>
-            <span className="text-grey-500 text-sm">/{totalCount}</span>
-          </Trans>
+          <Trans
+            t={t}
+            values={{ selectedCount, totalCount }}
+            defaults="Selected accounts <Selected>{{selectedCount}}</Selected><Total>/{{totalCount}}</Total>"
+            components={{
+              Selected: <span className="text-primary ml-2" />,
+              Total: <span className="text-grey-500 text-sm" />,
+            }}
+          ></Trans>
         </div>
         {accounts.length > 1 && (
           <div className="text-grey-500 flex items-center gap-4">

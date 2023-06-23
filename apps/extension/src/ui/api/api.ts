@@ -82,8 +82,8 @@ export const api: MessageTypes = {
   accountCreate: (name, type) => messageService.sendMessage("pri(accounts.create)", { name, type }),
   accountCreateFromSeed: (name, seed, type) =>
     messageService.sendMessage("pri(accounts.create.seed)", { name, seed, type }),
-  accountCreateFromJson: (json, password) =>
-    messageService.sendMessage("pri(accounts.create.json)", { json, password }),
+  accountCreateFromJson: (unlockedPairs) =>
+    messageService.sendMessage("pri(accounts.create.json)", { unlockedPairs }),
   accountCreateHardware: ({ accountIndex, address, addressOffset, genesisHash, name }) =>
     messageService.sendMessage("pri(accounts.create.hardware.substrate)", {
       accountIndex,

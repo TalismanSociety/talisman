@@ -62,8 +62,8 @@ const AccountJson = () => {
       { autoClose: false }
     )
     try {
-      // TODO trigger import here
-      setAddress(await importAccounts())
+      const addresses = await importAccounts()
+      setAddress(addresses[0])
       notifyUpdate(notificationId, {
         type: "success",
         title: t("Accounts imported", { count }),
@@ -151,6 +151,18 @@ if (DEBUG) {
       "5EHNsSHuWrNMYgx3bPhsRVLG77DX8sS8wZrnbtieJzbtSZr9",
       "5DyUfURQT1NX1Vyid1apvWP5yTnPTtouMyftrWmgsNAa14kM",
       "5CaSZQyy9RQqdt3qMQEDMm1dYSVee9Sr7LdeGQU221B1WNLM",
+      "5CFvLZv7mUek94zD4mhW5GkWs52QHChNCkvBduXgDiBbPADj",
+      "5DFa8NXB68bYL7fYcbReKhCX2WndXK5DqcExbyRGDCpgYk6w",
+      "5EcMkFurA1BRQeMfkuw1qMEf7gYtPDQ35PtusxiDGPwg8wii",
+      "5FELmvbMjLSHDEf7iMftjLmVt3PE7Der8r8hr9WzmKAs9s6Q",
+      "5ESFEQnCQR1hN9UdSGRNfVgvSvFoep3RP7Xay28eLX8xvdg6",
+      "5DHYnuSHhA5NsfxZX67MCmRMj8Lf63Z3DyrezKunbKw22tFH",
+      "5DHbXfAwioBPgh9A4cCWjKfrsn34UdNer4DJGwuaGW3epFY5",
+      "5HmZdPTkSjPGGpwtLm4mBKyRtxJVwtAUGfop4vu4dxKftgsy",
+      "5GvW5HnxeMS8e6EFjd6mhbeYbBhHXUeAtLikhWXPG1yXifWB",
+      "5CGRgP74EcW2E5ZPYdJjnUNWjRpUyah7ZmWstqty7dPmtz8h",
+      "5GF2Lad5NZsdCXFxT2m1M5xFLScrUmGxag1iXaYPr3qmXoDG",
+      "5HVsBH48sUe2ULQhqhYrDLgxeKF4tvDW83rTC5GxVzdB7Wmz",
     ]) {
       try {
         log.log(`Removing account ${address}`)

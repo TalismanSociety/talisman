@@ -13,10 +13,10 @@ import useAccounts from "@ui/hooks/useAccounts"
 import useChains from "@ui/hooks/useChains"
 import { useCallback, useEffect, useMemo, useState } from "react"
 
-//import testImport from "./GITIGNORE.json"
+// import testImport from "./GITIGNORE.json"
 import { JsonImportAccount } from "./JsonAccountsList"
 
-// let DO_NOT_MERGE_ABOVE_IMPORT: any
+// TODO DO_NOT_MERGE_ABOVE_IMPORT
 
 type SingleAccountJson = KeyringPair$Json
 type MultiAccountJson = KeyringPairs$Json
@@ -112,19 +112,6 @@ export const useJsonAccountImport = () => {
               ) as KeyringPair$Json[]
               const pairs = accounts.map(createPairFromJson)
 
-              // try to unlock each pair with master password
-              // pairs
-              //   .filter((p) => !p.meta.isExternal)
-              //   .forEach((pair) => {
-              //     try {
-              //       pair.decodePkcs8(password)
-              //       console.log("password match", pair.meta.name)
-              //     } catch (err) {
-              //       console.log("password invalid", pair.meta.name)
-              //       // ignore
-              //     }
-              //   })
-
               setMasterPassword(password)
               setPairs(pairs)
             } else throw new Error("Invalid file type")
@@ -213,32 +200,6 @@ export const useJsonAccountImport = () => {
       }
 
       setUnlockAttemptProgress(0)
-      // // hangs UI, do asynchronously
-      // return await new Promise<boolean>((resolve, reject) => {
-      //   setTimeout(() => {
-      //     try {
-      //       let unlocked = false
-      //       for (const account of accounts.filter((a) => a.selected && a.isLocked)) {
-      //         const pair = pairs.find((p) => p.address === account.id)
-      //         if (!pair) continue
-      //         try {
-      //           pair.unlock(password)
-
-      //           // TODO react18 transition so UI updates as soon as one is unlocked
-      //           // update state so UI updates
-      //           setPairs([...pairs])
-      //           unlocked = true
-      //         } catch (err) {
-      //           // ignore
-      //         }
-      //       }
-
-      //       resolve(unlocked)
-      //     } catch (err) {
-      //       reject(err)
-      //     }
-      //   }, 1)
-      // })
     },
     [accounts, pairs]
   )
@@ -257,7 +218,7 @@ export const useJsonAccountImport = () => {
     return true
   }, [pairs, selectedAccounts])
 
-  const importAccounts = useCallback(async () => {
+  const importAccounts = useCallback(() => {
     assert(selectedAccounts.length, "No accounts selected")
     assert(pairs, "Pairs unavailable")
 
@@ -270,13 +231,11 @@ export const useJsonAccountImport = () => {
       assert(!pair.isLocked, "Account is locked")
     }
 
-    for (const pair of pairsToImport) {
-      const json = pair?.toJson()
-      // empty password will do as account is already unlocked
-      await api.accountCreateFromJson(JSON.stringify(json), "")
-    }
+    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+    const unlockedPairs = pairsToImport.map((p) => p!.toJson())
 
-    return selectedAccounts[0]
+    // blank password as pairs are unlocked
+    return api.accountCreateFromJson(unlockedPairs)
   }, [pairs, selectedAccounts])
 
   const selectAll = useCallback(() => {

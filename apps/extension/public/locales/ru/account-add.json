@@ -22,7 +22,7 @@
   "Import": "",
   "This account already exists.": "",
   "Private key is not available.": "",
-  "Selected Accounts <1>{selectedCount}</1><2>/{totalCount}</2>": "",
+  "Selected accounts <Selected>{{selectedCount}}</Selected><Total>/{{totalCount}}</Total>": "",
   "Clear": "",
   "Select all": "",
   "Drop your JSON file or <1>Browse</1>": "",
