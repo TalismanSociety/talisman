@@ -14,17 +14,34 @@ const { srcDir, coreDir, distDir, getRelease, getGitShortHash } = require("./uti
 
 const config = (env) => ({
   entry: {
-    backend: ["@substrate/txwrapper-core", "@talismn/chaindata-provider-extension"],
-    frontEnd: ["lottie-react", "@substrate/txwrapper-core"],
-    appFrontEnd: [
-      "lottie-react",
-      "@substrate/txwrapper-core",
-      "@talismn/chaindata-provider-extension",
+    ethers: [
+      "@ethersproject/providers",
+      "@ethersproject/abstract-provider",
+      "@ethersproject/bignumber",
+      "@ethersproject/abi",
+      "@ethersproject/contracts",
+      "@ethersproject/wordlists",
+      "@ethersproject/json-wallets",
+      "@ethersproject/wallet",
+      "@ethersproject/hdnode",
+      "@ethersproject/strings",
+      "@ethersproject/solidity",
+      "@ethersproject/random",
     ],
-    popup: { import: path.join(srcDir, "index.popup.tsx"), dependOn: "appFrontEnd" },
+    app: ["ethers", "@talismn/chaindata-provider-extension", "@polkadot/apps-config/api"],
+    backend: ["@substrate/txwrapper-core", "elliptic"],
+    frontEnd: ["lottie-react", "@substrate/txwrapper-core", "framer-motion", "react", "elliptic"],
+    appFrontEnd: ["react-qr-reader", "recoil"],
     onboarding: { import: path.join(srcDir, "index.onboarding.tsx"), dependOn: "frontEnd" },
-    dashboard: { import: path.join(srcDir, "index.dashboard.tsx"), dependOn: "appFrontEnd" },
-    background: { import: path.join(coreDir, "background.ts"), dependOn: "backend" },
+    popup: {
+      import: path.join(srcDir, "index.popup.tsx"),
+      dependOn: ["app", "frontEnd", "appFrontEnd"],
+    },
+    dashboard: {
+      import: path.join(srcDir, "index.dashboard.tsx"),
+      dependOn: ["app", "frontEnd", "appFrontEnd"],
+    },
+    background: { import: path.join(coreDir, "background.ts"), dependOn: ["app", "backend"] },
     content_script: path.join(coreDir, "content_script.ts"),
     page: path.join(coreDir, "page.ts"),
   },
