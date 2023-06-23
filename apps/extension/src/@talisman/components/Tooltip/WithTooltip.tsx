@@ -23,7 +23,7 @@ export const WithTooltip = ({
       <TooltipTrigger asChild>
         <Container className={className}>{children}</Container>
       </TooltipTrigger>
-      <TooltipContent>{tooltip}</TooltipContent>
+      {tooltip && <TooltipContent>{tooltip}</TooltipContent>}
     </Tooltip>
   )
 }
