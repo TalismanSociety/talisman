@@ -2,7 +2,7 @@ import Color from "color"
 import { AnimationPlaybackControls, animate } from "framer-motion"
 import { useCallback, useEffect, useMemo, useRef } from "react"
 
-import { MysticalPhysics } from "./MysticalPhysics"
+import { MysticalPhysicsV2 } from "./MysticalPhysicsV2"
 
 export type ParentSize = {
   width: number
@@ -31,7 +31,7 @@ const rotateColor = (color: string) => {
 }
 
 const generateCharacteristics = (
-  config: MysticalPhysics,
+  config: MysticalPhysicsV2,
   parentSize: ParentSize,
   isAcolyte = false,
   cx?: number,
@@ -66,7 +66,7 @@ const generateCharacteristics = (
 }
 
 export const useCelestialArtifact = (
-  config: MysticalPhysics,
+  config: MysticalPhysicsV2,
   parentSize: ParentSize,
   isAcolyte?: boolean,
   cx?: number,

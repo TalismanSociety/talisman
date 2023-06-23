@@ -2,15 +2,15 @@ import { classNames } from "@talismn/util"
 import { useRef } from "react"
 import { useMeasure, useMouse } from "react-use"
 
+import { useWindowHovered } from "../MysticalBackgroundV3/useWindowHovered"
 import MysticalCanvas from "./MysticalCanvas"
-import { MYSTICAL_PHYSICS, MysticalPhysics } from "./MysticalPhysics"
-import { useWindowHovered } from "./useWindowHovered"
+import { MYSTICAL_PHYSICS_V2, MysticalPhysicsV2 } from "./MysticalPhysicsV2"
 
-export const MysticalBackground = ({
+export const MysticalBackgroundV2 = ({
   className,
-  config = MYSTICAL_PHYSICS,
+  config = MYSTICAL_PHYSICS_V2,
 }: {
-  config?: MysticalPhysics
+  config?: MysticalPhysicsV2
   className?: string
 }) => {
   const [refSize, size] = useMeasure<HTMLDivElement>()
@@ -29,13 +29,13 @@ export const MysticalBackground = ({
 
   return (
     <div ref={refSize} className={classNames(className)}>
-      <div ref={refMouseLocation} className="absolute top-0 left-0 h-full w-full">
+      <div ref={refMouseLocation} className="absolute left-0 top-0 h-full w-full">
         {config && !!size.height && (
           <MysticalCanvas
             size={size}
             config={config}
             {...acolyte}
-            className="absolute top-0 left-0 h-full w-full"
+            className="absolute left-0 top-0 h-full w-full"
           />
         )}
       </div>

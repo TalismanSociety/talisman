@@ -13,7 +13,7 @@ const Onboarding = () => {
 
   return (
     <Context resetWallet={resetWalletRef.current}>
-      <MysticalBackground className="fixed top-0 left-0 h-[100vh] w-[100vw]" />
+      <MysticalBackground className="fixed left-0 top-0 h-[100vh] w-[100vw]" />
       <OnboardingRoutes />
     </Context>
   )
