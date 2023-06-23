@@ -1,9 +1,12 @@
 import { AccountType } from "@core/domains/accounts/types"
-import { CheckCircleIcon, LockIcon, UnlockIcon } from "@talisman/theme/icons"
+import { AlertCircleIcon, CheckCircleIcon, LockIcon, UnlockIcon } from "@talisman/theme/icons"
 import { shortenAddress } from "@talisman/util/shortenAddress"
+import { Balances } from "@talismn/balances"
 import { classNames } from "@talismn/util"
 import { AccountIcon } from "@ui/domains/Account/AccountIcon"
 import { AccountTypeIcon } from "@ui/domains/Account/AccountTypeIcon"
+import Fiat from "@ui/domains/Asset/Fiat"
+import { TokensAndFiat } from "@ui/domains/Asset/TokensAndFiat"
 import { FC, useCallback, useMemo } from "react"
 import { Trans, useTranslation } from "react-i18next"
 import { Checkbox, Tooltip, TooltipContent, TooltipTrigger } from "talisman-ui"
@@ -18,6 +21,8 @@ export type JsonImportAccount = {
   isLocked: boolean
   isPrivateKeyAvailable: boolean
   isExisting: boolean
+  balances: Balances
+  isLoading: boolean
 }
 
 const JsonAccount: FC<{ account: JsonImportAccount; onSelect: (select: boolean) => void }> = ({
@@ -28,6 +33,11 @@ const JsonAccount: FC<{ account: JsonImportAccount; onSelect: (select: boolean) 
   const handleClick = useCallback(() => {
     onSelect(!account.selected)
   }, [onSelect, account])
+
+  const positiveBalances = useMemo(
+    () => account.balances.each.filter((b) => b.total.planck > 0),
+    [account]
+  )
 
   return (
     <Tooltip>
@@ -45,13 +55,37 @@ const JsonAccount: FC<{ account: JsonImportAccount; onSelect: (select: boolean) 
               address={account.address}
               genesisHash={account.genesisHash}
             />
-            <div className="flex grow flex-col gap-2">
-              <div className=" text-base">
+            <div className="flex grow flex-col gap-2 overflow-hidden">
+              <div className=" overflow-hidden text-ellipsis whitespace-nowrap text-base">
                 {account.name} <AccountTypeIcon origin={account.origin as AccountType} />
               </div>
               <div className="text-body-secondary text-sm">{shortenAddress(account.address)}</div>
             </div>
-            <div>$6,282.50</div>
+            <div className={classNames(account.isLoading && "animate-pulse")}>
+              <Tooltip placement="bottom-end">
+                <TooltipTrigger asChild>
+                  <div>
+                    <Fiat amount={account.balances.sum.fiat("usd").total} />
+                  </div>
+                </TooltipTrigger>
+                {!!positiveBalances.length && (
+                  <TooltipContent>
+                    <div className="flex flex-col items-end gap-3 p-2">
+                      {positiveBalances.map((balance) => (
+                        <div key={balance.tokenId}>
+                          <TokensAndFiat
+                            tokenId={balance.tokenId}
+                            planck={balance.total.planck}
+                            noTooltip
+                            noCountUp
+                          />
+                        </div>
+                      ))}
+                    </div>
+                  </TooltipContent>
+                )}
+              </Tooltip>
+            </div>
             {account.isExisting || !account.isPrivateKeyAvailable ? (
               <div className="w-8 shrink-0"></div>
             ) : account.isLocked ? (
@@ -64,14 +98,16 @@ const JsonAccount: FC<{ account: JsonImportAccount; onSelect: (select: boolean) 
               <div className="w-[1.92rem] shrink-0 text-center">
                 <CheckCircleIcon className="text-primary-500" />
               </div>
-            ) : account.isPrivateKeyAvailable ? (
+            ) : !account.isPrivateKeyAvailable ? (
+              <div className="w-[1.92rem] shrink-0 text-center">
+                <AlertCircleIcon className="text-alert-warn" />
+              </div>
+            ) : (
               <Checkbox
                 readOnly
                 checked={account.selected}
                 disabled={!account.isPrivateKeyAvailable || account.isExisting}
               />
-            ) : (
-              <div className="w-[1.92rem] shrink-0"></div>
             )}
           </button>
         </div>
@@ -141,6 +177,11 @@ export const JsonImportAccountsList: FC<{
         {accounts.map((acc, i) => (
           <JsonAccount key={i} account={acc} onSelect={handleSelect(acc.id)} />
         ))}
+      </div>
+      <div className="text-grey-500 mt-6 text-xs">
+        {t(
+          "During the import stage, the displayed balances may represent only a subset of your account holdings."
+        )}
       </div>
     </div>
   )

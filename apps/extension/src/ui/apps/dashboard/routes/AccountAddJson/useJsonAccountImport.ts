@@ -1,16 +1,28 @@
-//import { DEBUG } from "@core/constants"
+// import { DEBUG } from "@core/constants"
 import { AccountType } from "@core/domains/accounts/types"
+import { AddressesByEvmNetwork } from "@core/domains/balances/types"
 import { log } from "@core/log"
+import { AddressesByChain } from "@core/types/base"
 import { createPair } from "@polkadot/keyring"
 import { KeyringPair, KeyringPair$Json } from "@polkadot/keyring/types"
 import { KeyringPairs$Json } from "@polkadot/ui-keyring/types"
 import { assert, hexToU8a, isHex, u8aToString } from "@polkadot/util"
-import { base64Decode, decodeAddress, encodeAddress, jsonDecrypt } from "@polkadot/util-crypto"
+import {
+  base64Decode,
+  decodeAddress,
+  encodeAddress,
+  isEthereumAddress,
+  jsonDecrypt,
+} from "@polkadot/util-crypto"
 import { KeypairType } from "@polkadot/util-crypto/types"
+import { Address, Balances } from "@talismn/balances"
 import { encodeAnyAddress } from "@talismn/util"
 import { api } from "@ui/api"
 import useAccounts from "@ui/hooks/useAccounts"
+import useBalancesByParams from "@ui/hooks/useBalancesByParams"
 import useChains from "@ui/hooks/useChains"
+import { useEvmNetworks } from "@ui/hooks/useEvmNetworks"
+import isEqual from "lodash/isEqual"
 import { useCallback, useEffect, useMemo, useState } from "react"
 
 // import testImport from "./GITIGNORE.json"
@@ -48,21 +60,108 @@ const createPairFromJson = ({ encoded, encoding, address, meta }: KeyringPair$Js
   )
 }
 
+const BALANCE_CHECK_EVM_NETWORK_IDS = ["1284", "1285", "592", "1"]
+const BALANCE_CHECK_SUB_NETWORK_IDS = ["polkadot", "kusama", "astar", "acala"]
+
+const useAccountsBalances = (pairs: KeyringPair[] | undefined) => {
+  // pairs beeing mutable the whole array has to be overriden after each unlock
+  // keep a separate list for addresses that won't be updated, so we only recreate balanceParams when necessary
+  const [addresses, setAddresses] = useState(pairs?.map((p) => p.address) ?? [])
+
+  const { chains } = useChains(false)
+  const { evmNetworks } = useEvmNetworks(false)
+
+  useEffect(() => {
+    const newAddresses = pairs?.map((p) => encodeAnyAddress(p.address)) ?? []
+    if (!isEqual(newAddresses, addresses)) {
+      setAddresses(newAddresses)
+    }
+  }, [addresses, pairs, setAddresses])
+
+  const balanceParams = useMemo(() => {
+    if (!addresses.length) return {}
+
+    const ethAddresses = addresses?.filter((address) => isEthereumAddress(address))
+    const subAddresses = addresses?.filter((address) => !isEthereumAddress(address))
+
+    const addressesByChain = subAddresses.length
+      ? chains
+          .filter(({ id }) => BALANCE_CHECK_SUB_NETWORK_IDS.includes(id))
+          .reduce(
+            (acc, chain) => ({
+              ...acc,
+              [chain.id]: subAddresses.map(
+                (address) => encodeAnyAddress(address) //, chain.prefix ?? undefined)
+              ),
+            }),
+            {} as AddressesByChain
+          )
+      : undefined
+
+    const addressesByEvmNetwork = ethAddresses.length
+      ? ({
+          addresses: ethAddresses,
+          evmNetworks: evmNetworks
+            .filter(({ id }) => BALANCE_CHECK_EVM_NETWORK_IDS.includes(id))
+            .map(({ id, nativeToken }) => ({ id, nativeToken })),
+        } as AddressesByEvmNetwork)
+      : undefined
+
+    const result = {
+      addressesByChain,
+      addressesByEvmNetwork,
+    }
+
+    return result
+  }, [addresses, chains, evmNetworks])
+
+  // debounce state to prevent accounts from beeing recomputed too frequently
+  // const liveBalances = useBalancesByParams(balanceParams)
+  // const [balances, setBalances] = useState<Balances>(liveBalances)
+  // useDebounce(() => setBalances(liveBalances), 500, [liveBalances])
+
+  const allBalances = useBalancesByParams(balanceParams)
+
+  return useMemo(() => {
+    return addresses.reduce((acc, address) => {
+      const individualBalances = allBalances.find({ address }).each
+      const expectedBalancesNetworksCount = isEthereumAddress(address)
+        ? BALANCE_CHECK_EVM_NETWORK_IDS.length
+        : BALANCE_CHECK_SUB_NETWORK_IDS.length
+      const individualBalancesNetworksCount = [
+        ...new Set(individualBalances.map((b) => b.chainId ?? b.evmNetworkId)),
+      ].length
+      const isLoading =
+        individualBalancesNetworksCount < expectedBalancesNetworksCount ||
+        individualBalances.some((b) => b.status === "cache")
+      const balances = new Balances(individualBalances)
+
+      return {
+        ...acc,
+        [address]: { balances, isLoading },
+      }
+    }, {} as Record<Address, { balances: Balances; isLoading: boolean }>)
+  }, [addresses, allBalances])
+
+  //return allBalances
+}
+
 export const useJsonAccountImport = () => {
   // TODO REMOVE BEFORE MERGE
-  // const [fileContent, setFileContent] = useState(DEBUG ? JSON.stringify(testImport) : undefined)
+  //const [fileContent, setFileContent] = useState(DEBUG ? JSON.stringify(testImport) : undefined)
   const [fileContent, setFileContent] = useState<string>()
   // do we really need to save this ?
-  const [masterPassword, setMasterPassword] = useState<string>()
+  //const [masterPassword, setMasterPassword] = useState<string>()
+  const [isFileUnlocked, setIsFileUnlocked] = useState(false)
   const [selectedAccounts, setSelectedAccounts] = useState<string[]>([])
   const existingAccounts = useAccounts()
 
   const [pairs, setPairs] = useState<KeyringPair[]>()
 
   useEffect(() => {
-    setMasterPassword(undefined)
-    setPairs(undefined)
+    setIsFileUnlocked(false)
     setSelectedAccounts([])
+    setPairs(undefined)
   }, [fileContent])
 
   const file = useMemo<UnknownAccountJsonFile | undefined>(() => {
@@ -80,7 +179,7 @@ export const useJsonAccountImport = () => {
     return undefined
   }, [fileContent])
 
-  const requiresFilePassword = useMemo(() => file && !masterPassword, [file, masterPassword])
+  const requiresFilePassword = useMemo(() => file && !isFileUnlocked, [file, isFileUnlocked])
 
   const unlockFile = useCallback(
     async (password: string) => {
@@ -95,7 +194,7 @@ export const useJsonAccountImport = () => {
               // check password, throws if invalid
               pair.decodePkcs8(password)
 
-              setMasterPassword(password)
+              setIsFileUnlocked(true)
               setPairs([pair])
 
               if (
@@ -112,7 +211,7 @@ export const useJsonAccountImport = () => {
               ) as KeyringPair$Json[]
               const pairs = accounts.map(createPairFromJson)
 
-              setMasterPassword(password)
+              setIsFileUnlocked(true)
               setPairs(pairs)
             } else throw new Error("Invalid file type")
 
@@ -127,18 +226,23 @@ export const useJsonAccountImport = () => {
   )
 
   const { chains } = useChains(true)
+  const accountBalances = useAccountsBalances(pairs)
 
   const accounts = useMemo<JsonImportAccount[] | undefined>(() => {
     if (!pairs) return undefined
 
-    return pairs.map((pair) => {
+    const result = pairs.map((pair) => {
       const chain = pair.meta.genesisHash
         ? chains.find((c) => c.genesisHash === pair.meta.genesisHash)
         : undefined
 
-      const isExisting = existingAccounts.some(
-        (a) => encodeAnyAddress(a.address) === encodeAnyAddress(pair.address)
-      )
+      const address = encodeAnyAddress(pair.address)
+      const isExisting = existingAccounts.some((a) => encodeAnyAddress(a.address) === address)
+
+      const { balances, isLoading } = accountBalances[address] ?? {
+        balances: new Balances([]),
+        isLoading: true,
+      }
 
       return {
         id: pair.address,
@@ -150,9 +254,13 @@ export const useJsonAccountImport = () => {
         selected: !isExisting && selectedAccounts.includes(pair.address),
         isLocked: pair.isLocked,
         isPrivateKeyAvailable: !pair.meta.isExternal && !pair.meta.isHardware,
+        balances,
+        isLoading,
       }
     })
-  }, [chains, existingAccounts, pairs, selectedAccounts])
+
+    return result
+  }, [accountBalances, chains, existingAccounts, pairs, selectedAccounts])
 
   const selectAccount = useCallback(
     (id: string, select: boolean) => {

@@ -46,12 +46,14 @@ export const JsonFileDrop: FC<JsonFileDropProps> = ({ onChange }) => {
       className={classNames(
         "border-grey-700 hover:bg-grey-900 flex h-[16rem] cursor-pointer flex-col items-center gap-8 rounded border border-dashed p-8",
         isDragAccept && "bg-primary/10",
-        isDragReject && "bg-alert-error/10"
+        isDragReject && "bg-alert-warn/10"
       )}
     >
       <input {...getInputProps()} />
       <div className="bg-primary/10 rounded-full p-5">
-        <FilePlusIcon className="text-primary text-lg" />
+        <FilePlusIcon
+          className={classNames("text-lg", isDragReject ? "text-alert-warn" : "text-primary")}
+        />
       </div>
       <div className="flex grow flex-col items-center justify-center gap-6">
         {file ? (
@@ -72,13 +74,13 @@ export const JsonFileDrop: FC<JsonFileDropProps> = ({ onChange }) => {
             </Trans>
           </div>
         )}
-        {isDragReject ? (
-          <div className="text-alert-warn text-xs">{t("Invalid JSON file")}</div>
-        ) : (
-          <div className="text-grey-500 text-xs">
-            {file ? t("Replace File") : t("Talisman supports the import of multiple accounts")}
-          </div>
-        )}
+        <div className="text-grey-500 text-xs">
+          {isDragReject
+            ? t("File not supported")
+            : file
+            ? t("Replace File")
+            : t("Talisman supports the import of multiple accounts")}
+        </div>
       </div>
     </div>
   )

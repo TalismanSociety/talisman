@@ -2,10 +2,9 @@ import { log } from "@core/log"
 import { yupResolver } from "@hookform/resolvers/yup"
 import { ModalDialog } from "@talisman/components/ModalDialog"
 import { KeyIcon } from "@talisman/theme/icons"
-import { classNames } from "@talismn/util"
 import { FC, useCallback, useEffect, useMemo } from "react"
 import { useForm } from "react-hook-form"
-import { useTranslation } from "react-i18next"
+import { Trans, useTranslation } from "react-i18next"
 import { CSSProperties } from "styled-components"
 import { Button, FormFieldContainer, FormFieldInputText, Modal, useOpenClose } from "talisman-ui"
 import * as yup from "yup"
@@ -103,11 +102,16 @@ export const UnlockJsonAccountsButton: FC<{
       </Button>
       <Modal isOpen={isOpen} onDismiss={close}>
         <ModalDialog title={t("Unlock accounts")} onClose={close}>
-          <div className="text-body-secondary flex w-full justify-between">
-            <div className={classNames(!!unlockedCount && "text-primary")}>
-              {t("{{unlockedCount}} unlocked", { unlockedCount })}
-            </div>
-            <div>{t("{{selectedCount}} selected", { selectedCount })}</div>
+          <div className="text-body-secondary w-full text-right">
+            <Trans
+              t={t}
+              defaults="<Unlocked>{{unlockedCount}}</Unlocked>/<Selected>{{selectedCount}}</Selected> unlocked"
+              values={{ unlockedCount, selectedCount }}
+              components={{
+                Unlocked: <span className="text-primary"></span>,
+                Selected: <span></span>,
+              }}
+            />
           </div>
           <div className="bg-grey-800 relative my-4 flex h-5 overflow-hidden rounded-lg">
             <div
@@ -119,8 +123,10 @@ export const UnlockJsonAccountsButton: FC<{
               style={progressStyle}
             ></div>
           </div>
-
-          <form className="mt-16" onSubmit={handleSubmit(submit)} autoComplete="off">
+          <div className="text-body-secondary my-16">
+            {t("Enter passwords until all selected accounts are unlocked")}
+          </div>
+          <form onSubmit={handleSubmit(submit)} autoComplete="off">
             <FormFieldContainer error={errors.password?.message}>
               <FormFieldInputText
                 before={<KeyIcon className="opacity-50" />}

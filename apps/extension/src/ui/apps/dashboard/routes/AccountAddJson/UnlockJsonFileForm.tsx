@@ -72,7 +72,7 @@ export const UnlockJsonFileForm: FC<{
     <FadeIn>
       <form onSubmit={handleSubmit(submit)} autoComplete="off">
         <div className="text-body-secondary mb-8">
-          {t("Please enter the password you set when creating your polkadot.js account")}
+          {t("Enter the password that was used to encrypt this JSON file.")}
         </div>
         <FormFieldContainer error={errors.password?.message}>
           <FormFieldInputText
@@ -86,7 +86,7 @@ export const UnlockJsonFileForm: FC<{
         </FormFieldContainer>
         <div className="mt-8 flex w-full justify-end">
           <Button type="submit" primary disabled={!isValid} processing={isSubmitting}>
-            {t("Unlock")}
+            {t("Unlock JSON file")}
           </Button>
         </div>
       </form>
