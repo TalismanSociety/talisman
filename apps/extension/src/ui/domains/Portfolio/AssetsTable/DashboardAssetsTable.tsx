@@ -121,9 +121,12 @@ const AssetRow = ({ balances }: AssetRowProps) => {
 
   const navigate = useNavigate()
   const handleClick = useCallback(() => {
-    navigate(`/portfolio/${token?.symbol}${token?.isTestnet ? "?testnet=true" : ""}`)
-    genericEvent("goto portfolio asset", { from: "dashboard", symbol: token?.symbol })
-  }, [genericEvent, navigate, token?.isTestnet, token?.symbol])
+    if (!token) return
+    navigate(
+      `/portfolio/${encodeURIComponent(token.symbol)}${token.isTestnet ? "?testnet=true" : ""}`
+    )
+    genericEvent("goto portfolio asset", { from: "dashboard", symbol: token.symbol })
+  }, [genericEvent, navigate, token])
 
   const handleClickStakingBanner = useCallback(() => {
     window.open("https://app.talisman.xyz/staking")
@@ -143,7 +146,11 @@ const AssetRow = ({ balances }: AssetRowProps) => {
         <tr className="staking-banner bg-primary-500 text-primary-500 h-[4.1rem] cursor-pointer bg-opacity-10 text-sm">
           <td colSpan={3} className="rounded-t px-8">
             <div className="flex w-full items-center justify-between">
-              <button onClick={handleClickStakingBanner} className="flex items-center gap-4">
+              <button
+                type="button"
+                onClick={handleClickStakingBanner}
+                className="flex items-center gap-4"
+              >
                 <ZapIcon />{" "}
                 <Trans t={t}>
                   <span className="text-white">Earn ~15% yield on your DOT.</span> This balance is

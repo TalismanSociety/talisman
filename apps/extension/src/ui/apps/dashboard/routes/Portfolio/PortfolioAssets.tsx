@@ -1,8 +1,6 @@
 import { Balances } from "@core/domains/balances/types"
 import { isEthereumAddress } from "@polkadot/util-crypto"
 import { IconMore } from "@talisman/theme/icons"
-import { classNames } from "@talismn/util"
-import { api } from "@ui/api"
 import { useAccountExportModal } from "@ui/domains/Account/AccountExportModal"
 import { useAccountExportPrivateKeyModal } from "@ui/domains/Account/AccountExportPrivateKeyModal"
 import { useAccountRemoveModal } from "@ui/domains/Account/AccountRemoveModal"
@@ -15,38 +13,16 @@ import { NetworkPicker } from "@ui/domains/Portfolio/NetworkPicker"
 import { useSelectedAccount } from "@ui/domains/Portfolio/SelectedAccountContext"
 import { Statistics } from "@ui/domains/Portfolio/Statistics"
 import { useDisplayBalances } from "@ui/domains/Portfolio/useDisplayBalances"
+import { useAccountToggleIsPortfolio } from "@ui/hooks/useAccountToggleIsPortfolio"
 import { useAnalytics } from "@ui/hooks/useAnalytics"
 import { useAppState } from "@ui/hooks/useAppState"
 import { useIsFeatureEnabled } from "@ui/hooks/useFeatures"
+import { useSendFundsPopup } from "@ui/hooks/useSendFundsPopup"
 import { getTransactionHistoryUrl } from "@ui/util/getTransactionHistoryUrl"
-import { ButtonHTMLAttributes, FC, MouseEvent, useCallback, useEffect, useMemo } from "react"
+import { useCallback, useEffect, useMemo } from "react"
 import { useTranslation } from "react-i18next"
 import { useNavigate } from "react-router-dom"
-import { Popover, PopoverContent, PopoverTrigger, usePopoverContext } from "talisman-ui"
-
-const PopoverItem: FC<ButtonHTMLAttributes<HTMLButtonElement>> = ({
-  onClick,
-  className,
-  ...props
-}) => {
-  const { setOpen } = usePopoverContext()
-
-  const handleClick = useCallback(
-    (e: MouseEvent<HTMLButtonElement>) => {
-      onClick?.(e)
-      setOpen(false)
-    },
-    [setOpen, onClick]
-  )
-
-  return (
-    <button
-      {...props}
-      onClick={handleClick}
-      className={classNames("hover:bg-grey-800 rounded-xs h-20 p-6 text-left", className)}
-    />
-  )
-}
+import { ContextMenu, ContextMenuContent, ContextMenuItem, ContextMenuTrigger } from "talisman-ui"
 
 const PageContent = ({ balances }: { balances: Balances }) => {
   const [hasFunds] = useAppState("hasFunds")
@@ -59,11 +35,14 @@ const PageContent = ({ balances }: { balances: Balances }) => {
   const { canRename, open: openAccountRenameModal } = useAccountRenameModal()
   const { open: openCopyAddressModal } = useCopyAddressModal()
   const { genericEvent } = useAnalytics()
+  const { canToggleIsPortfolio, toggleIsPortfolio, toggleLabel } =
+    useAccountToggleIsPortfolio(account)
+  const { canSendFunds, openSendFundsPopup } = useSendFundsPopup(account)
 
   const sendFunds = useCallback(() => {
-    api.sendFundsOpen({ from: account?.address })
+    openSendFundsPopup()
     genericEvent("open send funds", { from: "dashboard portfolio" })
-  }, [account?.address, genericEvent])
+  }, [openSendFundsPopup, genericEvent])
 
   const { portfolio, available, locked } = useMemo(() => {
     const { total, frozen, reserved, transferable } = balancesToDisplay.sum.fiat("usd")
@@ -121,43 +100,50 @@ const PageContent = ({ balances }: { balances: Balances }) => {
             <Statistics className="max-w-[40%]" title={t("Available")} fiat={available} />
             <div className="flex grow items-center justify-end gap-8">
               {account && (
-                <Popover placement="bottom-end">
-                  <PopoverTrigger className="hover:bg-grey-800 text-body-secondary hover:text-body flex h-[1.5em] w-[1.5em] flex-col items-center justify-center rounded-full text-lg">
+                <ContextMenu placement="bottom-end">
+                  <ContextMenuTrigger className="hover:bg-grey-800 text-body-secondary hover:text-body flex h-[1.5em] w-[1.5em] flex-col items-center justify-center rounded-full text-lg">
                     <IconMore />
-                  </PopoverTrigger>
-                  <PopoverContent className="border-grey-800 z-50 flex w-min flex-col whitespace-nowrap rounded-sm border bg-black px-2 py-3 text-left text-sm shadow-lg">
-                    <PopoverItem onClick={sendFunds}>{t("Send funds")}</PopoverItem>
-                    <PopoverItem onClick={copyAddress}>{t("Copy address")}</PopoverItem>
+                  </ContextMenuTrigger>
+                  <ContextMenuContent className="border-grey-800 z-50 flex w-min flex-col whitespace-nowrap rounded-sm border bg-black px-2 py-3 text-left text-sm shadow-lg">
+                    {canSendFunds && (
+                      <ContextMenuItem onClick={sendFunds}>{t("Send funds")}</ContextMenuItem>
+                    )}
+                    <ContextMenuItem onClick={copyAddress}>{t("Copy address")}</ContextMenuItem>
                     {showTxHistory && (
-                      <PopoverItem onClick={browseTxHistory}>
+                      <ContextMenuItem onClick={browseTxHistory}>
                         {t("Transaction History")}
-                      </PopoverItem>
+                      </ContextMenuItem>
                     )}
                     {canRename && (
-                      <PopoverItem onClick={openAccountRenameModal}>{t("Rename")}</PopoverItem>
+                      <ContextMenuItem onClick={openAccountRenameModal}>
+                        {t("Rename")}
+                      </ContextMenuItem>
                     )}
                     {canExportAccount && (
-                      <PopoverItem onClick={openAccountExportModal}>
+                      <ContextMenuItem onClick={openAccountExportModal}>
                         {t("Export as JSON")}
-                      </PopoverItem>
+                      </ContextMenuItem>
                     )}
                     {canExportAccountPk && (
-                      <PopoverItem onClick={openAccountExportPkModal}>
+                      <ContextMenuItem onClick={openAccountExportPkModal}>
                         {t("Export Private Key")}
-                      </PopoverItem>
+                      </ContextMenuItem>
                     )}
                     {canRemove && (
-                      <PopoverItem onClick={openAccountRemoveModal}>
+                      <ContextMenuItem onClick={openAccountRemoveModal}>
                         {t("Remove Account")}
-                      </PopoverItem>
+                      </ContextMenuItem>
+                    )}
+                    {canToggleIsPortfolio && (
+                      <ContextMenuItem onClick={toggleIsPortfolio}>{toggleLabel}</ContextMenuItem>
                     )}
                     {canAddCustomToken && (
-                      <PopoverItem onClick={handleAddCustomToken}>
+                      <ContextMenuItem onClick={handleAddCustomToken}>
                         {t("Add Custom Token")}
-                      </PopoverItem>
+                      </ContextMenuItem>
                     )}
-                  </PopoverContent>
-                </Popover>
+                  </ContextMenuContent>
+                </ContextMenu>
               )}
             </div>
           </div>

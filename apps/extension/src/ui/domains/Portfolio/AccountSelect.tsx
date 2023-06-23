@@ -1,21 +1,22 @@
+import { AccountType } from "@core/domains/accounts/types"
 import { isEthereumAddress } from "@polkadot/util-crypto"
 import { breakpoints } from "@talisman/theme/definitions"
-import { AllAccountsIcon, ChevronDownIcon } from "@talisman/theme/icons"
+import { AllAccountsIcon, ChevronDownIcon, EyeIcon, TalismanHandIcon } from "@talisman/theme/icons"
 import { scrollbarsStyle } from "@talisman/theme/styles"
 import { shortenAddress } from "@talisman/util/shortenAddress"
 import { classNames } from "@talismn/util"
-import { AccountTypeIcon } from "@ui/domains/Account/NamedAddress"
 import Fiat from "@ui/domains/Asset/Fiat"
 import { useSelectedAccount } from "@ui/domains/Portfolio/SelectedAccountContext"
 import { useAnalytics } from "@ui/hooks/useAnalytics"
 import useBalances from "@ui/hooks/useBalances"
 import useBalancesByAddress from "@ui/hooks/useBalancesByAddress"
 import { UseSelectStateChange, useSelect } from "downshift"
-import { useCallback, useMemo } from "react"
+import { Fragment, useCallback, useMemo } from "react"
 import { useTranslation } from "react-i18next"
 import styled, { css } from "styled-components"
 
 import { AccountIcon } from "../Account/AccountIcon"
+import { AccountTypeIcon } from "../Account/AccountTypeIcon"
 
 const Button = styled.button`
   background: none;
@@ -220,7 +221,7 @@ type AccountOptionProps = AnyAccountOptionProps & {
   totalUsd: number
   genesisHash?: string | null
   name?: string
-  origin?: string
+  origin?: AccountType
 }
 
 type SingleAccountOptionProps = Omit<AccountOptionProps, "totalUsd"> & {
@@ -276,7 +277,7 @@ const SingleAccountOption = (props: SingleAccountOptionProps) => {
 }
 
 const AllAccountsOption = ({ withTrack }: AnyAccountOptionProps) => {
-  const { sum } = useBalances()
+  const { sum } = useBalances("portfolio")
   const { total } = useMemo(() => sum.fiat("usd"), [sum])
   const { t } = useTranslation("portfolio")
 
@@ -287,7 +288,8 @@ type DropdownItem = {
   name?: string
   address?: string
   genesisHash?: string | null
-  origin?: string
+  origin?: AccountType
+  isPortfolio?: boolean
 }
 const OPTION_ALL_ACCOUNTS: DropdownItem = {}
 
@@ -297,6 +299,7 @@ type AccountSelectProps = {
 }
 
 export const AccountSelect = ({ responsive, className }: AccountSelectProps) => {
+  const { t } = useTranslation()
   const { account, accounts, select } = useSelectedAccount()
 
   const items = useMemo<DropdownItem[]>(
@@ -321,6 +324,11 @@ export const AccountSelect = ({ responsive, className }: AccountSelectProps) => 
     onSelectedItemChange: handleItemChange,
   })
 
+  const indexFirstWatchedOnlyAccount = useMemo(
+    () => items.findIndex((item) => item.origin === "WATCHED" && !item.isPortfolio),
+    [items]
+  )
+
   return (
     <Container
       className={classNames(isOpen && "open", responsive && "responsive", className)}
@@ -333,20 +341,34 @@ export const AccountSelect = ({ responsive, className }: AccountSelectProps) => 
       <ul {...getMenuProps()}>
         {isOpen && (
           <>
+            {indexFirstWatchedOnlyAccount > -1 && (
+              <li className="text-body-secondary !mb-2 !mt-6 flex !cursor-default gap-4 !px-6 font-bold hover:!bg-transparent">
+                <TalismanHandIcon />
+                <div>{t("My portfolio")}</div>
+              </li>
+            )}
             {/* This first item is hidden by default, displayed only on small screen, when button contains only the avatar */}
             <li className="current">
-              <button onClick={closeMenu} className="w-full text-left">
+              <button type="button" onClick={closeMenu} className="w-full text-left">
                 {account ? <SingleAccountOption {...account} /> : <AllAccountsOption />}
               </button>
             </li>
             {items.map((item, index) => (
-              <li key={item.address ?? "all"} {...getItemProps({ item, index })}>
-                {item.address ? (
-                  <SingleAccountOption {...item} address={item.address} withTrack />
-                ) : (
-                  <AllAccountsOption withTrack />
+              <Fragment key={item.address}>
+                {index === indexFirstWatchedOnlyAccount && (
+                  <li className="text-body-secondary !mb-2 !mt-6 flex !cursor-default gap-4 !px-6 font-bold hover:!bg-transparent">
+                    <EyeIcon />
+                    <div>{t("Followed only")}</div>
+                  </li>
                 )}
-              </li>
+                <li {...getItemProps({ item, index })}>
+                  {item.address ? (
+                    <SingleAccountOption {...item} address={item.address} withTrack />
+                  ) : (
+                    <AllAccountsOption withTrack />
+                  )}
+                </li>
+              </Fragment>
             ))}
           </>
         )}

@@ -1,10 +1,10 @@
-import Field from "@talisman/components/Field"
 import { classNames } from "@talismn/util"
 import { api } from "@ui/api"
 import useMnemonicBackup from "@ui/hooks/useMnemonicBackup"
 import { useEffect, useState } from "react"
 import { Trans, useTranslation } from "react-i18next"
 import styled from "styled-components"
+import { Toggle } from "talisman-ui"
 
 import { Mnemonic } from "./Mnemonic"
 import { PasswordUnlock, usePasswordUnlock } from "./PasswordUnlock"
@@ -57,7 +57,7 @@ const MnemonicForm = ({ className }: MnemonicFormProps) => {
           <div className="grow"></div>
           <div className="flex w-full items-center justify-end">
             <div className="text-body-secondary text-sm">{t("Don't remind me again")}</div>
-            <Field.Toggle value={isConfirmed} onChange={(val: boolean) => toggleConfirmed(val)} />
+            <Toggle checked={isConfirmed} onChange={(e) => toggleConfirmed(e.target.checked)} />
           </div>
         </>
       ) : (

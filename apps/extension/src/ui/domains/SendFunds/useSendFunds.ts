@@ -373,6 +373,12 @@ const useSendFundsProvider = () => {
 
   const { isValid, error, errorDetails } = useMemo(() => {
     try {
+      if (fromAccount?.origin === "WATCHED")
+        return {
+          isValid: false,
+          error: t("Cannot send from a watched account"),
+        }
+
       if (token && !isTransferableToken(token))
         return {
           isValid: false,
@@ -466,6 +472,7 @@ const useSendFundsProvider = () => {
     feeToken,
     feeTokenBalance,
     estimatedFee,
+    fromAccount?.origin,
     t,
   ])
 

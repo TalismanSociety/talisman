@@ -19,6 +19,12 @@ export const NavUI = () => {
         Checkbox
       </Link>
       <Link
+        to="/ui/toggle"
+        className={classNames(location.pathname === "/ui/toggle" && "text-primary-500")}
+      >
+        Toggle
+      </Link>
+      <Link
         to="/ui/mystical-background"
         className={classNames(
           location.pathname === "/ui/mystical-background" && "text-primary-500"

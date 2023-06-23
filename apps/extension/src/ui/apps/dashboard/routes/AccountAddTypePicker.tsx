@@ -1,21 +1,22 @@
 import { getIsLedgerCapable } from "@core/util/getIsLedgerCapable"
-import CtaButton from "@talisman/components/CtaButton"
-import Grid from "@talisman/components/Grid"
 import HeaderBlock from "@talisman/components/HeaderBlock"
 import Spacer from "@talisman/components/Spacer"
-import { KeyIcon, PlusIcon, PolkadotVaultIcon, SeedIcon, UsbIcon } from "@talisman/theme/icons"
+import {
+  ChevronRightIcon,
+  EyePlusIcon,
+  FileTextIcon,
+  PlusIcon,
+  PolkadotVaultIcon,
+  SeedIcon,
+  UsbIcon,
+} from "@talisman/theme/icons"
 import { useAppState } from "@ui/hooks/useAppState"
 import { useIsFeatureEnabled } from "@ui/hooks/useFeatures"
 import { useSetting } from "@ui/hooks/useSettings"
 import { useTranslation } from "react-i18next"
-import styled from "styled-components"
+import { CtaButton } from "talisman-ui"
 
 import Layout from "../layout"
-
-// workaround for plus icon's padding
-const LargePlusIcon = styled(PlusIcon)`
-  font-size: 2rem;
-`
 
 const AccountAddTypePicker = () => {
   const isLedgerCapable = getIsLedgerCapable()
@@ -32,27 +33,35 @@ const AccountAddTypePicker = () => {
         text={t("Create a new account or import an existing one")}
       />
       <Spacer />
-      <Grid columns={2}>
+      <div className="grid grid-cols-2 gap-12">
         <CtaButton
-          icon={<LargePlusIcon />}
+          size="small"
+          iconRight={ChevronRightIcon}
+          iconLeft={PlusIcon}
           title={t("New Account")}
           subtitle={t("Create a new account")}
           to={`/accounts/add/derived`}
         />
         <CtaButton
-          icon={<SeedIcon />}
+          size="small"
+          iconLeft={SeedIcon}
+          iconRight={ChevronRightIcon}
           title={t("Import via Recovery Phrase")}
           subtitle={t("Your Polkadot or Ethereum account")}
           to={`/accounts/add/secret`}
         />
         <CtaButton
-          icon={<KeyIcon />}
+          size="small"
+          iconLeft={FileTextIcon}
+          iconRight={ChevronRightIcon}
           title={t("Import via JSON file")}
           subtitle={t("Import your Polkadot.js account")}
           to={`/accounts/add/json`}
         />
         <CtaButton
-          icon={<UsbIcon />}
+          size="small"
+          iconLeft={UsbIcon}
+          iconRight={ChevronRightIcon}
           title={t("Import from Ledger")}
           subtitle={
             isLedgerCapable
@@ -64,13 +73,23 @@ const AccountAddTypePicker = () => {
         />
         {paritySignerEnabled && (
           <CtaButton
-            icon={<PolkadotVaultIcon />}
+            size="small"
+            iconLeft={PolkadotVaultIcon}
+            iconRight={ChevronRightIcon}
             title={t("Import Polkadot Vault")}
             subtitle={t("Or Parity Signer (Legacy)")}
             to={`/accounts/add/qr`}
           />
         )}
-      </Grid>
+        <CtaButton
+          size="small"
+          iconLeft={EyePlusIcon}
+          iconRight={ChevronRightIcon}
+          title={t("Add Watched Account")}
+          subtitle={t("Add a watch only address")}
+          to={`/accounts/add/watched`}
+        />
+      </div>
     </Layout>
   )
 }

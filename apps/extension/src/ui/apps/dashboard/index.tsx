@@ -1,5 +1,6 @@
 import { PHISHING_PAGE_REDIRECT } from "@polkadot/extension-base/defaults"
 import { FullScreenLoader } from "@talisman/components/FullScreenLoader"
+import { SuspenseTracker } from "@talisman/components/SuspenseTracker"
 import { api } from "@ui/api"
 import { AccountExportModalProvider } from "@ui/domains/Account/AccountExportModal"
 import { AccountExportPrivateKeyModalProvider } from "@ui/domains/Account/AccountExportPrivateKeyModal"
@@ -9,12 +10,9 @@ import { BuyTokensModalProvider } from "@ui/domains/Asset/Buy/BuyTokensModalCont
 import { SendTokensModalProvider } from "@ui/domains/Asset/Send/SendTokensModalContext"
 import { CopyAddressModalProvider } from "@ui/domains/CopyAddress"
 import { SelectedAccountProvider } from "@ui/domains/Portfolio/SelectedAccountContext"
-import { useAppState } from "@ui/hooks/useAppState"
-import { useIsFeatureEnabled } from "@ui/hooks/useFeatures"
 import { useIsLoggedIn } from "@ui/hooks/useIsLoggedIn"
 import { useIsOnboarded } from "@ui/hooks/useIsOnboarded"
 import { useModalSubscription } from "@ui/hooks/useModalSubscription"
-import { useSetting } from "@ui/hooks/useSettings"
 import { FC, PropsWithChildren, Suspense, lazy, useEffect, useRef } from "react"
 import { useTranslation } from "react-i18next"
 import { Navigate, Route, Routes, useMatch } from "react-router-dom"
@@ -26,6 +24,7 @@ import AccountAddJson from "./routes/AccountAddJson"
 import { AccountAddQr } from "./routes/AccountAddQr"
 import { AccountAddSecret } from "./routes/AccountAddSecret"
 import AccountAddTypePicker from "./routes/AccountAddTypePicker"
+import { AccountAddWatched } from "./routes/AccountAddWatched"
 import { NetworkPage } from "./routes/Networks/NetworkPage"
 import { NetworksPage } from "./routes/Networks/NetworksPage"
 import { PhishingPage } from "./routes/PhishingPage"
@@ -68,11 +67,6 @@ const DashboardInner = () => {
     }
   }, [isLoggedIn, isOnboarded])
 
-  const [hasSpiritKey] = useAppState("hasSpiritKey")
-  const [spiritClanFeatures] = useSetting("spiritClanFeatures")
-  const paritySignerEnabled =
-    useIsFeatureEnabled("PARITY_SIGNER") || (hasSpiritKey && spiritClanFeatures)
-
   const { t } = useTranslation()
 
   return isLoggedIn === "UNKNOWN" ? (
@@ -81,7 +75,14 @@ const DashboardInner = () => {
     <FullScreenLoader title={t("Waiting")} subtitle={t("Please unlock the Talisman")} />
   ) : (
     // use an empty layout as fallback to prevent flickering
-    <Suspense fallback={<Layout />}>
+    <Suspense
+      fallback={
+        <>
+          <SuspenseTracker name="Dashboard" />
+          <Layout />
+        </>
+      }
+    >
       <Routes>
         <Route path="portfolio/*" element={<Portfolio />} />
         <Route path="accounts">
@@ -91,7 +92,8 @@ const DashboardInner = () => {
             <Route path="json" element={<AccountAddJson />} />
             <Route path="secret/*" element={<AccountAddSecret />} />
             <Route path="ledger/*" element={<AccountAddLedger />} />
-            {paritySignerEnabled ? <Route path="qr/*" element={<AccountAddQr />} /> : null}
+            <Route path="qr/*" element={<AccountAddQr />} />
+            <Route path="watched" element={<AccountAddWatched />} />
             <Route path="*" element={<Navigate to="" replace />} />
           </Route>
           <Route path="" element={<Navigate to="/portfolio" />} />

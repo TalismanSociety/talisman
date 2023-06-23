@@ -1,12 +1,13 @@
+import { UNKNOWN_TOKEN_URL } from "@core/constants"
 import { WatchAssetRequestIdOnly } from "@core/domains/ethereum/types"
 import { AppPill } from "@talisman/components/AppPill"
 import StyledGrid from "@talisman/components/Grid"
 import { IconButton } from "@talisman/components/IconButton"
 import { SimpleButton } from "@talisman/components/SimpleButton"
 import { XIcon } from "@talisman/theme/icons"
-import unknownToken from "@talisman/theme/icons/custom-token-generic.svg?url"
 import { api } from "@ui/api"
 import { CustomErc20TokenViewDetails } from "@ui/domains/Erc20Tokens/CustomErc20TokenViewDetails"
+import { SignAlertMessage } from "@ui/domains/Sign/SignAlertMessage"
 import { useEvmNetwork } from "@ui/hooks/useEvmNetwork"
 import { useRequest } from "@ui/hooks/useRequest"
 import { useCallback, useState } from "react"
@@ -139,8 +140,9 @@ export const AddCustomErc20Token = () => {
         <div>
           <TokenLogo
             className="inline-block"
-            src={request.token.image ?? unknownToken}
+            src={request.token.image ?? UNKNOWN_TOKEN_URL}
             alt={request.token.symbol}
+            crossOrigin="anonymous"
           />
         </div>
         <h1>{t("New Token")}</h1>
@@ -148,7 +150,11 @@ export const AddCustomErc20Token = () => {
           {t("You are adding the token")}
           <br />
           <strong>
-            <TokenLogoSmall src={request.token.image ?? unknownToken} alt="" />
+            <TokenLogoSmall
+              src={request.token.image ?? UNKNOWN_TOKEN_URL}
+              crossOrigin="anonymous"
+              alt=""
+            />
             {request.token.symbol}
           </strong>{" "}
           {t("on")}{" "}
@@ -163,6 +169,16 @@ export const AddCustomErc20Token = () => {
         <div>
           <CustomErc20TokenViewDetails token={request.token} network={network} />
         </div>
+        {!!request.warnings?.length && (
+          <SignAlertMessage type="error" className="mt-8">
+            {request.warnings.map((warning, i) => (
+              <div key={i}>
+                {request.warnings.length > 1 ? "- " : ""}
+                {warning}
+              </div>
+            ))}
+          </SignAlertMessage>
+        )}
       </Content>
       <Footer>
         <ErrorMessage>{error}</ErrorMessage>

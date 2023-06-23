@@ -1,7 +1,7 @@
 import { StorageProvider } from "@core/libs/Store"
 import { decrypt, encrypt } from "@metamask/browser-passworder"
 import { assert } from "@polkadot/util"
-import { genSalt, hash } from "bcryptjs"
+import { compare, genSalt, hash } from "bcryptjs"
 import { BehaviorSubject } from "rxjs"
 import { Err, Ok, Result } from "ts-results"
 
@@ -134,9 +134,15 @@ export class PasswordStore extends StorageProvider<PasswordStoreData> {
 
   async checkPassword(password: string) {
     assert(this.isLoggedIn.value === TRUE, "Unauthorised")
-    const pw = await this.transformPassword(password)
-    assert(pw === this.getPassword(), "Incorrect password")
-    return pw
+
+    const hash = this.getPassword()
+    assert(hash, "Unauthorised")
+
+    const { isTrimmed } = await this.get()
+    const plainText = isTrimmed ? password.trim() : password
+
+    const isMatch = await compare(plainText, hash)
+    assert(isMatch, "Incorrect password")
   }
 
   /**

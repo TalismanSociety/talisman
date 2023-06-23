@@ -1,5 +1,5 @@
 import { classNames } from "@talismn/util"
-import { ButtonHTMLAttributes, FC } from "react"
+import { ButtonHTMLAttributes, forwardRef } from "react"
 import styled from "styled-components"
 
 const Button = styled.button`
@@ -20,15 +20,20 @@ const Button = styled.button`
     opacity: 1;
     color: var(--color-muted);
   }
+
+  &:disabled {
+    opacity: 0.5;
+    color: var(--color-mid);
+  }
 `
 
-export const IconButton: FC<ButtonHTMLAttributes<HTMLButtonElement>> = ({
-  children,
-  type = "button",
-  className,
-  ...rest
-}) => (
-  <Button className={classNames("icon-button", className)} type={type} {...rest}>
-    {children}
-  </Button>
+type IconButtonProps = Omit<ButtonHTMLAttributes<HTMLButtonElement>, "ref">
+
+export const IconButton = forwardRef<HTMLButtonElement, IconButtonProps>(
+  ({ children, type = "button", className, ...rest }, ref) => (
+    <Button ref={ref} className={classNames("icon-button", className)} type={type} {...rest}>
+      {children}
+    </Button>
+  )
 )
+IconButton.displayName = "IconButton"

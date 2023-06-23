@@ -5,9 +5,9 @@ import { Box } from "@talisman/components/Box"
 import { SimpleButton } from "@talisman/components/SimpleButton"
 import { Content, Footer, Header } from "@ui/apps/popup/Layout"
 import { AccountPill } from "@ui/domains/Account/AccountPill"
+import { Message } from "@ui/domains/Sign/Message"
 import { QrSubstrate } from "@ui/domains/Sign/Qr/QrSubstrate"
 import { usePolkadotSigningRequest } from "@ui/domains/Sign/SignRequestContext"
-import { ViewDetails } from "@ui/domains/Sign/ViewDetails/ViewDetails"
 import { FC, Suspense, lazy, useEffect, useMemo } from "react"
 import { useTranslation } from "react-i18next"
 
@@ -54,21 +54,14 @@ export const PolkadotSignMessageRequest: FC = () => {
           <>
             <div className="flex grow flex-col">
               <h1>{"Sign Request"}</h1>
-              <h2 className="center">
+              <h2 className="center mb-8">
                 {t("You are signing a message with account")}{" "}
                 <AccountPill account={account} prefix={chain?.prefix ?? undefined} />
                 {chain ? ` ${t("on {{chainName}}", { chainName: chain.name })}` : null}
               </h2>
-              <textarea
-                readOnly
-                className="scrollable scrollable-700 bg-black-tertiary scroll my-12 w-full grow resize-none overflow-x-auto rounded-sm p-6 font-mono text-base"
-                value={(request.payload as SignerPayloadRaw).data}
-              />
+              <Message className="grow" text={(request.payload as SignerPayloadRaw).data} />
             </div>
             {errorMessage && <div className="error">{errorMessage}</div>}
-            <div className="bottom">
-              <ViewDetails />
-            </div>
           </>
         )}
       </Content>

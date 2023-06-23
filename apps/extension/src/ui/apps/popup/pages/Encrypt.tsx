@@ -40,7 +40,7 @@ const SignMessage = ({
         <br />
         <AccountPill account={account} />
       </h2>
-      <Message readOnly defaultValue={data} />
+      <Message className="mt-8 grow" text={data} />
     </>
   )
 }

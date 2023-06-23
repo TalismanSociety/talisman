@@ -64,6 +64,7 @@ export const Mnemonic = ({ onMouseEnter, mnemonic }: MnemonicProps) => {
     <>
       <div className="py-4 text-sm">
         <button
+          type="button"
           onClick={handleCopy}
           className={classNames(hasHovered ? "text-white" : "text-black", "cursor-pointer")}
         >

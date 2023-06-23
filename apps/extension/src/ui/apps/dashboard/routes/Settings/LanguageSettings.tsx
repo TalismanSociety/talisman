@@ -1,8 +1,8 @@
+import { languages } from "@core/i18nConfig"
 import HeaderBlock from "@talisman/components/HeaderBlock"
 import Spacer from "@talisman/components/Spacer"
 import { CheckIcon } from "@talisman/theme/icons"
 import Layout from "@ui/apps/dashboard/layout"
-import { languages } from "@ui/i18nConfig"
 import { useTranslation } from "react-i18next"
 
 const LanguageButton = ({
@@ -17,6 +17,7 @@ const LanguageButton = ({
   onClick?: (lang?: keyof typeof languages) => void
 }) => (
   <button
+    type="button"
     key={lang}
     className="bg-grey-900 enabled:hover:bg-grey-800 text-body-disabled enabled:hover:text-body flex h-28 w-full cursor-pointer items-center gap-8 rounded-sm px-8 disabled:cursor-not-allowed disabled:opacity-50"
     onClick={() => onClick && onClick(lang)}

@@ -15,6 +15,9 @@ jest.mock("bcryptjs", () => {
     ...jest.requireActual("bcryptjs"),
     genSalt: jest.fn((rounds: number) => `salt-${rounds}`),
     hash: jest.fn((password: string, salt: string) => `${password}.${salt}`),
+    compare: jest.fn(
+      (password: string, hash: string) => password === hash.slice(0, hash.lastIndexOf("."))
+    ),
   }
 })
 

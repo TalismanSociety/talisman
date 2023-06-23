@@ -1,10 +1,10 @@
-import Field from "@talisman/components/Field"
 import Setting from "@talisman/components/Setting"
 import Layout from "@ui/apps/dashboard/layout"
 import { AnalyticsOptInInfo } from "@ui/domains/Settings/Analytics/AnalyticsOptInInfo"
 import { useSetting } from "@ui/hooks/useSettings"
 import { useTranslation } from "react-i18next"
 import { useNavigationType } from "react-router-dom"
+import { Toggle } from "talisman-ui"
 
 export const AnalyticsOptIn = () => {
   const { t } = useTranslation("settings")
@@ -22,7 +22,10 @@ export const AnalyticsOptIn = () => {
               : t("You are currently opted out")
           }
         >
-          <Field.Toggle value={useAnalyticsTracking} onChange={setUseAnalyticsTracking} />
+          <Toggle
+            checked={useAnalyticsTracking}
+            onChange={(e) => setUseAnalyticsTracking(e.target.checked)}
+          />
         </Setting>
       </AnalyticsOptInInfo>
     </Layout>

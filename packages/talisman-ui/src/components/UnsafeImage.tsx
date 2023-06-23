@@ -54,6 +54,7 @@ export const UnsafeImage: FC<UnsafeImageProps> = ({ ...props }) => {
         isLoading && "animate-pulse"
       )}
       loading="lazy"
+      crossOrigin="anonymous"
       onLoadStart={handleLoadStart}
       onLoad={handleLoad}
       onError={handleError}

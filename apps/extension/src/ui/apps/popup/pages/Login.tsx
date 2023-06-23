@@ -1,14 +1,15 @@
-import { AccountJsonAny } from "@core/domains/accounts/types"
+import { AccountJsonAny, AccountType, storedSeedAccountTypes } from "@core/domains/accounts/types"
 import { yupResolver } from "@hookform/resolvers/yup"
+import { SuspenseTracker } from "@talisman/components/SuspenseTracker"
 import { HandMonoTransparentLogo } from "@talisman/theme/logos"
 import { useTalismanOrb } from "@talismn/orb"
 import { classNames } from "@talismn/util"
 import { api } from "@ui/api"
 import { useAnalytics } from "@ui/hooks/useAnalytics"
-import { usePrimaryAccount } from "@ui/hooks/usePrimaryAccount"
-import { useCallback, useEffect, useRef, useState } from "react"
+import { Suspense, useCallback, useEffect, useMemo, useRef, useState } from "react"
 import { SubmitHandler, useForm } from "react-hook-form"
 import { useTranslation } from "react-i18next"
+import { atom, useRecoilValue } from "recoil"
 import { Button, FormFieldInputText } from "talisman-ui"
 import { LoginBackground } from "talisman-ui"
 import * as yup from "yup"
@@ -34,6 +35,34 @@ const useAccountColors = ({ account }: { account: AccountJsonAny }): [string, st
   return [bgColor1, bgColor2]
 }
 
+// do not use this atom outside of this screen as it may cause performance issues because of suspense
+const accountsState = atom<AccountJsonAny[]>({
+  key: "accountsState",
+  effects: [
+    ({ setSelf }) => {
+      const unsubscribe = api.accountsSubscribe(setSelf)
+      return () => unsubscribe()
+    },
+  ],
+})
+
+/**
+ * @param storedSeedOnly causes the function to return only accounts derived from a seed stored in Talisman. Returns that account if it
+ * exists, or the first account present if not, by default
+ * @returns an Account
+ */
+export const useBackgroundLoginAccount = (storedSeedOnly?: boolean) => {
+  const accounts = useRecoilValue(accountsState)
+
+  const storedSeedAccount = useMemo(
+    () => accounts.find(({ origin }) => storedSeedAccountTypes.includes(origin as AccountType)),
+    [accounts]
+  )
+  if (storedSeedOnly) return storedSeedAccount
+  if (accounts.length > 0) return accounts[0]
+  return
+}
+
 const LoginBackgroundWithAccount = ({ account }: { account: AccountJsonAny }) => {
   const accountColors = useAccountColors({ account })
 
@@ -47,14 +76,20 @@ const LoginBackgroundWithAccount = ({ account }: { account: AccountJsonAny }) =>
   )
 }
 
-const LoginBackgroundDefault = () => (
-  <LoginBackground
-    width={400}
-    height={600}
-    colors={["#F48F45", "#C8EB46"]}
-    className="absolute left-0 top-0 m-0 block h-full w-full overflow-hidden "
-  />
-)
+const Background = () => {
+  const account = useBackgroundLoginAccount()
+
+  return account ? (
+    <LoginBackgroundWithAccount account={account} />
+  ) : (
+    <LoginBackground
+      width={400}
+      height={600}
+      colors={["#fd4848", "#d5ff5c"]}
+      className="absolute left-0 top-0 m-0 block h-full w-full overflow-hidden "
+    />
+  )
+}
 
 const Login = ({ setShowResetWallet }: { setShowResetWallet: () => void }) => {
   const { t } = useTranslation()
@@ -102,12 +137,11 @@ const Login = ({ setShowResetWallet }: { setShowResetWallet: () => void }) => {
     }
   }, [handleSubmit, setValue, submit])
 
-  const primaryAccount = usePrimaryAccount()
-
   return (
     <Layout className="pt-32">
-      {!!primaryAccount && <LoginBackgroundWithAccount account={primaryAccount} />}
-      {!primaryAccount && <LoginBackgroundDefault />}
+      <Suspense fallback={<SuspenseTracker name="Background" />}>
+        <Background />
+      </Suspense>
       <Content className={classNames("z-10 text-center", isSubmitting && "animate-pulse")}>
         <div className="mt-[60px]">
           <HandMonoTransparentLogo className="inline-block text-[64px]" />
@@ -142,6 +176,7 @@ const Login = ({ setShowResetWallet }: { setShowResetWallet: () => void }) => {
             {t("Unlock")}
           </Button>
           <button
+            type="button"
             className="text-body-disabled mt-2 cursor-pointer text-sm transition-colors hover:text-white"
             onClick={setShowResetWallet}
           >

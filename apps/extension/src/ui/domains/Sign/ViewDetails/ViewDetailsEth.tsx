@@ -349,6 +349,7 @@ const ViewDetailsContent: FC<ViewDetailsContentProps> = ({ onClose }) => {
           <ViewDetailsField
             label={
               <button
+                type="button"
                 onClick={handleCopyByteCode}
                 className="text-body-secondary text-left hover:text-white"
               >
@@ -357,10 +358,9 @@ const ViewDetailsContent: FC<ViewDetailsContentProps> = ({ onClose }) => {
             }
           >
             <Message
-              readOnly
               rows={6}
               className="bg-grey-800 w-full rounded-sm"
-              value={request.data?.toString()}
+              text={request.data?.toString()}
             />
           </ViewDetailsField>
         )}

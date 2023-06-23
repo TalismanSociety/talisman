@@ -6,8 +6,10 @@ import type {
   RequestAccountCreateHardware,
   RequestAccountCreateHardwareEthereum,
   RequestAccountCreateQr,
+  RequestAccountCreateWatched,
   RequestAccountExport,
   RequestAccountExportPrivateKey,
+  RequestAccountExternalSetIsPortfolio,
   RequestAccountForget,
   RequestAccountRename,
   ResponseAccountExport,
@@ -263,8 +265,55 @@ export default class AccountsHandler extends ExtensionHandler {
     return pair.address
   }
 
+  private accountCreateWatched({
+    name,
+    address,
+    isPortfolio,
+  }: RequestAccountCreateWatched): string {
+    const password = this.stores.password.getPassword()
+    assert(password, "Not logged in")
+
+    const safeAddress = encodeAnyAddress(address)
+
+    const exists = keyring
+      .getAccounts()
+      .some((account) => encodeAnyAddress(account.address) === safeAddress)
+    assert(!exists, "Account already exists")
+
+    // ui-keyring's addExternal method only supports substrate accounts, cannot set ethereum type
+    // => create the pair without helper
+    const pair = createPair(
+      isEthereumAddress(safeAddress)
+        ? { type: "ethereum", toSS58: ethereumEncode }
+        : { type: "sr25519", toSS58: keyring.encodeAddress },
+      {
+        publicKey: decodeAnyAddress(address),
+        secretKey: new Uint8Array(),
+      },
+      {
+        name,
+        isExternal: true,
+        isPortfolio: !!isPortfolio,
+        origin: AccountTypes.WATCHED,
+      },
+      null
+    )
+
+    // add to the underlying keyring, allowing not to specify a password
+    keyring.keyring.addPair(pair)
+    keyring.saveAccount(pair)
+
+    talismanAnalytics.capture("add watched account", {
+      type: isEthereumAddress(safeAddress) ? "ethereum" : "substrate",
+      method: "watched",
+    })
+
+    return pair.address
+  }
+
   private accountForget({ address }: RequestAccountForget): boolean {
-    const account = keyring.getAccount(address)
+    const encodedAddress = encodeAnyAddress(address)
+    const account = keyring.getAccount(encodedAddress)
     assert(account, "Unable to find account")
 
     const { type } = keyring.getPair(account?.address)
@@ -321,6 +370,20 @@ export default class AccountsHandler extends ExtensionHandler {
 
     if (err) throw new Error(val as string)
     return val
+  }
+
+  private async accountExternalSetIsPortfolio({
+    address,
+    isPortfolio,
+  }: RequestAccountExternalSetIsPortfolio): Promise<boolean> {
+    await sleep(1000)
+
+    const pair = keyring.getPair(address)
+    assert(pair, "Unable to find pair")
+
+    keyring.saveAccountMeta(pair, { ...pair.meta, isPortfolio })
+
+    return true
   }
 
   private async accountRename({ address, name }: RequestAccountRename): Promise<boolean> {
@@ -381,6 +444,10 @@ export default class AccountsHandler extends ExtensionHandler {
         return this.accountsCreateHardwareEthereum(request as RequestAccountCreateHardwareEthereum)
       case "pri(accounts.create.qr.substrate)":
         return this.accountsCreateQr(request as RequestAccountCreateQr)
+      case "pri(accounts.create.watched)":
+        return this.accountCreateWatched(request as RequestAccountCreateWatched)
+      case "pri(accounts.external.setIsPortfolio)":
+        return this.accountExternalSetIsPortfolio(request as RequestAccountExternalSetIsPortfolio)
       case "pri(accounts.forget)":
         return this.accountForget(request as RequestAccountForget)
       case "pri(accounts.export)":

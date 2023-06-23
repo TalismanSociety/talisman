@@ -125,10 +125,11 @@ const usePortfolioProvider = () => {
   const { evmNetworks } = useEvmNetworks(useTestnets)
   const hydrate = useBalancesHydrate()
   const balances = useBalances()
+  const myBalances = useBalances("portfolio")
 
   const allBalances = useMemo(
-    () => (account ? balances.find({ address: account.address }) : balances),
-    [account, balances]
+    () => (account ? balances.find({ address: account.address }) : myBalances),
+    [account, balances, myBalances]
   )
 
   const accountType = useMemo(() => {

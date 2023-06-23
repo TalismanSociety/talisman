@@ -6,6 +6,7 @@ import {
   IdenticonType,
   storedSeedAccountTypes,
 } from "@core/domains/accounts/types"
+import type { Address } from "@core/types/base"
 import { getAccountAvatarDataUri } from "@core/util/getAccountAvatarDataUri"
 import { canDerive } from "@polkadot/extension-base/utils"
 import type { InjectedAccount } from "@polkadot/extension-inject/types"
@@ -67,9 +68,18 @@ export const sortAccounts = (accounts: SubjectInfo): AccountJsonAny[] => {
     ["SEED", "JSON", "QR", "HARDWARE"].includes(origin as string)
   )
   const importedSorted = sortAccountsByWhenCreated(imported)
-  ordered = [...ordered, ...importedSorted]
 
-  return ordered
+  const watchedPortfolio = transformedAccounts.filter(
+    ({ origin, isPortfolio }) => origin === AccountTypes.WATCHED && isPortfolio
+  )
+  const watchedPortfolioSorted = sortAccountsByWhenCreated(watchedPortfolio)
+
+  const watchedFollowed = transformedAccounts.filter(
+    ({ origin, isPortfolio }) => origin === AccountTypes.WATCHED && !isPortfolio
+  )
+  const watchedFollowedSorted = sortAccountsByWhenCreated(watchedFollowed)
+
+  return [...ordered, ...importedSorted, ...watchedPortfolioSorted, ...watchedFollowedSorted]
 }
 
 export const getInjectedAccount = ({
@@ -97,6 +107,7 @@ export const getPublicAccounts = (
   filterFn: (accounts: SingleAddress[]) => SingleAddress[] = (accounts) => accounts
 ) =>
   filterFn(accounts)
+    .filter((a) => a.json.meta.origin !== "WATCHED")
     .sort((a, b) => (a.json.meta.whenCreated || 0) - (b.json.meta.whenCreated || 0))
     .map(getInjectedAccount)
 
@@ -132,4 +143,14 @@ export const copySeedStoreToVerifierCertificateStore = async () => {
   if (verifierCertMnemonicData.cipher)
     throw new Error("Verifier Certificate Store already has data")
   await verifierCertificateMnemonicStore.set(seedData)
+}
+
+export const hasPrivateKey = (address: Address) => {
+  const acc = keyring.getAccount(address)
+
+  if (!acc) return false
+  if (acc.meta?.isExternal) return false
+  if (acc.meta?.isHardware) return false
+  if (["QR", "WATCHED"].includes(acc.meta?.origin as string)) return false
+  return true
 }

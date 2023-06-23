@@ -51,7 +51,7 @@ const Expanda = ({ title, subtitle, info, className, children }: IProps) => {
 
   return (
     <section className={`grid ${className}`} data-open={open}>
-      <button onClick={toggleOpen}>
+      <button type="button" onClick={toggleOpen}>
         <span className="left">
           <span className="title">{title}</span>
           <span className="subtitle">{subtitle}</span>
