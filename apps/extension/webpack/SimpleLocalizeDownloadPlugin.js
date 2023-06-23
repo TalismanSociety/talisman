@@ -26,7 +26,11 @@ const getTranslations = () =>
   })
     .then((response) => response.json())
     .then((data) => {
-      const { content } = data.data
+      const content = data?.data?.content
+      if (!content) {
+        console.log(data)
+        throw new Error("Bad response from SimpleLocalize")
+      }
       return content
     })
     .catch((error) => {
