@@ -30,8 +30,6 @@ import {
 } from "@dnd-kit/sortable"
 import { CSS } from "@dnd-kit/utilities"
 import HeaderBlock from "@talisman/components/HeaderBlock"
-import { Modal } from "@talisman/components/Modal"
-import { ModalDialog } from "@talisman/components/ModalDialog"
 import { WithTooltip } from "@talisman/components/Tooltip"
 import {
   ChevronDownIcon,
@@ -54,6 +52,10 @@ import { useAnalyticsPageView } from "@ui/hooks/useAnalyticsPageView"
 import { forwardRef, useCallback, useEffect, useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
 
+import { NewFolderModal, useNewFolderModal } from "./NewFolderModal"
+import { SortableTree } from "./SortableTree"
+import { UiTree, UiTreeAccount, UiTreeItem } from "./types"
+
 const ANALYTICS_PAGE: AnalyticsPage = {
   container: "Fullscreen",
   feature: "Settings",
@@ -67,38 +69,24 @@ export const Accounts = () => {
 
   const accounts = useAccounts()
   const portfolio = useAccountsPortfolio()
+  const uiTree = useMemo(
+    (): UiTree =>
+      portfolio.map(
+        (item): UiTreeItem =>
+          item.type === "account"
+            ? { ...item, id: `account-${item.address}` }
+            : {
+                ...item,
+                id: `folder-${item.name}`,
+                tree: item.tree.map(
+                  (item): UiTreeAccount => ({ ...item, id: `account-${item.address}` })
+                ),
+              }
+      ),
+    [portfolio]
+  )
 
-  const test = () => {
-    api.accountsPortfolioMutate([
-      {
-        type: "moveAccount",
-        address: "5EHNsSHuWrNMYgx3bPhsRVLG77DX8sS8wZrnbtieJzbtSZr9",
-        folder: "New folder 2",
-        // beforeItem: {
-        //   type: "account",
-        //   address: "5CcU6DRpocLUWYJHuNLjB4gGyHJrkWuruQD5XFbRYffCfSAP",
-        // },
-      },
-      {
-        type: "moveAccount",
-        address: "0x5d89da39290A439e024e597E9c0F0E902d3fD64E",
-        folder: "New folder 2",
-        // beforeItem: {
-        //   type: "account",
-        //   address: "5CcU6DRpocLUWYJHuNLjB4gGyHJrkWuruQD5XFbRYffCfSAP",
-        // },
-      },
-      {
-        type: "moveAccount",
-        address: "0x3aE3199223732c2745dA671aDd5d0B834b6c3d86",
-        folder: "New folder 2",
-        // beforeItem: {
-        //   type: "account",
-        //   address: "5CcU6DRpocLUWYJHuNLjB4gGyHJrkWuruQD5XFbRYffCfSAP",
-        // },
-      },
-    ])
-  }
+  const newFolderModal = useNewFolderModal()
 
   return (
     <Layout analytics={ANALYTICS_PAGE} withBack centered backTo="/settings">
@@ -110,48 +98,15 @@ export const Accounts = () => {
         <button
           type="button"
           className="bg-primary text-body-black hover:bg-primary/80 flex items-center gap-3 rounded-sm p-4 text-sm"
-          onClick={() => {
-            api.accountsPortfolioMutate([{ type: "addFolder", name: "New folder" }])
-          }}
+          onClick={newFolderModal.open}
         >
           <FolderPlusIcon />
           Add new folder
         </button>
-
-        <button
-          type="button"
-          className="bg-primary text-body-black hover:bg-primary/80 flex items-center gap-3 rounded-sm p-4 text-sm"
-          onClick={test}
-        >
-          Test
-        </button>
       </div>
-      <AccountsList accounts={accounts} portfolio={portfolio} />
-      {/* <button
-        type="button"
-        className="bg-primary text-body-black hover:bg-primary/80 flex items-center gap-3 rounded-sm p-4 text-sm"
-        onClick={open}
-      >
-        {t("Reset to defaults")}
-      </button>
-      <Modal open={isOpen && !!network} onClose={close}>
-        <ModalDialog title={t("Reset Network")} onClose={close}>
-          <div className="text-body-secondary mt-4 space-y-16">
-            <div className="text-base">
-              <Trans t={t}>
-                Network <span className="text-body">{networkName}</span> will be reset to Talisman's
-                default settings.
-              </Trans>
-            </div>
-            <div className="grid grid-cols-2 gap-8">
-              <Button onClick={close}>{t("Cancel")}</Button>
-              <Button primary onClick={handleConfirmReset}>
-                {t("Reset")}
-              </Button>
-            </div>
-          </div>
-        </ModalDialog>
-      </Modal> */}
+      <SortableTree tree={uiTree} collapsible />
+      {/* <AccountsList accounts={accounts} portfolio={portfolio} /> */}
+      <NewFolderModal />
     </Layout>
   )
 }
@@ -315,32 +270,35 @@ const AccountsList = ({ accounts, portfolio }: { accounts: AccountJson[]; portfo
   )
 
   return (
-    <DndContext
-      sensors={sensors}
-      collisionDetection={closestCorners}
-      onDragStart={handleDragStart}
-      onDragCancel={handleDragCancel}
-      onDragOver={handleDragOver}
-      onDragEnd={handleDragEnd}
-    >
-      <div className="flex flex-col gap-4">
-        <SortableContext id={rootId} items={rootItems} strategy={verticalListSortingStrategy}>
-          <div className="droppable bg-green p-12" ref={setDroppableNodeRef}>
-            {rootItems.map((item) => (
-              <SortableTreeItem
-                key={item.id}
-                id={item.id}
-                itemsById={itemsById}
-                accounts={accounts}
-              />
-            ))}
-          </div>
-        </SortableContext>
-      </div>
-      <DragOverlay>
-        {activeId && <TreeItem id={activeId} itemsById={itemsById} accounts={accounts} />}
-      </DragOverlay>
-    </DndContext>
+    <>
+      <SortableTree collapsible />
+      <DndContext
+        sensors={sensors}
+        collisionDetection={closestCorners}
+        onDragStart={handleDragStart}
+        onDragCancel={handleDragCancel}
+        onDragOver={handleDragOver}
+        onDragEnd={handleDragEnd}
+      >
+        <div className="flex flex-col gap-4">
+          <SortableContext id={rootId} items={rootItems} strategy={verticalListSortingStrategy}>
+            <div className="droppable bg-green p-12" ref={setDroppableNodeRef}>
+              {rootItems.map((item) => (
+                <SortableTreeItem
+                  key={item.id}
+                  id={item.id}
+                  itemsById={itemsById}
+                  accounts={accounts}
+                />
+              ))}
+            </div>
+          </SortableContext>
+        </div>
+        <DragOverlay>
+          {activeId && <TreeItem id={activeId} itemsById={itemsById} accounts={accounts} />}
+        </DragOverlay>
+      </DndContext>
+    </>
   )
 }
 
