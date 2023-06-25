@@ -1,5 +1,6 @@
+import { Tree } from "@core/domains/accounts/store.portfolio"
 import { AccountAddressType, RequestAccountCreateHardware } from "@core/domains/accounts/types"
-import type { AccountJson } from "@core/domains/accounts/types"
+import type { AccountJson, RequestPortfolioMutate } from "@core/domains/accounts/types"
 import { MnemonicSubscriptionResult } from "@core/domains/accounts/types"
 import {
   AnalyticsCaptureRequest,
@@ -114,6 +115,8 @@ export default interface MessageTypes {
   accountCreateWatched: (name: string, address: string, isPortfolio: boolean) => Promise<string>
   accountExternalSetIsPortfolio: (address: string, isPortfolio: boolean) => Promise<boolean>
   accountsSubscribe: (cb: (accounts: AccountJson[]) => void) => UnsubscribeFn
+  accountsPortfolioSubscribe: (cb: (tree: Tree) => void) => UnsubscribeFn
+  accountsPortfolioMutate: (mutations: RequestPortfolioMutate[]) => Promise<boolean>
   accountForget: (address: string) => Promise<boolean>
   accountExport: (
     address: string,

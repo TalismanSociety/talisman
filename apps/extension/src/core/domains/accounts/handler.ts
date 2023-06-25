@@ -12,12 +12,13 @@ import type {
   RequestAccountExternalSetIsPortfolio,
   RequestAccountForget,
   RequestAccountRename,
+  RequestPortfolioMutate,
   ResponseAccountExport,
 } from "@core/domains/accounts/types"
 import { AccountTypes } from "@core/domains/accounts/types"
 import { getEthDerivationPath } from "@core/domains/ethereum/helpers"
 import { getPairForAddressSafely } from "@core/handlers/helpers"
-import { genericSubscription } from "@core/handlers/subscriptions"
+import { genericAsyncSubscription } from "@core/handlers/subscriptions"
 import { talismanAnalytics } from "@core/libs/Analytics"
 import { ExtensionHandler } from "@core/libs/Handler"
 import type { MessageTypes, RequestTypes, ResponseType } from "@core/types"
@@ -320,6 +321,9 @@ export default class AccountsHandler extends ExtensionHandler {
     // remove associated authorizations
     this.stores.sites.forgetAccount(address)
 
+    // remove from portfolio organisation store (sorting, folders, hiding)
+    this.stores.portfolio.removeAccounts([address])
+
     return true
   }
 
@@ -400,12 +404,25 @@ export default class AccountsHandler extends ExtensionHandler {
   }
 
   private accountsSubscribe(id: string, port: Port) {
-    return genericSubscription<"pri(accounts.subscribe)">(
+    return genericAsyncSubscription<"pri(accounts.subscribe)">(
       id,
       port,
       keyring.accounts.subject,
-      sortAccounts
+      sortAccounts(this.stores.portfolio)
     )
+  }
+
+  private accountsPortfolioSubscribe(id: string, port: Port) {
+    return genericAsyncSubscription<"pri(accounts.portfolio.subscribe)">(
+      id,
+      port,
+      this.stores.portfolio.observable,
+      async (store) => store.tree
+    )
+  }
+
+  private accountsPortfolioMutate(mutations: RequestPortfolioMutate[]) {
+    return this.stores.portfolio.executePortfolioMutations(mutations)
   }
 
   private accountValidateMnemonic(mnemonic: string): boolean {
@@ -454,6 +471,10 @@ export default class AccountsHandler extends ExtensionHandler {
         return this.accountRename(request as RequestAccountRename)
       case "pri(accounts.subscribe)":
         return this.accountsSubscribe(id, port)
+      case "pri(accounts.portfolio.subscribe)":
+        return this.accountsPortfolioSubscribe(id, port)
+      case "pri(accounts.portfolio.mutate)":
+        return this.accountsPortfolioMutate(request as RequestPortfolioMutate[])
       case "pri(accounts.validateMnemonic)":
         return this.accountValidateMnemonic(request as string)
       case "pri(accounts.setVerifierCertMnemonic)":

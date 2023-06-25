@@ -29,6 +29,7 @@ import { NetworksPage } from "./routes/Networks/NetworksPage"
 import { PhishingPage } from "./routes/PhishingPage"
 import { Portfolio } from "./routes/Portfolio"
 import Settings from "./routes/Settings"
+import { Accounts } from "./routes/Settings/Accounts"
 import AddressBook from "./routes/Settings/AddressBook"
 import { AnalyticsOptIn } from "./routes/Settings/AnalyticsOptIn"
 import { AutoLockTimer } from "./routes/Settings/AutoLockTimer"
@@ -102,13 +103,14 @@ const DashboardInner = () => {
           <Route path="" element={<Settings />} />
           <Route path="connected-sites" element={<SitesConnected />} />
           <Route path="address-book" element={<AddressBook />} />
+          <Route path="options" element={<Options />} />
+          <Route path="accounts" element={<Accounts />} />
           <Route path="language" element={<LanguageSettings />} />
           <Route path="security-privacy-settings" element={<SecurityPrivacySettings />} />
-          <Route path="options" element={<Options />} />
-          <Route path="about" element={<About />} />
-          <Route path="analytics" element={<AnalyticsOptIn />} />
           <Route path="change-password" element={<ChangePassword />} />
           <Route path="autolock" element={<AutoLockTimer />} />
+          <Route path="about" element={<About />} />
+          <Route path="analytics" element={<AnalyticsOptIn />} />
         </Route>
         <Route path="tokens">
           <Route path="" element={<TokensPage />} />

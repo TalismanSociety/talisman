@@ -1,3 +1,4 @@
+import { Tree } from "@core/domains/accounts/store.portfolio"
 import { Address } from "@core/types/base"
 import type {
   AccountJson,
@@ -50,7 +51,11 @@ export type AccountJsonAny = (
   | AccountJsonQr
   | AccountJsonWatched
   | AccountJson
-) & { origin?: AccountType | undefined }
+) & { origin?: AccountType | undefined } & {
+  folder?: string
+  hidden?: boolean
+  sortOrder?: number
+}
 
 export type IdenticonType = "talisman-orb" | "polkadot-identicon"
 
@@ -152,6 +157,27 @@ export interface RequestAccountCreate {
   type: AccountAddressType
 }
 
+export type RequestPortfolioMutate =
+  // account mutations
+  | {
+      type: "moveAccount"
+      address: string
+      folder?: string
+      beforeItem?: { type: "account"; address: string } | { type: "folder"; name: string }
+    }
+  | { type: "hideAccount"; address: string }
+  | { type: "showAccount"; address: string }
+  // folder mutations
+  | { type: "addFolder"; name: string; color?: string }
+  | { type: "renameFolder"; name: string; newName: string }
+  | { type: "recolorFolder"; name: string; newColor?: string }
+  | {
+      type: "moveFolder"
+      name: string
+      beforeItem?: { type: "account"; address: string } | { type: "folder"; name: string }
+    }
+  | { type: "removeFolder"; name: string }
+
 export interface AccountsMessages {
   // account message signatures
   "pri(accounts.create)": [RequestAccountCreate, string]
@@ -170,6 +196,8 @@ export interface AccountsMessages {
   "pri(accounts.rename)": [RequestAccountRename, boolean]
   "pri(accounts.external.setIsPortfolio)": [RequestAccountExternalSetIsPortfolio, boolean]
   "pri(accounts.subscribe)": [RequestAccountSubscribe, boolean, AccountJson[]]
+  "pri(accounts.portfolio.subscribe)": [null, boolean, Tree]
+  "pri(accounts.portfolio.mutate)": [RequestPortfolioMutate[], boolean]
   "pri(accounts.validateMnemonic)": [string, boolean]
   "pri(accounts.setVerifierCertMnemonic)": [string, boolean]
 }
