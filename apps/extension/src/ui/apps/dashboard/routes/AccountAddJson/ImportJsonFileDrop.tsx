@@ -1,10 +1,30 @@
-import { FilePlusIcon, XIcon } from "@talisman/theme/icons"
+import { FileCheckIcon, FilePlusIcon, FileXIcon, XIcon } from "@talisman/theme/icons"
 import { classNames } from "@talismn/util"
 import { FC, MouseEventHandler, useCallback, useMemo, useState } from "react"
 import { DropzoneOptions, useDropzone } from "react-dropzone"
 import { Trans, useTranslation } from "react-i18next"
 
 import { useJsonAccountImport } from "./context"
+
+const FileIcon: FC<{ state: "ok" | "nok" | "unknown" }> = ({ state }) => {
+  if (state === "nok")
+    return (
+      <div className="bg-alert-warn/10 rounded-full p-5 text-lg">
+        <FileXIcon className="text-alert-warn" />
+      </div>
+    )
+  if (state === "ok")
+    return (
+      <div className="bg-primary/10 rounded-full p-5 text-lg">
+        <FileCheckIcon className="text-primary" />
+      </div>
+    )
+  return (
+    <div className="bg-body/10 rounded-full p-5 text-lg">
+      <FilePlusIcon />
+    </div>
+  )
+}
 
 const JsonFileDrop: FC<{ onChange?: (file?: File) => void }> = ({ onChange }) => {
   const { t } = useTranslation("account-add")
@@ -48,11 +68,7 @@ const JsonFileDrop: FC<{ onChange?: (file?: File) => void }> = ({ onChange }) =>
       )}
     >
       <input {...getInputProps()} />
-      <div className="bg-primary/10 rounded-full p-5">
-        <FilePlusIcon
-          className={classNames("text-lg", isDragReject ? "text-alert-warn" : "text-primary")}
-        />
-      </div>
+      <FileIcon state={file || isDragAccept ? "ok" : isDragReject ? "nok" : "unknown"} />
       <div className="flex grow flex-col items-center justify-center gap-6">
         {file ? (
           <div className="bg-grey-800 flex h-16 w-[24rem] max-w-full items-center rounded-sm pl-6 text-xs">
