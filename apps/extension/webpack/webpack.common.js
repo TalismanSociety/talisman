@@ -14,17 +14,25 @@ const { srcDir, coreDir, distDir, getRelease, getGitShortHash } = require("./uti
 
 const config = (env) => ({
   entry: {
-    backend: ["@substrate/txwrapper-core", "@talismn/chaindata-provider-extension"],
-    popup: { import: path.join(srcDir, "index.popup.tsx") },
-    // onboarding: { import: path.join(srcDir, "index.onboarding.tsx") },
-    // dashboard: { import: path.join(srcDir, "index.dashboard.tsx") },
-    background: { import: path.join(coreDir, "background.ts"), dependOn: "backend" },
-    content_script: path.join(coreDir, "content_script.ts"),
-    page: path.join(coreDir, "page.ts"),
+    // Wallet ui
+    "popup": { import: path.join(srcDir, "index.popup.tsx") },
+    "onboarding": { import: path.join(srcDir, "index.onboarding.tsx") },
+    "dashboard": { import: path.join(srcDir, "index.dashboard.tsx") },
+
+    // Wallet service workers
+    "background": { import: path.join(coreDir, "background.ts"), dependOn: "vendor-background" },
+
+    // Background.js manually-specified code-splits (to keep background.js under 4MB)
+    "vendor-background": ["@substrate/txwrapper-core", "@talismn/chaindata-provider-extension"],
+
+    // Wallet injected scripts
+    "content_script": path.join(coreDir, "content_script.ts"),
+    "page": path.join(coreDir, "page.ts"),
   },
   output: {
     path: distDir,
     filename: "[name].js",
+    chunkFilename: "[name].chunk.js",
     assetModuleFilename: "assets/[hash][ext]", // removes query string if there are any in our import strings (we use ?url for svgs)
   },
 
@@ -140,7 +148,6 @@ const config = (env) => ({
     new AssetReplacePlugin({
       "#TALISMAN_PAGE_SCRIPT#": "page",
     }),
-    new webpack.ProgressPlugin(),
   ],
 })
 

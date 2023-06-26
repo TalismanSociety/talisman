@@ -5,17 +5,10 @@ const CopyPlugin = require("copy-webpack-plugin")
 const ZipPlugin = require("./ZipPlugin")
 const TerserPlugin = require("terser-webpack-plugin")
 const HtmlWebpackPlugin = require("html-webpack-plugin")
-const HtmlWebpackSingleEntryPointPlugin = require("./HtmlExcludeAssetsPlugin")
 const BundleAnalyzerPlugin = require("webpack-bundle-analyzer").BundleAnalyzerPlugin
 
 const common = require("./webpack.common.js")
-const {
-  distDir,
-  publicDir,
-  getArchiveFileName,
-  getSentryPlugin,
-  getManifestVersionName,
-} = require("./utils")
+const { distDir, getArchiveFileName, getSentryPlugin, getManifestVersionName } = require("./utils")
 const { SourceMapDevToolPlugin } = require("webpack")
 
 const config = (env) => {
@@ -34,22 +27,20 @@ const config = (env) => {
         filename: "[file].map[query]",
         exclude: ["content_script.js", "page.js"],
       }),
-      new HtmlWebpackPlugin({
-        template: `${publicDir}/popup.html`,
-        filename: (entryName) => `${distDir}/${entryName}.html`,
-        chunks: ["popup"],
-      }),
-      new HtmlWebpackSingleEntryPointPlugin(),
-      // new HtmlWebpackPlugin({
-      //   template: `${publicDir}/dashboard.html`,
-      //   filename: (entryName) => `${distDir}/${entryName}.html`,
-      //   chunks: ['dashboard']
-      // }),
-      // new HtmlWebpackPlugin({
-      //   template: `${publicDir}/onboarding.html`,
-      //   filename: (entryName) => `${distDir}/${entryName}.html`,
-      //   chunks: ['onboarding']
-      // }),
+      ...[
+        { title: "Talisman", entrypoint: "popup" },
+        { title: "Talisman Wallet", entrypoint: "dashboard" },
+        { title: "Unlock the Talisman", entrypoint: "onboarding" },
+      ].map(
+        ({ title, entrypoint }) =>
+          new HtmlWebpackPlugin({
+            template: `src/template.${entrypoint}.html`,
+            filename: `${entrypoint}.html`,
+            chunks: [entrypoint],
+            title,
+            minify: false,
+          })
+      ),
       // Ensure plugins in this array will not change source in any way that will affect source maps
       getSentryPlugin(env),
       new CopyPlugin({
@@ -121,18 +112,46 @@ const config = (env) => {
       minimize: true,
       minimizer: [new TerserPlugin({ terserOptions: { compress: true } })],
       splitChunks: {
-        chunks: (chunk) => {
-          return chunk.name !== "background" && chunk.name !== "backend"
+        name(module, chunks, cacheGroupKey) {
+          const moduleFileName = module
+            .identifier()
+            .split("/")
+            .reduceRight((item) => item)
+          const allChunksNames = chunks.map((item) => item.name).join("~")
+          return `${cacheGroupKey}-${allChunksNames}-${moduleFileName?.toLowerCase?.()}`
         },
+        chunks: (chunk) =>
+          !["background", "vendor-background", "content_script", "page"].includes(chunk.name),
+        minSize: 0,
         maxSize: 4 * 1024 * 1024,
+        maxInitialRequests: Infinity,
         cacheGroups: {
           "vendor-react": {
             test: /[\\/]node_modules[\\/](react|react-dom|lottie-react)[\\/]/,
             name: "vendor-react",
-            chunks: (chunk) => {
-              return chunk.name !== "background" && chunk.name !== "backend"
-            },
+            priority: -1,
+            reuseExistingChunk: true,
           },
+          "vendor-substrate": {
+            test: /[\\/]node_modules[\\/](@substrate)[\\/]/,
+            name: "vendor-substrate",
+            priority: -1,
+            reuseExistingChunk: true,
+          },
+          "vendor-talisman": {
+            test: /[\\/]node_modules[\\/](@talismn)[\\/]/,
+            name: "vendor-talisman",
+            priority: -1,
+            reuseExistingChunk: true,
+          },
+          "vendor": {
+            test: /[\\/]node_modules[\\/]/,
+            name: "vendor",
+            priority: -2,
+            reuseExistingChunk: true,
+          },
+          "defaultVendors": false,
+          "default": false,
         },
       },
     },
