@@ -8,9 +8,10 @@
     <meta name="description" content="Traverse the Paraverse with Talisman" />
     <link rel="apple-touch-icon" href="./logo192.png" />
     <link rel="manifest" href="./manifest.json" />
-    <title>Talisman Wallet</title>
+    <title><%= htmlWebpackPlugin.options.title || 'Talisman'%></title>
     <style>
-      html {
+      html,
+      body {
         /* prevents bg flickering on page load */
         background: #121212;
       }
@@ -20,7 +21,5 @@
   <body>
     <noscript>You need to enable JavaScript to run this app.</noscript>
     <div id="root" />
-    <script src="appFrontEnd.js"></script>
-    <script src="dashboard.js"></script>
   </body>
 </html>

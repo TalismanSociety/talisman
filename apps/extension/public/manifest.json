@@ -17,7 +17,7 @@
     }
   ],
   "background": {
-    "scripts": ["backend.js", "background.js"],
+    "scripts": ["vendor-background.js", "background.js"],
     "persistent": true
   },
   "web_accessible_resources": ["page.js", "dashboard.js.map"],
