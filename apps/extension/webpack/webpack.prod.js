@@ -81,19 +81,7 @@ const config = (env) => {
               return JSON.stringify(manifest, null, 2)
             },
           },
-          {
-            from: ".",
-            to: distDir,
-            context: "public",
-            filter: (path) => {
-              const isHtml = path.endsWith("popup.html")
-              if (isHtml) {
-                console.log("not copying ", path)
-                return false
-              }
-              return true
-            },
-          },
+          { from: ".", to: distDir, context: "public" },
         ],
       }),
       // Do not include source maps in the zip file

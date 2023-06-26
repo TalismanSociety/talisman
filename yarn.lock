@@ -14330,7 +14330,6 @@ __metadata:
     graphql-tag: ^2.12.6
     highlight.js: 11.7.0
     html-react-parser: 1.4.14
-    html-webpack-exclude-assets-plugin: ^0.0.7
     html-webpack-plugin: ^5.5.3
     https-browserify: ^1.0.0
     i18next: ^22.5.0
@@ -15880,13 +15879,6 @@ __metadata:
   peerDependencies:
     react: 0.14 || 15 || 16 || 17 || 18
   checksum: 14745d2949da38c31d9812ed0f7d77bbbffcf5a6db441d3c703d57ca884ebe705fc2dbc312f47353c349f11f5e61f4735b6610ed905cb4d06da56d475ecc2892
-  languageName: node
-  linkType: hard
-
-"html-webpack-exclude-assets-plugin@npm:^0.0.7":
-  version: 0.0.7
-  resolution: "html-webpack-exclude-assets-plugin@npm:0.0.7"
-  checksum: d90126cd547441a8ec4c0b67e44964b729b6d9d42e354b5b809a0ab1832a0bfbdfe6558e04e1f79ce0044016cb7eda1d93d888e138eec7eabbafe113a13db558
   languageName: node
   linkType: hard
 
