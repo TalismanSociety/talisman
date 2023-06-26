@@ -1,4 +1,3 @@
-// import { DEBUG } from "@core/constants"
 import { AccountType } from "@core/domains/accounts/types"
 import { AddressesByEvmNetwork } from "@core/domains/balances/types"
 import { log } from "@core/log"
@@ -15,6 +14,7 @@ import {
   jsonDecrypt,
 } from "@polkadot/util-crypto"
 import { KeypairType } from "@polkadot/util-crypto/types"
+import { provideContext } from "@talisman/util/provideContext"
 import { Address, Balances } from "@talismn/balances"
 import { encodeAnyAddress } from "@talismn/util"
 import { api } from "@ui/api"
@@ -25,10 +25,19 @@ import { useEvmNetworks } from "@ui/hooks/useEvmNetworks"
 import isEqual from "lodash/isEqual"
 import { useCallback, useEffect, useMemo, useState } from "react"
 
-// import testImport from "./GITIGNORE.json"
-import { JsonImportAccount } from "./JsonAccountsList"
-
-// TODO DO_NOT_MERGE_ABOVE_IMPORT
+export type JsonImportAccount = {
+  id: string
+  address: string
+  name: string
+  genesisHash: string
+  origin: AccountType
+  selected: boolean
+  isLocked: boolean
+  isPrivateKeyAvailable: boolean
+  isExisting: boolean
+  balances: Balances
+  isLoading: boolean
+}
 
 type SingleAccountJson = KeyringPair$Json
 type MultiAccountJson = KeyringPairs$Json
@@ -64,7 +73,7 @@ const BALANCE_CHECK_EVM_NETWORK_IDS = ["1284", "1285", "592", "1"]
 const BALANCE_CHECK_SUB_NETWORK_IDS = ["polkadot", "kusama", "astar", "acala"]
 
 const useAccountsBalances = (pairs: KeyringPair[] | undefined) => {
-  // pairs beeing mutable the whole array has to be overriden after each unlock
+  // pairs beeing mutable the whole is overriden after each unlock
   // keep a separate list for addresses that won't be updated, so we only recreate balanceParams when necessary
   const [addresses, setAddresses] = useState(pairs?.map((p) => p.address) ?? [])
 
@@ -73,9 +82,7 @@ const useAccountsBalances = (pairs: KeyringPair[] | undefined) => {
 
   useEffect(() => {
     const newAddresses = pairs?.map((p) => encodeAnyAddress(p.address)) ?? []
-    if (!isEqual(newAddresses, addresses)) {
-      setAddresses(newAddresses)
-    }
+    if (!isEqual(newAddresses, addresses)) setAddresses(newAddresses)
   }, [addresses, pairs, setAddresses])
 
   const balanceParams = useMemo(() => {
@@ -90,9 +97,7 @@ const useAccountsBalances = (pairs: KeyringPair[] | undefined) => {
           .reduce(
             (acc, chain) => ({
               ...acc,
-              [chain.id]: subAddresses.map(
-                (address) => encodeAnyAddress(address) //, chain.prefix ?? undefined)
-              ),
+              [chain.id]: subAddresses.map(encodeAnyAddress),
             }),
             {} as AddressesByChain
           )
@@ -114,11 +119,6 @@ const useAccountsBalances = (pairs: KeyringPair[] | undefined) => {
 
     return result
   }, [addresses, chains, evmNetworks])
-
-  // debounce state to prevent accounts from beeing recomputed too frequently
-  // const liveBalances = useBalancesByParams(balanceParams)
-  // const [balances, setBalances] = useState<Balances>(liveBalances)
-  // useDebounce(() => setBalances(liveBalances), 500, [liveBalances])
 
   const allBalances = useBalancesByParams(balanceParams)
 
@@ -142,33 +142,26 @@ const useAccountsBalances = (pairs: KeyringPair[] | undefined) => {
       }
     }, {} as Record<Address, { balances: Balances; isLoading: boolean }>)
   }, [addresses, allBalances])
-
-  //return allBalances
 }
 
-export const useJsonAccountImport = () => {
-  // TODO REMOVE BEFORE MERGE
-  //const [fileContent, setFileContent] = useState(DEBUG ? JSON.stringify(testImport) : undefined)
-  const [fileContent, setFileContent] = useState<string>()
-  // do we really need to save this ?
-  //const [masterPassword, setMasterPassword] = useState<string>()
-  const [isFileUnlocked, setIsFileUnlocked] = useState(false)
-  const [selectedAccounts, setSelectedAccounts] = useState<string[]>([])
+const useJsonAccountImportProvider = () => {
   const existingAccounts = useAccounts()
+  const [json, setJson] = useState<string>()
+  const [selectedAccounts, setSelectedAccounts] = useState<string[]>([])
 
+  // warning : array of mutable objects
   const [pairs, setPairs] = useState<KeyringPair[]>()
 
   useEffect(() => {
-    setIsFileUnlocked(false)
     setSelectedAccounts([])
     setPairs(undefined)
-  }, [fileContent])
+  }, [json])
 
   const file = useMemo<UnknownAccountJsonFile | undefined>(() => {
-    if (!fileContent) return undefined
+    if (!json) return undefined
 
     try {
-      const content = JSON.parse(fileContent) as UnknownAccountJson
+      const content = JSON.parse(json) as UnknownAccountJson
 
       if (isSingleAccountJson(content)) return { type: "single", content }
       if (isMultiAccountJson(content)) return { type: "multi", content }
@@ -177,9 +170,9 @@ export const useJsonAccountImport = () => {
     }
 
     return undefined
-  }, [fileContent])
+  }, [json])
 
-  const requiresFilePassword = useMemo(() => file && !isFileUnlocked, [file, isFileUnlocked])
+  const requiresFilePassword = useMemo(() => file && !pairs, [file, pairs])
 
   const unlockFile = useCallback(
     async (password: string) => {
@@ -191,10 +184,8 @@ export const useJsonAccountImport = () => {
           try {
             if (file.type === "single") {
               const pair = createPairFromJson(file.content)
-              // check password, throws if invalid
               pair.decodePkcs8(password)
 
-              setIsFileUnlocked(true)
               setPairs([pair])
 
               if (
@@ -206,12 +197,10 @@ export const useJsonAccountImport = () => {
               )
                 setSelectedAccounts([pair.address])
             } else if (file.type === "multi") {
-              const accounts = JSON.parse(
-                u8aToString(jsonDecrypt(file.content, password))
-              ) as KeyringPair$Json[]
+              const data = jsonDecrypt(file.content, password)
+              const accounts = JSON.parse(u8aToString(data)) as KeyringPair$Json[]
               const pairs = accounts.map(createPairFromJson)
 
-              setIsFileUnlocked(true)
               setPairs(pairs)
             } else throw new Error("Invalid file type")
 
@@ -262,6 +251,17 @@ export const useJsonAccountImport = () => {
     return result
   }, [accountBalances, chains, existingAccounts, pairs, selectedAccounts])
 
+  const selectNone = useCallback(() => {
+    setSelectedAccounts([])
+  }, [])
+
+  const selectAll = useCallback(() => {
+    if (!accounts) return
+    setSelectedAccounts(
+      accounts?.filter((a) => a.isPrivateKeyAvailable && !a.isExisting).map((a) => a.id)
+    )
+  }, [accounts])
+
   const selectAccount = useCallback(
     (id: string, select: boolean) => {
       if (!accounts?.length || !id) return
@@ -273,6 +273,12 @@ export const useJsonAccountImport = () => {
     [accounts]
   )
 
+  const requiresAccountUnlock = useMemo(
+    () => !!accounts?.filter((a) => a.selected && a.isLocked).length,
+    [accounts]
+  )
+
+  // track progress to display a progress bar
   const [unlockAttemptProgress, setUnlockAttemptProgress] = useState(0)
 
   const unlockAccounts = useCallback(
@@ -312,11 +318,6 @@ export const useJsonAccountImport = () => {
     [accounts, pairs]
   )
 
-  const requiresAccountUnlock = useMemo(
-    () => !!accounts?.filter((a) => a.selected && a.isLocked).length,
-    [accounts]
-  )
-
   const canImport = useMemo<boolean>(() => {
     if (!pairs || !selectedAccounts.length) return false
     for (const address of selectedAccounts) {
@@ -330,8 +331,8 @@ export const useJsonAccountImport = () => {
     assert(selectedAccounts.length, "No accounts selected")
     assert(pairs, "Pairs unavailable")
 
-    const pairsToImport = selectedAccounts.map((address) =>
-      pairs.find((p) => p.address === address)
+    const pairsToImport = selectedAccounts.map(
+      (address) => pairs.find((p) => p.address === address) as KeyringPair
     )
     for (const pair of pairsToImport) {
       assert(pair, "Pair not found")
@@ -339,32 +340,19 @@ export const useJsonAccountImport = () => {
       assert(!pair.isLocked, "Account is locked")
     }
 
-    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-    const unlockedPairs = pairsToImport.map((p) => p!.toJson())
+    const unlockedPairs = pairsToImport.map((p) => p.toJson())
 
-    // blank password as pairs are unlocked
     return api.accountCreateFromJson(unlockedPairs)
   }, [pairs, selectedAccounts])
 
-  const selectAll = useCallback(() => {
-    if (!accounts) return
-    setSelectedAccounts(
-      accounts?.filter((a) => a.isPrivateKeyAvailable && !a.isExisting).map((a) => a.id)
-    )
-  }, [accounts])
-
-  const selectNone = useCallback(() => {
-    setSelectedAccounts([])
-  }, [])
-
   return {
-    isMultiAccounts: file?.type === "multi",
     accounts,
+    isMultiAccounts: file?.type === "multi",
     requiresFilePassword,
     requiresAccountUnlock,
     canImport,
     unlockAttemptProgress,
-    setFileContent,
+    setJson,
     selectAccount,
     unlockFile,
     unlockAccounts,
@@ -373,3 +361,7 @@ export const useJsonAccountImport = () => {
     selectNone,
   }
 }
+
+export const [JsonAccountImportProvider, useJsonAccountImport] = provideContext(
+  useJsonAccountImportProvider
+)

@@ -4,11 +4,9 @@ import { FC, MouseEventHandler, useCallback, useMemo, useState } from "react"
 import { DropzoneOptions, useDropzone } from "react-dropzone"
 import { Trans, useTranslation } from "react-i18next"
 
-type JsonFileDropProps = {
-  onChange?: (file?: File) => void
-}
+import { useJsonAccountImport } from "./context"
 
-export const JsonFileDrop: FC<JsonFileDropProps> = ({ onChange }) => {
+const JsonFileDrop: FC<{ onChange?: (file?: File) => void }> = ({ onChange }) => {
   const { t } = useTranslation("account-add")
   const [file, setFile] = useState<File>()
 
@@ -84,4 +82,32 @@ export const JsonFileDrop: FC<JsonFileDropProps> = ({ onChange }) => {
       </div>
     </div>
   )
+}
+
+const getFileContent = (file?: File) =>
+  new Promise<string>((resolve) => {
+    if (file) {
+      const reader = new FileReader()
+      reader.onload = () => resolve(reader.result as string)
+      reader.onerror = () => resolve("")
+      reader.readAsText(file)
+    } else resolve("")
+  })
+
+export const ImportJsonFileDrop = () => {
+  const { setJson } = useJsonAccountImport()
+
+  const handleFileChange = useCallback(
+    async (file?: File) => {
+      try {
+        if (file) setJson(await getFileContent(file))
+        else setJson(undefined)
+      } catch (err) {
+        setJson(undefined)
+      }
+    },
+    [setJson]
+  )
+
+  return <JsonFileDrop onChange={handleFileChange} />
 }

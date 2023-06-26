@@ -20,7 +20,7 @@ import { Navigate, Route, Routes, useMatch } from "react-router-dom"
 import Layout from "./layout"
 import About from "./routes/About"
 import AccountAddDerived from "./routes/AccountAddDerived"
-import AccountAddJson from "./routes/AccountAddJson/AccountAddJson"
+import { AccountAddJsonPage } from "./routes/AccountAddJson"
 import { AccountAddQr } from "./routes/AccountAddQr"
 import { AccountAddSecret } from "./routes/AccountAddSecret"
 import AccountAddTypePicker from "./routes/AccountAddTypePicker"
@@ -89,7 +89,7 @@ const DashboardInner = () => {
           <Route path="add">
             <Route path="" element={<AccountAddTypePicker />} />
             <Route path="derived" element={<AccountAddDerived />} />
-            <Route path="json" element={<AccountAddJson />} />
+            <Route path="json" element={<AccountAddJsonPage />} />
             <Route path="secret/*" element={<AccountAddSecret />} />
             <Route path="ledger/*" element={<AccountAddLedger />} />
             <Route path="qr/*" element={<AccountAddQr />} />

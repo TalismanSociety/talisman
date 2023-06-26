@@ -9,20 +9,23 @@ import { CSSProperties } from "styled-components"
 import { Button, FormFieldContainer, FormFieldInputText, Modal, useOpenClose } from "talisman-ui"
 import * as yup from "yup"
 
-import { JsonImportAccount } from "./JsonAccountsList"
+import { useJsonAccountImport } from "./context"
 
 type FormData = {
   password?: string
 }
 
-export const UnlockJsonAccountsButton: FC<{
-  accounts: JsonImportAccount[]
-  requiresAccountUnlock: boolean
-  unlockAttemptProgress: number
-  unlockAccounts: (password: string) => void
-}> = ({ accounts, requiresAccountUnlock, unlockAttemptProgress, unlockAccounts }) => {
+export const UnlockJsonAccountsButton: FC = () => {
   const { t } = useTranslation("account-add")
   const { open, isOpen, close } = useOpenClose()
+
+  const {
+    accounts = [],
+    requiresAccountUnlock,
+    unlockAttemptProgress,
+    unlockAccounts,
+    isMultiAccounts,
+  } = useJsonAccountImport()
 
   const schema = yup
     .object({
@@ -87,13 +90,17 @@ export const UnlockJsonAccountsButton: FC<{
       }
     }, [accounts, unlockAttemptProgress])
 
+  // close modal when all accounts are unlocked
   useEffect(() => {
     if (unlockedCount === selectedCount) close()
   })
 
+  // manual autoFocus to prevent modal flickering on open
   useEffect(() => {
     if (isOpen) setTimeout(() => setFocus("password"), 50)
   }, [isOpen, setFocus])
+
+  if (!isMultiAccounts) return null
 
   return (
     <>

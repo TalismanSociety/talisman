@@ -1,4 +1,3 @@
-import { DEBUG } from "@core/constants"
 import { log } from "@core/log"
 import { yupResolver } from "@hookform/resolvers/yup"
 import { FadeIn } from "@talisman/components/FadeIn"
@@ -9,14 +8,15 @@ import { useTranslation } from "react-i18next"
 import { Button, FormFieldContainer, FormFieldInputText } from "talisman-ui"
 import * as yup from "yup"
 
+import { useJsonAccountImport } from "./context"
+
 type FormData = {
   password?: string
 }
 
-export const UnlockJsonFileForm: FC<{
-  unlockFile: (password: string) => Promise<void>
-}> = ({ unlockFile }) => {
+export const UnlockJsonFileForm: FC = () => {
   const { t } = useTranslation("account-add")
+  const { unlockFile, requiresFilePassword } = useJsonAccountImport()
 
   const schema = yup
     .object({
@@ -30,7 +30,6 @@ export const UnlockJsonFileForm: FC<{
     setError,
     clearErrors,
     setFocus,
-    setValue,
     formState: { errors, isValid, isSubmitting },
   } = useForm<FormData>({
     mode: "all",
@@ -56,17 +55,7 @@ export const UnlockJsonFileForm: FC<{
     setFocus("password")
   }, [setFocus])
 
-  // TODO REMOVE BEFORE MERGE
-  useEffect(() => {
-    if (DEBUG) {
-      setTimeout(() => {
-        setValue("password", "PasswordG", { shouldValidate: true })
-        setTimeout(() => {
-          handleSubmit(submit)()
-        }, 100)
-      }, 100)
-    }
-  }, [handleSubmit, setValue, submit])
+  if (!requiresFilePassword) return null
 
   return (
     <FadeIn>

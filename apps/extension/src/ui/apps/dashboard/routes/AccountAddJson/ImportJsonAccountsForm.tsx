@@ -1,29 +1,26 @@
 import { AccountType } from "@core/domains/accounts/types"
-import { AlertCircleIcon, CheckCircleIcon, LockIcon, UnlockIcon } from "@talisman/theme/icons"
+import { FadeIn } from "@talisman/components/FadeIn"
+import { notify, notifyUpdate } from "@talisman/components/Notifications"
+import {
+  AlertCircleIcon,
+  ArrowRightIcon,
+  CheckCircleIcon,
+  LockIcon,
+  UnlockIcon,
+} from "@talisman/theme/icons"
 import { shortenAddress } from "@talisman/util/shortenAddress"
-import { Balances } from "@talismn/balances"
-import { classNames } from "@talismn/util"
+import { classNames, sleep } from "@talismn/util"
 import { AccountIcon } from "@ui/domains/Account/AccountIcon"
 import { AccountTypeIcon } from "@ui/domains/Account/AccountTypeIcon"
 import Fiat from "@ui/domains/Asset/Fiat"
 import { TokensAndFiat } from "@ui/domains/Asset/TokensAndFiat"
-import { FC, useCallback, useMemo } from "react"
+import { useSelectAccountAndNavigate } from "@ui/hooks/useSelectAccountAndNavigate"
+import { FC, useCallback, useMemo, useState } from "react"
 import { Trans, useTranslation } from "react-i18next"
-import { Checkbox, Tooltip, TooltipContent, TooltipTrigger } from "talisman-ui"
+import { Button, Checkbox, Tooltip, TooltipContent, TooltipTrigger } from "talisman-ui"
 
-export type JsonImportAccount = {
-  id: string
-  address: string
-  name: string
-  genesisHash: string
-  origin: AccountType
-  selected: boolean
-  isLocked: boolean
-  isPrivateKeyAvailable: boolean
-  isExisting: boolean
-  balances: Balances
-  isLoading: boolean
-}
+import { JsonImportAccount, useJsonAccountImport } from "./context"
+import { UnlockJsonAccountsButton } from "./UnlockJsonAccountsButton"
 
 const JsonAccount: FC<{ account: JsonImportAccount; onSelect: (select: boolean) => void }> = ({
   account,
@@ -121,13 +118,17 @@ const JsonAccount: FC<{ account: JsonImportAccount; onSelect: (select: boolean) 
   )
 }
 
-export const JsonImportAccountsList: FC<{
-  accounts: JsonImportAccount[]
-  onSelectAccount: (account: string, select: boolean) => void
-  onSelectAll: () => void
-  onSelectNone: () => void
-}> = ({ accounts, onSelectAccount, onSelectAll, onSelectNone }) => {
+export const ImportJsonAccountsForm: FC = () => {
   const { t } = useTranslation("account-add")
+
+  const {
+    accounts = [],
+    canImport,
+    selectAccount,
+    selectAll,
+    selectNone,
+    importAccounts,
+  } = useJsonAccountImport()
 
   const { selectedCount, totalCount } = useMemo(() => {
     const selectedCount = accounts.filter((a) => a.selected).length.toString()
@@ -137,13 +138,53 @@ export const JsonImportAccountsList: FC<{
 
   const handleSelect = useCallback(
     (id: string) => (select: boolean) => {
-      onSelectAccount(id, select)
+      selectAccount(id, select)
     },
-    [onSelectAccount]
+    [selectAccount]
   )
 
+  const { setAddress } = useSelectAccountAndNavigate("/portfolio")
+  const [isImporting, setIsImporting] = useState(false)
+
+  const handleImportClick = useCallback(async () => {
+    setIsImporting(true)
+
+    const count = accounts?.filter((a) => a.selected).length
+
+    const notificationId = notify(
+      {
+        type: "processing",
+        title: t("Importing {{count}} accounts", { count }),
+        subtitle: t("Please wait"),
+      },
+      { autoClose: false }
+    )
+
+    // ensure notificatiton has time to display
+    await sleep(50)
+
+    try {
+      const addresses = await importAccounts()
+      setAddress(addresses[0])
+      notifyUpdate(notificationId, {
+        type: "success",
+        title: t("Accounts imported", { count }),
+        subtitle: "",
+      })
+    } catch (err) {
+      notifyUpdate(notificationId, {
+        type: "error",
+        title: t("Error importing account"),
+        subtitle: (err as Error)?.message,
+      })
+    }
+    setIsImporting(false)
+  }, [accounts, importAccounts, setAddress, t])
+
+  if (!accounts?.length) return null
+
   return (
-    <div>
+    <FadeIn>
       <div className={classNames("flex items-center px-8", accounts.length > 4 && "pr-12")}>
         <div className="grow">
           <Trans
@@ -158,11 +199,11 @@ export const JsonImportAccountsList: FC<{
         </div>
         {accounts.length > 1 && (
           <div className="text-grey-500 flex items-center gap-4">
-            <button type="button" className="hover:text-grey-400" onClick={onSelectNone}>
+            <button type="button" className="hover:text-grey-400" onClick={selectNone}>
               {t("Clear")}
             </button>
             <div className="bg-grey-500 h-6 w-0.5"></div>
-            <button type="button" className="hover:text-grey-400" onClick={onSelectAll}>
+            <button type="button" className="hover:text-grey-400" onClick={selectAll}>
               {t("Select all")}
             </button>
           </div>
@@ -183,6 +224,19 @@ export const JsonImportAccountsList: FC<{
           "During the import stage, the displayed balances may represent only a subset of your account holdings."
         )}
       </div>
-    </div>
+      <div className="mt-16 flex w-full justify-end gap-8">
+        <UnlockJsonAccountsButton />
+        <Button
+          icon={ArrowRightIcon}
+          type="button"
+          primary
+          disabled={!canImport}
+          onClick={handleImportClick}
+          processing={isImporting}
+        >
+          {t("Import")}
+        </Button>
+      </div>
+    </FadeIn>
   )
 }
