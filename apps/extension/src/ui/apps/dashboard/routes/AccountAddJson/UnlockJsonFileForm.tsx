@@ -52,8 +52,8 @@ export const UnlockJsonFileForm: FC = () => {
   )
 
   useEffect(() => {
-    setFocus("password")
-  }, [setFocus])
+    if (requiresFilePassword) setFocus("password")
+  }, [requiresFilePassword, setFocus])
 
   if (!requiresFilePassword) return null
 
