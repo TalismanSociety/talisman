@@ -75,7 +75,7 @@ const createPairFromJson = ({ encoded, encoding, address, meta }: KeyringPair$Js
 const useAccountsBalances = (pairs: KeyringPair[] | undefined) => {
   // pairs beeing mutable the whole is overriden after each unlock
   // keep a separate list for addresses that won't be updated, so we only recreate balanceParams when necessary
-  const [addresses, setAddresses] = useState(pairs?.map((p) => p.address) ?? [])
+  const [addresses, setAddresses] = useState(pairs?.map((p) => encodeAnyAddress(p.address)) ?? [])
 
   const { chains } = useChains(false)
   const { evmNetworks } = useEvmNetworks(false)
@@ -97,7 +97,7 @@ const useAccountsBalances = (pairs: KeyringPair[] | undefined) => {
           .reduce(
             (acc, chain) => ({
               ...acc,
-              [chain.id]: subAddresses.map(encodeAnyAddress),
+              [chain.id]: subAddresses.map((a) => encodeAnyAddress(a)),
             }),
             {} as AddressesByChain
           )
