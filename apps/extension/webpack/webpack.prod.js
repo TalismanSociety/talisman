@@ -4,10 +4,18 @@ const { merge } = require("webpack-merge")
 const CopyPlugin = require("copy-webpack-plugin")
 const ZipPlugin = require("./ZipPlugin")
 const TerserPlugin = require("terser-webpack-plugin")
+const HtmlWebpackPlugin = require("html-webpack-plugin")
+const HtmlWebpackSingleEntryPointPlugin = require("./HtmlExcludeAssetsPlugin")
 const BundleAnalyzerPlugin = require("webpack-bundle-analyzer").BundleAnalyzerPlugin
 
 const common = require("./webpack.common.js")
-const { distDir, getArchiveFileName, getSentryPlugin, getManifestVersionName } = require("./utils")
+const {
+  distDir,
+  publicDir,
+  getArchiveFileName,
+  getSentryPlugin,
+  getManifestVersionName,
+} = require("./utils")
 const { SourceMapDevToolPlugin } = require("webpack")
 
 const config = (env) => {
@@ -26,6 +34,22 @@ const config = (env) => {
         filename: "[file].map[query]",
         exclude: ["content_script.js", "page.js"],
       }),
+      new HtmlWebpackPlugin({
+        template: `${publicDir}/popup.html`,
+        filename: (entryName) => `${distDir}/${entryName}.html`,
+        chunks: ["popup"],
+      }),
+      new HtmlWebpackSingleEntryPointPlugin(),
+      // new HtmlWebpackPlugin({
+      //   template: `${publicDir}/dashboard.html`,
+      //   filename: (entryName) => `${distDir}/${entryName}.html`,
+      //   chunks: ['dashboard']
+      // }),
+      // new HtmlWebpackPlugin({
+      //   template: `${publicDir}/onboarding.html`,
+      //   filename: (entryName) => `${distDir}/${entryName}.html`,
+      //   chunks: ['onboarding']
+      // }),
       // Ensure plugins in this array will not change source in any way that will affect source maps
       getSentryPlugin(env),
       new CopyPlugin({
@@ -66,7 +90,19 @@ const config = (env) => {
               return JSON.stringify(manifest, null, 2)
             },
           },
-          { from: ".", to: distDir, context: "public" },
+          {
+            from: ".",
+            to: distDir,
+            context: "public",
+            filter: (path) => {
+              const isHtml = path.endsWith("popup.html")
+              if (isHtml) {
+                console.log("not copying ", path)
+                return false
+              }
+              return true
+            },
+          },
         ],
       }),
       // Do not include source maps in the zip file

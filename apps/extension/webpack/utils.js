@@ -7,6 +7,7 @@ const SentryWebpackPlugin = require("@sentry/webpack-plugin")
 const srcDir = path.join(__dirname, "..", "src")
 const coreDir = path.join(srcDir, "core")
 const distDir = path.join(__dirname, "..", "dist")
+const publicDir = path.join(__dirname, "..", "public")
 
 const getGitShortHash = () => {
   try {
@@ -82,6 +83,7 @@ module.exports = {
   srcDir,
   coreDir,
   distDir,
+  publicDir,
   getGitShortHash,
   getRelease,
   getManifestVersionName,

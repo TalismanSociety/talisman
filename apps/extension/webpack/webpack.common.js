@@ -16,8 +16,8 @@ const config = (env) => ({
   entry: {
     backend: ["@substrate/txwrapper-core", "@talismn/chaindata-provider-extension"],
     popup: { import: path.join(srcDir, "index.popup.tsx") },
-    onboarding: { import: path.join(srcDir, "index.onboarding.tsx") },
-    dashboard: { import: path.join(srcDir, "index.dashboard.tsx") },
+    // onboarding: { import: path.join(srcDir, "index.onboarding.tsx") },
+    // dashboard: { import: path.join(srcDir, "index.dashboard.tsx") },
     background: { import: path.join(coreDir, "background.ts"), dependOn: "backend" },
     content_script: path.join(coreDir, "content_script.ts"),
     page: path.join(coreDir, "page.ts"),
