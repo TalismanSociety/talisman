@@ -84,6 +84,21 @@ const config = (env) => {
     optimization: {
       minimize: true,
       minimizer: [new TerserPlugin({ terserOptions: { compress: true } })],
+      splitChunks: {
+        chunks: (chunk) => {
+          return chunk.name !== "background" && chunk.name !== "backend"
+        },
+        maxSize: 4 * 1024 * 1024,
+        cacheGroups: {
+          "vendor-react": {
+            test: /[\\/]node_modules[\\/](react|react-dom|lottie-react)[\\/]/,
+            name: "vendor-react",
+            chunks: (chunk) => {
+              return chunk.name !== "background" && chunk.name !== "backend"
+            },
+          },
+        },
+      },
     },
   })
 }

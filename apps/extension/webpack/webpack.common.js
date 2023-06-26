@@ -15,15 +15,9 @@ const { srcDir, coreDir, distDir, getRelease, getGitShortHash } = require("./uti
 const config = (env) => ({
   entry: {
     backend: ["@substrate/txwrapper-core", "@talismn/chaindata-provider-extension"],
-    frontEnd: ["lottie-react", "@substrate/txwrapper-core"],
-    appFrontEnd: [
-      "lottie-react",
-      "@substrate/txwrapper-core",
-      "@talismn/chaindata-provider-extension",
-    ],
-    popup: { import: path.join(srcDir, "index.popup.tsx"), dependOn: "appFrontEnd" },
-    onboarding: { import: path.join(srcDir, "index.onboarding.tsx"), dependOn: "frontEnd" },
-    dashboard: { import: path.join(srcDir, "index.dashboard.tsx"), dependOn: "appFrontEnd" },
+    popup: { import: path.join(srcDir, "index.popup.tsx") },
+    onboarding: { import: path.join(srcDir, "index.onboarding.tsx") },
+    dashboard: { import: path.join(srcDir, "index.dashboard.tsx") },
     background: { import: path.join(coreDir, "background.ts"), dependOn: "backend" },
     content_script: path.join(coreDir, "content_script.ts"),
     page: path.join(coreDir, "page.ts"),
@@ -146,6 +140,7 @@ const config = (env) => ({
     new AssetReplacePlugin({
       "#TALISMAN_PAGE_SCRIPT#": "page",
     }),
+    new webpack.ProgressPlugin(),
   ],
 })
 
