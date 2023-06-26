@@ -10,7 +10,7 @@
   "repository": {
     "directory": "packages/chaindata-provider-extension",
     "type": "git",
-    "url": "https://github.com/talismansociety/talisman.git"
+    "url": "https://github.com/talisman-labs/talisman.git"
   },
   "main": "dist/talismn-chaindata-provider-extension.cjs.js",
   "module": "dist/talismn-chaindata-provider-extension.esm.js",

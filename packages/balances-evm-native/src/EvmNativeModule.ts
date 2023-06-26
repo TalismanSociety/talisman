@@ -79,7 +79,7 @@ export const EvmNativeModule: NewBalanceModule<
     ...DefaultBalanceModule("evm-native"),
 
     /**
-     * This method is currently executed on [a squid](https://github.com/TalismanSociety/chaindata-squid/blob/0ee02818bf5caa7362e3f3664e55ef05ec8df078/src/steps/updateEvmNetworksFromGithub.ts#L280-L284).
+     * This method is currently executed on [a squid](https://github.com/talisman-labs/chaindata-squid/blob/0ee02818bf5caa7362e3f3664e55ef05ec8df078/src/steps/updateEvmNetworksFromGithub.ts#L280-L284).
      * In a future version of the balance libraries, we may build some kind of async scheduling system which will keep the chainmeta for each chain up to date without relying on a squid.
      */
     async fetchEvmChainMeta(chainId) {
@@ -89,7 +89,7 @@ export const EvmNativeModule: NewBalanceModule<
     },
 
     /**
-     * This method is currently executed on [a squid](https://github.com/TalismanSociety/chaindata-squid/blob/0ee02818bf5caa7362e3f3664e55ef05ec8df078/src/steps/updateEvmNetworksFromGithub.ts#L338-L343).
+     * This method is currently executed on [a squid](https://github.com/talisman-labs/chaindata-squid/blob/0ee02818bf5caa7362e3f3664e55ef05ec8df078/src/steps/updateEvmNetworksFromGithub.ts#L338-L343).
      * In a future version of the balance libraries, we may build some kind of async scheduling system which will keep the list of tokens for each chain up to date without relying on a squid.
      */
     async fetchEvmChainTokens(chainId, chainMeta, moduleConfig) {

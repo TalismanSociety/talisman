@@ -4,7 +4,7 @@
 
 1. Clone the repo.
 
-   `git clone git@github.com:TalismanSociety/extension.git`
+   `git clone git@github.com:talisman-labs/extension.git`
 
 2. Change to the repo directory.
 

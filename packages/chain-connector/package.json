@@ -10,7 +10,7 @@
   "repository": {
     "directory": "packages/chain-connector",
     "type": "git",
-    "url": "https://github.com/talismansociety/talisman.git"
+    "url": "https://github.com/talisman-labs/talisman.git"
   },
   "main": "dist/talismn-chain-connector.cjs.js",
   "module": "dist/talismn-chain-connector.esm.js",

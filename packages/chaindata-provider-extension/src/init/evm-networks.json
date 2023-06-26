@@ -5,7 +5,7 @@
     "sortIndex": 6,
     "name": "Acala",
     "themeColor": "#e61059",
-    "logo": "https://raw.githubusercontent.com/TalismanSociety/chaindata/v3/assets/chains/acala.svg",
+    "logo": "https://raw.githubusercontent.com/talisman-labs/chaindata/v3/assets/chains/acala.svg",
     "nativeToken": {
       "id": "787-evm-native-aca"
     },
@@ -36,7 +36,7 @@
     "sortIndex": 11,
     "name": "Arbitrum",
     "themeColor": "#2d374b",
-    "logo": "https://raw.githubusercontent.com/TalismanSociety/chaindata/v3/assets/chains/42161.svg",
+    "logo": "https://raw.githubusercontent.com/talisman-labs/chaindata/v3/assets/chains/42161.svg",
     "nativeToken": {
       "id": "42161-evm-native-eth"
     },
@@ -65,7 +65,7 @@
     "sortIndex": 15,
     "name": "Astar",
     "themeColor": "#03b0fb",
-    "logo": "https://raw.githubusercontent.com/TalismanSociety/chaindata/v3/assets/chains/astar.svg",
+    "logo": "https://raw.githubusercontent.com/talisman-labs/chaindata/v3/assets/chains/astar.svg",
     "nativeToken": {
       "id": "592-evm-native-astr"
     },
@@ -142,7 +142,7 @@
     "sortIndex": 22,
     "name": "Binance Smart Chain",
     "themeColor": "#f3ba2f",
-    "logo": "https://raw.githubusercontent.com/TalismanSociety/chaindata/v3/assets/chains/56.svg",
+    "logo": "https://raw.githubusercontent.com/talisman-labs/chaindata/v3/assets/chains/56.svg",
     "nativeToken": {
       "id": "56-evm-native-bnb"
     },
@@ -179,7 +179,7 @@
     "sortIndex": 44,
     "name": "Darwinia",
     "themeColor": "#db378a",
-    "logo": "https://raw.githubusercontent.com/TalismanSociety/chaindata/v3/assets/chains/darwinia.svg",
+    "logo": "https://raw.githubusercontent.com/talisman-labs/chaindata/v3/assets/chains/darwinia.svg",
     "nativeToken": {
       "id": "46-evm-native-ring"
     },
@@ -206,7 +206,7 @@
     "sortIndex": 50,
     "name": "Edgeware",
     "themeColor": "#ff3b80",
-    "logo": "https://raw.githubusercontent.com/TalismanSociety/chaindata/v3/assets/chains/edgeware.svg",
+    "logo": "https://raw.githubusercontent.com/talisman-labs/chaindata/v3/assets/chains/edgeware.svg",
     "nativeToken": {
       "id": "2021-evm-native-edg"
     },
@@ -249,7 +249,7 @@
     "sortIndex": 55,
     "name": "Ethereum",
     "themeColor": "#8a92b2",
-    "logo": "https://raw.githubusercontent.com/TalismanSociety/chaindata/v3/assets/chains/1.svg",
+    "logo": "https://raw.githubusercontent.com/talisman-labs/chaindata/v3/assets/chains/1.svg",
     "nativeToken": {
       "id": "1-evm-native-eth"
     },
@@ -297,7 +297,7 @@
     "sortIndex": 61,
     "name": "Gnosis",
     "themeColor": "#8e8e9e",
-    "logo": "https://raw.githubusercontent.com/TalismanSociety/chaindata/v3/assets/chains/100.svg",
+    "logo": "https://raw.githubusercontent.com/talisman-labs/chaindata/v3/assets/chains/100.svg",
     "nativeToken": {
       "id": "100-evm-native-xdai"
     },
@@ -330,7 +330,7 @@
     "sortIndex": 96,
     "name": "Moonbeam",
     "themeColor": "#53cbc9",
-    "logo": "https://raw.githubusercontent.com/TalismanSociety/chaindata/v3/assets/chains/moonbeam.svg",
+    "logo": "https://raw.githubusercontent.com/talisman-labs/chaindata/v3/assets/chains/moonbeam.svg",
     "nativeToken": {
       "id": "1284-evm-native-glmr"
     },
@@ -383,7 +383,7 @@
     "sortIndex": 98,
     "name": "Moonriver",
     "themeColor": "#f2b705",
-    "logo": "https://raw.githubusercontent.com/TalismanSociety/chaindata/v3/assets/chains/moonriver.svg",
+    "logo": "https://raw.githubusercontent.com/talisman-labs/chaindata/v3/assets/chains/moonriver.svg",
     "nativeToken": {
       "id": "1285-evm-native-movr"
     },
@@ -427,7 +427,7 @@
     "sortIndex": 116,
     "name": "Polygon",
     "themeColor": "#8f5ae8",
-    "logo": "https://raw.githubusercontent.com/TalismanSociety/chaindata/v3/assets/chains/137.svg",
+    "logo": "https://raw.githubusercontent.com/talisman-labs/chaindata/v3/assets/chains/137.svg",
     "nativeToken": {
       "id": "137-evm-native-matic"
     },
@@ -469,7 +469,7 @@
     "sortIndex": 125,
     "name": "Shiden",
     "themeColor": "#bba5e1",
-    "logo": "https://raw.githubusercontent.com/TalismanSociety/chaindata/v3/assets/chains/shiden-kusama.svg",
+    "logo": "https://raw.githubusercontent.com/talisman-labs/chaindata/v3/assets/chains/shiden-kusama.svg",
     "nativeToken": {
       "id": "336-evm-native-sdn"
     },
@@ -504,7 +504,7 @@
     "sortIndex": 212,
     "name": "Goerli",
     "themeColor": "#8a92b2",
-    "logo": "https://raw.githubusercontent.com/TalismanSociety/chaindata/v3/assets/chains/5.svg",
+    "logo": "https://raw.githubusercontent.com/talisman-labs/chaindata/v3/assets/chains/5.svg",
     "nativeToken": {
       "id": "5-evm-native-eth"
     },
@@ -529,7 +529,7 @@
     "sortIndex": 243,
     "name": "Moonbase Alpha",
     "themeColor": "#4cb1b3",
-    "logo": "https://raw.githubusercontent.com/TalismanSociety/chaindata/v3/assets/chains/moonbase-alpha-testnet.svg",
+    "logo": "https://raw.githubusercontent.com/talisman-labs/chaindata/v3/assets/chains/moonbase-alpha-testnet.svg",
     "nativeToken": {
       "id": "1287-evm-native-dev"
     },
@@ -560,7 +560,7 @@
     "sortIndex": 271,
     "name": "Sepolia",
     "themeColor": "#8a92b2",
-    "logo": "https://raw.githubusercontent.com/TalismanSociety/chaindata/v3/assets/chains/11155111.svg",
+    "logo": "https://raw.githubusercontent.com/talisman-labs/chaindata/v3/assets/chains/11155111.svg",
     "nativeToken": {
       "id": "11155111-evm-native-eth"
     },
@@ -585,7 +585,7 @@
     "sortIndex": 274,
     "name": "Shibuya",
     "themeColor": "#bba5e1",
-    "logo": "https://raw.githubusercontent.com/TalismanSociety/chaindata/v3/assets/chains/shibuya-testnet.svg",
+    "logo": "https://raw.githubusercontent.com/talisman-labs/chaindata/v3/assets/chains/shibuya-testnet.svg",
     "nativeToken": {
       "id": "81-evm-native-sby"
     },
@@ -612,7 +612,7 @@
     "sortIndex": 309,
     "name": "Watr Testnet",
     "themeColor": "#f5f5f3",
-    "logo": "https://raw.githubusercontent.com/TalismanSociety/chaindata/v3/assets/chains/rococo-watr-testnet.svg",
+    "logo": "https://raw.githubusercontent.com/talisman-labs/chaindata/v3/assets/chains/rococo-watr-testnet.svg",
     "nativeToken": {
       "id": "688-evm-native-watrd"
     },

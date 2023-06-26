@@ -10,7 +10,7 @@
   "repository": {
     "directory": "packages/util",
     "type": "git",
-    "url": "https://github.com/talismansociety/talisman.git"
+    "url": "https://github.com/talisman-labs/talisman.git"
   },
   "main": "dist/talismn-util.cjs.js",
   "module": "dist/talismn-util.esm.js",

@@ -10,7 +10,7 @@
   "repository": {
     "directory": "packages/balances-react",
     "type": "git",
-    "url": "https://github.com/talismansociety/talisman.git"
+    "url": "https://github.com/talisman-labs/talisman.git"
   },
   "main": "dist/talismn-balances-react.cjs.js",
   "module": "dist/talismn-balances-react.esm.js",

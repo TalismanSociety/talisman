@@ -29,7 +29,7 @@ All our package and apps are 100% [TypeScript](https://www.typescriptlang.org/).
 
 1. Clone the repo.
 
-   `git clone git@github.com:TalismanSociety/talisman.git`
+   `git clone git@github.com:talisman-labs/talisman.git`
 
 2. Change to the repo directory.
 

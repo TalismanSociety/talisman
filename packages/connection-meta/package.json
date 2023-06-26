@@ -10,7 +10,7 @@
   "repository": {
     "directory": "packages/connection-meta",
     "type": "git",
-    "url": "https://github.com/talismansociety/talisman.git"
+    "url": "https://github.com/talisman-labs/talisman.git"
   },
   "main": "dist/talismn-connection-meta.cjs.js",
   "module": "dist/talismn-connection-meta.esm.js",

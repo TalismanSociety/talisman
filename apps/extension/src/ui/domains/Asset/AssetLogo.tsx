@@ -1,17 +1,12 @@
 import { UNKNOWN_TOKEN_URL } from "@core/constants"
 import { getCoinGeckoErc20Coin } from "@core/util/coingecko/getCoinGeckoErc20Coin"
-import { EvmNetworkId } from "@talismn/chaindata-provider"
+import { EvmNetworkId, isTalismanLogo } from "@talismn/chaindata-provider"
 import { TokenId } from "@talismn/chaindata-provider"
 import { classNames } from "@talismn/util"
 import { useQuery } from "@tanstack/react-query"
 import useToken from "@ui/hooks/useToken"
 import { isCustomErc20Token } from "@ui/util/isCustomErc20Token"
 import { FC, useCallback, useEffect, useMemo, useState } from "react"
-
-const isTalismanLogo = (url?: string | null) => {
-  if (!url) return false
-  return /^https:\/\/raw.githubusercontent.com\/TalismanSociety\/chaindata\//i.test(url)
-}
 
 type AssetLogoBaseProps = {
   id?: string

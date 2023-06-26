@@ -10,7 +10,7 @@
   "repository": {
     "directory": "packages/mutate-metadata",
     "type": "git",
-    "url": "https://github.com/talismansociety/talisman.git"
+    "url": "https://github.com/talisman-labs/talisman.git"
   },
   "main": "dist/talismn-mutate-metadata.cjs.js",
   "module": "dist/talismn-mutate-metadata.esm.js",

@@ -1,7 +1,10 @@
 import { ChainId, EvmNetworkId, TokenId } from "./types"
 
 export const githubChaindataBranch = "v3"
-export const githubChaindataBaseUrl = `https://raw.githubusercontent.com/TalismanSociety/chaindata/${githubChaindataBranch}`
+export const githubChaindataBaseUrl = `https://raw.githubusercontent.com/talisman-labs/chaindata/${githubChaindataBranch}`
+
+export const isTalismanLogo = (url?: string | null) =>
+  !url ? false : url.startsWith(githubChaindataBaseUrl)
 
 export const githubChainsUrl = `${githubChaindataBaseUrl}/chaindata.json`
 export const githubTestnetChainsUrl = `${githubChaindataBaseUrl}/testnets-chaindata.json`
