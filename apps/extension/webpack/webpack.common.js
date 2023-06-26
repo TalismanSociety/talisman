@@ -4,6 +4,7 @@ require("dotenv").config()
 
 const webpack = require("webpack")
 const path = require("path")
+const HtmlWebpackPlugin = require("html-webpack-plugin")
 const CaseSensitivePathsPlugin = require("case-sensitive-paths-webpack-plugin")
 const ForkTsCheckerWebpackPlugin = require("fork-ts-checker-webpack-plugin")
 const ForkTsCheckerNotifierWebpackPlugin = require("fork-ts-checker-notifier-webpack-plugin")
@@ -137,6 +138,20 @@ const config = (env) => ({
       "process.env.RELEASE": JSON.stringify(getRelease(env)),
       "process.env.VERSION": JSON.stringify(process.env.npm_package_version),
     }),
+    ...[
+      { title: "Talisman", entrypoint: "popup" },
+      { title: "Talisman Wallet", entrypoint: "dashboard" },
+      { title: "Unlock the Talisman", entrypoint: "onboarding" },
+    ].map(
+      ({ title, entrypoint }) =>
+        new HtmlWebpackPlugin({
+          template: `src/template.${entrypoint}.html`,
+          filename: `${entrypoint}.html`,
+          chunks: [entrypoint],
+          title,
+          minify: false,
+        })
+    ),
     new CaseSensitivePathsPlugin(),
     new ForkTsCheckerWebpackPlugin(),
     new ForkTsCheckerNotifierWebpackPlugin({ title: "TypeScript", excludeWarnings: false }),

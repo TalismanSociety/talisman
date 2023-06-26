@@ -4,7 +4,6 @@ const { merge } = require("webpack-merge")
 const CopyPlugin = require("copy-webpack-plugin")
 const ZipPlugin = require("./ZipPlugin")
 const TerserPlugin = require("terser-webpack-plugin")
-const HtmlWebpackPlugin = require("html-webpack-plugin")
 const BundleAnalyzerPlugin = require("webpack-bundle-analyzer").BundleAnalyzerPlugin
 
 const common = require("./webpack.common.js")
@@ -27,20 +26,6 @@ const config = (env) => {
         filename: "[file].map[query]",
         exclude: ["content_script.js", "page.js"],
       }),
-      ...[
-        { title: "Talisman", entrypoint: "popup" },
-        { title: "Talisman Wallet", entrypoint: "dashboard" },
-        { title: "Unlock the Talisman", entrypoint: "onboarding" },
-      ].map(
-        ({ title, entrypoint }) =>
-          new HtmlWebpackPlugin({
-            template: `src/template.${entrypoint}.html`,
-            filename: `${entrypoint}.html`,
-            chunks: [entrypoint],
-            title,
-            minify: false,
-          })
-      ),
       // Ensure plugins in this array will not change source in any way that will affect source maps
       getSentryPlugin(env),
       new CopyPlugin({
