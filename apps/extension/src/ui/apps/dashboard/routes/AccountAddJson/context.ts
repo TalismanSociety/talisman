@@ -25,6 +25,9 @@ import { useEvmNetworks } from "@ui/hooks/useEvmNetworks"
 import isEqual from "lodash/isEqual"
 import { useCallback, useEffect, useMemo, useState } from "react"
 
+const BALANCE_CHECK_EVM_NETWORK_IDS = ["1284", "1285", "592", "1"]
+const BALANCE_CHECK_SUB_NETWORK_IDS = ["polkadot", "kusama", "astar", "acala"]
+
 export type JsonImportAccount = {
   id: string
   address: string
@@ -68,9 +71,6 @@ const createPairFromJson = ({ encoded, encoding, address, meta }: KeyringPair$Js
     encType
   )
 }
-
-const BALANCE_CHECK_EVM_NETWORK_IDS = ["1284", "1285", "592", "1"]
-const BALANCE_CHECK_SUB_NETWORK_IDS = ["polkadot", "kusama", "astar", "acala"]
 
 const useAccountsBalances = (pairs: KeyringPair[] | undefined) => {
   // pairs beeing mutable the whole is overriden after each unlock
@@ -295,16 +295,16 @@ const useJsonAccountImportProvider = () => {
 
         const unlocked = await new Promise((resolve) => {
           setTimeout(() => {
-            let unlocked = false
+            let success = false
 
             try {
               pair.unlock(password)
-              unlocked = true
+              success = true
             } catch (err) {
               // ignore
             }
 
-            resolve(unlocked)
+            resolve(success)
           }, 50)
         })
 

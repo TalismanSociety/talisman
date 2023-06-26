@@ -160,7 +160,7 @@ export const ImportJsonAccountsForm: FC = () => {
       { autoClose: false }
     )
 
-    // ensure notificatiton has time to display
+    // ensure notification has time to display
     await sleep(50)
 
     try {

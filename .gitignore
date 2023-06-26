@@ -41,6 +41,3 @@ yarn-error.log*
 
 # extension
 dist
-
-# can be used to store secrets
-**/GITIGNORE.json
