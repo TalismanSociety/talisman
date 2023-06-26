@@ -13,7 +13,7 @@ import {
   isEthereumAddress,
   jsonDecrypt,
 } from "@polkadot/util-crypto"
-import { KeypairType } from "@polkadot/util-crypto/types"
+import { EncryptedJson, KeypairType } from "@polkadot/util-crypto/types"
 import { provideContext } from "@talisman/util/provideContext"
 import { Address, Balances } from "@talismn/balances"
 import { encodeAnyAddress } from "@talismn/util"
@@ -41,21 +41,17 @@ export type JsonImportAccount = {
   isLoading: boolean
 }
 
-type SingleAccountJson = KeyringPair$Json
-type MultiAccountJson = KeyringPairs$Json
-type UnknownAccountJson = SingleAccountJson | MultiAccountJson
-
-type SingleAccountJsonFile = { type: "single"; content: SingleAccountJson }
+type SingleAccountJsonFile = { type: "single"; content: KeyringPair$Json }
 type MultiAccountJsonFile = {
   type: "multi"
-  content: MultiAccountJson
+  content: KeyringPairs$Json
 }
 type UnknownAccountJsonFile = SingleAccountJsonFile | MultiAccountJsonFile
 
-const isMultiAccountJson = (json: UnknownAccountJson): json is MultiAccountJson => {
+const isMultiAccountJson = (json: EncryptedJson): json is KeyringPairs$Json => {
   return (json as KeyringPairs$Json).accounts !== undefined
 }
-const isSingleAccountJson = (json: UnknownAccountJson): json is SingleAccountJson => {
+const isSingleAccountJson = (json: EncryptedJson): json is KeyringPair$Json => {
   return (json as KeyringPair$Json).address !== undefined
 }
 
@@ -152,7 +148,7 @@ const useJsonAccountImportProvider = () => {
     if (!json) return undefined
 
     try {
-      const content = JSON.parse(json) as UnknownAccountJson
+      const content = JSON.parse(json) as EncryptedJson
 
       if (isSingleAccountJson(content)) return { type: "single", content }
       if (isMultiAccountJson(content)) return { type: "multi", content }
