@@ -30,6 +30,7 @@ export const UnlockJsonFileForm: FC = () => {
     setError,
     clearErrors,
     setFocus,
+    resetField,
     formState: { errors, isValid, isSubmitting },
   } = useForm<FormData>({
     mode: "all",
@@ -52,8 +53,10 @@ export const UnlockJsonFileForm: FC = () => {
   )
 
   useEffect(() => {
-    if (requiresFilePassword) setFocus("password")
-  }, [requiresFilePassword, setFocus])
+    if (!requiresFilePassword) return
+    resetField("password")
+    setFocus("password")
+  }, [requiresFilePassword, resetField, setFocus])
 
   if (!requiresFilePassword) return null
 
