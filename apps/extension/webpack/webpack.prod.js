@@ -85,14 +85,6 @@ const config = (env) => {
       minimize: true,
       minimizer: [new TerserPlugin({ terserOptions: { compress: true } })],
       splitChunks: {
-        name(module, chunks, cacheGroupKey) {
-          const moduleFileName = module
-            .identifier()
-            .split("/")
-            .reduceRight((item) => item)
-          const allChunksNames = chunks.map((item) => item.name).join("~")
-          return `${cacheGroupKey}-${allChunksNames}-${moduleFileName?.toLowerCase?.()}`
-        },
         chunks: (chunk) =>
           !["background", "vendor-background", "content_script", "page"].includes(chunk.name),
         minSize: 0,
@@ -100,7 +92,7 @@ const config = (env) => {
         maxInitialRequests: Infinity,
         cacheGroups: {
           "vendor-react": {
-            test: /[\\/]node_modules[\\/](react|react-dom|lottie-react)[\\/]/,
+            test: /[\\/]node_modules[\\/](react|react-dom|lottie-react|lottie-web)[\\/]/,
             name: "vendor-react",
             priority: -1,
             reuseExistingChunk: true,
@@ -112,7 +104,7 @@ const config = (env) => {
             reuseExistingChunk: true,
           },
           "vendor-talisman": {
-            test: /[\\/]node_modules[\\/](@talismn)[\\/]/,
+            test: /([\\/]node_modules[\\/](@talismn)[\\/])|(packages[\\/](chaindata-provider-extension[\\/]dist))/,
             name: "vendor-talisman",
             priority: -1,
             reuseExistingChunk: true,
