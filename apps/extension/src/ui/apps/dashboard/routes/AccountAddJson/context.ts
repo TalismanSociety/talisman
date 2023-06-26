@@ -22,7 +22,6 @@ import useAccounts from "@ui/hooks/useAccounts"
 import useBalancesByParams from "@ui/hooks/useBalancesByParams"
 import useChains from "@ui/hooks/useChains"
 import { useEvmNetworks } from "@ui/hooks/useEvmNetworks"
-import isEqual from "lodash/isEqual"
 import { useCallback, useEffect, useMemo, useState } from "react"
 
 const BALANCE_CHECK_EVM_NETWORK_IDS = ["1284", "1285", "592", "1"]
@@ -73,17 +72,9 @@ const createPairFromJson = ({ encoded, encoding, address, meta }: KeyringPair$Js
 }
 
 const useAccountsBalances = (pairs: KeyringPair[] | undefined) => {
-  // pairs beeing mutable the whole is overriden after each unlock
-  // keep a separate list for addresses that won't be updated, so we only recreate balanceParams when necessary
-  const [addresses, setAddresses] = useState(pairs?.map((p) => encodeAnyAddress(p.address)) ?? [])
-
+  const addresses = useMemo(() => pairs?.map((p) => encodeAnyAddress(p.address)) ?? [], [pairs])
   const { chains } = useChains(false)
   const { evmNetworks } = useEvmNetworks(false)
-
-  useEffect(() => {
-    const newAddresses = pairs?.map((p) => encodeAnyAddress(p.address)) ?? []
-    if (!isEqual(newAddresses, addresses)) setAddresses(newAddresses)
-  }, [addresses, pairs, setAddresses])
 
   const balanceParams = useMemo(() => {
     if (!addresses.length) return {}
