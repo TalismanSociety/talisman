@@ -3,7 +3,10 @@ import HeaderBlock from "@talisman/components/HeaderBlock"
 import Spacer from "@talisman/components/Spacer"
 import { CheckIcon } from "@talisman/theme/icons"
 import Layout from "@ui/apps/dashboard/layout"
+import { useIsFeatureEnabled } from "@ui/hooks/useFeatures"
+import { useEffect } from "react"
 import { useTranslation } from "react-i18next"
+import { useNavigate } from "react-router-dom"
 
 const LanguageButton = ({
   displayName,
@@ -31,9 +34,19 @@ const LanguageButton = ({
 
 export const LanguageSettings = () => {
   const { t, i18n } = useTranslation("settings")
+  const i18nEnabled = useIsFeatureEnabled("I18N")
+  const navigate = useNavigate()
 
   const currentLang = i18n.language
   const changeLang = (lang?: keyof typeof languages) => lang && i18n.changeLanguage(lang)
+
+  // TODO remove this useEffect when i18n is enabled by default
+  useEffect(() => {
+    if (!i18nEnabled) {
+      // redirect to settings page
+      navigate("/settings")
+    }
+  }, [i18nEnabled, navigate])
 
   return (
     <Layout centered withBack backTo="/settings">
