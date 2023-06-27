@@ -1,6 +1,7 @@
 import { isEthereumAddress } from "@polkadot/util-crypto"
 import { ScrollContainer } from "@talisman/components/ScrollContainer"
 import { SearchInput } from "@talisman/components/SearchInput"
+import { encodeAnyAddress } from "@talismn/util"
 import { useSendFundsWizard } from "@ui/apps/popup/pages/SendFunds/context"
 import useAccounts from "@ui/hooks/useAccounts"
 import useChain from "@ui/hooks/useChain"
@@ -13,7 +14,7 @@ import { SendFundsAccountsList } from "./SendFundsAccountsList"
 
 export const SendFundsAccountPicker = () => {
   const { t } = useTranslation("send-funds")
-  const { from, set, tokenId } = useSendFundsWizard()
+  const { from, to, tokenId, set, remove } = useSendFundsWizard()
   const [search, setSearch] = useState("")
 
   const token = useToken(tokenId)
@@ -38,9 +39,10 @@ export const SendFundsAccountPicker = () => {
 
   const handleSelect = useCallback(
     (address: string) => {
+      if (to && encodeAnyAddress(to) === encodeAnyAddress(address)) remove("to")
       set("from", address, true)
     },
-    [set]
+    [remove, set, to]
   )
 
   return (
