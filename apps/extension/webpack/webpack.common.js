@@ -149,6 +149,7 @@ const config = (env) => ({
           filename: `${entrypoint}.html`,
           chunks: [entrypoint],
           title,
+          inject: "body",
           minify: false,
         })
     ),
