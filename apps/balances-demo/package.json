@@ -1,6 +1,7 @@
 {
   "name": "balances-demo",
   "private": true,
+  "license": "GPL-3.0-or-later",
   "version": "0.0.0",
   "type": "module",
   "scripts": {

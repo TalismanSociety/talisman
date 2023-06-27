@@ -3,7 +3,7 @@
   "version": "0.1.9",
   "author": "Talisman",
   "homepage": "https://talisman.xyz",
-  "license": "UNLICENSED",
+  "license": "GPL-3.0-or-later",
   "publishConfig": {
     "access": "public"
   },
