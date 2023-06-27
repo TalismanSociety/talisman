@@ -55,7 +55,7 @@ const MnemonicForm = ({ className }: MnemonicFormProps) => {
         <>
           <Mnemonic mnemonic={mnemonic} />
           <div className="grow"></div>
-          <div className="flex w-full items-center justify-end">
+          <div className="flex w-full items-center justify-end gap-2">
             <div className="text-body-secondary text-sm">{t("Don't remind me again")}</div>
             <Toggle checked={isConfirmed} onChange={(e) => toggleConfirmed(e.target.checked)} />
           </div>
