@@ -69,7 +69,7 @@ const InnerPopup = () => {
   if (isLoggedIn === "FALSE") return <LoginViewManager />
 
   return (
-    <FadeIn>
+    <FadeIn className="h-full w-full">
       <SelectedAccountProvider isPopup>
         <AccountRemoveModalProvider>
           <AccountRenameModalProvider>

@@ -33,7 +33,7 @@ export const SendFundsLayout: FC<SendFundsLayoutProps> = ({
   const showBackButton = withBackLink && window.history.length > 1
 
   return (
-    <div id="main" className="relative flex h-[60rem] w-[40rem] flex-col">
+    <div id="main" className="relative flex h-full w-full flex-col">
       <div className="text-body-secondary flex h-32 min-h-[6.4rem] w-full items-center px-12">
         {showBackButton ? (
           <button
