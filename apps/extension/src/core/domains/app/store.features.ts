@@ -36,6 +36,7 @@ if (!process.env.POSTHOG_AUTH_TOKEN) {
     PARITY_SIGNER: true,
     SEND_FUNDS_V2: true,
     BANNER_NOM_POOL_STAKING: true,
+    I18N: true,
     USE_ONFINALITY_API_KEY_SUBSTRATE: false,
     USE_ONFINALITY_API_KEY_EVM: false,
     TEST_VARIANT: "VARIANT1",
