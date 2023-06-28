@@ -2,11 +2,12 @@
 
 // The key is the `locale` as passed to i18next.
 // The value is the `human-readable name` as passed to the language settings UI in the wallet.
+// TODO all other languages disabled for now, until we have translations
 const languages = {
   en: "English",
-  cn: "中文",
-  ru: "Pусский",
-  fr: "Français",
+  // cn: "中文",
+  // ru: "Pусский",
+  // fr: "Français",
 }
 
 module.exports = {

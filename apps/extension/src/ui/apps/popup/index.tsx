@@ -6,11 +6,23 @@ import { AUTH_PREFIX } from "@core/domains/sitesAuthorised/types"
 import { FadeIn } from "@talisman/components/FadeIn"
 import { SuspenseTracker } from "@talisman/components/SuspenseTracker"
 import { api } from "@ui/api"
-import { AccountExportModalProvider } from "@ui/domains/Account/AccountExportModal"
-import { AccountExportPrivateKeyModalProvider } from "@ui/domains/Account/AccountExportPrivateKeyModal"
-import { AccountRemoveModalProvider } from "@ui/domains/Account/AccountRemoveModal"
-import { AccountRenameModalProvider } from "@ui/domains/Account/AccountRenameModal"
-import { CopyAddressModalProvider } from "@ui/domains/CopyAddress"
+import {
+  AccountExportModal,
+  AccountExportModalProvider,
+} from "@ui/domains/Account/AccountExportModal"
+import {
+  AccountExportPrivateKeyModal,
+  AccountExportPrivateKeyModalProvider,
+} from "@ui/domains/Account/AccountExportPrivateKeyModal"
+import {
+  AccountRemoveModal,
+  AccountRemoveModalProvider,
+} from "@ui/domains/Account/AccountRemoveModal"
+import {
+  AccountRenameModal,
+  AccountRenameModalProvider,
+} from "@ui/domains/Account/AccountRenameModal"
+import { CopyAddressModal, CopyAddressModalProvider } from "@ui/domains/CopyAddress"
 import { SelectedAccountProvider } from "@ui/domains/Portfolio/SelectedAccountContext"
 import { useIsLoggedIn } from "@ui/hooks/useIsLoggedIn"
 import { useIsOnboarded } from "@ui/hooks/useIsOnboarded"
@@ -57,7 +69,7 @@ const InnerPopup = () => {
   if (isLoggedIn === "FALSE") return <LoginViewManager />
 
   return (
-    <FadeIn>
+    <FadeIn className="h-full w-full">
       <SelectedAccountProvider isPopup>
         <AccountRemoveModalProvider>
           <AccountRenameModalProvider>
@@ -95,6 +107,11 @@ const InnerPopup = () => {
                         <Route path="send/*" element={<SendFundsPage />} />
                         <Route path="*" element={<Navigate to="/portfolio" replace />} />
                       </Routes>
+                      <AccountRenameModal />
+                      <AccountRemoveModal />
+                      <AccountExportModal />
+                      <AccountExportPrivateKeyModal />
+                      <CopyAddressModal />
                     </CopyAddressModalProvider>
                   </NavigationProvider>
                 </CurrentSiteProvider>

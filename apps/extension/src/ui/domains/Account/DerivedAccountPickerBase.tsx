@@ -1,12 +1,12 @@
 import { Balance } from "@core/domains/balances/types"
 import { AccountJson } from "@polkadot/extension-base/background/types"
 import { Checkbox } from "@talisman/components/Checkbox"
-import { WithTooltip } from "@talisman/components/Tooltip"
 import { CheckCircleIcon, LoaderIcon } from "@talisman/theme/icons"
 import { classNames } from "@talismn/util"
 import { useBalanceDetails } from "@ui/hooks/useBalanceDetails"
 import { FC, useCallback, useEffect, useState } from "react"
 import styled from "styled-components"
+import { Tooltip, TooltipContent, TooltipTrigger } from "talisman-ui"
 
 import Fiat from "../Asset/Fiat"
 import { Address } from "./Address"
@@ -172,9 +172,18 @@ const AccountButton: FC<AccountButtonProps> = ({
         <div className="flex flex-col justify-center pb-1 leading-none">
           {isBalanceLoading && <LoaderIcon className="animate-spin-slow inline text-white" />}
         </div>
-        <WithTooltip as="div" className="leading-none" tooltip={balanceDetails} noWrap>
-          <Fiat className="leading-none" amount={totalUsd} currency="usd" />
-        </WithTooltip>
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <span>
+              <Fiat className="leading-none" amount={totalUsd} currency="usd" />
+            </span>
+          </TooltipTrigger>
+          {balanceDetails && (
+            <TooltipContent>
+              <div className="whitespace-pre-wrap text-right">{balanceDetails}</div>
+            </TooltipContent>
+          )}
+        </Tooltip>
       </div>
       <Center>{connected ? <ConnectedIcon /> : <Checkbox checked={selected} disabled />}</Center>
     </button>

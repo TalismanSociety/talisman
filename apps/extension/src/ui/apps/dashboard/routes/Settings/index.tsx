@@ -16,6 +16,7 @@ import { ReactComponent as IconLock } from "@talisman/theme/icons/lock.svg"
 import Layout from "@ui/apps/dashboard/layout"
 import { MigratePasswordModal } from "@ui/domains/Settings/MigratePassword/MigratePasswordModal"
 import { MnemonicModal } from "@ui/domains/Settings/MnemonicModal"
+import { useIsFeatureEnabled } from "@ui/hooks/useFeatures"
 import useMnemonicBackup from "@ui/hooks/useMnemonicBackup"
 import { useCallback, useEffect } from "react"
 import { useTranslation } from "react-i18next"
@@ -46,6 +47,7 @@ const Settings = () => {
     close: closeBackupMnemonic,
   } = useShowBackupModal()
   const { isNotConfirmed } = useMnemonicBackup()
+  const i18nEnabled = useIsFeatureEnabled("I18N")
 
   // auto open modal if requested in query string
   const [searchParams, setSearchParams] = useSearchParams()
@@ -107,13 +109,15 @@ const Settings = () => {
           subtitle={t("Customise your extension experience")}
           to={`/settings/options`}
         />
-        <CtaButton
-          iconLeft={FlagIcon}
-          iconRight={ChevronRightIcon}
-          title={t("Language")}
-          subtitle={t("Change the wallet display language")}
-          to={`/settings/language`}
-        />
+        {i18nEnabled && (
+          <CtaButton
+            iconLeft={FlagIcon}
+            iconRight={ChevronRightIcon}
+            title={t("Language")}
+            subtitle={t("Change the wallet display language")}
+            to={`/settings/language`}
+          />
+        )}
         <CtaButton
           iconLeft={ShieldIcon}
           iconRight={ChevronRightIcon}

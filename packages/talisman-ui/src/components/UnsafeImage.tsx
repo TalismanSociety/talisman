@@ -6,6 +6,8 @@ export type UnsafeImageProps = React.DetailedHTMLProps<
   HTMLImageElement
 >
 
+const IS_FIREFOX = navigator.userAgent.toLowerCase().includes("firefox")
+
 // Use for slow loading images, or images that may not load properly such as NFTs from ipfs
 // TODO error fallback image/style ?
 export const UnsafeImage: FC<UnsafeImageProps> = ({ ...props }) => {
@@ -54,7 +56,7 @@ export const UnsafeImage: FC<UnsafeImageProps> = ({ ...props }) => {
         isLoading && "animate-pulse"
       )}
       loading="lazy"
-      crossOrigin="anonymous"
+      crossOrigin={IS_FIREFOX ? undefined : "anonymous"}
       onLoadStart={handleLoadStart}
       onLoad={handleLoad}
       onError={handleError}
