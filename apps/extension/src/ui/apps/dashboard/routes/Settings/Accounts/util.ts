@@ -1,7 +1,9 @@
+import { TreeAccount, TreeFolder, TreeItem } from "@core/domains/accounts/store.portfolio"
+import { AccountJsonAny } from "@core/domains/accounts/types"
 import type { UniqueIdentifier } from "@dnd-kit/core"
 import { arrayMove } from "@dnd-kit/sortable"
 
-import type { FlattenedItem, UiTree, UiTreeItem } from "./types"
+import type { FlattenedItem, UiTree, UiTreeAccount, UiTreeFolder, UiTreeItem } from "./types"
 
 export const iOS = /iPad|iPhone|iPod/.test(navigator.platform)
 
@@ -122,3 +124,24 @@ export const removeChildrenOf = (items: FlattenedItem[], ids: UniqueIdentifier[]
     return true
   })
 }
+
+// Add an id to a TreeAccount
+export const accountWithId = (item: TreeAccount): UiTreeAccount => ({
+  ...item,
+  id: `account-${item.address}`,
+})
+
+// Add an id to a TreeFolder (and its TreeAccount decendents)
+export const folderWithId = (item: TreeFolder): UiTreeFolder => ({
+  ...item,
+  id: `folder-${item.name}`,
+  tree: item.tree.map(accountWithId),
+})
+
+// Add an id to each item in a list of TreeItems
+export const withIds = (items: TreeItem[]): UiTreeItem[] =>
+  items.map((item) => (item.type === "account" ? accountWithId(item) : folderWithId(item)))
+
+// Find an account in a list of accounts by address
+export const accountByAddress = (accounts: AccountJsonAny[], address: string) =>
+  accounts.find((account) => account.address === address)

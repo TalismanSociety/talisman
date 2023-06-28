@@ -35,6 +35,7 @@ import {
 } from "@polkadot/util-crypto"
 import { addressFromMnemonic } from "@talisman/util/addressFromMnemonic"
 import { decodeAnyAddress, encodeAnyAddress, sleep } from "@talismn/util"
+import { combineLatest } from "rxjs"
 
 export default class AccountsHandler extends ExtensionHandler {
   // we can only create a new account if we have an existing stored seed
@@ -407,8 +408,8 @@ export default class AccountsHandler extends ExtensionHandler {
     return genericAsyncSubscription<"pri(accounts.subscribe)">(
       id,
       port,
-      keyring.accounts.subject,
-      sortAccounts(this.stores.portfolio)
+      combineLatest([keyring.accounts.subject, this.stores.portfolio.observable]),
+      ([accounts]) => sortAccounts(this.stores.portfolio)(accounts)
     )
   }
 

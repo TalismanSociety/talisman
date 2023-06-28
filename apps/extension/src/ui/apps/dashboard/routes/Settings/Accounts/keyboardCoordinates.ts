@@ -7,7 +7,7 @@ import {
 } from "@dnd-kit/core"
 
 import type { SensorContext } from "./types"
-import { getProjection } from "./utilities"
+import { getProjection } from "./util"
 
 const directions: string[] = [
   KeyboardCode.Down,

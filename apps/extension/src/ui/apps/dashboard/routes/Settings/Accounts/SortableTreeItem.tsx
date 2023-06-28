@@ -4,9 +4,9 @@ import { CSS } from "@dnd-kit/utilities"
 import { CSSProperties } from "react"
 
 import { TreeItem, Props as TreeItemProps } from "./TreeItem"
-import { iOS } from "./utilities"
+import { iOS } from "./util"
 
-interface Props extends TreeItemProps {
+interface Props extends Omit<TreeItemProps, "style"> {
   id: UniqueIdentifier
 }
 
@@ -34,6 +34,7 @@ export function SortableTreeItem({ id, depth, ...props }: Props) {
 
   return (
     <TreeItem
+      {...props}
       ref={setDraggableNodeRef}
       wrapperRef={setDroppableNodeRef}
       style={style}
@@ -42,10 +43,9 @@ export function SortableTreeItem({ id, depth, ...props }: Props) {
       disableSelection={iOS}
       disableInteraction={isSorting}
       handleProps={{
-        ...attributes,
-        ...listeners,
+        attributes,
+        listeners,
       }}
-      {...props}
     />
   )
 }
