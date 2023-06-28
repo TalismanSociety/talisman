@@ -4,7 +4,7 @@ Welcome to the Talisman Wallet! We are excited to have you as a contributor. Bef
 
 ## Code of Conduct
 
-We expect all contributors to adhere to the [Talisman Wallet Code of Conduct](https://github.com/TalismanSociety/talisman/tree/main/CODE_OF_CONDUCT.md). We are committed to creating a welcoming and inclusive environment for everyone, and we will not tolerate any form of harassment or discrimination.
+We expect all contributors to adhere to the [Talisman Wallet Code of Conduct](https://github.com/TalismanSociety/talisman/tree/dev/CODE_OF_CONDUCT.md). We are committed to creating a welcoming and inclusive environment for everyone, and we will not tolerate any form of harassment or discrimination.
 
 ## Getting Started
 
@@ -43,4 +43,4 @@ All pull requests will be reviewed by one or more maintainers. We aim to respond
 
 ### License
 
-By contributing to the Talisman Wallet, you agree to license your contributions under the [GPL License](https://github.com/TalismanSociety/talisman/tree/main/apps/extension/LICENSE).
+By contributing to the Talisman Wallet, you agree to license your contributions under the [GPL License](https://github.com/TalismanSociety/talisman/tree/dev/apps/extension/LICENSE).
