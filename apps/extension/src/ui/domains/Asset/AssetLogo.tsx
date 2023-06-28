@@ -1,4 +1,4 @@
-import { UNKNOWN_TOKEN_URL } from "@core/constants"
+import { IS_FIREFOX, UNKNOWN_TOKEN_URL } from "@core/constants"
 import { getCoinGeckoErc20Coin } from "@core/util/coingecko/getCoinGeckoErc20Coin"
 import { EvmNetworkId } from "@talismn/chaindata-provider"
 import { TokenId } from "@talismn/chaindata-provider"
@@ -44,7 +44,7 @@ export const AssetLogoBase = ({ id, className, url, rounded }: AssetLogoBaseProp
       src={src}
       className={imgClassName}
       alt=""
-      crossOrigin="anonymous"
+      crossOrigin={IS_FIREFOX ? undefined : "anonymous"}
       loading="lazy" // defers download, helps performance especially in token pickers
       onError={handleError}
     />

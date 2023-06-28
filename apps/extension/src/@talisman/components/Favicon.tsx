@@ -1,9 +1,7 @@
-import { UNKNOWN_NETWORK_URL } from "@core/constants"
+import { IS_FIREFOX, UNKNOWN_NETWORK_URL } from "@core/constants"
 import { useFaviconUrl } from "@ui/hooks/useFaviconUrl"
 import { useCallback, useEffect, useState } from "react"
 import styled from "styled-components"
-
-const IS_FIREFOX = navigator.userAgent.toLowerCase().includes("firefox")
 
 interface IProps {
   url: string
