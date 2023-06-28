@@ -1,1 +1,1 @@
-export const graphqlUrl = "https://app.gc.subsquid.io/beta/chaindata/v3/graphql"
+export const graphqlUrl = "https://squid.subsquid.io/chaindata/v/v4/graphql"
