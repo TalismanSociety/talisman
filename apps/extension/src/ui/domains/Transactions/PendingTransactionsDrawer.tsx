@@ -1,3 +1,4 @@
+import { IS_FIREFOX } from "@core/constants"
 import { db } from "@core/db"
 import {
   EvmWalletTransaction,
@@ -82,7 +83,7 @@ const Favicon: FC<{ siteUrl: string; className?: string }> = ({ siteUrl, classNa
     <img
       loading="lazy"
       src={iconUrl}
-      crossOrigin="anonymous"
+      crossOrigin={IS_FIREFOX ? undefined : "anonymous"}
       className={className}
       alt=""
       onError={handleError}

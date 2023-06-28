@@ -4,6 +4,8 @@ export const DEBUG = !["production", "test", "canary"].includes(process.env.NODE
 export const TEST = process.env.NODE_ENV === "test"
 export const DEFAULT_ETH_CHAIN_ID = 1 //Ethereum mainnet
 
+export const IS_FIREFOX = navigator.userAgent.toLowerCase().includes("firefox")
+
 /**
  * A list of tokens to show by default for empty substrate accounts
  */
