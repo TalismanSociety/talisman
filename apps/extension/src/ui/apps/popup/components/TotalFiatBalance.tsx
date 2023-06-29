@@ -81,7 +81,7 @@ const TotalFiat = styled.div`
 `
 
 export const TotalFiatBalance: FC<{ className?: string }> = ({ className }) => {
-  const { t } = useTranslation("portfolio")
+  const { t } = useTranslation()
   const balances = useBalances("portfolio")
 
   const [hideBalances, setHideBalances] = useSetting("hideBalances")

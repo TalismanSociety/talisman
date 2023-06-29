@@ -73,7 +73,7 @@ export const QrSubstrate = ({
   // move around when switching to this component
   narrowMargin = false,
 }: Props): ReactElement<Props> => {
-  const { t } = useTranslation("sign")
+  const { t } = useTranslation("request")
   const [scanState, setScanState] = useState<ScanState>(
     skipInit ? { page: "SEND" } : { page: "INIT" }
   )
@@ -254,7 +254,7 @@ const SendPage = ({
   qrCodeSourceSelectorState: QrCodeSourceSelectorProps
   chain: Chain | undefined
 }) => {
-  const { t } = useTranslation("sign")
+  const { t } = useTranslation("request")
   return (
     <>
       <div className="flex h-full flex-col items-center justify-end">

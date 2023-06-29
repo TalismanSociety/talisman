@@ -249,7 +249,7 @@ export const TokenPickerModal = ({
   filter,
   onTokenSelect,
 }: TokenPickerModalProps) => {
-  const { t } = useTranslation("asset")
+  const { t } = useTranslation()
 
   return (
     <Modal open={isOpen} onClose={close}>

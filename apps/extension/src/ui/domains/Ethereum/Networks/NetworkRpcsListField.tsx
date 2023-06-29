@@ -99,7 +99,7 @@ const SortableRpcField: FC<SortableRpcItemProps> = ({
 }
 
 export const NetworkRpcsListField = () => {
-  const { t } = useTranslation("settings")
+  const { t } = useTranslation("admin")
   const {
     register,
     trigger,

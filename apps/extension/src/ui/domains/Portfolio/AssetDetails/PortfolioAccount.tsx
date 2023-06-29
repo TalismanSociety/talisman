@@ -11,7 +11,7 @@ export const PortfolioAccount = ({
   address: string
   className?: string
 }) => {
-  const { t } = useTranslation("portfolio")
+  const { t } = useTranslation()
   const account = useAccountByAddress(address)
   if (!account) return null
   return (

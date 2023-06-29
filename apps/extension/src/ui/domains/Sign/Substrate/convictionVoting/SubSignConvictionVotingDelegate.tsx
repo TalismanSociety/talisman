@@ -9,7 +9,7 @@ import { SignViewVotingDelegate } from "../../Views/convictionVoting/SignViewVot
 import { getConviction } from "./getConviction"
 
 export const SubSignConvictionVotingDelegate = () => {
-  const { t } = useTranslation("sign")
+  const { t } = useTranslation("request")
   const { chain, payload } = usePolkadotSigningRequest()
   const { data: extrinsic } = useExtrinsic(payload)
 

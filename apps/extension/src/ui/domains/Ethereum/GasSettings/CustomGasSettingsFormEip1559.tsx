@@ -123,7 +123,7 @@ export const CustomGasSettingsFormEip1559: FC<CustomGasSettingsFormEip1559Props>
   txDetails,
   onConfirm,
 }) => {
-  const { t } = useTranslation("sign")
+  const { t } = useTranslation("request")
   const { genericEvent } = useAnalytics()
 
   useEffect(() => {

@@ -75,7 +75,7 @@ const RecentActivityButton = () => {
     open()
   }, [open])
 
-  const { t } = useTranslation("navigation")
+  const { t } = useTranslation()
 
   return (
     <>
@@ -141,7 +141,7 @@ export const BottomNav = () => {
 
   const { isSnoozed, isNotConfirmed } = useMnemonicBackup()
 
-  const { t } = useTranslation("navigation")
+  const { t } = useTranslation()
 
   return (
     <>

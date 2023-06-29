@@ -14,7 +14,7 @@ const Dialog = styled(ModalDialog)`
 `
 
 export const MnemonicModal = ({ open, onClose }: MnemonicModalProps) => {
-  const { t } = useTranslation("settings")
+  const { t } = useTranslation()
   return (
     <Modal open={open} onClose={onClose}>
       <Dialog title={t("Backup recovery phrase")} onClose={onClose}>

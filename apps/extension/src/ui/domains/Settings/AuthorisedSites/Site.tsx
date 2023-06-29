@@ -41,7 +41,7 @@ const ConfirmForgetDialog: FC<{ onConfirm: () => void; onCancel: () => void }> =
   onConfirm,
   onCancel,
 }) => {
-  const { t } = useTranslation("settings")
+  const { t } = useTranslation("admin")
   return (
     <Dialog
       icon={<IconAlert />}
@@ -62,7 +62,7 @@ type ConnectedSiteProps = {
 }
 
 const ConnectedSite = ({ id, provider, className }: ConnectedSiteProps) => {
-  const { t } = useTranslation("settings")
+  const { t } = useTranslation("admin")
   const { origin, connected, availableAddresses, toggleAll, toggleOne, forget } =
     useAuthorisedSiteById(id, provider)
   const [showForget, setShowForget] = useState(false)

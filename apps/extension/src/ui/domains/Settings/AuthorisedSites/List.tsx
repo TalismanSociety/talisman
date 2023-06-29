@@ -12,7 +12,7 @@ import styled from "styled-components"
 import Site from "./Site"
 
 const AuthorisedSitesList = () => {
-  const { t } = useTranslation("settings")
+  const { t } = useTranslation("admin")
   const sites = useAuthorisedSites()
   const [providerType, setProviderType] = useState<ProviderType>("polkadot")
 

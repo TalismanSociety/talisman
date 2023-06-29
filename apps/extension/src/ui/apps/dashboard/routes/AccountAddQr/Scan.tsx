@@ -7,7 +7,7 @@ import { useTranslation } from "react-i18next"
 import { useAccountAddQr } from "./context"
 
 export const Scan = () => {
-  const { t } = useTranslation("account-add")
+  const { t } = useTranslation("admin")
   const { state, dispatch } = useAccountAddQr()
   if (state.type !== "SCAN") return null
   return (

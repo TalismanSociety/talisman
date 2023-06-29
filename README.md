@@ -62,8 +62,8 @@ import { useTranslation } from "react-i18next"
 // uses the `common` namespace (`apps/extension/public/locales/en/common.json`)
 const { t } = useTranslation()
 
-// uses the `portfolio` namespace (`apps/extension/public/locales/en/portfolio.json`)
-const { t } = useTranslation("portfolio")
+// uses the `admin` namespace (`apps/extension/public/locales/en/admin.json`)
+const { t } = useTranslation("admin")
 ```
 
 3. Wrap any user-visible language in your component with the `t` function:

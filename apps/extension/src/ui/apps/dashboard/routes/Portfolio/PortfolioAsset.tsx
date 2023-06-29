@@ -38,7 +38,7 @@ const PageContent = ({ balances, symbol }: { balances: Balances; symbol: string 
   }, [openSendFundsPopup, genericEvent])
 
   const handleBackBtnClick = useCallback(() => navigate("/portfolio"), [navigate])
-  const { t } = useTranslation("portfolio")
+  const { t } = useTranslation()
 
   return (
     <div>

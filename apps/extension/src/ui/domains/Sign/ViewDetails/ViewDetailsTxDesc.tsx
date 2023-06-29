@@ -10,7 +10,7 @@ type ViewDetailsTxDescProps = {
 }
 
 export const ViewDetailsTxDesc: FC<ViewDetailsTxDescProps> = ({ label, method }) => {
-  const { t } = useTranslation("sign")
+  const { t } = useTranslation("request")
   const { main = "", steps = [] } = useMemo(() => {
     const isBatch =
       method && ["utility.batch", "utility.batchAll"].includes(`${method.section}.${method.method}`)

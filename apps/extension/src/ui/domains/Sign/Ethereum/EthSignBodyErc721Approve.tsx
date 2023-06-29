@@ -15,7 +15,7 @@ import { useEthSignKnownTransactionRequest } from "./shared/useEthSignKnownTrans
 const ZERO_ADDRESS = "0x0000000000000000000000000000000000000000"
 
 export const EthSignBodyErc721Approve: FC = () => {
-  const { t } = useTranslation("sign")
+  const { t } = useTranslation("request")
   const { account, network, transactionInfo } = useEthSignKnownTransactionRequest()
 
   const qMetadata = useQuery({

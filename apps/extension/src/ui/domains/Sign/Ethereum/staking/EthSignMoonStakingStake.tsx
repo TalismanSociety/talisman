@@ -10,7 +10,7 @@ import { getContractCallArg } from "../getContractCallArg"
 import { useEthSignKnownTransactionRequest } from "../shared/useEthSignKnownTransactionRequest"
 
 export const EthSignMoonStakingStake: FC = () => {
-  const { t } = useTranslation("sign")
+  const { t } = useTranslation("request")
   const { network, transactionInfo } = useEthSignKnownTransactionRequest()
   const token = useToken(network?.nativeToken?.id)
 

@@ -161,7 +161,7 @@ const testValidMnemonic = async (val?: string) => {
 }
 
 export const AccountAddSecretMnemonic = () => {
-  const { t } = useTranslation("account-add")
+  const { t } = useTranslation("admin")
 
   const { data, updateData } = useAccountAddSecret()
   const navigate = useNavigate()

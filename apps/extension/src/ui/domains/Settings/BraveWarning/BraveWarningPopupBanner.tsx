@@ -18,7 +18,7 @@ const WarningCard = styled(BraveWarningCard)`
 `
 
 const BraveWarningPopupBanner = () => {
-  const { t } = useTranslation("settings")
+  const { t } = useTranslation()
   const { isOpen, open, close } = useOpenClose()
 
   const isBrave = useIsBrave()

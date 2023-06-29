@@ -59,7 +59,7 @@ type ContactItemProps = ExistingContactComponentProps & {
 }
 
 const AddressBookContactItem = ({ contact, handleDelete, handleEdit }: ContactItemProps) => {
-  const { t } = useTranslation("settings")
+  const { t } = useTranslation("admin")
   const { genericEvent } = useAnalytics()
   const { open: openCopyAddressModal } = useCopyAddressModal()
   const [hover, setHover] = useState(false)
@@ -129,7 +129,7 @@ const contactTypeAddressTypeMap: Record<ProviderType, AccountAddressType> = {
 }
 
 const AddressBook = () => {
-  const { t } = useTranslation("settings")
+  const { t } = useTranslation("admin")
   const { contacts } = useAddressBook()
   const contactsMap = useMemo(
     () => Object.fromEntries(contacts.map((c) => [c.address, c])),

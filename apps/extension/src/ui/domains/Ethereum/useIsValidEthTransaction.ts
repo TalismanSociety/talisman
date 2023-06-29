@@ -9,7 +9,7 @@ export const useIsValidEthTransaction = (
   transaction?: ethers.providers.TransactionRequest,
   priority?: EthPriorityOptionName
 ) => {
-  const { t } = useTranslation("sign")
+  const { t } = useTranslation("request")
   const account = useAccountByAddress(transaction?.from)
 
   const { data, error, isLoading } = useQuery({
