@@ -3,7 +3,7 @@ import StyledDialog from "@talisman/components/Dialog"
 import { Modal } from "@talisman/components/Modal"
 import { ModalDialog } from "@talisman/components/ModalDialog"
 import { useOpenClose } from "@talisman/hooks/useOpenClose"
-import { IconAlert } from "@talisman/theme/icons"
+import { AlertCircleIcon } from "@talisman/theme/icons"
 import { provideContext } from "@talisman/util/provideContext"
 import { api } from "@ui/api"
 import { useSelectedAccount } from "@ui/domains/Portfolio/SelectedAccountContext"
@@ -58,7 +58,7 @@ export const AccountRemoveModal = () => {
     <Modal open={isOpen} onClose={close}>
       <ModalDialog title={t("Remove account {{accountName}}", { accountName })} onClose={close}>
         <StyledDialog
-          icon={<IconAlert />}
+          icon={<AlertCircleIcon />}
           title={t("Are you sure?")}
           text={t("Ensure you have backed up your recovery phrase or private key before removing.")}
           confirmText={t("Remove")}

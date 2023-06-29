@@ -1,4 +1,4 @@
-import { ExternalLinkIcon, IconChevron } from "@talisman/theme/icons"
+import { ChevronRightIcon, ExternalLinkIcon } from "@talisman/theme/icons"
 import { classNames } from "@talismn/util"
 import styled from "styled-components"
 
@@ -17,7 +17,7 @@ const CtaButton = ({ icon, title, subtitle, className, external, ...rest }: IPro
       <div className="title">{title}</div>
       <div className="subtitle">{subtitle}</div>
     </span>
-    <span className="arrow">{external ? <ExternalLinkIcon /> : <IconChevron />}</span>
+    <span className="arrow">{external ? <ExternalLinkIcon /> : <ChevronRightIcon />}</span>
   </Link>
 )
 

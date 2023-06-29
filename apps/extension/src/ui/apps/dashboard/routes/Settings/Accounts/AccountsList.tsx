@@ -19,6 +19,7 @@ import {
 } from "@dnd-kit/core"
 import { SortableContext, verticalListSortingStrategy } from "@dnd-kit/sortable"
 import { CSS } from "@dnd-kit/utilities"
+import { Balances } from "@talismn/balances"
 import { api } from "@ui/api"
 import { useCallback, useEffect, useMemo, useRef, useState } from "react"
 import { createPortal } from "react-dom"
@@ -30,11 +31,12 @@ import { flattenTree, getChildCount, getProjection, removeChildrenOf } from "./u
 
 type Props = {
   accounts: AccountJsonAny[]
+  balances: Balances
   tree: UiTree
   indentationWidth?: number
 }
 
-export const AccountsList = ({ accounts, tree, indentationWidth = 50 }: Props) => {
+export const AccountsList = ({ accounts, balances, tree, indentationWidth = 50 }: Props) => {
   const [items, setItems] = useState(() => tree ?? [])
   useEffect(() => {
     setItems(tree ?? [])
@@ -172,21 +174,26 @@ export const AccountsList = ({ accounts, tree, indentationWidth = 50 }: Props) =
       onDragCancel={handleDragCancel}
     >
       <SortableContext items={sortedIds} strategy={verticalListSortingStrategy}>
-        {flattenedItems.map((item) => (
-          <SortableTreeItem
-            key={item.id}
-            id={item.id}
-            depth={item.id === activeId && projected ? projected.depth : item.depth}
-            accounts={accounts}
-            item={item}
-            indentationWidth={indentationWidth}
-            collapsed={closedFolders.includes(item.id)}
-            onCollapse={
-              item.type === "folder" && item.tree.length ? () => handleCollapse(item.id) : undefined
-            }
-            onDelete={item.type === "folder" ? () => handleDelete(item.id) : undefined}
-          />
-        ))}
+        <div className="flex flex-col gap-4">
+          {flattenedItems.map((item) => (
+            <SortableTreeItem
+              key={item.id}
+              id={item.id}
+              depth={item.id === activeId && projected ? projected.depth : item.depth}
+              accounts={accounts}
+              balances={balances}
+              item={item}
+              indentationWidth={indentationWidth}
+              collapsed={closedFolders.includes(item.id)}
+              onCollapse={
+                item.type === "folder" && item.tree.length
+                  ? () => handleCollapse(item.id)
+                  : undefined
+              }
+              onDelete={item.type === "folder" ? () => handleDelete(item.id) : undefined}
+            />
+          ))}
+        </div>
         {createPortal(
           <DragOverlay dropAnimation={dropAnimationConfig}>
             {activeId && activeItem ? (
@@ -194,6 +201,7 @@ export const AccountsList = ({ accounts, tree, indentationWidth = 50 }: Props) =
                 id={activeId}
                 depth={activeItem.depth}
                 accounts={accounts}
+                balances={balances}
                 item={activeItem}
                 clone
                 childCount={getChildCount(items, activeId) + 1}

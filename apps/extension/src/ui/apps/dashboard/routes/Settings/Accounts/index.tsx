@@ -5,6 +5,7 @@ import Layout from "@ui/apps/dashboard/layout"
 import useAccounts from "@ui/hooks/useAccounts"
 import useAccountsPortfolio from "@ui/hooks/useAccountsPortfolio"
 import { useAnalyticsPageView } from "@ui/hooks/useAnalyticsPageView"
+import useBalances from "@ui/hooks/useBalances"
 import { useMemo } from "react"
 import { useTranslation } from "react-i18next"
 
@@ -25,9 +26,9 @@ export const Accounts = () => {
   useAnalyticsPageView(ANALYTICS_PAGE)
 
   const accounts = useAccounts()
+  const balances = useBalances()
   const portfolio = useAccountsPortfolio()
   const uiTree = useMemo((): UiTree => withIds(portfolio), [portfolio])
-
   const newFolderModal = useNewFolderModal()
 
   return (
@@ -46,7 +47,7 @@ export const Accounts = () => {
           Add new folder
         </button>
       </div>
-      <AccountsList accounts={accounts} tree={uiTree} />
+      <AccountsList accounts={accounts} balances={balances} tree={uiTree} />
       <NewFolderModal />
     </Layout>
   )

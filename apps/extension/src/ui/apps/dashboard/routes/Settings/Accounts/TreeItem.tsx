@@ -2,25 +2,24 @@ import { AccountJsonAny } from "@core/domains/accounts/types"
 import { DraggableAttributes } from "@dnd-kit/core"
 import { SyntheticListenerMap } from "@dnd-kit/core/dist/hooks/utilities"
 import { WithTooltip } from "@talisman/components/Tooltip"
-import {
-  ChevronDownIcon,
-  DragIcon,
-  FolderIcon,
-  MoreHorizontalIcon,
-  TrashIcon,
-} from "@talisman/theme/icons"
+import { ChevronDownIcon, DragIcon, FolderIcon, MoreHorizontalIcon } from "@talisman/theme/icons"
+import { Balances } from "@talismn/balances"
 import { classNames } from "@talismn/util"
 import { AccountIcon } from "@ui/domains/Account/AccountIcon"
+import { AccountTypeIcon } from "@ui/domains/Account/AccountTypeIcon"
 import { Address } from "@ui/domains/Account/Address"
 import Fiat from "@ui/domains/Asset/Fiat"
+import { useBalanceDetails } from "@ui/hooks/useBalanceDetails"
 import { CSSProperties, ReactNode, forwardRef, useMemo } from "react"
+import { useTranslation } from "react-i18next"
+import { ContextMenu, ContextMenuContent, ContextMenuItem, ContextMenuTrigger } from "talisman-ui"
 
 import { AccountsLogoStack } from "./AccountsLogoStack"
-import { Action } from "./Action"
 import { UiTreeAccount, UiTreeFolder, UiTreeItem } from "./types"
 
 export interface Props {
   accounts: AccountJsonAny[]
+  balances: Balances
   childCount?: number
   clone?: boolean
   collapsed?: boolean
@@ -47,10 +46,16 @@ TreeItem.displayName = "TreeItem"
 
 export const TreeAccountItem = forwardRef<HTMLDivElement, Props & { item: UiTreeAccount }>(
   (props, ref) => {
-    const { item, handleProps, style, accounts, wrapperRef, depth } = props
+    const { t } = useTranslation("admin")
+    const { item, handleProps, style, accounts, balances, wrapperRef, depth } = props
     const account = accounts.find((account) => account.address === item.address)
-    if (!account) return null
+    const accountBalances = useMemo(
+      () => balances.find({ address: account?.address }),
+      [account, balances]
+    )
+    const { balanceDetails, totalUsd } = useBalanceDetails(accountBalances)
 
+    if (!account) return null
     return (
       <TreeItemWrapper {...props} ref={wrapperRef}>
         <div
@@ -64,17 +69,29 @@ export const TreeAccountItem = forwardRef<HTMLDivElement, Props & { item: UiTree
           <DragButton {...handleProps?.attributes} {...handleProps?.listeners} />
           <AccountIcon className="text-xl" address={item.address} />
           <div className="flex grow flex-col gap-2 overflow-hidden">
-            <div className="overflow-hidden text-ellipsis whitespace-nowrap">{account.name}</div>
+            <div className="flex items-center gap-2">
+              <div className="overflow-hidden text-ellipsis whitespace-nowrap">{account.name}</div>
+              <AccountTypeIcon className="text-primary" origin={account.origin} />
+            </div>
             <div className="text-body-secondary text-sm">
               <Address address={item.address} />
             </div>
           </div>
           <div className="flex flex-col gap-2">
-            <WithTooltip as="div" tooltip="TODO: Add balance details" noWrap>
-              <Fiat amount={0} currency="usd" />
+            <WithTooltip as="div" tooltip={balanceDetails} noWrap>
+              <Fiat amount={totalUsd} currency="usd" />
             </WithTooltip>
           </div>
-          <MoreHorizontalIcon className="shrink-0" />
+
+          <ContextMenu placement="bottom-end">
+            <ContextMenuTrigger className="hover:bg-grey-800 text-body-secondary hover:text-body rounded p-6">
+              <MoreHorizontalIcon className="shrink-0" />
+            </ContextMenuTrigger>
+            <ContextMenuContent className="border-grey-800 z-50 flex w-min flex-col whitespace-nowrap rounded-sm border bg-black px-2 py-3 text-left text-sm shadow-lg">
+              <ContextMenuItem onClick={() => {}}>{t("Send funds")}</ContextMenuItem>
+              <ContextMenuItem onClick={() => {}}>{t("Copy address")}</ContextMenuItem>
+            </ContextMenuContent>
+          </ContextMenu>
         </div>
       </TreeItemWrapper>
     )
@@ -84,6 +101,7 @@ TreeAccountItem.displayName = "TreeAccountItem"
 
 export const TreeFolderItem = forwardRef<HTMLDivElement, Props & { item: UiTreeFolder }>(
   (props, ref) => {
+    const { t } = useTranslation("admin")
     const {
       childCount,
       clone,
@@ -97,6 +115,12 @@ export const TreeFolderItem = forwardRef<HTMLDivElement, Props & { item: UiTreeF
     } = props
 
     const addresses = useMemo(() => item.tree.map((item) => item.address), [item])
+    const stopPropagation =
+      <T extends Pick<Event, "stopPropagation">>(andThen?: (event: T) => void) =>
+      (event: T) => {
+        event.stopPropagation()
+        andThen && andThen(event)
+      }
 
     return (
       <TreeItemWrapper {...props} ref={wrapperRef}>
@@ -117,23 +141,30 @@ export const TreeFolderItem = forwardRef<HTMLDivElement, Props & { item: UiTreeF
             <div className="overflow-hidden text-ellipsis whitespace-nowrap">{item.name}</div>
             <AccountsLogoStack addresses={addresses} />
           </div>
-          {onCollapse && (
-            <Action onClick={onCollapse}>
-              <ChevronDownIcon
-                className={classNames("transition-transform", collapsed && "-rotate-90")}
-              />
-            </Action>
-          )}
+
           {collapsed ? (
-            <MoreHorizontalIcon className="shrink-0" />
+            <ContextMenu placement="bottom-end">
+              <ContextMenuTrigger
+                className="hover:bg-grey-800 text-body-secondary hover:text-body rounded p-6"
+                onClick={stopPropagation()}
+              >
+                <MoreHorizontalIcon className="shrink-0" />
+              </ContextMenuTrigger>
+              <ContextMenuContent className="border-grey-800 z-50 flex w-min flex-col whitespace-nowrap rounded-sm border bg-black px-2 py-3 text-left text-sm shadow-lg">
+                {onDelete && (
+                  <ContextMenuItem onClick={stopPropagation(onDelete)}>
+                    {t("Delete")}
+                  </ContextMenuItem>
+                )}
+                <ContextMenuItem onClick={stopPropagation()}>{t("Copy address")}</ContextMenuItem>
+              </ContextMenuContent>
+            </ContextMenu>
           ) : (
-            <ChevronDownIcon className="text-body-disabled shrink-0" />
+            <div className="text-body-disabled rounded p-6">
+              <ChevronDownIcon className="shrink-0" />
+            </div>
           )}
-          {onDelete && (
-            <Action onClick={onDelete}>
-              <TrashIcon />
-            </Action>
-          )}
+
           {clone && childCount && childCount > 1 ? (
             <span
               className={classNames(

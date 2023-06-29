@@ -1,6 +1,6 @@
 import { Balances } from "@core/domains/balances/types"
 import { isEthereumAddress } from "@polkadot/util-crypto"
-import { IconMore } from "@talisman/theme/icons"
+import { MoreHorizontalIcon } from "@talisman/theme/icons"
 import { useAccountExportModal } from "@ui/domains/Account/AccountExportModal"
 import { useAccountExportPrivateKeyModal } from "@ui/domains/Account/AccountExportPrivateKeyModal"
 import { useAccountRemoveModal } from "@ui/domains/Account/AccountRemoveModal"
@@ -102,7 +102,7 @@ const PageContent = ({ balances }: { balances: Balances }) => {
               {account && (
                 <ContextMenu placement="bottom-end">
                   <ContextMenuTrigger className="hover:bg-grey-800 text-body-secondary hover:text-body flex h-[1.5em] w-[1.5em] flex-col items-center justify-center rounded-full text-lg">
-                    <IconMore />
+                    <MoreHorizontalIcon />
                   </ContextMenuTrigger>
                   <ContextMenuContent className="border-grey-800 z-50 flex w-min flex-col whitespace-nowrap rounded-sm border bg-black px-2 py-3 text-left text-sm shadow-lg">
                     {canSendFunds && (

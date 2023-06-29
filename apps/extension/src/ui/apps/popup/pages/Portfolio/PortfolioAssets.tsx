@@ -1,7 +1,12 @@
 import { Balances } from "@core/domains/balances/types"
 import { isEthereumAddress } from "@polkadot/util-crypto"
 import { IconButton } from "@talisman/components/IconButton"
-import { ChevronLeftIcon, CopyIcon, IconMore, PaperPlaneIcon } from "@talisman/theme/icons"
+import {
+  ChevronLeftIcon,
+  CopyIcon,
+  MoreHorizontalIcon,
+  PaperPlaneIcon,
+} from "@talisman/theme/icons"
 import { classNames } from "@talismn/util"
 import { api } from "@ui/api"
 import { useAccountExportModal } from "@ui/domains/Account/AccountExportModal"
@@ -129,7 +134,7 @@ const PageContent = ({ balances }: { balances: Balances }) => {
               <Tooltip>
                 <TooltipTrigger asChild>
                   <ContextMenuTrigger className="hover:bg-grey-800 text-body-secondary hover:text-body text-md flex h-16 w-16 flex-col items-center justify-center rounded-full">
-                    <IconMore />
+                    <MoreHorizontalIcon />
                   </ContextMenuTrigger>
                 </TooltipTrigger>
                 <TooltipContent>{t("More options")}</TooltipContent>
