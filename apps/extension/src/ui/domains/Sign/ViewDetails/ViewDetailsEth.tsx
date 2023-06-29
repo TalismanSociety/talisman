@@ -113,7 +113,7 @@ const ViewDetailsAddress: FC<{ address?: string }> = ({ address }) => {
 }
 
 const Gwei: FC<{ value: BigNumberish | null | undefined }> = ({ value }) => {
-  const { t } = useTranslation("sign")
+  const { t } = useTranslation("request")
   return (
     <>
       {value
@@ -124,7 +124,7 @@ const Gwei: FC<{ value: BigNumberish | null | undefined }> = ({ value }) => {
 }
 
 const ViewDetailsContent: FC<ViewDetailsContentProps> = ({ onClose }) => {
-  const { t } = useTranslation("sign")
+  const { t } = useTranslation("request")
   const feePriorityOptions = useFeePriorityOptionsUI()
   const {
     request,
@@ -373,7 +373,7 @@ const ViewDetailsContent: FC<ViewDetailsContentProps> = ({ onClose }) => {
 }
 
 export const ViewDetailsEth = () => {
-  const { t } = useTranslation("sign")
+  const { t } = useTranslation("request")
   const { isOpen, open, close } = useOpenClose()
   const { isLoading } = useEthSignTransactionRequest()
 

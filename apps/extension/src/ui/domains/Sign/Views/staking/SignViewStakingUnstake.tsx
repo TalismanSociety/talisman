@@ -7,7 +7,7 @@ import { useTranslation } from "react-i18next"
 export const SignViewStakingUnstake: FC<{
   tokenId: TokenId
 }> = ({ tokenId }) => {
-  const { t } = useTranslation("sign")
+  const { t } = useTranslation("request")
   const token = useToken(tokenId)
 
   return (

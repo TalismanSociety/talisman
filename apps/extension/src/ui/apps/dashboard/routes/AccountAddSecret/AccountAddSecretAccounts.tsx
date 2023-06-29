@@ -45,7 +45,7 @@ type FormData = {
 }
 
 export const AccountAddSecretAccounts = () => {
-  const { t } = useTranslation("account-add")
+  const { t } = useTranslation("admin")
   const { data, importAccounts } = useAccountAddSecret()
   const navigate = useNavigate()
   const { setAddress } = useSelectAccountAndNavigate("/portfolio")

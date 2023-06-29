@@ -166,7 +166,7 @@ const AssetRow = ({ balances, locked }: AssetRowProps) => {
     summary.lockedTokens,
   ])
 
-  const { t } = useTranslation("portfolio")
+  const { t } = useTranslation()
 
   if (!token || !summary) return null
 
@@ -307,7 +307,7 @@ export const PopupAssetsTable = ({ balances }: GroupedAssetsTableProps) => {
     return { totalAvailable: transferable, totalLocked: locked + reserved }
   }, [balances])
 
-  const { t } = useTranslation("portfolio")
+  const { t } = useTranslation()
 
   if (!available.length && !locked.length) return null
 

@@ -24,7 +24,7 @@ const Modal = styled(BaseModal)`
 `
 
 const MigratePasswordModalContent = () => {
-  const { t } = useTranslation("settings")
+  const { t } = useTranslation()
   const { hasPassword, hasBackedUpMnemonic, passwordTrimmed, hasNewPassword, status } =
     useMigratePassword()
   if (status === statusOptions.PROCESSING)

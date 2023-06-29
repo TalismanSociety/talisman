@@ -224,7 +224,7 @@ export const NetworkPicker = () => {
       selectItem(undefined)
   }, [networks, selectItem, selectedItem])
 
-  const { t } = useTranslation("portfolio")
+  const { t } = useTranslation()
 
   return (
     <Container

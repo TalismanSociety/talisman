@@ -78,7 +78,7 @@ const PageContent = ({ balances }: { balances: Balances }) => {
     api.dashboardOpen("/tokens/add")
   }, [])
 
-  const { t } = useTranslation("portfolio")
+  const { t } = useTranslation()
 
   return (
     <>

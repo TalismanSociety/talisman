@@ -37,7 +37,7 @@ const getFileContent = (file?: File) =>
   })
 
 const AccountJson = () => {
-  const { t } = useTranslation("account-add")
+  const { t } = useTranslation("admin")
   const { setAddress } = useSelectAccountAndNavigate("/portfolio")
 
   const submit = useCallback(

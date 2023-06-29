@@ -124,7 +124,7 @@ export const reducer = (state: AddQrState, action: Action): AddQrState => {
 const initialState: AddQrState = { type: "SCAN", enable: false }
 
 const useAccountAddQrContext = () => {
-  const { t } = useTranslation("account-add")
+  const { t } = useTranslation("admin")
   const [state, dispatch] = useReducer(reducer, initialState)
   const hasVerifierCertMnemonic = useHasVerifierCertificateMnemonic()
   const vaultAccounts = useQrCodeAccounts()

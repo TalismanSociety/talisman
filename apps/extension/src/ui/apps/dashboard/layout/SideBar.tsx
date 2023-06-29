@@ -355,7 +355,7 @@ export const SideBar = () => {
     navigate("/settings?showBackupModal")
   }, [genericEvent, navigate])
 
-  const { t } = useTranslation("navigation")
+  const { t } = useTranslation()
 
   return (
     <Container>

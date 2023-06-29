@@ -110,7 +110,7 @@ type AssetRowProps = {
 }
 
 const ChainTokenBalances = ({ chainId, balances }: AssetRowProps) => {
-  const { t } = useTranslation("portfolio")
+  const { t } = useTranslation()
   const { chainOrNetwork, summary, symbol, detailRows, status, networkType } =
     useChainTokenBalances({ chainId, balances })
 

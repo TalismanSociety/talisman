@@ -145,7 +145,7 @@ const LedgerEthereum: FC<LedgerEthereumProps> = ({
   onSignature,
   onReject,
 }) => {
-  const { t } = useTranslation("sign")
+  const { t } = useTranslation("request")
   const [autoSend, setAutoSend] = useState(!manualSend)
   const [isSigning, setIsSigning] = useState(false)
   const [isSigned, setIsSigned] = useState(false)

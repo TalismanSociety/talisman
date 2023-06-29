@@ -8,7 +8,7 @@ export const MetadataStatus: FC<{ genesisHash?: string; specVersion?: number }> 
   genesisHash,
   specVersion,
 }) => {
-  const { t } = useTranslation("sign")
+  const { t } = useTranslation("request")
   const { updateUrl, isMetadataUpdating, hasMetadataUpdateFailed, requiresUpdate } =
     useMetadataUpdates(genesisHash, specVersion)
 

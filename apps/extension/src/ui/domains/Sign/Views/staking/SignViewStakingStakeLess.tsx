@@ -8,7 +8,7 @@ export const SignViewStakingStakeLess: FC<{
   planck: bigint
   tokenId: TokenId
 }> = ({ planck, tokenId }) => {
-  const { t } = useTranslation("sign")
+  const { t } = useTranslation("request")
   return (
     <div className="flex w-full flex-col items-center gap-4">
       <div>{t("You are unbonding")}</div>

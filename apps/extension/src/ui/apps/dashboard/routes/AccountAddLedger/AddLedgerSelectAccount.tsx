@@ -101,7 +101,7 @@ type FormData = {
 }
 
 export const AddLedgerSelectAccount = () => {
-  const { t } = useTranslation("account-add")
+  const { t } = useTranslation("admin")
   const { data, importAccounts } = useAddLedgerAccount()
   const { setAddress } = useSelectAccountAndNavigate("/portfolio")
 

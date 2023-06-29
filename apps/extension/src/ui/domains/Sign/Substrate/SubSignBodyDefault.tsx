@@ -5,7 +5,7 @@ import { usePolkadotSigningRequest } from "../SignRequestContext"
 import { ViewDetails } from "../ViewDetails/ViewDetails"
 
 export const SubSignBodyDefault = () => {
-  const { t } = useTranslation("sign")
+  const { t } = useTranslation("request")
   const { account, chain } = usePolkadotSigningRequest()
 
   return (

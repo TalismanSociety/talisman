@@ -80,7 +80,7 @@ const PageContent = ({ balances }: { balances: Balances }) => {
     navigate("/tokens/add")
   }, [navigate])
 
-  const { t } = useTranslation("portfolio")
+  const { t } = useTranslation()
 
   return (
     <div className="flex w-full flex-col">

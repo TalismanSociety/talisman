@@ -11,7 +11,7 @@ export const ConnectLedgerEthereum = ({
   onReadyChanged?: (ready: boolean) => void
   className?: string
 }) => {
-  const { t } = useTranslation("account-add")
+  const { t } = useTranslation("admin")
   const ledger = useLedgerEthereum(true)
 
   useEffect(() => {

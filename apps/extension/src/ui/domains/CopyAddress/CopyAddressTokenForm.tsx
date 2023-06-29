@@ -6,7 +6,7 @@ import { useCopyAddressWizard } from "./useCopyAddressWizard"
 
 export const CopyAddressTokenForm = () => {
   const { tokenId, address, setTokenId } = useCopyAddressWizard()
-  const { t } = useTranslation("copy-address")
+  const { t } = useTranslation()
 
   return (
     <CopyAddressLayout title={t("Select a token to receive")}>

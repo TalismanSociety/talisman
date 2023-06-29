@@ -433,7 +433,7 @@ export const useEthTransaction = (
   // use staleIsValid to prevent disabling approve button each time there is a new block (triggers gas check)
   const { isValid, error: isValidError } = useIsValidEthTransaction(provider, transaction, priority)
 
-  const { t } = useTranslation("sign")
+  const { t } = useTranslation("request")
   const { error, errorDetails } = useMemo(() => {
     const anyError = (errorEip1559Support ??
       nonceError ??

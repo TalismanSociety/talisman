@@ -14,7 +14,7 @@ type NoTokensMessageProps = {
 }
 
 export const NoTokensMessage = ({ symbol }: NoTokensMessageProps) => {
-  const { t } = useTranslation("portfolio")
+  const { t } = useTranslation()
   const { genericEvent } = useAnalytics()
   const { account } = useSelectedAccount()
   const { open } = useCopyAddressModal()

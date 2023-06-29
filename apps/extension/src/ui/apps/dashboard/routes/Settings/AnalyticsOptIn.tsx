@@ -7,7 +7,7 @@ import { useNavigationType } from "react-router-dom"
 import { Toggle } from "talisman-ui"
 
 export const AnalyticsOptIn = () => {
-  const { t } = useTranslation("settings")
+  const { t } = useTranslation("admin")
   const [useAnalyticsTracking, setUseAnalyticsTracking] = useSetting("useAnalyticsTracking")
   const nav = useNavigationType()
 

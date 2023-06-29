@@ -98,7 +98,7 @@ const NetworkPillButton: FC<NetworkPillButtonProps> = ({
   onClick,
 }) => {
   const chain = useChain(chainId as string)
-  const { t } = useTranslation("copy-address")
+  const { t } = useTranslation()
 
   // substrate generic format
   if (chainId === null)
@@ -128,7 +128,7 @@ const NetworkPillButton: FC<NetworkPillButtonProps> = ({
 }
 
 const ExternalAddressWarning = () => {
-  const { t } = useTranslation("copy-address")
+  const { t } = useTranslation()
   const { address } = useCopyAddressWizard()
 
   const accounts = useAccounts("owned")
@@ -164,7 +164,7 @@ const CopyButton = () => {
     close()
   }, [close, copy])
 
-  const { t } = useTranslation("copy-address")
+  const { t } = useTranslation()
 
   return (
     <>
@@ -214,7 +214,7 @@ export const CopyAddressCopyForm = () => {
     [chain, formattedAddress]
   )
 
-  const { t } = useTranslation("copy-address")
+  const { t } = useTranslation()
 
   if (!formattedAddress) return null
 

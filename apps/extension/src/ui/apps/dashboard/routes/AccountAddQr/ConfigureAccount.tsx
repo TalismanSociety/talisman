@@ -18,7 +18,7 @@ import { Checkbox, FormFieldInputText } from "talisman-ui"
 import { useAccountAddQr } from "./context"
 
 export const ConfigureAccount = () => {
-  const { t } = useTranslation("account-add")
+  const { t } = useTranslation("admin")
   const { state, dispatch, submitConfigure } = useAccountAddQr()
 
   const [useTestnets] = useSetting("useTestnets")

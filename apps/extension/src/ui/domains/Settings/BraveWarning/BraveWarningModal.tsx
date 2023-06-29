@@ -44,7 +44,7 @@ type BraveWarningModalProps = {
 }
 
 export const BraveWarningModal: FC<BraveWarningModalProps> = ({ className, popup }) => {
-  const { t } = useTranslation("settings")
+  const { t } = useTranslation()
   const [hideBraveWarning, setHideBraveWarning] = useState<boolean>()
   const [hasBraveWarningBeenShown, setHasBraveWarningBeenShown] = useState<boolean>()
 

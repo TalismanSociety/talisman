@@ -34,7 +34,7 @@ export const useChainTokenBalances = ({ chainId, balances }: ChainTokenBalancesP
 
   const { account } = useSelectedAccount()
   const { summary, tokenBalances, token } = useTokenBalancesSummary(balances)
-  const { t } = useTranslation("portfolio")
+  const { t } = useTranslation()
 
   const detailRows = useMemo((): DetailRow[] => {
     if (!summary) return []

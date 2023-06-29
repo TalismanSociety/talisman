@@ -28,7 +28,7 @@ const ConfirmRemove = ({
   token: Erc20Token
   onClose: () => void
 }) => {
-  const { t } = useTranslation("settings")
+  const { t } = useTranslation("admin")
   const navigate = useNavigate()
 
   // keep last one to prevent symbol to disappear when deleting it
@@ -85,7 +85,7 @@ const ANALYTICS_PAGE: AnalyticsPage = {
 }
 
 export const TokenPage = () => {
-  const { t } = useTranslation("settings")
+  const { t } = useTranslation("admin")
   const { id } = useParams<"id">()
   const { isOpen, open, close } = useOpenClose()
   const navigate = useNavigate()

@@ -43,7 +43,7 @@ const getNetworkTokenSymbols = ({
 }
 
 const useAllNetworks = ({ balances, type }: { type?: AccountAddressType; balances?: Balances }) => {
-  const { t } = useTranslation("portfolio")
+  const { t } = useTranslation()
   const [useTestnets] = useSetting("useTestnets")
   const { chains } = useChains(useTestnets)
   const { tokens } = useTokens(useTestnets)

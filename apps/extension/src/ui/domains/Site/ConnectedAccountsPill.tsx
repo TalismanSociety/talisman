@@ -46,7 +46,7 @@ const Container = styled.button`
 `
 
 export const ConnectedAccountsPill: FC = () => {
-  const { t } = useTranslation("sites")
+  const { t } = useTranslation()
   const currentSite = useCurrentSite()
   const accounts = useAccounts()
   const authorisedSites = useAuthorisedSites()
