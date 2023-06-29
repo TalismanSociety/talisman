@@ -236,7 +236,7 @@ export const EthSignTransactionRequest = () => {
           </div>
           <Suspense fallback={null}>
             {transaction && txDetails && network?.nativeToken ? (
-              <div className="gasInfo mt-8">
+              <div className="gasInfo my-8">
                 <div>
                   <div>
                     {t("Estimated Fee")}{" "}
@@ -282,7 +282,6 @@ export const EthSignTransactionRequest = () => {
               transaction ? (
                 <LedgerEthereum
                   manualSend
-                  className="mt-6"
                   method="transaction"
                   payload={transaction}
                   account={account as AccountJsonHardwareEthereum}
