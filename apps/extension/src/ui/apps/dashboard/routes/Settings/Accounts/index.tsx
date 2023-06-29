@@ -10,7 +10,9 @@ import { useMemo } from "react"
 import { useTranslation } from "react-i18next"
 
 import { AccountsList } from "./AccountsList"
+import { DeleteFolderModal } from "./DeleteFolderModal"
 import { NewFolderModal, useNewFolderModal } from "./NewFolderModal"
+import { RenameFolderModal } from "./RenameFolderModal"
 import { UiTree } from "./types"
 import { withIds } from "./util"
 
@@ -49,6 +51,8 @@ export const Accounts = () => {
       </div>
       <AccountsList accounts={accounts} balances={balances} tree={uiTree} />
       <NewFolderModal />
+      <RenameFolderModal />
+      <DeleteFolderModal />
     </Layout>
   )
 }

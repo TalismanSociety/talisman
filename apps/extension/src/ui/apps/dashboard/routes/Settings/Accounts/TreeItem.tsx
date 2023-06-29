@@ -15,6 +15,8 @@ import { useTranslation } from "react-i18next"
 import { ContextMenu, ContextMenuContent, ContextMenuItem, ContextMenuTrigger } from "talisman-ui"
 
 import { AccountsLogoStack } from "./AccountsLogoStack"
+import { useDeleteFolderModal } from "./DeleteFolderModal"
+import { useRenameFolderModal } from "./RenameFolderModal"
 import { UiTreeAccount, UiTreeFolder, UiTreeItem } from "./types"
 
 export interface Props {
@@ -32,7 +34,6 @@ export interface Props {
   item: UiTreeItem
   style: CSSProperties
   onCollapse?(): void
-  onDelete?(): void
   wrapperRef?(node: HTMLLIElement): void
 }
 
@@ -88,8 +89,20 @@ export const TreeAccountItem = forwardRef<HTMLDivElement, Props & { item: UiTree
               <MoreHorizontalIcon className="shrink-0" />
             </ContextMenuTrigger>
             <ContextMenuContent className="border-grey-800 z-50 flex w-min flex-col whitespace-nowrap rounded-sm border bg-black px-2 py-3 text-left text-sm shadow-lg">
-              <ContextMenuItem onClick={() => {}}>{t("Send funds")}</ContextMenuItem>
               <ContextMenuItem onClick={() => {}}>{t("Copy address")}</ContextMenuItem>
+              <ContextMenuItem onClick={() => {}}>{t("Export json")}</ContextMenuItem>
+              <ContextMenuItem onClick={() => {}}>{t("Export private key")}</ContextMenuItem>
+              <ContextMenuItem onClick={() => {}}>{t("Hide from portfolio")}</ContextMenuItem>
+              <ContextMenuItem onClick={() => {}}>{t("Show in portfolio")}</ContextMenuItem>
+              <ContextMenuItem onClick={() => {}}>{t("Rename")}</ContextMenuItem>
+              <ContextMenuItem onClick={() => {}}>{t("Remove account")}</ContextMenuItem>
+
+              {/* Watch-only */}
+              {/* Maybe re-use the Hide/Show in portfolio from above? */}
+              <ContextMenuItem onClick={() => {}}>{t("Add to portfolio")}</ContextMenuItem>
+              <ContextMenuItem onClick={() => {}}>
+                {t("Make followed-only account")}
+              </ContextMenuItem>
             </ContextMenuContent>
           </ContextMenu>
         </div>
@@ -102,17 +115,7 @@ TreeAccountItem.displayName = "TreeAccountItem"
 export const TreeFolderItem = forwardRef<HTMLDivElement, Props & { item: UiTreeFolder }>(
   (props, ref) => {
     const { t } = useTranslation("admin")
-    const {
-      childCount,
-      clone,
-      handleProps,
-      item,
-      collapsed,
-      onCollapse,
-      onDelete,
-      style,
-      wrapperRef,
-    } = props
+    const { childCount, clone, handleProps, item, collapsed, onCollapse, style, wrapperRef } = props
 
     const addresses = useMemo(() => item.tree.map((item) => item.address), [item])
     const stopPropagation =
@@ -121,6 +124,9 @@ export const TreeFolderItem = forwardRef<HTMLDivElement, Props & { item: UiTreeF
         event.stopPropagation()
         andThen && andThen(event)
       }
+
+    const { open: renameFolder } = useRenameFolderModal()
+    const { open: deleteFolder } = useDeleteFolderModal()
 
     return (
       <TreeItemWrapper {...props} ref={wrapperRef}>
@@ -139,7 +145,7 @@ export const TreeFolderItem = forwardRef<HTMLDivElement, Props & { item: UiTreeF
           </div>
           <div className="flex grow flex-col gap-2">
             <div className="overflow-hidden text-ellipsis whitespace-nowrap">{item.name}</div>
-            <AccountsLogoStack addresses={addresses} />
+            {addresses.length > 0 && <AccountsLogoStack addresses={addresses} />}
           </div>
 
           {collapsed ? (
@@ -151,12 +157,14 @@ export const TreeFolderItem = forwardRef<HTMLDivElement, Props & { item: UiTreeF
                 <MoreHorizontalIcon className="shrink-0" />
               </ContextMenuTrigger>
               <ContextMenuContent className="border-grey-800 z-50 flex w-min flex-col whitespace-nowrap rounded-sm border bg-black px-2 py-3 text-left text-sm shadow-lg">
-                {onDelete && (
-                  <ContextMenuItem onClick={stopPropagation(onDelete)}>
-                    {t("Delete")}
-                  </ContextMenuItem>
-                )}
-                <ContextMenuItem onClick={stopPropagation()}>{t("Copy address")}</ContextMenuItem>
+                <ContextMenuItem onClick={stopPropagation(() => renameFolder(item.name))}>
+                  {t("Rename")}
+                </ContextMenuItem>
+                {/* TODO: Expose folder colors */}
+                {/* <ContextMenuItem onClick={stopPropagation()}>{t("Change color")}</ContextMenuItem> */}
+                <ContextMenuItem onClick={stopPropagation(() => deleteFolder(item.name))}>
+                  {t("Delete")}
+                </ContextMenuItem>
               </ContextMenuContent>
             </ContextMenu>
           ) : (
@@ -165,7 +173,7 @@ export const TreeFolderItem = forwardRef<HTMLDivElement, Props & { item: UiTreeF
             </div>
           )}
 
-          {clone && childCount && childCount > 1 ? (
+          {clone && childCount && childCount > 0 ? (
             <span
               className={classNames(
                 "bg-black-tertiary text-primary rounded-xs absolute -right-5 -top-5 flex h-12 w-12 items-center justify-center text-xs",

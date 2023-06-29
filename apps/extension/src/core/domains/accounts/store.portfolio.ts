@@ -9,6 +9,7 @@ export type PortfolioData = {
 export type Tree = TreeItem[]
 export type TreeItem = TreeAccount | TreeFolder
 export type TreeAccount = { type: "account"; address: string; hidden: boolean }
+// TODO: Make TreeFolder hideable
 export type TreeFolder = { type: "folder"; name: string; color: string; tree: TreeAccount[] }
 
 export type MoveBeforeTarget =
@@ -161,6 +162,9 @@ export class PortfolioStore extends SubscribableStorageProvider<
     tree.push({ type: "folder", name, color: color ?? defaultFolderColor, tree: [] })
   }
   private static renameFolder = (tree: Tree, name: string, newName: string) => {
+    // don't rename folder if newName already exists
+    if (PortfolioStore.folderInTree(tree, newName)) return
+
     const folder = tree.filter(folderFilter).find((item) => item.name === name)
     if (!folder) return
 

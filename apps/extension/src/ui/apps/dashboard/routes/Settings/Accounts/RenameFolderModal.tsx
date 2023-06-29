@@ -2,40 +2,49 @@ import { yupResolver } from "@hookform/resolvers/yup"
 import Dialog from "@talisman/components/Dialog"
 import { Modal } from "@talisman/components/Modal"
 import { ModalDialog } from "@talisman/components/ModalDialog"
-import { useOpenClose } from "@talisman/hooks/useOpenClose"
 import { provideContext } from "@talisman/util/provideContext"
 import { api } from "@ui/api"
-import { RefCallback, useCallback, useEffect, useMemo, useRef } from "react"
+import { RefCallback, useCallback, useEffect, useMemo, useRef, useState } from "react"
 import { useForm } from "react-hook-form"
 import { useTranslation } from "react-i18next"
 import styled from "styled-components"
 import { FormFieldContainer, FormFieldInputText } from "talisman-ui"
 import * as yup from "yup"
 
-const useNewFolderModalProvider = () => {
-  const { isOpen, open, close } = useOpenClose()
+const useRenameFolderModalProvider = () => {
+  const [name, setName] = useState<string | null>(null)
+  const [isOpen, setIsOpen] = useState(false)
+
+  const open = useCallback((name: string) => {
+    setName(name)
+    setIsOpen(true)
+  }, [])
+  const close = useCallback(() => setIsOpen(false), [])
 
   useEffect(() => {
     close()
   }, [close])
 
   return {
+    name,
     isOpen,
     open,
     close,
   }
 }
 
-export const [NewFolderModalProvider, useNewFolderModal] = provideContext(useNewFolderModalProvider)
+export const [RenameFolderModalProvider, useRenameFolderModal] = provideContext(
+  useRenameFolderModalProvider
+)
 
-export const NewFolderModal = () => {
+export const RenameFolderModal = () => {
   const { t } = useTranslation("admin")
-  const { close, isOpen } = useNewFolderModal()
+  const { name, close, isOpen } = useRenameFolderModal()
 
   return (
     <Modal open={isOpen}>
-      <ModalDialog title={t("New Folder")} onClose={close}>
-        <NewFolder onConfirm={close} onCancel={close} />
+      <ModalDialog title={t("Rename Folder")} onClose={close}>
+        {name !== null && <RenameFolder name={name} onConfirm={close} onCancel={close} />}
       </ModalDialog>
     </Modal>
   )
@@ -54,13 +63,14 @@ type FormData = {
   name: string
 }
 
-interface NewFolderProps {
+interface RenameFolderProps {
+  name: string
   onConfirm: () => void
   onCancel: () => void
   className?: string
 }
 
-const NewFolder = ({ onConfirm, onCancel, className }: NewFolderProps) => {
+const RenameFolder = ({ name, onConfirm, onCancel, className }: RenameFolderProps) => {
   const { t } = useTranslation("admin")
 
   const schema = useMemo(
@@ -72,13 +82,7 @@ const NewFolder = ({ onConfirm, onCancel, className }: NewFolderProps) => {
         .required(),
     []
   )
-
-  const defaultValues = useMemo(
-    () => ({
-      name: "",
-    }),
-    []
-  )
+  const defaultValues = useMemo(() => ({ name }), [name])
 
   const {
     register,
@@ -92,9 +96,9 @@ const NewFolder = ({ onConfirm, onCancel, className }: NewFolderProps) => {
   })
 
   const submit = useCallback(
-    async ({ name }: FormData) => {
+    async ({ name: newName }: FormData) => {
       try {
-        await api.accountsPortfolioMutate([{ type: "addFolder", name }])
+        await api.accountsPortfolioMutate([{ type: "renameFolder", name, newName }])
         onConfirm()
       } catch (err) {
         setError("name", {
@@ -103,7 +107,7 @@ const NewFolder = ({ onConfirm, onCancel, className }: NewFolderProps) => {
         })
       }
     },
-    [onConfirm, setError]
+    [name, onConfirm, setError]
   )
 
   // "manual" field registration so we can hook our own ref to it

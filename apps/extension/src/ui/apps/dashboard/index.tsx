@@ -30,7 +30,9 @@ import { PhishingPage } from "./routes/PhishingPage"
 import { Portfolio } from "./routes/Portfolio"
 import Settings from "./routes/Settings"
 import { Accounts } from "./routes/Settings/Accounts"
+import { DeleteFolderModalProvider } from "./routes/Settings/Accounts/DeleteFolderModal"
 import { NewFolderModalProvider } from "./routes/Settings/Accounts/NewFolderModal"
+import { RenameFolderModalProvider } from "./routes/Settings/Accounts/RenameFolderModal"
 import AddressBook from "./routes/Settings/AddressBook"
 import { AnalyticsOptIn } from "./routes/Settings/AnalyticsOptIn"
 import { AutoLockTimer } from "./routes/Settings/AutoLockTimer"
@@ -147,7 +149,11 @@ const Dashboard = () => (
               <CopyAddressModalProvider>
                 <BuyTokensModalProvider>
                   <NewFolderModalProvider>
-                    <DashboardInner />
+                    <RenameFolderModalProvider>
+                      <DeleteFolderModalProvider>
+                        <DashboardInner />
+                      </DeleteFolderModalProvider>
+                    </RenameFolderModalProvider>
                   </NewFolderModalProvider>
                 </BuyTokensModalProvider>
               </CopyAddressModalProvider>

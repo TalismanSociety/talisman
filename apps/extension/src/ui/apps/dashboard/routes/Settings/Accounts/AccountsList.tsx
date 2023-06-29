@@ -1,4 +1,4 @@
-import { PortfolioStore, TreeFolder } from "@core/domains/accounts/store.portfolio"
+import { PortfolioStore } from "@core/domains/accounts/store.portfolio"
 import { AccountJsonAny, RequestPortfolioMutate } from "@core/domains/accounts/types"
 import {
   DndContext,
@@ -149,18 +149,6 @@ export const AccountsList = ({ accounts, balances, tree, indentationWidth = 50 }
       setClosedFolders((ids) => (ids.includes(id) ? ids.filter((i) => i !== id) : [...ids, id])),
     []
   )
-  const handleDelete = useCallback(
-    (id: UniqueIdentifier) => {
-      const folder = flattenedItems.find((item) => item.type === "folder" && item.id === id) as
-        | TreeFolder
-        | undefined
-      if (!folder) return
-
-      // TODO: Show confirmation modal
-      api.accountsPortfolioMutate([{ type: "removeFolder", name: folder.name }])
-    },
-    [flattenedItems]
-  )
 
   return (
     <DndContext
@@ -185,12 +173,7 @@ export const AccountsList = ({ accounts, balances, tree, indentationWidth = 50 }
               item={item}
               indentationWidth={indentationWidth}
               collapsed={closedFolders.includes(item.id)}
-              onCollapse={
-                item.type === "folder" && item.tree.length
-                  ? () => handleCollapse(item.id)
-                  : undefined
-              }
-              onDelete={item.type === "folder" ? () => handleDelete(item.id) : undefined}
+              onCollapse={item.type === "folder" ? () => handleCollapse(item.id) : undefined}
             />
           ))}
         </div>
@@ -204,7 +187,7 @@ export const AccountsList = ({ accounts, balances, tree, indentationWidth = 50 }
                 balances={balances}
                 item={activeItem}
                 clone
-                childCount={getChildCount(items, activeId) + 1}
+                childCount={getChildCount(items, activeId)}
                 indentationWidth={indentationWidth}
               />
             ) : null}
