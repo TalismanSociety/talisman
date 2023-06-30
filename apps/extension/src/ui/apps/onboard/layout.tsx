@@ -108,23 +108,9 @@ const FADE_IN: Variants = {
   anim: { opacity: 1 },
 }
 
-const TRANS_MED: Transition = {
-  type: "spring",
-  duration: 0.5,
-}
 const TRANS_SLOW: Transition = {
-  type: "spring",
   duration: 1,
-}
-
-const SLIDE_IN_LEFT: Variants = {
-  init: { x: -200 },
-  anim: { x: 0 },
-}
-
-const SLIDE_IN_RIGHT: Variants = {
-  init: { x: 200 },
-  anim: { x: 0 },
+  ease: "easeInOut",
 }
 
 export const Layout: FC<LayoutProps> = ({
@@ -139,15 +125,11 @@ export const Layout: FC<LayoutProps> = ({
       {!!withBack && <BtnBack analytics={analytics} />}
       {picture ? (
         <div className="hflex">
-          <motion.div className="picture" variants={SLIDE_IN_LEFT} transition={TRANS_MED}>
-            {picture}
-          </motion.div>
-          <motion.div className="content" variants={SLIDE_IN_RIGHT} transition={TRANS_MED}>
-            {children}
-          </motion.div>
+          <div className="picture">{picture}</div>
+          <div className="content">{children}</div>
         </div>
       ) : (
-        children
+        <div className="flex justify-center">{children}</div>
       )}
     </motion.section>
   </Main>

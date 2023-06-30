@@ -90,58 +90,56 @@ export const PasswordPage = () => {
 
   return (
     <Layout withBack analytics={ANALYTICS_PAGE}>
-      <div className="flex justify-center">
-        <OnboardDialog title={t("First, let's set a password")} stage={1}>
-          <p>
-            {t(
-              "Your password is used to unlock your wallet and is stored securely on your device. We recommend 12 characters, with uppercase and lowercase letters, symbols and numbers."
-            )}
-          </p>
-          <form onSubmit={handleSubmit(submit)} autoComplete="off">
-            <div className="flex flex-col">
-              <div className="text-body-secondary mb-8 mt-16 text-sm">
-                {t("Password strength")}: <PasswordStrength password={password} />
-              </div>
-              <OnboardFormField error={errors.password}>
-                <FormFieldInputText
-                  {...register("password")}
-                  type="password"
-                  placeholder={t("Enter password")}
-                  autoComplete="new-password"
-                  spellCheck={false}
-                  data-lpignore
-                  // eslint-disable-next-line jsx-a11y/no-autofocus
-                  autoFocus
-                  className="placeholder:text-body-secondary/30 !bg-transparent !px-0"
-                  containerProps={INPUT_CONTAINER_PROPS_PASSWORD}
-                />
-              </OnboardFormField>
-              <OnboardFormField error={errors.passwordConfirm}>
-                <FormFieldInputText
-                  {...register("passwordConfirm")}
-                  type="password"
-                  autoComplete="off"
-                  placeholder={t("Confirm password")}
-                  spellCheck={false}
-                  data-lpignore
-                  className="placeholder:text-body-secondary/30 !bg-transparent !px-0"
-                  containerProps={INPUT_CONTAINER_PROPS_PASSWORD}
-                />
-              </OnboardFormField>
+      <OnboardDialog title={t("First, let's set a password")} stage={1}>
+        <p>
+          {t(
+            "Your password is used to unlock your wallet and is stored securely on your device. We recommend 12 characters, with uppercase and lowercase letters, symbols and numbers."
+          )}
+        </p>
+        <form onSubmit={handleSubmit(submit)} autoComplete="off">
+          <div className="flex flex-col">
+            <div className="text-body-secondary mb-8 mt-16 text-sm">
+              {t("Password strength")}: <PasswordStrength password={password} />
             </div>
-            <div className="h-8" />
-            <OnboardButton
-              className="h-28"
-              type="submit"
-              primary
-              disabled={!isValid}
-              processing={isSubmitting}
-            >
-              {t("Continue")}
-            </OnboardButton>
-          </form>
-        </OnboardDialog>
-      </div>
+            <OnboardFormField error={errors.password}>
+              <FormFieldInputText
+                {...register("password")}
+                type="password"
+                placeholder={t("Enter password")}
+                autoComplete="new-password"
+                spellCheck={false}
+                data-lpignore
+                // eslint-disable-next-line jsx-a11y/no-autofocus
+                autoFocus
+                className="placeholder:text-body-secondary/30 !bg-transparent !px-0"
+                containerProps={INPUT_CONTAINER_PROPS_PASSWORD}
+              />
+            </OnboardFormField>
+            <OnboardFormField error={errors.passwordConfirm}>
+              <FormFieldInputText
+                {...register("passwordConfirm")}
+                type="password"
+                autoComplete="off"
+                placeholder={t("Confirm password")}
+                spellCheck={false}
+                data-lpignore
+                className="placeholder:text-body-secondary/30 !bg-transparent !px-0"
+                containerProps={INPUT_CONTAINER_PROPS_PASSWORD}
+              />
+            </OnboardFormField>
+          </div>
+          <div className="h-8" />
+          <OnboardButton
+            className="h-28"
+            type="submit"
+            primary
+            disabled={!isValid}
+            processing={isSubmitting}
+          >
+            {t("Continue")}
+          </OnboardButton>
+        </form>
+      </OnboardDialog>
     </Layout>
   )
 }

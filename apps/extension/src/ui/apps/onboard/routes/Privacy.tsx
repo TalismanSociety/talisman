@@ -1,41 +1,28 @@
-import { SimpleButton } from "@talisman/components/SimpleButton"
-import imgAnalytics from "@talisman/theme/images/analytics.png"
+// import imgAnalytics from "@talisman/theme/images/analytics.png"
 import { AnalyticsPage, sendAnalyticsEvent } from "@ui/api/analytics"
 import { useAnalyticsPageView } from "@ui/hooks/useAnalyticsPageView"
 import { useCallback } from "react"
 import { Trans, useTranslation } from "react-i18next"
-import { Navigate, useNavigate } from "react-router-dom"
-import styled from "styled-components"
+import { useNavigate } from "react-router-dom"
+import { Button } from "talisman-ui"
 
 import { OnboardDialog } from "../components/OnboardDialog"
 import { useOnboard } from "../context"
 import { Layout } from "../layout"
 
-const Container = styled(Layout)`
-  > section > .hflex > .picture {
-    width: auto;
-  }
+// const Container = styled(Layout)`
+//   > section > .hflex > .picture {
+//     width: auto;
+//   }
 
-  > section > .hflex > .content {
-    width: 59.2rem;
-  }
+//   > section > .hflex > .content {
+//     width: 59.2rem;
+//   }
 
-  a {
-    color: var(--color-foreground);
-  }
-`
-
-const SimpleButtonTransparent = styled(SimpleButton)`
-  background: transparent;
-`
-
-const Dialog = styled(OnboardDialog)`
-  width: 59.2rem;
-`
-
-const Picture = styled.img`
-  width: 53.7rem;
-`
+//   a {
+//     color: var(--color-foreground);
+//   }
+// `
 
 const ANALYTICS_PAGE: AnalyticsPage = {
   container: "Fullscreen",
@@ -48,7 +35,7 @@ export const PrivacyPage = () => {
   const { t } = useTranslation("onboard")
   useAnalyticsPageView(ANALYTICS_PAGE)
 
-  const { updateData, data } = useOnboard()
+  const { updateData } = useOnboard()
   const navigate = useNavigate()
 
   const handleClick = useCallback(
@@ -74,43 +61,45 @@ export const PrivacyPage = () => {
   }, [])
 
   // if user refreshes the page, context data is lost
-  if (!data?.password) return <Navigate to="/" replace />
+  // if (!data?.password) return <Navigate to="/" replace />
 
   return (
-    <Container
+    <Layout
       withBack
-      picture={<Picture src={imgAnalytics} alt="Analytics" />}
+      // picture={<img className="w-[54rem]" src={imgAnalytics} alt="Analytics" />}
       analytics={ANALYTICS_PAGE}
     >
-      <Dialog title={t("Manage your privacy")}>
-        <p className="mt-16">
-          <Trans t={t}>
+      <OnboardDialog title={t("Manage your privacy")} stage={2}>
+        <Trans t={t} className="mt-8 flex gap-8">
+          <p>
             To help improve Talisman we’d like to collect anonymous usage information and send
-            anonymized error reports. We respect your data and never record sensitive or identifying
-            information. You can always adjust these settings, or opt out completely at any time.
-          </Trans>
-          <br />
-          <br />
-          <Trans t={t}>
+            anonymized error reports.
+          </p>
+          <p>
+            We respect your data and never record sensitive or identifying information. You can
+            always adjust these settings, or opt out completely at any time.
+          </p>
+          <p>
             <a
               onClick={handleLearnMoreClick}
+              className="text-body"
               href="https://docs.talisman.xyz/talisman/legal-and-security/privacy-policy"
               target="_blank"
             >
               Learn more
             </a>{" "}
             about what we track and how we use this data.
-          </Trans>
-        </p>
+          </p>
+        </Trans>
         <div className="mt-24 flex w-full gap-8">
-          <SimpleButtonTransparent onClick={handleClick(false)}>
+          <Button className="bg-transparent" onClick={handleClick(false)}>
             {t("No thanks")}
-          </SimpleButtonTransparent>
-          <SimpleButton onClick={handleClick(true)} primary>
+          </Button>
+          <Button onClick={handleClick(true)} primary>
             {t("I agree")}
-          </SimpleButton>
+          </Button>
         </div>
-      </Dialog>
-    </Container>
+      </OnboardDialog>
+    </Layout>
   )
 }
