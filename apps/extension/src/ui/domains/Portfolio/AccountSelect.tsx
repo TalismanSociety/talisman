@@ -11,7 +11,7 @@ import { useAnalytics } from "@ui/hooks/useAnalytics"
 import useBalances from "@ui/hooks/useBalances"
 import useBalancesByAddress from "@ui/hooks/useBalancesByAddress"
 import { UseSelectStateChange, useSelect } from "downshift"
-import { Fragment, useCallback, useMemo } from "react"
+import { useCallback, useMemo } from "react"
 import { useTranslation } from "react-i18next"
 import styled, { css } from "styled-components"
 
@@ -324,10 +324,8 @@ export const AccountSelect = ({ responsive, className }: AccountSelectProps) => 
     onSelectedItemChange: handleItemChange,
   })
 
-  const indexFirstWatchedOnlyAccount = useMemo(
-    () => items.findIndex((item) => item.origin === "WATCHED" && !item.isPortfolio),
-    [items]
-  )
+  const portfolioItems = useMemo(() => items.filter(isPortfolio), [items])
+  const watchedOnlyItems = useMemo(() => items.filter(isWatchedOnly), [items])
 
   return (
     <Container
@@ -341,7 +339,7 @@ export const AccountSelect = ({ responsive, className }: AccountSelectProps) => 
       <ul {...getMenuProps()}>
         {isOpen && (
           <>
-            {indexFirstWatchedOnlyAccount > -1 && (
+            {watchedOnlyItems.length > 0 && (
               <li className="text-body-secondary !mb-2 !mt-6 flex !cursor-default gap-4 !px-6 font-bold hover:!bg-transparent">
                 <TalismanHandIcon />
                 <div>{t("My portfolio")}</div>
@@ -353,22 +351,29 @@ export const AccountSelect = ({ responsive, className }: AccountSelectProps) => 
                 {account ? <SingleAccountOption {...account} /> : <AllAccountsOption />}
               </button>
             </li>
-            {items.map((item, index) => (
-              <Fragment key={item.address}>
-                {index === indexFirstWatchedOnlyAccount && (
-                  <li className="text-body-secondary !mb-2 !mt-6 flex !cursor-default gap-4 !px-6 font-bold hover:!bg-transparent">
-                    <EyeIcon />
-                    <div>{t("Followed only")}</div>
-                  </li>
+            {portfolioItems.map((item, index) => (
+              <li key={item.address} {...getItemProps({ item, index })}>
+                {item.address ? (
+                  <SingleAccountOption {...item} address={item.address} withTrack />
+                ) : (
+                  <AllAccountsOption withTrack />
                 )}
-                <li {...getItemProps({ item, index })}>
-                  {item.address ? (
-                    <SingleAccountOption {...item} address={item.address} withTrack />
-                  ) : (
-                    <AllAccountsOption withTrack />
-                  )}
-                </li>
-              </Fragment>
+              </li>
+            ))}
+            {watchedOnlyItems.length > 0 && (
+              <li className="text-body-secondary !mb-2 !mt-6 flex !cursor-default gap-4 !px-6 font-bold hover:!bg-transparent">
+                <EyeIcon />
+                <div>{t("Followed only")}</div>
+              </li>
+            )}
+            {watchedOnlyItems.map((item, index) => (
+              <li key={item.address} {...getItemProps({ item, index })}>
+                {item.address ? (
+                  <SingleAccountOption {...item} address={item.address} withTrack />
+                ) : (
+                  <AllAccountsOption withTrack />
+                )}
+              </li>
             ))}
           </>
         )}
@@ -376,3 +381,6 @@ export const AccountSelect = ({ responsive, className }: AccountSelectProps) => 
     </Container>
   )
 }
+
+const isWatchedOnly = (item: DropdownItem) => item.origin === "WATCHED" && !item.isPortfolio
+const isPortfolio = (item: DropdownItem) => !isWatchedOnly(item)

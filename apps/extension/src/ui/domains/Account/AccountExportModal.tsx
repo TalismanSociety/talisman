@@ -1,4 +1,4 @@
-import { AccountType } from "@core/domains/accounts/types"
+import { AccountJsonAny, AccountType } from "@core/domains/accounts/types"
 import { yupResolver } from "@hookform/resolvers/yup"
 import { Modal } from "@talisman/components/Modal"
 import { ModalDialog } from "@talisman/components/ModalDialog"
@@ -7,7 +7,7 @@ import { useOpenClose } from "@talisman/hooks/useOpenClose"
 import downloadJson from "@talisman/util/downloadJson"
 import { provideContext } from "@talisman/util/provideContext"
 import { api } from "@ui/api"
-import { useCallback, useEffect, useMemo } from "react"
+import { useCallback, useEffect, useMemo, useState } from "react"
 import { useForm } from "react-hook-form"
 import { Trans, useTranslation } from "react-i18next"
 import { Button, FormFieldContainer, FormFieldInputText } from "talisman-ui"
@@ -19,17 +19,29 @@ import { PasswordUnlock, usePasswordUnlock } from "./PasswordUnlock"
 const EXPORTABLE_ORIGINS: AccountType[] = ["SEED", "JSON", "DERIVED"]
 
 const useAccountExportModalProvider = () => {
-  const { account } = useSelectedAccount()
-  const { isOpen, open, close } = useOpenClose()
+  const [_account, setAccount] = useState<AccountJsonAny>()
+
+  const { account: selectedAccount } = useSelectedAccount()
+  const { isOpen, open: innerOpen, close } = useOpenClose()
+
+  const open = useCallback(
+    (account?: AccountJsonAny) => {
+      setAccount(account)
+      innerOpen()
+    },
+    [innerOpen]
+  )
 
   useEffect(() => {
     close()
-  }, [account, close])
+  }, [selectedAccount, close])
 
-  const canExportAccount = useMemo(
-    () => account?.origin && EXPORTABLE_ORIGINS.includes(account?.origin),
-    [account]
-  )
+  const account = _account ?? selectedAccount
+
+  const canExportAccountFunc = (account?: AccountJsonAny) =>
+    account?.origin && EXPORTABLE_ORIGINS.includes(account?.origin)
+
+  const canExportAccount = useMemo(() => canExportAccountFunc(account), [account])
 
   const exportAccount = useCallback(
     async (password: string, newPw: string) => {
@@ -40,7 +52,7 @@ const useAccountExportModalProvider = () => {
     [account]
   )
 
-  return { account, canExportAccount, exportAccount, isOpen, open, close }
+  return { account, canExportAccountFunc, canExportAccount, exportAccount, isOpen, open, close }
 }
 
 export const [AccountExportModalProvider, useAccountExportModal] = provideContext(

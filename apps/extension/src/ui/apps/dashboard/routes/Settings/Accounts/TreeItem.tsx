@@ -1,17 +1,28 @@
 import { AccountJsonAny } from "@core/domains/accounts/types"
 import { DraggableAttributes } from "@dnd-kit/core"
 import { SyntheticListenerMap } from "@dnd-kit/core/dist/hooks/utilities"
+import { isEthereumAddress } from "@polkadot/util-crypto"
 import { WithTooltip } from "@talisman/components/Tooltip"
 import { ChevronDownIcon, DragIcon, FolderIcon, MoreHorizontalIcon } from "@talisman/theme/icons"
 import { Balances } from "@talismn/balances"
 import { classNames } from "@talismn/util"
+import { useAccountExportModal } from "@ui/domains/Account/AccountExportModal"
+import { useAccountExportPrivateKeyModal } from "@ui/domains/Account/AccountExportPrivateKeyModal"
 import { AccountIcon } from "@ui/domains/Account/AccountIcon"
+import { useAccountRemoveModal } from "@ui/domains/Account/AccountRemoveModal"
+import { useAccountRenameModal } from "@ui/domains/Account/AccountRenameModal"
 import { AccountTypeIcon } from "@ui/domains/Account/AccountTypeIcon"
 import { Address } from "@ui/domains/Account/Address"
 import Fiat from "@ui/domains/Asset/Fiat"
+import { useCopyAddressModal } from "@ui/domains/CopyAddress"
+import { useAccountToggleIsPortfolio } from "@ui/hooks/useAccountToggleIsPortfolio"
+import { useAnalytics } from "@ui/hooks/useAnalytics"
 import { useBalanceDetails } from "@ui/hooks/useBalanceDetails"
+import { useIsFeatureEnabled } from "@ui/hooks/useFeatures"
+import { getTransactionHistoryUrl } from "@ui/util/getTransactionHistoryUrl"
 import { CSSProperties, ReactNode, forwardRef, useMemo } from "react"
 import { useTranslation } from "react-i18next"
+import { useNavigate } from "react-router-dom"
 import { ContextMenu, ContextMenuContent, ContextMenuItem, ContextMenuTrigger } from "talisman-ui"
 
 import { AccountsLogoStack } from "./AccountsLogoStack"
@@ -47,7 +58,7 @@ TreeItem.displayName = "TreeItem"
 
 export const TreeAccountItem = forwardRef<HTMLDivElement, Props & { item: UiTreeAccount }>(
   (props, ref) => {
-    const { t } = useTranslation("admin")
+    const { t } = useTranslation()
     const { item, handleProps, style, accounts, balances, wrapperRef, depth } = props
     const account = accounts.find((account) => account.address === item.address)
     const accountBalances = useMemo(
@@ -55,6 +66,19 @@ export const TreeAccountItem = forwardRef<HTMLDivElement, Props & { item: UiTree
       [account, balances]
     )
     const { balanceDetails, totalUsd } = useBalanceDetails(accountBalances)
+
+    const { genericEvent } = useAnalytics()
+    const { canToggleIsPortfolio, toggleIsPortfolio, toggleLabel } =
+      useAccountToggleIsPortfolio(account)
+    const { open: openCopyAddressModal } = useCopyAddressModal()
+    const showTxHistory = useIsFeatureEnabled("LINK_TX_HISTORY")
+    const { open: openAccountRenameModal } = useAccountRenameModal()
+    const { canExportAccountFunc, open: openAccountExportModal } = useAccountExportModal()
+    const { canExportAccountFunc: canExportAccountPkFunc, open: openAccountExportPkModal } =
+      useAccountExportPrivateKeyModal()
+    const { canRemoveFunc, open: openAccountRemoveModal } = useAccountRemoveModal()
+    const canAddCustomToken = useMemo(() => isEthereumAddress(account?.address), [account?.address])
+    const navigate = useNavigate()
 
     if (!account) return null
     return (
@@ -89,20 +113,57 @@ export const TreeAccountItem = forwardRef<HTMLDivElement, Props & { item: UiTree
               <MoreHorizontalIcon className="shrink-0" />
             </ContextMenuTrigger>
             <ContextMenuContent className="border-grey-800 z-50 flex w-min flex-col whitespace-nowrap rounded-sm border bg-black px-2 py-3 text-left text-sm shadow-lg">
-              <ContextMenuItem onClick={() => {}}>{t("Copy address")}</ContextMenuItem>
-              <ContextMenuItem onClick={() => {}}>{t("Export json")}</ContextMenuItem>
-              <ContextMenuItem onClick={() => {}}>{t("Export private key")}</ContextMenuItem>
-              <ContextMenuItem onClick={() => {}}>{t("Hide from portfolio")}</ContextMenuItem>
-              <ContextMenuItem onClick={() => {}}>{t("Show in portfolio")}</ContextMenuItem>
-              <ContextMenuItem onClick={() => {}}>{t("Rename")}</ContextMenuItem>
-              <ContextMenuItem onClick={() => {}}>{t("Remove account")}</ContextMenuItem>
-
-              {/* Watch-only */}
-              {/* Maybe re-use the Hide/Show in portfolio from above? */}
-              <ContextMenuItem onClick={() => {}}>{t("Add to portfolio")}</ContextMenuItem>
-              <ContextMenuItem onClick={() => {}}>
-                {t("Make followed-only account")}
+              {canToggleIsPortfolio && (
+                <ContextMenuItem onClick={toggleIsPortfolio}>{toggleLabel}</ContextMenuItem>
+              )}
+              <ContextMenuItem
+                onClick={() => {
+                  genericEvent("open copy address", { from: "settings - accounts" })
+                  openCopyAddressModal({ mode: "copy", address: account.address })
+                }}
+              >
+                {t("Copy address")}
               </ContextMenuItem>
+              {showTxHistory && (
+                <ContextMenuItem
+                  onClick={() => {
+                    genericEvent("open web app tx history", { from: "settings - accounts" })
+                    window.open(getTransactionHistoryUrl(account?.address), "_blank")
+                  }}
+                >
+                  {t("Transaction history")}
+                </ContextMenuItem>
+              )}
+              <ContextMenuItem onClick={() => openAccountRenameModal(account)}>
+                {t("Rename")}
+              </ContextMenuItem>
+              {canExportAccountFunc(account) && (
+                <ContextMenuItem onClick={() => openAccountExportModal(account)}>
+                  {t("Export as JSON")}
+                </ContextMenuItem>
+              )}
+              {canExportAccountPkFunc(account) && (
+                <ContextMenuItem onClick={() => openAccountExportPkModal(account)}>
+                  {t("Export private key")}
+                </ContextMenuItem>
+              )}
+              {canRemoveFunc(account) && (
+                <ContextMenuItem onClick={() => openAccountRemoveModal(account)}>
+                  {t("Remove account")}
+                </ContextMenuItem>
+              )}
+              {/*
+               ** TODO: Add hidden accounts
+               ** (See thread: https://discord.com/channels/969497836410507274/969971058918699110/1124182936841879605)
+               */}
+              {/* <ContextMenuItem onClick={() => {}}>{t("Hide from portfolio")}</ContextMenuItem> */}
+              {/* <ContextMenuItem onClick={() => {}}>{t("Show in portfolio")}</ContextMenuItem> */}
+
+              {canAddCustomToken && (
+                <ContextMenuItem onClick={() => navigate("/tokens/add")}>
+                  {t("Add custom token")}
+                </ContextMenuItem>
+              )}
             </ContextMenuContent>
           </ContextMenu>
         </div>
@@ -114,7 +175,7 @@ TreeAccountItem.displayName = "TreeAccountItem"
 
 export const TreeFolderItem = forwardRef<HTMLDivElement, Props & { item: UiTreeFolder }>(
   (props, ref) => {
-    const { t } = useTranslation("admin")
+    const { t } = useTranslation()
     const { childCount, clone, handleProps, item, collapsed, onCollapse, style, wrapperRef } = props
 
     const addresses = useMemo(() => item.tree.map((item) => item.address), [item])

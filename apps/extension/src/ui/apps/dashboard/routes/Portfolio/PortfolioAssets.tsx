@@ -105,41 +105,41 @@ const PageContent = ({ balances }: { balances: Balances }) => {
                     <MoreHorizontalIcon />
                   </ContextMenuTrigger>
                   <ContextMenuContent className="border-grey-800 z-50 flex w-min flex-col whitespace-nowrap rounded-sm border bg-black px-2 py-3 text-left text-sm shadow-lg">
+                    {canToggleIsPortfolio && (
+                      <ContextMenuItem onClick={toggleIsPortfolio}>{toggleLabel}</ContextMenuItem>
+                    )}
                     {canSendFunds && (
                       <ContextMenuItem onClick={sendFunds}>{t("Send funds")}</ContextMenuItem>
                     )}
                     <ContextMenuItem onClick={copyAddress}>{t("Copy address")}</ContextMenuItem>
                     {showTxHistory && (
                       <ContextMenuItem onClick={browseTxHistory}>
-                        {t("Transaction History")}
+                        {t("Transaction history")}
                       </ContextMenuItem>
                     )}
                     {canRename && (
-                      <ContextMenuItem onClick={openAccountRenameModal}>
+                      <ContextMenuItem onClick={() => openAccountRenameModal()}>
                         {t("Rename")}
                       </ContextMenuItem>
                     )}
                     {canExportAccount && (
-                      <ContextMenuItem onClick={openAccountExportModal}>
+                      <ContextMenuItem onClick={() => openAccountExportModal()}>
                         {t("Export as JSON")}
                       </ContextMenuItem>
                     )}
                     {canExportAccountPk && (
-                      <ContextMenuItem onClick={openAccountExportPkModal}>
-                        {t("Export Private Key")}
+                      <ContextMenuItem onClick={() => openAccountExportPkModal()}>
+                        {t("Export private key")}
                       </ContextMenuItem>
                     )}
                     {canRemove && (
-                      <ContextMenuItem onClick={openAccountRemoveModal}>
-                        {t("Remove Account")}
+                      <ContextMenuItem onClick={() => openAccountRemoveModal()}>
+                        {t("Remove account")}
                       </ContextMenuItem>
-                    )}
-                    {canToggleIsPortfolio && (
-                      <ContextMenuItem onClick={toggleIsPortfolio}>{toggleLabel}</ContextMenuItem>
                     )}
                     {canAddCustomToken && (
                       <ContextMenuItem onClick={handleAddCustomToken}>
-                        {t("Add Custom Token")}
+                        {t("Add custom token")}
                       </ContextMenuItem>
                     )}
                   </ContextMenuContent>
