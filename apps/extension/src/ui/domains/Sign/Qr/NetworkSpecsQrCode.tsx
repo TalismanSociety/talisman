@@ -1,3 +1,4 @@
+import { IS_FIREFOX } from "@core/constants"
 import { hexToU8a } from "@polkadot/util"
 import { useQuery } from "@tanstack/react-query"
 import { api } from "@ui/api"
@@ -37,10 +38,11 @@ export const NetworkSpecsQrCode = ({ genesisHash, qrCodeSource }: Props) => {
           onLoad={onLoad}
           onLoadedData={onLoad}
           alt=""
+          crossOrigin={IS_FIREFOX ? undefined : "anonymous"}
         />
         {loaded && qrCodeLogo ? (
           <img
-            className="absolute top-1/2 left-1/2 w-11 -translate-x-1/2 -translate-y-1/2 bg-white p-2"
+            className="absolute left-1/2 top-1/2 w-11 -translate-x-1/2 -translate-y-1/2 bg-white p-2"
             src={qrCodeLogo}
             alt=""
           />
