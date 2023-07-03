@@ -45,7 +45,7 @@ const StyledDropdown = styled((props: DropdownProps<Option>) => Dropdown(props))
 `
 
 export const AutoLockTimer = () => {
-  const { t } = useTranslation("settings")
+  const { t } = useTranslation("admin")
   const [autoLockTimeout, setAutoLockTimeout] = useSetting("autoLockTimeout")
 
   const options: Record<AllowedValues, Option> = useMemo(

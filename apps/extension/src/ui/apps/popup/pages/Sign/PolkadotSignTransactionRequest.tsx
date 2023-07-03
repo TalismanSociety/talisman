@@ -20,7 +20,7 @@ import { SignAccountAvatar } from "./SignAccountAvatar"
 const LedgerSubstrate = lazy(() => import("@ui/domains/Sign/LedgerSubstrate"))
 
 const EstimatedFeesRow: FC = () => {
-  const { t } = useTranslation("sign")
+  const { t } = useTranslation("request")
   const { fee, isLoadingFee, errorFee, chain, errorDecodingExtrinsic } = usePolkadotSigningRequest()
   const feeToken = useFeeToken(chain?.nativeToken?.id)
 
@@ -58,7 +58,7 @@ const EstimatedFeesRow: FC = () => {
 }
 
 export const PolkadotSignTransactionRequest: FC = () => {
-  const { t } = useTranslation("sign")
+  const { t } = useTranslation("request")
   const {
     isDecodingExtrinsic,
     url,

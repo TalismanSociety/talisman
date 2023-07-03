@@ -7,7 +7,7 @@ import { useTranslation } from "react-i18next"
 import { Button } from "talisman-ui"
 
 export const BackupWarningDrawer = () => {
-  const { t } = useTranslation("settings")
+  const { t } = useTranslation()
   const { showBackupWarning, snoozeBackupReminder } = useMnemonicBackup()
   const openBackup = useCallback(async () => {
     await api.dashboardOpen("/settings?showBackupModal")

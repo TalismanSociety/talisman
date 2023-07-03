@@ -98,7 +98,7 @@ const renderOption: RenderItemFunc<Chain> = (chain) => {
 }
 
 export const AddLedgerSelectNetwork = () => {
-  const { t } = useTranslation("account-add")
+  const { t } = useTranslation("admin")
   const { data: defaultValues, updateData } = useAddLedgerAccount()
 
   const navigate = useNavigate()

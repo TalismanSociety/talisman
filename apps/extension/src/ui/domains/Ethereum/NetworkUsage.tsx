@@ -29,7 +29,7 @@ const NetworkUsageBase = ({
 type NetworkUsageProps = { baseFeeTrend?: EthBaseFeeTrend; className?: string }
 
 export const NetworkUsage: FC<NetworkUsageProps> = ({ baseFeeTrend, className }) => {
-  const { t } = useTranslation("sign")
+  const { t } = useTranslation("request")
   switch (baseFeeTrend) {
     case "idle":
       return <NetworkUsageBase className={className} text={t("Idle")} icon={NetworkUsageIdle} />

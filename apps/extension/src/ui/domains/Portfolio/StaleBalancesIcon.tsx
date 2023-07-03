@@ -4,7 +4,7 @@ import { useTranslation } from "react-i18next"
 
 export type Props = { className?: string; staleChains?: string[] }
 export const StaleBalancesIcon = ({ className, staleChains = [] }: Props) => {
-  const { t } = useTranslation("portfolio")
+  const { t } = useTranslation()
 
   if (staleChains.length < 1) return null
 

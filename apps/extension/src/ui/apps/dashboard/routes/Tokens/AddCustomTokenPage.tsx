@@ -33,7 +33,7 @@ const ANALYTICS_PAGE: AnalyticsPage = {
 }
 
 export const AddCustomTokenPage = () => {
-  const { t } = useTranslation("settings")
+  const { t } = useTranslation("admin")
   useAnalyticsPageView(ANALYTICS_PAGE)
   const navigate = useNavigate()
   const networks = useSortedEvmNetworks(true)

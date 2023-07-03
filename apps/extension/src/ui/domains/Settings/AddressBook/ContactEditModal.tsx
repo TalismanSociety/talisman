@@ -28,7 +28,7 @@ const ANALYTICS_PAGE: AnalyticsPage = {
 }
 
 export const ContactEditModal = ({ contact, isOpen, close }: ContactModalProps) => {
-  const { t } = useTranslation("settings")
+  const { t } = useTranslation("admin")
   const { edit } = useAddressBook()
 
   const {

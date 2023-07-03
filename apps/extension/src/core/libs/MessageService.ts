@@ -92,7 +92,7 @@ export default class MessageService {
         request: request || (null as RequestTypes[TMessageType]),
       }
 
-      this.messageSource.postMessage(transportRequestMessage, "*")
+      this.messageSource.postMessage(transportRequestMessage, window.location.origin)
     })
   }
 
@@ -121,7 +121,7 @@ export default class MessageService {
       request: request || (null as RequestTypes[TMessageType]),
     }
 
-    this.messageSource.postMessage(transportRequestMessage, "*")
+    this.messageSource.postMessage(transportRequestMessage, window.location.origin)
 
     return () => {
       this.sendMessage("pri(unsubscribe)", { id }).then(() => delete this.handlers[id])

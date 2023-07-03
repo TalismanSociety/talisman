@@ -106,7 +106,7 @@ export const QrCodeSourceSelector = ({
   showPopover,
   togglePopover,
 }: QrCodeSourceSelectorProps) => {
-  const { t } = useTranslation("sign")
+  const { t } = useTranslation("request")
   return sources.length > 1 ? (
     <Popover placement="bottom-end" open={showPopover} onOpenChange={togglePopover}>
       <PopoverTrigger asChild>

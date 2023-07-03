@@ -16,7 +16,7 @@ import { SignAccountAvatar } from "./SignAccountAvatar"
 const LedgerSubstrate = lazy(() => import("@ui/domains/Sign/LedgerSubstrate"))
 
 export const PolkadotSignMessageRequest: FC = () => {
-  const { t } = useTranslation("sign")
+  const { t } = useTranslation("request")
   const {
     url,
     request,

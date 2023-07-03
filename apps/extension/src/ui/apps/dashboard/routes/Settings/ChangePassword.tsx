@@ -21,7 +21,7 @@ type FormData = {
 }
 
 const ChangePassword = () => {
-  const { t } = useTranslation("settings")
+  const { t } = useTranslation("admin")
   const navigate = useNavigate()
   const { isNotConfirmed } = useMnemonicBackup()
   const { isOpen, open, close } = useOpenClose()

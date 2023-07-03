@@ -7,7 +7,7 @@ export const SignViewStakingSetAutoCompound: FC<{
   tokenId: TokenId
   autoCompound: number
 }> = ({ tokenId, autoCompound }) => {
-  const { t } = useTranslation("sign")
+  const { t } = useTranslation("request")
   const token = useToken(tokenId)
 
   if (!token) return null

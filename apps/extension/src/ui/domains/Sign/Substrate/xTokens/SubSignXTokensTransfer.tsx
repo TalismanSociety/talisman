@@ -106,7 +106,7 @@ const getTarget = (
 }
 
 export const SubSignXTokensTransfer = () => {
-  const { t } = useTranslation("sign")
+  const { t } = useTranslation("request")
   const { chain, payload, account } = usePolkadotSigningRequest()
   const { data: extrinsic } = useExtrinsic(payload)
   const { tokens } = useTokens(true)

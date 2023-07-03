@@ -6,7 +6,7 @@ import { Button } from "talisman-ui"
 import { useMigratePassword } from "./context"
 
 export const MigratePasswordSuccess = () => {
-  const { t } = useTranslation("settings")
+  const { t } = useTranslation()
   const { onComplete } = useMigratePassword()
   return (
     <ModalDialog title={t("Security Upgrade Complete")}>

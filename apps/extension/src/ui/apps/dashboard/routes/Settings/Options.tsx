@@ -10,7 +10,7 @@ import { Trans, useTranslation } from "react-i18next"
 import { Toggle, Tooltip, TooltipContent, TooltipTrigger } from "talisman-ui"
 
 const Options = () => {
-  const { t } = useTranslation("settings")
+  const { t } = useTranslation("admin")
   const [hasSpiritKey] = useAppState("hasSpiritKey")
   const [identiconType, setIdenticonType] = useSetting("identiconType")
   const [useTestnets, setUseTestnets] = useSetting("useTestnets")

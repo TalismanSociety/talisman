@@ -15,7 +15,7 @@ const ANALYTICS_PAGE: AnalyticsPage = {
 }
 
 export const NetworkPage = () => {
-  const { t } = useTranslation("settings")
+  const { t } = useTranslation("admin")
   const navigate = useNavigate()
   const { id: evmNetworkId } = useParams<"id">()
 

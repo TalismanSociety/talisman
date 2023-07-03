@@ -75,7 +75,7 @@ export const SignViewXTokensTransfer: FC<{
   toNetwork,
   toAddress,
 }) => {
-  const { t } = useTranslation("sign")
+  const { t } = useTranslation("request")
   const fromChain = useChain(fromNetwork)
   const fromEvmNetwork = useEvmNetwork(fromNetwork)
   const toChain = useChain(toNetwork)

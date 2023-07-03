@@ -2,6 +2,7 @@ import { db } from "@core/db"
 import { RequestMetadataApprove, RequestMetadataReject } from "@core/domains/metadata/types"
 import { ExtensionHandler } from "@core/libs/Handler"
 import { requestStore } from "@core/libs/requests/store"
+import { log } from "@core/log"
 import type { MessageTypes, RequestTypes, ResponseType } from "@core/types"
 import { Port } from "@core/types/base"
 import { assert } from "@polkadot/util"
@@ -10,19 +11,22 @@ import { metadataUpdatesStore } from "./metadataUpdates"
 
 export default class MetadataHandler extends ExtensionHandler {
   private async metadataApprove({ id }: RequestMetadataApprove): Promise<boolean> {
-    const queued = requestStore.getRequest(id)
+    try {
+      const queued = requestStore.getRequest(id)
 
-    assert(queued, "Unable to find request")
+      assert(queued, "Unable to find request")
 
-    const { request, resolve } = queued
+      const { request, resolve } = queued
 
-    // NOTE: If this throws, errors are handled in the UI (we show a nice error message toast to the user)
-    // For more info check out @ui/apps/popup/pages/Metadata.tsx
-    await db.metadata.put(request)
+      await db.metadata.put(request)
 
-    resolve(true)
+      resolve(true)
 
-    return true
+      return true
+    } catch (err) {
+      log.error("Failed to update metadata", { err })
+      throw new Error("Failed to update metadata")
+    }
   }
 
   private metadataReject({ id }: RequestMetadataReject): boolean {

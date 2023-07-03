@@ -47,7 +47,7 @@ const normalise = (address: string, addressType?: "ss58" | "ethereum") =>
   normaliseMethods[addressType || "ss58"](address)
 
 export const ContactCreateModal = ({ isOpen, close }: ContactModalProps) => {
-  const { t } = useTranslation("settings")
+  const { t } = useTranslation("admin")
   const { add, contacts } = useAddressBook()
   const accounts = useAccounts()
 

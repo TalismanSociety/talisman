@@ -66,7 +66,7 @@ const ANALYTICS_PAGE: AnalyticsPage = {
 }
 
 export const FundYourWallet = () => {
-  const { t } = useTranslation("portfolio")
+  const { t } = useTranslation()
   useAnalyticsPageView(ANALYTICS_PAGE)
   const showBuyCryptoButton = useIsFeatureEnabled("BUY_CRYPTO")
   const { open: openBuyModal } = useBuyTokensModal()

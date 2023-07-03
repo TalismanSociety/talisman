@@ -13,7 +13,7 @@ import { SignAccountAvatar } from "./SignAccountAvatar"
 const LedgerEthereum = lazy(() => import("@ui/domains/Sign/LedgerEthereum"))
 
 export const EthSignMessageRequest = () => {
-  const { t } = useTranslation("sign")
+  const { t } = useTranslation("request")
   const {
     url,
     request,

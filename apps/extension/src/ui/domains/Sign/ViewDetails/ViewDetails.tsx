@@ -61,7 +61,7 @@ const ViewDetailsContainer = styled.div`
 const ViewDetailsContent: FC<{
   onClose: () => void
 }> = ({ onClose }) => {
-  const { t } = useTranslation("sign")
+  const { t } = useTranslation("request")
   const { genericEvent } = useAnalytics()
   const { request, account, chain, payload, extrinsic, errorDecodingExtrinsic, fee, errorFee } =
     usePolkadotSigningRequest()

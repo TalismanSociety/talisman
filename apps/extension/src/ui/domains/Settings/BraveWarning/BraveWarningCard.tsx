@@ -10,7 +10,7 @@ type Props = {
 }
 
 export const BraveWarningCard = styled(({ className, onLearnMoreClick }: Props) => {
-  const { t } = useTranslation("settings")
+  const { t } = useTranslation()
   return (
     <Card
       className={className}

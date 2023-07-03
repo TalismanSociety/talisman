@@ -90,7 +90,7 @@ const SignContainer = styled(Container)`
 `
 
 const useEvmBalance = (address?: string, evmNetworkId?: string) => {
-  const { t } = useTranslation("sign")
+  const { t } = useTranslation("request")
   const provider = useEthereumProvider(evmNetworkId)
   return useQuery({
     queryKey: ["evm-balance", provider?.network?.chainId, address],
@@ -119,7 +119,7 @@ const FeeTooltip = ({
   maxFee?: string | bigint
   tokenId?: string
 }) => {
-  const { t } = useTranslation("sign")
+  const { t } = useTranslation("request")
   // cannot use useBalance because our db may not include testnet balances
   const token = useToken(tokenId)
   const { data: balance, error } = useEvmBalance(account, token?.evmNetwork?.id)
@@ -163,7 +163,7 @@ const FeeTooltip = ({
 }
 
 export const EthSignTransactionRequest = () => {
-  const { t } = useTranslation("sign")
+  const { t } = useTranslation("request")
   const {
     url,
     request,

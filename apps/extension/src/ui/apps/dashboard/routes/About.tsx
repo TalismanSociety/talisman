@@ -6,7 +6,7 @@ import { CtaButton } from "talisman-ui"
 import Layout from "../layout"
 
 const About = () => {
-  const { t } = useTranslation("settings")
+  const { t } = useTranslation("admin")
   return (
     <Layout withBack centered backTo="/settings">
       <HeaderBlock title={t("About")} />
