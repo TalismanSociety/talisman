@@ -1,49 +1,13 @@
+import { classNames } from "@talismn/util"
 import { useCurrentSite } from "@ui/apps/popup/context/CurrentSiteContext"
 import useAccounts from "@ui/hooks/useAccounts"
 import { useAuthorisedSites } from "@ui/hooks/useAuthorisedSites"
 import { FC, Suspense, lazy, useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
-import styled from "styled-components"
 
 import { NetworkLogo } from "../Ethereum/NetworkLogo"
 
 const ConnectedAccountsDrawer = lazy(() => import("@ui/domains/Site/ConnectedAccountsDrawer"))
-
-const Container = styled.button`
-  display: flex;
-  align-items: center;
-  background: var(--color-background-muted);
-  line-height: 2.8rem;
-  border-radius: 4.8rem;
-  font-weight: var(--font-weight-regular);
-  color: var(--color-mid);
-  outline: none;
-  border: none;
-  cursor: pointer;
-  gap: 0.6rem;
-  padding: 0 0.8rem;
-
-  .dot {
-    display: inline-block;
-    height: 0.8em;
-    width: 0.8em;
-    border-radius: 50%;
-    background: var(--color-status-error);
-  }
-
-  &.connected .dot {
-    background: var(--color-status-connected);
-  }
-
-  :hover {
-    background: var(--color-background-muted-3x);
-    color: var(--color-foreground-muted-2x);
-  }
-
-  .network-logo {
-    font-size: 1.6rem;
-  }
-`
 
 export const ConnectedAccountsPill: FC = () => {
   const { t } = useTranslation()
@@ -77,14 +41,22 @@ export const ConnectedAccountsPill: FC = () => {
 
   return (
     <>
-      <Container
-        className={count ? "connected" : undefined}
+      <button
+        type="button"
+        className="text-body-secondary bg-grey-800 hover:bg-grey-750 hover:text-grey-300 flex h-14 items-center gap-3 rounded-3xl px-4 text-sm"
         onClick={() => setShowConnectedAccounts(true)}
       >
-        <span className="dot"></span>
-        <span className="label">{label}</span>
-        {typeof ethChainId === "number" && <NetworkLogo ethChainId={ethChainId.toString()} />}
-      </Container>
+        <div
+          className={classNames(
+            "h-6 w-6 rounded-full",
+            count ? "bg-alert-success" : "bg-alert-error"
+          )}
+        ></div>
+        <div>{label}</div>
+        {typeof ethChainId === "number" && (
+          <NetworkLogo className="text-base" ethChainId={ethChainId.toString()} />
+        )}
+      </button>
       <Suspense fallback={null}>
         <ConnectedAccountsDrawer
           open={showConnectedAccounts}
