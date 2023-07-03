@@ -3,6 +3,7 @@ import { Navigate, Route, Routes } from "react-router-dom"
 import { BalancesPage } from "./balances/BalancesPage"
 import { EncryptionPage } from "./encryption/EncryptionPage"
 import { IdentityPage } from "./identity/IdentityPage"
+import { MiscPage } from "./misc/MiscPage"
 import { NavSubstrate } from "./NavSubstrate"
 import { ApiProvider } from "./shared/useApi"
 import { NetworkProvider } from "./shared/useNetwork"
@@ -27,6 +28,7 @@ export const Substrate = () => {
             <Route path="identity" element={<IdentityPage />} />
             <Route path="sign" element={<SignPage />} />
             <Route path="encryption" element={<EncryptionPage />} />
+            <Route path="Misc" element={<MiscPage />} />
             <Route path="*" element={<Navigate to="identity" />} />
           </Routes>
         </WalletProvider>
