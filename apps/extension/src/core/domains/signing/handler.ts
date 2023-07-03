@@ -39,7 +39,6 @@ export default class SigningHandler extends ExtensionHandler {
         hostName: ok ? hostName : undefined,
       }
 
-      // an empty registry is sufficient, we don't need metadata here
       let registry = new TypeRegistry()
 
       if (isJsonPayload(payload)) {

@@ -1,8 +1,6 @@
 import { AccountJsonHardwareSubstrate, AccountJsonQr } from "@core/domains/accounts/types"
 import { SignerPayloadRaw } from "@core/domains/signing/types"
 import { AppPill } from "@talisman/components/AppPill"
-import { Box } from "@talisman/components/Box"
-import { SimpleButton } from "@talisman/components/SimpleButton"
 import { Content, Footer, Header } from "@ui/apps/popup/Layout"
 import { AccountPill } from "@ui/domains/Account/AccountPill"
 import { Message } from "@ui/domains/Sign/Message"
@@ -10,6 +8,7 @@ import { QrSubstrate } from "@ui/domains/Sign/Qr/QrSubstrate"
 import { usePolkadotSigningRequest } from "@ui/domains/Sign/SignRequestContext"
 import { FC, Suspense, lazy, useEffect, useMemo } from "react"
 import { useTranslation } from "react-i18next"
+import { Button } from "talisman-ui"
 
 import { Container } from "./common"
 import { SignAccountAvatar } from "./SignAccountAvatar"
@@ -69,19 +68,14 @@ export const PolkadotSignMessageRequest: FC = () => {
         {account && request && (
           <>
             {account.origin !== "HARDWARE" && account.origin !== "QR" && (
-              <Box flex fullwidth gap={2.4}>
-                <SimpleButton disabled={processing} onClick={reject}>
+              <div className="grid w-full grid-cols-2 gap-12">
+                <Button disabled={processing} onClick={reject}>
                   {t("Cancel")}
-                </SimpleButton>
-                <SimpleButton
-                  disabled={processing}
-                  processing={processing}
-                  primary
-                  onClick={approve}
-                >
+                </Button>
+                <Button disabled={processing} processing={processing} primary onClick={approve}>
                   {t("Approve")}
-                </SimpleButton>
-              </Box>
+                </Button>
+              </div>
             )}
             {account.origin === "HARDWARE" && (
               <Suspense fallback={null}>

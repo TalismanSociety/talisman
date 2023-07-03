@@ -13,9 +13,7 @@ import { useAccount, useNetwork } from "wagmi"
 
 import { Section } from "../../shared/Section"
 
-type GetTypedData = (chainId: number) => TypedDataV1 | TypedMessage<MessageTypes>
-
-const getTestDataV1: GetTypedData = () => [
+const getTestDataV1 = (): TypedDataV1 => [
   {
     type: "string",
     name: "Question",
@@ -28,7 +26,10 @@ const getTestDataV1: GetTypedData = () => [
   },
 ]
 
-const getTestDataV3: GetTypedData = (chainId: number) => ({
+const getTestDataV3 = (
+  chainId: number,
+  validContractAddress: boolean
+): TypedMessage<MessageTypes> => ({
   types: {
     EIP712Domain: [
       { name: "name", type: "string" },
@@ -51,7 +52,9 @@ const getTestDataV3: GetTypedData = (chainId: number) => ({
     name: "Ether Mail",
     version: "1",
     chainId,
-    verifyingContract: "0xCcCCccccCCCCcCCCCCCcCcCccCcCCCcCcccccccC",
+    verifyingContract: validContractAddress
+      ? "0xCcCCccccCCCCcCCCCCCcCcCccCcCCCcCcccccccC"
+      : "javascript:alert(1)",
   },
   message: {
     from: {
@@ -66,11 +69,16 @@ const getTestDataV3: GetTypedData = (chainId: number) => ({
   },
 })
 
-const getTestDataV4: GetTypedData = (chainId: number) => ({
+const getTestDataV4 = (
+  chainId: number,
+  validContractAddress: boolean
+): TypedMessage<MessageTypes> => ({
   domain: {
     chainId: chainId,
     name: "Ether Mail",
-    verifyingContract: "0xCcCCccccCCCCcCCCCCCcCcCccCcCCCcCcccccccC",
+    verifyingContract: validContractAddress
+      ? "0xCcCCccccCCCCcCCCCCCcCcCccCcCCCcCcccccccC"
+      : "javascript:alert(1)",
     version: "1",
   },
   message: {
@@ -117,26 +125,56 @@ const getTestDataV4: GetTypedData = (chainId: number) => ({
   },
 })
 
-const TEST_PAYLOADS = {
+type TypedDataTestPayload = {
+  version: SignTypedDataVersion
+  method: string
+  getData: (chainId: number) => TypedMessage<MessageTypes> | TypedDataV1
+  getParams: (address: string, chainId: number) => [unknown, unknown]
+}
+
+type TestCases = "V1" | "V3" | "V3_INVALID" | "V4" | "V4_INVALID"
+
+const TEST_PAYLOADS: Record<TestCases, TypedDataTestPayload> = {
   V1: {
+    version: SignTypedDataVersion.V1,
     method: "eth_signTypedData",
-    getData: (chainId: number) => getTestDataV1(chainId),
-    getParams: (address: string, chainId: number) => [getTestDataV1(chainId), address],
+    getData: () => getTestDataV1(),
+    getParams: (address: string) => [getTestDataV1(), address],
   },
   V3: {
+    version: SignTypedDataVersion.V3,
     method: "eth_signTypedData_v3",
-    getData: (chainId: number) => getTestDataV3(chainId),
+    getData: (chainId: number) => getTestDataV3(chainId, true),
     getParams: (address: string, chainId: number) => [
       address,
-      JSON.stringify(getTestDataV3(chainId)),
+      JSON.stringify(getTestDataV3(chainId, true)),
+    ],
+  },
+  V3_INVALID: {
+    version: SignTypedDataVersion.V3,
+    method: "eth_signTypedData_v3",
+    getData: (chainId: number) => getTestDataV3(chainId, false),
+    getParams: (address: string, chainId: number) => [
+      address,
+      JSON.stringify(getTestDataV3(chainId, false)),
     ],
   },
   V4: {
+    version: SignTypedDataVersion.V4,
     method: "eth_signTypedData_v4",
-    getData: (chainId: number) => getTestDataV4(chainId),
+    getData: (chainId: number) => getTestDataV4(chainId, true),
     getParams: (address: string, chainId: number) => [
       address,
-      JSON.stringify(getTestDataV4(chainId)),
+      JSON.stringify(getTestDataV4(chainId, true)),
+    ],
+  },
+  V4_INVALID: {
+    version: SignTypedDataVersion.V4,
+    method: "eth_signTypedData_v4",
+    getData: (chainId: number) => getTestDataV4(chainId, false),
+    getParams: (address: string, chainId: number) => [
+      address,
+      JSON.stringify(getTestDataV4(chainId, false)),
     ],
   },
 } as const
@@ -144,7 +182,7 @@ const TEST_PAYLOADS = {
 const SignTypedDataInner = () => {
   const { isConnected, address, connector } = useAccount()
   const { chain } = useNetwork()
-  const [processing, setProcessing] = useState<SignTypedDataVersion>()
+  const [processing, setProcessing] = useState<TestCases>()
   const [error, setError] = useState<Error>()
   const [signature, setSignature] = useState<string>()
   const [signedBy, setSignedBy] = useState<string>()
@@ -152,15 +190,15 @@ const SignTypedDataInner = () => {
   const disabled = useMemo(() => !chain || !connector || !address, [address, chain, connector])
 
   const handleSignClick = useCallback(
-    (version: SignTypedDataVersion) => async () => {
-      setProcessing(version)
+    (testCase: TestCases) => async () => {
       setError(undefined)
       setSignature(undefined)
       setSignedBy(undefined)
       try {
         if (!connector || !chain || !address) return
 
-        const { method, getData, getParams } = TEST_PAYLOADS[version]
+        const { version, method, getData, getParams } = TEST_PAYLOADS[testCase]
+        setProcessing(version)
         const params = getParams(address, chain.id)
         const data = getData(chain.id)
 
@@ -192,27 +230,43 @@ const SignTypedDataInner = () => {
       <div className="flex gap-8 pt-4">
         <Button
           small
-          onClick={handleSignClick(SignTypedDataVersion.V1)}
-          processing={processing === SignTypedDataVersion.V1}
-          disabled={processing !== SignTypedDataVersion.V1 && disabled}
+          onClick={handleSignClick("V1")}
+          processing={processing === "V1"}
+          disabled={processing !== "V1" && disabled}
         >
           Legacy
         </Button>
         <Button
           small
-          onClick={handleSignClick(SignTypedDataVersion.V3)}
-          processing={processing === SignTypedDataVersion.V3}
-          disabled={processing !== SignTypedDataVersion.V3 && disabled}
+          onClick={handleSignClick("V3")}
+          processing={processing === "V3"}
+          disabled={processing !== "V3" && disabled}
         >
           V3
         </Button>
         <Button
           small
-          onClick={handleSignClick(SignTypedDataVersion.V4)}
-          processing={processing === SignTypedDataVersion.V4}
-          disabled={processing !== SignTypedDataVersion.V4 && disabled}
+          onClick={handleSignClick("V3_INVALID")}
+          processing={processing === "V3_INVALID"}
+          disabled={processing !== "V3_INVALID" && disabled}
+        >
+          V3 invalid
+        </Button>
+        <Button
+          small
+          onClick={handleSignClick("V4")}
+          processing={processing === "V4"}
+          disabled={processing !== "V4" && disabled}
         >
           V4
+        </Button>
+        <Button
+          small
+          onClick={handleSignClick("V4_INVALID")}
+          processing={processing === "V4_INVALID"}
+          disabled={processing !== "V4_INVALID" && disabled}
+        >
+          V4 invalid
         </Button>
       </div>
 

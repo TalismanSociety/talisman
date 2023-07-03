@@ -1,8 +1,6 @@
 import { AccountJsonHardwareEthereum } from "@core/domains/accounts/types"
 import { EthPriorityOptionName } from "@core/domains/signing/types"
 import { AppPill } from "@talisman/components/AppPill"
-import Grid from "@talisman/components/Grid"
-import { SimpleButton } from "@talisman/components/SimpleButton"
 import { WithTooltip } from "@talisman/components/Tooltip"
 import { InfoIcon } from "@talisman/theme/icons"
 import { useQuery } from "@tanstack/react-query"
@@ -62,10 +60,6 @@ const SignContainer = styled(Container)`
     white-space: nowrap;
   }
 
-  ${SimpleButton} {
-    width: auto;
-  }
-
   .center {
     text-align: center;
   }
@@ -84,10 +78,6 @@ const SignContainer = styled(Container)`
       align-items: center;
       justify-content: space-between;
     }
-  }
-
-  ${Grid} {
-    margin-top: 1.6rem;
   }
 
   .error {
@@ -246,7 +236,7 @@ export const EthSignTransactionRequest = () => {
           </div>
           <Suspense fallback={null}>
             {transaction && txDetails && network?.nativeToken ? (
-              <div className="gasInfo mt-8">
+              <div className="gasInfo my-8">
                 <div>
                   <div>
                     {t("Estimated Fee")}{" "}
@@ -292,7 +282,6 @@ export const EthSignTransactionRequest = () => {
               transaction ? (
                 <LedgerEthereum
                   manualSend
-                  className="mt-6"
                   method="transaction"
                   payload={transaction}
                   account={account as AccountJsonHardwareEthereum}
@@ -306,19 +295,19 @@ export const EthSignTransactionRequest = () => {
                 </Button>
               )
             ) : (
-              <Grid>
-                <SimpleButton disabled={processing} onClick={reject}>
+              <div className="grid w-full grid-cols-2 gap-12">
+                <Button disabled={processing} onClick={reject}>
                   {t("Cancel")}
-                </SimpleButton>
-                <SimpleButton
+                </Button>
+                <Button
                   disabled={!transaction || processing || isLoading || !isValid}
                   processing={processing}
                   primary
                   onClick={approve}
                 >
                   {t("Approve")}
-                </SimpleButton>
-              </Grid>
+                </Button>
+              </div>
             )}
           </Suspense>
         </Footer>
