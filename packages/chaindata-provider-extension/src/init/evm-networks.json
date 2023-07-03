@@ -369,7 +369,7 @@
       },
       {
         "url": "https://moonbeam-rpc.dwellir.com",
-        "isHealthy": false
+        "isHealthy": true
       }
     ],
     "isHealthy": true,
@@ -413,7 +413,7 @@
       },
       {
         "url": "https://moonriver-rpc.dwellir.com",
-        "isHealthy": false
+        "isHealthy": true
       }
     ],
     "isHealthy": true,
@@ -490,7 +490,7 @@
       },
       {
         "url": "https://shiden-rpc.dwellir.com",
-        "isHealthy": false
+        "isHealthy": true
       }
     ],
     "isHealthy": true,
