@@ -54,6 +54,11 @@ export const ledgerNetworks = [
     genesisHash: "0xb3db41421702df9a7fcac62b53ffeac85f7853cc4e689e0b93aeb3db18c09d82",
     label: "Centrifuge",
   },
+  {
+    name: "aleph-node",
+    genesisHash: "0x70255b4d28de0fc4e1a193d7e175ad1ccef431598211c55538f1018651a0344e",
+    label: "Aleph Zero",
+  },
 ]
 
 export type LedgerStatus = "ready" | "warning" | "error" | "connecting" | "unknown"
