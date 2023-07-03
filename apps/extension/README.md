@@ -40,3 +40,7 @@ This README was written and verified with:
 - Tests can be written in `*.spec.ts` files, inside a `__tests__` folder.
 - Follow the pattern in `src/core/handlers/Extension.spec.ts` or `src/core/domains/signing/__tests__/requestsStore.spec.ts`
 - Tests are run with `yarn test`
+
+## Security disclosures
+
+If you find a security issue or exploit, please email us at **security@talisman.xyz**. Please _DO NOT_ create an issue or PR in this repo for security issues.
