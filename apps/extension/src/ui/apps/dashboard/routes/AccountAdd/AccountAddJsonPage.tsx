@@ -5,14 +5,13 @@ import { notify, notifyUpdate } from "@talisman/components/Notifications"
 import Spacer from "@talisman/components/Spacer"
 import { ArrowRightIcon } from "@talisman/theme/icons"
 import { api } from "@ui/api"
+import { DashboardLayout } from "@ui/apps/dashboard/layout/DashboardLayout"
 import { useSelectAccountAndNavigate } from "@ui/hooks/useSelectAccountAndNavigate"
 import { useCallback } from "react"
 import { useForm } from "react-hook-form"
 import { useTranslation } from "react-i18next"
 import { Button, FormFieldContainer, FormFieldInputText } from "talisman-ui"
 import * as yup from "yup"
-
-import Layout from "../layout"
 
 type FormData = {
   fileContent: string
@@ -36,7 +35,7 @@ const getFileContent = (file?: File) =>
     } else resolve("")
   })
 
-const AccountJson = () => {
+export const AccountAddJsonPage = () => {
   const { t } = useTranslation("admin")
   const { setAddress } = useSelectAccountAndNavigate("/portfolio")
 
@@ -90,7 +89,7 @@ const AccountJson = () => {
   )
 
   return (
-    <Layout withBack centered>
+    <DashboardLayout withBack centered>
       <HeaderBlock
         title={t("Import JSON")}
         text={t("Please choose the .json file you exported from Polkadot.js or Talisman")}
@@ -135,8 +134,6 @@ const AccountJson = () => {
           {t("Import")}
         </Button>
       </form>
-    </Layout>
+    </DashboardLayout>
   )
 }
-
-export default AccountJson

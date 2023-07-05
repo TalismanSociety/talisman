@@ -4,7 +4,6 @@ import { notify } from "@talisman/components/Notifications"
 import { useOpenClose } from "@talisman/hooks/useOpenClose"
 import { InfoIcon } from "@talisman/theme/icons"
 import { api } from "@ui/api"
-import Layout from "@ui/apps/dashboard/layout"
 import { MnemonicModal } from "@ui/domains/Settings/MnemonicModal"
 import useMnemonicBackup from "@ui/hooks/useMnemonicBackup"
 import { useCallback } from "react"
@@ -14,13 +13,15 @@ import { useNavigate } from "react-router-dom"
 import { Button, FormFieldContainer, FormFieldInputText } from "talisman-ui"
 import * as yup from "yup"
 
+import { DashboardLayout } from "../../layout/DashboardLayout"
+
 type FormData = {
   currentPw: string
   newPw: string
   newPwConfirm: string
 }
 
-const ChangePassword = () => {
+export const ChangePasswordPage = () => {
   const { t } = useTranslation("admin")
   const navigate = useNavigate()
   const { isNotConfirmed } = useMnemonicBackup()
@@ -75,7 +76,7 @@ const ChangePassword = () => {
 
   return (
     <>
-      <Layout withBack centered>
+      <DashboardLayout withBack centered>
         <HeaderBlock title={t("Change your password")} />
         <p className="text-body-secondary my-10">
           {t(
@@ -147,10 +148,8 @@ const ChangePassword = () => {
             </Button>
           </div>
         </form>
-      </Layout>
+      </DashboardLayout>
       <MnemonicModal open={isOpen} onClose={close} />
     </>
   )
 }
-
-export default ChangePassword

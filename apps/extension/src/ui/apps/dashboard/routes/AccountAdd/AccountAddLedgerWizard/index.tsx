@@ -1,9 +1,10 @@
 import { Navigate, Route, Routes } from "react-router-dom"
+
 import { AddLedgerSelectAccount } from "./AddLedgerSelectAccount"
 import { AddLedgerSelectNetwork } from "./AddLedgerSelectNetwork"
 import { AddLedgerAccountProvider } from "./context"
 
-const AccountAddLedger = () => (
+export const AccountAddLedgerWizard = () => (
   <AddLedgerAccountProvider>
     <Routes>
       <Route path="" element={<AddLedgerSelectNetwork />} />
@@ -13,4 +14,5 @@ const AccountAddLedger = () => (
   </AddLedgerAccountProvider>
 )
 
-export default AccountAddLedger
+// lazy load
+export default AccountAddLedgerWizard

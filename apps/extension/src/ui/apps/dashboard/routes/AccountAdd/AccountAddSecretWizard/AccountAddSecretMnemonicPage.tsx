@@ -4,9 +4,10 @@ import { yupResolver } from "@hookform/resolvers/yup"
 import { Checkbox } from "@talisman/components/Checkbox"
 import HeaderBlock from "@talisman/components/HeaderBlock"
 import { notify, notifyUpdate } from "@talisman/components/Notifications"
-import { SimpleButton } from "@talisman/components/SimpleButton"
+import Spacer from "@talisman/components/Spacer"
 import { classNames } from "@talismn/util"
 import { api } from "@ui/api"
+import { DashboardLayout } from "@ui/apps/dashboard/layout/DashboardLayout"
 import { AccountTypeSelector } from "@ui/domains/Account/AccountTypeSelector"
 import AccountAvatar from "@ui/domains/Account/Avatar"
 import useAccounts from "@ui/hooks/useAccounts"
@@ -16,11 +17,9 @@ import { useCallback, useEffect, useMemo, useState } from "react"
 import { useForm } from "react-hook-form"
 import { useTranslation } from "react-i18next"
 import { useNavigate } from "react-router-dom"
-import styled from "styled-components"
-import { FormFieldContainer, FormFieldInputText, FormFieldTextarea } from "talisman-ui"
+import { Button, FormFieldContainer, FormFieldInputText, FormFieldTextarea } from "talisman-ui"
 import * as yup from "yup"
 
-import Layout from "../../layout"
 import { useAccountAddSecret } from "./context"
 
 type FormData = {
@@ -29,79 +28,6 @@ type FormData = {
   mnemonic: string
   multi: boolean
 }
-
-const Spacer = styled.div<{ small?: boolean }>`
-  height: ${({ small }) => (small ? "1.6rem" : "3.2rem")};
-`
-
-const Container = styled(Layout)`
-  .checkbox {
-    color: var(--color-mid);
-    font-size: 1.6rem;
-    span:last-child {
-      padding-top: 0.2rem;
-    }
-  }
-
-  form {
-    transition: opacity var(--transition-speed) ease-in-out;
-    opacity: 0;
-    &.show {
-      opacity: 1;
-    }
-  }
-
-  .invisible {
-    opacity: 0;
-  }
-
-  .mnemonic-buttons {
-    display: flex;
-    position: absolute;
-    bottom: 0;
-    right: 0;
-
-    button {
-      margin: 0.8em;
-      background-color: transparent;
-      border: none;
-      outline: none;
-      color: var(--color-mid);
-      cursor: pointer;
-      font-size: var(--font-size-xsmall);
-      padding: 0.8rem;
-      border-radius: var(--border-radius-small);
-      background: var(--color-background-muted-3x);
-      opacity: 0.5;
-      transition: all var(--transition-speed) ease-in-out;
-      &:hover {
-        opacity: 1;
-      }
-    }
-  }
-
-  .field > .children {
-    position: relative;
-
-    > .suffix {
-      opacity: 1;
-      transform: none;
-      top: 0;
-      right: 0;
-      width: 4.8rem;
-      height: 100%;
-      display: flex;
-      flex-direction: column;
-      justify-content: center;
-      align-items: center;
-
-      > * {
-        width: auto;
-        height: auto;
-      }
-    }
-  }
-`
 
 const cleanupMnemonic = (input = "") =>
   input
@@ -160,7 +86,7 @@ const testValidMnemonic = async (val?: string) => {
   return await api.accountValidateMnemonic(val)
 }
 
-export const AccountAddSecretMnemonic = () => {
+export const AccountAddSecretMnemonicPage = () => {
   const { t } = useTranslation("admin")
 
   const { data, updateData } = useAccountAddSecret()
@@ -308,19 +234,15 @@ export const AccountAddSecretMnemonic = () => {
   // }, [setValue])
 
   return (
-    <Container withBack centered>
+    <DashboardLayout withBack centered>
       <HeaderBlock
         title={t("Choose account type")}
         text={t("What type of account would you like to import?")}
       />
       <Spacer small />
       <AccountTypeSelector defaultType={data.type} onChange={handleTypeChange} />
-      <Spacer />
-      <form
-        className={classNames(type && "show")}
-        data-button-pull-left
-        onSubmit={handleSubmit(submit)}
-      >
+      <Spacer small />
+      <form className={classNames(type ? "visible" : "invisible")} onSubmit={handleSubmit(submit)}>
         <FormFieldContainer error={errors.name?.message}>
           <FormFieldInputText
             {...register("name")}
@@ -354,22 +276,26 @@ export const AccountAddSecretMnemonic = () => {
           <div className="text-body-secondary">{t("Word count: {{words}}", { words })}</div>
           <div className="text-alert-warn text-right">{errors.mnemonic?.message}</div>
         </div>
-        {/* Waiting for designers validation for this feature, but it's ready ! */}
-        {/* <div className="mnemonic-buttons">
-            <button type="button" onClick={handleGenerateNew}>
-              {t('Generate New')}
-            </button>
-          </div> */}
         <Spacer small />
-        <Spacer small />
-        <Checkbox {...register("multi")} className={classNames(isPrivateKey && "invisible")}>
+        <Checkbox
+          {...register("multi")}
+          className={classNames("text-body-secondary", isPrivateKey && "invisible")}
+        >
           {t("Import multiple accounts from this recovery phrase")}
         </Checkbox>
-        <Spacer />
-        <SimpleButton type="submit" primary disabled={!isValid} processing={isSubmitting}>
-          {t("Import")}
-        </SimpleButton>
+        <Spacer small />
+        <div className="mt-1 flex w-full justify-end">
+          <Button
+            className="w-[24rem]"
+            type="submit"
+            primary
+            disabled={!isValid}
+            processing={isSubmitting}
+          >
+            {t("Import")}
+          </Button>
+        </div>
       </form>
-    </Container>
+    </DashboardLayout>
   )
 }

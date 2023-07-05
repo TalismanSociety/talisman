@@ -2,14 +2,15 @@ import Grid from "@talisman/components/Grid"
 import HeaderBlock from "@talisman/components/HeaderBlock"
 import Setting from "@talisman/components/Setting"
 import Spacer from "@talisman/components/Spacer"
-import Layout from "@ui/apps/dashboard/layout"
 import { AvatarTypeSelect } from "@ui/domains/Settings/AvatarTypeSelect"
 import { useAppState } from "@ui/hooks/useAppState"
 import { useSetting } from "@ui/hooks/useSettings"
 import { Trans, useTranslation } from "react-i18next"
 import { Toggle, Tooltip, TooltipContent, TooltipTrigger } from "talisman-ui"
 
-const Options = () => {
+import { DashboardLayout } from "../../layout/DashboardLayout"
+
+export const OptionsPage = () => {
   const { t } = useTranslation("admin")
   const [hasSpiritKey] = useAppState("hasSpiritKey")
   const [identiconType, setIdenticonType] = useSetting("identiconType")
@@ -19,7 +20,7 @@ const Options = () => {
   const [spiritClanFeatures, setSpiritClanFeatures] = useSetting("spiritClanFeatures")
 
   return (
-    <Layout centered withBack backTo="/settings">
+    <DashboardLayout centered withBack backTo="/settings">
       <HeaderBlock title={t("Extension options")} text={t("Customise your extension experience")} />
       <Spacer />
       <Grid columns={1}>
@@ -79,8 +80,6 @@ const Options = () => {
           </Tooltip>
         </Setting>
       </Grid>
-    </Layout>
+    </DashboardLayout>
   )
 }
-
-export default Options

@@ -2,9 +2,9 @@ import { LedgerEthDerivationPathType } from "@core/domains/ethereum/types"
 import { yupResolver } from "@hookform/resolvers/yup"
 import { Dropdown } from "@talisman/components/Dropdown"
 import { notify, notifyUpdate } from "@talisman/components/Notifications"
-import { SimpleButton } from "@talisman/components/SimpleButton"
 import Spacer from "@talisman/components/Spacer"
 import { sleep } from "@talismn/util"
+import { DashboardLayout } from "@ui/apps/dashboard/layout/DashboardLayout"
 import { LedgerEthereumAccountPicker } from "@ui/domains/Account/LedgerEthereumAccountPicker"
 import { LedgerSubstrateAccountPicker } from "@ui/domains/Account/LedgerSubstrateAccountPicker"
 import { useSelectAccountAndNavigate } from "@ui/hooks/useSelectAccountAndNavigate"
@@ -12,10 +12,9 @@ import { FC, useCallback, useMemo, useState } from "react"
 import { useForm } from "react-hook-form"
 import { useTranslation } from "react-i18next"
 import { Navigate } from "react-router-dom"
-import styled from "styled-components"
+import { Button } from "talisman-ui"
 import * as yup from "yup"
 
-import Layout from "../../layout"
 import { LedgerAccountDef, useAddLedgerAccount } from "./context"
 
 const options: Record<LedgerEthDerivationPathType, string> = {
@@ -62,39 +61,6 @@ const LedgerDerivationPathSelector: FC<LedgerDerivationPathSelectorProps> = ({
     />
   )
 }
-
-const Container = styled(Layout)`
-  ${SimpleButton} {
-    width: 24rem;
-  }
-
-  form {
-    display: flex;
-    flex-direction: column;
-    height: 53.4rem;
-    max-height: 100vh;
-
-    .grow {
-      flex-grow: 1;
-    }
-
-    .buttons {
-      display: flex;
-      justify-content: flex-end;
-      margin-top: 2.4rem;
-    }
-    padding-bottom: 2.4rem;
-  }
-`
-
-const H1 = styled.h1`
-  margin: 0;
-`
-
-const Text = styled.p`
-  color: var(--color-mid);
-  margin: 1em 0 2.4rem 0;
-`
 
 type FormData = {
   accounts: LedgerAccountDef[]
@@ -172,17 +138,17 @@ export const AddLedgerSelectAccount = () => {
     return <Navigate to="/accounts/add/ledger" replace />
 
   return (
-    <Container withBack centered>
-      <form data-button-pull-left onSubmit={handleSubmit(submit)}>
-        <div className="grow">
-          <H1>{t("Import from Ledger")}</H1>
+    <DashboardLayout withBack centered>
+      <form className="flex h-[53.4rem] max-h-screen flex-col" onSubmit={handleSubmit(submit)}>
+        <div className="flex-grow">
+          <h1 className="m-0">{t("Import from Ledger")}</h1>
           {data.type === "ethereum" && (
             <>
-              <Text>
+              <p className="text-body-secondary mb-12 mt-[1em]">
                 {t(
                   "The derivation path will be different based on which application you used to initialise your Ledger account."
                 )}
-              </Text>
+              </p>
               <div>
                 <LedgerDerivationPathSelector
                   defaultValue="LedgerLive"
@@ -192,7 +158,7 @@ export const AddLedgerSelectAccount = () => {
               <div className="h-4" />
             </>
           )}
-          <Text>
+          <p className="text-body-secondary mb-12 mt-[1em]">
             {t("Please select which account(s) you'd like to import.")}
             {data.type === "ethereum" && (
               <>
@@ -200,7 +166,7 @@ export const AddLedgerSelectAccount = () => {
                 {t("Amounts displayed for each account are the sum of GLMR, MOVR, ASTR and ETH.")}
               </>
             )}
-          </Text>
+          </p>
           {data.type === "sr25519" && (
             <LedgerSubstrateAccountPicker
               chainId={data.chainId as string}
@@ -215,13 +181,19 @@ export const AddLedgerSelectAccount = () => {
             />
           )}
         </div>
-        <div className="buttons">
-          <SimpleButton type="submit" primary disabled={!isValid} processing={isSubmitting}>
+        <div className="mt-12 flex justify-end">
+          <Button
+            className="w-[24rem]"
+            type="submit"
+            primary
+            disabled={!isValid}
+            processing={isSubmitting}
+          >
             {t("Continue")}
-          </SimpleButton>
+          </Button>
         </div>
         <Spacer />
       </form>
-    </Container>
+    </DashboardLayout>
   )
 }

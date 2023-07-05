@@ -2,12 +2,13 @@ import Grid from "@talisman/components/Grid"
 import HeaderBlock from "@talisman/components/HeaderBlock"
 import Setting from "@talisman/components/Setting"
 import Spacer from "@talisman/components/Spacer"
-import Layout from "@ui/apps/dashboard/layout"
 import { useSetting } from "@ui/hooks/useSettings"
 import { Trans, useTranslation } from "react-i18next"
 import { useNavigate } from "react-router-dom"
 import styled from "styled-components"
 import { Toggle } from "talisman-ui"
+
+import { DashboardLayout } from "../../layout/DashboardLayout"
 
 const LinkText = styled.span`
   color: var(--color-primary);
@@ -18,13 +19,13 @@ const TSLink = styled.a`
   color: var(--color-primary);
 `
 
-const SecurityPrivacySettings = () => {
+export const SecurityPrivacySettingsPage = () => {
   const { t } = useTranslation("admin")
   const [useAnalyticsTracking, setUseAnalyticsTracking] = useSetting("useAnalyticsTracking")
   const [useErrorTracking, setUseErrorTracking] = useSetting("useErrorTracking")
   const navigate = useNavigate()
   return (
-    <Layout centered withBack backTo="/settings">
+    <DashboardLayout centered withBack backTo="/settings">
       <HeaderBlock
         title={t("Security and Privacy")}
         text={t("Control security and privacy preferences")}
@@ -68,8 +69,6 @@ const SecurityPrivacySettings = () => {
           </Setting>
         )}
       </Grid>
-    </Layout>
+    </DashboardLayout>
   )
 }
-
-export default SecurityPrivacySettings

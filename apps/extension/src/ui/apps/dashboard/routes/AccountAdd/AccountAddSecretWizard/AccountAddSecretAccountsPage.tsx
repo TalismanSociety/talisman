@@ -2,49 +2,24 @@ import { RequestAccountCreateFromSeed } from "@core/domains/accounts/types"
 import { yupResolver } from "@hookform/resolvers/yup"
 import HeaderBlock from "@talisman/components/HeaderBlock"
 import { notify, notifyUpdate } from "@talisman/components/Notifications"
-import { SimpleButton } from "@talisman/components/SimpleButton"
 import Spacer from "@talisman/components/Spacer"
+import { DashboardLayout } from "@ui/apps/dashboard/layout/DashboardLayout"
 import { DerivedFromMnemonicAccountPicker } from "@ui/domains/Account/DerivedFromMnemonicAccountPicker"
 import { useSelectAccountAndNavigate } from "@ui/hooks/useSelectAccountAndNavigate"
 import { useCallback, useEffect, useMemo } from "react"
 import { useForm } from "react-hook-form"
 import { useTranslation } from "react-i18next"
 import { Navigate, useNavigate } from "react-router-dom"
-import styled from "styled-components"
+import { Button } from "talisman-ui"
 import * as yup from "yup"
 
-import Layout from "../../layout"
 import { useAccountAddSecret } from "./context"
-
-const Container = styled(Layout)`
-  ${SimpleButton} {
-    width: 24rem;
-  }
-
-  form {
-    display: flex;
-    flex-direction: column;
-    height: 53.4rem;
-    max-height: 100vh;
-
-    .grow {
-      flex-grow: 1;
-    }
-
-    .buttons {
-      display: flex;
-      justify-content: flex-end;
-      margin-top: 2.4rem;
-    }
-    padding-bottom: 2.4rem;
-  }
-`
 
 type FormData = {
   accounts: RequestAccountCreateFromSeed[]
 }
 
-export const AccountAddSecretAccounts = () => {
+export const AccountAddSecretAccountsPage = () => {
   const { t } = useTranslation("admin")
   const { data, importAccounts } = useAccountAddSecret()
   const navigate = useNavigate()
@@ -124,16 +99,16 @@ export const AccountAddSecretAccounts = () => {
   if (!data.mnemonic || !data.type) return <Navigate to="/accounts/add/secret" />
 
   return (
-    <Container withBack centered>
-      <form data-button-pull-left onSubmit={handleSubmit(submit)}>
-        <div className="grow">
-          <HeaderBlock
-            title={t("Import {{accountType}} account(s)", {
-              accountType: data?.type === "ethereum" ? t("Ethereum") : t("Polkadot"),
-            })}
-            text={t("Please select which account(s) you'd like to import.")}
-          />
-          <Spacer />
+    <DashboardLayout withBack centered>
+      <form onSubmit={handleSubmit(submit)}>
+        <HeaderBlock
+          title={t("Import {{accountType}} account(s)", {
+            accountType: data?.type === "ethereum" ? t("Ethereum") : t("Polkadot"),
+          })}
+          text={t("Please select which account(s) you'd like to import.")}
+        />
+        <Spacer small />
+        <div className="h-[42rem]">
           <DerivedFromMnemonicAccountPicker
             name={name}
             mnemonic={data.mnemonic}
@@ -141,14 +116,19 @@ export const AccountAddSecretAccounts = () => {
             onChange={handleAccountsChange}
           />
         </div>
-
-        <div className="buttons">
-          <SimpleButton type="submit" primary disabled={!isValid} processing={isSubmitting}>
+        <Spacer small />
+        <div className="flex w-full justify-end">
+          <Button
+            className="w-[24rem]"
+            type="submit"
+            primary
+            disabled={!isValid}
+            processing={isSubmitting}
+          >
             {t("Import")} {accounts?.length || ""}
-          </SimpleButton>
+          </Button>
         </div>
-        <Spacer />
       </form>
-    </Container>
+    </DashboardLayout>
   )
 }

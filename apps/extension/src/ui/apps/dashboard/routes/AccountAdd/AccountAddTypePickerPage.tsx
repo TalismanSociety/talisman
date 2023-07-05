@@ -10,15 +10,14 @@ import {
   SeedIcon,
   UsbIcon,
 } from "@talisman/theme/icons"
+import { DashboardLayout } from "@ui/apps/dashboard/layout/DashboardLayout"
 import { useAppState } from "@ui/hooks/useAppState"
 import { useIsFeatureEnabled } from "@ui/hooks/useFeatures"
 import { useSetting } from "@ui/hooks/useSettings"
 import { useTranslation } from "react-i18next"
 import { CtaButton } from "talisman-ui"
 
-import Layout from "../layout"
-
-const AccountAddTypePicker = () => {
+export const AccountAddTypePickerPage = () => {
   const isLedgerCapable = getIsLedgerCapable()
   const [hasSpiritKey] = useAppState("hasSpiritKey")
   const [spiritClanFeatures] = useSetting("spiritClanFeatures")
@@ -27,7 +26,7 @@ const AccountAddTypePicker = () => {
   const { t } = useTranslation("admin")
 
   return (
-    <Layout centered>
+    <DashboardLayout centered>
       <HeaderBlock
         title={t("Add Account")}
         text={t("Create a new account or import an existing one")}
@@ -90,8 +89,6 @@ const AccountAddTypePicker = () => {
           to={`/accounts/add/watched`}
         />
       </div>
-    </Layout>
+    </DashboardLayout>
   )
 }
-
-export default AccountAddTypePicker

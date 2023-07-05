@@ -8,7 +8,6 @@ import { AccountAddressType } from "@talisman/util/getAddressType"
 import { classNames } from "@talismn/util"
 import { api } from "@ui/api"
 import { AnalyticsPage } from "@ui/api/analytics"
-import Layout from "@ui/apps/dashboard/layout"
 import { Address } from "@ui/domains/Account/Address"
 import AccountAvatar from "@ui/domains/Account/Avatar"
 import { useCopyAddressModal } from "@ui/domains/CopyAddress"
@@ -32,6 +31,8 @@ import {
   ContextMenuTrigger,
   PillButton,
 } from "talisman-ui"
+
+import { DashboardLayout } from "../../layout/DashboardLayout"
 
 const ANALYTICS_PAGE: AnalyticsPage = {
   container: "Fullscreen",
@@ -128,7 +129,7 @@ const contactTypeAddressTypeMap: Record<ProviderType, AccountAddressType> = {
   ethereum: "ethereum",
 }
 
-const AddressBook = () => {
+export const AddressBookPage = () => {
   const { t } = useTranslation("admin")
   const { contacts } = useAddressBook()
   const contactsMap = useMemo(
@@ -149,7 +150,7 @@ const AddressBook = () => {
 
   return (
     <>
-      <Layout centered withBack backTo="/settings" analytics={ANALYTICS_PAGE}>
+      <DashboardLayout centered withBack backTo="/settings" analytics={ANALYTICS_PAGE}>
         <HeaderBlock title={t("Address Book")} text={t("Manage your saved contacts")} />
         <div className="mt-4 flex justify-between align-middle">
           <ProviderTypeSwitch defaultProvider="polkadot" onChange={setAddressType} />
@@ -182,7 +183,7 @@ const AddressBook = () => {
             </div>
           )}
         </div>
-      </Layout>
+      </DashboardLayout>
 
       {toDelete && (
         <ContactDeleteModal
@@ -202,5 +203,3 @@ const AddressBook = () => {
     </>
   )
 }
-
-export default AddressBook

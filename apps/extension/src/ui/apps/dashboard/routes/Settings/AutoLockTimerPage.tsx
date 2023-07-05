@@ -1,11 +1,12 @@
 import { SettingsStoreData } from "@core/domains/app/store.settings"
 import { Dropdown, DropdownProps } from "@talisman/components/Dropdown"
 import HeaderBlock from "@talisman/components/HeaderBlock"
-import Layout from "@ui/apps/dashboard/layout"
 import { useSetting } from "@ui/hooks/useSettings"
 import { useMemo } from "react"
 import { useTranslation } from "react-i18next"
 import styled from "styled-components"
+
+import { DashboardLayout } from "../../layout/DashboardLayout"
 
 type AllowedValues = SettingsStoreData["autoLockTimeout"]
 type Option = { value: AllowedValues; label: string }
@@ -44,7 +45,7 @@ const StyledDropdown = styled((props: DropdownProps<Option>) => Dropdown(props))
   }
 `
 
-export const AutoLockTimer = () => {
+export const AutoLockTimerPage = () => {
   const { t } = useTranslation("admin")
   const [autoLockTimeout, setAutoLockTimeout] = useSetting("autoLockTimeout")
 
@@ -59,7 +60,7 @@ export const AutoLockTimer = () => {
   )
 
   return (
-    <Layout centered withBack>
+    <DashboardLayout centered withBack>
       <HeaderBlock
         title="Auto-lock Timer"
         text="Set a timer to automatically lock the Talisman wallet extension."
@@ -76,6 +77,6 @@ export const AutoLockTimer = () => {
           if (newVal !== autoLockTimeout) setAutoLockTimeout(newVal)
         }}
       />
-    </Layout>
+    </DashboardLayout>
   )
 }

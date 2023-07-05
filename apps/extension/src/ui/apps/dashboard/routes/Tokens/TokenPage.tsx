@@ -7,7 +7,6 @@ import { notify } from "@talisman/components/Notifications"
 import { useOpenClose } from "@talisman/hooks/useOpenClose"
 import { api } from "@ui/api"
 import { AnalyticsPage } from "@ui/api/analytics"
-import Layout from "@ui/apps/dashboard/layout"
 import { AssetLogoBase } from "@ui/domains/Asset/AssetLogo"
 import { NetworkSelect } from "@ui/domains/Ethereum/NetworkSelect"
 import { useAnalyticsPageView } from "@ui/hooks/useAnalyticsPageView"
@@ -18,6 +17,8 @@ import { useCallback, useEffect, useMemo, useState } from "react"
 import { Trans, useTranslation } from "react-i18next"
 import { useNavigate, useParams } from "react-router-dom"
 import { Button, FormFieldContainer, FormFieldInputText } from "talisman-ui"
+
+import { DashboardLayout } from "../../layout/DashboardLayout"
 
 const ConfirmRemove = ({
   open,
@@ -108,7 +109,7 @@ export const TokenPage = () => {
   if (!erc20Token || !network) return null
 
   return (
-    <Layout analytics={ANALYTICS_PAGE} withBack centered>
+    <DashboardLayout analytics={ANALYTICS_PAGE} withBack centered>
       <HeaderBlock
         title={t("{{tokenSymbol}} on {{networkName}}", {
           tokenSymbol: erc20Token.symbol,
@@ -183,6 +184,6 @@ export const TokenPage = () => {
         </div>
       </form>
       <ConfirmRemove open={isOpen} onClose={close} token={erc20Token} />
-    </Layout>
+    </DashboardLayout>
   )
 }

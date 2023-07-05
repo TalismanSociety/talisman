@@ -3,9 +3,9 @@ import { Chain } from "@core/domains/chains/types"
 import { yupResolver } from "@hookform/resolvers/yup"
 import { Dropdown, RenderItemFunc } from "@talisman/components/Dropdown"
 import StytledHeaderBlock from "@talisman/components/HeaderBlock"
-import { SimpleButton } from "@talisman/components/SimpleButton"
 import Spacer from "@talisman/components/Spacer"
 import { classNames } from "@talismn/util"
+import { DashboardLayout } from "@ui/apps/dashboard/layout/DashboardLayout"
 import { AccountTypeSelector } from "@ui/domains/Account/AccountTypeSelector"
 import Asset from "@ui/domains/Asset"
 import { useLedgerChains } from "@ui/hooks/ledger/useLedgerChains"
@@ -14,74 +14,12 @@ import { useCallback, useMemo, useState } from "react"
 import { useForm } from "react-hook-form"
 import { useTranslation } from "react-i18next"
 import { useNavigate } from "react-router-dom"
-import styled from "styled-components"
+import { Button } from "talisman-ui"
 import * as yup from "yup"
 
-import Layout from "../../layout"
 import { useAddLedgerAccount } from "./context"
 import { ConnectLedgerEthereum } from "./Shared/ConnectLedgerEthereum"
 import { ConnectLedgerSubstrate } from "./Shared/ConnectLedgerSubstrate"
-
-const Container = styled(Layout)`
-  .dropdown {
-    margin: 1.6rem 0 1.3rem 0;
-  }
-
-  ${SimpleButton} {
-    width: 24rem;
-  }
-
-  .step2 {
-    opacity: 0;
-    transition: opacity 0.2s ease-in-out;
-    max-width: 53rem;
-  }
-  .fadeIn {
-    opacity: 1;
-  }
-
-  form {
-    display: flex;
-    flex-direction: column;
-    height: 53.4rem;
-    max-height: 100vh;
-
-    .grow {
-      flex-grow: 1;
-    }
-
-    .buttons {
-      display: flex;
-      justify-content: flex-end;
-    }
-  }
-`
-
-const H2 = styled.h2`
-  font-size: 1.6rem;
-  margin-top: 2.4rem;
-`
-
-const Flex = styled.span`
-  display: flex;
-  gap: 0.8rem;
-  width: 100%;
-  font-size: 1.6rem;
-  line-height: 1;
-
-  .grow {
-    flex-grow: 1;
-    overflow: hidden;
-    white-space: nowrap;
-    text-overflow: ellipsis;
-    line-height: 1;
-  }
-`
-
-const Text = styled.p`
-  color: var(--color-mid);
-  margin: 0;
-`
 
 type FormData = {
   chainId: string
@@ -90,10 +28,12 @@ type FormData = {
 
 const renderOption: RenderItemFunc<Chain> = (chain) => {
   return (
-    <Flex>
+    <div className="flex items-center gap-4 text-base">
       <Asset.ChainLogo id={chain.id} />
-      <span className="grow">{chain.name}</span>
-    </Flex>
+      <span className="flex-grow overflow-hidden text-ellipsis whitespace-nowrap">
+        {chain.name}
+      </span>
+    </div>
   )
 }
 
@@ -167,9 +107,9 @@ export const AddLedgerSelectNetwork = () => {
   const showStep2 = accountType === "ethereum" || (accountType === "sr25519" && chainId)
 
   return (
-    <Container withBack centered>
-      <form data-button-pull-left onSubmit={handleSubmit(submit)}>
-        <div className="grow">
+    <DashboardLayout withBack centered>
+      <form className="flex h-[53.4rem] max-h-screen flex-col" onSubmit={handleSubmit(submit)}>
+        <div className="flex-grow">
           <StytledHeaderBlock
             title={t("Import from Ledger")}
             text={t("What type of account would you like to import ?")}
@@ -178,7 +118,7 @@ export const AddLedgerSelectNetwork = () => {
           <AccountTypeSelector defaultType={accountType} onChange={handleTypeChange} />
           {accountType === "sr25519" && (
             <>
-              <H2>{t("Step 1")}</H2>
+              <h2 className="mb-8 mt-12 text-base">{t("Step 1")}</h2>
               <Dropdown
                 key={defaultChain?.id ?? "DEFAULT"}
                 propertyKey="id"
@@ -188,15 +128,15 @@ export const AddLedgerSelectNetwork = () => {
                 renderItem={renderOption}
                 onChange={handleNetworkChange}
               />
-              <Text>
+              <p className="text-body-secondary mt-6">
                 {t("Please note: a Ledger account can only be used on a single network.")}
-              </Text>
+              </p>
             </>
           )}
-          <div className={classNames(showStep2 ? "visible" : "invisible")}>
+          <div className={classNames("mt-12 h-[20rem]", showStep2 ? "visible" : "invisible")}>
             {chainId && accountType === "sr25519" && (
               <>
-                <H2>{t("Step 2")}</H2>
+                <h2 className="mb-8 mt-0 text-base">{t("Step 2")}</h2>
                 <ConnectLedgerSubstrate
                   className="min-h-[11rem]"
                   onReadyChanged={setIsLedgerReady}
@@ -208,21 +148,21 @@ export const AddLedgerSelectNetwork = () => {
               <ConnectLedgerEthereum className="mt-14" onReadyChanged={setIsLedgerReady} />
             )}
           </div>
-          <Spacer />
         </div>
         {!!accountType && (
-          <div className="buttons">
-            <SimpleButton
+          <div className="flex justify-end">
+            <Button
+              className="w-[24rem]"
               type="submit"
               primary
               disabled={!isLedgerReady || !isValid}
               processing={isSubmitting}
             >
               {t("Continue")}
-            </SimpleButton>
+            </Button>
           </div>
         )}
       </form>
-    </Container>
+    </DashboardLayout>
   )
 }

@@ -2,38 +2,21 @@ import { AccountAddressType } from "@core/domains/accounts/types"
 import { yupResolver } from "@hookform/resolvers/yup"
 import HeaderBlock from "@talisman/components/HeaderBlock"
 import { notify, notifyUpdate } from "@talisman/components/Notifications"
+import Spacer from "@talisman/components/Spacer"
 import { ArrowRightIcon } from "@talisman/theme/icons"
 import { getAddressType } from "@talisman/util/getAddressType"
 import { classNames } from "@talismn/util"
 import { sleep } from "@talismn/util"
 import { api } from "@ui/api"
+import { DashboardLayout } from "@ui/apps/dashboard/layout/DashboardLayout"
 import { AccountTypeSelector } from "@ui/domains/Account/AccountTypeSelector"
 import useAccounts from "@ui/hooks/useAccounts"
 import { useSelectAccountAndNavigate } from "@ui/hooks/useSelectAccountAndNavigate"
 import { useCallback, useEffect, useMemo, useRef } from "react"
 import { useForm } from "react-hook-form"
 import { useTranslation } from "react-i18next"
-import styled from "styled-components"
 import { Button, FormFieldContainer, FormFieldInputText, Toggle } from "talisman-ui"
 import * as yup from "yup"
-
-import Layout from "../layout"
-
-const Container = styled(Layout)`
-  .hide {
-    opacity: 0;
-    transition: opacity var(--transition-speed) ease-in-out;
-  }
-  .show {
-    opacity: 1;
-  }
-
-  .buttons {
-    display: flex;
-    width: 100%;
-    justify-content: flex-end;
-  }
-`
 
 type FormData = {
   name: string
@@ -42,11 +25,7 @@ type FormData = {
   isPortfolio: boolean
 }
 
-const Spacer = styled.div<{ small?: boolean }>`
-  height: ${({ small }) => (small ? "1.6rem" : "3.2rem")};
-`
-
-export const AccountAddWatched = () => {
+export const AccountAddWatchedPage = () => {
   const { t } = useTranslation("admin")
   const allAccounts = useAccounts()
   const accountNames = useMemo(() => allAccounts.map((a) => a.name), [allAccounts])
@@ -150,16 +129,16 @@ export const AccountAddWatched = () => {
   }, [setFocus, type])
 
   return (
-    <Container withBack centered>
+    <DashboardLayout withBack centered>
       <HeaderBlock
         title={t("Choose account type")}
         text={t("What type of account would you like to add?")}
       />
-      <Spacer />
+      <Spacer small />
       <form onSubmit={handleSubmit(submit)}>
         <AccountTypeSelector onChange={handleTypeChange} />
-        <Spacer />
-        <div className={classNames("hide", type && "show")}>
+        <Spacer small />
+        <div className={classNames("transition-opacity", type ? "opacity-100" : "opacity-0")}>
           <div>
             <p className="text-body-secondary">
               {t("Please enter the name and the wallet address you'll be watching.")}
@@ -201,7 +180,7 @@ export const AccountAddWatched = () => {
             <Toggle {...register("isPortfolio")} />
           </div>
           <Spacer />
-          <div className="buttons">
+          <div className="flex w-full justify-end">
             <Button
               icon={ArrowRightIcon}
               type="submit"
@@ -214,6 +193,6 @@ export const AccountAddWatched = () => {
           </div>
         </div>
       </form>
-    </Container>
+    </DashboardLayout>
   )
 }

@@ -13,7 +13,6 @@ import { ReactComponent as IconKey } from "@talisman/theme/icons/key.svg"
 import { ReactComponent as IconLink } from "@talisman/theme/icons/link.svg"
 import { ReactComponent as IconList } from "@talisman/theme/icons/list.svg"
 import { ReactComponent as IconLock } from "@talisman/theme/icons/lock.svg"
-import Layout from "@ui/apps/dashboard/layout"
 import { MigratePasswordModal } from "@ui/domains/Settings/MigratePassword/MigratePasswordModal"
 import { MnemonicModal } from "@ui/domains/Settings/MnemonicModal"
 import { useIsFeatureEnabled } from "@ui/hooks/useFeatures"
@@ -22,6 +21,8 @@ import { useCallback, useEffect } from "react"
 import { useTranslation } from "react-i18next"
 import { useSearchParams } from "react-router-dom"
 import { CtaButton } from "talisman-ui"
+
+import { DashboardLayout } from "../../layout/DashboardLayout"
 
 const useShowBackupModal = () => {
   const { isOpen, open, close: closeBackupModal } = useOpenClose()
@@ -39,7 +40,7 @@ const useShowBackupModal = () => {
   return { isOpen, open, close }
 }
 
-const Settings = () => {
+export const SettingsPage = () => {
   const { isOpen: isOpenMigratePw, open: openMigratePw, close: closeMigratePw } = useOpenClose()
   const {
     isOpen: isOpenBackupMnemonic,
@@ -64,7 +65,7 @@ const Settings = () => {
   const { t } = useTranslation("admin")
 
   return (
-    <Layout centered>
+    <DashboardLayout centered>
       <h2>{t("Settings")}</h2>
       <div className="mt-20 space-y-4">
         <CtaButton
@@ -154,8 +155,6 @@ const Settings = () => {
       </div>
       <MnemonicModal open={isOpenBackupMnemonic} onClose={closeBackupMnemonic} />
       <MigratePasswordModal open={isOpenMigratePw} onClose={closeMigratePw} />
-    </Layout>
+    </DashboardLayout>
   )
 }
-
-export default Settings

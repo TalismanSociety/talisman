@@ -2,7 +2,6 @@ import { CustomEvmNetwork, EvmNetwork } from "@core/domains/ethereum/types"
 import HeaderBlock from "@talisman/components/HeaderBlock"
 import { IconChevron, PlusIcon } from "@talisman/theme/icons"
 import { AnalyticsPage, sendAnalyticsEvent } from "@ui/api/analytics"
-import Layout from "@ui/apps/dashboard/layout"
 import { ChainLogo } from "@ui/domains/Asset/ChainLogo"
 import { EnableTestnetPillButton } from "@ui/domains/Settings/EnableTestnetPillButton"
 import { useAnalyticsPageView } from "@ui/hooks/useAnalyticsPageView"
@@ -14,6 +13,8 @@ import { useCallback, useMemo } from "react"
 import { useTranslation } from "react-i18next"
 import { useNavigate } from "react-router-dom"
 import { ListButton, PillButton } from "talisman-ui"
+
+import { DashboardLayout } from "../../layout/DashboardLayout"
 
 const TestnetPill = () => {
   const { t } = useTranslation("admin")
@@ -93,7 +94,7 @@ export const NetworksPage = () => {
   }, [navigate])
 
   return (
-    <Layout analytics={ANALYTICS_PAGE} withBack centered backTo="/settings">
+    <DashboardLayout analytics={ANALYTICS_PAGE} withBack centered backTo="/settings">
       <HeaderBlock
         title={t("Ethereum Networks")}
         text={t("Add or delete custom Ethereum networks")}
@@ -105,6 +106,6 @@ export const NetworksPage = () => {
         </PillButton>
       </div>
       <NetworksList />
-    </Layout>
+    </DashboardLayout>
   )
 }

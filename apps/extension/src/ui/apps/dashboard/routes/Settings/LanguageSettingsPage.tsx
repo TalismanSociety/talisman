@@ -2,11 +2,12 @@ import { languages } from "@core/i18nConfig"
 import HeaderBlock from "@talisman/components/HeaderBlock"
 import Spacer from "@talisman/components/Spacer"
 import { CheckIcon } from "@talisman/theme/icons"
-import Layout from "@ui/apps/dashboard/layout"
 import { useIsFeatureEnabled } from "@ui/hooks/useFeatures"
 import { useEffect } from "react"
 import { useTranslation } from "react-i18next"
 import { useNavigate } from "react-router-dom"
+
+import { DashboardLayout } from "../../layout/DashboardLayout"
 
 const LanguageButton = ({
   displayName,
@@ -32,7 +33,7 @@ const LanguageButton = ({
   </button>
 )
 
-export const LanguageSettings = () => {
+export const LanguageSettingsPage = () => {
   const { t, i18n } = useTranslation("admin")
   const i18nEnabled = useIsFeatureEnabled("I18N")
   const navigate = useNavigate()
@@ -49,7 +50,7 @@ export const LanguageSettings = () => {
   }, [i18nEnabled, navigate])
 
   return (
-    <Layout centered withBack backTo="/settings">
+    <DashboardLayout centered withBack backTo="/settings">
       <HeaderBlock title={t("Language")} text={t("Choose your preferred language")} />
       <Spacer />
       <div className="flex flex-col gap-4">
@@ -69,6 +70,6 @@ export const LanguageSettings = () => {
           />
         ))}
       </div>
-    </Layout>
+    </DashboardLayout>
   )
 }

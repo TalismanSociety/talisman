@@ -1,18 +1,19 @@
 import Setting from "@talisman/components/Setting"
-import Layout from "@ui/apps/dashboard/layout"
 import { AnalyticsOptInInfo } from "@ui/domains/Settings/Analytics/AnalyticsOptInInfo"
 import { useSetting } from "@ui/hooks/useSettings"
 import { useTranslation } from "react-i18next"
 import { useNavigationType } from "react-router-dom"
 import { Toggle } from "talisman-ui"
 
-export const AnalyticsOptIn = () => {
+import { DashboardLayout } from "../../layout/DashboardLayout"
+
+export const AnalyticsOptInPage = () => {
   const { t } = useTranslation("admin")
   const [useAnalyticsTracking, setUseAnalyticsTracking] = useSetting("useAnalyticsTracking")
   const nav = useNavigationType()
 
   return (
-    <Layout centered withBack={nav === "PUSH"}>
+    <DashboardLayout centered withBack={nav === "PUSH"}>
       <AnalyticsOptInInfo>
         <Setting
           title={t("Opt in to collection of anonymised usage data")}
@@ -28,6 +29,6 @@ export const AnalyticsOptIn = () => {
           />
         </Setting>
       </AnalyticsOptInInfo>
-    </Layout>
+    </DashboardLayout>
   )
 }

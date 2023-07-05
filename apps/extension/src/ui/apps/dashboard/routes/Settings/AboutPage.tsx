@@ -3,12 +3,12 @@ import { ExternalLinkIcon } from "@talisman/theme/icons"
 import { Trans, useTranslation } from "react-i18next"
 import { CtaButton } from "talisman-ui"
 
-import Layout from "../layout"
+import { DashboardLayout } from "../../layout/DashboardLayout"
 
-const About = () => {
+export const AboutPage = () => {
   const { t } = useTranslation("admin")
   return (
-    <Layout withBack centered backTo="/settings">
+    <DashboardLayout withBack centered backTo="/settings">
       <HeaderBlock title={t("About")} />
       <div className="text-body-secondary my-12 flex flex-col gap-8">
         <p>
@@ -65,8 +65,6 @@ const About = () => {
           iconRight={ExternalLinkIcon}
         />
       </div>
-    </Layout>
+    </DashboardLayout>
   )
 }
-
-export default About
