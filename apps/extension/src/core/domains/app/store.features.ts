@@ -39,7 +39,6 @@ if (!process.env.POSTHOG_AUTH_TOKEN) {
     I18N: true,
     USE_ONFINALITY_API_KEY_SUBSTRATE: false,
     USE_ONFINALITY_API_KEY_EVM: false,
-    I18N: true,
     TEST_VARIANT: "VARIANT1",
   }
   featuresStore.set({

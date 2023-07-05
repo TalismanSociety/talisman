@@ -3,30 +3,26 @@
 const nodeFetch = (...args) => import("node-fetch").then(({ default: fetch }) => fetch(...args))
 
 const apiKey = process.env.SIMPLE_LOCALIZE_API_KEY
-const endpoint = `https://api.simplelocalize.io/api/v1/translations`
+const endpoint = `https://api.simplelocalize.io/api/v4/export?downloadFormat=single-language-json&downloadOptions=SPLIT_BY_NAMESPACES`
 
-/*
-* Fetch languages from CDN
-* returns shape:
-  {
-    key: "I've backed it up",
-    language: 'en',
-    text: "I've backed it up",
-    namespace: 'settings',
-    description: ''
-  }[]
-*/
-const getTranslations = () =>
-  nodeFetch(endpoint, {
+const simpleLocalizeFetch = (url) =>
+  nodeFetch(url, {
     method: "GET",
     headers: {
       "Content-Type": "application/json",
       "X-SimpleLocalize-Token": apiKey,
     },
-  })
-    .then((response) => response.json())
+  }).then((response) => response.json())
+
+/*
+* Fetch languages from CDN
+* returns shape:
+  { url:string, namespace:string, language: string }[]
+*/
+const getNamespaceUrls = () =>
+  simpleLocalizeFetch(endpoint)
     .then((data) => {
-      const content = data?.data?.content
+      const content = data?.data?.files
       if (!content) {
         console.log(data)
         throw new Error("Bad response from SimpleLocalize")
@@ -47,25 +43,30 @@ class SimpleLocalizeDownloadPlugin {
 
     compiler.hooks.make.tapAsync("SimpleLocalizeDownloadPlugin", async (compilation, callback) => {
       console.log("Getting translations from ", endpoint)
-      const langs = await getTranslations()
+      const namespaces = await getNamespaceUrls()
+      const namespaceJson = await Promise.all(
+        namespaces.map(({ url, namespace, language }) =>
+          simpleLocalizeFetch(url)
+            .then((json) => {
+              return { namespace, language, json }
+            })
+            .catch((error) => {
+              console.error(`Unable to get ${language} file for namespace ${namespace}`)
+              console.error(error)
+              return undefined
+            })
+        )
+      )
 
-      const languages = langs.reduce((output, current) => {
-        const { language, namespace, key, text } = current
-        if (!output[language]) output[language] = {}
-        if (!output[language][namespace]) output[language][namespace] = {}
-        output[current.language][namespace][key] = text
-        return output
-      }, {})
-
-      console.log("Got translations for :", Object.keys(languages).join(", "))
-      Object.entries(languages).forEach(([language, namespaces]) => {
-        Object.keys(namespaces).forEach((namespace) => {
-          compilation.emitAsset(
-            `locales/${language}/${namespace}.json`,
-            new RawSource(JSON.stringify(namespaces[namespace]))
-          )
-        })
+      namespaceJson.forEach((item) => {
+        if (!item) return
+        const { namespace, language, json } = item
+        compilation.emitAsset(
+          `locales/${language}/${namespace}.json`,
+          new RawSource(JSON.stringify(json))
+        )
       })
+
       callback()
     })
   }
