@@ -10,6 +10,8 @@ declare namespace NodeJS {
     readonly API_KEY_ONFINALITY?: string
     readonly SENTRY_DSN?: string
     readonly SENTRY_AUTH_TOKEN?: string
+    readonly SIMPLE_LOCALIZE_API_KEY?: string
+    readonly SIMPLE_LOCALIZE_PROJECT_TOKEN?: string
     readonly BUILD?: "production" | "canary" | "ci"
 
     // dev utilities
