@@ -66,6 +66,8 @@ jobs:
           EXTENSION_PREFIX: talisman
           API_KEY_ONFINALITY: ${{ secrets.API_KEY_ONFINALITY }}
           POSTHOG_AUTH_TOKEN: ${{ secrets.POSTHOG_AUTH_TOKEN }}
+          SIMPLE_LOCALIZE_API_KEY: ${{ secrets.SIMPLE_LOCALIZE_API_KEY }}
+          SIMPLE_LOCALIZE_PROJECT_TOKEN: ${{ secrets.SIMPLE_LOCALIZE_PROJECT_TOKEN }}
           # SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
           # SENTRY_DSN: ${{ secrets.SENTRY_DSN }}
       - name: Upload build artifacts
