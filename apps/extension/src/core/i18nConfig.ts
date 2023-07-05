@@ -7,7 +7,7 @@ import { initReactI18next } from "react-i18next"
 import i18nextParserConfig from "../../i18next-parser.config.cjs"
 
 // juicy human-readable names
-export const languages = i18nextParserConfig.languages
+export const languages = i18nextParserConfig.languages as Record<string, string>
 const locales = Object.keys(i18nextParserConfig.languages)
 
 i18next

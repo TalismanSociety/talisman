@@ -1,8 +1,10 @@
 /* eslint-env es2021 */
 
 const nodeFetch = (...args) => import("node-fetch").then(({ default: fetch }) => fetch(...args))
+const { DefinePlugin } = require("webpack")
 
 const apiKey = process.env.SIMPLE_LOCALIZE_API_KEY
+const projectToken = process.env.SIMPLE_LOCALIZE_PROJECT_TOKEN
 const endpoint = `https://api.simplelocalize.io/api/v4/export?downloadFormat=single-language-json&downloadOptions=SPLIT_BY_NAMESPACES`
 
 const simpleLocalizeFetch = (url) =>
@@ -40,6 +42,23 @@ class SimpleLocalizeDownloadPlugin {
         sources: { RawSource },
       },
     } = compiler
+
+    compiler.hooks.afterPlugins.tap("SimpleLocalizeDownloadPlugin", async ({ options }) => {
+      const definePlugin = options.plugins.find((plugin) => plugin instanceof DefinePlugin)
+      if (definePlugin) {
+        const languages = await simpleLocalizeFetch(
+          `https://cdn.simplelocalize.io/${projectToken}/_latest/_languages`
+        )
+        const supportedLanguages = languages.reduce((result, lang) => {
+          result[lang.key] = lang.name
+          return result
+        }, {})
+
+        console.log("Setting supported languages", supportedLanguages)
+        definePlugin.definitions["process.env.SUPPORTED_LANGUAGES"] =
+          JSON.stringify(supportedLanguages)
+      }
+    })
 
     compiler.hooks.make.tapAsync("SimpleLocalizeDownloadPlugin", async (compilation, callback) => {
       console.log("Getting translations from ", endpoint)
