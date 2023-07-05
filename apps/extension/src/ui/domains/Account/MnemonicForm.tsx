@@ -46,8 +46,14 @@ const MnemonicForm = ({ className }: MnemonicFormProps) => {
 
   useEffect(() => {
     if (!password) return
-    api.mnemonicUnlock(password).then((result) => setMnemonic(result))
+    api.mnemonicUnlock(password).then(setMnemonic)
   }, [password])
+
+  useEffect(() => {
+    return () => {
+      setMnemonic(undefined)
+    }
+  }, [])
 
   return (
     <div className={classNames("flex grow flex-col", className)}>

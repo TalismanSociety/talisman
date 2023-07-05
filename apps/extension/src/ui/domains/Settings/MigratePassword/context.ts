@@ -60,6 +60,14 @@ const useMigratePasswordProvider = ({ onComplete }: { onComplete: () => void }) 
     }
   }, [hasBackedUpMnemonic, status, migratePassword])
 
+  useEffect(() => {
+    return () => {
+      setPassword(undefined)
+      setMnemonic(undefined)
+      setNewPassword(undefined)
+    }
+  }, [])
+
   return {
     hasPassword,
     hasNewPassword,

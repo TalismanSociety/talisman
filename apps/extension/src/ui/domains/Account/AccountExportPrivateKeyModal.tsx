@@ -4,9 +4,8 @@ import { notify } from "@talisman/components/Notifications"
 import { useOpenClose } from "@talisman/hooks/useOpenClose"
 import { CopyIcon, LoaderIcon } from "@talisman/theme/icons"
 import { provideContext } from "@talisman/util/provideContext"
-import { useQuery } from "@tanstack/react-query"
 import { api } from "@ui/api"
-import { useCallback, useEffect, useMemo } from "react"
+import { useCallback, useEffect, useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
 import { Button } from "talisman-ui"
 
@@ -28,7 +27,7 @@ const useAccountExportPrivateKeyModalProvider = () => {
   )
 
   const exportAccount = useCallback(
-    (password: string) => {
+    async (password: string) => {
       if (!account) return
       return api.accountExportPrivateKey(account.address, password)
     },
@@ -46,19 +45,10 @@ const ExportPrivateKeyResult = ({ onClose }: { onClose?: () => void }) => {
   const { account, exportAccount } = useAccountExportPrivateKeyModal()
   const { password } = usePasswordUnlock()
 
-  // force password check each time this component is rendered
-  const {
-    error,
-    data: privateKey,
-    isLoading,
-  } = useQuery({
-    queryKey: ["accountExportPrivateKey", !!password],
-    queryFn: () => (password ? exportAccount(password) : null),
-    refetchInterval: false,
-    refetchOnWindowFocus: false,
-    refetchOnReconnect: false,
-    refetchOnMount: true,
-  })
+  // don't use react-query here as we don't want this to be cached
+  const [privateKey, setPrivateKey] = useState<string>()
+  const [isLoading, setIsLoading] = useState(false)
+  const [error, setError] = useState<Error>()
 
   const copyToClipboard = useCallback(async () => {
     if (!privateKey) return
@@ -87,6 +77,25 @@ const ExportPrivateKeyResult = ({ onClose }: { onClose?: () => void }) => {
       return false
     }
   }, [privateKey, t])
+
+  useEffect(() => {
+    if (password) {
+      setError(undefined)
+      setIsLoading(true)
+      exportAccount(password)
+        .then(setPrivateKey)
+        .catch(setError)
+        .finally(() => setIsLoading(false))
+    }
+  }, [exportAccount, password])
+
+  useEffect(() => {
+    return () => {
+      setError(undefined)
+      setPrivateKey(undefined)
+      setIsLoading(false)
+    }
+  }, [])
 
   if (!account) return null
 

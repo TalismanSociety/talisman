@@ -2,7 +2,7 @@ import { yupResolver } from "@hookform/resolvers/yup"
 import { api } from "@ui/api"
 import { AnalyticsPage, sendAnalyticsEvent } from "@ui/api/analytics"
 import { useAnalyticsPageView } from "@ui/hooks/useAnalyticsPageView"
-import { useCallback, useMemo } from "react"
+import { useCallback, useEffect, useMemo } from "react"
 import { useForm } from "react-hook-form"
 import { Trans, useTranslation } from "react-i18next"
 import { useNavigate } from "react-router-dom"
@@ -61,6 +61,7 @@ export const ImportSeedPage = () => {
   const {
     register,
     handleSubmit,
+    setValue,
     formState: { errors, isValid },
   } = useForm<FormData>({
     mode: "onChange",
@@ -84,6 +85,12 @@ export const ImportSeedPage = () => {
     },
     [data.importAccountType, data.importMethodType, navigate, updateData]
   )
+
+  useEffect(() => {
+    return () => {
+      setValue("mnemonic", "")
+    }
+  }, [setValue])
 
   return (
     <Layout withBack analytics={ANALYTICS_PAGE}>
