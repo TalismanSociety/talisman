@@ -99,7 +99,7 @@ export const Drawer: FC<DrawerProps> = ({
       {onDismiss && (
         <Transition.Child
           className={classNames(
-            "bg-grey-900 top-0 left-0 z-10 h-full w-full cursor-pointer bg-opacity-50",
+            "bg-grey-900 left-0 top-0 z-10 h-full w-full cursor-pointer bg-opacity-50",
             position
           )}
           enter="transition-opacity ease-linear duration-300"

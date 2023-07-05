@@ -181,7 +181,12 @@ export const ViewDetails: FC = () => {
   return (
     <>
       <ViewDetailsButton onClick={open} hide={isOpen} isAnalysing={isDecodingExtrinsic} />
-      <Drawer anchor="bottom" isOpen={isOpen && !isDecodingExtrinsic} onDismiss={close}>
+      <Drawer
+        anchor="bottom"
+        containerId="main"
+        isOpen={isOpen && !isDecodingExtrinsic}
+        onDismiss={close}
+      >
         <ViewDetailsContent onClose={close} />
       </Drawer>
     </>

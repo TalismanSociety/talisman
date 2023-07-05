@@ -1,7 +1,6 @@
 import { AccountJsonHardwareSubstrate, AccountJsonQr } from "@core/domains/accounts/types"
 import { SignerPayloadRaw } from "@core/domains/signing/types"
 import { AppPill } from "@talisman/components/AppPill"
-import { Content, Footer, Header } from "@ui/apps/popup/Layout"
 import { AccountPill } from "@ui/domains/Account/AccountPill"
 import { Message } from "@ui/domains/Sign/Message"
 import { QrSubstrate } from "@ui/domains/Sign/Qr/QrSubstrate"
@@ -10,7 +9,7 @@ import { FC, Suspense, lazy, useEffect, useMemo } from "react"
 import { useTranslation } from "react-i18next"
 import { Button } from "talisman-ui"
 
-import { Container } from "./common"
+import { PopupContent, PopupFooter, PopupHeader, PopupLayout } from "../../Layout/PopupLayout"
 import { SignAccountAvatar } from "./SignAccountAvatar"
 
 const LedgerSubstrate = lazy(() => import("@ui/domains/Sign/LedgerSubstrate"))
@@ -43,28 +42,30 @@ export const PolkadotSignMessageRequest: FC = () => {
   }, [status])
 
   return (
-    <Container>
-      <Header
-        text={<AppPill url={url} />}
-        nav={<SignAccountAvatar account={account} ss58Format={chain?.prefix} />}
-      ></Header>
-      <Content>
+    <PopupLayout>
+      <PopupHeader right={<SignAccountAvatar account={account} ss58Format={chain?.prefix} />}>
+        <AppPill url={url} />
+      </PopupHeader>
+      <PopupContent>
         {account && request && (
           <>
-            <div className="flex grow flex-col">
-              <h1>{"Sign Request"}</h1>
-              <h2 className="center mb-8">
+            <div className="text-body-secondary flex h-full w-full flex-col items-center text-center">
+              <h1 className="text-body text-md my-12 font-bold leading-9">{"Sign Request"}</h1>
+              <h2 className="mb-8 text-base leading-[3.2rem]">
                 {t("You are signing a message with account")}{" "}
                 <AccountPill account={account} prefix={chain?.prefix ?? undefined} />
                 {chain ? ` ${t("on {{chainName}}", { chainName: chain.name })}` : null}
               </h2>
-              <Message className="grow" text={(request.payload as SignerPayloadRaw).data} />
+              <Message
+                className="w-full flex-grow"
+                text={(request.payload as SignerPayloadRaw).data}
+              />
             </div>
             {errorMessage && <div className="error">{errorMessage}</div>}
           </>
         )}
-      </Content>
-      <Footer>
+      </PopupContent>
+      <PopupFooter>
         {account && request && (
           <>
             {account.origin !== "HARDWARE" && account.origin !== "QR" && (
@@ -101,7 +102,7 @@ export const PolkadotSignMessageRequest: FC = () => {
             )}
           </>
         )}
-      </Footer>
-    </Container>
+      </PopupFooter>
+    </PopupLayout>
   )
 }

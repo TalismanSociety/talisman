@@ -7,7 +7,7 @@ import { ChangeEventHandler, useCallback, useEffect, useMemo, useState } from "r
 import { useTranslation } from "react-i18next"
 import { Button, FormFieldInputText } from "talisman-ui"
 
-import Layout, { Content, Footer } from "../Layout"
+import { PopupContent, PopupFooter, PopupLayout } from "../Layout/PopupLayout"
 
 const ConfirmDrawer = ({
   isOpen,
@@ -90,7 +90,7 @@ export const ResetWallet = ({ closeResetWallet }: { closeResetWallet: () => void
   }, [popupOpenEvent])
 
   return (
-    <Layout>
+    <PopupLayout>
       <div className="text-body-secondary flex h-32 items-center justify-center px-12 pr-[16px]">
         <ChevronLeftIcon
           className="flex-shrink cursor-pointer text-lg hover:text-white"
@@ -98,7 +98,7 @@ export const ResetWallet = ({ closeResetWallet }: { closeResetWallet: () => void
         />
         <span className="flex-grow pr-[24px] text-center">{t("Reset Wallet")}</span>
       </div>
-      <Content>
+      <PopupContent>
         <div className="flex h-full flex-col items-center justify-end gap-16 pb-8">
           <LockIcon className="text-primary-500 text-[4.8rem]" />
           <div className="text-lg font-bold">{t("Forgot your password?")}</div>
@@ -115,16 +115,16 @@ export const ResetWallet = ({ closeResetWallet }: { closeResetWallet: () => void
             </p>
           </div>
         </div>
-      </Content>
-      <Footer className="flex flex-col gap-8">
+      </PopupContent>
+      <PopupFooter className="flex flex-col gap-8">
         <Button fullWidth primary onClick={open} className="h-24">
           {t("Reset Wallet")}
         </Button>
         <Button fullWidth onClick={closeResetWallet} className="h-24">
           {t("Cancel")}
         </Button>
-      </Footer>
+      </PopupFooter>
       <ConfirmDrawer isOpen={isOpen} closeResetWallet={closeResetWallet} />
-    </Layout>
+    </PopupLayout>
   )
 }

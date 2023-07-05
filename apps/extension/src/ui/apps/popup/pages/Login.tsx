@@ -14,7 +14,7 @@ import { Button, FormFieldInputText } from "talisman-ui"
 import { LoginBackground } from "talisman-ui"
 import * as yup from "yup"
 
-import Layout, { Content, Footer } from "../Layout"
+import { PopupContent, PopupFooter, PopupLayout } from "../Layout/PopupLayout"
 import { ResetWallet } from "./ResetWallet"
 
 type FormData = {
@@ -127,6 +127,10 @@ const Login = ({ setShowResetWallet }: { setShowResetWallet: () => void }) => {
     [setError, setFocus, t]
   )
 
+  useEffect(() => {
+    setFocus("password")
+  }, [setFocus])
+
   // autologin, for developers only
   const refDone = useRef(false)
   useEffect(() => {
@@ -138,11 +142,13 @@ const Login = ({ setShowResetWallet }: { setShowResetWallet: () => void }) => {
   }, [handleSubmit, setValue, submit])
 
   return (
-    <Layout className="pt-32">
+    <PopupLayout>
       <Suspense fallback={<SuspenseTracker name="Background" />}>
         <Background />
       </Suspense>
-      <Content className={classNames("z-10 text-center", isSubmitting && "animate-pulse")}>
+      <PopupContent
+        className={classNames("z-10 pt-32 text-center", isSubmitting && "animate-pulse")}
+      >
         <div className="mt-[60px]">
           <HandMonoTransparentLogo className="inline-block text-[64px]" />
         </div>
@@ -150,8 +156,8 @@ const Login = ({ setShowResetWallet }: { setShowResetWallet: () => void }) => {
         {errors.password?.message && (
           <div className="text-alert-warn mt-8">{errors.password?.message}</div>
         )}
-      </Content>
-      <Footer className="z-10">
+      </PopupContent>
+      <PopupFooter className="z-10">
         <form className="flex flex-col items-center gap-6" onSubmit={handleSubmit(submit)}>
           <FormFieldInputText
             {...register("password")}
@@ -160,8 +166,6 @@ const Login = ({ setShowResetWallet }: { setShowResetWallet: () => void }) => {
             spellCheck={false}
             autoComplete="off"
             data-lpignore
-            // eslint-disable-next-line jsx-a11y/no-autofocus
-            autoFocus
             containerProps={INPUT_CONTAINER_PROPS}
             className="placeholder:text-grey-500"
           />
@@ -183,8 +187,8 @@ const Login = ({ setShowResetWallet }: { setShowResetWallet: () => void }) => {
             {t("Forgot Password?")}
           </button>
         </form>
-      </Footer>
-    </Layout>
+      </PopupFooter>
+    </PopupLayout>
   )
 }
 

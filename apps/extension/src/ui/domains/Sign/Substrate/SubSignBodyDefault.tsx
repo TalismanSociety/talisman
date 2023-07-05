@@ -10,8 +10,8 @@ export const SubSignBodyDefault = () => {
 
   return (
     <div className="animate-fade-in flex grow flex-col">
-      <h1>{t("Approve Request")}</h1>
-      <h2 className="center">
+      <h1 className="text-md text-body my-12 font-bold">{t("Approve Request")}</h1>
+      <h2 className="text-base leading-[3.2rem]">
         {t("You are approving a request with account")}{" "}
         <AccountPill account={account} prefix={chain?.prefix ?? undefined} />
         {chain ? ` on ${chain.name}` : null}

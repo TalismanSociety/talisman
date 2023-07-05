@@ -1,11 +1,11 @@
 import { CurrentAccountAvatar } from "@ui/domains/Account/CurrentAccountAvatar"
 import { PortfolioProvider } from "@ui/domains/Portfolio/context"
 import { NomPoolStakingBannerProvider } from "@ui/domains/Portfolio/NomPoolStakingContext"
-import Site from "@ui/domains/Site"
+import { ConnectedAccountsPill } from "@ui/domains/Site/ConnectedAccountsPill"
 import { Suspense, lazy } from "react"
 import { Route, Routes, useLocation } from "react-router-dom"
 
-import Layout, { Content, Header } from "../../Layout"
+import { PopupContent, PopupHeader, PopupLayout } from "../../Layout/PopupLayout"
 import { PortfolioAccounts } from "./PortfolioAccounts"
 import { PortfolioAsset } from "./PortfolioAsset"
 import { PortfolioAssets } from "./PortfolioAssets"
@@ -34,9 +34,11 @@ export const Portfolio = () => {
     <PortfolioProvider>
       <NomPoolStakingBannerProvider>
         {/* share layout to prevent sidebar flickering when navigating between the 2 pages */}
-        <Layout withBottomNav>
-          <Header text={<Site.ConnectedAccountsPill />} nav={<AccountAvatar />} />
-          <Content>
+        <PopupLayout withBottomNav>
+          <PopupHeader right={<AccountAvatar />}>
+            <ConnectedAccountsPill />
+          </PopupHeader>
+          <PopupContent>
             <Routes>
               <Route path="assets" element={<PortfolioAssets />} />
               <Route path=":symbol" element={<PortfolioAsset />} />
@@ -44,15 +46,11 @@ export const Portfolio = () => {
             </Routes>
             <Suspense fallback={null}>
               <BraveWarningPopupBanner />
-            </Suspense>
-            <Suspense fallback={null}>
               <MigratePasswordAlert />
-            </Suspense>
-            <Suspense fallback={null}>
               <AnalyticsAlert />
             </Suspense>
-          </Content>
-        </Layout>
+          </PopupContent>
+        </PopupLayout>
       </NomPoolStakingBannerProvider>
     </PortfolioProvider>
   )

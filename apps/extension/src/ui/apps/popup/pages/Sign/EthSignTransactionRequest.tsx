@@ -4,7 +4,6 @@ import { AppPill } from "@talisman/components/AppPill"
 import { WithTooltip } from "@talisman/components/Tooltip"
 import { InfoIcon } from "@talisman/theme/icons"
 import { useQuery } from "@tanstack/react-query"
-import { Content, Footer, Header } from "@ui/apps/popup/Layout"
 import { TokensAndFiat } from "@ui/domains/Asset/TokensAndFiat"
 import { EthFeeSelect } from "@ui/domains/Ethereum/GasSettings/EthFeeSelect"
 import { useEthereumProvider } from "@ui/domains/Ethereum/useEthereumProvider"
@@ -14,80 +13,12 @@ import { useEthSignTransactionRequest } from "@ui/domains/Sign/SignRequestContex
 import useToken from "@ui/hooks/useToken"
 import { Suspense, lazy, useCallback, useEffect, useMemo } from "react"
 import { useTranslation } from "react-i18next"
-import styled from "styled-components"
-import { Button } from "talisman-ui"
+import { Button, Tooltip, TooltipContent, TooltipTrigger } from "talisman-ui"
 
-import { Container } from "./common"
+import { PopupContent, PopupFooter, PopupHeader, PopupLayout } from "../../Layout/PopupLayout"
 import { SignAccountAvatar } from "./SignAccountAvatar"
 
 const LedgerEthereum = lazy(() => import("@ui/domains/Sign/LedgerEthereum"))
-
-const SignContainer = styled(Container)`
-  .layout-content .children {
-    padding-left: 0;
-    padding-right: 0;
-
-    .scrollable {
-      // padding-right is dynamic and browser-specific so only set padding left and width
-      padding-left: 2.4rem;
-      & > div {
-        width: 35.2rem;
-        max-width: 35.2rem;
-      }
-    }
-  }
-
-  .layout-content .children h2 {
-    text-align: center;
-    padding: 0;
-  }
-
-  .layout-content .children h1.no-margin-top {
-    margin: 0 0 1.6rem 0;
-  }
-
-  .sign-summary {
-    flex-grow: 1;
-    display: flex;
-    flex-direction: column;
-  }
-
-  strong {
-    color: var(--color-foreground);
-    background: var(--color-background-muted);
-    border-radius: 4.8rem;
-    padding: 0.4rem 0.8rem;
-    white-space: nowrap;
-  }
-
-  .center {
-    text-align: center;
-  }
-
-  .gasInfo {
-    display: flex;
-    flex-direction: column;
-    gap: 0.4rem;
-    font-size: 1.4rem;
-    text-align: left;
-    justify-content: space-between;
-    color: var(--color-mid);
-
-    > div {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-    }
-  }
-
-  .error {
-    color: var(--color-status-error);
-    max-width: 100%;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-  }
-`
 
 const useEvmBalance = (address?: string, evmNetworkId?: string) => {
   const { t } = useTranslation("request")
@@ -217,45 +148,48 @@ export const EthSignTransactionRequest = () => {
   )
 
   return (
-    <SignContainer>
-      <Header text={<AppPill url={url} />} nav={<SignAccountAvatar account={account} />}></Header>
-      <Content>
-        <div className="scrollable scrollable-800 h-full overflow-y-auto">
+    <PopupLayout>
+      <PopupHeader right={<SignAccountAvatar account={account} />}>
+        <AppPill url={url} />
+      </PopupHeader>
+      <PopupContent>
+        <div className="scrollable scrollable-800 text-body-secondary h-full overflow-y-auto text-center">
           <EthSignBody transactionInfo={transactionInfo} isReady={!isLoading} />
         </div>
-      </Content>
+      </PopupContent>
       {!isLoading && (
-        <Footer>
-          <div className="space-y-4">
+        <PopupFooter>
+          <div className="flex flex-col gap-4">
             <div id="sign-alerts-inject"></div>
             {errorMessage && (
-              <SignAlertMessage type="error">
+              <SignAlertMessage className="mb-8" type="error">
                 <WithTooltip tooltip={errorDetails}>{errorMessage}</WithTooltip>
               </SignAlertMessage>
             )}
           </div>
           <Suspense fallback={null}>
             {transaction && txDetails && network?.nativeToken ? (
-              <div className="gasInfo my-8">
-                <div>
+              <div className="text-body-secondary my-8 flex flex-col gap-2 text-sm">
+                <div className="flex items-center justify-between">
                   <div>
                     {t("Estimated Fee")}{" "}
-                    <WithTooltip
-                      tooltip={
+                    <Tooltip placement="top">
+                      <TooltipTrigger asChild>
+                        <InfoIcon className="inline align-text-top" />
+                      </TooltipTrigger>
+                      <TooltipContent>
                         <FeeTooltip
                           account={account?.address}
                           tokenId={network.nativeToken.id}
                           estimatedFee={txDetails.estimatedFee.toString()}
                           maxFee={txDetails.maxFee.toString()}
                         />
-                      }
-                    >
-                      <InfoIcon className="inline align-text-top" />
-                    </WithTooltip>
+                      </TooltipContent>
+                    </Tooltip>
                   </div>
                   <div>{transaction?.type === 2 && t("Priority")}</div>
                 </div>
-                <div>
+                <div className="flex items-center justify-between">
                   <div>
                     <TokensAndFiat
                       tokenId={network.nativeToken.id}
@@ -273,6 +207,7 @@ export const EthSignTransactionRequest = () => {
                       priority={priority}
                       onChange={handleFeeChange}
                       networkUsage={networkUsage}
+                      drawerContainerId="main"
                     />
                   </div>
                 </div>
@@ -310,8 +245,8 @@ export const EthSignTransactionRequest = () => {
               </div>
             )}
           </Suspense>
-        </Footer>
+        </PopupFooter>
       )}
-    </SignContainer>
+    </PopupLayout>
   )
 }
