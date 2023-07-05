@@ -1,10 +1,12 @@
 import { IconButton } from "@talisman/components/IconButton"
 import { EyeIcon, EyeOffIcon } from "@talisman/theme/icons"
+import { Balance, Balances } from "@talismn/balances"
 import Asset from "@ui/domains/Asset"
 import { useAnalytics } from "@ui/hooks/useAnalytics"
 import useBalances from "@ui/hooks/useBalances"
+import { useSearchParamsSelectedFolder } from "@ui/hooks/useSearchParamsSelectedFolder"
 import { useSetting } from "@ui/hooks/useSettings"
-import { FC, useCallback } from "react"
+import { FC, useCallback, useMemo } from "react"
 import { useTranslation } from "react-i18next"
 import styled from "styled-components"
 
@@ -82,7 +84,28 @@ const TotalFiat = styled.div`
 
 export const TotalFiatBalance: FC<{ className?: string }> = ({ className }) => {
   const { t } = useTranslation()
-  const balances = useBalances("portfolio")
+  const { folder } = useSearchParamsSelectedFolder()
+
+  const balances = useBalances(folder ? "all" : "portfolio")
+  const balancesByAddress = useMemo(() => {
+    // we use this to avoid looping over the balances list n times, where n is the number of accounts in the wallet
+    // instead, we'll only interate over the balances one time
+    const balancesByAddress: Map<string, Balance[]> = new Map()
+    balances.each.forEach((balance) => {
+      if (!balancesByAddress.has(balance.address)) balancesByAddress.set(balance.address, [])
+      balancesByAddress.get(balance.address)?.push(balance)
+    })
+    return balancesByAddress
+  }, [balances])
+  const filteredBalances = useMemo(
+    () =>
+      !folder
+        ? balances
+        : new Balances(
+            folder.tree.flatMap((account) => balancesByAddress.get(account.address) ?? [])
+          ),
+    [balances, balancesByAddress, folder]
+  )
 
   const [hideBalances, setHideBalances] = useSetting("hideBalances")
   const { genericEvent } = useAnalytics()
@@ -96,7 +119,7 @@ export const TotalFiatBalance: FC<{ className?: string }> = ({ className }) => {
     <Container className={className}>
       <TitleRow>
         <Side></Side>
-        <Title>{t("Total Portfolio")}</Title>
+        <Title>{folder ? folder.name : t("Total Portfolio")}</Title>
         <Side>
           <ToggleHide showIcon={hideBalances} onClick={toggleHideBalance}>
             {hideBalances ? <EyeIcon /> : <EyeOffIcon />}
@@ -104,7 +127,7 @@ export const TotalFiatBalance: FC<{ className?: string }> = ({ className }) => {
         </Side>
       </TitleRow>
       <TotalFiat>
-        <Asset.Fiat amount={balances?.sum.fiat("usd").total} currency="usd" isBalance />
+        <Asset.Fiat amount={filteredBalances?.sum.fiat("usd").total} currency="usd" isBalance />
       </TotalFiat>
     </Container>
   )

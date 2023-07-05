@@ -17,7 +17,7 @@ const PageContent = ({ balances, symbol }: { balances: Balances; symbol: string 
   const balancesToDisplay = useDisplayBalances(balances)
   const { token } = useTokenBalancesSummary(balancesToDisplay)
 
-  const handleBackBtnClick = useCallback(() => navigate("/portfolio/assets"), [navigate])
+  const handleBackBtnClick = useCallback(() => navigate(-1), [navigate])
 
   const total = useMemo(() => balancesToDisplay.sum.fiat("usd").total, [balancesToDisplay])
 

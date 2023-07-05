@@ -2,7 +2,6 @@ import { AccountType } from "@core/domains/accounts/types"
 import { isEthereumAddress } from "@polkadot/util-crypto"
 import { FadeIn } from "@talisman/components/FadeIn"
 import {
-  AllAccountsIcon,
   ArrowDownIcon,
   ChevronRightIcon,
   CopyIcon,
@@ -15,15 +14,18 @@ import { Balance, Balances } from "@talismn/balances"
 import { api } from "@ui/api"
 import { AnalyticsPage, sendAnalyticsEvent } from "@ui/api/analytics"
 import { TotalFiatBalance } from "@ui/apps/popup/components/TotalFiatBalance"
+import { AccountFolderIcon } from "@ui/domains/Account/AccountFolderIcon"
 import { AccountTypeIcon } from "@ui/domains/Account/AccountTypeIcon"
+import { AllAccountsIcon } from "@ui/domains/Account/AllAccountsIcon"
 import AccountAvatar from "@ui/domains/Account/Avatar"
 import Fiat from "@ui/domains/Asset/Fiat"
 import { useCopyAddressModal } from "@ui/domains/CopyAddress"
-import { useSelectedAccount } from "@ui/domains/Portfolio/SelectedAccountContext"
 import useAccounts from "@ui/hooks/useAccounts"
+import useAccountsPortfolio from "@ui/hooks/useAccountsPortfolio"
 import { useAnalytics } from "@ui/hooks/useAnalytics"
 import useBalances from "@ui/hooks/useBalances"
 import { useIsFeatureEnabled } from "@ui/hooks/useFeatures"
+import { useSearchParamsSelectedFolder } from "@ui/hooks/useSearchParamsSelectedFolder"
 import { MouseEventHandler, useCallback, useEffect, useMemo } from "react"
 import { useTranslation } from "react-i18next"
 import { useNavigate } from "react-router-dom"
@@ -36,34 +38,55 @@ const ANALYTICS_PAGE: AnalyticsPage = {
   page: "Portfolio Home",
 }
 
-type AccountOption = {
-  address?: string
-  name: string
-  total?: number
-  genesisHash?: string | null
-  origin?: AccountType
-  isPortfolio?: boolean
-}
+type AccountOption =
+  | { type: "all accounts"; name: string; total?: number }
+  | { type: "folder"; name: string; color: string; total?: number }
+  | {
+      type: "account"
+      name: string
+      address: string
+      total?: number
+      genesisHash?: string | null
+      origin?: AccountType
+      isPortfolio?: boolean
+    }
 
-const AccountButton = ({ address, name, total, genesisHash, origin }: AccountOption) => {
+const AccountButton = ({ option }: { option: AccountOption }) => {
   const { open } = useCopyAddressModal()
-  const { select } = useSelectedAccount()
   const navigate = useNavigate()
   const { genericEvent } = useAnalytics()
 
-  const handleAccountClick = useCallback(() => {
-    select(address)
-    navigate("/portfolio/assets")
-    genericEvent("select account(s)", {
-      type: address ? (isEthereumAddress(address) ? "ethereum" : "substrate") : "all",
-      from: "popup",
-    })
-  }, [address, genericEvent, navigate, select])
+  const { folder } = useSearchParamsSelectedFolder()
+
+  const handleClick = useCallback(() => {
+    if (option.type === "all accounts") {
+      // navigate to list of all account assets (user clicked 'All Accounts' on main menu)
+      if (!folder) return navigate("/portfolio/assets")
+
+      // navigate to list of all account assets in folder (user clicked 'All Accounts in {{folder}}' on folder menu)
+      return navigate(`/portfolio/assets?folder=${folder.name}`)
+    }
+
+    if (option.type === "account") {
+      genericEvent("select account(s)", {
+        type: option.address
+          ? isEthereumAddress(option.address)
+            ? "ethereum"
+            : "substrate"
+          : "all",
+        from: "popup",
+      })
+      return navigate(`/portfolio/assets?account=${option.address}`)
+    }
+
+    // navigate to list of accounts in folder (user clicked folder on main menu)
+    if (option.type === "folder") return navigate(`/portfolio?folder=${option.name}`)
+  }, [folder, genericEvent, navigate, option])
 
   const handleCopyClick: MouseEventHandler<HTMLOrSVGElement> = useCallback(
-    (e) => {
-      e.stopPropagation()
-      if (address) {
+    (event) => {
+      event.stopPropagation()
+      if (option.type === "account") {
         sendAnalyticsEvent({
           ...ANALYTICS_PAGE,
           name: "Goto",
@@ -71,11 +94,11 @@ const AccountButton = ({ address, name, total, genesisHash, origin }: AccountOpt
         })
         open({
           mode: "copy",
-          address,
+          address: option.address,
         })
       }
     },
-    [address, open]
+    [open, option]
   )
 
   return (
@@ -83,31 +106,39 @@ const AccountButton = ({ address, name, total, genesisHash, origin }: AccountOpt
       type="button"
       tabIndex={0}
       className="text-body-secondary bg-black-secondary hover:bg-grey-800 flex h-[5.9rem] w-full cursor-pointer items-center gap-6 overflow-hidden rounded-sm px-6 hover:text-white"
-      onClick={handleAccountClick}
+      onClick={handleClick}
     >
       <div className="flex flex-col justify-center text-xl">
-        {address ? (
-          <AccountAvatar address={address} genesisHash={genesisHash} />
+        {option.type === "all accounts" ? (
+          !folder ? (
+            <AllAccountsIcon />
+          ) : (
+            <AccountFolderIcon color={folder.color} />
+          )
+        ) : option.type === "account" ? (
+          <AccountAvatar address={option.address} genesisHash={option.genesisHash} />
         ) : (
-          <AllAccountsIcon />
+          <AccountFolderIcon color={option.color} />
         )}
       </div>
       <div className="flex grow flex-col items-start justify-center gap-2 overflow-hidden">
         <div className="text-body flex w-full items-center gap-3 text-base leading-none">
-          <div className="overflow-hidden overflow-ellipsis whitespace-nowrap">{name}</div>
-          <AccountTypeIcon className="text-primary" origin={origin} />
-          {address ? (
-            <div className="flex flex-col justify-end">
-              <CopyIcon
-                role="button"
-                className="text-body-secondary hover:text-body !text-sm "
-                onClick={handleCopyClick}
-              />
-            </div>
+          <div className="overflow-hidden overflow-ellipsis whitespace-nowrap">{option.name}</div>
+          {option.type === "account" ? (
+            <>
+              <AccountTypeIcon className="text-primary" origin={option.origin} />
+              <div className="flex flex-col justify-end">
+                <CopyIcon
+                  role="button"
+                  className="text-body-secondary hover:text-body !text-sm "
+                  onClick={handleCopyClick}
+                />
+              </div>
+            </>
           ) : null}
         </div>
         <div className="text-body-secondary flex w-full overflow-hidden text-ellipsis whitespace-nowrap text-left text-sm leading-none">
-          <Fiat amount={total} isBalance />
+          <Fiat amount={option.total} isBalance />
         </div>
       </div>
       <div className="flex flex-col justify-center text-lg">
@@ -175,7 +206,16 @@ const TopActions = () => {
 const AccountsListView = ({ options }: { options: AccountOption[] }) => (
   <div className="flex w-full flex-col gap-4 ">
     {options.map((option) => (
-      <AccountButton key={option.address ?? "all"} {...option} />
+      <AccountButton
+        key={`${option.type}-${
+          option.type === "all accounts"
+            ? "all"
+            : option.type === "account"
+            ? option.address
+            : option.name
+        }`}
+        option={option}
+      />
     ))}
   </div>
 )
@@ -184,10 +224,13 @@ const AccountsList = ({ options }: { options: AccountOption[] }) => {
   const { t } = useTranslation()
   const { myAccounts, watchedAccounts } = useMemo(
     () => ({
-      myAccounts: options.filter(({ origin, isPortfolio }) => origin !== "WATCHED" || isPortfolio),
-      watchedAccounts: options.filter(
-        ({ origin, isPortfolio }) => origin === "WATCHED" && !isPortfolio
-      ),
+      // TODO: Split watched accounts into separate tree
+      myAccounts: options,
+      watchedAccounts: [],
+      // myAccounts: options.filter(({ origin, isPortfolio }) => origin !== "WATCHED" || isPortfolio),
+      // watchedAccounts: options.filter(
+      //   ({ origin, isPortfolio }) => origin === "WATCHED" && !isPortfolio
+      // ),
     }),
     [options]
   )
@@ -227,10 +270,12 @@ export const PortfolioAccounts = () => {
   const balances = useBalances()
   const myBalances = useBalances("portfolio")
   const accounts = useAccounts()
+  const portfolio = useAccountsPortfolio()
+  const { folder } = useSearchParamsSelectedFolder()
   const { popupOpenEvent } = useAnalytics()
   const { t } = useTranslation()
 
-  const options: AccountOption[] = useMemo(() => {
+  const options = useMemo((): AccountOption[] => {
     // we use this to avoid looping over the balances list n times, where n is the number of accounts in the wallet
     // instead, we'll only interate over the balances one time
     const balancesByAddress: Map<string, Balance[]> = new Map()
@@ -239,21 +284,49 @@ export const PortfolioAccounts = () => {
       balancesByAddress.get(balance.address)?.push(balance)
     })
 
+    const allAccountsName = !folder
+      ? t("All Accounts")
+      : t("All Accounts in '{{folder}}'", { folder: folder.name })
+    const allAccountsTotal = !folder
+      ? myBalances.sum.fiat("usd").total
+      : new Balances(
+          folder.tree.flatMap((account) => balancesByAddress.get(account.address) ?? [])
+        ).sum.fiat("usd").total
+    const tree = folder ? folder.tree : portfolio
+
     return [
       {
-        name: t("All Accounts"),
-        total: myBalances.sum.fiat("usd").total,
+        type: "all accounts",
+        name: allAccountsName,
+        total: allAccountsTotal,
       },
-      ...accounts.map(({ address, name, genesisHash, origin, isPortfolio }) => ({
-        address,
-        genesisHash,
-        name: name ?? t("Unknown Account"),
-        origin,
-        isPortfolio: !!isPortfolio,
-        total: new Balances(balancesByAddress.get(address) ?? []).sum.fiat("usd").total,
-      })),
+      ...tree.map((item): AccountOption => {
+        const account =
+          item.type === "account"
+            ? accounts.find((account) => account.address === item.address)
+            : undefined
+
+        return item.type === "account"
+          ? {
+              type: "account",
+              name: account?.name ?? t("Unknown Account"),
+              address: item.address,
+              total: new Balances(balancesByAddress.get(item.address) ?? []).sum.fiat("usd").total,
+              genesisHash: account?.genesisHash,
+              origin: account?.origin,
+              isPortfolio: !!account?.isPortfolio,
+            }
+          : {
+              type: "folder",
+              name: item.name,
+              color: item.color,
+              total: new Balances(
+                item.tree.flatMap((account) => balancesByAddress.get(account.address) ?? [])
+              ).sum.fiat("usd").total,
+            }
+      }),
     ]
-  }, [t, accounts, balances, myBalances])
+  }, [balances, folder, portfolio, t, myBalances, accounts])
 
   useEffect(() => {
     popupOpenEvent("portfolio accounts")

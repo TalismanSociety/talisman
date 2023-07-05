@@ -1,10 +1,13 @@
 import { AccountType } from "@core/domains/accounts/types"
 import { isEthereumAddress } from "@polkadot/util-crypto"
 import { breakpoints } from "@talisman/theme/definitions"
-import { AllAccountsIcon, ChevronDownIcon, EyeIcon, TalismanHandIcon } from "@talisman/theme/icons"
+import { ChevronDownIcon, EyeIcon, TalismanHandIcon } from "@talisman/theme/icons"
 import { scrollbarsStyle } from "@talisman/theme/styles"
 import { shortenAddress } from "@talisman/util/shortenAddress"
 import { classNames } from "@talismn/util"
+import { AccountIcon } from "@ui/domains/Account/AccountIcon"
+import { AccountTypeIcon } from "@ui/domains/Account/AccountTypeIcon"
+import { AllAccountsIcon } from "@ui/domains/Account/AllAccountsIcon"
 import Fiat from "@ui/domains/Asset/Fiat"
 import { useSelectedAccount } from "@ui/domains/Portfolio/SelectedAccountContext"
 import { useAnalytics } from "@ui/hooks/useAnalytics"
@@ -14,9 +17,6 @@ import { UseSelectStateChange, useSelect } from "downshift"
 import { useCallback, useMemo } from "react"
 import { useTranslation } from "react-i18next"
 import styled, { css } from "styled-components"
-
-import { AccountIcon } from "../Account/AccountIcon"
-import { AccountTypeIcon } from "../Account/AccountTypeIcon"
 
 const Button = styled.button`
   background: none;

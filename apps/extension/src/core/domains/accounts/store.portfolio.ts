@@ -20,6 +20,7 @@ export type MoveBeforeTarget =
 const folderFilter = (item: TreeItem): item is TreeFolder => item.type === "folder"
 const defaultFolderColor = "#d5ff5c"
 
+// TODO: Split portfolio and watch-only accounts into separate trees
 export class PortfolioStore extends SubscribableStorageProvider<
   PortfolioData,
   "pri(mnemonic.subscribe)"

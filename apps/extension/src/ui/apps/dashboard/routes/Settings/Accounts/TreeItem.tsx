@@ -3,11 +3,12 @@ import { DraggableAttributes } from "@dnd-kit/core"
 import { SyntheticListenerMap } from "@dnd-kit/core/dist/hooks/utilities"
 import { isEthereumAddress } from "@polkadot/util-crypto"
 import { WithTooltip } from "@talisman/components/Tooltip"
-import { ChevronDownIcon, DragIcon, FolderIcon, MoreHorizontalIcon } from "@talisman/theme/icons"
+import { ChevronDownIcon, DragIcon, MoreHorizontalIcon } from "@talisman/theme/icons"
 import { Balances } from "@talismn/balances"
 import { classNames } from "@talismn/util"
 import { useAccountExportModal } from "@ui/domains/Account/AccountExportModal"
 import { useAccountExportPrivateKeyModal } from "@ui/domains/Account/AccountExportPrivateKeyModal"
+import { AccountFolderIcon } from "@ui/domains/Account/AccountFolderIcon"
 import { AccountIcon } from "@ui/domains/Account/AccountIcon"
 import { useAccountRemoveModal } from "@ui/domains/Account/AccountRemoveModal"
 import { useAccountRenameModal } from "@ui/domains/Account/AccountRenameModal"
@@ -176,9 +177,24 @@ TreeAccountItem.displayName = "TreeAccountItem"
 export const TreeFolderItem = forwardRef<HTMLDivElement, Props & { item: UiTreeFolder }>(
   (props, ref) => {
     const { t } = useTranslation()
-    const { childCount, clone, handleProps, item, collapsed, onCollapse, style, wrapperRef } = props
+    const {
+      balances,
+      childCount,
+      clone,
+      handleProps,
+      item,
+      collapsed,
+      onCollapse,
+      style,
+      wrapperRef,
+    } = props
 
     const addresses = useMemo(() => item.tree.map((item) => item.address), [item])
+    const folderBalances = useMemo(
+      () => balances.find((b) => addresses.includes(b.address)),
+      [addresses, balances]
+    )
+    const { balanceDetails, totalUsd } = useBalanceDetails(folderBalances)
     const stopPropagation =
       <T extends Pick<Event, "stopPropagation">>(andThen?: (event: T) => void) =>
       (event: T) => {
@@ -201,12 +217,15 @@ export const TreeFolderItem = forwardRef<HTMLDivElement, Props & { item: UiTreeF
           onClick={onCollapse}
         >
           <DragButton {...handleProps?.attributes} {...handleProps?.listeners} />
-          <div className="bg-black-tertiary p-4 text-base">
-            <FolderIcon style={{ color: item.color }} />
-          </div>
+          <AccountFolderIcon className="text-xl" color={item.color} />
           <div className="flex grow flex-col gap-2">
             <div className="overflow-hidden text-ellipsis whitespace-nowrap">{item.name}</div>
             {addresses.length > 0 && <AccountsLogoStack addresses={addresses} />}
+          </div>
+          <div className="flex flex-col gap-2">
+            <WithTooltip as="div" tooltip={balanceDetails} noWrap>
+              <Fiat amount={totalUsd} currency="usd" />
+            </WithTooltip>
           </div>
 
           {collapsed ? (

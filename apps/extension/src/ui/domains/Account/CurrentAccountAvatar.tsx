@@ -1,19 +1,35 @@
+import { TreeFolder } from "@core/domains/accounts/store.portfolio"
 import { AccountJsonAny } from "@core/domains/accounts/types"
 import { WithTooltip } from "@talisman/components/Tooltip"
-import { AllAccountsIcon } from "@talisman/theme/icons"
 import { classNames } from "@talismn/util"
+import { AllAccountsIcon } from "@ui/domains/Account/AllAccountsIcon"
 import AccountAvatar from "@ui/domains/Account/Avatar"
-import { useSelectedAccount } from "@ui/domains/Portfolio/SelectedAccountContext"
+import { useSearchParamsSelectedAccount } from "@ui/hooks/useSearchParamsSelectedAccount"
+import { useSearchParamsSelectedFolder } from "@ui/hooks/useSearchParamsSelectedFolder"
 import { useMemo } from "react"
 import { useTranslation } from "react-i18next"
 
-const Avatar = ({ account, className }: { className?: string; account?: AccountJsonAny }) => {
+import { AccountFolderIcon } from "./AccountFolderIcon"
+
+const Avatar = ({
+  account,
+  folder,
+  className,
+}: {
+  className?: string
+  account?: AccountJsonAny
+  folder?: TreeFolder
+}) => {
   return account?.address ? (
     <AccountAvatar
       className={className}
       address={account.address}
       genesisHash={account.genesisHash}
     />
+  ) : folder ? (
+    <div className={className}>
+      <AccountFolderIcon className={classNames("account-avatar", className)} color={folder.color} />
+    </div>
   ) : (
     <div className={className}>
       <AllAccountsIcon className={classNames("account-avatar", className)} />
@@ -28,18 +44,20 @@ export const CurrentAccountAvatar = ({
   className?: string
   withTooltip?: boolean
 }) => {
-  const { account } = useSelectedAccount()
+  const { account } = useSearchParamsSelectedAccount()
+  const { folder } = useSearchParamsSelectedFolder()
   const { t } = useTranslation()
   const tooltip = useMemo(() => {
     if (!withTooltip) return
-    return account ? account.name : t("All accounts")
-  }, [t, account, withTooltip])
+    return account ? account.name : folder ? folder.name : t("All accounts")
+  }, [t, account, folder, withTooltip])
 
-  return withTooltip ? (
-    <WithTooltip as="div" tooltip={tooltip} className="flex flex-col justify-center">
-      <Avatar account={account} className={className} />
-    </WithTooltip>
-  ) : (
-    <Avatar account={account} className={className} />
-  )
+  if (withTooltip)
+    return (
+      <WithTooltip as="div" tooltip={tooltip} className="flex flex-col justify-center">
+        <Avatar account={account} folder={folder} className={className} />
+      </WithTooltip>
+    )
+
+  return <Avatar account={account} folder={folder} className={className} />
 }

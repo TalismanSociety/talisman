@@ -1,4 +1,4 @@
-import { Balances } from "@core/domains/balances/types"
+import { Balance, Balances } from "@core/domains/balances/types"
 import { isEthereumAddress } from "@polkadot/util-crypto"
 import { IconButton } from "@talisman/components/IconButton"
 import {
@@ -19,11 +19,12 @@ import Fiat from "@ui/domains/Asset/Fiat"
 import { useCopyAddressModal } from "@ui/domains/CopyAddress"
 import { PopupAssetsTable } from "@ui/domains/Portfolio/AssetsTable"
 import { usePortfolio } from "@ui/domains/Portfolio/context"
-import { useSelectedAccount } from "@ui/domains/Portfolio/SelectedAccountContext"
 import { useDisplayBalances } from "@ui/domains/Portfolio/useDisplayBalances"
 import { useAccountToggleIsPortfolio } from "@ui/hooks/useAccountToggleIsPortfolio"
 import { useAnalytics } from "@ui/hooks/useAnalytics"
 import { useIsFeatureEnabled } from "@ui/hooks/useFeatures"
+import { useSearchParamsSelectedAccount } from "@ui/hooks/useSearchParamsSelectedAccount"
+import { useSearchParamsSelectedFolder } from "@ui/hooks/useSearchParamsSelectedFolder"
 import { useSendFundsPopup } from "@ui/hooks/useSendFundsPopup"
 import { getTransactionHistoryUrl } from "@ui/util/getTransactionHistoryUrl"
 import { useCallback, useEffect, useMemo } from "react"
@@ -39,9 +40,31 @@ import {
   TooltipTrigger,
 } from "talisman-ui"
 
-const PageContent = ({ balances }: { balances: Balances }) => {
+const PageContent = ({ balances: networkBalances }: { balances: Balances }) => {
+  const { account } = useSearchParamsSelectedAccount()
+  const { folder } = useSearchParamsSelectedFolder()
+
+  const balancesByAddress = useMemo(() => {
+    // we use this to avoid looping over the balances list n times, where n is the number of accounts in the wallet
+    // instead, we'll only interate over the balances one time
+    const balancesByAddress: Map<string, Balance[]> = new Map()
+    networkBalances.each.forEach((balance) => {
+      if (!balancesByAddress.has(balance.address)) balancesByAddress.set(balance.address, [])
+      balancesByAddress.get(balance.address)?.push(balance)
+    })
+    return balancesByAddress
+  }, [networkBalances])
+  const balances = useMemo(
+    () =>
+      !folder
+        ? networkBalances
+        : new Balances(
+            folder.tree.flatMap((account) => balancesByAddress.get(account.address) ?? [])
+          ),
+    [balancesByAddress, folder, networkBalances]
+  )
+
   const balancesToDisplay = useDisplayBalances(balances)
-  const { account } = useSelectedAccount()
   const { canExportAccount, open: openExportAccountModal } = useAccountExportModal()
   const { canExportAccount: canExportAccountPk, open: openExportAccountPkModal } =
     useAccountExportPrivateKeyModal()
@@ -75,7 +98,7 @@ const PageContent = ({ balances }: { balances: Balances }) => {
 
   const navigate = useNavigate()
   const handleBackBtnClick = useCallback(() => {
-    navigate("/portfolio")
+    navigate(-1)
   }, [navigate])
 
   const canAddCustomToken = useMemo(() => isEthereumAddress(account?.address), [account?.address])
@@ -98,7 +121,11 @@ const PageContent = ({ balances }: { balances: Balances }) => {
           <div className="flex grow flex-col gap-2 overflow-hidden pl-2 text-sm">
             <div className="flex items-center gap-3">
               <div className="text-body-secondary overflow-hidden text-ellipsis whitespace-nowrap">
-                {account ? account.name ?? t("Unnamed Account") : t("All Accounts")}
+                {account
+                  ? account.name ?? t("Unnamed Account")
+                  : folder
+                  ? folder.name
+                  : t("All Accounts")}
               </div>
               <AccountTypeIcon className="text-primary" origin={account?.origin} />
             </div>
@@ -187,6 +214,7 @@ const PageContent = ({ balances }: { balances: Balances }) => {
 }
 
 export const PortfolioAssets = () => {
+  // TODO: Fetch -all- balances when looking at folder of watched accounts
   const { networkBalances } = usePortfolio()
   const { popupOpenEvent } = useAnalytics()
 
