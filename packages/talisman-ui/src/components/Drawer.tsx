@@ -74,7 +74,7 @@ export const Drawer: FC<DrawerProps> = ({
   isOpen,
   className,
   containerId,
-  onDismiss: onDismiss,
+  onDismiss,
 }) => {
   const handleDismiss: MouseEventHandler<HTMLDivElement> = useCallback(
     (e) => {
@@ -96,21 +96,20 @@ export const Drawer: FC<DrawerProps> = ({
   return createPortal(
     <Transition show={!!isOpen}>
       {/* Background overlay */}
-      {onDismiss && (
-        <Transition.Child
-          className={classNames(
-            "bg-grey-900 left-0 top-0 z-10 h-full w-full cursor-pointer bg-opacity-50",
-            position
-          )}
-          enter="transition-opacity ease-linear duration-300"
-          enterFrom="opacity-0"
-          enterTo="opacity-100"
-          leave="transition-opacity ease-linear duration-300"
-          leaveFrom="opacity-100"
-          leaveTo="opacity-0"
-          onClick={handleDismiss}
-        ></Transition.Child>
-      )}
+      <Transition.Child
+        className={classNames(
+          "bg-grey-900 left-0 top-0 z-10 h-full w-full bg-opacity-50",
+          onDismiss ? "cursor-pointer" : "cursor-not-allowed",
+          position
+        )}
+        enter="transition-opacity ease-linear duration-300"
+        enterFrom="opacity-0"
+        enterTo="opacity-100"
+        leave="transition-opacity ease-linear duration-300"
+        leaveFrom="opacity-100"
+        leaveTo="opacity-0"
+        onClick={handleDismiss}
+      ></Transition.Child>
 
       {/* Drawer */}
       <Transition.Child
