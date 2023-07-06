@@ -1,9 +1,8 @@
-import { Modal as BaseModal } from "@talisman/components/Modal"
+import { Modal } from "@talisman/components/Modal"
 import { ModalDialog } from "@talisman/components/ModalDialog"
 import StatusIcon from "@talisman/components/StatusIcon"
 import { statusOptions } from "@talisman/hooks/useStatus"
 import { useTranslation } from "react-i18next"
-import styled from "styled-components"
 
 import { BackUpMnemonicDialog } from "./BackUpMnemonicDialog"
 import { MigratePasswordProvider, useMigratePassword } from "./context"
@@ -16,12 +15,6 @@ type MigratePasswordModalProps = {
   open: boolean
   onClose: () => void
 }
-
-const Modal = styled(BaseModal)`
-  .modal-dialog {
-    width: 50.3rem;
-  }
-`
 
 const MigratePasswordModalContent = () => {
   const { t } = useTranslation()
@@ -46,8 +39,10 @@ const MigratePasswordModalContent = () => {
 
 export const MigratePasswordModal = ({ open, onClose }: MigratePasswordModalProps) => (
   <Modal open={open} onClose={onClose}>
-    <MigratePasswordProvider onComplete={onClose}>
-      <MigratePasswordModalContent />
-    </MigratePasswordProvider>
+    <div className="w-[50.3rem]">
+      <MigratePasswordProvider onComplete={onClose}>
+        <MigratePasswordModalContent />
+      </MigratePasswordProvider>
+    </div>
   </Modal>
 )
