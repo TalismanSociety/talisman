@@ -1,4 +1,4 @@
-import { TreeFolder } from "@core/domains/accounts/store.portfolio"
+import { TreeFolder } from "@core/domains/accounts/store.catalog"
 import { AccountJsonAny } from "@core/domains/accounts/types"
 import { WithTooltip } from "@talisman/components/Tooltip"
 import { classNames } from "@talismn/util"

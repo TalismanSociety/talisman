@@ -94,7 +94,7 @@ const NewFolder = ({ onConfirm, onCancel, className }: NewFolderProps) => {
   const submit = useCallback(
     async ({ name }: FormData) => {
       try {
-        await api.accountsPortfolioMutate([{ type: "addFolder", name }])
+        await api.accountsCatalogMutate([{ type: "addFolder", name }])
         onConfirm()
       } catch (err) {
         setError("name", {

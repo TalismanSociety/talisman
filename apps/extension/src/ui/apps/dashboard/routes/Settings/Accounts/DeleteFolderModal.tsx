@@ -65,7 +65,7 @@ interface DeleteFolderProps {
 const DeleteFolder = ({ name, onConfirm, onCancel, className }: DeleteFolderProps) => {
   const { t } = useTranslation("admin")
   const submit = useCallback(async () => {
-    await api.accountsPortfolioMutate([{ type: "removeFolder", name }])
+    await api.accountsCatalogMutate([{ type: "removeFolder", name }])
     onConfirm()
   }, [name, onConfirm])
 

@@ -1,4 +1,4 @@
-import { PortfolioStore } from "@core/domains/accounts/store.portfolio"
+import { AccountsCatalogStore } from "@core/domains/accounts/store.catalog"
 import { Account } from "@core/domains/accounts/types"
 import {
   AccountJsonAny,
@@ -76,7 +76,7 @@ const legacySortAccounts = (accounts: AccountJsonAny[]) => {
 }
 
 export const sortAccounts =
-  (portfolioStore: PortfolioStore) =>
+  (accountsCatalogStore: AccountsCatalogStore) =>
   async (keyringAccounts: SubjectInfo): Promise<AccountJsonAny[]> => {
     const unsortedAccounts = Object.values(keyringAccounts).map(
       ({ json: { address, meta }, type }: SingleAddress): AccountJsonAny => ({
@@ -86,19 +86,19 @@ export const sortAccounts =
       })
     )
 
-    // default to legacy sort method when adding new accounts to the portfolio
+    // default to legacy sort method when adding new accounts to the catalog
     // this will mean that for existing users, their accounts list will maintain
-    // its current sort order - despite being migrated to the new portfolio store
+    // its current sort order - despite being migrated to the new catalog store
     //
-    // for new users, the default portfolio order will be the order in which they add
+    // for new users, the default catalog order will be the order in which they add
     // each new account
     const legacySortedAccounts = legacySortAccounts(unsortedAccounts)
     const addresses = legacySortedAccounts.map((account) => account.address)
 
-    // add any newly created accounts to the portfolio
+    // add any newly created accounts to the catalog
     // each new account will be placed at the end of the list
-    await portfolioStore.addAccounts(addresses)
-    const sortedAccounts = await portfolioStore.sortAccounts(legacySortedAccounts)
+    await accountsCatalogStore.addAccounts(addresses)
+    const sortedAccounts = await accountsCatalogStore.sortAccounts(legacySortedAccounts)
 
     return sortedAccounts
   }

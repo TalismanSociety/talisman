@@ -3,7 +3,7 @@ import { FolderPlusIcon } from "@talisman/theme/icons"
 import { AnalyticsPage } from "@ui/api/analytics"
 import Layout from "@ui/apps/dashboard/layout"
 import useAccounts from "@ui/hooks/useAccounts"
-import useAccountsPortfolio from "@ui/hooks/useAccountsPortfolio"
+import useAccountsCatalog from "@ui/hooks/useAccountsCatalog"
 import { useAnalyticsPageView } from "@ui/hooks/useAnalyticsPageView"
 import useBalances from "@ui/hooks/useBalances"
 import { useMemo } from "react"
@@ -29,8 +29,8 @@ export const Accounts = () => {
 
   const accounts = useAccounts()
   const balances = useBalances()
-  const portfolio = useAccountsPortfolio()
-  const uiTree = useMemo((): UiTree => withIds(portfolio), [portfolio])
+  const catalog = useAccountsCatalog()
+  const uiTree = useMemo((): UiTree => withIds(catalog), [catalog])
   const newFolderModal = useNewFolderModal()
 
   // TODO: "Followed only" section

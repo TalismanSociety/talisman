@@ -1,5 +1,5 @@
-import { PortfolioStore } from "@core/domains/accounts/store.portfolio"
-import { AccountJsonAny, RequestPortfolioMutate } from "@core/domains/accounts/types"
+import { AccountsCatalogStore } from "@core/domains/accounts/store.catalog"
+import { AccountJsonAny, RequestAccountsCatalogMutate } from "@core/domains/accounts/types"
 import {
   DndContext,
   DragEndEvent,
@@ -128,17 +128,17 @@ export const AccountsList = ({ accounts, balances, tree, indentationWidth = 50 }
             ? ({ type: "folder", name: nextItem.name } as const)
             : undefined
 
-        const mutation: RequestPortfolioMutate =
+        const mutation: RequestAccountsCatalogMutate =
           activeTreeItem.type === "account"
             ? { type: "moveAccount", address: activeTreeItem.address, folder, beforeItem }
             : { type: "moveFolder", name: activeTreeItem.name, beforeItem }
 
         setItems((items) => {
           const newItems = items.slice()
-          PortfolioStore.mutateTree(newItems, [mutation])
+          AccountsCatalogStore.mutateTree(newItems, [mutation])
           return newItems
         })
-        api.accountsPortfolioMutate([mutation])
+        api.accountsCatalogMutate([mutation])
       }
     },
     [items, projected, resetState]

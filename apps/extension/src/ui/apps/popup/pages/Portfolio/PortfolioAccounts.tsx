@@ -21,7 +21,7 @@ import AccountAvatar from "@ui/domains/Account/Avatar"
 import Fiat from "@ui/domains/Asset/Fiat"
 import { useCopyAddressModal } from "@ui/domains/CopyAddress"
 import useAccounts from "@ui/hooks/useAccounts"
-import useAccountsPortfolio from "@ui/hooks/useAccountsPortfolio"
+import useAccountsCatalog from "@ui/hooks/useAccountsCatalog"
 import { useAnalytics } from "@ui/hooks/useAnalytics"
 import useBalances from "@ui/hooks/useBalances"
 import { useIsFeatureEnabled } from "@ui/hooks/useFeatures"
@@ -270,7 +270,7 @@ export const PortfolioAccounts = () => {
   const balances = useBalances()
   const myBalances = useBalances("portfolio")
   const accounts = useAccounts()
-  const portfolio = useAccountsPortfolio()
+  const catalog = useAccountsCatalog()
   const { folder } = useSearchParamsSelectedFolder()
   const { popupOpenEvent } = useAnalytics()
   const { t } = useTranslation()
@@ -292,7 +292,7 @@ export const PortfolioAccounts = () => {
       : new Balances(
           folder.tree.flatMap((account) => balancesByAddress.get(account.address) ?? [])
         ).sum.fiat("usd").total
-    const tree = folder ? folder.tree : portfolio
+    const tree = folder ? folder.tree : catalog
 
     return [
       {
@@ -326,7 +326,7 @@ export const PortfolioAccounts = () => {
             }
       }),
     ]
-  }, [balances, folder, portfolio, t, myBalances, accounts])
+  }, [balances, folder, catalog, t, myBalances, accounts])
 
   useEffect(() => {
     popupOpenEvent("portfolio accounts")

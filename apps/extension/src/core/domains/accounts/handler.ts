@@ -12,7 +12,7 @@ import type {
   RequestAccountExternalSetIsPortfolio,
   RequestAccountForget,
   RequestAccountRename,
-  RequestPortfolioMutate,
+  RequestAccountsCatalogMutate,
   ResponseAccountExport,
 } from "@core/domains/accounts/types"
 import { AccountTypes } from "@core/domains/accounts/types"
@@ -322,8 +322,8 @@ export default class AccountsHandler extends ExtensionHandler {
     // remove associated authorizations
     this.stores.sites.forgetAccount(address)
 
-    // remove from portfolio organisation store (sorting, folders, hiding)
-    this.stores.portfolio.removeAccounts([address])
+    // remove from accounts catalog store (sorting, folders, hiding)
+    this.stores.accountsCatalog.removeAccounts([address])
 
     return true
   }
@@ -384,6 +384,8 @@ export default class AccountsHandler extends ExtensionHandler {
 
     keyring.saveAccountMeta(pair, { ...pair.meta, isPortfolio })
 
+    // TODO: Fix in catalog
+
     return true
   }
 
@@ -408,22 +410,22 @@ export default class AccountsHandler extends ExtensionHandler {
     return genericAsyncSubscription<"pri(accounts.subscribe)">(
       id,
       port,
-      combineLatest([keyring.accounts.subject, this.stores.portfolio.observable]),
-      ([accounts]) => sortAccounts(this.stores.portfolio)(accounts)
+      combineLatest([keyring.accounts.subject, this.stores.accountsCatalog.observable]),
+      ([accounts]) => sortAccounts(this.stores.accountsCatalog)(accounts)
     )
   }
 
-  private accountsPortfolioSubscribe(id: string, port: Port) {
-    return genericAsyncSubscription<"pri(accounts.portfolio.subscribe)">(
+  private accountsCatalogSubscribe(id: string, port: Port) {
+    return genericAsyncSubscription<"pri(accounts.catalog.subscribe)">(
       id,
       port,
-      this.stores.portfolio.observable,
+      this.stores.accountsCatalog.observable,
       async (store) => store.tree
     )
   }
 
-  private accountsPortfolioMutate(mutations: RequestPortfolioMutate[]) {
-    return this.stores.portfolio.executePortfolioMutations(mutations)
+  private accountsCatalogMutate(mutations: RequestAccountsCatalogMutate[]) {
+    return this.stores.accountsCatalog.executeCatalogMutations(mutations)
   }
 
   private accountValidateMnemonic(mnemonic: string): boolean {
@@ -472,10 +474,10 @@ export default class AccountsHandler extends ExtensionHandler {
         return this.accountRename(request as RequestAccountRename)
       case "pri(accounts.subscribe)":
         return this.accountsSubscribe(id, port)
-      case "pri(accounts.portfolio.subscribe)":
-        return this.accountsPortfolioSubscribe(id, port)
-      case "pri(accounts.portfolio.mutate)":
-        return this.accountsPortfolioMutate(request as RequestPortfolioMutate[])
+      case "pri(accounts.catalog.subscribe)":
+        return this.accountsCatalogSubscribe(id, port)
+      case "pri(accounts.catalog.mutate)":
+        return this.accountsCatalogMutate(request as RequestAccountsCatalogMutate[])
       case "pri(accounts.validateMnemonic)":
         return this.accountValidateMnemonic(request as string)
       case "pri(accounts.setVerifierCertMnemonic)":

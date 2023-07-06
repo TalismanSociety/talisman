@@ -1,9 +1,11 @@
 import { DEBUG } from "@core/constants"
-import { AccountJsonAny, RequestPortfolioMutate } from "@core/domains/accounts/types"
+import { AccountJsonAny, RequestAccountsCatalogMutate } from "@core/domains/accounts/types"
 import { SubscribableStorageProvider } from "@core/libs/Store"
 
-export type PortfolioData = {
+export type AccountsCatalogData = {
   tree: Tree
+  // myAccounts: Tree
+  // watchedAccounts: Tree
 }
 
 export type Tree = TreeItem[]
@@ -21,8 +23,8 @@ const folderFilter = (item: TreeItem): item is TreeFolder => item.type === "fold
 const defaultFolderColor = "#d5ff5c"
 
 // TODO: Split portfolio and watch-only accounts into separate trees
-export class PortfolioStore extends SubscribableStorageProvider<
-  PortfolioData,
+export class AccountsCatalogStore extends SubscribableStorageProvider<
+  AccountsCatalogData,
   "pri(mnemonic.subscribe)"
 > {
   //
@@ -61,46 +63,49 @@ export class PortfolioStore extends SubscribableStorageProvider<
     )
   }
 
-  executePortfolioMutations = async (mutations: RequestPortfolioMutate[]) =>
-    await this.withTree((tree) => PortfolioStore.mutateTree(tree, mutations))
+  executeCatalogMutations = async (mutations: RequestAccountsCatalogMutate[]) =>
+    await this.withTree((tree) => AccountsCatalogStore.mutateTree(tree, mutations))
 
-  static mutateTree = (tree: Tree, mutations: RequestPortfolioMutate[]) =>
+  static mutateTree = (tree: Tree, mutations: RequestAccountsCatalogMutate[]) =>
     mutations.forEach((mutation) => {
       const { type } = mutation
 
       // account mutations
       if (type === "moveAccount")
-        return PortfolioStore.moveAccount(
+        return AccountsCatalogStore.moveAccount(
           tree,
           mutation.address,
           mutation.folder,
           mutation.beforeItem
         )
-      if (type === "hideAccount") return PortfolioStore.hideAccount(tree, mutation.address, true)
-      if (type === "showAccount") return PortfolioStore.hideAccount(tree, mutation.address, false)
+      if (type === "hideAccount")
+        return AccountsCatalogStore.hideAccount(tree, mutation.address, true)
+      if (type === "showAccount")
+        return AccountsCatalogStore.hideAccount(tree, mutation.address, false)
 
       // folder mutations
-      if (type === "addFolder") return PortfolioStore.addFolder(tree, mutation.name, mutation.color)
+      if (type === "addFolder")
+        return AccountsCatalogStore.addFolder(tree, mutation.name, mutation.color)
       if (type === "renameFolder")
-        return PortfolioStore.renameFolder(tree, mutation.name, mutation.newName)
+        return AccountsCatalogStore.renameFolder(tree, mutation.name, mutation.newName)
       if (type === "recolorFolder")
-        return PortfolioStore.recolorFolder(tree, mutation.name, mutation.newColor)
+        return AccountsCatalogStore.recolorFolder(tree, mutation.name, mutation.newColor)
       if (type === "moveFolder")
-        return PortfolioStore.moveFolder(tree, mutation.name, mutation.beforeItem)
-      if (type === "removeFolder") return PortfolioStore.removeFolder(tree, mutation.name)
+        return AccountsCatalogStore.moveFolder(tree, mutation.name, mutation.beforeItem)
+      if (type === "removeFolder") return AccountsCatalogStore.removeFolder(tree, mutation.name)
 
       // force compilation error if any mutation types don't have a case
       const exhaustiveCheck: never = type
-      DEBUG && console.error(`Unhandled portfolio mutation type ${exhaustiveCheck}`) // eslint-disable-line no-console
+      DEBUG && console.error(`Unhandled accounts catalog mutation type ${exhaustiveCheck}`) // eslint-disable-line no-console
     })
 
   addAccounts = async (addresses: string[]) =>
     await this.withTree((tree) =>
-      addresses.forEach((address) => PortfolioStore.addAccount(tree, address))
+      addresses.forEach((address) => AccountsCatalogStore.addAccount(tree, address))
     )
   removeAccounts = async (addresses: string[]) =>
     await this.withTree((tree) =>
-      addresses.forEach((address) => PortfolioStore.removeAccount(tree, address))
+      addresses.forEach((address) => AccountsCatalogStore.removeAccount(tree, address))
     )
 
   //
@@ -116,7 +121,7 @@ export class PortfolioStore extends SubscribableStorageProvider<
 
   private static addAccount = (tree: Tree, address: string) => {
     // don't add account if it already exists
-    if (PortfolioStore.accountInTree(tree, address)) return
+    if (AccountsCatalogStore.accountInTree(tree, address)) return
 
     // insert account into tree
     tree.push({ type: "account", address, hidden: false })
@@ -128,7 +133,7 @@ export class PortfolioStore extends SubscribableStorageProvider<
     beforeItem?: MoveBeforeTarget
   ) => {
     // remove existing account from tree
-    const accountItem = PortfolioStore.removeAccountFromTree(tree, address)
+    const accountItem = AccountsCatalogStore.removeAccountFromTree(tree, address)
     if (!accountItem) return
 
     // find destination set (either root tree, or folder tree)
@@ -138,7 +143,7 @@ export class PortfolioStore extends SubscribableStorageProvider<
     const set = folderSet ?? tree
 
     // insert account into tree
-    const beforeItemIndex = beforeItem ? PortfolioStore.findBeforeItem(set, beforeItem) : -1
+    const beforeItemIndex = beforeItem ? AccountsCatalogStore.findBeforeItem(set, beforeItem) : -1
     if (beforeItem && beforeItemIndex !== -1) {
       // insert before specified item
       set.splice(beforeItemIndex, 0, accountItem)
@@ -148,23 +153,23 @@ export class PortfolioStore extends SubscribableStorageProvider<
     }
   }
   private static hideAccount = (tree: Tree, address: string, hidden: boolean) => {
-    const account = PortfolioStore.findAccountInTree(tree, address)
+    const account = AccountsCatalogStore.findAccountInTree(tree, address)
     if (account?.type !== "account") return
     account.hidden = hidden
   }
   private static removeAccount = (tree: Tree, address: string) =>
-    PortfolioStore.removeAccountFromTree(tree, address)
+    AccountsCatalogStore.removeAccountFromTree(tree, address)
 
   private static addFolder = (tree: Tree, name: string, color?: string) => {
     // don't add folder if it already exists
-    if (PortfolioStore.folderInTree(tree, name)) return
+    if (AccountsCatalogStore.folderInTree(tree, name)) return
 
     // insert folder into tree
     tree.push({ type: "folder", name, color: color ?? defaultFolderColor, tree: [] })
   }
   private static renameFolder = (tree: Tree, name: string, newName: string) => {
     // don't rename folder if newName already exists
-    if (PortfolioStore.folderInTree(tree, newName)) return
+    if (AccountsCatalogStore.folderInTree(tree, newName)) return
 
     const folder = tree.filter(folderFilter).find((item) => item.name === name)
     if (!folder) return
@@ -186,7 +191,7 @@ export class PortfolioStore extends SubscribableStorageProvider<
     const folder = tree.splice(folderIndex, 1)[0]
 
     // insert folder into tree
-    const beforeItemIndex = beforeItem ? PortfolioStore.findBeforeItem(tree, beforeItem) : -1
+    const beforeItemIndex = beforeItem ? AccountsCatalogStore.findBeforeItem(tree, beforeItem) : -1
     if (beforeItem && beforeItemIndex !== -1) {
       // insert before specified item
       tree.splice(beforeItemIndex, 0, folder)
@@ -205,7 +210,7 @@ export class PortfolioStore extends SubscribableStorageProvider<
     if (folder.type !== "folder") return
 
     // insert folder accounts back into tree
-    folder.tree.forEach((account) => PortfolioStore.addAccount(tree, account.address))
+    folder.tree.forEach((account) => AccountsCatalogStore.addAccount(tree, account.address))
   }
 
   private static findAccountInTree = (tree: Tree, address: string) =>
@@ -215,7 +220,7 @@ export class PortfolioStore extends SubscribableStorageProvider<
         : item.tree.find((account) => account.address === address)
     )
   private static accountInTree = (tree: Tree, address: string): boolean =>
-    PortfolioStore.findAccountInTree(tree, address) !== undefined
+    AccountsCatalogStore.findAccountInTree(tree, address) !== undefined
   private static folderInTree = (tree: Tree, name: string): boolean =>
     tree.find((item) => item.type === "folder" && item.name === name) !== undefined
 
@@ -247,4 +252,4 @@ export class PortfolioStore extends SubscribableStorageProvider<
   }
 }
 
-export const portfolioStore = new PortfolioStore("portfolio")
+export const accountsCatalogStore = new AccountsCatalogStore("accountsCatalog")

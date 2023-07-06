@@ -1,4 +1,4 @@
-import { TreeAccount, TreeFolder, TreeItem } from "@core/domains/accounts/store.portfolio"
+import { TreeAccount, TreeFolder, TreeItem } from "@core/domains/accounts/store.catalog"
 import { AccountJsonAny } from "@core/domains/accounts/types"
 import type { UniqueIdentifier } from "@dnd-kit/core"
 import { arrayMove } from "@dnd-kit/sortable"

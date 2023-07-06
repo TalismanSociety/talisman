@@ -98,7 +98,7 @@ const RenameFolder = ({ name, onConfirm, onCancel, className }: RenameFolderProp
   const submit = useCallback(
     async ({ name: newName }: FormData) => {
       try {
-        await api.accountsPortfolioMutate([{ type: "renameFolder", name, newName }])
+        await api.accountsCatalogMutate([{ type: "renameFolder", name, newName }])
         onConfirm()
       } catch (err) {
         setError("name", {
