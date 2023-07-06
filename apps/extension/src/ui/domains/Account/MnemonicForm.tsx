@@ -1,7 +1,8 @@
 import { classNames } from "@talismn/util"
 import { api } from "@ui/api"
 import useMnemonicBackup from "@ui/hooks/useMnemonicBackup"
-import { useEffect, useState } from "react"
+import { useSensitiveState } from "@ui/hooks/useSensitiveState"
+import { useEffect } from "react"
 import { Trans, useTranslation } from "react-i18next"
 import styled from "styled-components"
 import { Toggle } from "talisman-ui"
@@ -41,13 +42,13 @@ type MnemonicFormProps = {
 const MnemonicForm = ({ className }: MnemonicFormProps) => {
   const { t } = useTranslation()
   const { isConfirmed, toggleConfirmed } = useMnemonicBackup()
-  const [mnemonic, setMnemonic] = useState<string>()
+  const [mnemonic, setMnemonic] = useSensitiveState<string>()
   const { password } = usePasswordUnlock()
 
   useEffect(() => {
     if (!password) return
-    api.mnemonicUnlock(password).then((result) => setMnemonic(result))
-  }, [password])
+    api.mnemonicUnlock(password).then(setMnemonic)
+  }, [password, setMnemonic])
 
   return (
     <div className={classNames("flex grow flex-col", className)}>
