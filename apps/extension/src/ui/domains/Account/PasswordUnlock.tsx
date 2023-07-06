@@ -2,7 +2,8 @@ import { yupResolver } from "@hookform/resolvers/yup"
 import { KeyIcon } from "@talisman/theme/icons"
 import { provideContext } from "@talisman/util/provideContext"
 import { api } from "@ui/api"
-import { ReactNode, useCallback, useEffect, useState } from "react"
+import { useSensitiveState } from "@ui/hooks/useSensitiveState"
+import { ReactNode, useCallback, useEffect } from "react"
 import { useForm } from "react-hook-form"
 import { useTranslation } from "react-i18next"
 import { Button, FormFieldContainer, FormFieldInputText } from "talisman-ui"
@@ -31,17 +32,14 @@ type PasswordUnlockContext = {
 }
 
 function usePasswordUnlockContext(): PasswordUnlockContext {
-  const [password, setPassword] = useState<string>()
+  const [password, setPassword] = useSensitiveState<string>()
 
-  const checkPassword = useCallback(async (password: string) => {
-    if (await api.checkPassword(password)) setPassword(password)
-  }, [])
-
-  useEffect(() => {
-    return () => {
-      setPassword(undefined)
-    }
-  }, [])
+  const checkPassword = useCallback(
+    async (password: string) => {
+      if (await api.checkPassword(password)) setPassword(password)
+    },
+    [setPassword]
+  )
 
   return {
     checkPassword,

@@ -4,14 +4,15 @@ import useStatus, { statusOptions } from "@talisman/hooks/useStatus"
 import { provideContext } from "@talisman/util/provideContext"
 import { api } from "@ui/api"
 import useMnemonicBackup from "@ui/hooks/useMnemonicBackup"
+import { useSensitiveState } from "@ui/hooks/useSensitiveState"
 import { useSetting } from "@ui/hooks/useSettings"
 import { useCallback, useEffect, useState } from "react"
 
 const useMigratePasswordProvider = ({ onComplete }: { onComplete: () => void }) => {
-  const [password, setPassword] = useState<string>()
-  const [newPassword, setNewPassword] = useState<string>()
+  const [password, setPassword] = useSensitiveState<string>()
+  const [newPassword, setNewPassword] = useSensitiveState<string>()
+  const [mnemonic, setMnemonic] = useSensitiveState<string>()
   const [passwordTrimmed, setPasswordTrimmed] = useState<boolean>()
-  const [mnemonic, setMnemonic] = useState<string>()
   const [hasBackedUpMnemonic, setHasBackedUpMnemonic] = useState<boolean>(false)
   const [error, setError] = useState<Error>()
   const [useErrorTracking] = useSetting("useErrorTracking")
@@ -59,14 +60,6 @@ const useMigratePasswordProvider = ({ onComplete }: { onComplete: () => void }) 
       migratePassword()
     }
   }, [hasBackedUpMnemonic, status, migratePassword])
-
-  useEffect(() => {
-    return () => {
-      setPassword(undefined)
-      setMnemonic(undefined)
-      setNewPassword(undefined)
-    }
-  }, [])
 
   return {
     hasPassword,

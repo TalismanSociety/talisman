@@ -5,6 +5,7 @@ import { useOpenClose } from "@talisman/hooks/useOpenClose"
 import { CopyIcon, LoaderIcon } from "@talisman/theme/icons"
 import { provideContext } from "@talisman/util/provideContext"
 import { api } from "@ui/api"
+import { useSensitiveState } from "@ui/hooks/useSensitiveState"
 import { useCallback, useEffect, useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
 import { Button } from "talisman-ui"
@@ -46,7 +47,7 @@ const ExportPrivateKeyResult = ({ onClose }: { onClose?: () => void }) => {
   const { password } = usePasswordUnlock()
 
   // don't use react-query here as we don't want this to be cached
-  const [privateKey, setPrivateKey] = useState<string>()
+  const [privateKey, setPrivateKey] = useSensitiveState<string>()
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState<Error>()
 
@@ -87,12 +88,11 @@ const ExportPrivateKeyResult = ({ onClose }: { onClose?: () => void }) => {
         .catch(setError)
         .finally(() => setIsLoading(false))
     }
-  }, [exportAccount, password])
+  }, [exportAccount, password, setPrivateKey])
 
   useEffect(() => {
     return () => {
       setError(undefined)
-      setPrivateKey(undefined)
       setIsLoading(false)
     }
   }, [])
