@@ -1,6 +1,7 @@
 import { AccountPill } from "@ui/domains/Account/AccountPill"
 import { useAnalytics } from "@ui/hooks/useAnalytics"
 import { useExtrinsic } from "@ui/hooks/useExtrinsic"
+import { useEffect } from "react"
 import { useTranslation } from "react-i18next"
 
 import { usePolkadotSigningRequest } from "../SignRequestContext"
@@ -11,10 +12,13 @@ export const SubSignBodyDefault = () => {
   const { account, chain, payload } = usePolkadotSigningRequest()
   const { data: extrinsic } = useExtrinsic(payload)
   const { genericEvent } = useAnalytics()
-  genericEvent("Default substrate signing method", {
-    chain: chain?.name ?? "unknown",
-    method: extrinsic ? `${extrinsic.method.section}.${extrinsic.method.method}` : "unknown",
-  })
+
+  useEffect(() => {
+    genericEvent("Default substrate signing method", {
+      chain: chain?.name ?? "unknown",
+      method: extrinsic ? `${extrinsic.method.section}.${extrinsic.method.method}` : "unknown",
+    })
+  }, [chain, extrinsic, genericEvent])
 
   return (
     <div className="animate-fade-in flex grow flex-col">
