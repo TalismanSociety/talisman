@@ -14,9 +14,10 @@ export const SubSignBodyDefault = () => {
   const { genericEvent } = useAnalytics()
 
   useEffect(() => {
+    if (!chain || !extrinsic) return
     genericEvent("Default substrate signing method", {
-      chain: chain?.name ?? "unknown",
-      method: extrinsic ? `${extrinsic.method.section}.${extrinsic.method.method}` : "unknown",
+      chain: chain.name,
+      method: `${extrinsic.method.section}.${extrinsic.method.method}`,
     })
   }, [chain, extrinsic, genericEvent])
 
