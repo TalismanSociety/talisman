@@ -1,65 +1,11 @@
 import { CheckCircleIcon, XIcon } from "@talisman/theme/icons/"
+import { classNames } from "@talismn/util"
 import { FC, ReactNode } from "react"
 import { Trans, useTranslation } from "react-i18next"
-import styled from "styled-components"
 
-const H1 = styled.h1`
-  margin-bottom: 0.8rem;
-`
+const TickYes = () => <CheckCircleIcon className="text-md text-primary mr-6" />
 
-const H3 = styled.h3`
-  margin-bottom: 0.8rem;
-`
-
-const StyledCheckCircleIcon = styled(CheckCircleIcon)`
-  color: var(--color-primary);
-  width: 1.8rem;
-  height: 1.8rem;
-  margin-right: 1.2rem;
-`
-
-const StyledXIcon = styled(XIcon)`
-  color: var(--color-status-negative);
-  width: 1.8rem;
-  height: 1.8rem;
-  margin-right: 1.2rem;
-`
-
-const TickList = styled.ul<{ tick?: boolean }>`
-  color: var(--color-mid);
-  margin: 0;
-  padding-left: 0px;
-  list-style: none;
-
-  li {
-    display: flex;
-    align-items: center;
-  }
-`
-
-const MoreInfoText = styled.div`
-  font-size: var(--font-size-small);
-  color: var(--color-mid);
-  > a {
-    text-decoration: underline;
-  }
-
-  a:link,
-  a:visited {
-    color: var(--color-mid);
-  }
-  a:hover,
-  a:active {
-    color: var(--color-foreground);
-  }
-`
-
-const AnalyticsContainer = styled.div`
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  gap: 2.4rem;
-`
+const TickNo = () => <XIcon className="text-md text-brand-orange mr-6" />
 
 export const AnalyticsOptInInfo: FC<{
   className?: string
@@ -68,56 +14,57 @@ export const AnalyticsOptInInfo: FC<{
   const { t } = useTranslation("admin")
 
   return (
-    <AnalyticsContainer className={className}>
-      <H1>{t("Help us improve Talisman")}</H1>
-      <p>
+    <div className={classNames("flex flex-col gap-12", className)}>
+      <h1 className="mb-4">{t("Help us improve Talisman")}</h1>
+      <p className="text-body-secondary">
         {t(
           "We want to build simple tools that empower our users and allow them navigate web3 applications with ease. To help improve our product and features we'd like to collect anonymous usage information. This is optional, and you can opt-out at any time."
         )}
       </p>
       <div>
-        <H3>{t("What we track")}</H3>
-        <TickList tick>
+        <h3 className="mb-4">{t("What we track")}</h3>
+        <ul className="text-body-secondary m-0 list-none pl-0 [&>li]:flex [&>li]:items-center">
           <li>
-            <StyledCheckCircleIcon />
+            <TickYes />
             {t("Anonymous user data")}
           </li>
           <li>
-            <StyledCheckCircleIcon />
+            <TickYes />
             {t("Basic UI metrics")}
           </li>
-        </TickList>
+        </ul>
       </div>
       <div>
-        <H3>{t("What we don't track")}</H3>
-        <TickList>
+        <h3 className="mb-4">{t("What we don't track")}</h3>
+        <ul className="text-body-secondary m-0 list-none pl-0 [&>li]:flex [&>li]:items-center">
           <li>
-            <StyledXIcon />
+            <TickNo />
             {t("Identifying personal data such as IP addresses")}
           </li>
           <li>
-            <StyledXIcon />
+            <TickNo />
             {t("Recovery phrases or private keys")}
           </li>
           <li>
-            <StyledXIcon />
+            <TickNo />
             {t("Public addresses")}
           </li>
-        </TickList>
+        </ul>
       </div>
       {children}
-      <MoreInfoText>
+      <div className="text-body-secondary text-sm">
         <Trans t={t}>
           For more information please read our{" "}
           <a
             href="https://docs.talisman.xyz/talisman/legal-and-security/privacy-policy"
             target="_blank"
             rel="noreferrer"
+            className="hover:text-grey-300 active:text-grey-300 underline"
           >
             Privacy Policy
           </a>
         </Trans>
-      </MoreInfoText>
-    </AnalyticsContainer>
+      </div>
+    </div>
   )
 }
