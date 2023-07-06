@@ -2,14 +2,8 @@ import { ChevronDownIcon } from "@talisman/theme/icons"
 import { classNames } from "@talismn/util"
 import { TargetAndTransition, motion } from "framer-motion"
 import { CSSProperties, ReactNode, useEffect, useMemo, useRef, useState } from "react"
-import styled from "styled-components"
 
-// const TRANSITION_ACCORDION = { ease: "easeInOut", duration: 0.3 }
-
-// const AccordionIconContainer = styled(motion.div)`
-//   height: 1em;
-//   width: 1em;
-// `
+const TRANSITION_ACCORDION = { ease: "easeInOut", duration: 0.3 }
 
 // Note : not a button because usually we want the whole accordion title row (title, data, + the icon) to be clickable
 // didn't package the row neither to keep this very generic
@@ -28,10 +22,6 @@ export const AccordionIcon = ({ isOpen }: { isOpen: boolean }) => {
     </div>
   )
 }
-
-const AccordionContainer = styled(motion.div)`
-  overflow-y: hidden;
-`
 
 export const Accordion = ({ isOpen, children }: { isOpen: boolean; children?: ReactNode }) => {
   const [contentHeight, setContentHeight] = useState<number>()
@@ -67,14 +57,15 @@ export const Accordion = ({ isOpen, children }: { isOpen: boolean; children?: Re
   )
 
   return (
-    <AccordionContainer
+    <motion.div
+      className="overflow-y-hidden"
       style={style}
       ref={refContainer}
       animate={animate}
       initial={false}
-      //transition={TRANSITION_ACCORDION}
+      transition={TRANSITION_ACCORDION}
     >
       {children}
-    </AccordionContainer>
+    </motion.div>
   )
 }
