@@ -3,6 +3,7 @@ import { settingsStore } from "@core/domains/app/store.settings"
 import { provideContext } from "@talisman/util/provideContext"
 import { api } from "@ui/api"
 import { useIsOnboarded } from "@ui/hooks/useIsOnboarded"
+import { useSensitiveState } from "@ui/hooks/useSensitiveState"
 import { ReactNode, useEffect } from "react"
 import { useCallback, useState } from "react"
 
@@ -21,11 +22,14 @@ const DEFAULT_DATA: OnboardingWizardData = {}
 
 const useAppOnboardProvider = ({ isResettingWallet = false }: { isResettingWallet?: boolean }) => {
   // data used for account creation
-  const [data, setData] = useState<OnboardingWizardData>(DEFAULT_DATA)
+  const [data, setData] = useSensitiveState<OnboardingWizardData>(DEFAULT_DATA)
 
-  const updateData = useCallback((fields: Partial<OnboardingWizardData>) => {
-    setData((prev) => ({ ...prev, ...fields }))
-  }, [])
+  const updateData = useCallback(
+    (fields: Partial<OnboardingWizardData>) => {
+      setData((prev) => ({ ...prev, ...fields }))
+    },
+    [setData]
+  )
 
   const onboard = useCallback(async () => {
     const { mnemonic, password, passwordConfirm, importAccountType, importMethodType } = data
@@ -48,7 +52,7 @@ const useAppOnboardProvider = ({ isResettingWallet = false }: { isResettingWalle
 
   const reset = useCallback(() => {
     setData(DEFAULT_DATA)
-  }, [])
+  }, [setData])
 
   // update
   useEffect(() => {
@@ -61,12 +65,6 @@ const useAppOnboardProvider = ({ isResettingWallet = false }: { isResettingWalle
         useAnalyticsTracking: data.allowTracking,
       })
   }, [data.allowTracking])
-
-  useEffect(() => {
-    return () => {
-      setData(DEFAULT_DATA)
-    }
-  }, [])
 
   return {
     onboard,
