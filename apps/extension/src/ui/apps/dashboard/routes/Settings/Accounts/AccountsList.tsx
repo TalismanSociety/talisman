@@ -1,5 +1,9 @@
 import { AccountsCatalogStore } from "@core/domains/accounts/store.catalog"
-import { AccountJsonAny, RequestAccountsCatalogMutate } from "@core/domains/accounts/types"
+import {
+  AccountJsonAny,
+  AccountsCatalogTree,
+  RequestAccountsCatalogMutate,
+} from "@core/domains/accounts/types"
 import {
   DndContext,
   DragEndEvent,
@@ -32,11 +36,18 @@ import { flattenTree, getChildCount, getProjection, removeChildrenOf } from "./u
 type Props = {
   accounts: AccountJsonAny[]
   balances: Balances
+  treeName: AccountsCatalogTree
   tree: UiTree
   indentationWidth?: number
 }
 
-export const AccountsList = ({ accounts, balances, tree, indentationWidth = 50 }: Props) => {
+export const AccountsList = ({
+  accounts,
+  balances,
+  treeName,
+  tree,
+  indentationWidth = 50,
+}: Props) => {
   const [items, setItems] = useState(() => tree ?? [])
   useEffect(() => {
     setItems(tree ?? [])
@@ -130,18 +141,24 @@ export const AccountsList = ({ accounts, balances, tree, indentationWidth = 50 }
 
         const mutation: RequestAccountsCatalogMutate =
           activeTreeItem.type === "account"
-            ? { type: "moveAccount", address: activeTreeItem.address, folder, beforeItem }
-            : { type: "moveFolder", name: activeTreeItem.name, beforeItem }
+            ? {
+                type: "moveAccount",
+                tree: treeName,
+                address: activeTreeItem.address,
+                folder,
+                beforeItem,
+              }
+            : { type: "moveFolder", tree: treeName, name: activeTreeItem.name, beforeItem }
 
         setItems((items) => {
           const newItems = items.slice()
-          AccountsCatalogStore.mutateTree(newItems, [mutation])
+          AccountsCatalogStore.mutateTree({ [treeName]: newItems }, [mutation])
           return newItems
         })
         api.accountsCatalogMutate([mutation])
       }
     },
-    [items, projected, resetState]
+    [items, projected, resetState, treeName]
   )
 
   const handleCollapse = useCallback(
@@ -171,6 +188,7 @@ export const AccountsList = ({ accounts, balances, tree, indentationWidth = 50 }
               accounts={accounts}
               balances={balances}
               item={item}
+              treeName={treeName}
               indentationWidth={indentationWidth}
               collapsed={closedFolders.includes(item.id)}
               onCollapse={item.type === "folder" ? () => handleCollapse(item.id) : undefined}
@@ -186,6 +204,7 @@ export const AccountsList = ({ accounts, balances, tree, indentationWidth = 50 }
                 accounts={accounts}
                 balances={balances}
                 item={activeItem}
+                treeName={treeName}
                 clone
                 childCount={getChildCount(items, activeId)}
                 indentationWidth={indentationWidth}

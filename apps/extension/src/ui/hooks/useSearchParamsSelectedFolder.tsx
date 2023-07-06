@@ -12,7 +12,7 @@ export const useSearchParamsSelectedFolder = () => {
   const catalog = useAccountsCatalog()
   const folder = useMemo(
     () =>
-      catalog.find(
+      [...catalog.portfolio, ...catalog.watched].find(
         (item): item is TreeFolder => item.type === "folder" && item.name === folderName
       ),
     [folderName, catalog]

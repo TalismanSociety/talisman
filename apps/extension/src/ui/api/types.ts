@@ -1,4 +1,4 @@
-import { Tree } from "@core/domains/accounts/store.catalog"
+import { Trees } from "@core/domains/accounts/store.catalog"
 import { AccountAddressType, RequestAccountCreateHardware } from "@core/domains/accounts/types"
 import type { AccountJson, RequestAccountsCatalogMutate } from "@core/domains/accounts/types"
 import { MnemonicSubscriptionResult } from "@core/domains/accounts/types"
@@ -115,7 +115,7 @@ export default interface MessageTypes {
   accountCreateWatched: (name: string, address: string, isPortfolio: boolean) => Promise<string>
   accountExternalSetIsPortfolio: (address: string, isPortfolio: boolean) => Promise<boolean>
   accountsSubscribe: (cb: (accounts: AccountJson[]) => void) => UnsubscribeFn
-  accountsCatalogSubscribe: (cb: (tree: Tree) => void) => UnsubscribeFn
+  accountsCatalogSubscribe: (cb: (trees: Trees) => void) => UnsubscribeFn
   accountsCatalogMutate: (mutations: RequestAccountsCatalogMutate[]) => Promise<boolean>
   accountForget: (address: string) => Promise<boolean>
   accountExport: (

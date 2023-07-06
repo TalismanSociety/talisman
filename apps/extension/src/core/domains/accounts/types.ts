@@ -1,4 +1,4 @@
-import { Tree } from "@core/domains/accounts/store.catalog"
+import { Trees } from "@core/domains/accounts/store.catalog"
 import { Address } from "@core/types/base"
 import type {
   AccountJson,
@@ -157,7 +157,7 @@ export interface RequestAccountCreate {
   type: AccountAddressType
 }
 
-export type AccountsCatalogTree = "myAccounts" | "watchedAccounts"
+export type AccountsCatalogTree = "portfolio" | "watched"
 export type RequestAccountsCatalogMutate =
   // account mutations
   | {
@@ -199,7 +199,7 @@ export interface AccountsMessages {
   "pri(accounts.rename)": [RequestAccountRename, boolean]
   "pri(accounts.external.setIsPortfolio)": [RequestAccountExternalSetIsPortfolio, boolean]
   "pri(accounts.subscribe)": [RequestAccountSubscribe, boolean, AccountJson[]]
-  "pri(accounts.catalog.subscribe)": [null, boolean, Tree]
+  "pri(accounts.catalog.subscribe)": [null, boolean, Trees]
   "pri(accounts.catalog.mutate)": [RequestAccountsCatalogMutate[], boolean]
   "pri(accounts.validateMnemonic)": [string, boolean]
   "pri(accounts.setVerifierCertMnemonic)": [string, boolean]

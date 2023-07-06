@@ -292,7 +292,7 @@ export const PortfolioAccounts = () => {
       : new Balances(
           folder.tree.flatMap((account) => balancesByAddress.get(account.address) ?? [])
         ).sum.fiat("usd").total
-    const tree = folder ? folder.tree : catalog
+    const tree = folder ? folder.tree : catalog.portfolio
 
     return [
       {

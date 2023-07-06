@@ -1,5 +1,5 @@
 import HeaderBlock from "@talisman/components/HeaderBlock"
-import { FolderPlusIcon } from "@talisman/theme/icons"
+import { EyeIcon, FolderPlusIcon, TalismanHandIcon } from "@talisman/theme/icons"
 import { AnalyticsPage } from "@ui/api/analytics"
 import Layout from "@ui/apps/dashboard/layout"
 import useAccounts from "@ui/hooks/useAccounts"
@@ -30,7 +30,10 @@ export const Accounts = () => {
   const accounts = useAccounts()
   const balances = useBalances()
   const catalog = useAccountsCatalog()
-  const uiTree = useMemo((): UiTree => withIds(catalog), [catalog])
+  const [portfolioUiTree, watchedUiTree] = useMemo(
+    (): [UiTree, UiTree] => [withIds(catalog.portfolio), withIds(catalog.watched)],
+    [catalog]
+  )
   const newFolderModal = useNewFolderModal()
 
   // TODO: "Followed only" section
@@ -51,7 +54,31 @@ export const Accounts = () => {
           Add new folder
         </button>
       </div>
-      <AccountsList accounts={accounts} balances={balances} tree={uiTree} />
+
+      {watchedUiTree.length > 0 && (
+        <div className="text-body-secondary mb-6 flex items-center gap-4 font-bold">
+          <TalismanHandIcon className="inline" />
+          <div>{t("My portfolio")}</div>
+        </div>
+      )}
+      <AccountsList
+        accounts={accounts}
+        balances={balances}
+        treeName="portfolio"
+        tree={portfolioUiTree}
+      />
+      {watchedUiTree.length > 0 && (
+        <div className="text-body-secondary mb-6 mt-8 flex items-center gap-4 font-bold">
+          <EyeIcon className="inline" />
+          <div>{t("Followed only")}</div>
+        </div>
+      )}
+      <AccountsList
+        accounts={accounts}
+        balances={balances}
+        treeName="watched"
+        tree={watchedUiTree}
+      />
       <NewFolderModal />
       <RenameFolderModal />
       <DeleteFolderModal />

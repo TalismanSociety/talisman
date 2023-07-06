@@ -1,4 +1,4 @@
-import { AccountJsonAny } from "@core/domains/accounts/types"
+import { AccountJsonAny, AccountsCatalogTree } from "@core/domains/accounts/types"
 import { DraggableAttributes } from "@dnd-kit/core"
 import { SyntheticListenerMap } from "@dnd-kit/core/dist/hooks/utilities"
 import { isEthereumAddress } from "@polkadot/util-crypto"
@@ -44,6 +44,7 @@ export interface Props {
   handleProps?: { attributes: DraggableAttributes; listeners?: SyntheticListenerMap }
   indentationWidth: number
   item: UiTreeItem
+  treeName: AccountsCatalogTree
   style: CSSProperties
   onCollapse?(): void
   wrapperRef?(node: HTMLLIElement): void
@@ -183,6 +184,7 @@ export const TreeFolderItem = forwardRef<HTMLDivElement, Props & { item: UiTreeF
       clone,
       handleProps,
       item,
+      treeName,
       collapsed,
       onCollapse,
       style,
@@ -237,12 +239,12 @@ export const TreeFolderItem = forwardRef<HTMLDivElement, Props & { item: UiTreeF
                 <MoreHorizontalIcon className="shrink-0" />
               </ContextMenuTrigger>
               <ContextMenuContent className="border-grey-800 z-50 flex w-min flex-col whitespace-nowrap rounded-sm border bg-black px-2 py-3 text-left text-sm shadow-lg">
-                <ContextMenuItem onClick={stopPropagation(() => renameFolder(item.name))}>
+                <ContextMenuItem onClick={stopPropagation(() => renameFolder(item.name, treeName))}>
                   {t("Rename")}
                 </ContextMenuItem>
                 {/* TODO: Expose folder colors */}
                 {/* <ContextMenuItem onClick={stopPropagation()}>{t("Change color")}</ContextMenuItem> */}
-                <ContextMenuItem onClick={stopPropagation(() => deleteFolder(item.name))}>
+                <ContextMenuItem onClick={stopPropagation(() => deleteFolder(item.name, treeName))}>
                   {t("Delete")}
                 </ContextMenuItem>
               </ContextMenuContent>

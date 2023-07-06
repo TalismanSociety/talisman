@@ -5,11 +5,12 @@ import { ModalDialog } from "@talisman/components/ModalDialog"
 import { useOpenClose } from "@talisman/hooks/useOpenClose"
 import { provideContext } from "@talisman/util/provideContext"
 import { api } from "@ui/api"
+import useAccountsCatalog from "@ui/hooks/useAccountsCatalog"
 import { RefCallback, useCallback, useEffect, useMemo, useRef } from "react"
 import { useForm } from "react-hook-form"
 import { useTranslation } from "react-i18next"
 import styled from "styled-components"
-import { FormFieldContainer, FormFieldInputText } from "talisman-ui"
+import { Checkbox, FormFieldContainer, FormFieldInputText } from "talisman-ui"
 import * as yup from "yup"
 
 const useNewFolderModalProvider = () => {
@@ -52,6 +53,7 @@ const StyledDialog = styled(Dialog)`
 
 type FormData = {
   name: string
+  followedOnly?: boolean
 }
 
 interface NewFolderProps {
@@ -68,6 +70,7 @@ const NewFolder = ({ onConfirm, onCancel, className }: NewFolderProps) => {
       yup
         .object({
           name: yup.string().required(""),
+          followedOnly: yup.boolean(),
         })
         .required(),
     []
@@ -76,6 +79,7 @@ const NewFolder = ({ onConfirm, onCancel, className }: NewFolderProps) => {
   const defaultValues = useMemo(
     () => ({
       name: "",
+      followedOnly: false,
     }),
     []
   )
@@ -92,9 +96,11 @@ const NewFolder = ({ onConfirm, onCancel, className }: NewFolderProps) => {
   })
 
   const submit = useCallback(
-    async ({ name }: FormData) => {
+    async ({ name, followedOnly }: FormData) => {
       try {
-        await api.accountsCatalogMutate([{ type: "addFolder", name }])
+        await api.accountsCatalogMutate([
+          { type: "addFolder", tree: followedOnly ? "watched" : "portfolio", name },
+        ])
         onConfirm()
       } catch (err) {
         setError("name", {
@@ -128,6 +134,8 @@ const NewFolder = ({ onConfirm, onCancel, className }: NewFolderProps) => {
     [refName]
   )
 
+  const catalog = useAccountsCatalog()
+
   return (
     <StyledDialog
       className={className}
@@ -146,6 +154,9 @@ const NewFolder = ({ onConfirm, onCancel, className }: NewFolderProps) => {
               data-lpignore
             />
           </FormFieldContainer>
+          {catalog.watched.length > 0 && (
+            <Checkbox {...register("followedOnly")}>Followed only</Checkbox>
+          )}
         </form>
       }
       confirmText={t("Save")}

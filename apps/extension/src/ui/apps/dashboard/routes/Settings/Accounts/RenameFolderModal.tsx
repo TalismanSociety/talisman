@@ -1,3 +1,4 @@
+import { AccountsCatalogTree } from "@core/domains/accounts/types"
 import { yupResolver } from "@hookform/resolvers/yup"
 import Dialog from "@talisman/components/Dialog"
 import { Modal } from "@talisman/components/Modal"
@@ -13,10 +14,12 @@ import * as yup from "yup"
 
 const useRenameFolderModalProvider = () => {
   const [name, setName] = useState<string | null>(null)
+  const [treeName, setTreeName] = useState<AccountsCatalogTree | null>(null)
   const [isOpen, setIsOpen] = useState(false)
 
-  const open = useCallback((name: string) => {
+  const open = useCallback((name: string, treeName: AccountsCatalogTree) => {
     setName(name)
+    setTreeName(treeName)
     setIsOpen(true)
   }, [])
   const close = useCallback(() => setIsOpen(false), [])
@@ -27,6 +30,7 @@ const useRenameFolderModalProvider = () => {
 
   return {
     name,
+    treeName,
     isOpen,
     open,
     close,
@@ -39,12 +43,14 @@ export const [RenameFolderModalProvider, useRenameFolderModal] = provideContext(
 
 export const RenameFolderModal = () => {
   const { t } = useTranslation("admin")
-  const { name, close, isOpen } = useRenameFolderModal()
+  const { name, treeName, close, isOpen } = useRenameFolderModal()
 
   return (
     <Modal open={isOpen}>
       <ModalDialog title={t("Rename Folder")} onClose={close}>
-        {name !== null && <RenameFolder name={name} onConfirm={close} onCancel={close} />}
+        {name !== null && treeName !== null && (
+          <RenameFolder name={name} treeName={treeName} onConfirm={close} onCancel={close} />
+        )}
       </ModalDialog>
     </Modal>
   )
@@ -65,12 +71,13 @@ type FormData = {
 
 interface RenameFolderProps {
   name: string
+  treeName: AccountsCatalogTree
   onConfirm: () => void
   onCancel: () => void
   className?: string
 }
 
-const RenameFolder = ({ name, onConfirm, onCancel, className }: RenameFolderProps) => {
+const RenameFolder = ({ name, treeName, onConfirm, onCancel, className }: RenameFolderProps) => {
   const { t } = useTranslation("admin")
 
   const schema = useMemo(
@@ -98,7 +105,14 @@ const RenameFolder = ({ name, onConfirm, onCancel, className }: RenameFolderProp
   const submit = useCallback(
     async ({ name: newName }: FormData) => {
       try {
-        await api.accountsCatalogMutate([{ type: "renameFolder", name, newName }])
+        await api.accountsCatalogMutate([
+          {
+            type: "renameFolder",
+            tree: treeName,
+            name,
+            newName,
+          },
+        ])
         onConfirm()
       } catch (err) {
         setError("name", {
@@ -107,7 +121,7 @@ const RenameFolder = ({ name, onConfirm, onCancel, className }: RenameFolderProp
         })
       }
     },
-    [name, onConfirm, setError]
+    [name, onConfirm, setError, treeName]
   )
 
   // "manual" field registration so we can hook our own ref to it

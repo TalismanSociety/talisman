@@ -1,13 +1,16 @@
 import { DEBUG } from "@core/constants"
-import { AccountJsonAny, RequestAccountsCatalogMutate } from "@core/domains/accounts/types"
+import {
+  AccountJsonAny,
+  AccountsCatalogTree,
+  RequestAccountsCatalogMutate,
+} from "@core/domains/accounts/types"
 import { SubscribableStorageProvider } from "@core/libs/Store"
 
-export type AccountsCatalogData = {
-  tree: Tree
-  // myAccounts: Tree
-  // watchedAccounts: Tree
-}
+// AccountsCatalogData is here in case we want to use this to store anything
+// else in addition to the two `Tree` objects in the future
+export type AccountsCatalogData = Trees
 
+export type Trees = Record<AccountsCatalogTree, Tree>
 export type Tree = TreeItem[]
 export type TreeItem = TreeAccount | TreeFolder
 export type TreeAccount = { type: "account"; address: string; hidden: boolean }
@@ -35,8 +38,8 @@ export class AccountsCatalogStore extends SubscribableStorageProvider<
     const sortedAccounts = accounts.slice()
     let nextSortIndex = 0
 
-    await this.withTree((tree) => {
-      tree.forEach((item) => {
+    await this.withTrees((trees) =>
+      [...trees.portfolio, ...trees.watched].forEach((item) => {
         if (item.type === "account") {
           const account = sortedAccounts.find((account) => account.address === item.address)
           if (!account) return
@@ -56,7 +59,7 @@ export class AccountsCatalogStore extends SubscribableStorageProvider<
           })
         }
       })
-    })
+    )
 
     return sortedAccounts.sort(
       (a, b) => (a.sortOrder ?? Number.MAX_SAFE_INTEGER) - (b.sortOrder ?? Number.MAX_SAFE_INTEGER)
@@ -64,11 +67,14 @@ export class AccountsCatalogStore extends SubscribableStorageProvider<
   }
 
   executeCatalogMutations = async (mutations: RequestAccountsCatalogMutate[]) =>
-    await this.withTree((tree) => AccountsCatalogStore.mutateTree(tree, mutations))
+    await this.withTrees((trees) => AccountsCatalogStore.mutateTree(trees, mutations))
 
-  static mutateTree = (tree: Tree, mutations: RequestAccountsCatalogMutate[]) =>
+  static mutateTree = (trees: Partial<Trees>, mutations: RequestAccountsCatalogMutate[]) =>
     mutations.forEach((mutation) => {
       const { type } = mutation
+
+      const tree = AccountsCatalogStore.getTree(trees, mutation.tree)
+      if (!tree) return
 
       // account mutations
       if (type === "moveAccount")
@@ -99,25 +105,48 @@ export class AccountsCatalogStore extends SubscribableStorageProvider<
       DEBUG && console.error(`Unhandled accounts catalog mutation type ${exhaustiveCheck}`) // eslint-disable-line no-console
     })
 
-  addAccounts = async (addresses: string[]) =>
-    await this.withTree((tree) =>
-      addresses.forEach((address) => AccountsCatalogStore.addAccount(tree, address))
+  addAccounts = async (accounts: Array<{ address: string; isPortfolio?: boolean }>) =>
+    await this.withTrees((trees) =>
+      accounts.forEach(({ address, isPortfolio }) => {
+        if (isPortfolio !== false) {
+          AccountsCatalogStore.addAccount(trees.portfolio, address)
+          AccountsCatalogStore.removeAccount(trees.watched, address)
+        } else {
+          AccountsCatalogStore.addAccount(trees.watched, address)
+          AccountsCatalogStore.removeAccount(trees.portfolio, address)
+        }
+      })
     )
   removeAccounts = async (addresses: string[]) =>
-    await this.withTree((tree) =>
-      addresses.forEach((address) => AccountsCatalogStore.removeAccount(tree, address))
+    await this.withTrees((trees) =>
+      addresses.forEach((address) => {
+        AccountsCatalogStore.removeAccount(trees.portfolio, address)
+        AccountsCatalogStore.removeAccount(trees.watched, address)
+      })
     )
 
   //
   // private implementation
   //
 
-  private withTree = async (callback: (tree: Tree) => void) => {
+  private withTrees = async (callback: (trees: Trees) => void) => {
     const store = await this.get()
-    const tree = Array.isArray(store.tree) ? store.tree : []
-    callback(tree)
-    await this.set({ tree })
+
+    const ensureArray = <T>(item: T) => (Array.isArray(item) ? item : [])
+    const trees: Trees = {
+      portfolio: ensureArray(store.portfolio),
+      watched: ensureArray(store.watched),
+    }
+
+    callback(trees)
+
+    await this.set(trees)
   }
+
+  private static getTree = (
+    trees: Partial<Trees>,
+    treeName: AccountsCatalogTree = "portfolio"
+  ): Tree | undefined => trees[treeName]
 
   private static addAccount = (tree: Tree, address: string) => {
     // don't add account if it already exists

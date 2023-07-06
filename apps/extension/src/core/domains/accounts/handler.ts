@@ -384,8 +384,6 @@ export default class AccountsHandler extends ExtensionHandler {
 
     keyring.saveAccountMeta(pair, { ...pair.meta, isPortfolio })
 
-    // TODO: Fix in catalog
-
     return true
   }
 
@@ -410,6 +408,7 @@ export default class AccountsHandler extends ExtensionHandler {
     return genericAsyncSubscription<"pri(accounts.subscribe)">(
       id,
       port,
+      // make sure the sort order is updated when the catalog changes
       combineLatest([keyring.accounts.subject, this.stores.accountsCatalog.observable]),
       ([accounts]) => sortAccounts(this.stores.accountsCatalog)(accounts)
     )
@@ -419,8 +418,9 @@ export default class AccountsHandler extends ExtensionHandler {
     return genericAsyncSubscription<"pri(accounts.catalog.subscribe)">(
       id,
       port,
-      this.stores.accountsCatalog.observable,
-      async (store) => store.tree
+      // make sure the list of accounts in the catalog is updated when the keyring changes
+      combineLatest([keyring.accounts.subject, this.stores.accountsCatalog.observable]),
+      async ([, catalog]) => catalog
     )
   }
 
