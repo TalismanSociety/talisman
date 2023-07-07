@@ -5,7 +5,7 @@ import { useAccountByAddress } from "@ui/hooks/useAccountByAddress"
 import { ChangeEventHandler, FC, useCallback } from "react"
 import { Toggle } from "talisman-ui"
 
-export const AuthorisedSitesListAccount: FC<{
+export const AuthorisedSiteAccount: FC<{
   address: string
   isConnected: boolean
   onChange: (val: boolean) => void

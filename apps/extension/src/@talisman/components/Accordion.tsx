@@ -23,6 +23,7 @@ export const AccordionIcon = ({ isOpen }: { isOpen: boolean }) => {
   )
 }
 
+// TODO migrate to tailwind's transition component to prevent rendering content while closed
 export const Accordion = ({ isOpen, children }: { isOpen: boolean; children?: ReactNode }) => {
   const [contentHeight, setContentHeight] = useState<number>()
   const refContainer = useRef<HTMLDivElement>(null)
@@ -36,6 +37,7 @@ export const Accordion = ({ isOpen, children }: { isOpen: boolean; children?: Re
     }
 
     container.addEventListener("resize", updateContentHeight)
+    updateContentHeight()
 
     return () => {
       container.removeEventListener("resize", updateContentHeight)

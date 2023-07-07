@@ -6,11 +6,10 @@ import { ProviderTypeSwitch } from "@ui/domains/Site/ProviderTypeSwitch"
 import { useAuthorisedSites } from "@ui/hooks/useAuthorisedSites"
 import { useEffect, useMemo, useState } from "react"
 import { Trans, useTranslation } from "react-i18next"
-import styled from "styled-components"
 
-import Site from "./Site"
+import { AuthorizedSite } from "./AuthorisedSite"
 
-const AuthorisedSitesList = () => {
+export const AuthorisedSites = () => {
   const { t } = useTranslation("admin")
   const sites = useAuthorisedSites()
   const [providerType, setProviderType] = useState<ProviderType>("polkadot")
@@ -56,16 +55,16 @@ const AuthorisedSitesList = () => {
       <Spacer small />
       <div className="flex flex-col gap-7">
         {siteIds.map((id) => (
-          <Site key={`${providerType}-${id}`} id={id} provider={providerType} />
+          <AuthorizedSite key={`${providerType}-${id}`} id={id} provider={providerType} />
         ))}
         {!sites ||
           (Object.keys(sites).length === 0 && (
             <Panel>
               <Trans t={t}>
                 You haven't connected to any sites yet. Why not start with the{" "}
-                <TSLink href="https://app.talisman.xyz" target="_blank" className="link">
+                <a href="https://app.talisman.xyz" target="_blank" className="text-primary">
                   Talisman Web App
-                </TSLink>
+                </a>
                 ?
               </Trans>
             </Panel>
@@ -78,9 +77,3 @@ const AuthorisedSitesList = () => {
     </>
   )
 }
-
-const TSLink = styled.a`
-  color: var(--color-primary);
-`
-
-export default AuthorisedSitesList
