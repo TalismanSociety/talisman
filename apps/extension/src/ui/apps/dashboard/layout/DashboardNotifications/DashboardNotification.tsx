@@ -24,9 +24,9 @@ export const DashboardNotification = ({
       {icon && (
         <div className="text-primary flex flex-col justify-center text-[3.8rem]">{icon}</div>
       )}
-      <div className="grow">
-        <div className="inline">{title}</div>
-        <div className="text-body-secondary inline">{description}</div>
+      <div className="flex-grow">
+        <span className="mr-4">{title}</span>
+        <span className="text-body-secondary">{description}</span>
       </div>
       {action && (
         <button

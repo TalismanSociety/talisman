@@ -1,49 +1,16 @@
 import { appStore } from "@core/domains/app/store.app"
-import Button from "@talisman/components/Button"
 import imgBraveFlag from "@talisman/theme/images/brave_flag.gif"
-import { FC, useEffect, useState } from "react"
-import { useTranslation } from "react-i18next"
-import styled from "styled-components"
-import { Toggle } from "talisman-ui"
+import { FC, useCallback, useEffect, useState } from "react"
+import { Trans, useTranslation } from "react-i18next"
+import { Button, Toggle } from "talisman-ui"
 import Browser from "webextension-polyfill"
-
-const ModalContainer = styled.div<{ small?: boolean }>`
-  display: flex;
-  flex-direction: column;
-  gap: 1.6rem;
-  text-align: center;
-  color: var(--color-mid);
-
-  p {
-    font-size: var(--font-size-${(small) => (small ? "xsmall" : "small")});
-
-    padding: 0 1.6rem;
-
-    b {
-      color: var(--color-foreground);
-    }
-  }
-
-  img {
-    max-width: 100%;
-    border-radius: var(--border-radius-small);
-  }
-
-  .toggle {
-    display: inline-flex;
-    flex-direction: row;
-    .children {
-      display: inline-flex;
-    }
-  }
-`
 
 type BraveWarningModalProps = {
   className?: string
   popup?: boolean
 }
 
-export const BraveWarningModal: FC<BraveWarningModalProps> = ({ className, popup }) => {
+export const BraveWarningModal: FC<BraveWarningModalProps> = () => {
   const { t } = useTranslation()
   const [hideBraveWarning, setHideBraveWarning] = useState<boolean>()
   const [hasBraveWarningBeenShown, setHasBraveWarningBeenShown] = useState<boolean>()
@@ -60,12 +27,21 @@ export const BraveWarningModal: FC<BraveWarningModalProps> = ({ className, popup
     return () => sub.unsubscribe()
   }, [])
 
+  const handleReadMoreClick = useCallback(() => {
+    window.open(
+      "https://docs.talisman.xyz/talisman/help-and-support/troubleshooting/balances-on-brave-not-showing",
+      "_blank"
+    )
+  }, [])
+
   return (
-    <ModalContainer className={className} small={popup}>
-      <p>
-        {t(
-          "Due to a recent Brave update (v 1.36) some balances may not display correctly. In order to view your balances please disable the <b>Restrict WebSockets Pool</b> flag and relaunch Brave."
-        )}
+    <div className="text-body-secondary flex w-full flex-col gap-8">
+      <p className="text-body-secondary [&>b]:text-body px-8 text-xs">
+        <Trans t={t}>
+          Due to a recent Brave update (v 1.36) some balances may not display correctly. In order to
+          view your balances please disable the <b>Restrict WebSockets Pool</b> flag and relaunch
+          Brave.
+        </Trans>
       </p>
       <div>
         <img src={imgBraveFlag} alt="brave flag setting" />
@@ -81,12 +57,7 @@ export const BraveWarningModal: FC<BraveWarningModalProps> = ({ className, popup
       >
         {t("Open Brave flags")}
       </Button>
-      <Button
-        external
-        to="https://docs.talisman.xyz/talisman/help-and-support/troubleshooting/balances-on-brave-not-showing"
-      >
-        {t("Read the docs")}
-      </Button>
+      <Button onClick={handleReadMoreClick}>{t("Read the docs")}</Button>
       <div className="text-body-secondary flex w-full items-center justify-center gap-4 text-sm">
         <div>{t("Don't prompt me again")}</div>
         <Toggle
@@ -94,6 +65,6 @@ export const BraveWarningModal: FC<BraveWarningModalProps> = ({ className, popup
           onChange={(e) => appStore.set({ hideBraveWarning: e.target.checked })}
         />
       </div>
-    </ModalContainer>
+    </div>
   )
 }

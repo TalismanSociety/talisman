@@ -1,21 +1,20 @@
 import { appStore } from "@core/domains/app/store.app"
-import { Drawer } from "@talisman/components/Drawer"
 import { Modal } from "@talisman/components/Modal"
 import { ModalDialog } from "@talisman/components/ModalDialog"
 import { useIsBrave } from "@talisman/hooks/useIsBrave"
 import { useOpenClose } from "@talisman/hooks/useOpenClose"
 import { useCallback, useEffect, useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
-import styled from "styled-components"
+import { Drawer } from "talisman-ui"
 
 import { BraveWarningCard } from "./BraveWarningCard"
 import { BraveWarningModal } from "./BraveWarningModal"
 
-const WarningCard = styled(BraveWarningCard)`
-  margin: 0;
-  border-bottom-left-radius: 0;
-  border-bottom-right-radius: 0;
-`
+// const WarningCard = styled(BraveWarningCard)`
+//   margin: 0;
+//   border-bottom-left-radius: 0;
+//   border-bottom-right-radius: 0;
+// `
 
 const BraveWarningPopupBanner = () => {
   const { t } = useTranslation()
@@ -50,8 +49,8 @@ const BraveWarningPopupBanner = () => {
 
   return (
     <>
-      <Drawer open={showWarning} anchor="bottom" onClose={handleClose}>
-        <WarningCard onLearnMoreClick={open} />
+      <Drawer isOpen={showWarning} containerId="main" anchor="bottom" onDismiss={handleClose}>
+        <BraveWarningCard className="!m-0 !rounded-b-none" onLearnMoreClick={open} />
       </Drawer>
       <Modal open={isOpen} anchor="bottom" onClose={close}>
         <ModalDialog centerTitle title={t("Attention Brave Users")} onClose={close}>

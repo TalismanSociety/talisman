@@ -1,5 +1,4 @@
 import passwordStore from "@core/domains/app/store.password"
-import Button from "@talisman/components/Button"
 import { Card } from "@talisman/components/Card"
 import { useOpenClose } from "@talisman/hooks/useOpenClose"
 import { LockIcon } from "@talisman/theme/icons"
@@ -8,7 +7,7 @@ import { api } from "@ui/api"
 import { sendAnalyticsEvent } from "@ui/api/analytics"
 import { useCallback, useEffect } from "react"
 import { Trans, useTranslation } from "react-i18next"
-import { Drawer } from "talisman-ui"
+import { Button, Drawer } from "talisman-ui"
 
 type Props = {
   className?: string
@@ -45,10 +44,12 @@ export const AlertCard = ({ className, onAccept, onReject }: Props) => {
       }
       cta={
         <div className="flex w-full flex-col gap-5">
-          <Button primary onClick={onAccept}>
+          <Button className="w-full" primary onClick={onAccept}>
             {t("Continue")}
           </Button>
-          <Button onClick={onReject}>Not for now</Button>
+          <Button className="w-full" onClick={onReject}>
+            Not for now
+          </Button>
         </div>
       }
     />

@@ -1,33 +1,7 @@
-import Button from "@talisman/components/Button"
 import { AlertCircleIcon, LoaderIcon } from "@talisman/theme/icons"
+import { classNames } from "@talismn/util"
 import { useTranslation } from "react-i18next"
-import styled from "styled-components"
-
-const Container = styled.div<{ status?: string }>`
-  background: var(--color-background-muted);
-  padding: 2.4rem;
-  border-radius: 2.4rem 2.4rem 0px 0px;
-  color: var(--color-mid);
-  font-size: var(--font-size-small);
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 0.8rem;
-  line-height: 1;
-  svg {
-    font-size: 3rem;
-    min-width: 1em;
-    line-height: 3rem;
-    ${(props) => (props.status ? `color: var(--color-status-${props.status});` : "")};
-  }
-  button {
-    margin-top: 2.4rem;
-    width: 100%;
-  }
-  span {
-    line-height: 2rem !important;
-  }
-`
+import { Button } from "talisman-ui"
 
 interface LedgerSigningStatusProps {
   message: string
@@ -45,25 +19,32 @@ export const LedgerSigningStatus = ({
   confirm = NO_OP,
 }: LedgerSigningStatusProps) => {
   const { t } = useTranslation("request")
+
   return (
-    <Container status={status === "error" ? status : ""}>
+    <div
+      className={
+        "bg-grey-800 text-body-secondary flex w-full flex-col items-center gap-4 rounded-t-xl p-12 text-sm"
+      }
+    >
       {status === "error" && (
         <>
-          <AlertCircleIcon />
+          <AlertCircleIcon
+            className={classNames("text-[3rem]", status === "error" && "text-alert-error")}
+          />
           <span>{message}</span>
         </>
       )}
       {status === "signing" && (
         <>
-          <LoaderIcon className="animate-spin-slow" />
+          <LoaderIcon className="animate-spin-slow text-[3rem]" />
           <span>{t("Sign with Ledger...")}</span>
         </>
       )}
       {status === "error" && requiresConfirmation && confirm && (
-        <Button primary onClick={confirm}>
+        <Button className="mt-12 w-full" primary onClick={confirm}>
           {t("OK")}
         </Button>
       )}
-    </Container>
+    </div>
   )
 }

@@ -158,18 +158,17 @@ export const EthSignTransactionRequest = () => {
         </div>
       </PopupContent>
       {!isLoading && (
-        <PopupFooter>
-          <div className="flex flex-col gap-4">
-            <div id="sign-alerts-inject"></div>
+        <PopupFooter className="flex flex-col gap-8">
+          <div id="sign-alerts-inject" className="flex flex-col gap-4">
             {errorMessage && (
-              <SignAlertMessage className="mb-8" type="error">
+              <SignAlertMessage type="error">
                 <WithTooltip tooltip={errorDetails}>{errorMessage}</WithTooltip>
               </SignAlertMessage>
             )}
           </div>
           <Suspense fallback={null}>
             {transaction && txDetails && network?.nativeToken ? (
-              <div className="text-body-secondary my-8 flex flex-col gap-2 text-sm">
+              <div className="text-body-secondary flex flex-col gap-2 text-sm">
                 <div className="flex items-center justify-between">
                   <div>
                     {t("Estimated Fee")}{" "}

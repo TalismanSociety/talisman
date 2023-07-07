@@ -1,6 +1,4 @@
 import { KnownRequestIdOnly } from "@core/libs/requests/types"
-import Button from "@talisman/components/Button"
-import Grid from "@talisman/components/Grid"
 import { notify } from "@talisman/components/Notifications"
 import { api } from "@ui/api"
 import { useAnalytics } from "@ui/hooks/useAnalytics"
@@ -8,6 +6,7 @@ import { useRequest } from "@ui/hooks/useRequest"
 import { FC, useCallback, useEffect, useMemo } from "react"
 import { Trans, useTranslation } from "react-i18next"
 import { useParams } from "react-router-dom"
+import { Button } from "talisman-ui"
 
 import { PopupContent, PopupFooter, PopupHeader, PopupLayout } from "../Layout/PopupLayout"
 
@@ -82,12 +81,12 @@ export const Metadata: FC<{ className?: string }> = ({ className }) => {
         </div>
       </PopupContent>
       <PopupFooter>
-        <Grid>
+        <div className="grid grid-cols-2 gap-12">
           <Button onClick={reject}>{t("Cancel")}</Button>
           <Button primary onClick={approve}>
             {t("Approve")}
           </Button>
-        </Grid>
+        </div>
       </PopupFooter>
     </PopupLayout>
   )

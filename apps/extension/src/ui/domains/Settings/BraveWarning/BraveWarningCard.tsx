@@ -1,51 +1,35 @@
-import Button from "@talisman/components/Button"
 import { Card } from "@talisman/components/Card"
 import { BraveIcon } from "@talisman/theme/icons"
+import { classNames } from "@talismn/util"
 import { useTranslation } from "react-i18next"
-import styled from "styled-components"
+import { Button } from "talisman-ui"
 
 type Props = {
   className?: string
   onLearnMoreClick?: () => void
 }
 
-export const BraveWarningCard = styled(({ className, onLearnMoreClick }: Props) => {
+export const BraveWarningCard = ({ className, onLearnMoreClick }: Props) => {
   const { t } = useTranslation()
   return (
     <Card
-      className={className}
+      className={classNames("mt-10", className)}
       title={
-        <>
-          <BraveIcon className="icon" /> {t("Attention Brave users")}
-        </>
+        <div className="flex w-full items-center gap-5">
+          <BraveIcon className="inline" />
+          <span>{t("Attention Brave users")}</span>
+        </div>
       }
       description={
-        <span>
+        <span className="text-body-secondary text-sm">
           {t("Due to a recent update, users may be experiencing issues loading balances.")}
         </span>
       }
-      cta={<Button onClick={onLearnMoreClick}>{t("Learn more")}</Button>}
+      cta={
+        <Button className="w-full" onClick={onLearnMoreClick}>
+          {t("Learn more")}
+        </Button>
+      }
     />
   )
-})`
-  margin: 2rem;
-
-  .icon {
-    color: var(--color-primary);
-  }
-
-  .card-title {
-    display: flex;
-    align-items: center;
-    gap: 1rem;
-  }
-
-  .card-description {
-    color: var(--color-mid);
-    font-size: small;
-  }
-
-  .card-cta > * {
-    width: 100%;
-  }
-`
+}
