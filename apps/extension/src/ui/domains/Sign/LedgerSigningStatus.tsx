@@ -44,7 +44,7 @@ export const LedgerSigningStatus = ({
   requiresConfirmation = true,
   confirm = NO_OP,
 }: LedgerSigningStatusProps) => {
-  const { t } = useTranslation("sign")
+  const { t } = useTranslation("request")
   return (
     <Container status={status === "error" ? status : ""}>
       {status === "error" && (

@@ -1,3 +1,4 @@
+import { IS_FIREFOX } from "@core/constants"
 import * as Sentry from "@sentry/browser"
 import { useFaviconUrl } from "@ui/hooks/useFaviconUrl"
 import { FC, useMemo } from "react"
@@ -12,7 +13,8 @@ const Favicon: FC<{ url: string }> = ({ url }) => {
         <img
           className="h-8 w-8"
           loading="lazy"
-          crossOrigin="anonymous"
+          // required for chrome to work around the manifest rule, but breaks firefox as it enforces CORS
+          crossOrigin={IS_FIREFOX ? undefined : "anonymous"}
           src={iconUrl}
           alt={`favicon ${url}`}
         />

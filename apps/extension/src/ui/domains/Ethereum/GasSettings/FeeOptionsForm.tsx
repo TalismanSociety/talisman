@@ -38,7 +38,7 @@ const Eip1559FeeTooltip: FC<{
   maxFee: BigNumber
   tokenId: string
 }> = ({ estimatedFee, maxFee, tokenId }) => {
-  const { t } = useTranslation("sign")
+  const { t } = useTranslation("request")
   const token = useToken(tokenId)
 
   // get estimated and max as string, with as many decimals on both for easy reading
@@ -158,7 +158,7 @@ export const FeeOptionsSelectForm: FC<FeeOptionsSelectProps> = ({
   networkUsage,
   tokenId,
 }) => {
-  const { t } = useTranslation("sign")
+  const { t } = useTranslation("request")
   const handleSelect = useCallback(
     (priority: EthPriorityOptionName) => () => {
       if (onChange) onChange(priority)

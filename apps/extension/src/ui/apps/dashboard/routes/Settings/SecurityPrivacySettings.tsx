@@ -19,7 +19,7 @@ const TSLink = styled.a`
 `
 
 const SecurityPrivacySettings = () => {
-  const { t } = useTranslation("settings")
+  const { t } = useTranslation("admin")
   const [useAnalyticsTracking, setUseAnalyticsTracking] = useSetting("useAnalyticsTracking")
   const [useErrorTracking, setUseErrorTracking] = useSetting("useErrorTracking")
   const navigate = useNavigate()

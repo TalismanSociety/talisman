@@ -29,7 +29,7 @@ type ConnectedAccountsProps = {
 }
 
 export const ConnectedAccounts: FC<ConnectedAccountsProps> = ({ siteId }) => {
-  const { t } = useTranslation("sites")
+  const { t } = useTranslation()
   const { genericEvent } = useAnalytics()
   const { authorizedProviders, defaultProvider } = useAuthorisedSiteProviders(siteId)
   const [providerType, setProviderType] = useState<ProviderType>(defaultProvider)

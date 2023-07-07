@@ -14,10 +14,10 @@ import type { MessageTypes, RequestType, ResponseType } from "@core/types"
 import { Port } from "@core/types/base"
 import { getTypeRegistry } from "@core/util/getTypeRegistry"
 import { isJsonPayload } from "@core/util/isJsonPayload"
-import { encodeAddress } from "@polkadot/keyring"
 import { TypeRegistry } from "@polkadot/types"
 import keyring from "@polkadot/ui-keyring"
 import { assert } from "@polkadot/util"
+import { encodeAnyAddress } from "@talismn/util"
 
 import { getHostName } from "../app/helpers"
 
@@ -29,7 +29,7 @@ export default class SigningHandler extends ExtensionHandler {
 
     const { reject, request, resolve, url } = queued
 
-    const address = encodeAddress(queued.account.address)
+    const address = encodeAnyAddress(queued.account.address)
 
     const result = await getPairForAddressSafely(address, async (pair) => {
       const { payload } = request
@@ -39,7 +39,6 @@ export default class SigningHandler extends ExtensionHandler {
         hostName: ok ? hostName : undefined,
       }
 
-      // an empty registry is sufficient, we don't need metadata here
       let registry = new TypeRegistry()
 
       if (isJsonPayload(payload)) {

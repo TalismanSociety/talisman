@@ -1,3 +1,4 @@
+import { IS_FIREFOX } from "@core/constants"
 import { db } from "@core/db"
 import {
   EvmWalletTransaction,
@@ -82,7 +83,7 @@ const Favicon: FC<{ siteUrl: string; className?: string }> = ({ siteUrl, classNa
     <img
       loading="lazy"
       src={iconUrl}
-      crossOrigin="anonymous"
+      crossOrigin={IS_FIREFOX ? undefined : "anonymous"}
       className={className}
       alt=""
       onError={handleError}
@@ -193,7 +194,7 @@ const EvmTxActions: FC<{
     window.close()
   }, [hrefBlockExplorer])
 
-  const { t } = useTranslation("sign")
+  const { t } = useTranslation("request")
 
   return (
     <div
@@ -293,7 +294,7 @@ const EvmTxActions: FC<{
 }
 
 const TransactionStatusLabel: FC<{ status: TransactionStatus }> = ({ status }) => {
-  const { t } = useTranslation("sign")
+  const { t } = useTranslation("request")
 
   switch (status) {
     case "error":
@@ -370,7 +371,7 @@ const TransactionRowEvm: FC<TransactionRowEvmProps> = ({
     return () => setIsMounted(false)
   }, [])
 
-  const { t } = useTranslation("sign")
+  const { t } = useTranslation("request")
 
   return (
     <div
@@ -490,7 +491,7 @@ const SubTxActions: FC<{
     window.close()
   }, [hrefBlockExplorer])
 
-  const { t } = useTranslation("sign")
+  const { t } = useTranslation("request")
 
   return (
     <div
@@ -585,7 +586,7 @@ const TransactionRowSubstrate: FC<TransactionRowSubProps> = ({
     return () => setIsMounted(false)
   }, [])
 
-  const { t } = useTranslation("sign")
+  const { t } = useTranslation("request")
 
   return (
     <div
@@ -733,7 +734,7 @@ const DrawerContent: FC<{ transactions: WalletTransaction[]; onClose?: () => voi
     window.close()
   }, [account?.address])
 
-  const { t } = useTranslation("sign")
+  const { t } = useTranslation("request")
 
   return (
     <>

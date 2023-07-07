@@ -7,7 +7,7 @@ import { Button, Checkbox } from "talisman-ui"
 import { useMigratePassword } from "./context"
 
 export const MigratePasswordError = () => {
-  const { t } = useTranslation("settings")
+  const { t } = useTranslation()
   const { statusMessage, onComplete } = useMigratePassword()
   const [useErrorTracking, setUseErrorTracking] = useSetting("useErrorTracking")
 

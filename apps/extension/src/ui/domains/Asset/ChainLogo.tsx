@@ -1,4 +1,4 @@
-import { UNKNOWN_NETWORK_URL } from "@core/constants"
+import { IS_FIREFOX, UNKNOWN_NETWORK_URL } from "@core/constants"
 import { ChainId, EvmNetworkId } from "@talismn/chaindata-provider"
 import { classNames } from "@talismn/util"
 import useChain from "@ui/hooks/useChain"
@@ -36,7 +36,7 @@ export const ChainLogoBase: FC<ChainLogoBaseProps> = ({ id, logo, className }) =
       src={src}
       className={imgClassName}
       alt=""
-      crossOrigin="anonymous"
+      crossOrigin={IS_FIREFOX ? undefined : "anonymous"}
       loading="lazy" // defers download, helps performance especially in chain lists
       onError={handleError}
     />

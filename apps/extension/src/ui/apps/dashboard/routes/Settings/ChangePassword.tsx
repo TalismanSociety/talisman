@@ -7,7 +7,7 @@ import { api } from "@ui/api"
 import Layout from "@ui/apps/dashboard/layout"
 import { MnemonicModal } from "@ui/domains/Settings/MnemonicModal"
 import useMnemonicBackup from "@ui/hooks/useMnemonicBackup"
-import { useCallback } from "react"
+import { useCallback, useEffect, useMemo } from "react"
 import { useForm } from "react-hook-form"
 import { useTranslation } from "react-i18next"
 import { useNavigate } from "react-router-dom"
@@ -21,27 +21,32 @@ type FormData = {
 }
 
 const ChangePassword = () => {
-  const { t } = useTranslation("settings")
+  const { t } = useTranslation("admin")
   const navigate = useNavigate()
   const { isNotConfirmed } = useMnemonicBackup()
   const { isOpen, open, close } = useOpenClose()
 
-  const schema = yup
-    .object({
-      currentPw: yup.string().required(""),
-      newPw: yup.string().required("").min(6, t("Password must be at least 6 characters long")),
-      newPwConfirm: yup
-        .string()
-        .required("")
-        .oneOf([yup.ref("newPw")], t("Passwords must match!")),
-    })
-    .required()
+  const schema = useMemo(
+    () =>
+      yup
+        .object({
+          currentPw: yup.string().required(""),
+          newPw: yup.string().required("").min(6, t("Password must be at least 6 characters long")),
+          newPwConfirm: yup
+            .string()
+            .required("")
+            .oneOf([yup.ref("newPw")], t("Passwords must match!")),
+        })
+        .required(),
+    [t]
+  )
 
   const {
     register,
     handleSubmit,
     formState: { errors, isValid, isSubmitting },
     setError,
+    setValue,
   } = useForm<FormData>({
     mode: "onChange",
     resolver: yupResolver(schema),
@@ -72,6 +77,14 @@ const ChangePassword = () => {
     },
     [navigate, setError, t]
   )
+
+  useEffect(() => {
+    return () => {
+      setValue("currentPw", "")
+      setValue("newPw", "")
+      setValue("newPwConfirm", "")
+    }
+  }, [setValue])
 
   return (
     <>

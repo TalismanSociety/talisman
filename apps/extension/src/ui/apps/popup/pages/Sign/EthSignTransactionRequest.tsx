@@ -1,8 +1,6 @@
 import { AccountJsonHardwareEthereum } from "@core/domains/accounts/types"
 import { EthPriorityOptionName } from "@core/domains/signing/types"
 import { AppPill } from "@talisman/components/AppPill"
-import Grid from "@talisman/components/Grid"
-import { SimpleButton } from "@talisman/components/SimpleButton"
 import { WithTooltip } from "@talisman/components/Tooltip"
 import { InfoIcon } from "@talisman/theme/icons"
 import { useQuery } from "@tanstack/react-query"
@@ -62,10 +60,6 @@ const SignContainer = styled(Container)`
     white-space: nowrap;
   }
 
-  ${SimpleButton} {
-    width: auto;
-  }
-
   .center {
     text-align: center;
   }
@@ -86,10 +80,6 @@ const SignContainer = styled(Container)`
     }
   }
 
-  ${Grid} {
-    margin-top: 1.6rem;
-  }
-
   .error {
     color: var(--color-status-error);
     max-width: 100%;
@@ -100,7 +90,7 @@ const SignContainer = styled(Container)`
 `
 
 const useEvmBalance = (address?: string, evmNetworkId?: string) => {
-  const { t } = useTranslation("sign")
+  const { t } = useTranslation("request")
   const provider = useEthereumProvider(evmNetworkId)
   return useQuery({
     queryKey: ["evm-balance", provider?.network?.chainId, address],
@@ -129,7 +119,7 @@ const FeeTooltip = ({
   maxFee?: string | bigint
   tokenId?: string
 }) => {
-  const { t } = useTranslation("sign")
+  const { t } = useTranslation("request")
   // cannot use useBalance because our db may not include testnet balances
   const token = useToken(tokenId)
   const { data: balance, error } = useEvmBalance(account, token?.evmNetwork?.id)
@@ -173,7 +163,7 @@ const FeeTooltip = ({
 }
 
 export const EthSignTransactionRequest = () => {
-  const { t } = useTranslation("sign")
+  const { t } = useTranslation("request")
   const {
     url,
     request,
@@ -246,7 +236,7 @@ export const EthSignTransactionRequest = () => {
           </div>
           <Suspense fallback={null}>
             {transaction && txDetails && network?.nativeToken ? (
-              <div className="gasInfo mt-8">
+              <div className="gasInfo my-8">
                 <div>
                   <div>
                     {t("Estimated Fee")}{" "}
@@ -292,7 +282,6 @@ export const EthSignTransactionRequest = () => {
               transaction ? (
                 <LedgerEthereum
                   manualSend
-                  className="mt-6"
                   method="transaction"
                   payload={transaction}
                   account={account as AccountJsonHardwareEthereum}
@@ -306,19 +295,19 @@ export const EthSignTransactionRequest = () => {
                 </Button>
               )
             ) : (
-              <Grid>
-                <SimpleButton disabled={processing} onClick={reject}>
+              <div className="grid w-full grid-cols-2 gap-12">
+                <Button disabled={processing} onClick={reject}>
                   {t("Cancel")}
-                </SimpleButton>
-                <SimpleButton
+                </Button>
+                <Button
                   disabled={!transaction || processing || isLoading || !isValid}
                   processing={processing}
                   primary
                   onClick={approve}
                 >
                   {t("Approve")}
-                </SimpleButton>
-              </Grid>
+                </Button>
+              </div>
             )}
           </Suspense>
         </Footer>

@@ -7,7 +7,6 @@ import { AccountExportPrivateKeyModalProvider } from "@ui/domains/Account/Accoun
 import { AccountRemoveModalProvider } from "@ui/domains/Account/AccountRemoveModal"
 import { AccountRenameModalProvider } from "@ui/domains/Account/AccountRenameModal"
 import { BuyTokensModalProvider } from "@ui/domains/Asset/Buy/BuyTokensModalContext"
-import { SendTokensModalProvider } from "@ui/domains/Asset/Send/SendTokensModalContext"
 import { CopyAddressModalProvider } from "@ui/domains/CopyAddress"
 import { SelectedAccountProvider } from "@ui/domains/Portfolio/SelectedAccountContext"
 import { useIsLoggedIn } from "@ui/hooks/useIsLoggedIn"
@@ -69,11 +68,12 @@ const DashboardInner = () => {
 
   const { t } = useTranslation()
 
-  return isLoggedIn === "UNKNOWN" ? (
-    <FullScreenLoader spin title={t("Loading")} />
-  ) : isLoggedIn === "FALSE" ? (
-    <FullScreenLoader title={t("Waiting")} subtitle={t("Please unlock the Talisman")} />
-  ) : (
+  if (isLoggedIn === "UNKNOWN") return null
+
+  if (isLoggedIn === "FALSE")
+    return <FullScreenLoader title={t("Waiting")} subtitle={t("Please unlock the Talisman")} />
+
+  return (
     // use an empty layout as fallback to prevent flickering
     <Suspense
       fallback={
@@ -142,11 +142,9 @@ const Dashboard = () => (
           <AccountExportModalProvider>
             <AccountExportPrivateKeyModalProvider>
               <CopyAddressModalProvider>
-                <SendTokensModalProvider>
-                  <BuyTokensModalProvider>
-                    <DashboardInner />
-                  </BuyTokensModalProvider>
-                </SendTokensModalProvider>
+                <BuyTokensModalProvider>
+                  <DashboardInner />
+                </BuyTokensModalProvider>
               </CopyAddressModalProvider>
             </AccountExportPrivateKeyModalProvider>
           </AccountExportModalProvider>

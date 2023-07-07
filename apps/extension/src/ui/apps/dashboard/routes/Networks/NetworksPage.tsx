@@ -16,7 +16,7 @@ import { useNavigate } from "react-router-dom"
 import { ListButton, PillButton } from "talisman-ui"
 
 const TestnetPill = () => {
-  const { t } = useTranslation("settings")
+  const { t } = useTranslation("admin")
   return (
     <div className="bg-alert-warn/10 text-alert-warn inline-block rounded p-4 text-xs font-light">
       {t("Testnet")}
@@ -25,7 +25,7 @@ const TestnetPill = () => {
 }
 
 const CustomPill = () => {
-  const { t } = useTranslation("settings")
+  const { t } = useTranslation("admin")
   return (
     <div className="bg-primary/10 text-primary inline-block rounded p-4 text-xs font-light">
       {t("Custom")}
@@ -79,7 +79,7 @@ const NetworksList = () => {
 }
 
 export const NetworksPage = () => {
-  const { t } = useTranslation("settings")
+  const { t } = useTranslation("admin")
   useAnalyticsPageView(ANALYTICS_PAGE)
   const navigate = useNavigate()
 

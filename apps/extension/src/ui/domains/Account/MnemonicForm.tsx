@@ -1,7 +1,8 @@
 import { classNames } from "@talismn/util"
 import { api } from "@ui/api"
 import useMnemonicBackup from "@ui/hooks/useMnemonicBackup"
-import { useEffect, useState } from "react"
+import { useSensitiveState } from "@ui/hooks/useSensitiveState"
+import { useEffect } from "react"
 import { Trans, useTranslation } from "react-i18next"
 import styled from "styled-components"
 import { Toggle } from "talisman-ui"
@@ -41,13 +42,13 @@ type MnemonicFormProps = {
 const MnemonicForm = ({ className }: MnemonicFormProps) => {
   const { t } = useTranslation()
   const { isConfirmed, toggleConfirmed } = useMnemonicBackup()
-  const [mnemonic, setMnemonic] = useState<string>()
+  const [mnemonic, setMnemonic] = useSensitiveState<string>()
   const { password } = usePasswordUnlock()
 
   useEffect(() => {
     if (!password) return
-    api.mnemonicUnlock(password).then((result) => setMnemonic(result))
-  }, [password])
+    api.mnemonicUnlock(password).then(setMnemonic)
+  }, [password, setMnemonic])
 
   return (
     <div className={classNames("flex grow flex-col", className)}>
@@ -55,7 +56,7 @@ const MnemonicForm = ({ className }: MnemonicFormProps) => {
         <>
           <Mnemonic mnemonic={mnemonic} />
           <div className="grow"></div>
-          <div className="flex w-full items-center justify-end">
+          <div className="flex w-full items-center justify-end gap-2">
             <div className="text-body-secondary text-sm">{t("Don't remind me again")}</div>
             <Toggle checked={isConfirmed} onChange={(e) => toggleConfirmed(e.target.checked)} />
           </div>

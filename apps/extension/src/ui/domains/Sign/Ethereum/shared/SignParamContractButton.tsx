@@ -1,9 +1,10 @@
 import { CustomEvmNetwork, EvmNetwork } from "@core/domains/ethereum/types"
-import { WithTooltip } from "@talisman/components/Tooltip"
+import { isEthereumAddress } from "@talismn/util"
 import { Address } from "@ui/domains/Account/Address"
 import { AssetLogo } from "@ui/domains/Asset/AssetLogo"
 import useToken from "@ui/hooks/useToken"
-import { FC } from "react"
+import { FC, useMemo } from "react"
+import { Tooltip, TooltipContent, TooltipTrigger } from "talisman-ui"
 
 import { SignParamButton } from "./SignParamButton"
 
@@ -21,6 +22,7 @@ export const SignParamNetworkAddressButton: FC<SignParamNetworkAddressButtonProp
   className,
 }) => {
   const nativeToken = useToken(network.nativeToken?.id)
+  const isInvalidAddress = useMemo(() => !isEthereumAddress(address), [address])
 
   return (
     <SignParamButton
@@ -34,14 +36,15 @@ export const SignParamNetworkAddressButton: FC<SignParamNetworkAddressButtonProp
       }
       withIcon
       className={className}
+      contentClassName={isInvalidAddress ? "text-alert-warn" : undefined}
     >
       {name ? (
-        <WithTooltip
-          tooltip={address}
-          className="inline-block max-w-[16rem] overflow-hidden text-ellipsis whitespace-nowrap"
-        >
-          {name}
-        </WithTooltip>
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <span>{name}</span>
+          </TooltipTrigger>
+          <TooltipContent>{address}</TooltipContent>
+        </Tooltip>
       ) : (
         <Address startCharCount={6} endCharCount={4} address={address} />
       )}

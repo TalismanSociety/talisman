@@ -167,7 +167,7 @@ export const NavigationDrawer: FC = () => {
 
   const { isNotConfirmed } = useMnemonicBackup()
 
-  const { t } = useTranslation("navigation")
+  const { t } = useTranslation()
 
   return (
     <Drawer anchor="bottom" open={isOpen} onClose={close} fullScreen>

@@ -24,7 +24,7 @@ const AccountAddTypePicker = () => {
   const [spiritClanFeatures] = useSetting("spiritClanFeatures")
   const paritySignerEnabled =
     useIsFeatureEnabled("PARITY_SIGNER") || (hasSpiritKey && spiritClanFeatures)
-  const { t } = useTranslation("account-add")
+  const { t } = useTranslation("admin")
 
   return (
     <Layout centered>

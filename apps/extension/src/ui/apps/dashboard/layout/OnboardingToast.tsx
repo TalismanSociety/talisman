@@ -1,3 +1,4 @@
+import { IS_FIREFOX } from "@core/constants"
 import { notifyCustom } from "@talisman/components/Notifications"
 import { ExtensionButtonIcon, PinIcon } from "@talisman/theme/icons"
 import { useEffect, useMemo } from "react"
@@ -11,7 +12,6 @@ const CACHE = {
 
 export const OnboardingToast = () => {
   const [searchParams, setSearchParams] = useSearchParams()
-  const isFirefox = navigator.userAgent.toLowerCase().includes("firefox")
   const { t } = useTranslation()
 
   // OnboardNotification can only be a ReactNode, not a ReactComponent
@@ -41,7 +41,7 @@ export const OnboardingToast = () => {
   )
 
   useEffect(() => {
-    if (!CACHE.notified && searchParams.get("onboarded") !== null && !isFirefox) {
+    if (!CACHE.notified && searchParams.get("onboarded") !== null && !IS_FIREFOX) {
       CACHE.notified = true
       setSearchParams({})
 
@@ -49,7 +49,7 @@ export const OnboardingToast = () => {
         autoClose: false,
       })
     }
-  }, [searchParams, setSearchParams, isFirefox, OnboardNotification])
+  }, [searchParams, setSearchParams, OnboardNotification])
 
   return null
 }

@@ -1,4 +1,4 @@
-import { UNKNOWN_TOKEN_URL } from "@core/constants"
+import { IS_FIREFOX, UNKNOWN_TOKEN_URL } from "@core/constants"
 import { WatchAssetRequestIdOnly } from "@core/domains/ethereum/types"
 import { AppPill } from "@talisman/components/AppPill"
 import StyledGrid from "@talisman/components/Grid"
@@ -142,7 +142,7 @@ export const AddCustomErc20Token = () => {
             className="inline-block"
             src={request.token.image ?? UNKNOWN_TOKEN_URL}
             alt={request.token.symbol}
-            crossOrigin="anonymous"
+            crossOrigin={IS_FIREFOX ? undefined : "anonymous"}
           />
         </div>
         <h1>{t("New Token")}</h1>
@@ -152,7 +152,7 @@ export const AddCustomErc20Token = () => {
           <strong>
             <TokenLogoSmall
               src={request.token.image ?? UNKNOWN_TOKEN_URL}
-              crossOrigin="anonymous"
+              crossOrigin={IS_FIREFOX ? undefined : "anonymous"}
               alt=""
             />
             {request.token.symbol}

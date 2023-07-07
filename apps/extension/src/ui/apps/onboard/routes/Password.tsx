@@ -53,6 +53,7 @@ export const PasswordPage = () => {
     handleSubmit,
     watch,
     trigger,
+    setValue,
     formState: { errors, isValid, isSubmitting },
   } = useForm<FormData>({
     mode: "all",
@@ -98,6 +99,13 @@ export const PasswordPage = () => {
           ),
         ]
   }, [data, t])
+
+  useEffect(() => {
+    return () => {
+      setValue("password", "")
+      setValue("passwordConfirm", "")
+    }
+  }, [setValue])
 
   return (
     <Layout withBack analytics={ANALYTICS_PAGE}>

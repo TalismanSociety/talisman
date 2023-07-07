@@ -14,6 +14,7 @@ import {
   PaperPlaneIcon,
   PlusIcon,
   SettingsIcon,
+  StarIcon,
   UserIcon,
   ZapIcon,
 } from "@talisman/theme/icons"
@@ -334,10 +335,10 @@ export const SideBar = () => {
     return false
   }, [account?.address, genericEvent])
 
-  // const handleCrowdloansClick = useCallback(() => {
-  //   genericEvent("open web app crowdloans", { from: "sidebar", target: "crowdloans" })
-  //   window.open("https://app.talisman.xyz/crowdloans", "_blank")
-  // }, [genericEvent])
+  const handleCrowdloansClick = useCallback(() => {
+    genericEvent("open web app crowdloans", { from: "sidebar", target: "crowdloans" })
+    window.open("https://app.talisman.xyz/crowdloans", "_blank")
+  }, [genericEvent])
 
   const handleSettingsClick = useCallback(() => {
     genericEvent("goto settings", { from: "sidebar" })
@@ -355,7 +356,7 @@ export const SideBar = () => {
     navigate("/settings?showBackupModal")
   }, [genericEvent, navigate])
 
-  const { t } = useTranslation("navigation")
+  const { t } = useTranslation()
 
   return (
     <Container>
@@ -438,7 +439,7 @@ export const SideBar = () => {
           >
             {t("NFTs")} <ExtLinkIcon />
           </NavItemButton>
-          {/* <NavItemButton
+          <NavItemButton
             onClick={handleCrowdloansClick}
             icon={
               <ResponsiveTooltip tooltip="Crowdloans">
@@ -447,7 +448,7 @@ export const SideBar = () => {
             }
           >
             {t("Crowdloans")} <ExtLinkIcon />
-          </NavItemButton> */}
+          </NavItemButton>
           {showTxHistory && (
             <NavItemButton
               onClick={handleTxHistoryClick}

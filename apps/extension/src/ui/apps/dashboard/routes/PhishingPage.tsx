@@ -10,7 +10,7 @@ type PhishingPageProps = {
 }
 
 export const PhishingPage: FC<PhishingPageProps> = ({ url }) => {
-  const { t } = useTranslation("phishing")
+  const { t } = useTranslation()
   const allowSite = useCallback(async () => {
     await api.allowPhishingSite(url)
     window.location.replace(url)

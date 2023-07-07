@@ -15,7 +15,7 @@ type FormData = {
 }
 
 export const NewPasswordForm = () => {
-  const { t } = useTranslation("settings")
+  const { t } = useTranslation()
   const { setNewPassword } = useMigratePassword()
 
   const schema = useMemo(

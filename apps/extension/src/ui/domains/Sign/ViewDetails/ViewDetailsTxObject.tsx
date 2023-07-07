@@ -13,7 +13,7 @@ type ObjectLabelProps = {
 }
 
 const ObjectLabel: FC<ObjectLabelProps> = ({ label, displayAsJson, setDisplayAsJson }) => {
-  const { t } = useTranslation("sign")
+  const { t } = useTranslation("request")
   return (
     <div>
       {t("{{label}} as :", { label })}{" "}

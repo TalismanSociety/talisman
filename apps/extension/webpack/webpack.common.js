@@ -4,6 +4,7 @@ require("dotenv").config()
 
 const webpack = require("webpack")
 const path = require("path")
+const HtmlWebpackPlugin = require("html-webpack-plugin")
 const CaseSensitivePathsPlugin = require("case-sensitive-paths-webpack-plugin")
 const ForkTsCheckerWebpackPlugin = require("fork-ts-checker-webpack-plugin")
 const ForkTsCheckerNotifierWebpackPlugin = require("fork-ts-checker-notifier-webpack-plugin")
@@ -14,23 +15,25 @@ const { srcDir, coreDir, distDir, getRelease, getGitShortHash } = require("./uti
 
 const config = (env) => ({
   entry: {
-    backend: ["@substrate/txwrapper-core", "@talismn/chaindata-provider-extension"],
-    frontEnd: ["lottie-react", "@substrate/txwrapper-core"],
-    appFrontEnd: [
-      "lottie-react",
-      "@substrate/txwrapper-core",
-      "@talismn/chaindata-provider-extension",
-    ],
-    popup: { import: path.join(srcDir, "index.popup.tsx"), dependOn: "appFrontEnd" },
-    onboarding: { import: path.join(srcDir, "index.onboarding.tsx"), dependOn: "frontEnd" },
-    dashboard: { import: path.join(srcDir, "index.dashboard.tsx"), dependOn: "appFrontEnd" },
-    background: { import: path.join(coreDir, "background.ts"), dependOn: "backend" },
-    content_script: path.join(coreDir, "content_script.ts"),
-    page: path.join(coreDir, "page.ts"),
+    // Wallet ui
+    "popup": { import: path.join(srcDir, "index.popup.tsx") },
+    "onboarding": { import: path.join(srcDir, "index.onboarding.tsx") },
+    "dashboard": { import: path.join(srcDir, "index.dashboard.tsx") },
+
+    // Wallet service workers
+    "background": { import: path.join(coreDir, "background.ts"), dependOn: "vendor-background" },
+
+    // Background.js manually-specified code-splits (to keep background.js under 4MB)
+    "vendor-background": ["@substrate/txwrapper-core", "@talismn/chaindata-provider-extension"],
+
+    // Wallet injected scripts
+    "content_script": path.join(coreDir, "content_script.ts"),
+    "page": path.join(coreDir, "page.ts"),
   },
   output: {
     path: distDir,
     filename: "[name].js",
+    chunkFilename: "[name].chunk.js",
     assetModuleFilename: "assets/[hash][ext]", // removes query string if there are any in our import strings (we use ?url for svgs)
   },
 
@@ -135,6 +138,21 @@ const config = (env) => ({
       "process.env.RELEASE": JSON.stringify(getRelease(env)),
       "process.env.VERSION": JSON.stringify(process.env.npm_package_version),
     }),
+    ...[
+      { title: "Talisman", entrypoint: "popup" },
+      { title: "Talisman Wallet", entrypoint: "dashboard" },
+      { title: "Unlock the Talisman", entrypoint: "onboarding" },
+    ].map(
+      ({ title, entrypoint }) =>
+        new HtmlWebpackPlugin({
+          template: `src/template.${entrypoint}.html`,
+          filename: `${entrypoint}.html`,
+          chunks: [entrypoint],
+          title,
+          inject: "body",
+          minify: false,
+        })
+    ),
     new CaseSensitivePathsPlugin(),
     new ForkTsCheckerWebpackPlugin(),
     new ForkTsCheckerNotifierWebpackPlugin({ title: "TypeScript", excludeWarnings: false }),

@@ -3,17 +3,25 @@ import { EthSignRequest } from "@core/domains/signing/types"
 import { log } from "@core/log"
 import { isHexString, stripHexPrefix } from "@ethereumjs/util"
 import * as Sentry from "@sentry/browser"
-import { classNames } from "@talismn/util"
+import { classNames, isEthereumAddress } from "@talismn/util"
 import { Message } from "@ui/domains/Sign/Message"
 import { useEvmNetwork } from "@ui/hooks/useEvmNetwork"
 import { dump as convertToYaml } from "js-yaml"
 import { FC, useMemo } from "react"
 import { useTranslation } from "react-i18next"
 
+import { SignAlertMessage } from "../SignAlertMessage"
 import { SignParamAccountButton, SignParamNetworkAddressButton } from "./shared"
 
 const useEthSignMessage = (request: EthSignRequest) => {
-  const { isTypedData, typedMessage, verifyingAddress, chainId, ethChainId } = useMemo(() => {
+  const {
+    isTypedData,
+    typedMessage,
+    verifyingAddress,
+    chainId,
+    ethChainId,
+    isInvalidVerifyingContract,
+  } = useMemo(() => {
     try {
       const isTypedData = Boolean(request?.method?.startsWith("eth_signTypedData"))
       const typedMessage = isTypedData ? JSON.parse(request.request) : undefined
@@ -22,7 +30,15 @@ const useEthSignMessage = (request: EthSignRequest) => {
         ? parseInt(typedMessage.domain?.chainId)
         : undefined
       const ethChainId = request.ethChainId
-      return { isTypedData, typedMessage, verifyingAddress, chainId, ethChainId }
+      const isInvalidVerifyingContract = verifyingAddress && !isEthereumAddress(verifyingAddress)
+      return {
+        isTypedData,
+        typedMessage,
+        verifyingAddress,
+        chainId,
+        ethChainId,
+        isInvalidVerifyingContract,
+      }
     } catch (err) {
       log.error(err)
       return { isTypedData: false }
@@ -52,7 +68,7 @@ const useEthSignMessage = (request: EthSignRequest) => {
     return request.request
   }, [request.request, typedMessage])
 
-  return { isTypedData, text, verifyingAddress, chainId, ethChainId }
+  return { isTypedData, text, verifyingAddress, chainId, ethChainId, isInvalidVerifyingContract }
 }
 
 export type EthSignBodyMessageProps = {
@@ -61,8 +77,9 @@ export type EthSignBodyMessageProps = {
 }
 
 export const EthSignBodyMessage: FC<EthSignBodyMessageProps> = ({ account, request }) => {
-  const { t } = useTranslation("sign")
-  const { isTypedData, text, verifyingAddress, ethChainId } = useEthSignMessage(request)
+  const { t } = useTranslation("request")
+  const { isTypedData, text, verifyingAddress, ethChainId, isInvalidVerifyingContract } =
+    useEthSignMessage(request)
   const evmNetwork = useEvmNetwork(ethChainId)
 
   return (
@@ -87,6 +104,11 @@ export const EthSignBodyMessage: FC<EthSignBodyMessageProps> = ({ account, reque
         className={classNames("w-full grow", isTypedData && "whitespace-pre text-xs")}
         text={text}
       />
+      {isInvalidVerifyingContract && (
+        <SignAlertMessage type="error" className="mt-8">
+          {t("Verifying contract's address is invalid.")}
+        </SignAlertMessage>
+      )}
     </div>
   )
 }

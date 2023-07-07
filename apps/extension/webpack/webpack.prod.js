@@ -84,6 +84,41 @@ const config = (env) => {
     optimization: {
       minimize: true,
       minimizer: [new TerserPlugin({ terserOptions: { compress: true } })],
+      splitChunks: {
+        chunks: (chunk) =>
+          !["background", "vendor-background", "content_script", "page"].includes(chunk.name),
+        minSize: 0,
+        maxSize: 4 * 1024 * 1024,
+        maxInitialRequests: Infinity,
+        cacheGroups: {
+          "vendor-react": {
+            test: /[\\/]node_modules[\\/](react|react-dom|lottie-react|lottie-web)[\\/]/,
+            name: "vendor-react",
+            priority: -1,
+            reuseExistingChunk: true,
+          },
+          "vendor-substrate": {
+            test: /[\\/]node_modules[\\/](@substrate)[\\/]/,
+            name: "vendor-substrate",
+            priority: -1,
+            reuseExistingChunk: true,
+          },
+          "vendor-talisman": {
+            test: /([\\/]node_modules[\\/](@talismn)[\\/])|(packages[\\/](chaindata-provider-extension[\\/]dist))/,
+            name: "vendor-talisman",
+            priority: -1,
+            reuseExistingChunk: true,
+          },
+          "vendor": {
+            test: /[\\/]node_modules[\\/]/,
+            name: "vendor",
+            priority: -2,
+            reuseExistingChunk: true,
+          },
+          "defaultVendors": false,
+          "default": false,
+        },
+      },
     },
   })
 }

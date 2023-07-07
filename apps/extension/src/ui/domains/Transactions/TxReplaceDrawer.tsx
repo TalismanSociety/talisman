@@ -44,7 +44,7 @@ export const EvmEstimatedFeeTooltip: FC<{
   feeTokenId?: TokenId
   txDetails?: EthTransactionDetails
 }> = ({ account, feeTokenId, txDetails }) => {
-  const { t } = useTranslation("sign")
+  const { t } = useTranslation("request")
   const balance = useBalance(account, feeTokenId as string)
 
   if (!feeTokenId || !txDetails) return null
@@ -105,7 +105,7 @@ const EvmDrawerContent: FC<{
   type: TxReplaceType
   onClose?: (newTxHash?: HexString) => void
 }> = ({ tx, type, onClose }) => {
-  const { t } = useTranslation("sign")
+  const { t } = useTranslation("request")
   const analyticsProps = useMemo(
     () => ({
       evmNetworkId: tx.evmNetworkId,

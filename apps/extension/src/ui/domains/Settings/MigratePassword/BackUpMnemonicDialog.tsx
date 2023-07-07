@@ -8,7 +8,7 @@ import { Button } from "talisman-ui"
 import { useMigratePassword } from "./context"
 
 const ShowMnemonic = () => {
-  const { t } = useTranslation("settings")
+  const { t } = useTranslation()
   const [hasHovered, setHasHovered] = useState(false)
   const { setMnemonicBackupConfirmed, mnemonic } = useMigratePassword()
 
@@ -43,7 +43,7 @@ const ShowMnemonic = () => {
 }
 
 export const BackUpMnemonicDialog = () => {
-  const { t } = useTranslation("settings")
+  const { t } = useTranslation()
 
   const [showMnemonic, setShowMnemonic] = useState<boolean>(false)
   const { setMnemonicBackupConfirmed } = useMigratePassword()

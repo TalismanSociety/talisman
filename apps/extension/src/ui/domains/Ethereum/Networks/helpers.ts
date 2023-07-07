@@ -1,5 +1,4 @@
 import { EvmNetworkId } from "@talismn/chaindata-provider"
-import { getRpcUrlWithApiKey } from "@ui/util/getRpcUrlWithApiKey"
 import { ethers } from "ethers"
 
 // because of validation the same query is done 3 times minimum per url, make all await same promise
@@ -13,7 +12,7 @@ export const getRpcChainId = (rpcUrl: string) => {
     rpcChainIdCache.set(
       rpcUrl,
       new Promise((resolve) => {
-        const provider = new ethers.providers.StaticJsonRpcProvider(getRpcUrlWithApiKey(rpcUrl))
+        const provider = new ethers.providers.StaticJsonRpcProvider(rpcUrl)
         provider
           .send("eth_chainId", [])
           .then((hexChainId) => {

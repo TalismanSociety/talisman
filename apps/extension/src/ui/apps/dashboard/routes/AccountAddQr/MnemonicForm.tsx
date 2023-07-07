@@ -49,7 +49,7 @@ const schema = yup
   .required()
 
 export const MnemonicForm = ({ onSubmit, onCancel }: FormProps) => {
-  const { t } = useTranslation("account-add")
+  const { t } = useTranslation("admin")
   const {
     register,
     handleSubmit,

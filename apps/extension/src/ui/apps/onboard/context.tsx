@@ -62,6 +62,12 @@ const useAppOnboardProvider = ({ isResettingWallet = false }: { isResettingWalle
       })
   }, [data.allowTracking])
 
+  useEffect(() => {
+    return () => {
+      setData(DEFAULT_DATA)
+    }
+  }, [])
+
   return {
     onboard,
     reset,

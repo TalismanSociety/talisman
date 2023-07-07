@@ -33,7 +33,7 @@ import { getRpcChainId } from "./helpers"
 import { NetworkRpcsListField } from "./NetworkRpcsListField"
 
 const ResetNetworkButton: FC<{ network: EvmNetwork | CustomEvmNetwork }> = ({ network }) => {
-  const { t } = useTranslation("settings")
+  const { t } = useTranslation("admin")
   const navigate = useNavigate()
   const { isOpen, open, close } = useOpenClose()
 
@@ -80,7 +80,7 @@ const ResetNetworkButton: FC<{ network: EvmNetwork | CustomEvmNetwork }> = ({ ne
 }
 
 const RemoveNetworkButton: FC<{ network: EvmNetwork | CustomEvmNetwork }> = ({ network }) => {
-  const { t } = useTranslation("settings")
+  const { t } = useTranslation("admin")
   const navigate = useNavigate()
   const { isOpen, open, close } = useOpenClose()
 
@@ -191,7 +191,7 @@ const useEditMode = (evmNetworkId?: EvmNetworkId) => {
 }
 
 export const NetworkForm: FC<NetworkFormProps> = ({ evmNetworkId, onSubmitted }) => {
-  const { t } = useTranslation("settings")
+  const { t } = useTranslation("admin")
   const schema = useMemo(() => getNetworkFormSchema(evmNetworkId), [evmNetworkId])
 
   const qIsBuiltInEvmNetwork = useIsBuiltInEvmNetwork(evmNetworkId)

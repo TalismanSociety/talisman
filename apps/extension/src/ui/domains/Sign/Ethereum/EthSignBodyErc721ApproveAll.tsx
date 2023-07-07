@@ -9,7 +9,7 @@ import { SignParamAccountButton, SignParamNetworkAddressButton } from "./shared"
 import { useEthSignKnownTransactionRequest } from "./shared/useEthSignKnownTransactionRequest"
 
 export const EthSignBodyErc721ApproveAll: FC = () => {
-  const { t } = useTranslation("sign")
+  const { t } = useTranslation("request")
   const { account, network, transactionInfo } = useEthSignKnownTransactionRequest()
 
   const { operator, approve } = useMemo(() => {

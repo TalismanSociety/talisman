@@ -77,6 +77,7 @@ const ExportAccountForm = ({ onSuccess }: { onSuccess?: () => void }) => {
     formState: { errors, isValid, isSubmitting },
     watch,
     setError,
+    setValue,
   } = useForm<FormData>({
     mode: "onChange",
     resolver: yupResolver(schema),
@@ -98,6 +99,13 @@ const ExportAccountForm = ({ onSuccess }: { onSuccess?: () => void }) => {
     },
     [exportAccount, setError, onSuccess, password]
   )
+
+  useEffect(() => {
+    return () => {
+      setValue("newPw", "")
+      setValue("newPwConfirm", "")
+    }
+  }, [setValue])
 
   if (!canExportAccount || !password) return null
   return (

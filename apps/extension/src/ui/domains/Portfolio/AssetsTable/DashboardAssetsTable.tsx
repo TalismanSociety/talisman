@@ -106,7 +106,7 @@ type AssetRowProps = {
 }
 
 const AssetRow = ({ balances }: AssetRowProps) => {
-  const { t } = useTranslation("portfolio")
+  const { t } = useTranslation()
   const networkIds = usePortfolioNetworkIds(balances)
   const { genericEvent } = useAnalytics()
 
@@ -251,7 +251,7 @@ const getSkeletonOpacity = (index: number) => {
 }
 
 export const DashboardAssetsTable = ({ balances }: AssetsTableProps) => {
-  const { t } = useTranslation("portfolio")
+  const { t } = useTranslation()
   // group by token (symbol)
   const { symbolBalances, skeletons } = usePortfolioSymbolBalances(balances)
 

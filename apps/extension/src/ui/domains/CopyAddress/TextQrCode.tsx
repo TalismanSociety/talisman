@@ -21,7 +21,7 @@ export const TextQrCode = ({
 }) => {
   const [qrCode, setQrCode] = useState<string>()
   const [error, setError] = useState<Error>()
-  const { t } = useTranslation("copy-address")
+  const { t } = useTranslation()
 
   useEffect(() => {
     if (!data) return

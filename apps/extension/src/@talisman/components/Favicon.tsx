@@ -1,4 +1,6 @@
+import { IS_FIREFOX, UNKNOWN_NETWORK_URL } from "@core/constants"
 import { useFaviconUrl } from "@ui/hooks/useFaviconUrl"
+import { useCallback, useEffect, useState } from "react"
 import styled from "styled-components"
 
 interface IProps {
@@ -10,11 +12,26 @@ interface IProps {
 
 const Favicon = ({ url, className }: IProps) => {
   const iconUrl = useFaviconUrl(url)
+  const [src, setSrc] = useState(() => iconUrl)
+
+  useEffect(() => {
+    setSrc(iconUrl)
+  }, [iconUrl])
+
+  // fallback to the globe icon if image can't be loaded
+  const handleError = useCallback(() => setSrc(UNKNOWN_NETWORK_URL), [])
 
   return (
     <span className={`favicon ${className}`}>
       {!!iconUrl && (
-        <img loading="lazy" src={iconUrl} crossOrigin="anonymous" alt={`favicon ${url}`} />
+        <img
+          loading="lazy"
+          src={src}
+          alt=""
+          // required for chrome to work around the manifest rule, but breaks firefox as it enforces CORS
+          crossOrigin={IS_FIREFOX ? undefined : "anonymous"}
+          onError={handleError}
+        />
       )}
     </span>
   )

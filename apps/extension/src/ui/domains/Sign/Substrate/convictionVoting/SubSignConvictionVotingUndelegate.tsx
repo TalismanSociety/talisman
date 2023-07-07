@@ -8,7 +8,7 @@ import { usePolkadotSigningRequest } from "../../SignRequestContext"
 import { SignViewVotingUndelegate } from "../../Views/convictionVoting/SignViewVotingUndelegate"
 
 export const SubSignConvictionVotingUndelegate = () => {
-  const { t } = useTranslation("sign")
+  const { t } = useTranslation("request")
   const { chain, payload } = usePolkadotSigningRequest()
   const { data: extrinsic } = useExtrinsic(payload)
 

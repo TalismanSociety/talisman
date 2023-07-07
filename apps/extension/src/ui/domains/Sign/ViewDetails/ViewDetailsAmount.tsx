@@ -13,7 +13,7 @@ type ViewDetailsAmountProps = ViewDetailsFieldProps & {
 }
 
 export const ViewDetailsAmount: FC<ViewDetailsAmountProps> = ({ amount, token, ...fieldProps }) => {
-  const { t } = useTranslation("sign")
+  const { t } = useTranslation("request")
   return (
     <ViewDetailsField {...fieldProps}>
       {amount?.tokens
