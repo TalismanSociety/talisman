@@ -34,7 +34,6 @@ if (!process.env.POSTHOG_AUTH_TOKEN) {
     LINK_TX_HISTORY: true,
     LINK_STAKING: true,
     PARITY_SIGNER: true,
-    SEND_FUNDS_V2: true,
     BANNER_NOM_POOL_STAKING: true,
     I18N: true,
     USE_ONFINALITY_API_KEY_SUBSTRATE: false,
