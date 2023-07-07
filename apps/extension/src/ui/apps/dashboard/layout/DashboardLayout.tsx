@@ -6,7 +6,6 @@ import { AccountExportPrivateKeyModal } from "@ui/domains/Account/AccountExportP
 import { AccountRemoveModal } from "@ui/domains/Account/AccountRemoveModal"
 import { AccountRenameModal } from "@ui/domains/Account/AccountRenameModal"
 import { BuyTokensModal } from "@ui/domains/Asset/Buy/BuyTokensModal"
-import { SendTokensModal } from "@ui/domains/Asset/Send/SendTokensModal"
 import { CopyAddressModal } from "@ui/domains/CopyAddress"
 import { FC, Suspense, lazy, useEffect, useRef } from "react"
 import { useLocation } from "react-router-dom"
@@ -68,7 +67,6 @@ export const DashboardLayout: FC<LayoutProps> = ({
           <DashboardNotifications />
         </Suspense>
       </section>
-      <SendTokensModal />
       <BuyTokensModal />
       <AccountRenameModal />
       <AccountExportModal />

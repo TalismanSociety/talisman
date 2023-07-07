@@ -2,7 +2,8 @@ import { yupResolver } from "@hookform/resolvers/yup"
 import { KeyIcon } from "@talisman/theme/icons"
 import { provideContext } from "@talisman/util/provideContext"
 import { api } from "@ui/api"
-import { ReactNode, useCallback, useState } from "react"
+import { useSensitiveState } from "@ui/hooks/useSensitiveState"
+import { ReactNode, useCallback, useEffect } from "react"
 import { useForm } from "react-hook-form"
 import { useTranslation } from "react-i18next"
 import { Button, FormFieldContainer, FormFieldInputText } from "talisman-ui"
@@ -31,7 +32,7 @@ type PasswordUnlockContext = {
 }
 
 function usePasswordUnlockContext(): PasswordUnlockContext {
-  const [password, setPassword] = useState<string>()
+  const [password, setPassword] = useSensitiveState<string>()
 
   const checkPassword = useCallback(
     async (password: string) => {
@@ -56,6 +57,8 @@ const BasePasswordUnlock = ({ className, children, buttonText, title }: Password
     register,
     handleSubmit,
     setError,
+    setValue,
+    setFocus,
     formState: { errors, isValid, isSubmitting },
   } = useForm<FormData>({
     mode: "onChange",
@@ -77,6 +80,16 @@ const BasePasswordUnlock = ({ className, children, buttonText, title }: Password
     [checkPassword, setError]
   )
 
+  useEffect(() => {
+    if (!password) setFocus("password")
+  }, [password, setFocus])
+
+  useEffect(() => {
+    return () => {
+      setValue("password", "")
+    }
+  }, [setValue])
+
   return password ? (
     <div className={className}>{children}</div>
   ) : (
@@ -92,8 +105,6 @@ const BasePasswordUnlock = ({ className, children, buttonText, title }: Password
               placeholder={t("Enter password")}
               spellCheck={false}
               data-lpignore
-              // eslint-disable-next-line jsx-a11y/no-autofocus
-              autoFocus
             />
           </FormFieldContainer>
         </div>

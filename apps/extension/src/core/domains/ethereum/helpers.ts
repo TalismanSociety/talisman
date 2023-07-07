@@ -237,14 +237,16 @@ export const prepareTransaction = (
   return result
 }
 
+const testNoScriptTag = (text?: string) => !text?.toLowerCase().includes("<script")
+
 const schemaAddEthereumRequest = yup.object().shape({
   chainId: yup.string().required(),
-  chainName: yup.string().required(),
+  chainName: yup.string().required().max(100).test("noScriptTag", testNoScriptTag),
   nativeCurrency: yup
     .object()
     .shape({
-      name: yup.string().required(),
-      symbol: yup.string().min(2).max(6).required(),
+      name: yup.string().required().max(50).test("noScriptTag", testNoScriptTag),
+      symbol: yup.string().required().min(2).max(11).test("noScriptTag", testNoScriptTag),
       decimals: yup.number().required().integer(),
     })
     .required(),
@@ -281,8 +283,8 @@ const schemaWatchAssetRequest = yup.object().shape({
   options: yup
     .object()
     .shape({
-      address: yup.string().required(),
-      symbol: yup.string().min(2).max(11),
+      address: yup.string().required().test("ethAddress", isEthereumAddress),
+      symbol: yup.string().min(2).max(11).test("noScriptTag", testNoScriptTag),
       decimals: yup.number(),
       // ignore image if it doesn't pass security checks
       image: yup.string().transform((value) => (isSafeImageUrl(value) ? value : undefined)),

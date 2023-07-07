@@ -6,7 +6,7 @@ import { InfoIcon } from "@talisman/theme/icons"
 import { api } from "@ui/api"
 import { MnemonicModal } from "@ui/domains/Settings/MnemonicModal"
 import useMnemonicBackup from "@ui/hooks/useMnemonicBackup"
-import { useCallback } from "react"
+import { useCallback, useEffect, useMemo } from "react"
 import { useForm } from "react-hook-form"
 import { useTranslation } from "react-i18next"
 import { useNavigate } from "react-router-dom"
@@ -27,22 +27,27 @@ export const ChangePasswordPage = () => {
   const { isNotConfirmed } = useMnemonicBackup()
   const { isOpen, open, close } = useOpenClose()
 
-  const schema = yup
-    .object({
-      currentPw: yup.string().required(""),
-      newPw: yup.string().required("").min(6, t("Password must be at least 6 characters long")),
-      newPwConfirm: yup
-        .string()
-        .required("")
-        .oneOf([yup.ref("newPw")], t("Passwords must match!")),
-    })
-    .required()
+  const schema = useMemo(
+    () =>
+      yup
+        .object({
+          currentPw: yup.string().required(""),
+          newPw: yup.string().required("").min(6, t("Password must be at least 6 characters long")),
+          newPwConfirm: yup
+            .string()
+            .required("")
+            .oneOf([yup.ref("newPw")], t("Passwords must match!")),
+        })
+        .required(),
+    [t]
+  )
 
   const {
     register,
     handleSubmit,
     formState: { errors, isValid, isSubmitting },
     setError,
+    setValue,
   } = useForm<FormData>({
     mode: "onChange",
     resolver: yupResolver(schema),
@@ -73,6 +78,14 @@ export const ChangePasswordPage = () => {
     },
     [navigate, setError, t]
   )
+
+  useEffect(() => {
+    return () => {
+      setValue("currentPw", "")
+      setValue("newPw", "")
+      setValue("newPwConfirm", "")
+    }
+  }, [setValue])
 
   return (
     <>
