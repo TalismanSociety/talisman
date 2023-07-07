@@ -1,5 +1,4 @@
 import { ProviderType } from "@core/domains/sitesAuthorised/types"
-import Grid from "@talisman/components/Grid"
 import HeaderBlock from "@talisman/components/HeaderBlock"
 import Panel from "@talisman/components/Panel"
 import Spacer from "@talisman/components/Spacer"
@@ -55,7 +54,7 @@ const AuthorisedSitesList = () => {
         <ProviderTypeSwitch defaultProvider="polkadot" onChange={setProviderType} />
       ) : null}
       <Spacer small />
-      <Grid columns={1} gap="1.4rem">
+      <div className="flex flex-col gap-7">
         {siteIds.map((id) => (
           <Site key={`${providerType}-${id}`} id={id} provider={providerType} />
         ))}
@@ -75,7 +74,7 @@ const AuthorisedSitesList = () => {
           // This should never be displayed unless we decide to display the provider switcher without check
           <Panel>{t("You haven't connected to any Ethereum sites yet.")}</Panel>
         )}
-      </Grid>
+      </div>
     </>
   )
 }

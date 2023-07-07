@@ -1,7 +1,5 @@
-import Grid from "@talisman/components/Grid"
 import HeaderBlock from "@talisman/components/HeaderBlock"
 import Setting from "@talisman/components/Setting"
-import Spacer from "@talisman/components/Spacer"
 import { useSetting } from "@ui/hooks/useSettings"
 import { Trans, useTranslation } from "react-i18next"
 import { useNavigate } from "react-router-dom"
@@ -30,8 +28,7 @@ export const SecurityPrivacySettingsPage = () => {
         title={t("Security and Privacy")}
         text={t("Control security and privacy preferences")}
       />
-      <Spacer />
-      <Grid columns={1}>
+      <div className="mt-16 flex flex-col gap-12">
         {useErrorTracking !== undefined && (
           <Setting
             title={t("Error Reporting")}
@@ -68,7 +65,7 @@ export const SecurityPrivacySettingsPage = () => {
             />
           </Setting>
         )}
-      </Grid>
+      </div>
     </DashboardLayout>
   )
 }

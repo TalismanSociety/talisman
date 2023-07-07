@@ -1,7 +1,5 @@
-import Grid from "@talisman/components/Grid"
 import HeaderBlock from "@talisman/components/HeaderBlock"
 import Setting from "@talisman/components/Setting"
-import Spacer from "@talisman/components/Spacer"
 import { AvatarTypeSelect } from "@ui/domains/Settings/AvatarTypeSelect"
 import { useAppState } from "@ui/hooks/useAppState"
 import { useSetting } from "@ui/hooks/useSettings"
@@ -22,8 +20,7 @@ export const OptionsPage = () => {
   return (
     <DashboardLayout centered withBack backTo="/settings">
       <HeaderBlock title={t("Extension options")} text={t("Customise your extension experience")} />
-      <Spacer />
-      <Grid columns={1}>
+      <div className="mt-16 flex flex-col gap-12">
         <Setting
           title={t("Enable Testnets")}
           subtitle={t("Connect to test networks (Westend, Mandala)")}
@@ -79,7 +76,7 @@ export const OptionsPage = () => {
             )}
           </Tooltip>
         </Setting>
-      </Grid>
+      </div>
     </DashboardLayout>
   )
 }
