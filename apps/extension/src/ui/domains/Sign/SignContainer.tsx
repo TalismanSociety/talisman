@@ -1,7 +1,7 @@
 import { FadeIn } from "@talisman/components/FadeIn"
 import { classNames } from "@talismn/util"
-import { ViewDetails } from "@ui/domains/Sign/ViewDetails/ViewDetails"
 import { ViewDetailsEth } from "@ui/domains/Sign/ViewDetails/ViewDetailsEth"
+import { ViewDetailsSub } from "@ui/domains/Sign/ViewDetails/ViewDetailsSub"
 import { FC, ReactNode } from "react"
 import { createPortal } from "react-dom"
 
@@ -29,7 +29,7 @@ export const SignContainer: FC<SignContainerProps> = ({
       <div className="flex w-full flex-col items-center gap-4 py-8">{children}</div>
       <div className="mb-8 mt-12 grow text-center">
         {networkType === "ethereum" && <ViewDetailsEth />}
-        {networkType === "substrate" && <ViewDetails />}
+        {networkType === "substrate" && <ViewDetailsSub />}
       </div>
       {alert && createPortal(alert, document.getElementById("sign-alerts-inject") as Element)}
     </FadeIn>

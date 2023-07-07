@@ -20,7 +20,10 @@ const ObjectLabel: FC<ObjectLabelProps> = ({ label, displayAsJson, setDisplayAsJ
       <button
         type="button"
         onClick={() => setDisplayAsJson(false)}
-        className={classNames("decode-mode !w-auto", !displayAsJson && "decode-mode-active")}
+        className={classNames(
+          "cursor-pointer",
+          !displayAsJson ? "text-body" : "hover:text-grey-300 underline"
+        )}
       >
         YAML
       </button>{" "}
@@ -28,7 +31,10 @@ const ObjectLabel: FC<ObjectLabelProps> = ({ label, displayAsJson, setDisplayAsJ
       <button
         type="button"
         onClick={() => setDisplayAsJson(true)}
-        className={classNames("decode-mode !w-auto", displayAsJson && "decode-mode-active")}
+        className={classNames(
+          "cursor-pointer",
+          displayAsJson ? "text-body" : "hover:text-grey-300 underline"
+        )}
       >
         JSON
       </button>

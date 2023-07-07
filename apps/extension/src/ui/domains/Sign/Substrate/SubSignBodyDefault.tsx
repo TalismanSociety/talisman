@@ -5,7 +5,7 @@ import { useEffect } from "react"
 import { useTranslation } from "react-i18next"
 
 import { usePolkadotSigningRequest } from "../SignRequestContext"
-import { ViewDetails } from "../ViewDetails/ViewDetails"
+import { ViewDetailsSub } from "../ViewDetails/ViewDetailsSub"
 
 export const SubSignBodyDefault = () => {
   const { t } = useTranslation("request")
@@ -30,7 +30,7 @@ export const SubSignBodyDefault = () => {
         {chain ? ` on ${chain.name}` : null}
       </h2>
       <div className="mt-16">
-        <ViewDetails />
+        <ViewDetailsSub />
       </div>
     </div>
   )

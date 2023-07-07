@@ -174,7 +174,9 @@ export const EthSignTransactionRequest = () => {
                     {t("Estimated Fee")}{" "}
                     <Tooltip placement="top">
                       <TooltipTrigger asChild>
-                        <InfoIcon className="inline align-text-top" />
+                        <span>
+                          <InfoIcon className="inline align-text-top" />
+                        </span>
                       </TooltipTrigger>
                       <TooltipContent>
                         <FeeTooltip
