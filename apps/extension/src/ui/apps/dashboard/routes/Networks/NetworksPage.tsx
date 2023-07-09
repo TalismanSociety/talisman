@@ -1,5 +1,5 @@
 import { CustomEvmNetwork, EvmNetwork } from "@core/domains/ethereum/types"
-import HeaderBlock from "@talisman/components/HeaderBlock"
+import { HeaderBlock } from "@talisman/components/HeaderBlock"
 import { IconChevron, PlusIcon } from "@talisman/theme/icons"
 import { AnalyticsPage, sendAnalyticsEvent } from "@ui/api/analytics"
 import { ChainLogo } from "@ui/domains/Asset/ChainLogo"

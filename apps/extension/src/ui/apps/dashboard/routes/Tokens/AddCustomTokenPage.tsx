@@ -1,7 +1,7 @@
 import { CustomErc20TokenCreate } from "@core/domains/tokens/types"
 import { yupResolver } from "@hookform/resolvers/yup"
 import { assert } from "@polkadot/util"
-import HeaderBlock from "@talisman/components/HeaderBlock"
+import { HeaderBlock } from "@talisman/components/HeaderBlock"
 import { LoaderIcon, PlusIcon } from "@talisman/theme/icons"
 import { EvmNetworkId } from "@talismn/chaindata-provider"
 import { classNames } from "@talismn/util"

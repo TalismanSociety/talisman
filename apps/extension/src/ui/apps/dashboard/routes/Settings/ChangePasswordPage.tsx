@@ -1,5 +1,5 @@
 import { yupResolver } from "@hookform/resolvers/yup"
-import HeaderBlock from "@talisman/components/HeaderBlock"
+import { HeaderBlock } from "@talisman/components/HeaderBlock"
 import { notify } from "@talisman/components/Notifications"
 import { useOpenClose } from "@talisman/hooks/useOpenClose"
 import { InfoIcon } from "@talisman/theme/icons"

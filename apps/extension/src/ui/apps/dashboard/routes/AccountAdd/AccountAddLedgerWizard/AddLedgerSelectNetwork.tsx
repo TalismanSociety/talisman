@@ -2,7 +2,7 @@ import { AccountAddressType } from "@core/domains/accounts/types"
 import { Chain } from "@core/domains/chains/types"
 import { yupResolver } from "@hookform/resolvers/yup"
 import { Dropdown, RenderItemFunc } from "@talisman/components/Dropdown"
-import StytledHeaderBlock from "@talisman/components/HeaderBlock"
+import { HeaderBlock } from "@talisman/components/HeaderBlock"
 import Spacer from "@talisman/components/Spacer"
 import { classNames } from "@talismn/util"
 import { DashboardLayout } from "@ui/apps/dashboard/layout/DashboardLayout"
@@ -110,7 +110,7 @@ export const AddLedgerSelectNetwork = () => {
     <DashboardLayout withBack centered>
       <form className="flex h-[53.4rem] max-h-screen flex-col" onSubmit={handleSubmit(submit)}>
         <div className="flex-grow">
-          <StytledHeaderBlock
+          <HeaderBlock
             title={t("Import from Ledger")}
             text={t("What type of account would you like to import ?")}
           />

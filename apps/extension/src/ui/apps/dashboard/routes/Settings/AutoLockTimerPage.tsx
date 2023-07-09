@@ -1,6 +1,6 @@
 import { SettingsStoreData } from "@core/domains/app/store.settings"
 import { Dropdown, DropdownProps } from "@talisman/components/Dropdown"
-import HeaderBlock from "@talisman/components/HeaderBlock"
+import { HeaderBlock } from "@talisman/components/HeaderBlock"
 import { useSetting } from "@ui/hooks/useSettings"
 import { useMemo } from "react"
 import { useTranslation } from "react-i18next"

@@ -1,5 +1,5 @@
 import { ProviderType } from "@core/domains/sitesAuthorised/types"
-import HeaderBlock from "@talisman/components/HeaderBlock"
+import { HeaderBlock } from "@talisman/components/HeaderBlock"
 import Panel from "@talisman/components/Panel"
 import Spacer from "@talisman/components/Spacer"
 import { ProviderTypeSwitch } from "@ui/domains/Site/ProviderTypeSwitch"
@@ -48,7 +48,6 @@ export const AuthorisedSites = () => {
         title={t("Trusted Sites")}
         text={t("Manage the sites that have access to your accounts")}
       />
-      <Spacer />
       {hasEthereumTrustedSites ? (
         <ProviderTypeSwitch defaultProvider="polkadot" onChange={setProviderType} />
       ) : null}

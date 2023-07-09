@@ -1,4 +1,4 @@
-import HeaderBlock from "@talisman/components/HeaderBlock"
+import { HeaderBlock } from "@talisman/components/HeaderBlock"
 import { SimpleButton } from "@talisman/components/SimpleButton"
 import { WithTooltip } from "@talisman/components/Tooltip"
 import { ArrowRightIcon, LoaderIcon, PolkadotVaultIcon } from "@talisman/theme/icons"

@@ -1,5 +1,5 @@
 import { getIsLedgerCapable } from "@core/util/getIsLedgerCapable"
-import HeaderBlock from "@talisman/components/HeaderBlock"
+import { HeaderBlock } from "@talisman/components/HeaderBlock"
 import Spacer from "@talisman/components/Spacer"
 import {
   ChevronRightIcon,

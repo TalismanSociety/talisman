@@ -1,4 +1,4 @@
-import HeaderBlock from "@talisman/components/HeaderBlock"
+import { HeaderBlock } from "@talisman/components/HeaderBlock"
 import { AnalyticsPage } from "@ui/api/analytics"
 import { NetworkForm } from "@ui/domains/Ethereum/Networks/NetworkForm"
 import { useAnalyticsPageView } from "@ui/hooks/useAnalyticsPageView"

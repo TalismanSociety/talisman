@@ -1,4 +1,4 @@
-import HeaderBlock from "@talisman/components/HeaderBlock"
+import { HeaderBlock } from "@talisman/components/HeaderBlock"
 import { ExternalLinkIcon } from "@talisman/theme/icons"
 import { Trans, useTranslation } from "react-i18next"
 import { CtaButton } from "talisman-ui"

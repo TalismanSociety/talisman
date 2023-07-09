@@ -1,5 +1,5 @@
 import { yupResolver } from "@hookform/resolvers/yup"
-import HeaderBlock from "@talisman/components/HeaderBlock"
+import { HeaderBlock } from "@talisman/components/HeaderBlock"
 import { InputFileDrop } from "@talisman/components/InputFileDrop"
 import { notify, notifyUpdate } from "@talisman/components/Notifications"
 import Spacer from "@talisman/components/Spacer"

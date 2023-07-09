@@ -1,5 +1,5 @@
 import { POLKADOT_VAULT_DOCS_URL } from "@core/constants"
-import HeaderBlock from "@talisman/components/HeaderBlock"
+import { HeaderBlock } from "@talisman/components/HeaderBlock"
 import { useHasMnemonic } from "@ui/hooks/useHasMnemonic"
 import { ReactNode, useMemo } from "react"
 import { Trans, useTranslation } from "react-i18next"

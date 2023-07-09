@@ -1,4 +1,4 @@
-import HeaderBlock from "@talisman/components/HeaderBlock"
+import { HeaderBlock } from "@talisman/components/HeaderBlock"
 import Setting from "@talisman/components/Setting"
 import { useSetting } from "@ui/hooks/useSettings"
 import { Trans, useTranslation } from "react-i18next"

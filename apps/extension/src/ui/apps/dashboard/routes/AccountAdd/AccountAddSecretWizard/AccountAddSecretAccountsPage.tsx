@@ -1,6 +1,6 @@
 import { RequestAccountCreateFromSeed } from "@core/domains/accounts/types"
 import { yupResolver } from "@hookform/resolvers/yup"
-import HeaderBlock from "@talisman/components/HeaderBlock"
+import { HeaderBlock } from "@talisman/components/HeaderBlock"
 import { notify, notifyUpdate } from "@talisman/components/Notifications"
 import Spacer from "@talisman/components/Spacer"
 import { DashboardLayout } from "@ui/apps/dashboard/layout/DashboardLayout"
