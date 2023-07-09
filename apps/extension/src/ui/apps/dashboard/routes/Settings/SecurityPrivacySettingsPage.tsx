@@ -1,5 +1,5 @@
 import { HeaderBlock } from "@talisman/components/HeaderBlock"
-import Setting from "@talisman/components/Setting"
+import { Setting } from "@talisman/components/Setting"
 import { useSetting } from "@ui/hooks/useSettings"
 import { Trans, useTranslation } from "react-i18next"
 import { useNavigate } from "react-router-dom"

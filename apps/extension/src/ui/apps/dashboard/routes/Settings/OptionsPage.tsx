@@ -1,5 +1,5 @@
 import { HeaderBlock } from "@talisman/components/HeaderBlock"
-import Setting from "@talisman/components/Setting"
+import { Setting } from "@talisman/components/Setting"
 import { AvatarTypeSelect } from "@ui/domains/Settings/AvatarTypeSelect"
 import { useAppState } from "@ui/hooks/useAppState"
 import { useSetting } from "@ui/hooks/useSettings"

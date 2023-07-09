@@ -1,4 +1,4 @@
-import Setting from "@talisman/components/Setting"
+import { Setting } from "@talisman/components/Setting"
 import { AnalyticsOptInInfo } from "@ui/domains/Settings/Analytics/AnalyticsOptInInfo"
 import { useSetting } from "@ui/hooks/useSettings"
 import { useTranslation } from "react-i18next"
