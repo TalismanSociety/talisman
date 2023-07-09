@@ -203,10 +203,22 @@ export const ImportJsonAccountsForm: FC = () => {
     setIsImporting(false)
   }, [accounts, importAccounts, setAddress, t])
 
+  const alreadyImported = useMemo(() => {
+    return !accounts.filter((a) => !a.isExisting && a.isPrivateKeyAvailable).length
+  }, [accounts])
+
   if (!accounts?.length) return null
 
   return (
     <FadeIn>
+      {alreadyImported && (
+        <div className="bg-grey-850 text-body-secondary mb-8 flex w-full items-center gap-6 rounded p-8">
+          <AlertCircleIcon className="shrink-0 text-lg" />
+          <div className="grow">
+            {t("All accounts included in this file already exist in Talisman.")}
+          </div>
+        </div>
+      )}
       <div className={classNames("flex items-center px-8", accounts.length > 4 && "pr-12")}>
         <div className="grow">
           <Trans
