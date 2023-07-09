@@ -1,5 +1,5 @@
 import { ProviderType } from "@core/domains/sitesAuthorised/types"
-import Spacer from "@talisman/components/Spacer"
+import { Spacer } from "@talisman/components/Spacer"
 import { useAnalytics } from "@ui/hooks/useAnalytics"
 import useAuthorisedSiteById from "@ui/hooks/useAuthorisedSiteById"
 import useAuthorisedSiteProviders from "@ui/hooks/useAuthorisedSiteProviders"

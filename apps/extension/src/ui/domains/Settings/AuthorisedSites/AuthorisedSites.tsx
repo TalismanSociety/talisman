@@ -1,7 +1,7 @@
 import { ProviderType } from "@core/domains/sitesAuthorised/types"
 import { HeaderBlock } from "@talisman/components/HeaderBlock"
 import Panel from "@talisman/components/Panel"
-import Spacer from "@talisman/components/Spacer"
+import { Spacer } from "@talisman/components/Spacer"
 import { ProviderTypeSwitch } from "@ui/domains/Site/ProviderTypeSwitch"
 import { useAuthorisedSites } from "@ui/hooks/useAuthorisedSites"
 import { useEffect, useMemo, useState } from "react"

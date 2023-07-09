@@ -1,4 +1,4 @@
-import Spacer from "@talisman/components/Spacer"
+import { Spacer } from "@talisman/components/Spacer"
 import { LedgerConnectionStatus } from "@ui/domains/Account/LedgerConnectionStatus"
 import { useLedgerEthereum } from "@ui/hooks/ledger/useLedgerEthereum"
 import { useEffect } from "react"

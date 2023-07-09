@@ -1,7 +1,7 @@
 import { ProviderType } from "@core/domains/sitesAuthorised/types"
 import { isEthereumAddress } from "@polkadot/util-crypto"
 import { HeaderBlock } from "@talisman/components/HeaderBlock"
-import Spacer from "@talisman/components/Spacer"
+import { Spacer } from "@talisman/components/Spacer"
 import { useOpenClose } from "@talisman/hooks/useOpenClose"
 import { CopyIcon, MoreHorizontalIcon, PlusIcon, UserPlusIcon } from "@talisman/theme/icons"
 import { AccountAddressType } from "@talisman/util/getAddressType"

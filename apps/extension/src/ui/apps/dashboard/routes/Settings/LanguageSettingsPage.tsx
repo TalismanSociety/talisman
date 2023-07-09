@@ -1,6 +1,6 @@
 import { languages } from "@core/i18nConfig"
 import { HeaderBlock } from "@talisman/components/HeaderBlock"
-import Spacer from "@talisman/components/Spacer"
+import { Spacer } from "@talisman/components/Spacer"
 import { CheckIcon } from "@talisman/theme/icons"
 import { useIsFeatureEnabled } from "@ui/hooks/useFeatures"
 import { useEffect } from "react"
