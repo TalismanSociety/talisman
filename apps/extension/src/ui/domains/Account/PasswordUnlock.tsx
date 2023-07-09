@@ -96,7 +96,7 @@ const BasePasswordUnlock = ({ className, children, buttonText, title }: Password
     <div className={className}>
       <form onSubmit={handleSubmit(submit)} className="flex h-full flex-col">
         <div className="flex grow flex-col justify-center">
-          <div className="text-md mb-12">{title || t("Enter your password")}</div>
+          <div className="text-md mb-6">{title || t("Enter your password")}</div>
           <FormFieldContainer error={errors.password?.message}>
             <FormFieldInputText
               before={<KeyIcon className="opacity-50" />}
