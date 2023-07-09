@@ -10,12 +10,6 @@ import { Drawer } from "talisman-ui"
 import { BraveWarningCard } from "./BraveWarningCard"
 import { BraveWarningModal } from "./BraveWarningModal"
 
-// const WarningCard = styled(BraveWarningCard)`
-//   margin: 0;
-//   border-bottom-left-radius: 0;
-//   border-bottom-right-radius: 0;
-// `
-
 const BraveWarningPopupBanner = () => {
   const { t } = useTranslation()
   const { isOpen, open, close } = useOpenClose()
