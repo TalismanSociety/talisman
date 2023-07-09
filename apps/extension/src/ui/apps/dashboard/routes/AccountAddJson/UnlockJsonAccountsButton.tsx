@@ -131,7 +131,9 @@ export const UnlockJsonAccountsButton: FC = () => {
             ></div>
           </div>
           <div className="text-body-secondary my-16">
-            {t("Enter passwords until all selected accounts are unlocked")}
+            {t(
+              "Enter the passwords for each of the selected accounts, until all accounts unlocked."
+            )}
           </div>
           <form onSubmit={handleSubmit(submit)} autoComplete="off">
             <FormFieldContainer error={errors.password?.message}>
