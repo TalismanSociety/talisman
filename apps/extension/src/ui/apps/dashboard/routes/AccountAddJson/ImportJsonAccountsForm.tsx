@@ -26,7 +26,7 @@ const JsonAccount: FC<{ account: JsonImportAccount; onSelect: (select: boolean) 
   account,
   onSelect,
 }) => {
-  const { t } = useTranslation("account-add")
+  const { t } = useTranslation("admin")
   const handleClick = useCallback(() => {
     onSelect(!account.selected)
   }, [onSelect, account])
@@ -119,7 +119,7 @@ const JsonAccount: FC<{ account: JsonImportAccount; onSelect: (select: boolean) 
 }
 
 export const ImportJsonAccountsForm: FC = () => {
-  const { t } = useTranslation("account-add")
+  const { t } = useTranslation("admin")
 
   const {
     accounts = [],

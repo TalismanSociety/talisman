@@ -16,7 +16,7 @@ type FormData = {
 }
 
 export const UnlockJsonAccountsButton: FC = () => {
-  const { t } = useTranslation("account-add")
+  const { t } = useTranslation("admin")
   const { open, isOpen, close } = useOpenClose()
 
   const {

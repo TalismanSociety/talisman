@@ -15,7 +15,7 @@ type FormData = {
 }
 
 export const UnlockJsonFileForm: FC = () => {
-  const { t } = useTranslation("account-add")
+  const { t } = useTranslation("admin")
   const { unlockFile, requiresFilePassword } = useJsonAccountImport()
 
   const schema = yup

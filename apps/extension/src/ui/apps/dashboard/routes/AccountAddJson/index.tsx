@@ -9,7 +9,7 @@ import { ImportJsonFileDrop } from "./ImportJsonFileDrop"
 import { UnlockJsonFileForm } from "./UnlockJsonFileForm"
 
 export const AccountAddJsonPage = () => {
-  const { t } = useTranslation("account-add")
+  const { t } = useTranslation("admin")
 
   return (
     <JsonAccountImportProvider>

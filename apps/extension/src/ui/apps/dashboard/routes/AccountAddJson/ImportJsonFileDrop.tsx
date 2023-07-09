@@ -27,7 +27,7 @@ const FileIcon: FC<{ state: "ok" | "nok" | "unknown" }> = ({ state }) => {
 }
 
 const JsonFileDrop: FC<{ onChange?: (file?: File) => void }> = ({ onChange }) => {
-  const { t } = useTranslation("account-add")
+  const { t } = useTranslation("admin")
   const [file, setFile] = useState<File>()
 
   const onDrop = useCallback(
