@@ -1,23 +1,17 @@
-import styled from "styled-components"
+import { classNames } from "@talismn/util"
+import { FC, ReactNode } from "react"
 
-export const Card = styled(({ className, title, description, cta }) => {
+export const Card: FC<{
+  title?: ReactNode
+  description?: ReactNode
+  cta?: ReactNode
+  className?: string
+}> = ({ className, title, description, cta }) => {
   return (
-    <div className={`${className} card-root`}>
-      {title && <div className="card-title">{title}</div>}
-      {description && <div className="card-description">{description}</div>}
-      {cta && <span className="card-cta">{cta}</span>}
+    <div className={classNames("bg-grey-800 flex w-full flex-col gap-10 rounded p-10", className)}>
+      {title && <div>{title}</div>}
+      {description && <div>{description}</div>}
+      {cta && <div>{cta}</div>}
     </div>
   )
-})`
-  background: var(--color-background-muted-3x);
-  border-radius: 1.2rem;
-  padding: var(--padding);
-
-  > * + * {
-    margin-top: 1rem;
-  }
-
-  .card-cta > * {
-    margin-top: 2rem;
-  }
-`
+}

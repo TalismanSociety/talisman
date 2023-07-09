@@ -1,7 +1,7 @@
 import { ProviderType } from "@core/domains/sitesAuthorised/types"
 import { Accordion, AccordionIcon } from "@talisman/components/Accordion"
 import Dialog from "@talisman/components/Dialog"
-import Favicon from "@talisman/components/Favicon"
+import { Favicon } from "@talisman/components/Favicon"
 import { Modal } from "@talisman/components/Modal"
 import { ModalDialog } from "@talisman/components/ModalDialog"
 import { ReactComponent as IconAlert } from "@talisman/theme/icons/alert-circle.svg"
@@ -14,7 +14,7 @@ import { AuthorisedSiteAccount } from "./AuthorisedSiteAccount"
 
 const Title: FC<{ name: string; domain: string }> = ({ name, domain }) => (
   <div className="flex items-center gap-3 text-base">
-    <Favicon small url={domain} />
+    <Favicon url={domain} className="text-[2rem]" />
     <div className="ml-2">{name || domain}</div>
   </div>
 )

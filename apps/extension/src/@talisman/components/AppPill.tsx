@@ -1,27 +1,8 @@
-import { IS_FIREFOX } from "@core/constants"
 import * as Sentry from "@sentry/browser"
-import { useFaviconUrl } from "@ui/hooks/useFaviconUrl"
 import { FC, useMemo } from "react"
 import { Tooltip, TooltipContent, TooltipTrigger } from "talisman-ui"
 
-const Favicon: FC<{ url: string }> = ({ url }) => {
-  const iconUrl = useFaviconUrl(url)
-
-  return (
-    <span className="flex h-10 w-10 shrink-0 items-center justify-center overflow-hidden rounded-full bg-black">
-      {!!iconUrl && (
-        <img
-          className="h-8 w-8"
-          loading="lazy"
-          // required for chrome to work around the manifest rule, but breaks firefox as it enforces CORS
-          crossOrigin={IS_FIREFOX ? undefined : "anonymous"}
-          src={iconUrl}
-          alt={`favicon ${url}`}
-        />
-      )}
-    </span>
-  )
-}
+import { Favicon } from "./Favicon"
 
 export const AppPill: FC<{ url?: string }> = ({ url }) => {
   const host = useMemo(() => {
@@ -41,7 +22,7 @@ export const AppPill: FC<{ url?: string }> = ({ url }) => {
     <Tooltip>
       <TooltipTrigger>
         <div className="text-body-secondary bg-grey-800 flex max-w-[22rem] items-center gap-2  rounded-3xl px-4 py-2 text-sm font-light">
-          <Favicon url={url} />
+          <Favicon url={url} className="text-base" />
           <span className="overflow-hidden text-ellipsis whitespace-nowrap">{host}</span>
         </div>
       </TooltipTrigger>
