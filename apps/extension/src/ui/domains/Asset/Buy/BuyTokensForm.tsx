@@ -30,6 +30,7 @@ const Form = styled.form`
   gap: 1.6rem;
 `
 
+// TODO migrate dropdown
 const AccountDropDown = styled(Dropdown)<AccountJsonAny>`
   z-index: 1;
   display: block;
@@ -265,7 +266,8 @@ export const BuyTokensForm = () => {
   )
 
   const handleAccountChange = useCallback(
-    (acc: AccountJsonAny) => {
+    (acc: AccountJsonAny | null) => {
+      if (!acc) return
       sendAnalyticsEvent({
         ...ANALYTICS_PAGE,
         name: "Interact",
@@ -332,6 +334,7 @@ export const BuyTokensForm = () => {
         placeholder={t("Select Account")}
         defaultSelectedItem={selectedAccount}
         key={address} // uncontrolled component, will reset if value changes
+        className="w-full"
       />
       <TokenAmountField
         fieldProps={register("amountUSD")}
