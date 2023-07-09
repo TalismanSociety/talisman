@@ -284,7 +284,7 @@ const BalancesGroup = ({ label, fiatAmount, className, children }: GroupProps) =
           <AccordionIcon isOpen={isOpen} />
         </div>
       </button>
-      <Accordion isOpen={isOpen}>
+      <Accordion alwaysRender isOpen={isOpen}>
         <div className="flex flex-col gap-4">{children}</div>
       </Accordion>
     </div>

@@ -1,7 +1,7 @@
 import { ChevronDownIcon } from "@talisman/theme/icons"
 import { classNames } from "@talismn/util"
 import { TargetAndTransition, Transition, motion } from "framer-motion"
-import { CSSProperties, ReactNode, useEffect, useMemo, useRef, useState } from "react"
+import { CSSProperties, FC, ReactNode, useEffect, useMemo, useRef, useState } from "react"
 
 const TRANSITION_ACCORDION: Transition = { ease: "easeInOut", duration: 0.3 }
 
@@ -23,8 +23,11 @@ export const AccordionIcon = ({ isOpen }: { isOpen: boolean }) => {
   )
 }
 
-// TODO migrate to tailwind's transition component to prevent rendering content while closed
-export const Accordion = ({ isOpen, children }: { isOpen: boolean; children?: ReactNode }) => {
+export const Accordion: FC<{ isOpen: boolean; children?: ReactNode; alwaysRender?: boolean }> = ({
+  isOpen,
+  children,
+  alwaysRender,
+}) => {
   const [contentHeight, setContentHeight] = useState<number>()
   const refContainer = useRef<HTMLDivElement>(null)
 
@@ -83,7 +86,7 @@ export const Accordion = ({ isOpen, children }: { isOpen: boolean; children?: Re
       initial={false}
       transition={TRANSITION_ACCORDION}
     >
-      {shouldRender && children}
+      {!!(alwaysRender || shouldRender) && children}
     </motion.div>
   )
 }
