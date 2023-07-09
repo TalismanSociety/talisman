@@ -9,6 +9,7 @@ import {
   UnlockIcon,
 } from "@talisman/theme/icons"
 import { shortenAddress } from "@talisman/util/shortenAddress"
+import { Balances } from "@talismn/balances"
 import { classNames, sleep } from "@talismn/util"
 import { AccountIcon } from "@ui/domains/Account/AccountIcon"
 import { AccountTypeIcon } from "@ui/domains/Account/AccountTypeIcon"
@@ -31,10 +32,15 @@ const JsonAccount: FC<{ account: JsonImportAccount; onSelect: (select: boolean) 
     onSelect(!account.selected)
   }, [onSelect, account])
 
-  const positiveBalances = useMemo(
-    () => account.balances.each.filter((b) => b.total.planck > 0),
-    [account]
-  )
+  const tokenBalances = useMemo(() => {
+    const positiveBalances = account.balances.each.filter((b) => b.total.planck > 0)
+    // need to dedupe by asset, in case there are entries for staking
+    const tokenIds = [...new Set(positiveBalances.map((b) => b.tokenId))]
+    return tokenIds.map((tokenId) => {
+      const balances = positiveBalances.filter((b) => b.tokenId === tokenId)
+      return { tokenId, symbol: balances[0].token?.symbol, balances: new Balances(balances) }
+    })
+  }, [account])
 
   return (
     <Tooltip>
@@ -65,14 +71,14 @@ const JsonAccount: FC<{ account: JsonImportAccount; onSelect: (select: boolean) 
                     <Fiat amount={account.balances.sum.fiat("usd").total} />
                   </div>
                 </TooltipTrigger>
-                {!!positiveBalances.length && (
+                {!!tokenBalances.length && (
                   <TooltipContent>
                     <div className="flex flex-col items-end gap-3 p-2">
-                      {positiveBalances.map((balance) => (
-                        <div key={balance.tokenId}>
+                      {tokenBalances.map((tokenBalance, i) => (
+                        <div key={`${tokenBalance.tokenId}-${i}`}>
                           <TokensAndFiat
-                            tokenId={balance.tokenId}
-                            planck={balance.total.planck}
+                            tokenId={tokenBalance.tokenId}
+                            planck={tokenBalance.balances.sum.planck.total}
                             noTooltip
                             noCountUp
                           />
@@ -86,9 +92,25 @@ const JsonAccount: FC<{ account: JsonImportAccount; onSelect: (select: boolean) 
             {account.isExisting || !account.isPrivateKeyAvailable ? (
               <div className="w-8 shrink-0"></div>
             ) : account.isLocked ? (
-              <LockIcon className="text-alert-warn shrink-0" />
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <div className="text-alert-warn shrink-0">
+                    <LockIcon />
+                  </div>
+                </TooltipTrigger>
+                <TooltipContent>
+                  {t("Account is locked, password needs to be provided")}
+                </TooltipContent>
+              </Tooltip>
             ) : (
-              <UnlockIcon className="text-primary shrink-0" />
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <div className="text-primary shrink-0">
+                    <UnlockIcon />
+                  </div>
+                </TooltipTrigger>
+                <TooltipContent>{t("Account is unlocked and can be imported")}</TooltipContent>
+              </Tooltip>
             )}
 
             {account.isExisting ? (
