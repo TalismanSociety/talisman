@@ -1,9 +1,9 @@
 import { ChevronDownIcon } from "@talisman/theme/icons"
 import { classNames } from "@talismn/util"
-import { TargetAndTransition, motion } from "framer-motion"
+import { TargetAndTransition, Transition, motion } from "framer-motion"
 import { CSSProperties, ReactNode, useEffect, useMemo, useRef, useState } from "react"
 
-const TRANSITION_ACCORDION = { ease: "easeInOut", duration: 0.3 }
+const TRANSITION_ACCORDION: Transition = { ease: "easeInOut", duration: 0.3 }
 
 // Note : not a button because usually we want the whole accordion title row (title, data, + the icon) to be clickable
 // didn't package the row neither to keep this very generic
@@ -28,6 +28,8 @@ export const Accordion = ({ isOpen, children }: { isOpen: boolean; children?: Re
   const [contentHeight, setContentHeight] = useState<number>()
   const refContainer = useRef<HTMLDivElement>(null)
 
+  const [shouldRender, setShouldRender] = useState(isOpen)
+
   useEffect(() => {
     const container = refContainer.current
     if (!container) return () => {}
@@ -42,7 +44,7 @@ export const Accordion = ({ isOpen, children }: { isOpen: boolean; children?: Re
     return () => {
       container.removeEventListener("resize", updateContentHeight)
     }
-  }, [])
+  }, [shouldRender])
 
   const style: CSSProperties = useMemo(
     () => ({
@@ -58,6 +60,20 @@ export const Accordion = ({ isOpen, children }: { isOpen: boolean; children?: Re
     [contentHeight, isOpen]
   )
 
+  useEffect(() => {
+    if (isOpen) {
+      setShouldRender(true)
+      return () => []
+    } else {
+      const timeout = setTimeout(() => {
+        setShouldRender(false)
+      }, 1000)
+      return () => {
+        clearTimeout(timeout)
+      }
+    }
+  }, [isOpen])
+
   return (
     <motion.div
       className="overflow-y-hidden"
@@ -67,7 +83,7 @@ export const Accordion = ({ isOpen, children }: { isOpen: boolean; children?: Re
       initial={false}
       transition={TRANSITION_ACCORDION}
     >
-      {children}
+      {shouldRender && children}
     </motion.div>
   )
 }
