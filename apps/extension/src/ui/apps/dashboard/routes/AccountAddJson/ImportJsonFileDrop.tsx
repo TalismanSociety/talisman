@@ -3,6 +3,7 @@ import { classNames } from "@talismn/util"
 import { FC, MouseEventHandler, useCallback, useMemo, useState } from "react"
 import { DropzoneOptions, useDropzone } from "react-dropzone"
 import { Trans, useTranslation } from "react-i18next"
+import * as yup from "yup"
 
 import { useJsonAccountImport } from "./context"
 
@@ -26,7 +27,10 @@ const FileIcon: FC<{ state: "ok" | "nok" | "unknown" }> = ({ state }) => {
   )
 }
 
-const JsonFileDrop: FC<{ onChange?: (file?: File) => void }> = ({ onChange }) => {
+const JsonFileDrop: FC<{ onChange?: (file?: File) => void; isInvalid: boolean }> = ({
+  onChange,
+  isInvalid,
+}) => {
   const { t } = useTranslation("admin")
   const [file, setFile] = useState<File>()
 
@@ -64,11 +68,19 @@ const JsonFileDrop: FC<{ onChange?: (file?: File) => void }> = ({ onChange }) =>
       className={classNames(
         "border-grey-700 hover:bg-grey-900 flex h-[16rem] cursor-pointer flex-col items-center gap-8 rounded border border-dashed p-8",
         isDragAccept && "bg-primary/10",
-        isDragReject && "bg-alert-warn/10"
+        (isInvalid || isDragReject) && "bg-alert-warn/10"
       )}
     >
       <input {...getInputProps()} />
-      <FileIcon state={file || isDragAccept ? "ok" : isDragReject ? "nok" : "unknown"} />
+      <FileIcon
+        state={
+          (file && !isInvalid) || isDragAccept
+            ? "ok"
+            : isInvalid || isDragReject
+            ? "nok"
+            : "unknown"
+        }
+      />
       <div className="flex grow flex-col items-center justify-center gap-6">
         {file ? (
           <div className="bg-grey-800 flex h-16 w-[24rem] max-w-full items-center rounded-sm pl-6 text-xs">
@@ -89,7 +101,7 @@ const JsonFileDrop: FC<{ onChange?: (file?: File) => void }> = ({ onChange }) =>
           </div>
         )}
         <div className="text-grey-500 text-xs">
-          {isDragReject
+          {isInvalid || isDragReject
             ? t("File not supported")
             : file
             ? t("Replace File")
@@ -110,20 +122,43 @@ const getFileContent = (file?: File) =>
     } else resolve("")
   })
 
+const schema = yup.object({
+  encoded: yup.string().required(""),
+  encoding: yup
+    .object({
+      content: yup.array(yup.string()).required(""),
+      type: yup.array(yup.string()).required(""),
+      version: yup.string().required(),
+    })
+    .required(),
+})
+
 export const ImportJsonFileDrop = () => {
   const { setJson } = useJsonAccountImport()
+  const [isValid, setIsValid] = useState(true)
 
   const handleFileChange = useCallback(
     async (file?: File) => {
-      try {
-        if (file) setJson(await getFileContent(file))
-        else setJson(undefined)
-      } catch (err) {
+      if (file) {
+        try {
+          const content = await getFileContent(file)
+
+          const json = JSON.parse(content)
+          await schema.validate(json)
+
+          setIsValid(true)
+          setJson(content)
+        } catch (err) {
+          setIsValid(false)
+          setJson(undefined)
+        }
+      } else {
+        setIsValid(true)
         setJson(undefined)
       }
     },
     [setJson]
   )
 
-  return <JsonFileDrop onChange={handleFileChange} />
+  return <JsonFileDrop onChange={handleFileChange} isInvalid={!isValid} />
 }
