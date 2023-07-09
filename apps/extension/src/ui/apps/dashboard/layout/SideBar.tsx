@@ -20,7 +20,7 @@ import {
 } from "@talisman/theme/icons"
 import { FullColorLogo, FullColorVerticalLogo, HandRedLogo } from "@talisman/theme/logos"
 import { useBuyTokensModal } from "@ui/domains/Asset/Buy/BuyTokensModalContext"
-import Build from "@ui/domains/Build"
+import { BuildVersionPill } from "@ui/domains/Build/BuildVersionPill"
 import { useCopyAddressModal } from "@ui/domains/CopyAddress"
 import { AccountSelect } from "@ui/domains/Portfolio/AccountSelect"
 import { useSelectedAccount } from "@ui/domains/Portfolio/SelectedAccountContext"
@@ -50,7 +50,7 @@ const BrandLogo = styled(({ className }) => {
         <FullColorVerticalLogo className="logo-medium" />
         <HandRedLogo className="logo-small" />
       </a>
-      <Build.Version />
+      <BuildVersionPill />
     </div>
   )
 })`

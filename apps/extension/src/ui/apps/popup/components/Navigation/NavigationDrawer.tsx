@@ -19,7 +19,7 @@ import { FullColorSmallLogo } from "@talisman/theme/logos"
 import { api } from "@ui/api"
 import { AnalyticsPage, sendAnalyticsEvent } from "@ui/api/analytics"
 import { useNavigationContext } from "@ui/apps/popup/context/NavigationContext"
-import Build from "@ui/domains/Build"
+import { BuildVersionPill } from "@ui/domains/Build/BuildVersionPill"
 import { useIsFeatureEnabled } from "@ui/hooks/useFeatures"
 import useMnemonicBackup from "@ui/hooks/useMnemonicBackup"
 import { useSetting } from "@ui/hooks/useSettings"
@@ -214,7 +214,7 @@ export const NavigationDrawer: FC = () => {
           </ScrollContainer>
         </main>
         <footer>
-          <Build.Version />
+          <BuildVersionPill />
         </footer>
       </Container>
     </Drawer>
