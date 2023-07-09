@@ -1,6 +1,6 @@
 import { Modal } from "@talisman/components/Modal"
 import { ModalDialog } from "@talisman/components/ModalDialog"
-import StatusIcon from "@talisman/components/StatusIcon"
+import { StatusIcon } from "@talisman/components/StatusIcon"
 import { statusOptions } from "@talisman/hooks/useStatus"
 import { useTranslation } from "react-i18next"
 
