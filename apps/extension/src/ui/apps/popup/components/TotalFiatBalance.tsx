@@ -1,6 +1,6 @@
 import { IconButton } from "@talisman/components/IconButton"
 import { EyeIcon, EyeOffIcon } from "@talisman/theme/icons"
-import Asset from "@ui/domains/Asset"
+import Fiat from "@ui/domains/Asset/Fiat"
 import { useAnalytics } from "@ui/hooks/useAnalytics"
 import useBalances from "@ui/hooks/useBalances"
 import { useSetting } from "@ui/hooks/useSettings"
@@ -104,7 +104,7 @@ export const TotalFiatBalance: FC<{ className?: string }> = ({ className }) => {
         </Side>
       </TitleRow>
       <TotalFiat>
-        <Asset.Fiat amount={balances?.sum.fiat("usd").total} currency="usd" isBalance />
+        <Fiat amount={balances?.sum.fiat("usd").total} currency="usd" isBalance />
       </TotalFiat>
     </Container>
   )

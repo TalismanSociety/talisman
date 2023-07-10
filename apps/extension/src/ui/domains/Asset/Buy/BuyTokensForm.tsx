@@ -9,7 +9,7 @@ import { SimpleButton } from "@talisman/components/SimpleButton"
 import { githubChaindataBaseUrl } from "@talismn/chaindata-provider"
 import { encodeAnyAddress } from "@talismn/util"
 import { AnalyticsPage, sendAnalyticsEvent } from "@ui/api/analytics"
-import Account from "@ui/domains/Account"
+import { FormattedAddress } from "@ui/domains/Account/FormattedAddress"
 import useAccounts from "@ui/hooks/useAccounts"
 import { useAnalyticsPageView } from "@ui/hooks/useAnalyticsPageView"
 import useChains from "@ui/hooks/useChains"
@@ -101,7 +101,7 @@ const Caption = styled.div`
 `
 
 const renderAccountItem: RenderItemFunc<AccountJsonAny> = (account) => {
-  return <Account.Name withAvatar address={account?.address} />
+  return <FormattedAddress address={account.address} withSource className="h-16 w-full" />
 }
 
 // list to keep up to date, it's used when github is unreachable

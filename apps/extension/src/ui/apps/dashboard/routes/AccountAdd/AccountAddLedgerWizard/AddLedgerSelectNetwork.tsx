@@ -7,7 +7,7 @@ import { Spacer } from "@talisman/components/Spacer"
 import { classNames } from "@talismn/util"
 import { DashboardLayout } from "@ui/apps/dashboard/layout/DashboardLayout"
 import { AccountTypeSelector } from "@ui/domains/Account/AccountTypeSelector"
-import Asset from "@ui/domains/Asset"
+import { ChainLogo } from "@ui/domains/Asset/ChainLogo"
 import { useLedgerChains } from "@ui/hooks/ledger/useLedgerChains"
 import useChain from "@ui/hooks/useChain"
 import { useCallback, useMemo, useState } from "react"
@@ -29,7 +29,7 @@ type FormData = {
 const renderOption: RenderItemFunc<Chain> = (chain) => {
   return (
     <div className="flex items-center gap-4 text-base">
-      <Asset.ChainLogo id={chain.id} />
+      <ChainLogo id={chain.id} />
       <span className="flex-grow overflow-hidden text-ellipsis whitespace-nowrap">
         {chain.name}
       </span>
