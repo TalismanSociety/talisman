@@ -105,7 +105,7 @@ export default interface MessageTypes {
   // account message types ---------------------------------------------------
   accountCreate: (name: string, type: AccountAddressType) => Promise<string>
   accountCreateFromSeed: (name: string, seed: string, type?: AccountAddressType) => Promise<string>
-  accountCreateFromJson: (json: string, password: string) => Promise<string>
+  accountCreateFromJson: (unlockedPairs: KeyringPair$Json[]) => Promise<string[]>
   accountCreateHardware: (
     request: Omit<RequestAccountCreateHardware, "hardwareType">
   ) => Promise<string>

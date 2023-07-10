@@ -24,7 +24,6 @@ import type { MessageTypes, RequestTypes, ResponseType } from "@core/types"
 import { Port } from "@core/types/base"
 import { getPrivateKey } from "@core/util/getPrivateKey"
 import { createPair } from "@polkadot/keyring"
-import { KeyringPair$Json } from "@polkadot/keyring/types"
 import keyring from "@polkadot/ui-keyring"
 import { assert } from "@polkadot/util"
 import {
@@ -151,19 +150,15 @@ export default class AccountsHandler extends ExtensionHandler {
   }
 
   private async accountCreateJson({
-    json,
-    password: importedAccountPassword,
-  }: RequestAccountCreateFromJson): Promise<string> {
-    await sleep(1000)
-
+    unlockedPairs,
+  }: RequestAccountCreateFromJson): Promise<string[]> {
     const password = this.stores.password.getPassword()
     assert(password, "Not logged in")
 
-    try {
-      const parsedJson: KeyringPair$Json = JSON.parse(json)
-
-      const pair = keyring.createFromJson(parsedJson, {
-        name: parsedJson.meta?.name || "Json Import",
+    const addresses = []
+    for (const json of unlockedPairs) {
+      const pair = keyring.createFromJson(json, {
+        name: json.meta?.name || "Json Import",
         origin: AccountTypes.JSON,
       })
 
@@ -173,18 +168,19 @@ export default class AccountsHandler extends ExtensionHandler {
 
       assert(notExists, "Account already exists")
 
-      pair.decodePkcs8(importedAccountPassword)
+      // unlocked pairs need to be decoded with blank password to be considered unlocked
+      pair.decodePkcs8("")
 
       delete pair.meta.genesisHash
       pair.meta.whenCreated = Date.now()
 
       keyring.encryptAccount(pair, password)
+      addresses.push(pair.address)
 
       talismanAnalytics.capture("account create", { type: pair.type, method: "json" })
-      return pair.address
-    } catch (error) {
-      throw new Error((error as Error).message)
     }
+
+    return addresses
   }
 
   private accountsCreateHardwareEthereum({

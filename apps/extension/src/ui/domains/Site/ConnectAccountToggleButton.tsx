@@ -1,5 +1,4 @@
 import { AccountJsonAny } from "@core/domains/accounts/types"
-import Field from "@talisman/components/Field"
 import { shortenAddress } from "@talisman/util/shortenAddress"
 import { classNames } from "@talismn/util"
 import { FC } from "react"
@@ -31,7 +30,12 @@ export const ConnectAccountToggleButton: FC<{
           <AccountTypeIcon origin={account.origin} className="text-primary-500" />
         </div>
       </div>
-      <Field.Checkbox value={value} small />
+      <div
+        className={classNames(
+          "h-4 w-4 shrink-0 rounded-full",
+          value ? "bg-primary" : "bg-grey-700"
+        )}
+      ></div>
     </button>
   )
 }
