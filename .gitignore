@@ -41,3 +41,4 @@ yarn-error.log*
 
 # extension
 dist
+apps/extension/public/locales/*
