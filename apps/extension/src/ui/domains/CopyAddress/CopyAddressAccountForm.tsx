@@ -6,7 +6,7 @@ import { useCopyAddressWizard } from "./useCopyAddressWizard"
 
 export const CopyAddressAccountForm = () => {
   const { mode, tokenId, address, setAddress } = useCopyAddressWizard()
-  const { t } = useTranslation("copy-address")
+  const { t } = useTranslation()
 
   return (
     <CopyAddressLayout title={t("Select account")}>

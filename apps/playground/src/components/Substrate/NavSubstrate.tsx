@@ -30,6 +30,12 @@ export const NavSubstrate = () => {
       >
         Encryption
       </Link>
+      <Link
+        to="/substrate/misc"
+        className={classNames(location.pathname === "/substrate/misc" && "text-primary-500")}
+      >
+        Misc
+      </Link>
     </div>
   )
 }

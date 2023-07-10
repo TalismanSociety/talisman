@@ -137,6 +137,12 @@ const Login = ({ setShowResetWallet }: { setShowResetWallet: () => void }) => {
     }
   }, [handleSubmit, setValue, submit])
 
+  useEffect(() => {
+    return () => {
+      setValue("password", "")
+    }
+  }, [setValue])
+
   return (
     <Layout className="pt-32">
       <Suspense fallback={<SuspenseTracker name="Background" />}>

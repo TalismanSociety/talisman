@@ -34,7 +34,7 @@ type EnableTestnetPillButtonProps = {
 }
 
 export const EnableTestnetPillButton: FC<EnableTestnetPillButtonProps> = ({ className }) => {
-  const { t } = useTranslation("settings")
+  const { t } = useTranslation("admin")
   const [useTestnets, setUseTestnets] = useSetting("useTestnets")
 
   const handleClick = useCallback(() => {

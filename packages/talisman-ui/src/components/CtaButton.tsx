@@ -85,12 +85,14 @@ export const CtaButton: FC<CtaButton> = ({
       )}
       onClick={handleClick}
     >
-      {IconLeft && <IconLeft className={classNames("text-primary", iconLeftClassName)} />}
+      {IconLeft && <IconLeft className={classNames("text-primary shrink-0", iconLeftClassName)} />}
       <div className={classNames("flex grow flex-col items-start", contentClassName)}>
         <div className={classNames("text-body", titleClassName)}>{title}</div>
-        <div className={classNames("text-body-secondary", subtitleClassName)}>{subtitle}</div>
+        <div className={classNames("text-body-secondary text-left", subtitleClassName)}>
+          {subtitle}
+        </div>
       </div>
-      {IconRight && <IconRight className="text-lg" />}
+      {IconRight && <IconRight className="shrink-0 text-lg" />}
     </button>
   )
 }

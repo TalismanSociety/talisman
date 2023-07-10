@@ -47,7 +47,7 @@ const Spacer = styled.div<{ small?: boolean }>`
 `
 
 export const AccountAddWatched = () => {
-  const { t } = useTranslation("account-add")
+  const { t } = useTranslation("admin")
   const allAccounts = useAccounts()
   const accountNames = useMemo(() => allAccounts.map((a) => a.name), [allAccounts])
   const { setAddress } = useSelectAccountAndNavigate("/portfolio")

@@ -20,7 +20,7 @@ const schema = yup
   .required()
 
 export const EnterPasswordForm = () => {
-  const { t } = useTranslation("settings")
+  const { t } = useTranslation()
   const { setPassword, setMnemonic } = useMigratePassword()
 
   const {

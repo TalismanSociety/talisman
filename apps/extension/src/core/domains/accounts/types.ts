@@ -5,6 +5,7 @@ import type {
   RequestAccountSubscribe,
   ResponseAccountExport,
 } from "@polkadot/extension-base/background/types"
+import { KeyringPair$Json } from "@polkadot/keyring/types"
 
 export type { ResponseAccountExport, RequestAccountCreateHardware, AccountJson }
 
@@ -101,8 +102,7 @@ export interface RequestAccountCreateFromSeed {
 }
 
 export interface RequestAccountCreateFromJson {
-  json: string
-  password: string
+  unlockedPairs: KeyringPair$Json[]
 }
 
 export interface RequestAccountCreateHardwareEthereum {
@@ -156,7 +156,7 @@ export interface AccountsMessages {
   // account message signatures
   "pri(accounts.create)": [RequestAccountCreate, string]
   "pri(accounts.create.seed)": [RequestAccountCreateFromSeed, string]
-  "pri(accounts.create.json)": [RequestAccountCreateFromJson, string]
+  "pri(accounts.create.json)": [RequestAccountCreateFromJson, string[]]
   "pri(accounts.create.hardware.substrate)": [
     Omit<RequestAccountCreateHardware, "hardwareType">,
     string

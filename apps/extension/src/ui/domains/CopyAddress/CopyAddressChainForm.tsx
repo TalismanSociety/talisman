@@ -81,7 +81,7 @@ export const CopyAddressChainForm = () => {
   const [search, setSearch] = useState("")
   const [useTestnets] = useSetting("useTestnets")
   const { chains, chainsMap } = useChains(useTestnets)
-  const { t } = useTranslation("copy-address")
+  const { t } = useTranslation()
 
   const account = useAccountByAddress(address)
   const accountChain = useMemo(

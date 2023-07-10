@@ -1,4 +1,4 @@
-import { DEBUG, PORT_EXTENSION } from "@core/constants"
+import { PORT_EXTENSION } from "@core/constants"
 import { AnyEthRequest } from "@core/injectEth/types"
 import { log } from "@core/log"
 import { assert } from "@polkadot/util"
@@ -11,6 +11,22 @@ import Tabs from "./Tabs"
 
 const extension = new Extension(extensionStores)
 const tabs = new Tabs(tabStores)
+
+// dev mode logs shouldn't log content for these messages
+const OBFUSCATE_LOG_MESSAGES: MessageTypes[] = [
+  "pri(mnemonic.unlock)",
+  "pri(app.authenticate)",
+  "pri(app.checkPassword)",
+  "pri(app.changePassword)",
+  "pri(accounts.export)",
+  "pri(accounts.export.pk)",
+  "pri(accounts.validateMnemonic)",
+  "pri(accounts.create.seed)",
+  "pri(accounts.create.json)",
+  "pri(accounts.setVerifierCertMnemonic)",
+  "pri(app.onboard)",
+]
+const OBFUSCATED_PAYLOAD = "#OBFUSCATED#"
 
 const formatFrom = (source: string) => {
   if (["extension", "<unknown>"].includes(source)) return source
@@ -35,9 +51,10 @@ const talismanHandler = <TMessageType extends MessageTypes>(
   const source = `${formatFrom(from)}: ${id}: ${
     message === "pub(eth.request)" ? `${message} ${(request as AnyEthRequest).method}` : message
   }`
+  const shouldLog = !OBFUSCATE_LOG_MESSAGES.includes(message)
 
   // eslint-disable-next-line no-console
-  DEBUG && console.debug(`[${port.name} REQ] ${source}`, { request })
+  log.debug(`[${port.name} REQ] ${source}`, { request: shouldLog ? request : OBFUSCATED_PAYLOAD })
 
   // handle the request and get a promise as a response
   const promise = isExtension
@@ -47,7 +64,10 @@ const talismanHandler = <TMessageType extends MessageTypes>(
   // resolve the promise and send back the response
   promise
     .then((response): void => {
-      log.debug(`[${port.name} RES] ${source}`, { request, response })
+      log.debug(`[${port.name} RES] ${source}`, {
+        request: shouldLog ? request : OBFUSCATED_PAYLOAD,
+        response: shouldLog ? response : OBFUSCATED_PAYLOAD,
+      })
 
       // between the start and the end of the promise, the user may have closed
       // the tab, in which case port will be undefined
@@ -63,9 +83,12 @@ const talismanHandler = <TMessageType extends MessageTypes>(
         }
         throw e
       }
+
+      // heap cleanup
+      response = null
     })
     .catch((error) => {
-      log.debug(`[err] ${source}:: ${error.message}`, { error })
+      log.error(`[${port.name} ERR] ${source}:: ${error.message}`, { error })
 
       if (
         error instanceof Error &&
@@ -96,6 +119,10 @@ const talismanHandler = <TMessageType extends MessageTypes>(
            *  */
         }
       }
+    })
+    .finally(() => {
+      // heap cleanup
+      data.request = null
     })
 }
 

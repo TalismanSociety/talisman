@@ -47,7 +47,7 @@ export const BackupWarningModal = ({ isOpen, snooze, openBackupModal }: BackupWa
 }
 
 export const BackupNotification = () => {
-  const { t } = useTranslation("settings")
+  const { t } = useTranslation()
   const { isOpen, open, close } = useOpenClose()
   const { isNotConfirmed, isSnoozed, showBackupWarning, snoozeBackupReminder } = useMnemonicBackup()
 

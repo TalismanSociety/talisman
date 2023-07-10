@@ -9,7 +9,7 @@ import { getContractCallArg } from "../getContractCallArg"
 import { useEthSignKnownTransactionRequest } from "../shared/useEthSignKnownTransactionRequest"
 
 export const EthSignMoonVotingDelegate: FC = () => {
-  const { t } = useTranslation("sign")
+  const { t } = useTranslation("request")
   const { network, transactionInfo } = useEthSignKnownTransactionRequest()
 
   const { amount, representative, conviction, trackId } = useMemo(() => {

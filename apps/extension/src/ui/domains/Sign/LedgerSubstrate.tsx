@@ -41,7 +41,7 @@ const LedgerSubstrate = ({
   payload,
   parent,
 }: Props): React.ReactElement<Props> => {
-  const { t } = useTranslation("sign")
+  const { t } = useTranslation("request")
   const [isSigning, setIsSigning] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [unsigned, setUnsigned] = useState<Uint8Array>()

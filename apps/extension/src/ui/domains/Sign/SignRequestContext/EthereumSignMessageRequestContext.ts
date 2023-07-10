@@ -2,10 +2,11 @@ import { KnownSigningRequestIdOnly } from "@core/domains/signing/types"
 import { log } from "@core/log"
 import { HexString } from "@polkadot/util/types"
 import { provideContext } from "@talisman/util/provideContext"
+import { isEthereumAddress } from "@talismn/util"
 import { api } from "@ui/api"
 import { useEvmNetwork } from "@ui/hooks/useEvmNetwork"
 import { useRequest } from "@ui/hooks/useRequest"
-import { useCallback } from "react"
+import { useCallback, useMemo } from "react"
 
 import { useAnySigningRequest } from "./AnySignRequestContext"
 
@@ -35,11 +36,26 @@ const useEthSignMessageRequestProvider = ({ id }: KnownSigningRequestIdOnly<"eth
     [baseRequest]
   )
 
+  const isValid = useMemo(() => {
+    if (!request) return false
+
+    const isTypedData = Boolean(request?.method?.startsWith("eth_signTypedData"))
+    if (isTypedData) {
+      // for now only check signTypedData's verifying contract's address
+      const typedMessage = isTypedData ? JSON.parse(request.request) : undefined
+      const verifyingContract = typedMessage?.domain?.verifyingContract as string | undefined
+      if (verifyingContract && !isEthereumAddress(verifyingContract)) return false
+    }
+
+    return true
+  }, [request])
+
   return {
     ...baseRequest,
     approveHardware,
     request,
     network,
+    isValid,
   }
 }
 

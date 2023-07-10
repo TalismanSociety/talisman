@@ -17,7 +17,6 @@ import { talismanAnalytics } from "@core/libs/Analytics"
 import { ExtensionHandler } from "@core/libs/Handler"
 import { requestStore } from "@core/libs/requests/store"
 import { windowManager } from "@core/libs/WindowManager"
-import { chaindataProvider } from "@core/rpcs/chaindata"
 import type { MessageTypes, RequestTypes, ResponseType } from "@core/types"
 import { Port } from "@core/types/base"
 import keyring from "@polkadot/ui-keyring"
@@ -30,7 +29,6 @@ import Browser from "webextension-polyfill"
 import { getPrimaryAccount } from "../accounts/helpers"
 import { changePassword } from "./helpers"
 import { protector } from "./protector"
-import { featuresStore } from "./store.features"
 import { PasswordStoreData } from "./store.password"
 
 export default class AppHandler extends ExtensionHandler {
@@ -230,22 +228,12 @@ export default class AppHandler extends ExtensionHandler {
   }
 
   private async openSendFunds({ from, tokenId, to }: SendFundsOpenRequest): Promise<boolean> {
-    if (await featuresStore.isFeatureEnabled("SEND_FUNDS_V2")) {
-      const params = new URLSearchParams()
-      if (from) params.append("from", from)
-      if (tokenId) params.append("tokenId", tokenId)
-      if (to) params.append("to", to)
-      await windowManager.popupOpen(`#/send?${params.toString()}`)
-    } else {
-      // TODO : delete as soon as we remove the SEND_FUNDS_V2 feature flag
-      let transferableTokenId: string | undefined = undefined
-      if (tokenId) {
-        const token = await chaindataProvider.getToken(tokenId)
-        if (token?.chain) transferableTokenId = `${token.id}-${token.chain.id}`
-        else if (token?.evmNetwork) transferableTokenId = `${token.id}-${token.evmNetwork.id}`
-      }
-      await this.openModal({ modalType: "send", from, transferableTokenId })
-    }
+    const params = new URLSearchParams()
+    if (from) params.append("from", from)
+    if (tokenId) params.append("tokenId", tokenId)
+    if (to) params.append("to", to)
+    await windowManager.popupOpen(`#/send?${params.toString()}`)
+
     return true
   }
 

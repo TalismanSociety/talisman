@@ -86,7 +86,7 @@ export const useQrCodeSourceSelectorState = (genesisHash?: string) => {
     setShowPopover(false)
   }
 
-  return { qrCodeSource: source, sources, setSource, showPopover, togglePopover }
+  return { qrCodeSource: source ?? sources[0], sources, setSource, showPopover, togglePopover }
 }
 
 export type QrCodeSourceSelectorProps = {
@@ -106,7 +106,7 @@ export const QrCodeSourceSelector = ({
   showPopover,
   togglePopover,
 }: QrCodeSourceSelectorProps) => {
-  const { t } = useTranslation("sign")
+  const { t } = useTranslation("request")
   return sources.length > 1 ? (
     <Popover placement="bottom-end" open={showPopover} onOpenChange={togglePopover}>
       <PopoverTrigger asChild>

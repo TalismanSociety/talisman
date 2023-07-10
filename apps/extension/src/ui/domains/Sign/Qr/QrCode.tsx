@@ -16,7 +16,7 @@ type Props = {
   }
 }
 export const QrCode = ({ data, image, imageOptions }: Props) => {
-  const { t } = useTranslation("sign")
+  const { t } = useTranslation("request")
   const qrCodeFrames = useRef<Array<string | null> | null>(null)
 
   const [animGeneration, resetQrAnimation] = useReducer((x) => (x + 1) % Number.MAX_SAFE_INTEGER, 0)

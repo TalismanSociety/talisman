@@ -20,7 +20,7 @@ export const ConnectLedgerSubstrate = ({
   const token = useToken(chain?.nativeToken?.id)
   const ledger = useLedgerSubstrate(chain?.genesisHash, true)
   const app = useLedgerSubstrateApp(chain?.genesisHash)
-  const { t } = useTranslation("account-add")
+  const { t } = useTranslation("admin")
 
   useEffect(() => {
     onReadyChanged?.(ledger.isReady)

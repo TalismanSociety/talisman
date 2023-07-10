@@ -1,8 +1,9 @@
-import { WithTooltip } from "@talisman/components/Tooltip"
+import { isEthereumAddress } from "@talismn/util"
+import { AccountIcon } from "@ui/domains/Account/AccountIcon"
 import { Address } from "@ui/domains/Account/Address"
-import AccountAvatar from "@ui/domains/Account/Avatar"
 import { useAccountByAddress } from "@ui/hooks/useAccountByAddress"
-import { FC } from "react"
+import { FC, useMemo } from "react"
+import { Tooltip, TooltipContent, TooltipTrigger } from "talisman-ui"
 
 import { SignParamButton, SignParamButtonProps } from "./SignParamButton"
 
@@ -16,6 +17,7 @@ export const SignParamAccountButton: FC<SignParamAccountButtonProps> = ({
   withIcon,
 }) => {
   const account = useAccountByAddress(address)
+  const isInvalidAddress = useMemo(() => !isEthereumAddress(address), [address])
 
   return (
     <SignParamButton
@@ -24,26 +26,27 @@ export const SignParamAccountButton: FC<SignParamAccountButtonProps> = ({
       withIcon={withIcon}
       iconPrefix={
         account ? (
-          <AccountAvatar
+          <AccountIcon
             className="!h-[1.65rem] !text-[1.65rem] !leading-none"
             address={account.address}
           />
         ) : (
-          <AccountAvatar
+          <AccountIcon
             type="polkadot-identicon"
             className="!h-[1.65rem] !text-[1.65rem] !leading-none"
             address={address}
           />
         )
       }
+      contentClassName={isInvalidAddress ? "!text-alert-warn" : undefined}
     >
       {account?.name ? (
-        <WithTooltip
-          tooltip={address}
-          className="inline-block h-[1.2em] max-w-[16rem] overflow-hidden overflow-ellipsis whitespace-nowrap align-baseline"
-        >
-          {account.name}
-        </WithTooltip>
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <span>{account.name}</span>
+          </TooltipTrigger>
+          <TooltipContent>{address}</TooltipContent>
+        </Tooltip>
       ) : (
         <Address startCharCount={6} endCharCount={4} address={address} />
       )}

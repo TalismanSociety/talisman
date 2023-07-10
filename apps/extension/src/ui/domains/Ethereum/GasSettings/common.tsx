@@ -10,7 +10,7 @@ import { FC, PropsWithChildren, useMemo } from "react"
 import { useTranslation } from "react-i18next"
 
 export const useFeePriorityOptionsUI = () => {
-  const { t } = useTranslation("sign")
+  const { t } = useTranslation("request")
 
   return useMemo<Record<EthPriorityOptionName, { icon: string; label: string }>>(
     () => ({

@@ -65,7 +65,7 @@ export const AnalyticsOptInInfo: FC<{
   className?: string
   children?: ReactNode
 }> = ({ className, children }) => {
-  const { t } = useTranslation("settings")
+  const { t } = useTranslation("admin")
 
   return (
     <AnalyticsContainer className={className}>

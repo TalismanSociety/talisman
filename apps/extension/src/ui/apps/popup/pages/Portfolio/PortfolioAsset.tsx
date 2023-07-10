@@ -21,7 +21,7 @@ const PageContent = ({ balances, symbol }: { balances: Balances; symbol: string 
 
   const total = useMemo(() => balancesToDisplay.sum.fiat("usd").total, [balancesToDisplay])
 
-  const { t } = useTranslation("portfolio")
+  const { t } = useTranslation()
 
   return (
     <>

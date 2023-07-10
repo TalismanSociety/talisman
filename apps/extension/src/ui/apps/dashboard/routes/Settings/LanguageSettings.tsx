@@ -33,7 +33,7 @@ const LanguageButton = ({
 )
 
 export const LanguageSettings = () => {
-  const { t, i18n } = useTranslation("settings")
+  const { t, i18n } = useTranslation("admin")
   const i18nEnabled = useIsFeatureEnabled("I18N")
   const navigate = useNavigate()
 

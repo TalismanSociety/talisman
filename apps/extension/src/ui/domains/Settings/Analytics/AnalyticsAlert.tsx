@@ -24,7 +24,7 @@ type Props = {
 }
 
 export const AlertCard = styled(({ className, onLearnMoreClick, onAccept, onReject }: Props) => {
-  const { t } = useTranslation("settings")
+  const { t } = useTranslation()
   return (
     <Card
       className={className}

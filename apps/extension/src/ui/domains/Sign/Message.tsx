@@ -5,7 +5,7 @@ import { useTranslation } from "react-i18next"
 type MessageProps = { text: string; className?: string; rows?: number }
 
 export const Message: FC<MessageProps> = ({ text, rows, className }) => {
-  const { t } = useTranslation("sign")
+  const { t } = useTranslation("request")
   const [showAll, setShowAll] = useState(false)
   const { value, canShowAll } = useMemo(() => {
     const shouldTruncate = text.length > 1000

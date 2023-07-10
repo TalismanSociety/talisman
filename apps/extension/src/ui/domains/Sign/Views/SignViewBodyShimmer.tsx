@@ -3,7 +3,7 @@ import { LoaderIcon } from "@talisman/theme/icons"
 import { useTranslation } from "react-i18next"
 
 export const SignViewBodyShimmer = () => {
-  const { t } = useTranslation("sign")
+  const { t } = useTranslation("request")
   return (
     <FadeIn className="flex flex-col items-center gap-2 pt-64 leading-[140%]">
       <LoaderIcon className="animate-spin-slow h-16 w-16" />

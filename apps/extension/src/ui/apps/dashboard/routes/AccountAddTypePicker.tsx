@@ -24,7 +24,7 @@ const AccountAddTypePicker = () => {
   const [spiritClanFeatures] = useSetting("spiritClanFeatures")
   const paritySignerEnabled =
     useIsFeatureEnabled("PARITY_SIGNER") || (hasSpiritKey && spiritClanFeatures)
-  const { t } = useTranslation("account-add")
+  const { t } = useTranslation("admin")
 
   return (
     <Layout centered>
@@ -55,7 +55,7 @@ const AccountAddTypePicker = () => {
           iconLeft={FileTextIcon}
           iconRight={ChevronRightIcon}
           title={t("Import via JSON file")}
-          subtitle={t("Import your Polkadot.js account")}
+          subtitle={t("Import your Polkadot.js account(s)")}
           to={`/accounts/add/json`}
         />
         <CtaButton

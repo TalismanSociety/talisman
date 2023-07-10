@@ -151,7 +151,7 @@ const TopActions = () => {
     })
   }, [openCopyAddressModal])
 
-  const { t } = useTranslation("portfolio")
+  const { t } = useTranslation()
 
   return (
     <div className="mt-8 flex justify-center gap-4">
@@ -228,7 +228,7 @@ export const PortfolioAccounts = () => {
   const myBalances = useBalances("portfolio")
   const accounts = useAccounts()
   const { popupOpenEvent } = useAnalytics()
-  const { t } = useTranslation("portfolio")
+  const { t } = useTranslation()
 
   const options: AccountOption[] = useMemo(() => {
     // we use this to avoid looping over the balances list n times, where n is the number of accounts in the wallet

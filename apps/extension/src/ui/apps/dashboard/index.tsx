@@ -7,7 +7,6 @@ import { AccountExportPrivateKeyModalProvider } from "@ui/domains/Account/Accoun
 import { AccountRemoveModalProvider } from "@ui/domains/Account/AccountRemoveModal"
 import { AccountRenameModalProvider } from "@ui/domains/Account/AccountRenameModal"
 import { BuyTokensModalProvider } from "@ui/domains/Asset/Buy/BuyTokensModalContext"
-import { SendTokensModalProvider } from "@ui/domains/Asset/Send/SendTokensModalContext"
 import { CopyAddressModalProvider } from "@ui/domains/CopyAddress"
 import { SelectedAccountProvider } from "@ui/domains/Portfolio/SelectedAccountContext"
 import { useIsLoggedIn } from "@ui/hooks/useIsLoggedIn"
@@ -20,7 +19,7 @@ import { Navigate, Route, Routes, useMatch } from "react-router-dom"
 import Layout from "./layout"
 import About from "./routes/About"
 import AccountAddDerived from "./routes/AccountAddDerived"
-import AccountAddJson from "./routes/AccountAddJson"
+import { AccountAddJsonPage } from "./routes/AccountAddJson"
 import { AccountAddQr } from "./routes/AccountAddQr"
 import { AccountAddSecret } from "./routes/AccountAddSecret"
 import AccountAddTypePicker from "./routes/AccountAddTypePicker"
@@ -90,7 +89,7 @@ const DashboardInner = () => {
           <Route path="add">
             <Route path="" element={<AccountAddTypePicker />} />
             <Route path="derived" element={<AccountAddDerived />} />
-            <Route path="json" element={<AccountAddJson />} />
+            <Route path="json" element={<AccountAddJsonPage />} />
             <Route path="secret/*" element={<AccountAddSecret />} />
             <Route path="ledger/*" element={<AccountAddLedger />} />
             <Route path="qr/*" element={<AccountAddQr />} />
@@ -143,11 +142,9 @@ const Dashboard = () => (
           <AccountExportModalProvider>
             <AccountExportPrivateKeyModalProvider>
               <CopyAddressModalProvider>
-                <SendTokensModalProvider>
-                  <BuyTokensModalProvider>
-                    <DashboardInner />
-                  </BuyTokensModalProvider>
-                </SendTokensModalProvider>
+                <BuyTokensModalProvider>
+                  <DashboardInner />
+                </BuyTokensModalProvider>
               </CopyAddressModalProvider>
             </AccountExportPrivateKeyModalProvider>
           </AccountExportModalProvider>

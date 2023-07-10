@@ -61,7 +61,7 @@ const Settings = () => {
     }
   }, [openMigratePw, openBackupMnemonic, searchParams, setSearchParams])
 
-  const { t } = useTranslation("settings")
+  const { t } = useTranslation("admin")
 
   return (
     <Layout centered>

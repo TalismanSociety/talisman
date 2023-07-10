@@ -16,7 +16,7 @@ const VerifierCertificateOption = ({ text, children }: { text: string; children:
 )
 
 export const ConfigureVerifierCertificateMnemonic = () => {
-  const { t } = useTranslation("account-add")
+  const { t } = useTranslation("admin")
   const { dispatch, state, submit } = useAccountAddQr()
   const hasMnemonic = useHasMnemonic()
 

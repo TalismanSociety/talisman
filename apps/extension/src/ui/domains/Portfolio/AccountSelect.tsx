@@ -279,7 +279,7 @@ const SingleAccountOption = (props: SingleAccountOptionProps) => {
 const AllAccountsOption = ({ withTrack }: AnyAccountOptionProps) => {
   const { sum } = useBalances("portfolio")
   const { total } = useMemo(() => sum.fiat("usd"), [sum])
-  const { t } = useTranslation("portfolio")
+  const { t } = useTranslation()
 
   return <AccountOption name={t("All accounts")} totalUsd={total} withTrack={withTrack} />
 }

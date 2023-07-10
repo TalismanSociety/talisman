@@ -1,7 +1,6 @@
 import { log } from "@core/log"
 import { GenericExtrinsic } from "@polkadot/types"
 import { ErrorBoundary, FallbackRender } from "@sentry/react"
-import * as Sentry from "@sentry/react"
 import { SignViewBodyShimmer } from "@ui/domains/Sign/Views/SignViewBodyShimmer"
 import { useExtrinsic } from "@ui/hooks/useExtrinsic"
 import { FC } from "react"
@@ -35,7 +34,6 @@ const getComponentFromTxDetails = (extrinsic: GenericExtrinsic | null | undefine
       return SubSignXTokensTransfer
     default:
       log.debug("Unknown signing request type", { method })
-      Sentry.captureMessage("Unknown signing request type", { extra: { method } })
       return null
   }
 }

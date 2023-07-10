@@ -22,7 +22,7 @@ import { useEthSignKnownTransactionRequest } from "./shared/useEthSignKnownTrans
 const ALLOWANCE_UNLIMITED = "0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"
 
 export const EthSignBodyErc20Approve: FC = () => {
-  const { t } = useTranslation("sign")
+  const { t } = useTranslation("request")
   const { account, network, transactionInfo } = useEthSignKnownTransactionRequest()
 
   const { tokens } = useTokens(true)

@@ -15,7 +15,7 @@ export const addressBookState = atom<AddressBookContact[]>({
 })
 
 export const useAddressBook = () => {
-  const { t } = useTranslation("settings")
+  const { t } = useTranslation()
   const contacts = useRecoilValue(addressBookState)
 
   const add = useCallback(async ({ address, ...rest }: AddressBookContact) => {
