@@ -1,6 +1,5 @@
 import { ProviderType } from "@core/domains/sitesAuthorised/types"
 import { HeaderBlock } from "@talisman/components/HeaderBlock"
-import Panel from "@talisman/components/Panel"
 import { Spacer } from "@talisman/components/Spacer"
 import { ProviderTypeSwitch } from "@ui/domains/Site/ProviderTypeSwitch"
 import { useAuthorisedSites } from "@ui/hooks/useAuthorisedSites"
@@ -58,7 +57,7 @@ export const AuthorisedSites = () => {
         ))}
         {!sites ||
           (Object.keys(sites).length === 0 && (
-            <Panel>
+            <div className="bg-grey-850 w-full rounded p-8">
               <Trans t={t}>
                 You haven't connected to any sites yet. Why not start with the{" "}
                 <a href="https://app.talisman.xyz" target="_blank" className="text-primary">
@@ -66,11 +65,13 @@ export const AuthorisedSites = () => {
                 </a>
                 ?
               </Trans>
-            </Panel>
+            </div>
           ))}
         {sites && !hasEthereumTrustedSites && providerType === "ethereum" && (
           // This should never be displayed unless we decide to display the provider switcher without check
-          <Panel>{t("You haven't connected to any Ethereum sites yet.")}</Panel>
+          <div className="bg-grey-850 w-full rounded p-8">
+            {t("You haven't connected to any Ethereum sites yet.")}
+          </div>
         )}
       </div>
     </>
