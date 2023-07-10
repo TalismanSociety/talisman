@@ -2,6 +2,7 @@
 
 const { merge } = require("webpack-merge")
 const common = require("./webpack.common.js")
+const webpack = require("webpack")
 const path = require("path")
 const distDir = path.join(__dirname, "..", "dist")
 const CopyPlugin = require("copy-webpack-plugin")
@@ -19,6 +20,11 @@ const config = (env) =>
       ignored: [distDir, path.join(__dirname, "..", "node_modules")],
     },
     plugins: [
+      new webpack.DefinePlugin({
+        "process.env.SUPPORTED_LANGUAGES": JSON.stringify(
+          process.env.SUPPORTED_LANGUAGES || { en: "English" }
+        ),
+      }),
       new CopyPlugin({
         patterns: [
           {
