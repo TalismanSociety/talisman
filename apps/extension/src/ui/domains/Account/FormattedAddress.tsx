@@ -31,12 +31,15 @@ export const FormattedAddress: FC<{
     <Tooltip>
       <TooltipTrigger asChild>
         <span
-          className={classNames("inline-flex items-center gap-[0.5em] overflow-hidden", className)}
+          className={classNames(
+            "flex max-w-full items-center gap-[0.5em] overflow-hidden",
+            className
+          )}
         >
           <AccountIcon
             address={address}
             genesisHash={account?.genesisHash}
-            className="text-[1.2em]"
+            className="text-[1.4em]"
           />
           <span className="max-w-full overflow-hidden text-ellipsis whitespace-nowrap">
             {isKnown && isKnown.type === "account" ? (

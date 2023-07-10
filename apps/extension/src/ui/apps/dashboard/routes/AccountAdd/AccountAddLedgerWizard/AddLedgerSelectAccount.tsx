@@ -1,6 +1,5 @@
 import { LedgerEthDerivationPathType } from "@core/domains/ethereum/types"
 import { yupResolver } from "@hookform/resolvers/yup"
-import { Dropdown } from "@talisman/components/Dropdown"
 import { notify, notifyUpdate } from "@talisman/components/Notifications"
 import { Spacer } from "@talisman/components/Spacer"
 import { sleep } from "@talismn/util"
@@ -12,7 +11,7 @@ import { FC, useCallback, useMemo, useState } from "react"
 import { useForm } from "react-hook-form"
 import { useTranslation } from "react-i18next"
 import { Navigate } from "react-router-dom"
-import { Button } from "talisman-ui"
+import { Button, Dropdown } from "talisman-ui"
 import * as yup from "yup"
 
 import { LedgerAccountDef, useAddLedgerAccount } from "./context"
@@ -54,10 +53,11 @@ const LedgerDerivationPathSelector: FC<LedgerDerivationPathSelectorProps> = ({
   return (
     <Dropdown
       items={items}
-      defaultSelectedItem={defaultSelectedItem}
+      value={defaultSelectedItem}
       propertyKey="key"
-      renderItem={(item) => <div>{item.label}</div>}
+      propertyLabel="label"
       onChange={handleChange}
+      className="w-[32rem]"
     />
   )
 }

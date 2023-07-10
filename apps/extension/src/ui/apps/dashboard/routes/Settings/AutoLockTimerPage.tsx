@@ -1,62 +1,41 @@
 import { SettingsStoreData } from "@core/domains/app/store.settings"
-import { Dropdown, DropdownProps } from "@talisman/components/Dropdown"
 import { HeaderBlock } from "@talisman/components/HeaderBlock"
+import { Spacer } from "@talisman/components/Spacer"
 import { useSetting } from "@ui/hooks/useSettings"
-import { useMemo } from "react"
+import { useCallback, useMemo } from "react"
 import { useTranslation } from "react-i18next"
-import styled from "styled-components"
+import { Dropdown } from "talisman-ui"
 
 import { DashboardLayout } from "../../layout/DashboardLayout"
 
 type AllowedValues = SettingsStoreData["autoLockTimeout"]
 type Option = { value: AllowedValues; label: string }
 
-const PickerItem = styled.div`
-  display: flex;
-  gap: 1rem;
-`
-
-const renderOption = ({ label }: Option) => (
-  <PickerItem>
-    <span>{label}</span>
-  </PickerItem>
-)
-
-// this function syntax is required to get around the issue described in Dropdown.tsx and ensure the component is correctly typed
-const StyledDropdown = styled((props: DropdownProps<Option>) => Dropdown(props))`
-  width: 100%;
-  margin-top: 3.2rem;
-
-  label {
-    display: flex;
-    align-items: center;
-    padding-bottom: 1.6rem;
-    line-height: 1;
-    text-align: left;
-    color: var(--color-mid);
-  }
-
-  button {
-    width: 100%;
-  }
-
-  ul {
-    top: initial;
-  }
-`
-
 export const AutoLockTimerPage = () => {
   const { t } = useTranslation("admin")
   const [autoLockTimeout, setAutoLockTimeout] = useSetting("autoLockTimeout")
 
-  const options: Record<AllowedValues, Option> = useMemo(
-    () => ({
-      0: { value: 0, label: t("Disabled") },
-      300: { value: 300, label: t("5 minutes") },
-      1800: { value: 1800, label: t("30 minutes") },
-      3600: { value: 3600, label: t("60 minutes") },
-    }),
+  const options: Option[] = useMemo(
+    () => [
+      { value: 0, label: t("Disabled") },
+      { value: 300, label: t("5 minutes") },
+      { value: 1800, label: t("30 minutes") },
+      { value: 3600, label: t("60 minutes") },
+    ],
     [t]
+  )
+
+  const handleChange = useCallback(
+    (val: Option | null) => {
+      const newVal = val?.value || 0
+      if (newVal !== autoLockTimeout) setAutoLockTimeout(newVal)
+    },
+    [autoLockTimeout, setAutoLockTimeout]
+  )
+
+  const value = useMemo(
+    () => options.find((o) => o.value === (autoLockTimeout ?? 0)),
+    [autoLockTimeout, options]
   )
 
   return (
@@ -65,18 +44,16 @@ export const AutoLockTimerPage = () => {
         title="Auto-lock Timer"
         text="Set a timer to automatically lock the Talisman wallet extension."
       />
-      <StyledDropdown
-        label="Lock the Talisman extension after inactivity for"
-        className="autolock-dropdown"
-        renderItem={renderOption}
+      <Spacer />
+      <Dropdown
+        label={t("Lock the Talisman extension after inactivity for")}
+        items={options}
+        value={value}
         propertyKey="value"
-        defaultSelectedItem={autoLockTimeout ? options[autoLockTimeout] : options[0]}
-        items={Object.values(options)}
-        onChange={(val) => {
-          const newVal = val?.value || 0
-          if (newVal !== autoLockTimeout) setAutoLockTimeout(newVal)
-        }}
+        propertyLabel="label"
+        onChange={handleChange}
       />
+      <Spacer />
     </DashboardLayout>
   )
 }

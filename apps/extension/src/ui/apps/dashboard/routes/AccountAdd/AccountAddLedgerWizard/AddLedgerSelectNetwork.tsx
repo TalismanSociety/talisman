@@ -1,7 +1,6 @@
 import { AccountAddressType } from "@core/domains/accounts/types"
 import { Chain } from "@core/domains/chains/types"
 import { yupResolver } from "@hookform/resolvers/yup"
-import { Dropdown, RenderItemFunc } from "@talisman/components/Dropdown"
 import { HeaderBlock } from "@talisman/components/HeaderBlock"
 import { Spacer } from "@talisman/components/Spacer"
 import { classNames } from "@talismn/util"
@@ -14,7 +13,7 @@ import { useCallback, useMemo, useState } from "react"
 import { useForm } from "react-hook-form"
 import { useTranslation } from "react-i18next"
 import { useNavigate } from "react-router-dom"
-import { Button } from "talisman-ui"
+import { Button, Dropdown } from "talisman-ui"
 import * as yup from "yup"
 
 import { useAddLedgerAccount } from "./context"
@@ -26,13 +25,11 @@ type FormData = {
   type: AccountAddressType
 }
 
-const renderOption: RenderItemFunc<Chain> = (chain) => {
+const renderOption = (chain: Chain) => {
   return (
-    <div className="flex items-center gap-4 text-base">
-      <ChainLogo id={chain.id} />
-      <span className="flex-grow overflow-hidden text-ellipsis whitespace-nowrap">
-        {chain.name}
-      </span>
+    <div className="flex max-w-full items-center gap-5 overflow-hidden">
+      <ChainLogo id={chain.id} className="text-[1.25em]" />
+      <span className="overflow-hidden text-ellipsis whitespace-nowrap">{chain.name}</span>
     </div>
   )
 }
@@ -43,7 +40,6 @@ export const AddLedgerSelectNetwork = () => {
 
   const navigate = useNavigate()
   const ledgerChains = useLedgerChains()
-  const defaultChain = useChain(defaultValues.chainId as string)
 
   const schema = useMemo(
     () =>
@@ -102,6 +98,8 @@ export const AddLedgerSelectNetwork = () => {
     [setValue]
   )
 
+  const chain = useChain(chainId ?? (defaultValues.chainId as string))
+
   const [isLedgerReady, setIsLedgerReady] = useState(false)
 
   const showStep2 = accountType === "ethereum" || (accountType === "sr25519" && chainId)
@@ -120,10 +118,9 @@ export const AddLedgerSelectNetwork = () => {
             <>
               <h2 className="mb-8 mt-12 text-base">{t("Step 1")}</h2>
               <Dropdown
-                key={defaultChain?.id ?? "DEFAULT"}
                 propertyKey="id"
                 items={ledgerChains}
-                defaultSelectedItem={defaultChain}
+                value={chain}
                 placeholder={t("Select a network")}
                 renderItem={renderOption}
                 onChange={handleNetworkChange}

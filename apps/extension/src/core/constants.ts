@@ -34,6 +34,11 @@ export const IPFS_GATEWAY = "https://talisman.mypinata.cloud/ipfs/"
 export const TALISMAN_WEB_APP_DOMAIN = "app.talisman.xyz"
 export const TALISMAN_WEB_APP_NFTS_URL = "https://app.talisman.xyz/nfts"
 
+// Used for testing the full buying flow
+// The tokens available at this endpoint are not in sync with the production endpoint
+// export const BANXA_URL = "https://talisman.banxa-sandbox.com/"
+export const BANXA_URL = "https://talisman.banxa.com/"
+
 export const NOM_POOL_SUPPORTED_CHAINS = ["polkadot"]
 export const NOM_POOL_MIN_DEPOSIT: Record<string, string> = {
   polkadot: "10000000000",
