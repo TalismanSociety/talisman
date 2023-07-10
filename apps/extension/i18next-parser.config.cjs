@@ -2,9 +2,7 @@
 
 // The key is the `locale` as passed to i18next.
 // The value is the `human-readable name` as passed to the language settings UI in the wallet.
-const languages = process.env.SUPPORTED_LANGUAGES || {
-  en: "English",
-}
+const languages = process.env.SUPPORTED_LANGUAGES || { en: "English" }
 
 module.exports = {
   // use `common` instead of `translation` as the default namespace

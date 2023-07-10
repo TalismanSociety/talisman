@@ -35,14 +35,18 @@ All our package and apps are 100% [TypeScript](https://www.typescriptlang.org/).
 
    `cd talisman`
 
-3. Install dependencies and start the dev server, waiting for it to generate the `dist` directory.
+3. Install dependencies and generate the english translation files (these are loaded by i18next during development).
 
-   `yarn && yarn dev`
+   `yarn && yarn update:translations`
 
-4. Open Chrome and navigate to `chrome://extensions`.
-5. Turn on the `Developer mode` toggle on the top right of the page.
-6. Click `Load unpacked` on the top left of the page and select the `apps/extension/dist` directory.
-7. Change some code!
+4. Start the dev server, waiting for it to generate the `dist` directory.
+
+   `yarn dev:extension`
+
+5. Open Chrome and navigate to `chrome://extensions`.
+6. Turn on the `Developer mode` toggle on the top right of the page.
+7. Click `Load unpacked` on the top left of the page and select the `apps/extension/dist` directory.
+8. Change some code!
 
 ## i18n (wallet extension development)
 
@@ -112,15 +116,26 @@ return (
 )
 ```
 
-5. Once you've finished building your feature, generate the new translation keys for the locales files (and don't forget to commit them!):
+5. If you see one of the following errors in your console:
 
-```bash
+```
+locales/en/common.json:1
+Failed to load resource: net::ERR_FILE_NOT_FOUND
+```
+
+```
+i18next::translator: missingKey en common <i18n-key>
+```
+
+Then update the english translation files with this command:
+
+```sh
 yarn update:translations
-git add apps/extension/public/locales
 ```
 
 ### Scripts
 
+- `update:translations` : finds all of the i18n strings in the codebase and adds them to the english translations files which i18next loads in development builds of the wallet
 - `dev` : builds and watches all packages/apps with hot reloading
 - `dev:extension` : when working on extension only, for better color output
 - `build`: builds the wallet in `packages/apps/extension/dist` folder, without sentry keys
