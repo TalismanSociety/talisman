@@ -6,7 +6,7 @@ import { useSelectedAccount } from "@ui/domains/Portfolio/SelectedAccountContext
 import { useEffect } from "react"
 import { useTranslation } from "react-i18next"
 
-import AccountRename from "./Rename"
+import { AccountRename } from "./AccountRename"
 
 const useAccountRenameModalProvider = () => {
   const { account } = useSelectedAccount()
