@@ -6,6 +6,7 @@ const { DefinePlugin } = require("webpack")
 const apiKey = process.env.SIMPLE_LOCALIZE_API_KEY
 const projectToken = process.env.SIMPLE_LOCALIZE_PROJECT_TOKEN
 const endpoint = `https://api.simplelocalize.io/api/v4/export?downloadFormat=single-language-json&downloadOptions=SPLIT_BY_NAMESPACES`
+const fallbackLanguages = { en: "English" }
 
 module.exports = class SimpleLocalizeDownloadPlugin {
   constructor(
@@ -32,64 +33,44 @@ module.exports = class SimpleLocalizeDownloadPlugin {
     const { devMode } = this.options
     const hasKeys = apiKey && projectToken
 
-    // only fetch translations for prod builds,
-    // and only when the developer has SimpleLocalize keys available
-    const fetchTranslations = !devMode && hasKeys
-
     if (!devMode && !hasKeys)
       console.warn(
         `No SimpleLocalize API key has been configured. This build will use the existing i18n translations at apps/extension/public/locales`
       )
 
+    // only fetch translations for prod builds,
+    // and only when the developer has SimpleLocalize keys available
+    const fetchTranslations = !devMode && hasKeys
+    if (!fetchTranslations) {
+      compiler.hooks.afterPlugins.tap("SimpleLocalizeDownloadPlugin", ({ options }) => {
+        setSupportedLanguages(options, fallbackLanguages)
+      })
+
+      // if we're not fetching translations, stop here
+      // (don't tap into compiler.hooks.beforeRun or compiler.hooks.make)
+      return
+    }
+
     compiler.hooks.beforeRun.tapAsync(
       "SimpleLocalizeDownloadPlugin",
       async ({ options }, callback) => {
-        const definePlugin = options.plugins.find((plugin) => plugin instanceof DefinePlugin)
-        if (!definePlugin) return
-
-        const languages = await (async () => {
-          if (!fetchTranslations) return []
-
-          try {
-            return await simpleLocalizeFetch(
-              `https://cdn.simplelocalize.io/${projectToken}/_latest/_languages`
-            )
-          } catch (error) {
+        const languages = await simpleLocalizeFetch(
+          `https://cdn.simplelocalize.io/${projectToken}/_latest/_languages`
+        )
+          .catch((error) => {
             console.error("Failed to fetch languages list:", error)
             return []
-          }
-        })()
+          })
+          .then((result) => Object.fromEntries(result.map((lang) => [lang.key, lang.name])))
 
-        const supportedLanguages =
-          languages.length > 0
-            ? Object.fromEntries(languages.map((lang) => [lang.key, lang.name]))
-            : { en: "English" }
-
-        console.log("Setting supported languages", supportedLanguages)
-        // Explanation for the double JSON.stringify:
-        //
-        // - first stringify turns JSON into a string e.g. `{ en: "English" }` -> `'{"en":"English"}'`
-        // - second stringify puts string quotes around the string, e.g. `'{"en":"English"}'` -> `'"{\\"en\\":\\"English\\"}"'`
-        //
-        // The first stringify is necessary because process.env['key'] should be of type string, not object.
-        //
-        // The second stringify is necessary because DefinePlugin expects a code fragment, not a string.
-        // From the DefinePlugin docs:
-        // > Note that because the plugin does a direct text replacement,
-        // > the value given to it must include actual quotes inside of the string itself.
-        // >
-        // > Typically, this is done either with either alternate quotes, such as '"production"',
-        // > or by using JSON.stringify('production').
-        definePlugin.definitions["process.env.SUPPORTED_LANGUAGES"] = JSON.stringify(
-          JSON.stringify(supportedLanguages)
+        setSupportedLanguages(
+          options,
+          Object.keys(languages).length > 0 ? languages : fallbackLanguages
         )
 
         callback()
       }
     )
-
-    // if we're not fetching translations, stop here (don't tap into compiler.hooks.make)
-    if (!fetchTranslations) return
 
     compiler.hooks.make.tapAsync("SimpleLocalizeDownloadPlugin", async (compilation, callback) => {
       console.log(`Getting translations from ${endpoint}`)
@@ -120,6 +101,33 @@ module.exports = class SimpleLocalizeDownloadPlugin {
       callback()
     })
   }
+}
+
+const setSupportedLanguages = (options, supportedLanguages = fallbackLanguages) => {
+  const definePlugin = options.plugins.find((plugin) => plugin instanceof DefinePlugin)
+  if (!definePlugin)
+    return console.warn(
+      `No DefinePlugin found - process.env.SUPPORTED_LANGUAGES will not be substituted`
+    )
+
+  console.log("Setting supported languages", supportedLanguages)
+  // Explanation for the double JSON.stringify:
+  //
+  // - first stringify turns JSON into a string e.g. `{ en: "English" }` -> `'{"en":"English"}'`
+  // - second stringify puts string quotes around the string, e.g. `'{"en":"English"}'` -> `'"{\\"en\\":\\"English\\"}"'`
+  //
+  // The first stringify is necessary because process.env['key'] should be of type string, not object.
+  //
+  // The second stringify is necessary because DefinePlugin expects a code fragment, not a string.
+  // From the DefinePlugin docs:
+  // > Note that because the plugin does a direct text replacement,
+  // > the value given to it must include actual quotes inside of the string itself.
+  // >
+  // > Typically, this is done either with either alternate quotes, such as '"production"',
+  // > or by using JSON.stringify('production').
+  definePlugin.definitions["process.env.SUPPORTED_LANGUAGES"] = JSON.stringify(
+    JSON.stringify(supportedLanguages)
+  )
 }
 
 const simpleLocalizeFetch = (url) =>
