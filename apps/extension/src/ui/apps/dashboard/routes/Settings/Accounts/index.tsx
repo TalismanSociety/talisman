@@ -36,8 +36,6 @@ export const Accounts = () => {
   )
   const newFolderModal = useNewFolderModal()
 
-  // TODO: "Followed only" section
-
   return (
     <Layout analytics={ANALYTICS_PAGE} withBack centered backTo="/settings">
       <HeaderBlock

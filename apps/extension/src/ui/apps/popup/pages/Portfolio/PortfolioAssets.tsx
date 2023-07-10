@@ -125,7 +125,7 @@ const PageContent = ({ balances: networkBalances }: { balances: Balances }) => {
                   ? account.name ?? t("Unnamed Account")
                   : folder
                   ? folder.name
-                  : t("All Accounts")}
+                  : t("Total Portfolio")}
               </div>
               <AccountTypeIcon className="text-primary" origin={account?.origin} />
             </div>
