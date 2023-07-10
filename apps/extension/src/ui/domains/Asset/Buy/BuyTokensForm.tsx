@@ -343,6 +343,7 @@ export const BuyTokensForm = () => {
         onTokenButtonClick={handleTokenButtonClick}
         tokensFilter={filterTokens}
         tokenId={tokenId}
+        address={address}
       />
       <Button type="submit" primary disabled={!isValid}>
         {t("Continue")}

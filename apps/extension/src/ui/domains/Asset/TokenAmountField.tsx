@@ -1,18 +1,21 @@
 import { Token } from "@core/domains/tokens/types"
 import { useOpenClose } from "@talisman/hooks/useOpenClose"
-import { ChevronRightIcon } from "@talisman/theme/icons"
+import { ChevronRightIcon, XIcon } from "@talisman/theme/icons"
 import { classNames } from "@talismn/util"
 import useToken from "@ui/hooks/useToken"
 import { useCallback } from "react"
+import { useTranslation } from "react-i18next"
+import { Modal } from "talisman-ui"
 
 import { TokenLogo } from "./TokenLogo"
-import { TokenPickerModal } from "./TokenPickerModal"
+import { TokenPicker } from "./TokenPicker"
 
 type TokenAmountFieldProps = {
   fieldProps: React.DetailedHTMLProps<React.InputHTMLAttributes<HTMLInputElement>, HTMLInputElement>
 } & {
   prefix?: string
   tokenId?: string
+  address?: string
   onTokenChanged?: (tokenId: string) => void
   tokensFilter?: (token: Token) => boolean
   onTokenButtonClick?: () => void // use for analytics only
@@ -25,11 +28,13 @@ type TokenAmountFieldProps = {
 export const TokenAmountField = ({
   prefix,
   tokenId,
+  address,
   onTokenChanged,
   onTokenButtonClick,
   fieldProps,
   tokensFilter,
 }: TokenAmountFieldProps) => {
+  const { t } = useTranslation("common")
   const { open, isOpen, close } = useOpenClose()
   const token = useToken(tokenId)
 
@@ -87,12 +92,25 @@ export const TokenAmountField = ({
           </span>
         )}
       </div>
-      <TokenPickerModal
-        isOpen={isOpen}
-        close={close}
-        filter={tokensFilter}
-        onTokenSelect={handleTokenSelect}
-      />
+      <Modal isOpen={isOpen} onDismiss={close}>
+        <div className=" text-body-secondary bg-grey-850 flex h-[50rem] w-[42rem] flex-col overflow-hidden rounded">
+          <div className="flex w-full items-center p-10">
+            <div className="w-12"></div>
+            <div className="flex-grow text-center">{t("Select a token")}</div>
+            <button className="hover:text-body text-lg" onClick={close}>
+              <XIcon />
+            </button>
+          </div>
+          <TokenPicker
+            className="[&>section]:bg-grey-800 flex-grow"
+            address={address}
+            onSelect={handleTokenSelect}
+            ownedOnly
+            showEmptyBalances
+            tokenFilter={tokensFilter}
+          />
+        </div>
+      </Modal>
     </>
   )
 }
