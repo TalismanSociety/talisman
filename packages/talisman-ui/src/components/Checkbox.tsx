@@ -49,12 +49,18 @@ export const Checkbox: FC<CheckboxProps> = ({
         disabled={disabled}
         {...inputProps}
       />
-      <span
-        className={classNames("text-left", disabled && "text-body-disabled", childProps.className)}
-        {...childProps}
-      >
-        {children}
-      </span>
+      {children && (
+        <span
+          className={classNames(
+            "text-left",
+            disabled && "text-body-disabled",
+            childProps.className
+          )}
+          {...childProps}
+        >
+          {children}
+        </span>
+      )}
     </label>
   )
 }
