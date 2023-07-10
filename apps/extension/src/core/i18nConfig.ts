@@ -7,8 +7,13 @@ import { initReactI18next } from "react-i18next"
 import i18nextParserConfig from "../../i18next-parser.config.cjs"
 
 // juicy human-readable names
-export const languages = i18nextParserConfig.languages as Record<string, string>
-const locales = Object.keys(i18nextParserConfig.languages)
+export const languages: Record<string, string> = process.env.SUPPORTED_LANGUAGES
+  ? // prod builds (fetched from SimpleLocalize)
+    JSON.parse(process.env.SUPPORTED_LANGUAGES)
+  : // dev builds (just English)
+    i18nextParserConfig.languages
+
+const locales = Object.keys(languages)
 
 i18next
   .use(LanguageDetector)
@@ -34,7 +39,8 @@ i18next
       "dev",
 
       // the actual languages
-      // imported from i18next-parser.config.cjs so that these two files are kept in sync
+      // imported from i18next-parser.config.cjs in development so that these two files are kept in sync
+      // fetched from SimpleLocalize as part of the build process for production builds
       ...locales,
     ],
     // use natural language 'en' keys as fallback for languages with no
