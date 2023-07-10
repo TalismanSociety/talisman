@@ -3,9 +3,8 @@ import { classNames } from "@talismn/util"
 import { api } from "@ui/api"
 import useMnemonicBackup from "@ui/hooks/useMnemonicBackup"
 import { useSensitiveState } from "@ui/hooks/useSensitiveState"
-import { useEffect } from "react"
+import { FC, useEffect } from "react"
 import { Trans, useTranslation } from "react-i18next"
-import styled from "styled-components"
 import { Toggle } from "talisman-ui"
 
 import { Mnemonic } from "./Mnemonic"
@@ -46,11 +45,7 @@ const Description = () => {
   )
 }
 
-type MnemonicFormProps = {
-  className?: string
-}
-
-const MnemonicForm = ({ className }: MnemonicFormProps) => {
+const MnemonicFormInner = () => {
   const { t } = useTranslation()
   const { isConfirmed, toggleConfirmed } = useMnemonicBackup()
   const [mnemonic, setMnemonic] = useSensitiveState<string>()
@@ -62,7 +57,7 @@ const MnemonicForm = ({ className }: MnemonicFormProps) => {
   }, [password, setMnemonic])
 
   return (
-    <div className={classNames("flex grow flex-col", className)}>
+    <div className="flex grow flex-col">
       {mnemonic ? (
         <>
           <Mnemonic mnemonic={mnemonic} />
@@ -79,14 +74,7 @@ const MnemonicForm = ({ className }: MnemonicFormProps) => {
   )
 }
 
-const StyledMnemonicForm = styled(MnemonicForm)`
-  .toggle {
-    flex-direction: row;
-    justify-content: flex-end;
-  }
-`
-
-const WrappedMnemonicForm = ({ className }: MnemonicFormProps) => {
+export const MnemonicForm: FC<{ className?: string }> = ({ className }) => {
   const { t } = useTranslation()
   return (
     <div className={classNames("flex h-[47rem] flex-col", className)}>
@@ -100,10 +88,8 @@ const WrappedMnemonicForm = ({ className }: MnemonicFormProps) => {
           </span>
         }
       >
-        <StyledMnemonicForm />
+        <MnemonicFormInner />
       </PasswordUnlock>
     </div>
   )
 }
-
-export default WrappedMnemonicForm
