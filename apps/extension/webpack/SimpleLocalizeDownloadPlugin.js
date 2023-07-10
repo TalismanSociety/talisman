@@ -37,6 +37,14 @@ const getNamespaceUrls = () =>
 
 class SimpleLocalizeDownloadPlugin {
   apply(compiler) {
+    // Do nothing if dev hasn't configured an api key for simplelocalize
+    if (!apiKey || !projectToken) {
+      console.warn(
+        `No SimpleLocalize API key has been configured. This build will use the existing i18n translations at apps/extension/public/locales`
+      )
+      return
+    }
+
     const {
       webpack: {
         sources: { RawSource },
