@@ -64,7 +64,7 @@ export const MnemonicForm = ({ onSubmit, onCancel }: FormProps) => {
   const wordCount = useMemo(() => cleanupMnemonic(mnemonic).split(" ").length ?? 0, [mnemonic])
 
   return (
-    <Form className={classNames("show")} data-button-pull-left onSubmit={handleSubmit(onSubmit)}>
+    <Form className={classNames("show")} onSubmit={handleSubmit(onSubmit)}>
       <div className="text-body-secondary mb-6">
         <Trans t={t}>
           Please enter a mnemonic you would like to use as your Verifier Certificate Mnemonic. You

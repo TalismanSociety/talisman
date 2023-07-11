@@ -4,8 +4,6 @@ import { hideScrollbarsStyle, scrollbarsStyle } from "./styles"
 
 const Global = createGlobalStyle`
 
-
-
   *:not(.allow-focus):focus{
       outline: none;
   }
@@ -15,24 +13,6 @@ const Global = createGlobalStyle`
     opacity: 0.4;
   }
 
-  .notification-container{
-    z-index: 998
-  }
-
-  .modal-container{
-    z-index: 999
-  }
-
-  form[data-button-pull-left]{
-    display: flex;
-    flex-direction: column;
-    align-items: stretch;
-    >.button:last-of-type,
-    >button:last-of-type{
-      align-self: flex-end;
-    }
-  }
-
   .scrollbars {
     ${scrollbarsStyle()}
   }
@@ -40,8 +20,6 @@ const Global = createGlobalStyle`
   .hide-scrollbars {
     ${hideScrollbarsStyle}
   }
-
-  
 
   /* revealable balances */
   .balance-revealable {
