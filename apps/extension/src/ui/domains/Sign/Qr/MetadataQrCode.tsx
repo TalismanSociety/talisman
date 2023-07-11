@@ -1,4 +1,5 @@
 import { IS_FIREFOX } from "@core/constants"
+import { SignerPayloadGenesisHash } from "@core/domains/signing/types"
 import { hexToU8a } from "@polkadot/util"
 import { useQuery } from "@tanstack/react-query"
 import { api } from "@ui/api"
@@ -8,7 +9,11 @@ import { useImageLoaded } from "@ui/hooks/useImageLoaded"
 import { QrCode } from "./QrCode"
 import { QrCodeSource, qrCodeLogoForSource } from "./QrCodeSourceSelector"
 
-type Props = { genesisHash: string; specVersion: string; qrCodeSource: QrCodeSource }
+type Props = {
+  genesisHash: SignerPayloadGenesisHash
+  specVersion: string
+  qrCodeSource: QrCodeSource
+}
 
 export const MetadataQrCode = ({ genesisHash, specVersion, qrCodeSource }: Props) => {
   const chain = useChainByGenesisHash(genesisHash)

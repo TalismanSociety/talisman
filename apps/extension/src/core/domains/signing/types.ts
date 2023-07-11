@@ -133,6 +133,8 @@ export type TransactionDetails = {
   partialFee?: string
 }
 
+export type SignerPayloadGenesisHash = SignerPayloadJSON["genesisHash"] // extracting this out because it's liable to change to HexString in future
+
 // eth fees types ----------------------------------
 export type EthPriorityOptionNameEip1559 = "low" | "medium" | "high" | "custom"
 export type EthPriorityOptionNameLegacy = "recommended" | "custom"

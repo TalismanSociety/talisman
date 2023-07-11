@@ -40,7 +40,7 @@ const sortAccountsByWhenCreated = (accounts: AccountJsonAny[]) => {
 
 export const sortAccounts = (accounts: SubjectInfo): AccountJsonAny[] => {
   const transformedAccounts = Object.values(accounts).map(
-    ({ json: { address, meta }, type }: SingleAddress): AccountJsonAny => ({
+    ({ json: { address, meta }, type }): AccountJsonAny => ({
       address,
       ...meta,
       type,

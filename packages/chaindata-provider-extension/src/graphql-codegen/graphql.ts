@@ -117,11 +117,10 @@ export type Chain = {
   /** chain-specified name for this chain */
   chainName: Maybe<Scalars["String"]>
   /** chainspec qr url for this chain */
-  chainspecQrUrl: Maybe<Scalars["String"]>
   /** evm networks on this chain */
   evmNetworks: Array<EvmNetwork>
   /** hash of the first block on this chain */
-  genesisHash: Maybe<Scalars["String"]>
+  genesisHash: Maybe<`0x${Scalars["String"]}`>
   /** the id for this chain (talisman-defined) */
   id: Scalars["String"]
   /** implementation name for this chain */
@@ -1111,7 +1110,7 @@ export type ChainsQuery = {
     id: string
     isTestnet: boolean
     sortIndex: number | null
-    genesisHash: string | null
+    genesisHash: `0x${string}` | null
     prefix: number | null
     name: string | null
     themeColor: string | null

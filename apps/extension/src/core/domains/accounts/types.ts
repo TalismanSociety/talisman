@@ -1,19 +1,24 @@
 import { Address } from "@core/types/base"
 import type {
   AccountJson,
+  RequestAccountCreateExternal,
   RequestAccountCreateHardware,
   RequestAccountSubscribe,
   ResponseAccountExport,
 } from "@polkadot/extension-base/background/types"
 import { KeyringPair$Json } from "@polkadot/keyring/types"
 
-export type { ResponseAccountExport, RequestAccountCreateHardware, AccountJson }
+export type {
+  ResponseAccountExport,
+  RequestAccountCreateHardware,
+  AccountJson,
+  RequestAccountCreateExternal,
+}
 
 export type {
   RequestAccountList,
   RequestAccountBatchExport,
   RequestAccountChangePassword,
-  RequestAccountCreateExternal,
   RequestAccountCreateSuri,
   RequestAccountEdit,
   RequestAccountShow,
@@ -24,25 +29,32 @@ export type {
 
 // account types ----------------------------------
 
-export interface AccountJsonHardwareSubstrate extends AccountJson {
+type AccountJsonHardwareSubstrateOwnProperties = {
   isHardware: true
   accountIndex: number
   addressOffset: number
-  genesisHash: string
 }
 
-export interface AccountJsonHardwareEthereum extends AccountJson {
+export type AccountJsonHardwareSubstrate = AccountJson & AccountJsonHardwareSubstrateOwnProperties
+
+type AccountJsonHardwareEthereumOwnProperties = {
   isHardware: true
   path: string
 }
 
-export interface AccountJsonQr extends AccountJson {
+export type AccountJsonHardwareEthereum = AccountJson & AccountJsonHardwareEthereumOwnProperties
+
+type AccountJsonQrOwnProperties = {
   isQr: true
 }
 
-export interface AccountJsonWatched extends AccountJson {
+export type AccountJsonQr = AccountJson & AccountJsonQrOwnProperties
+
+type AccountJsonWatchedOwnProperties = {
   isPortfolio: boolean
 }
+
+export type AccountJsonWatched = AccountJson & AccountJsonWatchedOwnProperties
 
 export type AccountJsonAny = (
   | AccountJsonHardwareEthereum
@@ -111,12 +123,6 @@ export interface RequestAccountCreateHardwareEthereum {
   path: string
 }
 
-export interface RequestAccountCreateQr {
-  name: string
-  address: string
-  genesisHash: string | null
-}
-
 export interface RequestAccountCreateWatched {
   name: string
   address: string
@@ -162,7 +168,7 @@ export interface AccountsMessages {
     string
   ]
   "pri(accounts.create.hardware.ethereum)": [RequestAccountCreateHardwareEthereum, string]
-  "pri(accounts.create.qr.substrate)": [RequestAccountCreateQr, string]
+  "pri(accounts.create.qr.substrate)": [RequestAccountCreateExternal, string]
   "pri(accounts.create.watched)": [RequestAccountCreateWatched, string]
   "pri(accounts.forget)": [RequestAccountForget, boolean]
   "pri(accounts.export)": [RequestAccountExport, ResponseAccountExport]

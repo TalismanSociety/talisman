@@ -1,4 +1,5 @@
 import { copySeedStoreToVerifierCertificateStore } from "@core/domains/accounts/helpers"
+import { HexString } from "@polkadot/util/types"
 import { notify, notifyUpdate } from "@talisman/components/Notifications"
 import { provideContext } from "@talisman/util/provideContext"
 import { decodeAnyAddress } from "@talismn/util"
@@ -14,7 +15,7 @@ import { useTranslation } from "react-i18next"
 type AccountConfigState = {
   name: string
   address: string
-  genesisHash: string | null
+  genesisHash: HexString | null
   lockToNetwork: boolean
 }
 
@@ -43,7 +44,10 @@ type Action =
   | { method: "enableScan" }
   | { method: "setScanError"; error: string }
   | { method: "setCameraError"; error: string }
-  | { method: "onScan"; scanned?: { content: string; genesisHash: string; isAddress: boolean } }
+  | {
+      method: "onScan"
+      scanned?: { content: string; genesisHash: HexString | null; isAddress: boolean }
+    }
   | { method: "setName"; name: string }
   | { method: "setLockToNetwork"; lockToNetwork: boolean }
   | { method: "setSubmitting" }
@@ -73,7 +77,7 @@ export const reducer = (state: AddQrState, action: Action): AddQrState => {
 
       if (decodeAnyAddress(address).byteLength !== 32)
         return { type: "SCAN", enable: true, scanError: "QR code contains an invalid address" }
-      if (!genesisHash.startsWith("0x"))
+      if (!genesisHash || !genesisHash.startsWith("0x"))
         return { type: "SCAN", enable: true, scanError: "QR code contains an invalid genesisHash" }
 
       return {

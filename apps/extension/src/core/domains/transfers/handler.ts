@@ -21,6 +21,7 @@ import { chaindataProvider } from "@core/rpcs/chaindata"
 import type { RequestSignatures, RequestTypes, ResponseType } from "@core/types"
 import { Port } from "@core/types/base"
 import { getPrivateKey } from "@core/util/getPrivateKey"
+import { isStringHexString } from "@core/util/isStringHexString"
 import { TransactionRequest } from "@ethersproject/abstract-provider"
 import { assert } from "@polkadot/util"
 import { HexString } from "@polkadot/util/types"
@@ -251,8 +252,9 @@ export default class AssetTransferHandler extends ExtensionHandler {
     signature,
     transferInfo,
   }: RequestAssetTransferApproveSign): Promise<ResponseAssetTransfer> {
-    const chain = await chaindataProvider.getChain({ genesisHash: unsigned.genesisHash })
-    if (!chain) throw new Error(`Could not find chain for genesisHash ${unsigned.genesisHash}`)
+    const genesisHash = isStringHexString(unsigned.genesisHash)
+    const chain = await chaindataProvider.getChain({ genesisHash })
+    if (!chain) throw new Error(`Could not find chain for genesisHash ${genesisHash}`)
 
     const hash = await AssetTransfersRpc.transferSigned(unsigned, signature, transferInfo)
     return { hash }

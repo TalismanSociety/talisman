@@ -3,7 +3,7 @@ import { RequestMetadataApprove, RequestMetadataReject } from "@core/domains/met
 import { ExtensionHandler } from "@core/libs/Handler"
 import { requestStore } from "@core/libs/requests/store"
 import { log } from "@core/log"
-import type { MessageTypes, RequestTypes, ResponseType } from "@core/types"
+import type { MessageTypes, RequestType, RequestTypes, ResponseType } from "@core/types"
 import { Port } from "@core/types/base"
 import { assert } from "@polkadot/util"
 
@@ -59,7 +59,7 @@ export default class MetadataHandler extends ExtensionHandler {
         return this.metadataReject(request as RequestMetadataReject)
 
       case "pri(metadata.updates.subscribe)": {
-        const { id: genesisHash } = request as RequestTypes["pri(metadata.updates.subscribe)"]
+        const { id: genesisHash } = request as RequestType<"pri(metadata.updates.subscribe)">
         return metadataUpdatesStore.subscribe(id, port, genesisHash)
       }
 

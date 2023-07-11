@@ -1,5 +1,5 @@
 import { DEBUG, TALISMAN_WEB_APP_DOMAIN, TEST } from "@core/constants"
-import { AccountMeta, AccountTypes } from "@core/domains/accounts/types"
+import { AccountTypes } from "@core/domains/accounts/types"
 import { AppStoreData } from "@core/domains/app/store.app"
 import type {
   AnalyticsCaptureRequest,
@@ -82,7 +82,7 @@ export default class AppHandler extends ExtensionHandler {
     const { pair } = keyring.addUri(mnemonic, transformedPw, {
       name: "My Polkadot Account",
       origin: mnemonic ? AccountTypes.SEED_STORED : AccountTypes.TALISMAN,
-    } as AccountMeta)
+    })
     await this.stores.seedPhrase.add(mnemonic, transformedPw, confirmed)
 
     try {

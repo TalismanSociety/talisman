@@ -1,4 +1,4 @@
-import { AccountMeta, AccountTypes } from "@core/domains/accounts/types"
+import { AccountTypes } from "@core/domains/accounts/types"
 import { signSubstrate } from "@core/domains/signing/requests"
 import { requestStore } from "@core/libs/requests/store"
 import { windowManager } from "@core/libs/WindowManager"
@@ -15,7 +15,7 @@ const createAccount = () => {
   const { pair } = keyring.addUri(mnemonic, password, {
     name: "Test Account",
     origin: AccountTypes.TALISMAN,
-  } as AccountMeta)
+  })
   return pair
 }
 

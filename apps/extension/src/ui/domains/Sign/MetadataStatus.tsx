@@ -1,10 +1,11 @@
+import { HexString } from "@polkadot/util/types"
 import { useMetadataUpdates } from "@ui/hooks/useMetadataUpdates"
 import { FC } from "react"
 import { Trans, useTranslation } from "react-i18next"
 
 import { SignAlertMessage } from "./SignAlertMessage"
 
-export const MetadataStatus: FC<{ genesisHash?: string; specVersion?: number }> = ({
+export const MetadataStatus: FC<{ genesisHash?: HexString; specVersion?: number }> = ({
   genesisHash,
   specVersion,
 }) => {
