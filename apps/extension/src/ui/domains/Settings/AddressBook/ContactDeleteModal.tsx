@@ -1,9 +1,9 @@
-import { ModalDialog } from "@talisman/components/ModalDialog"
 import { AnalyticsPage, sendAnalyticsEvent } from "@ui/api/analytics"
 import { useAddressBook } from "@ui/hooks/useAddressBook"
 import { useAnalyticsPageView } from "@ui/hooks/useAnalyticsPageView"
 import { useCallback } from "react"
 import { Trans, useTranslation } from "react-i18next"
+import { ModalDialog } from "talisman-ui"
 import { Button, Modal } from "talisman-ui"
 
 import { ContactModalProps } from "./types"

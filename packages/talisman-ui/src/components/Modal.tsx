@@ -57,7 +57,10 @@ export const Modal: FC<ModalProps> = ({
         )}
       >
         <Transition.Child
-          className={classNames("pointer-events-auto", className)}
+          className={classNames(
+            "pointer-events-auto max-h-full max-w-full overflow-hidden",
+            className
+          )}
           enter="ease-out duration-200"
           enterFrom="opacity-0 scale-90"
           enterTo="opacity-100 scale-100"

@@ -1,7 +1,7 @@
-import { ModalDialog } from "@talisman/components/ModalDialog"
 import { StatusIcon } from "@talisman/components/StatusIcon"
 import { statusOptions } from "@talisman/hooks/useStatus"
 import { useTranslation } from "react-i18next"
+import { ModalDialog } from "talisman-ui"
 import { Modal } from "talisman-ui"
 
 import { BackUpMnemonicDialog } from "./BackUpMnemonicDialog"

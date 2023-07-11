@@ -1,13 +1,11 @@
 import { AccountType } from "@core/domains/accounts/types"
-import StyledDialog from "@talisman/components/Dialog"
-import { ModalDialog } from "@talisman/components/ModalDialog"
 import { useOpenClose } from "@talisman/hooks/useOpenClose"
-import { IconAlert } from "@talisman/theme/icons"
 import { provideContext } from "@talisman/util/provideContext"
 import { api } from "@ui/api"
 import { useSelectedAccount } from "@ui/domains/Portfolio/SelectedAccountContext"
 import { useCallback, useEffect, useMemo, useState } from "react"
-import { useTranslation } from "react-i18next"
+import { Trans, useTranslation } from "react-i18next"
+import { Button, ModalDialog } from "talisman-ui"
 import { Modal } from "talisman-ui"
 
 const REMOVABLE_ORIGINS: AccountType[] = ["DERIVED", "SEED", "WATCHED", "JSON", "QR", "HARDWARE"]
@@ -56,16 +54,28 @@ export const AccountRemoveModal = () => {
 
   return (
     <Modal isOpen={isOpen} onDismiss={close}>
-      <ModalDialog title={t("Remove account {{accountName}}", { accountName })} onClose={close}>
-        <StyledDialog
-          icon={<IconAlert />}
-          title={t("Are you sure?")}
-          text={t("Ensure you have backed up your recovery phrase or private key before removing.")}
-          confirmText={t("Remove")}
-          cancelText={t("Cancel")}
-          onConfirm={handleConfirm}
-          onCancel={close}
-        />
+      <ModalDialog title={t("Remove account")} onClose={close}>
+        <div className="text-body-secondary text-sm">
+          <p className="text-sm">
+            <Trans
+              t={t}
+              defaults="Confirm to remove account <Highlight>{{accountName}}</Highlight>."
+              components={{ Highlight: <span className="text-body" /> }}
+              values={{ accountName }}
+            />
+          </p>
+          <p className="mt-4 text-sm">
+            {t("Ensure you have backed up your recovery phrase or private key before removing.")}
+          </p>
+          <div className="mt-8 grid grid-cols-2 gap-8">
+            <Button type="button" onClick={close}>
+              {t("Cancel")}
+            </Button>
+            <Button primary onClick={handleConfirm}>
+              {t("Remove")}
+            </Button>
+          </div>
+        </div>
       </ModalDialog>
     </Modal>
   )

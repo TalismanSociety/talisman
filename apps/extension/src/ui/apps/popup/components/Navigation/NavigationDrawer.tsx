@@ -1,5 +1,4 @@
 import { Drawer } from "@talisman/components/Drawer"
-import { IconButton } from "@talisman/components/IconButton"
 import Nav, { NavItemButton } from "@talisman/components/Nav"
 import { ScrollContainer } from "@talisman/components/ScrollContainer"
 import {
@@ -25,6 +24,7 @@ import { useSetting } from "@ui/hooks/useSettings"
 import { FC, useCallback } from "react"
 import { useTranslation } from "react-i18next"
 import styled from "styled-components"
+import { IconButton } from "talisman-ui"
 
 const Container = styled.aside`
   width: 100%;

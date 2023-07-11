@@ -1,12 +1,10 @@
 import { ProviderType } from "@core/domains/sitesAuthorised/types"
 import { Accordion, AccordionIcon } from "@talisman/components/Accordion"
-import Dialog from "@talisman/components/Dialog"
 import { Favicon } from "@talisman/components/Favicon"
-import { ModalDialog } from "@talisman/components/ModalDialog"
-import { ReactComponent as IconAlert } from "@talisman/theme/icons/alert-circle.svg"
 import useAuthorisedSiteById from "@ui/hooks/useAuthorisedSiteById"
 import { FC, useCallback, useState } from "react"
-import { useTranslation } from "react-i18next"
+import { Trans, useTranslation } from "react-i18next"
+import { Button, ModalDialog } from "talisman-ui"
 import { Modal, useOpenClose } from "talisman-ui"
 
 import { AuthorisedSiteAccount } from "./AuthorisedSiteAccount"
@@ -18,21 +16,35 @@ const Title: FC<{ name: string; domain: string }> = ({ name, domain }) => (
   </div>
 )
 
-const ConfirmForgetDialog: FC<{ onConfirm: () => void; onCancel: () => void }> = ({
-  onConfirm,
-  onCancel,
-}) => {
+const ConfirmForgetDialog: FC<{
+  siteLabel: string
+  onConfirm: () => void
+  onCancel: () => void
+}> = ({ siteLabel, onConfirm, onCancel }) => {
   const { t } = useTranslation("admin")
+
   return (
-    <Dialog
-      icon={<IconAlert />}
-      title={t("Are you sure?")}
-      text={t("You can always reconnect to this site by visiting it in the future.")}
-      confirmText={t("Forget Site")}
-      cancelText={t("Cancel")}
-      onConfirm={onConfirm}
-      onCancel={onCancel}
-    />
+    <div className="text-body-secondary text-sm">
+      <p className="text-sm">
+        <Trans
+          t={t}
+          defaults="Confirm to forget <Highlight>{{siteLabel}}</Highlight>."
+          components={{ Highlight: <span className="text-body" /> }}
+          values={{ siteLabel }}
+        />
+      </p>
+      <p className="mt-4 text-sm">
+        {t("You can always reconnect to this site by visiting it in the future.")}
+      </p>
+      <div className="mt-8 grid grid-cols-2 gap-8">
+        <Button type="button" onClick={onCancel}>
+          {t("Cancel")}
+        </Button>
+        <Button primary onClick={onConfirm}>
+          {t("Forget Site")}
+        </Button>
+      </div>
+    </div>
   )
 }
 
@@ -100,8 +112,12 @@ export const AuthorizedSite: FC<{
         </div>
       </Accordion>
       <Modal isOpen={showForget} onDismiss={hideForget}>
-        <ModalDialog title={t("Confirm Forget")} onClose={hideForget}>
-          <ConfirmForgetDialog onConfirm={confirmForget} onCancel={hideForget} />
+        <ModalDialog title={t("Forget Site")} onClose={hideForget}>
+          <ConfirmForgetDialog
+            siteLabel={origin ?? id}
+            onConfirm={confirmForget}
+            onCancel={hideForget}
+          />
         </ModalDialog>
       </Modal>
     </div>

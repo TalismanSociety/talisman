@@ -1,4 +1,3 @@
-import { IconButton } from "@talisman/components/IconButton"
 import { EyeIcon, EyeOffIcon } from "@talisman/theme/icons"
 import Fiat from "@ui/domains/Asset/Fiat"
 import { useAnalytics } from "@ui/hooks/useAnalytics"
@@ -7,6 +6,7 @@ import { useSetting } from "@ui/hooks/useSettings"
 import { FC, useCallback } from "react"
 import { useTranslation } from "react-i18next"
 import styled from "styled-components"
+import { IconButton } from "talisman-ui"
 
 const ToggleHide = styled(IconButton).attrs((props: { showIcon?: boolean }) => ({
   showIcon: !!props.showIcon,

@@ -1,5 +1,4 @@
 import { TALISMAN_WEB_APP_NFTS_URL } from "@core/constants"
-import { IconButton } from "@talisman/components/IconButton"
 import Nav, { NavItemButton, NavItemLink } from "@talisman/components/Nav"
 import { ScrollContainer } from "@talisman/components/ScrollContainer"
 import { WithTooltip } from "@talisman/components/Tooltip"
@@ -34,6 +33,7 @@ import { useTranslation } from "react-i18next"
 import { useNavigate } from "react-router-dom"
 import { useWindowSize } from "react-use"
 import styled from "styled-components"
+import { IconButton } from "talisman-ui"
 import { PillButton, PillButtonProps, Tooltip, TooltipContent, TooltipTrigger } from "talisman-ui"
 
 const PaddedItem = styled.div`

@@ -1,7 +1,8 @@
-import { ReactComponent as IconClose } from "@talisman/theme/icons/x.svg"
 import { classNames } from "@talismn/util"
 import { FC, ReactNode } from "react"
-import { IconButton } from "talisman-ui"
+
+import { IconX } from "../icons"
+import { IconButton } from "./IconButton"
 
 type ModalDialogProps = {
   className?: string
@@ -21,7 +22,7 @@ export const ModalDialog: FC<ModalDialogProps> = ({
   return (
     <div
       className={classNames(
-        "bg-grey-850 border-grey-800 flex max-h-full w-[42rem] max-w-full flex-col overflow-hidden rounded border",
+        "border-grey-850 flex max-h-full w-[42rem] max-w-full flex-col overflow-hidden rounded border bg-black",
         className
       )}
       tabIndex={-1} // reset to prevent tab key from giving focus to elements below the modal
@@ -30,7 +31,7 @@ export const ModalDialog: FC<ModalDialogProps> = ({
         {centerTitle && <div className="w-12 shrink-0"></div>}
         <h1
           className={classNames(
-            "flex-grow overflow-hidden text-base",
+            "flex-grow overflow-hidden text-ellipsis whitespace-nowrap text-base",
             centerTitle && "text-center"
           )}
         >
@@ -38,7 +39,7 @@ export const ModalDialog: FC<ModalDialogProps> = ({
         </h1>
         {onClose && (
           <IconButton onClick={onClose}>
-            <IconClose />
+            <IconX />
           </IconButton>
         )}
       </header>

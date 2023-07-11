@@ -1,9 +1,9 @@
 import { appStore } from "@core/domains/app/store.app"
-import { ModalDialog } from "@talisman/components/ModalDialog"
 import { useIsBrave } from "@talisman/hooks/useIsBrave"
 import { useOpenClose } from "@talisman/hooks/useOpenClose"
 import { useCallback, useEffect, useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
+import { ModalDialog } from "talisman-ui"
 import { Drawer, Modal } from "talisman-ui"
 
 import { BraveWarningCard } from "./BraveWarningCard"

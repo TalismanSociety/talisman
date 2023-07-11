@@ -1,6 +1,6 @@
-import { ModalDialog } from "@talisman/components/ModalDialog"
 import { MnemonicForm } from "@ui/domains/Account/MnemonicForm"
 import { useTranslation } from "react-i18next"
+import { ModalDialog } from "talisman-ui"
 import { Modal } from "talisman-ui"
 
 type MnemonicModalProps = {

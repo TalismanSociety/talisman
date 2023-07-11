@@ -1,5 +1,5 @@
-import { ModalDialog } from "@talisman/components/ModalDialog"
 import { useTranslation } from "react-i18next"
+import { ModalDialog } from "talisman-ui"
 import { Modal } from "talisman-ui"
 
 import { BuyTokensForm } from "./BuyTokensForm"
