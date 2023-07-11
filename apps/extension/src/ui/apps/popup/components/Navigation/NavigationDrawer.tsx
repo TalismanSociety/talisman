@@ -6,7 +6,6 @@ import {
   CreditCardIcon,
   DownloadAlertIcon,
   DownloadIcon,
-  ExternalLinkIcon,
   EyeIcon,
   EyeOffIcon,
   LockIcon,
@@ -76,11 +75,6 @@ const Container = styled.aside`
       background: var(--color-background-muted);
     }
   }
-`
-
-export const ExtLinkIcon = styled(ExternalLinkIcon)`
-  vertical-align: text-top;
-  display: inline;
 `
 
 const ANALYTICS_PAGE: AnalyticsPage = {
