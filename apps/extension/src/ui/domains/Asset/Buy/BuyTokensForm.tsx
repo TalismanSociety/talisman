@@ -4,7 +4,6 @@ import { Chain } from "@core/domains/chains/types"
 import { Token } from "@core/domains/tokens/types"
 import { yupResolver } from "@hookform/resolvers/yup"
 import { isEthereumAddress } from "@polkadot/util-crypto"
-import { SimpleButton } from "@talisman/components/SimpleButton"
 import { githubChaindataBaseUrl } from "@talismn/chaindata-provider"
 import { encodeAnyAddress } from "@talismn/util"
 import { AnalyticsPage, sendAnalyticsEvent } from "@ui/api/analytics"
@@ -16,38 +15,11 @@ import useTokens from "@ui/hooks/useTokens"
 import { useCallback, useEffect, useMemo, useState } from "react"
 import { useForm } from "react-hook-form"
 import { useTranslation } from "react-i18next"
-import styled from "styled-components"
-import { Dropdown, DropdownOptionRender } from "talisman-ui"
+import { Button, Dropdown, DropdownOptionRender } from "talisman-ui"
 import * as yup from "yup"
 
 import { TokenAmountField } from "../TokenAmountField"
 import { useBuyTokensModal } from "./BuyTokensModalContext"
-
-const Form = styled.form`
-  padding-top: 3rem;
-  display: flex;
-  flex-direction: column;
-  gap: 1.6rem;
-`
-
-const Button = styled(SimpleButton)`
-  width: 100%;
-  font-size: 1.8rem;
-  height: 5.6rem;
-
-  :disabled {
-    background: var(--color-background-muted-3x);
-    color: var(--color-background-muted-2x);
-    opacity: 1;
-  }
-`
-
-const Caption = styled.div`
-  color: var(--color-background-muted-2x);
-  font-size: 1.2rem;
-  line-height: 1.2rem;
-  font-weight: 500;
-`
 
 // list to keep up to date, it's used when github is unreachable
 const DEFAULT_BUY_TOKEN_IDS = [
@@ -269,7 +241,7 @@ export const BuyTokensForm = () => {
   }, [])
 
   return (
-    <Form onSubmit={handleSubmit(submit)}>
+    <form className="mt-14 flex flex-col gap-8" onSubmit={handleSubmit(submit)}>
       <Dropdown
         items={accounts as AccountJsonAny[]}
         propertyKey="address"
@@ -293,7 +265,9 @@ export const BuyTokensForm = () => {
       <Button type="submit" primary disabled={!isValid}>
         {t("Continue")}
       </Button>
-      <Caption>{t("You will be taken to Banxa to complete this transaction")}</Caption>
-    </Form>
+      <div className="text-body-disabled text-xs leading-none">
+        {t("You will be taken to Banxa to complete this transaction")}
+      </div>
+    </form>
   )
 }
