@@ -1,6 +1,5 @@
 import { yupResolver } from "@hookform/resolvers/yup"
 import { isEthereumAddress } from "@polkadot/util-crypto"
-import { Modal } from "@talisman/components/Modal"
 import { ModalDialog } from "@talisman/components/ModalDialog"
 import { notify } from "@talisman/components/Notifications"
 import { convertAddress } from "@talisman/util/convertAddress"
@@ -13,7 +12,7 @@ import { useAnalyticsPageView } from "@ui/hooks/useAnalyticsPageView"
 import { useCallback, useEffect, useMemo } from "react"
 import { useForm } from "react-hook-form"
 import { useTranslation } from "react-i18next"
-import { Button, FormFieldContainer, FormFieldInputText } from "talisman-ui"
+import { Button, FormFieldContainer, FormFieldInputText, Modal } from "talisman-ui"
 import * as yup from "yup"
 
 import { ContactModalProps } from "./types"
@@ -146,7 +145,7 @@ export const ContactCreateModal = ({ isOpen, close }: ContactModalProps) => {
   useAnalyticsPageView(ANALYTICS_PAGE)
 
   return (
-    <Modal open={isOpen} className="bg-black-secondary" onClose={close}>
+    <Modal isOpen={isOpen} onDismiss={close}>
       <ModalDialog title="Add new contact">
         <form onSubmit={handleSubmit(submit)} className="grid gap-8">
           <FormFieldContainer error={errors.name?.message} label={t("Name")}>

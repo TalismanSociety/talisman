@@ -2,13 +2,12 @@ import { ProviderType } from "@core/domains/sitesAuthorised/types"
 import { Accordion, AccordionIcon } from "@talisman/components/Accordion"
 import Dialog from "@talisman/components/Dialog"
 import { Favicon } from "@talisman/components/Favicon"
-import { Modal } from "@talisman/components/Modal"
 import { ModalDialog } from "@talisman/components/ModalDialog"
 import { ReactComponent as IconAlert } from "@talisman/theme/icons/alert-circle.svg"
 import useAuthorisedSiteById from "@ui/hooks/useAuthorisedSiteById"
 import { FC, useCallback, useState } from "react"
 import { useTranslation } from "react-i18next"
-import { useOpenClose } from "talisman-ui"
+import { Modal, useOpenClose } from "talisman-ui"
 
 import { AuthorisedSiteAccount } from "./AuthorisedSiteAccount"
 
@@ -100,7 +99,7 @@ export const AuthorizedSite: FC<{
           ))}
         </div>
       </Accordion>
-      <Modal open={showForget} onClose={hideForget}>
+      <Modal isOpen={showForget} onDismiss={hideForget}>
         <ModalDialog title={t("Confirm Forget")} onClose={hideForget}>
           <ConfirmForgetDialog onConfirm={confirmForget} onCancel={hideForget} />
         </ModalDialog>

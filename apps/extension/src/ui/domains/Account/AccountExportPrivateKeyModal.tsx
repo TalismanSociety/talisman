@@ -1,4 +1,3 @@
-import { Modal } from "@talisman/components/Modal"
 import { ModalDialog } from "@talisman/components/ModalDialog"
 import { notify } from "@talisman/components/Notifications"
 import { useOpenClose } from "@talisman/hooks/useOpenClose"
@@ -8,6 +7,7 @@ import { api } from "@ui/api"
 import { useSensitiveState } from "@ui/hooks/useSensitiveState"
 import { useCallback, useEffect, useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
+import { Modal } from "talisman-ui"
 import { Button } from "talisman-ui"
 
 import { useSelectedAccount } from "../Portfolio/SelectedAccountContext"
@@ -153,7 +153,7 @@ export const AccountExportPrivateKeyModal = () => {
   const { isOpen, close } = useAccountExportPrivateKeyModal()
 
   return (
-    <Modal open={isOpen} onClose={close}>
+    <Modal isOpen={isOpen} onDismiss={close}>
       <ModalDialog title="Export private key" onClose={close} className="w-[50.3rem]">
         <div className="h-[24.2rem]">
           <PasswordUnlock

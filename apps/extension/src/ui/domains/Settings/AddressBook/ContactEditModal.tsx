@@ -1,5 +1,4 @@
 import { yupResolver } from "@hookform/resolvers/yup"
-import { Modal } from "@talisman/components/Modal"
 import { ModalDialog } from "@talisman/components/ModalDialog"
 import { AnalyticsPage, sendAnalyticsEvent } from "@ui/api/analytics"
 import { useAddressBook } from "@ui/hooks/useAddressBook"
@@ -7,7 +6,7 @@ import { useAnalyticsPageView } from "@ui/hooks/useAnalyticsPageView"
 import { useCallback } from "react"
 import { useForm } from "react-hook-form"
 import { useTranslation } from "react-i18next"
-import { Button, FormFieldContainer, FormFieldInputText } from "talisman-ui"
+import { Button, FormFieldContainer, FormFieldInputText, Modal } from "talisman-ui"
 import * as yup from "yup"
 
 import { ContactModalProps } from "./types"
@@ -64,7 +63,7 @@ export const ContactEditModal = ({ contact, isOpen, close }: ContactModalProps) 
   useAnalyticsPageView(ANALYTICS_PAGE)
 
   return (
-    <Modal open={isOpen} className="bg-black-secondary" onClose={close}>
+    <Modal isOpen={isOpen} onDismiss={close}>
       <ModalDialog title={t("Edit contact")}>
         <form onSubmit={handleSubmit(submit)} className="grid gap-8">
           <FormFieldContainer error={errors.name?.message} label={t("Name")}>

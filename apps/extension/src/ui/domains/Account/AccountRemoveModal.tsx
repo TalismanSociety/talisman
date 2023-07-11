@@ -1,6 +1,5 @@
 import { AccountType } from "@core/domains/accounts/types"
 import StyledDialog from "@talisman/components/Dialog"
-import { Modal } from "@talisman/components/Modal"
 import { ModalDialog } from "@talisman/components/ModalDialog"
 import { useOpenClose } from "@talisman/hooks/useOpenClose"
 import { IconAlert } from "@talisman/theme/icons"
@@ -9,6 +8,7 @@ import { api } from "@ui/api"
 import { useSelectedAccount } from "@ui/domains/Portfolio/SelectedAccountContext"
 import { useCallback, useEffect, useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
+import { Modal } from "talisman-ui"
 
 const REMOVABLE_ORIGINS: AccountType[] = ["DERIVED", "SEED", "WATCHED", "JSON", "QR", "HARDWARE"]
 
@@ -55,7 +55,7 @@ export const AccountRemoveModal = () => {
   }, [account, close])
 
   return (
-    <Modal open={isOpen} onClose={close}>
+    <Modal isOpen={isOpen} onDismiss={close}>
       <ModalDialog title={t("Remove account {{accountName}}", { accountName })} onClose={close}>
         <StyledDialog
           icon={<IconAlert />}

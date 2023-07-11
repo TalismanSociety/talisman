@@ -1,8 +1,8 @@
-import { Modal } from "@talisman/components/Modal"
 import { ModalDialog } from "@talisman/components/ModalDialog"
 import { StatusIcon } from "@talisman/components/StatusIcon"
 import { statusOptions } from "@talisman/hooks/useStatus"
 import { useTranslation } from "react-i18next"
+import { Modal } from "talisman-ui"
 
 import { BackUpMnemonicDialog } from "./BackUpMnemonicDialog"
 import { MigratePasswordProvider, useMigratePassword } from "./context"
@@ -38,7 +38,7 @@ const MigratePasswordModalContent = () => {
 }
 
 export const MigratePasswordModal = ({ open, onClose }: MigratePasswordModalProps) => (
-  <Modal open={open} onClose={onClose}>
+  <Modal isOpen={open} onDismiss={onClose}>
     <div className="w-[50.3rem]">
       <MigratePasswordProvider onComplete={onClose}>
         <MigratePasswordModalContent />

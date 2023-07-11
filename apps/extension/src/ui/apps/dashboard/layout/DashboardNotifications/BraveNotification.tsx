@@ -1,5 +1,4 @@
 import { appStore } from "@core/domains/app/store.app"
-import { Modal } from "@talisman/components/Modal"
 import { ModalDialog } from "@talisman/components/ModalDialog"
 import { useIsBrave } from "@talisman/hooks/useIsBrave"
 import { useOpenClose } from "@talisman/hooks/useOpenClose"
@@ -8,6 +7,7 @@ import { BraveWarningModal } from "@ui/domains/Settings/BraveWarning/BraveWarnin
 import { useAppState } from "@ui/hooks/useAppState"
 import { useCallback, useMemo } from "react"
 import { useTranslation } from "react-i18next"
+import { Modal } from "talisman-ui"
 
 import { DashboardNotification } from "./DashboardNotification"
 
@@ -37,7 +37,7 @@ export const BraveWarningNotification = () => {
         onActionClick={open}
         onClose={handleHide}
       />
-      <Modal open={isOpen} onClose={close}>
+      <Modal isOpen={isOpen} onDismiss={close}>
         <ModalDialog centerTitle title={t("Attention Brave Users")} onClose={close}>
           <BraveWarningModal />
         </ModalDialog>

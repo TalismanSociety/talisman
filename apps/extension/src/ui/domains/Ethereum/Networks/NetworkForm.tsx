@@ -2,7 +2,6 @@ import { CustomEvmNetwork, EvmNetwork, EvmNetworkId } from "@core/domains/ethere
 import { RequestUpsertCustomEvmNetwork } from "@core/domains/ethereum/types"
 import { CustomNativeToken } from "@core/domains/tokens/types"
 import { yupResolver } from "@hookform/resolvers/yup"
-import { Modal } from "@talisman/components/Modal"
 import { ModalDialog } from "@talisman/components/ModalDialog"
 import { notify } from "@talisman/components/Notifications"
 import { useOpenClose } from "@talisman/hooks/useOpenClose"
@@ -26,7 +25,7 @@ import { FormProvider, useForm } from "react-hook-form"
 import { Trans, useTranslation } from "react-i18next"
 import { useNavigate } from "react-router-dom"
 import { useDebounce } from "react-use"
-import { Button, Checkbox, FormFieldContainer, FormFieldInputText } from "talisman-ui"
+import { Button, Checkbox, FormFieldContainer, FormFieldInputText, Modal } from "talisman-ui"
 
 import { getNetworkFormSchema } from "./getNetworkFormSchema"
 import { getRpcChainId } from "./helpers"
@@ -57,7 +56,7 @@ const ResetNetworkButton: FC<{ network: EvmNetwork | CustomEvmNetwork }> = ({ ne
       <Button type="button" className="mt-8" onClick={open}>
         {t("Reset to defaults")}
       </Button>
-      <Modal open={isOpen && !!network} onClose={close}>
+      <Modal isOpen={isOpen && !!network} onDismiss={close}>
         <ModalDialog title={t("Reset Network")} onClose={close}>
           <div className="text-body-secondary mt-4 space-y-16">
             <div className="text-base">
@@ -105,7 +104,7 @@ const RemoveNetworkButton: FC<{ network: EvmNetwork | CustomEvmNetwork }> = ({ n
       <Button type="button" className="mt-8" onClick={open}>
         {t("Remove Network")}
       </Button>
-      <Modal open={isOpen && !!network} onClose={close}>
+      <Modal isOpen={isOpen && !!network} onDismiss={close}>
         <ModalDialog title={t("Remove Network")} onClose={close}>
           <div className="text-body-secondary mt-4 space-y-16">
             <div className="text-base">

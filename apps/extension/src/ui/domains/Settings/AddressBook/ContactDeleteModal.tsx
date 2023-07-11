@@ -1,11 +1,10 @@
-import { Modal } from "@talisman/components/Modal"
 import { ModalDialog } from "@talisman/components/ModalDialog"
 import { AnalyticsPage, sendAnalyticsEvent } from "@ui/api/analytics"
 import { useAddressBook } from "@ui/hooks/useAddressBook"
 import { useAnalyticsPageView } from "@ui/hooks/useAnalyticsPageView"
 import { useCallback } from "react"
 import { Trans, useTranslation } from "react-i18next"
-import { Button } from "talisman-ui"
+import { Button, Modal } from "talisman-ui"
 
 import { ContactModalProps } from "./types"
 
@@ -36,7 +35,7 @@ export const ContactDeleteModal = ({ contact, isOpen, close }: ContactModalProps
   const contactName = contact?.name || ""
 
   return (
-    <Modal open={isOpen} className="bg-black-secondary" onClose={close}>
+    <Modal isOpen={isOpen} onDismiss={close}>
       <ModalDialog title={t("Delete contact")}>
         <div className="text-body-secondary my-12">
           <Trans t={t}>

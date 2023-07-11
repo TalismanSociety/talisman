@@ -1,7 +1,6 @@
 import { Erc20Token } from "@core/domains/tokens/types"
 import * as Sentry from "@sentry/browser"
 import { HeaderBlock } from "@talisman/components/HeaderBlock"
-import { Modal } from "@talisman/components/Modal"
 import { ModalDialog } from "@talisman/components/ModalDialog"
 import { notify } from "@talisman/components/Notifications"
 import { useOpenClose } from "@talisman/hooks/useOpenClose"
@@ -16,6 +15,7 @@ import { isCustomErc20Token } from "@ui/util/isCustomErc20Token"
 import { useCallback, useEffect, useMemo, useState } from "react"
 import { Trans, useTranslation } from "react-i18next"
 import { useNavigate, useParams } from "react-router-dom"
+import { Modal } from "talisman-ui"
 import { Button, FormFieldContainer, FormFieldInputText } from "talisman-ui"
 
 import { DashboardLayout } from "../../layout/DashboardLayout"
@@ -57,7 +57,7 @@ const ConfirmRemove = ({
   }, [navigate, token, t])
 
   return (
-    <Modal open={Boolean(open && saved)} onClose={onClose}>
+    <Modal isOpen={Boolean(open && saved)} onDismiss={onClose}>
       <ModalDialog title={t("Remove Token")} onClose={onClose}>
         <div className="text-body-secondary mt-4 space-y-16">
           <div className="text-base">
