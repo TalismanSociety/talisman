@@ -53,7 +53,7 @@ export const AccountRemoveModal = () => {
   }, [account, close])
 
   return (
-    <Modal isOpen={isOpen} onDismiss={close}>
+    <Modal containerId="main" isOpen={isOpen} onDismiss={close}>
       <ModalDialog title={t("Remove account")} onClose={close}>
         <div className="text-body-secondary text-sm">
           <p className="text-sm">

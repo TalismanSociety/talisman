@@ -47,6 +47,7 @@ export const AuthorisedSites = () => {
         title={t("Trusted Sites")}
         text={t("Manage the sites that have access to your accounts")}
       />
+      <Spacer large />
       {hasEthereumTrustedSites ? (
         <ProviderTypeSwitch defaultProvider="polkadot" onChange={setProviderType} />
       ) : null}

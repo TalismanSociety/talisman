@@ -1,6 +1,7 @@
 import { ChevronDownIcon } from "@talisman/theme/icons"
 import { classNames } from "@talismn/util"
 import { TargetAndTransition, Transition, motion } from "framer-motion"
+import throttle from "lodash/throttle"
 import { CSSProperties, FC, ReactNode, useEffect, useMemo, useRef, useState } from "react"
 
 const TRANSITION_ACCORDION: Transition = { ease: "easeInOut", duration: 0.3 }
@@ -37,17 +38,21 @@ export const Accordion: FC<{ isOpen: boolean; children?: ReactNode; alwaysRender
     const container = refContainer.current
     if (!container) return () => {}
 
-    const updateContentHeight = () => {
-      setContentHeight(container.scrollHeight)
-    }
+    const updateContentHeight = throttle(() => {
+      if (container.scrollHeight !== contentHeight) setContentHeight(container.scrollHeight)
+    }, 50) // prevent multiple re-renders in case of batch
+
+    const observer = new MutationObserver(updateContentHeight)
+    observer.observe(container, { childList: true, subtree: true })
 
     container.addEventListener("resize", updateContentHeight)
     updateContentHeight()
 
     return () => {
+      observer.disconnect()
       container.removeEventListener("resize", updateContentHeight)
     }
-  }, [shouldRender])
+  }, [shouldRender, contentHeight])
 
   const style: CSSProperties = useMemo(
     () => ({
