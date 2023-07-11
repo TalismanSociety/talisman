@@ -6,7 +6,7 @@ import { useTalismanOrb } from "@talismn/orb"
 import { classNames } from "@talismn/util"
 import { api } from "@ui/api"
 import { useAnalytics } from "@ui/hooks/useAnalytics"
-import { Suspense, useCallback, useEffect, useMemo, useRef, useState } from "react"
+import { Suspense, useCallback, useEffect, useMemo, useState } from "react"
 import { SubmitHandler, useForm } from "react-hook-form"
 import { useTranslation } from "react-i18next"
 import { atom, useRecoilValue } from "recoil"
@@ -132,10 +132,8 @@ const Login = ({ setShowResetWallet }: { setShowResetWallet: () => void }) => {
   }, [setFocus])
 
   // autologin, for developers only
-  const refDone = useRef(false)
   useEffect(() => {
-    if (process.env.NODE_ENV !== "production" && process.env.PASSWORD && !refDone.current) {
-      refDone.current = true // prevent infinite loop if password is incorrect
+    if (process.env.NODE_ENV !== "production" && process.env.PASSWORD) {
       setValue("password", process.env.PASSWORD)
       handleSubmit(submit)()
     }

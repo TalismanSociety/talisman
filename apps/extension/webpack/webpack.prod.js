@@ -9,6 +9,7 @@ const BundleAnalyzerPlugin = require("webpack-bundle-analyzer").BundleAnalyzerPl
 const common = require("./webpack.common.js")
 const { distDir, getArchiveFileName, getSentryPlugin, getManifestVersionName } = require("./utils")
 const { SourceMapDevToolPlugin } = require("webpack")
+const SimpleLocalizeDownloadPlugin = require("./SimpleLocalizeDownloadPlugin")
 
 const config = (env) => {
   if (env.build === "production") {
@@ -69,6 +70,7 @@ const config = (env) => {
           { from: ".", to: distDir, context: "public" },
         ],
       }),
+      new SimpleLocalizeDownloadPlugin(),
       // Do not include source maps in the zip file
       new ZipPlugin({
         folder: distDir,

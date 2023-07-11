@@ -23,6 +23,8 @@
     "build:extension:ci": {
       "dependsOn": [
         "//#build:packages",
+        "$SIMPLE_LOCALIZE_API_KEY",
+        "$SIMPLE_LOCALIZE_PROJECT_TOKEN",
         "$SENTRY_DSN",
         "$SENTRY_AUTH_TOKEN",
         "$POSTHOG_AUTH_TOKEN"
@@ -32,6 +34,8 @@
     "build:extension:prod": {
       "dependsOn": [
         "//#build:packages",
+        "$SIMPLE_LOCALIZE_API_KEY",
+        "$SIMPLE_LOCALIZE_PROJECT_TOKEN",
         "$SENTRY_DSN",
         "$SENTRY_AUTH_TOKEN",
         "$POSTHOG_AUTH_TOKEN"
@@ -41,6 +45,8 @@
     "build:extension:canary": {
       "dependsOn": [
         "//#build:packages",
+        "$SIMPLE_LOCALIZE_API_KEY",
+        "$SIMPLE_LOCALIZE_PROJECT_TOKEN",
         "$SENTRY_DSN",
         "$SENTRY_AUTH_TOKEN",
         "$POSTHOG_AUTH_TOKEN"

@@ -7,6 +7,7 @@ const distDir = path.join(__dirname, "..", "dist")
 const CopyPlugin = require("copy-webpack-plugin")
 const ExtensionReloader = require("@alectalisman/webpack-ext-reloader")
 const CircularDependencyPlugin = require("circular-dependency-plugin")
+const SimpleLocalizeDownloadPlugin = require("./SimpleLocalizeDownloadPlugin")
 const { getManifestVersionName } = require("./utils.js")
 
 const manifestPath = path.join(__dirname, "..", "public", "manifest.json")
@@ -19,6 +20,7 @@ const config = (env) =>
       ignored: [distDir, path.join(__dirname, "..", "node_modules")],
     },
     plugins: [
+      new SimpleLocalizeDownloadPlugin({ devMode: true }),
       new CopyPlugin({
         patterns: [
           {
