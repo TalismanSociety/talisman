@@ -3,6 +3,8 @@ import { classNames } from "@talismn/util"
 import { FC, MouseEvent, ReactNode } from "react"
 import styled from "styled-components"
 
+import { IconButton } from "./IconButton"
+
 const Container = styled.div`
   overflow: hidden;
   display: flex;
@@ -81,7 +83,11 @@ export const ModalDialog: FC<ModalDialogProps> = ({
     >
       <header>
         <h1>{title}</h1>
-        {onClose && <IconClose className="close" onClick={onClose} />}
+        {onClose && (
+          <IconButton onClick={onClose}>
+            <IconClose />
+          </IconButton>
+        )}
       </header>
       <div className="content">{children}</div>
     </Container>
