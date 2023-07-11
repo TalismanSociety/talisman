@@ -1,7 +1,6 @@
 import { AccountAddressType } from "@core/domains/accounts/types"
 import { getEthDerivationPath } from "@core/domains/ethereum/helpers"
 import { yupResolver } from "@hookform/resolvers/yup"
-import { Checkbox } from "@talisman/components/Checkbox"
 import { HeaderBlock } from "@talisman/components/HeaderBlock"
 import { notify, notifyUpdate } from "@talisman/components/Notifications"
 import { Spacer } from "@talisman/components/Spacer"
@@ -17,7 +16,13 @@ import { useCallback, useEffect, useMemo, useState } from "react"
 import { useForm } from "react-hook-form"
 import { useTranslation } from "react-i18next"
 import { useNavigate } from "react-router-dom"
-import { Button, FormFieldContainer, FormFieldInputText, FormFieldTextarea } from "talisman-ui"
+import {
+  Button,
+  Checkbox,
+  FormFieldContainer,
+  FormFieldInputText,
+  FormFieldTextarea,
+} from "talisman-ui"
 import * as yup from "yup"
 
 import { useAccountAddSecret } from "./context"

@@ -1,132 +1,32 @@
 import { Balance } from "@core/domains/balances/types"
 import { AccountJson } from "@polkadot/extension-base/background/types"
-import { Checkbox } from "@talisman/components/Checkbox"
-import { CheckCircleIcon, LoaderIcon } from "@talisman/theme/icons"
+import { CheckCircleIcon } from "@talisman/theme/icons"
 import { classNames } from "@talismn/util"
 import { useBalanceDetails } from "@ui/hooks/useBalanceDetails"
-import { FC, useCallback, useEffect, useState } from "react"
-import styled from "styled-components"
-import { Tooltip, TooltipContent, TooltipTrigger } from "talisman-ui"
+import { FC, ReactNode, useCallback } from "react"
+import { Checkbox, Tooltip, TooltipContent, TooltipTrigger } from "talisman-ui"
 
 import Fiat from "../Asset/Fiat"
+import { AccountIcon } from "./AccountIcon"
 import { Address } from "./Address"
-import Avatar from "./Avatar"
 
-const Container = styled.div`
-  display: flex;
-  flex-direction: column;
-  gap: 0.8rem;
-
-  .picker-button {
-    width: 100%;
-    background: none;
-    border: none;
-    outline: none;
-    padding: 1.6rem;
-    background: var(--color-background-muted);
-    border-radius: var(--border-radius-tiny);
-    max-width: 100%;
-    overflow: hidden;
-    display: flex;
-    align-items: center;
-    text-align: left;
-    gap: 1.6rem;
-    opacity: 0.55;
-    transition: opacity var(--transition-speed-slow) ease-in-out;
-    color: var(--color-foreground-muted);
-
-    :not(:disabled) {
-      cursor: pointer;
-
-      :hover {
-        background: var(--color-background-muted-3x);
-      }
-    }
-    &.appear {
-      opacity: 1;
-    }
-    &.appear:disabled {
-      opacity: 0.55;
-    }
-
-    .vflex {
-      display: flex;
-      flex-direction: column;
-      gap: 0.4rem;
-      line-height: 1.6rem;
-
-      div,
-      span {
-        font-size: 1.6rem;
-        line-height: 1.6rem;
-        white-space: nowrap;
-        overflow: hidden;
-        text-overflow: ellipsis;
-      }
-
-      .caption {
-        font-size: 1.4rem;
-        line-height: 1.4rem;
-        color: var(--color-mid);
-      }
-    }
-
-    .grow {
-      overflow: hidden;
-    }
-
-    .right {
-      text-align: right;
-    }
-
-    input[type="checkbox"] + span span {
-      margin-right: 0;
-    }
-
-    &.shim div {
-      height: 3.6rem;
-    }
-  }
-`
-
-const PagerButton = styled.button.attrs({ type: "button" })`
-  background: none;
-  border: none;
-  outline: none;
-  padding: 0.8rem;
-  width: 4rem;
-  border-radius: var(--border-radius-tiny);
-  cursor: pointer;
-  font-weight: var(--font-weight-bold);
-
-  background: var(--color-background-muted-3x);
-  color: var(--color-mid);
-  opacity: 0.6;
-  :hover {
-    opacity: 1;
-  }
-`
-
-const ConnectedIcon = styled(CheckCircleIcon)`
-  color: var(--color-primary);
-  width: 2.4rem;
-  height: 2.4rem;
-`
-
-const Center = styled.div`
-  min-width: 2.4rem;
-  text-align: center;
-`
-
-const Pager = styled.div`
-  display: flex;
-  width: 100%;
-  justify-content: flex-end;
-  gap: 1.2rem;
-`
+const PagerButton: FC<{ disabled?: boolean; children: ReactNode; onClick?: () => void }> = ({
+  children,
+  disabled,
+  onClick,
+}) => (
+  <button
+    type="button"
+    disabled={disabled}
+    onClick={onClick}
+    className="bg-grey-850 hover:bg-grey-800 text-body-secondary w-20 rounded-sm p-4 font-bold "
+  >
+    {children}
+  </button>
+)
 
 const AccountButtonShimmer = () => (
-  <div className={"bg-black-secondary flex h-[6.8rem] w-full items-center gap-8 rounded px-8"}>
+  <div className={"bg-grey-850 flex h-32 w-full items-center gap-8 rounded px-8"}>
     <div className="bg-grey-750 inline-block h-16 w-16 animate-pulse rounded-full"></div>
     <div className="flex grow flex-col gap-2">
       <div className="rounded-xs bg-grey-750 h-[1.6rem] w-[13rem] animate-pulse"></div>
@@ -140,41 +40,35 @@ const AccountButtonShimmer = () => (
 const AccountButton: FC<AccountButtonProps> = ({
   name,
   address,
+  genesisHash,
   balances,
   connected,
   selected,
   onClick,
   isBalanceLoading,
 }) => {
-  const [appear, setAppear] = useState(false)
-  useEffect(() => {
-    const timeout = setTimeout(() => setAppear(true), 10)
-    return () => clearTimeout(timeout)
-  }, [])
-
   const { balanceDetails, totalUsd } = useBalanceDetails(balances)
 
   return (
     <button
       type="button"
-      className={classNames("picker-button", appear && "appear")}
+      className={classNames(
+        " bg-grey-850 text-grey-200 enabled:hover:bg-grey-800 flex h-32 w-full items-center gap-8 rounded-sm px-8 text-left disabled:opacity-50"
+      )}
       disabled={connected}
       onClick={onClick}
     >
-      <Avatar address={address} />
-      <div className="vflex grow">
-        <div>{name}</div>
-        <div className="caption">
-          <Address address={address} />
+      <AccountIcon address={address} genesisHash={genesisHash} className="text-xl" />
+      <div className="flex flex-grow flex-col gap-2 overflow-hidden">
+        <div className="overflow-hidden text-ellipsis whitespace-nowrap">{name}</div>
+        <div className="text-body-secondary text-sm">
+          <Address address={address} startCharCount={6} endCharCount={6} />
         </div>
       </div>
       <div className="flex items-center justify-end gap-2">
-        <div className="flex flex-col justify-center pb-1 leading-none">
-          {isBalanceLoading && <LoaderIcon className="animate-spin-slow inline text-white" />}
-        </div>
         <Tooltip>
           <TooltipTrigger asChild>
-            <span>
+            <span className={classNames(isBalanceLoading && "animate-pulse")}>
               <Fiat className="leading-none" amount={totalUsd} currency="usd" />
             </span>
           </TooltipTrigger>
@@ -185,7 +79,13 @@ const AccountButton: FC<AccountButtonProps> = ({
           )}
         </Tooltip>
       </div>
-      <Center>{connected ? <ConnectedIcon /> : <Checkbox checked={selected} disabled />}</Center>
+      <div className="flex w-12 shrink-0 flex-col items-center justify-center">
+        {connected ? (
+          <CheckCircleIcon className="text-primary text-lg" />
+        ) : (
+          <Checkbox checked={selected} readOnly className="[&>input]:!border-body-disabled" />
+        )}
+      </div>
     </button>
   )
 }
@@ -231,7 +131,7 @@ export const DerivedAccountPickerBase: FC<DerivedAccountPickerBaseProps> = ({
   )
 
   return (
-    <Container>
+    <div className="flex flex-col gap-4">
       <div className="flex w-full flex-col gap-4">
         {accounts.map((account, i) =>
           account ? (
@@ -245,7 +145,7 @@ export const DerivedAccountPickerBase: FC<DerivedAccountPickerBaseProps> = ({
           )
         )}
       </div>
-      <Pager>
+      <div className="flex w-full justify-end gap-6">
         {canPageBack && (
           <PagerButton disabled={disablePaging} onClick={onPagerFirstClick}>
             &lt;&lt;
@@ -259,7 +159,7 @@ export const DerivedAccountPickerBase: FC<DerivedAccountPickerBaseProps> = ({
         <PagerButton disabled={disablePaging} onClick={onPagerNextClick}>
           &gt;
         </PagerButton>
-      </Pager>
-    </Container>
+      </div>
+    </div>
   )
 }
