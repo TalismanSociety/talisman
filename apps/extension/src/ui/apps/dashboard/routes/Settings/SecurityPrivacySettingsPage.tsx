@@ -3,19 +3,9 @@ import { Setting } from "@talisman/components/Setting"
 import { useSetting } from "@ui/hooks/useSettings"
 import { Trans, useTranslation } from "react-i18next"
 import { useNavigate } from "react-router-dom"
-import styled from "styled-components"
 import { Toggle } from "talisman-ui"
 
 import { DashboardLayout } from "../../layout/DashboardLayout"
-
-const LinkText = styled.span`
-  color: var(--color-primary);
-  cursor: pointer;
-`
-
-const TSLink = styled.a`
-  color: var(--color-primary);
-`
 
 export const SecurityPrivacySettingsPage = () => {
   const { t } = useTranslation("admin")
@@ -35,10 +25,14 @@ export const SecurityPrivacySettingsPage = () => {
             subtitle={
               <Trans t={t}>
                 Send anonymised error reports to Talisman (via{" "}
-                <TSLink href="https://www.sentry.io" target="_blank" rel="noreferrer">
-                  {" "}
+                <a
+                  className="text-primary-700 hover:text-primary"
+                  href="https://www.sentry.io"
+                  target="_blank"
+                  rel="noreferrer"
+                >
                   Sentry
-                </TSLink>
+                </a>
                 )
               </Trans>
             }
@@ -55,7 +49,13 @@ export const SecurityPrivacySettingsPage = () => {
             subtitle={
               <Trans t={t}>
                 Opt in to collection of anonymised usage data.{" "}
-                <LinkText onClick={() => navigate("/settings/analytics")}>Learn More</LinkText>
+                <button
+                  type="button"
+                  className="text-primary-700 hover:text-primary"
+                  onClick={() => navigate("/settings/analytics")}
+                >
+                  Learn More
+                </button>
               </Trans>
             }
           >
