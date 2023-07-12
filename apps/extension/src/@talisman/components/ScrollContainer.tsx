@@ -1,61 +1,5 @@
-import { hideScrollbarsStyle } from "@talisman/theme/styles"
 import { classNames } from "@talismn/util"
 import { RefObject, forwardRef, useEffect, useMemo, useRef, useState } from "react"
-import styled from "styled-components"
-
-const Container = styled.section`
-  position: relative;
-  overflow: auto;
-
-  > div {
-    overflow: hidden;
-    overflow-y: auto;
-    height: 100%;
-    display: block;
-    width: 100%;
-
-    ${hideScrollbarsStyle}
-  }
-
-  &:before,
-  &:after {
-    z-index: 0;
-    content: "";
-    position: absolute;
-    left: 0;
-    width: 100%;
-    height: 2.4rem;
-    pointer-events: none;
-    opacity: 0;
-    transition: opacity var(--transition-speed-fast) ease-out;
-  }
-
-  &:before {
-    top: 0;
-    background: linear-gradient(var(--color-background), transparent);
-  }
-
-  &:after {
-    bottom: 0;
-    background: linear-gradient(transparent, var(--color-background));
-  }
-
-  &.more-top {
-    &:before {
-      z-index: 1;
-      opacity: 1;
-      z-index: 1;
-    }
-  }
-
-  &.more-bottom {
-    &:after {
-      z-index: 1;
-      opacity: 1;
-      z-index: 1;
-    }
-  }
-`
 
 type ScrollContainerProps = {
   className?: string
@@ -108,13 +52,36 @@ export const ScrollContainer = forwardRef<HTMLDivElement, ScrollContainerProps>(
       throw new Error("forwardRef as function is not supported")
 
     return (
-      <Container
-        className={classNames(className, more.top && "more-top", more.bottom && "more-bottom")}
+      <div
+        className={classNames(
+          "relative z-0 overflow-hidden",
+          more.top && "more-top",
+          more.bottom && "more-bottom",
+          className
+        )}
       >
-        <div ref={refDiv} className={innerClassName}>
+        <div
+          ref={refDiv}
+          className={classNames(
+            "no-scrollbar h-full w-full overflow-y-auto overflow-x-hidden",
+            innerClassName
+          )}
+        >
           {children}
         </div>
-      </Container>
+        <div
+          className={classNames(
+            "pointer-events-none absolute left-0 top-0 h-12 w-full bg-gradient-to-b from-black to-transparent",
+            more.top ? "opacity-100" : "opacity-0"
+          )}
+        ></div>
+        <div
+          className={classNames(
+            "pointer-events-none absolute bottom-0 left-0 h-12 w-full bg-gradient-to-t from-black to-transparent",
+            more.bottom ? "opacity-100" : "opacity-0"
+          )}
+        ></div>
+      </div>
     )
   }
 )

@@ -89,6 +89,14 @@
 
 /* The utilities layer is for small, single-purpose classes that should always take precedence over any other styles. */
 @layer utilities {
+  .no-scrollbar::-webkit-scrollbar {
+    background-color: transparent;
+    width: 0;
+  }
+  .no-scrollbar {
+    scrollbar-color: transparent transparent;
+  }
+
   .scrollable::-webkit-scrollbar {
     background-color: transparent;
   }

@@ -1,24 +1,9 @@
 import { createGlobalStyle } from "styled-components"
 
-import { hideScrollbarsStyle, scrollbarsStyle } from "./styles"
-
 const Global = createGlobalStyle`
 
   *:not(.allow-focus):focus{
       outline: none;
-  }
-
-  .muted{
-    font-size: 0.8em;
-    opacity: 0.4;
-  }
-
-  .scrollbars {
-    ${scrollbarsStyle()}
-  }
-
-  .hide-scrollbars {
-    ${hideScrollbarsStyle}
   }
 
   /* revealable balances */
