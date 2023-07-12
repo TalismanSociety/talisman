@@ -15,8 +15,8 @@ import { Balance, Balances } from "@talismn/balances"
 import { api } from "@ui/api"
 import { AnalyticsPage, sendAnalyticsEvent } from "@ui/api/analytics"
 import { TotalFiatBalance } from "@ui/apps/popup/components/TotalFiatBalance"
+import { AccountIcon } from "@ui/domains/Account/AccountIcon"
 import { AccountTypeIcon } from "@ui/domains/Account/AccountTypeIcon"
-import AccountAvatar from "@ui/domains/Account/Avatar"
 import Fiat from "@ui/domains/Asset/Fiat"
 import { useCopyAddressModal } from "@ui/domains/CopyAddress"
 import { useSelectedAccount } from "@ui/domains/Portfolio/SelectedAccountContext"
@@ -87,7 +87,7 @@ const AccountButton = ({ address, name, total, genesisHash, origin }: AccountOpt
     >
       <div className="flex flex-col justify-center text-xl">
         {address ? (
-          <AccountAvatar address={address} genesisHash={genesisHash} />
+          <AccountIcon address={address} genesisHash={genesisHash} />
         ) : (
           <AllAccountsIcon />
         )}

@@ -11,7 +11,7 @@ import { Modal } from "talisman-ui"
 import { Button } from "talisman-ui"
 
 import { useSelectedAccount } from "../Portfolio/SelectedAccountContext"
-import AccountAvatar from "./Avatar"
+import { AccountIcon } from "./AccountIcon"
 import { PasswordUnlock, usePasswordUnlock } from "./PasswordUnlock"
 
 const useAccountExportPrivateKeyModalProvider = () => {
@@ -109,7 +109,7 @@ const ExportPrivateKeyResult = ({ onClose }: { onClose?: () => void }) => {
       <div className="flex w-full grow flex-col justify-center gap-6 ">
         <div className="!text-body flex w-full items-center gap-4">
           <div>
-            <AccountAvatar address={account.address} className="!text-lg" />
+            <AccountIcon address={account.address} className="!text-lg" />
           </div>
           <div className="overflow-hidden text-ellipsis whitespace-nowrap"> {account.name}</div>
         </div>

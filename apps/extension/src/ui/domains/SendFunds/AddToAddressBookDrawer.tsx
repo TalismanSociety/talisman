@@ -2,7 +2,6 @@ import { AddressBookContact } from "@core/domains/app/store.addressBook"
 import { yupResolver } from "@hookform/resolvers/yup"
 import { AnalyticsPage, sendAnalyticsEvent } from "@ui/api/analytics"
 import { Address } from "@ui/domains/Account/Address"
-import AccountAvatar from "@ui/domains/Account/Avatar"
 import { useAddressBook } from "@ui/hooks/useAddressBook"
 import { useAnalyticsPageView } from "@ui/hooks/useAnalyticsPageView"
 import { FC, FormEventHandler, useCallback } from "react"
@@ -11,6 +10,8 @@ import styled from "styled-components"
 import { Drawer } from "talisman-ui"
 import { Button, FormFieldContainer, FormFieldInputText } from "talisman-ui"
 import * as yup from "yup"
+
+import { AccountIcon } from "../Account/AccountIcon"
 
 const INPUT_CONTAINER_PROPS = { className: "bg-grey-700" }
 
@@ -115,7 +116,7 @@ export const AddToAddressBookDrawer: FC<{
       <Container className="bg-black-tertiary">
         <form onSubmit={submitWithoutBubbleUp}>
           <header className="flex flex-col items-center justify-center gap-6">
-            <AccountAvatar address={address} />
+            <AccountIcon address={address} />
             <span className="font-bold">
               {nameValue ? (
                 `${nameValue}`

@@ -8,8 +8,8 @@ import { AccountAddressType } from "@talisman/util/getAddressType"
 import { classNames } from "@talismn/util"
 import { api } from "@ui/api"
 import { AnalyticsPage } from "@ui/api/analytics"
+import { AccountIcon } from "@ui/domains/Account/AccountIcon"
 import { Address } from "@ui/domains/Account/Address"
-import AccountAvatar from "@ui/domains/Account/Avatar"
 import { useCopyAddressModal } from "@ui/domains/CopyAddress"
 import { useSelectedAccount } from "@ui/domains/Portfolio/SelectedAccountContext"
 import { ContactCreateModal } from "@ui/domains/Settings/AddressBook/ContactCreateModal"
@@ -92,7 +92,7 @@ const AddressBookContactItem = ({ contact, handleDelete, handleEdit }: ContactIt
       onMouseLeave={() => setHover(false)}
     >
       <span className="gap flex gap-4">
-        <AccountAvatar address={contact.address} />
+        <AccountIcon address={contact.address} />
         <div className="flex flex-col justify-between">
           <span>{contact.name}</span>
           <Address className="text-body-secondary text-xs" address={contact.address} />

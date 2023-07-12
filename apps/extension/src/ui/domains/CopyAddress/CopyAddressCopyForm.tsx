@@ -20,7 +20,6 @@ import { Button, PillButton, Tooltip, TooltipContent, TooltipTrigger } from "tal
 
 import { AccountIcon } from "../Account/AccountIcon"
 import { AccountTypeIcon } from "../Account/AccountTypeIcon"
-import AccountAvatar from "../Account/Avatar"
 import { ChainLogo } from "../Asset/ChainLogo"
 import { TokenLogo } from "../Asset/TokenLogo"
 import { CopyAddressLayout } from "./CopyAddressLayout"
@@ -330,7 +329,7 @@ export const CopyAddressCopyForm = () => {
                 />
               </div>
               <div className="flex items-center gap-4">
-                <AccountAvatar
+                <AccountIcon
                   type="polkadot-identicon"
                   className="!text-lg [&>div]:block"
                   address={formattedAddress}

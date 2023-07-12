@@ -7,8 +7,8 @@ import { Spacer } from "@talisman/components/Spacer"
 import { classNames } from "@talismn/util"
 import { api } from "@ui/api"
 import { DashboardLayout } from "@ui/apps/dashboard/layout/DashboardLayout"
+import { AccountIcon } from "@ui/domains/Account/AccountIcon"
 import { AccountTypeSelector } from "@ui/domains/Account/AccountTypeSelector"
-import AccountAvatar from "@ui/domains/Account/Avatar"
 import useAccounts from "@ui/hooks/useAccounts"
 import { useSelectAccountAndNavigate } from "@ui/hooks/useSelectAccountAndNavigate"
 import { Wallet } from "ethers"
@@ -260,7 +260,7 @@ export const AccountAddSecretMnemonicPage = () => {
             after={
               targetAddress ? (
                 <div>
-                  <AccountAvatar address={targetAddress} />
+                  <AccountIcon address={targetAddress} />
                 </div>
               ) : null
             }
