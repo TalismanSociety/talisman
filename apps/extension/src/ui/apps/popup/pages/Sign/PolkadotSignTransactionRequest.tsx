@@ -129,6 +129,7 @@ export const PolkadotSignTransactionRequest: FC = () => {
                     genesisHash={chain?.genesisHash ?? account?.genesisHash ?? undefined}
                     onSignature={approveHardware}
                     onReject={reject}
+                    containerId="main"
                   />
                 </Suspense>
               )}
@@ -140,6 +141,7 @@ export const PolkadotSignTransactionRequest: FC = () => {
                     genesisHash={chain?.genesisHash ?? account?.genesisHash ?? undefined}
                     onSignature={approveQr}
                     onReject={reject}
+                    containerId="main"
                   />
                 </Suspense>
               )}

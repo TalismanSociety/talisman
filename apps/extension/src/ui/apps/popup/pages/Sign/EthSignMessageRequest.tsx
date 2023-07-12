@@ -60,6 +60,7 @@ export const EthSignMessageRequest = () => {
                   account={account as AccountJsonHardwareEthereum}
                   onSignature={approveHardware}
                   onReject={reject}
+                  containerId="main"
                 />
               ) : (
                 <div className="grid w-full grid-cols-2 gap-12">

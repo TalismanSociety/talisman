@@ -1,5 +1,4 @@
 import { isEthereumAddress } from "@polkadot/util-crypto"
-import { Drawer } from "@talisman/components/Drawer"
 import { FadeIn } from "@talisman/components/FadeIn"
 import { useOpenClose } from "@talisman/hooks/useOpenClose"
 import { AlertCircleIcon, CopyIcon, InfoIcon } from "@talisman/theme/icons"
@@ -16,6 +15,7 @@ import { isEvmToken } from "@ui/util/isEvmToken"
 import { isSubToken } from "@ui/util/isSubToken"
 import { FC, useCallback, useMemo } from "react"
 import { Trans, useTranslation } from "react-i18next"
+import { Drawer } from "talisman-ui"
 import { Button, PillButton, Tooltip, TooltipContent, TooltipTrigger } from "talisman-ui"
 
 import { AccountIcon } from "../Account/AccountIcon"
@@ -172,7 +172,7 @@ const CopyButton = () => {
       <Button fullWidth primary icon={CopyIcon} onClick={handleCopyClick}>
         {t("Copy Address")}
       </Button>
-      <Drawer parent="copy-address-modal" open={isOpen} anchor="bottom" onClose={close}>
+      <Drawer containerId="copy-address-modal" isOpen={isOpen} anchor="bottom" onDismiss={close}>
         <div className="bg-grey-800 flex w-full flex-col items-center rounded-t-xl p-12">
           <AlertCircleIcon className="text-primary-500 text-3xl" />
           <div className="text-md mt-12 font-bold">{t("Sending from an exchange?")}</div>

@@ -1,10 +1,10 @@
 import { AppPill } from "@talisman/components/AppPill"
-import { Drawer } from "@talisman/components/Drawer"
 import { ScrollContainer } from "@talisman/components/ScrollContainer"
 import { XIcon } from "@talisman/theme/icons"
 import { useCurrentSite } from "@ui/apps/popup/context/CurrentSiteContext"
 import { FC } from "react"
 import styled from "styled-components"
+import { Drawer } from "talisman-ui"
 import { IconButton } from "talisman-ui"
 
 import { ConnectedAccounts } from "./ConnectedAccounts"
@@ -46,7 +46,7 @@ const ConnectedAccountsDrawer: FC<Props> = ({ open, onClose }) => {
 
   if (!id) return null
   return (
-    <Drawer fullScreen anchor="right" open={open} onClose={onClose}>
+    <Drawer className="w-full" containerId="main" anchor="right" isOpen={open} onDismiss={onClose}>
       <Container>
         <header>
           <AppPill url={url} />

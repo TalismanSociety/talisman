@@ -1,10 +1,10 @@
-import { Drawer } from "@talisman/components/Drawer"
 import { useOpenClose } from "@talisman/hooks/useOpenClose"
 import { AlertTriangleIcon, ChevronLeftIcon, LockIcon } from "@talisman/theme/icons"
 import { api } from "@ui/api"
 import { useAnalytics } from "@ui/hooks/useAnalytics"
 import { ChangeEventHandler, useCallback, useEffect, useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
+import { Drawer } from "talisman-ui"
 import { Button, FormFieldInputText } from "talisman-ui"
 
 import { PopupContent, PopupFooter, PopupLayout } from "../Layout/PopupLayout"
@@ -40,7 +40,7 @@ const ConfirmDrawer = ({
   const isMatch = useMemo(() => confirmText?.toLowerCase() === "reset wallet", [confirmText])
 
   return (
-    <Drawer open={isOpen} anchor="bottom">
+    <Drawer isOpen={isOpen} anchor="bottom">
       <div className="bg-grey-800 items-center rounded-t-xl p-12 pt-12">
         <div className="flex flex-col items-center gap-12 px-12 text-center">
           <div className="text-3xl">

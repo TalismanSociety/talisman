@@ -224,6 +224,7 @@ export const EthSignTransactionRequest = () => {
                   onSignature={approveHardware}
                   onReject={reject}
                   onSendToLedger={handleSendToLedger}
+                  containerId="main"
                 />
               ) : (
                 <Button className="w-full" onClick={reject}>

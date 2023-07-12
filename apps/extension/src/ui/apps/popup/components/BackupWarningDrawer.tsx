@@ -1,10 +1,9 @@
-import { Drawer } from "@talisman/components/Drawer"
 import { AlertCircleIcon } from "@talisman/theme/icons"
 import { api } from "@ui/api"
 import useMnemonicBackup from "@ui/hooks/useMnemonicBackup"
 import { useCallback } from "react"
 import { useTranslation } from "react-i18next"
-import { Button } from "talisman-ui"
+import { Button, Drawer } from "talisman-ui"
 
 export const BackupWarningDrawer = () => {
   const { t } = useTranslation()
@@ -15,7 +14,7 @@ export const BackupWarningDrawer = () => {
   }, [])
 
   return (
-    <Drawer open={showBackupWarning} anchor="bottom" onClose={close}>
+    <Drawer containerId="main" isOpen={showBackupWarning} anchor="bottom" onDismiss={close}>
       <div className="bg-black-tertiary flex max-w-[42rem] flex-col items-center gap-12 rounded-t-xl p-12">
         <AlertCircleIcon className="text-primary-500 h-20 w-20" />
         <div className="flex flex-col gap-5 text-center">

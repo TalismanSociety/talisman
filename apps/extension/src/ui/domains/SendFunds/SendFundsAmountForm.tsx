@@ -1,6 +1,5 @@
 import { log } from "@core/log"
 import { isEthereumAddress } from "@polkadot/util-crypto"
-import { Drawer } from "@talisman/components/Drawer"
 import { WithTooltip } from "@talisman/components/Tooltip"
 import { useOpenClose } from "@talisman/hooks/useOpenClose"
 import { IconAlert, InfoIcon, SwapIcon, UserPlusIcon } from "@talisman/theme/icons"
@@ -28,6 +27,7 @@ import {
 } from "react"
 import { Container } from "react-dom"
 import { Trans, useTranslation } from "react-i18next"
+import { Drawer } from "talisman-ui"
 import { Button, PillButton } from "talisman-ui"
 
 import { AccountIcon } from "../Account/AccountIcon"
@@ -556,12 +556,7 @@ const ReviewButton = () => {
       >
         {t("Review")}
       </Button>
-      <Drawer
-        anchor="bottom"
-        open={isOpen}
-        onClose={close}
-        parent={document.getElementById("main")}
-      >
+      <Drawer anchor="bottom" isOpen={isOpen} onDismiss={close} containerId="main">
         <div className="bg-black-tertiary rounded-t-xl p-12 text-center">
           <div>
             <InfoIcon className="text-primary-500 inline-block text-3xl" />
@@ -611,8 +606,6 @@ const AddContact = () => {
     return isEthereumAddress(to) ? "ethereum" : "ss58"
   }, [to])
 
-  const drawerContainer = document.getElementById("main")
-
   if (!canAdd || !to) return null
 
   return (
@@ -626,7 +619,7 @@ const AddContact = () => {
         address={to}
         addressType={addressType}
         asChild={false}
-        parent={drawerContainer}
+        containerId="main"
       />
     </>
   )

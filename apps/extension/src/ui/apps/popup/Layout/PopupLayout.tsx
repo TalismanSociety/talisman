@@ -78,7 +78,7 @@ export const PopupLayout: FC<ContainerProps & { withBottomNav?: boolean }> = ({
     <main
       id="main"
       {...props}
-      className={classNames("relative flex h-full w-full flex-col", className)}
+      className={classNames("relative flex h-full w-full flex-col overflow-hidden", className)}
     >
       <ErrorBoundary>
         {children}

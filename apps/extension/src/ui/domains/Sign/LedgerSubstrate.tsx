@@ -3,11 +3,11 @@ import { SignerPayloadJSON, SignerPayloadRaw } from "@core/domains/signing/types
 import { log } from "@core/log"
 import { TypeRegistry } from "@polkadot/types"
 import type { HexString } from "@polkadot/util/types"
-import { Drawer } from "@talisman/components/Drawer"
 import { classNames } from "@talismn/util"
 import { useLedgerSubstrate } from "@ui/hooks/ledger/useLedgerSubstrate"
 import React, { useCallback, useEffect, useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
+import { Drawer } from "talisman-ui"
 import { Button } from "talisman-ui"
 
 import {
@@ -23,7 +23,7 @@ interface Props {
   onSignature?: ({ signature }: { signature: HexString }) => void
   onReject: () => void
   payload: SignerPayloadJSON | SignerPayloadRaw
-  parent?: HTMLElement | string | null
+  containerId?: string
 }
 
 const registry = new TypeRegistry()
@@ -39,7 +39,7 @@ const LedgerSubstrate = ({
   onSignature,
   onReject,
   payload,
-  parent,
+  containerId,
 }: Props): React.ReactElement<Props> => {
   const { t } = useTranslation("request")
   const [isSigning, setIsSigning] = useState(false)
@@ -120,7 +120,7 @@ const LedgerSubstrate = ({
         {t("Cancel")}
       </Button>
       {error && (
-        <Drawer anchor="bottom" open={true} parent={parent}>
+        <Drawer anchor="bottom" isOpen={true} containerId={containerId}>
           <LedgerSigningStatus
             message={error ? error : ""}
             status={error ? "error" : isSigning ? "signing" : undefined}

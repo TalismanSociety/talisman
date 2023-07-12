@@ -1,6 +1,5 @@
 import { AddressBookContact } from "@core/domains/app/store.addressBook"
 import { yupResolver } from "@hookform/resolvers/yup"
-import { Drawer } from "@talisman/components/Drawer"
 import { AnalyticsPage, sendAnalyticsEvent } from "@ui/api/analytics"
 import { Address } from "@ui/domains/Account/Address"
 import AccountAvatar from "@ui/domains/Account/Avatar"
@@ -9,6 +8,7 @@ import { useAnalyticsPageView } from "@ui/hooks/useAnalyticsPageView"
 import { FC, FormEventHandler, useCallback } from "react"
 import { useForm } from "react-hook-form"
 import styled from "styled-components"
+import { Drawer } from "talisman-ui"
 import { Button, FormFieldContainer, FormFieldInputText } from "talisman-ui"
 import * as yup from "yup"
 
@@ -54,9 +54,9 @@ export const AddToAddressBookDrawer: FC<{
   close: () => void
   address: string
   addressType: AddressBookContact["addressType"]
-  parent?: HTMLElement | string | null
+  containerId?: string
   asChild?: boolean
-}> = ({ isOpen, close, address, addressType, asChild, parent }) => {
+}> = ({ isOpen, close, address, addressType, containerId }) => {
   const { add } = useAddressBook()
   const {
     register,
@@ -111,7 +111,7 @@ export const AddToAddressBookDrawer: FC<{
   useAnalyticsPageView(ANALYTICS_PAGE)
 
   return (
-    <Drawer asChild={asChild} open={isOpen} anchor="bottom" onClose={closeDrawer} parent={parent}>
+    <Drawer isOpen={isOpen} anchor="bottom" onDismiss={closeDrawer} containerId={containerId}>
       <Container className="bg-black-tertiary">
         <form onSubmit={submitWithoutBubbleUp}>
           <header className="flex flex-col items-center justify-center gap-6">

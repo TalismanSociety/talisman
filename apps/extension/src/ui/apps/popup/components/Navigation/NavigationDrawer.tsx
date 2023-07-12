@@ -1,4 +1,3 @@
-import { Drawer } from "@talisman/components/Drawer"
 import Nav, { NavItemButton } from "@talisman/components/Nav"
 import { ScrollContainer } from "@talisman/components/ScrollContainer"
 import {
@@ -24,6 +23,7 @@ import { useSetting } from "@ui/hooks/useSettings"
 import { FC, useCallback } from "react"
 import { useTranslation } from "react-i18next"
 import styled from "styled-components"
+import { Drawer } from "talisman-ui"
 import { IconButton } from "talisman-ui"
 
 const Container = styled.aside`
@@ -164,7 +164,7 @@ export const NavigationDrawer: FC = () => {
   const { t } = useTranslation()
 
   return (
-    <Drawer anchor="bottom" open={isOpen} onClose={close} fullScreen>
+    <Drawer className="h-full" containerId="main" anchor="bottom" isOpen={isOpen} onDismiss={close}>
       <Container>
         <header>
           <FullColorSmallLogo className="logo" />
