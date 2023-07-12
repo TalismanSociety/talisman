@@ -3,7 +3,6 @@ import { ScrollContainer } from "@talisman/components/ScrollContainer"
 import { XIcon } from "@talisman/theme/icons"
 import { useCurrentSite } from "@ui/apps/popup/context/CurrentSiteContext"
 import { FC } from "react"
-import styled from "styled-components"
 import { Drawer } from "talisman-ui"
 import { IconButton } from "talisman-ui"
 
@@ -14,50 +13,23 @@ type Props = {
   onClose: () => void
 }
 
-const Container = styled.div`
-  background: var(--color-background);
-  height: 100%;
-  overflow: hidden;
-  display: flex;
-  flex-direction: column;
-
-  > header {
-    position: relative;
-    text-align: center;
-    padding: 2rem 2.4rem;
-
-    .close {
-      position: absolute;
-      top: 2rem;
-      right: 2rem;
-    }
-  }
-  > section {
-    flex-grow: 1;
-    padding: 0 2.4rem;
-    .accounts {
-      padding-bottom: 2.4rem;
-    }
-  }
-`
-
 const ConnectedAccountsDrawer: FC<Props> = ({ open, onClose }) => {
   const { id, url } = useCurrentSite()
 
   if (!id) return null
   return (
     <Drawer className="w-full" containerId="main" anchor="right" isOpen={open} onDismiss={onClose}>
-      <Container>
-        <header>
+      <div className="flex h-full flex-col bg-black">
+        <header className="px-12 py-10 text-center">
           <AppPill url={url} />
-          <IconButton className="close" onClick={onClose}>
+          <IconButton className="absolute right-10 top-10" onClick={onClose}>
             <XIcon />
           </IconButton>
         </header>
-        <ScrollContainer>
+        <ScrollContainer innerClassName="px-12">
           <ConnectedAccounts siteId={id} />
         </ScrollContainer>
-      </Container>
+      </div>
     </Drawer>
   )
 }
