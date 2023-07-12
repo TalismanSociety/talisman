@@ -1,50 +1,83 @@
 import { classNames } from "@talismn/util"
 import { DetailedHTMLProps, FC, HTMLAttributes, ReactNode } from "react"
-import { NavLink, NavLinkProps } from "react-router-dom"
+import { NavLink, To } from "react-router-dom"
 
-type NavItemCommonProps = {
-  icon?: ReactNode
-  children?: ReactNode
+type NavItemProps = {
+  icon: ReactNode
+  children: ReactNode
   className?: string
+  iconContainerClassName?: string
+  contentClassName?: string
+  to?: To
+  onClick?: () => void
 }
 
-type NavItemButtonProps = HTMLAttributes<HTMLButtonElement> & NavItemCommonProps
-
-export const NavItemButton: FC<NavItemButtonProps> = ({ icon, className, children, ...props }) => {
+export const NavItemButton: FC<NavItemProps> = ({
+  icon,
+  className,
+  children,
+  contentClassName,
+  iconContainerClassName,
+  ...props
+}) => {
   return (
     <button
       type="button"
       className={classNames(
-        "hover:bg-grey-800 text-body-secondary hover:text-body flex h-28 w-full items-center justify-start gap-4 rounded-sm px-4 text-left",
+        "hover:bg-grey-800 text-body-secondary hover:text-body flex w-full items-center justify-start gap-4 rounded-sm p-4 py-8 text-left",
         className
       )}
       {...props}
     >
-      {icon && <div className="flex w-20 shrink-0 justify-center text-lg">{icon}</div>}
-      <div className="flex-grow">{children}</div>
+      {icon && (
+        <div
+          className={classNames(
+            "flex w-20 shrink-0 justify-center text-lg",
+            iconContainerClassName
+          )}
+        >
+          {icon}
+        </div>
+      )}
+      <div className={classNames("flex-grow", contentClassName)}>{children}</div>
     </button>
   )
 }
 
-export const NavItemLink: FC<NavLinkProps & NavItemButtonProps> = ({
+export const NavItemLink: FC<NavItemProps & { to: To }> = ({
   icon,
   className,
   children,
+  contentClassName,
+  iconContainerClassName,
   ...props
 }) => {
   return (
     <NavLink
       className={classNames(
-        "hover:bg-grey-800 text-body-secondary hover:text-body flex h-28 w-full items-center justify-start gap-4 rounded-sm px-4 text-left",
+        "hover:bg-grey-800 text-body-secondary hover:text-body flex w-full items-center justify-start gap-4 rounded-sm p-4 py-8 text-left",
+        "[&.active]:text-body",
         className
       )}
       {...props}
     >
-      {icon && <div className="flex w-20 shrink-0 justify-center text-lg">{icon}</div>}
-      <div className="flex-grow">{children}</div>
+      {icon && (
+        <div
+          className={classNames(
+            "flex w-20 shrink-0 justify-center text-lg",
+            iconContainerClassName
+          )}
+        >
+          {icon}
+        </div>
+      )}
+      <div className={classNames("flex-grow", contentClassName)}>{children}</div>
     </NavLink>
   )
 }
+
+export const NavItem: FC<NavItemProps> = ({ to, ...props }) =>
+  to ? <NavItemLink to={to} {...props} /> : <NavItemButton {...props} />
 
 export const Nav: FC<DetailedHTMLProps<HTMLAttributes<HTMLElement>, HTMLElement>> = ({
   className,
