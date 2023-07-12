@@ -1,5 +1,5 @@
 import { TALISMAN_WEB_APP_NFTS_URL } from "@core/constants"
-import Nav, { NavItemButton, NavItemLink } from "@talisman/components/Nav"
+import { Nav, NavItemButton, NavItemLink } from "@talisman/components/Nav"
 import { ScrollContainer } from "@talisman/components/ScrollContainer"
 import { WithTooltip } from "@talisman/components/Tooltip"
 import { breakpoints } from "@talisman/theme/definitions"
@@ -384,7 +384,7 @@ export const SideBar = () => {
         </Buttons>
       </PaddedItem>
       <ScrollContainer className="scrollable">
-        <Nav column>
+        <Nav>
           <NavItemLink
             to="/portfolio"
             onClick={handlePortfolioClick}

@@ -1,52 +1,6 @@
 import { classNames } from "@talismn/util"
-import { HTMLAttributes, ReactNode } from "react"
+import { DetailedHTMLProps, FC, HTMLAttributes, ReactNode } from "react"
 import { NavLink, NavLinkProps } from "react-router-dom"
-import styled, { css } from "styled-components"
-
-const NAV_ITEM_STYLE = css`
-  display: inline-flex;
-  align-items: center;
-  justify-content: flex-start;
-  border: none;
-  color: var(--color-foreground);
-  background: transparent;
-  padding: 1em 0.4em;
-  line-height: 1.6em;
-  cursor: pointer;
-  text-align: center;
-  position: relative;
-  overflow: hidden;
-
-  > * {
-    margin: 0 0.4em;
-
-    &.icon {
-      margin-bottom: 0.05em;
-      font-size: 1.5em;
-      svg {
-        display: block;
-      }
-    }
-  }
-
-  > * {
-    opacity: 0.6;
-  }
-
-  &.active {
-    opacity: 1;
-
-    > * {
-      opacity: 1;
-    }
-  }
-
-  &:hover {
-    > * {
-      opacity: 1;
-    }
-  }
-`
 
 type NavItemCommonProps = {
   icon?: ReactNode
@@ -56,56 +10,45 @@ type NavItemCommonProps = {
 
 type NavItemButtonProps = HTMLAttributes<HTMLButtonElement> & NavItemCommonProps
 
-export const NavItemButton = styled(
-  ({ icon, className, children, ...props }: NavItemButtonProps) => {
-    return (
-      <button type="button" className={classNames("link", className)} {...props}>
-        <>
-          {icon && <span className="icon">{icon}</span>}
-          <span>{children}</span>
-        </>
-      </button>
-    )
-  }
-)`
-  ${NAV_ITEM_STYLE}
-`
-
-type NavItemProps = NavLinkProps & NavItemButtonProps
-
-export const NavItemLink = styled(({ icon, className, children, ...props }: NavItemProps) => {
+export const NavItemButton: FC<NavItemButtonProps> = ({ icon, className, children, ...props }) => {
   return (
-    <NavLink className={classNames("link", className)} {...props}>
-      <>
-        {icon && <span className="icon">{icon}</span>}
-        <span>{children}</span>
-      </>
-    </NavLink>
+    <button
+      type="button"
+      className={classNames(
+        "hover:bg-grey-800 text-body-secondary hover:text-body flex h-28 w-full items-center justify-start gap-4 rounded-sm px-4 text-left",
+        className
+      )}
+      {...props}
+    >
+      {icon && <div className="flex w-20 shrink-0 justify-center text-lg">{icon}</div>}
+      <div className="flex-grow">{children}</div>
+    </button>
   )
-})`
-  ${NAV_ITEM_STYLE}
-`
-
-interface NavProps {
-  column?: boolean
-  children?: ReactNode
-  className?: string
 }
 
-const Nav = styled(({ children, className }: NavProps) => (
-  <nav className={classNames("nav", className)}>{children}</nav>
-))`
-  display: flex;
-  align-items: flex-start;
+export const NavItemLink: FC<NavLinkProps & NavItemButtonProps> = ({
+  icon,
+  className,
+  children,
+  ...props
+}) => {
+  return (
+    <NavLink
+      className={classNames(
+        "hover:bg-grey-800 text-body-secondary hover:text-body flex h-28 w-full items-center justify-start gap-4 rounded-sm px-4 text-left",
+        className
+      )}
+      {...props}
+    >
+      {icon && <div className="flex w-20 shrink-0 justify-center text-lg">{icon}</div>}
+      <div className="flex-grow">{children}</div>
+    </NavLink>
+  )
+}
 
-  ${({ column }) =>
-    !!column &&
-    `
-    flex-direction: column;
-    >.link{
-      display: flex
-    }
-  `};
-`
-
-export default Nav
+export const Nav: FC<DetailedHTMLProps<HTMLAttributes<HTMLElement>, HTMLElement>> = ({
+  className,
+  ...props
+}) => (
+  <nav className={classNames("flex flex-col items-start justify-start", className)} {...props} />
+)
