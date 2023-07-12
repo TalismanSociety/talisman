@@ -3,21 +3,8 @@ import { ChainId, EvmNetworkId } from "@talismn/chaindata-provider"
 import { classNames } from "@talismn/util"
 import { ChainLogo } from "@ui/domains/Asset/ChainLogo"
 import { useMemo } from "react"
-import styled from "styled-components"
 
 import { PortfolioNetwork, usePortfolioNetworks } from "./usePortfolioNetworks"
-
-export const Container = styled.div`
-  height: 1em;
-  overflow: hidden;
-  padding-left: 0.25em;
-  .item {
-    margin-left: -0.25rem;
-  }
-  .logo-circle {
-    border: 1px solid white;
-  }
-`
 
 export const NetworksLogoStackItem = ({ network }: { network?: PortfolioNetwork }) => {
   const tooltip = useMemo(
@@ -28,7 +15,7 @@ export const NetworksLogoStackItem = ({ network }: { network?: PortfolioNetwork 
   if (!network) return null
 
   return (
-    <div className="item inline-block h-[1em] w-[1em] overflow-hidden">
+    <div className="ml-[-0.25rem] inline-block h-[1em] w-[1em] overflow-hidden">
       <WithTooltip tooltip={tooltip}>
         <ChainLogo key={network.id} id={network.id} />
       </WithTooltip>
@@ -38,7 +25,7 @@ export const NetworksLogoStackItem = ({ network }: { network?: PortfolioNetwork 
 
 const MoreNetworksTooltip = ({ networks }: { networks: PortfolioNetwork[] }) => {
   return (
-    <div className="text-left">
+    <div className="flex flex-col gap-1 text-left">
       {networks.map(({ label, type }, i) => (
         <div key={i}>
           {label} ({type})
@@ -52,7 +39,7 @@ export const NetworksLogoStackMore = ({ networks }: { networks: PortfolioNetwork
   if (!networks.length) return null
 
   return (
-    <div className="item inline-block h-[1em] w-[1em] overflow-hidden">
+    <div className="ml-[-0.25rem] inline-block h-[1em] w-[1em] overflow-hidden">
       <WithTooltip tooltip={<MoreNetworksTooltip networks={networks} />}>
         <div className="bg-body-secondary column relative flex h-[1em] w-[1em] flex-col justify-center overflow-hidden rounded-full text-center text-black">
           <div className="text-[0.5em] font-bold leading-[1em]">+{networks.length}</div>
@@ -75,11 +62,11 @@ export const NetworksLogoStack = ({ networkIds, className, max = 4 }: Props) => 
   }, [networks, max])
 
   return (
-    <Container className={classNames("logo-stack", className)}>
+    <div className={classNames("h-[1em] pl-[0.25rem]", className)}>
       {visibleNetworks.map((network, idx) => (
         <NetworksLogoStackItem key={`${network}-${idx}`} network={network} />
       ))}
       <NetworksLogoStackMore networks={moreNetworks} />
-    </Container>
+    </div>
   )
 }
