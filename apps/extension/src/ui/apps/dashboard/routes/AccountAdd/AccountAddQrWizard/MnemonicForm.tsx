@@ -1,21 +1,15 @@
 import { yupResolver } from "@hookform/resolvers/yup"
-import { classNames } from "@talismn/util"
+import { FadeIn } from "@talisman/components/FadeIn"
 import { api } from "@ui/api"
 import { useMemo } from "react"
 import { useForm } from "react-hook-form"
 import { Trans, useTranslation } from "react-i18next"
-import styled from "styled-components"
 import { Button, FormFieldTextarea } from "talisman-ui"
 import * as yup from "yup"
 
 type FormData = {
   mnemonic: string
 }
-
-const Form = styled.form`
-  transition: opacity var(--transition-speed) ease-in-out;
-  opacity: 1;
-`
 
 const cleanupMnemonic = (input = "") =>
   input
@@ -64,34 +58,38 @@ export const MnemonicForm = ({ onSubmit, onCancel }: FormProps) => {
   const wordCount = useMemo(() => cleanupMnemonic(mnemonic).split(" ").length ?? 0, [mnemonic])
 
   return (
-    <Form className={classNames("show")} onSubmit={handleSubmit(onSubmit)}>
-      <div className="text-body-secondary mb-6">
-        <Trans t={t}>
-          Please enter a mnemonic you would like to use as your Verifier Certificate Mnemonic. You
-          should not enter your main Polkadot Vault account mnemonic here.
-        </Trans>
-      </div>
-      <FormFieldTextarea
-        {...register("mnemonic")}
-        placeholder={t(`Enter your 12 or 24 word mnemonic`)}
-        rows={5}
-        data-lpignore
-        spellCheck={false}
-      />
-      <div className="my-8 flex justify-between text-xs">
-        {mnemonic && (
-          <div className="text-body-secondary">{t("Word count: {{wordCount}}", { wordCount })}</div>
-        )}
-        <div className="text-alert-warn text-right">{errors.mnemonic?.message}</div>
-      </div>
-      <div className="flex justify-between gap-8">
-        <Button type="button" fullWidth onClick={onCancel}>
-          {t("Cancel")}
-        </Button>
-        <Button type="submit" fullWidth primary disabled={!isValid} processing={isSubmitting}>
-          {t("Import")}
-        </Button>
-      </div>
-    </Form>
+    <FadeIn>
+      <form onSubmit={handleSubmit(onSubmit)}>
+        <div className="text-body-secondary mb-6">
+          <Trans t={t}>
+            Please enter a mnemonic you would like to use as your Verifier Certificate Mnemonic. You
+            should not enter your main Polkadot Vault account mnemonic here.
+          </Trans>
+        </div>
+        <FormFieldTextarea
+          {...register("mnemonic")}
+          placeholder={t(`Enter your 12 or 24 word mnemonic`)}
+          rows={5}
+          data-lpignore
+          spellCheck={false}
+        />
+        <div className="my-8 flex justify-between text-xs">
+          {mnemonic && (
+            <div className="text-body-secondary">
+              {t("Word count: {{wordCount}}", { wordCount })}
+            </div>
+          )}
+          <div className="text-alert-warn text-right">{errors.mnemonic?.message}</div>
+        </div>
+        <div className="flex justify-between gap-8">
+          <Button type="button" fullWidth onClick={onCancel}>
+            {t("Cancel")}
+          </Button>
+          <Button type="submit" fullWidth primary disabled={!isValid} processing={isSubmitting}>
+            {t("Import")}
+          </Button>
+        </div>
+      </form>
+    </FadeIn>
   )
 }
