@@ -50,7 +50,9 @@ const BrandLogo = styled(({ className }) => {
         <FullColorVerticalLogo className="logo-medium" />
         <HandRedLogo className="logo-small" />
       </a>
-      <BuildVersionPill />
+      <div className="hidden lg:block">
+        <BuildVersionPill />
+      </div>
     </div>
   )
 })`
