@@ -1,12 +1,11 @@
 import { CustomEvmNetwork, EvmNetwork } from "@core/domains/ethereum/types"
 import { CustomErc20Token } from "@core/domains/tokens/types"
-import { Drawer } from "@talisman/components/Drawer"
-import { SimpleButton } from "@talisman/components/SimpleButton"
 import { useOpenClose } from "@talisman/hooks/useOpenClose"
 import { scrollbarsStyle } from "@talisman/theme/styles"
 import { ReactNode, useMemo } from "react"
 import { useTranslation } from "react-i18next"
 import styled from "styled-components"
+import { Button, Drawer } from "talisman-ui"
 
 const ViewDetailsContainer = styled.div`
   background: var(--color-background-muted);
@@ -59,7 +58,7 @@ const ViewDetailsContainer = styled.div`
   }
 `
 
-const Button = styled.button`
+const OpenButton = styled.button`
   background: var(--color-background-muted-3x);
   padding: 0.4rem 0.6rem;
   border-radius: 4.8rem;
@@ -120,8 +119,8 @@ export const CustomErc20TokenViewDetails = ({
 
   return (
     <>
-      <Button onClick={open}>{t("View Details")}</Button>
-      <Drawer open={isOpen} onClose={close} anchor="bottom">
+      <OpenButton onClick={open}>{t("View Details")}</OpenButton>
+      <Drawer containerId="main" isOpen={isOpen} onDismiss={close} anchor="bottom">
         <ViewDetailsContainer>
           <h3>{t("Token Details")}</h3>
           <div className="grow">
@@ -135,7 +134,7 @@ export const CustomErc20TokenViewDetails = ({
             />
           </div>
           <div>
-            <SimpleButton onClick={close}>Close</SimpleButton>
+            <Button onClick={close}>Close</Button>
           </div>
         </ViewDetailsContainer>
       </Drawer>

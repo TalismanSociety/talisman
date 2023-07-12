@@ -1,9 +1,7 @@
 import { HeaderBlock } from "@talisman/components/HeaderBlock"
-import { SimpleButton } from "@talisman/components/SimpleButton"
-import { WithTooltip } from "@talisman/components/Tooltip"
 import { ArrowRightIcon, LoaderIcon, PolkadotVaultIcon } from "@talisman/theme/icons"
+import { AccountIcon } from "@ui/domains/Account/AccountIcon"
 import { Address } from "@ui/domains/Account/Address"
-import Avatar from "@ui/domains/Account/Avatar"
 import { ChainLogo } from "@ui/domains/Asset/ChainLogo"
 import Fiat from "@ui/domains/Asset/Fiat"
 import { useBalanceDetails } from "@ui/hooks/useBalanceDetails"
@@ -13,7 +11,14 @@ import useChains from "@ui/hooks/useChains"
 import { useSetting } from "@ui/hooks/useSettings"
 import { useMemo } from "react"
 import { Trans, useTranslation } from "react-i18next"
-import { Checkbox, FormFieldInputText } from "talisman-ui"
+import {
+  Button,
+  Checkbox,
+  FormFieldInputText,
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "talisman-ui"
 
 import { useAccountAddQr } from "./context"
 
@@ -70,7 +75,7 @@ export const ConfigureAccount = () => {
         />
 
         <div className="ring-grey-700 flex w-full items-center gap-8 overflow-hidden rounded-sm p-8 text-left ring-1">
-          <Avatar
+          <AccountIcon
             address={accountConfig.address}
             genesisHash={accountConfig.lockToNetwork ? accountConfig.genesisHash : undefined}
           />
@@ -92,9 +97,20 @@ export const ConfigureAccount = () => {
             <div className="flex flex-col justify-center pb-1 leading-none">
               {isBalanceLoading && <LoaderIcon className="animate-spin-slow inline text-white" />}
             </div>
-            <WithTooltip as="div" className="leading-none" tooltip={balanceDetails} noWrap>
-              <Fiat className="leading-none" amount={totalUsd} currency="usd" />
-            </WithTooltip>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <div>
+                  <Fiat amount={totalUsd} currency="usd" />
+                </div>
+              </TooltipTrigger>
+              {balanceDetails && (
+                <TooltipContent>
+                  <div className="leading-paragraph whitespace-pre text-right">
+                    {balanceDetails}
+                  </div>
+                </TooltipContent>
+              )}
+            </Tooltip>
           </div>
         </div>
 
@@ -117,9 +133,9 @@ export const ConfigureAccount = () => {
         )}
 
         <div className="flex justify-end py-8">
-          <SimpleButton type="submit" primary processing={state.submitting}>
-            {t("Import")} <ArrowRightIcon />
-          </SimpleButton>
+          <Button icon={ArrowRightIcon} type="submit" primary processing={state.submitting}>
+            {t("Import")}
+          </Button>
         </div>
       </form>
     </>

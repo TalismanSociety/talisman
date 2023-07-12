@@ -1,10 +1,9 @@
 import { AddEthereumChainParameter } from "@core/domains/ethereum/types"
-import { Drawer } from "@talisman/components/Drawer"
-import { SimpleButton } from "@talisman/components/SimpleButton"
 import { useOpenClose } from "@talisman/hooks/useOpenClose"
 import { ReactNode, useCallback, useMemo } from "react"
 import { useTranslation } from "react-i18next"
 import styled from "styled-components"
+import { Button, Drawer } from "talisman-ui"
 
 const ViewDetailsContainer = styled.div`
   background: var(--color-background-muted);
@@ -52,7 +51,7 @@ const ViewDetailsContainer = styled.div`
   }
 `
 
-const Button = styled.button`
+const OpenButton = styled.button`
   background: var(--color-background-muted-3x);
   padding: 0.4rem 0.6rem;
   border-radius: 4.8rem;
@@ -119,8 +118,8 @@ export const NetworksDetailsButton = ({ network }: NetworkDetailsButtonProps) =>
 
   return (
     <>
-      <Button onClick={open}>{t("View Details")}</Button>
-      <Drawer open={isOpen} onClose={close} anchor="bottom">
+      <OpenButton onClick={open}>{t("View Details")}</OpenButton>
+      <Drawer containerId="main" isOpen={isOpen} onDismiss={close} anchor="bottom">
         <ViewDetailsContainer>
           <h3>{t("Network Details")}</h3>
           <div className="grow">
@@ -131,7 +130,7 @@ export const NetworksDetailsButton = ({ network }: NetworkDetailsButtonProps) =>
             <ViewDetailsEntry title={t("Block Explorer URL")} value={blockExplorers} />
           </div>
           <div>
-            <SimpleButton onClick={close}>{t("Close")}</SimpleButton>
+            <Button onClick={close}>{t("Close")}</Button>
           </div>
         </ViewDetailsContainer>
       </Drawer>
