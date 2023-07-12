@@ -68,7 +68,7 @@ export const ConnectedAccounts: FC<ConnectedAccountsProps> = ({ siteId }) => {
   return (
     <div>
       {authorizedProviders.length > 1 && (
-        <div className="mb-12 flex w-full justify-end text-xs leading-8">
+        <div className="mb-4 flex w-full justify-end text-xs ">
           <ProviderTypeSwitch
             authorizedProviders={authorizedProviders}
             defaultProvider={defaultProvider}
