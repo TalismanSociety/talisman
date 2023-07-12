@@ -3,27 +3,8 @@ import { Address } from "@core/types/base"
 import { classNames } from "@talismn/util"
 import useAccounts from "@ui/hooks/useAccounts"
 import { FC, useCallback, useMemo } from "react"
-import styled from "styled-components"
 
 import { AccountIcon } from "../Account/AccountIcon"
-
-const Container = styled.div`
-  display: flex;
-  gap: 0.8rem;
-
-  .avatar-option {
-    border-radius: 50%;
-    font-size: 3.2rem;
-    padding: 0.3rem;
-    width: 3.8rem;
-    height: 3.8rem;
-    cursor: pointer;
-  }
-
-  .avatar-option.selected {
-    background: var(--color-primary);
-  }
-`
 
 type SelectableAvatarProps = {
   type: IdenticonType
@@ -36,10 +17,13 @@ const AvatarOption: FC<SelectableAvatarProps> = ({ address, type, selected, onCl
   return (
     <button
       type="button"
-      className={classNames("avatar-option", selected && "selected")}
+      className={classNames(
+        "h-[3.8rem] w-[3.8rem] rounded-full p-[0.3rem]",
+        selected && "bg-primary"
+      )}
       onClick={onClick}
     >
-      <AccountIcon address={address} type={type} />
+      <AccountIcon className="text-xl" address={address} type={type} />
     </button>
   )
 }
@@ -70,7 +54,7 @@ export const AvatarTypeSelect: FC<AvatarTypeSelectProps> = ({
   )
 
   return (
-    <Container className={className}>
+    <div className={classNames("inline-flex gap-4", className)}>
       <AvatarOption
         address={address}
         type="talisman-orb"
@@ -83,6 +67,6 @@ export const AvatarTypeSelect: FC<AvatarTypeSelectProps> = ({
         selected={selectedType === "polkadot-identicon"}
         onClick={handleSelect("polkadot-identicon")}
       />
-    </Container>
+    </div>
   )
 }
