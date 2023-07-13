@@ -1,51 +1,7 @@
 import { CheckCircleIcon, LoaderIcon, XCircleIcon } from "@talisman/theme/icons"
 import { classNames } from "@talismn/util"
 import { LedgerStatus } from "@ui/hooks/ledger/common"
-import { useEffect, useState } from "react"
-import styled from "styled-components"
-
-const Panel = styled.div<{ status?: string; onClick?: () => void; hide?: boolean }>`
-  background: var(--color-background-muted);
-  padding: 1.6rem;
-  border-radius: var(--border-radius);
-  color: var(--color-mid);
-  display: flex;
-  align-items: center;
-  gap: 0.8rem;
-  line-height: 1;
-  svg {
-    font-size: 2rem;
-    min-width: 1em;
-    line-height: 2rem;
-    ${(props) =>
-      props.status
-        ? `color: var(--color-status-${props.status === "ready" ? "success" : props.status});`
-        : ""};
-  }
-  span {
-    line-height: 2rem !important;
-  }
-  height: 5.6rem;
-  width: 100%;
-
-  ${(props) =>
-    props.onClick
-      ? `
-      :hover {
-      cursor: pointer;
-      background: var(--color-background-muted-3x);
-      }
-  `
-      : ""}
-
-  ${(props) =>
-    props.hide
-      ? `
-        transition: opacity var(--transition-speed-xslower) ease-in-out;
-        opacity: 0;
-    `
-      : ""}
-`
+import { FC, ReactNode, useEffect, useState } from "react"
 
 export type LedgerConnectionStatusProps = {
   status: LedgerStatus
@@ -56,14 +12,6 @@ export type LedgerConnectionStatusProps = {
   refresh: () => void
 }
 
-const Strong = styled.strong`
-  color: var(--color-foreground-muted-2x);
-  text-transform: capitalize;
-  &&& {
-    padding: 0;
-  }
-`
-
 const wrapStrong = (text: string) => {
   if (!text) return text
 
@@ -72,8 +20,28 @@ const wrapStrong = (text: string) => {
 
   return text.split(splitter).map((str, i) => {
     const match = extractor.exec(str)
-    return match ? <Strong key={i}>{match[1]}</Strong> : <span key={i}>{str}</span>
+    return match ? (
+      <strong key={i} className="!text-grey-300 !p-0 !capitalize">
+        {match[1]}
+      </strong>
+    ) : (
+      <span key={i}>{str}</span>
+    )
   })
+}
+
+const Container: FC<{ className?: string; onClick?: () => void; children?: ReactNode }> = ({
+  className,
+  onClick,
+  children,
+}) => {
+  if (onClick)
+    return (
+      <button type="button" onClick={onClick} className={className}>
+        {children}
+      </button>
+    )
+  else return <div className={className}>{children}</div>
 }
 
 export const LedgerConnectionStatus = ({
@@ -92,17 +60,28 @@ export const LedgerConnectionStatus = ({
 
   if (!status || status === "unknown") return null
   return (
-    <Panel
-      className={classNames("ledger-connection", className)}
-      status={status}
+    <Container
+      className={classNames(
+        "text-body-secondary bg-grey-850 flex h-28 w-full items-center gap-4 rounded-sm p-8",
+        hide && "invisible",
+        requiresManualRetry && "hover:bg-grey-800",
+        className
+      )}
       onClick={requiresManualRetry ? refresh : undefined}
-      {...{ hide }}
     >
-      {status === "ready" && <CheckCircleIcon />}
-      {status === "warning" && <XCircleIcon />}
-      {status === "error" && <XCircleIcon />}
-      {status === "connecting" && <LoaderIcon className="animate-spin-slow text-white" />}
-      <span>{wrapStrong(message)}</span>
-    </Panel>
+      {status === "ready" && (
+        <CheckCircleIcon className="text-alert-success min-w-[1em] shrink-0 text-[2rem]" />
+      )}
+      {status === "warning" && (
+        <XCircleIcon className="text-alert-warn min-w-[1em] shrink-0 text-[2rem]" />
+      )}
+      {status === "error" && (
+        <XCircleIcon className="text-alert-error min-w-[1em] shrink-0 text-[2rem]" />
+      )}
+      {status === "connecting" && (
+        <LoaderIcon className="animate-spin-slow min-w-[1em] shrink-0 text-[2rem] text-white" />
+      )}
+      <span className="leading-[2rem]">{wrapStrong(message)}</span>
+    </Container>
   )
 }
