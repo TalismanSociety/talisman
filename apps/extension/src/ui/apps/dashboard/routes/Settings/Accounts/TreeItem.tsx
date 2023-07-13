@@ -219,12 +219,12 @@ export const TreeFolderItem = forwardRef<HTMLDivElement, Props & { item: UiTreeF
           onClick={onCollapse}
         >
           <DragButton {...handleProps?.attributes} {...handleProps?.listeners} />
-          <AccountFolderIcon className="text-xl" color={item.color} />
-          <div className="flex grow flex-col gap-2">
+          <AccountFolderIcon className="shrink-0 text-xl" color={item.color} />
+          <div className="flex w-full grow flex-col gap-2 overflow-hidden">
             <div className="overflow-hidden text-ellipsis whitespace-nowrap">{item.name}</div>
             {addresses.length > 0 && <AccountsLogoStack addresses={addresses} />}
           </div>
-          <div className="flex flex-col gap-2">
+          <div className="flex flex-col">
             <WithTooltip as="div" tooltip={balanceDetails} noWrap>
               <Fiat amount={totalUsd} currency="usd" />
             </WithTooltip>
