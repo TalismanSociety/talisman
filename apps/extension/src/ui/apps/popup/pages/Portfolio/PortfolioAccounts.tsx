@@ -323,8 +323,7 @@ export const PortfolioAccounts = () => {
     popupOpenEvent("portfolio accounts")
   }, [popupOpenEvent])
 
-  // if only 1 entry (all accounts) it means that accounts aren't loaded
-  if ([...portfolioOptions, ...watchedOptions].length <= 1) return null
+  if ([...portfolioOptions, ...watchedOptions].length <= 0) return null
 
   return (
     <FadeIn>
