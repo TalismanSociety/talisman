@@ -267,6 +267,8 @@ const Item = forwardRef<HTMLDivElement, ItemProps>(function Item(
   const isAccount = item && item.type === "account"
   const isFolder = item && item.type === "folder"
 
+  if (isFolder) return <FolderItem {...{ ref, item, collapsed }} />
+
   const icon = isAllAccounts ? (
     <AllAccountsIcon className="shrink-0 text-3xl" />
   ) : isAccount ? (
@@ -280,7 +282,7 @@ const Item = forwardRef<HTMLDivElement, ItemProps>(function Item(
       {t("All Accounts")}
     </div>
   ) : (
-    <div className="flex items-center gap-2">
+    <div className="flex w-full items-center gap-2">
       <div className="overflow-hidden text-ellipsis whitespace-nowrap text-sm">{item.name}</div>
       {isAccount && <AccountTypeIcon className="text-primary" origin={item.origin} />}
     </div>
@@ -325,6 +327,28 @@ const Item = forwardRef<HTMLDivElement, ItemProps>(function Item(
         <ChevronDownIcon className={classNames("shrink-0 text-lg", button && "hidden md:block")} />
       )}
       {isFolder && collapsed && <div>{item.addresses.length}</div>}
+    </div>
+  )
+})
+
+type FolderItemProps = {
+  item?: AccountSelectFolderItem
+  collapsed?: boolean
+}
+const FolderItem = forwardRef<HTMLDivElement, FolderItemProps>(function FolderItem(
+  { item, collapsed },
+  ref
+) {
+  return (
+    <div
+      ref={ref}
+      className="text-body-disabled bg-grey-850 flex w-full cursor-pointer items-center gap-2 p-2 text-sm"
+    >
+      <ChevronDownIcon
+        className={classNames("shrink-0 transition-transform", collapsed && "-rotate-90")}
+      />
+      <div className="flex-grow overflow-hidden text-ellipsis whitespace-nowrap">{item?.name}</div>
+      <div className="text-xs">{item?.addresses.length}</div>
     </div>
   )
 })
