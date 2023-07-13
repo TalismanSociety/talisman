@@ -323,8 +323,6 @@ export const PortfolioAccounts = () => {
     popupOpenEvent("portfolio accounts")
   }, [popupOpenEvent])
 
-  if ([...portfolioOptions, ...watchedOptions].length <= 0) return null
-
   return (
     <FadeIn>
       <Accounts
