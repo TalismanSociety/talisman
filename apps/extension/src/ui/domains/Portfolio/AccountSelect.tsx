@@ -347,7 +347,10 @@ const FolderItem = forwardRef<HTMLDivElement, FolderItemProps>(function FolderIt
       className="text-body-disabled bg-grey-850 flex w-full cursor-pointer items-center gap-2 p-2 text-sm"
     >
       <ChevronDownIcon
-        className={classNames("shrink-0 transition-transform", collapsed && "-rotate-90")}
+        className={classNames(
+          "shrink-0 transition-transform",
+          (collapsed || item?.addresses.length === 0) && "-rotate-90"
+        )}
       />
       <div className="flex-grow overflow-hidden text-ellipsis whitespace-nowrap">{item?.name}</div>
       <div className="text-xs">{item?.addresses.length}</div>
