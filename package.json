@@ -108,7 +108,8 @@
     "@substrate/txwrapper-registry": "7.0.1",
     "@substrate/txwrapper-substrate": "7.0.1",
     "@substrate/txwrapper-template": "7.0.1",
-    "ethereumjs-abi": "0.6.8"
+    "ethereumjs-abi": "0.6.8",
+    "glob-parent": "^5.1.2"
   },
   "engines": {
     "node": ">=18"
