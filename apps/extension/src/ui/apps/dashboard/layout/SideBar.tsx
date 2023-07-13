@@ -361,7 +361,7 @@ export const SideBar = () => {
   return (
     <Container>
       <PaddedItem>
-        <AccountSelect responsive />
+        <AccountSelect />
         {/* Pills for large screens */}
         <Pills>
           <SendPillButton className="!px-4" icon={PaperPlaneIcon}>

@@ -6,7 +6,6 @@ import {
   EyeOffIcon,
   PaperPlaneIcon,
 } from "@talisman/theme/icons"
-import { Balance, Balances } from "@talismn/balances"
 import { classNames } from "@talismn/util"
 import { api } from "@ui/api"
 import { AnalyticsEventName, AnalyticsPage, sendAnalyticsEvent } from "@ui/api/analytics"
@@ -15,7 +14,6 @@ import { useCopyAddressModal } from "@ui/domains/CopyAddress"
 import { useAnalytics } from "@ui/hooks/useAnalytics"
 import useBalances from "@ui/hooks/useBalances"
 import { useIsFeatureEnabled } from "@ui/hooks/useFeatures"
-import { useSearchParamsSelectedFolder } from "@ui/hooks/useSearchParamsSelectedFolder"
 import { useSetting } from "@ui/hooks/useSettings"
 import { ComponentProps, MouseEventHandler, useCallback, useMemo } from "react"
 import { useTranslation } from "react-i18next"
@@ -28,28 +26,8 @@ type Props = {
 
 export const TotalFiatBalance = ({ className, mouseOver }: Props) => {
   const { t } = useTranslation()
-  const { folder } = useSearchParamsSelectedFolder()
 
-  const balances = useBalances(folder ? "all" : "portfolio")
-  const balancesByAddress = useMemo(() => {
-    // we use this to avoid looping over the balances list n times, where n is the number of accounts in the wallet
-    // instead, we'll only interate over the balances one time
-    const balancesByAddress: Map<string, Balance[]> = new Map()
-    balances.each.forEach((balance) => {
-      if (!balancesByAddress.has(balance.address)) balancesByAddress.set(balance.address, [])
-      balancesByAddress.get(balance.address)?.push(balance)
-    })
-    return balancesByAddress
-  }, [balances])
-  const filteredBalances = useMemo(
-    () =>
-      !folder
-        ? balances
-        : new Balances(
-            folder.tree.flatMap((account) => balancesByAddress.get(account.address) ?? [])
-          ),
-    [balances, balancesByAddress, folder]
-  )
+  const balances = useBalances("portfolio")
 
   const [hideBalances, setHideBalances] = useSetting("hideBalances")
   const { genericEvent } = useAnalytics()
@@ -67,7 +45,7 @@ export const TotalFiatBalance = ({ className, mouseOver }: Props) => {
     <div className={classNames(className, "flex w-full items-center")}>
       <div className="flex flex-grow flex-col items-start gap-4">
         <div className="text-body-secondary mt-2 flex gap-2 text-sm">
-          <span>{folder ? folder.name : t("Total Portfolio")}</span>
+          <span>{t("Total Portfolio")}</span>
           <button
             className={classNames(
               "hover:text-body focus:text-body opacity-0 transition-[color,opacity]",
@@ -80,7 +58,7 @@ export const TotalFiatBalance = ({ className, mouseOver }: Props) => {
         </div>
         <Fiat
           className="font-surtExpanded text-lg"
-          amount={filteredBalances?.sum.fiat("usd").total}
+          amount={balances.sum.fiat("usd").total}
           currency="usd"
           isBalance
         />
