@@ -12,8 +12,6 @@ const subscribe = (subject: BehaviorSubject<AccountJsonAny[]>) =>
 
 export type UseAccountsFilter = "all" | "watched" | "owned" | "portfolio"
 
-// const hiddenFilter = (account:AccountJsonAny) => account.
-
 // TODO migrate to recoil
 export const useAccounts = (filter: UseAccountsFilter = "all") => {
   const allAccounts = useMessageSubscription("accountsSubscribe", INITIAL_VALUE, subscribe)

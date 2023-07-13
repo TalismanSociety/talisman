@@ -214,7 +214,6 @@ const PageContent = ({ balances: networkBalances }: { balances: Balances }) => {
 }
 
 export const PortfolioAssets = () => {
-  // TODO: Fetch -all- balances when looking at folder of watched accounts
   const { networkBalances } = usePortfolio()
   const { popupOpenEvent } = useAnalytics()
 
