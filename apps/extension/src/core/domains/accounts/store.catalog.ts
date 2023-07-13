@@ -10,6 +10,8 @@ import { SubscribableStorageProvider } from "@core/libs/Store"
 // else in addition to the two `Tree` objects in the future
 export type AccountsCatalogData = Trees
 
+export const emptyCatalog: AccountsCatalogData = { portfolio: [], watched: [] }
+
 export type Trees = Record<AccountsCatalogTree, Tree>
 export type Tree = TreeItem[]
 export type TreeItem = TreeAccount | TreeFolder
@@ -25,7 +27,6 @@ export type MoveBeforeTarget =
 const folderFilter = (item: TreeItem): item is TreeFolder => item.type === "folder"
 const defaultFolderColor = "#d5ff5c"
 
-// TODO: Split portfolio and watch-only accounts into separate trees
 export class AccountsCatalogStore extends SubscribableStorageProvider<
   AccountsCatalogData,
   "pri(mnemonic.subscribe)"

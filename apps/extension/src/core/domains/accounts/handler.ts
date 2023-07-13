@@ -37,6 +37,8 @@ import { addressFromMnemonic } from "@talisman/util/addressFromMnemonic"
 import { decodeAnyAddress, encodeAnyAddress, sleep } from "@talismn/util"
 import { combineLatest } from "rxjs"
 
+import { AccountsCatalogData, emptyCatalog } from "./store.catalog"
+
 export default class AccountsHandler extends ExtensionHandler {
   // we can only create a new account if we have an existing stored seed
   // requires:
@@ -420,7 +422,8 @@ export default class AccountsHandler extends ExtensionHandler {
       port,
       // make sure the list of accounts in the catalog is updated when the keyring changes
       combineLatest([keyring.accounts.subject, this.stores.accountsCatalog.observable]),
-      async ([, catalog]) => catalog
+      async ([, catalog]): Promise<AccountsCatalogData> =>
+        Object.keys(catalog).length === 0 ? emptyCatalog : catalog
     )
   }
 
