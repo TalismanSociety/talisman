@@ -320,7 +320,7 @@ const Item = forwardRef<HTMLDivElement, ItemProps>(function Item(
           amount={item?.total !== undefined ? item.total : totalUsd}
           currency="usd"
           isBalance
-          noCountUp={!button}
+          noCountUp
         />
       </div>
       {(button || (isFolder && !collapsed)) && (
