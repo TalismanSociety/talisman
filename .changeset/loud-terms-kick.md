@@ -2,4 +2,4 @@
 "talisman-ui": minor
 ---
 
-feat: new Dropdown component
+feat: new Dropdown, ModalDialog and IconButton components

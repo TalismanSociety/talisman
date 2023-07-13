@@ -234,10 +234,6 @@ export const AccountAddSecretMnemonicPage = () => {
     [setValue, trigger]
   )
 
-  // const handleGenerateNew = useCallback(() => {
-  //   setValue("mnemonic", Wallet.createRandom().mnemonic.phrase, { shouldValidate: true })
-  // }, [setValue])
-
   return (
     <DashboardLayout withBack centered>
       <HeaderBlock

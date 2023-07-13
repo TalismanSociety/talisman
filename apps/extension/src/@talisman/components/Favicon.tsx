@@ -20,7 +20,7 @@ export const Favicon: FC<{ url: string; className?: string }> = ({ url, classNam
           // required for chrome to work around the manifest rule, but breaks firefox as it enforces CORS
           crossOrigin={IS_FIREFOX ? undefined : "anonymous"}
           src={iconUrl}
-          alt={`favicon ${url}`}
+          alt=""
         />
       )}
     </span>

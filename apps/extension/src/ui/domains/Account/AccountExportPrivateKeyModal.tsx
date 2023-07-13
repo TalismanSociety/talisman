@@ -154,7 +154,7 @@ export const AccountExportPrivateKeyModal = () => {
 
   return (
     <Modal containerId="main" isOpen={isOpen} onDismiss={close}>
-      <ModalDialog title="Export private key" onClose={close} className="w-[50.3rem]">
+      <ModalDialog title={t("Export private key")} onClose={close} className="w-[50.3rem]">
         <div className="h-[24.2rem]">
           <PasswordUnlock
             className="h-full"

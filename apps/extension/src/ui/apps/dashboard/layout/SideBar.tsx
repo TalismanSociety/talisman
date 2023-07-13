@@ -1,5 +1,5 @@
 import { TALISMAN_WEB_APP_NFTS_URL } from "@core/constants"
-import { Nav, NavItem, NavItemButton, NavItemLink } from "@talisman/components/Nav"
+import { Nav, NavItem } from "@talisman/components/Nav"
 import { ScrollContainer } from "@talisman/components/ScrollContainer"
 import {
   ArrowDownIcon,
@@ -173,7 +173,7 @@ export const SideBar = () => {
       </div>
       <ScrollContainer className="flex-grow">
         <Nav className="gap-2 lg:p-12">
-          <NavItemLink
+          <NavItem
             to="/portfolio"
             className="flex-col lg:flex-row"
             contentClassName="hidden md:block"
@@ -185,9 +185,9 @@ export const SideBar = () => {
             }
           >
             {t("Portfolio")}
-          </NavItemLink>
+          </NavItem>
           {showBuyCryptoButton && (
-            <NavItemButton
+            <NavItem
               className="flex-col lg:flex-row"
               contentClassName="hidden md:block"
               onClick={handleBuyClick}
@@ -198,9 +198,9 @@ export const SideBar = () => {
               }
             >
               {t("Buy Crypto")}
-            </NavItemButton>
+            </NavItem>
           )}
-          <NavItemLink
+          <NavItem
             to="/accounts/add"
             className="flex-col lg:flex-row"
             contentClassName="hidden md:block"
@@ -212,9 +212,9 @@ export const SideBar = () => {
             }
           >
             {t("Add Account")}
-          </NavItemLink>
+          </NavItem>
           {showStaking && (
-            <NavItemButton
+            <NavItem
               className="flex-col lg:flex-row"
               contentClassName="hidden md:block"
               onClick={handleStakingClick}
@@ -225,7 +225,7 @@ export const SideBar = () => {
               }
             >
               <span>{t("Staking")}</span> <ExternalLinkIcon className="hidden lg:inline" />
-            </NavItemButton>
+            </NavItem>
           )}
           <NavItem
             className="flex-col lg:flex-row"
@@ -280,14 +280,14 @@ export const SideBar = () => {
             {t("Settings")}
           </NavItem>
           {isSnoozed && (
-            <NavItemButton
+            <NavItem
               // show only on large screens
               className="!hidden lg:!flex"
               onClick={handleBackupClick}
               icon={<DownloadAlertIcon />}
             >
               {t("Backup Wallet")}
-            </NavItemButton>
+            </NavItem>
           )}
         </Nav>
       </ScrollContainer>

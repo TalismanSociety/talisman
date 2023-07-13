@@ -1,4 +1,4 @@
-import { Nav, NavItemButton } from "@talisman/components/Nav"
+import { Nav, NavItem } from "@talisman/components/Nav"
 import { ScrollContainer } from "@talisman/components/ScrollContainer"
 import {
   CreditCardIcon,
@@ -122,35 +122,32 @@ export const NavigationDrawer: FC = () => {
         </header>
         <ScrollContainer className="flex-grow">
           <Nav className="p-4">
-            <NavItemButton icon={<PaperPlaneIcon />} onClick={handleSendFundsClick}>
+            <NavItem icon={<PaperPlaneIcon />} onClick={handleSendFundsClick}>
               {t("Send Funds")}
-            </NavItemButton>
+            </NavItem>
             {showBuyTokens && (
-              <NavItemButton icon={<CreditCardIcon />} onClick={handleBuyTokensClick}>
+              <NavItem icon={<CreditCardIcon />} onClick={handleBuyTokensClick}>
                 {t("Buy Crypto")}
-              </NavItemButton>
+              </NavItem>
             )}
-            <NavItemButton
-              icon={hideBalances ? <EyeIcon /> : <EyeOffIcon />}
-              onClick={toggleHideBalance}
-            >
+            <NavItem icon={hideBalances ? <EyeIcon /> : <EyeOffIcon />} onClick={toggleHideBalance}>
               {hideBalances ? t("Show Balances") : t("Hide Balances")}
-            </NavItemButton>
-            <NavItemButton icon={<PlusIcon />} onClick={handleAddAccountClick}>
+            </NavItem>
+            <NavItem icon={<PlusIcon />} onClick={handleAddAccountClick}>
               {t("Add Account")}
-            </NavItemButton>
-            <NavItemButton icon={<SettingsIcon />} onClick={handleSettingsClick}>
+            </NavItem>
+            <NavItem icon={<SettingsIcon />} onClick={handleSettingsClick}>
               {t("Settings")}
-            </NavItemButton>
-            <NavItemButton
+            </NavItem>
+            <NavItem
               icon={isNotConfirmed ? <DownloadAlertIcon /> : <DownloadIcon />}
               onClick={handleBackupClick}
             >
               {t("Backup Wallet")}
-            </NavItemButton>
-            <NavItemButton icon={<LockIcon />} onClick={handleLock}>
+            </NavItem>
+            <NavItem icon={<LockIcon />} onClick={handleLock}>
               {t("Lock Wallet")}
-            </NavItemButton>
+            </NavItem>
           </Nav>
         </ScrollContainer>
         <footer className="py-10 text-center">

@@ -13,9 +13,6 @@ import { PortfolioAssets } from "./PortfolioAssets"
 const BraveWarningPopupBanner = lazy(
   () => import("@ui/domains/Settings/BraveWarning/BraveWarningPopupBanner")
 )
-
-// TODO : Check if we can delete this - it was for existing users when we implemented analytics
-// const AnalyticsAlert = lazy(() => import("@ui/domains/Settings/Analytics/AnalyticsAlert"))
 const MigratePasswordAlert = lazy(() => import("@ui/domains/Settings/MigratePasswordAlert"))
 
 const AccountAvatar = () => {

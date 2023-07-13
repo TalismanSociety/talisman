@@ -54,9 +54,7 @@ export const DashboardLayout: FC<LayoutProps> = ({
       >
         <div
           className={classNames(
-            "children",
-            "w-full",
-            // necessary ? "relative",
+            "relative w-full",
             centered && (large ? "max-w-[120rem]" : "max-w-[66rem]")
           )}
         >

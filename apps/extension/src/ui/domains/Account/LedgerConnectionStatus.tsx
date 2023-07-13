@@ -21,7 +21,7 @@ const wrapStrong = (text: string) => {
   return text.split(splitter).map((str, i) => {
     const match = extractor.exec(str)
     return match ? (
-      <strong key={i} className="!text-grey-300 !p-0 !capitalize">
+      <strong key={i} className="text-grey-300 p-0 capitalize">
         {match[1]}
       </strong>
     ) : (

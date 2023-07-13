@@ -49,7 +49,7 @@ export const Metadata: FC<{ className?: string }> = ({ className }) => {
 
   return (
     <PopupLayout className={className}>
-      <PopupHeader>Update Metadata</PopupHeader>
+      <PopupHeader>{t("Update Metadata")}</PopupHeader>
       <PopupContent>
         <div>
           <div className="px-4 text-center">

@@ -12,14 +12,30 @@ type NavItemProps = {
   onClick?: () => void
 }
 
-export const NavItemButton: FC<NavItemProps> = ({
+const NavItemContent: FC<NavItemProps> = ({
   icon,
-  className,
   children,
   contentClassName,
   iconContainerClassName,
-  ...props
 }) => {
+  return (
+    <>
+      {icon && (
+        <div
+          className={classNames(
+            "flex w-20 shrink-0 justify-center text-lg",
+            iconContainerClassName
+          )}
+        >
+          {icon}
+        </div>
+      )}
+      <div className={classNames("flex-grow", contentClassName)}>{children}</div>
+    </>
+  )
+}
+
+const NavItemButton: FC<NavItemProps> = ({ className, ...props }) => {
   return (
     <button
       type="button"
@@ -29,29 +45,12 @@ export const NavItemButton: FC<NavItemProps> = ({
       )}
       {...props}
     >
-      {icon && (
-        <div
-          className={classNames(
-            "flex w-20 shrink-0 justify-center text-lg",
-            iconContainerClassName
-          )}
-        >
-          {icon}
-        </div>
-      )}
-      <div className={classNames("flex-grow", contentClassName)}>{children}</div>
+      <NavItemContent {...props} />
     </button>
   )
 }
 
-export const NavItemLink: FC<NavItemProps & { to: To }> = ({
-  icon,
-  className,
-  children,
-  contentClassName,
-  iconContainerClassName,
-  ...props
-}) => {
+const NavItemLink: FC<NavItemProps & { to: To }> = ({ className, ...props }) => {
   return (
     <NavLink
       className={classNames(
@@ -61,17 +60,7 @@ export const NavItemLink: FC<NavItemProps & { to: To }> = ({
       )}
       {...props}
     >
-      {icon && (
-        <div
-          className={classNames(
-            "flex w-20 shrink-0 justify-center text-lg",
-            iconContainerClassName
-          )}
-        >
-          {icon}
-        </div>
-      )}
-      <div className={classNames("flex-grow", contentClassName)}>{children}</div>
+      <NavItemContent {...props} />
     </NavLink>
   )
 }

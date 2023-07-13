@@ -19,7 +19,7 @@ const PagerButton: FC<{ disabled?: boolean; children: ReactNode; onClick?: () =>
     type="button"
     disabled={disabled}
     onClick={onClick}
-    className="bg-grey-850 hover:bg-grey-800 text-body-secondary w-20 rounded-sm p-4 font-bold "
+    className="bg-grey-850 hover:bg-grey-800 text-body-secondary w-20 rounded-sm p-4 font-bold"
   >
     {children}
   </button>
