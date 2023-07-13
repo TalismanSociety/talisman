@@ -168,7 +168,7 @@ export const AccountSelect = () => {
               ref={refs.setFloating}
               className={classNames(
                 "bg-black-primary scrollable scrollable-700 z-10 max-h-[calc(100vh-12rem)] w-[27.2rem] overflow-y-auto overflow-x-hidden",
-                "rounded-sm md:rounded-t-none",
+                "legacy-md:rounded-t-none rounded-sm",
                 open && "border-grey-800 border border-t-0"
               )}
               style={floatingStyles}
@@ -300,9 +300,9 @@ const Item = forwardRef<HTMLDivElement, ItemProps>(function Item(
         (current || (button && open)) && "!bg-grey-800 !text-body",
         !isFolder && "hover:bg-grey-800 focus:bg-grey-800 hover:text-body focus:text-body",
 
-        button && "flex-col md:flex-row",
+        button && "legacy-md:flex-row flex-col",
         button && "rounded-sm",
-        button && open && "md:rounded-b-none",
+        button && open && "legacy-md:rounded-b-none",
 
         current && item === undefined && "hidden"
       )}
@@ -312,7 +312,7 @@ const Item = forwardRef<HTMLDivElement, ItemProps>(function Item(
         className={classNames(
           "flex-grow flex-col justify-center gap-2 overflow-hidden",
           !button && "flex",
-          button && "hidden items-center sm:flex md:items-start"
+          button && "legacy-sm:flex legacy-md:items-start hidden items-center"
         )}
       >
         {name}
@@ -324,7 +324,9 @@ const Item = forwardRef<HTMLDivElement, ItemProps>(function Item(
         />
       </div>
       {(button || (isFolder && !collapsed)) && (
-        <ChevronDownIcon className={classNames("shrink-0 text-lg", button && "hidden md:block")} />
+        <ChevronDownIcon
+          className={classNames("shrink-0 text-lg", button && "legacy-md:block hidden")}
+        />
       )}
       {isFolder && collapsed && <div>{item.addresses.length}</div>}
     </div>
