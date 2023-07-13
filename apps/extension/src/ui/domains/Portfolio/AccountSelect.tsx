@@ -310,7 +310,7 @@ const Item = forwardRef<HTMLDivElement, ItemProps>(function Item(
       {icon}
       <div
         className={classNames(
-          "flex-grow flex-col justify-center gap-2 overflow-hidden",
+          "max-w-full flex-grow flex-col justify-center gap-2 overflow-hidden",
           !button && "flex",
           button && "legacy-sm:flex legacy-md:items-start hidden items-center"
         )}
