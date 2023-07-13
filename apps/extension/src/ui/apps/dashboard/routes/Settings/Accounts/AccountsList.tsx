@@ -152,7 +152,7 @@ export const AccountsList = ({
 
         setItems((items) => {
           const newItems = items.slice()
-          AccountsCatalogStore.mutateTree({ [treeName]: newItems }, [mutation])
+          AccountsCatalogStore.executeMutationOnTrees({ [treeName]: newItems }, mutation)
           return newItems
         })
         api.accountsCatalogMutate([mutation])
