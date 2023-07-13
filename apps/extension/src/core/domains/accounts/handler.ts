@@ -423,6 +423,10 @@ export default class AccountsHandler extends ExtensionHandler {
       // make sure the list of accounts in the catalog is updated when the keyring changes
       combineLatest([keyring.accounts.subject, this.stores.accountsCatalog.observable]),
       async ([, catalog]): Promise<AccountsCatalogData> =>
+        // on first start-up, the store (loaded from localstorage) will be empty
+        //
+        // when this happens, instead of sending `{}` or `undefined` to the frontend,
+        // we'll send an empty catalog of the correct type `AccountsCatalogData`
         Object.keys(catalog).length === 0 ? emptyCatalog : catalog
     )
   }
