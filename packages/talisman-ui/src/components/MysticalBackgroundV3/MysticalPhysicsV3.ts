@@ -9,6 +9,7 @@ export type MysticalPhysicsV3 = {
   radiusMin: number
   radiusMax: number
   ellipsisRatio: number
+  colors?: string[]
 }
 
 export const MYSTICAL_PHYSICS_V3: MysticalPhysicsV3 = {
