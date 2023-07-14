@@ -3,6 +3,7 @@ import { AccountType, AccountsCatalogTree } from "@core/domains/accounts/types"
 import { isEthereumAddress } from "@polkadot/util-crypto"
 import { FadeIn } from "@talisman/components/FadeIn"
 import { IconButton } from "@talisman/components/IconButton"
+import { SuspenseTracker } from "@talisman/components/SuspenseTracker"
 import { ChevronLeftIcon, ChevronRightIcon, CopyIcon, EyeIcon } from "@talisman/theme/icons"
 import { Balance, Balances } from "@talismn/balances"
 import { classNames } from "@talismn/util"
@@ -19,8 +20,9 @@ import useAccounts from "@ui/hooks/useAccounts"
 import useAccountsCatalog from "@ui/hooks/useAccountsCatalog"
 import { useAnalytics } from "@ui/hooks/useAnalytics"
 import useBalances from "@ui/hooks/useBalances"
+import { useFirstAccountColors } from "@ui/hooks/useFirstAccountColors"
 import { useSearchParamsSelectedFolder } from "@ui/hooks/useSearchParamsSelectedFolder"
-import { MouseEventHandler, useCallback, useEffect, useMemo, useState } from "react"
+import { MouseEventHandler, Suspense, useCallback, useEffect, useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
 import { useNavigate } from "react-router-dom"
 import { MYSTICAL_PHYSICS_V3, MysticalBackground } from "talisman-ui"
@@ -200,6 +202,18 @@ const Accounts = ({
   )
 }
 
+const AllAccountsHeaderBackground = () => {
+  const colors = useFirstAccountColors()
+  const config = useMemo(() => ({ ...AccountsBgConfig, colors }), [colors])
+
+  return (
+    <MysticalBackground
+      className="absolute left-0 top-0 h-full w-full backdrop-blur-3xl"
+      config={config}
+    />
+  )
+}
+
 const AllAccountsHeader = () => {
   const navigate = useNavigate()
   const handleClick = useCallback(() => navigate("/portfolio/assets"), [navigate])
@@ -214,10 +228,10 @@ const AllAccountsHeader = () => {
       onMouseOut={() => setMouseOver(false)}
       onBlur={() => setMouseOver(false)}
     >
-      <MysticalBackground
-        className="absolute left-0 top-0 h-full w-full backdrop-blur-3xl"
-        config={AccountsBgConfig}
-      />
+      <Suspense fallback={<SuspenseTracker name="AllAccountsHeaderBackground" />}>
+        <AllAccountsHeaderBackground />
+      </Suspense>
+
       <TotalFiatBalance className="relative" mouseOver={mouseOver} />
     </button>
   )
