@@ -254,7 +254,13 @@ export class AccountsCatalogStore extends SubscribableStorageProvider<
     const id = uuidV4()
 
     // insert folder into tree
-    tree.push({ type: "folder", id, name, color: color ?? defaultFolderColor, tree: [] })
+    tree.push({
+      type: "folder",
+      id,
+      name: name.trim(),
+      color: color ?? defaultFolderColor,
+      tree: [],
+    })
 
     return Mutated
   }
@@ -262,7 +268,7 @@ export class AccountsCatalogStore extends SubscribableStorageProvider<
     const folder = tree.filter(folderFilter).find((item) => item.id === id)
     if (!folder) return NotMutated
 
-    folder.name = newName
+    folder.name = newName.trim()
 
     return Mutated
   }
