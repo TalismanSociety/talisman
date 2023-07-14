@@ -128,13 +128,13 @@ const AccountButton = ({ option }: { option: AccountOption }) => {
           <Fiat amount={option.total} isBalance />
         </div>
       </div>
-      <div className="flex flex-col justify-center text-lg">
-        {option.type === "account" ? (
+      {option.type === "account" ? (
+        <div className="text-lg">
           <ChevronRightIcon />
-        ) : (
-          <AccountsLogoStack className="text-sm" addresses={option.addresses} />
-        )}
-      </div>
+        </div>
+      ) : (
+        <AccountsLogoStack className="text-sm" addresses={option.addresses} />
+      )}
     </button>
   )
 }
