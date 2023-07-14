@@ -36,6 +36,7 @@ type AccountOption =
   | {
       type: "folder"
       treeName: string
+      id: string
       name: string
       color: string
       total?: number
@@ -72,7 +73,7 @@ const AccountButton = ({ option }: { option: AccountOption }) => {
     // navigate to list of accounts in folder (user clicked folder on main menu)
     if (option.type === "folder")
       return navigate(
-        `/portfolio?${option.treeName === "portfolio" ? "folder" : "watchedFolder"}=${option.name}`
+        `/portfolio?${option.treeName === "portfolio" ? "folder" : "watchedFolder"}=${option.id}`
       )
   }, [genericEvent, navigate, option])
 
@@ -143,7 +144,7 @@ const AccountsList = ({ className, options }: { className?: string; options: Acc
   <div className={classNames("flex w-full flex-col gap-4", className)}>
     {options.map((option) => (
       <AccountButton
-        key={`${option.type}-${option.type === "account" ? option.address : option.name}`}
+        key={option.type === "account" ? `account-${option.address}` : option.id}
         option={option}
       />
     ))}
@@ -294,6 +295,7 @@ export const PortfolioAccounts = () => {
           : {
               type: "folder",
               treeName,
+              id: item.id,
               name: item.name,
               color: item.color,
               total: new Balances(

@@ -131,10 +131,9 @@ export const accountWithId = (item: TreeAccount): UiTreeAccount => ({
   id: `account-${item.address}`,
 })
 
-// Add an id to a TreeFolder (and its TreeAccount decendents)
+// Add an id to a TreeFolder's TreeAccount decendents
 export const folderWithId = (item: TreeFolder): UiTreeFolder => ({
   ...item,
-  id: `folder-${item.name}`,
   tree: item.tree.map(accountWithId),
 })
 

@@ -5,7 +5,6 @@ import { Modal } from "@talisman/components/Modal"
 import { ModalDialog } from "@talisman/components/ModalDialog"
 import { provideContext } from "@talisman/util/provideContext"
 import { api } from "@ui/api"
-import useAccountsCatalog from "@ui/hooks/useAccountsCatalog"
 import { RefCallback, useCallback, useEffect, useMemo, useRef, useState } from "react"
 import { useForm } from "react-hook-form"
 import { useTranslation } from "react-i18next"
@@ -14,11 +13,13 @@ import { FormFieldContainer, FormFieldInputText } from "talisman-ui"
 import * as yup from "yup"
 
 const useRenameFolderModalProvider = () => {
+  const [id, setId] = useState<string | null>(null)
   const [name, setName] = useState<string | null>(null)
   const [treeName, setTreeName] = useState<AccountsCatalogTree | null>(null)
   const [isOpen, setIsOpen] = useState(false)
 
-  const open = useCallback((name: string, treeName: AccountsCatalogTree) => {
+  const open = useCallback((id: string, name: string, treeName: AccountsCatalogTree) => {
+    setId(id)
     setName(name)
     setTreeName(treeName)
     setIsOpen(true)
@@ -30,6 +31,7 @@ const useRenameFolderModalProvider = () => {
   }, [close])
 
   return {
+    id,
     name,
     treeName,
     isOpen,
@@ -44,13 +46,19 @@ export const [RenameFolderModalProvider, useRenameFolderModal] = provideContext(
 
 export const RenameFolderModal = () => {
   const { t } = useTranslation("admin")
-  const { name, treeName, close, isOpen } = useRenameFolderModal()
+  const { id, name, treeName, close, isOpen } = useRenameFolderModal()
 
   return (
     <Modal open={isOpen}>
       <ModalDialog title={t("Rename Folder")} onClose={close}>
-        {name !== null && treeName !== null && (
-          <RenameFolder name={name} treeName={treeName} onConfirm={close} onCancel={close} />
+        {id !== null && name !== null && treeName !== null && (
+          <RenameFolder
+            id={id}
+            name={name}
+            treeName={treeName}
+            onConfirm={close}
+            onCancel={close}
+          />
         )}
       </ModalDialog>
     </Modal>
@@ -71,6 +79,7 @@ type FormData = {
 }
 
 interface RenameFolderProps {
+  id: string
   name: string
   treeName: AccountsCatalogTree
   onConfirm: () => void
@@ -78,7 +87,14 @@ interface RenameFolderProps {
   className?: string
 }
 
-const RenameFolder = ({ name, treeName, onConfirm, onCancel, className }: RenameFolderProps) => {
+const RenameFolder = ({
+  id,
+  name,
+  treeName,
+  onConfirm,
+  onCancel,
+  className,
+}: RenameFolderProps) => {
   const { t } = useTranslation("admin")
 
   const schema = useMemo(
@@ -104,19 +120,10 @@ const RenameFolder = ({ name, treeName, onConfirm, onCancel, className }: Rename
     resolver: yupResolver(schema),
   })
 
-  const catalog = useAccountsCatalog()
   const submit = useCallback(
     async ({ name: newName }: FormData) => {
-      const tree = catalog[treeName]
-      if (tree.some((item) => item.type === "folder" && item.name === newName)) {
-        return setError("name", {
-          type: "validate",
-          message: t("A folder with this name already exists."),
-        })
-      }
-
       try {
-        await api.accountsCatalogMutate([{ type: "renameFolder", tree: treeName, name, newName }])
+        await api.accountsCatalogMutate([{ type: "renameFolder", tree: treeName, id, newName }])
         onConfirm()
       } catch (err) {
         setError("name", {
@@ -125,7 +132,7 @@ const RenameFolder = ({ name, treeName, onConfirm, onCancel, className }: Rename
         })
       }
     },
-    [catalog, name, onConfirm, setError, t, treeName]
+    [id, onConfirm, setError, treeName]
   )
 
   // "manual" field registration so we can hook our own ref to it

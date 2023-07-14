@@ -9,11 +9,13 @@ import { useTranslation } from "react-i18next"
 import styled from "styled-components"
 
 const useDeleteFolderModalProvider = () => {
+  const [id, setId] = useState<string | null>(null)
   const [name, setName] = useState<string | null>(null)
   const [treeName, setTreeName] = useState<AccountsCatalogTree | null>(null)
   const [isOpen, setIsOpen] = useState(false)
 
-  const open = useCallback((name: string, treeName: AccountsCatalogTree) => {
+  const open = useCallback((id: string, name: string, treeName: AccountsCatalogTree) => {
+    setId(id)
     setName(name)
     setTreeName(treeName)
     setIsOpen(true)
@@ -25,6 +27,7 @@ const useDeleteFolderModalProvider = () => {
   }, [close])
 
   return {
+    id,
     name,
     treeName,
     isOpen,
@@ -39,13 +42,19 @@ export const [DeleteFolderModalProvider, useDeleteFolderModal] = provideContext(
 
 export const DeleteFolderModal = () => {
   const { t } = useTranslation("admin")
-  const { name, treeName, close, isOpen } = useDeleteFolderModal()
+  const { id, name, treeName, close, isOpen } = useDeleteFolderModal()
 
   return (
     <Modal open={isOpen}>
       <ModalDialog title={t("Delete Folder")} onClose={close}>
-        {name !== null && treeName !== null && (
-          <DeleteFolder name={name} treeName={treeName} onConfirm={close} onCancel={close} />
+        {id !== null && name !== null && treeName !== null && (
+          <DeleteFolder
+            id={id}
+            name={name}
+            treeName={treeName}
+            onConfirm={close}
+            onCancel={close}
+          />
         )}
       </ModalDialog>
     </Modal>
@@ -62,6 +71,7 @@ const StyledDialog = styled(Dialog)`
 `
 
 interface DeleteFolderProps {
+  id: string
   name: string
   treeName: AccountsCatalogTree
   onConfirm: () => void
@@ -69,18 +79,25 @@ interface DeleteFolderProps {
   className?: string
 }
 
-const DeleteFolder = ({ name, treeName, onConfirm, onCancel, className }: DeleteFolderProps) => {
+const DeleteFolder = ({
+  id,
+  name,
+  treeName,
+  onConfirm,
+  onCancel,
+  className,
+}: DeleteFolderProps) => {
   const { t } = useTranslation("admin")
   const submit = useCallback(async () => {
     await api.accountsCatalogMutate([
       {
         type: "removeFolder",
         tree: treeName,
-        name,
+        id,
       },
     ])
     onConfirm()
-  }, [name, onConfirm, treeName])
+  }, [id, onConfirm, treeName])
 
   return (
     <StyledDialog

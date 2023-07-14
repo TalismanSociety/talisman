@@ -130,13 +130,13 @@ export const AccountsList = ({
         const parentIndex = flattenedItems.findIndex(({ id }) => id === parentId)
         const parentTreeItem = flattenedItems[parentIndex]
 
-        const folder =
-          parentTreeItem && parentTreeItem.type === "folder" ? parentTreeItem.name : undefined
+        const folderId =
+          parentTreeItem && parentTreeItem.type === "folder" ? parentTreeItem.id : undefined
         const beforeItem =
           nextItem?.type === "account"
             ? ({ type: "account", address: nextItem.address } as const)
             : nextItem?.type === "folder"
-            ? ({ type: "folder", name: nextItem.name } as const)
+            ? ({ type: "folder", id: nextItem.id } as const)
             : undefined
 
         const mutation: RequestAccountsCatalogMutate =
@@ -145,10 +145,10 @@ export const AccountsList = ({
                 type: "moveAccount",
                 tree: treeName,
                 address: activeTreeItem.address,
-                folder,
+                folderId,
                 beforeItem,
               }
-            : { type: "moveFolder", tree: treeName, name: activeTreeItem.name, beforeItem }
+            : { type: "moveFolder", tree: treeName, id: activeTreeItem.id, beforeItem }
 
         setItems((items) => {
           const newItems = items.slice()

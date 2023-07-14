@@ -239,12 +239,16 @@ export const TreeFolderItem = forwardRef<HTMLDivElement, Props & { item: UiTreeF
                 <MoreHorizontalIcon className="shrink-0" />
               </ContextMenuTrigger>
               <ContextMenuContent className="border-grey-800 z-50 flex w-min flex-col whitespace-nowrap rounded-sm border bg-black px-2 py-3 text-left text-sm shadow-lg">
-                <ContextMenuItem onClick={stopPropagation(() => renameFolder(item.name, treeName))}>
+                <ContextMenuItem
+                  onClick={stopPropagation(() => renameFolder(item.id, item.name, treeName))}
+                >
                   {t("Rename")}
                 </ContextMenuItem>
                 {/* TODO: Expose folder colors */}
                 {/* <ContextMenuItem onClick={stopPropagation()}>{t("Change color")}</ContextMenuItem> */}
-                <ContextMenuItem onClick={stopPropagation(() => deleteFolder(item.name, treeName))}>
+                <ContextMenuItem
+                  onClick={stopPropagation(() => deleteFolder(item.id, item.name, treeName))}
+                >
                   {t("Delete")}
                 </ContextMenuItem>
               </ContextMenuContent>

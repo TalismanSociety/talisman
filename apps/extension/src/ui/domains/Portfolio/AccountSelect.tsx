@@ -22,7 +22,7 @@ type AccountSelectItem =
   | {
       type: "account"
       key: string
-      folderKey?: string
+      folderId?: string
       name: string
       address: string
       total?: number
@@ -34,6 +34,7 @@ type AccountSelectItem =
       type: "folder"
       key: string
       treeName: AccountsCatalogTree
+      id: string
       name: string
       color: string
       total?: number
@@ -68,10 +69,9 @@ export const AccountSelect = () => {
 
   const [portfolioItems, watchedItems] = useMemo((): [AccountSelectItem[], AccountSelectItem[]] => {
     const treeItemToOptions =
-      (treeName: AccountsCatalogTree, folderKey?: string) =>
+      (treeName: AccountsCatalogTree, folderId?: string) =>
       (item: TreeItem): AccountSelectItem | AccountSelectItem[] => {
-        const key =
-          item.type === "account" ? `account-${item.address}` : `folder-${treeName}-${item.name}`
+        const key = item.type === "account" ? `account-${item.address}` : item.id
         const account =
           item.type === "account"
             ? accounts.find((account) => account.address === item.address)
@@ -81,7 +81,7 @@ export const AccountSelect = () => {
           ? {
               type: "account",
               key,
-              folderKey,
+              folderId,
               name: account?.name ?? t("Unknown Account"),
               address: item.address,
               total: new Balances(balancesByAddress.get(item.address) ?? []).sum.fiat("usd").total,
@@ -94,6 +94,7 @@ export const AccountSelect = () => {
                 type: "folder",
                 key,
                 treeName,
+                id: item.id,
                 name: item.name,
                 color: item.color,
                 total: new Balances(
@@ -189,8 +190,8 @@ export const AccountSelect = () => {
                 </Listbox.Option>
                 {portfolioItems.map((item) =>
                   item.type === "account" &&
-                  item.folderKey &&
-                  collapsed.includes(item.folderKey) ? null : (
+                  item.folderId &&
+                  collapsed.includes(item.folderId) ? null : (
                     <Listbox.Option
                       className="w-full"
                       key={item.key}
@@ -219,8 +220,8 @@ export const AccountSelect = () => {
                 )}
                 {watchedItems.map((item) =>
                   item.type === "account" &&
-                  item.folderKey &&
-                  collapsed.includes(item.folderKey) ? null : (
+                  item.folderId &&
+                  collapsed.includes(item.folderId) ? null : (
                     <Listbox.Option
                       className="w-full"
                       key={item.key}
@@ -294,7 +295,7 @@ const Item = forwardRef<HTMLDivElement, ItemProps>(function Item(
       className={classNames(
         "text-body-secondary flex w-full cursor-pointer items-center gap-4 p-5",
 
-        !button && isAccount && item.folderKey !== undefined && "bg-grey-900",
+        !button && isAccount && item.folderId !== undefined && "bg-grey-900",
         !button && isFolder && "bg-grey-850",
 
         (current || (button && open)) && "!bg-grey-800 !text-body",

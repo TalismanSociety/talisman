@@ -5,7 +5,7 @@ import type { MutableRefObject } from "react"
 export type UiTree = UiTreeItem[]
 export type UiTreeItem = UiTreeAccount | UiTreeFolder
 export type UiTreeAccount = TreeAccount & { id: UniqueIdentifier }
-export type UiTreeFolder = TreeFolder & { id: UniqueIdentifier; tree: UiTreeAccount[] }
+export type UiTreeFolder = TreeFolder & { tree: UiTreeAccount[] }
 
 export type FlattenedItem = UiTreeItem & {
   parentId: UniqueIdentifier | null

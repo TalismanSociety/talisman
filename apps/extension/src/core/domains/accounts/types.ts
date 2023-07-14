@@ -52,7 +52,8 @@ export type AccountJsonAny = (
   | AccountJsonWatched
   | AccountJson
 ) & { origin?: AccountType | undefined } & {
-  folder?: string
+  folderId?: string
+  folderName?: string
   hidden?: boolean
   sortOrder?: number
 }
@@ -164,22 +165,22 @@ export type RequestAccountsCatalogMutate =
       type: "moveAccount"
       tree?: AccountsCatalogTree
       address: string
-      folder?: string
-      beforeItem?: { type: "account"; address: string } | { type: "folder"; name: string }
+      folderId?: string
+      beforeItem?: { type: "account"; address: string } | { type: "folder"; id: string }
     }
   | { type: "hideAccount"; tree?: AccountsCatalogTree; address: string }
   | { type: "showAccount"; tree?: AccountsCatalogTree; address: string }
   // folder mutations
   | { type: "addFolder"; tree?: AccountsCatalogTree; name: string; color?: string }
-  | { type: "renameFolder"; tree?: AccountsCatalogTree; name: string; newName: string }
-  | { type: "recolorFolder"; tree?: AccountsCatalogTree; name: string; newColor?: string }
+  | { type: "renameFolder"; tree?: AccountsCatalogTree; id: string; newName: string }
+  | { type: "recolorFolder"; tree?: AccountsCatalogTree; id: string; newColor?: string }
   | {
       type: "moveFolder"
       tree?: AccountsCatalogTree
-      name: string
-      beforeItem?: { type: "account"; address: string } | { type: "folder"; name: string }
+      id: string
+      beforeItem?: { type: "account"; address: string } | { type: "folder"; id: string }
     }
-  | { type: "removeFolder"; tree?: AccountsCatalogTree; name: string }
+  | { type: "removeFolder"; tree?: AccountsCatalogTree; id: string }
 
 export interface AccountsMessages {
   // account message signatures
