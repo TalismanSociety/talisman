@@ -49,7 +49,7 @@ export const Accounts = () => {
           onClick={newFolderModal.open}
         >
           <FolderPlusIcon />
-          Add new folder
+          {t("Add new folder")}
         </button>
       </div>
 
