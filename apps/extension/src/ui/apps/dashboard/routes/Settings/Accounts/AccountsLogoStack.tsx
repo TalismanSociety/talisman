@@ -4,7 +4,6 @@ import { classNames } from "@talismn/util"
 import { AccountIcon } from "@ui/domains/Account/AccountIcon"
 import useAccounts from "@ui/hooks/useAccounts"
 import { useMemo } from "react"
-import styled from "styled-components"
 
 type Props = { addresses?: string[]; className?: string; max?: number }
 
@@ -24,7 +23,7 @@ export const AccountsLogoStack = ({ addresses, className, max = 4 }: Props) => {
   )
 
   return (
-    <div className={classNames("logo-stack pl-[0.25em]", className)}>
+    <div className={classNames("pl-[0.25em]", className)}>
       {visibleAccounts.map((account) => (
         <AccountsLogoStackItem key={account.address} account={account} />
       ))}
@@ -32,12 +31,6 @@ export const AccountsLogoStack = ({ addresses, className, max = 4 }: Props) => {
     </div>
   )
 }
-
-export const Container = styled.div`
-  .logo-circle {
-    border: 1px solid white;
-  }
-`
 
 export const AccountsLogoStackItem = ({ account }: { account?: AccountJsonAny }) => {
   if (!account) return null
@@ -55,7 +48,7 @@ export const AccountsLogoStackMore = ({ accounts }: { accounts: AccountJsonAny[]
   return (
     <div className="-ml-[0.25em] inline-block h-[1em] w-[1em] overflow-hidden">
       <WithTooltip tooltip={<MoreAccountsTooltip accounts={accounts} />}>
-        <div className="bg-body-secondary column relative flex h-[1em] w-[1em] flex-col justify-center overflow-hidden rounded-full text-center text-black">
+        <div className="bg-body-secondary relative flex h-[1em] w-[1em] flex-col justify-center overflow-hidden rounded-full text-center text-black">
           <div className="text-[0.5em] font-bold leading-[1em]">+{accounts.length}</div>
         </div>
       </WithTooltip>
