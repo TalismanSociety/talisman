@@ -126,11 +126,9 @@ const InnerPopup = () => {
 }
 
 const Popup = () => (
-  <div className="mx-auto h-[60rem] w-[40rem]">
-    <Suspense fallback={<SuspenseTracker name="Popup" />}>
-      <InnerPopup />
-    </Suspense>
-  </div>
+  <Suspense fallback={<SuspenseTracker name="Popup" />}>
+    <InnerPopup />
+  </Suspense>
 )
 
 export default Popup
