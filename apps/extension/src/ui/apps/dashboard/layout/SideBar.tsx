@@ -54,7 +54,7 @@ const SendPillButton: FC<PillButtonProps> = (props) => {
     <PillButton onClick={openSendFundsPopup} {...props} />
   ) : (
     <Tooltip placement="bottom-start">
-      <TooltipTrigger>
+      <TooltipTrigger asChild>
         <PillButton disabled {...props} />
       </TooltipTrigger>
       <TooltipContent>{cannotSendFundsReason}</TooltipContent>
@@ -70,7 +70,7 @@ const SendIconButton: FC<Omit<ButtonHTMLAttributes<HTMLButtonElement>, "ref">> =
     <IconButton onClick={openSendFundsPopup} {...props} />
   ) : (
     <Tooltip placement="bottom-start">
-      <TooltipTrigger>
+      <TooltipTrigger asChild>
         <IconButton disabled {...props} />
       </TooltipTrigger>
       <TooltipContent>{cannotSendFundsReason}</TooltipContent>
@@ -162,11 +162,14 @@ export const SideBar = () => {
           </PillButton>
         </div>
         {/* Buttons for small screens */}
-        <div className="flex justify-center gap-4 py-4 md:hidden">
-          <SendIconButton>
+        <div className="flex justify-center py-2 md:hidden">
+          <SendIconButton className="hover:bg-grey-800 rounded-xs p-4 !text-base">
             <PaperPlaneIcon />
           </SendIconButton>
-          <IconButton onClick={handleCopyClick}>
+          <IconButton
+            className="hover:bg-grey-800 rounded-xs p-2 !text-base"
+            onClick={handleCopyClick}
+          >
             <ArrowDownIcon />
           </IconButton>
         </div>
