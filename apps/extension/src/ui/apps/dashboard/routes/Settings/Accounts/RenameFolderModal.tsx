@@ -96,6 +96,7 @@ const RenameFolder = ({ name, treeName, onConfirm, onCancel, className }: Rename
     register,
     handleSubmit,
     setError,
+    setFocus,
     formState: { errors, isValid, isSubmitting },
   } = useForm<FormData>({
     mode: "onChange",
@@ -149,6 +150,10 @@ const RenameFolder = ({ name, treeName, onConfirm, onCancel, className }: Rename
     [refName]
   )
 
+  useEffect(() => {
+    setFocus("name")
+  }, [setFocus])
+
   return (
     <StyledDialog
       className={className}
@@ -160,11 +165,6 @@ const RenameFolder = ({ name, treeName, onConfirm, onCancel, className }: Rename
               {...registerName}
               ref={handleNameRef}
               placeholder={t("Choose a name")}
-              spellCheck={false}
-              autoComplete="off"
-              // eslint-disable-next-line jsx-a11y/no-autofocus
-              autoFocus
-              data-lpignore
             />
           </FormFieldContainer>
         </form>

@@ -89,6 +89,7 @@ const NewFolder = ({ onConfirm, onCancel, className }: NewFolderProps) => {
     register,
     handleSubmit,
     setError,
+    setFocus,
     formState: { errors, isValid, isSubmitting },
   } = useForm<FormData>({
     mode: "onChange",
@@ -143,6 +144,10 @@ const NewFolder = ({ onConfirm, onCancel, className }: NewFolderProps) => {
     [refName]
   )
 
+  useEffect(() => {
+    setFocus("name")
+  }, [setFocus])
+
   return (
     <StyledDialog
       className={className}
@@ -154,11 +159,6 @@ const NewFolder = ({ onConfirm, onCancel, className }: NewFolderProps) => {
               {...registerName}
               ref={handleNameRef}
               placeholder={t("Choose a name")}
-              spellCheck={false}
-              autoComplete="off"
-              // eslint-disable-next-line jsx-a11y/no-autofocus
-              autoFocus
-              data-lpignore
             />
           </FormFieldContainer>
           {catalog.watched.length > 0 && (
