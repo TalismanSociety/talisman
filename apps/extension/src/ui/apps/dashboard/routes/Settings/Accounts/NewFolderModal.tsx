@@ -1,3 +1,4 @@
+import { AccountsCatalogTree } from "@core/domains/accounts/types"
 import { yupResolver } from "@hookform/resolvers/yup"
 import Dialog from "@talisman/components/Dialog"
 import { Modal } from "@talisman/components/Modal"
@@ -95,12 +96,20 @@ const NewFolder = ({ onConfirm, onCancel, className }: NewFolderProps) => {
     resolver: yupResolver(schema),
   })
 
+  const catalog = useAccountsCatalog()
   const submit = useCallback(
     async ({ name, followedOnly }: FormData) => {
+      const treeName: AccountsCatalogTree = followedOnly ? "watched" : "portfolio"
+      const tree = catalog[treeName]
+      if (tree.some((item) => item.type === "folder" && item.name === name)) {
+        return setError("name", {
+          type: "validate",
+          message: t("A folder with this name already exists."),
+        })
+      }
+
       try {
-        await api.accountsCatalogMutate([
-          { type: "addFolder", tree: followedOnly ? "watched" : "portfolio", name },
-        ])
+        await api.accountsCatalogMutate([{ type: "addFolder", tree: treeName, name }])
         onConfirm()
       } catch (err) {
         setError("name", {
@@ -109,7 +118,7 @@ const NewFolder = ({ onConfirm, onCancel, className }: NewFolderProps) => {
         })
       }
     },
-    [onConfirm, setError]
+    [catalog, onConfirm, setError, t]
   )
 
   // "manual" field registration so we can hook our own ref to it
@@ -133,8 +142,6 @@ const NewFolder = ({ onConfirm, onCancel, className }: NewFolderProps) => {
     },
     [refName]
   )
-
-  const catalog = useAccountsCatalog()
 
   return (
     <StyledDialog

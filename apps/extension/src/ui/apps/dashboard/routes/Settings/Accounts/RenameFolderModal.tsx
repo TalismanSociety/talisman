@@ -5,6 +5,7 @@ import { Modal } from "@talisman/components/Modal"
 import { ModalDialog } from "@talisman/components/ModalDialog"
 import { provideContext } from "@talisman/util/provideContext"
 import { api } from "@ui/api"
+import useAccountsCatalog from "@ui/hooks/useAccountsCatalog"
 import { RefCallback, useCallback, useEffect, useMemo, useRef, useState } from "react"
 import { useForm } from "react-hook-form"
 import { useTranslation } from "react-i18next"
@@ -102,17 +103,19 @@ const RenameFolder = ({ name, treeName, onConfirm, onCancel, className }: Rename
     resolver: yupResolver(schema),
   })
 
+  const catalog = useAccountsCatalog()
   const submit = useCallback(
     async ({ name: newName }: FormData) => {
+      const tree = catalog[treeName]
+      if (tree.some((item) => item.type === "folder" && item.name === newName)) {
+        return setError("name", {
+          type: "validate",
+          message: t("A folder with this name already exists."),
+        })
+      }
+
       try {
-        await api.accountsCatalogMutate([
-          {
-            type: "renameFolder",
-            tree: treeName,
-            name,
-            newName,
-          },
-        ])
+        await api.accountsCatalogMutate([{ type: "renameFolder", tree: treeName, name, newName }])
         onConfirm()
       } catch (err) {
         setError("name", {
@@ -121,7 +124,7 @@ const RenameFolder = ({ name, treeName, onConfirm, onCancel, className }: Rename
         })
       }
     },
-    [name, onConfirm, setError, treeName]
+    [catalog, name, onConfirm, setError, t, treeName]
   )
 
   // "manual" field registration so we can hook our own ref to it
