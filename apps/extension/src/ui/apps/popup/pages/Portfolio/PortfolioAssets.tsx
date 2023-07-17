@@ -15,6 +15,7 @@ import { PopupAssetsTable } from "@ui/domains/Portfolio/AssetsTable"
 import { usePortfolio } from "@ui/domains/Portfolio/context"
 import { useDisplayBalances } from "@ui/domains/Portfolio/useDisplayBalances"
 import { useAnalytics } from "@ui/hooks/useAnalytics"
+import useBalances from "@ui/hooks/useBalances"
 import { useSearchParamsSelectedAccount } from "@ui/hooks/useSearchParamsSelectedAccount"
 import { useSearchParamsSelectedFolder } from "@ui/hooks/useSearchParamsSelectedFolder"
 import { useSendFundsPopup } from "@ui/hooks/useSendFundsPopup"
@@ -29,7 +30,13 @@ import {
   TooltipTrigger,
 } from "talisman-ui"
 
-const PageContent = ({ balances: networkBalances }: { balances: Balances }) => {
+const PageContent = ({
+  allBalances,
+  networkBalances,
+}: {
+  allBalances: Balances
+  networkBalances: Balances
+}) => {
   const { account } = useSearchParamsSelectedAccount()
   const { folder } = useSearchParamsSelectedFolder()
 
@@ -37,20 +44,27 @@ const PageContent = ({ balances: networkBalances }: { balances: Balances }) => {
     // we use this to avoid looping over the balances list n times, where n is the number of accounts in the wallet
     // instead, we'll only interate over the balances one time
     const balancesByAddress: Map<string, Balance[]> = new Map()
-    networkBalances.each.forEach((balance) => {
+    allBalances.each.forEach((balance) => {
       if (!balancesByAddress.has(balance.address)) balancesByAddress.set(balance.address, [])
       balancesByAddress.get(balance.address)?.push(balance)
     })
     return balancesByAddress
-  }, [networkBalances])
+  }, [allBalances.each])
+
   const balances = useMemo(
     () =>
-      !folder
-        ? networkBalances
-        : new Balances(
+      account
+        ? new Balances(balancesByAddress.get(account.address) ?? [])
+        : folder
+        ? new Balances(
             folder.tree.flatMap((account) => balancesByAddress.get(account.address) ?? [])
-          ),
-    [balancesByAddress, folder, networkBalances]
+          )
+        : // only show networkBalances when no account / folder selected
+          // networkBalances is basically the full portfolio, without any watch-only accounts
+          // i.e. `Total Portfolio`
+          // on the other hand, allBalances includes watch-only accounts
+          networkBalances,
+    [account, balancesByAddress, folder, networkBalances]
   )
 
   const balancesToDisplay = useDisplayBalances(balances)
@@ -154,6 +168,7 @@ const PageContent = ({ balances: networkBalances }: { balances: Balances }) => {
 }
 
 export const PortfolioAssets = () => {
+  const allBalances = useBalances()
   const { networkBalances } = usePortfolio()
   const { popupOpenEvent } = useAnalytics()
 
@@ -161,5 +176,5 @@ export const PortfolioAssets = () => {
     popupOpenEvent("portfolio assets")
   }, [popupOpenEvent])
 
-  return <PageContent balances={networkBalances} />
+  return <PageContent allBalances={allBalances} networkBalances={networkBalances} />
 }
