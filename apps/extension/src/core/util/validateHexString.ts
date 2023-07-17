@@ -1,16 +1,16 @@
 import { HexString } from "@polkadot/util/types"
 
 /**
- * @name isStringHexString
+ * @name validateHexString
  * @description Checks if a string is a hex string. Required to account for type differences between different polkadot libraries
  * @param {string} str - string to check
- * @returns {HexString} - hex string
+ * @returns {HexString} - boolean
  * @example
- * isStringHexString("0x1234") // "0x1234"
- * isStringHexString("1234") // Error: Expected a hex string
- * isStringHexString(1234) // Error: Expected a string
+ * validateHexString("0x1234") // "0x1234"
+ * validateHexString("1234") // Error: Expected a hex string
+ * validateHexString(1234) // Error: Expected a string
  **/
-export const isStringHexString = (str: string): HexString => {
+export const validateHexString = (str: string): HexString => {
   if (typeof str !== "string") {
     throw new Error("Expected a string")
   }
