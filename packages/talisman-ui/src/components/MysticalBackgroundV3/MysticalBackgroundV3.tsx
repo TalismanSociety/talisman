@@ -12,6 +12,7 @@ const CelestialArtifact = memo(
     config,
     x,
     y,
+    color,
   }: {
     parentSize: ParentSize
     config: MysticalPhysicsV3
@@ -19,9 +20,12 @@ const CelestialArtifact = memo(
     // force target position if this artifact is an acolyte
     x?: number
     y?: number
+
+    // force color
+    color?: string
   }) => {
     const [id] = useState(() => crypto.randomUUID())
-    const artifact = useCelestialArtifact(config, parentSize, x, y)
+    const artifact = useCelestialArtifact(config, parentSize, x, y, color)
 
     const refInitialized = useRef(false)
 
@@ -71,15 +75,26 @@ const CelestialArtifacts: FC<{
   acolyte?: { x: number; y: number }
 }> = ({ size, config, acolyte }) => {
   const artifactKeys = useMemo(() => Array.from(Array(config.artifacts).keys()), [config.artifacts])
-
   if (!size.width || !size.height) return null
 
   return (
     <>
       {artifactKeys.map((i) => (
-        <CelestialArtifact key={i} parentSize={size} config={config} />
+        <CelestialArtifact
+          key={i}
+          parentSize={size}
+          config={config}
+          color={config.colors?.[i % config.colors.length]}
+        />
       ))}
-      {config.withAcolyte && <CelestialArtifact parentSize={size} config={config} {...acolyte} />}
+      {config.withAcolyte && (
+        <CelestialArtifact
+          parentSize={size}
+          config={config}
+          {...acolyte}
+          color={config.colors?.[artifactKeys.length % config.colors.length]}
+        />
+      )}
     </>
   )
 }

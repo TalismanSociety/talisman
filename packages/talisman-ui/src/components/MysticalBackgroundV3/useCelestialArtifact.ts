@@ -20,9 +20,10 @@ const generateCharacteristics = (
   duration: number,
   initialized: boolean,
   targetX: number,
-  targetY: number
+  targetY: number,
+  forceColor?: string
 ): ArtifactCharacteristics => {
-  const color = Color.hsv(Math.random() * 360, 100, 100).hex()
+  const color = forceColor || Color.hsv(Math.random() * 360, 100, 100).hex()
   const maxSize = Math.min(parentSize.width, parentSize.height)
   const rx = Math.round(
     maxSize * (config.radiusMin + Math.random() * (config.radiusMax - config.radiusMin))
@@ -65,7 +66,8 @@ export const useCelestialArtifact = (
   config: MysticalPhysicsV3,
   parentSize: ParentSize,
   x = 0,
-  y = 0
+  y = 0,
+  color?: string
 ) => {
   const refInitialized = useRef(false)
   const duration = useMemo(
@@ -75,7 +77,7 @@ export const useCelestialArtifact = (
   )
 
   const [characteristics, setCharacteristics] = useState<ArtifactCharacteristics>(
-    generateCharacteristics(config, parentSize, duration, refInitialized.current, x, y)
+    generateCharacteristics(config, parentSize, duration, refInitialized.current, x, y, color)
   )
 
   const refTarget = useRef<[number, number]>([x, y])
@@ -91,7 +93,8 @@ export const useCelestialArtifact = (
           parentSize,
           duration,
           refInitialized.current,
-          ...refTarget.current
+          ...refTarget.current,
+          color
         )
       )
       refInitialized.current = true
@@ -105,7 +108,7 @@ export const useCelestialArtifact = (
     return () => {
       clearInterval(interval)
     }
-  }, [config, duration, parentSize])
+  }, [config, duration, parentSize, color])
 
   // acolyte must update it's position every 500ms
   const isAcolyte = useMemo(() => !!x && !!y, [x, y])
