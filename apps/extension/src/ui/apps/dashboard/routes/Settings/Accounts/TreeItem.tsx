@@ -209,14 +209,14 @@ export const TreeFolderItem = forwardRef<HTMLDivElement, Props & { item: UiTreeF
 
     return (
       <TreeItemWrapper {...props} ref={wrapperRef}>
-        {/* eslint-disable-next-line jsx-a11y/click-events-have-key-events */}
         <div
           ref={ref}
-          role="button"
-          tabIndex={-1}
           className="bg-black-secondary relative flex items-center gap-8 rounded-sm border-[1px] border-transparent p-8"
-          style={style}
+          role="button"
+          tabIndex={0}
           onClick={onCollapse}
+          onKeyDown={(e) => ["Enter", " "].includes(e.key) && onCollapse?.()}
+          style={style}
         >
           <DragButton {...handleProps?.attributes} {...handleProps?.listeners} />
           <AccountFolderIcon className="shrink-0 text-xl" color={item.color} />
