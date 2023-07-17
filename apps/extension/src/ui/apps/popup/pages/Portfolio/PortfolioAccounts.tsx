@@ -233,10 +233,12 @@ const AllAccountsHeader = () => {
         <Suspense fallback={<SuspenseTracker name="AllAccountsHeaderBackground" />}>
           <AllAccountsHeaderBackground />
         </Suspense>
-        <ChevronRightIcon className="z-10" />
+        <ChevronRightIcon
+          className={classNames("mix-blend-color-dodge", isHovered && "text-body")}
+        />
       </button>
       <TotalFiatBalance
-        className="pointer-events-none absolute left-0 top-0 z-10 h-full w-full px-6"
+        className="pointer-events-none absolute left-0 top-0 h-full w-full px-6"
         mouseOver={isHovered}
       />
     </div>
