@@ -33,7 +33,31 @@ export const injectEthereum = (sendRequest: SendRequest) => {
   if (windowInject.ethereum === undefined) {
     log.debug("Injecting talismanEth in window.ethereum")
 
-    windowInject.ethereum = talismanEth
+    try {
+      // Protect window.ethereum - workaround Phantom abuse bug
+      let currentWindowEthereum = talismanEth
+      Object.defineProperty(windowInject, "ethereum", {
+        get() {
+          return currentWindowEthereum
+        },
+        set(newValue) {
+          // If Talisman is injected before Phantom, Phantom will proxy calls to Talisman if user wants to use Metamask
+          // => Prevent Phantom from overriding window.ethereum
+          if (newValue.isPhantom)
+            throw new Error(
+              "Prevent Phantom window.ethereum abuse - see https://github.com/TalismanSociety/talisman/issues/819"
+            )
+
+          // allow all other wallets to override window.ethereum
+          currentWindowEthereum = newValue
+          log.debug("window.ethereum overriden with", { newValue })
+        },
+      })
+      log.debug("window.ethereum protected")
+    } catch (err) {
+      log.error("Failed to define window.ethereum", { err })
+      windowInject.ethereum = talismanEth
+    }
 
     // some dapps (ex moonriver.moonscan.io), still use web3 object send wallet_* messages
     windowInject.web3 = { currentProvider: talismanEth }
