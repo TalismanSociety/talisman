@@ -1,5 +1,5 @@
 import { TALISMAN_WEB_APP_NFTS_URL } from "@core/constants"
-import { Nav, NavItem } from "@talisman/components/Nav"
+import { Nav, NavItem, NavItemProps } from "@talisman/components/Nav"
 import { ScrollContainer } from "@talisman/components/ScrollContainer"
 import {
   ArrowDownIcon,
@@ -16,6 +16,7 @@ import {
   ZapIcon,
 } from "@talisman/theme/icons"
 import { FullColorLogo, FullColorVerticalLogo, HandRedLogo } from "@talisman/theme/logos"
+import { classNames } from "@talismn/util"
 import { useBuyTokensModal } from "@ui/domains/Asset/Buy/BuyTokensModalContext"
 import { BuildVersionPill } from "@ui/domains/Build/BuildVersionPill"
 import { useCopyAddressModal } from "@ui/domains/CopyAddress"
@@ -35,16 +36,40 @@ import { PillButton, PillButtonProps, Tooltip, TooltipContent, TooltipTrigger } 
 // show tooltip only on small screens
 const ResponsiveTooltip = ({
   tooltip,
+  className,
   children,
 }: {
+  className?: string
   tooltip?: ReactNode
   children?: ReactNode
 }) => (
-  <Tooltip>
-    <TooltipTrigger>{children}</TooltipTrigger>
-    <TooltipContent className="md:hidden">{tooltip}</TooltipContent>
+  <Tooltip placement="right">
+    <TooltipTrigger asChild>
+      <div className={classNames("w-full", className)}>{children}</div>
+    </TooltipTrigger>
+    <TooltipContent className="rounded-xs text-body-secondary border-grey-700 z-20 border-[0.5px] bg-black p-3 text-xs shadow md:hidden">
+      {tooltip}
+    </TooltipContent>
   </Tooltip>
 )
+
+const SideBarNavItem: FC<
+  Omit<NavItemProps & { title: ReactNode; isExternalLink?: boolean }, "children">
+> = ({ title, isExternalLink, className, ...props }) => {
+  return (
+    <ResponsiveTooltip tooltip={title} className={className}>
+      <NavItem {...props} className="flex-col lg:flex-row" contentClassName="hidden md:block">
+        {isExternalLink ? (
+          <>
+            <span>{title}</span> <ExternalLinkIcon className="hidden lg:inline" />
+          </>
+        ) : (
+          <>{title}</>
+        )}
+      </NavItem>
+    </ResponsiveTooltip>
+  )
+}
 
 const SendPillButton: FC<PillButtonProps> = (props) => {
   const { account } = useSelectedAccount()
@@ -175,122 +200,69 @@ export const SideBar = () => {
         </div>
       </div>
       <ScrollContainer className="flex-grow">
-        <Nav className="gap-2 lg:p-12">
-          <NavItem
-            to="/portfolio"
-            className="flex-col lg:flex-row"
-            contentClassName="hidden md:block"
-            onClick={handlePortfolioClick}
-            icon={
-              <ResponsiveTooltip tooltip="Portfolio">
-                <UserIcon />
-              </ResponsiveTooltip>
-            }
-          >
-            {t("Portfolio")}
-          </NavItem>
-          {showBuyCryptoButton && (
-            <NavItem
-              className="flex-col lg:flex-row"
-              contentClassName="hidden md:block"
-              onClick={handleBuyClick}
-              icon={
-                <ResponsiveTooltip tooltip="Buy Crypto">
-                  <CreditCardIcon />
-                </ResponsiveTooltip>
-              }
-            >
-              {t("Buy Crypto")}
-            </NavItem>
-          )}
-          <NavItem
+        <Nav className="gap-2 p-4 text-sm lg:p-12 lg:text-base">
+          <SideBarNavItem
+            title={t("Portfolio")}
             to="/accounts/add"
-            className="flex-col lg:flex-row"
-            contentClassName="hidden md:block"
+            onClick={handlePortfolioClick}
+            icon={<UserIcon />}
+          />
+          {showBuyCryptoButton && (
+            <SideBarNavItem
+              title={t("Buy Crypto")}
+              onClick={handleBuyClick}
+              icon={<CreditCardIcon />}
+            />
+          )}
+          <SideBarNavItem
+            title={t("Add Account")}
+            to="/accounts/add"
             onClick={handleAddAccountClick}
-            icon={
-              <ResponsiveTooltip tooltip="Add Account">
-                <PlusIcon />
-              </ResponsiveTooltip>
-            }
-          >
-            {t("Add Account")}
-          </NavItem>
+            icon={<PlusIcon />}
+          />
+
           {showStaking && (
-            <NavItem
-              className="flex-col lg:flex-row"
-              contentClassName="hidden md:block"
+            <SideBarNavItem
+              title={t("Staking")}
               onClick={handleStakingClick}
-              icon={
-                <ResponsiveTooltip tooltip="Staking">
-                  <ZapIcon />
-                </ResponsiveTooltip>
-              }
-            >
-              <span>{t("Staking")}</span> <ExternalLinkIcon className="hidden lg:inline" />
-            </NavItem>
+              isExternalLink
+              icon={<ZapIcon />}
+            />
           )}
-          <NavItem
-            className="flex-col lg:flex-row"
-            contentClassName="hidden md:block"
+          <SideBarNavItem
+            title={t("NFTs")}
             onClick={handleNftsClick}
-            icon={
-              <ResponsiveTooltip tooltip="NFTs">
-                <ImageIcon />
-              </ResponsiveTooltip>
-            }
-          >
-            <span>{t("NFTs")}</span> <ExternalLinkIcon className="hidden lg:inline" />
-          </NavItem>
-          <NavItem
-            className="flex-col lg:flex-row"
-            contentClassName="hidden md:block"
+            icon={<ImageIcon />}
+            isExternalLink
+          />
+          <SideBarNavItem
+            title={t("Crowdloans")}
             onClick={handleCrowdloansClick}
-            icon={
-              <ResponsiveTooltip tooltip="Crowdloans">
-                <StarIcon />
-              </ResponsiveTooltip>
-            }
-          >
-            <span>{t("Crowdloans")}</span> <ExternalLinkIcon className="hidden lg:inline" />
-          </NavItem>
+            icon={<StarIcon />}
+            isExternalLink
+          />
           {showTxHistory && (
-            <NavItem
-              className="flex-col lg:flex-row"
-              contentClassName="hidden md:block"
+            <SideBarNavItem
+              title={t("Transaction History")}
               onClick={handleTxHistoryClick}
-              icon={
-                <ResponsiveTooltip tooltip="Transaction History">
-                  <ClockIcon />
-                </ResponsiveTooltip>
-              }
-            >
-              <span>{t("Transaction History")}</span>{" "}
-              <ExternalLinkIcon className="hidden lg:inline" />
-            </NavItem>
+              icon={<ClockIcon />}
+              isExternalLink
+            />
           )}
-          <NavItem
+          <SideBarNavItem
+            title={t("Settings")}
             to="/settings"
-            className="flex-col lg:flex-row"
-            contentClassName="hidden md:block"
             onClick={handleSettingsClick}
-            icon={
-              <ResponsiveTooltip tooltip="Settings">
-                <SettingsIcon />
-              </ResponsiveTooltip>
-            }
-          >
-            {t("Settings")}
-          </NavItem>
+            icon={<SettingsIcon />}
+          />
           {isSnoozed && (
-            <NavItem
+            <SideBarNavItem
+              title={t("Backup Wallet")}
               // show only on large screens
               className="!hidden lg:!flex"
               onClick={handleBackupClick}
               icon={<DownloadAlertIcon />}
-            >
-              {t("Backup Wallet")}
-            </NavItem>
+            />
           )}
         </Nav>
       </ScrollContainer>

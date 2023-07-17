@@ -2,7 +2,7 @@ import { classNames } from "@talismn/util"
 import { DetailedHTMLProps, FC, HTMLAttributes, ReactNode } from "react"
 import { NavLink, To } from "react-router-dom"
 
-type NavItemProps = {
+export type NavItemProps = {
   icon: ReactNode
   children: ReactNode
   className?: string

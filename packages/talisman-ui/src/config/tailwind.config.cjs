@@ -140,14 +140,6 @@ module.exports = {
       96: "19.2rem",
     },
     extend: {
-      // TODO: Delete these
-      // They are just for compatbility with the preexisting styled-components breakpoints
-      // To remove: delete this section from the tailwind config, then replace all instances
-      // of `legacy-sm` with `sm`, and `legacy-md` with `md` throughout the codebase.
-      screens: {
-        "legacy-sm": "721px",
-        "legacy-md": "1025px",
-      },
       fontFamily: {
         // recommended way of overriding default font
         sans: 'Surt, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji", sans-serif',
