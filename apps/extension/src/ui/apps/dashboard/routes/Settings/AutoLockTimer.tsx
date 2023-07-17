@@ -62,7 +62,7 @@ export const AutoLockTimer = () => {
     <Layout centered withBack>
       <HeaderBlock
         title="Auto-lock Timer"
-        text="Set a timer to automatically lock the Talisman wallet extension."
+        text="Set a timer to automatically lock your Talisman wallet."
       />
       <StyledDropdown
         label="Lock the Talisman extension after inactivity for"
