@@ -34,7 +34,7 @@ export const injectEthereum = (sendRequest: SendRequest) => {
     log.debug("Injecting talismanEth in window.ethereum")
 
     try {
-      // Protect window.ethereum - workaround Phantom abuse bug
+      // Protect window.ethereum property to workaround Phantom abuse bug
       let currentWindowEthereum = talismanEth
       Object.defineProperty(windowInject, "ethereum", {
         get() {
@@ -43,6 +43,7 @@ export const injectEthereum = (sendRequest: SendRequest) => {
         set(newValue) {
           // If Talisman is injected before Phantom, Phantom will proxy calls to Talisman if user wants to use Metamask
           // => Prevent Phantom from overriding window.ethereum
+          // This may never be called in practice due to Phantom's injection method
           if (newValue.isPhantom)
             throw new Error(
               "Prevent Phantom window.ethereum abuse - see https://github.com/TalismanSociety/talisman/issues/819"
@@ -52,6 +53,7 @@ export const injectEthereum = (sendRequest: SendRequest) => {
           currentWindowEthereum = newValue
           log.debug("window.ethereum overriden with", { newValue })
         },
+        configurable: false,
       })
       log.debug("window.ethereum protected")
     } catch (err) {
