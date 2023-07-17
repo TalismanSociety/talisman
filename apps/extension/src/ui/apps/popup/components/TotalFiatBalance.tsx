@@ -42,11 +42,11 @@ export const TotalFiatBalance = ({ className, mouseOver }: Props) => {
 
   return (
     <div className={classNames("flex flex-col items-start justify-center gap-4", className)}>
-      <div className="text-body-secondary mt-2 flex gap-2 text-sm">
+      <div className="text-grey-300 mt-2 flex gap-2 text-sm mix-blend-color-dodge">
         <span>{t("Total Portfolio")}</span>
         <button
           className={classNames(
-            "hover:text-body focus:text-body pointer-events-auto opacity-0 transition-[color,opacity]",
+            "pointer-events-auto opacity-0 transition-opacity hover:text-white focus:text-white",
             (hideBalances || mouseOver) && "opacity-100"
           )}
           onClick={toggleHideBalance}
