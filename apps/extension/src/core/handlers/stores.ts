@@ -1,5 +1,6 @@
-import { seedPhraseStore } from "@core/domains/accounts"
+import { accountsCatalogStore, seedPhraseStore } from "@core/domains/accounts"
 import { SeedPhraseData } from "@core/domains/accounts/store"
+import { AccountsCatalogData } from "@core/domains/accounts/store.catalog"
 import { verifierCertificateMnemonicStore } from "@core/domains/accounts/store.verifierCertificateMnemonic"
 import { SettingsStoreData, appStore, passwordStore, settingsStore } from "@core/domains/app"
 import { AppStoreData } from "@core/domains/app/store.app"
@@ -23,6 +24,7 @@ export type TabStore = {
 export type ExtensionStore = TabStore & {
   password: typeof passwordStore
   seedPhrase: typeof seedPhraseStore
+  accountsCatalog: typeof accountsCatalogStore
   verifierCertificateMnemonic: typeof verifierCertificateMnemonicStore
 }
 
@@ -32,6 +34,7 @@ type GettableStores = {
   app: [typeof appStore, AppStoreData]
   sites: [typeof sitesAuthorisedStore, AuthorizedSites]
   seedPhrase: [typeof seedPhraseStore, SeedPhraseData]
+  accountsCatalog: [typeof accountsCatalogStore, AccountsCatalogData]
   verifierCertificateMnemonic: [typeof verifierCertificateMnemonicStore, SeedPhraseData]
 }
 // Stores that expose the .get method
@@ -52,6 +55,7 @@ export const extensionStores = {
   ...tabStores,
   password: passwordStore,
   seedPhrase: seedPhraseStore,
+  accountsCatalog: accountsCatalogStore,
   verifierCertificateMnemonic: verifierCertificateMnemonicStore,
 }
 
@@ -61,6 +65,7 @@ const localStorageStores: { [K in GettableStoreKeys]: GettableStores[K][0] } = {
   app: appStore,
   sites: sitesAuthorisedStore,
   seedPhrase: seedPhraseStore,
+  accountsCatalog: accountsCatalogStore,
   verifierCertificateMnemonic: verifierCertificateMnemonicStore,
 }
 

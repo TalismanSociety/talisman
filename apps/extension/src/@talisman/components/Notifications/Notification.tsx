@@ -1,4 +1,4 @@
-import { CheckCircleIcon, IconAlert, LoaderIcon, XCircleIcon } from "@talisman/theme/icons"
+import { AlertCircleIcon, CheckCircleIcon, LoaderIcon, XCircleIcon } from "@talisman/theme/icons"
 import { ReactNode } from "react"
 
 type NotificationType = "success" | "error" | "processing" | "warn"
@@ -11,7 +11,7 @@ export type NotificationProps = {
 
 const NotificationIcon = ({ type }: { type: NotificationType }) => {
   if (type === "success") return <CheckCircleIcon className="text-alert-success h-16 w-16" />
-  if (type === "warn") return <IconAlert className="text-alert-warn h-16 w-16" />
+  if (type === "warn") return <AlertCircleIcon className="text-alert-warn h-16 w-16" />
   if (type === "error") return <XCircleIcon className="text-alert-error h-16 w-16" />
   if (type === "processing")
     return <LoaderIcon className="text-body-secondary animate-spin-slow h-16 w-16" />

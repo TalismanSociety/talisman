@@ -1,3 +1,4 @@
+import { Trees } from "@core/domains/accounts/store.catalog"
 import { Address } from "@core/types/base"
 import type {
   AccountJson,
@@ -50,7 +51,12 @@ export type AccountJsonAny = (
   | AccountJsonQr
   | AccountJsonWatched
   | AccountJson
-) & { origin?: AccountType | undefined }
+) & { origin?: AccountType | undefined } & {
+  folderId?: string
+  folderName?: string
+  hidden?: boolean
+  sortOrder?: number
+}
 
 export type IdenticonType = "talisman-orb" | "polkadot-identicon"
 
@@ -152,6 +158,30 @@ export interface RequestAccountCreate {
   type: AccountAddressType
 }
 
+export type AccountsCatalogTree = "portfolio" | "watched"
+export type RequestAccountsCatalogMutate =
+  // account mutations
+  | {
+      type: "moveAccount"
+      tree?: AccountsCatalogTree
+      address: string
+      folderId?: string
+      beforeItem?: { type: "account"; address: string } | { type: "folder"; id: string }
+    }
+  | { type: "hideAccount"; tree?: AccountsCatalogTree; address: string }
+  | { type: "showAccount"; tree?: AccountsCatalogTree; address: string }
+  // folder mutations
+  | { type: "addFolder"; tree?: AccountsCatalogTree; name: string; color?: string }
+  | { type: "renameFolder"; tree?: AccountsCatalogTree; id: string; newName: string }
+  | { type: "recolorFolder"; tree?: AccountsCatalogTree; id: string; newColor?: string }
+  | {
+      type: "moveFolder"
+      tree?: AccountsCatalogTree
+      id: string
+      beforeItem?: { type: "account"; address: string } | { type: "folder"; id: string }
+    }
+  | { type: "removeFolder"; tree?: AccountsCatalogTree; id: string }
+
 export interface AccountsMessages {
   // account message signatures
   "pri(accounts.create)": [RequestAccountCreate, string]
@@ -170,6 +200,8 @@ export interface AccountsMessages {
   "pri(accounts.rename)": [RequestAccountRename, boolean]
   "pri(accounts.external.setIsPortfolio)": [RequestAccountExternalSetIsPortfolio, boolean]
   "pri(accounts.subscribe)": [RequestAccountSubscribe, boolean, AccountJson[]]
+  "pri(accounts.catalog.subscribe)": [null, boolean, Trees]
+  "pri(accounts.catalog.mutate)": [RequestAccountsCatalogMutate[], boolean]
   "pri(accounts.validateMnemonic)": [string, boolean]
   "pri(accounts.setVerifierCertMnemonic)": [string, boolean]
 }

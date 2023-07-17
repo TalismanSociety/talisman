@@ -1,6 +1,6 @@
 import { CustomEvmNetwork, EvmNetwork } from "@core/domains/ethereum/types"
 import { HeaderBlock } from "@talisman/components/HeaderBlock"
-import { IconChevron, PlusIcon } from "@talisman/theme/icons"
+import { ChevronRightIcon, PlusIcon } from "@talisman/theme/icons"
 import { AnalyticsPage, sendAnalyticsEvent } from "@ui/api/analytics"
 import { ChainLogo } from "@ui/domains/Asset/ChainLogo"
 import { EnableTestnetPillButton } from "@ui/domains/Settings/EnableTestnetPillButton"
@@ -72,7 +72,7 @@ const NetworksList = () => {
           <div className="text-body grow">{network.name}</div>
           {network.isTestnet && <TestnetPill />}
           {isCustomEvmNetwork(network) && <CustomPill />}
-          <IconChevron className="text-lg transition-none" />
+          <ChevronRightIcon className="text-lg transition-none" />
         </ListButton>
       ))}
     </div>

@@ -151,7 +151,7 @@ export const SideBar = () => {
   return (
     <div className="bg-grey-850 flex w-[7.4rem] shrink-0 flex-col overflow-hidden md:w-[17.2rem] lg:w-[32rem]">
       <div className="p-4 md:p-12">
-        <AccountSelect responsive />
+        <AccountSelect />
         {/* Pills for large screens */}
         <div className="hidden flex-col items-center gap-4 p-4 pb-0 md:flex lg:flex-row">
           <SendPillButton className="!px-4" icon={PaperPlaneIcon}>

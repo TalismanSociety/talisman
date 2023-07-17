@@ -1,7 +1,7 @@
 import { EvmNetwork } from "@core/domains/ethereum/types"
 import { Erc20Token } from "@core/domains/tokens/types"
 import { HeaderBlock } from "@talisman/components/HeaderBlock"
-import { IconChevron, PlusIcon } from "@talisman/theme/icons"
+import { ChevronRightIcon, PlusIcon } from "@talisman/theme/icons"
 import { AnalyticsPage, sendAnalyticsEvent } from "@ui/api/analytics"
 import { TokenLogo } from "@ui/domains/Asset/TokenLogo"
 import { EnableTestnetPillButton } from "@ui/domains/Settings/EnableTestnetPillButton"
@@ -42,7 +42,7 @@ const TokenRow = ({ token }: { token: Erc20Token }) => {
         )}
       </div>
       {isCustomErc20Token(token) && <CustomPill />}
-      <IconChevron className="text-lg transition-none" />
+      <ChevronRightIcon className="text-lg transition-none" />
     </ListButton>
   )
 }

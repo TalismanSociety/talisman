@@ -1,15 +1,13 @@
-import { AccountJsonAny, AccountType, storedSeedAccountTypes } from "@core/domains/accounts/types"
 import { yupResolver } from "@hookform/resolvers/yup"
 import { SuspenseTracker } from "@talisman/components/SuspenseTracker"
 import { HandMonoTransparentLogo } from "@talisman/theme/logos"
-import { useTalismanOrb } from "@talismn/orb"
 import { classNames } from "@talismn/util"
 import { api } from "@ui/api"
 import { useAnalytics } from "@ui/hooks/useAnalytics"
-import { Suspense, useCallback, useEffect, useMemo, useState } from "react"
+import { useFirstAccountColors } from "@ui/hooks/useFirstAccountColors"
+import { Suspense, useCallback, useEffect, useState } from "react"
 import { SubmitHandler, useForm } from "react-hook-form"
 import { useTranslation } from "react-i18next"
-import { atom, useRecoilValue } from "recoil"
 import { Button, FormFieldInputText } from "talisman-ui"
 import { LoginBackground } from "talisman-ui"
 import * as yup from "yup"
@@ -29,63 +27,14 @@ const schema = yup
 
 const INPUT_CONTAINER_PROPS = { className: "bg-white/10" }
 
-const useAccountColors = ({ account }: { account: AccountJsonAny }): [string, string] => {
-  const { bgColor1, bgColor2 } = useTalismanOrb(account.address)
-
-  return [bgColor1, bgColor2]
-}
-
-// do not use this atom outside of this screen as it may cause performance issues because of suspense
-const accountsState = atom<AccountJsonAny[]>({
-  key: "accountsState",
-  effects: [
-    ({ setSelf }) => {
-      const unsubscribe = api.accountsSubscribe(setSelf)
-      return () => unsubscribe()
-    },
-  ],
-})
-
-/**
- * @param storedSeedOnly causes the function to return only accounts derived from a seed stored in Talisman. Returns that account if it
- * exists, or the first account present if not, by default
- * @returns an Account
- */
-export const useBackgroundLoginAccount = (storedSeedOnly?: boolean) => {
-  const accounts = useRecoilValue(accountsState)
-
-  const storedSeedAccount = useMemo(
-    () => accounts.find(({ origin }) => storedSeedAccountTypes.includes(origin as AccountType)),
-    [accounts]
-  )
-  if (storedSeedOnly) return storedSeedAccount
-  if (accounts.length > 0) return accounts[0]
-  return
-}
-
-const LoginBackgroundWithAccount = ({ account }: { account: AccountJsonAny }) => {
-  const accountColors = useAccountColors({ account })
+const Background = () => {
+  const colors = useFirstAccountColors()
 
   return (
     <LoginBackground
       width={400}
       height={600}
-      colors={accountColors}
-      className="absolute left-0 top-0 m-0 block h-full w-full overflow-hidden "
-    />
-  )
-}
-
-const Background = () => {
-  const account = useBackgroundLoginAccount()
-
-  return account ? (
-    <LoginBackgroundWithAccount account={account} />
-  ) : (
-    <LoginBackground
-      width={400}
-      height={600}
-      colors={["#fd4848", "#d5ff5c"]}
+      colors={colors}
       className="absolute left-0 top-0 m-0 block h-full w-full overflow-hidden "
     />
   )

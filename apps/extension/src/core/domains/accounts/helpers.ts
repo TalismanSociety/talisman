@@ -1,3 +1,4 @@
+import { AccountsCatalogStore } from "@core/domains/accounts/store.catalog"
 import { Account } from "@core/domains/accounts/types"
 import {
   AccountJsonAny,
@@ -38,49 +39,69 @@ const sortAccountsByWhenCreated = (accounts: AccountJsonAny[]) => {
   })
 }
 
-export const sortAccounts = (accounts: SubjectInfo): AccountJsonAny[] => {
-  const transformedAccounts = Object.values(accounts).map(
-    ({ json: { address, meta }, type }: SingleAddress): AccountJsonAny => ({
-      address,
-      ...meta,
-      type,
-    })
-  )
-
-  let ordered: AccountJsonAny[] = []
-
+const legacySortAccounts = (accounts: AccountJsonAny[]) => {
   // should be one 'Talisman' account with a stored seed
-  const root = transformedAccounts.find(
-    ({ origin }) => origin && storedSeedAccountTypes.includes(origin)
-  )
-  !!root && ordered.push(root)
+  const root = accounts.find(({ origin }) => origin && storedSeedAccountTypes.includes(origin))
 
   // can be multiple derived accounts
   // should order these by created date? probably
-  const derived = transformedAccounts.filter(({ origin }) => origin === AccountTypes.DERIVED)
+  const derived = accounts.filter(({ origin }) => origin === AccountTypes.DERIVED)
   const derivedSorted = sortAccountsByWhenCreated(derived)
-  ordered = [...ordered, ...derivedSorted]
 
   // can be multiple imported accounts - both JSON or SEED imports
   // as well as QR (parity signer) and HARDWARE (ledger) accounts
   // should order these by created date? probably
-  const imported = transformedAccounts.filter(({ origin }) =>
+  const imported = accounts.filter(({ origin }) =>
     ["SEED", "JSON", "QR", "HARDWARE"].includes(origin as string)
   )
   const importedSorted = sortAccountsByWhenCreated(imported)
 
-  const watchedPortfolio = transformedAccounts.filter(
+  const watchedPortfolio = accounts.filter(
     ({ origin, isPortfolio }) => origin === AccountTypes.WATCHED && isPortfolio
   )
   const watchedPortfolioSorted = sortAccountsByWhenCreated(watchedPortfolio)
 
-  const watchedFollowed = transformedAccounts.filter(
+  const watchedFollowed = accounts.filter(
     ({ origin, isPortfolio }) => origin === AccountTypes.WATCHED && !isPortfolio
   )
   const watchedFollowedSorted = sortAccountsByWhenCreated(watchedFollowed)
 
-  return [...ordered, ...importedSorted, ...watchedPortfolioSorted, ...watchedFollowedSorted]
+  return [
+    ...(root ? [root] : []),
+    ...derivedSorted,
+    ...importedSorted,
+    ...watchedPortfolioSorted,
+    ...watchedFollowedSorted,
+  ]
 }
+
+export const sortAccounts =
+  (accountsCatalogStore: AccountsCatalogStore) =>
+  async (keyringAccounts: SubjectInfo): Promise<AccountJsonAny[]> => {
+    const unsortedAccounts = Object.values(keyringAccounts).map(
+      ({ json: { address, meta }, type }: SingleAddress): AccountJsonAny => ({
+        address,
+        ...meta,
+        type,
+      })
+    )
+
+    // default to legacy sort method when adding new accounts to the catalog
+    // this will mean that for existing users, their accounts list will maintain
+    // its current sort order - despite being migrated to the new catalog store
+    //
+    // for new users, the default catalog order will be the order in which they add
+    // each new account
+    const legacySortedAccounts = legacySortAccounts(unsortedAccounts)
+    const accounts = legacySortedAccounts
+
+    // add any newly created accounts to the catalog
+    // each new account will be placed at the end of the list
+    await accountsCatalogStore.addAccounts(accounts)
+    const sortedAccounts = await accountsCatalogStore.sortAccounts(legacySortedAccounts)
+
+    return sortedAccounts
+  }
 
 export const getInjectedAccount = ({
   json: {

@@ -1,3 +1,4 @@
+import { AccountJsonAny } from "@core/domains/accounts/types"
 import { notify } from "@talisman/components/Notifications"
 import { useOpenClose } from "@talisman/hooks/useOpenClose"
 import { CopyIcon, LoaderIcon } from "@talisman/theme/icons"
@@ -15,17 +16,29 @@ import { AccountIcon } from "./AccountIcon"
 import { PasswordUnlock, usePasswordUnlock } from "./PasswordUnlock"
 
 const useAccountExportPrivateKeyModalProvider = () => {
-  const { account } = useSelectedAccount()
-  const { isOpen, open, close } = useOpenClose()
+  const [_account, setAccount] = useState<AccountJsonAny>()
+
+  const { account: selectedAccount } = useSelectedAccount()
+  const { isOpen, open: innerOpen, close } = useOpenClose()
+
+  const open = useCallback(
+    (account?: AccountJsonAny) => {
+      setAccount(account)
+      innerOpen()
+    },
+    [innerOpen]
+  )
 
   useEffect(() => {
     close()
-  }, [account, close])
+  }, [selectedAccount, close])
 
-  const canExportAccount = useMemo(
-    () => account?.type === "ethereum" && !account.isExternal && !account.isHardware,
-    [account]
-  )
+  const account = _account ?? selectedAccount
+
+  const canExportAccountFunc = (account?: AccountJsonAny) =>
+    account?.type === "ethereum" && !account.isExternal && !account.isHardware
+
+  const canExportAccount = useMemo(() => canExportAccountFunc(account), [account])
 
   const exportAccount = useCallback(
     async (password: string) => {
@@ -35,7 +48,7 @@ const useAccountExportPrivateKeyModalProvider = () => {
     [account]
   )
 
-  return { account, canExportAccount, exportAccount, isOpen, open, close }
+  return { account, canExportAccountFunc, canExportAccount, exportAccount, isOpen, open, close }
 }
 
 export const [AccountExportPrivateKeyModalProvider, useAccountExportPrivateKeyModal] =

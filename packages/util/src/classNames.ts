@@ -1,5 +1,3 @@
-type ClassName = string | false | undefined | null
+import { twMerge } from "tailwind-merge"
 
-export const classNames = (...args: ClassName[]): string | undefined => {
-  return args.filter(Boolean).join(" ") || undefined
-}
+export const classNames = twMerge

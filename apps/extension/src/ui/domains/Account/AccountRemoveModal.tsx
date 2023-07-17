@@ -1,4 +1,4 @@
-import { AccountType } from "@core/domains/accounts/types"
+import { AccountJsonAny, AccountType } from "@core/domains/accounts/types"
 import { useOpenClose } from "@talisman/hooks/useOpenClose"
 import { provideContext } from "@talisman/util/provideContext"
 import { api } from "@ui/api"
@@ -11,23 +11,36 @@ import { Modal } from "talisman-ui"
 const REMOVABLE_ORIGINS: AccountType[] = ["DERIVED", "SEED", "WATCHED", "JSON", "QR", "HARDWARE"]
 
 const useAccountRemoveModalProvider = () => {
-  const { account } = useSelectedAccount()
-  const { isOpen, open, close } = useOpenClose()
+  const [_account, setAccount] = useState<AccountJsonAny>()
 
-  const canRemove = useMemo(
-    () => account?.origin && REMOVABLE_ORIGINS.includes(account?.origin),
-    [account?.origin]
+  const { account: selectedAccount } = useSelectedAccount()
+  const { isOpen, open: innerOpen, close } = useOpenClose()
+
+  const open = useCallback(
+    (account?: AccountJsonAny) => {
+      setAccount(account)
+      innerOpen()
+    },
+    [innerOpen]
   )
 
   useEffect(() => {
     close()
-  }, [account, close])
+  }, [selectedAccount, close])
+
+  const account = _account ?? selectedAccount
+
+  const canRemoveFunc = (account?: AccountJsonAny) =>
+    account?.origin && REMOVABLE_ORIGINS.includes(account?.origin)
+
+  const canRemove = useMemo(() => canRemoveFunc(account), [account])
 
   return {
     account,
     isOpen,
     open,
     close,
+    canRemoveFunc,
     canRemove,
   }
 }

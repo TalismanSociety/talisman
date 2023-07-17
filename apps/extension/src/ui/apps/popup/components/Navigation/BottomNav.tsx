@@ -4,9 +4,10 @@ import { AlertCircleIcon } from "@talisman/theme/icons"
 import { classNames } from "@talismn/util"
 import { api } from "@ui/api"
 import { AnalyticsPage, sendAnalyticsEvent } from "@ui/api/analytics"
-import { useSelectedAccount } from "@ui/domains/Portfolio/SelectedAccountContext"
 import { PendingTransactionsDrawer } from "@ui/domains/Transactions/PendingTransactionsDrawer"
 import useMnemonicBackup from "@ui/hooks/useMnemonicBackup"
+import { useSearchParamsSelectedAccount } from "@ui/hooks/useSearchParamsSelectedAccount"
+import { useSearchParamsSelectedFolder } from "@ui/hooks/useSearchParamsSelectedFolder"
 import { useLiveQuery } from "dexie-react-hooks"
 import { ButtonHTMLAttributes, DetailedHTMLProps, forwardRef, useCallback } from "react"
 import { Trans, useTranslation } from "react-i18next"
@@ -95,7 +96,8 @@ const RecentActivityButton = () => {
 export const BottomNav = () => {
   const navigate = useNavigate()
   const location = useLocation()
-  const { account } = useSelectedAccount()
+  const { folder } = useSearchParamsSelectedFolder()
+  const { account } = useSearchParamsSelectedAccount()
   const { open } = useNavigationContext()
 
   const handleHomeClick = useCallback(() => {
@@ -160,7 +162,10 @@ export const BottomNav = () => {
       <div className="border-t-grey-800 flex h-32 min-h-[6.4rem] items-center justify-between border-t px-12 text-3xl">
         <Tooltip placement="top">
           <TooltipTrigger asChild>
-            <BottomNavButton onClick={handleHomeClick} current={location.pathname === "/portfolio"}>
+            <BottomNavButton
+              onClick={handleHomeClick}
+              current={location.pathname === "/portfolio" && folder === undefined}
+            >
               <NavIconHome />
             </BottomNavButton>
           </TooltipTrigger>

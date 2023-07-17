@@ -8,11 +8,12 @@ import {
   UsersIcon,
 } from "@talisman/theme/icons"
 import { ReactComponent as IconClock } from "@talisman/theme/icons/clock.svg"
-import { ReactComponent as IconInfo } from "@talisman/theme/icons/info.svg"
 import { ReactComponent as IconKey } from "@talisman/theme/icons/key.svg"
 import { ReactComponent as IconLink } from "@talisman/theme/icons/link.svg"
 import { ReactComponent as IconList } from "@talisman/theme/icons/list.svg"
 import { ReactComponent as IconLock } from "@talisman/theme/icons/lock.svg"
+import { ReactComponent as IconTalisman } from "@talisman/theme/icons/talisman-hand.svg"
+import { ReactComponent as IconUser } from "@talisman/theme/icons/user.svg"
 import { MigratePasswordModal } from "@ui/domains/Settings/MigratePassword/MigratePasswordModal"
 import { MnemonicModal } from "@ui/domains/Settings/MnemonicModal"
 import { useIsFeatureEnabled } from "@ui/hooks/useFeatures"
@@ -90,25 +91,32 @@ export const SettingsPage = () => {
           to={`/settings/address-book`}
         />
         <CtaButton
+          iconLeft={ToolIcon}
+          iconRight={ChevronRightIcon}
+          title={t("Extension Options")}
+          subtitle={t("Customise your extension experience")}
+          to={`/settings/options`}
+        />
+        <CtaButton
+          iconLeft={IconUser}
+          iconRight={ChevronRightIcon}
+          title={t("Manage Accounts")}
+          subtitle={t("Sort, organise and hide your accounts")}
+          to={`/settings/accounts`}
+        />
+        <CtaButton
           iconLeft={GlobeIcon}
           iconRight={ChevronRightIcon}
-          title={t("Ethereum Networks")}
+          title={t("Manage Ethereum Networks")}
           subtitle={t("Manage Ethereum compatible networks")}
           to={`/networks`}
         />
         <CtaButton
           iconLeft={IconList}
           iconRight={ChevronRightIcon}
-          title={t("Ethereum Tokens")}
+          title={t("Manage Ethereum Tokens")}
           subtitle={t("Add or delete custom ERC20 tokens")}
           to={`/tokens`}
-        />
-        <CtaButton
-          iconLeft={ToolIcon}
-          iconRight={ChevronRightIcon}
-          title={t("Extension Options")}
-          subtitle={t("Customise your extension experience")}
-          to={`/settings/options`}
         />
         {i18nEnabled && (
           <CtaButton
@@ -142,11 +150,11 @@ export const SettingsPage = () => {
           iconLeft={IconClock}
           iconRight={ChevronRightIcon}
           title={t("Auto-lock Timer")}
-          subtitle={t("Set a timer to automatically lock the Talisman extension")}
+          subtitle={t("Set a timer to automatically lock your Talisman wallet")}
           to={`/settings/autolock`}
         />
         <CtaButton
-          iconLeft={IconInfo}
+          iconLeft={IconTalisman}
           iconRight={ChevronRightIcon}
           title={t("About")}
           subtitle={t("Read our Privacy Policy and Terms of Use")}

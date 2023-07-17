@@ -28,6 +28,10 @@ import { NetworksPage } from "./routes/Networks/NetworksPage"
 import { PhishingPage } from "./routes/PhishingPage"
 import { PortfolioRoutes } from "./routes/Portfolio"
 import { AboutPage } from "./routes/Settings/AboutPage"
+import { AccountsPage } from "./routes/Settings/Accounts"
+import { DeleteFolderModalProvider } from "./routes/Settings/Accounts/DeleteFolderModal"
+import { NewFolderModalProvider } from "./routes/Settings/Accounts/NewFolderModal"
+import { RenameFolderModalProvider } from "./routes/Settings/Accounts/RenameFolderModal"
 import { AddressBookPage } from "./routes/Settings/AddressBookPage"
 import { AnalyticsOptInPage } from "./routes/Settings/AnalyticsOptInPage"
 import { AutoLockTimerPage } from "./routes/Settings/AutoLockTimerPage"
@@ -102,13 +106,14 @@ const DashboardInner = () => {
           <Route path="" element={<SettingsPage />} />
           <Route path="connected-sites" element={<TrustedSitesPage />} />
           <Route path="address-book" element={<AddressBookPage />} />
+          <Route path="options" element={<OptionsPage />} />
+          <Route path="accounts" element={<AccountsPage />} />
           <Route path="language" element={<LanguageSettingsPage />} />
           <Route path="security-privacy-settings" element={<SecurityPrivacySettingsPage />} />
-          <Route path="options" element={<OptionsPage />} />
-          <Route path="about" element={<AboutPage />} />
-          <Route path="analytics" element={<AnalyticsOptInPage />} />
           <Route path="change-password" element={<ChangePasswordPage />} />
           <Route path="autolock" element={<AutoLockTimerPage />} />
+          <Route path="about" element={<AboutPage />} />
+          <Route path="analytics" element={<AnalyticsOptInPage />} />
         </Route>
         <Route path="tokens">
           <Route path="" element={<TokensPage />} />
@@ -134,6 +139,7 @@ const PreventPhishing: FC<PropsWithChildren> = ({ children }) => {
   return <>{children}</>
 }
 
+// TODO move NewFolderModalProvider, RenameFolderModalProvider, DeleteFolderModalProvider inside the only page that uses them
 const Dashboard = () => (
   <PreventPhishing>
     <SelectedAccountProvider>
@@ -143,7 +149,13 @@ const Dashboard = () => (
             <AccountExportPrivateKeyModalProvider>
               <CopyAddressModalProvider>
                 <BuyTokensModalProvider>
-                  <DashboardInner />
+                  <NewFolderModalProvider>
+                    <RenameFolderModalProvider>
+                      <DeleteFolderModalProvider>
+                        <DashboardInner />
+                      </DeleteFolderModalProvider>
+                    </RenameFolderModalProvider>
+                  </NewFolderModalProvider>
                 </BuyTokensModalProvider>
               </CopyAddressModalProvider>
             </AccountExportPrivateKeyModalProvider>
