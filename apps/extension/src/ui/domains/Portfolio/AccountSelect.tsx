@@ -325,7 +325,7 @@ const Item = forwardRef<HTMLDivElement, ItemProps>(function Item(
         />
       </div>
       {(button || (isFolder && !collapsed)) && (
-        <ChevronDownIcon className={classNames("shrink-0 text-lg", button && "hidden md:block")} />
+        <ChevronDownIcon className={classNames("shrink-0 text-lg", button && "hidden lg:block")} />
       )}
       {isFolder && collapsed && <div>{item.addresses.length}</div>}
     </div>
