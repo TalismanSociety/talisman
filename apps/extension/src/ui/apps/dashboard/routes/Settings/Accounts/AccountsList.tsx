@@ -190,7 +190,7 @@ export const AccountsList = ({
               item={item}
               treeName={treeName}
               indentationWidth={indentationWidth}
-              collapsed={closedFolders.includes(item.id)}
+              collapsed={closedFolders.includes(item.id) || activeId === item.id}
               onCollapse={item.type === "folder" ? () => handleCollapse(item.id) : undefined}
             />
           ))}

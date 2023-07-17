@@ -20,6 +20,25 @@ export function getProjection(
   const overItemIndex = items.findIndex(({ id }) => id === overId)
   const activeItemIndex = items.findIndex(({ id }) => id === activeId)
   const activeItem = items[activeItemIndex]
+
+  // special case: an account is dropped onto an empty folder's EmptyFolderDropzone
+  if (
+    activeItem.type === "account" &&
+    typeof overId === "string" &&
+    overId.startsWith("empty-folder-")
+  ) {
+    const depth = 1
+    const maxDepth = 1
+    const minDepth = 1
+    const parentId = overId.slice("empty-folder-".length)
+
+    const itemsWithoutActive = items.filter((item) => item.id !== activeId)
+    const nextItem =
+      itemsWithoutActive[itemsWithoutActive.findIndex((item) => item.id === parentId) + 1]
+
+    return { depth, maxDepth, minDepth, parentId, nextItem }
+  }
+
   const newItems = arrayMove(items, activeItemIndex, overItemIndex)
   const previousItem = newItems[overItemIndex - 1]
   const nextItem = newItems[overItemIndex + 1]
