@@ -1,5 +1,5 @@
 import { AccountJsonAny, AccountsCatalogTree } from "@core/domains/accounts/types"
-import { DraggableAttributes } from "@dnd-kit/core"
+import { DraggableAttributes, useDroppable } from "@dnd-kit/core"
 import { SyntheticListenerMap } from "@dnd-kit/core/dist/hooks/utilities"
 import { ChevronDownIcon, DragIcon, MoreHorizontalIcon } from "@talisman/theme/icons"
 import { Balances } from "@talismn/balances"
@@ -109,6 +109,7 @@ export const TreeFolderItem = forwardRef<HTMLDivElement, Props & { item: UiTreeF
       onCollapse,
       style,
       wrapperRef,
+      indentationWidth,
     } = props
 
     const addresses = useMemo(() => item.tree.map((item) => item.address), [item])
@@ -186,6 +187,10 @@ export const TreeFolderItem = forwardRef<HTMLDivElement, Props & { item: UiTreeF
             </span>
           ) : null}
         </div>
+
+        {!clone && !collapsed && item.tree.length === 0 ? (
+          <EmptyFolderDropzone id={item.id} indentationWidth={indentationWidth} />
+        ) : null}
       </TreeItemWrapper>
     )
   }
@@ -218,3 +223,27 @@ TreeItemWrapper.displayName = "TreeItemWrapper"
 const DragButton = (props: any) => (
   <DragIcon className="text-grey-750 -mx-4 shrink-0 text-xl" {...props} />
 )
+
+const EmptyFolderDropzone = ({
+  id,
+  indentationWidth,
+}: {
+  id: string
+  indentationWidth: number
+}) => {
+  const { t } = useTranslation()
+  const { setNodeRef } = useDroppable({ id: `empty-folder-${id}` })
+
+  return (
+    <div
+      ref={setNodeRef}
+      className="bg-black-secondary/60 mt-4 flex flex-col gap-2 rounded p-20"
+      style={{ marginLeft: `${indentationWidth}px` }}
+    >
+      <span className="">{t("There are no accounts in this folder")}</span>
+      <span className="text-body-secondary text-sm">
+        {t("You can drag an account here to add it")}
+      </span>
+    </div>
+  )
+}
