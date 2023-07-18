@@ -72,7 +72,7 @@ const SendFundsLedgerSubstrate = () => {
     return (
       <Button
         disabled={!subTransaction?.unsigned}
-        className="mt-12 w-full"
+        className="w-full"
         primary
         onClick={sendToLedger(true)}
         processing={signed}

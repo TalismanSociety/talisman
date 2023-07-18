@@ -81,7 +81,7 @@ export const LedgerConnectionStatus = ({
       {status === "connecting" && (
         <LoaderIcon className="animate-spin-slow min-w-[1em] shrink-0 text-[2rem] text-white" />
       )}
-      <span className="leading-[2rem]">{wrapStrong(message)}</span>
+      <div className="text-left leading-[2rem]">{wrapStrong(message)}</div>
     </Container>
   )
 }

@@ -74,7 +74,7 @@ const SendFundsQrSubstrate = () => {
     return (
       <Button
         disabled={!subTransaction?.unsigned}
-        className="mt-12 w-full"
+        className="w-full"
         primary
         onClick={showQrApproval(true)}
         processing={signed}
