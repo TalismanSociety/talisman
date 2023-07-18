@@ -1,37 +1,21 @@
-import Button from "@talisman/components/Button"
 import { ChevronLeftIcon } from "@talisman/theme/icons"
+import { classNames } from "@talismn/util"
 import { AnalyticsPage, sendAnalyticsEvent } from "@ui/api/analytics"
-import { ReactNode, useCallback } from "react"
+import { ButtonHTMLAttributes, DetailedHTMLProps, FC, useCallback } from "react"
 import { useTranslation } from "react-i18next"
 import { To, useNavigate } from "react-router-dom"
-import styled from "styled-components"
 
-import { ILinkProps } from "./Link"
-
-const StyledButton = styled(Button)`
-  background: var(--color-background-muted);
-  border: none;
-  color: var(--color-mid);
-  padding: 0.3em;
-  display: inline-flex;
-  transition: none;
-  width: auto;
-  svg {
-    margin: 0;
-  }
-  &:hover {
-    color: var(--color-foreground-muted-2x);
-    background: var(--color-background-muted);
-  }
-`
-
-type BackButtonProps = ILinkProps & {
-  children?: ReactNode
+type BackButtonProps = DetailedHTMLProps<
+  ButtonHTMLAttributes<HTMLButtonElement>,
+  HTMLButtonElement
+> & {
+  to?: string
   analytics?: AnalyticsPage
 }
 
-export const BackButton = ({ analytics, children, to, ...props }: BackButtonProps) => {
+export const BackButton: FC<BackButtonProps> = ({ analytics, children, to, ...props }) => {
   const navigate = useNavigate()
+
   const handleBackClick = useCallback(() => {
     if (analytics) {
       sendAnalyticsEvent({
@@ -46,9 +30,17 @@ export const BackButton = ({ analytics, children, to, ...props }: BackButtonProp
   const { t } = useTranslation()
 
   return (
-    <StyledButton small onClick={handleBackClick} {...props}>
+    <button
+      type="button"
+      {...props}
+      onClick={handleBackClick}
+      className={classNames(
+        "allow-focus bg-grey-850 hover:bg-grey-800 text-grey-400 hover:text-grey-300 inline-flex items-center gap-2 rounded-sm py-3 pl-2 pr-4 text-sm",
+        props.className
+      )}
+    >
       <ChevronLeftIcon />
       <span>{children ?? t("Back")}</span>
-    </StyledButton>
+    </button>
   )
 }

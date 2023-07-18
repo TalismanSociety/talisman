@@ -11,7 +11,6 @@ import { useAnalytics } from "@ui/hooks/useAnalytics"
 import { MouseEventHandler, ReactNode, useCallback, useMemo } from "react"
 import { Trans, useTranslation } from "react-i18next"
 import { useNavigate } from "react-router-dom"
-import styled from "styled-components"
 
 import { TokenLogo } from "../../Asset/TokenLogo"
 import { useNomPoolStakingBanner } from "../NomPoolStakingContext"
@@ -55,44 +54,6 @@ type AssetRowProps = {
   balances: Balances
   locked?: boolean
 }
-
-const AssetButton = styled.button`
-  width: 100%;
-  outline: none;
-  border: none;
-  display: flex;
-  align-items: center;
-  border-radius: var(--border-radius-tiny);
-  height: 5.6rem;
-
-  :not(.staking-banner) {
-    padding: 0 0.2rem;
-    background: var(--color-background-muted);
-  }
-
-  .logo-stack .logo-circle {
-    border-color: var(--color-background-muted);
-  }
-
-  :not(.skeleton) {
-    cursor: pointer;
-  }
-
-  :not(.skeleton, .staking-banner):hover {
-    background: var(--color-background-muted-3x);
-    .logo-stack .logo-circle {
-      border-color: var(--color-background-muted-3x);
-    }
-  }
-`
-
-const RowLockIcon = styled(LockIcon)`
-  font-size: 1.2rem;
-  margin-left: 0.4rem;
-`
-const SectionLockIcon = styled(LockIcon)`
-  font-size: 1.4rem;
-`
 
 const AssetRowSkeleton = ({ className }: { className?: string }) => {
   return (
@@ -172,7 +133,11 @@ const AssetRow = ({ balances, locked }: AssetRowProps) => {
 
   return (
     <>
-      <AssetButton className="asset" onClick={handleClick}>
+      <button
+        type="button"
+        className="bg-grey-850 hover:bg-grey-800 flex h-28 w-full items-center rounded-sm"
+        onClick={handleClick}
+      >
         <div className="p-6 text-xl">
           <TokenLogo tokenId={token.id} />
         </div>
@@ -208,9 +173,9 @@ const AssetRow = ({ balances, locked }: AssetRowProps) => {
               )}
             >
               <Tokens amount={tokens} symbol={token?.symbol} isBalance />
-              {locked ? <RowLockIcon className="lock inline align-baseline" /> : null}
+              {locked ? <LockIcon className="lock ml-2 inline align-baseline text-xs" /> : null}
               <StaleBalancesIcon
-                className="alert ml-2 inline align-baseline text-xs"
+                className="alert ml-2 inline align-baseline text-sm"
                 staleChains={status.status === "stale" ? status.staleChains : []}
               />
             </div>
@@ -219,11 +184,12 @@ const AssetRow = ({ balances, locked }: AssetRowProps) => {
             </div>
           </div>
         </div>
-      </AssetButton>
+      </button>
       {showBanner && (
-        <AssetButton
+        <button
+          type="button"
           onClick={handleClickStakingBanner}
-          className="staking-banner bg-primary-500 text-primary-500 flex items-center justify-between bg-opacity-10 p-[1rem]"
+          className="staking-banner bg-primary-500 text-primary-500 flex h-28 w-full items-center justify-between rounded-sm bg-opacity-10 p-[1rem]"
         >
           <div className="flex gap-2">
             <div className="self-center">
@@ -249,7 +215,7 @@ const AssetRow = ({ balances, locked }: AssetRowProps) => {
           <div className="self-start">
             <XIcon role="button" onClick={handleDismissStakingBanner} className="h-6" />
           </div>
-        </AssetButton>
+        </button>
       )}
     </>
   )
@@ -284,7 +250,7 @@ const BalancesGroup = ({ label, fiatAmount, className, children }: GroupProps) =
           <AccordionIcon isOpen={isOpen} />
         </div>
       </button>
-      <Accordion isOpen={isOpen}>
+      <Accordion alwaysRender isOpen={isOpen}>
         <div className="flex flex-col gap-4">{children}</div>
       </Accordion>
     </div>
@@ -335,7 +301,7 @@ export const PopupAssetsTable = ({ balances }: GroupedAssetsTableProps) => {
             <div className="flex items-center gap-2">
               <div>{t("Locked")}</div>
               <div>
-                <SectionLockIcon />
+                <LockIcon className="text-sm" />
               </div>
             </div>
           }

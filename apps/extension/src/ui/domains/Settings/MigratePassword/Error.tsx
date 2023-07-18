@@ -1,7 +1,7 @@
 import { passwordStore } from "@core/domains/app"
-import { ModalDialog } from "@talisman/components/ModalDialog"
 import { useSetting } from "@ui/hooks/useSettings"
 import { Trans, useTranslation } from "react-i18next"
+import { ModalDialog } from "talisman-ui"
 import { Button, Checkbox } from "talisman-ui"
 
 import { useMigratePassword } from "./context"

@@ -1,15 +1,13 @@
-import { DEBUG } from "@core/constants"
+import { BANXA_URL, DEBUG } from "@core/constants"
 import { AccountJsonAny } from "@core/domains/accounts/types"
 import { Chain } from "@core/domains/chains/types"
 import { Token } from "@core/domains/tokens/types"
 import { yupResolver } from "@hookform/resolvers/yup"
 import { isEthereumAddress } from "@polkadot/util-crypto"
-import { Dropdown, RenderItemFunc } from "@talisman/components/Dropdown"
-import { SimpleButton } from "@talisman/components/SimpleButton"
 import { githubChaindataBaseUrl } from "@talismn/chaindata-provider"
 import { encodeAnyAddress } from "@talismn/util"
 import { AnalyticsPage, sendAnalyticsEvent } from "@ui/api/analytics"
-import Account from "@ui/domains/Account"
+import { FormattedAddress } from "@ui/domains/Account/FormattedAddress"
 import useAccounts from "@ui/hooks/useAccounts"
 import { useAnalyticsPageView } from "@ui/hooks/useAnalyticsPageView"
 import useChains from "@ui/hooks/useChains"
@@ -17,91 +15,11 @@ import useTokens from "@ui/hooks/useTokens"
 import { useCallback, useEffect, useMemo, useState } from "react"
 import { useForm } from "react-hook-form"
 import { useTranslation } from "react-i18next"
-import styled from "styled-components"
+import { Button, Dropdown, DropdownOptionRender } from "talisman-ui"
 import * as yup from "yup"
 
 import { TokenAmountField } from "../TokenAmountField"
 import { useBuyTokensModal } from "./BuyTokensModalContext"
-
-const Form = styled.form`
-  padding-top: 3rem;
-  display: flex;
-  flex-direction: column;
-  gap: 1.6rem;
-`
-
-const AccountDropDown = styled(Dropdown)<AccountJsonAny>`
-  z-index: 1;
-  display: block;
-
-  button {
-    width: 100%;
-    height: 56px;
-    padding: 0 1.6rem;
-    align-items: center;
-    > span,
-    > span * {
-      max-height: none;
-    }
-
-    .account-name > .text > .account-name-row .copy {
-      display: none;
-    }
-
-    > span + span > svg {
-      font-size: 2.4rem;
-    }
-    .copy {
-      display: none;
-    }
-  }
-
-  > ul {
-    top: 5.2rem;
-
-    > li {
-      padding: 0.8rem 1.6rem;
-      opacity: 0.8;
-
-      .account-name > .text > .account-name-row {
-        //color: var(--color-background-muted-2x);
-        color: var(--color-mid);
-        opacity: 0.8;
-      }
-
-      &[aria-selected="true"] {
-        opacity: 1;
-        background-color: #333333;
-        .account-name > .text > .account-name-row {
-          opacity: 1;
-        }
-      }
-    }
-  }
-`
-
-const Button = styled(SimpleButton)`
-  width: 100%;
-  font-size: 1.8rem;
-  height: 5.6rem;
-
-  :disabled {
-    background: var(--color-background-muted-3x);
-    color: var(--color-background-muted-2x);
-    opacity: 1;
-  }
-`
-
-const Caption = styled.div`
-  color: var(--color-background-muted-2x);
-  font-size: 1.2rem;
-  line-height: 1.2rem;
-  font-weight: 500;
-`
-
-const renderAccountItem: RenderItemFunc<AccountJsonAny> = (account) => {
-  return <Account.Name withAvatar address={account?.address} />
-}
 
 // list to keep up to date, it's used when github is unreachable
 const DEFAULT_BUY_TOKEN_IDS = [
@@ -114,11 +32,6 @@ const DEFAULT_BUY_TOKEN_IDS = [
   "moonriver-substrate-native-movr",
   "1-evm-native-eth",
 ]
-
-// Used for testing the full buying flow
-// The tokens available at this endpoint are not in sync with the production endpoint
-// const BANXA_URL = "https://talisman.banxa-sandbox.com/"
-const BANXA_URL = "https://talisman.banxa.com/"
 
 type FormData = {
   address: string
@@ -196,11 +109,15 @@ const useSupportedTokenIds = (chains?: Chain[], tokens?: Token[], address?: stri
   return { substrateTokenIds, ethereumTokenIds, filterTokens }
 }
 
+const renderAccountItem: DropdownOptionRender<AccountJsonAny> = (account) => {
+  return <FormattedAddress address={account.address} withSource />
+}
+
 export const BuyTokensForm = () => {
   const [t] = useTranslation()
   useAnalyticsPageView(ANALYTICS_PAGE)
   const { close } = useBuyTokensModal()
-  const accounts = useAccounts()
+  const accounts = useAccounts("portfolio")
 
   const {
     register,
@@ -265,7 +182,8 @@ export const BuyTokensForm = () => {
   )
 
   const handleAccountChange = useCallback(
-    (acc: AccountJsonAny) => {
+    (acc: AccountJsonAny | null) => {
+      if (!acc) return
       sendAnalyticsEvent({
         ...ANALYTICS_PAGE,
         name: "Interact",
@@ -323,15 +241,17 @@ export const BuyTokensForm = () => {
   }, [])
 
   return (
-    <Form onSubmit={handleSubmit(submit)}>
-      <AccountDropDown
+    <form className="mt-14 flex flex-col gap-8" onSubmit={handleSubmit(submit)}>
+      <Dropdown
         items={accounts as AccountJsonAny[]}
         propertyKey="address"
         renderItem={renderAccountItem}
         onChange={handleAccountChange}
         placeholder={t("Select Account")}
-        defaultSelectedItem={selectedAccount}
+        value={selectedAccount}
         key={address} // uncontrolled component, will reset if value changes
+        className="w-full"
+        buttonClassName="h-28"
       />
       <TokenAmountField
         fieldProps={register("amountUSD")}
@@ -340,11 +260,14 @@ export const BuyTokensForm = () => {
         onTokenButtonClick={handleTokenButtonClick}
         tokensFilter={filterTokens}
         tokenId={tokenId}
+        address={address}
       />
       <Button type="submit" primary disabled={!isValid}>
         {t("Continue")}
       </Button>
-      <Caption>{t("You will be taken to Banxa to complete this transaction")}</Caption>
-    </Form>
+      <div className="text-body-disabled text-xs leading-none">
+        {t("You will be taken to Banxa to complete this transaction")}
+      </div>
+    </form>
   )
 }

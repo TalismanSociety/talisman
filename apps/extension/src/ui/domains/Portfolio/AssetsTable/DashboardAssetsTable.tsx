@@ -3,10 +3,9 @@ import { ExternalLinkIcon, XIcon, ZapIcon } from "@talisman/theme/icons"
 import { useBalancesStatus } from "@talismn/balances-react"
 import { classNames } from "@talismn/util"
 import { useAnalytics } from "@ui/hooks/useAnalytics"
-import { useCallback } from "react"
+import { FC, useCallback } from "react"
 import { Trans, useTranslation } from "react-i18next"
 import { useNavigate } from "react-router-dom"
-import styled from "styled-components"
 
 import { TokenLogo } from "../../Asset/TokenLogo"
 import { AssetBalanceCellValue } from "../AssetBalanceCellValue"
@@ -16,88 +15,32 @@ import { NetworksLogoStack } from "./NetworksLogoStack"
 import { usePortfolioNetworkIds } from "./usePortfolioNetworkIds"
 import { usePortfolioSymbolBalances } from "./usePortfolioSymbolBalances"
 
-const Table = styled.table`
-  border-collapse: collapse;
-  width: 100%;
-  color: var(--color-mid);
-  text-align: left;
-  font-weight: 400;
-  font-size: 1.6rem;
-
-  th {
-    font-size: 1.4rem;
-    font-weight: 400;
-    padding-bottom: 1rem;
-  }
-
-  tbody tr.asset {
-    :not(.skeleton) {
-      cursor: pointer;
-    }
-
-    td {
-      padding: 0;
-      background: var(--color-background-muted);
-      .logo-stack .logo-circle {
-        border-color: var(--color-background-muted);
-      }
-    }
-
-    :not(.skeleton):hover td {
-      background: var(--color-background-muted-3x);
-      .logo-stack .logo-circle {
-        border-color: var(--color-background-muted-3x);
-      }
-    }
-
-    > td:first-child {
-      border-bottom-left-radius: var(--border-radius);
-    }
-    > td:last-child {
-      border-bottom-right-radius: var(--border-radius);
-    }
-
-    :not(.has-staking-banner) {
-      > td:first-child {
-        border-top-left-radius: var(--border-radius);
-      }
-      > td:last-child {
-        border-top-right-radius: var(--border-radius);
-      }
-    }
-  }
-
-  .noPadRight {
-    padding-right: 0;
-  }
-`
-
-const AssetRowSkeleton = ({ className }: { className?: string }) => {
+const AssetRowSkeleton: FC<{ className?: string }> = ({ className }) => {
   return (
-    <>
-      <tr className={classNames("asset skeleton", className)}>
-        <td>
-          <div className="flex h-[6.6rem]">
-            <div className="p-8 text-xl">
-              <div className="bg-grey-700 h-16 w-16 animate-pulse rounded-full"></div>
-            </div>
-            <div className="flex grow flex-col justify-center gap-2">
-              <div className="bg-grey-700 rounded-xs h-8 w-20 animate-pulse"></div>
-            </div>
+    <div
+      className={classNames(
+        "text-body-secondary bg-grey-850 mb-4 grid w-full grid-cols-[40%_30%_30%] rounded text-left text-base",
+        className
+      )}
+    >
+      <div>
+        <div className="flex h-[6.6rem]">
+          <div className="p-8 text-xl">
+            <div className="bg-grey-700 h-16 w-16 animate-pulse rounded-full"></div>
           </div>
-        </td>
-        <td></td>
-        <td>
-          <div className="flex h-full flex-col items-end justify-center gap-2 px-8">
-            <div className="bg-grey-700 rounded-xs h-8 w-[10rem] animate-pulse"></div>
-            <div className="bg-grey-700 rounded-xs h-8 w-[6rem] animate-pulse"></div>
+          <div className="flex grow flex-col justify-center gap-2">
+            <div className="bg-grey-700 rounded-xs h-8 w-20 animate-pulse"></div>
           </div>
-        </td>
-      </tr>
-      <tr className="spacer h-4">
-        <td colSpan={3}></td>
-      </tr>
-    </>
+        </div>
+      </div>
+      <div></div>
+      <div>
+        <div className="flex h-full flex-col items-end justify-center gap-2 px-8">
+          <div className="bg-grey-700 rounded-xs h-8 w-[10rem] animate-pulse"></div>
+          <div className="bg-grey-700 rounded-xs h-8 w-[6rem] animate-pulse"></div>
+        </div>
+      </div>
+    </div>
   )
 }
 
@@ -143,31 +86,44 @@ const AssetRow = ({ balances }: AssetRowProps) => {
   return (
     <>
       {showBanner && (
-        <tr className="staking-banner bg-primary-500 text-primary-500 h-[4.1rem] cursor-pointer bg-opacity-10 text-sm">
-          <td colSpan={3} className="rounded-t px-8">
-            <div className="flex w-full items-center justify-between">
-              <button
-                type="button"
-                onClick={handleClickStakingBanner}
-                className="flex items-center gap-4"
-              >
-                <ZapIcon />{" "}
-                <Trans t={t}>
-                  <span className="text-white">Earn ~15% yield on your DOT.</span> This balance is
-                  eligible for Nomination Pool Staking via the Talisman Portal.
-                </Trans>{" "}
-                <ExternalLinkIcon />
-              </button>
-              <XIcon role="button" className="h-8" onClick={handleDismissStakingBanner} />
+        <div className="bg-primary-500 text-primary-500 flex h-[4.1rem] w-full cursor-pointer items-center justify-between rounded-t bg-opacity-10 px-8 text-sm">
+          <button
+            type="button"
+            className="flex items-center gap-4"
+            onClick={handleClickStakingBanner}
+          >
+            <ZapIcon className="shrink-0" />{" "}
+            <div className="text-left">
+              <Trans
+                t={t}
+                components={{
+                  Highlight: <span className="text-white" />,
+                  LinkIcon: (
+                    <span className="inline-flex shrink-0 flex-col justify-center">
+                      <ExternalLinkIcon className="inline-block shrink-0" />
+                    </span>
+                  ),
+                }}
+                defaults="<Highlight>Earn ~15% yield on your {{symbol}}.</Highlight> This balance is
+                eligible for Nomination Pool Staking via the Talisman Portal. <LinkIcon />"
+                values={{ symbol: token.symbol }}
+              />
             </div>
-          </td>
-        </tr>
+          </button>
+          <button type="button" className="shrink-0">
+            <XIcon onClick={handleDismissStakingBanner} />
+          </button>
+        </div>
       )}
-      <tr
-        className={classNames(`asset${showBanner ? " has-staking-banner" : ""}`)}
+      <button
+        type="button"
+        className={classNames(
+          "text-body-secondary bg-grey-850 hover:bg-grey-800 mb-4 grid w-full grid-cols-[40%_30%_30%] text-left text-base",
+          showBanner ? "rounded-b" : "rounded"
+        )}
         onClick={handleClick}
       >
-        <td valign="top">
+        <div className="">
           <div className="flex">
             <div className="p-8 text-xl">
               <TokenLogo tokenId={token.id} />
@@ -188,8 +144,8 @@ const AssetRow = ({ balances }: AssetRowProps) => {
               )}
             </div>
           </div>
-        </td>
-        <td align="right" valign="top">
+        </div>
+        <div className="text-right">
           <AssetBalanceCellValue
             locked
             render={summary.lockedTokens.gt(0)}
@@ -202,8 +158,8 @@ const AssetRow = ({ balances }: AssetRowProps) => {
               status.status === "fetching" && "animate-pulse transition-opacity"
             )}
           />
-        </td>
-        <td align="right" valign="top">
+        </div>
+        <div className="text-right">
           <AssetBalanceCellValue
             render
             tokens={summary.availableTokens}
@@ -214,11 +170,8 @@ const AssetRow = ({ balances }: AssetRowProps) => {
               status.status === "fetching" && "animate-pulse transition-opacity"
             )}
           />
-        </td>
-      </tr>
-      <tr className="spacer h-4">
-        <td colSpan={3}></td>
-      </tr>
+        </div>
+      </button>
     </>
   )
 }
@@ -256,28 +209,19 @@ export const DashboardAssetsTable = ({ balances }: AssetsTableProps) => {
   const { symbolBalances, skeletons } = usePortfolioSymbolBalances(balances)
 
   return (
-    <Table>
-      <thead>
-        <tr>
-          <th>Asset</th>
-          <th align="right">{t("Locked")}</th>
-          <th align="right">{t("Available")}</th>
-        </tr>
-      </thead>
-      <tbody>
-        {symbolBalances.map(([symbol, b]) => (
-          <AssetRow key={symbol} balances={b} />
-        ))}
-        {[...Array(skeletons).keys()].map((i) => (
-          <AssetRowSkeleton key={i} className={getSkeletonOpacity(i)} />
-        ))}
-        {/** this row locks column sizes to prevent flickering */}
-        <tr>
-          <td></td>
-          <td width="30%"></td>
-          <td width="30%"></td>
-        </tr>
-      </tbody>
-    </Table>
+    <div className="text-body-secondary min-w-[45rem] text-left text-base">
+      <div className="mb-5 grid grid-cols-[40%_30%_30%] text-sm font-normal">
+        <div>Asset</div>
+        <div className="text-right">{t("Locked")}</div>
+        <div className="text-right">{t("Available")}</div>
+      </div>
+
+      {symbolBalances.map(([symbol, b]) => (
+        <AssetRow key={symbol} balances={b} />
+      ))}
+      {[...Array(skeletons).keys()].map((i) => (
+        <AssetRowSkeleton key={i} className={getSkeletonOpacity(i)} />
+      ))}
+    </div>
   )
 }

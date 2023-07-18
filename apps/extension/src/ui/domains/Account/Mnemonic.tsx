@@ -3,38 +3,6 @@ import { CopyIcon } from "@talisman/theme/icons"
 import { classNames } from "@talismn/util"
 import { MouseEventHandler, useCallback, useState } from "react"
 import { useTranslation } from "react-i18next"
-import styled from "styled-components"
-
-const SecretText = styled.div`
-  position: relative;
-
-  .content {
-    filter: blur(10px);
-    cursor: pointer;
-  }
-
-  &:after {
-    content: "☝";
-    position: absolute;
-    top: calc(50% - 28px); // accounts for height of icon itself
-    left: 50%;
-    font-size: var(--font-size-large);
-    filter: saturate(0);
-    opacity: 0.6;
-    cursor: pointer;
-  }
-
-  &:hover,
-  &:focus-within {
-    &:after {
-      display: none;
-    }
-    .content {
-      filter: blur(0);
-      cursor: auto;
-    }
-  }
-`
 
 type MnemonicProps = {
   onMouseEnter?: MouseEventHandler
@@ -72,24 +40,27 @@ export const Mnemonic = ({ onMouseEnter, mnemonic }: MnemonicProps) => {
         </button>
       </div>
 
-      <SecretText
-        className="secret bg-black-secondary h-72 rounded p-2"
+      <div
+        className="bg-black-secondary group relative h-72 overflow-hidden rounded p-2"
         onMouseEnter={(e) => {
           setHasHovered(true)
           onMouseEnter && onMouseEnter(e)
         }}
       >
-        <div className="content flex flex-wrap">
+        <div className="inline-flex flex-wrap">
           {mnemonic.split(" ").map((word, i) => (
             <span
-              className="bg-black-tertiary text-body-secondary mx-2 my-2 rounded-lg px-4 py-3"
+              className="bg-black-tertiary text-body-secondary mx-2 my-2 inline rounded-sm px-4 py-3"
               key={`mnemonic-${i}`}
             >
               {word}
             </span>
           ))}
+          <div className="absolute left-0 top-0 flex h-full w-full items-center justify-center backdrop-blur-md group-hover:hidden">
+            <div className="text-xl opacity-60 saturate-0">☝</div>
+          </div>
         </div>
-      </SecretText>
+      </div>
     </>
   )
 }

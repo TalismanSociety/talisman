@@ -1,7 +1,5 @@
 import { AccountJsonAny, AccountType } from "@core/domains/accounts/types"
 import { yupResolver } from "@hookform/resolvers/yup"
-import { Modal } from "@talisman/components/Modal"
-import { ModalDialog } from "@talisman/components/ModalDialog"
 import { PasswordStrength } from "@talisman/components/PasswordStrength"
 import { useOpenClose } from "@talisman/hooks/useOpenClose"
 import downloadJson from "@talisman/util/downloadJson"
@@ -10,6 +8,8 @@ import { api } from "@ui/api"
 import { useCallback, useEffect, useMemo, useState } from "react"
 import { useForm } from "react-hook-form"
 import { Trans, useTranslation } from "react-i18next"
+import { ModalDialog } from "talisman-ui"
+import { Modal } from "talisman-ui"
 import { Button, FormFieldContainer, FormFieldInputText } from "talisman-ui"
 import * as yup from "yup"
 
@@ -179,8 +179,8 @@ export const AccountExportModal = () => {
   const { t } = useTranslation()
   const { isOpen, close } = useAccountExportModal()
   return (
-    <Modal open={isOpen} onClose={close} className="w-[50.3rem]">
-      <ModalDialog title="Export account JSON" onClose={close}>
+    <Modal containerId="main" isOpen={isOpen} onDismiss={close}>
+      <ModalDialog title={t("Export account JSON")} className="w-[50.3rem]" onClose={close}>
         <PasswordUnlock
           title={
             <div className="text-body-secondary mb-8">

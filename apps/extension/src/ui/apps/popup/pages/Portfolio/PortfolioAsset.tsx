@@ -1,5 +1,4 @@
 import { Balances } from "@core/domains/balances/types"
-import { IconButton } from "@talisman/components/IconButton"
 import { ChevronLeftIcon } from "@talisman/theme/icons"
 import Fiat from "@ui/domains/Asset/Fiat"
 import { TokenLogo } from "@ui/domains/Asset/TokenLogo"
@@ -11,6 +10,7 @@ import { useAnalytics } from "@ui/hooks/useAnalytics"
 import { useCallback, useEffect, useMemo } from "react"
 import { useTranslation } from "react-i18next"
 import { Navigate, useNavigate, useParams, useSearchParams } from "react-router-dom"
+import { IconButton } from "talisman-ui"
 
 const PageContent = ({ balances, symbol }: { balances: Balances; symbol: string }) => {
   const navigate = useNavigate()

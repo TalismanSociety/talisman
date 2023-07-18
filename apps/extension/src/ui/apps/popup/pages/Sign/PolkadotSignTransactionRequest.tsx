@@ -3,7 +3,6 @@ import { isJsonPayload } from "@core/util/isJsonPayload"
 import { validateHexString } from "@core/util/validateHexString"
 import { AppPill } from "@talisman/components/AppPill"
 import { InfoIcon, LoaderIcon } from "@talisman/theme/icons"
-import { Content, Footer, Header } from "@ui/apps/popup/Layout"
 import { TokensAndFiat } from "@ui/domains/Asset/TokensAndFiat"
 import { useFeeToken } from "@ui/domains/SendFunds/useFeeToken"
 import { MetadataStatus } from "@ui/domains/Sign/MetadataStatus"
@@ -15,7 +14,7 @@ import { FC, Suspense, lazy, useEffect, useMemo } from "react"
 import { useTranslation } from "react-i18next"
 import { Button, Tooltip, TooltipContent, TooltipTrigger } from "talisman-ui"
 
-import { Container } from "./common"
+import { PopupContent, PopupFooter, PopupHeader, PopupLayout } from "../../Layout/PopupLayout"
 import { SignAccountAvatar } from "./SignAccountAvatar"
 
 const LedgerSubstrate = lazy(() => import("@ui/domains/Sign/LedgerSubstrate"))
@@ -97,18 +96,17 @@ export const PolkadotSignTransactionRequest: FC = () => {
   }, [status])
 
   return (
-    <Container>
-      <Header
-        text={<AppPill url={url} />}
-        nav={<SignAccountAvatar account={account} ss58Format={chain?.prefix} />}
-      ></Header>
-      <Content>
-        <div className="scrollable scrollable-800 h-full overflow-y-auto">
+    <PopupLayout>
+      <PopupHeader right={<SignAccountAvatar account={account} ss58Format={chain?.prefix} />}>
+        <AppPill url={url} />
+      </PopupHeader>
+      <PopupContent>
+        <div className="scrollable scrollable-800 text-body-secondary h-full overflow-y-auto text-center">
           <SubSignBody />
         </div>
-      </Content>
+      </PopupContent>
       {!isDecodingExtrinsic && (
-        <Footer className="animate-fade-in">
+        <PopupFooter className="animate-fade-in">
           <div className="flex w-full flex-col gap-4">
             <div id="sign-alerts-inject"></div>
             <MetadataStatus genesisHash={genesisHash} specVersion={specVersion} />
@@ -135,6 +133,7 @@ export const PolkadotSignTransactionRequest: FC = () => {
                     genesisHash={chain?.genesisHash ?? account?.genesisHash ?? undefined}
                     onSignature={approveHardware}
                     onReject={reject}
+                    containerId="main"
                   />
                 </Suspense>
               )}
@@ -146,13 +145,14 @@ export const PolkadotSignTransactionRequest: FC = () => {
                     genesisHash={chain?.genesisHash ?? account?.genesisHash ?? undefined}
                     onSignature={approveQr}
                     onReject={reject}
+                    containerId="main"
                   />
                 </Suspense>
               )}
             </>
           )}
-        </Footer>
+        </PopupFooter>
       )}
-    </Container>
+    </PopupLayout>
   )
 }

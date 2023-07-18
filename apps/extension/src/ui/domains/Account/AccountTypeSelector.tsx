@@ -1,37 +1,31 @@
 import { AccountAddressType } from "@core/domains/accounts/types"
-import CtaButton from "@talisman/components/CtaButton"
 import { EthereumCircleLogo, PolkadotCircleLogo } from "@talisman/theme/logos"
 import { classNames } from "@talismn/util"
-import { useEffect, useState } from "react"
+import { FC, ReactNode, useEffect, useState } from "react"
 import { useTranslation } from "react-i18next"
-import styled from "styled-components"
 
-const Container = styled.div`
-  display: flex;
-  width: 100%;
-  flex-wrap: wrap;
-  gap: 2rem;
-`
-
-const AccountTypeButton = styled(CtaButton)`
-  flex-grow: 1;
-  > span.icon {
-    width: 3.2rem;
-    font-size: 3.2rem;
-    margin: 0 1.2rem;
-  }
-  > span.arrow {
-    display: none;
-  }
-  :hover {
-    background: var(--color-background-muted-3x);
-  }
-
-  &.selected {
-    outline: 1px solid var(--color-foreground-muted);
-    cursor: default;
-  }
-`
+const AccountTypeButton: FC<{
+  title: ReactNode
+  className?: string
+  icon: ReactNode
+  subtitle: ReactNode
+  onClick: () => void
+}> = ({ icon, title, subtitle, className, onClick }) => (
+  <button
+    type="button"
+    onClick={onClick}
+    className={classNames(
+      "bg-field hover:bg-grey-800 allow-focus flex h-32 items-center gap-6 rounded px-6 text-left",
+      className
+    )}
+  >
+    <div className="text-xl">{icon}</div>
+    <div className="flex flex-grow flex-col justify-center gap-2">
+      <div className="text-body text-base">{title}</div>
+      <div className="text-body-secondary text-xs">{subtitle}</div>
+    </div>
+  </button>
+)
 
 type AccountTypeSelectorProps = {
   defaultType?: AccountAddressType
@@ -56,21 +50,21 @@ export const AccountTypeSelector = ({
   }, [onChange, type])
 
   return (
-    <Container className={className} tabIndex={0}>
+    <div className={classNames("grid w-full grid-cols-1 gap-10 md:grid-cols-2", className)}>
       <AccountTypeButton
         title={t("Polkadot")}
-        className={classNames("allow-focus", type === "sr25519" && "selected")}
+        className={classNames(type === "sr25519" && "border-body border")}
         icon={<PolkadotCircleLogo />}
         subtitle={t(`Polkadot, Kusama & Parachains`)}
         onClick={handleClick("sr25519")}
       />
       <AccountTypeButton
         title={t("Ethereum")}
-        className={classNames("allow-focus", type === "ethereum" && "selected")}
+        className={classNames(type === "ethereum" && "border-body border")}
         icon={<EthereumCircleLogo />}
         subtitle={t("Moonbeam, Moonriver, Astar etc.")}
         onClick={handleClick("ethereum")}
       />
-    </Container>
+    </div>
   )
 }

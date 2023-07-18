@@ -296,6 +296,7 @@ const EvmDrawerContent: FC<{
               onSignature={handleSendSigned}
               onReject={() => onClose?.()}
               onSendToLedger={handleSendToLedger}
+              containerId="main"
             />
           </div>
         ) : (

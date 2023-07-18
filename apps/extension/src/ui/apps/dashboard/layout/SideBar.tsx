@@ -1,9 +1,6 @@
 import { TALISMAN_WEB_APP_NFTS_URL } from "@core/constants"
-import { IconButton } from "@talisman/components/IconButton"
-import Nav, { NavItemButton, NavItemLink } from "@talisman/components/Nav"
+import { Nav, NavItem, NavItemProps } from "@talisman/components/Nav"
 import { ScrollContainer } from "@talisman/components/ScrollContainer"
-import { WithTooltip } from "@talisman/components/Tooltip"
-import { breakpoints } from "@talisman/theme/definitions"
 import {
   ArrowDownIcon,
   ClockIcon,
@@ -19,8 +16,9 @@ import {
   ZapIcon,
 } from "@talisman/theme/icons"
 import { FullColorLogo, FullColorVerticalLogo, HandRedLogo } from "@talisman/theme/logos"
+import { classNames } from "@talismn/util"
 import { useBuyTokensModal } from "@ui/domains/Asset/Buy/BuyTokensModalContext"
-import Build from "@ui/domains/Build"
+import { BuildVersionPill } from "@ui/domains/Build/BuildVersionPill"
 import { useCopyAddressModal } from "@ui/domains/CopyAddress"
 import { AccountSelect } from "@ui/domains/Portfolio/AccountSelect"
 import { useSelectedAccount } from "@ui/domains/Portfolio/SelectedAccountContext"
@@ -32,229 +30,46 @@ import { getTransactionHistoryUrl } from "@ui/util/getTransactionHistoryUrl"
 import { ButtonHTMLAttributes, FC, ReactNode, useCallback } from "react"
 import { useTranslation } from "react-i18next"
 import { useNavigate } from "react-router-dom"
-import { useWindowSize } from "react-use"
-import styled from "styled-components"
+import { IconButton } from "talisman-ui"
 import { PillButton, PillButtonProps, Tooltip, TooltipContent, TooltipTrigger } from "talisman-ui"
 
-const PaddedItem = styled.div`
-  padding: 2.4rem;
-  position: relative;
-  width: 100%;
-`
-
-const BrandLogo = styled(({ className }) => {
-  return (
-    <div className={className}>
-      <a href="https://talisman.xyz" target="_blank">
-        <FullColorLogo className="logo-full" />
-        <FullColorVerticalLogo className="logo-medium" />
-        <HandRedLogo className="logo-small" />
-      </a>
-      <Build.Version />
-    </div>
-  )
-})`
-  width: 100%;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding-left: 0.6rem;
-
-  .logo-full {
-    width: auto;
-    height: 3.2rem;
-  }
-
-  .logo-medium,
-  .logo-small {
-    display: none;
-  }
-
-  @media (max-width: ${breakpoints.large}px) {
-    justify-content: center;
-    padding-left: 0;
-
-    .logo-full {
-      display: none;
-    }
-    .logo-medium {
-      display: inline-block;
-      height: 7rem;
-      width: auto;
-    }
-  }
-
-  @media (max-width: ${breakpoints.medium}px) {
-    .logo-medium {
-      display: none;
-    }
-    .logo-small {
-      display: inline-block;
-      width: 100%;
-      height: auto;
-    }
-  }
-`
-
-const Pills = styled.div`
-  display: flex;
-  gap: 0.8rem;
-  padding: 0.8rem;
-  padding-bottom: 0;
-  @media (max-width: ${breakpoints.large}px) {
-    flex-direction: column;
-    align-items: center;
-  }
-  @media (max-width: ${breakpoints.medium}px) {
-    display: none;
-  }
-`
-
-const Buttons = styled.div`
-  display: none;
-  gap: 0.8rem;
-  padding: 0.8rem;
-  justify-content: center;
-
-  @media (max-width: ${breakpoints.medium}px) {
-    display: flex;
-  }
-
-  .icon-button,
-  .icon-button svg {
-    width: 1.6rem;
-    height: 1.6rem;
-  }
-`
-
-const Container = styled.aside`
-  width: 32rem;
-  overflow: hidden;
-  display: flex;
-  flex-direction: column;
-  justify-content: space-between;
-  align-items: flex-start;
-  background: var(--color-background-muted);
-  flex-shrink: 0;
-
-  .scrollable {
-    flex-grow: 1;
-    width: 100%;
-  }
-
-  nav {
-    width: 100%;
-    flex-grow: 1;
-    padding: 2.4rem;
-    display: flex;
-    flex-direction: column;
-    gap: 0.4rem;
-
-    .link {
-      border-radius: var(--border-radius);
-      background: rgb(var(--color-foreground-raw), 0);
-      width: 100%;
-      padding-left: 0.8;
-      padding-right: 0;
-
-      span:not(.icon) {
-        white-space: nowrap;
-        overflow: hidden;
-        text-overflow: ellipsis;
-        max-width: 100%;
-      }
-
-      &:hover {
-        background: rgb(var(--color-foreground-raw), 0.05);
-      }
-    }
-  }
-
-  // medium sidebar
-  @media (max-width: ${breakpoints.large}px) {
-    width: 17.2rem;
-    min-width: 17.2rem;
-
-    nav .link {
-      flex-direction: column;
-      gap: 0.6rem;
-      font-size: var(--font-size-xsmall);
-    }
-
-    // hide version pill in footer
-    .pill {
-      display: none;
-    }
-  }
-
-  // small sidebar
-  @media (max-width: ${breakpoints.medium}px) {
-    width: 7.4rem;
-    min-width: 7.4rem;
-
-    ${PaddedItem} {
-      padding: 0.8rem;
-    }
-    nav {
-      padding: 2.4rem 0.8rem;
-    }
-
-    .logo-container {
-      padding: 1.6rem;
-    }
-
-    nav .link span:last-child,
-    nav .link {
-      justify-content: center;
-      padding-left: 0;
-      padding-right: 0;
-      font-size: var(--font-size-normal);
-
-      > span:not(.icon) {
-        display: none;
-      }
-    }
-
-    ${Pills} {
-      display: none;
-    }
-  }
-`
-
+// show tooltip only on small screens
 const ResponsiveTooltip = ({
   tooltip,
+  className,
   children,
 }: {
+  className?: string
   tooltip?: ReactNode
   children?: ReactNode
-}) => {
-  // show tooltip only on small screens
-  const { width } = useWindowSize()
+}) => (
+  <Tooltip placement="right">
+    <TooltipTrigger asChild>
+      <div className={classNames("w-full", className)}>{children}</div>
+    </TooltipTrigger>
+    <TooltipContent className="rounded-xs text-body-secondary border-grey-700 z-20 border-[0.5px] bg-black p-3 text-xs shadow md:hidden">
+      {tooltip}
+    </TooltipContent>
+  </Tooltip>
+)
 
-  return width <= breakpoints.medium ? (
-    <WithTooltip tooltip={tooltip}>{children}</WithTooltip>
-  ) : (
-    <>{children}</>
+const SideBarNavItem: FC<
+  Omit<NavItemProps & { title: ReactNode; isExternalLink?: boolean }, "children">
+> = ({ title, isExternalLink, className, ...props }) => {
+  return (
+    <ResponsiveTooltip tooltip={title} className={className}>
+      <NavItem {...props} className="flex-col lg:flex-row" contentClassName="hidden md:block">
+        {isExternalLink ? (
+          <>
+            <span>{title}</span> <ExternalLinkIcon className="hidden lg:inline" />
+          </>
+        ) : (
+          <>{title}</>
+        )}
+      </NavItem>
+    </ResponsiveTooltip>
   )
 }
-
-const LargeScreenOnlyItem = ({ children }: { children?: ReactNode }) => {
-  // show children only on large screens
-  const { width } = useWindowSize()
-
-  return width > breakpoints.large ? <>{children}</> : null
-}
-
-const ExtLinkIcon = styled(({ className }: { className?: string }) => (
-  <span className={className}>
-    <ExternalLinkIcon />
-  </span>
-))`
-  display: inline-flex;
-  flex-direction: column;
-  justify-content: center;
-  vertical-align: text-top;
-`
 
 const SendPillButton: FC<PillButtonProps> = (props) => {
   const { account } = useSelectedAccount()
@@ -264,7 +79,7 @@ const SendPillButton: FC<PillButtonProps> = (props) => {
     <PillButton onClick={openSendFundsPopup} {...props} />
   ) : (
     <Tooltip placement="bottom-start">
-      <TooltipTrigger>
+      <TooltipTrigger asChild>
         <PillButton disabled {...props} />
       </TooltipTrigger>
       <TooltipContent>{cannotSendFundsReason}</TooltipContent>
@@ -280,7 +95,7 @@ const SendIconButton: FC<Omit<ButtonHTMLAttributes<HTMLButtonElement>, "ref">> =
     <IconButton onClick={openSendFundsPopup} {...props} />
   ) : (
     <Tooltip placement="bottom-start">
-      <TooltipTrigger>
+      <TooltipTrigger asChild>
         <IconButton disabled {...props} />
       </TooltipTrigger>
       <TooltipContent>{cannotSendFundsReason}</TooltipContent>
@@ -359,131 +174,108 @@ export const SideBar = () => {
   const { t } = useTranslation()
 
   return (
-    <Container>
-      <PaddedItem>
+    <div className="bg-grey-850 flex w-[7.4rem] shrink-0 flex-col overflow-hidden md:w-[17.2rem] lg:w-[32rem]">
+      <div className="p-4 md:p-12">
         <AccountSelect />
         {/* Pills for large screens */}
-        <Pills>
+        <div className="hidden flex-col items-center gap-4 p-4 pb-0 md:flex lg:flex-row">
           <SendPillButton className="!px-4" icon={PaperPlaneIcon}>
             {t("Send")}
           </SendPillButton>
           <PillButton className="!px-4" icon={ArrowDownIcon} onClick={handleCopyClick}>
             {t("Receive")}
           </PillButton>
-        </Pills>
+        </div>
         {/* Buttons for small screens */}
-        <Buttons>
-          <SendIconButton>
+        <div className="flex justify-center py-2 md:hidden">
+          <SendIconButton className="hover:bg-grey-800 rounded-xs p-4 !text-base">
             <PaperPlaneIcon />
           </SendIconButton>
-          <IconButton onClick={handleCopyClick}>
+          <IconButton
+            className="hover:bg-grey-800 rounded-xs p-2 !text-base"
+            onClick={handleCopyClick}
+          >
             <ArrowDownIcon />
           </IconButton>
-        </Buttons>
-      </PaddedItem>
-      <ScrollContainer className="scrollable">
-        <Nav column>
-          <NavItemLink
+        </div>
+      </div>
+      <ScrollContainer className="flex-grow">
+        <Nav className="gap-2 p-4 text-sm lg:p-12 lg:text-base">
+          <SideBarNavItem
+            title={t("Portfolio")}
             to="/portfolio"
             onClick={handlePortfolioClick}
-            icon={
-              <ResponsiveTooltip tooltip="Portfolio">
-                <UserIcon />
-              </ResponsiveTooltip>
-            }
-          >
-            {t("Portfolio")}
-          </NavItemLink>
+            icon={<UserIcon />}
+          />
           {showBuyCryptoButton && (
-            <NavItemButton
+            <SideBarNavItem
+              title={t("Buy Crypto")}
               onClick={handleBuyClick}
-              icon={
-                <ResponsiveTooltip tooltip="Buy Crypto">
-                  <CreditCardIcon />
-                </ResponsiveTooltip>
-              }
-            >
-              {t("Buy Crypto")}
-            </NavItemButton>
+              icon={<CreditCardIcon />}
+            />
           )}
-          <NavItemLink
+          <SideBarNavItem
+            title={t("Add Account")}
             to="/accounts/add"
             onClick={handleAddAccountClick}
-            icon={
-              <ResponsiveTooltip tooltip="Add Account">
-                <PlusIcon />
-              </ResponsiveTooltip>
-            }
-          >
-            {t("Add Account")}
-          </NavItemLink>
+            icon={<PlusIcon />}
+          />
+
           {showStaking && (
-            <NavItemButton
+            <SideBarNavItem
+              title={t("Staking")}
               onClick={handleStakingClick}
-              icon={
-                <ResponsiveTooltip tooltip="Staking">
-                  <ZapIcon />
-                </ResponsiveTooltip>
-              }
-            >
-              {t("Staking")} <ExtLinkIcon />
-            </NavItemButton>
+              isExternalLink
+              icon={<ZapIcon />}
+            />
           )}
-          <NavItemButton
+          <SideBarNavItem
+            title={t("NFTs")}
             onClick={handleNftsClick}
-            icon={
-              <ResponsiveTooltip tooltip="NFTs">
-                <ImageIcon />
-              </ResponsiveTooltip>
-            }
-          >
-            {t("NFTs")} <ExtLinkIcon />
-          </NavItemButton>
-          <NavItemButton
+            icon={<ImageIcon />}
+            isExternalLink
+          />
+          <SideBarNavItem
+            title={t("Crowdloans")}
             onClick={handleCrowdloansClick}
-            icon={
-              <ResponsiveTooltip tooltip="Crowdloans">
-                <StarIcon />
-              </ResponsiveTooltip>
-            }
-          >
-            {t("Crowdloans")} <ExtLinkIcon />
-          </NavItemButton>
+            icon={<StarIcon />}
+            isExternalLink
+          />
           {showTxHistory && (
-            <NavItemButton
+            <SideBarNavItem
+              title={t("Transaction History")}
               onClick={handleTxHistoryClick}
-              icon={
-                <ResponsiveTooltip tooltip="Transaction History">
-                  <ClockIcon />
-                </ResponsiveTooltip>
-              }
-            >
-              {t("Transaction History")} <ExtLinkIcon />
-            </NavItemButton>
+              icon={<ClockIcon />}
+              isExternalLink
+            />
           )}
-          <NavItemLink
+          <SideBarNavItem
+            title={t("Settings")}
             to="/settings"
             onClick={handleSettingsClick}
-            icon={
-              <ResponsiveTooltip tooltip="Settings">
-                <SettingsIcon />
-              </ResponsiveTooltip>
-            }
-          >
-            {t("Settings")}
-          </NavItemLink>
+            icon={<SettingsIcon />}
+          />
           {isSnoozed && (
-            <LargeScreenOnlyItem>
-              <NavItemButton onClick={handleBackupClick} icon={<DownloadAlertIcon />}>
-                {t("Backup Wallet")}
-              </NavItemButton>
-            </LargeScreenOnlyItem>
+            <SideBarNavItem
+              title={t("Backup Wallet")}
+              // show only on large screens
+              className="!hidden lg:!flex"
+              onClick={handleBackupClick}
+              icon={<DownloadAlertIcon />}
+            />
           )}
         </Nav>
       </ScrollContainer>
-      <PaddedItem className="logo-container">
-        <BrandLogo />
-      </PaddedItem>
-    </Container>
+      <footer className="flex w-full items-center justify-center p-8 md:p-12 lg:justify-between">
+        <a href="https://talisman.xyz" target="_blank">
+          <FullColorLogo className="hidden h-16 w-auto lg:block" />
+          <FullColorVerticalLogo className="hidden h-[7rem] w-auto md:block lg:hidden" />
+          <HandRedLogo className="h-auto w-full md:hidden" />
+        </a>
+        <div className="hidden lg:block">
+          <BuildVersionPill />
+        </div>
+      </footer>
+    </div>
   )
 }

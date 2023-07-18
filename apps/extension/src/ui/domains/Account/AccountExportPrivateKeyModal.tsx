@@ -1,6 +1,4 @@
 import { AccountJsonAny } from "@core/domains/accounts/types"
-import { Modal } from "@talisman/components/Modal"
-import { ModalDialog } from "@talisman/components/ModalDialog"
 import { notify } from "@talisman/components/Notifications"
 import { useOpenClose } from "@talisman/hooks/useOpenClose"
 import { CopyIcon, LoaderIcon } from "@talisman/theme/icons"
@@ -9,10 +7,12 @@ import { api } from "@ui/api"
 import { useSensitiveState } from "@ui/hooks/useSensitiveState"
 import { useCallback, useEffect, useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
+import { ModalDialog } from "talisman-ui"
+import { Modal } from "talisman-ui"
 import { Button } from "talisman-ui"
 
 import { useSelectedAccount } from "../Portfolio/SelectedAccountContext"
-import AccountAvatar from "./Avatar"
+import { AccountIcon } from "./AccountIcon"
 import { PasswordUnlock, usePasswordUnlock } from "./PasswordUnlock"
 
 const useAccountExportPrivateKeyModalProvider = () => {
@@ -122,7 +122,7 @@ const ExportPrivateKeyResult = ({ onClose }: { onClose?: () => void }) => {
       <div className="flex w-full grow flex-col justify-center gap-6 ">
         <div className="!text-body flex w-full items-center gap-4">
           <div>
-            <AccountAvatar address={account.address} className="!text-lg" />
+            <AccountIcon address={account.address} className="!text-lg" />
           </div>
           <div className="overflow-hidden text-ellipsis whitespace-nowrap"> {account.name}</div>
         </div>
@@ -166,8 +166,8 @@ export const AccountExportPrivateKeyModal = () => {
   const { isOpen, close } = useAccountExportPrivateKeyModal()
 
   return (
-    <Modal open={isOpen} onClose={close}>
-      <ModalDialog title="Export private key" onClose={close} className="w-[50.3rem]">
+    <Modal containerId="main" isOpen={isOpen} onDismiss={close}>
+      <ModalDialog title={t("Export private key")} onClose={close} className="w-[50.3rem]">
         <div className="h-[24.2rem]">
           <PasswordUnlock
             className="h-full"

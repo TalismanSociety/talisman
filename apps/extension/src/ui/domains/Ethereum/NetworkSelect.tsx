@@ -1,15 +1,9 @@
 import { CustomEvmNetwork, EvmNetwork, EvmNetworkId } from "@core/domains/ethereum/types"
-import { Dropdown } from "@talisman/components/Dropdown"
 import { useSortedEvmNetworks } from "@ui/hooks/useSortedEvmNetworks"
 import { useCallback, useEffect, useState } from "react"
-import styled from "styled-components"
+import { Dropdown } from "talisman-ui"
 
 import { NetworkLogo } from "./NetworkLogo"
-
-const NetworkItem = styled.div`
-  display: flex;
-  gap: 1rem;
-`
 
 type NetworkSelectProps = {
   placeholder?: string
@@ -22,10 +16,10 @@ type NetworkSelectProps = {
 
 const renderNetwork = (network: EvmNetwork | CustomEvmNetwork) => {
   return (
-    <NetworkItem>
-      <NetworkLogo ethChainId={network.id} />
+    <div className="flex items-center gap-5">
+      <NetworkLogo ethChainId={network.id} className="text-[1.25em]" />
       <span>{network.name}</span>
-    </NetworkItem>
+    </div>
   )
 }
 
@@ -64,11 +58,10 @@ export const NetworkSelect = ({
     <Dropdown
       // change key to ensure re-render when loaded
       placeholder={placeholder}
-      key={selected?.id}
       items={networks}
       propertyKey="id"
       renderItem={renderNetwork}
-      defaultSelectedItem={selected}
+      value={selected}
       onChange={handleChange}
       disabled={disabled}
       className={className}

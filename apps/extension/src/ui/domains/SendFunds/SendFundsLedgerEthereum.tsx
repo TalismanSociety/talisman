@@ -41,7 +41,7 @@ const SendFundsLedgerEthereum = () => {
     return (
       <Button
         disabled={!evmTransaction}
-        className="mt-12 w-full"
+        className="w-full"
         primary
         onClick={sendToLedger(true)}
         processing={signed}
@@ -60,7 +60,7 @@ const SendFundsLedgerEthereum = () => {
       onReject={sendToLedger(false)}
       onSignature={handleSigned}
       payload={evmTransaction.transaction}
-      parent="main"
+      containerId="main"
     />
   )
 }

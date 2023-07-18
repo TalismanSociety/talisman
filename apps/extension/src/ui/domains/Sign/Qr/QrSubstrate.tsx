@@ -3,7 +3,6 @@ import { AccountJsonQr } from "@core/domains/accounts/types"
 import { SignerPayloadJSON, SignerPayloadRaw } from "@core/domains/signing/types"
 import { isJsonPayload } from "@core/util/isJsonPayload"
 import { HexString } from "@polkadot/util/types"
-import { Drawer } from "@talisman/components/Drawer"
 import { InfoIcon, LoaderIcon, PolkadotVaultIcon } from "@talisman/theme/icons"
 import { ChevronLeftIcon } from "@talisman/theme/icons"
 import { Chain } from "@talismn/chaindata-provider"
@@ -13,7 +12,7 @@ import { ScanQr } from "@ui/domains/Sign/Qr/ScanQr"
 import useChainByGenesisHash from "@ui/hooks/useChainByGenesisHash"
 import { ReactElement, useState } from "react"
 import { Trans, useTranslation } from "react-i18next"
-import { Button, Tooltip, TooltipContent, TooltipTrigger } from "talisman-ui"
+import { Button, Drawer, Tooltip, TooltipContent, TooltipTrigger } from "talisman-ui"
 
 import { ExtrinsicQrCode } from "./ExtrinsicQrCode"
 import { MetadataQrCode } from "./MetadataQrCode"
@@ -52,7 +51,7 @@ interface Props {
   onSignature?: (result: { signature: `0x${string}` }) => void
   onReject: () => void
   payload: SignerPayloadJSON | SignerPayloadRaw
-  parent?: HTMLElement | string | null
+  containerId: string
   skipInit?: boolean
   narrowMargin?: boolean
 }
@@ -64,7 +63,7 @@ export const QrSubstrate = ({
   onSignature,
   onReject,
   payload,
-  parent,
+  containerId,
   // in the sign tx popup it makes sense to show an INIT state
   // in the send funds popup it does not
   skipInit = false,
@@ -147,10 +146,10 @@ export const QrSubstrate = ({
             setScanState={setScanState}
             reject={onReject}
             scanState={scanState}
-            parent={parent}
             qrCodeSource={qrCodeSource}
             qrCodeSourceSelectorState={qrCodeSourceSelectorState}
             chain={chain}
+            containerId={containerId}
           />
         )}
 
@@ -239,10 +238,10 @@ const SendPage = ({
   reject,
   setScanState,
   scanState,
-  parent,
   qrCodeSource,
   qrCodeSourceSelectorState,
   chain,
+  containerId,
 }: {
   account: AccountJsonQr
   genesisHash: string | undefined
@@ -250,10 +249,10 @@ const SendPage = ({
   reject: () => void
   setScanState: React.Dispatch<React.SetStateAction<ScanState>>
   scanState: SendScanState
-  parent: string | HTMLElement | null | undefined
   qrCodeSource: QrCodeSource | undefined
   qrCodeSourceSelectorState: QrCodeSourceSelectorProps
   chain: Chain | undefined
+  containerId: string
 }) => {
   const { t } = useTranslation("request")
   return (
@@ -305,7 +304,12 @@ const SendPage = ({
         )}
       </div>
 
-      <Drawer anchor="bottom" open={!qrCodeSource && !!chain} parent={parent} onClose={reject}>
+      <Drawer
+        anchor="bottom"
+        isOpen={!qrCodeSource && !!chain}
+        containerId={containerId}
+        onDismiss={reject}
+      >
         <div className="bg-black-tertiary flex flex-col items-center rounded-t p-12">
           <div className="mb-16 font-bold">{t("Unable to sign")}</div>
           <div className="text-body-secondary mb-16 max-w-md text-center text-sm leading-10">
@@ -333,9 +337,9 @@ const SendPage = ({
 
       <Drawer
         anchor="bottom"
-        open={!!scanState.showChainspecDrawer}
-        parent={parent}
-        onClose={() => setScanState({ page: "SEND" })}
+        isOpen={!!scanState.showChainspecDrawer}
+        containerId={containerId}
+        onDismiss={() => setScanState({ page: "SEND" })}
       >
         <div className="bg-black-tertiary flex flex-col items-center rounded-t p-12">
           <div className="mb-16 font-bold">{t("Add network")}</div>
@@ -386,9 +390,9 @@ const SendPage = ({
 
       <Drawer
         anchor="bottom"
-        open={!!scanState.showEnableNetwork}
-        parent={parent}
-        onClose={() => setScanState({ page: "SEND" })}
+        isOpen={!!scanState.showEnableNetwork}
+        containerId={containerId}
+        onDismiss={() => setScanState({ page: "SEND" })}
       >
         <div className="bg-black-tertiary flex max-h-full w-full flex-col items-center rounded-t p-12">
           <div className="mb-12 font-bold">{t("Enable network")}</div>
@@ -429,9 +433,9 @@ const SendPage = ({
 
       <Drawer
         anchor="bottom"
-        open={!!scanState.showUpdateMetadataDrawer}
-        parent={parent}
-        onClose={() => setScanState({ page: "SEND" })}
+        isOpen={!!scanState.showUpdateMetadataDrawer}
+        containerId={containerId}
+        onDismiss={() => setScanState({ page: "SEND" })}
       >
         <div className="bg-black-tertiary flex flex-col items-center rounded-t p-12">
           <PolkadotVaultIcon className="mb-10 h-auto w-16" />

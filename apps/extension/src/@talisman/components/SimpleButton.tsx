@@ -7,6 +7,8 @@ type ButtonAdditionalProps = {
   processing?: boolean
 }
 
+// TODO delete after onboarding v4
+
 /**
  * @deprecated Use Button from talisman-ui instead
  */

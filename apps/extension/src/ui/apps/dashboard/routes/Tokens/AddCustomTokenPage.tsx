@@ -1,13 +1,12 @@
 import { CustomErc20TokenCreate } from "@core/domains/tokens/types"
 import { yupResolver } from "@hookform/resolvers/yup"
 import { assert } from "@polkadot/util"
-import HeaderBlock from "@talisman/components/HeaderBlock"
+import { HeaderBlock } from "@talisman/components/HeaderBlock"
 import { LoaderIcon, PlusIcon } from "@talisman/theme/icons"
 import { EvmNetworkId } from "@talismn/chaindata-provider"
 import { classNames } from "@talismn/util"
 import { api } from "@ui/api"
 import { AnalyticsPage } from "@ui/api/analytics"
-import Layout from "@ui/apps/dashboard/layout"
 import { AssetLogoBase } from "@ui/domains/Asset/AssetLogo"
 import { NetworkSelect } from "@ui/domains/Ethereum/NetworkSelect"
 import { useAnalyticsPageView } from "@ui/hooks/useAnalyticsPageView"
@@ -19,6 +18,8 @@ import { useTranslation } from "react-i18next"
 import { useNavigate } from "react-router-dom"
 import { Button, FormFieldContainer, FormFieldInputText } from "talisman-ui"
 import * as yup from "yup"
+
+import { DashboardLayout } from "../../layout/DashboardLayout"
 
 type FormData = Pick<
   CustomErc20TokenCreate,
@@ -115,7 +116,7 @@ export const AddCustomTokenPage = () => {
   )
 
   return (
-    <Layout analytics={ANALYTICS_PAGE} withBack centered>
+    <DashboardLayout analytics={ANALYTICS_PAGE} withBack centered>
       <HeaderBlock
         title={t("Add custom token")}
         text={t(
@@ -196,6 +197,6 @@ export const AddCustomTokenPage = () => {
           </Button>
         </div>
       </form>
-    </Layout>
+    </DashboardLayout>
   )
 }

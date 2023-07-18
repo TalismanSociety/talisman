@@ -1,13 +1,13 @@
-import { Drawer } from "@talisman/components/Drawer"
 import { useOpenClose } from "@talisman/hooks/useOpenClose"
 import { AlertTriangleIcon, ChevronLeftIcon, LockIcon } from "@talisman/theme/icons"
 import { api } from "@ui/api"
 import { useAnalytics } from "@ui/hooks/useAnalytics"
 import { ChangeEventHandler, useCallback, useEffect, useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
+import { Drawer } from "talisman-ui"
 import { Button, FormFieldInputText } from "talisman-ui"
 
-import Layout, { Content, Footer } from "../Layout"
+import { PopupContent, PopupFooter, PopupLayout } from "../Layout/PopupLayout"
 
 const ConfirmDrawer = ({
   isOpen,
@@ -40,7 +40,7 @@ const ConfirmDrawer = ({
   const isMatch = useMemo(() => confirmText?.toLowerCase() === "reset wallet", [confirmText])
 
   return (
-    <Drawer open={isOpen} anchor="bottom">
+    <Drawer isOpen={isOpen} anchor="bottom">
       <div className="bg-grey-800 items-center rounded-t-xl p-12 pt-12">
         <div className="flex flex-col items-center gap-12 px-12 text-center">
           <div className="text-3xl">
@@ -90,7 +90,7 @@ export const ResetWallet = ({ closeResetWallet }: { closeResetWallet: () => void
   }, [popupOpenEvent])
 
   return (
-    <Layout>
+    <PopupLayout>
       <div className="text-body-secondary flex h-32 items-center justify-center px-12 pr-[16px]">
         <ChevronLeftIcon
           className="flex-shrink cursor-pointer text-lg hover:text-white"
@@ -98,7 +98,7 @@ export const ResetWallet = ({ closeResetWallet }: { closeResetWallet: () => void
         />
         <span className="flex-grow pr-[24px] text-center">{t("Reset Wallet")}</span>
       </div>
-      <Content>
+      <PopupContent>
         <div className="flex h-full flex-col items-center justify-end gap-16 pb-8">
           <LockIcon className="text-primary-500 text-[4.8rem]" />
           <div className="text-lg font-bold">{t("Forgot your password?")}</div>
@@ -115,16 +115,16 @@ export const ResetWallet = ({ closeResetWallet }: { closeResetWallet: () => void
             </p>
           </div>
         </div>
-      </Content>
-      <Footer className="flex flex-col gap-8">
+      </PopupContent>
+      <PopupFooter className="flex flex-col gap-8">
         <Button fullWidth primary onClick={open} className="h-24">
           {t("Reset Wallet")}
         </Button>
         <Button fullWidth onClick={closeResetWallet} className="h-24">
           {t("Cancel")}
         </Button>
-      </Footer>
+      </PopupFooter>
       <ConfirmDrawer isOpen={isOpen} closeResetWallet={closeResetWallet} />
-    </Layout>
+    </PopupLayout>
   )
 }

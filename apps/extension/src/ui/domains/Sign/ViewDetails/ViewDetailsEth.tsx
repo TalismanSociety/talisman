@@ -1,12 +1,8 @@
 import { BalanceFormatter } from "@core/domains/balances"
-import Button from "@talisman/components/Button"
-import { Drawer } from "@talisman/components/Drawer"
 import { notify } from "@talisman/components/Notifications"
 import { useOpenClose } from "@talisman/hooks/useOpenClose"
-import { CopyIcon, ExternalLinkIcon } from "@talisman/theme/icons"
-import { scrollbarsStyle } from "@talisman/theme/styles"
+import { CopyIcon } from "@talisman/theme/icons"
 import { formatDecimals } from "@talismn/util"
-import { Address } from "@ui/domains/Account/Address"
 import Fiat from "@ui/domains/Asset/Fiat"
 import Tokens from "@ui/domains/Asset/Tokens"
 import { useFeePriorityOptionsUI } from "@ui/domains/Ethereum/GasSettings/common"
@@ -18,11 +14,11 @@ import { BigNumber, BigNumberish } from "ethers"
 import { formatEther, formatUnits } from "ethers/lib/utils"
 import { FC, PropsWithChildren, ReactNode, useCallback, useEffect, useMemo } from "react"
 import { useTranslation } from "react-i18next"
-import styled from "styled-components"
-import { PillButton } from "talisman-ui"
+import { Button, Drawer, PillButton } from "talisman-ui"
 
 import { Message } from "../Message"
 import { useEthSignTransactionRequest } from "../SignRequestContext"
+import { ViewDetailsAddress } from "./ViewDetailsAddress"
 import { ViewDetailsField } from "./ViewDetailsField"
 
 const ViewDetailsGrid: FC<PropsWithChildren> = ({ children }) => (
@@ -36,80 +32,8 @@ const ViewDetailsGridRow: FC<{ left: ReactNode; right: ReactNode }> = ({ left, r
   </>
 )
 
-const ViewDetailsContainer = styled.div`
-  background: var(--color-background);
-  padding: 2.4rem;
-  border-radius: 2.4rem 2.4rem 0px 0px;
-  font-size: var(--font-size-small);
-  line-height: 2rem;
-  display: flex;
-  flex-direction: column;
-  max-height: 60rem;
-
-  .grow {
-    flex-grow: 1;
-    overflow-y: auto;
-    ${scrollbarsStyle()}
-  }
-
-  color: var(--color-foreground-muted-2x);
-  .title {
-    color: var(--color-mid);
-  }
-
-  .title {
-    margin-bottom: 1.6rem;
-  }
-
-  button {
-    margin-top: 2.4rem;
-    width: 100%;
-  }
-
-  .error {
-    color: var(--color-status-error);
-  }
-
-  .warning {
-    color: var(--color-status-warning);
-  }
-
-  a:link,
-  a:visited {
-    transition: none;
-    color: var(--color-foreground-muted-2x);
-  }
-  a:hover,
-  a:active {
-    color: var(--color-foreground);
-  }
-`
-
 type ViewDetailsContentProps = {
   onClose: () => void
-}
-
-const ViewDetailsAddress: FC<{ address?: string }> = ({ address }) => {
-  const { network } = useEthSignTransactionRequest()
-  const blockExplorerUrl = useMemo(() => network?.explorerUrl, [network?.explorerUrl])
-
-  if (!address) return null
-
-  if (!blockExplorerUrl) return <>{address}</>
-
-  return (
-    <a
-      className="inline-flex gap-2"
-      href={`${blockExplorerUrl}/address/${address}`}
-      target="_blank"
-      rel="noreferrer"
-    >
-      <Address address={address} startCharCount={8} endCharCount={8} />
-      <div className="flex-col-justify-center flex pb-1">
-        <ExternalLinkIcon className="transition-none" />
-      </div>
-    </a>
-  )
 }
 
 const Gwei: FC<{ value: BigNumberish | null | undefined }> = ({ value }) => {
@@ -199,9 +123,9 @@ const ViewDetailsContent: FC<ViewDetailsContentProps> = ({ onClose }) => {
   if (!request) return null
 
   return (
-    <ViewDetailsContainer>
-      <div className="grow">
-        <div className="title">{t("Details")}</div>
+    <div className="bg-grey-850 flex max-h-[60rem] w-full flex-col gap-12 p-12">
+      <div className="scrollable scrollable-700 flex-grow overflow-y-auto pr-4 text-sm leading-[2rem]">
+        <div className="text-body-secondary">{t("Details")}</div>
         {!!txInfo?.isContractCall && (
           <ViewDetailsField label={t("Contract type and method")}>
             {txInfo?.contractType
@@ -209,12 +133,16 @@ const ViewDetailsContent: FC<ViewDetailsContentProps> = ({ onClose }) => {
               : t("Unknown")}
           </ViewDetailsField>
         )}
-        <ViewDetailsField label={t("From")} breakAll>
-          <ViewDetailsAddress address={request.from} />
-        </ViewDetailsField>
-        <ViewDetailsField label={t("To")} breakAll>
-          {request.to ? <ViewDetailsAddress address={request.to} /> : t("N/A")}
-        </ViewDetailsField>
+        <ViewDetailsAddress
+          label={t("From")}
+          address={request.from}
+          blockExplorerUrl={network?.explorerUrl}
+        />
+        <ViewDetailsAddress
+          label={t("To")}
+          address={request.to}
+          blockExplorerUrl={network?.explorerUrl}
+        />
         <ViewDetailsField label={t("Value to be transferred")} breakAll>
           {formatEthValue(request.value)}
         </ViewDetailsField>
@@ -368,7 +296,7 @@ const ViewDetailsContent: FC<ViewDetailsContentProps> = ({ onClose }) => {
       <Button className="shrink-0" onClick={onClose}>
         {t("Close")}
       </Button>
-    </ViewDetailsContainer>
+    </div>
   )
 }
 
@@ -382,7 +310,7 @@ export const ViewDetailsEth = () => {
       <PillButton size="sm" onClick={open}>
         {t("View Details")}
       </PillButton>
-      <Drawer anchor="bottom" open={isOpen && !isLoading} onClose={close}>
+      <Drawer anchor="bottom" containerId="main" isOpen={isOpen && !isLoading} onDismiss={close}>
         <ViewDetailsContent onClose={close} />
       </Drawer>
     </>

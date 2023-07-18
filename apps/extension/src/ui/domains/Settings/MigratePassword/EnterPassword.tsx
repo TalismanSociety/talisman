@@ -1,9 +1,9 @@
 import { yupResolver } from "@hookform/resolvers/yup"
-import { ModalDialog } from "@talisman/components/ModalDialog"
 import { api } from "@ui/api"
 import { useCallback } from "react"
 import { useForm } from "react-hook-form"
 import { Trans, useTranslation } from "react-i18next"
+import { ModalDialog } from "talisman-ui"
 import { Button, FormFieldContainer, FormFieldInputText } from "talisman-ui"
 import * as yup from "yup"
 

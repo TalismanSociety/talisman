@@ -2,47 +2,7 @@ import { DEBUG } from "@core/constants"
 import { ErrorBoundary as SentryErrorBoundary } from "@sentry/react"
 import STATIC from "@talisman/theme/images/hand_open_static_dark.gif"
 import { FC, ReactNode, useCallback } from "react"
-import styled from "styled-components"
 import { Button } from "talisman-ui"
-
-const ErrorContainer = styled.section`
-  display: flex;
-  align-items: center;
-  height: 100%;
-  width: 100%;
-  min-width: 36rem;
-  min-height: 48rem;
-  justify-content: center;
-  color: var(--color-mid);
-  text-align: center;
-
-  section {
-    padding: 2rem;
-    width: 36rem;
-    height: 48rem;
-    display: flex;
-    flex-direction: column;
-
-    .content {
-      flex-grow: 1;
-      display: flex;
-      flex-direction: column;
-      justify-content: center;
-
-      h1 {
-        font-size: 4.2rem;
-        font-weight: var(--font-weight-bold);
-        margin: 0;
-      }
-      img {
-        width: 26rem;
-      }
-      p {
-        margin-bottom: 2rem;
-      }
-    }
-  }
-`
 
 const ErrorMessage: FC<{ error: Error }> = ({ error }) => {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -60,31 +20,29 @@ const ErrorMessage: FC<{ error: Error }> = ({ error }) => {
   }, [])
 
   return (
-    <ErrorContainer>
-      <section>
-        <div className="content">
-          <h1>Oops !</h1>
-          <div>
-            <img className="inline-block" src={STATIC} alt="Talisman Hand logo" />
-          </div>
-          {isDbVersionError ? (
-            <p>Invalid database version.</p>
-          ) : (
-            <p>Sorry, an error occured in Talisman.</p>
-          )}
+    <section className="max-w-screen  text-body-secondary mx-auto flex h-[60rem] max-h-screen w-[40rem] flex-col overflow-hidden p-10 text-center">
+      <div className="flex flex-grow flex-col justify-center">
+        <h1 className="m-0 text-3xl font-bold">Oops !</h1>
+        <div>
+          <img className="inline-block" src={STATIC} alt="Talisman Hand logo" />
         </div>
-        <div className="space-y-4">
-          {DEBUG && isDbVersionError && (
-            <Button className="w-full" onClick={clearDatabases}>
-              Clear local databases
-            </Button>
-          )}
-          <Button className="!w-full" primary onClick={() => window.close()}>
-            Close
+        {isDbVersionError ? (
+          <p>Invalid database version.</p>
+        ) : (
+          <p>Sorry, an error occured in Talisman.</p>
+        )}
+      </div>
+      <div className="flex w-full shrink-0 flex-col gap-4">
+        {DEBUG && isDbVersionError && (
+          <Button className="w-full" onClick={clearDatabases}>
+            Clear local databases
           </Button>
-        </div>
-      </section>
-    </ErrorContainer>
+        )}
+        <Button className="!w-full" primary onClick={() => window.close()}>
+          Close
+        </Button>
+      </div>
+    </section>
   )
 }
 

@@ -4,12 +4,12 @@ import { log } from "@core/log"
 import { bufferToHex, isHexString, stripHexPrefix } from "@ethereumjs/util"
 import LedgerEthereumApp from "@ledgerhq/hw-app-eth"
 import { SignTypedDataVersion, TypedDataUtils } from "@metamask/eth-sig-util"
-import { Drawer } from "@talisman/components/Drawer"
 import { classNames } from "@talismn/util"
 import { useLedgerEthereum } from "@ui/hooks/ledger/useLedgerEthereum"
 import { ethers } from "ethers"
 import { FC, useCallback, useEffect, useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
+import { Drawer } from "talisman-ui"
 import { Button } from "talisman-ui"
 
 import {
@@ -33,7 +33,7 @@ type LedgerEthereumProps = {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   payload: any // string message, typed object for eip712, TransactionRequest for tx
   manualSend?: boolean // requests user to click a button to send the payload to the ledger
-  parent?: HTMLElement | string | null
+  containerId?: string
   onSignature?: (result: { signature: `0x${string}` }) => void
   onReject: () => void
   onSendToLedger?: () => void // triggered when tx is sent to the ledger
@@ -140,7 +140,7 @@ const LedgerEthereum: FC<LedgerEthereumProps> = ({
   method,
   payload,
   manualSend,
-  parent,
+  containerId,
   onSendToLedger,
   onSignature,
   onReject,
@@ -246,7 +246,7 @@ const LedgerEthereum: FC<LedgerEthereumProps> = ({
         {t("Cancel")}
       </Button>
       {error && (
-        <Drawer anchor="bottom" open={true} parent={parent}>
+        <Drawer anchor="bottom" isOpen containerId={containerId}>
           {/* Shouldn't be a LedgerSigningStatus, just an error message */}
           <LedgerSigningStatus
             message={error ? error : ""}

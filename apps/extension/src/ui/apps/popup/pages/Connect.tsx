@@ -1,9 +1,8 @@
 import { KnownRequestIdOnly } from "@core/libs/requests/types"
 import { AppPill } from "@talisman/components/AppPill"
-import { IconButton } from "@talisman/components/IconButton"
 import { notify } from "@talisman/components/Notifications"
 import useSet from "@talisman/hooks/useSet"
-import { InfoIcon, XIcon } from "@talisman/theme/icons"
+import { InfoIcon } from "@talisman/theme/icons"
 import { api } from "@ui/api"
 import { ConnectAccountToggleButton } from "@ui/domains/Site/ConnectAccountToggleButton"
 import useAccounts from "@ui/hooks/useAccounts"
@@ -15,7 +14,7 @@ import { useParams } from "react-router-dom"
 import { Button, Drawer, Tooltip, TooltipContent, TooltipTrigger } from "talisman-ui"
 import { Checkbox } from "talisman-ui"
 
-import Layout, { Content, Footer, Header } from "../Layout"
+import { PopupContent, PopupFooter, PopupHeader, PopupLayout } from "../Layout/PopupLayout"
 
 const NoEthAccountWarning = ({
   onIgnoreClick,
@@ -85,7 +84,6 @@ export const Connect: FC<{ className?: string }> = ({ className }) => {
     () => ethereum && !!allAccounts.length && !accounts.length,
     [accounts.length, allAccounts.length, ethereum]
   )
-  const canIgnore = useMemo(() => !authRequest?.request?.ethereum, [authRequest])
 
   const authorise = useCallback(async () => {
     if (!authRequest) return
@@ -139,17 +137,12 @@ export const Connect: FC<{ className?: string }> = ({ className }) => {
   if (!authRequest) return null
 
   return (
-    <Layout className={className}>
-      <Header
-        text={<AppPill url={authRequest.url} />}
-        nav={
-          <IconButton onClick={canIgnore ? ignore : reject}>
-            <XIcon />
-          </IconButton>
-        }
-      />
+    <PopupLayout className={className}>
+      <PopupHeader>
+        <AppPill url={authRequest.url} />
+      </PopupHeader>
 
-      <Content>
+      <PopupContent>
         <h3 className="mb-12 mt-0 pt-10 text-center text-sm font-bold">
           {ethereum
             ? t("Choose the account you'd like to connect")
@@ -184,15 +177,15 @@ export const Connect: FC<{ className?: string }> = ({ className }) => {
             />
           )}
         </section>
-      </Content>
-      <Footer>
+      </PopupContent>
+      <PopupFooter>
         <div className="grid w-full grid-cols-2 gap-12">
           <Button onClick={reject}>{t("Reject")}</Button>
           <Button primary onClick={authorise} disabled={connected.length <= 0}>
             {t("Connect")} {connected.length > 0 && connected.length}
           </Button>
         </div>
-      </Footer>
-    </Layout>
+      </PopupFooter>
+    </PopupLayout>
   )
 }

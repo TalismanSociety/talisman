@@ -4,11 +4,11 @@ import { useSelectedAccount } from "@ui/domains/Portfolio/SelectedAccountContext
 import { useEffect } from "react"
 import { Route, Routes, useSearchParams } from "react-router-dom"
 
-import Layout from "../../layout"
+import { DashboardLayout } from "../../layout/DashboardLayout"
 import { PortfolioAsset } from "./PortfolioAsset"
 import { PortfolioAssets } from "./PortfolioAssets"
 
-export const Portfolio = () => {
+export const PortfolioRoutes = () => {
   // popup may pass an account in the query string, with expand button
   const { select } = useSelectedAccount()
   const [searchParams, updateSearchParams] = useSearchParams()
@@ -24,7 +24,7 @@ export const Portfolio = () => {
 
   return (
     // share layout to prevent sidebar flickering when navigating between the 2 pages
-    <Layout centered large>
+    <DashboardLayout centered large>
       <PortfolioProvider>
         <NomPoolStakingBannerProvider>
           <Routes>
@@ -35,6 +35,6 @@ export const Portfolio = () => {
           </Routes>
         </NomPoolStakingBannerProvider>
       </PortfolioProvider>
-    </Layout>
+    </DashboardLayout>
   )
 }
