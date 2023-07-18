@@ -167,8 +167,11 @@ const removeFolder = (tree: Tree, { id }: RemoveFolderAction) => {
   return true
 }
 
+/** Filters an array of `TreeItem` (accounts and folders) into an array of just `TreeAccount` */
+export const accountFilter = (item: TreeItem): item is TreeAccount => item.type === "account"
+
 /** Filters an array of `TreeItem` (accounts and folders) into an array of just `TreeFolder` */
-const folderFilter = (item: TreeItem): item is TreeFolder => item.type === "folder"
+export const folderFilter = (item: TreeItem): item is TreeFolder => item.type === "folder"
 
 /** Given a tree and a `MoveBeforeTarget`, finds the index of the target in the tree */
 const findBeforeItemIndex = (tree: Tree, beforeItem: MoveBeforeTarget) => {
