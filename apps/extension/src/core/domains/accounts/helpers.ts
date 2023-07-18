@@ -126,10 +126,11 @@ export const filterAccountsByAddresses =
 
 export const getPublicAccounts = (
   accounts: SingleAddress[],
-  filterFn: (accounts: SingleAddress[]) => SingleAddress[] = (accounts) => accounts
+  filterFn: (accounts: SingleAddress[]) => SingleAddress[] = (accounts) => accounts,
+  options = { includeWatchedAccounts: false }
 ) =>
   filterFn(accounts)
-    .filter((a) => a.json.meta.origin !== "WATCHED")
+    .filter((a) => options.includeWatchedAccounts || a.json.meta.origin !== AccountTypes.WATCHED)
     .sort((a, b) => (a.json.meta.whenCreated || 0) - (b.json.meta.whenCreated || 0))
     .map(getInjectedAccount)
 
