@@ -12,12 +12,13 @@ import type {
   RequestAccountExternalSetIsPortfolio,
   RequestAccountForget,
   RequestAccountRename,
+  RequestAccountsCatalogMutate,
   ResponseAccountExport,
 } from "@core/domains/accounts/types"
 import { AccountTypes } from "@core/domains/accounts/types"
 import { getEthDerivationPath } from "@core/domains/ethereum/helpers"
 import { getPairForAddressSafely } from "@core/handlers/helpers"
-import { genericSubscription } from "@core/handlers/subscriptions"
+import { genericAsyncSubscription } from "@core/handlers/subscriptions"
 import { talismanAnalytics } from "@core/libs/Analytics"
 import { ExtensionHandler } from "@core/libs/Handler"
 import type { MessageTypes, RequestTypes, ResponseType } from "@core/types"
@@ -34,6 +35,9 @@ import {
 } from "@polkadot/util-crypto"
 import { addressFromMnemonic } from "@talisman/util/addressFromMnemonic"
 import { decodeAnyAddress, encodeAnyAddress, sleep } from "@talismn/util"
+import { combineLatest } from "rxjs"
+
+import { AccountsCatalogData, emptyCatalog } from "./store.catalog"
 
 export default class AccountsHandler extends ExtensionHandler {
   // we can only create a new account if we have an existing stored seed
@@ -320,6 +324,9 @@ export default class AccountsHandler extends ExtensionHandler {
     // remove associated authorizations
     this.stores.sites.forgetAccount(address)
 
+    // remove from accounts catalog store (sorting, folders, hiding)
+    this.stores.accountsCatalog.removeAccounts([address])
+
     return true
   }
 
@@ -400,12 +407,32 @@ export default class AccountsHandler extends ExtensionHandler {
   }
 
   private accountsSubscribe(id: string, port: Port) {
-    return genericSubscription<"pri(accounts.subscribe)">(
+    return genericAsyncSubscription<"pri(accounts.subscribe)">(
       id,
       port,
-      keyring.accounts.subject,
-      sortAccounts
+      // make sure the sort order is updated when the catalog changes
+      combineLatest([keyring.accounts.subject, this.stores.accountsCatalog.observable]),
+      ([accounts]) => sortAccounts(this.stores.accountsCatalog)(accounts)
     )
+  }
+
+  private accountsCatalogSubscribe(id: string, port: Port) {
+    return genericAsyncSubscription<"pri(accounts.catalog.subscribe)">(
+      id,
+      port,
+      // make sure the list of accounts in the catalog is updated when the keyring changes
+      combineLatest([keyring.accounts.subject, this.stores.accountsCatalog.observable]),
+      async ([, catalog]): Promise<AccountsCatalogData> =>
+        // on first start-up, the store (loaded from localstorage) will be empty
+        //
+        // when this happens, instead of sending `{}` or `undefined` to the frontend,
+        // we'll send an empty catalog of the correct type `AccountsCatalogData`
+        Object.keys(catalog).length === 0 ? emptyCatalog : catalog
+    )
+  }
+
+  private accountsCatalogMutate(mutations: RequestAccountsCatalogMutate[]) {
+    return this.stores.accountsCatalog.executeCatalogMutations(mutations)
   }
 
   private accountValidateMnemonic(mnemonic: string): boolean {
@@ -454,6 +481,10 @@ export default class AccountsHandler extends ExtensionHandler {
         return this.accountRename(request as RequestAccountRename)
       case "pri(accounts.subscribe)":
         return this.accountsSubscribe(id, port)
+      case "pri(accounts.catalog.subscribe)":
+        return this.accountsCatalogSubscribe(id, port)
+      case "pri(accounts.catalog.mutate)":
+        return this.accountsCatalogMutate(request as RequestAccountsCatalogMutate[])
       case "pri(accounts.validateMnemonic)":
         return this.accountValidateMnemonic(request as string)
       case "pri(accounts.setVerifierCertMnemonic)":

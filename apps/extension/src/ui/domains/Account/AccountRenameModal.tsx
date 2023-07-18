@@ -1,20 +1,33 @@
+import { AccountJsonAny } from "@core/domains/accounts/types"
 import { Modal } from "@talisman/components/Modal"
 import { ModalDialog } from "@talisman/components/ModalDialog"
 import { useOpenClose } from "@talisman/hooks/useOpenClose"
 import { provideContext } from "@talisman/util/provideContext"
 import { useSelectedAccount } from "@ui/domains/Portfolio/SelectedAccountContext"
-import { useEffect } from "react"
+import { useCallback, useEffect, useState } from "react"
 import { useTranslation } from "react-i18next"
 
 import AccountRename from "./Rename"
 
 const useAccountRenameModalProvider = () => {
-  const { account } = useSelectedAccount()
-  const { isOpen, open, close } = useOpenClose()
+  const [_account, setAccount] = useState<AccountJsonAny>()
+
+  const { account: selectedAccount } = useSelectedAccount()
+  const { isOpen, open: innerOpen, close } = useOpenClose()
+
+  const open = useCallback(
+    (account?: AccountJsonAny) => {
+      setAccount(account)
+      innerOpen()
+    },
+    [innerOpen]
+  )
 
   useEffect(() => {
     close()
-  }, [account, close])
+  }, [selectedAccount, close])
+
+  const account = _account ?? selectedAccount
 
   return {
     account,
@@ -37,7 +50,7 @@ export const AccountRenameModal = () => {
     <Modal open={isOpen}>
       <ModalDialog title={t("Rename account")} onClose={close}>
         {account?.address ? (
-          <AccountRename address={account?.address} onConfirm={close} onCancel={close} />
+          <AccountRename address={account.address} onConfirm={close} onCancel={close} />
         ) : null}
       </ModalDialog>
     </Modal>

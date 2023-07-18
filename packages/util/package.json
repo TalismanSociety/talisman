@@ -26,7 +26,8 @@
     "clean": "rm -rf dist && rm -rf .turbo rm -rf node_modules"
   },
   "dependencies": {
-    "bignumber.js": "^9.1.1"
+    "bignumber.js": "^9.1.1",
+    "tailwind-merge": "^1.13.2"
   },
   "devDependencies": {
     "@polkadot/keyring": "^12.2.1",

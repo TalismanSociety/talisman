@@ -1,111 +1,151 @@
-import { IconButton } from "@talisman/components/IconButton"
-import { EyeIcon, EyeOffIcon } from "@talisman/theme/icons"
-import Asset from "@ui/domains/Asset"
+import {
+  ArrowDownIcon,
+  ChevronRightIcon,
+  CreditCardIcon,
+  EyeIcon,
+  EyeOffIcon,
+  PaperPlaneIcon,
+} from "@talisman/theme/icons"
+import { classNames } from "@talismn/util"
+import { api } from "@ui/api"
+import { AnalyticsEventName, AnalyticsPage, sendAnalyticsEvent } from "@ui/api/analytics"
+import { Fiat } from "@ui/domains/Asset/Fiat"
+import { useCopyAddressModal } from "@ui/domains/CopyAddress"
 import { useAnalytics } from "@ui/hooks/useAnalytics"
 import useBalances from "@ui/hooks/useBalances"
+import { useIsFeatureEnabled } from "@ui/hooks/useFeatures"
 import { useSetting } from "@ui/hooks/useSettings"
-import { FC, useCallback } from "react"
+import { ComponentProps, MouseEventHandler, useCallback, useMemo } from "react"
 import { useTranslation } from "react-i18next"
-import styled from "styled-components"
+import { PillButton } from "talisman-ui"
 
-const ToggleHide = styled(IconButton).attrs((props: { showIcon?: boolean }) => ({
-  showIcon: !!props.showIcon,
-}))`
-  position: absolute;
-  top: 0;
-  left: 0.5rem;
-  display: ${({ showIcon }) => (showIcon ? "inline-block" : "none")};
-  font-size: 1.6rem;
-  width: 2rem;
-  height: 2rem;
-`
-const Container = styled.div`
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
+type Props = {
+  className?: string
+  mouseOver: boolean
+}
 
-  span {
-    font-size: var(--font-size-large);
-    font-weight: var(--font-weight-bold);
-  }
-
-  &:hover {
-    ${ToggleHide} {
-      display: inline-block;
-    }
-  }
-
-  .fiat {
-    width: 65%;
-    text-align: center;
-  }
-
-  .balance-revealable {
-    border-radius: 10px;
-  }
-  .balance-revealable::after {
-    border-radius: 10px;
-  }
-`
-
-const TitleRow = styled.div`
-  width: 100%;
-  display: flex;
-  justify-content: center;
-  margin-bottom: 1rem;
-  align-items: center;
-`
-
-const Title = styled.h3`
-  font-size: var(--font-size-small);
-  color: var(--color-mid);
-  margin: 0;
-`
-
-const Side = styled.div`
-  position: relative;
-  font-size: 1.4rem;
-  flex-grow: 0.5;
-  height: 2rem;
-`
-
-// force height to prevent flickering
-const TotalFiat = styled.div`
-  height: 2.9rem;
-
-  span {
-    display: inline-block;
-    min-width: 15rem;
-  }
-`
-
-export const TotalFiatBalance: FC<{ className?: string }> = ({ className }) => {
+export const TotalFiatBalance = ({ className, mouseOver }: Props) => {
   const { t } = useTranslation()
+
   const balances = useBalances("portfolio")
 
   const [hideBalances, setHideBalances] = useSetting("hideBalances")
   const { genericEvent } = useAnalytics()
 
-  const toggleHideBalance = useCallback(() => {
-    genericEvent("toggle hide balance")
-    setHideBalances((prev) => !prev)
-  }, [genericEvent, setHideBalances])
+  const toggleHideBalance: MouseEventHandler<HTMLButtonElement> = useCallback(
+    (event) => {
+      event.stopPropagation()
+      genericEvent("toggle hide balance")
+      setHideBalances((prev) => !prev)
+    },
+    [genericEvent, setHideBalances]
+  )
 
   return (
-    <Container className={className}>
-      <TitleRow>
-        <Side></Side>
-        <Title>{t("Total Portfolio")}</Title>
-        <Side>
-          <ToggleHide showIcon={hideBalances} onClick={toggleHideBalance}>
+    <div className={classNames(className, "flex w-full items-center")}>
+      <div className="flex flex-grow flex-col items-start gap-4">
+        <div className="text-body-secondary mt-2 flex gap-2 text-sm">
+          <span>{t("Total Portfolio")}</span>
+          <button
+            className={classNames(
+              "hover:text-body focus:text-body opacity-0 transition-[color,opacity]",
+              (hideBalances || mouseOver) && "opacity-100"
+            )}
+            onClick={toggleHideBalance}
+          >
             {hideBalances ? <EyeIcon /> : <EyeOffIcon />}
-          </ToggleHide>
-        </Side>
-      </TitleRow>
-      <TotalFiat>
-        <Asset.Fiat amount={balances?.sum.fiat("usd").total} currency="usd" isBalance />
-      </TotalFiat>
-    </Container>
+          </button>
+        </div>
+        <Fiat
+          className="font-surtExpanded text-lg"
+          amount={balances.sum.fiat("usd").total}
+          currency="usd"
+          isBalance
+        />
+        <TopActions />
+      </div>
+      <ChevronRightIcon
+        className={classNames("text-body-secondary text-lg", mouseOver && "!text-body")}
+      />
+    </div>
+  )
+}
+
+const ANALYTICS_PAGE: AnalyticsPage = {
+  container: "Popup",
+  feature: "Porfolio",
+  featureVersion: 2,
+  page: "Portfolio Home",
+}
+
+const TopActions = () => {
+  const { t } = useTranslation()
+  const { open: openCopyAddressModal } = useCopyAddressModal()
+  const canBuy = useIsFeatureEnabled("BUY_CRYPTO")
+
+  const topActions = useMemo(() => {
+    const topActions: Array<{
+      analyticsName: AnalyticsEventName
+      analyticsAction?: string
+      label: string
+      icon: ComponentProps<typeof PillButton>["icon"]
+      action: () => void
+    }> = [
+      {
+        analyticsName: "Goto",
+        analyticsAction: "open receive",
+        label: t("Receive"),
+        icon: ArrowDownIcon,
+        action: () => openCopyAddressModal({ mode: "receive" }),
+      },
+      {
+        analyticsName: "Goto",
+        analyticsAction: "Send Funds button",
+        label: t("Send"),
+        icon: PaperPlaneIcon,
+        action: () => api.sendFundsOpen().then(() => window.close()),
+      },
+    ]
+    if (canBuy)
+      topActions.push({
+        analyticsName: "Goto",
+        analyticsAction: "Buy Crypto button",
+        label: t("Buy"),
+        icon: CreditCardIcon,
+        action: () => api.modalOpen({ modalType: "buy" }).then(() => window.close()),
+      })
+    return topActions
+  }, [canBuy, openCopyAddressModal, t])
+
+  const handleClicks = useMemo(
+    () =>
+      topActions.map(
+        (topAction): MouseEventHandler<HTMLButtonElement> =>
+          (event) => {
+            event.stopPropagation()
+            sendAnalyticsEvent({
+              ...ANALYTICS_PAGE,
+              name: topAction.analyticsName,
+              action: topAction.analyticsAction,
+            })
+            topAction.action()
+          }
+      ),
+    [topActions]
+  )
+
+  return (
+    <div className="flex justify-center gap-4">
+      {topActions.map((action, index) => (
+        <PillButton
+          key={index}
+          className="bg-opacity-50"
+          onClick={handleClicks[index]}
+          icon={action.icon}
+        >
+          {action.label}
+        </PillButton>
+      ))}
+    </div>
   )
 }

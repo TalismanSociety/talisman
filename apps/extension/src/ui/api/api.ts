@@ -111,6 +111,10 @@ export const api: MessageTypes = {
       isPortfolio,
     }),
   accountsSubscribe: (cb) => messageService.subscribe("pri(accounts.subscribe)", null, cb),
+  accountsCatalogSubscribe: (cb) =>
+    messageService.subscribe("pri(accounts.catalog.subscribe)", null, cb),
+  accountsCatalogMutate: (mutations) =>
+    messageService.sendMessage("pri(accounts.catalog.mutate)", mutations),
   accountForget: (address) => messageService.sendMessage("pri(accounts.forget)", { address }),
   accountExport: (address, password, exportPw) =>
     messageService.sendMessage("pri(accounts.export)", { address, password, exportPw }),

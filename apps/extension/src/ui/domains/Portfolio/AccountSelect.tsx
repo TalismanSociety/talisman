@@ -1,378 +1,360 @@
-import { AccountType } from "@core/domains/accounts/types"
+import { TreeItem } from "@core/domains/accounts/store.catalog"
+import { AccountType, AccountsCatalogTree } from "@core/domains/accounts/types"
+import { FloatingPortal, autoUpdate, useFloating } from "@floating-ui/react"
+import { Listbox } from "@headlessui/react"
 import { isEthereumAddress } from "@polkadot/util-crypto"
-import { breakpoints } from "@talisman/theme/definitions"
-import { AllAccountsIcon, ChevronDownIcon, EyeIcon, TalismanHandIcon } from "@talisman/theme/icons"
-import { scrollbarsStyle } from "@talisman/theme/styles"
-import { shortenAddress } from "@talisman/util/shortenAddress"
+import { ChevronDownIcon, EyeIcon, TalismanHandIcon } from "@talisman/theme/icons"
+import { Balance, Balances } from "@talismn/balances"
 import { classNames } from "@talismn/util"
+import { AccountFolderIcon } from "@ui/domains/Account/AccountFolderIcon"
+import { AccountIcon } from "@ui/domains/Account/AccountIcon"
+import { AccountTypeIcon } from "@ui/domains/Account/AccountTypeIcon"
+import { AllAccountsIcon } from "@ui/domains/Account/AllAccountsIcon"
 import Fiat from "@ui/domains/Asset/Fiat"
 import { useSelectedAccount } from "@ui/domains/Portfolio/SelectedAccountContext"
+import useAccountsCatalog from "@ui/hooks/useAccountsCatalog"
 import { useAnalytics } from "@ui/hooks/useAnalytics"
 import useBalances from "@ui/hooks/useBalances"
-import useBalancesByAddress from "@ui/hooks/useBalancesByAddress"
-import { UseSelectStateChange, useSelect } from "downshift"
-import { Fragment, useCallback, useMemo } from "react"
+import { forwardRef, useCallback, useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
-import styled, { css } from "styled-components"
 
-import { AccountIcon } from "../Account/AccountIcon"
-import { AccountTypeIcon } from "../Account/AccountTypeIcon"
-
-const Button = styled.button`
-  background: none;
-  border: none;
-  width: 100%;
-  overflow: hidden;
-  text-align: left;
-  cursor: pointer;
-  border-radius: var(--border-radius);
-  padding: 0;
-
-  :hover {
-    background-color: var(--color-background-muted-3x);
-  }
-
-  display: flex;
-  align-items: center;
-  .chevron {
-    font-size: 2.4rem;
-    color: var(--color-mid);
-    margin-right: 1.6rem;
-  }
-  :hover .chevron {
-    color: var(--color-foreground-muted);
-  }
-`
-
-const AccountOptionContainer = styled.div`
-  display: flex;
-  align-items: center;
-  gap: 0.8rem;
-  padding: 1rem;
-  width: 100%;
-  overflow: hidden;
-  color: var(--color-mid);
-
-  .ao-avatar {
-    flex-shrink: 0;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    .account-avatar {
-      font-size: 4rem;
+type AccountSelectItem =
+  | {
+      type: "account"
+      key: string
+      folderId?: string
+      name: string
+      address: string
+      total?: number
+      genesisHash?: string | null
+      origin?: AccountType
+      isPortfolio?: boolean
     }
-  }
-  .ao-rows {
-    display: flex;
-    flex-grow: 1;
-    flex-direction: column;
-    justify-content: center;
-    overflow: hidden;
-    gap: 0.4rem;
-
-    .ao-rowName,
-    .ao-rowFiat {
-      font-size: 1.4rem;
-      overflow: hidden;
-
-      white-space: nowrap;
-      overflow: hidden;
-      width: 100%;
-      text-overflow: ellipsis;
+  | {
+      type: "folder"
+      key: string
+      treeName: AccountsCatalogTree
+      id: string
+      name: string
+      color: string
+      total?: number
+      addresses: string[]
     }
-    .ao-rowFiat {
-      font-size: 1.6rem;
-    }
-  }
+type AccountSelectFolderItem = AccountSelectItem & { type: "folder" }
 
-  :hover {
-    color: var(--color-foreground-muted);
-  }
-`
-
-const RESPONSIVE_CONTAINER_STYLE = css`
-  // medium sidebar
-  @media (max-width: ${breakpoints.large}px) {
-    .chevron {
-      display: none;
-    }
-    ${Button} > div {
-      align-items: center;
-      flex-direction: column;
-      gap: 0.8rem;
-    }
-
-    &.open ${Button} {
-      border-bottom-left-radius: var(--border-radius);
-      border-bottom-right-radius: var(--border-radius);
-    }
-
-    > ul {
-      position: fixed;
-      border-top-left-radius: var(--border-radius);
-      border-top-right-radius: var(--border-radius);
-      max-width: 24rem;
-      top: 14rem;
-      left: 2.4rem;
-    }
-
-    ${Button} .ao-rows {
-      width: 100%;
-      align-items: center;
-      text-align: center;
-    }
-    ${Button} .ao-rows .ao-rowName {
-      justify-content: center;
-    }
-
-    &.open > ul {
-      border: 0.02rem solid var(--color-background-muted-3x);
-      .current {
-        border-bottom: 0.02rem solid var(--color-background-muted-3x);
-      }
-    }
-  }
-
-  // small sidebar
-  @media (max-width: ${breakpoints.medium}px) {
-    .current {
-      display: inherit;
-    }
-    ${Button} .ao-rows, .chevron {
-      display: none;
-    }
-
-    > ul {
-      position: fixed;
-      border-top-left-radius: var(--border-radius);
-      border-top-right-radius: var(--border-radius);
-      max-width: 24rem;
-      top: 0.7rem;
-      left: 0.6rem;
-    }
-  }
-`
-
-const Container = styled.div<{ responsive?: boolean }>`
-  width: 100%;
-  position: relative;
-
-  &.open ${Button} {
-    background-color: var(--color-background-muted-3x);
-    border-bottom-left-radius: 0;
-    border-bottom-right-radius: 0;
-  }
-
-  > ul {
-    padding: 0;
-    margin: 0;
-    z-index: 10;
-    position: absolute;
-    left: 0;
-    top: 6rem;
-    width: 100%;
-    overflow-x: hidden;
-    overflow-y: auto;
-    max-height: calc(100vh - 12rem);
-    background-color: var(--color-background);
-    border-bottom-left-radius: var(--border-radius);
-    border-bottom-right-radius: var(--border-radius);
-
-    ${scrollbarsStyle()}
-
-    li {
-      padding: 0;
-      margin: 0;
-      list-style: none;
-      cursor: pointer;
-
-      :hover {
-        background-color: var(--color-background-muted-3x);
-      }
-    }
-
-    li.current {
-      background-color: var(--color-background-muted);
-      ${AccountOptionContainer} {
-        color: var(--color-foreground);
-      }
-    }
-  }
-
-  .current {
-    display: none;
-  }
-
-  .ao-rows .ao-rowName > div:first-child {
-    overflow: hidden;
-    white-space: nowrap;
-    text-overflow: ellipsis;
-    max-width: 100%;
-    display: block;
-  }
-
-  ${({ responsive }) => (responsive ? RESPONSIVE_CONTAINER_STYLE : "")}
-`
-
-type AnyAccountOptionProps = { withTrack?: boolean }
-
-type AccountOptionProps = AnyAccountOptionProps & {
-  address?: string
-  totalUsd: number
-  genesisHash?: string | null
-  name?: string
-  origin?: AccountType
-}
-
-type SingleAccountOptionProps = Omit<AccountOptionProps, "totalUsd"> & {
-  address: string
-}
-
-const AccountOption = ({
-  address,
-  totalUsd,
-  genesisHash,
-  name,
-  origin,
-  withTrack,
-}: AccountOptionProps) => {
-  const { genericEvent } = useAnalytics()
-  const handleClick = useCallback(() => {
-    if (!withTrack) return
-    genericEvent("select account(s)", {
-      type: address ? (isEthereumAddress(address) ? "ethereum" : "substrate") : "all",
-      from: "sidebar",
-    })
-  }, [address, genericEvent, withTrack])
-
-  return (
-    <AccountOptionContainer onClick={handleClick}>
-      <div className="ao-avatar">
-        {address ? (
-          <AccountIcon className="text-[4rem]" address={address} genesisHash={genesisHash} />
-        ) : (
-          <AllAccountsIcon className="account-avatar" />
-        )}
-      </div>
-      <div className="ao-rows">
-        <div className="ao-rowName flex w-full items-center gap-2">
-          <div className="flex flex-col justify-center overflow-hidden text-ellipsis whitespace-nowrap">
-            {name ?? (address ? shortenAddress(address) : "unknown")}
-          </div>
-          <AccountTypeIcon className="text-primary" origin={origin} />
-        </div>
-        <div className="ao-rowFiat">
-          <Fiat amount={totalUsd} currency="usd" isBalance noCountUp />
-        </div>
-      </div>
-    </AccountOptionContainer>
-  )
-}
-
-const SingleAccountOption = (props: SingleAccountOptionProps) => {
-  const { sum } = useBalancesByAddress(props.address)
-  const { total } = useMemo(() => sum.fiat("usd"), [sum])
-
-  return <AccountOption {...props} totalUsd={total} />
-}
-
-const AllAccountsOption = ({ withTrack }: AnyAccountOptionProps) => {
-  const { sum } = useBalances("portfolio")
-  const { total } = useMemo(() => sum.fiat("usd"), [sum])
-  const { t } = useTranslation()
-
-  return <AccountOption name={t("All accounts")} totalUsd={total} withTrack={withTrack} />
-}
-
-type DropdownItem = {
-  name?: string
-  address?: string
-  genesisHash?: string | null
-  origin?: AccountType
-  isPortfolio?: boolean
-}
-const OPTION_ALL_ACCOUNTS: DropdownItem = {}
-
-type AccountSelectProps = {
-  responsive?: boolean
-  className?: string
-}
-
-export const AccountSelect = ({ responsive, className }: AccountSelectProps) => {
-  const { t } = useTranslation()
-  const { account, accounts, select } = useSelectedAccount()
-
-  const items = useMemo<DropdownItem[]>(
-    () =>
-      [OPTION_ALL_ACCOUNTS, ...accounts]
-        .filter((a) => a.address !== account?.address)
-        .map((a) => a as DropdownItem),
-    [account?.address, accounts]
-  )
-
-  const handleItemChange = useCallback(
-    (changes: UseSelectStateChange<DropdownItem | undefined>) => {
-      select(changes.selectedItem?.address)
-    },
-    [select]
-  )
-  const { isOpen, getToggleButtonProps, getMenuProps, getItemProps, closeMenu } = useSelect<
-    DropdownItem | undefined
-  >({
-    items,
-    selectedItem: undefined, // there should never be a selected item, as we don't display currently selected option in the dropdown itself
-    onSelectedItemChange: handleItemChange,
+export const AccountSelect = () => {
+  const { refs, floatingStyles } = useFloating({
+    placement: "bottom-start",
+    whileElementsMounted: autoUpdate,
   })
 
-  const indexFirstWatchedOnlyAccount = useMemo(
-    () => items.findIndex((item) => item.origin === "WATCHED" && !item.isPortfolio),
-    [items]
+  const { t } = useTranslation()
+  const { account: selectedAccount, accounts, select } = useSelectedAccount()
+  const balances = useBalances()
+  const catalog = useAccountsCatalog()
+
+  const portfolioBalances = useBalances("portfolio")
+  const totalUsd = useMemo(() => portfolioBalances.sum.fiat("usd").total, [portfolioBalances])
+
+  const balancesByAddress = useMemo(() => {
+    // we use this to avoid looping over the balances list n times, where n is the number of accounts in the wallet
+    // instead, we'll only interate over the balances one time
+    const balancesByAddress: Map<string, Balance[]> = new Map()
+    balances.each.forEach((balance) => {
+      if (!balancesByAddress.has(balance.address)) balancesByAddress.set(balance.address, [])
+      balancesByAddress.get(balance.address)?.push(balance)
+    })
+    return balancesByAddress
+  }, [balances])
+
+  const [portfolioItems, watchedItems] = useMemo((): [AccountSelectItem[], AccountSelectItem[]] => {
+    const treeItemToOptions =
+      (treeName: AccountsCatalogTree, folderId?: string) =>
+      (item: TreeItem): AccountSelectItem | AccountSelectItem[] => {
+        const key = item.type === "account" ? `account-${item.address}` : item.id
+        const account =
+          item.type === "account"
+            ? accounts.find((account) => account.address === item.address)
+            : undefined
+
+        return item.type === "account"
+          ? {
+              type: "account",
+              key,
+              folderId,
+              name: account?.name ?? t("Unknown Account"),
+              address: item.address,
+              total: new Balances(balancesByAddress.get(item.address) ?? []).sum.fiat("usd").total,
+              genesisHash: account?.genesisHash,
+              origin: account?.origin,
+              isPortfolio: !!account?.isPortfolio,
+            }
+          : [
+              {
+                type: "folder",
+                key,
+                treeName,
+                id: item.id,
+                name: item.name,
+                color: item.color,
+                total: new Balances(
+                  item.tree.flatMap((account) => balancesByAddress.get(account.address) ?? [])
+                ).sum.fiat("usd").total,
+                addresses: item.tree.map((account) => account.address),
+              },
+              ...item.tree.flatMap(treeItemToOptions(treeName, key)),
+            ]
+      }
+
+    return [
+      catalog.portfolio.flatMap(treeItemToOptions("portfolio")),
+      catalog.watched.flatMap(treeItemToOptions("watched")),
+    ]
+  }, [catalog, accounts, t, balancesByAddress])
+
+  const selectedItem = useMemo(
+    () =>
+      selectedAccount &&
+      [...portfolioItems, ...watchedItems].find(
+        (item) => item.type === "account" && item.address === selectedAccount.address
+      ),
+    [selectedAccount, portfolioItems, watchedItems]
+  )
+
+  const onChange = useCallback(
+    (item: AccountSelectItem | "all-accounts") =>
+      item === "all-accounts" ? select(undefined) : item.type === "account" && select(item.address),
+    [select]
+  )
+
+  const [collapsed, setCollapsed] = useState<string[]>([])
+  const onFolderClick = useCallback(
+    (item: AccountSelectFolderItem) =>
+      setCollapsed((collapsed) =>
+        collapsed.includes(item.key)
+          ? collapsed.filter((key) => key !== item.key)
+          : [...collapsed, item.key]
+      ),
+    []
+  )
+
+  const { genericEvent } = useAnalytics()
+  const trackClick = useCallback(
+    (address?: string) => {
+      genericEvent("select account(s)", {
+        type: address ? (isEthereumAddress(address) ? "ethereum" : "substrate") : "all",
+        from: "sidebar",
+      })
+    },
+    [genericEvent]
   )
 
   return (
-    <Container
-      className={classNames(isOpen && "open", responsive && "responsive", className)}
-      responsive={responsive}
-    >
-      <Button type="button" {...getToggleButtonProps()}>
-        {account ? <SingleAccountOption {...account} /> : <AllAccountsOption />}
-        <ChevronDownIcon className="chevron" />
-      </Button>
-      <ul {...getMenuProps()}>
-        {isOpen && (
-          <>
-            {indexFirstWatchedOnlyAccount > -1 && (
-              <li className="text-body-secondary !mb-2 !mt-6 flex !cursor-default gap-4 !px-6 font-bold hover:!bg-transparent">
-                <TalismanHandIcon />
-                <div>{t("My portfolio")}</div>
-              </li>
-            )}
-            {/* This first item is hidden by default, displayed only on small screen, when button contains only the avatar */}
-            <li className="current">
-              <button type="button" onClick={closeMenu} className="w-full text-left">
-                {account ? <SingleAccountOption {...account} /> : <AllAccountsOption />}
-              </button>
-            </li>
-            {items.map((item, index) => (
-              <Fragment key={item.address}>
-                {index === indexFirstWatchedOnlyAccount && (
-                  <li className="text-body-secondary !mb-2 !mt-6 flex !cursor-default gap-4 !px-6 font-bold hover:!bg-transparent">
-                    <EyeIcon />
-                    <div>{t("Followed only")}</div>
-                  </li>
+    <Listbox value={selectedItem} onChange={onChange}>
+      {({ open }) => (
+        <>
+          <Listbox.Button ref={refs.setReference} className="w-full text-left">
+            <Item
+              ref={refs.setReference}
+              key={selectedItem?.key}
+              item={selectedItem}
+              totalUsd={totalUsd}
+              open={open}
+              button
+            />
+          </Listbox.Button>
+
+          <FloatingPortal>
+            <div
+              ref={refs.setFloating}
+              className={classNames(
+                "bg-black-primary scrollable scrollable-700 z-10 max-h-[calc(100vh-12rem)] w-[27.2rem] overflow-y-auto overflow-x-hidden",
+                "legacy-md:rounded-t-none rounded-sm",
+                open && "border-grey-800 border border-t-0"
+              )}
+              style={floatingStyles}
+            >
+              <Listbox.Options>
+                {watchedItems.length > 0 && (
+                  <div className="text-body-secondary flex items-center gap-4 p-4 font-bold">
+                    <TalismanHandIcon className="inline" />
+                    <div>{t("My portfolio")}</div>
+                  </div>
                 )}
-                <li {...getItemProps({ item, index })}>
-                  {item.address ? (
-                    <SingleAccountOption {...item} address={item.address} withTrack />
-                  ) : (
-                    <AllAccountsOption withTrack />
-                  )}
-                </li>
-              </Fragment>
-            ))}
-          </>
-        )}
-      </ul>
-    </Container>
+                <Listbox.Option
+                  className="w-full"
+                  value="all-accounts"
+                  onClick={() => trackClick()}
+                >
+                  <Item current={selectedItem === undefined} totalUsd={totalUsd} />
+                </Listbox.Option>
+                {portfolioItems.map((item) =>
+                  item.type === "account" &&
+                  item.folderId &&
+                  collapsed.includes(item.folderId) ? null : (
+                    <Listbox.Option
+                      className="w-full"
+                      key={item.key}
+                      value={item}
+                      onClick={(event) => {
+                        if (item.type === "account") trackClick(item.address)
+                        if (item.type !== "folder") return
+                        event.preventDefault()
+                        event.stopPropagation()
+                        onFolderClick(item)
+                      }}
+                    >
+                      <Item
+                        item={item}
+                        collapsed={collapsed.includes(item.key)}
+                        current={item.key === selectedItem?.key}
+                      />
+                    </Listbox.Option>
+                  )
+                )}
+                {watchedItems.length > 0 && (
+                  <div className="text-body-secondary flex items-center gap-4 p-4 font-bold">
+                    <EyeIcon className="inline" />
+                    <div>{t("Followed only")}</div>
+                  </div>
+                )}
+                {watchedItems.map((item) =>
+                  item.type === "account" &&
+                  item.folderId &&
+                  collapsed.includes(item.folderId) ? null : (
+                    <Listbox.Option
+                      className="w-full"
+                      key={item.key}
+                      value={item}
+                      onClick={(event) => {
+                        if (item.type !== "folder") return
+                        event.preventDefault()
+                        event.stopPropagation()
+                        onFolderClick(item)
+                      }}
+                    >
+                      <Item
+                        item={item}
+                        collapsed={collapsed.includes(item.key)}
+                        current={item.key === selectedItem?.key}
+                      />
+                    </Listbox.Option>
+                  )
+                )}
+              </Listbox.Options>
+            </div>
+          </FloatingPortal>
+        </>
+      )}
+    </Listbox>
   )
 }
+
+type ItemProps = {
+  item?: AccountSelectItem
+  collapsed?: boolean
+  current?: boolean
+  button?: boolean
+  open?: boolean
+  totalUsd?: number
+}
+const Item = forwardRef<HTMLDivElement, ItemProps>(function Item(
+  { item, collapsed, current, button, open, totalUsd },
+  ref
+) {
+  const { t } = useTranslation()
+
+  const isAllAccounts = !item
+  const isAccount = item && item.type === "account"
+  const isFolder = item && item.type === "folder"
+
+  if (isFolder) return <FolderItem {...{ ref, item, collapsed }} />
+
+  const icon = isAllAccounts ? (
+    <AllAccountsIcon className="shrink-0 text-3xl" />
+  ) : isAccount ? (
+    <AccountIcon className="shrink-0 text-3xl" address={item.address} />
+  ) : isFolder ? (
+    <AccountFolderIcon className="shrink-0 text-3xl" color={item.color} />
+  ) : null
+
+  const name = isAllAccounts ? (
+    <div className="overflow-hidden text-ellipsis whitespace-nowrap text-sm">
+      {t("All Accounts")}
+    </div>
+  ) : (
+    <div className="flex w-full items-center gap-2">
+      <div className="overflow-hidden text-ellipsis whitespace-nowrap text-sm">{item.name}</div>
+      {isAccount && <AccountTypeIcon className="text-primary" origin={item.origin} />}
+    </div>
+  )
+
+  return (
+    <div
+      ref={ref}
+      className={classNames(
+        "text-body-secondary flex w-full cursor-pointer items-center gap-4 p-5",
+
+        !button && isAccount && item.folderId !== undefined && "bg-grey-900",
+        !button && isFolder && "bg-grey-850",
+
+        (current || (button && open)) && "!bg-grey-800 !text-body",
+        !isFolder && "hover:bg-grey-800 focus:bg-grey-800 hover:text-body focus:text-body",
+
+        button && "legacy-md:flex-row flex-col",
+        button && "rounded-sm",
+        button && open && "legacy-md:rounded-b-none",
+
+        current && item === undefined && "hidden"
+      )}
+    >
+      {icon}
+      <div
+        className={classNames(
+          "max-w-full flex-grow flex-col justify-center gap-2 overflow-hidden",
+          !button && "flex",
+          button && "legacy-sm:flex legacy-md:items-start hidden items-center"
+        )}
+      >
+        {name}
+        <Fiat
+          amount={item?.total !== undefined ? item.total : totalUsd}
+          currency="usd"
+          isBalance
+          noCountUp
+        />
+      </div>
+      {(button || (isFolder && !collapsed)) && (
+        <ChevronDownIcon
+          className={classNames("shrink-0 text-lg", button && "legacy-md:block hidden")}
+        />
+      )}
+      {isFolder && collapsed && <div>{item.addresses.length}</div>}
+    </div>
+  )
+})
+
+type FolderItemProps = {
+  item?: AccountSelectFolderItem
+  collapsed?: boolean
+}
+const FolderItem = forwardRef<HTMLDivElement, FolderItemProps>(function FolderItem(
+  { item, collapsed },
+  ref
+) {
+  return (
+    <div
+      ref={ref}
+      className="text-body-disabled bg-grey-850 flex w-full cursor-pointer items-center gap-2 p-2 text-sm"
+    >
+      <ChevronDownIcon
+        className={classNames(
+          "shrink-0 transition-transform",
+          (collapsed || item?.addresses.length === 0) && "-rotate-90"
+        )}
+      />
+      <div className="flex-grow overflow-hidden text-ellipsis whitespace-nowrap">{item?.name}</div>
+      <div className="text-xs">{item?.addresses.length}</div>
+    </div>
+  )
+})

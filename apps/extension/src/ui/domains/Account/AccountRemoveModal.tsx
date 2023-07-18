@@ -1,9 +1,9 @@
-import { AccountType } from "@core/domains/accounts/types"
+import { AccountJsonAny, AccountType } from "@core/domains/accounts/types"
 import StyledDialog from "@talisman/components/Dialog"
 import { Modal } from "@talisman/components/Modal"
 import { ModalDialog } from "@talisman/components/ModalDialog"
 import { useOpenClose } from "@talisman/hooks/useOpenClose"
-import { IconAlert } from "@talisman/theme/icons"
+import { AlertCircleIcon } from "@talisman/theme/icons"
 import { provideContext } from "@talisman/util/provideContext"
 import { api } from "@ui/api"
 import { useSelectedAccount } from "@ui/domains/Portfolio/SelectedAccountContext"
@@ -13,23 +13,36 @@ import { useTranslation } from "react-i18next"
 const REMOVABLE_ORIGINS: AccountType[] = ["DERIVED", "SEED", "WATCHED", "JSON", "QR", "HARDWARE"]
 
 const useAccountRemoveModalProvider = () => {
-  const { account } = useSelectedAccount()
-  const { isOpen, open, close } = useOpenClose()
+  const [_account, setAccount] = useState<AccountJsonAny>()
 
-  const canRemove = useMemo(
-    () => account?.origin && REMOVABLE_ORIGINS.includes(account?.origin),
-    [account?.origin]
+  const { account: selectedAccount } = useSelectedAccount()
+  const { isOpen, open: innerOpen, close } = useOpenClose()
+
+  const open = useCallback(
+    (account?: AccountJsonAny) => {
+      setAccount(account)
+      innerOpen()
+    },
+    [innerOpen]
   )
 
   useEffect(() => {
     close()
-  }, [account, close])
+  }, [selectedAccount, close])
+
+  const account = _account ?? selectedAccount
+
+  const canRemoveFunc = (account?: AccountJsonAny) =>
+    account?.origin && REMOVABLE_ORIGINS.includes(account?.origin)
+
+  const canRemove = useMemo(() => canRemoveFunc(account), [account])
 
   return {
     account,
     isOpen,
     open,
     close,
+    canRemoveFunc,
     canRemove,
   }
 }
@@ -58,7 +71,7 @@ export const AccountRemoveModal = () => {
     <Modal open={isOpen} onClose={close}>
       <ModalDialog title={t("Remove account {{accountName}}", { accountName })} onClose={close}>
         <StyledDialog
-          icon={<IconAlert />}
+          icon={<AlertCircleIcon />}
           title={t("Are you sure?")}
           text={t("Ensure you have backed up your recovery phrase or private key before removing.")}
           confirmText={t("Remove")}

@@ -3,7 +3,7 @@ import { isEthereumAddress } from "@polkadot/util-crypto"
 import { Drawer } from "@talisman/components/Drawer"
 import { WithTooltip } from "@talisman/components/Tooltip"
 import { useOpenClose } from "@talisman/hooks/useOpenClose"
-import { IconAlert, InfoIcon, SwapIcon, UserPlusIcon } from "@talisman/theme/icons"
+import { AlertCircleIcon, InfoIcon, SwapIcon, UserPlusIcon } from "@talisman/theme/icons"
 import { convertAddress } from "@talisman/util/convertAddress"
 import { AccountAddressType } from "@talisman/util/getAddressType"
 import { shortenAddress } from "@talisman/util/shortenAddress"
@@ -318,7 +318,7 @@ const ErrorMessage = () => {
 
   return error ? (
     <WithTooltip tooltip={errorDetails}>
-      <IconAlert className="inline-block align-text-top text-sm" /> {error}
+      <AlertCircleIcon className="inline-block align-text-top text-sm" /> {error}
     </WithTooltip>
   ) : null
 }

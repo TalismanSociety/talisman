@@ -1,7 +1,12 @@
-import { Balances } from "@core/domains/balances/types"
+import { Balance, Balances } from "@core/domains/balances/types"
 import { isEthereumAddress } from "@polkadot/util-crypto"
 import { IconButton } from "@talisman/components/IconButton"
-import { ChevronLeftIcon, CopyIcon, IconMore, PaperPlaneIcon } from "@talisman/theme/icons"
+import {
+  ChevronLeftIcon,
+  CopyIcon,
+  MoreHorizontalIcon,
+  PaperPlaneIcon,
+} from "@talisman/theme/icons"
 import { classNames } from "@talismn/util"
 import { api } from "@ui/api"
 import { useAccountExportModal } from "@ui/domains/Account/AccountExportModal"
@@ -14,11 +19,12 @@ import Fiat from "@ui/domains/Asset/Fiat"
 import { useCopyAddressModal } from "@ui/domains/CopyAddress"
 import { PopupAssetsTable } from "@ui/domains/Portfolio/AssetsTable"
 import { usePortfolio } from "@ui/domains/Portfolio/context"
-import { useSelectedAccount } from "@ui/domains/Portfolio/SelectedAccountContext"
 import { useDisplayBalances } from "@ui/domains/Portfolio/useDisplayBalances"
 import { useAccountToggleIsPortfolio } from "@ui/hooks/useAccountToggleIsPortfolio"
 import { useAnalytics } from "@ui/hooks/useAnalytics"
 import { useIsFeatureEnabled } from "@ui/hooks/useFeatures"
+import { useSearchParamsSelectedAccount } from "@ui/hooks/useSearchParamsSelectedAccount"
+import { useSearchParamsSelectedFolder } from "@ui/hooks/useSearchParamsSelectedFolder"
 import { useSendFundsPopup } from "@ui/hooks/useSendFundsPopup"
 import { getTransactionHistoryUrl } from "@ui/util/getTransactionHistoryUrl"
 import { useCallback, useEffect, useMemo } from "react"
@@ -34,9 +40,31 @@ import {
   TooltipTrigger,
 } from "talisman-ui"
 
-const PageContent = ({ balances }: { balances: Balances }) => {
+const PageContent = ({ balances: networkBalances }: { balances: Balances }) => {
+  const { account } = useSearchParamsSelectedAccount()
+  const { folder } = useSearchParamsSelectedFolder()
+
+  const balancesByAddress = useMemo(() => {
+    // we use this to avoid looping over the balances list n times, where n is the number of accounts in the wallet
+    // instead, we'll only interate over the balances one time
+    const balancesByAddress: Map<string, Balance[]> = new Map()
+    networkBalances.each.forEach((balance) => {
+      if (!balancesByAddress.has(balance.address)) balancesByAddress.set(balance.address, [])
+      balancesByAddress.get(balance.address)?.push(balance)
+    })
+    return balancesByAddress
+  }, [networkBalances])
+  const balances = useMemo(
+    () =>
+      !folder
+        ? networkBalances
+        : new Balances(
+            folder.tree.flatMap((account) => balancesByAddress.get(account.address) ?? [])
+          ),
+    [balancesByAddress, folder, networkBalances]
+  )
+
   const balancesToDisplay = useDisplayBalances(balances)
-  const { account } = useSelectedAccount()
   const { canExportAccount, open: openExportAccountModal } = useAccountExportModal()
   const { canExportAccount: canExportAccountPk, open: openExportAccountPkModal } =
     useAccountExportPrivateKeyModal()
@@ -70,7 +98,7 @@ const PageContent = ({ balances }: { balances: Balances }) => {
 
   const navigate = useNavigate()
   const handleBackBtnClick = useCallback(() => {
-    navigate("/portfolio")
+    navigate(-1)
   }, [navigate])
 
   const canAddCustomToken = useMemo(() => isEthereumAddress(account?.address), [account?.address])
@@ -93,7 +121,11 @@ const PageContent = ({ balances }: { balances: Balances }) => {
           <div className="flex grow flex-col gap-2 overflow-hidden pl-2 text-sm">
             <div className="flex items-center gap-3">
               <div className="text-body-secondary overflow-hidden text-ellipsis whitespace-nowrap">
-                {account ? account.name ?? t("Unnamed Account") : t("All Accounts")}
+                {account
+                  ? account.name ?? t("Unnamed Account")
+                  : folder
+                  ? folder.name
+                  : t("Total Portfolio")}
               </div>
               <AccountTypeIcon className="text-primary" origin={account?.origin} />
             </div>
@@ -129,42 +161,44 @@ const PageContent = ({ balances }: { balances: Balances }) => {
               <Tooltip>
                 <TooltipTrigger asChild>
                   <ContextMenuTrigger className="hover:bg-grey-800 text-body-secondary hover:text-body text-md flex h-16 w-16 flex-col items-center justify-center rounded-full">
-                    <IconMore />
+                    <MoreHorizontalIcon />
                   </ContextMenuTrigger>
                 </TooltipTrigger>
                 <TooltipContent>{t("More options")}</TooltipContent>
               </Tooltip>
               <ContextMenuContent className="border-grey-800 z-50 flex w-min flex-col whitespace-nowrap rounded-sm border bg-black px-2 py-3 text-left text-sm shadow-lg">
+                {canToggleIsPortfolio && (
+                  <ContextMenuItem onClick={toggleIsPortfolio}>{toggleLabel}</ContextMenuItem>
+                )}
                 <ContextMenuItem onClick={copyAddress}>{t("Copy address")}</ContextMenuItem>
                 {showTxHistory && (
                   <ContextMenuItem onClick={browseTxHistory}>
-                    {t("Transaction History")}
+                    {t("Transaction history")}
                   </ContextMenuItem>
                 )}
                 {canRename && (
-                  <ContextMenuItem onClick={openAccountRenameModal}>{t("Rename")}</ContextMenuItem>
+                  <ContextMenuItem onClick={() => openAccountRenameModal()}>
+                    {t("Rename")}
+                  </ContextMenuItem>
                 )}
                 {canExportAccount && (
-                  <ContextMenuItem onClick={openExportAccountModal}>
+                  <ContextMenuItem onClick={() => openExportAccountModal()}>
                     {t("Export as JSON")}
                   </ContextMenuItem>
                 )}
                 {canExportAccountPk && (
-                  <ContextMenuItem onClick={openExportAccountPkModal}>
-                    {t("Export Private Key")}
+                  <ContextMenuItem onClick={() => openExportAccountPkModal()}>
+                    {t("Export private key")}
                   </ContextMenuItem>
                 )}
                 {canRemove && (
-                  <ContextMenuItem onClick={openAccountRemoveModal}>
-                    {t("Remove Account")}
+                  <ContextMenuItem onClick={() => openAccountRemoveModal()}>
+                    {t("Remove account")}
                   </ContextMenuItem>
-                )}
-                {canToggleIsPortfolio && (
-                  <ContextMenuItem onClick={toggleIsPortfolio}>{toggleLabel}</ContextMenuItem>
                 )}
                 {canAddCustomToken && (
                   <ContextMenuItem onClick={handleAddCustomToken}>
-                    {t("Add Custom Token")}
+                    {t("Add custom token")}
                   </ContextMenuItem>
                 )}
               </ContextMenuContent>

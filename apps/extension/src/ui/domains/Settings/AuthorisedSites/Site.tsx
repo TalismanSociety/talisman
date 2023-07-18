@@ -6,7 +6,7 @@ import Link from "@talisman/components/Link"
 import { Modal } from "@talisman/components/Modal"
 import { ModalDialog } from "@talisman/components/ModalDialog"
 import Rule from "@talisman/components/Rule"
-import { ReactComponent as IconAlert } from "@talisman/theme/icons/alert-circle.svg"
+import { AlertCircleIcon } from "@talisman/theme/icons"
 import useAuthorisedSiteById from "@ui/hooks/useAuthorisedSiteById"
 import { FC, useCallback, useState } from "react"
 import { useTranslation } from "react-i18next"
@@ -44,7 +44,7 @@ const ConfirmForgetDialog: FC<{ onConfirm: () => void; onCancel: () => void }> =
   const { t } = useTranslation("admin")
   return (
     <Dialog
-      icon={<IconAlert />}
+      icon={<AlertCircleIcon />}
       title={t("Are you sure?")}
       text={t("You can always reconnect to this site by visiting it in the future.")}
       confirmText={t("Forget Site")}
