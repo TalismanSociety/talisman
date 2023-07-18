@@ -94,7 +94,7 @@ const SendFundsQrSubstrate = () => {
       payload={subTransaction.unsigned}
       onReject={showQrApproval(false)}
       onSignature={handleSigned}
-      parent="main"
+      containerId="main"
       skipInit
       // the send funds popup has a narrower margin on the bottom
       // than the sign tx popup does

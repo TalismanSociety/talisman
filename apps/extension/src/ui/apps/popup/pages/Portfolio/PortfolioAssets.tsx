@@ -1,6 +1,5 @@
 import { Balance, Balances } from "@core/domains/balances/types"
 import { isEthereumAddress } from "@polkadot/util-crypto"
-import { IconButton } from "@talisman/components/IconButton"
 import {
   ChevronLeftIcon,
   CopyIcon,
@@ -35,6 +34,7 @@ import {
   ContextMenuContent,
   ContextMenuItem,
   ContextMenuTrigger,
+  IconButton,
   Tooltip,
   TooltipContent,
   TooltipTrigger,

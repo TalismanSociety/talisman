@@ -1,9 +1,9 @@
 import { yupResolver } from "@hookform/resolvers/yup"
-import { ModalDialog } from "@talisman/components/ModalDialog"
 import { PasswordStrength } from "@talisman/components/PasswordStrength"
 import { useCallback, useMemo } from "react"
 import { useForm } from "react-hook-form"
 import { useTranslation } from "react-i18next"
+import { ModalDialog } from "talisman-ui"
 import { Button, FormFieldContainer, FormFieldInputText } from "talisman-ui"
 import * as yup from "yup"
 

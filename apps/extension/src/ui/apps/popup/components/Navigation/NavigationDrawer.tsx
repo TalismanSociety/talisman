@@ -1,12 +1,9 @@
-import { Drawer } from "@talisman/components/Drawer"
-import { IconButton } from "@talisman/components/IconButton"
-import Nav, { NavItemButton } from "@talisman/components/Nav"
+import { Nav, NavItem } from "@talisman/components/Nav"
 import { ScrollContainer } from "@talisman/components/ScrollContainer"
 import {
   CreditCardIcon,
   DownloadAlertIcon,
   DownloadIcon,
-  ExternalLinkIcon,
   EyeIcon,
   EyeOffIcon,
   LockIcon,
@@ -19,69 +16,14 @@ import { FullColorSmallLogo } from "@talisman/theme/logos"
 import { api } from "@ui/api"
 import { AnalyticsPage, sendAnalyticsEvent } from "@ui/api/analytics"
 import { useNavigationContext } from "@ui/apps/popup/context/NavigationContext"
-import Build from "@ui/domains/Build"
+import { BuildVersionPill } from "@ui/domains/Build/BuildVersionPill"
 import { useIsFeatureEnabled } from "@ui/hooks/useFeatures"
 import useMnemonicBackup from "@ui/hooks/useMnemonicBackup"
 import { useSetting } from "@ui/hooks/useSettings"
 import { FC, useCallback } from "react"
 import { useTranslation } from "react-i18next"
-import styled from "styled-components"
-
-const Container = styled.aside`
-  width: 100%;
-  height: 100%;
-  background: var(--color-background);
-  display: flex;
-  flex-direction: column;
-
-  header {
-    display: flex;
-    justify-content: space-between;
-    width: 100%;
-    height: 7.2rem;
-    align-items: center;
-    padding: 0 2.4rem;
-    box-sizing: border-box;
-    border-bottom: 1px solid var(--color-background-muted-3x);
-  }
-
-  main {
-    padding: 0.8rem 1rem;
-    flex-grow: 1;
-
-    .nav {
-      display: flex;
-      flex-direction: column;
-
-      .link {
-        height: 5.6rem;
-        width: 100%;
-      }
-    }
-  }
-
-  footer {
-    text-align: center;
-    padding: 2rem;
-  }
-
-  .logo {
-    width: auto;
-    height: 2.5rem;
-  }
-
-  ${NavItemButton} {
-    transition: none;
-    :hover {
-      background: var(--color-background-muted);
-    }
-  }
-`
-
-export const ExtLinkIcon = styled(ExternalLinkIcon)`
-  vertical-align: text-top;
-  display: inline;
-`
+import { Drawer } from "talisman-ui"
+import { IconButton } from "talisman-ui"
 
 const ANALYTICS_PAGE: AnalyticsPage = {
   container: "Popup",
@@ -170,53 +112,48 @@ export const NavigationDrawer: FC = () => {
   const { t } = useTranslation()
 
   return (
-    <Drawer anchor="bottom" open={isOpen} onClose={close} fullScreen>
-      <Container>
-        <header>
-          <FullColorSmallLogo className="logo" />
+    <Drawer className="h-full" containerId="main" anchor="bottom" isOpen={isOpen} onDismiss={close}>
+      <div className="flex h-full w-full flex-col bg-black">
+        <header className="border-grey-800 box-border flex h-36 w-full items-center justify-between border-b px-12">
+          <FullColorSmallLogo className="h-[2.5rem] w-auto" />
           <IconButton onClick={close} aria-label={t("Close menu")}>
             <XIcon />
           </IconButton>
         </header>
-        <main>
-          <ScrollContainer>
-            <Nav column>
-              <NavItemButton icon={<PaperPlaneIcon />} onClick={handleSendFundsClick}>
-                {t("Send Funds")}
-              </NavItemButton>
-              {showBuyTokens && (
-                <NavItemButton icon={<CreditCardIcon />} onClick={handleBuyTokensClick}>
-                  {t("Buy Crypto")}
-                </NavItemButton>
-              )}
-              <NavItemButton
-                icon={hideBalances ? <EyeIcon /> : <EyeOffIcon />}
-                onClick={toggleHideBalance}
-              >
-                {hideBalances ? t("Show Balances") : t("Hide Balances")}
-              </NavItemButton>
-              <NavItemButton icon={<PlusIcon />} onClick={handleAddAccountClick}>
-                {t("Add Account")}
-              </NavItemButton>
-              <NavItemButton icon={<SettingsIcon />} onClick={handleSettingsClick}>
-                {t("Settings")}
-              </NavItemButton>
-              <NavItemButton
-                icon={isNotConfirmed ? <DownloadAlertIcon /> : <DownloadIcon />}
-                onClick={handleBackupClick}
-              >
-                {t("Backup Wallet")}
-              </NavItemButton>
-              <NavItemButton icon={<LockIcon />} onClick={handleLock}>
-                {t("Lock Wallet")}
-              </NavItemButton>
-            </Nav>
-          </ScrollContainer>
-        </main>
-        <footer>
-          <Build.Version />
+        <ScrollContainer className="flex-grow">
+          <Nav className="p-4">
+            <NavItem icon={<PaperPlaneIcon />} onClick={handleSendFundsClick}>
+              {t("Send Funds")}
+            </NavItem>
+            {showBuyTokens && (
+              <NavItem icon={<CreditCardIcon />} onClick={handleBuyTokensClick}>
+                {t("Buy Crypto")}
+              </NavItem>
+            )}
+            <NavItem icon={hideBalances ? <EyeIcon /> : <EyeOffIcon />} onClick={toggleHideBalance}>
+              {hideBalances ? t("Show Balances") : t("Hide Balances")}
+            </NavItem>
+            <NavItem icon={<PlusIcon />} onClick={handleAddAccountClick}>
+              {t("Add Account")}
+            </NavItem>
+            <NavItem icon={<SettingsIcon />} onClick={handleSettingsClick}>
+              {t("Settings")}
+            </NavItem>
+            <NavItem
+              icon={isNotConfirmed ? <DownloadAlertIcon /> : <DownloadIcon />}
+              onClick={handleBackupClick}
+            >
+              {t("Backup Wallet")}
+            </NavItem>
+            <NavItem icon={<LockIcon />} onClick={handleLock}>
+              {t("Lock Wallet")}
+            </NavItem>
+          </Nav>
+        </ScrollContainer>
+        <footer className="py-10 text-center">
+          <BuildVersionPill />
         </footer>
-      </Container>
+      </div>
     </Drawer>
   )
 }

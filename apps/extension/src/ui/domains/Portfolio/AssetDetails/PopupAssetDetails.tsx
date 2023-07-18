@@ -14,7 +14,6 @@ import { useAnalytics } from "@ui/hooks/useAnalytics"
 import { useIsFeatureEnabled } from "@ui/hooks/useFeatures"
 import { useCallback, useMemo } from "react"
 import { useTranslation } from "react-i18next"
-import styled from "styled-components"
 import { PillButton } from "talisman-ui"
 
 import { CopyAddressButton } from "./CopyAddressIconButton"
@@ -28,17 +27,6 @@ type AssetRowProps = {
   balances: Balances
 }
 
-const ChainTokenBlock = styled.div`
-  > div:first-child {
-    border-top-left-radius: var(--border-radius-tiny);
-    border-top-right-radius: var(--border-radius-tiny);
-  }
-  > div:last-child {
-    border-bottom-left-radius: var(--border-radius-tiny);
-    border-bottom-right-radius: var(--border-radius-tiny);
-  }
-`
-
 const ChainTokenBalances = ({ chainId, balances }: AssetRowProps) => {
   const { chainOrNetwork, summary, symbol, detailRows, status, networkType } =
     useChainTokenBalances({ chainId, balances })
@@ -47,8 +35,13 @@ const ChainTokenBalances = ({ chainId, balances }: AssetRowProps) => {
   if (!chainOrNetwork || !summary || !symbol || balances.count === 0) return null
 
   return (
-    <ChainTokenBlock className="text-body-secondary rounded text-sm">
-      <div className="bg-grey-800 flex w-full items-center gap-6 border-transparent px-7 py-6">
+    <div className={classNames("text-body-secondary text-sm")}>
+      <div
+        className={classNames(
+          "bg-grey-800 flex w-full items-center gap-6 border-transparent px-7 py-6",
+          detailRows.length ? "rounded-t-sm" : "rounded"
+        )}
+      >
         <div className="text-xl">
           <ChainLogo id={chainOrNetwork.id} />
         </div>
@@ -72,7 +65,7 @@ const ChainTokenBalances = ({ chainId, balances }: AssetRowProps) => {
             key={row.key}
             className={classNames(
               "bg-black-secondary flex w-full items-center gap-8 px-7 py-6",
-              rows.length === i + 1 && "stop-row"
+              rows.length === i + 1 && "rounded-b-sm"
             )}
           >
             <div className="flex grow flex-col justify-center gap-2 overflow-hidden">
@@ -123,7 +116,7 @@ const ChainTokenBalances = ({ chainId, balances }: AssetRowProps) => {
             </div>
           </div>
         ))}
-    </ChainTokenBlock>
+    </div>
   )
 }
 

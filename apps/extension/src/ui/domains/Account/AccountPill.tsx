@@ -5,7 +5,7 @@ import { copyAddress } from "@ui/util/copyAddress"
 import { FC, useCallback } from "react"
 import styled from "styled-components"
 
-import AccountAvatar from "./Avatar"
+import { AccountIcon } from "./AccountIcon"
 
 const Container = styled.span`
   display: inline-flex;
@@ -50,7 +50,7 @@ export const AccountPill: FC<AccountPillProps> = ({ account }) => {
   return (
     <WithTooltip tooltip={account.address}>
       <Container onClick={handleClick}>
-        <AccountAvatar address={account.address} />
+        <AccountIcon address={account.address} />
         <span className="account-name">{account.name ?? shortenAddress(account.address)}</span>
       </Container>
     </WithTooltip>

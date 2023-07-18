@@ -1,9 +1,9 @@
-import { Modal } from "@talisman/components/Modal"
 import { useOpenClose } from "@talisman/hooks/useOpenClose"
 import { AlertCircleIcon, InfoIcon } from "@talisman/theme/icons"
 import { MnemonicModal } from "@ui/domains/Settings/MnemonicModal"
 import useMnemonicBackup from "@ui/hooks/useMnemonicBackup"
 import { useTranslation } from "react-i18next"
+import { Modal } from "talisman-ui"
 import { Button } from "talisman-ui"
 
 import { DashboardNotification } from "./DashboardNotification"
@@ -18,7 +18,7 @@ export const BackupWarningModal = ({ isOpen, snooze, openBackupModal }: BackupWa
   const { t } = useTranslation()
 
   return (
-    <Modal open={isOpen}>
+    <Modal isOpen={isOpen}>
       <div className="align-center bg-black-primary border-black-tertiary flex flex-col items-center gap-[3.2rem] rounded-lg border-2 p-[2.4rem] text-center">
         <div className="flex flex-col items-center gap-8 p-0">
           <AlertCircleIcon className="text-primary-500 h-20 w-20" />

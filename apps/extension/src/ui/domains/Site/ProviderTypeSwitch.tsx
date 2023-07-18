@@ -1,82 +1,48 @@
 import { ProviderType } from "@core/domains/sitesAuthorised/types"
-import { useCallback, useEffect, useMemo, useRef, useState } from "react"
+import { classNames } from "@talismn/util"
+import {
+  CSSProperties,
+  ReactNode,
+  forwardRef,
+  useCallback,
+  useEffect,
+  useRef,
+  useState,
+} from "react"
 import { useTranslation } from "react-i18next"
-import styled from "styled-components"
-
-type SelectionOverlayProps = {
-  width: number
-  left: number
-}
-
-const SelectionOverlay = styled.div<SelectionOverlayProps>`
-  position: absolute;
-  top: 0;
-  left: ${({ left }) => left}px;
-  width: ${({ width }) => width}px;
-  height: 100%;
-  transition: all var(--transition-speed-fast) ease-in-out;
-  border-radius: var(--border-radius);
-  background: var(--color-primary);
-`
-
-const Button = styled.button<{ selected?: boolean; unauthorized: boolean }>`
-  outline: none;
-  border: none;
-  color: var(--color-mid);
-  background: transparent;
-  border-radius: var(--border-radius);
-  padding: 0 0.5em;
-
-  :not(:disabled) {
-    cursor: pointer;
-
-    &:hover {
-      color: var(--color-foreground-muted-2x);
-    }
-  }
-
-  ${({ selected }) =>
-    selected
-      ? `
-    color: black;
-    z-index:1;
-  `
-      : ""}
-
-  ${({ unauthorized }) =>
-    unauthorized
-      ? `
-    color: var(--color-background-muted-2x);
-  `
-      : ""}
-`
-
-const Container = styled.div`
-  background: var(--color-background-muted-3x);
-  padding: 0.4rem;
-  display: inline-block;
-  border-radius: var(--border-radius);
-
-  > div {
-    position: relative;
-    display: inline-flex;
-    gap: -0.5em;
-
-    line-height: 1.6em;
-  }
-`
 
 type ProviderSwitchProps = {
   defaultProvider?: ProviderType
   authorizedProviders?: ProviderType[]
+  className?: string
   onChange?: (provider: ProviderType) => void
 }
 
 const DEFAULT_PROVIDERS: ProviderType[] = ["polkadot", "ethereum"]
 
+const Button = forwardRef<
+  HTMLButtonElement,
+  { selected: boolean; authorised: boolean; onClick: () => void; children: ReactNode }
+>(({ selected, authorised, children, onClick }, ref) => (
+  <button
+    type="button"
+    ref={ref}
+    disabled={!authorised || selected}
+    className={classNames(
+      "z-10 px-[0.5em] transition-colors duration-150",
+      selected && "text-body-black"
+    )}
+    onClick={onClick}
+  >
+    {children}
+  </button>
+))
+Button.displayName = "Button"
+
 export const ProviderTypeSwitch = ({
   defaultProvider = "polkadot",
   authorizedProviders = DEFAULT_PROVIDERS,
+  className,
   onChange,
 }: ProviderSwitchProps) => {
   const { t } = useTranslation()
@@ -84,26 +50,10 @@ export const ProviderTypeSwitch = ({
   const refPolkadot = useRef<HTMLButtonElement>(null)
   const refEthereum = useRef<HTMLButtonElement>(null)
 
-  const [selectionOverlay, setSelectionOverlay] = useState<SelectionOverlayProps>({
+  const [selectionOverlay, setSelectionOverlay] = useState<CSSProperties>({
     left: 0,
     width: 0,
   })
-
-  const buttonProps = useMemo(
-    () => ({
-      polkadot: {
-        selected: selected === "polkadot",
-        disabled: !authorizedProviders.includes("polkadot") || selected === "polkadot",
-        unauthorized: !authorizedProviders.includes("polkadot"),
-      },
-      ethereum: {
-        selected: selected === "ethereum",
-        disabled: !authorizedProviders.includes("ethereum") || selected === "ethereum",
-        unauthorized: !authorizedProviders.includes("ethereum"),
-      },
-    }),
-    [authorizedProviders, selected]
-  )
 
   useEffect(() => {
     if (!refPolkadot.current || !refEthereum.current) return
@@ -131,16 +81,34 @@ export const ProviderTypeSwitch = ({
   )
 
   return (
-    <Container>
-      <div>
-        <Button ref={refPolkadot} {...buttonProps.polkadot} onClick={handleChange("polkadot")}>
+    <div
+      className={classNames(
+        "bg-grey-800 text-body-secondary leading-paragraph inline-block rounded-full p-[0.2em]",
+        className
+      )}
+    >
+      <div className="relative z-0 flex items-center gap-[-0.5em]">
+        <Button
+          ref={refPolkadot}
+          selected={selected === "polkadot"}
+          authorised={authorizedProviders.includes("polkadot")}
+          onClick={handleChange("polkadot")}
+        >
           {t("Polkadot")}
         </Button>
-        <Button ref={refEthereum} {...buttonProps.ethereum} onClick={handleChange("ethereum")}>
+        <Button
+          ref={refEthereum}
+          selected={selected === "ethereum"}
+          authorised={authorizedProviders.includes("ethereum")}
+          onClick={handleChange("ethereum")}
+        >
           {t("Ethereum")}
         </Button>
-        <SelectionOverlay {...selectionOverlay} />
+        <div
+          className="bg-primary absolute top-0 h-full rounded-full transition-all duration-150 ease-in-out"
+          style={selectionOverlay}
+        />
       </div>
-    </Container>
+    </div>
   )
 }

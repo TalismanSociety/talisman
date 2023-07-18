@@ -2,7 +2,6 @@ import { TreeFolder, TreeItem } from "@core/domains/accounts/store.catalog"
 import { AccountType, AccountsCatalogTree } from "@core/domains/accounts/types"
 import { isEthereumAddress } from "@polkadot/util-crypto"
 import { FadeIn } from "@talisman/components/FadeIn"
-import { IconButton } from "@talisman/components/IconButton"
 import { SuspenseTracker } from "@talisman/components/SuspenseTracker"
 import { ChevronLeftIcon, ChevronRightIcon, CopyIcon, EyeIcon } from "@talisman/theme/icons"
 import { Balance, Balances } from "@talismn/balances"
@@ -11,8 +10,8 @@ import { AnalyticsPage, sendAnalyticsEvent } from "@ui/api/analytics"
 import { AccountsLogoStack } from "@ui/apps/dashboard/routes/Settings/Accounts/AccountsLogoStack"
 import { TotalFiatBalance } from "@ui/apps/popup/components/TotalFiatBalance"
 import { AccountFolderIcon } from "@ui/domains/Account/AccountFolderIcon"
+import { AccountIcon } from "@ui/domains/Account/AccountIcon"
 import { AccountTypeIcon } from "@ui/domains/Account/AccountTypeIcon"
-import AccountAvatar from "@ui/domains/Account/Avatar"
 import { CurrentAccountAvatar } from "@ui/domains/Account/CurrentAccountAvatar"
 import Fiat from "@ui/domains/Asset/Fiat"
 import { useCopyAddressModal } from "@ui/domains/CopyAddress"
@@ -25,6 +24,7 @@ import { useSearchParamsSelectedFolder } from "@ui/hooks/useSearchParamsSelected
 import { MouseEventHandler, Suspense, useCallback, useEffect, useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
 import { useNavigate } from "react-router-dom"
+import { IconButton } from "talisman-ui"
 import { MYSTICAL_PHYSICS_V3, MysticalBackground } from "talisman-ui"
 
 const ANALYTICS_PAGE: AnalyticsPage = {
@@ -106,7 +106,7 @@ const AccountButton = ({ option }: { option: AccountOption }) => {
     >
       <div className="flex flex-col justify-center text-xl">
         {option.type === "account" ? (
-          <AccountAvatar address={option.address} genesisHash={option.genesisHash} />
+          <AccountIcon address={option.address} genesisHash={option.genesisHash} />
         ) : (
           <AccountFolderIcon color={option.color} />
         )}

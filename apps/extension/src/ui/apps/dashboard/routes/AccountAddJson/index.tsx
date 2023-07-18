@@ -1,8 +1,8 @@
-import HeaderBlock from "@talisman/components/HeaderBlock"
-import Spacer from "@talisman/components/Spacer"
+import { HeaderBlock } from "@talisman/components/HeaderBlock"
+import { Spacer } from "@talisman/components/Spacer"
 import { useTranslation } from "react-i18next"
 
-import Layout from "../../layout"
+import { DashboardLayout } from "../../layout/DashboardLayout"
 import { JsonAccountImportProvider } from "./context"
 import { ImportJsonAccountsForm } from "./ImportJsonAccountsForm"
 import { ImportJsonFileDrop } from "./ImportJsonFileDrop"
@@ -13,7 +13,7 @@ export const AccountAddJsonPage = () => {
 
   return (
     <JsonAccountImportProvider>
-      <Layout withBack centered>
+      <DashboardLayout withBack centered>
         <HeaderBlock
           title={t("Import JSON")}
           text={t("Please choose the .json file you exported from Polkadot.js or Talisman")}
@@ -23,7 +23,7 @@ export const AccountAddJsonPage = () => {
         <Spacer />
         <UnlockJsonFileForm />
         <ImportJsonAccountsForm />
-      </Layout>
+      </DashboardLayout>
     </JsonAccountImportProvider>
   )
 }

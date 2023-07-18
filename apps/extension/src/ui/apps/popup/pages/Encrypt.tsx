@@ -1,20 +1,19 @@
 import { AccountJson } from "@core/domains/accounts/types"
 import { DecryptRequestIdOnly, EncryptRequestIdOnly } from "@core/domains/encrypt/types"
 import { AppPill } from "@talisman/components/AppPill"
-import Grid from "@talisman/components/Grid"
-import { SimpleButton } from "@talisman/components/SimpleButton"
 import { AccountPill } from "@ui/domains/Account/AccountPill"
 import { useEncryptRequest } from "@ui/domains/Encrypt/EncryptRequestContext"
 import { Message } from "@ui/domains/Sign/Message"
+import { SignAlertMessage } from "@ui/domains/Sign/SignAlertMessage"
 import { useAnalytics } from "@ui/hooks/useAnalytics"
 import { useRequest } from "@ui/hooks/useRequest"
 import { useEffect, useMemo } from "react"
 import { useTranslation } from "react-i18next"
 import { useParams } from "react-router-dom"
-import styled from "styled-components"
+import { Button } from "talisman-ui"
 
-import { Content, Footer, Header } from "../Layout"
-import { SignContainer } from "./Sign/common"
+import { PopupContent, PopupFooter, PopupHeader, PopupLayout } from "../Layout/PopupLayout"
+import { SignAccountAvatar } from "./Sign/SignAccountAvatar"
 
 const SignMessage = ({
   account,
@@ -31,21 +30,23 @@ const SignMessage = ({
   }, [request])
 
   return (
-    <>
-      <h1 className="no-margin-top">{isDecrypt ? "Decrypt " : "Encrypt "}Request</h1>
-      <h2>
+    <div className="text-body-secondary flex h-full w-full flex-col items-center pt-8">
+      <h1 className="text-body leading-base text-md my-0 font-sans font-bold">
+        {isDecrypt ? "Decrypt " : "Encrypt "}Request
+      </h1>
+      <h2 className="mt-8 flex w-full flex-col items-center text-base leading-[3.2rem]">
         {isDecrypt
           ? t("You are decrypting some data with")
           : t("You are encrypting some data with")}
         <br />
         <AccountPill account={account} />
       </h2>
-      <Message className="mt-8 grow" text={data} />
-    </>
+      <Message className="mt-8 w-full flex-grow" text={data} />
+    </div>
   )
 }
 
-const EncryptApprove = () => {
+export const Encrypt = () => {
   const { t } = useTranslation("request")
   const { popupOpenEvent } = useAnalytics()
   const { id } = useParams() as EncryptRequestIdOnly | DecryptRequestIdOnly
@@ -64,92 +65,38 @@ const EncryptApprove = () => {
   }, [status, message])
 
   return (
-    <SignContainer>
-      <Header text={<AppPill url={url} />}></Header>
-      <Content>
+    <PopupLayout>
+      <PopupHeader right={<SignAccountAvatar account={account} />}>
+        <AppPill url={url} />
+      </PopupHeader>
+      <PopupContent>
+        {account && request && (
+          <SignMessage
+            account={account}
+            request={request?.payload.message as string}
+            isDecrypt={type == "decrypt"}
+          />
+        )}
+      </PopupContent>
+      <PopupFooter>
+        {errorMessage && (
+          <SignAlertMessage className="mb-8" type="error">
+            {errorMessage}
+          </SignAlertMessage>
+        )}
         {account && request && (
           <>
-            <div className="sign-summary">
-              <SignMessage
-                account={account}
-                request={request?.payload.message as string}
-                isDecrypt={type == "decrypt"}
-              />
+            <div className="grid w-full grid-cols-2 gap-12">
+              <Button disabled={processing} onClick={reject}>
+                {t("Cancel")}
+              </Button>
+              <Button disabled={processing} processing={processing} primary onClick={approve}>
+                {t("Approve")}
+              </Button>
             </div>
           </>
         )}
-      </Content>
-      <Footer>
-        {errorMessage && <p className="error">{errorMessage}</p>}
-        {account && request && (
-          <>
-            <Grid>
-              <SimpleButton disabled={processing} onClick={reject}>
-                {t("Cancel")}
-              </SimpleButton>
-              <SimpleButton disabled={processing} processing={processing} primary onClick={approve}>
-                {t("Approve")}
-              </SimpleButton>
-            </Grid>
-          </>
-        )}
-      </Footer>
-    </SignContainer>
+      </PopupFooter>
+    </PopupLayout>
   )
 }
-
-export const Encrypt = styled(EncryptApprove)`
-  .layout-header {
-    .pill {
-      background: var(--color-background-muted);
-      color: var(--color-mid);
-      font-weight: normal;
-    }
-  }
-
-  .layout-content {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    text-align: center;
-
-    h1 {
-      font-size: var(--font-size-medium);
-      font-weight: var(--font-weight-bold);
-    }
-
-    h2 {
-      color: var(--color-mid);
-      word-break: break-word;
-      strong {
-        color: var(--color-foreground-muted-2x);
-      }
-    }
-
-    .stats {
-      width: auto;
-      margin: 0 auto;
-      p {
-        font-weight: var(--font-weight-normal);
-        font-size: var(--font-size-small);
-        color: var(--color-foreground-muted-2x);
-        line-height: 1em;
-        margin: 0.4rem 0;
-        text-align: left;
-
-        strong {
-          font-weight: var(--font-weight-normal);
-          text-align: right;
-          min-width: 10rem;
-          color: var(--color-mid);
-          display: inline-block;
-          margin-right: 0.4em;
-        }
-      }
-    }
-  }
-
-  .layout-footer {
-  }
-`

@@ -1,9 +1,8 @@
 import { EvmNetwork } from "@core/domains/ethereum/types"
 import { Erc20Token } from "@core/domains/tokens/types"
-import HeaderBlock from "@talisman/components/HeaderBlock"
+import { HeaderBlock } from "@talisman/components/HeaderBlock"
 import { ChevronRightIcon, PlusIcon } from "@talisman/theme/icons"
 import { AnalyticsPage, sendAnalyticsEvent } from "@ui/api/analytics"
-import Layout from "@ui/apps/dashboard/layout"
 import { TokenLogo } from "@ui/domains/Asset/TokenLogo"
 import { EnableTestnetPillButton } from "@ui/domains/Settings/EnableTestnetPillButton"
 import { useAnalyticsPageView } from "@ui/hooks/useAnalyticsPageView"
@@ -18,6 +17,8 @@ import { FC, useCallback, useMemo } from "react"
 import { useTranslation } from "react-i18next"
 import { useNavigate } from "react-router-dom"
 import { ListButton, PillButton } from "talisman-ui"
+
+import { DashboardLayout } from "../../layout/DashboardLayout"
 
 const CustomPill = () => (
   <div className="bg-primary/10 text-primary inline-block rounded p-4 text-xs font-light">
@@ -105,7 +106,7 @@ export const TokensPage = () => {
   if (!erc20Tokens) return null
 
   return (
-    <Layout analytics={ANALYTICS_PAGE} withBack centered backTo="/settings">
+    <DashboardLayout analytics={ANALYTICS_PAGE} withBack centered backTo="/settings">
       <HeaderBlock title={t("Ethereum Tokens")} text={t("Add or delete custom ERC20 tokens")} />
       <div className="mt-16 flex justify-end gap-4">
         <EnableTestnetPillButton className="h-16" />
@@ -118,6 +119,6 @@ export const TokensPage = () => {
           <NetworkTokensGroup key={network.id} network={network} tokens={tokens} />
         ))}
       </div>
-    </Layout>
+    </DashboardLayout>
   )
 }

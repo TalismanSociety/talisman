@@ -1,17 +1,9 @@
-import { Modal } from "@talisman/components/Modal"
-import { ModalDialog } from "@talisman/components/ModalDialog"
 import { useTranslation } from "react-i18next"
-import styled from "styled-components"
+import { ModalDialog } from "talisman-ui"
+import { Modal } from "talisman-ui"
 
 import { BuyTokensForm } from "./BuyTokensForm"
 import { useBuyTokensModal } from "./BuyTokensModalContext"
-
-const Dialog = styled(ModalDialog)`
-  overflow: visible;
-  .content {
-    overflow: visible;
-  }
-`
 
 // This control is injected directly in the layout of dashboard
 export const BuyTokensModal = () => {
@@ -19,10 +11,14 @@ export const BuyTokensModal = () => {
   const { isOpen, close } = useBuyTokensModal()
 
   return (
-    <Modal open={isOpen} onClose={close}>
-      <Dialog title={t("Buy Crypto")} onClose={close}>
+    <Modal isOpen={isOpen} onDismiss={close}>
+      <ModalDialog
+        className="!bg-grey-850 !overflow-visible [&>.content]:!overflow-visible"
+        title={t("Buy Crypto")}
+        onClose={close}
+      >
         <BuyTokensForm />
-      </Dialog>
+      </ModalDialog>
     </Modal>
   )
 }

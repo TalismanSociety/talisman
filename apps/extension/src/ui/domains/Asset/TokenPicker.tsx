@@ -162,6 +162,8 @@ const TokenRow: FC<TokenRowProps> = ({
   )
 }
 
+const DEFAULT_FILTER = () => true
+
 type TokensListProps = {
   address?: Address
   selected?: TokenId
@@ -169,6 +171,7 @@ type TokensListProps = {
   showEmptyBalances?: boolean
   allowUntransferable?: boolean
   ownedOnly?: boolean
+  tokenFilter?: (token: Token) => boolean
   onSelect?: (tokenId: TokenId) => void
 }
 
@@ -179,6 +182,7 @@ const TokensList: FC<TokensListProps> = ({
   showEmptyBalances,
   allowUntransferable,
   ownedOnly,
+  tokenFilter = DEFAULT_FILTER,
   onSelect,
 }) => {
   const { t } = useTranslation()
@@ -228,6 +232,7 @@ const TokensList: FC<TokensListProps> = ({
       return []
 
     return allTokens
+      .filter(tokenFilter)
       .filter(filterAccountCompatibleTokens)
       .filter(isTransferableToken)
       .map((token) => {
@@ -246,7 +251,15 @@ const TokensList: FC<TokensListProps> = ({
           hasFiatRate: !!tokenRatesMap[token.id],
         }
       })
-  }, [allTokens, chainsMap, evmNetworksMap, filterAccountCompatibleTokens, t, tokenRatesMap])
+  }, [
+    allTokens,
+    chainsMap,
+    evmNetworksMap,
+    filterAccountCompatibleTokens,
+    t,
+    tokenFilter,
+    tokenRatesMap,
+  ])
 
   const tokensWithBalances = useMemo(() => {
     // wait until balances are loaded
@@ -367,6 +380,7 @@ type TokenPickerProps = {
   allowUntransferable?: boolean
   ownedOnly?: boolean
   className?: string
+  tokenFilter?: (token: Token) => boolean
   onSelect?: (tokenId: TokenId) => void
 }
 
@@ -376,13 +390,17 @@ export const TokenPicker: FC<TokenPickerProps> = ({
   showEmptyBalances,
   allowUntransferable,
   ownedOnly,
+  className,
+  tokenFilter,
   onSelect,
 }) => {
   const { t } = useTranslation()
   const [search, setSearch] = useState("")
 
   return (
-    <div className="flex h-full min-h-full w-full flex-col overflow-hidden">
+    <div
+      className={classNames("flex h-full min-h-full w-full flex-col overflow-hidden", className)}
+    >
       <div className="flex min-h-fit w-full items-center gap-8 px-12 pb-8">
         <SearchInput
           onChange={setSearch}
@@ -399,6 +417,7 @@ export const TokenPicker: FC<TokenPickerProps> = ({
           showEmptyBalances={showEmptyBalances}
           allowUntransferable={allowUntransferable}
           ownedOnly={ownedOnly}
+          tokenFilter={tokenFilter}
           onSelect={onSelect}
         />
       </ScrollContainer>

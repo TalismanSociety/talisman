@@ -1,77 +1,16 @@
 import { KnownRequestIdOnly } from "@core/libs/requests/types"
 import { AppPill } from "@talisman/components/AppPill"
-import StyledGrid from "@talisman/components/Grid"
-import { IconButton } from "@talisman/components/IconButton"
 import { notify } from "@talisman/components/Notifications"
-import { SimpleButton } from "@talisman/components/SimpleButton"
-import { GlobeIcon, XIcon } from "@talisman/theme/icons"
+import { GlobeIcon } from "@talisman/theme/icons"
 import { api } from "@ui/api"
 import { NetworksDetailsButton } from "@ui/domains/Ethereum/NetworkDetailsButton"
 import { useRequest } from "@ui/hooks/useRequest"
 import { useCallback } from "react"
 import { Trans, useTranslation } from "react-i18next"
 import { useParams } from "react-router-dom"
-import styled from "styled-components"
+import { Button } from "talisman-ui"
 
-import Layout, { Content, Footer, Header } from "../Layout"
-
-const Container = styled(Layout)`
-  .layout-content .children {
-    color: var(--color-mid);
-    text-align: center;
-    display: flex;
-    flex-direction: column;
-    height: 100%;
-
-    .grow {
-      flex-grow: 1;
-    }
-
-    h1 {
-      margin: 1.6rem 0 2.4rem 0;
-      color: var(--color-foreground);
-      font-size: var(--font-size-medium);
-      line-height: var(--font-size-medium);
-      font-weight: var(--font-weight-bold);
-    }
-
-    h2 {
-      font-size: var(--font-size-normal);
-      line-height: var(--font-size-xlarge);
-      padding: 0 2rem;
-      text-align: left;
-    }
-
-    strong {
-      color: var(--color-foreground);
-      background: var(--color-background-muted);
-      padding: 0.4rem 1.2rem;
-      border-radius: 4.8rem;
-      font-weight: var(--font-weight-normal);
-    }
-
-    .bottom {
-      display: flex;
-      justify-content: center;
-      align-items: center;
-    }
-    .error {
-      color: var(--color-status-error);
-      text-align: left;
-      margin-top: 1rem;
-    }
-  }
-
-  ${StyledGrid} ${SimpleButton} {
-    width: auto;
-  }
-
-  .globeIcon {
-    margin-top: 1.2rem;
-    font-size: 4rem;
-    color: var(--color-primary);
-  }
-`
+import { PopupContent, PopupFooter, PopupHeader, PopupLayout } from "../Layout/PopupLayout"
 
 export const AddEthereumNetwork = () => {
   const { t } = useTranslation("request")
@@ -99,38 +38,37 @@ export const AddEthereumNetwork = () => {
   const chainName = request.network.chainName
 
   return (
-    <Container>
-      <Header
-        text={<AppPill url={request.url} />}
-        nav={
-          <IconButton onClick={cancel}>
-            <XIcon />
-          </IconButton>
-        }
-      />
-      <Content>
-        <div>
-          <GlobeIcon className="globeIcon inline-block" />
+    <PopupLayout>
+      <PopupHeader>
+        <AppPill url={request.url} />
+      </PopupHeader>
+      <PopupContent>
+        <div className="flex h-full w-full flex-col items-center text-center">
+          <GlobeIcon className="globeIcon text-primary mt-6 inline-block text-3xl" />
+          <h1 className="text-md mb-12 mt-8 font-bold">{t("Add Network")}</h1>
+          <p className="text-body-secondary leading-[2.6rem]">
+            <Trans t={t}>
+              This app wants to connect Talisman to the{" "}
+              <span className="bg-grey-850 text-body inline-block h-[2.6rem] items-center rounded-3xl px-3 font-light">
+                {chainName}
+              </span>{" "}
+              network.
+            </Trans>
+          </p>
+          <div className="grow"></div>
+          <div>
+            <NetworksDetailsButton network={request.network} />
+          </div>
         </div>
-        <h1>{t("Add Network")}</h1>
-        <p>
-          <Trans t={t}>
-            This app wants to connect Talisman to the <strong>{chainName}</strong> network.
-          </Trans>
-        </p>
-        <div className="grow"></div>
-        <div>
-          <NetworksDetailsButton network={request.network} />
-        </div>
-      </Content>
-      <Footer>
-        <StyledGrid>
-          <SimpleButton onClick={cancel}>{t("Reject")}</SimpleButton>
-          <SimpleButton primary onClick={approve}>
+      </PopupContent>
+      <PopupFooter>
+        <div className="grid w-full grid-cols-2 gap-8">
+          <Button onClick={cancel}>{t("Reject")}</Button>
+          <Button primary onClick={approve}>
             {t("Approve")}
-          </SimpleButton>
-        </StyledGrid>
-      </Footer>
-    </Container>
+          </Button>
+        </div>
+      </PopupFooter>
+    </PopupLayout>
   )
 }

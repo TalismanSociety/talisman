@@ -1,13 +1,10 @@
 import { Erc20Token } from "@core/domains/tokens/types"
 import * as Sentry from "@sentry/browser"
-import HeaderBlock from "@talisman/components/HeaderBlock"
-import { Modal } from "@talisman/components/Modal"
-import { ModalDialog } from "@talisman/components/ModalDialog"
+import { HeaderBlock } from "@talisman/components/HeaderBlock"
 import { notify } from "@talisman/components/Notifications"
 import { useOpenClose } from "@talisman/hooks/useOpenClose"
 import { api } from "@ui/api"
 import { AnalyticsPage } from "@ui/api/analytics"
-import Layout from "@ui/apps/dashboard/layout"
 import { AssetLogoBase } from "@ui/domains/Asset/AssetLogo"
 import { NetworkSelect } from "@ui/domains/Ethereum/NetworkSelect"
 import { useAnalyticsPageView } from "@ui/hooks/useAnalyticsPageView"
@@ -17,7 +14,11 @@ import { isCustomErc20Token } from "@ui/util/isCustomErc20Token"
 import { useCallback, useEffect, useMemo, useState } from "react"
 import { Trans, useTranslation } from "react-i18next"
 import { useNavigate, useParams } from "react-router-dom"
+import { ModalDialog } from "talisman-ui"
+import { Modal } from "talisman-ui"
 import { Button, FormFieldContainer, FormFieldInputText } from "talisman-ui"
+
+import { DashboardLayout } from "../../layout/DashboardLayout"
 
 const ConfirmRemove = ({
   open,
@@ -56,7 +57,7 @@ const ConfirmRemove = ({
   }, [navigate, token, t])
 
   return (
-    <Modal open={Boolean(open && saved)} onClose={onClose}>
+    <Modal isOpen={Boolean(open && saved)} onDismiss={onClose}>
       <ModalDialog title={t("Remove Token")} onClose={onClose}>
         <div className="text-body-secondary mt-4 space-y-16">
           <div className="text-base">
@@ -108,7 +109,7 @@ export const TokenPage = () => {
   if (!erc20Token || !network) return null
 
   return (
-    <Layout analytics={ANALYTICS_PAGE} withBack centered>
+    <DashboardLayout analytics={ANALYTICS_PAGE} withBack centered>
       <HeaderBlock
         title={t("{{tokenSymbol}} on {{networkName}}", {
           tokenSymbol: erc20Token.symbol,
@@ -183,6 +184,6 @@ export const TokenPage = () => {
         </div>
       </form>
       <ConfirmRemove open={isOpen} onClose={close} token={erc20Token} />
-    </Layout>
+    </DashboardLayout>
   )
 }

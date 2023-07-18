@@ -1,94 +1,21 @@
 import { Token } from "@core/domains/tokens/types"
 import { useOpenClose } from "@talisman/hooks/useOpenClose"
-import { ChevronRightIcon } from "@talisman/theme/icons"
+import { ChevronRightIcon, XIcon } from "@talisman/theme/icons"
 import { classNames } from "@talismn/util"
 import useToken from "@ui/hooks/useToken"
 import { useCallback } from "react"
-import styled from "styled-components"
+import { useTranslation } from "react-i18next"
+import { Modal } from "talisman-ui"
 
 import { TokenLogo } from "./TokenLogo"
-import { TokenPickerModal } from "./TokenPickerModal"
-
-const Amount = styled.div`
-  background: var(--color-background-muted-3x);
-  border-radius: var(--border-radius-tiny);
-  height: 7.2rem;
-  padding: 1.6rem;
-  display: flex;
-  flex-direction: row-reverse; // l33t trick to make the prefix color change possible
-  align-items: center;
-
-  span,
-  input {
-    font-size: var(--font-size-xlarge);
-    line-height: var(--font-size-xlarge);
-  }
-
-  span.prefix {
-    color: var(--color-background-muted-2x);
-  }
-  input:not(:placeholder-shown) + span.prefix {
-    color: var(--color-mid);
-  }
-
-  // hide input number buttons
-  /* Chrome, Safari, Edge, Opera */
-  input::-webkit-outer-spin-button,
-  input::-webkit-inner-spin-button {
-    -webkit-appearance: none;
-    margin: 0;
-  }
-  /* Firefox */
-  input[type="number"] {
-    -moz-appearance: textfield;
-  }
-
-  input {
-    min-width: 0; // workaround user agent
-    background: none;
-    color: var(--color-mid);
-    border: none;
-  }
-
-  button {
-    height: 4rem;
-    border: none;
-    border-radius: var(--border-radius-tiny);
-    background-color: #333333;
-    background-color: rgba(var(--color-primary-raw), 0.1);
-    cursor: pointer;
-    outline: none;
-    font-size: var(--font-size-small);
-    color: var(--color-primary);
-    svg {
-      font-size: var(--font-size-normal);
-    }
-    padding: 0.8rem;
-    white-space: nowrap;
-    display: flex;
-    align-items: center;
-    opacity: 0.8;
-    :hover {
-      opacity: 1;
-    }
-  }
-  button.token {
-    background-color: #333333;
-    color: var(--color-mid);
-    font-size: var(--font-size-normal);
-    gap: 0.8rem;
-    div {
-      width: 2.4rem;
-      height: 2.4rem;
-    }
-  }
-`
+import { TokenPicker } from "./TokenPicker"
 
 type TokenAmountFieldProps = {
   fieldProps: React.DetailedHTMLProps<React.InputHTMLAttributes<HTMLInputElement>, HTMLInputElement>
 } & {
   prefix?: string
   tokenId?: string
+  address?: string
   onTokenChanged?: (tokenId: string) => void
   tokensFilter?: (token: Token) => boolean
   onTokenButtonClick?: () => void // use for analytics only
@@ -101,11 +28,13 @@ type TokenAmountFieldProps = {
 export const TokenAmountField = ({
   prefix,
   tokenId,
+  address,
   onTokenChanged,
   onTokenButtonClick,
   fieldProps,
   tokensFilter,
 }: TokenAmountFieldProps) => {
+  const { t } = useTranslation("common")
   const { open, isOpen, close } = useOpenClose()
   const token = useToken(tokenId)
 
@@ -124,33 +53,64 @@ export const TokenAmountField = ({
 
   return (
     <>
-      <Amount>
+      <div
+        className={classNames("bg-grey-800 flex h-36 flex-row-reverse items-center rounded-sm p-8")}
+      >
         {/* CSS trick here we need prefix to be after input to have a valid CSS rule for prefix color change base on input beeing empty
         items will be displayed in reverse order to make this workaround possible */}
         <button
           type="button"
           onClick={handleTokenButtonClick}
-          className={classNames("shrink-0", token && "token")}
+          className={classNames(
+            "bg-primary/10 text-primary flex h-20 shrink-0 items-center whitespace-nowrap rounded-sm px-4 text-sm opacity-80 hover:opacity-100",
+            token && "!bg-grey-750 !text-body-secondary hover:!bg-grey-700 gap-4 !text-base"
+          )}
         >
           {token ? (
             <>
-              <TokenLogo tokenId={tokenId} /> {token.symbol}
+              <TokenLogo tokenId={tokenId} className="inline-block text-lg" /> {token.symbol}
             </>
           ) : (
             <>
-              Choose Token <ChevronRightIcon />
+              Choose Token <ChevronRightIcon className="inline-block text-base" />
             </>
           )}
         </button>
-        <input type="number" placeholder="100" autoComplete="off" {...fieldProps} />
-        {!!prefix && <span className="prefix">{prefix}</span>}
-      </Amount>
-      <TokenPickerModal
-        isOpen={isOpen}
-        close={close}
-        filter={tokensFilter}
-        onTokenSelect={handleTokenSelect}
-      />
+        <input
+          type="number"
+          inputMode="decimal"
+          placeholder="100"
+          autoComplete="off"
+          {...fieldProps}
+          className={classNames(
+            "text-secondary peer min-w-0 appearance-none border-none bg-transparent text-xl leading-none"
+          )}
+        />
+        {!!prefix && (
+          <span className={classNames("prefix peer-placeholder-shown:text-body-disabled text-xl")}>
+            {prefix}
+          </span>
+        )}
+      </div>
+      <Modal isOpen={isOpen} onDismiss={close}>
+        <div className=" text-body-secondary bg-grey-850 flex h-[50rem] w-[42rem] flex-col overflow-hidden rounded">
+          <div className="flex w-full items-center p-10">
+            <div className="w-12"></div>
+            <div className="flex-grow text-center">{t("Select a token")}</div>
+            <button className="hover:text-body text-lg" onClick={close}>
+              <XIcon />
+            </button>
+          </div>
+          <TokenPicker
+            className="[&>section]:bg-grey-800 flex-grow"
+            address={address}
+            onSelect={handleTokenSelect}
+            ownedOnly
+            showEmptyBalances
+            tokenFilter={tokensFilter}
+          />
+        </div>
+      </Modal>
     </>
   )
 }

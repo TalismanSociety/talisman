@@ -1,12 +1,9 @@
 import { AccountsCatalogTree } from "@core/domains/accounts/types"
-import Dialog from "@talisman/components/Dialog"
-import { Modal } from "@talisman/components/Modal"
-import { ModalDialog } from "@talisman/components/ModalDialog"
 import { provideContext } from "@talisman/util/provideContext"
 import { api } from "@ui/api"
 import { useCallback, useEffect, useState } from "react"
-import { useTranslation } from "react-i18next"
-import styled from "styled-components"
+import { Trans, useTranslation } from "react-i18next"
+import { Button, Modal, ModalDialog } from "talisman-ui"
 
 const useDeleteFolderModalProvider = () => {
   const [id, setId] = useState<string | null>(null)
@@ -45,7 +42,7 @@ export const DeleteFolderModal = () => {
   const { id, name, treeName, close, isOpen } = useDeleteFolderModal()
 
   return (
-    <Modal open={isOpen}>
+    <Modal containerId="main" isOpen={isOpen} onDismiss={close}>
       <ModalDialog title={t("Delete Folder")} onClose={close}>
         {id !== null && name !== null && treeName !== null && (
           <DeleteFolder
@@ -60,15 +57,6 @@ export const DeleteFolderModal = () => {
     </Modal>
   )
 }
-
-const StyledDialog = styled(Dialog)`
-  .error {
-    font-size: var(--font-size-small);
-    color: var(--color-status-warning);
-    height: 1.6em;
-    margin-bottom: -1.6em;
-  }
-`
 
 interface DeleteFolderProps {
   id: string
@@ -88,7 +76,7 @@ const DeleteFolder = ({
   className,
 }: DeleteFolderProps) => {
   const { t } = useTranslation("admin")
-  const submit = useCallback(async () => {
+  const handleDeleteClick = useCallback(async () => {
     await api.accountsCatalogMutate([
       {
         type: "removeFolder",
@@ -100,13 +88,23 @@ const DeleteFolder = ({
   }, [id, onConfirm, treeName])
 
   return (
-    <StyledDialog
-      className={className}
-      extra={<div>{t("Delete '{{name}}'?", { name })}</div>}
-      confirmText={t("Delete")}
-      cancelText={t("Cancel")}
-      onConfirm={submit}
-      onCancel={onCancel}
-    />
+    <div className={className}>
+      <p className="text-body-secondary text-sm">
+        <Trans
+          t={t}
+          defaults="Confirm to delete folder <Highlight>{{name}}</Highlight>."
+          components={{ Highlight: <span className="text-body" /> }}
+          values={{ name }}
+        />
+      </p>
+      <div className="mt-8 grid grid-cols-2 gap-8">
+        <Button type="button" onClick={onCancel}>
+          {t("Cancel")}
+        </Button>
+        <Button primary onClick={handleDeleteClick}>
+          {t("Delete")}
+        </Button>
+      </div>
+    </div>
   )
 }

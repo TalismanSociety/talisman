@@ -14,9 +14,9 @@ import { isEvmToken } from "@ui/util/isEvmToken"
 import { FC, ReactNode, useCallback, useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
 
-import AccountAvatar from "../Account/Avatar"
 import Fiat from "../Asset/Fiat"
 import Tokens from "../Asset/Tokens"
+import { AccountIcon } from "./AccountIcon"
 
 type AccountPickerAccount = {
   address: string
@@ -80,7 +80,7 @@ const AccountRow: FC<AccountRowProps> = ({
       )}
       disabled={disabled}
     >
-      <AccountAvatar
+      <AccountIcon
         address={account.address}
         genesisHash={account.genesisHash}
         className="!text-lg"

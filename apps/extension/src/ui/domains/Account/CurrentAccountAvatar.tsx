@@ -3,13 +3,13 @@ import { AccountJsonAny } from "@core/domains/accounts/types"
 import { WithTooltip } from "@talisman/components/Tooltip"
 import { classNames } from "@talismn/util"
 import { AllAccountsIcon } from "@ui/domains/Account/AllAccountsIcon"
-import AccountAvatar from "@ui/domains/Account/Avatar"
 import { useSearchParamsSelectedAccount } from "@ui/hooks/useSearchParamsSelectedAccount"
 import { useSearchParamsSelectedFolder } from "@ui/hooks/useSearchParamsSelectedFolder"
 import { useMemo } from "react"
 import { useTranslation } from "react-i18next"
 
 import { AccountFolderIcon } from "./AccountFolderIcon"
+import { AccountIcon } from "./AccountIcon"
 
 const Avatar = ({
   account,
@@ -21,7 +21,7 @@ const Avatar = ({
   folder?: TreeFolder
 }) => {
   return account?.address ? (
-    <AccountAvatar
+    <AccountIcon
       className={className}
       address={account.address}
       genesisHash={account.genesisHash}

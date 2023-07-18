@@ -1,11 +1,11 @@
 import { log } from "@core/log"
 import { yupResolver } from "@hookform/resolvers/yup"
-import { ModalDialog } from "@talisman/components/ModalDialog"
 import { KeyIcon } from "@talisman/theme/icons"
 import { FC, useCallback, useEffect, useMemo } from "react"
 import { useForm } from "react-hook-form"
 import { Trans, useTranslation } from "react-i18next"
 import { CSSProperties } from "styled-components"
+import { ModalDialog } from "talisman-ui"
 import { Button, FormFieldContainer, FormFieldInputText, Modal, useOpenClose } from "talisman-ui"
 import * as yup from "yup"
 

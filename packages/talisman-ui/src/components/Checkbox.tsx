@@ -22,7 +22,7 @@ export const Checkbox = forwardRef<HTMLInputElement, CheckboxProps>(
         className={classNames(
           "inline-flex items-center justify-start gap-[0.5em]",
           !disabled && "cursor-pointer",
-          containerProps?.className && containerProps.className
+          className
         )}
         {...containerProps}
       >
@@ -33,8 +33,7 @@ export const Checkbox = forwardRef<HTMLInputElement, CheckboxProps>(
             "checked:hover:border-body-secondary checked:active hover:border-white checked:active:focus-visible:border-transparent",
             "active:bg-grey-700",
             "focus-visible:border-transparent focus-visible:shadow-none focus-visible:outline-offset-0 focus-visible:outline-white focus-visible:ring-0",
-            "disabled:checked:bg-grey-700 disabled:border-body-disabled disabled:cursor-default disabled:bg-transparent disabled:checked:border-transparent",
-            className
+            "disabled:checked:bg-grey-700 disabled:border-body-disabled disabled:cursor-default disabled:bg-transparent disabled:checked:border-transparent"
           )}
           ref={ref}
           disabled={disabled}

@@ -26,10 +26,13 @@ export const AccountTypeIcon: FC<AccountTypeIconProps> = ({ origin, showLinked, 
 
   if (!origin || !Icon) return null
 
+  // wrap icon with a span as tooltip trigger needs a ref to it's children
   return (
     <Tooltip>
-      <TooltipTrigger className="flex flex-col justify-center">
-        <Icon className={classNames("shrink-0", className)} />
+      <TooltipTrigger asChild className="flex flex-col justify-center">
+        <span>
+          <Icon className={classNames(className)} />
+        </span>
       </TooltipTrigger>
       <TooltipContent>{tooltip}</TooltipContent>
     </Tooltip>

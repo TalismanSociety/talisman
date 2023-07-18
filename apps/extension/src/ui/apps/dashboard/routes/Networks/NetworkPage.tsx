@@ -1,11 +1,12 @@
-import HeaderBlock from "@talisman/components/HeaderBlock"
+import { HeaderBlock } from "@talisman/components/HeaderBlock"
 import { AnalyticsPage } from "@ui/api/analytics"
-import Layout from "@ui/apps/dashboard/layout"
 import { NetworkForm } from "@ui/domains/Ethereum/Networks/NetworkForm"
 import { useAnalyticsPageView } from "@ui/hooks/useAnalyticsPageView"
 import { useCallback } from "react"
 import { Trans, useTranslation } from "react-i18next"
 import { useNavigate, useParams } from "react-router-dom"
+
+import { DashboardLayout } from "../../layout/DashboardLayout"
 
 const ANALYTICS_PAGE: AnalyticsPage = {
   container: "Fullscreen",
@@ -29,7 +30,7 @@ export const NetworkPage = () => {
   }, [navigate])
 
   return (
-    <Layout analytics={ANALYTICS_PAGE} withBack centered>
+    <DashboardLayout analytics={ANALYTICS_PAGE} withBack centered>
       <HeaderBlock
         title={t("{{editMode}} EVM Network", { editMode: evmNetworkId ? t("Edit") : t("Add") })}
         text={
@@ -42,6 +43,6 @@ export const NetworkPage = () => {
         }
       />
       <NetworkForm evmNetworkId={evmNetworkId} onSubmitted={handleSubmitted} />
-    </Layout>
+    </DashboardLayout>
   )
 }

@@ -1,8 +1,5 @@
 import { AccountsCatalogTree } from "@core/domains/accounts/types"
 import { yupResolver } from "@hookform/resolvers/yup"
-import Dialog from "@talisman/components/Dialog"
-import { Modal } from "@talisman/components/Modal"
-import { ModalDialog } from "@talisman/components/ModalDialog"
 import { useOpenClose } from "@talisman/hooks/useOpenClose"
 import { provideContext } from "@talisman/util/provideContext"
 import { api } from "@ui/api"
@@ -10,7 +7,7 @@ import useAccountsCatalog from "@ui/hooks/useAccountsCatalog"
 import { RefCallback, useCallback, useEffect, useMemo, useRef } from "react"
 import { useForm } from "react-hook-form"
 import { useTranslation } from "react-i18next"
-import styled from "styled-components"
+import { Button, Modal, ModalDialog } from "talisman-ui"
 import { Checkbox, FormFieldContainer, FormFieldInputText } from "talisman-ui"
 import * as yup from "yup"
 
@@ -35,22 +32,13 @@ export const NewFolderModal = () => {
   const { close, isOpen } = useNewFolderModal()
 
   return (
-    <Modal open={isOpen}>
+    <Modal containerId="main" isOpen={isOpen} onDismiss={close}>
       <ModalDialog title={t("New Folder")} onClose={close}>
         <NewFolder onConfirm={close} onCancel={close} />
       </ModalDialog>
     </Modal>
   )
 }
-
-const StyledDialog = styled(Dialog)`
-  .error {
-    font-size: var(--font-size-small);
-    color: var(--color-status-warning);
-    height: 1.6em;
-    margin-bottom: -1.6em;
-  }
-`
 
 type FormData = {
   name: string
@@ -142,29 +130,23 @@ const NewFolder = ({ onConfirm, onCancel, className }: NewFolderProps) => {
   }, [setFocus])
 
   return (
-    <StyledDialog
-      className={className}
-      text={t("Folder name")}
-      extra={
-        <form onSubmit={handleSubmit(submit)}>
-          <FormFieldContainer error={errors.name?.message}>
-            <FormFieldInputText
-              {...registerName}
-              ref={handleNameRef}
-              placeholder={t("Choose a name")}
-            />
-          </FormFieldContainer>
-          {catalog.watched.length > 0 && (
-            <Checkbox {...register("followedOnly")}>Followed only</Checkbox>
-          )}
-        </form>
-      }
-      confirmText={t("Save")}
-      cancelText={t("Cancel")}
-      onConfirm={handleSubmit(submit)}
-      onCancel={onCancel}
-      confirmDisabled={!isValid}
-      confirming={isSubmitting}
-    />
+    <form className={className} onSubmit={handleSubmit(submit)}>
+      <FormFieldContainer label={t("Folder name")} error={errors.name?.message}>
+        <FormFieldInputText
+          {...registerName}
+          ref={handleNameRef}
+          placeholder={t("Choose a name")}
+        />
+      </FormFieldContainer>
+      {catalog.watched.length > 0 && (
+        <Checkbox {...register("followedOnly")}>Followed only</Checkbox>
+      )}
+      <div className="mt-12 grid grid-cols-2 gap-8">
+        <Button onClick={onCancel}>{t("Cancel")}</Button>
+        <Button type="submit" primary disabled={!isValid} processing={isSubmitting}>
+          {t("Save")}
+        </Button>
+      </div>
+    </form>
   )
 }

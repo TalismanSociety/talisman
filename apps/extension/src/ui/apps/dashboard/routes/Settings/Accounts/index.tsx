@@ -1,7 +1,7 @@
-import HeaderBlock from "@talisman/components/HeaderBlock"
+import { HeaderBlock } from "@talisman/components/HeaderBlock"
 import { EyeIcon, FolderPlusIcon, TalismanHandIcon } from "@talisman/theme/icons"
 import { AnalyticsPage } from "@ui/api/analytics"
-import Layout from "@ui/apps/dashboard/layout"
+import { DashboardLayout } from "@ui/apps/dashboard/layout/DashboardLayout"
 import useAccounts from "@ui/hooks/useAccounts"
 import useAccountsCatalog from "@ui/hooks/useAccountsCatalog"
 import { useAnalyticsPageView } from "@ui/hooks/useAnalyticsPageView"
@@ -23,7 +23,7 @@ const ANALYTICS_PAGE: AnalyticsPage = {
   page: "Settings - Accounts",
 }
 
-export const Accounts = () => {
+export const AccountsPage = () => {
   const { t } = useTranslation("admin")
   useAnalyticsPageView(ANALYTICS_PAGE)
 
@@ -37,7 +37,7 @@ export const Accounts = () => {
   const newFolderModal = useNewFolderModal()
 
   return (
-    <Layout analytics={ANALYTICS_PAGE} withBack centered backTo="/settings">
+    <DashboardLayout analytics={ANALYTICS_PAGE} withBack centered backTo="/settings">
       <HeaderBlock
         title={t("Manage Accounts")}
         text={t("Select which accounts are shown on your portfolio")}
@@ -80,6 +80,6 @@ export const Accounts = () => {
       <NewFolderModal />
       <RenameFolderModal />
       <DeleteFolderModal />
-    </Layout>
+    </DashboardLayout>
   )
 }

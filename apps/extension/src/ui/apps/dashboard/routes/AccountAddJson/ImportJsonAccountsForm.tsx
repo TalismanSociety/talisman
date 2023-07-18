@@ -126,6 +126,7 @@ const JsonAccount: FC<{ account: JsonImportAccount; onSelect: (select: boolean) 
                 readOnly
                 checked={account.selected}
                 disabled={!account.isPrivateKeyAvailable || account.isExisting}
+                className="[&>input]:!border-body-disabled"
               />
             )}
           </button>

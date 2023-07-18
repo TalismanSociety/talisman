@@ -11,7 +11,7 @@ import sortBy from "lodash/sortBy"
 import { useCallback, useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
 
-import AccountAvatar from "../Account/Avatar"
+import { AccountIcon } from "../Account/AccountIcon"
 import { ChainLogo } from "../Asset/ChainLogo"
 import { CopyAddressLayout } from "./CopyAddressLayout"
 import { useCopyAddressWizard } from "./useCopyAddressWizard"
@@ -34,7 +34,7 @@ const ChainFormatButton = ({ format, onClick }: { format: ChainFormat; onClick?:
       {format.chainId ? (
         <ChainLogo className="shrink-0 text-xl" id={format.chainId} />
       ) : (
-        <AccountAvatar
+        <AccountIcon
           className="shrink-0 text-xl "
           address={format.address}
           type="polkadot-identicon"

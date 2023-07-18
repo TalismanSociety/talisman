@@ -1,6 +1,4 @@
 import { KnownRequestIdOnly } from "@core/libs/requests/types"
-import Button from "@talisman/components/Button"
-import Grid from "@talisman/components/Grid"
 import { notify } from "@talisman/components/Notifications"
 import { api } from "@ui/api"
 import { useAnalytics } from "@ui/hooks/useAnalytics"
@@ -8,8 +6,9 @@ import { useRequest } from "@ui/hooks/useRequest"
 import { FC, useCallback, useEffect, useMemo } from "react"
 import { Trans, useTranslation } from "react-i18next"
 import { useParams } from "react-router-dom"
+import { Button } from "talisman-ui"
 
-import Layout, { Content, Footer, Header } from "../Layout"
+import { PopupContent, PopupFooter, PopupHeader, PopupLayout } from "../Layout/PopupLayout"
 
 export const Metadata: FC<{ className?: string }> = ({ className }) => {
   const { t } = useTranslation("request")
@@ -49,9 +48,9 @@ export const Metadata: FC<{ className?: string }> = ({ className }) => {
   const { request } = metadataRequest
 
   return (
-    <Layout className={className}>
-      <Header text={"Update Metadata"} />
-      <Content>
+    <PopupLayout className={className}>
+      <PopupHeader>{t("Update Metadata")}</PopupHeader>
+      <PopupContent>
         <div>
           <div className="px-4 text-center">
             <h1 className="my-8 text-lg">{t("Your metadata is out of date")}</h1>
@@ -80,15 +79,15 @@ export const Metadata: FC<{ className?: string }> = ({ className }) => {
             </div>
           </div>
         </div>
-      </Content>
-      <Footer>
-        <Grid>
+      </PopupContent>
+      <PopupFooter>
+        <div className="grid grid-cols-2 gap-12">
           <Button onClick={reject}>{t("Cancel")}</Button>
           <Button primary onClick={approve}>
             {t("Approve")}
           </Button>
-        </Grid>
-      </Footer>{" "}
-    </Layout>
+        </div>
+      </PopupFooter>
+    </PopupLayout>
   )
 }

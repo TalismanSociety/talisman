@@ -1,20 +1,13 @@
 import passwordStore from "@core/domains/app/store.password"
-import Button, { ButtonGroup } from "@talisman/components/Button"
 import { Card } from "@talisman/components/Card"
-import { Drawer } from "@talisman/components/Drawer"
 import { useOpenClose } from "@talisman/hooks/useOpenClose"
 import { LockIcon } from "@talisman/theme/icons"
+import { classNames } from "@talismn/util"
 import { api } from "@ui/api"
 import { sendAnalyticsEvent } from "@ui/api/analytics"
 import { useCallback, useEffect } from "react"
 import { Trans, useTranslation } from "react-i18next"
-import styled from "styled-components"
-
-const StackedButtonGroup = styled(ButtonGroup)`
-  flex-direction: column;
-  align-items: stretch;
-  gap: 1rem;
-`
+import { Button, Drawer } from "talisman-ui"
 
 type Props = {
   className?: string
@@ -22,25 +15,26 @@ type Props = {
   onReject: () => void
 }
 
-export const AlertCard = styled(({ className, onAccept, onReject }: Props) => {
+export const AlertCard = ({ className, onAccept, onReject }: Props) => {
   const { t } = useTranslation()
   return (
     <Card
-      className={className}
+      className={classNames("text-body-secondary !rounded-b-none text-center", className)}
       title={
-        <div className="flex flex-col p-2">
-          <LockIcon className="icon p-1" />
-          <span className="mt-2">{t("Security Upgrade")}</span>
+        <div className="flex flex-col items-center p-2">
+          <LockIcon className="icon text-primary inline-block p-1 text-3xl" />
+          <div className="text-body mt-4">{t("Security Upgrade")}</div>
         </div>
       }
       description={
-        <p>
+        <p className="text-sm">
           <Trans t={t}>
             We’re upgrading our security measures, including enhanced password encryption.{" "}
             <a
               href="https://medium.com/we-are-talisman/talismans-security-model-1e60391694c0"
               target="_blank"
               rel="noreferrer"
+              className="text-body underline"
             >
               Learn more
             </a>{" "}
@@ -49,66 +43,18 @@ export const AlertCard = styled(({ className, onAccept, onReject }: Props) => {
         </p>
       }
       cta={
-        <StackedButtonGroup>
-          <Button primary onClick={onAccept}>
+        <div className="flex w-full flex-col gap-5">
+          <Button className="w-full" primary onClick={onAccept}>
             {t("Continue")}
           </Button>
-          <Button onClick={onReject}>Not for now</Button>
-        </StackedButtonGroup>
+          <Button className="w-full" onClick={onReject}>
+            Not for now
+          </Button>
+        </div>
       }
     />
   )
-})`
-  margin-bottom: 0;
-  border-bottom-left-radius: 0;
-  border-bottom-right-radius: 0;
-  text-align: center;
-
-  .icon {
-    color: var(--color-primary);
-  }
-
-  .card-title {
-    gap: 1rem;
-    svg {
-      width: 4rem;
-      height: 4rem;
-    }
-  }
-
-  .card-description {
-    color: var(--color-mid);
-    font-size: small;
-
-    > p {
-      font-size: var(--font-size-small);
-      > a {
-        text-decoration: underline;
-        color: var(--color-foreground-muted);
-        opacity: 1;
-      }
-
-      & .learn-more {
-        color: var(--color-foreground-muted);
-        text-decoration: underline;
-        cursor: pointer;
-      }
-    }
-  }
-
-  .card-cta > * {
-    width: 100%;
-  }
-
-  a:link,
-  a:visited {
-    color: var(--color-mid);
-  }
-  a:hover,
-  a:active {
-    color: var(--color-foreground);
-  }
-`
+}
 
 const PasswordMigrationAlertPopupDrawer = () => {
   const { close, isOpen, setIsOpen } = useOpenClose()
@@ -142,7 +88,7 @@ const PasswordMigrationAlertPopupDrawer = () => {
   }, [close])
 
   return (
-    <Drawer open={isOpen} anchor="bottom">
+    <Drawer isOpen={isOpen} anchor="bottom">
       <AlertCard onAccept={handleAccept} onReject={handleReject} />
     </Drawer>
   )

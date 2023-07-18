@@ -16,37 +16,37 @@ import { FC, PropsWithChildren, Suspense, lazy, useEffect, useRef } from "react"
 import { useTranslation } from "react-i18next"
 import { Navigate, Route, Routes, useMatch } from "react-router-dom"
 
-import Layout from "./layout"
-import About from "./routes/About"
-import AccountAddDerived from "./routes/AccountAddDerived"
+import { DashboardLayout } from "./layout/DashboardLayout"
+import { AccounAddDerivedPage } from "./routes/AccountAdd/AccountAddDerivedPage"
+import { AccountAddQrWizard } from "./routes/AccountAdd/AccountAddQrWizard"
+import { AccountAddSecretWizard } from "./routes/AccountAdd/AccountAddSecretWizard"
+import { AccountAddTypePickerPage } from "./routes/AccountAdd/AccountAddTypePickerPage"
+import { AccountAddWatchedPage } from "./routes/AccountAdd/AccountAddWatchedPage"
 import { AccountAddJsonPage } from "./routes/AccountAddJson"
-import { AccountAddQr } from "./routes/AccountAddQr"
-import { AccountAddSecret } from "./routes/AccountAddSecret"
-import AccountAddTypePicker from "./routes/AccountAddTypePicker"
-import { AccountAddWatched } from "./routes/AccountAddWatched"
 import { NetworkPage } from "./routes/Networks/NetworkPage"
 import { NetworksPage } from "./routes/Networks/NetworksPage"
 import { PhishingPage } from "./routes/PhishingPage"
-import { Portfolio } from "./routes/Portfolio"
-import Settings from "./routes/Settings"
-import { Accounts } from "./routes/Settings/Accounts"
+import { PortfolioRoutes } from "./routes/Portfolio"
+import { AboutPage } from "./routes/Settings/AboutPage"
+import { AccountsPage } from "./routes/Settings/Accounts"
 import { DeleteFolderModalProvider } from "./routes/Settings/Accounts/DeleteFolderModal"
 import { NewFolderModalProvider } from "./routes/Settings/Accounts/NewFolderModal"
 import { RenameFolderModalProvider } from "./routes/Settings/Accounts/RenameFolderModal"
-import AddressBook from "./routes/Settings/AddressBook"
-import { AnalyticsOptIn } from "./routes/Settings/AnalyticsOptIn"
-import { AutoLockTimer } from "./routes/Settings/AutoLockTimer"
-import ChangePassword from "./routes/Settings/ChangePassword"
-import { LanguageSettings } from "./routes/Settings/LanguageSettings"
-import Options from "./routes/Settings/Options"
-import SecurityPrivacySettings from "./routes/Settings/SecurityPrivacySettings"
-import SitesConnected from "./routes/Settings/SitesConnected"
+import { AddressBookPage } from "./routes/Settings/AddressBookPage"
+import { AnalyticsOptInPage } from "./routes/Settings/AnalyticsOptInPage"
+import { AutoLockTimerPage } from "./routes/Settings/AutoLockTimerPage"
+import { ChangePasswordPage } from "./routes/Settings/ChangePasswordPage"
+import { LanguageSettingsPage } from "./routes/Settings/LanguageSettingsPage"
+import { OptionsPage } from "./routes/Settings/OptionsPage"
+import { SecurityPrivacySettingsPage } from "./routes/Settings/SecurityPrivacySettingsPage"
+import { SettingsPage } from "./routes/Settings/SettingsPage"
+import { TrustedSitesPage } from "./routes/Settings/TrustedSitesPage"
 import { AddCustomTokenPage } from "./routes/Tokens/AddCustomTokenPage"
 import { TokenPage } from "./routes/Tokens/TokenPage"
 import { TokensPage } from "./routes/Tokens/TokensPage"
 
 // lazy load this one to prevent polkadot/hw-ledger to be loaded (slow)
-const AccountAddLedger = lazy(() => import("./routes/AccountAddLedger"))
+const AccountAddLedgerWizard = lazy(() => import("./routes/AccountAdd/AccountAddLedgerWizard"))
 
 const DashboardInner = () => {
   const isLoggedIn = useIsLoggedIn()
@@ -83,37 +83,37 @@ const DashboardInner = () => {
       fallback={
         <>
           <SuspenseTracker name="Dashboard" />
-          <Layout />
+          <DashboardLayout />
         </>
       }
     >
       <Routes>
-        <Route path="portfolio/*" element={<Portfolio />} />
+        <Route path="portfolio/*" element={<PortfolioRoutes />} />
         <Route path="accounts">
           <Route path="add">
-            <Route path="" element={<AccountAddTypePicker />} />
-            <Route path="derived" element={<AccountAddDerived />} />
+            <Route path="" element={<AccountAddTypePickerPage />} />
+            <Route path="derived" element={<AccounAddDerivedPage />} />
             <Route path="json" element={<AccountAddJsonPage />} />
-            <Route path="secret/*" element={<AccountAddSecret />} />
-            <Route path="ledger/*" element={<AccountAddLedger />} />
-            <Route path="qr/*" element={<AccountAddQr />} />
-            <Route path="watched" element={<AccountAddWatched />} />
+            <Route path="secret/*" element={<AccountAddSecretWizard />} />
+            <Route path="ledger/*" element={<AccountAddLedgerWizard />} />
+            <Route path="qr/*" element={<AccountAddQrWizard />} />
+            <Route path="watched" element={<AccountAddWatchedPage />} />
             <Route path="*" element={<Navigate to="" replace />} />
           </Route>
           <Route path="" element={<Navigate to="/portfolio" />} />
         </Route>
         <Route path="settings">
-          <Route path="" element={<Settings />} />
-          <Route path="connected-sites" element={<SitesConnected />} />
-          <Route path="address-book" element={<AddressBook />} />
-          <Route path="options" element={<Options />} />
-          <Route path="accounts" element={<Accounts />} />
-          <Route path="language" element={<LanguageSettings />} />
-          <Route path="security-privacy-settings" element={<SecurityPrivacySettings />} />
-          <Route path="change-password" element={<ChangePassword />} />
-          <Route path="autolock" element={<AutoLockTimer />} />
-          <Route path="about" element={<About />} />
-          <Route path="analytics" element={<AnalyticsOptIn />} />
+          <Route path="" element={<SettingsPage />} />
+          <Route path="connected-sites" element={<TrustedSitesPage />} />
+          <Route path="address-book" element={<AddressBookPage />} />
+          <Route path="options" element={<OptionsPage />} />
+          <Route path="accounts" element={<AccountsPage />} />
+          <Route path="language" element={<LanguageSettingsPage />} />
+          <Route path="security-privacy-settings" element={<SecurityPrivacySettingsPage />} />
+          <Route path="change-password" element={<ChangePasswordPage />} />
+          <Route path="autolock" element={<AutoLockTimerPage />} />
+          <Route path="about" element={<AboutPage />} />
+          <Route path="analytics" element={<AnalyticsOptInPage />} />
         </Route>
         <Route path="tokens">
           <Route path="" element={<TokensPage />} />
@@ -139,6 +139,7 @@ const PreventPhishing: FC<PropsWithChildren> = ({ children }) => {
   return <>{children}</>
 }
 
+// TODO move NewFolderModalProvider, RenameFolderModalProvider, DeleteFolderModalProvider inside the only page that uses them
 const Dashboard = () => (
   <PreventPhishing>
     <SelectedAccountProvider>
