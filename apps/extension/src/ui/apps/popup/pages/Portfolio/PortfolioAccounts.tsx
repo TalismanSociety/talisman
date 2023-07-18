@@ -21,9 +21,10 @@ import { useAnalytics } from "@ui/hooks/useAnalytics"
 import useBalances from "@ui/hooks/useBalances"
 import { useFirstAccountColors } from "@ui/hooks/useFirstAccountColors"
 import { useSearchParamsSelectedFolder } from "@ui/hooks/useSearchParamsSelectedFolder"
-import { MouseEventHandler, Suspense, useCallback, useEffect, useMemo, useState } from "react"
+import { MouseEventHandler, Suspense, useCallback, useEffect, useMemo, useRef } from "react"
 import { useTranslation } from "react-i18next"
 import { useNavigate } from "react-router-dom"
+import { useHoverDirty } from "react-use"
 import { IconButton } from "talisman-ui"
 import { MYSTICAL_PHYSICS_V3, MysticalBackground } from "talisman-ui"
 
@@ -208,7 +209,7 @@ const AllAccountsHeaderBackground = () => {
 
   return (
     <MysticalBackground
-      className="absolute left-0 top-0 h-full w-full backdrop-blur-3xl"
+      className="absolute left-0 top-0 h-full w-full overflow-hidden rounded-sm backdrop-blur-3xl"
       config={config}
     />
   )
@@ -217,23 +218,28 @@ const AllAccountsHeaderBackground = () => {
 const AllAccountsHeader = () => {
   const navigate = useNavigate()
   const handleClick = useCallback(() => navigate("/portfolio/assets"), [navigate])
-  const [mouseOver, setMouseOver] = useState(false)
+  const ref = useRef<HTMLDivElement>(null)
+  const isHovered = useHoverDirty(ref)
 
   return (
-    <button
-      className="hover:bg-grey-800 relative flex w-full cursor-pointer flex-col items-start gap-4 overflow-hidden rounded-sm p-6 hover:text-white"
-      onClick={handleClick}
-      onMouseOver={() => setMouseOver(true)}
-      onFocus={() => setMouseOver(true)}
-      onMouseOut={() => setMouseOver(false)}
-      onBlur={() => setMouseOver(false)}
-    >
-      <Suspense fallback={<SuspenseTracker name="AllAccountsHeaderBackground" />}>
-        <AllAccountsHeaderBackground />
-      </Suspense>
-
-      <TotalFiatBalance className="relative" mouseOver={mouseOver} />
-    </button>
+    <div ref={ref} className="relative h-[11.4rem] w-full">
+      <button
+        className={classNames(
+          "flex h-full w-full items-center justify-end gap-4 overflow-hidden rounded-sm p-6 text-lg",
+          "hover:bg-grey-800 text-body-secondary transition-colors duration-75 hover:text-white"
+        )}
+        onClick={handleClick}
+      >
+        <Suspense fallback={<SuspenseTracker name="AllAccountsHeaderBackground" />}>
+          <AllAccountsHeaderBackground />
+        </Suspense>
+        <ChevronRightIcon className="z-10" />
+      </button>
+      <TotalFiatBalance
+        className="pointer-events-none absolute left-0 top-0 z-10 h-full w-full px-6"
+        mouseOver={isHovered}
+      />
+    </div>
   )
 }
 
