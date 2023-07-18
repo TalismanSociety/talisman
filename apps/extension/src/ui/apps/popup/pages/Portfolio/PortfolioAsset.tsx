@@ -7,6 +7,7 @@ import { usePortfolio } from "@ui/domains/Portfolio/context"
 import { useDisplayBalances } from "@ui/domains/Portfolio/useDisplayBalances"
 import { useTokenBalancesSummary } from "@ui/domains/Portfolio/useTokenBalancesSummary"
 import { useAnalytics } from "@ui/hooks/useAnalytics"
+import useBalances from "@ui/hooks/useBalances"
 import { useSearchParamsSelectedAccount } from "@ui/hooks/useSearchParamsSelectedAccount"
 import { useCallback, useEffect, useMemo } from "react"
 import { useTranslation } from "react-i18next"
@@ -57,19 +58,22 @@ export const PortfolioAsset = () => {
   const { symbol } = useParams()
   const [search] = useSearchParams()
   const { account } = useSearchParamsSelectedAccount()
-  const { allBalances } = usePortfolio()
+  const allBalances = useBalances()
+  const { networkBalances } = usePortfolio()
   const { popupOpenEvent } = useAnalytics()
   const isTestnet = search.get("testnet") === "true"
 
-  const symbolBalances = useMemo(
+  const accountBalances = useMemo(
+    () => (account ? allBalances.find((b) => b.address === account.address) : networkBalances),
+    [account, allBalances, networkBalances]
+  )
+
+  const balances = useMemo(
     // TODO: Move the association between a token on multiple chains into the backend / subsquid.
     // We will eventually need to handle the scenario where two tokens with the same symbol are not the same token.
-    () => allBalances.find((b) => b.token?.symbol === symbol && b.token?.isTestnet === isTestnet),
-    [allBalances, isTestnet, symbol]
-  )
-  const accountBalances = useMemo(
-    () => (account ? symbolBalances.find((b) => b.address === account.address) : symbolBalances),
-    [account, symbolBalances]
+    () =>
+      accountBalances.find((b) => b.token?.symbol === symbol && b.token?.isTestnet === isTestnet),
+    [accountBalances, isTestnet, symbol]
   )
 
   useEffect(() => {
@@ -78,5 +82,5 @@ export const PortfolioAsset = () => {
 
   if (!symbol) return <Navigate to="/portfolio" />
 
-  return <PageContent balances={accountBalances} symbol={symbol} />
+  return <PageContent balances={balances} symbol={symbol} />
 }
