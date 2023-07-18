@@ -1,9 +1,9 @@
-import { AccountsCatalogStore } from "@core/domains/accounts/store.catalog"
 import {
-  AccountJsonAny,
   AccountsCatalogTree,
-  RequestAccountsCatalogMutate,
-} from "@core/domains/accounts/types"
+  RequestAccountsCatalogAction,
+  runActionOnTrees,
+} from "@core/domains/accounts/helpers.catalog"
+import { AccountJsonAny } from "@core/domains/accounts/types"
 import {
   DndContext,
   DragEndEvent,
@@ -139,7 +139,7 @@ export const AccountsList = ({
             ? ({ type: "folder", id: nextItem.id } as const)
             : undefined
 
-        const mutation: RequestAccountsCatalogMutate =
+        const action: RequestAccountsCatalogAction =
           activeTreeItem.type === "account"
             ? {
                 type: "moveAccount",
@@ -150,12 +150,20 @@ export const AccountsList = ({
               }
             : { type: "moveFolder", tree: treeName, id: activeTreeItem.id, beforeItem }
 
+        // in order for the drag and drop UI to work correctly, we have to immediately update the state in react
+        // i.e. we can't wait for the `api.accountsCatalogRunActions` call to complete
+        //
+        // if we try to wait, the hovering element will return to its old location instead of the new location that is has been dropped into
+        //
+        // by calling the same method here which the backend will call on its store, we'll predict the outcome without waiting
+        //
+        // once the backend has processed the action, the state in the UI will be thrown away in favour of the new backend state
         setItems((items) => {
           const newItems = items.slice()
-          AccountsCatalogStore.executeMutationOnTrees({ [treeName]: newItems }, mutation)
+          runActionOnTrees({ [treeName]: newItems })(action)
           return newItems
         })
-        api.accountsCatalogMutate([mutation])
+        api.accountsCatalogRunActions([action])
       }
     },
     [items, projected, resetState, treeName]

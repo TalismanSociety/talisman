@@ -1,5 +1,5 @@
-import { TreeFolder, TreeItem } from "@core/domains/accounts/store.catalog"
-import { AccountType, AccountsCatalogTree } from "@core/domains/accounts/types"
+import { AccountsCatalogTree, TreeFolder, TreeItem } from "@core/domains/accounts/helpers.catalog"
+import { AccountType } from "@core/domains/accounts/types"
 import { isEthereumAddress } from "@polkadot/util-crypto"
 import { FadeIn } from "@talisman/components/FadeIn"
 import { SuspenseTracker } from "@talisman/components/SuspenseTracker"
@@ -41,7 +41,6 @@ type AccountOption =
       treeName: string
       id: string
       name: string
-      color: string
       total?: number
       addresses: string[]
     }
@@ -109,7 +108,7 @@ const AccountButton = ({ option }: { option: AccountOption }) => {
         {option.type === "account" ? (
           <AccountIcon address={option.address} genesisHash={option.genesisHash} />
         ) : (
-          <AccountFolderIcon color={option.color} />
+          <AccountFolderIcon />
         )}
       </div>
       <div className="flex grow flex-col items-start justify-center gap-2 overflow-hidden">
@@ -319,7 +318,6 @@ export const PortfolioAccounts = () => {
               treeName,
               id: item.id,
               name: item.name,
-              color: item.color,
               total: new Balances(
                 item.tree.flatMap((account) => balancesByAddress.get(account.address) ?? [])
               ).sum.fiat("usd").total,

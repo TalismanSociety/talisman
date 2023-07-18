@@ -1,4 +1,4 @@
-import { AccountsCatalogTree } from "@core/domains/accounts/types"
+import { AccountsCatalogTree } from "@core/domains/accounts/helpers.catalog"
 import { yupResolver } from "@hookform/resolvers/yup"
 import { useOpenClose } from "@talisman/hooks/useOpenClose"
 import { provideContext } from "@talisman/util/provideContext"
@@ -91,7 +91,7 @@ const NewFolder = ({ onConfirm, onCancel, className }: NewFolderProps) => {
       const treeName: AccountsCatalogTree = followedOnly ? "watched" : "portfolio"
 
       try {
-        await api.accountsCatalogMutate([{ type: "addFolder", tree: treeName, name }])
+        await api.accountsCatalogRunActions([{ type: "addFolder", tree: treeName, name }])
         onConfirm()
       } catch (err) {
         setError("name", {

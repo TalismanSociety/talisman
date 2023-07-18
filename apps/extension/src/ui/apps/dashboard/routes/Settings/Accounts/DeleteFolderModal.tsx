@@ -1,4 +1,4 @@
-import { AccountsCatalogTree } from "@core/domains/accounts/types"
+import { AccountsCatalogTree } from "@core/domains/accounts/helpers.catalog"
 import { provideContext } from "@talisman/util/provideContext"
 import { api } from "@ui/api"
 import { useCallback, useEffect, useState } from "react"
@@ -77,13 +77,7 @@ const DeleteFolder = ({
 }: DeleteFolderProps) => {
   const { t } = useTranslation("admin")
   const handleDeleteClick = useCallback(async () => {
-    await api.accountsCatalogMutate([
-      {
-        type: "removeFolder",
-        tree: treeName,
-        id,
-      },
-    ])
+    await api.accountsCatalogRunActions([{ type: "removeFolder", tree: treeName, id }])
     onConfirm()
   }, [id, onConfirm, treeName])
 

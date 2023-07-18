@@ -1,5 +1,5 @@
-import { TreeItem } from "@core/domains/accounts/store.catalog"
-import { AccountType, AccountsCatalogTree } from "@core/domains/accounts/types"
+import { AccountsCatalogTree, TreeItem } from "@core/domains/accounts/helpers.catalog"
+import { AccountType } from "@core/domains/accounts/types"
 import { FloatingPortal, autoUpdate, useFloating } from "@floating-ui/react"
 import { Listbox } from "@headlessui/react"
 import { isEthereumAddress } from "@polkadot/util-crypto"
@@ -36,7 +36,6 @@ type AccountSelectItem =
       treeName: AccountsCatalogTree
       id: string
       name: string
-      color: string
       total?: number
       addresses: string[]
     }
@@ -96,7 +95,6 @@ export const AccountSelect = () => {
                 treeName,
                 id: item.id,
                 name: item.name,
-                color: item.color,
                 total: new Balances(
                   item.tree.flatMap((account) => balancesByAddress.get(account.address) ?? [])
                 ).sum.fiat("usd").total,
@@ -275,7 +273,7 @@ const Item = forwardRef<HTMLDivElement, ItemProps>(function Item(
   ) : isAccount ? (
     <AccountIcon className="shrink-0 text-3xl" address={item.address} />
   ) : isFolder ? (
-    <AccountFolderIcon className="shrink-0 text-3xl" color={item.color} />
+    <AccountFolderIcon className="shrink-0 text-3xl" />
   ) : null
 
   const name = isAllAccounts ? (
