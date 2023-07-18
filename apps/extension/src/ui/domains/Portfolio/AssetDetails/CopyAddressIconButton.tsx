@@ -2,6 +2,7 @@ import { CopyIcon } from "@talisman/theme/icons"
 import { ChainId, EvmNetworkId } from "@talismn/chaindata-provider"
 import { useCopyAddressModal } from "@ui/domains/CopyAddress"
 import { useAnalytics } from "@ui/hooks/useAnalytics"
+import { useSearchParamsSelectedAccount } from "@ui/hooks/useSearchParamsSelectedAccount"
 import { useSetting } from "@ui/hooks/useSettings"
 import useTokens from "@ui/hooks/useTokens"
 import { useCallback } from "react"
@@ -15,9 +16,12 @@ export const CopyAddressButton = ({
   symbol: string
   networkId: ChainId | EvmNetworkId | null | undefined
 }) => {
-  const { account } = useSelectedAccount()
+  const { account: searchParamsSelectedAccount } = useSearchParamsSelectedAccount()
+  const { account: selectedAccount } = useSelectedAccount()
   const [useTestnets] = useSetting("useTestnets")
   const { tokens } = useTokens(useTestnets)
+
+  const account = searchParamsSelectedAccount ?? selectedAccount
 
   const token = tokens?.find(
     (t) =>

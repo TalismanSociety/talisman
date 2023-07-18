@@ -1,5 +1,6 @@
 import { PaperPlaneIcon } from "@talisman/theme/icons"
 import { ChainId, EvmNetworkId } from "@talismn/chaindata-provider"
+import { useSearchParamsSelectedAccount } from "@ui/hooks/useSearchParamsSelectedAccount"
 import { useSendFundsPopup } from "@ui/hooks/useSendFundsPopup"
 import { useSetting } from "@ui/hooks/useSettings"
 import useTokens from "@ui/hooks/useTokens"
@@ -18,9 +19,12 @@ export const SendFundsButton = ({
   networkId: ChainId | EvmNetworkId
   shouldClose?: boolean
 }) => {
-  const { account } = useSelectedAccount()
+  const { account: searchParamsSelectedAccount } = useSearchParamsSelectedAccount()
+  const { account: selectedAccount } = useSelectedAccount()
   const [useTestnets] = useSetting("useTestnets")
   const { tokens } = useTokens(useTestnets)
+
+  const account = searchParamsSelectedAccount ?? selectedAccount
 
   const token = tokens?.find(
     (t) =>
