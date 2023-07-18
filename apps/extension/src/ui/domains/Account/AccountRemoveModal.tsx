@@ -8,7 +8,14 @@ import { Trans, useTranslation } from "react-i18next"
 import { Button, ModalDialog } from "talisman-ui"
 import { Modal } from "talisman-ui"
 
-const REMOVABLE_ORIGINS: AccountType[] = ["DERIVED", "SEED", "WATCHED", "JSON", "QR", "HARDWARE"]
+const REMOVABLE_ORIGINS: AccountType[] = [
+  AccountType.Derived,
+  AccountType.Seed,
+  AccountType.Watched,
+  AccountType.Json,
+  AccountType.Qr,
+  AccountType.Hardware,
+]
 
 const useAccountRemoveModalProvider = () => {
   const [_account, setAccount] = useState<AccountJsonAny>()

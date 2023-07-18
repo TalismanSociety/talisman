@@ -15,7 +15,7 @@ import type {
   RequestAccountsCatalogMutate,
   ResponseAccountExport,
 } from "@core/domains/accounts/types"
-import { AccountTypes } from "@core/domains/accounts/types"
+import { AccountType } from "@core/domains/accounts/types"
 import { getEthDerivationPath } from "@core/domains/ethereum/helpers"
 import { getPairForAddressSafely } from "@core/handlers/helpers"
 import { genericAsyncSubscription } from "@core/handlers/subscriptions"
@@ -76,7 +76,7 @@ export default class AccountsHandler extends ExtensionHandler {
     if (!rootAccount) {
       const { pair } = keyring.addUri(seed, password, {
         name,
-        origin: AccountTypes.TALISMAN,
+        origin: AccountType.Talisman,
       })
       talismanAnalytics.capture("account create", { type, method: "parent" })
       if (shouldStoreSeed) await this.stores.seedPhrase.add(seed, password)
@@ -100,7 +100,7 @@ export default class AccountsHandler extends ExtensionHandler {
         password,
         {
           name,
-          origin: AccountTypes.DERIVED,
+          origin: AccountType.Derived,
           parent: rootAccount.address,
           derivationPath: getDerivationPath(accountIndex),
         },
@@ -140,7 +140,7 @@ export default class AccountsHandler extends ExtensionHandler {
         password,
         {
           name,
-          origin: AccountTypes.SEED,
+          origin: AccountType.Seed,
         },
         type // if undefined, defaults to keyring's default (sr25519 atm)
       )
@@ -163,7 +163,7 @@ export default class AccountsHandler extends ExtensionHandler {
     for (const json of unlockedPairs) {
       const pair = keyring.createFromJson(json, {
         name: json.meta?.name || "Json Import",
-        origin: AccountTypes.JSON,
+        origin: AccountType.Json,
       })
 
       const notExists = !keyring
@@ -209,7 +209,7 @@ export default class AccountsHandler extends ExtensionHandler {
         name,
         hardwareType: "ledger",
         isHardware: true,
-        origin: AccountTypes.HARDWARE,
+        origin: AccountType.Hardware,
         path,
       },
       null
@@ -236,7 +236,7 @@ export default class AccountsHandler extends ExtensionHandler {
       addressOffset,
       genesisHash,
       name,
-      origin: AccountTypes.HARDWARE,
+      origin: AccountType.Hardware,
     })
 
     talismanAnalytics.capture("account create", { type: "substrate", method: "hardware" })
@@ -257,7 +257,7 @@ export default class AccountsHandler extends ExtensionHandler {
       isQr: true,
       name,
       genesisHash,
-      origin: AccountTypes.QR,
+      origin: AccountType.Qr,
     })
 
     talismanAnalytics.capture("account create", { type: "substrate", method: "qr" })
@@ -294,7 +294,7 @@ export default class AccountsHandler extends ExtensionHandler {
         name,
         isExternal: true,
         isPortfolio: !!isPortfolio,
-        origin: AccountTypes.WATCHED,
+        origin: AccountType.Watched,
       },
       null
     )

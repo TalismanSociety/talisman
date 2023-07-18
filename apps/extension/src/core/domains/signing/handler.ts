@@ -1,5 +1,5 @@
 import { TEST } from "@core/constants"
-import { AccountTypes } from "@core/domains/accounts/types"
+import { AccountType } from "@core/domains/accounts/types"
 import type {
   KnownSigningRequestIdOnly,
   RequestSigningApproveSignature,
@@ -141,7 +141,7 @@ export default class SigningHandler extends ExtensionHandler {
 
     const hardwareType: "ledger" | "qr" | undefined = account?.meta.hardwareType
       ? account.meta.hardwareType
-      : account?.meta.origin === AccountTypes.QR
+      : account?.meta.origin === AccountType.Qr
       ? "qr"
       : undefined
 

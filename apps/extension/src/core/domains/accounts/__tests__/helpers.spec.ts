@@ -4,14 +4,14 @@ import { KeyringJson } from "@polkadot/ui-keyring/types"
 import Browser from "webextension-polyfill"
 
 import { hasPrivateKey, hasQrCodeAccounts } from "../helpers"
-import { AccountTypes } from "../types"
+import { AccountType } from "../types"
 
 describe("hasQrCodeAccounts", () => {
   it("should return true if there are QR code accounts", async () => {
     const localData = {
       "account:0x123": {
         meta: {
-          origin: AccountTypes.QR,
+          origin: AccountType.Qr,
         },
       },
     }
@@ -25,7 +25,7 @@ describe("hasQrCodeAccounts", () => {
     const localData = {
       "account:0x123": {
         meta: {
-          origin: AccountTypes.SEED,
+          origin: AccountType.Seed,
         },
       },
     }
