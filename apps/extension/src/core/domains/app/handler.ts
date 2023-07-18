@@ -1,5 +1,5 @@
 import { DEBUG, TALISMAN_WEB_APP_DOMAIN, TEST } from "@core/constants"
-import { AccountTypes } from "@core/domains/accounts/types"
+import { AccountType } from "@core/domains/accounts/types"
 import { AppStoreData } from "@core/domains/app/store.app"
 import type {
   AnalyticsCaptureRequest,
@@ -81,7 +81,7 @@ export default class AppHandler extends ExtensionHandler {
 
     const { pair } = keyring.addUri(mnemonic, transformedPw, {
       name: "My Polkadot Account",
-      origin: mnemonic ? AccountTypes.SEED_STORED : AccountTypes.TALISMAN,
+      origin: mnemonic ? AccountType.SeedStored : AccountType.Talisman,
     })
     await this.stores.seedPhrase.add(mnemonic, transformedPw, confirmed)
 
@@ -93,7 +93,7 @@ export default class AppHandler extends ExtensionHandler {
         transformedPw,
         {
           name: `My Ethereum Account`,
-          origin: AccountTypes.DERIVED,
+          origin: AccountType.Derived,
           parent: pair.address,
           derivationPath,
         },

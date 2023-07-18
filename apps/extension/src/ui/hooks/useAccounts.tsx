@@ -1,4 +1,4 @@
-import type { AccountJsonAny } from "@core/domains/accounts/types"
+import { AccountJsonAny, AccountType } from "@core/domains/accounts/types"
 import { api } from "@ui/api"
 import { useMemo } from "react"
 import { BehaviorSubject } from "rxjs"
@@ -19,12 +19,14 @@ export const useAccounts = (filter: UseAccountsFilter = "all") => {
   return useMemo(() => {
     switch (filter) {
       case "portfolio":
-        return allAccounts.filter(({ origin, isPortfolio }) => origin !== "WATCHED" || isPortfolio)
+        return allAccounts.filter(
+          ({ origin, isPortfolio }) => origin !== AccountType.Watched || isPortfolio
+        )
       case "watched":
-        return allAccounts.filter(({ origin }) => origin === "WATCHED")
+        return allAccounts.filter(({ origin }) => origin === AccountType.Watched)
       case "dapp":
       case "owned":
-        return allAccounts.filter(({ origin }) => origin !== "WATCHED")
+        return allAccounts.filter(({ origin }) => origin !== AccountType.Watched)
       case "portal":
       case "all":
         return allAccounts
