@@ -201,7 +201,10 @@ describe("runActionOnTrees", () => {
     const status = runActionsOnTrees({ portfolio: tree }, actions)
     expect(status).toStrictEqual(true)
 
-    const lastFolderId = tree.findLast((item): item is TreeFolder => item.type === "folder")?.id
+    const lastFolderId = tree
+      .slice()
+      .reverse()
+      .find((item): item is TreeFolder => item.type === "folder")?.id
 
     const expectedResult = [
       ...getTestStartTree(),
