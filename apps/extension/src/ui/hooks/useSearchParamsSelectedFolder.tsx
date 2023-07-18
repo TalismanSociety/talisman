@@ -1,5 +1,4 @@
-import { TreeFolder, TreeItem } from "@core/domains/accounts/store.catalog"
-import { AccountsCatalogTree } from "@core/domains/accounts/types"
+import { AccountsCatalogTree, TreeFolder, TreeItem } from "@core/domains/accounts/helpers.catalog"
 import { useMemo } from "react"
 import { useSearchParams } from "react-router-dom"
 

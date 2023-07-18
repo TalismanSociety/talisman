@@ -92,15 +92,14 @@ export const sortAccounts =
     //
     // for new users, the default catalog order will be the order in which they add
     // each new account
-    const legacySortedAccounts = legacySortAccounts(unsortedAccounts)
-    const accounts = legacySortedAccounts
+    const accounts = legacySortAccounts(unsortedAccounts)
 
     // add any newly created accounts to the catalog
     // each new account will be placed at the end of the list
     await accountsCatalogStore.addAccounts(accounts)
-    const sortedAccounts = await accountsCatalogStore.sortAccounts(legacySortedAccounts)
+    await accountsCatalogStore.sortAccountsByCatalogOrder(accounts)
 
-    return sortedAccounts
+    return accounts
   }
 
 export const getInjectedAccount = ({

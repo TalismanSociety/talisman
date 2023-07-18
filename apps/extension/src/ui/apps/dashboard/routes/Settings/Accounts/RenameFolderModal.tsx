@@ -1,4 +1,4 @@
-import { AccountsCatalogTree } from "@core/domains/accounts/types"
+import { AccountsCatalogTree } from "@core/domains/accounts/helpers.catalog"
 import { yupResolver } from "@hookform/resolvers/yup"
 import { provideContext } from "@talisman/util/provideContext"
 import { api } from "@ui/api"
@@ -111,7 +111,7 @@ const RenameFolder = ({
   const submit = useCallback(
     async ({ name: newName }: FormData) => {
       try {
-        await api.accountsCatalogMutate([{ type: "renameFolder", tree: treeName, id, newName }])
+        await api.accountsCatalogRunActions([{ type: "renameFolder", tree: treeName, id, newName }])
         onConfirm()
       } catch (err) {
         setError("name", {

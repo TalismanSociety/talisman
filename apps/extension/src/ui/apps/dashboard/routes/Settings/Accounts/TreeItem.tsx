@@ -1,4 +1,5 @@
-import { AccountJsonAny, AccountsCatalogTree } from "@core/domains/accounts/types"
+import { AccountsCatalogTree } from "@core/domains/accounts/helpers.catalog"
+import { AccountJsonAny } from "@core/domains/accounts/types"
 import { DraggableAttributes, useDroppable } from "@dnd-kit/core"
 import { SyntheticListenerMap } from "@dnd-kit/core/dist/hooks/utilities"
 import { ChevronDownIcon, DragIcon, MoreHorizontalIcon } from "@talisman/theme/icons"
@@ -140,7 +141,7 @@ export const TreeFolderItem = forwardRef<HTMLDivElement, Props & { item: UiTreeF
           style={style}
         >
           <DragButton {...handleProps?.attributes} {...handleProps?.listeners} />
-          <AccountFolderIcon className="shrink-0 text-xl" color={item.color} />
+          <AccountFolderIcon className="shrink-0 text-xl" />
           <div className="flex w-full grow flex-col gap-2 overflow-hidden">
             <div className="overflow-hidden text-ellipsis whitespace-nowrap">{item.name}</div>
             {addresses.length > 0 && <AccountsLogoStack addresses={addresses} />}

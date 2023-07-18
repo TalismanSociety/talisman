@@ -1,4 +1,4 @@
-import { Trees } from "@core/domains/accounts/store.catalog"
+import { Trees } from "@core/domains/accounts/helpers.catalog"
 import { api } from "@ui/api"
 import { BehaviorSubject } from "rxjs"
 

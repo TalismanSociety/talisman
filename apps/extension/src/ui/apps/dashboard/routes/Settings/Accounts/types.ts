@@ -1,4 +1,4 @@
-import type { TreeAccount, TreeFolder } from "@core/domains/accounts/store.catalog"
+import type { TreeAccount, TreeFolder } from "@core/domains/accounts/helpers.catalog"
 import type { UniqueIdentifier } from "@dnd-kit/core"
 import type { MutableRefObject } from "react"
 

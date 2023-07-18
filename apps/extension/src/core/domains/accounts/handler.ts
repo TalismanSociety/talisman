@@ -12,7 +12,7 @@ import type {
   RequestAccountExternalSetIsPortfolio,
   RequestAccountForget,
   RequestAccountRename,
-  RequestAccountsCatalogMutate,
+  RequestAccountsCatalogAction,
   ResponseAccountExport,
 } from "@core/domains/accounts/types"
 import { AccountTypes } from "@core/domains/accounts/types"
@@ -431,8 +431,8 @@ export default class AccountsHandler extends ExtensionHandler {
     )
   }
 
-  private accountsCatalogMutate(mutations: RequestAccountsCatalogMutate[]) {
-    return this.stores.accountsCatalog.executeCatalogMutations(mutations)
+  private accountsCatalogRunActions(actions: RequestAccountsCatalogAction[]) {
+    return this.stores.accountsCatalog.runActions(actions)
   }
 
   private accountValidateMnemonic(mnemonic: string): boolean {
@@ -483,8 +483,8 @@ export default class AccountsHandler extends ExtensionHandler {
         return this.accountsSubscribe(id, port)
       case "pri(accounts.catalog.subscribe)":
         return this.accountsCatalogSubscribe(id, port)
-      case "pri(accounts.catalog.mutate)":
-        return this.accountsCatalogMutate(request as RequestAccountsCatalogMutate[])
+      case "pri(accounts.catalog.runActions)":
+        return this.accountsCatalogRunActions(request as RequestAccountsCatalogAction[])
       case "pri(accounts.validateMnemonic)":
         return this.accountValidateMnemonic(request as string)
       case "pri(accounts.setVerifierCertMnemonic)":
