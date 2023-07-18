@@ -1,3 +1,4 @@
+import { ScrollContainer } from "@talisman/components/ScrollContainer"
 import { WithTooltip } from "@talisman/components/Tooltip"
 import { AlertCircleIcon, LoaderIcon } from "@talisman/theme/icons"
 import { classNames, encodeAnyAddress } from "@talismn/util"
@@ -119,8 +120,8 @@ export const ExternalRecipientWarning = () => {
   if (!showWarning) return null
 
   return (
-    <div className="text-alert-warn bg-grey-900 flex w-full items-center gap-5 rounded-sm px-5 py-6 text-xs">
-      <AlertCircleIcon className="text-lg" />
+    <div className="text-alert-warn bg-grey-900 flex w-full items-center gap-6 rounded-sm px-8 py-6 text-xs">
+      <AlertCircleIcon className="text-[2rem]" />
       <div>{t("You are sending funds to an external account")}</div>
     </div>
   )
@@ -144,28 +145,30 @@ const SendButton = () => {
 
   return (
     <Suspense fallback={null}>
-      {sendErrorMessage ? (
-        <div className="text-alert-warn bg-grey-900 flex w-full items-center gap-5 rounded-sm px-5 py-6 text-xs">
-          <AlertCircleIcon className="text-lg" />
-          <div>{sendErrorMessage}</div>
-        </div>
-      ) : (
-        <ExternalRecipientWarning />
-      )}
-      {signMethod === "normal" && (
-        <Button
-          className="mt-6 w-full"
-          primary
-          disabled={!isReady}
-          onClick={send}
-          processing={isProcessing}
-        >
-          {t("Confirm")}
-        </Button>
-      )}
-      {signMethod === "qrSubstrate" && <SendFundsQrSubstrate />}
-      {signMethod === "ledgerSubstrate" && <SendFundsLedgerSubstrate />}
-      {signMethod === "ledgerEthereum" && <SendFundsLedgerEthereum />}
+      <div className="flex w-full flex-col gap-6">
+        {sendErrorMessage ? (
+          <div className="text-alert-warn bg-grey-900 flex w-full items-center gap-5 rounded-sm px-5 py-6 text-xs">
+            <AlertCircleIcon className="text-lg" />
+            <div>{sendErrorMessage}</div>
+          </div>
+        ) : (
+          <ExternalRecipientWarning />
+        )}
+        {signMethod === "normal" && (
+          <Button
+            className="w-full"
+            primary
+            disabled={!isReady}
+            onClick={send}
+            processing={isProcessing}
+          >
+            {t("Confirm")}
+          </Button>
+        )}
+        {signMethod === "qrSubstrate" && <SendFundsQrSubstrate />}
+        {signMethod === "ledgerSubstrate" && <SendFundsLedgerSubstrate />}
+        {signMethod === "ledgerEthereum" && <SendFundsLedgerEthereum />}
+      </div>
     </Suspense>
   )
 }
@@ -290,51 +293,56 @@ export const SendFundsConfirmForm = () => {
   const { from, to, chain, evmNetwork } = useSendFunds()
 
   return (
-    <div className="flex h-full w-full flex-col items-center px-12 py-8">
-      <div className="text-lg font-bold">{t("You are sending")}</div>
-      <div className="mt-24 w-full grow">
-        <div className="bg-grey-900 text-body-secondary flex flex-col rounded px-12 py-8 leading-[140%]">
-          <div className="flex min-h-[32px] items-center justify-between gap-8">
-            <div className="text-body-secondary align-top">{t("Amount")}</div>
-            <div className="text-body overflow-x-hidden">
-              <AmountDisplay />
+    <div className="flex h-full w-full flex-col items-center gap-6 px-12 pb-8">
+      <ScrollContainer
+        className="w-full grow"
+        innerClassName="flex flex-col w-full items-center space-between min-h-full"
+      >
+        <div className="h-32 text-lg font-bold">{t("You are sending")}</div>
+        <div className="w-full grow">
+          <div className="bg-grey-900 text-body-secondary flex flex-col rounded px-12 py-8 leading-[140%]">
+            <div className="flex min-h-[32px] items-center justify-between gap-8">
+              <div className="text-body-secondary align-top">{t("Amount")}</div>
+              <div className="text-body overflow-x-hidden">
+                <AmountDisplay />
+              </div>
             </div>
-          </div>
-          <div className="flex min-h-[32px] items-center justify-between gap-8">
-            <div className="text-body-secondary">{t("From")}</div>
-            <div className="text-body overflow-x-hidden">
-              <AddressDisplay
-                className="h-16"
-                address={from}
-                chainId={chain?.id}
-                evmNetworkId={evmNetwork?.id}
-              />
+            <div className="flex min-h-[32px] items-center justify-between gap-8">
+              <div className="text-body-secondary">{t("From")}</div>
+              <div className="text-body overflow-x-hidden">
+                <AddressDisplay
+                  className="h-16"
+                  address={from}
+                  chainId={chain?.id}
+                  evmNetworkId={evmNetwork?.id}
+                />
+              </div>
             </div>
-          </div>
-          <div className="flex min-h-[32px] items-center justify-between gap-8">
-            <div className="text-body-secondary">{t("To")}</div>
-            <div className="text-body overflow-x-hidden">
-              <AddressDisplay
-                className="h-16"
-                address={to}
-                chainId={chain?.id}
-                evmNetworkId={evmNetwork?.id}
-              />
+            <div className="flex min-h-[32px] items-center justify-between gap-8">
+              <div className="text-body-secondary">{t("To")}</div>
+              <div className="text-body overflow-x-hidden">
+                <AddressDisplay
+                  className="h-16"
+                  address={to}
+                  chainId={chain?.id}
+                  evmNetworkId={evmNetwork?.id}
+                />
+              </div>
             </div>
-          </div>
-          <div className="flex min-h-[32px] items-center justify-between gap-8">
-            <div className="text-body-secondary align-top">{t("Network")}</div>
-            <div className="text-body overflow-x-hidden">
-              <NetworkDisplay />
+            <div className="flex min-h-[32px] items-center justify-between gap-8">
+              <div className="text-body-secondary align-top">{t("Network")}</div>
+              <div className="text-body overflow-x-hidden">
+                <NetworkDisplay />
+              </div>
             </div>
+            <div className="py-8">
+              <hr className="text-grey-800" />
+            </div>
+            <FeeSummary />
+            <TotalValueRow />
           </div>
-          <div className="py-8">
-            <hr className="text-grey-800" />
-          </div>
-          <FeeSummary />
-          <TotalValueRow />
         </div>
-      </div>
+      </ScrollContainer>
       <SendButton />
     </div>
   )

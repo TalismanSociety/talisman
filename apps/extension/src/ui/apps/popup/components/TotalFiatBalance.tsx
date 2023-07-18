@@ -1,6 +1,5 @@
 import {
   ArrowDownIcon,
-  ChevronRightIcon,
   CreditCardIcon,
   EyeIcon,
   EyeOffIcon,
@@ -42,31 +41,26 @@ export const TotalFiatBalance = ({ className, mouseOver }: Props) => {
   )
 
   return (
-    <div className={classNames(className, "flex w-full items-center")}>
-      <div className="flex flex-grow flex-col items-start gap-4">
-        <div className="text-body-secondary mt-2 flex gap-2 text-sm">
-          <span>{t("Total Portfolio")}</span>
-          <button
-            className={classNames(
-              "hover:text-body focus:text-body opacity-0 transition-[color,opacity]",
-              (hideBalances || mouseOver) && "opacity-100"
-            )}
-            onClick={toggleHideBalance}
-          >
-            {hideBalances ? <EyeIcon /> : <EyeOffIcon />}
-          </button>
-        </div>
-        <Fiat
-          className="font-surtExpanded text-lg"
-          amount={balances.sum.fiat("usd").total}
-          currency="usd"
-          isBalance
-        />
-        <TopActions />
+    <div className={classNames("flex flex-col items-start justify-center gap-4", className)}>
+      <div className="text-body-secondary mt-2 flex gap-2 text-sm">
+        <span>{t("Total Portfolio")}</span>
+        <button
+          className={classNames(
+            "hover:text-body focus:text-body pointer-events-auto opacity-0 transition-[color,opacity]",
+            (hideBalances || mouseOver) && "opacity-100"
+          )}
+          onClick={toggleHideBalance}
+        >
+          {hideBalances ? <EyeIcon /> : <EyeOffIcon />}
+        </button>
       </div>
-      <ChevronRightIcon
-        className={classNames("text-body-secondary text-lg", mouseOver && "!text-body")}
+      <Fiat
+        className="font-surtExpanded text-lg"
+        amount={balances.sum.fiat("usd").total}
+        currency="usd"
+        isBalance
       />
+      <TopActions />
     </div>
   )
 }
@@ -139,7 +133,7 @@ const TopActions = () => {
       {topActions.map((action, index) => (
         <PillButton
           key={index}
-          className="bg-opacity-50"
+          className="pointer-events-auto opacity-90"
           onClick={handleClicks[index]}
           icon={action.icon}
         >

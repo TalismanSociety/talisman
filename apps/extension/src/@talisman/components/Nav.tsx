@@ -35,7 +35,7 @@ const NavItemContent: FC<NavItemProps> = ({
   )
 }
 
-const NavItemButton: FC<NavItemProps> = ({ className, ...props }) => {
+const NavItemButton: FC<NavItemProps> = ({ className, contentClassName, ...props }) => {
   return (
     <button
       type="button"
@@ -45,12 +45,12 @@ const NavItemButton: FC<NavItemProps> = ({ className, ...props }) => {
       )}
       {...props}
     >
-      <NavItemContent {...props} />
+      <NavItemContent contentClassName={contentClassName} {...props} />
     </button>
   )
 }
 
-const NavItemLink: FC<NavItemProps & { to: To }> = ({ className, ...props }) => {
+const NavItemLink: FC<NavItemProps & { to: To }> = ({ className, contentClassName, ...props }) => {
   return (
     <NavLink
       className={classNames(
@@ -60,7 +60,7 @@ const NavItemLink: FC<NavItemProps & { to: To }> = ({ className, ...props }) => 
       )}
       {...props}
     >
-      <NavItemContent {...props} />
+      <NavItemContent contentClassName={contentClassName} {...props} />
     </NavLink>
   )
 }
