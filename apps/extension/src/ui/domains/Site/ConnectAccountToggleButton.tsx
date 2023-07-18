@@ -21,7 +21,11 @@ export const ConnectAccountToggleButton: FC<{
       )}
       onClick={onChange}
     >
-      <AccountIcon address={account.address} genesisHash={account.genesisHash} />
+      <AccountIcon
+        className="text-xl"
+        address={account.address}
+        genesisHash={account.genesisHash}
+      />
       <div className="text-body-secondary text-md flex grow items-center gap-4 overflow-x-hidden text-left">
         <div className="overflow-x-hidden text-ellipsis whitespace-nowrap text-left">
           {account.name ?? shortenAddress(account.address)}
