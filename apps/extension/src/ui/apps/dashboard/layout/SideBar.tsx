@@ -203,7 +203,7 @@ export const SideBar = () => {
         <Nav className="gap-2 p-4 text-sm lg:p-12 lg:text-base">
           <SideBarNavItem
             title={t("Portfolio")}
-            to="/accounts/add"
+            to="/portfolio"
             onClick={handlePortfolioClick}
             icon={<UserIcon />}
           />
