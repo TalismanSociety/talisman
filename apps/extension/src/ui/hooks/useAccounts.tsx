@@ -10,7 +10,7 @@ const INITIAL_VALUE: AccountJsonAny[] = []
 const subscribe = (subject: BehaviorSubject<AccountJsonAny[]>) =>
   api.accountsSubscribe((v) => subject.next(v))
 
-export type UseAccountsFilter = "all" | "watched" | "owned" | "portfolio"
+export type UseAccountsFilter = "all" | "watched" | "owned" | "portfolio" | "dapp" | "portal"
 
 // TODO migrate to recoil
 export const useAccounts = (filter: UseAccountsFilter = "all") => {
@@ -22,8 +22,10 @@ export const useAccounts = (filter: UseAccountsFilter = "all") => {
         return allAccounts.filter(({ origin, isPortfolio }) => origin !== "WATCHED" || isPortfolio)
       case "watched":
         return allAccounts.filter(({ origin }) => origin === "WATCHED")
+      case "dapp":
       case "owned":
         return allAccounts.filter(({ origin }) => origin !== "WATCHED")
+      case "portal":
       case "all":
         return allAccounts
     }

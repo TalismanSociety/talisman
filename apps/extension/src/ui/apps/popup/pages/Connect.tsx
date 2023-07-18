@@ -1,3 +1,4 @@
+import { TALISMAN_WEB_APP_DOMAIN } from "@core/constants"
 import { KnownRequestIdOnly } from "@core/libs/requests/types"
 import { AppPill } from "@talisman/components/AppPill"
 import { notify } from "@talisman/components/Notifications"
@@ -54,7 +55,9 @@ export const Connect: FC<{ className?: string }> = ({ className }) => {
   const { id } = useParams<"id">() as KnownRequestIdOnly<"auth">
   const authRequest = useRequest(id)
   const { popupOpenEvent } = useAnalytics()
-  const allAccounts = useAccounts()
+  const allAccounts = useAccounts(
+    authRequest?.url.includes(TALISMAN_WEB_APP_DOMAIN) ? "portal" : "dapp"
+  )
   const { items: connected, toggle, set } = useSet<string>()
   const ethereum = !!authRequest?.request?.ethereum
   const [showEthAccounts, setShowEthAccounts] = useState(false)
@@ -62,13 +65,11 @@ export const Connect: FC<{ className?: string }> = ({ className }) => {
   const accounts = useMemo(
     () =>
       authRequest && allAccounts
-        ? allAccounts
-            .filter(({ origin }) => origin !== "WATCHED")
-            .filter(
-              ({ type }) =>
-                showEthAccounts ||
-                (authRequest.request.ethereum ? type === "ethereum" : type !== "ethereum")
-            )
+        ? allAccounts.filter(
+            ({ type }) =>
+              showEthAccounts ||
+              (authRequest.request.ethereum ? type === "ethereum" : type !== "ethereum")
+          )
         : [],
     [allAccounts, authRequest, showEthAccounts]
   )
