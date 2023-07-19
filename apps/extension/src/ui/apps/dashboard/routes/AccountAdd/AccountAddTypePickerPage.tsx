@@ -11,18 +11,11 @@ import {
   UsbIcon,
 } from "@talisman/theme/icons"
 import { DashboardLayout } from "@ui/apps/dashboard/layout/DashboardLayout"
-import { useAppState } from "@ui/hooks/useAppState"
-import { useIsFeatureEnabled } from "@ui/hooks/useFeatures"
-import { useSetting } from "@ui/hooks/useSettings"
 import { useTranslation } from "react-i18next"
 import { CtaButton } from "talisman-ui"
 
 export const AccountAddTypePickerPage = () => {
   const isLedgerCapable = getIsLedgerCapable()
-  const [hasSpiritKey] = useAppState("hasSpiritKey")
-  const [spiritClanFeatures] = useSetting("spiritClanFeatures")
-  const paritySignerEnabled =
-    useIsFeatureEnabled("PARITY_SIGNER") || (hasSpiritKey && spiritClanFeatures)
   const { t } = useTranslation("admin")
 
   return (
@@ -70,16 +63,14 @@ export const AccountAddTypePickerPage = () => {
           to={`/accounts/add/ledger`}
           disabled={!isLedgerCapable}
         />
-        {paritySignerEnabled && (
-          <CtaButton
-            size="small"
-            iconLeft={PolkadotVaultIcon}
-            iconRight={ChevronRightIcon}
-            title={t("Import Polkadot Vault")}
-            subtitle={t("Or Parity Signer (Legacy)")}
-            to={`/accounts/add/qr`}
-          />
-        )}
+        <CtaButton
+          size="small"
+          iconLeft={PolkadotVaultIcon}
+          iconRight={ChevronRightIcon}
+          title={t("Import Polkadot Vault")}
+          subtitle={t("Or Parity Signer (Legacy)")}
+          to={`/accounts/add/qr`}
+        />
         <CtaButton
           size="small"
           iconLeft={EyePlusIcon}

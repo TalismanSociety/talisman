@@ -8,9 +8,6 @@ import {
 } from "@talisman/theme/icons"
 import { AnalyticsPage, sendAnalyticsEvent } from "@ui/api/analytics"
 import { useAnalyticsPageView } from "@ui/hooks/useAnalyticsPageView"
-import { useAppState } from "@ui/hooks/useAppState"
-import { useIsFeatureEnabled } from "@ui/hooks/useFeatures"
-import { useSetting } from "@ui/hooks/useSettings"
 import { useCallback, useEffect, useMemo } from "react"
 import { Trans, useTranslation } from "react-i18next"
 import { useNavigate } from "react-router-dom"
@@ -55,10 +52,6 @@ export const ImportMethodPage = () => {
   )
 
   const disableLedger = useMemo(() => !getIsLedgerCapable(), [])
-  const [hasSpiritKey] = useAppState("hasSpiritKey")
-  const [spiritClanFeatures] = useSetting("spiritClanFeatures")
-  const paritySignerEnabled =
-    useIsFeatureEnabled("PARITY_SIGNER") || (hasSpiritKey && spiritClanFeatures)
 
   if (!data.importAccountType) return null
 
@@ -104,7 +97,7 @@ export const ImportMethodPage = () => {
               subtitle={t("Import an account from a private key")}
             />
           )}
-          {paritySignerEnabled && data.importAccountType === "sr25519" && (
+          {data.importAccountType === "sr25519" && (
             <OnboardCta
               onClick={handleClick("qr")}
               icon={PolkadotVaultIcon}
