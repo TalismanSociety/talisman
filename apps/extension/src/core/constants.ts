@@ -26,9 +26,6 @@ export const DEFAULT_PORTFOLIO_TOKENS_ETHEREUM = [
 export const DEFAULT_SEND_FUNDS_TOKEN_SUBSTRATE = "polkadot-substrate-native-dot-polkadot"
 export const DEFAULT_SEND_FUNDS_TOKEN_ETHEREUM = "1-evm-native-eth-1"
 
-// talisman onfinality api key
-export const API_KEY_ONFINALITY = process.env.API_KEY_ONFINALITY
-
 export const IPFS_GATEWAY = "https://talisman.mypinata.cloud/ipfs/"
 
 export const TALISMAN_WEB_APP_DOMAIN = "app.talisman.xyz"
