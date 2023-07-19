@@ -19,7 +19,7 @@ import { LedgerSigningStatus } from "./LedgerSigningStatus"
 interface Props {
   account: AccountJsonHardwareSubstrate
   className?: string
-  genesisHash?: string
+  genesisHash?: HexString | null
   onSignature?: ({ signature }: { signature: HexString }) => void
   onReject: () => void
   payload: SignerPayloadJSON | SignerPayloadRaw

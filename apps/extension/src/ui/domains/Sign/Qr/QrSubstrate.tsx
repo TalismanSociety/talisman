@@ -2,6 +2,7 @@ import { POLKADOT_VAULT_DOCS_URL } from "@core/constants"
 import { AccountJsonQr } from "@core/domains/accounts/types"
 import { SignerPayloadJSON, SignerPayloadRaw } from "@core/domains/signing/types"
 import { isJsonPayload } from "@core/util/isJsonPayload"
+import { HexString } from "@polkadot/util/types"
 import { InfoIcon, LoaderIcon, PolkadotVaultIcon } from "@talisman/theme/icons"
 import { ChevronLeftIcon } from "@talisman/theme/icons"
 import { Chain } from "@talismn/chaindata-provider"
@@ -11,8 +12,7 @@ import { ScanQr } from "@ui/domains/Sign/Qr/ScanQr"
 import useChainByGenesisHash from "@ui/hooks/useChainByGenesisHash"
 import { ReactElement, useState } from "react"
 import { Trans, useTranslation } from "react-i18next"
-import { Drawer } from "talisman-ui"
-import { Button, Tooltip, TooltipContent, TooltipTrigger } from "talisman-ui"
+import { Button, Drawer, Tooltip, TooltipContent, TooltipTrigger } from "talisman-ui"
 
 import { ExtrinsicQrCode } from "./ExtrinsicQrCode"
 import { MetadataQrCode } from "./MetadataQrCode"
@@ -47,7 +47,7 @@ type ScanState =
 interface Props {
   account: AccountJsonQr
   className?: string
-  genesisHash?: string
+  genesisHash?: HexString
   onSignature?: (result: { signature: `0x${string}` }) => void
   onReject: () => void
   payload: SignerPayloadJSON | SignerPayloadRaw

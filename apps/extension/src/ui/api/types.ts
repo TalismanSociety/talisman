@@ -29,7 +29,11 @@ import {
   WatchAssetRequestId,
 } from "@core/domains/ethereum/types"
 import { MetadataUpdateStatus, RequestMetadataId } from "@core/domains/metadata/types"
-import { SignerPayloadJSON, SigningRequestID } from "@core/domains/signing/types"
+import {
+  SignerPayloadGenesisHash,
+  SignerPayloadJSON,
+  SigningRequestID,
+} from "@core/domains/signing/types"
 import {
   AuthRequestAddresses,
   AuthRequestId,
@@ -111,7 +115,7 @@ export default interface MessageTypes {
     request: Omit<RequestAccountCreateHardware, "hardwareType">
   ) => Promise<string>
   accountCreateHardwareEthereum: (name: string, address: string, path: string) => Promise<string>
-  accountCreateQr: (name: string, address: string, genesisHash: string | null) => Promise<string>
+  accountCreateQr: (name: string, address: string, genesisHash: HexString | null) => Promise<string>
   accountCreateWatched: (name: string, address: string, isPortfolio: boolean) => Promise<string>
   accountExternalSetIsPortfolio: (address: string, isPortfolio: boolean) => Promise<boolean>
   accountsSubscribe: (cb: (accounts: AccountJson[]) => void) => UnsubscribeFn
@@ -160,14 +164,17 @@ export default interface MessageTypes {
   authrequestIgnore: (id: AuthRequestId) => Promise<boolean>
 
   metadataUpdatesSubscribe: (
-    genesisHash: string,
+    genesisHash: HexString,
     cb: (status: MetadataUpdateStatus) => void
   ) => UnsubscribeFn
 
   // chain message types
   chains: (cb: () => void) => UnsubscribeFn
-  generateChainSpecsQr: (genesisHash: string) => Promise<HexString>
-  generateChainMetadataQr: (genesisHash: string, specVersion: number) => Promise<HexString>
+  generateChainSpecsQr: (genesisHash: SignerPayloadGenesisHash) => Promise<HexString>
+  generateChainMetadataQr: (
+    genesisHash: SignerPayloadGenesisHash,
+    specVersion: number
+  ) => Promise<HexString>
 
   // token message types
   tokens: (cb: () => void) => UnsubscribeFn

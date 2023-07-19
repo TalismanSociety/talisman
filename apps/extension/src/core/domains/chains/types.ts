@@ -1,13 +1,14 @@
+import { SignerPayloadGenesisHash } from "@core/domains/signing/types"
 import { HexString } from "@polkadot/util/types"
 
 export type { Chain, ChainId, ChainList, SubstrateRpc } from "@talismn/chaindata-provider"
 
 export type RequestChainGenerateQrAddNetworkSpecs = {
-  genesisHash: string
+  genesisHash: SignerPayloadGenesisHash // ussing the imported type from above enables us to stay up to date with upstream changes
 }
 
 export type RequestChainGenerateQrUpdateNetworkMetadata = {
-  genesisHash: string
+  genesisHash: SignerPayloadGenesisHash
   specVersion: number
 }
 

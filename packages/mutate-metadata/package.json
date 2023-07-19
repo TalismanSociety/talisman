@@ -39,8 +39,8 @@
     "clean": "rm -rf dist && rm -rf .turbo rm -rf node_modules"
   },
   "dependencies": {
-    "@subsquid/scale-codec": "^1.1.0",
-    "@subsquid/substrate-metadata": "^2.1.2",
+    "@subsquid/scale-codec": "^1.1.1",
+    "@subsquid/substrate-metadata": "^2.3.0",
     "anylogger": "^1.0.11"
   },
   "devDependencies": {

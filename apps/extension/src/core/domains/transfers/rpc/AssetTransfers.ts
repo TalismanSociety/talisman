@@ -12,6 +12,7 @@ import { Address } from "@core/types/base"
 import { getExtrinsicDispatchInfo } from "@core/util/getExtrinsicDispatchInfo"
 import { getRuntimeVersion } from "@core/util/getRuntimeVersion"
 import { getTypeRegistry } from "@core/util/getTypeRegistry"
+import { validateHexString } from "@core/util/validateHexString"
 import { KeyringPair } from "@polkadot/keyring/types"
 import { TypeRegistry } from "@polkadot/types"
 import { Extrinsic } from "@polkadot/types/interfaces"
@@ -80,8 +81,9 @@ export default class AssetTransfersRpc {
     signature: `0x${string}`,
     transferInfo: WalletTransactionTransferInfo
   ) {
-    const chain = await chaindataProvider.getChain({ genesisHash: unsigned.genesisHash })
-    if (!chain) throw new Error(`Could not find chain for genesisHash ${unsigned.genesisHash}`)
+    const genesisHash = validateHexString(unsigned.genesisHash)
+    const chain = await chaindataProvider.getChain({ genesisHash })
+    if (!chain) throw new Error(`Could not find chain for genesisHash ${genesisHash}`)
 
     // create the unsigned extrinsic
     const { registry } = await getTypeRegistry(chain.id)

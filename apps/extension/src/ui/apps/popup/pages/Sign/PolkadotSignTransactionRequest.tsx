@@ -1,5 +1,6 @@
 import { AccountJsonHardwareSubstrate, AccountJsonQr } from "@core/domains/accounts/types"
 import { isJsonPayload } from "@core/util/isJsonPayload"
+import { validateHexString } from "@core/util/validateHexString"
 import { AppPill } from "@talisman/components/AppPill"
 import { InfoIcon, LoaderIcon } from "@talisman/theme/icons"
 import { TokensAndFiat } from "@ui/domains/Asset/TokensAndFiat"
@@ -75,7 +76,10 @@ export const PolkadotSignTransactionRequest: FC = () => {
 
   const { genesisHash, specVersion } = useMemo(() => {
     return payload && isJsonPayload(payload)
-      ? { genesisHash: payload.genesisHash, specVersion: parseInt(payload.specVersion, 16) }
+      ? {
+          genesisHash: validateHexString(payload.genesisHash),
+          specVersion: parseInt(payload.specVersion, 16),
+        }
       : {}
   }, [payload])
 

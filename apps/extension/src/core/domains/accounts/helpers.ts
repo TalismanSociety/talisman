@@ -79,7 +79,7 @@ export const sortAccounts =
   (accountsCatalogStore: AccountsCatalogStore) =>
   async (keyringAccounts: SubjectInfo): Promise<AccountJsonAny[]> => {
     const unsortedAccounts = Object.values(keyringAccounts).map(
-      ({ json: { address, meta }, type }: SingleAddress): AccountJsonAny => ({
+      ({ json: { address, meta }, type }): AccountJsonAny => ({
         address,
         ...meta,
         type,

@@ -1,4 +1,5 @@
 import { db } from "@core/db"
+import { HexString } from "@polkadot/util/types"
 import { api } from "@ui/api"
 import { useLiveQuery } from "dexie-react-hooks"
 import { useEffect, useMemo, useState } from "react"
@@ -29,7 +30,7 @@ const DEFAULT_VALUE: ChainMetadata = {
   requiresUpdate: false,
 }
 
-export const useMetadataUpdates = (genesisHash?: string, specVersion?: number) => {
+export const useMetadataUpdates = (genesisHash?: HexString, specVersion?: number) => {
   const [isMetadataUpdating, setIsMetadataUpdating] = useState(false)
   const [hasMetadataUpdated, setHasMetadataUpdated] = useState(false)
 

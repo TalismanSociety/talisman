@@ -1,11 +1,11 @@
 import { getPrimaryAccount, sortAccounts } from "@core/domains/accounts/helpers"
 import type {
   RequestAccountCreate,
+  RequestAccountCreateExternal,
   RequestAccountCreateFromJson,
   RequestAccountCreateFromSeed,
   RequestAccountCreateHardware,
   RequestAccountCreateHardwareEthereum,
-  RequestAccountCreateQr,
   RequestAccountCreateWatched,
   RequestAccountExport,
   RequestAccountExportPrivateKey,
@@ -244,7 +244,7 @@ export default class AccountsHandler extends ExtensionHandler {
     return pair.address
   }
 
-  private accountsCreateQr({ name, address, genesisHash }: RequestAccountCreateQr): string {
+  private accountsCreateQr({ name, address, genesisHash }: RequestAccountCreateExternal): string {
     const password = this.stores.password.getPassword()
     assert(password, "Not logged in")
 
@@ -466,7 +466,7 @@ export default class AccountsHandler extends ExtensionHandler {
       case "pri(accounts.create.hardware.ethereum)":
         return this.accountsCreateHardwareEthereum(request as RequestAccountCreateHardwareEthereum)
       case "pri(accounts.create.qr.substrate)":
-        return this.accountsCreateQr(request as RequestAccountCreateQr)
+        return this.accountsCreateQr(request as RequestAccountCreateExternal)
       case "pri(accounts.create.watched)":
         return this.accountCreateWatched(request as RequestAccountCreateWatched)
       case "pri(accounts.external.setIsPortfolio)":

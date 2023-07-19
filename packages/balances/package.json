@@ -33,7 +33,7 @@
     "@talismn/token-rates": "workspace:*",
     "@talismn/util": "workspace:*",
     "anylogger": "^1.0.11",
-    "dexie": "^3.2.3",
+    "dexie": "^3.2.4",
     "lodash": "4.17.21"
   },
   "devDependencies": {

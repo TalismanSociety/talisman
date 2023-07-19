@@ -1,6 +1,7 @@
 import { log } from "@core/log"
 import type { ResponseType, SendRequest } from "@core/types"
 import type { ProviderInterfaceCallback } from "@polkadot/rpc-provider/types"
+import { HexString } from "@polkadot/util/types"
 import { CustomChain, CustomEvmNetwork, Token } from "@talismn/chaindata-provider"
 
 type TalismanWindow = typeof globalThis & {
@@ -9,14 +10,14 @@ type TalismanWindow = typeof globalThis & {
 
 const rpcProvider = (sendRequest: SendRequest) => ({
   rpcByGenesisHashSend: (
-    genesisHash: string,
+    genesisHash: HexString,
     method: string,
     params: unknown[]
   ): Promise<ResponseType<"pub(talisman.rpc.byGenesisHash.send)">> =>
     sendRequest("pub(talisman.rpc.byGenesisHash.send)", { genesisHash, method, params }),
 
   rpcByGenesisHashSubscribe: (
-    genesisHash: string,
+    genesisHash: HexString,
     subscribeMethod: string,
     responseMethod: string,
     params: unknown[],

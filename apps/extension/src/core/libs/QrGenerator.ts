@@ -1,10 +1,12 @@
 import { verifierCertificateMnemonicStore } from "@core/domains/accounts/store.verifierCertificateMnemonic"
 import { passwordStore } from "@core/domains/app"
+import { SignerPayloadGenesisHash } from "@core/domains/signing/types"
 import { log } from "@core/log"
 import { chaindataProvider } from "@core/rpcs/chaindata"
 import { getMetadataDef, getMetadataRpcFromDef } from "@core/util/getMetadataDef"
 import { Keyring } from "@polkadot/keyring"
 import { assert, hexToU8a, u8aConcat, u8aToU8a } from "@polkadot/util"
+import { HexString } from "@polkadot/util/types"
 import { SubNativeToken } from "@talismn/balances-substrate-native"
 import { Chain } from "@talismn/chaindata-provider"
 import * as $ from "scale-codec"
@@ -60,8 +62,8 @@ const $networkSpecs = $.object(
 )
 const $addNetworkSpecsPayload = $.object($.field("specs", $.uint8Array))
 
-export const generateQrAddNetworkSpecs = async (genesisHash: string) => {
-  const chain = await chaindataProvider.getChain({ genesisHash })
+export const generateQrAddNetworkSpecs = async (genesisHash: SignerPayloadGenesisHash) => {
+  const chain = await chaindataProvider.getChain({ genesisHash } as { genesisHash: HexString })
   assert(chain, "Chain not found")
   assert(chain.nativeToken?.id, "Chain native token not found")
 

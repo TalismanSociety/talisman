@@ -1,6 +1,7 @@
-import { BaseRequest, BaseRequestId, RequestIdOnly } from "@core/types/base"
+import { BaseRequest, BaseRequestId } from "@core/types/base"
 import type { MetadataRequest as PolkadotMetadataRequest } from "@polkadot/extension-base/background/types"
 import type { MetadataDef } from "@polkadot/extension-inject/types"
+import { HexString } from "@polkadot/util/types"
 export type { MetadataDef }
 
 export type MetadataUpdateStatus = {
@@ -22,12 +23,16 @@ export type RequestMetadataIdOnly = {
 export type RequestMetadataApprove = RequestMetadataIdOnly
 export type RequestMetadataReject = RequestMetadataIdOnly
 
+export type HexStringRequestIdOnly = {
+  id: HexString
+}
+
 export type MetadataMessages = {
   "pri(metadata.approve)": [RequestMetadataApprove, boolean]
   "pri(metadata.get)": [string | null, MetadataDef | null]
   "pri(metadata.reject)": [RequestMetadataReject, boolean]
   "pri(metadata.list)": [null, MetadataDef[]]
-  "pri(metadata.updates.subscribe)": [RequestIdOnly, boolean, MetadataUpdateStatus]
+  "pri(metadata.updates.subscribe)": [HexStringRequestIdOnly, boolean, MetadataUpdateStatus]
 }
 
 export type MetadataRequests = {

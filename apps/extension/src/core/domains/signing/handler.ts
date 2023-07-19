@@ -14,6 +14,7 @@ import type { MessageTypes, RequestType, ResponseType } from "@core/types"
 import { Port } from "@core/types/base"
 import { getTypeRegistry } from "@core/util/getTypeRegistry"
 import { isJsonPayload } from "@core/util/isJsonPayload"
+import { validateHexString } from "@core/util/validateHexString"
 import { TypeRegistry } from "@polkadot/types"
 import keyring from "@polkadot/ui-keyring"
 import { assert } from "@polkadot/util"
@@ -42,7 +43,8 @@ export default class SigningHandler extends ExtensionHandler {
       let registry = new TypeRegistry()
 
       if (isJsonPayload(payload)) {
-        const { genesisHash, signedExtensions, specVersion, blockHash } = payload
+        const { signedExtensions, specVersion, blockHash } = payload
+        const genesisHash = validateHexString(payload.genesisHash)
 
         const { registry: fullRegistry } = await getTypeRegistry(
           genesisHash,
@@ -118,7 +120,7 @@ export default class SigningHandler extends ExtensionHandler {
     const account = keyring.getAccount(accountAddress)
 
     if (isJsonPayload(payload)) {
-      const { genesisHash } = payload
+      const genesisHash = validateHexString(payload.genesisHash)
       const chain = await chaindataProvider.getChain({ genesisHash })
       analyticsProperties.chain = chain?.chainName ?? undefined
 
