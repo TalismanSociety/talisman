@@ -4,6 +4,8 @@ import { AccountsHandler } from "@core/domains/accounts"
 import { verifierCertificateMnemonicStore } from "@core/domains/accounts/store.verifierCertificateMnemonic"
 import { AccountTypes, RequestAddressFromMnemonic } from "@core/domains/accounts/types"
 import AppHandler from "@core/domains/app/handler"
+import { featuresStore } from "@core/domains/app/store.features"
+import { FeatureFlag } from "@core/domains/app/types"
 import { BalancesHandler } from "@core/domains/balances"
 import { EncryptHandler } from "@core/domains/encrypt"
 import { EthHandler } from "@core/domains/ethereum"
@@ -23,6 +25,7 @@ import { generateQrAddNetworkSpecs, generateQrUpdateNetworkMetadata } from "@cor
 import { log } from "@core/log"
 import { MessageTypes, RequestType, ResponseType } from "@core/types"
 import { Port, RequestIdOnly } from "@core/types/base"
+import { getConfig } from "@core/util/getConfig"
 import { fetchHasSpiritKey } from "@core/util/hasSpiritKey"
 import keyring from "@polkadot/ui-keyring"
 import { assert, u8aToHex } from "@polkadot/util"
@@ -97,10 +100,30 @@ export default class Extension extends ExtensionHandler {
       DEBUG || TEST ? 0 : 2000
     )
 
+    // setup polling for config from github
+    const CONFIG_UPDATE_INTERVAL = 1000 * 60 * 5 // 5 minutes
+    setInterval(() => {
+      this.getRemoteConfig()
+    }, CONFIG_UPDATE_INTERVAL)
+
+    setTimeout(async () => {
+      this.getRemoteConfig()
+    }, 1000) // initial call immediately after extension start
+
     this.initDb()
     this.initWalletFunding()
     this.checkSpiritKeyOwnership()
     this.cleanup()
+  }
+
+  private async getRemoteConfig() {
+    const config = await getConfig()
+
+    featuresStore.set({
+      features: Object.entries(config.featureFlags)
+        .filter(([, v]) => v)
+        .map(([k]) => k as FeatureFlag),
+    })
   }
 
   private cleanup() {
