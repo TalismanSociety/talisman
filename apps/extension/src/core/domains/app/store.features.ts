@@ -29,15 +29,10 @@ export const featuresStore = new FeaturesStore("features", FEATURE_STORE_INITIAL
 if (!process.env.POSTHOG_AUTH_TOKEN) {
   // @devs : add all feature flags here, comment some if needed for testing
   const DEV_FEATURE_VARIANTS: FeatureVariants = {
-    WALLET_FUNDING: true, // shown when onboarding until wallet has funds
     BUY_CRYPTO: true, // nav buttons + button in fund wallet component
     LINK_TX_HISTORY: true,
     LINK_STAKING: true,
-    PARITY_SIGNER: true,
-    BANNER_NOM_POOL_STAKING: true,
     I18N: true,
-    USE_ONFINALITY_API_KEY_SUBSTRATE: false,
-    USE_ONFINALITY_API_KEY_EVM: false,
     TEST_VARIANT: "VARIANT1",
   }
   featuresStore.set({
