@@ -4,6 +4,7 @@ import { classNames } from "@talismn/util"
 import { ChainLogo } from "@ui/domains/Asset/ChainLogo"
 import { NetworkOption, usePortfolio } from "@ui/domains/Portfolio/context"
 import { useCallback, useEffect, useMemo, useRef, useState } from "react"
+import { useTranslation } from "react-i18next"
 import { IconButton } from "talisman-ui"
 
 const filterItems = (inputValue?: string) => (bc: NetworkOption | undefined) => {
@@ -21,6 +22,7 @@ const filterItems = (inputValue?: string) => (bc: NetworkOption | undefined) => 
 }
 
 export const NetworkPicker = () => {
+  const { t } = useTranslation()
   const { networks, networkFilter, setNetworkFilter } = usePortfolio()
   const [search, setSearch] = useState<string>()
   const ref = useRef<HTMLInputElement>(null)
@@ -71,7 +73,7 @@ export const NetworkPicker = () => {
                   "h-full flex-grow bg-transparent",
                   networkFilter && "placeholder-body-secondary focus:placeholder-body-disabled"
                 )}
-                placeholder={networkFilter ? networkFilter.name : "Search networks"}
+                placeholder={networkFilter ? networkFilter.name : t("All networks")}
                 onChange={(event) => setSearch(event.target.value)}
               />
               <div className="flex h-full w-12 flex-col justify-center">
@@ -86,12 +88,12 @@ export const NetworkPicker = () => {
                 )}
               </div>
             </div>
-            <Combobox.Options className="scrollable scrollable-700 border-grey-700 bg-field absolute z-10 max-h-[20rem] w-full overflow-y-auto rounded-b-sm border border-t-0">
+            <Combobox.Options className="scrollable scrollable-700 border-grey-700 bg-field absolute z-10 max-h-[30vh] w-full overflow-y-auto rounded-b-sm border border-t-0">
               {displayNetworks.map((network) => (
                 <Combobox.Option
                   key={network.id}
                   value={network}
-                  className="hover:bg-grey-800 data-[headlessui-state=active]:bg-grey-800 focus:bg-grey-800 flex w-full items-center gap-4 px-6 py-4"
+                  className="hover:bg-grey-800 data-[headlessui-state=active]:bg-grey-800 data-[headlessui-state='active_selected']:bg-grey-800 focus:bg-grey-800 flex w-full items-center gap-4 px-6 py-4"
                 >
                   <ChainLogo id={network.id} className="text-lg" />
                   <div>{network.name}</div>
