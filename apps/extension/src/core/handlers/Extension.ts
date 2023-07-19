@@ -25,10 +25,11 @@ import { generateQrAddNetworkSpecs, generateQrUpdateNetworkMetadata } from "@cor
 import { log } from "@core/log"
 import { MessageTypes, RequestType, ResponseType } from "@core/types"
 import { Port, RequestIdOnly } from "@core/types/base"
-import { getConfig } from "@core/util/getConfig"
+import { CONFIG_RATE_LIMIT_ERROR, getConfig } from "@core/util/getConfig"
 import { fetchHasSpiritKey } from "@core/util/hasSpiritKey"
 import keyring from "@polkadot/ui-keyring"
 import { assert, u8aToHex } from "@polkadot/util"
+import * as Sentry from "@sentry/browser"
 import { addressFromMnemonic } from "@talisman/util/addressFromMnemonic"
 import { db as balancesDb } from "@talismn/balances"
 import { liveQuery } from "dexie"
@@ -101,9 +102,20 @@ export default class Extension extends ExtensionHandler {
     )
 
     // setup polling for config from github
-    const CONFIG_UPDATE_INTERVAL = 1000 * 60 * 5 // 5 minutes
+    let CONFIG_UPDATE_INTERVAL = 1000 * 60 * 5 // 5 minutes
+    const MAX_CONFIG_UPDATE_INTERVAL = 1000 * 60 * 60 // 1 hour
     setInterval(() => {
-      this.getRemoteConfig()
+      try {
+        this.getRemoteConfig()
+      } catch (e) {
+        // exponential backoff for rate limits
+        if (
+          (e as Error).message === CONFIG_RATE_LIMIT_ERROR &&
+          CONFIG_UPDATE_INTERVAL < MAX_CONFIG_UPDATE_INTERVAL
+        )
+          CONFIG_UPDATE_INTERVAL = CONFIG_UPDATE_INTERVAL / 2
+        else Sentry.captureException(e)
+      }
     }, CONFIG_UPDATE_INTERVAL)
 
     setTimeout(async () => {
