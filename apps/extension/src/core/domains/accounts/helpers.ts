@@ -1,6 +1,6 @@
 import { AccountsCatalogStore } from "@core/domains/accounts/store.catalog"
-import { Account } from "@core/domains/accounts/types"
 import {
+  Account,
   AccountJsonAny,
   AccountType,
   IdenticonType,
@@ -103,17 +103,26 @@ export const sortAccounts =
     return accounts
   }
 
-export const getInjectedAccount = ({
-  json: {
-    address,
-    meta: { genesisHash, name },
-  },
-  type,
-}: SingleAddress): InjectedAccount => ({
+export const getInjectedAccount = (
+  {
+    json: {
+      address,
+      meta: { genesisHash, name, origin, isPortfolio },
+    },
+    type,
+  }: SingleAddress,
+  options = { includePortalOnlyInfo: false }
+): InjectedAccount | (InjectedAccount & { readonly: boolean; partOfPortfolio: boolean }) => ({
   address,
   genesisHash,
   name,
   type,
+  ...(options.includePortalOnlyInfo
+    ? {
+        readonly: origin === AccountType.Watched,
+        partOfPortfolio: isPortfolio,
+      }
+    : {}),
 })
 
 export const filterAccountsByAddresses =
@@ -131,7 +140,7 @@ export const getPublicAccounts = (
   filterFn(accounts)
     .filter((a) => options.includeWatchedAccounts || a.json.meta.origin !== AccountType.Watched)
     .sort((a, b) => (a.json.meta.whenCreated || 0) - (b.json.meta.whenCreated || 0))
-    .map(getInjectedAccount)
+    .map((x) => getInjectedAccount(x, { includePortalOnlyInfo: options.includeWatchedAccounts }))
 
 export const includeAvatar = (iconType: IdenticonType) => (account: InjectedAccount) => ({
   ...account,
