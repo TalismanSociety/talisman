@@ -1,9 +1,9 @@
-import { Combobox, Transition } from "@headlessui/react"
+import { Combobox } from "@headlessui/react"
 import { ChevronDownIcon, SearchIcon, XIcon } from "@talisman/theme/icons"
 import { classNames } from "@talismn/util"
 import { ChainLogo } from "@ui/domains/Asset/ChainLogo"
 import { NetworkOption, usePortfolio } from "@ui/domains/Portfolio/context"
-import { Fragment, useCallback, useEffect, useMemo, useRef, useState } from "react"
+import { useCallback, useEffect, useMemo, useRef, useState } from "react"
 import { IconButton } from "talisman-ui"
 
 const filterItems = (inputValue?: string) => (bc: NetworkOption | undefined) => {
@@ -86,25 +86,18 @@ export const NetworkPicker = () => {
                 )}
               </div>
             </div>
-            <Transition
-              as={Fragment}
-              leave="transition ease-in duration-100"
-              leaveFrom="opacity-100"
-              leaveTo="opacity-0"
-            >
-              <Combobox.Options className=" scrollable scrollable-700 border-grey-700 bg-field absolute z-10 max-h-[20rem] w-full overflow-y-auto rounded-b-sm border border-t-0">
-                {displayNetworks.map((network) => (
-                  <Combobox.Option
-                    key={network.id}
-                    value={network}
-                    className="hover:bg-grey-800 data-[headlessui-state=active]:bg-grey-800 focus:bg-grey-800 flex w-full items-center gap-4 px-6 py-4"
-                  >
-                    <ChainLogo id={network.id} className="text-lg" />
-                    <div>{network.name}</div>
-                  </Combobox.Option>
-                ))}
-              </Combobox.Options>
-            </Transition>
+            <Combobox.Options className="scrollable scrollable-700 border-grey-700 bg-field absolute z-10 max-h-[20rem] w-full overflow-y-auto rounded-b-sm border border-t-0">
+              {displayNetworks.map((network) => (
+                <Combobox.Option
+                  key={network.id}
+                  value={network}
+                  className="hover:bg-grey-800 data-[headlessui-state=active]:bg-grey-800 focus:bg-grey-800 flex w-full items-center gap-4 px-6 py-4"
+                >
+                  <ChainLogo id={network.id} className="text-lg" />
+                  <div>{network.name}</div>
+                </Combobox.Option>
+              ))}
+            </Combobox.Options>
           </div>
         )}
       </Combobox>
