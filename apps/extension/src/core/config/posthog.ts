@@ -1,8 +1,5 @@
 import { DEBUG } from "@core/constants"
-import { FeaturesStoreData, featuresStore } from "@core/domains/app/store.features"
 import posthog, { Properties } from "posthog-js"
-
-const REFRESH_FEATURE_FLAGS_INTERVAL = 5 * 60 * 1000 // 5 minutes
 
 const unsafeProperties = [
   "$os",
@@ -58,18 +55,5 @@ export const initPosthog = () => {
         }
       },
     })
-
-    // update feature store on each reload of feature flags
-    posthog.onFeatureFlags((features, variants) => {
-      featuresStore.set({
-        features,
-        variants,
-      } as FeaturesStoreData)
-    })
-
-    // reload feature flags every 5 minutes
-    setInterval(() => {
-      posthog.reloadFeatureFlags()
-    }, REFRESH_FEATURE_FLAGS_INTERVAL)
   }
 }
