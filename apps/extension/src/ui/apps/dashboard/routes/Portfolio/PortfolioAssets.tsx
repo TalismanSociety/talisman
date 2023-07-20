@@ -8,7 +8,6 @@ import { Statistics } from "@ui/domains/Portfolio/Statistics"
 import { useDisplayBalances } from "@ui/domains/Portfolio/useDisplayBalances"
 import { useAnalytics } from "@ui/hooks/useAnalytics"
 import { useAppState } from "@ui/hooks/useAppState"
-import { useIsFeatureEnabled } from "@ui/hooks/useFeatures"
 import { useEffect, useMemo } from "react"
 import { useTranslation } from "react-i18next"
 
@@ -28,11 +27,7 @@ const PageContent = ({ balances }: { balances: Balances }) => {
     }
   }, [balancesToDisplay.sum])
 
-  const enableWalletFunding = useIsFeatureEnabled("WALLET_FUNDING")
-  const displayWalletFunding = useMemo(
-    () => !account && Boolean(!hasFunds && enableWalletFunding),
-    [account, hasFunds, enableWalletFunding]
-  )
+  const displayWalletFunding = useMemo(() => !account && Boolean(!hasFunds), [account, hasFunds])
 
   return (
     <div className="flex w-full flex-col">

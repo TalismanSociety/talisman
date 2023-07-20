@@ -55,10 +55,10 @@ export const AddEthereumNetwork = () => {
               network.
             </Trans>
           </p>
-          <div className="grow"></div>
-          <div>
+          <div className="mt-16">
             <NetworksDetailsButton network={request.network} />
           </div>
+          <div className="grow"></div>
         </div>
       </PopupContent>
       <PopupFooter>

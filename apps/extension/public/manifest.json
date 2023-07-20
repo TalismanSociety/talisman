@@ -26,9 +26,6 @@
   "cross_origin_embedder_policy": {
     "value": "require-corp"
   },
-  "cross_origin_opener_policy": {
-    "value": "same-origin"
-  },
   "icons": {
     "16": "favicon16x16.png",
     "24": "favicon24x24.png",
