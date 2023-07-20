@@ -42,7 +42,7 @@ export const TotalFiatBalance = ({ className, mouseOver }: Props) => {
 
   return (
     <div className={classNames("flex flex-col items-start justify-center gap-4", className)}>
-      <div className="text-body-secondary mt-2 flex gap-2 text-sm mix-blend-color-dodge">
+      <div className="text-body-secondary mt-2 flex gap-2 text-sm">
         <span>{t("Total Portfolio")}</span>
         <button
           className={classNames(
