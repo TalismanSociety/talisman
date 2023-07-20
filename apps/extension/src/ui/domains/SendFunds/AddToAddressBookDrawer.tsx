@@ -4,16 +4,14 @@ import { AnalyticsPage, sendAnalyticsEvent } from "@ui/api/analytics"
 import { Address } from "@ui/domains/Account/Address"
 import { useAddressBook } from "@ui/hooks/useAddressBook"
 import { useAnalyticsPageView } from "@ui/hooks/useAnalyticsPageView"
-import { FC, FormEventHandler, useCallback } from "react"
+import { FC, FormEventHandler, useCallback, useEffect } from "react"
 import { useForm } from "react-hook-form"
-import styled from "styled-components"
+import { useTranslation } from "react-i18next"
 import { Drawer } from "talisman-ui"
 import { Button, FormFieldContainer, FormFieldInputText } from "talisman-ui"
 import * as yup from "yup"
 
 import { AccountIcon } from "../Account/AccountIcon"
-
-const INPUT_CONTAINER_PROPS = { className: "bg-grey-700" }
 
 const ANALYTICS_PAGE: AnalyticsPage = {
   container: "Fullscreen",
@@ -22,62 +20,33 @@ const ANALYTICS_PAGE: AnalyticsPage = {
   page: "Add to address book",
 }
 
-const Container = styled.div`
-  width: 100%;
-  max-width: 42rem;
-  box-sizing: border-box;
-  border: 1px solid var(--color-background-muted-3x);
-  border-top-right-radius: 1.6rem;
-  border-top-left-radius: 1.6rem;
-  padding: 2.4rem 2.4rem 2.9rem 2.4rem;
-
-  > section > p {
-    color: var(--color-mid);
-    font-size: 1.4rem;
-    line-height: 2rem;
-  }
-
-  .account-avatar {
-    font-size: 4rem;
-  }
-`
-
 type FormValues = {
   name: string
 }
 
 const schema = yup.object({
-  name: yup.string().required(""),
+  name: yup.string().trim().required(""),
 })
 
-export const AddToAddressBookDrawer: FC<{
-  isOpen: boolean
-  close: () => void
+const AddToAddressBookDrawerForm: FC<{
   address: string
   addressType: AddressBookContact["addressType"]
-  containerId?: string
-  asChild?: boolean
-}> = ({ isOpen, close, address, addressType, containerId }) => {
+  onClose?: () => void
+}> = ({ address, addressType, onClose }) => {
+  const { t } = useTranslation("send-funds")
   const { add } = useAddressBook()
   const {
     register,
     handleSubmit,
     formState: { isValid, errors, isSubmitting },
     setError,
-    watch,
     reset,
+    setFocus,
   } = useForm<FormValues>({
     resolver: yupResolver(schema),
     mode: "all",
     reValidateMode: "onChange",
   })
-
-  const nameValue = watch("name")
-
-  const closeDrawer = useCallback(() => {
-    reset()
-    close()
-  }, [reset, close])
 
   const submit = useCallback(
     async ({ name }: FormValues) => {
@@ -91,12 +60,12 @@ export const AddToAddressBookDrawer: FC<{
             addressType,
           },
         })
-        close()
+        onClose?.()
       } catch (err) {
         setError("name", err as Error)
       }
     },
-    [add, addressType, address, setError, close]
+    [add, addressType, address, setError, onClose]
   )
 
   // don't bubble up submit event, in case we're in another form (send funds)
@@ -109,59 +78,62 @@ export const AddToAddressBookDrawer: FC<{
     [handleSubmit, submit]
   )
 
+  useEffect(() => {
+    setTimeout(() => {
+      setFocus("name")
+    }, 250)
+  }, [setFocus, reset])
+
   useAnalyticsPageView(ANALYTICS_PAGE)
 
   return (
-    <Drawer isOpen={isOpen} anchor="bottom" onDismiss={closeDrawer} containerId={containerId}>
-      <Container className="bg-black-tertiary">
-        <form onSubmit={submitWithoutBubbleUp}>
-          <header className="flex flex-col items-center justify-center gap-6">
-            <AccountIcon address={address} />
-            <span className="font-bold">
-              {nameValue ? (
-                `${nameValue}`
-              ) : (
-                <Address
-                  className="address"
-                  address={address}
-                  endCharCount={6}
-                  startCharCount={6}
-                />
-              )}
-            </span>
-          </header>
-          <section className="my-4 mt-10">
-            <FormFieldContainer error={errors.name?.message}>
-              <FormFieldInputText
-                containerProps={INPUT_CONTAINER_PROPS}
-                type="text"
-                {...register("name")}
-                // eslint-disable-next-line jsx-a11y/no-autofocus
-                autoFocus
-                placeholder="Contact name"
-                autoComplete="off"
-              />
-            </FormFieldContainer>
-          </section>
-          <footer>
-            <div className="flex items-stretch gap-4">
-              <Button fullWidth onClick={closeDrawer}>
-                Cancel
-              </Button>
-              <Button
-                className="disabled:bg-grey-700"
-                type="submit"
-                fullWidth
-                primary
-                processing={isSubmitting}
-                disabled={!isValid}
-              >
-                Save
-              </Button>
-            </div>
-          </footer>
-        </form>
-      </Container>
-    </Drawer>
+    <form
+      className="bg-grey-800 flex h-[26.8rem] flex-col justify-end rounded-t-xl p-12"
+      onSubmit={submitWithoutBubbleUp}
+    >
+      <header className="flex flex-col items-center justify-center gap-6">
+        <AccountIcon className="text-xl" address={address} />
+        <span className="font-bold">
+          <Address className="address" address={address} endCharCount={6} startCharCount={6} />
+        </span>
+      </header>
+      <section className="my-4 mt-10">
+        <FormFieldContainer error={errors.name?.message}>
+          <FormFieldInputText
+            {...register("name")}
+            placeholder={t("Contact name")}
+            autoComplete="off"
+          />
+        </FormFieldContainer>
+      </section>
+      <footer className="grid grid-cols-2 gap-8">
+        <Button fullWidth onClick={onClose}>
+          {t("Cancel")}
+        </Button>
+        <Button
+          className="disabled:bg-grey-750"
+          type="submit"
+          fullWidth
+          primary
+          processing={isSubmitting}
+          disabled={!isValid}
+        >
+          {t("Save")}
+        </Button>
+      </footer>
+    </form>
   )
 }
+
+export const AddToAddressBookDrawer: FC<{
+  isOpen: boolean
+  close: () => void
+  address: string
+  addressType: AddressBookContact["addressType"]
+  containerId?: string
+  asChild?: boolean
+}> = ({ isOpen, close, address, addressType, containerId }) => (
+  <Drawer isOpen={isOpen} anchor="bottom" onDismiss={close} containerId={containerId}>
+    <AddToAddressBookDrawerForm address={address} addressType={addressType} onClose={close} />
+  </Drawer>
+)

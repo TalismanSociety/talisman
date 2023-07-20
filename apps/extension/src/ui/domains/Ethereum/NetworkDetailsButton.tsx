@@ -1,97 +1,14 @@
 import { AddEthereumChainParameter } from "@core/domains/ethereum/types"
 import { useOpenClose } from "@talisman/hooks/useOpenClose"
-import { ReactNode, useCallback, useMemo } from "react"
+import { FC, useCallback, useMemo } from "react"
 import { useTranslation } from "react-i18next"
-import styled from "styled-components"
-import { Button, Drawer } from "talisman-ui"
+import { Button, Drawer, PillButton } from "talisman-ui"
 
-const ViewDetailsContainer = styled.div`
-  background: var(--color-background-muted);
-  padding: 2.4rem;
-  border-radius: 2.4rem 2.4rem 0px 0px;
-  font-size: var(--font-size-small);
-  line-height: 2rem;
-  display: flex;
-  flex-direction: column;
-  max-height: 60rem;
-  color: var(--color-foreground-muted-2x);
+import { ViewDetailsField } from "../Sign/ViewDetails/ViewDetailsField"
 
-  .grow {
-    flex-grow: 1;
-    overflow-y: auto;
-  }
-
-  button {
-    margin-top: 2.4rem;
-    width: 100%;
-  }
-
-  h3 {
-    font-size: 1.4rem;
-    line-height: 2rem;
-    margin: 1.6remrem 0;
-  }
-
-  .vd-entry {
-    h4 {
-      padding: 0;
-      font-size: 1.2rem;
-      line-height: 1.6rem;
-      margin: 1.2rem 0 0.4rem 0;
-    }
-    p {
-      color: var(--color-foreground);
-      word-break: break-all;
-      margin: 0;
-      padding: 0;
-      font-size: 1.2rem;
-      line-height: 1.6rem;
-      white-space: pre-wrap;
-    }
-  }
-`
-
-const OpenButton = styled.button`
-  background: var(--color-background-muted-3x);
-  padding: 0.4rem 0.6rem;
-  border-radius: 4.8rem;
-  font-weight: var(--font-weight-regular);
-  color: var(--color-mid);
-  outline: none;
-  border: none;
-  cursor: pointer;
-  transition: all var(--transition-speed-fast) ease-in;
-  margin-bottom: 0.4rem;
-
-  font-size: var(--font-size-tiny);
-  line-height: var(--font-size-xsmall);
-
-  :hover {
-    background: var(--color-background-muted-3x);
-    color: var(--color-foreground-muted-2x);
-  }
-`
-
-type ViewDetailsEntryProps = {
-  title: string
-  value?: ReactNode
-}
-
-const ViewDetailsEntry = ({ title, value }: ViewDetailsEntryProps) => {
-  const { t } = useTranslation("request")
-  return (
-    <div className="vd-entry">
-      <h4>{title}</h4>
-      <p>{value ?? t("N/A")}</p>
-    </div>
-  )
-}
-
-type NetworkDetailsButtonProps = {
+export const NetworksDetailsButton: FC<{
   network: AddEthereumChainParameter
-}
-
-export const NetworksDetailsButton = ({ network }: NetworkDetailsButtonProps) => {
+}> = ({ network }) => {
   const { t } = useTranslation("request")
   const { isOpen, open, close } = useOpenClose()
 
@@ -118,21 +35,21 @@ export const NetworksDetailsButton = ({ network }: NetworkDetailsButtonProps) =>
 
   return (
     <>
-      <OpenButton onClick={open}>{t("View Details")}</OpenButton>
+      <PillButton onClick={open}>{t("View Details")}</PillButton>
       <Drawer containerId="main" isOpen={isOpen} onDismiss={close} anchor="bottom">
-        <ViewDetailsContainer>
-          <h3>{t("Network Details")}</h3>
-          <div className="grow">
-            <ViewDetailsEntry title={t("Network Name")} value={name} />
-            <ViewDetailsEntry title={t("RPC URL")} value={rpcs} />
-            <ViewDetailsEntry title={t("Chain ID")} value={chainId} />
-            <ViewDetailsEntry title={t("Currency Symbol")} value={tokenSymbol} />
-            <ViewDetailsEntry title={t("Block Explorer URL")} value={blockExplorers} />
+        <div className="bg-grey-800 text-body-secondary flex max-h-full flex-col rounded-t-xl p-12 text-sm">
+          <h3 className="text-sm">{t("Network Details")}</h3>
+          <div className="scrollable scrollable-700 text-body leading-paragraph overflow-y-auto">
+            <ViewDetailsField label={t("Network Name")}>{name}</ViewDetailsField>
+            <ViewDetailsField label={t("RPC URL")}>{rpcs}</ViewDetailsField>
+            <ViewDetailsField label={t("Chain ID")}>{chainId}</ViewDetailsField>
+            <ViewDetailsField label={t("Currency Symbol")}>{tokenSymbol}</ViewDetailsField>
+            <ViewDetailsField label={t("Block Explorer URL")}>{blockExplorers}</ViewDetailsField>
           </div>
-          <div>
-            <Button onClick={close}>{t("Close")}</Button>
-          </div>
-        </ViewDetailsContainer>
+          <Button className="mt-12" onClick={close}>
+            {t("Close")}
+          </Button>
+        </div>
       </Drawer>
     </>
   )

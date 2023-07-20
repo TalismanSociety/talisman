@@ -1,62 +1,13 @@
-import { breakpoints } from "@talisman/theme/definitions"
 import imgFundWallet from "@talisman/theme/images/fund-wallet.png"
+import { classNames } from "@talismn/util"
 import { AnalyticsPage, sendAnalyticsEvent } from "@ui/api/analytics"
 import { useAnalyticsPageView } from "@ui/hooks/useAnalyticsPageView"
 import { useIsFeatureEnabled } from "@ui/hooks/useFeatures"
 import { useCallback } from "react"
 import { useTranslation } from "react-i18next"
-import styled from "styled-components"
 
 import { useBuyTokensModal } from "../Asset/Buy/BuyTokensModalContext"
 import { useCopyAddressModal } from "../CopyAddress"
-
-const Container = styled.div`
-  width: 31.8rem;
-  color: var(--color-mid);
-  text-align: center;
-  display: flex;
-  flex-direction: column;
-  gap: 2.4rem;
-  align-items: center;
-
-  @media (min-width: ${breakpoints["2xl"]}px) {
-    margin-top: 3rem;
-    transform: scale(1.2);
-  }
-`
-
-const Button = styled.button`
-  border-radius: 24px;
-  padding: 0.4rem 1.6rem;
-  font-size: 1.4rem;
-  white-space: nowrap;
-  border: none;
-  cursor: pointer;
-  min-width: 12rem;
-  flex-grow: 1;
-  line-height: 2.2rem;
-`
-
-const DefaultButton = styled(Button)`
-  background-color: transparent;
-  color: var(--color-foreground);
-  border: 1px solid var(--color-foreground);
-
-  :hover {
-    background-color: var(--color-foreground);
-    color: var(--color-background);
-  }
-`
-
-const PrimaryButton = styled(Button)`
-  background-color: var(--color-primary);
-  color: black;
-  opacity: 0.9;
-
-  :hover {
-    opacity: 1;
-  }
-`
 
 const ANALYTICS_PAGE: AnalyticsPage = {
   container: "Fullscreen",
@@ -91,19 +42,33 @@ export const FundYourWallet = () => {
   }, [openBuyModal])
 
   return (
-    <Container>
+    <div className="text-body-secondary flex w-[31.8rem] flex-col items-center gap-12 text-center 2xl:mt-[3rem] 2xl:scale-125">
       <div className="text-md text-white">{t("Fund your wallet")}</div>
       <div>
         <img height={124} src={imgFundWallet} alt="" />
       </div>
       <div>{t("This is where you'll see your balances.")}</div>
       <div>{t("Get started with some crypto so you can start using apps.")}</div>
-      <div className="flex w-full gap-4">
-        <DefaultButton onClick={handleReceiveClick}>{t("Receive Funds")}</DefaultButton>
+      <div className="grid w-full grid-cols-2 gap-4 text-sm">
+        <button
+          className={classNames(
+            "border-body text-body hover:bg-body hover:text-body-black h-16 rounded-xl border"
+          )}
+          onClick={handleReceiveClick}
+        >
+          {t("Receive Funds")}
+        </button>
         {showBuyCryptoButton && (
-          <PrimaryButton onClick={handleBuyClick}>{t("Buy Crypto")}</PrimaryButton>
+          <button
+            className={classNames(
+              "bg-primary text-body-black h-16 rounded-xl opacity-90 hover:opacity-100"
+            )}
+            onClick={handleBuyClick}
+          >
+            {t("Buy Crypto")}
+          </button>
         )}
       </div>
-    </Container>
+    </div>
   )
 }
