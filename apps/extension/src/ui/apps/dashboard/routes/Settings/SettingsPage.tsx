@@ -101,7 +101,7 @@ export const SettingsPage = () => {
           iconLeft={IconUser}
           iconRight={ChevronRightIcon}
           title={t("Manage Accounts")}
-          subtitle={t("Sort, organise and hide your accounts")}
+          subtitle={t("Sort and organise your accounts")}
           to={`/settings/accounts`}
         />
         <CtaButton
