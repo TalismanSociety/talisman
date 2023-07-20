@@ -217,6 +217,8 @@ export default class AppHandler extends ExtensionHandler {
     await windowManager.openOnboarding("/import?resetWallet=true")
     // since all accounts are being wiped, all sites need to be reset - so they may as well be wiped.
     await this.stores.sites.clear()
+    // since all accounts are being wiped, account catalog also needs to be wiped.
+    await this.stores.accountsCatalog.clear()
 
     return true
   }
