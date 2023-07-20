@@ -7,6 +7,8 @@ import { usePortfolio } from "@ui/domains/Portfolio/context"
 import { useDisplayBalances } from "@ui/domains/Portfolio/useDisplayBalances"
 import { useTokenBalancesSummary } from "@ui/domains/Portfolio/useTokenBalancesSummary"
 import { useAnalytics } from "@ui/hooks/useAnalytics"
+import useBalances from "@ui/hooks/useBalances"
+import { useSearchParamsSelectedAccount } from "@ui/hooks/useSearchParamsSelectedAccount"
 import { useCallback, useEffect, useMemo } from "react"
 import { useTranslation } from "react-i18next"
 import { Navigate, useNavigate, useParams, useSearchParams } from "react-router-dom"
@@ -55,15 +57,23 @@ const PageContent = ({ balances, symbol }: { balances: Balances; symbol: string 
 export const PortfolioAsset = () => {
   const { symbol } = useParams()
   const [search] = useSearchParams()
-  const { allBalances } = usePortfolio()
+  const { account } = useSearchParamsSelectedAccount()
+  const allBalances = useBalances()
+  const { networkBalances } = usePortfolio()
   const { popupOpenEvent } = useAnalytics()
   const isTestnet = search.get("testnet") === "true"
+
+  const accountBalances = useMemo(
+    () => (account ? allBalances.find((b) => b.address === account.address) : networkBalances),
+    [account, allBalances, networkBalances]
+  )
 
   const balances = useMemo(
     // TODO: Move the association between a token on multiple chains into the backend / subsquid.
     // We will eventually need to handle the scenario where two tokens with the same symbol are not the same token.
-    () => allBalances.find((b) => b.token?.symbol === symbol && b.token?.isTestnet === isTestnet),
-    [allBalances, isTestnet, symbol]
+    () =>
+      accountBalances.find((b) => b.token?.symbol === symbol && b.token?.isTestnet === isTestnet),
+    [accountBalances, isTestnet, symbol]
   )
 
   useEffect(() => {

@@ -8,6 +8,7 @@ import { classNames } from "@talismn/util"
 import Fiat from "@ui/domains/Asset/Fiat"
 import Tokens from "@ui/domains/Asset/Tokens"
 import { useAnalytics } from "@ui/hooks/useAnalytics"
+import { useSearchParamsSelectedAccount } from "@ui/hooks/useSearchParamsSelectedAccount"
 import { MouseEventHandler, ReactNode, useCallback, useMemo } from "react"
 import { Trans, useTranslation } from "react-i18next"
 import { useNavigate } from "react-router-dom"
@@ -82,6 +83,7 @@ const AssetRow = ({ balances, locked }: AssetRowProps) => {
   const networkIds = usePortfolioNetworkIds(balances)
   const { genericEvent } = useAnalytics()
 
+  const { account } = useSearchParamsSelectedAccount()
   const status = useBalancesStatus(balances)
 
   const { token, summary } = useTokenBalancesSummary(balances)
@@ -93,11 +95,14 @@ const AssetRow = ({ balances, locked }: AssetRowProps) => {
   const navigate = useNavigate()
   const handleClick = useCallback(() => {
     if (!token) return
-    navigate(
-      `/portfolio/${encodeURIComponent(token.symbol)}${token.isTestnet ? "?testnet=true" : ""}`
-    )
+
+    const params = new URLSearchParams()
+    token.isTestnet && params.set("testnet", "true")
+    account && params.set("account", account?.address)
+
+    navigate(`/portfolio/${encodeURIComponent(token.symbol)}?${params.toString()}`)
     genericEvent("goto portfolio asset", { from: "popup", symbol: token.symbol })
-  }, [genericEvent, navigate, token])
+  }, [account, genericEvent, navigate, token])
 
   const handleClickStakingBanner = useCallback(() => {
     window.open("https://app.talisman.xyz/staking")

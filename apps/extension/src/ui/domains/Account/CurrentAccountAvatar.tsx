@@ -1,4 +1,4 @@
-import { TreeFolder } from "@core/domains/accounts/store.catalog"
+import { TreeFolder } from "@core/domains/accounts/helpers.catalog"
 import { AccountJsonAny } from "@core/domains/accounts/types"
 import { WithTooltip } from "@talisman/components/Tooltip"
 import { classNames } from "@talismn/util"
@@ -28,7 +28,7 @@ const Avatar = ({
     />
   ) : folder ? (
     <div className={className}>
-      <AccountFolderIcon className={classNames("account-avatar", className)} color={folder.color} />
+      <AccountFolderIcon className={classNames("account-avatar", className)} />
     </div>
   ) : (
     <div className={className}>

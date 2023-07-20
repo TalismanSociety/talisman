@@ -46,7 +46,7 @@ export const TotalFiatBalance = ({ className, mouseOver }: Props) => {
         <span>{t("Total Portfolio")}</span>
         <button
           className={classNames(
-            "hover:text-body focus:text-body pointer-events-auto opacity-0 transition-[color,opacity]",
+            "hover:text-body focus:text-body pointer-events-auto opacity-0 transition-opacity",
             (hideBalances || mouseOver) && "opacity-100"
           )}
           onClick={toggleHideBalance}

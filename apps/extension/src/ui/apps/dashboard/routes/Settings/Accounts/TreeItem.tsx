@@ -1,29 +1,19 @@
-import { AccountJsonAny, AccountsCatalogTree } from "@core/domains/accounts/types"
-import { DraggableAttributes } from "@dnd-kit/core"
+import { AccountsCatalogTree } from "@core/domains/accounts/helpers.catalog"
+import { AccountJsonAny } from "@core/domains/accounts/types"
+import { DraggableAttributes, useDroppable } from "@dnd-kit/core"
 import { SyntheticListenerMap } from "@dnd-kit/core/dist/hooks/utilities"
-import { isEthereumAddress } from "@polkadot/util-crypto"
-import { WithTooltip } from "@talisman/components/Tooltip"
 import { ChevronDownIcon, DragIcon, MoreHorizontalIcon } from "@talisman/theme/icons"
 import { Balances } from "@talismn/balances"
 import { classNames } from "@talismn/util"
-import { useAccountExportModal } from "@ui/domains/Account/AccountExportModal"
-import { useAccountExportPrivateKeyModal } from "@ui/domains/Account/AccountExportPrivateKeyModal"
+import { AccountContextMenu } from "@ui/apps/dashboard/routes/Portfolio/AccountContextMenu"
 import { AccountFolderIcon } from "@ui/domains/Account/AccountFolderIcon"
 import { AccountIcon } from "@ui/domains/Account/AccountIcon"
-import { useAccountRemoveModal } from "@ui/domains/Account/AccountRemoveModal"
-import { useAccountRenameModal } from "@ui/domains/Account/AccountRenameModal"
 import { AccountTypeIcon } from "@ui/domains/Account/AccountTypeIcon"
 import { Address } from "@ui/domains/Account/Address"
 import Fiat from "@ui/domains/Asset/Fiat"
-import { useCopyAddressModal } from "@ui/domains/CopyAddress"
-import { useAccountToggleIsPortfolio } from "@ui/hooks/useAccountToggleIsPortfolio"
-import { useAnalytics } from "@ui/hooks/useAnalytics"
 import { useBalanceDetails } from "@ui/hooks/useBalanceDetails"
-import { useIsFeatureEnabled } from "@ui/hooks/useFeatures"
-import { getTransactionHistoryUrl } from "@ui/util/getTransactionHistoryUrl"
 import { CSSProperties, ReactNode, forwardRef, useMemo } from "react"
 import { useTranslation } from "react-i18next"
-import { useNavigate } from "react-router-dom"
 import { ContextMenu, ContextMenuContent, ContextMenuItem, ContextMenuTrigger } from "talisman-ui"
 
 import { AccountsLogoStack } from "./AccountsLogoStack"
@@ -60,27 +50,13 @@ TreeItem.displayName = "TreeItem"
 
 export const TreeAccountItem = forwardRef<HTMLDivElement, Props & { item: UiTreeAccount }>(
   (props, ref) => {
-    const { t } = useTranslation()
     const { item, handleProps, style, accounts, balances, wrapperRef, depth } = props
     const account = accounts.find((account) => account.address === item.address)
     const accountBalances = useMemo(
       () => balances.find({ address: account?.address }),
       [account, balances]
     )
-    const { balanceDetails, totalUsd } = useBalanceDetails(accountBalances)
-
-    const { genericEvent } = useAnalytics()
-    const { canToggleIsPortfolio, toggleIsPortfolio, toggleLabel } =
-      useAccountToggleIsPortfolio(account)
-    const { open: openCopyAddressModal } = useCopyAddressModal()
-    const showTxHistory = useIsFeatureEnabled("LINK_TX_HISTORY")
-    const { open: openAccountRenameModal } = useAccountRenameModal()
-    const { canExportAccountFunc, open: openAccountExportModal } = useAccountExportModal()
-    const { canExportAccountFunc: canExportAccountPkFunc, open: openAccountExportPkModal } =
-      useAccountExportPrivateKeyModal()
-    const { canRemoveFunc, open: openAccountRemoveModal } = useAccountRemoveModal()
-    const canAddCustomToken = useMemo(() => isEthereumAddress(account?.address), [account?.address])
-    const navigate = useNavigate()
+    const { totalUsd } = useBalanceDetails(accountBalances)
 
     if (!account) return null
     return (
@@ -105,69 +81,14 @@ export const TreeAccountItem = forwardRef<HTMLDivElement, Props & { item: UiTree
             </div>
           </div>
           <div className="flex flex-col gap-2">
-            <WithTooltip as="div" tooltip={balanceDetails} noWrap>
-              <Fiat amount={totalUsd} currency="usd" />
-            </WithTooltip>
+            <Fiat amount={totalUsd} currency="usd" />
           </div>
 
-          <ContextMenu placement="bottom-end">
-            <ContextMenuTrigger className="hover:bg-grey-800 text-body-secondary hover:text-body rounded p-6">
-              <MoreHorizontalIcon className="shrink-0" />
-            </ContextMenuTrigger>
-            <ContextMenuContent className="border-grey-800 z-50 flex w-min flex-col whitespace-nowrap rounded-sm border bg-black px-2 py-3 text-left text-sm shadow-lg">
-              {canToggleIsPortfolio && (
-                <ContextMenuItem onClick={toggleIsPortfolio}>{toggleLabel}</ContextMenuItem>
-              )}
-              <ContextMenuItem
-                onClick={() => {
-                  genericEvent("open copy address", { from: "settings - accounts" })
-                  openCopyAddressModal({ mode: "copy", address: account.address })
-                }}
-              >
-                {t("Copy address")}
-              </ContextMenuItem>
-              {showTxHistory && (
-                <ContextMenuItem
-                  onClick={() => {
-                    genericEvent("open web app tx history", { from: "settings - accounts" })
-                    window.open(getTransactionHistoryUrl(account?.address), "_blank")
-                  }}
-                >
-                  {t("Transaction history")}
-                </ContextMenuItem>
-              )}
-              <ContextMenuItem onClick={() => openAccountRenameModal(account)}>
-                {t("Rename")}
-              </ContextMenuItem>
-              {canExportAccountFunc(account) && (
-                <ContextMenuItem onClick={() => openAccountExportModal(account)}>
-                  {t("Export as JSON")}
-                </ContextMenuItem>
-              )}
-              {canExportAccountPkFunc(account) && (
-                <ContextMenuItem onClick={() => openAccountExportPkModal(account)}>
-                  {t("Export private key")}
-                </ContextMenuItem>
-              )}
-              {canRemoveFunc(account) && (
-                <ContextMenuItem onClick={() => openAccountRemoveModal(account)}>
-                  {t("Remove account")}
-                </ContextMenuItem>
-              )}
-              {/*
-               ** TODO: Add hidden accounts
-               ** (See thread: https://discord.com/channels/969497836410507274/969971058918699110/1124182936841879605)
-               */}
-              {/* <ContextMenuItem onClick={() => {}}>{t("Hide from portfolio")}</ContextMenuItem> */}
-              {/* <ContextMenuItem onClick={() => {}}>{t("Show in portfolio")}</ContextMenuItem> */}
-
-              {canAddCustomToken && (
-                <ContextMenuItem onClick={() => navigate("/tokens/add")}>
-                  {t("Add custom token")}
-                </ContextMenuItem>
-              )}
-            </ContextMenuContent>
-          </ContextMenu>
+          <AccountContextMenu
+            analyticsFrom="settings - accounts"
+            address={item.address}
+            hideManageAccounts
+          />
         </div>
       </TreeItemWrapper>
     )
@@ -189,6 +110,7 @@ export const TreeFolderItem = forwardRef<HTMLDivElement, Props & { item: UiTreeF
       onCollapse,
       style,
       wrapperRef,
+      indentationWidth,
     } = props
 
     const addresses = useMemo(() => item.tree.map((item) => item.address), [item])
@@ -196,7 +118,7 @@ export const TreeFolderItem = forwardRef<HTMLDivElement, Props & { item: UiTreeF
       () => balances.find((b) => addresses.includes(b.address)),
       [addresses, balances]
     )
-    const { balanceDetails, totalUsd } = useBalanceDetails(folderBalances)
+    const { totalUsd } = useBalanceDetails(folderBalances)
     const stopPropagation =
       <T extends Pick<Event, "stopPropagation">>(andThen?: (event: T) => void) =>
       (event: T) => {
@@ -209,55 +131,51 @@ export const TreeFolderItem = forwardRef<HTMLDivElement, Props & { item: UiTreeF
 
     return (
       <TreeItemWrapper {...props} ref={wrapperRef}>
-        {/* eslint-disable-next-line jsx-a11y/click-events-have-key-events */}
         <div
           ref={ref}
-          role="button"
-          tabIndex={-1}
           className="bg-black-secondary relative flex items-center gap-8 rounded-sm border-[1px] border-transparent p-8"
-          style={style}
+          role="button"
+          tabIndex={0}
           onClick={onCollapse}
+          onKeyDown={(e) => ["Enter", " "].includes(e.key) && onCollapse?.()}
+          style={style}
         >
           <DragButton {...handleProps?.attributes} {...handleProps?.listeners} />
-          <AccountFolderIcon className="shrink-0 text-xl" color={item.color} />
+          <AccountFolderIcon className="shrink-0 text-xl" />
           <div className="flex w-full grow flex-col gap-2 overflow-hidden">
             <div className="overflow-hidden text-ellipsis whitespace-nowrap">{item.name}</div>
             {addresses.length > 0 && <AccountsLogoStack addresses={addresses} />}
           </div>
+          <ChevronDownIcon
+            className={classNames(
+              "text-body-disabled shrink-0 transition-transform",
+              (clone || collapsed) && "-rotate-90"
+            )}
+          />
           <div className="flex flex-col">
-            <WithTooltip as="div" tooltip={balanceDetails} noWrap>
-              <Fiat amount={totalUsd} currency="usd" />
-            </WithTooltip>
+            <Fiat amount={totalUsd} currency="usd" />
           </div>
 
-          {collapsed ? (
-            <ContextMenu placement="bottom-end">
-              <ContextMenuTrigger
-                className="hover:bg-grey-800 text-body-secondary hover:text-body rounded p-6"
-                onClick={stopPropagation()}
+          <ContextMenu placement="bottom-end">
+            <ContextMenuTrigger
+              className="hover:bg-grey-800 text-body-secondary hover:text-body rounded p-6"
+              onClick={stopPropagation()}
+            >
+              <MoreHorizontalIcon className="shrink-0" />
+            </ContextMenuTrigger>
+            <ContextMenuContent className="border-grey-800 z-50 flex w-min flex-col whitespace-nowrap rounded-sm border bg-black px-2 py-3 text-left text-sm shadow-lg">
+              <ContextMenuItem
+                onClick={stopPropagation(() => renameFolder(item.id, item.name, treeName))}
               >
-                <MoreHorizontalIcon className="shrink-0" />
-              </ContextMenuTrigger>
-              <ContextMenuContent className="border-grey-800 z-50 flex w-min flex-col whitespace-nowrap rounded-sm border bg-black px-2 py-3 text-left text-sm shadow-lg">
-                <ContextMenuItem
-                  onClick={stopPropagation(() => renameFolder(item.id, item.name, treeName))}
-                >
-                  {t("Rename")}
-                </ContextMenuItem>
-                {/* TODO: Expose folder colors */}
-                {/* <ContextMenuItem onClick={stopPropagation()}>{t("Change color")}</ContextMenuItem> */}
-                <ContextMenuItem
-                  onClick={stopPropagation(() => deleteFolder(item.id, item.name, treeName))}
-                >
-                  {t("Delete")}
-                </ContextMenuItem>
-              </ContextMenuContent>
-            </ContextMenu>
-          ) : (
-            <div className="text-body-disabled rounded p-6">
-              <ChevronDownIcon className="shrink-0" />
-            </div>
-          )}
+                {t("Rename")}
+              </ContextMenuItem>
+              <ContextMenuItem
+                onClick={stopPropagation(() => deleteFolder(item.id, item.name, treeName))}
+              >
+                {t("Delete")}
+              </ContextMenuItem>
+            </ContextMenuContent>
+          </ContextMenu>
 
           {clone && childCount && childCount > 0 ? (
             <span
@@ -270,6 +188,10 @@ export const TreeFolderItem = forwardRef<HTMLDivElement, Props & { item: UiTreeF
             </span>
           ) : null}
         </div>
+
+        {!clone && !collapsed && item.tree.length === 0 ? (
+          <EmptyFolderDropzone id={item.id} indentationWidth={indentationWidth} />
+        ) : null}
       </TreeItemWrapper>
     )
   }
@@ -302,3 +224,27 @@ TreeItemWrapper.displayName = "TreeItemWrapper"
 const DragButton = (props: any) => (
   <DragIcon className="text-grey-750 -mx-4 shrink-0 text-xl" {...props} />
 )
+
+const EmptyFolderDropzone = ({
+  id,
+  indentationWidth,
+}: {
+  id: string
+  indentationWidth: number
+}) => {
+  const { t } = useTranslation()
+  const { setNodeRef } = useDroppable({ id: `empty-folder-${id}` })
+
+  return (
+    <div
+      ref={setNodeRef}
+      className="bg-black-secondary/60 mt-4 flex flex-col gap-2 rounded p-20"
+      style={{ marginLeft: `${indentationWidth}px` }}
+    >
+      <span className="">{t("There are no accounts in this folder")}</span>
+      <span className="text-body-secondary text-sm">
+        {t("You can drag an account here to add it")}
+      </span>
+    </div>
+  )
+}

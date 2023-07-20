@@ -1,5 +1,5 @@
-import { TreeFolder, TreeItem } from "@core/domains/accounts/store.catalog"
-import { AccountType, AccountsCatalogTree } from "@core/domains/accounts/types"
+import { AccountsCatalogTree, TreeFolder, TreeItem } from "@core/domains/accounts/helpers.catalog"
+import { AccountType } from "@core/domains/accounts/types"
 import { isEthereumAddress } from "@polkadot/util-crypto"
 import { FadeIn } from "@talisman/components/FadeIn"
 import { SuspenseTracker } from "@talisman/components/SuspenseTracker"
@@ -25,7 +25,7 @@ import { MouseEventHandler, Suspense, useCallback, useEffect, useMemo, useRef } 
 import { useTranslation } from "react-i18next"
 import { useNavigate } from "react-router-dom"
 import { useHoverDirty } from "react-use"
-import { IconButton } from "talisman-ui"
+import { IconButton, MysticalPhysicsV3 } from "talisman-ui"
 import { MYSTICAL_PHYSICS_V3, MysticalBackground } from "talisman-ui"
 
 const ANALYTICS_PAGE: AnalyticsPage = {
@@ -41,7 +41,6 @@ type AccountOption =
       treeName: string
       id: string
       name: string
-      color: string
       total?: number
       addresses: string[]
     }
@@ -109,7 +108,7 @@ const AccountButton = ({ option }: { option: AccountOption }) => {
         {option.type === "account" ? (
           <AccountIcon address={option.address} genesisHash={option.genesisHash} />
         ) : (
-          <AccountFolderIcon color={option.color} />
+          <AccountFolderIcon />
         )}
       </div>
       <div className="flex grow flex-col items-start justify-center gap-2 overflow-hidden">
@@ -154,13 +153,17 @@ const AccountsList = ({ className, options }: { className?: string; options: Acc
   </div>
 )
 
-const AccountsBgConfig = {
+const AccountsBgConfig: MysticalPhysicsV3 = {
   ...MYSTICAL_PHYSICS_V3,
   withAcolyte: false,
-  artifacts: 10,
+  artifacts: 2,
   blur: 0,
-  radiusMin: 2,
+  radiusMin: 4,
   radiusMax: 4,
+  opacityMin: 0.5,
+  opacityMax: 0.5,
+  durationMin: 12000,
+  durationMax: 15000,
 }
 const Accounts = ({
   folder,
@@ -209,7 +212,7 @@ const AllAccountsHeaderBackground = () => {
 
   return (
     <MysticalBackground
-      className="absolute left-0 top-0 h-full w-full overflow-hidden rounded-sm backdrop-blur-3xl"
+      className="absolute left-0 top-0 h-full w-full overflow-hidden rounded-sm"
       config={config}
     />
   )
@@ -226,7 +229,7 @@ const AllAccountsHeader = () => {
       <button
         className={classNames(
           "flex h-full w-full items-center justify-end gap-4 overflow-hidden rounded-sm p-6 text-lg",
-          "hover:bg-grey-800 text-body-secondary transition-colors duration-75 hover:text-white"
+          "hover:bg-grey-800 bg-black-secondary text-body-secondary transition-colors duration-75 hover:text-white"
         )}
         onClick={handleClick}
       >
@@ -236,7 +239,7 @@ const AllAccountsHeader = () => {
         <ChevronRightIcon className="z-10" />
       </button>
       <TotalFiatBalance
-        className="pointer-events-none absolute left-0 top-0 z-10 h-full w-full px-6"
+        className="pointer-events-none absolute left-0 top-0 h-full w-full px-6"
         mouseOver={isHovered}
       />
     </div>
@@ -317,7 +320,6 @@ export const PortfolioAccounts = () => {
               treeName,
               id: item.id,
               name: item.name,
-              color: item.color,
               total: new Balances(
                 item.tree.flatMap((account) => balancesByAddress.get(account.address) ?? [])
               ).sum.fiat("usd").total,

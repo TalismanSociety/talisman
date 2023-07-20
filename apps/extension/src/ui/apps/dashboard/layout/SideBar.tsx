@@ -8,6 +8,7 @@ import {
   DownloadAlertIcon,
   ExternalLinkIcon,
   ImageIcon,
+  MoreHorizontalIcon,
   PaperPlaneIcon,
   PlusIcon,
   SettingsIcon,
@@ -17,6 +18,7 @@ import {
 } from "@talisman/theme/icons"
 import { FullColorLogo, FullColorVerticalLogo, HandRedLogo } from "@talisman/theme/logos"
 import { classNames } from "@talismn/util"
+import { AccountContextMenu } from "@ui/apps/dashboard/routes/Portfolio/AccountContextMenu"
 import { useBuyTokensModal } from "@ui/domains/Asset/Buy/BuyTokensModalContext"
 import { BuildVersionPill } from "@ui/domains/Build/BuildVersionPill"
 import { useCopyAddressModal } from "@ui/domains/CopyAddress"
@@ -185,18 +187,36 @@ export const SideBar = () => {
           <PillButton className="!px-4" icon={ArrowDownIcon} onClick={handleCopyClick}>
             {t("Receive")}
           </PillButton>
+          <div className="hidden flex-grow lg:block" />
+          <AccountContextMenu
+            analyticsFrom="dashboard portfolio"
+            placement="bottom-start"
+            trigger={
+              <PillButton className="!px-4">
+                <MoreHorizontalIcon className="shrink-0" />
+              </PillButton>
+            }
+          />
         </div>
         {/* Buttons for small screens */}
         <div className="flex justify-center py-2 md:hidden">
-          <SendIconButton className="hover:bg-grey-800 rounded-xs p-4 !text-base">
+          <SendIconButton className="hover:bg-grey-800 rounded-xs p-1 !text-base">
             <PaperPlaneIcon />
           </SendIconButton>
           <IconButton
-            className="hover:bg-grey-800 rounded-xs p-2 !text-base"
+            className="hover:bg-grey-800 rounded-xs p-1 !text-base"
             onClick={handleCopyClick}
           >
             <ArrowDownIcon />
           </IconButton>
+          <AccountContextMenu
+            analyticsFrom="dashboard portfolio"
+            trigger={
+              <IconButton className="hover:bg-grey-800 rounded-xs p-1 !text-base">
+                <MoreHorizontalIcon />
+              </IconButton>
+            }
+          />
         </div>
       </div>
       <ScrollContainer className="flex-grow">

@@ -1,5 +1,4 @@
 import { Balance, Balances } from "@core/domains/balances/types"
-import { isEthereumAddress } from "@polkadot/util-crypto"
 import {
   ChevronLeftIcon,
   CopyIcon,
@@ -7,11 +6,7 @@ import {
   PaperPlaneIcon,
 } from "@talisman/theme/icons"
 import { classNames } from "@talismn/util"
-import { api } from "@ui/api"
-import { useAccountExportModal } from "@ui/domains/Account/AccountExportModal"
-import { useAccountExportPrivateKeyModal } from "@ui/domains/Account/AccountExportPrivateKeyModal"
-import { useAccountRemoveModal } from "@ui/domains/Account/AccountRemoveModal"
-import { useAccountRenameModal } from "@ui/domains/Account/AccountRenameModal"
+import { AccountContextMenu } from "@ui/apps/dashboard/routes/Portfolio/AccountContextMenu"
 import { AccountTypeIcon } from "@ui/domains/Account/AccountTypeIcon"
 import { CurrentAccountAvatar } from "@ui/domains/Account/CurrentAccountAvatar"
 import Fiat from "@ui/domains/Asset/Fiat"
@@ -19,20 +14,15 @@ import { useCopyAddressModal } from "@ui/domains/CopyAddress"
 import { PopupAssetsTable } from "@ui/domains/Portfolio/AssetsTable"
 import { usePortfolio } from "@ui/domains/Portfolio/context"
 import { useDisplayBalances } from "@ui/domains/Portfolio/useDisplayBalances"
-import { useAccountToggleIsPortfolio } from "@ui/hooks/useAccountToggleIsPortfolio"
 import { useAnalytics } from "@ui/hooks/useAnalytics"
-import { useIsFeatureEnabled } from "@ui/hooks/useFeatures"
+import useBalances from "@ui/hooks/useBalances"
 import { useSearchParamsSelectedAccount } from "@ui/hooks/useSearchParamsSelectedAccount"
 import { useSearchParamsSelectedFolder } from "@ui/hooks/useSearchParamsSelectedFolder"
 import { useSendFundsPopup } from "@ui/hooks/useSendFundsPopup"
-import { getTransactionHistoryUrl } from "@ui/util/getTransactionHistoryUrl"
 import { useCallback, useEffect, useMemo } from "react"
 import { useTranslation } from "react-i18next"
 import { useNavigate } from "react-router-dom"
 import {
-  ContextMenu,
-  ContextMenuContent,
-  ContextMenuItem,
   ContextMenuTrigger,
   IconButton,
   Tooltip,
@@ -40,7 +30,13 @@ import {
   TooltipTrigger,
 } from "talisman-ui"
 
-const PageContent = ({ balances: networkBalances }: { balances: Balances }) => {
+const PageContent = ({
+  allBalances,
+  networkBalances,
+}: {
+  allBalances: Balances
+  networkBalances: Balances
+}) => {
   const { account } = useSearchParamsSelectedAccount()
   const { folder } = useSearchParamsSelectedFolder()
 
@@ -48,31 +44,31 @@ const PageContent = ({ balances: networkBalances }: { balances: Balances }) => {
     // we use this to avoid looping over the balances list n times, where n is the number of accounts in the wallet
     // instead, we'll only interate over the balances one time
     const balancesByAddress: Map<string, Balance[]> = new Map()
-    networkBalances.each.forEach((balance) => {
+    allBalances.each.forEach((balance) => {
       if (!balancesByAddress.has(balance.address)) balancesByAddress.set(balance.address, [])
       balancesByAddress.get(balance.address)?.push(balance)
     })
     return balancesByAddress
-  }, [networkBalances])
+  }, [allBalances.each])
+
   const balances = useMemo(
     () =>
-      !folder
-        ? networkBalances
-        : new Balances(
+      account
+        ? new Balances(balancesByAddress.get(account.address) ?? [])
+        : folder
+        ? new Balances(
             folder.tree.flatMap((account) => balancesByAddress.get(account.address) ?? [])
-          ),
-    [balancesByAddress, folder, networkBalances]
+          )
+        : // only show networkBalances when no account / folder selected
+          // networkBalances is basically the full portfolio, without any watch-only accounts
+          // i.e. `Total Portfolio`
+          // on the other hand, allBalances includes watch-only accounts
+          networkBalances,
+    [account, balancesByAddress, folder, networkBalances]
   )
 
   const balancesToDisplay = useDisplayBalances(balances)
-  const { canExportAccount, open: openExportAccountModal } = useAccountExportModal()
-  const { canExportAccount: canExportAccountPk, open: openExportAccountPkModal } =
-    useAccountExportPrivateKeyModal()
-  const { canRemove, open: openAccountRemoveModal } = useAccountRemoveModal()
-  const { canRename, open: openAccountRenameModal } = useAccountRenameModal()
   const { open: openCopyAddressModal } = useCopyAddressModal()
-  const { canToggleIsPortfolio, toggleIsPortfolio, toggleLabel } =
-    useAccountToggleIsPortfolio(account)
   const { canSendFunds, cannotSendFundsReason, openSendFundsPopup } = useSendFundsPopup(account)
 
   const { genericEvent } = useAnalytics()
@@ -90,21 +86,10 @@ const PageContent = ({ balances: networkBalances }: { balances: Balances }) => {
     genericEvent("open copy address", { from: "popup portfolio" })
   }, [account, genericEvent, openCopyAddressModal])
 
-  const showTxHistory = useIsFeatureEnabled("LINK_TX_HISTORY")
-  const browseTxHistory = useCallback(() => {
-    genericEvent("open web app tx history", { from: "popup portfolio" })
-    window.open(getTransactionHistoryUrl(account?.address), "_blank")
-  }, [account, genericEvent])
-
   const navigate = useNavigate()
   const handleBackBtnClick = useCallback(() => {
     navigate(-1)
   }, [navigate])
-
-  const canAddCustomToken = useMemo(() => isEthereumAddress(account?.address), [account?.address])
-  const handleAddCustomToken = useCallback(() => {
-    api.dashboardOpen("/tokens/add")
-  }, [])
 
   const { t } = useTranslation()
 
@@ -157,52 +142,21 @@ const PageContent = ({ balances: networkBalances }: { balances: Balances }) => {
             <TooltipContent>{canSendFunds ? t("Send") : cannotSendFundsReason}</TooltipContent>
           </Tooltip>
           {account && (
-            <ContextMenu placement="bottom-end">
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <ContextMenuTrigger className="hover:bg-grey-800 text-body-secondary hover:text-body text-md flex h-16 w-16 flex-col items-center justify-center rounded-full">
-                    <MoreHorizontalIcon />
-                  </ContextMenuTrigger>
-                </TooltipTrigger>
-                <TooltipContent>{t("More options")}</TooltipContent>
-              </Tooltip>
-              <ContextMenuContent className="border-grey-800 z-50 flex w-min flex-col whitespace-nowrap rounded-sm border bg-black px-2 py-3 text-left text-sm shadow-lg">
-                {canToggleIsPortfolio && (
-                  <ContextMenuItem onClick={toggleIsPortfolio}>{toggleLabel}</ContextMenuItem>
-                )}
-                <ContextMenuItem onClick={copyAddress}>{t("Copy address")}</ContextMenuItem>
-                {showTxHistory && (
-                  <ContextMenuItem onClick={browseTxHistory}>
-                    {t("Transaction history")}
-                  </ContextMenuItem>
-                )}
-                {canRename && (
-                  <ContextMenuItem onClick={() => openAccountRenameModal()}>
-                    {t("Rename")}
-                  </ContextMenuItem>
-                )}
-                {canExportAccount && (
-                  <ContextMenuItem onClick={() => openExportAccountModal()}>
-                    {t("Export as JSON")}
-                  </ContextMenuItem>
-                )}
-                {canExportAccountPk && (
-                  <ContextMenuItem onClick={() => openExportAccountPkModal()}>
-                    {t("Export private key")}
-                  </ContextMenuItem>
-                )}
-                {canRemove && (
-                  <ContextMenuItem onClick={() => openAccountRemoveModal()}>
-                    {t("Remove account")}
-                  </ContextMenuItem>
-                )}
-                {canAddCustomToken && (
-                  <ContextMenuItem onClick={handleAddCustomToken}>
-                    {t("Add custom token")}
-                  </ContextMenuItem>
-                )}
-              </ContextMenuContent>
-            </ContextMenu>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <AccountContextMenu
+                  analyticsFrom="popup portfolio"
+                  address={account?.address}
+                  hideManageAccounts
+                  trigger={
+                    <ContextMenuTrigger className="hover:bg-grey-800 text-body-secondary hover:text-body text-md flex h-16 w-16 flex-col items-center justify-center rounded-full">
+                      <MoreHorizontalIcon />
+                    </ContextMenuTrigger>
+                  }
+                />
+              </TooltipTrigger>
+              <TooltipContent>{t("More options")}</TooltipContent>
+            </Tooltip>
           )}
         </div>
       </div>
@@ -214,6 +168,7 @@ const PageContent = ({ balances: networkBalances }: { balances: Balances }) => {
 }
 
 export const PortfolioAssets = () => {
+  const allBalances = useBalances()
   const { networkBalances } = usePortfolio()
   const { popupOpenEvent } = useAnalytics()
 
@@ -221,5 +176,5 @@ export const PortfolioAssets = () => {
     popupOpenEvent("portfolio assets")
   }, [popupOpenEvent])
 
-  return <PageContent balances={networkBalances} />
+  return <PageContent allBalances={allBalances} networkBalances={networkBalances} />
 }
