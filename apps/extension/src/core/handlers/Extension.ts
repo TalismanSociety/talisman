@@ -35,12 +35,12 @@ import { db as balancesDb } from "@talismn/balances"
 import { liveQuery } from "dexie"
 import Browser from "webextension-polyfill"
 
-// import chainsInit from "@core/libs/init/chains.json"
-// import evmNetworksInit from "@core/libs/init/evmNetworks.json"
-// import tokensInit from "@core/libs/init/tokens.json"
+let CONFIG_UPDATE_INTERVAL = 1000 * 60 * 5 // 5 minutes
+const MAX_CONFIG_UPDATE_INTERVAL = 1000 * 60 * 60 * 24 // 24 hours
 
 export default class Extension extends ExtensionHandler {
   readonly #routes: Record<string, ExtensionHandler> = {}
+  #configUpdater?: NodeJS.Timeout
   #autoLockTimeout = 0 // cached value so we don't have to get data from the store every time
 
   constructor(stores: ExtensionStore) {
@@ -102,24 +102,9 @@ export default class Extension extends ExtensionHandler {
     )
 
     // setup polling for config from github
-    let CONFIG_UPDATE_INTERVAL = 1000 * 60 * 5 // 5 minutes
-    const MAX_CONFIG_UPDATE_INTERVAL = 1000 * 60 * 60 // 1 hour
-    setInterval(() => {
-      try {
-        this.getRemoteConfig()
-      } catch (e) {
-        // exponential backoff for rate limits
-        if (
-          (e as Error).message === CONFIG_RATE_LIMIT_ERROR &&
-          CONFIG_UPDATE_INTERVAL < MAX_CONFIG_UPDATE_INTERVAL
-        )
-          CONFIG_UPDATE_INTERVAL = CONFIG_UPDATE_INTERVAL / 2
-        else Sentry.captureException(e)
-      }
-    }, CONFIG_UPDATE_INTERVAL)
-
     setTimeout(async () => {
-      this.getRemoteConfig()
+      this.fetchRemoteConfig()
+      this.setConfigUpdateTimeout()
     }, 1000) // initial call immediately after extension start
 
     this.initDb()
@@ -128,10 +113,28 @@ export default class Extension extends ExtensionHandler {
     this.cleanup()
   }
 
-  private async getRemoteConfig() {
+  private setConfigUpdateTimeout() {
+    if (this.#configUpdater) clearInterval(this.#configUpdater)
+    this.#configUpdater = setInterval(async () => {
+      try {
+        await this.fetchRemoteConfig()
+      } catch (e) {
+        // exponential backoff for rate limits
+        if (
+          (e as Error).message === CONFIG_RATE_LIMIT_ERROR &&
+          CONFIG_UPDATE_INTERVAL < MAX_CONFIG_UPDATE_INTERVAL
+        )
+          CONFIG_UPDATE_INTERVAL = CONFIG_UPDATE_INTERVAL * 2
+        else Sentry.captureException(e)
+      }
+      this.setConfigUpdateTimeout()
+    }, CONFIG_UPDATE_INTERVAL)
+  }
+
+  private async fetchRemoteConfig() {
     const config = await getConfig()
 
-    featuresStore.set({
+    return await featuresStore.set({
       features: Object.entries(config.featureFlags)
         .filter(([, v]) => v)
         .map(([k]) => k as FeatureFlag),
@@ -170,9 +173,6 @@ export default class Extension extends ExtensionHandler {
       //
       //   // TODO: Add this back again, but as an internal part of the @talismn/chaindata-provider-extension lib
       //   // // initial data provisioning (workaround to wallet beeing installed when subsquid is down)
-      //   // db.chains.bulkAdd(chainsInit as unknown as Chain[])
-      //   // db.evmNetworks.bulkAdd(evmNetworksInit as unknown as EvmNetwork[])
-      //   // db.tokens.bulkAdd(tokensInit as unknown as Token[])
       // }
     })
 
