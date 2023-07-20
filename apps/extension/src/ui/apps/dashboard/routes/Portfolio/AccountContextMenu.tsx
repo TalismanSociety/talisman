@@ -56,8 +56,6 @@ export const AccountContextMenu = forwardRef<HTMLElement, Props>(function Accoun
   const navigate = useNavigate()
   const { genericEvent } = useAnalytics()
 
-  const goToManageAccounts = useCallback(() => navigate("/settings/accounts"), [navigate])
-
   const { canToggleIsPortfolio, toggleIsPortfolio, toggleLabel } =
     useAccountToggleIsPortfolio(account)
 
@@ -110,6 +108,8 @@ export const AccountContextMenu = forwardRef<HTMLElement, Props>(function Accoun
     [_openAccountRemoveModal, account]
   )
 
+  const goToManageAccounts = useCallback(() => navigate("/settings/accounts"), [navigate])
+
   return (
     <ContextMenu placement={placement ?? "bottom-end"}>
       <ContextMenuTrigger
@@ -120,9 +120,6 @@ export const AccountContextMenu = forwardRef<HTMLElement, Props>(function Accoun
         {trigger ? trigger : <MoreHorizontalIcon className="shrink-0" />}
       </ContextMenuTrigger>
       <ContextMenuContent className="border-grey-800 z-50 flex w-min flex-col whitespace-nowrap rounded-sm border bg-black px-2 py-3 text-left text-sm shadow-lg">
-        {!hideManageAccounts && (
-          <ContextMenuItem onClick={goToManageAccounts}>{t("Manage accounts")}</ContextMenuItem>
-        )}
         {account && (
           <>
             {canToggleIsPortfolio && (
@@ -153,6 +150,9 @@ export const AccountContextMenu = forwardRef<HTMLElement, Props>(function Accoun
               </ContextMenuItem>
             )}
           </>
+        )}
+        {!hideManageAccounts && (
+          <ContextMenuItem onClick={goToManageAccounts}>{t("Manage accounts")}</ContextMenuItem>
         )}
       </ContextMenuContent>
     </ContextMenu>
