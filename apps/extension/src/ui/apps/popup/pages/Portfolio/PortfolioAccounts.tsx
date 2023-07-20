@@ -25,7 +25,7 @@ import { MouseEventHandler, Suspense, useCallback, useEffect, useMemo, useRef } 
 import { useTranslation } from "react-i18next"
 import { useNavigate } from "react-router-dom"
 import { useHoverDirty } from "react-use"
-import { IconButton } from "talisman-ui"
+import { IconButton, MysticalPhysicsV3 } from "talisman-ui"
 import { MYSTICAL_PHYSICS_V3, MysticalBackground } from "talisman-ui"
 
 const ANALYTICS_PAGE: AnalyticsPage = {
@@ -153,13 +153,17 @@ const AccountsList = ({ className, options }: { className?: string; options: Acc
   </div>
 )
 
-const AccountsBgConfig = {
+const AccountsBgConfig: MysticalPhysicsV3 = {
   ...MYSTICAL_PHYSICS_V3,
   withAcolyte: false,
-  artifacts: 10,
+  artifacts: 2,
   blur: 0,
-  radiusMin: 2,
+  radiusMin: 4,
   radiusMax: 4,
+  opacityMin: 0.5,
+  opacityMax: 0.5,
+  durationMin: 12000,
+  durationMax: 15000,
 }
 const Accounts = ({
   folder,
@@ -208,7 +212,7 @@ const AllAccountsHeaderBackground = () => {
 
   return (
     <MysticalBackground
-      className="absolute left-0 top-0 h-full w-full overflow-hidden rounded-sm backdrop-blur-3xl"
+      className="absolute left-0 top-0 h-full w-full overflow-hidden rounded-sm"
       config={config}
     />
   )
@@ -225,7 +229,7 @@ const AllAccountsHeader = () => {
       <button
         className={classNames(
           "flex h-full w-full items-center justify-end gap-4 overflow-hidden rounded-sm p-6 text-lg",
-          "hover:bg-grey-800 text-body-secondary transition-colors duration-75 hover:text-white"
+          "hover:bg-grey-800 bg-black-secondary text-body-secondary transition-colors duration-75 hover:text-white"
         )}
         onClick={handleClick}
       >
@@ -233,7 +237,8 @@ const AllAccountsHeader = () => {
           <AllAccountsHeaderBackground />
         </Suspense>
         <ChevronRightIcon
-          className={classNames("mix-blend-color-dodge", isHovered && "text-body")}
+          className="z-10"
+          //className={classNames("mix-blend-color-dodge", isHovered && "text-body")}
         />
       </button>
       <TotalFiatBalance
