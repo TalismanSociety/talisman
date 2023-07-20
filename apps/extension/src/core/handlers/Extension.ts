@@ -36,12 +36,11 @@ import { liveQuery } from "dexie"
 import Browser from "webextension-polyfill"
 
 let CONFIG_UPDATE_INTERVAL = 1000 * 60 * 5 // 5 minutes
-const MAX_CONFIG_UPDATE_INTERVAL = 1000 * 60 * 60 * 24 // 24 hours
-
+const MAX_CONFIG_UPDATE_INTERVAL = 1000 * 60 * 60 // 1 hour
 export default class Extension extends ExtensionHandler {
   readonly #routes: Record<string, ExtensionHandler> = {}
   #configUpdater?: NodeJS.Timeout
-  #autoLockTimeout = 0 // cached value so we don't have to get data from the store every time
+  #autoLockTimeout = 0
 
   constructor(stores: ExtensionStore) {
     super(stores)
