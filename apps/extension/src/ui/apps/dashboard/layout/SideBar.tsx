@@ -190,6 +190,7 @@ export const SideBar = () => {
           <div className="hidden flex-grow lg:block" />
           <AccountContextMenu
             analyticsFrom="dashboard portfolio"
+            placement="bottom-start"
             trigger={
               <PillButton className="!px-4">
                 <MoreHorizontalIcon className="shrink-0" />

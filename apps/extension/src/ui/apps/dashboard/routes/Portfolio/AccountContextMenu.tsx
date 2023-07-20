@@ -13,11 +13,18 @@ import { getTransactionHistoryUrl } from "@ui/util/getTransactionHistoryUrl"
 import React, { forwardRef, useCallback, useMemo } from "react"
 import { useTranslation } from "react-i18next"
 import { useNavigate } from "react-router-dom"
-import { ContextMenu, ContextMenuContent, ContextMenuItem, ContextMenuTrigger } from "talisman-ui"
+import {
+  ContextMenu,
+  ContextMenuContent,
+  ContextMenuItem,
+  ContextMenuTrigger,
+  PopoverOptions,
+} from "talisman-ui"
 
 type Props = {
   analyticsFrom: string
   address?: string
+  placement?: PopoverOptions["placement"]
   trigger?: React.ReactNode
   hideManageAccounts?: boolean
 }
@@ -28,7 +35,7 @@ type Props = {
  * If the `address` prop is null, this component will ignore `selectedAccount`
  */
 export const AccountContextMenu = forwardRef<HTMLElement, Props>(function AccountContextMenu(
-  { analyticsFrom, address, trigger, hideManageAccounts },
+  { analyticsFrom, address, placement, trigger, hideManageAccounts },
   ref
 ) {
   const { t } = useTranslation()
@@ -104,7 +111,7 @@ export const AccountContextMenu = forwardRef<HTMLElement, Props>(function Accoun
   )
 
   return (
-    <ContextMenu placement="bottom-end">
+    <ContextMenu placement={placement ?? "bottom-end"}>
       <ContextMenuTrigger
         ref={ref}
         className="hover:bg-grey-800 text-body-secondary hover:text-body rounded p-6"
