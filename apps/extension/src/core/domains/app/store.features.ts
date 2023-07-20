@@ -33,6 +33,7 @@ if (!process.env.POSTHOG_AUTH_TOKEN) {
     LINK_TX_HISTORY: true,
     LINK_STAKING: true,
     I18N: true,
+    USE_ONFINALITY_API_KEY: false,
     TEST_VARIANT: "VARIANT1",
   }
   featuresStore.set({
