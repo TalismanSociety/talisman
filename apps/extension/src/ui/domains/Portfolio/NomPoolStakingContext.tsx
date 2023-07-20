@@ -9,7 +9,6 @@ import { api } from "@ui/api"
 import useAccounts from "@ui/hooks/useAccounts"
 import { useAppState } from "@ui/hooks/useAppState"
 import useBalances from "@ui/hooks/useBalances"
-import { useIsFeatureEnabled } from "@ui/hooks/useFeatures"
 import { useCallback, useEffect, useState } from "react"
 import { useDebounce } from "react-use"
 
@@ -21,7 +20,6 @@ const useShowNomPoolStakingBannerProvider = () => {
   const [nomPoolStake, setNomPoolStake] = useState<Record<ChainId, ResponseNomPoolStake>>({})
   const [updateKey, setUpdateKey] = useState<Record<ChainId, string>>({})
 
-  const featureFlag = useIsFeatureEnabled("BANNER_NOM_POOL_STAKING")
   const balances = useBalances()
   const accounts = useAccounts()
   // only balances on substrate accounts are eligible for nom pool staking
@@ -99,16 +97,9 @@ const useShowNomPoolStakingBannerProvider = () => {
         )
       })
 
-      return featureFlag && showBannerSetting && !isLoading && eligible.length > 0
+      return showBannerSetting && !isLoading && eligible.length > 0
     },
-    [
-      featureFlag,
-      substrateAddresses,
-      isLoading,
-      showBannerSetting,
-      nomPoolStake,
-      eligibleAddressBalances,
-    ]
+    [substrateAddresses, isLoading, showBannerSetting, nomPoolStake, eligibleAddressBalances]
   )
 
   return { showNomPoolBanner, dismissNomPoolBanner }

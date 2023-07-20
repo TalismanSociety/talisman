@@ -33,6 +33,7 @@ export const IPFS_GATEWAY = "https://talisman.mypinata.cloud/ipfs/"
 
 export const TALISMAN_WEB_APP_DOMAIN = "app.talisman.xyz"
 export const TALISMAN_WEB_APP_NFTS_URL = "https://app.talisman.xyz/nfts"
+export const TALISMAN_CONFIG_URL = "https://talismansociety.github.io/talisman-config/config.toml"
 
 // Used for testing the full buying flow
 // The tokens available at this endpoint are not in sync with the production endpoint

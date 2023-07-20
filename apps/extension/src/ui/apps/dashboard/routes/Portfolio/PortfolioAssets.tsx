@@ -68,11 +68,7 @@ const PageContent = ({ balances }: { balances: Balances }) => {
     window.open(getTransactionHistoryUrl(account?.address), "_blank")
   }, [account, genericEvent])
 
-  const enableWalletFunding = useIsFeatureEnabled("WALLET_FUNDING")
-  const displayWalletFunding = useMemo(
-    () => !account && Boolean(!hasFunds && enableWalletFunding),
-    [account, hasFunds, enableWalletFunding]
-  )
+  const displayWalletFunding = useMemo(() => !account && Boolean(!hasFunds), [account, hasFunds])
 
   const canAddCustomToken = useMemo(() => isEthereumAddress(account?.address), [account?.address])
   const navigate = useNavigate()

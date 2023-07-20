@@ -4,6 +4,8 @@ import { AccountsHandler } from "@core/domains/accounts"
 import { verifierCertificateMnemonicStore } from "@core/domains/accounts/store.verifierCertificateMnemonic"
 import { AccountTypes, RequestAddressFromMnemonic } from "@core/domains/accounts/types"
 import AppHandler from "@core/domains/app/handler"
+import { featuresStore } from "@core/domains/app/store.features"
+import { FeatureFlag } from "@core/domains/app/types"
 import { BalancesHandler } from "@core/domains/balances"
 import { EncryptHandler } from "@core/domains/encrypt"
 import { EthHandler } from "@core/domains/ethereum"
@@ -23,21 +25,22 @@ import { generateQrAddNetworkSpecs, generateQrUpdateNetworkMetadata } from "@cor
 import { log } from "@core/log"
 import { MessageTypes, RequestType, ResponseType } from "@core/types"
 import { Port, RequestIdOnly } from "@core/types/base"
+import { CONFIG_RATE_LIMIT_ERROR, getConfig } from "@core/util/getConfig"
 import { fetchHasSpiritKey } from "@core/util/hasSpiritKey"
 import keyring from "@polkadot/ui-keyring"
 import { assert, u8aToHex } from "@polkadot/util"
+import * as Sentry from "@sentry/browser"
 import { addressFromMnemonic } from "@talisman/util/addressFromMnemonic"
 import { db as balancesDb } from "@talismn/balances"
 import { liveQuery } from "dexie"
 import Browser from "webextension-polyfill"
 
-// import chainsInit from "@core/libs/init/chains.json"
-// import evmNetworksInit from "@core/libs/init/evmNetworks.json"
-// import tokensInit from "@core/libs/init/tokens.json"
-
+let CONFIG_UPDATE_INTERVAL = 1000 * 60 * 5 // 5 minutes
+const MAX_CONFIG_UPDATE_INTERVAL = 1000 * 60 * 60 // 1 hour
 export default class Extension extends ExtensionHandler {
   readonly #routes: Record<string, ExtensionHandler> = {}
-  #autoLockTimeout = 0 // cached value so we don't have to get data from the store every time
+  #configUpdater?: NodeJS.Timeout
+  #autoLockTimeout = 0
 
   constructor(stores: ExtensionStore) {
     super(stores)
@@ -97,10 +100,44 @@ export default class Extension extends ExtensionHandler {
       DEBUG || TEST ? 0 : 2000
     )
 
+    // setup polling for config from github
+    setTimeout(async () => {
+      this.fetchRemoteConfig()
+      this.setConfigUpdateTimeout()
+    }, 1000) // initial call immediately after extension start
+
     this.initDb()
     this.initWalletFunding()
     this.checkSpiritKeyOwnership()
     this.cleanup()
+  }
+
+  private setConfigUpdateTimeout() {
+    if (this.#configUpdater) clearInterval(this.#configUpdater)
+    this.#configUpdater = setInterval(async () => {
+      try {
+        await this.fetchRemoteConfig()
+      } catch (e) {
+        // exponential backoff for rate limits
+        if (
+          (e as Error).message === CONFIG_RATE_LIMIT_ERROR &&
+          CONFIG_UPDATE_INTERVAL < MAX_CONFIG_UPDATE_INTERVAL
+        )
+          CONFIG_UPDATE_INTERVAL = CONFIG_UPDATE_INTERVAL * 2
+        else Sentry.captureException(e)
+      }
+      this.setConfigUpdateTimeout()
+    }, CONFIG_UPDATE_INTERVAL)
+  }
+
+  private async fetchRemoteConfig() {
+    const config = await getConfig()
+
+    return await featuresStore.set({
+      features: Object.entries(config.featureFlags)
+        .filter(([, v]) => v)
+        .map(([k]) => k as FeatureFlag),
+    })
   }
 
   private cleanup() {
@@ -135,9 +172,6 @@ export default class Extension extends ExtensionHandler {
       //
       //   // TODO: Add this back again, but as an internal part of the @talismn/chaindata-provider-extension lib
       //   // // initial data provisioning (workaround to wallet beeing installed when subsquid is down)
-      //   // db.chains.bulkAdd(chainsInit as unknown as Chain[])
-      //   // db.evmNetworks.bulkAdd(evmNetworksInit as unknown as EvmNetwork[])
-      //   // db.tokens.bulkAdd(tokensInit as unknown as Token[])
       // }
     })
 
