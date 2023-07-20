@@ -324,7 +324,7 @@ export default class AccountsHandler extends ExtensionHandler {
     // remove associated authorizations
     this.stores.sites.forgetAccount(address)
 
-    // remove from accounts catalog store (sorting, folders, hiding)
+    // remove from accounts catalog store (sorting, folders)
     this.stores.accountsCatalog.removeAccounts([address])
 
     return true
