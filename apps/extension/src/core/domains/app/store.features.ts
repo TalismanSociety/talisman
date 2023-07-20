@@ -1,4 +1,6 @@
+import { DEBUG } from "@core/constants"
 import { StorageProvider } from "@core/libs/Store"
+import Browser from "webextension-polyfill"
 
 import { FeatureFlag, FeatureVariants } from "./types"
 
@@ -20,13 +22,21 @@ export class FeaturesStore extends StorageProvider<FeaturesStoreData> {
     const store = await this.get()
     return store.features.includes(feature)
   }
+
+  update(variants: FeatureVariants) {
+    return featuresStore.set({
+      features: Object.keys(variants).filter(
+        (k) => !!variants[k as keyof FeatureVariants]
+      ) as FeatureFlag[],
+      variants,
+    })
+  }
 }
 
 export const featuresStore = new FeaturesStore("features", FEATURE_STORE_INITIAL_DATA)
 
-// in dev build the developer may or not have a posthog token
-// without token, posthog won't be initialized and won't update the store
-if (!process.env.POSTHOG_AUTH_TOKEN) {
+// while in dev mode, turn on all features
+if (DEBUG && Browser.extension.getBackgroundPage() === window) {
   // @devs : add all feature flags here, comment some if needed for testing
   const DEV_FEATURE_VARIANTS: FeatureVariants = {
     BUY_CRYPTO: true, // nav buttons + button in fund wallet component
@@ -36,10 +46,6 @@ if (!process.env.POSTHOG_AUTH_TOKEN) {
     USE_ONFINALITY_API_KEY: false,
     TEST_VARIANT: "VARIANT1",
   }
-  featuresStore.set({
-    features: Object.keys(DEV_FEATURE_VARIANTS).filter(
-      (k) => !!DEV_FEATURE_VARIANTS[k as keyof FeatureVariants]
-    ) as FeatureFlag[],
-    variants: DEV_FEATURE_VARIANTS,
-  })
+
+  featuresStore.update(DEV_FEATURE_VARIANTS)
 }

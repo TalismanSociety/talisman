@@ -5,7 +5,6 @@ import { verifierCertificateMnemonicStore } from "@core/domains/accounts/store.v
 import { AccountTypes, RequestAddressFromMnemonic } from "@core/domains/accounts/types"
 import AppHandler from "@core/domains/app/handler"
 import { featuresStore } from "@core/domains/app/store.features"
-import { FeatureFlag } from "@core/domains/app/types"
 import { BalancesHandler } from "@core/domains/balances"
 import { EncryptHandler } from "@core/domains/encrypt"
 import { EthHandler } from "@core/domains/ethereum"
@@ -131,13 +130,12 @@ export default class Extension extends ExtensionHandler {
   }
 
   private async fetchRemoteConfig() {
+    // in dev mode, ignore github config
+    if (DEBUG) return
+
     const config = await getConfig()
 
-    return await featuresStore.set({
-      features: Object.entries(config.featureFlags)
-        .filter(([, v]) => v)
-        .map(([k]) => k as FeatureFlag),
-    })
+    return featuresStore.update(config.featureFlags)
   }
 
   private cleanup() {
