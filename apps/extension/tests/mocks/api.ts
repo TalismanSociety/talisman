@@ -80,14 +80,12 @@ export const api = {
       }),
     authorizedSiteUpdate: jest
       .fn()
-      .mockImplementation((id: keyof typeof authorisedSites, update: Partial<AuthorizedSite>) =>
+      .mockImplementation((id: string, update: Partial<AuthorizedSite>) =>
         sitesStore.updateSite(id, update)
       ),
     authorizedSiteForget: jest
       .fn()
-      .mockImplementation((id: keyof typeof authorisedSites, type: ProviderType) =>
-        sitesStore.forgetSite(id, type)
-      ),
+      .mockImplementation((id: string, type: ProviderType) => sitesStore.forgetSite(id, type)),
     balances: jest.fn().mockImplementation((cb: () => void) => () => undefined),
     chains: jest.fn().mockImplementation((cb: () => void) => () => undefined),
     ethereumNetworks: jest.fn().mockImplementation((cb: () => void) => () => undefined),
