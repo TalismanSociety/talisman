@@ -62,7 +62,7 @@
   {
     "id": "592",
     "isTestnet": false,
-    "sortIndex": 15,
+    "sortIndex": 17,
     "name": "Astar",
     "themeColor": "#03b0fb",
     "logo": "https://raw.githubusercontent.com/TalismanSociety/chaindata/v3/assets/chains/astar.svg",
@@ -127,7 +127,7 @@
         "isHealthy": true
       },
       {
-        "url": "https://astar.api.onfinality.io/public-ws",
+        "url": "https://astar.api.onfinality.io/public",
         "isHealthy": true
       }
     ],
@@ -139,7 +139,7 @@
   {
     "id": "56",
     "isTestnet": false,
-    "sortIndex": 22,
+    "sortIndex": 24,
     "name": "Binance Smart Chain",
     "themeColor": "#f3ba2f",
     "logo": "https://raw.githubusercontent.com/TalismanSociety/chaindata/v3/assets/chains/56.svg",
@@ -176,7 +176,7 @@
   {
     "id": "46",
     "isTestnet": false,
-    "sortIndex": 44,
+    "sortIndex": 46,
     "name": "Darwinia",
     "themeColor": "#db378a",
     "logo": "https://raw.githubusercontent.com/TalismanSociety/chaindata/v3/assets/chains/darwinia.svg",
@@ -203,7 +203,7 @@
   {
     "id": "2021",
     "isTestnet": false,
-    "sortIndex": 50,
+    "sortIndex": 52,
     "name": "Edgeware",
     "themeColor": "#ff3b80",
     "logo": "https://raw.githubusercontent.com/TalismanSociety/chaindata/v3/assets/chains/edgeware.svg",
@@ -246,7 +246,7 @@
   {
     "id": "1",
     "isTestnet": false,
-    "sortIndex": 55,
+    "sortIndex": 57,
     "name": "Ethereum",
     "themeColor": "#8a92b2",
     "logo": "https://raw.githubusercontent.com/TalismanSociety/chaindata/v3/assets/chains/1.svg",
@@ -280,7 +280,7 @@
         "isHealthy": true
       },
       {
-        "url": "https://eth.api.onfinality.io/public-ws",
+        "url": "https://eth.api.onfinality.io/public",
         "isHealthy": true
       },
       {
@@ -294,7 +294,7 @@
   {
     "id": "100",
     "isTestnet": false,
-    "sortIndex": 61,
+    "sortIndex": 63,
     "name": "Gnosis",
     "themeColor": "#8e8e9e",
     "logo": "https://raw.githubusercontent.com/TalismanSociety/chaindata/v3/assets/chains/100.svg",
@@ -327,7 +327,7 @@
   {
     "id": "1284",
     "isTestnet": false,
-    "sortIndex": 96,
+    "sortIndex": 99,
     "name": "Moonbeam",
     "themeColor": "#53cbc9",
     "logo": "https://raw.githubusercontent.com/TalismanSociety/chaindata/v3/assets/chains/moonbeam.svg",
@@ -364,7 +364,7 @@
         "isHealthy": true
       },
       {
-        "url": "https://moonbeam.api.onfinality.io/public-ws",
+        "url": "https://moonbeam.api.onfinality.io/public",
         "isHealthy": true
       },
       {
@@ -380,7 +380,7 @@
   {
     "id": "1285",
     "isTestnet": false,
-    "sortIndex": 98,
+    "sortIndex": 101,
     "name": "Moonriver",
     "themeColor": "#f2b705",
     "logo": "https://raw.githubusercontent.com/TalismanSociety/chaindata/v3/assets/chains/moonriver.svg",
@@ -408,7 +408,7 @@
         "isHealthy": true
       },
       {
-        "url": "https://moonriver.api.onfinality.io/public-ws",
+        "url": "https://moonriver.api.onfinality.io/public",
         "isHealthy": true
       },
       {
@@ -424,7 +424,7 @@
   {
     "id": "137",
     "isTestnet": false,
-    "sortIndex": 116,
+    "sortIndex": 119,
     "name": "Polygon",
     "themeColor": "#8f5ae8",
     "logo": "https://raw.githubusercontent.com/TalismanSociety/chaindata/v3/assets/chains/137.svg",
@@ -466,7 +466,7 @@
   {
     "id": "336",
     "isTestnet": false,
-    "sortIndex": 125,
+    "sortIndex": 128,
     "name": "Shiden",
     "themeColor": "#bba5e1",
     "logo": "https://raw.githubusercontent.com/TalismanSociety/chaindata/v3/assets/chains/shiden-kusama.svg",
@@ -485,7 +485,7 @@
         "isHealthy": true
       },
       {
-        "url": "https://shiden.api.onfinality.io/public-ws",
+        "url": "https://shiden.api.onfinality.io/public",
         "isHealthy": true
       },
       {
@@ -501,7 +501,7 @@
   {
     "id": "5",
     "isTestnet": true,
-    "sortIndex": 212,
+    "sortIndex": 217,
     "name": "Goerli",
     "themeColor": "#8a92b2",
     "logo": "https://raw.githubusercontent.com/TalismanSociety/chaindata/v3/assets/chains/5.svg",
@@ -526,7 +526,7 @@
   {
     "id": "1287",
     "isTestnet": true,
-    "sortIndex": 243,
+    "sortIndex": 251,
     "name": "Moonbase Alpha",
     "themeColor": "#4cb1b3",
     "logo": "https://raw.githubusercontent.com/TalismanSociety/chaindata/v3/assets/chains/moonbase-alpha-testnet.svg",
@@ -545,7 +545,7 @@
         "isHealthy": true
       },
       {
-        "url": "https://moonbeam-alpha.api.onfinality.io/public-ws",
+        "url": "https://moonbeam-alpha.api.onfinality.io/public",
         "isHealthy": true
       }
     ],
@@ -557,7 +557,7 @@
   {
     "id": "11155111",
     "isTestnet": true,
-    "sortIndex": 271,
+    "sortIndex": 280,
     "name": "Sepolia",
     "themeColor": "#8a92b2",
     "logo": "https://raw.githubusercontent.com/TalismanSociety/chaindata/v3/assets/chains/11155111.svg",
@@ -582,7 +582,7 @@
   {
     "id": "81",
     "isTestnet": true,
-    "sortIndex": 274,
+    "sortIndex": 283,
     "name": "Shibuya",
     "themeColor": "#bba5e1",
     "logo": "https://raw.githubusercontent.com/TalismanSociety/chaindata/v3/assets/chains/shibuya-testnet.svg",
@@ -609,7 +609,7 @@
   {
     "id": "688",
     "isTestnet": true,
-    "sortIndex": 309,
+    "sortIndex": 319,
     "name": "Watr Testnet",
     "themeColor": "#f5f5f3",
     "logo": "https://raw.githubusercontent.com/TalismanSociety/chaindata/v3/assets/chains/rococo-watr-testnet.svg",
