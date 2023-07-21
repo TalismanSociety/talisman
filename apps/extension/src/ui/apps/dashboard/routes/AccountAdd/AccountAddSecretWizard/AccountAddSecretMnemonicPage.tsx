@@ -254,11 +254,7 @@ export const AccountAddSecretMnemonicPage = () => {
             autoFocus
             data-lpignore
             after={
-              targetAddress ? (
-                <div>
-                  <AccountIcon address={targetAddress} />
-                </div>
-              ) : null
+              targetAddress ? <AccountIcon address={targetAddress} className="text-xl" /> : null
             }
           />
         </FormFieldContainer>
