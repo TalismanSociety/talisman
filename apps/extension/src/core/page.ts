@@ -4,7 +4,7 @@
 // Adapted from https://github.com/polkadot-js/extension/packages/extension-base/src/page.ts
 import type { Message } from "@polkadot/extension-base/types"
 
-import { DEBUG, TALISMAN_WEB_APP_DOMAIN } from "./constants"
+import { DEBUG } from "./constants"
 import TalismanInjected from "./inject/Injected"
 import { injectExtension } from "./inject/injectExtension"
 import { injectSubstrate } from "./inject/injectSubstrate"
@@ -48,16 +48,12 @@ function inject() {
 
   injectEthereum(messageService.sendMessage)
 
-  // Custom `injectSub` endpoint used by app.talisman.xyz
-  // to access the ChainConnector instance of the wallet
-  const injectSubstrateHostnames = [
-    // always inject on https://app.talisman.xyz
-    TALISMAN_WEB_APP_DOMAIN,
+  // Inject restricted substrate provider for Talisman dapps
+  const regAllowPrivateProvider = DEBUG
+    ? /(^app.talisman.xyz$)|(.talisman.pages.dev$)|(^localhost$)/i
+    : /(^app.talisman.xyz$)|(.talisman.pages.dev$)/i
 
-    // inject on localhost (if DEBUG is true)
-    ...(DEBUG ? ["localhost"] : []),
-  ]
-  if (injectSubstrateHostnames.includes(window.location.hostname))
+  if (regAllowPrivateProvider.test(window.location.hostname))
     injectSubstrate(messageService.sendMessage)
 }
 
