@@ -1,5 +1,15 @@
 # @talismn/chaindata-provider
 
+## 0.7.0
+
+### Minor Changes
+
+- b920ab98: Added GPL licence
+
+### Patch Changes
+
+- 3c1a8b10: Dependency updates
+
 ## 0.6.0
 
 ## 0.5.0

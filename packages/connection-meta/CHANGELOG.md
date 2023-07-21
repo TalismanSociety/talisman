@@ -1,5 +1,18 @@
 # @talismn/connection-meta
 
+## 0.1.0
+
+### Minor Changes
+
+- b920ab98: Added GPL licence
+
+### Patch Changes
+
+- 3c1a8b10: Dependency updates
+- Updated dependencies [3c1a8b10]
+- Updated dependencies [b920ab98]
+  - @talismn/chaindata-provider@0.7.0
+
 ## 0.0.5
 
 ### Patch Changes

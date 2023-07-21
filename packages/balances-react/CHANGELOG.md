@@ -1,5 +1,28 @@
 # @talismn/balances-react
 
+## 0.6.0
+
+### Minor Changes
+
+- b920ab98: Added GPL licence
+
+### Patch Changes
+
+- f7984674: Synchronise chains, networks & tokens config with Talisman extension
+- 3c1a8b10: Dependency updates
+- Updated dependencies [22f4c035]
+- Updated dependencies [f7984674]
+- Updated dependencies [3c1a8b10]
+- Updated dependencies [b920ab98]
+- Updated dependencies [ca0c2a93]
+  - @talismn/chaindata-provider-extension@0.7.0
+  - @talismn/chaindata-provider@0.7.0
+  - @talismn/connection-meta@0.1.0
+  - @talismn/token-rates@0.2.0
+  - @talismn/balances@0.6.0
+  - @talismn/chain-connector-evm@0.7.0
+  - @talismn/chain-connector@0.7.0
+
 ## 0.5.0
 
 ### Minor Changes

@@ -1,5 +1,24 @@
 # @talismn/balances
 
+## 0.6.0
+
+### Minor Changes
+
+- b920ab98: Added GPL licence
+
+### Patch Changes
+
+- 3c1a8b10: Dependency updates
+- Updated dependencies [2d0ae30b]
+- Updated dependencies [3c1a8b10]
+- Updated dependencies [b920ab98]
+- Updated dependencies [7573864f]
+  - @talismn/util@0.2.0
+  - @talismn/chaindata-provider@0.7.0
+  - @talismn/token-rates@0.2.0
+  - @talismn/chain-connector-evm@0.7.0
+  - @talismn/chain-connector@0.7.0
+
 ## 0.5.0
 
 ### Patch Changes

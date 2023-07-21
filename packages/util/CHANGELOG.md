@@ -1,5 +1,16 @@
 # @talismn/util
 
+## 0.2.0
+
+### Minor Changes
+
+- b920ab98: Added GPL licence
+- 7573864f: chore: remove dead code
+
+### Patch Changes
+
+- 2d0ae30b: fix: non-conflict tw class merging for classNames via twMerge
+
 ## 0.1.9
 
 ### Patch Changes
