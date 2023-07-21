@@ -155,16 +155,16 @@ const TokenInput = () => {
     [remove, sendMax, set, token]
   )
 
-  useEffect(() => {
-    resizeTokensInput()
-  }, [resizeTokensInput])
-
   const refInitialized = useRef(false)
   useEffect(() => {
     if (refInitialized.current) return
     refInitialized.current = true
     if (!sendMax && !transfer) refTokensInput.current?.focus()
   }, [refTokensInput, sendMax, transfer])
+
+  useEffect(() => {
+    resizeTokensInput()
+  }, [resizeTokensInput, token?.symbol])
 
   return (
     <div
@@ -178,10 +178,9 @@ const TokenInput = () => {
         key="tokenInput"
         ref={refTokensInput}
         type="text"
+        inputMode="decimal"
         defaultValue={defaultValue}
         placeholder={`0 ${token?.symbol}`}
-        // // eslint-disable-next-line jsx-a11y/no-autofocus
-        // autoFocus={!sendMax && !transfer}
         className={classNames(
           "text-body peer inline-block min-w-0 bg-transparent text-xl",
           sendMax && "placeholder:text-white",
