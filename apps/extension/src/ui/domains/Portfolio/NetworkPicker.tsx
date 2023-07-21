@@ -93,7 +93,7 @@ export const NetworkPicker = () => {
                 <Combobox.Option
                   key={network.id}
                   value={network}
-                  className="hover:bg-grey-800 data-[headlessui-state=active]:bg-grey-800 data-[headlessui-state='active_selected']:bg-grey-800 focus:bg-grey-800 flex w-full items-center gap-4 px-6 py-4"
+                  className="hover:bg-grey-800 data-[headlessui-state=active]:bg-grey-800 data-[headlessui-state='active_selected']:bg-grey-800 focus:bg-grey-800 flex w-full cursor-pointer items-center gap-4 px-6 py-4"
                 >
                   <ChainLogo id={network.id} className="text-lg" />
                   <div>{network.name}</div>
