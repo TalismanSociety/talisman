@@ -1,5 +1,21 @@
 # @talismn/chaindata-provider-extension
 
+## 0.7.0
+
+### Minor Changes
+
+- b920ab98: Added GPL licence
+
+### Patch Changes
+
+- 22f4c035: Updated initial data
+- f7984674: Synchronise chains, networks & tokens config with Talisman extension
+- 3c1a8b10: Dependency updates
+- ca0c2a93: fix: chaindata subsquid url
+- Updated dependencies [3c1a8b10]
+- Updated dependencies [b920ab98]
+  - @talismn/chaindata-provider@0.7.0
+
 ## 0.6.0
 
 ### Minor Changes

@@ -1,5 +1,23 @@
 # @talismn/balances-default-modules
 
+## 0.6.0
+
+### Minor Changes
+
+- b920ab98: Added GPL licence
+
+### Patch Changes
+
+- b292e53d: Github made me do it
+- Updated dependencies [b920ab98]
+  - @talismn/balances-substrate-equilibrium@0.6.0
+  - @talismn/balances-substrate-assets@0.6.0
+  - @talismn/balances-substrate-native@0.6.0
+  - @talismn/balances-substrate-tokens@0.6.0
+  - @talismn/balances-substrate-orml@0.6.0
+  - @talismn/balances-evm-native@0.6.0
+  - @talismn/balances-evm-erc20@0.6.0
+
 ## 0.5.0
 
 ### Patch Changes

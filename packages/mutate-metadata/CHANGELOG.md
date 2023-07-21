@@ -1,5 +1,15 @@
 # @talismn/mutate-metadata
 
+## 0.1.0
+
+### Minor Changes
+
+- b920ab98: Added GPL licence
+
+### Patch Changes
+
+- 3c1a8b10: Dependency updates
+
 ## 0.0.4
 
 ### Patch Changes
