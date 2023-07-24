@@ -132,19 +132,15 @@ export default class Extension extends ExtensionHandler {
   private async fetchRemoteConfig() {
     // in dev mode, ignore github config
     if (DEBUG) return
-    let remoteConfig
-    try {
-      // eslint-disable-next-line no-var
-      remoteConfig = await getConfig()
-    } catch (e) {
+    const config = await getConfig().catch((e) => {
       // bubble up rate limit errors
       if ((e as Error).message === CONFIG_RATE_LIMIT_ERROR) throw e
       // ignore other errors
       log.error("Failed to fetch remote config", { err: e })
-    }
+    })
 
-    const config = remoteConfig ?? { featureFlags: {} }
-    return featuresStore.update(config.featureFlags)
+    if (config) return featuresStore.update(config.featureFlags)
+    return
   }
 
   private cleanup() {
