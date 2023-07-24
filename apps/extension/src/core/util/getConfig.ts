@@ -19,6 +19,8 @@ export const getConfig = async (): Promise<Config | null> => {
   }
 
   if (response.status === 429) throw new Error(CONFIG_RATE_LIMIT_ERROR)
+  if (!response.ok) throw new Error(`Unable to fetch config.toml: ${response.statusText}`)
+
   const text = await response.text()
   try {
     return toml.parse(text)
