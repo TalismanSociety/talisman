@@ -31,6 +31,9 @@ export const useSendFundsInputSize = (ref?: RefObject<HTMLInputElement>) => {
 
     input.addEventListener("input", resize)
 
+    // size will change once our font will be loaded
+    document.fonts.ready.then(resize)
+
     resize()
 
     return () => {
