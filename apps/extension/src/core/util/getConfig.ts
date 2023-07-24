@@ -1,5 +1,6 @@
 import { TALISMAN_CONFIG_URL } from "@core/constants"
 import { FeatureVariants } from "@core/domains/app/types"
+import { log } from "@core/log"
 import toml from "toml"
 
 type Config = {
@@ -8,8 +9,15 @@ type Config = {
 
 export const CONFIG_RATE_LIMIT_ERROR = "Rate Limit Exceeded"
 
-export const getConfig = async (): Promise<Config> => {
-  const response = await fetch(TALISMAN_CONFIG_URL)
+export const getConfig = async (): Promise<Config | null> => {
+  try {
+    // eslint-disable-next-line no-var
+    var response = await fetch(TALISMAN_CONFIG_URL)
+  } catch (e) {
+    log.error("Unable to fetch config.toml", { cause: e })
+    return null
+  }
+
   if (response.status === 429) throw new Error(CONFIG_RATE_LIMIT_ERROR)
   const text = await response.text()
   try {
