@@ -132,10 +132,17 @@ export default class Extension extends ExtensionHandler {
   private async fetchRemoteConfig() {
     // in dev mode, ignore github config
     if (DEBUG) return
+    try {
+      const config = await getConfig()
+      if (config) return featuresStore.update(config.featureFlags)
+    } catch (e) {
+      // bubble up rate limit errors
+      if ((e as Error).message === CONFIG_RATE_LIMIT_ERROR) throw e
+      // ignore other errors
+      log.error("Failed to fetch remote config", { err: e })
+    }
 
-    const config = await getConfig()
-
-    return featuresStore.update(config.featureFlags)
+    return
   }
 
   private cleanup() {
