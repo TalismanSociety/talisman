@@ -30,20 +30,6 @@ const Main = styled.main`
   }
 
   > section > .hflex {
-    width: 100%;
-    display: flex;
-    gap: 13.5rem;
-    justify-content: center;
-
-    .picture,
-    .content {
-      width: 44rem;
-    }
-
-    .picture {
-      text-align: right;
-    }
-
     @media (max-width: 1146px) {
       flex-direction: column;
       align-items: center;
@@ -83,18 +69,6 @@ const Main = styled.main`
   }
 `
 
-const BtnBack = styled(BackButton)`
-  position: absolute;
-  top: 6.4rem;
-  left: 6.4rem;
-  background: rgba(var(--color-foreground-raw), 0.1);
-  transition: background-color var(--transition-speed-fast) ease-in;
-
-  :hover {
-    background: rgba(var(--color-foreground-raw), 0.2);
-  }
-`
-
 type LayoutProps = {
   withBack?: boolean
   className?: string
@@ -122,11 +96,16 @@ export const Layout: FC<LayoutProps> = ({
 }) => (
   <Main className={className}>
     <motion.section variants={FADE_IN} initial="init" animate="anim" transition={TRANS_SLOW}>
-      {!!withBack && <BtnBack analytics={analytics} />}
+      {!!withBack && (
+        <BackButton
+          className="bg-body hover:bg-body absolute left-32 top-32 bg-opacity-10 transition-colors ease-in hover:bg-opacity-20"
+          analytics={analytics}
+        />
+      )}
       {picture ? (
-        <div className="hflex">
-          <div className="picture">{picture}</div>
-          <div className="content">{children}</div>
+        <div className="flex w-full content-center gap-64">
+          <div className="w-22 text-right">{picture}</div>
+          <div className="w-22">{children}</div>
         </div>
       ) : (
         <div className="flex justify-center">{children}</div>

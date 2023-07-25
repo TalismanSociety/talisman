@@ -8,3 +8,5 @@ export const styleOnboardTranslucidBackground = css`
   transform: translate3d(0, 0, 0); // prevents flickering (enables GPU rendering)
   transform: translateZ(0);
 `
+
+export const styleOnboardTranslucidBackgroundClassNames = ""
