@@ -1,12 +1,7 @@
 import { classNames } from "@talismn/util"
 import { ReactNode } from "react"
-import styled from "styled-components"
 
-import { styleOnboardTranslucidBackground } from "./OnboardStyles"
-
-const Container = styled.div`
-  ${styleOnboardTranslucidBackground}
-`
+import { onboardBackgroundClassNames } from "./OnboardStyles"
 
 type OnboardDialogProps = {
   title: string
@@ -24,10 +19,12 @@ export const OnboardDialog = ({
   stages = 3,
 }: OnboardDialogProps) => (
   <div className="flex w-[60rem] flex-col items-center gap-12">
-    <Container className={classNames(className, "rounded-lg p-24 text-left")}>
+    <div
+      className={classNames(className, onboardBackgroundClassNames, "rounded-lg p-24 text-left")}
+    >
       <div className="text-xl text-white">{title}</div>
       <div className="text-body-secondary mt-16">{children}</div>
-    </Container>
+    </div>
     {stages > 1 && <OnboardProgressBar stage={stage} stages={stages} />}
   </div>
 )

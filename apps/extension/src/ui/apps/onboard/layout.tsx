@@ -1,5 +1,6 @@
 import { BackButton } from "@talisman/components/BackButton"
 import { hideScrollbarsStyle } from "@talisman/theme/styles"
+import { classNames } from "@talismn/util"
 import { AnalyticsPage } from "@ui/api/analytics"
 import { Transition, Variants, motion } from "framer-motion"
 import { FC, ReactNode } from "react"
@@ -7,10 +8,6 @@ import styled from "styled-components"
 
 const Main = styled.main`
   //force dimensions and overflow to allow scrolling if very small screen
-  overflow: auto;
-  max-width: 100vw;
-  max-height: 100vh;
-
   ${hideScrollbarsStyle}
 
   > section {
@@ -94,7 +91,7 @@ export const Layout: FC<LayoutProps> = ({
   children,
   className,
 }) => (
-  <Main className={className}>
+  <Main className={classNames(className, "max-w-screen max-h-screen overflow-auto")}>
     <motion.section variants={FADE_IN} initial="init" animate="anim" transition={TRANS_SLOW}>
       {!!withBack && (
         <BackButton

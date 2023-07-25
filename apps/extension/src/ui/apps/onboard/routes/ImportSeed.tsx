@@ -6,10 +6,9 @@ import { useCallback, useEffect, useMemo } from "react"
 import { useForm } from "react-hook-form"
 import { Trans, useTranslation } from "react-i18next"
 import { useNavigate } from "react-router-dom"
-import { FormFieldTextarea } from "talisman-ui"
+import { Button, FormFieldTextarea } from "talisman-ui"
 import * as yup from "yup"
 
-import { OnboardButton } from "../components/OnboardButton"
 import { OnboardDialog } from "../components/OnboardDialog"
 import { OnboardFormField } from "../components/OnboardFormField"
 import { useOnboard } from "../context"
@@ -118,9 +117,9 @@ export const ImportSeedPage = () => {
                   />
                 </OnboardFormField>
                 <div className="h-12"></div>
-                <OnboardButton className="h-28" type="submit" primary disabled={!isValid}>
+                <Button type="submit" primary disabled={!isValid}>
                   {t("Import wallet")}
-                </OnboardButton>
+                </Button>
               </div>
             </form>
           </OnboardDialog>

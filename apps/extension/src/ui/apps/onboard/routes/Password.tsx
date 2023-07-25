@@ -1,5 +1,6 @@
 import { yupResolver } from "@hookform/resolvers/yup"
 import { PasswordStrength } from "@talisman/components/PasswordStrength"
+import { classNames } from "@talismn/util"
 import { AnalyticsPage, sendAnalyticsEvent } from "@ui/api/analytics"
 import { useAnalyticsPageView } from "@ui/hooks/useAnalyticsPageView"
 import { useCallback, useEffect } from "react"
@@ -7,11 +8,12 @@ import { useForm } from "react-hook-form"
 import { useTranslation } from "react-i18next"
 import { useNavigate } from "react-router-dom"
 import { FormFieldInputText } from "talisman-ui"
+import { Button } from "talisman-ui"
 import * as yup from "yup"
 
-import { OnboardButton } from "../components/OnboardButton"
 import { OnboardDialog } from "../components/OnboardDialog"
 import { OnboardFormField } from "../components/OnboardFormField"
+import { onboardBackgroundClassNames } from "../components/OnboardStyles"
 import { useOnboard } from "../context"
 import { Layout } from "../layout"
 
@@ -128,16 +130,22 @@ export const PasswordPage = () => {
               />
             </OnboardFormField>
           </div>
-          <div className="h-8" />
-          <OnboardButton
-            className="h-28"
-            type="submit"
+          <Button
+            fullWidth
             primary
+            type="submit"
+            className={classNames(
+              `${
+                !isValid
+                  ? `${onboardBackgroundClassNames} text-body-secondary cursor-not-allowed border-none`
+                  : ""
+              }`
+            )}
             disabled={!isValid}
             processing={isSubmitting}
           >
             {t("Continue")}
-          </OnboardButton>
+          </Button>
         </form>
       </OnboardDialog>
     </Layout>
