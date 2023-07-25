@@ -39,6 +39,11 @@ const enable = async (origin: string): Promise<Injected> => {
   return new TalismanInjected(messageService.sendMessage) as Injected
 }
 
+const isTalismanHostname = (hostname: string) =>
+  (DEBUG && hostname === "localhost") ||
+  hostname === TALISMAN_WEB_APP_DOMAIN ||
+  hostname.endsWith(".talisman.pages.dev")
+
 function inject() {
   // inject substrate wallet provider
   injectExtension(enable, {
@@ -48,17 +53,7 @@ function inject() {
 
   injectEthereum(messageService.sendMessage)
 
-  // Custom `injectSub` endpoint used by app.talisman.xyz
-  // to access the ChainConnector instance of the wallet
-  const injectSubstrateHostnames = [
-    // always inject on https://app.talisman.xyz
-    TALISMAN_WEB_APP_DOMAIN,
-
-    // inject on localhost (if DEBUG is true)
-    ...(DEBUG ? ["localhost"] : []),
-  ]
-  if (injectSubstrateHostnames.includes(window.location.hostname))
-    injectSubstrate(messageService.sendMessage)
+  if (isTalismanHostname(window.location.hostname)) injectSubstrate(messageService.sendMessage)
 }
 
 inject()
