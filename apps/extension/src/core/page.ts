@@ -4,7 +4,7 @@
 // Adapted from https://github.com/polkadot-js/extension/packages/extension-base/src/page.ts
 import type { Message } from "@polkadot/extension-base/types"
 
-import { DEBUG } from "./constants"
+import { DEBUG, TALISMAN_WEB_APP_DOMAIN } from "./constants"
 import TalismanInjected from "./inject/Injected"
 import { injectExtension } from "./inject/injectExtension"
 import { injectSubstrate } from "./inject/injectSubstrate"
@@ -39,6 +39,11 @@ const enable = async (origin: string): Promise<Injected> => {
   return new TalismanInjected(messageService.sendMessage) as Injected
 }
 
+const isTalismanHostname = (hostname: string) =>
+  (DEBUG && hostname === "localhost") ||
+  hostname === TALISMAN_WEB_APP_DOMAIN ||
+  hostname.endsWith(".talisman.pages.dev")
+
 function inject() {
   // inject substrate wallet provider
   injectExtension(enable, {
@@ -48,13 +53,7 @@ function inject() {
 
   injectEthereum(messageService.sendMessage)
 
-  // Inject restricted substrate provider for Talisman dapps
-  const regAllowPrivateProvider = DEBUG
-    ? /(^app.talisman.xyz$)|(.talisman.pages.dev$)|(^localhost$)/i
-    : /(^app.talisman.xyz$)|(.talisman.pages.dev$)/i
-
-  if (regAllowPrivateProvider.test(window.location.hostname))
-    injectSubstrate(messageService.sendMessage)
+  if (isTalismanHostname(window.location.hostname)) injectSubstrate(messageService.sendMessage)
 }
 
 inject()
