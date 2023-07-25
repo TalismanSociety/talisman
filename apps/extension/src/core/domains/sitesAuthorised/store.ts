@@ -1,3 +1,4 @@
+import { TALISMAN_WEB_APP_DOMAIN } from "@core/constants"
 import { AuthorizedSite, AuthorizedSites, ProviderType } from "@core/domains/sitesAuthorised/types"
 import { SubscribableByIdStorageProvider } from "@core/libs/Store"
 import { urlToDomain } from "@core/util/urlToDomain"
@@ -33,11 +34,13 @@ export class SitesAuthorizedStore extends SubscribableByIdStorageProvider<
     })
   }
 
-  async getSiteFromUrl(url: string) {
+  async getSiteFromUrl(url: string): Promise<AuthorizedSite> {
     const { val, err } = urlToDomain(url)
     if (err) throw new Error(val)
 
-    return await this.get(val)
+    const site = await this.get(val)
+
+    return { ...site, connectWatchedAccounts: site.url.includes(TALISMAN_WEB_APP_DOMAIN) }
   }
 
   public async ensureUrlAuthorized(
