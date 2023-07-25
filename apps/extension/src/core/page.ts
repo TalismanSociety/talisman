@@ -40,9 +40,9 @@ const enable = async (origin: string): Promise<Injected> => {
 }
 
 const isTalismanHostname = (hostname: string) =>
-  (DEBUG && hostname === "localhost") ||
   hostname === TALISMAN_WEB_APP_DOMAIN ||
-  hostname.endsWith(".talisman.pages.dev")
+  (DEBUG && hostname.endsWith(".talisman.pages.dev")) ||
+  (DEBUG && hostname === "localhost")
 
 function inject() {
   // inject substrate wallet provider
