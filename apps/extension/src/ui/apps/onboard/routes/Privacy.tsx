@@ -10,20 +10,6 @@ import { OnboardDialog } from "../components/OnboardDialog"
 import { useOnboard } from "../context"
 import { Layout } from "../layout"
 
-// const Container = styled(Layout)`
-//   > section > .hflex > .picture {
-//     width: auto;
-//   }
-
-//   > section > .hflex > .content {
-//     width: 59.2rem;
-//   }
-
-//   a {
-//     color: var(--color-foreground);
-//   }
-// `
-
 const ANALYTICS_PAGE: AnalyticsPage = {
   container: "Fullscreen",
   feature: "Onboarding",
@@ -61,7 +47,7 @@ export const PrivacyPage = () => {
   }, [])
 
   // if user refreshes the page, context data is lost
-  // if (!data?.password) return <Navigate to="/" replace />
+  // if (!data?.password) return <Navigate to="/" replace /> TODO re-enable this
 
   return (
     <Layout
@@ -70,32 +56,34 @@ export const PrivacyPage = () => {
       analytics={ANALYTICS_PAGE}
     >
       <OnboardDialog title={t("Manage your privacy")}>
-        <Trans t={t} className="mt-8 flex gap-8">
-          <p>
-            To help improve Talisman we’d like to collect anonymous usage information and send
-            anonymized error reports.
-          </p>
-          <p>
-            We respect your data and never record sensitive or identifying information. You can
-            always adjust these settings, or opt out completely at any time.
-          </p>
-          <p>
-            <a
-              onClick={handleLearnMoreClick}
-              className="text-body"
-              href="https://docs.talisman.xyz/talisman/legal-and-security/privacy-policy"
-              target="_blank"
-            >
-              Learn more
-            </a>{" "}
-            about what we track and how we use this data.
-          </p>
+        <Trans t={t}>
+          <div className="flex flex-col gap-8">
+            <p>
+              To help improve Talisman we’d like to collect anonymous usage information and send
+              anonymized error reports.
+            </p>
+            <p>
+              We respect your data and never record sensitive or identifying information. You can
+              always adjust these settings, or opt out completely at any time.
+            </p>
+            <p>
+              <a
+                onClick={handleLearnMoreClick}
+                className="text-body"
+                href="https://docs.talisman.xyz/talisman/legal-and-security/privacy-policy"
+                target="_blank"
+              >
+                Learn more
+              </a>{" "}
+              about what we track and how we use this data.
+            </p>
+          </div>
         </Trans>
-        <div className="mt-24 flex w-full gap-8">
-          <Button className="bg-transparent" onClick={handleClick(false)}>
+        <div className="mt-40 flex w-full gap-8">
+          <Button className="bg-transparent" fullWidth onClick={handleClick(false)}>
             {t("No thanks")}
           </Button>
-          <Button onClick={handleClick(true)} primary>
+          <Button onClick={handleClick(true)} fullWidth primary>
             {t("I agree")}
           </Button>
         </div>

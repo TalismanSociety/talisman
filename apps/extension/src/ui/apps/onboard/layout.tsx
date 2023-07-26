@@ -26,19 +26,6 @@ const Main = styled.main`
     text-align: left;
   }
 
-  > section > .hflex {
-    @media (max-width: 1146px) {
-      flex-direction: column;
-      align-items: center;
-      gap: 1rem;
-
-      .picture,
-      .content {
-        text-align: center;
-      }
-    }
-  }
-
   > section .content {
     display: flex;
     flex-direction: column;
@@ -51,13 +38,6 @@ const Main = styled.main`
     line-height: var(--font-size-xlarge);
     font-weight: var(--font-weight-bold);
     margin: 0;
-  }
-
-  p {
-    font-size: var(--font-size-normal);
-    line-height: var(--font-size-large);
-    margin: 0;
-    color: var(--color-mid);
   }
 
   .content .field input,
