@@ -101,15 +101,16 @@ const CelestialArtifacts: FC<{
 
 export const MysticalBackgroundV3 = ({
   className,
-  config = MYSTICAL_PHYSICS_V3,
+  config,
 }: {
-  config?: MysticalPhysicsV3
+  config?: Partial<MysticalPhysicsV3>
   className?: string
 }) => {
   const [refSize, size] = useMeasure<HTMLDivElement>()
   const refMouseLocation = useRef<SVGSVGElement>(null)
   const { elX, elY, elW, elH } = useMouse(refMouseLocation)
 
+  const mergedConfig = config ? { ...MYSTICAL_PHYSICS_V3, ...config } : MYSTICAL_PHYSICS_V3
   // useMouse doesn't detect if cursor goes out of the screen, so we also need to check for window hovering
   const isWindowHovered = useWindowHovered()
 
@@ -121,7 +122,7 @@ export const MysticalBackgroundV3 = ({
       : undefined
 
   const viewBox = useMemo(() => `0 0 ${size.width} ${size.height}`, [size.width, size.height])
-  const style = useMemo(() => ({ transform: `blur(${config.blur}ptx)` }), [config.blur])
+  const style = useMemo(() => ({ transform: `blur(${mergedConfig.blur}ptx)` }), [mergedConfig.blur])
 
   return (
     <div ref={refSize} className={className}>
@@ -133,7 +134,7 @@ export const MysticalBackgroundV3 = ({
         className={classNames(className)}
         style={style}
       >
-        <CelestialArtifacts config={config} size={size} acolyte={acolyte} />
+        <CelestialArtifacts config={mergedConfig} size={size} acolyte={acolyte} />
       </svg>
     </div>
   )

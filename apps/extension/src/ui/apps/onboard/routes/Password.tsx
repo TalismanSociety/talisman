@@ -92,7 +92,7 @@ export const PasswordPage = () => {
 
   return (
     <Layout withBack analytics={ANALYTICS_PAGE}>
-      <OnboardDialog title={t("First, let's set a password")} stage={1}>
+      <OnboardDialog title={t("First, let's set a password")}>
         <p>
           {t(
             "Your password is used to unlock your wallet and is stored securely on your device. We recommend 12 characters, with uppercase and lowercase letters, symbols and numbers."

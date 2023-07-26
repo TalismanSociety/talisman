@@ -69,7 +69,7 @@ export const PrivacyPage = () => {
       // picture={<img className="w-[54rem]" src={imgAnalytics} alt="Analytics" />}
       analytics={ANALYTICS_PAGE}
     >
-      <OnboardDialog title={t("Manage your privacy")} stage={2}>
+      <OnboardDialog title={t("Manage your privacy")}>
         <Trans t={t} className="mt-8 flex gap-8">
           <p>
             To help improve Talisman we’d like to collect anonymous usage information and send

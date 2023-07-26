@@ -22,6 +22,7 @@ const DEFAULT_DATA: OnboardingWizardData = {}
 const useAppOnboardProvider = ({ isResettingWallet = false }: { isResettingWallet?: boolean }) => {
   // data used for account creation
   const [data, setData] = useState<OnboardingWizardData>(DEFAULT_DATA)
+  const [stage, setStage] = useState<number>()
 
   const updateData = useCallback((fields: Partial<OnboardingWizardData>) => {
     setData((prev) => ({ ...prev, ...fields }))
@@ -74,6 +75,8 @@ const useAppOnboardProvider = ({ isResettingWallet = false }: { isResettingWalle
     isResettingWallet,
     data,
     updateData,
+    stage,
+    setStage,
   }
 }
 
