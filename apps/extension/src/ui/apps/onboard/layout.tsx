@@ -49,7 +49,6 @@ const Main = styled.main`
 type LayoutProps = {
   withBack?: boolean
   className?: string
-  picture?: ReactNode
   children?: ReactNode
   analytics?: AnalyticsPage
 }
@@ -64,13 +63,7 @@ const TRANS_SLOW: Transition = {
   ease: "easeInOut",
 }
 
-export const Layout: FC<LayoutProps> = ({
-  analytics,
-  withBack = false,
-  picture,
-  children,
-  className,
-}) => (
+export const Layout: FC<LayoutProps> = ({ analytics, withBack = false, children, className }) => (
   <Main className={classNames(className, "max-w-screen max-h-screen overflow-auto")}>
     <motion.section variants={FADE_IN} initial="init" animate="anim" transition={TRANS_SLOW}>
       {!!withBack && (
@@ -79,14 +72,7 @@ export const Layout: FC<LayoutProps> = ({
           analytics={analytics}
         />
       )}
-      {picture ? (
-        <div className="flex w-full content-center gap-64">
-          <div className="w-22 text-right">{picture}</div>
-          <div className="w-22">{children}</div>
-        </div>
-      ) : (
-        <div className="flex justify-center">{children}</div>
-      )}
+      <div className="flex justify-center">{children}</div>
     </motion.section>
   </Main>
 )

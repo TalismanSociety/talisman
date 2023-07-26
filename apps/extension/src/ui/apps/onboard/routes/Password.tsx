@@ -1,5 +1,6 @@
 import { yupResolver } from "@hookform/resolvers/yup"
 import { PasswordStrength } from "@talisman/components/PasswordStrength"
+import imgPassword from "@talisman/theme/images/onboard_password_character.png"
 import { classNames } from "@talismn/util"
 import { AnalyticsPage, sendAnalyticsEvent } from "@ui/api/analytics"
 import { useAnalyticsPageView } from "@ui/hooks/useAnalyticsPageView"
@@ -92,6 +93,8 @@ export const PasswordPage = () => {
 
   return (
     <Layout withBack analytics={ANALYTICS_PAGE}>
+      {/* eslint-disable-next-line jsx-a11y/alt-text */}
+      <img src={imgPassword} width="960" className="absolute left-32 top-[25rem] opacity-30 " />
       <OnboardDialog title={t("First, let's set a password")}>
         <p>
           {t(

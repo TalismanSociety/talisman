@@ -1,4 +1,5 @@
-// import imgAnalytics from "@talisman/theme/images/analytics.png"
+import imgAnalyticsFlower from "@talisman/theme/images/onboard_analytics_flower.png"
+import imgAnalyticsSwitch from "@talisman/theme/images/onboard_analytics_switch.png"
 import { AnalyticsPage, sendAnalyticsEvent } from "@ui/api/analytics"
 import { useAnalyticsPageView } from "@ui/hooks/useAnalyticsPageView"
 import { useCallback } from "react"
@@ -55,6 +56,10 @@ export const PrivacyPage = () => {
       // picture={<img className="w-[54rem]" src={imgAnalytics} alt="Analytics" />}
       analytics={ANALYTICS_PAGE}
     >
+      {/* eslint-disable-next-line jsx-a11y/alt-text */}
+      <img src={imgAnalyticsSwitch} className="absolute left-80 top-80" />
+      {/* eslint-disable-next-line jsx-a11y/alt-text */}
+      <img src={imgAnalyticsFlower} className="absolute bottom-32 right-10 " />
       <OnboardDialog title={t("Manage your privacy")}>
         <Trans t={t}>
           <div className="flex flex-col gap-8">
