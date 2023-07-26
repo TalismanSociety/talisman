@@ -2,7 +2,7 @@ import { ArrowRightIcon } from "@talisman/theme/icons"
 import { TalismanWhiteLogo } from "@talisman/theme/logos"
 import { AnalyticsPage, sendAnalyticsEvent } from "@ui/api/analytics"
 import { useAnalyticsPageView } from "@ui/hooks/useAnalyticsPageView"
-import { useCallback } from "react"
+import { useCallback, useEffect } from "react"
 import { Trans, useTranslation } from "react-i18next"
 import { useNavigate } from "react-router-dom"
 import { Button } from "talisman-ui"
@@ -29,7 +29,7 @@ const handleLinkClick = (action: string) => () => {
 export const WelcomePage = () => {
   const { t } = useTranslation("onboard")
   useAnalyticsPageView(ANALYTICS_PAGE)
-  const { reset, updateData } = useOnboard()
+  const { reset, updateData, setStage } = useOnboard()
   const navigate = useNavigate()
 
   const handleNextClick = useCallback(
@@ -45,6 +45,9 @@ export const WelcomePage = () => {
     },
     [navigate, reset, updateData]
   )
+
+  // reset the background opacity to the full amount when this page is refreshed or navigated back to
+  useEffect(() => setStage(undefined), [setStage])
 
   return (
     <Layout>

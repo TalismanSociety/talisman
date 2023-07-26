@@ -13,7 +13,7 @@ import { Layout } from "../layout"
 const ANALYTICS_PAGE: AnalyticsPage = {
   container: "Fullscreen",
   feature: "Onboarding",
-  featureVersion: 4,
+  featureVersion: 5,
   page: "Onboarding - Step 3 - Manage your privacy",
 }
 

@@ -40,7 +40,7 @@ const ANALYTICS_PAGE: AnalyticsPage = {
   container: "Fullscreen",
   feature: "Onboarding",
   featureVersion: 5,
-  page: "Onboarding - Step 2b - Password",
+  page: "Onboarding - Step 2 - Password",
 }
 
 export const PasswordPage = () => {
