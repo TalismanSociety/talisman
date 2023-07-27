@@ -1,5 +1,4 @@
 import { DEBUG, TALISMAN_WEB_APP_DOMAIN, TEST } from "@core/constants"
-import { AccountTypes } from "@core/domains/accounts/types"
 import { AppStoreData } from "@core/domains/app/store.app"
 import type {
   AnalyticsCaptureRequest,
@@ -11,7 +10,6 @@ import type {
   RequestRoute,
   SendFundsOpenRequest,
 } from "@core/domains/app/types"
-import { getEthDerivationPath } from "@core/domains/ethereum/helpers"
 import { genericSubscription } from "@core/handlers/subscriptions"
 import { talismanAnalytics } from "@core/libs/Analytics"
 import { ExtensionHandler } from "@core/libs/Handler"
@@ -21,7 +19,6 @@ import type { MessageTypes, RequestTypes, ResponseType } from "@core/types"
 import { Port } from "@core/types/base"
 import keyring from "@polkadot/ui-keyring"
 import { assert } from "@polkadot/util"
-import { mnemonicGenerate, mnemonicValidate } from "@polkadot/util-crypto"
 import { sleep } from "@talismn/util"
 import { Subject } from "rxjs"
 import Browser from "webextension-polyfill"
@@ -34,14 +31,14 @@ import { PasswordStoreData } from "./store.password"
 export default class AppHandler extends ExtensionHandler {
   #modalOpenRequest = new Subject<ModalOpenRequest>()
 
-  private async onboard({ pass, passConfirm, mnemonic }: RequestOnboard): Promise<OnboardedType> {
+  private async onboard({ pass, passConfirm }: RequestOnboard): Promise<OnboardedType> {
     if (!(DEBUG || TEST)) await sleep(1000)
     assert(pass, "Password cannot be empty")
     assert(passConfirm, "Password confirm cannot be empty")
 
     assert(pass === passConfirm, "Passwords do not match")
 
-    assert(!(await this.stores.app.getIsOnboarded()), "A root account already exists")
+    assert(!(await this.stores.app.getIsOnboarded()), "Onboarding has already been completed")
 
     const accounts = keyring.getAccounts().length
     assert(!accounts, "Accounts already exist")
@@ -57,18 +54,6 @@ export default class AppHandler extends ExtensionHandler {
       },
     })
 
-    let confirmed = false
-    const method = mnemonic ? "import" : "new"
-    // no mnemonic passed in generate a mnemonic as needed
-    if (!mnemonic) {
-      mnemonic = mnemonicGenerate()
-    } else {
-      // mnemonic is passed in from user
-      const isValidMnemonic = mnemonicValidate(mnemonic)
-      assert(isValidMnemonic, "Supplied mnemonic is not valid")
-      confirmed = true
-    }
-
     const {
       password: transformedPw,
       salt,
@@ -76,37 +61,12 @@ export default class AppHandler extends ExtensionHandler {
       check,
     } = await this.stores.password.createPassword(pass)
     assert(transformedPw, "Password creation failed")
+
     this.stores.password.setPassword(transformedPw)
     await this.stores.password.set({ isTrimmed: false, isHashed: true, salt, secret, check })
 
-    const { pair } = keyring.addUri(mnemonic, transformedPw, {
-      name: "My Polkadot Account",
-      origin: mnemonic ? AccountTypes.SEED_STORED : AccountTypes.TALISMAN,
-    })
-    await this.stores.seedPhrase.add(mnemonic, transformedPw, confirmed)
-
-    try {
-      // also derive a first ethereum account
-      const derivationPath = getEthDerivationPath()
-      keyring.addUri(
-        `${mnemonic}${derivationPath}`,
-        transformedPw,
-        {
-          name: `My Ethereum Account`,
-          origin: AccountTypes.DERIVED,
-          parent: pair.address,
-          derivationPath,
-        },
-        "ethereum"
-      )
-    } catch (err) {
-      // do not break onboarding as user couldn't recover from it
-      // eslint-disable-next-line no-console
-      console.error(err)
-    }
-
-    const result = await this.stores.app.setOnboarded(method !== "new")
-    talismanAnalytics.capture("onboarded", { method })
+    const result = await this.stores.app.setOnboarded()
+    talismanAnalytics.capture("onboarded")
     return result
   }
 

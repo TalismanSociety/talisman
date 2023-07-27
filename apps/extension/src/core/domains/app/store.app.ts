@@ -88,8 +88,8 @@ export class AppStore extends SubscribableStorageProvider<
     return (await this.get("onboarded")) === TRUE
   }
 
-  async setOnboarded(hasFunds: boolean) {
-    return (await this.set({ onboarded: TRUE, hasFunds })).onboarded
+  async setOnboarded() {
+    return (await this.set({ onboarded: TRUE })).onboarded
   }
 
   async ensureOnboarded() {
