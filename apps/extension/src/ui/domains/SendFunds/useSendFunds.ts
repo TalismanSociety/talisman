@@ -33,7 +33,14 @@ import { useFeeToken } from "./useFeeToken"
 import { useSendFundsInputNumber } from "./useSendFundsInputNumber"
 import { useSendFundsInputSize } from "./useSendFundsInputSize"
 
-type SignMethod = "normal" | "ledgerSubstrate" | "ledgerEthereum" | "qrSubstrate" | "unknown"
+type SignMethod =
+  | "normal"
+  | "ledgerSubstrate"
+  | "ledgerEthereum"
+  | "qrSubstrate"
+  | "dcentSubstrate"
+  | "dcentEthereum"
+  | "unknown"
 
 const useRecipientBalance = (token?: Token, address?: Address | null) => {
   const { t } = useTranslation("send-funds")
@@ -501,6 +508,11 @@ const useSendFundsProvider = () => {
       if (isSubToken(token)) return "qrSubstrate"
       else if (isEvmToken(token))
         return "unknown" // Parity signer / parity vault don't support ethereum accounts
+      else throw new Error("Unknown token type")
+    }
+    if (fromAccount?.origin === "DCENT") {
+      if (isSubToken(token)) return "dcentSubstrate"
+      else if (isEvmToken(token)) return "dcentEthereum"
       else throw new Error("Unknown token type")
     }
     if (fromAccount?.isHardware) {

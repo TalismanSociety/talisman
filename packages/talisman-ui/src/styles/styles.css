@@ -69,6 +69,11 @@
   input[type="number"] {
     -moz-appearance: textfield;
   }
+
+  /* hide dcent iframe */
+  #dcent-connect {
+    display: none;
+  }
 }
 
 /* The components layer is for class-based styles that you want to be able to override with utilities. */

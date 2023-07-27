@@ -85,23 +85,43 @@ export default class AssetTransfersRpc {
     const chain = await chaindataProvider.getChain({ genesisHash })
     if (!chain) throw new Error(`Could not find chain for genesisHash ${genesisHash}`)
 
-    // create the unsigned extrinsic
     const { registry } = await getTypeRegistry(chain.id)
 
-    const tx = registry.createType(
-      "Extrinsic",
-      { method: unsigned.method },
-      { version: unsigned.version }
-    )
+    const isDcent = false // TODO
+    if (isDcent) {
+      const data = registry.createType("SignerPayload", unsigned)
+      // create the unsigned extrinsic
+      const tx = registry.createType(
+        "Extrinsic",
+        { method: unsigned.method },
+        { version: unsigned.version }
+      )
 
-    // apply signature
-    tx.addSignature(unsigned.address, signature, unsigned)
+      // apply signature
+      tx.addSignature(unsigned.address, signature, data.toPayload())
 
-    await watchSubstrateTransaction(chain, registry, unsigned, signature, { transferInfo })
+      //await watchSubstrateTransaction(chain, registry, unsigned, signature, { transferInfo })
 
-    await chainConnector.send(chain.id, "author_submitExtrinsic", [tx.toHex()])
+      await chainConnector.send(chain.id, "author_submitExtrinsic", [tx.toHex()])
 
-    return tx.hash.toHex()
+      return tx.hash.toHex()
+    } else {
+      // create the unsigned extrinsic
+      const tx = registry.createType(
+        "Extrinsic",
+        { method: unsigned.method },
+        { version: unsigned.version }
+      )
+
+      // apply signature
+      tx.addSignature(unsigned.address, signature, unsigned)
+
+      await watchSubstrateTransaction(chain, registry, unsigned, signature, { transferInfo })
+
+      await chainConnector.send(chain.id, "author_submitExtrinsic", [tx.toHex()])
+
+      return tx.hash.toHex()
+    }
   }
 
   /**

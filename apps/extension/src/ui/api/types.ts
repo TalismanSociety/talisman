@@ -55,6 +55,7 @@ import { ValidRequests } from "@core/libs/requests/types"
 import { UnsubscribeFn } from "@core/types"
 import { AddressesByChain } from "@core/types/base"
 import type { KeyringPair$Json } from "@polkadot/keyring/types"
+import { KeypairType } from "@polkadot/util-crypto/types"
 import type { HexString } from "@polkadot/util/types"
 import { Address } from "@talismn/balances"
 import { ethers } from "ethers"
@@ -115,6 +116,13 @@ export default interface MessageTypes {
     request: Omit<RequestAccountCreateHardware, "hardwareType">
   ) => Promise<string>
   accountCreateHardwareEthereum: (name: string, address: string, path: string) => Promise<string>
+  accountCreateDcent: (
+    name: string,
+    address: string,
+    type: KeypairType,
+    path: string,
+    tokenIds: TokenId[]
+  ) => Promise<string>
   accountCreateQr: (name: string, address: string, genesisHash: HexString | null) => Promise<string>
   accountCreateWatched: (name: string, address: string, isPortfolio: boolean) => Promise<string>
   accountExternalSetIsPortfolio: (address: string, isPortfolio: boolean) => Promise<boolean>

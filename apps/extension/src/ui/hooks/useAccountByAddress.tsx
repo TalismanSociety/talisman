@@ -1,4 +1,4 @@
-import { AccountJson } from "@polkadot/extension-base/background/types"
+import { AccountJsonAny } from "@core/domains/accounts/types"
 import { encodeAnyAddress } from "@talismn/util"
 import { useMemo } from "react"
 
@@ -6,7 +6,7 @@ import useAccounts from "./useAccounts"
 
 const filterByUnencodedAddress =
   (address: string) =>
-  (account: AccountJson): boolean =>
+  (account: AccountJsonAny): boolean =>
     account.address === address
 const filterByEncodedAddress = (address: string) =>
   filterByUnencodedAddress(encodeAnyAddress(address, 42))
@@ -14,7 +14,7 @@ const filterByEncodedAddress = (address: string) =>
 export const useAccountByAddress = (address?: string | null) => {
   const accounts = useAccounts()
 
-  const account = useMemo(() => {
+  const account = useMemo<AccountJsonAny | null>(() => {
     if (!address || !accounts) return null
 
     return (

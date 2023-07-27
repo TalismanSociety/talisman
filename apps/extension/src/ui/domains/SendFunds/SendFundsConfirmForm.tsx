@@ -20,6 +20,8 @@ import { useSendFunds } from "./useSendFunds"
 const SendFundsQrSubstrate = lazy(() => import("./SendFundsQrSubstrate"))
 const SendFundsLedgerSubstrate = lazy(() => import("./SendFundsLedgerSubstrate"))
 const SendFundsLedgerEthereum = lazy(() => import("./SendFundsLedgerEthereum"))
+const SendFundsDcentSubstrate = lazy(() => import("./SendFundsDcentSubstrate"))
+const SendFundsDcentEthereum = lazy(() => import("./SendFundsDcentEthereum"))
 
 const AmountDisplay = () => {
   const { sendMax, maxAmount, transfer, token } = useSendFunds()
@@ -107,7 +109,7 @@ const TotalValueRow = () => {
 }
 
 export const ExternalRecipientWarning = () => {
-  const { t } = useTranslation()
+  const { t } = useTranslation("send-funds")
   const { to } = useSendFunds()
   const accounts = useAccounts("owned")
 
@@ -168,6 +170,8 @@ const SendButton = () => {
         {signMethod === "qrSubstrate" && <SendFundsQrSubstrate />}
         {signMethod === "ledgerSubstrate" && <SendFundsLedgerSubstrate />}
         {signMethod === "ledgerEthereum" && <SendFundsLedgerEthereum />}
+        {signMethod === "dcentSubstrate" && <SendFundsDcentSubstrate />}
+        {signMethod === "dcentEthereum" && <SendFundsDcentEthereum />}
       </div>
     </Suspense>
   )

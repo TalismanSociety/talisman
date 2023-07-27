@@ -52,7 +52,7 @@ const legacySortAccounts = (accounts: AccountJsonAny[]) => {
   // as well as QR (parity signer) and HARDWARE (ledger) accounts
   // should order these by created date? probably
   const imported = accounts.filter(({ origin }) =>
-    ["SEED", "JSON", "QR", "HARDWARE"].includes(origin as string)
+    ["SEED", "JSON", "QR", "HARDWARE", "DCENT"].includes(origin as string)
   )
   const importedSorted = sortAccountsByWhenCreated(imported)
 

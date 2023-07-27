@@ -98,6 +98,14 @@ export const api: MessageTypes = {
       address,
       path,
     }),
+  accountCreateDcent: (name, address, type, path, tokenIds) =>
+    messageService.sendMessage("pri(accounts.create.dcent)", {
+      name,
+      address,
+      type,
+      path,
+      tokenIds,
+    }),
   accountCreateQr: (name, address, genesisHash) =>
     messageService.sendMessage("pri(accounts.create.qr.substrate)", {
       name,

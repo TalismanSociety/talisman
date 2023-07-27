@@ -44,6 +44,7 @@ import { TrustedSitesPage } from "./routes/Settings/TrustedSitesPage"
 import { AddCustomTokenPage } from "./routes/Tokens/AddCustomTokenPage"
 import { TokenPage } from "./routes/Tokens/TokenPage"
 import { TokensPage } from "./routes/Tokens/TokensPage"
+import { AccountAddDecentPage } from "./routes/AccountAdd/AccountAddDcentPage"
 
 // lazy load this one to prevent polkadot/hw-ledger to be loaded (slow)
 const AccountAddLedgerWizard = lazy(() => import("./routes/AccountAdd/AccountAddLedgerWizard"))
@@ -98,6 +99,7 @@ const DashboardInner = () => {
             <Route path="ledger/*" element={<AccountAddLedgerWizard />} />
             <Route path="qr/*" element={<AccountAddQrWizard />} />
             <Route path="watched" element={<AccountAddWatchedPage />} />
+            <Route path="dcent" element={<AccountAddDecentPage />} />
             <Route path="*" element={<Navigate to="" replace />} />
           </Route>
           <Route path="" element={<Navigate to="/portfolio" />} />

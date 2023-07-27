@@ -79,6 +79,14 @@ export const AccountAddTypePickerPage = () => {
           subtitle={t("Add a watch only address")}
           to={`/accounts/add/watched`}
         />
+        <CtaButton
+          size="small"
+          iconLeft={UsbIcon}
+          iconRight={ChevronRightIcon}
+          title={t("Add D'CENT Account")}
+          subtitle={t("Connect your D'CENT biometric wallet")}
+          to={`/accounts/add/dcent`}
+        />
       </div>
     </DashboardLayout>
   )
