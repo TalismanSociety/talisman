@@ -73,12 +73,14 @@ export async function balances<
 export type GetOrCreateTypeRegistry = (chainId: ChainId, metadataRpc?: `0x${string}`) => Registry
 
 export const createTypeRegistryCache = () => {
-  const typeRegistryCache: Map<ChainId, TypeRegistry> = new Map()
+  const typeRegistryCache: Map<
+    ChainId,
+    { metadataRpc: `0x${string}` | undefined; typeRegistry: Registry }
+  > = new Map()
 
   const getOrCreateTypeRegistry: GetOrCreateTypeRegistry = (chainId, metadataRpc) => {
-    // TODO: Delete cache when metadataRpc is different from last time
     const cached = typeRegistryCache.get(chainId)
-    if (cached) return cached
+    if (cached && cached.metadataRpc === metadataRpc) return cached.typeRegistry
 
     const typeRegistry = new TypeRegistry()
     if (typeof metadataRpc === "string") {
@@ -90,7 +92,7 @@ export const createTypeRegistryCache = () => {
       }
     }
 
-    typeRegistryCache.set(chainId, typeRegistry)
+    typeRegistryCache.set(chainId, { metadataRpc, typeRegistry })
 
     return typeRegistry
   }
