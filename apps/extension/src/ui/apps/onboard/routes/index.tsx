@@ -1,7 +1,7 @@
 import { Navigate, Route, Routes } from "react-router-dom"
 
 import { OnboardStageWrapper } from "../components/OnboardStageWrapper"
-import { OnboardingPage } from "./Onboarding"
+import { AddAccountPage } from "./AddAccount"
 import { PasswordPage } from "./Password"
 import { PrivacyPage } from "./Privacy"
 import { WelcomePage } from "./Welcome"
@@ -26,7 +26,14 @@ const OnboardingRoutes = () => {
           </OnboardStageWrapper>
         }
       />
-      <Route path="onboard" element={<OnboardingPage />} />
+      <Route
+        path="account"
+        element={
+          <OnboardStageWrapper stage={3}>
+            <AddAccountPage />
+          </OnboardStageWrapper>
+        }
+      />
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>
   )
