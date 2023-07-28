@@ -40,12 +40,6 @@ import { combineLatest } from "rxjs"
 import { AccountsCatalogData, emptyCatalog } from "./store.catalog"
 
 export default class AccountsHandler extends ExtensionHandler {
-  // we can only create a new account if we have an existing stored seed
-  // requires:
-  //   - password
-  //   - stored seed (unlocked with password)
-  //   - derivation path
-
   private async accountCreate({ name, type }: RequestAccountCreate): Promise<string> {
     const password = this.stores.password.getPassword()
     assert(password, "Not logged in")
@@ -66,13 +60,11 @@ export default class AccountsHandler extends ExtensionHandler {
 
     let seed = seedResult.val
     let shouldStoreSeed = false
-    // currently shouldn't be possible to not have a seed, but it will be soon
     if (!seed) {
       seed = mnemonicGenerate()
       shouldStoreSeed = true
     }
 
-    // currently shouldn't be possible to not have a root account, but it will be soon
     if (!rootAccount) {
       const { pair } = keyring.addUri(seed, password, {
         name,

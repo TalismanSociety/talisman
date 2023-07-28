@@ -62,7 +62,7 @@ import { ethers } from "ethers"
 export default interface MessageTypes {
   unsubscribe: (id: string) => Promise<null>
   // UNSORTED
-  onboard: (pass: string, passConfirm: string, mnemonic?: string) => Promise<OnboardedType>
+  onboardCreatePassword: (pass: string, passConfirm: string) => Promise<boolean>
   authenticate: (pass: string) => Promise<boolean>
   lock: () => Promise<boolean>
   changePassword: (currentPw: string, newPw: string, newPwConfirm: string) => Promise<boolean>

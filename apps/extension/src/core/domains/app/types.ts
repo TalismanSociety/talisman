@@ -3,10 +3,9 @@ import { ValidRequests } from "@core/libs/requests/types"
 import { Address } from "@core/types/base"
 import { Properties } from "posthog-js"
 
-export interface RequestOnboard {
+export interface RequestOnboardCreatePassword {
   pass: string
   passConfirm: string
-  mnemonic?: string
 }
 
 export interface RequestLogin {
@@ -63,7 +62,7 @@ export interface RequestAllowPhishingSite {
 }
 
 export interface AppMessages {
-  "pri(app.onboard)": [RequestOnboard, OnboardedType]
+  "pri(app.onboardCreatePassword)": [RequestOnboardCreatePassword, boolean]
   "pri(app.onboardStatus)": [null, OnboardedType]
   "pri(app.onboardStatus.subscribe)": [null, boolean, OnboardedType]
   "pri(app.authenticate)": [RequestLogin, boolean]

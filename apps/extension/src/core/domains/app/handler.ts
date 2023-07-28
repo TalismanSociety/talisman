@@ -4,9 +4,8 @@ import type {
   AnalyticsCaptureRequest,
   LoggedinType,
   ModalOpenRequest,
-  OnboardedType,
   RequestLogin,
-  RequestOnboard,
+  RequestOnboardCreatePassword,
   RequestRoute,
   SendFundsOpenRequest,
 } from "@core/domains/app/types"
@@ -31,7 +30,10 @@ import { PasswordStoreData } from "./store.password"
 export default class AppHandler extends ExtensionHandler {
   #modalOpenRequest = new Subject<ModalOpenRequest>()
 
-  private async onboard({ pass, passConfirm }: RequestOnboard): Promise<OnboardedType> {
+  private async createPassword({
+    pass,
+    passConfirm,
+  }: RequestOnboardCreatePassword): Promise<boolean> {
     if (!(DEBUG || TEST)) await sleep(1000)
     assert(pass, "Password cannot be empty")
     assert(passConfirm, "Password confirm cannot be empty")
@@ -64,10 +66,8 @@ export default class AppHandler extends ExtensionHandler {
 
     this.stores.password.setPassword(transformedPw)
     await this.stores.password.set({ isTrimmed: false, isHashed: true, salt, secret, check })
-
-    const result = await this.stores.app.setOnboarded()
-    talismanAnalytics.capture("onboarded")
-    return result
+    talismanAnalytics.capture("password created")
+    return true
   }
 
   private async authenticate({ pass }: RequestLogin): Promise<boolean> {
@@ -234,8 +234,8 @@ export default class AppHandler extends ExtensionHandler {
       // --------------------------------------------------------------------
       // app handlers -------------------------------------------------------
       // --------------------------------------------------------------------
-      case "pri(app.onboard)":
-        return this.onboard(request as RequestOnboard)
+      case "pri(app.onboardCreatePassword)":
+        return this.createPassword(request as RequestOnboardCreatePassword)
 
       case "pri(app.onboardStatus)":
         return await this.stores.app.get("onboarded")

@@ -21,7 +21,6 @@ import { Layout } from "../layout"
 type FormData = {
   password?: string
   passwordConfirm?: string
-  agreeToS?: boolean
 }
 
 const INPUT_CONTAINER_PROPS_PASSWORD = { className: "!bg-white/5 h-28" }
@@ -33,7 +32,6 @@ const schema = yup
       .string()
       .required("")
       .oneOf([yup.ref("password")], "Passwords must match"),
-    agreeToS: yup.boolean().oneOf([true], ""),
   })
   .required()
 
@@ -48,7 +46,7 @@ export const PasswordPage = () => {
   const { t } = useTranslation("onboard")
   useAnalyticsPageView(ANALYTICS_PAGE)
 
-  const { data, updateData, isResettingWallet } = useOnboard()
+  const { data, createPassword, isResettingWallet } = useOnboard()
   const navigate = useNavigate()
 
   const {
@@ -57,6 +55,7 @@ export const PasswordPage = () => {
     watch,
     trigger,
     setValue,
+    setError,
     formState: { errors, isValid, isSubmitting },
   } = useForm<FormData>({
     mode: "all",
@@ -80,15 +79,23 @@ export const PasswordPage = () => {
 
   const submit = useCallback(
     async (fields: FormData) => {
-      updateData(fields)
+      const { password, passwordConfirm } = fields
+      if (!password || !passwordConfirm) return
+
+      try {
+        await createPassword(password, passwordConfirm)
+      } catch (e) {
+        setError("password", { message: (e as Error).message })
+        return
+      }
       sendAnalyticsEvent({
         ...ANALYTICS_PAGE,
         name: "Submit",
         action: "Choose password continue button",
       })
-      navigate(isResettingWallet ? "/onboard" : `/privacy`)
+      navigate(isResettingWallet ? "/success" : `/privacy`)
     },
-    [navigate, updateData, isResettingWallet]
+    [navigate, setError, createPassword, isResettingWallet]
   )
 
   return (

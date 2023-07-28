@@ -58,7 +58,7 @@ describe("Extension", () => {
   }
 
   const getAccount = async (): Promise<string> => {
-    const account = keyring.getAccounts().find(({ meta }) => meta.name === "My Polkadot Account")
+    const account = keyring.getAccounts().find(({ meta }) => meta.name === "Test Polkadot Account")
     expect(account).toBeDefined()
 
     if (!account) throw new Error("Account not found")
@@ -70,13 +70,17 @@ describe("Extension", () => {
     extension = await createExtension()
     messageSender = getMessageSenderFn(extension)
 
-    await messageSender("pri(app.onboard)", {
+    await messageSender("pri(app.onboardCreatePassword)", {
       pass: password,
       passConfirm: password,
     })
-    const account = keyring.getAccounts().find(({ meta }) => meta.name === "My Polkadot Account")
+    const address = await messageSender("pri(accounts.create)", {
+      name: "Test Polkadot Account",
+      type: "sr25519",
+    })
     // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-    await extensionStores.sites.updateSite("localhost:3000", { addresses: [account!.address] })
+    await extensionStores.sites.updateSite("localhost:3000", { addresses: [address] })
+    await extensionStores.app.setOnboarded()
   })
 
   beforeEach(async () => {

@@ -36,10 +36,15 @@ describe("Sites Authorised Handler", () => {
     handler = await createExtension()
     messageSender = getMessageSenderFn(handler)
 
-    await messageSender("pri(app.onboard)", {
+    await messageSender("pri(app.onboardCreatePassword)", {
       pass: password,
       passConfirm: password,
     })
+    await messageSender("pri(accounts.create)", {
+      name: "Test Polkadot Account",
+      type: "sr25519",
+    })
+
     sitesStore = await extensionStores.sites.get()
   })
 

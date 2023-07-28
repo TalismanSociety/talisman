@@ -1,5 +1,4 @@
-// import Extension from "./Extension"
-import AppHandler from "@core/domains/app/handler"
+import Extension from "@core/handlers/Extension"
 import {
   GettableStoreData,
   extensionStores,
@@ -22,16 +21,16 @@ jest.setTimeout(20000)
 keyring.loadAll({ store: new AccountsStore() })
 
 describe("App handler when password is not trimmed", () => {
-  let extension: AppHandler
+  let extension: Extension
   let messageSender: ReturnType<typeof getMessageSenderFn>
   const password = "passw0rd " // has a space
   let initialStoreData: Partial<GettableStoreData> = {}
   let accountsJson: KeyringPairs$Json
 
-  async function createExtension(): Promise<AppHandler> {
+  async function createExtension(): Promise<Extension> {
     await cryptoWaitReady()
 
-    return new AppHandler(extensionStores)
+    return new Extension(extensionStores)
   }
 
   afterAll(async () => {
@@ -45,9 +44,14 @@ describe("App handler when password is not trimmed", () => {
     extension = await createExtension()
     messageSender = getMessageSenderFn(extension)
 
-    await messageSender("pri(app.onboard)", {
+    await messageSender("pri(app.onboardCreatePassword)", {
       pass: password,
       passConfirm: password,
+    })
+
+    await messageSender("pri(accounts.create)", {
+      name: "Test Polkadot Account",
+      type: "sr25519",
     })
 
     initialStoreData = await getLocalStorage()
@@ -112,7 +116,7 @@ describe("App handler when password is not trimmed", () => {
 
     expect(hashedPw).toEqual(await extensionStores.password.transformPassword(newPw))
     // should now be able to unlock a keypair with the plain text pw
-    const account = keyring.getAccounts().find(({ meta }) => meta.name === "My Polkadot Account")
+    const account = keyring.getAccounts().find(({ meta }) => meta.name === "Test Polkadot Account")
     assert(account, "No account")
     expect(account)
 
@@ -143,7 +147,7 @@ describe("App handler when password is not trimmed", () => {
     const hashedPw = await extensionStores.password.getHashedPassword(newPw)
     expect(hashedPw).toEqual(await extensionStores.password.transformPassword(newPw))
     // should now be able to unlock a keypair with the plain text pw
-    const account = keyring.getAccounts().find(({ meta }) => meta.name === "My Polkadot Account")
+    const account = keyring.getAccounts().find(({ meta }) => meta.name === "Test Polkadot Account")
     assert(account, "No account")
     expect(account)
 
@@ -158,16 +162,16 @@ describe("App handler when password is not trimmed", () => {
 })
 
 describe("App handler when password is trimmed", () => {
-  let extension: AppHandler
+  let extension: Extension
   let messageSender: ReturnType<typeof getMessageSenderFn>
   const password = "passw0rd " // has a space
   let initialStoreData: Partial<GettableStoreData> = {}
   let accountsJson: KeyringPairs$Json
 
-  async function createExtension(): Promise<AppHandler> {
+  async function createExtension(): Promise<Extension> {
     await cryptoWaitReady()
 
-    return new AppHandler(extensionStores)
+    return new Extension(extensionStores)
   }
 
   afterAll(async () => {
@@ -181,12 +185,19 @@ describe("App handler when password is trimmed", () => {
     extension = await createExtension()
     messageSender = getMessageSenderFn(extension)
 
-    await messageSender("pri(app.onboard)", {
+    await messageSender("pri(app.onboardCreatePassword)", {
       pass: password.trim(),
       passConfirm: password.trim(),
     })
 
     await extensionStores.password.set({ isTrimmed: true })
+
+    await messageSender("pri(accounts.create)", {
+      name: "Test Polkadot Account",
+      type: "sr25519",
+    })
+    await extensionStores.app.setOnboarded()
+
     initialStoreData = await getLocalStorage()
 
     accountsJson = await keyring.backupAccounts(
@@ -254,7 +265,7 @@ describe("App handler when password is trimmed", () => {
     const hashedPw = await extensionStores.password.getHashedPassword(newPw)
     expect(hashedPw).toEqual(await extensionStores.password.transformPassword(newPw))
     // should now be able to unlock a keypair with the plain text pw
-    const account = keyring.getAccounts().find(({ meta }) => meta.name === "My Polkadot Account")
+    const account = keyring.getAccounts().find(({ meta }) => meta.name === "Test Polkadot Account")
     assert(account, "No account")
     expect(account)
 
@@ -286,7 +297,7 @@ describe("App handler when password is trimmed", () => {
     const hashedPw = await extensionStores.password.getHashedPassword(newPw)
     expect(hashedPw).toEqual(await extensionStores.password.transformPassword(newPw))
     // should now be able to unlock a keypair with the plain text pw
-    const account = keyring.getAccounts().find(({ meta }) => meta.name === "My Polkadot Account")
+    const account = keyring.getAccounts().find(({ meta }) => meta.name === "Test Polkadot Account")
     assert(account, "No account")
     expect(account)
 
