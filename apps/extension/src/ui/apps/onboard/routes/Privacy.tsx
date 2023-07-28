@@ -47,9 +47,6 @@ export const PrivacyPage = () => {
     })
   }, [])
 
-  // if user refreshes the page, context data is lost
-  // if (!data?.password) return <Navigate to="/" replace /> TODO re-enable this
-
   return (
     <Layout
       withBack

@@ -40,8 +40,6 @@ export default class AppHandler extends ExtensionHandler {
 
     assert(pass === passConfirm, "Passwords do not match")
 
-    assert(!(await this.stores.app.getIsOnboarded()), "Onboarding has already been completed")
-
     const accounts = keyring.getAccounts().length
     assert(!accounts, "Accounts already exist")
 

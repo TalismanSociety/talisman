@@ -30,17 +30,13 @@ const useAppOnboardProvider = ({ isResettingWallet = false }: { isResettingWalle
     setData((prev) => ({ ...prev, ...fields }))
   }, [])
 
-  const createPassword = useCallback(
-    async (password: string, passwordConfirm: string) => {
-      if (!password || !passwordConfirm) throw new Error("Password is not set")
+  const createPassword = useCallback(async (password: string, passwordConfirm: string) => {
+    if (!password || !passwordConfirm) throw new Error("Password is not set")
 
-      if (!(await api.onboardCreatePassword(password, passwordConfirm)))
-        throw new Error("Failed to set password")
-      else if (isResettingWallet) location.href = "dashboard.html#/portfolio"
-      else location.href = "dashboard.html#/portfolio?onboarded"
-    },
-    [isResettingWallet]
-  )
+    const result = await api.onboardCreatePassword(password, passwordConfirm)
+    if (!result) throw new Error("Failed to set password")
+    return result
+  }, [])
 
   const reset = useCallback(() => {
     setData(DEFAULT_DATA)

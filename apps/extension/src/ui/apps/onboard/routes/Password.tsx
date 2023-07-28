@@ -1,10 +1,11 @@
+import { passwordStore } from "@core/domains/app"
 import { yupResolver } from "@hookform/resolvers/yup"
 import { PasswordStrength } from "@talisman/components/PasswordStrength"
 import imgPassword from "@talisman/theme/images/onboard_password_character.png"
 import { classNames } from "@talismn/util"
 import { AnalyticsPage, sendAnalyticsEvent } from "@ui/api/analytics"
 import { useAnalyticsPageView } from "@ui/hooks/useAnalyticsPageView"
-import { useCallback, useEffect } from "react"
+import { useCallback, useEffect, useState } from "react"
 import { useForm } from "react-hook-form"
 import { useTranslation } from "react-i18next"
 import { useNavigate } from "react-router-dom"
@@ -47,6 +48,8 @@ export const PasswordPage = () => {
   useAnalyticsPageView(ANALYTICS_PAGE)
 
   const { data, createPassword, isResettingWallet } = useOnboard()
+  const [passwordExists, setPasswordExists] = useState(false)
+
   const navigate = useNavigate()
 
   const {
@@ -69,6 +72,13 @@ export const PasswordPage = () => {
   useEffect(() => {
     trigger()
   }, [trigger, password])
+
+  // handle case where user has navigated back, and a password already exists in the store
+  useEffect(() => {
+    passwordStore.get("secret").then((pw) => {
+      setPasswordExists(!!pw)
+    })
+  }, [navigate])
 
   useEffect(() => {
     return () => {
@@ -93,7 +103,7 @@ export const PasswordPage = () => {
         name: "Submit",
         action: "Choose password continue button",
       })
-      navigate(isResettingWallet ? "/success" : `/privacy`)
+      navigate(isResettingWallet ? "/account" : `/privacy`)
     },
     [navigate, setError, createPassword, isResettingWallet]
   )
@@ -102,62 +112,89 @@ export const PasswordPage = () => {
     <Layout withBack analytics={ANALYTICS_PAGE}>
       {/* eslint-disable-next-line jsx-a11y/alt-text */}
       <img src={imgPassword} width="960" className="absolute left-32 top-[25rem] opacity-30 " />
-      <OnboardDialog title={t("First, let's set a password")}>
-        <p>
-          {t(
-            "Your password is used to unlock your wallet and is stored securely on your device. We recommend 12 characters, with uppercase and lowercase letters, symbols and numbers."
-          )}
-        </p>
-        <form onSubmit={handleSubmit(submit)} autoComplete="off">
-          <div className="flex flex-col">
-            <div className="text-body-secondary mb-8 mt-16 text-sm">
-              {t("Password strength")}: <PasswordStrength password={password} />
-            </div>
-            <OnboardFormField error={errors.password}>
-              <FormFieldInputText
-                {...register("password")}
-                type="password"
-                placeholder={t("Enter password")}
-                autoComplete="new-password"
-                spellCheck={false}
-                data-lpignore
-                // eslint-disable-next-line jsx-a11y/no-autofocus
-                autoFocus
-                className="placeholder:text-body-secondary/30 !bg-transparent !px-0"
-                containerProps={INPUT_CONTAINER_PROPS_PASSWORD}
-              />
-            </OnboardFormField>
-            <OnboardFormField error={errors.passwordConfirm}>
-              <FormFieldInputText
-                {...register("passwordConfirm")}
-                type="password"
-                autoComplete="off"
-                placeholder={t("Confirm password")}
-                spellCheck={false}
-                data-lpignore
-                className="placeholder:text-body-secondary/30 !bg-transparent !px-0"
-                containerProps={INPUT_CONTAINER_PROPS_PASSWORD}
-              />
-            </OnboardFormField>
+      {passwordExists && (
+        <OnboardDialog title={t("You've already set your password")}>
+          <div className="text-body-secondary flex flex-col gap-8">
+            <p>
+              {t(
+                "You can change your password in the settings at any time after you've onboarded."
+              )}
+            </p>
+            <p>
+              {t(
+                "If you can't remember the password you set, you should re-install Talisman now, and restart this onboarding process."
+              )}
+            </p>
+            <Button
+              fullWidth
+              primary
+              className="mt-16"
+              type="button"
+              onClick={() => navigate(isResettingWallet ? "/account" : `/privacy`)}
+            >
+              {t("Continue")}
+            </Button>
           </div>
-          <Button
-            fullWidth
-            primary
-            type="submit"
-            className={classNames(
-              `${
-                !isValid
-                  ? `${onboardBackgroundClassNames} text-body-secondary cursor-not-allowed border-none`
-                  : ""
-              }`
+        </OnboardDialog>
+      )}
+      {!passwordExists && (
+        <OnboardDialog title={t("First, let's set a password")}>
+          <p>
+            {t(
+              "Your password is used to unlock your wallet and is stored securely on your device. We recommend 12 characters, with uppercase and lowercase letters, symbols and numbers."
             )}
-            disabled={!isValid}
-            processing={isSubmitting}
-          >
-            {t("Continue")}
-          </Button>
-        </form>
-      </OnboardDialog>
+          </p>
+          <form onSubmit={handleSubmit(submit)} autoComplete="off">
+            <div className="flex flex-col">
+              <div className="text-body-secondary mb-8 mt-16 text-sm">
+                {t("Password strength")}: <PasswordStrength password={password} />
+              </div>
+              <OnboardFormField error={errors.password}>
+                <FormFieldInputText
+                  {...register("password")}
+                  type="password"
+                  placeholder={t("Enter password")}
+                  autoComplete="new-password"
+                  spellCheck={false}
+                  data-lpignore
+                  // eslint-disable-next-line jsx-a11y/no-autofocus
+                  autoFocus
+                  className="placeholder:text-body-secondary/30 !bg-transparent !px-0"
+                  containerProps={INPUT_CONTAINER_PROPS_PASSWORD}
+                />
+              </OnboardFormField>
+              <OnboardFormField error={errors.passwordConfirm}>
+                <FormFieldInputText
+                  {...register("passwordConfirm")}
+                  type="password"
+                  autoComplete="off"
+                  placeholder={t("Confirm password")}
+                  spellCheck={false}
+                  data-lpignore
+                  className="placeholder:text-body-secondary/30 !bg-transparent !px-0"
+                  containerProps={INPUT_CONTAINER_PROPS_PASSWORD}
+                />
+              </OnboardFormField>
+            </div>
+            <Button
+              fullWidth
+              primary
+              type="submit"
+              className={classNames(
+                `${
+                  !isValid
+                    ? `${onboardBackgroundClassNames} text-body-secondary cursor-not-allowed border-none`
+                    : ""
+                }`
+              )}
+              disabled={!isValid}
+              processing={isSubmitting}
+            >
+              {t("Continue")}
+            </Button>
+          </form>
+        </OnboardDialog>
+      )}
     </Layout>
   )
 }
