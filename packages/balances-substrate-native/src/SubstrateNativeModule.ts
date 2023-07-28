@@ -46,17 +46,12 @@ import log from "./log"
 
 type ModuleType = "substrate-native"
 
-// System.Account is the state_storage key prefix for nativeToken balances
-const moduleHash = "26aa394eea5630e07c48ae0c9558cef7" // util_crypto.xxhashAsHex("System", 128);
-const storageHash = "b99d880ec681799c0cf30e8886371da9" // util_crypto.xxhashAsHex("Account", 128);
-const moduleStorageHash = `${moduleHash}${storageHash}`
-
-// TODO: Move the fallback configs for each chain into the ChainMeta section of chaindata
-
 // AccountInfo is the state_storage data format for nativeToken balances
 // Theory: new chains will be at least on metadata v14, and so we won't need to hardcode their AccountInfo type.
 // But for chains we want to support which aren't on metadata v14, hardcode them here:
 // If the chain upgrades to metadata v14, this override will be ignored :)
+//
+// TODO: Move the AccountInfoFallback configs for each chain into the ChainMeta section of chaindata
 const RegularAccountInfoFallback = JSON.stringify({
   nonce: "u32",
   consumers: "u32",
@@ -118,7 +113,6 @@ export type SubNativeChainMeta = {
   existentialDeposit: string | null
   nominationPoolsPalletId: string | null
   crowdloanPalletId: string | null
-  accountInfoType: number | null
   metadata: `0x${string}` | null
   metadataVersion: number
 }
@@ -187,7 +181,6 @@ export const SubNativeModule: NewBalanceModule<
           existentialDeposit: null,
           nominationPoolsPalletId: null,
           crowdloanPalletId: null,
-          accountInfoType: null,
           metadata: null,
           metadataVersion: 0,
         }
@@ -222,7 +215,6 @@ export const SubNativeModule: NewBalanceModule<
         ? Buffer.from(constants.crowdloan.palletId.toU8a()).toString("hex")
         : null
 
-      let accountInfoType = null
       const balanceMetadata = await mutateMetadata(metadataRpc, (metadata) => {
         // we can't parse metadata < v14
         //
@@ -264,11 +256,6 @@ export const SubNativeModule: NewBalanceModule<
           { pallet: isParasPallet, items: [isParachainsItem] },
         ])
 
-        // extract this bad boy from the system pallet
-        accountInfoType =
-          metadata.value.pallets.find(isSystemPallet)?.storage?.items?.find?.(isAccountItem)?.type
-            ?.value ?? null
-
         // ditch the chain's signedExtensions, we don't need them for balance lookups
         // and the polkadot.js TypeRegistry will complain when it can't find the types for them
         metadata.value.extrinsic.signedExtensions = []
@@ -283,7 +270,6 @@ export const SubNativeModule: NewBalanceModule<
         existentialDeposit,
         nominationPoolsPalletId,
         crowdloanPalletId,
-        accountInfoType,
         metadata: balanceMetadata,
         metadataVersion: pjsMetadata.version,
       }
@@ -468,25 +454,13 @@ async function buildQueries(
     }
 
     const chainMeta = findChainMeta<typeof SubNativeModule>("substrate-native", chain)
-    const typeRegistry =
+    const hasMetadataV14 =
       chainMeta?.metadata !== undefined &&
       chainMeta?.metadata !== null &&
       chainMeta?.metadataVersion >= 14
-        ? getOrCreateTypeRegistry(chainId, chainMeta.metadata)
-        : new TypeRegistry()
-
-    const accountInfoTypeDef = (() => {
-      if (chainMeta?.accountInfoType === undefined) return AccountInfoOverrides[chainId]
-      if (chainMeta?.accountInfoType === null) return AccountInfoOverrides[chainId]
-      if (!(chainMeta?.metadataVersion >= 14)) return AccountInfoOverrides[chainId]
-
-      try {
-        return typeRegistry.metadata.lookup.getTypeDef(chainMeta.accountInfoType).type
-      } catch (error) {
-        log.debug(`Failed to getTypeDef for chain ${chainId}: ${(error as Error).message}`)
-        return
-      }
-    })()
+    const typeRegistry = hasMetadataV14
+      ? getOrCreateTypeRegistry(chainId, chainMeta.metadata ?? undefined)
+      : new TypeRegistry()
 
     return addresses.flatMap((address) => {
       // We share thie balanceJson between the base and the lock query for this address
@@ -515,36 +489,60 @@ async function buildQueries(
         ],
       }
 
-      const baseQuery: RpcStateQuery<Balance> = (() => {
-        const addressBytes = decodeAnyAddress(address)
-        const addressHash = blake2Concat(addressBytes).replace(/^0x/, "")
-        const stateKey = `0x${moduleStorageHash}${addressHash}`
+      const baseQuery: RpcStateQuery<Balance> | undefined = (() => {
+        const storageHelper = new StorageHelper(
+          typeRegistry,
+          "system",
+          "account",
+          decodeAnyAddress(address)
+        )
+        const stateKey = hasMetadataV14
+          ? storageHelper.stateKey
+          : (() => {
+              const addressBytes = decodeAnyAddress(address)
+              const addressHash = blake2Concat(addressBytes).replace(/^0x/, "")
+              const moduleHash = "26aa394eea5630e07c48ae0c9558cef7" // util_crypto.xxhashAsHex("System", 128);
+              const storageHash = "b99d880ec681799c0cf30e8886371da9" // util_crypto.xxhashAsHex("Account", 128);
+              const moduleStorageHash = `${moduleHash}${storageHash}` // System.Account is the state_storage key prefix for nativeToken balances
+              const stateKey = `0x${moduleStorageHash}${addressHash}`
+              return stateKey
+            })()
+        if (!stateKey) return
 
         const decodeResult = (change: string | null) => {
-          if (accountInfoTypeDef === undefined) {
-            // accountInfoTypeDef is undefined when chain is metadata < 14 and we also don't have an override hardcoded in
-            // the most likely best way to handle this case: log a warning and return an empty balance
-            log.debug(
-              `Token ${tokenId} on chain ${chainId} has no balance type for decoding. Defaulting to a balance of 0 (zero).`
-            )
-            return new Balance(balanceJson)
+          // BEGIN: Handle chains which use metadata < v14
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          let oldChainBalance: any = undefined
+          if (!hasMetadataV14) {
+            const accountInfoTypeDef = AccountInfoOverrides[chainId]
+            if (accountInfoTypeDef === undefined) {
+              // chain metadata version is < 14 and we also don't have an override hardcoded in
+              // the best way to handle this case: log a warning and return an empty balance
+              log.debug(
+                `Token ${tokenId} on chain ${chainId} has no balance type for decoding. Defaulting to a balance of 0 (zero).`
+              )
+              return new Balance(balanceJson)
+            }
+
+            try {
+              // eslint-disable-next-line no-var
+              oldChainBalance = createType(typeRegistry, accountInfoTypeDef, change)
+            } catch (error) {
+              log.warn(
+                `Failed to create pre-metadataV14 balance type for token ${tokenId} on chain ${chainId}: ${error?.toString()}`
+              )
+              return new Balance(balanceJson)
+            }
           }
+          // END: Handle chains which use metadata < v14
 
           // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          let chainBalance: any
-          try {
-            chainBalance = createType(typeRegistry, accountInfoTypeDef, change)
-          } catch (error) {
-            log.warn(
-              `Failed to create balance type for token ${tokenId} on chain ${chainId}: ${error?.toString()}`
-            )
-            return new Balance(balanceJson)
-          }
+          const decoded: any = hasMetadataV14 ? storageHelper.decode(change) : oldChainBalance
 
-          let free = (chainBalance?.data?.free?.toBigInt?.() ?? 0n).toString()
-          let reserved = (chainBalance?.data?.reserved?.toBigInt?.() ?? 0n).toString()
-          let miscFrozen = (chainBalance?.data?.miscFrozen?.toBigInt?.() ?? 0n).toString()
-          let feeFrozen = (chainBalance?.data?.feeFrozen?.toBigInt?.() ?? 0n).toString()
+          let free = (decoded?.data?.free?.toBigInt?.() ?? 0n).toString()
+          let reserved = (decoded?.data?.reserved?.toBigInt?.() ?? 0n).toString()
+          let miscFrozen = (decoded?.data?.miscFrozen?.toBigInt?.() ?? 0n).toString()
+          let feeFrozen = (decoded?.data?.feeFrozen?.toBigInt?.() ?? 0n).toString()
 
           // we use the evm-native module to fetch native token balances for ethereum addresses on ethereum networks
           // but on moonbeam, moonriver and other chains which use ethereum addresses instead of substrate addresses,
