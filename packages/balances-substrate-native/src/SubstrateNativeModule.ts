@@ -147,7 +147,7 @@ export type SubNativeTransferParams = NewTransferParamsType<{
   specVersion: number
   transactionVersion: number
   tip?: string
-  transferMethod: "transfer" | "transferKeepAlive" | "transferAll"
+  transferMethod: "transfer" | "transferAllowDeath" | "transferKeepAlive" | "transferAll"
 }>
 
 export const SubNativeModule: NewBalanceModule<
@@ -390,6 +390,48 @@ export const SubNativeModule: NewBalanceModule<
       const { genesisHash } = chain
 
       const sendAll = transferMethod === "transferAll"
+
+      // BEGIN: Detect Balances::transfer -> Balances::transfer_allow_death migration
+      // https://github.com/paritytech/substrate/pull/12951
+      //
+      // transfer_allow_death is the preferred method,
+      // so if something goes wrong during detection, we'll assume the chain has migrated
+      const hasDeprecatedTransferCall = (() => {
+        try {
+          const pjsMetadata: Metadata = new Metadata(new TypeRegistry(), metadataRpc)
+          pjsMetadata.registry.setMetadata(pjsMetadata)
+          const balancesPallet = pjsMetadata.asLatest.pallets.find((pallet) =>
+            pallet.name.eq("Balances")
+          )
+
+          const balancesCallsTypeIndex = balancesPallet?.calls.value.type.toNumber()
+          const balancesCallsType =
+            balancesCallsTypeIndex !== undefined
+              ? pjsMetadata.asLatest.lookup.types[balancesCallsTypeIndex]
+              : undefined
+          const hasDeprecatedTransferCall =
+            balancesCallsType?.type.def.asVariant?.variants.find((variant) =>
+              variant.name.eq("transfer")
+            ) !== undefined
+
+          // returns `true` if chain has `transfer` call
+          // if `false` we should use the non-deprecated `transfer_allow_death` instead
+          return hasDeprecatedTransferCall
+        } catch (cause) {
+          log.debug(
+            new Error(
+              `An error occured while detecting the presence of the deprecated Balances::transfer call on chain ${chainId}`,
+              { cause }
+            )
+          )
+          return false
+        }
+      })()
+
+      if (transferMethod === "transfer") {
+        transferMethod = hasDeprecatedTransferCall ? "transfer" : "transferAllowDeath"
+      }
+      // END: Detect Balances::transfer -> Balances::transfer_allow_death migration
 
       const pallet = "balances"
       const method = transferMethod
