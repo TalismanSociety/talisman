@@ -1,4 +1,5 @@
 import { AccountJsonHardwareEthereum } from "@core/domains/accounts/types"
+import { EthSignMessageMethod } from "@core/domains/signing/types"
 import i18next from "@core/i18nConfig"
 import { log } from "@core/log"
 import { bufferToHex, isHexString, stripHexPrefix } from "@ethereumjs/util"
@@ -18,18 +19,10 @@ import {
 } from "../Account/LedgerConnectionStatus"
 import { LedgerSigningStatus } from "./LedgerSigningStatus"
 
-export type LedgerEthereumSignMethod =
-  | "transaction"
-  | "personal_sign"
-  | "eth_signTypedData"
-  | "eth_signTypedData_v1"
-  | "eth_signTypedData_v3"
-  | "eth_signTypedData_v4"
-
 type LedgerEthereumProps = {
   account: AccountJsonHardwareEthereum
   className?: string
-  method: LedgerEthereumSignMethod
+  method: EthSignMessageMethod | "eth_sendTransaction"
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   payload: any // string message, typed object for eip712, TransactionRequest for tx
   manualSend?: boolean // requests user to click a button to send the payload to the ledger
@@ -41,7 +34,7 @@ type LedgerEthereumProps = {
 
 const signWithLedger = async (
   ledger: LedgerEthereumApp,
-  method: LedgerEthereumSignMethod,
+  method: EthSignMessageMethod | "eth_sendTransaction",
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   payload: any,
   accountPath: string
@@ -94,7 +87,7 @@ const signWithLedger = async (
     sig.s = "0x" + sig.s
     return ethers.utils.joinSignature(sig) as `0x${string}`
   }
-  if (method === "transaction") {
+  if (method === "eth_sendTransaction") {
     const {
       to,
       nonce,

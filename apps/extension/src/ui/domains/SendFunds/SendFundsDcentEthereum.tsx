@@ -1,26 +1,23 @@
 import { AccountJsonDcent } from "@core/domains/accounts/types"
 import { HexString } from "@polkadot/util/types"
-import SignDcentEthereum, { DcentEthereumSignRequest } from "@ui/domains/Sign/SignDcentEthereum"
+import SignDcentEthereum from "@ui/domains/Sign/SignDcentEthereum"
 import { useAccountByAddress } from "@ui/hooks/useAccountByAddress"
-import { useCallback, useMemo, useState } from "react"
-import { useTranslation } from "react-i18next"
-import { Button } from "talisman-ui"
+import { useCallback, useState } from "react"
 
 import { useSendFunds } from "./useSendFunds"
 
 const SendFundsDcentEthereum = () => {
-  const { t } = useTranslation("send-funds")
-  const { from, evmTransaction, sendWithSignature, isLocked, setIsLocked, feeToken } =
-    useSendFunds()
+  // TODO isLocked, feeToken
+  const { from, evmTransaction, sendWithSignature, setIsLocked } = useSendFunds()
   const account = useAccountByAddress(from) as AccountJsonDcent
 
   const [error, setError] = useState<Error>()
 
-  const [signed, setSigned] = useState(false)
+  //const [signed, setSigned] = useState(false)
   const handleSigned = useCallback(
-    async (signature: HexString) => {
+    async ({ signature }: { signature: HexString }) => {
       try {
-        setSigned(true)
+        //    setSigned(true)
         await sendWithSignature(signature)
       } catch (err) {
         setError(err as Error)
@@ -29,49 +26,24 @@ const SendFundsDcentEthereum = () => {
     [sendWithSignature]
   )
 
-  const sendToLedger = useCallback(
-    (send: boolean) => () => {
-      setIsLocked(send)
-    },
-    [setIsLocked]
-  )
-
-  const payload = useMemo<DcentEthereumSignRequest | undefined>(
-    () =>
-      evmTransaction?.transaction && feeToken
-        ? {
-            type: "transaction",
-            transaction: evmTransaction?.transaction,
-            token: feeToken,
-          }
-        : undefined,
-    [evmTransaction?.transaction, feeToken]
-  )
+  // const sendToLedger = useCallback(
+  //   (send: boolean) => () => {
+  //     setIsLocked(send)
+  //   },
+  //   [setIsLocked]
+  // )
 
   if (error) return <div className="text-alert-error">{error.message}</div>
 
-  if (!isLocked || signed)
-    return (
-      <Button
-        disabled={!evmTransaction}
-        className="w-full"
-        primary
-        onClick={sendToLedger(true)}
-        processing={signed}
-      >
-        {t("Approve on DCENT")}
-      </Button>
-    )
-
-  // hide until ready or after it's signed
-  if (!payload) return null
-
+  // TODO feeToken
   return (
     <SignDcentEthereum
       account={account}
-      onReject={sendToLedger(false)}
+      method="eth_sendTransaction"
+      payload={evmTransaction?.transaction}
+      onReject={() => setIsLocked(false)}
       onSignature={handleSigned}
-      payload={payload}
+      onWaitingChanged={setIsLocked}
       containerId="main"
     />
   )

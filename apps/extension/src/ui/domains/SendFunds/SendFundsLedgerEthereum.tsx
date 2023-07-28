@@ -56,7 +56,7 @@ const SendFundsLedgerEthereum = () => {
   return (
     <LedgerEthereum
       account={account}
-      method="transaction"
+      method="eth_sendTransaction"
       onReject={sendToLedger(false)}
       onSignature={handleSigned}
       payload={evmTransaction.transaction}

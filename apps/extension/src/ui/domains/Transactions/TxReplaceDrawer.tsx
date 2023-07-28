@@ -290,7 +290,7 @@ const EvmDrawerContent: FC<{
             <LedgerEthereum
               manualSend
               className="mt-6"
-              method="transaction"
+              method="eth_sendTransaction"
               payload={transaction}
               account={account as AccountJsonHardwareEthereum}
               onSignature={handleSendSigned}

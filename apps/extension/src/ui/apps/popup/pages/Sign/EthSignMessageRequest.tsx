@@ -1,6 +1,7 @@
-import { AccountJsonHardwareEthereum } from "@core/domains/accounts/types"
+import { AccountJsonDcent, AccountJsonHardwareEthereum } from "@core/domains/accounts/types"
 import { AppPill } from "@talisman/components/AppPill"
 import { EthSignBodyMessage } from "@ui/domains/Sign/Ethereum/EthSignBodyMessage"
+import SignDcentEthereum from "@ui/domains/Sign/SignDcentEthereum"
 import { useEthSignMessageRequest } from "@ui/domains/Sign/SignRequestContext"
 import { Suspense, lazy, useEffect, useMemo } from "react"
 import { useTranslation } from "react-i18next"
@@ -53,7 +54,16 @@ export const EthSignMessageRequest = () => {
           {errorMessage && <p className="error">{errorMessage}</p>}
           {account && request && (
             <>
-              {account.isHardware ? (
+              {account.origin === "DCENT" ? (
+                <SignDcentEthereum
+                  method={request.method}
+                  payload={request.request}
+                  account={account as AccountJsonDcent}
+                  onSignature={approveHardware}
+                  onReject={reject}
+                  containerId="main"
+                />
+              ) : account.isHardware ? (
                 <LedgerEthereum
                   method={request.method}
                   payload={request.request}

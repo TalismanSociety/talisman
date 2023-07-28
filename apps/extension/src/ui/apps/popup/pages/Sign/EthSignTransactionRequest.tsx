@@ -218,7 +218,7 @@ export const EthSignTransactionRequest = () => {
               transaction ? (
                 <LedgerEthereum
                   manualSend
-                  method="transaction"
+                  method="eth_sendTransaction"
                   payload={transaction}
                   account={account as AccountJsonHardwareEthereum}
                   onSignature={approveHardware}
