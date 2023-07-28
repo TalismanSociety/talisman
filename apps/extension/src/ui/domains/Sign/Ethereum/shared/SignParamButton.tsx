@@ -38,12 +38,14 @@ export const SignParamButton: FC<SignParamButtonProps> = ({
       type="button"
       onClick={handleClick}
       className={classNames(
-        "text-body-secondary inline-flex h-[1.2em] gap-3 px-4 text-base hover:text-white",
+        "text-body-secondary inline-flex h-[1.2em] max-w-full gap-3 overflow-hidden text-ellipsis whitespace-nowrap px-4 text-base hover:text-white",
         className
       )}
     >
       {iconPrefix && <div className="flex h-full flex-col justify-center">{iconPrefix}</div>}
-      <div className={contentClassName}>{children}</div>
+      <div className={classNames("max-w-full overflow-hidden text-ellipsis", contentClassName)}>
+        {children}
+      </div>
       {withIcon && (
         <div>
           {url ? (
