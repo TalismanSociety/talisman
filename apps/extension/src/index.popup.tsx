@@ -1,6 +1,7 @@
 import "@core/util/enableLogsInDevelopment"
 import "@core/i18nConfig"
 
+import { IS_FIREFOX } from "@core/constants"
 import { appStore } from "@core/domains/app"
 import { log } from "@core/log"
 import { renderTalisman } from "@ui"
@@ -16,12 +17,15 @@ const adjustPopupSize = async () => {
 
     // make sure zoom is reset before adjusting size or size will be incorrect
     // test the necessity to apply the zoom settings, otherwise a zoom update message would appear
-    if (currentZoom !== 1)
-      await Browser.tabs.setZoomSettings(undefined, {
-        defaultZoomFactor: 1,
-        mode: "disabled",
-        scope: "per-tab",
-      })
+    if (currentZoom !== 1) {
+      if (IS_FIREFOX) await Browser.tabs.setZoom(1)
+      else
+        await Browser.tabs.setZoomSettings(undefined, {
+          defaultZoomFactor: 1,
+          mode: "disabled",
+          scope: "per-tab",
+        })
+    }
 
     const { innerHeight, innerWidth, outerHeight, outerWidth } = window
 
