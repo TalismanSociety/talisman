@@ -110,7 +110,7 @@ class WindowManager {
       top: 100 + (currWindow?.top ?? 0),
       left:
         (currWindow?.width ? (currWindow.left ?? 0) + currWindow.width : window.screen.availWidth) -
-        410,
+        500,
     }
 
     const popup = await Browser.windows.create({
