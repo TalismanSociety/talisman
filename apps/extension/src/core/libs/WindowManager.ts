@@ -1,3 +1,4 @@
+import { IS_FIREFOX } from "@core/constants"
 import { appStore } from "@core/domains/app"
 import { RequestRoute } from "@core/domains/app/types"
 import { sleep } from "@talismn/util"
@@ -125,7 +126,7 @@ class WindowManager {
     if (typeof popup?.id !== "undefined") {
       this.#windows.push(popup.id || 0)
       // firefox compatibility (cannot be set at creation)
-      if (popup.left !== left && popup.state !== "fullscreen") {
+      if (IS_FIREFOX && popup.left !== left && popup.state !== "fullscreen") {
         await Browser.windows.update(popup.id, { left, top })
       }
     }
