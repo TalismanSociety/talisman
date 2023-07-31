@@ -1,15 +1,14 @@
+import { IS_FIREFOX } from "@core/constants"
 import { appStore } from "@core/domains/app"
 import { RequestRoute } from "@core/domains/app/types"
 import { sleep } from "@talismn/util"
 import Browser from "webextension-polyfill"
 
-const WINDOW_OPTS: Browser.Windows.CreateCreateDataType = {
-  // This is not allowed on FF, only on Chrome - disable completely
-  // focused: true,
-  height: 630,
+const WINDOW_OPTS: Browser.Windows.CreateCreateDataType & { width: number; height: number } = {
   type: "popup",
   url: Browser.runtime.getURL("popup.html"),
   width: 400,
+  height: 600,
 }
 
 class WindowManager {
@@ -106,25 +105,28 @@ class WindowManager {
 
   async popupOpen(argument?: string, onClose?: () => void) {
     const currWindow = await Browser.windows.getLastFocused()
+    const [widthDelta, heightDelta] = await appStore.get("popupSizeDelta")
 
     const { left, top } = {
       top: 100 + (currWindow?.top ?? 0),
       left:
         (currWindow?.width ? (currWindow.left ?? 0) + currWindow.width : window.screen.availWidth) -
-        410,
+        500,
     }
 
     const popup = await Browser.windows.create({
       ...WINDOW_OPTS,
+      url: Browser.runtime.getURL(`popup.html${argument ? argument : ""}`),
       top,
       left,
-      url: Browser.runtime.getURL(`popup.html${argument ? argument : ""}`),
+      width: WINDOW_OPTS.width + widthDelta,
+      height: WINDOW_OPTS.height + heightDelta,
     })
 
     if (typeof popup?.id !== "undefined") {
       this.#windows.push(popup.id || 0)
       // firefox compatibility (cannot be set at creation)
-      if (popup.left !== left && popup.state !== "fullscreen") {
+      if (IS_FIREFOX && popup.left !== left && popup.state !== "fullscreen") {
         await Browser.windows.update(popup.id, { left, top })
       }
     }
