@@ -3,6 +3,7 @@
 const { merge } = require("webpack-merge")
 const common = require("./webpack.common.js")
 const path = require("path")
+console.log("__dirname", __dirname)
 const distDir = path.join(__dirname, "..", "dist")
 const CopyPlugin = require("copy-webpack-plugin")
 const ExtensionReloader = require("@alectalisman/webpack-ext-reloader")
@@ -17,7 +18,7 @@ const config = (env) =>
     devtool: "inline-cheap-module-source-map",
     mode: "development",
     watchOptions: {
-      ignored: [distDir, path.join(__dirname, "..", "node_modules")],
+      ignored: ["**/node_modules", "**/dist"],
     },
     plugins: [
       new SimpleLocalizeDownloadPlugin({ devMode: true }),
