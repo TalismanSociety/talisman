@@ -25,13 +25,14 @@ export const OptionsPage = () => {
           title={t("Enable Testnets")}
           subtitle={
             <>
-              {t("Connect to test networks")} |{" "}
+              {t("Connect to test networks")}
+              <span> | </span>
               <a
-                href="https://paritytech.github.io/polkadot-testnet-faucet/"
+                href="https://paritytech.github.io/polkadot-testnet-faucet"
                 target="_blank"
                 className="text-grey-200 hover:text-body"
               >
-                {t("Rococo Faucet")}
+                {t("Faucets")}
               </a>
             </>
           }
