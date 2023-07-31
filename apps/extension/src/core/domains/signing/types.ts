@@ -1,6 +1,6 @@
 import {
   AccountJson,
-  AccountJsonHardwareEthereum,
+  AccountJsonAny,
   AccountJsonHardwareSubstrate,
 } from "@core/domains/accounts/types"
 import {
@@ -58,7 +58,7 @@ export interface SubstrateSigningRequest extends BaseSigningRequest<SUBSTRATE_SI
 
 export interface EthBaseSignRequest<T extends ETH_SIGN | ETH_SEND> extends BaseSigningRequest<T> {
   ethChainId: EvmNetworkId
-  account: AccountJson | AccountJsonHardwareEthereum
+  account: AccountJsonAny
   request: string | EthTransactionRequest
 }
 
@@ -73,15 +73,18 @@ export const SIGNING_TYPES = {
   ETH_SEND,
   SUBSTRATE_SIGN,
 }
+
+export type EthSignMessageMethod =
+  | "personal_sign"
+  | "eth_signTypedData"
+  | "eth_signTypedData_v1"
+  | "eth_signTypedData_v3"
+  | "eth_signTypedData_v4"
+
 export interface EthSignRequest extends EthBaseSignRequest<ETH_SIGN> {
   request: string
   ethChainId: EvmNetworkId
-  method:
-    | "personal_sign"
-    | "eth_signTypedData"
-    | "eth_signTypedData_v1"
-    | "eth_signTypedData_v3"
-    | "eth_signTypedData_v4"
+  method: EthSignMessageMethod
 }
 
 export interface EthSignAndSendRequest extends EthBaseSignRequest<ETH_SEND> {
