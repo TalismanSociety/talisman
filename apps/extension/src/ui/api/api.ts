@@ -143,10 +143,10 @@ export const api: MessageTypes = {
   getNomPoolStakedBalance: ({ chainId, addresses }) =>
     messageService.sendMessage("pri(balances.nompools.get)", { chainId, addresses }),
   balances: (cb) => messageService.subscribe("pri(balances.subscribe)", null, cb),
-  balancesByParams: (addressesByChain, addressesByEvmNetwork, cb) =>
+  balancesByParams: (addressesByChain, addressesByEvmNetwork, addressesByTokens, cb) =>
     messageService.subscribe(
       "pri(balances.byparams.subscribe)",
-      { addressesByChain, addressesByEvmNetwork },
+      { addressesByChain, addressesByEvmNetwork, addressesByTokens },
       cb
     ),
 

@@ -11,6 +11,7 @@ import {
 } from "@core/domains/app/types"
 import {
   AddressesByEvmNetwork,
+  AddressesByTokens,
   BalanceJson,
   BalancesUpdate,
   RequestBalance,
@@ -155,6 +156,7 @@ export default interface MessageTypes {
   balancesByParams: (
     addressesByChain: AddressesByChain,
     addressesByEvmNetwork: AddressesByEvmNetwork,
+    addressesByTokens: AddressesByTokens,
     cb: (balances: BalancesUpdate) => void
   ) => UnsubscribeFn
 

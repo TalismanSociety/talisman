@@ -21,9 +21,14 @@ export type AddressesByEvmNetwork = {
   evmNetworks: Array<Pick<EvmNetwork, "id" | "nativeToken">>
   addresses: string[]
 }
+export type AddressesByTokens = {
+  tokenIds: TokenId[]
+  addresses: string[]
+}
 export interface RequestBalancesByParamsSubscribe {
   addressesByChain: AddressesByChain
   addressesByEvmNetwork: AddressesByEvmNetwork
+  addressesByTokens: AddressesByTokens
 }
 
 export type NomPoolStakedBalance = {

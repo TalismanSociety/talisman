@@ -42,7 +42,7 @@ export class BalancesHandler extends ExtensionHandler {
         // create subscription callback
         const callback = createSubscription<"pri(balances.byparams.subscribe)">(id, port)
 
-        const { addressesByChain, addressesByEvmNetwork } =
+        const { addressesByChain, addressesByEvmNetwork, addressesByTokens } =
           request as RequestBalancesByParamsSubscribe
 
         //
@@ -85,6 +85,13 @@ export class BalancesHandler extends ExtensionHandler {
             addressesByToken[tokenId].push(...addresses)
             return addressesByToken
           }, {} as AddressesByToken<Token>)
+
+        for (const tokenId of addressesByTokens.tokenIds) {
+          if (!addressesByToken[tokenId]) addressesByToken[tokenId] = []
+          addressesByToken[tokenId].push(
+            ...addressesByTokens.addresses.filter((a) => !addressesByToken[tokenId].includes(a))
+          )
+        }
 
         //
         // Separate out the tokens in `addressesByToken` into groups based on `token.type`
