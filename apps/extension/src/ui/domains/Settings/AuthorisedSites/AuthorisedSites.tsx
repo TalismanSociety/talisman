@@ -1,3 +1,4 @@
+import { TALISMAN_WEB_APP_URL } from "@core/constants"
 import { ProviderType } from "@core/domains/sitesAuthorised/types"
 import { HeaderBlock } from "@talisman/components/HeaderBlock"
 import { Spacer } from "@talisman/components/Spacer"
@@ -61,7 +62,7 @@ export const AuthorisedSites = () => {
             <div className="bg-grey-850 w-full rounded p-8">
               <Trans t={t}>
                 You haven't connected to any sites yet. Why not start with the{" "}
-                <a href="https://app.talisman.xyz" target="_blank" className="text-primary">
+                <a href={TALISMAN_WEB_APP_URL} target="_blank" className="text-primary">
                   Talisman Web App
                 </a>
                 ?

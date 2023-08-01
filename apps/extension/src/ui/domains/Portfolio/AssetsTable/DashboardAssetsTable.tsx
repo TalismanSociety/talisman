@@ -1,3 +1,4 @@
+import { TALISMAN_WEB_APP_STAKING_URL } from "@core/constants"
 import { Balances } from "@core/domains/balances/types"
 import { ExternalLinkIcon, XIcon, ZapIcon } from "@talisman/theme/icons"
 import { useBalancesStatus } from "@talismn/balances-react"
@@ -72,7 +73,7 @@ const AssetRow = ({ balances }: AssetRowProps) => {
   }, [genericEvent, navigate, token])
 
   const handleClickStakingBanner = useCallback(() => {
-    window.open("https://app.talisman.xyz/staking")
+    window.open(TALISMAN_WEB_APP_STAKING_URL)
     genericEvent("open web app staking from banner", { from: "dashboard", symbol: token?.symbol })
   }, [genericEvent, token?.symbol])
 

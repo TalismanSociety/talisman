@@ -1,4 +1,8 @@
-import { TALISMAN_WEB_APP_NFTS_URL } from "@core/constants"
+import {
+  TALISMAN_WEB_APP_CROWDLOANS_URL,
+  TALISMAN_WEB_APP_NFTS_URL,
+  TALISMAN_WEB_APP_STAKING_URL,
+} from "@core/constants"
 import { Nav, NavItem, NavItemProps } from "@talisman/components/Nav"
 import { ScrollContainer } from "@talisman/components/ScrollContainer"
 import {
@@ -141,7 +145,7 @@ export const SideBar = () => {
 
   const handleStakingClick = useCallback(() => {
     genericEvent("open web app staking", { from: "sidebar", target: "staking" })
-    window.open("https://app.talisman.xyz/staking", "_blank")
+    window.open(TALISMAN_WEB_APP_STAKING_URL, "_blank")
     return false
   }, [genericEvent])
 
@@ -154,7 +158,7 @@ export const SideBar = () => {
 
   const handleCrowdloansClick = useCallback(() => {
     genericEvent("open web app crowdloans", { from: "sidebar", target: "crowdloans" })
-    window.open("https://app.talisman.xyz/crowdloans", "_blank")
+    window.open(TALISMAN_WEB_APP_CROWDLOANS_URL, "_blank")
   }, [genericEvent])
 
   const handleSettingsClick = useCallback(() => {
