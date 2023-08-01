@@ -1,4 +1,4 @@
-import { DEBUG } from "@core/constants"
+import { DEBUG, IS_FIREFOX } from "@core/constants"
 import { SubscribableStorageProvider } from "@core/libs/Store"
 import { assert } from "@polkadot/util"
 import { gt } from "semver"
@@ -45,7 +45,7 @@ export const DEFAULT_APP_STATE: AppStoreData = {
   hasSpiritKey: false,
   needsSpiritKeyUpdate: false,
   showDotNomPoolStakingBanner: true,
-  popupSizeDelta: [0, 0],
+  popupSizeDelta: [0, IS_FIREFOX ? 30 : 0],
 }
 
 export class AppStore extends SubscribableStorageProvider<
