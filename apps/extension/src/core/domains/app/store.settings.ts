@@ -9,6 +9,7 @@ export interface SettingsStoreData {
   hideBalances: boolean
   allowNotifications: boolean
   selectedAccount?: string // undefined = show all accounts
+  collapsedFolders?: string[] // persists the collapsed folders in the dashboard account picker
   autoLockTimeout: 0 | 300 | 1800 | 3600
   spiritClanFeatures: boolean
 }

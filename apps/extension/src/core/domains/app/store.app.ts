@@ -29,6 +29,7 @@ export type AppStoreData = {
   hasSpiritKey: boolean
   showDotNomPoolStakingBanner: boolean
   needsSpiritKeyUpdate: boolean
+  popupSizeDelta: [number, number]
 }
 
 const ANALYTICS_VERSION = "1.5.0"
@@ -44,6 +45,7 @@ export const DEFAULT_APP_STATE: AppStoreData = {
   hasSpiritKey: false,
   needsSpiritKeyUpdate: false,
   showDotNomPoolStakingBanner: true,
+  popupSizeDelta: [0, 0],
 }
 
 export class AppStore extends SubscribableStorageProvider<

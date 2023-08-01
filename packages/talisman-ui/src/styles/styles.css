@@ -50,14 +50,8 @@
   }
 
   /* popup borders */
-  html.popup {
-    @apply border-grey-700 border;
-  }
-  html.popup.embedded {
-    @apply border-none;
-  }
-  html.popup.embedded #main {
-    @apply border-grey-700 border;
+  .popup #root {
+    @apply border-grey-750 box-border border;
   }
 
   /* number inputs */

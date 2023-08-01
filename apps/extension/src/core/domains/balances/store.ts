@@ -33,9 +33,7 @@ export const balanceModules = defaultBalanceModules.map((mod) =>
   mod({ chainConnectors, chaindataProvider })
 )
 
-type ChainIdAndHealth = Pick<Chain, "id" | "isHealthy" | "genesisHash" | "account"> & {
-  balanceMetadataHash: string
-}
+type ChainIdAndHealth = Pick<Chain, "id" | "isHealthy" | "genesisHash" | "account">
 type EvmNetworkIdAndHealth = Pick<
   EvmNetwork,
   "id" | "isHealthy" | "nativeToken" | "substrateChain"
@@ -111,15 +109,7 @@ export class BalanceStore {
           // substrate chains
           Object.values(chains ?? {})
             .filter((chain) => (settings.useTestnets ? true : !chain.isTestnet))
-            .map((chain) => ({
-              ...pick(chain, ["id", "isHealthy", "genesisHash", "account"]),
-
-              // We include this field to force the balance subscriptions to be recreated in
-              // the event that the balance metadata has changed.
-              //
-              // Should fix https://github.com/TalismanSociety/talisman/issues/847
-              balanceMetadataHash: JSON.stringify(chain.balanceMetadata),
-            })),
+            .map((chain) => pick(chain, ["id", "isHealthy", "genesisHash", "account"])),
 
           // evm chains
           Object.values(evmNetworks ?? {})

@@ -15,7 +15,8 @@ import { useSelectedAccount } from "@ui/domains/Portfolio/SelectedAccountContext
 import useAccountsCatalog from "@ui/hooks/useAccountsCatalog"
 import { useAnalytics } from "@ui/hooks/useAnalytics"
 import useBalances from "@ui/hooks/useBalances"
-import { forwardRef, useCallback, useMemo, useState } from "react"
+import { useSetting } from "@ui/hooks/useSettings"
+import { forwardRef, useCallback, useMemo } from "react"
 import { useTranslation } from "react-i18next"
 
 type AccountSelectItem =
@@ -125,15 +126,15 @@ export const AccountSelect = () => {
     [select]
   )
 
-  const [collapsed, setCollapsed] = useState<string[]>([])
+  const [collapsedFolders = [], setCollapsedFolders] = useSetting("collapsedFolders")
   const onFolderClick = useCallback(
     (item: AccountSelectFolderItem) =>
-      setCollapsed((collapsed) =>
-        collapsed.includes(item.key)
-          ? collapsed.filter((key) => key !== item.key)
-          : [...collapsed, item.key]
+      setCollapsedFolders((collapsedFolders = []) =>
+        collapsedFolders.includes(item.key)
+          ? collapsedFolders.filter((key) => key !== item.key)
+          : [...collapsedFolders, item.key]
       ),
-    []
+    [setCollapsedFolders]
   )
 
   const { genericEvent } = useAnalytics()
@@ -189,7 +190,7 @@ export const AccountSelect = () => {
                 {portfolioItems.map((item) =>
                   item.type === "account" &&
                   item.folderId &&
-                  collapsed.includes(item.folderId) ? null : (
+                  collapsedFolders.includes(item.folderId) ? null : (
                     <Listbox.Option
                       className="w-full"
                       key={item.key}
@@ -204,7 +205,7 @@ export const AccountSelect = () => {
                     >
                       <Item
                         item={item}
-                        collapsed={collapsed.includes(item.key)}
+                        collapsed={collapsedFolders.includes(item.key)}
                         current={item.key === selectedItem?.key}
                       />
                     </Listbox.Option>
@@ -219,7 +220,7 @@ export const AccountSelect = () => {
                 {watchedItems.map((item) =>
                   item.type === "account" &&
                   item.folderId &&
-                  collapsed.includes(item.folderId) ? null : (
+                  collapsedFolders.includes(item.folderId) ? null : (
                     <Listbox.Option
                       className="w-full"
                       key={item.key}
@@ -233,7 +234,7 @@ export const AccountSelect = () => {
                     >
                       <Item
                         item={item}
-                        collapsed={collapsed.includes(item.key)}
+                        collapsed={collapsedFolders.includes(item.key)}
                         current={item.key === selectedItem?.key}
                       />
                     </Listbox.Option>

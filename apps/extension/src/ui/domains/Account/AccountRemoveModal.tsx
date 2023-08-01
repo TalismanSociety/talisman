@@ -1,4 +1,4 @@
-import { AccountJsonAny, AccountType } from "@core/domains/accounts/types"
+import { AccountJsonAny, AccountType, AccountTypes } from "@core/domains/accounts/types"
 import { useOpenClose } from "@talisman/hooks/useOpenClose"
 import { provideContext } from "@talisman/util/provideContext"
 import { api } from "@ui/api"
@@ -85,9 +85,11 @@ export const AccountRemoveModal = () => {
               values={{ accountName }}
             />
           </p>
-          <p className="mt-4 text-sm">
-            {t("Ensure you have backed up your recovery phrase or private key before removing.")}
-          </p>
+          {account?.origin !== AccountTypes.WATCHED && (
+            <p className="mt-4 text-sm">
+              {t("Ensure you have backed up your recovery phrase or private key before removing.")}
+            </p>
+          )}
           <div className="mt-8 grid grid-cols-2 gap-8">
             <Button type="button" onClick={close}>
               {t("Cancel")}
