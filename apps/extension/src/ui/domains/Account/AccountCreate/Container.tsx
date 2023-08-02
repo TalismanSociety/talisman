@@ -88,9 +88,13 @@ const AccountCreateMethodButton = ({
       type="button"
       disabled={disabled}
       onClick={handleClick}
-      className="flex cursor-pointer flex-col content-center gap-2 rounded bg-white bg-opacity-[0.02] p-6 hover:bg-opacity-10 focus:bg-opacity-10"
+      className={`flex flex-col gap-2 rounded bg-white bg-opacity-[0.02] p-6 ${
+        disabled
+          ? "text-body-secondary"
+          : "text-body cursor-pointer hover:bg-opacity-10 focus:bg-opacity-10"
+      }`}
     >
-      <span>{title}</span>
+      <span className={"flex justify-start"}>{title}</span>
       <span className={"text-body-secondary flex items-center gap-2 text-sm"}>
         {networks.map((network, i) => (
           <span key={network} className={i + 1 < networks.length ? "-mr-[0.8rem]" : ""}>
@@ -104,7 +108,7 @@ const AccountCreateMethodButton = ({
 }
 
 const NewAccountMethodButtons = () => {
-  const { t } = useTranslation()
+  const { t } = useTranslation("onboard")
   return (
     <>
       <AccountCreateMethodButton
@@ -122,8 +126,7 @@ const NewAccountMethodButtons = () => {
 }
 
 const ImportAccountMethodButtons = () => {
-  const { t } = useTranslation()
-
+  const { t } = useTranslation("onboard")
   return (
     <>
       <AccountCreateMethodButton
@@ -142,17 +145,15 @@ const ImportAccountMethodButtons = () => {
 
 const ConnectAccountMethodButtons = () => {
   const isLedgerCapable = getIsLedgerCapable()
-  const { t } = useTranslation()
+  const { t } = useTranslation("onboard")
   return (
     <>
       <AccountCreateMethodButton
         title={t("Connect Ledger")}
         subtitle={
-          isLedgerCapable
-            ? t("Polkadot or Ethereum account")
-            : t("Polkadot or Ethereum account (not supported on this browser)")
+          isLedgerCapable ? t("Polkadot or Ethereum account") : t("Not supported on this browser")
         }
-        networks={["polkadot", "ethereum"]}
+        networks={isLedgerCapable ? ["polkadot", "ethereum"] : []}
         disabled={!isLedgerCapable}
       />
       <AccountCreateMethodButton
@@ -165,7 +166,7 @@ const ConnectAccountMethodButtons = () => {
 }
 
 export const AccountCreateContainer = ({ className }: Props) => {
-  const { t } = useTranslation()
+  const { t } = useTranslation("onboard")
   const { setMethodType, methodType } = useAccountCreateContext()
   const MethodButtonsComponent = useMemo(() => {
     switch (methodType) {
