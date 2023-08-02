@@ -4,6 +4,7 @@ import { OnboardStageWrapper } from "../components/OnboardStageWrapper"
 import { AddAccountPage } from "./AddAccount"
 import { PasswordPage } from "./Password"
 import { PrivacyPage } from "./Privacy"
+import { SuccessPage } from "./Success"
 import { WelcomePage } from "./Welcome"
 
 const OnboardingRoutes = () => {
@@ -31,6 +32,14 @@ const OnboardingRoutes = () => {
         element={
           <OnboardStageWrapper stage={3}>
             <AddAccountPage />
+          </OnboardStageWrapper>
+        }
+      />
+      <Route
+        path="success"
+        element={
+          <OnboardStageWrapper stage={4}>
+            <SuccessPage />
           </OnboardStageWrapper>
         }
       />
