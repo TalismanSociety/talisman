@@ -1,5 +1,5 @@
 import { DEBUG, IS_FIREFOX } from "@core/constants"
-import { SubscribableStorageProvider } from "@core/libs/Store"
+import { StorageProvider } from "@core/libs/Store"
 import { assert } from "@polkadot/util"
 import { gt } from "semver"
 import Browser from "webextension-polyfill"
@@ -48,10 +48,7 @@ export const DEFAULT_APP_STATE: AppStoreData = {
   popupSizeDelta: [0, IS_FIREFOX ? 30 : 0],
 }
 
-export class AppStore extends SubscribableStorageProvider<
-  AppStoreData,
-  "pri(app.onboardStatus.subscribe)"
-> {
+export class AppStore extends StorageProvider<AppStoreData> {
   // keeps track of 'onboarding requests' per session so that each dapp can only cause the onboarding tab to focus once
   onboardingRequestsByUrl: { [url: string]: boolean } = {}
 

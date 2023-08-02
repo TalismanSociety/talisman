@@ -22,9 +22,6 @@ export const api: MessageTypes = {
   checkPassword: (password) => messageService.sendMessage("pri(app.checkPassword)", { password }),
   authStatus: () => messageService.sendMessage("pri(app.authStatus)"),
   authStatusSubscribe: (cb) => messageService.subscribe("pri(app.authStatus.subscribe)", null, cb),
-  onboardStatus: () => messageService.sendMessage("pri(app.onboardStatus)"),
-  onboardStatusSubscribe: (cb) =>
-    messageService.subscribe("pri(app.onboardStatus.subscribe)", null, cb),
   dashboardOpen: (route) => messageService.sendMessage("pri(app.dashboardOpen)", { route }),
   onboardOpen: () => messageService.sendMessage("pri(app.onboardOpen)"),
   popupOpen: () => messageService.sendMessage("pri(app.popupOpen)"),

@@ -6,7 +6,6 @@ import {
   AnalyticsCaptureRequest,
   LoggedinType,
   ModalOpenRequest,
-  OnboardedType,
   SendFundsOpenRequest,
 } from "@core/domains/app/types"
 import {
@@ -69,8 +68,6 @@ export default interface MessageTypes {
   checkPassword: (password: string) => Promise<boolean>
   authStatus: () => Promise<LoggedinType>
   authStatusSubscribe: (cb: (val: LoggedinType) => void) => UnsubscribeFn
-  onboardStatus: () => Promise<OnboardedType>
-  onboardStatusSubscribe: (cb: (val: OnboardedType) => void) => UnsubscribeFn
   dashboardOpen: (route: string) => Promise<boolean>
   onboardOpen: () => Promise<boolean>
   popupOpen: () => Promise<boolean>

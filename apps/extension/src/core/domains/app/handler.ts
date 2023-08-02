@@ -1,5 +1,4 @@
 import { DEBUG, TALISMAN_WEB_APP_DOMAIN, TEST } from "@core/constants"
-import { AppStoreData } from "@core/domains/app/store.app"
 import type {
   AnalyticsCaptureRequest,
   LoggedinType,
@@ -234,17 +233,6 @@ export default class AppHandler extends ExtensionHandler {
       // --------------------------------------------------------------------
       case "pri(app.onboardCreatePassword)":
         return this.createPassword(request as RequestOnboardCreatePassword)
-
-      case "pri(app.onboardStatus)":
-        return await this.stores.app.get("onboarded")
-
-      case "pri(app.onboardStatus.subscribe)":
-        return genericSubscription(
-          id,
-          port,
-          this.stores.app.observable,
-          ({ onboarded }: AppStoreData) => onboarded
-        )
 
       case "pri(app.authenticate)":
         return this.authenticate(request as RequestLogin)

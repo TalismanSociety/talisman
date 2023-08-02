@@ -63,8 +63,6 @@ export interface RequestAllowPhishingSite {
 
 export interface AppMessages {
   "pri(app.onboardCreatePassword)": [RequestOnboardCreatePassword, boolean]
-  "pri(app.onboardStatus)": [null, OnboardedType]
-  "pri(app.onboardStatus.subscribe)": [null, boolean, OnboardedType]
   "pri(app.authenticate)": [RequestLogin, boolean]
   "pri(app.authStatus)": [null, LoggedinType]
   "pri(app.authStatus.subscribe)": [null, boolean, LoggedinType]
