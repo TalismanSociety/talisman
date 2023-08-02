@@ -10,7 +10,6 @@ export const OnboardProgressBar = ({ stages = 3 }: { stages?: number }) => {
 
   if (!stage) return null
   return (
-    // <div className="flex w-[24rem] justify-center gap-8">
     <div className="flex w-[24rem] justify-center gap-8 text-center">
       {Array.from({ length: stages }).map((_, i) => (
         <div
@@ -48,10 +47,8 @@ export const OnboardDialog = ({
   className,
   onDoItLaterClick,
 }: OnboardDialogProps) => (
-  <div className="flex w-[60rem] flex-col items-center gap-12">
-    <div
-      className={classNames(className, onboardBackgroundClassNames, "rounded-lg p-24 text-left")}
-    >
+  <div className={classNames(className, "flex w-[60rem] flex-col items-center gap-12")}>
+    <div className={classNames(onboardBackgroundClassNames, "rounded-lg p-24 text-left")}>
       <div className="text-xl text-white">{title}</div>
       <div className="text-body-secondary mt-16">{children}</div>
     </div>

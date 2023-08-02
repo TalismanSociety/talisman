@@ -1,7 +1,8 @@
 import { AnalyticsPage, sendAnalyticsEvent } from "@ui/api/analytics"
+import { AccountCreate } from "@ui/domains/Account/AccountCreate"
 import { useAnalyticsPageView } from "@ui/hooks/useAnalyticsPageView"
 import { useCallback } from "react"
-import { Trans, useTranslation } from "react-i18next"
+import { useTranslation } from "react-i18next"
 import { useNavigate } from "react-router-dom"
 
 import { OnboardDialog } from "../components/OnboardDialog"
@@ -20,8 +21,6 @@ export const AddAccountPage = () => {
   useAnalyticsPageView(ANALYTICS_PAGE)
   const { setOnboarded } = useOnboard()
 
-  // if user refreshes the page, context data is lost
-  // if (!data?.password) return <Navigate to="/" replace /> TODO re-enable this
   const navigate = useNavigate()
 
   const handleDoItLaterClick = useCallback(async () => {
@@ -37,12 +36,11 @@ export const AddAccountPage = () => {
   return (
     <Layout withBack analytics={ANALYTICS_PAGE}>
       <OnboardDialog
-        className="flex w-[64rem] flex-col items-center gap-12"
+        className="flex flex-col"
         title={t("Add your first account")}
         onDoItLaterClick={handleDoItLaterClick}
       >
-        <Trans t={t}>You can also do this later</Trans>
-        <div className="mt-40 flex w-full gap-8">Account buttons here</div>
+        <AccountCreate className="mt-0" />
       </OnboardDialog>
     </Layout>
   )

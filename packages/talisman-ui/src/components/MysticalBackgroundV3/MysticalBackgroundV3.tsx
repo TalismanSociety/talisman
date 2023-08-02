@@ -117,7 +117,14 @@ export const MysticalBackgroundV3 = ({
   // props for the artifact that follows mouse cursor
   // changes a lot when hovering, do not memoize
   const acolyte =
-    isWindowHovered && !!elX && !!elY && elX > 0 && elX < elW && elY > 0 && elY < elH
+    mergedConfig?.withAcolyte &&
+    isWindowHovered &&
+    !!elX &&
+    !!elY &&
+    elX > 0 &&
+    elX < elW &&
+    elY > 0 &&
+    elY < elH
       ? { x: elX, y: elY }
       : undefined
 
