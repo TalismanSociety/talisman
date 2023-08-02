@@ -60,7 +60,7 @@ export const DcentAccountsList = () => {
   if (error || !accountInfos?.length)
     return (
       <div className="text-alert-warn bg-grey-800 flex h-[6rem] items-center gap-6 rounded px-8">
-        <AlertCircleIcon className="animate-spin-slow text-lg" />
+        <AlertCircleIcon className="text-lg" />
         <div>{error?.message ?? "Failed to fetch accounts from D'CENT Biometric Wallet"}</div>
       </div>
     )
