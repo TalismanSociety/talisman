@@ -14,12 +14,11 @@ export const OnboardBackground = () => {
       opacityMin: MYSTICAL_PHYSICS_V3.opacityMin - stage * 0.05,
     }
   }, [stage])
-  return null
 
   return (
     <MysticalBackground
       className="fixed left-0 top-0 h-[100vh] w-[100vw]"
-      config={{ ...onboardConfig, withAcolyte: false, artifacts: 4, radiusMax: 2 }}
+      config={{ ...onboardConfig, withAcolyte: false, artifacts: 4, radiusMax: 1.4 }}
     />
   )
 }

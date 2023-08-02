@@ -48,11 +48,7 @@ export const PrivacyPage = () => {
   }, [])
 
   return (
-    <Layout
-      withBack
-      // picture={<img className="w-[54rem]" src={imgAnalytics} alt="Analytics" />}
-      analytics={ANALYTICS_PAGE}
-    >
+    <Layout withBack analytics={ANALYTICS_PAGE}>
       {/* eslint-disable-next-line jsx-a11y/alt-text */}
       <img src={imgAnalyticsSwitch} className="absolute left-80 top-80" />
       {/* eslint-disable-next-line jsx-a11y/alt-text */}
