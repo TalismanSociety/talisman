@@ -1,7 +1,8 @@
 import { Balances } from "@core/domains/balances/types"
 import { DashboardAssetsTable } from "@ui/domains/Portfolio/AssetsTable"
 import { usePortfolio } from "@ui/domains/Portfolio/context"
-import { FundYourWallet } from "@ui/domains/Portfolio/FundYourWallet"
+import { FundYourWallet } from "@ui/domains/Portfolio/EmptyStates/FundYourWallet"
+import { NoAccounts } from "@ui/domains/Portfolio/EmptyStates/NoAccounts"
 import { NetworkPicker } from "@ui/domains/Portfolio/NetworkPicker"
 import { useSelectedAccount } from "@ui/domains/Portfolio/SelectedAccountContext"
 import { Statistics } from "@ui/domains/Portfolio/Statistics"
@@ -16,7 +17,7 @@ const PageContent = ({ balances }: { balances: Balances }) => {
 
   const [hasFunds] = useAppState("hasFunds")
   const balancesToDisplay = useDisplayBalances(balances)
-  const { account } = useSelectedAccount()
+  const { account, accounts } = useSelectedAccount()
 
   const { portfolio, available, locked } = useMemo(() => {
     const { total, frozen, reserved, transferable } = balancesToDisplay.sum.fiat("usd")
@@ -27,11 +28,19 @@ const PageContent = ({ balances }: { balances: Balances }) => {
     }
   }, [balancesToDisplay.sum])
 
-  const displayWalletFunding = useMemo(() => !account && Boolean(!hasFunds), [account, hasFunds])
+  const displayNoAccounts = useMemo(() => accounts.length === 0, [accounts])
+  const displayWalletFunding = useMemo(
+    () => accounts.length > 0 && !account && Boolean(!hasFunds),
+    [account, accounts, hasFunds]
+  )
 
   return (
     <div className="flex w-full flex-col">
-      {displayWalletFunding ? (
+      {displayNoAccounts ? (
+        <div className="mt-[3.8rem] flex grow items-center justify-center">
+          <NoAccounts />
+        </div>
+      ) : displayWalletFunding ? (
         <div className="mt-[3.8rem] flex grow items-center justify-center">
           <FundYourWallet />
         </div>
