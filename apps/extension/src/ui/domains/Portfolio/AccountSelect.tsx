@@ -152,16 +152,19 @@ export const AccountSelect = () => {
     <Listbox value={selectedItem} onChange={onChange}>
       {({ open }) => (
         <>
-          <Listbox.Button ref={refs.setReference} className="w-full text-left">
-            <Item
-              ref={refs.setReference}
-              key={selectedItem?.key}
-              item={selectedItem}
-              totalUsd={totalUsd}
-              open={open}
-              button
-            />
-          </Listbox.Button>
+          {accounts.length === 0 && <NoAccountsItem />}
+          {accounts.length > 0 && (
+            <Listbox.Button ref={refs.setReference} className="w-full text-left">
+              <Item
+                ref={refs.setReference}
+                key={selectedItem?.key}
+                item={selectedItem}
+                totalUsd={totalUsd}
+                open={open}
+                button
+              />
+            </Listbox.Button>
+          )}
 
           <FloatingPortal>
             <div
@@ -359,3 +362,13 @@ const FolderItem = forwardRef<HTMLDivElement, FolderItemProps>(function FolderIt
     </div>
   )
 })
+
+const NoAccountsItem = () => (
+  <div className="text-body-secondary flex w-full cursor-pointer flex-col items-center gap-4 rounded-sm p-5 lg:flex-row">
+    <div className="bg-body-disabled h-20 w-20 rounded-[2rem]">&nbsp;</div>
+    <div className="hidden max-w-full flex-grow flex-col items-center justify-center gap-2 overflow-hidden md:flex lg:items-start">
+      No Accounts
+      <Fiat amount={0.0} currency="usd" />
+    </div>
+  </div>
+)
