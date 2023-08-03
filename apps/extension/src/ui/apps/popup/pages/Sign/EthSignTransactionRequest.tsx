@@ -1,4 +1,4 @@
-import { AccountJsonHardwareEthereum } from "@core/domains/accounts/types"
+import { AccountJsonDcent, AccountJsonHardwareEthereum } from "@core/domains/accounts/types"
 import { EthPriorityOptionName } from "@core/domains/signing/types"
 import { AppPill } from "@talisman/components/AppPill"
 import { WithTooltip } from "@talisman/components/Tooltip"
@@ -9,6 +9,7 @@ import { EthFeeSelect } from "@ui/domains/Ethereum/GasSettings/EthFeeSelect"
 import { useEthereumProvider } from "@ui/domains/Ethereum/useEthereumProvider"
 import { EthSignBody } from "@ui/domains/Sign/Ethereum/EthSignBody"
 import { SignAlertMessage } from "@ui/domains/Sign/SignAlertMessage"
+import SignDcentEthereum from "@ui/domains/Sign/SignDcentEthereum"
 import { useEthSignTransactionRequest } from "@ui/domains/Sign/SignRequestContext"
 import useToken from "@ui/hooks/useToken"
 import { Suspense, lazy, useCallback, useEffect, useMemo } from "react"
@@ -216,16 +217,28 @@ export const EthSignTransactionRequest = () => {
             ) : null}
             {account && request && account.isHardware ? (
               transaction ? (
-                <LedgerEthereum
-                  manualSend
-                  method="eth_sendTransaction"
-                  payload={transaction}
-                  account={account as AccountJsonHardwareEthereum}
-                  onSignature={approveHardware}
-                  onReject={reject}
-                  onSendToLedger={handleSendToLedger}
-                  containerId="main"
-                />
+                account.origin === "DCENT" ? (
+                  <SignDcentEthereum
+                    method="eth_sendTransaction"
+                    payload={transaction}
+                    account={account as AccountJsonDcent}
+                    onSignature={approveHardware}
+                    onReject={reject}
+                    containerId="main"
+                    showCancelButton
+                  />
+                ) : (
+                  <LedgerEthereum
+                    manualSend
+                    method="eth_sendTransaction"
+                    payload={transaction}
+                    account={account as AccountJsonHardwareEthereum}
+                    onSignature={approveHardware}
+                    onReject={reject}
+                    onSendToLedger={handleSendToLedger}
+                    containerId="main"
+                  />
+                )
               ) : (
                 <Button className="w-full" onClick={reject}>
                   {t("Cancel")}

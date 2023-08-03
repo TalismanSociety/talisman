@@ -65,6 +65,7 @@ const signWithDcent = async (
 
     case "eth_sendTransaction": {
       const {
+        accessList,
         to,
         nonce,
         gasLimit,
@@ -83,23 +84,24 @@ const signWithDcent = async (
         chainId,
         type,
       }
-      // TODO do the same for ledger or it will break for legacy gas networks
+
+      // TODO do the same for ledger or it may break for legacy gas networks
       if (nonce !== undefined) baseTx.nonce = ethers.BigNumber.from(nonce).toNumber()
       if (maxPriorityFeePerGas) baseTx.maxPriorityFeePerGas = maxPriorityFeePerGas
       if (maxFeePerGas) baseTx.maxFeePerGas = maxFeePerGas
       if (gasPrice) baseTx.gasPrice = gasPrice
       if (data) baseTx.data = data
       if (value) baseTx.value = value
+      if (accessList) baseTx.accessList = accessList
 
+      // Note : most fields can't be undefined
       const args = [
-        type === 2
-          ? DcentWebConnector.coinType.ETHEREUM
-          : DcentWebConnector.coinType.ETHEREUM_KOVAN, //try ETHEREUM_KOVAN
+        DcentWebConnector.coinType.ETHEREUM,
         ethers.BigNumber.from(nonce).toString(),
         type === 2 ? undefined : gasPrice?.toString(),
-        gasLimit?.toString(),
+        gasLimit?.toString() ?? "21000",
         to,
-        value?.toString(), // ?? "0"
+        value?.toString() ?? "0",
         data ?? "0x",
         accountPath,
         chainId,
@@ -107,7 +109,7 @@ const signWithDcent = async (
 
       if (type === 2)
         args.push(2, {
-          accessList: [],
+          accessList: accessList ?? [],
           maxPriorityFeePerGas: maxPriorityFeePerGas?.toString(),
           maxFeePerGas: maxFeePerGas?.toString(),
         })
