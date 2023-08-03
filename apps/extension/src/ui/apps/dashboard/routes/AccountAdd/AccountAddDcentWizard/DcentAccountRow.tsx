@@ -1,4 +1,5 @@
 import { Accordion, AccordionIcon } from "@talisman/components/Accordion"
+import { CornerDownRightIcon } from "@talisman/theme/icons"
 import { shortenAddress } from "@talisman/util/shortenAddress"
 import { Token } from "@talismn/chaindata-provider"
 import { AccountIcon } from "@ui/domains/Account/AccountIcon"
@@ -104,7 +105,7 @@ export const DcentAccountRow: FC<{ accountInfo: DcentAccountInfo }> = ({ account
         />
       </div>
       <Accordion isOpen={isOpen}>
-        <div className="pl-[6rem]">
+        <div className="relative pl-[6rem]">
           {accountInfo.tokens.map((token) => (
             <DcentAccountTokenRow
               key={token.id}
@@ -113,6 +114,7 @@ export const DcentAccountRow: FC<{ accountInfo: DcentAccountInfo }> = ({ account
               balances={balances}
             />
           ))}
+          <CornerDownRightIcon className="text-body-disabled absolute left-12 top-6 text-lg" />
         </div>
       </Accordion>
     </div>

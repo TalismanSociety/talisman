@@ -1,4 +1,5 @@
 import { SignerPayloadJSON, SignerPayloadRaw } from "@core/domains/signing/types"
+import { log } from "@core/log"
 import { getTypeRegistry } from "@core/util/getTypeRegistry"
 import { isJsonPayload } from "@core/util/isJsonPayload"
 import { HexString } from "@polkadot/util/types"
@@ -9,9 +10,11 @@ import useChainByGenesisHash from "@ui/hooks/useChainByGenesisHash"
 import useToken from "@ui/hooks/useToken"
 import { DcentError, dcentCall } from "@ui/util/dcent"
 import DcentWebConnector from "dcent-web-connector"
-import { FC, useCallback, useMemo, useState } from "react"
+import { FC, useCallback, useEffect, useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
-import { Button, Drawer } from "talisman-ui"
+import { Button } from "talisman-ui"
+
+import { ErrorMessageDrawer } from "./ErrorMessageDrawer"
 
 export type DcentSubstratePayload = {
   coinType: string
@@ -93,18 +96,14 @@ export const SignDcentSubstrate: FC<{
   fee: string
   containerId?: string
   className?: string
-
+  showCancelButton?: boolean
   onCancel: () => void
   onSigned: (signature: HexString) => void
-}> = ({ payload, fee, containerId, className, onCancel, onSigned }) => {
+}> = ({ payload, fee, showCancelButton, containerId, className, onCancel, onSigned }) => {
   const { t } = useTranslation("admin")
-  const {
-    // isValid,
-    errorMessage,
-    dcentTx,
-  } = useDcentPayload(payload, fee)
+  const { errorMessage, dcentTx } = useDcentPayload(payload, fee)
 
-  const [error, setError] = useState<DcentError>()
+  const [displayedErrorMessage, setDisplayedErrorMessage] = useState<string>()
   const [isSigning, setIsSigning] = useState(false)
 
   type DcentResponseSignature = {
@@ -114,7 +113,7 @@ export const SignDcentSubstrate: FC<{
   const handleSendClick = useCallback(async () => {
     if (!dcentTx) return
     setIsSigning(true)
-    setError(undefined)
+    setDisplayedErrorMessage(undefined)
     try {
       const { signed_tx } = await dcentCall<DcentResponseSignature>(() =>
         DcentWebConnector.getPolkadotSignedTransaction(dcentTx)
@@ -124,14 +123,22 @@ export const SignDcentSubstrate: FC<{
       // prefix with ed25519
       return onSigned(`0x00${signed_tx.substring(2)}`)
     } catch (err) {
-      setError(err as DcentError)
+      log.error("Failed to sign", { err })
+      if (err instanceof DcentError) {
+        if (err.code === "user_cancel") onCancel?.()
+        else setDisplayedErrorMessage(err.message ?? "Failed to sign")
+      } else setDisplayedErrorMessage((err as Error).message ?? "Failed to sign")
     }
     setIsSigning(false)
-  }, [dcentTx, onSigned])
+  }, [dcentTx, onCancel, onSigned])
+
+  useEffect(() => {
+    // error from constructing payload
+    if (errorMessage) setDisplayedErrorMessage(errorMessage)
+  }, [errorMessage])
 
   return (
     <div className={classNames("flex w-full flex-col gap-6", className)}>
-      {errorMessage && <div>errorMessage : {errorMessage}</div>}
       <Button
         className="w-full"
         disabled={!dcentTx}
@@ -141,40 +148,16 @@ export const SignDcentSubstrate: FC<{
       >
         {t("Approve on D'CENT")}
       </Button>
-      {/* {!error && (
-        <>
-          {isReady && !autoSend ? (
-            <Button className="w-full" primary onClick={handleSendClick}>
-              {t("Approve on D'CENT")}
-            </Button>
-          ) : (
-            !isSigned && (
-              <LedgerConnectionStatus {...{ ...connectionStatus }} refresh={_onRefresh} />
-            )
-          )}
-        </>
-      )} */}
-      <Button className="w-full" onClick={onCancel}>
-        {t("Cancel")}
-      </Button>
-      {error && (
-        <Drawer
-          anchor="bottom"
-          isOpen
-          containerId={containerId}
-          onDismiss={() => setError(undefined)}
-        >
-          {/* Shouldn't be a LedgerSigningStatus, just an error message */}
-          {/* <LedgerSigningStatus
-            message={error ? error : ""}
-            status={error ? "error" : isSigning ? "signing" : undefined}
-            confirm={onReject}
-          /> */}
-          <div>
-            [{error.code}] {error.message}
-          </div>
-        </Drawer>
+      {showCancelButton && (
+        <Button className="w-full" onClick={onCancel}>
+          {t("Cancel")}
+        </Button>
       )}
+      <ErrorMessageDrawer
+        message={displayedErrorMessage}
+        containerId={containerId}
+        onDismiss={() => setDisplayedErrorMessage(undefined)}
+      />
     </div>
   )
 }

@@ -76,7 +76,7 @@ const SendFundsDcentSubstrate = () => {
         onClick={sendToLedger(true)}
         processing={signed}
       >
-        {t("Approve on Dcent")}
+        {t("Approve on D'CENT")}
       </Button>
     )
 

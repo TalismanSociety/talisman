@@ -62,6 +62,7 @@ export const EthSignMessageRequest = () => {
                   onSignature={approveHardware}
                   onReject={reject}
                   containerId="main"
+                  showCancelButton
                 />
               ) : account.isHardware ? (
                 <LedgerEthereum

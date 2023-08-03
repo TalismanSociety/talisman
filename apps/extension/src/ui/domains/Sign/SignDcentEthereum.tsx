@@ -1,6 +1,7 @@
 import { AccountJsonDcent } from "@core/domains/accounts/types"
 import { EthSignMessageMethod } from "@core/domains/signing/types"
 import i18next from "@core/i18nConfig"
+import { log } from "@core/log"
 import { isHexString } from "@ethereumjs/util"
 import { hexToString } from "@polkadot/util"
 import { HexString } from "@polkadot/util/types"
@@ -10,14 +11,16 @@ import DcentWebConnector from "dcent-web-connector"
 import { ethers } from "ethers"
 import { FC, useCallback, useEffect, useState } from "react"
 import { useTranslation } from "react-i18next"
-import { Drawer } from "talisman-ui"
 import { Button } from "talisman-ui"
+
+import { ErrorMessageDrawer } from "./ErrorMessageDrawer"
 
 type DcentEthereumProps = {
   account: AccountJsonDcent
   method: EthSignMessageMethod | "eth_sendTransaction"
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   payload: any // string message, typed object for eip712, TransactionRequest for tx
+  showCancelButton?: boolean
   containerId?: string
   className?: string
   onSignature?: ({ signature }: { signature: HexString }) => void | Promise<void>
@@ -72,9 +75,7 @@ const signWithDcent = async (
         type,
         maxPriorityFeePerGas,
         maxFeePerGas,
-      } = await ethers.utils.resolveProperties(
-        payload.transaction as ethers.providers.TransactionRequest
-      )
+      } = await ethers.utils.resolveProperties(payload as ethers.providers.TransactionRequest)
 
       const baseTx: ethers.utils.UnsignedTransaction = {
         to,
@@ -136,6 +137,7 @@ const SignDcentEthereum: FC<DcentEthereumProps> = ({
   payload,
   className,
   containerId,
+  showCancelButton,
   onWaitingChanged, // TODO to manage error, maybe rename and change to a have a boolean indicating if waiting signature or not (then call again with false )
   onSignature,
   onReject,
@@ -143,7 +145,7 @@ const SignDcentEthereum: FC<DcentEthereumProps> = ({
   const { t } = useTranslation("request")
   const [isSigning, setIsSigning] = useState(false)
   const [isSigned, setIsSigned] = useState(false)
-  const [error, setError] = useState<DcentError>()
+  const [displayedErrorMessage, setDisplayedErrorMessage] = useState<string>()
 
   // reset
   useEffect(() => {
@@ -155,19 +157,23 @@ const SignDcentEthereum: FC<DcentEthereumProps> = ({
       return
     }
     setIsSigning(true)
-    setError(undefined)
+    setDisplayedErrorMessage(undefined)
     onWaitingChanged?.(true)
     try {
       const signature = await signWithDcent(method, payload, account.path)
-      await onSignature({ signature })
+      onSignature({ signature })
       setIsSigned(true)
     } catch (err) {
-      setError(err as DcentError)
+      log.error("Failed to sign", { err })
+      if (err instanceof DcentError) {
+        if (err.code === "user_cancel") onReject?.()
+        else setDisplayedErrorMessage(err.message)
+      } else setDisplayedErrorMessage((err as Error).message ?? "Failed to sign")
       setIsSigning(false)
     }
     onWaitingChanged?.(false)
     setIsSigning(false)
-  }, [onSignature, onWaitingChanged, method, payload, account])
+  }, [onSignature, payload, account, onWaitingChanged, method, onReject])
 
   const handleCancelClick = useCallback(() => {
     onReject()
@@ -182,23 +188,18 @@ const SignDcentEthereum: FC<DcentEthereumProps> = ({
         onClick={signLedger}
         processing={isSigning || isSigned}
       >
-        {t("Approve on DCENT")}
+        {t("Approve on D'CENT")}
       </Button>
-      <Button className="w-full" onClick={handleCancelClick}>
-        {t("Cancel")}
-      </Button>
-      {error && (
-        <Drawer
-          anchor="bottom"
-          isOpen
-          containerId={containerId}
-          onDismiss={() => setError(undefined)}
-        >
-          <div>
-            [{error.code}] {error.message}
-          </div>
-        </Drawer>
+      {showCancelButton && (
+        <Button className="w-full" onClick={handleCancelClick}>
+          {t("Cancel")}
+        </Button>
       )}
+      <ErrorMessageDrawer
+        message={displayedErrorMessage}
+        containerId={containerId}
+        onDismiss={() => setDisplayedErrorMessage(undefined)}
+      />
     </div>
   )
 }
