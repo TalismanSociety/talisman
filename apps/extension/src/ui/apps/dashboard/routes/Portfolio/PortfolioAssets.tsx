@@ -28,7 +28,6 @@ const PageContent = ({ balances }: { balances: Balances }) => {
     }
   }, [balancesToDisplay.sum])
 
-  const displayNoAccounts = useMemo(() => accounts.length === 0, [accounts])
   const displayWalletFunding = useMemo(
     () => accounts.length > 0 && !account && Boolean(!hasFunds),
     [account, accounts, hasFunds]
@@ -36,7 +35,7 @@ const PageContent = ({ balances }: { balances: Balances }) => {
 
   return (
     <div className="flex w-full flex-col">
-      {displayNoAccounts ? (
+      {accounts.length === 0 ? (
         <div className="mt-[3.8rem] flex grow items-center justify-center">
           <NoAccounts />
         </div>

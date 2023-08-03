@@ -41,13 +41,13 @@ export const NoAccounts = () => {
     <div className="flex w-1/2 flex-col items-center justify-center gap-12 p-12 text-center">
       <span className="text-lg">{t("Talisman awaits!")}</span>
       <img className="w-[26rem]" src={imgNoAccounts} alt="Heroic Character" />
-      <Trans t={t}>
-        <div className="text-body-secondary">
+      <div className="text-body-secondary">
+        <Trans t={t}>
           <span className="text-body">Add an account</span> or{" "}
           <span className="text-body">watch</span> those who are already walking the paths of the
           Paraverse.
-        </div>
-      </Trans>
+        </Trans>
+      </div>
       <div className="flex w-[28rem] flex-col items-center gap-8">
         <Button primary fullWidth iconLeft={PlusIcon} onClick={handleAddAccountClick}>
           {t("Add account")}
