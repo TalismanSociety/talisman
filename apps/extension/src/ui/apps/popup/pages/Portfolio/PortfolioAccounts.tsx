@@ -223,6 +223,7 @@ const AllAccountsHeader = () => {
   const handleClick = useCallback(() => navigate("/portfolio/assets"), [navigate])
   const ref = useRef<HTMLDivElement>(null)
   const isHovered = useHoverDirty(ref)
+  const accounts = useAccounts()
 
   return (
     <div ref={ref} className="relative h-[11.4rem] w-full">
@@ -232,11 +233,12 @@ const AllAccountsHeader = () => {
           "hover:bg-grey-800 bg-black-secondary text-body-secondary transition-colors duration-75 hover:text-white"
         )}
         onClick={handleClick}
+        disabled={accounts.length === 0}
       >
         <Suspense fallback={<SuspenseTracker name="AllAccountsHeaderBackground" />}>
           <AllAccountsHeaderBackground />
         </Suspense>
-        <ChevronRightIcon className="z-10" />
+        {accounts.length > 0 && <ChevronRightIcon className="z-10" />}
       </button>
       <TotalFiatBalance
         className="pointer-events-none absolute left-0 top-0 h-full w-full px-6"
