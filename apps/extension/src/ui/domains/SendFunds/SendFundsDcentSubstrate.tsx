@@ -7,26 +7,21 @@ import { useSendFundsWizard } from "@ui/apps/popup/pages/SendFunds/context"
 import { useIsKnownAddress } from "@ui/hooks/useIsKnownAddress"
 import useToken from "@ui/hooks/useToken"
 import { useCallback, useState } from "react"
-import { useTranslation } from "react-i18next"
-import { Button } from "talisman-ui"
 
 import { SignDcentSubstrate } from "../Sign/SignDcentSubstrate"
 import { useSendFunds } from "./useSendFunds"
 
 const SendFundsDcentSubstrate = () => {
-  const { t } = useTranslation("send-funds")
   const { tokenId, to, amount } = useSendFundsWizard()
-  const { subTransaction, sendWithSignature, isLocked, setIsLocked } = useSendFunds()
+  const { subTransaction, sendWithSignature, setIsLocked } = useSendFunds()
   const [error, setError] = useState<Error>()
 
   const token = useToken(tokenId)
   const knownAddress = useIsKnownAddress(to)
 
-  const [signed, setSigned] = useState(false)
   const handleSigned = useCallback(
-    async (signature: HexString) => {
+    async ({ signature }: { signature: HexString }) => {
       try {
-        setSigned(true)
         await sendWithSignature(signature)
 
         // this analytics call is designed to mirror the shape of the other 'asset transfer' calls
@@ -58,36 +53,24 @@ const SendFundsDcentSubstrate = () => {
     [sendWithSignature, to, token, amount, tokenId, knownAddress]
   )
 
-  const sendToLedger = useCallback(
-    (send: boolean) => () => {
-      setIsLocked(send)
+  const handleCancel = useCallback(
+    () => () => {
+      setIsLocked(false)
     },
     [setIsLocked]
   )
 
+  // TODO
   if (error) return <div className="text-alert-error">{error.message}</div>
 
-  if (!isLocked || signed)
-    return (
-      <Button
-        disabled={!subTransaction?.unsigned}
-        className="w-full"
-        primary
-        onClick={sendToLedger(true)}
-        processing={signed}
-      >
-        {t("Approve on D'CENT")}
-      </Button>
-    )
-
   // hide when done
-  if (!subTransaction?.unsigned || !subTransaction.partialFee) return null
+  if (!subTransaction?.unsigned) return null
 
   return (
     <SignDcentSubstrate
       fee={subTransaction.partialFee}
       payload={subTransaction.unsigned}
-      onCancel={sendToLedger(false)}
+      onCancel={handleCancel}
       onSigned={handleSigned}
       containerId="main"
     />

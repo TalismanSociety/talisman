@@ -26,13 +26,7 @@ const SendFundsDcentEthereum = () => {
     [sendWithSignature]
   )
 
-  // const sendToLedger = useCallback(
-  //   (send: boolean) => () => {
-  //     setIsLocked(send)
-  //   },
-  //   [setIsLocked]
-  // )
-
+  // TODO
   if (error) return <div className="text-alert-error">{error.message}</div>
 
   // TODO feeToken

@@ -22,6 +22,7 @@ export type DcentSubstratePayload = {
   fee: string
   path: string
   symbol: string
+  decimals: number
 }
 
 const useTypeRegistry = (chainIdOrHash: string | null) => {
@@ -39,7 +40,7 @@ const useTypeRegistry = (chainIdOrHash: string | null) => {
   })
 }
 
-const useDcentPayload = (payload: SignerPayloadRaw | SignerPayloadJSON, fee: string) => {
+const useDcentPayload = (payload: SignerPayloadRaw | SignerPayloadJSON, fee?: string) => {
   const isJson = isJsonPayload(payload)
   const account = useAccountByAddress(payload.address)
   const chain = useChainByGenesisHash(isJson ? payload.genesisHash : null)
@@ -53,14 +54,20 @@ const useDcentPayload = (payload: SignerPayloadRaw | SignerPayloadJSON, fee: str
 
     if (payload.signedExtensions)
       chainRegistry.registry.setSignedExtensions(payload.signedExtensions)
+
+    // specVersion & transactionVersion have to be passed in a runtimeVersion property, weird.
+    const signerPayload = chainRegistry.registry.createType("SignerPayload", {
+      ...payload,
+      runtimeVersion: {
+        specVersion: payload.specVersion,
+        transactionVersion: payload.transactionVersion,
+      },
+    })
+
     try {
       return {
         isValid: true,
-        sigHash: chainRegistry.registry.createType("SignerPayload", payload).toRaw().data,
-        // ledger does like this
-        // sigHash: chainRegistry.registry
-        //   .createType("ExtrinsicPayload", payload, { version: payload.version })
-        //   .toHex(),
+        sigHash: signerPayload.toRaw().data,
         errorMessage: undefined,
       }
     } catch (err) {
@@ -74,32 +81,47 @@ const useDcentPayload = (payload: SignerPayloadRaw | SignerPayloadJSON, fee: str
     }
   }, [chainRegistry, isJson, payload])
 
-  return {
-    isValid, //tx may be valid, will be true even if metadata breaks
-    errorMessage,
-    dcentTx:
+  const dcentTx = useMemo(
+    () =>
       sigHash && account && token
         ? ({
             coinType: DcentWebConnector.coinType.POLKADOT,
             sigHash,
             path: account.path,
-            fee: planckToTokens(fee, token.decimals),
-            symbol: token?.symbol,
-            decimals: token?.decimals,
+            symbol: token.symbol,
+            fee: planckToTokens(fee ?? "0", token.decimals),
+            decimals: token.decimals,
           } as DcentSubstratePayload)
         : null,
+    [account, fee, sigHash, token]
+  )
+
+  return {
+    isValid, //tx may be valid, will be true even if metadata breaks
+    errorMessage,
+    dcentTx,
   }
 }
 
 export const SignDcentSubstrate: FC<{
   payload: SignerPayloadRaw | SignerPayloadJSON
-  fee: string
+  fee?: string
   containerId?: string
   className?: string
   showCancelButton?: boolean
   onCancel: () => void
-  onSigned: (signature: HexString) => void
-}> = ({ payload, fee, showCancelButton, containerId, className, onCancel, onSigned }) => {
+  onSignaturePending?: (pending: boolean) => void
+  onSigned: (result: { signature: HexString }) => Promise<void> | void
+}> = ({
+  payload,
+  fee,
+  showCancelButton,
+  containerId,
+  className,
+  onCancel,
+  onSignaturePending,
+  onSigned,
+}) => {
   const { t } = useTranslation("admin")
   const { errorMessage, dcentTx } = useDcentPayload(payload, fee)
 
@@ -114,6 +136,8 @@ export const SignDcentSubstrate: FC<{
     if (!dcentTx) return
     setIsSigning(true)
     setDisplayedErrorMessage(undefined)
+    onSignaturePending?.(true)
+
     try {
       const { signed_tx } = await dcentCall<DcentResponseSignature>(() =>
         DcentWebConnector.getPolkadotSignedTransaction(dcentTx)
@@ -121,16 +145,18 @@ export const SignDcentSubstrate: FC<{
 
       // TODO await ?
       // prefix with ed25519
-      return onSigned(`0x00${signed_tx.substring(2)}`)
+      return onSigned({ signature: `0x00${signed_tx.substring(2)}` })
     } catch (err) {
       log.error("Failed to sign", { err })
       if (err instanceof DcentError) {
         if (err.code === "user_cancel") onCancel?.()
         else setDisplayedErrorMessage(err.message ?? "Failed to sign")
       } else setDisplayedErrorMessage((err as Error).message ?? "Failed to sign")
+
+      onSignaturePending?.(false)
+      setIsSigning(false)
     }
-    setIsSigning(false)
-  }, [dcentTx, onCancel, onSigned])
+  }, [dcentTx, onCancel, onSignaturePending, onSigned])
 
   useEffect(() => {
     // error from constructing payload

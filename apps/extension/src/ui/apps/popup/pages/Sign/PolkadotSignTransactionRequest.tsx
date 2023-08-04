@@ -8,6 +8,7 @@ import { useFeeToken } from "@ui/domains/SendFunds/useFeeToken"
 import { MetadataStatus } from "@ui/domains/Sign/MetadataStatus"
 import { QrSubstrate } from "@ui/domains/Sign/Qr/QrSubstrate"
 import { SignAlertMessage } from "@ui/domains/Sign/SignAlertMessage"
+import { SignDcentSubstrate } from "@ui/domains/Sign/SignDcentSubstrate"
 import { usePolkadotSigningRequest } from "@ui/domains/Sign/SignRequestContext"
 import { SubSignBody } from "@ui/domains/Sign/Substrate/SubSignBody"
 import { FC, Suspense, lazy, useEffect, useMemo } from "react"
@@ -72,6 +73,7 @@ export const PolkadotSignTransactionRequest: FC = () => {
     approveHardware,
     approveQr,
     payload,
+    fee,
   } = usePolkadotSigningRequest()
 
   const { genesisHash, specVersion } = useMemo(() => {
@@ -115,7 +117,7 @@ export const PolkadotSignTransactionRequest: FC = () => {
           {account && request && (
             <>
               <EstimatedFeesRow />
-              {account.origin !== "HARDWARE" && account.origin !== "QR" && (
+              {!["HARDWARE", "QR", "DCENT"].includes(account.origin ?? "") && (
                 <div className="grid w-full grid-cols-2 gap-12">
                   <Button disabled={processing} onClick={reject}>
                     {t("Cancel")}
@@ -124,6 +126,15 @@ export const PolkadotSignTransactionRequest: FC = () => {
                     {t("Approve")}
                   </Button>
                 </div>
+              )}
+              {account.origin === "DCENT" && (
+                <SignDcentSubstrate
+                  fee={fee?.toString()}
+                  payload={request.payload}
+                  onSigned={approveHardware}
+                  onCancel={reject}
+                  containerId="main"
+                />
               )}
               {account.origin === "HARDWARE" && (
                 <Suspense fallback={null}>

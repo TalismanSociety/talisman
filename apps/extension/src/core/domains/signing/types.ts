@@ -53,7 +53,7 @@ const SUBSTRATE_SIGN: SUBSTRATE_SIGN = "substrate-sign"
 
 export interface SubstrateSigningRequest extends BaseSigningRequest<SUBSTRATE_SIGN> {
   request: RequestSign
-  account: AccountJson | AccountJsonHardwareSubstrate
+  account: AccountJsonAny
 }
 
 export interface EthBaseSignRequest<T extends ETH_SIGN | ETH_SEND> extends BaseSigningRequest<T> {

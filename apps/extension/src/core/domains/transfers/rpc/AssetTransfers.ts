@@ -87,41 +87,21 @@ export default class AssetTransfersRpc {
 
     const { registry } = await getTypeRegistry(chain.id)
 
-    const isDcent = false // TODO
-    if (isDcent) {
-      const data = registry.createType("SignerPayload", unsigned)
-      // create the unsigned extrinsic
-      const tx = registry.createType(
-        "Extrinsic",
-        { method: unsigned.method },
-        { version: unsigned.version }
-      )
+    // create the unsigned extrinsic
+    const tx = registry.createType(
+      "Extrinsic",
+      { method: unsigned.method },
+      { version: unsigned.version }
+    )
 
-      // apply signature
-      tx.addSignature(unsigned.address, signature, data.toPayload())
+    // apply signature
+    tx.addSignature(unsigned.address, signature, unsigned)
 
-      //await watchSubstrateTransaction(chain, registry, unsigned, signature, { transferInfo })
+    await watchSubstrateTransaction(chain, registry, unsigned, signature, { transferInfo })
 
-      await chainConnector.send(chain.id, "author_submitExtrinsic", [tx.toHex()])
+    await chainConnector.send(chain.id, "author_submitExtrinsic", [tx.toHex()])
 
-      return tx.hash.toHex()
-    } else {
-      // create the unsigned extrinsic
-      const tx = registry.createType(
-        "Extrinsic",
-        { method: unsigned.method },
-        { version: unsigned.version }
-      )
-
-      // apply signature
-      tx.addSignature(unsigned.address, signature, unsigned)
-
-      await watchSubstrateTransaction(chain, registry, unsigned, signature, { transferInfo })
-
-      await chainConnector.send(chain.id, "author_submitExtrinsic", [tx.toHex()])
-
-      return tx.hash.toHex()
-    }
+    return tx.hash.toHex()
   }
 
   /**

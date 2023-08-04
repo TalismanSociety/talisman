@@ -15,7 +15,7 @@ type DcentDeviceInfo = {
 
 export const useDcentDeviceInfo = (options: UseQueryOptions = {}) => {
   const result = useQuery({
-    queryKey: ["useDecentDeviceInfo"],
+    queryKey: ["useDcentDeviceInfo"],
     queryFn: () => dcentCall<DcentDeviceInfo>(DcentWebConnector.getDeviceInfo),
     ...options,
   }) as UseQueryResult<DcentDeviceInfo | null, DcentError>

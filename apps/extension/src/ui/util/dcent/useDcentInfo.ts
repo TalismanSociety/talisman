@@ -11,7 +11,7 @@ type DcentInfo = {
 
 export const useDcentInfo = (options: UseQueryOptions = {}) => {
   return useQuery({
-    queryKey: ["useDecentInfo"],
+    queryKey: ["useDcentInfo"],
     queryFn: () => dcentCall<DcentInfo>(DcentWebConnector.info),
     ...options,
   }) as UseQueryResult<DcentInfo | null, DcentError>

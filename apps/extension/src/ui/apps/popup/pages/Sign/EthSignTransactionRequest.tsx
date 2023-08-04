@@ -223,6 +223,7 @@ export const EthSignTransactionRequest = () => {
                     payload={transaction}
                     account={account as AccountJsonDcent}
                     onSignature={approveHardware}
+                    onWaitingChanged={(waiting) => setIsPayloadLocked(waiting)}
                     onReject={reject}
                     containerId="main"
                     showCancelButton
