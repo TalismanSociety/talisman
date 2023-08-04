@@ -3,6 +3,7 @@ import { Navigate, Route, Routes } from "react-router-dom"
 import { OnboardStageWrapper } from "../components/OnboardStageWrapper"
 import { AddAccountPage } from "./AddAccount"
 import { AccountAddDerivedPage } from "./AddAccount/AccountAddDerivedPage"
+import { AccountAddJsonPage } from "./AddAccount/AccountAddJsonPage"
 import { PasswordPage } from "./Password"
 import { PrivacyPage } from "./Privacy"
 import { SuccessPage } from "./Success"
@@ -23,8 +24,8 @@ const OnboardingRoutes = () => {
           <Route element={<OnboardStageWrapper stage={3} />}>
             <Route index element={<AddAccountPage />} />
             <Route path="derived" element={<AccountAddDerivedPage />} />
-            {/* <Route path="json" element={<AccountAddJsonPage />} />
-            <Route path="secret/*" element={<AccountAddSecretWizard />} />
+            <Route path="json" element={<AccountAddJsonPage />} />
+            {/* <Route path="secret/*" element={<AccountAddSecretWizard />} />
             <Route path="ledger/*" element={<AccountAddLedgerWizard />} />
             <Route path="qr/*" element={<AccountAddQrWizard />} />
             <Route path="watched" element={<AccountAddWatchedPage />} /> */}
