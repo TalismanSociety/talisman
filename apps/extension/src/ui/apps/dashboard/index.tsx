@@ -17,12 +17,12 @@ import { useTranslation } from "react-i18next"
 import { Navigate, Route, Routes, useMatch } from "react-router-dom"
 
 import { DashboardLayout } from "./layout/DashboardLayout"
+import { AccountAddMenu } from "./routes/AccountAdd"
 import { AccounAddDerivedPage } from "./routes/AccountAdd/AccountAddDerivedPage"
+import { AccountAddJsonPage } from "./routes/AccountAdd/AccountAddJson"
 import { AccountAddQrWizard } from "./routes/AccountAdd/AccountAddQrWizard"
 import { AccountAddSecretWizard } from "./routes/AccountAdd/AccountAddSecretWizard"
-import { AccountAddTypePickerPage } from "./routes/AccountAdd/AccountAddTypePickerPage"
 import { AccountAddWatchedPage } from "./routes/AccountAdd/AccountAddWatchedPage"
-import { AccountAddJsonPage } from "./routes/AccountAddJson"
 import { NetworkPage } from "./routes/Networks/NetworkPage"
 import { NetworksPage } from "./routes/Networks/NetworksPage"
 import { PhishingPage } from "./routes/PhishingPage"
@@ -91,7 +91,7 @@ const DashboardInner = () => {
         <Route path="portfolio/*" element={<PortfolioRoutes />} />
         <Route path="accounts">
           <Route path="add">
-            <Route path="" element={<AccountAddTypePickerPage />} />
+            <Route path="" element={<AccountAddMenu />} />
             <Route path="derived" element={<AccounAddDerivedPage />} />
             <Route path="json" element={<AccountAddJsonPage />} />
             <Route path="secret/*" element={<AccountAddSecretWizard />} />

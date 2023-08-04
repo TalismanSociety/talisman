@@ -1,5 +1,5 @@
 import { AnalyticsPage, sendAnalyticsEvent } from "@ui/api/analytics"
-import { AccountCreate } from "@ui/domains/Account/AccountCreate"
+import { AccountCreateMenu } from "@ui/domains/Account/AccountCreate"
 import { useAnalyticsPageView } from "@ui/hooks/useAnalyticsPageView"
 import { useCallback } from "react"
 import { useTranslation } from "react-i18next"
@@ -40,7 +40,7 @@ export const AddAccountPage = () => {
         title={t("Add your first account")}
         onDoItLaterClick={handleDoItLaterClick}
       >
-        <AccountCreate className="mt-0" />
+        <AccountCreateMenu className="mt-0" />
       </OnboardDialog>
     </Layout>
   )

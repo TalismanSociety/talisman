@@ -10,10 +10,10 @@ import { api } from "@ui/api"
 import { AnalyticsEventName, AnalyticsPage, sendAnalyticsEvent } from "@ui/api/analytics"
 import { Fiat } from "@ui/domains/Asset/Fiat"
 import { useCopyAddressModal } from "@ui/domains/CopyAddress"
-import useAccounts from "@ui/hooks/useAccounts"
 import { useAnalytics } from "@ui/hooks/useAnalytics"
 import useBalances from "@ui/hooks/useBalances"
 import { useIsFeatureEnabled } from "@ui/hooks/useFeatures"
+import { useHasAccounts } from "@ui/hooks/useHasAccounts"
 import { useSetting } from "@ui/hooks/useSettings"
 import { ComponentProps, MouseEventHandler, useCallback, useMemo } from "react"
 import { useTranslation } from "react-i18next"
@@ -26,7 +26,7 @@ type Props = {
 
 export const TotalFiatBalance = ({ className, mouseOver }: Props) => {
   const { t } = useTranslation()
-  const accounts = useAccounts()
+  const hasAccounts = useHasAccounts()
   const balances = useBalances("portfolio")
 
   const [hideBalances, setHideBalances] = useSetting("hideBalances")
@@ -44,7 +44,7 @@ export const TotalFiatBalance = ({ className, mouseOver }: Props) => {
   return (
     <div className={classNames("flex flex-col items-start justify-center gap-4", className)}>
       <div className="text-body-secondary mt-2 flex gap-2 text-sm">
-        {accounts.length > 0 ? (
+        {hasAccounts ? (
           <>
             <span>{t("Total Portfolio")}</span>
             <button
@@ -67,7 +67,7 @@ export const TotalFiatBalance = ({ className, mouseOver }: Props) => {
         currency="usd"
         isBalance
       />
-      {accounts.length > 0 && <TopActions />}
+      {hasAccounts && <TopActions />}
     </div>
   )
 }

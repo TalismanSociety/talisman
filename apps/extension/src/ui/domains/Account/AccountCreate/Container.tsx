@@ -2,8 +2,9 @@ import { getIsLedgerCapable } from "@core/util/getIsLedgerCapable"
 import { ChainIcon, EyePlusIcon, FilePlusIcon, PlusIcon } from "@talisman/theme/icons"
 import { EthereumCircleLogo, PolkadotCircleLogo } from "@talisman/theme/logos"
 import { classNames } from "@talismn/util"
-import { ReactNode, useMemo } from "react"
-import { Trans, useTranslation } from "react-i18next"
+import { ReactNode, useCallback, useMemo } from "react"
+import { useTranslation } from "react-i18next"
+import { useNavigate } from "react-router-dom"
 
 import { MethodTypes, useAccountCreateContext } from "./context"
 
@@ -74,15 +75,20 @@ const AccountCreateMethodButton = ({
   title,
   subtitle,
   networks,
-  handleClick,
   disabled,
+  to,
 }: {
   title: string
   subtitle: string
   networks: Array<"ethereum" | "polkadot">
-  handleClick?: () => void
   disabled?: boolean
+  to?: string
 }) => {
+  const navigate = useNavigate()
+  const handleClick = useCallback(() => {
+    if (to) navigate(to)
+  }, [navigate, to])
+
   return (
     <button
       type="button"
@@ -115,11 +121,13 @@ const NewAccountMethodButtons = () => {
         title={t("New Polkadot Account")}
         subtitle={t("Create new Polkadot account")}
         networks={["polkadot"]}
+        to={`/accounts/add/derived?type=sr25519`}
       />
       <AccountCreateMethodButton
         title={t("New Ethereum Account")}
         subtitle={t("Create new Ethereum account")}
         networks={["ethereum"]}
+        to={`/accounts/add/derived?type=ethereum`}
       />
     </>
   )
@@ -133,11 +141,13 @@ const ImportAccountMethodButtons = () => {
         title={t("Import via JSON")}
         subtitle={t("Import your Polkadot.{js} file")}
         networks={["polkadot"]}
+        to={`/accounts/add/json`}
       />
       <AccountCreateMethodButton
         title={t("Import via Recovery Phrase")}
         subtitle={t("Polkadot or Ethereum account")}
         networks={["polkadot", "ethereum"]}
+        to={`/accounts/add/secret`}
       />
     </>
   )
@@ -155,11 +165,13 @@ const ConnectAccountMethodButtons = () => {
         }
         networks={isLedgerCapable ? ["polkadot", "ethereum"] : []}
         disabled={!isLedgerCapable}
+        to={`/accounts/add/ledger`}
       />
       <AccountCreateMethodButton
         title={t("Connect Polkadot Vault")}
         subtitle={t("Or Parity Signer (Legacy)")}
         networks={["polkadot"]}
+        to={`/accounts/add/qr`}
       />
     </>
   )
@@ -184,7 +196,6 @@ export const AccountCreateContainer = ({ className }: Props) => {
 
   return (
     <div className={classNames(className, "justify-left flex w-[68rem] flex-col gap-8")}>
-      <Trans t={t}>You can also do this later</Trans>
       <div className="flex flex-col justify-center gap-24">
         <div className="flex flex-col gap-8">
           <div className="grid grid-cols-3 gap-8">

@@ -10,9 +10,10 @@ import { api } from "@ui/api"
 import { AccountTypeSelector } from "@ui/domains/Account/AccountTypeSelector"
 import useAccounts from "@ui/hooks/useAccounts"
 import { useSelectAccountAndNavigate } from "@ui/hooks/useSelectAccountAndNavigate"
-import { useCallback, useMemo } from "react"
+import { useCallback, useEffect, useMemo } from "react"
 import { useForm } from "react-hook-form"
 import { useTranslation } from "react-i18next"
+import { useSearchParams } from "react-router-dom"
 import { Button, FormFieldContainer, FormFieldInputText } from "talisman-ui"
 import * as yup from "yup"
 
@@ -25,6 +26,9 @@ type FormData = {
 
 export const AccounAddDerivedPage = () => {
   const { t } = useTranslation("admin")
+  // get type paramter from url
+  const [params] = useSearchParams()
+  const urlParamType = (params.get("type") ?? undefined) as AccountAddressType | undefined
   const allAccounts = useAccounts()
   const accountNames = useMemo(() => allAccounts.map((a) => a.name), [allAccounts])
   const { setAddress } = useSelectAccountAndNavigate("/portfolio")
@@ -51,6 +55,7 @@ export const AccounAddDerivedPage = () => {
   } = useForm<FormData>({
     mode: "onChange",
     resolver: yupResolver(schema),
+    defaultValues: { type: urlParamType },
   })
 
   const submit = useCallback(
@@ -96,15 +101,20 @@ export const AccounAddDerivedPage = () => {
 
   const type = watch("type")
 
+  useEffect(() => {
+    // if we have a type in the url, set it
+    if (urlParamType) handleTypeChange(urlParamType)
+  }, [urlParamType, handleTypeChange])
+
   return (
     <DashboardLayout withBack centered>
       <HeaderBlock
         title={t("Create a new account")}
-        text={t("What type of account would you like to create ?")}
+        text={!urlParamType && t("What type of account would you like to create ?")}
       />
       <Spacer small />
       <form onSubmit={handleSubmit(submit)}>
-        <AccountTypeSelector onChange={handleTypeChange} />
+        <AccountTypeSelector defaultType={urlParamType} onChange={handleTypeChange} />
         <Spacer small />
         <div className={classNames("transition-opacity", type ? "opacity-100" : "opacity-0")}>
           <FormFieldContainer error={errors.name?.message}>
