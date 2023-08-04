@@ -33,7 +33,7 @@ export const PrivacyPage = () => {
         action: `Manage your privacy - ${allowTracking ? "I agree" : "No thanks"}`,
       })
       updateData({ allowTracking })
-      navigate("/account")
+      navigate("/accounts/add")
     },
     [navigate, updateData]
   )

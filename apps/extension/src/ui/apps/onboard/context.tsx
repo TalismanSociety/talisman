@@ -6,6 +6,7 @@ import { useAppState } from "@ui/hooks/useAppState"
 import { useIsOnboarded } from "@ui/hooks/useIsOnboarded"
 import { ReactNode, useEffect } from "react"
 import { useCallback, useState } from "react"
+import { useNavigate } from "react-router-dom"
 
 export type ImportMethodType = "mnemonic" | "private-key" | "ledger" | "qr" | "json"
 
@@ -25,6 +26,7 @@ const useAppOnboardProvider = ({ isResettingWallet = false }: { isResettingWalle
   const [data, setData] = useState<OnboardingWizardData>(DEFAULT_DATA)
   const [stage, setStage] = useState<number>()
   const [, updateOnboarded] = useAppState("onboarded")
+  const navigate = useNavigate()
 
   const updateData = useCallback((fields: Partial<OnboardingWizardData>) => {
     setData((prev) => ({ ...prev, ...fields }))
@@ -42,7 +44,11 @@ const useAppOnboardProvider = ({ isResettingWallet = false }: { isResettingWalle
     setData(DEFAULT_DATA)
   }, [])
 
-  const setOnboarded = useCallback(() => updateOnboarded("TRUE"), [updateOnboarded])
+  const setOnboarded = useCallback(() => {
+    updateOnboarded("TRUE")
+    navigate("/success")
+  }, [navigate, updateOnboarded])
+
   const completeOnboarding = useCallback(
     () => (location.href = "dashboard.html#/portfolio?onboarded"),
     []

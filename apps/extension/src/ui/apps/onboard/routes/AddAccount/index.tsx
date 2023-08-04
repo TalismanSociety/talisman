@@ -1,13 +1,11 @@
 import { AnalyticsPage, sendAnalyticsEvent } from "@ui/api/analytics"
+import { OnboardDialog } from "@ui/apps/onboard/components/OnboardDialog"
+import { useOnboard } from "@ui/apps/onboard/context"
+import { Layout } from "@ui/apps/onboard/layout"
 import { AccountCreateMenu } from "@ui/domains/Account/AccountCreate"
 import { useAnalyticsPageView } from "@ui/hooks/useAnalyticsPageView"
 import { useCallback } from "react"
 import { useTranslation } from "react-i18next"
-import { useNavigate } from "react-router-dom"
-
-import { OnboardDialog } from "../components/OnboardDialog"
-import { useOnboard } from "../context"
-import { Layout } from "../layout"
 
 const ANALYTICS_PAGE: AnalyticsPage = {
   container: "Fullscreen",
@@ -21,8 +19,6 @@ export const AddAccountPage = () => {
   useAnalyticsPageView(ANALYTICS_PAGE)
   const { setOnboarded } = useOnboard()
 
-  const navigate = useNavigate()
-
   const handleDoItLaterClick = useCallback(async () => {
     sendAnalyticsEvent({
       ...ANALYTICS_PAGE,
@@ -30,8 +26,7 @@ export const AddAccountPage = () => {
       action: "Add account - I'll do it later",
     })
     setOnboarded()
-    navigate("/success")
-  }, [navigate, setOnboarded])
+  }, [setOnboarded])
 
   return (
     <Layout withBack analytics={ANALYTICS_PAGE}>

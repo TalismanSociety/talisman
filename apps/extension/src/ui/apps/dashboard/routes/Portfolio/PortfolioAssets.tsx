@@ -36,7 +36,7 @@ const PageContent = ({ balances }: { balances: Balances }) => {
 
   return (
     <div className="flex w-full flex-col">
-      {!hasAccounts ? (
+      {hasAccounts === false ? (
         <div className="mt-[3.8rem] flex grow items-center justify-center">
           <NoAccounts />
         </div>

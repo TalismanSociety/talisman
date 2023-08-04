@@ -1,15 +1,10 @@
-import { ReactNode, useEffect } from "react"
+import { useEffect } from "react"
+import { Outlet } from "react-router-dom"
 
 import { useOnboard } from "../context"
 
-export const OnboardStageWrapper = ({
-  stage,
-  children,
-}: {
-  stage: number
-  children: ReactNode
-}) => {
+export const OnboardStageWrapper = ({ stage }: { stage: number }) => {
   const { setStage } = useOnboard()
   useEffect(() => setStage(stage), [stage, setStage])
-  return <>{children}</>
+  return <Outlet />
 }

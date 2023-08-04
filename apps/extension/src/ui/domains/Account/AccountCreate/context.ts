@@ -4,7 +4,7 @@ import { useState } from "react"
 export type MethodTypes = "new" | "import" | "connect" | "watched"
 
 const useAccountCreate = () => {
-  const [methodType, setMethodType] = useState<MethodTypes>("import")
+  const [methodType, setMethodType] = useState<MethodTypes>("new")
 
   return {
     methodType,

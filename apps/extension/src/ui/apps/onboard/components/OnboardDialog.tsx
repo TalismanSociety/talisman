@@ -47,7 +47,7 @@ export const OnboardDialog = ({
   className,
   onDoItLaterClick,
 }: OnboardDialogProps) => (
-  <div className={classNames(className, "flex w-[60rem] flex-col items-center gap-12")}>
+  <div className={classNames("flex w-[60rem] flex-col items-center gap-12", className)}>
     <div className={classNames(onboardBackgroundClassNames, "rounded-lg p-24 text-left")}>
       <div className="text-xl text-white">{title}</div>
       <div className="text-body-secondary mt-16">{children}</div>

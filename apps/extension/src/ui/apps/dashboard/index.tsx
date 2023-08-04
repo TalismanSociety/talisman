@@ -18,7 +18,7 @@ import { Navigate, Route, Routes, useMatch } from "react-router-dom"
 
 import { DashboardLayout } from "./layout/DashboardLayout"
 import { AccountAddMenu } from "./routes/AccountAdd"
-import { AccounAddDerivedPage } from "./routes/AccountAdd/AccountAddDerivedPage"
+import { AccountAddDerivedPage } from "./routes/AccountAdd/AccountAddDerivedPage"
 import { AccountAddJsonPage } from "./routes/AccountAdd/AccountAddJson"
 import { AccountAddQrWizard } from "./routes/AccountAdd/AccountAddQrWizard"
 import { AccountAddSecretWizard } from "./routes/AccountAdd/AccountAddSecretWizard"
@@ -92,7 +92,7 @@ const DashboardInner = () => {
         <Route path="accounts">
           <Route path="add">
             <Route path="" element={<AccountAddMenu />} />
-            <Route path="derived" element={<AccounAddDerivedPage />} />
+            <Route path="derived" element={<AccountAddDerivedPage />} />
             <Route path="json" element={<AccountAddJsonPage />} />
             <Route path="secret/*" element={<AccountAddSecretWizard />} />
             <Route path="ledger/*" element={<AccountAddLedgerWizard />} />

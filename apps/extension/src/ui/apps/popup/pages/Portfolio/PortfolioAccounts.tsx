@@ -234,7 +234,7 @@ const AllAccountsHeader = () => {
           "hover:bg-grey-800 bg-black-secondary text-body-secondary transition-colors duration-75 hover:text-white"
         )}
         onClick={handleClick}
-        disabled={!hasAccounts}
+        disabled={hasAccounts === false}
       >
         <Suspense fallback={<SuspenseTracker name="AllAccountsHeaderBackground" />}>
           <AllAccountsHeaderBackground />
