@@ -1,8 +1,4 @@
-import {
-  AccountJson,
-  AccountJsonAny,
-  AccountJsonHardwareSubstrate,
-} from "@core/domains/accounts/types"
+import { AccountJsonAny } from "@core/domains/accounts/types"
 import {
   EthGasSettingsEip1559,
   EthGasSettingsLegacy,
