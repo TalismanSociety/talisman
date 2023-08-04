@@ -13,7 +13,13 @@ const adjustPopupSize = async () => {
   if (window.location.search === "?embedded") return
 
   try {
-    const currentZoom = await Browser.tabs.getZoom()
+    const [currentWindow, currentZoom] = await Promise.all([
+      Browser.windows.getCurrent(),
+      Browser.tabs.getZoom(),
+    ])
+
+    // exit if popup is opened in a normal window (common for devs)
+    if (currentWindow.type !== "popup") return
 
     // make sure zoom is reset before adjusting size or size will be incorrect
     // test the necessity to apply the zoom settings, otherwise a zoom update message would appear
