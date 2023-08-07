@@ -35,7 +35,7 @@ const DoItLaterButton = ({ onDoItLaterClick }: { onDoItLaterClick: () => void })
 }
 
 type OnboardDialogProps = {
-  title: string
+  title?: string
   children: ReactNode
   onDoItLaterClick?: () => void
   className?: string
@@ -48,9 +48,14 @@ export const OnboardDialog = ({
   onDoItLaterClick,
 }: OnboardDialogProps) => (
   <div className={classNames("flex w-[60rem] flex-col items-center gap-12", className)}>
-    <div className={classNames(onboardBackgroundClassNames, "rounded-lg p-24 text-left")}>
-      <div className="text-xl text-white">{title}</div>
-      <div className="text-body-secondary mt-16">{children}</div>
+    <div
+      className={classNames(
+        onboardBackgroundClassNames,
+        "flex w-full flex-col gap-16 rounded-lg p-16 text-left"
+      )}
+    >
+      {title && <div className="text-xl text-white">{title}</div>}
+      <div className={`text-body-secondary`}>{children}</div>
     </div>
     {onDoItLaterClick && (
       <div className="grid w-full grid-cols-3 items-center">

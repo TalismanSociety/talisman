@@ -31,7 +31,7 @@ export const AddAccountPage = () => {
   return (
     <Layout withBack analytics={ANALYTICS_PAGE}>
       <OnboardDialog
-        className="flex flex-col"
+        className="flex w-[68rem] flex-col"
         title={t("Add your first account")}
         onDoItLaterClick={handleDoItLaterClick}
       >

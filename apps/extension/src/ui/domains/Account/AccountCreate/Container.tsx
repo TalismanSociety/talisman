@@ -195,7 +195,7 @@ export const AccountCreateContainer = ({ className }: Props) => {
   }, [methodType])
 
   return (
-    <div className={classNames(className, "justify-left flex w-[68rem] flex-col gap-8")}>
+    <div className={classNames(className, "justify-left flex flex-col gap-8")}>
       <div className="flex flex-col justify-center gap-24">
         <div className="flex flex-col gap-8">
           <div className="grid grid-cols-3 gap-8">

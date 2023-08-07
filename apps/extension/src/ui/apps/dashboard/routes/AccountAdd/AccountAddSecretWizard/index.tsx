@@ -1,15 +1,14 @@
-import { Navigate, Route, Routes } from "react-router-dom"
+import { AccountAddSecretWizard } from "@ui/domains/Account/AccountCreate/AccountAddSecretMnemonic/router"
+import { useSelectAccountAndNavigate } from "@ui/hooks/useSelectAccountAndNavigate"
 
-import { AccountAddSecretAccountsPage } from "./AccountAddSecretAccountsPage"
-import { AccountAddSecretMnemonicPage } from "./AccountAddSecretMnemonicPage"
-import { AccountAddSecretProvider } from "./context"
+import { AccountAddSecretLayout } from "./AccountAddSecretLayout"
 
-export const AccountAddSecretWizard = () => (
-  <AccountAddSecretProvider>
-    <Routes>
-      <Route path="" element={<AccountAddSecretMnemonicPage />} />
-      <Route path="accounts" element={<AccountAddSecretAccountsPage />} />
-      <Route path="*" element={<Navigate to="" replace />} />
-    </Routes>
-  </AccountAddSecretProvider>
-)
+export const AccountAddSecretDashboardWizard = () => {
+  const { setAddress } = useSelectAccountAndNavigate("/portfolio")
+
+  return (
+    <AccountAddSecretLayout>
+      <AccountAddSecretWizard onSuccess={setAddress} />
+    </AccountAddSecretLayout>
+  )
+}

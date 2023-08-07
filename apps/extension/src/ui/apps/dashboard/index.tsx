@@ -21,7 +21,7 @@ import { AccountAddMenu } from "./routes/AccountAdd"
 import { AccountAddDerivedPage } from "./routes/AccountAdd/AccountAddDerivedPage"
 import { AccountAddJsonPage } from "./routes/AccountAdd/AccountAddJsonPage"
 import { AccountAddQrWizard } from "./routes/AccountAdd/AccountAddQrWizard"
-import { AccountAddSecretWizard } from "./routes/AccountAdd/AccountAddSecretWizard"
+import { AccountAddSecretDashboardWizard } from "./routes/AccountAdd/AccountAddSecretWizard"
 import { AccountAddWatchedPage } from "./routes/AccountAdd/AccountAddWatchedPage"
 import { NetworkPage } from "./routes/Networks/NetworkPage"
 import { NetworksPage } from "./routes/Networks/NetworksPage"
@@ -91,14 +91,14 @@ const DashboardInner = () => {
         <Route path="portfolio/*" element={<PortfolioRoutes />} />
         <Route path="accounts">
           <Route path="add">
-            <Route path="" element={<AccountAddMenu />} />
+            <Route index element={<AccountAddMenu />} />
             <Route path="derived" element={<AccountAddDerivedPage />} />
             <Route path="json" element={<AccountAddJsonPage />} />
-            <Route path="secret/*" element={<AccountAddSecretWizard />} />
+            <Route path="secret/*" element={<AccountAddSecretDashboardWizard />} />
             <Route path="ledger/*" element={<AccountAddLedgerWizard />} />
             <Route path="qr/*" element={<AccountAddQrWizard />} />
             <Route path="watched" element={<AccountAddWatchedPage />} />
-            <Route path="*" element={<Navigate to="" replace />} />
+            <Route path="*" element={<Navigate to="/accounts/add" replace />} />
           </Route>
           <Route path="" element={<Navigate to="/portfolio" />} />
         </Route>

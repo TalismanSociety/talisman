@@ -2,10 +2,7 @@ import { RequestAccountCreateFromSeed } from "@core/domains/accounts/types"
 import { yupResolver } from "@hookform/resolvers/yup"
 import { HeaderBlock } from "@talisman/components/HeaderBlock"
 import { notify, notifyUpdate } from "@talisman/components/Notifications"
-import { Spacer } from "@talisman/components/Spacer"
-import { DashboardLayout } from "@ui/apps/dashboard/layout/DashboardLayout"
 import { DerivedFromMnemonicAccountPicker } from "@ui/domains/Account/DerivedFromMnemonicAccountPicker"
-import { useSelectAccountAndNavigate } from "@ui/hooks/useSelectAccountAndNavigate"
 import { useCallback, useEffect, useMemo } from "react"
 import { useForm } from "react-hook-form"
 import { useTranslation } from "react-i18next"
@@ -19,11 +16,10 @@ type FormData = {
   accounts: RequestAccountCreateFromSeed[]
 }
 
-export const AccountAddSecretAccountsPage = () => {
+export const AccountAddSecretAccountsForm = () => {
   const { t } = useTranslation("admin")
-  const { data, importAccounts } = useAccountAddSecret()
+  const { data, importAccounts, onSuccess } = useAccountAddSecret()
   const navigate = useNavigate()
-  const { setAddress } = useSelectAccountAndNavigate("/portfolio")
 
   const name = useMemo(
     () => data.name ?? (data.type === "ethereum" ? t("Ethereum Account") : t("Polkadot Account")),
@@ -70,7 +66,7 @@ export const AccountAddSecretAccountsPage = () => {
           subtitle: null,
         })
 
-        setAddress(addresses[0])
+        onSuccess(addresses[0])
       } catch (err) {
         notifyUpdate(notificationId, {
           type: "error",
@@ -79,7 +75,7 @@ export const AccountAddSecretAccountsPage = () => {
         })
       }
     },
-    [importAccounts, setAddress, t]
+    [importAccounts, onSuccess, t]
   )
 
   const handleAccountsChange = useCallback(
@@ -90,24 +86,20 @@ export const AccountAddSecretAccountsPage = () => {
   )
 
   useEffect(() => {
-    if (!data.mnemonic || !data.type) return navigate("")
+    if (!data.mnemonic || !data.type) return navigate("/accounts/add/secret")
   }, [data.mnemonic, data.type, navigate])
 
   const accounts = watch("accounts")
-
   // invalid state, useEffect above will redirect to previous form
-  if (!data.mnemonic || !data.type) return <Navigate to="/accounts/add/secret" />
+  if (!data.mnemonic || !data.type) return <Navigate to="/accounts/add/secret" replace />
 
   return (
-    <DashboardLayout withBack centered>
-      <form onSubmit={handleSubmit(submit)}>
-        <HeaderBlock
-          title={t("Import {{accountType}} account(s)", {
-            accountType: data?.type === "ethereum" ? t("Ethereum") : t("Polkadot"),
-          })}
-          text={t("Please select which account(s) you'd like to import.")}
-        />
-        <Spacer small />
+    <div className="flex w-full flex-col gap-8">
+      <HeaderBlock
+        title={t("Import account(s)")}
+        text={t("Please select which account(s) you'd like to import.")}
+      />
+      <form onSubmit={handleSubmit(submit)} className="flex flex-col gap-8">
         <div className="h-[42rem]">
           <DerivedFromMnemonicAccountPicker
             name={name}
@@ -116,7 +108,6 @@ export const AccountAddSecretAccountsPage = () => {
             onChange={handleAccountsChange}
           />
         </div>
-        <Spacer small />
         <div className="flex w-full justify-end">
           <Button
             className="w-[24rem]"
@@ -129,6 +120,6 @@ export const AccountAddSecretAccountsPage = () => {
           </Button>
         </div>
       </form>
-    </DashboardLayout>
+    </div>
   )
 }
