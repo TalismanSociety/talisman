@@ -131,7 +131,7 @@ export default class AppHandler extends ExtensionHandler {
         pair.lock()
 
         // we can now set up the auth secret
-        await this.stores.password.setPassword(transformedPassword)
+        this.stores.password.setPassword(transformedPassword)
         await this.stores.password.setupAuthSecret(transformedPassword)
       } else {
         await this.stores.password.authenticate(pass)
