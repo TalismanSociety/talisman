@@ -3,6 +3,7 @@ import { HeaderBlock } from "@talisman/components/HeaderBlock"
 import { Spacer } from "@talisman/components/Spacer"
 import {
   ChevronRightIcon,
+  DcentLogoIcon,
   EyePlusIcon,
   FileTextIcon,
   PlusIcon,
@@ -81,9 +82,9 @@ export const AccountAddTypePickerPage = () => {
         />
         <CtaButton
           size="small"
-          iconLeft={UsbIcon}
+          iconLeft={DcentLogoIcon}
           iconRight={ChevronRightIcon}
-          title={t("Add D'CENT Account")}
+          title={t("Connect D'CENT")}
           subtitle={t("Connect your D'CENT biometric wallet")}
           to={`/accounts/add/dcent`}
         />
