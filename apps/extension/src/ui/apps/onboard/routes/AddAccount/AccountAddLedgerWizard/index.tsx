@@ -1,4 +1,4 @@
-import { useSelectAccountAndNavigate } from "@ui/hooks/useSelectAccountAndNavigate"
+import { useOnboard } from "@ui/apps/onboard/context"
 import { lazy } from "react"
 
 import { AccountAddLedgerLayout } from "./AccountAddLedgerLayout"
@@ -7,12 +7,11 @@ const AccountAddLedgerWizard = lazy(
   () => import("@ui/domains/Account/AccountCreate/AccountAddLedger")
 )
 
-export const AccountAddLedgerDashboardWizard = () => {
-  const { setAddress } = useSelectAccountAndNavigate("/portfolio")
-
+export const AccountAddLedgerOnboardWizard = () => {
+  const { setOnboarded } = useOnboard()
   return (
     <AccountAddLedgerLayout>
-      <AccountAddLedgerWizard onSuccess={setAddress} />
+      <AccountAddLedgerWizard onSuccess={setOnboarded} />
     </AccountAddLedgerLayout>
   )
 }

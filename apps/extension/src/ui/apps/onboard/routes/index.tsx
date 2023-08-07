@@ -4,6 +4,7 @@ import { OnboardStageWrapper } from "../components/OnboardStageWrapper"
 import { AddAccountPage } from "./AddAccount"
 import { AccountAddDerivedPage } from "./AddAccount/AccountAddDerivedPage"
 import { AccountAddJsonPage } from "./AddAccount/AccountAddJsonPage"
+import { AccountAddLedgerOnboardWizard } from "./AddAccount/AccountAddLedgerWizard"
 import { AccountAddSecretOnboardWizard } from "./AddAccount/AccountAddSecretWizard"
 import { PasswordPage } from "./Password"
 import { PrivacyPage } from "./Privacy"
@@ -27,8 +28,8 @@ const OnboardingRoutes = () => {
             <Route path="derived" element={<AccountAddDerivedPage />} />
             <Route path="json" element={<AccountAddJsonPage />} />
             <Route path="secret/*" element={<AccountAddSecretOnboardWizard />} />
-            {/* <Route path="ledger/*" element={<AccountAddLedgerWizard />} />
-            <Route path="qr/*" element={<AccountAddQrWizard />} />
+            <Route path="ledger/*" element={<AccountAddLedgerOnboardWizard />} />
+            {/* <Route path="qr/*" element={<AccountAddQrWizard />} />
             <Route path="watched" element={<AccountAddWatchedPage />} /> */}
             <Route path="*" element={<Navigate to="" replace />} />
           </Route>

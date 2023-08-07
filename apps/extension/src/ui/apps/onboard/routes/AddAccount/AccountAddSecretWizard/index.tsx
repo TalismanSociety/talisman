@@ -1,5 +1,5 @@
 import { useOnboard } from "@ui/apps/onboard/context"
-import { AccountAddSecretWizard } from "@ui/domains/Account/AccountCreate/AccountAddSecretMnemonic/router"
+import { AccountAddSecretWizard } from "@ui/domains/Account/AccountCreate/AccountAddSecret/router"
 
 import { AccountAddSecretLayout } from "./AccountAddSecretLayout"
 
