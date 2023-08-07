@@ -1,0 +1,12 @@
+{
+  "name": "e2e",
+  "version": "1.0.0",
+  "devDependencies": {
+    "@playwright/test": "^1.36.2",
+    "dotenv": "^16.3.1"
+  },
+  "scripts": {
+    "e2e:test": "playwright test",
+    "e2e:report": "playwright show-report"
+  }
+}
