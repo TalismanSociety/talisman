@@ -12,6 +12,7 @@ import { TotalFiatBalance } from "@ui/apps/popup/components/TotalFiatBalance"
 import { AccountFolderIcon } from "@ui/domains/Account/AccountFolderIcon"
 import { AccountIcon } from "@ui/domains/Account/AccountIcon"
 import { AccountTypeIcon } from "@ui/domains/Account/AccountTypeIcon"
+import { Address } from "@ui/domains/Account/Address"
 import { CurrentAccountAvatar } from "@ui/domains/Account/CurrentAccountAvatar"
 import Fiat from "@ui/domains/Asset/Fiat"
 import { useCopyAddressModal } from "@ui/domains/CopyAddress"
@@ -97,15 +98,20 @@ const AccountButton = ({ option }: { option: AccountOption }) => {
     [open, option]
   )
 
+  const isAccount = option.type === "account"
+
   return (
     <button
       type="button"
       tabIndex={0}
-      className="text-body-secondary bg-black-secondary hover:bg-grey-800 flex h-[5.9rem] w-full cursor-pointer items-center gap-6 overflow-hidden rounded-sm px-6 hover:text-white"
+      className={classNames(
+        "[&:hover_.hide-on-hover]:hidden [&:hover_.show-on-hover]:block [&_.hide-on-hover]:block [&_.show-on-hover]:hidden",
+        "text-body-secondary bg-black-secondary hover:bg-grey-800 flex h-[5.9rem] w-full cursor-pointer items-center gap-6 overflow-hidden rounded-sm px-6 hover:text-white"
+      )}
       onClick={handleClick}
     >
       <div className="flex flex-col justify-center text-xl">
-        {option.type === "account" ? (
+        {isAccount ? (
           <AccountIcon address={option.address} genesisHash={option.genesisHash} />
         ) : (
           <AccountFolderIcon />
@@ -114,30 +120,30 @@ const AccountButton = ({ option }: { option: AccountOption }) => {
       <div className="flex grow flex-col items-start justify-center gap-2 overflow-hidden">
         <div className="text-body flex w-full items-center gap-3 text-base leading-none">
           <div className="overflow-hidden overflow-ellipsis whitespace-nowrap">{option.name}</div>
-          {option.type === "account" ? (
-            <>
-              <AccountTypeIcon className="text-primary" origin={option.origin} />
-              <div className="flex flex-col justify-end">
-                <CopyIcon
-                  role="button"
-                  className="text-body-secondary hover:text-body !text-sm "
-                  onClick={handleCopyClick}
-                />
-              </div>
-            </>
-          ) : null}
+          {isAccount && <AccountTypeIcon className="text-primary" origin={option.origin} />}
+          {isAccount && (
+            <div className="show-on-hover flex flex-col justify-end">
+              <CopyIcon
+                role="button"
+                className="text-body-secondary hover:text-body !text-sm "
+                onClick={handleCopyClick}
+              />
+            </div>
+          )}
         </div>
         <div className="text-body-secondary flex w-full overflow-hidden text-ellipsis whitespace-nowrap text-left text-sm leading-none">
           <Fiat amount={option.total} isBalance />
         </div>
       </div>
-      {option.type === "account" ? (
-        <div className="text-lg">
+      {isAccount && (
+        <Address className="show-on-hover text-body-secondary text-xs" address={option.address} />
+      )}
+      {isAccount && (
+        <div className="hide-on-hover text-lg">
           <ChevronRightIcon />
         </div>
-      ) : (
-        <AccountsLogoStack className="text-sm" addresses={option.addresses} />
       )}
+      {!isAccount && <AccountsLogoStack className="text-sm" addresses={option.addresses} />}
     </button>
   )
 }
@@ -257,7 +263,7 @@ const FolderHeader = ({ folder, folderTotal }: { folder: TreeFolder; folderTotal
       <div className="flex flex-col justify-center">
         <CurrentAccountAvatar className="!text-2xl" />
       </div>
-      <div className="flex grow flex-col gap-2 overflow-hidden pl-2 text-sm">
+      <div className="flex grow flex-col gap-1 overflow-hidden pl-2 text-sm">
         <div className="flex items-center gap-3">
           <div className="text-body-secondary overflow-hidden text-ellipsis whitespace-nowrap">
             {folder.name}

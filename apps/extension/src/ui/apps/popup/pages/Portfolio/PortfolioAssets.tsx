@@ -8,6 +8,7 @@ import {
 import { classNames } from "@talismn/util"
 import { AccountContextMenu } from "@ui/apps/dashboard/routes/Portfolio/AccountContextMenu"
 import { AccountTypeIcon } from "@ui/domains/Account/AccountTypeIcon"
+import { Address } from "@ui/domains/Account/Address"
 import { CurrentAccountAvatar } from "@ui/domains/Account/CurrentAccountAvatar"
 import Fiat from "@ui/domains/Asset/Fiat"
 import { useCopyAddressModal } from "@ui/domains/CopyAddress"
@@ -103,9 +104,14 @@ const PageContent = ({
           <div className="flex flex-col justify-center">
             <CurrentAccountAvatar className="!text-2xl" />
           </div>
-          <div className="flex grow flex-col gap-2 overflow-hidden pl-2 text-sm">
+          <div className="flex grow flex-col gap-1 overflow-hidden pl-2 text-sm">
             <div className="flex items-center gap-3">
-              <div className="text-body-secondary overflow-hidden text-ellipsis whitespace-nowrap">
+              <div
+                className={classNames(
+                  "overflow-hidden text-ellipsis whitespace-nowrap",
+                  account ? "text-md" : "text-body-secondary"
+                )}
+              >
                 {account
                   ? account.name ?? t("Unnamed Account")
                   : folder
@@ -114,8 +120,17 @@ const PageContent = ({
               </div>
               <AccountTypeIcon className="text-primary" origin={account?.origin} />
             </div>
-            <div className="text-md overflow-hidden text-ellipsis whitespace-nowrap">
-              <Fiat amount={balances.sum.fiat("usd").total} isBalance />
+            <div
+              className={classNames(
+                "overflow-hidden text-ellipsis whitespace-nowrap",
+                account ? "text-body-secondary" : "text-md"
+              )}
+            >
+              {account ? (
+                <Address address={account.address} />
+              ) : (
+                <Fiat amount={balances.sum.fiat("usd").total} isBalance />
+              )}
             </div>
           </div>
         </div>

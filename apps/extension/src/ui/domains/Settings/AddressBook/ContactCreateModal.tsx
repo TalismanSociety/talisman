@@ -2,12 +2,13 @@ import { yupResolver } from "@hookform/resolvers/yup"
 import { isEthereumAddress } from "@polkadot/util-crypto"
 import { notify } from "@talisman/components/Notifications"
 import { convertAddress } from "@talisman/util/convertAddress"
-import { AccountAddressType } from "@talisman/util/getAddressType"
 import { isValidSubstrateAddress } from "@talisman/util/isValidSubstrateAddress"
 import { AnalyticsPage, sendAnalyticsEvent } from "@ui/api/analytics"
+import { AddressFieldEnsBadge } from "@ui/domains/Account/AddressFieldEnsBadge"
 import useAccounts from "@ui/hooks/useAccounts"
 import { useAddressBook } from "@ui/hooks/useAddressBook"
 import { useAnalyticsPageView } from "@ui/hooks/useAnalyticsPageView"
+import { useResolveEnsName } from "@ui/hooks/useResolveEnsName"
 import { useCallback, useEffect, useMemo } from "react"
 import { useForm } from "react-hook-form"
 import { useTranslation } from "react-i18next"
@@ -19,8 +20,8 @@ import { ContactModalProps } from "./types"
 
 type FormValues = {
   name: string
+  searchAddress: string
   address: string
-  addressType: AccountAddressType
 }
 
 interface ValidationContext {
@@ -54,6 +55,7 @@ export const ContactCreateModal = ({ isOpen, close }: ContactModalProps) => {
     () =>
       yup.object({
         name: yup.string().required(""),
+        searchAddress: yup.string().required(""),
         address: yup
           .string()
           .required("")
@@ -74,7 +76,6 @@ export const ContactCreateModal = ({ isOpen, close }: ContactModalProps) => {
               return ctx.createError({ message: t("Address already saved in contacts") })
             return true
           }),
-        addressType: yup.string().oneOf(["ss58", "ethereum"]).required(""),
       }),
     [t]
   )
@@ -113,17 +114,39 @@ export const ContactCreateModal = ({ isOpen, close }: ContactModalProps) => {
     if (isOpen) reset()
   }, [isOpen, reset])
 
-  const address = watch("address")
+  const { searchAddress } = watch()
 
+  const [ensLookup, { isLookup: isEnsLookup, isFetching: isEnsFetching }] =
+    useResolveEnsName(searchAddress)
   useEffect(() => {
-    if (ethRegex.test(address)) setValue("addressType", "ethereum")
-    else setValue("addressType", "ss58")
-  }, [address, setValue])
+    if (!isEnsLookup) {
+      setValue("address", searchAddress, {
+        shouldValidate: true,
+        shouldTouch: true,
+        shouldDirty: true,
+      })
+      return
+    }
+
+    setValue("address", ensLookup ?? (ensLookup === null ? "invalid" : ""), {
+      shouldValidate: true,
+      shouldTouch: true,
+      shouldDirty: true,
+    })
+  }, [ensLookup, isEnsLookup, searchAddress, setValue])
 
   const submit = useCallback(
     async (formData: FormValues) => {
       try {
-        await add({ ...formData })
+        const { name, address } = formData
+        await add({
+          name,
+          address,
+          addressType:
+            ethRegex.test(address) ?? isEthereumAddress(address.toLowerCase())
+              ? "ethereum"
+              : "ss58",
+        })
         sendAnalyticsEvent({
           ...ANALYTICS_PAGE,
           name: "Interact",
@@ -160,10 +183,17 @@ export const ContactCreateModal = ({ isOpen, close }: ContactModalProps) => {
           <FormFieldContainer error={errors.address?.message} label={t("Address")}>
             <FormFieldInputText
               type="text"
-              {...register("address")}
+              {...register("searchAddress")}
               placeholder={t("Address")}
               autoComplete="off"
               spellCheck="false"
+              after={
+                <AddressFieldEnsBadge
+                  isEnsLookup={isEnsLookup}
+                  isEnsFetching={isEnsFetching}
+                  ensLookup={ensLookup}
+                />
+              }
             />
           </FormFieldContainer>
 

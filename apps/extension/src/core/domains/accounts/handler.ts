@@ -1,4 +1,6 @@
 import { getPrimaryAccount, sortAccounts } from "@core/domains/accounts/helpers"
+import { lookupAddresses, resolveNames } from "@core/domains/accounts/helpers.onChainIds"
+import { AccountsCatalogData, emptyCatalog } from "@core/domains/accounts/store.catalog"
 import type {
   RequestAccountCreate,
   RequestAccountCreateExternal,
@@ -36,8 +38,6 @@ import {
 import { addressFromMnemonic } from "@talisman/util/addressFromMnemonic"
 import { decodeAnyAddress, encodeAnyAddress, sleep } from "@talismn/util"
 import { combineLatest } from "rxjs"
-
-import { AccountsCatalogData, emptyCatalog } from "./store.catalog"
 
 export default class AccountsHandler extends ExtensionHandler {
   // we can only create a new account if we have an existing stored seed
@@ -485,6 +485,10 @@ export default class AccountsHandler extends ExtensionHandler {
         return this.accountsCatalogSubscribe(id, port)
       case "pri(accounts.catalog.runActions)":
         return this.accountsCatalogRunActions(request as RequestAccountsCatalogAction[])
+      case "pri(accounts.onChainIds.resolveNames)":
+        return Object.fromEntries(await resolveNames(request as string[]))
+      case "pri(accounts.onChainIds.lookupAddresses)":
+        return Object.fromEntries(await lookupAddresses(request as string[]))
       case "pri(accounts.validateMnemonic)":
         return this.accountValidateMnemonic(request as string)
       case "pri(accounts.setVerifierCertMnemonic)":

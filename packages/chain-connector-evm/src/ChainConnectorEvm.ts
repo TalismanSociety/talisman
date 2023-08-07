@@ -144,8 +144,8 @@ export class ChainConnectorEvm {
 
       const provider =
         batch === true
-          ? new BatchRpcProvider(connection, network)
-          : new StandardRpcProvider(connection, network)
+          ? new BatchRpcProvider(connection /*network*/)
+          : new StandardRpcProvider(connection /*network*/)
 
       // in case an error is thrown, rotate rpc urls cache
       // also clear provider cache to force logic going through getHealthyRpc again on next call

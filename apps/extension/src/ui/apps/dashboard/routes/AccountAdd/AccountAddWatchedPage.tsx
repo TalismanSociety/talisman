@@ -10,7 +10,9 @@ import { sleep } from "@talismn/util"
 import { api } from "@ui/api"
 import { DashboardLayout } from "@ui/apps/dashboard/layout/DashboardLayout"
 import { AccountTypeSelector } from "@ui/domains/Account/AccountTypeSelector"
+import { AddressFieldEnsBadge } from "@ui/domains/Account/AddressFieldEnsBadge"
 import useAccounts from "@ui/hooks/useAccounts"
+import { useResolveEnsName } from "@ui/hooks/useResolveEnsName"
 import { useSelectAccountAndNavigate } from "@ui/hooks/useSelectAccountAndNavigate"
 import { useCallback, useEffect, useMemo, useRef } from "react"
 import { useForm } from "react-hook-form"
@@ -20,6 +22,7 @@ import * as yup from "yup"
 
 type FormData = {
   name: string
+  searchAddress: string
   address: string
   type: AccountAddressType
   isPortfolio: boolean
@@ -36,6 +39,7 @@ export const AccountAddWatchedPage = () => {
       yup
         .object({
           name: yup.string().required("").notOneOf(accountNames, t("Name already in use")),
+          searchAddress: yup.string().trim().required(""),
           address: yup
             .string()
             .trim()
@@ -76,6 +80,21 @@ export const AccountAddWatchedPage = () => {
     mode: "onChange",
     resolver: yupResolver(schema),
   })
+
+  const { type, searchAddress } = watch()
+  const [ensLookup, { isLookup: isEnsLookup, isFetching: isEnsFetching }] = useResolveEnsName(
+    type === "ethereum" ? searchAddress : undefined
+  )
+  useEffect(() => {
+    if (!isEnsLookup) {
+      setValue("address", searchAddress, { shouldValidate: true })
+      return
+    }
+
+    setValue("address", ensLookup ?? (ensLookup === null ? "invalid" : ""), {
+      shouldValidate: true,
+    })
+  }, [ensLookup, isEnsLookup, searchAddress, setValue])
 
   const submit = useCallback(
     async ({ name, address, isPortfolio }: FormData) => {
@@ -118,8 +137,6 @@ export const AccountAddWatchedPage = () => {
     [setValue, trigger]
   )
 
-  const { type } = watch()
-
   const hasSetFocus = useRef(false)
   useEffect(() => {
     if (type && !hasSetFocus.current) {
@@ -161,11 +178,18 @@ export const AccountAddWatchedPage = () => {
           </FormFieldContainer>
           <FormFieldContainer error={errors.address?.message}>
             <FormFieldInputText
-              {...register("address")}
+              {...register("searchAddress")}
               placeholder={t("Enter wallet address")}
               spellCheck={false}
               autoComplete="off"
               data-lpignore
+              after={
+                <AddressFieldEnsBadge
+                  isEnsLookup={isEnsLookup}
+                  isEnsFetching={isEnsFetching}
+                  ensLookup={ensLookup}
+                />
+              }
             />
           </FormFieldContainer>
           <div className="bg-grey-850 mt-4 flex h-[58px] w-full items-center rounded px-12">

@@ -184,6 +184,8 @@ export interface AccountsMessages {
   "pri(accounts.subscribe)": [RequestAccountSubscribe, boolean, AccountJson[]]
   "pri(accounts.catalog.subscribe)": [null, boolean, Trees]
   "pri(accounts.catalog.runActions)": [RequestAccountsCatalogAction[], boolean]
+  "pri(accounts.onChainIds.resolveNames)": [string[], Record<string, string | null>]
+  "pri(accounts.onChainIds.lookupAddresses)": [string[], Record<string, string | null>]
   "pri(accounts.validateMnemonic)": [string, boolean]
   "pri(accounts.setVerifierCertMnemonic)": [string, boolean]
 }

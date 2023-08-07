@@ -1,6 +1,5 @@
 import { AccountType } from "@core/domains/accounts/types"
 import { CheckCircleIcon } from "@talisman/theme/icons"
-import { shortenAddress } from "@talisman/util/shortenAddress"
 import { Balance } from "@talismn/balances"
 import { Token } from "@talismn/chaindata-provider"
 import { classNames } from "@talismn/util"
@@ -11,10 +10,11 @@ import { useTranslation } from "react-i18next"
 
 import { AccountIcon } from "../Account/AccountIcon"
 import { AccountTypeIcon } from "../Account/AccountTypeIcon"
+import { Address } from "../Account/Address"
 import Fiat from "../Asset/Fiat"
 import Tokens from "../Asset/Tokens"
 
-type SendFundsAccount = {
+export type SendFundsAccount = {
   address: string
   origin?: AccountType
   name?: string
@@ -83,10 +83,17 @@ const AccountRow: FC<AccountRowProps> = ({
         className="!text-lg"
       />
       <div className="flex grow items-center overflow-hidden">
-        <div className="overflow-hidden text-ellipsis whitespace-nowrap">
-          {account.name ?? shortenAddress(account.address, 6, 6)}
+        <div className="flex flex-col">
+          <div className="flex items-center gap-2">
+            <div className="overflow-hidden text-ellipsis whitespace-nowrap">
+              {account.name ?? (
+                <Address address={account.address} startCharCount={6} endCharCount={6} noTooltip />
+              )}
+            </div>
+            <AccountTypeIcon origin={account.origin} className="text-primary" />
+          </div>
+          <Address className="text-body-secondary text-xs" address={account.address} />
         </div>
-        <AccountTypeIcon origin={account.origin} className="text-primary ml-3 inline" />
         {selected && <CheckCircleIcon className="ml-3 inline shrink-0" />}
       </div>
       {showBalances && <AccountTokenBalance token={token} balance={account.balance} />}

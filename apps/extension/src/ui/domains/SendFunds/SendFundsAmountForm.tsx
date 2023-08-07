@@ -5,7 +5,6 @@ import { useOpenClose } from "@talisman/hooks/useOpenClose"
 import { AlertCircleIcon, InfoIcon, SwapIcon, UserPlusIcon } from "@talisman/theme/icons"
 import { convertAddress } from "@talisman/util/convertAddress"
 import { AccountAddressType } from "@talisman/util/getAddressType"
-import { shortenAddress } from "@talisman/util/shortenAddress"
 import { classNames, planckToTokens, tokensToPlanck } from "@talismn/util"
 import { SendFundsWizardPage, useSendFundsWizard } from "@ui/apps/popup/pages/SendFunds/context"
 import { useAccountByAddress } from "@ui/hooks/useAccountByAddress"
@@ -33,6 +32,7 @@ import { Button, PillButton } from "talisman-ui"
 
 import { AccountIcon } from "../Account/AccountIcon"
 import { AccountTypeIcon } from "../Account/AccountTypeIcon"
+import { Address } from "../Account/Address"
 import { ChainLogo } from "../Asset/ChainLogo"
 import Fiat from "../Asset/Fiat"
 import { TokenLogo } from "../Asset/TokenLogo"
@@ -93,7 +93,7 @@ const AddressPillButton: FC<AddressPillButtonProps> = ({ address, className, onC
       <div className="text-body flex h-16 max-w-full flex-nowrap items-center gap-4 overflow-x-hidden text-base">
         <AccountIcon className="!text-lg" address={address} genesisHash={genesisHash} />
         <div className="leading-base grow overflow-hidden text-ellipsis whitespace-nowrap">
-          {name ?? shortenAddress(address, 6, 6)}
+          {name ?? <Address address={address} startCharCount={6} endCharCount={6} />}
         </div>
         <AccountTypeIcon origin={account?.origin} className="text-primary-500" />
       </div>

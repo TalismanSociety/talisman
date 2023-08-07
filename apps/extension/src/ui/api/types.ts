@@ -121,6 +121,8 @@ export default interface MessageTypes {
   accountsSubscribe: (cb: (accounts: AccountJson[]) => void) => UnsubscribeFn
   accountsCatalogSubscribe: (cb: (trees: Trees) => void) => UnsubscribeFn
   accountsCatalogRunActions: (actions: RequestAccountsCatalogAction[]) => Promise<boolean>
+  accountsOnChainIdsResolveNames: (names: string[]) => Promise<Record<string, string | null>>
+  accountsOnChainIdsLookupAddresses: (addresses: string[]) => Promise<Record<string, string | null>>
   accountForget: (address: string) => Promise<boolean>
   accountExport: (
     address: string,

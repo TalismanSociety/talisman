@@ -1,7 +1,15 @@
 import { SearchIcon } from "@talisman/theme/icons"
 import { classNames } from "@talismn/util"
 import { useDebouncedState } from "@ui/hooks/useDebouncedState"
-import { ChangeEventHandler, FC, KeyboardEventHandler, useCallback, useEffect, useRef } from "react"
+import {
+  ChangeEventHandler,
+  FC,
+  KeyboardEventHandler,
+  ReactNode,
+  useCallback,
+  useEffect,
+  useRef,
+} from "react"
 import { FormFieldInputContainerProps, FormFieldInputText } from "talisman-ui"
 
 const INPUT_CONTAINER_PROPS: FormFieldInputContainerProps = {
@@ -13,6 +21,7 @@ type SearchInputProps = {
   className?: string
   autoFocus?: boolean
   placeholder?: string
+  after?: ReactNode
   onChange?: (search: string) => void
   onValidate?: () => void
 }
@@ -20,8 +29,9 @@ type SearchInputProps = {
 export const SearchInput: FC<SearchInputProps> = ({
   className,
   autoFocus,
-  onChange,
   placeholder,
+  after,
+  onChange,
   onValidate,
 }) => {
   const ref = useRef<HTMLInputElement>(null)
@@ -58,6 +68,7 @@ export const SearchInput: FC<SearchInputProps> = ({
       className={classNames("text-base", className)}
       containerProps={INPUT_CONTAINER_PROPS}
       before={<SearchIcon className="text-body-disabled" />}
+      after={after}
       placeholder={placeholder}
       onChange={handleSearchChange}
       onKeyUp={handleKeyUp}

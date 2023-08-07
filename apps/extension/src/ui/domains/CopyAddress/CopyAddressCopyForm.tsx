@@ -3,7 +3,7 @@ import { FadeIn } from "@talisman/components/FadeIn"
 import { useOpenClose } from "@talisman/hooks/useOpenClose"
 import { AlertCircleIcon, CopyIcon, InfoIcon } from "@talisman/theme/icons"
 import { shortenAddress } from "@talisman/util/shortenAddress"
-import { Address } from "@talismn/balances"
+import { Address as TAddress } from "@talismn/balances"
 import { classNames, encodeAnyAddress } from "@talismn/util"
 import { useAccountByAddress } from "@ui/hooks/useAccountByAddress"
 import useAccounts from "@ui/hooks/useAccounts"
@@ -20,6 +20,7 @@ import { Button, PillButton, Tooltip, TooltipContent, TooltipTrigger } from "tal
 
 import { AccountIcon } from "../Account/AccountIcon"
 import { AccountTypeIcon } from "../Account/AccountTypeIcon"
+import { Address } from "../Account/Address"
 import { ChainLogo } from "../Asset/ChainLogo"
 import { TokenLogo } from "../Asset/TokenLogo"
 import { CopyAddressLayout } from "./CopyAddressLayout"
@@ -50,7 +51,7 @@ const AddressPillButton: FC<AddressPillButtonProps> = ({ address, className, onC
       <div className="text-body flex h-16 max-w-full flex-nowrap items-center gap-4 overflow-x-hidden text-base">
         <AccountIcon className="!text-lg" address={address} genesisHash={genesisHash} />
         <div className="leading-base grow overflow-hidden text-ellipsis whitespace-nowrap">
-          {name ?? shortenAddress(address, 6, 6)}
+          {name ?? <Address address={address} startCharCount={6} endCharCount={6} />}
         </div>
         <AccountTypeIcon origin={account?.origin} className="text-primary" />
       </div>
@@ -85,7 +86,7 @@ const TokenPillButton: FC<TokenPillButtonProps> = ({ tokenId, className, onClick
 
 type NetworkPillButtonProps = {
   chainId?: string | null
-  address: Address
+  address: TAddress
   className?: string
   onClick?: () => void
 }
