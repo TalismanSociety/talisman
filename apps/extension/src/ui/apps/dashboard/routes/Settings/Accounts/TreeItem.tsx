@@ -70,7 +70,11 @@ export const TreeAccountItem = forwardRef<HTMLDivElement, Props & { item: UiTree
           style={style}
         >
           <DragButton {...handleProps?.attributes} {...handleProps?.listeners} />
-          <AccountIcon className="text-xl" address={item.address} />
+          <AccountIcon
+            className="text-xl"
+            address={item.address}
+            genesisHash={account?.genesisHash}
+          />
           <div className="flex grow flex-col gap-2 overflow-hidden">
             <div className="flex items-center gap-2">
               <div className="overflow-hidden text-ellipsis whitespace-nowrap">{account.name}</div>

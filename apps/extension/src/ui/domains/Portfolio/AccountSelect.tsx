@@ -272,7 +272,11 @@ const Item = forwardRef<HTMLDivElement, ItemProps>(function Item(
   const icon = isAllAccounts ? (
     <AllAccountsIcon className="shrink-0 text-3xl" />
   ) : isAccount ? (
-    <AccountIcon className="shrink-0 text-3xl" address={item.address} />
+    <AccountIcon
+      className="shrink-0 text-3xl"
+      address={item.address}
+      genesisHash={item.genesisHash}
+    />
   ) : isFolder ? (
     <AccountFolderIcon className="shrink-0 text-3xl" />
   ) : null
