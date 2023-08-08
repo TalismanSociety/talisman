@@ -35,9 +35,9 @@ export const DcentAccountTokenRow: FC<{
       <TokenLogo className="text-lg" tokenId={token.id} />
       <div className="flex grow flex-col gap-1">
         <div className="text-body text-sm">
-          {token.symbol} ({label})
+          {token.symbol} <span className="text-grey-600">{label}</span>
         </div>
-        <div className="text-body-secondary text-xs">{chain?.name ?? evmNetwork?.name}</div>
+        <div className="text-grey-500 text-xs">{chain?.name ?? evmNetwork?.name}</div>
       </div>
       <div className={classNames("flex flex-col gap-1 text-right", isLoading && "animate-pulse")}>
         <div className="text-body text-sm">
@@ -48,7 +48,7 @@ export const DcentAccountTokenRow: FC<{
             isBalance
           />
         </div>
-        <div className="text-body-secondary text-xs">
+        <div className="text-grey-500 text-xs">
           <Fiat amount={balance.fiat("usd")} currency={"usd"} isBalance />
         </div>
       </div>
