@@ -71,7 +71,11 @@ export const DcentAccountRow: FC<{ accountInfo: DcentAccountInfo }> = ({ account
           onClick={toggle}
           className="bg-grey-850 hover:bg-grey-800 hover:text-body text-body-secondary flex h-[6rem] w-full items-center gap-6 rounded-sm px-8 text-left"
         >
-          <AccountIcon className="text-xl" address={addressInfo.address} />
+          <AccountIcon
+            className="text-xl"
+            address={addressInfo.address}
+            genesisHash={account?.genesisHash}
+          />
           <div className="flex grow flex-col gap-2 overflow-hidden">
             <div className="flex w-full gap-[0.5em] overflow-hidden">
               <span className="text-body truncate font-bold">
