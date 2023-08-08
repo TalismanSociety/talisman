@@ -92,7 +92,7 @@ const AddressBookContactItem = ({ contact, handleDelete, handleEdit }: ContactIt
       onMouseLeave={() => setHover(false)}
     >
       <span className="gap flex gap-4">
-        <AccountIcon address={contact.address} />
+        <AccountIcon address={contact.address} className="text-xl" />
         <div className="flex flex-col justify-between">
           <span>{contact.name}</span>
           <Address className="text-body-secondary text-xs" address={contact.address} />
