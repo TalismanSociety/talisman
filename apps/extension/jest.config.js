@@ -24,4 +24,5 @@ module.exports = {
   ],
   setupFilesAfterEnv: ["<rootDir>/tests/mocks/index.ts"],
   testEnvironment: "jsdom",
+  testPathIgnorePatterns: ["<rootDir>/e2e"]
 }
