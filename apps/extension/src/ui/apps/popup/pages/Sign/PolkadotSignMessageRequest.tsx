@@ -7,7 +7,7 @@ import { QrSubstrate } from "@ui/domains/Sign/Qr/QrSubstrate"
 import { usePolkadotSigningRequest } from "@ui/domains/Sign/SignRequestContext"
 import { FC, Suspense, lazy, useEffect, useMemo } from "react"
 import { useTranslation } from "react-i18next"
-import { Button } from "talisman-ui"
+import { Button, Tooltip, TooltipContent, TooltipTrigger } from "talisman-ui"
 
 import { PopupContent, PopupFooter, PopupHeader, PopupLayout } from "../../Layout/PopupLayout"
 import { SignAccountAvatar } from "./SignAccountAvatar"
@@ -68,7 +68,7 @@ export const PolkadotSignMessageRequest: FC = () => {
       <PopupFooter>
         {account && request && (
           <>
-            {account.origin !== "HARDWARE" && account.origin !== "QR" && (
+            {!["HARDWARE", "QR", "DCENT"].includes(account.origin ?? "") && (
               <div className="grid w-full grid-cols-2 gap-12">
                 <Button disabled={processing} onClick={reject}>
                   {t("Cancel")}
@@ -76,6 +76,23 @@ export const PolkadotSignMessageRequest: FC = () => {
                 <Button disabled={processing} processing={processing} primary onClick={approve}>
                   {t("Approve")}
                 </Button>
+              </div>
+            )}
+            {account.origin === "DCENT" && (
+              <div className="grid w-full grid-cols-2 gap-12">
+                <Button disabled={processing} onClick={reject}>
+                  {t("Cancel")}
+                </Button>
+                <Tooltip placement="top-end">
+                  <TooltipTrigger asChild>
+                    <div>
+                      <Button disabled fullWidth primary onClick={approve}>
+                        {t("Approve")}
+                      </Button>
+                    </div>
+                  </TooltipTrigger>
+                  <TooltipContent>{t("D'CENT cannot sign text messages")}</TooltipContent>
+                </Tooltip>
               </div>
             )}
             {account.origin === "HARDWARE" && (
