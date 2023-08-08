@@ -6,7 +6,7 @@ import { isHexString } from "@ethereumjs/util"
 import { hexToString } from "@polkadot/util"
 import { HexString } from "@polkadot/util/types"
 import { classNames } from "@talismn/util"
-import { DcentError, dcentCall } from "@ui/util/dcent"
+import { DcentError, dcent } from "@ui/util/dcent"
 import DcentWebConnector from "dcent-web-connector"
 import { ethers } from "ethers"
 import { FC, useCallback, useEffect, useState } from "react"
@@ -43,12 +43,7 @@ const signWithDcent = async (
       const clearTextJson = isHexString(payload) ? hexToString(payload) : payload
       const json = JSON.parse(clearTextJson)
 
-      const response = await dcentCall<{ address: string; sign: string }>(() =>
-        DcentWebConnector.getSignedData(accountPath, {
-          version,
-          payload: json,
-        })
-      )
+      const response = await dcent.getEthereumSignedData(accountPath, version, json)
 
       return response.sign as HexString
     }
@@ -56,9 +51,7 @@ const signWithDcent = async (
     case "personal_sign": {
       const clearText = isHexString(payload) ? hexToString(payload) : payload
 
-      const response = await dcentCall<{ address: string; sign: string }>(() =>
-        DcentWebConnector.getEthereumSignedMessage(clearText, accountPath)
-      )
+      const response = await dcent.getEthereumSignedMessage(accountPath, clearText)
 
       return response.sign as HexString
     }
@@ -114,12 +107,7 @@ const signWithDcent = async (
           maxFeePerGas: maxFeePerGas?.toString(),
         })
 
-      const result = await dcentCall<{
-        sign_v: string
-        sign_r: string
-        sign_s: string
-        signed: string
-      }>(() => DcentWebConnector.getEthereumSignedTransaction(...args))
+      const result = await dcent.getEthereumSignedTransaction(...args)
 
       return ethers.utils.serializeTransaction(baseTx, {
         v: ethers.BigNumber.from(result.sign_v).toNumber(),

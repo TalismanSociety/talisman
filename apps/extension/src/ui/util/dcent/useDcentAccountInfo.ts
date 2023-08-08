@@ -1,23 +1,12 @@
 import { UseQueryOptions, UseQueryResult, useQuery } from "@tanstack/react-query"
-import DcentWebConnector from "dcent-web-connector"
 
-import { DcentError, dcentCall } from "./dcentCall"
-
-export type DcentAccount = {
-  coin_name: string
-  label: string
-  address_path: string
-  coin_group: string
-}
-
-type DcentAccountInfo = {
-  account: DcentAccount[]
-}
+import { dcent } from "./dcent"
+import { DcentAccountInfo, DcentError } from "./types"
 
 export const useDcentAccountInfo = (options: UseQueryOptions = {}) => {
   return useQuery({
     queryKey: ["useDcentAccounts"],
-    queryFn: () => dcentCall<DcentAccountInfo>(DcentWebConnector.getAccountInfo),
+    queryFn: dcent.getAccountInfo,
     ...options,
   }) as UseQueryResult<DcentAccountInfo, DcentError>
 }

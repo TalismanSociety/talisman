@@ -3,8 +3,7 @@ import { notify } from "@talisman/components/Notifications"
 import { Spacer } from "@talisman/components/Spacer"
 import { ArrowRightIcon } from "@talisman/theme/icons"
 import { DashboardLayout } from "@ui/apps/dashboard/layout/DashboardLayout"
-import { dcentCall } from "@ui/util/dcent"
-import DcentWebConnector from "dcent-web-connector"
+import { dcent } from "@ui/util/dcent"
 import { FC, ReactNode, useCallback, useState } from "react"
 import { Trans, useTranslation } from "react-i18next"
 import { useNavigate } from "react-router-dom"
@@ -32,7 +31,7 @@ export const ConnectDcentBridgePage = () => {
   const handleContinueClick = useCallback(async () => {
     setIsConnecting(true)
     try {
-      await dcentCall(DcentWebConnector.getDeviceInfo)
+      await dcent.getDeviceInfo()
       navigate("./accounts")
     } catch (err) {
       setIsConnecting(false)

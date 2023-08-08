@@ -1,11 +1,7 @@
 import { UseQueryOptions, UseQueryResult, useQuery } from "@tanstack/react-query"
-import DcentWebConnector from "dcent-web-connector"
 
-import { DcentError, dcentCall } from "./dcentCall"
-
-type DcentResponseAddress = {
-  address: string
-}
+import { dcent } from "./dcent"
+import { DcentAccountAddress, DcentError } from "./types"
 
 export const useDcentAddress = (
   coinType: string,
@@ -14,10 +10,10 @@ export const useDcentAddress = (
 ) => {
   return useQuery({
     queryKey: ["useDcentAddress", coinType, keyPath],
-    queryFn: async () => {
+    queryFn: () => {
       if (!coinType || !keyPath) return null
-      return dcentCall<DcentResponseAddress>(() => DcentWebConnector.getAddress(coinType, keyPath))
+      return dcent.getAddress(coinType, keyPath)
     },
     ...options,
-  }) as UseQueryResult<DcentResponseAddress | null, DcentError>
+  }) as UseQueryResult<DcentAccountAddress | null, DcentError>
 }

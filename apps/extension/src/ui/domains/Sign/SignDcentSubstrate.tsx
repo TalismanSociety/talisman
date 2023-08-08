@@ -8,7 +8,7 @@ import { useQuery } from "@tanstack/react-query"
 import { useAccountByAddress } from "@ui/hooks/useAccountByAddress"
 import useChainByGenesisHash from "@ui/hooks/useChainByGenesisHash"
 import useToken from "@ui/hooks/useToken"
-import { DcentError, dcentCall } from "@ui/util/dcent"
+import { DcentError, dcent } from "@ui/util/dcent"
 import DcentWebConnector from "dcent-web-connector"
 import { FC, useCallback, useEffect, useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
@@ -129,10 +129,6 @@ export const SignDcentSubstrate: FC<{
   const [displayedErrorMessage, setDisplayedErrorMessage] = useState<string>()
   const [isSigning, setIsSigning] = useState(false)
 
-  type DcentResponseSignature = {
-    signed_tx: HexString
-  }
-
   const handleSendClick = useCallback(async () => {
     if (!dcentTx) return
     setIsSigning(true)
@@ -140,9 +136,7 @@ export const SignDcentSubstrate: FC<{
     onSignaturePending?.(true)
 
     try {
-      const { signed_tx } = await dcentCall<DcentResponseSignature>(() =>
-        DcentWebConnector.getPolkadotSignedTransaction(dcentTx)
-      )
+      const { signed_tx } = await dcent.getPolkadotSignedTransaction(dcentTx)
 
       // add prefix for ed25519 signature (0x00)
       return onSigned({ signature: `0x00${signed_tx.substring(2)}` })
