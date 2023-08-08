@@ -25,7 +25,7 @@ const useAccountInfos = () => {
           const existing = result.find(
             (r) => r.coinType === coinType && r.derivationPath === account.address_path
           )
-          if (existing) existing.tokens.push(token)
+          if (existing) existing.tokens[account.label] = token
           else
             result.push({
               name: `D'CENT ${isSubToken(token) ? "Polkadot" : "Ethereum"} ${
@@ -33,7 +33,7 @@ const useAccountInfos = () => {
               }`,
               coinType,
               derivationPath: account.address_path,
-              tokens: [token],
+              tokens: { [account.label]: token },
             })
         }
       } else log.warn("Unsupported account", account)

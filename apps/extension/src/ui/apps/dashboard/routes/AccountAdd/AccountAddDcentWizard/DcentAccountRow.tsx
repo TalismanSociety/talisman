@@ -41,7 +41,8 @@ export const DcentAccountRow: FC<{ accountInfo: DcentAccountInfo }> = ({ account
     accountInfo.derivationPath
   )
   const account = useAccountByAddress(addressInfo?.address)
-  const balances = useAccountBalances(addressInfo?.address, accountInfo.tokens)
+  const tokens = useMemo(() => Object.values(accountInfo.tokens), [accountInfo.tokens])
+  const balances = useAccountBalances(addressInfo?.address, tokens)
   const { isOpen, toggle } = useOpenClose()
 
   if (error)
@@ -83,16 +84,14 @@ export const DcentAccountRow: FC<{ accountInfo: DcentAccountInfo }> = ({ account
             <div className="flex items-center gap-[0.3em] leading-none">
               <div className="inline-block shrink-0">
                 <div className="ml-[0.4em] text-base [&>div]:ml-[-0.4em]">
-                  {accountInfo.tokens.slice(0, 3).map((token) => (
+                  {tokens.slice(0, 3).map((token) => (
                     <div key={token.id} className="inline-block h-[1em] w-[1em]">
                       <TokenLogo tokenId={token.id} className="shrink-0" />
                     </div>
                   ))}
                 </div>
               </div>
-              <div className="text-body-secondary text-sm">
-                {getTokensSummary(accountInfo.tokens)}
-              </div>
+              <div className="text-body-secondary text-sm">{getTokensSummary(tokens)}</div>
             </div>
           </div>
           <div className="h-[3rem] w-[14rem] shrink-0"></div>
@@ -106,10 +105,11 @@ export const DcentAccountRow: FC<{ accountInfo: DcentAccountInfo }> = ({ account
       </div>
       <Accordion isOpen={isOpen}>
         <div className="relative pl-[6rem]">
-          {accountInfo.tokens.map((token) => (
+          {Object.entries(accountInfo.tokens).map(([label, token]) => (
             <DcentAccountTokenRow
               key={token.id}
               address={addressInfo.address}
+              label={label}
               token={token}
               balances={balances}
             />

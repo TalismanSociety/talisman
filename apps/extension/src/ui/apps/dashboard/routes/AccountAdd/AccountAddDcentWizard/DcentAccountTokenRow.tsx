@@ -9,11 +9,12 @@ import { useEvmNetwork } from "@ui/hooks/useEvmNetwork"
 import { useTokenRates } from "@ui/hooks/useTokenRates"
 import { FC, useMemo } from "react"
 
-export const DcentAccountTokenRow: FC<{ address: string; token: Token; balances: Balances }> = ({
-  address,
-  token,
-  balances,
-}) => {
+export const DcentAccountTokenRow: FC<{
+  address: string
+  label: string
+  token: Token
+  balances: Balances
+}> = ({ address, label, token, balances }) => {
   const evmNetwork = useEvmNetwork(token?.evmNetwork?.id)
   const chain = useChain(token?.chain?.id)
   const tokenRate = useTokenRates(token.id)
@@ -33,7 +34,9 @@ export const DcentAccountTokenRow: FC<{ address: string; token: Token; balances:
     <div className="text-body-secondary bg-grey-900 mt-4 flex h-[4.8rem] items-center gap-4 rounded-sm px-8">
       <TokenLogo className="text-lg" tokenId={token.id} />
       <div className="flex grow flex-col gap-1">
-        <div className="text-body text-sm">{token.symbol}</div>
+        <div className="text-body text-sm">
+          {token.symbol} ({label})
+        </div>
         <div className="text-body-secondary text-xs">{chain?.name ?? evmNetwork?.name}</div>
       </div>
       <div className={classNames("flex flex-col gap-1 text-right", isLoading && "animate-pulse")}>

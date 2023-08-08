@@ -6,7 +6,7 @@ export type DcentAccountInfo = {
   name: string
   coinType: string
   derivationPath: string
-  tokens: Token[]
+  tokens: Record<string, Token>
 }
 
 // TODO move to chaindata

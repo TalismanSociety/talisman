@@ -18,7 +18,7 @@ export const useDcentAccountConnect = (accountInfo: DcentAccountInfo, address: s
             isConnected: true,
             isUpdateRequired:
               account.tokenIds.sort().join("|") !==
-              accountInfo.tokens
+              Object.values(accountInfo.tokens)
                 .map((t) => t.id)
                 .sort()
                 .join("|"),
@@ -39,7 +39,7 @@ export const useDcentAccountConnect = (accountInfo: DcentAccountInfo, address: s
         address,
         isEthereumAddress(address) ? "ethereum" : "ed25519",
         accountInfo.derivationPath,
-        accountInfo.tokens.map((t) => t.id)
+        Object.values(accountInfo.tokens).map((t) => t.id)
       ),
     [accountInfo.derivationPath, accountInfo.tokens, address]
   )
