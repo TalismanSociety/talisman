@@ -31,7 +31,7 @@ export const DcentAccountTokenRow: FC<{
   }, [address, balances, token.decimals, token.id, tokenRate])
 
   return (
-    <div className="text-body-secondary bg-grey-900 mt-4 flex h-[4.8rem] items-center gap-4 rounded-sm px-8">
+    <div className="text-body-secondary bg-grey-900 mt-4 flex h-[4.8rem] items-center gap-6 rounded-sm px-8">
       <TokenLogo className="text-lg" tokenId={token.id} />
       <div className="flex grow flex-col gap-1">
         <div className="text-body text-sm">
