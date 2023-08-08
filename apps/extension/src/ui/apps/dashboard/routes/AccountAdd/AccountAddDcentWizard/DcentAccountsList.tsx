@@ -7,18 +7,21 @@ import { useMemo } from "react"
 import { useTranslation } from "react-i18next"
 
 import { DcentAccountRow } from "./DcentAccountRow"
-import { DCENT_COIN_NAME_TO_TOKEN_ID, DcentAccountInfo, getDcentCoinTypeFromToken } from "./util"
+import { DcentAccountInfo, getDcentCoinTypeFromToken } from "./util"
 
 const useAccountInfos = () => {
-  const { tokensMap } = useTokens(true)
+  const { tokens } = useTokens(true)
   const { data: accounts, isLoading, error } = useDcentAccountInfo()
 
   // a dcent account entry is 1 token for 1 address
   // group them by address to match talisman accounts structure
   const accountInfos = useMemo(() => {
     return accounts?.account.reduce((result, account) => {
-      const tokenId = DCENT_COIN_NAME_TO_TOKEN_ID[account.coin_name]
-      const token = tokensMap[tokenId]
+      const token = tokens.find(
+        (t) =>
+          t.dcentName === account.coin_name ||
+          (t.type === "evm-erc20" && t.contractAddress.toUpperCase().startsWith(account.coin_name))
+      )
       if (token) {
         const coinType = getDcentCoinTypeFromToken(token)
         if (coinType) {
@@ -40,7 +43,7 @@ const useAccountInfos = () => {
 
       return result
     }, [] as DcentAccountInfo[])
-  }, [accounts?.account, tokensMap])
+  }, [accounts?.account, tokens])
 
   return { accountInfos, isLoading, error }
 }
