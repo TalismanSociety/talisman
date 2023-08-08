@@ -38,8 +38,8 @@ export const DcentAccountConnectButton: FC<{
         } catch (err) {
           notify({
             type: "error",
-            title: "Failed to update",
-            subtitle: "Could not sync with device tokens",
+            title: t("Failed to update"),
+            subtitle: t("Could not sync with device tokens"),
           })
           log.error(err)
         }
@@ -47,7 +47,7 @@ export const DcentAccountConnectButton: FC<{
         break
       }
     }
-  }, [account?.name, accountInfo.name, connect, isUpdating, open, status])
+  }, [account?.name, accountInfo.name, connect, isUpdating, open, status, t])
 
   return (
     <>

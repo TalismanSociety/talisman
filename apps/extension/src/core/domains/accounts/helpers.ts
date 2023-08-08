@@ -13,6 +13,8 @@ import { canDerive } from "@polkadot/extension-base/utils"
 import type { InjectedAccount } from "@polkadot/extension-inject/types"
 import keyring from "@polkadot/ui-keyring"
 import type { SingleAddress, SubjectInfo } from "@polkadot/ui-keyring/observable/types"
+import { hexToU8a, isHex } from "@polkadot/util"
+import { decodeAnyAddress, encodeAnyAddress } from "@talismn/util"
 import Browser from "webextension-polyfill"
 
 import seedPhraseStore from "./store"
@@ -173,4 +175,15 @@ export const hasPrivateKey = (address: Address) => {
   if (acc.meta?.isHardware) return false
   if (["QR", "WATCHED"].includes(acc.meta?.origin as string)) return false
   return true
+}
+
+export const isValidAnyAddress = (address: string) => {
+  try {
+    // validates both SS58 and ethereum addresses
+    encodeAnyAddress(isHex(address) ? hexToU8a(address) : decodeAnyAddress(address))
+
+    return true
+  } catch (error) {
+    return false
+  }
 }

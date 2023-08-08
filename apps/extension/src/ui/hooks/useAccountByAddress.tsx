@@ -8,6 +8,7 @@ const filterByUnencodedAddress =
   (address: string) =>
   (account: AccountJsonAny): boolean =>
     account.address === address
+
 const filterByEncodedAddress = (address: string) =>
   filterByUnencodedAddress(encodeAnyAddress(address, 42))
 

@@ -1,4 +1,4 @@
-import { AccountJsonHardwareEthereum } from "@core/domains/accounts/types"
+import { AccountJsonDcent, AccountJsonHardwareEthereum } from "@core/domains/accounts/types"
 import { EthTransactionDetails } from "@core/domains/signing/types"
 import { EvmWalletTransaction, WalletTransaction } from "@core/domains/transactions/types"
 import { HexString } from "@polkadot/util/types"
@@ -22,6 +22,7 @@ import { Tooltip, TooltipContent, TooltipTrigger } from "talisman-ui"
 import { TokensAndFiat } from "../Asset/TokensAndFiat"
 import { EthFeeSelect } from "../Ethereum/GasSettings/EthFeeSelect"
 import { useEthReplaceTransaction } from "../Ethereum/useEthReplaceTransaction"
+import SignDcentEthereum from "../Sign/SignDcentEthereum"
 import { TxReplaceType } from "./types"
 
 const ANALYTICS_PAGE: AnalyticsPage = {
@@ -287,17 +288,30 @@ const EvmDrawerContent: FC<{
       <>
         {canReplace && account?.isHardware ? (
           <div className="w-full">
-            <LedgerEthereum
-              manualSend
-              className="mt-6"
-              method="eth_sendTransaction"
-              payload={transaction}
-              account={account as AccountJsonHardwareEthereum}
-              onSignature={handleSendSigned}
-              onReject={() => onClose?.()}
-              onSendToLedger={handleSendToLedger}
-              containerId="main"
-            />
+            {account.origin === "DCENT" ? (
+              <SignDcentEthereum
+                className="mt-6"
+                method="eth_sendTransaction"
+                payload={transaction}
+                account={account as AccountJsonDcent}
+                onSignature={handleSendSigned}
+                onReject={() => onClose?.()}
+                onWaitingChanged={handleSendToLedger}
+                containerId="main"
+              />
+            ) : (
+              <LedgerEthereum
+                manualSend
+                className="mt-6"
+                method="eth_sendTransaction"
+                payload={transaction}
+                account={account as AccountJsonHardwareEthereum}
+                onSignature={handleSendSigned}
+                onReject={() => onClose?.()}
+                onSendToLedger={handleSendToLedger}
+                containerId="main"
+              />
+            )}
           </div>
         ) : (
           <div

@@ -1,4 +1,4 @@
-import { getPrimaryAccount, sortAccounts } from "@core/domains/accounts/helpers"
+import { getPrimaryAccount, isValidAnyAddress, sortAccounts } from "@core/domains/accounts/helpers"
 import type {
   RequestAccountCreate,
   RequestAccountCreateDcent,
@@ -26,10 +26,10 @@ import { chaindataProvider } from "@core/rpcs/chaindata"
 import type { MessageTypes, RequestTypes, ResponseType } from "@core/types"
 import { Port } from "@core/types/base"
 import { getPrivateKey } from "@core/util/getPrivateKey"
-import { createPair, decodeAddress, encodeAddress } from "@polkadot/keyring"
+import { createPair, encodeAddress } from "@polkadot/keyring"
 import { KeyringPair$Meta } from "@polkadot/keyring/types"
 import keyring from "@polkadot/ui-keyring"
-import { assert, hexToU8a, isHex } from "@polkadot/util"
+import { assert } from "@polkadot/util"
 import {
   ethereumEncode,
   isEthereumAddress,
@@ -41,16 +41,6 @@ import { decodeAnyAddress, encodeAnyAddress, sleep } from "@talismn/util"
 import { combineLatest } from "rxjs"
 
 import { AccountsCatalogData, emptyCatalog } from "./store.catalog"
-
-const isValidAddress = (address: string) => {
-  try {
-    encodeAddress(isHex(address) ? hexToU8a(address) : decodeAddress(address))
-
-    return true
-  } catch (error) {
-    return false
-  }
-}
 
 export default class AccountsHandler extends ExtensionHandler {
   // we can only create a new account if we have an existing stored seed
@@ -245,7 +235,7 @@ export default class AccountsHandler extends ExtensionHandler {
     tokenIds,
   }: RequestAccountCreateDcent) {
     if (type === "ethereum") assert(isEthereumAddress(address), "Not an Ethereum address")
-    else assert(isValidAddress(address), "Not a Substrate address")
+    else assert(isValidAnyAddress(address), "Not a Substrate address")
 
     const meta: KeyringPair$Meta = {
       name,
@@ -256,7 +246,7 @@ export default class AccountsHandler extends ExtensionHandler {
     }
 
     // hopefully in the future D'CENT will be able to sign on any chain, and code below can be simply removed.
-    // keep this here for now to avoid polluting the messaging interface as polkadot is the only token supported by D'CENT.
+    // keep this basic check for now to avoid polluting the messaging interface, as polkadot is the only token supported by D'CENT.
     if (tokenIds.length === 1 && tokenIds[0] === "polkadot-substrate-native-dot") {
       const chain = await chaindataProvider.getChain("polkadot")
       meta.genesisHash = chain?.genesisHash

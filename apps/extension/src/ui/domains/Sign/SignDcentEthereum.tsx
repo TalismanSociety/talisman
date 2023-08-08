@@ -170,12 +170,12 @@ const SignDcentEthereum: FC<DcentEthereumProps> = ({
       if (err instanceof DcentError) {
         if (err.code === "user_cancel") onReject?.()
         else setDisplayedErrorMessage(err.message)
-      } else setDisplayedErrorMessage((err as Error).message ?? "Failed to sign")
+      } else setDisplayedErrorMessage((err as Error).message ?? t("Failed to sign"))
       setIsSigning(false)
     }
     onWaitingChanged?.(false)
     setIsSigning(false)
-  }, [onSignature, payload, account, onWaitingChanged, method, onReject])
+  }, [onSignature, payload, account, onWaitingChanged, method, onReject, t])
 
   const handleCancelClick = useCallback(() => {
     onReject()
