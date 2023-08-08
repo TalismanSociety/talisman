@@ -122,6 +122,11 @@
     "*.{ts,tsx,js,jsx,css,scss,html,md,json}": "prettier --write",
     "*.{js,ts,jsx,tsx}": "eslint --fix --max-warnings 0"
   },
+  "dependenciesMeta": {
+    "@sentry/cli": {
+      "built": true
+    }
+  },
   "preconstruct": {
     "packages": [
       "packages/*"

@@ -24152,6 +24152,9 @@ __metadata:
     prettier-plugin-tailwindcss: ^0.4.0
     ts-loader: 9.4.4
     turbo: latest
+  dependenciesMeta:
+    "@sentry/cli":
+      built: true
   languageName: unknown
   linkType: soft
 

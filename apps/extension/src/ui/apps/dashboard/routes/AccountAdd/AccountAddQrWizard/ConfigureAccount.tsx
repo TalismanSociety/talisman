@@ -78,6 +78,7 @@ export const ConfigureAccount = () => {
           <AccountIcon
             address={accountConfig.address}
             genesisHash={accountConfig.lockToNetwork ? accountConfig.genesisHash : undefined}
+            className="text-xl"
           />
           <div className="flex flex-col !items-start gap-2 overflow-hidden leading-8">
             <div className="text-body flex w-full items-center gap-3 text-base leading-none">

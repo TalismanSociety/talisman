@@ -1,6 +1,7 @@
 import { IS_FIREFOX } from "@core/constants"
 import { appStore } from "@core/domains/app"
 import { RequestRoute } from "@core/domains/app/types"
+import { log } from "@core/log"
 import { sleep } from "@talismn/util"
 import Browser from "webextension-polyfill"
 
@@ -114,14 +115,28 @@ class WindowManager {
         500,
     }
 
-    const popup = await Browser.windows.create({
+    const popupCreateArgs: Browser.Windows.CreateCreateDataType = {
       ...WINDOW_OPTS,
       url: Browser.runtime.getURL(`popup.html${argument ? argument : ""}`),
       top,
       left,
       width: WINDOW_OPTS.width + widthDelta,
       height: WINDOW_OPTS.height + heightDelta,
-    })
+    }
+
+    let popup: Browser.Windows.Window
+    try {
+      popup = await Browser.windows.create(popupCreateArgs)
+    } catch (err) {
+      log.error("Failed to open popup", err)
+
+      // retry with default size, as an invalid size could be the source of the error
+      popup = await Browser.windows.create({
+        ...popupCreateArgs,
+        width: WINDOW_OPTS.width,
+        height: WINDOW_OPTS.height,
+      })
+    }
 
     if (typeof popup?.id !== "undefined") {
       this.#windows.push(popup.id || 0)

@@ -28,7 +28,7 @@ export class TalismanChaindataDatabase extends Dexie {
       // https://dexie.org/docs/Version/Version.stores()#warning
       chains: "id, genesisHash, name, nativeToken, tokens, evmNetworks",
       evmNetworks: "id, name, nativeToken, tokens, substrateChain",
-      tokens: "id, type, symbol, coingeckoId, contractAddress, chain, evmNetwork",
+      tokens: "id, type, symbol, coingeckoId, dcentName, contractAddress, chain, evmNetwork",
     })
 
     // this.on("ready", async () => {})
