@@ -1,3 +1,4 @@
+import { log } from "@core/log"
 import DcentWebConnector from "dcent-web-connector"
 
 import {
@@ -63,14 +64,12 @@ const isDcentResponseSuccess = <T>(
 }
 
 const dcentCall = async <T>(func: () => Promise<DcentResponse<T>>): Promise<T> => {
-  try {
-    const res = (await func()) as DcentResponse<T>
-    if (isDcentResponseSuccess(res)) return res.body.parameter
-    throw new Error("unexpected dcent response")
-  } catch (err) {
-    if (isDcentResponseError(err)) throw new DcentError(err.body.error.code, err.body.error.message)
-    throw err
-  }
+  const res = (await func()) as DcentResponse<T>
+  if (isDcentResponseSuccess(res)) return res.body.parameter
+  if (isDcentResponseError(res)) throw new DcentError(res.body.error.code, res.body.error.message)
+
+  log.error("Unexpected D'CENT response", { res })
+  throw new Error("Unexpected D'CENT response")
 }
 
 // typed api that hides the response envelopes
