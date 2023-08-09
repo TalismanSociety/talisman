@@ -78,7 +78,6 @@ const signWithDcent = async (
         type,
       }
 
-      // TODO do the same for ledger or it may break for legacy gas networks
       if (nonce !== undefined) baseTx.nonce = ethers.BigNumber.from(nonce).toNumber()
       if (maxPriorityFeePerGas) baseTx.maxPriorityFeePerGas = maxPriorityFeePerGas
       if (maxFeePerGas) baseTx.maxFeePerGas = maxFeePerGas
