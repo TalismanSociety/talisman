@@ -83,22 +83,24 @@ export const dcent = {
   getDeviceInfo: () => dcentCall<DcentDeviceInfo>(DcentWebConnector.getDeviceInfo),
 
   getEthereumSignedData: (accountPath: string, version: string, payload: unknown) =>
-    dcentCall<DcentEthereumSignedData>(
+    dcentCall<DcentEthereumSignedData>(() =>
       DcentWebConnector.getSignedData(accountPath, { version, payload })
     ),
 
   getEthereumSignedMessage: (accountPath: string, text: string) =>
-    dcentCall<DcentEthereumSignedMessage>(
+    dcentCall<DcentEthereumSignedMessage>(() =>
       DcentWebConnector.getEthereumSignedMessage(text, accountPath)
     ),
 
   getEthereumSignedTransaction: (...args: unknown[]) =>
-    dcentCall<DcentEthereumSignedTransaction>(
+    dcentCall<DcentEthereumSignedTransaction>(() =>
       DcentWebConnector.getEthereumSignedTransaction(...args)
     ),
 
   getInfo: () => dcentCall<DcentInfo>(DcentWebConnector.info),
 
   getPolkadotSignedTransaction: (payload: DcentSubstratePayload) =>
-    dcentCall<DcentSubstrateSignature>(DcentWebConnector.getPolkadotSignedTransaction(payload)),
+    dcentCall<DcentSubstrateSignature>(() =>
+      DcentWebConnector.getPolkadotSignedTransaction(payload)
+    ),
 }
