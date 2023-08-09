@@ -2,6 +2,7 @@ import "@core/util/enableLogsInDevelopment"
 
 import { initSentry } from "@core/config/sentry"
 import { DEBUG, PORT_CONTENT, PORT_EXTENSION, TALISMAN_WEB_APP_DOMAIN } from "@core/constants"
+import { MigrationStore, migrations } from "@core/domains/app/migrations"
 import { consoleOverride } from "@core/util/logging"
 import { AccountsStore } from "@polkadot/extension-base/stores"
 import keyring from "@polkadot/ui-keyring"
@@ -38,6 +39,16 @@ Browser.runtime.onInstalled.addListener(async ({ reason, previousVersion }) => {
       Browser.tabs.create({ url: Browser.runtime.getURL("onboarding.html") })
     }
   })
+
+  if (reason === "install") {
+    // instantiate the migrations store with all migrations as initial data
+    // this will not run any migrations
+    new MigrationStore(migrations, true)
+  } else if (reason === "update") {
+    // instantiate the migrations store with migrations to run
+    // this will run any migrations that have not already been run
+    new MigrationStore(migrations)
+  }
 
   if (reason === "update" && previousVersion && lt(previousVersion, "1.14.0")) {
     // once off migration to add `connectAllSubstrate` to the record for the Talisman Web App
