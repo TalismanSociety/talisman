@@ -6,7 +6,7 @@ import { AccountsStore } from "@polkadot/extension-base/stores"
 import keyring from "@polkadot/ui-keyring"
 import { cryptoWaitReady } from "@polkadot/util-crypto"
 
-import { migratePasswordV1ToV2 } from "../migrationsPw"
+import { migratePasswordV1ToV2 } from "./legacyMigrations"
 
 const mnemonic = "seed sock milk update focus rotate barely fade car face mechanic mercy"
 const password = "passw0rd"

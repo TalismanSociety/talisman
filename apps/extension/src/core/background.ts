@@ -1,7 +1,7 @@
 import "@core/util/enableLogsInDevelopment"
 
 import { initSentry } from "@core/config/sentry"
-import { DEBUG, PORT_CONTENT, PORT_EXTENSION, TALISMAN_WEB_APP_DOMAIN } from "@core/constants"
+import { DEBUG, PORT_CONTENT, PORT_EXTENSION } from "@core/constants"
 import { MigrationStore, migrations } from "@core/domains/app/migrations"
 import { consoleOverride } from "@core/util/logging"
 import { AccountsStore } from "@polkadot/extension-base/stores"
@@ -9,13 +9,12 @@ import keyring from "@polkadot/ui-keyring"
 import { assert } from "@polkadot/util"
 import { cryptoWaitReady } from "@polkadot/util-crypto"
 import * as Sentry from "@sentry/browser"
-import { lt } from "semver"
 import Browser, { Runtime } from "webextension-polyfill"
 
-import { hasQrCodeAccounts } from "./domains/accounts/helpers"
-import seedPhraseStore from "./domains/accounts/store"
-import { verifierCertificateMnemonicStore } from "./domains/accounts/store.verifierCertificateMnemonic"
-import sitesAuthorisedStore from "./domains/sitesAuthorised/store"
+import {
+  migrateConnectAllSubstrate,
+  migratePolkadotVaultVerifierCertificate,
+} from "./domains/app/migrations/legacyMigrations"
 import talismanHandler from "./handlers"
 import { IconManager } from "./libs/IconManager"
 
@@ -27,62 +26,33 @@ void Browser.browserAction.setBadgeBackgroundColor({ color: "#d90000" })
 
 // Onboarding and migrations
 Browser.runtime.onInstalled.addListener(async ({ reason, previousVersion }) => {
-  // if install, we want to check the storage for prev onboarded info
-  // if not onboarded, show the onboard screen
-  Browser.storage.local.get(["talismanOnboarded", "app"]).then((data) => {
-    // open onboarding when reason === "install" and data?.talismanOnboarded !== true
-    // open dashboard data?.talismanOnboarded === true
-    const legacyOnboarded =
-      data && data.talismanOnboarded && data.talismanOnboarded?.onboarded === "TRUE"
-    const currentOnboarded = data && data.app && data.app.onboarded === "TRUE"
-    if (!legacyOnboarded && !currentOnboarded && reason === "install") {
-      Browser.tabs.create({ url: Browser.runtime.getURL("onboarding.html") })
-    }
-  })
-
   if (reason === "install") {
-    // instantiate the migrations store with all migrations as initial data
+    // if install, we want to check the storage for prev onboarded info
+    // if not onboarded, show the onboard screen
+    Browser.storage.local.get(["talismanOnboarded", "app"]).then((data) => {
+      // open onboarding when reason === "install" and data?.talismanOnboarded !== true
+      // open dashboard data?.talismanOnboarded === true
+      const legacyOnboarded =
+        data && data.talismanOnboarded && data.talismanOnboarded?.onboarded === "TRUE"
+      const currentOnboarded = data && data.app && data.app.onboarded === "TRUE"
+      if (!legacyOnboarded && !currentOnboarded) {
+        Browser.tabs.create({ url: Browser.runtime.getURL("onboarding.html") })
+      }
+    })
+
+    // instantiate the migrations store with applyFake = true
     // this will not run any migrations
-    new MigrationStore(migrations, true)
+    const migrationStore = new MigrationStore(migrations, true)
+    await migrationStore.isComplete
   } else if (reason === "update") {
     // instantiate the migrations store with migrations to run
     // this will run any migrations that have not already been run
-    new MigrationStore(migrations)
-  }
-
-  if (reason === "update" && previousVersion && lt(previousVersion, "1.14.0")) {
-    // once off migration to add `connectAllSubstrate` to the record for the Talisman Web App
-    const site = await sitesAuthorisedStore.get(TALISMAN_WEB_APP_DOMAIN)
-    if (!site) {
-      const localData = await Browser.storage.local.get()
-      const addresses = Object.entries(localData)
-        .filter(([key]) => key.startsWith("account:0x"))
-        .map(([, value]: [string, { address: string }]) => value.address)
-
-      sitesAuthorisedStore.set({
-        [TALISMAN_WEB_APP_DOMAIN]: {
-          addresses,
-          connectAllSubstrate: true,
-          id: TALISMAN_WEB_APP_DOMAIN,
-          origin: "Talisman",
-          url: `https://${TALISMAN_WEB_APP_DOMAIN}`,
-        },
-      })
-    }
-  }
-  if (reason === "update" && previousVersion && lt(previousVersion, "1.17.0")) {
-    // once off migration to add a Polkadot Vault verifier certificate seed store
-    const hasVaultAccounts = await hasQrCodeAccounts()
-    if (hasVaultAccounts) {
-      // add a vault verifier certificate if any of the addresses are from a vault
-      //first check if any of the addresses are from a vault
-      // check if a vault verifier certificate store already exists
-      const verifierCertMnemonicCipher = await verifierCertificateMnemonicStore.get("cipher")
-      const seedPhraseData = await seedPhraseStore.get()
-      if (!verifierCertMnemonicCipher && seedPhraseData.cipher) {
-        // if not, create one
-        await verifierCertificateMnemonicStore.set(seedPhraseData)
-      }
+    const migrationStore = new MigrationStore(migrations)
+    await migrationStore.isComplete
+    // run any legacy migrations
+    if (previousVersion) {
+      await migrateConnectAllSubstrate(previousVersion)
+      await migratePolkadotVaultVerifierCertificate(previousVersion)
     }
   }
 })
