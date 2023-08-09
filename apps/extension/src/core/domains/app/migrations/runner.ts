@@ -5,14 +5,14 @@ import { BehaviorSubject } from "rxjs"
 
 import { Migrations } from "./types"
 
-type MigrationStoreData = {
+type MigrationRunnerData = {
   appliedAt: number
 }
 
 type MigrationStatus = "unknown" | "pending" | "migrating" | "complete" | "error"
 
 /**
- * MigrationStore
+ * MigrationRunner
  * @description
  * This store is used to keep track of migrations that have been applied, and to run migrations on startup.
  * When updating, the store will check which migrations have already been run, and run the remaining ones.
@@ -20,7 +20,7 @@ type MigrationStatus = "unknown" | "pending" | "migrating" | "complete" | "error
  *
  */
 
-export class MigrationStore extends StorageProvider<Record<string, MigrationStoreData>> {
+export class MigrationRunner extends StorageProvider<Record<string, MigrationRunnerData>> {
   status = new BehaviorSubject<MigrationStatus>("unknown")
   isComplete: Promise<boolean>
   migrations: Migrations
@@ -30,7 +30,7 @@ export class MigrationStore extends StorageProvider<Record<string, MigrationStor
    * @param fakeApply - If true, will mark all migrations as applied, without actually running them. To be used on first install.
    */
   constructor(migrations: Migrations = [], fakeApply = false) {
-    const initialData: Record<string, MigrationStoreData> = {}
+    const initialData: Record<string, MigrationRunnerData> = {}
 
     if (fakeApply) {
       migrations.forEach((_, i) => {
@@ -113,28 +113,30 @@ export class MigrationStore extends StorageProvider<Record<string, MigrationStor
   }
 
   applyMigrations = async () => {
+    if (this.status.value !== "pending") return
+    this.status.next("migrating")
     const latestApplied = (await this.getLatestAppliedMigration()) ?? -1
     const lastToApply = this.migrations.length - 1
     const pending = Array.from(
       { length: lastToApply - latestApplied },
       (_, i) => latestApplied + 1 + i
     )
-    if (pending.length > 0) this.status.next("migrating")
+
+    const applied: number[] = []
     try {
-      const result: number[] = []
       for (const index of pending) {
         await this.applyMigration(index)
-        result.push(index)
+        applied.push(index)
       }
 
       this.status.next("complete")
-      return result
+      return applied
     } catch (e) {
       this.status.next("error")
       log.error(e)
       if ((e as Error).cause) captureException(e)
-      const stillPending = this.migrations.slice(latestApplied + 1)
-      log.error(`${stillPending} migrations were not applied`)
+      const stillPending = pending.filter((i) => !applied.includes(i))
+      log.error(`${stillPending.length} migrations were not applied`)
       return false
     }
   }

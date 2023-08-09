@@ -2,7 +2,7 @@ import "@core/util/enableLogsInDevelopment"
 
 import { initSentry } from "@core/config/sentry"
 import { DEBUG, PORT_CONTENT, PORT_EXTENSION } from "@core/constants"
-import { MigrationStore, migrations } from "@core/domains/app/migrations"
+import { MigrationRunner, migrations } from "@core/domains/app/migrations"
 import { consoleOverride } from "@core/util/logging"
 import { AccountsStore } from "@polkadot/extension-base/stores"
 import keyring from "@polkadot/ui-keyring"
@@ -40,15 +40,15 @@ Browser.runtime.onInstalled.addListener(async ({ reason, previousVersion }) => {
       }
     })
 
-    // instantiate the migrations store with applyFake = true
+    // instantiate the migrations runner with applyFake = true
     // this will not run any migrations
-    const migrationStore = new MigrationStore(migrations, true)
-    await migrationStore.isComplete
+    const migrationRunner = new MigrationRunner(migrations, true)
+    await migrationRunner.isComplete
   } else if (reason === "update") {
-    // instantiate the migrations store with migrations to run
+    // instantiate the migrations runner with migrations to run
     // this will run any migrations that have not already been run
-    const migrationStore = new MigrationStore(migrations)
-    await migrationStore.isComplete
+    const migrationRunner = new MigrationRunner(migrations)
+    await migrationRunner.isComplete
     // run any legacy migrations
     if (previousVersion) {
       await migrateConnectAllSubstrate(previousVersion)

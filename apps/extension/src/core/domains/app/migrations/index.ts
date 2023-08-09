@@ -1,4 +1,4 @@
 import { Migrations } from "./types"
-export { MigrationStore } from "./store.migrations"
+export { MigrationRunner } from "./runner"
 
 export const migrations: Migrations = []
