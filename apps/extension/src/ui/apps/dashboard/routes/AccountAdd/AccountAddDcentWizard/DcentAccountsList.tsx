@@ -1,5 +1,5 @@
 import { log } from "@core/log"
-import { AlertCircleIcon, LoaderIcon } from "@talisman/theme/icons"
+import { AlertCircleIcon, InfoIcon, LoaderIcon } from "@talisman/theme/icons"
 import useTokens from "@ui/hooks/useTokens"
 import { useDcentAccountInfo } from "@ui/util/dcent"
 import { isSubToken } from "@ui/util/isSubToken"
@@ -55,16 +55,28 @@ export const DcentAccountsList = () => {
   if (isLoading)
     return (
       <div className="text-body-secondary bg-grey-800 flex h-[6rem] items-center gap-6 rounded px-8">
-        <LoaderIcon className="animate-spin-slow text-lg" />
+        <LoaderIcon className="animate-spin-slow shrink-0 text-lg" />
         <div>{t("Connecting to D'CENT Biometric Wallet")}</div>
       </div>
     )
 
-  if (error || !accountInfos?.length)
+  if (error || !accountInfos)
     return (
       <div className="text-alert-warn bg-grey-800 flex h-[6rem] items-center gap-6 rounded px-8">
-        <AlertCircleIcon className="text-lg" />
+        <AlertCircleIcon className="shrink-0 text-lg" />
         <div>{error?.message ?? "Failed to fetch accounts from D'CENT Biometric Wallet"}</div>
+      </div>
+    )
+
+  if (!accountInfos.length)
+    return (
+      <div className="text-body-secondary bg-grey-800 flex h-[6rem] items-center gap-6 rounded px-8">
+        <InfoIcon className="shrink-0 text-lg" />
+        <div>
+          {t(
+            "No account found for tokens supported by Talisman. Please use the D'CENT Wallet mobile app to create one."
+          )}
+        </div>
       </div>
     )
 

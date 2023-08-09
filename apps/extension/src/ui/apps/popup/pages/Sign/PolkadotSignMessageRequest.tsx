@@ -91,7 +91,9 @@ export const PolkadotSignMessageRequest: FC = () => {
                       </Button>
                     </div>
                   </TooltipTrigger>
-                  <TooltipContent>{t("D'CENT cannot sign text messages")}</TooltipContent>
+                  <TooltipContent>
+                    {t("D'CENT currently cannot sign text messages for Polkadot")}
+                  </TooltipContent>
                 </Tooltip>
               </div>
             )}
