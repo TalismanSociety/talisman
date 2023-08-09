@@ -111,8 +111,7 @@
     "ethereumjs-abi": "0.6.8",
     "glob-parent": "^5.1.2",
     "decode-uri-component": "0.2.1",
-    "semver": "~7.5.4",
-    "dcent-web-connector": "portal:/C:/Repositories/talisman-forks/dcent-web-connector"
+    "semver": "~7.5.4"
   },
   "engines": {
     "node": ">=18"

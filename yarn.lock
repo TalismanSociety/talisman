@@ -12597,14 +12597,15 @@ __metadata:
   languageName: node
   linkType: hard
 
-"dcent-web-connector@portal:/C:/Repositories/talisman-forks/dcent-web-connector::locator=talisman%40workspace%3A.":
-  version: 0.0.0-use.local
-  resolution: "dcent-web-connector@portal:/C:/Repositories/talisman-forks/dcent-web-connector::locator=talisman%40workspace%3A."
+"dcent-web-connector@npm:^0.14.1":
+  version: 0.14.1
+  resolution: "dcent-web-connector@npm:0.14.1"
   dependencies:
     bignumber.js: ^9.1.1
     events: ^3.0.0
+  checksum: 7f5ce96f153b8a4e9b103c06ebc27e8720889ef1255c97915768b03eb3b34ec47df94b76ddbc388584e7e4595e46179da778c6bdf908e0f41c90c4ca596b0d22
   languageName: node
-  linkType: soft
+  linkType: hard
 
 "de-indent@npm:^1.0.2":
   version: 1.0.2
@@ -14512,7 +14513,7 @@ __metadata:
     crypto-browserify: 3.12.0
     css-loader: ^6.7.3
     date-fns: ^2.30.0
-    dcent-web-connector: ^0.14.0
+    dcent-web-connector: ^0.14.1
     dexie: ^3.2.4
     dexie-react-hooks: ^1.1.6
     dotenv: ^16.0.3
