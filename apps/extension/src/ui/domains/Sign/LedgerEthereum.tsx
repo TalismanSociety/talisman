@@ -89,6 +89,7 @@ const signWithLedger = async (
   }
   if (method === "eth_sendTransaction") {
     const {
+      accessList,
       to,
       nonce,
       gasLimit,
@@ -103,20 +104,24 @@ const signWithLedger = async (
 
     const baseTx: ethers.utils.UnsignedTransaction = {
       to,
-      nonce: nonce ? ethers.BigNumber.from(nonce).toNumber() : undefined,
       gasLimit,
-      gasPrice,
-      data,
-      value,
       chainId,
       type,
-      maxPriorityFeePerGas,
-      maxFeePerGas,
     }
+
+    // TODO do the same for ledger or it may break for legacy gas networks
+    if (nonce !== undefined) baseTx.nonce = ethers.BigNumber.from(nonce).toNumber()
+    if (maxPriorityFeePerGas) baseTx.maxPriorityFeePerGas = maxPriorityFeePerGas
+    if (maxFeePerGas) baseTx.maxFeePerGas = maxFeePerGas
+    if (gasPrice) baseTx.gasPrice = gasPrice
+    if (data) baseTx.data = data
+    if (value) baseTx.value = value
+    if (accessList) baseTx.accessList = accessList
+
     const unsignedTx = stripHexPrefix(ethers.utils.serializeTransaction(baseTx))
     const sig = await ledger.signTransaction(accountPath, unsignedTx, null) // resolver)
 
-    return ethers.utils.serializeTransaction(payload, {
+    return ethers.utils.serializeTransaction(baseTx, {
       v: ethers.BigNumber.from("0x" + sig.v).toNumber(),
       r: "0x" + sig.r,
       s: "0x" + sig.s,
