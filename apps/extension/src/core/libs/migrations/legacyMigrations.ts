@@ -7,7 +7,7 @@ import sitesAuthorisedStore from "@core/domains/sitesAuthorised/store"
 import { lt } from "semver"
 import Browser from "webextension-polyfill"
 
-import { changePassword } from "../helpers"
+import { changePassword } from "../../domains/app/helpers"
 
 export const migrateConnectAllSubstrate = async (previousVersion: string) => {
   if (!lt(previousVersion, "1.14.0")) return

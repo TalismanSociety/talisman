@@ -2,7 +2,7 @@ import "@core/util/enableLogsInDevelopment"
 
 import { initSentry } from "@core/config/sentry"
 import { DEBUG, PORT_CONTENT, PORT_EXTENSION } from "@core/constants"
-import { MigrationRunner, migrations } from "@core/domains/app/migrations"
+import { MigrationRunner, migrations } from "@core/libs/migrations"
 import { consoleOverride } from "@core/util/logging"
 import { AccountsStore } from "@polkadot/extension-base/stores"
 import keyring from "@polkadot/ui-keyring"
@@ -11,12 +11,12 @@ import { cryptoWaitReady } from "@polkadot/util-crypto"
 import * as Sentry from "@sentry/browser"
 import Browser, { Runtime } from "webextension-polyfill"
 
+import talismanHandler from "./handlers"
+import { IconManager } from "./libs/IconManager"
 import {
   migrateConnectAllSubstrate,
   migratePolkadotVaultVerifierCertificate,
-} from "./domains/app/migrations/legacyMigrations"
-import talismanHandler from "./handlers"
-import { IconManager } from "./libs/IconManager"
+} from "./libs/migrations/legacyMigrations"
 
 initSentry(Sentry)
 consoleOverride(DEBUG)

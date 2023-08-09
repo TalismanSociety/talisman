@@ -4,7 +4,7 @@ import { assert } from "@polkadot/util"
 import { gt } from "semver"
 import Browser from "webextension-polyfill"
 
-import { migratePasswordV2ToV1 } from "./migrations/legacyMigrations"
+import { migratePasswordV2ToV1 } from "../../libs/migrations/legacyMigrations"
 
 type ONBOARDED_TRUE = "TRUE"
 type ONBOARDED_FALSE = "FALSE"
