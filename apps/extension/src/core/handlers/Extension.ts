@@ -1,4 +1,4 @@
-import { DEBUG, TEST } from "@core/constants"
+import { DEBUG } from "@core/constants"
 import { db } from "@core/db"
 import { AccountsHandler } from "@core/domains/accounts"
 import { verifierCertificateMnemonicStore } from "@core/domains/accounts/store.verifierCertificateMnemonic"
@@ -24,6 +24,7 @@ import { generateQrAddNetworkSpecs, generateQrUpdateNetworkMetadata } from "@cor
 import { log } from "@core/log"
 import { MessageTypes, RequestType, ResponseType } from "@core/types"
 import { Port, RequestIdOnly } from "@core/types/base"
+import { awaitKeyringLoaded } from "@core/util/awaitKeyringLoaded"
 import { CONFIG_RATE_LIMIT_ERROR, getConfig } from "@core/util/getConfig"
 import { fetchHasSpiritKey } from "@core/util/hasSpiritKey"
 import keyring from "@polkadot/ui-keyring"
@@ -74,30 +75,26 @@ export default class Extension extends ExtensionHandler {
     // Resets password update notification at extension restart if user has asked to ignore it previously
     stores.password.set({ ignorePasswordUpdate: false })
 
-    // Watches keyring to do things that depend on type of accounts added
-    // Delayed by 2 sec so that keyring accounts will have loaded
-    setTimeout(
-      () =>
-        keyring.accounts.subject.subscribe(async (addresses) => {
-          const sites = await stores.sites.get()
+    awaitKeyringLoaded().then(() => {
+      // Watches keyring to do things that depend on type of accounts added
+      keyring.accounts.subject.subscribe(async (addresses) => {
+        const sites = await stores.sites.get()
 
-          Object.entries(sites)
-            .filter(([, site]) => site.connectAllSubstrate)
-            .forEach(async ([url, autoAddSite]) => {
-              const newAddresses = Object.values(addresses)
-                .filter(
-                  ({ json: { address, meta } }) =>
-                    meta.origin !== AccountTypes.WATCHED &&
-                    !autoAddSite.addresses?.includes(address)
-                )
-                .map(({ json: { address } }) => address)
+        Object.entries(sites)
+          .filter(([, site]) => site.connectAllSubstrate)
+          .forEach(async ([url, autoAddSite]) => {
+            const newAddresses = Object.values(addresses)
+              .filter(
+                ({ json: { address, meta } }) =>
+                  meta.origin !== AccountTypes.WATCHED && !autoAddSite.addresses?.includes(address)
+              )
+              .map(({ json: { address } }) => address)
 
-              autoAddSite.addresses = [...(autoAddSite.addresses || []), ...newAddresses]
-              await stores.sites.updateSite(url, autoAddSite)
-            })
-        }),
-      DEBUG || TEST ? 0 : 2000
-    )
+            autoAddSite.addresses = [...(autoAddSite.addresses || []), ...newAddresses]
+            await stores.sites.updateSite(url, autoAddSite)
+          })
+      })
+    })
 
     // setup polling for config from github
     setTimeout(async () => {
