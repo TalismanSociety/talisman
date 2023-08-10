@@ -74,7 +74,7 @@ export const DcentAccountsList = () => {
         <InfoIcon className="shrink-0 text-lg" />
         <div>
           {t(
-            "No account found for tokens supported by Talisman. Please use the D'CENT Wallet mobile app to create one."
+            "No accounts found for tokens supported by Talisman. Please use the D'CENT Wallet mobile app to create one."
           )}
         </div>
       </div>

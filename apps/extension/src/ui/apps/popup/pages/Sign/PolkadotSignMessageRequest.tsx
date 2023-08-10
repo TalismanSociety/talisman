@@ -1,4 +1,4 @@
-import { AccountJsonHardwareSubstrate, AccountJsonQr } from "@core/domains/accounts/types"
+import { AccountJsonQr } from "@core/domains/accounts/types"
 import { SignerPayloadRaw } from "@core/domains/signing/types"
 import { AppPill } from "@talisman/components/AppPill"
 import { AccountPill } from "@ui/domains/Account/AccountPill"
@@ -12,7 +12,7 @@ import { Button, Tooltip, TooltipContent, TooltipTrigger } from "talisman-ui"
 import { PopupContent, PopupFooter, PopupHeader, PopupLayout } from "../../Layout/PopupLayout"
 import { SignAccountAvatar } from "./SignAccountAvatar"
 
-const LedgerSubstrate = lazy(() => import("@ui/domains/Sign/LedgerSubstrate"))
+const SignLedgerSubstrate = lazy(() => import("@ui/domains/Sign/SignLedgerSubstrate"))
 
 export const PolkadotSignMessageRequest: FC = () => {
   const { t } = useTranslation("request")
@@ -78,6 +78,7 @@ export const PolkadotSignMessageRequest: FC = () => {
                 </Button>
               </div>
             )}
+            {/* TODO move this logic inside SignDcentSubstrate */}
             {account.origin === "DCENT" && (
               <div className="grid w-full grid-cols-2 gap-12">
                 <Button disabled={processing} onClick={reject}>
@@ -99,12 +100,10 @@ export const PolkadotSignMessageRequest: FC = () => {
             )}
             {account.origin === "HARDWARE" && (
               <Suspense fallback={null}>
-                <LedgerSubstrate
+                <SignLedgerSubstrate
                   payload={request.payload}
-                  account={account as AccountJsonHardwareSubstrate}
-                  genesisHash={chain?.genesisHash ?? account?.genesisHash ?? undefined}
-                  onSignature={approveHardware}
-                  onReject={reject}
+                  onSigned={approveHardware}
+                  onCancel={reject}
                   containerId="main"
                 />
               </Suspense>

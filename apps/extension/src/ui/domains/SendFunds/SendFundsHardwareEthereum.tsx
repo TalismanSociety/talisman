@@ -1,12 +1,12 @@
 import { AccountJsonDcent } from "@core/domains/accounts/types"
 import { HexString } from "@polkadot/util/types"
-import SignDcentEthereum from "@ui/domains/Sign/SignDcentEthereum"
 import { useAccountByAddress } from "@ui/hooks/useAccountByAddress"
 import { useCallback, useState } from "react"
 
+import { SignHardwareEthereum } from "../Sign/SignHardwareEthereum"
 import { useSendFunds } from "./useSendFunds"
 
-const SendFundsDcentEthereum = () => {
+export const SendFundsHardwareEthereum = () => {
   const { from, evmTransaction, sendWithSignature, setIsLocked } = useSendFunds()
   const account = useAccountByAddress(from) as AccountJsonDcent
 
@@ -26,17 +26,13 @@ const SendFundsDcentEthereum = () => {
   if (error) return <div className="text-alert-error">{error.message}</div>
 
   return (
-    <SignDcentEthereum
+    <SignHardwareEthereum
       account={account}
       method="eth_sendTransaction"
       payload={evmTransaction?.transaction}
-      onReject={() => setIsLocked(false)}
-      onSignature={handleSigned}
-      onWaitingChanged={setIsLocked}
+      onSigned={handleSigned}
+      onSentToDevice={setIsLocked}
       containerId="main"
     />
   )
 }
-
-// default export to allow lazy loading
-export default SendFundsDcentEthereum

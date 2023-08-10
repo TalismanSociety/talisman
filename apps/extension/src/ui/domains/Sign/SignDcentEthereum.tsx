@@ -14,19 +14,7 @@ import { useTranslation } from "react-i18next"
 import { Button } from "talisman-ui"
 
 import { ErrorMessageDrawer } from "./ErrorMessageDrawer"
-
-type DcentEthereumProps = {
-  account: AccountJsonDcent
-  method: EthSignMessageMethod | "eth_sendTransaction"
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  payload: any // string message, typed object for eip712, TransactionRequest for tx
-  showCancelButton?: boolean
-  containerId?: string
-  className?: string
-  onSignature?: ({ signature }: { signature: HexString }) => void | Promise<void>
-  onReject: () => void
-  onWaitingChanged?: (waiting: boolean) => void // triggered when tx is sent to the device, or when response is received
-}
+import { SignHardwareEthereumProps } from "./SignHardwareEthereum"
 
 const signWithDcent = async (
   method: EthSignMessageMethod | "eth_sendTransaction",
@@ -120,16 +108,15 @@ const signWithDcent = async (
   }
 }
 
-const SignDcentEthereum: FC<DcentEthereumProps> = ({
+const SignDcentEthereum: FC<SignHardwareEthereumProps> = ({
   account,
   method,
   payload,
   className,
   containerId,
-  showCancelButton,
-  onWaitingChanged, // TODO to manage error, maybe rename and change to a have a boolean indicating if waiting signature or not (then call again with false )
-  onSignature,
-  onReject,
+  onSentToDevice, // TODO to manage error, maybe rename and change to a have a boolean indicating if waiting signature or not (then call again with false )
+  onSigned,
+  onCancel,
 }) => {
   const { t } = useTranslation("request")
   const [isSigning, setIsSigning] = useState(false)
@@ -142,31 +129,27 @@ const SignDcentEthereum: FC<DcentEthereumProps> = ({
   }, [payload])
 
   const signLedger = useCallback(async () => {
-    if (!onSignature || !payload || !account) {
+    if (!onSigned || !payload || !account) {
       return
     }
     setIsSigning(true)
     setDisplayedErrorMessage(undefined)
-    onWaitingChanged?.(true)
+    onSentToDevice?.(true)
     try {
-      const signature = await signWithDcent(method, payload, account.path)
-      onSignature({ signature })
+      const signature = await signWithDcent(method, payload, (account as AccountJsonDcent).path)
+      await onSigned({ signature })
       setIsSigned(true)
     } catch (err) {
       log.error("Failed to sign", { err })
       if (err instanceof DcentError) {
-        if (err.code === "user_cancel") onReject?.()
-        else setDisplayedErrorMessage(err.message)
+        if (err.code !== "user_cancel") setDisplayedErrorMessage(err.message)
       } else setDisplayedErrorMessage((err as Error).message ?? t("Failed to sign"))
       setIsSigning(false)
+      dcent.popupWindowClose()
     }
-    onWaitingChanged?.(false)
+    onSentToDevice?.(false)
     setIsSigning(false)
-  }, [onSignature, payload, account, onWaitingChanged, method, onReject, t])
-
-  const handleCancelClick = useCallback(() => {
-    onReject()
-  }, [onReject])
+  }, [onSigned, payload, account, onSentToDevice, method, t])
 
   return (
     <div className={classNames("flex w-full flex-col gap-6", className)}>
@@ -179,8 +162,8 @@ const SignDcentEthereum: FC<DcentEthereumProps> = ({
       >
         {t("Approve on D'CENT")}
       </Button>
-      {showCancelButton && (
-        <Button className="w-full" onClick={handleCancelClick}>
+      {onCancel && (
+        <Button className="w-full" onClick={onCancel}>
           {t("Cancel")}
         </Button>
       )}

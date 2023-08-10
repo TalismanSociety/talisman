@@ -9,7 +9,12 @@ import { DcentAccountInfo } from "./util"
 type DcentAccountStatus = "not-connected" | "update-required" | "connected"
 
 export const useDcentAccountConnect = (accountInfo: DcentAccountInfo, address: string) => {
-  const account = useAccountByAddress(address) as AccountJsonDcent | undefined
+  // origin check in case a same seed is used accross multiple device, it would crash the screen if type isn't AccountJsonDcent
+  const accountUnsafe = useAccountByAddress(address)
+  const account = useMemo(
+    () => (accountUnsafe?.origin === "DCENT" ? (accountUnsafe as AccountJsonDcent) : undefined),
+    [accountUnsafe]
+  )
 
   const { isConnected, isUpdateRequired } = useMemo(
     () =>

@@ -2,7 +2,7 @@ import { DEBUG } from "@core/constants"
 import { HeaderBlock } from "@talisman/components/HeaderBlock"
 import { Spacer } from "@talisman/components/Spacer"
 import { DashboardLayout } from "@ui/apps/dashboard/layout/DashboardLayout"
-import DcentWebConnector from "dcent-web-connector"
+import { dcent } from "@ui/util/dcent"
 import { useEffect } from "react"
 import { useTranslation } from "react-i18next"
 
@@ -15,7 +15,7 @@ export const ConnectDcentAccountsPage = () => {
   useEffect(() => {
     return () => {
       // Skip this in dev mode because of React StrictMode
-      if (!DEBUG) DcentWebConnector.popupWindowClose()
+      if (!DEBUG) dcent.popupWindowClose()
     }
   }, [])
 

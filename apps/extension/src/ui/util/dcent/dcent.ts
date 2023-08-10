@@ -64,12 +64,18 @@ const isDcentResponseSuccess = <T>(
 }
 
 const dcentCall = async <T>(func: () => Promise<DcentResponse<T>>): Promise<T> => {
-  const res = (await func()) as DcentResponse<T>
-  if (isDcentResponseSuccess(res)) return res.body.parameter
-  if (isDcentResponseError(res)) throw new DcentError(res.body.error.code, res.body.error.message)
+  try {
+    const res = (await func()) as DcentResponse<T>
+    if (isDcentResponseSuccess(res)) return res.body.parameter
+    if (isDcentResponseError(res)) throw new DcentError(res.body.error.code, res.body.error.message)
 
-  log.error("Unexpected D'CENT response", { res })
-  throw new Error("Unexpected D'CENT response")
+    log.error("Unexpected D'CENT response", { res })
+    throw new Error("Unexpected D'CENT response")
+  } catch (err) {
+    // could be a timeout, they are thrown as a dcent error payload
+    if (isDcentResponseError(err)) throw new DcentError(err.body.error.code, err.body.error.message)
+    throw err
+  }
 }
 
 // typed api that hides the response envelopes
@@ -102,4 +108,8 @@ export const dcent = {
     dcentCall<DcentSubstrateSignature>(() =>
       DcentWebConnector.getPolkadotSignedTransaction(payload)
     ),
+
+  popupWindowClose: () => {
+    DcentWebConnector.popupWindowClose()
+  },
 }

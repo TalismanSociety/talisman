@@ -2,7 +2,6 @@ import { SignerPayloadJSON, SignerPayloadRaw } from "@core/domains/signing/types
 import { log } from "@core/log"
 import { getTypeRegistry } from "@core/util/getTypeRegistry"
 import { isJsonPayload } from "@core/util/isJsonPayload"
-import { HexString } from "@polkadot/util/types"
 import { classNames, planckToTokens } from "@talismn/util"
 import { useQuery } from "@tanstack/react-query"
 import { useAccountByAddress } from "@ui/hooks/useAccountByAddress"
@@ -15,6 +14,7 @@ import { useTranslation } from "react-i18next"
 import { Button } from "talisman-ui"
 
 import { ErrorMessageDrawer } from "./ErrorMessageDrawer"
+import { SignHardwareSubstrateProps } from "./SignHardwareSubstrate"
 
 export type DcentSubstratePayload = {
   coinType: string
@@ -40,10 +40,10 @@ const useTypeRegistry = (chainIdOrHash: string | null) => {
   })
 }
 
-const useDcentPayload = (payload: SignerPayloadRaw | SignerPayloadJSON, fee?: string) => {
+const useDcentPayload = (payload?: SignerPayloadRaw | SignerPayloadJSON, fee?: string) => {
   const { t } = useTranslation()
-  const isJson = isJsonPayload(payload)
-  const account = useAccountByAddress(payload.address)
+  const isJson = payload && isJsonPayload(payload)
+  const account = useAccountByAddress(payload?.address)
   const chain = useChainByGenesisHash(isJson ? payload.genesisHash : null)
   const { data: chainRegistry } = useTypeRegistry(chain?.genesisHash ?? null)
 
@@ -104,23 +104,13 @@ const useDcentPayload = (payload: SignerPayloadRaw | SignerPayloadJSON, fee?: st
   }
 }
 
-export const SignDcentSubstrate: FC<{
-  payload: SignerPayloadRaw | SignerPayloadJSON
-  fee?: string
-  containerId?: string
-  className?: string
-  showCancelButton?: boolean
-  onCancel: () => void
-  onSignaturePending?: (pending: boolean) => void
-  onSigned: (result: { signature: HexString }) => Promise<void> | void
-}> = ({
+export const SignDcentSubstrate: FC<SignHardwareSubstrateProps> = ({
   payload,
   fee,
-  showCancelButton,
   containerId,
   className,
   onCancel,
-  onSignaturePending,
+  onSentToDevice,
   onSigned,
 }) => {
   const { t } = useTranslation("admin")
@@ -133,7 +123,7 @@ export const SignDcentSubstrate: FC<{
     if (!dcentTx) return
     setIsSigning(true)
     setDisplayedErrorMessage(undefined)
-    onSignaturePending?.(true)
+    onSentToDevice?.(true)
 
     try {
       const { signed_tx } = await dcent.getPolkadotSignedTransaction(dcentTx)
@@ -143,14 +133,14 @@ export const SignDcentSubstrate: FC<{
     } catch (err) {
       log.error("Failed to sign", { err })
       if (err instanceof DcentError) {
-        if (err.code === "user_cancel") onCancel?.()
-        else setDisplayedErrorMessage(err.message ?? t("Failed to sign"))
+        if (err.code !== "user_cancel") setDisplayedErrorMessage(err.message)
       } else setDisplayedErrorMessage((err as Error).message ?? t("Failed to sign"))
 
-      onSignaturePending?.(false)
+      onSentToDevice?.(false)
       setIsSigning(false)
+      dcent.popupWindowClose()
     }
-  }, [dcentTx, onCancel, onSignaturePending, onSigned, t])
+  }, [dcentTx, onSentToDevice, onSigned, t])
 
   useEffect(() => {
     // error from constructing payload
@@ -168,7 +158,7 @@ export const SignDcentSubstrate: FC<{
       >
         {t("Approve on D'CENT")}
       </Button>
-      {showCancelButton && (
+      {onCancel && (
         <Button className="w-full" onClick={onCancel}>
           {t("Cancel")}
         </Button>

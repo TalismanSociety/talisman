@@ -33,14 +33,7 @@ import { useFeeToken } from "./useFeeToken"
 import { useSendFundsInputNumber } from "./useSendFundsInputNumber"
 import { useSendFundsInputSize } from "./useSendFundsInputSize"
 
-type SignMethod =
-  | "normal"
-  | "ledgerSubstrate"
-  | "ledgerEthereum"
-  | "qrSubstrate"
-  | "dcentSubstrate"
-  | "dcentEthereum"
-  | "unknown"
+type SignMethod = "normal" | "hardwareSubstrate" | "hardwareEthereum" | "qrSubstrate" | "unknown"
 
 const useRecipientBalance = (token?: Token, address?: Address | null) => {
   const { t } = useTranslation("send-funds")
@@ -511,13 +504,13 @@ const useSendFundsProvider = () => {
       else throw new Error("Unknown token type")
     }
     if (fromAccount?.origin === "DCENT") {
-      if (isSubToken(token)) return "dcentSubstrate"
-      else if (isEvmToken(token)) return "dcentEthereum"
+      if (isSubToken(token)) return "hardwareSubstrate"
+      else if (isEvmToken(token)) return "hardwareEthereum"
       else throw new Error("Unknown token type")
     }
     if (fromAccount?.isHardware) {
-      if (isSubToken(token)) return "ledgerSubstrate"
-      else if (isEvmToken(token)) return "ledgerEthereum"
+      if (isSubToken(token)) return "hardwareSubstrate"
+      else if (isEvmToken(token)) return "hardwareEthereum"
       else throw new Error("Unknown token type")
     }
     return "normal"
