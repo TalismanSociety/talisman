@@ -23,7 +23,19 @@ export const OptionsPage = () => {
       <div className="mt-16 flex flex-col gap-12">
         <Setting
           title={t("Enable Testnets")}
-          subtitle={t("Connect to test networks (Westend, Mandala)")}
+          subtitle={
+            <>
+              {t("Connect to test networks")}
+              <span> | </span>
+              <a
+                href="https://paritytech.github.io/polkadot-testnet-faucet"
+                target="_blank"
+                className="text-grey-200 hover:text-body"
+              >
+                {t("Faucets")}
+              </a>
+            </>
+          }
         >
           <Toggle checked={useTestnets} onChange={(e) => setUseTestnets(e.target.checked)} />
         </Setting>
