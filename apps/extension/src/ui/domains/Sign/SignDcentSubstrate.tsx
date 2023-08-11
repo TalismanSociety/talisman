@@ -1,7 +1,7 @@
 import { SignerPayloadJSON, SignerPayloadRaw } from "@core/domains/signing/types"
 import { log } from "@core/log"
 import { getTypeRegistry } from "@core/util/getTypeRegistry"
-import { isJsonPayload } from "@core/util/isJsonPayload"
+import { isJsonPayload, isRawPayload } from "@core/util/isJsonPayload"
 import { classNames, planckToTokens } from "@talismn/util"
 import { useQuery } from "@tanstack/react-query"
 import { useAccountByAddress } from "@ui/hooks/useAccountByAddress"
@@ -11,7 +11,7 @@ import { DcentError, dcent } from "@ui/util/dcent"
 import DcentWebConnector from "dcent-web-connector"
 import { FC, useCallback, useEffect, useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
-import { Button } from "talisman-ui"
+import { Button, Tooltip, TooltipContent, TooltipTrigger } from "talisman-ui"
 
 import { ErrorMessageDrawer } from "./ErrorMessageDrawer"
 import { SignHardwareSubstrateProps } from "./SignHardwareSubstrate"
@@ -147,17 +147,30 @@ export const SignDcentSubstrate: FC<SignHardwareSubstrateProps> = ({
     if (errorMessage) setDisplayedErrorMessage(errorMessage)
   }, [errorMessage])
 
+  const showCannotSignTextMessages = useMemo(() => payload && isRawPayload(payload), [payload])
+
   return (
     <div className={classNames("flex w-full flex-col gap-6", className)}>
-      <Button
-        className="w-full"
-        disabled={!dcentTx}
-        processing={isSigning}
-        primary
-        onClick={handleSendClick}
-      >
-        {t("Approve on D'CENT")}
-      </Button>
+      <Tooltip placement="top">
+        <TooltipTrigger asChild>
+          <div>
+            <Button
+              className="w-full"
+              disabled={!dcentTx || showCannotSignTextMessages}
+              processing={isSigning}
+              primary
+              onClick={handleSendClick}
+            >
+              {t("Approve on D'CENT")}
+            </Button>
+          </div>
+        </TooltipTrigger>
+        {showCannotSignTextMessages && (
+          <TooltipContent>
+            {t("D'CENT currently cannot sign text messages for Polkadot")}
+          </TooltipContent>
+        )}
+      </Tooltip>
       {onCancel && (
         <Button className="w-full" onClick={onCancel}>
           {t("Cancel")}

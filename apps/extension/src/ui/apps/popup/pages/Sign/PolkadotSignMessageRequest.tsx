@@ -4,15 +4,14 @@ import { AppPill } from "@talisman/components/AppPill"
 import { AccountPill } from "@ui/domains/Account/AccountPill"
 import { Message } from "@ui/domains/Sign/Message"
 import { QrSubstrate } from "@ui/domains/Sign/Qr/QrSubstrate"
+import { SignHardwareSubstrate } from "@ui/domains/Sign/SignHardwareSubstrate"
 import { usePolkadotSigningRequest } from "@ui/domains/Sign/SignRequestContext"
-import { FC, Suspense, lazy, useEffect, useMemo } from "react"
+import { FC, Suspense, useEffect, useMemo } from "react"
 import { useTranslation } from "react-i18next"
-import { Button, Tooltip, TooltipContent, TooltipTrigger } from "talisman-ui"
+import { Button } from "talisman-ui"
 
 import { PopupContent, PopupFooter, PopupHeader, PopupLayout } from "../../Layout/PopupLayout"
 import { SignAccountAvatar } from "./SignAccountAvatar"
-
-const SignLedgerSubstrate = lazy(() => import("@ui/domains/Sign/SignLedgerSubstrate"))
 
 export const PolkadotSignMessageRequest: FC = () => {
   const { t } = useTranslation("request")
@@ -78,29 +77,9 @@ export const PolkadotSignMessageRequest: FC = () => {
                 </Button>
               </div>
             )}
-            {/* TODO move this logic inside SignDcentSubstrate */}
-            {account.origin === "DCENT" && (
-              <div className="grid w-full grid-cols-2 gap-12">
-                <Button disabled={processing} onClick={reject}>
-                  {t("Cancel")}
-                </Button>
-                <Tooltip placement="top-end">
-                  <TooltipTrigger asChild>
-                    <div>
-                      <Button disabled fullWidth primary onClick={approve}>
-                        {t("Approve")}
-                      </Button>
-                    </div>
-                  </TooltipTrigger>
-                  <TooltipContent>
-                    {t("D'CENT currently cannot sign text messages for Polkadot")}
-                  </TooltipContent>
-                </Tooltip>
-              </div>
-            )}
-            {account.origin === "HARDWARE" && (
+            {["HARDWARE", "DCENT"].includes(account.origin ?? "") && (
               <Suspense fallback={null}>
-                <SignLedgerSubstrate
+                <SignHardwareSubstrate
                   payload={request.payload}
                   onSigned={approveHardware}
                   onCancel={reject}
