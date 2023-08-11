@@ -503,11 +503,6 @@ const useSendFundsProvider = () => {
         return "unknown" // Parity signer / parity vault don't support ethereum accounts
       else throw new Error("Unknown token type")
     }
-    if (fromAccount?.origin === "DCENT") {
-      if (isSubToken(token)) return "hardwareSubstrate"
-      else if (isEvmToken(token)) return "hardwareEthereum"
-      else throw new Error("Unknown token type")
-    }
     if (fromAccount?.isHardware) {
       if (isSubToken(token)) return "hardwareSubstrate"
       else if (isEvmToken(token)) return "hardwareEthereum"

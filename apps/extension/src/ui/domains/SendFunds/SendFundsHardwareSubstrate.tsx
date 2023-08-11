@@ -47,13 +47,12 @@ export const SendFundsHardwareSubstrate = () => {
         })
       } catch (err) {
         setError(err as Error)
-        log.error("handleSigned", err)
+        log.error("handleSigned", { err })
       }
     },
     [sendWithSignature, to, token, amount, tokenId, knownAddress]
   )
 
-  // TODO
   if (error) return <div className="text-alert-error">{error.message}</div>
 
   return (

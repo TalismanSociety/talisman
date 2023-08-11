@@ -19,7 +19,6 @@ export const getDcentCoinTypeFromToken = (token: Token) => {
     case "substrate-native":
       return DcentWebConnector.coinType.POLKADOT
     default: {
-      // TODO sentry
       log.warn("Unsupported D'CENT token type : " + token.type, token)
     }
   }
