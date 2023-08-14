@@ -110,10 +110,14 @@ export class ChainConnectorEvm {
   ): Promise<ethers.providers.JsonRpcProvider | null> {
     if (!Array.isArray(evmNetwork.rpcs)) return null
 
-    const network = {
+    const network: ethers.providers.Network = {
       name: evmNetwork.name ?? "unknown network",
       chainId: parseInt(evmNetwork.id, 10),
     }
+
+    // Fixes ENS lookups by adding `ensAddress` to the `network` - which is then passed to the RpcProvider
+    const ensNetwork = ethers.providers.getNetwork(network.chainId)
+    if (typeof ensNetwork?.ensAddress === "string") network.ensAddress = ensNetwork.ensAddress
 
     // initialize cache for rpc urls if empty
     if (!this.#rpcUrlsCache.has(evmNetwork.id)) {
@@ -144,8 +148,8 @@ export class ChainConnectorEvm {
 
       const provider =
         batch === true
-          ? new BatchRpcProvider(connection /*network*/)
-          : new StandardRpcProvider(connection /*network*/)
+          ? new BatchRpcProvider(connection, network)
+          : new StandardRpcProvider(connection, network)
 
       // in case an error is thrown, rotate rpc urls cache
       // also clear provider cache to force logic going through getHealthyRpc again on next call
