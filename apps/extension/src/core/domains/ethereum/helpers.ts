@@ -118,6 +118,7 @@ export const rebuildGasSettings = (gasSettings: EthGasSettings) => {
 
 const TX_GAS_LIMIT_DEFAULT = BigNumber.from("250000")
 const TX_GAS_LIMIT_MIN = BigNumber.from("21000")
+const TX_GAS_LIMIT_SAFETY_RATIO = 2
 
 export const getGasLimit = (
   blockGasLimit: BigNumberish,
@@ -132,9 +133,8 @@ export const getGasLimit = (
     ? BigNumber.from(suggestedGasLimit)
     : BigNumber.from(0)
   const bnEstimatedGas = BigNumber.from(estimatedGas)
-  // RPC estimated gas may be too low (reliable ex: https://portal.zksync.io/bridge),
-  // so if dapp suggests higher gas limit as the estimate, use that
-  const highestLimit = bnEstimatedGas.gt(bnSuggestedGasLimit) ? bnEstimatedGas : bnSuggestedGasLimit
+  const bnSafeGasLimit = bnEstimatedGas.mul(100 + TX_GAS_LIMIT_SAFETY_RATIO).div(100)
+  const highestLimit = bnSafeGasLimit.gt(bnSuggestedGasLimit) ? bnSafeGasLimit : bnSuggestedGasLimit
 
   let gasLimit = BigNumber.from(highestLimit)
   if (gasLimit.gt(blockGasLimit)) {

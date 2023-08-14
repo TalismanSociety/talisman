@@ -204,6 +204,14 @@ const ViewDetailsContent: FC<ViewDetailsContentProps> = ({ onClose }) => {
                   </>
                 )}
                 <ViewDetailsGridRow
+                  left={t("Estimated gas")}
+                  right={
+                    txDetails?.estimatedGas
+                      ? BigNumber.from(txDetails?.estimatedGas)?.toNumber()
+                      : t("N/A")
+                  }
+                />
+                <ViewDetailsGridRow
                   left={t("Gas limit")}
                   right={
                     transaction?.gasLimit

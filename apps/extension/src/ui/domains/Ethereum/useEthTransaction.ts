@@ -257,7 +257,6 @@ const useGasSettings = ({
   tx?: ethers.providers.TransactionRequest
   isReplacement?: boolean
 }) => {
-  // TODO init with values from tx (supplied by dapp)
   const [customSettings, setCustomSettings] = useState<EthGasSettings>()
 
   const gasSettingsByPriority: GasSettingsByPriority | undefined = useMemo(() => {
