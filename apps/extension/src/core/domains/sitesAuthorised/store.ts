@@ -1,6 +1,6 @@
-import { TALISMAN_WEB_APP_DOMAIN } from "@core/constants"
 import { AuthorizedSite, AuthorizedSites, ProviderType } from "@core/domains/sitesAuthorised/types"
 import { SubscribableByIdStorageProvider } from "@core/libs/Store"
+import { isTalismanHostname } from "@core/page"
 import { urlToDomain } from "@core/util/urlToDomain"
 import { assert } from "@polkadot/util"
 import { convertAddress } from "@talisman/util/convertAddress"
@@ -40,7 +40,7 @@ export class SitesAuthorizedStore extends SubscribableByIdStorageProvider<
 
     const site = await this.get(val)
 
-    return { ...site, connectWatchedAccounts: site.url.includes(TALISMAN_WEB_APP_DOMAIN) }
+    return { ...site, connectWatchedAccounts: isTalismanHostname(site.url) }
   }
 
   public async ensureUrlAuthorized(

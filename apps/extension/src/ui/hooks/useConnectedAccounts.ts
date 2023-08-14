@@ -1,6 +1,6 @@
-import { TALISMAN_WEB_APP_DOMAIN } from "@core/constants"
 import { AccountJsonAny } from "@core/domains/accounts/types"
 import { ProviderType } from "@core/domains/sitesAuthorised/types"
+import { isTalismanHostname } from "@core/page"
 import { useMemo, useState } from "react"
 
 import useAccounts from "./useAccounts"
@@ -8,7 +8,7 @@ import useAuthorisedSiteById from "./useAuthorisedSiteById"
 
 export const useConnectedAccounts = (siteId: string, providerType: ProviderType) => {
   const { connected, toggleOne, url } = useAuthorisedSiteById(siteId, providerType)
-  const allAccounts = useAccounts(url.includes(TALISMAN_WEB_APP_DOMAIN) ? "portal" : "dapp")
+  const allAccounts = useAccounts(isTalismanHostname(url) ? "portal" : "dapp")
   const [showEthAccounts, setShowEthAccounts] = useState(
     allAccounts?.some((a) => connected.includes(a.address) && a.type === "ethereum")
   )

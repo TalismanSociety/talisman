@@ -1,5 +1,5 @@
-import { TALISMAN_WEB_APP_DOMAIN } from "@core/constants"
 import { KnownRequestIdOnly } from "@core/libs/requests/types"
+import { isTalismanHostname } from "@core/page"
 import { AppPill } from "@talisman/components/AppPill"
 import { notify } from "@talisman/components/Notifications"
 import useSet from "@talisman/hooks/useSet"
@@ -55,9 +55,7 @@ export const Connect: FC<{ className?: string }> = ({ className }) => {
   const { id } = useParams<"id">() as KnownRequestIdOnly<"auth">
   const authRequest = useRequest(id)
   const { popupOpenEvent } = useAnalytics()
-  const allAccounts = useAccounts(
-    authRequest?.url.includes(TALISMAN_WEB_APP_DOMAIN) ? "portal" : "dapp"
-  )
+  const allAccounts = useAccounts(isTalismanHostname(authRequest?.url) ? "portal" : "dapp")
   const { items: connected, toggle, set } = useSet<string>()
   const ethereum = !!authRequest?.request?.ethereum
   const [showEthAccounts, setShowEthAccounts] = useState(false)

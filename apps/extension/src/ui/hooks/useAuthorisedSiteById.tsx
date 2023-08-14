@@ -1,10 +1,11 @@
-import { DEFAULT_ETH_CHAIN_ID, TALISMAN_WEB_APP_DOMAIN } from "@core/constants"
+import { DEFAULT_ETH_CHAIN_ID } from "@core/constants"
 import {
   AuthorizedSite,
   AuthorizedSiteAddresses,
   AuthorizedSiteId,
   ProviderType,
 } from "@core/domains/sitesAuthorised/types"
+import { isTalismanHostname } from "@core/page"
 import { api } from "@ui/api"
 import { useCallback, useEffect, useMemo, useState } from "react"
 
@@ -15,7 +16,7 @@ const useAuthorisedSiteById = (id: AuthorizedSiteId, type: ProviderType) => {
   const sites = useAuthorisedSites()
   const availableAddresses = useAccountAddresses(
     type === "ethereum",
-    sites[id]?.url.includes(TALISMAN_WEB_APP_DOMAIN) ? "portal" : "dapp"
+    isTalismanHostname(sites[id]?.url) ? "portal" : "dapp"
   )
 
   const connected = useMemo(() => {
