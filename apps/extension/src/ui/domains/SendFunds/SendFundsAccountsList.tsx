@@ -86,7 +86,7 @@ const AccountRow: FC<AccountRowProps> = ({
         className="!text-lg"
       />
       <div className="flex grow items-center overflow-hidden">
-        <div className="flex flex-col">
+        <div className="flex flex-col space-y-2">
           <div className="flex items-center gap-2">
             <div className="overflow-hidden text-ellipsis whitespace-nowrap">
               {account.name ?? (
