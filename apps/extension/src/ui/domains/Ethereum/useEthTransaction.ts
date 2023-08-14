@@ -35,11 +35,11 @@ const UNRELIABLE_GASPRICE_NETWORK_IDS = [137, 80001]
 
 const useNonce = (address?: string, evmNetworkId?: EvmNetworkId, forcedValue?: number) => {
   const { data, ...rest } = useQuery({
-    queryKey: ["nonce", address, evmNetworkId],
+    queryKey: ["nonce", address, evmNetworkId, forcedValue],
     queryFn: () => {
+      if (forcedValue !== undefined) return forcedValue
       return address && evmNetworkId ? api.ethGetTransactionsCount(address, evmNetworkId) : null
     },
-    enabled: forcedValue === undefined, // don't bother fetching if value is forced
   })
 
   return { nonce: forcedValue ?? data ?? undefined, ...rest }
