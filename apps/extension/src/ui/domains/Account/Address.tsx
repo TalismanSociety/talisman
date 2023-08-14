@@ -5,7 +5,7 @@ import { useOnChainId } from "@ui/hooks/useOnChainId"
 import { FC, useMemo } from "react"
 
 type AddressProps = {
-  address: string
+  address?: string
   startCharCount?: number
   endCharCount?: number
   as?: "span" | "div"
@@ -33,6 +33,7 @@ export const Address: FC<AddressProps> = ({
   const formatted = useMemo(() => {
     if (!noOnChainId && onChainId) return onChainId
     if (noShorten) return address
+    if (!address) return address
     return shortenAddress(address, startCharCount, endCharCount)
   }, [noOnChainId, onChainId, noShorten, address, startCharCount, endCharCount])
   if (!formatted) return null

@@ -17,6 +17,7 @@ import { usePortfolio } from "@ui/domains/Portfolio/context"
 import { useDisplayBalances } from "@ui/domains/Portfolio/useDisplayBalances"
 import { useAnalytics } from "@ui/hooks/useAnalytics"
 import useBalances from "@ui/hooks/useBalances"
+import { useFormattedAddress } from "@ui/hooks/useFormattedAddress"
 import { useSearchParamsSelectedAccount } from "@ui/hooks/useSearchParamsSelectedAccount"
 import { useSearchParamsSelectedFolder } from "@ui/hooks/useSearchParamsSelectedFolder"
 import { useSendFundsPopup } from "@ui/hooks/useSendFundsPopup"
@@ -40,6 +41,8 @@ const PageContent = ({
 }) => {
   const { account } = useSearchParamsSelectedAccount()
   const { folder } = useSearchParamsSelectedFolder()
+
+  const formattedAddress = useFormattedAddress(account?.address, account?.genesisHash)
 
   const balancesByAddress = useMemo(() => {
     // we use this to avoid looping over the balances list n times, where n is the number of accounts in the wallet
@@ -127,7 +130,7 @@ const PageContent = ({
               )}
             >
               {account ? (
-                <Address address={account.address} />
+                <Address address={formattedAddress} />
               ) : (
                 <Fiat amount={balances.sum.fiat("usd").total} isBalance />
               )}

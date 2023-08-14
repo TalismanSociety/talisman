@@ -9,6 +9,7 @@ import { classNames, planckToTokens, tokensToPlanck } from "@talismn/util"
 import { SendFundsWizardPage, useSendFundsWizard } from "@ui/apps/popup/pages/SendFunds/context"
 import { useAccountByAddress } from "@ui/hooks/useAccountByAddress"
 import { useAddressBook } from "@ui/hooks/useAddressBook"
+import { useFormattedAddress } from "@ui/hooks/useFormattedAddress"
 import useToken from "@ui/hooks/useToken"
 import { isEvmToken } from "@ui/util/isEvmToken"
 import { isSubToken } from "@ui/util/isSubToken"
@@ -86,6 +87,8 @@ const AddressPillButton: FC<AddressPillButtonProps> = ({ address, className, onC
     return { name: undefined, genesisHash: undefined }
   }, [account, contact])
 
+  const formattedAddress = useFormattedAddress(address ?? undefined, genesisHash)
+
   if (!address) return null
 
   return (
@@ -93,7 +96,7 @@ const AddressPillButton: FC<AddressPillButtonProps> = ({ address, className, onC
       <div className="text-body flex h-16 max-w-full flex-nowrap items-center gap-4 overflow-x-hidden text-base">
         <AccountIcon className="!text-lg" address={address} genesisHash={genesisHash} />
         <div className="leading-base grow overflow-hidden text-ellipsis whitespace-nowrap">
-          {name ?? <Address address={address} startCharCount={6} endCharCount={6} />}
+          {name ?? <Address address={formattedAddress} startCharCount={6} endCharCount={6} />}
         </div>
         <AccountTypeIcon origin={account?.origin} className="text-primary-500" />
       </div>

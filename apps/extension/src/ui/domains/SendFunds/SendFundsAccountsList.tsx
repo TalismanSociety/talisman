@@ -4,6 +4,7 @@ import { Balance } from "@talismn/balances"
 import { Token } from "@talismn/chaindata-provider"
 import { classNames } from "@talismn/util"
 import useBalances from "@ui/hooks/useBalances"
+import { useFormattedAddress } from "@ui/hooks/useFormattedAddress"
 import useToken from "@ui/hooks/useToken"
 import { FC, ReactNode, useCallback, useMemo } from "react"
 import { useTranslation } from "react-i18next"
@@ -65,6 +66,8 @@ const AccountRow: FC<AccountRowProps> = ({
   token,
   disabled,
 }) => {
+  const formattedAddress = useFormattedAddress(account?.address, account?.genesisHash)
+
   return (
     <button
       type="button"
@@ -87,12 +90,12 @@ const AccountRow: FC<AccountRowProps> = ({
           <div className="flex items-center gap-2">
             <div className="overflow-hidden text-ellipsis whitespace-nowrap">
               {account.name ?? (
-                <Address address={account.address} startCharCount={6} endCharCount={6} noTooltip />
+                <Address address={formattedAddress} startCharCount={6} endCharCount={6} noTooltip />
               )}
             </div>
             <AccountTypeIcon origin={account.origin} className="text-primary" />
           </div>
-          <Address className="text-body-secondary text-xs" address={account.address} />
+          <Address className="text-body-secondary text-xs" address={formattedAddress} />
         </div>
         {selected && <CheckCircleIcon className="ml-3 inline shrink-0" />}
       </div>

@@ -1,6 +1,6 @@
-import { classNames, encodeAnyAddress } from "@talismn/util"
+import { classNames } from "@talismn/util"
 import { useAccountByAddress } from "@ui/hooks/useAccountByAddress"
-import useChainByGenesisHash from "@ui/hooks/useChainByGenesisHash"
+import { useFormattedAddress } from "@ui/hooks/useFormattedAddress"
 import { useIsKnownAddress } from "@ui/hooks/useIsKnownAddress"
 import { FC } from "react"
 import { Tooltip, TooltipContent, TooltipTrigger } from "talisman-ui"
@@ -13,9 +13,9 @@ const FormattedAddressTooltip: FC<{ address: string; genesisHash?: string | null
   address,
   genesisHash,
 }) => {
-  const chain = useChainByGenesisHash(genesisHash)
+  const formattedAddress = useFormattedAddress(address, genesisHash)
 
-  return <TooltipContent>{encodeAnyAddress(address, chain?.prefix ?? undefined)}</TooltipContent>
+  return <TooltipContent>{formattedAddress}</TooltipContent>
 }
 
 export const FormattedAddress: FC<{

@@ -21,6 +21,7 @@ import useAccountsCatalog from "@ui/hooks/useAccountsCatalog"
 import { useAnalytics } from "@ui/hooks/useAnalytics"
 import useBalances from "@ui/hooks/useBalances"
 import { useFirstAccountColors } from "@ui/hooks/useFirstAccountColors"
+import { useFormattedAddress } from "@ui/hooks/useFormattedAddress"
 import { useSearchParamsSelectedFolder } from "@ui/hooks/useSearchParamsSelectedFolder"
 import { MouseEventHandler, Suspense, useCallback, useEffect, useMemo, useRef } from "react"
 import { useTranslation } from "react-i18next"
@@ -99,6 +100,10 @@ const AccountButton = ({ option }: { option: AccountOption }) => {
   )
 
   const isAccount = option.type === "account"
+  const formattedAddress = useFormattedAddress(
+    isAccount ? option.address : undefined,
+    isAccount ? option.genesisHash : undefined
+  )
 
   return (
     <button
@@ -136,7 +141,7 @@ const AccountButton = ({ option }: { option: AccountOption }) => {
         </div>
       </div>
       {isAccount && (
-        <Address className="show-on-hover text-body-secondary text-xs" address={option.address} />
+        <Address className="show-on-hover text-body-secondary text-xs" address={formattedAddress} />
       )}
       {isAccount && (
         <div className="hide-on-hover text-lg">
