@@ -123,7 +123,8 @@ const TX_GAS_LIMIT_SAFETY_RATIO = 2
 export const getGasLimit = (
   blockGasLimit: BigNumberish,
   estimatedGas: BigNumberish,
-  tx?: ethers.providers.TransactionRequest
+  tx: ethers.providers.TransactionRequest | undefined,
+  isContractCall?: boolean
 ) => {
   // some dapps use legacy gas field instead of gasLimit
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -133,7 +134,10 @@ export const getGasLimit = (
     ? BigNumber.from(suggestedGasLimit)
     : BigNumber.from(0)
   const bnEstimatedGas = BigNumber.from(estimatedGas)
-  const bnSafeGasLimit = bnEstimatedGas.mul(100 + TX_GAS_LIMIT_SAFETY_RATIO).div(100)
+  // for contract calls, cas cost can evolve overtime : add a safety margin
+  const bnSafeGasLimit = isContractCall
+    ? bnEstimatedGas
+    : bnEstimatedGas.mul(100 + TX_GAS_LIMIT_SAFETY_RATIO).div(100)
   const highestLimit = bnSafeGasLimit.gt(bnSuggestedGasLimit) ? bnSafeGasLimit : bnSuggestedGasLimit
 
   let gasLimit = BigNumber.from(highestLimit)
