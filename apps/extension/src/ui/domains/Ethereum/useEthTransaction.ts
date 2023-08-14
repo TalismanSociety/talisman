@@ -19,6 +19,7 @@ import {
   GasSettingsByPriority,
 } from "@core/domains/signing/types"
 import { ETH_ERROR_EIP1474_METHOD_NOT_FOUND } from "@core/injectEth/EthProviderRpcError"
+import { log } from "@core/log"
 import { getEthTransactionInfo } from "@core/util/getEthTransactionInfo"
 import { FeeHistoryAnalysis, getFeeHistoryAnalysis } from "@core/util/getFeeHistoryAnalysis"
 import { useQuery } from "@tanstack/react-query"
@@ -45,6 +46,7 @@ const useNonce = (address?: string, evmNetworkId?: EvmNetworkId, forcedValue?: n
   return { nonce: forcedValue ?? data ?? undefined, ...rest }
 }
 
+// TODO : could be skipped (store in db ?) for networks that we know already support it, but need to keep checking for legacy network in case they upgrade
 const useHasEip1559Support = (provider?: ethers.providers.JsonRpcProvider) => {
   const { data, ...rest } = useQuery({
     queryKey: ["hasEip1559Support", provider?.network?.chainId],
@@ -67,20 +69,39 @@ const useHasEip1559Support = (provider?: ethers.providers.JsonRpcProvider) => {
       }
     },
     refetchInterval: false,
+    refetchOnMount: false,
+    refetchOnReconnect: false,
+    refetchOnWindowFocus: false,
+    enabled: !!provider,
   })
 
   return { hasEip1559Support: data ?? undefined, ...rest }
 }
 
 const useBlockFeeData = (
-  provider?: ethers.providers.JsonRpcProvider,
-  tx?: ethers.providers.TransactionRequest,
-  withFeeOptions?: boolean
+  provider: ethers.providers.JsonRpcProvider | undefined,
+  tx: ethers.providers.TransactionRequest | undefined,
+  withFeeOptions: boolean | undefined
 ) => {
   const { data, ...rest } = useQuery({
     queryKey: ["block", provider?.network?.chainId, tx, withFeeOptions],
     queryFn: async () => {
       if (!provider || !tx) return null
+
+      // estimate gas without any gas setting, will be used as our gasLimit
+      // spread to keep only valid properties (exclude the one called "gas" and any undefined ones)
+      const { chainId, from, to, value = BigNumber.from("0"), data } = tx
+      const txForEstimate: ethers.providers.TransactionRequest = {
+        chainId,
+        from,
+        to,
+        value,
+        data,
+      }
+      if (tx.accessList !== undefined) txForEstimate.accessList = tx.accessList
+      if (tx.customData !== undefined) txForEstimate.customData = tx.customData
+      if (tx.ccipReadEnabled !== undefined) txForEstimate.ccipReadEnabled = tx.ccipReadEnabled
+
       const [
         gasPrice,
         { gasLimit: blockGasLimit, baseFeePerGas, gasUsed, number: blockNumber },
@@ -91,15 +112,10 @@ const useBlockFeeData = (
         provider.getBlock("latest"),
         withFeeOptions ? getFeeHistoryAnalysis(provider) : undefined,
         // estimate gas may change over time for contract calls, so we need to refresh it every time we prepare the tx to prevent an invalid transaction
-        provider.estimateGas({
-          ...tx,
-          type: undefined,
-          gasPrice: undefined,
-          maxPriorityFeePerGas: undefined,
-          maxFeePerGas: undefined,
-          gasLimit: undefined,
-        }),
+        provider.estimateGas(txForEstimate),
       ])
+
+      log.debug("estimatedGas", estimatedGas.toString())
 
       if (
         feeHistoryAnalysis &&
@@ -145,6 +161,7 @@ const useBlockFeeData = (
         blockNumber,
       }
     },
+    enabled: !!tx && !!provider && withFeeOptions !== undefined,
     refetchInterval: 6_000,
     retry: false,
   })
@@ -178,6 +195,7 @@ const useTransactionInfo = (
     },
     refetchInterval: false,
     refetchOnWindowFocus: false, // prevents error to be cleared when window gets focus
+    enabled: !!provider && !!tx,
   })
 
   return { transactionInfo: data ?? undefined, ...rest }

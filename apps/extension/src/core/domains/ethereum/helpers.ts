@@ -217,24 +217,32 @@ export const prepareTransaction = (
   gasSettings: EthGasSettings,
   nonce: number
 ) => {
-  // keep only known fields except gas related ones
-  const { chainId, data, from, to, value, accessList, ccipReadEnabled, customData } = tx
-
-  const result: ethers.providers.TransactionRequest = {
+  // keep only known fields except gas related ones, there are sometimes invalid ones in the original payload (ex: "gas")
+  const {
     chainId,
     data,
     from,
     to,
-    value,
-    nonce,
+    value = BigNumber.from(0),
     accessList,
     ccipReadEnabled,
     customData,
-    // apply user gas settings
+  } = tx
+
+  const transaction: ethers.providers.TransactionRequest = {
+    chainId,
+    from,
+    to,
+    value,
+    nonce: BigNumber.from(nonce),
+    data,
     ...gasSettings,
   }
+  if (accessList) transaction.accessList = accessList
+  if (customData) transaction.customData = customData
+  if (ccipReadEnabled !== undefined) transaction.ccipReadEnabled = ccipReadEnabled
 
-  return result
+  return transaction
 }
 
 const testNoScriptTag = (text?: string) => !text?.toLowerCase().includes("<script")

@@ -1,13 +1,14 @@
 import { EthPriorityOptionName } from "@core/domains/signing/types"
+import { log } from "@core/log"
 import { useQuery } from "@tanstack/react-query"
 import { useAccountByAddress } from "@ui/hooks/useAccountByAddress"
 import { ethers } from "ethers"
 import { useTranslation } from "react-i18next"
 
 export const useIsValidEthTransaction = (
-  provider?: ethers.providers.JsonRpcProvider,
-  transaction?: ethers.providers.TransactionRequest,
-  priority?: EthPriorityOptionName
+  provider: ethers.providers.JsonRpcProvider | undefined,
+  transaction: ethers.providers.TransactionRequest | undefined,
+  priority: EthPriorityOptionName | undefined
 ) => {
   const { t } = useTranslation("request")
   const account = useAccountByAddress(transaction?.from)
@@ -30,6 +31,7 @@ export const useIsValidEthTransaction = (
 
       // dry runs the transaction, if it fails we can't know for sure what the issue really is
       // there should be helpful message in the error though.
+      log.debug("validating tx using estimateGas", transaction)
       const estimatedGas = await provider.estimateGas(transaction)
       return estimatedGas?.gt(0)
     },
@@ -37,6 +39,7 @@ export const useIsValidEthTransaction = (
     refetchOnWindowFocus: false,
     retry: 0,
     keepPreviousData: true,
+    enabled: !!provider && !!transaction && !!account,
   })
 
   return { isValid: !!data, error, isLoading }
