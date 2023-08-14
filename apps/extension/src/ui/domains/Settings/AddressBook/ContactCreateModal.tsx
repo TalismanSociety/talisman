@@ -187,6 +187,8 @@ export const ContactCreateModal = ({ isOpen, close }: ContactModalProps) => {
               placeholder={t("Address")}
               autoComplete="off"
               spellCheck="false"
+              /* Fixes implicit min-width of approx. 180px */
+              size={1}
               after={
                 <AddressFieldEnsBadge
                   isEnsLookup={isEnsLookup}
