@@ -212,6 +212,23 @@ export const getTotalFeesFromGasSettings = (
   }
 }
 
+export const getMaxTransactionCost = (transaction: ethers.providers.TransactionRequest) => {
+  if (transaction.gasLimit === undefined)
+    throw new Error("gasLimit is required for type 2 fee computation")
+
+  const value = BigNumber.from(transaction.value ?? 0)
+
+  if (transaction.type === 2) {
+    if (transaction.maxFeePerGas === undefined)
+      throw new Error("maxFeePerGas is required for type 2 fee computation")
+    return BigNumber.from(transaction.maxFeePerGas).mul(transaction.gasLimit).add(value)
+  } else {
+    if (transaction.gasPrice === undefined)
+      throw new Error("gasPrice is required for legacy fee computation")
+    return BigNumber.from(transaction.gasPrice).mul(transaction.gasLimit).add(value)
+  }
+}
+
 export const prepareTransaction = (
   tx: ethers.providers.TransactionRequest,
   gasSettings: EthGasSettings,

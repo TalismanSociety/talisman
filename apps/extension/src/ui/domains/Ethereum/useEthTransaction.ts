@@ -34,7 +34,11 @@ import { useIsValidEthTransaction } from "./useIsValidEthTransaction"
 // gasPrice isn't reliable on polygon & mumbai, see https://github.com/ethers-io/ethers.js/issues/2828#issuecomment-1283014250
 const UNRELIABLE_GASPRICE_NETWORK_IDS = [137, 80001]
 
-const useNonce = (address?: string, evmNetworkId?: EvmNetworkId, forcedValue?: number) => {
+const useNonce = (
+  address: string | undefined,
+  evmNetworkId: EvmNetworkId | undefined,
+  forcedValue?: number
+) => {
   const { data, ...rest } = useQuery({
     queryKey: ["nonce", address, evmNetworkId, forcedValue],
     queryFn: () => {
@@ -47,7 +51,7 @@ const useNonce = (address?: string, evmNetworkId?: EvmNetworkId, forcedValue?: n
 }
 
 // TODO : could be skipped (store in db ?) for networks that we know already support it, but need to keep checking for legacy network in case they upgrade
-const useHasEip1559Support = (provider?: ethers.providers.JsonRpcProvider) => {
+const useHasEip1559Support = (provider: ethers.providers.JsonRpcProvider | undefined) => {
   const { data, ...rest } = useQuery({
     queryKey: ["hasEip1559Support", provider?.network?.chainId],
     queryFn: async () => {
