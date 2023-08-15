@@ -301,39 +301,31 @@ export const SendFundsConfirmForm = () => {
         <div className="h-32 text-lg font-bold">{t("You are sending")}</div>
         <div className="w-full grow">
           <div className="bg-grey-900 text-body-secondary flex flex-col rounded px-12 py-8 leading-[140%]">
-            <div className="flex min-h-[32px] items-center justify-between gap-8">
-              <div className="text-body-secondary align-top">{t("Amount")}</div>
-              <div className="text-body overflow-x-hidden">
-                <AmountDisplay />
-              </div>
+            <div className="text-body flex min-h-[32px] items-center justify-between gap-8">
+              <div className="text-body-secondary">{t("Amount")}</div>
+              <AmountDisplay />
             </div>
             <div className="flex min-h-[32px] items-center justify-between gap-8">
               <div className="text-body-secondary">{t("From")}</div>
-              <div className="text-body overflow-x-hidden">
-                <AddressDisplay
-                  className="h-16"
-                  address={from}
-                  chainId={chain?.id}
-                  evmNetworkId={evmNetwork?.id}
-                />
-              </div>
+              <AddressDisplay
+                className="h-16"
+                address={from}
+                chainId={chain?.id}
+                evmNetworkId={evmNetwork?.id}
+              />
             </div>
             <div className="flex min-h-[32px] items-center justify-between gap-8">
               <div className="text-body-secondary">{t("To")}</div>
-              <div className="text-body overflow-x-hidden">
-                <AddressDisplay
-                  className="h-16"
-                  address={to}
-                  chainId={chain?.id}
-                  evmNetworkId={evmNetwork?.id}
-                />
-              </div>
+              <AddressDisplay
+                className="h-16"
+                address={to}
+                chainId={chain?.id}
+                evmNetworkId={evmNetwork?.id}
+              />
             </div>
-            <div className="flex min-h-[32px] items-center justify-between gap-8">
-              <div className="text-body-secondary align-top">{t("Network")}</div>
-              <div className="text-body overflow-x-hidden">
-                <NetworkDisplay />
-              </div>
+            <div className="text-body flex min-h-[32px] items-center justify-between gap-8">
+              <div className="text-body-secondary">{t("Network")}</div>
+              <NetworkDisplay />
             </div>
             <div className="py-8">
               <hr className="text-grey-800" />
