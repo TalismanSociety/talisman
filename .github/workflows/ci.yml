@@ -306,7 +306,7 @@ jobs:
       - name: Run e2e tests
         run: xvfb-run -a yarn e2e:test
         env:
-          PASSWORD: ${{ secrets.PASSWORD }}
+          PASSWORD: ${{ secrets.TESTING_PASSWORD }}
       - name: Upload test results
         if: failure()
         uses: actions/upload-artifact@v3
