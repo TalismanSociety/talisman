@@ -19,7 +19,6 @@ import {
   GasSettingsByPriority,
 } from "@core/domains/signing/types"
 import { ETH_ERROR_EIP1474_METHOD_NOT_FOUND } from "@core/injectEth/EthProviderRpcError"
-import { log } from "@core/log"
 import { getEthTransactionInfo } from "@core/util/getEthTransactionInfo"
 import { FeeHistoryAnalysis, getFeeHistoryAnalysis } from "@core/util/getFeeHistoryAnalysis"
 import { useQuery } from "@tanstack/react-query"
@@ -50,7 +49,7 @@ const useNonce = (
   return { nonce: forcedValue ?? data ?? undefined, ...rest }
 }
 
-// TODO : could be skipped (store in db ?) for networks that we know already support it, but need to keep checking for legacy network in case they upgrade
+// TODO : could be skipped for networks that we know already support it, but need to keep checking for legacy network in case they upgrade
 const useHasEip1559Support = (provider: ethers.providers.JsonRpcProvider | undefined) => {
   const { data, ...rest } = useQuery({
     queryKey: ["hasEip1559Support", provider?.network?.chainId],
@@ -118,8 +117,6 @@ const useBlockFeeData = (
         // estimate gas may change over time for contract calls, so we need to refresh it every time we prepare the tx to prevent an invalid transaction
         provider.estimateGas(txForEstimate),
       ])
-
-      log.debug("estimatedGas", estimatedGas.toString())
 
       if (
         feeHistoryAnalysis &&

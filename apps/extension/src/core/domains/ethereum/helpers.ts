@@ -138,6 +138,8 @@ export const getGasLimit = (
   const bnSafeGasLimit = isContractCall
     ? bnEstimatedGas
     : bnEstimatedGas.mul(100 + TX_GAS_LIMIT_SAFETY_RATIO).div(100)
+  // RPC estimated gas may be too low (reliable ex: https://portal.zksync.io/bridge),
+  // so if dapp suggests higher gas limit as the estimate, use that
   const highestLimit = bnSafeGasLimit.gt(bnSuggestedGasLimit) ? bnSafeGasLimit : bnSuggestedGasLimit
 
   let gasLimit = BigNumber.from(highestLimit)
@@ -218,7 +220,7 @@ export const getTotalFeesFromGasSettings = (
 
 export const getMaxTransactionCost = (transaction: ethers.providers.TransactionRequest) => {
   if (transaction.gasLimit === undefined)
-    throw new Error("gasLimit is required for type 2 fee computation")
+    throw new Error("gasLimit is required for fee computation")
 
   const value = BigNumber.from(transaction.value ?? 0)
 
@@ -238,7 +240,6 @@ export const prepareTransaction = (
   gasSettings: EthGasSettings,
   nonce: number
 ) => {
-  // keep only known fields except gas related ones, there are sometimes invalid ones in the original payload (ex: "gas")
   const {
     chainId,
     data,

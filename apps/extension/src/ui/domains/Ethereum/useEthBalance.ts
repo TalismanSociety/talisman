@@ -6,12 +6,16 @@ export const useEthBalance = (
   address: string | undefined
 ) => {
   const { data: balance, ...rest } = useQuery({
-    queryKey: ["balance", address],
+    queryKey: ["useEthBalance", provider?.network?.chainId, address],
     queryFn: () => {
       if (!provider || !address) return null
       return provider.getBalance(address)
     },
-    enabled: !!provider && !!address,
+    refetchInterval: 12_000,
+    refetchOnMount: false,
+    refetchOnReconnect: false,
+    refetchOnWindowFocus: false,
+    enabled: !!provider?.network && !!address,
   })
 
   return { balance, ...rest }

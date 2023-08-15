@@ -1,6 +1,5 @@
 import { getMaxTransactionCost } from "@core/domains/ethereum/helpers"
 import { EthPriorityOptionName } from "@core/domains/signing/types"
-import { log } from "@core/log"
 import { useQuery } from "@tanstack/react-query"
 import { useAccountByAddress } from "@ui/hooks/useAccountByAddress"
 import { ethers } from "ethers"
@@ -40,7 +39,6 @@ export const useIsValidEthTransaction = (
 
       // dry runs the transaction, if it fails we can't know for sure what the issue really is
       // there should be helpful message in the error though.
-      log.debug("validating tx using estimateGas", transaction)
       const estimatedGas = await provider.estimateGas(transaction)
       return estimatedGas?.gt(0)
     },
