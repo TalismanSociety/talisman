@@ -15,7 +15,7 @@ export const data = {
 			tokenDecimals: '18',
 			blockExplorerUrl: 'https://explorer.dogechain.dog',
 			tokenCoingeckoId: 'dogecoin',
-			testnet: true
+			testnet: false
 		},
 		{
 			rpc: 'https://evm.kava.io',
