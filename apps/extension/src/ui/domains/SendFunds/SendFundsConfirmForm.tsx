@@ -301,11 +301,11 @@ export const SendFundsConfirmForm = () => {
         <div className="h-32 text-lg font-bold">{t("You are sending")}</div>
         <div className="w-full grow">
           <div className="bg-grey-900 text-body-secondary flex flex-col rounded px-12 py-8 leading-[140%]">
-            <div className="text-body flex min-h-[32px] items-center justify-between gap-8">
+            <div className="text-body flex h-16 items-center justify-between gap-8">
               <div className="text-body-secondary">{t("Amount")}</div>
               <AmountDisplay />
             </div>
-            <div className="flex min-h-[32px] items-center justify-between gap-8">
+            <div className="flex h-16 items-center justify-between gap-8">
               <div className="text-body-secondary">{t("From")}</div>
               <AddressDisplay
                 className="h-16"
@@ -314,7 +314,7 @@ export const SendFundsConfirmForm = () => {
                 evmNetworkId={evmNetwork?.id}
               />
             </div>
-            <div className="flex min-h-[32px] items-center justify-between gap-8">
+            <div className="flex h-16 items-center justify-between gap-8">
               <div className="text-body-secondary">{t("To")}</div>
               <AddressDisplay
                 className="h-16"
@@ -323,7 +323,7 @@ export const SendFundsConfirmForm = () => {
                 evmNetworkId={evmNetwork?.id}
               />
             </div>
-            <div className="text-body flex min-h-[32px] items-center justify-between gap-8">
+            <div className="text-body flex h-16 items-center justify-between gap-8">
               <div className="text-body-secondary">{t("Network")}</div>
               <NetworkDisplay />
             </div>
