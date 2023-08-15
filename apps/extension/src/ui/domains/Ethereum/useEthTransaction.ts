@@ -262,7 +262,7 @@ const useGasSettings = ({
   const gasSettingsByPriority: GasSettingsByPriority | undefined = useMemo(() => {
     if (hasEip1559Support === undefined || !estimatedGas || !gasPrice || !blockGasLimit || !tx)
       return undefined
-    const gasLimit = getGasLimit(blockGasLimit, estimatedGas, tx)
+    const gasLimit = getGasLimit(blockGasLimit, estimatedGas, tx, isContractCall)
     const suggestedSettings = getEthGasSettingsFromTransaction(
       tx,
       hasEip1559Support,

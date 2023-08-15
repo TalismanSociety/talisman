@@ -128,16 +128,12 @@ export const getGasLimit = (
 ) => {
   // some dapps use legacy gas field instead of gasLimit
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const suggestedGasLimit = tx?.gasLimit ?? (tx as any)?.gas
-
-  const bnSuggestedGasLimit = suggestedGasLimit
-    ? BigNumber.from(suggestedGasLimit)
-    : BigNumber.from(0)
+  const bnSuggestedGasLimit = BigNumber.from(tx?.gasLimit ?? (tx as any)?.gas ?? 0)
   const bnEstimatedGas = BigNumber.from(estimatedGas)
-  // for contract calls, cas cost can evolve overtime : add a safety margin
+  // for contract calls, gas cost can evolve overtime : add a safety margin
   const bnSafeGasLimit = isContractCall
-    ? bnEstimatedGas
-    : bnEstimatedGas.mul(100 + TX_GAS_LIMIT_SAFETY_RATIO).div(100)
+    ? bnEstimatedGas.mul(100 + TX_GAS_LIMIT_SAFETY_RATIO).div(100)
+    : bnEstimatedGas
   // RPC estimated gas may be too low (reliable ex: https://portal.zksync.io/bridge),
   // so if dapp suggests higher gas limit as the estimate, use that
   const highestLimit = bnSafeGasLimit.gt(bnSuggestedGasLimit) ? bnSafeGasLimit : bnSuggestedGasLimit
