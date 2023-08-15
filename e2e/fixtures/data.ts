@@ -1,6 +1,6 @@
 export const data = {
-	seedPhrase: process.env.SEED_PHRASE as string,
-	password: process.env.PASSWORD as string,
+	password: process.env.TESTING_PASSWORD as string,
+	seedPhrase: process.env.TESTING_SEED_PHRASE as string,
 	dotName: 'Polkadot',
 	ethName: 'Ethereum',
 	dotAddress: '1YmEYgtfPbwx5Jos1PjKDWRpuJWSpTzytwZgYan6kgiquNS',
