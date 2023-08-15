@@ -16,7 +16,7 @@ test.describe('Settings', () => {
         await context.close();
     });
 
-    test('backup wallet', async ({page, settings}) => {
+    test('Backup Wallet', async ({page, settings}) => {
         await test.step('check Change password button is disabled', async () => {
             await expect(settings.getByRole('button', 'Change password')).toBeDisabled();
         });
@@ -41,7 +41,7 @@ test.describe('Settings', () => {
         });
     });
 
-    test('trusted sites', async ({settings, appPage}) => {
+    test('Trusted Sites', async ({settings, appPage}) => {
         await test.step('go to Trusted Sites. check web app is connected', async () => {
             await settings.getByRole('button', 'Trusted Sites').click();
             await settings.getByRole('button', 'Talisman').click();
@@ -81,7 +81,7 @@ test.describe('Settings', () => {
         });
     });
 
-    test('address book', async ({settings}) => {
+    test('Address Book', async ({settings}) => {
         await test.step('go to Address Book. check Polkadot tab is selected by default', 
         async () => {
             await settings.getByRole('button', 'Address Book').click();
@@ -133,11 +133,11 @@ test.describe('Settings', () => {
         });
     });
 
-    test('extension options > enable testnets', async ({settings}) => {
+    test('Extension Options > enable/disable testnets', async ({settings}) => {
         await test.step('go to Manage Ethereum Networks. check testnet is disabled', 
         async () => {
             await settings.getByRole('button', 'Manage Ethereum Networks').click();
-            await expect(settings.textTestnet).not.toBeVisible();
+            await expect(settings.btnTestnets).not.toBeVisible();
             await settings.getByRole('button', 'Back').click();
         });
         await test.step('go to Extension Options. enable Testnets option', 
@@ -149,7 +149,7 @@ test.describe('Settings', () => {
         await test.step('go to Manage Ethereum Networks. check testnet is enabled', 
         async () => {
             await settings.getByRole('button', 'Manage Ethereum Networks').click();
-            await expect(settings.textTestnet.first()).toBeVisible();
+            await expect(settings.btnTestnets.first()).toBeVisible();
             await settings.getByRole('button', 'Back').click();
         });
         await test.step('go Extension Options. disable Testnets option', 
@@ -161,12 +161,109 @@ test.describe('Settings', () => {
         await test.step('go to Manage Ethereum Networks. check testnet is disabled', 
         async () => {
             await settings.getByRole('button', 'Manage Ethereum Networks').click();
-            await expect(settings.textTestnet).not.toBeVisible();
+            await expect(settings.btnTestnets).not.toBeVisible();
             await settings.getByRole('button', 'Back').click();
         });
     });
 
-    test('change password', async ({settings}) => {
+    test('Ethereum Networks > enable/disable testnets', async ({settings}) => {
+        let totalEthNetworks = 0, totalTestnets = 0, totalAllNetworks = 0;
+        await test.step('go to Manage Ethereum Networks. check testnet is disabled', async () => {
+            await settings.getByRole('button', 'Manage Ethereum Networks').click();
+            await expect(settings.btnTestnets).not.toBeVisible();
+            totalEthNetworks = await settings.btnEthNetworks.count();
+        });
+        await test.step('click Enable testnets. check testnet is enabled', async () => {
+            await settings.getByRole('button', 'Enable testnets').click();
+            await expect(settings.btnTestnets.first()).toBeVisible();
+            totalTestnets = await settings.btnTestnets.count();
+            totalAllNetworks = await settings.btnEthNetworks.count();
+            expect(totalAllNetworks).toBe(totalEthNetworks + totalTestnets);
+        });
+        await test.step('click Enable testnets. check testnet is disabled', async () => {
+            await settings.getByRole('button', 'Enable testnets').click();
+            await expect(settings.btnTestnets.first()).not.toBeVisible();
+            totalEthNetworks = await settings.btnEthNetworks.count();
+            expect(totalEthNetworks).toBe(totalAllNetworks - totalTestnets);
+        });
+    });
+
+    test('Ethereum Networks > Add/Remove EVM Network', async ({settings}) => {
+        await test.step('go to Manage Ethereum Networks', async () => {
+            await settings.getByRole('button', 'Manage Ethereum Networks').click();
+        });
+        for (const evm of data.evmNetworks) {
+            const { rpc, rpc2, ...inputs } = evm;
+            await test.step('click Add network. check required fields', async () => {
+                await settings.getByRole('button', 'Add network').click();
+                await settings.inputRpc.press('Tab');
+                await settings.textError.getByText('required').first().waitFor();
+                await settings.inputName.press('Tab');
+                await settings.textError.getByText('required').nth(1).waitFor();
+                await settings.inputTokenSymbol.press('Tab');
+                await settings.textError.getByText('required').last().waitFor();
+                await settings.inputTokenDecimals.press('Tab');
+                await settings.textError.getByText('invalid number').waitFor();
+                await expect(settings.getByRole('button', 'Add Network')).toBeDisabled();
+            });
+            await test.step('add a RPC URL', async () => {
+                await settings.inputRpc.fill(rpc);
+                await settings.imgDefaultNetwork.waitFor();
+                await expect(settings.getByRole('button', 'Add Network')).toBeEnabled();
+                await settings.inputTokenCoingeckoId.fill(inputs.tokenCoingeckoId);
+                await settings.imgDefaultToken.waitFor({state: 'hidden'});
+                await settings.checkInputValues(inputs);
+            });
+            await test.step('delete RPC URL', async () => {
+                await settings.btnDeleteRpc.click();
+                await settings.inputRpc.waitFor({state: 'hidden'});
+                await settings.imgDefaultNetwork.waitFor();
+                await expect(settings.getByRole('button', 'Add Network')).toBeDisabled();
+            });
+            await test.step('add back previous RPC URL', async() => {
+                await settings.getByRole('button', 'Add another RPC').click();
+                await settings.inputRpc.fill(rpc);
+                await settings.imgDefaultNetwork.waitFor({state: 'hidden'});
+                await expect(settings.getByRole('button', 'Add Network')).toBeEnabled();
+                await settings.checkInputValues(inputs);
+            });
+            await test.step('add another RPC URL', async() => {
+                await settings.getByRole('button', 'Add another RPC').click();
+                await expect(settings.getByRole('button', 'Add Network')).toBeDisabled();
+                await settings.inputRpc.last().fill(rpc2);
+                await settings.imgDefaultNetwork.waitFor({state: 'hidden'});
+                await expect(settings.getByRole('button', 'Add Network')).toBeEnabled();
+                await settings.checkInputValues(inputs);
+            });
+            await test.step('change order in RPC list', async() => {
+                await settings.dragAndDropRpc(settings.btnDragRpc.first(), settings.btnDragRpc.last());
+                await expect(settings.inputRpc.first()).toHaveValue(rpc2);
+                await expect(settings.inputRpc.last()).toHaveValue(rpc);
+                await settings.checkInputValues(inputs);
+                if (inputs.testnet) {
+                    await settings.page.waitForTimeout(500);
+                    await settings.ckbTestnet.click();
+                }
+            });
+            await test.step('add network. check network list shows the newly added network', async () => {
+                await settings.getByRole('button', 'Add Network').click();
+                const loc = settings.btnEthNetwork(inputs.name);
+                await loc.waitFor();
+                await loc.getByText('custom').waitFor();
+                if (inputs.testnet) {
+                    await loc.getByText('testnet').waitFor();
+                }
+            });
+            await test.step('remove network. check the network is removed from network list', async () => {
+                await settings.btnEthNetwork(inputs.name).click();
+                await settings.getByRole('button', 'Remove Network').click();
+                await settings.getByRole('button', 'Remove', true).click();
+                await settings.btnEthNetwork(inputs.name).waitFor({state: 'hidden'});
+            });
+        }
+    });
+
+    test('Change Password', async ({settings}) => {
         await test.step('go to Backup Wallet. toggle on Dont remind me', async () => {
             await settings.getByRole('button', 'Backup Wallet').click();
             await settings.inputPassword.fill(data.password);
@@ -174,14 +271,14 @@ test.describe('Settings', () => {
             await settings.btnToggle.click();
             await settings.iconClosePopup.click();
         });
-        await test.step('go Change password. check Submit button is disabled', async () => {
+        await test.step('go to Change password. check Submit button is disabled', async () => {
             await settings.getByRole('button', 'Change password').click();
             await expect(settings.getByRole('button', 'Submit')).toBeDisabled();
         });
         await test.step('enter new/confirm password with < 6 characters. check Submit button is disabled and error message is shown', 
         async () => {
             await settings.inputNewPwd.fill('12345');
-            await expect(settings.textPwdError.nth(1)).toHaveText('Password must be at least 6 characters long')
+            await expect(settings.textError.nth(1)).toHaveText('Password must be at least 6 characters long')
             await expect(settings.getByRole('button', 'Submit')).toBeDisabled();
             await settings.inputNewPwd.clear();
         });
@@ -189,7 +286,7 @@ test.describe('Settings', () => {
         async () => {
             await settings.inputNewPwd.fill('123456');
             await settings.inputConfirmPwd.fill('654321');
-            await expect(settings.textPwdError.last()).toHaveText('Passwords must match!')
+            await expect(settings.textError.last()).toHaveText('Passwords must match!')
             await expect(settings.getByRole('button', 'Submit')).toBeDisabled();
             await settings.inputConfirmPwd.clear();
         });
@@ -198,7 +295,7 @@ test.describe('Settings', () => {
             await settings.inputOldPwd.fill('abcdef');
             await settings.getByRole('button', 'Submit').click();
             await settings.getByRole('alert').getByText('Error changing password').waitFor();
-            await expect(settings.textPwdError.first()).toHaveText('Incorrect password')
+            await expect(settings.textError.first()).toHaveText('Incorrect password')
             await settings.getByRole('alert').waitFor({state: 'hidden'});
         });
         await test.step('enter valid current password. check password is changed', async () => {
@@ -209,7 +306,7 @@ test.describe('Settings', () => {
         });
     });
 
-    test('about', async ({context, common}) => {
+    test('About', async ({context, common}) => {
         await test.step('go to About. check Talisman URL is correct', async () => {
             await common.getByRole('button', 'About').click();
             await expect(common.getByRole('link', 'Talisman')).toHaveAttribute('href', 'https://talisman.xyz');
