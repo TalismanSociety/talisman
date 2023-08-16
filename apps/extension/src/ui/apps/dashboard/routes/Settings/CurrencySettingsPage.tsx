@@ -54,9 +54,11 @@ const CurrencySettingsPage = () => {
               )
             }
           >
+            <img alt={currency} src={currencyConfig[currency]?.icon} />
             <div className="flex grow flex-col items-start gap-4">
               <div className="text-body uppercase">{currency}</div>
               <div className="text-body-secondary text-sm">
+                {currencyConfig[currency]?.unicodeCharacter ?? ""}{" "}
                 {currencyConfig[currency]?.name ?? currency}
               </div>
             </div>
