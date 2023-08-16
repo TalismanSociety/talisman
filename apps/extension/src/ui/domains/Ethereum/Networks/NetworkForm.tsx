@@ -376,19 +376,20 @@ export const NetworkForm: FC<NetworkFormProps> = ({ evmNetworkId, onSubmitted })
           </FormFieldContainer>
         </div>
         <div className="text-body-disabled mt-[-1.6rem] pb-8 text-xs">
-          <Trans t={t}>
-            Talisman uses CoinGecko as reference for fiat rates and token logos.
-            <br />
-            Find the API ID of the native token of this network on{" "}
-            <a
-              className="text-body-secondary hover:text-body"
-              href="https://coingecko.com"
-              target="_blank"
-            >
-              https://coingecko.com
-            </a>{" "}
-            and paste it here.
-          </Trans>
+          <Trans
+            t={t}
+            defaults="Talisman uses CoinGecko as reference for fiat rates and token logos.<br />Find the API ID of the native token of this network on <Link>https://coingecko.com</Link> and paste it here."
+            components={{
+              Link: (
+                // eslint-disable-next-line jsx-a11y/anchor-has-content
+                <a
+                  className="text-body-secondary hover:text-body"
+                  href="https://coingecko.com"
+                  target="_blank"
+                ></a>
+              ),
+            }}
+          />
         </div>
         <FormFieldContainer
           label={t("Block explorer URL")}
