@@ -6,8 +6,6 @@ import { RPC_CALL_TIMEOUT } from "./constants"
 import log from "./log"
 import { BatchRpcProvider, StandardRpcProvider, addOnfinalityApiKey, getHealthyRpc } from "./util"
 
-const RESET_FAILING_PROVIDERS_INTERVAL_SECONDS = 30
-
 export type GetProviderOptions = {
   /** If true, returns a provider which will batch requests */
   batch?: boolean
@@ -52,18 +50,6 @@ export class ChainConnectorEvm {
   ) {
     this.#chaindataEvmNetworkProvider = chaindataEvmNetworkProvider
     this.#onfinalityApiKey = options?.onfinalityApiKey ?? undefined
-
-    setInterval(
-      this.resetFailingProviders.bind(this),
-      RESET_FAILING_PROVIDERS_INTERVAL_SECONDS * 1000
-    )
-  }
-
-  private async resetFailingProviders() {
-    for (const key of this.#providerCache.keys()) {
-      const provider = await this.#providerCache.get(key)
-      if (provider === null) this.#providerCache.delete(key)
-    }
   }
 
   setOnfinalityApiKey(apiKey: string | undefined) {
@@ -87,7 +73,18 @@ export class ChainConnectorEvm {
   ): Promise<ethers.providers.JsonRpcProvider | null> {
     const cacheKey = getEvmNetworkProviderCacheKey(evmNetwork.id, batch)
 
-    if (!this.#providerCache.has(cacheKey)) {
+    // By using `Promise.race`, this variable will immediately resolve to either the
+    // value of the promise at `this.#providerCache.get(cacheKey)`,
+    // or if it's still pending, then it will resolve to `undefined`
+    const cached = await Promise.race([this.#providerCache.get(cacheKey), undefined])
+
+    const createNewProvider =
+      // Check if #providerCache has no pending provider for this key - if so, we should attempt to create a new provider
+      !this.#providerCache.has(cacheKey) ||
+      // Check if #providerCache has already resolved to `null` - if so, we should attempt to create a new provider
+      cached === null
+
+    if (createNewProvider) {
       // store the promise straight away
       // otherwise another call to `getProviderForEvmNetwork` would create a new provider,
       // instead of what we want which is to wait for this provider to spin up
