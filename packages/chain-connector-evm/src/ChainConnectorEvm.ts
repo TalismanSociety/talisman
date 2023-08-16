@@ -6,6 +6,8 @@ import { RPC_CALL_TIMEOUT } from "./constants"
 import log from "./log"
 import { BatchRpcProvider, StandardRpcProvider, addOnfinalityApiKey, getHealthyRpc } from "./util"
 
+const RESET_FAILING_PROVIDERS_INTERVAL_SECONDS = 30
+
 export type GetProviderOptions = {
   /** If true, returns a provider which will batch requests */
   batch?: boolean
@@ -50,6 +52,18 @@ export class ChainConnectorEvm {
   ) {
     this.#chaindataEvmNetworkProvider = chaindataEvmNetworkProvider
     this.#onfinalityApiKey = options?.onfinalityApiKey ?? undefined
+
+    setInterval(
+      this.resetFailingProviders.bind(this),
+      RESET_FAILING_PROVIDERS_INTERVAL_SECONDS * 1000
+    )
+  }
+
+  private async resetFailingProviders() {
+    for (const key of this.#providerCache.keys()) {
+      const provider = await this.#providerCache.get(key)
+      if (provider === null) this.#providerCache.delete(key)
+    }
   }
 
   setOnfinalityApiKey(apiKey: string | undefined) {
