@@ -2,10 +2,12 @@ import { ScrollContainer } from "@talisman/components/ScrollContainer"
 import { WithTooltip } from "@talisman/components/Tooltip"
 import { AlertCircleIcon, LoaderIcon } from "@talismn/icons"
 import { classNames, encodeAnyAddress } from "@talismn/util"
+import { selectedCurrencyState } from "@ui/atoms"
 import useAccounts from "@ui/hooks/useAccounts"
 import { isEvmToken } from "@ui/util/isEvmToken"
 import { Suspense, lazy, useEffect, useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
+import { useRecoilValue } from "recoil"
 import { Button } from "talisman-ui"
 
 import { ChainLogo } from "../Asset/ChainLogo"
@@ -72,6 +74,8 @@ const TotalValueRow = () => {
   } = useSendFunds()
   const amount = sendMax ? maxAmount : transfer
 
+  const currency = useRecoilValue(selectedCurrencyState)
+
   const totalValue = useMemo(() => {
     // Not all tokens have a fiat rate. if one of the 3 tokens doesn't have a rate, don't show the row
     if (
@@ -83,12 +87,12 @@ const TotalValueRow = () => {
     )
       return null
 
-    const fiatAmount = amount.fiat("usd") ?? 0
-    const fiatFee = estimatedFee.fiat("usd") ?? 0
-    const fiatTip = tip?.fiat("usd") ?? 0
+    const fiatAmount = amount.fiat(currency) ?? 0
+    const fiatFee = estimatedFee.fiat(currency) ?? 0
+    const fiatTip = tip?.fiat(currency) ?? 0
 
     return fiatAmount + fiatFee + fiatTip
-  }, [amount, estimatedFee, feeTokenRates, tip, tipTokenRates, tokenRates])
+  }, [amount, currency, estimatedFee, feeTokenRates, tip, tipTokenRates, tokenRates])
 
   if (!totalValue) return null
 

@@ -13,6 +13,7 @@ import { ChainId, EvmNetworkId } from "@talismn/chaindata-provider"
 import { LoaderIcon, MoreHorizontalIcon, RocketIcon, XOctagonIcon } from "@talismn/icons"
 import { classNames } from "@talismn/util"
 import { AnalyticsPage, sendAnalyticsEvent } from "@ui/api/analytics"
+import { selectedCurrencyState } from "@ui/atoms"
 import { useAnalyticsPageView } from "@ui/hooks/useAnalyticsPageView"
 import useChainByGenesisHash from "@ui/hooks/useChainByGenesisHash"
 import { useEvmNetwork } from "@ui/hooks/useEvmNetwork"
@@ -27,6 +28,7 @@ import { BigNumber } from "ethers"
 import sortBy from "lodash/sortBy"
 import { FC, PropsWithChildren, forwardRef, useCallback, useEffect, useMemo, useState } from "react"
 import { Trans, useTranslation } from "react-i18next"
+import { useRecoilValue } from "recoil"
 import {
   Button,
   Drawer,
@@ -342,6 +344,7 @@ const TransactionRowEvm: FC<TransactionRowEvmProps> = ({
 
   const token = useToken(tokenId)
   const tokenRates = useTokenRates(tokenId)
+  const currency = useRecoilValue(selectedCurrencyState)
 
   const [isCtxMenuOpen, setIsCtxMenuOpen] = useState(false)
 
@@ -429,9 +432,7 @@ const TransactionRowEvm: FC<TransactionRowEvmProps> = ({
                 />
               </div>
               <div className="text-body-secondary text-xs">
-                {amount.fiat("usd") && (
-                  <Fiat amount={amount.fiat("usd")} currency="usd" noCountUp />
-                )}
+                {amount.fiat(currency) && <Fiat amount={amount} noCountUp />}
               </div>
             </div>
           )}
@@ -557,6 +558,7 @@ const TransactionRowSubstrate: FC<TransactionRowSubProps> = ({
   const chain = useChainByGenesisHash(genesisHash)
   const token = useToken(tx.tokenId)
   const tokenRates = useTokenRates(tx.tokenId)
+  const currency = useRecoilValue(selectedCurrencyState)
 
   const { isTransfer, amount } = useMemo(() => {
     const isTransfer = tx.value && tx.tokenId && tx.to && token
@@ -640,9 +642,7 @@ const TransactionRowSubstrate: FC<TransactionRowSubProps> = ({
                 />
               </div>
               <div className="text-body-secondary text-xs">
-                {amount.fiat("usd") && (
-                  <Fiat amount={amount.fiat("usd")} currency="usd" noCountUp />
-                )}
+                {amount.fiat(currency) && <Fiat amount={amount} noCountUp />}
               </div>
             </div>
           )}

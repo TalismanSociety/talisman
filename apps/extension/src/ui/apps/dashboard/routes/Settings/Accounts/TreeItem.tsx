@@ -88,7 +88,7 @@ export const TreeAccountItem = forwardRef<HTMLDivElement, Props & { item: UiTree
             </div>
           </div>
           <div className="flex flex-col gap-2">
-            <Fiat amount={totalUsd} currency="usd" isBalance />
+            <Fiat amount={totalUsd} isBalance />
           </div>
 
           <AccountContextMenu
@@ -160,7 +160,7 @@ export const TreeFolderItem = forwardRef<HTMLDivElement, Props & { item: UiTreeF
             )}
           />
           <div className="flex flex-col">
-            <Fiat amount={totalUsd} currency="usd" isBalance />
+            <Fiat amount={totalUsd} isBalance />
           </div>
 
           <ContextMenu placement="bottom-end">

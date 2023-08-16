@@ -101,7 +101,7 @@ export const ConfigureAccount = () => {
             <Tooltip>
               <TooltipTrigger asChild>
                 <div>
-                  <Fiat amount={totalUsd} currency="usd" />
+                  <Fiat amount={totalUsd} />
                 </div>
               </TooltipTrigger>
               {balanceDetails && (

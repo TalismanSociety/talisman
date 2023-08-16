@@ -7,6 +7,7 @@ import { AccountAddressType } from "@talisman/util/getAddressType"
 import { AlertCircleIcon, InfoIcon, SwapIcon, UserPlusIcon } from "@talismn/icons"
 import { classNames, planckToTokens, tokensToPlanck } from "@talismn/util"
 import { SendFundsWizardPage, useSendFundsWizard } from "@ui/apps/popup/pages/SendFunds/context"
+import { selectedCurrencyState } from "@ui/atoms"
 import { useAccountByAddress } from "@ui/hooks/useAccountByAddress"
 import { useAddressBook } from "@ui/hooks/useAddressBook"
 import { useFormattedAddress } from "@ui/hooks/useFormattedAddress"
@@ -28,6 +29,7 @@ import {
 } from "react"
 import { Container } from "react-dom"
 import { Trans, useTranslation } from "react-i18next"
+import { useRecoilValue } from "recoil"
 import { Drawer } from "talisman-ui"
 import { Button, PillButton } from "talisman-ui"
 
@@ -219,13 +221,15 @@ const FiatInput = () => {
     resizeFiatInput,
   } = useSendFunds()
 
+  const currency = useRecoilValue(selectedCurrencyState)
+
   const defaultValue = useMemo(
     () =>
       normalizeStringNumber(
-        sendMax && maxAmount ? maxAmount.fiat("usd") : transfer?.fiat("usd"),
+        sendMax && maxAmount ? maxAmount.fiat(currency) : transfer?.fiat(currency),
         2
       ),
-    [maxAmount, sendMax, transfer]
+    [currency, maxAmount, sendMax, transfer]
   )
 
   // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -299,7 +303,7 @@ const FiatDisplay = () => {
 
   return (
     <DisplayContainer>
-      <Fiat amount={value.fiat("usd") ?? 0} noCountUp />
+      <Fiat amount={value} noCountUp />
     </DisplayContainer>
   )
 }
@@ -406,7 +410,7 @@ const TokenRow = ({ onEditClick }: { onEditClick: () => void }) => {
               />
             </div>
             <div className="text-body-disabled">
-              <Fiat amount={balance.transferable.fiat("usd")} noCountUp isBalance />
+              <Fiat amount={balance.transferable} noCountUp isBalance />
             </div>
           </>
         )}

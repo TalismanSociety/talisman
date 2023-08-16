@@ -4,6 +4,7 @@ import { ChainId, EvmNetworkId } from "@talismn/chaindata-provider"
 import { ArrowRightIcon } from "@talismn/icons"
 import { TokenRates } from "@talismn/token-rates"
 import { classNames } from "@talismn/util"
+import { selectedCurrencyState } from "@ui/atoms"
 import { AccountIcon } from "@ui/domains/Account/AccountIcon"
 import { AssetLogoBase } from "@ui/domains/Asset/AssetLogo"
 import { ChainLogo } from "@ui/domains/Asset/ChainLogo"
@@ -14,6 +15,7 @@ import { useEvmNetwork } from "@ui/hooks/useEvmNetwork"
 import { useIsKnownAddress } from "@ui/hooks/useIsKnownAddress"
 import { FC, useMemo } from "react"
 import { useTranslation } from "react-i18next"
+import { useRecoilValue } from "recoil"
 import { Tooltip, TooltipContent, TooltipTrigger } from "talisman-ui"
 
 const FormattedAddress = ({ address, className }: { address: string; className?: string }) => {
@@ -95,6 +97,8 @@ export const SignViewXTokensTransfer: FC<{
     [tokenDecimals, tokenRates, value]
   )
 
+  const currency = useRecoilValue(selectedCurrencyState)
+
   return (
     <div className="flex w-full flex-col items-center gap-16">
       <div className="flex items-center gap-4">
@@ -110,9 +114,9 @@ export const SignViewXTokensTransfer: FC<{
               noCountUp
             />
           </div>
-          {amount.fiat("usd") && (
+          {amount.fiat(currency) && (
             <div className="text-body-secondary text-left">
-              (<Fiat amount={amount.fiat("usd")} noCountUp currency="usd" />)
+              (<Fiat amount={amount} noCountUp />)
             </div>
           )}
         </div>

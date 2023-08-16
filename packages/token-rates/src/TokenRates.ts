@@ -15,13 +15,14 @@ const coingeckoCurrencies: Array<keyof TokenRates> = [
   // 'cud',
   // 'hkd',
   "eur",
-  // 'gbp',
-  // 'jpy',
+  "gbp",
+  "jpy",
   // 'krw',
-  // 'cny',
-  // 'btc',
-  // 'eth',
-  // 'dot',
+  "cny",
+  "rub",
+  "btc",
+  "eth",
+  "dot",
 ]
 
 // export function tokenRates(tokens: WithCoingeckoId[]): TokenRatesList {}

@@ -2,6 +2,7 @@ import { Balance, Balances } from "@core/domains/balances/types"
 import { ChevronLeftIcon, CopyIcon, MoreHorizontalIcon, SendIcon } from "@talismn/icons"
 import { classNames } from "@talismn/util"
 import { AccountContextMenu } from "@ui/apps/dashboard/routes/Portfolio/AccountContextMenu"
+import { selectedCurrencyState } from "@ui/atoms"
 import { AccountTypeIcon } from "@ui/domains/Account/AccountTypeIcon"
 import { Address } from "@ui/domains/Account/Address"
 import { CurrentAccountAvatar } from "@ui/domains/Account/CurrentAccountAvatar"
@@ -19,6 +20,7 @@ import { useSendFundsPopup } from "@ui/hooks/useSendFundsPopup"
 import { useCallback, useEffect, useMemo } from "react"
 import { useTranslation } from "react-i18next"
 import { useNavigate } from "react-router-dom"
+import { useRecoilValue } from "recoil"
 import {
   ContextMenuTrigger,
   IconButton,
@@ -67,6 +69,7 @@ const PageContent = ({
   )
 
   const balancesToDisplay = useDisplayBalances(balances)
+  const currency = useRecoilValue(selectedCurrencyState)
   const { open: openCopyAddressModal } = useCopyAddressModal()
   const { canSendFunds, cannotSendFundsReason, openSendFundsPopup } = useSendFundsPopup(account)
 
@@ -117,7 +120,7 @@ const PageContent = ({
               {account ? (
                 <Address address={formattedAddress} />
               ) : (
-                <Fiat amount={balances.sum.fiat("usd").total} isBalance />
+                <Fiat amount={balances.sum.fiat(currency).total} isBalance />
               )}
             </div>
           </div>

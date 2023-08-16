@@ -111,7 +111,7 @@ const ChainTokenBalances = ({ chainId, balances }: AssetRowProps) => {
                 ) : null}
               </div>
               <div className="text-xs">
-                {row.fiat === null ? "-" : <Fiat currency="usd" amount={row.fiat} isBalance />}
+                {row.fiat === null ? "-" : <Fiat amount={row.fiat} isBalance />}
               </div>
             </div>
           </div>

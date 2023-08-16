@@ -22,7 +22,7 @@ export const ViewDetailsAmount: FC<ViewDetailsAmountProps> = ({ amount, token, .
       {amount?.fiat("usd") ? (
         <>
           {" / "}
-          <Fiat noCountUp amount={amount.fiat("usd")} currency="usd" />
+          <Fiat noCountUp amount={amount} />
         </>
       ) : null}
     </ViewDetailsField>

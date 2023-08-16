@@ -236,7 +236,7 @@ const ViewDetailsContent: FC<ViewDetailsContentProps> = ({ onClose }) => {
                     {estimatedFee && nativeTokenRates ? (
                       <>
                         {" "}
-                        / <Fiat amount={estimatedFee?.fiat("usd")} noCountUp currency="usd" />
+                        / <Fiat amount={estimatedFee} noCountUp />
                       </>
                     ) : null}
                   </>
@@ -258,7 +258,7 @@ const ViewDetailsContent: FC<ViewDetailsContentProps> = ({ onClose }) => {
                     {maximumFee && nativeTokenRates ? (
                       <>
                         {" "}
-                        / <Fiat amount={maximumFee?.fiat("usd")} noCountUp currency="usd" />
+                        / <Fiat amount={maximumFee} noCountUp />
                       </>
                     ) : null}
                   </>

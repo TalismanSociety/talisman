@@ -3,12 +3,14 @@ import { Address } from "@core/types/base"
 import { sortBigBy } from "@talisman/util/bigHelper"
 import { BalanceLockType, filterBaseLocks, getLockTitle } from "@talismn/balances-substrate-native"
 import { ChainId, EvmNetworkId } from "@talismn/chaindata-provider"
+import { selectedCurrencyState } from "@ui/atoms"
 import { useBalancesStatus } from "@ui/hooks/useBalancesStatus"
 import useChain from "@ui/hooks/useChain"
 import { useNetworkCategory } from "@ui/hooks/useNetworkCategory"
 import BigNumber from "bignumber.js"
 import { useMemo } from "react"
 import { useTranslation } from "react-i18next"
+import { useRecoilValue } from "recoil"
 
 import { useSelectedAccount } from "../SelectedAccountContext"
 import { useTokenBalancesSummary } from "../useTokenBalancesSummary"
@@ -36,6 +38,8 @@ export const useChainTokenBalances = ({ chainId, balances }: ChainTokenBalancesP
   const { summary, tokenBalances, token } = useTokenBalancesSummary(balances)
   const { t } = useTranslation()
 
+  const currency = useRecoilValue(selectedCurrencyState)
+
   const detailRows = useMemo((): DetailRow[] => {
     if (!summary) return []
 
@@ -54,7 +58,7 @@ export const useChainTokenBalances = ({ chainId, balances }: ChainTokenBalancesP
           key: `${b.id}-available`,
           title: t("Available"),
           tokens: BigNumber(b.transferable.tokens),
-          fiat: b.transferable.fiat("usd"),
+          fiat: b.transferable.fiat(currency),
           locked: false,
           address: b.address,
         }))
@@ -65,7 +69,7 @@ export const useChainTokenBalances = ({ chainId, balances }: ChainTokenBalancesP
         key: `${b.id}-locked-${index}`,
         title: getLockTitle(lock, { balance: b }),
         tokens: BigNumber(lock.amount.tokens),
-        fiat: lock.amount.fiat("usd"),
+        fiat: lock.amount.fiat(currency),
         locked: true,
         // only show address when we're viewing balances for all accounts
         address: account ? undefined : b.address,
@@ -80,7 +84,7 @@ export const useChainTokenBalances = ({ chainId, balances }: ChainTokenBalancesP
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         description: (reserve.meta as any)?.description ?? undefined,
         tokens: BigNumber(reserve.amount.tokens),
-        fiat: reserve.amount.fiat("usd"),
+        fiat: reserve.amount.fiat(currency),
         locked: true,
         // only show address when we're viewing balances for all accounts
         address: account ? undefined : b.address,
@@ -91,7 +95,7 @@ export const useChainTokenBalances = ({ chainId, balances }: ChainTokenBalancesP
     return [...available, ...locked, ...reserved]
       .filter((row) => row && row.tokens.gt(0))
       .sort(sortBigBy("tokens", true))
-  }, [t, account, summary, tokenBalances])
+  }, [summary, account, t, tokenBalances, currency])
 
   const { evmNetwork } = balances.sorted[0]
   const relay = useChain(chain?.relay?.id)

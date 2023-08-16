@@ -34,6 +34,9 @@ export type TokenRates = {
   /** chinese yuan rate */
   cny: number | null
 
+  /** russian yuan rate */
+  rub: number | null
+
   /** btc rate */
   btc: number | null
 
@@ -54,6 +57,7 @@ export const NewTokenRates = (): TokenRates => ({
   jpy: null,
   krw: null,
   cny: null,
+  rub: null,
   btc: null,
   eth: null,
   dot: null,

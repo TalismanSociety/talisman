@@ -1,10 +1,12 @@
 import { CreditCardIcon, PaperPlaneIcon } from "@talismn/icons"
 import { api } from "@ui/api"
 import { AnalyticsPage, sendAnalyticsEvent } from "@ui/api/analytics"
+import { selectedCurrencyState } from "@ui/atoms"
 import { NoAccounts as NoAccountsComponent } from "@ui/domains/Portfolio/EmptyStates/NoAccounts"
 import { useAnalyticsPageView } from "@ui/hooks/useAnalyticsPageView"
 import { useCallback } from "react"
 import { useTranslation } from "react-i18next"
+import { useRecoilValue } from "recoil"
 import { PillButton } from "talisman-ui"
 
 const ANALYTICS_PAGE: AnalyticsPage = {
@@ -45,6 +47,7 @@ export const NoAccountsPopup = () => {
 
 export const NoAccounts = () => {
   const { t } = useTranslation()
+  const currency = useRecoilValue(selectedCurrencyState)
 
   return (
     <div className="flex flex-col items-center gap-16">
@@ -54,7 +57,7 @@ export const NoAccounts = () => {
           <span className="text-body-disabled font-surtExpanded text-lg font-bold">
             {(0).toLocaleString("en-us", {
               style: "currency",
-              currency: "usd",
+              currency,
               currencyDisplay: "narrowSymbol",
             })}
           </span>

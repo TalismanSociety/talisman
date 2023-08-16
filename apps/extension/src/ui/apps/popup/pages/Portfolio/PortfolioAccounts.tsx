@@ -9,6 +9,7 @@ import { classNames } from "@talismn/util"
 import { AnalyticsPage, sendAnalyticsEvent } from "@ui/api/analytics"
 import { AccountsLogoStack } from "@ui/apps/dashboard/routes/Settings/Accounts/AccountsLogoStack"
 import { TotalFiatBalance } from "@ui/apps/popup/components/TotalFiatBalance"
+import { selectedCurrencyState } from "@ui/atoms"
 import { AccountFolderIcon } from "@ui/domains/Account/AccountFolderIcon"
 import { AccountIcon } from "@ui/domains/Account/AccountIcon"
 import { AccountTypeIcon } from "@ui/domains/Account/AccountTypeIcon"
@@ -28,6 +29,7 @@ import { MouseEventHandler, Suspense, useCallback, useEffect, useMemo, useRef } 
 import { useTranslation } from "react-i18next"
 import { useNavigate } from "react-router-dom"
 import { useHoverDirty } from "react-use"
+import { useRecoilValue } from "recoil"
 import { IconButton, MysticalPhysicsV3 } from "talisman-ui"
 import { MYSTICAL_PHYSICS_V3, MysticalBackground } from "talisman-ui"
 
@@ -284,6 +286,7 @@ const FolderHeader = ({ folder, folderTotal }: { folder: TreeFolder; folderTotal
 
 export const PortfolioAccounts = () => {
   const balances = useBalances()
+  const currency = useRecoilValue(selectedCurrencyState)
   const accounts = useAccounts()
   const catalog = useAccountsCatalog()
   const { folder, treeName: folderTreeName } = useSearchParamsSelectedFolder()
@@ -321,7 +324,8 @@ export const PortfolioAccounts = () => {
               type: "account",
               name: account?.name ?? t("Unknown Account"),
               address: item.address,
-              total: new Balances(balancesByAddress.get(item.address) ?? []).sum.fiat("usd").total,
+              total: new Balances(balancesByAddress.get(item.address) ?? []).sum.fiat(currency)
+                .total,
               genesisHash: account?.genesisHash,
               origin: account?.origin,
               isPortfolio: !!account?.isPortfolio,
@@ -333,7 +337,7 @@ export const PortfolioAccounts = () => {
               name: item.name,
               total: new Balances(
                 item.tree.flatMap((account) => balancesByAddress.get(account.address) ?? [])
-              ).sum.fiat("usd").total,
+              ).sum.fiat(currency).total,
               addresses: item.tree.map((account) => account.address),
             }
       }
@@ -342,16 +346,25 @@ export const PortfolioAccounts = () => {
       portfolioTree.map(treeItemToOption("portfolio")),
       watchedTree.map(treeItemToOption("watched")),
     ]
-  }, [folder, folderTreeName, catalog, accounts, t, balancesByAddress])
+  }, [
+    folder,
+    folderTreeName,
+    catalog.portfolio,
+    catalog.watched,
+    accounts,
+    t,
+    balancesByAddress,
+    currency,
+  ])
 
   const folderTotal = useMemo(
     () =>
       folder
         ? new Balances(
             folder.tree.flatMap((account) => balancesByAddress.get(account.address) ?? [])
-          ).sum.fiat("usd").total
+          ).sum.fiat(currency).total
         : undefined,
-    [balancesByAddress, folder]
+    [balancesByAddress, currency, folder]
   )
 
   useEffect(() => {

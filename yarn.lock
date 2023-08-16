@@ -6133,6 +6133,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@recoiljs/refine@npm:^0.1.1":
+  version: 0.1.1
+  resolution: "@recoiljs/refine@npm:0.1.1"
+  checksum: 63b3e468f4ce7417cd13470f39a85a7318b902d411121759fc0a7ee427cd8882328a2c999ef0913e086f0c99f732e5478378b4ebe514bd811bb6e96333c747c3
+  languageName: node
+  linkType: hard
+
 "@remix-run/router@npm:1.7.1":
   version: 1.7.1
   resolution: "@remix-run/router@npm:1.7.1"
@@ -14530,6 +14537,7 @@ __metadata:
     "@polkadot/util-crypto": "*"
     "@polkadot/wasm-crypto": "*"
     "@polkadot/x-randomvalues": "*"
+    "@recoiljs/refine": ^0.1.1
     "@sentry/browser": 7.44.1
     "@sentry/integrations": 7.44.1
     "@sentry/react": 7.44.1

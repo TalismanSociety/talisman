@@ -109,7 +109,7 @@ export const EthSignBodyErc20Approve: FC = () => {
             tokens={allowance.tokens}
             decimals={transactionInfo.asset.decimals}
             symbol={symbol}
-            fiat={allowance.fiat("usd")}
+            fiat={allowance}
             withIcon
           />
         ) : (

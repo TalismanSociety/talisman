@@ -36,13 +36,13 @@ const TokensAndFiat = ({
       />
     </div>
     <div className="text-body-secondary text-sm">
-      {fiat === null ? "-" : <Fiat amount={fiat} currency="usd" isBalance />}
+      {fiat === null ? "-" : <Fiat amount={fiat} isBalance />}
     </div>
   </div>
 )
 const FiatOnly = ({ fiat }: { fiat: number | null }) => (
   <div className="textbase text-white">
-    {fiat === null ? "-" : <Fiat amount={fiat} currency="usd" isBalance />}
+    {fiat === null ? "-" : <Fiat amount={fiat} isBalance />}
   </div>
 )
 

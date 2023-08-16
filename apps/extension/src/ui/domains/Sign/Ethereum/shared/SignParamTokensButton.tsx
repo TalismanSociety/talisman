@@ -1,4 +1,5 @@
 import { CustomEvmNetwork, EvmNetwork } from "@core/domains/ethereum/types"
+import { BalanceFormatter } from "@talismn/balances"
 import { classNames } from "@talismn/util"
 import { CoingeckoLogoRequest } from "@ui/domains/Asset/AssetLogo"
 import { FC } from "react"
@@ -15,7 +16,7 @@ type SignParamTokensButtonProps = {
   tokens: string | number | null
   decimals: number
   symbol: string
-  fiat?: number | null
+  fiat?: number | BalanceFormatter | null
   className?: string
 }
 

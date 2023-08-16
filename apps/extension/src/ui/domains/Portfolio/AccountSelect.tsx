@@ -6,6 +6,7 @@ import { isEthereumAddress } from "@polkadot/util-crypto"
 import { Balance, Balances } from "@talismn/balances"
 import { ChevronDownIcon, EyeIcon, TalismanHandIcon } from "@talismn/icons"
 import { classNames } from "@talismn/util"
+import { selectedCurrencyState } from "@ui/atoms"
 import { AccountFolderIcon } from "@ui/domains/Account/AccountFolderIcon"
 import { AccountIcon } from "@ui/domains/Account/AccountIcon"
 import { AccountTypeIcon } from "@ui/domains/Account/AccountTypeIcon"
@@ -18,6 +19,7 @@ import useBalances from "@ui/hooks/useBalances"
 import { useSetting } from "@ui/hooks/useSettings"
 import { forwardRef, useCallback, useMemo } from "react"
 import { useTranslation } from "react-i18next"
+import { useRecoilValue } from "recoil"
 
 type AccountSelectItem =
   | {
@@ -52,9 +54,13 @@ export const AccountSelect = () => {
   const { account: selectedAccount, accounts, select } = useSelectedAccount()
   const balances = useBalances()
   const catalog = useAccountsCatalog()
+  const currency = useRecoilValue(selectedCurrencyState)
 
   const portfolioBalances = useBalances("portfolio")
-  const totalUsd = useMemo(() => portfolioBalances.sum.fiat("usd").total, [portfolioBalances])
+  const totalFiat = useMemo(
+    () => portfolioBalances.sum.fiat(currency).total,
+    [currency, portfolioBalances.sum]
+  )
 
   const balancesByAddress = useMemo(() => {
     // we use this to avoid looping over the balances list n times, where n is the number of accounts in the wallet
@@ -84,7 +90,8 @@ export const AccountSelect = () => {
               folderId,
               name: account?.name ?? t("Unknown Account"),
               address: item.address,
-              total: new Balances(balancesByAddress.get(item.address) ?? []).sum.fiat("usd").total,
+              total: new Balances(balancesByAddress.get(item.address) ?? []).sum.fiat(currency)
+                .total,
               genesisHash: account?.genesisHash,
               origin: account?.origin,
               isPortfolio: !!account?.isPortfolio,
@@ -98,7 +105,7 @@ export const AccountSelect = () => {
                 name: item.name,
                 total: new Balances(
                   item.tree.flatMap((account) => balancesByAddress.get(account.address) ?? [])
-                ).sum.fiat("usd").total,
+                ).sum.fiat(currency).total,
                 addresses: item.tree.map((account) => account.address),
               },
               ...item.tree.flatMap(treeItemToOptions(treeName, key)),
@@ -109,7 +116,7 @@ export const AccountSelect = () => {
       catalog.portfolio.flatMap(treeItemToOptions("portfolio")),
       catalog.watched.flatMap(treeItemToOptions("watched")),
     ]
-  }, [catalog, accounts, t, balancesByAddress])
+  }, [catalog.portfolio, catalog.watched, accounts, t, balancesByAddress, currency])
 
   const selectedItem = useMemo(
     () =>
@@ -159,7 +166,7 @@ export const AccountSelect = () => {
                 ref={refs.setReference}
                 key={selectedItem?.key}
                 item={selectedItem}
-                totalUsd={totalUsd}
+                totalFiat={totalFiat}
                 open={open}
                 button
               />
@@ -188,7 +195,7 @@ export const AccountSelect = () => {
                   value="all-accounts"
                   onClick={() => trackClick()}
                 >
-                  <Item current={selectedItem === undefined} totalUsd={totalUsd} />
+                  <Item current={selectedItem === undefined} totalFiat={totalFiat} />
                 </Listbox.Option>
                 {portfolioItems.map((item) =>
                   item.type === "account" &&
@@ -258,10 +265,10 @@ type ItemProps = {
   current?: boolean
   button?: boolean
   open?: boolean
-  totalUsd?: number
+  totalFiat?: number
 }
 const Item = forwardRef<HTMLDivElement, ItemProps>(function Item(
-  { item, collapsed, current, button, open, totalUsd },
+  { item, collapsed, current, button, open, totalFiat },
   ref
 ) {
   const { t } = useTranslation()
@@ -323,12 +330,7 @@ const Item = forwardRef<HTMLDivElement, ItemProps>(function Item(
         )}
       >
         {name}
-        <Fiat
-          amount={item?.total !== undefined ? item.total : totalUsd}
-          currency="usd"
-          isBalance
-          noCountUp
-        />
+        <Fiat amount={item?.total !== undefined ? item.total : totalFiat} isBalance noCountUp />
       </div>
       {(button || (isFolder && !collapsed)) && (
         <ChevronDownIcon className={classNames("shrink-0 text-lg", button && "hidden lg:block")} />
@@ -368,7 +370,7 @@ const NoAccountsItem = () => (
     <div className="bg-body-disabled h-20 w-20 rounded-[2rem]">&nbsp;</div>
     <div className="hidden max-w-full flex-grow flex-col items-center justify-center gap-2 overflow-hidden md:flex lg:items-start">
       No Accounts
-      <Fiat amount={0.0} currency="usd" />
+      <Fiat amount={0.0} />
     </div>
   </div>
 )

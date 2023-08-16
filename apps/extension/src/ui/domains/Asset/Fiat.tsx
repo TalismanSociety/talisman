@@ -1,17 +1,19 @@
-import { TokenRateCurrency } from "@core/domains/tokens/types"
 import { fiatDecimalSeparator, fiatGroupSeparator, formatFiat } from "@talisman/util/formatFiat"
+import { BalanceFormatter } from "@talismn/balances"
 import { classNames } from "@talismn/util"
+import { selectedCurrencyState } from "@ui/atoms"
 import { useRevealableBalance } from "@ui/hooks/useRevealableBalance"
 import { FC, useCallback, useMemo } from "react"
 import CountUp from "react-countup"
+import { useRecoilValue } from "recoil"
 
 type FiatProps = {
-  amount?: number | null
-  currency?: TokenRateCurrency | null
+  amount?: number | BalanceFormatter | null
   className?: string
   as?: "span" | "div"
   noCountUp?: boolean
   isBalance?: boolean
+  hideSymbol?: boolean
 }
 
 type DisplayValueProps = {
@@ -42,15 +44,17 @@ const DisplayValue: FC<DisplayValueProps> = ({ amount, currency, noCountUp }) =>
 
 export const Fiat = ({
   amount,
-  currency,
   className,
   noCountUp = false,
   isBalance = false,
+  hideSymbol = false,
 }: FiatProps) => {
   const { refReveal, isRevealable, isRevealed, isHidden, effectiveNoCountUp } =
     useRevealableBalance(isBalance, noCountUp)
 
   const render = amount !== null && amount !== undefined
+
+  const currency = useRecoilValue(selectedCurrencyState)
 
   return (
     <span
@@ -64,8 +68,8 @@ export const Fiat = ({
     >
       {render && (
         <DisplayValue
-          amount={isHidden ? 0 : amount}
-          currency={currency || undefined}
+          amount={isHidden ? 0 : typeof amount === "number" ? amount : amount.fiat(currency) ?? 0}
+          currency={hideSymbol ? undefined : currency}
           noCountUp={effectiveNoCountUp}
         />
       )}

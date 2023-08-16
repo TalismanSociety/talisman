@@ -6,6 +6,7 @@ import { ScrollContainer } from "@talisman/components/ScrollContainer"
 import { SearchInput } from "@talisman/components/SearchInput"
 import { CheckCircleIcon } from "@talismn/icons"
 import { classNames, planckToTokens } from "@talismn/util"
+import { selectedCurrencyState } from "@ui/atoms"
 import { useAccountByAddress } from "@ui/hooks/useAccountByAddress"
 import useBalances from "@ui/hooks/useBalances"
 import useChains from "@ui/hooks/useChains"
@@ -19,6 +20,7 @@ import { useCallback, useMemo, useRef, useState } from "react"
 import { FC } from "react"
 import { useTranslation } from "react-i18next"
 import { useIntersection } from "react-use"
+import { useRecoilValue } from "recoil"
 
 import { ChainLogoBase } from "./ChainLogo"
 import Fiat from "./Fiat"
@@ -88,6 +90,8 @@ const TokenRow: FC<TokenRowProps> = ({
     rootMargin: "1000px",
   })
 
+  const currency = useRecoilValue(selectedCurrencyState)
+
   return (
     <button
       ref={refButton}
@@ -144,12 +148,7 @@ const TokenRow: FC<TokenRowProps> = ({
               <div>{chainName}</div>
               <div className={classNames("grow", isLoading && "animate-pulse")}>
                 {hasFiatRate ? (
-                  <Fiat
-                    amount={balances.sum.fiat("usd").transferable}
-                    currency="usd"
-                    isBalance
-                    noCountUp
-                  />
+                  <Fiat amount={balances.sum.fiat(currency).transferable} isBalance noCountUp />
                 ) : (
                   "-"
                 )}
@@ -194,6 +193,7 @@ const TokensList: FC<TokensListProps> = ({
   const tokenRatesMap = useTokenRatesMap()
 
   const balances = useBalances(ownedOnly ? "owned" : "all")
+  const currency = useRecoilValue(selectedCurrencyState)
 
   const accountBalances = useMemo(
     () => (address && !selected ? balances.find({ address: address ?? undefined }) : balances),
@@ -291,8 +291,8 @@ const TokensList: FC<TokensListProps> = ({
       if (b.id === selected) return 1
 
       // sort by fiat balance
-      const aFiat = a.balances.sum.fiat("usd").transferable
-      const bFiat = b.balances.sum.fiat("usd").transferable
+      const aFiat = a.balances.sum.fiat(currency).transferable
+      const bFiat = b.balances.sum.fiat(currency).transferable
       if (aFiat > bFiat) return -1
       if (aFiat < bFiat) return 1
 
@@ -313,7 +313,7 @@ const TokensList: FC<TokensListProps> = ({
     })
 
     return results
-  }, [accountBalances, accountCompatibleTokens, showEmptyBalances, selected])
+  }, [accountBalances, accountCompatibleTokens, showEmptyBalances, selected, currency])
 
   // apply user search
   const tokens = useMemo(() => {

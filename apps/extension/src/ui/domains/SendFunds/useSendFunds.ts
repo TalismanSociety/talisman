@@ -10,6 +10,7 @@ import { formatDecimals, sleep } from "@talismn/util"
 import { useQuery } from "@tanstack/react-query"
 import { api } from "@ui/api"
 import { useSendFundsWizard } from "@ui/apps/popup/pages/SendFunds/context"
+import { selectedCurrencyState } from "@ui/atoms"
 import { useAccountByAddress } from "@ui/hooks/useAccountByAddress"
 import { useBalance } from "@ui/hooks/useBalance"
 import useBalancesByAddress from "@ui/hooks/useBalancesByAddress"
@@ -28,6 +29,7 @@ import { BigNumber, ethers } from "ethers"
 import { useCallback, useEffect, useMemo, useRef, useState } from "react"
 import { useTranslation } from "react-i18next"
 import { useLocation } from "react-router-dom"
+import { useRecoilValue } from "recoil"
 
 import { useEthTransaction } from "../Ethereum/useEthTransaction"
 import { useFeeToken } from "./useFeeToken"
@@ -172,6 +174,7 @@ const useSendFundsProvider = () => {
   const { tokensMap } = useTokens(true)
   const tokenRatesMap = useTokenRatesMap()
   const balances = useBalancesByAddress(from as string)
+  const currency = useRecoilValue(selectedCurrencyState)
   const token = useToken(tokenId)
   const tokenRates = useTokenRates(tokenId)
   const balance = useBalance(from as string, tokenId as string)
@@ -492,10 +495,10 @@ const useSendFundsProvider = () => {
       resizeTokensInput()
     }
     if (refFiatInput.current) {
-      refFiatInput.current.value = maxAmount.fiat("usd")?.toString() ?? ""
+      refFiatInput.current.value = maxAmount.fiat(currency)?.toString() ?? ""
       resizeFiatInput()
     }
-  }, [maxAmount, resizeFiatInput, resizeTokensInput, set, token])
+  }, [currency, maxAmount, resizeFiatInput, resizeTokensInput, set, token])
 
   const signMethod: SignMethod = useMemo(() => {
     if (!fromAccount || !token) return "unknown"

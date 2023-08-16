@@ -4,14 +4,17 @@ import {
 } from "@core/constants"
 import { Balance, Balances } from "@core/domains/balances/types"
 import { FiatSumBalancesFormatter } from "@talismn/balances"
+import { TokenRateCurrency } from "@talismn/token-rates"
+import { selectedCurrencyState } from "@ui/atoms"
 import { useMemo } from "react"
+import { useRecoilValue } from "recoil"
 
 import { usePortfolio } from "../context"
 import { useSelectedAccount } from "../SelectedAccountContext"
 
 type SymbolBalances = [string, Balances]
 const sortSymbolBalancesBy =
-  (type: "total" | "available" | "locked") =>
+  (type: "total" | "available" | "locked", currency: TokenRateCurrency) =>
   ([aSymbol, aBalances]: SymbolBalances, [bSymbol, bBalances]: SymbolBalances): number => {
     const planckAmount = (b: Balance) =>
       type === "total"
@@ -22,7 +25,7 @@ const sortSymbolBalancesBy =
 
     const fiatAmount = (b: FiatSumBalancesFormatter | Balance) => {
       const getAmount = (b: FiatSumBalancesFormatter | Balance, type: keyof typeof b) => {
-        if (b instanceof Balance) return b[type].fiat("usd")
+        if (b instanceof Balance) return b[type].fiat(currency)
         return b[type]
       }
 
@@ -40,8 +43,8 @@ const sortSymbolBalancesBy =
     }
 
     // sort by fiat balance
-    const aFiat = fiatAmount(aBalances.sum.fiat("usd")) ?? 0
-    const bFiat = fiatAmount(bBalances.sum.fiat("usd")) ?? 0
+    const aFiat = fiatAmount(aBalances.sum.fiat(currency)) ?? 0
+    const bFiat = fiatAmount(bBalances.sum.fiat(currency)) ?? 0
     if (aFiat > bFiat) return -1
     if (aFiat < bFiat) return 1
 
@@ -90,6 +93,8 @@ const sortSymbolBalancesBy =
   }
 
 export const usePortfolioSymbolBalances = (balances: Balances) => {
+  const currency = useRecoilValue(selectedCurrencyState)
+
   // group balances by token symbol
   // TODO: Move the association between a token on multiple chains into the backend / subsquid.
   // We will eventually need to handle the scenario where two tokens with the same symbol are not the same token.
@@ -107,8 +112,8 @@ export const usePortfolioSymbolBalances = (balances: Balances) => {
 
     return Object.entries(groupedByToken)
       .map(([key, tokenBalances]): SymbolBalances => [key, new Balances(tokenBalances)])
-      .sort(sortSymbolBalancesBy("total"))
-  }, [balances])
+      .sort(sortSymbolBalancesBy("total", currency))
+  }, [balances.each, currency])
 
   const availableSymbolBalances = useMemo(() => {
     const available = symbolBalances
@@ -117,7 +122,7 @@ export const usePortfolioSymbolBalances = (balances: Balances) => {
         balances.find((b) => b.transferable.planck > 0n),
       ])
       .filter(([, balances]) => balances.count > 0)
-      .sort(sortSymbolBalancesBy("available"))
+      .sort(sortSymbolBalancesBy("available", currency))
 
     // only show zero balances in the popup when the selected account(s) have balances
     if (available.length > 0) return available
@@ -128,8 +133,8 @@ export const usePortfolioSymbolBalances = (balances: Balances) => {
         balances.find((b) => b.total.planck === 0n),
       ])
       .filter(([, balances]) => balances.count > 0)
-      .sort(sortSymbolBalancesBy("available"))
-  }, [symbolBalances])
+      .sort(sortSymbolBalancesBy("available", currency))
+  }, [currency, symbolBalances])
 
   const lockedSymbolBalances = useMemo(
     () =>
@@ -139,8 +144,8 @@ export const usePortfolioSymbolBalances = (balances: Balances) => {
           balances.find((b) => b.locked.planck > 0n || b.reserved.planck > 0n),
         ])
         .filter(([, balances]) => balances.count > 0)
-        .sort(sortSymbolBalancesBy("locked")),
-    [symbolBalances]
+        .sort(sortSymbolBalancesBy("locked", currency)),
+    [currency, symbolBalances]
   )
 
   const { account, accounts } = useSelectedAccount()
