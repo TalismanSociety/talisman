@@ -5,6 +5,7 @@ import { api } from "@ui/api"
 import { useSelectedAccount } from "@ui/domains/Portfolio/SelectedAccountContext"
 import { useCallback, useEffect, useMemo, useState } from "react"
 import { Trans, useTranslation } from "react-i18next"
+import { useNavigate } from "react-router-dom"
 import { Button, ModalDialog } from "talisman-ui"
 import { Modal } from "talisman-ui"
 
@@ -52,6 +53,7 @@ export const [AccountRemoveModalProvider, useAccountRemoveModal] = provideContex
 export const AccountRemoveModal = () => {
   const { t } = useTranslation()
   const { account, close, isOpen } = useAccountRemoveModal()
+  const navigate = useNavigate()
 
   // persist in state so text doesn't disappear upon deletion
   const [accountName, setAccountName] = useState<string>("")
@@ -62,8 +64,9 @@ export const AccountRemoveModal = () => {
   const handleConfirm = useCallback(async () => {
     if (!account) return
     await api.accountForget(account?.address)
+    if (window.location.pathname === "/popup.html") navigate("/")
     close()
-  }, [account, close])
+  }, [account, close, navigate])
 
   return (
     <Modal containerId="main" isOpen={isOpen} onDismiss={close}>
