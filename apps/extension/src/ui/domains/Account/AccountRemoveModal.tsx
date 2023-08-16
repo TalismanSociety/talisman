@@ -64,7 +64,7 @@ export const AccountRemoveModal = () => {
   const handleConfirm = useCallback(async () => {
     if (!account) return
     await api.accountForget(account?.address)
-    if (window.location.pathname === "/popup.html") navigate("/)")
+    if (window.location.pathname === "/popup.html") navigate("/")
     close()
   }, [account, close, navigate])
 
