@@ -78,7 +78,9 @@ const migrateMnemonic = async (
   if (!seed) return Ok(undefined)
   // attempt to re-encrypt the seed phrase with the new password
   try {
-    return Ok(await encryptMnemonic(seed, newPw))
+    const result = await encryptMnemonic(seed, newPw)
+
+    return Ok(result)
   } catch (error) {
     Sentry.captureException(error)
     return Err(MnemonicErrors.UnableToEncrypt)
@@ -105,11 +107,12 @@ export const changePassword = async ({
     }
     if (keypairMigrationResult.val.length !== backupJson.accounts.filter(eligiblePairFilter).length)
       throw new Error("Unable to re-encrypt all keypairs when changing password")
+
     // now migrate seed phrase store passwords
     const seedStoreData = await seedPhraseStore.get()
     const newSeedStoreData: Partial<SeedPhraseStoreData> = {}
-    if (seedStoreData) {
-      Object.entries(seedStoreData).forEach(async ([key, value]) => {
+    if (Object.values(seedStoreData).length > 0) {
+      const mnemonicPromises = Object.entries(seedStoreData).map(async ([key, value]) => {
         if (!value.cipher) {
           // unset this value in the store
           newSeedStoreData[key] = undefined
@@ -119,7 +122,10 @@ export const changePassword = async ({
         const newCipher = await migrateMnemonic(value.cipher, currentPw, newPw)
         if (newCipher.err) throw Error(newCipher.val)
         newSeedStoreData[key] = { ...value, cipher: newCipher.val }
+        return
       })
+
+      await Promise.all(mnemonicPromises)
       await seedPhraseStore.set(newSeedStoreData)
     }
   } catch (error) {

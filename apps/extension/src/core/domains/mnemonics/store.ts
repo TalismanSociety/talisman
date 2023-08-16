@@ -35,11 +35,11 @@ export enum MnemonicErrors {
   AlreadyExists = "Seed already exists in SeedPhraseStore",
 }
 
-export const encryptMnemonic = async (seed: string, password: string) => {
-  const cipher = await encrypt(password, seed)
+export const encryptMnemonic = async (mnemonic: string, password: string) => {
+  const cipher = await encrypt(password, mnemonic)
 
-  const checkedSeed = await decrypt(password, cipher)
-  assert(seed === checkedSeed, MnemonicErrors.UnableToEncrypt)
+  const checkedMnemonic = await decrypt(password, cipher)
+  assert(mnemonic === checkedMnemonic, MnemonicErrors.UnableToEncrypt)
 
   return cipher
 }
@@ -121,7 +121,7 @@ export class SeedPhraseStore extends StorageProvider<SeedPhraseStoreData> {
     if (!cipher) return Ok(undefined)
 
     const decryptResult = await decryptMnemonic(cipher, password)
-    if (decryptResult.err) return decryptResult
+    if (decryptResult.err) return Err(decryptResult.val)
 
     return Ok(decryptResult.val)
   }
