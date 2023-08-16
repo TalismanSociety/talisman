@@ -122,13 +122,16 @@ export class MigrationRunner extends StorageProvider<Record<string, MigrationRun
       (_, i) => latestApplied + 1 + i
     )
 
+    log.debug(`${pending.length} pending migrations`)
+
     const applied: number[] = []
     try {
       for (const index of pending) {
+        log.debug(`Applying migration ${index}`)
         await this.applyMigration(index)
         applied.push(index)
       }
-
+      log.debug(`Applied ${applied.length} migrations`)
       this.status.next("complete")
       return applied
     } catch (e) {

@@ -2,6 +2,7 @@ import { useOpenClose } from "@talisman/hooks/useOpenClose"
 import { AlertCircleIcon, InfoIcon } from "@talisman/theme/icons"
 import { MnemonicModal } from "@ui/domains/Settings/MnemonicModal"
 import useMnemonicBackup from "@ui/hooks/useMnemonicBackup"
+import { useSeedPhrases } from "@ui/hooks/useSeedPhrases"
 import { useTranslation } from "react-i18next"
 import { Modal } from "talisman-ui"
 import { Button } from "talisman-ui"
@@ -49,13 +50,17 @@ export const BackupWarningModal = ({ isOpen, snooze, openBackupModal }: BackupWa
 export const BackupNotification = () => {
   const { t } = useTranslation()
   const { isOpen, open, close } = useOpenClose()
-  const { isNotConfirmed, isSnoozed, showBackupWarning, snoozeBackupReminder } = useMnemonicBackup()
+  const { allBackedUp, isSnoozed, showBackupWarning, snoozeBackupReminder } = useMnemonicBackup()
+
+  // todo need a way to choose mnemonic Id, for now just use the first
+  const mnemonics = useSeedPhrases()
+  const firstMnemonicId = Object.keys(mnemonics)[0]
 
   // showBackupWarning refers to the main full screen backup warning. This backup notification should be shown whenever that
   // full screen backup warning is *not* shown, as long as the account has not been backed up
   return (
     <>
-      {isNotConfirmed && (
+      {!allBackedUp && (
         <>
           {showBackupWarning && (
             <BackupWarningModal
@@ -77,7 +82,7 @@ export const BackupNotification = () => {
           )}
         </>
       )}
-      <MnemonicModal open={isOpen} onClose={close} />
+      <MnemonicModal mnemonicId={firstMnemonicId} open={isOpen} onClose={close} />
     </>
   )
 }

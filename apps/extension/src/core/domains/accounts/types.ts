@@ -162,6 +162,15 @@ export interface RequestAccountRename {
 export interface RequestAccountCreate {
   name: string
   type: AccountAddressType
+  mnemonicId?: string
+}
+
+export type VerifierCertificateType = "new" | "talisman"
+
+export type RequestSetVerifierCertificateMnemonic = {
+  type: VerifierCertificateType
+  mnemonic?: string
+  mnemonicId?: string
 }
 
 export interface AccountsMessages {
@@ -185,23 +194,5 @@ export interface AccountsMessages {
   "pri(accounts.catalog.subscribe)": [null, boolean, Trees]
   "pri(accounts.catalog.runActions)": [RequestAccountsCatalogAction[], boolean]
   "pri(accounts.validateMnemonic)": [string, boolean]
-  "pri(accounts.setVerifierCertMnemonic)": [string, boolean]
-}
-
-// Mnemonic types
-export declare type MnemonicSubscriptionResult = {
-  confirmed?: boolean
-}
-
-export declare type RequestAddressFromMnemonic = {
-  mnemonic: string
-  type?: AccountAddressType
-}
-
-export interface MnemonicMessages {
-  // mnemonic message signatures
-  "pri(mnemonic.unlock)": [string, string]
-  "pri(mnemonic.confirm)": [boolean, boolean]
-  "pri(mnemonic.subscribe)": [null, boolean, MnemonicSubscriptionResult]
-  "pri(mnemonic.address)": [RequestAddressFromMnemonic, string]
+  "pri(accounts.setVerifierCertMnemonic)": [RequestSetVerifierCertificateMnemonic, boolean]
 }

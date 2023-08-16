@@ -1,6 +1,6 @@
 import { POLKADOT_VAULT_DOCS_URL } from "@core/constants"
 import { HeaderBlock } from "@talisman/components/HeaderBlock"
-import { useHasMnemonic } from "@ui/hooks/useHasMnemonic"
+import { useSeedPhrases } from "@ui/hooks/useSeedPhrases"
 import { ReactNode, useMemo } from "react"
 import { Trans, useTranslation } from "react-i18next"
 import { Button } from "talisman-ui"
@@ -18,7 +18,15 @@ const VerifierCertificateOption = ({ text, children }: { text: string; children:
 export const ConfigureVerifierCertificateMnemonic = () => {
   const { t } = useTranslation("admin")
   const { dispatch, state, submit } = useAccountAddQr()
-  const hasMnemonic = useHasMnemonic()
+  const seedPhrases = useSeedPhrases()
+
+  const existingMnemonicId = useMemo(() => {
+    const existing = Object.entries(seedPhrases).find(([, s]) =>
+      ["legacy", "imported", "generated"].includes(s.source)
+    )
+    if (existing) return existing[0]
+    return
+  }, [seedPhrases])
 
   const canSubmit = useMemo(() => {
     if (state.type !== "CONFIGURE_VERIFIER_CERT") return null
@@ -69,7 +77,7 @@ export const ConfigureVerifierCertificateMnemonic = () => {
           </span>
           <span>{t("Choose an option")}</span>
 
-          {hasMnemonic && (
+          {existingMnemonicId && (
             <VerifierCertificateOption
               text={t(
                 "Use this option to use your existing Talisman recovery phrase as your Polkadot Vault Verifier Certificate Mnemonic. Choose this option if you are not sure what to do."
@@ -78,7 +86,11 @@ export const ConfigureVerifierCertificateMnemonic = () => {
               <Button
                 className="secondary text-sm"
                 onClick={() =>
-                  dispatch({ method: "setVerifierCertType", verifierCertificateType: "talisman" })
+                  dispatch({
+                    method: "setVerifierCertType",
+                    verifierCertificateType: "talisman",
+                    verifierCertificateMnemonicId: existingMnemonicId,
+                  })
                 }
               >
                 {t("Use my existing Talisman mnemonic")}

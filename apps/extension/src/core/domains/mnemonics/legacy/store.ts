@@ -1,24 +1,19 @@
-import { SubscribableStorageProvider } from "@core/libs/Store"
+import { StorageProvider } from "@core/libs/Store"
 import { log } from "@core/log"
 import { decrypt, encrypt } from "@metamask/browser-passworder"
 import { assert, isObject } from "@polkadot/util"
 import { Err, Ok, Result } from "ts-results"
 
+import { LegacySeedObj, legacyDecryptSeed } from "./helpers"
+
 const storageKey = "nursery"
-
-type LEGACY_SEED_PREFIX = "----"
-export const LEGACY_SEED_PREFIX = "----"
-
-export type LegacySeedObj = {
-  seed: `${LEGACY_SEED_PREFIX}${string}`
-}
 
 export type SeedPhraseData = {
   cipher?: string
   confirmed: boolean
 }
 
-export const encryptSeed = async (seed: string, password: string) => {
+export const encryptMnemonic = async (seed: string, password: string) => {
   const cipher = await encrypt(password, seed)
 
   const checkedSeed = await decrypt(password, cipher)
@@ -27,18 +22,7 @@ export const encryptSeed = async (seed: string, password: string) => {
   return cipher
 }
 
-export const legacyUnpackSeed = ({
-  seed,
-}: LegacySeedObj): Result<string, "Unable to decrypt seed"> => {
-  if (!seed.startsWith(LEGACY_SEED_PREFIX)) return Err("Unable to decrypt seed")
-  const seedString = seed.split(LEGACY_SEED_PREFIX)[1]
-  return Ok(seedString)
-}
-
-export class SeedPhraseStore extends SubscribableStorageProvider<
-  SeedPhraseData,
-  "pri(mnemonic.subscribe)"
-> {
+export class SeedPhraseStore extends StorageProvider<SeedPhraseData> {
   public async add(
     seed: string,
     password: string,
@@ -47,7 +31,7 @@ export class SeedPhraseStore extends SubscribableStorageProvider<
     const storedCipher = await this.get("cipher")
     if (storedCipher) return Err("Seed already exists in SeedPhraseStore")
 
-    const cipher = await encryptSeed(seed, password)
+    const cipher = await encryptMnemonic(seed, password)
     await this.set({ cipher, confirmed })
     return Ok(true)
   }
@@ -76,7 +60,7 @@ export class SeedPhraseStore extends SubscribableStorageProvider<
 
     try {
       if (isObject(decryptedSeed)) {
-        const unpackResult = legacyUnpackSeed(decryptedSeed)
+        const unpackResult = legacyDecryptSeed(decryptedSeed)
         if (unpackResult.err) throw new Error(unpackResult.val)
         seed = unpackResult.val
       } else {
@@ -91,6 +75,10 @@ export class SeedPhraseStore extends SubscribableStorageProvider<
   }
 }
 
-const seedPhraseStore = new SeedPhraseStore(storageKey)
+export const createLegacySeedPhraseStore = () => {
+  return new SeedPhraseStore(storageKey)
+}
 
-export default seedPhraseStore
+export const createLegacyVerifierCertificateMnemonicStore = () => {
+  return new SeedPhraseStore("verifierCertificateMnemonic")
+}

@@ -1,4 +1,3 @@
-import { copySeedStoreToVerifierCertificateStore } from "@core/domains/accounts/helpers"
 import { HexString } from "@polkadot/util/types"
 import { notify, notifyUpdate } from "@talisman/components/Notifications"
 import { provideContext } from "@talisman/util/provideContext"
@@ -30,6 +29,7 @@ export type CONFIGURE_VERIFIER_CERT_STATE = {
   verifierCertificateConfig?: {
     verifierCertificateType?: "talisman" | "new" | null
     verifierCertificateMnemonic?: string
+    verifierCertificateMnemonicId?: string
   }
   submitting?: true
   accountConfig: AccountConfigState
@@ -56,6 +56,7 @@ type Action =
   | {
       method: "setVerifierCertType"
       verifierCertificateType: "talisman" | "new" | null | undefined
+      verifierCertificateMnemonicId?: string | undefined
     }
 
 export const reducer = (state: AddQrState, action: Action): AddQrState => {
@@ -117,6 +118,7 @@ export const reducer = (state: AddQrState, action: Action): AddQrState => {
         verifierCertificateConfig: {
           ...state.verifierCertificateConfig,
           verifierCertificateType: action.verifierCertificateType,
+          verifierCertificateMnemonicId: action.verifierCertificateMnemonicId,
         },
       }
     }
@@ -157,12 +159,8 @@ const useAccountAddQrContext = () => {
       const { name, address, genesisHash, lockToNetwork } = state.accountConfig
       if (state.type === "CONFIGURE_VERIFIER_CERT" && state.verifierCertificateConfig) {
         const { verifierCertificateType } = state.verifierCertificateConfig
-
-        if (verifierCertificateType === "talisman") {
-          await copySeedStoreToVerifierCertificateStore()
-        } else if (verifierCertificateType === "new" && mnemonic) {
-          await api.setVerifierCertMnemonic(mnemonic)
-        }
+        if (verifierCertificateType)
+          await api.setVerifierCertMnemonic(verifierCertificateType, mnemonic)
       }
 
       try {

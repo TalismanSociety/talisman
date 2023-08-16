@@ -18,6 +18,7 @@ import { MigratePasswordModal } from "@ui/domains/Settings/MigratePassword/Migra
 import { MnemonicModal } from "@ui/domains/Settings/MnemonicModal"
 import { useIsFeatureEnabled } from "@ui/hooks/useFeatures"
 import useMnemonicBackup from "@ui/hooks/useMnemonicBackup"
+import { useSeedPhrases } from "@ui/hooks/useSeedPhrases"
 import { useCallback, useEffect } from "react"
 import { useTranslation } from "react-i18next"
 import { useSearchParams } from "react-router-dom"
@@ -43,12 +44,16 @@ const useShowBackupModal = () => {
 
 export const SettingsPage = () => {
   const { isOpen: isOpenMigratePw, open: openMigratePw, close: closeMigratePw } = useOpenClose()
+  // todo need a way to choose mnemonic Id, for now just use the first
+  const mnemonics = useSeedPhrases()
+  const firstMnemonicId = Object.keys(mnemonics)[0]
+
   const {
     isOpen: isOpenBackupMnemonic,
     open: openBackupMnemonic,
     close: closeBackupMnemonic,
   } = useShowBackupModal()
-  const { isNotConfirmed } = useMnemonicBackup()
+  const { allBackedUp } = useMnemonicBackup()
   const i18nEnabled = useIsFeatureEnabled("I18N")
 
   // auto open modal if requested in query string
@@ -139,12 +144,12 @@ export const SettingsPage = () => {
           iconRight={ChevronRightIcon}
           title={t("Change password")}
           subtitle={
-            isNotConfirmed
-              ? t("Please back up your recovery phrase before you change your password.")
-              : t("Change your Talisman password")
+            allBackedUp
+              ? t("Change your Talisman password")
+              : t("Please back up your recovery phrase before you change your password.")
           }
           to={`/settings/change-password`}
-          disabled={isNotConfirmed}
+          disabled={!allBackedUp}
         />
         <CtaButton
           iconLeft={IconClock}
@@ -161,7 +166,11 @@ export const SettingsPage = () => {
           to={`/settings/about`}
         />
       </div>
-      <MnemonicModal open={isOpenBackupMnemonic} onClose={closeBackupMnemonic} />
+      <MnemonicModal
+        mnemonicId={firstMnemonicId}
+        open={isOpenBackupMnemonic}
+        onClose={closeBackupMnemonic}
+      />
       <MigratePasswordModal open={isOpenMigratePw} onClose={closeMigratePw} />
     </DashboardLayout>
   )

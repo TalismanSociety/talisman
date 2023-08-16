@@ -21,7 +21,7 @@ const schema = yup
 
 export const EnterPasswordForm = () => {
   const { t } = useTranslation()
-  const { setPassword, setMnemonic } = useMigratePassword()
+  const { setPassword, setMnemonic, mnemonicId } = useMigratePassword()
 
   const {
     register,
@@ -36,8 +36,8 @@ export const EnterPasswordForm = () => {
   const submit = useCallback(
     async ({ password }: FormData) => {
       try {
-        // use mnemonicUnlock message because authenticate causes logout on failure
-        const mnemonic = await api.mnemonicUnlock(password)
+        // use mnemonicUnlock message because authenticate causes logout on failure, and we need the mnemonic anyway
+        const mnemonic = await api.mnemonicUnlock(mnemonicId, password)
         if (mnemonic) {
           setPassword(password)
           setMnemonic(mnemonic)
@@ -48,7 +48,7 @@ export const EnterPasswordForm = () => {
         })
       }
     },
-    [setPassword, setMnemonic, setError, t]
+    [setPassword, setMnemonic, setError, t, mnemonicId]
   )
 
   return (

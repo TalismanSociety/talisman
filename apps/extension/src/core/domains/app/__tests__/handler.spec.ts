@@ -27,6 +27,7 @@ describe("App handler when password is not trimmed", () => {
   const password = "passw0rd " // has a space
   let initialStoreData: Partial<GettableStoreData> = {}
   let accountsJson: KeyringPairs$Json
+  let mnemonicId: string
 
   async function createExtension(): Promise<AppHandler> {
     await cryptoWaitReady()
@@ -50,6 +51,7 @@ describe("App handler when password is not trimmed", () => {
       passConfirm: password,
     })
 
+    mnemonicId = Object.keys(await extensionStores.seedPhrase.get())[0]
     initialStoreData = await getLocalStorage()
 
     accountsJson = await keyring.backupAccounts(
@@ -96,7 +98,7 @@ describe("App handler when password is not trimmed", () => {
   test("can change password to one without spaces (not trimmed)", async () => {
     expect(await extensionStores.password.get("isTrimmed")).toBe(false)
     // seed phrase store needs to have confirmed === true
-    await extensionStores.seedPhrase.set({ confirmed: true })
+    await extensionStores.seedPhrase.setConfirmed(mnemonicId, true)
 
     const newPw = "noSpaces"
     const changePassword = await messageSender("pri(app.changePassword)", {
@@ -121,13 +123,13 @@ describe("App handler when password is not trimmed", () => {
     pairAgain.decodePkcs8(hashedPw)
     expect(pairAgain.isLocked).toBeFalsy()
 
-    const seedResult = await extensionStores.seedPhrase.getSeed(hashedPw)
+    const seedResult = await extensionStores.seedPhrase.getSeed(mnemonicId, hashedPw)
     expect(seedResult.ok && seedResult.val).toBeTruthy()
   })
 
   test("can change password to one with spaces (not trimmed)", async () => {
     expect(await extensionStores.password.get("isTrimmed")).toBe(false)
-    await extensionStores.seedPhrase.set({ confirmed: true })
+    await extensionStores.seedPhrase.setConfirmed(mnemonicId, true)
 
     const newPw = " Spaces "
     const changePassword = await messageSender("pri(app.changePassword)", {
@@ -152,7 +154,7 @@ describe("App handler when password is not trimmed", () => {
     pairAgain.decodePkcs8(hashedPw)
     expect(pairAgain.isLocked).toBeFalsy()
 
-    const seedResult = await extensionStores.seedPhrase.getSeed(hashedPw)
+    const seedResult = await extensionStores.seedPhrase.getSeed(mnemonicId, hashedPw)
     expect(seedResult.ok && seedResult.val).toBeTruthy()
   })
 })
@@ -163,6 +165,7 @@ describe("App handler when password is trimmed", () => {
   const password = "passw0rd " // has a space
   let initialStoreData: Partial<GettableStoreData> = {}
   let accountsJson: KeyringPairs$Json
+  let mnemonicId: string
 
   async function createExtension(): Promise<AppHandler> {
     await cryptoWaitReady()
@@ -185,6 +188,8 @@ describe("App handler when password is trimmed", () => {
       pass: password.trim(),
       passConfirm: password.trim(),
     })
+
+    mnemonicId = Object.keys(await extensionStores.seedPhrase.get())[0]
 
     await extensionStores.password.set({ isTrimmed: true })
     initialStoreData = await getLocalStorage()
@@ -239,7 +244,7 @@ describe("App handler when password is trimmed", () => {
   test("can change password to one without spaces (trimmed)", async () => {
     expect(await extensionStores.password.get("isTrimmed")).toBe(true)
     // seed phrase store needs to have confirmed === true
-    await extensionStores.seedPhrase.set({ confirmed: true })
+    await extensionStores.seedPhrase.setConfirmed(mnemonicId, true)
 
     const newPw = "noSpaces"
     const changePassword = await messageSender("pri(app.changePassword)", {
@@ -263,13 +268,13 @@ describe("App handler when password is trimmed", () => {
     pairAgain.decodePkcs8(hashedPw)
     expect(pairAgain.isLocked).toBeFalsy()
 
-    const seedResult = await extensionStores.seedPhrase.getSeed(hashedPw)
+    const seedResult = await extensionStores.seedPhrase.getSeed(mnemonicId, hashedPw)
     expect(seedResult.ok && seedResult.val).toBeTruthy()
   })
 
   test("can change password to one with spaces (trimmed)", async () => {
     expect(await extensionStores.password.get("isTrimmed")).toBe(true)
-    await extensionStores.seedPhrase.set({ confirmed: true })
+    await extensionStores.seedPhrase.setConfirmed(mnemonicId, true)
 
     expect(extensionStores.password.isLoggedIn.value).toBe("TRUE")
 
@@ -295,7 +300,7 @@ describe("App handler when password is trimmed", () => {
     pairAgain.decodePkcs8(hashedPw)
     expect(pairAgain.isLocked).toBeFalsy()
 
-    const seedResult = await extensionStores.seedPhrase.getSeed(hashedPw)
+    const seedResult = await extensionStores.seedPhrase.getSeed(mnemonicId, hashedPw)
     expect(seedResult.ok && seedResult.val).toBeTruthy()
   })
 })

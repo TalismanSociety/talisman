@@ -6,6 +6,7 @@ import { InfoIcon } from "@talisman/theme/icons"
 import { api } from "@ui/api"
 import { MnemonicModal } from "@ui/domains/Settings/MnemonicModal"
 import useMnemonicBackup from "@ui/hooks/useMnemonicBackup"
+import { useSeedPhrases } from "@ui/hooks/useSeedPhrases"
 import { useCallback, useEffect, useMemo } from "react"
 import { useForm } from "react-hook-form"
 import { useTranslation } from "react-i18next"
@@ -24,8 +25,12 @@ type FormData = {
 export const ChangePasswordPage = () => {
   const { t } = useTranslation("admin")
   const navigate = useNavigate()
-  const { isNotConfirmed } = useMnemonicBackup()
+  const { allBackedUp } = useMnemonicBackup()
   const { isOpen, open, close } = useOpenClose()
+
+  // todo need a way to choose mnemonic Id, for now just use the first
+  const mnemonics = useSeedPhrases()
+  const firstMnemonicId = Object.keys(mnemonics)[0]
 
   const schema = useMemo(
     () =>
@@ -96,7 +101,7 @@ export const ChangePasswordPage = () => {
             "Your password is used to unlock your wallet and is stored securely on your device. We recommend 12 characters, with uppercase and lowercase letters, symbols, and numbers."
           )}
         </p>
-        {isNotConfirmed && (
+        {!allBackedUp && (
           <div className="mnemonic-warning flex flex-col gap-0.5 rounded-sm border border-white p-8">
             <div className="flex items-center justify-between">
               <InfoIcon className="text-primary mr-10 text-3xl" />
@@ -122,7 +127,7 @@ export const ChangePasswordPage = () => {
               data-lpignore
               type="password"
               tabIndex={0}
-              disabled={isNotConfirmed}
+              disabled={!allBackedUp}
             />
           </FormFieldContainer>
           <FormFieldContainer error={errors.newPw?.message} label={t("New Password")}>
@@ -134,7 +139,7 @@ export const ChangePasswordPage = () => {
               data-lpignore
               type="password"
               tabIndex={0}
-              disabled={isNotConfirmed}
+              disabled={!allBackedUp}
             />
           </FormFieldContainer>
           <FormFieldContainer error={errors.newPwConfirm?.message}>
@@ -146,7 +151,7 @@ export const ChangePasswordPage = () => {
               data-lpignore
               type="password"
               tabIndex={0}
-              disabled={isNotConfirmed}
+              disabled={!allBackedUp}
             />
           </FormFieldContainer>
           <div className="mt-8 flex justify-end">
@@ -154,7 +159,7 @@ export const ChangePasswordPage = () => {
               className="w-[20rem]"
               type="submit"
               primary
-              disabled={!isValid || isNotConfirmed}
+              disabled={!isValid || !allBackedUp}
               processing={isSubmitting}
             >
               {t("Submit")}
@@ -162,7 +167,7 @@ export const ChangePasswordPage = () => {
           </div>
         </form>
       </DashboardLayout>
-      <MnemonicModal open={isOpen} onClose={close} />
+      <MnemonicModal mnemonicId={firstMnemonicId} open={isOpen} onClose={close} />
     </>
   )
 }

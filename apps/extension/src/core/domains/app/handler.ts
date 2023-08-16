@@ -12,6 +12,7 @@ import type {
   SendFundsOpenRequest,
 } from "@core/domains/app/types"
 import { getEthDerivationPath } from "@core/domains/ethereum/helpers"
+import { SOURCES } from "@core/domains/mnemonics/store"
 import { genericSubscription } from "@core/handlers/subscriptions"
 import { talismanAnalytics } from "@core/libs/Analytics"
 import { ExtensionHandler } from "@core/libs/Handler"
@@ -57,8 +58,8 @@ export default class AppHandler extends ExtensionHandler {
       },
     })
 
-    let confirmed = false
-    const method = mnemonic ? "import" : "new"
+    const confirmed = !!mnemonic
+    let source = SOURCES.Generated
     // no mnemonic passed in generate a mnemonic as needed
     if (!mnemonic) {
       mnemonic = mnemonicGenerate()
@@ -66,7 +67,7 @@ export default class AppHandler extends ExtensionHandler {
       // mnemonic is passed in from user
       const isValidMnemonic = mnemonicValidate(mnemonic)
       assert(isValidMnemonic, "Supplied mnemonic is not valid")
-      confirmed = true
+      source = SOURCES.Imported
     }
 
     const {
@@ -83,7 +84,14 @@ export default class AppHandler extends ExtensionHandler {
       name: "My Polkadot Account",
       origin: mnemonic ? AccountTypes.SEED_STORED : AccountTypes.TALISMAN,
     })
-    await this.stores.seedPhrase.add(mnemonic, transformedPw, confirmed)
+    // will conflict with onboarding PR, delete this line when merged
+    await this.stores.seedPhrase.add(
+      "Talisman Recovery Phrase",
+      mnemonic,
+      transformedPw,
+      source,
+      confirmed
+    )
 
     try {
       // also derive a first ethereum account
@@ -105,8 +113,10 @@ export default class AppHandler extends ExtensionHandler {
       console.error(err)
     }
 
-    const result = await this.stores.app.setOnboarded(method !== "new")
-    talismanAnalytics.capture("onboarded", { method })
+    const result = await this.stores.app.setOnboarded(source === SOURCES.Imported)
+    talismanAnalytics.capture("onboarded", {
+      method: source === SOURCES.Imported ? "import" : "new",
+    })
     return result
   }
 
@@ -160,9 +170,9 @@ export default class AppHandler extends ExtensionHandler {
     newPwConfirm,
   }: RequestTypes["pri(app.changePassword)"]) {
     // only allow users who have confirmed backing up their seed phrase to change PW
-    const mnemonicConfirmed = await this.stores.seedPhrase.get("confirmed")
+    const mnemonicsUnconfirmed = await this.stores.seedPhrase.hasUnconfirmed()
     assert(
-      mnemonicConfirmed,
+      !mnemonicsUnconfirmed,
       "Please backup your seed phrase before attempting to change your password."
     )
 

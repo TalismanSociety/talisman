@@ -13,10 +13,7 @@ import Browser, { Runtime } from "webextension-polyfill"
 
 import talismanHandler from "./handlers"
 import { IconManager } from "./libs/IconManager"
-import {
-  migrateConnectAllSubstrate,
-  migratePolkadotVaultVerifierCertificate,
-} from "./libs/migrations/legacyMigrations"
+import { migrateConnectAllSubstrate } from "./libs/migrations/legacyMigrations"
 
 initSentry(Sentry)
 consoleOverride(DEBUG)
@@ -52,7 +49,6 @@ Browser.runtime.onInstalled.addListener(async ({ reason, previousVersion }) => {
     // run any legacy migrations
     if (previousVersion) {
       await migrateConnectAllSubstrate(previousVersion)
-      await migratePolkadotVaultVerifierCertificate(previousVersion)
     }
   }
 })

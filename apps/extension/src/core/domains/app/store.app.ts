@@ -30,6 +30,7 @@ export type AppStoreData = {
   showDotNomPoolStakingBanner: boolean
   needsSpiritKeyUpdate: boolean
   popupSizeDelta: [number, number]
+  vaultVerifierCertificateMnemonicId?: string | null
 }
 
 const ANALYTICS_VERSION = "1.5.0"

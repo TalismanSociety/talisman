@@ -1,7 +1,10 @@
 import { Trees } from "@core/domains/accounts/helpers.catalog"
 import { AccountAddressType, RequestAccountCreateHardware } from "@core/domains/accounts/types"
-import type { AccountJson, RequestAccountsCatalogAction } from "@core/domains/accounts/types"
-import { MnemonicSubscriptionResult } from "@core/domains/accounts/types"
+import type {
+  AccountJson,
+  RequestAccountsCatalogAction,
+  VerifierCertificateType,
+} from "@core/domains/accounts/types"
 import {
   AnalyticsCaptureRequest,
   LoggedinType,
@@ -102,9 +105,8 @@ export default interface MessageTypes {
   subscribeRequests: (cb: (request: ValidRequests[]) => void) => UnsubscribeFn
 
   // mnemonic message types -------------------------------------------------------
-  mnemonicUnlock: (pass: string) => Promise<string>
-  mnemonicConfirm: (confirmed: boolean) => Promise<boolean>
-  mnemonicSubscribe: (cb: (val: MnemonicSubscriptionResult) => void) => UnsubscribeFn
+  mnemonicUnlock: (mnemonicId: string, pass: string) => Promise<string>
+  mnemonicConfirm: (mnemonicId: string, confirmed: boolean) => Promise<boolean>
   addressFromMnemonic: (mnemonic: string, type?: AccountAddressType) => Promise<string>
 
   // account message types ---------------------------------------------------
@@ -130,7 +132,7 @@ export default interface MessageTypes {
   accountExportPrivateKey: (address: string, password: string) => Promise<string>
   accountRename: (address: string, name: string) => Promise<boolean>
   accountValidateMnemonic: (mnemonic: string) => Promise<boolean>
-  setVerifierCertMnemonic: (mnemonic: string) => Promise<boolean>
+  setVerifierCertMnemonic: (type: VerifierCertificateType, mnemonic?: string) => Promise<boolean>
 
   // balance message types ---------------------------------------------------
   getBalance: ({
