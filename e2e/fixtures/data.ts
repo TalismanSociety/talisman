@@ -18,14 +18,14 @@ export const data = {
 			testnet: false
 		},
 		{
-			rpc: 'https://evm.kava.io',
-			rpc2: 'https://kava-evm.publicnode.com',
-			chainId: '2222',
-			name: 'Kava EVM',
-			tokenSymbol: 'KAVA',
+			rpc: 'https://rpc-mumbai.maticvigil.com',
+			rpc2: 'https://rpc.ankr.com/polygon_mumbai',
+			chainId: '80001',
+			name: 'Mumbai',
+			tokenSymbol: 'MATIC',
 			tokenDecimals: '18',
-			blockExplorerUrl: 'https://explorer.kava.io',
-			tokenCoingeckoId: 'kava',
+			blockExplorerUrl: 'https://mumbai.polygonscan.com',
+			tokenCoingeckoId: 'matic-network',
 			testnet: true
 		},
 	]
