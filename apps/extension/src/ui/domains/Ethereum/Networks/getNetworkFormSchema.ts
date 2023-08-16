@@ -36,7 +36,10 @@ export const getNetworkFormSchema = (evmNetworkId?: string) => {
                   path: `rpcs[${rpcs.indexOf(rpc)}].url`,
                 })
             } catch (err) {
-              return this.createError({ message: i18next.t("Failed to connect") })
+              return this.createError({
+                message: i18next.t("Failed to connect"),
+                path: `rpcs[${rpcs.indexOf(rpc)}].url`,
+              })
             }
           }
           return true
