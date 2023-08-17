@@ -6,6 +6,7 @@ import { api } from "@ui/api"
 import { storageEffect } from "@ui/util/atomEffect"
 import { liveQuery } from "dexie"
 import { DefaultValue, atom, selector, selectorFamily } from "recoil"
+import Browser from "webextension-polyfill"
 
 const NO_OP = () => {}
 export const tokenRatesState = atom<DbTokenRates[]>({
@@ -45,7 +46,9 @@ const _selectableCurrenciesState = atom<ReadonlySet<TokenRateCurrency>>({
   key: "_selectableCurrency",
   default: new Set(["usd", "btc"]),
   effects: [
-    storageEffect(localStorage, {
+    storageEffect(Browser.storage.local, {
+      key: "settings",
+      subKey: "selectableCurrencies",
       isSet: true,
     }),
   ],
@@ -65,7 +68,11 @@ const _selectedCurrencyState = atom<TokenRateCurrency>({
   key: "_selectedCurrency",
   default: "usd",
   effects: [
-    storageEffect(localStorage, { parser: jsonParser(string() as Checker<TokenRateCurrency>) }),
+    storageEffect(Browser.storage.local, {
+      key: "settings",
+      subKey: "selectedCurrency",
+      parser: jsonParser(string() as Checker<TokenRateCurrency>),
+    }),
   ],
 })
 
