@@ -20,8 +20,8 @@ export const NetworksTokensPage = () => {
         <CtaButton
           iconLeft={GlobeIcon}
           iconRight={ChevronRightIcon}
-          title={t("Manage Ethereum Networks")}
-          subtitle={t("Manage Ethereum compatible networks")}
+          title={t("Manage Networks")}
+          subtitle={t("View, edit and delete custom networks")}
           to={`/networks`}
         />
         <CtaButton
