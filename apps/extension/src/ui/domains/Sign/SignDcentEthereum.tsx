@@ -7,6 +7,7 @@ import { hexToString } from "@polkadot/util"
 import { HexString } from "@polkadot/util/types"
 import { classNames } from "@talismn/util"
 import { DcentError, dcent } from "@ui/util/dcent"
+import { useBringPopupBackInFront } from "@ui/util/dcent/useBringPopupBackInFront"
 import DcentWebConnector from "dcent-web-connector"
 import { ethers } from "ethers"
 import { FC, useCallback, useEffect, useState } from "react"
@@ -122,24 +123,30 @@ const SignDcentEthereum: FC<SignHardwareEthereumProps> = ({
   const [isSigning, setIsSigning] = useState(false)
   const [isSigned, setIsSigned] = useState(false)
   const [displayedErrorMessage, setDisplayedErrorMessage] = useState<string>()
-
+  const { startListening, stopListening } = useBringPopupBackInFront()
   // reset
   useEffect(() => {
     setIsSigned(false)
   }, [payload])
 
-  const signLedger = useCallback(async () => {
+  const handleSendClick = useCallback(async () => {
     if (!onSigned || !payload || !account) {
       return
     }
     setIsSigning(true)
     setDisplayedErrorMessage(undefined)
     onSentToDevice?.(true)
+
     try {
+      // this will open the bridge page that may hide Talisman popup => bring talisman back in front
+      startListening()
       const signature = await signWithDcent(method, payload, (account as AccountJsonDcent).path)
+      stopListening()
+
       await onSigned({ signature })
       setIsSigned(true)
     } catch (err) {
+      stopListening()
       log.error("Failed to sign", { err })
       if (err instanceof DcentError) {
         if (err.code !== "user_cancel") setDisplayedErrorMessage(err.message)
@@ -149,7 +156,7 @@ const SignDcentEthereum: FC<SignHardwareEthereumProps> = ({
     }
     onSentToDevice?.(false)
     setIsSigning(false)
-  }, [onSigned, payload, account, onSentToDevice, method, t])
+  }, [onSigned, payload, account, onSentToDevice, startListening, method, stopListening, t])
 
   return (
     <div className={classNames("flex w-full flex-col gap-6", className)}>
@@ -157,7 +164,7 @@ const SignDcentEthereum: FC<SignHardwareEthereumProps> = ({
         className="w-full"
         disabled={!payload}
         primary
-        onClick={signLedger}
+        onClick={handleSendClick}
         processing={isSigning || isSigned}
       >
         {t("Approve on D'CENT")}

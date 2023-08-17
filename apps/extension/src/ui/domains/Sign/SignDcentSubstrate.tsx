@@ -8,6 +8,7 @@ import { useAccountByAddress } from "@ui/hooks/useAccountByAddress"
 import useChainByGenesisHash from "@ui/hooks/useChainByGenesisHash"
 import useToken from "@ui/hooks/useToken"
 import { DcentError, dcent } from "@ui/util/dcent"
+import { useBringPopupBackInFront } from "@ui/util/dcent/useBringPopupBackInFront"
 import DcentWebConnector from "dcent-web-connector"
 import { FC, useCallback, useEffect, useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
@@ -118,6 +119,7 @@ export const SignDcentSubstrate: FC<SignHardwareSubstrateProps> = ({
 
   const [displayedErrorMessage, setDisplayedErrorMessage] = useState<string>()
   const [isSigning, setIsSigning] = useState(false)
+  const { startListening, stopListening } = useBringPopupBackInFront()
 
   const handleSendClick = useCallback(async () => {
     if (!dcentTx) return
@@ -126,11 +128,15 @@ export const SignDcentSubstrate: FC<SignHardwareSubstrateProps> = ({
     onSentToDevice?.(true)
 
     try {
+      // this will open the bridge page that may hide Talisman popup => bring talisman back in front
+      startListening()
       const { signed_tx } = await dcent.getPolkadotSignedTransaction(dcentTx)
+      stopListening()
 
       // add prefix for ed25519 signature (0x00)
       return onSigned({ signature: `0x00${signed_tx.substring(2)}` })
     } catch (err) {
+      stopListening
       log.error("Failed to sign", { err })
       if (err instanceof DcentError) {
         if (err.code !== "user_cancel") setDisplayedErrorMessage(err.message)
@@ -140,7 +146,7 @@ export const SignDcentSubstrate: FC<SignHardwareSubstrateProps> = ({
       setIsSigning(false)
       dcent.popupWindowClose()
     }
-  }, [dcentTx, onSentToDevice, onSigned, t])
+  }, [dcentTx, onSentToDevice, onSigned, startListening, stopListening, t])
 
   useEffect(() => {
     // error from constructing payload
