@@ -57,11 +57,13 @@ const _selectableCurrenciesState = atom<ReadonlySet<TokenRateCurrency>>({
 export const selectableCurrenciesState = selector<readonly TokenRateCurrency[]>({
   key: "selectableCurrency",
   get: ({ get }) => Array.from(get(_selectableCurrenciesState).values()).slice().sort(),
-  set: ({ set }, newValue) =>
-    set(
-      _selectableCurrenciesState,
-      newValue instanceof DefaultValue ? newValue : new Set(newValue)
-    ),
+  set: ({ set }, newValue) => {
+    if (!(newValue instanceof DefaultValue) && newValue.length < 1) {
+      return
+    }
+
+    set(_selectableCurrenciesState, newValue instanceof DefaultValue ? newValue : new Set(newValue))
+  },
 })
 
 const _selectedCurrencyState = atom<TokenRateCurrency>({
