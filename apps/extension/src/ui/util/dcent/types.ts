@@ -1,3 +1,5 @@
+import i18next from "i18next"
+
 export class DcentError extends Error {
   public readonly code: string
 
@@ -5,6 +7,17 @@ export class DcentError extends Error {
     super(msg)
 
     this.code = code
+
+    // override message with user friendly message
+    // other error codes can be looked up here : https://github.com/DcentWallet/dcent-web-connector/blob/35a05a4752e2553f91ef79c2d872b7af3163934e/src/index.js
+    switch (code) {
+      case "time_out":
+        this.message = i18next.t("The request has expired (timeout).")
+        break
+      case "pop-up_closed":
+        this.message = i18next.t("Failed to connect to D'CENT Bridge.")
+        break
+    }
 
     // Set the prototype explicitly.
     Object.setPrototypeOf(this, DcentError.prototype)
