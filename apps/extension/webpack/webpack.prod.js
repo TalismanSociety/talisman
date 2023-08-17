@@ -1,6 +1,7 @@
 /* eslint-env es2021 */
 
 const { merge } = require("webpack-merge")
+const path = require("path")
 const CopyPlugin = require("copy-webpack-plugin")
 const ZipPlugin = require("./ZipPlugin")
 const TerserPlugin = require("terser-webpack-plugin")
@@ -10,6 +11,9 @@ const common = require("./webpack.common.js")
 const { distDir, getArchiveFileName, getSentryPlugin, getManifestVersionName } = require("./utils")
 const { SourceMapDevToolPlugin } = require("webpack")
 const SimpleLocalizeDownloadPlugin = require("./SimpleLocalizeDownloadPlugin")
+
+const manifestPath = path.join(__dirname, "..", "public", "manifest.json")
+const faviconsSrcPath = path.join(__dirname, "..", "public", "favicon*.*")
 
 const config = (env) => {
   if (env.build === "production") {
@@ -35,10 +39,6 @@ const config = (env) => {
             from: "manifest.json",
             to: distDir,
             context: "public",
-            // overwrite non-transformed manifest.json
-            force: true,
-            // copied last to overwrite the `dist/manifest.json` copied by the `from "."` pattern
-            priority: 10,
             transform(content) {
               // Parse the manifest
               const manifest = JSON.parse(content.toString())
@@ -53,21 +53,28 @@ const config = (env) => {
               if (env.build === "canary") {
                 manifest.name = `${manifest.name} - Canary`
                 manifest.browser_action.default_title = `${manifest.browser_action.default_title} - Canary`
-
-                for (const key in manifest.icons) {
-                  const filename = manifest.icons[key]
-                  const name = filename.split(".").slice(0, -1).join()
-                  const extension = filename.split(".").slice(-1).join()
-
-                  manifest.icons[key] = `${name}-canary.${extension}`
-                }
               }
 
               // Return the modified manifest
               return JSON.stringify(manifest, null, 2)
             },
           },
-          { from: ".", to: distDir, context: "public" },
+          {
+            from: env.build === "canary" ? "favicon*-canary*" : "favicon*-prod*",
+            to: ({ absoluteFilename }) =>
+              path.join(
+                distDir,
+                path.basename(absoluteFilename).replace(/-(?:prod|canary|dev)/, "")
+              ),
+            context: "public",
+          },
+          {
+            from: ".",
+            to: distDir,
+            context: "public",
+            // do not copy the manifest or the favicons, they're handled separately
+            globOptions: { ignore: [manifestPath, faviconsSrcPath] },
+          },
         ],
       }),
       new SimpleLocalizeDownloadPlugin(),
