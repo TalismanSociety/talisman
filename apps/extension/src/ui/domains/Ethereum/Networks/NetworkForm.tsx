@@ -2,6 +2,7 @@ import { CustomEvmNetwork, EvmNetwork, EvmNetworkId } from "@core/domains/ethere
 import { RequestUpsertCustomEvmNetwork } from "@core/domains/ethereum/types"
 import { CustomNativeToken } from "@core/domains/tokens/types"
 import { yupResolver } from "@hookform/resolvers/yup"
+import { HeaderBlock } from "@talisman/components/HeaderBlock"
 import { notify } from "@talisman/components/Notifications"
 import { useOpenClose } from "@talisman/hooks/useOpenClose"
 import { ArrowRightIcon } from "@talismn/icons"
@@ -39,7 +40,7 @@ const ResetNetworkButton: FC<{ network: EvmNetwork | CustomEvmNetwork }> = ({ ne
   const handleConfirmReset = useCallback(async () => {
     try {
       await api.ethNetworkReset(network.id.toString())
-      navigate("/networks")
+      navigate("/networks?type=ethereum")
     } catch (err) {
       notify({
         title: t("Failed to reset"),
@@ -87,7 +88,7 @@ const RemoveNetworkButton: FC<{ network: EvmNetwork | CustomEvmNetwork }> = ({ n
     if (!network) return
     try {
       await api.ethNetworkRemove(network.id.toString())
-      navigate("/networks")
+      navigate("/networks?type=ethereum")
     } catch (err) {
       notify({
         title: t("Failed to remove"),
@@ -321,105 +322,116 @@ export const NetworkForm: FC<NetworkFormProps> = ({ evmNetworkId, onSubmitted })
   if (evmNetworkId && !defaultValues) return null
 
   return (
-    <form className="mt-24 space-y-4" onSubmit={handleSubmit(submit)}>
-      <FormProvider {...formProps}>
-        <NetworkRpcsListField />
-        <div className="grid grid-cols-3 gap-12">
-          <FormFieldContainer label={t("Chain ID")} error={errors.id?.message}>
-            <FormFieldInputText
-              readOnly
-              className="text-body-disabled cursor-not-allowed"
-              before={
-                <ChainLogoBase
-                  logo={chainLogoUrl}
-                  className={classNames(
-                    "ml-[-0.8rem] mr-[0.4rem] min-w-[3rem] text-[3rem]",
-                    !id && "opacity-50"
-                  )}
-                />
-              }
-              {...register("id")}
-            />
-          </FormFieldContainer>
-          <FormFieldContainer
-            className="col-span-2"
-            label={t("Network Name")}
-            error={errors.name?.message}
-          >
-            <FormFieldInputText placeholder={t("Paraverse")} {...register("name")} />
-          </FormFieldContainer>
-        </div>
-        <div className="grid grid-cols-3 gap-12">
-          <FormFieldContainer
-            label={t("Token Coingecko ID")}
-            error={errors.tokenCoingeckoId?.message}
-          >
-            <FormFieldInputText
-              before={
-                <AssetLogoBase
-                  url={tokenLogoUrl}
-                  className="ml-[-0.8rem] mr-[0.4rem] min-w-[3rem] text-[3rem]"
-                />
-              }
-              placeholder={t("(optional)")}
-              {...register("tokenCoingeckoId")}
-            />
-          </FormFieldContainer>
-          <FormFieldContainer label={t("Token symbol")} error={errors.tokenSymbol?.message}>
-            <FormFieldInputText placeholder={"ABC"} {...register("tokenSymbol")} />
-          </FormFieldContainer>
-          <FormFieldContainer label={t("Token decimals")} error={errors.tokenDecimals?.message}>
-            <FormFieldInputText
-              placeholder="18"
-              {...register("tokenDecimals", { valueAsNumber: true })}
-            />
-          </FormFieldContainer>
-        </div>
-        <div className="text-body-disabled mt-[-1.6rem] pb-8 text-xs">
+    <>
+      <HeaderBlock
+        title={t("{{editMode}} EVM Network", { editMode: evmNetworkId ? t("Edit") : t("Add") })}
+        text={
           <Trans
             t={t}
-            defaults="Talisman uses CoinGecko as reference for fiat rates and token logos.<br />Find the API ID of the native token of this network on <Link>https://coingecko.com</Link> and paste it here."
-            components={{
-              Link: (
-                // eslint-disable-next-line jsx-a11y/anchor-has-content
-                <a
-                  className="text-body-secondary hover:text-body"
-                  href="https://coingecko.com"
-                  target="_blank"
-                ></a>
-              ),
-            }}
+            defaults="Only ever add RPCs you trust.<br />RPCs will automatically cycle in the order of priority defined here in case of any errors."
           />
-        </div>
-        <FormFieldContainer
-          label={t("Block explorer URL")}
-          error={errors.blockExplorerUrl?.message}
-        >
-          <FormFieldInputText placeholder="https://" {...register("blockExplorerUrl")} />
-        </FormFieldContainer>
-        <div>
-          <Checkbox checked={!!isTestnet} onChange={handleIsTestnetChange}>
-            <span className="text-body-secondary">{t("Testnet")}</span>
-          </Checkbox>
-        </div>
-        <div className="text-alert-warn">{submitError}</div>
-        <div className="flex justify-between">
-          <div>
-            {evmNetwork && showRemove && <RemoveNetworkButton network={evmNetwork} />}
-            {evmNetwork && showReset && <ResetNetworkButton network={evmNetwork} />}
+        }
+      />
+      <form className="mt-24 space-y-4" onSubmit={handleSubmit(submit)}>
+        <FormProvider {...formProps}>
+          <NetworkRpcsListField />
+          <div className="grid grid-cols-3 gap-12">
+            <FormFieldContainer label={t("Chain ID")} error={errors.id?.message}>
+              <FormFieldInputText
+                readOnly
+                className="text-body-disabled cursor-not-allowed"
+                before={
+                  <ChainLogoBase
+                    logo={chainLogoUrl}
+                    className={classNames(
+                      "ml-[-0.8rem] mr-[0.4rem] min-w-[3rem] text-[3rem]",
+                      !id && "opacity-50"
+                    )}
+                  />
+                }
+                {...register("id")}
+              />
+            </FormFieldContainer>
+            <FormFieldContainer
+              className="col-span-2"
+              label={t("Network Name")}
+              error={errors.name?.message}
+            >
+              <FormFieldInputText placeholder={t("Paraverse")} {...register("name")} />
+            </FormFieldContainer>
           </div>
-          <Button
-            type="submit"
-            className="mt-8"
-            primary
-            disabled={!isValid || !isDirty}
-            processing={isSubmitting}
+          <div className="grid grid-cols-3 gap-12">
+            <FormFieldContainer
+              label={t("Token Coingecko ID")}
+              error={errors.tokenCoingeckoId?.message}
+            >
+              <FormFieldInputText
+                before={
+                  <AssetLogoBase
+                    url={tokenLogoUrl}
+                    className="ml-[-0.8rem] mr-[0.4rem] min-w-[3rem] text-[3rem]"
+                  />
+                }
+                placeholder={t("(optional)")}
+                {...register("tokenCoingeckoId")}
+              />
+            </FormFieldContainer>
+            <FormFieldContainer label={t("Token symbol")} error={errors.tokenSymbol?.message}>
+              <FormFieldInputText placeholder={"ABC"} {...register("tokenSymbol")} />
+            </FormFieldContainer>
+            <FormFieldContainer label={t("Token decimals")} error={errors.tokenDecimals?.message}>
+              <FormFieldInputText
+                placeholder="18"
+                {...register("tokenDecimals", { valueAsNumber: true })}
+              />
+            </FormFieldContainer>
+          </div>
+          <div className="text-body-disabled mt-[-1.6rem] pb-8 text-xs">
+            <Trans
+              t={t}
+              defaults="Talisman uses CoinGecko as reference for fiat rates and token logos.<br />Find the API ID of the native token of this network on <Link>https://coingecko.com</Link> and paste it here."
+              components={{
+                Link: (
+                  // eslint-disable-next-line jsx-a11y/anchor-has-content
+                  <a
+                    className="text-body-secondary hover:text-body"
+                    href="https://coingecko.com"
+                    target="_blank"
+                  ></a>
+                ),
+              }}
+            />
+          </div>
+          <FormFieldContainer
+            label={t("Block explorer URL")}
+            error={errors.blockExplorerUrl?.message}
           >
-            {isEditMode ? t("Update Network") : t("Add Network")}
-            <ArrowRightIcon className="ml-4 inline text-lg" />
-          </Button>
-        </div>
-      </FormProvider>
-    </form>
+            <FormFieldInputText placeholder="https://" {...register("blockExplorerUrl")} />
+          </FormFieldContainer>
+          <div>
+            <Checkbox checked={!!isTestnet} onChange={handleIsTestnetChange}>
+              <span className="text-body-secondary">{t("Testnet")}</span>
+            </Checkbox>
+          </div>
+          <div className="text-alert-warn">{submitError}</div>
+          <div className="flex justify-between">
+            <div>
+              {evmNetwork && showRemove && <RemoveNetworkButton network={evmNetwork} />}
+              {evmNetwork && showReset && <ResetNetworkButton network={evmNetwork} />}
+            </div>
+            <Button
+              type="submit"
+              className="mt-8"
+              primary
+              disabled={!isValid || !isDirty}
+              processing={isSubmitting}
+            >
+              {isEditMode ? t("Update Network") : t("Add Network")}
+              <ArrowRightIcon className="ml-4 inline text-lg" />
+            </Button>
+          </div>
+        </FormProvider>
+      </form>
+    </>
   )
 }
