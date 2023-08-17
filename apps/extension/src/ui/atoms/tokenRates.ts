@@ -44,7 +44,7 @@ export const tokenRatesQuery = selectorFamily({
 
 const _selectableCurrenciesState = atom<ReadonlySet<TokenRateCurrency>>({
   key: "_selectableCurrency",
-  default: new Set(["usd", "btc"]),
+  default: new Set(["usd", "dot", "eth"]),
   effects: [
     storageEffect(Browser.storage.local, {
       key: "settings",
