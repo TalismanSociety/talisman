@@ -115,6 +115,14 @@ export const AddCustomTokenPage = () => {
     [navigate, tokenInfo]
   )
 
+  const addressErrorMessage = useMemo(() => {
+    // error code may be filled by ethers provider
+    const error = tokenInfoError as Error & { code?: string }
+    if (error?.code === "NETWORK_ERROR") return t("Failed to connect")
+    else if (error) return t("Invalid address")
+    else return undefined
+  }, [t, tokenInfoError])
+
   return (
     <DashboardLayout analytics={ANALYTICS_PAGE} withBack centered>
       <HeaderBlock
@@ -134,7 +142,7 @@ export const AddCustomTokenPage = () => {
         </FormFieldContainer>
         <FormFieldContainer
           label={t("Contract Address")}
-          error={errors.contractAddress?.message ?? (tokenInfoError && t("Invalid address"))}
+          error={errors.contractAddress?.message ?? addressErrorMessage}
         >
           <FormFieldInputText
             {...register("contractAddress")}
@@ -190,7 +198,7 @@ export const AddCustomTokenPage = () => {
             icon={PlusIcon}
             type="submit"
             primary
-            disabled={!isValid || isLoading}
+            disabled={!isValid || isLoading || !!tokenInfoError}
             processing={isSubmitting}
           >
             {t("Add Token")}
