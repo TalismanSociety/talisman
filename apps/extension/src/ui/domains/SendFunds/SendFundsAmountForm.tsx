@@ -37,6 +37,7 @@ import { AccountIcon } from "../Account/AccountIcon"
 import { AccountTypeIcon } from "../Account/AccountTypeIcon"
 import { Address } from "../Account/Address"
 import { ChainLogo } from "../Asset/ChainLogo"
+import currencyConfig from "../Asset/currencyConfig"
 import Fiat from "../Asset/Fiat"
 import { TokenLogo } from "../Asset/TokenLogo"
 import Tokens from "../Asset/Tokens"
@@ -284,7 +285,7 @@ const FiatInput = () => {
           isEstimatingMaxAmount ? "text-grey-800" : "peer-placeholder-shown:text-body-disabled"
         )}
       >
-        $
+        {currencyConfig[currency]?.unicodeCharacter}
       </div>
     </div>
   )
