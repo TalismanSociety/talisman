@@ -6,8 +6,7 @@ import { useSelectedAccount } from "@ui/domains/Portfolio/SelectedAccountContext
 import { useCallback, useEffect, useMemo, useState } from "react"
 import { Trans, useTranslation } from "react-i18next"
 import { useNavigate } from "react-router-dom"
-import { Button, ModalDialog } from "talisman-ui"
-import { Modal } from "talisman-ui"
+import { Button, Modal, ModalDialog } from "talisman-ui"
 
 const REMOVABLE_ORIGINS: AccountType[] = [
   AccountType.Derived,
