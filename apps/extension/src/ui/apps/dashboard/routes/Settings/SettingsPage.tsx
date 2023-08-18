@@ -110,6 +110,13 @@ export const SettingsPage = () => {
           to={`/settings/accounts`}
         />
         <CtaButton
+          iconLeft={IconUser}
+          iconRight={ChevronRightIcon}
+          title={t("Recovery Phrases")}
+          subtitle={t("Backup and manage your recovery phrases")}
+          to={`/settings/mnemonics`}
+        />
+        <CtaButton
           iconLeft={GlobeIcon}
           iconRight={ChevronRightIcon}
           title={t("Manage Ethereum Networks")}
