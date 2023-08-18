@@ -3,8 +3,6 @@ import { RequestUpsertCustomEvmNetwork } from "@core/domains/ethereum/types"
 import { CustomNativeToken } from "@core/domains/tokens/types"
 import { yupResolver } from "@hookform/resolvers/yup"
 import { HeaderBlock } from "@talisman/components/HeaderBlock"
-import { notify } from "@talisman/components/Notifications"
-import { useOpenClose } from "@talisman/hooks/useOpenClose"
 import { ArrowRightIcon } from "@talismn/icons"
 import { classNames } from "@talismn/util"
 import { useQuery } from "@tanstack/react-query"
@@ -23,178 +21,25 @@ import { isCustomEvmNetwork } from "@ui/util/isCustomEvmNetwork"
 import { ChangeEventHandler, FC, useCallback, useEffect, useMemo, useRef, useState } from "react"
 import { FormProvider, useForm } from "react-hook-form"
 import { Trans, useTranslation } from "react-i18next"
-import { useNavigate } from "react-router-dom"
 import { useDebounce } from "react-use"
-import { ModalDialog } from "talisman-ui"
-import { Button, Checkbox, FormFieldContainer, FormFieldInputText, Modal } from "talisman-ui"
+import { Button, Checkbox, FormFieldContainer, FormFieldInputText } from "talisman-ui"
 
-import { getNetworkFormSchema } from "./getNetworkFormSchema"
+import { getEvmNetworkFormSchema } from "./getEvmNetworkFormSchema"
 import { getRpcChainId } from "./helpers"
 import { NetworkRpcsListField } from "./NetworkRpcsListField"
+import { RemoveEvmNetworkButton } from "./RemoveEvmNetworkButton"
+import { ResetEvmNetworkButton } from "./ResetEvmNetworkButton"
 
-const ResetNetworkButton: FC<{ network: EvmNetwork | CustomEvmNetwork }> = ({ network }) => {
-  const { t } = useTranslation("admin")
-  const navigate = useNavigate()
-  const { isOpen, open, close } = useOpenClose()
-
-  const handleConfirmReset = useCallback(async () => {
-    try {
-      await api.ethNetworkReset(network.id.toString())
-      navigate("/networks?type=ethereum")
-    } catch (err) {
-      notify({
-        title: t("Failed to reset"),
-        subtitle: (err as Error).message,
-        type: "error",
-      })
-    }
-  }, [navigate, network.id, t])
-
-  const networkName = network?.name ?? t("N/A")
-
-  return (
-    <>
-      <Button type="button" className="mt-8" onClick={open}>
-        {t("Reset to defaults")}
-      </Button>
-      <Modal isOpen={isOpen && !!network} onDismiss={close}>
-        <ModalDialog title={t("Reset Network")} onClose={close}>
-          <div className="text-body-secondary mt-4 space-y-16">
-            <div className="text-base">
-              <Trans t={t}>
-                Network <span className="text-body">{networkName}</span> will be reset to Talisman's
-                default settings.
-              </Trans>
-            </div>
-            <div className="grid grid-cols-2 gap-8">
-              <Button onClick={close}>{t("Cancel")}</Button>
-              <Button primary onClick={handleConfirmReset}>
-                {t("Reset")}
-              </Button>
-            </div>
-          </div>
-        </ModalDialog>
-      </Modal>
-    </>
-  )
-}
-
-const RemoveNetworkButton: FC<{ network: EvmNetwork | CustomEvmNetwork }> = ({ network }) => {
-  const { t } = useTranslation("admin")
-  const navigate = useNavigate()
-  const { isOpen, open, close } = useOpenClose()
-
-  const handleConfirmRemove = useCallback(async () => {
-    if (!network) return
-    try {
-      await api.ethNetworkRemove(network.id.toString())
-      navigate("/networks?type=ethereum")
-    } catch (err) {
-      notify({
-        title: t("Failed to remove"),
-        subtitle: (err as Error).message,
-        type: "error",
-      })
-    }
-  }, [network, navigate, t])
-
-  const networkName = network?.name ?? t("N/A")
-
-  return (
-    <>
-      <Button type="button" className="mt-8" onClick={open}>
-        {t("Remove Network")}
-      </Button>
-      <Modal isOpen={isOpen && !!network} onDismiss={close}>
-        <ModalDialog title={t("Remove Network")} onClose={close}>
-          <div className="text-body-secondary mt-4 space-y-16">
-            <div className="text-base">
-              <Trans t={t}>
-                Network <span className="text-body">{networkName}</span> and associated tokens will
-                be removed from Talisman.
-              </Trans>
-            </div>
-            <div className="grid grid-cols-2 gap-8">
-              <Button onClick={close}>{t("Cancel")}</Button>
-              <Button primary onClick={handleConfirmRemove}>
-                {t("Remove")}
-              </Button>
-            </div>
-          </div>
-        </ModalDialog>
-      </Modal>
-    </>
-  )
-}
-
-const evmNetworkToFormData = (
-  network?: EvmNetwork | CustomEvmNetwork,
-  nativeToken?: CustomNativeToken
-): RequestUpsertCustomEvmNetwork | undefined => {
-  if (!network || !nativeToken) return undefined
-
-  return {
-    id: network.id,
-    name: network.name ?? "",
-    rpcs: network.rpcs ?? [],
-    blockExplorerUrl:
-      network.explorerUrl ?? ("explorerUrls" in network ? network.explorerUrls?.[0] : undefined),
-    isTestnet: !!network.isTestnet,
-    chainLogoUrl: network.logo ?? null,
-    tokenCoingeckoId: nativeToken.coingeckoId ?? null,
-    tokenSymbol: nativeToken.symbol,
-    tokenDecimals: nativeToken.decimals,
-    tokenLogoUrl: nativeToken.logo ?? null,
-  }
-}
-
-const useRpcChainId = (rpcUrl: string) => {
-  const [debouncedRpcUrl, setDebouncedRpcUrl] = useState(rpcUrl)
-  useDebounce(
-    () => {
-      setDebouncedRpcUrl(rpcUrl)
-    },
-    250,
-    [rpcUrl]
-  )
-
-  return useQuery({
-    queryKey: ["useRpcChainId", debouncedRpcUrl],
-    queryFn: () => (debouncedRpcUrl ? getRpcChainId(debouncedRpcUrl) : null),
-    refetchInterval: false,
-    refetchOnMount: false,
-    refetchOnReconnect: false,
-    refetchOnWindowFocus: false,
-  })
-}
-
-type NetworkFormProps = {
+type EvmNetworkFormProps = {
   evmNetworkId?: EvmNetworkId
   onSubmitted?: () => void
 }
 
-const DEFAULT_VALUES: Partial<RequestUpsertCustomEvmNetwork> = {
-  rpcs: [{ url: "" }], // provides one empty row
-}
-
-const useEditMode = (evmNetworkId?: EvmNetworkId) => {
-  const evmNetwork = useEvmNetwork(evmNetworkId)
-  const nativeToken = useToken(evmNetwork?.nativeToken?.id) as CustomNativeToken | undefined
-  const defaultValues = useMemo(() => {
-    if (!evmNetworkId) return DEFAULT_VALUES
-    return evmNetwork && nativeToken ? evmNetworkToFormData(evmNetwork, nativeToken) : undefined
-  }, [evmNetwork, evmNetworkId, nativeToken])
-
-  const isCustom = useMemo(() => !!evmNetwork && isCustomEvmNetwork(evmNetwork), [evmNetwork])
-
-  return { defaultValues, isEditMode: !!evmNetworkId, isCustom, evmNetwork, nativeToken }
-}
-
-export const NetworkForm: FC<NetworkFormProps> = ({ evmNetworkId, onSubmitted }) => {
+export const EvmNetworkForm: FC<EvmNetworkFormProps> = ({ evmNetworkId, onSubmitted }) => {
   const { t } = useTranslation("admin")
-  const schema = useMemo(() => getNetworkFormSchema(evmNetworkId), [evmNetworkId])
+  const schema = useMemo(() => getEvmNetworkFormSchema(evmNetworkId), [evmNetworkId])
 
-  const qIsBuiltInEvmNetwork = useIsBuiltInEvmNetwork(evmNetworkId)
+  const isBuiltInEvmNetwork = useIsBuiltInEvmNetwork(evmNetworkId)
 
   const [submitError, setSubmitError] = useState<string>()
   const { evmNetworks } = useEvmNetworks(true)
@@ -222,8 +67,7 @@ export const NetworkForm: FC<NetworkFormProps> = ({ evmNetworkId, onSubmitted })
     formState: { errors, isValid, isSubmitting, isDirty, touchedFields },
   } = formProps
 
-  const formData = watch()
-  const { isTestnet, rpcs, id, tokenCoingeckoId } = formData
+  const { isTestnet, rpcs, id, tokenCoingeckoId } = watch()
 
   // initialize form with existing values (edit mode), only once
   const initialized = useRef(false)
@@ -236,15 +80,15 @@ export const NetworkForm: FC<NetworkFormProps> = ({ evmNetworkId, onSubmitted })
   }, [defaultValues, evmNetworkId, reset, trigger])
 
   // auto detect chain id based on RPC url (add mode only)
-  const qRpcChainId = useRpcChainId(rpcs?.[0]?.url)
+  const rpcChainId = useRpcChainId(rpcs?.[0]?.url)
   useEffect(() => {
-    if (evmNetworkId || !qRpcChainId.isFetched) return
-    if (!!qRpcChainId.data && qRpcChainId.data !== id) {
-      setValue("id", qRpcChainId.data)
-    } else if (!!id && !qRpcChainId.data) {
+    if (evmNetworkId || !rpcChainId.isFetched) return
+    if (!!rpcChainId.data && rpcChainId.data !== id) {
+      setValue("id", rpcChainId.data)
+    } else if (!!id && !rpcChainId.data) {
       resetField("id")
     }
-  }, [evmNetworkId, id, qRpcChainId.data, qRpcChainId.isFetched, resetField, setValue])
+  }, [evmNetworkId, id, rpcChainId.data, rpcChainId.isFetched, resetField, setValue])
 
   // fetch token logo's url, but only if form has been edited to reduce 429 errors from coingecko
   const coingeckoLogoUrl = useCoinGeckoTokenImageUrl(isDirty ? tokenCoingeckoId : null)
@@ -294,10 +138,10 @@ export const NetworkForm: FC<NetworkFormProps> = ({ evmNetworkId, onSubmitted })
 
   const [showRemove, showReset] = useMemo(
     () =>
-      isCustom && qIsBuiltInEvmNetwork.isFetched
-        ? [!qIsBuiltInEvmNetwork.data, !!qIsBuiltInEvmNetwork.data]
+      isCustom && isBuiltInEvmNetwork.isFetched
+        ? [!isBuiltInEvmNetwork.data, !!isBuiltInEvmNetwork.data]
         : [false, false],
-    [isCustom, qIsBuiltInEvmNetwork.data, qIsBuiltInEvmNetwork.isFetched]
+    [isCustom, isBuiltInEvmNetwork.data, isBuiltInEvmNetwork.isFetched]
   )
 
   const submit = useCallback(
@@ -416,8 +260,8 @@ export const NetworkForm: FC<NetworkFormProps> = ({ evmNetworkId, onSubmitted })
           <div className="text-alert-warn">{submitError}</div>
           <div className="flex justify-between">
             <div>
-              {evmNetwork && showRemove && <RemoveNetworkButton network={evmNetwork} />}
-              {evmNetwork && showReset && <ResetNetworkButton network={evmNetwork} />}
+              {evmNetwork && showRemove && <RemoveEvmNetworkButton network={evmNetwork} />}
+              {evmNetwork && showReset && <ResetEvmNetworkButton network={evmNetwork} />}
             </div>
             <Button
               type="submit"
@@ -434,4 +278,62 @@ export const NetworkForm: FC<NetworkFormProps> = ({ evmNetworkId, onSubmitted })
       </form>
     </>
   )
+}
+
+const evmNetworkToFormData = (
+  network?: EvmNetwork | CustomEvmNetwork,
+  nativeToken?: CustomNativeToken
+): RequestUpsertCustomEvmNetwork | undefined => {
+  if (!network || !nativeToken) return undefined
+
+  return {
+    id: network.id,
+    name: network.name ?? "",
+    rpcs: network.rpcs ?? [],
+    blockExplorerUrl:
+      network.explorerUrl ?? ("explorerUrls" in network ? network.explorerUrls?.[0] : undefined),
+    isTestnet: !!network.isTestnet,
+    chainLogoUrl: network.logo ?? null,
+    tokenCoingeckoId: nativeToken.coingeckoId ?? null,
+    tokenSymbol: nativeToken.symbol,
+    tokenDecimals: nativeToken.decimals,
+    tokenLogoUrl: nativeToken.logo ?? null,
+  }
+}
+
+const useRpcChainId = (rpcUrl: string) => {
+  const [debouncedRpcUrl, setDebouncedRpcUrl] = useState(rpcUrl)
+  useDebounce(
+    () => {
+      setDebouncedRpcUrl(rpcUrl)
+    },
+    250,
+    [rpcUrl]
+  )
+
+  return useQuery({
+    queryKey: ["useRpcChainId", debouncedRpcUrl],
+    queryFn: () => (debouncedRpcUrl ? getRpcChainId(debouncedRpcUrl) : null),
+    refetchInterval: false,
+    refetchOnMount: false,
+    refetchOnReconnect: false,
+    refetchOnWindowFocus: false,
+  })
+}
+
+const DEFAULT_VALUES: Partial<RequestUpsertCustomEvmNetwork> = {
+  rpcs: [{ url: "" }], // provides one empty row
+}
+
+const useEditMode = (evmNetworkId?: EvmNetworkId) => {
+  const evmNetwork = useEvmNetwork(evmNetworkId)
+  const nativeToken = useToken(evmNetwork?.nativeToken?.id) as CustomNativeToken | undefined
+  const defaultValues = useMemo(() => {
+    if (!evmNetworkId) return DEFAULT_VALUES
+    return evmNetwork && nativeToken ? evmNetworkToFormData(evmNetwork, nativeToken) : undefined
+  }, [evmNetwork, evmNetworkId, nativeToken])
+
+  const isCustom = useMemo(() => !!evmNetwork && isCustomEvmNetwork(evmNetwork), [evmNetwork])
+
+  return { defaultValues, isEditMode: !!evmNetworkId, isCustom, evmNetwork, nativeToken }
 }

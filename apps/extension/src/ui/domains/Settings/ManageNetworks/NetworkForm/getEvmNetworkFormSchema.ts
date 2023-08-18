@@ -3,7 +3,7 @@ import * as yup from "yup"
 
 import { getRpcChainId } from "./helpers"
 
-export const getNetworkFormSchema = (evmNetworkId?: string) => {
+export const getEvmNetworkFormSchema = (evmNetworkId?: string) => {
   return yup
     .object({
       id: yup.string().required(""),
