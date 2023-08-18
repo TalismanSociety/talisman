@@ -1,8 +1,6 @@
 import { AnalyticsPage } from "@ui/api/analytics"
-import { NetworkForm } from "@ui/domains/Ethereum/Networks/NetworkForm"
+import { EvmNetworkForm, SubNetworkForm } from "@ui/domains/Settings/ManageNetworks/NetworkForm"
 import { useAnalyticsPageView } from "@ui/hooks/useAnalyticsPageView"
-import { useChain } from "@ui/hooks/useChain"
-import { useEvmNetwork } from "@ui/hooks/useEvmNetwork"
 import { useCallback } from "react"
 import { useTranslation } from "react-i18next"
 import { useNavigate, useParams } from "react-router-dom"
@@ -30,8 +28,8 @@ export const NetworkPage = () => {
     networkType,
   })
 
-  const chain = useChain(networkType === "polkadot" ? id : undefined)
-  const evmNetwork = useEvmNetwork(networkType === "ethereum" ? id : undefined)
+  const isChain = networkType === "polkadot"
+  const isEvmNetwork = networkType === "ethereum"
 
   const handleSubmitted = useCallback(
     () => navigate(`/networks?type=${networkType}`),
@@ -39,9 +37,9 @@ export const NetworkPage = () => {
   )
 
   return (
-    <DashboardLayout analytics={ANALYTICS_PAGE} centered withBack>
-      {chain && <>Chain Form</>}
-      {evmNetwork && <NetworkForm evmNetworkId={id} onSubmitted={handleSubmitted} />}
+    <DashboardLayout analytics={ANALYTICS_PAGE} withBack centered>
+      {isChain && <SubNetworkForm />}
+      {isEvmNetwork && <EvmNetworkForm evmNetworkId={id} onSubmitted={handleSubmitted} />}
     </DashboardLayout>
   )
 }
