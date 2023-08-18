@@ -266,7 +266,7 @@ export const prepareTransaction = (
 const testNoScriptTag = (text?: string) => !text?.toLowerCase().includes("<script")
 
 const schemaAddEthereumRequest = yup.object().shape({
-  chainId: yup.string().required(),
+  chainId: yup.string().required().test("noScriptTag", testNoScriptTag),
   chainName: yup.string().required().max(100).test("noScriptTag", testNoScriptTag),
   nativeCurrency: yup
     .object()
@@ -276,9 +276,9 @@ const schemaAddEthereumRequest = yup.object().shape({
       decimals: yup.number().required().integer(),
     })
     .required(),
-  rpcUrls: yup.array().of(yup.string().required().url()).required(),
-  blockExplorerUrls: yup.array().of(yup.string().required().url()),
-  iconUrls: yup.array().of(yup.string()),
+  rpcUrls: yup.array().of(yup.string().required().test("noScriptTag", testNoScriptTag)).required(),
+  blockExplorerUrls: yup.array().of(yup.string().required().test("noScriptTag", testNoScriptTag)),
+  iconUrls: yup.array().of(yup.string().test("noScriptTag", testNoScriptTag)),
 })
 
 export const isValidAddEthereumRequestParam = (obj: unknown) =>
