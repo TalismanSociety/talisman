@@ -62,10 +62,9 @@ i18next
       // fall back to browser language
       //
       // we use the `lang` key in the wallet settings ui
-      order: [
-        "localStorage", // key lang=LANGUAGE
-        "navigator", // browser language
-      ],
+      order: ["localStorage"], // key lang=LANGUAGE
+      //   "navigator", // browser language
+      // ], // todo reinstate navigator when we support i18n officially
       lookupLocalStorage: "lang",
       caches: ["localStorage"],
     },
