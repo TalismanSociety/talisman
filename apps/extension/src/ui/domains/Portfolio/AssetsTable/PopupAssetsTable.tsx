@@ -1,3 +1,4 @@
+import { TALISMAN_WEB_APP_STAKING_URL } from "@core/constants"
 import { Balances } from "@core/domains/balances/types"
 import { Accordion, AccordionIcon } from "@talisman/components/Accordion"
 import { FadeIn } from "@talisman/components/FadeIn"
@@ -105,7 +106,7 @@ const AssetRow = ({ balances, locked }: AssetRowProps) => {
   }, [account, genericEvent, navigate, token])
 
   const handleClickStakingBanner = useCallback(() => {
-    window.open("https://app.talisman.xyz/staking")
+    window.open(TALISMAN_WEB_APP_STAKING_URL)
     genericEvent("open web app staking from banner", { from: "popup", symbol: token?.symbol })
   }, [genericEvent, token?.symbol])
 

@@ -1,9 +1,9 @@
-const TX_HISTORY_PAGE_URL = "https://app.talisman.xyz/portfolio/history"
+import { TALISMAN_WEB_APP_TX_HISTORY_URL } from "@core/constants"
 
 export const getTransactionHistoryUrl = (address?: string) => {
-  if (!address) return TX_HISTORY_PAGE_URL
+  if (!address) return TALISMAN_WEB_APP_TX_HISTORY_URL
 
-  const url = new URL(TX_HISTORY_PAGE_URL)
+  const url = new URL(TALISMAN_WEB_APP_TX_HISTORY_URL)
   url.searchParams.set("address", address)
   return url.toString()
 }

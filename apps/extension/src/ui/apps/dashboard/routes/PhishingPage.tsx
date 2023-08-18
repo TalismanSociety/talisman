@@ -1,3 +1,4 @@
+import { TALISMAN_WEB_APP_URL } from "@core/constants"
 import { AlertTriangleIcon } from "@talisman/theme/icons"
 import { TalismanWhiteLogo } from "@talisman/theme/logos"
 import { api } from "@ui/api"
@@ -46,7 +47,7 @@ export const PhishingPage: FC<PhishingPageProps> = ({ url }) => {
                 </Trans>
               </div>
               <div className="w-full">
-                <a href="https://app.talisman.xyz">
+                <a href={TALISMAN_WEB_APP_URL}>
                   <Button className="mb-6 w-full" primary>
                     {t("Get me out of here")}
                   </Button>
