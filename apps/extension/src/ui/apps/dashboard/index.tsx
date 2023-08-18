@@ -37,6 +37,7 @@ import { AnalyticsOptInPage } from "./routes/Settings/AnalyticsOptInPage"
 import { AutoLockTimerPage } from "./routes/Settings/AutoLockTimerPage"
 import { ChangePasswordPage } from "./routes/Settings/ChangePasswordPage"
 import { LanguageSettingsPage } from "./routes/Settings/LanguageSettingsPage"
+import { MnemonicsPage } from "./routes/Settings/Mnemonics/MnemonicsPage"
 import { OptionsPage } from "./routes/Settings/OptionsPage"
 import { SecurityPrivacySettingsPage } from "./routes/Settings/SecurityPrivacySettingsPage"
 import { SettingsPage } from "./routes/Settings/SettingsPage"
@@ -107,6 +108,7 @@ const DashboardInner = () => {
           <Route path="connected-sites" element={<TrustedSitesPage />} />
           <Route path="address-book" element={<AddressBookPage />} />
           <Route path="options" element={<OptionsPage />} />
+          <Route path="mnemonics" element={<MnemonicsPage />} />
           <Route path="accounts" element={<AccountsPage />} />
           <Route path="language" element={<LanguageSettingsPage />} />
           <Route path="security-privacy-settings" element={<SecurityPrivacySettingsPage />} />
