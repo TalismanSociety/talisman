@@ -12,26 +12,38 @@ export const getNetworkFormSchema = (evmNetworkId?: string) => {
         .array()
         .of(
           yup.object({
-            url: yup
-              .string()
-              .trim()
-              .required(i18next.t("required"))
-              .test("rpcmatch", "rpcCheck", async function (newRpc) {
-                if (!evmNetworkId || !newRpc) return true
-                try {
-                  const chainId = await getRpcChainId(newRpc as string)
-                  if (!chainId) return this.createError({ message: i18next.t("Failed to connect") })
-                  if (evmNetworkId !== chainId)
-                    return this.createError({ message: i18next.t("Chain ID mismatch") })
-                  return true
-                } catch (err) {
-                  return this.createError({ message: i18next.t("Failed to connect") })
-                }
-              }),
+            url: yup.string().trim().required(i18next.t("required")),
           })
         )
         .required(i18next.t("required"))
-        .min(1, i18next.t("RPC URL required")),
+        .min(1, i18next.t("RPC URL required"))
+        .test("rpcs", i18next.t("Chain ID mismatch"), async function (rpcs) {
+          if (!rpcs?.length) return true
+          let targetId = evmNetworkId
+          for (const rpc of rpcs) {
+            try {
+              if (!rpc.url) continue
+              const chainId = await getRpcChainId(rpc.url)
+              if (!chainId)
+                return this.createError({
+                  message: i18next.t("Failed to connect"),
+                  path: `rpcs[${rpcs.indexOf(rpc)}].url`,
+                })
+              if (!targetId) targetId = chainId
+              if (chainId !== targetId)
+                return this.createError({
+                  message: i18next.t("Chain ID mismatch"),
+                  path: `rpcs[${rpcs.indexOf(rpc)}].url`,
+                })
+            } catch (err) {
+              return this.createError({
+                message: i18next.t("Failed to connect"),
+                path: `rpcs[${rpcs.indexOf(rpc)}].url`,
+              })
+            }
+          }
+          return true
+        }),
       tokenSymbol: yup
         .string()
         .trim()

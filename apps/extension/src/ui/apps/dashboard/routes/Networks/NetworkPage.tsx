@@ -34,12 +34,10 @@ export const NetworkPage = () => {
       <HeaderBlock
         title={t("{{editMode}} EVM Network", { editMode: evmNetworkId ? t("Edit") : t("Add") })}
         text={
-          <Trans t={t}>
-            Only ever add RPCs you trust.
-            <br />
-            RPCs will automatically cycle in the order of priority defined here in case of any
-            errors.
-          </Trans>
+          <Trans
+            t={t}
+            defaults="Only ever add RPCs you trust.<br />RPCs will automatically cycle in the order of priority defined here in case of any errors."
+          />
         }
       />
       <NetworkForm evmNetworkId={evmNetworkId} onSubmitted={handleSubmitted} />

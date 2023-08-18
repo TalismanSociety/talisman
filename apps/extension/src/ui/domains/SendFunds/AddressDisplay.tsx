@@ -37,6 +37,27 @@ const useBlockExplorerUrl = (
   }, [chain?.subscanUrl, evmNetwork?.explorerUrl, resolvedAddress])
 }
 
+const AddressTooltip: FC<{
+  address: string
+  resolvedAddress: string
+  chainName?: string | null
+}> = ({ address, resolvedAddress, chainName }) => {
+  const { t } = useTranslation()
+
+  if (address === resolvedAddress) return <>{resolvedAddress}</>
+
+  return (
+    <>
+      <div>{t("Original address:")}</div>
+      <div style={{ marginTop: 2 }}>{address}</div>
+      <div style={{ marginTop: 4 }}>
+        {t("{{chainName}} format:", { chainName: chainName || "Generic" })}
+      </div>
+      <div style={{ marginTop: 2 }}>{resolvedAddress}</div>
+    </>
+  )
+}
+
 type AddressDisplayProps = {
   // allow undefined but force developer to fill the property so he doesn't forget
   address: Address | null | undefined
@@ -51,7 +72,6 @@ export const AddressDisplay: FC<AddressDisplayProps> = ({
   evmNetworkId,
   className,
 }) => {
-  const { t } = useTranslation()
   const account = useAccountByAddress(address)
   const contact = useContact(address)
   const chain = useChain(chainId as string)
@@ -70,17 +90,16 @@ export const AddressDisplay: FC<AddressDisplayProps> = ({
     copyAddress(resolvedAddress as string)
   }, [resolvedAddress])
 
-  if (!resolvedAddress || !text) return null
+  if (!address || !resolvedAddress || !text) return null
 
   return (
     <Tooltip>
       <TooltipContent>
-        <div>{t("Original address:")}</div>
-        <div style={{ marginTop: 2 }}>{address}</div>
-        <div style={{ marginTop: 4 }}>
-          {t("{{chainName}} format:", { chainName: chain?.name || "Generic" })}
-        </div>
-        <div style={{ marginTop: 2 }}>{resolvedAddress}</div>
+        <AddressTooltip
+          address={address}
+          resolvedAddress={resolvedAddress}
+          chainName={chain?.name}
+        />
       </TooltipContent>
       <TooltipTrigger
         className={classNames(
