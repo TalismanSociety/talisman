@@ -64,7 +64,7 @@ export type AccountJsonAny = (
   | AccountJsonQr
   | AccountJsonWatched
   | AccountJson
-) & { origin?: AccountType | undefined } & {
+) & { origin?: AccountType | undefined; derivedMnemonicId?: string; derivationPath?: string } & {
   folderId?: string
   folderName?: string
   sortOrder?: number

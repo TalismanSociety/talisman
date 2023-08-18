@@ -1,8 +1,10 @@
+import { AccountJsonAny } from "@core/domains/accounts/types"
 import { AccordionIcon } from "@talisman/components/Accordion"
 import { HeaderBlock } from "@talisman/components/HeaderBlock"
 import { Spacer } from "@talisman/components/Spacer"
 import { useOpenClose } from "@talisman/hooks/useOpenClose"
 import { AlertCircleIcon, MoreHorizontalIcon, XIcon } from "@talisman/theme/icons"
+import { AccountIcon } from "@ui/domains/Account/AccountIcon"
 import useAccounts from "@ui/hooks/useAccounts"
 import { FC, useMemo } from "react"
 import { useTranslation } from "react-i18next"
@@ -19,7 +21,21 @@ import { Mnemonic, useMnemonics } from "./useMnemonics"
 
 const useMnemonicAccounts = (mnemonicId: string) => {
   const accounts = useAccounts("owned")
-  return accounts.filter((account) => account.mnemonicId === mnemonicId)
+  return accounts.filter((account) => account.derivedMnemonicId === mnemonicId)
+}
+
+const AccountsStack = ({ accounts }: { accounts: AccountJsonAny[] }) => {
+  return (
+    <div className="ml-[0.4em] inline-block h-9 pl-0.5 leading-none [&>div]:ml-[-0.4em]">
+      {accounts.slice(0, 3).map((account) => (
+        <AccountIcon
+          key={account.address}
+          address={account.address}
+          className="border-grey-800 box-content shrink-0 rounded-full border text-base"
+        />
+      ))}
+    </div>
+  )
 }
 
 const MnemonicRow: FC<{ mnemonic: Mnemonic }> = ({ mnemonic }) => {
@@ -37,8 +53,9 @@ const MnemonicRow: FC<{ mnemonic: Mnemonic }> = ({ mnemonic }) => {
       >
         <div className="flex grow flex-col gap-2 overflow-hidden truncate">
           <div className="text-body text-base">{mnemonic.name}</div>
-          <div className="text-body-secondary text-xs">
-            {t("used by {{count}} accounts", { count: accounts.length })}
+          <div className="text-body-secondary flex items-center gap-2 text-xs leading-none">
+            <AccountsStack accounts={accounts} />
+            <div>{t("used by {{count}} accounts", { count: accounts.length })}</div>
           </div>
         </div>
         {/* reserved space for the context menu button */}
@@ -69,6 +86,8 @@ const BackupReminder: FC = () => {
     () => mnemonics.filter((mnemonic) => !mnemonic.confirmed).length,
     [mnemonics]
   )
+
+  if (!count) return null
 
   return (
     <div className="border-body-secondary mb-8 flex w-full items-center gap-4 rounded-sm border p-4">
