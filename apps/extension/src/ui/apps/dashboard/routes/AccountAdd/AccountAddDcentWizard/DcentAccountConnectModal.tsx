@@ -17,7 +17,7 @@ export const DcentAccountConnectModal: FC<{
   const { setAddress } = useSelectAccountAndNavigate("/portfolio")
 
   useEffect(() => {
-    if (!isOpen) setIsConnected(false)
+    if (isOpen) setIsConnected(false)
   }, [isOpen])
 
   return (
