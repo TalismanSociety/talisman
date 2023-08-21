@@ -38,12 +38,13 @@ export class MigrationRunner extends StorageProvider<Record<string, MigrationRun
       migrations.forEach((_, i) => {
         initialData[i.toString()] = { appliedAt: Date.now() }
       })
-    }
+    } else if (!context && migrations.length > 0)
+      throw new Error("Migration context required when performing migrations")
 
     super("migrations", {})
+
     this.context = context
-    if (!context && !fakeApply)
-      throw new Error("Migration context required when performing migrations")
+    this.migrations = migrations
 
     this.isComplete = new Promise((resolve) => {
       this.status.subscribe({
@@ -58,23 +59,19 @@ export class MigrationRunner extends StorageProvider<Record<string, MigrationRun
       })
     })
 
-    this.migrations = migrations
     if (fakeApply) {
       // initial data has to be set rather than just passed into the super constructor
       this.set(initialData).then(() => {
-        this.init(fakeApply)
+        this.status.next("complete")
       })
-    } else this.init(fakeApply)
+    } else this.init()
   }
 
-  private init(fakeApply = false) {
-    if (!fakeApply) {
-      this.get().then((data) => {
-        const newStatus =
-          Object.keys(data).length === this.migrations.length ? "complete" : "pending"
-        this.status.next(newStatus)
-      })
-    } else this.status.next("complete")
+  private init() {
+    this.get().then((data) => {
+      const newStatus = Object.keys(data).length === this.migrations.length ? "complete" : "pending"
+      this.status.next(newStatus)
+    })
   }
 
   checkMigration = async (key: string) => {

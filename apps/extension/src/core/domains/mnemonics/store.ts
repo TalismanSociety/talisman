@@ -86,8 +86,7 @@ export class SeedPhraseStore extends StorageProvider<SeedPhraseStoreData> {
 
   public async checkSeedExists(seed: string): Promise<boolean> {
     const hash = md5(seed)
-    const existing = Object.keys(await this.get(hash)).find((id) => id === hash)
-    return !!existing
+    return !!(await this.get(hash))
   }
 
   public async getSeed(

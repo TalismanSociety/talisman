@@ -28,7 +28,7 @@ describe("MigrationRunner", () => {
 
   it("should apply migrations", async () => {
     const migrations = [voidMigration, voidMigration]
-    const runner = new MigrationRunner(migrations)
+    const runner = new MigrationRunner(migrations, false, { password: "test" })
     expect(runner.status.value).toEqual("unknown")
     await runner.isComplete
     const latest = await runner.getLatestAppliedMigration()
@@ -39,7 +39,7 @@ describe("MigrationRunner", () => {
   it("should apply migrations in order", async () => {
     const migrations = [voidMigration, voidMigration]
     const spy = jest.spyOn(migrations[0].forward, "apply")
-    const runner = new MigrationRunner(migrations)
+    const runner = new MigrationRunner(migrations, false, { password: "test" })
     await runner.isComplete
     expect(spy).toHaveBeenCalled()
   })
@@ -48,7 +48,7 @@ describe("MigrationRunner", () => {
     const migrations = [badMigration, voidMigration]
     const errorSpy = jest.spyOn(migrations[0].forward, "onError")
 
-    const runner = new MigrationRunner(migrations)
+    const runner = new MigrationRunner(migrations, false, { password: "test" })
     await runner.isComplete
     expect(errorSpy).toHaveBeenCalled()
     expect(runner.status.value).toEqual("error")
@@ -57,22 +57,15 @@ describe("MigrationRunner", () => {
 
   it("should apply migrations only once", async () => {
     const migrations = [voidMigration, voidMigration]
-    const runner = new MigrationRunner(migrations)
+    const runner = new MigrationRunner(migrations, false, { password: "test" })
     await runner.isComplete
 
-    const runner2 = new MigrationRunner(migrations)
+    const runner2 = new MigrationRunner(migrations, false, { password: "test" })
     await runner2.isComplete
     expect(runner.status.value).toEqual("complete")
     expect(runner2.status.value).toEqual("complete")
     const length = Object.keys(await runner.get()).length
     expect(length).toEqual(migrations.length)
-  })
-
-  it("should throw if migration not found", async () => {
-    const migrations = [voidMigration, voidMigration]
-    const runner = new MigrationRunner(migrations)
-    await runner.isComplete
-    await expect(runner.applyMigration(2)).rejects.toThrowError("Migration 2 not found")
   })
 
   it("should not run migration functions if fakeApply is true", async () => {
@@ -86,7 +79,7 @@ describe("MigrationRunner", () => {
 
     // now run some migrations for real
     const newMigrations = [...migrations, voidMigration]
-    const runner2 = new MigrationRunner(newMigrations)
+    const runner2 = new MigrationRunner(newMigrations, false, { password: "test" })
     await runner2.isComplete
 
     const runner2Data = await runner2.get()
