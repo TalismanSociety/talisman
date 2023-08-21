@@ -55,7 +55,7 @@ export const TotalFiatBalance = ({ className, mouseOver }: Props) => {
       </div>
       <div className="flex items-center gap-2">
         <button
-          className="bg-grey-800 text-body-secondary hover:bg-grey-700 pointer-events-auto flex h-14 w-14 items-center justify-center rounded-full text-center transition-colors duration-100 ease-out"
+          className="bg-grey-800 border-grey-750 text-body-secondary hover:bg-grey-700 pointer-events-auto flex h-14 w-14 items-center justify-center rounded-full border text-center transition-colors duration-100 ease-out"
           onClick={(event) => {
             event.stopPropagation()
             toggleCurrency()

@@ -1,9 +1,13 @@
 import { Token } from "@core/domains/tokens/types"
 import { LockIcon } from "@talismn/icons"
 import { classNames } from "@talismn/util"
+import { selectedCurrencyState } from "@ui/atoms"
+import { useToggleCurrency } from "@ui/hooks/useCurrency"
 import BigNumber from "bignumber.js"
 import { ReactNode } from "react"
+import { useRecoilValue } from "recoil"
 
+import currencyConfig from "../Asset/currencyConfig"
 import Fiat from "../Asset/Fiat"
 import Tokens from "../Asset/Tokens"
 
@@ -15,16 +19,19 @@ type StatisticsProps = {
   token?: Token
   locked?: boolean
   showTokens?: boolean
+  showCurrencyToggle?: boolean
 }
 
 const TokensAndFiat = ({
   tokenAmount,
   fiat,
   token,
+  hideSymbol,
 }: {
   tokenAmount?: BigNumber
   fiat: number | null
   token?: Token
+  hideSymbol?: boolean
 }) => (
   <div className="flex flex-col gap-2 whitespace-nowrap">
     <div className="textbase text-white">
@@ -36,13 +43,14 @@ const TokensAndFiat = ({
       />
     </div>
     <div className="text-body-secondary text-sm">
-      {fiat === null ? "-" : <Fiat amount={fiat} isBalance />}
+      {fiat === null ? "-" : <Fiat amount={fiat} isBalance hideSymbol={hideSymbol} />}
     </div>
   </div>
 )
-const FiatOnly = ({ fiat }: { fiat: number | null }) => (
+
+const FiatOnly = ({ fiat, hideSymbol }: { fiat: number | null; hideSymbol?: boolean }) => (
   <div className="textbase text-white">
-    {fiat === null ? "-" : <Fiat amount={fiat} isBalance />}
+    {fiat === null ? "-" : <Fiat amount={fiat} isBalance hideSymbol={hideSymbol} />}
   </div>
 )
 
@@ -54,7 +62,11 @@ export const Statistics = ({
   token,
   locked,
   showTokens,
+  showCurrencyToggle,
 }: StatisticsProps) => {
+  const currency = useRecoilValue(selectedCurrencyState)
+  const toggleCurrency = useToggleCurrency()
+
   return (
     <div
       className={classNames(
@@ -66,11 +78,29 @@ export const Statistics = ({
         {locked && <LockIcon />}
         {title}
       </div>
-      {showTokens ? (
-        <TokensAndFiat tokenAmount={tokens} fiat={fiat} token={token} />
-      ) : (
-        <FiatOnly fiat={fiat} />
-      )}
+      <div className="flex items-center gap-2">
+        {showCurrencyToggle && (
+          <button
+            className="border-grey-750 bg-grey-800 text-body-secondary hover:bg-grey-700 pointer-events-auto flex h-11 w-11 items-center justify-center rounded-full border text-center transition-colors duration-100 ease-out"
+            onClick={(event) => {
+              event.stopPropagation()
+              toggleCurrency()
+            }}
+          >
+            {currencyConfig[currency]?.unicodeCharacter}
+          </button>
+        )}
+        {showTokens ? (
+          <TokensAndFiat
+            tokenAmount={tokens}
+            fiat={fiat}
+            token={token}
+            hideSymbol={showCurrencyToggle}
+          />
+        ) : (
+          <FiatOnly fiat={fiat} hideSymbol={showCurrencyToggle} />
+        )}
+      </div>
     </div>
   )
 }
