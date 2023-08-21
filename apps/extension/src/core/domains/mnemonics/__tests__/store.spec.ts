@@ -1,7 +1,6 @@
-import { LEGACY_SEED_PREFIX, LegacySeedObj, legacyDecryptSeed } from "../legacy/helpers"
 import { seedPhraseStore } from "../store"
 
-describe("createLegacySeedPhraseStore", () => {
+describe("createSeedPhraseStore", () => {
   it("should be defined", () => {
     expect(seedPhraseStore).toBeDefined()
   })
@@ -19,9 +18,10 @@ describe("createLegacySeedPhraseStore", () => {
     const { ok, val: id } = result
     expect(ok).toBe(true)
     expect(typeof id === "string").toBe(true)
-    const storedCipher = await seedPhraseStore.get("cipher")
+    const stored = await seedPhraseStore.get(id)
+    const storedCipher = stored.cipher
     expect(storedCipher).toBeDefined()
-    const storedConfirmed = await seedPhraseStore.get("confirmed")
+    const storedConfirmed = stored.confirmed
     expect(storedConfirmed).toBeDefined()
     expect(storedConfirmed).toBe(false)
 
@@ -32,32 +32,5 @@ describe("createLegacySeedPhraseStore", () => {
     const badSeed = await seedPhraseStore.getSeed(id, "badPassword")
     expect(badSeed.err).toBe(true)
     expect(badSeed.val).toBe("Incorrect password")
-  })
-
-  test("calling getSeed with a legacy seed should return the seed", async () => {
-    const seed = "dove lumber quote board young robust kit invite plastic regular skull history"
-    const legacySeed: LegacySeedObj = { seed: `${LEGACY_SEED_PREFIX}${seed}` }
-    const password = "password"
-    // eslint-disable-next-line @typescript-eslint/ban-ts-comment -- this is to enable storing an object instead of a string
-    // @ts-ignore
-    const id = await seedPhraseStore.add("Test Legacy Seed", legacySeed, password, "legacy", true)
-    const result = await seedPhraseStore.getSeed(id.val, password)
-    const { ok, val } = result
-    expect(ok).toBe(true)
-    expect(val).toBe(seed)
-  })
-})
-
-describe("legacyDecryptSeed", () => {
-  it("should be defined", () => {
-    expect(legacyDecryptSeed).toBeDefined()
-  })
-
-  test("should unpack a legacy seed", () => {
-    const seed = "dove lumber quote board young robust kit invite plastic regular skull history"
-    const legacySeed: LegacySeedObj = { seed: `${LEGACY_SEED_PREFIX}${seed}` }
-    const result = legacyDecryptSeed(legacySeed)
-    expect(result.ok).toBe(true)
-    expect(result.val).toBe(seed)
   })
 })

@@ -112,8 +112,8 @@ export default class AccountsHandler extends ExtensionHandler {
     const password = this.stores.password.getPassword()
     assert(password, "Not logged in")
 
-    const seedResult = await this.stores.seedPhrase.checkSeedExists(seed, password)
-    assert(!seedResult, "This recovery phrase is already imported")
+    const exists = await this.stores.seedPhrase.checkSeedExists(seed)
+    assert(!exists, "This recovery phrase is already imported")
 
     const seedAddress = addressFromMnemonic(seed, type)
 

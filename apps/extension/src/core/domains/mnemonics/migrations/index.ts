@@ -1,13 +1,15 @@
 import { appStore } from "@core/domains/app"
 import { Migration, MigrationFunction } from "@core/libs/migrations/types"
 import keyring from "@polkadot/ui-keyring"
-import { nanoid } from "nanoid"
+import { assert } from "@polkadot/util"
+import md5 from "blueimp-md5"
 
+import { decryptMnemonic } from "../legacy/helpers"
 import {
   createLegacySeedPhraseStore,
   createLegacyVerifierCertificateMnemonicStore,
 } from "../legacy/store"
-import { seedPhraseStore } from "../store"
+import { encryptMnemonic, seedPhraseStore } from "../store"
 
 enum SOURCES {
   Imported = "imported",
@@ -33,14 +35,37 @@ const storedSeedAccountTypes: AccountType[] = [
   AccountTypes.SEED_STORED,
 ]
 
+const getMnemonicHash = async (cipher: string, password: string) => {
+  const { val: mnemonic, err } = await decryptMnemonic(cipher, password)
+  if (err) throw new Error(mnemonic)
+  const hash = md5(mnemonic)
+
+  const encrypted = await encryptMnemonic(mnemonic, password)
+  return { hash, encrypted }
+}
+
 export const migrateSeedStoreToMultiple: Migration = {
-  forward: new MigrationFunction(async () => {
+  forward: new MigrationFunction(async (context) => {
     const legacyStore = createLegacySeedPhraseStore()
     const legacyData = await legacyStore.get()
-    const id = nanoid()
+    const legacyCipher = legacyData.cipher
+    if (!legacyCipher) return
+
+    const { password } = context
+    assert(password, "Password not found, unable to perform migration")
+
+    const { encrypted: cipher, hash: id } = await getMnemonicHash(legacyCipher, password)
+
     await seedPhraseStore.set({
-      [id]: { id, name: "My Recovery Phrase", source: SOURCES.Legacy, ...legacyData },
+      [id]: {
+        id,
+        name: "My Recovery Phrase",
+        source: SOURCES.Legacy,
+        cipher,
+        confirmed: legacyData.confirmed,
+      },
     })
+
     // get all accounts which have been derived from this seed phrase, and add derivedMnemonicId to the metadata
 
     const allAccounts = keyring.getAccounts()
@@ -67,19 +92,26 @@ export const migrateSeedStoreToMultiple: Migration = {
     const legacyVCData = await legacyVerifierCertificateStore.get()
     if (legacyVCData.cipher) {
       let appStoreVCId = id
-      // todo tell the appstore which one is the vc cert
       if (legacyVCData.cipher !== legacyData.cipher) {
-        const vcId = nanoid()
+        const { encrypted: vcCipher, hash: vcId } = await getMnemonicHash(
+          legacyVCData.cipher,
+          password
+        )
+
         appStoreVCId = vcId
+
         await seedPhraseStore.set({
           [vcId]: {
+            ...legacyVCData,
             id: vcId,
             name: "My Recovery Phrase",
             source: SOURCES.Vault,
-            ...legacyVCData,
+            cipher: vcCipher,
           },
         })
       }
+
+      // set the app store to use the new id
       await appStore.set({ vaultVerifierCertificateMnemonicId: appStoreVCId })
     }
   }),

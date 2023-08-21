@@ -1,11 +1,9 @@
 import { StorageProvider } from "@core/libs/Store"
 import { log } from "@core/log"
 import { decrypt, encrypt } from "@metamask/browser-passworder"
-import { assert, isObject } from "@polkadot/util"
-import { nanoid } from "nanoid"
+import { assert } from "@polkadot/util"
+import md5 from "blueimp-md5"
 import { Err, Ok, Result } from "ts-results"
-
-import { LegacySeedObj, legacyDecryptSeed } from "./legacy/helpers"
 
 const storageKey = "seeds"
 
@@ -47,29 +45,15 @@ export const encryptMnemonic = async (mnemonic: string, password: string) => {
 export const decryptMnemonic = async (
   cipher: string,
   password: string
-): Promise<Result<string, MnemonicErrors.IncorrectPassword | MnemonicErrors.UnableToDecrypt>> => {
-  let mnemonic: DecryptedMnemonic
+): Promise<Result<string, MnemonicErrors.IncorrectPassword>> => {
   try {
-    mnemonic = (await decrypt(password, cipher)) as DecryptedMnemonic
+    const mnemonic = (await decrypt(password, cipher)) as string
+    return Ok(mnemonic)
   } catch (e) {
     log.error("Error decrypting mnemonic: ", e)
     return Err(MnemonicErrors.IncorrectPassword)
   }
-
-  try {
-    if (isObject(mnemonic)) {
-      const unpackResult = legacyDecryptSeed(mnemonic)
-      if (unpackResult.err) throw new Error(unpackResult.val)
-      mnemonic = unpackResult.val
-    }
-  } catch (e) {
-    log.error(e)
-    return Err(MnemonicErrors.UnableToDecrypt)
-  }
-  return Ok(mnemonic)
 }
-
-type DecryptedMnemonic = LegacySeedObj | string
 
 export class SeedPhraseStore extends StorageProvider<SeedPhraseStoreData> {
   public async add(
@@ -79,7 +63,10 @@ export class SeedPhraseStore extends StorageProvider<SeedPhraseStoreData> {
     source: SOURCES = SOURCES.Imported,
     confirmed = false
   ): Promise<Result<string, MnemonicErrors.AlreadyExists>> {
-    const id = nanoid()
+    const id = md5(seed)
+    const status = await this.checkSeedExists(seed)
+    if (status) return Err(MnemonicErrors.AlreadyExists)
+
     const cipher = await encryptMnemonic(seed, password)
     await this.set({ [id]: { name, id, source, cipher, confirmed } })
     return Ok(id)
@@ -97,10 +84,9 @@ export class SeedPhraseStore extends StorageProvider<SeedPhraseStoreData> {
     return Object.values(seeds).some(({ confirmed }) => !confirmed)
   }
 
-  public async checkSeedExists(seed: string, password: string) {
-    const cipher = await encryptMnemonic(seed, password)
-    const seeds = await this.get()
-    const existing = Object.values(seeds).find((s) => s.cipher === cipher)
+  public async checkSeedExists(seed: string): Promise<boolean> {
+    const hash = md5(seed)
+    const existing = Object.keys(await this.get(hash)).find((id) => id === hash)
     return !!existing
   }
 

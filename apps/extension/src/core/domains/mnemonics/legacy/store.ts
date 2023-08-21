@@ -4,7 +4,7 @@ import { decrypt, encrypt } from "@metamask/browser-passworder"
 import { assert, isObject } from "@polkadot/util"
 import { Err, Ok, Result } from "ts-results"
 
-import { LegacySeedObj, legacyDecryptSeed } from "./helpers"
+import { LegacySeedObj, decryptLegacyMnemonicObject } from "./helpers"
 
 const storageKey = "nursery"
 
@@ -60,7 +60,7 @@ export class SeedPhraseStore extends StorageProvider<SeedPhraseData> {
 
     try {
       if (isObject(decryptedSeed)) {
-        const unpackResult = legacyDecryptSeed(decryptedSeed)
+        const unpackResult = decryptLegacyMnemonicObject(decryptedSeed)
         if (unpackResult.err) throw new Error(unpackResult.val)
         seed = unpackResult.val
       } else {

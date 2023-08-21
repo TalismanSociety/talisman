@@ -1,4 +1,4 @@
-import { LEGACY_SEED_PREFIX, LegacySeedObj, legacyDecryptSeed } from "../legacy/helpers"
+import { LEGACY_SEED_PREFIX, LegacySeedObj, decryptLegacyMnemonicObject } from "../legacy/helpers"
 import { createLegacySeedPhraseStore } from "../legacy/store"
 
 describe("createLegacySeedPhraseStore", () => {
@@ -15,15 +15,15 @@ describe("createLegacySeedPhraseStore", () => {
   })
 })
 
-describe("legacyDecryptSeed", () => {
+describe("decryptLegacyMnemonicObject", () => {
   it("should be defined", () => {
-    expect(legacyDecryptSeed).toBeDefined()
+    expect(decryptLegacyMnemonicObject).toBeDefined()
   })
 
   test("should unpack a legacy seed", () => {
     const seed = "dove lumber quote board young robust kit invite plastic regular skull history"
     const legacySeed: LegacySeedObj = { seed: `${LEGACY_SEED_PREFIX}${seed}` }
-    const result = legacyDecryptSeed(legacySeed)
+    const result = decryptLegacyMnemonicObject(legacySeed)
     expect(result.ok).toBe(true)
     expect(result.val).toBe(seed)
   })

@@ -1,9 +1,10 @@
 import { StorageProvider } from "@core/libs/Store"
 import { log } from "@core/log"
+import { assert } from "@polkadot/util"
 import { captureException } from "@sentry/browser"
 import { BehaviorSubject } from "rxjs"
 
-import { Migrations } from "./types"
+import { MigrationContext, Migrations } from "./types"
 
 type MigrationRunnerData = {
   appliedAt: number
@@ -24,12 +25,13 @@ export class MigrationRunner extends StorageProvider<Record<string, MigrationRun
   status = new BehaviorSubject<MigrationStatus>("unknown")
   isComplete: Promise<boolean>
   migrations: Migrations
+  context: MigrationContext | undefined
 
   /**
    * @param migrations - List of migrations to run
    * @param fakeApply - If true, will mark all migrations as applied, without actually running them. To be used on first install.
    */
-  constructor(migrations: Migrations = [], fakeApply = false) {
+  constructor(migrations: Migrations = [], fakeApply = false, context?: MigrationContext) {
     const initialData: Record<string, MigrationRunnerData> = {}
 
     if (fakeApply) {
@@ -39,12 +41,19 @@ export class MigrationRunner extends StorageProvider<Record<string, MigrationRun
     }
 
     super("migrations", {})
+    this.context = context
+    if (!context && !fakeApply)
+      throw new Error("Migration context required when performing migrations")
 
     this.isComplete = new Promise((resolve) => {
       this.status.subscribe({
         next: (v) => {
           if (v === "pending") this.applyMigrations()
-          if (v === "complete" || v === "error") resolve(true)
+          if (v === "complete" || v === "error") {
+            // cleanup password and other context
+            this.context = undefined
+            resolve(true)
+          }
         },
       })
     })
@@ -74,12 +83,13 @@ export class MigrationRunner extends StorageProvider<Record<string, MigrationRun
   }
 
   applyMigration = async (index: number) => {
+    assert(this.context, "Migration context required")
     const migration = this.migrations[index]
     if (!migration) throw new Error(`Migration ${index} not found`)
     const key = index.toString()
     const applied = await this.checkMigration(key)
     if (!applied) {
-      const migrated = await migration.forward.apply()
+      const migrated = await migration.forward.apply(this.context)
       if (migrated) {
         return await this.set({ [key]: { appliedAt: Date.now() } })
       }
@@ -90,12 +100,13 @@ export class MigrationRunner extends StorageProvider<Record<string, MigrationRun
   }
 
   reverseMigration = async (index: number) => {
+    assert(this.context, "Migration context required")
     const migration = this.migrations[index]
     const key = index.toString()
     const applied = await this.checkMigration(key)
 
     if (applied) {
-      const migrated = migration.backward ? await migration.backward.apply() : true
+      const migrated = migration.backward ? await migration.backward.apply(this.context) : true
       if (migrated) {
         return await this.set({ [key]: undefined })
       }

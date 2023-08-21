@@ -11,6 +11,7 @@ import { cryptoWaitReady } from "@polkadot/util-crypto"
 import * as Sentry from "@sentry/browser"
 import Browser, { Runtime } from "webextension-polyfill"
 
+import { passwordStore } from "./domains/app"
 import talismanHandler from "./handlers"
 import { IconManager } from "./libs/IconManager"
 import { migrateConnectAllSubstrate } from "./libs/migrations/legacyMigrations"
@@ -42,10 +43,19 @@ Browser.runtime.onInstalled.addListener(async ({ reason, previousVersion }) => {
     const migrationRunner = new MigrationRunner(migrations, true)
     await migrationRunner.isComplete
   } else if (reason === "update") {
-    // instantiate the migrations runner with migrations to run
-    // this will run any migrations that have not already been run
-    const migrationRunner = new MigrationRunner(migrations)
-    await migrationRunner.isComplete
+    // Main migrations will occur on login to ensure that password is present for any migrations that require it
+    passwordStore.isLoggedIn.subscribe(async (isLoggedIn) => {
+      if (isLoggedIn) {
+        const password = passwordStore.getPassword()
+        if (!password) return
+        // instantiate the migrations runner with migrations to run
+        // this will run any migrations that have not already been run
+        const migrationRunner = new MigrationRunner(migrations, false, {
+          password,
+        })
+        await migrationRunner.isComplete
+      }
+    })
     // run any legacy migrations
     if (previousVersion) {
       await migrateConnectAllSubstrate(previousVersion)
