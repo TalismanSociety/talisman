@@ -83,6 +83,6 @@ export const selectedCurrencyState = selector<TokenRateCurrency>({
   get: ({ get }) =>
     get(selectableCurrenciesState).includes(get(_selectedCurrencyState))
       ? get(_selectedCurrencyState)
-      : "usd",
+      : get(selectableCurrenciesState).at(0) ?? "usd",
   set: ({ set }, newValue) => set(_selectedCurrencyState, newValue),
 })
