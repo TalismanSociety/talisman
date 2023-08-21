@@ -10,7 +10,7 @@ const coingeckoApiUrl = "https://api.coingecko.com/api/v3"
 // comment out unused currencies to save some bandwidth!
 const coingeckoCurrencies: Array<keyof TokenRates> = [
   "usd",
-  // 'aud',
+  "aud",
   // 'nzd',
   // 'cud',
   // 'hkd',
