@@ -1,5 +1,6 @@
 import { TokenRateCurrency } from "@talismn/token-rates"
 
+import audIcon from "./currencyIcons/aud.svg?url"
 import btcIcon from "./currencyIcons/btc.svg?url"
 import cnyIcon from "./currencyIcons/cny.svg?url"
 import dotIcon from "./currencyIcons/dot.svg?url"
@@ -17,6 +18,11 @@ const currencyConfig: Partial<
     unicodeCharacter: "$",
     name: "US Dollar",
     icon: usdIcon,
+  },
+  aud: {
+    unicodeCharacter: "$",
+    name: "Australian Dollar",
+    icon: audIcon,
   },
   eur: {
     unicodeCharacter: "€",

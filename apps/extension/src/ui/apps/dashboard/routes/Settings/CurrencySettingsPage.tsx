@@ -14,15 +14,16 @@ const CurrencySettingsPage = () => {
   const currencies = useMemo(
     () =>
       [
-        "usd",
-        "eur",
-        "gbp",
-        "jpy",
-        "cny",
-        "rub",
         "btc",
         "eth",
         "dot",
+        "usd",
+        "aud",
+        "cny",
+        "eur",
+        "gbp",
+        "jpy",
+        "rub",
       ] as const satisfies readonly TokenRateCurrency[],
     []
   )
