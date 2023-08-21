@@ -79,6 +79,13 @@ export class SeedPhraseStore extends StorageProvider<SeedPhraseStoreData> {
     return true
   }
 
+  public async setName(id: string, name: string) {
+    const existing = await this.get(id)
+    if (!existing) throw new Error("Mnemonic not found")
+    await this.set({ [id]: { ...existing, name } })
+    return true
+  }
+
   public async hasUnconfirmed() {
     const seeds = await this.get()
     return Object.values(seeds).some(({ confirmed }) => !confirmed)

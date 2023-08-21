@@ -21,9 +21,15 @@ export declare type MnemonicConfirmRequest = {
   confirmed: boolean
 }
 
+export declare type MnemonicRenameRequest = {
+  mnemonicId: MnemonicId
+  name: string
+}
+
 export interface MnemonicMessages {
   // mnemonic message signatures
   "pri(mnemonic.unlock)": [MnemonicUnlockRequest, string]
   "pri(mnemonic.confirm)": [MnemonicConfirmRequest, boolean]
   "pri(mnemonic.address)": [RequestAddressFromMnemonic, string]
+  "pri(mnemonic.rename)": [MnemonicRenameRequest, boolean]
 }

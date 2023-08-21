@@ -31,6 +31,11 @@ export default class MnemonicHandler extends ExtensionHandler {
         return addressFromMnemonic(mnemonic, type)
       }
 
+      case "pri(mnemonic.rename)": {
+        const { mnemonicId, name } = request as RequestType<"pri(mnemonic.rename)">
+        return this.stores.seedPhrase.setName(mnemonicId, name)
+      }
+
       default:
         throw new Error(`Unable to handle message of type ${type}`)
     }
