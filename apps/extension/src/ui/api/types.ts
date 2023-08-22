@@ -108,6 +108,7 @@ export default interface MessageTypes {
   mnemonicUnlock: (mnemonicId: string, pass: string) => Promise<string>
   mnemonicConfirm: (mnemonicId: string, confirmed: boolean) => Promise<boolean>
   mnemonicRename: (mnemonicId: string, name: string) => Promise<boolean>
+  mnemonicDelete: (mnemonicId: string) => Promise<boolean>
   addressFromMnemonic: (mnemonic: string, type?: AccountAddressType) => Promise<string>
 
   // account message types ---------------------------------------------------

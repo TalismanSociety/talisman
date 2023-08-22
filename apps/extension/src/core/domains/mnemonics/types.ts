@@ -26,10 +26,15 @@ export declare type MnemonicRenameRequest = {
   name: string
 }
 
+export declare type MnemonicDeleteRequest = {
+  mnemonicId: MnemonicId
+}
+
 export interface MnemonicMessages {
   // mnemonic message signatures
   "pri(mnemonic.unlock)": [MnemonicUnlockRequest, string]
   "pri(mnemonic.confirm)": [MnemonicConfirmRequest, boolean]
   "pri(mnemonic.address)": [RequestAddressFromMnemonic, string]
   "pri(mnemonic.rename)": [MnemonicRenameRequest, boolean]
+  "pri(mnemonic.delete)": [MnemonicDeleteRequest, boolean]
 }

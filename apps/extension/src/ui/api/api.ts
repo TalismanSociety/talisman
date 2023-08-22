@@ -77,6 +77,8 @@ export const api: MessageTypes = {
     messageService.sendMessage("pri(mnemonic.confirm)", { mnemonicId, confirmed }),
   mnemonicRename: (mnemonicId, name) =>
     messageService.sendMessage("pri(mnemonic.rename)", { mnemonicId, name }),
+  mnemonicDelete: (mnemonicId) =>
+    messageService.sendMessage("pri(mnemonic.delete)", { mnemonicId }),
   addressFromMnemonic: (mnemonic, type) =>
     messageService.sendMessage("pri(mnemonic.address)", { mnemonic, type }),
 

@@ -1,7 +1,8 @@
 import { notify } from "@talisman/components/Notifications"
 import { useOpenClose } from "@talisman/hooks/useOpenClose"
 import { provideContext } from "@talisman/util/provideContext"
-import { useCallback, useState } from "react"
+import { api } from "@ui/api"
+import { useCallback, useEffect, useState } from "react"
 import { Trans, useTranslation } from "react-i18next"
 import { Button, ModalDialog } from "talisman-ui"
 import { Modal } from "talisman-ui"
@@ -48,9 +49,17 @@ export const MnemonicDeleteModal = () => {
   const { t } = useTranslation("admin")
   const { mnemonic, close, isOpen } = useMnemonicDeleteModal()
 
+  // keep name in memory so it can still be displayed while modal is closing
+  const [name, setName] = useState<string>()
+  useEffect(() => {
+    if (mnemonic) setName(mnemonic.name)
+  }, [mnemonic])
+
   const handleConfirmClick = useCallback(async () => {
     try {
       if (!mnemonic) return
+      await api.mnemonicDelete(mnemonic.id)
+      close()
     } catch (err) {
       notify({
         type: "error",
@@ -58,18 +67,19 @@ export const MnemonicDeleteModal = () => {
         subtitle: (err as Error)?.message ?? "",
       })
     }
-  }, [mnemonic, t])
+  }, [close, mnemonic, t])
 
   return (
     <Modal containerId="main" isOpen={isOpen} onDismiss={close}>
-      <ModalDialog title={t("Set as Polkadot Vault Verifier")} onClose={close}>
-        <div>
+      <ModalDialog title={t("Delete Recovery Phrase")} onClose={close}>
+        <p className="text-body-secondary">
           <Trans
             t={t}
             components={{ Highlight: <span className="text-body"></span> }}
             defaults="Are you sure that you want to delete <Highlight>{{name}}</Highlight>?"
+            values={{ name }}
           />
-        </div>
+        </p>
         <div className="mt-12 grid grid-cols-2 gap-8">
           <Button onClick={close}>{t("Cancel")}</Button>
           <Button primary onClick={handleConfirmClick}>
