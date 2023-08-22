@@ -1,8 +1,13 @@
 import { classNames } from "@talismn/util"
 import { CSSProperties, FC, memo, useEffect, useMemo, useRef, useState } from "react"
 import { useMeasure, useMouse } from "react-use"
+import { UseMeasureRect } from "react-use/lib/useMeasure"
 
-import { MYSTICAL_PHYSICS_V3, MysticalPhysicsV3 } from "./MysticalPhysicsV3"
+import {
+  MYSTICAL_PHYSICS_V3,
+  MysticalPhysicsV3,
+  MysticalPhysicsV3NoAcolyte,
+} from "./MysticalPhysicsV3"
 import { ParentSize, useCelestialArtifact } from "./useCelestialArtifact"
 import { useWindowHovered } from "./useWindowHovered"
 
@@ -76,7 +81,6 @@ const CelestialArtifacts: FC<{
 }> = ({ size, config, acolyte }) => {
   const artifactKeys = useMemo(() => Array.from(Array(config.artifacts).keys()), [config.artifacts])
   if (!size.width || !size.height) return null
-
   return (
     <>
       {artifactKeys.map((i) => (
@@ -99,6 +103,69 @@ const CelestialArtifacts: FC<{
   )
 }
 
+type MysticalBackgroundInnerProps = {
+  config: MysticalPhysicsV3NoAcolyte | MysticalPhysicsV3
+  viewConfig: {
+    style: { transform: string }
+    viewBox: string
+    size: UseMeasureRect
+  }
+  className?: string
+}
+
+export const MysticalBackgroundV3WithAcolyte = ({
+  className,
+  config,
+  viewConfig,
+}: MysticalBackgroundInnerProps) => {
+  const { size, viewBox, style } = viewConfig
+  const refMouseLocation = useRef<SVGSVGElement>(null)
+  const { elX, elY, elW, elH } = useMouse(refMouseLocation)
+
+  // useMouse doesn't detect if cursor goes out of the screen, so we also need to check for window hovering
+  const isWindowHovered = useWindowHovered()
+
+  // props for the artifact that follows mouse cursor
+  // changes a lot when hovering, do not memoize
+  const acolyte =
+    isWindowHovered && !!elX && !!elY && elX > 0 && elX < elW && elY > 0 && elY < elH
+      ? { x: elX, y: elY }
+      : undefined
+
+  return (
+    <svg
+      ref={refMouseLocation}
+      width={size.width}
+      height={size.height}
+      viewBox={viewBox}
+      className={classNames(className)}
+      style={style}
+    >
+      <CelestialArtifacts config={config} size={size} acolyte={acolyte} />
+    </svg>
+  )
+}
+
+export const MysticalBackgroundV3NoAcolyte = ({
+  className,
+  config,
+  viewConfig,
+}: MysticalBackgroundInnerProps) => {
+  const { size, viewBox, style } = viewConfig
+
+  return (
+    <svg
+      width={size.width}
+      height={size.height}
+      viewBox={viewBox}
+      className={classNames(className)}
+      style={style}
+    >
+      <CelestialArtifacts config={config} size={size} />
+    </svg>
+  )
+}
+
 export const MysticalBackgroundV3 = ({
   className,
   config,
@@ -106,43 +173,29 @@ export const MysticalBackgroundV3 = ({
   config?: Partial<MysticalPhysicsV3>
   className?: string
 }) => {
-  const [refSize, size] = useMeasure<HTMLDivElement>()
-  const refMouseLocation = useRef<SVGSVGElement>(null)
-  const { elX, elY, elW, elH } = useMouse(refMouseLocation)
-
   const mergedConfig = config ? { ...MYSTICAL_PHYSICS_V3, ...config } : MYSTICAL_PHYSICS_V3
-  // useMouse doesn't detect if cursor goes out of the screen, so we also need to check for window hovering
-  const isWindowHovered = useWindowHovered()
 
-  // props for the artifact that follows mouse cursor
-  // changes a lot when hovering, do not memoize
-  const acolyte =
-    mergedConfig?.withAcolyte &&
-    isWindowHovered &&
-    !!elX &&
-    !!elY &&
-    elX > 0 &&
-    elX < elW &&
-    elY > 0 &&
-    elY < elH
-      ? { x: elX, y: elY }
-      : undefined
+  const [refSize, size] = useMeasure<HTMLDivElement>()
 
   const viewBox = useMemo(() => `0 0 ${size.width} ${size.height}`, [size.width, size.height])
   const style = useMemo(() => ({ transform: `blur(${mergedConfig.blur}ptx)` }), [mergedConfig.blur])
 
   return (
     <div ref={refSize} className={className}>
-      <svg
-        ref={refMouseLocation}
-        width={size.width}
-        height={size.height}
-        viewBox={viewBox}
-        className={classNames(className)}
-        style={style}
-      >
-        <CelestialArtifacts config={mergedConfig} size={size} acolyte={acolyte} />
-      </svg>
+      {!mergedConfig.withAcolyte && (
+        <MysticalBackgroundV3NoAcolyte
+          viewConfig={{ style, viewBox, size }}
+          className={className}
+          config={mergedConfig}
+        />
+      )}
+      {mergedConfig.withAcolyte && (
+        <MysticalBackgroundV3WithAcolyte
+          viewConfig={{ style, viewBox, size }}
+          className={className}
+          config={mergedConfig}
+        />
+      )}
     </div>
   )
 }
