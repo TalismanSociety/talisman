@@ -21,7 +21,7 @@ const useMigratePasswordProvider = ({ onComplete }: { onComplete: () => void }) 
   const mnemonics = useMnemonics()
 
   // assume that if password has not been migrated yet, there is only one mnemonic
-  const mnemonicId = useMemo(() => mnemonics[0].id, [mnemonics])
+  const mnemonicId = useMemo(() => mnemonics[0]?.id, [mnemonics])
 
   useEffect(() => {
     if (!password) return
