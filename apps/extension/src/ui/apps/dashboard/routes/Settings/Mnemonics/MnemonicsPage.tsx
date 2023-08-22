@@ -9,22 +9,15 @@ import {
   InfoIcon,
   MoreHorizontalIcon,
   SeedIcon,
-  XIcon,
 } from "@talisman/theme/icons"
 import { classNames } from "@talismn/util"
 import { AccountIcon } from "@ui/domains/Account/AccountIcon"
 import { Address } from "@ui/domains/Account/Address"
 import useAccounts from "@ui/hooks/useAccounts"
-import useMnemonicBackup from "@ui/hooks/useMnemonicBackup"
+import { Mnemonic, useMnemonics } from "@ui/hooks/useMnemonics"
 import { FC, useCallback, useLayoutEffect, useMemo, useRef, useState } from "react"
 import { useTranslation } from "react-i18next"
-import {
-  ContextMenu,
-  ContextMenuContent,
-  ContextMenuItem,
-  ContextMenuTrigger,
-  IconButton,
-} from "talisman-ui"
+import { ContextMenu, ContextMenuContent, ContextMenuItem, ContextMenuTrigger } from "talisman-ui"
 
 import { DashboardLayout } from "../../../layout/DashboardLayout"
 import {
@@ -47,7 +40,6 @@ import {
   MnemonicSetPvVerifierModalProvider,
   useMnemonicSetPvVerifierModal,
 } from "./MnemonicSetPvVerifierModal"
-import { Mnemonic, useMnemonics } from "./useMnemonics"
 
 const useMnemonicAccounts = (mnemonicId: string) => {
   const accounts = useAccounts("owned")
@@ -204,20 +196,18 @@ const MnemonicRow: FC<{ mnemonic: Mnemonic }> = ({ mnemonic }) => {
 const BackupReminder: FC = () => {
   const { t } = useTranslation("admin")
   const mnemonics = useMnemonics()
-  const { snoozeBackupReminder, isSnoozed } = useMnemonicBackup()
 
   const count = useMemo(
     () => mnemonics.filter((mnemonic) => !mnemonic.confirmed).length,
     [mnemonics]
   )
 
-  if (!count || isSnoozed) return null
+  if (!count) return null
 
   return (
     <div
       className={classNames(
-        "border-body-secondary mb-8 flex w-full items-center gap-4 rounded-sm border p-4",
-        isSnoozed && "invisible"
+        "border-grey-500 mb-8 flex w-full items-center gap-4 rounded-sm border p-4"
       )}
     >
       <div className="bg-primary/10 rounded-full p-3">
@@ -226,9 +216,6 @@ const BackupReminder: FC = () => {
       <div className="grow text-sm">
         {t("{{count}} recovery phrase(s) have not been backed up yet.", { count })}
       </div>
-      <IconButton className="p-2 text-base" onClick={snoozeBackupReminder}>
-        <XIcon />
-      </IconButton>
     </div>
   )
 }
@@ -249,7 +236,7 @@ export const MnemonicsPage = () => {
               />
               <Spacer large />
               <BackupReminder />
-              <div className="">
+              <div className="flex flex-col gap-4">
                 {mnemonics.map((mnemonic) => (
                   <MnemonicRow key={mnemonic.id} mnemonic={mnemonic} />
                 ))}

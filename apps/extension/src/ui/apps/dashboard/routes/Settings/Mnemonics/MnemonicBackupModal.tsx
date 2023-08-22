@@ -6,13 +6,12 @@ import { classNames } from "@talismn/util"
 import { api } from "@ui/api"
 import { Mnemonic } from "@ui/domains/Account/Mnemonic"
 import { PasswordUnlock, usePasswordUnlock } from "@ui/domains/Account/PasswordUnlock"
+import { Mnemonic as MnemonicInfo, useMnemonic, useMnemonics } from "@ui/hooks/useMnemonics"
 import { useSensitiveState } from "@ui/hooks/useSensitiveState"
 import { ChangeEventHandler, FC, useCallback, useEffect, useState } from "react"
 import { Trans, useTranslation } from "react-i18next"
 import { ModalDialog, Toggle } from "talisman-ui"
 import { Modal } from "talisman-ui"
-
-import { Mnemonic as MnemonicInfo, useMnemonic, useMnemonics } from "./useMnemonics"
 
 const Description = () => {
   const { t } = useTranslation("admin")

@@ -1,6 +1,6 @@
 import { POLKADOT_VAULT_DOCS_URL } from "@core/constants"
 import { HeaderBlock } from "@talisman/components/HeaderBlock"
-import { useSeedPhrases } from "@ui/hooks/useSeedPhrases"
+import { useMnemonics } from "@ui/hooks/useMnemonics"
 import { ReactNode, useMemo } from "react"
 import { Trans, useTranslation } from "react-i18next"
 import { Button } from "talisman-ui"
@@ -18,15 +18,14 @@ const VerifierCertificateOption = ({ text, children }: { text: string; children:
 export const ConfigureVerifierCertificateMnemonic = () => {
   const { t } = useTranslation("admin")
   const { dispatch, state, submit } = useAccountAddQr()
-  const seedPhrases = useSeedPhrases()
+  const mnemonics = useMnemonics()
 
+  // TODO user should choose which one to pick
   const existingMnemonicId = useMemo(() => {
-    const existing = Object.entries(seedPhrases).find(([, s]) =>
-      ["legacy", "imported", "generated"].includes(s.source)
-    )
-    if (existing) return existing[0]
+    const existing = mnemonics.find((s) => ["legacy", "imported", "generated"].includes(s.source))
+    if (existing) return existing.id
     return
-  }, [seedPhrases])
+  }, [mnemonics])
 
   const canSubmit = useMemo(() => {
     if (state.type !== "CONFIGURE_VERIFIER_CERT") return null

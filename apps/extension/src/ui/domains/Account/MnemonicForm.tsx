@@ -2,7 +2,7 @@ import { AlertTriangleIcon } from "@talisman/theme/icons"
 import { classNames } from "@talismn/util"
 import { api } from "@ui/api"
 import useMnemonicBackup from "@ui/hooks/useMnemonicBackup"
-import { useSeedPhrases } from "@ui/hooks/useSeedPhrases"
+import { useMnemonic } from "@ui/hooks/useMnemonics"
 import { useSensitiveState } from "@ui/hooks/useSensitiveState"
 import { FC, useEffect } from "react"
 import { Trans, useTranslation } from "react-i18next"
@@ -51,7 +51,7 @@ const MnemonicFormInner = ({ mnemonicId }: { mnemonicId: string }) => {
   const { toggleConfirmed } = useMnemonicBackup()
   const [mnemonic, setMnemonic] = useSensitiveState<string>()
   const { password } = usePasswordUnlock()
-  const mnemonics = useSeedPhrases()
+  const mnemonicInfo = useMnemonic(mnemonicId)
 
   useEffect(() => {
     if (!password) return
@@ -67,7 +67,7 @@ const MnemonicFormInner = ({ mnemonicId }: { mnemonicId: string }) => {
           <div className="flex w-full items-center justify-end gap-2">
             <div className="text-body-secondary text-sm">{t("Don't remind me again")}</div>
             <Toggle
-              checked={mnemonics[mnemonicId].confirmed}
+              checked={mnemonicInfo?.confirmed}
               onChange={(e) => toggleConfirmed(mnemonicId, e.target.checked)}
             />
           </div>

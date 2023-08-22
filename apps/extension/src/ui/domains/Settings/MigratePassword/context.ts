@@ -4,7 +4,7 @@ import useStatus, { statusOptions } from "@talisman/hooks/useStatus"
 import { provideContext } from "@talisman/util/provideContext"
 import { api } from "@ui/api"
 import useMnemonicBackup from "@ui/hooks/useMnemonicBackup"
-import { useSeedPhrases } from "@ui/hooks/useSeedPhrases"
+import { useMnemonics } from "@ui/hooks/useMnemonics"
 import { useSensitiveState } from "@ui/hooks/useSensitiveState"
 import { useSetting } from "@ui/hooks/useSettings"
 import { useCallback, useEffect, useMemo, useState } from "react"
@@ -18,9 +18,10 @@ const useMigratePasswordProvider = ({ onComplete }: { onComplete: () => void }) 
   const [useErrorTracking] = useSetting("useErrorTracking")
   const { setStatus, status, message } = useStatus()
   const { allBackedUp, confirm } = useMnemonicBackup()
-  const mnemonics = useSeedPhrases()
+  const mnemonics = useMnemonics()
 
-  const mnemonicId = useMemo(() => Object.keys(mnemonics)[0], [mnemonics])
+  // assume that if password has not been migrated yet, there is only one mnemonic
+  const mnemonicId = useMemo(() => mnemonics[0].id, [mnemonics])
 
   useEffect(() => {
     if (!password) return

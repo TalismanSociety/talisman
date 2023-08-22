@@ -1,12 +1,9 @@
 import { yupResolver } from "@hookform/resolvers/yup"
 import { HeaderBlock } from "@talisman/components/HeaderBlock"
 import { notify } from "@talisman/components/Notifications"
-import { useOpenClose } from "@talisman/hooks/useOpenClose"
 import { InfoIcon } from "@talisman/theme/icons"
 import { api } from "@ui/api"
-import { MnemonicModal } from "@ui/domains/Settings/MnemonicModal"
 import useMnemonicBackup from "@ui/hooks/useMnemonicBackup"
-import { useSeedPhrases } from "@ui/hooks/useSeedPhrases"
 import { useCallback, useEffect, useMemo } from "react"
 import { useForm } from "react-hook-form"
 import { useTranslation } from "react-i18next"
@@ -26,11 +23,6 @@ export const ChangePasswordPage = () => {
   const { t } = useTranslation("admin")
   const navigate = useNavigate()
   const { allBackedUp } = useMnemonicBackup()
-  const { isOpen, open, close } = useOpenClose()
-
-  // todo need a way to choose mnemonic Id, for now just use the first
-  const mnemonics = useSeedPhrases()
-  const firstMnemonicId = Object.keys(mnemonics)[0]
 
   const schema = useMemo(
     () =>
@@ -84,6 +76,10 @@ export const ChangePasswordPage = () => {
     [navigate, setError, t]
   )
 
+  const handleBackupClick = useCallback(() => {
+    navigate("/settings/mnemonics")
+  }, [navigate])
+
   useEffect(() => {
     return () => {
       setValue("currentPw", "")
@@ -110,7 +106,7 @@ export const ChangePasswordPage = () => {
               )}
             </div>
             <div className="flex justify-end">
-              <Button onClick={open}>{t("Backup Seed Phrase")}</Button>
+              <Button onClick={handleBackupClick}>{t("Backup Seed Phrase")}</Button>
             </div>
           </div>
         )}
@@ -167,7 +163,6 @@ export const ChangePasswordPage = () => {
           </div>
         </form>
       </DashboardLayout>
-      <MnemonicModal mnemonicId={firstMnemonicId} open={isOpen} onClose={close} />
     </>
   )
 }

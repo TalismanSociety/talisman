@@ -92,7 +92,7 @@ export const NavigationDrawer: FC = () => {
       name: "Goto",
       action: "Backup wallet button",
     })
-    api.dashboardOpen("/settings?showBackupModal")
+    api.dashboardOpen("/settings/mnemonics")
     window.close()
   }, [])
 

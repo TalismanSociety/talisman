@@ -7,13 +7,13 @@ import { AccountRemoveModal } from "@ui/domains/Account/AccountRemoveModal"
 import { AccountRenameModal } from "@ui/domains/Account/AccountRenameModal"
 import { BuyTokensModal } from "@ui/domains/Asset/Buy/BuyTokensModal"
 import { CopyAddressModal } from "@ui/domains/CopyAddress"
-import { FC, Suspense, lazy, useEffect, useRef } from "react"
+import { FC, useEffect, useRef } from "react"
 import { useLocation } from "react-router-dom"
 
+import DashboardNotifications from "./DashboardNotifications"
+import { BackupWarningModal } from "./DashboardNotifications/BackupWarningModal"
 import { OnboardingToast } from "./OnboardingToast"
 import { SideBar } from "./SideBar"
-
-const DashboardNotifications = lazy(() => import("./DashboardNotifications"))
 
 type LayoutProps = {
   children?: React.ReactNode
@@ -61,10 +61,9 @@ export const DashboardLayout: FC<LayoutProps> = ({
           {!!withBack && <BackButton analytics={analytics} className="mb-[3rem]" to={backTo} />}
           {children}
         </div>
-        <Suspense fallback={null}>
-          <DashboardNotifications />
-        </Suspense>
+        <DashboardNotifications />
       </section>
+      <BackupWarningModal />
       <BuyTokensModal />
       <AccountRenameModal />
       <AccountExportModal />
