@@ -106,29 +106,47 @@ export default class AccountsHandler extends ExtensionHandler {
 
   private async accountCreateSeed({
     name,
-    seed,
+    seed: suri, // TODO split in 2 args: mnemonic and derivation path, or nuke the method and use only accountCreate with additional mnemonic arg
     type,
   }: RequestAccountCreateFromSeed): Promise<string> {
     const password = this.stores.password.getPassword()
     assert(password, "Not logged in")
 
-    const exists = await this.stores.seedPhrase.checkSeedExists(seed)
-    assert(!exists, "This recovery phrase is already imported")
-
-    const seedAddress = addressFromMnemonic(seed, type)
+    const seedAddress = addressFromMnemonic(suri, type)
 
     const notExists = !keyring
       .getAccounts()
       .some((acc) => acc.address.toLowerCase() === seedAddress.toLowerCase())
     assert(notExists, "Account already exists")
 
+    //suri includes the derivation path if any
+    const splitIdx = suri.indexOf("/")
+    const mnemonic = suri.slice(0, splitIdx)
+    const derivationPath = suri.slice(splitIdx)
+
+    let derivedMnemonicId = await this.stores.seedPhrase.getExistingId(mnemonic)
+
+    if (!derivedMnemonicId) {
+      const result = await this.stores.seedPhrase.add(
+        `${name} Recovery Phrase`,
+        mnemonic,
+        password,
+        SOURCES.Imported,
+        true
+      )
+      if (result.ok) derivedMnemonicId = result.val
+      else throw new Error("Failed to store mnemonic", { cause: result.val })
+    }
+
     try {
       const { pair } = keyring.addUri(
-        seed,
+        suri,
         password,
         {
           name,
-          origin: AccountTypes.SEED,
+          origin: AccountTypes.DERIVED, // should we keep "SEED" instead ?
+          derivedMnemonicId,
+          derivationPath,
         },
         type // if undefined, defaults to keyring's default (sr25519 atm)
       )

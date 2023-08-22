@@ -56,7 +56,7 @@ export const AccountAddSecretAccountsPage = () => {
       const notificationId = notify(
         {
           type: "processing",
-          title: t("Importing account", { count: accounts.length }),
+          title: t("Importing {{count}} accounts", { count: accounts.length }),
           subtitle: "Please wait",
         },
         { autoClose: false }
@@ -66,7 +66,7 @@ export const AccountAddSecretAccountsPage = () => {
 
         notifyUpdate(notificationId, {
           type: "success",
-          title: t("Account imported", { count: accounts.length }),
+          title: t("{{count}} accounts imported", { count: accounts.length }),
           subtitle: null,
         })
 
@@ -74,7 +74,7 @@ export const AccountAddSecretAccountsPage = () => {
       } catch (err) {
         notifyUpdate(notificationId, {
           type: "error",
-          title: t("Importing account", { count: accounts.length }),
+          title: t("Failed to import", { count: accounts.length }),
           subtitle: (err as Error).message,
         })
       }

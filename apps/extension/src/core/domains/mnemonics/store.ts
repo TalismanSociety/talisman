@@ -2,6 +2,7 @@ import { StorageProvider } from "@core/libs/Store"
 import { log } from "@core/log"
 import { decrypt, encrypt } from "@metamask/browser-passworder"
 import { assert } from "@polkadot/util"
+import { mnemonicValidate } from "@polkadot/util-crypto"
 import md5 from "blueimp-md5"
 import { Err, Ok, Result } from "ts-results"
 
@@ -26,6 +27,7 @@ export type SeedPhraseStoreData = Record<string, SeedPhraseData>
 
 export enum MnemonicErrors {
   IncorrectPassword = "Incorrect password",
+  InvalidMnemonic = "Invalid mnemonic",
   UnableToDecrypt = "Unable to decrypt mnemonic",
   UnableToEncrypt = "Unable to encrypt mnemonic",
   NoMnemonicPresent = "No mnemonic present",
@@ -55,6 +57,10 @@ export const decryptMnemonic = async (
   }
 }
 
+const cleanupMnemonic = (mnemonic: string) => {
+  return mnemonic.trim().toLowerCase().replace(/\s+/g, " ")
+}
+
 export class SeedPhraseStore extends StorageProvider<SeedPhraseStoreData> {
   public async add(
     name: string,
@@ -62,12 +68,15 @@ export class SeedPhraseStore extends StorageProvider<SeedPhraseStoreData> {
     password: string,
     source: SOURCES = SOURCES.Imported,
     confirmed = false
-  ): Promise<Result<string, MnemonicErrors.AlreadyExists>> {
-    const id = md5(seed)
-    const status = await this.checkSeedExists(seed)
+  ): Promise<Result<string, MnemonicErrors.AlreadyExists | MnemonicErrors.InvalidMnemonic>> {
+    if (!mnemonicValidate(seed)) return Err(MnemonicErrors.InvalidMnemonic)
+
+    const cleanMnemonic = cleanupMnemonic(seed)
+    const id = md5(cleanMnemonic)
+    const status = await this.checkSeedExists(cleanMnemonic)
     if (status) return Err(MnemonicErrors.AlreadyExists)
 
-    const cipher = await encryptMnemonic(seed, password)
+    const cipher = await encryptMnemonic(cleanMnemonic, password)
     await this.set({ [id]: { name, id, source, cipher, confirmed } })
     return Ok(id)
   }
@@ -92,8 +101,13 @@ export class SeedPhraseStore extends StorageProvider<SeedPhraseStoreData> {
   }
 
   public async checkSeedExists(seed: string): Promise<boolean> {
-    const hash = md5(seed)
+    const hash = md5(cleanupMnemonic(seed))
     return !!(await this.get(hash))
+  }
+
+  public async getExistingId(mnemonic: string): Promise<string | null> {
+    const hash = md5(cleanupMnemonic(mnemonic))
+    return (await this.get(hash)) ? hash : null
   }
 
   public async getSeed(

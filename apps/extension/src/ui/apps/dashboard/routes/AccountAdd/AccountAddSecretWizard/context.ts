@@ -1,6 +1,5 @@
 import { AccountAddressType, RequestAccountCreateFromSeed } from "@core/domains/accounts/types"
 import { provideContext } from "@talisman/util/provideContext"
-import { sleep } from "@talismn/util"
 import { api } from "@ui/api"
 import { useCallback, useState } from "react"
 import { useSearchParams } from "react-router-dom"
@@ -29,12 +28,10 @@ const useAccountAddSecretProvider = () => {
   const importAccounts = useCallback(async (accounts: RequestAccountCreateFromSeed[]) => {
     setData((prev) => ({ ...prev, accounts }))
 
-    const addresses = await Promise.all(
-      accounts.map(({ name, seed, type }) => api.accountCreateFromSeed(name, seed, type))
-    )
-
-    // poudre de perlimpinpin
-    await sleep(1000)
+    const addresses: string[] = []
+    // proceed sequencially in case mnemonic must be added to the store on first call
+    for (const { name, seed, type } of accounts)
+      addresses.push(await api.accountCreateFromSeed(name, seed, type))
 
     return addresses
   }, [])
