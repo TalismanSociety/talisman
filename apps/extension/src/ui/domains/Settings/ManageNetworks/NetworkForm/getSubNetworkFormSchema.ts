@@ -18,13 +18,11 @@ export const getSubNetworkFormSchema = (genesisHash?: string) =>
         .string()
         .url(i18next.t("invalid url"))
         .optional()
-        .nullable()
         .test(
           "subscan",
           i18next.t("invalid url"),
           (url) =>
             url === undefined ||
-            url === null ||
             url.length < 1 ||
             (/^https:\/\//i.test(url) && /\.subscan\.io\/?$/i.test(url))
         ),

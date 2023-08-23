@@ -9,6 +9,7 @@ import { chainConnector } from "@core/rpcs/chain-connector"
 import { chainConnectorEvm } from "@core/rpcs/chain-connector-evm"
 import { chaindataProvider } from "@core/rpcs/chaindata"
 import { Addresses, Port } from "@core/types/base"
+import { validateHexString } from "@core/util/validateHexString"
 import keyring from "@polkadot/ui-keyring"
 import { SingleAddress } from "@polkadot/ui-keyring/observable/types"
 import { assert } from "@polkadot/util"
@@ -299,10 +300,11 @@ export class BalanceStore {
         // these aren't fetched anymore but were fetched prior to v1.14.0, so we need to clean them up
         const chain =
           (balance.chainId && this.#chains.find((b) => b.id === balance.chainId)) || null
+        const genesisHash = validateHexString(chain?.genesisHash ?? "")
         if (
-          chain?.genesisHash &&
+          genesisHash &&
           addresses[balance.address] && // first check if account has any genesisHashes
-          !addresses[balance.address]?.includes(chain.genesisHash) // then check if match
+          !addresses[balance.address]?.includes(genesisHash) // then check if match
         )
           return true
 

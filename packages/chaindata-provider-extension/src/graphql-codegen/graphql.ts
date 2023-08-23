@@ -121,7 +121,7 @@ export type Chain = {
   /** evm networks on this chain */
   evmNetworks: Array<EvmNetwork>
   /** hash of the first block on this chain */
-  genesisHash: Maybe<`0x${Scalars["String"]}`>
+  genesisHash: Maybe<Scalars["String"]>
   /** the id for this chain (talisman-defined) */
   id: Scalars["String"]
   /** implementation name for this chain */
@@ -1111,7 +1111,7 @@ export type ChainsQuery = {
     id: string
     isTestnet: boolean
     sortIndex: number | null
-    genesisHash: `0x${string}` | null
+    genesisHash: string | null
     prefix: number | null
     name: string | null
     themeColor: string | null

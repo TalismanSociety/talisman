@@ -16,8 +16,7 @@ export const ResetSubNetworkButton: FC<{ chain: Chain | CustomChain }> = ({ chai
   const handleConfirmReset = useCallback(async () => {
     if (!chain) return
     try {
-      // TODO: Make the api request
-      // await api.ethNetworkReset(chain.id.toString())
+      await api.chainReset(chain.id)
       navigate("/networks?type=polkadot")
     } catch (err) {
       notify({

@@ -7,6 +7,7 @@ import { shortenAddress } from "@talisman/util/shortenAddress"
 import { Chain, ChainId, CustomChain } from "@talismn/chaindata-provider"
 import { classNames } from "@talismn/util"
 import { useQuery } from "@tanstack/react-query"
+import { api } from "@ui/api"
 import { AssetLogoBase } from "@ui/domains/Asset/AssetLogo"
 import { ChainLogoBase } from "@ui/domains/Asset/ChainLogo"
 import useChain from "@ui/hooks/useChain"
@@ -16,15 +17,7 @@ import { useIsBuiltInChain } from "@ui/hooks/useIsBuiltInChain"
 import { useSetting } from "@ui/hooks/useSettings"
 import useToken from "@ui/hooks/useToken"
 import { isCustomChain } from "@ui/util/isCustomChain"
-import {
-  ChangeEventHandler,
-  ReactNode,
-  useCallback,
-  useEffect,
-  useMemo,
-  useRef,
-  useState,
-} from "react"
+import { ReactNode, useCallback, useEffect, useMemo, useRef, useState } from "react"
 import { FormProvider, useForm } from "react-hook-form"
 import { Trans, useTranslation } from "react-i18next"
 import { useDebounce } from "react-use"
@@ -75,7 +68,7 @@ export const SubNetworkForm = ({ chainId, onSubmitted }: SubNetworkFormProps) =>
     formState: { errors, isValid, isSubmitting, isDirty, touchedFields },
   } = formProps
 
-  const { isTestnet, rpcs, id, nativeTokenCoingeckoId, accountFormat } = watch()
+  const { rpcs, id, nativeTokenCoingeckoId, accountFormat } = watch()
 
   // initialize form with existing values (edit mode), only once
   const initialized = useRef(false)
@@ -93,10 +86,22 @@ export const SubNetworkForm = ({ chainId, onSubmitted }: SubNetworkFormProps) =>
     if (chainId || !rpcInfo.isFetched) return
     const rpcId = rpcInfo.data && `custom-${rpcInfo.data.genesisHash}`
     if (rpcInfo.data && rpcId && rpcId !== id) {
-      setValue("id", rpcId)
-      setValue("genesisHash", rpcInfo.data.genesisHash as `0x${string}`)
-      setValue("nativeTokenSymbol", rpcInfo.data.token.symbol)
-      setValue("nativeTokenDecimals", rpcInfo.data.token.decimals)
+      setValue("id", rpcId, { shouldValidate: true, shouldTouch: true, shouldDirty: true })
+      setValue("genesisHash", rpcInfo.data.genesisHash as `0x${string}`, {
+        shouldValidate: true,
+        shouldTouch: true,
+        shouldDirty: true,
+      })
+      setValue("nativeTokenSymbol", rpcInfo.data.token.symbol, {
+        shouldValidate: true,
+        shouldTouch: true,
+        shouldDirty: true,
+      })
+      setValue("nativeTokenDecimals", rpcInfo.data.token.decimals, {
+        shouldValidate: true,
+        shouldTouch: true,
+        shouldDirty: true,
+      })
     } else if (!!id && !rpcInfo.data) {
       resetField("id")
       resetField("genesisHash")
@@ -170,11 +175,6 @@ export const SubNetworkForm = ({ chainId, onSubmitted }: SubNetworkFormProps) =>
     [setValue]
   )
 
-  const handleIsTestnetChange: ChangeEventHandler<HTMLInputElement> = useCallback(
-    (e) => setValue("isTestnet", e.target.checked, { shouldTouch: true }),
-    [setValue]
-  )
-
   const [showRemove, showReset] = useMemo(
     () =>
       isCustom && isBuiltInChain.isFetched
@@ -187,15 +187,14 @@ export const SubNetworkForm = ({ chainId, onSubmitted }: SubNetworkFormProps) =>
   const submit = useCallback(
     async (chain: RequestUpsertCustomChain) => {
       try {
-        // TODO: Make the request to the background script
-        // await api.ethNetworkUpsert({ ...network, tokenLogoUrl, chainLogoUrl })
+        await api.chainUpsert({ ...chain, nativeTokenLogoUrl, chainLogoUrl })
         if (chain.isTestnet && !useTestnets) setUseTestNets(true)
         onSubmitted?.()
       } catch (err) {
         setSubmitError((err as Error).message)
       }
     },
-    [onSubmitted, setUseTestNets, useTestnets]
+    [chainLogoUrl, nativeTokenLogoUrl, onSubmitted, setUseTestNets, useTestnets]
   )
 
   // on edit screen, wait for existing chain to be loaded
@@ -304,7 +303,7 @@ export const SubNetworkForm = ({ chainId, onSubmitted }: SubNetworkFormProps) =>
             />
           </FormFieldContainer>
           <div>
-            <Checkbox checked={!!isTestnet} onChange={handleIsTestnetChange}>
+            <Checkbox {...register("isTestnet")}>
               <span className="text-body-secondary">{t("This is a testnet")}</span>
             </Checkbox>
           </div>
