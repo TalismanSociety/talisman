@@ -101,7 +101,7 @@ const useLedgerEthereumAccounts = (
           (wa) => convertAddress(wa.address, null) === convertAddress(acc.address, null)
         )
 
-        const accountBalances = balances.sorted.filter(
+        const accountBalances = balances.find(
           (b) => convertAddress(b.address, null) === convertAddress(acc.address, null)
         )
 
@@ -113,11 +113,11 @@ const useLedgerEthereumAccounts = (
           balances: accountBalances,
           isBalanceLoading:
             !addressesAndEvmNetworks ||
-            accountBalances.length < BALANCE_CHECK_EVM_NETWORK_IDS.length ||
-            accountBalances.some((b) => b.status === "cache"),
+            accountBalances.count < BALANCE_CHECK_EVM_NETWORK_IDS.length ||
+            accountBalances.each.some((b) => b.status === "cache"),
         }
       }),
-    [balances.sorted, derivedAccounts, selectedAccounts, addressesAndEvmNetworks, walletAccounts]
+    [balances, derivedAccounts, selectedAccounts, addressesAndEvmNetworks, walletAccounts]
   )
 
   useEffect(() => {
