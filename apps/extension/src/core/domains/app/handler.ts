@@ -117,9 +117,9 @@ export default class AppHandler extends ExtensionHandler {
     newPwConfirm,
   }: RequestTypes["pri(app.changePassword)"]) {
     // only allow users who have confirmed backing up their seed phrase to change PW
-    const mnemonicConfirmed = await this.stores.seedPhrase.get("confirmed")
+    const mnemonicsUnconfirmed = await this.stores.seedPhrase.hasUnconfirmed()
     assert(
-      mnemonicConfirmed,
+      !mnemonicsUnconfirmed,
       "Please backup your seed phrase before attempting to change your password."
     )
 

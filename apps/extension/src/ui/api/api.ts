@@ -68,10 +68,14 @@ export const api: MessageTypes = {
   cancelEncryptRequest: (id) => messageService.sendMessage("pri(encrypt.cancel)", { id }),
 
   // mnemonic messages -------------------------------------------------------
-  mnemonicUnlock: (pass) => messageService.sendMessage("pri(mnemonic.unlock)", pass),
-  mnemonicConfirm: (confirmed: boolean) =>
-    messageService.sendMessage("pri(mnemonic.confirm)", confirmed),
-  mnemonicSubscribe: (cb) => messageService.subscribe("pri(mnemonic.subscribe)", null, cb),
+  mnemonicUnlock: (mnemonicId, password) =>
+    messageService.sendMessage("pri(mnemonic.unlock)", { mnemonicId, password }),
+  mnemonicConfirm: (mnemonicId, confirmed: boolean) =>
+    messageService.sendMessage("pri(mnemonic.confirm)", { mnemonicId, confirmed }),
+  mnemonicRename: (mnemonicId, name) =>
+    messageService.sendMessage("pri(mnemonic.rename)", { mnemonicId, name }),
+  mnemonicDelete: (mnemonicId) =>
+    messageService.sendMessage("pri(mnemonic.delete)", { mnemonicId }),
   addressFromMnemonic: (mnemonic, type) =>
     messageService.sendMessage("pri(mnemonic.address)", { mnemonic, type }),
 
@@ -123,8 +127,11 @@ export const api: MessageTypes = {
     messageService.sendMessage("pri(accounts.external.setIsPortfolio)", { address, isPortfolio }),
   accountValidateMnemonic: (mnemonic) =>
     messageService.sendMessage("pri(accounts.validateMnemonic)", mnemonic),
-  setVerifierCertMnemonic: (mnemonic) =>
-    messageService.sendMessage("pri(accounts.setVerifierCertMnemonic)", mnemonic),
+  setVerifierCertMnemonic: (verifierCertType, mnemonic) =>
+    messageService.sendMessage("pri(accounts.setVerifierCertMnemonic)", {
+      type: verifierCertType,
+      mnemonic,
+    }),
 
   // balance messages ---------------------------------------------------
   getBalance: ({ chainId, evmNetworkId, tokenId, address }) =>

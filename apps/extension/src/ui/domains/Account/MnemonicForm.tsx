@@ -2,6 +2,7 @@ import { AlertTriangleIcon } from "@talisman/theme/icons"
 import { classNames } from "@talismn/util"
 import { api } from "@ui/api"
 import useMnemonicBackup from "@ui/hooks/useMnemonicBackup"
+import { useMnemonic } from "@ui/hooks/useMnemonics"
 import { useSensitiveState } from "@ui/hooks/useSensitiveState"
 import { FC, useEffect } from "react"
 import { Trans, useTranslation } from "react-i18next"
@@ -45,16 +46,17 @@ const Description = () => {
   )
 }
 
-const MnemonicFormInner = () => {
+const MnemonicFormInner = ({ mnemonicId }: { mnemonicId: string }) => {
   const { t } = useTranslation()
-  const { isConfirmed, toggleConfirmed } = useMnemonicBackup()
+  const { toggleConfirmed } = useMnemonicBackup()
   const [mnemonic, setMnemonic] = useSensitiveState<string>()
   const { password } = usePasswordUnlock()
+  const mnemonicInfo = useMnemonic(mnemonicId)
 
   useEffect(() => {
     if (!password) return
-    api.mnemonicUnlock(password).then(setMnemonic)
-  }, [password, setMnemonic])
+    api.mnemonicUnlock(mnemonicId, password).then(setMnemonic)
+  }, [password, setMnemonic, mnemonicId])
 
   return (
     <div className="flex grow flex-col">
@@ -64,7 +66,10 @@ const MnemonicFormInner = () => {
           <div className="grow"></div>
           <div className="flex w-full items-center justify-end gap-2">
             <div className="text-body-secondary text-sm">{t("Don't remind me again")}</div>
-            <Toggle checked={isConfirmed} onChange={(e) => toggleConfirmed(e.target.checked)} />
+            <Toggle
+              checked={mnemonicInfo?.confirmed}
+              onChange={(e) => toggleConfirmed(mnemonicId, e.target.checked)}
+            />
           </div>
         </>
       ) : (
@@ -74,7 +79,10 @@ const MnemonicFormInner = () => {
   )
 }
 
-export const MnemonicForm: FC<{ className?: string }> = ({ className }) => {
+export const MnemonicForm: FC<{ className?: string; mnemonicId: string }> = ({
+  className,
+  mnemonicId,
+}) => {
   const { t } = useTranslation()
   return (
     <div className={classNames("flex h-[47rem] flex-col", className)}>
@@ -88,7 +96,7 @@ export const MnemonicForm: FC<{ className?: string }> = ({ className }) => {
           </span>
         }
       >
-        <MnemonicFormInner />
+        <MnemonicFormInner mnemonicId={mnemonicId} />
       </PasswordUnlock>
     </div>
   )

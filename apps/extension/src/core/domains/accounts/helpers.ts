@@ -7,15 +7,21 @@ import {
   IdenticonType,
   storedSeedAccountTypes,
 } from "@core/domains/accounts/types"
+import { log } from "@core/log"
 import type { Address } from "@core/types/base"
 import { getAccountAvatarDataUri } from "@core/util/getAccountAvatarDataUri"
 import { canDerive } from "@polkadot/extension-base/utils"
 import type { InjectedAccount } from "@polkadot/extension-inject/types"
 import keyring from "@polkadot/ui-keyring"
 import type { SingleAddress, SubjectInfo } from "@polkadot/ui-keyring/observable/types"
+import { KeypairType } from "@polkadot/util-crypto/types"
+import { captureException } from "@sentry/browser"
+import { addressFromMnemonic } from "@talisman/util/addressFromMnemonic"
+import { Err, Ok, Result } from "ts-results"
 import Browser from "webextension-polyfill"
 
-import seedPhraseStore from "./store"
+import { getEthDerivationPath } from "../ethereum/helpers"
+import { seedPhraseStore } from "../mnemonics/store"
 import { verifierCertificateMnemonicStore } from "./store.verifierCertificateMnemonic"
 
 const sortAccountsByWhenCreated = (accounts: AccountJsonAny[]) => {
@@ -149,6 +155,56 @@ export const getPrimaryAccount = (storedSeedOnly = false) => {
   return allAccounts[0]
 }
 
+export const getRootAccountForMnemonic = (mnemonicId: string, type: KeypairType = "sr25519") => {
+  const allAccounts = keyring.getAccounts()
+
+  if (allAccounts.length === 0) return
+  const seedRootAccount = allAccounts.find(
+    ({ meta }) =>
+      meta &&
+      meta.type === type &&
+      meta.derivedMnemonicId &&
+      meta.derivedMnemonicId === mnemonicId &&
+      meta.origin &&
+      (meta.origin === AccountTypes.TALISMAN || meta.origin === AccountTypes.LEGACY_ROOT)
+  )
+
+  if (seedRootAccount) return seedRootAccount
+  return
+}
+
+export const getNextDerivationPathForMnemonic = (
+  mnemonic: string,
+  type: KeypairType = "sr25519"
+): Result<
+  string,
+  "Unable to get next derivation path" | "Reached maximum number of derived accounts"
+> => {
+  const allAccounts = keyring.getAccounts().filter(({ meta }) => meta && meta.type === type)
+  let accountIndex
+  let derivedAddress: string | null = null
+  try {
+    const getDerivationPath = (accountIndex: number) =>
+      type === "ethereum" ? getEthDerivationPath(accountIndex) : `//${accountIndex}`
+
+    for (accountIndex = 0; accountIndex <= 1000; accountIndex += 1) {
+      derivedAddress = addressFromMnemonic(`${mnemonic}${getDerivationPath(accountIndex)}`, type)
+
+      const exists = allAccounts.some(({ address }) => address === derivedAddress)
+      if (exists) continue
+
+      break
+    }
+
+    if (!derivedAddress) return Err("Reached maximum number of derived accounts")
+    return Ok(getDerivationPath(accountIndex))
+  } catch (error) {
+    log.error("Unable to get next derivation path", error)
+    captureException(error)
+    return Err("Unable to get next derivation path")
+  }
+}
+
 export const hasQrCodeAccounts = async () => {
   const localData = await Browser.storage.local.get(null)
   return Object.entries(localData).some(
@@ -158,6 +214,7 @@ export const hasQrCodeAccounts = async () => {
 }
 
 export const copySeedStoreToVerifierCertificateStore = async () => {
+  // todo check if used
   const seedData = await seedPhraseStore.get()
   const verifierCertMnemonicData = await verifierCertificateMnemonicStore.get()
   if (verifierCertMnemonicData.cipher)

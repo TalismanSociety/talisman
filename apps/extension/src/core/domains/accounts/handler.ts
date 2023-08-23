@@ -1,4 +1,8 @@
-import { getPrimaryAccount, sortAccounts } from "@core/domains/accounts/helpers"
+import {
+  getNextDerivationPathForMnemonic,
+  getRootAccountForMnemonic,
+  sortAccounts,
+} from "@core/domains/accounts/helpers"
 import type {
   RequestAccountCreate,
   RequestAccountCreateExternal,
@@ -13,10 +17,10 @@ import type {
   RequestAccountForget,
   RequestAccountRename,
   RequestAccountsCatalogAction,
+  RequestSetVerifierCertificateMnemonic,
   ResponseAccountExport,
 } from "@core/domains/accounts/types"
 import { AccountTypes } from "@core/domains/accounts/types"
-import { getEthDerivationPath } from "@core/domains/ethereum/helpers"
 import { getPairForAddressSafely } from "@core/handlers/helpers"
 import { genericAsyncSubscription } from "@core/handlers/subscriptions"
 import { talismanAnalytics } from "@core/libs/Analytics"
@@ -37,10 +41,11 @@ import { addressFromMnemonic } from "@talisman/util/addressFromMnemonic"
 import { decodeAnyAddress, encodeAnyAddress, sleep } from "@talismn/util"
 import { combineLatest } from "rxjs"
 
+import { SOURCES } from "../mnemonics/store"
 import { AccountsCatalogData, emptyCatalog } from "./store.catalog"
 
 export default class AccountsHandler extends ExtensionHandler {
-  private async accountCreate({ name, type }: RequestAccountCreate): Promise<string> {
+  private async accountCreate({ name, type, mnemonicId }: RequestAccountCreate): Promise<string> {
     const password = this.stores.password.getPassword()
     assert(password, "Not logged in")
 
@@ -48,53 +53,48 @@ export default class AccountsHandler extends ExtensionHandler {
     const existing = allAccounts.find((account) => account.meta?.name === name)
     assert(!existing, "An account with this name already exists")
 
-    const rootAccount = getPrimaryAccount(true)
+    const rootAccount = mnemonicId ? getRootAccountForMnemonic(mnemonicId, type) : false
 
-    const isEthereum = type === "ethereum"
-    const getDerivationPath = (accountIndex: number) =>
-      // for ethereum accounts, use same derivation path as metamask in case user wants to share seed with it
-      isEthereum ? getEthDerivationPath(accountIndex) : `//${accountIndex}`
-
-    const seedResult = await this.stores.seedPhrase.getSeed(password)
-    if (seedResult.err) throw new Error(seedResult.val)
-
-    let seed = seedResult.val
-    let shouldStoreSeed = false
-    if (!seed) {
-      seed = mnemonicGenerate()
-      shouldStoreSeed = true
+    let seed = mnemonicGenerate()
+    let derivedMnemonicId = mnemonicId
+    if (mnemonicId) {
+      const seedResult = await this.stores.seedPhrase.getSeed(mnemonicId, password)
+      if (seedResult.err) throw seedResult.val
+      if (!seedResult.val) throw new Error("Seed not stored locally")
+      seed = seedResult.val
+    } else {
+      const newSeedId = await this.stores.seedPhrase.add(
+        "Talisman Recovery Phrase",
+        seed,
+        password,
+        SOURCES.Generated
+      )
+      if (newSeedId.err) throw new Error("Unable to store new seed")
+      derivedMnemonicId = newSeedId.val
     }
 
+    const accountMeta = { derivedMnemonicId }
     if (!rootAccount) {
       const { pair } = keyring.addUri(seed, password, {
         name,
         origin: AccountTypes.TALISMAN,
+        ...accountMeta,
       })
       talismanAnalytics.capture("account create", { type, method: "parent" })
-      if (shouldStoreSeed) await this.stores.seedPhrase.add(seed, password)
       return pair.address
     } else {
-      let accountIndex
-      let derivedAddress: string | null = null
-      for (accountIndex = 0; accountIndex <= 1000; accountIndex += 1) {
-        derivedAddress = addressFromMnemonic(`${seed}${getDerivationPath(accountIndex)}`, type)
-
-        const exists = keyring.getAccounts().some(({ address }) => address === derivedAddress)
-        if (exists) continue
-
-        break
-      }
-
-      assert(derivedAddress, "Reached maximum number of derived accounts")
+      const { val: derivationPath, err } = getNextDerivationPathForMnemonic(seed, type)
+      if (err) throw new Error(derivationPath)
 
       const { pair } = keyring.addUri(
-        `${seed}${getDerivationPath(accountIndex)}`,
+        `${seed}${derivationPath}`,
         password,
         {
           name,
           origin: AccountTypes.DERIVED,
           parent: rootAccount.address,
-          derivationPath: getDerivationPath(accountIndex),
+          derivationPath,
+          ...accountMeta,
         },
         type
       )
@@ -106,33 +106,47 @@ export default class AccountsHandler extends ExtensionHandler {
 
   private async accountCreateSeed({
     name,
-    seed,
+    seed: suri, // TODO split in 2 args: mnemonic and derivation path, or nuke the method and use only accountCreate with additional mnemonic arg
     type,
   }: RequestAccountCreateFromSeed): Promise<string> {
     const password = this.stores.password.getPassword()
     assert(password, "Not logged in")
 
-    // get seed and compare against master seed - cannot import root seed
-    const rootSeedResult = await this.stores.seedPhrase.getSeed(password)
-    if (rootSeedResult.err) throw new Error("Global seed not available")
-    const rootSeed = rootSeedResult.val
-
-    assert(rootSeed !== seed.trim(), "Cannot re-import your master seed")
-
-    const seedAddress = addressFromMnemonic(seed, type)
+    const seedAddress = addressFromMnemonic(suri, type)
 
     const notExists = !keyring
       .getAccounts()
       .some((acc) => acc.address.toLowerCase() === seedAddress.toLowerCase())
     assert(notExists, "Account already exists")
 
+    //suri includes the derivation path if any
+    const splitIdx = suri.indexOf("/")
+    const mnemonic = splitIdx === -1 ? suri : suri.slice(0, splitIdx)
+    const derivationPath = splitIdx === -1 ? "" : suri.slice(splitIdx)
+
+    let derivedMnemonicId = await this.stores.seedPhrase.getExistingId(mnemonic)
+
+    if (!derivedMnemonicId) {
+      const result = await this.stores.seedPhrase.add(
+        `${name} Recovery Phrase`,
+        mnemonic,
+        password,
+        SOURCES.Imported,
+        true
+      )
+      if (result.ok) derivedMnemonicId = result.val
+      else throw new Error("Failed to store mnemonic", { cause: result.val })
+    }
+
     try {
       const { pair } = keyring.addUri(
-        seed,
+        suri,
         password,
         {
           name,
-          origin: AccountTypes.SEED,
+          origin: AccountTypes.DERIVED, // should we keep "SEED" instead ?
+          derivedMnemonicId,
+          derivationPath,
         },
         type // if undefined, defaults to keyring's default (sr25519 atm)
       )
@@ -431,12 +445,27 @@ export default class AccountsHandler extends ExtensionHandler {
     return mnemonicValidate(mnemonic)
   }
 
-  private async setVerifierCertMnemonic(mnemonic: string) {
-    const isValidMnemonic = mnemonicValidate(mnemonic)
-    assert(isValidMnemonic, "Invalid mnemonic")
-    const password = this.stores.password.getPassword()
-    if (!password) throw new Error("Unauthorised")
-    await this.stores.verifierCertificateMnemonic.add(mnemonic, password)
+  private async setVerifierCertMnemonic({
+    type,
+    mnemonic,
+    mnemonicId,
+  }: RequestSetVerifierCertificateMnemonic) {
+    if (type === "new" && mnemonic) {
+      const isValidMnemonic = mnemonicValidate(mnemonic)
+      assert(isValidMnemonic, "Invalid mnemonic")
+      const password = this.stores.password.getPassword()
+      if (!password) throw new Error("Unauthorised")
+      const { err, val } = await this.stores.seedPhrase.add(
+        "Vault Verifier Certificate Mnemonic",
+        mnemonic,
+        password,
+        SOURCES.Vault
+      )
+      if (err) throw new Error("Unable to set Verifier Certificate Mnemonic", { cause: val })
+      await this.stores.app.set({ vaultVerifierCertificateMnemonicId: val })
+    } else if (type === "talisman" && mnemonicId) {
+      await this.stores.app.set({ vaultVerifierCertificateMnemonicId: mnemonicId })
+    }
     return true
   }
 
@@ -480,7 +509,7 @@ export default class AccountsHandler extends ExtensionHandler {
       case "pri(accounts.validateMnemonic)":
         return this.accountValidateMnemonic(request as string)
       case "pri(accounts.setVerifierCertMnemonic)":
-        return this.setVerifierCertMnemonic(request as string)
+        return this.setVerifierCertMnemonic(request as RequestSetVerifierCertificateMnemonic)
       default:
         throw new Error(`Unable to handle message of type ${type}`)
     }

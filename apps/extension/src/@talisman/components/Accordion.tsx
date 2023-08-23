@@ -9,11 +9,15 @@ const TRANSITION_ACCORDION: Transition = { ease: "easeInOut", duration: 0.3 }
 // Note : not a button because usually we want the whole accordion title row (title, data, + the icon) to be clickable
 // didn't package the row neither to keep this very generic
 
-export const AccordionIcon: FC<{ isOpen: boolean }> = ({ isOpen }) => (
+export const AccordionIcon: FC<{ isOpen: boolean; className?: string }> = ({
+  isOpen,
+  className,
+}) => (
   <div
     className={classNames(
       "transition-transform duration-300 ease-in-out",
-      isOpen ? "rotate-0" : "rotate-[-90deg]"
+      isOpen ? "rotate-0" : "rotate-[-90deg]",
+      className
     )}
   >
     <ChevronDownIcon />

@@ -1,63 +1,53 @@
 import { appStore } from "@core/domains/app"
 import { api } from "@ui/api"
 import { useCallback, useMemo } from "react"
-import { useSearchParams } from "react-router-dom"
+import { useLocation } from "react-router-dom"
 
 import { useAppState } from "./useAppState"
-import useBalances from "./useBalances"
-import { useMnemonicBackupConfirmed } from "./useMnemonicBackupConfirmed"
-import { useTalismanSeedAccounts } from "./useTalismanSeedAccounts"
+import { useMnemonics } from "./useMnemonics"
 
 const useMnemonicBackup = () => {
   const [hasFunds] = useAppState("hasFunds")
   const [hideBackupWarningUntil] = useAppState("hideBackupWarningUntil")
   const snoozeBackupReminder = useCallback(() => appStore.snoozeBackupReminder(), [])
-  const balances = useBalances()
+  const mnemonics = useMnemonics()
+  const location = useLocation()
 
-  const backupConfirmed = useMnemonicBackupConfirmed()
-
-  const talismanSeedAddresses = useTalismanSeedAccounts().map((acc) => acc.address)
-
-  const { isConfirmed, isNotConfirmed } = useMemo(
-    () => ({
-      isConfirmed: backupConfirmed === "TRUE",
-      isNotConfirmed: backupConfirmed === "FALSE",
-    }),
-    [backupConfirmed]
-  )
+  const allBackedUp = useMemo(() => mnemonics.every((mnemonic) => mnemonic.confirmed), [mnemonics])
 
   const isSnoozed = useMemo(() => {
-    return Boolean(hideBackupWarningUntil && hideBackupWarningUntil > Date.now() && isNotConfirmed)
-  }, [hideBackupWarningUntil, isNotConfirmed])
+    return Boolean(hideBackupWarningUntil && hideBackupWarningUntil > Date.now() && !allBackedUp)
+  }, [hideBackupWarningUntil, allBackedUp])
 
-  // the `showBackupModal` url query param exists only when opening the backup modal
-  // while we show the backup modal, we should not show the backup warning modal
-  const [searchParams] = useSearchParams()
-
+  // whether we must show the big backup warning modal
   const showBackupWarning = useMemo(
-    () =>
-      !isSnoozed &&
-      isNotConfirmed &&
-      hasFunds &&
-      searchParams.get("showBackupModal") === null &&
-      !!talismanSeedAddresses.length &&
-      balances.each.some(
-        (bal) => bal.free.planck > 0n && talismanSeedAddresses.includes(bal.address)
-      ),
-    [isSnoozed, isNotConfirmed, hasFunds, searchParams, talismanSeedAddresses, balances]
+    () => !isSnoozed && !allBackedUp && hasFunds && location.pathname !== "/settings/mnemonics",
+    [isSnoozed, allBackedUp, hasFunds, location.pathname]
+  )
+
+  // whether we must show the small backup warning notification in dashboard
+  const showBackupNotification = useMemo(
+    () => !showBackupWarning && !allBackedUp && isSnoozed && hasFunds,
+    [showBackupWarning, allBackedUp, isSnoozed, hasFunds]
   )
 
   // toggle menmonic confirmed
-  const toggleConfirmed = useCallback((confirmed: boolean) => api.mnemonicConfirm(confirmed), [])
+  const toggleConfirmed = useCallback(
+    (mnemonicId: string, confirmed: boolean) => api.mnemonicConfirm(mnemonicId, confirmed),
+    []
+  )
 
-  const confirm = useCallback(() => toggleConfirmed(true), [toggleConfirmed])
+  const confirm = useCallback(
+    (mnemonicId: string) => toggleConfirmed(mnemonicId, true),
+    [toggleConfirmed]
+  )
 
   return {
-    isConfirmed,
-    isNotConfirmed,
+    allBackedUp,
     toggleConfirmed,
     confirm,
     showBackupWarning,
+    showBackupNotification,
     snoozeBackupReminder,
     isSnoozed,
   }

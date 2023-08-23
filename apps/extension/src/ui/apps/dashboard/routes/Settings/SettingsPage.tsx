@@ -8,47 +8,25 @@ import {
   UsersIcon,
 } from "@talisman/theme/icons"
 import { ReactComponent as IconClock } from "@talisman/theme/icons/clock.svg"
-import { ReactComponent as IconKey } from "@talisman/theme/icons/key.svg"
 import { ReactComponent as IconLink } from "@talisman/theme/icons/link.svg"
 import { ReactComponent as IconList } from "@talisman/theme/icons/list.svg"
 import { ReactComponent as IconLock } from "@talisman/theme/icons/lock.svg"
 import { ReactComponent as IconTalisman } from "@talisman/theme/icons/talisman-hand.svg"
 import { ReactComponent as IconUser } from "@talisman/theme/icons/user.svg"
 import { MigratePasswordModal } from "@ui/domains/Settings/MigratePassword/MigratePasswordModal"
-import { MnemonicModal } from "@ui/domains/Settings/MnemonicModal"
 import { useIsFeatureEnabled } from "@ui/hooks/useFeatures"
 import useMnemonicBackup from "@ui/hooks/useMnemonicBackup"
-import { useCallback, useEffect } from "react"
+import { useEffect } from "react"
 import { useTranslation } from "react-i18next"
 import { useSearchParams } from "react-router-dom"
 import { CtaButton } from "talisman-ui"
 
 import { DashboardLayout } from "../../layout/DashboardLayout"
 
-const useShowBackupModal = () => {
-  const { isOpen, open, close: closeBackupModal } = useOpenClose()
-  const [, setSearchParams] = useSearchParams()
-
-  // when closing modal, remove the query param so the warning modal displays again
-  const close = useCallback(() => {
-    closeBackupModal()
-    setSearchParams((prev) => {
-      prev.delete("showBackupModal")
-      return prev
-    })
-  }, [closeBackupModal, setSearchParams])
-
-  return { isOpen, open, close }
-}
-
 export const SettingsPage = () => {
   const { isOpen: isOpenMigratePw, open: openMigratePw, close: closeMigratePw } = useOpenClose()
-  const {
-    isOpen: isOpenBackupMnemonic,
-    open: openBackupMnemonic,
-    close: closeBackupMnemonic,
-  } = useShowBackupModal()
-  const { isNotConfirmed } = useMnemonicBackup()
+
+  const { allBackedUp } = useMnemonicBackup()
   const i18nEnabled = useIsFeatureEnabled("I18N")
 
   // auto open modal if requested in query string
@@ -58,10 +36,8 @@ export const SettingsPage = () => {
       // migrating the password requires confirming backup of the seed, so this modal has priority
       openMigratePw()
       setSearchParams({})
-    } else if (searchParams.get("showBackupModal") !== null) {
-      openBackupMnemonic()
     }
-  }, [openMigratePw, openBackupMnemonic, searchParams, setSearchParams])
+  }, [openMigratePw, searchParams, setSearchParams])
 
   const { t } = useTranslation("admin")
 
@@ -69,13 +45,6 @@ export const SettingsPage = () => {
     <DashboardLayout centered>
       <h2>{t("Settings")}</h2>
       <div className="mt-20 space-y-4">
-        <CtaButton
-          iconLeft={IconKey}
-          iconRight={ChevronRightIcon}
-          title={t("Backup Wallet")}
-          subtitle={t("Backup your recovery phrase")}
-          onClick={openBackupMnemonic}
-        />
         <CtaButton
           iconLeft={IconLink}
           iconRight={ChevronRightIcon}
@@ -103,6 +72,13 @@ export const SettingsPage = () => {
           title={t("Manage Accounts")}
           subtitle={t("Sort and organise your accounts")}
           to={`/settings/accounts`}
+        />
+        <CtaButton
+          iconLeft={IconUser}
+          iconRight={ChevronRightIcon}
+          title={t("Recovery Phrases")}
+          subtitle={t("Backup and manage your recovery phrases")}
+          to={`/settings/mnemonics`}
         />
         <CtaButton
           iconLeft={GlobeIcon}
@@ -139,12 +115,12 @@ export const SettingsPage = () => {
           iconRight={ChevronRightIcon}
           title={t("Change password")}
           subtitle={
-            isNotConfirmed
-              ? t("Please back up your recovery phrase before you change your password.")
-              : t("Change your Talisman password")
+            allBackedUp
+              ? t("Change your Talisman password")
+              : t("Please back up your recovery phrase before you change your password.")
           }
           to={`/settings/change-password`}
-          disabled={isNotConfirmed}
+          disabled={!allBackedUp}
         />
         <CtaButton
           iconLeft={IconClock}
@@ -161,7 +137,6 @@ export const SettingsPage = () => {
           to={`/settings/about`}
         />
       </div>
-      <MnemonicModal open={isOpenBackupMnemonic} onClose={closeBackupMnemonic} />
       <MigratePasswordModal open={isOpenMigratePw} onClose={closeMigratePw} />
     </DashboardLayout>
   )

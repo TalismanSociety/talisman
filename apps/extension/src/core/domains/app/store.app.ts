@@ -4,7 +4,7 @@ import { assert } from "@polkadot/util"
 import { gt } from "semver"
 import Browser from "webextension-polyfill"
 
-import { migratePasswordV2ToV1 } from "./migrations"
+import { migratePasswordV2ToV1 } from "../../libs/migrations/legacyMigrations"
 
 type ONBOARDED_TRUE = "TRUE"
 type ONBOARDED_FALSE = "FALSE"
@@ -30,6 +30,7 @@ export type AppStoreData = {
   showDotNomPoolStakingBanner: boolean
   needsSpiritKeyUpdate: boolean
   popupSizeDelta: [number, number]
+  vaultVerifierCertificateMnemonicId?: string | null
 }
 
 const ANALYTICS_VERSION = "1.5.0"

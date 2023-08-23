@@ -20,7 +20,7 @@ export const DashboardNotification = ({
   onActionClick,
 }: NotificationProps) => {
   return (
-    <div className="bg-grey-900 flex w-full items-center gap-6 rounded border border-white p-8 text-base">
+    <div className="bg-grey-900 mb-12 flex w-full items-center gap-6 rounded border border-white p-8 text-base">
       {icon && (
         <div className="text-primary flex flex-col justify-center text-[3.8rem]">{icon}</div>
       )}

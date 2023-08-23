@@ -1,12 +1,12 @@
-import { seedPhraseStore } from "@core/domains/accounts"
 import { AccountAddressType, AccountMeta, AccountTypes } from "@core/domains/accounts/types"
 import { passwordStore } from "@core/domains/app"
 import { getEthDerivationPath } from "@core/domains/ethereum/helpers"
+import { createLegacySeedPhraseStore } from "@core/domains/mnemonics/legacy/store"
 import { AccountsStore } from "@polkadot/extension-base/stores"
 import keyring from "@polkadot/ui-keyring"
 import { cryptoWaitReady } from "@polkadot/util-crypto"
 
-import { migratePasswordV1ToV2 } from "../migrations"
+import { migratePasswordV1ToV2 } from "./legacyMigrations"
 
 const mnemonic = "seed sock milk update focus rotate barely fade car face mechanic mercy"
 const password = "passw0rd"
@@ -54,7 +54,7 @@ describe("App migrations", () => {
     })
     // create an ethereum account
     createPair("DERIVED", getEthDerivationPath(), rootAccount.address, "ethereum")
-
+    const seedPhraseStore = createLegacySeedPhraseStore()
     // create a seedphrase encrypted with the plaintext password
     await seedPhraseStore.add(mnemonic, password, true)
 

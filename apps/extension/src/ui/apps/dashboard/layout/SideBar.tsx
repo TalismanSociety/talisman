@@ -174,7 +174,7 @@ export const SideBar = () => {
 
   const handleBackupClick = useCallback(() => {
     genericEvent("goto backup modal", { from: "sidebar" })
-    navigate("/settings?showBackupModal")
+    navigate("/settings/mnemonics")
   }, [genericEvent, navigate])
 
   const { t } = useTranslation()
