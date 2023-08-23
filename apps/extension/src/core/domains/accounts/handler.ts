@@ -121,8 +121,8 @@ export default class AccountsHandler extends ExtensionHandler {
 
     //suri includes the derivation path if any
     const splitIdx = suri.indexOf("/")
-    const mnemonic = suri.slice(0, splitIdx)
-    const derivationPath = suri.slice(splitIdx)
+    const mnemonic = splitIdx === -1 ? suri : suri.slice(0, splitIdx)
+    const derivationPath = splitIdx === -1 ? "" : suri.slice(splitIdx)
 
     let derivedMnemonicId = await this.stores.seedPhrase.getExistingId(mnemonic)
 
