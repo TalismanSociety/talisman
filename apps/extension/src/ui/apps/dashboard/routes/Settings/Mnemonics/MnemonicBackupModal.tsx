@@ -10,13 +10,13 @@ import { Mnemonic as MnemonicInfo, useMnemonic, useMnemonics } from "@ui/hooks/u
 import { useSensitiveState } from "@ui/hooks/useSensitiveState"
 import { ChangeEventHandler, FC, useCallback, useEffect, useState } from "react"
 import { Trans, useTranslation } from "react-i18next"
-import { ModalDialog, Toggle } from "talisman-ui"
+import { Checkbox, ModalDialog } from "talisman-ui"
 import { Modal } from "talisman-ui"
 
 const Description = () => {
   const { t } = useTranslation("admin")
   return (
-    <div className="text-body-secondary my-6 text-sm">
+    <div className="text-body-secondary text-sm">
       <p>
         {t(
           "Your recovery phrase gives you access to your wallet and funds. It can be used to restore your Talisman created accounts if you lose access to your device, or forget your password."
@@ -39,9 +39,9 @@ const Description = () => {
           it in a secure location. <Link>Learn more</Link>"
         ></Trans>
       </p>
-      <div className="bg-grey-750 text-alert-warn mt-12 flex w-full items-center gap-8 rounded p-8">
+      <div className="bg-grey-750 text-alert-warn mt-12 flex w-full items-center gap-8 rounded px-8 py-6">
         <AlertTriangleIcon className="shrink-0 text-xl" />
-        <ul>
+        <ul className="flex flex-col gap-1">
           <Trans
             t={t}
             components={{ li: <li></li> }}
@@ -82,14 +82,19 @@ const MnemonicFormInner = ({ mnemonicId }: { mnemonicId: string }) => {
   )
 
   return (
-    <div className="flex grow flex-col">
-      {mnemonic ? (
+    <div className="mt-4 flex grow flex-col">
+      {mnemonic && secret ? (
         <>
           <Mnemonic mnemonic={secret ?? ""} />
           <div className="grow"></div>
-          <div className="flex w-full items-center justify-end gap-2">
-            <div className="text-body-secondary text-sm">{t("Don't remind me again")}</div>
-            <Toggle checked={mnemonic.confirmed} onChange={handleConfirmToggle} />
+          <div className="bg-grey-900 mt-8 flex w-full flex-col justify-center rounded-sm p-8">
+            <Checkbox
+              onChange={handleConfirmToggle}
+              checked={mnemonic.confirmed}
+              className="text-body-secondary hover:text-body gap-8!"
+            >
+              {t("I have backed up my recovery phrase")}
+            </Checkbox>
           </div>
         </>
       ) : (
@@ -104,10 +109,10 @@ const MnemonicBackupForm: FC<{
 }> = ({ mnemonic }) => {
   const { t } = useTranslation("admin")
   return (
-    <div className={classNames("flex h-[47rem] flex-col")}>
+    <div className={classNames("flex min-h-[47rem] flex-col")}>
       <Description />
       <PasswordUnlock
-        className="flex w-full grow flex-col justify-center"
+        className="flex w-full grow flex-col justify-center [&>form]:grow"
         buttonText={t("View Recovery Phrase")}
         title={
           <span className="mb-[-0.8rem] text-sm">
@@ -163,7 +168,7 @@ export const MnemonicBackupModal = () => {
 
   return (
     <Modal containerId="main" isOpen={isOpen} onDismiss={close}>
-      <ModalDialog className="!w-[50.3rem]" title={t("Backup recovery phrase")} onClose={close}>
+      <ModalDialog className="!w-[64rem]" title={t("Backup recovery phrase")} onClose={close}>
         {!!mnemonic && <MnemonicBackupForm mnemonic={mnemonic} />}
       </ModalDialog>
     </Modal>

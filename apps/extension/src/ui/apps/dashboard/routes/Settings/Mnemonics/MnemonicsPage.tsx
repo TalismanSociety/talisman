@@ -157,14 +157,14 @@ const MnemonicRow: FC<{ mnemonic: Mnemonic }> = ({ mnemonic }) => {
             </button>
           )}
           <ContextMenu placement="bottom-end">
-            <ContextMenuTrigger className="bg-grey-850 hover:bg-grey-800 hover:text-body text-body-secondary  rounded p-2">
+            <ContextMenuTrigger className=" hover:bg-grey-800 active:hover:bg-grey-800 hover:text-body text-body-secondary rounded p-2">
               <MoreHorizontalIcon className="text-lg" />
             </ContextMenuTrigger>
             <ContextMenuContent>
               <ContextMenuItem onClick={handleRenameClick}>{t("Rename")}</ContextMenuItem>
               <ContextMenuItem onClick={handleBackupClick}>
                 <div className="flex items-center gap-[0.8rem]">
-                  <span>{t("Backup")} </span>
+                  <span>{t("Backup")}</span>
                   {!mnemonic.confirmed && (
                     <AlertCircleIcon className="text-alert-warn inline-block text-base" />
                   )}
