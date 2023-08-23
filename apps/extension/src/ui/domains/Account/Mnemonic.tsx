@@ -1,5 +1,5 @@
 import { notify } from "@talisman/components/Notifications"
-import { CopyIcon } from "@talisman/theme/icons"
+import { CopyIcon, CursorClickIcon } from "@talisman/theme/icons"
 import { classNames } from "@talismn/util"
 import { useCallback, useEffect, useState } from "react"
 import { useTranslation } from "react-i18next"
@@ -62,7 +62,7 @@ export const Mnemonic = ({ onReveal, mnemonic }: MnemonicProps) => {
               isRevealed && "group-hover:hidden"
             )}
           >
-            <div className="text-xl opacity-60 saturate-0">☝</div>
+            <CursorClickIcon className="text-xl" />
           </button>
         </div>
       </div>
