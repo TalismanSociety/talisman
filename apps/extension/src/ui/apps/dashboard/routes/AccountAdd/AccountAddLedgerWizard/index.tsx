@@ -1,18 +1,18 @@
-import { Navigate, Route, Routes } from "react-router-dom"
+import { useSelectAccountAndNavigate } from "@ui/hooks/useSelectAccountAndNavigate"
+import { lazy } from "react"
 
-import { AddLedgerSelectAccount } from "./AddLedgerSelectAccount"
-import { AddLedgerSelectNetwork } from "./AddLedgerSelectNetwork"
-import { AddLedgerAccountProvider } from "./context"
+import { AccountAddLedgerLayout } from "./AccountAddLedgerLayout"
 
-export const AccountAddLedgerWizard = () => (
-  <AddLedgerAccountProvider>
-    <Routes>
-      <Route path="" element={<AddLedgerSelectNetwork />} />
-      <Route path="account" element={<AddLedgerSelectAccount />} />
-      <Route path="*" element={<Navigate to="" replace />} />
-    </Routes>
-  </AddLedgerAccountProvider>
+const AccountAddLedgerWizard = lazy(
+  () => import("@ui/domains/Account/AccountCreate/AccountAddLedger")
 )
 
-// lazy load
-export default AccountAddLedgerWizard
+export const AccountAddLedgerDashboardWizard = () => {
+  const { setAddress } = useSelectAccountAndNavigate("/portfolio")
+
+  return (
+    <AccountAddLedgerLayout>
+      <AccountAddLedgerWizard onSuccess={setAddress} />
+    </AccountAddLedgerLayout>
+  )
+}

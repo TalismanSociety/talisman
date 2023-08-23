@@ -12,17 +12,18 @@ import { SelectedAccountProvider } from "@ui/domains/Portfolio/SelectedAccountCo
 import { useIsLoggedIn } from "@ui/hooks/useIsLoggedIn"
 import { useIsOnboarded } from "@ui/hooks/useIsOnboarded"
 import { useModalSubscription } from "@ui/hooks/useModalSubscription"
-import { FC, PropsWithChildren, Suspense, lazy, useEffect, useRef } from "react"
+import { FC, PropsWithChildren, Suspense, useEffect, useRef } from "react"
 import { useTranslation } from "react-i18next"
 import { Navigate, Route, Routes, useMatch } from "react-router-dom"
 
 import { DashboardLayout } from "./layout/DashboardLayout"
-import { AccounAddDerivedPage } from "./routes/AccountAdd/AccountAddDerivedPage"
+import { AccountAddMenu } from "./routes/AccountAdd"
+import { AccountAddDerivedPage } from "./routes/AccountAdd/AccountAddDerivedPage"
+import { AccountAddJsonPage } from "./routes/AccountAdd/AccountAddJsonPage"
+import { AccountAddLedgerDashboardWizard } from "./routes/AccountAdd/AccountAddLedgerWizard"
 import { AccountAddQrWizard } from "./routes/AccountAdd/AccountAddQrWizard"
-import { AccountAddSecretWizard } from "./routes/AccountAdd/AccountAddSecretWizard"
-import { AccountAddTypePickerPage } from "./routes/AccountAdd/AccountAddTypePickerPage"
+import { AccountAddSecretDashboardWizard } from "./routes/AccountAdd/AccountAddSecretWizard"
 import { AccountAddWatchedPage } from "./routes/AccountAdd/AccountAddWatchedPage"
-import { AccountAddJsonPage } from "./routes/AccountAddJson"
 import { NetworkPage } from "./routes/Networks/NetworkPage"
 import { NetworksPage } from "./routes/Networks/NetworksPage"
 import { PhishingPage } from "./routes/PhishingPage"
@@ -45,9 +46,6 @@ import { TrustedSitesPage } from "./routes/Settings/TrustedSitesPage"
 import { AddCustomTokenPage } from "./routes/Tokens/AddCustomTokenPage"
 import { TokenPage } from "./routes/Tokens/TokenPage"
 import { TokensPage } from "./routes/Tokens/TokensPage"
-
-// lazy load this one to prevent polkadot/hw-ledger to be loaded (slow)
-const AccountAddLedgerWizard = lazy(() => import("./routes/AccountAdd/AccountAddLedgerWizard"))
 
 const DashboardInner = () => {
   const isLoggedIn = useIsLoggedIn()
@@ -92,14 +90,14 @@ const DashboardInner = () => {
         <Route path="portfolio/*" element={<PortfolioRoutes />} />
         <Route path="accounts">
           <Route path="add">
-            <Route path="" element={<AccountAddTypePickerPage />} />
-            <Route path="derived" element={<AccounAddDerivedPage />} />
+            <Route index element={<AccountAddMenu />} />
+            <Route path="derived" element={<AccountAddDerivedPage />} />
             <Route path="json" element={<AccountAddJsonPage />} />
-            <Route path="secret/*" element={<AccountAddSecretWizard />} />
-            <Route path="ledger/*" element={<AccountAddLedgerWizard />} />
+            <Route path="secret/*" element={<AccountAddSecretDashboardWizard />} />
+            <Route path="ledger/*" element={<AccountAddLedgerDashboardWizard />} />
             <Route path="qr/*" element={<AccountAddQrWizard />} />
             <Route path="watched" element={<AccountAddWatchedPage />} />
-            <Route path="*" element={<Navigate to="" replace />} />
+            <Route path="*" element={<Navigate to="/accounts/add" replace />} />
           </Route>
           <Route path="" element={<Navigate to="/portfolio" />} />
         </Route>

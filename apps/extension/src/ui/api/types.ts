@@ -9,7 +9,6 @@ import {
   AnalyticsCaptureRequest,
   LoggedinType,
   ModalOpenRequest,
-  OnboardedType,
   SendFundsOpenRequest,
 } from "@core/domains/app/types"
 import {
@@ -65,15 +64,13 @@ import { ethers } from "ethers"
 export default interface MessageTypes {
   unsubscribe: (id: string) => Promise<null>
   // UNSORTED
-  onboard: (pass: string, passConfirm: string, mnemonic?: string) => Promise<OnboardedType>
+  onboardCreatePassword: (pass: string, passConfirm: string) => Promise<boolean>
   authenticate: (pass: string) => Promise<boolean>
   lock: () => Promise<boolean>
   changePassword: (currentPw: string, newPw: string, newPwConfirm: string) => Promise<boolean>
   checkPassword: (password: string) => Promise<boolean>
   authStatus: () => Promise<LoggedinType>
   authStatusSubscribe: (cb: (val: LoggedinType) => void) => UnsubscribeFn
-  onboardStatus: () => Promise<OnboardedType>
-  onboardStatusSubscribe: (cb: (val: OnboardedType) => void) => UnsubscribeFn
   dashboardOpen: (route: string) => Promise<boolean>
   onboardOpen: () => Promise<boolean>
   popupOpen: () => Promise<boolean>

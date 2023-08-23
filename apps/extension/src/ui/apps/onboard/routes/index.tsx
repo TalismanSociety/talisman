@@ -1,23 +1,44 @@
 import { Navigate, Route, Routes } from "react-router-dom"
 
-import { ImportPage } from "./Import"
-import { ImportMethodPage } from "./ImportMethod"
-import { ImportSeedPage } from "./ImportSeed"
-import { OnboardingPage } from "./Onboarding"
+import { OnboardStageWrapper } from "../components/OnboardStageWrapper"
+import { AddAccountPage } from "./AddAccount"
+import { AccountAddDerivedPage } from "./AddAccount/AccountAddDerivedPage"
+import { AccountAddJsonPage } from "./AddAccount/AccountAddJsonPage"
+import { AccountAddLedgerOnboardWizard } from "./AddAccount/AccountAddLedgerWizard"
+import { AccountAddSecretOnboardWizard } from "./AddAccount/AccountAddSecretWizard"
 import { PasswordPage } from "./Password"
 import { PrivacyPage } from "./Privacy"
+import { SuccessPage } from "./Success"
 import { WelcomePage } from "./Welcome"
 
 const OnboardingRoutes = () => {
   return (
     <Routes>
       <Route path="/" element={<WelcomePage />} />
-      <Route path="import" element={<ImportPage />} />
-      <Route path="import-method" element={<ImportMethodPage />} />
-      <Route path="import-seed" element={<ImportSeedPage />} />
-      <Route path="password" element={<PasswordPage />} />
-      <Route path="privacy" element={<PrivacyPage />} />
-      <Route path="onboard" element={<OnboardingPage />} />
+      <Route path="password" element={<OnboardStageWrapper stage={1} />}>
+        <Route index element={<PasswordPage />} />
+      </Route>
+      <Route path="privacy" element={<OnboardStageWrapper stage={2} />}>
+        <Route index element={<PrivacyPage />} />
+      </Route>
+      <Route path="accounts">
+        <Route path="add">
+          <Route element={<OnboardStageWrapper stage={3} />}>
+            <Route index element={<AddAccountPage />} />
+            <Route path="derived" element={<AccountAddDerivedPage />} />
+            <Route path="json" element={<AccountAddJsonPage />} />
+            <Route path="secret/*" element={<AccountAddSecretOnboardWizard />} />
+            <Route path="ledger/*" element={<AccountAddLedgerOnboardWizard />} />
+            {/* <Route path="qr/*" element={<AccountAddQrWizard />} />
+            <Route path="watched" element={<AccountAddWatchedPage />} /> */}
+            <Route path="*" element={<Navigate to="" replace />} />
+          </Route>
+        </Route>
+      </Route>
+      <Route path="success" element={<OnboardStageWrapper stage={4} />}>
+        <Route index element={<SuccessPage />} />
+      </Route>
+
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>
   )

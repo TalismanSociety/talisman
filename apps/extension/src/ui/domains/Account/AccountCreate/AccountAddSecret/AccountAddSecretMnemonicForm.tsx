@@ -6,11 +6,9 @@ import { notify, notifyUpdate } from "@talisman/components/Notifications"
 import { Spacer } from "@talisman/components/Spacer"
 import { classNames } from "@talismn/util"
 import { api } from "@ui/api"
-import { DashboardLayout } from "@ui/apps/dashboard/layout/DashboardLayout"
 import { AccountIcon } from "@ui/domains/Account/AccountIcon"
 import { AccountTypeSelector } from "@ui/domains/Account/AccountTypeSelector"
 import useAccounts from "@ui/hooks/useAccounts"
-import { useSelectAccountAndNavigate } from "@ui/hooks/useSelectAccountAndNavigate"
 import { Wallet } from "ethers"
 import { useCallback, useEffect, useMemo, useState } from "react"
 import { useForm } from "react-hook-form"
@@ -91,12 +89,11 @@ const testValidMnemonic = async (val?: string) => {
   return await api.accountValidateMnemonic(val)
 }
 
-export const AccountAddSecretMnemonicPage = () => {
+export const AccountAddSecretMnemonicForm = () => {
   const { t } = useTranslation("admin")
 
-  const { data, updateData } = useAccountAddSecret()
+  const { data, updateData, onSuccess } = useAccountAddSecret()
   const navigate = useNavigate()
-  const { setAddress } = useSelectAccountAndNavigate("/portfolio")
 
   const allAccounts = useAccounts()
   const accountAddresses = useMemo(() => allAccounts.map((a) => a.address), [allAccounts])
@@ -195,7 +192,7 @@ export const AccountAddSecretMnemonicPage = () => {
   const submit = useCallback(
     async ({ type, name, mnemonic, multi }: FormData) => {
       updateData({ type, name, mnemonic, multi })
-      if (multi) navigate("accounts")
+      if (multi) navigate("multiple")
       else {
         const notificationId = notify(
           {
@@ -207,7 +204,7 @@ export const AccountAddSecretMnemonicPage = () => {
         )
         try {
           const uri = await getAccountUri(mnemonic, type)
-          setAddress(await api.accountCreateFromSeed(name, uri, type))
+          onSuccess(await api.accountCreateFromSeed(name, uri, type))
           notifyUpdate(notificationId, {
             type: "success",
             title: t("Account imported"),
@@ -222,7 +219,7 @@ export const AccountAddSecretMnemonicPage = () => {
         }
       }
     },
-    [t, navigate, setAddress, updateData]
+    [t, navigate, onSuccess, updateData]
   )
 
   const handleTypeChange = useCallback(
@@ -235,14 +232,14 @@ export const AccountAddSecretMnemonicPage = () => {
   )
 
   return (
-    <DashboardLayout withBack centered>
+    <div className="flex w-full flex-col gap-8">
       <HeaderBlock
         title={t("Choose account type")}
         text={t("What type of account would you like to import?")}
       />
-      <Spacer small />
+
       <AccountTypeSelector defaultType={data.type} onChange={handleTypeChange} />
-      <Spacer small />
+
       <form className={classNames(type ? "visible" : "invisible")} onSubmit={handleSubmit(submit)}>
         <FormFieldContainer error={errors.name?.message}>
           <FormFieldInputText
@@ -293,6 +290,6 @@ export const AccountAddSecretMnemonicPage = () => {
           </Button>
         </div>
       </form>
-    </DashboardLayout>
+    </div>
   )
 }

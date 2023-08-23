@@ -81,7 +81,7 @@ Browser.runtime.onConnect.addListener((_port): void => {
   })
 })
 
-Browser.runtime.setUninstallURL("https://goto.talisman.xyz/uninstall")
+!DEBUG && Browser.runtime.setUninstallURL("https://goto.talisman.xyz/uninstall")
 
 // initial setup
 cryptoWaitReady()

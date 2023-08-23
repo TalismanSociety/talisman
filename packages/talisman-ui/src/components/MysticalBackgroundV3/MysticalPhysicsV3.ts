@@ -12,6 +12,8 @@ export type MysticalPhysicsV3 = {
   colors?: string[]
 }
 
+export type MysticalPhysicsV3NoAcolyte = MysticalPhysicsV3 & { withAcolyte: false }
+
 export const MYSTICAL_PHYSICS_V3: MysticalPhysicsV3 = {
   withAcolyte: true,
   artifacts: 3,

@@ -20,6 +20,7 @@ import useAccountsCatalog from "@ui/hooks/useAccountsCatalog"
 import { useAnalytics } from "@ui/hooks/useAnalytics"
 import useBalances from "@ui/hooks/useBalances"
 import { useFirstAccountColors } from "@ui/hooks/useFirstAccountColors"
+import { useHasAccounts } from "@ui/hooks/useHasAccounts"
 import { useSearchParamsSelectedFolder } from "@ui/hooks/useSearchParamsSelectedFolder"
 import { MouseEventHandler, Suspense, useCallback, useEffect, useMemo, useRef } from "react"
 import { useTranslation } from "react-i18next"
@@ -30,7 +31,7 @@ import { MYSTICAL_PHYSICS_V3, MysticalBackground } from "talisman-ui"
 
 const ANALYTICS_PAGE: AnalyticsPage = {
   container: "Popup",
-  feature: "Porfolio",
+  feature: "Portfolio",
   featureVersion: 2,
   page: "Portfolio Home",
 }
@@ -223,6 +224,7 @@ const AllAccountsHeader = () => {
   const handleClick = useCallback(() => navigate("/portfolio/assets"), [navigate])
   const ref = useRef<HTMLDivElement>(null)
   const isHovered = useHoverDirty(ref)
+  const hasAccounts = useHasAccounts()
 
   return (
     <div ref={ref} className="relative h-[11.4rem] w-full">
@@ -232,11 +234,12 @@ const AllAccountsHeader = () => {
           "hover:bg-grey-800 bg-black-secondary text-body-secondary transition-colors duration-75 hover:text-white"
         )}
         onClick={handleClick}
+        disabled={hasAccounts === false}
       >
         <Suspense fallback={<SuspenseTracker name="AllAccountsHeaderBackground" />}>
           <AllAccountsHeaderBackground />
         </Suspense>
-        <ChevronRightIcon className="z-10" />
+        {hasAccounts && <ChevronRightIcon className="z-10" />}
       </button>
       <TotalFiatBalance
         className="pointer-events-none absolute left-0 top-0 h-full w-full px-6"

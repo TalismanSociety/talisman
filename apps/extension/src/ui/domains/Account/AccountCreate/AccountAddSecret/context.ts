@@ -12,7 +12,7 @@ type AccountAddSecretInputs = {
   accounts: RequestAccountCreateFromSeed[]
 }
 
-const useAccountAddSecretProvider = () => {
+const useAccountAddSecretProvider = ({ onSuccess }: { onSuccess: (address: string) => void }) => {
   const [params] = useSearchParams()
   const [data, setData] = useState<Partial<AccountAddSecretInputs>>(() => ({
     type: params.get("type") as AccountAddressType,
@@ -36,7 +36,7 @@ const useAccountAddSecretProvider = () => {
     return addresses
   }, [])
 
-  return { data, updateData, importAccounts }
+  return { data, updateData, importAccounts, onSuccess }
 }
 
 export const [AccountAddSecretProvider, useAccountAddSecret] = provideContext(
