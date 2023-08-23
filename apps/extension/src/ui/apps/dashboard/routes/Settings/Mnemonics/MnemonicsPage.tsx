@@ -60,6 +60,7 @@ const AccountRow: FC<{ account: AccountJsonAny }> = ({ account }) => {
           <Address address={account.address} startCharCount={6} endCharCount={6} />
         </div>
       </div>
+      <div className="text-body-secondary flex flex-col text-xs">{account.derivationPath}</div>
     </div>
   )
 }
@@ -84,7 +85,7 @@ const MnemonicRow: FC<{ mnemonic: Mnemonic }> = ({ mnemonic }) => {
   const { open: openRename } = useMnemonicRenameModal()
   const { open: openSetPvVerifier, isVerifier } = useMnemonicSetPvVerifierModal()
   const { open: openDelete, canDelete } = useMnemonicDeleteModal()
-  const { open: openBackup, isBackupConfirmed } = useMnemonicBackupModal()
+  const { open: openBackup } = useMnemonicBackupModal()
   const refActions = useRef<HTMLDivElement>(null)
   const refBackup = useRef<HTMLButtonElement>(null)
 
@@ -118,7 +119,12 @@ const MnemonicRow: FC<{ mnemonic: Mnemonic }> = ({ mnemonic }) => {
       <button
         type="button"
         onClick={toggle}
-        className="bg-grey-850 hover:bg-grey-800 hover:text-body text-body-secondary flex h-[6.5rem] w-full items-center gap-6 rounded-sm px-8 text-left"
+        className={classNames(
+          "  hover:text-body text-body-secondary flex h-[6.5rem] w-full items-center gap-6 rounded-sm px-8 text-left",
+          mnemonic.confirmed
+            ? "bg-grey-850 hover:bg-grey-800"
+            : "bg-alert-warn/5 hover:bg-alert-warn/10"
+        )}
       >
         <div className="bg-body-secondary/10 flex h-[4rem] w-[4rem] shrink-0 items-center justify-center rounded-full">
           <SeedIcon className="text-body-secondary text-lg" />
@@ -144,25 +150,24 @@ const MnemonicRow: FC<{ mnemonic: Mnemonic }> = ({ mnemonic }) => {
             <button
               ref={refBackup}
               onClick={handleBackupClick}
-              className="bg-grey-850 hover:bg-grey-800 text-alert-warn flex h-[3rem] items-center gap-[0.5em] rounded-[2rem] border px-6 text-sm"
+              className="bg-alert-warn/5 hover:bg-alert-warn/10 text-alert-warn flex h-[3rem] items-center gap-[0.5em] rounded-[2rem] border px-6 text-sm"
             >
               <span>{t("Backup")}</span>
               <AlertCircleIcon className="inline-block text-base" />
             </button>
           )}
-          <ContextMenu>
+          <ContextMenu placement="bottom-end">
             <ContextMenuTrigger className="bg-grey-850 hover:bg-grey-800 hover:text-body text-body-secondary  rounded p-2">
               <MoreHorizontalIcon className="text-lg" />
             </ContextMenuTrigger>
             <ContextMenuContent>
               <ContextMenuItem onClick={handleRenameClick}>{t("Rename")}</ContextMenuItem>
-              <ContextMenuItem
-                onClick={handleBackupClick}
-                disabled={isBackupConfirmed(mnemonic.id)}
-              >
+              <ContextMenuItem onClick={handleBackupClick}>
                 <div className="flex items-center gap-[0.8rem]">
                   <span>{t("Backup")} </span>
-                  <AlertCircleIcon className="text-alert-warn inline-block text-base" />
+                  {!mnemonic.confirmed && (
+                    <AlertCircleIcon className="text-alert-warn inline-block text-base" />
+                  )}
                 </div>
               </ContextMenuItem>
               <ContextMenuItem onClick={handleSetVerifierClick} disabled={isVerifier(mnemonic.id)}>
