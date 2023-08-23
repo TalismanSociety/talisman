@@ -22,6 +22,8 @@ const documents = {
     types.TokenFragmentDoc,
   "\n  query chains {\n    chains(orderBy: sortIndex_ASC) {\n      ...Chain\n    }\n  }\n":
     types.ChainsDocument,
+  "\n  query chainById($chainId: String!) {\n    chainById(id: $chainId) {\n      ...Chain\n    }\n  }\n":
+    types.ChainByIdDocument,
   "\n  query evmNetworks {\n    evmNetworks(orderBy: sortIndex_ASC) {\n      ...EvmNetwork\n    }\n  }\n":
     types.EvmNetworksDocument,
   "\n  query evmNetworkById($evmNetworkId: String!) {\n    evmNetworkById(id: $evmNetworkId) {\n      ...EvmNetwork\n    }\n  }\n":
@@ -70,6 +72,12 @@ export function graphql(
 export function graphql(
   source: "\n  query chains {\n    chains(orderBy: sortIndex_ASC) {\n      ...Chain\n    }\n  }\n"
 ): (typeof documents)["\n  query chains {\n    chains(orderBy: sortIndex_ASC) {\n      ...Chain\n    }\n  }\n"]
+/**
+ * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
+ */
+export function graphql(
+  source: "\n  query chainById($chainId: String!) {\n    chainById(id: $chainId) {\n      ...Chain\n    }\n  }\n"
+): (typeof documents)["\n  query chainById($chainId: String!) {\n    chainById(id: $chainId) {\n      ...Chain\n    }\n  }\n"]
 /**
  * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
  */

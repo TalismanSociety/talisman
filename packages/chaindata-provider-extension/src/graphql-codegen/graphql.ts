@@ -117,6 +117,7 @@ export type Chain = {
   /** chain-specified name for this chain */
   chainName: Maybe<Scalars["String"]>
   /** chainspec qr url for this chain */
+  chainspecQrUrl: Maybe<Scalars["String"]>
   /** evm networks on this chain */
   evmNetworks: Array<EvmNetwork>
   /** hash of the first block on this chain */
@@ -1136,6 +1137,41 @@ export type ChainsQuery = {
   }>
 }
 
+export type ChainByIdQueryVariables = Exact<{
+  chainId: Scalars["String"]
+}>
+
+export type ChainByIdQuery = {
+  chainById: {
+    id: string
+    isTestnet: boolean
+    sortIndex: number | null
+    genesisHash: string | null
+    prefix: number | null
+    name: string | null
+    themeColor: string | null
+    logo: string | null
+    chainName: string | null
+    implName: string | null
+    specName: string | null
+    specVersion: string | null
+    account: string | null
+    subscanUrl: string | null
+    chainspecQrUrl: string | null
+    latestMetadataQrUrl: string | null
+    isUnknownFeeToken: boolean
+    isHealthy: boolean
+    paraId: number | null
+    nativeToken: { id: string } | null
+    tokens: Array<{ id: string }>
+    rpcs: Array<{ url: string; isHealthy: boolean }>
+    evmNetworks: Array<{ id: string }>
+    parathreads: Array<{ id: string; paraId: number | null; name: string | null }>
+    relay: { id: string } | null
+    balanceMetadata: Array<{ moduleType: string; metadata: unknown }>
+  } | null
+}
+
 export type EvmNetworksQueryVariables = Exact<{ [key: string]: never }>
 
 export type EvmNetworksQuery = {
@@ -1579,6 +1615,162 @@ export const ChainsDocument = {
     },
   ],
 } as unknown as DocumentNode<ChainsQuery, ChainsQueryVariables>
+export const ChainByIdDocument = {
+  kind: "Document",
+  definitions: [
+    {
+      kind: "OperationDefinition",
+      operation: "query",
+      name: { kind: "Name", value: "chainById" },
+      variableDefinitions: [
+        {
+          kind: "VariableDefinition",
+          variable: { kind: "Variable", name: { kind: "Name", value: "chainId" } },
+          type: {
+            kind: "NonNullType",
+            type: { kind: "NamedType", name: { kind: "Name", value: "String" } },
+          },
+        },
+      ],
+      selectionSet: {
+        kind: "SelectionSet",
+        selections: [
+          {
+            kind: "Field",
+            name: { kind: "Name", value: "chainById" },
+            arguments: [
+              {
+                kind: "Argument",
+                name: { kind: "Name", value: "id" },
+                value: { kind: "Variable", name: { kind: "Name", value: "chainId" } },
+              },
+            ],
+            selectionSet: {
+              kind: "SelectionSet",
+              selections: [{ kind: "FragmentSpread", name: { kind: "Name", value: "Chain" } }],
+            },
+          },
+        ],
+      },
+    },
+    {
+      kind: "FragmentDefinition",
+      name: { kind: "Name", value: "Chain" },
+      typeCondition: { kind: "NamedType", name: { kind: "Name", value: "Chain" } },
+      selectionSet: {
+        kind: "SelectionSet",
+        selections: [
+          { kind: "Field", name: { kind: "Name", value: "id" } },
+          { kind: "Field", name: { kind: "Name", value: "isTestnet" } },
+          { kind: "Field", name: { kind: "Name", value: "sortIndex" } },
+          { kind: "Field", name: { kind: "Name", value: "genesisHash" } },
+          { kind: "Field", name: { kind: "Name", value: "prefix" } },
+          { kind: "Field", name: { kind: "Name", value: "name" } },
+          { kind: "Field", name: { kind: "Name", value: "themeColor" } },
+          { kind: "Field", name: { kind: "Name", value: "logo" } },
+          { kind: "Field", name: { kind: "Name", value: "chainName" } },
+          { kind: "Field", name: { kind: "Name", value: "implName" } },
+          { kind: "Field", name: { kind: "Name", value: "specName" } },
+          { kind: "Field", name: { kind: "Name", value: "specVersion" } },
+          {
+            kind: "Field",
+            name: { kind: "Name", value: "nativeToken" },
+            selectionSet: {
+              kind: "SelectionSet",
+              selections: [{ kind: "Field", name: { kind: "Name", value: "id" } }],
+            },
+          },
+          {
+            kind: "Field",
+            name: { kind: "Name", value: "tokens" },
+            arguments: [
+              {
+                kind: "Argument",
+                name: { kind: "Name", value: "orderBy" },
+                value: { kind: "EnumValue", value: "id_ASC" },
+              },
+            ],
+            selectionSet: {
+              kind: "SelectionSet",
+              selections: [{ kind: "Field", name: { kind: "Name", value: "id" } }],
+            },
+          },
+          { kind: "Field", name: { kind: "Name", value: "account" } },
+          { kind: "Field", name: { kind: "Name", value: "subscanUrl" } },
+          { kind: "Field", name: { kind: "Name", value: "chainspecQrUrl" } },
+          { kind: "Field", name: { kind: "Name", value: "latestMetadataQrUrl" } },
+          { kind: "Field", name: { kind: "Name", value: "isUnknownFeeToken" } },
+          {
+            kind: "Field",
+            name: { kind: "Name", value: "rpcs" },
+            selectionSet: {
+              kind: "SelectionSet",
+              selections: [
+                { kind: "Field", name: { kind: "Name", value: "url" } },
+                { kind: "Field", name: { kind: "Name", value: "isHealthy" } },
+              ],
+            },
+          },
+          { kind: "Field", name: { kind: "Name", value: "isHealthy" } },
+          {
+            kind: "Field",
+            name: { kind: "Name", value: "evmNetworks" },
+            arguments: [
+              {
+                kind: "Argument",
+                name: { kind: "Name", value: "orderBy" },
+                value: { kind: "EnumValue", value: "name_ASC" },
+              },
+            ],
+            selectionSet: {
+              kind: "SelectionSet",
+              selections: [{ kind: "Field", name: { kind: "Name", value: "id" } }],
+            },
+          },
+          {
+            kind: "Field",
+            name: { kind: "Name", value: "parathreads" },
+            arguments: [
+              {
+                kind: "Argument",
+                name: { kind: "Name", value: "orderBy" },
+                value: { kind: "EnumValue", value: "paraId_ASC" },
+              },
+            ],
+            selectionSet: {
+              kind: "SelectionSet",
+              selections: [
+                { kind: "Field", name: { kind: "Name", value: "id" } },
+                { kind: "Field", name: { kind: "Name", value: "paraId" } },
+                { kind: "Field", name: { kind: "Name", value: "name" } },
+              ],
+            },
+          },
+          { kind: "Field", name: { kind: "Name", value: "paraId" } },
+          {
+            kind: "Field",
+            name: { kind: "Name", value: "relay" },
+            selectionSet: {
+              kind: "SelectionSet",
+              selections: [{ kind: "Field", name: { kind: "Name", value: "id" } }],
+            },
+          },
+          {
+            kind: "Field",
+            name: { kind: "Name", value: "balanceMetadata" },
+            selectionSet: {
+              kind: "SelectionSet",
+              selections: [
+                { kind: "Field", name: { kind: "Name", value: "moduleType" } },
+                { kind: "Field", name: { kind: "Name", value: "metadata" } },
+              ],
+            },
+          },
+        ],
+      },
+    },
+  ],
+} as unknown as DocumentNode<ChainByIdQuery, ChainByIdQueryVariables>
 export const EvmNetworksDocument = {
   kind: "Document",
   definitions: [

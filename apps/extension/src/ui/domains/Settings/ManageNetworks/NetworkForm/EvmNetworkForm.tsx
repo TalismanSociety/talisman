@@ -25,7 +25,7 @@ import { useDebounce } from "react-use"
 import { Button, Checkbox, FormFieldContainer, FormFieldInputText } from "talisman-ui"
 
 import { getEvmNetworkFormSchema } from "./getEvmNetworkFormSchema"
-import { getRpcChainId } from "./helpers"
+import { getEvmRpcChainId } from "./helpers"
 import { NetworkRpcsListField } from "./NetworkRpcsListField"
 import { RemoveEvmNetworkButton } from "./RemoveEvmNetworkButton"
 import { ResetEvmNetworkButton } from "./ResetEvmNetworkButton"
@@ -37,15 +37,14 @@ type EvmNetworkFormProps = {
 
 export const EvmNetworkForm: FC<EvmNetworkFormProps> = ({ evmNetworkId, onSubmitted }) => {
   const { t } = useTranslation("admin")
-  const schema = useMemo(() => getEvmNetworkFormSchema(evmNetworkId), [evmNetworkId])
-
   const isBuiltInEvmNetwork = useIsBuiltInEvmNetwork(evmNetworkId)
 
-  const [submitError, setSubmitError] = useState<string>()
   const { evmNetworks } = useEvmNetworks(true)
   const [useTestnets, setUseTestNets] = useSetting("useTestnets")
 
   const { defaultValues, isCustom, isEditMode, evmNetwork } = useEditMode(evmNetworkId)
+
+  const schema = useMemo(() => getEvmNetworkFormSchema(evmNetworkId), [evmNetworkId])
 
   // because of the RPC checks, do not validate on each change
   const formProps = useForm<RequestUpsertCustomEvmNetwork>({
@@ -136,6 +135,11 @@ export const EvmNetworkForm: FC<EvmNetworkFormProps> = ({ evmNetworkId, onSubmit
     }
   }, [autoFill, clearErrors, evmNetworkId, evmNetworks, id, setError, errors.id, t])
 
+  const handleIsTestnetChange: ChangeEventHandler<HTMLInputElement> = useCallback(
+    (e) => setValue("isTestnet", e.target.checked, { shouldTouch: true }),
+    [setValue]
+  )
+
   const [showRemove, showReset] = useMemo(
     () =>
       isCustom && isBuiltInEvmNetwork.isFetched
@@ -144,6 +148,7 @@ export const EvmNetworkForm: FC<EvmNetworkFormProps> = ({ evmNetworkId, onSubmit
     [isCustom, isBuiltInEvmNetwork.data, isBuiltInEvmNetwork.isFetched]
   )
 
+  const [submitError, setSubmitError] = useState<string>()
   const submit = useCallback(
     async (network: RequestUpsertCustomEvmNetwork) => {
       try {
@@ -155,11 +160,6 @@ export const EvmNetworkForm: FC<EvmNetworkFormProps> = ({ evmNetworkId, onSubmit
       }
     },
     [chainLogoUrl, tokenLogoUrl, onSubmitted, setUseTestNets, useTestnets]
-  )
-
-  const handleIsTestnetChange: ChangeEventHandler<HTMLInputElement> = useCallback(
-    (e) => setValue("isTestnet", e.target.checked, { shouldTouch: true }),
-    [setValue]
   )
 
   // on edit screen, wait for existing network to be loaded
@@ -254,7 +254,7 @@ export const EvmNetworkForm: FC<EvmNetworkFormProps> = ({ evmNetworkId, onSubmit
           </FormFieldContainer>
           <div>
             <Checkbox checked={!!isTestnet} onChange={handleIsTestnetChange}>
-              <span className="text-body-secondary">{t("Testnet")}</span>
+              <span className="text-body-secondary">{t("This is a testnet")}</span>
             </Checkbox>
           </div>
           <div className="text-alert-warn">{submitError}</div>
@@ -280,27 +280,6 @@ export const EvmNetworkForm: FC<EvmNetworkFormProps> = ({ evmNetworkId, onSubmit
   )
 }
 
-const evmNetworkToFormData = (
-  network?: EvmNetwork | CustomEvmNetwork,
-  nativeToken?: CustomNativeToken
-): RequestUpsertCustomEvmNetwork | undefined => {
-  if (!network || !nativeToken) return undefined
-
-  return {
-    id: network.id,
-    name: network.name ?? "",
-    rpcs: network.rpcs ?? [],
-    blockExplorerUrl:
-      network.explorerUrl ?? ("explorerUrls" in network ? network.explorerUrls?.[0] : undefined),
-    isTestnet: !!network.isTestnet,
-    chainLogoUrl: network.logo ?? null,
-    tokenCoingeckoId: nativeToken.coingeckoId ?? null,
-    tokenSymbol: nativeToken.symbol,
-    tokenDecimals: nativeToken.decimals,
-    tokenLogoUrl: nativeToken.logo ?? null,
-  }
-}
-
 const useRpcChainId = (rpcUrl: string) => {
   const [debouncedRpcUrl, setDebouncedRpcUrl] = useState(rpcUrl)
   useDebounce(
@@ -313,7 +292,7 @@ const useRpcChainId = (rpcUrl: string) => {
 
   return useQuery({
     queryKey: ["useRpcChainId", debouncedRpcUrl],
-    queryFn: () => (debouncedRpcUrl ? getRpcChainId(debouncedRpcUrl) : null),
+    queryFn: () => (debouncedRpcUrl ? getEvmRpcChainId(debouncedRpcUrl) : null),
     refetchInterval: false,
     refetchOnMount: false,
     refetchOnReconnect: false,
@@ -336,4 +315,25 @@ const useEditMode = (evmNetworkId?: EvmNetworkId) => {
   const isCustom = useMemo(() => !!evmNetwork && isCustomEvmNetwork(evmNetwork), [evmNetwork])
 
   return { defaultValues, isEditMode: !!evmNetworkId, isCustom, evmNetwork, nativeToken }
+}
+
+const evmNetworkToFormData = (
+  network?: EvmNetwork | CustomEvmNetwork,
+  nativeToken?: CustomNativeToken
+): RequestUpsertCustomEvmNetwork | undefined => {
+  if (!network || !nativeToken) return undefined
+
+  return {
+    id: network.id,
+    name: network.name ?? "",
+    rpcs: network.rpcs ?? [],
+    blockExplorerUrl:
+      network.explorerUrl ?? ("explorerUrls" in network ? network.explorerUrls?.[0] : undefined),
+    isTestnet: !!network.isTestnet,
+    chainLogoUrl: network.logo ?? null,
+    tokenCoingeckoId: nativeToken.coingeckoId ?? null,
+    tokenSymbol: nativeToken.symbol,
+    tokenDecimals: nativeToken.decimals,
+    tokenLogoUrl: nativeToken.logo ?? null,
+  }
 }
