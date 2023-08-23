@@ -1,5 +1,6 @@
 import { BackButton } from "@talisman/components/BackButton"
 import { hideScrollbarsStyle } from "@talisman/theme/styles"
+import { classNames } from "@talismn/util"
 import { AnalyticsPage } from "@ui/api/analytics"
 import { Transition, Variants, motion } from "framer-motion"
 import { FC, ReactNode } from "react"
@@ -7,10 +8,6 @@ import styled from "styled-components"
 
 const Main = styled.main`
   //force dimensions and overflow to allow scrolling if very small screen
-  overflow: auto;
-  max-width: 100vw;
-  max-height: 100vh;
-
   ${hideScrollbarsStyle}
 
   > section {
@@ -29,33 +26,6 @@ const Main = styled.main`
     text-align: left;
   }
 
-  > section > .hflex {
-    width: 100%;
-    display: flex;
-    gap: 13.5rem;
-    justify-content: center;
-
-    .picture,
-    .content {
-      width: 44rem;
-    }
-
-    .picture {
-      text-align: right;
-    }
-
-    @media (max-width: 1146px) {
-      flex-direction: column;
-      align-items: center;
-      gap: 1rem;
-
-      .picture,
-      .content {
-        text-align: center;
-      }
-    }
-  }
-
   > section .content {
     display: flex;
     flex-direction: column;
@@ -70,35 +40,15 @@ const Main = styled.main`
     margin: 0;
   }
 
-  p {
-    font-size: var(--font-size-normal);
-    line-height: var(--font-size-large);
-    margin: 0;
-    color: var(--color-mid);
-  }
-
   .content .field input,
   .content .field textarea {
     text-align: left;
   }
 `
 
-const BtnBack = styled(BackButton)`
-  position: absolute;
-  top: 6.4rem;
-  left: 6.4rem;
-  background: rgba(var(--color-foreground-raw), 0.1);
-  transition: background-color var(--transition-speed-fast) ease-in;
-
-  :hover {
-    background: rgba(var(--color-foreground-raw), 0.2);
-  }
-`
-
 type LayoutProps = {
   withBack?: boolean
   className?: string
-  picture?: ReactNode
   children?: ReactNode
   analytics?: AnalyticsPage
 }
@@ -108,47 +58,21 @@ const FADE_IN: Variants = {
   anim: { opacity: 1 },
 }
 
-const TRANS_MED: Transition = {
-  type: "spring",
-  duration: 0.5,
-}
 const TRANS_SLOW: Transition = {
-  type: "spring",
   duration: 1,
+  ease: "easeInOut",
 }
 
-const SLIDE_IN_LEFT: Variants = {
-  init: { x: -200 },
-  anim: { x: 0 },
-}
-
-const SLIDE_IN_RIGHT: Variants = {
-  init: { x: 200 },
-  anim: { x: 0 },
-}
-
-export const Layout: FC<LayoutProps> = ({
-  analytics,
-  withBack = false,
-  picture,
-  children,
-  className,
-}) => (
-  <Main className={className}>
+export const Layout: FC<LayoutProps> = ({ analytics, withBack = false, children, className }) => (
+  <Main className={classNames(className, "max-w-screen max-h-screen overflow-auto")}>
     <motion.section variants={FADE_IN} initial="init" animate="anim" transition={TRANS_SLOW}>
-      {!!withBack && <BtnBack analytics={analytics} />}
-      {picture ? (
-        <div className="hflex">
-          <motion.div className="picture" variants={SLIDE_IN_LEFT} transition={TRANS_MED}>
-            {picture}
-          </motion.div>
-          <motion.div className="content" variants={SLIDE_IN_RIGHT} transition={TRANS_MED}>
-            {children}
-          </motion.div>
-        </div>
-      ) : (
-        children
+      {!!withBack && (
+        <BackButton
+          className="bg-body hover:bg-body absolute left-32 top-32 bg-opacity-10 transition-colors ease-in hover:bg-opacity-20"
+          analytics={analytics}
+        />
       )}
+      <div className="flex justify-center">{children}</div>
     </motion.section>
   </Main>
 )

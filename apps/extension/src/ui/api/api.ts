@@ -13,8 +13,8 @@ port.onMessage.addListener(messageService.handleResponse)
 export const api: MessageTypes = {
   unsubscribe: (id) => messageService.sendMessage("pri(unsubscribe)", { id }),
   // UNSORTED
-  onboard: (pass, passConfirm, mnemonic) =>
-    messageService.sendMessage("pri(app.onboard)", { pass, passConfirm, mnemonic }),
+  onboardCreatePassword: (pass, passConfirm) =>
+    messageService.sendMessage("pri(app.onboardCreatePassword)", { pass, passConfirm }),
   authenticate: (pass) => messageService.sendMessage("pri(app.authenticate)", { pass }),
   lock: () => messageService.sendMessage("pri(app.lock)"),
   changePassword: (currentPw, newPw, newPwConfirm) =>
@@ -22,9 +22,6 @@ export const api: MessageTypes = {
   checkPassword: (password) => messageService.sendMessage("pri(app.checkPassword)", { password }),
   authStatus: () => messageService.sendMessage("pri(app.authStatus)"),
   authStatusSubscribe: (cb) => messageService.subscribe("pri(app.authStatus.subscribe)", null, cb),
-  onboardStatus: () => messageService.sendMessage("pri(app.onboardStatus)"),
-  onboardStatusSubscribe: (cb) =>
-    messageService.subscribe("pri(app.onboardStatus.subscribe)", null, cb),
   dashboardOpen: (route) => messageService.sendMessage("pri(app.dashboardOpen)", { route }),
   onboardOpen: () => messageService.sendMessage("pri(app.onboardOpen)"),
   popupOpen: () => messageService.sendMessage("pri(app.popupOpen)"),

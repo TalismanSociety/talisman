@@ -6,8 +6,8 @@ import { useIsFeatureEnabled } from "@ui/hooks/useFeatures"
 import { useCallback } from "react"
 import { useTranslation } from "react-i18next"
 
-import { useBuyTokensModal } from "../Asset/Buy/BuyTokensModalContext"
-import { useCopyAddressModal } from "../CopyAddress"
+import { useBuyTokensModal } from "../../Asset/Buy/BuyTokensModalContext"
+import { useCopyAddressModal } from "../../CopyAddress"
 
 const ANALYTICS_PAGE: AnalyticsPage = {
   container: "Fullscreen",

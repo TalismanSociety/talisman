@@ -20,7 +20,7 @@ type LedgerCreationInputs = {
   accounts: LedgerAccountDef[]
 }
 
-const useAddLedgerAccountProvider = () => {
+const useAddLedgerAccountProvider = ({ onSuccess }: { onSuccess: (address: string) => void }) => {
   const [params] = useSearchParams()
   const [data, setData] = useState<Partial<LedgerCreationInputs>>(() => ({
     type: params.get("type") as AccountAddressType,
@@ -57,7 +57,7 @@ const useAddLedgerAccountProvider = () => {
     [chain?.genesisHash, data.type]
   )
 
-  return { data, updateData, importAccounts }
+  return { data, updateData, importAccounts, onSuccess }
 }
 
 export const [AddLedgerAccountProvider, useAddLedgerAccount] = provideContext(

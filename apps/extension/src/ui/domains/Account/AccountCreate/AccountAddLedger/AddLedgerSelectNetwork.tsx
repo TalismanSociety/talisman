@@ -4,7 +4,6 @@ import { yupResolver } from "@hookform/resolvers/yup"
 import { HeaderBlock } from "@talisman/components/HeaderBlock"
 import { Spacer } from "@talisman/components/Spacer"
 import { classNames } from "@talismn/util"
-import { DashboardLayout } from "@ui/apps/dashboard/layout/DashboardLayout"
 import { AccountTypeSelector } from "@ui/domains/Account/AccountTypeSelector"
 import { ChainLogo } from "@ui/domains/Asset/ChainLogo"
 import { useLedgerChains } from "@ui/hooks/ledger/useLedgerChains"
@@ -105,61 +104,59 @@ export const AddLedgerSelectNetwork = () => {
   const showStep2 = accountType === "ethereum" || (accountType === "sr25519" && chainId)
 
   return (
-    <DashboardLayout withBack centered>
-      <form className="flex h-[53.4rem] max-h-screen flex-col" onSubmit={handleSubmit(submit)}>
-        <div className="flex-grow">
-          <HeaderBlock
-            title={t("Import from Ledger")}
-            text={t("What type of account would you like to import ?")}
-          />
-          <Spacer small />
-          <AccountTypeSelector defaultType={accountType} onChange={handleTypeChange} />
-          {accountType === "sr25519" && (
+    <form className="flex h-[53.4rem] max-h-screen flex-col" onSubmit={handleSubmit(submit)}>
+      <div className="flex-grow">
+        <HeaderBlock
+          title={t("Import from Ledger")}
+          text={t("What type of account would you like to import ?")}
+        />
+        <Spacer small />
+        <AccountTypeSelector defaultType={accountType} onChange={handleTypeChange} />
+        {accountType === "sr25519" && (
+          <>
+            <h2 className="mb-8 mt-12 text-base">{t("Step 1")}</h2>
+            <Dropdown
+              propertyKey="id"
+              items={ledgerChains}
+              value={chain}
+              placeholder={t("Select a network")}
+              renderItem={renderOption}
+              onChange={handleNetworkChange}
+            />
+            <p className="text-body-secondary mt-6">
+              {t("Please note: a Ledger account can only be used on a single network.")}
+            </p>
+          </>
+        )}
+        <div className={classNames("mt-12 h-[20rem]", showStep2 ? "visible" : "invisible")}>
+          {chainId && accountType === "sr25519" && (
             <>
-              <h2 className="mb-8 mt-12 text-base">{t("Step 1")}</h2>
-              <Dropdown
-                propertyKey="id"
-                items={ledgerChains}
-                value={chain}
-                placeholder={t("Select a network")}
-                renderItem={renderOption}
-                onChange={handleNetworkChange}
+              <h2 className="mb-8 mt-0 text-base">{t("Step 2")}</h2>
+              <ConnectLedgerSubstrate
+                className="min-h-[11rem]"
+                onReadyChanged={setIsLedgerReady}
+                chainId={chainId}
               />
-              <p className="text-body-secondary mt-6">
-                {t("Please note: a Ledger account can only be used on a single network.")}
-              </p>
             </>
           )}
-          <div className={classNames("mt-12 h-[20rem]", showStep2 ? "visible" : "invisible")}>
-            {chainId && accountType === "sr25519" && (
-              <>
-                <h2 className="mb-8 mt-0 text-base">{t("Step 2")}</h2>
-                <ConnectLedgerSubstrate
-                  className="min-h-[11rem]"
-                  onReadyChanged={setIsLedgerReady}
-                  chainId={chainId}
-                />
-              </>
-            )}
-            {accountType === "ethereum" && (
-              <ConnectLedgerEthereum className="mt-14" onReadyChanged={setIsLedgerReady} />
-            )}
-          </div>
+          {accountType === "ethereum" && (
+            <ConnectLedgerEthereum className="mt-14" onReadyChanged={setIsLedgerReady} />
+          )}
         </div>
-        {!!accountType && (
-          <div className="flex justify-end">
-            <Button
-              className="w-[24rem]"
-              type="submit"
-              primary
-              disabled={!isLedgerReady || !isValid}
-              processing={isSubmitting}
-            >
-              {t("Continue")}
-            </Button>
-          </div>
-        )}
-      </form>
-    </DashboardLayout>
+      </div>
+      {!!accountType && (
+        <div className="flex justify-end">
+          <Button
+            className="w-[24rem]"
+            type="submit"
+            primary
+            disabled={!isLedgerReady || !isValid}
+            processing={isSubmitting}
+          >
+            {t("Continue")}
+          </Button>
+        </div>
+      )}
+    </form>
   )
 }

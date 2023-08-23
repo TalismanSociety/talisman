@@ -1,8 +1,13 @@
 import { classNames } from "@talismn/util"
 import { CSSProperties, FC, memo, useEffect, useMemo, useRef, useState } from "react"
 import { useMeasure, useMouse } from "react-use"
+import { UseMeasureRect } from "react-use/lib/useMeasure"
 
-import { MYSTICAL_PHYSICS_V3, MysticalPhysicsV3 } from "./MysticalPhysicsV3"
+import {
+  MYSTICAL_PHYSICS_V3,
+  MysticalPhysicsV3,
+  MysticalPhysicsV3NoAcolyte,
+} from "./MysticalPhysicsV3"
 import { ParentSize, useCelestialArtifact } from "./useCelestialArtifact"
 import { useWindowHovered } from "./useWindowHovered"
 
@@ -76,7 +81,6 @@ const CelestialArtifacts: FC<{
 }> = ({ size, config, acolyte }) => {
   const artifactKeys = useMemo(() => Array.from(Array(config.artifacts).keys()), [config.artifacts])
   if (!size.width || !size.height) return null
-
   return (
     <>
       {artifactKeys.map((i) => (
@@ -99,14 +103,22 @@ const CelestialArtifacts: FC<{
   )
 }
 
-export const MysticalBackgroundV3 = ({
-  className,
-  config = MYSTICAL_PHYSICS_V3,
-}: {
-  config?: MysticalPhysicsV3
+type MysticalBackgroundInnerProps = {
+  config: MysticalPhysicsV3NoAcolyte | MysticalPhysicsV3
+  viewConfig: {
+    style: { transform: string }
+    viewBox: string
+    size: UseMeasureRect
+  }
   className?: string
-}) => {
-  const [refSize, size] = useMeasure<HTMLDivElement>()
+}
+
+export const MysticalBackgroundV3WithAcolyte = ({
+  className,
+  config,
+  viewConfig,
+}: MysticalBackgroundInnerProps) => {
+  const { size, viewBox, style } = viewConfig
   const refMouseLocation = useRef<SVGSVGElement>(null)
   const { elX, elY, elW, elH } = useMouse(refMouseLocation)
 
@@ -120,21 +132,70 @@ export const MysticalBackgroundV3 = ({
       ? { x: elX, y: elY }
       : undefined
 
+  return (
+    <svg
+      ref={refMouseLocation}
+      width={size.width}
+      height={size.height}
+      viewBox={viewBox}
+      className={classNames(className)}
+      style={style}
+    >
+      <CelestialArtifacts config={config} size={size} acolyte={acolyte} />
+    </svg>
+  )
+}
+
+export const MysticalBackgroundV3NoAcolyte = ({
+  className,
+  config,
+  viewConfig,
+}: MysticalBackgroundInnerProps) => {
+  const { size, viewBox, style } = viewConfig
+
+  return (
+    <svg
+      width={size.width}
+      height={size.height}
+      viewBox={viewBox}
+      className={classNames(className)}
+      style={style}
+    >
+      <CelestialArtifacts config={config} size={size} />
+    </svg>
+  )
+}
+
+export const MysticalBackgroundV3 = ({
+  className,
+  config,
+}: {
+  config?: Partial<MysticalPhysicsV3>
+  className?: string
+}) => {
+  const mergedConfig = config ? { ...MYSTICAL_PHYSICS_V3, ...config } : MYSTICAL_PHYSICS_V3
+
+  const [refSize, size] = useMeasure<HTMLDivElement>()
+
   const viewBox = useMemo(() => `0 0 ${size.width} ${size.height}`, [size.width, size.height])
-  const style = useMemo(() => ({ transform: `blur(${config.blur}ptx)` }), [config.blur])
+  const style = useMemo(() => ({ transform: `blur(${mergedConfig.blur}ptx)` }), [mergedConfig.blur])
 
   return (
     <div ref={refSize} className={className}>
-      <svg
-        ref={refMouseLocation}
-        width={size.width}
-        height={size.height}
-        viewBox={viewBox}
-        className={classNames(className)}
-        style={style}
-      >
-        <CelestialArtifacts config={config} size={size} acolyte={acolyte} />
-      </svg>
+      {!mergedConfig.withAcolyte && (
+        <MysticalBackgroundV3NoAcolyte
+          viewConfig={{ style, viewBox, size }}
+          className={className}
+          config={mergedConfig}
+        />
+      )}
+      {mergedConfig.withAcolyte && (
+        <MysticalBackgroundV3WithAcolyte
+          viewConfig={{ style, viewBox, size }}
+          className={className}
+          config={mergedConfig}
+        />
+      )}
     </div>
   )
 }

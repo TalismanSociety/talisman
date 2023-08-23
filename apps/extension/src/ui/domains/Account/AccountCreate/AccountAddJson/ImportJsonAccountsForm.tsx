@@ -15,7 +15,6 @@ import { AccountIcon } from "@ui/domains/Account/AccountIcon"
 import { AccountTypeIcon } from "@ui/domains/Account/AccountTypeIcon"
 import Fiat from "@ui/domains/Asset/Fiat"
 import { TokensAndFiat } from "@ui/domains/Asset/TokensAndFiat"
-import { useSelectAccountAndNavigate } from "@ui/hooks/useSelectAccountAndNavigate"
 import { FC, useCallback, useMemo, useState } from "react"
 import { Trans, useTranslation } from "react-i18next"
 import { Button, Checkbox, Tooltip, TooltipContent, TooltipTrigger } from "talisman-ui"
@@ -141,7 +140,9 @@ const JsonAccount: FC<{ account: JsonImportAccount; onSelect: (select: boolean) 
   )
 }
 
-export const ImportJsonAccountsForm: FC = () => {
+export const ImportJsonAccountsForm: FC<{ onSuccess: (address: string) => void }> = ({
+  onSuccess,
+}) => {
   const { t } = useTranslation("admin")
 
   const {
@@ -166,7 +167,6 @@ export const ImportJsonAccountsForm: FC = () => {
     [selectAccount]
   )
 
-  const { setAddress } = useSelectAccountAndNavigate("/portfolio")
   const [isImporting, setIsImporting] = useState(false)
 
   const handleImportClick = useCallback(async () => {
@@ -188,7 +188,7 @@ export const ImportJsonAccountsForm: FC = () => {
 
     try {
       const addresses = await importAccounts()
-      setAddress(addresses[0])
+      onSuccess(addresses[0])
       notifyUpdate(notificationId, {
         type: "success",
         title: t("Accounts imported", { count }),
@@ -202,7 +202,7 @@ export const ImportJsonAccountsForm: FC = () => {
       })
     }
     setIsImporting(false)
-  }, [accounts, importAccounts, setAddress, t])
+  }, [accounts, importAccounts, onSuccess, t])
 
   const alreadyImported = useMemo(() => {
     return !accounts.filter((a) => !a.isExisting && a.isPrivateKeyAvailable).length
