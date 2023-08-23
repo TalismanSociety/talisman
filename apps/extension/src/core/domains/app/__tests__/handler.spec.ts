@@ -193,14 +193,15 @@ describe("App handler when password is trimmed", () => {
       passConfirm: password.trim(),
     })
 
-    mnemonicId = Object.keys(await extensionStores.seedPhrase.get())[0]
-
     await extensionStores.password.set({ isTrimmed: true })
 
     await messageSender("pri(accounts.create)", {
       name: "Test Polkadot Account",
       type: "sr25519",
     })
+
+    mnemonicId = Object.keys(await extensionStores.seedPhrase.get())[0]
+
     await extensionStores.app.setOnboarded()
 
     initialStoreData = await getLocalStorage()
