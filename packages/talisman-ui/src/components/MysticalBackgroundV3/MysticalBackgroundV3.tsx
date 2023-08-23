@@ -9,22 +9,15 @@ const CelestialArtifact = memo(
   ({
     parentSize,
     config,
-    x,
-    y,
     color,
   }: {
     parentSize: ParentSize
     config: MysticalPhysicsV3
-
-    // force target position if this artifact is an acolyte
-    x?: number
-    y?: number
-
     // force color
     color?: string
   }) => {
     const [id] = useState(() => crypto.randomUUID())
-    const artifact = useCelestialArtifact(config, parentSize, x, y, color)
+    const artifact = useCelestialArtifact(config, parentSize, color)
 
     const refInitialized = useRef(false)
 
