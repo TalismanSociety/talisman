@@ -57,7 +57,10 @@ export const ContextMenuItem: FC<ButtonHTMLAttributes<HTMLButtonElement>> = ({
       type="button"
       {...props}
       onClick={handleClick}
-      className={classNames("hover:bg-grey-800 rounded-xs h-20 p-6 text-left", className)}
+      className={classNames(
+        "enabled:hover:bg-grey-800 disabled:text-body-disabled rounded-xs h-20 p-6 text-left",
+        className
+      )}
     />
   )
 }
