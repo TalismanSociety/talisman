@@ -80,18 +80,23 @@ export default class AppHandler extends ExtensionHandler {
     this.stores.password.setPassword(transformedPw)
     await this.stores.password.set({ isTrimmed: false, isHashed: true, salt, secret, check })
 
-    const { pair } = keyring.addUri(mnemonic, transformedPw, {
-      name: "My Polkadot Account",
-      origin: mnemonic ? AccountTypes.SEED_STORED : AccountTypes.TALISMAN,
-    })
     // will conflict with onboarding PR, delete this line when merged
-    await this.stores.seedPhrase.add(
+    const resMnemonic = await this.stores.seedPhrase.add(
       "Talisman Recovery Phrase",
       mnemonic,
       transformedPw,
       source,
       confirmed
     )
+    if (!resMnemonic.ok) throw Error(resMnemonic.val)
+    const derivedMnemonicId = resMnemonic.val
+
+    const { pair } = keyring.addUri(mnemonic, transformedPw, {
+      name: "My Polkadot Account",
+      origin: mnemonic ? AccountTypes.SEED_STORED : AccountTypes.TALISMAN,
+      derivedMnemonicId,
+      derivationPath: "",
+    })
 
     try {
       // also derive a first ethereum account
@@ -103,6 +108,7 @@ export default class AppHandler extends ExtensionHandler {
           name: `My Ethereum Account`,
           origin: AccountTypes.DERIVED,
           parent: pair.address,
+          derivedMnemonicId,
           derivationPath,
         },
         "ethereum"
