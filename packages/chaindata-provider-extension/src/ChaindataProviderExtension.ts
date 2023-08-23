@@ -16,7 +16,14 @@ import { PromiseExtended, Transaction, TransactionMode, liveQuery } from "dexie"
 import { Observable, from } from "rxjs"
 
 import { addCustomChainRpcs } from "./addCustomChainRpcs"
-import { fetchChains, fetchEvmNetwork, fetchEvmNetworks, fetchToken, fetchTokens } from "./graphql"
+import {
+  fetchChain,
+  fetchChains,
+  fetchEvmNetwork,
+  fetchEvmNetworks,
+  fetchToken,
+  fetchTokens,
+} from "./graphql"
 import { fetchInitChains, fetchInitEvmNetworks, fetchInitTokens } from "./init"
 import log from "./log"
 import { isITokenPartial, isToken, parseTokensResponse } from "./parseTokensResponse"
@@ -489,6 +496,11 @@ export class ChaindataProviderExtension implements ChaindataProvider {
 
       return false
     }
+  }
+
+  async getIsBuiltInChain(chainId: ChainId) {
+    const chain = await fetchChain(chainId)
+    return !!chain
   }
 
   async getIsBuiltInEvmNetwork(evmNetworkId: EvmNetworkId) {

@@ -17,7 +17,7 @@ export type RequestChainGenerateQrUpdateNetworkMetadata = {
 export type RequestUpsertCustomChain = {
   id: ChainId
   isTestnet: boolean
-  genesisHash: `0x${string}`
+  genesisHash: `0x${string}` | null
   // prefix: number | null
   name: string
   // themeColor: string | null
@@ -28,10 +28,10 @@ export type RequestUpsertCustomChain = {
   // specVersion: string
   nativeTokenSymbol: string
   nativeTokenDecimals: number
-  nativeTokenED: number
+  // nativeTokenED: string
   nativeTokenCoingeckoId: string | null
   nativeTokenLogoUrl: string | null
-  accountFormat: string
+  accountFormat: string | null
   subscanUrl: string | null
   rpcs: { url: string }[]
 }

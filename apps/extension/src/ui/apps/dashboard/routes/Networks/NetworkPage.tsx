@@ -38,7 +38,7 @@ export const NetworkPage = () => {
 
   return (
     <DashboardLayout analytics={ANALYTICS_PAGE} withBack centered>
-      {isChain && <SubNetworkForm />}
+      {isChain && <SubNetworkForm chainId={id} onSubmitted={handleSubmitted} />}
       {isEvmNetwork && <EvmNetworkForm evmNetworkId={id} onSubmitted={handleSubmitted} />}
     </DashboardLayout>
   )
