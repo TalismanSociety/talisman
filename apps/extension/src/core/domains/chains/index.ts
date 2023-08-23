@@ -1,1 +1,1 @@
-export { chainStore } from "./store"
+export { ChainsHandler } from "./handler"

@@ -188,6 +188,9 @@ export const api: MessageTypes = {
 
   // chain message types
   chains: (cb) => messageService.subscribe("pri(chains.subscribe)", null, cb),
+  chainUpsert: (chain) => messageService.sendMessage("pri(chains.upsert)", chain),
+  chainRemove: (id) => messageService.sendMessage("pri(chains.remove)", { id }),
+  chainReset: (id) => messageService.sendMessage("pri(chains.reset)", { id }),
   generateChainSpecsQr: (genesisHash) =>
     messageService.sendMessage("pri(chains.generateQr.addNetworkSpecs)", { genesisHash }),
   generateChainMetadataQr: (genesisHash, specVersion) =>

@@ -1,4 +1,3 @@
-import { HexString } from "@polkadot/util/types"
 import { ChevronDownIcon } from "@talismn/icons"
 import { classNames } from "@talismn/util"
 import useChain from "@ui/hooks/useChain"
@@ -33,7 +32,7 @@ export const qrCodeLogoForSource = (source: QrCodeSource) =>
     ? novaLogoSvg
     : undefined
 
-export const useQrCodeSourceSelectorState = (genesisHash?: HexString) => {
+export const useQrCodeSourceSelectorState = (genesisHash?: string) => {
   // calculate the list of available sources
   const chain = useChainByGenesisHash(genesisHash)
   const verifierCertificateMnemonic = useHasVerifierCertificateMnemonic()

@@ -16,8 +16,7 @@ export const RemoveSubNetworkButton: FC<{ chain: Chain | CustomChain }> = ({ cha
   const handleConfirmRemove = useCallback(async () => {
     if (!chain) return
     try {
-      // TODO: Make the api request
-      // await api.ethNetworkRemove(chain.id.toString())
+      await api.chainRemove(chain.id)
       navigate("/networks?type=polkadot")
     } catch (err) {
       notify({

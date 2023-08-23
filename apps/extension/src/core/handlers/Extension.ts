@@ -5,6 +5,7 @@ import { AccountType } from "@core/domains/accounts/types"
 import AppHandler from "@core/domains/app/handler"
 import { featuresStore } from "@core/domains/app/store.features"
 import { BalancesHandler } from "@core/domains/balances"
+import { ChainsHandler } from "@core/domains/chains"
 import { EncryptHandler } from "@core/domains/encrypt"
 import { EthHandler } from "@core/domains/ethereum"
 import { MetadataHandler } from "@core/domains/metadata"
@@ -20,7 +21,6 @@ import { ExtensionStore } from "@core/handlers/stores"
 import { unsubscribe } from "@core/handlers/subscriptions"
 import { talismanAnalytics } from "@core/libs/Analytics"
 import { ExtensionHandler } from "@core/libs/Handler"
-import { generateQrAddNetworkSpecs, generateQrUpdateNetworkMetadata } from "@core/libs/QrGenerator"
 import { log } from "@core/log"
 import { isTalismanHostname } from "@core/page"
 import { MessageTypes, RequestType, ResponseType } from "@core/types"
@@ -29,7 +29,7 @@ import { awaitKeyringLoaded } from "@core/util/awaitKeyringLoaded"
 import { CONFIG_RATE_LIMIT_ERROR, getConfig } from "@core/util/getConfig"
 import { fetchHasSpiritKey } from "@core/util/hasSpiritKey"
 import keyring from "@polkadot/ui-keyring"
-import { assert, u8aToHex } from "@polkadot/util"
+import { assert } from "@polkadot/util"
 import * as Sentry from "@sentry/browser"
 import { db as balancesDb } from "@talismn/balances"
 import { liveQuery } from "dexie"
@@ -48,6 +48,7 @@ export default class Extension extends ExtensionHandler {
     // routing to sub-handlers
     this.#routes = {
       accounts: new AccountsHandler(stores),
+      chains: new ChainsHandler(stores),
       app: new AppHandler(stores),
       assets: new AssetTransferHandler(stores),
       balances: new BalancesHandler(stores),
@@ -243,14 +244,6 @@ export default class Extension extends ExtensionHandler {
     await this.stores.app.set({ needsSpiritKeyUpdate: false })
   }
 
-  private async validateVaultVerifierCertificateMnemonic() {
-    const vaultMnemoicId = await this.stores.app.get("vaultVerifierCertificateMnemonicId")
-    assert(vaultMnemoicId, "No Polkadot Vault Verifier Certificate Mnemonic set")
-    const vaultCipher = await this.stores.mnemonics.get(vaultMnemoicId)
-    assert(vaultCipher, "No Polkadot Vault Verifier Certificate Mnemonic found")
-    return true
-  }
-
   public async handle<TMessageType extends MessageTypes>(
     id: string,
     type: TMessageType,
@@ -283,30 +276,7 @@ export default class Extension extends ExtensionHandler {
     // Then try remaining which are present in this class
     // --------------------------------------------------------------------
     switch (type) {
-      // --------------------------------------------------------------------
-      // chain handlers -----------------------------------------------------
-      // --------------------------------------------------------------------
-      case "pri(chains.subscribe)":
-        return this.stores.chains.hydrateStore()
-
-      case "pri(chains.generateQr.addNetworkSpecs)": {
-        await this.validateVaultVerifierCertificateMnemonic()
-
-        const { genesisHash } = request as RequestType<"pri(chains.generateQr.addNetworkSpecs)">
-        const data = await generateQrAddNetworkSpecs(genesisHash)
-        // serialize as hex for transfer
-        return u8aToHex(data)
-      }
-
-      case "pri(chains.generateQr.updateNetworkMetadata)": {
-        await this.validateVaultVerifierCertificateMnemonic()
-
-        const { genesisHash, specVersion } =
-          request as RequestType<"pri(chains.generateQr.updateNetworkMetadata)">
-        const data = await generateQrUpdateNetworkMetadata(genesisHash, specVersion)
-        // serialize as hex for transfer
-        return u8aToHex(data)
-      }
+      // NOTE: The remaining message handlers which used to be here have now all been moved into subhandlers :)
 
       default:
         throw new Error(`Unable to handle message of type ${type}`)

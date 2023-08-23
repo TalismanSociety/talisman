@@ -17,7 +17,7 @@ export type RequestChainGenerateQrUpdateNetworkMetadata = {
 export type RequestUpsertCustomChain = {
   id: ChainId
   isTestnet: boolean
-  genesisHash: `0x${string}` | null
+  genesisHash: string | null
   // prefix: number | null
   name: string
   // themeColor: string | null
@@ -39,9 +39,9 @@ export type RequestUpsertCustomChain = {
 export interface ChainsMessages {
   // chain message signatures
   "pri(chains.subscribe)": [null, boolean, boolean]
+  "pri(chains.upsert)": [RequestUpsertCustomChain, boolean]
   "pri(chains.remove)": [RequestIdOnly, boolean]
   "pri(chains.reset)": [RequestIdOnly, boolean]
-  "pri(chains.upsert)": [RequestUpsertCustomChain, boolean]
   "pri(chains.generateQr.addNetworkSpecs)": [RequestChainGenerateQrAddNetworkSpecs, HexString]
   "pri(chains.generateQr.updateNetworkMetadata)": [
     RequestChainGenerateQrUpdateNetworkMetadata,
