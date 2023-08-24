@@ -66,7 +66,7 @@ export const WelcomePage = () => {
             </div>
           </div>
           <div className="welcome-subtitle text-[2rem] lg:text-[2.8rem]">
-            {t("Talisman supports Polkadot, Kusama, Ethereum, and more")}
+            {t("Talisman supports Polkadot, Ethereum, and more")}
           </div>
         </div>
         <div className="welcome-button flex w-[44rem] flex-col gap-8">
