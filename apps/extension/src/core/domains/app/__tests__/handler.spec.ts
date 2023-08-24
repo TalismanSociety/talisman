@@ -13,6 +13,7 @@ import { assert } from "@polkadot/util"
 import { cryptoWaitReady } from "@polkadot/util-crypto"
 import Browser from "webextension-polyfill"
 
+import { TEST_MNEMONIC } from "../../../../../tests/constants"
 import { getMessageSenderFn } from "../../../../../tests/util"
 
 jest.mock("@talismn/chaindata-provider-extension/src/graphql")
@@ -53,6 +54,8 @@ describe("App handler when password is not trimmed", () => {
     await messageSender("pri(accounts.create)", {
       name: "Test Polkadot Account",
       type: "sr25519",
+      mnemonic: TEST_MNEMONIC,
+      confirmed: false,
     })
 
     mnemonicId = Object.keys(await extensionStores.seedPhrase.get())[0]
@@ -198,6 +201,8 @@ describe("App handler when password is trimmed", () => {
     await messageSender("pri(accounts.create)", {
       name: "Test Polkadot Account",
       type: "sr25519",
+      mnemonic: TEST_MNEMONIC,
+      confirmed: false,
     })
 
     mnemonicId = Object.keys(await extensionStores.seedPhrase.get())[0]

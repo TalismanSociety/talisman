@@ -159,11 +159,20 @@ export interface RequestAccountRename {
   address: string
   name: string
 }
-export interface RequestAccountCreate {
+
+export type RequestAccountCreateOptions =
+  | {
+      mnemonicId: string
+    }
+  | {
+      mnemonic: string
+      confirmed: boolean
+    }
+
+export type RequestAccountCreate = {
   name: string
   type: AccountAddressType
-  mnemonicId?: string
-}
+} & RequestAccountCreateOptions
 
 export type VerifierCertificateType = "new" | "talisman"
 

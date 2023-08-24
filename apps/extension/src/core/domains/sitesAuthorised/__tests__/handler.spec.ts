@@ -9,6 +9,7 @@ import keyring from "@polkadot/ui-keyring"
 import { cryptoWaitReady } from "@polkadot/util-crypto"
 import Browser from "webextension-polyfill"
 
+import { TEST_MNEMONIC } from "../../../../../tests/constants"
 import { getMessageSenderFn } from "../../../../../tests/util"
 import { AuthorizedSites } from "../types"
 
@@ -43,6 +44,8 @@ describe("Sites Authorised Handler", () => {
     await messageSender("pri(accounts.create)", {
       name: "Test Polkadot Account",
       type: "sr25519",
+      mnemonic: TEST_MNEMONIC,
+      confirmed: false,
     })
 
     sitesStore = await extensionStores.sites.get()
@@ -61,6 +64,8 @@ describe("Sites Authorised Handler", () => {
     const newAddress = await messageSender("pri(accounts.create)", {
       name: "TestAdd",
       type: "sr25519",
+      mnemonic: TEST_MNEMONIC,
+      confirmed: false,
     })
 
     const webApp = await extensionStores.sites.get(TALISMAN_WEB_APP_DOMAIN)
@@ -97,6 +102,8 @@ describe("Sites Authorised Handler", () => {
     const ethAddress = await messageSender("pri(accounts.create)", {
       name: "TestAddAEth",
       type: "ethereum",
+      mnemonic: TEST_MNEMONIC,
+      confirmed: false,
     })
 
     await extensionStores.sites.updateSite(TALISMAN_WEB_APP_DOMAIN, {

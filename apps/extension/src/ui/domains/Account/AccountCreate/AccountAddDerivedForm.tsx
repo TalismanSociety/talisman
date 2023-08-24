@@ -1,4 +1,5 @@
-import { AccountAddressType } from "@core/domains/accounts/types"
+import { AccountAddressType, RequestAccountCreateOptions } from "@core/domains/accounts/types"
+import { log } from "@core/log"
 import { yupResolver } from "@hookform/resolvers/yup"
 import { notify, notifyUpdate } from "@talisman/components/Notifications"
 import { Spacer } from "@talisman/components/Spacer"
@@ -8,19 +9,42 @@ import { sleep } from "@talismn/util"
 import { api } from "@ui/api"
 import { AccountTypeSelector } from "@ui/domains/Account/AccountTypeSelector"
 import useAccounts from "@ui/hooks/useAccounts"
-import { useCallback, useEffect, useMemo } from "react"
+import { useMnemonics } from "@ui/hooks/useMnemonics"
+import { FC, useCallback, useEffect, useMemo, useState } from "react"
 import { useForm } from "react-hook-form"
 import { useTranslation } from "react-i18next"
 import { useSearchParams } from "react-router-dom"
-import { Button, FormFieldContainer, FormFieldInputText } from "talisman-ui"
+import { Button, Dropdown, FormFieldContainer, FormFieldInputText } from "talisman-ui"
 import * as yup from "yup"
+
+import {
+  MnemonicCreateModal,
+  MnemonicCreateModalProvider,
+  useMnemonicCreateModal,
+} from "../MnemonicCreateModal"
+
+type MnemonicOption = {
+  value: string
+  label: string
+  accountsCount?: number
+}
+
+const GENERATE_MNEMONIC_OPTION = {
+  value: "new",
+  label: "Generate new recovery phrase",
+  accountsCount: undefined,
+}
 
 type FormData = {
   name: string
   type: AccountAddressType
 }
 
-export const AccountAddDerivedForm = ({ onSuccess }: { onSuccess: (address: string) => void }) => {
+type AccountAddDerivedFormProps = {
+  onSuccess: (address: string) => void
+}
+
+const AccountAddDerivedFormInner: FC<AccountAddDerivedFormProps> = ({ onSuccess }) => {
   const { t } = useTranslation("admin")
   // get type paramter from url
   const [params] = useSearchParams()
@@ -53,8 +77,40 @@ export const AccountAddDerivedForm = ({ onSuccess }: { onSuccess: (address: stri
     defaultValues: { type: urlParamType },
   })
 
+  const mnemonics = useMnemonics()
+  const mnemonicOptions: MnemonicOption[] = useMemo(
+    () => [
+      ...mnemonics
+        .map((m) => ({
+          label: m.name,
+          value: m.id,
+          accountsCount: allAccounts.filter((a) => a.derivedMnemonicId === m.id).length,
+        }))
+        .sort((a, b) => a.label.localeCompare(b.label)),
+      GENERATE_MNEMONIC_OPTION,
+    ],
+    [allAccounts, mnemonics]
+  )
+  const [selectedMnemonic, setSelectedMnemonic] = useState<MnemonicOption | null>(
+    () => mnemonicOptions[0]
+  )
+
+  const { generateMnemonic } = useMnemonicCreateModal()
+
   const submit = useCallback(
     async ({ name, type }: FormData) => {
+      if (!selectedMnemonic) return
+
+      let options: RequestAccountCreateOptions
+
+      if (selectedMnemonic.value === "new") {
+        const mnemonicOptions = await generateMnemonic()
+        if (mnemonicOptions === null) return // cancelled
+        options = mnemonicOptions
+      } else {
+        options = { mnemonicId: selectedMnemonic.value }
+      }
+
       const notificationId = notify(
         {
           type: "processing",
@@ -64,12 +120,11 @@ export const AccountAddDerivedForm = ({ onSuccess }: { onSuccess: (address: stri
         { autoClose: false }
       )
 
-      // pause to prevent double notification
-      await sleep(1000)
-
       try {
-        const resultAddress = await api.accountCreate(name, type)
-        onSuccess(resultAddress)
+        // pause to prevent double notification
+        await sleep(1000)
+
+        onSuccess(await api.accountCreate(name, type, options))
 
         notifyUpdate(notificationId, {
           type: "success",
@@ -77,6 +132,7 @@ export const AccountAddDerivedForm = ({ onSuccess }: { onSuccess: (address: stri
           subtitle: name,
         })
       } catch (err) {
+        log.error("Failed to create account", err)
         notifyUpdate(notificationId, {
           type: "error",
           title: t("Error creating account"),
@@ -84,7 +140,7 @@ export const AccountAddDerivedForm = ({ onSuccess }: { onSuccess: (address: stri
         })
       }
     },
-    [onSuccess, t]
+    [generateMnemonic, onSuccess, selectedMnemonic, t]
   )
 
   const handleTypeChange = useCallback(
@@ -107,6 +163,16 @@ export const AccountAddDerivedForm = ({ onSuccess }: { onSuccess: (address: stri
       <AccountTypeSelector defaultType={urlParamType} onChange={handleTypeChange} />
       <Spacer small />
       <div className={classNames("transition-opacity", type ? "opacity-100" : "opacity-0")}>
+        {mnemonicOptions.length > 1 && (
+          <Dropdown
+            items={mnemonicOptions}
+            label={t("Recovery phrase to derive the new account from")}
+            propertyKey="value"
+            renderItem={(o) => o.label}
+            value={selectedMnemonic}
+            onChange={setSelectedMnemonic}
+          />
+        )}
         <FormFieldContainer error={errors.name?.message}>
           <FormFieldInputText
             {...register("name")}
@@ -130,5 +196,14 @@ export const AccountAddDerivedForm = ({ onSuccess }: { onSuccess: (address: stri
         </div>
       </div>
     </form>
+  )
+}
+
+export const AccountAddDerivedForm: FC<AccountAddDerivedFormProps> = ({ onSuccess }) => {
+  return (
+    <MnemonicCreateModalProvider>
+      <AccountAddDerivedFormInner onSuccess={onSuccess} />
+      <MnemonicCreateModal />
+    </MnemonicCreateModalProvider>
   )
 }

@@ -16,6 +16,7 @@ import keyring from "@polkadot/ui-keyring"
 import { cryptoWaitReady } from "@polkadot/util-crypto"
 import Browser from "webextension-polyfill"
 
+import { TEST_MNEMONIC } from "../../../tests/constants"
 import { getMessageSenderFn } from "../../../tests/util"
 import { signSubstrate } from "../domains/signing/requests"
 import { requestStore } from "../libs/requests/store"
@@ -77,6 +78,8 @@ describe("Extension", () => {
     const address = await messageSender("pri(accounts.create)", {
       name: "Test Polkadot Account",
       type: "sr25519",
+      mnemonic: TEST_MNEMONIC,
+      confirmed: false,
     })
     // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
     await extensionStores.sites.updateSite("localhost:3000", { addresses: [address] })
@@ -472,6 +475,8 @@ describe("Extension", () => {
     const newAddress = await messageSender("pri(accounts.create)", {
       name: "AutoAdd",
       type: "sr25519",
+      mnemonic: TEST_MNEMONIC,
+      confirmed: false,
     })
 
     const sites = await extensionStores.sites.get()

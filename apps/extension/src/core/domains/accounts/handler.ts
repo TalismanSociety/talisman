@@ -1,10 +1,5 @@
-import {
-  getNextDerivationPathForMnemonic,
-  getRootAccountForMnemonic,
-  sortAccounts,
-} from "@core/domains/accounts/helpers"
+import { getNextDerivationPathForMnemonic, sortAccounts } from "@core/domains/accounts/helpers"
 import type {
-  AccountJsonAny,
   RequestAccountCreate,
   RequestAccountCreateExternal,
   RequestAccountCreateFromJson,
@@ -32,12 +27,7 @@ import { getPrivateKey } from "@core/util/getPrivateKey"
 import { createPair } from "@polkadot/keyring"
 import keyring from "@polkadot/ui-keyring"
 import { assert } from "@polkadot/util"
-import {
-  ethereumEncode,
-  isEthereumAddress,
-  mnemonicGenerate,
-  mnemonicValidate,
-} from "@polkadot/util-crypto"
+import { ethereumEncode, isEthereumAddress, mnemonicValidate } from "@polkadot/util-crypto"
 import { addressFromMnemonic } from "@talisman/util/addressFromMnemonic"
 import { decodeAnyAddress, encodeAnyAddress, sleep } from "@talismn/util"
 import { combineLatest } from "rxjs"
@@ -46,7 +36,7 @@ import { SOURCES } from "../mnemonics/store"
 import { AccountsCatalogData, emptyCatalog } from "./store.catalog"
 
 export default class AccountsHandler extends ExtensionHandler {
-  private async accountCreate({ name, type, mnemonicId }: RequestAccountCreate): Promise<string> {
+  private async accountCreate({ name, type, ...options }: RequestAccountCreate): Promise<string> {
     const password = this.stores.password.getPassword()
     assert(password, "Not logged in")
 
@@ -54,55 +44,62 @@ export default class AccountsHandler extends ExtensionHandler {
     const existing = allAccounts.find((account) => account.meta?.name === name)
     assert(!existing, "An account with this name already exists")
 
-    const rootAccount = mnemonicId ? getRootAccountForMnemonic(mnemonicId, type) : false
-
-    let seed = mnemonicGenerate()
-    let derivedMnemonicId = mnemonicId
-    if (mnemonicId) {
-      const seedResult = await this.stores.seedPhrase.getSeed(mnemonicId, password)
-      if (seedResult.err) throw seedResult.val
-      if (!seedResult.val) throw new Error("Seed not stored locally")
-      seed = seedResult.val
+    let derivedMnemonicId: string
+    if ("mnemonicId" in options) {
+      derivedMnemonicId = options.mnemonicId
     } else {
-      const newSeedId = await this.stores.seedPhrase.add(
-        "Talisman Recovery Phrase",
-        seed,
+      const newMnemonicId = await this.stores.seedPhrase.add(
+        `${name} Recovery Phrase`,
+        options.mnemonic,
         password,
-        SOURCES.Generated
+        SOURCES.Generated,
+        options.confirmed
       )
-      if (newSeedId.err) throw new Error("Unable to store new seed")
-      derivedMnemonicId = newSeedId.val
+      if (newMnemonicId.err) throw new Error("Failed to store new mnemonic")
+      derivedMnemonicId = newMnemonicId.val
     }
 
-    const accountMeta = { derivedMnemonicId }
-    if (!rootAccount) {
-      const { pair } = keyring.addUri(seed, password, {
+    const mnemonicResult = await this.stores.seedPhrase.getSeed(derivedMnemonicId, password)
+    if (mnemonicResult.err) throw mnemonicResult.val
+    if (!mnemonicResult.val) throw new Error("Mnemonic not stored locally")
+
+    const { val: derivationPath, err } = getNextDerivationPathForMnemonic(mnemonicResult.val, type)
+    if (err) throw new Error(derivationPath)
+
+    const { pair } = keyring.addUri(
+      `${mnemonicResult.val}${derivationPath}`,
+      password,
+      {
         name,
-        origin: AccountTypes.TALISMAN,
-        ...accountMeta,
-      })
-      talismanAnalytics.capture("account create", { type, method: "parent" })
-      return pair.address
-    } else {
-      const { val: derivationPath, err } = getNextDerivationPathForMnemonic(seed, type)
-      if (err) throw new Error(derivationPath)
+        origin: AccountTypes.DERIVED,
+        derivedMnemonicId,
+        derivationPath,
+      },
+      type
+    )
 
-      const { pair } = keyring.addUri(
-        `${seed}${derivationPath}`,
-        password,
-        {
-          name,
-          origin: AccountTypes.DERIVED,
-          parent: rootAccount.address,
-          derivationPath,
-          ...accountMeta,
-        },
-        type
-      )
+    // const mnemonic = this.stores.seedPhrase.getSeed(derivedMnemonicId, password)
 
-      talismanAnalytics.capture("account create", { type, method: "derived" })
-      return pair.address
-    }
+    talismanAnalytics.capture("account create", { type, method: "derived" })
+    return pair.address
+
+    // const rootAccount =
+    //   "mnemonicId" in mnemonicOptions
+    //     ? getRootAccountForMnemonic(mnemonicOptions.mnemonicId, type)
+    //     : false
+
+    // const accountMeta = { derivedMnemonicId }
+    // if (!rootAccount) {
+    //   const { pair } = keyring.addUri(seed, password, {
+    //     name,
+    //     origin: AccountTypes.TALISMAN,
+    //     ...accountMeta,
+    //   })
+    //   talismanAnalytics.capture("account create", { type, method: "parent" })
+    //   return pair.address
+    // } else {
+
+    // }
   }
 
   private async accountCreateSeed({
@@ -127,7 +124,6 @@ export default class AccountsHandler extends ExtensionHandler {
 
     const meta: Record<string, unknown> = {
       name,
-      origin: AccountTypes.SEED, // find a better name
     }
 
     // suri could be a private key instead of a mnemonic
@@ -146,10 +142,13 @@ export default class AccountsHandler extends ExtensionHandler {
           true
         )
         if (result.ok) {
+          meta.origin = AccountTypes.SEED // find a better name
           meta.derivedMnemonicId = result.val
           meta.derivationPath = derivationPath
         } else throw new Error("Failed to store mnemonic", { cause: result.val })
       }
+    } else {
+      // meta.origin = "PRIVATE_KEY" // TODO
     }
 
     try {
