@@ -6,7 +6,7 @@ import { provideContext } from "@talisman/util/provideContext"
 import { classNames } from "@talismn/util"
 import { api } from "@ui/api"
 import { Mnemonic } from "@ui/domains/Account/Mnemonic"
-import { PasswordUnlock, usePasswordUnlock } from "@ui/domains/Account/PasswordUnlock"
+import { MnemonicUnlock, useMnemonicUnlock } from "@ui/domains/Account/MnemonicUnlock"
 import { Mnemonic as MnemonicInfo, useMnemonic, useMnemonics } from "@ui/hooks/useMnemonics"
 import { useSensitiveState } from "@ui/hooks/useSensitiveState"
 import { ChangeEventHandler, FC, useCallback, useEffect, useState } from "react"
@@ -46,15 +46,8 @@ const Description = () => {
 
 const MnemonicFormInner = ({ mnemonicId }: { mnemonicId: string }) => {
   const { t } = useTranslation()
-  const { password } = usePasswordUnlock()
+  const { mnemonic: secret } = useMnemonicUnlock()
   const mnemonic = useMnemonic(mnemonicId)
-
-  const [secret, setSecret] = useSensitiveState<string>()
-
-  useEffect(() => {
-    if (!password) return
-    api.mnemonicUnlock(mnemonicId, password).then(setSecret)
-  }, [password, setSecret, mnemonicId])
 
   const handleConfirmToggle: ChangeEventHandler<HTMLInputElement> = useCallback(
     async (e) => {
@@ -74,36 +67,28 @@ const MnemonicFormInner = ({ mnemonicId }: { mnemonicId: string }) => {
 
   return (
     <div className="flex grow flex-col">
-      {mnemonic && secret ? (
-        <>
-          <Mnemonic mnemonic={secret ?? ""} />
-          <div className="bg-grey-750 text-alert-warn mt-8 flex w-full items-center gap-6 rounded-sm p-4">
-            <div className="bg-alert-warn/10 flex flex-col justify-center rounded-full p-2">
-              <AlertTriangleIcon className="shrink-0 text-base" />
-            </div>
-            <div className="text-xs">
-              <p>
-                {t(
-                  "Never share your recovery phrase with anyone or enter your recovery phrase in any website. Talisman will never ask you to do it."
-                )}
-              </p>
-            </div>
-          </div>
-          <div className="bg-grey-900 mt-8 flex w-full flex-col justify-center rounded-sm p-8">
-            <Checkbox
-              onChange={handleConfirmToggle}
-              checked={mnemonic.confirmed}
-              className="text-body-secondary hover:text-body gap-8!"
-            >
-              {t("I have backed up my recovery phrase")}
-            </Checkbox>
-          </div>
-        </>
-      ) : (
-        <FadeIn className="mt-24 text-center">
-          <LoaderIcon className="animate-spin-slow text-body-disabled inline text-lg" />
-        </FadeIn>
-      )}
+      <Mnemonic mnemonic={secret ?? ""} />
+      <div className="bg-grey-750 text-alert-warn mt-8 flex w-full items-center gap-6 rounded-sm p-4">
+        <div className="bg-alert-warn/10 flex flex-col justify-center rounded-full p-2">
+          <AlertTriangleIcon className="shrink-0 text-base" />
+        </div>
+        <div className="text-xs">
+          <p>
+            {t(
+              "Never share your recovery phrase with anyone or enter your recovery phrase in any website. Talisman will never ask you to do it."
+            )}
+          </p>
+        </div>
+      </div>
+      <div className="mt-6 p-4">
+        <Checkbox
+          onChange={handleConfirmToggle}
+          checked={mnemonic?.confirmed}
+          className="text-body-secondary hover:text-body gap-8!"
+        >
+          {t("I have backed up my recovery phrase")}
+        </Checkbox>
+      </div>
     </div>
   )
 }
@@ -115,18 +100,19 @@ const MnemonicBackupForm: FC<{
   return (
     <div className={classNames("flex flex-col gap-12")}>
       <Description />
-      <div className="min-h-[18.6rem] transition-none">
-        <PasswordUnlock
-          className="flex w-full flex-col justify-center [&>form>button]:mt-[1.6rem]"
+      <div className="min-h-[18.6rem] grow">
+        <MnemonicUnlock
+          mnemonicId={mnemonic.id}
+          className="flex h-[18.6rem] w-full flex-col justify-between"
           buttonText={t("View Recovery Phrase")}
           title={
-            <span className="mb-[-0.8rem] text-sm">
+            <div className="text-body mb-10">
               {t("Enter your password to show your recovery phrase.")}
-            </span>
+            </div>
           }
         >
           <MnemonicFormInner mnemonicId={mnemonic.id} />
-        </PasswordUnlock>
+        </MnemonicUnlock>
       </div>
     </div>
   )
