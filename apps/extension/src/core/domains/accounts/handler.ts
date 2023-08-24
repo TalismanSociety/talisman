@@ -4,6 +4,7 @@ import {
   sortAccounts,
 } from "@core/domains/accounts/helpers"
 import type {
+  AccountJsonAny,
   RequestAccountCreate,
   RequestAccountCreateExternal,
   RequestAccountCreateFromJson,
@@ -124,30 +125,38 @@ export default class AccountsHandler extends ExtensionHandler {
     const mnemonic = splitIdx === -1 ? suri : suri.slice(0, splitIdx)
     const derivationPath = splitIdx === -1 ? "" : suri.slice(splitIdx)
 
-    let derivedMnemonicId = await this.stores.seedPhrase.getExistingId(mnemonic)
+    const meta: Record<string, unknown> = {
+      name,
+      origin: AccountTypes.SEED, // find a better name
+    }
 
-    if (!derivedMnemonicId) {
-      const result = await this.stores.seedPhrase.add(
-        `${name} Recovery Phrase`,
-        mnemonic,
-        password,
-        SOURCES.Imported,
-        true
-      )
-      if (result.ok) derivedMnemonicId = result.val
-      else throw new Error("Failed to store mnemonic", { cause: result.val })
+    // suri could be a private key instead of a mnemonic
+    if (mnemonicValidate(mnemonic)) {
+      const derivedMnemonicId = await this.stores.seedPhrase.getExistingId(mnemonic)
+
+      if (derivedMnemonicId) {
+        meta.derivedMnemonicId = derivedMnemonicId
+        meta.derivationPath = derivationPath
+      } else {
+        const result = await this.stores.seedPhrase.add(
+          `${name} Recovery Phrase`,
+          mnemonic,
+          password,
+          SOURCES.Imported,
+          true
+        )
+        if (result.ok) {
+          meta.derivedMnemonicId = result.val
+          meta.derivationPath = derivationPath
+        } else throw new Error("Failed to store mnemonic", { cause: result.val })
+      }
     }
 
     try {
       const { pair } = keyring.addUri(
         suri,
         password,
-        {
-          name,
-          origin: AccountTypes.DERIVED, // should we keep "SEED" instead ?
-          derivedMnemonicId,
-          derivationPath,
-        },
+        meta,
         type // if undefined, defaults to keyring's default (sr25519 atm)
       )
 
