@@ -22,7 +22,7 @@ import { AccountAddDcentWizard } from "./routes/AccountAdd/AccountAddDcentWizard
 import { AccountAddDerivedPage } from "./routes/AccountAdd/AccountAddDerivedPage"
 import { AccountAddJsonPage } from "./routes/AccountAdd/AccountAddJsonPage"
 import { AccountAddLedgerDashboardWizard } from "./routes/AccountAdd/AccountAddLedgerWizard"
-import { AccountAddQrWizard } from "./routes/AccountAdd/AccountAddQrWizard"
+import { AccountAddQrDashboardWizard } from "./routes/AccountAdd/AccountAddQrWizard"
 import { AccountAddSecretDashboardWizard } from "./routes/AccountAdd/AccountAddSecretWizard"
 import { AccountAddWatchedPage } from "./routes/AccountAdd/AccountAddWatchedPage"
 import { NetworkPage } from "./routes/Networks/NetworkPage"
@@ -96,7 +96,7 @@ const DashboardInner = () => {
             <Route path="json" element={<AccountAddJsonPage />} />
             <Route path="secret/*" element={<AccountAddSecretDashboardWizard />} />
             <Route path="ledger/*" element={<AccountAddLedgerDashboardWizard />} />
-            <Route path="qr/*" element={<AccountAddQrWizard />} />
+            <Route path="qr/*" element={<AccountAddQrDashboardWizard />} />
             <Route path="watched" element={<AccountAddWatchedPage />} />
             <Route path="dcent/*" element={<AccountAddDcentWizard />} />
             <Route path="*" element={<Navigate to="/accounts/add" replace />} />

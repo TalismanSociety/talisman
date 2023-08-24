@@ -1,5 +1,6 @@
 import { DashboardLayout } from "@ui/apps/dashboard/layout/DashboardLayout"
 
+import { AccountAddPageProps } from "../types"
 import { ConfigureAccount } from "./ConfigureAccount"
 import { ConfigureVerifierCertificateMnemonic } from "./ConfigureVerifierCertificateMnemonic"
 import { AccountAddQrProvider, useAccountAddQr } from "./context"
@@ -17,10 +18,8 @@ const WrappedAccountAddQr = () => {
   )
 }
 
-export const AccountAddQrWizard = () => {
-  return (
-    <AccountAddQrProvider>
-      <WrappedAccountAddQr />
-    </AccountAddQrProvider>
-  )
-}
+export const AccountAddQrWizard = ({ onSuccess }: AccountAddPageProps) => (
+  <AccountAddQrProvider onSuccess={onSuccess}>
+    <WrappedAccountAddQr />
+  </AccountAddQrProvider>
+)
