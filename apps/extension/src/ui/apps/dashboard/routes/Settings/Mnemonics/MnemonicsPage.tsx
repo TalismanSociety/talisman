@@ -8,6 +8,7 @@ import {
   CornerDownRightIcon,
   InfoIcon,
   MoreHorizontalIcon,
+  PolkadotVaultIcon,
   SeedIcon,
 } from "@talisman/theme/icons"
 import { classNames } from "@talismn/util"
@@ -43,7 +44,14 @@ import {
 
 const useMnemonicAccounts = (mnemonicId: string) => {
   const accounts = useAccounts("owned")
-  return accounts.filter((account) => account.derivedMnemonicId === mnemonicId)
+
+  return useMemo(
+    () =>
+      accounts
+        .filter((account) => account.derivedMnemonicId === mnemonicId)
+        .sort((a1, a2) => (a1.derivationPath ?? "")?.localeCompare(a2.derivationPath ?? "")),
+    [accounts, mnemonicId]
+  )
 }
 
 const AccountRow: FC<{ account: AccountJsonAny }> = ({ account }) => {
@@ -60,7 +68,9 @@ const AccountRow: FC<{ account: AccountJsonAny }> = ({ account }) => {
           <Address address={account.address} startCharCount={6} endCharCount={6} />
         </div>
       </div>
-      <div className="text-body-secondary flex flex-col text-xs">{account.derivationPath}</div>
+      <div className="text-body-secondary flex flex-col font-mono text-xs">
+        {account.derivationPath}
+      </div>
     </div>
   )
 }
@@ -130,7 +140,10 @@ const MnemonicRow: FC<{ mnemonic: Mnemonic }> = ({ mnemonic }) => {
           <SeedIcon className="text-body-secondary text-lg" />
         </div>
         <div className="flex grow flex-col gap-2 overflow-hidden">
-          <div className="text-body truncate text-base">{mnemonic.name}</div>
+          <div className="flex items-center gap-2">
+            <div className="text-body truncate text-base">{mnemonic.name}</div>
+            {isVerifier(mnemonic.id) && <PolkadotVaultIcon className="text-primary shrink-0" />}
+          </div>
           <div className="text-body-secondary flex items-center gap-2 text-xs leading-none">
             <AccountsStack accounts={accounts} />
             <div>{t("used by {{count}} accounts", { count: accounts.length })}</div>
@@ -229,6 +242,11 @@ export const MnemonicsPage = () => {
   const { t } = useTranslation("admin")
   const mnemonics = useMnemonics()
 
+  const sortedMnemonics = useMemo(
+    () => [...mnemonics].sort((m1, m2) => m1.name.localeCompare(m2.name)),
+    [mnemonics]
+  )
+
   return (
     <DashboardLayout centered withBack backTo="/settings">
       <MnemonicRenameModalProvider>
@@ -242,7 +260,7 @@ export const MnemonicsPage = () => {
               <Spacer large />
               <BackupReminder />
               <div className="flex flex-col gap-4">
-                {mnemonics.map((mnemonic) => (
+                {sortedMnemonics.map((mnemonic) => (
                   <MnemonicRow key={mnemonic.id} mnemonic={mnemonic} />
                 ))}
               </div>
