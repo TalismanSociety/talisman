@@ -104,7 +104,7 @@ export const AddLedgerSelectNetwork = () => {
   const showStep2 = accountType === "ethereum" || (accountType === "sr25519" && chainId)
 
   return (
-    <form className="flex h-[53.4rem] max-h-screen flex-col" onSubmit={handleSubmit(submit)}>
+    <form className="flex h-full max-h-screen flex-col" onSubmit={handleSubmit(submit)}>
       <div className="flex-grow">
         <HeaderBlock
           title={t("Import from Ledger")}
