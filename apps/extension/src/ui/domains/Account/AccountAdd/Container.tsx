@@ -114,7 +114,7 @@ const AccountCreateMethodButton = ({
 }
 
 const NewAccountMethodButtons = () => {
-  const { t } = useTranslation("onboard")
+  const { t } = useTranslation("admin")
   return (
     <>
       <AccountCreateMethodButton
@@ -134,7 +134,7 @@ const NewAccountMethodButtons = () => {
 }
 
 const ImportAccountMethodButtons = () => {
-  const { t } = useTranslation("onboard")
+  const { t } = useTranslation("admin")
   return (
     <>
       <AccountCreateMethodButton
@@ -155,7 +155,7 @@ const ImportAccountMethodButtons = () => {
 
 const ConnectAccountMethodButtons = () => {
   const isLedgerCapable = getIsLedgerCapable()
-  const { t } = useTranslation("onboard")
+  const { t } = useTranslation("admin")
   return (
     <>
       <AccountCreateMethodButton
@@ -177,9 +177,40 @@ const ConnectAccountMethodButtons = () => {
   )
 }
 
+const AddWatchedAccountButton = () => {
+  const { t } = useTranslation("admin")
+  const navigate = useNavigate()
+  const handleClick = useCallback(() => {
+    navigate("/accounts/add/watched")
+  }, [navigate])
+
+  return (
+    <div
+      tabIndex={-4}
+      role="button"
+      onClick={() => handleClick()}
+      onKeyUp={(e) => {
+        if (e.key === "Enter") handleClick()
+      }}
+      className="hover:text-grey-300 focus:text-grey-300 flex cursor-pointer flex-col items-center justify-center gap-4 rounded p-4 hover:bg-white hover:bg-opacity-10 focus:bg-white focus:bg-opacity-10"
+    >
+      <div className="text-body flex items-center gap-4 font-bold">
+        <EyePlusIcon />
+        <span>{t("Add Watched Account")}</span>
+      </div>
+      <div className="flex items-center justify-end text-lg">
+        {/* flex gap doesn't allow negatives */}
+        <PolkadotCircleLogo className="-mr-[0.6rem]" />
+        <EthereumCircleLogo />
+      </div>
+    </div>
+  )
+}
+
 export const AccountCreateContainer = ({ className }: Props) => {
-  const { t } = useTranslation("onboard")
-  const { setMethodType, methodType } = useAccountCreateContext()
+  const { t } = useTranslation("admin")
+  const { methodType } = useAccountCreateContext()
+
   const MethodButtonsComponent = useMemo(() => {
     switch (methodType) {
       case "new":
@@ -232,25 +263,7 @@ export const AccountCreateContainer = ({ className }: Props) => {
             <span className="bg-grey-700 h-[0.08rem] w-full"></span>
           </div>
 
-          <div
-            tabIndex={-4}
-            role="button"
-            onClick={() => setMethodType("watched")}
-            onKeyUp={(e) => {
-              if (e.key === "Enter") setMethodType("watched")
-            }}
-            className="hover:bg-grey-800 hover:text-grey-300 focus:bg-grey-800 focus:text-grey-300 flex cursor-pointer flex-col items-center justify-center gap-4 rounded p-4"
-          >
-            <span className="text-body flex items-center gap-4 font-bold">
-              <EyePlusIcon />
-              <span>{t("Add Watched Account")}</span>
-            </span>
-            <div className="flex items-center justify-end text-lg">
-              {/* flex gap doesn't allow negatives */}
-              <PolkadotCircleLogo className="-mr-[0.6rem]" />
-              <EthereumCircleLogo />
-            </div>
-          </div>
+          <AddWatchedAccountButton />
         </div>
       </div>
     </div>

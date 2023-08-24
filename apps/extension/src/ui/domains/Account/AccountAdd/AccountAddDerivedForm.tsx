@@ -15,12 +15,14 @@ import { useSearchParams } from "react-router-dom"
 import { Button, FormFieldContainer, FormFieldInputText } from "talisman-ui"
 import * as yup from "yup"
 
+import { AccountAddPageProps } from "./types"
+
 type FormData = {
   name: string
   type: AccountAddressType
 }
 
-export const AccountAddDerivedForm = ({ onSuccess }: { onSuccess: (address: string) => void }) => {
+export const AccountAddDerivedForm = ({ onSuccess }: AccountAddPageProps) => {
   const { t } = useTranslation("admin")
   // get type paramter from url
   const [params] = useSearchParams()
