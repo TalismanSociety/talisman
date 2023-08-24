@@ -58,7 +58,7 @@ export const Mnemonic = ({ onReveal, mnemonic }: MnemonicProps) => {
             type="button"
             onClick={() => setIsRevealed(true)}
             className={classNames(
-              "absolute left-0 top-0 flex h-full w-full items-center justify-center rounded-sm backdrop-blur-md",
+              "text-body-secondary hover:text-body absolute left-0 top-0 flex h-full w-full items-center justify-center rounded-sm backdrop-blur-md",
               isRevealed && "group-hover:hidden"
             )}
           >

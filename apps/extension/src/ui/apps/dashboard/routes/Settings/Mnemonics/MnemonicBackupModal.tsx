@@ -1,6 +1,7 @@
+import { FadeIn } from "@talisman/components/FadeIn"
 import { notify } from "@talisman/components/Notifications"
 import { useOpenClose } from "@talisman/hooks/useOpenClose"
-import { AlertTriangleIcon } from "@talisman/theme/icons"
+import { AlertTriangleIcon, LoaderIcon } from "@talisman/theme/icons"
 import { provideContext } from "@talisman/util/provideContext"
 import { classNames } from "@talismn/util"
 import { api } from "@ui/api"
@@ -39,16 +40,6 @@ const Description = () => {
           it in a secure location. <Link>Learn more</Link>"
         ></Trans>
       </p>
-      <div className="bg-grey-750 text-alert-warn mt-12 flex w-full items-center gap-8 rounded px-8 py-6">
-        <AlertTriangleIcon className="shrink-0 text-xl" />
-        <ul className="flex flex-col gap-1">
-          <Trans
-            t={t}
-            components={{ li: <li></li> }}
-            defaults="<li>Never share your recovery phrase with anyone.</li><li>Never enter your recovery phrase in any website.</li><li>Talisman will never ask you for it.</li>"
-          ></Trans>
-        </ul>
-      </div>
     </div>
   )
 }
@@ -82,11 +73,22 @@ const MnemonicFormInner = ({ mnemonicId }: { mnemonicId: string }) => {
   )
 
   return (
-    <div className="mt-4 flex grow flex-col">
+    <div className="flex grow flex-col">
       {mnemonic && secret ? (
         <>
           <Mnemonic mnemonic={secret ?? ""} />
-          <div className="grow"></div>
+          <div className="bg-grey-750 text-alert-warn mt-8 flex w-full items-center gap-6 rounded-sm p-4">
+            <div className="bg-alert-warn/10 flex flex-col justify-center rounded-full p-2">
+              <AlertTriangleIcon className="shrink-0 text-base" />
+            </div>
+            <div className="text-xs">
+              <p>
+                {t(
+                  "Never share your recovery phrase with anyone or enter your recovery phrase in any website. Talisman will never ask you to do it."
+                )}
+              </p>
+            </div>
+          </div>
           <div className="bg-grey-900 mt-8 flex w-full flex-col justify-center rounded-sm p-8">
             <Checkbox
               onChange={handleConfirmToggle}
@@ -98,7 +100,9 @@ const MnemonicFormInner = ({ mnemonicId }: { mnemonicId: string }) => {
           </div>
         </>
       ) : (
-        <div className="bg-grey-800 mt-[32.8px] h-72 w-full animate-pulse rounded"></div>
+        <FadeIn className="mt-24 text-center">
+          <LoaderIcon className="animate-spin-slow text-body-disabled inline text-lg" />
+        </FadeIn>
       )}
     </div>
   )
@@ -109,19 +113,21 @@ const MnemonicBackupForm: FC<{
 }> = ({ mnemonic }) => {
   const { t } = useTranslation("admin")
   return (
-    <div className={classNames("flex min-h-[47rem] flex-col")}>
+    <div className={classNames("flex flex-col gap-12")}>
       <Description />
-      <PasswordUnlock
-        className="flex w-full grow flex-col justify-center [&>form]:grow"
-        buttonText={t("View Recovery Phrase")}
-        title={
-          <span className="mb-[-0.8rem] text-sm">
-            {t("Enter your password to show your recovery phrase.")}
-          </span>
-        }
-      >
-        <MnemonicFormInner mnemonicId={mnemonic.id} />
-      </PasswordUnlock>
+      <div className="min-h-[18.6rem] transition-none">
+        <PasswordUnlock
+          className="flex w-full flex-col justify-center [&>form>button]:mt-[1.6rem]"
+          buttonText={t("View Recovery Phrase")}
+          title={
+            <span className="mb-[-0.8rem] text-sm">
+              {t("Enter your password to show your recovery phrase.")}
+            </span>
+          }
+        >
+          <MnemonicFormInner mnemonicId={mnemonic.id} />
+        </PasswordUnlock>
+      </div>
     </div>
   )
 }
