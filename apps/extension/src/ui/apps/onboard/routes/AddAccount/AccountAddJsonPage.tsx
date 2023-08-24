@@ -1,7 +1,7 @@
 import { OnboardDialog } from "@ui/apps/onboard/components/OnboardDialog"
 import { useOnboard } from "@ui/apps/onboard/context"
 import { Layout } from "@ui/apps/onboard/layout"
-import { AccountAddJson } from "@ui/domains/Account/AccountCreate/AccountAddJson"
+import { AccountAddJson } from "@ui/domains/Account/AccountAdd/AccountAddJson"
 import { useTranslation } from "react-i18next"
 
 export const AccountAddJsonPage = () => {

@@ -3,9 +3,7 @@ import { lazy } from "react"
 
 import { AccountAddLedgerLayout } from "./AccountAddLedgerLayout"
 
-const AccountAddLedgerWizard = lazy(
-  () => import("@ui/domains/Account/AccountCreate/AccountAddLedger")
-)
+const AccountAddLedgerWizard = lazy(() => import("@ui/domains/Account/AccountAdd/AccountAddLedger"))
 
 export const AccountAddLedgerDashboardWizard = () => {
   const { setAddress } = useSelectAccountAndNavigate("/portfolio")

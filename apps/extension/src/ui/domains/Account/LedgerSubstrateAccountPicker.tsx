@@ -1,7 +1,7 @@
 import { log } from "@core/log"
 import { AddressesByChain } from "@core/types/base"
 import { convertAddress } from "@talisman/util/convertAddress"
-import { LedgerAccountDefSubstrate } from "@ui/domains/Account/AccountCreate/AccountAddLedger/context" // Todo
+import { LedgerAccountDefSubstrate } from "@ui/domains/Account/AccountAdd/AccountAddLedger/context" // Todo
 import { useLedgerSubstrate } from "@ui/hooks/ledger/useLedgerSubstrate"
 import { useLedgerSubstrateApp } from "@ui/hooks/ledger/useLedgerSubstrateApp"
 import useAccounts from "@ui/hooks/useAccounts"
