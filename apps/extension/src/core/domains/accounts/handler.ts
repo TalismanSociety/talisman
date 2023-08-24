@@ -450,7 +450,6 @@ export default class AccountsHandler extends ExtensionHandler {
     mnemonic,
     mnemonicId,
   }: RequestSetVerifierCertificateMnemonic) {
-    console.log({ type, mnemonic, mnemonicId })
     if (type === "new" && mnemonic) {
       const isValidMnemonic = mnemonicValidate(mnemonic)
       assert(isValidMnemonic, "Invalid mnemonic")
