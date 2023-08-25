@@ -1,4 +1,5 @@
 import { AccountAddressType } from "@core/domains/accounts/types"
+import { passwordStore } from "@core/domains/app"
 import { settingsStore } from "@core/domains/app/store.settings"
 import { provideContext } from "@talisman/util/provideContext"
 import { api } from "@ui/api"
@@ -25,6 +26,7 @@ const useAppOnboardProvider = ({ isResettingWallet = false }: { isResettingWalle
   // data used for account creation
   const [data, setData] = useState<OnboardingWizardData>(DEFAULT_DATA)
   const [stage, setStage] = useState<number>()
+  const [passwordExists, setPasswordExists] = useState(false)
   const [, updateOnboarded] = useAppState("onboarded")
   const navigate = useNavigate()
 
@@ -66,6 +68,13 @@ const useAppOnboardProvider = ({ isResettingWallet = false }: { isResettingWalle
       })
   }, [data.allowTracking])
 
+  // handle case where user has navigated back, and a password already exists in the store
+  useEffect(() => {
+    passwordStore.get("secret").then((pw) => {
+      setPasswordExists(!!pw)
+    })
+  }, [stage])
+
   useEffect(() => {
     return () => {
       setData(DEFAULT_DATA)
@@ -76,6 +85,7 @@ const useAppOnboardProvider = ({ isResettingWallet = false }: { isResettingWalle
     setOnboarded,
     completeOnboarding,
     createPassword,
+    passwordExists,
     reset,
     isResettingWallet,
     data,

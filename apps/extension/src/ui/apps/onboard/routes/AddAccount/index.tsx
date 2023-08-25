@@ -4,6 +4,7 @@ import { useOnboard } from "@ui/apps/onboard/context"
 import { Layout } from "@ui/apps/onboard/layout"
 import { AccountCreateMenu } from "@ui/domains/Account/AccountAdd"
 import { useAnalyticsPageView } from "@ui/hooks/useAnalyticsPageView"
+import { useIsLoggedIn } from "@ui/hooks/useIsLoggedIn"
 import { useCallback } from "react"
 import { useTranslation } from "react-i18next"
 
@@ -18,6 +19,7 @@ export const AddAccountPage = () => {
   const { t } = useTranslation("onboard")
   useAnalyticsPageView(ANALYTICS_PAGE)
   const { setOnboarded } = useOnboard()
+  const isLoggedIn = useIsLoggedIn()
 
   const handleDoItLaterClick = useCallback(async () => {
     sendAnalyticsEvent({
@@ -27,6 +29,8 @@ export const AddAccountPage = () => {
     })
     setOnboarded()
   }, [setOnboarded])
+
+  if (isLoggedIn === "FALSE") setOnboarded()
 
   return (
     <Layout withBack analytics={ANALYTICS_PAGE}>
