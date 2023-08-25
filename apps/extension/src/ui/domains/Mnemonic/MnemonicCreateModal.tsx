@@ -45,16 +45,22 @@ const MnemonicFormInner = () => {
   const { mnemonic, acknowledge, wordsCount, setWordsCount } = useMnemonicCreateModal()
   const [acknowledged, setAcknowledged] = useState(false)
   const [confirmed, setConfirmed] = useState(false)
+  const [canConfirm, setCanConfirm] = useState(false)
 
   const handleContinueClick = useCallback(() => {
     if (!mnemonic) return
     acknowledge(confirmed)
   }, [acknowledge, confirmed, mnemonic])
 
+  const handleMnemonicRevealed = useCallback(() => {
+    setCanConfirm(true)
+  }, [])
+
   return (
     <div className="flex grow flex-col">
       <Mnemonic
         mnemonic={mnemonic}
+        onReveal={handleMnemonicRevealed}
         topRight={<MnemonicWordCountSwitch value={wordsCount} onChange={setWordsCount} />}
       />
       <div className="bg-grey-750 text-alert-warn mt-8 flex w-full items-center gap-6 rounded-sm p-4">
@@ -79,6 +85,7 @@ const MnemonicFormInner = () => {
           )}
         </Checkbox>
         <Checkbox
+          disabled={!canConfirm}
           onChange={(e) => setConfirmed(e.target.checked)}
           className="text-body-secondary hover:text-body [&>span]:leading-paragraph !gap-8"
         >

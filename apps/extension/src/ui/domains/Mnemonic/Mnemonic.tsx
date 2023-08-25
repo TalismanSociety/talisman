@@ -45,10 +45,7 @@ export const Mnemonic: FC<MnemonicProps> = ({ onReveal, mnemonic, topRight }) =>
         </button>
         {topRight}
       </div>
-      <div
-        className="bg-black-secondary group relative overflow-hidden rounded p-2"
-        onMouseLeave={() => setIsRevealed(false)}
-      >
+      <div className="bg-black-secondary group relative overflow-hidden rounded p-2">
         <div className="grid min-h-[12.6rem] grid-cols-4 gap-4 p-2">
           {!!mnemonic &&
             mnemonic.split(" ").map((word, i) => (
@@ -62,7 +59,7 @@ export const Mnemonic: FC<MnemonicProps> = ({ onReveal, mnemonic, topRight }) =>
             onClick={() => setIsRevealed(true)}
             className={classNames(
               "text-body absolute left-0 top-0 flex h-full w-full items-center justify-center rounded-sm backdrop-blur-md transition",
-              isRevealed && "group-hover:opacity-0"
+              isRevealed && "opacity-0"
             )}
           >
             <CursorClickIcon className="text-xl" />
