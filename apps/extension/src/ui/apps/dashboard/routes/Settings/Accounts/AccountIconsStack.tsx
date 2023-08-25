@@ -7,6 +7,8 @@ export const AccountsStack: FC<{ accounts: AccountJsonAny[]; className?: string 
   accounts,
   className,
 }) => {
+  if (!accounts.length) return null
+
   return (
     <div
       className={classNames(
