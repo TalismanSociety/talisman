@@ -190,7 +190,7 @@ const AccountAddDerivedFormInner: FC<AccountAddDerivedFormProps> = ({ onSuccess 
               //     )}
               //   </div>
               // </div>
-              <div className="flex w-full items-center gap-6 overflow-hidden">
+              <div className="text-body-secondary flex w-full items-center gap-6 overflow-hidden">
                 <div className="bg-body/10 text-md rounded-full p-4">
                   {o.value === "new" ? <PlusIcon /> : <SeedIcon />}
                 </div>
