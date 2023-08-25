@@ -21,6 +21,7 @@ import { useTranslation } from "react-i18next"
 import { ContextMenu, ContextMenuContent, ContextMenuItem, ContextMenuTrigger } from "talisman-ui"
 
 import { DashboardLayout } from "../../../layout/DashboardLayout"
+import { AccountsStack } from "../Accounts/AccountIconsStack"
 import {
   MnemonicBackupModal,
   MnemonicBackupModalProvider,
@@ -71,20 +72,6 @@ const AccountRow: FC<{ account: AccountJsonAny }> = ({ account }) => {
       <div className="text-body-secondary flex flex-col font-mono text-xs">
         {account.derivationPath}
       </div>
-    </div>
-  )
-}
-
-const AccountsStack: FC<{ accounts: AccountJsonAny[] }> = ({ accounts }) => {
-  return (
-    <div className="ml-[0.4em] inline-block h-9 pl-0.5 leading-none [&>div]:ml-[-0.4em]">
-      {accounts.slice(0, 3).map((account) => (
-        <AccountIcon
-          key={account.address}
-          address={account.address}
-          className="border-grey-800 box-content shrink-0 rounded-full border text-base"
-        />
-      ))}
     </div>
   )
 }

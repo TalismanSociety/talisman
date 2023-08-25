@@ -1,13 +1,22 @@
-import { AccountAddressType, RequestAccountCreateOptions } from "@core/domains/accounts/types"
+import {
+  AccountAddressType,
+  AccountJsonAny,
+  RequestAccountCreateOptions,
+} from "@core/domains/accounts/types"
 import { log } from "@core/log"
 import { yupResolver } from "@hookform/resolvers/yup"
 import { notify, notifyUpdate } from "@talisman/components/Notifications"
 import { Spacer } from "@talisman/components/Spacer"
-import { ArrowRightIcon } from "@talisman/theme/icons"
+import { ArrowRightIcon, PlusIcon, SeedIcon } from "@talisman/theme/icons"
 import { classNames } from "@talismn/util"
 import { sleep } from "@talismn/util"
 import { api } from "@ui/api"
 import { AccountTypeSelector } from "@ui/domains/Account/AccountTypeSelector"
+import {
+  MnemonicCreateModal,
+  MnemonicCreateModalProvider,
+  useMnemonicCreateModal,
+} from "@ui/domains/Mnemonic/MnemonicCreateModal"
 import useAccounts from "@ui/hooks/useAccounts"
 import { useMnemonics } from "@ui/hooks/useMnemonics"
 import { FC, useCallback, useEffect, useMemo, useState } from "react"
@@ -17,16 +26,10 @@ import { useSearchParams } from "react-router-dom"
 import { Button, Dropdown, FormFieldContainer, FormFieldInputText } from "talisman-ui"
 import * as yup from "yup"
 
-import {
-  MnemonicCreateModal,
-  MnemonicCreateModalProvider,
-  useMnemonicCreateModal,
-} from "../MnemonicCreateModal"
-
 type MnemonicOption = {
   value: string
   label: string
-  accountsCount?: number
+  accounts?: AccountJsonAny[]
 }
 
 const GENERATE_MNEMONIC_OPTION = {
@@ -84,7 +87,7 @@ const AccountAddDerivedFormInner: FC<AccountAddDerivedFormProps> = ({ onSuccess 
         .map((m) => ({
           label: m.name,
           value: m.id,
-          accountsCount: allAccounts.filter((a) => a.derivedMnemonicId === m.id).length,
+          accounts: allAccounts.filter((a) => a.derivedMnemonicId === m.id),
         }))
         .sort((a, b) => a.label.localeCompare(b.label)),
       GENERATE_MNEMONIC_OPTION,
@@ -165,15 +168,47 @@ const AccountAddDerivedFormInner: FC<AccountAddDerivedFormProps> = ({ onSuccess 
       <div className={classNames("transition-opacity", type ? "opacity-100" : "opacity-0")}>
         {mnemonicOptions.length > 1 && (
           <Dropdown
+            className="mt-8 [&>label]:mb-4"
             items={mnemonicOptions}
-            label={t("Recovery phrase to derive the new account from")}
+            label={t("Recovery phrase")}
             propertyKey="value"
-            renderItem={(o) => o.label}
+            renderItem={(o) => (
+              // <div className="flex w-full items-center gap-6 overflow-hidden">
+              //   <div className="bg-body/10 text-md rounded-full p-4">
+              //     {o.value === "new" ? <PlusIcon /> : <SeedIcon />}
+              //   </div>
+
+              //   <div className="flex grow flex-col gap-1 overflow-hidden">
+              //     <div className="truncate text-sm">{o.label}</div>
+              //     {o.value !== "new" && (
+              //       <div className="text-body-disabled flex items-center gap-2 truncate text-xs">
+              //         {o.accounts && <AccountsStack accounts={o.accounts} />}
+              //         <div>
+              //           {t("used by {{count}} accounts", { count: o.accounts?.length ?? 0 })}
+              //         </div>
+              //       </div>
+              //     )}
+              //   </div>
+              // </div>
+              <div className="flex w-full items-center gap-6 overflow-hidden">
+                <div className="bg-body/10 text-md rounded-full p-4">
+                  {o.value === "new" ? <PlusIcon /> : <SeedIcon />}
+                </div>
+                <div className="grow truncate text-sm">{o.label}</div>
+                {o.value !== "new" && (
+                  <div className="text-body-disabled flex shrink-0 items-center gap-2 truncate text-xs">
+                    {t("used by {{count}} accounts", { count: o.accounts?.length ?? 0 })}
+                  </div>
+                )}
+              </div>
+            )}
             value={selectedMnemonic}
             onChange={setSelectedMnemonic}
+            buttonClassName="py-6 bg-field"
+            optionClassName="py-4 bg-field"
           />
         )}
-        <FormFieldContainer error={errors.name?.message}>
+        <FormFieldContainer className="mt-8" label={t("Account name")} error={errors.name?.message}>
           <FormFieldInputText
             {...register("name")}
             placeholder={t("Choose a name")}

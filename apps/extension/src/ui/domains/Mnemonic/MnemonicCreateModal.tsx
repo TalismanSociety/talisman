@@ -2,11 +2,13 @@ import { mnemonicGenerate } from "@polkadot/util-crypto"
 import { AlertTriangleIcon } from "@talisman/theme/icons"
 import { provideContext } from "@talisman/util/provideContext"
 import { classNames } from "@talismn/util"
-import { Mnemonic } from "@ui/domains/Account/Mnemonic"
+import { Mnemonic } from "@ui/domains/Mnemonic/Mnemonic"
 import { useCallback, useMemo, useState } from "react"
 import { Trans, useTranslation } from "react-i18next"
 import { Button, Checkbox, ModalDialog } from "talisman-ui"
 import { Modal } from "talisman-ui"
+
+import { MnemonicWordCountSwitch } from "./MnemonicWordCountSwitch"
 
 const Description = () => {
   const { t } = useTranslation("admin")
@@ -40,7 +42,7 @@ const Description = () => {
 
 const MnemonicFormInner = () => {
   const { t } = useTranslation()
-  const { mnemonic, acknowledge } = useMnemonicCreateModal()
+  const { mnemonic, acknowledge, wordsCount, setWordsCount } = useMnemonicCreateModal()
   const [acknowledged, setAcknowledged] = useState(false)
   const [confirmed, setConfirmed] = useState(false)
 
@@ -51,12 +53,15 @@ const MnemonicFormInner = () => {
 
   return (
     <div className="flex grow flex-col">
-      <Mnemonic mnemonic={mnemonic} />
+      <Mnemonic
+        mnemonic={mnemonic}
+        topRight={<MnemonicWordCountSwitch value={wordsCount} onChange={setWordsCount} />}
+      />
       <div className="bg-grey-750 text-alert-warn mt-8 flex w-full items-center gap-6 rounded-sm p-4">
         <div className="bg-alert-warn/10 flex flex-col justify-center rounded-full p-2">
           <AlertTriangleIcon className="shrink-0 text-base" />
         </div>
-        <div className="text-xs">
+        <div className="text-sm">
           <p>
             {t(
               "Never share your recovery phrase with anyone or enter your recovery phrase in any website. Talisman will never ask you to do it."
@@ -64,10 +69,10 @@ const MnemonicFormInner = () => {
           </p>
         </div>
       </div>
-      <div className="mt-6 p-4">
+      <div className="mt-6 flex flex-col gap-6 px-4 pt-4">
         <Checkbox
           onChange={(e) => setAcknowledged(e.target.checked)}
-          className="text-body-secondary hover:text-body gap-8!"
+          className="text-body-secondary hover:text-body [&>span]:leading-paragraph  !gap-8"
         >
           {t(
             "I acknowledge that the loss of my recovery phrase will result in the loss of all the assets in my wallet"
@@ -75,12 +80,18 @@ const MnemonicFormInner = () => {
         </Checkbox>
         <Checkbox
           onChange={(e) => setConfirmed(e.target.checked)}
-          className="text-body-secondary hover:text-body gap-8!"
+          className="text-body-secondary hover:text-body [&>span]:leading-paragraph !gap-8"
         >
           {t("I have backed up my recovery phrase")}
         </Checkbox>
       </div>
-      <Button primary fullWidth onClick={handleContinueClick} disabled={!acknowledged}>
+      <Button
+        className="mt-8"
+        primary
+        fullWidth
+        onClick={handleContinueClick}
+        disabled={!acknowledged}
+      >
         {t("Continue")}
       </Button>
     </div>
@@ -137,19 +148,15 @@ const useMnemonicCreateProvider = () => {
     })
   }, [])
 
-  const result = useMemo(
-    () => ({
-      mnemonic,
-      isOpen: !!callback,
-      cancel,
-      acknowledge,
-      setWordsCount,
-      generateMnemonic,
-    }),
-    [acknowledge, callback, cancel, generateMnemonic, mnemonic]
-  )
-
-  return result
+  return {
+    mnemonic,
+    isOpen: !!callback,
+    cancel,
+    acknowledge,
+    wordsCount,
+    setWordsCount,
+    generateMnemonic,
+  }
 }
 
 export const [MnemonicCreateModalProvider, useMnemonicCreateModal] =

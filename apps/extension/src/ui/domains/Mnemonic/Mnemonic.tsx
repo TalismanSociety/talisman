@@ -1,15 +1,16 @@
 import { notify } from "@talisman/components/Notifications"
 import { CopyIcon, CursorClickIcon } from "@talisman/theme/icons"
 import { classNames } from "@talismn/util"
-import { useCallback, useEffect, useState } from "react"
+import { FC, ReactNode, useCallback, useEffect, useState } from "react"
 import { useTranslation } from "react-i18next"
 
 type MnemonicProps = {
+  topRight?: ReactNode
   onReveal?: () => void
   mnemonic: string
 }
 
-export const Mnemonic = ({ onReveal, mnemonic }: MnemonicProps) => {
+export const Mnemonic: FC<MnemonicProps> = ({ onReveal, mnemonic, topRight }) => {
   const { t } = useTranslation()
   const [isRevealed, setIsRevealed] = useState(false)
 
@@ -34,7 +35,7 @@ export const Mnemonic = ({ onReveal, mnemonic }: MnemonicProps) => {
 
   return (
     <>
-      <div className="py-4 text-sm">
+      <div className="flex items-center justify-between py-4 text-sm">
         <button
           type="button"
           onClick={handleCopy}
@@ -42,6 +43,7 @@ export const Mnemonic = ({ onReveal, mnemonic }: MnemonicProps) => {
         >
           <CopyIcon className="mr-2 inline" /> <span>{t("Copy to clipboard")}</span>
         </button>
+        {topRight}
       </div>
       <div
         className="bg-black-secondary group relative overflow-hidden rounded p-2"
@@ -51,15 +53,16 @@ export const Mnemonic = ({ onReveal, mnemonic }: MnemonicProps) => {
           {!!mnemonic &&
             mnemonic.split(" ").map((word, i) => (
               <span className="bg-black-tertiary text-body rounded px-8 py-4" key={`mnemonic-${i}`}>
-                <span className="select-none">{i + 1}.</span> {word}
+                <span className="text-body-disabled select-none">{i + 1}. </span>
+                <span>{word}</span>
               </span>
             ))}
           <button
             type="button"
             onClick={() => setIsRevealed(true)}
             className={classNames(
-              "text-body-secondary hover:text-body absolute left-0 top-0 flex h-full w-full items-center justify-center rounded-sm backdrop-blur-md",
-              isRevealed && "group-hover:hidden"
+              "text-body absolute left-0 top-0 flex h-full w-full items-center justify-center rounded-sm backdrop-blur-md transition",
+              isRevealed && "group-hover:opacity-0"
             )}
           >
             <CursorClickIcon className="text-xl" />
