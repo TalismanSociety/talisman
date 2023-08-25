@@ -1,5 +1,5 @@
 import { notify } from "@talisman/components/Notifications"
-import { CopyIcon, CursorClickIcon } from "@talisman/theme/icons"
+import { CheckIcon, CopyIcon, CursorClickIcon } from "@talisman/theme/icons"
 import { classNames } from "@talismn/util"
 import { FC, ReactNode, useCallback, useEffect, useState } from "react"
 import { useTranslation } from "react-i18next"
@@ -13,10 +13,12 @@ type MnemonicProps = {
 export const Mnemonic: FC<MnemonicProps> = ({ onReveal, mnemonic, topRight }) => {
   const { t } = useTranslation()
   const [isRevealed, setIsRevealed] = useState(false)
+  const [isCopied, setIsCopied] = useState(false)
 
   const handleCopy = useCallback(async () => {
     try {
       await window.navigator.clipboard.writeText(mnemonic)
+      setIsCopied(true)
       notify({
         title: t("Copied to clipboard"),
         type: "success",
@@ -33,15 +35,37 @@ export const Mnemonic: FC<MnemonicProps> = ({ onReveal, mnemonic, topRight }) =>
     if (isRevealed) onReveal?.()
   }, [isRevealed, onReveal])
 
+  useEffect(() => {
+    if (!isCopied) return () => {}
+
+    const timeout = setTimeout(() => {
+      setIsCopied(false)
+    }, 3000)
+
+    return () => {
+      clearTimeout(timeout)
+    }
+  }, [isCopied])
+
   return (
     <>
       <div className="flex items-center justify-between py-4 text-sm">
         <button
           type="button"
           onClick={handleCopy}
-          className={"text-body-secondary hover:text-body"}
+          className={"text-body-secondary hover:text-body flex items-center"}
         >
-          <CopyIcon className="mr-2 inline" /> <span>{t("Copy to clipboard")}</span>
+          {isCopied ? (
+            <>
+              <CheckIcon className="text-primary mr-2 inline" />
+              <span className="text-primary">{t("Copied")}</span>
+            </>
+          ) : (
+            <>
+              <CopyIcon className="mr-2 inline" />
+              <span>{t("Copy to clipboard")}</span>
+            </>
+          )}
         </button>
         {topRight}
       </div>
