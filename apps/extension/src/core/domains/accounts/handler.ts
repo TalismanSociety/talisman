@@ -25,6 +25,7 @@ import type { MessageTypes, RequestTypes, ResponseType } from "@core/types"
 import { Port } from "@core/types/base"
 import { getPrivateKey } from "@core/util/getPrivateKey"
 import { createPair } from "@polkadot/keyring"
+import { KeyringPair$Meta } from "@polkadot/keyring/types"
 import keyring from "@polkadot/ui-keyring"
 import { assert } from "@polkadot/util"
 import { ethereumEncode, isEthereumAddress, mnemonicValidate } from "@polkadot/util-crypto"
@@ -78,28 +79,8 @@ export default class AccountsHandler extends ExtensionHandler {
       type
     )
 
-    // const mnemonic = this.stores.seedPhrase.getSeed(derivedMnemonicId, password)
-
     talismanAnalytics.capture("account create", { type, method: "derived" })
     return pair.address
-
-    // const rootAccount =
-    //   "mnemonicId" in mnemonicOptions
-    //     ? getRootAccountForMnemonic(mnemonicOptions.mnemonicId, type)
-    //     : false
-
-    // const accountMeta = { derivedMnemonicId }
-    // if (!rootAccount) {
-    //   const { pair } = keyring.addUri(seed, password, {
-    //     name,
-    //     origin: AccountTypes.TALISMAN,
-    //     ...accountMeta,
-    //   })
-    //   talismanAnalytics.capture("account create", { type, method: "parent" })
-    //   return pair.address
-    // } else {
-
-    // }
   }
 
   private async accountCreateSeed({
@@ -122,7 +103,7 @@ export default class AccountsHandler extends ExtensionHandler {
     const mnemonic = splitIdx === -1 ? suri : suri.slice(0, splitIdx)
     const derivationPath = splitIdx === -1 ? "" : suri.slice(splitIdx)
 
-    const meta: Record<string, unknown> = {
+    const meta: KeyringPair$Meta = {
       name,
     }
 
@@ -148,7 +129,7 @@ export default class AccountsHandler extends ExtensionHandler {
         } else throw new Error("Failed to store mnemonic", { cause: result.val })
       }
     } else {
-      // meta.origin = "PRIVATE_KEY" // TODO
+      meta.origin = AccountTypes.SEED // TODO "LOCAL"
     }
 
     try {
