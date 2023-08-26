@@ -83,7 +83,7 @@ const PasswordMigrationAlertPopupDrawer = () => {
       name: "Goto",
       action: "Migrate password button",
     })
-    api.dashboardOpen("/settings?showMigratePasswordModal")
+    api.dashboardOpen("/settings/security-privacy-settings?showMigratePasswordModal")
     close()
   }, [close])
 

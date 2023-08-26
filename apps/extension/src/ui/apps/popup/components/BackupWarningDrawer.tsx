@@ -9,7 +9,7 @@ export const BackupWarningDrawer = () => {
   const { t } = useTranslation()
   const { showBackupWarning, snoozeBackupReminder } = useMnemonicBackup()
   const openBackup = useCallback(async () => {
-    await api.dashboardOpen("/settings?showBackupModal")
+    await api.dashboardOpen("/settings/security-privacy-settings?showBackupModal")
     window.close()
   }, [])
 

@@ -82,7 +82,7 @@ export const NavigationDrawer: FC = () => {
       name: "Goto",
       action: "Settings button",
     })
-    api.dashboardOpen("/settings")
+    api.dashboardOpen("/settings/general")
     window.close()
   }, [])
 
@@ -92,7 +92,7 @@ export const NavigationDrawer: FC = () => {
       name: "Goto",
       action: "Backup wallet button",
     })
-    api.dashboardOpen("/settings?showBackupModal")
+    api.dashboardOpen("/settings/security-privacy-settings?showBackupModal")
     window.close()
   }, [])
 

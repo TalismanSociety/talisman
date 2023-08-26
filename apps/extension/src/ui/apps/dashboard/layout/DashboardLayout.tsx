@@ -11,7 +11,7 @@ import { FC, Suspense, lazy, useEffect, useRef } from "react"
 import { useLocation } from "react-router-dom"
 
 import { OnboardingToast } from "./OnboardingToast"
-import { SideBar } from "./SideBar"
+import { Sidebar } from "./Sidebar"
 
 const DashboardNotifications = lazy(() => import("./DashboardNotifications"))
 
@@ -44,7 +44,7 @@ export const DashboardLayout: FC<LayoutProps> = ({
 
   return (
     <main className={classNames("flex h-screen w-screen", className)}>
-      <SideBar />
+      <Sidebar />
       <section
         ref={scrollableRef}
         className={classNames(

@@ -10,7 +10,7 @@ import {
 } from "react"
 import { useNavigate } from "react-router-dom"
 
-type CtaButtonSize = "large" | "small"
+export type CtaButtonSize = "large" | "small"
 
 type CtaButton = DetailedHTMLProps<
   React.ButtonHTMLAttributes<HTMLButtonElement>,
@@ -24,7 +24,7 @@ type CtaButton = DetailedHTMLProps<
   size?: CtaButtonSize
 }
 
-const getContainerClassName = (size: CtaButtonSize) => {
+export const getContainerClassName = (size: CtaButtonSize) => {
   switch (size) {
     case "large":
       return {
@@ -85,7 +85,7 @@ export const CtaButton: FC<CtaButton> = ({
       )}
       onClick={handleClick}
     >
-      {IconLeft && <IconLeft className={classNames("text-primary shrink-0", iconLeftClassName)} />}
+      {IconLeft && <IconLeft className={classNames("text-body shrink-0", iconLeftClassName)} />}
       <div className={classNames("flex grow flex-col items-start", contentClassName)}>
         <div className={classNames("text-body", titleClassName)}>{title}</div>
         <div className={classNames("text-body-secondary text-left", subtitleClassName)}>

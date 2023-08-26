@@ -1,6 +1,6 @@
 import {
   CheckCircleIcon,
-  RefreshIcon,
+  RefreshCwIcon,
   VoteIcon,
   XCircleIcon,
   ZapIcon,
@@ -24,7 +24,7 @@ const getIcon = (type: SignIconType) => {
     case "vote":
       return VoteIcon
     case "transfer":
-      return RefreshIcon
+      return RefreshCwIcon
   }
 }
 

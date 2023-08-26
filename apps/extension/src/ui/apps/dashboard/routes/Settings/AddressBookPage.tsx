@@ -150,10 +150,10 @@ export const AddressBookPage = () => {
 
   return (
     <>
-      <DashboardLayout centered withBack backTo="/settings" analytics={ANALYTICS_PAGE}>
+      <DashboardLayout centered analytics={ANALYTICS_PAGE}>
         <HeaderBlock title={t("Address Book")} text={t("Manage your saved contacts")} />
         <Spacer large />
-        <div className="mt-4 flex justify-between align-middle">
+        <div className="flex justify-between align-middle">
           <ProviderTypeSwitch defaultProvider="polkadot" onChange={setAddressType} />
           {contactsToDisplay.length > 0 && (
             <PillButton onClick={open} icon={UserPlusIcon}>
@@ -161,7 +161,7 @@ export const AddressBookPage = () => {
             </PillButton>
           )}
         </div>
-        <Spacer />
+        <Spacer small />
         <div className="flex flex-col gap-3">
           {contactsToDisplay.map((contact) => (
             <AddressBookContactItem

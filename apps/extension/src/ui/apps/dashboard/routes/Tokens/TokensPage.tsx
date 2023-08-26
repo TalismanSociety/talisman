@@ -1,6 +1,7 @@
 import { EvmNetwork } from "@core/domains/ethereum/types"
 import { Erc20Token } from "@core/domains/tokens/types"
 import { HeaderBlock } from "@talisman/components/HeaderBlock"
+import { Spacer } from "@talisman/components/Spacer"
 import { ChevronRightIcon, PlusIcon } from "@talisman/theme/icons"
 import { AnalyticsPage, sendAnalyticsEvent } from "@ui/api/analytics"
 import { TokenLogo } from "@ui/domains/Asset/TokenLogo"
@@ -106,15 +107,22 @@ export const TokensPage = () => {
   if (!erc20Tokens) return null
 
   return (
-    <DashboardLayout analytics={ANALYTICS_PAGE} withBack centered backTo="/settings">
+    <DashboardLayout
+      analytics={ANALYTICS_PAGE}
+      withBack
+      centered
+      backTo="/settings/networks-tokens"
+    >
       <HeaderBlock title={t("Ethereum Tokens")} text={t("Add or delete custom ERC20 tokens")} />
-      <div className="mt-16 flex justify-end gap-4">
+      <Spacer large />
+      <div className="flex justify-end gap-4">
         <EnableTestnetPillButton className="h-16" />
         <PillButton icon={PlusIcon} size="xs" className="h-16" onClick={handleAddToken}>
           {t("Add token")}
         </PillButton>
       </div>
-      <div className="space-y-4">
+      <Spacer small />
+      <div className="flex flex-col gap-4">
         {groups.map(({ network, tokens }) => (
           <NetworkTokensGroup key={network.id} network={network} tokens={tokens} />
         ))}
