@@ -1,6 +1,5 @@
 import { AccountJsonHardwareSubstrate, AccountJsonQr } from "@core/domains/accounts/types"
 import { isJsonPayload } from "@core/util/isJsonPayload"
-import { validateHexString } from "@core/util/validateHexString"
 import { AppPill } from "@talisman/components/AppPill"
 import { InfoIcon, LoaderIcon } from "@talisman/theme/icons"
 import { TokensAndFiat } from "@ui/domains/Asset/TokensAndFiat"
@@ -10,6 +9,7 @@ import { QrSubstrate } from "@ui/domains/Sign/Qr/QrSubstrate"
 import { SignAlertMessage } from "@ui/domains/Sign/SignAlertMessage"
 import { usePolkadotSigningRequest } from "@ui/domains/Sign/SignRequestContext"
 import { SubSignBody } from "@ui/domains/Sign/Substrate/SubSignBody"
+import { getExtrinsicPayload } from "@ui/util/getExtrinsicPayload"
 import { FC, Suspense, lazy, useEffect, useMemo } from "react"
 import { useTranslation } from "react-i18next"
 import { Button, Tooltip, TooltipContent, TooltipTrigger } from "talisman-ui"
@@ -75,12 +75,13 @@ export const PolkadotSignTransactionRequest: FC = () => {
   } = usePolkadotSigningRequest()
 
   const { genesisHash, specVersion } = useMemo(() => {
-    return payload && isJsonPayload(payload)
-      ? {
-          genesisHash: validateHexString(payload.genesisHash),
-          specVersion: parseInt(payload.specVersion, 16),
-        }
-      : {}
+    if (!payload || !isJsonPayload(payload)) return {}
+
+    const extPayload = getExtrinsicPayload(payload)
+    return {
+      genesisHash: extPayload.genesisHash.toHex(),
+      specVersion: extPayload.specVersion.toNumber(),
+    }
   }, [payload])
 
   const { processing, errorMessage } = useMemo(() => {

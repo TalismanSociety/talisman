@@ -10,7 +10,8 @@ import { classNames } from "@talismn/util"
 import { ChainLogo } from "@ui/domains/Asset/ChainLogo"
 import { ScanQr } from "@ui/domains/Sign/Qr/ScanQr"
 import useChainByGenesisHash from "@ui/hooks/useChainByGenesisHash"
-import { ReactElement, useState } from "react"
+import { getExtrinsicPayload } from "@ui/util/getExtrinsicPayload"
+import { ReactElement, useMemo, useState } from "react"
 import { Trans, useTranslation } from "react-i18next"
 import { Button, Drawer, Tooltip, TooltipContent, TooltipTrigger } from "talisman-ui"
 
@@ -80,6 +81,10 @@ export const QrSubstrate = ({
   const chain = useChainByGenesisHash(genesisHash)
   const qrCodeSourceSelectorState = useQrCodeSourceSelectorState(genesisHash)
   const { qrCodeSource } = qrCodeSourceSelectorState
+
+  const extPayload = useMemo(() => {
+    return isJsonPayload(payload) ? getExtrinsicPayload(payload) : null
+  }, [payload])
 
   if (scanState.page === "INIT")
     return (
@@ -162,10 +167,10 @@ export const QrSubstrate = ({
               <div className="text-body-secondary absolute left-1/2 top-1/2 inline-flex -translate-x-1/2 -translate-y-1/2 flex-col items-center gap-8">
                 <LoaderIcon className="animate-spin-slow text-3xl" />
               </div>
-              {qrCodeSource && isJsonPayload(payload) && (
+              {qrCodeSource && extPayload && (
                 <MetadataQrCode
-                  genesisHash={payload.genesisHash}
-                  specVersion={payload.specVersion}
+                  genesisHash={extPayload.genesisHash.toHex()}
+                  specVersion={extPayload.specVersion.toNumber()}
                   qrCodeSource={qrCodeSource}
                 />
               )}

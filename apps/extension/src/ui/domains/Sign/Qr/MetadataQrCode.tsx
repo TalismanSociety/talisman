@@ -11,7 +11,7 @@ import { QrCodeSource, qrCodeLogoForSource } from "./QrCodeSourceSelector"
 
 type Props = {
   genesisHash: SignerPayloadGenesisHash
-  specVersion: string
+  specVersion: number
   qrCodeSource: QrCodeSource
 }
 
@@ -22,7 +22,7 @@ export const MetadataQrCode = ({ genesisHash, specVersion, qrCodeSource }: Props
   const { data, isLoading, error } = useQuery({
     queryKey: ["chainMetadataQr", genesisHash, specVersion],
     queryFn: async () => {
-      const hexData = await api.generateChainMetadataQr(genesisHash, Number(specVersion))
+      const hexData = await api.generateChainMetadataQr(genesisHash, specVersion)
       return hexToU8a(hexData)
     },
     enabled: qrCodeSource === "talisman",

@@ -19,6 +19,7 @@ import { TypeRegistry } from "@polkadot/types"
 import keyring from "@polkadot/ui-keyring"
 import { assert } from "@polkadot/util"
 import { encodeAnyAddress } from "@talismn/util"
+import { getExtrinsicPayload } from "@ui/util/getExtrinsicPayload"
 
 import { getHostName } from "../app/helpers"
 
@@ -43,14 +44,14 @@ export default class SigningHandler extends ExtensionHandler {
       let registry = new TypeRegistry()
 
       if (isJsonPayload(payload)) {
-        const { signedExtensions, specVersion, blockHash } = payload
-        const genesisHash = validateHexString(payload.genesisHash)
+        const extPayload = getExtrinsicPayload(payload)
+        const genesisHash = extPayload.genesisHash.toHex()
 
         const { registry: fullRegistry } = await getTypeRegistry(
           genesisHash,
-          specVersion,
-          blockHash,
-          signedExtensions
+          extPayload.specVersion.toNumber(),
+          extPayload.blockHash.toHex(),
+          payload.signedExtensions
         )
 
         registry = fullRegistry

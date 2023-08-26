@@ -10,6 +10,7 @@ import { hexToNumber, isHex } from "@polkadot/util"
 import { HexString } from "@polkadot/util/types"
 import { useQuery } from "@tanstack/react-query"
 import { api } from "@ui/api"
+import { getExtrinsicPayload } from "@ui/util/getExtrinsicPayload"
 
 // do not reuse getTypeRegistry because we're on front-end, we need to leverage backend's metadata cache
 const getFrontEndTypeRegistry = async (
@@ -86,13 +87,13 @@ const getFrontEndTypeRegistry = async (
 
 const decodeExtrinsic = async (payload: SignerPayloadJSON) => {
   try {
-    const { genesisHash, signedExtensions, specVersion: hexSpecVersion } = payload
+    const extPayload = getExtrinsicPayload(payload)
 
     const { registry } = await getFrontEndTypeRegistry(
-      genesisHash,
-      hexToNumber(hexSpecVersion),
+      extPayload.genesisHash.toHex(),
+      extPayload.specVersion.toNumber(),
       undefined, // dapp may be using an RPC that is a block ahead our provder's RPC, do not specify payload's blockHash or it could throw
-      signedExtensions
+      payload.signedExtensions
     )
 
     return registry.createType("Extrinsic", payload)
