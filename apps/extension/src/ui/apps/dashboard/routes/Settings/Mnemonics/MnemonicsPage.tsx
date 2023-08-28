@@ -13,21 +13,12 @@ import {
 } from "@talisman/theme/icons"
 import { classNames } from "@talismn/util"
 import { AccountIcon } from "@ui/domains/Account/AccountIcon"
-import { AccountInfoTooltip } from "@ui/domains/Account/AccountInfoTooltip"
 import { Address } from "@ui/domains/Account/Address"
 import useAccounts from "@ui/hooks/useAccounts"
 import { Mnemonic, useMnemonics } from "@ui/hooks/useMnemonics"
 import { FC, useCallback, useLayoutEffect, useMemo, useRef, useState } from "react"
 import { useTranslation } from "react-i18next"
-import {
-  ContextMenu,
-  ContextMenuContent,
-  ContextMenuItem,
-  ContextMenuTrigger,
-  Tooltip,
-  TooltipContent,
-  TooltipTrigger,
-} from "talisman-ui"
+import { ContextMenu, ContextMenuContent, ContextMenuItem, ContextMenuTrigger } from "talisman-ui"
 
 import { DashboardLayout } from "../../../layout/DashboardLayout"
 import { AccountsStack } from "../Accounts/AccountIconsStack"
@@ -64,48 +55,20 @@ const useMnemonicAccounts = (mnemonicId: string) => {
   )
 }
 
-const AccountRow: FC<{ account: AccountJsonAny }> = ({ account }) => {
-  // hide main tooltip while hovering the address, or address would be partially hidden
-  const [allowTooltip, setAllowTooltip] = useState(true)
-
-  const handleAddressMouseEnter = useCallback(() => {
-    setAllowTooltip(false)
-  }, [])
-
-  const handleAddressMouseLeave = useCallback(() => {
-    setAllowTooltip(true)
-  }, [])
-
-  return (
-    <Tooltip placement="bottom-end">
-      <TooltipTrigger asChild>
-        <div className="text-body-secondary bg-grey-900 mt-4 flex h-[4.8rem] w-full items-center gap-6 overflow-hidden rounded-sm px-8">
-          <AccountIcon
-            className="text-lg"
-            address={account.address}
-            genesisHash={account.genesisHash}
-          />
-          <div className="flex grow flex-col gap-1 overflow-hidden">
-            <div className="text-body max-w-full truncate text-sm">{account.name}</div>
-            <div className="text-body-secondary text-xs">
-              <span onMouseEnter={handleAddressMouseEnter} onMouseLeave={handleAddressMouseLeave}>
-                <Address address={account.address} startCharCount={6} endCharCount={6} />
-              </span>
-            </div>
-          </div>
-          <div className="text-body-secondary flex flex-col font-mono text-xs">
-            {account.derivationPath}
-          </div>
-        </div>
-      </TooltipTrigger>
-      {allowTooltip && (
-        <TooltipContent>
-          <AccountInfoTooltip account={account} />
-        </TooltipContent>
-      )}
-    </Tooltip>
-  )
-}
+const AccountRow: FC<{ account: AccountJsonAny }> = ({ account }) => (
+  <div className="text-body-secondary bg-grey-900 mt-4 flex h-[4.8rem] w-full items-center gap-6 overflow-hidden rounded-sm px-8">
+    <AccountIcon className="text-lg" address={account.address} genesisHash={account.genesisHash} />
+    <div className="flex grow flex-col gap-1 overflow-hidden">
+      <div className="text-body max-w-full truncate text-sm">{account.name}</div>
+      <div className="text-body-secondary text-xs">
+        <Address address={account.address} startCharCount={6} endCharCount={6} />
+      </div>
+    </div>
+    <div className="text-body-secondary flex flex-col font-mono text-xs">
+      {account.derivationPath}
+    </div>
+  </div>
+)
 
 const MnemonicRow: FC<{ mnemonic: Mnemonic }> = ({ mnemonic }) => {
   const { t } = useTranslation("admin")
