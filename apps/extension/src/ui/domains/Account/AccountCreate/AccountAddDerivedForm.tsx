@@ -81,14 +81,14 @@ const AccountAddDerivedFormInner: FC<AccountAddDerivedFormProps> = ({ onSuccess 
   })
 
   const mnemonics = useMnemonics()
-  const mnemonicOptions: MnemonicOption[] = useMemo(
-    () => {
-      const accountsByMnemonic = allAccounts.reduce((result, acc) => {
-        if (!acc.derivedMnemonicId in result) result[acc.derivedMnemonicId] = []
-        result[acc.derivedMnemonicId].append(acc)
-        return result
-      }, {} as Record<string, AccountJsonAny[]>)
-      return [
+  const mnemonicOptions: MnemonicOption[] = useMemo(() => {
+    const accountsByMnemonic = allAccounts.reduce((result, acc) => {
+      if (!acc.derivedMnemonicId) return result
+      if (!result[acc.derivedMnemonicId]) result[acc.derivedMnemonicId] = []
+      result[acc.derivedMnemonicId].push(acc)
+      return result
+    }, {} as Record<string, AccountJsonAny[]>)
+    return [
       ...mnemonics
         .map((m) => ({
           label: m.name,
@@ -97,9 +97,8 @@ const AccountAddDerivedFormInner: FC<AccountAddDerivedFormProps> = ({ onSuccess 
         }))
         .sort((a, b) => a.label.localeCompare(b.label)),
       GENERATE_MNEMONIC_OPTION,
-    ]},
-    [allAccounts, mnemonics]
-  )
+    ]
+  }, [allAccounts, mnemonics])
   const [selectedMnemonic, setSelectedMnemonic] = useState<MnemonicOption | null>(
     () => mnemonicOptions[0]
   )
