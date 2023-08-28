@@ -1,6 +1,6 @@
 import { TALISMAN_WEB_APP_NFTS_URL } from "@core/constants"
 import { db } from "@core/db"
-import { AlertCircleIcon } from "@talisman/theme/icons"
+import { AlertCircleIcon } from "@talismn/icons"
 import { classNames } from "@talismn/util"
 import { api } from "@ui/api"
 import { AnalyticsPage, sendAnalyticsEvent } from "@ui/api/analytics"

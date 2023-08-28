@@ -1,6 +1,6 @@
 import { log } from "@core/log"
 import { notify } from "@talisman/components/Notifications"
-import { AlertCircleIcon, CheckCircleIcon } from "@talisman/theme/icons"
+import { AlertCircleIcon, CheckCircleIcon } from "@talismn/icons"
 import { classNames } from "@talismn/util"
 import { useAccountByAddress } from "@ui/hooks/useAccountByAddress"
 import { FC, useCallback, useState } from "react"

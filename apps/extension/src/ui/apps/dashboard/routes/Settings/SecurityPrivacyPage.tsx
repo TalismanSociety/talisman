@@ -9,7 +9,7 @@ import {
   ClockIcon,
   KeyIcon,
   LockIcon,
-} from "@talisman/theme/icons"
+} from "@talismn/icons"
 import { MigratePasswordModal } from "@ui/domains/Settings/MigratePassword/MigratePasswordModal"
 import { MnemonicModal } from "@ui/domains/Settings/MnemonicModal"
 import useMnemonicBackup from "@ui/hooks/useMnemonicBackup"

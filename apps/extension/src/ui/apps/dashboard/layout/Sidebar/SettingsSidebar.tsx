@@ -7,7 +7,7 @@ import {
   TalismanHandIcon,
   UserIcon,
   UsersIcon,
-} from "@talisman/theme/icons"
+} from "@talismn/icons"
 import { useTranslation } from "react-i18next"
 
 import { SidebarNavItem } from "./SidebarNavItem"

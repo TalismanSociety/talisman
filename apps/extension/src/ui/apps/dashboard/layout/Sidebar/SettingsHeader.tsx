@@ -1,4 +1,4 @@
-import { ChevronLeftIcon, PlusIcon } from "@talisman/theme/icons"
+import { ChevronLeftIcon, PlusIcon } from "@talismn/icons"
 import { useAnalytics } from "@ui/hooks/useAnalytics"
 import { useCallback } from "react"
 import { useTranslation } from "react-i18next"

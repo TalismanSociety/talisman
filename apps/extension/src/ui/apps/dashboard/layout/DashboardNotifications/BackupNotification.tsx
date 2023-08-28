@@ -1,5 +1,5 @@
 import { useOpenClose } from "@talisman/hooks/useOpenClose"
-import { AlertCircleIcon, InfoIcon } from "@talisman/theme/icons"
+import { AlertCircleIcon, InfoIcon } from "@talismn/icons"
 import { MnemonicModal } from "@ui/domains/Settings/MnemonicModal"
 import useMnemonicBackup from "@ui/hooks/useMnemonicBackup"
 import { useTranslation } from "react-i18next"

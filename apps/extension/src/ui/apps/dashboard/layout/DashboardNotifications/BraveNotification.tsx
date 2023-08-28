@@ -1,7 +1,7 @@
 import { appStore } from "@core/domains/app/store.app"
 import { useIsBrave } from "@talisman/hooks/useIsBrave"
 import { useOpenClose } from "@talisman/hooks/useOpenClose"
-import { BraveIcon } from "@talisman/theme/icons"
+import { BraveIcon } from "@talismn/icons"
 import { BraveWarningModal } from "@ui/domains/Settings/BraveWarning/BraveWarningModal"
 import { useAppState } from "@ui/hooks/useAppState"
 import { useCallback, useMemo } from "react"

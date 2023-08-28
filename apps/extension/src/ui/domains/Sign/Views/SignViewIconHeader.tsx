@@ -5,7 +5,7 @@ import {
   XCircleIcon,
   ZapIcon,
   ZapOffIcon,
-} from "@talisman/theme/icons"
+} from "@talismn/icons"
 import { classNames } from "@talismn/util"
 import { FC, useMemo } from "react"
 

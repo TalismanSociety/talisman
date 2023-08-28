@@ -14,7 +14,7 @@ import {
   StarIcon,
   UserIcon,
   ZapIcon,
-} from "@talisman/theme/icons"
+} from "@talismn/icons"
 import { useBuyTokensModal } from "@ui/domains/Asset/Buy/BuyTokensModalContext"
 import { useSelectedAccount } from "@ui/domains/Portfolio/SelectedAccountContext"
 import { useAnalytics } from "@ui/hooks/useAnalytics"

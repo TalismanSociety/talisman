@@ -1,7 +1,7 @@
 import { TALISMAN_WEB_APP_STAKING_URL } from "@core/constants"
 import { Balances } from "@core/domains/balances/types"
-import { ExternalLinkIcon, XIcon, ZapIcon } from "@talisman/theme/icons"
 import { useBalancesStatus } from "@talismn/balances-react"
+import { ExternalLinkIcon, XIcon, ZapIcon } from "@talismn/icons"
 import { classNames } from "@talismn/util"
 import { useAnalytics } from "@ui/hooks/useAnalytics"
 import { FC, useCallback } from "react"

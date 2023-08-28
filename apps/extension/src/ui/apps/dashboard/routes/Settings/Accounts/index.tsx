@@ -1,6 +1,6 @@
 import { HeaderBlock } from "@talisman/components/HeaderBlock"
 import { Spacer } from "@talisman/components/Spacer"
-import { EyeIcon, FolderPlusIcon, TalismanHandIcon, UserPlusIcon } from "@talisman/theme/icons"
+import { EyeIcon, FolderPlusIcon, TalismanHandIcon, UserPlusIcon } from "@talismn/icons"
 import { AnalyticsPage } from "@ui/api/analytics"
 import { DashboardLayout } from "@ui/apps/dashboard/layout/DashboardLayout"
 import useAccounts from "@ui/hooks/useAccounts"

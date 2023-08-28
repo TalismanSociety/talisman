@@ -1,4 +1,4 @@
-import { UsersIcon } from "@talisman/theme/icons"
+import { UsersIcon } from "@talismn/icons"
 import { classNames } from "@talismn/util"
 import { ReactNode } from "react"
 

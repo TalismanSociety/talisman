@@ -1,4 +1,4 @@
-import { ArrowDownIcon, MoreHorizontalIcon, PaperPlaneIcon } from "@talisman/theme/icons"
+import { ArrowDownIcon, MoreHorizontalIcon, SendIcon } from "@talismn/icons"
 import { AccountContextMenu } from "@ui/apps/dashboard/routes/Portfolio/AccountContextMenu"
 import { useCopyAddressModal } from "@ui/domains/CopyAddress"
 import { AccountSelect } from "@ui/domains/Portfolio/AccountSelect"
@@ -36,7 +36,7 @@ export const MainHeader = () => {
       <AccountSelect />
       {/* Pills for large screens */}
       <div className="hidden flex-col items-center gap-4 p-4 pb-0 md:flex lg:flex-row">
-        <SendPillButton className="!px-4" icon={PaperPlaneIcon}>
+        <SendPillButton className="!px-4" icon={SendIcon}>
           {t("Send")}
         </SendPillButton>
         <PillButton className="!px-4" icon={ArrowDownIcon} onClick={handleCopyClick}>
@@ -56,7 +56,7 @@ export const MainHeader = () => {
       {/* Buttons for small screens */}
       <div className="flex justify-center py-2 md:hidden">
         <SendIconButton className="hover:bg-grey-800 rounded-xs p-1 !text-base">
-          <PaperPlaneIcon />
+          <SendIcon />
         </SendIconButton>
         <IconButton
           className="hover:bg-grey-800 rounded-xs p-1 !text-base"

@@ -8,7 +8,7 @@ import {
   KeyIcon,
   TerminalIcon,
   UserIcon,
-} from "@talisman/theme/icons"
+} from "@talismn/icons"
 import { AvatarTypeSelect } from "@ui/domains/Settings/AvatarTypeSelect"
 import { useAppState } from "@ui/hooks/useAppState"
 import { useIsFeatureEnabled } from "@ui/hooks/useFeatures"

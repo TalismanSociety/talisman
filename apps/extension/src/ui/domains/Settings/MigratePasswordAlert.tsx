@@ -1,7 +1,7 @@
 import passwordStore from "@core/domains/app/store.password"
 import { Card } from "@talisman/components/Card"
 import { useOpenClose } from "@talisman/hooks/useOpenClose"
-import { LockIcon } from "@talisman/theme/icons"
+import { LockIcon } from "@talismn/icons"
 import { classNames } from "@talismn/util"
 import { api } from "@ui/api"
 import { sendAnalyticsEvent } from "@ui/api/analytics"

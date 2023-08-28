@@ -1,7 +1,7 @@
-import { ArrowRightIcon } from "@talisman/theme/icons"
 import { shortenAddress } from "@talisman/util/shortenAddress"
 import { Address, BalanceFormatter } from "@talismn/balances"
 import { ChainId, EvmNetworkId } from "@talismn/chaindata-provider"
+import { ArrowRightIcon } from "@talismn/icons"
 import { TokenRates } from "@talismn/token-rates"
 import { classNames } from "@talismn/util"
 import { AccountIcon } from "@ui/domains/Account/AccountIcon"

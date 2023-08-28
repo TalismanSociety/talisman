@@ -47,6 +47,7 @@
     "@talismn/balances-react": "workspace:*",
     "@talismn/chaindata-js": "^0.0.7",
     "@talismn/chaindata-provider": "workspace:*",
+    "@talismn/icons": "workspace:*",
     "@talismn/orb": "workspace:*",
     "@talismn/token-rates": "workspace:*",
     "@talismn/util": "workspace:*",

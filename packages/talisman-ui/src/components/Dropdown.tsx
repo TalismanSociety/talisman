@@ -1,8 +1,7 @@
 import { Listbox } from "@headlessui/react"
+import { ChevronDownIcon } from "@talismn/icons"
 import { classNames } from "@talismn/util"
 import { ReactNode } from "react"
-
-import { IconChevronDown } from "../icons"
 
 export type DropdownOption = Record<string, unknown>
 
@@ -59,7 +58,7 @@ export const Dropdown = <T extends Record<string, unknown>>({
             <div className="flex flex-grow flex-col justify-center overflow-hidden">
               {value ? renderItem(value, propertyLabel) : placeholder}
             </div>
-            <IconChevronDown className="shrink-0 text-[1.2em]" />
+            <ChevronDownIcon className="shrink-0 text-[1.2em]" />
           </Listbox.Button>
           <div className="relative w-full">
             <div className="bg-grey-800 scrollable scrollable-700 absolute left-0 top-0 z-10 max-h-[30rem] w-full overflow-y-auto overflow-x-hidden rounded-b-sm">

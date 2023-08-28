@@ -4,7 +4,7 @@ import {
   NetworkUsageHighIcon,
   NetworkUsageIdleIcon,
   NetworkUsageIncreasingIcon,
-} from "@talisman/theme/icons"
+} from "@talismn/icons"
 import { classNames } from "@talismn/util"
 import { FC, SVGProps } from "react"
 import { useTranslation } from "react-i18next"

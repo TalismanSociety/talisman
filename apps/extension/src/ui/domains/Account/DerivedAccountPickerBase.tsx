@@ -1,6 +1,6 @@
 import { Balance } from "@core/domains/balances/types"
 import { AccountJson } from "@polkadot/extension-base/background/types"
-import { CheckCircleIcon } from "@talisman/theme/icons"
+import { CheckCircleIcon } from "@talismn/icons"
 import { classNames } from "@talismn/util"
 import { useBalanceDetails } from "@ui/hooks/useBalanceDetails"
 import { FC, ReactNode, useCallback } from "react"

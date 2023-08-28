@@ -1,6 +1,6 @@
 import { HeaderBlock } from "@talisman/components/HeaderBlock"
 import { Spacer } from "@talisman/components/Spacer"
-import { ChevronRightIcon, GlobeIcon, ListIcon } from "@talisman/theme/icons"
+import { ChevronRightIcon, GlobeIcon, ListIcon } from "@talismn/icons"
 import { useTranslation } from "react-i18next"
 import { CtaButton } from "talisman-ui"
 

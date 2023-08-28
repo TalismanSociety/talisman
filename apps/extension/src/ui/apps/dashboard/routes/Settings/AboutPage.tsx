@@ -6,7 +6,7 @@ import {
   HelpCircleIcon,
   MapIcon,
   TalismanHandIcon,
-} from "@talisman/theme/icons"
+} from "@talismn/icons"
 import { Trans, useTranslation } from "react-i18next"
 import { CtaButton } from "talisman-ui"
 
