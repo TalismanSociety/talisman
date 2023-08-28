@@ -40,7 +40,7 @@ export const NoAccounts = () => {
   return (
     <div className="flex w-1/2 flex-col items-center justify-center gap-12 p-12 text-center">
       <span className="text-lg">{t("Talisman awaits!")}</span>
-      <img className="w-[26rem]" src={imgNoAccounts} alt="Heroic Character" />
+      <img className="h-[21.4rem] w-[26rem]" src={imgNoAccounts} alt="Heroic Character" />
       <div className="text-body-secondary">
         <Trans t={t}>
           <span className="text-body">Add an account</span> or{" "}
