@@ -34,7 +34,7 @@ export const NoAccounts = () => {
       name: "Goto",
       action: "watch account",
     })
-    navigate("/accouts/add/watched")
+    navigate("/accounts/add/watched")
   }, [navigate])
 
   return (
