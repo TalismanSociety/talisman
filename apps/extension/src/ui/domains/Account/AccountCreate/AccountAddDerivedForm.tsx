@@ -173,23 +173,6 @@ const AccountAddDerivedFormInner: FC<AccountAddDerivedFormProps> = ({ onSuccess 
             label={t("Recovery phrase")}
             propertyKey="value"
             renderItem={(o) => (
-              // <div className="flex w-full items-center gap-6 overflow-hidden">
-              //   <div className="bg-body/10 text-md rounded-full p-4">
-              //     {o.value === "new" ? <PlusIcon /> : <SeedIcon />}
-              //   </div>
-
-              //   <div className="flex grow flex-col gap-1 overflow-hidden">
-              //     <div className="truncate text-sm">{o.label}</div>
-              //     {o.value !== "new" && (
-              //       <div className="text-body-disabled flex items-center gap-2 truncate text-xs">
-              //         {o.accounts && <AccountsStack accounts={o.accounts} />}
-              //         <div>
-              //           {t("used by {{count}} accounts", { count: o.accounts?.length ?? 0 })}
-              //         </div>
-              //       </div>
-              //     )}
-              //   </div>
-              // </div>
               <div className="text-body-secondary flex w-full items-center gap-6 overflow-hidden">
                 <div className="bg-body/10 text-md rounded-full p-4">
                   {o.value === "new" ? <PlusIcon /> : <SeedIcon />}
