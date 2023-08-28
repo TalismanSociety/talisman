@@ -46,8 +46,12 @@ export default class AccountsHandler extends ExtensionHandler {
     assert(!existing, "An account with this name already exists")
 
     let derivedMnemonicId: string
+    let mnemonic: string
     if ("mnemonicId" in options) {
       derivedMnemonicId = options.mnemonicId
+      const mnemonicResult = await this.stores.seedPhrase.getSeed(derivedMnemonicId, password)
+      if (mnemonicResult.err || !mnemonicResult.val) throw new Error("Mnemonic not stored locally")
+      mnemonic = mnemonicResult.val
     } else {
       const newMnemonicId = await this.stores.seedPhrase.add(
         `${name} Recovery Phrase`,
@@ -58,17 +62,14 @@ export default class AccountsHandler extends ExtensionHandler {
       )
       if (newMnemonicId.err) throw new Error("Failed to store new mnemonic")
       derivedMnemonicId = newMnemonicId.val
+      mnemonic = options.mnemonic
     }
 
-    const mnemonicResult = await this.stores.seedPhrase.getSeed(derivedMnemonicId, password)
-    if (mnemonicResult.err) throw mnemonicResult.val
-    if (!mnemonicResult.val) throw new Error("Mnemonic not stored locally")
-
-    const { val: derivationPath, err } = getNextDerivationPathForMnemonic(mnemonicResult.val, type)
+    const { val: derivationPath, err } = getNextDerivationPathForMnemonic(mnemonic, type)
     if (err) throw new Error(derivationPath)
 
     const { pair } = keyring.addUri(
-      `${mnemonicResult.val}${derivationPath}`,
+      `${mnemonic}${derivationPath}`,
       password,
       {
         name,
