@@ -82,16 +82,22 @@ const AccountAddDerivedFormInner: FC<AccountAddDerivedFormProps> = ({ onSuccess 
 
   const mnemonics = useMnemonics()
   const mnemonicOptions: MnemonicOption[] = useMemo(
-    () => [
+    () => {
+      const accountsByMnemonic = allAccounts.reduce((result, acc) => {
+        if (!acc.derivedMnemonicId in result) result[acc.derivedMnemonicId] = []
+        result[acc.derivedMnemonicId].append(acc)
+        return result
+      }, {} as Record<string, AccountJsonAny[]>)
+      return [
       ...mnemonics
         .map((m) => ({
           label: m.name,
           value: m.id,
-          accounts: allAccounts.filter((a) => a.derivedMnemonicId === m.id),
+          accounts: accountsByMnemonic[m.id] || [],
         }))
         .sort((a, b) => a.label.localeCompare(b.label)),
       GENERATE_MNEMONIC_OPTION,
-    ],
+    ]},
     [allAccounts, mnemonics]
   )
   const [selectedMnemonic, setSelectedMnemonic] = useState<MnemonicOption | null>(
