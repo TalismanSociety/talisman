@@ -112,6 +112,7 @@ export default class AccountsHandler extends ExtensionHandler {
       const derivedMnemonicId = await this.stores.seedPhrase.getExistingId(mnemonic)
 
       if (derivedMnemonicId) {
+        meta.origin = AccountTypes.SEED
         meta.derivedMnemonicId = derivedMnemonicId
         meta.derivationPath = derivationPath
       } else {
