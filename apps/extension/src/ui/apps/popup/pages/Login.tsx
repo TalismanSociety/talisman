@@ -171,7 +171,7 @@ const useDevModeAutologin = ({
   useLayoutEffect(() => {
     if (process.env.NODE_ENV === "production") return
     if (!process.env.PASSWORD) return
-    setValue("password", process.env.PASSWORD)
+    // setValue("password", process.env.PASSWORD)
   }, [setValue])
 
   // submit login form

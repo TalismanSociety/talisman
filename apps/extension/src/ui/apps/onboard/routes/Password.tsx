@@ -80,6 +80,11 @@ export const PasswordPage = () => {
     }
   }, [setValue])
 
+  const navigateNext = useCallback(() => {
+    if (isLoggedIn === "TRUE") navigate(isResettingWallet ? "/account" : `/privacy`)
+    else setOnboarded()
+  }, [navigate, isLoggedIn, setOnboarded, isResettingWallet])
+
   const submit = useCallback(
     async (fields: FormData) => {
       const { password, passwordConfirm } = fields
@@ -96,10 +101,9 @@ export const PasswordPage = () => {
         name: "Submit",
         action: "Choose password continue button",
       })
-      if (isLoggedIn === "TRUE") navigate(isResettingWallet ? "/account" : `/privacy`)
-      else setOnboarded()
+      navigateNext()
     },
-    [navigate, setOnboarded, setError, createPassword, isResettingWallet, isLoggedIn]
+    [setError, createPassword, navigateNext]
   )
 
   return (
@@ -119,13 +123,7 @@ export const PasswordPage = () => {
                 "If you can't remember the password you set, you should re-install Talisman now, and restart this onboarding process."
               )}
             </p>
-            <Button
-              fullWidth
-              primary
-              className="mt-16"
-              type="button"
-              onClick={() => navigate(isResettingWallet ? "/account" : `/privacy`)}
-            >
+            <Button fullWidth primary className="mt-16" type="button" onClick={navigateNext}>
               {t("Continue")}
             </Button>
           </div>
