@@ -13,7 +13,6 @@ import { assert } from "@polkadot/util"
 import { cryptoWaitReady } from "@polkadot/util-crypto"
 import Browser from "webextension-polyfill"
 
-import { TEST_MNEMONIC } from "../../../../../tests/constants"
 import { getMessageSenderFn } from "../../../../../tests/util"
 
 jest.mock("@talismn/chaindata-provider-extension/src/graphql")
@@ -24,9 +23,11 @@ keyring.loadAll({ store: new AccountsStore() })
 describe("App handler when password is not trimmed", () => {
   let extension: Extension
   let messageSender: ReturnType<typeof getMessageSenderFn>
+  const suri = "seed sock milk update focus rotate barely fade car face mechanic mercy"
   const password = "passw0rd " // has a space
   let initialStoreData: Partial<GettableStoreData> = {}
   let accountsJson: KeyringPairs$Json
+
   let mnemonicId: string
 
   async function createExtension(): Promise<Extension> {
@@ -54,7 +55,7 @@ describe("App handler when password is not trimmed", () => {
     await messageSender("pri(accounts.create)", {
       name: "Test Polkadot Account",
       type: "sr25519",
-      mnemonic: TEST_MNEMONIC,
+      mnemonic: suri,
       confirmed: false,
     })
 
@@ -169,6 +170,7 @@ describe("App handler when password is not trimmed", () => {
 describe("App handler when password is trimmed", () => {
   let extension: Extension
   let messageSender: ReturnType<typeof getMessageSenderFn>
+  const suri = "seed sock milk update focus rotate barely fade car face mechanic mercy"
   const password = "passw0rd " // has a space
   let initialStoreData: Partial<GettableStoreData> = {}
   let accountsJson: KeyringPairs$Json
@@ -201,7 +203,7 @@ describe("App handler when password is trimmed", () => {
     await messageSender("pri(accounts.create)", {
       name: "Test Polkadot Account",
       type: "sr25519",
-      mnemonic: TEST_MNEMONIC,
+      mnemonic: suri,
       confirmed: false,
     })
 

@@ -16,7 +16,6 @@ import keyring from "@polkadot/ui-keyring"
 import { cryptoWaitReady } from "@polkadot/util-crypto"
 import Browser from "webextension-polyfill"
 
-import { TEST_MNEMONIC } from "../../../tests/constants"
 import { getMessageSenderFn } from "../../../tests/util"
 import { signSubstrate } from "../domains/signing/requests"
 import { requestStore } from "../libs/requests/store"
@@ -40,6 +39,7 @@ describe("Extension", () => {
   let messageSender: ReturnType<typeof getMessageSenderFn>
   const suri = "seed sock milk update focus rotate barely fade car face mechanic mercy"
   const password = "passw0rd " // has a space
+  let mnemonicId: string
 
   async function createExtension(): Promise<Extension> {
     await cryptoWaitReady()
@@ -78,9 +78,12 @@ describe("Extension", () => {
     const address = await messageSender("pri(accounts.create)", {
       name: "Test Polkadot Account",
       type: "sr25519",
-      mnemonic: TEST_MNEMONIC,
+      mnemonic: suri,
       confirmed: false,
     })
+
+    mnemonicId = Object.keys(await extensionStores.seedPhrase.get())[0]
+
     // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
     await extensionStores.sites.updateSite("localhost:3000", { addresses: [address] })
     await extensionStores.app.setOnboarded()
@@ -475,8 +478,7 @@ describe("Extension", () => {
     const newAddress = await messageSender("pri(accounts.create)", {
       name: "AutoAdd",
       type: "sr25519",
-      mnemonic: TEST_MNEMONIC,
-      confirmed: false,
+      mnemonicId,
     })
 
     const sites = await extensionStores.sites.get()
