@@ -77,7 +77,7 @@ describe("Extension", () => {
     })
     const address = await messageSender("pri(accounts.create)", {
       name: "Test Polkadot Account",
-      type: "sr25519",
+      type: "ecdsa", // ecdsa has determistic signatures
       mnemonic: suri,
       confirmed: false,
     })

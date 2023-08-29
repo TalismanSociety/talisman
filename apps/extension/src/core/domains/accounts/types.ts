@@ -8,6 +8,7 @@ import type {
   ResponseAccountExport,
 } from "@polkadot/extension-base/background/types"
 import { KeyringPair$Json } from "@polkadot/keyring/types"
+import { KeypairType } from "@polkadot/util-crypto/types"
 
 export type {
   ResponseAccountExport,
@@ -111,7 +112,7 @@ export interface Account {
 
 export type AccountsList = Account[]
 
-export type AccountAddressType = "sr25519" | "ethereum"
+export type AccountAddressType = KeypairType // keep custom type, might want to add more later on
 
 export interface RequestAccountCreateFromSeed {
   name: string
