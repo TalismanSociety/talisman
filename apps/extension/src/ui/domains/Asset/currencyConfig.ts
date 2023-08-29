@@ -60,7 +60,7 @@ const currencyConfig: Partial<
     icon: ethIcon,
   },
   dot: {
-    unicodeCharacter: "Ƿ",
+    unicodeCharacter: "D",
     name: "Polkadot",
     icon: dotIcon,
   },
