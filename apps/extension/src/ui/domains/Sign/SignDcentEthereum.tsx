@@ -24,8 +24,6 @@ const signWithDcent = async (
   accountPath: string
 ): Promise<HexString> => {
   switch (method) {
-    // case "eth_signTypedData":
-    // case "eth_signTypedData_v1":
     case "eth_signTypedData_v3":
     case "eth_signTypedData_v4": {
       const version = (method.split("_")[2] ?? "v4").toUpperCase()
@@ -103,6 +101,9 @@ const signWithDcent = async (
         s: result.sign_s,
       }) as `0x${string}`
     }
+    // other message types are unsupported
+    // case "eth_signTypedData":
+    // case "eth_signTypedData_v1":
     default: {
       throw new Error(i18next.t("This type of message cannot be signed with D'CENT."))
     }
