@@ -156,7 +156,6 @@ const AccountsList = ({ className, options }: { className?: string; options: Acc
 
 const AccountsBgConfig: MysticalPhysicsV3 = {
   ...MYSTICAL_PHYSICS_V3,
-  withAcolyte: false,
   artifacts: 2,
   blur: 0,
   radiusMin: 4,
