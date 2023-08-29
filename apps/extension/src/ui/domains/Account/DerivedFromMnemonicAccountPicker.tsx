@@ -1,5 +1,5 @@
 import { AccountAddressType, RequestAccountCreateFromSeed } from "@core/domains/accounts/types"
-import { AddressesByEvmNetwork } from "@core/domains/balances/types"
+import { AddressesAndEvmNetwork } from "@core/domains/balances/types"
 import { getEthDerivationPath } from "@core/domains/ethereum/helpers"
 import { AddressesByChain } from "@core/types/base"
 import { convertAddress } from "@talisman/util/convertAddress"
@@ -72,7 +72,7 @@ const useDerivedAccounts = (
   const { chains } = useChains(false)
   const { evmNetworks } = useEvmNetworks(false)
 
-  const { expectedBalancesCount, addressesByChain, addressesByEvmNetwork } = useMemo(() => {
+  const { expectedBalancesCount, addressesByChain, addressesAndEvmNetworks } = useMemo(() => {
     const expectedBalancesCount =
       type === "ethereum"
         ? BALANCE_CHECK_EVM_NETWORK_IDS.length
@@ -102,7 +102,7 @@ const useDerivedAccounts = (
             {}
           )
 
-    const addressesByEvmNetwork: AddressesByEvmNetwork =
+    const addressesAndEvmNetworks: AddressesAndEvmNetwork =
       type === "ethereum"
         ? {
             addresses: derivedAccounts
@@ -118,10 +118,17 @@ const useDerivedAccounts = (
           }
         : { addresses: [], evmNetworks: [] }
 
-    return { expectedBalancesCount, addressesByChain, addressesByEvmNetwork }
+    return {
+      expectedBalancesCount,
+      addressesByChain,
+      addressesAndEvmNetworks,
+    }
   }, [chains, derivedAccounts, evmNetworks, type])
 
-  const balances = useBalancesByParams({ addressesByChain, addressesByEvmNetwork })
+  const balances = useBalancesByParams({
+    addressesByChain,
+    addressesAndEvmNetworks,
+  })
 
   const accounts: (DerivedFromMnemonicAccount | null)[] = useMemo(
     () =>
@@ -145,14 +152,14 @@ const useDerivedAccounts = (
           selected: selectedAccounts.some((sa) => sa.seed === acc.seed),
           balances: accountBalances,
           isBalanceLoading:
-            (!addressesByChain && !addressesByEvmNetwork) ||
+            (!addressesByChain && !addressesAndEvmNetworks) ||
             accountBalances.length < expectedBalancesCount ||
             accountBalances.some((b) => b.status === "cache"),
         }
       }),
     [
       addressesByChain,
-      addressesByEvmNetwork,
+      addressesAndEvmNetworks,
       balances.sorted,
       derivedAccounts,
       expectedBalancesCount,

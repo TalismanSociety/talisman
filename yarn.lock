@@ -12590,6 +12590,16 @@ __metadata:
   languageName: node
   linkType: hard
 
+"dcent-web-connector@npm:^0.14.1":
+  version: 0.14.1
+  resolution: "dcent-web-connector@npm:0.14.1"
+  dependencies:
+    bignumber.js: ^9.1.1
+    events: ^3.0.0
+  checksum: 7f5ce96f153b8a4e9b103c06ebc27e8720889ef1255c97915768b03eb3b34ec47df94b76ddbc388584e7e4595e46179da778c6bdf908e0f41c90c4ca596b0d22
+  languageName: node
+  linkType: hard
+
 "de-indent@npm:^1.0.2":
   version: 1.0.2
   resolution: "de-indent@npm:1.0.2"
@@ -14277,7 +14287,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"events@npm:^3.2.0, events@npm:^3.3.0":
+"events@npm:^3.0.0, events@npm:^3.2.0, events@npm:^3.3.0":
   version: 3.3.0
   resolution: "events@npm:3.3.0"
   checksum: f6f487ad2198aa41d878fa31452f1a3c00958f46e9019286ff4787c84aac329332ab45c9cdc8c445928fc6d7ded294b9e005a7fce9426488518017831b272780
@@ -14496,6 +14506,7 @@ __metadata:
     crypto-browserify: 3.12.0
     css-loader: ^6.7.3
     date-fns: ^2.30.0
+    dcent-web-connector: ^0.14.1
     dexie: ^3.2.4
     dexie-react-hooks: ^1.1.6
     dotenv: ^16.0.3

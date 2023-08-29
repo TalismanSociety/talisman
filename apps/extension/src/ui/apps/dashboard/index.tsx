@@ -17,6 +17,7 @@ import { useTranslation } from "react-i18next"
 import { Navigate, Route, Routes, useMatch } from "react-router-dom"
 
 import { DashboardLayout } from "./layout/DashboardLayout"
+import { AccountAddDcentWizard } from "./routes/AccountAdd/AccountAddDcentWizard"
 import { AccounAddDerivedPage } from "./routes/AccountAdd/AccountAddDerivedPage"
 import { AccountAddQrWizard } from "./routes/AccountAdd/AccountAddQrWizard"
 import { AccountAddSecretWizard } from "./routes/AccountAdd/AccountAddSecretWizard"
@@ -98,6 +99,7 @@ const DashboardInner = () => {
             <Route path="ledger/*" element={<AccountAddLedgerWizard />} />
             <Route path="qr/*" element={<AccountAddQrWizard />} />
             <Route path="watched" element={<AccountAddWatchedPage />} />
+            <Route path="dcent/*" element={<AccountAddDcentWizard />} />
             <Route path="*" element={<Navigate to="" replace />} />
           </Route>
           <Route path="" element={<Navigate to="/portfolio" />} />
