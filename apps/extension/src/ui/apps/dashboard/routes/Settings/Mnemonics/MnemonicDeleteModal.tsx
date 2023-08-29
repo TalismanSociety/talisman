@@ -1,11 +1,12 @@
 import { notify } from "@talisman/components/Notifications"
 import { useOpenClose } from "@talisman/hooks/useOpenClose"
+import { AlertTriangleIcon } from "@talisman/theme/icons"
 import { provideContext } from "@talisman/util/provideContext"
 import { api } from "@ui/api"
 import { useMnemonic, useMnemonics } from "@ui/hooks/useMnemonics"
-import { useCallback, useEffect, useState } from "react"
+import { useCallback, useEffect, useMemo, useState } from "react"
 import { Trans, useTranslation } from "react-i18next"
-import { Button, ModalDialog } from "talisman-ui"
+import { Button, FormFieldInputText, ModalDialog } from "talisman-ui"
 import { Modal } from "talisman-ui"
 
 const useMnemonicDeleteModalProvider = () => {
@@ -47,6 +48,7 @@ export const [MnemonicDeleteModalProvider, useMnemonicDeleteModal] = provideCont
 export const MnemonicDeleteModal = () => {
   const { t } = useTranslation("admin")
   const { mnemonic, close, isOpen } = useMnemonicDeleteModal()
+  const [inputCheck, setInputCheck] = useState<string>("")
 
   // keep name in memory so it can still be displayed while modal is closing
   const [name, setName] = useState<string>()
@@ -68,9 +70,21 @@ export const MnemonicDeleteModal = () => {
     }
   }, [close, mnemonic, t])
 
+  const disableDelete = useMemo(() => {
+    return t("Delete").trim().toLowerCase() !== inputCheck.trim().toLowerCase()
+  }, [inputCheck, t])
+
   return (
     <Modal containerId="main" isOpen={isOpen} onDismiss={close}>
-      <ModalDialog title={t("Delete Recovery Phrase")} onClose={close}>
+      <ModalDialog
+        title={
+          <div className="flex items-center gap-4">
+            <AlertTriangleIcon className="text-brand-orange inline text-lg" />
+            <span>{t("Delete Recovery Phrase")}</span>
+          </div>
+        }
+        onClose={close}
+      >
         <p className="text-body-secondary">
           <Trans
             t={t}
@@ -79,9 +93,22 @@ export const MnemonicDeleteModal = () => {
             values={{ name }}
           />
         </p>
+        <div>
+          <div className="text-body-disabled mb-4 mt-12">{t("Type Delete to continue")}</div>
+          <FormFieldInputText
+            placeholder={t("Delete")}
+            defaultValue=""
+            onChange={(e) => setInputCheck(e.target.value)}
+          />
+        </div>
         <div className="mt-12 grid grid-cols-2 gap-8">
           <Button onClick={close}>{t("Cancel")}</Button>
-          <Button primary onClick={handleConfirmClick}>
+          <Button
+            primary
+            onClick={handleConfirmClick}
+            disabled={disableDelete}
+            className="enabled:!bg-brand-orange hover:enabled:!bg-brand-orange/80  enabled:text-white"
+          >
             {t("Delete")}
           </Button>
         </div>

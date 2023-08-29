@@ -1,4 +1,3 @@
-import { AccountJsonHardwareEthereum } from "@core/domains/accounts/types"
 import { EthTransactionDetails } from "@core/domains/signing/types"
 import { EvmWalletTransaction, WalletTransaction } from "@core/domains/transactions/types"
 import { HexString } from "@polkadot/util/types"
@@ -14,7 +13,7 @@ import { useBalance } from "@ui/hooks/useBalance"
 import { useEvmNetwork } from "@ui/hooks/useEvmNetwork"
 import { BigNumber } from "ethers"
 import { ethers } from "ethers"
-import { FC, lazy, useCallback, useMemo, useState } from "react"
+import { FC, useCallback, useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
 import { Button, Drawer, useOpenCloseWithData } from "talisman-ui"
 import { Tooltip, TooltipContent, TooltipTrigger } from "talisman-ui"
@@ -22,6 +21,7 @@ import { Tooltip, TooltipContent, TooltipTrigger } from "talisman-ui"
 import { TokensAndFiat } from "../Asset/TokensAndFiat"
 import { EthFeeSelect } from "../Ethereum/GasSettings/EthFeeSelect"
 import { useEthReplaceTransaction } from "../Ethereum/useEthReplaceTransaction"
+import { SignHardwareEthereum } from "../Sign/SignHardwareEthereum"
 import { TxReplaceType } from "./types"
 
 const ANALYTICS_PAGE: AnalyticsPage = {
@@ -30,8 +30,6 @@ const ANALYTICS_PAGE: AnalyticsPage = {
   featureVersion: 1,
   page: "Replace Transaction",
 }
-
-const LedgerEthereum = lazy(() => import("@ui/domains/Sign/LedgerEthereum"))
 
 type TxReplaceDrawerProps = {
   tx?: WalletTransaction
@@ -194,7 +192,7 @@ const EvmDrawerContent: FC<{
     [onClose, t, transaction, tx, type]
   )
 
-  const handleSendToLedger = useCallback(() => {
+  const handleSentToDevice = useCallback(() => {
     setIsLocked(true)
   }, [])
 
@@ -287,15 +285,14 @@ const EvmDrawerContent: FC<{
       <>
         {canReplace && account?.isHardware ? (
           <div className="w-full">
-            <LedgerEthereum
-              manualSend
+            <SignHardwareEthereum
               className="mt-6"
-              method="transaction"
+              account={account}
+              method="eth_sendTransaction"
               payload={transaction}
-              account={account as AccountJsonHardwareEthereum}
-              onSignature={handleSendSigned}
-              onReject={() => onClose?.()}
-              onSendToLedger={handleSendToLedger}
+              onSigned={handleSendSigned}
+              onCancel={() => onClose?.()}
+              onSentToDevice={handleSentToDevice}
               containerId="main"
             />
           </div>

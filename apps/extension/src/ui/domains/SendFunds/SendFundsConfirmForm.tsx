@@ -15,11 +15,11 @@ import { TokensAndFiat } from "../Asset/TokensAndFiat"
 import { EthFeeSelect } from "../Ethereum/GasSettings/EthFeeSelect"
 import { AddressDisplay } from "./AddressDisplay"
 import { SendFundsFeeTooltip } from "./SendFundsFeeTooltip"
+import { SendFundsHardwareEthereum } from "./SendFundsHardwareEthereum"
+import { SendFundsHardwareSubstrate } from "./SendFundsHardwareSubstrate"
 import { useSendFunds } from "./useSendFunds"
 
 const SendFundsQrSubstrate = lazy(() => import("./SendFundsQrSubstrate"))
-const SendFundsLedgerSubstrate = lazy(() => import("./SendFundsLedgerSubstrate"))
-const SendFundsLedgerEthereum = lazy(() => import("./SendFundsLedgerEthereum"))
 
 const AmountDisplay = () => {
   const { sendMax, maxAmount, transfer, token } = useSendFunds()
@@ -107,7 +107,7 @@ const TotalValueRow = () => {
 }
 
 export const ExternalRecipientWarning = () => {
-  const { t } = useTranslation()
+  const { t } = useTranslation("send-funds")
   const { to } = useSendFunds()
   const accounts = useAccounts("owned")
 
@@ -166,8 +166,8 @@ const SendButton = () => {
           </Button>
         )}
         {signMethod === "qrSubstrate" && <SendFundsQrSubstrate />}
-        {signMethod === "ledgerSubstrate" && <SendFundsLedgerSubstrate />}
-        {signMethod === "ledgerEthereum" && <SendFundsLedgerEthereum />}
+        {signMethod === "hardwareSubstrate" && <SendFundsHardwareSubstrate />}
+        {signMethod === "hardwareEthereum" && <SendFundsHardwareEthereum />}
       </div>
     </Suspense>
   )

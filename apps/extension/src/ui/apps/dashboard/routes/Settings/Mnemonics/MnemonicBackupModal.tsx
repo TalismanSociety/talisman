@@ -5,18 +5,17 @@ import { provideContext } from "@talisman/util/provideContext"
 import { classNames } from "@talismn/util"
 import { api } from "@ui/api"
 import { Mnemonic } from "@ui/domains/Account/Mnemonic"
-import { PasswordUnlock, usePasswordUnlock } from "@ui/domains/Account/PasswordUnlock"
+import { MnemonicUnlock, useMnemonicUnlock } from "@ui/domains/Account/MnemonicUnlock"
 import { Mnemonic as MnemonicInfo, useMnemonic, useMnemonics } from "@ui/hooks/useMnemonics"
-import { useSensitiveState } from "@ui/hooks/useSensitiveState"
-import { ChangeEventHandler, FC, useCallback, useEffect, useState } from "react"
+import { ChangeEventHandler, FC, useCallback, useState } from "react"
 import { Trans, useTranslation } from "react-i18next"
-import { ModalDialog, Toggle } from "talisman-ui"
+import { Checkbox, ModalDialog } from "talisman-ui"
 import { Modal } from "talisman-ui"
 
 const Description = () => {
   const { t } = useTranslation("admin")
   return (
-    <div className="text-body-secondary my-6 text-sm">
+    <div className="text-body-secondary text-sm">
       <p>
         {t(
           "Your recovery phrase gives you access to your wallet and funds. It can be used to restore your Talisman created accounts if you lose access to your device, or forget your password."
@@ -39,31 +38,14 @@ const Description = () => {
           it in a secure location. <Link>Learn more</Link>"
         ></Trans>
       </p>
-      <div className="bg-grey-750 text-alert-warn mt-12 flex w-full items-center gap-8 rounded p-8">
-        <AlertTriangleIcon className="shrink-0 text-xl" />
-        <ul>
-          <Trans
-            t={t}
-            components={{ li: <li></li> }}
-            defaults="<li>Never share your recovery phrase with anyone.</li><li>Never enter your recovery phrase in any website.</li><li>Talisman will never ask you for it.</li>"
-          ></Trans>
-        </ul>
-      </div>
     </div>
   )
 }
 
 const MnemonicFormInner = ({ mnemonicId }: { mnemonicId: string }) => {
   const { t } = useTranslation()
-  const { password } = usePasswordUnlock()
+  const { mnemonic: secret } = useMnemonicUnlock()
   const mnemonic = useMnemonic(mnemonicId)
-
-  const [secret, setSecret] = useSensitiveState<string>()
-
-  useEffect(() => {
-    if (!password) return
-    api.mnemonicUnlock(mnemonicId, password).then(setSecret)
-  }, [password, setSecret, mnemonicId])
 
   const handleConfirmToggle: ChangeEventHandler<HTMLInputElement> = useCallback(
     async (e) => {
@@ -83,18 +65,28 @@ const MnemonicFormInner = ({ mnemonicId }: { mnemonicId: string }) => {
 
   return (
     <div className="flex grow flex-col">
-      {mnemonic ? (
-        <>
-          <Mnemonic mnemonic={secret ?? ""} />
-          <div className="grow"></div>
-          <div className="flex w-full items-center justify-end gap-2">
-            <div className="text-body-secondary text-sm">{t("Don't remind me again")}</div>
-            <Toggle checked={mnemonic.confirmed} onChange={handleConfirmToggle} />
-          </div>
-        </>
-      ) : (
-        <div className="bg-grey-800 mt-[32.8px] h-72 w-full animate-pulse rounded"></div>
-      )}
+      <Mnemonic mnemonic={secret ?? ""} />
+      <div className="bg-grey-750 text-alert-warn mt-8 flex w-full items-center gap-6 rounded-sm p-4">
+        <div className="bg-alert-warn/10 flex flex-col justify-center rounded-full p-2">
+          <AlertTriangleIcon className="shrink-0 text-base" />
+        </div>
+        <div className="text-xs">
+          <p>
+            {t(
+              "Never share your recovery phrase with anyone or enter your recovery phrase in any website. Talisman will never ask you to do it."
+            )}
+          </p>
+        </div>
+      </div>
+      <div className="mt-6 p-4">
+        <Checkbox
+          onChange={handleConfirmToggle}
+          checked={mnemonic?.confirmed}
+          className="text-body-secondary hover:text-body gap-8!"
+        >
+          {t("I have backed up my recovery phrase")}
+        </Checkbox>
+      </div>
     </div>
   )
 }
@@ -104,19 +96,22 @@ const MnemonicBackupForm: FC<{
 }> = ({ mnemonic }) => {
   const { t } = useTranslation("admin")
   return (
-    <div className={classNames("flex h-[47rem] flex-col")}>
+    <div className={classNames("flex flex-col gap-12")}>
       <Description />
-      <PasswordUnlock
-        className="flex w-full grow flex-col justify-center"
-        buttonText={t("View Recovery Phrase")}
-        title={
-          <span className="mb-[-0.8rem] text-sm">
-            {t("Enter your password to show your recovery phrase.")}
-          </span>
-        }
-      >
-        <MnemonicFormInner mnemonicId={mnemonic.id} />
-      </PasswordUnlock>
+      <div className="min-h-[18.6rem] grow">
+        <MnemonicUnlock
+          mnemonicId={mnemonic.id}
+          className="flex h-[18.6rem] w-full flex-col justify-between"
+          buttonText={t("View Recovery Phrase")}
+          title={
+            <div className="text-body mb-10">
+              {t("Enter your password to show your recovery phrase.")}
+            </div>
+          }
+        >
+          <MnemonicFormInner mnemonicId={mnemonic.id} />
+        </MnemonicUnlock>
+      </div>
     </div>
   )
 }
@@ -163,7 +158,7 @@ export const MnemonicBackupModal = () => {
 
   return (
     <Modal containerId="main" isOpen={isOpen} onDismiss={close}>
-      <ModalDialog className="!w-[50.3rem]" title={t("Backup recovery phrase")} onClose={close}>
+      <ModalDialog className="!w-[64rem]" title={t("Backup recovery phrase")} onClose={close}>
         {!!mnemonic && <MnemonicBackupForm mnemonic={mnemonic} />}
       </ModalDialog>
     </Modal>

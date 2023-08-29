@@ -1,17 +1,17 @@
 import { notify } from "@talisman/components/Notifications"
-import { CopyIcon } from "@talisman/theme/icons"
+import { CopyIcon, CursorClickIcon } from "@talisman/theme/icons"
 import { classNames } from "@talismn/util"
-import { MouseEventHandler, useCallback, useState } from "react"
+import { useCallback, useEffect, useState } from "react"
 import { useTranslation } from "react-i18next"
 
 type MnemonicProps = {
-  onMouseEnter?: MouseEventHandler
+  onReveal?: () => void
   mnemonic: string
 }
 
-export const Mnemonic = ({ onMouseEnter, mnemonic }: MnemonicProps) => {
+export const Mnemonic = ({ onReveal, mnemonic }: MnemonicProps) => {
   const { t } = useTranslation()
-  const [hasHovered, setHasHovered] = useState(false)
+  const [isRevealed, setIsRevealed] = useState(false)
 
   const handleCopy = useCallback(async () => {
     try {
@@ -28,37 +28,42 @@ export const Mnemonic = ({ onMouseEnter, mnemonic }: MnemonicProps) => {
     }
   }, [mnemonic, t])
 
+  useEffect(() => {
+    if (isRevealed) onReveal?.()
+  }, [isRevealed, onReveal])
+
   return (
     <>
       <div className="py-4 text-sm">
         <button
           type="button"
           onClick={handleCopy}
-          className={classNames(hasHovered ? "text-white" : "text-black", "cursor-pointer")}
+          className={"text-body-secondary hover:text-body"}
         >
           <CopyIcon className="mr-2 inline" /> <span>{t("Copy to clipboard")}</span>
         </button>
       </div>
-
       <div
-        className="bg-black-secondary group relative h-72 overflow-hidden rounded p-2"
-        onMouseEnter={(e) => {
-          setHasHovered(true)
-          onMouseEnter && onMouseEnter(e)
-        }}
+        className="bg-black-secondary group relative overflow-hidden rounded p-2"
+        onMouseLeave={() => setIsRevealed(false)}
       >
-        <div className="inline-flex flex-wrap">
-          {mnemonic.split(" ").map((word, i) => (
-            <span
-              className="bg-black-tertiary text-body-secondary mx-2 my-2 inline rounded-sm px-4 py-3"
-              key={`mnemonic-${i}`}
-            >
-              {word}
-            </span>
-          ))}
-          <div className="absolute left-0 top-0 flex h-full w-full items-center justify-center backdrop-blur-md group-hover:hidden">
-            <div className="text-xl opacity-60 saturate-0">☝</div>
-          </div>
+        <div className="grid min-h-[12.6rem] grid-cols-4 gap-4 p-2">
+          {!!mnemonic &&
+            mnemonic.split(" ").map((word, i) => (
+              <span className="bg-black-tertiary text-body rounded px-8 py-4" key={`mnemonic-${i}`}>
+                <span className="select-none">{i + 1}.</span> {word}
+              </span>
+            ))}
+          <button
+            type="button"
+            onClick={() => setIsRevealed(true)}
+            className={classNames(
+              "text-body-secondary hover:text-body absolute left-0 top-0 flex h-full w-full items-center justify-center rounded-sm backdrop-blur-md",
+              isRevealed && "group-hover:hidden"
+            )}
+          >
+            <CursorClickIcon className="text-xl" />
+          </button>
         </div>
       </div>
     </>

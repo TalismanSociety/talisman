@@ -26,7 +26,7 @@ const ShowMnemonic = () => {
         )}
       </p>
 
-      <Mnemonic mnemonic={mnemonic} onMouseEnter={() => setHasHovered(true)} />
+      <Mnemonic mnemonic={mnemonic} onReveal={() => setHasHovered(true)} />
 
       <div className="mt-20 flex justify-end">
         <Button
