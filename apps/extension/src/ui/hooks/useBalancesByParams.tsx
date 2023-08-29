@@ -1,4 +1,8 @@
-import { AddressesByEvmNetwork, AddressesByTokens, Balances } from "@core/domains/balances/types"
+import {
+  AddressesAndTokens,
+  Balances,
+  AddressesAndEvmNetwork as EvmNetworksAndAddresses,
+} from "@core/domains/balances/types"
 import { AddressesByChain } from "@core/types/base"
 import { api } from "@ui/api"
 import { useMessageSubscription } from "@ui/hooks/useMessageSubscription"
@@ -12,20 +16,23 @@ import { useBalancesHydrate } from "./useBalancesHydrate"
 const INITIAL_VALUE = new Balances({})
 
 const DEFAULT_BY_CHAIN: AddressesByChain = {}
-const DEFAULT_BY_EVM_NETWORK: AddressesByEvmNetwork = { addresses: [], evmNetworks: [] }
-const DEFAULT_BY_TOKENS: AddressesByTokens = { addresses: [], tokenIds: [] }
+const DEFAULT_EVM_NETWORKS_AND_ADDRESSES: EvmNetworksAndAddresses = {
+  addresses: [],
+  evmNetworks: [],
+}
+const DEFAULT_TOKENS_AND_ADDRESSES: AddressesAndTokens = { addresses: [], tokenIds: [] }
 
 export type BalanceByParamsProps = {
   addressesByChain?: AddressesByChain
-  addressesByEvmNetwork?: AddressesByEvmNetwork
-  addressesByTokens?: AddressesByTokens
+  addressesAndEvmNetworks?: EvmNetworksAndAddresses
+  addressesAndTokens?: AddressesAndTokens
 }
 
 // This is used to fetch balances from accounts that are not in the keyring
 export const useBalancesByParams = ({
   addressesByChain = DEFAULT_BY_CHAIN,
-  addressesByEvmNetwork = DEFAULT_BY_EVM_NETWORK,
-  addressesByTokens = DEFAULT_BY_TOKENS,
+  addressesAndEvmNetworks = DEFAULT_EVM_NETWORKS_AND_ADDRESSES,
+  addressesAndTokens = DEFAULT_TOKENS_AND_ADDRESSES,
 }: BalanceByParamsProps) => {
   const hydrate = useBalancesHydrate()
 
@@ -33,8 +40,8 @@ export const useBalancesByParams = ({
     (subject: BehaviorSubject<Balances>) =>
       api.balancesByParams(
         addressesByChain,
-        addressesByEvmNetwork,
-        addressesByTokens,
+        addressesAndEvmNetworks,
+        addressesAndTokens,
         async (update) => {
           switch (update.type) {
             case "reset": {
@@ -58,16 +65,16 @@ export const useBalancesByParams = ({
           }
         }
       ),
-    [addressesByChain, addressesByEvmNetwork, addressesByTokens, hydrate]
+    [addressesByChain, addressesAndEvmNetworks, addressesAndTokens, hydrate]
   )
 
   // subscrition must be reinitialized (using the key) if parameters change
   const subscriptionKey = useMemo(
     () =>
       `useBalancesByParams-${md5(JSON.stringify(addressesByChain))}-${md5(
-        JSON.stringify(addressesByEvmNetwork)
-      )}-${md5(JSON.stringify(addressesByTokens))}`,
-    [addressesByChain, addressesByEvmNetwork, addressesByTokens]
+        JSON.stringify(addressesAndEvmNetworks)
+      )}-${md5(JSON.stringify(addressesAndTokens))}`,
+    [addressesByChain, addressesAndEvmNetworks, addressesAndTokens]
   )
 
   const balances = useMessageSubscription(subscriptionKey, INITIAL_VALUE, subscribe)

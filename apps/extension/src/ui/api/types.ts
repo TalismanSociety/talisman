@@ -10,8 +10,8 @@ import {
   SendFundsOpenRequest,
 } from "@core/domains/app/types"
 import {
-  AddressesByEvmNetwork,
-  AddressesByTokens,
+  AddressesAndEvmNetwork,
+  AddressesAndTokens,
   BalanceJson,
   BalancesUpdate,
   RequestBalance,
@@ -155,8 +155,8 @@ export default interface MessageTypes {
   balances: (cb: () => void) => UnsubscribeFn
   balancesByParams: (
     addressesByChain: AddressesByChain,
-    addressesByEvmNetwork: AddressesByEvmNetwork,
-    addressesByTokens: AddressesByTokens,
+    addressesAndEvmNetworks: AddressesAndEvmNetwork,
+    addressesAndTokens: AddressesAndTokens,
     cb: (balances: BalancesUpdate) => void
   ) => UnsubscribeFn
 

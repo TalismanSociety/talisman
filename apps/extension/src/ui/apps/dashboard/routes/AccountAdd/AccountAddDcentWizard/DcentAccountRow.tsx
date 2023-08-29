@@ -25,7 +25,7 @@ const useAccountBalances = (address: string | undefined, tokens: Token[]) => {
   const balanceParams = useMemo<BalanceByParamsProps>(() => {
     if (!address) return {}
     return {
-      addressesByTokens: {
+      addressesAndTokens: {
         addresses: [address],
         tokenIds: tokens.map((t) => t.id),
       },
