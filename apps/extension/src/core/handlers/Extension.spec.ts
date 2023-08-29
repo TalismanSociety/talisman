@@ -1,11 +1,9 @@
+/* eslint-disable @typescript-eslint/no-non-null-assertion */
 import { TALISMAN_WEB_APP_DOMAIN } from "@core/constants"
 import { db } from "@core/db"
 import { passwordStore } from "@core/domains/app"
 import { chaindataProvider } from "@core/rpcs/chaindata"
 import RequestExtrinsicSign from "@polkadot/extension-base/background/RequestExtrinsicSign"
-/* eslint-disable no-console */
-/* eslint-disable @typescript-eslint/no-non-null-assertion */
-import type { ResponseSigning } from "@polkadot/extension-base/background/types"
 import { AccountsStore } from "@polkadot/extension-base/stores"
 import type { MetadataDef } from "@polkadot/extension-inject/types"
 import type { KeyringPair } from "@polkadot/keyring/types"
@@ -13,7 +11,7 @@ import { TypeRegistry } from "@polkadot/types"
 import type { ExtDef } from "@polkadot/types/extrinsic/signedExtensions/types"
 import type { SignerPayloadJSON } from "@polkadot/types/types"
 import keyring from "@polkadot/ui-keyring"
-import { cryptoWaitReady } from "@polkadot/util-crypto"
+import { cryptoWaitReady, signatureVerify } from "@polkadot/util-crypto"
 import Browser from "webextension-polyfill"
 
 import { getMessageSenderFn } from "../../../tests/util"
@@ -77,7 +75,7 @@ describe("Extension", () => {
     })
     const address = await messageSender("pri(accounts.create)", {
       name: "Test Polkadot Account",
-      type: "ecdsa", // ecdsa has determistic signatures
+      type: "sr25519", // ecdsa has determistic signatures
       mnemonic: suri,
       confirmed: false,
     })
@@ -166,10 +164,6 @@ describe("Extension", () => {
 
       registry.setSignedExtensions(payload.signedExtensions)
 
-      const signatureExpected = registry
-        .createType("ExtrinsicPayload", payload, { version: payload.version })
-        .sign(pair)
-
       const requestPromise = signSubstrate(
         "http://test.com",
         new RequestExtrinsicSign(payload),
@@ -190,15 +184,14 @@ describe("Extension", () => {
 
       expect(approveMessage).toEqual(true)
 
-      // eslint-disable-next-line jest/valid-expect-in-promise
-      return await requestPromise
-        .then((result) =>
-          // eslint-disable-next-line jest/no-conditional-expect
-          expect((result as ResponseSigning)?.signature).toEqual(signatureExpected.signature)
-        )
-        .catch((err) => {
-          throw err
-        })
+      const { signature } = await requestPromise
+
+      const extrinsicPayload = registry.createType("ExtrinsicPayload", payload, {
+        version: payload.version,
+      })
+
+      const verif = signatureVerify(extrinsicPayload.toU8a(true), signature, address)
+      expect(verif.isValid).toBeTruthy()
     })
 
     test("signs with user extensions, known types", async () => {
@@ -248,16 +241,12 @@ describe("Extension", () => {
       registry.setSignedExtensions(payload.signedExtensions, userExtensions)
       registry.register(types)
 
-      const signatureExpected = registry
-        .createType("ExtrinsicPayload", payload, { version: payload.version })
-        .sign(pair)
-
       const requestPromise = signSubstrate(
         "http://test.com",
         new RequestExtrinsicSign(payload),
         {
           address,
-          ...meta,
+          ...pair.meta,
         },
         {} as chrome.runtime.Port
       )
@@ -271,13 +260,14 @@ describe("Extension", () => {
         })
       ).resolves.toEqual(true)
 
-      // eslint-disable-next-line jest/valid-expect-in-promise
-      return await requestPromise
-        .then((result) => {
-          // eslint-disable-next-line jest/no-conditional-expect
-          expect(result?.signature).toEqual(signatureExpected.signature)
-        })
-        .catch(console.log)
+      const { signature } = await requestPromise
+
+      const extrinsicPayload = registry.createType("ExtrinsicPayload", payload, {
+        version: payload.version,
+      })
+
+      const verif = signatureVerify(extrinsicPayload.toU8a(true), signature, address)
+      expect(verif.isValid).toBeTruthy()
     })
 
     test("override default signed extension", async () => {
@@ -321,16 +311,12 @@ describe("Extension", () => {
       registry.setSignedExtensions(payload.signedExtensions, userExtensions)
       registry.register(types)
 
-      const signatureExpected = registry
-        .createType("ExtrinsicPayload", payload, { version: payload.version })
-        .sign(pair)
-
       const requestPromise = signSubstrate(
         "http://test.com",
         new RequestExtrinsicSign(payload),
         {
           address,
-          ...meta,
+          ...pair.meta,
         },
         {} as chrome.runtime.Port
       )
@@ -344,13 +330,14 @@ describe("Extension", () => {
         })
       ).resolves.toEqual(true)
 
-      // eslint-disable-next-line jest/valid-expect-in-promise
-      return await requestPromise
-        .then((result) => {
-          // eslint-disable-next-line jest/no-conditional-expect
-          expect((result as ResponseSigning)?.signature).toEqual(signatureExpected.signature)
-        })
-        .catch((err) => console.log(err))
+      const { signature } = await requestPromise
+
+      const extrinsicPayload = registry.createType("ExtrinsicPayload", payload, {
+        version: payload.version,
+      })
+
+      const verif = signatureVerify(extrinsicPayload.toU8a(true), signature, address)
+      expect(verif.isValid).toBeTruthy()
     })
 
     test("signs with user extensions, additional types", async () => {
@@ -414,16 +401,12 @@ describe("Extension", () => {
       registry.setSignedExtensions(payload.signedExtensions, userExtensions)
       registry.register(types)
 
-      const signatureExpected = registry
-        .createType("ExtrinsicPayload", payload, { version: payload.version })
-        .sign(pair)
-
       const requestPromise = signSubstrate(
         "http://test.com",
         new RequestExtrinsicSign(payload),
         {
           address,
-          ...meta,
+          ...pair.meta,
         },
         {} as chrome.runtime.Port
       )
@@ -437,13 +420,14 @@ describe("Extension", () => {
         })
       ).resolves.toEqual(true)
 
-      // eslint-disable-next-line jest/valid-expect-in-promise
-      return await requestPromise
-        .then((result) => {
-          // eslint-disable-next-line jest/no-conditional-expect
-          expect((result as ResponseSigning)?.signature).toEqual(signatureExpected.signature)
-        })
-        .catch((err) => console.log(err))
+      const { signature } = await requestPromise
+
+      const extrinsicPayload = registry.createType("ExtrinsicPayload", payload, {
+        version: payload.version,
+      })
+
+      const verif = signatureVerify(extrinsicPayload.toU8a(true), signature, address)
+      expect(verif.isValid).toBeTruthy()
     })
   })
 
