@@ -17,13 +17,18 @@ export interface RequestBalance {
   address: Address
 }
 
-export type AddressesByEvmNetwork = {
-  evmNetworks: Array<Pick<EvmNetwork, "id" | "nativeToken">>
+export type AddressesAndEvmNetwork = {
   addresses: string[]
+  evmNetworks: Array<Pick<EvmNetwork, "id" | "nativeToken">>
+}
+export type AddressesAndTokens = {
+  addresses: string[]
+  tokenIds: TokenId[]
 }
 export interface RequestBalancesByParamsSubscribe {
   addressesByChain: AddressesByChain
-  addressesByEvmNetwork: AddressesByEvmNetwork
+  addressesAndEvmNetworks: AddressesAndEvmNetwork
+  addressesAndTokens: AddressesAndTokens
 }
 
 export type NomPoolStakedBalance = {

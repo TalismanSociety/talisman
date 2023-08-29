@@ -1,4 +1,3 @@
-import { AccountJsonHardwareEthereum } from "@core/domains/accounts/types"
 import { EthPriorityOptionName } from "@core/domains/signing/types"
 import { AppPill } from "@talisman/components/AppPill"
 import { WithTooltip } from "@talisman/components/Tooltip"
@@ -9,15 +8,14 @@ import { useEthBalance } from "@ui/domains/Ethereum/useEthBalance"
 import { useEthereumProvider } from "@ui/domains/Ethereum/useEthereumProvider"
 import { EthSignBody } from "@ui/domains/Sign/Ethereum/EthSignBody"
 import { SignAlertMessage } from "@ui/domains/Sign/SignAlertMessage"
+import { SignHardwareEthereum } from "@ui/domains/Sign/SignHardwareEthereum"
 import { useEthSignTransactionRequest } from "@ui/domains/Sign/SignRequestContext"
-import { Suspense, lazy, useCallback, useEffect, useMemo } from "react"
+import { Suspense, useCallback, useEffect, useMemo } from "react"
 import { useTranslation } from "react-i18next"
 import { Button, Tooltip, TooltipContent, TooltipTrigger } from "talisman-ui"
 
 import { PopupContent, PopupFooter, PopupHeader, PopupLayout } from "../../Layout/PopupLayout"
 import { SignAccountAvatar } from "./SignAccountAvatar"
-
-const LedgerEthereum = lazy(() => import("@ui/domains/Sign/LedgerEthereum"))
 
 const useEvmBalance = (address: string, evmNetworkId: string | undefined) => {
   const provider = useEthereumProvider(evmNetworkId)
@@ -119,11 +117,6 @@ export const EthSignTransactionRequest = () => {
     if (status === "SUCCESS") window.close()
   }, [status])
 
-  // gas settings must be locked as soon as payload is sent to ledger
-  const handleSendToLedger = useCallback(() => {
-    setIsPayloadLocked(true)
-  }, [setIsPayloadLocked])
-
   const handleFeeChange = useCallback(
     (priority: EthPriorityOptionName) => {
       setPriority(priority)
@@ -200,22 +193,15 @@ export const EthSignTransactionRequest = () => {
               </div>
             ) : null}
             {account && request && account.isHardware ? (
-              transaction ? (
-                <LedgerEthereum
-                  manualSend
-                  method="transaction"
-                  payload={transaction}
-                  account={account as AccountJsonHardwareEthereum}
-                  onSignature={approveHardware}
-                  onReject={reject}
-                  onSendToLedger={handleSendToLedger}
-                  containerId="main"
-                />
-              ) : (
-                <Button className="w-full" onClick={reject}>
-                  {t("Cancel")}
-                </Button>
-              )
+              <SignHardwareEthereum
+                method="eth_sendTransaction"
+                payload={transaction}
+                account={account}
+                onSigned={approveHardware}
+                onSentToDevice={setIsPayloadLocked}
+                onCancel={reject}
+                containerId="main"
+              />
             ) : (
               <div className="grid w-full grid-cols-2 gap-12">
                 <Button disabled={processing} onClick={reject}>

@@ -1,10 +1,12 @@
 import {
   getNextDerivationPathForMnemonic,
   getRootAccountForMnemonic,
+  isValidAnyAddress,
   sortAccounts,
 } from "@core/domains/accounts/helpers"
 import type {
   RequestAccountCreate,
+  RequestAccountCreateDcent,
   RequestAccountCreateExternal,
   RequestAccountCreateFromJson,
   RequestAccountCreateFromSeed,
@@ -25,10 +27,12 @@ import { getPairForAddressSafely } from "@core/handlers/helpers"
 import { genericAsyncSubscription } from "@core/handlers/subscriptions"
 import { talismanAnalytics } from "@core/libs/Analytics"
 import { ExtensionHandler } from "@core/libs/Handler"
+import { chaindataProvider } from "@core/rpcs/chaindata"
 import type { MessageTypes, RequestTypes, ResponseType } from "@core/types"
 import { Port } from "@core/types/base"
 import { getPrivateKey } from "@core/util/getPrivateKey"
-import { createPair } from "@polkadot/keyring"
+import { createPair, encodeAddress } from "@polkadot/keyring"
+import { KeyringPair$Meta } from "@polkadot/keyring/types"
 import keyring from "@polkadot/ui-keyring"
 import { assert } from "@polkadot/util"
 import {
@@ -226,6 +230,55 @@ export default class AccountsHandler extends ExtensionHandler {
     keyring.saveAccount(pair)
 
     talismanAnalytics.capture("account create", { type: "ethereum", method: "hardware" })
+
+    return pair.address
+  }
+
+  private async accountCreateDcent({
+    name,
+    address,
+    type,
+    path,
+    tokenIds,
+  }: RequestAccountCreateDcent) {
+    if (type === "ethereum") assert(isEthereumAddress(address), "Not an Ethereum address")
+    else assert(isValidAnyAddress(address), "Not a Substrate address")
+
+    const meta: KeyringPair$Meta = {
+      name,
+      isHardware: true,
+      origin: AccountTypes.DCENT,
+      path,
+      tokenIds,
+    }
+
+    // hopefully in the future D'CENT will be able to sign on any chain, and code below can be simply removed.
+    // keep this basic check for now to avoid polluting the messaging interface, as polkadot is the only token supported by D'CENT.
+    if (tokenIds.length === 1 && tokenIds[0] === "polkadot-substrate-native-dot") {
+      const chain = await chaindataProvider.getChain("polkadot")
+      meta.genesisHash = chain?.genesisHash
+    }
+
+    // ui-keyring's addHardware method only supports substrate accounts, cannot set ethereum type
+    // => create the pair without helper
+    const pair = createPair(
+      {
+        type,
+        toSS58: type === "ethereum" ? ethereumEncode : encodeAddress,
+      },
+      {
+        publicKey: decodeAnyAddress(address),
+        secretKey: new Uint8Array(),
+      },
+      meta,
+      null
+    )
+
+    // add to the underlying keyring, allowing not to specify a password
+    keyring.keyring.addPair(pair)
+    keyring.saveAccount(pair)
+
+    talismanAnalytics.capture("account create", { type, method: "dcent" })
 
     return pair.address
   }
@@ -482,6 +535,8 @@ export default class AccountsHandler extends ExtensionHandler {
         return this.accountCreateSeed(request as RequestAccountCreateFromSeed)
       case "pri(accounts.create.json)":
         return this.accountCreateJson(request as RequestAccountCreateFromJson)
+      case "pri(accounts.create.dcent)":
+        return this.accountCreateDcent(request as RequestAccountCreateDcent)
       case "pri(accounts.create.hardware.substrate)":
         return this.accountsCreateHardware(request as RequestAccountCreateHardware)
       case "pri(accounts.create.hardware.ethereum)":

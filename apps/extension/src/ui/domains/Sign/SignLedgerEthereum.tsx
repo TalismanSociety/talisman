@@ -1,4 +1,5 @@
 import { AccountJsonHardwareEthereum } from "@core/domains/accounts/types"
+import { EthSignMessageMethod } from "@core/domains/signing/types"
 import i18next from "@core/i18nConfig"
 import { log } from "@core/log"
 import { bufferToHex, isHexString, stripHexPrefix } from "@ethereumjs/util"
@@ -17,31 +18,11 @@ import {
   LedgerConnectionStatusProps,
 } from "../Account/LedgerConnectionStatus"
 import { LedgerSigningStatus } from "./LedgerSigningStatus"
-
-export type LedgerEthereumSignMethod =
-  | "transaction"
-  | "personal_sign"
-  | "eth_signTypedData"
-  | "eth_signTypedData_v1"
-  | "eth_signTypedData_v3"
-  | "eth_signTypedData_v4"
-
-type LedgerEthereumProps = {
-  account: AccountJsonHardwareEthereum
-  className?: string
-  method: LedgerEthereumSignMethod
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  payload: any // string message, typed object for eip712, TransactionRequest for tx
-  manualSend?: boolean // requests user to click a button to send the payload to the ledger
-  containerId?: string
-  onSignature?: (result: { signature: `0x${string}` }) => void
-  onReject: () => void
-  onSendToLedger?: () => void // triggered when tx is sent to the ledger
-}
+import { SignHardwareEthereumProps } from "./SignHardwareEthereum"
 
 const signWithLedger = async (
   ledger: LedgerEthereumApp,
-  method: LedgerEthereumSignMethod,
+  method: EthSignMessageMethod | "eth_sendTransaction",
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   payload: any,
   accountPath: string
@@ -94,8 +75,9 @@ const signWithLedger = async (
     sig.s = "0x" + sig.s
     return ethers.utils.joinSignature(sig) as `0x${string}`
   }
-  if (method === "transaction") {
+  if (method === "eth_sendTransaction") {
     const {
+      accessList,
       to,
       nonce,
       gasLimit,
@@ -110,20 +92,23 @@ const signWithLedger = async (
 
     const baseTx: ethers.utils.UnsignedTransaction = {
       to,
-      nonce: nonce ? ethers.BigNumber.from(nonce).toNumber() : undefined,
       gasLimit,
-      gasPrice,
-      data,
-      value,
       chainId,
       type,
-      maxPriorityFeePerGas,
-      maxFeePerGas,
     }
+
+    if (nonce !== undefined) baseTx.nonce = ethers.BigNumber.from(nonce).toNumber()
+    if (maxPriorityFeePerGas) baseTx.maxPriorityFeePerGas = maxPriorityFeePerGas
+    if (maxFeePerGas) baseTx.maxFeePerGas = maxFeePerGas
+    if (gasPrice) baseTx.gasPrice = gasPrice
+    if (data) baseTx.data = data
+    if (value) baseTx.value = value
+    if (accessList) baseTx.accessList = accessList
+
     const unsignedTx = stripHexPrefix(ethers.utils.serializeTransaction(baseTx))
     const sig = await ledger.signTransaction(accountPath, unsignedTx, null) // resolver)
 
-    return ethers.utils.serializeTransaction(payload, {
+    return ethers.utils.serializeTransaction(baseTx, {
       v: ethers.BigNumber.from("0x" + sig.v).toNumber(),
       r: "0x" + sig.r,
       s: "0x" + sig.s,
@@ -134,19 +119,17 @@ const signWithLedger = async (
   throw new Error(i18next.t("This type of message cannot be signed with ledger."))
 }
 
-const LedgerEthereum: FC<LedgerEthereumProps> = ({
+const SignLedgerEthereum: FC<SignHardwareEthereumProps> = ({
   account,
   className = "",
   method,
   payload,
-  manualSend,
   containerId,
-  onSendToLedger,
-  onSignature,
-  onReject,
+  onSentToDevice,
+  onSigned,
+  onCancel,
 }) => {
   const { t } = useTranslation("request")
-  const [autoSend, setAutoSend] = useState(!manualSend)
   const [isSigning, setIsSigning] = useState(false)
   const [isSigned, setIsSigned] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -173,20 +156,26 @@ const LedgerEthereum: FC<LedgerEthereumProps> = ({
   }, [refresh, setError])
 
   const signLedger = useCallback(async () => {
-    if (!ledger || !onSignature || !autoSend) {
+    if (!ledger || !onSigned) {
       return
     }
 
     setError(null)
-    onSendToLedger?.()
     try {
-      const signature = await signWithLedger(ledger, method, payload, account.path)
+      const signature = await signWithLedger(
+        ledger,
+        method,
+        payload,
+        (account as AccountJsonHardwareEthereum).path
+      )
       setIsSigned(true)
-      onSignature({ signature })
+
+      // await so we can keep the spinning loader until popup closes
+      await onSigned({ signature })
     } catch (err) {
       const error = err as Error & { statusCode?: number; reason?: string }
       // if user rejects from device
-      if (error.statusCode === 27013) return onReject()
+      if (error.statusCode === 27013) return
 
       log.error("ledger sign Ethereum", { error })
 
@@ -196,43 +185,23 @@ const LedgerEthereum: FC<LedgerEthereumProps> = ({
           t("Sorry, Talisman doesn't support signing transactions with Ledger on this network.")
         )
       else setError(error.reason ?? error.message)
-      setIsSigning(false)
-      setAutoSend(!manualSend)
     }
-  }, [
-    ledger,
-    onSignature,
-    autoSend,
-    onSendToLedger,
-    method,
-    payload,
-    account.path,
-    onReject,
-    manualSend,
-    t,
-  ])
-
-  useEffect(() => {
-    if (isReady && !error && !isSigning && autoSend && !isSigned) {
-      setIsSigning(true)
-      signLedger().finally(() => setIsSigning(false))
-    }
-  }, [signLedger, isSigning, error, isReady, autoSend, isSigned])
+  }, [ledger, onSigned, method, payload, account, t])
 
   const handleSendClick = useCallback(() => {
-    setAutoSend(true)
-  }, [])
-
-  const handleCancelClick = useCallback(() => {
-    onReject()
-  }, [onReject])
+    setIsSigning(true)
+    onSentToDevice?.(true)
+    signLedger()
+      .catch(() => onSentToDevice?.(false))
+      .finally(() => setIsSigning(false))
+  }, [onSentToDevice, signLedger])
 
   return (
     <div className={classNames("flex w-full flex-col gap-6", className)}>
       {!error && (
         <>
-          {isReady && !autoSend ? (
-            <Button className="w-full" primary onClick={handleSendClick}>
+          {isReady ? (
+            <Button className="w-full" primary processing={isSigning} onClick={handleSendClick}>
               {t("Approve on Ledger")}
             </Button>
           ) : (
@@ -242,16 +211,18 @@ const LedgerEthereum: FC<LedgerEthereumProps> = ({
           )}
         </>
       )}
-      <Button className="w-full" onClick={handleCancelClick}>
-        {t("Cancel")}
-      </Button>
+      {onCancel && (
+        <Button className="w-full" onClick={onCancel}>
+          {t("Cancel")}
+        </Button>
+      )}
       {error && (
         <Drawer anchor="bottom" isOpen containerId={containerId}>
           {/* Shouldn't be a LedgerSigningStatus, just an error message */}
           <LedgerSigningStatus
             message={error ? error : ""}
             status={error ? "error" : isSigning ? "signing" : undefined}
-            confirm={onReject}
+            confirm={onCancel}
           />
         </Drawer>
       )}
@@ -260,4 +231,4 @@ const LedgerEthereum: FC<LedgerEthereumProps> = ({
 }
 
 // default export to allow for lazy loading
-export default LedgerEthereum
+export default SignLedgerEthereum

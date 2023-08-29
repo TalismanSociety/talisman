@@ -99,6 +99,14 @@ export const api: MessageTypes = {
       address,
       path,
     }),
+  accountCreateDcent: (name, address, type, path, tokenIds) =>
+    messageService.sendMessage("pri(accounts.create.dcent)", {
+      name,
+      address,
+      type,
+      path,
+      tokenIds,
+    }),
   accountCreateQr: (name, address, genesisHash) =>
     messageService.sendMessage("pri(accounts.create.qr.substrate)", {
       name,
@@ -139,10 +147,14 @@ export const api: MessageTypes = {
   getNomPoolStakedBalance: ({ chainId, addresses }) =>
     messageService.sendMessage("pri(balances.nompools.get)", { chainId, addresses }),
   balances: (cb) => messageService.subscribe("pri(balances.subscribe)", null, cb),
-  balancesByParams: (addressesByChain, addressesByEvmNetwork, cb) =>
+  balancesByParams: (addressesByChain, addressesAndEvmNetworks, addressesAndTokens, cb) =>
     messageService.subscribe(
       "pri(balances.byparams.subscribe)",
-      { addressesByChain, addressesByEvmNetwork },
+      {
+        addressesByChain,
+        addressesAndEvmNetworks,
+        addressesAndTokens,
+      },
       cb
     ),
 

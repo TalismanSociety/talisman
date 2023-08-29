@@ -42,7 +42,7 @@ export class BalancesHandler extends ExtensionHandler {
         // create subscription callback
         const callback = createSubscription<"pri(balances.byparams.subscribe)">(id, port)
 
-        const { addressesByChain, addressesByEvmNetwork } =
+        const { addressesByChain, addressesAndEvmNetworks, addressesAndTokens } =
           request as RequestBalancesByParamsSubscribe
 
         //
@@ -56,7 +56,7 @@ export class BalancesHandler extends ExtensionHandler {
         ])
 
         //
-        // Convert the inputs of `addressesByChain` and `addressesByEvmNetwork` into what we need
+        // Convert the inputs of `addressesByChain` and `addressesAndEvmNetworks` into what we need
         // for each balance module: `addressesByToken`.
         //
 
@@ -65,9 +65,9 @@ export class BalancesHandler extends ExtensionHandler {
             // convert chainIds into chains
             .map(([chainId, addresses]) => [chains[chainId], addresses] as const),
 
-          ...addressesByEvmNetwork.evmNetworks
+          ...addressesAndEvmNetworks.evmNetworks
             // convert evmNetworkIds into evmNetworks
-            .map(({ id }) => [evmNetworks[id], addressesByEvmNetwork.addresses] as const),
+            .map(({ id }) => [evmNetworks[id], addressesAndEvmNetworks.addresses] as const),
         ]
           // filter out requested chains/evmNetworks which don't exist
           .filter(([chainOrNetwork]) => chainOrNetwork !== undefined)
@@ -85,6 +85,13 @@ export class BalancesHandler extends ExtensionHandler {
             addressesByToken[tokenId].push(...addresses)
             return addressesByToken
           }, {} as AddressesByToken<Token>)
+
+        for (const tokenId of addressesAndTokens.tokenIds) {
+          if (!addressesByToken[tokenId]) addressesByToken[tokenId] = []
+          addressesByToken[tokenId].push(
+            ...addressesAndTokens.addresses.filter((a) => !addressesByToken[tokenId].includes(a))
+          )
+        }
 
         //
         // Separate out the tokens in `addressesByToken` into groups based on `token.type`

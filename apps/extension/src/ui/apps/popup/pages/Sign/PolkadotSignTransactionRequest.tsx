@@ -1,4 +1,4 @@
-import { AccountJsonHardwareSubstrate, AccountJsonQr } from "@core/domains/accounts/types"
+import { AccountJsonQr } from "@core/domains/accounts/types"
 import { isJsonPayload } from "@core/util/isJsonPayload"
 import { validateHexString } from "@core/util/validateHexString"
 import { AppPill } from "@talisman/components/AppPill"
@@ -8,16 +8,15 @@ import { useFeeToken } from "@ui/domains/SendFunds/useFeeToken"
 import { MetadataStatus } from "@ui/domains/Sign/MetadataStatus"
 import { QrSubstrate } from "@ui/domains/Sign/Qr/QrSubstrate"
 import { SignAlertMessage } from "@ui/domains/Sign/SignAlertMessage"
+import { SignHardwareSubstrate } from "@ui/domains/Sign/SignHardwareSubstrate"
 import { usePolkadotSigningRequest } from "@ui/domains/Sign/SignRequestContext"
 import { SubSignBody } from "@ui/domains/Sign/Substrate/SubSignBody"
-import { FC, Suspense, lazy, useEffect, useMemo } from "react"
+import { FC, Suspense, useEffect, useMemo } from "react"
 import { useTranslation } from "react-i18next"
 import { Button, Tooltip, TooltipContent, TooltipTrigger } from "talisman-ui"
 
 import { PopupContent, PopupFooter, PopupHeader, PopupLayout } from "../../Layout/PopupLayout"
 import { SignAccountAvatar } from "./SignAccountAvatar"
-
-const LedgerSubstrate = lazy(() => import("@ui/domains/Sign/LedgerSubstrate"))
 
 const EstimatedFeesRow: FC = () => {
   const { t } = useTranslation("request")
@@ -72,6 +71,7 @@ export const PolkadotSignTransactionRequest: FC = () => {
     approveHardware,
     approveQr,
     payload,
+    fee,
   } = usePolkadotSigningRequest()
 
   const { genesisHash, specVersion } = useMemo(() => {
@@ -115,7 +115,7 @@ export const PolkadotSignTransactionRequest: FC = () => {
           {account && request && (
             <>
               <EstimatedFeesRow />
-              {account.origin !== "HARDWARE" && account.origin !== "QR" && (
+              {!["HARDWARE", "QR", "DCENT"].includes(account.origin ?? "") && (
                 <div className="grid w-full grid-cols-2 gap-12">
                   <Button disabled={processing} onClick={reject}>
                     {t("Cancel")}
@@ -125,17 +125,14 @@ export const PolkadotSignTransactionRequest: FC = () => {
                   </Button>
                 </div>
               )}
-              {account.origin === "HARDWARE" && (
-                <Suspense fallback={null}>
-                  <LedgerSubstrate
-                    payload={request.payload}
-                    account={account as AccountJsonHardwareSubstrate}
-                    genesisHash={chain?.genesisHash ?? account?.genesisHash ?? undefined}
-                    onSignature={approveHardware}
-                    onReject={reject}
-                    containerId="main"
-                  />
-                </Suspense>
+              {["DCENT", "HARDWARE"].includes(account.origin ?? "") && (
+                <SignHardwareSubstrate
+                  fee={fee?.toString()}
+                  payload={request.payload}
+                  onSigned={approveHardware}
+                  onCancel={reject}
+                  containerId="main"
+                />
               )}
               {account.origin === "QR" && (
                 <Suspense fallback={null}>
