@@ -18,7 +18,7 @@ import { Navigate, Route, Routes, useMatch } from "react-router-dom"
 
 import { DashboardLayout } from "./layout/DashboardLayout"
 import { AccountAddMenu } from "./routes/AccountAdd"
-import { AccountAddDcentWizard } from "./routes/AccountAdd/AccountAddDcentWizard"
+import { AccountAddDcentDashboardWizard } from "./routes/AccountAdd/AccountAddDcentWizard"
 import { AccountAddDerivedPage } from "./routes/AccountAdd/AccountAddDerivedPage"
 import { AccountAddJsonPage } from "./routes/AccountAdd/AccountAddJsonPage"
 import { AccountAddLedgerDashboardWizard } from "./routes/AccountAdd/AccountAddLedgerWizard"
@@ -98,7 +98,7 @@ const DashboardInner = () => {
             <Route path="ledger/*" element={<AccountAddLedgerDashboardWizard />} />
             <Route path="qr/*" element={<AccountAddQrDashboardWizard />} />
             <Route path="watched" element={<AccountAddWatchedPage />} />
-            <Route path="dcent/*" element={<AccountAddDcentWizard />} />
+            <Route path="dcent/*" element={<AccountAddDcentDashboardWizard />} />
             <Route path="*" element={<Navigate to="/accounts/add" replace />} />
           </Route>
           <Route path="" element={<Navigate to="/portfolio" />} />

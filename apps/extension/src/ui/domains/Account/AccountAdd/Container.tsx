@@ -1,3 +1,4 @@
+import { IS_FIREFOX } from "@core/constants"
 import { getIsLedgerCapable } from "@core/util/getIsLedgerCapable"
 import { ChainIcon, EyePlusIcon, FilePlusIcon, PlusIcon } from "@talisman/theme/icons"
 import { EthereumCircleLogo, PolkadotCircleLogo } from "@talisman/theme/logos"
@@ -107,7 +108,7 @@ const AccountCreateMethodButton = ({
             {networkChoices[network]}
           </span>
         ))}
-        {subtitle}
+        <span className="text-xs">{subtitle}</span>
       </span>
     </button>
   )
@@ -172,6 +173,16 @@ const ConnectAccountMethodButtons = () => {
         subtitle={t("Or Parity Signer (Legacy)")}
         networks={["polkadot"]}
         to={`/accounts/add/qr`}
+      />
+      <AccountCreateMethodButton
+        title={t("Connect D'CENT")}
+        subtitle={
+          !IS_FIREFOX
+            ? t("Connect your D'CENT Biometric Wallet")
+            : t("Not supported on this browser")
+        }
+        networks={["polkadot", "ethereum"]}
+        to={`/accounts/add/dcent`}
       />
     </>
   )
