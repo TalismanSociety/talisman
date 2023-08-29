@@ -16,7 +16,7 @@ const useAuthorisedSiteById = (id: AuthorizedSiteId, type: ProviderType) => {
   const sites = useAuthorisedSites()
   const availableAddresses = useAccountAddresses(
     type === "ethereum",
-    isTalismanHostname(sites[id]?.url) ? "portal" : "dapp"
+    isTalismanHostname(sites[id]?.url) ? "all" : "owned"
   )
 
   const connected = useMemo(() => {

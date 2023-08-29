@@ -8,7 +8,7 @@ import useAuthorisedSiteById from "./useAuthorisedSiteById"
 
 export const useConnectedAccounts = (siteId: string, providerType: ProviderType) => {
   const { connected, toggleOne, url } = useAuthorisedSiteById(siteId, providerType)
-  const allAccounts = useAccounts(isTalismanHostname(url) ? "portal" : "dapp")
+  const allAccounts = useAccounts(isTalismanHostname(url) ? "all" : "owned")
   const [showEthAccounts, setShowEthAccounts] = useState(
     allAccounts?.some((a) => connected.includes(a.address) && a.type === "ethereum")
   )

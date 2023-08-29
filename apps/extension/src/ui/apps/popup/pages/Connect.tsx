@@ -55,7 +55,7 @@ export const Connect: FC<{ className?: string }> = ({ className }) => {
   const { id } = useParams<"id">() as KnownRequestIdOnly<"auth">
   const authRequest = useRequest(id)
   const { popupOpenEvent } = useAnalytics()
-  const allAccounts = useAccounts(isTalismanHostname(authRequest?.url) ? "portal" : "dapp")
+  const allAccounts = useAccounts(isTalismanHostname(authRequest?.url) ? "all" : "owned")
   const { items: connected, toggle, set } = useSet<string>()
   const ethereum = !!authRequest?.request?.ethereum
   const [showEthAccounts, setShowEthAccounts] = useState(false)
