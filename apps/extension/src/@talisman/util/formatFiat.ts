@@ -17,6 +17,6 @@ export const formatFiat = (
       : {
           style: "currency",
           currency,
-          currencyDisplay: "narrowSymbol",
+          currencyDisplay: "code",
         }
   ).format(amount)

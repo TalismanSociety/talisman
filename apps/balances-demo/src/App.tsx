@@ -28,7 +28,7 @@ export function App(): JSX.Element {
           ((balances.sum.fiat("usd").total ?? 0).toLocaleString(undefined, {
             style: "currency",
             currency: "USD",
-            currencyDisplay: "narrowSymbol",
+            currencyDisplay: "code",
           }) ??
             "-")}
       </div>
@@ -76,7 +76,7 @@ export function App(): JSX.Element {
                   ? new Intl.NumberFormat(undefined, {
                       style: "currency",
                       currency: "usd",
-                      currencyDisplay: "narrowSymbol",
+                      currencyDisplay: "code",
                     }).format(balance.transferable.fiat("usd") || 0)
                   : " -"}
               </span>

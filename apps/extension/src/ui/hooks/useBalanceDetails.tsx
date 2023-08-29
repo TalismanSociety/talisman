@@ -8,7 +8,7 @@ import { useRecoilValue } from "recoil"
 const usdFormatter = new Intl.NumberFormat(undefined, {
   style: "currency",
   currency: "usd",
-  currencyDisplay: "narrowSymbol",
+  currencyDisplay: "code",
 })
 const formatUsd = (usd: number | null) => usdFormatter.format(usd ?? 0)
 const formatBalanceDetails = (b: Balance, currency: TokenRateCurrency) =>
