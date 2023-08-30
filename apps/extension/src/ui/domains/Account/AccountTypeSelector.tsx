@@ -68,7 +68,7 @@ export const AccountTypeSelector = ({
           "border"
         )}
         icon={<EthereumCircleLogo />}
-        subtitle={t("Moonbeam, Moonriver, Astar etc.")}
+        subtitle={t("Ethereum, Moonbeam, Astar etc.")}
         onClick={handleClick("ethereum")}
       />
     </div>
