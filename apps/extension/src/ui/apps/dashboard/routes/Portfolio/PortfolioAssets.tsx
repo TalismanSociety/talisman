@@ -2,7 +2,6 @@ import { Balances } from "@core/domains/balances/types"
 import { DashboardAssetsTable } from "@ui/domains/Portfolio/AssetsTable"
 import { usePortfolio } from "@ui/domains/Portfolio/context"
 import { FundYourWallet } from "@ui/domains/Portfolio/EmptyStates/FundYourWallet"
-import { NoAccounts } from "@ui/domains/Portfolio/EmptyStates/NoAccounts"
 import { NetworkPicker } from "@ui/domains/Portfolio/NetworkPicker"
 import { useSelectedAccount } from "@ui/domains/Portfolio/SelectedAccountContext"
 import { Statistics } from "@ui/domains/Portfolio/Statistics"
@@ -12,6 +11,8 @@ import { useAppState } from "@ui/hooks/useAppState"
 import { useHasAccounts } from "@ui/hooks/useHasAccounts"
 import { useEffect, useMemo } from "react"
 import { useTranslation } from "react-i18next"
+
+import { NoAccountsFullscreen } from "./NoAccounts"
 
 const FullscreenPortfolioAssets = ({ balances }: { balances: Balances }) => {
   const { t } = useTranslation()
@@ -59,7 +60,7 @@ const PageContent = ({ balances }: { balances: Balances }) => {
       {}
       {hasAccounts === false && (
         <div className="mt-[3.8rem] flex grow items-center justify-center">
-          <NoAccounts />
+          <NoAccountsFullscreen />
         </div>
       )}
       {hasAccounts && (

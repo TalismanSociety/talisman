@@ -11,15 +11,15 @@ const formatUsd = (usd: number | null) => usdFormatter.format(usd ?? 0)
 const formatBalanceDetails = (b: Balance) =>
   `${formatDecimals(b.total.tokens)} ${b.token?.symbol ?? ""} / ${formatUsd(b.total.fiat("usd"))}`
 
-export const useBalanceDetails = (balances: Balances) => {
-  return useMemo(() => {
-    return {
+export const useBalanceDetails = (balances: Balances) =>
+  useMemo(
+    () => ({
       balanceDetails: balances
         .filterNonZeroFiat("total", "usd")
         .sorted.map(formatBalanceDetails)
         .join("\n"),
 
       totalUsd: balances.sum.fiat("usd").total,
-    }
-  }, [balances])
-}
+    }),
+    [balances]
+  )
