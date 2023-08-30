@@ -157,24 +157,6 @@ export const getPrimaryAccount = (storedSeedOnly = false) => {
   return allAccounts[0]
 }
 
-export const getRootAccountForMnemonic = (mnemonicId: string, type: KeypairType = "sr25519") => {
-  const allAccounts = keyring.getAccounts()
-
-  if (allAccounts.length === 0) return
-  const seedRootAccount = allAccounts.find(
-    ({ meta }) =>
-      meta &&
-      meta.type === type &&
-      meta.derivedMnemonicId &&
-      meta.derivedMnemonicId === mnemonicId &&
-      meta.origin &&
-      (meta.origin === AccountTypes.TALISMAN || meta.origin === AccountTypes.LEGACY_ROOT)
-  )
-
-  if (seedRootAccount) return seedRootAccount
-  return
-}
-
 export const getNextDerivationPathForMnemonic = (
   mnemonic: string,
   type: KeypairType = "sr25519"
@@ -182,24 +164,29 @@ export const getNextDerivationPathForMnemonic = (
   string,
   "Unable to get next derivation path" | "Reached maximum number of derived accounts"
 > => {
-  const allAccounts = keyring.getAccounts().filter(({ meta }) => meta && meta.type === type)
-  let accountIndex
-  let derivedAddress: string | null = null
+  const allAccounts = keyring.getAccounts()
   try {
+    // for substrate check empty derivation path first
+    if (type !== "ethereum") {
+      const derivedAddress = encodeAnyAddress(addressFromMnemonic(mnemonic, type))
+      if (!allAccounts.some(({ address }) => encodeAnyAddress(address) === derivedAddress))
+        return Ok("")
+    }
+
     const getDerivationPath = (accountIndex: number) =>
       type === "ethereum" ? getEthDerivationPath(accountIndex) : `//${accountIndex}`
 
-    for (accountIndex = 0; accountIndex <= 1000; accountIndex += 1) {
-      derivedAddress = addressFromMnemonic(`${mnemonic}${getDerivationPath(accountIndex)}`, type)
+    for (let accountIndex = 0; accountIndex <= 1000; accountIndex += 1) {
+      const derivationPath = getDerivationPath(accountIndex)
+      const derivedAddress = encodeAnyAddress(
+        addressFromMnemonic(`${mnemonic}${derivationPath}`, type)
+      )
 
-      const exists = allAccounts.some(({ address }) => address === derivedAddress)
-      if (exists) continue
-
-      break
+      if (!allAccounts.some(({ address }) => encodeAnyAddress(address) === derivedAddress))
+        return Ok(derivationPath)
     }
 
-    if (!derivedAddress) return Err("Reached maximum number of derived accounts")
-    return Ok(getDerivationPath(accountIndex))
+    return Err("Reached maximum number of derived accounts")
   } catch (error) {
     log.error("Unable to get next derivation path", error)
     captureException(error)

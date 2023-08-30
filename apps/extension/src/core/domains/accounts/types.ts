@@ -122,7 +122,7 @@ export interface Account {
 
 export type AccountsList = Account[]
 
-export type AccountAddressType = "sr25519" | "ethereum"
+export type AccountAddressType = KeypairType // keep custom type, might want to add more later on
 
 export interface RequestAccountCreateFromSeed {
   name: string
@@ -177,11 +177,20 @@ export interface RequestAccountRename {
   address: string
   name: string
 }
-export interface RequestAccountCreate {
+
+export type RequestAccountCreateOptions =
+  | {
+      mnemonicId: string
+    }
+  | {
+      mnemonic: string
+      confirmed: boolean
+    }
+
+export type RequestAccountCreate = {
   name: string
   type: AccountAddressType
-  mnemonicId?: string
-}
+} & RequestAccountCreateOptions
 
 export type VerifierCertificateType = "new" | "talisman"
 

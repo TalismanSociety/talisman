@@ -16,7 +16,14 @@ import * as yup from "yup"
 import { useSelectedAccount } from "../Portfolio/SelectedAccountContext"
 import { PasswordUnlock, usePasswordUnlock } from "./PasswordUnlock"
 
-const EXPORTABLE_ORIGINS: AccountType[] = ["SEED", "JSON", "DERIVED"]
+const EXPORTABLE_ORIGINS: AccountType[] = [
+  "SEED",
+  "JSON",
+  "DERIVED",
+  "ROOT",
+  "SEED_STORED",
+  "TALISMAN",
+]
 
 const useAccountExportModalProvider = () => {
   const [_account, setAccount] = useState<AccountJsonAny>()

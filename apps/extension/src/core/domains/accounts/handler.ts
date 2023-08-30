@@ -1,6 +1,5 @@
 import {
   getNextDerivationPathForMnemonic,
-  getRootAccountForMnemonic,
   isValidAnyAddress,
   sortAccounts,
 } from "@core/domains/accounts/helpers"
@@ -35,12 +34,7 @@ import { createPair, encodeAddress } from "@polkadot/keyring"
 import { KeyringPair$Meta } from "@polkadot/keyring/types"
 import keyring from "@polkadot/ui-keyring"
 import { assert } from "@polkadot/util"
-import {
-  ethereumEncode,
-  isEthereumAddress,
-  mnemonicGenerate,
-  mnemonicValidate,
-} from "@polkadot/util-crypto"
+import { ethereumEncode, isEthereumAddress, mnemonicValidate } from "@polkadot/util-crypto"
 import { addressFromMnemonic } from "@talisman/util/addressFromMnemonic"
 import { decodeAnyAddress, encodeAnyAddress, sleep } from "@talismn/util"
 import { combineLatest } from "rxjs"
@@ -49,7 +43,7 @@ import { SOURCES } from "../mnemonics/store"
 import { AccountsCatalogData, emptyCatalog } from "./store.catalog"
 
 export default class AccountsHandler extends ExtensionHandler {
-  private async accountCreate({ name, type, mnemonicId }: RequestAccountCreate): Promise<string> {
+  private async accountCreate({ name, type, ...options }: RequestAccountCreate): Promise<string> {
     const password = this.stores.password.getPassword()
     assert(password, "Not logged in")
 
@@ -57,55 +51,43 @@ export default class AccountsHandler extends ExtensionHandler {
     const existing = allAccounts.find((account) => account.meta?.name === name)
     assert(!existing, "An account with this name already exists")
 
-    const rootAccount = mnemonicId ? getRootAccountForMnemonic(mnemonicId, type) : false
-
-    let seed = mnemonicGenerate()
-    let derivedMnemonicId = mnemonicId
-    if (mnemonicId) {
-      const seedResult = await this.stores.seedPhrase.getSeed(mnemonicId, password)
-      if (seedResult.err) throw seedResult.val
-      if (!seedResult.val) throw new Error("Seed not stored locally")
-      seed = seedResult.val
+    let derivedMnemonicId: string
+    let mnemonic: string
+    if ("mnemonicId" in options) {
+      derivedMnemonicId = options.mnemonicId
+      const mnemonicResult = await this.stores.seedPhrase.getSeed(derivedMnemonicId, password)
+      if (mnemonicResult.err || !mnemonicResult.val) throw new Error("Mnemonic not stored locally")
+      mnemonic = mnemonicResult.val
     } else {
-      const newSeedId = await this.stores.seedPhrase.add(
-        "Talisman Recovery Phrase",
-        seed,
+      const newMnemonicId = await this.stores.seedPhrase.add(
+        `${name} Recovery Phrase`,
+        options.mnemonic,
         password,
-        SOURCES.Generated
+        SOURCES.Generated,
+        options.confirmed
       )
-      if (newSeedId.err) throw new Error("Unable to store new seed")
-      derivedMnemonicId = newSeedId.val
+      if (newMnemonicId.err) throw new Error("Failed to store new mnemonic")
+      derivedMnemonicId = newMnemonicId.val
+      mnemonic = options.mnemonic
     }
 
-    const accountMeta = { derivedMnemonicId }
-    if (!rootAccount) {
-      const { pair } = keyring.addUri(seed, password, {
+    const { val: derivationPath, err } = getNextDerivationPathForMnemonic(mnemonic, type)
+    if (err) throw new Error(derivationPath)
+
+    const { pair } = keyring.addUri(
+      `${mnemonic}${derivationPath}`,
+      password,
+      {
         name,
-        origin: AccountTypes.TALISMAN,
-        ...accountMeta,
-      })
-      talismanAnalytics.capture("account create", { type, method: "parent" })
-      return pair.address
-    } else {
-      const { val: derivationPath, err } = getNextDerivationPathForMnemonic(seed, type)
-      if (err) throw new Error(derivationPath)
+        origin: AccountTypes.DERIVED,
+        derivedMnemonicId,
+        derivationPath,
+      },
+      type
+    )
 
-      const { pair } = keyring.addUri(
-        `${seed}${derivationPath}`,
-        password,
-        {
-          name,
-          origin: AccountTypes.DERIVED,
-          parent: rootAccount.address,
-          derivationPath,
-          ...accountMeta,
-        },
-        type
-      )
-
-      talismanAnalytics.capture("account create", { type, method: "derived" })
-      return pair.address
-    }
+    talismanAnalytics.capture("account create", { type, method: "derived" })
+    return pair.address
   }
 
   private async accountCreateSeed({
@@ -128,30 +110,41 @@ export default class AccountsHandler extends ExtensionHandler {
     const mnemonic = splitIdx === -1 ? suri : suri.slice(0, splitIdx)
     const derivationPath = splitIdx === -1 ? "" : suri.slice(splitIdx)
 
-    let derivedMnemonicId = await this.stores.seedPhrase.getExistingId(mnemonic)
+    const meta: KeyringPair$Meta = {
+      name,
+    }
 
-    if (!derivedMnemonicId) {
-      const result = await this.stores.seedPhrase.add(
-        `${name} Recovery Phrase`,
-        mnemonic,
-        password,
-        SOURCES.Imported,
-        true
-      )
-      if (result.ok) derivedMnemonicId = result.val
-      else throw new Error("Failed to store mnemonic", { cause: result.val })
+    // suri could be a private key instead of a mnemonic
+    if (mnemonicValidate(mnemonic)) {
+      const derivedMnemonicId = await this.stores.seedPhrase.getExistingId(mnemonic)
+
+      if (derivedMnemonicId) {
+        meta.origin = AccountTypes.SEED
+        meta.derivedMnemonicId = derivedMnemonicId
+        meta.derivationPath = derivationPath
+      } else {
+        const result = await this.stores.seedPhrase.add(
+          `${name} Recovery Phrase`,
+          mnemonic,
+          password,
+          SOURCES.Imported,
+          true
+        )
+        if (result.ok) {
+          meta.origin = AccountTypes.SEED // find a better name
+          meta.derivedMnemonicId = result.val
+          meta.derivationPath = derivationPath
+        } else throw new Error("Failed to store mnemonic", { cause: result.val })
+      }
+    } else {
+      meta.origin = AccountTypes.SEED // TODO "LOCAL"
     }
 
     try {
       const { pair } = keyring.addUri(
         suri,
         password,
-        {
-          name,
-          origin: AccountTypes.DERIVED, // should we keep "SEED" instead ?
-          derivedMnemonicId,
-          derivationPath,
-        },
+        meta,
         type // if undefined, defaults to keyring's default (sr25519 atm)
       )
 

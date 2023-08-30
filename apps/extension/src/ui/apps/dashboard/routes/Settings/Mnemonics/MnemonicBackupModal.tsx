@@ -4,8 +4,8 @@ import { AlertTriangleIcon } from "@talisman/theme/icons"
 import { provideContext } from "@talisman/util/provideContext"
 import { classNames } from "@talismn/util"
 import { api } from "@ui/api"
-import { Mnemonic } from "@ui/domains/Account/Mnemonic"
-import { MnemonicUnlock, useMnemonicUnlock } from "@ui/domains/Account/MnemonicUnlock"
+import { Mnemonic } from "@ui/domains/Mnemonic/Mnemonic"
+import { MnemonicUnlock, useMnemonicUnlock } from "@ui/domains/Mnemonic/MnemonicUnlock"
 import { Mnemonic as MnemonicInfo, useMnemonic, useMnemonics } from "@ui/hooks/useMnemonics"
 import { ChangeEventHandler, FC, useCallback, useState } from "react"
 import { Trans, useTranslation } from "react-i18next"
@@ -46,6 +46,7 @@ const MnemonicFormInner = ({ mnemonicId }: { mnemonicId: string }) => {
   const { t } = useTranslation()
   const { mnemonic: secret } = useMnemonicUnlock()
   const mnemonic = useMnemonic(mnemonicId)
+  const [canConfirm, setCanConfirm] = useState(() => mnemonic?.confirmed)
 
   const handleConfirmToggle: ChangeEventHandler<HTMLInputElement> = useCallback(
     async (e) => {
@@ -63,9 +64,13 @@ const MnemonicFormInner = ({ mnemonicId }: { mnemonicId: string }) => {
     [mnemonic, t]
   )
 
+  const handleMnemonicReveal = useCallback(() => {
+    setCanConfirm(true)
+  }, [])
+
   return (
     <div className="flex grow flex-col">
-      <Mnemonic mnemonic={secret ?? ""} />
+      <Mnemonic onReveal={handleMnemonicReveal} mnemonic={secret ?? ""} />
       <div className="bg-grey-750 text-alert-warn mt-8 flex w-full items-center gap-6 rounded-sm p-4">
         <div className="bg-alert-warn/10 flex flex-col justify-center rounded-full p-2">
           <AlertTriangleIcon className="shrink-0 text-base" />
@@ -80,6 +85,7 @@ const MnemonicFormInner = ({ mnemonicId }: { mnemonicId: string }) => {
       </div>
       <div className="mt-6 p-4">
         <Checkbox
+          disabled={!canConfirm}
           onChange={handleConfirmToggle}
           checked={mnemonic?.confirmed}
           className="text-body-secondary hover:text-body gap-8!"
