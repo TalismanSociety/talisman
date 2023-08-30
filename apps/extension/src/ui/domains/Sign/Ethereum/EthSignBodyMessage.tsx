@@ -91,7 +91,7 @@ export const EthSignBodyMessage: FC<EthSignBodyMessageProps> = ({ account, reque
         <div className="p-2">
           {isTypedData ? t("You are signing typed data") : t("You are signing a message")}{" "}
         </div>
-        <div className="flex items-start p-1">
+        <div className="flex max-w-full items-start p-1">
           <div>{t("with")}</div>
           <SignParamAccountButton address={account.address} withIcon />
         </div>

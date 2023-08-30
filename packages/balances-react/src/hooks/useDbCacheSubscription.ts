@@ -9,7 +9,7 @@ import {
 } from "@talismn/balances"
 import { ChaindataProvider, TokenList } from "@talismn/chaindata-provider"
 import { ChaindataProviderExtension } from "@talismn/chaindata-provider-extension"
-import { DbTokenRates, fetchTokenRates, db as tokenRatesDb } from "@talismn/token-rates"
+import { fetchTokenRates, db as tokenRatesDb } from "@talismn/token-rates"
 import md5 from "blueimp-md5"
 import { useCallback, useMemo } from "react"
 
@@ -162,19 +162,23 @@ const subscribeTokenRates = (tokens: TokenList) => {
   const refreshTokenRates = async () => {
     try {
       if (timeout) clearTimeout(timeout)
-      const tokenRates = await fetchTokenRates(tokens)
 
-      const putTokenRates = Object.entries(tokenRates).map(
-        ([tokenId, rates]): DbTokenRates => ({
-          tokenId,
-          rates,
-        })
-      )
-      tokenRatesDb.transaction(
-        "rw",
-        tokenRatesDb.tokenRates,
-        async () => await tokenRatesDb.tokenRates.bulkPut(putTokenRates)
-      )
+      const tokenRates = await fetchTokenRates(tokens)
+      const putTokenRates = Object.entries(tokenRates).map(([tokenId, rates]) => ({
+        tokenId,
+        rates,
+      }))
+
+      await tokenRatesDb.transaction("rw", tokenRatesDb.tokenRates, async () => {
+        // override all tokenRates
+        await tokenRatesDb.tokenRates.bulkPut(putTokenRates)
+
+        // delete tokenRates for tokens which no longer exist
+        const tokenIds = await tokenRatesDb.tokenRates.toCollection().primaryKeys()
+        const validTokenIds = new Set(Object.keys(tokenRates))
+        const deleteTokenIds = tokenIds.filter((tokenId) => !validTokenIds.has(tokenId))
+        if (deleteTokenIds.length > 0) await tokenRatesDb.tokenRates.bulkDelete(deleteTokenIds)
+      })
 
       timeout = setTimeout(() => {
         refreshTokenRates()

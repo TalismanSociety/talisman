@@ -18,7 +18,7 @@ export const OnboardBackground = () => {
   return (
     <MysticalBackground
       className="fixed left-0 top-0 h-[100vh] w-[100vw]"
-      config={{ ...onboardConfig, withAcolyte: false, artifacts: 4, radiusMax: 1.4 }}
+      config={{ ...onboardConfig, artifacts: 4, radiusMax: 1.4 }}
     />
   )
 }

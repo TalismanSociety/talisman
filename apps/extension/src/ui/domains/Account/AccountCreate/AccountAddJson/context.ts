@@ -1,5 +1,5 @@
 import { AccountType } from "@core/domains/accounts/types"
-import { AddressesByEvmNetwork } from "@core/domains/balances/types"
+import { AddressesAndEvmNetwork } from "@core/domains/balances/types"
 import { log } from "@core/log"
 import { AddressesByChain } from "@core/types/base"
 import { createPair } from "@polkadot/keyring"
@@ -90,18 +90,18 @@ const useAccountsBalances = (pairs: KeyringPair[] | undefined) => {
           )
       : undefined
 
-    const addressesByEvmNetwork = ethAddresses.length
+    const addressesAndEvmNetworks = ethAddresses.length
       ? ({
           addresses: ethAddresses,
           evmNetworks: evmNetworks
             .filter(({ id }) => BALANCE_CHECK_EVM_NETWORK_IDS.includes(id))
             .map(({ id, nativeToken }) => ({ id, nativeToken })),
-        } as AddressesByEvmNetwork)
+        } as AddressesAndEvmNetwork)
       : undefined
 
     const result = {
       addressesByChain,
-      addressesByEvmNetwork,
+      addressesAndEvmNetworks,
     }
 
     return result

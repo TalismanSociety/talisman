@@ -1,18 +1,17 @@
-import { AccountJsonHardwareSubstrate, AccountJsonQr } from "@core/domains/accounts/types"
+import { AccountJsonQr } from "@core/domains/accounts/types"
 import { SignerPayloadRaw } from "@core/domains/signing/types"
 import { AppPill } from "@talisman/components/AppPill"
 import { AccountPill } from "@ui/domains/Account/AccountPill"
 import { Message } from "@ui/domains/Sign/Message"
 import { QrSubstrate } from "@ui/domains/Sign/Qr/QrSubstrate"
+import { SignHardwareSubstrate } from "@ui/domains/Sign/SignHardwareSubstrate"
 import { usePolkadotSigningRequest } from "@ui/domains/Sign/SignRequestContext"
-import { FC, Suspense, lazy, useEffect, useMemo } from "react"
+import { FC, Suspense, useEffect, useMemo } from "react"
 import { useTranslation } from "react-i18next"
 import { Button } from "talisman-ui"
 
 import { PopupContent, PopupFooter, PopupHeader, PopupLayout } from "../../Layout/PopupLayout"
 import { SignAccountAvatar } from "./SignAccountAvatar"
-
-const LedgerSubstrate = lazy(() => import("@ui/domains/Sign/LedgerSubstrate"))
 
 export const PolkadotSignMessageRequest: FC = () => {
   const { t } = useTranslation("request")
@@ -68,7 +67,7 @@ export const PolkadotSignMessageRequest: FC = () => {
       <PopupFooter>
         {account && request && (
           <>
-            {account.origin !== "HARDWARE" && account.origin !== "QR" && (
+            {!["HARDWARE", "QR", "DCENT"].includes(account.origin ?? "") && (
               <div className="grid w-full grid-cols-2 gap-12">
                 <Button disabled={processing} onClick={reject}>
                   {t("Cancel")}
@@ -78,14 +77,12 @@ export const PolkadotSignMessageRequest: FC = () => {
                 </Button>
               </div>
             )}
-            {account.origin === "HARDWARE" && (
+            {["HARDWARE", "DCENT"].includes(account.origin ?? "") && (
               <Suspense fallback={null}>
-                <LedgerSubstrate
+                <SignHardwareSubstrate
                   payload={request.payload}
-                  account={account as AccountJsonHardwareSubstrate}
-                  genesisHash={chain?.genesisHash ?? account?.genesisHash ?? undefined}
-                  onSignature={approveHardware}
-                  onReject={reject}
+                  onSigned={approveHardware}
+                  onCancel={reject}
                   containerId="main"
                 />
               </Suspense>
