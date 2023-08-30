@@ -1,5 +1,4 @@
 export type MysticalPhysicsV3 = {
-  withAcolyte: boolean
   artifacts: number
   blur: number
   opacityMin: number
@@ -12,10 +11,7 @@ export type MysticalPhysicsV3 = {
   colors?: string[]
 }
 
-export type MysticalPhysicsV3NoAcolyte = MysticalPhysicsV3 & { withAcolyte: false }
-
 export const MYSTICAL_PHYSICS_V3: MysticalPhysicsV3 = {
-  withAcolyte: true,
   artifacts: 3,
   blur: 24,
   opacityMin: 0.2,

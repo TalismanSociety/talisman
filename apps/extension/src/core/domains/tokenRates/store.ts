@@ -89,22 +89,20 @@ export class TokenRatesStore {
 
     try {
       const tokenRates = await fetchTokenRates(tokens)
+      const putTokenRates = Object.entries(tokenRates).map(([tokenId, rates]) => ({
+        tokenId,
+        rates,
+      }))
 
       await db.transaction("rw", db.tokenRates, async () => {
         // override all tokenRates
-        await db.tokenRates.bulkPut(
-          Object.entries(tokenRates).map(([tokenId, tokenRates]) => ({
-            tokenId,
-            rates: tokenRates,
-          }))
-        )
+        await db.tokenRates.bulkPut(putTokenRates)
 
         // delete tokenRates for tokens which no longer exist
         const tokenIds = await db.tokenRates.toCollection().primaryKeys()
-        if (tokenIds.length)
-          await db.tokenRates.bulkDelete(
-            tokenIds.filter((tokenId) => tokens[tokenId] === undefined)
-          )
+        const validTokenIds = new Set(Object.keys(tokenRates))
+        const deleteTokenIds = tokenIds.filter((tokenId) => !validTokenIds.has(tokenId))
+        if (deleteTokenIds.length > 0) await db.tokenRates.bulkDelete(deleteTokenIds)
       })
     } catch (err) {
       // reset lastUpdateTokenIds to retry on next call

@@ -9,6 +9,7 @@ import type {
 } from "@polkadot/extension-base/background/types"
 import { KeyringPair$Json } from "@polkadot/keyring/types"
 import { KeypairType } from "@polkadot/util-crypto/types"
+import { TokenId } from "@talismn/chaindata-provider"
 
 export type {
   ResponseAccountExport,
@@ -59,11 +60,19 @@ type AccountJsonWatchedOwnProperties = {
 
 export type AccountJsonWatched = AccountJson & AccountJsonWatchedOwnProperties
 
+type AccountJsonDcentOwnProperties = {
+  path: string
+  tokenIds: TokenId[]
+}
+
+export type AccountJsonDcent = AccountJson & AccountJsonDcentOwnProperties
+
 export type AccountJsonAny = (
   | AccountJsonHardwareEthereum
   | AccountJsonHardwareSubstrate
   | AccountJsonQr
   | AccountJsonWatched
+  | AccountJsonDcent
   | AccountJson
 ) & { origin?: AccountType | undefined; derivedMnemonicId?: string; derivationPath?: string } & {
   folderId?: string
@@ -86,6 +95,7 @@ export const AccountTypes = {
   JSON: "JSON",
   QR: "QR",
   HARDWARE: "HARDWARE",
+  DCENT: "DCENT",
   WATCHED: "WATCHED",
 } as const
 
@@ -128,6 +138,13 @@ export interface RequestAccountCreateHardwareEthereum {
   name: string
   address: string
   path: string
+}
+export interface RequestAccountCreateDcent {
+  name: string
+  address: string
+  type: KeypairType
+  path: string
+  tokenIds: TokenId[]
 }
 
 export interface RequestAccountCreateWatched {
@@ -193,6 +210,7 @@ export interface AccountsMessages {
     string
   ]
   "pri(accounts.create.hardware.ethereum)": [RequestAccountCreateHardwareEthereum, string]
+  "pri(accounts.create.dcent)": [RequestAccountCreateDcent, string]
   "pri(accounts.create.qr.substrate)": [RequestAccountCreateExternal, string]
   "pri(accounts.create.watched)": [RequestAccountCreateWatched, string]
   "pri(accounts.forget)": [RequestAccountForget, boolean]
