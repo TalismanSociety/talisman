@@ -6,10 +6,11 @@ import { sleep } from "@talismn/util"
 import { api } from "@ui/api"
 import { useHasVerifierCertificateMnemonic } from "@ui/hooks/useHasVerifierCertificateMnemonic"
 import { useQrCodeAccounts } from "@ui/hooks/useQrCodeAccounts"
-import { useSelectAccountAndNavigate } from "@ui/hooks/useSelectAccountAndNavigate"
 import { useReducer } from "react"
 import { useCallback } from "react"
 import { useTranslation } from "react-i18next"
+
+import { AccountAddPageProps } from "../types"
 
 type AccountConfigState = {
   name: string
@@ -129,13 +130,11 @@ export const reducer = (state: AddQrState, action: Action): AddQrState => {
 
 const initialState: AddQrState = { type: "SCAN", enable: false }
 
-const useAccountAddQrContext = () => {
+const useAccountAddQrContext = ({ onSuccess }: AccountAddPageProps) => {
   const { t } = useTranslation("admin")
   const [state, dispatch] = useReducer(reducer, initialState)
   const hasVerifierCertMnemonic = useHasVerifierCertificateMnemonic()
   const vaultAccounts = useQrCodeAccounts()
-
-  const { setAddress } = useSelectAccountAndNavigate("/portfolio")
 
   const submit = useCallback(
     async (mnemonic?: string) => {
@@ -164,7 +163,7 @@ const useAccountAddQrContext = () => {
       }
 
       try {
-        setAddress(
+        onSuccess(
           await api.accountCreateQr(
             name || t("My Polkadot Vault Account"),
             address,
@@ -185,7 +184,7 @@ const useAccountAddQrContext = () => {
         })
       }
     },
-    [setAddress, state, t]
+    [onSuccess, state, t]
   )
 
   const submitConfigure = useCallback(

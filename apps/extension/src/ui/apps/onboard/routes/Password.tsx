@@ -1,11 +1,10 @@
-import { passwordStore } from "@core/domains/app"
 import { yupResolver } from "@hookform/resolvers/yup"
 import { PasswordStrength } from "@talisman/components/PasswordStrength"
 import imgPassword from "@talisman/theme/images/onboard_password_character.png"
 import { classNames } from "@talismn/util"
 import { AnalyticsPage, sendAnalyticsEvent } from "@ui/api/analytics"
 import { useAnalyticsPageView } from "@ui/hooks/useAnalyticsPageView"
-import { useCallback, useEffect, useState } from "react"
+import { useCallback, useEffect } from "react"
 import { useForm } from "react-hook-form"
 import { useTranslation } from "react-i18next"
 import { useNavigate } from "react-router-dom"
@@ -47,8 +46,7 @@ export const PasswordPage = () => {
   const { t } = useTranslation("onboard")
   useAnalyticsPageView(ANALYTICS_PAGE)
 
-  const { data, createPassword, isResettingWallet } = useOnboard()
-  const [passwordExists, setPasswordExists] = useState(false)
+  const { data, createPassword, isResettingWallet, passwordExists } = useOnboard()
 
   const navigate = useNavigate()
 
@@ -73,19 +71,16 @@ export const PasswordPage = () => {
     trigger()
   }, [trigger, password])
 
-  // handle case where user has navigated back, and a password already exists in the store
-  useEffect(() => {
-    passwordStore.get("secret").then((pw) => {
-      setPasswordExists(!!pw)
-    })
-  }, [navigate])
-
   useEffect(() => {
     return () => {
       setValue("password", "")
       setValue("passwordConfirm", "")
     }
   }, [setValue])
+
+  const navigateNext = useCallback(() => {
+    navigate(isResettingWallet ? "/accounts/add" : `/privacy`)
+  }, [navigate, isResettingWallet])
 
   const submit = useCallback(
     async (fields: FormData) => {
@@ -103,9 +98,9 @@ export const PasswordPage = () => {
         name: "Submit",
         action: "Choose password continue button",
       })
-      navigate(isResettingWallet ? "/account" : `/privacy`)
+      navigateNext()
     },
-    [navigate, setError, createPassword, isResettingWallet]
+    [setError, createPassword, navigateNext]
   )
 
   return (
@@ -125,13 +120,7 @@ export const PasswordPage = () => {
                 "If you can't remember the password you set, you should re-install Talisman now, and restart this onboarding process."
               )}
             </p>
-            <Button
-              fullWidth
-              primary
-              className="mt-16"
-              type="button"
-              onClick={() => navigate(isResettingWallet ? "/account" : `/privacy`)}
-            >
+            <Button fullWidth primary className="mt-16" type="button" onClick={navigateNext}>
               {t("Continue")}
             </Button>
           </div>

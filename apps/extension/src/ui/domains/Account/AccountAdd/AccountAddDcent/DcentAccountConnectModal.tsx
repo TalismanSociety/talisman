@@ -1,8 +1,8 @@
-import { useSelectAccountAndNavigate } from "@ui/hooks/useSelectAccountAndNavigate"
 import { FC, useEffect, useState } from "react"
 import { Trans, useTranslation } from "react-i18next"
 import { Button, Modal, ModalDialog } from "talisman-ui"
 
+import { useDcentConnect } from "./context"
 import { DcentAccountConnectForm } from "./DcentAccountConnectForm"
 
 export const DcentAccountConnectModal: FC<{
@@ -14,7 +14,7 @@ export const DcentAccountConnectModal: FC<{
 }> = ({ isOpen, address, defaultName, connect, onClose }) => {
   const { t } = useTranslation("admin")
   const [isConnected, setIsConnected] = useState(false)
-  const { setAddress } = useSelectAccountAndNavigate("/portfolio")
+  const { onSuccess } = useDcentConnect()
 
   useEffect(() => {
     if (isOpen) setIsConnected(false)
@@ -36,7 +36,7 @@ export const DcentAccountConnectModal: FC<{
               </Trans>
             </p>
             <div className="mt-12 grid grid-cols-2 gap-8">
-              <Button onClick={() => setAddress(address)}>{t("View Portfolio")}</Button>
+              <Button onClick={() => onSuccess(address)}>{t("View Portfolio")}</Button>
               <Button primary onClick={onClose}>
                 {t("Connect More")}
               </Button>

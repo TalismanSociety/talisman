@@ -2,7 +2,6 @@ import { HeaderBlock } from "@talisman/components/HeaderBlock"
 import { notify } from "@talisman/components/Notifications"
 import { Spacer } from "@talisman/components/Spacer"
 import { ArrowRightIcon } from "@talisman/theme/icons"
-import { DashboardLayout } from "@ui/apps/dashboard/layout/DashboardLayout"
 import { dcent } from "@ui/util/dcent"
 import { FC, ReactNode, useCallback, useState } from "react"
 import { Trans, useTranslation } from "react-i18next"
@@ -43,7 +42,7 @@ export const ConnectDcentBridgePage = () => {
   }, [navigate, t])
 
   return (
-    <DashboardLayout withBack centered>
+    <>
       <HeaderBlock
         title={t("Connect D'CENT Biometric Wallet")}
         text={t(
@@ -85,6 +84,6 @@ export const ConnectDcentBridgePage = () => {
           {t("Continue")}
         </Button>
       </div>
-    </DashboardLayout>
+    </>
   )
 }

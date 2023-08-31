@@ -2,10 +2,13 @@ import { Navigate, Route, Routes } from "react-router-dom"
 
 import { OnboardStageWrapper } from "../components/OnboardStageWrapper"
 import { AddAccountPage } from "./AddAccount"
+import { AccountAddDcentOnboardingWizard } from "./AddAccount/AccountAddDcentWizard"
 import { AccountAddDerivedPage } from "./AddAccount/AccountAddDerivedPage"
-import { AccountAddJsonPage } from "./AddAccount/AccountAddJsonPage"
+import { AccountAddJsonOnboardPage } from "./AddAccount/AccountAddJsonPage"
 import { AccountAddLedgerOnboardWizard } from "./AddAccount/AccountAddLedgerWizard"
+import { AccountAddQrOnboardWizard } from "./AddAccount/AccountAddQrWizard"
 import { AccountAddSecretOnboardWizard } from "./AddAccount/AccountAddSecretWizard"
+import { AccountAddWatchedPage } from "./AddAccount/AccountAddWatchedPage"
 import { PasswordPage } from "./Password"
 import { PrivacyPage } from "./Privacy"
 import { SuccessPage } from "./Success"
@@ -26,11 +29,12 @@ const OnboardingRoutes = () => {
           <Route element={<OnboardStageWrapper stage={3} />}>
             <Route index element={<AddAccountPage />} />
             <Route path="derived" element={<AccountAddDerivedPage />} />
-            <Route path="json" element={<AccountAddJsonPage />} />
+            <Route path="json" element={<AccountAddJsonOnboardPage />} />
             <Route path="secret/*" element={<AccountAddSecretOnboardWizard />} />
             <Route path="ledger/*" element={<AccountAddLedgerOnboardWizard />} />
-            {/* <Route path="qr/*" element={<AccountAddQrWizard />} />
-            <Route path="watched" element={<AccountAddWatchedPage />} /> */}
+            <Route path="qr/*" element={<AccountAddQrOnboardWizard />} />
+            <Route path="watched" element={<AccountAddWatchedPage />} />
+            <Route path="dcent/*" element={<AccountAddDcentOnboardingWizard />} />
             <Route path="*" element={<Navigate to="" replace />} />
           </Route>
         </Route>

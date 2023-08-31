@@ -26,6 +26,8 @@ import { useSearchParams } from "react-router-dom"
 import { Button, Dropdown, FormFieldContainer, FormFieldInputText } from "talisman-ui"
 import * as yup from "yup"
 
+import { AccountAddPageProps } from "./types"
+
 type MnemonicOption = {
   value: string
   label: string
@@ -43,11 +45,7 @@ type FormData = {
   type: AccountAddressType
 }
 
-type AccountAddDerivedFormProps = {
-  onSuccess: (address: string) => void
-}
-
-const AccountAddDerivedFormInner: FC<AccountAddDerivedFormProps> = ({ onSuccess }) => {
+const AccountAddDerivedFormInner: FC<AccountAddPageProps> = ({ onSuccess }) => {
   const { t } = useTranslation("admin")
   // get type paramter from url
   const [params] = useSearchParams()
@@ -222,7 +220,7 @@ const AccountAddDerivedFormInner: FC<AccountAddDerivedFormProps> = ({ onSuccess 
   )
 }
 
-export const AccountAddDerivedForm: FC<AccountAddDerivedFormProps> = ({ onSuccess }) => {
+export const AccountAddDerivedForm: FC<AccountAddPageProps> = ({ onSuccess }) => {
   return (
     <MnemonicCreateModalProvider>
       <AccountAddDerivedFormInner onSuccess={onSuccess} />
