@@ -105,7 +105,7 @@ describe("App handler when password is not trimmed", () => {
 
   test("can change password to one without spaces (not trimmed)", async () => {
     expect(await extensionStores.password.get("isTrimmed")).toBe(false)
-    // seed phrase store needs to have confirmed === true
+    // mnemonic store needs to have confirmed === true
     await extensionStores.mnemonics.setConfirmed(mnemonicId, true)
 
     const newPw = "noSpaces"
@@ -262,7 +262,7 @@ describe("App handler when password is trimmed", () => {
 
   test("can change password to one without spaces (trimmed)", async () => {
     expect(await extensionStores.password.get("isTrimmed")).toBe(true)
-    // seed phrase store needs to have confirmed === true
+    // mnemonic store needs to have confirmed === true
     await extensionStores.mnemonics.setConfirmed(mnemonicId, true)
 
     const newPw = "noSpaces"
