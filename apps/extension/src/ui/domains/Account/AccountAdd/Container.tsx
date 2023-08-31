@@ -260,7 +260,7 @@ export const AccountCreateContainer = ({ className }: Props) => {
               methodType="connect"
             />
           </div>
-          <div className="grid grid-cols-2 gap-8">
+          <div className="grid h-[14rem] grid-cols-2 items-start gap-8">
             {MethodButtonsComponent && <MethodButtonsComponent />}
           </div>
         </div>

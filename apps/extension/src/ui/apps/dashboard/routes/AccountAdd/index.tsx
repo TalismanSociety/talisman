@@ -8,7 +8,7 @@ export const AccountAddMenu = () => {
   const { t } = useTranslation()
   return (
     <DashboardLayout centered withBack>
-      <div className="mt-64 flex flex-col gap-16">
+      <div className="flex flex-col gap-16">
         <HeaderBlock
           title={t("Add Account")}
           text={t("Create a new account or import an existing one")}

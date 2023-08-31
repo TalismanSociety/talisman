@@ -12,7 +12,7 @@ export const Scan = () => {
   if (state.type !== "SCAN") return null
   return (
     <>
-      <HeaderBlock className="mb-12" title={t("Import Polkadot Vault")} />
+      <HeaderBlock className="mb-12" title={t("Connect Polkadot Vault")} />
       <div className="grid grid-cols-2 gap-12">
         <div>
           <ol className="flex flex-col gap-12">
