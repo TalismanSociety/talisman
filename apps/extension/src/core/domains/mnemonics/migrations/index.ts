@@ -15,7 +15,6 @@ enum SOURCES {
   Imported = "imported",
   Generated = "generated",
   Legacy = "legacy",
-  Vault = "vault",
 }
 
 type AccountType = {
@@ -104,8 +103,8 @@ export const migrateSeedStoreToMultiple: Migration = {
           [vcId]: {
             ...legacyVCData,
             id: vcId,
-            name: "My Recovery Phrase",
-            source: SOURCES.Vault,
+            name: "Polkadot Vault Verifier Certificate",
+            source: SOURCES.Legacy,
             cipher: vcCipher,
           },
         })

@@ -505,7 +505,7 @@ export default class AccountsHandler extends ExtensionHandler {
         "Vault Verifier Certificate Mnemonic",
         mnemonic,
         password,
-        SOURCES.Vault
+        SOURCES.Imported
       )
       if (err) throw new Error("Unable to set Verifier Certificate Mnemonic", { cause: val })
       await this.stores.app.set({ vaultVerifierCertificateMnemonicId: val })

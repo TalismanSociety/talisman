@@ -12,7 +12,6 @@ export enum SOURCES {
   Imported = "imported",
   Generated = "generated",
   Legacy = "legacy",
-  Vault = "vault",
 }
 
 export type MnemonicData = {
