@@ -21,6 +21,7 @@ const OBFUSCATE_LOG_MESSAGES: MessageTypes[] = [
   "pri(accounts.export)",
   "pri(accounts.export.pk)",
   "pri(accounts.validateMnemonic)",
+  "pri(accounts.create)",
   "pri(accounts.create.seed)",
   "pri(accounts.create.json)",
   "pri(accounts.setVerifierCertMnemonic)",

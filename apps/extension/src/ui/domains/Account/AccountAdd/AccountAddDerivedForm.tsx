@@ -1,28 +1,51 @@
-import { AccountAddressType } from "@core/domains/accounts/types"
+import {
+  AccountAddressType,
+  AccountJsonAny,
+  RequestAccountCreateOptions,
+} from "@core/domains/accounts/types"
+import { log } from "@core/log"
 import { yupResolver } from "@hookform/resolvers/yup"
 import { notify, notifyUpdate } from "@talisman/components/Notifications"
 import { Spacer } from "@talisman/components/Spacer"
-import { ArrowRightIcon } from "@talisman/theme/icons"
+import { ArrowRightIcon, PlusIcon, SeedIcon } from "@talisman/theme/icons"
 import { classNames } from "@talismn/util"
 import { sleep } from "@talismn/util"
 import { api } from "@ui/api"
 import { AccountTypeSelector } from "@ui/domains/Account/AccountTypeSelector"
+import {
+  MnemonicCreateModal,
+  MnemonicCreateModalProvider,
+  useMnemonicCreateModal,
+} from "@ui/domains/Mnemonic/MnemonicCreateModal"
 import useAccounts from "@ui/hooks/useAccounts"
-import { useCallback, useEffect, useMemo } from "react"
+import { useMnemonics } from "@ui/hooks/useMnemonics"
+import { FC, useCallback, useEffect, useMemo, useState } from "react"
 import { useForm } from "react-hook-form"
 import { useTranslation } from "react-i18next"
 import { useSearchParams } from "react-router-dom"
-import { Button, FormFieldContainer, FormFieldInputText } from "talisman-ui"
+import { Button, Dropdown, FormFieldContainer, FormFieldInputText } from "talisman-ui"
 import * as yup from "yup"
 
 import { AccountAddPageProps } from "./types"
+
+type MnemonicOption = {
+  value: string
+  label: string
+  accounts?: AccountJsonAny[]
+}
+
+const GENERATE_MNEMONIC_OPTION = {
+  value: "new",
+  label: "Generate new recovery phrase",
+  accountsCount: undefined,
+}
 
 type FormData = {
   name: string
   type: AccountAddressType
 }
 
-export const AccountAddDerivedForm = ({ onSuccess }: AccountAddPageProps) => {
+const AccountAddDerivedFormInner: FC<AccountAddPageProps> = ({ onSuccess }) => {
   const { t } = useTranslation("admin")
   // get type paramter from url
   const [params] = useSearchParams()
@@ -55,8 +78,45 @@ export const AccountAddDerivedForm = ({ onSuccess }: AccountAddPageProps) => {
     defaultValues: { type: urlParamType },
   })
 
+  const mnemonics = useMnemonics()
+  const mnemonicOptions: MnemonicOption[] = useMemo(() => {
+    const accountsByMnemonic = allAccounts.reduce((result, acc) => {
+      if (!acc.derivedMnemonicId) return result
+      if (!result[acc.derivedMnemonicId]) result[acc.derivedMnemonicId] = []
+      result[acc.derivedMnemonicId].push(acc)
+      return result
+    }, {} as Record<string, AccountJsonAny[]>)
+    return [
+      ...mnemonics
+        .map((m) => ({
+          label: m.name,
+          value: m.id,
+          accounts: accountsByMnemonic[m.id] || [],
+        }))
+        .sort((a, b) => a.label.localeCompare(b.label)),
+      GENERATE_MNEMONIC_OPTION,
+    ]
+  }, [allAccounts, mnemonics])
+  const [selectedMnemonic, setSelectedMnemonic] = useState<MnemonicOption | null>(
+    () => mnemonicOptions[0]
+  )
+
+  const { generateMnemonic } = useMnemonicCreateModal()
+
   const submit = useCallback(
     async ({ name, type }: FormData) => {
+      if (!selectedMnemonic) return
+
+      let options: RequestAccountCreateOptions
+
+      if (selectedMnemonic.value === "new") {
+        const mnemonicOptions = await generateMnemonic()
+        if (mnemonicOptions === null) return // cancelled
+        options = mnemonicOptions
+      } else {
+        options = { mnemonicId: selectedMnemonic.value }
+      }
+
       const notificationId = notify(
         {
           type: "processing",
@@ -66,12 +126,11 @@ export const AccountAddDerivedForm = ({ onSuccess }: AccountAddPageProps) => {
         { autoClose: false }
       )
 
-      // pause to prevent double notification
-      await sleep(1000)
-
       try {
-        const resultAddress = await api.accountCreate(name, type)
-        onSuccess(resultAddress)
+        // pause to prevent double notification
+        await sleep(1000)
+
+        onSuccess(await api.accountCreate(name, type, options))
 
         notifyUpdate(notificationId, {
           type: "success",
@@ -79,6 +138,7 @@ export const AccountAddDerivedForm = ({ onSuccess }: AccountAddPageProps) => {
           subtitle: name,
         })
       } catch (err) {
+        log.error("Failed to create account", err)
         notifyUpdate(notificationId, {
           type: "error",
           title: t("Error creating account"),
@@ -86,7 +146,7 @@ export const AccountAddDerivedForm = ({ onSuccess }: AccountAddPageProps) => {
         })
       }
     },
-    [onSuccess, t]
+    [generateMnemonic, onSuccess, selectedMnemonic, t]
   )
 
   const handleTypeChange = useCallback(
@@ -109,7 +169,32 @@ export const AccountAddDerivedForm = ({ onSuccess }: AccountAddPageProps) => {
       <AccountTypeSelector defaultType={urlParamType} onChange={handleTypeChange} />
       <Spacer small />
       <div className={classNames("transition-opacity", type ? "opacity-100" : "opacity-0")}>
-        <FormFieldContainer error={errors.name?.message}>
+        {mnemonicOptions.length > 1 && (
+          <Dropdown
+            className="mt-8 [&>label]:mb-4"
+            items={mnemonicOptions}
+            label={t("Recovery phrase")}
+            propertyKey="value"
+            renderItem={(o) => (
+              <div className="text-body-secondary flex w-full items-center gap-6 overflow-hidden">
+                <div className="bg-body/10 text-md rounded-full p-4">
+                  {o.value === "new" ? <PlusIcon /> : <SeedIcon />}
+                </div>
+                <div className="grow truncate text-sm">{o.label}</div>
+                {o.value !== "new" && (
+                  <div className="text-body-disabled flex shrink-0 items-center gap-2 truncate text-xs">
+                    {t("used by {{count}} accounts", { count: o.accounts?.length ?? 0 })}
+                  </div>
+                )}
+              </div>
+            )}
+            value={selectedMnemonic}
+            onChange={setSelectedMnemonic}
+            buttonClassName="py-6 bg-field"
+            optionClassName="py-4 bg-field"
+          />
+        )}
+        <FormFieldContainer className="mt-8" label={t("Account name")} error={errors.name?.message}>
           <FormFieldInputText
             {...register("name")}
             placeholder={t("Choose a name")}
@@ -132,5 +217,14 @@ export const AccountAddDerivedForm = ({ onSuccess }: AccountAddPageProps) => {
         </div>
       </div>
     </form>
+  )
+}
+
+export const AccountAddDerivedForm: FC<AccountAddPageProps> = ({ onSuccess }) => {
+  return (
+    <MnemonicCreateModalProvider>
+      <AccountAddDerivedFormInner onSuccess={onSuccess} />
+      <MnemonicCreateModal />
+    </MnemonicCreateModalProvider>
   )
 }

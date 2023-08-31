@@ -2,6 +2,7 @@ import { Trees } from "@core/domains/accounts/helpers.catalog"
 import { AccountAddressType, RequestAccountCreateHardware } from "@core/domains/accounts/types"
 import type {
   AccountJson,
+  RequestAccountCreateOptions,
   RequestAccountsCatalogAction,
   VerifierCertificateType,
 } from "@core/domains/accounts/types"
@@ -111,7 +112,11 @@ export default interface MessageTypes {
   addressFromMnemonic: (mnemonic: string, type?: AccountAddressType) => Promise<string>
 
   // account message types ---------------------------------------------------
-  accountCreate: (name: string, type: AccountAddressType) => Promise<string>
+  accountCreate: (
+    name: string,
+    type: AccountAddressType,
+    options: RequestAccountCreateOptions
+  ) => Promise<string>
   accountCreateFromSeed: (name: string, seed: string, type?: AccountAddressType) => Promise<string>
   accountCreateFromJson: (unlockedPairs: KeyringPair$Json[]) => Promise<string[]>
   accountCreateHardware: (
@@ -140,7 +145,11 @@ export default interface MessageTypes {
   accountExportPrivateKey: (address: string, password: string) => Promise<string>
   accountRename: (address: string, name: string) => Promise<boolean>
   accountValidateMnemonic: (mnemonic: string) => Promise<boolean>
-  setVerifierCertMnemonic: (type: VerifierCertificateType, mnemonic?: string) => Promise<boolean>
+  setVerifierCertMnemonic: (
+    type: VerifierCertificateType,
+    mnemonic?: string,
+    mnemonicId?: string
+  ) => Promise<boolean>
 
   // balance message types ---------------------------------------------------
   getBalance: ({

@@ -101,8 +101,7 @@ export const AccountContextMenu = forwardRef<HTMLElement, Props>(function Accoun
     [_openAccountExportPkModal, account]
   )
 
-  const { canRemoveFunc, open: _openAccountRemoveModal } = useAccountRemoveModal()
-  const canRemove = useMemo(() => canRemoveFunc(account), [account, canRemoveFunc])
+  const { open: _openAccountRemoveModal } = useAccountRemoveModal()
   const openAccountRemoveModal = useCallback(
     () => _openAccountRemoveModal(account),
     [_openAccountRemoveModal, account]
@@ -144,11 +143,9 @@ export const AccountContextMenu = forwardRef<HTMLElement, Props>(function Accoun
                 {t("Export private key")}
               </ContextMenuItem>
             )}
-            {canRemove && (
-              <ContextMenuItem onClick={openAccountRemoveModal}>
-                {t("Remove account")}
-              </ContextMenuItem>
-            )}
+            <ContextMenuItem onClick={openAccountRemoveModal}>
+              {t("Remove account")}
+            </ContextMenuItem>
           </>
         )}
         {!hideManageAccounts && (

@@ -42,7 +42,7 @@ export const DEFAULT_APP_STATE: AppStoreData = {
   hasBraveWarningBeenShown: false,
   // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
   analyticsRequestShown: gt(process.env.VERSION!, ANALYTICS_VERSION), // assume user has onboarded with analytics if current version is newer
-  hasFunds: true, // false after onboarding with a newly created account
+  hasFunds: false,
   hasSpiritKey: false,
   needsSpiritKeyUpdate: false,
   showDotNomPoolStakingBanner: true,
