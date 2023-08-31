@@ -4,7 +4,6 @@ import imgPassword from "@talisman/theme/images/onboard_password_character.png"
 import { classNames } from "@talismn/util"
 import { AnalyticsPage, sendAnalyticsEvent } from "@ui/api/analytics"
 import { useAnalyticsPageView } from "@ui/hooks/useAnalyticsPageView"
-import { useIsLoggedIn } from "@ui/hooks/useIsLoggedIn"
 import { useCallback, useEffect } from "react"
 import { useForm } from "react-hook-form"
 import { useTranslation } from "react-i18next"
@@ -47,10 +46,9 @@ export const PasswordPage = () => {
   const { t } = useTranslation("onboard")
   useAnalyticsPageView(ANALYTICS_PAGE)
 
-  const { data, createPassword, isResettingWallet, passwordExists, setOnboarded } = useOnboard()
+  const { data, createPassword, isResettingWallet, passwordExists } = useOnboard()
 
   const navigate = useNavigate()
-  const isLoggedIn = useIsLoggedIn()
 
   const {
     register,
@@ -81,9 +79,8 @@ export const PasswordPage = () => {
   }, [setValue])
 
   const navigateNext = useCallback(() => {
-    if (isLoggedIn === "TRUE") navigate(isResettingWallet ? "/account" : `/privacy`)
-    else setOnboarded()
-  }, [navigate, isLoggedIn, setOnboarded, isResettingWallet])
+    navigate(isResettingWallet ? "/accounts/add" : `/privacy`)
+  }, [navigate, isResettingWallet])
 
   const submit = useCallback(
     async (fields: FormData) => {
