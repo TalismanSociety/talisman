@@ -4,7 +4,6 @@ import type {
   AccountJson,
   RequestAccountCreateOptions,
   RequestAccountsCatalogAction,
-  VerifierCertificateType,
 } from "@core/domains/accounts/types"
 import {
   AnalyticsCaptureRequest,
@@ -33,6 +32,7 @@ import {
   WatchAssetRequestId,
 } from "@core/domains/ethereum/types"
 import { MetadataUpdateStatus, RequestMetadataId } from "@core/domains/metadata/types"
+import { VerifierCertificateType } from "@core/domains/mnemonics/types"
 import {
   SignerPayloadGenesisHash,
   SignerPayloadJSON,
@@ -110,6 +110,12 @@ export default interface MessageTypes {
   mnemonicRename: (mnemonicId: string, name: string) => Promise<boolean>
   mnemonicDelete: (mnemonicId: string) => Promise<boolean>
   addressFromMnemonic: (mnemonic: string, type?: AccountAddressType) => Promise<string>
+  validateMnemonic: (mnemonic: string) => Promise<boolean>
+  setVerifierCertMnemonic: (
+    type: VerifierCertificateType,
+    mnemonic?: string,
+    mnemonicId?: string
+  ) => Promise<boolean>
 
   // account message types ---------------------------------------------------
   accountCreate: (
@@ -144,12 +150,6 @@ export default interface MessageTypes {
   ) => Promise<{ exportedJson: KeyringPair$Json }>
   accountExportPrivateKey: (address: string, password: string) => Promise<string>
   accountRename: (address: string, name: string) => Promise<boolean>
-  accountValidateMnemonic: (mnemonic: string) => Promise<boolean>
-  setVerifierCertMnemonic: (
-    type: VerifierCertificateType,
-    mnemonic?: string,
-    mnemonicId?: string
-  ) => Promise<boolean>
 
   // balance message types ---------------------------------------------------
   getBalance: ({

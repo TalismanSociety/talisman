@@ -192,14 +192,6 @@ export type RequestAccountCreate = {
   type: AccountAddressType
 } & RequestAccountCreateOptions
 
-export type VerifierCertificateType = "new" | "talisman"
-
-export type RequestSetVerifierCertificateMnemonic = {
-  type: VerifierCertificateType
-  mnemonic?: string
-  mnemonicId?: string
-}
-
 export interface AccountsMessages {
   // account message signatures
   "pri(accounts.create)": [RequestAccountCreate, string]
@@ -221,6 +213,4 @@ export interface AccountsMessages {
   "pri(accounts.subscribe)": [RequestAccountSubscribe, boolean, AccountJson[]]
   "pri(accounts.catalog.subscribe)": [null, boolean, Trees]
   "pri(accounts.catalog.runActions)": [RequestAccountsCatalogAction[], boolean]
-  "pri(accounts.validateMnemonic)": [string, boolean]
-  "pri(accounts.setVerifierCertMnemonic)": [RequestSetVerifierCertificateMnemonic, boolean]
 }

@@ -22,7 +22,7 @@ const cleanupMnemonic = (input = "") =>
 const testValidMnemonic = async (val?: string) => {
   // Don't bother calling the api if the mnemonic isn't the right length
   if (!val || ![12, 24].includes(val.split(" ").length)) return false
-  return await api.accountValidateMnemonic(val)
+  return await api.validateMnemonic(val)
 }
 
 type FormProps = {

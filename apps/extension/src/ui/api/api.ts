@@ -78,6 +78,14 @@ export const api: MessageTypes = {
     messageService.sendMessage("pri(mnemonic.delete)", { mnemonicId }),
   addressFromMnemonic: (mnemonic, type) =>
     messageService.sendMessage("pri(mnemonic.address)", { mnemonic, type }),
+  validateMnemonic: (mnemonic) =>
+    messageService.sendMessage("pri(mnemonic.validateMnemonic)", mnemonic),
+  setVerifierCertMnemonic: (verifierCertType, mnemonic, mnemonicId) =>
+    messageService.sendMessage("pri(mnemonic.setVerifierCertMnemonic)", {
+      type: verifierCertType,
+      mnemonic,
+      mnemonicId,
+    }),
 
   // account messages ---------------------------------------------------
   accountCreate: (name, type, options) =>
@@ -134,14 +142,6 @@ export const api: MessageTypes = {
     messageService.sendMessage("pri(accounts.rename)", { address, name }),
   accountExternalSetIsPortfolio: (address, isPortfolio) =>
     messageService.sendMessage("pri(accounts.external.setIsPortfolio)", { address, isPortfolio }),
-  accountValidateMnemonic: (mnemonic) =>
-    messageService.sendMessage("pri(accounts.validateMnemonic)", mnemonic),
-  setVerifierCertMnemonic: (verifierCertType, mnemonic, mnemonicId) =>
-    messageService.sendMessage("pri(accounts.setVerifierCertMnemonic)", {
-      type: verifierCertType,
-      mnemonic,
-      mnemonicId,
-    }),
 
   // balance messages ---------------------------------------------------
   getBalance: ({ chainId, evmNetworkId, tokenId, address }) =>

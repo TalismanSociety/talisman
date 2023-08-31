@@ -30,6 +30,14 @@ export declare type MnemonicDeleteRequest = {
   mnemonicId: MnemonicId
 }
 
+export type VerifierCertificateType = "new" | "talisman"
+
+export type RequestSetVerifierCertificateMnemonic = {
+  type: VerifierCertificateType
+  mnemonic?: string
+  mnemonicId?: string
+}
+
 export interface MnemonicMessages {
   // mnemonic message signatures
   "pri(mnemonic.unlock)": [MnemonicUnlockRequest, string]
@@ -37,4 +45,6 @@ export interface MnemonicMessages {
   "pri(mnemonic.address)": [RequestAddressFromMnemonic, string]
   "pri(mnemonic.rename)": [MnemonicRenameRequest, boolean]
   "pri(mnemonic.delete)": [MnemonicDeleteRequest, boolean]
+  "pri(mnemonic.validateMnemonic)": [string, boolean]
+  "pri(mnemonic.setVerifierCertMnemonic)": [RequestSetVerifierCertificateMnemonic, boolean]
 }

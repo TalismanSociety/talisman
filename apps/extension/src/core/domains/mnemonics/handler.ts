@@ -1,9 +1,37 @@
 import { ExtensionHandler } from "@core/libs/Handler"
 import { MessageTypes, RequestType, ResponseType } from "@core/types"
 import { assert } from "@polkadot/util"
+import { mnemonicValidate } from "@polkadot/util-crypto"
 import { addressFromMnemonic } from "@talisman/util/addressFromMnemonic"
 
+import { SOURCES } from "./store"
+import { RequestSetVerifierCertificateMnemonic } from "./types"
+
 export default class MnemonicHandler extends ExtensionHandler {
+  private async setVerifierCertMnemonic({
+    type,
+    mnemonic,
+    mnemonicId,
+  }: RequestSetVerifierCertificateMnemonic) {
+    if (type === "new" && mnemonic) {
+      const isValidMnemonic = mnemonicValidate(mnemonic)
+      assert(isValidMnemonic, "Invalid mnemonic")
+      const password = this.stores.password.getPassword()
+      if (!password) throw new Error("Unauthorised")
+      const { err, val } = await this.stores.mnemonics.add(
+        "Vault Verifier Certificate Mnemonic",
+        mnemonic,
+        password,
+        SOURCES.Imported
+      )
+      if (err) throw new Error("Unable to set Verifier Certificate Mnemonic", { cause: val })
+      await this.stores.app.set({ vaultVerifierCertificateMnemonicId: val })
+    } else if (type === "talisman" && mnemonicId) {
+      await this.stores.app.set({ vaultVerifierCertificateMnemonicId: mnemonicId })
+    }
+    return true
+  }
+
   public async handle<TMessageType extends MessageTypes>(
     id: string,
     type: TMessageType,
@@ -40,6 +68,12 @@ export default class MnemonicHandler extends ExtensionHandler {
         const { mnemonicId } = request as RequestType<"pri(mnemonic.delete)">
         return this.stores.mnemonics.delete(mnemonicId)
       }
+
+      case "pri(mnemonic.validateMnemonic)":
+        return mnemonicValidate(request as string)
+
+      case "pri(mnemonic.setVerifierCertMnemonic)":
+        return this.setVerifierCertMnemonic(request as RequestSetVerifierCertificateMnemonic)
 
       default:
         throw new Error(`Unable to handle message of type ${type}`)

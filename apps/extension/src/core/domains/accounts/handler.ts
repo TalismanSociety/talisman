@@ -18,7 +18,6 @@ import type {
   RequestAccountForget,
   RequestAccountRename,
   RequestAccountsCatalogAction,
-  RequestSetVerifierCertificateMnemonic,
   ResponseAccountExport,
 } from "@core/domains/accounts/types"
 import { AccountTypes } from "@core/domains/accounts/types"
@@ -487,34 +486,6 @@ export default class AccountsHandler extends ExtensionHandler {
     return this.stores.accountsCatalog.runActions(actions)
   }
 
-  private accountValidateMnemonic(mnemonic: string): boolean {
-    return mnemonicValidate(mnemonic)
-  }
-
-  private async setVerifierCertMnemonic({
-    type,
-    mnemonic,
-    mnemonicId,
-  }: RequestSetVerifierCertificateMnemonic) {
-    if (type === "new" && mnemonic) {
-      const isValidMnemonic = mnemonicValidate(mnemonic)
-      assert(isValidMnemonic, "Invalid mnemonic")
-      const password = this.stores.password.getPassword()
-      if (!password) throw new Error("Unauthorised")
-      const { err, val } = await this.stores.mnemonics.add(
-        "Vault Verifier Certificate Mnemonic",
-        mnemonic,
-        password,
-        SOURCES.Imported
-      )
-      if (err) throw new Error("Unable to set Verifier Certificate Mnemonic", { cause: val })
-      await this.stores.app.set({ vaultVerifierCertificateMnemonicId: val })
-    } else if (type === "talisman" && mnemonicId) {
-      await this.stores.app.set({ vaultVerifierCertificateMnemonicId: mnemonicId })
-    }
-    return true
-  }
-
   public async handle<TMessageType extends MessageTypes>(
     id: string,
     type: TMessageType,
@@ -554,10 +525,6 @@ export default class AccountsHandler extends ExtensionHandler {
         return this.accountsCatalogSubscribe(id, port)
       case "pri(accounts.catalog.runActions)":
         return this.accountsCatalogRunActions(request as RequestAccountsCatalogAction[])
-      case "pri(accounts.validateMnemonic)":
-        return this.accountValidateMnemonic(request as string)
-      case "pri(accounts.setVerifierCertMnemonic)":
-        return this.setVerifierCertMnemonic(request as RequestSetVerifierCertificateMnemonic)
       default:
         throw new Error(`Unable to handle message of type ${type}`)
     }
