@@ -9,7 +9,7 @@ import {
   createLegacySeedPhraseStore,
   createLegacyVerifierCertificateMnemonicStore,
 } from "../legacy/store"
-import { encryptMnemonic, seedPhraseStore } from "../store"
+import { encryptMnemonic, mnemonicsStore } from "../store"
 
 enum SOURCES {
   Imported = "imported",
@@ -56,7 +56,7 @@ export const migrateSeedStoreToMultiple: Migration = {
 
     const { encrypted: cipher, hash: id } = await getMnemonicHash(legacyCipher, password)
 
-    await seedPhraseStore.set({
+    await mnemonicsStore.set({
       [id]: {
         id,
         name: "My Recovery Phrase",
@@ -100,7 +100,7 @@ export const migrateSeedStoreToMultiple: Migration = {
 
         appStoreVCId = vcId
 
-        await seedPhraseStore.set({
+        await mnemonicsStore.set({
           [vcId]: {
             ...legacyVCData,
             id: vcId,

@@ -1,3 +1,3 @@
-import { SeedPhraseStore } from "../mnemonics/store"
+import { MnemonicsStore } from "../mnemonics/store"
 
-export const verifierCertificateMnemonicStore = new SeedPhraseStore("verifierCertificateMnemonic")
+export const verifierCertificateMnemonicStore = new MnemonicsStore("verifierCertificateMnemonic")

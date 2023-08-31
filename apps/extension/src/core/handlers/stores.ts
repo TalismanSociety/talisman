@@ -6,7 +6,7 @@ import { AppStoreData } from "@core/domains/app/store.app"
 import { PasswordStoreData } from "@core/domains/app/store.password"
 import { balanceStore } from "@core/domains/balances"
 import { chainStore } from "@core/domains/chains"
-import { SeedPhraseData, seedPhraseStore } from "@core/domains/mnemonics/store"
+import { MnemonicData, mnemonicsStore } from "@core/domains/mnemonics/store"
 import { sitesAuthorisationStore } from "@core/domains/sitesAuthorised"
 import sitesAuthorisedStore from "@core/domains/sitesAuthorised/store"
 import { AuthorizedSites } from "@core/domains/sitesAuthorised/types"
@@ -23,7 +23,7 @@ export type TabStore = {
 
 export type ExtensionStore = TabStore & {
   password: typeof passwordStore
-  seedPhrase: typeof seedPhraseStore
+  mnemonics: typeof mnemonicsStore
   accountsCatalog: typeof accountsCatalogStore
   verifierCertificateMnemonic: typeof verifierCertificateMnemonicStore
 }
@@ -33,9 +33,9 @@ type GettableStores = {
   password: [typeof passwordStore, PasswordStoreData]
   app: [typeof appStore, AppStoreData]
   sites: [typeof sitesAuthorisedStore, AuthorizedSites]
-  seedPhrase: [typeof seedPhraseStore, SeedPhraseData]
+  seedPhrase: [typeof mnemonicsStore, MnemonicData]
   accountsCatalog: [typeof accountsCatalogStore, AccountsCatalogData]
-  verifierCertificateMnemonic: [typeof verifierCertificateMnemonicStore, SeedPhraseData]
+  verifierCertificateMnemonic: [typeof verifierCertificateMnemonicStore, MnemonicData]
 }
 // Stores that expose the .get method
 type GettableStoreKeys = keyof GettableStores
@@ -54,7 +54,7 @@ export const tabStores = {
 export const extensionStores = {
   ...tabStores,
   password: passwordStore,
-  seedPhrase: seedPhraseStore,
+  mnemonics: mnemonicsStore,
   accountsCatalog: accountsCatalogStore,
   verifierCertificateMnemonic: verifierCertificateMnemonicStore,
 }
@@ -64,7 +64,7 @@ const localStorageStores: { [K in GettableStoreKeys]: GettableStores[K][0] } = {
   password: passwordStore,
   app: appStore,
   sites: sitesAuthorisedStore,
-  seedPhrase: seedPhraseStore,
+  seedPhrase: mnemonicsStore,
   accountsCatalog: accountsCatalogStore,
   verifierCertificateMnemonic: verifierCertificateMnemonicStore,
 }

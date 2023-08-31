@@ -15,7 +15,7 @@ export enum SOURCES {
   Vault = "vault",
 }
 
-export type SeedPhraseData = {
+export type MnemonicData = {
   id: string
   name: string
   cipher?: string
@@ -23,7 +23,7 @@ export type SeedPhraseData = {
   confirmed: boolean
 }
 
-export type SeedPhraseStoreData = Record<string, SeedPhraseData>
+export type MnemonicsStoreData = Record<string, MnemonicData>
 
 export enum MnemonicErrors {
   IncorrectPassword = "Incorrect password",
@@ -32,7 +32,7 @@ export enum MnemonicErrors {
   UnableToEncrypt = "Unable to encrypt mnemonic",
   NoMnemonicPresent = "No mnemonic present",
   MnemonicNotFound = "Mnemonic not found",
-  AlreadyExists = "Seed already exists in SeedPhraseStore",
+  AlreadyExists = "Mnemonic already exists in MnemonicsStore",
 }
 
 export const encryptMnemonic = async (mnemonic: string, password: string) => {
@@ -61,7 +61,7 @@ const cleanupMnemonic = (mnemonic: string) => {
   return mnemonic.trim().toLowerCase().replace(/\s+/g, " ")
 }
 
-export class SeedPhraseStore extends StorageProvider<SeedPhraseStoreData> {
+export class MnemonicsStore extends StorageProvider<MnemonicsStoreData> {
   public async add(
     name: string,
     seed: string,
@@ -83,7 +83,7 @@ export class SeedPhraseStore extends StorageProvider<SeedPhraseStoreData> {
 
   public async setConfirmed(id: string, confirmed = false) {
     const existing = await this.get(id)
-    if (!existing) throw new Error("Seed not found")
+    if (!existing) throw new Error("Mnemonic not found")
     await this.set({ [id]: { ...existing, confirmed } })
     return true
   }
@@ -133,4 +133,4 @@ export class SeedPhraseStore extends StorageProvider<SeedPhraseStoreData> {
   }
 }
 
-export const seedPhraseStore = new SeedPhraseStore(storageKey)
+export const mnemonicsStore = new MnemonicsStore(storageKey)

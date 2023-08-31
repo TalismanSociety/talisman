@@ -15,7 +15,7 @@ export default class MnemonicHandler extends ExtensionHandler {
         const transformedPw = await this.stores.password.transformPassword(password)
         assert(transformedPw, "Password error")
 
-        const seedResult = await this.stores.seedPhrase.getSeed(mnemonicId, transformedPw)
+        const seedResult = await this.stores.mnemonics.getSeed(mnemonicId, transformedPw)
         assert(seedResult.val, "No mnemonic present")
         assert(seedResult.ok, seedResult.val)
         return seedResult.val
@@ -23,7 +23,7 @@ export default class MnemonicHandler extends ExtensionHandler {
 
       case "pri(mnemonic.confirm)": {
         const { confirmed, mnemonicId } = request as RequestType<"pri(mnemonic.confirm)">
-        return await this.stores.seedPhrase.setConfirmed(mnemonicId, confirmed)
+        return await this.stores.mnemonics.setConfirmed(mnemonicId, confirmed)
       }
 
       case "pri(mnemonic.address)": {
@@ -33,12 +33,12 @@ export default class MnemonicHandler extends ExtensionHandler {
 
       case "pri(mnemonic.rename)": {
         const { mnemonicId, name } = request as RequestType<"pri(mnemonic.rename)">
-        return this.stores.seedPhrase.setName(mnemonicId, name)
+        return this.stores.mnemonics.setName(mnemonicId, name)
       }
 
       case "pri(mnemonic.delete)": {
         const { mnemonicId } = request as RequestType<"pri(mnemonic.delete)">
-        return this.stores.seedPhrase.delete(mnemonicId)
+        return this.stores.mnemonics.delete(mnemonicId)
       }
 
       default:

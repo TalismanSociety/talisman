@@ -9,10 +9,10 @@ import Browser from "webextension-polyfill"
 
 import {
   MnemonicErrors,
-  SeedPhraseStoreData,
+  MnemonicsStoreData,
   decryptMnemonic,
   encryptMnemonic,
-  seedPhraseStore,
+  mnemonicsStore,
 } from "../mnemonics/store"
 
 export const TALISMAN_BACKUP_KEYRING_KEY = "talismanKeyringBackup"
@@ -109,8 +109,8 @@ export const changePassword = async ({
       throw new Error("Unable to re-encrypt all keypairs when changing password")
 
     // now migrate seed phrase store passwords
-    const seedStoreData = await seedPhraseStore.get()
-    const newSeedStoreData: Partial<SeedPhraseStoreData> = {}
+    const seedStoreData = await mnemonicsStore.get()
+    const newSeedStoreData: Partial<MnemonicsStoreData> = {}
     if (Object.values(seedStoreData).length > 0) {
       const mnemonicPromises = Object.entries(seedStoreData).map(async ([key, value]) => {
         if (!value.cipher) {
@@ -126,7 +126,7 @@ export const changePassword = async ({
       })
 
       await Promise.all(mnemonicPromises)
-      await seedPhraseStore.set(newSeedStoreData)
+      await mnemonicsStore.set(newSeedStoreData)
     }
   } catch (error) {
     await restoreBackupKeyring(currentPw)

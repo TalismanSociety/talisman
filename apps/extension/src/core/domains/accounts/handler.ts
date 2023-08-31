@@ -55,11 +55,11 @@ export default class AccountsHandler extends ExtensionHandler {
     let mnemonic: string
     if ("mnemonicId" in options) {
       derivedMnemonicId = options.mnemonicId
-      const mnemonicResult = await this.stores.seedPhrase.getSeed(derivedMnemonicId, password)
+      const mnemonicResult = await this.stores.mnemonics.getSeed(derivedMnemonicId, password)
       if (mnemonicResult.err || !mnemonicResult.val) throw new Error("Mnemonic not stored locally")
       mnemonic = mnemonicResult.val
     } else {
-      const newMnemonicId = await this.stores.seedPhrase.add(
+      const newMnemonicId = await this.stores.mnemonics.add(
         `${name} Recovery Phrase`,
         options.mnemonic,
         password,
@@ -116,14 +116,14 @@ export default class AccountsHandler extends ExtensionHandler {
 
     // suri could be a private key instead of a mnemonic
     if (mnemonicValidate(mnemonic)) {
-      const derivedMnemonicId = await this.stores.seedPhrase.getExistingId(mnemonic)
+      const derivedMnemonicId = await this.stores.mnemonics.getExistingId(mnemonic)
 
       if (derivedMnemonicId) {
         meta.origin = AccountTypes.SEED
         meta.derivedMnemonicId = derivedMnemonicId
         meta.derivationPath = derivationPath
       } else {
-        const result = await this.stores.seedPhrase.add(
+        const result = await this.stores.mnemonics.add(
           `${name} Recovery Phrase`,
           mnemonic,
           password,
@@ -501,7 +501,7 @@ export default class AccountsHandler extends ExtensionHandler {
       assert(isValidMnemonic, "Invalid mnemonic")
       const password = this.stores.password.getPassword()
       if (!password) throw new Error("Unauthorised")
-      const { err, val } = await this.stores.seedPhrase.add(
+      const { err, val } = await this.stores.mnemonics.add(
         "Vault Verifier Certificate Mnemonic",
         mnemonic,
         password,

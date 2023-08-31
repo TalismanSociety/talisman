@@ -1,4 +1,4 @@
-import { SOURCES, seedPhraseStore } from "@core/domains/mnemonics/store"
+import { SOURCES, mnemonicsStore } from "@core/domains/mnemonics/store"
 import { atom, selectorFamily, useRecoilValue } from "recoil"
 
 export type Mnemonic = {
@@ -13,7 +13,7 @@ const mnemonicsState = atom<Mnemonic[]>({
   default: [],
   effects: [
     ({ setSelf }) => {
-      const sub = seedPhraseStore.observable.subscribe((data) => {
+      const sub = mnemonicsStore.observable.subscribe((data) => {
         const mnemonics = Object.values(data).map(({ id, name, confirmed, source }) => ({
           id,
           name,

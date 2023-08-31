@@ -49,7 +49,7 @@ describe("Sites Authorised Handler", () => {
       confirmed: false,
     })
 
-    mnemonicId = Object.keys(await extensionStores.seedPhrase.get())[0]
+    mnemonicId = Object.keys(await extensionStores.mnemonics.get())[0]
 
     sitesStore = await extensionStores.sites.get()
   })
