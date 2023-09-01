@@ -1,5 +1,6 @@
 import { AuthorizedSite, AuthorizedSites, ProviderType } from "@core/domains/sitesAuthorised/types"
 import { SubscribableByIdStorageProvider } from "@core/libs/Store"
+import { isTalismanHostname } from "@core/page"
 import { urlToDomain } from "@core/util/urlToDomain"
 import { assert } from "@polkadot/util"
 import { convertAddress } from "@talisman/util/convertAddress"
@@ -33,11 +34,13 @@ export class SitesAuthorizedStore extends SubscribableByIdStorageProvider<
     })
   }
 
-  async getSiteFromUrl(url: string) {
+  async getSiteFromUrl(url: string): Promise<AuthorizedSite> {
     const { val, err } = urlToDomain(url)
     if (err) throw new Error(val)
 
-    return await this.get(val)
+    const site = await this.get(val)
+
+    return { ...site, connectWatchedAccounts: isTalismanHostname(site.url) }
   }
 
   public async ensureUrlAuthorized(

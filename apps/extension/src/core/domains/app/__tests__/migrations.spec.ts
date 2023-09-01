@@ -1,5 +1,5 @@
 import { seedPhraseStore } from "@core/domains/accounts"
-import { AccountAddressType, AccountMeta, AccountTypes } from "@core/domains/accounts/types"
+import { AccountAddressType, AccountMeta, AccountType } from "@core/domains/accounts/types"
 import { passwordStore } from "@core/domains/app"
 import { getEthDerivationPath } from "@core/domains/ethereum/helpers"
 import { AccountsStore } from "@polkadot/extension-base/stores"
@@ -12,15 +12,15 @@ const mnemonic = "seed sock milk update focus rotate barely fade car face mechan
 const password = "passw0rd"
 
 const createPair = (
-  origin: AccountMeta["origin"] = AccountTypes.TALISMAN,
+  origin: AccountMeta["origin"] = AccountType.Talisman,
   derivationPath = "",
   parent?: string,
   type: AccountAddressType = "sr25519"
 ) => {
   const slashDerivationPath = `${type === "sr25519" ? "//" : ""}${derivationPath}`
   const options = {
-    parent: origin === AccountTypes.TALISMAN ? undefined : parent,
-    derivationPath: origin === AccountTypes.TALISMAN ? undefined : slashDerivationPath,
+    parent: origin === AccountType.Talisman ? undefined : parent,
+    derivationPath: origin === AccountType.Talisman ? undefined : slashDerivationPath,
   }
 
   const { pair } = keyring.addUri(
@@ -50,10 +50,10 @@ describe("App migrations", () => {
     const rootAccount = createPair()
     const indices = [1, 2]
     indices.forEach((index) => {
-      createPair("DERIVED", `${index}`, rootAccount.address)
+      createPair(AccountType.Derived, `${index}`, rootAccount.address)
     })
     // create an ethereum account
-    createPair("DERIVED", getEthDerivationPath(), rootAccount.address, "ethereum")
+    createPair(AccountType.Derived, getEthDerivationPath(), rootAccount.address, "ethereum")
 
     // create a seedphrase encrypted with the plaintext password
     await seedPhraseStore.add(mnemonic, password, true)
@@ -73,7 +73,7 @@ describe("App migrations", () => {
     expect(hashedPw !== password)
     const newRootAccounts = keyring
       .getPairs()
-      .filter(({ meta }) => meta.origin === AccountTypes.TALISMAN)
+      .filter(({ meta }) => meta.origin === AccountType.Talisman)
     expect(newRootAccounts.length === 1)
     const newRootAccount = newRootAccounts[0]
 

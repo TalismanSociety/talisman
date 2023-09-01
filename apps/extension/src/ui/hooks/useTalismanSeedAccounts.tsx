@@ -1,4 +1,4 @@
-import { AccountTypes, storedSeedAccountTypes } from "@core/domains/accounts/types"
+import { AccountType, storedSeedAccountTypes } from "@core/domains/accounts/types"
 import { useMemo } from "react"
 
 import useAccounts from "./useAccounts"
@@ -14,6 +14,6 @@ export const useTalismanSeedAccounts = () => {
     // put it in an array to get return typing right
     const sa = seedAccount ? [seedAccount] : []
     // even if the root seed account has been deleted, its children could still be there
-    return [...sa, ...accounts.filter((acc) => acc.origin === AccountTypes.DERIVED && acc.parent)]
+    return [...sa, ...accounts.filter((acc) => acc.origin === AccountType.Derived && acc.parent)]
   }, [accounts])
 }

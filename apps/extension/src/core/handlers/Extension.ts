@@ -2,7 +2,7 @@ import { DEBUG } from "@core/constants"
 import { db } from "@core/db"
 import { AccountsHandler } from "@core/domains/accounts"
 import { verifierCertificateMnemonicStore } from "@core/domains/accounts/store.verifierCertificateMnemonic"
-import { AccountTypes, RequestAddressFromMnemonic } from "@core/domains/accounts/types"
+import { AccountType, RequestAddressFromMnemonic } from "@core/domains/accounts/types"
 import AppHandler from "@core/domains/app/handler"
 import { featuresStore } from "@core/domains/app/store.features"
 import { BalancesHandler } from "@core/domains/balances"
@@ -85,9 +85,10 @@ export default class Extension extends ExtensionHandler {
           .forEach(async ([url, autoAddSite]) => {
             const newAddresses = Object.values(addresses)
               .filter(
-                ({ json: { address, meta } }) =>
-                  meta.origin !== AccountTypes.WATCHED && !autoAddSite.addresses?.includes(address)
+                ({ json: { meta } }) =>
+                  autoAddSite.connectWatchedAccounts || meta.origin !== AccountType.Watched
               )
+              .filter(({ json: { address } }) => !autoAddSite.addresses?.includes(address))
               .map(({ json: { address } }) => address)
 
             autoAddSite.addresses = [...(autoAddSite.addresses || []), ...newAddresses]
