@@ -2,6 +2,7 @@ import imgAnalyticsFlower from "@talisman/theme/images/onboard_analytics_flower.
 import imgAnalyticsSwitch from "@talisman/theme/images/onboard_analytics_switch.png"
 import { AnalyticsPage, sendAnalyticsEvent } from "@ui/api/analytics"
 import { useAnalyticsPageView } from "@ui/hooks/useAnalyticsPageView"
+import { useIsLoggedIn } from "@ui/hooks/useIsLoggedIn"
 import { useCallback } from "react"
 import { Trans, useTranslation } from "react-i18next"
 import { useNavigate } from "react-router-dom"
@@ -22,8 +23,9 @@ export const PrivacyPage = () => {
   const { t } = useTranslation("onboard")
   useAnalyticsPageView(ANALYTICS_PAGE)
 
-  const { updateData } = useOnboard()
+  const { updateData, setOnboarded } = useOnboard()
   const navigate = useNavigate()
+  const isLoggedIn = useIsLoggedIn()
 
   const handleClick = useCallback(
     (allowTracking: boolean) => () => {
@@ -33,9 +35,9 @@ export const PrivacyPage = () => {
         action: `Manage your privacy - ${allowTracking ? "I agree" : "No thanks"}`,
       })
       updateData({ allowTracking })
-      navigate("/accounts/add")
+      isLoggedIn === "TRUE" ? navigate("/accounts/add") : setOnboarded()
     },
-    [navigate, updateData]
+    [navigate, updateData, isLoggedIn, setOnboarded]
   )
 
   const handleLearnMoreClick = useCallback(() => {

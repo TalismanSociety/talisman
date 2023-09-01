@@ -1,6 +1,6 @@
 import { HeaderBlock } from "@talisman/components/HeaderBlock"
 import { Spacer } from "@talisman/components/Spacer"
-import { AccountAddJson } from "@ui/domains/Account/AccountCreate/AccountAddJson"
+import { AccountAddJson } from "@ui/domains/Account/AccountAdd/AccountAddJson"
 import { useSelectAccountAndNavigate } from "@ui/hooks/useSelectAccountAndNavigate"
 import { useTranslation } from "react-i18next"
 

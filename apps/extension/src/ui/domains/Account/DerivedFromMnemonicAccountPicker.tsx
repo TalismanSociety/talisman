@@ -142,7 +142,7 @@ const useDerivedAccounts = (
             acc.genesisHash === wa.genesisHash
         )
 
-        const accountBalances = balances.sorted.filter(
+        const accountBalances = balances.find(
           (b) => convertAddress(b.address, null) === convertAddress(acc.address, null)
         )
 
@@ -154,14 +154,14 @@ const useDerivedAccounts = (
           balances: accountBalances,
           isBalanceLoading:
             (!addressesByChain && !addressesAndEvmNetworks) ||
-            accountBalances.length < expectedBalancesCount ||
-            accountBalances.some((b) => b.status === "cache"),
+            accountBalances.count < expectedBalancesCount ||
+            accountBalances.each.some((b) => b.status === "cache"),
         }
       }),
     [
       addressesByChain,
       addressesAndEvmNetworks,
-      balances.sorted,
+      balances,
       derivedAccounts,
       expectedBalancesCount,
       selectedAccounts,
