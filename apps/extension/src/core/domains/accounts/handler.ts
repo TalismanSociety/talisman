@@ -109,7 +109,7 @@ export default class AccountsHandler extends ExtensionHandler {
 
   private async accountCreateSeed({
     name,
-    seed: suri, // TODO split in 2 args: mnemonic and derivation path, or nuke the method and use only accountCreate with additional mnemonic arg
+    seed: suri,
     type,
   }: RequestAccountCreateFromSeed): Promise<string> {
     const password = this.stores.password.getPassword()
@@ -549,9 +549,7 @@ export default class AccountsHandler extends ExtensionHandler {
     }
   }
 
-  private accountValidateDerivationPath({
-    derivationPath,
-  }: RequestValidateDerivationPath): boolean {
+  private validateDerivationPath({ derivationPath }: RequestValidateDerivationPath): boolean {
     return isValidDerivationPath(derivationPath)
   }
 
@@ -597,7 +595,7 @@ export default class AccountsHandler extends ExtensionHandler {
       case "pri(accounts.validateMnemonic)":
         return this.accountValidateMnemonic(request as string)
       case "pri(accounts.validateDerivationPath)":
-        return this.accountValidateDerivationPath(request as RequestValidateDerivationPath)
+        return this.validateDerivationPath(request as RequestValidateDerivationPath)
       case "pri(accounts.address.lookup)":
         return this.addressLookup(request as RequestAddressLookup)
       case "pri(accounts.setVerifierCertMnemonic)":

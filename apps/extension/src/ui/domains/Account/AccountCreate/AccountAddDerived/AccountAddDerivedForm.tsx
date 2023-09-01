@@ -83,14 +83,14 @@ const AccountAddDerivedFormInner: FC<AccountAddDerivedFormProps> = ({ onSuccess 
           const { customDerivationPath, derivationPath, mnemonicId, type } = val as FormData
           if (!customDerivationPath) return true
 
-          if (derivationPath && !(await api.accountValidateDerivationPath(derivationPath)))
+          if (derivationPath && !(await api.validateDerivationPath(derivationPath)))
             return ctx.createError({
               path: "derivationPath",
               message: t("Invalid derivation path"),
             })
 
           if (mnemonicId) {
-            const address = await api.accountAddressLookup({ mnemonicId, derivationPath, type })
+            const address = await api.addressLookup({ mnemonicId, derivationPath, type })
             if (allAccounts.some((a) => a.address === address))
               return ctx.createError({
                 path: "derivationPath",

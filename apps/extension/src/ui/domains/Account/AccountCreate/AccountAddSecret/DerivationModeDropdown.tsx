@@ -33,15 +33,12 @@ export const DerivationModeDropdown: FC<{
   const handleChange = (o: DropdownOption | null) => {
     if (o === null) return // won't happen
     setCurrent(o)
+    onChange(o.mode)
   }
 
   useEffect(() => {
     setCurrent(items.find((o) => o.mode === value) ?? null)
   }, [items, value])
-
-  useEffect(() => {
-    if (current) onChange(current.mode)
-  }, [current, onChange])
 
   return (
     <Dropdown

@@ -51,7 +51,7 @@ const useDerivedAccounts = (
         Array.from(Array(itemsPerPage).keys()).map(async (i) => {
           const accountIndex = skip + i
           const suri = formatSuri(mnemonic, getDerivationPath(type, accountIndex))
-          const rawAddress = await api.accountAddressLookup({ suri, type })
+          const rawAddress = await api.addressLookup({ suri, type })
           const address = type === "ethereum" ? rawAddress : convertAddress(rawAddress, 0)
 
           return {

@@ -100,12 +100,12 @@ export const AccountAddSecretMnemonicForm = () => {
                 .test(
                   "is-valid-mnemonic-ethereum",
                   t("Invalid secret"),
-                  (val) => isValidEthPrivateKey(val) || mnemonicValidate(val ?? "")
+                  async (val) => isValidEthPrivateKey(val) || api.accountValidateMnemonic(val ?? "")
                 ),
               otherwise: yup
                 .string()
                 .test("is-valid-mnemonic-sr25519", t("Invalid secret"), (val) =>
-                  mnemonicValidate(val ?? "")
+                  api.accountValidateMnemonic(val ?? "")
                 ),
             }),
         })
@@ -119,7 +119,7 @@ export const AccountAddSecretMnemonicForm = () => {
 
           let address: string
           try {
-            address = await api.accountAddressLookup({ suri, type })
+            address = await api.addressLookup({ suri, type })
           } catch (err) {
             return ctx.createError({
               path: "derivationPath",
@@ -173,7 +173,7 @@ export const AccountAddSecretMnemonicForm = () => {
       try {
         const suri = getSuri(cleanupMnemonic(mnemonic), type, derivationPath)
         if (!suri) return setTargetAddress(undefined)
-        setTargetAddress(await api.accountAddressLookup({ suri, type }))
+        setTargetAddress(await api.addressLookup({ suri, type }))
       } catch (err) {
         setTargetAddress(undefined)
       }

@@ -145,8 +145,8 @@ export default interface MessageTypes {
   accountExportPrivateKey: (address: string, password: string) => Promise<string>
   accountRename: (address: string, name: string) => Promise<boolean>
   accountValidateMnemonic: (mnemonic: string) => Promise<boolean>
-  accountValidateDerivationPath: (derivationPath: string) => Promise<boolean>
-  accountAddressLookup: (lookup: RequestAddressLookup) => Promise<string>
+  validateDerivationPath: (derivationPath: string) => Promise<boolean>
+  addressLookup: (lookup: RequestAddressLookup) => Promise<string>
   setVerifierCertMnemonic: (
     type: VerifierCertificateType,
     mnemonic?: string,
