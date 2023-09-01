@@ -181,10 +181,12 @@ export interface RequestAccountRename {
 export type RequestAccountCreateOptions =
   | {
       mnemonicId: string
+      derivationPath?: string
     }
   | {
       mnemonic: string
       confirmed: boolean
+      derivationPath?: string
     }
 
 export type RequestAccountCreate = {
@@ -222,5 +224,6 @@ export interface AccountsMessages {
   "pri(accounts.catalog.subscribe)": [null, boolean, Trees]
   "pri(accounts.catalog.runActions)": [RequestAccountsCatalogAction[], boolean]
   "pri(accounts.validateMnemonic)": [string, boolean]
+  "pri(accounts.validateDerivationPath)": [string, boolean]
   "pri(accounts.setVerifierCertMnemonic)": [RequestSetVerifierCertificateMnemonic, boolean]
 }

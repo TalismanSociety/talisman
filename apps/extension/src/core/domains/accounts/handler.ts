@@ -36,6 +36,7 @@ import keyring from "@polkadot/ui-keyring"
 import { assert } from "@polkadot/util"
 import { ethereumEncode, isEthereumAddress, mnemonicValidate } from "@polkadot/util-crypto"
 import { addressFromMnemonic } from "@talisman/util/addressFromMnemonic"
+import { isValidDerivationPath } from "@talisman/util/isValidDerivationPath"
 import { decodeAnyAddress, encodeAnyAddress, sleep } from "@talismn/util"
 import { combineLatest } from "rxjs"
 
@@ -71,11 +72,28 @@ export default class AccountsHandler extends ExtensionHandler {
       mnemonic = options.mnemonic
     }
 
-    const { val: derivationPath, err } = getNextDerivationPathForMnemonic(mnemonic, type)
-    if (err) throw new Error(derivationPath)
+    let derivationPath: string
+    if (typeof options.derivationPath === "string") {
+      derivationPath = options.derivationPath
+    } else {
+      const { val, err } = getNextDerivationPathForMnemonic(mnemonic, type)
+      if (err) throw new Error(val)
+      else derivationPath = val
+    }
+
+    const suri =
+      derivationPath && !derivationPath.startsWith("/")
+        ? `${mnemonic}/${derivationPath}`
+        : `${mnemonic}${derivationPath}`
+
+    const resultingAddress = encodeAnyAddress(addressFromMnemonic(suri, type))
+    assert(
+      allAccounts.every((acc) => encodeAnyAddress(acc.address) !== resultingAddress),
+      "Account already exists"
+    )
 
     const { pair } = keyring.addUri(
-      `${mnemonic}${derivationPath}`,
+      suri,
       password,
       {
         name,
@@ -556,6 +574,8 @@ export default class AccountsHandler extends ExtensionHandler {
         return this.accountsCatalogRunActions(request as RequestAccountsCatalogAction[])
       case "pri(accounts.validateMnemonic)":
         return this.accountValidateMnemonic(request as string)
+      case "pri(accounts.validateDerivationPath)":
+        return isValidDerivationPath(request as string)
       case "pri(accounts.setVerifierCertMnemonic)":
         return this.setVerifierCertMnemonic(request as RequestSetVerifierCertificateMnemonic)
       default:

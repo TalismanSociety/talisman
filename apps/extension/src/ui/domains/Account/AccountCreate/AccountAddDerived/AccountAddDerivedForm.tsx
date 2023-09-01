@@ -1,13 +1,10 @@
-import {
-  AccountAddressType,
-  AccountJsonAny,
-  RequestAccountCreateOptions,
-} from "@core/domains/accounts/types"
+import { AccountAddressType, RequestAccountCreateOptions } from "@core/domains/accounts/types"
 import { log } from "@core/log"
 import { yupResolver } from "@hookform/resolvers/yup"
+import { Accordion, AccordionIcon } from "@talisman/components/Accordion"
 import { notify, notifyUpdate } from "@talisman/components/Notifications"
 import { Spacer } from "@talisman/components/Spacer"
-import { ArrowRightIcon, PlusIcon, SeedIcon } from "@talisman/theme/icons"
+import { ArrowRightIcon } from "@talisman/theme/icons"
 import { classNames } from "@talismn/util"
 import { sleep } from "@talismn/util"
 import { api } from "@ui/api"
@@ -19,32 +16,49 @@ import {
 } from "@ui/domains/Mnemonic/MnemonicCreateModal"
 import useAccounts from "@ui/hooks/useAccounts"
 import { useMnemonics } from "@ui/hooks/useMnemonics"
-import { FC, useCallback, useEffect, useMemo, useState } from "react"
+import { FC, PropsWithChildren, useCallback, useEffect, useMemo } from "react"
 import { useForm } from "react-hook-form"
 import { useTranslation } from "react-i18next"
 import { useSearchParams } from "react-router-dom"
-import { Button, Dropdown, FormFieldContainer, FormFieldInputText } from "talisman-ui"
+import { Button, Checkbox, FormFieldContainer, FormFieldInputText, useOpenClose } from "talisman-ui"
 import * as yup from "yup"
 
-type MnemonicOption = {
-  value: string
-  label: string
-  accounts?: AccountJsonAny[]
-}
-
-const GENERATE_MNEMONIC_OPTION = {
-  value: "new",
-  label: "Generate new recovery phrase",
-  accountsCount: undefined,
-}
+import { AccountAddMnemonicDropdown } from "./AccountAddMnemonicDropdown"
 
 type FormData = {
   name: string
   type: AccountAddressType
+  mnemonicId: string | null
+  customDerivationPath: boolean
+  derivationPath: string
 }
 
 type AccountAddDerivedFormProps = {
   onSuccess: (address: string) => void
+}
+
+const AdvancedSettings: FC<PropsWithChildren> = ({ children }) => {
+  const { t } = useTranslation("admin")
+  const { toggle, isOpen } = useOpenClose()
+
+  return (
+    <div className="h-[12rem]">
+      <div className="text-right">
+        <button
+          type="button"
+          className="text-body-disabled hover:text-body-secondary inline-flex items-center gap-0.5 whitespace-nowrap"
+          onClick={toggle}
+        >
+          <div>{t("Advanced")}</div>
+          <AccordionIcon isOpen={isOpen} />
+        </button>
+      </div>
+      {/* enlarge the area or it would hide focus ring on the textbox */}
+      <Accordion isOpen={isOpen} className="mx-[-0.2rem] px-[0.2rem]">
+        {children}
+      </Accordion>
+    </div>
+  )
 }
 
 const AccountAddDerivedFormInner: FC<AccountAddDerivedFormProps> = ({ onSuccess }) => {
@@ -52,6 +66,7 @@ const AccountAddDerivedFormInner: FC<AccountAddDerivedFormProps> = ({ onSuccess 
   // get type paramter from url
   const [params] = useSearchParams()
   const urlParamType = (params.get("type") ?? undefined) as AccountAddressType | undefined
+  const mnemonics = useMnemonics()
   const allAccounts = useAccounts()
   const accountNames = useMemo(() => allAccounts.map((a) => a.name), [allAccounts])
 
@@ -61,9 +76,23 @@ const AccountAddDerivedFormInner: FC<AccountAddDerivedFormProps> = ({ onSuccess 
         .object({
           name: yup.string().required("").notOneOf(accountNames, t("Name already in use")),
           type: yup.string().required("").oneOf(["ethereum", "sr25519"]),
+          derivationPath: yup.string(),
         })
-        .required(),
+        .required()
+        .test("validateDerivationPath", t("Invalid derivation path"), async (val, ctx) => {
+          const { customDerivationPath, derivationPath } = val as FormData
+          if (!customDerivationPath) return true
 
+          if (!(await api.accountValidateDerivationPath(derivationPath)))
+            return ctx.createError({
+              path: "derivationPath",
+              message: t("Invalid derivation path"),
+            })
+
+          // TODO : check if resulting address already exists
+
+          return true
+        }),
     [accountNames, t]
   )
 
@@ -77,46 +106,31 @@ const AccountAddDerivedFormInner: FC<AccountAddDerivedFormProps> = ({ onSuccess 
   } = useForm<FormData>({
     mode: "onChange",
     resolver: yupResolver(schema),
-    defaultValues: { type: urlParamType },
+    defaultValues: { type: urlParamType, mnemonicId: mnemonics[0]?.id ?? null },
   })
-
-  const mnemonics = useMnemonics()
-  const mnemonicOptions: MnemonicOption[] = useMemo(() => {
-    const accountsByMnemonic = allAccounts.reduce((result, acc) => {
-      if (!acc.derivedMnemonicId) return result
-      if (!result[acc.derivedMnemonicId]) result[acc.derivedMnemonicId] = []
-      result[acc.derivedMnemonicId].push(acc)
-      return result
-    }, {} as Record<string, AccountJsonAny[]>)
-    return [
-      ...mnemonics
-        .map((m) => ({
-          label: m.name,
-          value: m.id,
-          accounts: accountsByMnemonic[m.id] || [],
-        }))
-        .sort((a, b) => a.label.localeCompare(b.label)),
-      GENERATE_MNEMONIC_OPTION,
-    ]
-  }, [allAccounts, mnemonics])
-  const [selectedMnemonic, setSelectedMnemonic] = useState<MnemonicOption | null>(
-    () => mnemonicOptions[0]
-  )
 
   const { generateMnemonic } = useMnemonicCreateModal()
 
   const submit = useCallback(
-    async ({ name, type }: FormData) => {
-      if (!selectedMnemonic) return
-
+    async ({ name, type, mnemonicId, customDerivationPath, derivationPath }: FormData) => {
       let options: RequestAccountCreateOptions
 
-      if (selectedMnemonic.value === "new") {
+      // note on derivation path :
+      // undefined : backend will use next available derivation path
+      // string : forces backend to use provided value, empty string being a valid derivation path
+
+      if (mnemonicId === null) {
         const mnemonicOptions = await generateMnemonic()
         if (mnemonicOptions === null) return // cancelled
-        options = mnemonicOptions
+        options = {
+          ...mnemonicOptions,
+          derivationPath: customDerivationPath ? derivationPath : undefined,
+        }
       } else {
-        options = { mnemonicId: selectedMnemonic.value }
+        options = {
+          mnemonicId, // undefined and empty strings should not be treated the same
+          derivationPath: customDerivationPath ? derivationPath : undefined,
+        }
       }
 
       const notificationId = notify(
@@ -148,7 +162,7 @@ const AccountAddDerivedFormInner: FC<AccountAddDerivedFormProps> = ({ onSuccess 
         })
       }
     },
-    [generateMnemonic, onSuccess, selectedMnemonic, t]
+    [generateMnemonic, onSuccess, t]
   )
 
   const handleTypeChange = useCallback(
@@ -159,7 +173,14 @@ const AccountAddDerivedFormInner: FC<AccountAddDerivedFormProps> = ({ onSuccess 
     [setFocus, setValue]
   )
 
-  const type = watch("type")
+  const handleMnemonicChange = useCallback(
+    (mnemonicId: string | null) => {
+      setValue("mnemonicId", mnemonicId, { shouldValidate: true })
+    },
+    [setValue]
+  )
+
+  const { type, mnemonicId, customDerivationPath } = watch()
 
   useEffect(() => {
     // if we have a type in the url, set it
@@ -171,30 +192,8 @@ const AccountAddDerivedFormInner: FC<AccountAddDerivedFormProps> = ({ onSuccess 
       <AccountTypeSelector defaultType={urlParamType} onChange={handleTypeChange} />
       <Spacer small />
       <div className={classNames("transition-opacity", type ? "opacity-100" : "opacity-0")}>
-        {mnemonicOptions.length > 1 && (
-          <Dropdown
-            className="mt-8 [&>label]:mb-4"
-            items={mnemonicOptions}
-            label={t("Recovery phrase")}
-            propertyKey="value"
-            renderItem={(o) => (
-              <div className="text-body-secondary flex w-full items-center gap-6 overflow-hidden">
-                <div className="bg-body/10 text-md rounded-full p-4">
-                  {o.value === "new" ? <PlusIcon /> : <SeedIcon />}
-                </div>
-                <div className="grow truncate text-sm">{o.label}</div>
-                {o.value !== "new" && (
-                  <div className="text-body-disabled flex shrink-0 items-center gap-2 truncate text-xs">
-                    {t("used by {{count}} accounts", { count: o.accounts?.length ?? 0 })}
-                  </div>
-                )}
-              </div>
-            )}
-            value={selectedMnemonic}
-            onChange={setSelectedMnemonic}
-            buttonClassName="py-6 bg-field"
-            optionClassName="py-4 bg-field"
-          />
+        {!!mnemonics.length && (
+          <AccountAddMnemonicDropdown value={mnemonicId} onChange={handleMnemonicChange} />
         )}
         <FormFieldContainer className="mt-8" label={t("Account name")} error={errors.name?.message}>
           <FormFieldInputText
@@ -205,6 +204,25 @@ const AccountAddDerivedFormInner: FC<AccountAddDerivedFormProps> = ({ onSuccess 
             data-lpignore
           />
         </FormFieldContainer>
+        <Spacer small />
+        <AdvancedSettings>
+          <Checkbox {...register("customDerivationPath")} className="text-body-secondary">
+            {t("Custom derivation path (advanced)")}
+          </Checkbox>
+          <FormFieldContainer
+            className={classNames("mt-2", !customDerivationPath && "invisible")}
+            error={errors.derivationPath?.message}
+          >
+            <FormFieldInputText
+              {...register("derivationPath")}
+              placeholder={type === "ethereum" ? "m/44'/60'/0'/0/0" : "//0"}
+              spellCheck={false}
+              autoComplete="off"
+              className="font-mono"
+              data-lpignore
+            />
+          </FormFieldContainer>
+        </AdvancedSettings>
         <Spacer small />
         <div className="flex w-full justify-end">
           <Button

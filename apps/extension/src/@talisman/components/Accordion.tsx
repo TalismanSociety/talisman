@@ -24,11 +24,12 @@ export const AccordionIcon: FC<{ isOpen: boolean; className?: string }> = ({
   </div>
 )
 
-export const Accordion: FC<{ isOpen: boolean; children?: ReactNode; alwaysRender?: boolean }> = ({
-  isOpen,
-  children,
-  alwaysRender,
-}) => {
+export const Accordion: FC<{
+  isOpen: boolean
+  children?: ReactNode
+  alwaysRender?: boolean
+  className?: string
+}> = ({ isOpen, children, alwaysRender, className }) => {
   const [contentHeight, setContentHeight] = useState<number>()
   const refContainer = useRef<HTMLDivElement>(null)
 
@@ -84,7 +85,7 @@ export const Accordion: FC<{ isOpen: boolean; children?: ReactNode; alwaysRender
 
   return (
     <motion.div
-      className="overflow-y-hidden"
+      className={classNames("overflow-y-hidden", className)}
       style={style}
       ref={refContainer}
       animate={animate}
