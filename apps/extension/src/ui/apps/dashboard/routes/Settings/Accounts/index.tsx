@@ -43,7 +43,7 @@ export const AccountsPage = () => {
   return (
     <DashboardLayout analytics={ANALYTICS_PAGE} centered>
       <HeaderBlock
-        title={t("Manage Accounts")}
+        title={t("Accounts")}
         text={t("Select which accounts are shown on your portfolio")}
       />
       <Spacer large />
