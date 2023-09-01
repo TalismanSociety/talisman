@@ -46,7 +46,7 @@ const CurrencySettingsPage = () => {
           <button
             type="button"
             key={currency}
-            className="bg-grey-900 enabled:hover:bg-grey-800 text-body-disabled enabled:hover:text-body flex h-28 w-full cursor-pointer items-center gap-8 rounded-sm px-8 disabled:cursor-not-allowed disabled:opacity-50"
+            className="bg-grey-850 enabled:hover:bg-grey-800 text-body-disabled enabled:hover:text-body-secondary flex h-28 w-full cursor-pointer items-center gap-8 rounded-sm px-8 disabled:cursor-not-allowed disabled:opacity-50"
             onClick={() =>
               setSelectableCurrencies((selected) =>
                 selected.includes(currency)
@@ -56,17 +56,17 @@ const CurrencySettingsPage = () => {
             }
           >
             <img alt={currency} src={currencyConfig[currency]?.icon} />
-            <div className="flex grow flex-col items-start gap-4">
+            <div className="flex grow flex-col items-start gap-1">
               <div className="text-body uppercase">{currency}</div>
-              <div className="text-body-secondary text-sm">
+              <div className="text-body-secondary text-xs">
                 {currencyConfig[currency]?.unicodeCharacter ?? ""}{" "}
                 {currencyConfig[currency]?.name ?? currency}
               </div>
             </div>
             {selectableCurrencies.includes(currency) ? (
-              <StarIcon className="stroke-primary fill-primary text-lg" />
+              <StarIcon className="stroke-primary fill-primary" />
             ) : (
-              <StarIcon className="text-lg" />
+              <StarIcon />
             )}
           </button>
         ))}
