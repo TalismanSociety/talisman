@@ -1,4 +1,5 @@
 import {
+  formatSuri,
   getNextDerivationPathForMnemonic,
   isValidAnyAddress,
   sortAccounts,
@@ -18,6 +19,7 @@ import type {
   RequestAccountForget,
   RequestAccountRename,
   RequestAccountsCatalogAction,
+  RequestAddressLookup,
   RequestSetVerifierCertificateMnemonic,
   ResponseAccountExport,
 } from "@core/domains/accounts/types"
@@ -35,7 +37,7 @@ import { KeyringPair$Meta } from "@polkadot/keyring/types"
 import keyring from "@polkadot/ui-keyring"
 import { assert } from "@polkadot/util"
 import { ethereumEncode, isEthereumAddress, mnemonicValidate } from "@polkadot/util-crypto"
-import { addressFromMnemonic } from "@talisman/util/addressFromMnemonic"
+import { addressFromSuri } from "@talisman/util/addressFromSuri"
 import { isValidDerivationPath } from "@talisman/util/isValidDerivationPath"
 import { decodeAnyAddress, encodeAnyAddress, sleep } from "@talismn/util"
 import { combineLatest } from "rxjs"
@@ -81,12 +83,8 @@ export default class AccountsHandler extends ExtensionHandler {
       else derivationPath = val
     }
 
-    const suri =
-      derivationPath && !derivationPath.startsWith("/")
-        ? `${mnemonic}/${derivationPath}`
-        : `${mnemonic}${derivationPath}`
-
-    const resultingAddress = encodeAnyAddress(addressFromMnemonic(suri, type))
+    const suri = formatSuri(mnemonic, derivationPath)
+    const resultingAddress = encodeAnyAddress(addressFromSuri(suri, type))
     assert(
       allAccounts.every((acc) => encodeAnyAddress(acc.address) !== resultingAddress),
       "Account already exists"
@@ -116,11 +114,11 @@ export default class AccountsHandler extends ExtensionHandler {
     const password = this.stores.password.getPassword()
     assert(password, "Not logged in")
 
-    const seedAddress = addressFromMnemonic(suri, type)
+    const expectedAddress = addressFromSuri(suri, type)
 
     const notExists = !keyring
       .getAccounts()
-      .some((acc) => acc.address.toLowerCase() === seedAddress.toLowerCase())
+      .some((acc) => acc.address.toLowerCase() === expectedAddress.toLowerCase())
     assert(notExists, "Account already exists")
 
     //suri includes the derivation path if any
@@ -533,6 +531,23 @@ export default class AccountsHandler extends ExtensionHandler {
     return true
   }
 
+  private async addressLookup(lookup: RequestAddressLookup): Promise<string> {
+    if ("mnemonicId" in lookup) {
+      const { mnemonicId, derivationPath, type } = lookup
+
+      const password = this.stores.password.getPassword()
+      assert(password, "Not logged in")
+      const mnemonicResult = await this.stores.seedPhrase.getSeed(mnemonicId, password)
+      assert(mnemonicResult.ok && mnemonicResult.val, "Mnemonic not stored locally")
+
+      const suri = formatSuri(mnemonicResult.val, derivationPath)
+      return encodeAnyAddress(addressFromSuri(suri, type))
+    } else {
+      const { suri, type } = lookup
+      return encodeAnyAddress(addressFromSuri(suri, type))
+    }
+  }
+
   public async handle<TMessageType extends MessageTypes>(
     id: string,
     type: TMessageType,
@@ -576,6 +591,8 @@ export default class AccountsHandler extends ExtensionHandler {
         return this.accountValidateMnemonic(request as string)
       case "pri(accounts.validateDerivationPath)":
         return isValidDerivationPath(request as string)
+      case "pri(accounts.address.lookup)":
+        return this.addressLookup(request as RequestAddressLookup)
       case "pri(accounts.setVerifierCertMnemonic)":
         return this.setVerifierCertMnemonic(request as RequestSetVerifierCertificateMnemonic)
       default:

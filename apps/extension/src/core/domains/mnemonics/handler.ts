@@ -1,7 +1,7 @@
 import { ExtensionHandler } from "@core/libs/Handler"
 import { MessageTypes, RequestType, ResponseType } from "@core/types"
 import { assert } from "@polkadot/util"
-import { addressFromMnemonic } from "@talisman/util/addressFromMnemonic"
+import { addressFromSuri } from "@talisman/util/addressFromSuri"
 
 export default class MnemonicHandler extends ExtensionHandler {
   public async handle<TMessageType extends MessageTypes>(
@@ -28,7 +28,7 @@ export default class MnemonicHandler extends ExtensionHandler {
 
       case "pri(mnemonic.address)": {
         const { mnemonic, type } = request as RequestType<"pri(mnemonic.address)">
-        return addressFromMnemonic(mnemonic, type)
+        return addressFromSuri(mnemonic, type)
       }
 
       case "pri(mnemonic.rename)": {

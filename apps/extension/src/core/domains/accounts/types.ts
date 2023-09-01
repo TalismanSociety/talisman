@@ -202,6 +202,17 @@ export type RequestSetVerifierCertificateMnemonic = {
   mnemonicId?: string
 }
 
+export type RequestAddressLookupBySuri = {
+  suri: string
+  type: AccountAddressType
+}
+export type RequestAddressLookupByMnemonic = {
+  mnemonicId: string
+  derivationPath: string
+  type: AccountAddressType
+}
+export type RequestAddressLookup = RequestAddressLookupBySuri | RequestAddressLookupByMnemonic
+
 export interface AccountsMessages {
   // account message signatures
   "pri(accounts.create)": [RequestAccountCreate, string]
@@ -226,4 +237,5 @@ export interface AccountsMessages {
   "pri(accounts.validateMnemonic)": [string, boolean]
   "pri(accounts.validateDerivationPath)": [string, boolean]
   "pri(accounts.setVerifierCertMnemonic)": [RequestSetVerifierCertificateMnemonic, boolean]
+  "pri(accounts.address.lookup)": [RequestAddressLookup, string]
 }

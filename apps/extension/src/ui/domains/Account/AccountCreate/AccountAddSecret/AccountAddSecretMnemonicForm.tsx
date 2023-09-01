@@ -29,7 +29,7 @@ import * as yup from "yup"
 import { AccountAddDerivationMode, useAccountAddSecret } from "./context"
 import { DerivationModeDropdown } from "./DerivationModeDropdown"
 
-export const cleanupMnemonic = (input = "") =>
+const cleanupMnemonic = (input = "") =>
   input
     .trim()
     .toLowerCase()
@@ -37,7 +37,7 @@ export const cleanupMnemonic = (input = "") =>
     .filter(Boolean) //remove empty strings
     .join(" ")
 
-export const isValidEthPrivateKey = (privateKey?: string) => {
+const isValidEthPrivateKey = (privateKey?: string) => {
   if (!privateKey) return false
 
   try {
@@ -48,7 +48,7 @@ export const isValidEthPrivateKey = (privateKey?: string) => {
   }
 }
 
-export const getSuri = (secret: string, type: AccountAddressType, derivationPath?: string) => {
+const getSuri = (secret: string, type: AccountAddressType, derivationPath?: string) => {
   if (!secret || !type) return null
 
   // metamask exports private key without the 0x in front of it
@@ -119,7 +119,7 @@ export const AccountAddSecretMnemonicForm = () => {
 
           let address: string
           try {
-            address = encodeAnyAddress(await api.addressFromMnemonic(suri, type))
+            address = await api.accountAddressLookup({ suri, type })
           } catch (err) {
             return ctx.createError({
               path: "derivationPath",
@@ -173,7 +173,7 @@ export const AccountAddSecretMnemonicForm = () => {
       try {
         const suri = getSuri(cleanupMnemonic(mnemonic), type, derivationPath)
         if (!suri) return setTargetAddress(undefined)
-        setTargetAddress(await api.addressFromMnemonic(suri, type))
+        setTargetAddress(await api.accountAddressLookup({ suri, type }))
       } catch (err) {
         setTargetAddress(undefined)
       }

@@ -80,20 +80,26 @@ const AccountAddDerivedFormInner: FC<AccountAddDerivedFormProps> = ({ onSuccess 
         })
         .required()
         .test("validateDerivationPath", t("Invalid derivation path"), async (val, ctx) => {
-          const { customDerivationPath, derivationPath } = val as FormData
+          const { customDerivationPath, derivationPath, mnemonicId, type } = val as FormData
           if (!customDerivationPath) return true
 
-          if (!(await api.accountValidateDerivationPath(derivationPath)))
+          if (derivationPath && !(await api.accountValidateDerivationPath(derivationPath)))
             return ctx.createError({
               path: "derivationPath",
               message: t("Invalid derivation path"),
             })
 
-          // TODO : check if resulting address already exists
-
+          if (mnemonicId) {
+            const address = await api.accountAddressLookup({ mnemonicId, derivationPath, type })
+            if (allAccounts.some((a) => a.address === address))
+              return ctx.createError({
+                path: "derivationPath",
+                message: t("Address already exists"),
+              })
+          }
           return true
         }),
-    [accountNames, t]
+    [accountNames, t, allAccounts]
   )
 
   const {
@@ -106,7 +112,7 @@ const AccountAddDerivedFormInner: FC<AccountAddDerivedFormProps> = ({ onSuccess 
   } = useForm<FormData>({
     mode: "onChange",
     resolver: yupResolver(schema),
-    defaultValues: { type: urlParamType, mnemonicId: mnemonics[0]?.id ?? null },
+    defaultValues: { type: urlParamType, mnemonicId: mnemonics[0]?.id ?? null, derivationPath: "" },
   })
 
   const { generateMnemonic } = useMnemonicCreateModal()
@@ -183,6 +189,12 @@ const AccountAddDerivedFormInner: FC<AccountAddDerivedFormProps> = ({ onSuccess 
   const { type, mnemonicId, customDerivationPath } = watch()
 
   useEffect(() => {
+    // when customDerivationPath is checked, mark derivationPath as touched to trigger validation
+    if (customDerivationPath)
+      setValue("derivationPath", "", { shouldValidate: true, shouldTouch: true })
+  }, [customDerivationPath, setValue])
+
+  useEffect(() => {
     // if we have a type in the url, set it
     if (urlParamType) handleTypeChange(urlParamType)
   }, [urlParamType, handleTypeChange])
@@ -206,19 +218,26 @@ const AccountAddDerivedFormInner: FC<AccountAddDerivedFormProps> = ({ onSuccess 
         </FormFieldContainer>
         <Spacer small />
         <AdvancedSettings>
-          <Checkbox {...register("customDerivationPath")} className="text-body-secondary">
+          <Checkbox
+            {...register("customDerivationPath")}
+            className="text-body-secondary hover:text-body-secondary"
+          >
             {t("Custom derivation path")}
           </Checkbox>
           <FormFieldContainer
-            className={classNames("mt-2", !customDerivationPath && "invisible")}
+            className={classNames(
+              "mt-2",
+              !customDerivationPath && "block cursor-not-allowed select-none opacity-50"
+            )}
             error={errors.derivationPath?.message}
           >
             <FormFieldInputText
               {...register("derivationPath")}
               placeholder={type === "ethereum" ? "m/44'/60'/0'/0/0" : "//0"}
               spellCheck={false}
+              disabled={!customDerivationPath}
               autoComplete="off"
-              className="font-mono"
+              className="font-mono disabled:cursor-not-allowed disabled:select-none disabled:opacity-50"
               data-lpignore
             />
           </FormFieldContainer>

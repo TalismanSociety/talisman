@@ -1,27 +1,16 @@
-import { Keyring } from "@polkadot/keyring"
+import { formatSuri } from "@core/domains/accounts/helpers"
 import { KeypairType } from "@polkadot/util-crypto/types"
+
+import { addressFromSuri } from "./addressFromSuri"
 
 const TEST_MNEMONIC = "test test test test test test test test test test test junk"
 
 /**
  *
- * Don't call this from front-end as it imports heavy polkadot crypto libs
+ * Don't call this from front-end as it loads a heavy wasm blob
  *
  */
 export const isValidDerivationPath = (derivationPath: string, type: KeypairType = "sr25519") => {
-  try {
-    // standalone/disposable keyring, this is not the one that stores user's keys
-    const keyring = new Keyring({ type })
-
-    const suri =
-      !!derivationPath && !derivationPath.startsWith("/")
-        ? `${TEST_MNEMONIC}/${derivationPath}`
-        : `${TEST_MNEMONIC}${derivationPath}`
-
-    // simply test if keyring can derive an address from the suri
-    const { address } = keyring.addFromUri(suri)
-    return !!address
-  } catch (err) {
-    return false
-  }
+  if (typeof derivationPath !== "string") return false
+  return !!addressFromSuri(formatSuri(TEST_MNEMONIC, derivationPath), type)
 }
