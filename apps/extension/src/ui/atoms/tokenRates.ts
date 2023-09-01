@@ -1,12 +1,10 @@
 import { db } from "@core/db"
-import { Checker, jsonParser, string } from "@recoiljs/refine"
 import { TokenId } from "@talismn/chaindata-provider"
 import { DbTokenRates, TokenRateCurrency } from "@talismn/token-rates"
 import { api } from "@ui/api"
-import { storageEffect } from "@ui/util/atomEffect"
+import { settingQuery } from "@ui/hooks/useSettings"
 import { liveQuery } from "dexie"
 import { DefaultValue, atom, selector, selectorFamily } from "recoil"
-import Browser from "webextension-polyfill"
 
 const NO_OP = () => {}
 export const tokenRatesState = atom<DbTokenRates[]>({
@@ -42,47 +40,26 @@ export const tokenRatesQuery = selectorFamily({
     },
 })
 
-const _selectableCurrenciesState = atom<ReadonlySet<TokenRateCurrency>>({
-  key: "_selectableCurrency",
-  default: new Set(["usd", "dot", "eth"]),
-  effects: [
-    storageEffect(Browser.storage.local, {
-      key: "settings",
-      subKey: "selectableCurrencies",
-      isSet: true,
-    }),
-  ],
-})
-
 export const selectableCurrenciesState = selector<readonly TokenRateCurrency[]>({
   key: "selectableCurrency",
-  get: ({ get }) => Array.from(get(_selectableCurrenciesState).values()).slice().sort(),
+  get: ({ get }) => get(settingQuery("selectableCurrency")).slice().sort(),
   set: ({ set }, newValue) => {
     if (!(newValue instanceof DefaultValue) && newValue.length < 1) {
       return
     }
 
-    set(_selectableCurrenciesState, newValue instanceof DefaultValue ? newValue : new Set(newValue))
+    set(
+      settingQuery("selectableCurrency"),
+      newValue instanceof DefaultValue ? newValue : [...new Set(newValue)]
+    )
   },
-})
-
-const _selectedCurrencyState = atom<TokenRateCurrency>({
-  key: "_selectedCurrency",
-  default: "usd",
-  effects: [
-    storageEffect(Browser.storage.local, {
-      key: "settings",
-      subKey: "selectedCurrency",
-      parser: jsonParser(string() as Checker<TokenRateCurrency>),
-    }),
-  ],
 })
 
 export const selectedCurrencyState = selector<TokenRateCurrency>({
   key: "selectedCurrency",
   get: ({ get }) =>
-    get(selectableCurrenciesState).includes(get(_selectedCurrencyState))
-      ? get(_selectedCurrencyState)
+    get(selectableCurrenciesState).includes(get(settingQuery("selectedCurrency")))
+      ? get(settingQuery("selectedCurrency"))
       : get(selectableCurrenciesState).at(0) ?? "usd",
-  set: ({ set }, newValue) => set(_selectedCurrencyState, newValue),
+  set: ({ set }, newValue) => set(settingQuery("selectedCurrency"), newValue),
 })

@@ -3,7 +3,7 @@ import {
   SettingsStoreData,
   settingsStore,
 } from "@core/domains/app/store.settings"
-import { RecoilState, atom, selectorFamily, useRecoilState } from "recoil"
+import { GetRecoilValue, RecoilState, atom, selectorFamily, useRecoilState } from "recoil"
 
 const settingsState = atom<SettingsStoreData>({
   key: "settingsState",
@@ -18,11 +18,11 @@ const settingsState = atom<SettingsStoreData>({
   ],
 })
 
-const settingQuery = selectorFamily({
+export const settingQuery = selectorFamily({
   key: "settingQuery",
   get:
-    <K extends keyof SettingsStoreData, V extends SettingsStoreData[K]>(key: K) =>
-    ({ get }): V => {
+    <K extends keyof SettingsStoreData>(key: K) =>
+    <V extends SettingsStoreData[K]>({ get }: { get: GetRecoilValue }): V => {
       const settings = get(settingsState)
       return settings[key] as V
     },
