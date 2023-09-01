@@ -49,6 +49,7 @@
     "@talismn/icons": "workspace:*",
     "@talismn/on-chain-id": "workspace:*",
     "@talismn/orb": "workspace:*",
+    "@talismn/scale": "workspace:*",
     "@talismn/token-rates": "workspace:*",
     "@talismn/util": "workspace:*",
     "@tanstack/react-query": "4.29.19",

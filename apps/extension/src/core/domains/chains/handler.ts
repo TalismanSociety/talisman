@@ -2,9 +2,22 @@ import { talismanAnalytics } from "@core/libs/Analytics"
 import { ExtensionHandler } from "@core/libs/Handler"
 import { generateQrAddNetworkSpecs, generateQrUpdateNetworkMetadata } from "@core/libs/QrGenerator"
 import { chaindataProvider } from "@core/rpcs/chaindata"
+import { WsProvider } from "@polkadot/api"
 import { assert, u8aToHex } from "@polkadot/util"
 import { CustomSubNativeToken, subNativeTokenId } from "@talismn/balances-substrate-native"
-import { CustomChain, githubUnknownTokenLogoUrl } from "@talismn/chaindata-provider"
+import {
+  BalanceMetadata,
+  CustomChain,
+  githubUnknownTokenLogoUrl,
+} from "@talismn/chaindata-provider"
+import {
+  $metadataV14,
+  PalletMV14,
+  StorageEntryMV14,
+  filterMetadataPalletsAndItems,
+} from "@talismn/scale"
+import * as $ from "@talismn/subshape-fork"
+import { sleep } from "@talismn/util"
 import { MessageHandler, MessageTypes, RequestType, RequestTypes, ResponseType } from "core/types"
 
 export class ChainsHandler extends ExtensionHandler {
@@ -17,6 +30,76 @@ export class ChainsHandler extends ExtensionHandler {
   }
 
   private chainUpsert: MessageHandler<"pri(chains.upsert)"> = async (chain) => {
+    let customBalanceMetadata: BalanceMetadata[] | undefined = undefined
+    if (chain.id === `custom-${chain.genesisHash}`) {
+      // When saving custom chains, download the chain metadata and build some SCALE types so we can fetch balances.
+      //
+      // TODO: Replace this with a scheduled background task which maintains (keeps up to date) the required SCALE types for *all* chains, not just custom ones.
+
+      const rpcUrl = chain.rpcs?.find((rpc) => rpc.url && /^wss?:\/\/.+$/.test(rpc.url))
+      if (!rpcUrl) throw new Error("No valid RPC found")
+
+      const ws = new WsProvider(rpcUrl.url, 0)
+      const [
+        // TODO: Store minMetadata with genesisHash|specName|specVersion index for scheduled background task
+        // genesisHash,
+        // { specName, specVersion },
+        metadataRpc,
+      ] = await (async () => {
+        try {
+          await ws.connect()
+
+          const isReadyTimeout = sleep(10_000).then(() => {
+            throw new Error("timeout")
+          })
+          await Promise.race([ws.isReady, isReadyTimeout])
+
+          return await Promise.all([
+            // TODO: Store minMetadata with genesisHash|specName|specVersion index for scheduled background task
+            // ws.send<string>("chain_getBlockHash", [0]),
+            // ws.send<{ specName: string; specVersion: number }>("state_getRuntimeVersion", []),
+            ws.send<string>("state_getMetadata", []),
+          ])
+        } finally {
+          ws.disconnect()
+        }
+      })()
+
+      const metadata = $metadataV14.decode($.decodeHex(metadataRpc))
+
+      const isSystemPallet = (pallet: PalletMV14) => pallet.name === "System"
+      const isAccountItem = (item: StorageEntryMV14) => item.name === "Account"
+
+      const isBalancesPallet = (pallet: PalletMV14) => pallet.name === "Balances"
+      const isLocksItem = (item: StorageEntryMV14) => item.name === "Locks"
+
+      filterMetadataPalletsAndItems(metadata, [
+        { pallet: isSystemPallet, items: [isAccountItem] },
+        { pallet: isBalancesPallet, items: [isLocksItem] },
+      ])
+      metadata.extrinsic.signedExtensions = []
+
+      const minMetadata = $.encodeHexPrefixed($metadataV14.encode(metadata))
+      // TODO: Use this inside the balance modules instead of TypeRegistry
+      // const metadataSubshape = transformMetadataV14(metadata)
+
+      customBalanceMetadata = [
+        {
+          moduleType: "substrate-native",
+          metadata: {
+            isTestnet: chain.isTestnet,
+            symbol: chain.nativeTokenSymbol,
+            decimals: chain.nativeTokenDecimals,
+            existentialDeposit: "0", // TODO: Extract this from the metadata (Balances pallet constants)
+            nominationPoolsPalletId: null, // TODO: Extract this from the metadata (NominationPools pallet constants)
+            crowdloanPalletId: null, // TODO: Extract this from the metadata (Crowdloan pallet constants)
+            metadata: minMetadata,
+            metadataVersion: metadata.version,
+          },
+        },
+      ]
+    }
+
     await chaindataProvider.transaction("rw", ["chains", "tokens"], async () => {
       const existingChain = await chaindataProvider.getChain(chain.id)
       const existingToken = existingChain?.nativeToken?.id
@@ -38,36 +121,35 @@ export class ChainsHandler extends ExtensionHandler {
       }
 
       const newChain: CustomChain = {
-        // EvmNetwork
         id: chain.id,
         isTestnet: chain.isTestnet,
         sortIndex: existingChain?.sortIndex ?? null,
         genesisHash: chain.genesisHash,
-        prefix: 42, // TODO: query this
+        prefix: existingChain?.prefix ?? 42, // TODO: query this
         name: chain.name,
-        themeColor: "#505050",
+        themeColor: existingChain?.themeColor ?? "#505050",
         logo: chain.chainLogoUrl ?? null,
-        chainName: "", // TODO: query this
-        implName: "", // TODO: query this
-        specName: "", // TODO: query this
-        specVersion: "", // TODO: query this
+        chainName: existingChain?.chainName ?? "", // TODO: query this
+        implName: existingChain?.implName ?? "", // TODO: query this
+        specName: existingChain?.specName ?? "", // TODO: query this
+        specVersion: existingChain?.specVersion ?? "", // TODO: query this
         nativeToken: { id: newToken.id },
-        tokens: existingChain?.tokens ?? [],
+        tokens: existingChain?.tokens ?? [{ id: newToken.id }],
         account: chain.accountFormat,
         subscanUrl: chain.subscanUrl ?? null,
-        chainspecQrUrl: null,
-        latestMetadataQrUrl: null,
-        isUnknownFeeToken: false,
+        chainspecQrUrl: existingChain?.chainspecQrUrl ?? null,
+        latestMetadataQrUrl: existingChain?.latestMetadataQrUrl ?? null,
+        isUnknownFeeToken: existingChain?.isUnknownFeeToken ?? false,
         rpcs: chain.rpcs.map(({ url }) => ({ url, isHealthy: true })),
         isHealthy: true,
         evmNetworks: existingChain?.evmNetworks ?? [],
 
-        parathreads: [],
+        parathreads: existingChain?.parathreads ?? [],
 
-        paraId: null,
-        relay: null,
+        paraId: existingChain?.paraId ?? null,
+        relay: existingChain?.relay ?? null,
 
-        balanceMetadata: [],
+        balanceMetadata: customBalanceMetadata ?? existingChain?.balanceMetadata ?? [],
 
         // CustomChain
         isCustom: true,
