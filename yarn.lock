@@ -7726,6 +7726,30 @@ __metadata:
   languageName: unknown
   linkType: soft
 
+"@talismn/scale@workspace:*, @talismn/scale@workspace:packages/scale":
+  version: 0.0.0-use.local
+  resolution: "@talismn/scale@workspace:packages/scale"
+  dependencies:
+    "@talismn/eslint-config": "workspace:*"
+    "@talismn/subshape-fork": ^0.0.1
+    "@talismn/tsconfig": "workspace:*"
+    "@types/jest": ^27.5.1
+    anylogger: ^1.0.11
+    eslint: ^8.4.0
+    jest: ^28.1.0
+    ts-jest: ^28.0.2
+    typescript: ^4.6.4
+    wat-the-crypto: ^0.0.3
+  languageName: unknown
+  linkType: soft
+
+"@talismn/subshape-fork@npm:^0.0.1":
+  version: 0.0.1
+  resolution: "@talismn/subshape-fork@npm:0.0.1"
+  checksum: 424ded6811a5bbe67143e21c95b006de4d4e139ff663998509d1de07376e061ea5c714619b7c2e4fd27f7171c043d2193a66caf02198b73e2f77bc1c00c7a037
+  languageName: node
+  linkType: hard
+
 "@talismn/token-rates@workspace:*, @talismn/token-rates@workspace:packages/token-rates":
   version: 0.0.0-use.local
   resolution: "@talismn/token-rates@workspace:packages/token-rates"
@@ -14478,6 +14502,7 @@ __metadata:
     "@talismn/eslint-config": "workspace:*"
     "@talismn/icons": "workspace:*"
     "@talismn/orb": "workspace:*"
+    "@talismn/scale": "workspace:*"
     "@talismn/token-rates": "workspace:*"
     "@talismn/tsconfig": "workspace:*"
     "@talismn/util": "workspace:*"
@@ -25860,6 +25885,13 @@ __metadata:
   dependencies:
     makeerror: 1.0.12
   checksum: ad7a257ea1e662e57ef2e018f97b3c02a7240ad5093c392186ce0bcf1f1a60bbadd520d073b9beb921ed99f64f065efb63dfc8eec689a80e569f93c1c5d5e16c
+  languageName: node
+  linkType: hard
+
+"wat-the-crypto@npm:^0.0.3":
+  version: 0.0.3
+  resolution: "wat-the-crypto@npm:0.0.3"
+  checksum: cebd2e2999ea0cc45fb3433a34ce8e21b7bb1d1a11394954143735062df39560162c2e8f82685e9d67f1289ff3a6b1006c4aa1ea983e15e62f1de4ee5e910871
   languageName: node
   linkType: hard
 
