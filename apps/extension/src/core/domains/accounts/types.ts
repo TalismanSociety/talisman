@@ -202,6 +202,11 @@ export type RequestSetVerifierCertificateMnemonic = {
   mnemonicId?: string
 }
 
+// wrap in a dedicated type because empty strings are changed to null by the message service
+export type RequestValidateDerivationPath = {
+  derivationPath: string
+}
+
 export type RequestAddressLookupBySuri = {
   suri: string
   type: AccountAddressType
@@ -235,7 +240,7 @@ export interface AccountsMessages {
   "pri(accounts.catalog.subscribe)": [null, boolean, Trees]
   "pri(accounts.catalog.runActions)": [RequestAccountsCatalogAction[], boolean]
   "pri(accounts.validateMnemonic)": [string, boolean]
-  "pri(accounts.validateDerivationPath)": [string, boolean]
+  "pri(accounts.validateDerivationPath)": [RequestValidateDerivationPath, boolean]
   "pri(accounts.setVerifierCertMnemonic)": [RequestSetVerifierCertificateMnemonic, boolean]
   "pri(accounts.address.lookup)": [RequestAddressLookup, string]
 }

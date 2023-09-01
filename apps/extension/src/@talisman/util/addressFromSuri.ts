@@ -7,7 +7,7 @@ import { KeypairType } from "@polkadot/util-crypto/types"
  *
  * @param suri Substrate URI : mnemonic with optionally appended derivation path
  * @param type
- * @returns address of the first keypair associated to a mnemonic
+ * @returns address of the target keypair
  */
 export const addressFromSuri = (suri: string, type: KeypairType = "sr25519") => {
   // standalone/disposable keyring, this is not the one that stores user's keys

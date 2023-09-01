@@ -21,6 +21,7 @@ import type {
   RequestAccountsCatalogAction,
   RequestAddressLookup,
   RequestSetVerifierCertificateMnemonic,
+  RequestValidateDerivationPath,
   ResponseAccountExport,
 } from "@core/domains/accounts/types"
 import { AccountTypes } from "@core/domains/accounts/types"
@@ -541,11 +542,17 @@ export default class AccountsHandler extends ExtensionHandler {
       assert(mnemonicResult.ok && mnemonicResult.val, "Mnemonic not stored locally")
 
       const suri = formatSuri(mnemonicResult.val, derivationPath)
-      return encodeAnyAddress(addressFromSuri(suri, type))
+      return addressFromSuri(suri, type)
     } else {
       const { suri, type } = lookup
-      return encodeAnyAddress(addressFromSuri(suri, type))
+      return addressFromSuri(suri, type)
     }
+  }
+
+  private accountValidateDerivationPath({
+    derivationPath,
+  }: RequestValidateDerivationPath): boolean {
+    return isValidDerivationPath(derivationPath)
   }
 
   public async handle<TMessageType extends MessageTypes>(
@@ -590,7 +597,7 @@ export default class AccountsHandler extends ExtensionHandler {
       case "pri(accounts.validateMnemonic)":
         return this.accountValidateMnemonic(request as string)
       case "pri(accounts.validateDerivationPath)":
-        return isValidDerivationPath(request as string)
+        return this.accountValidateDerivationPath(request as RequestValidateDerivationPath)
       case "pri(accounts.address.lookup)":
         return this.addressLookup(request as RequestAddressLookup)
       case "pri(accounts.setVerifierCertMnemonic)":

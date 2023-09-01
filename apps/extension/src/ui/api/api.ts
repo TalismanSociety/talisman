@@ -135,7 +135,7 @@ export const api: MessageTypes = {
   accountValidateMnemonic: (mnemonic) =>
     messageService.sendMessage("pri(accounts.validateMnemonic)", mnemonic),
   accountValidateDerivationPath: (derivationPath) =>
-    messageService.sendMessage("pri(accounts.validateDerivationPath)", derivationPath),
+    messageService.sendMessage("pri(accounts.validateDerivationPath)", { derivationPath }),
   accountAddressLookup: (lookup) =>
     messageService.sendMessage("pri(accounts.address.lookup)", lookup),
   setVerifierCertMnemonic: (verifierCertType, mnemonic, mnemonicId) =>
