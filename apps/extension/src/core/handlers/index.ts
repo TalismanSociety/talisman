@@ -15,7 +15,6 @@ const tabs = new Tabs(tabStores)
 // dev mode logs shouldn't log content for these messages
 const OBFUSCATE_LOG_MESSAGES: MessageTypes[] = [
   "pri(mnemonic.unlock)",
-  "pri(mnemonic.address)",
   "pri(app.authenticate)",
   "pri(app.checkPassword)",
   "pri(app.changePassword)",
@@ -26,6 +25,7 @@ const OBFUSCATE_LOG_MESSAGES: MessageTypes[] = [
   "pri(accounts.create.seed)",
   "pri(accounts.create.json)",
   "pri(accounts.setVerifierCertMnemonic)",
+  "pri(accounts.address.lookup)",
   "pri(app.onboardCreatePassword)",
 ]
 const OBFUSCATED_PAYLOAD = "#OBFUSCATED#"
