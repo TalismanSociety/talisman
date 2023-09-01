@@ -207,7 +207,7 @@ const AccountAddDerivedFormInner: FC<AccountAddDerivedFormProps> = ({ onSuccess 
         <Spacer small />
         <AdvancedSettings>
           <Checkbox {...register("customDerivationPath")} className="text-body-secondary">
-            {t("Custom derivation path (advanced)")}
+            {t("Custom derivation path")}
           </Checkbox>
           <FormFieldContainer
             className={classNames("mt-2", !customDerivationPath && "invisible")}
