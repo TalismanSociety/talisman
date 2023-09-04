@@ -14473,7 +14473,6 @@ __metadata:
     "@tailwindcss/forms": ^0.5.3
     "@talismn/balances": "workspace:*"
     "@talismn/balances-default-modules": "workspace:*"
-    "@talismn/balances-react": "workspace:*"
     "@talismn/chaindata-js": ^0.0.7
     "@talismn/chaindata-provider": "workspace:*"
     "@talismn/eslint-config": "workspace:*"
