@@ -298,9 +298,9 @@ export class BalanceStore {
 
         // delete balances for hardware accounts on chains other than the one they were created on
         // these aren't fetched anymore but were fetched prior to v1.14.0, so we need to clean them up
-        const chain =
-          (balance.chainId && this.#chains.find((b) => b.id === balance.chainId)) || null
-        const genesisHash = validateHexString(chain?.genesisHash ?? "")
+        const chainId = balance.chainId
+        const chain = (chainId && this.#chains.find((chain) => chain.id === chainId)) || undefined
+        const genesisHash = chain?.genesisHash ? validateHexString(chain.genesisHash) : undefined
         if (
           genesisHash &&
           addresses[balance.address] && // first check if account has any genesisHashes
