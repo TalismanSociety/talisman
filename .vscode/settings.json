@@ -1,6 +1,10 @@
 {
   "githubPullRequests.ignoredPullRequestBranches": ["dev"],
 
+  "search.exclude": {
+    ".yarn/**": true
+  },
+
   // shows tailwind intellisense for attributes like `contentClassName`, `innerClassName`, `bodyClassName`, etc
   "tailwindCSS.classAttributes": [
     "class", // default value
