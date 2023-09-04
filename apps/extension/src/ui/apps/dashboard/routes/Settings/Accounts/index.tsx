@@ -50,7 +50,7 @@ export const AccountsPage = () => {
       <div className="flex gap-4">
         <button
           type="button"
-          className="bg-primary text-body-black hover:bg-primary/80 flex items-center gap-3 rounded-sm p-4 text-sm"
+          className="bg-primary text-body-black hover:bg-primary/80 flex items-center gap-3 rounded-sm p-3 text-xs"
           onClick={newFolderModal.open}
         >
           <FolderPlusIcon />
@@ -58,7 +58,7 @@ export const AccountsPage = () => {
         </button>
         <button
           type="button"
-          className="bg-primary text-body-black hover:bg-primary/80 flex items-center gap-3 rounded-sm p-4 text-sm"
+          className="bg-primary text-body-black hover:bg-primary/80 flex items-center gap-3 rounded-sm p-3 text-xs"
           onClick={addNewAccount}
         >
           <UserPlusIcon />
