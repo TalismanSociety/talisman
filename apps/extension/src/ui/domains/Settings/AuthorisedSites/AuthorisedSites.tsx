@@ -45,7 +45,7 @@ export const AuthorisedSites = () => {
   return (
     <>
       <HeaderBlock
-        title={t("Trusted Sites")}
+        title={t("Connected Sites")}
         text={t("Manage the sites that have access to your accounts")}
       />
       <Spacer large />
@@ -53,7 +53,7 @@ export const AuthorisedSites = () => {
         <ProviderTypeSwitch defaultProvider="polkadot" onChange={setProviderType} />
       ) : null}
       <Spacer small />
-      <div className="flex flex-col gap-7">
+      <div className="flex flex-col gap-4">
         {siteIds.map((id) => (
           <AuthorizedSite key={`${providerType}-${id}`} id={id} provider={providerType} />
         ))}

@@ -1,9 +1,8 @@
 import { AccountsCatalogStore } from "@core/domains/accounts/store.catalog"
-import { Account } from "@core/domains/accounts/types"
 import {
+  Account,
   AccountJsonAny,
   AccountType,
-  AccountTypes,
   IdenticonType,
   storedSeedAccountTypes,
 } from "@core/domains/accounts/types"
@@ -47,7 +46,7 @@ const legacySortAccounts = (accounts: AccountJsonAny[]) => {
 
   // can be multiple derived accounts
   // should order these by created date? probably
-  const derived = accounts.filter(({ origin }) => origin === AccountTypes.DERIVED)
+  const derived = accounts.filter(({ origin }) => origin === AccountType.Derived)
   const derivedSorted = sortAccountsByWhenCreated(derived)
 
   // can be multiple imported accounts - both JSON or SEED imports
@@ -59,12 +58,12 @@ const legacySortAccounts = (accounts: AccountJsonAny[]) => {
   const importedSorted = sortAccountsByWhenCreated(imported)
 
   const watchedPortfolio = accounts.filter(
-    ({ origin, isPortfolio }) => origin === AccountTypes.WATCHED && isPortfolio
+    ({ origin, isPortfolio }) => origin === AccountType.Watched && isPortfolio
   )
   const watchedPortfolioSorted = sortAccountsByWhenCreated(watchedPortfolio)
 
   const watchedFollowed = accounts.filter(
-    ({ origin, isPortfolio }) => origin === AccountTypes.WATCHED && !isPortfolio
+    ({ origin, isPortfolio }) => origin === AccountType.Watched && !isPortfolio
   )
   const watchedFollowedSorted = sortAccountsByWhenCreated(watchedFollowed)
 
@@ -104,17 +103,26 @@ export const sortAccounts =
     return accounts
   }
 
-export const getInjectedAccount = ({
-  json: {
-    address,
-    meta: { genesisHash, name },
-  },
-  type,
-}: SingleAddress): InjectedAccount => ({
+export const getInjectedAccount = (
+  {
+    json: {
+      address,
+      meta: { genesisHash, name, origin, isPortfolio },
+    },
+    type,
+  }: SingleAddress,
+  options = { includePortalOnlyInfo: false }
+): InjectedAccount | (InjectedAccount & { readonly: boolean; partOfPortfolio: boolean }) => ({
   address,
   genesisHash,
   name,
   type,
+  ...(options.includePortalOnlyInfo
+    ? {
+        readonly: origin === AccountType.Watched,
+        partOfPortfolio: isPortfolio,
+      }
+    : {}),
 })
 
 export const filterAccountsByAddresses =
@@ -126,12 +134,13 @@ export const filterAccountsByAddresses =
 
 export const getPublicAccounts = (
   accounts: SingleAddress[],
-  filterFn: (accounts: SingleAddress[]) => SingleAddress[] = (accounts) => accounts
+  filterFn: (accounts: SingleAddress[]) => SingleAddress[] = (accounts) => accounts,
+  options = { includeWatchedAccounts: false }
 ) =>
   filterFn(accounts)
-    .filter((a) => a.json.meta.origin !== "WATCHED")
+    .filter((a) => options.includeWatchedAccounts || a.json.meta.origin !== AccountType.Watched)
     .sort((a, b) => (a.json.meta.whenCreated || 0) - (b.json.meta.whenCreated || 0))
-    .map(getInjectedAccount)
+    .map((x) => getInjectedAccount(x, { includePortalOnlyInfo: options.includeWatchedAccounts }))
 
 export const includeAvatar = (iconType: IdenticonType) => (account: InjectedAccount) => ({
   ...account,
@@ -155,7 +164,7 @@ export const hasQrCodeAccounts = async () => {
   const localData = await Browser.storage.local.get(null)
   return Object.entries(localData).some(
     ([key, account]: [string, Account]) =>
-      key.startsWith("account:0x") && account.meta?.origin === AccountTypes.QR
+      key.startsWith("account:0x") && account.meta?.origin === AccountType.Qr
   )
 }
 

@@ -1,5 +1,5 @@
 import { isEthereumAddress } from "@polkadot/util-crypto"
-import { CopyIcon, ExternalLinkIcon } from "@talisman/theme/icons"
+import { CopyIcon, ExternalLinkIcon } from "@talismn/icons"
 import { classNames } from "@talismn/util"
 import { copyAddress } from "@ui/util/copyAddress"
 import { FC, ReactNode, useCallback, useMemo } from "react"

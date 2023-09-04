@@ -1,4 +1,4 @@
-import { LoaderIcon } from "@talisman/theme/icons"
+import { LoaderIcon } from "@talismn/icons"
 import { classNames } from "@talismn/util"
 import { FC, useCallback, useState } from "react"
 import { useTranslation } from "react-i18next"

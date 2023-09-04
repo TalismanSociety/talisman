@@ -1,7 +1,7 @@
 import { BalanceFormatter } from "@core/domains/balances"
 import { notify } from "@talisman/components/Notifications"
 import { useOpenClose } from "@talisman/hooks/useOpenClose"
-import { CopyIcon } from "@talisman/theme/icons"
+import { CopyIcon } from "@talismn/icons"
 import { formatDecimals } from "@talismn/util"
 import Fiat from "@ui/domains/Asset/Fiat"
 import Tokens from "@ui/domains/Asset/Tokens"

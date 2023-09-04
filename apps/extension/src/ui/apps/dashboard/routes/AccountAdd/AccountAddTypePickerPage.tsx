@@ -3,14 +3,14 @@ import { HeaderBlock } from "@talisman/components/HeaderBlock"
 import { Spacer } from "@talisman/components/Spacer"
 import {
   ChevronRightIcon,
-  DcentLogoIcon,
+  DcentIcon,
   EyePlusIcon,
   FileTextIcon,
   PlusIcon,
   PolkadotVaultIcon,
   SeedIcon,
   UsbIcon,
-} from "@talisman/theme/icons"
+} from "@talismn/icons"
 import { DashboardLayout } from "@ui/apps/dashboard/layout/DashboardLayout"
 import { useTranslation } from "react-i18next"
 import { CtaButton } from "talisman-ui"
@@ -82,7 +82,7 @@ export const AccountAddTypePickerPage = () => {
         />
         <CtaButton
           size="small"
-          iconLeft={DcentLogoIcon}
+          iconLeft={DcentIcon}
           iconRight={ChevronRightIcon}
           title={t("Connect D'CENT")}
           subtitle={t("Connect your D'CENT biometric wallet")}

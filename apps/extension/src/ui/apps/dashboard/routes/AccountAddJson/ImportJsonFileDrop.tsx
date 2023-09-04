@@ -1,4 +1,4 @@
-import { FileCheckIcon, FilePlusIcon, FileXIcon, XIcon } from "@talisman/theme/icons"
+import { FileCheckIcon, FilePlusIcon, FileXIcon, XIcon } from "@talismn/icons"
 import { classNames } from "@talismn/util"
 import { FC, MouseEventHandler, useCallback, useMemo, useState } from "react"
 import { DropzoneOptions, useDropzone } from "react-dropzone"

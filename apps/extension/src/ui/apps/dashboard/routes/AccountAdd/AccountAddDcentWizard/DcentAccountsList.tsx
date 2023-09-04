@@ -1,5 +1,5 @@
 import { log } from "@core/log"
-import { AlertCircleIcon, InfoIcon, LoaderIcon } from "@talisman/theme/icons"
+import { AlertCircleIcon, InfoIcon, LoaderIcon } from "@talismn/icons"
 import useTokens from "@ui/hooks/useTokens"
 import { useDcentAccountInfo } from "@ui/util/dcent"
 import { isSubToken } from "@ui/util/isSubToken"

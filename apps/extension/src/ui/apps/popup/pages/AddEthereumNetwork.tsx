@@ -1,7 +1,7 @@
 import { KnownRequestIdOnly } from "@core/libs/requests/types"
 import { AppPill } from "@talisman/components/AppPill"
 import { notify } from "@talisman/components/Notifications"
-import { GlobeIcon } from "@talisman/theme/icons"
+import { GlobeIcon } from "@talismn/icons"
 import { api } from "@ui/api"
 import { NetworksDetailsButton } from "@ui/domains/Ethereum/NetworkDetailsButton"
 import { useRequest } from "@ui/hooks/useRequest"

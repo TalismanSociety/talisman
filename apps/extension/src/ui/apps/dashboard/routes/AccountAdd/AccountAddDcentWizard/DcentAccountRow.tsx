@@ -1,7 +1,7 @@
 import { Accordion, AccordionIcon } from "@talisman/components/Accordion"
-import { CornerDownRightIcon } from "@talisman/theme/icons"
 import { shortenAddress } from "@talisman/util/shortenAddress"
 import { Token } from "@talismn/chaindata-provider"
+import { CornerDownRightIcon } from "@talismn/icons"
 import { AccountIcon } from "@ui/domains/Account/AccountIcon"
 import { TokenLogo } from "@ui/domains/Asset/TokenLogo"
 import { useAccountByAddress } from "@ui/hooks/useAccountByAddress"

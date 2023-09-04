@@ -1,4 +1,4 @@
-import { AccountJsonAny, AccountType, AccountTypes } from "@core/domains/accounts/types"
+import { AccountJsonAny, AccountType } from "@core/domains/accounts/types"
 import { useOpenClose } from "@talisman/hooks/useOpenClose"
 import { provideContext } from "@talisman/util/provideContext"
 import { api } from "@ui/api"
@@ -6,17 +6,16 @@ import { useSelectedAccount } from "@ui/domains/Portfolio/SelectedAccountContext
 import { useCallback, useEffect, useMemo, useState } from "react"
 import { Trans, useTranslation } from "react-i18next"
 import { useNavigate } from "react-router-dom"
-import { Button, ModalDialog } from "talisman-ui"
-import { Modal } from "talisman-ui"
+import { Button, Modal, ModalDialog } from "talisman-ui"
 
 const REMOVABLE_ORIGINS: AccountType[] = [
-  "DERIVED",
-  "SEED",
-  "WATCHED",
-  "JSON",
-  "QR",
-  "HARDWARE",
-  "DCENT",
+  AccountType.Derived,
+  AccountType.Seed,
+  AccountType.Watched,
+  AccountType.Json,
+  AccountType.Qr,
+  AccountType.Hardware,
+  AccountType.Dcent,
 ]
 
 const useAccountRemoveModalProvider = () => {
@@ -88,7 +87,7 @@ export const AccountRemoveModal = () => {
               values={{ accountName }}
             />
           </p>
-          {account?.origin !== AccountTypes.WATCHED && (
+          {account?.origin !== AccountType.Watched && (
             <p className="mt-4 text-sm">
               {t("Ensure you have backed up your recovery phrase or private key before removing.")}
             </p>
