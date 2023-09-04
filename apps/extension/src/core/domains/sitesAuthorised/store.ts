@@ -39,8 +39,7 @@ export class SitesAuthorizedStore extends SubscribableByIdStorageProvider<
     if (err) throw new Error(val)
 
     const site = await this.get(val)
-
-    return { ...site, connectWatchedAccounts: isTalismanHostname(site.url) }
+    return { ...site, connectWatchedAccounts: isTalismanHostname(site?.url) }
   }
 
   public async ensureUrlAuthorized(
