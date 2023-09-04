@@ -3,7 +3,7 @@ import { HeaderBlock } from "@talisman/components/HeaderBlock"
 import { Spacer } from "@talisman/components/Spacer"
 import { useOpenClose } from "@talisman/hooks/useOpenClose"
 import { AccountAddressType } from "@talisman/util/getAddressType"
-import { CopyIcon, MoreHorizontalIcon, PaperclipIcon, PlusIcon, UserPlusIcon } from "@talismn/icons"
+import { CopyIcon, MoreHorizontalIcon, PlusIcon, SendIcon, UserPlusIcon } from "@talismn/icons"
 import { classNames } from "@talismn/util"
 import { AnalyticsPage } from "@ui/api/analytics"
 import { AccountIcon } from "@ui/domains/Account/AccountIcon"
@@ -108,7 +108,7 @@ const AddressBookContactItem = ({ contact, handleDelete, handleEdit }: ContactIt
             {/* wrap in a div because disabled buttons can't have tooltips */}
             <div>
               <SquareButton disabled={!canSendFunds} onClick={openSendFundsPopup}>
-                <PaperclipIcon />
+                <SendIcon />
               </SquareButton>
             </div>
           </TooltipTrigger>
