@@ -95,7 +95,7 @@ export function useDbCacheBalancesSubscription() {
       )
     )
     const enabledChainIds = enabledChains.flatMap(
-      (genesisHash) => chainsByGenesisHash.get(genesisHash) ?? []
+      (genesisHash) => chainsByGenesisHash.get(genesisHash as `0x${string}`) ?? []
     )
     return Object.fromEntries(
       Object.entries(allTokens).flatMap(([id, token]) =>

@@ -50,7 +50,11 @@ export const AuthorisedSites = () => {
       />
       <Spacer large />
       {hasEthereumTrustedSites ? (
-        <ProviderTypeSwitch defaultProvider="polkadot" onChange={setProviderType} />
+        <ProviderTypeSwitch
+          className="text-xs [&>div]:h-full"
+          defaultProvider="polkadot"
+          onChange={setProviderType}
+        />
       ) : null}
       <Spacer small />
       <div className="flex flex-col gap-4">

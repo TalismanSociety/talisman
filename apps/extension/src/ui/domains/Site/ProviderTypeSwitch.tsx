@@ -29,7 +29,7 @@ const Button = forwardRef<
     ref={ref}
     disabled={!authorised || selected}
     className={classNames(
-      "z-10 px-[0.5em] transition-colors duration-150",
+      "z-10 h-full px-[0.5em] transition-colors duration-150",
       selected && "text-body-black"
     )}
     onClick={onClick}
@@ -83,11 +83,11 @@ export const ProviderTypeSwitch = ({
   return (
     <div
       className={classNames(
-        "bg-grey-800 text-body-secondary leading-paragraph inline-block rounded-full p-[0.2em]",
+        "bg-grey-800 text-body-secondary inline-block h-14 rounded-full p-[0.25em]",
         className
       )}
     >
-      <div className="relative z-0 flex items-center gap-[-0.5em]">
+      <div className="relative z-0 flex h-full items-center gap-[-0.5em]">
         <Button
           ref={refPolkadot}
           selected={selected === "polkadot"}
