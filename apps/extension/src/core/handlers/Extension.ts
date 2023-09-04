@@ -22,6 +22,7 @@ import { talismanAnalytics } from "@core/libs/Analytics"
 import { ExtensionHandler } from "@core/libs/Handler"
 import { generateQrAddNetworkSpecs, generateQrUpdateNetworkMetadata } from "@core/libs/QrGenerator"
 import { log } from "@core/log"
+import { isTalismanHostname } from "@core/page"
 import { MessageTypes, RequestType, ResponseType } from "@core/types"
 import { Port, RequestIdOnly } from "@core/types/base"
 import { awaitKeyringLoaded } from "@core/util/awaitKeyringLoaded"
@@ -86,7 +87,7 @@ export default class Extension extends ExtensionHandler {
             const newAddresses = Object.values(addresses)
               .filter(
                 ({ json: { meta } }) =>
-                  autoAddSite.connectWatchedAccounts || meta.origin !== AccountType.Watched
+                  isTalismanHostname(autoAddSite.url) || meta.origin !== AccountType.Watched
               )
               .filter(({ json: { address } }) => !autoAddSite.addresses?.includes(address))
               .map(({ json: { address } }) => address)
