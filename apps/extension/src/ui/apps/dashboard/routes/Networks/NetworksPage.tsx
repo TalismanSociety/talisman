@@ -42,7 +42,11 @@ export const NetworksPage = () => {
       <HeaderBlock title={t("Manage Networks")} text={t("View, edit and delete custom networks")} />
       <Spacer large />
       <div className="flex justify-end gap-4">
-        <ProviderTypeSwitch defaultProvider={networkType} onChange={setNetworkType} />
+        <ProviderTypeSwitch
+          className="text-xs [&>div]:h-full"
+          defaultProvider={networkType}
+          onChange={setNetworkType}
+        />
 
         <div className="flex-grow" />
 
