@@ -14,11 +14,21 @@ import { ListButton } from "talisman-ui"
 import { ANALYTICS_PAGE } from "./analytics"
 import { CustomPill, TestnetPill } from "./Pill"
 
-export const ChainsList = () => {
+export const ChainsList = ({ search }: { search?: string }) => {
   const [useTestnets] = useSetting("useTestnets")
   const { chains } = useChains(useTestnets)
 
-  const sortedChains = useMemo(() => sortBy(chains, "name"), [chains])
+  const filteredChains = useMemo(() => {
+    if (search === undefined || search.length < 1) return chains
+    const lowerSearch = search.toLowerCase()
+    const filter = (chain: Chain) =>
+      chain.name?.toLowerCase().includes(lowerSearch) ||
+      chain.nativeToken?.id.toLowerCase().includes(lowerSearch)
+
+    return chains.filter(filter)
+  }, [chains, search])
+
+  const sortedChains = useMemo(() => sortBy(filteredChains, "name"), [filteredChains])
   if (!sortedChains) return null
 
   return (

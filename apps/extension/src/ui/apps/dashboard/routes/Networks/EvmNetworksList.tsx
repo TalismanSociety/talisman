@@ -14,11 +14,21 @@ import { ListButton } from "talisman-ui"
 import { ANALYTICS_PAGE } from "./analytics"
 import { CustomPill, TestnetPill } from "./Pill"
 
-export const EvmNetworksList = () => {
+export const EvmNetworksList = ({ search }: { search?: string }) => {
   const [useTestnets] = useSetting("useTestnets")
   const { evmNetworks } = useEvmNetworks(useTestnets)
 
-  const sortedNetworks = useMemo(() => sortBy(evmNetworks, "name"), [evmNetworks])
+  const filteredEvmNetworks = useMemo(() => {
+    if (search === undefined || search.length < 1) return evmNetworks
+    const lowerSearch = search.toLowerCase()
+    const filter = (network: EvmNetwork) =>
+      network.name?.toLowerCase().includes(lowerSearch) ||
+      network.nativeToken?.id.toLowerCase().includes(lowerSearch)
+
+    return evmNetworks.filter(filter)
+  }, [evmNetworks, search])
+
+  const sortedNetworks = useMemo(() => sortBy(filteredEvmNetworks, "name"), [filteredEvmNetworks])
   if (!sortedNetworks) return null
 
   return (
