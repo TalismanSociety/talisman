@@ -1,11 +1,12 @@
 import { HeaderBlock } from "@talisman/components/HeaderBlock"
+import { SearchInput } from "@talisman/components/SearchInput"
 import { Spacer } from "@talisman/components/Spacer"
 import { PlusIcon } from "@talismn/icons"
 import { sendAnalyticsEvent } from "@ui/api/analytics"
 import { EnableTestnetPillButton } from "@ui/domains/Settings/EnableTestnetPillButton"
 import { ProviderTypeSwitch } from "@ui/domains/Site/ProviderTypeSwitch"
 import { useAnalyticsPageView } from "@ui/hooks/useAnalyticsPageView"
-import { useCallback } from "react"
+import { useCallback, useState } from "react"
 import { useTranslation } from "react-i18next"
 import { useNavigate } from "react-router-dom"
 import { PillButton } from "talisman-ui"
@@ -32,6 +33,8 @@ export const NetworksPage = () => {
     navigate(`./add?type=${networkType}`)
   }, [navigate, networkType])
 
+  const [search, setSearch] = useState("")
+
   return (
     <DashboardLayout
       analytics={ANALYTICS_PAGE}
@@ -56,7 +59,15 @@ export const NetworksPage = () => {
         </PillButton>
       </div>
       <Spacer small />
-      {networkType === "polkadot" ? <ChainsList /> : <EvmNetworksList />}
+      <div className="flex gap-4">
+        <SearchInput onChange={setSearch} placeholder={t("Search networks")} />
+      </div>
+      <Spacer small />
+      {networkType === "polkadot" ? (
+        <ChainsList search={search} />
+      ) : (
+        <EvmNetworksList search={search} />
+      )}
     </DashboardLayout>
   )
 }
