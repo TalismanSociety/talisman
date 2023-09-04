@@ -15,6 +15,9 @@
     "lint": "eslint src --max-warnings 0",
     "clean": "rm -rf dist && rm -rf .turbo rm -rf node_modules"
   },
+  "dependencies": {
+    "@talismn/icons": "workspace:*"
+  },
   "devDependencies": {
     "@floating-ui/react": "0.24.3",
     "@headlessui/react": "1.7.13",

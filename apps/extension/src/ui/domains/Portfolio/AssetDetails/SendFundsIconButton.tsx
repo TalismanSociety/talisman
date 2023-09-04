@@ -1,5 +1,5 @@
-import { PaperPlaneIcon } from "@talisman/theme/icons"
 import { ChainId, EvmNetworkId } from "@talismn/chaindata-provider"
+import { SendIcon } from "@talismn/icons"
 import { useSearchParamsSelectedAccount } from "@ui/hooks/useSearchParamsSelectedAccount"
 import { useSendFundsPopup } from "@ui/hooks/useSendFundsPopup"
 import { useSetting } from "@ui/hooks/useSettings"
@@ -50,7 +50,7 @@ export const SendFundsButton = ({
     return (
       <Tooltip>
         <TooltipTrigger className="text-body-secondary focus:text-body hover:bg-grey-700 inline-flex h-9 w-9 cursor-default items-center justify-center rounded-full text-xs opacity-50">
-          <PaperPlaneIcon />
+          <SendIcon />
         </TooltipTrigger>
         <TooltipContent>{cannotSendFundsReason}</TooltipContent>
       </Tooltip>
@@ -62,7 +62,7 @@ export const SendFundsButton = ({
       onClick={handleClick}
       className="text-body-secondary hover:text-body focus:text-body focus:bg-grey-700 hover:bg-grey-700 inline-flex h-9 w-9 items-center justify-center rounded-full text-xs"
     >
-      <PaperPlaneIcon />
+      <SendIcon />
     </button>
   )
 }

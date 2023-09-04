@@ -1,5 +1,5 @@
 import { WithTooltip } from "@talisman/components/Tooltip"
-import { InfoIcon } from "@talisman/theme/icons"
+import { InfoIcon } from "@talismn/icons"
 import { ethers } from "ethers"
 import { useTranslation } from "react-i18next"
 

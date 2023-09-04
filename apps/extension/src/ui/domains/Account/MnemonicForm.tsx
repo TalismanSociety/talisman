@@ -1,4 +1,4 @@
-import { AlertTriangleIcon } from "@talisman/theme/icons"
+import { AlertTriangleIcon } from "@talismn/icons"
 import { classNames } from "@talismn/util"
 import { api } from "@ui/api"
 import useMnemonicBackup from "@ui/hooks/useMnemonicBackup"

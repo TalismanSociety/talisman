@@ -1,4 +1,4 @@
-import { XIcon } from "@talisman/theme/icons"
+import { XIcon } from "@talismn/icons"
 import { FC, PropsWithChildren } from "react"
 import { IconButton } from "talisman-ui"
 

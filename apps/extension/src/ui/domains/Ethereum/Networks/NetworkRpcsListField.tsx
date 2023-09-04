@@ -11,7 +11,7 @@ import {
 import { SortableContext, sortableKeyboardCoordinates } from "@dnd-kit/sortable"
 import { useSortable } from "@dnd-kit/sortable"
 import { CSS } from "@dnd-kit/utilities"
-import { DragIcon, PlusIcon, TrashIcon } from "@talisman/theme/icons"
+import { DragIcon, PlusIcon, TrashIcon } from "@talismn/icons"
 import { FC, useCallback, useMemo } from "react"
 import {
   FieldArrayWithId,

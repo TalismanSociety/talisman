@@ -1,13 +1,15 @@
 import { HeaderBlock } from "@talisman/components/HeaderBlock"
-import { EyeIcon, FolderPlusIcon, TalismanHandIcon } from "@talisman/theme/icons"
+import { Spacer } from "@talisman/components/Spacer"
+import { EyeIcon, FolderPlusIcon, TalismanHandIcon, UserPlusIcon } from "@talismn/icons"
 import { AnalyticsPage } from "@ui/api/analytics"
 import { DashboardLayout } from "@ui/apps/dashboard/layout/DashboardLayout"
 import useAccounts from "@ui/hooks/useAccounts"
 import useAccountsCatalog from "@ui/hooks/useAccountsCatalog"
 import { useAnalyticsPageView } from "@ui/hooks/useAnalyticsPageView"
 import useBalances from "@ui/hooks/useBalances"
-import { useMemo } from "react"
+import { useCallback, useMemo } from "react"
 import { useTranslation } from "react-i18next"
+import { useNavigate } from "react-router-dom"
 
 import { AccountsList } from "./AccountsList"
 import { DeleteFolderModal } from "./DeleteFolderModal"
@@ -35,14 +37,17 @@ export const AccountsPage = () => {
     [catalog]
   )
   const newFolderModal = useNewFolderModal()
+  const navigate = useNavigate()
+  const addNewAccount = useCallback(() => navigate("/accounts/add"), [navigate])
 
   return (
-    <DashboardLayout analytics={ANALYTICS_PAGE} withBack centered backTo="/settings">
+    <DashboardLayout analytics={ANALYTICS_PAGE} centered>
       <HeaderBlock
-        title={t("Manage Accounts")}
+        title={t("Accounts")}
         text={t("Select which accounts are shown on your portfolio")}
       />
-      <div className="mb-16 mt-24 flex gap-4">
+      <Spacer large />
+      <div className="flex gap-4">
         <button
           type="button"
           className="bg-primary text-body-black hover:bg-primary/80 flex items-center gap-3 rounded-sm p-4 text-sm"
@@ -51,8 +56,16 @@ export const AccountsPage = () => {
           <FolderPlusIcon />
           {t("Add new folder")}
         </button>
+        <button
+          type="button"
+          className="bg-primary text-body-black hover:bg-primary/80 flex items-center gap-3 rounded-sm p-4 text-sm"
+          onClick={addNewAccount}
+        >
+          <UserPlusIcon />
+          {t("Add new account")}
+        </button>
       </div>
-
+      <Spacer />
       {watchedUiTree.length > 0 && (
         <div className="text-body-secondary mb-6 flex items-center gap-4 font-bold">
           <TalismanHandIcon className="inline" />

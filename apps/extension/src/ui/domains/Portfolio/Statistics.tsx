@@ -1,5 +1,5 @@
 import { Token } from "@core/domains/tokens/types"
-import { LockIcon } from "@talisman/theme/icons"
+import { LockIcon } from "@talismn/icons"
 import { classNames } from "@talismn/util"
 import BigNumber from "bignumber.js"
 import { ReactNode } from "react"

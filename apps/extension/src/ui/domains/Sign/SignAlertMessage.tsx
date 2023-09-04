@@ -1,4 +1,4 @@
-import { InfoIcon, LoaderIcon } from "@talisman/theme/icons"
+import { InfoIcon, LoaderIcon } from "@talismn/icons"
 import { classNames } from "@talismn/util"
 import { FC, PropsWithChildren } from "react"
 

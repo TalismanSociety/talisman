@@ -1,4 +1,4 @@
-import { AlertCircleIcon } from "@talisman/theme/icons"
+import { AlertCircleIcon } from "@talismn/icons"
 import { api } from "@ui/api"
 import useMnemonicBackup from "@ui/hooks/useMnemonicBackup"
 import { useCallback } from "react"
@@ -9,7 +9,7 @@ export const BackupWarningDrawer = () => {
   const { t } = useTranslation()
   const { showBackupWarning, snoozeBackupReminder } = useMnemonicBackup()
   const openBackup = useCallback(async () => {
-    await api.dashboardOpen("/settings?showBackupModal")
+    await api.dashboardOpen("/settings/security-privacy-settings?showBackupModal")
     window.close()
   }, [])
 

@@ -1,5 +1,5 @@
 import { RELEASE_NOTES_URL } from "@core/constants"
-import { KeyIcon } from "@talisman/theme/icons"
+import { KeyIcon } from "@talismn/icons"
 import { useAppState } from "@ui/hooks/useAppState"
 import { FC, useCallback } from "react"
 import { PillButton } from "talisman-ui"

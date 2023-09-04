@@ -1,4 +1,4 @@
-import { CheckCircleIcon, LoaderIcon, XCircleIcon } from "@talisman/theme/icons"
+import { CheckCircleIcon, LoaderIcon, XCircleIcon } from "@talismn/icons"
 import { classNames } from "@talismn/util"
 import { LedgerStatus } from "@ui/hooks/ledger/common"
 import { FC, ReactNode, useEffect, useState } from "react"

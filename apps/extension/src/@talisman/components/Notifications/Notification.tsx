@@ -1,4 +1,4 @@
-import { AlertCircleIcon, CheckCircleIcon, LoaderIcon, XCircleIcon } from "@talisman/theme/icons"
+import { AlertCircleIcon, CheckCircleIcon, LoaderIcon, XCircleIcon } from "@talismn/icons"
 import { ReactNode } from "react"
 
 type NotificationType = "success" | "error" | "processing" | "warn"

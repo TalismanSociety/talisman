@@ -5,7 +5,7 @@ import {
   MessageCircleIcon,
   PolkadotVaultIcon,
   UsbIcon,
-} from "@talisman/theme/icons"
+} from "@talismn/icons"
 import { AnalyticsPage, sendAnalyticsEvent } from "@ui/api/analytics"
 import { useAnalyticsPageView } from "@ui/hooks/useAnalyticsPageView"
 import { useCallback, useEffect, useMemo } from "react"
