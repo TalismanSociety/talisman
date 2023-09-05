@@ -1,6 +1,5 @@
 import { accountsCatalogStore } from "@core/domains/accounts"
 import { AccountsCatalogData } from "@core/domains/accounts/store.catalog"
-import { verifierCertificateMnemonicStore } from "@core/domains/accounts/store.verifierCertificateMnemonic"
 import { SettingsStoreData, appStore, passwordStore, settingsStore } from "@core/domains/app"
 import { AppStoreData } from "@core/domains/app/store.app"
 import { PasswordStoreData } from "@core/domains/app/store.password"
@@ -25,7 +24,6 @@ export type ExtensionStore = TabStore & {
   password: typeof passwordStore
   mnemonics: typeof mnemonicsStore
   accountsCatalog: typeof accountsCatalogStore
-  verifierCertificateMnemonic: typeof verifierCertificateMnemonicStore
 }
 
 type GettableStores = {
@@ -35,7 +33,6 @@ type GettableStores = {
   sites: [typeof sitesAuthorisedStore, AuthorizedSites]
   seedPhrase: [typeof mnemonicsStore, MnemonicData]
   accountsCatalog: [typeof accountsCatalogStore, AccountsCatalogData]
-  verifierCertificateMnemonic: [typeof verifierCertificateMnemonicStore, MnemonicData]
 }
 // Stores that expose the .get method
 type GettableStoreKeys = keyof GettableStores
@@ -56,7 +53,6 @@ export const extensionStores = {
   password: passwordStore,
   mnemonics: mnemonicsStore,
   accountsCatalog: accountsCatalogStore,
-  verifierCertificateMnemonic: verifierCertificateMnemonicStore,
 }
 
 const localStorageStores: { [K in GettableStoreKeys]: GettableStores[K][0] } = {
@@ -66,7 +62,6 @@ const localStorageStores: { [K in GettableStoreKeys]: GettableStores[K][0] } = {
   sites: sitesAuthorisedStore,
   seedPhrase: mnemonicsStore,
   accountsCatalog: accountsCatalogStore,
-  verifierCertificateMnemonic: verifierCertificateMnemonicStore,
 }
 
 // utility functions used in tests

@@ -1,19 +1,8 @@
-import { verifierCertificateMnemonicStore } from "@core/domains/accounts/store.verifierCertificateMnemonic"
-import { atom, useRecoilValue } from "recoil"
-
-export const hasVerifierCertificateMnemonicState = atom<boolean>({
-  key: "hasVerifierCertificateMnemonicState",
-  default: false,
-  effects: [
-    ({ setSelf }) => {
-      const sub = verifierCertificateMnemonicStore.observable.subscribe(({ cipher }) =>
-        setSelf(!!cipher)
-      )
-      return () => sub.unsubscribe()
-    },
-  ],
-})
+import { useAppState } from "./useAppState"
+import { useMnemonic } from "./useMnemonics"
 
 export const useHasVerifierCertificateMnemonic = () => {
-  return useRecoilValue(hasVerifierCertificateMnemonicState)
+  const [verifierCertificateMnemonicId] = useAppState("vaultVerifierCertificateMnemonicId")
+  const mnemonic = useMnemonic(verifierCertificateMnemonicId || undefined)
+  return !!mnemonic
 }

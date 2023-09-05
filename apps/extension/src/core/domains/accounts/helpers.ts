@@ -23,8 +23,6 @@ import { Err, Ok, Result } from "ts-results"
 import Browser from "webextension-polyfill"
 
 import { getEthDerivationPath } from "../ethereum/helpers"
-import { mnemonicsStore } from "../mnemonics/store"
-import { verifierCertificateMnemonicStore } from "./store.verifierCertificateMnemonic"
 
 const sortAccountsByWhenCreated = (accounts: AccountJsonAny[]) => {
   return accounts.sort((acc1, acc2) => {
@@ -200,15 +198,6 @@ export const hasQrCodeAccounts = async () => {
     ([key, account]: [string, Account]) =>
       key.startsWith("account:0x") && account.meta?.origin === AccountTypes.QR
   )
-}
-
-export const copySeedStoreToVerifierCertificateStore = async () => {
-  // todo check if used
-  const seedData = await mnemonicsStore.get()
-  const verifierCertMnemonicData = await verifierCertificateMnemonicStore.get()
-  if (verifierCertMnemonicData.cipher)
-    throw new Error("Verifier Certificate Store already has data")
-  await verifierCertificateMnemonicStore.set(seedData)
 }
 
 export const hasPrivateKey = (address: Address) => {

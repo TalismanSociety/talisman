@@ -1,7 +1,7 @@
 import { TALISMAN_WEB_APP_DOMAIN } from "@core/constants"
 import { hasQrCodeAccounts } from "@core/domains/accounts/helpers"
-import { verifierCertificateMnemonicStore } from "@core/domains/accounts/store.verifierCertificateMnemonic"
 import passwordStore from "@core/domains/app/store.password"
+import { createLegacyVerifierCertificateMnemonicStore } from "@core/domains/mnemonics/legacy/store"
 import { mnemonicsStore } from "@core/domains/mnemonics/store"
 import sitesAuthorisedStore from "@core/domains/sitesAuthorised/store"
 import { lt } from "semver"
@@ -39,6 +39,7 @@ export const migratePolkadotVaultVerifierCertificate = async (previousVersion: s
     // add a vault verifier certificate if any of the addresses are from a vault
     //first check if any of the addresses are from a vault
     // check if a vault verifier certificate store already exists
+    const verifierCertificateMnemonicStore = createLegacyVerifierCertificateMnemonicStore()
     const verifierCertMnemonicCipher = await verifierCertificateMnemonicStore.get("cipher")
     const mnemonicsData = await mnemonicsStore.get()
     if (!verifierCertMnemonicCipher && mnemonicsData.cipher) {
