@@ -550,8 +550,8 @@ export default class AccountsHandler extends ExtensionHandler {
     }
   }
 
-  private validateDerivationPath({ derivationPath }: RequestValidateDerivationPath): boolean {
-    return isValidDerivationPath(derivationPath)
+  private validateDerivationPath({ derivationPath, type }: RequestValidateDerivationPath): boolean {
+    return isValidDerivationPath(derivationPath, type)
   }
 
   private async getNextDerivationPath({

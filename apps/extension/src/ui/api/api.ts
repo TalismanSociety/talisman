@@ -134,8 +134,8 @@ export const api: MessageTypes = {
     messageService.sendMessage("pri(accounts.external.setIsPortfolio)", { address, isPortfolio }),
   accountValidateMnemonic: (mnemonic) =>
     messageService.sendMessage("pri(accounts.validateMnemonic)", mnemonic),
-  validateDerivationPath: (derivationPath) =>
-    messageService.sendMessage("pri(accounts.validateDerivationPath)", { derivationPath }),
+  validateDerivationPath: (derivationPath, type) =>
+    messageService.sendMessage("pri(accounts.validateDerivationPath)", { derivationPath, type }),
   addressLookup: (lookup) => messageService.sendMessage("pri(accounts.address.lookup)", lookup),
   setVerifierCertMnemonic: (verifierCertType, mnemonic, mnemonicId) =>
     messageService.sendMessage("pri(accounts.setVerifierCertMnemonic)", {

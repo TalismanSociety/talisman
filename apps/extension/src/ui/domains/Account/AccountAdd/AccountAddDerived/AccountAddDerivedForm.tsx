@@ -65,9 +65,10 @@ const useLookupAddress = (
 ) => {
   return useQuery({
     queryKey: ["useLookupAddress", mnemonicId, derivationPath],
-    queryFn: () => {
+    queryFn: async () => {
       // empty string is valid
       if (!mnemonicId || !type || typeof derivationPath !== "string") return null
+      if (!(await api.validateDerivationPath(derivationPath, type))) return null
       return api.addressLookup({ mnemonicId, type, derivationPath })
     },
     enabled: !!mnemonicId && type && typeof derivationPath === "string",
@@ -122,7 +123,7 @@ const AccountAddDerivedFormInner: FC<AccountAddPageProps> = ({ onSuccess }) => {
           const { customDerivationPath, derivationPath, mnemonicId, type } = val as FormData
           if (!customDerivationPath) return true
 
-          if (derivationPath && !(await api.validateDerivationPath(derivationPath)))
+          if (!(await api.validateDerivationPath(derivationPath, type)))
             return ctx.createError({
               path: "derivationPath",
               message: t("Invalid derivation path"),

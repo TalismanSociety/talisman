@@ -205,6 +205,7 @@ export type RequestSetVerifierCertificateMnemonic = {
 // wrap in a dedicated type because empty strings are changed to null by the message service
 export type RequestValidateDerivationPath = {
   derivationPath: string
+  type: AccountAddressType
 }
 
 export type RequestAddressLookupBySuri = {

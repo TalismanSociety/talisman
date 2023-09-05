@@ -10,10 +10,11 @@ const TEST_MNEMONIC = "test test test test test test test test test test test ju
  * Don't call this from front-end as it loads a heavy wasm blob
  *
  */
-export const isValidDerivationPath = (derivationPath: string, type: KeypairType = "sr25519") => {
+export const isValidDerivationPath = (derivationPath: string, type: KeypairType) => {
   if (typeof derivationPath !== "string") return false
   try {
-    return !!addressFromSuri(formatSuri(TEST_MNEMONIC, derivationPath), type)
+    const suri = formatSuri(TEST_MNEMONIC, derivationPath)
+    return !!addressFromSuri(suri, type)
   } catch (err) {
     return false
   }
