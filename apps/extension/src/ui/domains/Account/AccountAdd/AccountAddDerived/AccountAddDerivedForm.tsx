@@ -7,6 +7,7 @@ import { Spacer } from "@talisman/components/Spacer"
 import { ArrowRightIcon } from "@talisman/theme/icons"
 import { classNames } from "@talismn/util"
 import { sleep } from "@talismn/util"
+import { useQuery } from "@tanstack/react-query"
 import { api } from "@ui/api"
 import { AccountTypeSelector } from "@ui/domains/Account/AccountTypeSelector"
 import {
@@ -20,9 +21,19 @@ import { FC, PropsWithChildren, useCallback, useEffect, useMemo } from "react"
 import { useForm } from "react-hook-form"
 import { useTranslation } from "react-i18next"
 import { useSearchParams } from "react-router-dom"
-import { Button, Checkbox, FormFieldContainer, FormFieldInputText, useOpenClose } from "talisman-ui"
+import {
+  Button,
+  Checkbox,
+  FormFieldContainer,
+  FormFieldInputText,
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+  useOpenClose,
+} from "talisman-ui"
 import * as yup from "yup"
 
+import { AccountIcon } from "../../AccountIcon"
 import { AccountAddPageProps } from "../types"
 import { AccountAddMnemonicDropdown } from "./AccountAddMnemonicDropdown"
 
@@ -32,6 +43,37 @@ type FormData = {
   mnemonicId: string | null
   customDerivationPath: boolean
   derivationPath: string
+}
+
+const useNextAvailableDerivationPath = (mnemonicId: string | null, type: AccountAddressType) => {
+  return useQuery({
+    queryKey: ["useNextAvailableDerivationPath", mnemonicId, type],
+    queryFn: () => {
+      if (!mnemonicId || !type) return null
+      return api.getNextDerivationPath(mnemonicId, type)
+    },
+    enabled: !!mnemonicId,
+    refetchInterval: false,
+    retry: false,
+  })
+}
+
+const useLookupAddress = (
+  mnemonicId: string | null,
+  type: AccountAddressType,
+  derivationPath: string | null | undefined
+) => {
+  return useQuery({
+    queryKey: ["useLookupAddress", mnemonicId, derivationPath],
+    queryFn: () => {
+      // empty string is valid
+      if (!mnemonicId || !type || typeof derivationPath !== "string") return null
+      return api.addressLookup({ mnemonicId, type, derivationPath })
+    },
+    enabled: !!mnemonicId && type && typeof derivationPath === "string",
+    refetchInterval: false,
+    retry: false,
+  })
 }
 
 const AdvancedSettings: FC<PropsWithChildren> = ({ children }) => {
@@ -50,8 +92,8 @@ const AdvancedSettings: FC<PropsWithChildren> = ({ children }) => {
           <AccordionIcon isOpen={isOpen} />
         </button>
       </div>
-      {/* enlarge the area or it would hide focus ring on the textbox */}
-      <Accordion isOpen={isOpen} className="mx-[-0.2rem] px-[0.2rem]">
+      {/* enlarge the area or it would hide focus ring on the inputs */}
+      <Accordion isOpen={isOpen} className={classNames(isOpen && "m-[-0.2rem] p-[0.2rem]")}>
         {children}
       </Accordion>
     </div>
@@ -183,13 +225,20 @@ const AccountAddDerivedFormInner: FC<AccountAddPageProps> = ({ onSuccess }) => {
     [setValue]
   )
 
-  const { type, mnemonicId, customDerivationPath } = watch()
+  const { type, mnemonicId, customDerivationPath, derivationPath } = watch()
+  const { data: nextDerivationPath } = useNextAvailableDerivationPath(mnemonicId, type)
+  const { data: address } = useLookupAddress(
+    mnemonicId,
+    type,
+    customDerivationPath ? derivationPath : nextDerivationPath
+  )
 
   useEffect(() => {
-    // when customDerivationPath is checked, mark derivationPath as touched to trigger validation
-    if (customDerivationPath)
-      setValue("derivationPath", "", { shouldValidate: true, shouldTouch: true })
-  }, [customDerivationPath, setValue])
+    // prefill custom derivation path with next available one
+    if (nextDerivationPath === undefined || nextDerivationPath === null) return
+    if (!customDerivationPath)
+      setValue("derivationPath", nextDerivationPath, { shouldValidate: true })
+  }, [customDerivationPath, nextDerivationPath, setValue])
 
   useEffect(() => {
     // if we have a type in the url, set it
@@ -211,6 +260,16 @@ const AccountAddDerivedFormInner: FC<AccountAddPageProps> = ({ onSuccess }) => {
             spellCheck={false}
             autoComplete="off"
             data-lpignore
+            after={
+              address ? (
+                <Tooltip>
+                  <TooltipTrigger>
+                    <AccountIcon address={address} className="text-xl" />
+                  </TooltipTrigger>
+                  <TooltipContent>{address}</TooltipContent>
+                </Tooltip>
+              ) : null
+            }
           />
         </FormFieldContainer>
         <Spacer small />
@@ -234,7 +293,7 @@ const AccountAddDerivedFormInner: FC<AccountAddPageProps> = ({ onSuccess }) => {
               spellCheck={false}
               disabled={!customDerivationPath}
               autoComplete="off"
-              className="font-mono disabled:cursor-not-allowed disabled:select-none disabled:opacity-50"
+              className="font-mono disabled:cursor-not-allowed disabled:select-none"
               data-lpignore
             />
           </FormFieldContainer>

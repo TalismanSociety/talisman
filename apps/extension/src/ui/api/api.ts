@@ -143,6 +143,8 @@ export const api: MessageTypes = {
       mnemonic,
       mnemonicId,
     }),
+  getNextDerivationPath: (mnemonicId, type) =>
+    messageService.sendMessage("pri(accounts.derivationPath.next)", { mnemonicId, type }),
 
   // balance messages ---------------------------------------------------
   getBalance: ({ chainId, evmNetworkId, tokenId, address }) =>

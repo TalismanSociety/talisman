@@ -147,6 +147,7 @@ export default interface MessageTypes {
   accountValidateMnemonic: (mnemonic: string) => Promise<boolean>
   validateDerivationPath: (derivationPath: string) => Promise<boolean>
   addressLookup: (lookup: RequestAddressLookup) => Promise<string>
+  getNextDerivationPath: (mnemonicId: string, type: AccountAddressType) => Promise<string>
   setVerifierCertMnemonic: (
     type: VerifierCertificateType,
     mnemonic?: string,

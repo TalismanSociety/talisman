@@ -20,6 +20,7 @@ import type {
   RequestAccountRename,
   RequestAccountsCatalogAction,
   RequestAddressLookup,
+  RequestNextDerivationPath,
   RequestSetVerifierCertificateMnemonic,
   RequestValidateDerivationPath,
   ResponseAccountExport,
@@ -553,6 +554,22 @@ export default class AccountsHandler extends ExtensionHandler {
     return isValidDerivationPath(derivationPath)
   }
 
+  private async getNextDerivationPath({
+    mnemonicId,
+    type,
+  }: RequestNextDerivationPath): Promise<string> {
+    const password = this.stores.password.getPassword()
+    assert(password, "Not logged in")
+
+    const { val: mnemonic, ok } = await this.stores.seedPhrase.getSeed(mnemonicId, password)
+    assert(ok && mnemonic, "Mnemonic not stored locally")
+
+    const { val: derivationPath, ok: ok2 } = getNextDerivationPathForMnemonic(mnemonic, type)
+    assert(ok2, "Failed to lookup next available derivation path")
+
+    return derivationPath
+  }
+
   public async handle<TMessageType extends MessageTypes>(
     id: string,
     type: TMessageType,
@@ -600,6 +617,8 @@ export default class AccountsHandler extends ExtensionHandler {
         return this.addressLookup(request as RequestAddressLookup)
       case "pri(accounts.setVerifierCertMnemonic)":
         return this.setVerifierCertMnemonic(request as RequestSetVerifierCertificateMnemonic)
+      case "pri(accounts.derivationPath.next)":
+        return this.getNextDerivationPath(request as RequestNextDerivationPath)
       default:
         throw new Error(`Unable to handle message of type ${type}`)
     }
