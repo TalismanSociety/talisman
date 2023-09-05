@@ -12,5 +12,9 @@ const TEST_MNEMONIC = "test test test test test test test test test test test ju
  */
 export const isValidDerivationPath = (derivationPath: string, type: KeypairType = "sr25519") => {
   if (typeof derivationPath !== "string") return false
-  return !!addressFromSuri(formatSuri(TEST_MNEMONIC, derivationPath), type)
+  try {
+    return !!addressFromSuri(formatSuri(TEST_MNEMONIC, derivationPath), type)
+  } catch (err) {
+    return false
+  }
 }

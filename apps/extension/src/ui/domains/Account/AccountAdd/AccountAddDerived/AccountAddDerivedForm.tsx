@@ -133,7 +133,7 @@ const AccountAddDerivedFormInner: FC<AccountAddPageProps> = ({ onSuccess }) => {
             if (allAccounts.some((a) => a.address === address))
               return ctx.createError({
                 path: "derivationPath",
-                message: t("Address already exists"),
+                message: t("Account already exists"),
               })
           }
           return true
