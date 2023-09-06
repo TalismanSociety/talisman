@@ -510,7 +510,7 @@ export default class AccountsHandler extends ExtensionHandler {
 
       const password = this.stores.password.getPassword()
       assert(password, "Not logged in")
-      const mnemonicResult = await this.stores.seedPhrase.getSeed(mnemonicId, password)
+      const mnemonicResult = await this.stores.mnemonics.getSeed(mnemonicId, password)
       assert(mnemonicResult.ok && mnemonicResult.val, "Mnemonic not stored locally")
 
       const suri = formatSuri(mnemonicResult.val, derivationPath)
@@ -532,7 +532,7 @@ export default class AccountsHandler extends ExtensionHandler {
     const password = this.stores.password.getPassword()
     assert(password, "Not logged in")
 
-    const { val: mnemonic, ok } = await this.stores.seedPhrase.getSeed(mnemonicId, password)
+    const { val: mnemonic, ok } = await this.stores.mnemonics.getSeed(mnemonicId, password)
     assert(ok && mnemonic, "Mnemonic not stored locally")
 
     const { val: derivationPath, ok: ok2 } = getNextDerivationPathForMnemonic(mnemonic, type)
