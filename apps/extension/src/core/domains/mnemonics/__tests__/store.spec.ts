@@ -25,11 +25,11 @@ describe("createMnemonicsStore", () => {
     expect(storedConfirmed).toBeDefined()
     expect(storedConfirmed).toBe(false)
 
-    const storedSeed = await mnemonicsStore.getSeed(id, password)
+    const storedSeed = await mnemonicsStore.getMnemonic(id, password)
     expect(storedSeed.ok).toBe(true)
     expect(storedSeed.val).toBe(seed)
 
-    const badSeed = await mnemonicsStore.getSeed(id, "badPassword")
+    const badSeed = await mnemonicsStore.getMnemonic(id, "badPassword")
     expect(badSeed.err).toBe(true)
     expect(badSeed.val).toBe("Incorrect password")
   })

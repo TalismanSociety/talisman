@@ -42,7 +42,7 @@ export default class MnemonicHandler extends ExtensionHandler {
         const transformedPw = await this.stores.password.transformPassword(password)
         assert(transformedPw, "Password error")
 
-        const seedResult = await this.stores.mnemonics.getSeed(mnemonicId, transformedPw)
+        const seedResult = await this.stores.mnemonics.getMnemonic(mnemonicId, transformedPw)
         assert(seedResult.val, "No mnemonic present")
         assert(seedResult.ok, seedResult.val)
         return seedResult.val

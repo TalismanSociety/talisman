@@ -131,7 +131,7 @@ describe("App handler when password is not trimmed", () => {
     pairAgain.decodePkcs8(hashedPw)
     expect(pairAgain.isLocked).toBeFalsy()
 
-    const seedResult = await extensionStores.mnemonics.getSeed(mnemonicId, hashedPw)
+    const seedResult = await extensionStores.mnemonics.getMnemonic(mnemonicId, hashedPw)
     expect(seedResult.ok && seedResult.val).toBeTruthy()
   })
 
@@ -162,7 +162,7 @@ describe("App handler when password is not trimmed", () => {
     pairAgain.decodePkcs8(hashedPw)
     expect(pairAgain.isLocked).toBeFalsy()
 
-    const seedResult = await extensionStores.mnemonics.getSeed(mnemonicId, hashedPw)
+    const seedResult = await extensionStores.mnemonics.getMnemonic(mnemonicId, hashedPw)
     expect(seedResult.ok && seedResult.val).toBeTruthy()
   })
 })
@@ -287,7 +287,7 @@ describe("App handler when password is trimmed", () => {
     pairAgain.decodePkcs8(hashedPw)
     expect(pairAgain.isLocked).toBeFalsy()
 
-    const seedResult = await extensionStores.mnemonics.getSeed(mnemonicId, hashedPw)
+    const seedResult = await extensionStores.mnemonics.getMnemonic(mnemonicId, hashedPw)
     expect(seedResult.ok && seedResult.val).toBeTruthy()
   })
 
@@ -319,7 +319,7 @@ describe("App handler when password is trimmed", () => {
     pairAgain.decodePkcs8(hashedPw)
     expect(pairAgain.isLocked).toBeFalsy()
 
-    const seedResult = await extensionStores.mnemonics.getSeed(mnemonicId, hashedPw)
+    const seedResult = await extensionStores.mnemonics.getMnemonic(mnemonicId, hashedPw)
     expect(seedResult.ok && seedResult.val).toBeTruthy()
   })
 })

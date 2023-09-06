@@ -59,7 +59,7 @@ export default class AccountsHandler extends ExtensionHandler {
     let mnemonic: string
     if ("mnemonicId" in options) {
       derivedMnemonicId = options.mnemonicId
-      const mnemonicResult = await this.stores.mnemonics.getSeed(derivedMnemonicId, password)
+      const mnemonicResult = await this.stores.mnemonics.getMnemonic(derivedMnemonicId, password)
       if (mnemonicResult.err || !mnemonicResult.val) throw new Error("Mnemonic not stored locally")
       mnemonic = mnemonicResult.val
     } else {
@@ -510,7 +510,7 @@ export default class AccountsHandler extends ExtensionHandler {
 
       const password = this.stores.password.getPassword()
       assert(password, "Not logged in")
-      const mnemonicResult = await this.stores.mnemonics.getSeed(mnemonicId, password)
+      const mnemonicResult = await this.stores.mnemonics.getMnemonic(mnemonicId, password)
       assert(mnemonicResult.ok && mnemonicResult.val, "Mnemonic not stored locally")
 
       const suri = formatSuri(mnemonicResult.val, derivationPath)
@@ -532,7 +532,7 @@ export default class AccountsHandler extends ExtensionHandler {
     const password = this.stores.password.getPassword()
     assert(password, "Not logged in")
 
-    const { val: mnemonic, ok } = await this.stores.mnemonics.getSeed(mnemonicId, password)
+    const { val: mnemonic, ok } = await this.stores.mnemonics.getMnemonic(mnemonicId, password)
     assert(ok && mnemonic, "Mnemonic not stored locally")
 
     const { val: derivationPath, ok: ok2 } = getNextDerivationPathForMnemonic(mnemonic, type)

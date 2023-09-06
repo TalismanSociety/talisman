@@ -6,7 +6,7 @@ import { mnemonicValidate } from "@polkadot/util-crypto"
 import md5 from "blueimp-md5"
 import { Err, Ok, Result } from "ts-results"
 
-const storageKey = "seeds"
+const storageKey = "mnemonics"
 
 export enum SOURCES {
   Imported = "imported",
@@ -63,17 +63,17 @@ const cleanupMnemonic = (mnemonic: string) => {
 export class MnemonicsStore extends StorageProvider<MnemonicsStoreData> {
   public async add(
     name: string,
-    seed: string,
+    mnemonic: string,
     password: string,
     source: SOURCES = SOURCES.Imported,
     confirmed = false
   ): Promise<Result<string, MnemonicErrors.AlreadyExists | MnemonicErrors.InvalidMnemonic>> {
-    if (!mnemonicValidate(seed)) return Err(MnemonicErrors.InvalidMnemonic)
+    if (!mnemonicValidate(mnemonic)) return Err(MnemonicErrors.InvalidMnemonic)
 
-    const cleanMnemonic = cleanupMnemonic(seed)
+    const cleanMnemonic = cleanupMnemonic(mnemonic)
     const id = md5(cleanMnemonic)
-    const status = await this.checkSeedExists(cleanMnemonic)
-    if (status) return Err(MnemonicErrors.AlreadyExists)
+    const existingId = await this.getExistingId(cleanMnemonic)
+    if (existingId) return Err(MnemonicErrors.AlreadyExists)
 
     const cipher = await encryptMnemonic(cleanMnemonic, password)
     await this.set({ [id]: { name, id, source, cipher, confirmed } })
@@ -95,13 +95,8 @@ export class MnemonicsStore extends StorageProvider<MnemonicsStoreData> {
   }
 
   public async hasUnconfirmed() {
-    const seeds = await this.get()
-    return Object.values(seeds).some(({ confirmed }) => !confirmed)
-  }
-
-  public async checkSeedExists(seed: string): Promise<boolean> {
-    const hash = md5(cleanupMnemonic(seed))
-    return !!(await this.get(hash))
+    const data = await this.get()
+    return Object.values(data).some(({ confirmed }) => !confirmed)
   }
 
   public async getExistingId(mnemonic: string): Promise<string | null> {
@@ -109,7 +104,7 @@ export class MnemonicsStore extends StorageProvider<MnemonicsStoreData> {
     return (await this.get(hash)) ? hash : null
   }
 
-  public async getSeed(
+  public async getMnemonic(
     id: string,
     password: string
   ): Promise<
@@ -120,9 +115,9 @@ export class MnemonicsStore extends StorageProvider<MnemonicsStoreData> {
       | MnemonicErrors.UnableToDecrypt
     >
   > {
-    const seedData = await this.get(id)
-    if (!seedData) throw new Err(MnemonicErrors.MnemonicNotFound)
-    const cipher = seedData.cipher
+    const data = await this.get(id)
+    if (!data) return Err(MnemonicErrors.MnemonicNotFound)
+    const cipher = data.cipher
     if (!cipher) return Ok(undefined)
 
     const decryptResult = await decryptMnemonic(cipher, password)
