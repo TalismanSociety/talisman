@@ -104,12 +104,7 @@ const PageContent = ({
           </div>
           <div className="flex grow flex-col gap-1 overflow-hidden pl-2 text-sm">
             <div className="flex items-center gap-3">
-              <div
-                className={classNames(
-                  "overflow-hidden text-ellipsis whitespace-nowrap",
-                  account ? "text-md" : "text-body-secondary"
-                )}
-              >
+              <div className={classNames("truncate", account ? "text-md" : "text-body-secondary")}>
                 {account
                   ? account.name ?? t("Unnamed Account")
                   : folder
@@ -118,12 +113,7 @@ const PageContent = ({
               </div>
               <AccountTypeIcon className="text-primary" origin={account?.origin} />
             </div>
-            <div
-              className={classNames(
-                "overflow-hidden text-ellipsis whitespace-nowrap",
-                account ? "text-body-secondary" : "text-md"
-              )}
-            >
+            <div className={classNames("truncate", account ? "text-body-secondary" : "text-md")}>
               {account ? (
                 <Address address={formattedAddress} />
               ) : (

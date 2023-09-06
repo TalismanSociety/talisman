@@ -27,7 +27,7 @@ export const AddressFieldEnsBadge = ({
         <PillButton className="h-16 max-w-full !cursor-default !px-4">
           <div className="text-body flex h-16 max-w-full flex-nowrap items-center gap-4 overflow-x-hidden text-base">
             <AccountIcon className="text-lg" address={ensLookup} />
-            <div className="leading-base grow overflow-hidden text-ellipsis whitespace-nowrap">
+            <div className="leading-base grow truncate">
               <Address className="text-body" address={ensLookup} noTooltip />
             </div>
             {isEnsFetching ? (

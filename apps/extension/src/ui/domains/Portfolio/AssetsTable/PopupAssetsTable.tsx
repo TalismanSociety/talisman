@@ -249,7 +249,7 @@ const BalancesGroup = ({ label, fiatAmount, className, children }: GroupProps) =
         onClick={toggle}
       >
         <div className="text-body-secondary grow text-left">{label}</div>
-        <div className="text-body-secondary overflow-hidden text-ellipsis whitespace-nowrap">
+        <div className="text-body-secondary truncate">
           <Fiat amount={fiatAmount} currency="usd" isBalance />
         </div>
         <div className="text-body-secondary text-md flex flex-col justify-center">
@@ -290,7 +290,7 @@ export const PopupAssetsTable = ({ balances }: GroupedAssetsTableProps) => {
           <>
             <div className="text-md flex items-center gap-2">
               <div className="text-body grow text-left">{t("Total")}</div>
-              <div className="text-body-secondary overflow-hidden text-ellipsis whitespace-nowrap">
+              <div className="text-body-secondary truncate">
                 <Fiat amount={total} currency="usd" isBalance />
               </div>
             </div>

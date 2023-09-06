@@ -41,7 +41,7 @@ export const FormattedAddress: FC<{
             genesisHash={account?.genesisHash}
             className="text-[1.4em]"
           />
-          <span className="max-w-full overflow-hidden text-ellipsis whitespace-nowrap">
+          <span className="max-w-full truncate">
             {isKnown && isKnown.type === "account" ? (
               <>{isKnown.value.name}</>
             ) : (

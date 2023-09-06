@@ -88,7 +88,7 @@ const AccountRow: FC<AccountRowProps> = ({
       <div className="flex grow items-center overflow-hidden">
         <div className="flex flex-col space-y-2">
           <div className="flex items-center gap-2">
-            <div className="overflow-hidden text-ellipsis whitespace-nowrap">
+            <div className="truncate">
               {account.name ?? (
                 <Address address={formattedAddress} startCharCount={6} endCharCount={6} noTooltip />
               )}

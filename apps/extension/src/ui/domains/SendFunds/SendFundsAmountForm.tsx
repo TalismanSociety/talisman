@@ -95,7 +95,7 @@ const AddressPillButton: FC<AddressPillButtonProps> = ({ address, className, onC
     <PillButton className={classNames("h-16 max-w-full !px-4", className)} onClick={onClick}>
       <div className="text-body flex h-16 max-w-full flex-nowrap items-center gap-4 overflow-x-hidden text-base">
         <AccountIcon className="!text-lg" address={address} genesisHash={genesisHash} />
-        <div className="leading-base grow overflow-hidden text-ellipsis whitespace-nowrap">
+        <div className="leading-base grow truncate">
           {name ? (
             <WithTooltip tooltip={address}>{name}</WithTooltip>
           ) : (
@@ -287,11 +287,7 @@ const FiatInput = () => {
 }
 
 const DisplayContainer: FC<PropsWithChildren> = ({ children }) => {
-  return (
-    <div className="text-body-secondary max-w-[264px] overflow-hidden text-ellipsis whitespace-nowrap text-sm">
-      {children}
-    </div>
-  )
+  return <div className="text-body-secondary max-w-[264px] truncate text-sm">{children}</div>
 }
 
 const FiatDisplay = () => {
@@ -500,7 +496,7 @@ const FeesSummary = () => {
         </div>
         <div
           className={classNames(
-            "flex grow items-center justify-end gap-2 overflow-hidden text-ellipsis whitespace-nowrap",
+            "flex grow items-center justify-end gap-2 truncate",
             isLoading && estimatedFee && "animate-pulse"
           )}
         >

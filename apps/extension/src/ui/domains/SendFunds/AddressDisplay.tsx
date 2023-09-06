@@ -135,9 +135,7 @@ export const AddressDisplay: FC<AddressDisplayProps> = ({
           address={resolvedAddress}
           genesisHash={account?.genesisHash}
         />
-        <div className="leading-base grow overflow-hidden text-ellipsis whitespace-nowrap">
-          {text}
-        </div>
+        <div className="leading-base grow truncate">{text}</div>
         <AccountTypeIcon origin={account?.origin} className="text-primary" />
         {blockExplorerUrl ? (
           <a href={blockExplorerUrl} target="_blank" className="text-grey-300 hover:text-white">

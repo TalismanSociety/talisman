@@ -136,7 +136,7 @@ const AccountButton = ({ option }: { option: AccountOption }) => {
             </div>
           )}
         </div>
-        <div className="text-body-secondary flex w-full overflow-hidden text-ellipsis whitespace-nowrap text-left text-sm leading-none">
+        <div className="text-body-secondary flex w-full truncate text-left text-sm leading-none">
           <Fiat amount={option.total} isBalance />
         </div>
       </div>
@@ -270,11 +270,9 @@ const FolderHeader = ({ folder, folderTotal }: { folder: TreeFolder; folderTotal
       </div>
       <div className="flex grow flex-col gap-1 overflow-hidden pl-2 text-sm">
         <div className="flex items-center gap-3">
-          <div className="text-body-secondary overflow-hidden text-ellipsis whitespace-nowrap">
-            {folder.name}
-          </div>
+          <div className="text-body-secondary truncate">{folder.name}</div>
         </div>
-        <div className="text-md overflow-hidden text-ellipsis whitespace-nowrap">
+        <div className="text-md truncate">
           <Fiat amount={folderTotal} isBalance />
         </div>
       </div>

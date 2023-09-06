@@ -53,7 +53,7 @@ const AddressPillButton: FC<AddressPillButtonProps> = ({ address, className, onC
     <PillButton className={classNames("h-16 max-w-[240px] !px-4", className)} onClick={onClick}>
       <div className="text-body flex h-16 max-w-full flex-nowrap items-center gap-4 overflow-x-hidden text-base">
         <AccountIcon className="!text-lg" address={address} genesisHash={genesisHash} />
-        <div className="leading-base grow overflow-hidden text-ellipsis whitespace-nowrap">
+        <div className="leading-base grow truncate">
           {name ?? <Address address={formattedAddress} startCharCount={6} endCharCount={6} />}
         </div>
         <AccountTypeIcon origin={account?.origin} className="text-primary" />
