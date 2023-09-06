@@ -5,13 +5,15 @@ export const useToggleCurrency = () =>
   useRecoilCallback(
     ({ snapshot, set }) =>
       async () => {
-        const selectableCurrency = await snapshot.getPromise(selectableCurrenciesState)
+        const selectableCurrencies = await snapshot.getPromise(selectableCurrenciesState)
         const selectedCurrency = await snapshot.getPromise(selectedCurrencyState)
 
         set(
           selectedCurrencyState,
-          selectableCurrency.at(selectableCurrency.findIndex((x) => x === selectedCurrency) + 1) ??
-            selectableCurrency[0] ??
+          selectableCurrencies.at(
+            selectableCurrencies.findIndex((x) => x === selectedCurrency) + 1
+          ) ??
+            selectableCurrencies[0] ??
             selectedCurrency
         )
       },

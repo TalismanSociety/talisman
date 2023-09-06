@@ -41,15 +41,15 @@ export const tokenRatesQuery = selectorFamily({
 })
 
 export const selectableCurrenciesState = selector<readonly TokenRateCurrency[]>({
-  key: "selectableCurrency",
-  get: ({ get }) => get(settingQuery("selectableCurrency")).slice().sort(),
+  key: "selectableCurrencies",
+  get: ({ get }) => get(settingQuery("selectableCurrencies")).slice().sort(),
   set: ({ set }, newValue) => {
     if (!(newValue instanceof DefaultValue) && newValue.length < 1) {
       return
     }
 
     set(
-      settingQuery("selectableCurrency"),
+      settingQuery("selectableCurrencies"),
       newValue instanceof DefaultValue ? newValue : [...new Set(newValue)]
     )
   },
