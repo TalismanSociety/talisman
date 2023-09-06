@@ -1,4 +1,5 @@
 import {
+  formatSuri,
   getNextDerivationPathForMnemonic,
   isValidAnyAddress,
   sortAccounts,
@@ -18,7 +19,10 @@ import type {
   RequestAccountForget,
   RequestAccountRename,
   RequestAccountsCatalogAction,
+  RequestAddressLookup,
+  RequestNextDerivationPath,
   RequestSetVerifierCertificateMnemonic,
+  RequestValidateDerivationPath,
   ResponseAccountExport,
 } from "@core/domains/accounts/types"
 import { AccountTypes } from "@core/domains/accounts/types"
@@ -35,7 +39,8 @@ import { KeyringPair$Meta } from "@polkadot/keyring/types"
 import keyring from "@polkadot/ui-keyring"
 import { assert } from "@polkadot/util"
 import { ethereumEncode, isEthereumAddress, mnemonicValidate } from "@polkadot/util-crypto"
-import { addressFromMnemonic } from "@talisman/util/addressFromMnemonic"
+import { addressFromSuri } from "@talisman/util/addressFromSuri"
+import { isValidDerivationPath } from "@talisman/util/isValidDerivationPath"
 import { decodeAnyAddress, encodeAnyAddress, sleep } from "@talismn/util"
 import { combineLatest } from "rxjs"
 
@@ -71,11 +76,24 @@ export default class AccountsHandler extends ExtensionHandler {
       mnemonic = options.mnemonic
     }
 
-    const { val: derivationPath, err } = getNextDerivationPathForMnemonic(mnemonic, type)
-    if (err) throw new Error(derivationPath)
+    let derivationPath: string
+    if (typeof options.derivationPath === "string") {
+      derivationPath = options.derivationPath
+    } else {
+      const { val, err } = getNextDerivationPathForMnemonic(mnemonic, type)
+      if (err) throw new Error(val)
+      else derivationPath = val
+    }
+
+    const suri = formatSuri(mnemonic, derivationPath)
+    const resultingAddress = encodeAnyAddress(addressFromSuri(suri, type))
+    assert(
+      allAccounts.every((acc) => encodeAnyAddress(acc.address) !== resultingAddress),
+      "Account already exists"
+    )
 
     const { pair } = keyring.addUri(
-      `${mnemonic}${derivationPath}`,
+      suri,
       password,
       {
         name,
@@ -92,17 +110,17 @@ export default class AccountsHandler extends ExtensionHandler {
 
   private async accountCreateSeed({
     name,
-    seed: suri, // TODO split in 2 args: mnemonic and derivation path, or nuke the method and use only accountCreate with additional mnemonic arg
+    seed: suri,
     type,
   }: RequestAccountCreateFromSeed): Promise<string> {
     const password = this.stores.password.getPassword()
     assert(password, "Not logged in")
 
-    const seedAddress = addressFromMnemonic(suri, type)
+    const expectedAddress = addressFromSuri(suri, type)
 
     const notExists = !keyring
       .getAccounts()
-      .some((acc) => acc.address.toLowerCase() === seedAddress.toLowerCase())
+      .some((acc) => acc.address.toLowerCase() === expectedAddress.toLowerCase())
     assert(notExists, "Account already exists")
 
     //suri includes the derivation path if any
@@ -515,6 +533,43 @@ export default class AccountsHandler extends ExtensionHandler {
     return true
   }
 
+  private async addressLookup(lookup: RequestAddressLookup): Promise<string> {
+    if ("mnemonicId" in lookup) {
+      const { mnemonicId, derivationPath, type } = lookup
+
+      const password = this.stores.password.getPassword()
+      assert(password, "Not logged in")
+      const mnemonicResult = await this.stores.seedPhrase.getSeed(mnemonicId, password)
+      assert(mnemonicResult.ok && mnemonicResult.val, "Mnemonic not stored locally")
+
+      const suri = formatSuri(mnemonicResult.val, derivationPath)
+      return addressFromSuri(suri, type)
+    } else {
+      const { suri, type } = lookup
+      return addressFromSuri(suri, type)
+    }
+  }
+
+  private validateDerivationPath({ derivationPath, type }: RequestValidateDerivationPath): boolean {
+    return isValidDerivationPath(derivationPath, type)
+  }
+
+  private async getNextDerivationPath({
+    mnemonicId,
+    type,
+  }: RequestNextDerivationPath): Promise<string> {
+    const password = this.stores.password.getPassword()
+    assert(password, "Not logged in")
+
+    const { val: mnemonic, ok } = await this.stores.seedPhrase.getSeed(mnemonicId, password)
+    assert(ok && mnemonic, "Mnemonic not stored locally")
+
+    const { val: derivationPath, ok: ok2 } = getNextDerivationPathForMnemonic(mnemonic, type)
+    assert(ok2, "Failed to lookup next available derivation path")
+
+    return derivationPath
+  }
+
   public async handle<TMessageType extends MessageTypes>(
     id: string,
     type: TMessageType,
@@ -556,8 +611,14 @@ export default class AccountsHandler extends ExtensionHandler {
         return this.accountsCatalogRunActions(request as RequestAccountsCatalogAction[])
       case "pri(accounts.validateMnemonic)":
         return this.accountValidateMnemonic(request as string)
+      case "pri(accounts.validateDerivationPath)":
+        return this.validateDerivationPath(request as RequestValidateDerivationPath)
+      case "pri(accounts.address.lookup)":
+        return this.addressLookup(request as RequestAddressLookup)
       case "pri(accounts.setVerifierCertMnemonic)":
         return this.setVerifierCertMnemonic(request as RequestSetVerifierCertificateMnemonic)
+      case "pri(accounts.derivationPath.next)":
+        return this.getNextDerivationPath(request as RequestNextDerivationPath)
       default:
         throw new Error(`Unable to handle message of type ${type}`)
     }

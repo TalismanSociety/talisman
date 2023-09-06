@@ -1,7 +1,6 @@
 import { ExtensionHandler } from "@core/libs/Handler"
 import { MessageTypes, RequestType, ResponseType } from "@core/types"
 import { assert } from "@polkadot/util"
-import { addressFromMnemonic } from "@talisman/util/addressFromMnemonic"
 
 export default class MnemonicHandler extends ExtensionHandler {
   public async handle<TMessageType extends MessageTypes>(
@@ -24,11 +23,6 @@ export default class MnemonicHandler extends ExtensionHandler {
       case "pri(mnemonic.confirm)": {
         const { confirmed, mnemonicId } = request as RequestType<"pri(mnemonic.confirm)">
         return await this.stores.seedPhrase.setConfirmed(mnemonicId, confirmed)
-      }
-
-      case "pri(mnemonic.address)": {
-        const { mnemonic, type } = request as RequestType<"pri(mnemonic.address)">
-        return addressFromMnemonic(mnemonic, type)
       }
 
       case "pri(mnemonic.rename)": {

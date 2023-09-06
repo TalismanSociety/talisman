@@ -4,6 +4,7 @@ import type {
   AccountJson,
   RequestAccountCreateOptions,
   RequestAccountsCatalogAction,
+  RequestAddressLookup,
   VerifierCertificateType,
 } from "@core/domains/accounts/types"
 import {
@@ -109,7 +110,6 @@ export default interface MessageTypes {
   mnemonicConfirm: (mnemonicId: string, confirmed: boolean) => Promise<boolean>
   mnemonicRename: (mnemonicId: string, name: string) => Promise<boolean>
   mnemonicDelete: (mnemonicId: string) => Promise<boolean>
-  addressFromMnemonic: (mnemonic: string, type?: AccountAddressType) => Promise<string>
 
   // account message types ---------------------------------------------------
   accountCreate: (
@@ -145,6 +145,9 @@ export default interface MessageTypes {
   accountExportPrivateKey: (address: string, password: string) => Promise<string>
   accountRename: (address: string, name: string) => Promise<boolean>
   accountValidateMnemonic: (mnemonic: string) => Promise<boolean>
+  validateDerivationPath: (derivationPath: string, type: AccountAddressType) => Promise<boolean>
+  addressLookup: (lookup: RequestAddressLookup) => Promise<string>
+  getNextDerivationPath: (mnemonicId: string, type: AccountAddressType) => Promise<string>
   setVerifierCertMnemonic: (
     type: VerifierCertificateType,
     mnemonic?: string,

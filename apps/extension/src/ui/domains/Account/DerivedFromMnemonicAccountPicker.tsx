@@ -1,3 +1,4 @@
+import { formatSuri } from "@core/domains/accounts/helpers"
 import { AccountAddressType, RequestAccountCreateFromSeed } from "@core/domains/accounts/types"
 import { AddressesAndEvmNetwork } from "@core/domains/balances/types"
 import { getEthDerivationPath } from "@core/domains/ethereum/helpers"
@@ -49,14 +50,14 @@ const useDerivedAccounts = (
         // maps [0, 1, 2, ..., itemsPerPage - 1] dynamically
         Array.from(Array(itemsPerPage).keys()).map(async (i) => {
           const accountIndex = skip + i
-          const seed = mnemonic + getDerivationPath(type, accountIndex)
-          const rawAddress = await api.addressFromMnemonic(seed, type)
+          const suri = formatSuri(mnemonic, getDerivationPath(type, accountIndex))
+          const rawAddress = await api.addressLookup({ suri, type })
           const address = type === "ethereum" ? rawAddress : convertAddress(rawAddress, 0)
 
           return {
             accountIndex,
             name: `${name}${accountIndex === 0 ? "" : ` ${accountIndex}`}`,
-            seed,
+            seed: suri,
             type,
             address,
           } as DerivedFromMnemonicAccount

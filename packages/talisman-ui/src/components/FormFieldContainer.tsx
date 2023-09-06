@@ -21,7 +21,7 @@ export const FormFieldContainer: FC<FormFieldContainerProps> = ({
       <div className="text-body-secondary">{label}</div>
       <div className="mt-4">{children}</div>
       {!noErrorRow && (
-        <div className="text-alert-warn h-8 max-w-full overflow-hidden text-ellipsis whitespace-nowrap py-2 text-right text-xs uppercase leading-none">
+        <div className="text-alert-warn h-8 max-w-full overflow-hidden text-ellipsis whitespace-nowrap py-2 text-right text-xs leading-none">
           {error}
         </div>
       )}
