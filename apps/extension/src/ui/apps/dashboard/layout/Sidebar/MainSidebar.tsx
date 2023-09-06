@@ -5,9 +5,9 @@ import {
 } from "@core/constants"
 import { Nav } from "@talisman/components/Nav"
 import {
-  ClockIcon,
   CreditCardIcon,
   DownloadAlertIcon,
+  HistoryIcon,
   ImageIcon,
   PieChartIcon,
   PlusIcon,
@@ -133,7 +133,7 @@ export const MainSidebar = () => {
         <SidebarNavItem
           title={t("Transaction History")}
           onClick={handleTxHistoryClick}
-          icon={<ClockIcon />}
+          icon={<HistoryIcon />}
           isExternalLink
         />
       )}

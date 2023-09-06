@@ -1,6 +1,6 @@
 import { TALISMAN_WEB_APP_NFTS_URL } from "@core/constants"
 import { db } from "@core/db"
-import { AlertCircleIcon, PieChartIcon } from "@talismn/icons"
+import { AlertCircleIcon, HistoryIcon, PieChartIcon } from "@talismn/icons"
 import { classNames } from "@talismn/util"
 import { api } from "@ui/api"
 import { AnalyticsPage, sendAnalyticsEvent } from "@ui/api/analytics"
@@ -16,7 +16,6 @@ import { Tooltip, TooltipContent, TooltipTrigger, useOpenClose } from "talisman-
 
 import { useNavigationContext } from "../../context/NavigationContext"
 import {
-  NavIconActivity,
   NavIconActivityPending,
   NavIconExpand,
   NavIconMore,
@@ -82,7 +81,11 @@ const RecentActivityButton = () => {
       <Tooltip placement="top">
         <TooltipTrigger asChild>
           <BottomNavButton onClick={handleClick}>
-            {hasPendingTransactions ? <NavIconActivityPending /> : <NavIconActivity />}
+            {hasPendingTransactions ? (
+              <NavIconActivityPending />
+            ) : (
+              <HistoryIcon className="self-center text-lg" />
+            )}
           </BottomNavButton>
         </TooltipTrigger>
         <TooltipContent>{t("Recent activity")}</TooltipContent>
