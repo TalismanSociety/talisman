@@ -6960,13 +6960,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@supercharge/promise-pool@npm:^3.0.0":
-  version: 3.0.0
-  resolution: "@supercharge/promise-pool@npm:3.0.0"
-  checksum: 761e7269e54b101c971f8436183c44def24f16a2a9928cfd3f937178fecceb259d4c752287e94dcb547237d9de1e52f1d15db14cb9c83148265cb67c38489a97
-  languageName: node
-  linkType: hard
-
 "@svgr/babel-plugin-add-jsx-attribute@npm:^6.5.1":
   version: 6.5.1
   resolution: "@svgr/babel-plugin-add-jsx-attribute@npm:6.5.1"
@@ -7716,7 +7709,6 @@ __metadata:
   resolution: "@talismn/on-chain-id@workspace:packages/on-chain-id"
   dependencies:
     "@polkadot/types": ^10.1.4
-    "@supercharge/promise-pool": ^3.0.0
     "@talismn/balances": "workspace:*"
     "@talismn/eslint-config": "workspace:*"
     "@talismn/tsconfig": "workspace:*"

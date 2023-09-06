@@ -1,5 +1,4 @@
 import { TypeRegistry } from "@polkadot/types"
-import { PromisePool } from "@supercharge/promise-pool"
 import {
   ChainConnectors,
   RpcStateQuery,
@@ -39,9 +38,8 @@ export class OnChainId {
       return resolvedNames
     }
 
-    const { errors } = await PromisePool.withConcurrency(3)
-      .for(names)
-      .process(async (name) => {
+    const results = await Promise.allSettled(
+      names.map(async (name) => {
         try {
           const address = await provider.resolveName(name)
           name !== null && resolvedNames.set(name, address)
@@ -49,8 +47,8 @@ export class OnChainId {
           throw new Error(`Failed to resolve address for ENS domain '${name}'`, { cause })
         }
       })
-
-    errors.forEach((error) => log.warn(error))
+    )
+    results.forEach((result) => result.status === "rejected" && log.warn(result.reason))
 
     return resolvedNames
   }
@@ -169,9 +167,8 @@ export class OnChainId {
       return onChainIds
     }
 
-    const { errors } = await PromisePool.withConcurrency(3)
-      .for(addresses)
-      .process(async (address) => {
+    const results = await Promise.allSettled(
+      addresses.map(async (address) => {
         // no need to do ENS lookup for polkadot addresses
         if (!isEthereumAddress(address)) return
 
@@ -185,8 +182,8 @@ export class OnChainId {
           )
         }
       })
-
-    errors.forEach((error) => log.warn(error))
+    )
+    results.forEach((result) => result.status === "rejected" && log.warn(result.reason))
 
     return onChainIds
   }

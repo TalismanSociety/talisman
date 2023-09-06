@@ -26,7 +26,6 @@
     "clean": "rm -rf dist && rm -rf .turbo rm -rf node_modules"
   },
   "dependencies": {
-    "@supercharge/promise-pool": "^3.0.0",
     "@talismn/balances": "workspace:*",
     "@talismn/util": "workspace:*",
     "anylogger": "^1.0.11"
