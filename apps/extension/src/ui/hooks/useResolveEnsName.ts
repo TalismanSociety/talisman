@@ -1,11 +1,7 @@
 import { isEthereumAddress } from "@polkadot/util-crypto"
 import { isPotentialEns } from "@talismn/on-chain-id"
-import {
-  ensNamesIsFetching,
-  readEnsNameLookups,
-  useResolveAddressesForEnsNames,
-} from "@ui/atoms/ensNames"
-import { useRecoilValue } from "recoil"
+import { useQuery } from "@tanstack/react-query"
+import { api } from "@ui/api"
 
 export const useResolveEnsName = (name?: string) => {
   // check if name is something we can look up
@@ -22,14 +18,34 @@ export const useResolveEnsName = (name?: string) => {
   // let caller detect if we're going to look name up or not
   const isLookup = lookupName !== undefined
 
-  // add address to global list of addresses we want to query
-  useResolveAddressesForEnsNames(lookupName)
+  const { data: address, ...rest } = useQuery({
+    queryKey: ["useResolveEnsName", name],
+    queryFn: async () => {
+      if (!name || !isLookup) return null
 
-  // retrieve result of global addresses query for this address
-  const address = useRecoilValue(readEnsNameLookups(lookupName)) as string | null | undefined
+      // resolve ens name
+      return (await api.accountsOnChainIdsResolveNames([name]))[0] ?? null
+    },
+    enabled: isLookup,
+    cacheTime: Infinity,
+    initialData: () => name && ensNamesCache.get(name),
+    onSuccess: (address) => {
+      if (!name) return
 
-  // let caller detect if we're still processing a lookup
-  const isFetching = useRecoilValue(ensNamesIsFetching(lookupName)) as boolean
+      // update cache
+      if (address === undefined) ensNamesCache.delete(name)
+      else ensNamesCache.set(name, address)
 
-  return [address, { isLookup, isFetching }] as const
+      // persist cache to local storage
+      persistEnsNamesCache()
+    },
+  })
+
+  return [address, { isLookup, ...rest }] as const
 }
+
+const ensNamesCache = new Map<string, string | null>(
+  JSON.parse(localStorage.getItem("TalismanEnsNamesCache") ?? "[]")
+)
+const persistEnsNamesCache = () =>
+  localStorage.setItem("TalismanEnsNamesCache", JSON.stringify(Array.from(ensNamesCache.entries())))
