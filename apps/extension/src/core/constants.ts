@@ -39,6 +39,7 @@ export const TALISMAN_WEB_APP_TX_HISTORY_URL = "https://app.talisman.xyz/history
 export const TALISMAN_WEB_APP_NFTS_URL = "https://app.talisman.xyz/nfts"
 export const TALISMAN_WEB_APP_STAKING_URL = "https://app.talisman.xyz/staking"
 export const TALISMAN_WEB_APP_CROWDLOANS_URL = "https://app.talisman.xyz/crowdloans"
+export const TALISMAN_WEB_APP_TRANSPORT_URL = "https://app.talisman.xyz/transfer/transport"
 
 // Used for testing the full buying flow
 // The tokens available at this endpoint are not in sync with the production endpoint

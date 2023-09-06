@@ -2,6 +2,7 @@ import {
   TALISMAN_WEB_APP_CROWDLOANS_URL,
   TALISMAN_WEB_APP_NFTS_URL,
   TALISMAN_WEB_APP_STAKING_URL,
+  TALISMAN_WEB_APP_TRANSPORT_URL,
 } from "@core/constants"
 import { Nav } from "@talisman/components/Nav"
 import {
@@ -11,6 +12,7 @@ import {
   ImageIcon,
   PieChartIcon,
   PlusIcon,
+  RefreshCwIcon,
   SettingsIcon,
   StarIcon,
   ZapIcon,
@@ -67,6 +69,12 @@ export const MainSidebar = () => {
     return false
   }, [account?.address, genericEvent])
 
+  const handleTransportClick = useCallback(() => {
+    genericEvent("open web app transport", { from: "sidebar" })
+    window.open(TALISMAN_WEB_APP_TRANSPORT_URL, "_blank")
+    return false
+  }, [genericEvent])
+
   const handleCrowdloansClick = useCallback(() => {
     genericEvent("open web app crowdloans", { from: "sidebar", target: "crowdloans" })
     window.open(TALISMAN_WEB_APP_CROWDLOANS_URL, "_blank")
@@ -117,6 +125,12 @@ export const MainSidebar = () => {
           icon={<ZapIcon />}
         />
       )}
+      <SidebarNavItem
+        title={t("Transport")}
+        onClick={handleTransportClick}
+        isExternalLink
+        icon={<RefreshCwIcon />}
+      />
       <SidebarNavItem
         title={t("NFTs")}
         onClick={handleNftsClick}
