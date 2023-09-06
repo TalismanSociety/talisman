@@ -46,8 +46,6 @@ const AddressTooltip: FC<{
 }> = ({ address, resolvedAddress, onChainId, chainName }) => {
   const { t } = useTranslation()
 
-  if (address === resolvedAddress) return <>{resolvedAddress}</>
-
   return (
     <div className="flex flex-col gap-2">
       {typeof onChainId === "string" && (
@@ -56,14 +54,21 @@ const AddressTooltip: FC<{
           <div>{onChainId}</div>
         </div>
       )}
-      <div className="flex flex-col gap-1">
-        <div>{t("Original address:")}</div>
-        <div>{address}</div>
-      </div>
-      <div className="flex flex-col gap-1">
-        <div>{t("{{chainName}} format:", { chainName: chainName || "Generic" })}</div>
-        <div>{resolvedAddress}</div>
-      </div>
+
+      {address === resolvedAddress && <>{resolvedAddress}</>}
+
+      {address !== resolvedAddress && (
+        <div className="flex flex-col gap-1">
+          <div>{t("Original address:")}</div>
+          <div>{address}</div>
+        </div>
+      )}
+      {address !== resolvedAddress && (
+        <div className="flex flex-col gap-1">
+          <div>{t("{{chainName}} format:", { chainName: chainName || "Generic" })}</div>
+          <div>{resolvedAddress}</div>
+        </div>
+      )}
     </div>
   )
 }
