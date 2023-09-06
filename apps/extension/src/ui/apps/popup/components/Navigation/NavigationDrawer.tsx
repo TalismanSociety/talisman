@@ -11,6 +11,7 @@ import {
   PlusIcon,
   SendIcon,
   SettingsIcon,
+  UsersIcon,
   XIcon,
 } from "@talismn/icons"
 import { api } from "@ui/api"
@@ -96,6 +97,16 @@ export const NavigationDrawer: FC = () => {
     window.close()
   }, [])
 
+  const handleAddressBookClick = useCallback(() => {
+    sendAnalyticsEvent({
+      ...ANALYTICS_PAGE,
+      name: "Goto",
+      action: "Address book button",
+    })
+    api.dashboardOpen("/settings/address-book")
+    window.close()
+  }, [])
+
   const [hideBalances, setHideBalances] = useSetting("hideBalances")
   const toggleHideBalance = useCallback(() => {
     sendAnalyticsEvent({
@@ -135,6 +146,9 @@ export const NavigationDrawer: FC = () => {
             </NavItem>
             <NavItem icon={<PlusIcon />} onClick={handleAddAccountClick}>
               {t("Add Account")}
+            </NavItem>
+            <NavItem icon={<UsersIcon />} onClick={handleAddressBookClick}>
+              {t("Address Book")}
             </NavItem>
             <NavItem icon={<SettingsIcon />} onClick={handleSettingsClick}>
               {t("Settings")}
