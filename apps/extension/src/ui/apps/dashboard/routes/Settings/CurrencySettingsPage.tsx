@@ -1,6 +1,6 @@
 import { HeaderBlock } from "@talisman/components/HeaderBlock"
 import { Spacer } from "@talisman/components/Spacer"
-import { StarIcon } from "@talisman/theme/icons"
+import { StarIcon } from "@talismn/icons"
 import { TokenRateCurrency } from "@talismn/token-rates"
 import { selectableCurrenciesState } from "@ui/atoms"
 import currencyConfig from "@ui/domains/Asset/currencyConfig"
