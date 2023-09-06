@@ -12,7 +12,7 @@ import {
   ImageIcon,
   PieChartIcon,
   PlusIcon,
-  RefreshCwIcon,
+  RepeatIcon,
   SettingsIcon,
   StarIcon,
   ZapIcon,
@@ -129,7 +129,7 @@ export const MainSidebar = () => {
         title={t("Transport")}
         onClick={handleTransportClick}
         isExternalLink
-        icon={<RefreshCwIcon />}
+        icon={<RepeatIcon />}
       />
       <SidebarNavItem
         title={t("NFTs")}

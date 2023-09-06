@@ -1,18 +1,19 @@
+import { TALISMAN_WEB_APP_STAKING_URL, TALISMAN_WEB_APP_TRANSPORT_URL } from "@core/constants"
 import { Nav, NavItem } from "@talisman/components/Nav"
 import { ScrollContainer } from "@talisman/components/ScrollContainer"
 import { FullColorSmallLogo } from "@talisman/theme/logos"
 import {
+  AlertCircleIcon,
   CreditCardIcon,
-  DownloadAlertIcon,
-  DownloadIcon,
   EyeIcon,
   EyeOffIcon,
   LockIcon,
   PlusIcon,
+  RepeatIcon,
   SendIcon,
   SettingsIcon,
-  UsersIcon,
   XIcon,
+  ZapIcon,
 } from "@talismn/icons"
 import { api } from "@ui/api"
 import { AnalyticsPage, sendAnalyticsEvent } from "@ui/api/analytics"
@@ -67,6 +68,26 @@ export const NavigationDrawer: FC = () => {
     window.close()
   }, [])
 
+  const handleTransportClick = useCallback(() => {
+    sendAnalyticsEvent({
+      ...ANALYTICS_PAGE,
+      name: "Goto",
+      action: "Transport button",
+    })
+    window.open(TALISMAN_WEB_APP_TRANSPORT_URL, "_blank")
+    window.close()
+  }, [])
+
+  const handleStakingClick = useCallback(() => {
+    sendAnalyticsEvent({
+      ...ANALYTICS_PAGE,
+      name: "Goto",
+      action: "Staking button",
+    })
+    window.open(TALISMAN_WEB_APP_STAKING_URL, "_blank")
+    window.close()
+  }, [])
+
   const handleBuyTokensClick = useCallback(async () => {
     sendAnalyticsEvent({
       ...ANALYTICS_PAGE,
@@ -84,26 +105,6 @@ export const NavigationDrawer: FC = () => {
       action: "Settings button",
     })
     api.dashboardOpen("/settings/general")
-    window.close()
-  }, [])
-
-  const handleBackupClick = useCallback(() => {
-    sendAnalyticsEvent({
-      ...ANALYTICS_PAGE,
-      name: "Goto",
-      action: "Backup wallet button",
-    })
-    api.dashboardOpen("/settings/security-privacy-settings?showBackupModal")
-    window.close()
-  }, [])
-
-  const handleAddressBookClick = useCallback(() => {
-    sendAnalyticsEvent({
-      ...ANALYTICS_PAGE,
-      name: "Goto",
-      action: "Address book button",
-    })
-    api.dashboardOpen("/settings/address-book")
     window.close()
   }, [])
 
@@ -133,8 +134,17 @@ export const NavigationDrawer: FC = () => {
         </header>
         <ScrollContainer className="flex-grow">
           <Nav className="p-4">
+            <NavItem icon={<PlusIcon />} onClick={handleAddAccountClick}>
+              {t("Add Account")}
+            </NavItem>
             <NavItem icon={<SendIcon />} onClick={handleSendFundsClick}>
               {t("Send Funds")}
+            </NavItem>
+            <NavItem icon={<RepeatIcon />} onClick={handleTransportClick}>
+              {t("Transport")}
+            </NavItem>
+            <NavItem icon={<ZapIcon />} onClick={handleStakingClick}>
+              {t("Staking")}
             </NavItem>
             {showBuyTokens && (
               <NavItem icon={<CreditCardIcon />} onClick={handleBuyTokensClick}>
@@ -144,27 +154,18 @@ export const NavigationDrawer: FC = () => {
             <NavItem icon={hideBalances ? <EyeIcon /> : <EyeOffIcon />} onClick={toggleHideBalance}>
               {hideBalances ? t("Show Balances") : t("Hide Balances")}
             </NavItem>
-            <NavItem icon={<PlusIcon />} onClick={handleAddAccountClick}>
-              {t("Add Account")}
-            </NavItem>
-            <NavItem icon={<UsersIcon />} onClick={handleAddressBookClick}>
-              {t("Address Book")}
-            </NavItem>
             <NavItem icon={<SettingsIcon />} onClick={handleSettingsClick}>
-              {t("Settings")}
-            </NavItem>
-            <NavItem
-              icon={isNotConfirmed ? <DownloadAlertIcon /> : <DownloadIcon />}
-              onClick={handleBackupClick}
-            >
-              {t("Backup Wallet")}
+              <span className="flex items-center">
+                {t("Settings")}
+                {isNotConfirmed && <AlertCircleIcon className="text-primary ml-2 inline text-sm" />}
+              </span>
             </NavItem>
             <NavItem icon={<LockIcon />} onClick={handleLock}>
               {t("Lock Wallet")}
             </NavItem>
           </Nav>
         </ScrollContainer>
-        <footer className="py-10 text-center">
+        <footer className="pb-10 text-center">
           <BuildVersionPill />
         </footer>
       </div>
