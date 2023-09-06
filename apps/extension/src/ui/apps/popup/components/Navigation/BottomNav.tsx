@@ -1,6 +1,6 @@
 import { TALISMAN_WEB_APP_NFTS_URL } from "@core/constants"
 import { db } from "@core/db"
-import { AlertCircleIcon } from "@talismn/icons"
+import { AlertCircleIcon, PieChartIcon } from "@talismn/icons"
 import { classNames } from "@talismn/util"
 import { api } from "@ui/api"
 import { AnalyticsPage, sendAnalyticsEvent } from "@ui/api/analytics"
@@ -19,7 +19,6 @@ import {
   NavIconActivity,
   NavIconActivityPending,
   NavIconExpand,
-  NavIconHome,
   NavIconMore,
   NavIconMoreAlert,
   NavIconNft,
@@ -166,7 +165,7 @@ export const BottomNav = () => {
               onClick={handleHomeClick}
               current={location.pathname === "/portfolio" && folder === undefined}
             >
-              <NavIconHome />
+              <PieChartIcon className="self-center text-lg" />
             </BottomNavButton>
           </TooltipTrigger>
           <TooltipContent>{t("Portfolio")}</TooltipContent>

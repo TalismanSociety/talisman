@@ -9,10 +9,10 @@ import {
   CreditCardIcon,
   DownloadAlertIcon,
   ImageIcon,
+  PieChartIcon,
   PlusIcon,
   SettingsIcon,
   StarIcon,
-  UserIcon,
   ZapIcon,
 } from "@talismn/icons"
 import { useBuyTokensModal } from "@ui/domains/Asset/Buy/BuyTokensModalContext"
@@ -91,10 +91,16 @@ export const MainSidebar = () => {
   return (
     <Nav className="gap-2 p-4 text-sm lg:p-12 lg:text-base">
       <SidebarNavItem
+        title={t("Add Account")}
+        to="/accounts/add"
+        onClick={handleAddAccountClick}
+        icon={<PlusIcon />}
+      />
+      <SidebarNavItem
         title={t("Portfolio")}
         to="/portfolio"
         onClick={handlePortfolioClick}
-        icon={<UserIcon />}
+        icon={<PieChartIcon />}
       />
       {showBuyCryptoButton && (
         <SidebarNavItem
@@ -103,13 +109,6 @@ export const MainSidebar = () => {
           icon={<CreditCardIcon />}
         />
       )}
-      <SidebarNavItem
-        title={t("Add Account")}
-        to="/accounts/add"
-        onClick={handleAddAccountClick}
-        icon={<PlusIcon />}
-      />
-
       {showStaking && (
         <SidebarNavItem
           title={t("Staking")}
