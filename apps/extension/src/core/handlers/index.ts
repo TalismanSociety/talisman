@@ -22,6 +22,7 @@ const OBFUSCATE_LOG_MESSAGES: MessageTypes[] = [
   "pri(accounts.create)",
   "pri(accounts.create.seed)",
   "pri(accounts.create.json)",
+  "pri(accounts.address.lookup)",
   "pri(app.onboardCreatePassword)",
   "pri(mnemonic.setVerifierCertMnemonic)",
   "pri(mnemonic.unlock)",

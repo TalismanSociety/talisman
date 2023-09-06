@@ -1,12 +1,5 @@
-import { AccountAddressType } from "../accounts/types"
-
 export declare type MnemonicSubscriptionResult = {
   confirmed?: boolean
-}
-
-export declare type RequestAddressFromMnemonic = {
-  mnemonic: string
-  type?: AccountAddressType
 }
 
 type MnemonicId = string
@@ -42,7 +35,6 @@ export interface MnemonicMessages {
   // mnemonic message signatures
   "pri(mnemonic.unlock)": [MnemonicUnlockRequest, string]
   "pri(mnemonic.confirm)": [MnemonicConfirmRequest, boolean]
-  "pri(mnemonic.address)": [RequestAddressFromMnemonic, string]
   "pri(mnemonic.rename)": [MnemonicRenameRequest, boolean]
   "pri(mnemonic.delete)": [MnemonicDeleteRequest, boolean]
   "pri(mnemonic.validateMnemonic)": [string, boolean]

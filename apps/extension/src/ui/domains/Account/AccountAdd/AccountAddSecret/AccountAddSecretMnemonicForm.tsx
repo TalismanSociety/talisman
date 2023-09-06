@@ -1,10 +1,11 @@
 import { AccountAddressType } from "@core/domains/accounts/types"
 import { getEthDerivationPath } from "@core/domains/ethereum/helpers"
 import { yupResolver } from "@hookform/resolvers/yup"
+import { mnemonicValidate } from "@polkadot/util-crypto"
 import { HeaderBlock } from "@talisman/components/HeaderBlock"
 import { notify, notifyUpdate } from "@talisman/components/Notifications"
 import { Spacer } from "@talisman/components/Spacer"
-import { classNames } from "@talismn/util"
+import { classNames, encodeAnyAddress } from "@talismn/util"
 import { api } from "@ui/api"
 import { AccountIcon } from "@ui/domains/Account/AccountIcon"
 import { AccountTypeSelector } from "@ui/domains/Account/AccountTypeSelector"
@@ -16,21 +17,17 @@ import { useTranslation } from "react-i18next"
 import { useNavigate } from "react-router-dom"
 import {
   Button,
-  Checkbox,
   FormFieldContainer,
   FormFieldInputText,
   FormFieldTextarea,
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
 } from "talisman-ui"
 import * as yup from "yup"
 
-import { useAccountAddSecret } from "./context"
-
-type FormData = {
-  name: string
-  type: AccountAddressType
-  mnemonic: string
-  multi: boolean
-}
+import { AccountAddDerivationMode, useAccountAddSecret } from "./context"
+import { DerivationModeDropdown } from "./DerivationModeDropdown"
 
 const cleanupMnemonic = (input = "") =>
   input
@@ -51,42 +48,27 @@ const isValidEthPrivateKey = (privateKey?: string) => {
   }
 }
 
-// for polkadot, do not force //0 derivation path to preserve backwards compatibility (since beta we import mnemonics as-is)
-// but for ethereum, use metamask's derivation path
-const ETHEREUM_DERIVATION_PATH = getEthDerivationPath()
-
-const getAccountUri = async (secret: string, type: AccountAddressType) => {
-  if (!secret || !type) throw new Error("Missing arguments")
+const getSuri = (secret: string, type: AccountAddressType, derivationPath?: string) => {
+  if (!secret || !type) return null
 
   // metamask exports private key without the 0x in front of it
   // pjs keyring & crypto api will throw if it's missing
   if (type === "ethereum" && isValidEthPrivateKey(secret))
     return secret.startsWith("0x") ? secret : `0x${secret}`
 
-  if (await testValidMnemonic(secret))
-    return type === "ethereum" ? `${secret}${ETHEREUM_DERIVATION_PATH}` : secret
-  throw new Error("Invalid recovery phrase")
+  if (!mnemonicValidate(secret)) return null
+
+  return derivationPath && !derivationPath.startsWith("/")
+    ? `${secret}/${derivationPath}`
+    : `${secret}${derivationPath}`
 }
 
-const testNoDuplicate = async (
-  allAccountsAddresses: string[],
-  type: AccountAddressType,
-  mnemonic?: string
-) => {
-  if (!mnemonic) return false
-  try {
-    const uri = await getAccountUri(mnemonic, type)
-    const address = await api.addressFromMnemonic(uri, type)
-    return !allAccountsAddresses.includes(address)
-  } catch (err) {
-    return false
-  }
-}
-
-const testValidMnemonic = async (val?: string) => {
-  // Don't bother calling the api if the mnemonic isn't the right length to reduce Sentry noise
-  if (!val || ![12, 24].includes(val.split(" ").length)) return false
-  return await api.validateMnemonic(val)
+type FormData = {
+  name: string
+  type: AccountAddressType
+  mnemonic: string
+  mode: AccountAddDerivationMode
+  derivationPath: string
 }
 
 export const AccountAddSecretMnemonicForm = () => {
@@ -104,7 +86,8 @@ export const AccountAddSecretMnemonicForm = () => {
         .object({
           name: yup.string().trim().required(""),
           type: yup.string().required("").oneOf(["ethereum", "sr25519"]),
-          multi: yup.boolean(),
+          mode: yup.string().required("").oneOf(["first", "custom", "multi"]),
+          derivationPath: yup.string().trim(),
           mnemonic: yup
             .string()
             .trim()
@@ -117,33 +100,42 @@ export const AccountAddSecretMnemonicForm = () => {
                 .test(
                   "is-valid-mnemonic-ethereum",
                   t("Invalid secret"),
-                  (val) => isValidEthPrivateKey(val) || testValidMnemonic(val)
-                )
-                .when("multi", {
-                  is: false,
-                  then: yup
-                    .string()
-                    .test("not-duplicate-ethereum", t("Account already exists"), async (val) =>
-                      testNoDuplicate(accountAddresses, "ethereum", val)
-                    ),
-                }),
+                  async (val) => isValidEthPrivateKey(val) || api.validateMnemonic(val ?? "")
+                ),
               otherwise: yup
                 .string()
                 .test("is-valid-mnemonic-sr25519", t("Invalid secret"), (val) =>
-                  testValidMnemonic(val)
-                )
-                .when("multi", {
-                  is: false,
-                  then: yup
-                    .string()
-                    .test("not-duplicate-sr25519", t("Account already exists"), async (val) =>
-                      testNoDuplicate(accountAddresses, "sr25519", val)
-                    ),
-                }),
+                  api.validateMnemonic(val ?? "")
+                ),
             }),
         })
-        .required(),
-    [t, accountAddresses]
+        .required()
+        .test("account-exists", t("Account exists"), async (val, ctx) => {
+          const { mnemonic, type, derivationPath, mode } = val as FormData
+          if (!val || mode === "multi") return true
+
+          const suri = getSuri(mnemonic, type, derivationPath)
+          if (!suri) return true
+
+          let address: string
+          try {
+            address = await api.addressLookup({ suri, type })
+          } catch (err) {
+            return ctx.createError({
+              path: "derivationPath",
+              message: t("Invalid derivation path"),
+            })
+          }
+
+          if (accountAddresses.some((a) => encodeAnyAddress(a) === address))
+            return ctx.createError({
+              path: mode === "custom" ? "derivationPath" : "mnemonic",
+              message: t("Account already exists"),
+            })
+
+          return true
+        }),
+    [accountAddresses, t]
   )
 
   const {
@@ -159,14 +151,14 @@ export const AccountAddSecretMnemonicForm = () => {
     resolver: yupResolver(schema),
   })
 
-  const { type, mnemonic } = watch()
+  const { type, mnemonic, mode, derivationPath } = watch()
 
   const isPrivateKey = useMemo(
     () => type === "ethereum" && isValidEthPrivateKey(mnemonic),
     [mnemonic, type]
   )
   useEffect(() => {
-    if (isPrivateKey) setValue("multi", false, { shouldValidate: true })
+    if (isPrivateKey) setValue("mode", "first", { shouldValidate: true })
   }, [isPrivateKey, setValue])
 
   const words = useMemo(
@@ -179,21 +171,25 @@ export const AccountAddSecretMnemonicForm = () => {
   useEffect(() => {
     const refreshTargetAddress = async () => {
       try {
-        const uri = await getAccountUri(cleanupMnemonic(mnemonic), type)
-        setTargetAddress(await api.addressFromMnemonic(uri, type))
+        const suri = getSuri(cleanupMnemonic(mnemonic), type, derivationPath)
+        if (!suri) return setTargetAddress(undefined)
+        setTargetAddress(await api.addressLookup({ suri, type }))
       } catch (err) {
         setTargetAddress(undefined)
       }
     }
 
     refreshTargetAddress()
-  }, [isValid, mnemonic, type])
+  }, [derivationPath, isValid, mnemonic, type])
 
   const submit = useCallback(
-    async ({ type, name, mnemonic, multi }: FormData) => {
-      updateData({ type, name, mnemonic, multi })
-      if (multi) navigate("multiple")
+    async ({ type, name, mnemonic, mode, derivationPath }: FormData) => {
+      updateData({ type, name, mnemonic, mode, derivationPath })
+      if (mode === "multi") navigate("multiple")
       else {
+        const suri = getSuri(mnemonic, type, derivationPath)
+        if (!suri) return
+
         const notificationId = notify(
           {
             type: "processing",
@@ -203,8 +199,7 @@ export const AccountAddSecretMnemonicForm = () => {
           { autoClose: false }
         )
         try {
-          const uri = await getAccountUri(mnemonic, type)
-          onSuccess(await api.accountCreateFromSeed(name, uri, type))
+          onSuccess(await api.accountCreateFromSeed(name, suri, type))
           notifyUpdate(notificationId, {
             type: "success",
             title: t("Account imported"),
@@ -225,11 +220,32 @@ export const AccountAddSecretMnemonicForm = () => {
   const handleTypeChange = useCallback(
     (type: AccountAddressType) => {
       setValue("type", type, { shouldValidate: true })
+      if (mode === "first")
+        setValue("derivationPath", type === "ethereum" ? getEthDerivationPath() : "", {
+          shouldValidate: true,
+        })
       // revalidate to get rid of "invalid mnemonic" with a private key, when switching to ethereum
       trigger()
     },
-    [setValue, trigger]
+    [mode, setValue, trigger]
   )
+
+  const handleModeChange = useCallback(
+    (mode: AccountAddDerivationMode) => {
+      setValue("mode", mode, { shouldValidate: true })
+      if (mode === "first")
+        setValue("derivationPath", type === "ethereum" ? getEthDerivationPath() : "", {
+          shouldValidate: true,
+        })
+    },
+    [setValue, type]
+  )
+
+  useEffect(() => {
+    setValue("derivationPath", type === "ethereum" ? getEthDerivationPath() : "", {
+      shouldValidate: true,
+    })
+  }, [setValue, type])
 
   return (
     <div className="flex w-full flex-col gap-8">
@@ -251,7 +267,14 @@ export const AccountAddSecretMnemonicForm = () => {
             autoFocus
             data-lpignore
             after={
-              targetAddress ? <AccountIcon address={targetAddress} className="text-xl" /> : null
+              targetAddress ? (
+                <Tooltip>
+                  <TooltipTrigger>
+                    <AccountIcon address={targetAddress} className="text-xl" />
+                  </TooltipTrigger>
+                  <TooltipContent>{targetAddress}</TooltipContent>
+                </Tooltip>
+              ) : null
             }
           />
         </FormFieldContainer>
@@ -266,17 +289,25 @@ export const AccountAddSecretMnemonicForm = () => {
           data-lpignore
           spellCheck={false}
         />
-        <div className="mt-8 flex justify-between text-xs">
-          <div className="text-body-secondary">{t("Word count: {{words}}", { words })}</div>
-          <div className="text-alert-warn text-right">{errors.mnemonic?.message}</div>
+        <div className="mt-2 flex w-full items-center justify-between gap-4 overflow-hidden text-xs">
+          <div className="text-grey-600 shrink-0">{t("Word count: {{words}}", { words })}</div>
+          <div className="text-alert-warn grow truncate text-right">{errors.mnemonic?.message}</div>
         </div>
         <Spacer small />
-        <Checkbox
-          {...register("multi")}
-          className={classNames("text-body-secondary", isPrivateKey && "invisible")}
+        <DerivationModeDropdown value={mode} onChange={handleModeChange} disabled={isPrivateKey} />
+        <FormFieldContainer
+          className={classNames("mt-2", mode !== "custom" && "invisible")}
+          error={errors.derivationPath?.message}
         >
-          {t("Import multiple accounts from this recovery phrase")}
-        </Checkbox>
+          <FormFieldInputText
+            {...register("derivationPath")}
+            placeholder={type === "ethereum" ? "m/44'/60'/0'/0/0" : "//0"}
+            spellCheck={false}
+            autoComplete="off"
+            className="font-mono"
+            data-lpignore
+          />
+        </FormFieldContainer>
         <Spacer small />
         <div className="mt-1 flex w-full justify-end">
           <Button

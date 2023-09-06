@@ -181,16 +181,40 @@ export interface RequestAccountRename {
 export type RequestAccountCreateOptions =
   | {
       mnemonicId: string
+      derivationPath?: string
     }
   | {
       mnemonic: string
       confirmed: boolean
+      derivationPath?: string
     }
 
 export type RequestAccountCreate = {
   name: string
   type: AccountAddressType
 } & RequestAccountCreateOptions
+
+// wrap in a dedicated type because empty strings are changed to null by the message service
+export type RequestValidateDerivationPath = {
+  derivationPath: string
+  type: AccountAddressType
+}
+
+export type RequestAddressLookupBySuri = {
+  suri: string
+  type: AccountAddressType
+}
+export type RequestAddressLookupByMnemonic = {
+  mnemonicId: string
+  derivationPath: string
+  type: AccountAddressType
+}
+export type RequestAddressLookup = RequestAddressLookupBySuri | RequestAddressLookupByMnemonic
+
+export type RequestNextDerivationPath = {
+  mnemonicId: string
+  type: AccountAddressType
+}
 
 export interface AccountsMessages {
   // account message signatures
@@ -213,4 +237,7 @@ export interface AccountsMessages {
   "pri(accounts.subscribe)": [RequestAccountSubscribe, boolean, AccountJson[]]
   "pri(accounts.catalog.subscribe)": [null, boolean, Trees]
   "pri(accounts.catalog.runActions)": [RequestAccountsCatalogAction[], boolean]
+  "pri(accounts.validateDerivationPath)": [RequestValidateDerivationPath, boolean]
+  "pri(accounts.address.lookup)": [RequestAddressLookup, string]
+  "pri(accounts.derivationPath.next)": [RequestNextDerivationPath, string]
 }

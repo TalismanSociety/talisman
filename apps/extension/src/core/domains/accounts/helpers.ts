@@ -17,7 +17,7 @@ import type { SingleAddress, SubjectInfo } from "@polkadot/ui-keyring/observable
 import { hexToU8a, isHex } from "@polkadot/util"
 import { KeypairType } from "@polkadot/util-crypto/types"
 import { captureException } from "@sentry/browser"
-import { addressFromMnemonic } from "@talisman/util/addressFromMnemonic"
+import { addressFromSuri } from "@talisman/util/addressFromSuri"
 import { decodeAnyAddress, encodeAnyAddress } from "@talismn/util"
 import { Err, Ok, Result } from "ts-results"
 import Browser from "webextension-polyfill"
@@ -166,7 +166,7 @@ export const getNextDerivationPathForMnemonic = (
   try {
     // for substrate check empty derivation path first
     if (type !== "ethereum") {
-      const derivedAddress = encodeAnyAddress(addressFromMnemonic(mnemonic, type))
+      const derivedAddress = encodeAnyAddress(addressFromSuri(mnemonic, type))
       if (!allAccounts.some(({ address }) => encodeAnyAddress(address) === derivedAddress))
         return Ok("")
     }
@@ -176,9 +176,7 @@ export const getNextDerivationPathForMnemonic = (
 
     for (let accountIndex = 0; accountIndex <= 1000; accountIndex += 1) {
       const derivationPath = getDerivationPath(accountIndex)
-      const derivedAddress = encodeAnyAddress(
-        addressFromMnemonic(`${mnemonic}${derivationPath}`, type)
-      )
+      const derivedAddress = encodeAnyAddress(addressFromSuri(`${mnemonic}${derivationPath}`, type))
 
       if (!allAccounts.some(({ address }) => encodeAnyAddress(address) === derivedAddress))
         return Ok(derivationPath)
@@ -220,3 +218,8 @@ export const isValidAnyAddress = (address: string) => {
     return false
   }
 }
+
+export const formatSuri = (mnemonic: string, derivationPath: string) =>
+  derivationPath && !derivationPath.startsWith("/")
+    ? `${mnemonic}/${derivationPath}`
+    : `${mnemonic}${derivationPath}`
