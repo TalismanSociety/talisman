@@ -96,7 +96,11 @@ const AddressPillButton: FC<AddressPillButtonProps> = ({ address, className, onC
       <div className="text-body flex h-16 max-w-full flex-nowrap items-center gap-4 overflow-x-hidden text-base">
         <AccountIcon className="!text-lg" address={address} genesisHash={genesisHash} />
         <div className="leading-base grow overflow-hidden text-ellipsis whitespace-nowrap">
-          {name ?? <Address address={formattedAddress} startCharCount={6} endCharCount={6} />}
+          {name ? (
+            <WithTooltip tooltip={address}>{name}</WithTooltip>
+          ) : (
+            <Address address={formattedAddress} startCharCount={6} endCharCount={6} />
+          )}
         </div>
         <AccountTypeIcon origin={account?.origin} className="text-primary-500" />
       </div>
