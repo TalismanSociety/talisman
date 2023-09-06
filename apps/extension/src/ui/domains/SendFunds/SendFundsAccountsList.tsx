@@ -1,7 +1,7 @@
 import { AccountType } from "@core/domains/accounts/types"
-import { CheckCircleIcon } from "@talisman/theme/icons"
 import { Balance } from "@talismn/balances"
 import { Token } from "@talismn/chaindata-provider"
+import { CheckCircleIcon } from "@talismn/icons"
 import { classNames } from "@talismn/util"
 import useBalances from "@ui/hooks/useBalances"
 import { useFormattedAddress } from "@ui/hooks/useFormattedAddress"

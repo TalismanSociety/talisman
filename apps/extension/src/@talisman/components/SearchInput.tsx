@@ -1,4 +1,4 @@
-import { SearchIcon } from "@talisman/theme/icons"
+import { SearchIcon } from "@talismn/icons"
 import { classNames } from "@talismn/util"
 import { useDebouncedState } from "@ui/hooks/useDebouncedState"
 import {

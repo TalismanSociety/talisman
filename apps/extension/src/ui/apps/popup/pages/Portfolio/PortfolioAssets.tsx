@@ -1,10 +1,5 @@
 import { Balance, Balances } from "@core/domains/balances/types"
-import {
-  ChevronLeftIcon,
-  CopyIcon,
-  MoreHorizontalIcon,
-  PaperPlaneIcon,
-} from "@talisman/theme/icons"
+import { ChevronLeftIcon, CopyIcon, MoreHorizontalIcon, SendIcon } from "@talismn/icons"
 import { classNames } from "@talismn/util"
 import { AccountContextMenu } from "@ui/apps/dashboard/routes/Portfolio/AccountContextMenu"
 import { AccountTypeIcon } from "@ui/domains/Account/AccountTypeIcon"
@@ -155,7 +150,7 @@ const PageContent = ({
                 canSendFunds ? "hover:bg-grey-800 hover:text-body" : "cursor-default opacity-50"
               )}
             >
-              <PaperPlaneIcon />
+              <SendIcon />
             </TooltipTrigger>
             <TooltipContent>{canSendFunds ? t("Send") : cannotSendFundsReason}</TooltipContent>
           </Tooltip>

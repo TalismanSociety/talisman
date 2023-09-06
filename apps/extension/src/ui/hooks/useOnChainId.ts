@@ -7,5 +7,5 @@ export const useOnChainId = (address?: string) => {
 
   // retrieve result of global addresses query for this address
   const onChainId = useRecoilValue(readOnChainIds(address))
-  return onChainId
+  return onChainId as string | null | undefined
 }

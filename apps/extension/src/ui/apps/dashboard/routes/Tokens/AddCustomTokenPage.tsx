@@ -2,8 +2,8 @@ import { CustomErc20TokenCreate } from "@core/domains/tokens/types"
 import { yupResolver } from "@hookform/resolvers/yup"
 import { assert } from "@polkadot/util"
 import { HeaderBlock } from "@talisman/components/HeaderBlock"
-import { LoaderIcon, PlusIcon } from "@talisman/theme/icons"
 import { EvmNetworkId } from "@talismn/chaindata-provider"
+import { LoaderIcon, PlusIcon } from "@talismn/icons"
 import { classNames } from "@talismn/util"
 import { api } from "@ui/api"
 import { AnalyticsPage } from "@ui/api/analytics"
@@ -115,6 +115,14 @@ export const AddCustomTokenPage = () => {
     [navigate, tokenInfo]
   )
 
+  const addressErrorMessage = useMemo(() => {
+    // error code may be filled by ethers provider
+    const error = tokenInfoError as Error & { code?: string }
+    if (error?.code === "NETWORK_ERROR") return t("Failed to connect")
+    else if (error) return t("Invalid address")
+    else return undefined
+  }, [t, tokenInfoError])
+
   return (
     <DashboardLayout analytics={ANALYTICS_PAGE} withBack centered>
       <HeaderBlock
@@ -134,7 +142,7 @@ export const AddCustomTokenPage = () => {
         </FormFieldContainer>
         <FormFieldContainer
           label={t("Contract Address")}
-          error={errors.contractAddress?.message ?? (tokenInfoError && t("Invalid address"))}
+          error={errors.contractAddress?.message ?? addressErrorMessage}
         >
           <FormFieldInputText
             {...register("contractAddress")}
@@ -190,7 +198,7 @@ export const AddCustomTokenPage = () => {
             icon={PlusIcon}
             type="submit"
             primary
-            disabled={!isValid || isLoading}
+            disabled={!isValid || isLoading || !!tokenInfoError}
             processing={isSubmitting}
           >
             {t("Add Token")}

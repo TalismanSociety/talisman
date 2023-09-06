@@ -1,5 +1,5 @@
 import { AccountType } from "@core/domains/accounts/types"
-import { EyeIcon, LinkIcon, PolkadotVaultIcon, UsbIcon } from "@talisman/theme/icons"
+import { DcentIcon, EyeIcon, LinkIcon, PolkadotVaultIcon, UsbIcon } from "@talismn/icons"
 import { classNames } from "@talismn/util"
 import { FC, useMemo } from "react"
 import { useTranslation } from "react-i18next"
@@ -20,6 +20,8 @@ export const AccountTypeIcon: FC<AccountTypeIconProps> = ({ origin, showLinked, 
     if (origin === "HARDWARE") return { Icon: UsbIcon, tooltip: t("Hardware wallet account") }
     if (origin === "QR") return { Icon: PolkadotVaultIcon, tooltip: t("Polkadot Vault account") }
     if (origin === "WATCHED") return { Icon: EyeIcon, tooltip: t("Watched account") }
+    if (origin === "DCENT")
+      return { Icon: DcentIcon, tooltip: t("D'CENT Biometric Wallet account") }
 
     return {}
   }, [origin, showLinked, t])

@@ -9,7 +9,7 @@ import {
 } from "@talismn/balances"
 import { ChaindataProvider, TokenList } from "@talismn/chaindata-provider"
 import { ChaindataProviderExtension } from "@talismn/chaindata-provider-extension"
-import { DbTokenRates, fetchTokenRates, db as tokenRatesDb } from "@talismn/token-rates"
+import { fetchTokenRates, db as tokenRatesDb } from "@talismn/token-rates"
 import md5 from "blueimp-md5"
 import { useCallback, useMemo } from "react"
 
@@ -20,6 +20,7 @@ import { useBalanceModules } from "./useBalanceModules"
 import { useChainConnectors } from "./useChainConnectors"
 import { useChaindata } from "./useChaindata"
 import { useDbCache } from "./useDbCache"
+import { useEnabledChains } from "./useEnabledChains"
 import { useWithTestnets } from "./useWithTestnets"
 
 export type DbEntityType = "chains" | "evmNetworks" | "tokens"
@@ -77,11 +78,31 @@ export function useDbCacheTokenRatesSubscription() {
  */
 export function useDbCacheBalancesSubscription() {
   const { withTestnets } = useWithTestnets()
+  const { enabledChains } = useEnabledChains()
   const balanceModules = useBalanceModules()
   const chaindataProvider = useChaindata()
   const chainConnectors = useChainConnectors()
   const [allAddresses] = useAllAddresses()
-  const tokens = useTokens(withTestnets)
+  const chains = useChains(withTestnets)
+  const allTokens = useTokens(withTestnets)
+
+  const tokens = useMemo(() => {
+    if (!enabledChains) return allTokens
+
+    const chainsByGenesisHash = new Map(
+      Object.values(chains).flatMap((chain) =>
+        chain.genesisHash ? [[chain.genesisHash, chain.id]] : []
+      )
+    )
+    const enabledChainIds = enabledChains.flatMap(
+      (genesisHash) => chainsByGenesisHash.get(genesisHash as `0x${string}`) ?? []
+    )
+    return Object.fromEntries(
+      Object.entries(allTokens).flatMap(([id, token]) =>
+        token.chain && enabledChainIds.includes(token.chain.id) ? [[id, token]] : []
+      )
+    )
+  }, [allTokens, chains, enabledChains])
 
   const subscriptionKey = useMemo(
     // not super sexy but we need key to change based on this stuff
@@ -113,7 +134,11 @@ export function useDbCacheBalancesSubscription() {
   useSharedSubscription(subscriptionKey, subscription)
 }
 
-// subscriptionless version of useTokens, prevents circular dependency
+// subscriptionless version of useChains and useTokens, prevents circular dependency
+const useChains = (withTestnets?: boolean) => {
+  const { chainsWithTestnetsMap, chainsWithoutTestnetsMap } = useDbCache()
+  return withTestnets ? chainsWithTestnetsMap : chainsWithoutTestnetsMap
+}
 const useTokens = (withTestnets?: boolean) => {
   const { tokensWithTestnetsMap, tokensWithoutTestnetsMap } = useDbCache()
   return withTestnets ? tokensWithTestnetsMap : tokensWithoutTestnetsMap
@@ -162,19 +187,23 @@ const subscribeTokenRates = (tokens: TokenList) => {
   const refreshTokenRates = async () => {
     try {
       if (timeout) clearTimeout(timeout)
-      const tokenRates = await fetchTokenRates(tokens)
 
-      const putTokenRates = Object.entries(tokenRates).map(
-        ([tokenId, rates]): DbTokenRates => ({
-          tokenId,
-          rates,
-        })
-      )
-      tokenRatesDb.transaction(
-        "rw",
-        tokenRatesDb.tokenRates,
-        async () => await tokenRatesDb.tokenRates.bulkPut(putTokenRates)
-      )
+      const tokenRates = await fetchTokenRates(tokens)
+      const putTokenRates = Object.entries(tokenRates).map(([tokenId, rates]) => ({
+        tokenId,
+        rates,
+      }))
+
+      await tokenRatesDb.transaction("rw", tokenRatesDb.tokenRates, async () => {
+        // override all tokenRates
+        await tokenRatesDb.tokenRates.bulkPut(putTokenRates)
+
+        // delete tokenRates for tokens which no longer exist
+        const tokenIds = await tokenRatesDb.tokenRates.toCollection().primaryKeys()
+        const validTokenIds = new Set(Object.keys(tokenRates))
+        const deleteTokenIds = tokenIds.filter((tokenId) => !validTokenIds.has(tokenId))
+        if (deleteTokenIds.length > 0) await tokenRatesDb.tokenRates.bulkDelete(deleteTokenIds)
+      })
 
       timeout = setTimeout(() => {
         refreshTokenRates()

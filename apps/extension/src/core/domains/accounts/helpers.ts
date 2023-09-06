@@ -1,9 +1,8 @@
 import { AccountsCatalogStore } from "@core/domains/accounts/store.catalog"
-import { Account } from "@core/domains/accounts/types"
 import {
+  Account,
   AccountJsonAny,
   AccountType,
-  AccountTypes,
   IdenticonType,
   storedSeedAccountTypes,
 } from "@core/domains/accounts/types"
@@ -13,6 +12,8 @@ import { canDerive } from "@polkadot/extension-base/utils"
 import type { InjectedAccount } from "@polkadot/extension-inject/types"
 import keyring from "@polkadot/ui-keyring"
 import type { SingleAddress, SubjectInfo } from "@polkadot/ui-keyring/observable/types"
+import { hexToU8a, isHex } from "@polkadot/util"
+import { decodeAnyAddress, encodeAnyAddress } from "@talismn/util"
 import Browser from "webextension-polyfill"
 
 import seedPhraseStore from "./store"
@@ -45,24 +46,24 @@ const legacySortAccounts = (accounts: AccountJsonAny[]) => {
 
   // can be multiple derived accounts
   // should order these by created date? probably
-  const derived = accounts.filter(({ origin }) => origin === AccountTypes.DERIVED)
+  const derived = accounts.filter(({ origin }) => origin === AccountType.Derived)
   const derivedSorted = sortAccountsByWhenCreated(derived)
 
   // can be multiple imported accounts - both JSON or SEED imports
   // as well as QR (parity signer) and HARDWARE (ledger) accounts
   // should order these by created date? probably
   const imported = accounts.filter(({ origin }) =>
-    ["SEED", "JSON", "QR", "HARDWARE"].includes(origin as string)
+    ["SEED", "JSON", "QR", "HARDWARE", "DCENT"].includes(origin as string)
   )
   const importedSorted = sortAccountsByWhenCreated(imported)
 
   const watchedPortfolio = accounts.filter(
-    ({ origin, isPortfolio }) => origin === AccountTypes.WATCHED && isPortfolio
+    ({ origin, isPortfolio }) => origin === AccountType.Watched && isPortfolio
   )
   const watchedPortfolioSorted = sortAccountsByWhenCreated(watchedPortfolio)
 
   const watchedFollowed = accounts.filter(
-    ({ origin, isPortfolio }) => origin === AccountTypes.WATCHED && !isPortfolio
+    ({ origin, isPortfolio }) => origin === AccountType.Watched && !isPortfolio
   )
   const watchedFollowedSorted = sortAccountsByWhenCreated(watchedFollowed)
 
@@ -102,17 +103,26 @@ export const sortAccounts =
     return accounts
   }
 
-export const getInjectedAccount = ({
-  json: {
-    address,
-    meta: { genesisHash, name },
-  },
-  type,
-}: SingleAddress): InjectedAccount => ({
+export const getInjectedAccount = (
+  {
+    json: {
+      address,
+      meta: { genesisHash, name, origin, isPortfolio },
+    },
+    type,
+  }: SingleAddress,
+  options = { includePortalOnlyInfo: false }
+): InjectedAccount | (InjectedAccount & { readonly: boolean; partOfPortfolio: boolean }) => ({
   address,
   genesisHash,
   name,
   type,
+  ...(options.includePortalOnlyInfo
+    ? {
+        readonly: origin === AccountType.Watched,
+        partOfPortfolio: isPortfolio,
+      }
+    : {}),
 })
 
 export const filterAccountsByAddresses =
@@ -124,12 +134,13 @@ export const filterAccountsByAddresses =
 
 export const getPublicAccounts = (
   accounts: SingleAddress[],
-  filterFn: (accounts: SingleAddress[]) => SingleAddress[] = (accounts) => accounts
+  filterFn: (accounts: SingleAddress[]) => SingleAddress[] = (accounts) => accounts,
+  options = { includeWatchedAccounts: false }
 ) =>
   filterFn(accounts)
-    .filter((a) => a.json.meta.origin !== "WATCHED")
+    .filter((a) => options.includeWatchedAccounts || a.json.meta.origin !== AccountType.Watched)
     .sort((a, b) => (a.json.meta.whenCreated || 0) - (b.json.meta.whenCreated || 0))
-    .map(getInjectedAccount)
+    .map((x) => getInjectedAccount(x, { includePortalOnlyInfo: options.includeWatchedAccounts }))
 
 export const includeAvatar = (iconType: IdenticonType) => (account: InjectedAccount) => ({
   ...account,
@@ -153,7 +164,7 @@ export const hasQrCodeAccounts = async () => {
   const localData = await Browser.storage.local.get(null)
   return Object.entries(localData).some(
     ([key, account]: [string, Account]) =>
-      key.startsWith("account:0x") && account.meta?.origin === AccountTypes.QR
+      key.startsWith("account:0x") && account.meta?.origin === AccountType.Qr
   )
 }
 
@@ -173,4 +184,15 @@ export const hasPrivateKey = (address: Address) => {
   if (acc.meta?.isHardware) return false
   if (["QR", "WATCHED"].includes(acc.meta?.origin as string)) return false
   return true
+}
+
+export const isValidAnyAddress = (address: string) => {
+  try {
+    // validates both SS58 and ethereum addresses
+    encodeAnyAddress(isHex(address) ? hexToU8a(address) : decodeAnyAddress(address))
+
+    return true
+  } catch (error) {
+    return false
+  }
 }

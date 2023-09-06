@@ -1,6 +1,6 @@
 {
   "name": "extension",
-  "version": "1.18.1",
+  "version": "1.18.2",
   "private": true,
   "license": "GPL-3.0-or-later",
   "dependencies": {
@@ -44,9 +44,9 @@
     "@svgr/webpack": "^6.5.1",
     "@talismn/balances": "workspace:*",
     "@talismn/balances-default-modules": "workspace:*",
-    "@talismn/balances-react": "workspace:*",
     "@talismn/chaindata-js": "^0.0.7",
     "@talismn/chaindata-provider": "workspace:*",
+    "@talismn/icons": "workspace:*",
     "@talismn/on-chain-id": "workspace:*",
     "@talismn/orb": "workspace:*",
     "@talismn/token-rates": "workspace:*",
@@ -86,6 +86,7 @@
     "copy-webpack-plugin": "^10.2.4",
     "css-loader": "^6.7.3",
     "date-fns": "^2.30.0",
+    "dcent-web-connector": "^0.14.1",
     "dexie": "^3.2.4",
     "dexie-react-hooks": "^1.1.6",
     "dotenv": "^16.0.3",

@@ -1,8 +1,19 @@
 {
+  "githubPullRequests.ignoredPullRequestBranches": ["dev"],
+
+  "search.exclude": {
+    ".yarn/**": true
+  },
+
+  // shows tailwind intellisense for attributes like `contentClassName`, `innerClassName`, `bodyClassName`, etc
+  "tailwindCSS.classAttributes": [
+    "class", // default value
+    "className", // default value
+    "ngClass", // default value
+    ".*ClassName" // NEW value (added by us)
+  ],
+
   // defaults to 1rem=16px, but we use 1rem=10px in the extension
   // this setting will provide accurate intellisense values
-  "tailwindCSS.rootFontSize": 10,
-  "githubPullRequests.ignoredPullRequestBranches": [
-    "dev"
-  ]
+  "tailwindCSS.rootFontSize": 10
 }

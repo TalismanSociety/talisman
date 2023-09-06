@@ -1,6 +1,6 @@
 import { ErrorBoundary } from "@talisman/components/ErrorBoundary"
 import { ScrollContainer } from "@talisman/components/ScrollContainer"
-import { ReactComponent as Logo } from "@talisman/theme/logos/logo-hand-mono.svg"
+import { HandMonoLogo } from "@talisman/theme/logos"
 import { classNames } from "@talismn/util"
 import { api } from "@ui/api"
 import {
@@ -38,7 +38,7 @@ export const PopupHeader: FC<ContainerProps & { right?: ReactNode }> = ({
       )}
     >
       <div className="w-16 shrink-0 text-xl">
-        <Logo onClick={handleLogoClick} />
+        <HandMonoLogo onClick={handleLogoClick} />
       </div>
       <div>{children}</div>
       <div className="w-16 shrink-0">{right}</div>

@@ -7,8 +7,10 @@ import { isEthereumAddress } from "@polkadot/util-crypto"
 import { convertAddress } from "@talisman/util/convertAddress"
 import { provideContext } from "@talisman/util/provideContext"
 import { Chain, ChainId, Token, TokenId } from "@talismn/chaindata-provider"
+import { useAccountByAddress } from "@ui/hooks/useAccountByAddress"
 import useAccounts from "@ui/hooks/useAccounts"
 import useChain from "@ui/hooks/useChain"
+import useChainByGenesisHash from "@ui/hooks/useChainByGenesisHash"
 import useChains from "@ui/hooks/useChains"
 import useToken from "@ui/hooks/useToken"
 import useTokens from "@ui/hooks/useTokens"
@@ -234,6 +236,13 @@ export const useCopyAddressWizardProvider = ({ inputs }: { inputs: CopyAddressWi
   const goToNetworkOrTokenPage = useCallback(() => {
     setState((prev) => ({ ...prev, route: state.mode === "receive" ? "token" : "chain" }))
   }, [state.mode])
+
+  // If chain restricted account, automatically select the chain
+  const account = useAccountByAddress(state.address)
+  const targetChain = useChainByGenesisHash(account?.genesisHash)
+  useEffect(() => {
+    if (targetChain) setChainId(targetChain.id)
+  }, [setChainId, targetChain])
 
   const copy = useCallback(async () => {
     if (!formattedAddress) return

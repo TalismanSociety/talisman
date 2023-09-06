@@ -31,9 +31,14 @@ export const API_KEY_ONFINALITY = process.env.API_KEY_ONFINALITY
 
 export const IPFS_GATEWAY = "https://talisman.mypinata.cloud/ipfs/"
 
-export const TALISMAN_WEB_APP_DOMAIN = "app.talisman.xyz"
-export const TALISMAN_WEB_APP_NFTS_URL = "https://app.talisman.xyz/nfts"
 export const TALISMAN_CONFIG_URL = "https://talismansociety.github.io/talisman-config/config.toml"
+
+export const TALISMAN_WEB_APP_DOMAIN = "app.talisman.xyz"
+export const TALISMAN_WEB_APP_URL = "https://app.talisman.xyz"
+export const TALISMAN_WEB_APP_TX_HISTORY_URL = "https://app.talisman.xyz/portfolio/history"
+export const TALISMAN_WEB_APP_NFTS_URL = "https://app.talisman.xyz/nfts"
+export const TALISMAN_WEB_APP_STAKING_URL = "https://app.talisman.xyz/staking"
+export const TALISMAN_WEB_APP_CROWDLOANS_URL = "https://app.talisman.xyz/crowdloans"
 
 // Used for testing the full buying flow
 // The tokens available at this endpoint are not in sync with the production endpoint

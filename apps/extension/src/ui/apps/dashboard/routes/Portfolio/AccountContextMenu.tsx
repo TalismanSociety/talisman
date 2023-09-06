@@ -1,4 +1,4 @@
-import { MoreHorizontalIcon } from "@talisman/theme/icons"
+import { MoreHorizontalIcon } from "@talismn/icons"
 import { useAccountExportModal } from "@ui/domains/Account/AccountExportModal"
 import { useAccountExportPrivateKeyModal } from "@ui/domains/Account/AccountExportPrivateKeyModal"
 import { useAccountRemoveModal } from "@ui/domains/Account/AccountRemoveModal"

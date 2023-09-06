@@ -5,8 +5,14 @@ import { classNames } from "@talismn/util"
 import { api } from "@ui/api"
 import { useAnalytics } from "@ui/hooks/useAnalytics"
 import { useFirstAccountColors } from "@ui/hooks/useFirstAccountColors"
-import { Suspense, useCallback, useEffect, useState } from "react"
-import { SubmitHandler, useForm } from "react-hook-form"
+import { Suspense, useCallback, useEffect, useLayoutEffect, useRef, useState } from "react"
+import {
+  SubmitHandler,
+  UseFormHandleSubmit,
+  UseFormSetValue,
+  UseFormWatch,
+  useForm,
+} from "react-hook-form"
 import { useTranslation } from "react-i18next"
 import { Button, FormFieldInputText } from "talisman-ui"
 import { LoginBackground } from "talisman-ui"
@@ -49,6 +55,7 @@ const Login = ({ setShowResetWallet }: { setShowResetWallet: () => void }) => {
   }, [popupOpenEvent])
 
   const {
+    watch,
     register,
     handleSubmit,
     setError,
@@ -80,19 +87,13 @@ const Login = ({ setShowResetWallet }: { setShowResetWallet: () => void }) => {
     setFocus("password")
   }, [setFocus])
 
-  // autologin, for developers only
-  useEffect(() => {
-    if (process.env.NODE_ENV !== "production" && process.env.PASSWORD) {
-      setValue("password", process.env.PASSWORD)
-      handleSubmit(submit)()
-    }
-  }, [handleSubmit, setValue, submit])
-
   useEffect(() => {
     return () => {
       setValue("password", "")
     }
   }, [setValue])
+
+  useDevModeAutologin({ watch, setValue, handleSubmit, submit })
 
   return (
     <PopupLayout>
@@ -150,4 +151,44 @@ export const LoginViewManager = () => {
 
   if (showResetWallet) return <ResetWallet closeResetWallet={() => setShowResetWallet(false)} />
   return <Login setShowResetWallet={() => setShowResetWallet(true)} />
+}
+
+/** autologin, for developers only */
+const useDevModeAutologin = ({
+  watch,
+  setValue,
+  handleSubmit,
+  submit,
+}: {
+  watch: UseFormWatch<FormData>
+  setValue: UseFormSetValue<FormData>
+  handleSubmit: UseFormHandleSubmit<FormData, undefined>
+  submit: SubmitHandler<FormData>
+}) => {
+  const [passwordField] = watch(["password"])
+
+  // set password field
+  useLayoutEffect(() => {
+    if (process.env.NODE_ENV === "production") return
+    if (!process.env.PASSWORD) return
+    setValue("password", process.env.PASSWORD)
+  }, [setValue])
+
+  // submit login form
+  //
+  // if we don't wait for the password to be set,
+  // then handleSubmit(submit)() won't show the loading state in the UI
+  //
+  // also, we want to make sure we only trigger the login once,
+  // otherwise, due to bcrypt hashing, the user will have to wait for longer than necessary
+  const autologinTriggered = useRef(false)
+  useLayoutEffect(() => {
+    if (process.env.NODE_ENV === "production") return
+    if (!process.env.PASSWORD) return
+    if (!passwordField) return
+    if (autologinTriggered.current) return
+
+    autologinTriggered.current = true
+    handleSubmit(submit)()
+  }, [handleSubmit, passwordField, submit])
 }

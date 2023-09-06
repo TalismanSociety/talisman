@@ -1,5 +1,6 @@
+import { encodeAnyAddress } from "@talismn/util"
 import { useSelectedAccount } from "@ui/domains/Portfolio/SelectedAccountContext"
-import { useEffect, useState } from "react"
+import { useEffect, useMemo, useState } from "react"
 import { useNavigate } from "react-router-dom"
 
 export const useSelectAccountAndNavigate = (url: string) => {
@@ -7,15 +8,19 @@ export const useSelectAccountAndNavigate = (url: string) => {
   const [address, setAddress] = useState<string>()
   const { account, accounts, select } = useSelectedAccount()
 
+  const encodedAddress = useMemo(() => address && encodeAnyAddress(address), [address])
+
   // wait for requested account to exist, then select it
   useEffect(() => {
-    if (address && accounts.find((a) => a.address === address)) select(address)
-  }, [accounts, address, select])
+    if (!encodedAddress) return
+    if (accounts.find((a) => encodeAnyAddress(a.address) === encodedAddress)) select(encodedAddress)
+  }, [accounts, address, encodedAddress, select])
 
   // wait for current account to be the requested one, then navigate
   useEffect(() => {
-    if (address && account?.address === address) navigate(url)
-  }, [account?.address, address, navigate, url])
+    if (!encodedAddress || !account) return
+    if (encodeAnyAddress(account.address) === encodedAddress) navigate(url)
+  }, [account, encodedAddress, navigate, url])
 
   return { setAddress }
 }

@@ -39,10 +39,10 @@ const enable = async (origin: string): Promise<Injected> => {
   return new TalismanInjected(messageService.sendMessage) as Injected
 }
 
-const isTalismanHostname = (hostname: string) =>
+export const isTalismanHostname = (hostname: string | undefined) =>
   hostname === TALISMAN_WEB_APP_DOMAIN ||
-  (DEBUG && hostname.endsWith(".talisman.pages.dev")) ||
-  (DEBUG && hostname === "localhost")
+  (DEBUG && hostname?.endsWith(".talisman.pages.dev")) ||
+  (DEBUG && ["localhost", "127.0.0.1"].includes(hostname ?? ""))
 
 function inject() {
   // inject substrate wallet provider

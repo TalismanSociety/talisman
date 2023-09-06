@@ -1,6 +1,6 @@
 import { log } from "@core/log"
 import { yupResolver } from "@hookform/resolvers/yup"
-import { KeyIcon } from "@talisman/theme/icons"
+import { KeyIcon } from "@talismn/icons"
 import { FC, useCallback, useEffect, useMemo } from "react"
 import { useForm } from "react-hook-form"
 import { Trans, useTranslation } from "react-i18next"

@@ -1,5 +1,5 @@
 import { DEBUG } from "@core/constants"
-import { AddressesByEvmNetwork } from "@core/domains/balances/types"
+import { AddressesAndEvmNetwork } from "@core/domains/balances/types"
 import { getEthLedgerDerivationPath } from "@core/domains/ethereum/helpers"
 import { LedgerEthDerivationPathType } from "@core/domains/ethereum/types"
 import { convertAddress } from "@talisman/util/convertAddress"
@@ -73,11 +73,11 @@ const useLedgerEthereumAccounts = (
   const { evmNetworks } = useEvmNetworks(false)
 
   // which balances to fetch
-  const addressesByEvmNetwork = useMemo(() => {
+  const addressesAndEvmNetworks = useMemo(() => {
     // start fetching balances only when all accounts are known to prevent recreating subscription 5 times
     if (derivedAccounts.filter(Boolean).length < derivedAccounts.length) return undefined
 
-    const result: AddressesByEvmNetwork = {
+    const result: AddressesAndEvmNetwork = {
       addresses: derivedAccounts
         .filter((acc) => !!acc)
         .map((acc) => acc?.address)
@@ -90,7 +90,7 @@ const useLedgerEthereumAccounts = (
     return result
   }, [derivedAccounts, evmNetworks])
 
-  const balances = useBalancesByParams({ addressesByEvmNetwork })
+  const balances = useBalancesByParams({ addressesAndEvmNetworks })
 
   const accounts = useMemo(
     () =>
@@ -112,12 +112,12 @@ const useLedgerEthereumAccounts = (
           selected: selectedAccounts.some((sa) => sa.path === acc.path),
           balances: accountBalances,
           isBalanceLoading:
-            !addressesByEvmNetwork ||
+            !addressesAndEvmNetworks ||
             accountBalances.length < BALANCE_CHECK_EVM_NETWORK_IDS.length ||
             accountBalances.some((b) => b.status === "cache"),
         }
       }),
-    [balances.sorted, derivedAccounts, selectedAccounts, addressesByEvmNetwork, walletAccounts]
+    [balances.sorted, derivedAccounts, selectedAccounts, addressesAndEvmNetworks, walletAccounts]
   )
 
   useEffect(() => {

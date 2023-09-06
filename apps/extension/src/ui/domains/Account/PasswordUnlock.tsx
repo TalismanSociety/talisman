@@ -1,6 +1,6 @@
 import { yupResolver } from "@hookform/resolvers/yup"
-import { KeyIcon } from "@talisman/theme/icons"
 import { provideContext } from "@talisman/util/provideContext"
+import { KeyIcon } from "@talismn/icons"
 import { api } from "@ui/api"
 import { useSensitiveState } from "@ui/hooks/useSensitiveState"
 import { ReactNode, useCallback, useEffect } from "react"

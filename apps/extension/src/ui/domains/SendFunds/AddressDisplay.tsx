@@ -1,7 +1,7 @@
-import { CopyIcon, ExternalLinkIcon } from "@talisman/theme/icons"
 import { convertAddress } from "@talisman/util/convertAddress"
 import { Address as TAddress } from "@talismn/balances"
 import { ChainId, EvmNetworkId } from "@talismn/chaindata-provider"
+import { CopyIcon, ExternalLinkIcon } from "@talismn/icons"
 import { classNames } from "@talismn/util"
 import { useAccountByAddress } from "@ui/hooks/useAccountByAddress"
 import useChain from "@ui/hooks/useChain"
@@ -38,6 +38,36 @@ const useBlockExplorerUrl = (
   }, [chain?.subscanUrl, evmNetwork?.explorerUrl, resolvedAddress])
 }
 
+const AddressTooltip: FC<{
+  address: string
+  resolvedAddress: string
+  onChainId?: string
+  chainName?: string | null
+}> = ({ address, resolvedAddress, onChainId, chainName }) => {
+  const { t } = useTranslation()
+
+  if (address === resolvedAddress) return <>{resolvedAddress}</>
+
+  return (
+    <div className="flex flex-col gap-2">
+      {typeof onChainId === "string" && (
+        <div className="flex gap-1">
+          <div>{t("Domain:")}</div>
+          <div>{onChainId}</div>
+        </div>
+      )}
+      <div className="flex flex-col gap-1">
+        <div>{t("Original address:")}</div>
+        <div>{address}</div>
+      </div>
+      <div className="flex flex-col gap-1">
+        <div>{t("{{chainName}} format:", { chainName: chainName || "Generic" })}</div>
+        <div>{resolvedAddress}</div>
+      </div>
+    </div>
+  )
+}
+
 type AddressDisplayProps = {
   // allow undefined but force developer to fill the property so he doesn't forget
   address: TAddress | null | undefined
@@ -52,7 +82,6 @@ export const AddressDisplay: FC<AddressDisplayProps> = ({
   evmNetworkId,
   className,
 }) => {
-  const { t } = useTranslation()
   const account = useAccountByAddress(address)
   const contact = useContact(address)
   const chain = useChain(chainId as string)
@@ -78,27 +107,17 @@ export const AddressDisplay: FC<AddressDisplayProps> = ({
     copyAddress(resolvedAddress as string)
   }, [resolvedAddress])
 
-  if (!resolvedAddress || !text) return null
+  if (!address || !resolvedAddress || !text) return null
 
   return (
     <Tooltip>
       <TooltipContent>
-        <div className="flex flex-col gap-2">
-          {typeof onChainId === "string" && (
-            <div className="flex gap-1">
-              <div>{t("Domain:")}</div>
-              <div>{onChainId}</div>
-            </div>
-          )}
-          <div className="flex flex-col gap-1">
-            <div>{t("Original address:")}</div>
-            <div>{address}</div>
-          </div>
-          <div className="flex flex-col gap-1">
-            <div>{t("{{chainName}} format:", { chainName: chain?.name || "Generic" })}</div>
-            <div>{resolvedAddress}</div>
-          </div>
-        </div>
+        <AddressTooltip
+          address={address}
+          resolvedAddress={resolvedAddress}
+          onChainId={onChainId ?? undefined}
+          chainName={chain?.name}
+        />
       </TooltipContent>
       <TooltipTrigger
         className={classNames(

@@ -1,13 +1,14 @@
+import { TALISMAN_WEB_APP_STAKING_URL } from "@core/constants"
 import { Balances } from "@core/domains/balances/types"
 import { Accordion, AccordionIcon } from "@talisman/components/Accordion"
 import { FadeIn } from "@talisman/components/FadeIn"
 import { useOpenClose } from "@talisman/hooks/useOpenClose"
-import { ExternalLinkIcon, LockIcon, XIcon, ZapIcon } from "@talisman/theme/icons"
-import { useBalancesStatus } from "@talismn/balances-react"
+import { ExternalLinkIcon, LockIcon, XIcon, ZapIcon } from "@talismn/icons"
 import { classNames } from "@talismn/util"
 import Fiat from "@ui/domains/Asset/Fiat"
 import Tokens from "@ui/domains/Asset/Tokens"
 import { useAnalytics } from "@ui/hooks/useAnalytics"
+import { useBalancesStatus } from "@ui/hooks/useBalancesStatus"
 import { useSearchParamsSelectedAccount } from "@ui/hooks/useSearchParamsSelectedAccount"
 import { MouseEventHandler, ReactNode, useCallback, useMemo } from "react"
 import { Trans, useTranslation } from "react-i18next"
@@ -105,7 +106,7 @@ const AssetRow = ({ balances, locked }: AssetRowProps) => {
   }, [account, genericEvent, navigate, token])
 
   const handleClickStakingBanner = useCallback(() => {
-    window.open("https://app.talisman.xyz/staking")
+    window.open(TALISMAN_WEB_APP_STAKING_URL)
     genericEvent("open web app staking from banner", { from: "popup", symbol: token?.symbol })
   }, [genericEvent, token?.symbol])
 

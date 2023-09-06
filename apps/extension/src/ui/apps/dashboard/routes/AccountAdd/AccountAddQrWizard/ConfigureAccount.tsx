@@ -1,5 +1,5 @@
 import { HeaderBlock } from "@talisman/components/HeaderBlock"
-import { ArrowRightIcon, LoaderIcon, PolkadotVaultIcon } from "@talisman/theme/icons"
+import { ArrowRightIcon, LoaderIcon, PolkadotVaultIcon } from "@talismn/icons"
 import { AccountIcon } from "@ui/domains/Account/AccountIcon"
 import { Address } from "@ui/domains/Account/Address"
 import { ChainLogo } from "@ui/domains/Asset/ChainLogo"

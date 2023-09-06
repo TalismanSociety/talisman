@@ -118,23 +118,25 @@ export const rebuildGasSettings = (gasSettings: EthGasSettings) => {
 
 const TX_GAS_LIMIT_DEFAULT = BigNumber.from("250000")
 const TX_GAS_LIMIT_MIN = BigNumber.from("21000")
+const TX_GAS_LIMIT_SAFETY_RATIO = 2
 
 export const getGasLimit = (
   blockGasLimit: BigNumberish,
   estimatedGas: BigNumberish,
-  tx?: ethers.providers.TransactionRequest
+  tx: ethers.providers.TransactionRequest | undefined,
+  isContractCall?: boolean
 ) => {
   // some dapps use legacy gas field instead of gasLimit
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const suggestedGasLimit = tx?.gasLimit ?? (tx as any)?.gas
-
-  const bnSuggestedGasLimit = suggestedGasLimit
-    ? BigNumber.from(suggestedGasLimit)
-    : BigNumber.from(0)
+  const bnSuggestedGasLimit = BigNumber.from(tx?.gasLimit ?? (tx as any)?.gas ?? 0)
   const bnEstimatedGas = BigNumber.from(estimatedGas)
+  // for contract calls, gas cost can evolve overtime : add a safety margin
+  const bnSafeGasLimit = isContractCall
+    ? bnEstimatedGas.mul(100 + TX_GAS_LIMIT_SAFETY_RATIO).div(100)
+    : bnEstimatedGas
   // RPC estimated gas may be too low (reliable ex: https://portal.zksync.io/bridge),
   // so if dapp suggests higher gas limit as the estimate, use that
-  const highestLimit = bnEstimatedGas.gt(bnSuggestedGasLimit) ? bnEstimatedGas : bnSuggestedGasLimit
+  const highestLimit = bnSafeGasLimit.gt(bnSuggestedGasLimit) ? bnSafeGasLimit : bnSuggestedGasLimit
 
   let gasLimit = BigNumber.from(highestLimit)
   if (gasLimit.gt(blockGasLimit)) {
@@ -212,35 +214,59 @@ export const getTotalFeesFromGasSettings = (
   }
 }
 
+export const getMaxTransactionCost = (transaction: ethers.providers.TransactionRequest) => {
+  if (transaction.gasLimit === undefined)
+    throw new Error("gasLimit is required for fee computation")
+
+  const value = BigNumber.from(transaction.value ?? 0)
+
+  if (transaction.type === 2) {
+    if (transaction.maxFeePerGas === undefined)
+      throw new Error("maxFeePerGas is required for type 2 fee computation")
+    return BigNumber.from(transaction.maxFeePerGas).mul(transaction.gasLimit).add(value)
+  } else {
+    if (transaction.gasPrice === undefined)
+      throw new Error("gasPrice is required for legacy fee computation")
+    return BigNumber.from(transaction.gasPrice).mul(transaction.gasLimit).add(value)
+  }
+}
+
 export const prepareTransaction = (
   tx: ethers.providers.TransactionRequest,
   gasSettings: EthGasSettings,
   nonce: number
 ) => {
-  // keep only known fields except gas related ones
-  const { chainId, data, from, to, value, accessList, ccipReadEnabled, customData } = tx
-
-  const result: ethers.providers.TransactionRequest = {
+  const {
     chainId,
     data,
     from,
     to,
-    value,
-    nonce,
+    value = BigNumber.from(0),
     accessList,
     ccipReadEnabled,
     customData,
-    // apply user gas settings
+  } = tx
+
+  const transaction: ethers.providers.TransactionRequest = {
+    chainId,
+    from,
+    to,
+    value,
+    nonce: BigNumber.from(nonce),
+    data,
     ...gasSettings,
   }
+  if (accessList) transaction.accessList = accessList
+  if (customData) transaction.customData = customData
+  if (ccipReadEnabled !== undefined) transaction.ccipReadEnabled = ccipReadEnabled
 
-  return result
+  return transaction
 }
 
 const testNoScriptTag = (text?: string) => !text?.toLowerCase().includes("<script")
 
 const schemaAddEthereumRequest = yup.object().shape({
-  chainId: yup.string().required(),
+  chainId: yup.string().required().test("noScriptTag", testNoScriptTag),
   chainName: yup.string().required().max(100).test("noScriptTag", testNoScriptTag),
   nativeCurrency: yup
     .object()
@@ -250,9 +276,9 @@ const schemaAddEthereumRequest = yup.object().shape({
       decimals: yup.number().required().integer(),
     })
     .required(),
-  rpcUrls: yup.array().of(yup.string().required().url()).required(),
-  blockExplorerUrls: yup.array().of(yup.string().required().url()),
-  iconUrls: yup.array().of(yup.string()),
+  rpcUrls: yup.array().of(yup.string().required().test("noScriptTag", testNoScriptTag)).required(),
+  blockExplorerUrls: yup.array().of(yup.string().required().test("noScriptTag", testNoScriptTag)),
+  iconUrls: yup.array().of(yup.string().test("noScriptTag", testNoScriptTag)),
 })
 
 export const isValidAddEthereumRequestParam = (obj: unknown) =>

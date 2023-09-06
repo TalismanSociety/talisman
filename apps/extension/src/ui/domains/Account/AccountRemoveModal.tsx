@@ -1,14 +1,22 @@
-import { AccountJsonAny, AccountType, AccountTypes } from "@core/domains/accounts/types"
+import { AccountJsonAny, AccountType } from "@core/domains/accounts/types"
 import { useOpenClose } from "@talisman/hooks/useOpenClose"
 import { provideContext } from "@talisman/util/provideContext"
 import { api } from "@ui/api"
 import { useSelectedAccount } from "@ui/domains/Portfolio/SelectedAccountContext"
 import { useCallback, useEffect, useMemo, useState } from "react"
 import { Trans, useTranslation } from "react-i18next"
-import { Button, ModalDialog } from "talisman-ui"
-import { Modal } from "talisman-ui"
+import { useNavigate } from "react-router-dom"
+import { Button, Modal, ModalDialog } from "talisman-ui"
 
-const REMOVABLE_ORIGINS: AccountType[] = ["DERIVED", "SEED", "WATCHED", "JSON", "QR", "HARDWARE"]
+const REMOVABLE_ORIGINS: AccountType[] = [
+  AccountType.Derived,
+  AccountType.Seed,
+  AccountType.Watched,
+  AccountType.Json,
+  AccountType.Qr,
+  AccountType.Hardware,
+  AccountType.Dcent,
+]
 
 const useAccountRemoveModalProvider = () => {
   const [_account, setAccount] = useState<AccountJsonAny>()
@@ -52,6 +60,7 @@ export const [AccountRemoveModalProvider, useAccountRemoveModal] = provideContex
 export const AccountRemoveModal = () => {
   const { t } = useTranslation()
   const { account, close, isOpen } = useAccountRemoveModal()
+  const navigate = useNavigate()
 
   // persist in state so text doesn't disappear upon deletion
   const [accountName, setAccountName] = useState<string>("")
@@ -62,8 +71,9 @@ export const AccountRemoveModal = () => {
   const handleConfirm = useCallback(async () => {
     if (!account) return
     await api.accountForget(account?.address)
+    if (window.location.pathname === "/popup.html") navigate("/")
     close()
-  }, [account, close])
+  }, [account, close, navigate])
 
   return (
     <Modal containerId="main" isOpen={isOpen} onDismiss={close}>
@@ -77,7 +87,7 @@ export const AccountRemoveModal = () => {
               values={{ accountName }}
             />
           </p>
-          {account?.origin !== AccountTypes.WATCHED && (
+          {account?.origin !== AccountType.Watched && (
             <p className="mt-4 text-sm">
               {t("Ensure you have backed up your recovery phrase or private key before removing.")}
             </p>

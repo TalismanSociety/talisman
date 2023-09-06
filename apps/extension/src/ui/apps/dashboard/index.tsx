@@ -17,6 +17,7 @@ import { useTranslation } from "react-i18next"
 import { Navigate, Route, Routes, useMatch } from "react-router-dom"
 
 import { DashboardLayout } from "./layout/DashboardLayout"
+import { AccountAddDcentWizard } from "./routes/AccountAdd/AccountAddDcentWizard"
 import { AccounAddDerivedPage } from "./routes/AccountAdd/AccountAddDerivedPage"
 import { AccountAddQrWizard } from "./routes/AccountAdd/AccountAddQrWizard"
 import { AccountAddSecretWizard } from "./routes/AccountAdd/AccountAddSecretWizard"
@@ -36,11 +37,11 @@ import { AddressBookPage } from "./routes/Settings/AddressBookPage"
 import { AnalyticsOptInPage } from "./routes/Settings/AnalyticsOptInPage"
 import { AutoLockTimerPage } from "./routes/Settings/AutoLockTimerPage"
 import { ChangePasswordPage } from "./routes/Settings/ChangePasswordPage"
-import { LanguageSettingsPage } from "./routes/Settings/LanguageSettingsPage"
-import { OptionsPage } from "./routes/Settings/OptionsPage"
-import { SecurityPrivacySettingsPage } from "./routes/Settings/SecurityPrivacySettingsPage"
-import { SettingsPage } from "./routes/Settings/SettingsPage"
-import { TrustedSitesPage } from "./routes/Settings/TrustedSitesPage"
+import { ConnectedSitesPage } from "./routes/Settings/ConnectedSitesPage"
+import { GeneralPage } from "./routes/Settings/GeneralPage"
+import { LanguagePage } from "./routes/Settings/LanguagePage"
+import { NetworksTokensPage } from "./routes/Settings/NetworksTokensPage"
+import { SecurityPrivacyPage } from "./routes/Settings/SecurityPrivacyPage"
 import { AddCustomTokenPage } from "./routes/Tokens/AddCustomTokenPage"
 import { TokenPage } from "./routes/Tokens/TokenPage"
 import { TokensPage } from "./routes/Tokens/TokensPage"
@@ -98,22 +99,25 @@ const DashboardInner = () => {
             <Route path="ledger/*" element={<AccountAddLedgerWizard />} />
             <Route path="qr/*" element={<AccountAddQrWizard />} />
             <Route path="watched" element={<AccountAddWatchedPage />} />
+            <Route path="dcent/*" element={<AccountAddDcentWizard />} />
             <Route path="*" element={<Navigate to="" replace />} />
           </Route>
           <Route path="" element={<Navigate to="/portfolio" />} />
         </Route>
         <Route path="settings">
-          <Route path="" element={<SettingsPage />} />
-          <Route path="connected-sites" element={<TrustedSitesPage />} />
+          <Route path="" element={<Navigate to="/settings/general" replace />} />
+          <Route path="general" element={<GeneralPage />} />
+          <Route path="language" element={<LanguagePage />} />
           <Route path="address-book" element={<AddressBookPage />} />
-          <Route path="options" element={<OptionsPage />} />
+          <Route path="connected-sites" element={<ConnectedSitesPage />} />
           <Route path="accounts" element={<AccountsPage />} />
-          <Route path="language" element={<LanguageSettingsPage />} />
-          <Route path="security-privacy-settings" element={<SecurityPrivacySettingsPage />} />
+          <Route path="security-privacy-settings" element={<SecurityPrivacyPage />} />
           <Route path="change-password" element={<ChangePasswordPage />} />
           <Route path="autolock" element={<AutoLockTimerPage />} />
+          <Route path="networks-tokens" element={<NetworksTokensPage />} />
           <Route path="about" element={<AboutPage />} />
           <Route path="analytics" element={<AnalyticsOptInPage />} />
+          <Route path="*" element={<Navigate to="" replace />} />
         </Route>
         <Route path="tokens">
           <Route path="" element={<TokensPage />} />

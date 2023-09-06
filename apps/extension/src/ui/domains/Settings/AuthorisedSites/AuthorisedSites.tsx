@@ -1,3 +1,4 @@
+import { TALISMAN_WEB_APP_URL } from "@core/constants"
 import { ProviderType } from "@core/domains/sitesAuthorised/types"
 import { HeaderBlock } from "@talisman/components/HeaderBlock"
 import { Spacer } from "@talisman/components/Spacer"
@@ -44,15 +45,19 @@ export const AuthorisedSites = () => {
   return (
     <>
       <HeaderBlock
-        title={t("Trusted Sites")}
+        title={t("Connected Sites")}
         text={t("Manage the sites that have access to your accounts")}
       />
       <Spacer large />
       {hasEthereumTrustedSites ? (
-        <ProviderTypeSwitch defaultProvider="polkadot" onChange={setProviderType} />
+        <ProviderTypeSwitch
+          className="text-xs [&>div]:h-full"
+          defaultProvider="polkadot"
+          onChange={setProviderType}
+        />
       ) : null}
       <Spacer small />
-      <div className="flex flex-col gap-7">
+      <div className="flex flex-col gap-4">
         {siteIds.map((id) => (
           <AuthorizedSite key={`${providerType}-${id}`} id={id} provider={providerType} />
         ))}
@@ -61,7 +66,7 @@ export const AuthorisedSites = () => {
             <div className="bg-grey-850 w-full rounded p-8">
               <Trans t={t}>
                 You haven't connected to any sites yet. Why not start with the{" "}
-                <a href="https://app.talisman.xyz" target="_blank" className="text-primary">
+                <a href={TALISMAN_WEB_APP_URL} target="_blank" className="text-primary">
                   Talisman Web App
                 </a>
                 ?

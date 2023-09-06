@@ -1,59 +1,39 @@
-import { AccountJsonHardwareEthereum } from "@core/domains/accounts/types"
 import { EthPriorityOptionName } from "@core/domains/signing/types"
 import { AppPill } from "@talisman/components/AppPill"
 import { WithTooltip } from "@talisman/components/Tooltip"
-import { InfoIcon } from "@talisman/theme/icons"
-import { useQuery } from "@tanstack/react-query"
+import { InfoIcon } from "@talismn/icons"
 import { TokensAndFiat } from "@ui/domains/Asset/TokensAndFiat"
 import { EthFeeSelect } from "@ui/domains/Ethereum/GasSettings/EthFeeSelect"
+import { useEthBalance } from "@ui/domains/Ethereum/useEthBalance"
 import { useEthereumProvider } from "@ui/domains/Ethereum/useEthereumProvider"
 import { EthSignBody } from "@ui/domains/Sign/Ethereum/EthSignBody"
 import { SignAlertMessage } from "@ui/domains/Sign/SignAlertMessage"
+import { SignHardwareEthereum } from "@ui/domains/Sign/SignHardwareEthereum"
 import { useEthSignTransactionRequest } from "@ui/domains/Sign/SignRequestContext"
-import useToken from "@ui/hooks/useToken"
-import { Suspense, lazy, useCallback, useEffect, useMemo } from "react"
+import { Suspense, useCallback, useEffect, useMemo } from "react"
 import { useTranslation } from "react-i18next"
 import { Button, Tooltip, TooltipContent, TooltipTrigger } from "talisman-ui"
 
 import { PopupContent, PopupFooter, PopupHeader, PopupLayout } from "../../Layout/PopupLayout"
 import { SignAccountAvatar } from "./SignAccountAvatar"
 
-const LedgerEthereum = lazy(() => import("@ui/domains/Sign/LedgerEthereum"))
-
-const useEvmBalance = (address?: string, evmNetworkId?: string) => {
-  const { t } = useTranslation("request")
+const useEvmBalance = (address: string, evmNetworkId: string | undefined) => {
   const provider = useEthereumProvider(evmNetworkId)
-  return useQuery({
-    queryKey: ["evm-balance", provider?.network?.chainId, address],
-    queryFn: async () => {
-      try {
-        if (!provider || !address) return null
-        const balance = await provider.getBalance(address)
-        return balance.toString()
-      } catch (err) {
-        // eslint-disable-next-line no-console
-        console.error(err)
-        throw new Error(t("Failed to fetch balance"))
-      }
-    },
-  })
+  return useEthBalance(provider, address)
 }
 
 const FeeTooltip = ({
   estimatedFee,
-  account,
   maxFee,
   tokenId,
+  balance,
 }: {
-  account?: string
-  estimatedFee?: string | bigint
-  maxFee?: string | bigint
-  tokenId?: string
+  estimatedFee: string | bigint | undefined
+  maxFee: string | bigint | undefined
+  tokenId: string | undefined
+  balance: string | bigint | null | undefined
 }) => {
   const { t } = useTranslation("request")
-  // cannot use useBalance because our db may not include testnet balances
-  const token = useToken(tokenId)
-  const { data: balance, error } = useEvmBalance(account, token?.evmNetwork?.id)
 
   if (!estimatedFee && !maxFee) return null
 
@@ -76,16 +56,18 @@ const FeeTooltip = ({
             </div>
           </div>
         )}
-        {(balance || error) && (
+        {balance !== undefined && (
           <div className="flex w-full justify-between gap-8">
             <div>{t("Balance:")}</div>
-            {balance ? (
-              <div>
-                <TokensAndFiat tokenId={tokenId} planck={balance} noTooltip noCountUp isBalance />
-              </div>
-            ) : (
-              <div className="text-alert-warn">Failed to fetch balance</div>
-            )}
+            <div>
+              <TokensAndFiat
+                tokenId={tokenId}
+                planck={balance ?? 0n}
+                noTooltip
+                noCountUp
+                isBalance
+              />
+            </div>
           </div>
         )}
       </>
@@ -121,6 +103,7 @@ export const EthSignTransactionRequest = () => {
     isValid,
     networkUsage,
   } = useEthSignTransactionRequest()
+  const { balance } = useEvmBalance(account?.address, network?.id)
 
   const { processing, errorMessage } = useMemo(() => {
     return {
@@ -133,11 +116,6 @@ export const EthSignTransactionRequest = () => {
     // force close upon success, usefull in case this is the browser embedded popup (which doesn't close by itself)
     if (status === "SUCCESS") window.close()
   }, [status])
-
-  // gas settings must be locked as soon as payload is sent to ledger
-  const handleSendToLedger = useCallback(() => {
-    setIsPayloadLocked(true)
-  }, [setIsPayloadLocked])
 
   const handleFeeChange = useCallback(
     (priority: EthPriorityOptionName) => {
@@ -180,10 +158,10 @@ export const EthSignTransactionRequest = () => {
                       </TooltipTrigger>
                       <TooltipContent>
                         <FeeTooltip
-                          account={account?.address}
                           tokenId={network.nativeToken.id}
                           estimatedFee={txDetails.estimatedFee.toString()}
                           maxFee={txDetails.maxFee.toString()}
+                          balance={balance?.toString()}
                         />
                       </TooltipContent>
                     </Tooltip>
@@ -215,22 +193,15 @@ export const EthSignTransactionRequest = () => {
               </div>
             ) : null}
             {account && request && account.isHardware ? (
-              transaction ? (
-                <LedgerEthereum
-                  manualSend
-                  method="transaction"
-                  payload={transaction}
-                  account={account as AccountJsonHardwareEthereum}
-                  onSignature={approveHardware}
-                  onReject={reject}
-                  onSendToLedger={handleSendToLedger}
-                  containerId="main"
-                />
-              ) : (
-                <Button className="w-full" onClick={reject}>
-                  {t("Cancel")}
-                </Button>
-              )
+              <SignHardwareEthereum
+                method="eth_sendTransaction"
+                payload={transaction}
+                account={account}
+                onSigned={approveHardware}
+                onSentToDevice={setIsPayloadLocked}
+                onCancel={reject}
+                containerId="main"
+              />
             ) : (
               <div className="grid w-full grid-cols-2 gap-12">
                 <Button disabled={processing} onClick={reject}>

@@ -1,4 +1,4 @@
-import { LoaderIcon } from "@talisman/theme/icons"
+import { LoaderIcon } from "@talismn/icons"
 import styled from "styled-components"
 
 type ButtonAdditionalProps = {
