@@ -199,7 +199,7 @@ export const AccountAddSecretMnemonicForm = () => {
           { autoClose: false }
         )
         try {
-          onSuccess(await api.accountCreateFromSeed(name, suri, type))
+          onSuccess(await api.accountCreateFromSuri(name, suri, type))
           notifyUpdate(notificationId, {
             type: "success",
             title: t("Account imported"),

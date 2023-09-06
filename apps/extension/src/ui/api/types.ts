@@ -123,7 +123,7 @@ export default interface MessageTypes {
     type: AccountAddressType,
     options: RequestAccountCreateOptions
   ) => Promise<string>
-  accountCreateFromSeed: (name: string, seed: string, type?: AccountAddressType) => Promise<string>
+  accountCreateFromSuri: (name: string, suri: string, type?: AccountAddressType) => Promise<string>
   accountCreateFromJson: (unlockedPairs: KeyringPair$Json[]) => Promise<string[]>
   accountCreateHardware: (
     request: Omit<RequestAccountCreateHardware, "hardwareType">

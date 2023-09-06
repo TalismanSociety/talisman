@@ -124,9 +124,9 @@ export type AccountsList = Account[]
 
 export type AccountAddressType = KeypairType // keep custom type, might want to add more later on
 
-export interface RequestAccountCreateFromSeed {
+export interface RequestAccountCreateFromSuri {
   name: string
-  seed: string
+  suri: string
   type?: AccountAddressType
 }
 
@@ -219,7 +219,7 @@ export type RequestNextDerivationPath = {
 export interface AccountsMessages {
   // account message signatures
   "pri(accounts.create)": [RequestAccountCreate, string]
-  "pri(accounts.create.seed)": [RequestAccountCreateFromSeed, string]
+  "pri(accounts.create.suri)": [RequestAccountCreateFromSuri, string]
   "pri(accounts.create.json)": [RequestAccountCreateFromJson, string[]]
   "pri(accounts.create.hardware.substrate)": [
     Omit<RequestAccountCreateHardware, "hardwareType">,

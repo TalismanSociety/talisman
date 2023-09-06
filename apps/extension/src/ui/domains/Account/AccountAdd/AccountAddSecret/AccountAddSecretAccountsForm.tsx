@@ -1,4 +1,4 @@
-import { RequestAccountCreateFromSeed } from "@core/domains/accounts/types"
+import { RequestAccountCreateFromSuri } from "@core/domains/accounts/types"
 import { yupResolver } from "@hookform/resolvers/yup"
 import { HeaderBlock } from "@talisman/components/HeaderBlock"
 import { notify, notifyUpdate } from "@talisman/components/Notifications"
@@ -13,7 +13,7 @@ import * as yup from "yup"
 import { useAccountAddSecret } from "./context"
 
 type FormData = {
-  accounts: RequestAccountCreateFromSeed[]
+  accounts: RequestAccountCreateFromSuri[]
 }
 
 export const AccountAddSecretAccountsForm = () => {
@@ -79,7 +79,7 @@ export const AccountAddSecretAccountsForm = () => {
   )
 
   const handleAccountsChange = useCallback(
-    (accounts: RequestAccountCreateFromSeed[]) => {
+    (accounts: RequestAccountCreateFromSuri[]) => {
       setValue("accounts", accounts, { shouldValidate: true })
     },
     [setValue]

@@ -9,7 +9,7 @@ import type {
   RequestAccountCreateDcent,
   RequestAccountCreateExternal,
   RequestAccountCreateFromJson,
-  RequestAccountCreateFromSeed,
+  RequestAccountCreateFromSuri,
   RequestAccountCreateHardware,
   RequestAccountCreateHardwareEthereum,
   RequestAccountCreateWatched,
@@ -107,11 +107,11 @@ export default class AccountsHandler extends ExtensionHandler {
     return pair.address
   }
 
-  private async accountCreateSeed({
+  private async accountCreateSuri({
     name,
-    seed: suri,
+    suri,
     type,
-  }: RequestAccountCreateFromSeed): Promise<string> {
+  }: RequestAccountCreateFromSuri): Promise<string> {
     const password = this.stores.password.getPassword()
     assert(password, "Not logged in")
 
@@ -550,8 +550,8 @@ export default class AccountsHandler extends ExtensionHandler {
     switch (type) {
       case "pri(accounts.create)":
         return this.accountCreate(request as RequestAccountCreate)
-      case "pri(accounts.create.seed)":
-        return this.accountCreateSeed(request as RequestAccountCreateFromSeed)
+      case "pri(accounts.create.suri)":
+        return this.accountCreateSuri(request as RequestAccountCreateFromSuri)
       case "pri(accounts.create.json)":
         return this.accountCreateJson(request as RequestAccountCreateFromJson)
       case "pri(accounts.create.dcent)":
