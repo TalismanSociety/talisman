@@ -2,7 +2,6 @@ import { Balance, Balances } from "@core/domains/balances/types"
 import { ChevronLeftIcon, CopyIcon, MoreHorizontalIcon, SendIcon } from "@talismn/icons"
 import { classNames } from "@talismn/util"
 import { AccountContextMenu } from "@ui/apps/dashboard/routes/Portfolio/AccountContextMenu"
-import { selectedCurrencyState } from "@ui/atoms"
 import { AccountTypeIcon } from "@ui/domains/Account/AccountTypeIcon"
 import { Address } from "@ui/domains/Account/Address"
 import { CurrentAccountAvatar } from "@ui/domains/Account/CurrentAccountAvatar"
@@ -16,11 +15,11 @@ import useBalances from "@ui/hooks/useBalances"
 import { useFormattedAddress } from "@ui/hooks/useFormattedAddress"
 import { useSearchParamsSelectedAccount } from "@ui/hooks/useSearchParamsSelectedAccount"
 import { useSearchParamsSelectedFolder } from "@ui/hooks/useSearchParamsSelectedFolder"
+import useSelectedCurrency from "@ui/hooks/useSelectedCurrency"
 import { useSendFundsPopup } from "@ui/hooks/useSendFundsPopup"
 import { useCallback, useEffect, useMemo } from "react"
 import { useTranslation } from "react-i18next"
 import { useNavigate } from "react-router-dom"
-import { useRecoilValue } from "recoil"
 import {
   ContextMenuTrigger,
   IconButton,
@@ -69,7 +68,7 @@ const PageContent = ({
   )
 
   const balancesToDisplay = useDisplayBalances(balances)
-  const currency = useRecoilValue(selectedCurrencyState)
+  const currency = useSelectedCurrency()
   const { open: openCopyAddressModal } = useCopyAddressModal()
   const { canSendFunds, cannotSendFundsReason, openSendFundsPopup } = useSendFundsPopup(account)
 

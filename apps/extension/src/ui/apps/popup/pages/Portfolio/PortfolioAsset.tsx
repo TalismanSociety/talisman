@@ -1,6 +1,5 @@
 import { Balances } from "@core/domains/balances/types"
 import { ChevronLeftIcon } from "@talismn/icons"
-import { selectedCurrencyState } from "@ui/atoms"
 import Fiat from "@ui/domains/Asset/Fiat"
 import { TokenLogo } from "@ui/domains/Asset/TokenLogo"
 import { PopupAssetDetails } from "@ui/domains/Portfolio/AssetDetails"
@@ -10,16 +9,16 @@ import { useTokenBalancesSummary } from "@ui/domains/Portfolio/useTokenBalancesS
 import { useAnalytics } from "@ui/hooks/useAnalytics"
 import useBalances from "@ui/hooks/useBalances"
 import { useSearchParamsSelectedAccount } from "@ui/hooks/useSearchParamsSelectedAccount"
+import useSelectedCurrency from "@ui/hooks/useSelectedCurrency"
 import { useCallback, useEffect, useMemo } from "react"
 import { useTranslation } from "react-i18next"
 import { Navigate, useNavigate, useParams, useSearchParams } from "react-router-dom"
-import { useRecoilValue } from "recoil"
 import { IconButton } from "talisman-ui"
 
 const PageContent = ({ balances, symbol }: { balances: Balances; symbol: string }) => {
   const navigate = useNavigate()
   const balancesToDisplay = useDisplayBalances(balances)
-  const currency = useRecoilValue(selectedCurrencyState)
+  const currency = useSelectedCurrency()
   const { token } = useTokenBalancesSummary(balancesToDisplay)
 
   const handleBackBtnClick = useCallback(() => navigate(-1), [navigate])

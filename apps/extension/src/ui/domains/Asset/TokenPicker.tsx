@@ -6,21 +6,19 @@ import { ScrollContainer } from "@talisman/components/ScrollContainer"
 import { SearchInput } from "@talisman/components/SearchInput"
 import { CheckCircleIcon } from "@talismn/icons"
 import { classNames, planckToTokens } from "@talismn/util"
-import { selectedCurrencyState } from "@ui/atoms"
 import { useAccountByAddress } from "@ui/hooks/useAccountByAddress"
 import useBalances from "@ui/hooks/useBalances"
 import useChains from "@ui/hooks/useChains"
 import { useEvmNetworks } from "@ui/hooks/useEvmNetworks"
+import useSelectedCurrency from "@ui/hooks/useSelectedCurrency"
 import { useSetting } from "@ui/hooks/useSettings"
 import { useTokenRatesMap } from "@ui/hooks/useTokenRatesMap"
 import useTokens from "@ui/hooks/useTokens"
 import { isTransferableToken } from "@ui/util/isTransferableToken"
 import sortBy from "lodash/sortBy"
-import { useCallback, useMemo, useRef, useState } from "react"
-import { FC } from "react"
+import { FC, useCallback, useMemo, useRef, useState } from "react"
 import { useTranslation } from "react-i18next"
 import { useIntersection } from "react-use"
-import { useRecoilValue } from "recoil"
 
 import { ChainLogoBase } from "./ChainLogo"
 import Fiat from "./Fiat"
@@ -90,7 +88,7 @@ const TokenRow: FC<TokenRowProps> = ({
     rootMargin: "1000px",
   })
 
-  const currency = useRecoilValue(selectedCurrencyState)
+  const currency = useSelectedCurrency()
 
   return (
     <button
@@ -193,7 +191,7 @@ const TokensList: FC<TokensListProps> = ({
   const tokenRatesMap = useTokenRatesMap()
 
   const balances = useBalances(ownedOnly ? "owned" : "all")
-  const currency = useRecoilValue(selectedCurrencyState)
+  const currency = useSelectedCurrency()
 
   const accountBalances = useMemo(
     () => (address && !selected ? balances.find({ address: address ?? undefined }) : balances),

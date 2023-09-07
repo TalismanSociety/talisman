@@ -3,13 +3,12 @@ import { Balance } from "@talismn/balances"
 import { Token } from "@talismn/chaindata-provider"
 import { CheckCircleIcon } from "@talismn/icons"
 import { classNames } from "@talismn/util"
-import { selectedCurrencyState } from "@ui/atoms"
 import useBalances from "@ui/hooks/useBalances"
 import { useFormattedAddress } from "@ui/hooks/useFormattedAddress"
+import useSelectedCurrency from "@ui/hooks/useSelectedCurrency"
 import useToken from "@ui/hooks/useToken"
 import { FC, ReactNode, useCallback, useMemo } from "react"
 import { useTranslation } from "react-i18next"
-import { useRecoilValue } from "recoil"
 
 import { AccountIcon } from "../Account/AccountIcon"
 import { AccountTypeIcon } from "../Account/AccountTypeIcon"
@@ -35,7 +34,7 @@ type AccountRowProps = {
 }
 
 const AccountTokenBalance = ({ token, balance }: { token?: Token; balance?: Balance }) => {
-  const currency = useRecoilValue(selectedCurrencyState)
+  const currency = useSelectedCurrency()
 
   if (!balance || !token) return null
 

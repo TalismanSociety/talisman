@@ -1,11 +1,10 @@
 import { fiatDecimalSeparator, fiatGroupSeparator, formatFiat } from "@talisman/util/formatFiat"
 import { BalanceFormatter } from "@talismn/balances"
 import { classNames } from "@talismn/util"
-import { selectedCurrencyState } from "@ui/atoms"
 import { useRevealableBalance } from "@ui/hooks/useRevealableBalance"
+import useSelectedCurrency from "@ui/hooks/useSelectedCurrency"
 import { FC, useCallback, useMemo } from "react"
 import CountUp from "react-countup"
-import { useRecoilValue } from "recoil"
 
 type FiatProps = {
   amount?: number | BalanceFormatter | null
@@ -54,7 +53,7 @@ export const Fiat = ({
 
   const render = amount !== null && amount !== undefined
 
-  const currency = useRecoilValue(selectedCurrencyState)
+  const currency = useSelectedCurrency()
 
   return (
     <span

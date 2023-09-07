@@ -1,5 +1,4 @@
 import { Balances } from "@core/domains/balances/types"
-import { selectedCurrencyState } from "@ui/atoms"
 import { DashboardAssetsTable } from "@ui/domains/Portfolio/AssetsTable"
 import { usePortfolio } from "@ui/domains/Portfolio/context"
 import { FundYourWallet } from "@ui/domains/Portfolio/EmptyStates/FundYourWallet"
@@ -10,9 +9,9 @@ import { useDisplayBalances } from "@ui/domains/Portfolio/useDisplayBalances"
 import { useAnalytics } from "@ui/hooks/useAnalytics"
 import { useAppState } from "@ui/hooks/useAppState"
 import { useHasAccounts } from "@ui/hooks/useHasAccounts"
+import useSelectedCurrency from "@ui/hooks/useSelectedCurrency"
 import { useEffect, useMemo } from "react"
 import { useTranslation } from "react-i18next"
-import { useRecoilValue } from "recoil"
 
 import { NoAccountsFullscreen } from "./NoAccounts"
 
@@ -20,7 +19,7 @@ const FullscreenPortfolioAssets = ({ balances }: { balances: Balances }) => {
   const { t } = useTranslation()
   const balancesToDisplay = useDisplayBalances(balances)
 
-  const currency = useRecoilValue(selectedCurrencyState)
+  const currency = useSelectedCurrency()
 
   const { portfolio, available, locked } = useMemo(() => {
     const { total, frozen, reserved, transferable } = balancesToDisplay.sum.fiat(currency)

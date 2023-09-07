@@ -3,14 +3,13 @@ import { Address } from "@core/types/base"
 import { sortBigBy } from "@talisman/util/bigHelper"
 import { BalanceLockType, filterBaseLocks, getLockTitle } from "@talismn/balances-substrate-native"
 import { ChainId, EvmNetworkId } from "@talismn/chaindata-provider"
-import { selectedCurrencyState } from "@ui/atoms"
 import { useBalancesStatus } from "@ui/hooks/useBalancesStatus"
 import useChain from "@ui/hooks/useChain"
 import { useNetworkCategory } from "@ui/hooks/useNetworkCategory"
+import useSelectedCurrency from "@ui/hooks/useSelectedCurrency"
 import BigNumber from "bignumber.js"
 import { useMemo } from "react"
 import { useTranslation } from "react-i18next"
-import { useRecoilValue } from "recoil"
 
 import { useSelectedAccount } from "../SelectedAccountContext"
 import { useTokenBalancesSummary } from "../useTokenBalancesSummary"
@@ -38,7 +37,7 @@ export const useChainTokenBalances = ({ chainId, balances }: ChainTokenBalancesP
   const { summary, tokenBalances, token } = useTokenBalancesSummary(balances)
   const { t } = useTranslation()
 
-  const currency = useRecoilValue(selectedCurrencyState)
+  const currency = useSelectedCurrency()
 
   const detailRows = useMemo((): DetailRow[] => {
     if (!summary) return []

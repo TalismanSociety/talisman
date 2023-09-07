@@ -2,12 +2,11 @@ import { ScrollContainer } from "@talisman/components/ScrollContainer"
 import { WithTooltip } from "@talisman/components/Tooltip"
 import { AlertCircleIcon, LoaderIcon } from "@talismn/icons"
 import { classNames, encodeAnyAddress } from "@talismn/util"
-import { selectedCurrencyState } from "@ui/atoms"
 import useAccounts from "@ui/hooks/useAccounts"
+import useSelectedCurrency from "@ui/hooks/useSelectedCurrency"
 import { isEvmToken } from "@ui/util/isEvmToken"
 import { Suspense, lazy, useEffect, useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
-import { useRecoilValue } from "recoil"
 import { Button } from "talisman-ui"
 
 import { ChainLogo } from "../Asset/ChainLogo"
@@ -74,7 +73,7 @@ const TotalValueRow = () => {
   } = useSendFunds()
   const amount = sendMax ? maxAmount : transfer
 
-  const currency = useRecoilValue(selectedCurrencyState)
+  const currency = useSelectedCurrency()
 
   const totalValue = useMemo(() => {
     // Not all tokens have a fiat rate. if one of the 3 tokens doesn't have a rate, don't show the row

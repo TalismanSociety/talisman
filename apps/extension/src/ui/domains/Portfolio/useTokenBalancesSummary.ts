@@ -2,11 +2,10 @@ import { Balances } from "@core/domains/balances/types"
 import { Chain } from "@core/domains/chains/types"
 import { Token } from "@core/domains/tokens/types"
 import { TokenRatesList } from "@talismn/token-rates"
-import { selectedCurrencyState } from "@ui/atoms"
 import { usePortfolio } from "@ui/domains/Portfolio/context"
+import useSelectedCurrency from "@ui/hooks/useSelectedCurrency"
 import BigNumber from "bignumber.js"
 import { useMemo } from "react"
-import { useRecoilValue } from "recoil"
 
 type BalanceSummary = {
   totalTokens: BigNumber
@@ -76,7 +75,7 @@ export const useTokenBalancesSummary = (balances: Balances) => {
     () => getBestTokenForSymbol(tokenBalances, tokens, chains),
     [chains, tokenBalances, tokens]
   )
-  const currency = useRecoilValue(selectedCurrencyState)
+  const currency = useSelectedCurrency()
 
   const tokenBalanceRates = useMemo(
     () =>

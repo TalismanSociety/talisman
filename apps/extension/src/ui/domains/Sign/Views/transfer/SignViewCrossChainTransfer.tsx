@@ -4,7 +4,6 @@ import { ChainId, EvmNetworkId } from "@talismn/chaindata-provider"
 import { ArrowRightIcon } from "@talismn/icons"
 import { TokenRates } from "@talismn/token-rates"
 import { classNames } from "@talismn/util"
-import { selectedCurrencyState } from "@ui/atoms"
 import { AccountIcon } from "@ui/domains/Account/AccountIcon"
 import { AssetLogoBase } from "@ui/domains/Asset/AssetLogo"
 import { ChainLogo } from "@ui/domains/Asset/ChainLogo"
@@ -13,9 +12,9 @@ import Tokens from "@ui/domains/Asset/Tokens"
 import useChain from "@ui/hooks/useChain"
 import { useEvmNetwork } from "@ui/hooks/useEvmNetwork"
 import { useIsKnownAddress } from "@ui/hooks/useIsKnownAddress"
+import useSelectedCurrency from "@ui/hooks/useSelectedCurrency"
 import { FC, useMemo } from "react"
 import { useTranslation } from "react-i18next"
-import { useRecoilValue } from "recoil"
 import { Tooltip, TooltipContent, TooltipTrigger } from "talisman-ui"
 
 const FormattedAddress = ({ address, className }: { address: string; className?: string }) => {
@@ -97,7 +96,7 @@ export const SignViewXTokensTransfer: FC<{
     [tokenDecimals, tokenRates, value]
   )
 
-  const currency = useRecoilValue(selectedCurrencyState)
+  const currency = useSelectedCurrency()
 
   return (
     <div className="flex w-full flex-col items-center gap-16">

@@ -5,16 +5,15 @@ import { FadeIn } from "@talisman/components/FadeIn"
 import { useOpenClose } from "@talisman/hooks/useOpenClose"
 import { ExternalLinkIcon, LockIcon, XIcon, ZapIcon } from "@talismn/icons"
 import { classNames } from "@talismn/util"
-import { selectedCurrencyState } from "@ui/atoms"
 import Fiat from "@ui/domains/Asset/Fiat"
 import Tokens from "@ui/domains/Asset/Tokens"
 import { useAnalytics } from "@ui/hooks/useAnalytics"
 import { useBalancesStatus } from "@ui/hooks/useBalancesStatus"
 import { useSearchParamsSelectedAccount } from "@ui/hooks/useSearchParamsSelectedAccount"
+import useSelectedCurrency from "@ui/hooks/useSelectedCurrency"
 import { MouseEventHandler, ReactNode, useCallback, useMemo } from "react"
 import { Trans, useTranslation } from "react-i18next"
 import { useNavigate } from "react-router-dom"
-import { useRecoilValue } from "recoil"
 
 import { TokenLogo } from "../../Asset/TokenLogo"
 import { useNomPoolStakingBanner } from "../NomPoolStakingContext"
@@ -275,7 +274,7 @@ export const PopupAssetsTable = ({ balances }: GroupedAssetsTableProps) => {
     skeletons,
   } = usePortfolioSymbolBalances(balances)
 
-  const currency = useRecoilValue(selectedCurrencyState)
+  const currency = useSelectedCurrency()
 
   // calculate totals
   const { total, totalAvailable, totalLocked } = useMemo(() => {

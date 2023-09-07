@@ -11,14 +11,13 @@ import {
   UnlockIcon,
 } from "@talismn/icons"
 import { classNames, sleep } from "@talismn/util"
-import { selectedCurrencyState } from "@ui/atoms"
 import { AccountIcon } from "@ui/domains/Account/AccountIcon"
 import { AccountTypeIcon } from "@ui/domains/Account/AccountTypeIcon"
 import Fiat from "@ui/domains/Asset/Fiat"
 import { TokensAndFiat } from "@ui/domains/Asset/TokensAndFiat"
+import useSelectedCurrency from "@ui/hooks/useSelectedCurrency"
 import { FC, useCallback, useMemo, useState } from "react"
 import { Trans, useTranslation } from "react-i18next"
-import { useRecoilValue } from "recoil"
 import { Button, Checkbox, Tooltip, TooltipContent, TooltipTrigger } from "talisman-ui"
 
 import { JsonImportAccount, useJsonAccountImport } from "./context"
@@ -43,7 +42,7 @@ const JsonAccount: FC<{ account: JsonImportAccount; onSelect: (select: boolean) 
     })
   }, [account])
 
-  const currency = useRecoilValue(selectedCurrencyState)
+  const currency = useSelectedCurrency()
 
   return (
     <Tooltip>

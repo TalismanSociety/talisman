@@ -5,9 +5,8 @@ import {
 import { Balance, Balances } from "@core/domains/balances/types"
 import { FiatSumBalancesFormatter } from "@talismn/balances"
 import { TokenRateCurrency } from "@talismn/token-rates"
-import { selectedCurrencyState } from "@ui/atoms"
+import useSelectedCurrency from "@ui/hooks/useSelectedCurrency"
 import { useMemo } from "react"
-import { useRecoilValue } from "recoil"
 
 import { usePortfolio } from "../context"
 import { useSelectedAccount } from "../SelectedAccountContext"
@@ -93,7 +92,7 @@ const sortSymbolBalancesBy =
   }
 
 export const usePortfolioSymbolBalances = (balances: Balances) => {
-  const currency = useRecoilValue(selectedCurrencyState)
+  const currency = useSelectedCurrency()
 
   // group balances by token symbol
   // TODO: Move the association between a token on multiple chains into the backend / subsquid.

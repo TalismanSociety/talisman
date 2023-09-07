@@ -1,14 +1,13 @@
 import { BalanceFormatter } from "@core/domains/balances"
 import { CustomErc20Token } from "@core/domains/tokens/types"
-import { selectedCurrencyState } from "@ui/atoms"
 import { TokenLogo } from "@ui/domains/Asset/TokenLogo"
+import useSelectedCurrency from "@ui/hooks/useSelectedCurrency"
 import useToken from "@ui/hooks/useToken"
 import { useTokenRates } from "@ui/hooks/useTokenRates"
 import useTokens from "@ui/hooks/useTokens"
 import { BigNumber } from "ethers"
 import { FC, useMemo } from "react"
 import { useTranslation } from "react-i18next"
-import { useRecoilValue } from "recoil"
 
 import { SignContainer } from "../SignContainer"
 import { SignViewBodyShimmer } from "../Views/SignViewBodyShimmer"
@@ -22,7 +21,7 @@ export const EthSignBodyErc20Transfer: FC = () => {
   const { account, network, transactionInfo } = useEthSignKnownTransactionRequest()
 
   const nativeToken = useToken(network?.nativeToken?.id)
-  const currency = useRecoilValue(selectedCurrencyState)
+  const currency = useSelectedCurrency()
 
   const { from, value, to } = useMemo(() => {
     return {

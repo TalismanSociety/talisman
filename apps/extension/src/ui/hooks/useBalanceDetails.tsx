@@ -1,9 +1,9 @@
 import { Balance, Balances } from "@talismn/balances"
 import { TokenRateCurrency } from "@talismn/token-rates"
 import { formatDecimals } from "@talismn/util"
-import { selectedCurrencyState } from "@ui/atoms"
 import { useMemo } from "react"
-import { useRecoilValue } from "recoil"
+
+import useSelectedCurrency from "./useSelectedCurrency"
 
 const usdFormatter = new Intl.NumberFormat(undefined, {
   style: "currency",
@@ -17,8 +17,8 @@ const formatBalanceDetails = (b: Balance, currency: TokenRateCurrency) =>
   )}`
 
 export const useBalanceDetails = (balances: Balances) => {
-  const currency = useRecoilValue(selectedCurrencyState)
-  useMemo(
+  const currency = useSelectedCurrency()
+  return useMemo(
     () => ({
       balanceDetails: balances
         .filterNonZeroFiat("total", currency)

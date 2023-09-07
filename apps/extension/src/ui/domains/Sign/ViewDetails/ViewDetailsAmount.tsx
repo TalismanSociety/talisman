@@ -2,6 +2,7 @@ import { BalanceFormatter } from "@core/domains/balances/types"
 import { Token } from "@core/domains/tokens/types"
 import { formatDecimals } from "@talismn/util"
 import Fiat from "@ui/domains/Asset/Fiat"
+import useSelectedCurrency from "@ui/hooks/useSelectedCurrency"
 import { FC } from "react"
 import { useTranslation } from "react-i18next"
 
@@ -14,12 +15,13 @@ type ViewDetailsAmountProps = ViewDetailsFieldProps & {
 
 export const ViewDetailsAmount: FC<ViewDetailsAmountProps> = ({ amount, token, ...fieldProps }) => {
   const { t } = useTranslation("request")
+  const currency = useSelectedCurrency()
   return (
     <ViewDetailsField {...fieldProps}>
       {amount?.tokens
         ? `${formatDecimals(amount?.tokens ?? 0, token?.decimals)} ${token?.symbol ?? ""}`
         : t("Unknown")}
-      {amount?.fiat("usd") ? (
+      {amount?.fiat(currency) ? (
         <>
           {" / "}
           <Fiat noCountUp amount={amount} />

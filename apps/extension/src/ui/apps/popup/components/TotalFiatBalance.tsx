@@ -2,7 +2,6 @@ import { ArrowDownIcon, CreditCardIcon, EyeIcon, EyeOffIcon, SendIcon } from "@t
 import { classNames } from "@talismn/util"
 import { api } from "@ui/api"
 import { AnalyticsEventName, AnalyticsPage, sendAnalyticsEvent } from "@ui/api/analytics"
-import { selectedCurrencyState } from "@ui/atoms"
 import currencyConfig from "@ui/domains/Asset/currencyConfig"
 import { Fiat } from "@ui/domains/Asset/Fiat"
 import { useCopyAddressModal } from "@ui/domains/CopyAddress"
@@ -10,10 +9,10 @@ import { useAnalytics } from "@ui/hooks/useAnalytics"
 import useBalances from "@ui/hooks/useBalances"
 import { useToggleCurrency } from "@ui/hooks/useCurrency"
 import { useIsFeatureEnabled } from "@ui/hooks/useFeatures"
+import useSelectedCurrency from "@ui/hooks/useSelectedCurrency"
 import { useSetting } from "@ui/hooks/useSettings"
 import { ComponentProps, MouseEventHandler, useCallback, useMemo } from "react"
 import { useTranslation } from "react-i18next"
-import { useRecoilValue } from "recoil"
 import { PillButton } from "talisman-ui"
 
 type Props = {
@@ -24,7 +23,7 @@ type Props = {
 export const TotalFiatBalance = ({ className, mouseOver }: Props) => {
   const { t } = useTranslation()
   const balances = useBalances("portfolio")
-  const currency = useRecoilValue(selectedCurrencyState)
+  const currency = useSelectedCurrency()
   const toggleCurrency = useToggleCurrency()
 
   const [hideBalances, setHideBalances] = useSetting("hideBalances")

@@ -1,11 +1,10 @@
 import { Token } from "@core/domains/tokens/types"
 import { LockIcon } from "@talismn/icons"
 import { classNames } from "@talismn/util"
-import { selectedCurrencyState } from "@ui/atoms"
 import { useToggleCurrency } from "@ui/hooks/useCurrency"
+import useSelectedCurrency from "@ui/hooks/useSelectedCurrency"
 import BigNumber from "bignumber.js"
 import { ReactNode } from "react"
-import { useRecoilValue } from "recoil"
 
 import currencyConfig from "../Asset/currencyConfig"
 import Fiat from "../Asset/Fiat"
@@ -64,7 +63,7 @@ export const Statistics = ({
   showTokens,
   showCurrencyToggle,
 }: StatisticsProps) => {
-  const currency = useRecoilValue(selectedCurrencyState)
+  const currency = useSelectedCurrency()
   const toggleCurrency = useToggleCurrency()
 
   return (

@@ -9,7 +9,6 @@ import { classNames } from "@talismn/util"
 import { AnalyticsPage, sendAnalyticsEvent } from "@ui/api/analytics"
 import { AccountsLogoStack } from "@ui/apps/dashboard/routes/Settings/Accounts/AccountsLogoStack"
 import { TotalFiatBalance } from "@ui/apps/popup/components/TotalFiatBalance"
-import { selectedCurrencyState } from "@ui/atoms"
 import { AccountFolderIcon } from "@ui/domains/Account/AccountFolderIcon"
 import { AccountIcon } from "@ui/domains/Account/AccountIcon"
 import { AccountTypeIcon } from "@ui/domains/Account/AccountTypeIcon"
@@ -25,13 +24,12 @@ import { useFirstAccountColors } from "@ui/hooks/useFirstAccountColors"
 import { useFormattedAddress } from "@ui/hooks/useFormattedAddress"
 import { useHasAccounts } from "@ui/hooks/useHasAccounts"
 import { useSearchParamsSelectedFolder } from "@ui/hooks/useSearchParamsSelectedFolder"
+import useSelectedCurrency from "@ui/hooks/useSelectedCurrency"
 import { MouseEventHandler, Suspense, useCallback, useEffect, useMemo, useRef } from "react"
 import { useTranslation } from "react-i18next"
 import { useNavigate } from "react-router-dom"
 import { useHoverDirty } from "react-use"
-import { useRecoilValue } from "recoil"
-import { IconButton, MysticalPhysicsV3 } from "talisman-ui"
-import { MYSTICAL_PHYSICS_V3, MysticalBackground } from "talisman-ui"
+import { IconButton, MYSTICAL_PHYSICS_V3, MysticalBackground, MysticalPhysicsV3 } from "talisman-ui"
 
 const ANALYTICS_PAGE: AnalyticsPage = {
   container: "Popup",
@@ -286,7 +284,7 @@ const FolderHeader = ({ folder, folderTotal }: { folder: TreeFolder; folderTotal
 
 export const PortfolioAccounts = () => {
   const balances = useBalances()
-  const currency = useRecoilValue(selectedCurrencyState)
+  const currency = useSelectedCurrency()
   const accounts = useAccounts()
   const catalog = useAccountsCatalog()
   const { folder, treeName: folderTreeName } = useSearchParamsSelectedFolder()

@@ -6,7 +6,6 @@ import { isEthereumAddress } from "@polkadot/util-crypto"
 import { Balance, Balances } from "@talismn/balances"
 import { ChevronDownIcon, EyeIcon, TalismanHandIcon } from "@talismn/icons"
 import { classNames } from "@talismn/util"
-import { selectedCurrencyState } from "@ui/atoms"
 import { AccountFolderIcon } from "@ui/domains/Account/AccountFolderIcon"
 import { AccountIcon } from "@ui/domains/Account/AccountIcon"
 import { AccountTypeIcon } from "@ui/domains/Account/AccountTypeIcon"
@@ -16,10 +15,10 @@ import { useSelectedAccount } from "@ui/domains/Portfolio/SelectedAccountContext
 import useAccountsCatalog from "@ui/hooks/useAccountsCatalog"
 import { useAnalytics } from "@ui/hooks/useAnalytics"
 import useBalances from "@ui/hooks/useBalances"
+import useSelectedCurrency from "@ui/hooks/useSelectedCurrency"
 import { useSetting } from "@ui/hooks/useSettings"
 import { forwardRef, useCallback, useMemo } from "react"
 import { useTranslation } from "react-i18next"
-import { useRecoilValue } from "recoil"
 
 type AccountSelectItem =
   | {
@@ -54,7 +53,7 @@ export const AccountSelect = () => {
   const { account: selectedAccount, accounts, select } = useSelectedAccount()
   const balances = useBalances()
   const catalog = useAccountsCatalog()
-  const currency = useRecoilValue(selectedCurrencyState)
+  const currency = useSelectedCurrency()
 
   const portfolioBalances = useBalances("portfolio")
   const totalFiat = useMemo(

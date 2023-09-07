@@ -1,9 +1,8 @@
 import { BalanceFormatter } from "@talismn/balances"
-import { selectedCurrencyState } from "@ui/atoms"
+import useSelectedCurrency from "@ui/hooks/useSelectedCurrency"
 import useToken from "@ui/hooks/useToken"
 import { useTokenRates } from "@ui/hooks/useTokenRates"
 import { FC, useMemo } from "react"
-import { useRecoilValue } from "recoil"
 
 import Fiat from "./Fiat"
 import Tokens from "./Tokens"
@@ -38,7 +37,7 @@ export const TokensAndFiat: FC<TokensAndFiatProps> = ({
         : null,
     [planck, token, tokenRates]
   )
-  const currency = useRecoilValue(selectedCurrencyState)
+  const currency = useSelectedCurrency()
 
   if (!balance || !token) return null
 

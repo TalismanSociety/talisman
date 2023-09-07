@@ -7,10 +7,10 @@ import { AccountAddressType } from "@talisman/util/getAddressType"
 import { AlertCircleIcon, InfoIcon, SwapIcon, UserPlusIcon } from "@talismn/icons"
 import { classNames, planckToTokens, tokensToPlanck } from "@talismn/util"
 import { SendFundsWizardPage, useSendFundsWizard } from "@ui/apps/popup/pages/SendFunds/context"
-import { selectedCurrencyState } from "@ui/atoms"
 import { useAccountByAddress } from "@ui/hooks/useAccountByAddress"
 import { useAddressBook } from "@ui/hooks/useAddressBook"
 import { useFormattedAddress } from "@ui/hooks/useFormattedAddress"
+import useSelectedCurrency from "@ui/hooks/useSelectedCurrency"
 import useToken from "@ui/hooks/useToken"
 import { isEvmToken } from "@ui/util/isEvmToken"
 import { isSubToken } from "@ui/util/isSubToken"
@@ -29,9 +29,7 @@ import {
 } from "react"
 import { Container } from "react-dom"
 import { Trans, useTranslation } from "react-i18next"
-import { useRecoilValue } from "recoil"
-import { Drawer } from "talisman-ui"
-import { Button, PillButton } from "talisman-ui"
+import { Button, Drawer, PillButton } from "talisman-ui"
 
 import { AccountIcon } from "../Account/AccountIcon"
 import { AccountTypeIcon } from "../Account/AccountTypeIcon"
@@ -222,7 +220,7 @@ const FiatInput = () => {
     resizeFiatInput,
   } = useSendFunds()
 
-  const currency = useRecoilValue(selectedCurrencyState)
+  const currency = useSelectedCurrency()
 
   const defaultValue = useMemo(
     () =>

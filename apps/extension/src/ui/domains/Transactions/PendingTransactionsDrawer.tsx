@@ -3,9 +3,9 @@ import { db } from "@core/db"
 import {
   EvmWalletTransaction,
   SubWalletTransaction,
+  TransactionStatus,
   WalletTransaction,
 } from "@core/domains/transactions/types"
-import { TransactionStatus } from "@core/domains/transactions/types"
 import i18next from "@core/i18nConfig"
 import { convertAddress } from "@talisman/util/convertAddress"
 import { BalanceFormatter } from "@talismn/balances"
@@ -13,12 +13,12 @@ import { ChainId, EvmNetworkId } from "@talismn/chaindata-provider"
 import { LoaderIcon, MoreHorizontalIcon, RocketIcon, XOctagonIcon } from "@talismn/icons"
 import { classNames } from "@talismn/util"
 import { AnalyticsPage, sendAnalyticsEvent } from "@ui/api/analytics"
-import { selectedCurrencyState } from "@ui/atoms"
 import { useAnalyticsPageView } from "@ui/hooks/useAnalyticsPageView"
 import useChainByGenesisHash from "@ui/hooks/useChainByGenesisHash"
 import { useEvmNetwork } from "@ui/hooks/useEvmNetwork"
 import { useFaviconUrl } from "@ui/hooks/useFaviconUrl"
 import { useIsFeatureEnabled } from "@ui/hooks/useFeatures"
+import useSelectedCurrency from "@ui/hooks/useSelectedCurrency"
 import useToken from "@ui/hooks/useToken"
 import { useTokenRates } from "@ui/hooks/useTokenRates"
 import { getTransactionHistoryUrl } from "@ui/util/getTransactionHistoryUrl"
@@ -28,7 +28,6 @@ import { BigNumber } from "ethers"
 import sortBy from "lodash/sortBy"
 import { FC, PropsWithChildren, forwardRef, useCallback, useEffect, useMemo, useState } from "react"
 import { Trans, useTranslation } from "react-i18next"
-import { useRecoilValue } from "recoil"
 import {
   Button,
   Drawer,
@@ -344,7 +343,7 @@ const TransactionRowEvm: FC<TransactionRowEvmProps> = ({
 
   const token = useToken(tokenId)
   const tokenRates = useTokenRates(tokenId)
-  const currency = useRecoilValue(selectedCurrencyState)
+  const currency = useSelectedCurrency()
 
   const [isCtxMenuOpen, setIsCtxMenuOpen] = useState(false)
 
@@ -558,7 +557,7 @@ const TransactionRowSubstrate: FC<TransactionRowSubProps> = ({
   const chain = useChainByGenesisHash(genesisHash)
   const token = useToken(tx.tokenId)
   const tokenRates = useTokenRates(tx.tokenId)
-  const currency = useRecoilValue(selectedCurrencyState)
+  const currency = useSelectedCurrency()
 
   const { isTransfer, amount } = useMemo(() => {
     const isTransfer = tx.value && tx.tokenId && tx.to && token
