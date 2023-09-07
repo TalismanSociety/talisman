@@ -11,9 +11,9 @@ export const BuyTokensModal = () => {
   const { isOpen, close } = useBuyTokensModal()
 
   return (
-    <Modal isOpen={isOpen} onDismiss={close}>
+    <Modal isOpen={isOpen} onDismiss={close} className="overflow-visible">
       <ModalDialog
-        className="!bg-grey-850 !overflow-visible [&>.content]:!overflow-visible"
+        className="bg-grey-850 border-grey-800 overflow-visible border [&>div]:overflow-visible"
         title={t("Buy Crypto")}
         onClose={close}
       >
