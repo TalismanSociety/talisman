@@ -1,3 +1,4 @@
+import { VerifierCertificateType } from "@core/domains/mnemonics/types"
 import { HexString } from "@polkadot/util/types"
 import { notify, notifyUpdate } from "@talisman/components/Notifications"
 import { provideContext } from "@talisman/util/provideContext"
@@ -25,10 +26,12 @@ export type CONFIGURE_STATE = {
   submitting?: true
 }
 
+type VerifierCertificateTypeState = VerifierCertificateType | "new" | undefined
+
 export type CONFIGURE_VERIFIER_CERT_STATE = {
   type: "CONFIGURE_VERIFIER_CERT"
   verifierCertificateConfig?: {
-    verifierCertificateType?: "talisman" | "new" | null
+    verifierCertificateType?: VerifierCertificateTypeState
     verifierCertificateMnemonic?: string
     verifierCertificateMnemonicId?: string
   }
@@ -56,8 +59,9 @@ type Action =
   | { method: "setConfigureVerifierCert" }
   | {
       method: "setVerifierCertType"
-      verifierCertificateType: "talisman" | "new" | null | undefined
+      verifierCertificateType: VerifierCertificateTypeState
       verifierCertificateMnemonicId?: string | undefined
+      verifierCertificateMnemonic?: string | undefined
     }
 
 export const reducer = (state: AddQrState, action: Action): AddQrState => {
@@ -120,6 +124,7 @@ export const reducer = (state: AddQrState, action: Action): AddQrState => {
           ...state.verifierCertificateConfig,
           verifierCertificateType: action.verifierCertificateType,
           verifierCertificateMnemonicId: action.verifierCertificateMnemonicId,
+          verifierCertificateMnemonic: action.verifierCertificateMnemonic,
         },
       }
     }
@@ -157,9 +162,17 @@ const useAccountAddQrContext = ({ onSuccess }: AccountAddPageProps) => {
 
       const { name, address, genesisHash, lockToNetwork } = state.accountConfig
       if (state.type === "CONFIGURE_VERIFIER_CERT" && state.verifierCertificateConfig) {
-        const { verifierCertificateType } = state.verifierCertificateConfig
+        const {
+          verifierCertificateType,
+          verifierCertificateMnemonic,
+          verifierCertificateMnemonicId,
+        } = state.verifierCertificateConfig
         if (verifierCertificateType)
-          await api.setVerifierCertMnemonic(verifierCertificateType, mnemonic)
+          await api.setVerifierCertMnemonic(
+            verifierCertificateType === "new" ? "import" : verifierCertificateType,
+            mnemonic ?? verifierCertificateMnemonic,
+            verifierCertificateMnemonicId
+          )
       }
 
       try {

@@ -23,7 +23,7 @@ export declare type MnemonicDeleteRequest = {
   mnemonicId: MnemonicId
 }
 
-export type VerifierCertificateType = "new" | "talisman"
+export type VerifierCertificateType = "existing" | "import" | null
 
 export type RequestSetVerifierCertificateMnemonic = {
   type: VerifierCertificateType

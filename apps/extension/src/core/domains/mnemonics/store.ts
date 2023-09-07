@@ -60,6 +60,7 @@ const cleanupMnemonic = (mnemonic: string) => {
   return mnemonic.trim().toLowerCase().replace(/\s+/g, " ")
 }
 
+type MnemonicId = string
 export class MnemonicsStore extends StorageProvider<MnemonicsStoreData> {
   public async add(
     name: string,
@@ -67,7 +68,7 @@ export class MnemonicsStore extends StorageProvider<MnemonicsStoreData> {
     password: string,
     source: SOURCES = SOURCES.Imported,
     confirmed = false
-  ): Promise<Result<string, MnemonicErrors.AlreadyExists | MnemonicErrors.InvalidMnemonic>> {
+  ): Promise<Result<MnemonicId, MnemonicErrors.AlreadyExists | MnemonicErrors.InvalidMnemonic>> {
     if (!mnemonicValidate(mnemonic)) return Err(MnemonicErrors.InvalidMnemonic)
 
     const cleanMnemonic = cleanupMnemonic(mnemonic)

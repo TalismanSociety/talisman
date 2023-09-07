@@ -1,5 +1,10 @@
 import { POLKADOT_VAULT_DOCS_URL } from "@core/constants"
 import { HeaderBlock } from "@talisman/components/HeaderBlock"
+import {
+  MnemonicCreateModal,
+  MnemonicCreateModalProvider,
+  useMnemonicCreateModal,
+} from "@ui/domains/Mnemonic/MnemonicCreateModal"
 import { useMnemonics } from "@ui/hooks/useMnemonics"
 import { ReactNode, useMemo } from "react"
 import { Trans, useTranslation } from "react-i18next"
@@ -15,10 +20,11 @@ const VerifierCertificateOption = ({ text, children }: { text: string; children:
   </div>
 )
 
-export const ConfigureVerifierCertificateMnemonic = () => {
+const ConfigureVerifierCertificateMnemonicForm = () => {
   const { t } = useTranslation("admin")
   const { dispatch, state, submit } = useAccountAddQr()
   const mnemonics = useMnemonics()
+  const { generateMnemonic } = useMnemonicCreateModal()
 
   // TODO user should choose which one to pick
   const existingMnemonicId = useMemo(() => {
@@ -29,14 +35,21 @@ export const ConfigureVerifierCertificateMnemonic = () => {
 
   const canSubmit = useMemo(() => {
     if (state.type !== "CONFIGURE_VERIFIER_CERT") return null
-    const { verifierCertificateConfig } = state
+    if (!state.verifierCertificateConfig) return null
+    const {
+      verifierCertificateConfig: {
+        verifierCertificateType,
+        verifierCertificateMnemonicId,
+        verifierCertificateMnemonic,
+      },
+    } = state
     return (
       !state.submitting &&
-      verifierCertificateConfig &&
-      (verifierCertificateConfig.verifierCertificateType === "talisman" ||
-        (verifierCertificateConfig.verifierCertificateType === "new" &&
-          verifierCertificateConfig.verifierCertificateMnemonic) ||
-        verifierCertificateConfig.verifierCertificateType === null)
+      ((verifierCertificateType &&
+        ((verifierCertificateType === "existing" && verifierCertificateMnemonicId) ||
+          (verifierCertificateType === "import" && verifierCertificateMnemonic) ||
+          (verifierCertificateType === "new" && verifierCertificateMnemonic))) ||
+        verifierCertificateType === null)
     )
   }, [state])
 
@@ -52,7 +65,7 @@ export const ConfigureVerifierCertificateMnemonic = () => {
         )}
       />
       {(!state.verifierCertificateConfig ||
-        state.verifierCertificateConfig.verifierCertificateType !== "new") && (
+        state.verifierCertificateConfig.verifierCertificateType !== "import") && (
         <div className="flex flex-col gap-8">
           <span>{t("Why do I need to do this?")}</span>
           <div className="text-body-secondary text-sm">
@@ -87,12 +100,35 @@ export const ConfigureVerifierCertificateMnemonic = () => {
                 onClick={() =>
                   dispatch({
                     method: "setVerifierCertType",
-                    verifierCertificateType: "talisman",
+                    verifierCertificateType: "existing",
                     verifierCertificateMnemonicId: existingMnemonicId,
                   })
                 }
               >
                 {t("Use my existing Talisman mnemonic")}
+              </Button>
+            </VerifierCertificateOption>
+          )}
+          {!existingMnemonicId && (
+            <VerifierCertificateOption
+              text={t(
+                "Use this option to generate a new recovery phrase as your Polkadot Vault Verifier Certificate Mnemonic. Choose this option if you are not sure what to do."
+              )}
+            >
+              <Button
+                className="secondary text-sm"
+                onClick={async () => {
+                  const mnemonicResult = await generateMnemonic()
+                  if (!mnemonicResult) return
+                  const { mnemonic } = mnemonicResult
+                  dispatch({
+                    method: "setVerifierCertType",
+                    verifierCertificateType: "new",
+                    verifierCertificateMnemonic: mnemonic,
+                  })
+                }}
+              >
+                {t("Generate a new mnemonic")}
               </Button>
             </VerifierCertificateOption>
           )}
@@ -104,10 +140,10 @@ export const ConfigureVerifierCertificateMnemonic = () => {
             <Button
               className="secondary text-sm"
               onClick={() =>
-                dispatch({ method: "setVerifierCertType", verifierCertificateType: "new" })
+                dispatch({ method: "setVerifierCertType", verifierCertificateType: "import" })
               }
             >
-              {t("Import a new mnemonic")}
+              {t("Import a mnemonic")}
             </Button>
           </VerifierCertificateOption>
           <VerifierCertificateOption
@@ -136,7 +172,7 @@ export const ConfigureVerifierCertificateMnemonic = () => {
           </Button>
         </div>
       )}
-      {state.verifierCertificateConfig?.verifierCertificateType === "new" && (
+      {state.verifierCertificateConfig?.verifierCertificateType === "import" && (
         <MnemonicForm
           onSubmit={async (data) => {
             await submit(data.mnemonic)
@@ -149,3 +185,10 @@ export const ConfigureVerifierCertificateMnemonic = () => {
     </div>
   )
 }
+
+export const ConfigureVerifierCertificateMnemonic = () => (
+  <MnemonicCreateModalProvider>
+    <MnemonicCreateModal />
+    <ConfigureVerifierCertificateMnemonicForm />
+  </MnemonicCreateModalProvider>
+)

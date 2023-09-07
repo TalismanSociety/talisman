@@ -12,21 +12,32 @@ export default class MnemonicHandler extends ExtensionHandler {
     mnemonic,
     mnemonicId,
   }: RequestSetVerifierCertificateMnemonic) {
-    if (type === "new" && mnemonic) {
-      const isValidMnemonic = mnemonicValidate(mnemonic)
-      assert(isValidMnemonic, "Invalid mnemonic")
-      const password = this.stores.password.getPassword()
-      if (!password) throw new Error("Unauthorised")
-      const { err, val } = await this.stores.mnemonics.add(
-        "Vault Verifier Certificate Mnemonic",
-        mnemonic,
-        password,
-        SOURCES.Imported
-      )
-      if (err) throw new Error("Unable to set Verifier Certificate Mnemonic", { cause: val })
-      await this.stores.app.set({ vaultVerifierCertificateMnemonicId: val })
-    } else if (type === "talisman" && mnemonicId) {
-      await this.stores.app.set({ vaultVerifierCertificateMnemonicId: mnemonicId })
+    switch (type) {
+      case "import": {
+        assert(mnemonic, "Mnemonic should be provided")
+        assert(!mnemonicId, "MnemonicId should not be provided")
+        const isValidMnemonic = mnemonicValidate(mnemonic)
+        assert(isValidMnemonic, "Invalid mnemonic")
+        const password = this.stores.password.getPassword()
+        if (!password) throw new Error("Unauthorised")
+        const { err, val } = await this.stores.mnemonics.add(
+          "Vault Verifier Certificate Mnemonic",
+          mnemonic,
+          password,
+          SOURCES.Imported
+        )
+        if (err) throw new Error("Unable to set Verifier Certificate Mnemonic", { cause: val })
+        await this.stores.app.set({ vaultVerifierCertificateMnemonicId: val })
+        break
+      }
+      case "existing": {
+        assert(!mnemonic, "Mnemonic should not be provided")
+        assert(mnemonicId, "MnemonicId should be provided")
+        await this.stores.app.set({ vaultVerifierCertificateMnemonicId: mnemonicId })
+        break
+      }
+      default:
+        throw new Error(`Unable to handle setVerifierCertMnemonic message with type ${type}`)
     }
     return true
   }
