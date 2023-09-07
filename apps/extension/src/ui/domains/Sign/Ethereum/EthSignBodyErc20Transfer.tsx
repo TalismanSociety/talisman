@@ -1,7 +1,7 @@
 import { BalanceFormatter } from "@core/domains/balances"
 import { CustomErc20Token } from "@core/domains/tokens/types"
 import { TokenLogo } from "@ui/domains/Asset/TokenLogo"
-import useSelectedCurrency from "@ui/hooks/useSelectedCurrency"
+import { useSelectedCurrency } from "@ui/hooks/useCurrency"
 import useToken from "@ui/hooks/useToken"
 import { useTokenRates } from "@ui/hooks/useTokenRates"
 import useTokens from "@ui/hooks/useTokens"

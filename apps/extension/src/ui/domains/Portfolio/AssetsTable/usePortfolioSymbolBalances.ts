@@ -5,7 +5,7 @@ import {
 import { Balance, Balances } from "@core/domains/balances/types"
 import { FiatSumBalancesFormatter } from "@talismn/balances"
 import { TokenRateCurrency } from "@talismn/token-rates"
-import useSelectedCurrency from "@ui/hooks/useSelectedCurrency"
+import { useSelectedCurrency } from "@ui/hooks/useCurrency"
 import { useMemo } from "react"
 
 import { usePortfolio } from "../context"

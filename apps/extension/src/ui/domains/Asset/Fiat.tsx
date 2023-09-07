@@ -1,8 +1,8 @@
 import { fiatDecimalSeparator, fiatGroupSeparator, formatFiat } from "@talisman/util/formatFiat"
 import { BalanceFormatter } from "@talismn/balances"
 import { classNames } from "@talismn/util"
+import { useSelectedCurrency } from "@ui/hooks/useCurrency"
 import { useRevealableBalance } from "@ui/hooks/useRevealableBalance"
-import useSelectedCurrency from "@ui/hooks/useSelectedCurrency"
 import { FC, useCallback, useMemo } from "react"
 import CountUp from "react-countup"
 

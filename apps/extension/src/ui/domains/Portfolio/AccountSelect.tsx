@@ -15,7 +15,7 @@ import { useSelectedAccount } from "@ui/domains/Portfolio/SelectedAccountContext
 import useAccountsCatalog from "@ui/hooks/useAccountsCatalog"
 import { useAnalytics } from "@ui/hooks/useAnalytics"
 import useBalances from "@ui/hooks/useBalances"
-import useSelectedCurrency from "@ui/hooks/useSelectedCurrency"
+import { useSelectedCurrency } from "@ui/hooks/useCurrency"
 import { useSetting } from "@ui/hooks/useSettings"
 import { forwardRef, useCallback, useMemo } from "react"
 import { useTranslation } from "react-i18next"

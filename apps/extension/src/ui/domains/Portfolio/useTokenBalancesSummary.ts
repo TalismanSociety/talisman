@@ -3,7 +3,7 @@ import { Chain } from "@core/domains/chains/types"
 import { Token } from "@core/domains/tokens/types"
 import { TokenRatesList } from "@talismn/token-rates"
 import { usePortfolio } from "@ui/domains/Portfolio/context"
-import useSelectedCurrency from "@ui/hooks/useSelectedCurrency"
+import { useSelectedCurrency } from "@ui/hooks/useCurrency"
 import BigNumber from "bignumber.js"
 import { useMemo } from "react"
 

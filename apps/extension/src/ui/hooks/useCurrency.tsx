@@ -1,5 +1,7 @@
 import { selectableCurrenciesState, selectedCurrencyState } from "@ui/atoms"
-import { useRecoilCallback } from "recoil"
+import { useRecoilCallback, useRecoilValue } from "recoil"
+
+export const useSelectedCurrency = () => useRecoilValue(selectedCurrencyState)
 
 export const useToggleCurrency = () =>
   useRecoilCallback(

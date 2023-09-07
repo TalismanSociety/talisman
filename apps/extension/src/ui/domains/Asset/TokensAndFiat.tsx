@@ -1,5 +1,5 @@
 import { BalanceFormatter } from "@talismn/balances"
-import useSelectedCurrency from "@ui/hooks/useSelectedCurrency"
+import { useSelectedCurrency } from "@ui/hooks/useCurrency"
 import useToken from "@ui/hooks/useToken"
 import { useTokenRates } from "@ui/hooks/useTokenRates"
 import { FC, useMemo } from "react"

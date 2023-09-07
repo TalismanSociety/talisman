@@ -3,7 +3,7 @@ import { TokenRateCurrency } from "@talismn/token-rates"
 import { formatDecimals } from "@talismn/util"
 import { useMemo } from "react"
 
-import useSelectedCurrency from "./useSelectedCurrency"
+import { useSelectedCurrency } from "./useCurrency"
 
 const usdFormatter = new Intl.NumberFormat(undefined, {
   style: "currency",

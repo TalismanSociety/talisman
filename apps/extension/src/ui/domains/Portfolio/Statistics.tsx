@@ -1,8 +1,7 @@
 import { Token } from "@core/domains/tokens/types"
 import { LockIcon } from "@talismn/icons"
 import { classNames } from "@talismn/util"
-import { useToggleCurrency } from "@ui/hooks/useCurrency"
-import useSelectedCurrency from "@ui/hooks/useSelectedCurrency"
+import { useSelectedCurrency, useToggleCurrency } from "@ui/hooks/useCurrency"
 import BigNumber from "bignumber.js"
 import { ReactNode } from "react"
 
