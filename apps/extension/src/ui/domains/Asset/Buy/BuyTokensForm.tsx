@@ -110,7 +110,7 @@ const useSupportedTokenIds = (chains?: Chain[], tokens?: Token[], address?: stri
 }
 
 const renderAccountItem: DropdownOptionRender<AccountJsonAny> = (account) => {
-  return <FormattedAddress address={account.address} withSource />
+  return <FormattedAddress address={account.address} withSource className="h-24" />
 }
 
 export const BuyTokensForm = () => {
@@ -252,6 +252,7 @@ export const BuyTokensForm = () => {
         key={address} // uncontrolled component, will reset if value changes
         className="w-full"
         buttonClassName="h-28"
+        optionClassName="h-24 py-0"
       />
       <TokenAmountField
         fieldProps={register("amountUSD")}
