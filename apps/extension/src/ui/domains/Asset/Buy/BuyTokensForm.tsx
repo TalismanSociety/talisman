@@ -266,7 +266,7 @@ export const BuyTokensForm = () => {
         {t("Continue")}
       </Button>
       <div className="text-body-disabled text-xs leading-none">
-        {t("You will be taken to Banxa to complete this transaction")}
+        {t("You will be redirected to Banxa to complete this transaction")}
       </div>
     </form>
   )
