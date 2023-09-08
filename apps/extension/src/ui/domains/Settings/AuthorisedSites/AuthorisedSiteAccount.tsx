@@ -34,9 +34,7 @@ export const AuthorisedSiteAccount: FC<{
         </div>
         <AccountTypeIcon origin={account.origin} className="text-primary-500 text-md" />
       </div>
-      <div>
-        <Toggle checked={isConnected} onChange={handleChange} />
-      </div>
+      <Toggle checked={isConnected} onChange={handleChange} />
     </div>
   )
 }
