@@ -183,7 +183,7 @@ export default interface MessageTypes {
   generateChainSpecsQr: (genesisHash: SignerPayloadGenesisHash) => Promise<HexString>
   generateChainMetadataQr: (
     genesisHash: SignerPayloadGenesisHash,
-    specVersion: number
+    specVersion?: number
   ) => Promise<HexString>
 
   // token message types
