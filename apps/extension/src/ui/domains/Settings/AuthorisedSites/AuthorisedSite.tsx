@@ -83,7 +83,7 @@ export const AuthorizedSite: FC<{
             totalCount: availableAddresses?.length ?? 0,
           })}
         </div>
-        <div>
+        <div className="text-lg">
           <AccordionIcon isOpen={isOpen} />
         </div>
       </button>
