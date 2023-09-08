@@ -167,6 +167,8 @@ export default interface MessageTypes {
   authorizedSiteSubscribe: (id: string, cb: (sites: AuthorizedSite) => void) => UnsubscribeFn
   authorizedSiteForget: (id: string, type: ProviderType) => Promise<boolean>
   authorizedSiteUpdate: (id: string, authorisedSite: AuthorisedSiteUpdate) => Promise<boolean>
+  authorizedSitesDisconnectAll: (type: ProviderType) => Promise<boolean>
+  authorizedSitesForgetAll: (type: ProviderType) => Promise<boolean>
 
   // authorization requests message types ------------------------------------
   authrequestApprove: (id: AuthRequestId, addresses: AuthRequestAddresses) => Promise<boolean>

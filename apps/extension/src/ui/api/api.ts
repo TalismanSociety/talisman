@@ -163,6 +163,9 @@ export const api: MessageTypes = {
   authorizedSiteForget: (id, type) => messageService.sendMessage("pri(sites.forget)", { id, type }),
   authorizedSiteUpdate: (id, authorisedSite) =>
     messageService.sendMessage("pri(sites.update)", { id, authorisedSite }),
+  authorizedSitesDisconnectAll: (type) =>
+    messageService.sendMessage("pri(sites.disconnect.all)", { type }),
+  authorizedSitesForgetAll: (type) => messageService.sendMessage("pri(sites.forget.all)", { type }),
 
   // authorization requests messages ------------------------------------
   authrequestApprove: (id, addresses) =>
