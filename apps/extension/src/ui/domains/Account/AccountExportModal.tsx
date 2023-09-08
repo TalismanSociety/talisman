@@ -1,4 +1,4 @@
-import { AccountJsonAny, AccountType } from "@core/domains/accounts/types"
+import { AccountJsonAny, AccountTypes } from "@core/domains/accounts/types"
 import { yupResolver } from "@hookform/resolvers/yup"
 import { PasswordStrength } from "@talisman/components/PasswordStrength"
 import { useOpenClose } from "@talisman/hooks/useOpenClose"
@@ -15,15 +15,6 @@ import * as yup from "yup"
 
 import { useSelectedAccount } from "../Portfolio/SelectedAccountContext"
 import { PasswordUnlock, usePasswordUnlock } from "./PasswordUnlock"
-
-const EXPORTABLE_ORIGINS: AccountType[] = [
-  "SEED",
-  "JSON",
-  "DERIVED",
-  "ROOT",
-  "SEED_STORED",
-  "TALISMAN",
-]
 
 const useAccountExportModalProvider = () => {
   const [_account, setAccount] = useState<AccountJsonAny>()
@@ -46,7 +37,7 @@ const useAccountExportModalProvider = () => {
   const account = _account ?? selectedAccount
 
   const canExportAccountFunc = (account?: AccountJsonAny) =>
-    account?.origin && EXPORTABLE_ORIGINS.includes(account?.origin)
+    account?.origin && account?.origin === AccountTypes.TALISMAN
 
   const canExportAccount = useMemo(() => canExportAccountFunc(account), [account])
 

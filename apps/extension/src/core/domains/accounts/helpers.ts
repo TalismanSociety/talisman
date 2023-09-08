@@ -1,12 +1,5 @@
 import { AccountsCatalogStore } from "@core/domains/accounts/store.catalog"
-import {
-  Account,
-  AccountJsonAny,
-  AccountType,
-  AccountTypes,
-  IdenticonType,
-  storedSeedAccountTypes,
-} from "@core/domains/accounts/types"
+import { Account, AccountJsonAny, AccountTypes, IdenticonType } from "@core/domains/accounts/types"
 import { log } from "@core/log"
 import type { Address } from "@core/types/base"
 import { getAccountAvatarDataUri } from "@core/util/getAccountAvatarDataUri"
@@ -46,20 +39,22 @@ const sortAccountsByWhenCreated = (accounts: AccountJsonAny[]) => {
 }
 
 const legacySortAccounts = (accounts: AccountJsonAny[]) => {
-  // should be one 'Talisman' account with a stored seed
-  const root = accounts.find(({ origin }) => origin && storedSeedAccountTypes.includes(origin))
+  const root = sortAccountsByWhenCreated(accounts).find(
+    ({ origin, parentAddress }) => origin && origin === AccountTypes.TALISMAN && !parentAddress
+  )
 
   // can be multiple derived accounts
   // should order these by created date? probably
-  const derived = accounts.filter(({ origin }) => origin === AccountTypes.DERIVED)
+  const derived = accounts.filter(
+    ({ origin, parentAddress }) => origin === AccountTypes.TALISMAN && !!parentAddress
+  )
   const derivedSorted = sortAccountsByWhenCreated(derived)
 
   // can be multiple imported accounts - both JSON or SEED imports
   // as well as QR (parity signer) and HARDWARE (ledger) accounts
   // should order these by created date? probably
-  const imported = accounts.filter(({ origin }) =>
-    ["SEED", "JSON", "QR", "HARDWARE", "DCENT"].includes(origin as string)
-  )
+  const imported = accounts.filter(({ origin }) => origin && origin !== AccountTypes.TALISMAN)
+
   const importedSorted = sortAccountsByWhenCreated(imported)
 
   const watchedPortfolio = accounts.filter(
@@ -133,7 +128,7 @@ export const getPublicAccounts = (
   filterFn: (accounts: SingleAddress[]) => SingleAddress[] = (accounts) => accounts
 ) =>
   filterFn(accounts)
-    .filter((a) => a.json.meta.origin !== "WATCHED")
+    .filter((a) => a.json.meta.origin !== AccountTypes.WATCHED)
     .sort((a, b) => (a.json.meta.whenCreated || 0) - (b.json.meta.whenCreated || 0))
     .map(getInjectedAccount)
 
@@ -147,7 +142,7 @@ export const getPrimaryAccount = (storedSeedOnly = false) => {
 
   if (allAccounts.length === 0) return
   const storedSeedAccount = allAccounts.find(
-    ({ meta }) => meta && meta.origin && storedSeedAccountTypes.includes(meta.origin as AccountType)
+    ({ meta }) => meta && meta.origin && meta.origin === AccountTypes.TALISMAN
   )
 
   if (storedSeedAccount) return storedSeedAccount

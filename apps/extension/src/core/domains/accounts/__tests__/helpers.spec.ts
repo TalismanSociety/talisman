@@ -25,7 +25,7 @@ describe("hasQrCodeAccounts", () => {
     const localData = {
       "account:0x123": {
         meta: {
-          origin: AccountTypes.SEED,
+          origin: AccountTypes.TALISMAN,
         },
       },
     }

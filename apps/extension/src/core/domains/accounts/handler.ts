@@ -96,7 +96,7 @@ export default class AccountsHandler extends ExtensionHandler {
       password,
       {
         name,
-        origin: AccountTypes.DERIVED,
+        origin: AccountTypes.TALISMAN,
         derivedMnemonicId,
         derivationPath,
       },
@@ -136,7 +136,7 @@ export default class AccountsHandler extends ExtensionHandler {
       const derivedMnemonicId = await this.stores.mnemonics.getExistingId(mnemonic)
 
       if (derivedMnemonicId) {
-        meta.origin = AccountTypes.SEED
+        meta.origin = AccountTypes.TALISMAN
         meta.derivedMnemonicId = derivedMnemonicId
         meta.derivationPath = derivationPath
       } else {
@@ -148,13 +148,13 @@ export default class AccountsHandler extends ExtensionHandler {
           true
         )
         if (result.ok) {
-          meta.origin = AccountTypes.SEED // find a better name
+          meta.origin = AccountTypes.TALISMAN
           meta.derivedMnemonicId = result.val
           meta.derivationPath = derivationPath
         } else throw new Error("Failed to store mnemonic", { cause: result.val })
       }
     } else {
-      meta.origin = AccountTypes.SEED // TODO "LOCAL"
+      meta.origin = AccountTypes.TALISMAN
     }
 
     try {
@@ -183,7 +183,7 @@ export default class AccountsHandler extends ExtensionHandler {
     for (const json of unlockedPairs) {
       const pair = keyring.createFromJson(json, {
         name: json.meta?.name || "Json Import",
-        origin: AccountTypes.JSON,
+        origin: AccountTypes.TALISMAN,
       })
 
       const notExists = !keyring
