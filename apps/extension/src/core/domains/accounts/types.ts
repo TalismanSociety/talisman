@@ -178,16 +178,20 @@ export interface RequestAccountRename {
   name: string
 }
 
+export type RequestAccountCreateOptionsNewMnemonic = {
+  mnemonic: string
+  confirmed: boolean
+  derivationPath?: string
+}
+
+export type RequestAccountCreateOptionsExistingMnemonic = {
+  mnemonicId: string
+  derivationPath?: string
+}
+
 export type RequestAccountCreateOptions =
-  | {
-      mnemonicId: string
-      derivationPath?: string
-    }
-  | {
-      mnemonic: string
-      confirmed: boolean
-      derivationPath?: string
-    }
+  | RequestAccountCreateOptionsExistingMnemonic
+  | RequestAccountCreateOptionsNewMnemonic
 
 export type RequestAccountCreate = {
   name: string

@@ -33,7 +33,7 @@ import {
   WatchAssetRequestId,
 } from "@core/domains/ethereum/types"
 import { MetadataUpdateStatus, RequestMetadataId } from "@core/domains/metadata/types"
-import { VerifierCertificateType } from "@core/domains/mnemonics/types"
+import { RequestSetVerifierCertParams } from "@core/domains/mnemonics/types"
 import {
   SignerPayloadGenesisHash,
   SignerPayloadJSON,
@@ -111,11 +111,7 @@ export default interface MessageTypes {
   mnemonicRename: (mnemonicId: string, name: string) => Promise<boolean>
   mnemonicDelete: (mnemonicId: string) => Promise<boolean>
   validateMnemonic: (mnemonic: string) => Promise<boolean>
-  setVerifierCertMnemonic: (
-    type: VerifierCertificateType,
-    mnemonic?: string,
-    mnemonicId?: string
-  ) => Promise<boolean>
+  setVerifierCertMnemonic: (...params: RequestSetVerifierCertParams) => Promise<boolean>
 
   // account message types ---------------------------------------------------
   accountCreate: (

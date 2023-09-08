@@ -26,7 +26,7 @@ export type CONFIGURE_STATE = {
   submitting?: true
 }
 
-type VerifierCertificateTypeState = VerifierCertificateType | "new" | undefined
+type VerifierCertificateTypeState = VerifierCertificateType | undefined
 
 export type CONFIGURE_VERIFIER_CERT_STATE = {
   type: "CONFIGURE_VERIFIER_CERT"
@@ -34,6 +34,7 @@ export type CONFIGURE_VERIFIER_CERT_STATE = {
     verifierCertificateType?: VerifierCertificateTypeState
     verifierCertificateMnemonic?: string
     verifierCertificateMnemonicId?: string
+    mnemonicConfirmed?: boolean
   }
   submitting?: true
   accountConfig: AccountConfigState
@@ -62,6 +63,7 @@ type Action =
       verifierCertificateType: VerifierCertificateTypeState
       verifierCertificateMnemonicId?: string | undefined
       verifierCertificateMnemonic?: string | undefined
+      mnemonicConfirmed?: boolean
     }
 
 export const reducer = (state: AddQrState, action: Action): AddQrState => {
@@ -125,6 +127,7 @@ export const reducer = (state: AddQrState, action: Action): AddQrState => {
           verifierCertificateType: action.verifierCertificateType,
           verifierCertificateMnemonicId: action.verifierCertificateMnemonicId,
           verifierCertificateMnemonic: action.verifierCertificateMnemonic,
+          mnemonicConfirmed: action.mnemonicConfirmed,
         },
       }
     }
@@ -139,6 +142,7 @@ const useAccountAddQrContext = ({ onSuccess }: AccountAddPageProps) => {
   const { t } = useTranslation("admin")
   const [state, dispatch] = useReducer(reducer, initialState)
   const hasVerifierCertMnemonic = useHasVerifierCertificateMnemonic()
+
   const vaultAccounts = useQrCodeAccounts()
 
   const submit = useCallback(
@@ -166,13 +170,25 @@ const useAccountAddQrContext = ({ onSuccess }: AccountAddPageProps) => {
           verifierCertificateType,
           verifierCertificateMnemonic,
           verifierCertificateMnemonicId,
+          mnemonicConfirmed,
         } = state.verifierCertificateConfig
-        if (verifierCertificateType)
-          await api.setVerifierCertMnemonic(
-            verifierCertificateType === "new" ? "import" : verifierCertificateType,
-            mnemonic ?? verifierCertificateMnemonic,
-            verifierCertificateMnemonicId
-          )
+        if (verifierCertificateType) {
+          if (verifierCertificateType === "import" && mnemonic) {
+            await api.setVerifierCertMnemonic(verifierCertificateType, {
+              mnemonic,
+              confirmed: true,
+            })
+          } else if (verifierCertificateType === "new" && verifierCertificateMnemonic) {
+            await api.setVerifierCertMnemonic(verifierCertificateType, {
+              mnemonic: verifierCertificateMnemonic,
+              confirmed: mnemonicConfirmed ?? false,
+            })
+          } else if (verifierCertificateType === "existing" && verifierCertificateMnemonicId) {
+            await api.setVerifierCertMnemonic(verifierCertificateType, {
+              mnemonicId: verifierCertificateMnemonicId,
+            })
+          }
+        }
       }
 
       try {

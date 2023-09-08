@@ -3,19 +3,20 @@ import { MessageTypes, RequestType, ResponseType } from "@core/types"
 import { assert } from "@polkadot/util"
 import { mnemonicValidate } from "@polkadot/util-crypto"
 
+import {
+  RequestAccountCreateOptionsExistingMnemonic,
+  RequestAccountCreateOptionsNewMnemonic,
+} from "../accounts/types"
 import { SOURCES } from "./store"
 import { RequestSetVerifierCertificateMnemonic } from "./types"
 
 export default class MnemonicHandler extends ExtensionHandler {
-  private async setVerifierCertMnemonic({
-    type,
-    mnemonic,
-    mnemonicId,
-  }: RequestSetVerifierCertificateMnemonic) {
+  private async setVerifierCertMnemonic({ type, options }: RequestSetVerifierCertificateMnemonic) {
     switch (type) {
+      case "new":
       case "import": {
+        const { mnemonic, confirmed } = options as RequestAccountCreateOptionsNewMnemonic
         assert(mnemonic, "Mnemonic should be provided")
-        assert(!mnemonicId, "MnemonicId should not be provided")
         const isValidMnemonic = mnemonicValidate(mnemonic)
         assert(isValidMnemonic, "Invalid mnemonic")
         const password = this.stores.password.getPassword()
@@ -24,14 +25,15 @@ export default class MnemonicHandler extends ExtensionHandler {
           "Vault Verifier Certificate Mnemonic",
           mnemonic,
           password,
-          SOURCES.Imported
+          type === "import" ? SOURCES.Imported : SOURCES.Generated,
+          type === "import" ? true : confirmed
         )
         if (err) throw new Error("Unable to set Verifier Certificate Mnemonic", { cause: val })
         await this.stores.app.set({ vaultVerifierCertificateMnemonicId: val })
         break
       }
       case "existing": {
-        assert(!mnemonic, "Mnemonic should not be provided")
+        const { mnemonicId } = options as RequestAccountCreateOptionsExistingMnemonic
         assert(mnemonicId, "MnemonicId should be provided")
         await this.stores.app.set({ vaultVerifierCertificateMnemonicId: mnemonicId })
         break

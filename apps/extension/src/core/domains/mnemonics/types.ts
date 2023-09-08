@@ -1,3 +1,9 @@
+import {
+  RequestAccountCreateOptions,
+  RequestAccountCreateOptionsExistingMnemonic,
+  RequestAccountCreateOptionsNewMnemonic,
+} from "../accounts/types"
+
 export declare type MnemonicSubscriptionResult = {
   confirmed?: boolean
 }
@@ -23,12 +29,16 @@ export declare type MnemonicDeleteRequest = {
   mnemonicId: MnemonicId
 }
 
-export type VerifierCertificateType = "existing" | "import" | null
+export type VerifierCertificateType = "existing" | "import" | "new" | null
+
+export type RequestSetVerifierCertParams =
+  | [type: "import", options: RequestAccountCreateOptionsNewMnemonic]
+  | [type: "new", options: RequestAccountCreateOptionsNewMnemonic]
+  | [type: "existing", options: RequestAccountCreateOptionsExistingMnemonic]
 
 export type RequestSetVerifierCertificateMnemonic = {
-  type: VerifierCertificateType
-  mnemonic?: string
-  mnemonicId?: string
+  type: "new" | "import" | "existing"
+  options: RequestAccountCreateOptions
 }
 
 export interface MnemonicMessages {

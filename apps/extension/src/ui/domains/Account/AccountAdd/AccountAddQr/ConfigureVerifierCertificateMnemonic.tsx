@@ -120,11 +120,12 @@ const ConfigureVerifierCertificateMnemonicForm = () => {
                 onClick={async () => {
                   const mnemonicResult = await generateMnemonic()
                   if (!mnemonicResult) return
-                  const { mnemonic } = mnemonicResult
+                  const { mnemonic, confirmed } = mnemonicResult
                   dispatch({
                     method: "setVerifierCertType",
                     verifierCertificateType: "new",
                     verifierCertificateMnemonic: mnemonic,
+                    mnemonicConfirmed: confirmed,
                   })
                 }}
               >
