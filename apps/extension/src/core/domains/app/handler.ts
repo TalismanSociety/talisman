@@ -21,7 +21,7 @@ import { sleep } from "@talismn/util"
 import { Subject } from "rxjs"
 import Browser from "webextension-polyfill"
 
-import { getPrimaryAccount } from "../accounts/helpers"
+import { getLegacyAuthenticationAccount } from "../accounts/helpers"
 import { changePassword } from "./helpers"
 import { protector } from "./protector"
 import { PasswordStoreData } from "./store.password"
@@ -76,7 +76,7 @@ export default class AppHandler extends ExtensionHandler {
         const transformedPassword = await this.stores.password.transformPassword(pass)
 
         // attempt to log in via the legacy method
-        const primaryAccount = getPrimaryAccount(true)
+        const primaryAccount = getLegacyAuthenticationAccount()
         assert(primaryAccount, "No primary account, unable to authorise")
 
         // fetch keyring pair from address
