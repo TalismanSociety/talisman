@@ -1,7 +1,7 @@
 import { AnalyticsPage, sendAnalyticsEvent } from "@ui/api/analytics"
 import { OnboardDialog } from "@ui/apps/onboard/components/OnboardDialog"
 import { useOnboard } from "@ui/apps/onboard/context"
-import { Layout } from "@ui/apps/onboard/layout"
+import { OnboardLayout } from "@ui/apps/onboard/OnboardLayout"
 import { AccountCreateMenu } from "@ui/domains/Account/AccountAdd"
 import { useAnalyticsPageView } from "@ui/hooks/useAnalyticsPageView"
 import { useIsLoggedIn } from "@ui/hooks/useIsLoggedIn"
@@ -33,7 +33,7 @@ export const AddAccountPage = () => {
   if (isLoggedIn === "FALSE") setOnboarded()
 
   return (
-    <Layout withBack analytics={ANALYTICS_PAGE}>
+    <OnboardLayout withBack analytics={ANALYTICS_PAGE}>
       <OnboardDialog
         className="flex w-[68rem] flex-col"
         title={t("Add your first account")}
@@ -41,6 +41,6 @@ export const AddAccountPage = () => {
       >
         <AccountCreateMenu className="mt-0" />
       </OnboardDialog>
-    </Layout>
+    </OnboardLayout>
   )
 }

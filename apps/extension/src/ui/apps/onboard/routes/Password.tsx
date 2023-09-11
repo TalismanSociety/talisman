@@ -16,7 +16,7 @@ import { OnboardDialog } from "../components/OnboardDialog"
 import { OnboardFormField } from "../components/OnboardFormField"
 import { onboardBackgroundClassNames } from "../components/OnboardStyles"
 import { useOnboard } from "../context"
-import { Layout } from "../layout"
+import { OnboardLayout } from "../OnboardLayout"
 
 type FormData = {
   password?: string
@@ -104,7 +104,7 @@ export const PasswordPage = () => {
   )
 
   return (
-    <Layout withBack analytics={ANALYTICS_PAGE}>
+    <OnboardLayout withBack analytics={ANALYTICS_PAGE}>
       {/* eslint-disable-next-line jsx-a11y/alt-text */}
       <img src={imgPassword} width="960" className="absolute left-32 top-[25rem] opacity-30 " />
       {passwordExists && (
@@ -184,6 +184,6 @@ export const PasswordPage = () => {
           </form>
         </OnboardDialog>
       )}
-    </Layout>
+    </OnboardLayout>
   )
 }

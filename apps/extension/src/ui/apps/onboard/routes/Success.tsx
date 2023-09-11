@@ -3,7 +3,7 @@ import { AnalyticsPage } from "@ui/api/analytics"
 import { Button } from "talisman-ui"
 
 import { useOnboard } from "../context"
-import { Layout } from "../layout"
+import { OnboardLayout } from "../OnboardLayout"
 
 const SUCCESS_PAGE: AnalyticsPage = {
   container: "Fullscreen",
@@ -15,7 +15,7 @@ const SUCCESS_PAGE: AnalyticsPage = {
 export const SuccessPage = () => {
   const { completeOnboarding } = useOnboard()
   return (
-    <Layout analytics={SUCCESS_PAGE}>
+    <OnboardLayout analytics={SUCCESS_PAGE}>
       <div className="inline-flex w-[59rem] flex-col items-center justify-center gap-12 rounded-sm p-12">
         <div className="text-center text-lg">Welcome, brave Seeker!</div>
         <img src={imgHandOrb} className="w-[23rem]" alt="Talisman Hand Logo" />
@@ -27,6 +27,6 @@ export const SuccessPage = () => {
           Enter Talisman
         </Button>
       </div>
-    </Layout>
+    </OnboardLayout>
   )
 }

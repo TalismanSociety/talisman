@@ -8,7 +8,7 @@ import { useNavigate } from "react-router-dom"
 import { Button } from "talisman-ui"
 
 import { useOnboard } from "../context"
-import { Layout } from "../layout"
+import { OnboardLayout } from "../OnboardLayout"
 
 const ANALYTICS_PAGE: AnalyticsPage = {
   container: "Fullscreen",
@@ -46,11 +46,12 @@ export const WelcomePage = () => {
     [navigate, reset, updateData]
   )
 
-  // reset the background opacity to the full amount when this page is refreshed or navigated back to
-  useEffect(() => setStage(undefined), [setStage])
+  useEffect(() => {
+    setStage(0)
+  }, [setStage])
 
   return (
-    <Layout>
+    <OnboardLayout analytics={ANALYTICS_PAGE}>
       <div className="my-[8rem] flex flex-col items-center justify-center gap-32 ">
         <div className="welcome-text flex flex-col items-center text-center xl:w-[76rem]">
           <div className="flex flex-col items-center gap-24 text-white xl:w-[65.2rem]">
@@ -99,6 +100,6 @@ export const WelcomePage = () => {
           </div>
         </div>
       </div>
-    </Layout>
+    </OnboardLayout>
   )
 }
