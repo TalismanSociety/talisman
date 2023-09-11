@@ -25,7 +25,7 @@ const DEFAULT_DATA: OnboardingWizardData = {}
 const useAppOnboardProvider = ({ isResettingWallet = false }: { isResettingWallet?: boolean }) => {
   // data used for account creation
   const [data, setData] = useState<OnboardingWizardData>(DEFAULT_DATA)
-  const [stage, setStage] = useState<number>()
+  const [stage, setStage] = useState<number>(0)
   const [passwordExists, setPasswordExists] = useState(false)
   const [, updateOnboarded] = useAppState("onboarded")
   const navigate = useNavigate()
