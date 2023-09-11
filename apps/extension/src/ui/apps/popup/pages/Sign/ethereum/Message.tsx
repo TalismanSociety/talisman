@@ -1,5 +1,11 @@
 import { AccountJsonDcent } from "@core/domains/accounts/types"
 import { AppPill } from "@talisman/components/AppPill"
+import {
+  PopupContent,
+  PopupFooter,
+  PopupHeader,
+  PopupLayout,
+} from "@ui/apps/popup/Layout/PopupLayout"
 import { EthSignBodyMessage } from "@ui/domains/Sign/Ethereum/EthSignBodyMessage"
 import { SignHardwareEthereum } from "@ui/domains/Sign/SignHardwareEthereum"
 import { useEthSignMessageRequest } from "@ui/domains/Sign/SignRequestContext"
@@ -7,8 +13,7 @@ import { Suspense, useEffect, useMemo } from "react"
 import { useTranslation } from "react-i18next"
 import { Button } from "talisman-ui"
 
-import { PopupContent, PopupFooter, PopupHeader, PopupLayout } from "../../Layout/PopupLayout"
-import { SignAccountAvatar } from "./SignAccountAvatar"
+import { SignAccountAvatar } from "../SignAccountAvatar"
 
 export const EthSignMessageRequest = () => {
   const { t } = useTranslation("request")

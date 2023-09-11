@@ -102,8 +102,10 @@ class TalismanAnalytics {
         },
         {
           talisman: 0,
-          hardware: 0,
+          json: 0,
+          ledger: 0,
           qr: 0,
+          dcent: 0,
           watched: 0,
         } as Record<Lowercase<AccountType>, number>
       )

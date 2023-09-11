@@ -91,12 +91,7 @@ cryptoWaitReady()
       store: new AccountsStore(),
       type: "sr25519",
       filter: (json) => {
-        if (typeof json?.address !== "string") return false
-
-        // delete genesisHash on load for old json-imported accounts
-        if (json.meta?.origin === "JSON" && json.meta.genesisHash) delete json.meta.genesisHash
-
-        return true
+        return typeof json?.address === "string"
       },
     })
   })

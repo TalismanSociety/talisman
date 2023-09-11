@@ -5,8 +5,8 @@ import { useRequest } from "@ui/hooks/useRequest"
 import { useMemo } from "react"
 import { useParams } from "react-router-dom"
 
-import { PolkadotSignMessageRequest } from "./PolkadotSignMessageRequest"
-import { PolkadotSignTransactionRequest } from "./PolkadotSignTransactionRequest"
+import { PolkadotSignMessageRequest } from "./Message"
+import { PolkadotSignTransactionRequest } from "./Transaction"
 
 export const SubstrateSignRequest = () => {
   const { id } = useParams() as KnownSigningRequestIdOnly<"substrate-sign">

@@ -49,7 +49,7 @@ type RemovedMessages =
   | "pri(authorize.list)"
   | "pri(authorize.requests)"
   | "pri(accounts.create.suri)"
-  | "pri(accounts.create.hardware)"
+  | "pri(accounts.create.ledger)"
   | "pri(accounts.export)"
   | "pri(accounts.forget)"
   | "pri(accounts.subscribe)"

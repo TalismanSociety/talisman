@@ -10,8 +10,8 @@ import type {
   RequestAccountCreateExternal,
   RequestAccountCreateFromJson,
   RequestAccountCreateFromSuri,
-  RequestAccountCreateHardware,
-  RequestAccountCreateHardwareEthereum,
+  RequestAccountCreateLedgerEthereum,
+  RequestAccountCreateLedgerSubstrate,
   RequestAccountCreateWatched,
   RequestAccountExport,
   RequestAccountExportPrivateKey,
@@ -24,7 +24,7 @@ import type {
   RequestValidateDerivationPath,
   ResponseAccountExport,
 } from "@core/domains/accounts/types"
-import { AccountTypes } from "@core/domains/accounts/types"
+import { AccountImportSources, AccountTypes } from "@core/domains/accounts/types"
 import { getPairForAddressSafely } from "@core/handlers/helpers"
 import { genericAsyncSubscription } from "@core/handlers/subscriptions"
 import { talismanAnalytics } from "@core/libs/Analytics"
@@ -129,6 +129,7 @@ export default class AccountsHandler extends ExtensionHandler {
 
     const meta: KeyringPair$Meta = {
       name,
+      origin: AccountTypes.TALISMAN,
     }
 
     // suri could be a private key instead of a mnemonic
@@ -136,7 +137,6 @@ export default class AccountsHandler extends ExtensionHandler {
       const derivedMnemonicId = await this.stores.mnemonics.getExistingId(mnemonic)
 
       if (derivedMnemonicId) {
-        meta.origin = AccountTypes.TALISMAN
         meta.derivedMnemonicId = derivedMnemonicId
         meta.derivationPath = derivationPath
       } else {
@@ -148,13 +148,12 @@ export default class AccountsHandler extends ExtensionHandler {
           true
         )
         if (result.ok) {
-          meta.origin = AccountTypes.TALISMAN
           meta.derivedMnemonicId = result.val
           meta.derivationPath = derivationPath
         } else throw new Error("Failed to store mnemonic", { cause: result.val })
       }
     } else {
-      meta.origin = AccountTypes.TALISMAN
+      meta.importSource = AccountImportSources.PK
     }
 
     try {
@@ -184,6 +183,7 @@ export default class AccountsHandler extends ExtensionHandler {
       const pair = keyring.createFromJson(json, {
         name: json.meta?.name || "Json Import",
         origin: AccountTypes.TALISMAN,
+        importSource: AccountImportSources.JSON,
       })
 
       const notExists = !keyring
@@ -207,11 +207,11 @@ export default class AccountsHandler extends ExtensionHandler {
     return addresses
   }
 
-  private accountsCreateHardwareEthereum({
+  private accountsCreateLedgerEthereum({
     name,
     address,
     path,
-  }: RequestAccountCreateHardwareEthereum): string {
+  }: RequestAccountCreateLedgerEthereum): string {
     assert(isEthereumAddress(address), "Not an Ethereum address")
 
     // ui-keyring's addHardware method only supports substrate accounts, cannot set ethereum type
@@ -229,7 +229,7 @@ export default class AccountsHandler extends ExtensionHandler {
         name,
         hardwareType: "ledger",
         isHardware: true,
-        origin: AccountTypes.HARDWARE,
+        origin: AccountTypes.LEDGER,
         path,
       },
       null
@@ -293,19 +293,19 @@ export default class AccountsHandler extends ExtensionHandler {
     return pair.address
   }
 
-  private accountsCreateHardware({
+  private accountsCreateLedger({
     accountIndex,
     address,
     addressOffset,
     genesisHash,
     name,
-  }: Omit<RequestAccountCreateHardware, "hardwareType">): string {
+  }: RequestAccountCreateLedgerSubstrate): string {
     const { pair } = keyring.addHardware(address, "ledger", {
       accountIndex,
       addressOffset,
       genesisHash,
       name,
-      origin: AccountTypes.HARDWARE,
+      origin: AccountTypes.LEDGER,
     })
 
     talismanAnalytics.capture("account create", { type: "substrate", method: "hardware" })
@@ -556,10 +556,10 @@ export default class AccountsHandler extends ExtensionHandler {
         return this.accountCreateJson(request as RequestAccountCreateFromJson)
       case "pri(accounts.create.dcent)":
         return this.accountCreateDcent(request as RequestAccountCreateDcent)
-      case "pri(accounts.create.hardware.substrate)":
-        return this.accountsCreateHardware(request as RequestAccountCreateHardware)
-      case "pri(accounts.create.hardware.ethereum)":
-        return this.accountsCreateHardwareEthereum(request as RequestAccountCreateHardwareEthereum)
+      case "pri(accounts.create.ledger.substrate)":
+        return this.accountsCreateLedger(request as RequestAccountCreateLedgerSubstrate)
+      case "pri(accounts.create.ledger.ethereum)":
+        return this.accountsCreateLedgerEthereum(request as RequestAccountCreateLedgerEthereum)
       case "pri(accounts.create.qr.substrate)":
         return this.accountsCreateQr(request as RequestAccountCreateExternal)
       case "pri(accounts.create.watched)":

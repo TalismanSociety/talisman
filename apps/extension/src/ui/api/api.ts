@@ -91,16 +91,16 @@ export const api: MessageTypes = {
     messageService.sendMessage("pri(accounts.create.suri)", { name, suri, type }),
   accountCreateFromJson: (unlockedPairs) =>
     messageService.sendMessage("pri(accounts.create.json)", { unlockedPairs }),
-  accountCreateHardware: ({ accountIndex, address, addressOffset, genesisHash, name }) =>
-    messageService.sendMessage("pri(accounts.create.hardware.substrate)", {
+  accountCreateLedger: ({ accountIndex, address, addressOffset, genesisHash, name }) =>
+    messageService.sendMessage("pri(accounts.create.ledger.substrate)", {
       accountIndex,
       address,
       addressOffset,
       genesisHash,
       name,
     }),
-  accountCreateHardwareEthereum: (name, address, path) =>
-    messageService.sendMessage("pri(accounts.create.hardware.ethereum)", {
+  accountCreateLedgerEthereum: (name, address, path) =>
+    messageService.sendMessage("pri(accounts.create.ledger.ethereum)", {
       name,
       address,
       path,

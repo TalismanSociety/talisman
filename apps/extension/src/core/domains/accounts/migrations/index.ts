@@ -1,4 +1,5 @@
 import { Migration, MigrationFunction } from "@core/libs/migrations/types"
+import { KeyringPair$Meta } from "@polkadot/keyring/types"
 import keyring from "@polkadot/ui-keyring"
 
 export const LegacyAccountTypes = {
@@ -19,34 +20,44 @@ export type LegacyAccountType = {
 }[keyof typeof LegacyAccountTypes]
 
 export const NewAccountTypes = {
-  TALISMAN: "TALISMAN", // all accounts where the private key is stored in the keyring
+  TALISMAN: "TALISMAN", // all accounts with locally stored private key
   QR: "QR",
-  HARDWARE: "HARDWARE",
+  LEDGER: "LEDGER",
   DCENT: "DCENT",
   WATCHED: "WATCHED",
 }
 
-const accountTypeSwitch = (type: LegacyAccountType) => {
-  switch (type) {
+const accountOriginSwitch = (origin: LegacyAccountType): KeyringPair$Meta => {
+  switch (origin) {
     case LegacyAccountTypes.TALISMAN:
     case LegacyAccountTypes.LEGACY_ROOT:
     case LegacyAccountTypes.DERIVED:
     case LegacyAccountTypes.SEED:
     case LegacyAccountTypes.SEED_STORED:
+      return { origin: NewAccountTypes.TALISMAN }
     case LegacyAccountTypes.JSON:
-      return NewAccountTypes.TALISMAN
+      return { origin: NewAccountTypes.TALISMAN, importSource: "json" }
+    case LegacyAccountTypes.HARDWARE:
+      return { origin: NewAccountTypes.LEDGER }
     default:
-      return type
+      return { origin }
   }
 }
 
 export const migrateToNewAccountTypes: Migration = {
   forward: new MigrationFunction(async () => {
     keyring.getAccounts().forEach((account) => {
-      const { origin } = account.meta as { origin: LegacyAccountType }
-      const newOrigin = accountTypeSwitch(origin)
+      const { origin } = account.meta as {
+        origin: LegacyAccountType
+      }
+      const newMeta = accountOriginSwitch(origin)
       const pair = keyring.getPair(account.address)
-      keyring.saveAccountMeta(pair, { ...account.meta, origin: newOrigin })
+
+      // delete genesisHash for old json-imported accounts
+      if (origin === LegacyAccountTypes.JSON && account.meta.genesisHash)
+        delete account.meta.genesisHash
+
+      keyring.saveAccountMeta(pair, { ...account.meta, ...newMeta })
     })
   }),
 }

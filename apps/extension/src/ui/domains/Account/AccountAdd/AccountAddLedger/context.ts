@@ -1,8 +1,8 @@
 import {
   AccountAddressType,
-  RequestAccountCreateHardwareEthereum,
+  RequestAccountCreateLedgerEthereum,
+  RequestAccountCreateLedgerSubstrate,
 } from "@core/domains/accounts/types"
-import { RequestAccountCreateHardware } from "@polkadot/extension-base/background/types"
 import { assert } from "@polkadot/util"
 import { provideContext } from "@talisman/util/provideContext"
 import { api } from "@ui/api"
@@ -10,8 +10,8 @@ import useChain from "@ui/hooks/useChain"
 import { useCallback, useState } from "react"
 import { useSearchParams } from "react-router-dom"
 
-export type LedgerAccountDefSubstrate = Omit<RequestAccountCreateHardware, "hardwareType">
-export type LedgerAccountDefEthereum = RequestAccountCreateHardwareEthereum
+export type LedgerAccountDefSubstrate = RequestAccountCreateLedgerSubstrate
+export type LedgerAccountDefEthereum = RequestAccountCreateLedgerEthereum
 export type LedgerAccountDef = LedgerAccountDefSubstrate | LedgerAccountDefEthereum
 
 type LedgerCreationInputs = {
@@ -48,8 +48,8 @@ const useAddLedgerAccountProvider = ({ onSuccess }: { onSuccess: (address: strin
       for (const account of accounts)
         addresses.push(
           "genesisHash" in account
-            ? await api.accountCreateHardware(account)
-            : await api.accountCreateHardwareEthereum(account.name, account.address, account.path)
+            ? await api.accountCreateLedger(account)
+            : await api.accountCreateLedgerEthereum(account.name, account.address, account.path)
         )
 
       return addresses

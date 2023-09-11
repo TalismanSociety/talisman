@@ -1,5 +1,11 @@
 import { AccountsCatalogStore } from "@core/domains/accounts/store.catalog"
-import { Account, AccountJsonAny, AccountTypes, IdenticonType } from "@core/domains/accounts/types"
+import {
+  Account,
+  AccountJsonAny,
+  AccountType,
+  AccountTypes,
+  IdenticonType,
+} from "@core/domains/accounts/types"
 import { log } from "@core/log"
 import type { Address } from "@core/types/base"
 import { getAccountAvatarDataUri } from "@core/util/getAccountAvatarDataUri"
@@ -17,83 +23,37 @@ import Browser from "webextension-polyfill"
 
 import { getEthDerivationPath } from "../ethereum/helpers"
 
-const sortAccountsByWhenCreated = (accounts: AccountJsonAny[]) => {
-  return accounts.sort((acc1, acc2) => {
-    const acc1Created = acc1.whenCreated
-    const acc2Created = acc2.whenCreated
+const sortAccountsByWhenCreated = (acc1: AccountJsonAny, acc2: AccountJsonAny) => {
+  const acc1Created = acc1.whenCreated
+  const acc2Created = acc2.whenCreated
 
-    if (!acc1Created || !acc2Created) {
-      return 0
-    }
-
-    if (acc1Created > acc2Created) {
-      return 1
-    }
-
-    if (acc1Created < acc2Created) {
-      return -1
-    }
-
+  if (!acc1Created || !acc2Created) {
     return 0
-  })
-}
+  }
 
-const legacySortAccounts = (accounts: AccountJsonAny[]) => {
-  const root = sortAccountsByWhenCreated(accounts).find(
-    ({ origin, parentAddress }) => origin && origin === AccountTypes.TALISMAN && !parentAddress
-  )
+  if (acc1Created > acc2Created) {
+    return 1
+  }
 
-  // can be multiple derived accounts
-  // should order these by created date? probably
-  const derived = accounts.filter(
-    ({ origin, parentAddress }) => origin === AccountTypes.TALISMAN && !!parentAddress
-  )
-  const derivedSorted = sortAccountsByWhenCreated(derived)
+  if (acc1Created < acc2Created) {
+    return -1
+  }
 
-  // can be multiple imported accounts - both JSON or SEED imports
-  // as well as QR (parity signer) and HARDWARE (ledger) accounts
-  // should order these by created date? probably
-  const imported = accounts.filter(({ origin }) => origin && origin !== AccountTypes.TALISMAN)
-
-  const importedSorted = sortAccountsByWhenCreated(imported)
-
-  const watchedPortfolio = accounts.filter(
-    ({ origin, isPortfolio }) => origin === AccountTypes.WATCHED && isPortfolio
-  )
-  const watchedPortfolioSorted = sortAccountsByWhenCreated(watchedPortfolio)
-
-  const watchedFollowed = accounts.filter(
-    ({ origin, isPortfolio }) => origin === AccountTypes.WATCHED && !isPortfolio
-  )
-  const watchedFollowedSorted = sortAccountsByWhenCreated(watchedFollowed)
-
-  return [
-    ...(root ? [root] : []),
-    ...derivedSorted,
-    ...importedSorted,
-    ...watchedPortfolioSorted,
-    ...watchedFollowedSorted,
-  ]
+  return 0
 }
 
 export const sortAccounts =
   (accountsCatalogStore: AccountsCatalogStore) =>
   async (keyringAccounts: SubjectInfo): Promise<AccountJsonAny[]> => {
-    const unsortedAccounts = Object.values(keyringAccounts).map(
-      ({ json: { address, meta }, type }): AccountJsonAny => ({
-        address,
-        ...meta,
-        type,
-      })
-    )
-
-    // default to legacy sort method when adding new accounts to the catalog
-    // this will mean that for existing users, their accounts list will maintain
-    // its current sort order - despite being migrated to the new catalog store
-    //
-    // for new users, the default catalog order will be the order in which they add
-    // each new account
-    const accounts = legacySortAccounts(unsortedAccounts)
+    const accounts = Object.values(keyringAccounts)
+      .map(
+        ({ json: { address, meta }, type }): AccountJsonAny => ({
+          address,
+          ...meta,
+          type,
+        })
+      )
+      .sort(sortAccountsByWhenCreated)
 
     // add any newly created accounts to the catalog
     // each new account will be placed at the end of the list
@@ -199,7 +159,12 @@ export const hasPrivateKey = (address: Address) => {
   if (!acc) return false
   if (acc.meta?.isExternal) return false
   if (acc.meta?.isHardware) return false
-  if (["QR", "WATCHED"].includes(acc.meta?.origin as string)) return false
+  if (
+    ([AccountTypes.QR, AccountTypes.WATCHED] as AccountType[]).includes(
+      acc.meta?.origin as AccountType
+    )
+  )
+    return false
   return true
 }
 

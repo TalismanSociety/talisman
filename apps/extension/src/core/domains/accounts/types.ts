@@ -11,12 +11,7 @@ import { KeyringPair$Json } from "@polkadot/keyring/types"
 import { KeypairType } from "@polkadot/util-crypto/types"
 import { TokenId } from "@talismn/chaindata-provider"
 
-export type {
-  ResponseAccountExport,
-  RequestAccountCreateHardware,
-  AccountJson,
-  RequestAccountCreateExternal,
-}
+export type { ResponseAccountExport, AccountJson, RequestAccountCreateExternal }
 export type { RequestAccountsCatalogAction } from "@core/domains/accounts/helpers.catalog"
 
 export type {
@@ -87,16 +82,26 @@ export type AccountType = {
 }[keyof typeof AccountTypes]
 
 export const AccountTypes = {
-  TALISMAN: "TALISMAN",
+  TALISMAN: "TALISMAN", // all accounts derived from a mnemonic or imported private key
   QR: "QR",
-  HARDWARE: "HARDWARE",
+  LEDGER: "LEDGER",
   DCENT: "DCENT",
   WATCHED: "WATCHED",
 } as const
 
+export const AccountImportSources = {
+  JSON: "json",
+  PK: "pk",
+} as const
+
+export type AccountImportSource = {
+  [K in keyof typeof AccountImportSources]: (typeof AccountImportSources)[K]
+}[keyof typeof AccountImportSources]
+
 export interface AccountMeta extends AccountJson {
   name: string
   origin: AccountType
+  importSource?: AccountImportSource
 }
 
 export interface Account {
@@ -118,7 +123,9 @@ export interface RequestAccountCreateFromJson {
   unlockedPairs: KeyringPair$Json[]
 }
 
-export interface RequestAccountCreateHardwareEthereum {
+export type RequestAccountCreateLedgerSubstrate = Omit<RequestAccountCreateHardware, "hardwareType">
+
+export interface RequestAccountCreateLedgerEthereum {
   name: string
   address: string
   path: string
@@ -209,11 +216,8 @@ export interface AccountsMessages {
   "pri(accounts.create)": [RequestAccountCreate, string]
   "pri(accounts.create.suri)": [RequestAccountCreateFromSuri, string]
   "pri(accounts.create.json)": [RequestAccountCreateFromJson, string[]]
-  "pri(accounts.create.hardware.substrate)": [
-    Omit<RequestAccountCreateHardware, "hardwareType">,
-    string
-  ]
-  "pri(accounts.create.hardware.ethereum)": [RequestAccountCreateHardwareEthereum, string]
+  "pri(accounts.create.ledger.substrate)": [RequestAccountCreateLedgerSubstrate, string]
+  "pri(accounts.create.ledger.ethereum)": [RequestAccountCreateLedgerEthereum, string]
   "pri(accounts.create.dcent)": [RequestAccountCreateDcent, string]
   "pri(accounts.create.qr.substrate)": [RequestAccountCreateExternal, string]
   "pri(accounts.create.watched)": [RequestAccountCreateWatched, string]
