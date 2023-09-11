@@ -1,4 +1,3 @@
-import { passwordStore } from "@core/domains/app"
 import { useSetting } from "@ui/hooks/useSettings"
 import { Trans, useTranslation } from "react-i18next"
 import { ModalDialog } from "talisman-ui"
@@ -59,8 +58,6 @@ export const MigratePasswordError = () => {
         fullWidth
         onClick={async () => {
           onComplete()
-          // don't bug the user with repeated requests
-          await passwordStore.set({ ignorePasswordUpdate: true })
         }}
       >
         {t("Close")}

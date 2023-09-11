@@ -60,8 +60,8 @@ const PasswordMigrationAlertPopupDrawer = () => {
   const { close, isOpen, setIsOpen } = useOpenClose()
 
   useEffect(() => {
-    const sub = passwordStore.observable.subscribe(({ isHashed, ignorePasswordUpdate }) => {
-      setIsOpen(!isHashed && !ignorePasswordUpdate)
+    const sub = passwordStore.observable.subscribe(({ isHashed }) => {
+      setIsOpen(!isHashed)
     })
     return () => {
       sub.unsubscribe()
@@ -69,8 +69,7 @@ const PasswordMigrationAlertPopupDrawer = () => {
   }, [setIsOpen])
 
   const handleReject = useCallback(async () => {
-    // don't bug the user with repeated requests
-    await passwordStore.set({ ignorePasswordUpdate: true })
+    // DO bug the user with repeated requests
     setIsOpen(false)
   }, [setIsOpen])
 

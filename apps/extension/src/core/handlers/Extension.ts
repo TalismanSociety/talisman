@@ -72,9 +72,6 @@ export default class Extension extends ExtensionHandler {
       stores.password.resetAutoLockTimer(this.#autoLockTimeout)
     })
 
-    // Resets password update notification at extension restart if user has asked to ignore it previously
-    stores.password.set({ ignorePasswordUpdate: false })
-
     awaitKeyringLoaded().then(() => {
       // Watches keyring to do things that depend on type of accounts added
       keyring.accounts.subject.subscribe(async (addresses) => {
