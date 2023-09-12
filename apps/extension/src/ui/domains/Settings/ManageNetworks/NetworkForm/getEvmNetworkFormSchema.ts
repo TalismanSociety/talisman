@@ -1,10 +1,10 @@
 import i18next from "@core/i18nConfig"
 import * as yup from "yup"
 
-import { getRpcChainId } from "./helpers"
+import { getEvmRpcChainId } from "./helpers"
 
-export const getNetworkFormSchema = (evmNetworkId?: string) => {
-  return yup
+export const getEvmNetworkFormSchema = (evmNetworkId?: string) =>
+  yup
     .object({
       id: yup.string().required(""),
       name: yup.string().required(i18next.t("required")),
@@ -23,7 +23,7 @@ export const getNetworkFormSchema = (evmNetworkId?: string) => {
           for (const rpc of rpcs) {
             try {
               if (!rpc.url) continue
-              const chainId = await getRpcChainId(rpc.url)
+              const chainId = await getEvmRpcChainId(rpc.url)
               if (!chainId)
                 return this.createError({
                   message: i18next.t("Failed to connect"),
@@ -59,4 +59,3 @@ export const getNetworkFormSchema = (evmNetworkId?: string) => {
       isTestnet: yup.boolean().required(),
     })
     .required()
-}

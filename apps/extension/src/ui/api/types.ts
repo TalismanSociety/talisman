@@ -18,7 +18,7 @@ import {
   RequestNomPoolStake,
   ResponseNomPoolStake,
 } from "@core/domains/balances/types"
-import { ChainId } from "@core/domains/chains/types"
+import { ChainId, RequestUpsertCustomChain } from "@core/domains/chains/types"
 import type { DecryptRequestId, EncryptRequestId } from "@core/domains/encrypt/types"
 import { AddEthereumChainRequestId } from "@core/domains/ethereum/types"
 import {
@@ -180,6 +180,9 @@ export default interface MessageTypes {
 
   // chain message types
   chains: (cb: () => void) => UnsubscribeFn
+  chainUpsert: (chain: RequestUpsertCustomChain) => Promise<boolean>
+  chainRemove: (id: string) => Promise<boolean>
+  chainReset: (id: string) => Promise<boolean>
   generateChainSpecsQr: (genesisHash: SignerPayloadGenesisHash) => Promise<HexString>
   generateChainMetadataQr: (
     genesisHash: SignerPayloadGenesisHash,

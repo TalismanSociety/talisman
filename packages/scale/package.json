@@ -1,0 +1,48 @@
+{
+  "name": "@talismn/scale",
+  "version": "0.0.1",
+  "author": "Talisman",
+  "homepage": "https://talisman.xyz",
+  "license": "GPL-3.0-or-later",
+  "publishConfig": {
+    "access": "public"
+  },
+  "repository": {
+    "directory": "packages/scale",
+    "type": "git",
+    "url": "https://github.com/talismansociety/talisman.git"
+  },
+  "main": "dist/talismn-scale.cjs.js",
+  "module": "dist/talismn-scale.esm.js",
+  "files": [
+    "/dist"
+  ],
+  "engines": {
+    "node": ">=18"
+  },
+  "scripts": {
+    "test": "jest",
+    "lint": "eslint src --max-warnings 0",
+    "clean": "rm -rf dist && rm -rf .turbo rm -rf node_modules"
+  },
+  "dependencies": {
+    "@talismn/subshape-fork": "^0.0.1",
+    "anylogger": "^1.0.11",
+    "wat-the-crypto": "^0.0.3"
+  },
+  "devDependencies": {
+    "@talismn/eslint-config": "workspace:*",
+    "@talismn/tsconfig": "workspace:*",
+    "@types/jest": "^27.5.1",
+    "eslint": "^8.4.0",
+    "jest": "^28.1.0",
+    "ts-jest": "^28.0.2",
+    "typescript": "^4.6.4"
+  },
+  "eslintConfig": {
+    "root": true,
+    "extends": [
+      "@talismn/eslint-config/base"
+    ]
+  }
+}

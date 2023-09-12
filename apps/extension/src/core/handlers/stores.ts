@@ -6,14 +6,12 @@ import { SettingsStoreData, appStore, passwordStore, settingsStore } from "@core
 import { AppStoreData } from "@core/domains/app/store.app"
 import { PasswordStoreData } from "@core/domains/app/store.password"
 import { balanceStore } from "@core/domains/balances"
-import { chainStore } from "@core/domains/chains"
 import { sitesAuthorisationStore } from "@core/domains/sitesAuthorised"
 import sitesAuthorisedStore from "@core/domains/sitesAuthorised/store"
 import { AuthorizedSites } from "@core/domains/sitesAuthorised/types"
 import { tokenRatesStore } from "@core/domains/tokenRates"
 
 export type TabStore = {
-  chains: typeof chainStore
   tokenRates: typeof tokenRatesStore
   balances: typeof balanceStore
   app: typeof appStore
@@ -43,7 +41,6 @@ type GettableStoreKeys = keyof GettableStores
 export type GettableStoreData = { [K in GettableStoreKeys]: GettableStores[K][1] }
 
 export const tabStores = {
-  chains: chainStore,
   tokenRates: tokenRatesStore,
   balances: balanceStore,
   app: appStore,

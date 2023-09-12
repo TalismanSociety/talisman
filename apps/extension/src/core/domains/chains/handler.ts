@@ -1,0 +1,230 @@
+import { verifierCertificateMnemonicStore } from "@core/domains/accounts/store.verifierCertificateMnemonic"
+import { talismanAnalytics } from "@core/libs/Analytics"
+import { ExtensionHandler } from "@core/libs/Handler"
+import { generateQrAddNetworkSpecs, generateQrUpdateNetworkMetadata } from "@core/libs/QrGenerator"
+import { chaindataProvider } from "@core/rpcs/chaindata"
+import { WsProvider } from "@polkadot/api"
+import { assert, u8aToHex } from "@polkadot/util"
+import { CustomSubNativeToken, subNativeTokenId } from "@talismn/balances-substrate-native"
+import {
+  BalanceMetadata,
+  CustomChain,
+  githubUnknownTokenLogoUrl,
+} from "@talismn/chaindata-provider"
+import {
+  $metadataV14,
+  PalletMV14,
+  StorageEntryMV14,
+  filterMetadataPalletsAndItems,
+} from "@talismn/scale"
+import * as $ from "@talismn/subshape-fork"
+import { sleep } from "@talismn/util"
+import { MessageHandler, MessageTypes, RequestType, RequestTypes, ResponseType } from "core/types"
+
+export class ChainsHandler extends ExtensionHandler {
+  private chainUpsert: MessageHandler<"pri(chains.upsert)"> = async (chain) => {
+    let customBalanceMetadata: BalanceMetadata[] | undefined = undefined
+    if (chain.id === `custom-${chain.genesisHash}`) {
+      // When saving custom chains, download the chain metadata and build some SCALE types so we can fetch balances.
+      //
+      // TODO: Replace this with a scheduled background task which maintains (keeps up to date) the required SCALE types for *all* chains, not just custom ones.
+
+      const rpcUrl = chain.rpcs?.find((rpc) => rpc.url && /^wss?:\/\/.+$/.test(rpc.url))
+      if (!rpcUrl) throw new Error("No valid RPC found")
+
+      const ws = new WsProvider(rpcUrl.url, 0)
+      const [
+        // TODO: Store minMetadata with genesisHash|specName|specVersion index for scheduled background task
+        // genesisHash,
+        // { specName, specVersion },
+        metadataRpc,
+      ] = await (async () => {
+        try {
+          await ws.connect()
+
+          const isReadyTimeout = sleep(10_000).then(() => {
+            throw new Error("timeout")
+          })
+          await Promise.race([ws.isReady, isReadyTimeout])
+
+          return await Promise.all([
+            // TODO: Store minMetadata with genesisHash|specName|specVersion index for scheduled background task
+            // ws.send<string>("chain_getBlockHash", [0]),
+            // ws.send<{ specName: string; specVersion: number }>("state_getRuntimeVersion", []),
+            ws.send<string>("state_getMetadata", []),
+          ])
+        } finally {
+          ws.disconnect()
+        }
+      })()
+
+      const metadata = $metadataV14.decode($.decodeHex(metadataRpc))
+
+      const isSystemPallet = (pallet: PalletMV14) => pallet.name === "System"
+      const isAccountItem = (item: StorageEntryMV14) => item.name === "Account"
+
+      const isBalancesPallet = (pallet: PalletMV14) => pallet.name === "Balances"
+      const isLocksItem = (item: StorageEntryMV14) => item.name === "Locks"
+
+      filterMetadataPalletsAndItems(metadata, [
+        { pallet: isSystemPallet, items: [isAccountItem] },
+        { pallet: isBalancesPallet, items: [isLocksItem] },
+      ])
+      metadata.extrinsic.signedExtensions = []
+
+      const minMetadata = $.encodeHexPrefixed($metadataV14.encode(metadata))
+      // TODO: Use this inside the balance modules instead of TypeRegistry
+      // const metadataSubshape = transformMetadataV14(metadata)
+
+      customBalanceMetadata = [
+        {
+          moduleType: "substrate-native",
+          metadata: {
+            isTestnet: chain.isTestnet,
+            symbol: chain.nativeTokenSymbol,
+            decimals: chain.nativeTokenDecimals,
+            existentialDeposit: "0", // TODO: Extract this from the metadata (Balances pallet constants)
+            nominationPoolsPalletId: null, // TODO: Extract this from the metadata (NominationPools pallet constants)
+            crowdloanPalletId: null, // TODO: Extract this from the metadata (Crowdloan pallet constants)
+            metadata: minMetadata,
+            metadataVersion: metadata.version,
+          },
+        },
+      ]
+    }
+
+    await chaindataProvider.transaction("rw", ["chains", "tokens"], async () => {
+      const existingChain = await chaindataProvider.getChain(chain.id)
+      const existingToken = existingChain?.nativeToken?.id
+        ? await chaindataProvider.getToken(existingChain.nativeToken.id)
+        : null
+
+      const newToken: CustomSubNativeToken = {
+        id: subNativeTokenId(chain.id, chain.nativeTokenSymbol),
+        type: "substrate-native",
+        isTestnet: chain.isTestnet,
+        symbol: chain.nativeTokenSymbol,
+        decimals: chain.nativeTokenDecimals,
+        existentialDeposit: "0", // TODO: query this
+        logo: chain.nativeTokenLogoUrl ?? githubUnknownTokenLogoUrl,
+        coingeckoId: chain.nativeTokenCoingeckoId ?? "",
+        chain: { id: chain.id },
+        evmNetwork: existingToken?.evmNetwork,
+        isCustom: true,
+      }
+
+      const newChain: CustomChain = {
+        id: chain.id,
+        isTestnet: chain.isTestnet,
+        sortIndex: existingChain?.sortIndex ?? null,
+        genesisHash: chain.genesisHash,
+        prefix: existingChain?.prefix ?? 42, // TODO: query this
+        name: chain.name,
+        themeColor: existingChain?.themeColor ?? "#505050",
+        logo: chain.chainLogoUrl ?? null,
+        chainName: existingChain?.chainName ?? "", // TODO: query this
+        implName: existingChain?.implName ?? "", // TODO: query this
+        specName: existingChain?.specName ?? "", // TODO: query this
+        specVersion: existingChain?.specVersion ?? "", // TODO: query this
+        nativeToken: { id: newToken.id },
+        tokens: existingChain?.tokens ?? [{ id: newToken.id }],
+        account: chain.accountFormat,
+        subscanUrl: chain.subscanUrl ?? null,
+        chainspecQrUrl: existingChain?.chainspecQrUrl ?? null,
+        latestMetadataQrUrl: existingChain?.latestMetadataQrUrl ?? null,
+        isUnknownFeeToken: existingChain?.isUnknownFeeToken ?? false,
+        rpcs: chain.rpcs.map(({ url }) => ({ url, isHealthy: true })),
+        isHealthy: true,
+        evmNetworks: existingChain?.evmNetworks ?? [],
+
+        parathreads: existingChain?.parathreads ?? [],
+
+        paraId: existingChain?.paraId ?? null,
+        relay: existingChain?.relay ?? null,
+
+        balanceMetadata: customBalanceMetadata ?? existingChain?.balanceMetadata ?? [],
+
+        // CustomChain
+        isCustom: true,
+      }
+
+      await chaindataProvider.addCustomToken(newToken)
+
+      // if symbol changed, id is different and previous native token must be deleted
+      if (existingToken && existingToken.id !== newToken.id)
+        await chaindataProvider.removeToken(existingToken.id)
+
+      await chaindataProvider.addCustomChain(newChain)
+
+      talismanAnalytics.capture(`${existingChain ? "update" : "create"} custom chain`, {
+        network: chain.id,
+      })
+    })
+
+    return true
+  }
+
+  private chainRemove: MessageHandler<"pri(chains.remove)"> = async (request) => {
+    await chaindataProvider.removeCustomChain(request.id)
+
+    talismanAnalytics.capture("remove custom chain", { chain: request.id })
+
+    return true
+  }
+
+  private chainReset: MessageHandler<"pri(chains.reset)"> = async (request) => {
+    await chaindataProvider.resetChain(request.id)
+
+    talismanAnalytics.capture("reset chain", { chain: request.id })
+
+    return true
+  }
+
+  public async handle<TMessageType extends MessageTypes>(
+    id: string,
+    type: TMessageType,
+    request: RequestTypes[TMessageType]
+    // port: Port
+  ): Promise<ResponseType<TMessageType>> {
+    switch (type) {
+      // --------------------------------------------------------------------
+      // chain handlers -----------------------------------------------------
+      // --------------------------------------------------------------------
+      case "pri(chains.subscribe)":
+        return chaindataProvider.hydrateChains()
+
+      case "pri(chains.upsert)":
+        return this.chainUpsert(request as RequestTypes["pri(chains.upsert)"])
+
+      case "pri(chains.remove)":
+        return this.chainRemove(request as RequestTypes["pri(chains.remove)"])
+
+      case "pri(chains.reset)":
+        return this.chainReset(request as RequestTypes["pri(chains.reset)"])
+
+      case "pri(chains.generateQr.addNetworkSpecs)": {
+        const vaultCipher = await verifierCertificateMnemonicStore.get("cipher")
+        assert(vaultCipher, "No Polkadot Vault Verifier Certificate Mnemonic found")
+
+        const { genesisHash } = request as RequestType<"pri(chains.generateQr.addNetworkSpecs)">
+        const data = await generateQrAddNetworkSpecs(genesisHash)
+        // serialize as hex for transfer
+        return u8aToHex(data)
+      }
+
+      case "pri(chains.generateQr.updateNetworkMetadata)": {
+        const vaultCipher = await verifierCertificateMnemonicStore.get("cipher")
+        assert(vaultCipher, "No Polkadot Vault Verifier Certificate Mnemonic found")
+
+        const { genesisHash, specVersion } =
+          request as RequestType<"pri(chains.generateQr.updateNetworkMetadata)">
+        const data = await generateQrUpdateNetworkMetadata(genesisHash, specVersion)
+        // serialize as hex for transfer
+        return u8aToHex(data)
+      }
+
+      default:
+        throw new Error(`Unable to handle message of type ${type}`)
+    }
+  }
+}
