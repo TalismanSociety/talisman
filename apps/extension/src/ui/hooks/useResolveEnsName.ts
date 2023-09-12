@@ -1,5 +1,5 @@
-import { isEthereumAddress } from "@polkadot/util-crypto"
 import { isPotentialEns } from "@talismn/on-chain-id"
+import { isEthereumAddress } from "@talismn/util"
 import { useQuery } from "@tanstack/react-query"
 import { api } from "@ui/api"
 
