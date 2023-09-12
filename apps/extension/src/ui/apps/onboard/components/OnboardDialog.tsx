@@ -3,7 +3,6 @@ import { classNames } from "@talismn/util"
 import { ReactNode } from "react"
 
 import { useOnboard } from "../context"
-import { onboardBackgroundClassNames } from "./OnboardStyles"
 
 export const OnboardProgressBar = ({ stages = 3 }: { stages?: number }) => {
   const { stage } = useOnboard()
@@ -50,7 +49,7 @@ export const OnboardDialog = ({
   <div className={classNames("flex w-[60rem] flex-col items-center gap-12", className)}>
     <div
       className={classNames(
-        onboardBackgroundClassNames,
+        "bg-body/5 transform-gpu backdrop-blur-xl",
         "flex w-full flex-col gap-16 rounded-lg p-16 text-left"
       )}
     >

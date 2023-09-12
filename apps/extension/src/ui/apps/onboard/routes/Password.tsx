@@ -8,13 +8,11 @@ import { useCallback, useEffect } from "react"
 import { useForm } from "react-hook-form"
 import { useTranslation } from "react-i18next"
 import { useNavigate } from "react-router-dom"
-import { FormFieldInputText } from "talisman-ui"
+import { FormFieldContainer, FormFieldInputText } from "talisman-ui"
 import { Button } from "talisman-ui"
 import * as yup from "yup"
 
 import { OnboardDialog } from "../components/OnboardDialog"
-import { OnboardFormField } from "../components/OnboardFormField"
-import { onboardBackgroundClassNames } from "../components/OnboardStyles"
 import { useOnboard } from "../context"
 import { OnboardLayout } from "../OnboardLayout"
 
@@ -134,11 +132,16 @@ export const PasswordPage = () => {
             )}
           </p>
           <form onSubmit={handleSubmit(submit)} autoComplete="off">
-            <div className="flex flex-col">
-              <div className="text-body-secondary mb-8 mt-16 text-sm">
+            <div className="flex flex-col pb-12">
+              <div
+                className={classNames(
+                  "mb-8 mt-16 text-sm",
+                  password ? "text-body-secondary" : "text-body-disabled"
+                )}
+              >
                 {t("Password strength")}: <PasswordStrength password={password} />
               </div>
-              <OnboardFormField error={errors.password}>
+              <FormFieldContainer error={errors.password?.message}>
                 <FormFieldInputText
                   {...register("password")}
                   type="password"
@@ -151,8 +154,8 @@ export const PasswordPage = () => {
                   className="placeholder:text-body-secondary/30 !bg-transparent !px-0"
                   containerProps={INPUT_CONTAINER_PROPS_PASSWORD}
                 />
-              </OnboardFormField>
-              <OnboardFormField error={errors.passwordConfirm}>
+              </FormFieldContainer>
+              <FormFieldContainer error={errors.passwordConfirm?.message}>
                 <FormFieldInputText
                   {...register("passwordConfirm")}
                   type="password"
@@ -163,18 +166,14 @@ export const PasswordPage = () => {
                   className="placeholder:text-body-secondary/30 !bg-transparent !px-0"
                   containerProps={INPUT_CONTAINER_PROPS_PASSWORD}
                 />
-              </OnboardFormField>
+              </FormFieldContainer>
             </div>
             <Button
               fullWidth
               primary
               type="submit"
               className={classNames(
-                `${
-                  !isValid
-                    ? `${onboardBackgroundClassNames} text-body-secondary cursor-not-allowed border-none`
-                    : ""
-                }`
+                !isValid && "bg-body/5 transform-gpu cursor-not-allowed backdrop-blur-xl"
               )}
               disabled={!isValid}
               processing={isSubmitting}
