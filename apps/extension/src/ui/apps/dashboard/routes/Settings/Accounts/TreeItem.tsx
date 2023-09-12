@@ -12,6 +12,7 @@ import { AccountTypeIcon } from "@ui/domains/Account/AccountTypeIcon"
 import { Address } from "@ui/domains/Account/Address"
 import Fiat from "@ui/domains/Asset/Fiat"
 import { useBalanceDetails } from "@ui/hooks/useBalanceDetails"
+import { useFormattedAddressForAccount } from "@ui/hooks/useFormattedAddress"
 import { CSSProperties, ReactNode, forwardRef, useMemo } from "react"
 import { useTranslation } from "react-i18next"
 import { ContextMenu, ContextMenuContent, ContextMenuItem, ContextMenuTrigger } from "talisman-ui"
@@ -58,6 +59,8 @@ export const TreeAccountItem = forwardRef<HTMLDivElement, Props & { item: UiTree
     )
     const { totalUsd } = useBalanceDetails(accountBalances)
 
+    const formattedAddress = useFormattedAddressForAccount(account)
+
     if (!account) return null
     return (
       <TreeItemWrapper {...props} ref={wrapperRef}>
@@ -81,7 +84,7 @@ export const TreeAccountItem = forwardRef<HTMLDivElement, Props & { item: UiTree
               <AccountTypeIcon className="text-primary" origin={account.origin} />
             </div>
             <div className="text-body-secondary text-sm">
-              <Address address={item.address} />
+              <Address address={formattedAddress} />
             </div>
           </div>
           <div className="flex flex-col gap-2">

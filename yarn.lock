@@ -7704,6 +7704,26 @@ __metadata:
   languageName: unknown
   linkType: soft
 
+"@talismn/on-chain-id@workspace:*, @talismn/on-chain-id@workspace:packages/on-chain-id":
+  version: 0.0.0-use.local
+  resolution: "@talismn/on-chain-id@workspace:packages/on-chain-id"
+  dependencies:
+    "@polkadot/types": ^10.1.4
+    "@talismn/balances": "workspace:*"
+    "@talismn/eslint-config": "workspace:*"
+    "@talismn/tsconfig": "workspace:*"
+    "@talismn/util": "workspace:*"
+    "@types/jest": ^27.5.1
+    anylogger: ^1.0.11
+    eslint: ^8.4.0
+    jest: ^28.1.0
+    ts-jest: ^28.0.2
+    typescript: ^4.6.4
+  peerDependencies:
+    "@polkadot/types": 10.x
+  languageName: unknown
+  linkType: soft
+
 "@talismn/orb@workspace:*, @talismn/orb@workspace:packages/orb":
   version: 0.0.0-use.local
   resolution: "@talismn/orb@workspace:packages/orb"
@@ -14477,6 +14497,7 @@ __metadata:
     "@talismn/chaindata-provider": "workspace:*"
     "@talismn/eslint-config": "workspace:*"
     "@talismn/icons": "workspace:*"
+    "@talismn/on-chain-id": "workspace:*"
     "@talismn/orb": "workspace:*"
     "@talismn/token-rates": "workspace:*"
     "@talismn/tsconfig": "workspace:*"
