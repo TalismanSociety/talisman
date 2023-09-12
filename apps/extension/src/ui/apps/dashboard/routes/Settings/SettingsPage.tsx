@@ -1,4 +1,3 @@
-import { useOpenClose } from "@talisman/hooks/useOpenClose"
 import {
   ChevronRightIcon,
   FlagIcon,
@@ -13,31 +12,16 @@ import { ReactComponent as IconList } from "@talisman/theme/icons/list.svg"
 import { ReactComponent as IconLock } from "@talisman/theme/icons/lock.svg"
 import { ReactComponent as IconTalisman } from "@talisman/theme/icons/talisman-hand.svg"
 import { ReactComponent as IconUser } from "@talisman/theme/icons/user.svg"
-import { MigratePasswordModal } from "@ui/domains/Settings/MigratePassword/MigratePasswordModal"
 import { useIsFeatureEnabled } from "@ui/hooks/useFeatures"
 import useMnemonicBackup from "@ui/hooks/useMnemonicBackup"
-import { useEffect } from "react"
 import { useTranslation } from "react-i18next"
-import { useSearchParams } from "react-router-dom"
 import { CtaButton } from "talisman-ui"
 
 import { DashboardLayout } from "../../layout/DashboardLayout"
 
 export const SettingsPage = () => {
-  const { isOpen: isOpenMigratePw, open: openMigratePw, close: closeMigratePw } = useOpenClose()
-
   const { allBackedUp } = useMnemonicBackup()
   const i18nEnabled = useIsFeatureEnabled("I18N")
-
-  // auto open modal if requested in query string
-  const [searchParams, setSearchParams] = useSearchParams()
-  useEffect(() => {
-    if (searchParams.get("showMigratePasswordModal") !== null) {
-      // migrating the password requires confirming backup of the seed, so this modal has priority
-      openMigratePw()
-      setSearchParams({})
-    }
-  }, [openMigratePw, searchParams, setSearchParams])
 
   const { t } = useTranslation("admin")
 
@@ -137,7 +121,6 @@ export const SettingsPage = () => {
           to={`/settings/about`}
         />
       </div>
-      <MigratePasswordModal open={isOpenMigratePw} onClose={closeMigratePw} />
     </DashboardLayout>
   )
 }
