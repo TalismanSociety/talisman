@@ -2,7 +2,7 @@ import { classNames, encodeAnyAddress } from "@talismn/util"
 import { useAccountByAddress } from "@ui/hooks/useAccountByAddress"
 import useChainByGenesisHash from "@ui/hooks/useChainByGenesisHash"
 import { useIsKnownAddress } from "@ui/hooks/useIsKnownAddress"
-import { FC } from "react"
+import { FC, useMemo } from "react"
 import { Tooltip, TooltipContent, TooltipTrigger } from "talisman-ui"
 
 import { AccountIcon } from "./AccountIcon"
@@ -14,8 +14,12 @@ const FormattedAddressTooltip: FC<{ address: string; genesisHash?: string | null
   genesisHash,
 }) => {
   const chain = useChainByGenesisHash(genesisHash)
+  const displayAddress = useMemo(
+    () => (chain ? encodeAnyAddress(address, chain?.prefix ?? undefined) : address),
+    [address, chain]
+  )
 
-  return <TooltipContent>{encodeAnyAddress(address, chain?.prefix ?? undefined)}</TooltipContent>
+  return <TooltipContent>{displayAddress}</TooltipContent>
 }
 
 export const FormattedAddress: FC<{
@@ -41,7 +45,7 @@ export const FormattedAddress: FC<{
             genesisHash={account?.genesisHash}
             className="text-[1.4em]"
           />
-          <span className="max-w-full overflow-hidden text-ellipsis whitespace-nowrap">
+          <span className="max-w-full truncate">
             {isKnown && isKnown.type === "account" ? (
               <>{isKnown.value.name}</>
             ) : (
