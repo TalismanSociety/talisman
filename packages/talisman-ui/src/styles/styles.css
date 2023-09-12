@@ -68,6 +68,11 @@
   #dcent-connect {
     display: none;
   }
+
+  /* Would be great to remove this at some point */
+  *:not(.allow-focus):focus {
+    outline: none;
+  }
 }
 
 /* The components layer is for class-based styles that you want to be able to override with utilities. */

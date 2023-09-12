@@ -1,6 +1,7 @@
 import { ArrowRightIcon } from "@talisman/theme/icons"
 import { classNames } from "@talismn/util"
 import { ReactNode } from "react"
+import { useTranslation } from "react-i18next"
 
 import { useOnboard } from "../context"
 
@@ -21,13 +22,14 @@ export const OnboardProgressBar = ({ stages = 3 }: { stages?: number }) => {
 }
 
 const DoItLaterButton = ({ onDoItLaterClick }: { onDoItLaterClick: () => void }) => {
+  const { t } = useTranslation("onboard")
   return (
     <span className="flex w-full grow justify-end">
       <button
         onClick={() => onDoItLaterClick()}
         className="text-body-secondary flex items-center gap-2 align-middle"
       >
-        I'll do it later <ArrowRightIcon />
+        {t("I'll do it later")} <ArrowRightIcon />
       </button>
     </span>
   )
