@@ -24,7 +24,7 @@ export const useResolveEnsName = (name?: string) => {
       if (!name || !isLookup) return null
 
       // resolve ens name
-      return (await api.accountsOnChainIdsResolveNames([name]))[0] ?? null
+      return (await api.accountsOnChainIdsResolveNames([name]))[name] ?? null
     },
     enabled: isLookup,
     cacheTime: Infinity,
