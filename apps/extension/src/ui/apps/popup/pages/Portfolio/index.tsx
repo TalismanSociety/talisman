@@ -55,7 +55,9 @@ export const Portfolio = () => {
           <PopupHeader right={<AccountAvatar />}>
             <ConnectedAccountsPill />
           </PopupHeader>
-          <PopupContent>{hasAccounts ? <PortfolioContent /> : <NoAccounts />}</PopupContent>
+          <PopupContent>
+            {hasAccounts === false ? <NoAccounts /> : <PortfolioContent />}
+          </PopupContent>
         </PopupLayout>
       </NomPoolStakingBannerProvider>
     </PortfolioProvider>
