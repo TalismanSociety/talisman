@@ -1,3 +1,4 @@
+import { VerifierCertificateType } from "@core/domains/mnemonics/types"
 import { HexString } from "@polkadot/util/types"
 import { notify, notifyUpdate } from "@talisman/components/Notifications"
 import { provideContext } from "@talisman/util/provideContext"
@@ -25,12 +26,15 @@ export type CONFIGURE_STATE = {
   submitting?: true
 }
 
+type VerifierCertificateTypeState = VerifierCertificateType | undefined
+
 export type CONFIGURE_VERIFIER_CERT_STATE = {
   type: "CONFIGURE_VERIFIER_CERT"
   verifierCertificateConfig?: {
-    verifierCertificateType?: "talisman" | "new" | null
+    verifierCertificateType?: VerifierCertificateTypeState
     verifierCertificateMnemonic?: string
     verifierCertificateMnemonicId?: string
+    mnemonicConfirmed?: boolean
   }
   submitting?: true
   accountConfig: AccountConfigState
@@ -56,8 +60,10 @@ type Action =
   | { method: "setConfigureVerifierCert" }
   | {
       method: "setVerifierCertType"
-      verifierCertificateType: "talisman" | "new" | null | undefined
+      verifierCertificateType: VerifierCertificateTypeState
       verifierCertificateMnemonicId?: string | undefined
+      verifierCertificateMnemonic?: string | undefined
+      mnemonicConfirmed?: boolean
     }
 
 export const reducer = (state: AddQrState, action: Action): AddQrState => {
@@ -120,6 +126,8 @@ export const reducer = (state: AddQrState, action: Action): AddQrState => {
           ...state.verifierCertificateConfig,
           verifierCertificateType: action.verifierCertificateType,
           verifierCertificateMnemonicId: action.verifierCertificateMnemonicId,
+          verifierCertificateMnemonic: action.verifierCertificateMnemonic,
+          mnemonicConfirmed: action.mnemonicConfirmed,
         },
       }
     }
@@ -134,6 +142,7 @@ const useAccountAddQrContext = ({ onSuccess }: AccountAddPageProps) => {
   const { t } = useTranslation("admin")
   const [state, dispatch] = useReducer(reducer, initialState)
   const hasVerifierCertMnemonic = useHasVerifierCertificateMnemonic()
+
   const vaultAccounts = useQrCodeAccounts()
 
   const submit = useCallback(
@@ -157,9 +166,29 @@ const useAccountAddQrContext = ({ onSuccess }: AccountAddPageProps) => {
 
       const { name, address, genesisHash, lockToNetwork } = state.accountConfig
       if (state.type === "CONFIGURE_VERIFIER_CERT" && state.verifierCertificateConfig) {
-        const { verifierCertificateType } = state.verifierCertificateConfig
-        if (verifierCertificateType)
-          await api.setVerifierCertMnemonic(verifierCertificateType, mnemonic)
+        const {
+          verifierCertificateType,
+          verifierCertificateMnemonic,
+          verifierCertificateMnemonicId,
+          mnemonicConfirmed,
+        } = state.verifierCertificateConfig
+        if (verifierCertificateType) {
+          if (verifierCertificateType === "import" && mnemonic) {
+            await api.setVerifierCertMnemonic(verifierCertificateType, {
+              mnemonic,
+              confirmed: true,
+            })
+          } else if (verifierCertificateType === "new" && verifierCertificateMnemonic) {
+            await api.setVerifierCertMnemonic(verifierCertificateType, {
+              mnemonic: verifierCertificateMnemonic,
+              confirmed: mnemonicConfirmed ?? false,
+            })
+          } else if (verifierCertificateType === "existing" && verifierCertificateMnemonicId) {
+            await api.setVerifierCertMnemonic(verifierCertificateType, {
+              mnemonicId: verifierCertificateMnemonicId,
+            })
+          }
+        }
       }
 
       try {

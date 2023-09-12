@@ -1,5 +1,5 @@
 import { appStore, passwordStore } from "@core/domains/app"
-import { seedPhraseStore } from "@core/domains/mnemonics/store"
+import { mnemonicsStore } from "@core/domains/mnemonics/store"
 import { SignerPayloadGenesisHash } from "@core/domains/signing/types"
 import { log } from "@core/log"
 import { chaindataProvider } from "@core/rpcs/chaindata"
@@ -29,7 +29,7 @@ export const getVerifierMnemonic = async () => {
   assert(mnemonicId !== undefined, "Verifier mnemonic not found")
   assert(mnemonicId !== null, "Talisman configured to not use verifier mnemonic")
 
-  const { ok, val: mnemonic } = await seedPhraseStore.getSeed(mnemonicId, pw)
+  const { ok, val: mnemonic } = await mnemonicsStore.getMnemonic(mnemonicId, pw)
   if (!ok || !mnemonic) throw new Error("Failed to get verifier mnemonic", { cause: mnemonic })
   return mnemonic
 }

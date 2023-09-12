@@ -59,7 +59,7 @@ describe("App handler when password is not trimmed", () => {
       confirmed: false,
     })
 
-    mnemonicId = Object.keys(await extensionStores.seedPhrase.get())[0]
+    mnemonicId = Object.keys(await extensionStores.mnemonics.get())[0]
     initialStoreData = await getLocalStorage()
 
     accountsJson = await keyring.backupAccounts(
@@ -105,8 +105,8 @@ describe("App handler when password is not trimmed", () => {
 
   test("can change password to one without spaces (not trimmed)", async () => {
     expect(await extensionStores.password.get("isTrimmed")).toBe(false)
-    // seed phrase store needs to have confirmed === true
-    await extensionStores.seedPhrase.setConfirmed(mnemonicId, true)
+    // mnemonic store needs to have confirmed === true
+    await extensionStores.mnemonics.setConfirmed(mnemonicId, true)
 
     const newPw = "noSpaces"
     const changePassword = await messageSender("pri(app.changePassword)", {
@@ -131,13 +131,13 @@ describe("App handler when password is not trimmed", () => {
     pairAgain.decodePkcs8(hashedPw)
     expect(pairAgain.isLocked).toBeFalsy()
 
-    const seedResult = await extensionStores.seedPhrase.getSeed(mnemonicId, hashedPw)
+    const seedResult = await extensionStores.mnemonics.getMnemonic(mnemonicId, hashedPw)
     expect(seedResult.ok && seedResult.val).toBeTruthy()
   })
 
   test("can change password to one with spaces (not trimmed)", async () => {
     expect(await extensionStores.password.get("isTrimmed")).toBe(false)
-    await extensionStores.seedPhrase.setConfirmed(mnemonicId, true)
+    await extensionStores.mnemonics.setConfirmed(mnemonicId, true)
 
     const newPw = " Spaces "
     const changePassword = await messageSender("pri(app.changePassword)", {
@@ -162,7 +162,7 @@ describe("App handler when password is not trimmed", () => {
     pairAgain.decodePkcs8(hashedPw)
     expect(pairAgain.isLocked).toBeFalsy()
 
-    const seedResult = await extensionStores.seedPhrase.getSeed(mnemonicId, hashedPw)
+    const seedResult = await extensionStores.mnemonics.getMnemonic(mnemonicId, hashedPw)
     expect(seedResult.ok && seedResult.val).toBeTruthy()
   })
 })
@@ -207,7 +207,7 @@ describe("App handler when password is trimmed", () => {
       confirmed: false,
     })
 
-    mnemonicId = Object.keys(await extensionStores.seedPhrase.get())[0]
+    mnemonicId = Object.keys(await extensionStores.mnemonics.get())[0]
 
     await extensionStores.app.setOnboarded()
 
@@ -262,8 +262,8 @@ describe("App handler when password is trimmed", () => {
 
   test("can change password to one without spaces (trimmed)", async () => {
     expect(await extensionStores.password.get("isTrimmed")).toBe(true)
-    // seed phrase store needs to have confirmed === true
-    await extensionStores.seedPhrase.setConfirmed(mnemonicId, true)
+    // mnemonic store needs to have confirmed === true
+    await extensionStores.mnemonics.setConfirmed(mnemonicId, true)
 
     const newPw = "noSpaces"
     const changePassword = await messageSender("pri(app.changePassword)", {
@@ -287,13 +287,13 @@ describe("App handler when password is trimmed", () => {
     pairAgain.decodePkcs8(hashedPw)
     expect(pairAgain.isLocked).toBeFalsy()
 
-    const seedResult = await extensionStores.seedPhrase.getSeed(mnemonicId, hashedPw)
+    const seedResult = await extensionStores.mnemonics.getMnemonic(mnemonicId, hashedPw)
     expect(seedResult.ok && seedResult.val).toBeTruthy()
   })
 
   test("can change password to one with spaces (trimmed)", async () => {
     expect(await extensionStores.password.get("isTrimmed")).toBe(true)
-    await extensionStores.seedPhrase.setConfirmed(mnemonicId, true)
+    await extensionStores.mnemonics.setConfirmed(mnemonicId, true)
 
     expect(extensionStores.password.isLoggedIn.value).toBe("TRUE")
 
@@ -319,7 +319,7 @@ describe("App handler when password is trimmed", () => {
     pairAgain.decodePkcs8(hashedPw)
     expect(pairAgain.isLocked).toBeFalsy()
 
-    const seedResult = await extensionStores.seedPhrase.getSeed(mnemonicId, hashedPw)
+    const seedResult = await extensionStores.mnemonics.getMnemonic(mnemonicId, hashedPw)
     expect(seedResult.ok && seedResult.val).toBeTruthy()
   })
 })

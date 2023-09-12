@@ -80,7 +80,7 @@ describe("Extension", () => {
       confirmed: false,
     })
 
-    mnemonicId = Object.keys(await extensionStores.seedPhrase.get())[0]
+    mnemonicId = Object.keys(await extensionStores.mnemonics.get())[0]
 
     // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
     await extensionStores.sites.updateSite("localhost:3000", { addresses: [address] })

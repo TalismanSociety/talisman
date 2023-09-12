@@ -1,11 +1,13 @@
 import { Trees } from "@core/domains/accounts/helpers.catalog"
-import { AccountAddressType, RequestAccountCreateHardware } from "@core/domains/accounts/types"
+import {
+  AccountAddressType,
+  RequestAccountCreateLedgerSubstrate,
+} from "@core/domains/accounts/types"
 import type {
   AccountJson,
   RequestAccountCreateOptions,
   RequestAccountsCatalogAction,
   RequestAddressLookup,
-  VerifierCertificateType,
 } from "@core/domains/accounts/types"
 import {
   AnalyticsCaptureRequest,
@@ -34,6 +36,7 @@ import {
   WatchAssetRequestId,
 } from "@core/domains/ethereum/types"
 import { MetadataUpdateStatus, RequestMetadataId } from "@core/domains/metadata/types"
+import { RequestSetVerifierCertParams } from "@core/domains/mnemonics/types"
 import {
   SignerPayloadGenesisHash,
   SignerPayloadJSON,
@@ -110,6 +113,8 @@ export default interface MessageTypes {
   mnemonicConfirm: (mnemonicId: string, confirmed: boolean) => Promise<boolean>
   mnemonicRename: (mnemonicId: string, name: string) => Promise<boolean>
   mnemonicDelete: (mnemonicId: string) => Promise<boolean>
+  validateMnemonic: (mnemonic: string) => Promise<boolean>
+  setVerifierCertMnemonic: (...params: RequestSetVerifierCertParams) => Promise<boolean>
 
   // account message types ---------------------------------------------------
   accountCreate: (
@@ -117,12 +122,10 @@ export default interface MessageTypes {
     type: AccountAddressType,
     options: RequestAccountCreateOptions
   ) => Promise<string>
-  accountCreateFromSeed: (name: string, seed: string, type?: AccountAddressType) => Promise<string>
+  accountCreateFromSuri: (name: string, suri: string, type?: AccountAddressType) => Promise<string>
   accountCreateFromJson: (unlockedPairs: KeyringPair$Json[]) => Promise<string[]>
-  accountCreateHardware: (
-    request: Omit<RequestAccountCreateHardware, "hardwareType">
-  ) => Promise<string>
-  accountCreateHardwareEthereum: (name: string, address: string, path: string) => Promise<string>
+  accountCreateLedger: (request: RequestAccountCreateLedgerSubstrate) => Promise<string>
+  accountCreateLedgerEthereum: (name: string, address: string, path: string) => Promise<string>
   accountCreateDcent: (
     name: string,
     address: string,
@@ -144,15 +147,9 @@ export default interface MessageTypes {
   ) => Promise<{ exportedJson: KeyringPair$Json }>
   accountExportPrivateKey: (address: string, password: string) => Promise<string>
   accountRename: (address: string, name: string) => Promise<boolean>
-  accountValidateMnemonic: (mnemonic: string) => Promise<boolean>
   validateDerivationPath: (derivationPath: string, type: AccountAddressType) => Promise<boolean>
   addressLookup: (lookup: RequestAddressLookup) => Promise<string>
   getNextDerivationPath: (mnemonicId: string, type: AccountAddressType) => Promise<string>
-  setVerifierCertMnemonic: (
-    type: VerifierCertificateType,
-    mnemonic?: string,
-    mnemonicId?: string
-  ) => Promise<boolean>
 
   // balance message types ---------------------------------------------------
   getBalance: ({

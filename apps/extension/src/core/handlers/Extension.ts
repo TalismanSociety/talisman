@@ -1,7 +1,6 @@
 import { DEBUG } from "@core/constants"
 import { db } from "@core/db"
 import { AccountsHandler } from "@core/domains/accounts"
-import { verifierCertificateMnemonicStore } from "@core/domains/accounts/store.verifierCertificateMnemonic"
 import { AccountTypes } from "@core/domains/accounts/types"
 import AppHandler from "@core/domains/app/handler"
 import { featuresStore } from "@core/domains/app/store.features"
@@ -245,6 +244,14 @@ export default class Extension extends ExtensionHandler {
     await this.stores.app.set({ needsSpiritKeyUpdate: false })
   }
 
+  private async validateVaultVerifierCertificateMnemonic() {
+    const vaultMnemoicId = await this.stores.app.get("vaultVerifierCertificateMnemonicId")
+    assert(vaultMnemoicId, "No Polkadot Vault Verifier Certificate Mnemonic set")
+    const vaultCipher = await this.stores.mnemonics.get(vaultMnemoicId)
+    assert(vaultCipher, "No Polkadot Vault Verifier Certificate Mnemonic found")
+    return true
+  }
+
   public async handle<TMessageType extends MessageTypes>(
     id: string,
     type: TMessageType,
@@ -284,8 +291,7 @@ export default class Extension extends ExtensionHandler {
         return this.stores.chains.hydrateStore()
 
       case "pri(chains.generateQr.addNetworkSpecs)": {
-        const vaultCipher = await verifierCertificateMnemonicStore.get("cipher")
-        assert(vaultCipher, "No Polkadot Vault Verifier Certificate Mnemonic found")
+        await this.validateVaultVerifierCertificateMnemonic()
 
         const { genesisHash } = request as RequestType<"pri(chains.generateQr.addNetworkSpecs)">
         const data = await generateQrAddNetworkSpecs(genesisHash)
@@ -294,8 +300,7 @@ export default class Extension extends ExtensionHandler {
       }
 
       case "pri(chains.generateQr.updateNetworkMetadata)": {
-        const vaultCipher = await verifierCertificateMnemonicStore.get("cipher")
-        assert(vaultCipher, "No Polkadot Vault Verifier Certificate Mnemonic found")
+        await this.validateVaultVerifierCertificateMnemonic()
 
         const { genesisHash, specVersion } =
           request as RequestType<"pri(chains.generateQr.updateNetworkMetadata)">

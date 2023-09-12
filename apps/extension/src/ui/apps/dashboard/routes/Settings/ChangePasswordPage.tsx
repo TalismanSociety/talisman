@@ -106,7 +106,7 @@ export const ChangePasswordPage = () => {
               )}
             </div>
             <div className="flex justify-end">
-              <Button onClick={handleBackupClick}>{t("Backup Seed Phrase")}</Button>
+              <Button onClick={handleBackupClick}>{t("Backup Recovery Phrase")}</Button>
             </div>
           </div>
         )}

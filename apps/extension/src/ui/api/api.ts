@@ -76,24 +76,31 @@ export const api: MessageTypes = {
     messageService.sendMessage("pri(mnemonic.rename)", { mnemonicId, name }),
   mnemonicDelete: (mnemonicId) =>
     messageService.sendMessage("pri(mnemonic.delete)", { mnemonicId }),
+  validateMnemonic: (mnemonic) =>
+    messageService.sendMessage("pri(mnemonic.validateMnemonic)", mnemonic),
+  setVerifierCertMnemonic: (certType, options) =>
+    messageService.sendMessage("pri(mnemonic.setVerifierCertMnemonic)", {
+      type: certType,
+      options,
+    }),
 
   // account messages ---------------------------------------------------
   accountCreate: (name, type, options) =>
     messageService.sendMessage("pri(accounts.create)", { name, type, ...options }),
-  accountCreateFromSeed: (name, seed, type) =>
-    messageService.sendMessage("pri(accounts.create.seed)", { name, seed, type }),
+  accountCreateFromSuri: (name, suri, type) =>
+    messageService.sendMessage("pri(accounts.create.suri)", { name, suri, type }),
   accountCreateFromJson: (unlockedPairs) =>
     messageService.sendMessage("pri(accounts.create.json)", { unlockedPairs }),
-  accountCreateHardware: ({ accountIndex, address, addressOffset, genesisHash, name }) =>
-    messageService.sendMessage("pri(accounts.create.hardware.substrate)", {
+  accountCreateLedger: ({ accountIndex, address, addressOffset, genesisHash, name }) =>
+    messageService.sendMessage("pri(accounts.create.ledger.substrate)", {
       accountIndex,
       address,
       addressOffset,
       genesisHash,
       name,
     }),
-  accountCreateHardwareEthereum: (name, address, path) =>
-    messageService.sendMessage("pri(accounts.create.hardware.ethereum)", {
+  accountCreateLedgerEthereum: (name, address, path) =>
+    messageService.sendMessage("pri(accounts.create.ledger.ethereum)", {
       name,
       address,
       path,
@@ -132,17 +139,9 @@ export const api: MessageTypes = {
     messageService.sendMessage("pri(accounts.rename)", { address, name }),
   accountExternalSetIsPortfolio: (address, isPortfolio) =>
     messageService.sendMessage("pri(accounts.external.setIsPortfolio)", { address, isPortfolio }),
-  accountValidateMnemonic: (mnemonic) =>
-    messageService.sendMessage("pri(accounts.validateMnemonic)", mnemonic),
   validateDerivationPath: (derivationPath, type) =>
     messageService.sendMessage("pri(accounts.validateDerivationPath)", { derivationPath, type }),
   addressLookup: (lookup) => messageService.sendMessage("pri(accounts.address.lookup)", lookup),
-  setVerifierCertMnemonic: (verifierCertType, mnemonic, mnemonicId) =>
-    messageService.sendMessage("pri(accounts.setVerifierCertMnemonic)", {
-      type: verifierCertType,
-      mnemonic,
-      mnemonicId,
-    }),
   getNextDerivationPath: (mnemonicId, type) =>
     messageService.sendMessage("pri(accounts.derivationPath.next)", { mnemonicId, type }),
 

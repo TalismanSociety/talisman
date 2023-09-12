@@ -1,4 +1,4 @@
-import { AccountType } from "@core/domains/accounts/types"
+import { AccountType, AccountTypes } from "@core/domains/accounts/types"
 import { DcentLogoIcon, EyeIcon, LinkIcon, PolkadotVaultIcon, UsbIcon } from "@talisman/theme/icons"
 import { classNames } from "@talismn/util"
 import { FC, useMemo } from "react"
@@ -15,12 +15,13 @@ export const AccountTypeIcon: FC<AccountTypeIconProps> = ({ origin, showLinked, 
   const { t } = useTranslation()
 
   const { Icon, tooltip } = useMemo(() => {
-    if (!!showLinked && ["SEED", "JSON"].includes(origin as string))
-      return { Icon: LinkIcon, tooltip: t("Imported account") }
-    if (origin === "HARDWARE") return { Icon: UsbIcon, tooltip: t("Hardware wallet account") }
-    if (origin === "QR") return { Icon: PolkadotVaultIcon, tooltip: t("Polkadot Vault account") }
-    if (origin === "WATCHED") return { Icon: EyeIcon, tooltip: t("Watched account") }
-    if (origin === "DCENT")
+    if (!!showLinked && origin === AccountTypes.TALISMAN)
+      return { Icon: LinkIcon, tooltip: t("Local account") }
+    if (origin === AccountTypes.LEDGER) return { Icon: UsbIcon, tooltip: t("Ledger account") }
+    if (origin === AccountTypes.QR)
+      return { Icon: PolkadotVaultIcon, tooltip: t("Polkadot Vault account") }
+    if (origin === AccountTypes.WATCHED) return { Icon: EyeIcon, tooltip: t("Watched account") }
+    if (origin === AccountTypes.DCENT)
       return { Icon: DcentLogoIcon, tooltip: t("D'CENT Biometric Wallet account") }
 
     return {}

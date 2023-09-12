@@ -6,8 +6,8 @@ import {
 import { useRequest } from "@ui/hooks/useRequest"
 import { useParams } from "react-router-dom"
 
-import { EthSignMessageRequest } from "./EthSignMessageRequest"
-import { EthSignTransactionRequest } from "./EthSignTransactionRequest"
+import { EthSignMessageRequest } from "./Message"
+import { EthSignTransactionRequest } from "./Transaction"
 
 export const EthereumSignRequest = () => {
   const { id } = useParams<"id">() as {

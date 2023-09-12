@@ -2,6 +2,12 @@ import { EthPriorityOptionName } from "@core/domains/signing/types"
 import { AppPill } from "@talisman/components/AppPill"
 import { WithTooltip } from "@talisman/components/Tooltip"
 import { InfoIcon } from "@talisman/theme/icons"
+import {
+  PopupContent,
+  PopupFooter,
+  PopupHeader,
+  PopupLayout,
+} from "@ui/apps/popup/Layout/PopupLayout"
 import { TokensAndFiat } from "@ui/domains/Asset/TokensAndFiat"
 import { EthFeeSelect } from "@ui/domains/Ethereum/GasSettings/EthFeeSelect"
 import { useEthBalance } from "@ui/domains/Ethereum/useEthBalance"
@@ -14,8 +20,7 @@ import { Suspense, useCallback, useEffect, useMemo } from "react"
 import { useTranslation } from "react-i18next"
 import { Button, Tooltip, TooltipContent, TooltipTrigger } from "talisman-ui"
 
-import { PopupContent, PopupFooter, PopupHeader, PopupLayout } from "../../Layout/PopupLayout"
-import { SignAccountAvatar } from "./SignAccountAvatar"
+import { SignAccountAvatar } from "../SignAccountAvatar"
 
 const useEvmBalance = (address: string, evmNetworkId: string | undefined) => {
   const provider = useEthereumProvider(evmNetworkId)

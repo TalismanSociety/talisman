@@ -1,4 +1,4 @@
-import { AccountAddressType, RequestAccountCreateFromSeed } from "@core/domains/accounts/types"
+import { AccountAddressType, RequestAccountCreateFromSuri } from "@core/domains/accounts/types"
 import { getEthDerivationPath } from "@core/domains/ethereum/helpers"
 import { provideContext } from "@talisman/util/provideContext"
 import { api } from "@ui/api"
@@ -13,7 +13,7 @@ type AccountAddSecretInputs = {
   mode: AccountAddDerivationMode
   mnemonic: string
   derivationPath: string
-  accounts: RequestAccountCreateFromSeed[]
+  accounts: RequestAccountCreateFromSuri[]
 }
 
 const useAccountAddSecretProvider = ({ onSuccess }: { onSuccess: (address: string) => void }) => {
@@ -31,13 +31,13 @@ const useAccountAddSecretProvider = ({ onSuccess }: { onSuccess: (address: strin
     }))
   }, [])
 
-  const importAccounts = useCallback(async (accounts: RequestAccountCreateFromSeed[]) => {
+  const importAccounts = useCallback(async (accounts: RequestAccountCreateFromSuri[]) => {
     setData((prev) => ({ ...prev, accounts }))
 
     const addresses: string[] = []
     // proceed sequencially in case mnemonic must be added to the store on first call
-    for (const { name, seed, type } of accounts)
-      addresses.push(await api.accountCreateFromSeed(name, seed, type))
+    for (const { name, suri, type } of accounts)
+      addresses.push(await api.accountCreateFromSuri(name, suri, type))
 
     return addresses
   }, [])

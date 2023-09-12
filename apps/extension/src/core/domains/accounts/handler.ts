@@ -9,9 +9,9 @@ import type {
   RequestAccountCreateDcent,
   RequestAccountCreateExternal,
   RequestAccountCreateFromJson,
-  RequestAccountCreateFromSeed,
-  RequestAccountCreateHardware,
-  RequestAccountCreateHardwareEthereum,
+  RequestAccountCreateFromSuri,
+  RequestAccountCreateLedgerEthereum,
+  RequestAccountCreateLedgerSubstrate,
   RequestAccountCreateWatched,
   RequestAccountExport,
   RequestAccountExportPrivateKey,
@@ -21,11 +21,10 @@ import type {
   RequestAccountsCatalogAction,
   RequestAddressLookup,
   RequestNextDerivationPath,
-  RequestSetVerifierCertificateMnemonic,
   RequestValidateDerivationPath,
   ResponseAccountExport,
 } from "@core/domains/accounts/types"
-import { AccountTypes } from "@core/domains/accounts/types"
+import { AccountImportSources, AccountTypes } from "@core/domains/accounts/types"
 import { getPairForAddressSafely } from "@core/handlers/helpers"
 import { genericAsyncSubscription } from "@core/handlers/subscriptions"
 import { talismanAnalytics } from "@core/libs/Analytics"
@@ -60,11 +59,11 @@ export default class AccountsHandler extends ExtensionHandler {
     let mnemonic: string
     if ("mnemonicId" in options) {
       derivedMnemonicId = options.mnemonicId
-      const mnemonicResult = await this.stores.seedPhrase.getSeed(derivedMnemonicId, password)
+      const mnemonicResult = await this.stores.mnemonics.getMnemonic(derivedMnemonicId, password)
       if (mnemonicResult.err || !mnemonicResult.val) throw new Error("Mnemonic not stored locally")
       mnemonic = mnemonicResult.val
     } else {
-      const newMnemonicId = await this.stores.seedPhrase.add(
+      const newMnemonicId = await this.stores.mnemonics.add(
         `${name} Recovery Phrase`,
         options.mnemonic,
         password,
@@ -97,7 +96,7 @@ export default class AccountsHandler extends ExtensionHandler {
       password,
       {
         name,
-        origin: AccountTypes.DERIVED,
+        origin: AccountTypes.TALISMAN,
         derivedMnemonicId,
         derivationPath,
       },
@@ -108,11 +107,11 @@ export default class AccountsHandler extends ExtensionHandler {
     return pair.address
   }
 
-  private async accountCreateSeed({
+  private async accountCreateSuri({
     name,
-    seed: suri,
+    suri,
     type,
-  }: RequestAccountCreateFromSeed): Promise<string> {
+  }: RequestAccountCreateFromSuri): Promise<string> {
     const password = this.stores.password.getPassword()
     assert(password, "Not logged in")
 
@@ -130,18 +129,18 @@ export default class AccountsHandler extends ExtensionHandler {
 
     const meta: KeyringPair$Meta = {
       name,
+      origin: AccountTypes.TALISMAN,
     }
 
     // suri could be a private key instead of a mnemonic
     if (mnemonicValidate(mnemonic)) {
-      const derivedMnemonicId = await this.stores.seedPhrase.getExistingId(mnemonic)
+      const derivedMnemonicId = await this.stores.mnemonics.getExistingId(mnemonic)
 
       if (derivedMnemonicId) {
-        meta.origin = AccountTypes.SEED
         meta.derivedMnemonicId = derivedMnemonicId
         meta.derivationPath = derivationPath
       } else {
-        const result = await this.stores.seedPhrase.add(
+        const result = await this.stores.mnemonics.add(
           `${name} Recovery Phrase`,
           mnemonic,
           password,
@@ -149,13 +148,12 @@ export default class AccountsHandler extends ExtensionHandler {
           true
         )
         if (result.ok) {
-          meta.origin = AccountTypes.SEED // find a better name
           meta.derivedMnemonicId = result.val
           meta.derivationPath = derivationPath
         } else throw new Error("Failed to store mnemonic", { cause: result.val })
       }
     } else {
-      meta.origin = AccountTypes.SEED // TODO "LOCAL"
+      meta.importSource = AccountImportSources.PK
     }
 
     try {
@@ -184,7 +182,8 @@ export default class AccountsHandler extends ExtensionHandler {
     for (const json of unlockedPairs) {
       const pair = keyring.createFromJson(json, {
         name: json.meta?.name || "Json Import",
-        origin: AccountTypes.JSON,
+        origin: AccountTypes.TALISMAN,
+        importSource: AccountImportSources.JSON,
       })
 
       const notExists = !keyring
@@ -208,11 +207,11 @@ export default class AccountsHandler extends ExtensionHandler {
     return addresses
   }
 
-  private accountsCreateHardwareEthereum({
+  private accountsCreateLedgerEthereum({
     name,
     address,
     path,
-  }: RequestAccountCreateHardwareEthereum): string {
+  }: RequestAccountCreateLedgerEthereum): string {
     assert(isEthereumAddress(address), "Not an Ethereum address")
 
     // ui-keyring's addHardware method only supports substrate accounts, cannot set ethereum type
@@ -230,7 +229,7 @@ export default class AccountsHandler extends ExtensionHandler {
         name,
         hardwareType: "ledger",
         isHardware: true,
-        origin: AccountTypes.HARDWARE,
+        origin: AccountTypes.LEDGER,
         path,
       },
       null
@@ -294,19 +293,19 @@ export default class AccountsHandler extends ExtensionHandler {
     return pair.address
   }
 
-  private accountsCreateHardware({
+  private accountsCreateLedger({
     accountIndex,
     address,
     addressOffset,
     genesisHash,
     name,
-  }: Omit<RequestAccountCreateHardware, "hardwareType">): string {
+  }: RequestAccountCreateLedgerSubstrate): string {
     const { pair } = keyring.addHardware(address, "ledger", {
       accountIndex,
       addressOffset,
       genesisHash,
       name,
-      origin: AccountTypes.HARDWARE,
+      origin: AccountTypes.LEDGER,
     })
 
     talismanAnalytics.capture("account create", { type: "substrate", method: "hardware" })
@@ -505,41 +504,13 @@ export default class AccountsHandler extends ExtensionHandler {
     return this.stores.accountsCatalog.runActions(actions)
   }
 
-  private accountValidateMnemonic(mnemonic: string): boolean {
-    return mnemonicValidate(mnemonic)
-  }
-
-  private async setVerifierCertMnemonic({
-    type,
-    mnemonic,
-    mnemonicId,
-  }: RequestSetVerifierCertificateMnemonic) {
-    if (type === "new" && mnemonic) {
-      const isValidMnemonic = mnemonicValidate(mnemonic)
-      assert(isValidMnemonic, "Invalid mnemonic")
-      const password = this.stores.password.getPassword()
-      if (!password) throw new Error("Unauthorised")
-      const { err, val } = await this.stores.seedPhrase.add(
-        "Vault Verifier Certificate Mnemonic",
-        mnemonic,
-        password,
-        SOURCES.Vault
-      )
-      if (err) throw new Error("Unable to set Verifier Certificate Mnemonic", { cause: val })
-      await this.stores.app.set({ vaultVerifierCertificateMnemonicId: val })
-    } else if (type === "talisman" && mnemonicId) {
-      await this.stores.app.set({ vaultVerifierCertificateMnemonicId: mnemonicId })
-    }
-    return true
-  }
-
   private async addressLookup(lookup: RequestAddressLookup): Promise<string> {
     if ("mnemonicId" in lookup) {
       const { mnemonicId, derivationPath, type } = lookup
 
       const password = this.stores.password.getPassword()
       assert(password, "Not logged in")
-      const mnemonicResult = await this.stores.seedPhrase.getSeed(mnemonicId, password)
+      const mnemonicResult = await this.stores.mnemonics.getMnemonic(mnemonicId, password)
       assert(mnemonicResult.ok && mnemonicResult.val, "Mnemonic not stored locally")
 
       const suri = formatSuri(mnemonicResult.val, derivationPath)
@@ -561,7 +532,7 @@ export default class AccountsHandler extends ExtensionHandler {
     const password = this.stores.password.getPassword()
     assert(password, "Not logged in")
 
-    const { val: mnemonic, ok } = await this.stores.seedPhrase.getSeed(mnemonicId, password)
+    const { val: mnemonic, ok } = await this.stores.mnemonics.getMnemonic(mnemonicId, password)
     assert(ok && mnemonic, "Mnemonic not stored locally")
 
     const { val: derivationPath, ok: ok2 } = getNextDerivationPathForMnemonic(mnemonic, type)
@@ -579,16 +550,16 @@ export default class AccountsHandler extends ExtensionHandler {
     switch (type) {
       case "pri(accounts.create)":
         return this.accountCreate(request as RequestAccountCreate)
-      case "pri(accounts.create.seed)":
-        return this.accountCreateSeed(request as RequestAccountCreateFromSeed)
+      case "pri(accounts.create.suri)":
+        return this.accountCreateSuri(request as RequestAccountCreateFromSuri)
       case "pri(accounts.create.json)":
         return this.accountCreateJson(request as RequestAccountCreateFromJson)
       case "pri(accounts.create.dcent)":
         return this.accountCreateDcent(request as RequestAccountCreateDcent)
-      case "pri(accounts.create.hardware.substrate)":
-        return this.accountsCreateHardware(request as RequestAccountCreateHardware)
-      case "pri(accounts.create.hardware.ethereum)":
-        return this.accountsCreateHardwareEthereum(request as RequestAccountCreateHardwareEthereum)
+      case "pri(accounts.create.ledger.substrate)":
+        return this.accountsCreateLedger(request as RequestAccountCreateLedgerSubstrate)
+      case "pri(accounts.create.ledger.ethereum)":
+        return this.accountsCreateLedgerEthereum(request as RequestAccountCreateLedgerEthereum)
       case "pri(accounts.create.qr.substrate)":
         return this.accountsCreateQr(request as RequestAccountCreateExternal)
       case "pri(accounts.create.watched)":
@@ -609,14 +580,10 @@ export default class AccountsHandler extends ExtensionHandler {
         return this.accountsCatalogSubscribe(id, port)
       case "pri(accounts.catalog.runActions)":
         return this.accountsCatalogRunActions(request as RequestAccountsCatalogAction[])
-      case "pri(accounts.validateMnemonic)":
-        return this.accountValidateMnemonic(request as string)
       case "pri(accounts.validateDerivationPath)":
         return this.validateDerivationPath(request as RequestValidateDerivationPath)
       case "pri(accounts.address.lookup)":
         return this.addressLookup(request as RequestAddressLookup)
-      case "pri(accounts.setVerifierCertMnemonic)":
-        return this.setVerifierCertMnemonic(request as RequestSetVerifierCertificateMnemonic)
       case "pri(accounts.derivationPath.next)":
         return this.getNextDerivationPath(request as RequestNextDerivationPath)
       default:

@@ -49,7 +49,7 @@ export const MnemonicSetPvVerifierModal = () => {
   const handleConfirmClick = useCallback(async () => {
     try {
       if (!mnemonic) return
-      await api.setVerifierCertMnemonic("talisman", undefined, mnemonic.id)
+      await api.setVerifierCertMnemonic("existing", { mnemonicId: mnemonic.id })
       close()
     } catch (err) {
       notify({
