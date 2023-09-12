@@ -12,17 +12,21 @@ type FiatProps = {
   as?: "span" | "div"
   noCountUp?: boolean
   isBalance?: boolean
-  hideSymbol?: boolean
+  currencyDisplay?: string
 }
 
 type DisplayValueProps = {
   amount: number
   currency?: Intl.NumberFormatOptions["currency"]
+  currencyDisplay?: string
   noCountUp?: boolean
 }
 
-const DisplayValue: FC<DisplayValueProps> = ({ amount, currency, noCountUp }) => {
-  const format = useCallback((amount = 0) => formatFiat(amount, currency), [currency])
+const DisplayValue: FC<DisplayValueProps> = ({ amount, currency, currencyDisplay, noCountUp }) => {
+  const format = useCallback(
+    (amount = 0) => formatFiat(amount, currency, currencyDisplay),
+    [currency, currencyDisplay]
+  )
   const formatted = useMemo(() => format(amount), [format, amount])
 
   if (noCountUp) return <>{formatted}</>
@@ -46,7 +50,7 @@ export const Fiat = ({
   className,
   noCountUp = false,
   isBalance = false,
-  hideSymbol = false,
+  currencyDisplay,
 }: FiatProps) => {
   const { refReveal, isRevealable, isRevealed, isHidden, effectiveNoCountUp } =
     useRevealableBalance(isBalance, noCountUp)
@@ -68,7 +72,8 @@ export const Fiat = ({
       {render && (
         <DisplayValue
           amount={isHidden ? 0 : typeof amount === "number" ? amount : amount.fiat(currency) ?? 0}
-          currency={hideSymbol ? undefined : currency}
+          currency={currency}
+          currencyDisplay={currencyDisplay}
           noCountUp={effectiveNoCountUp}
         />
       )}

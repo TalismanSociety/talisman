@@ -24,12 +24,12 @@ const TokensAndFiat = ({
   tokenAmount,
   fiat,
   token,
-  hideSymbol,
+  currencyDisplay,
 }: {
   tokenAmount?: BigNumber
   fiat: number | null
   token?: Token
-  hideSymbol?: boolean
+  currencyDisplay?: string
 }) => (
   <div className="flex flex-col gap-2 whitespace-nowrap">
     <div className="textbase text-white">
@@ -41,14 +41,14 @@ const TokensAndFiat = ({
       />
     </div>
     <div className="text-body-secondary text-sm">
-      {fiat === null ? "-" : <Fiat amount={fiat} isBalance hideSymbol={hideSymbol} />}
+      {fiat === null ? "-" : <Fiat amount={fiat} isBalance currencyDisplay={currencyDisplay} />}
     </div>
   </div>
 )
 
-const FiatOnly = ({ fiat, hideSymbol }: { fiat: number | null; hideSymbol?: boolean }) => (
+const FiatOnly = ({ fiat, currencyDisplay }: { fiat: number | null; currencyDisplay?: string }) => (
   <div className="textbase text-white">
-    {fiat === null ? "-" : <Fiat amount={fiat} isBalance hideSymbol={hideSymbol} />}
+    {fiat === null ? "-" : <Fiat amount={fiat} isBalance currencyDisplay={currencyDisplay} />}
   </div>
 )
 
@@ -93,10 +93,10 @@ export const Statistics = ({
             tokenAmount={tokens}
             fiat={fiat}
             token={token}
-            hideSymbol={showCurrencyToggle}
+            currencyDisplay={showCurrencyToggle ? "code" : undefined}
           />
         ) : (
-          <FiatOnly fiat={fiat} hideSymbol={showCurrencyToggle} />
+          <FiatOnly fiat={fiat} currencyDisplay={showCurrencyToggle ? "code" : undefined} />
         )}
       </div>
     </div>

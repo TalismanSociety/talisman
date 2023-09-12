@@ -8,7 +8,7 @@ import { useSelectedCurrency } from "./useCurrency"
 const usdFormatter = new Intl.NumberFormat(undefined, {
   style: "currency",
   currency: "usd",
-  currencyDisplay: "code",
+  currencyDisplay: "narrowSymbol",
 })
 const formatUsd = (usd: number | null) => usdFormatter.format(usd ?? 0)
 const formatBalanceDetails = (b: Balance, currency: TokenRateCurrency) =>

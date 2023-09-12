@@ -65,7 +65,7 @@ export const TotalFiatBalance = ({ className, mouseOver }: Props) => {
           className="font-surtExpanded text-lg"
           amount={balances.sum.fiat(currency).total}
           isBalance
-          hideSymbol
+          currencyDisplay="code"
         />
       </div>
       <TopActions />
