@@ -96,7 +96,7 @@ export const AddressDisplay: FC<AddressDisplayProps> = ({
     return chain && address ? convertAddress(address, chain.prefix) : address
   }, [address, chain])
 
-  const onChainId = useOnChainId(resolvedAddress ?? undefined)
+  const [onChainId] = useOnChainId(resolvedAddress ?? undefined)
 
   const text = useMemo(
     () =>

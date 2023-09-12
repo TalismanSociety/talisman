@@ -44,13 +44,14 @@ export const useResolveEnsName = (name?: string) => {
   return [address, { isLookup, ...rest }] as const
 }
 
+const cacheKey = "TalismanEnsNamesCache"
 const persistItemDuration = 15_778_476_000 // 6 months in milliseconds
 const ensNamesCache = new Map<string, { address?: string | null; updated?: number }>(
-  JSON.parse(localStorage.getItem("TalismanEnsNamesCache") ?? "[]")
+  JSON.parse(localStorage.getItem(cacheKey) ?? "[]")
 )
 const persistEnsNamesCache = () =>
   localStorage.setItem(
-    "TalismanEnsNamesCache",
+    cacheKey,
     JSON.stringify(
       Array.from(ensNamesCache.entries())
         // remove cached items which haven't been seen in a while

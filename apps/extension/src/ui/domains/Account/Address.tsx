@@ -29,7 +29,7 @@ export const Address: FC<AddressProps> = ({
   const noWrap = useMemo(() => !document.getElementById("main"), [])
 
   // if address has an onChainId, show that instead of the shortenedAddress
-  const onChainId = useOnChainId(address)
+  const [onChainId] = useOnChainId(address)
   const formatted = useMemo(() => {
     if (!noOnChainId && onChainId) return onChainId
     if (noShorten) return address
