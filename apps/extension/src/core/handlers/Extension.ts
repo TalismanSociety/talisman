@@ -244,7 +244,7 @@ export default class Extension extends ExtensionHandler {
     await this.stores.app.set({ needsSpiritKeyUpdate: false })
   }
 
-  private async validateVaultVerifierCeritificateMnemonic() {
+  private async validateVaultVerifierCertificateMnemonic() {
     const vaultMnemoicId = await this.stores.app.get("vaultVerifierCertificateMnemonicId")
     assert(vaultMnemoicId, "No Polkadot Vault Verifier Certificate Mnemonic set")
     const vaultCipher = await this.stores.mnemonics.get(vaultMnemoicId)
@@ -291,7 +291,7 @@ export default class Extension extends ExtensionHandler {
         return this.stores.chains.hydrateStore()
 
       case "pri(chains.generateQr.addNetworkSpecs)": {
-        await this.validateVaultVerifierCeritificateMnemonic()
+        await this.validateVaultVerifierCertificateMnemonic()
 
         const { genesisHash } = request as RequestType<"pri(chains.generateQr.addNetworkSpecs)">
         const data = await generateQrAddNetworkSpecs(genesisHash)
@@ -300,7 +300,7 @@ export default class Extension extends ExtensionHandler {
       }
 
       case "pri(chains.generateQr.updateNetworkMetadata)": {
-        await this.validateVaultVerifierCeritificateMnemonic()
+        await this.validateVaultVerifierCertificateMnemonic()
 
         const { genesisHash, specVersion } =
           request as RequestType<"pri(chains.generateQr.updateNetworkMetadata)">
