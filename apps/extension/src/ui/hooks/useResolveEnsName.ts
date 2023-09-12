@@ -28,13 +28,13 @@ export const useResolveEnsName = (name?: string) => {
     },
     enabled: isLookup,
     cacheTime: Infinity,
-    initialData: () => name && ensNamesCache.get(name),
+    initialData: () => name && ensNamesCache.get(name)?.address,
     onSuccess: (address) => {
       if (!name) return
 
       // update cache
       if (address === undefined) ensNamesCache.delete(name)
-      else ensNamesCache.set(name, address)
+      else ensNamesCache.set(name, { address, updated: Date.now() })
 
       // persist cache to local storage
       persistEnsNamesCache()
@@ -44,8 +44,22 @@ export const useResolveEnsName = (name?: string) => {
   return [address, { isLookup, ...rest }] as const
 }
 
-const ensNamesCache = new Map<string, string | null>(
+const persistItemDuration = 15_778_476_000 // 6 months in milliseconds
+const ensNamesCache = new Map<string, { address?: string | null; updated?: number }>(
   JSON.parse(localStorage.getItem("TalismanEnsNamesCache") ?? "[]")
 )
 const persistEnsNamesCache = () =>
-  localStorage.setItem("TalismanEnsNamesCache", JSON.stringify(Array.from(ensNamesCache.entries())))
+  localStorage.setItem(
+    "TalismanEnsNamesCache",
+    JSON.stringify(
+      Array.from(ensNamesCache.entries())
+        // remove cached items which haven't been seen in a while
+        .filter(
+          ([, item]) =>
+            // check that the updated field exists
+            item?.updated &&
+            // check that the item has been updated within the persistItemDuration
+            Date.now() - item.updated <= persistItemDuration
+        )
+    )
+  )
