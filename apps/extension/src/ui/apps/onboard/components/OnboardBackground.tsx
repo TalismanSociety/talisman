@@ -1,24 +1,28 @@
-import { useMemo } from "react"
-import { MYSTICAL_PHYSICS_V3, MysticalBackground } from "talisman-ui"
+import { CSSProperties, memo, useMemo } from "react"
+import { MYSTICAL_PHYSICS_V3, MysticalBackground, MysticalPhysicsV3 } from "talisman-ui"
 
 import { useOnboard } from "../context"
 
-const moreOpacityMax = 0.6
+const BG_CONFIG: MysticalPhysicsV3 = {
+  ...MYSTICAL_PHYSICS_V3,
+  artifacts: 4,
+  radiusMax: 1.4,
+}
+
+// Memoize so animations don't reset on every render
+const Background = memo(() => (
+  <MysticalBackground className="fixed left-0 top-0 z-0 h-[100vh] w-[100vw]" config={BG_CONFIG} />
+))
+Background.displayName = "Background"
 
 export const OnboardBackground = () => {
   const { stage } = useOnboard()
-  const onboardConfig = useMemo(() => {
-    if (!stage) return { ...MYSTICAL_PHYSICS_V3, opacityMax: moreOpacityMax }
-    return {
-      opacityMax: moreOpacityMax - stage * 0.1,
-      opacityMin: MYSTICAL_PHYSICS_V3.opacityMin - stage * 0.05,
-    }
-  }, [stage])
+
+  const style: CSSProperties = useMemo(() => ({ opacity: 1 - stage * 0.2 }), [stage])
 
   return (
-    <MysticalBackground
-      className="fixed left-0 top-0 h-[100vh] w-[100vw]"
-      config={{ ...onboardConfig, artifacts: 4, radiusMax: 1.4 }}
-    />
+    <div className="transition-opacity duration-[2.5s] ease-in-out" style={style}>
+      <Background />
+    </div>
   )
 }

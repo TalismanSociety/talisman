@@ -10,7 +10,7 @@ import { Button } from "talisman-ui"
 
 import { OnboardDialog } from "../components/OnboardDialog"
 import { useOnboard } from "../context"
-import { Layout } from "../layout"
+import { OnboardLayout } from "../OnboardLayout"
 
 const ANALYTICS_PAGE: AnalyticsPage = {
   container: "Fullscreen",
@@ -50,7 +50,7 @@ export const PrivacyPage = () => {
   }, [])
 
   return (
-    <Layout withBack analytics={ANALYTICS_PAGE}>
+    <OnboardLayout withBack analytics={ANALYTICS_PAGE}>
       {/* eslint-disable-next-line jsx-a11y/alt-text */}
       <img src={imgAnalyticsSwitch} className="absolute left-80 top-80" />
       {/* eslint-disable-next-line jsx-a11y/alt-text */}
@@ -88,6 +88,6 @@ export const PrivacyPage = () => {
           </Button>
         </div>
       </OnboardDialog>
-    </Layout>
+    </OnboardLayout>
   )
 }

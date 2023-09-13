@@ -1,9 +1,9 @@
 import { ArrowRightIcon } from "@talismn/icons"
 import { classNames } from "@talismn/util"
 import { ReactNode } from "react"
+import { useTranslation } from "react-i18next"
 
 import { useOnboard } from "../context"
-import { onboardBackgroundClassNames } from "./OnboardStyles"
 
 export const OnboardProgressBar = ({ stages = 3 }: { stages?: number }) => {
   const { stage } = useOnboard()
@@ -22,13 +22,14 @@ export const OnboardProgressBar = ({ stages = 3 }: { stages?: number }) => {
 }
 
 const DoItLaterButton = ({ onDoItLaterClick }: { onDoItLaterClick: () => void }) => {
+  const { t } = useTranslation("onboard")
   return (
     <span className="flex w-full grow justify-end">
       <button
         onClick={() => onDoItLaterClick()}
         className="text-body-secondary flex items-center gap-2 align-middle"
       >
-        I'll do it later <ArrowRightIcon />
+        {t("I'll do it later")} <ArrowRightIcon />
       </button>
     </span>
   )
@@ -50,7 +51,7 @@ export const OnboardDialog = ({
   <div className={classNames("flex w-[60rem] flex-col items-center gap-12", className)}>
     <div
       className={classNames(
-        onboardBackgroundClassNames,
+        "bg-body/5 transform-gpu backdrop-blur-xl",
         "flex w-full flex-col gap-16 rounded-lg p-16 text-left"
       )}
     >
