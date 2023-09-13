@@ -21,7 +21,7 @@ import { sleep } from "@talismn/util"
 import { Subject } from "rxjs"
 import Browser from "webextension-polyfill"
 
-import { getLegacyAuthenticationAccount } from "../accounts/helpers"
+import { authenticateLegacyMethod } from "../accounts/legacy"
 import { changePassword } from "./helpers"
 import { protector } from "./protector"
 import { PasswordStoreData } from "./store.password"
@@ -76,25 +76,17 @@ export default class AppHandler extends ExtensionHandler {
         const transformedPassword = await this.stores.password.transformPassword(pass)
 
         // attempt to log in via the legacy method
-        const primaryAccount = getLegacyAuthenticationAccount()
-        assert(primaryAccount, "No primary account, unable to authorise")
-
-        // fetch keyring pair from address
-        const pair = keyring.getPair(primaryAccount.address)
-
-        // attempt unlock the pair
-        // a successful unlock means authenticated
-        pair.unlock(transformedPassword)
-        pair.lock()
+        authenticateLegacyMethod(transformedPassword)
 
         // we can now set up the auth secret
         this.stores.password.setPassword(transformedPassword)
         await this.stores.password.setupAuthSecret(transformedPassword)
+        talismanAnalytics.capture("authenticate", { method: "legacy" })
       } else {
         await this.stores.password.authenticate(pass)
+        talismanAnalytics.capture("authenticate", { method: "new" })
       }
 
-      talismanAnalytics.capture("authenticate")
       return true
     } catch (e) {
       this.stores.password.clearPassword()

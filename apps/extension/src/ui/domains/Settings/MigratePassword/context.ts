@@ -9,6 +9,8 @@ import { useSensitiveState } from "@ui/hooks/useSensitiveState"
 import { useSetting } from "@ui/hooks/useSettings"
 import { useCallback, useEffect, useMemo, useState } from "react"
 
+import { useDismissMigratePasswordModal } from "./useMigratePasswordModal"
+
 const useMigratePasswordProvider = ({ onComplete }: { onComplete: () => void }) => {
   const [password, setPassword] = useSensitiveState<string>()
   const [newPassword, setNewPassword] = useSensitiveState<string>()
@@ -64,6 +66,13 @@ const useMigratePasswordProvider = ({ onComplete }: { onComplete: () => void }) 
     }
   }, [allBackedUp, status, migratePassword])
 
+  const dismiss = useDismissMigratePasswordModal()
+
+  const closeAndComplete = useCallback(() => {
+    dismiss()
+    onComplete()
+  }, [dismiss, onComplete])
+
   return {
     mnemonicId,
     hasPassword,
@@ -79,7 +88,7 @@ const useMigratePasswordProvider = ({ onComplete }: { onComplete: () => void }) 
     error,
     hasBackedUpMnemonic: allBackedUp,
     setMnemonicBackupConfirmed,
-    onComplete,
+    onComplete: closeAndComplete,
   }
 }
 

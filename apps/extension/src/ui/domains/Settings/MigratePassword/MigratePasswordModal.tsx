@@ -35,6 +35,7 @@ const MigratePasswordModalContent = () => {
 
 export const MigratePasswordModal = () => {
   const { isOpen, close } = useMigratePasswordModal()
+
   return (
     <Modal isOpen={isOpen} onDismiss={close}>
       <div className="w-[50.3rem]">
