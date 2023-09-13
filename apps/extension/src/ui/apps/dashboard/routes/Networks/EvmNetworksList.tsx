@@ -18,17 +18,38 @@ export const EvmNetworksList = ({ search }: { search?: string }) => {
   const [useTestnets] = useSetting("useTestnets")
   const { evmNetworks } = useEvmNetworks(useTestnets)
 
-  const filteredEvmNetworks = useMemo(() => {
-    if (search === undefined || search.length < 1) return evmNetworks
+  const [filteredEvmNetworks, exactMatches] = useMemo(() => {
+    if (search === undefined || search.length < 1) return [evmNetworks, [] as string[]] as const
     const lowerSearch = search.toLowerCase()
+
     const filter = (network: EvmNetwork) =>
       network.name?.toLowerCase().includes(lowerSearch) ||
       network.nativeToken?.id.toLowerCase().includes(lowerSearch)
 
-    return evmNetworks.filter(filter)
+    const filtered = evmNetworks.filter(filter)
+    const exactMatches = filtered.flatMap((network) =>
+      lowerSearch.trim() === network.name?.toLowerCase().trim() ||
+      lowerSearch.trim() === network.nativeToken?.id.toLowerCase().trim()
+        ? [network.id]
+        : []
+    )
+
+    return [filtered, exactMatches] as const
   }, [evmNetworks, search])
 
-  const sortedNetworks = useMemo(() => sortBy(filteredEvmNetworks, "name"), [filteredEvmNetworks])
+  const sortedNetworks = useMemo(() => {
+    const byName = sortBy(filteredEvmNetworks, "name")
+    if (exactMatches.length < 1) return byName
+
+    // put exact matches at the top of the list
+    return byName.sort((a, b) => {
+      const aExactMatch = exactMatches.includes(a.id)
+      const bExactMatch = exactMatches.includes(b.id)
+      if (aExactMatch && !bExactMatch) return -1
+      if (bExactMatch && !aExactMatch) return 1
+      return 0
+    })
+  }, [exactMatches, filteredEvmNetworks])
   if (!sortedNetworks) return null
 
   return (

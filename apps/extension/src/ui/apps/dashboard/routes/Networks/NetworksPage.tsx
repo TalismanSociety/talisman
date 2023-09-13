@@ -1,3 +1,4 @@
+import { FadeIn } from "@talisman/components/FadeIn"
 import { HeaderBlock } from "@talisman/components/HeaderBlock"
 import { SearchInput } from "@talisman/components/SearchInput"
 import { Spacer } from "@talisman/components/Spacer"
@@ -63,11 +64,15 @@ export const NetworksPage = () => {
         <SearchInput onChange={setSearch} placeholder={t("Search networks")} />
       </div>
       <Spacer small />
-      {networkType === "polkadot" ? (
-        <ChainsList search={search} />
-      ) : (
-        <EvmNetworksList search={search} />
-      )}
+      {/* The `FadeIn` with the `key` is a dirty workaround for https://github.com/streamich/react-use/issues/2376 */}
+      {/* Without it, when the search results change order, the `useIntersection` inside them bugs out and they turn blank */}
+      <FadeIn key={search || "DEFAULT"}>
+        {networkType === "polkadot" ? (
+          <ChainsList search={search} />
+        ) : (
+          <EvmNetworksList search={search} />
+        )}
+      </FadeIn>
     </DashboardLayout>
   )
 }

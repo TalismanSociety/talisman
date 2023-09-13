@@ -18,17 +18,38 @@ export const ChainsList = ({ search }: { search?: string }) => {
   const [useTestnets] = useSetting("useTestnets")
   const { chains } = useChains(useTestnets)
 
-  const filteredChains = useMemo(() => {
-    if (search === undefined || search.length < 1) return chains
+  const [filteredChains, exactMatches] = useMemo(() => {
+    if (search === undefined || search.length < 1) return [chains, [] as string[]] as const
     const lowerSearch = search.toLowerCase()
+
     const filter = (chain: Chain) =>
       chain.name?.toLowerCase().includes(lowerSearch) ||
       chain.nativeToken?.id.toLowerCase().includes(lowerSearch)
 
-    return chains.filter(filter)
+    const filtered = chains.filter(filter)
+    const exactMatches = filtered.flatMap((chain) =>
+      lowerSearch.trim() === chain.name?.toLowerCase().trim() ||
+      lowerSearch.trim() === chain.nativeToken?.id.toLowerCase().trim()
+        ? [chain.id]
+        : []
+    )
+
+    return [filtered, exactMatches] as const
   }, [chains, search])
 
-  const sortedChains = useMemo(() => sortBy(filteredChains, "name"), [filteredChains])
+  const sortedChains = useMemo(() => {
+    const byName = sortBy(filteredChains, "name")
+    if (exactMatches.length < 1) return byName
+
+    // put exact matches at the top of the list
+    return byName.sort((a, b) => {
+      const aExactMatch = exactMatches.includes(a.id)
+      const bExactMatch = exactMatches.includes(b.id)
+      if (aExactMatch && !bExactMatch) return -1
+      if (bExactMatch && !aExactMatch) return 1
+      return 0
+    })
+  }, [exactMatches, filteredChains])
   if (!sortedChains) return null
 
   return (
