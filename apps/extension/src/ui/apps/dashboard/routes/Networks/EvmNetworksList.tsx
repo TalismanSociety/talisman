@@ -12,7 +12,7 @@ import { useIntersection } from "react-use"
 import { ListButton } from "talisman-ui"
 
 import { ANALYTICS_PAGE } from "./analytics"
-import { CustomPill, TestnetPill } from "./Pill"
+import { CustomPill, TestnetPill } from "./Pills"
 
 export const EvmNetworksList = ({ search }: { search?: string }) => {
   const [useTestnets] = useSetting("useTestnets")
