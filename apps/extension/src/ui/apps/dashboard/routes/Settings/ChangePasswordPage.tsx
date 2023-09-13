@@ -1,7 +1,7 @@
 import { yupResolver } from "@hookform/resolvers/yup"
 import { HeaderBlock } from "@talisman/components/HeaderBlock"
 import { notify } from "@talisman/components/Notifications"
-import { InfoIcon } from "@talisman/theme/icons"
+import { InfoIcon } from "@talismn/icons"
 import { api } from "@ui/api"
 import useMnemonicBackup from "@ui/hooks/useMnemonicBackup"
 import { useCallback, useEffect, useMemo } from "react"
@@ -106,7 +106,7 @@ export const ChangePasswordPage = () => {
               )}
             </div>
             <div className="flex justify-end">
-              <Button onClick={handleBackupClick}>{t("Backup Seed Phrase")}</Button>
+              <Button onClick={handleBackupClick}>{t("Backup Recovery Phrase")}</Button>
             </div>
           </div>
         )}

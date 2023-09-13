@@ -21,7 +21,7 @@ import { sleep } from "@talismn/util"
 import { Subject } from "rxjs"
 import Browser from "webextension-polyfill"
 
-import { getPrimaryAccount } from "../accounts/helpers"
+import { getLegacyAuthenticationAccount } from "../accounts/helpers"
 import { changePassword } from "./helpers"
 import { protector } from "./protector"
 import { PasswordStoreData } from "./store.password"
@@ -76,7 +76,7 @@ export default class AppHandler extends ExtensionHandler {
         const transformedPassword = await this.stores.password.transformPassword(pass)
 
         // attempt to log in via the legacy method
-        const primaryAccount = getPrimaryAccount(true)
+        const primaryAccount = getLegacyAuthenticationAccount()
         assert(primaryAccount, "No primary account, unable to authorise")
 
         // fetch keyring pair from address
@@ -116,11 +116,11 @@ export default class AppHandler extends ExtensionHandler {
     newPw,
     newPwConfirm,
   }: RequestTypes["pri(app.changePassword)"]) {
-    // only allow users who have confirmed backing up their seed phrase to change PW
-    const mnemonicsUnconfirmed = await this.stores.seedPhrase.hasUnconfirmed()
+    // only allow users who have confirmed backing up their recovery phrase to change PW
+    const mnemonicsUnconfirmed = await this.stores.mnemonics.hasUnconfirmed()
     assert(
       !mnemonicsUnconfirmed,
-      "Please backup your seed phrase before attempting to change your password."
+      "Please backup your recovery phrase before attempting to change your password."
     )
 
     // check given PW
@@ -169,7 +169,7 @@ export default class AppHandler extends ExtensionHandler {
     keyring.getAccounts().forEach((acc) => keyring.forgetAccount(acc.address))
     this.stores.app.set({ onboarded: "FALSE" })
     await this.stores.password.reset()
-    await this.stores.seedPhrase.clear()
+    await this.stores.mnemonics.clear()
     await windowManager.openOnboarding("/import?resetWallet=true")
     // since all accounts are being wiped, all sites need to be reset - so they may as well be wiped.
     await this.stores.sites.clear()

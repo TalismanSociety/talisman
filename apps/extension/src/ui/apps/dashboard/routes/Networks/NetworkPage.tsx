@@ -30,7 +30,7 @@ export const NetworkPage = () => {
   }, [navigate])
 
   return (
-    <DashboardLayout analytics={ANALYTICS_PAGE} withBack centered>
+    <DashboardLayout analytics={ANALYTICS_PAGE} centered withBack>
       <HeaderBlock
         title={t("{{editMode}} EVM Network", { editMode: evmNetworkId ? t("Edit") : t("Add") })}
         text={

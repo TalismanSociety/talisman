@@ -1,4 +1,8 @@
-import { AccountAddressType, AccountMeta, AccountTypes } from "@core/domains/accounts/types"
+import {
+  LegacyAccountType as AccountType,
+  LegacyAccountTypes as AccountTypes,
+} from "@core/domains/accounts/migrations"
+import { AccountAddressType } from "@core/domains/accounts/types"
 import { passwordStore } from "@core/domains/app"
 import { getEthDerivationPath } from "@core/domains/ethereum/helpers"
 import { createLegacySeedPhraseStore } from "@core/domains/mnemonics/legacy/store"
@@ -12,7 +16,7 @@ const mnemonic = "seed sock milk update focus rotate barely fade car face mechan
 const password = "passw0rd"
 
 const createPair = (
-  origin: AccountMeta["origin"] = AccountTypes.TALISMAN,
+  origin: AccountType = AccountTypes.TALISMAN,
   derivationPath = "",
   parent?: string,
   type: AccountAddressType = "sr25519"
@@ -24,7 +28,7 @@ const createPair = (
   }
 
   const { pair } = keyring.addUri(
-    `${mnemonic}${origin === "DERIVED" ? slashDerivationPath : ""}`,
+    `${mnemonic}${origin === AccountTypes.DERIVED ? slashDerivationPath : ""}`,
     password,
     {
       name: `Test Account: ${derivationPath}`,
@@ -50,10 +54,10 @@ describe("App migrations", () => {
     const rootAccount = createPair()
     const indices = [1, 2]
     indices.forEach((index) => {
-      createPair("DERIVED", `${index}`, rootAccount.address)
+      createPair(AccountTypes.DERIVED, `${index}`, rootAccount.address)
     })
     // create an ethereum account
-    createPair("DERIVED", getEthDerivationPath(), rootAccount.address, "ethereum")
+    createPair(AccountTypes.DERIVED, getEthDerivationPath(), rootAccount.address, "ethereum")
     const seedPhraseStore = createLegacySeedPhraseStore()
     // create a seedphrase encrypted with the plaintext password
     await seedPhraseStore.add(mnemonic, password, true)

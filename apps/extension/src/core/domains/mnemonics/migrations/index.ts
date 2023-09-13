@@ -9,13 +9,12 @@ import {
   createLegacySeedPhraseStore,
   createLegacyVerifierCertificateMnemonicStore,
 } from "../legacy/store"
-import { encryptMnemonic, seedPhraseStore } from "../store"
+import { encryptMnemonic, mnemonicsStore } from "../store"
 
 enum SOURCES {
   Imported = "imported",
   Generated = "generated",
   Legacy = "legacy",
-  Vault = "vault",
 }
 
 type AccountType = {
@@ -29,7 +28,7 @@ const AccountTypes = {
   SEED_STORED: "SEED_STORED", // used for an imported mnemonic which is stored
 } as const
 
-const storedSeedAccountTypes: AccountType[] = [
+const mnemonicAccountTypes: AccountType[] = [
   AccountTypes.TALISMAN,
   AccountTypes.LEGACY_ROOT,
   AccountTypes.SEED_STORED,
@@ -56,7 +55,7 @@ export const migrateSeedStoreToMultiple: Migration = {
 
     const { encrypted: cipher, hash: id } = await getMnemonicHash(legacyCipher, password)
 
-    await seedPhraseStore.set({
+    await mnemonicsStore.set({
       [id]: {
         id,
         name: "My Recovery Phrase",
@@ -66,17 +65,17 @@ export const migrateSeedStoreToMultiple: Migration = {
       },
     })
 
-    // get all accounts which have been derived from this seed phrase, and add derivedMnemonicId to the metadata
+    // get all accounts which have been derived from this recovery phrase, and add derivedMnemonicId to the metadata
 
     const allAccounts = keyring.getAccounts()
-    const seedAccount = allAccounts.find(
-      ({ meta: { origin } }) => origin && storedSeedAccountTypes.includes(origin as AccountType)
+    const parentAccount = allAccounts.find(
+      ({ meta: { origin } }) => origin && mnemonicAccountTypes.includes(origin as AccountType)
     )
     const derivedAccounts = allAccounts.filter(
       ({ meta: { parent, origin } }) =>
-        parent === seedAccount?.address && origin === AccountTypes.DERIVED
+        parent === parentAccount?.address && origin === AccountTypes.DERIVED
     )
-    const migrationAccounts = [...derivedAccounts, seedAccount]
+    const migrationAccounts = [...derivedAccounts, parentAccount]
 
     migrationAccounts.forEach((account) => {
       if (account) {
@@ -100,12 +99,12 @@ export const migrateSeedStoreToMultiple: Migration = {
 
         appStoreVCId = vcId
 
-        await seedPhraseStore.set({
+        await mnemonicsStore.set({
           [vcId]: {
             ...legacyVCData,
             id: vcId,
-            name: "My Recovery Phrase",
-            source: SOURCES.Vault,
+            name: "Polkadot Vault Verifier Certificate",
+            source: SOURCES.Legacy,
             cipher: vcCipher,
           },
         })

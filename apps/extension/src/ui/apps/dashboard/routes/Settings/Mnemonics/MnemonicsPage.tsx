@@ -10,7 +10,7 @@ import {
   MoreHorizontalIcon,
   PolkadotVaultIcon,
   SeedIcon,
-} from "@talisman/theme/icons"
+} from "@talismn/icons"
 import { classNames } from "@talismn/util"
 import { AccountIcon } from "@ui/domains/Account/AccountIcon"
 import { Address } from "@ui/domains/Account/Address"

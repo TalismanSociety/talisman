@@ -1,18 +1,19 @@
 import { isEthereumAddress } from "@polkadot/util-crypto"
 import { ScrollContainer } from "@talisman/components/ScrollContainer"
 import { SearchInput } from "@talisman/components/SearchInput"
-import { EyeIcon, TalismanHandIcon, UserIcon } from "@talisman/theme/icons"
 import { convertAddress } from "@talisman/util/convertAddress"
 import { isValidAddress } from "@talisman/util/isValidAddress"
+import { EyeIcon, LoaderIcon, TalismanHandIcon, UserIcon } from "@talismn/icons"
 import { useSendFundsWizard } from "@ui/apps/popup/pages/SendFunds/context"
 import useAccounts from "@ui/hooks/useAccounts"
 import { useAddressBook } from "@ui/hooks/useAddressBook"
 import useChain from "@ui/hooks/useChain"
+import { useResolveEnsName } from "@ui/hooks/useResolveEnsName"
 import useToken from "@ui/hooks/useToken"
 import { useCallback, useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
 
-import { SendFundsAccountsList } from "./SendFundsAccountsList"
+import { SendFundsAccount, SendFundsAccountsList } from "./SendFundsAccountsList"
 
 export const SendFundsRecipientPicker = () => {
   const { t } = useTranslation("send-funds")
@@ -31,6 +32,10 @@ export const SendFundsRecipientPicker = () => {
     return isFromEthereum ? isEthereumAddress(search) : isValidAddress(search)
   }, [from, isFromEthereum, search])
 
+  const [ensLookup, { isLookup: isEnsLookup, isFetching: isEnsFetching }] = useResolveEnsName(
+    isFromEthereum ? search : undefined
+  )
+
   const normalize = useCallback(
     (addr = "") => {
       if (!addr) return null
@@ -45,9 +50,13 @@ export const SendFundsRecipientPicker = () => {
   const normalizedFrom = useMemo(() => normalize(from), [from, normalize])
   const normalizedTo = useMemo(() => normalize(to), [to, normalize])
   const normalizedSearch = useMemo(() => normalize(search), [search, normalize])
+  const normalizedEnsLookup = useMemo(
+    () => normalize(ensLookup ?? undefined),
+    [ensLookup, normalize]
+  )
 
   const newAddresses = useMemo(() => {
-    const addresses: { address: string }[] = []
+    const addresses: SendFundsAccount[] = []
 
     if (
       to &&
@@ -64,6 +73,15 @@ export const SendFundsRecipientPicker = () => {
     )
       addresses.push({ address: search })
 
+    if (
+      isEnsLookup &&
+      ensLookup &&
+      (!to || normalizedEnsLookup !== normalizedTo) &&
+      allAccounts.every((account) => normalizedEnsLookup !== normalize(account.address)) &&
+      allContacts.every((contact) => normalizedEnsLookup !== normalize(contact.address))
+    )
+      addresses.push({ name: search, address: ensLookup })
+
     return addresses
   }, [
     to,
@@ -73,6 +91,9 @@ export const SendFundsRecipientPicker = () => {
     normalizedSearch,
     normalizedTo,
     search,
+    isEnsLookup,
+    ensLookup,
+    normalizedEnsLookup,
     normalize,
   ])
 
@@ -84,9 +105,20 @@ export const SendFundsRecipientPicker = () => {
           (contact) =>
             !search ||
             contact.name?.toLowerCase().includes(search) ||
-            (isValidAddressInput && normalizedSearch === normalize(contact.address))
+            (isValidAddressInput && normalizedSearch === normalize(contact.address)) ||
+            (isEnsLookup && ensLookup && normalizedEnsLookup === normalize(contact.address))
         ),
-    [allContacts, isFromEthereum, isValidAddressInput, normalize, normalizedSearch, search]
+    [
+      allContacts,
+      ensLookup,
+      isEnsLookup,
+      isFromEthereum,
+      isValidAddressInput,
+      normalize,
+      normalizedEnsLookup,
+      normalizedSearch,
+      search,
+    ]
   )
 
   const accounts = useMemo(
@@ -98,15 +130,19 @@ export const SendFundsRecipientPicker = () => {
           (account) =>
             !search ||
             account.name?.toLowerCase().includes(search) ||
-            (isValidAddressInput && normalizedSearch === normalize(account.address))
+            (isValidAddressInput && normalizedSearch === normalize(account.address)) ||
+            (isEnsLookup && ensLookup && normalizedEnsLookup === normalize(account.address))
         )
         .filter((account) => !account.genesisHash || account.genesisHash === chain?.genesisHash),
     [
       allAccounts,
       chain?.genesisHash,
+      ensLookup,
+      isEnsLookup,
       isFromEthereum,
       isValidAddressInput,
       normalize,
+      normalizedEnsLookup,
       normalizedFrom,
       normalizedSearch,
       search,
@@ -145,6 +181,11 @@ export const SendFundsRecipientPicker = () => {
             autoFocus
             onChange={setSearch}
             placeholder={t("Enter address")}
+            after={
+              isEnsLookup && isEnsFetching ? (
+                <LoaderIcon className="text-body-disabled animate-spin-slow" />
+              ) : null
+            }
           />
         </div>
       </div>

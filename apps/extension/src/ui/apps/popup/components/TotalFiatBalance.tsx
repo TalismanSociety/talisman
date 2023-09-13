@@ -1,10 +1,4 @@
-import {
-  ArrowDownIcon,
-  CreditCardIcon,
-  EyeIcon,
-  EyeOffIcon,
-  PaperPlaneIcon,
-} from "@talisman/theme/icons"
+import { ArrowDownIcon, CreditCardIcon, EyeIcon, EyeOffIcon, SendIcon } from "@talismn/icons"
 import { classNames } from "@talismn/util"
 import { api } from "@ui/api"
 import { AnalyticsEventName, AnalyticsPage, sendAnalyticsEvent } from "@ui/api/analytics"
@@ -95,7 +89,7 @@ const TopActions = () => {
         analyticsName: "Goto",
         analyticsAction: "Send Funds button",
         label: t("Send"),
-        icon: PaperPlaneIcon,
+        icon: SendIcon,
         action: () => api.sendFundsOpen().then(() => window.close()),
       },
     ]

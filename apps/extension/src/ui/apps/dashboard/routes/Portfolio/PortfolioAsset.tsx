@@ -1,5 +1,5 @@
 import { Balances } from "@core/domains/balances/types"
-import { ChevronLeftIcon, CopyIcon, PaperPlaneIcon } from "@talisman/theme/icons"
+import { ChevronLeftIcon, CopyIcon, SendIcon } from "@talismn/icons"
 import { classNames } from "@talismn/util"
 import { TokenLogo } from "@ui/domains/Asset/TokenLogo"
 import { useCopyAddressModal } from "@ui/domains/CopyAddress"
@@ -75,7 +75,7 @@ const PageContent = ({ balances, symbol }: { balances: Balances; symbol: string 
                     canSendFunds ? "hover:bg-grey-800 hover:text-body" : "cursor-default opacity-50"
                   )}
                 >
-                  <PaperPlaneIcon />
+                  <SendIcon />
                 </TooltipTrigger>
                 <TooltipContent>{canSendFunds ? t("Send") : cannotSendFundsReason}</TooltipContent>
               </Tooltip>

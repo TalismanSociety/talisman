@@ -1,4 +1,4 @@
-import { CreditCardIcon, PaperPlaneIcon } from "@talisman/theme/icons"
+import { CreditCardIcon, PaperPlaneIcon } from "@talismn/icons"
 import { api } from "@ui/api"
 import { AnalyticsPage, sendAnalyticsEvent } from "@ui/api/analytics"
 import { NoAccounts as NoAccountsComponent } from "@ui/domains/Portfolio/EmptyStates/NoAccounts"

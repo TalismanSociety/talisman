@@ -1,4 +1,4 @@
-import { ChevronDownIcon } from "@talisman/theme/icons"
+import { ChevronDownIcon } from "@talismn/icons"
 import { classNames } from "@talismn/util"
 import { TargetAndTransition, Transition, motion } from "framer-motion"
 import throttle from "lodash/throttle"

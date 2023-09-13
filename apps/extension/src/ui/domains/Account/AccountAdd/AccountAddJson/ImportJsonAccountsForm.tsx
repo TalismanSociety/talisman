@@ -1,15 +1,15 @@
 import { AccountType } from "@core/domains/accounts/types"
 import { FadeIn } from "@talisman/components/FadeIn"
 import { notify, notifyUpdate } from "@talisman/components/Notifications"
+import { shortenAddress } from "@talisman/util/shortenAddress"
+import { Balances } from "@talismn/balances"
 import {
   AlertCircleIcon,
   ArrowRightIcon,
   CheckCircleIcon,
   LockIcon,
   UnlockIcon,
-} from "@talisman/theme/icons"
-import { shortenAddress } from "@talisman/util/shortenAddress"
-import { Balances } from "@talismn/balances"
+} from "@talismn/icons"
 import { classNames, sleep } from "@talismn/util"
 import { AccountIcon } from "@ui/domains/Account/AccountIcon"
 import { AccountTypeIcon } from "@ui/domains/Account/AccountTypeIcon"

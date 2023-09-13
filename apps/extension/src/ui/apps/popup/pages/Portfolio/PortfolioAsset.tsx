@@ -1,5 +1,5 @@
 import { Balances } from "@core/domains/balances/types"
-import { ChevronLeftIcon } from "@talisman/theme/icons"
+import { ChevronLeftIcon } from "@talismn/icons"
 import Fiat from "@ui/domains/Asset/Fiat"
 import { TokenLogo } from "@ui/domains/Asset/TokenLogo"
 import { PopupAssetDetails } from "@ui/domains/Portfolio/AssetDetails"
@@ -34,7 +34,7 @@ const PageContent = ({ balances, symbol }: { balances: Balances; symbol: string 
         <div className="text-2xl">
           <TokenLogo tokenId={token?.id} />
         </div>
-        <div className="flex grow flex-col gap-2 pl-2 text-sm">
+        <div className="flex grow flex-col gap-1 pl-2 text-sm">
           <div className="text-body-secondary flex justify-between">
             <div>{t("Asset")}</div>
             <div>{t("Total")}</div>

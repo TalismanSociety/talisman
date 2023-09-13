@@ -100,12 +100,12 @@ export const AccountAddSecretMnemonicForm = () => {
                 .test(
                   "is-valid-mnemonic-ethereum",
                   t("Invalid secret"),
-                  async (val) => isValidEthPrivateKey(val) || api.accountValidateMnemonic(val ?? "")
+                  async (val) => isValidEthPrivateKey(val) || api.validateMnemonic(val ?? "")
                 ),
               otherwise: yup
                 .string()
                 .test("is-valid-mnemonic-sr25519", t("Invalid secret"), (val) =>
-                  api.accountValidateMnemonic(val ?? "")
+                  api.validateMnemonic(val ?? "")
                 ),
             }),
         })
@@ -199,7 +199,7 @@ export const AccountAddSecretMnemonicForm = () => {
           { autoClose: false }
         )
         try {
-          onSuccess(await api.accountCreateFromSeed(name, suri, type))
+          onSuccess(await api.accountCreateFromSuri(name, suri, type))
           notifyUpdate(notificationId, {
             type: "success",
             title: t("Account imported"),

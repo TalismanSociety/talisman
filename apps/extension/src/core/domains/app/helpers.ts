@@ -9,10 +9,10 @@ import Browser from "webextension-polyfill"
 
 import {
   MnemonicErrors,
-  SeedPhraseStoreData,
+  MnemonicsStoreData,
   decryptMnemonic,
   encryptMnemonic,
-  seedPhraseStore,
+  mnemonicsStore,
 } from "../mnemonics/store"
 
 export const TALISMAN_BACKUP_KEYRING_KEY = "talismanKeyringBackup"
@@ -74,11 +74,11 @@ const migrateMnemonic = async (
 > => {
   const decryptResult = await decryptMnemonic(encryptedCipher, currentPw)
   if (decryptResult.err) return Err(decryptResult.val)
-  const seed = decryptResult.val
-  if (!seed) return Ok(undefined)
-  // attempt to re-encrypt the seed phrase with the new password
+  const mnemonic = decryptResult.val
+  if (!mnemonic) return Ok(undefined)
+  // attempt to re-encrypt the recovery phrase with the new password
   try {
-    const result = await encryptMnemonic(seed, newPw)
+    const result = await encryptMnemonic(mnemonic, newPw)
 
     return Ok(result)
   } catch (error) {
@@ -108,25 +108,25 @@ export const changePassword = async ({
     if (keypairMigrationResult.val.length !== backupJson.accounts.filter(eligiblePairFilter).length)
       throw new Error("Unable to re-encrypt all keypairs when changing password")
 
-    // now migrate seed phrase store passwords
-    const seedStoreData = await seedPhraseStore.get()
-    const newSeedStoreData: Partial<SeedPhraseStoreData> = {}
-    if (Object.values(seedStoreData).length > 0) {
-      const mnemonicPromises = Object.entries(seedStoreData).map(async ([key, value]) => {
+    // now migrate recovery phrase store passwords
+    const mnemonicStoreData = await mnemonicsStore.get()
+    const newMnemonicStoreData: Partial<MnemonicsStoreData> = {}
+    if (Object.values(mnemonicStoreData).length > 0) {
+      const mnemonicPromises = Object.entries(mnemonicStoreData).map(async ([key, value]) => {
         if (!value.cipher) {
           // unset this value in the store
-          newSeedStoreData[key] = undefined
+          newMnemonicStoreData[key] = undefined
           return
         }
 
         const newCipher = await migrateMnemonic(value.cipher, currentPw, newPw)
         if (newCipher.err) throw Error(newCipher.val)
-        newSeedStoreData[key] = { ...value, cipher: newCipher.val }
+        newMnemonicStoreData[key] = { ...value, cipher: newCipher.val }
         return
       })
 
       await Promise.all(mnemonicPromises)
-      await seedPhraseStore.set(newSeedStoreData)
+      await mnemonicsStore.set(newMnemonicStoreData)
     }
   } catch (error) {
     await restoreBackupKeyring(currentPw)

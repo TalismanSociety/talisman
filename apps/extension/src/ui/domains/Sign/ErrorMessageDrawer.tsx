@@ -1,4 +1,4 @@
-import { AlertCircleIcon } from "@talisman/theme/icons"
+import { AlertCircleIcon } from "@talismn/icons"
 import { FC, useEffect, useState } from "react"
 import { useTranslation } from "react-i18next"
 import { Button, Drawer } from "talisman-ui"

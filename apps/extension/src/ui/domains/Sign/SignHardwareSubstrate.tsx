@@ -1,4 +1,4 @@
-import { AccountJsonAny } from "@core/domains/accounts/types"
+import { AccountJsonAny, AccountType } from "@core/domains/accounts/types"
 import { SignerPayloadJSON, SignerPayloadRaw } from "@polkadot/types/types"
 import { HexString } from "@polkadot/util/types"
 import { useAccountByAddress } from "@ui/hooks/useAccountByAddress"
@@ -22,9 +22,9 @@ const getSignHardwareComponent = (account: AccountJsonAny | null) => {
   if (!account) return null
 
   switch (account?.origin) {
-    case "DCENT":
+    case AccountType.Dcent:
       return SignDcentSubstrate
-    case "HARDWARE":
+    case AccountType.Ledger:
       return SignLedgerSubstrate
     default:
       throw new Error(`Unknown sign hardware component for account origin ${account?.origin}`)

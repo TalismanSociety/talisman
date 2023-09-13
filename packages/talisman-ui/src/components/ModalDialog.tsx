@@ -1,7 +1,7 @@
+import { XIcon } from "@talismn/icons"
 import { classNames } from "@talismn/util"
 import { FC, ReactNode } from "react"
 
-import { IconX } from "../icons"
 import { IconButton } from "./IconButton"
 
 type ModalDialogProps = {
@@ -39,7 +39,7 @@ export const ModalDialog: FC<ModalDialogProps> = ({
         </h1>
         {onClose && (
           <IconButton onClick={onClose}>
-            <IconX />
+            <XIcon />
           </IconButton>
         )}
       </header>

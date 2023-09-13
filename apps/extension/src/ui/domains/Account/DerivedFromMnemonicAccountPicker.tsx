@@ -1,5 +1,5 @@
 import { formatSuri } from "@core/domains/accounts/helpers"
-import { AccountAddressType, RequestAccountCreateFromSeed } from "@core/domains/accounts/types"
+import { AccountAddressType, RequestAccountCreateFromSuri } from "@core/domains/accounts/types"
 import { AddressesAndEvmNetwork } from "@core/domains/balances/types"
 import { getEthDerivationPath } from "@core/domains/ethereum/helpers"
 import { AddressesByChain } from "@core/types/base"
@@ -30,7 +30,7 @@ const useDerivedAccounts = (
   name: string,
   mnemonic: string,
   type: AccountAddressType,
-  selectedAccounts: RequestAccountCreateFromSeed[],
+  selectedAccounts: RequestAccountCreateFromSuri[],
   pageIndex: number,
   itemsPerPage: number
 ) => {
@@ -57,7 +57,7 @@ const useDerivedAccounts = (
           return {
             accountIndex,
             name: `${name}${accountIndex === 0 ? "" : ` ${accountIndex}`}`,
-            seed: suri,
+            suri,
             type,
             address,
           } as DerivedFromMnemonicAccount
@@ -150,7 +150,7 @@ const useDerivedAccounts = (
           ...acc,
           name: existingAccount?.name ?? acc.name,
           connected: !!existingAccount,
-          selected: selectedAccounts.some((sa) => sa.seed === acc.seed),
+          selected: selectedAccounts.some((sa) => sa.suri === acc.suri),
           balances: accountBalances,
           isBalanceLoading:
             (!addressesByChain && !addressesAndEvmNetworks) ||
@@ -184,10 +184,10 @@ type DerivedAccountPickerProps = {
   name: string
   mnemonic: string
   type: AccountAddressType
-  onChange?: (accounts: RequestAccountCreateFromSeed[]) => void
+  onChange?: (accounts: RequestAccountCreateFromSuri[]) => void
 }
 
-type DerivedFromMnemonicAccount = DerivedAccountBase & RequestAccountCreateFromSeed
+type DerivedFromMnemonicAccount = DerivedAccountBase & RequestAccountCreateFromSuri
 
 export const DerivedFromMnemonicAccountPicker: FC<DerivedAccountPickerProps> = ({
   name,
@@ -197,7 +197,7 @@ export const DerivedFromMnemonicAccountPicker: FC<DerivedAccountPickerProps> = (
 }) => {
   const itemsPerPage = 5
   const [pageIndex, setPageIndex] = useState(0)
-  const [selectedAccounts, setSelectedAccounts] = useState<RequestAccountCreateFromSeed[]>([])
+  const [selectedAccounts, setSelectedAccounts] = useState<RequestAccountCreateFromSuri[]>([])
   const { accounts, error } = useDerivedAccounts(
     name,
     mnemonic,
@@ -208,13 +208,13 @@ export const DerivedFromMnemonicAccountPicker: FC<DerivedAccountPickerProps> = (
   )
 
   const handleToggleAccount = useCallback((acc: DerivedAccountBase) => {
-    const { name, seed, type } = acc as DerivedFromMnemonicAccount
+    const { name, suri, type } = acc as DerivedFromMnemonicAccount
     setSelectedAccounts((prev) =>
-      prev.some((pa) => pa.seed === seed)
-        ? prev.filter((pa) => pa.seed !== seed)
+      prev.some((pa) => pa.suri === suri)
+        ? prev.filter((pa) => pa.suri !== suri)
         : prev.concat({
             name,
-            seed,
+            suri,
             type,
           })
     )

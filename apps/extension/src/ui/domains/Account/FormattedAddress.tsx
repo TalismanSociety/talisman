@@ -1,8 +1,8 @@
-import { classNames, encodeAnyAddress } from "@talismn/util"
+import { classNames } from "@talismn/util"
 import { useAccountByAddress } from "@ui/hooks/useAccountByAddress"
-import useChainByGenesisHash from "@ui/hooks/useChainByGenesisHash"
+import { useFormattedAddress } from "@ui/hooks/useFormattedAddress"
 import { useIsKnownAddress } from "@ui/hooks/useIsKnownAddress"
-import { FC, useMemo } from "react"
+import { FC } from "react"
 import { Tooltip, TooltipContent, TooltipTrigger } from "talisman-ui"
 
 import { AccountIcon } from "./AccountIcon"
@@ -13,11 +13,10 @@ const FormattedAddressTooltip: FC<{ address: string; genesisHash?: string | null
   address,
   genesisHash,
 }) => {
-  const chain = useChainByGenesisHash(genesisHash)
-  const displayAddress = useMemo(
-    () => (chain ? encodeAnyAddress(address, chain?.prefix ?? undefined) : address),
-    [address, chain]
-  )
+  const formattedAddress = useFormattedAddress(address, genesisHash)
+
+  // caller may have formatted the address for a specific chain (ex substrate sign request), use formatted address only for network specific accounts
+  const displayAddress = genesisHash ? formattedAddress : address
 
   return <TooltipContent>{displayAddress}</TooltipContent>
 }

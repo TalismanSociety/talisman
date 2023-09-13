@@ -1,4 +1,4 @@
-import { ArrowRightIcon } from "@talisman/theme/icons"
+import { ArrowRightIcon } from "@talismn/icons"
 import { classNames } from "@talismn/util"
 import { ReactNode } from "react"
 import { useTranslation } from "react-i18next"

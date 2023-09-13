@@ -33,11 +33,11 @@ export class SitesAuthorizedStore extends SubscribableByIdStorageProvider<
     })
   }
 
-  async getSiteFromUrl(url: string) {
+  getSiteFromUrl(url: string): Promise<AuthorizedSite> {
     const { val, err } = urlToDomain(url)
     if (err) throw new Error(val)
 
-    return await this.get(val)
+    return this.get(val)
   }
 
   public async ensureUrlAuthorized(

@@ -1,4 +1,4 @@
-import { ChevronLeftIcon } from "@talisman/theme/icons"
+import { ChevronLeftIcon } from "@talismn/icons"
 import { classNames } from "@talismn/util"
 import { AnalyticsPage, sendAnalyticsEvent } from "@ui/api/analytics"
 import { ButtonHTMLAttributes, DetailedHTMLProps, FC, useCallback } from "react"

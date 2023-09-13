@@ -1,7 +1,7 @@
 import { notify } from "@talisman/components/Notifications"
 import { useOpenClose } from "@talisman/hooks/useOpenClose"
-import { AlertTriangleIcon } from "@talisman/theme/icons"
 import { provideContext } from "@talisman/util/provideContext"
+import { AlertTriangleIcon } from "@talismn/icons"
 import { api } from "@ui/api"
 import { useMnemonic, useMnemonics } from "@ui/hooks/useMnemonics"
 import { useCallback, useEffect, useMemo, useState } from "react"

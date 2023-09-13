@@ -1,12 +1,10 @@
 import { ProviderType } from "@core/domains/sitesAuthorised/types"
-import { isEthereumAddress } from "@polkadot/util-crypto"
 import { HeaderBlock } from "@talisman/components/HeaderBlock"
 import { Spacer } from "@talisman/components/Spacer"
 import { useOpenClose } from "@talisman/hooks/useOpenClose"
-import { CopyIcon, MoreHorizontalIcon, PlusIcon, UserPlusIcon } from "@talisman/theme/icons"
 import { AccountAddressType } from "@talisman/util/getAddressType"
+import { CopyIcon, MoreHorizontalIcon, PlusIcon, SendIcon, UserPlusIcon } from "@talismn/icons"
 import { classNames } from "@talismn/util"
-import { api } from "@ui/api"
 import { AnalyticsPage } from "@ui/api/analytics"
 import { AccountIcon } from "@ui/domains/Account/AccountIcon"
 import { Address } from "@ui/domains/Account/Address"
@@ -20,8 +18,16 @@ import { ProviderTypeSwitch } from "@ui/domains/Site/ProviderTypeSwitch"
 import { useAddressBook } from "@ui/hooks/useAddressBook"
 import { useAnalytics } from "@ui/hooks/useAnalytics"
 import { useAnalyticsPageView } from "@ui/hooks/useAnalyticsPageView"
+import { useSendFundsPopup } from "@ui/hooks/useSendFundsPopup"
 import startCase from "lodash/startCase"
-import { ButtonHTMLAttributes, FC, useCallback, useMemo, useState } from "react"
+import {
+  ButtonHTMLAttributes,
+  DetailedHTMLProps,
+  forwardRef,
+  useCallback,
+  useMemo,
+  useState,
+} from "react"
 import { useTranslation } from "react-i18next"
 import {
   Button,
@@ -30,6 +36,9 @@ import {
   ContextMenuItem,
   ContextMenuTrigger,
   PillButton,
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
 } from "talisman-ui"
 
 import { DashboardLayout } from "../../layout/DashboardLayout"
@@ -41,18 +50,21 @@ const ANALYTICS_PAGE: AnalyticsPage = {
   page: "Address book contact list",
 }
 
-const SquareButton: FC<ButtonHTMLAttributes<HTMLButtonElement>> = ({ children, ...props }) => (
+const SquareButton = forwardRef<
+  HTMLButtonElement,
+  DetailedHTMLProps<ButtonHTMLAttributes<HTMLButtonElement>, HTMLButtonElement>
+>((props, ref) => (
   <button
-    type="button"
     {...props}
+    type="button"
+    ref={ref}
     className={classNames(
-      "hover:bg-grey-700 flex h-[3.2rem] w-[3.2rem] cursor-pointer items-center justify-center rounded",
+      "enabled:hover:bg-grey-700 enabled:hover:text-body-secondary flex h-[3.2rem] w-[3.2rem] items-center justify-center rounded-sm enabled:cursor-pointer disabled:cursor-not-allowed",
       props.className
     )}
-  >
-    {children}
-  </button>
-)
+  ></button>
+))
+SquareButton.displayName = "SquareButton"
 
 type ContactItemProps = ExistingContactComponentProps & {
   handleDelete: (address: string) => void
@@ -63,8 +75,12 @@ const AddressBookContactItem = ({ contact, handleDelete, handleEdit }: ContactIt
   const { t } = useTranslation("admin")
   const { genericEvent } = useAnalytics()
   const { open: openCopyAddressModal } = useCopyAddressModal()
-  const [hover, setHover] = useState(false)
   const { account } = useSelectedAccount()
+  const { canSendFunds, cannotSendFundsReason, openSendFundsPopup } = useSendFundsPopup(
+    account,
+    undefined,
+    contact.address
+  )
 
   const handleCopyClick = useCallback(() => {
     openCopyAddressModal({
@@ -74,45 +90,54 @@ const AddressBookContactItem = ({ contact, handleDelete, handleEdit }: ContactIt
     genericEvent("open copy address", { from: "address book" })
   }, [contact.address, genericEvent, openCopyAddressModal])
 
-  const handleSendClick = useCallback(() => {
-    // set currently selected account as from, unless address type mismatch or watched account
-    const from =
-      account &&
-      account.origin !== "WATCHED" &&
-      isEthereumAddress(account.address) === isEthereumAddress(contact.address)
-        ? account.address
-        : undefined
-    api.sendFundsOpen({ to: contact.address, from })
-  }, [account, contact.address])
-
   return (
-    <div
-      className="bg-black-secondary hover:bg-black-tertiary flex w-full items-center justify-between rounded p-8"
-      onMouseEnter={() => setHover(true)}
-      onMouseLeave={() => setHover(false)}
-    >
-      <span className="gap flex gap-4">
-        <AccountIcon address={contact.address} className="text-xl" />
-        <div className="flex flex-col justify-between">
-          <span>{contact.name}</span>
+    <div className="bg-black-secondary group flex h-32 w-full items-center justify-between gap-4 rounded px-8">
+      <AccountIcon address={contact.address} className="text-xl" />
+      <div className="flex grow flex-col justify-between overflow-hidden">
+        <div className="truncate">{contact.name}</div>
+        <div>
           <Address className="text-body-secondary text-xs" address={contact.address} />
         </div>
-      </span>
-      <div
-        className={`text-body-secondary flex duration-300 ${hover ? "opacity-100" : "opacity-0"}`}
-      >
-        <SquareButton>
-          <CopyIcon onClick={handleCopyClick} />
+      </div>
+      <div className={`text-body-disabled flex shrink-0 gap-2`}>
+        <SquareButton onClick={handleCopyClick}>
+          <CopyIcon />
         </SquareButton>
+        <Tooltip>
+          <TooltipTrigger asChild>
+            {/* wrap in a div because disabled buttons can't have tooltips */}
+            <div>
+              <SquareButton disabled={!canSendFunds} onClick={openSendFundsPopup}>
+                <SendIcon />
+              </SquareButton>
+            </div>
+          </TooltipTrigger>
+          {cannotSendFundsReason && <TooltipContent>{cannotSendFundsReason}</TooltipContent>}
+        </Tooltip>
         <ContextMenu placement="bottom-end">
-          <ContextMenuTrigger className="hover:bg-grey-700 flex h-[3.2rem] w-[3.2rem] cursor-pointer items-center justify-center rounded">
-            <MoreHorizontalIcon />
+          <ContextMenuTrigger asChild>
+            <SquareButton>
+              <MoreHorizontalIcon />
+            </SquareButton>
           </ContextMenuTrigger>
           <ContextMenuContent>
             <ContextMenuItem onClick={() => handleEdit(contact.address)}>
               {t("Edit contact")}
             </ContextMenuItem>
-            <ContextMenuItem onClick={handleSendClick}>{t("Send to this contact")}</ContextMenuItem>
+            <ContextMenuItem
+              disabled={!canSendFunds}
+              onClick={openSendFundsPopup}
+              className="disabled:!text-body-disabled disabled:!cursor-not-allowed disabled:!bg-transparent"
+            >
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  {/* wrap in a div to prevent a button inside button situation */}
+                  <div>{t("Send to this contact")}</div>
+                </TooltipTrigger>
+                {/* TODO fix tooltip which appears behind context menu */}
+                {/* {cannotSendFundsReason && <TooltipContent>{cannotSendFundsReason}</TooltipContent>} */}
+              </Tooltip>
+            </ContextMenuItem>
             <ContextMenuItem onClick={handleCopyClick}>{t("Copy address")}</ContextMenuItem>
             <ContextMenuItem onClick={() => handleDelete(contact.address)}>
               {t("Delete contact")}
@@ -150,18 +175,22 @@ export const AddressBookPage = () => {
 
   return (
     <>
-      <DashboardLayout centered withBack backTo="/settings" analytics={ANALYTICS_PAGE}>
+      <DashboardLayout centered analytics={ANALYTICS_PAGE}>
         <HeaderBlock title={t("Address Book")} text={t("Manage your saved contacts")} />
         <Spacer large />
-        <div className="mt-4 flex justify-between align-middle">
-          <ProviderTypeSwitch defaultProvider="polkadot" onChange={setAddressType} />
+        <div className="flex justify-between align-middle">
+          <ProviderTypeSwitch
+            className="text-xs [&>div]:h-full"
+            defaultProvider="polkadot"
+            onChange={setAddressType}
+          />
           {contactsToDisplay.length > 0 && (
             <PillButton onClick={open} icon={UserPlusIcon}>
               {t("Add new contact")}
             </PillButton>
           )}
         </div>
-        <Spacer />
+        <Spacer small />
         <div className="flex flex-col gap-3">
           {contactsToDisplay.map((contact) => (
             <AddressBookContactItem
