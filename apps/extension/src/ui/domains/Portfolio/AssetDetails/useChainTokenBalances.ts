@@ -101,6 +101,7 @@ export const useChainTokenBalances = ({ chainId, balances }: ChainTokenBalancesP
 
   return {
     summary,
+    tokenId: token?.id, // there could be more than one token with same symbol, use this only for icon
     symbol: token?.symbol,
     detailRows,
     evmNetwork,
