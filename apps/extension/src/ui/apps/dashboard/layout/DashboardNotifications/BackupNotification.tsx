@@ -12,7 +12,7 @@ const BackupNotificationDisplay = () => {
   const navigate = useNavigate()
 
   const handleBackupNowClick = useCallback(() => {
-    navigate("/settings/mnemonics")
+    navigate("/settings/mnemonics?showBackupModal")
   }, [navigate])
 
   return (

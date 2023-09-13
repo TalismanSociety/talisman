@@ -16,8 +16,9 @@ import { AccountIcon } from "@ui/domains/Account/AccountIcon"
 import { Address } from "@ui/domains/Account/Address"
 import useAccounts from "@ui/hooks/useAccounts"
 import { Mnemonic, useMnemonics } from "@ui/hooks/useMnemonics"
-import { FC, useCallback, useLayoutEffect, useMemo, useRef, useState } from "react"
+import { FC, useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react"
 import { useTranslation } from "react-i18next"
+import { useSearchParams } from "react-router-dom"
 import { ContextMenu, ContextMenuContent, ContextMenuItem, ContextMenuTrigger } from "talisman-ui"
 
 import { DashboardLayout } from "../../../layout/DashboardLayout"
@@ -219,14 +220,44 @@ const BackupReminder: FC = () => {
   )
 }
 
-export const MnemonicsPage = () => {
-  const { t } = useTranslation("admin")
+const MnemonicsList = () => {
   const mnemonics = useMnemonics()
 
   const sortedMnemonics = useMemo(
     () => [...mnemonics].sort((m1, m2) => m1.name.localeCompare(m2.name)),
     [mnemonics]
   )
+
+  const notBackedUp = useMemo(
+    () => mnemonics.filter((mnemonic) => !mnemonic.confirmed),
+    [mnemonics]
+  )
+  const { open: openBackup } = useMnemonicBackupModal()
+  const [searchParams, updateSearchParams] = useSearchParams()
+
+  useEffect(() => {
+    const showBackupModal = searchParams.has("showBackupModal")
+    if (showBackupModal) {
+      searchParams.delete("showBackupModal")
+      updateSearchParams(searchParams, { replace: true })
+      if (notBackedUp.length === 1) {
+        // open the backup modal for the only mnemonic that is not backed up
+        openBackup(notBackedUp[0].id)
+      }
+    }
+  }, [searchParams, notBackedUp, openBackup, updateSearchParams])
+
+  return (
+    <div className="flex flex-col gap-4">
+      {sortedMnemonics.map((mnemonic) => (
+        <MnemonicRow key={mnemonic.id} mnemonic={mnemonic} />
+      ))}
+    </div>
+  )
+}
+
+export const MnemonicsPage = () => {
+  const { t } = useTranslation("admin")
 
   return (
     <DashboardLayout centered withBack backTo="/settings">
@@ -240,15 +271,11 @@ export const MnemonicsPage = () => {
               />
               <Spacer large />
               <BackupReminder />
-              <div className="flex flex-col gap-4">
-                {sortedMnemonics.map((mnemonic) => (
-                  <MnemonicRow key={mnemonic.id} mnemonic={mnemonic} />
-                ))}
-              </div>
+              <MnemonicsList />
               <MnemonicBackupModal />
-              <MnemonicSetPvVerifierModal />
               <MnemonicDeleteModal />
               <MnemonicRenameModal />
+              <MnemonicSetPvVerifierModal />
             </MnemonicBackupModalProvider>
           </MnemonicSetPvVerifierModalProvider>
         </MnemonicDeleteModalProvider>
