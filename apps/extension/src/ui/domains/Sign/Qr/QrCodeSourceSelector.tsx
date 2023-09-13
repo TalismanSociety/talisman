@@ -1,5 +1,5 @@
 import { HexString } from "@polkadot/util/types"
-import { ChevronDownIcon } from "@talisman/theme/icons"
+import { ChevronDownIcon } from "@talismn/icons"
 import { classNames } from "@talismn/util"
 import useChain from "@ui/hooks/useChain"
 import useChainByGenesisHash from "@ui/hooks/useChainByGenesisHash"

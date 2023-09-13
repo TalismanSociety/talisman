@@ -6,8 +6,8 @@ import {
   EthTransactionDetails,
   GasSettingsByPriority,
 } from "@core/domains/signing/types"
-import { ChevronRightIcon } from "@talisman/theme/icons"
 import { BalanceFormatter } from "@talismn/balances"
+import { ChevronRightIcon } from "@talismn/icons"
 import { classNames } from "@talismn/util"
 import { TokensAndFiat } from "@ui/domains/Asset/TokensAndFiat"
 import useToken from "@ui/hooks/useToken"

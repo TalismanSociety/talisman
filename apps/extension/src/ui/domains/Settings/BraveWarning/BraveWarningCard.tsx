@@ -1,5 +1,5 @@
 import { Card } from "@talisman/components/Card"
-import { BraveIcon } from "@talisman/theme/icons"
+import { BraveIcon } from "@talismn/icons"
 import { classNames } from "@talismn/util"
 import { useTranslation } from "react-i18next"
 import { Button } from "talisman-ui"

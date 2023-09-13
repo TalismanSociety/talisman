@@ -4,8 +4,8 @@ import {
   WalletTransaction,
 } from "@core/domains/transactions"
 import { HexString } from "@polkadot/util/types"
-import { ExternalLinkIcon, RocketIcon, XCircleIcon } from "@talisman/theme/icons"
 import { Chain, EvmNetwork } from "@talismn/chaindata-provider"
+import { ExternalLinkIcon, RocketIcon, XCircleIcon } from "@talismn/icons"
 import { useSendFundsWizard } from "@ui/apps/popup/pages/SendFunds/context"
 import useChainByGenesisHash from "@ui/hooks/useChainByGenesisHash"
 import { useEvmNetwork } from "@ui/hooks/useEvmNetwork"

@@ -1,5 +1,5 @@
 import { Combobox } from "@headlessui/react"
-import { ChevronDownIcon, SearchIcon, XIcon } from "@talisman/theme/icons"
+import { ChevronDownIcon, SearchIcon, XIcon } from "@talismn/icons"
 import { classNames } from "@talismn/util"
 import { ChainLogo } from "@ui/domains/Asset/ChainLogo"
 import { NetworkOption, usePortfolio } from "@ui/domains/Portfolio/context"

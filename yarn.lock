@@ -7668,6 +7668,25 @@ __metadata:
   languageName: unknown
   linkType: soft
 
+"@talismn/icons@workspace:*, @talismn/icons@workspace:packages/icons":
+  version: 0.0.0-use.local
+  resolution: "@talismn/icons@workspace:packages/icons"
+  dependencies:
+    "@talismn/eslint-config": "workspace:*"
+    "@talismn/tsconfig": "workspace:*"
+    "@types/jest": ^27.5.1
+    "@types/react": 18.0.14
+    eslint: ^8.4.0
+    jest: ^28.1.0
+    react: 18.2.0
+    react-icons: ^4.10.1
+    ts-jest: ^28.0.2
+    typescript: ^4.6.4
+  peerDependencies:
+    react: ">=18.2.0"
+  languageName: unknown
+  linkType: soft
+
 "@talismn/mutate-metadata@workspace:*, @talismn/mutate-metadata@workspace:packages/mutate-metadata":
   version: 0.0.0-use.local
   resolution: "@talismn/mutate-metadata@workspace:packages/mutate-metadata"
@@ -7682,6 +7701,26 @@ __metadata:
     jest: ^28.1.0
     ts-jest: ^28.0.2
     typescript: ^4.6.4
+  languageName: unknown
+  linkType: soft
+
+"@talismn/on-chain-id@workspace:*, @talismn/on-chain-id@workspace:packages/on-chain-id":
+  version: 0.0.0-use.local
+  resolution: "@talismn/on-chain-id@workspace:packages/on-chain-id"
+  dependencies:
+    "@polkadot/types": ^10.1.4
+    "@talismn/balances": "workspace:*"
+    "@talismn/eslint-config": "workspace:*"
+    "@talismn/tsconfig": "workspace:*"
+    "@talismn/util": "workspace:*"
+    "@types/jest": ^27.5.1
+    anylogger: ^1.0.11
+    eslint: ^8.4.0
+    jest: ^28.1.0
+    ts-jest: ^28.0.2
+    typescript: ^4.6.4
+  peerDependencies:
+    "@polkadot/types": 10.x
   languageName: unknown
   linkType: soft
 
@@ -14454,10 +14493,11 @@ __metadata:
     "@tailwindcss/forms": ^0.5.3
     "@talismn/balances": "workspace:*"
     "@talismn/balances-default-modules": "workspace:*"
-    "@talismn/balances-react": "workspace:*"
     "@talismn/chaindata-js": ^0.0.7
     "@talismn/chaindata-provider": "workspace:*"
     "@talismn/eslint-config": "workspace:*"
+    "@talismn/icons": "workspace:*"
+    "@talismn/on-chain-id": "workspace:*"
     "@talismn/orb": "workspace:*"
     "@talismn/token-rates": "workspace:*"
     "@talismn/tsconfig": "workspace:*"
@@ -21902,6 +21942,15 @@ __metadata:
   languageName: node
   linkType: hard
 
+"react-icons@npm:^4.10.1":
+  version: 4.10.1
+  resolution: "react-icons@npm:4.10.1"
+  peerDependencies:
+    react: "*"
+  checksum: b6c8d4fe482b112e1041515d93ef7670a0af128855c926052a076b64d0b991cdd4391394b26467100f8da3859db1ebd8f9c6b7614fa5969fde83de45c71031a3
+  languageName: node
+  linkType: hard
+
 "react-is@npm:17.0.2, react-is@npm:^17.0.1, react-is@npm:^17.0.2":
   version: 17.0.2
   resolution: "react-is@npm:17.0.2"
@@ -24091,6 +24140,7 @@ __metadata:
     "@headlessui/react": 1.7.13
     "@tailwindcss/forms": ^0.5.3
     "@talismn/eslint-config": "workspace:*"
+    "@talismn/icons": "workspace:*"
     "@talismn/tsconfig": "workspace:*"
     "@talismn/util": "workspace:*"
     "@types/react": 18.0.14

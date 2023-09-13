@@ -1,4 +1,4 @@
-import { AlertCircleIcon } from "@talisman/theme/icons"
+import { AlertCircleIcon } from "@talismn/icons"
 import { api } from "@ui/api"
 import useMnemonicBackup from "@ui/hooks/useMnemonicBackup"
 import { useCallback } from "react"

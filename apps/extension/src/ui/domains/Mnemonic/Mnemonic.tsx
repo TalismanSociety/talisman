@@ -1,5 +1,5 @@
 import { notify } from "@talisman/components/Notifications"
-import { CheckIcon, CopyIcon, CursorClickIcon } from "@talisman/theme/icons"
+import { CheckIcon, CopyIcon, CursorClickIcon } from "@talismn/icons"
 import { classNames } from "@talismn/util"
 import { FC, ReactNode, useCallback, useEffect, useState } from "react"
 import { useTranslation } from "react-i18next"

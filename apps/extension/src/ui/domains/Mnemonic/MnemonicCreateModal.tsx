@@ -1,6 +1,6 @@
 import { mnemonicGenerate } from "@polkadot/util-crypto"
-import { AlertTriangleIcon } from "@talisman/theme/icons"
 import { provideContext } from "@talisman/util/provideContext"
+import { AlertTriangleIcon } from "@talismn/icons"
 import { classNames } from "@talismn/util"
 import { Mnemonic } from "@ui/domains/Mnemonic/Mnemonic"
 import { useCallback, useMemo, useState } from "react"

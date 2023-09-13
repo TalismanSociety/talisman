@@ -1,7 +1,7 @@
 import { IS_FIREFOX } from "@core/constants"
 import { getIsLedgerCapable } from "@core/util/getIsLedgerCapable"
-import { ChainIcon, EyePlusIcon, FilePlusIcon, PlusIcon } from "@talisman/theme/icons"
 import { EthereumCircleLogo, PolkadotCircleLogo } from "@talisman/theme/logos"
+import { ChainIcon, EyePlusIcon, FilePlusIcon, PlusIcon } from "@talismn/icons"
 import { classNames } from "@talismn/util"
 import { ReactNode, useCallback, useMemo } from "react"
 import { useTranslation } from "react-i18next"

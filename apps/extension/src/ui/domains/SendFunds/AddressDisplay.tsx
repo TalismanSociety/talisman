@@ -1,13 +1,13 @@
-import { CopyIcon, ExternalLinkIcon } from "@talisman/theme/icons"
 import { convertAddress } from "@talisman/util/convertAddress"
-import { shortenAddress } from "@talisman/util/shortenAddress"
-import { Address } from "@talismn/balances"
+import { Address as TAddress } from "@talismn/balances"
 import { ChainId, EvmNetworkId } from "@talismn/chaindata-provider"
+import { CopyIcon, ExternalLinkIcon } from "@talismn/icons"
 import { classNames } from "@talismn/util"
 import { useAccountByAddress } from "@ui/hooks/useAccountByAddress"
 import useChain from "@ui/hooks/useChain"
 import { useContact } from "@ui/hooks/useContact"
 import { useEvmNetwork } from "@ui/hooks/useEvmNetwork"
+import { useOnChainId } from "@ui/hooks/useOnChainId"
 import { copyAddress } from "@ui/util/copyAddress"
 import { FC, useCallback, useMemo } from "react"
 import { useTranslation } from "react-i18next"
@@ -16,9 +16,10 @@ import urlJoin from "url-join"
 
 import { AccountIcon } from "../Account/AccountIcon"
 import { AccountTypeIcon } from "../Account/AccountTypeIcon"
+import { Address } from "../Account/Address"
 
 const useBlockExplorerUrl = (
-  address?: Address | null,
+  address?: TAddress | null,
   chainId?: ChainId | null,
   evmNetworkId?: EvmNetworkId | null
 ) => {
@@ -40,27 +41,41 @@ const useBlockExplorerUrl = (
 const AddressTooltip: FC<{
   address: string
   resolvedAddress: string
+  onChainId?: string
   chainName?: string | null
-}> = ({ address, resolvedAddress, chainName }) => {
+}> = ({ address, resolvedAddress, onChainId, chainName }) => {
   const { t } = useTranslation()
 
-  if (address === resolvedAddress) return <>{resolvedAddress}</>
-
   return (
-    <>
-      <div>{t("Original address:")}</div>
-      <div style={{ marginTop: 2 }}>{address}</div>
-      <div style={{ marginTop: 4 }}>
-        {t("{{chainName}} format:", { chainName: chainName || "Generic" })}
-      </div>
-      <div style={{ marginTop: 2 }}>{resolvedAddress}</div>
-    </>
+    <div className="flex flex-col gap-2">
+      {typeof onChainId === "string" && (
+        <div className="flex gap-1">
+          <div>{t("Domain:")}</div>
+          <div>{onChainId}</div>
+        </div>
+      )}
+
+      {address === resolvedAddress && <>{resolvedAddress}</>}
+
+      {address !== resolvedAddress && (
+        <div className="flex flex-col gap-1">
+          <div>{t("Original address:")}</div>
+          <div>{address}</div>
+        </div>
+      )}
+      {address !== resolvedAddress && (
+        <div className="flex flex-col gap-1">
+          <div>{t("{{chainName}} format:", { chainName: chainName || "Generic" })}</div>
+          <div>{resolvedAddress}</div>
+        </div>
+      )}
+    </div>
   )
 }
 
 type AddressDisplayProps = {
   // allow undefined but force developer to fill the property so he doesn't forget
-  address: Address | null | undefined
+  address: TAddress | null | undefined
   chainId: ChainId | null | undefined
   evmNetworkId: EvmNetworkId | null | undefined
   className?: string
@@ -81,8 +96,15 @@ export const AddressDisplay: FC<AddressDisplayProps> = ({
     return chain && address ? convertAddress(address, chain.prefix) : address
   }, [address, chain])
 
+  const [onChainId] = useOnChainId(resolvedAddress ?? undefined)
+
   const text = useMemo(
-    () => account?.name ?? contact?.name ?? shortenAddress(resolvedAddress ?? "", 6, 6),
+    () =>
+      account?.name ??
+      contact?.name ??
+      (resolvedAddress ? (
+        <Address address={resolvedAddress} startCharCount={6} endCharCount={6} noTooltip />
+      ) : null),
     [account?.name, contact?.name, resolvedAddress]
   )
 
@@ -98,6 +120,7 @@ export const AddressDisplay: FC<AddressDisplayProps> = ({
         <AddressTooltip
           address={address}
           resolvedAddress={resolvedAddress}
+          onChainId={onChainId ?? undefined}
           chainName={chain?.name}
         />
       </TooltipContent>
@@ -112,9 +135,7 @@ export const AddressDisplay: FC<AddressDisplayProps> = ({
           address={resolvedAddress}
           genesisHash={account?.genesisHash}
         />
-        <div className="leading-base grow overflow-hidden text-ellipsis whitespace-nowrap">
-          {text}
-        </div>
+        <div className="leading-base grow truncate">{text}</div>
         <AccountTypeIcon origin={account?.origin} className="text-primary" />
         {blockExplorerUrl ? (
           <a href={blockExplorerUrl} target="_blank" className="text-grey-300 hover:text-white">

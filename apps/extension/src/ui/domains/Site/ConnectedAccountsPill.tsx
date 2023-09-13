@@ -25,7 +25,7 @@ export const ConnectedAccountsPill: FC = () => {
     const { addresses = [], ethAddresses = [], ethChainId } = site || {}
     const connected = [...new Set([...addresses, ...ethAddresses])]
 
-    //if addresses is undefined or has length of 0, site has not been marked as trusted by the user
+    // if addresses is undefined or has length of 0, site has not been marked as trusted/connected by the user
     if (connected.length === 0) return { count: 0, label: t("Not connected"), ethChainId }
 
     const count = connected.filter((ca) => accounts.some(({ address }) => address === ca)).length

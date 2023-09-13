@@ -130,6 +130,10 @@ export const api: MessageTypes = {
     messageService.subscribe("pri(accounts.catalog.subscribe)", null, cb),
   accountsCatalogRunActions: (actions) =>
     messageService.sendMessage("pri(accounts.catalog.runActions)", actions),
+  accountsOnChainIdsResolveNames: (names) =>
+    messageService.sendMessage("pri(accounts.onChainIds.resolveNames)", names),
+  accountsOnChainIdsLookupAddresses: (addresses) =>
+    messageService.sendMessage("pri(accounts.onChainIds.lookupAddresses)", addresses),
   accountForget: (address) => messageService.sendMessage("pri(accounts.forget)", { address }),
   accountExport: (address, password, exportPw) =>
     messageService.sendMessage("pri(accounts.export)", { address, password, exportPw }),

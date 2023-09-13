@@ -31,6 +31,7 @@ import { TabStore } from "@core/handlers/stores"
 import { talismanAnalytics } from "@core/libs/Analytics"
 import { TabsHandler } from "@core/libs/Handler"
 import { log } from "@core/log"
+import { isTalismanHostname } from "@core/page"
 import type { MessageTypes, RequestType, ResponseType, SubscriptionMessageTypes } from "@core/types"
 import type { Port } from "@core/types/base"
 import { urlToDomain } from "@core/util/urlToDomain"
@@ -102,10 +103,15 @@ export default class Tabs extends TabsHandler {
     return true
   }
 
-  private async accountsList(
-    url: string,
-    { anyType }: RequestAccountList
-  ): Promise<InjectedAccount[]> {
+  #getFilteredAccounts(site: AuthorizedSite, { anyType }: RequestAccountList) {
+    return getPublicAccounts(
+      Object.values(accountsObservable.subject.getValue()),
+      filterAccountsByAddresses(site.addresses, anyType),
+      { includeWatchedAccounts: isTalismanHostname(site.url) }
+    )
+  }
+
+  private async accountsList(url: string, request: RequestAccountList): Promise<InjectedAccount[]> {
     let site
     try {
       site = await this.stores.sites.getSiteFromUrl(url)
@@ -116,13 +122,8 @@ export default class Tabs extends TabsHandler {
     const { addresses } = site
     if (!addresses || addresses.length === 0) return []
 
-    const filteredAccounts = getPublicAccounts(
-      Object.values(accountsObservable.subject.getValue()),
-      filterAccountsByAddresses(site.addresses, anyType)
-    )
-
     const iconType = await this.stores.settings.get("identiconType")
-    return filteredAccounts.map(includeAvatar(iconType))
+    return this.#getFilteredAccounts(site, request).map(includeAvatar(iconType))
   }
 
   private accountsSubscribe(url: string, id: string, port: Port) {
@@ -137,13 +138,8 @@ export default class Tabs extends TabsHandler {
         const site = sites[siteId]
         if (!site || !site.addresses) return []
 
-        const filteredAccounts = getPublicAccounts(
-          Object.values(accountsObservable.subject.getValue()),
-          filterAccountsByAddresses(site.addresses, true)
-        )
-
         const iconType = await this.stores.settings.get("identiconType")
-        return filteredAccounts.map(includeAvatar(iconType))
+        return this.#getFilteredAccounts(site, { anyType: true }).map(includeAvatar(iconType))
       }
     )
   }

@@ -1,7 +1,7 @@
 import { DEBUG } from "@core/constants"
 import { db } from "@core/db"
 import { AccountsHandler } from "@core/domains/accounts"
-import { AccountTypes } from "@core/domains/accounts/types"
+import { AccountType } from "@core/domains/accounts/types"
 import AppHandler from "@core/domains/app/handler"
 import { featuresStore } from "@core/domains/app/store.features"
 import { BalancesHandler } from "@core/domains/balances"
@@ -22,6 +22,7 @@ import { talismanAnalytics } from "@core/libs/Analytics"
 import { ExtensionHandler } from "@core/libs/Handler"
 import { generateQrAddNetworkSpecs, generateQrUpdateNetworkMetadata } from "@core/libs/QrGenerator"
 import { log } from "@core/log"
+import { isTalismanHostname } from "@core/page"
 import { MessageTypes, RequestType, ResponseType } from "@core/types"
 import { Port, RequestIdOnly } from "@core/types/base"
 import { awaitKeyringLoaded } from "@core/util/awaitKeyringLoaded"
@@ -85,9 +86,10 @@ export default class Extension extends ExtensionHandler {
           .forEach(async ([url, autoAddSite]) => {
             const newAddresses = Object.values(addresses)
               .filter(
-                ({ json: { address, meta } }) =>
-                  meta.origin !== AccountTypes.WATCHED && !autoAddSite.addresses?.includes(address)
+                ({ json: { meta } }) =>
+                  isTalismanHostname(autoAddSite.url) || meta.origin !== AccountType.Watched
               )
+              .filter(({ json: { address } }) => !autoAddSite.addresses?.includes(address))
               .map(({ json: { address } }) => address)
 
             autoAddSite.addresses = [...(autoAddSite.addresses || []), ...newAddresses]

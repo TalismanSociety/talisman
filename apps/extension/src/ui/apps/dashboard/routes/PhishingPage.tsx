@@ -1,6 +1,6 @@
 import { TALISMAN_WEB_APP_URL } from "@core/constants"
-import { AlertTriangleIcon } from "@talisman/theme/icons"
 import { TalismanWhiteLogo } from "@talisman/theme/logos"
+import { AlertTriangleIcon } from "@talismn/icons"
 import { api } from "@ui/api"
 import { FC, useCallback, useMemo } from "react"
 import { Trans, useTranslation } from "react-i18next"
