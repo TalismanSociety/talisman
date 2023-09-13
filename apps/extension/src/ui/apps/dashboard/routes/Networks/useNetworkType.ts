@@ -4,7 +4,7 @@ import { useSearchParams } from "react-router-dom"
 export const useNetworkType = () => {
   const [searchParams, setSearchParams] = useSearchParams()
   const type = searchParams.get("type")
-  const defaultNetworkType = type === "ethereum" ? "ethereum" : "polkadot"
+  const defaultNetworkType = type === "polkadot" ? "polkadot" : "ethereum"
 
   const [networkType, setNetworkType] = useState<"polkadot" | "ethereum">(defaultNetworkType)
   useEffect(() => {
