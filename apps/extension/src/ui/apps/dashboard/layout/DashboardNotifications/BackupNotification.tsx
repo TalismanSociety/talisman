@@ -1,4 +1,4 @@
-import { InfoIcon } from "@talisman/theme/icons"
+import { InfoIcon } from "@talismn/icons"
 import useMnemonicBackup from "@ui/hooks/useMnemonicBackup"
 import { useCallback } from "react"
 import { useTranslation } from "react-i18next"

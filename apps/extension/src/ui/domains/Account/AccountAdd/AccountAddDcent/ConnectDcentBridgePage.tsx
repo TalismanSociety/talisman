@@ -1,7 +1,7 @@
 import { HeaderBlock } from "@talisman/components/HeaderBlock"
 import { notify } from "@talisman/components/Notifications"
 import { Spacer } from "@talisman/components/Spacer"
-import { ArrowRightIcon } from "@talisman/theme/icons"
+import { ArrowRightIcon } from "@talismn/icons"
 import { dcent } from "@ui/util/dcent"
 import { FC, ReactNode, useCallback, useState } from "react"
 import { Trans, useTranslation } from "react-i18next"

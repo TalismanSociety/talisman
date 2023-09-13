@@ -1,4 +1,4 @@
-import { FolderIcon } from "@talisman/theme/icons"
+import { FolderIcon } from "@talismn/icons"
 import { classNames } from "@talismn/util"
 
 import { AccountsIconContainer } from "./AllAccountsIcon"

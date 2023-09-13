@@ -14,7 +14,7 @@ import { useLocation } from "react-router-dom"
 import DashboardNotifications from "./DashboardNotifications"
 import { BackupWarningModal } from "./DashboardNotifications/BackupWarningModal"
 import { OnboardingToast } from "./OnboardingToast"
-import { SideBar } from "./SideBar"
+import { Sidebar } from "./Sidebar"
 
 type LayoutProps = {
   children?: React.ReactNode
@@ -45,7 +45,7 @@ export const DashboardLayout: FC<LayoutProps> = ({
 
   return (
     <main className={classNames("flex h-screen w-screen", className)}>
-      <SideBar />
+      <Sidebar />
       <section
         ref={scrollableRef}
         className={classNames(

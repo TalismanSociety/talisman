@@ -1,5 +1,5 @@
 import { AccountJsonAny } from "@core/domains/accounts/types"
-import { PlusIcon, SeedIcon } from "@talisman/theme/icons"
+import { PlusIcon, SeedIcon } from "@talismn/icons"
 import useAccounts from "@ui/hooks/useAccounts"
 import { useMnemonics } from "@ui/hooks/useMnemonics"
 import { FC, useCallback, useMemo } from "react"

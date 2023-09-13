@@ -1,5 +1,5 @@
-import { AccountJsonQr, AccountType, AccountTypes } from "@core/domains/accounts/types"
-import { InfoIcon, LoaderIcon } from "@talisman/theme/icons"
+import { AccountJsonQr, AccountType } from "@core/domains/accounts/types"
+import { InfoIcon, LoaderIcon } from "@talismn/icons"
 import { TokensAndFiat } from "@ui/domains/Asset/TokensAndFiat"
 import { useFeeToken } from "@ui/domains/SendFunds/useFeeToken"
 import { QrSubstrate } from "@ui/domains/Sign/Qr/QrSubstrate"
@@ -58,7 +58,7 @@ export const FooterContent = ({ withFee = false }: { withFee?: boolean }) => {
   return (
     <>
       {withFee && <EstimatedFeesRow />}
-      {account.origin === AccountTypes.TALISMAN && (
+      {account.origin === AccountType.Talisman && (
         <div className="grid w-full grid-cols-2 gap-12">
           <Button disabled={processing} onClick={reject}>
             {t("Cancel")}
@@ -68,19 +68,18 @@ export const FooterContent = ({ withFee = false }: { withFee?: boolean }) => {
           </Button>
         </div>
       )}
-      {account.origin &&
-        ([AccountTypes.DCENT, AccountTypes.LEDGER] as AccountType[]).includes(account.origin) && (
-          <Suspense fallback={null}>
-            <SignHardwareSubstrate
-              fee={withFee ? fee?.toString() : undefined}
-              payload={request.payload}
-              onSigned={approveHardware}
-              onCancel={reject}
-              containerId="main"
-            />
-          </Suspense>
-        )}
-      {account.origin === AccountTypes.QR && (
+      {account.origin && [AccountType.Dcent, AccountType.Ledger].includes(account.origin) && (
+        <Suspense fallback={null}>
+          <SignHardwareSubstrate
+            fee={withFee ? fee?.toString() : undefined}
+            payload={request.payload}
+            onSigned={approveHardware}
+            onCancel={reject}
+            containerId="main"
+          />
+        </Suspense>
+      )}
+      {account.origin === AccountType.Qr && (
         <Suspense fallback={null}>
           <QrSubstrate
             payload={request.payload}

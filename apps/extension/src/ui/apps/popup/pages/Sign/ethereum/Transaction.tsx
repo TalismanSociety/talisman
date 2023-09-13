@@ -1,7 +1,7 @@
 import { EthPriorityOptionName } from "@core/domains/signing/types"
 import { AppPill } from "@talisman/components/AppPill"
 import { WithTooltip } from "@talisman/components/Tooltip"
-import { InfoIcon } from "@talisman/theme/icons"
+import { InfoIcon } from "@talismn/icons"
 import {
   PopupContent,
   PopupFooter,

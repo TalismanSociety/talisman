@@ -1,6 +1,6 @@
 import { Token } from "@core/domains/tokens/types"
 import { useOpenClose } from "@talisman/hooks/useOpenClose"
-import { ChevronRightIcon, XIcon } from "@talisman/theme/icons"
+import { ChevronRightIcon, XIcon } from "@talismn/icons"
 import { classNames } from "@talismn/util"
 import useToken from "@ui/hooks/useToken"
 import { useCallback } from "react"

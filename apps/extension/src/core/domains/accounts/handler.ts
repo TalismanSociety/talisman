@@ -4,6 +4,8 @@ import {
   isValidAnyAddress,
   sortAccounts,
 } from "@core/domains/accounts/helpers"
+import { lookupAddresses, resolveNames } from "@core/domains/accounts/helpers.onChainIds"
+import { AccountsCatalogData, emptyCatalog } from "@core/domains/accounts/store.catalog"
 import type {
   RequestAccountCreate,
   RequestAccountCreateDcent,
@@ -24,7 +26,7 @@ import type {
   RequestValidateDerivationPath,
   ResponseAccountExport,
 } from "@core/domains/accounts/types"
-import { AccountImportSources, AccountTypes } from "@core/domains/accounts/types"
+import { AccountImportSources, AccountType } from "@core/domains/accounts/types"
 import { getPairForAddressSafely } from "@core/handlers/helpers"
 import { genericAsyncSubscription } from "@core/handlers/subscriptions"
 import { talismanAnalytics } from "@core/libs/Analytics"
@@ -44,7 +46,6 @@ import { decodeAnyAddress, encodeAnyAddress, sleep } from "@talismn/util"
 import { combineLatest } from "rxjs"
 
 import { SOURCES } from "../mnemonics/store"
-import { AccountsCatalogData, emptyCatalog } from "./store.catalog"
 
 export default class AccountsHandler extends ExtensionHandler {
   private async accountCreate({ name, type, ...options }: RequestAccountCreate): Promise<string> {
@@ -96,7 +97,7 @@ export default class AccountsHandler extends ExtensionHandler {
       password,
       {
         name,
-        origin: AccountTypes.TALISMAN,
+        origin: AccountType.Talisman,
         derivedMnemonicId,
         derivationPath,
       },
@@ -129,7 +130,7 @@ export default class AccountsHandler extends ExtensionHandler {
 
     const meta: KeyringPair$Meta = {
       name,
-      origin: AccountTypes.TALISMAN,
+      origin: AccountType.Talisman,
     }
 
     // suri could be a private key instead of a mnemonic
@@ -182,7 +183,7 @@ export default class AccountsHandler extends ExtensionHandler {
     for (const json of unlockedPairs) {
       const pair = keyring.createFromJson(json, {
         name: json.meta?.name || "Json Import",
-        origin: AccountTypes.TALISMAN,
+        origin: AccountType.Talisman,
         importSource: AccountImportSources.JSON,
       })
 
@@ -229,7 +230,7 @@ export default class AccountsHandler extends ExtensionHandler {
         name,
         hardwareType: "ledger",
         isHardware: true,
-        origin: AccountTypes.LEDGER,
+        origin: AccountType.Ledger,
         path,
       },
       null
@@ -257,7 +258,7 @@ export default class AccountsHandler extends ExtensionHandler {
     const meta: KeyringPair$Meta = {
       name,
       isHardware: true,
-      origin: AccountTypes.DCENT,
+      origin: AccountType.Dcent,
       path,
       tokenIds,
     }
@@ -305,7 +306,7 @@ export default class AccountsHandler extends ExtensionHandler {
       addressOffset,
       genesisHash,
       name,
-      origin: AccountTypes.LEDGER,
+      origin: AccountType.Ledger,
     })
 
     talismanAnalytics.capture("account create", { type: "substrate", method: "hardware" })
@@ -326,7 +327,7 @@ export default class AccountsHandler extends ExtensionHandler {
       isQr: true,
       name,
       genesisHash,
-      origin: AccountTypes.QR,
+      origin: AccountType.Qr,
     })
 
     talismanAnalytics.capture("account create", { type: "substrate", method: "qr" })
@@ -363,7 +364,7 @@ export default class AccountsHandler extends ExtensionHandler {
         name,
         isExternal: true,
         isPortfolio: !!isPortfolio,
-        origin: AccountTypes.WATCHED,
+        origin: AccountType.Watched,
       },
       null
     )
@@ -586,6 +587,10 @@ export default class AccountsHandler extends ExtensionHandler {
         return this.addressLookup(request as RequestAddressLookup)
       case "pri(accounts.derivationPath.next)":
         return this.getNextDerivationPath(request as RequestNextDerivationPath)
+      case "pri(accounts.onChainIds.resolveNames)":
+        return Object.fromEntries(await resolveNames(request as string[]))
+      case "pri(accounts.onChainIds.lookupAddresses)":
+        return Object.fromEntries(await lookupAddresses(request as string[]))
       default:
         throw new Error(`Unable to handle message of type ${type}`)
     }

@@ -1,5 +1,5 @@
-import { EyePlusIcon, PlusIcon } from "@talisman/theme/icons"
 import imgNoAccounts from "@talisman/theme/images/no-accounts-character.png"
+import { EyePlusIcon, PlusIcon } from "@talismn/icons"
 import { Trans, useTranslation } from "react-i18next"
 import { Button } from "talisman-ui"
 

@@ -1,4 +1,4 @@
-import { AccountJsonAny, AccountTypes } from "@core/domains/accounts/types"
+import { AccountJsonAny, AccountType } from "@core/domains/accounts/types"
 import { yupResolver } from "@hookform/resolvers/yup"
 import { PasswordStrength } from "@talisman/components/PasswordStrength"
 import { useOpenClose } from "@talisman/hooks/useOpenClose"
@@ -37,7 +37,7 @@ const useAccountExportModalProvider = () => {
   const account = _account ?? selectedAccount
 
   const canExportAccountFunc = (account?: AccountJsonAny) =>
-    account?.origin && account?.origin === AccountTypes.TALISMAN
+    account?.origin === AccountType.Talisman
 
   const canExportAccount = useMemo(() => canExportAccountFunc(account), [account])
 

@@ -3,12 +3,12 @@ import { Balances } from "@core/domains/balances/types"
 import { Accordion, AccordionIcon } from "@talisman/components/Accordion"
 import { FadeIn } from "@talisman/components/FadeIn"
 import { useOpenClose } from "@talisman/hooks/useOpenClose"
-import { ExternalLinkIcon, LockIcon, XIcon, ZapIcon } from "@talisman/theme/icons"
-import { useBalancesStatus } from "@talismn/balances-react"
+import { ExternalLinkIcon, LockIcon, XIcon, ZapIcon } from "@talismn/icons"
 import { classNames } from "@talismn/util"
 import Fiat from "@ui/domains/Asset/Fiat"
 import Tokens from "@ui/domains/Asset/Tokens"
 import { useAnalytics } from "@ui/hooks/useAnalytics"
+import { useBalancesStatus } from "@ui/hooks/useBalancesStatus"
 import { useSearchParamsSelectedAccount } from "@ui/hooks/useSearchParamsSelectedAccount"
 import { MouseEventHandler, ReactNode, useCallback, useMemo } from "react"
 import { Trans, useTranslation } from "react-i18next"
@@ -245,14 +245,14 @@ const BalancesGroup = ({ label, fiatAmount, className, children }: GroupProps) =
     <div className="flex flex-col gap-6">
       <button
         type="button"
-        className={classNames("text-md flex cursor-pointer items-center gap-2", className)}
+        className={classNames("flex cursor-pointer items-center gap-2 text-sm", className)}
         onClick={toggle}
       >
-        <div className="text-body grow text-left">{label}</div>
-        <div className="text-body-secondary overflow-hidden text-ellipsis whitespace-nowrap">
+        <div className="text-body-secondary grow text-left">{label}</div>
+        <div className="text-body-secondary truncate">
           <Fiat amount={fiatAmount} currency="usd" isBalance />
         </div>
-        <div className="text-body-secondary flex flex-col justify-center text-lg">
+        <div className="text-body-secondary text-md flex flex-col justify-center">
           <AccordionIcon isOpen={isOpen} />
         </div>
       </button>
@@ -274,9 +274,9 @@ export const PopupAssetsTable = ({ balances }: GroupedAssetsTableProps) => {
   } = usePortfolioSymbolBalances(balances)
 
   // calculate totals
-  const { totalAvailable, totalLocked } = useMemo(() => {
-    const { transferable, locked, reserved } = balances.sum.fiat("usd")
-    return { totalAvailable: transferable, totalLocked: locked + reserved }
+  const { total, totalAvailable, totalLocked } = useMemo(() => {
+    const { total, transferable, locked, reserved } = balances.sum.fiat("usd")
+    return { total, totalAvailable: transferable, totalLocked: locked + reserved }
   }, [balances])
 
   const { t } = useTranslation()
@@ -286,6 +286,17 @@ export const PopupAssetsTable = ({ balances }: GroupedAssetsTableProps) => {
   return (
     <FadeIn>
       <div>
+        {!!account && (
+          <>
+            <div className="text-md flex items-center gap-2">
+              <div className="text-body grow text-left">{t("Total")}</div>
+              <div className="text-body-secondary truncate">
+                <Fiat amount={total} currency="usd" isBalance />
+              </div>
+            </div>
+            <div className="h-8" />
+          </>
+        )}
         <BalancesGroup label={t("Available")} fiatAmount={totalAvailable}>
           {available.map(([symbol, b]) => (
             <AssetRow key={symbol} balances={b} />

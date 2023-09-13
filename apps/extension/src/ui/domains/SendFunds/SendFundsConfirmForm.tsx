@@ -1,6 +1,6 @@
 import { ScrollContainer } from "@talisman/components/ScrollContainer"
 import { WithTooltip } from "@talisman/components/Tooltip"
-import { AlertCircleIcon, LoaderIcon } from "@talisman/theme/icons"
+import { AlertCircleIcon, LoaderIcon } from "@talismn/icons"
 import { classNames, encodeAnyAddress } from "@talismn/util"
 import useAccounts from "@ui/hooks/useAccounts"
 import { isEvmToken } from "@ui/util/isEvmToken"

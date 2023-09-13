@@ -1,5 +1,6 @@
 import { Nav, NavItem } from "@talisman/components/Nav"
 import { ScrollContainer } from "@talisman/components/ScrollContainer"
+import { FullColorSmallLogo } from "@talisman/theme/logos"
 import {
   CreditCardIcon,
   DownloadAlertIcon,
@@ -7,12 +8,11 @@ import {
   EyeIcon,
   EyeOffIcon,
   LockIcon,
-  PaperPlaneIcon,
   PlusIcon,
+  SendIcon,
   SettingsIcon,
   XIcon,
-} from "@talisman/theme/icons"
-import { FullColorSmallLogo } from "@talisman/theme/logos"
+} from "@talismn/icons"
 import { api } from "@ui/api"
 import { AnalyticsPage, sendAnalyticsEvent } from "@ui/api/analytics"
 import { useNavigationContext } from "@ui/apps/popup/context/NavigationContext"
@@ -82,7 +82,7 @@ export const NavigationDrawer: FC = () => {
       name: "Goto",
       action: "Settings button",
     })
-    api.dashboardOpen("/settings")
+    api.dashboardOpen("/settings/general")
     window.close()
   }, [])
 
@@ -122,7 +122,7 @@ export const NavigationDrawer: FC = () => {
         </header>
         <ScrollContainer className="flex-grow">
           <Nav className="p-4">
-            <NavItem icon={<PaperPlaneIcon />} onClick={handleSendFundsClick}>
+            <NavItem icon={<SendIcon />} onClick={handleSendFundsClick}>
               {t("Send Funds")}
             </NavItem>
             {showBuyTokens && (

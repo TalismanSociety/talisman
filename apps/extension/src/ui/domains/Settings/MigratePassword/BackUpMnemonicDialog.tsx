@@ -1,4 +1,4 @@
-import { ArrowRightIcon } from "@talisman/theme/icons"
+import { ArrowRightIcon } from "@talismn/icons"
 import { Mnemonic } from "@ui/domains/Mnemonic/Mnemonic"
 import { useState } from "react"
 import { useTranslation } from "react-i18next"

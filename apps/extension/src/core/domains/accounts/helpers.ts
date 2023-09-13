@@ -1,11 +1,5 @@
 import { AccountsCatalogStore } from "@core/domains/accounts/store.catalog"
-import {
-  Account,
-  AccountJsonAny,
-  AccountType,
-  AccountTypes,
-  IdenticonType,
-} from "@core/domains/accounts/types"
+import { Account, AccountJsonAny, AccountType, IdenticonType } from "@core/domains/accounts/types"
 import { log } from "@core/log"
 import type { Address } from "@core/types/base"
 import { getAccountAvatarDataUri } from "@core/util/getAccountAvatarDataUri"
@@ -63,17 +57,26 @@ export const sortAccounts =
     return accounts
   }
 
-export const getInjectedAccount = ({
-  json: {
-    address,
-    meta: { genesisHash, name },
-  },
-  type,
-}: SingleAddress): InjectedAccount => ({
+export const getInjectedAccount = (
+  {
+    json: {
+      address,
+      meta: { genesisHash, name, origin, isPortfolio },
+    },
+    type,
+  }: SingleAddress,
+  options = { includePortalOnlyInfo: false }
+): InjectedAccount | (InjectedAccount & { readonly: boolean; partOfPortfolio: boolean }) => ({
   address,
   genesisHash,
   name,
   type,
+  ...(options.includePortalOnlyInfo
+    ? {
+        readonly: origin === AccountType.Watched,
+        partOfPortfolio: isPortfolio,
+      }
+    : {}),
 })
 
 export const filterAccountsByAddresses =
@@ -85,12 +88,13 @@ export const filterAccountsByAddresses =
 
 export const getPublicAccounts = (
   accounts: SingleAddress[],
-  filterFn: (accounts: SingleAddress[]) => SingleAddress[] = (accounts) => accounts
+  filterFn: (accounts: SingleAddress[]) => SingleAddress[] = (accounts) => accounts,
+  options = { includeWatchedAccounts: false }
 ) =>
   filterFn(accounts)
-    .filter((a) => a.json.meta.origin !== AccountTypes.WATCHED)
+    .filter((a) => options.includeWatchedAccounts || a.json.meta.origin !== AccountType.Watched)
     .sort((a, b) => (a.json.meta.whenCreated || 0) - (b.json.meta.whenCreated || 0))
-    .map(getInjectedAccount)
+    .map((x) => getInjectedAccount(x, { includePortalOnlyInfo: options.includeWatchedAccounts }))
 
 export const includeAvatar = (iconType: IdenticonType) => (account: InjectedAccount) => ({
   ...account,
@@ -101,7 +105,7 @@ export const getLegacyAuthenticationAccount = () => {
   const allAccounts = keyring.getAccounts()
 
   if (allAccounts.length === 0) return
-  const storedSeedAccount = allAccounts.find(({ meta }) => meta.origin === AccountTypes.TALISMAN)
+  const storedSeedAccount = allAccounts.find(({ meta }) => meta.origin === AccountType.Talisman)
 
   if (storedSeedAccount) return storedSeedAccount
   return
@@ -146,7 +150,7 @@ export const hasQrCodeAccounts = async () => {
   const localData = await Browser.storage.local.get(null)
   return Object.entries(localData).some(
     ([key, account]: [string, Account]) =>
-      key.startsWith("account:0x") && account.meta?.origin === AccountTypes.QR
+      key.startsWith("account:0x") && account.meta?.origin === AccountType.Qr
   )
 }
 
@@ -156,12 +160,7 @@ export const hasPrivateKey = (address: Address) => {
   if (!acc) return false
   if (acc.meta?.isExternal) return false
   if (acc.meta?.isHardware) return false
-  if (
-    ([AccountTypes.QR, AccountTypes.WATCHED] as AccountType[]).includes(
-      acc.meta?.origin as AccountType
-    )
-  )
-    return false
+  if ([AccountType.Qr, AccountType.Watched].includes(acc.meta?.origin as AccountType)) return false
   return true
 }
 
