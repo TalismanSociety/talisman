@@ -39,9 +39,10 @@ export const SubNetworkForm = ({ chainId, onSubmitted }: SubNetworkFormProps) =>
   const isBuiltInChain = useIsBuiltInChain(chainId)
 
   const { chains } = useChains(true)
-  const [useTestnets, setUseTestNets] = useSetting("useTestnets")
+  const [useTestnets, setUseTestnets] = useSetting("useTestnets")
 
   const { defaultValues, isCustom, isEditMode, chain } = useEditMode(chainId)
+  const tEditMode = chainId ? t("Edit") : t("Add")
 
   const schema = useMemo(
     () => getSubNetworkFormSchema(chain?.genesisHash ?? undefined),
@@ -188,13 +189,13 @@ export const SubNetworkForm = ({ chainId, onSubmitted }: SubNetworkFormProps) =>
     async (chain: RequestUpsertCustomChain) => {
       try {
         await api.chainUpsert({ ...chain, nativeTokenLogoUrl, chainLogoUrl })
-        if (chain.isTestnet && !useTestnets) setUseTestNets(true)
+        if (chain.isTestnet && !useTestnets) setUseTestnets(true)
         onSubmitted?.()
       } catch (err) {
         setSubmitError((err as Error).message)
       }
     },
-    [chainLogoUrl, nativeTokenLogoUrl, onSubmitted, setUseTestNets, useTestnets]
+    [chainLogoUrl, nativeTokenLogoUrl, onSubmitted, setUseTestnets, useTestnets]
   )
 
   // on edit screen, wait for existing chain to be loaded
@@ -203,7 +204,11 @@ export const SubNetworkForm = ({ chainId, onSubmitted }: SubNetworkFormProps) =>
   return (
     <>
       <HeaderBlock
-        title={t("{{editMode}} custom network", { editMode: chainId ? t("Edit") : t("Add") })}
+        title={
+          isCustom
+            ? t("{{tEditMode}} Custom Substrate Network", { tEditMode })
+            : t("{{tEditMode}} Substrate Network", { tEditMode })
+        }
         text={t("Only ever add RPCs you trust.")}
       />
       <form className="mt-24 space-y-4" onSubmit={handleSubmit(submit)}>
@@ -360,7 +365,7 @@ const useEditMode = (chainId?: ChainId) => {
   const nativeToken = useToken(chain?.nativeToken?.id) as CustomNativeToken | undefined
   const defaultValues = useMemo(() => {
     if (!chainId) return DEFAULT_VALUES
-    return chain && nativeToken ? chainToFormData(chain, nativeToken) : undefined
+    return chain ? chainToFormData(chain, nativeToken) : undefined
   }, [chain, chainId, nativeToken])
 
   const isCustom = useMemo(() => !!chain && isCustomChain(chain), [chain])
@@ -372,7 +377,7 @@ const chainToFormData = (
   chain?: Chain | CustomChain,
   nativeToken?: CustomNativeToken
 ): RequestUpsertCustomChain | undefined => {
-  if (!chain || !nativeToken) return undefined
+  if (!chain) return undefined
 
   return {
     id: chain.id,
@@ -380,10 +385,10 @@ const chainToFormData = (
     genesisHash: chain.genesisHash,
     name: chain.name ?? "",
     chainLogoUrl: chain.logo ?? null,
-    nativeTokenSymbol: nativeToken.symbol,
-    nativeTokenDecimals: nativeToken.decimals,
-    nativeTokenCoingeckoId: nativeToken.coingeckoId ?? null,
-    nativeTokenLogoUrl: nativeToken.logo ?? null,
+    nativeTokenSymbol: nativeToken?.symbol ?? "Unit",
+    nativeTokenDecimals: nativeToken?.decimals ?? 0,
+    nativeTokenCoingeckoId: nativeToken?.coingeckoId ?? null,
+    nativeTokenLogoUrl: nativeToken?.logo ?? null,
     accountFormat: chain.account,
     subscanUrl: chain.subscanUrl,
     rpcs: chain.rpcs ?? [],

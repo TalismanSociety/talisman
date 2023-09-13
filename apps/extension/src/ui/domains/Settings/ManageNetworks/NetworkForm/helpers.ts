@@ -50,8 +50,7 @@ export const getSubstrateRpcInfo = (rpcUrl: string): Promise<SubstrateRpcInfo | 
         ws.send("system_properties", []),
       ])
       const { tokenSymbol, tokenDecimals } = systemProperties ?? {}
-      const symbol: string =
-        (Array.isArray(tokenSymbol) ? tokenSymbol[0] : tokenSymbol) ?? "Unknown"
+      const symbol: string = (Array.isArray(tokenSymbol) ? tokenSymbol[0] : tokenSymbol) ?? "Unit"
       const decimals: number =
         (Array.isArray(tokenDecimals) ? tokenDecimals[0] : tokenDecimals) ?? 0
 

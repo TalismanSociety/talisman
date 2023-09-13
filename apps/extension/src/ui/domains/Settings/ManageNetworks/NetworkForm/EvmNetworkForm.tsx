@@ -40,9 +40,10 @@ export const EvmNetworkForm: FC<EvmNetworkFormProps> = ({ evmNetworkId, onSubmit
   const isBuiltInEvmNetwork = useIsBuiltInEvmNetwork(evmNetworkId)
 
   const { evmNetworks } = useEvmNetworks(true)
-  const [useTestnets, setUseTestNets] = useSetting("useTestnets")
+  const [useTestnets, setUseTestnets] = useSetting("useTestnets")
 
   const { defaultValues, isCustom, isEditMode, evmNetwork } = useEditMode(evmNetworkId)
+  const tEditMode = evmNetworkId ? t("Edit") : t("Add")
 
   const schema = useMemo(() => getEvmNetworkFormSchema(evmNetworkId), [evmNetworkId])
 
@@ -153,13 +154,13 @@ export const EvmNetworkForm: FC<EvmNetworkFormProps> = ({ evmNetworkId, onSubmit
     async (network: RequestUpsertCustomEvmNetwork) => {
       try {
         await api.ethNetworkUpsert({ ...network, tokenLogoUrl, chainLogoUrl })
-        if (network.isTestnet && !useTestnets) setUseTestNets(true)
+        if (network.isTestnet && !useTestnets) setUseTestnets(true)
         onSubmitted?.()
       } catch (err) {
         setSubmitError((err as Error).message)
       }
     },
-    [chainLogoUrl, tokenLogoUrl, onSubmitted, setUseTestNets, useTestnets]
+    [chainLogoUrl, tokenLogoUrl, onSubmitted, setUseTestnets, useTestnets]
   )
 
   // on edit screen, wait for existing network to be loaded
@@ -168,7 +169,11 @@ export const EvmNetworkForm: FC<EvmNetworkFormProps> = ({ evmNetworkId, onSubmit
   return (
     <>
       <HeaderBlock
-        title={t("{{editMode}} EVM Network", { editMode: evmNetworkId ? t("Edit") : t("Add") })}
+        title={
+          isCustom
+            ? t("{{tEditMode}} Custom EVM Network", { tEditMode })
+            : t("{{tEditMode}} EVM Network", { tEditMode })
+        }
         text={
           <Trans
             t={t}
