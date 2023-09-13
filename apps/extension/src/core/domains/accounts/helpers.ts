@@ -16,6 +16,7 @@ import { Err, Ok, Result } from "ts-results"
 import Browser from "webextension-polyfill"
 
 import { getEthDerivationPath } from "../ethereum/helpers"
+import { LegacyAccountType, LegacyAccountTypes } from "./migrations"
 
 const sortAccountsByWhenCreated = (acc1: AccountJsonAny, acc2: AccountJsonAny) => {
   const acc1Created = acc1.whenCreated
@@ -105,7 +106,11 @@ export const getLegacyAuthenticationAccount = () => {
   const allAccounts = keyring.getAccounts()
 
   if (allAccounts.length === 0) return
-  const storedSeedAccount = allAccounts.find(({ meta }) => meta.origin === AccountType.Talisman)
+  const storedSeedAccount = allAccounts.find(({ meta }) =>
+    ([LegacyAccountTypes.LEGACY_ROOT, AccountType.Talisman] as LegacyAccountType[]).includes(
+      meta.origin as LegacyAccountType
+    )
+  )
 
   if (storedSeedAccount) return storedSeedAccount
   return
