@@ -5,16 +5,10 @@ import { useMemo } from "react"
 
 import { useSelectedCurrency } from "./useCurrency"
 
-const usdFormatter = new Intl.NumberFormat(undefined, {
-  style: "currency",
-  currency: "usd",
-  currencyDisplay: "narrowSymbol",
-})
-const formatUsd = (usd: number | null) => usdFormatter.format(usd ?? 0)
 const formatBalanceDetails = (b: Balance, currency: TokenRateCurrency) =>
-  `${formatDecimals(b.total.tokens)} ${b.token?.symbol ?? ""} / ${formatUsd(
-    b.total.fiat(currency)
-  )}`
+  `${formatDecimals(b.total.tokens)} ${b.token?.symbol ?? ""} / ${b.total
+    .fiat(currency)
+    ?.toLocaleString(undefined, { style: "currency", currency, currencyDisplay: "narrowSymbol" })}`
 
 export const useBalanceDetails = (balances: Balances) => {
   const currency = useSelectedCurrency()
