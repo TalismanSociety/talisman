@@ -4,14 +4,13 @@ import { ScrollContainer } from "@talisman/components/ScrollContainer"
 import { FullColorSmallLogo } from "@talisman/theme/logos"
 import {
   AlertCircleIcon,
-  CreditCardIcon,
-  EyeIcon,
-  EyeOffIcon,
   LockIcon,
   PlusIcon,
   RepeatIcon,
+  SeedIcon,
   SendIcon,
   SettingsIcon,
+  UsersIcon,
   XIcon,
   ZapIcon,
 } from "@talismn/icons"
@@ -19,9 +18,7 @@ import { api } from "@ui/api"
 import { AnalyticsPage, sendAnalyticsEvent } from "@ui/api/analytics"
 import { useNavigationContext } from "@ui/apps/popup/context/NavigationContext"
 import { BuildVersionPill } from "@ui/domains/Build/BuildVersionPill"
-import { useIsFeatureEnabled } from "@ui/hooks/useFeatures"
 import useMnemonicBackup from "@ui/hooks/useMnemonicBackup"
-import { useSetting } from "@ui/hooks/useSettings"
 import { FC, useCallback } from "react"
 import { useTranslation } from "react-i18next"
 import { Drawer } from "talisman-ui"
@@ -36,7 +33,6 @@ const ANALYTICS_PAGE: AnalyticsPage = {
 
 export const NavigationDrawer: FC = () => {
   const { isOpen, close } = useNavigationContext()
-  const showBuyTokens = useIsFeatureEnabled("BUY_CRYPTO")
 
   const handleLock = useCallback(async () => {
     sendAnalyticsEvent({
@@ -55,6 +51,16 @@ export const NavigationDrawer: FC = () => {
       action: "Add account button",
     })
     api.dashboardOpen("/accounts/add")
+    window.close()
+  }, [])
+
+  const handleAddressBookClick = useCallback(() => {
+    sendAnalyticsEvent({
+      ...ANALYTICS_PAGE,
+      name: "Goto",
+      action: "Address Book button",
+    })
+    api.dashboardOpen("/settings/address-book")
     window.close()
   }, [])
 
@@ -88,13 +94,13 @@ export const NavigationDrawer: FC = () => {
     window.close()
   }, [])
 
-  const handleBuyTokensClick = useCallback(async () => {
+  const handleBackupClick = useCallback(() => {
     sendAnalyticsEvent({
       ...ANALYTICS_PAGE,
       name: "Goto",
-      action: "Buy Crypto button",
+      action: "Backup Wallet button",
     })
-    await api.modalOpen({ modalType: "buy" })
+    api.dashboardOpen("/settings/mnemonics")
     window.close()
   }, [])
 
@@ -108,17 +114,6 @@ export const NavigationDrawer: FC = () => {
     window.close()
   }, [])
 
-  const [hideBalances, setHideBalances] = useSetting("hideBalances")
-  const toggleHideBalance = useCallback(() => {
-    sendAnalyticsEvent({
-      ...ANALYTICS_PAGE,
-      name: "Goto",
-      action: "Hide balances button",
-    })
-    setHideBalances((prev) => !prev)
-    close()
-  }, [close, setHideBalances])
-
   const { isNotConfirmed } = useMnemonicBackup()
 
   const { t } = useTranslation()
@@ -126,8 +121,10 @@ export const NavigationDrawer: FC = () => {
   return (
     <Drawer className="h-full" containerId="main" anchor="bottom" isOpen={isOpen} onDismiss={close}>
       <div className="flex h-full w-full flex-col bg-black">
-        <header className="border-grey-800 box-border flex h-36 w-full items-center justify-between border-b px-12">
+        <header className="border-grey-800 box-border flex h-36 w-full items-center justify-between gap-6 border-b px-12">
           <FullColorSmallLogo className="h-[2.5rem] w-auto" />
+          <BuildVersionPill className="bg-primary/20 text-primary hover:bg-primary/30" />
+          <div className="grow"></div>
           <IconButton onClick={close} aria-label={t("Close menu")}>
             <XIcon />
           </IconButton>
@@ -140,33 +137,36 @@ export const NavigationDrawer: FC = () => {
             <NavItem icon={<SendIcon />} onClick={handleSendFundsClick}>
               {t("Send Funds")}
             </NavItem>
+            <NavItem icon={<UsersIcon />} onClick={handleAddressBookClick}>
+              {t("Address Book")}
+            </NavItem>
             <NavItem icon={<RepeatIcon />} onClick={handleTransportClick}>
               {t("Transport")}
             </NavItem>
             <NavItem icon={<ZapIcon />} onClick={handleStakingClick}>
               {t("Staking")}
             </NavItem>
-            {showBuyTokens && (
-              <NavItem icon={<CreditCardIcon />} onClick={handleBuyTokensClick}>
-                {t("Buy Crypto")}
-              </NavItem>
-            )}
-            <NavItem icon={hideBalances ? <EyeIcon /> : <EyeOffIcon />} onClick={toggleHideBalance}>
-              {hideBalances ? t("Show Balances") : t("Hide Balances")}
-            </NavItem>
-            <NavItem icon={<SettingsIcon />} onClick={handleSettingsClick}>
+
+            <NavItem icon={<SeedIcon />} onClick={handleBackupClick}>
               <span className="flex items-center">
-                {t("Settings")}
+                {t("Backup Wallet")}
                 {isNotConfirmed && <AlertCircleIcon className="text-primary ml-2 inline text-sm" />}
               </span>
             </NavItem>
-            <NavItem icon={<LockIcon />} onClick={handleLock}>
-              {t("Lock Wallet")}
+            <NavItem icon={<SettingsIcon />} onClick={handleSettingsClick}>
+              {t("Settings")}
             </NavItem>
           </Nav>
         </ScrollContainer>
-        <footer className="pb-10 text-center">
-          <BuildVersionPill />
+        <footer className="border-grey-800 border-t">
+          <button
+            type="button"
+            className="text-md text-body-secondary hover:bg-grey-800 hover:text-body flex w-full items-center justify-center gap-8 rounded-none py-12 text-center"
+            onClick={handleLock}
+          >
+            <LockIcon className="text-lg" />
+            <span>{t("Lock Wallet")}</span>
+          </button>
         </footer>
       </div>
     </Drawer>
