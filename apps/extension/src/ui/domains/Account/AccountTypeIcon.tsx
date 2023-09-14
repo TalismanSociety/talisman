@@ -15,12 +15,13 @@ export const AccountTypeIcon: FC<AccountTypeIconProps> = ({ origin, showLinked, 
   const { t } = useTranslation()
 
   const { Icon, tooltip } = useMemo(() => {
-    if (!!showLinked && ["SEED", "JSON"].includes(origin as string))
-      return { Icon: LinkIcon, tooltip: t("Imported account") }
-    if (origin === "HARDWARE") return { Icon: UsbIcon, tooltip: t("Hardware wallet account") }
-    if (origin === "QR") return { Icon: PolkadotVaultIcon, tooltip: t("Polkadot Vault account") }
-    if (origin === "WATCHED") return { Icon: EyeIcon, tooltip: t("Watched account") }
-    if (origin === "DCENT")
+    if (!!showLinked && origin === AccountType.Talisman)
+      return { Icon: LinkIcon, tooltip: t("Local account") }
+    if (origin === AccountType.Ledger) return { Icon: UsbIcon, tooltip: t("Ledger account") }
+    if (origin === AccountType.Qr)
+      return { Icon: PolkadotVaultIcon, tooltip: t("Polkadot Vault account") }
+    if (origin === AccountType.Watched) return { Icon: EyeIcon, tooltip: t("Watched account") }
+    if (origin === AccountType.Dcent)
       return { Icon: DcentIcon, tooltip: t("D'CENT Biometric Wallet account") }
 
     return {}

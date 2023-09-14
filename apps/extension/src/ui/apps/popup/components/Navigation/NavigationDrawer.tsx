@@ -33,6 +33,7 @@ const ANALYTICS_PAGE: AnalyticsPage = {
 }
 
 export const NavigationDrawer: FC = () => {
+  const { t } = useTranslation()
   const { isOpen, close } = useNavigationContext()
 
   const handleLock = useCallback(async () => {
@@ -95,6 +96,7 @@ export const NavigationDrawer: FC = () => {
     window.close()
   }, [])
 
+  const { allBackedUp } = useMnemonicBackup()
   const handleBackupClick = useCallback(() => {
     sendAnalyticsEvent({
       ...ANALYTICS_PAGE,
@@ -114,10 +116,6 @@ export const NavigationDrawer: FC = () => {
     api.dashboardOpen("/settings/general")
     window.close()
   }, [])
-
-  const { isNotConfirmed } = useMnemonicBackup()
-
-  const { t } = useTranslation()
 
   return (
     <Drawer className="h-full" containerId="main" anchor="bottom" isOpen={isOpen} onDismiss={close}>
@@ -156,7 +154,7 @@ export const NavigationDrawer: FC = () => {
             <NavItem icon={<SeedIcon />} onClick={handleBackupClick}>
               <span className="flex items-center">
                 {t("Backup Wallet")}
-                {isNotConfirmed && <AlertCircleIcon className="text-primary ml-2 inline text-sm" />}
+                {!allBackedUp && <AlertCircleIcon className="text-primary ml-2 inline text-sm" />}
               </span>
             </NavItem>
             <NavItem icon={<SettingsIcon />} onClick={handleSettingsClick}>

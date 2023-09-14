@@ -1,17 +1,13 @@
 import { DEBUG, TALISMAN_WEB_APP_DOMAIN, TEST } from "@core/constants"
-import { AccountType } from "@core/domains/accounts/types"
-import { AppStoreData } from "@core/domains/app/store.app"
 import type {
   AnalyticsCaptureRequest,
   LoggedinType,
   ModalOpenRequest,
-  OnboardedType,
   RequestLogin,
-  RequestOnboard,
+  RequestOnboardCreatePassword,
   RequestRoute,
   SendFundsOpenRequest,
 } from "@core/domains/app/types"
-import { getEthDerivationPath } from "@core/domains/ethereum/helpers"
 import { genericSubscription } from "@core/handlers/subscriptions"
 import { talismanAnalytics } from "@core/libs/Analytics"
 import { ExtensionHandler } from "@core/libs/Handler"
@@ -21,12 +17,11 @@ import type { MessageTypes, RequestTypes, ResponseType } from "@core/types"
 import { Port } from "@core/types/base"
 import keyring from "@polkadot/ui-keyring"
 import { assert } from "@polkadot/util"
-import { mnemonicGenerate, mnemonicValidate } from "@polkadot/util-crypto"
 import { sleep } from "@talismn/util"
 import { Subject } from "rxjs"
 import Browser from "webextension-polyfill"
 
-import { getPrimaryAccount } from "../accounts/helpers"
+import { authenticateLegacyMethod } from "../accounts/legacy"
 import { changePassword } from "./helpers"
 import { protector } from "./protector"
 import { PasswordStoreData } from "./store.password"
@@ -34,14 +29,15 @@ import { PasswordStoreData } from "./store.password"
 export default class AppHandler extends ExtensionHandler {
   #modalOpenRequest = new Subject<ModalOpenRequest>()
 
-  private async onboard({ pass, passConfirm, mnemonic }: RequestOnboard): Promise<OnboardedType> {
+  private async createPassword({
+    pass,
+    passConfirm,
+  }: RequestOnboardCreatePassword): Promise<boolean> {
     if (!(DEBUG || TEST)) await sleep(1000)
     assert(pass, "Password cannot be empty")
     assert(passConfirm, "Password confirm cannot be empty")
 
     assert(pass === passConfirm, "Passwords do not match")
-
-    assert(!(await this.stores.app.getIsOnboarded()), "A root account already exists")
 
     const accounts = keyring.getAccounts().length
     assert(!accounts, "Accounts already exist")
@@ -57,18 +53,6 @@ export default class AppHandler extends ExtensionHandler {
       },
     })
 
-    let confirmed = false
-    const method = mnemonic ? "import" : "new"
-    // no mnemonic passed in generate a mnemonic as needed
-    if (!mnemonic) {
-      mnemonic = mnemonicGenerate()
-    } else {
-      // mnemonic is passed in from user
-      const isValidMnemonic = mnemonicValidate(mnemonic)
-      assert(isValidMnemonic, "Supplied mnemonic is not valid")
-      confirmed = true
-    }
-
     const {
       password: transformedPw,
       salt,
@@ -76,38 +60,11 @@ export default class AppHandler extends ExtensionHandler {
       check,
     } = await this.stores.password.createPassword(pass)
     assert(transformedPw, "Password creation failed")
+
     this.stores.password.setPassword(transformedPw)
     await this.stores.password.set({ isTrimmed: false, isHashed: true, salt, secret, check })
-
-    const { pair } = keyring.addUri(mnemonic, transformedPw, {
-      name: "My Polkadot Account",
-      origin: mnemonic ? AccountType.SeedStored : AccountType.Talisman,
-    })
-    await this.stores.seedPhrase.add(mnemonic, transformedPw, confirmed)
-
-    try {
-      // also derive a first ethereum account
-      const derivationPath = getEthDerivationPath()
-      keyring.addUri(
-        `${mnemonic}${derivationPath}`,
-        transformedPw,
-        {
-          name: `My Ethereum Account`,
-          origin: AccountType.Derived,
-          parent: pair.address,
-          derivationPath,
-        },
-        "ethereum"
-      )
-    } catch (err) {
-      // do not break onboarding as user couldn't recover from it
-      // eslint-disable-next-line no-console
-      console.error(err)
-    }
-
-    const result = await this.stores.app.setOnboarded(method !== "new")
-    talismanAnalytics.capture("onboarded", { method })
-    return result
+    talismanAnalytics.capture("password created")
+    return true
   }
 
   private async authenticate({ pass }: RequestLogin): Promise<boolean> {
@@ -119,25 +76,17 @@ export default class AppHandler extends ExtensionHandler {
         const transformedPassword = await this.stores.password.transformPassword(pass)
 
         // attempt to log in via the legacy method
-        const primaryAccount = getPrimaryAccount(true)
-        assert(primaryAccount, "No primary account, unable to authorise")
-
-        // fetch keyring pair from address
-        const pair = keyring.getPair(primaryAccount.address)
-
-        // attempt unlock the pair
-        // a successful unlock means authenticated
-        pair.unlock(transformedPassword)
-        pair.lock()
+        authenticateLegacyMethod(transformedPassword)
 
         // we can now set up the auth secret
         this.stores.password.setPassword(transformedPassword)
         await this.stores.password.setupAuthSecret(transformedPassword)
+        talismanAnalytics.capture("authenticate", { method: "legacy" })
       } else {
         await this.stores.password.authenticate(pass)
+        talismanAnalytics.capture("authenticate", { method: "new" })
       }
 
-      talismanAnalytics.capture("authenticate")
       return true
     } catch (e) {
       this.stores.password.clearPassword()
@@ -159,11 +108,11 @@ export default class AppHandler extends ExtensionHandler {
     newPw,
     newPwConfirm,
   }: RequestTypes["pri(app.changePassword)"]) {
-    // only allow users who have confirmed backing up their seed phrase to change PW
-    const mnemonicConfirmed = await this.stores.seedPhrase.get("confirmed")
+    // only allow users who have confirmed backing up their recovery phrase to change PW
+    const mnemonicsUnconfirmed = await this.stores.mnemonics.hasUnconfirmed()
     assert(
-      mnemonicConfirmed,
-      "Please backup your seed phrase before attempting to change your password."
+      !mnemonicsUnconfirmed,
+      "Please backup your recovery phrase before attempting to change your password."
     )
 
     // check given PW
@@ -212,7 +161,7 @@ export default class AppHandler extends ExtensionHandler {
     keyring.getAccounts().forEach((acc) => keyring.forgetAccount(acc.address))
     this.stores.app.set({ onboarded: "FALSE" })
     await this.stores.password.reset()
-    await this.stores.seedPhrase.clear()
+    await this.stores.mnemonics.clear()
     await windowManager.openOnboarding("/import?resetWallet=true")
     // since all accounts are being wiped, all sites need to be reset - so they may as well be wiped.
     await this.stores.sites.clear()
@@ -274,19 +223,8 @@ export default class AppHandler extends ExtensionHandler {
       // --------------------------------------------------------------------
       // app handlers -------------------------------------------------------
       // --------------------------------------------------------------------
-      case "pri(app.onboard)":
-        return this.onboard(request as RequestOnboard)
-
-      case "pri(app.onboardStatus)":
-        return await this.stores.app.get("onboarded")
-
-      case "pri(app.onboardStatus.subscribe)":
-        return genericSubscription(
-          id,
-          port,
-          this.stores.app.observable,
-          ({ onboarded }: AppStoreData) => onboarded
-        )
+      case "pri(app.onboardCreatePassword)":
+        return this.createPassword(request as RequestOnboardCreatePassword)
 
       case "pri(app.authenticate)":
         return this.authenticate(request as RequestLogin)

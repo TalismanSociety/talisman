@@ -3,6 +3,7 @@ import { ChevronLeftIcon, CopyIcon, MoreHorizontalIcon, SendIcon } from "@talism
 import { classNames } from "@talismn/util"
 import { AccountContextMenu } from "@ui/apps/dashboard/routes/Portfolio/AccountContextMenu"
 import { AccountTypeIcon } from "@ui/domains/Account/AccountTypeIcon"
+import { Address } from "@ui/domains/Account/Address"
 import { CurrentAccountAvatar } from "@ui/domains/Account/CurrentAccountAvatar"
 import Fiat from "@ui/domains/Asset/Fiat"
 import { useCopyAddressModal } from "@ui/domains/CopyAddress"
@@ -11,6 +12,7 @@ import { usePortfolio } from "@ui/domains/Portfolio/context"
 import { useDisplayBalances } from "@ui/domains/Portfolio/useDisplayBalances"
 import { useAnalytics } from "@ui/hooks/useAnalytics"
 import useBalances from "@ui/hooks/useBalances"
+import { useFormattedAddress } from "@ui/hooks/useFormattedAddress"
 import { useSearchParamsSelectedAccount } from "@ui/hooks/useSearchParamsSelectedAccount"
 import { useSearchParamsSelectedFolder } from "@ui/hooks/useSearchParamsSelectedFolder"
 import { useSendFundsPopup } from "@ui/hooks/useSendFundsPopup"
@@ -34,6 +36,8 @@ const PageContent = ({
 }) => {
   const { account } = useSearchParamsSelectedAccount()
   const { folder } = useSearchParamsSelectedFolder()
+
+  const formattedAddress = useFormattedAddress(account?.address, account?.genesisHash)
 
   const balancesByAddress = useMemo(() => {
     // we use this to avoid looping over the balances list n times, where n is the number of accounts in the wallet
@@ -98,9 +102,9 @@ const PageContent = ({
           <div className="flex flex-col justify-center">
             <CurrentAccountAvatar className="!text-2xl" />
           </div>
-          <div className="flex grow flex-col gap-2 overflow-hidden pl-2 text-sm">
+          <div className="flex grow flex-col gap-1 overflow-hidden pl-2 text-sm">
             <div className="flex items-center gap-3">
-              <div className="text-body-secondary overflow-hidden text-ellipsis whitespace-nowrap">
+              <div className={classNames("truncate", account ? "text-md" : "text-body-secondary")}>
                 {account
                   ? account.name ?? t("Unnamed Account")
                   : folder
@@ -109,8 +113,12 @@ const PageContent = ({
               </div>
               <AccountTypeIcon className="text-primary" origin={account?.origin} />
             </div>
-            <div className="text-md overflow-hidden text-ellipsis whitespace-nowrap">
-              <Fiat amount={balances.sum.fiat("usd").total} isBalance />
+            <div className={classNames("truncate", account ? "text-body-secondary" : "text-md")}>
+              {account ? (
+                <Address address={formattedAddress} />
+              ) : (
+                <Fiat amount={balances.sum.fiat("usd").total} isBalance />
+              )}
             </div>
           </div>
         </div>

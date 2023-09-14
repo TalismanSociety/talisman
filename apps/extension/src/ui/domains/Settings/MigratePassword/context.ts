@@ -4,20 +4,26 @@ import useStatus, { statusOptions } from "@talisman/hooks/useStatus"
 import { provideContext } from "@talisman/util/provideContext"
 import { api } from "@ui/api"
 import useMnemonicBackup from "@ui/hooks/useMnemonicBackup"
+import { useMnemonics } from "@ui/hooks/useMnemonics"
 import { useSensitiveState } from "@ui/hooks/useSensitiveState"
 import { useSetting } from "@ui/hooks/useSettings"
-import { useCallback, useEffect, useState } from "react"
+import { useCallback, useEffect, useMemo, useState } from "react"
+
+import { useDismissMigratePasswordModal } from "./useMigratePasswordModal"
 
 const useMigratePasswordProvider = ({ onComplete }: { onComplete: () => void }) => {
   const [password, setPassword] = useSensitiveState<string>()
   const [newPassword, setNewPassword] = useSensitiveState<string>()
   const [mnemonic, setMnemonic] = useSensitiveState<string>()
   const [passwordTrimmed, setPasswordTrimmed] = useState<boolean>()
-  const [hasBackedUpMnemonic, setHasBackedUpMnemonic] = useState<boolean>(false)
   const [error, setError] = useState<Error>()
   const [useErrorTracking] = useSetting("useErrorTracking")
   const { setStatus, status, message } = useStatus()
-  const { isNotConfirmed, confirm } = useMnemonicBackup()
+  const { allBackedUp, confirm } = useMnemonicBackup()
+  const mnemonics = useMnemonics()
+
+  // assume that if password has not been migrated yet, there is only one mnemonic
+  const mnemonicId = useMemo(() => mnemonics[0]?.id, [mnemonics])
 
   useEffect(() => {
     if (!password) return
@@ -34,12 +40,11 @@ const useMigratePasswordProvider = ({ onComplete }: { onComplete: () => void }) 
   const hasNewPassword = !!newPassword
 
   const setMnemonicBackupConfirmed = useCallback(async () => {
-    isNotConfirmed && (await confirm())
-    setHasBackedUpMnemonic(true)
-  }, [confirm, setHasBackedUpMnemonic, isNotConfirmed])
+    mnemonicId && !allBackedUp && (await confirm(mnemonicId))
+  }, [confirm, allBackedUp, mnemonicId])
 
   const migratePassword = useCallback(async () => {
-    if ((passwordTrimmed && !newPassword) || !password || !mnemonic) return
+    if ((passwordTrimmed && !newPassword) || !password || !allBackedUp) return
     setStatus.processing()
     // decide whether to use the new password or to use the same one
     let newPw = password
@@ -53,15 +58,23 @@ const useMigratePasswordProvider = ({ onComplete }: { onComplete: () => void }) 
       setError(err as Error)
       setStatus.error((err as Error).message)
     }
-  }, [mnemonic, newPassword, password, passwordTrimmed, setStatus])
+  }, [allBackedUp, newPassword, password, passwordTrimmed, setStatus])
 
   useEffect(() => {
-    if (status === statusOptions.INITIALIZED && hasBackedUpMnemonic) {
+    if (status === statusOptions.INITIALIZED && allBackedUp) {
       migratePassword()
     }
-  }, [hasBackedUpMnemonic, status, migratePassword])
+  }, [allBackedUp, status, migratePassword])
+
+  const dismiss = useDismissMigratePasswordModal()
+
+  const closeAndComplete = useCallback(() => {
+    dismiss()
+    onComplete()
+  }, [dismiss, onComplete])
 
   return {
+    mnemonicId,
     hasPassword,
     hasNewPassword,
     setPassword,
@@ -73,9 +86,9 @@ const useMigratePasswordProvider = ({ onComplete }: { onComplete: () => void }) 
     status,
     statusMessage: message,
     error,
-    hasBackedUpMnemonic,
+    hasBackedUpMnemonic: allBackedUp,
     setMnemonicBackupConfirmed,
-    onComplete,
+    onComplete: closeAndComplete,
   }
 }
 

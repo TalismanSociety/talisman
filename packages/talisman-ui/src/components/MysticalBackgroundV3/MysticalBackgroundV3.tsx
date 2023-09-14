@@ -1,31 +1,23 @@
 import { classNames } from "@talismn/util"
 import { CSSProperties, FC, memo, useEffect, useMemo, useRef, useState } from "react"
-import { useMeasure, useMouse } from "react-use"
+import { useMeasure } from "react-use"
 
 import { MYSTICAL_PHYSICS_V3, MysticalPhysicsV3 } from "./MysticalPhysicsV3"
 import { ParentSize, useCelestialArtifact } from "./useCelestialArtifact"
-import { useWindowHovered } from "./useWindowHovered"
 
 const CelestialArtifact = memo(
   ({
     parentSize,
     config,
-    x,
-    y,
     color,
   }: {
     parentSize: ParentSize
     config: MysticalPhysicsV3
-
-    // force target position if this artifact is an acolyte
-    x?: number
-    y?: number
-
     // force color
     color?: string
   }) => {
     const [id] = useState(() => crypto.randomUUID())
-    const artifact = useCelestialArtifact(config, parentSize, x, y, color)
+    const artifact = useCelestialArtifact(config, parentSize, color)
 
     const refInitialized = useRef(false)
 
@@ -72,11 +64,9 @@ CelestialArtifact.displayName = "CelestialArtifact"
 const CelestialArtifacts: FC<{
   size: ParentSize
   config: MysticalPhysicsV3
-  acolyte?: { x: number; y: number }
-}> = ({ size, config, acolyte }) => {
+}> = ({ size, config }) => {
   const artifactKeys = useMemo(() => Array.from(Array(config.artifacts).keys()), [config.artifacts])
   if (!size.width || !size.height) return null
-
   return (
     <>
       {artifactKeys.map((i) => (
@@ -87,53 +77,34 @@ const CelestialArtifacts: FC<{
           color={config.colors?.[i % config.colors.length]}
         />
       ))}
-      {config.withAcolyte && (
-        <CelestialArtifact
-          parentSize={size}
-          config={config}
-          {...acolyte}
-          color={config.colors?.[artifactKeys.length % config.colors.length]}
-        />
-      )}
     </>
   )
 }
 
 export const MysticalBackgroundV3 = ({
   className,
-  config = MYSTICAL_PHYSICS_V3,
+  config,
 }: {
-  config?: MysticalPhysicsV3
+  config?: Partial<MysticalPhysicsV3>
   className?: string
 }) => {
+  const mergedConfig = config ? { ...MYSTICAL_PHYSICS_V3, ...config } : MYSTICAL_PHYSICS_V3
+
   const [refSize, size] = useMeasure<HTMLDivElement>()
-  const refMouseLocation = useRef<SVGSVGElement>(null)
-  const { elX, elY, elW, elH } = useMouse(refMouseLocation)
-
-  // useMouse doesn't detect if cursor goes out of the screen, so we also need to check for window hovering
-  const isWindowHovered = useWindowHovered()
-
-  // props for the artifact that follows mouse cursor
-  // changes a lot when hovering, do not memoize
-  const acolyte =
-    isWindowHovered && !!elX && !!elY && elX > 0 && elX < elW && elY > 0 && elY < elH
-      ? { x: elX, y: elY }
-      : undefined
 
   const viewBox = useMemo(() => `0 0 ${size.width} ${size.height}`, [size.width, size.height])
-  const style = useMemo(() => ({ transform: `blur(${config.blur}ptx)` }), [config.blur])
+  const style = useMemo(() => ({ transform: `blur(${mergedConfig.blur}ptx)` }), [mergedConfig.blur])
 
   return (
     <div ref={refSize} className={className}>
       <svg
-        ref={refMouseLocation}
         width={size.width}
         height={size.height}
         viewBox={viewBox}
         className={classNames(className)}
         style={style}
       >
-        <CelestialArtifacts config={config} size={size} acolyte={acolyte} />
+        <CelestialArtifacts config={mergedConfig} size={size} />
       </svg>
     </div>
   )

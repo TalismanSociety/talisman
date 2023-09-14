@@ -53,6 +53,7 @@ export default class AssetTransferHandler extends ExtensionHandler {
         tokenType === "substrate-orml" ||
         tokenType === "substrate-assets" ||
         tokenType === "substrate-tokens" ||
+        tokenType === "substrate-psp22" ||
         tokenType === "substrate-equilibrium"
       ) {
         try {
@@ -114,6 +115,7 @@ export default class AssetTransferHandler extends ExtensionHandler {
       tokenType === "substrate-orml" ||
       tokenType === "substrate-assets" ||
       tokenType === "substrate-tokens" ||
+      tokenType === "substrate-psp22" ||
       tokenType === "substrate-equilibrium"
     ) {
       const pair = getPairFromAddress(fromAddress) // no need for an unlocked pair for fee estimation

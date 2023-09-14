@@ -2,10 +2,12 @@ import { CurrentAccountAvatar } from "@ui/domains/Account/CurrentAccountAvatar"
 import { PortfolioProvider } from "@ui/domains/Portfolio/context"
 import { NomPoolStakingBannerProvider } from "@ui/domains/Portfolio/NomPoolStakingContext"
 import { ConnectedAccountsPill } from "@ui/domains/Site/ConnectedAccountsPill"
+import { useHasAccounts } from "@ui/hooks/useHasAccounts"
 import { Suspense, lazy } from "react"
 import { Route, Routes, useLocation } from "react-router-dom"
 
 import { PopupContent, PopupHeader, PopupLayout } from "../../Layout/PopupLayout"
+import { NoAccounts } from "../NoAccounts"
 import { PortfolioAccounts } from "./PortfolioAccounts"
 import { PortfolioAsset } from "./PortfolioAsset"
 import { PortfolioAssets } from "./PortfolioAssets"
@@ -28,7 +30,23 @@ const AccountAvatar = () => {
   )
 }
 
+const PortfolioContent = () => (
+  <>
+    <Routes>
+      <Route path="assets" element={<PortfolioAssets />} />
+      <Route path=":symbol" element={<PortfolioAsset />} />
+      <Route path="" element={<PortfolioAccounts />} />
+    </Routes>
+    <Suspense fallback={null}>
+      <BraveWarningPopupBanner />
+      <MigratePasswordAlert />
+      {/* <AnalyticsAlert /> */}
+    </Suspense>
+  </>
+)
+
 export const Portfolio = () => {
+  const hasAccounts = useHasAccounts()
   return (
     <PortfolioProvider>
       <NomPoolStakingBannerProvider>
@@ -38,16 +56,7 @@ export const Portfolio = () => {
             <ConnectedAccountsPill />
           </PopupHeader>
           <PopupContent>
-            <Routes>
-              <Route path="assets" element={<PortfolioAssets />} />
-              <Route path=":symbol" element={<PortfolioAsset />} />
-              <Route path="" element={<PortfolioAccounts />} />
-            </Routes>
-            <Suspense fallback={null}>
-              <BraveWarningPopupBanner />
-              <MigratePasswordAlert />
-              {/* <AnalyticsAlert /> */}
-            </Suspense>
+            {hasAccounts === false ? <NoAccounts /> : <PortfolioContent />}
           </PopupContent>
         </PopupLayout>
       </NomPoolStakingBannerProvider>

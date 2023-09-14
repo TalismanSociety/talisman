@@ -32,6 +32,7 @@
     "@talismn/balances-substrate-equilibrium": "workspace:*",
     "@talismn/balances-substrate-native": "workspace:*",
     "@talismn/balances-substrate-orml": "workspace:*",
+    "@talismn/balances-substrate-psp22": "workspace:*",
     "@talismn/balances-substrate-tokens": "workspace:*"
   },
   "devDependencies": {
