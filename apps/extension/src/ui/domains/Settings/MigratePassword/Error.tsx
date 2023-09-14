@@ -53,6 +53,20 @@ export const MigratePasswordError = () => {
         {t(
           "The update was not completed, but you may continue to use Talisman. You will be asked to update again next time the extension is restarted."
         )}
+        {useErrorTracking && (
+          <Trans t={t}>
+            If this problem continues, please contact our support team on{" "}
+            <a
+              className="text-white opacity-100"
+              href="https://discord.gg/2EmmfrTN"
+              target="_blank"
+              rel="noreferrer"
+            >
+              Discord
+            </a>
+            .
+          </Trans>
+        )}
       </p>
       <Button
         fullWidth
