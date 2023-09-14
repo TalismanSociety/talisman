@@ -102,8 +102,12 @@ export const EthSignMoonXTokensTransfer: FC = () => {
     }
 
     const token = tokens.find(
-      (t) => t.type === "evm-erc20" && t.contractAddress === currencyAddress
+      (t) =>
+        t.type === "evm-erc20" &&
+        t.evmNetwork?.id === network?.id &&
+        t.contractAddress === currencyAddress
     )
+
     if (token) {
       const { decimals, symbol, coingeckoId, logo } = token
       return { decimals, symbol, coingeckoId, image: logo }
@@ -111,7 +115,7 @@ export const EthSignMoonXTokensTransfer: FC = () => {
 
     const { decimals, symbol, coingeckoId, image } = erc20.token || {}
     return { decimals, symbol, coingeckoId, image: image }
-  }, [currencyAddress, erc20.token, nativeToken, tokens])
+  }, [currencyAddress, erc20.token, nativeToken, network?.id, tokens])
 
   const target = useMemo(() => decodeMultilocation(destination), [destination])
 
