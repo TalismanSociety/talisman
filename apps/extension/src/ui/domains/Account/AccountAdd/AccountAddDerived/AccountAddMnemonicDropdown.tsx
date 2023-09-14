@@ -19,9 +19,10 @@ const GENERATE_MNEMONIC_OPTION = {
 }
 
 export const AccountAddMnemonicDropdown: FC<{
+  label?: string
   value: string | null // null means "generate new"
   onChange: (mnemonicId: string | null) => void
-}> = ({ value, onChange }) => {
+}> = ({ label, value, onChange }) => {
   const { t } = useTranslation("admin")
 
   const allAccounts = useAccounts()
@@ -63,7 +64,7 @@ export const AccountAddMnemonicDropdown: FC<{
     <Dropdown
       className="mt-8 [&>label]:mb-4"
       items={mnemonicOptions}
-      label={t("Recovery phrase")}
+      label={label ?? t("Recovery phrase")}
       propertyKey="value"
       renderItem={(o) => (
         <div className="text-body-secondary flex w-full items-center gap-6 overflow-hidden">

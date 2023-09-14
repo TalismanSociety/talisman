@@ -1,9 +1,18 @@
 import { POLKADOT_VAULT_DOCS_URL } from "@core/constants"
+import { log } from "@core/log"
 import { FadeIn } from "@talisman/components/FadeIn"
 import { HeaderBlock } from "@talisman/components/HeaderBlock"
+import { notify } from "@talisman/components/Notifications"
 import { Chain } from "@talismn/chaindata-provider"
 import { SeedIcon } from "@talismn/icons"
+import { api } from "@ui/api"
+import { AccountAddMnemonicDropdown } from "@ui/domains/Account/AccountAdd/AccountAddDerived/AccountAddMnemonicDropdown"
 import { ChainLogo } from "@ui/domains/Asset/ChainLogo"
+import {
+  MnemonicCreateModal,
+  MnemonicCreateModalProvider,
+  useMnemonicCreateModal,
+} from "@ui/domains/Mnemonic/MnemonicCreateModal"
 import { MetadataQrCode } from "@ui/domains/Sign/Qr/MetadataQrCode"
 import { NetworkSpecsQrCode } from "@ui/domains/Sign/Qr/NetworkSpecsQrCode"
 import { useAppState } from "@ui/hooks/useAppState"
@@ -15,6 +24,75 @@ import { useNavigate } from "react-router-dom"
 import { Button, Dropdown } from "talisman-ui"
 
 import { DashboardLayout } from "../../layout/DashboardLayout"
+
+const SetVerifierCertificateContentInner = () => {
+  const { t } = useTranslation("admin")
+  const navigate = useNavigate()
+
+  const [mnemonicId, setMnemonicId] = useState<string | null>(null)
+  const { generateMnemonic } = useMnemonicCreateModal()
+
+  const handleCancelClick = useCallback(() => {
+    navigate("/settings/networks-tokens")
+  }, [navigate])
+
+  const handleContinueClick = useCallback(async () => {
+    try {
+      if (!mnemonicId) {
+        const newMnemonic = await generateMnemonic()
+        if (!newMnemonic) return
+        const { mnemonic, confirmed } = newMnemonic
+        await api.setVerifierCertMnemonic("new", { mnemonic, confirmed })
+      } else {
+        await api.setVerifierCertMnemonic("existing", { mnemonicId })
+      }
+    } catch (err) {
+      log.error("Failed to set verifier certificate", { err })
+      notify(
+        {
+          type: "error",
+          title: t("Error"),
+          subtitle: t("Failed to set verifier certificate."),
+        },
+        { autoClose: false }
+      )
+    }
+  }, [generateMnemonic, mnemonicId, t])
+
+  return (
+    <div className="text-body-secondary my-12 flex w-full flex-col gap-8">
+      <h3 className="text-body text-md mt-4 font-bold">
+        {t("First, let's set your Verifier Certificate")}
+      </h3>
+      <p>
+        {t(
+          "Talisman's QR codes are generated from live network data and signed with the recovery phrase that you've chosen as Polkadot Vault Verifier Certificate."
+        )}
+      </p>
+      <p>{t("Select the recovery phrase to use a verifier certificate, or generate a new one.")}</p>
+      <AccountAddMnemonicDropdown
+        label={t("Verifier Certificate")}
+        value={mnemonicId}
+        onChange={setMnemonicId}
+      />
+      <div className="mt-8 flex justify-end gap-8">
+        <Button className="w-72" onClick={handleCancelClick}>
+          {t("Back")}
+        </Button>
+        <Button className="w-72" primary onClick={handleContinueClick}>
+          {t("Continue")}
+        </Button>
+      </div>
+    </div>
+  )
+}
+
+const SetVerifierCertificateContent = () => (
+  <MnemonicCreateModalProvider>
+    <SetVerifierCertificateContentInner />
+    <MnemonicCreateModal />
+  </MnemonicCreateModalProvider>
+)
 
 const renderOption = (chain: Chain) => {
   return (
@@ -46,7 +124,7 @@ const MnemonicButton: FC<{ label: string }> = ({ label }) => {
   )
 }
 
-export const QrMetadataPage = () => {
+const MetadataPortalContent = () => {
   const { t } = useTranslation("admin")
   const { chains } = useChains(true)
   const [chain, setChain] = useState<Chain | null>(null)
@@ -76,68 +154,77 @@ export const QrMetadataPage = () => {
   )
 
   return (
-    <DashboardLayout centered>
+    <div className="text-body-secondary my-12 flex w-full flex-col gap-8">
+      <Dropdown
+        propertyKey="id"
+        items={chainsWithRpcs}
+        value={chain}
+        placeholder={t("Select a network")}
+        renderItem={renderOption}
+        onChange={setChain}
+      />
+
+      {chain?.genesisHash && (
+        <>
+          <p className=" mt-4">
+            <Trans
+              t={t}
+              components={{
+                LineBreak: <br />,
+                Link: (
+                  // eslint-disable-next-line jsx-a11y/anchor-has-content
+                  <a
+                    href={POLKADOT_VAULT_DOCS_URL}
+                    target="_blank"
+                    className="hover:text-grey-200 text-grey-300"
+                  ></a>
+                ),
+              }}
+              defaults="Talisman's QR codes are generated from live network data and signed with the recovery phrase that you've chosen as Polkadot Vault Verifier Certificate. <Link>Learn more</Link"
+            />
+          </p>
+          <p className="flex items-center gap-3">
+            <span className="whitespace-nowrap">
+              {t("Your Verifier Certificate recovery phrase is")}
+            </span>
+            <MnemonicButton label={mnemonic?.name ?? "Unknown"} />
+          </p>
+          <FadeIn key={chain.genesisHash} className="flex flex-col items-center gap-16">
+            <div className="mt-12 flex gap-12">
+              <Button small primary={tab === "specs"} onClick={handleSetTab("specs")}>
+                {t("Network Specs")}
+              </Button>
+              <Button small primary={tab === "metadata"} onClick={handleSetTab("metadata")}>
+                {t("Network Metadata")}
+              </Button>
+            </div>
+            <div className="flex aspect-square h-[40rem] w-[40rem] justify-center rounded-xl bg-white p-12">
+              {tab === "specs" && (
+                <NetworkSpecsQrCode genesisHash={chain.genesisHash} qrCodeSource="talisman" />
+              )}
+              {tab === "metadata" && (
+                <MetadataQrCode genesisHash={chain.genesisHash} qrCodeSource="talisman" />
+              )}
+            </div>
+          </FadeIn>
+        </>
+      )}
+    </div>
+  )
+}
+
+export const QrMetadataPage = () => {
+  const { t } = useTranslation("admin")
+  const [certifierMnemonicId] = useAppState("vaultVerifierCertificateMnemonicId")
+  const mnemonic = useMnemonic(certifierMnemonicId)
+
+  return (
+    <DashboardLayout centered withBack backTo="/settings/networks-tokens">
       <HeaderBlock
         title={t("Polkadot Vault Metadata")}
         text={t("Register networks on your Polkadot Vault device, or update their metadata.")}
       />
-
-      <div className="text-body-secondary my-12 flex w-full flex-col gap-8">
-        <Dropdown
-          propertyKey="id"
-          items={chainsWithRpcs}
-          value={chain}
-          placeholder={t("Select a network")}
-          renderItem={renderOption}
-          onChange={setChain}
-        />
-
-        {chain?.genesisHash && (
-          <>
-            <p className=" mt-4">
-              <Trans
-                t={t}
-                components={{
-                  LineBreak: <br />,
-                  Link: (
-                    // eslint-disable-next-line jsx-a11y/anchor-has-content
-                    <a
-                      href={POLKADOT_VAULT_DOCS_URL}
-                      target="_blank"
-                      className="hover:text-grey-200 text-grey-300"
-                    ></a>
-                  ),
-                }}
-                defaults="Talisman's QR codes are generated from live network data and signed with the recovery phrase that you've chosen as Polkadot Vault Verifier Certificate. <Link>Learn more</Link"
-              />
-            </p>
-            <p className="flex items-center gap-3">
-              <span className="whitespace-nowrap">
-                {t("Your Verifier Certificate recovery phrase is")}
-              </span>
-              <MnemonicButton label={mnemonic?.name ?? "Unknown"} />
-            </p>
-            <FadeIn key={chain.genesisHash} className="flex flex-col items-center gap-16">
-              <div className="mt-12 flex gap-12">
-                <Button small primary={tab === "specs"} onClick={handleSetTab("specs")}>
-                  {t("Network Specs")}
-                </Button>
-                <Button small primary={tab === "metadata"} onClick={handleSetTab("metadata")}>
-                  {t("Network Metadata")}
-                </Button>
-              </div>
-              <div className="flex aspect-square h-[40rem] w-[40rem] justify-center rounded-xl bg-white p-12">
-                {tab === "specs" && (
-                  <NetworkSpecsQrCode genesisHash={chain.genesisHash} qrCodeSource="talisman" />
-                )}
-                {tab === "metadata" && (
-                  <MetadataQrCode genesisHash={chain.genesisHash} qrCodeSource="talisman" />
-                )}
-              </div>
-            </FadeIn>
-          </>
-        )}
-      </div>
+      {mnemonic ? <MetadataPortalContent /> : <SetVerifierCertificateContent />}
     </DashboardLayout>
   )
 }
