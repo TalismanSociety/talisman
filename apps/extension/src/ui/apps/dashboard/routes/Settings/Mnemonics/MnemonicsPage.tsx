@@ -17,8 +17,8 @@ import { Address } from "@ui/domains/Account/Address"
 import useAccounts from "@ui/hooks/useAccounts"
 import { Mnemonic, useMnemonics } from "@ui/hooks/useMnemonics"
 import { FC, useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react"
-import { useTranslation } from "react-i18next"
-import { useSearchParams } from "react-router-dom"
+import { Trans, useTranslation } from "react-i18next"
+import { useNavigate, useSearchParams } from "react-router-dom"
 import { ContextMenu, ContextMenuContent, ContextMenuItem, ContextMenuTrigger } from "talisman-ui"
 
 import { DashboardLayout } from "../../../layout/DashboardLayout"
@@ -43,6 +43,36 @@ import {
   MnemonicSetPvVerifierModalProvider,
   useMnemonicSetPvVerifierModal,
 } from "./MnemonicSetPvVerifierModal"
+
+const NoMnemonicMessage = () => {
+  const { t } = useTranslation("admin")
+  const navigate = useNavigate()
+
+  const handleAddAccountClick = useCallback(() => {
+    navigate("/accounts/add")
+  }, [navigate])
+
+  return (
+    <div className="text-body-secondary bg-grey-800 flex items-center gap-6 rounded p-6 text-base">
+      <InfoIcon className="shrink-0 text-lg" />
+      <div>
+        <Trans
+          t={t}
+          components={{
+            Link: (
+              <button
+                type="button"
+                onClick={handleAddAccountClick}
+                className="hover:text-grey-200 text-grey-300 inline"
+              ></button>
+            ),
+          }}
+          defaults="Your recovery phrases will be displayed here after adding accounts. <Link>Add an account</Link>"
+        />
+      </div>
+    </div>
+  )
+}
 
 const useMnemonicAccounts = (mnemonicId: string) => {
   const accounts = useAccounts("owned")
@@ -246,6 +276,8 @@ const MnemonicsList = () => {
       }
     }
   }, [searchParams, notBackedUp, openBackup, updateSearchParams])
+
+  if (!mnemonics.length) return <NoMnemonicMessage />
 
   return (
     <div className="flex flex-col gap-4">
