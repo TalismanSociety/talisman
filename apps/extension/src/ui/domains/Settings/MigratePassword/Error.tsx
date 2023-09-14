@@ -1,4 +1,3 @@
-import { passwordStore } from "@core/domains/app"
 import { useSetting } from "@ui/hooks/useSettings"
 import { Trans, useTranslation } from "react-i18next"
 import { ModalDialog } from "talisman-ui"
@@ -54,13 +53,25 @@ export const MigratePasswordError = () => {
         {t(
           "The update was not completed, but you may continue to use Talisman. You will be asked to update again next time the extension is restarted."
         )}
+        {useErrorTracking && (
+          <Trans t={t}>
+            If this problem continues, please contact our support team on{" "}
+            <a
+              className="text-white opacity-100"
+              href="https://discord.gg/2EmmfrTN"
+              target="_blank"
+              rel="noreferrer"
+            >
+              Discord
+            </a>
+            .
+          </Trans>
+        )}
       </p>
       <Button
         fullWidth
         onClick={async () => {
           onComplete()
-          // don't bug the user with repeated requests
-          await passwordStore.set({ ignorePasswordUpdate: true })
         }}
       >
         {t("Close")}

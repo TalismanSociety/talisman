@@ -101,16 +101,6 @@ export const includeAvatar = (iconType: IdenticonType) => (account: InjectedAcco
   avatar: getAccountAvatarDataUri(account.address, iconType),
 })
 
-export const getLegacyAuthenticationAccount = () => {
-  const allAccounts = keyring.getAccounts()
-
-  if (allAccounts.length === 0) return
-  const storedSeedAccount = allAccounts.find(({ meta }) => meta.origin === AccountType.Talisman)
-
-  if (storedSeedAccount) return storedSeedAccount
-  return
-}
-
 export const getNextDerivationPathForMnemonic = (
   mnemonic: string,
   type: KeypairType = "sr25519"
