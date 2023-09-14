@@ -15,7 +15,6 @@ export type UseAccountsFilter = "all" | "watched" | "owned" | "portfolio"
 // TODO migrate to recoil
 export const useAccounts = (filter: UseAccountsFilter = "all") => {
   const allAccounts = useMessageSubscription("accountsSubscribe", INITIAL_VALUE, subscribe)
-
   return useMemo(() => {
     switch (filter) {
       case "portfolio":

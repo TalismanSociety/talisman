@@ -85,7 +85,7 @@ export const MainSidebar = () => {
 
   const handleBackupClick = useCallback(() => {
     genericEvent("goto backup modal", { from: "sidebar" })
-    navigate("/settings/security-privacy-settings?showBackupModal")
+    navigate("/settings/mnemonics?showBackupModal")
   }, [genericEvent, navigate])
 
   return (

@@ -1,14 +1,14 @@
 import { DEBUG } from "@core/constants"
 import { db } from "@core/db"
 import { AccountsHandler } from "@core/domains/accounts"
-import { verifierCertificateMnemonicStore } from "@core/domains/accounts/store.verifierCertificateMnemonic"
-import { AccountType, RequestAddressFromMnemonic } from "@core/domains/accounts/types"
+import { AccountType } from "@core/domains/accounts/types"
 import AppHandler from "@core/domains/app/handler"
 import { featuresStore } from "@core/domains/app/store.features"
 import { BalancesHandler } from "@core/domains/balances"
 import { EncryptHandler } from "@core/domains/encrypt"
 import { EthHandler } from "@core/domains/ethereum"
 import { MetadataHandler } from "@core/domains/metadata"
+import MnemonicHandler from "@core/domains/mnemonics/handler"
 import { SigningHandler } from "@core/domains/signing"
 import { SitesAuthorisationHandler } from "@core/domains/sitesAuthorised"
 import { SubHandler } from "@core/domains/substrate/handler.extension"
@@ -31,7 +31,6 @@ import { fetchHasSpiritKey } from "@core/util/hasSpiritKey"
 import keyring from "@polkadot/ui-keyring"
 import { assert, u8aToHex } from "@polkadot/util"
 import * as Sentry from "@sentry/browser"
-import { addressFromMnemonic } from "@talisman/util/addressFromMnemonic"
 import { db as balancesDb } from "@talismn/balances"
 import { liveQuery } from "dexie"
 import Browser from "webextension-polyfill"
@@ -55,6 +54,7 @@ export default class Extension extends ExtensionHandler {
       encrypt: new EncryptHandler(stores),
       eth: new EthHandler(stores),
       metadata: new MetadataHandler(stores),
+      mnemonic: new MnemonicHandler(stores),
       signing: new SigningHandler(stores),
       sites: new SitesAuthorisationHandler(stores),
       tokenRates: new TokenRatesHandler(stores),
@@ -72,9 +72,6 @@ export default class Extension extends ExtensionHandler {
     Browser.storage.onChanged.addListener(() => {
       stores.password.resetAutoLockTimer(this.#autoLockTimeout)
     })
-
-    // Resets password update notification at extension restart if user has asked to ignore it previously
-    stores.password.set({ ignorePasswordUpdate: false })
 
     awaitKeyringLoaded().then(() => {
       // Watches keyring to do things that depend on type of accounts added
@@ -211,7 +208,7 @@ export default class Extension extends ExtensionHandler {
   private checkSpiritKeyOwnership() {
     // wait 10 seconds as this check is low priority
     // also need to be wait for keyring to be loaded and accounts populated
-    setTimeout(async () => {
+    awaitKeyringLoaded().then(async () => {
       try {
         const hasSpiritKey = await fetchHasSpiritKey()
         const currentSpiritKey = await this.stores.app.get("hasSpiritKey")
@@ -224,7 +221,7 @@ export default class Extension extends ExtensionHandler {
         // ignore, don't update app store nor posthog property
         log.error("Failed to check Spirit Key ownership", { err })
       }
-    }, 10_000)
+    })
 
     // in case reporting to posthog fails, set a timer so that every 5 min we will re-attempt
     setInterval(async () => {
@@ -244,6 +241,14 @@ export default class Extension extends ExtensionHandler {
       return
     }
     await this.stores.app.set({ needsSpiritKeyUpdate: false })
+  }
+
+  private async validateVaultVerifierCertificateMnemonic() {
+    const vaultMnemoicId = await this.stores.app.get("vaultVerifierCertificateMnemonicId")
+    assert(vaultMnemoicId, "No Polkadot Vault Verifier Certificate Mnemonic set")
+    const vaultCipher = await this.stores.mnemonics.get(vaultMnemoicId)
+    assert(vaultCipher, "No Polkadot Vault Verifier Certificate Mnemonic found")
+    return true
   }
 
   public async handle<TMessageType extends MessageTypes>(
@@ -279,40 +284,13 @@ export default class Extension extends ExtensionHandler {
     // --------------------------------------------------------------------
     switch (type) {
       // --------------------------------------------------------------------
-      // mnemonic handlers --------------------------------------------------
-      // --------------------------------------------------------------------
-      case "pri(mnemonic.unlock)": {
-        const transformedPw = await this.stores.password.transformPassword(
-          request as RequestType<"pri(mnemonic.unlock)">
-        )
-        assert(transformedPw, "Password error")
-
-        const seedResult = await this.stores.seedPhrase.getSeed(transformedPw)
-        assert(seedResult.val, "No mnemonic present")
-        assert(seedResult.ok, seedResult.val)
-        return seedResult.val
-      }
-
-      case "pri(mnemonic.confirm)":
-        return await this.stores.seedPhrase.setConfirmed(request as boolean)
-
-      case "pri(mnemonic.subscribe)":
-        return this.stores.seedPhrase.subscribe(id, port)
-
-      case "pri(mnemonic.address)": {
-        const { mnemonic, type } = request as RequestAddressFromMnemonic
-        return addressFromMnemonic(mnemonic, type)
-      }
-
-      // --------------------------------------------------------------------
       // chain handlers -----------------------------------------------------
       // --------------------------------------------------------------------
       case "pri(chains.subscribe)":
         return this.stores.chains.hydrateStore()
 
       case "pri(chains.generateQr.addNetworkSpecs)": {
-        const vaultCipher = await verifierCertificateMnemonicStore.get("cipher")
-        assert(vaultCipher, "No Polkadot Vault Verifier Certificate Mnemonic found")
+        await this.validateVaultVerifierCertificateMnemonic()
 
         const { genesisHash } = request as RequestType<"pri(chains.generateQr.addNetworkSpecs)">
         const data = await generateQrAddNetworkSpecs(genesisHash)
@@ -321,8 +299,7 @@ export default class Extension extends ExtensionHandler {
       }
 
       case "pri(chains.generateQr.updateNetworkMetadata)": {
-        const vaultCipher = await verifierCertificateMnemonicStore.get("cipher")
-        assert(vaultCipher, "No Polkadot Vault Verifier Certificate Mnemonic found")
+        await this.validateVaultVerifierCertificateMnemonic()
 
         const { genesisHash, specVersion } =
           request as RequestType<"pri(chains.generateQr.updateNetworkMetadata)">

@@ -1,11 +1,6 @@
 import { AccountsCatalogStore } from "@core/domains/accounts/store.catalog"
-import {
-  Account,
-  AccountJsonAny,
-  AccountType,
-  IdenticonType,
-  storedSeedAccountTypes,
-} from "@core/domains/accounts/types"
+import { Account, AccountJsonAny, AccountType, IdenticonType } from "@core/domains/accounts/types"
+import { log } from "@core/log"
 import type { Address } from "@core/types/base"
 import { getAccountAvatarDataUri } from "@core/util/getAccountAvatarDataUri"
 import { canDerive } from "@polkadot/extension-base/utils"
@@ -13,87 +8,46 @@ import type { InjectedAccount } from "@polkadot/extension-inject/types"
 import keyring from "@polkadot/ui-keyring"
 import type { SingleAddress, SubjectInfo } from "@polkadot/ui-keyring/observable/types"
 import { hexToU8a, isHex } from "@polkadot/util"
+import { KeypairType } from "@polkadot/util-crypto/types"
+import { captureException } from "@sentry/browser"
+import { addressFromSuri } from "@talisman/util/addressFromSuri"
 import { decodeAnyAddress, encodeAnyAddress } from "@talismn/util"
+import { Err, Ok, Result } from "ts-results"
 import Browser from "webextension-polyfill"
 
-import seedPhraseStore from "./store"
-import { verifierCertificateMnemonicStore } from "./store.verifierCertificateMnemonic"
+import { getEthDerivationPath } from "../ethereum/helpers"
 
-const sortAccountsByWhenCreated = (accounts: AccountJsonAny[]) => {
-  return accounts.sort((acc1, acc2) => {
-    const acc1Created = acc1.whenCreated
-    const acc2Created = acc2.whenCreated
+const sortAccountsByWhenCreated = (acc1: AccountJsonAny, acc2: AccountJsonAny) => {
+  const acc1Created = acc1.whenCreated
+  const acc2Created = acc2.whenCreated
 
-    if (!acc1Created || !acc2Created) {
-      return 0
-    }
-
-    if (acc1Created > acc2Created) {
-      return 1
-    }
-
-    if (acc1Created < acc2Created) {
-      return -1
-    }
-
+  if (!acc1Created || !acc2Created) {
     return 0
-  })
-}
+  }
 
-const legacySortAccounts = (accounts: AccountJsonAny[]) => {
-  // should be one 'Talisman' account with a stored seed
-  const root = accounts.find(({ origin }) => origin && storedSeedAccountTypes.includes(origin))
+  if (acc1Created > acc2Created) {
+    return 1
+  }
 
-  // can be multiple derived accounts
-  // should order these by created date? probably
-  const derived = accounts.filter(({ origin }) => origin === AccountType.Derived)
-  const derivedSorted = sortAccountsByWhenCreated(derived)
+  if (acc1Created < acc2Created) {
+    return -1
+  }
 
-  // can be multiple imported accounts - both JSON or SEED imports
-  // as well as QR (parity signer) and HARDWARE (ledger) accounts
-  // should order these by created date? probably
-  const imported = accounts.filter(({ origin }) =>
-    ["SEED", "JSON", "QR", "HARDWARE", "DCENT"].includes(origin as string)
-  )
-  const importedSorted = sortAccountsByWhenCreated(imported)
-
-  const watchedPortfolio = accounts.filter(
-    ({ origin, isPortfolio }) => origin === AccountType.Watched && isPortfolio
-  )
-  const watchedPortfolioSorted = sortAccountsByWhenCreated(watchedPortfolio)
-
-  const watchedFollowed = accounts.filter(
-    ({ origin, isPortfolio }) => origin === AccountType.Watched && !isPortfolio
-  )
-  const watchedFollowedSorted = sortAccountsByWhenCreated(watchedFollowed)
-
-  return [
-    ...(root ? [root] : []),
-    ...derivedSorted,
-    ...importedSorted,
-    ...watchedPortfolioSorted,
-    ...watchedFollowedSorted,
-  ]
+  return 0
 }
 
 export const sortAccounts =
   (accountsCatalogStore: AccountsCatalogStore) =>
   async (keyringAccounts: SubjectInfo): Promise<AccountJsonAny[]> => {
-    const unsortedAccounts = Object.values(keyringAccounts).map(
-      ({ json: { address, meta }, type }): AccountJsonAny => ({
-        address,
-        ...meta,
-        type,
-      })
-    )
-
-    // default to legacy sort method when adding new accounts to the catalog
-    // this will mean that for existing users, their accounts list will maintain
-    // its current sort order - despite being migrated to the new catalog store
-    //
-    // for new users, the default catalog order will be the order in which they add
-    // each new account
-    const accounts = legacySortAccounts(unsortedAccounts)
+    const accounts = Object.values(keyringAccounts)
+      .map(
+        ({ json: { address, meta }, type }): AccountJsonAny => ({
+          address,
+          ...meta,
+          type,
+        })
+      )
+      .sort(sortAccountsByWhenCreated)
 
     // add any newly created accounts to the catalog
     // each new account will be placed at the end of the list
@@ -147,17 +101,39 @@ export const includeAvatar = (iconType: IdenticonType) => (account: InjectedAcco
   avatar: getAccountAvatarDataUri(account.address, iconType),
 })
 
-export const getPrimaryAccount = (storedSeedOnly = false) => {
+export const getNextDerivationPathForMnemonic = (
+  mnemonic: string,
+  type: KeypairType = "sr25519"
+): Result<
+  string,
+  "Unable to get next derivation path" | "Reached maximum number of derived accounts"
+> => {
   const allAccounts = keyring.getAccounts()
+  try {
+    // for substrate check empty derivation path first
+    if (type !== "ethereum") {
+      const derivedAddress = encodeAnyAddress(addressFromSuri(mnemonic, type))
+      if (!allAccounts.some(({ address }) => encodeAnyAddress(address) === derivedAddress))
+        return Ok("")
+    }
 
-  if (allAccounts.length === 0) return
-  const storedSeedAccount = allAccounts.find(
-    ({ meta }) => meta && meta.origin && storedSeedAccountTypes.includes(meta.origin as AccountType)
-  )
+    const getDerivationPath = (accountIndex: number) =>
+      type === "ethereum" ? getEthDerivationPath(accountIndex) : `//${accountIndex}`
 
-  if (storedSeedAccount) return storedSeedAccount
-  if (storedSeedOnly) return
-  return allAccounts[0]
+    for (let accountIndex = 0; accountIndex <= 1000; accountIndex += 1) {
+      const derivationPath = getDerivationPath(accountIndex)
+      const derivedAddress = encodeAnyAddress(addressFromSuri(`${mnemonic}${derivationPath}`, type))
+
+      if (!allAccounts.some(({ address }) => encodeAnyAddress(address) === derivedAddress))
+        return Ok(derivationPath)
+    }
+
+    return Err("Reached maximum number of derived accounts")
+  } catch (error) {
+    log.error("Unable to get next derivation path", error)
+    captureException(error)
+    return Err("Unable to get next derivation path")
+  }
 }
 
 export const hasQrCodeAccounts = async () => {
@@ -168,21 +144,13 @@ export const hasQrCodeAccounts = async () => {
   )
 }
 
-export const copySeedStoreToVerifierCertificateStore = async () => {
-  const seedData = await seedPhraseStore.get()
-  const verifierCertMnemonicData = await verifierCertificateMnemonicStore.get()
-  if (verifierCertMnemonicData.cipher)
-    throw new Error("Verifier Certificate Store already has data")
-  await verifierCertificateMnemonicStore.set(seedData)
-}
-
 export const hasPrivateKey = (address: Address) => {
   const acc = keyring.getAccount(address)
 
   if (!acc) return false
   if (acc.meta?.isExternal) return false
   if (acc.meta?.isHardware) return false
-  if (["QR", "WATCHED"].includes(acc.meta?.origin as string)) return false
+  if ([AccountType.Qr, AccountType.Watched].includes(acc.meta?.origin as AccountType)) return false
   return true
 }
 
@@ -196,3 +164,8 @@ export const isValidAnyAddress = (address: string) => {
     return false
   }
 }
+
+export const formatSuri = (mnemonic: string, derivationPath: string) =>
+  derivationPath && !derivationPath.startsWith("/")
+    ? `${mnemonic}/${derivationPath}`
+    : `${mnemonic}${derivationPath}`

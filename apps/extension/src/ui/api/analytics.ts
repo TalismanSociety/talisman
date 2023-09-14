@@ -7,7 +7,7 @@ export type AnalyticsContainer = "Fullscreen" | "Popup"
 export type AnalyticsFeature =
   | "Onboarding"
   | "Account Funding"
-  | "Porfolio"
+  | "Portfolio"
   | "Navigation"
   | "Send Funds"
   | "Settings"

@@ -19,8 +19,6 @@ const generateCharacteristics = (
   parentSize: ParentSize,
   duration: number,
   initialized: boolean,
-  targetX: number,
-  targetY: number,
   forceColor?: string
 ): ArtifactCharacteristics => {
   const color = forceColor || Color.hsv(Math.random() * 360, 100, 100).hex()
@@ -30,11 +28,8 @@ const generateCharacteristics = (
   )
   const ry = Math.round(rx * (1 - config.ellipsisRatio * Math.random()))
 
-  const forceTarget = !!targetX && !!targetY
-  const cx = forceTarget ? targetX : Math.round(Math.random() * parentSize.width)
-  const cy = forceTarget
-    ? targetY
-    : Math.round(Math.random() * parentSize.height - Math.max(rx, ry) / 2)
+  const cx = Math.round(Math.random() * parentSize.width)
+  const cy = Math.round(Math.random() * parentSize.height - Math.max(rx, ry) / 2)
 
   const ellipsis: SVGProps<SVGEllipseElement> = {
     cx,
@@ -48,7 +43,7 @@ const generateCharacteristics = (
       transform: `rotate(${Math.round(Math.random() * 360)}deg)`,
       transitionDuration: `${duration}ms`,
       transitionDelay: "100ms", // prevents flickering on FF
-      transitionTimingFunction: !forceTarget && initialized ? "ease-in-out" : "ease-out",
+      transitionTimingFunction: initialized ? "ease-in-out" : "ease-out",
       opacity: Number(
         (config.opacityMin + Math.random() * (config.opacityMax - config.opacityMin)).toFixed(2)
       ),
@@ -65,8 +60,6 @@ const generateCharacteristics = (
 export const useCelestialArtifact = (
   config: MysticalPhysicsV3,
   parentSize: ParentSize,
-  x = 0,
-  y = 0,
   color?: string
 ) => {
   const refInitialized = useRef(false)
@@ -77,65 +70,26 @@ export const useCelestialArtifact = (
   )
 
   const [characteristics, setCharacteristics] = useState<ArtifactCharacteristics>(
-    generateCharacteristics(config, parentSize, duration, refInitialized.current, x, y, color)
+    generateCharacteristics(config, parentSize, duration, refInitialized.current, color)
   )
-
-  const refTarget = useRef<[number, number]>([x, y])
-  useEffect(() => {
-    refTarget.current = [x, y]
-  }, [x, y])
 
   useEffect(() => {
     const update = () => {
       setCharacteristics(
-        generateCharacteristics(
-          config,
-          parentSize,
-          duration,
-          refInitialized.current,
-          ...refTarget.current,
-          color
-        )
+        generateCharacteristics(config, parentSize, duration, refInitialized.current, color)
       )
       refInitialized.current = true
     }
 
     const interval = setInterval(update, duration)
 
-    // change after 100ms to ensure the first render has occured
-    setTimeout(() => update(), 100)
+    // change after 10ms to ensure the first render has occured
+    setTimeout(() => update(), 10)
 
     return () => {
       clearInterval(interval)
     }
   }, [config, duration, parentSize, color])
-
-  // acolyte must update it's position every 500ms
-  const isAcolyte = useMemo(() => !!x && !!y, [x, y])
-  useEffect(() => {
-    if (!isAcolyte) return
-
-    const update = () => {
-      const [cx, cy] = refTarget.current
-      setCharacteristics((prev) => ({
-        ...prev,
-        ellipsis: {
-          ...prev.ellipsis,
-          cx,
-          cy,
-        },
-      }))
-    }
-
-    const interval = setInterval(update, 500)
-
-    // change after 100ms to ensure the first render has occured
-    setTimeout(() => update(), 100)
-
-    return () => {
-      clearInterval(interval)
-    }
-  }, [isAcolyte])
 
   return characteristics
 }

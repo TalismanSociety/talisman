@@ -22,7 +22,6 @@ export type PasswordStoreData = {
   salt?: string
   isTrimmed: boolean
   isHashed: boolean
-  ignorePasswordUpdate: boolean
   secret?: string
   check?: string
 }
@@ -32,7 +31,6 @@ const initialData = {
   isTrimmed: true,
   isHashed: false,
   salt: undefined,
-  ignorePasswordUpdate: false,
 }
 
 export class PasswordStore extends StorageProvider<PasswordStoreData> {
@@ -53,7 +51,6 @@ export class PasswordStore extends StorageProvider<PasswordStoreData> {
       salt: undefined,
       secret: undefined,
       check: undefined,
-      ignorePasswordUpdate: false,
     })
   }
 

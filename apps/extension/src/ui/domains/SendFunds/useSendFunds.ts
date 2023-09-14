@@ -1,3 +1,4 @@
+import { AccountType } from "@core/domains/accounts/types"
 import { getEthTransferTransactionBase } from "@core/domains/ethereum/helpers"
 import { AssetTransferMethod } from "@core/domains/transfers/types"
 import { log } from "@core/log"
@@ -67,8 +68,9 @@ const useIsSendingEnough = (
         case "substrate-native":
         case "substrate-orml":
         case "substrate-assets":
-        case "substrate-equilibrium":
-        case "substrate-tokens": {
+        case "substrate-tokens":
+        case "substrate-psp22":
+        case "substrate-equilibrium": {
           const existentialDeposit = new BalanceFormatter(
             token.existentialDeposit ?? "0",
             token.decimals
@@ -373,7 +375,7 @@ const useSendFundsProvider = () => {
 
   const { isValid, error, errorDetails } = useMemo(() => {
     try {
-      if (fromAccount?.origin === "WATCHED")
+      if (fromAccount?.origin === AccountType.Watched)
         return {
           isValid: false,
           error: t("Cannot send from a watched account"),
@@ -497,7 +499,7 @@ const useSendFundsProvider = () => {
 
   const signMethod: SignMethod = useMemo(() => {
     if (!fromAccount || !token) return "unknown"
-    if (fromAccount?.origin === "QR") {
+    if (fromAccount?.origin === AccountType.Qr) {
       if (isSubToken(token)) return "qrSubstrate"
       else if (isEvmToken(token))
         return "unknown" // Parity signer / parity vault don't support ethereum accounts

@@ -1,4 +1,3 @@
-import { DEBUG } from "@core/constants"
 import i18next from "i18next"
 import LanguageDetector from "i18next-browser-languagedetector"
 import HttpBackend, { HttpBackendOptions } from "i18next-http-backend"
@@ -53,8 +52,7 @@ i18next
     returnNull: false,
     returnEmptyString: false,
 
-    // show debug info in debug builds
-    debug: DEBUG,
+    debug: false,
 
     // user lang auto-detection config
     detection: {

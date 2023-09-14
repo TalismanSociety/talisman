@@ -10,11 +10,7 @@ import { EnterPasswordForm } from "./EnterPassword"
 import { MigratePasswordError } from "./Error"
 import { NewPasswordForm } from "./NewPasswordForm"
 import { MigratePasswordSuccess } from "./Success"
-
-type MigratePasswordModalProps = {
-  open: boolean
-  onClose: () => void
-}
+import { useMigratePasswordModal } from "./useMigratePasswordModal"
 
 const MigratePasswordModalContent = () => {
   const { t } = useTranslation()
@@ -37,12 +33,16 @@ const MigratePasswordModalContent = () => {
   return null
 }
 
-export const MigratePasswordModal = ({ open, onClose }: MigratePasswordModalProps) => (
-  <Modal isOpen={open} onDismiss={onClose}>
-    <div className="w-[50.3rem]">
-      <MigratePasswordProvider onComplete={onClose}>
-        <MigratePasswordModalContent />
-      </MigratePasswordProvider>
-    </div>
-  </Modal>
-)
+export const MigratePasswordModal = () => {
+  const { isOpen, close } = useMigratePasswordModal()
+
+  return (
+    <Modal isOpen={isOpen} onDismiss={close}>
+      <div className="w-[50.3rem]">
+        <MigratePasswordProvider onComplete={close}>
+          <MigratePasswordModalContent />
+        </MigratePasswordProvider>
+      </div>
+    </Modal>
+  )
+}

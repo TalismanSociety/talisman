@@ -3,7 +3,7 @@ import { AddressesAndEvmNetwork } from "@core/domains/balances/types"
 import { getEthLedgerDerivationPath } from "@core/domains/ethereum/helpers"
 import { LedgerEthDerivationPathType } from "@core/domains/ethereum/types"
 import { convertAddress } from "@talisman/util/convertAddress"
-import { LedgerAccountDefEthereum } from "@ui/apps/dashboard/routes/AccountAdd/AccountAddLedgerWizard/context"
+import { LedgerAccountDefEthereum } from "@ui/domains/Account/AccountAdd/AccountAddLedger/context"
 import { useLedgerEthereum } from "@ui/hooks/ledger/useLedgerEthereum"
 import useAccounts from "@ui/hooks/useAccounts"
 import useBalancesByParams from "@ui/hooks/useBalancesByParams"
@@ -101,7 +101,7 @@ const useLedgerEthereumAccounts = (
           (wa) => convertAddress(wa.address, null) === convertAddress(acc.address, null)
         )
 
-        const accountBalances = balances.sorted.filter(
+        const accountBalances = balances.find(
           (b) => convertAddress(b.address, null) === convertAddress(acc.address, null)
         )
 
@@ -113,11 +113,11 @@ const useLedgerEthereumAccounts = (
           balances: accountBalances,
           isBalanceLoading:
             !addressesAndEvmNetworks ||
-            accountBalances.length < BALANCE_CHECK_EVM_NETWORK_IDS.length ||
-            accountBalances.some((b) => b.status === "cache"),
+            accountBalances.count < BALANCE_CHECK_EVM_NETWORK_IDS.length ||
+            accountBalances.each.some((b) => b.status === "cache"),
         }
       }),
-    [balances.sorted, derivedAccounts, selectedAccounts, addressesAndEvmNetworks, walletAccounts]
+    [balances, derivedAccounts, selectedAccounts, addressesAndEvmNetworks, walletAccounts]
   )
 
   useEffect(() => {

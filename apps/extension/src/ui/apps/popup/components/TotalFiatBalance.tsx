@@ -19,7 +19,6 @@ type Props = {
 
 export const TotalFiatBalance = ({ className, mouseOver }: Props) => {
   const { t } = useTranslation()
-
   const balances = useBalances("portfolio")
 
   const [hideBalances, setHideBalances] = useSetting("hideBalances")
@@ -61,7 +60,7 @@ export const TotalFiatBalance = ({ className, mouseOver }: Props) => {
 
 const ANALYTICS_PAGE: AnalyticsPage = {
   container: "Popup",
-  feature: "Porfolio",
+  feature: "Portfolio",
   featureVersion: 2,
   page: "Portfolio Home",
 }

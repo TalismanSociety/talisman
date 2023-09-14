@@ -1,5 +1,6 @@
 import { yupResolver } from "@hookform/resolvers/yup"
 import { AnalyticsPage, sendAnalyticsEvent } from "@ui/api/analytics"
+import { Address } from "@ui/domains/Account/Address"
 import { useAddressBook } from "@ui/hooks/useAddressBook"
 import { useAnalyticsPageView } from "@ui/hooks/useAnalyticsPageView"
 import { useCallback } from "react"
@@ -77,7 +78,11 @@ export const ContactEditModal = ({ contact, isOpen, close }: ContactModalProps) 
           </FormFieldContainer>
           <div>
             <div className="text-body-secondary block text-xs">{t("Address")}</div>
-            <div className="mt-3 block bg-none text-xs text-white">{contact?.address || ""}</div>
+            <Address
+              className="mt-3 block bg-none text-xs text-white"
+              address={contact?.address ?? ""}
+              noShorten
+            />
           </div>
           <div className="flex items-stretch gap-4 pt-4">
             <Button fullWidth onClick={close}>

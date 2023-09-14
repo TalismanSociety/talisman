@@ -23,6 +23,7 @@ export const isTransferableToken = (t: Token) => {
     case "substrate-orml":
     case "substrate-assets":
     case "substrate-tokens":
+    case "substrate-psp22":
     case "substrate-equilibrium":
     case "evm-erc20":
     case "evm-native":

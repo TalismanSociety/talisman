@@ -92,7 +92,7 @@ export const NavigationDrawer: FC = () => {
       name: "Goto",
       action: "Backup wallet button",
     })
-    api.dashboardOpen("/settings/security-privacy-settings?showBackupModal")
+    api.dashboardOpen("/settings/mnemonics")
     window.close()
   }, [])
 
@@ -107,7 +107,7 @@ export const NavigationDrawer: FC = () => {
     close()
   }, [close, setHideBalances])
 
-  const { isNotConfirmed } = useMnemonicBackup()
+  const { allBackedUp } = useMnemonicBackup()
 
   const { t } = useTranslation()
 
@@ -140,7 +140,7 @@ export const NavigationDrawer: FC = () => {
               {t("Settings")}
             </NavItem>
             <NavItem
-              icon={isNotConfirmed ? <DownloadAlertIcon /> : <DownloadIcon />}
+              icon={allBackedUp ? <DownloadIcon /> : <DownloadAlertIcon />}
               onClick={handleBackupClick}
             >
               {t("Backup Wallet")}

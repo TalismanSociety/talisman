@@ -1,46 +1,21 @@
-import { SimpleButton } from "@talisman/components/SimpleButton"
-import imgAnalytics from "@talisman/theme/images/analytics.png"
+import imgAnalyticsFlower from "@talisman/theme/images/onboard_analytics_flower.png"
+import imgAnalyticsSwitch from "@talisman/theme/images/onboard_analytics_switch.png"
 import { AnalyticsPage, sendAnalyticsEvent } from "@ui/api/analytics"
 import { useAnalyticsPageView } from "@ui/hooks/useAnalyticsPageView"
+import { useIsLoggedIn } from "@ui/hooks/useIsLoggedIn"
 import { useCallback } from "react"
 import { Trans, useTranslation } from "react-i18next"
-import { Navigate, useNavigate } from "react-router-dom"
-import styled from "styled-components"
+import { useNavigate } from "react-router-dom"
+import { Button } from "talisman-ui"
 
 import { OnboardDialog } from "../components/OnboardDialog"
 import { useOnboard } from "../context"
-import { Layout } from "../layout"
-
-const Container = styled(Layout)`
-  > section > .hflex > .picture {
-    width: auto;
-  }
-
-  > section > .hflex > .content {
-    width: 59.2rem;
-  }
-
-  a {
-    color: var(--color-foreground);
-  }
-`
-
-const SimpleButtonTransparent = styled(SimpleButton)`
-  background: transparent;
-`
-
-const Dialog = styled(OnboardDialog)`
-  width: 59.2rem;
-`
-
-const Picture = styled.img`
-  width: 53.7rem;
-`
+import { OnboardLayout } from "../OnboardLayout"
 
 const ANALYTICS_PAGE: AnalyticsPage = {
   container: "Fullscreen",
   feature: "Onboarding",
-  featureVersion: 4,
+  featureVersion: 5,
   page: "Onboarding - Step 3 - Manage your privacy",
 }
 
@@ -48,8 +23,9 @@ export const PrivacyPage = () => {
   const { t } = useTranslation("onboard")
   useAnalyticsPageView(ANALYTICS_PAGE)
 
-  const { updateData, data } = useOnboard()
+  const { updateData, setOnboarded } = useOnboard()
   const navigate = useNavigate()
+  const isLoggedIn = useIsLoggedIn()
 
   const handleClick = useCallback(
     (allowTracking: boolean) => () => {
@@ -59,9 +35,9 @@ export const PrivacyPage = () => {
         action: `Manage your privacy - ${allowTracking ? "I agree" : "No thanks"}`,
       })
       updateData({ allowTracking })
-      navigate("/onboard")
+      isLoggedIn === "TRUE" ? navigate("/accounts/add") : setOnboarded()
     },
-    [navigate, updateData]
+    [navigate, updateData, isLoggedIn, setOnboarded]
   )
 
   const handleLearnMoreClick = useCallback(() => {
@@ -73,44 +49,45 @@ export const PrivacyPage = () => {
     })
   }, [])
 
-  // if user refreshes the page, context data is lost
-  if (!data?.password) return <Navigate to="/" replace />
-
   return (
-    <Container
-      withBack
-      picture={<Picture src={imgAnalytics} alt="Analytics" />}
-      analytics={ANALYTICS_PAGE}
-    >
-      <Dialog title={t("Manage your privacy")}>
-        <p className="mt-16">
-          <Trans t={t}>
-            To help improve Talisman we’d like to collect anonymous usage information and send
-            anonymized error reports. We respect your data and never record sensitive or identifying
-            information. You can always adjust these settings, or opt out completely at any time.
-          </Trans>
-          <br />
-          <br />
-          <Trans t={t}>
-            <a
-              onClick={handleLearnMoreClick}
-              href="https://docs.talisman.xyz/talisman/legal-and-security/privacy-policy"
-              target="_blank"
-            >
-              Learn more
-            </a>{" "}
-            about what we track and how we use this data.
-          </Trans>
-        </p>
-        <div className="mt-24 flex w-full gap-8">
-          <SimpleButtonTransparent onClick={handleClick(false)}>
+    <OnboardLayout withBack analytics={ANALYTICS_PAGE}>
+      {/* eslint-disable-next-line jsx-a11y/alt-text */}
+      <img src={imgAnalyticsSwitch} className="absolute left-80 top-80" />
+      {/* eslint-disable-next-line jsx-a11y/alt-text */}
+      <img src={imgAnalyticsFlower} className="absolute bottom-32 right-10 " />
+      <OnboardDialog title={t("Manage your privacy")}>
+        <Trans t={t}>
+          <div className="flex flex-col gap-8">
+            <p>
+              To help improve Talisman we’d like to collect anonymous usage information and send
+              anonymized error reports.
+            </p>
+            <p>
+              We respect your data and never record sensitive or identifying information. You can
+              always adjust these settings, or opt out completely at any time.
+            </p>
+            <p>
+              <a
+                onClick={handleLearnMoreClick}
+                className="text-body"
+                href="https://docs.talisman.xyz/talisman/legal-and-security/privacy-policy"
+                target="_blank"
+              >
+                Learn more
+              </a>{" "}
+              about what we track and how we use this data.
+            </p>
+          </div>
+        </Trans>
+        <div className="mt-40 flex w-full gap-8">
+          <Button className="bg-transparent" fullWidth onClick={handleClick(false)}>
             {t("No thanks")}
-          </SimpleButtonTransparent>
-          <SimpleButton onClick={handleClick(true)} primary>
+          </Button>
+          <Button onClick={handleClick(true)} fullWidth primary>
             {t("I agree")}
-          </SimpleButton>
+          </Button>
         </div>
-      </Dialog>
-    </Container>
+      </OnboardDialog>
+    </OnboardLayout>
   )
 }

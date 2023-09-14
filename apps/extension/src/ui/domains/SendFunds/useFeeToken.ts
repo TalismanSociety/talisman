@@ -32,8 +32,9 @@ export const useFeeToken = (tokenId?: string | null) => {
       case "substrate-native":
       case "substrate-orml":
       case "substrate-assets":
-      case "substrate-equilibrium":
       case "substrate-tokens":
+      case "substrate-psp22":
+      case "substrate-equilibrium":
         return chain?.nativeToken?.id
     }
   }, [chain?.id, chain?.nativeToken?.id, evmNetwork?.nativeToken?.id, token])

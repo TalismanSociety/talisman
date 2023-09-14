@@ -1,7 +1,7 @@
 import { useRef } from "react"
 import { useSearchParams } from "react-router-dom"
-import { MysticalBackground } from "talisman-ui"
 
+import { OnboardBackground } from "./components/OnboardBackground"
 import Context from "./context"
 import OnboardingRoutes from "./routes"
 
@@ -13,7 +13,7 @@ const Onboarding = () => {
 
   return (
     <Context resetWallet={resetWalletRef.current}>
-      <MysticalBackground className="fixed left-0 top-0 h-[100vh] w-[100vw]" />
+      <OnboardBackground />
       <OnboardingRoutes />
     </Context>
   )

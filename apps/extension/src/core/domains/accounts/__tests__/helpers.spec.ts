@@ -25,7 +25,7 @@ describe("hasQrCodeAccounts", () => {
     const localData = {
       "account:0x123": {
         meta: {
-          origin: AccountType.Seed,
+          origin: AccountType.Talisman,
         },
       },
     }
@@ -106,7 +106,7 @@ const accounts = {
       isExternal: true,
       isHardware: true,
       name: "Ledger Polkadot 1",
-      origin: "HARDWARE",
+      origin: "LEDGER",
       whenCreated: 1687316601346,
     },
   },
@@ -122,7 +122,7 @@ const accounts = {
       hardwareType: "ledger",
       isHardware: true,
       name: "Ledger Ethereum 1",
-      origin: "HARDWARE",
+      origin: "LEDGER",
       path: "m/44'/60'/0'/0/0",
       whenCreated: 1687316570293,
     },

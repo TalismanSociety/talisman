@@ -1,5 +1,5 @@
 import { ArrowRightIcon } from "@talismn/icons"
-import { Mnemonic } from "@ui/domains/Account/Mnemonic"
+import { Mnemonic } from "@ui/domains/Mnemonic/Mnemonic"
 import { useState } from "react"
 import { useTranslation } from "react-i18next"
 import { ModalDialog } from "talisman-ui"
@@ -26,7 +26,7 @@ const ShowMnemonic = () => {
         )}
       </p>
 
-      <Mnemonic mnemonic={mnemonic} onMouseEnter={() => setHasHovered(true)} />
+      <Mnemonic mnemonic={mnemonic} onReveal={() => setHasHovered(true)} />
 
       <div className="mt-20 flex justify-end">
         <Button
