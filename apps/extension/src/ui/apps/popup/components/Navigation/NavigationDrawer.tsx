@@ -4,6 +4,7 @@ import { ScrollContainer } from "@talisman/components/ScrollContainer"
 import { FullColorSmallLogo } from "@talisman/theme/logos"
 import {
   AlertCircleIcon,
+  ExternalLinkIcon,
   LockIcon,
   PlusIcon,
   RepeatIcon,
@@ -141,12 +142,17 @@ export const NavigationDrawer: FC = () => {
               {t("Address Book")}
             </NavItem>
             <NavItem icon={<RepeatIcon />} onClick={handleTransportClick}>
-              {t("Transport")}
+              <span className="flex items-center gap-2">
+                {t("Transport")}
+                <ExternalLinkIcon />
+              </span>
             </NavItem>
             <NavItem icon={<ZapIcon />} onClick={handleStakingClick}>
-              {t("Staking")}
+              <span className="flex items-center gap-2">
+                {t("Staking")}
+                <ExternalLinkIcon />
+              </span>
             </NavItem>
-
             <NavItem icon={<SeedIcon />} onClick={handleBackupClick}>
               <span className="flex items-center">
                 {t("Backup Wallet")}
