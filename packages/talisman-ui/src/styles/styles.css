@@ -68,6 +68,11 @@
   #dcent-connect {
     display: none;
   }
+
+  /* Would be great to remove this at some point */
+  *:not(.allow-focus):focus {
+    outline: none;
+  }
 }
 
 /* The components layer is for class-based styles that you want to be able to override with utilities. */
@@ -143,5 +148,27 @@
   }
   .scrollable-800 {
     scrollbar-color: theme(colors.grey.800) transparent;
+  }
+
+  /*****************************************************************************
+   *                                Balances
+   ****************************************************************************/
+  .balance-revealable {
+    @apply rounded-xs relative cursor-pointer overflow-hidden text-transparent;
+  }
+
+  .balance-revealable.balance-reveal {
+    @apply overflow-visible rounded-none text-inherit;
+  }
+
+  .balance-revealable::after {
+    @apply rounded-xs absolute left-0 top-0 h-full w-full overflow-hidden opacity-[15%];
+    content: "";
+    /* ./blur.svg */
+    background-image: url("data:image/svg+xml;base64,IDxzdmcgaGVpZ2h0PSIxMDAiIHdpZHRoPSIxMDAiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CiAgPGRlZnM+CiAgICA8ZmlsdGVyIGlkPSJmMSIgeD0iMCIgeT0iMCI+CiAgICAgIDxmZUdhdXNzaWFuQmx1ciBpbj0iU291cmNlR3JhcGhpYyIgc3RkRGV2aWF0aW9uPSIxNSIgLz4KICAgIDwvZmlsdGVyPgogIDwvZGVmcz4KICA8cmVjdCB3aWR0aD0iMTAwIiBoZWlnaHQ9IjEwMCIgc3Ryb2tlLXdpZHRoPSIzIiAKICBmaWxsPSJ3aGl0ZSIgZmlsdGVyPSJ1cmwoI2YxKSIgLz4KPC9zdmc+IA==");
+  }
+
+  .balance-revealable.balance-reveal::after {
+    @apply hidden;
   }
 }

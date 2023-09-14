@@ -141,7 +141,7 @@ export const BottomNav = () => {
     open()
   }, [open])
 
-  const { isSnoozed, isNotConfirmed } = useMnemonicBackup()
+  const { isSnoozed, allBackedUp } = useMnemonicBackup()
 
   const { t } = useTranslation()
 
@@ -191,8 +191,8 @@ export const BottomNav = () => {
         <Tooltip placement="top">
           <TooltipTrigger asChild>
             <BottomNavButton onClick={handleMoreClick}>
-              {isNotConfirmed && <NavIconMoreAlert />}
-              {!isNotConfirmed && <NavIconMore />}
+              {!allBackedUp && <NavIconMoreAlert />}
+              {allBackedUp && <NavIconMore />}
             </BottomNavButton>
           </TooltipTrigger>
           <TooltipContent>{t("More Options")}</TooltipContent>

@@ -1,12 +1,18 @@
 import { Trees } from "@core/domains/accounts/helpers.catalog"
-import { AccountAddressType, RequestAccountCreateHardware } from "@core/domains/accounts/types"
-import type { AccountJson, RequestAccountsCatalogAction } from "@core/domains/accounts/types"
-import { MnemonicSubscriptionResult } from "@core/domains/accounts/types"
+import {
+  AccountAddressType,
+  RequestAccountCreateLedgerSubstrate,
+} from "@core/domains/accounts/types"
+import type {
+  AccountJson,
+  RequestAccountCreateOptions,
+  RequestAccountsCatalogAction,
+  RequestAddressLookup,
+} from "@core/domains/accounts/types"
 import {
   AnalyticsCaptureRequest,
   LoggedinType,
   ModalOpenRequest,
-  OnboardedType,
   SendFundsOpenRequest,
 } from "@core/domains/app/types"
 import {
@@ -30,6 +36,7 @@ import {
   WatchAssetRequestId,
 } from "@core/domains/ethereum/types"
 import { MetadataUpdateStatus, RequestMetadataId } from "@core/domains/metadata/types"
+import { RequestSetVerifierCertParams } from "@core/domains/mnemonics/types"
 import {
   SignerPayloadGenesisHash,
   SignerPayloadJSON,
@@ -64,15 +71,13 @@ import { ethers } from "ethers"
 export default interface MessageTypes {
   unsubscribe: (id: string) => Promise<null>
   // UNSORTED
-  onboard: (pass: string, passConfirm: string, mnemonic?: string) => Promise<OnboardedType>
+  onboardCreatePassword: (pass: string, passConfirm: string) => Promise<boolean>
   authenticate: (pass: string) => Promise<boolean>
   lock: () => Promise<boolean>
   changePassword: (currentPw: string, newPw: string, newPwConfirm: string) => Promise<boolean>
   checkPassword: (password: string) => Promise<boolean>
   authStatus: () => Promise<LoggedinType>
   authStatusSubscribe: (cb: (val: LoggedinType) => void) => UnsubscribeFn
-  onboardStatus: () => Promise<OnboardedType>
-  onboardStatusSubscribe: (cb: (val: OnboardedType) => void) => UnsubscribeFn
   dashboardOpen: (route: string) => Promise<boolean>
   onboardOpen: () => Promise<boolean>
   popupOpen: () => Promise<boolean>
@@ -104,19 +109,23 @@ export default interface MessageTypes {
   subscribeRequests: (cb: (request: ValidRequests[]) => void) => UnsubscribeFn
 
   // mnemonic message types -------------------------------------------------------
-  mnemonicUnlock: (pass: string) => Promise<string>
-  mnemonicConfirm: (confirmed: boolean) => Promise<boolean>
-  mnemonicSubscribe: (cb: (val: MnemonicSubscriptionResult) => void) => UnsubscribeFn
-  addressFromMnemonic: (mnemonic: string, type?: AccountAddressType) => Promise<string>
+  mnemonicUnlock: (mnemonicId: string, pass: string) => Promise<string>
+  mnemonicConfirm: (mnemonicId: string, confirmed: boolean) => Promise<boolean>
+  mnemonicRename: (mnemonicId: string, name: string) => Promise<boolean>
+  mnemonicDelete: (mnemonicId: string) => Promise<boolean>
+  validateMnemonic: (mnemonic: string) => Promise<boolean>
+  setVerifierCertMnemonic: (...params: RequestSetVerifierCertParams) => Promise<boolean>
 
   // account message types ---------------------------------------------------
-  accountCreate: (name: string, type: AccountAddressType) => Promise<string>
-  accountCreateFromSeed: (name: string, seed: string, type?: AccountAddressType) => Promise<string>
-  accountCreateFromJson: (unlockedPairs: KeyringPair$Json[]) => Promise<string[]>
-  accountCreateHardware: (
-    request: Omit<RequestAccountCreateHardware, "hardwareType">
+  accountCreate: (
+    name: string,
+    type: AccountAddressType,
+    options: RequestAccountCreateOptions
   ) => Promise<string>
-  accountCreateHardwareEthereum: (name: string, address: string, path: string) => Promise<string>
+  accountCreateFromSuri: (name: string, suri: string, type?: AccountAddressType) => Promise<string>
+  accountCreateFromJson: (unlockedPairs: KeyringPair$Json[]) => Promise<string[]>
+  accountCreateLedger: (request: RequestAccountCreateLedgerSubstrate) => Promise<string>
+  accountCreateLedgerEthereum: (name: string, address: string, path: string) => Promise<string>
   accountCreateDcent: (
     name: string,
     address: string,
@@ -140,8 +149,9 @@ export default interface MessageTypes {
   ) => Promise<{ exportedJson: KeyringPair$Json }>
   accountExportPrivateKey: (address: string, password: string) => Promise<string>
   accountRename: (address: string, name: string) => Promise<boolean>
-  accountValidateMnemonic: (mnemonic: string) => Promise<boolean>
-  setVerifierCertMnemonic: (mnemonic: string) => Promise<boolean>
+  validateDerivationPath: (derivationPath: string, type: AccountAddressType) => Promise<boolean>
+  addressLookup: (lookup: RequestAddressLookup) => Promise<string>
+  getNextDerivationPath: (mnemonicId: string, type: AccountAddressType) => Promise<string>
 
   // balance message types ---------------------------------------------------
   getBalance: ({

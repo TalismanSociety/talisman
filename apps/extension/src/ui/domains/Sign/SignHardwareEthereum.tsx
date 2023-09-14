@@ -1,4 +1,4 @@
-import { AccountJsonAny } from "@core/domains/accounts/types"
+import { AccountJsonAny, AccountType } from "@core/domains/accounts/types"
 import { EthSignMessageMethod } from "@core/domains/signing/types"
 import { HexString } from "@polkadot/util/types"
 import { FC, Suspense, lazy } from "react"
@@ -23,9 +23,9 @@ const getSignHardwareComponent = (account: AccountJsonAny | null) => {
   if (!account) return null
 
   switch (account?.origin) {
-    case "DCENT":
+    case AccountType.Dcent:
       return SignDcentEthereum
-    case "HARDWARE":
+    case AccountType.Ledger:
       return SignLedgerEthereum
     default:
       throw new Error(`Unknown sign hardware component for account origin ${account?.origin}`)

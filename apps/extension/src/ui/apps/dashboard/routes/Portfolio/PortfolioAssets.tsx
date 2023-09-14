@@ -1,22 +1,22 @@
 import { Balances } from "@core/domains/balances/types"
 import { DashboardAssetsTable } from "@ui/domains/Portfolio/AssetsTable"
 import { usePortfolio } from "@ui/domains/Portfolio/context"
-import { FundYourWallet } from "@ui/domains/Portfolio/FundYourWallet"
+import { FundYourWallet } from "@ui/domains/Portfolio/EmptyStates/FundYourWallet"
 import { NetworkPicker } from "@ui/domains/Portfolio/NetworkPicker"
 import { useSelectedAccount } from "@ui/domains/Portfolio/SelectedAccountContext"
 import { Statistics } from "@ui/domains/Portfolio/Statistics"
 import { useDisplayBalances } from "@ui/domains/Portfolio/useDisplayBalances"
 import { useAnalytics } from "@ui/hooks/useAnalytics"
 import { useAppState } from "@ui/hooks/useAppState"
+import { useHasAccounts } from "@ui/hooks/useHasAccounts"
 import { useEffect, useMemo } from "react"
 import { useTranslation } from "react-i18next"
 
-const PageContent = ({ balances }: { balances: Balances }) => {
-  const { t } = useTranslation()
+import { NoAccountsFullscreen } from "./NoAccounts"
 
-  const [hasFunds] = useAppState("hasFunds")
+const FullscreenPortfolioAssets = ({ balances }: { balances: Balances }) => {
+  const { t } = useTranslation()
   const balancesToDisplay = useDisplayBalances(balances)
-  const { account } = useSelectedAccount()
 
   const { portfolio, available, locked } = useMemo(() => {
     const { total, frozen, reserved, transferable } = balancesToDisplay.sum.fiat("usd")
@@ -27,31 +27,50 @@ const PageContent = ({ balances }: { balances: Balances }) => {
     }
   }, [balancesToDisplay.sum])
 
-  const displayWalletFunding = useMemo(() => !account && Boolean(!hasFunds), [account, hasFunds])
+  return (
+    <>
+      <div className="flex w-full gap-8">
+        <Statistics className="max-w-[40%]" title={t("Total Portfolio Value")} fiat={portfolio} />
+        <Statistics className="max-w-[40%]" title={t("Locked")} fiat={locked} locked />
+        <Statistics className="max-w-[40%]" title={t("Available")} fiat={available} />
+      </div>
+      <div className="mt-[3.8rem]">
+        <NetworkPicker />
+      </div>
+      <div className="mt-6">
+        <DashboardAssetsTable balances={balancesToDisplay} />
+      </div>
+    </>
+  )
+}
+
+const PageContent = ({ balances }: { balances: Balances }) => {
+  const [hasFunds] = useAppState("hasFunds")
+  const balancesToDisplay = useDisplayBalances(balances)
+  const { account } = useSelectedAccount()
+  const hasAccounts = useHasAccounts()
+
+  const displayWalletFunding = useMemo(
+    () => Boolean(hasAccounts && !account && !hasFunds),
+    [hasAccounts, account, hasFunds]
+  )
 
   return (
     <div className="flex w-full flex-col">
-      {displayWalletFunding ? (
+      {}
+      {hasAccounts === false && (
         <div className="mt-[3.8rem] flex grow items-center justify-center">
-          <FundYourWallet />
+          <NoAccountsFullscreen />
         </div>
-      ) : (
+      )}
+      {hasAccounts && (
         <>
-          <div className="flex w-full gap-8">
-            <Statistics
-              className="max-w-[40%]"
-              title={t("Total Portfolio Value")}
-              fiat={portfolio}
-            />
-            <Statistics className="max-w-[40%]" title={t("Locked")} fiat={locked} locked />
-            <Statistics className="max-w-[40%]" title={t("Available")} fiat={available} />
-          </div>
-          <div className="mt-[3.8rem]">
-            <NetworkPicker />
-          </div>
-          <div className="mt-6">
-            <DashboardAssetsTable balances={balancesToDisplay} />
-          </div>
+          {displayWalletFunding && (
+            <div className="mt-[3.8rem] flex grow items-center justify-center">
+              <FundYourWallet />
+            </div>
+          )}
+          {!displayWalletFunding && <FullscreenPortfolioAssets balances={balancesToDisplay} />}
         </>
       )}
     </div>

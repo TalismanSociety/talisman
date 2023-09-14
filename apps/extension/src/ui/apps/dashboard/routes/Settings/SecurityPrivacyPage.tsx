@@ -1,22 +1,17 @@
 import { HeaderBlock } from "@talisman/components/HeaderBlock"
 import { Setting } from "@talisman/components/Setting"
 import { Spacer } from "@talisman/components/Spacer"
-import { useOpenClose } from "@talisman/hooks/useOpenClose"
 import {
   ActivityIcon,
   AlertCircleIcon,
   ChevronRightIcon,
   ClockIcon,
-  KeyIcon,
   LockIcon,
 } from "@talismn/icons"
-import { MigratePasswordModal } from "@ui/domains/Settings/MigratePassword/MigratePasswordModal"
-import { MnemonicModal } from "@ui/domains/Settings/MnemonicModal"
 import useMnemonicBackup from "@ui/hooks/useMnemonicBackup"
 import { useSetting } from "@ui/hooks/useSettings"
-import { useCallback, useEffect } from "react"
 import { Trans, useTranslation } from "react-i18next"
-import { useNavigate, useSearchParams } from "react-router-dom"
+import { useNavigate } from "react-router-dom"
 import { CtaButton, Toggle } from "talisman-ui"
 
 import { DashboardLayout } from "../../layout/DashboardLayout"
@@ -27,14 +22,7 @@ export const SecurityPrivacyPage = () => {
   const [useErrorTracking, setUseErrorTracking] = useSetting("useErrorTracking")
   const navigate = useNavigate()
 
-  const { isNotConfirmed } = useMnemonicBackup()
-
-  const {
-    isOpen: isOpenBackupMnemonic,
-    open: openBackupMnemonic,
-    close: closeBackupMnemonic,
-  } = useShowBackupModal()
-  const { isOpen: isOpenMigratePw, close: closeMigratePw } = useShowMigratePwModal()
+  const { allBackedUp } = useMnemonicBackup()
 
   return (
     <DashboardLayout centered>
@@ -45,23 +33,16 @@ export const SecurityPrivacyPage = () => {
       <Spacer large />
       <div className="flex flex-col gap-4">
         <CtaButton
-          iconLeft={KeyIcon}
-          iconRight={ChevronRightIcon}
-          title={t("Backup Wallet")}
-          subtitle={t("Backup your recovery phrase")}
-          onClick={openBackupMnemonic}
-        />
-        <CtaButton
           iconLeft={LockIcon}
           iconRight={ChevronRightIcon}
           title={t("Change password")}
           subtitle={
-            isNotConfirmed
-              ? t("Please back up your recovery phrase before you change your password.")
-              : t("Change your Talisman password")
+            allBackedUp
+              ? t("Change your Talisman password")
+              : t("Please back up your recovery phrase before you change your password.")
           }
           to={`/settings/change-password`}
-          disabled={isNotConfirmed}
+          disabled={!allBackedUp}
         />
         <CtaButton
           iconLeft={ClockIcon}
@@ -119,44 +100,6 @@ export const SecurityPrivacyPage = () => {
           </Setting>
         )}
       </div>
-      <MnemonicModal open={isOpenBackupMnemonic} onClose={closeBackupMnemonic} />
-      <MigratePasswordModal open={isOpenMigratePw} onClose={closeMigratePw} />
     </DashboardLayout>
   )
-}
-
-const useShowBackupModal = () => {
-  const { isOpen, open, close: closeModal } = useOpenClose()
-  const [searchParams, setSearchParams] = useSearchParams()
-
-  // auto open modal if requested in query string
-  useEffect(() => {
-    if (searchParams.get("showBackupModal") === null) return
-    open()
-  }, [open, searchParams])
-
-  // when closing modal, remove the query param so the warning modal displays again
-  const close = useCallback(() => {
-    closeModal()
-    setSearchParams((prev) => {
-      prev.delete("showBackupModal")
-      return prev
-    })
-  }, [closeModal, setSearchParams])
-
-  return { isOpen, open, close }
-}
-
-const useShowMigratePwModal = () => {
-  const { isOpen, open, close } = useOpenClose()
-  const [searchParams, setSearchParams] = useSearchParams()
-
-  // auto open modal if requested in query string
-  useEffect(() => {
-    if (searchParams.get("showMigratePasswordModal") === null) return
-    open()
-    setSearchParams({})
-  }, [open, searchParams, setSearchParams])
-
-  return { isOpen, open, close }
 }

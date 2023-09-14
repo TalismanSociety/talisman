@@ -15,7 +15,10 @@ const FormattedAddressTooltip: FC<{ address: string; genesisHash?: string | null
 }) => {
   const formattedAddress = useFormattedAddress(address, genesisHash)
 
-  return <TooltipContent>{formattedAddress}</TooltipContent>
+  // caller may have formatted the address for a specific chain (ex substrate sign request), use formatted address only for network specific accounts
+  const displayAddress = genesisHash ? formattedAddress : address
+
+  return <TooltipContent>{displayAddress}</TooltipContent>
 }
 
 export const FormattedAddress: FC<{

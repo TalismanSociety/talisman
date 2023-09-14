@@ -1,4 +1,4 @@
-import { Balance } from "@core/domains/balances/types"
+import { Balances } from "@core/domains/balances/types"
 import { AccountJson } from "@polkadot/extension-base/background/types"
 import { CheckCircleIcon } from "@talismn/icons"
 import { classNames } from "@talismn/util"
@@ -94,7 +94,7 @@ export type DerivedAccountBase = AccountJson & {
   name: string
   accountIndex: number
   address: string
-  balances: Balance[]
+  balances: Balances
   isBalanceLoading: boolean
   connected?: boolean
   selected?: boolean

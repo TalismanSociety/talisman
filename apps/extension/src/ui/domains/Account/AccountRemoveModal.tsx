@@ -3,20 +3,10 @@ import { useOpenClose } from "@talisman/hooks/useOpenClose"
 import { provideContext } from "@talisman/util/provideContext"
 import { api } from "@ui/api"
 import { useSelectedAccount } from "@ui/domains/Portfolio/SelectedAccountContext"
-import { useCallback, useEffect, useMemo, useState } from "react"
+import { useCallback, useEffect, useState } from "react"
 import { Trans, useTranslation } from "react-i18next"
 import { useNavigate } from "react-router-dom"
 import { Button, Modal, ModalDialog } from "talisman-ui"
-
-const REMOVABLE_ORIGINS: AccountType[] = [
-  AccountType.Derived,
-  AccountType.Seed,
-  AccountType.Watched,
-  AccountType.Json,
-  AccountType.Qr,
-  AccountType.Hardware,
-  AccountType.Dcent,
-]
 
 const useAccountRemoveModalProvider = () => {
   const [_account, setAccount] = useState<AccountJsonAny>()
@@ -38,18 +28,11 @@ const useAccountRemoveModalProvider = () => {
 
   const account = _account ?? selectedAccount
 
-  const canRemoveFunc = (account?: AccountJsonAny) =>
-    account?.origin && REMOVABLE_ORIGINS.includes(account?.origin)
-
-  const canRemove = useMemo(() => canRemoveFunc(account), [account])
-
   return {
     account,
     isOpen,
     open,
     close,
-    canRemoveFunc,
-    canRemove,
   }
 }
 

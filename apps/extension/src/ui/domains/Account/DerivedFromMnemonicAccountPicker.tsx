@@ -1,4 +1,5 @@
-import { AccountAddressType, RequestAccountCreateFromSeed } from "@core/domains/accounts/types"
+import { formatSuri } from "@core/domains/accounts/helpers"
+import { AccountAddressType, RequestAccountCreateFromSuri } from "@core/domains/accounts/types"
 import { AddressesAndEvmNetwork } from "@core/domains/balances/types"
 import { getEthDerivationPath } from "@core/domains/ethereum/helpers"
 import { AddressesByChain } from "@core/types/base"
@@ -29,7 +30,7 @@ const useDerivedAccounts = (
   name: string,
   mnemonic: string,
   type: AccountAddressType,
-  selectedAccounts: RequestAccountCreateFromSeed[],
+  selectedAccounts: RequestAccountCreateFromSuri[],
   pageIndex: number,
   itemsPerPage: number
 ) => {
@@ -49,14 +50,14 @@ const useDerivedAccounts = (
         // maps [0, 1, 2, ..., itemsPerPage - 1] dynamically
         Array.from(Array(itemsPerPage).keys()).map(async (i) => {
           const accountIndex = skip + i
-          const seed = mnemonic + getDerivationPath(type, accountIndex)
-          const rawAddress = await api.addressFromMnemonic(seed, type)
+          const suri = formatSuri(mnemonic, getDerivationPath(type, accountIndex))
+          const rawAddress = await api.addressLookup({ suri, type })
           const address = type === "ethereum" ? rawAddress : convertAddress(rawAddress, 0)
 
           return {
             accountIndex,
             name: `${name}${accountIndex === 0 ? "" : ` ${accountIndex}`}`,
-            seed,
+            suri,
             type,
             address,
           } as DerivedFromMnemonicAccount
@@ -141,7 +142,7 @@ const useDerivedAccounts = (
             acc.genesisHash === wa.genesisHash
         )
 
-        const accountBalances = balances.sorted.filter(
+        const accountBalances = balances.find(
           (b) => convertAddress(b.address, null) === convertAddress(acc.address, null)
         )
 
@@ -149,18 +150,18 @@ const useDerivedAccounts = (
           ...acc,
           name: existingAccount?.name ?? acc.name,
           connected: !!existingAccount,
-          selected: selectedAccounts.some((sa) => sa.seed === acc.seed),
+          selected: selectedAccounts.some((sa) => sa.suri === acc.suri),
           balances: accountBalances,
           isBalanceLoading:
             (!addressesByChain && !addressesAndEvmNetworks) ||
-            accountBalances.length < expectedBalancesCount ||
-            accountBalances.some((b) => b.status === "cache"),
+            accountBalances.count < expectedBalancesCount ||
+            accountBalances.each.some((b) => b.status === "cache"),
         }
       }),
     [
       addressesByChain,
       addressesAndEvmNetworks,
-      balances.sorted,
+      balances,
       derivedAccounts,
       expectedBalancesCount,
       selectedAccounts,
@@ -183,10 +184,10 @@ type DerivedAccountPickerProps = {
   name: string
   mnemonic: string
   type: AccountAddressType
-  onChange?: (accounts: RequestAccountCreateFromSeed[]) => void
+  onChange?: (accounts: RequestAccountCreateFromSuri[]) => void
 }
 
-type DerivedFromMnemonicAccount = DerivedAccountBase & RequestAccountCreateFromSeed
+type DerivedFromMnemonicAccount = DerivedAccountBase & RequestAccountCreateFromSuri
 
 export const DerivedFromMnemonicAccountPicker: FC<DerivedAccountPickerProps> = ({
   name,
@@ -196,7 +197,7 @@ export const DerivedFromMnemonicAccountPicker: FC<DerivedAccountPickerProps> = (
 }) => {
   const itemsPerPage = 5
   const [pageIndex, setPageIndex] = useState(0)
-  const [selectedAccounts, setSelectedAccounts] = useState<RequestAccountCreateFromSeed[]>([])
+  const [selectedAccounts, setSelectedAccounts] = useState<RequestAccountCreateFromSuri[]>([])
   const { accounts, error } = useDerivedAccounts(
     name,
     mnemonic,
@@ -207,13 +208,13 @@ export const DerivedFromMnemonicAccountPicker: FC<DerivedAccountPickerProps> = (
   )
 
   const handleToggleAccount = useCallback((acc: DerivedAccountBase) => {
-    const { name, seed, type } = acc as DerivedFromMnemonicAccount
+    const { name, suri, type } = acc as DerivedFromMnemonicAccount
     setSelectedAccounts((prev) =>
-      prev.some((pa) => pa.seed === seed)
-        ? prev.filter((pa) => pa.seed !== seed)
+      prev.some((pa) => pa.suri === suri)
+        ? prev.filter((pa) => pa.suri !== suri)
         : prev.concat({
             name,
-            seed,
+            suri,
             type,
           })
     )

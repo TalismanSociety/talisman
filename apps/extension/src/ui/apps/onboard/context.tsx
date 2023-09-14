@@ -1,10 +1,13 @@
 import { AccountAddressType } from "@core/domains/accounts/types"
+import { passwordStore } from "@core/domains/app"
 import { settingsStore } from "@core/domains/app/store.settings"
 import { provideContext } from "@talisman/util/provideContext"
 import { api } from "@ui/api"
+import { useAppState } from "@ui/hooks/useAppState"
 import { useIsOnboarded } from "@ui/hooks/useIsOnboarded"
 import { ReactNode, useEffect } from "react"
 import { useCallback, useState } from "react"
+import { useNavigate } from "react-router-dom"
 
 export type ImportMethodType = "mnemonic" | "private-key" | "ledger" | "qr" | "json"
 
@@ -22,33 +25,36 @@ const DEFAULT_DATA: OnboardingWizardData = {}
 const useAppOnboardProvider = ({ isResettingWallet = false }: { isResettingWallet?: boolean }) => {
   // data used for account creation
   const [data, setData] = useState<OnboardingWizardData>(DEFAULT_DATA)
+  const [stage, setStage] = useState<number>(0)
+  const [passwordExists, setPasswordExists] = useState(false)
+  const [, updateOnboarded] = useAppState("onboarded")
+  const navigate = useNavigate()
 
   const updateData = useCallback((fields: Partial<OnboardingWizardData>) => {
     setData((prev) => ({ ...prev, ...fields }))
   }, [])
 
-  const onboard = useCallback(async () => {
-    const { mnemonic, password, passwordConfirm, importAccountType, importMethodType } = data
-
+  const createPassword = useCallback(async (password: string, passwordConfirm: string) => {
     if (!password || !passwordConfirm) throw new Error("Password is not set")
 
-    if ((await api.onboard(password, passwordConfirm, mnemonic)) !== "TRUE")
-      throw new Error("Failed to onboard")
-
-    if (importMethodType === "json") location.href = "dashboard.html#/accounts/add/json"
-    else if (importMethodType === "ledger")
-      location.href = `dashboard.html#/accounts/add/ledger?type=${importAccountType}`
-    else if (importMethodType === "qr")
-      location.href = `dashboard.html#/accounts/add/qr?type=${importAccountType}`
-    else if (importMethodType === "private-key")
-      location.href = `dashboard.html#/accounts/add/secret?type=${importAccountType}`
-    else if (isResettingWallet) location.href = "dashboard.html#/portfolio"
-    else location.href = "dashboard.html#/portfolio?onboarded"
-  }, [data, isResettingWallet])
+    const result = await api.onboardCreatePassword(password, passwordConfirm)
+    if (!result) throw new Error("Failed to set password")
+    return result
+  }, [])
 
   const reset = useCallback(() => {
     setData(DEFAULT_DATA)
   }, [])
+
+  const setOnboarded = useCallback(() => {
+    updateOnboarded("TRUE")
+    navigate("/success")
+  }, [navigate, updateOnboarded])
+
+  const completeOnboarding = useCallback(
+    () => (location.href = "dashboard.html#/portfolio?onboarded"),
+    []
+  )
 
   // update
   useEffect(() => {
@@ -62,6 +68,13 @@ const useAppOnboardProvider = ({ isResettingWallet = false }: { isResettingWalle
       })
   }, [data.allowTracking])
 
+  // handle case where user has navigated back, and a password already exists in the store
+  useEffect(() => {
+    passwordStore.get("secret").then((pw) => {
+      setPasswordExists(!!pw)
+    })
+  }, [stage])
+
   useEffect(() => {
     return () => {
       setData(DEFAULT_DATA)
@@ -69,11 +82,16 @@ const useAppOnboardProvider = ({ isResettingWallet = false }: { isResettingWalle
   }, [])
 
   return {
-    onboard,
+    setOnboarded,
+    completeOnboarding,
+    createPassword,
+    passwordExists,
     reset,
     isResettingWallet,
     data,
     updateData,
+    stage,
+    setStage,
   }
 }
 
