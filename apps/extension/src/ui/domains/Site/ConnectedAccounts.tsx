@@ -1,217 +1,14 @@
 import { AccountJsonAny } from "@core/domains/accounts/types"
 import { AuthorizedSite } from "@core/domains/sitesAuthorised/types"
-import { Accordion, AccordionIcon } from "@talisman/components/Accordion"
-import { classNames } from "@talismn/util"
 import { api } from "@ui/api"
-import { AccountsStack } from "@ui/apps/dashboard/routes/Settings/Accounts/AccountIconsStack"
 import { useCurrentSite } from "@ui/apps/popup/context/CurrentSiteContext"
 import useAccounts from "@ui/hooks/useAccounts"
 import { useAuthorisedSites } from "@ui/hooks/useAuthorisedSites"
-import { useResolveEnsName } from "@ui/hooks/useResolveEnsName"
-import { FC, Fragment, ReactNode, useCallback, useMemo } from "react"
+import { FC, Fragment, useCallback, useMemo } from "react"
 import { useTranslation } from "react-i18next"
-import { Tooltip, TooltipContent, TooltipTrigger, useOpenClose } from "talisman-ui"
 
-import { AccountIcon } from "../Account/AccountIcon"
-import { AccountTypeIcon } from "../Account/AccountTypeIcon"
-import { Address } from "../Account/Address"
-import { FormattedAddress } from "../Account/FormattedAddress"
-import { ConnectedSiteIndicator } from "./ConnectedSiteIndicator"
-import { SiteConnectionStatus } from "./types"
-
-const ConnectionStatusContainer: FC<{
-  status: SiteConnectionStatus
-  className?: string
-  children: ReactNode
-}> = ({ status, className, children }) => {
-  const colors = useMemo(() => {
-    switch (status) {
-      case "connected":
-        return "bg-gradient-to-r from-green-500/50 to-grey-800"
-      case "disconnected":
-        return "bg-gradient-to-r from-brand-orange/50 to-grey-800"
-      case "disabled":
-        return "bg-gradient-to-r from-grey-500/50 to-grey-800"
-    }
-  }, [status])
-
-  return (
-    <div className={classNames("rounded-sm p-0.5", colors)}>
-      <div className={classNames("overflow-hidden rounded-sm", className)}>{children}</div>
-    </div>
-  )
-}
-
-const AccountsExpandedContainer: FC<{
-  label: string
-  connectedAddresses: string[]
-  children: ReactNode
-}> = ({ label, connectedAddresses, children }) => {
-  const { t } = useTranslation()
-  const accounts = useAccounts()
-
-  const connectedAccounts = useMemo(() => {
-    return accounts.filter((account) => connectedAddresses.includes(account.address))
-  }, [accounts, connectedAddresses])
-
-  return (
-    <ConnectionStatusContainer
-      status={connectedAccounts.length ? "connected" : "disconnected"}
-      className="bg-black"
-    >
-      <div className="bg-grey-900 text-body-secondary hover:text-body  flex h-24 w-full items-center gap-6 px-6 text-left">
-        <div className="flex w-12 shrink-0 justify-center">
-          <ConnectedSiteIndicator
-            status={connectedAccounts.length ? "connected" : "disconnected"}
-          />
-        </div>
-        <div className="text-body grow ">{label}</div>
-        {connectedAccounts.length > 1 && (
-          <div className="flex items-center gap-2">
-            <AccountsStack accounts={connectedAccounts} />
-            <div className="text-body text-xs">
-              {t("{{count}} connected", { count: connectedAccounts.length })}
-            </div>
-          </div>
-        )}
-        {connectedAccounts.length === 1 && (
-          <FormattedAddress
-            className="text-body text-xs"
-            address={connectedAccounts[0].address}
-            noTooltip
-          />
-        )}
-        {!connectedAccounts.length && (
-          <div className="text-body-disabled text-xs">{t("Not connected")}</div>
-        )}
-      </div>
-      <div>{children}</div>
-    </ConnectionStatusContainer>
-  )
-}
-
-const AccountsAccordionContainer: FC<{
-  label: string
-  connectedAddresses: string[]
-  children: ReactNode
-}> = ({ label, connectedAddresses, children }) => {
-  const { t } = useTranslation()
-  const { isOpen, toggle } = useOpenClose()
-  const accounts = useAccounts()
-
-  const connectedAccounts = useMemo(() => {
-    return accounts.filter((account) => connectedAddresses.includes(account.address))
-  }, [accounts, connectedAddresses])
-
-  return (
-    <ConnectionStatusContainer
-      status={connectedAccounts.length ? "connected" : "disconnected"}
-      className="bg-black"
-    >
-      <button
-        type="button"
-        onClick={toggle}
-        className="bg-grey-900 hover:bg-grey-800 text-body-secondary hover:text-body  flex h-24 w-full items-center gap-6 px-6 text-left"
-      >
-        <div className="flex w-12 shrink-0 justify-center">
-          <ConnectedSiteIndicator
-            status={connectedAccounts.length ? "connected" : "disconnected"}
-          />
-        </div>
-        <div className="text-body grow ">{label}</div>
-        {connectedAccounts.length > 1 && (
-          <div className="flex items-center gap-2">
-            <AccountsStack accounts={connectedAccounts} />
-            <div className="text-body text-xs">
-              {t("{{count}} connected", { count: connectedAccounts.length })}
-            </div>
-          </div>
-        )}
-        {connectedAccounts.length === 1 && (
-          <FormattedAddress
-            className="text-body text-xs"
-            address={connectedAccounts[0].address}
-            noTooltip
-          />
-        )}
-        {!connectedAccounts.length && (
-          <div className="text-body-disabled text-xs">{t("Not connected")}</div>
-        )}
-        <AccordionIcon isOpen={isOpen} />
-      </button>
-      <Accordion isOpen={isOpen}>{children}</Accordion>
-    </ConnectionStatusContainer>
-  )
-}
-
-const AccountsContainer: FC<{
-  label: string
-  connectedAddresses: string[]
-  isSingleProvider?: boolean
-  children: ReactNode
-}> = ({ label, connectedAddresses, children, isSingleProvider }) => {
-  const Container = isSingleProvider ? AccountsExpandedContainer : AccountsAccordionContainer
-
-  return (
-    <Container label={label} connectedAddresses={connectedAddresses}>
-      {children}
-    </Container>
-  )
-}
-
-const AccountButton: FC<{
-  account: AccountJsonAny
-  showAddress?: boolean
-  isConnected?: boolean
-  onClick?: () => void
-}> = ({ account, isConnected, onClick }) => {
-  useResolveEnsName()
-
-  return (
-    <button
-      type="button"
-      onClick={onClick}
-      className={classNames(
-        "hover:bg-field flex h-24 w-full shrink-0 items-center gap-6 px-6",
-        !isConnected && "text-body-secondary"
-      )}
-    >
-      <AccountIcon
-        className="shrink-0 text-lg"
-        address={account.address}
-        genesisHash={account?.genesisHash}
-      />
-      <div className="truncate text-left text-sm">
-        <Tooltip placement="bottom-start">
-          <TooltipTrigger asChild>
-            <span>
-              {account?.name ?? (
-                <Address address={account.address} startCharCount={8} endCharCount={8} noTooltip />
-              )}
-            </span>
-          </TooltipTrigger>
-          <TooltipContent>
-            <Address
-              address={account.address}
-              startCharCount={8}
-              endCharCount={8}
-              noTooltip
-              noShorten
-            />
-          </TooltipContent>
-        </Tooltip>
-      </div>
-      <AccountTypeIcon origin={account.origin} className="text-primary" />
-      <div className="grow"></div>
-      <div
-        className={classNames(
-          "mx-2 h-4 w-4 shrink-0 rounded-full",
-          isConnected ? "bg-primary" : "bg-grey-700"
-        )}
-      ></div>
-    </button>
-  )
-}
+import { ConnectAccountsContainer } from "./ConnectAccountsContainer"
+import { ConnectAccountToggleButtonRow } from "./ConnectAccountToggleButtonRow"
 
 const SubAccounts: FC<{ site: AuthorizedSite | null }> = ({ site }) => {
   const { t } = useTranslation()
@@ -268,9 +65,9 @@ const SubAccounts: FC<{ site: AuthorizedSite | null }> = ({ site }) => {
       {evmAccounts.map(([acc, isConnected], idx) => (
         <Fragment key={acc.address}>
           {!!idx && <AccountSeparator />}
-          <AccountButton
+          <ConnectAccountToggleButtonRow
             account={acc}
-            isConnected={isConnected}
+            checked={isConnected}
             onClick={handleAccountClick(acc.address)}
           />
         </Fragment>
@@ -308,10 +105,10 @@ const EthAccounts: FC<{ site: AuthorizedSite | null }> = ({ site }) => {
       {evmAccounts.map(([acc, isConnected], idx) => (
         <Fragment key={acc.address}>
           {!!idx && <AccountSeparator />}
-          <AccountButton
+          <ConnectAccountToggleButtonRow
             account={acc}
             showAddress
-            isConnected={isConnected}
+            checked={isConnected}
             onClick={handleAccountClick(acc.address)}
           />
         </Fragment>
@@ -337,22 +134,24 @@ export const ConnectedAccounts: FC = () => {
         <span className="text-body font-bold">{site?.id}</span>
       </div>
       {site?.ethAddresses && (
-        <AccountsContainer
+        <ConnectAccountsContainer
           label={t("Ethereum")}
+          status={site.ethAddresses.length ? "connected" : "disconnected"}
           connectedAddresses={site.ethAddresses}
           isSingleProvider={!site.addresses}
         >
           <EthAccounts site={site} />
-        </AccountsContainer>
+        </ConnectAccountsContainer>
       )}
       {site?.addresses && (
-        <AccountsContainer
+        <ConnectAccountsContainer
           label={t("Polkadot")}
+          status={site.addresses.length ? "connected" : "disconnected"}
           connectedAddresses={site.addresses}
           isSingleProvider={!site.ethAddresses}
         >
           <SubAccounts site={site} />
-        </AccountsContainer>
+        </ConnectAccountsContainer>
       )}
     </div>
   )
