@@ -15,6 +15,7 @@ import {
   PalletMV14,
   StorageEntryMV14,
   filterMetadataPalletsAndItems,
+  transformMetadataV14,
 } from "@talismn/scale"
 import * as $ from "@talismn/subshape-fork"
 import { sleep } from "@talismn/util"
@@ -40,12 +41,8 @@ export class ChainsHandler extends ExtensionHandler {
       if (!rpcUrl) throw new Error("No valid RPC found")
 
       const ws = new WsProvider(rpcUrl.url, 0)
-      const [
-        // TODO: Store minMetadata with genesisHash|specName|specVersion index for scheduled background task
-        // genesisHash,
-        // { specName, specVersion },
-        metadataRpc,
-      ] = await (async () => {
+      // TODO: Store minMetadata with genesisHash|specName|specVersion index for scheduled background task
+      const metadataRpc = await (async () => {
         try {
           await ws.connect()
 
@@ -54,18 +51,20 @@ export class ChainsHandler extends ExtensionHandler {
           })
           await Promise.race([ws.isReady, isReadyTimeout])
 
-          return await Promise.all([
-            // TODO: Store minMetadata with genesisHash|specName|specVersion index for scheduled background task
-            // ws.send<string>("chain_getBlockHash", [0]),
-            // ws.send<{ specName: string; specVersion: number }>("state_getRuntimeVersion", []),
-            ws.send<string>("state_getMetadata", []),
-          ])
+          return await ws.send<string>("state_getMetadata", [])
         } finally {
           ws.disconnect()
         }
       })()
 
       const metadata = $metadataV14.decode($.decodeHex(metadataRpc))
+
+      const subshape = transformMetadataV14(metadata) // need full metadata
+      const existentialDeposit = (
+        subshape.pallets.Balances?.constants.ExistentialDeposit?.codec.decode?.(
+          subshape.pallets.Balances.constants.ExistentialDeposit.value
+        ) ?? 0n
+      ).toString()
 
       const isSystemPallet = (pallet: PalletMV14) => pallet.name === "System"
       const isAccountItem = (item: StorageEntryMV14) => item.name === "Account"
@@ -90,7 +89,7 @@ export class ChainsHandler extends ExtensionHandler {
             isTestnet: chain.isTestnet,
             symbol: chain.nativeTokenSymbol,
             decimals: chain.nativeTokenDecimals,
-            existentialDeposit: "0", // TODO: Extract this from the metadata (Balances pallet constants)
+            existentialDeposit,
             nominationPoolsPalletId: null, // TODO: Extract this from the metadata (NominationPools pallet constants)
             crowdloanPalletId: null, // TODO: Extract this from the metadata (Crowdloan pallet constants)
             metadata: minMetadata,

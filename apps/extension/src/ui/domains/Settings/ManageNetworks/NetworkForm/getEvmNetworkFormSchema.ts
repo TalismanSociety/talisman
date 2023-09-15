@@ -35,7 +35,7 @@ export const getEvmNetworkFormSchema = (evmNetworkId?: string) =>
                   message: i18next.t("Chain ID mismatch"),
                   path: `rpcs[${rpcs.indexOf(rpc)}].url`,
                 })
-            } catch (err) {
+            } catch (error) {
               return this.createError({
                 message: i18next.t("Failed to connect"),
                 path: `rpcs[${rpcs.indexOf(rpc)}].url`,

@@ -53,7 +53,7 @@ export const getSubNetworkFormSchema = (genesisHash?: string) =>
                   message: i18next.t("Genesis hash mismatch"),
                   path: `rpcs[${rpcs.indexOf(rpc)}].url`,
                 })
-            } catch (err) {
+            } catch (error) {
               return this.createError({
                 message: i18next.t("Failed to connect"),
                 path: `rpcs[${rpcs.indexOf(rpc)}].url`,
