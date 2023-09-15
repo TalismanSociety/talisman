@@ -32,7 +32,10 @@ export const EvmNetworkSelectPill = () => {
             onClick={open}
           >
             <NetworkLogo
-              className={classNames("text-[2.8rem]", network ? "opacity-100" : "opacity-0")} // flickering hack
+              className={classNames(
+                "text-[2.8rem] transition-opacity",
+                network ? "opacity-100" : "opacity-0"
+              )} // flickering hack
               ethChainId={network?.id}
             />
             <ChevronDownIcon className="shrink-0 text-base" />
