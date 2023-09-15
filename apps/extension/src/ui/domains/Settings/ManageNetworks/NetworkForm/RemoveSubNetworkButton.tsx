@@ -17,7 +17,7 @@ export const RemoveSubNetworkButton: FC<{ chain: Chain | CustomChain }> = ({ cha
     if (!chain) return
     try {
       await api.chainRemove(chain.id)
-      navigate("/networks?type=polkadot")
+      navigate("/networks/polkadot")
     } catch (err) {
       notify({
         title: t("Failed to remove"),

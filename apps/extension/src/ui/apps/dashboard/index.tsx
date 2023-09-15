@@ -125,9 +125,11 @@ const DashboardInner = () => {
           <Route path=":id" element={<TokenPage />} />
         </Route>
         <Route path="networks">
-          <Route path="" element={<NetworksPage />} />
-          <Route path="add" element={<NetworkPage />} />
-          <Route path=":id" element={<NetworkPage />} />
+          <Route path="" element={<Navigate to="/networks/ethereum" replace />} />
+          <Route path=":networksType" element={<NetworksPage />} />
+          <Route path=":networksType/add" element={<NetworkPage />} />
+          <Route path=":networksType/:id" element={<NetworkPage />} />
+          <Route path="*" element={<Navigate to="" replace />} />
         </Route>
         <Route path="*" element={<Navigate to="/portfolio" replace />} />
       </Routes>

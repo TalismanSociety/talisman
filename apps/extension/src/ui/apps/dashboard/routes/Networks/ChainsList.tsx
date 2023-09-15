@@ -72,7 +72,7 @@ const ChainsListItem = ({ chain }: { chain: Chain }) => {
         chainId: chain.id,
       },
     })
-    navigate(`./${chain.id}?type=polkadot`)
+    navigate(`./${chain.id}`)
   }, [navigate, chain.id])
 
   // there are lots of chains so we should only render visible rows to prevent performance issues

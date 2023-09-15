@@ -16,14 +16,14 @@ import { DashboardLayout } from "../../layout/DashboardLayout"
 import { ANALYTICS_PAGE } from "./analytics"
 import { ChainsList } from "./ChainsList"
 import { EvmNetworksList } from "./EvmNetworksList"
-import { useNetworkType } from "./useNetworkType"
+import { useNetworksType } from "./useNetworksType"
 
 export const NetworksPage = () => {
   const { t } = useTranslation("admin")
   useAnalyticsPageView(ANALYTICS_PAGE)
   const navigate = useNavigate()
 
-  const [networkType, setNetworkType] = useNetworkType()
+  const [networksType, setNetworksType] = useNetworksType()
 
   const handleAddNetworkClick = useCallback(() => {
     sendAnalyticsEvent({
@@ -31,8 +31,8 @@ export const NetworksPage = () => {
       name: "Goto",
       action: "Add network button",
     })
-    navigate(`./add?type=${networkType}`)
-  }, [navigate, networkType])
+    navigate("./add")
+  }, [navigate])
 
   const [search, setSearch] = useState("")
 
@@ -48,8 +48,8 @@ export const NetworksPage = () => {
       <div className="flex justify-end gap-4">
         <ProviderTypeSwitch
           className="text-xs [&>div]:h-full"
-          defaultProvider={networkType}
-          onChange={setNetworkType}
+          defaultProvider={networksType}
+          onChange={setNetworksType}
         />
 
         <div className="flex-grow" />
@@ -67,7 +67,7 @@ export const NetworksPage = () => {
       {/* The `FadeIn` with the `key` is a dirty workaround for https://github.com/streamich/react-use/issues/2376 */}
       {/* Without it, when the search results change order, the `useIntersection` inside them bugs out and they turn blank */}
       <FadeIn key={search || "DEFAULT"}>
-        {networkType === "polkadot" ? (
+        {networksType === "polkadot" ? (
           <ChainsList search={search} />
         ) : (
           <EvmNetworksList search={search} />

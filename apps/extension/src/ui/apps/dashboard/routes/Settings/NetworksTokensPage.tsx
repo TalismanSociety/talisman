@@ -22,7 +22,7 @@ export const NetworksTokensPage = () => {
           iconRight={ChevronRightIcon}
           title={t("Manage Networks")}
           subtitle={t("View, edit and delete custom networks")}
-          to={`/networks`}
+          to={`/networks/ethereum`}
         />
         <CtaButton
           iconLeft={ListIcon}

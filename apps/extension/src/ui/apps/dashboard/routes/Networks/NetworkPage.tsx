@@ -6,7 +6,7 @@ import { useTranslation } from "react-i18next"
 import { useNavigate, useParams } from "react-router-dom"
 
 import { DashboardLayout } from "../../layout/DashboardLayout"
-import { useNetworkType } from "./useNetworkType"
+import { useNetworksType } from "./useNetworksType"
 
 const ANALYTICS_PAGE: AnalyticsPage = {
   container: "Fullscreen",
@@ -20,20 +20,20 @@ export const NetworkPage = () => {
   const navigate = useNavigate()
   const { id } = useParams<"id">()
 
-  const [networkType] = useNetworkType()
+  const [networksType] = useNetworksType()
 
   useAnalyticsPageView(ANALYTICS_PAGE, {
     id,
     mode: id ? t("Edit") : t("Add"),
-    networkType,
+    networkType: networksType,
   })
 
-  const isChain = networkType === "polkadot"
-  const isEvmNetwork = networkType === "ethereum"
+  const isChain = networksType === "polkadot"
+  const isEvmNetwork = networksType === "ethereum"
 
   const handleSubmitted = useCallback(
-    () => navigate(`/networks?type=${networkType}`),
-    [navigate, networkType]
+    () => navigate(`/networks/${networksType}`),
+    [navigate, networksType]
   )
 
   return (

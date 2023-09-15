@@ -72,7 +72,7 @@ const EvmNetworksListItem = ({ network }: { network: EvmNetwork }) => {
         networkId: network.id.toString(),
       },
     })
-    navigate(`./${network.id}?type=ethereum`)
+    navigate(`./${network.id}`)
   }, [navigate, network.id])
 
   // there are lots of networks so we should only render visible rows to prevent performance issues
