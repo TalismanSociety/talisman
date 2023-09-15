@@ -20,6 +20,7 @@ interface TooltipOptions {
   placement?: Placement
   open?: boolean
   onOpenChange?: (open: boolean) => void
+  delay?: number
 }
 
 export function useTooltip({
@@ -27,6 +28,7 @@ export function useTooltip({
   placement = "bottom",
   open: controlledOpen,
   onOpenChange: setControlledOpen,
+  delay = 250,
 }: TooltipOptions = {}) {
   const [uncontrolledOpen, setUncontrolledOpen] = React.useState(initialOpen)
 
@@ -52,6 +54,10 @@ export function useTooltip({
   const hover = useHover(context, {
     move: false,
     enabled: controlledOpen == null,
+    delay: {
+      open: delay,
+      // delay on close has side-effects, don't use it
+    },
   })
   const focus = useFocus(context, {
     enabled: controlledOpen == null,
