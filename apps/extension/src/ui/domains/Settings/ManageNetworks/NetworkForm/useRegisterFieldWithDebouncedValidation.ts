@@ -19,21 +19,15 @@ export const useRegisterFieldWithDebouncedValidation = <TFieldValues extends Fie
 ) => {
   const useFormRegisterReturn: UseFormRegisterReturn = register(name, options)
   const { onChange } = useFormRegisterReturn
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  const debouncedValidate = useCallback(
-    debounce(() => {
-      trigger(name)
-    }, delay),
-    [name, trigger]
-  )
 
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   const handleChange = useCallback(
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    (e: any) => {
+    debounce((e: any) => {
       onChange(e)
-      debouncedValidate()
-    },
-    [debouncedValidate, onChange]
+      trigger(name)
+    }, delay),
+    [name, trigger, onChange, delay]
   )
 
   return {

@@ -85,7 +85,7 @@ const AccountInfoOverrides: { [key: ChainId]: string } = {
   "nftmart": RegularAccountInfoFallback,
 }
 
-const subNativeTokenId = (chainId: ChainId, tokenSymbol: string) =>
+export const subNativeTokenId = (chainId: ChainId, tokenSymbol: string) =>
   `${chainId}-substrate-native-${tokenSymbol}`.toLowerCase().replace(/ /g, "-")
 
 export type SubNativeToken = NewTokenType<

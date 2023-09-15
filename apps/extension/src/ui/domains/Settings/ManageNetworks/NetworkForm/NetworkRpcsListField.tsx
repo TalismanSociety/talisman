@@ -35,6 +35,7 @@ type SortableRpcItemProps = {
   canDrag?: boolean
   onDelete?: () => void
   index: number
+  placeholder: string
 }
 
 const SortableRpcField: FC<SortableRpcItemProps> = ({
@@ -46,6 +47,7 @@ const SortableRpcField: FC<SortableRpcItemProps> = ({
   canDelete,
   canDrag,
   onDelete,
+  placeholder,
 }) => {
   const { attributes, listeners, setNodeRef, transform, transition } = useSortable({ id: rpc.id })
 
@@ -67,7 +69,7 @@ const SortableRpcField: FC<SortableRpcItemProps> = ({
   return (
     <div ref={setNodeRef} style={style} className="w-full">
       <FormFieldInputText
-        placeholder="https://"
+        placeholder={placeholder}
         {...fieldRegistration}
         before={
           <button
@@ -98,7 +100,7 @@ const SortableRpcField: FC<SortableRpcItemProps> = ({
   )
 }
 
-export const NetworkRpcsListField = () => {
+export const NetworkRpcsListField = ({ placeholder = "https://" }: { placeholder?: string }) => {
   const { t } = useTranslation("admin")
   const {
     register,
@@ -168,6 +170,7 @@ export const NetworkRpcsListField = () => {
                 canDrag={arr.length > 1}
                 onDelete={handleRemove(index)}
                 errors={errors.rpcs}
+                placeholder={placeholder}
               />
             ))}
           </div>

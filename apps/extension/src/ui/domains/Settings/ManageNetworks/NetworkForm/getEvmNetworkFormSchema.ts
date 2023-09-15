@@ -1,21 +1,30 @@
 import i18next from "@core/i18nConfig"
 import * as yup from "yup"
 
-import { getRpcChainId } from "./helpers"
+import { getEvmRpcChainId } from "./helpers"
 
-export const getNetworkFormSchema = (evmNetworkId?: string) => {
-  return yup
+export const getEvmNetworkFormSchema = (evmNetworkId?: string) =>
+  yup
     .object({
       id: yup.string().required(""),
-      name: yup.string().required(i18next.t("required")),
+      isTestnet: yup.boolean().required(),
+      name: yup.string().required(i18next.t("Required")),
+      tokenSymbol: yup
+        .string()
+        .trim()
+        .required(i18next.t("Required"))
+        .min(2, i18next.t("2-6 characters"))
+        .max(6, i18next.t("2-6 characters")),
+      tokenDecimals: yup
+        .number()
+        .typeError(i18next.t("Must be a number"))
+        .required(i18next.t("Required"))
+        .integer(i18next.t("Must be a number")),
+      blockExplorerUrl: yup.string().url(i18next.t("Invalid URL")),
       rpcs: yup
         .array()
-        .of(
-          yup.object({
-            url: yup.string().trim().required(i18next.t("required")),
-          })
-        )
-        .required(i18next.t("required"))
+        .of(yup.object({ url: yup.string().trim().required(i18next.t("Required")) }))
+        .required(i18next.t("Required"))
         .min(1, i18next.t("RPC URL required"))
         .test("rpcs", i18next.t("Chain ID mismatch"), async function (rpcs) {
           if (!rpcs?.length) return true
@@ -23,7 +32,7 @@ export const getNetworkFormSchema = (evmNetworkId?: string) => {
           for (const rpc of rpcs) {
             try {
               if (!rpc.url) continue
-              const chainId = await getRpcChainId(rpc.url)
+              const chainId = await getEvmRpcChainId(rpc.url)
               if (!chainId)
                 return this.createError({
                   message: i18next.t("Failed to connect"),
@@ -35,7 +44,7 @@ export const getNetworkFormSchema = (evmNetworkId?: string) => {
                   message: i18next.t("Chain ID mismatch"),
                   path: `rpcs[${rpcs.indexOf(rpc)}].url`,
                 })
-            } catch (err) {
+            } catch (error) {
               return this.createError({
                 message: i18next.t("Failed to connect"),
                 path: `rpcs[${rpcs.indexOf(rpc)}].url`,
@@ -44,19 +53,5 @@ export const getNetworkFormSchema = (evmNetworkId?: string) => {
           }
           return true
         }),
-      tokenSymbol: yup
-        .string()
-        .trim()
-        .required(i18next.t("required"))
-        .min(2, i18next.t("2-6 characters"))
-        .max(6, i18next.t("2-6 characters")),
-      tokenDecimals: yup
-        .number()
-        .typeError(i18next.t("invalid number"))
-        .required(i18next.t("required"))
-        .integer(i18next.t("invalid number")),
-      blockExplorerUrl: yup.string().url(i18next.t("invalid url")),
-      isTestnet: yup.boolean().required(),
     })
     .required()
-}

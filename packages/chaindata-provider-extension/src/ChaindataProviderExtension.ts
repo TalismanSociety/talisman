@@ -16,7 +16,14 @@ import { PromiseExtended, Transaction, TransactionMode, liveQuery } from "dexie"
 import { Observable, from } from "rxjs"
 
 import { addCustomChainRpcs } from "./addCustomChainRpcs"
-import { fetchChains, fetchEvmNetwork, fetchEvmNetworks, fetchToken, fetchTokens } from "./graphql"
+import {
+  fetchChain,
+  fetchChains,
+  fetchEvmNetwork,
+  fetchEvmNetworks,
+  fetchToken,
+  fetchTokens,
+} from "./graphql"
 import { fetchInitChains, fetchInitEvmNetworks, fetchInitTokens } from "./init"
 import log from "./log"
 import { isITokenPartial, isToken, parseTokensResponse } from "./parseTokensResponse"
@@ -209,6 +216,33 @@ export class ChaindataProviderExtension implements ChaindataProvider {
     })
   }
 
+  async resetChain(chainId: ChainId) {
+    const builtInChain = await fetchChain(chainId)
+    if (!builtInChain) throw new Error("Cannot reset non-built-in chain")
+    if (!builtInChain.nativeToken?.id)
+      throw new Error("Failed to lookup native token (no token exists for chain)")
+    const builtInNativeToken = await fetchToken(builtInChain.nativeToken.id)
+    if (!isITokenPartial(builtInNativeToken)) throw new Error("Failed to lookup native token")
+    if (!isToken(builtInNativeToken))
+      throw new Error("Failed to lookup native token (isToken test failed)")
+
+    try {
+      return await this.#db.transaction("rw", this.#db.chains, this.#db.tokens, async () => {
+        // delete chain and its native token
+        const chainToDelete = await this.#db.chains.get(chainId)
+        if (chainToDelete?.nativeToken?.id)
+          await this.#db.tokens.delete(chainToDelete.nativeToken.id)
+        await this.#db.chains.delete(chainId)
+
+        // reprovision them from subsquid data
+        await this.#db.chains.put(builtInChain)
+        await this.#db.tokens.put(builtInNativeToken)
+      })
+    } catch (cause) {
+      throw new Error("Failed to reset chain", { cause })
+    }
+  }
+
   async addCustomEvmNetwork(customEvmNetwork: CustomEvmNetwork) {
     try {
       if (!("isCustom" in customEvmNetwork)) return
@@ -268,15 +302,15 @@ export class ChaindataProviderExtension implements ChaindataProvider {
 
     try {
       return await this.#db.transaction("rw", this.#db.evmNetworks, this.#db.tokens, async () => {
-        // delete network and it's native token
+        // delete network and its native token
         const networkToDelete = await this.#db.evmNetworks.get(evmNetworkId)
         if (networkToDelete?.nativeToken?.id)
           await this.#db.tokens.delete(networkToDelete.nativeToken.id)
         await this.#db.evmNetworks.delete(evmNetworkId)
 
         // reprovision them from subsquid data
-        await this.#db.tokens.put(builtInNativeToken)
         await this.#db.evmNetworks.put(builtInEvmNetwork)
+        await this.#db.tokens.put(builtInNativeToken)
       })
     } catch (cause) {
       throw new Error("Failed to reset evm network", { cause })
@@ -489,6 +523,11 @@ export class ChaindataProviderExtension implements ChaindataProvider {
 
       return false
     }
+  }
+
+  async getIsBuiltInChain(chainId: ChainId) {
+    const chain = await fetchChain(chainId)
+    return !!chain
   }
 
   async getIsBuiltInEvmNetwork(evmNetworkId: EvmNetworkId) {

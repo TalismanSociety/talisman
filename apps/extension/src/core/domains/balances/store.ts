@@ -9,6 +9,7 @@ import { chainConnector } from "@core/rpcs/chain-connector"
 import { chainConnectorEvm } from "@core/rpcs/chain-connector-evm"
 import { chaindataProvider } from "@core/rpcs/chaindata"
 import { Addresses, Port } from "@core/types/base"
+import { validateHexString } from "@core/util/validateHexString"
 import keyring from "@polkadot/ui-keyring"
 import { SingleAddress } from "@polkadot/ui-keyring/observable/types"
 import { assert } from "@polkadot/util"
@@ -297,12 +298,13 @@ export class BalanceStore {
 
         // delete balances for hardware accounts on chains other than the one they were created on
         // these aren't fetched anymore but were fetched prior to v1.14.0, so we need to clean them up
-        const chain =
-          (balance.chainId && this.#chains.find((b) => b.id === balance.chainId)) || null
+        const chainId = balance.chainId
+        const chain = (chainId && this.#chains.find((chain) => chain.id === chainId)) || undefined
+        const genesisHash = chain?.genesisHash ? validateHexString(chain.genesisHash) : undefined
         if (
-          chain?.genesisHash &&
+          genesisHash &&
           addresses[balance.address] && // first check if account has any genesisHashes
-          !addresses[balance.address]?.includes(chain.genesisHash) // then check if match
+          !addresses[balance.address]?.includes(genesisHash) // then check if match
         )
           return true
 
