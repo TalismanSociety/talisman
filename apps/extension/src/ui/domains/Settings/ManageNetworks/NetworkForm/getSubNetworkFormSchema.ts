@@ -9,18 +9,22 @@ export const getSubNetworkFormSchema = (genesisHash?: string) =>
       id: yup.string().required(""),
       isTestnet: yup.boolean().required(),
       genesisHash: yup.string().required(""),
-      name: yup.string().required(i18next.t("required")),
-      nativeTokenSymbol: yup.string().trim().required(),
-      nativeTokenDecimals: yup.number().integer().required(),
+      name: yup.string().required(i18next.t("Required")),
+      nativeTokenSymbol: yup.string().trim().required(i18next.t("Required")),
+      nativeTokenDecimals: yup
+        .number()
+        .typeError(i18next.t("Must be a number"))
+        .required(i18next.t("Required"))
+        .integer(i18next.t("Must be a number")),
       nativeTokenCoingeckoId: yup.string().trim(),
-      accountFormat: yup.string().trim().required(i18next.t("required")),
+      accountFormat: yup.string().trim().required(i18next.t("Required")),
       subscanUrl: yup
         .string()
-        .url(i18next.t("invalid url"))
+        .url(i18next.t("Invalid URL"))
         .optional()
         .test(
           "subscan",
-          i18next.t("invalid url"),
+          i18next.t("Invalid URL"),
           (url) =>
             url === undefined ||
             url.length < 1 ||
@@ -28,14 +32,10 @@ export const getSubNetworkFormSchema = (genesisHash?: string) =>
         ),
       rpcs: yup
         .array()
-        .of(
-          yup.object({
-            url: yup.string().trim().required(i18next.t("required")),
-          })
-        )
-        .required(i18next.t("required"))
+        .of(yup.object({ url: yup.string().trim().required(i18next.t("Required")) }))
+        .required(i18next.t("Required"))
         .min(1, i18next.t("RPC URL required"))
-        .test("rpcs", i18next.t("Chain ID mismatch"), async function (rpcs) {
+        .test("rpcs", i18next.t("Genesis hash mismatch"), async function (rpcs) {
           if (!rpcs?.length) return true
           let target = genesisHash
           for (const rpc of rpcs) {

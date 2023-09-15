@@ -7,15 +7,24 @@ export const getEvmNetworkFormSchema = (evmNetworkId?: string) =>
   yup
     .object({
       id: yup.string().required(""),
-      name: yup.string().required(i18next.t("required")),
+      isTestnet: yup.boolean().required(),
+      name: yup.string().required(i18next.t("Required")),
+      tokenSymbol: yup
+        .string()
+        .trim()
+        .required(i18next.t("Required"))
+        .min(2, i18next.t("2-6 characters"))
+        .max(6, i18next.t("2-6 characters")),
+      tokenDecimals: yup
+        .number()
+        .typeError(i18next.t("Must be a number"))
+        .required(i18next.t("Required"))
+        .integer(i18next.t("Must be a number")),
+      blockExplorerUrl: yup.string().url(i18next.t("Invalid URL")),
       rpcs: yup
         .array()
-        .of(
-          yup.object({
-            url: yup.string().trim().required(i18next.t("required")),
-          })
-        )
-        .required(i18next.t("required"))
+        .of(yup.object({ url: yup.string().trim().required(i18next.t("Required")) }))
+        .required(i18next.t("Required"))
         .min(1, i18next.t("RPC URL required"))
         .test("rpcs", i18next.t("Chain ID mismatch"), async function (rpcs) {
           if (!rpcs?.length) return true
@@ -44,18 +53,5 @@ export const getEvmNetworkFormSchema = (evmNetworkId?: string) =>
           }
           return true
         }),
-      tokenSymbol: yup
-        .string()
-        .trim()
-        .required(i18next.t("required"))
-        .min(2, i18next.t("2-6 characters"))
-        .max(6, i18next.t("2-6 characters")),
-      tokenDecimals: yup
-        .number()
-        .typeError(i18next.t("invalid number"))
-        .required(i18next.t("required"))
-        .integer(i18next.t("invalid number")),
-      blockExplorerUrl: yup.string().url(i18next.t("invalid url")),
-      isTestnet: yup.boolean().required(),
     })
     .required()
