@@ -35,7 +35,7 @@ export const NetworksTokensPage = () => {
           iconLeft={PolkadotVaultIcon}
           iconRight={ChevronRightIcon}
           title={t("Polkadot Vault Metadata")}
-          subtitle={t("Register networks on your Polkadot Vault device, or update their metadata.")}
+          subtitle={t("Register networks on your Polkadot Vault device, or update their metadata")}
           to={`/settings/qr-metadata`}
         />
       </div>
