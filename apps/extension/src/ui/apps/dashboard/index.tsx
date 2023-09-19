@@ -43,6 +43,7 @@ import { GeneralPage } from "./routes/Settings/GeneralPage"
 import { LanguagePage } from "./routes/Settings/LanguagePage"
 import { MnemonicsPage } from "./routes/Settings/Mnemonics/MnemonicsPage"
 import { NetworksTokensPage } from "./routes/Settings/NetworksTokensPage"
+import { QrMetadataPage } from "./routes/Settings/QrMetadataPage"
 import { SecurityPrivacyPage } from "./routes/Settings/SecurityPrivacyPage"
 import { AddCustomTokenPage } from "./routes/Tokens/AddCustomTokenPage"
 import { TokenPage } from "./routes/Tokens/TokenPage"
@@ -115,6 +116,7 @@ const DashboardInner = () => {
           <Route path="change-password" element={<ChangePasswordPage />} />
           <Route path="autolock" element={<AutoLockTimerPage />} />
           <Route path="networks-tokens" element={<NetworksTokensPage />} />
+          <Route path="qr-metadata" element={<QrMetadataPage />} />
           <Route path="about" element={<AboutPage />} />
           <Route path="analytics" element={<AnalyticsOptInPage />} />
           <Route path="*" element={<Navigate to="" replace />} />

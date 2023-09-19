@@ -1,6 +1,6 @@
 import { HeaderBlock } from "@talisman/components/HeaderBlock"
 import { Spacer } from "@talisman/components/Spacer"
-import { ChevronRightIcon, GlobeIcon, ListIcon } from "@talismn/icons"
+import { ChevronRightIcon, GlobeIcon, ListIcon, PolkadotVaultIcon } from "@talismn/icons"
 import { useTranslation } from "react-i18next"
 import { CtaButton } from "talisman-ui"
 
@@ -30,6 +30,13 @@ export const NetworksTokensPage = () => {
           title={t("Manage Ethereum Tokens")}
           subtitle={t("Add or delete custom ERC20 tokens")}
           to={`/tokens`}
+        />
+        <CtaButton
+          iconLeft={PolkadotVaultIcon}
+          iconRight={ChevronRightIcon}
+          title={t("Polkadot Vault Metadata")}
+          subtitle={t("Register networks on your Polkadot Vault device, or update their metadata")}
+          to={`/settings/qr-metadata`}
         />
       </div>
     </DashboardLayout>

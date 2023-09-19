@@ -131,7 +131,10 @@ const $updateNetworkMetadataPayload = $.object(
   $.field("genesis_hash", $.sizedUint8Array(32))
 )
 
-export const generateQrUpdateNetworkMetadata = async (genesisHash: string, specVersion: number) => {
+export const generateQrUpdateNetworkMetadata = async (
+  genesisHash: string,
+  specVersion?: number
+) => {
   const metadataDef = await getMetadataDef(genesisHash, specVersion)
   const metadataRpc = getMetadataRpcFromDef(metadataDef)
   assert(metadataRpc, "Failed to fetch metadata")

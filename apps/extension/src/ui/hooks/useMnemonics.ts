@@ -30,7 +30,7 @@ const mnemonicsState = atom<Mnemonic[]>({
 const mnemonicsQuery = selectorFamily({
   key: "mnemonicsQuery",
   get:
-    (id: string | undefined) =>
+    (id: string | null | undefined) =>
     ({ get }) =>
       get(mnemonicsState).find((m) => m.id === id),
 })
@@ -39,6 +39,6 @@ export const useMnemonics = () => {
   return useRecoilValue(mnemonicsState)
 }
 
-export const useMnemonic = (id: string | undefined) => {
+export const useMnemonic = (id: string | null | undefined) => {
   return useRecoilValue(mnemonicsQuery(id))
 }

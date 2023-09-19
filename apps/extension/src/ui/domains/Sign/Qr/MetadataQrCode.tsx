@@ -11,8 +11,8 @@ import { QrCodeSource, qrCodeLogoForSource } from "./QrCodeSourceSelector"
 
 type Props = {
   genesisHash: SignerPayloadGenesisHash
-  specVersion: string
   qrCodeSource: QrCodeSource
+  specVersion?: string
 }
 
 export const MetadataQrCode = ({ genesisHash, specVersion, qrCodeSource }: Props) => {

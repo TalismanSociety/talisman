@@ -11,7 +11,7 @@ export type RequestChainGenerateQrAddNetworkSpecs = {
 
 export type RequestChainGenerateQrUpdateNetworkMetadata = {
   genesisHash: SignerPayloadGenesisHash
-  specVersion: number
+  specVersion?: number
 }
 
 export type RequestUpsertCustomChain = {

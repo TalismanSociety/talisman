@@ -21,7 +21,7 @@ export const DerivationModeDropdown: FC<{
 
   const items = useMemo<DropdownOption[]>(
     () => [
-      { mode: "first", label: t("Import first account") },
+      { mode: "first", label: t("Import First Account") },
       { mode: "multi", label: t("Import Multiple Accounts") },
       { mode: "custom", label: t("Custom Derivation Path"), extra: t("Advanced") },
     ],
