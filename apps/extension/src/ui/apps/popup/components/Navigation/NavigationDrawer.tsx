@@ -165,7 +165,7 @@ export const NavigationDrawer: FC = () => {
         <footer className="border-grey-800 border-t">
           <button
             type="button"
-            className="text-md text-body-secondary hover:bg-grey-800 hover:text-body flex w-full items-center justify-center gap-8 rounded-none py-12 text-center"
+            className="text-body-secondary hover:bg-grey-800 hover:text-body flex w-full items-end justify-center gap-6 rounded-none py-12 pr-4 text-center"
             onClick={handleLock}
           >
             <LockIcon className="text-lg" />
