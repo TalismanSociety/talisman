@@ -1,10 +1,11 @@
-import { TALISMAN_WEB_APP_STAKING_URL, TALISMAN_WEB_APP_TRANSPORT_URL } from "@core/constants"
+import { TALISMAN_WEB_APP_NFTS_URL, TALISMAN_WEB_APP_TRANSPORT_URL } from "@core/constants"
 import { Nav, NavItem } from "@talisman/components/Nav"
 import { ScrollContainer } from "@talisman/components/ScrollContainer"
 import { FullColorSmallLogo } from "@talisman/theme/logos"
 import {
   AlertCircleIcon,
   ExternalLinkIcon,
+  ImageIcon,
   LockIcon,
   PlusIcon,
   RepeatIcon,
@@ -13,7 +14,6 @@ import {
   SettingsIcon,
   UsersIcon,
   XIcon,
-  ZapIcon,
 } from "@talismn/icons"
 import { api } from "@ui/api"
 import { AnalyticsPage, sendAnalyticsEvent } from "@ui/api/analytics"
@@ -86,13 +86,13 @@ export const NavigationDrawer: FC = () => {
     window.close()
   }, [])
 
-  const handleStakingClick = useCallback(() => {
+  const handleNftClick = useCallback(() => {
     sendAnalyticsEvent({
       ...ANALYTICS_PAGE,
       name: "Goto",
-      action: "Staking button",
+      action: "NFTs button",
     })
-    window.open(TALISMAN_WEB_APP_STAKING_URL, "_blank")
+    window.open(TALISMAN_WEB_APP_NFTS_URL, "_blank")
     window.close()
   }, [])
 
@@ -145,9 +145,9 @@ export const NavigationDrawer: FC = () => {
                 <ExternalLinkIcon />
               </span>
             </NavItem>
-            <NavItem icon={<ZapIcon />} onClick={handleStakingClick}>
+            <NavItem icon={<ImageIcon />} onClick={handleNftClick}>
               <span className="flex items-center gap-2">
-                {t("Staking")}
+                {t("NFTs")}
                 <ExternalLinkIcon />
               </span>
             </NavItem>

@@ -2,5 +2,4 @@
 export { ReactComponent as NavIconExpand } from "./nav-expand.svg"
 export { ReactComponent as NavIconMore } from "./nav-more.svg"
 export { ReactComponent as NavIconMoreAlert } from "./nav-more-alert.svg"
-export { ReactComponent as NavIconNft } from "./nav-nft.svg"
 export { ReactComponent as NavIconActivityPending } from "./nav-activity-pending.svg"

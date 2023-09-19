@@ -1,6 +1,6 @@
-import { TALISMAN_WEB_APP_NFTS_URL } from "@core/constants"
+import { TALISMAN_WEB_APP_STAKING_URL } from "@core/constants"
 import { db } from "@core/db"
-import { AlertCircleIcon, HistoryIcon, PieChartIcon } from "@talismn/icons"
+import { AlertCircleIcon, HistoryIcon, PieChartIcon, ZapIcon } from "@talismn/icons"
 import { classNames } from "@talismn/util"
 import { api } from "@ui/api"
 import { AnalyticsPage, sendAnalyticsEvent } from "@ui/api/analytics"
@@ -15,13 +15,7 @@ import { useLocation, useNavigate } from "react-router-dom"
 import { Tooltip, TooltipContent, TooltipTrigger, useOpenClose } from "talisman-ui"
 
 import { useNavigationContext } from "../../context/NavigationContext"
-import {
-  NavIconActivityPending,
-  NavIconExpand,
-  NavIconMore,
-  NavIconMoreAlert,
-  NavIconNft,
-} from "./icons"
+import { NavIconActivityPending, NavIconExpand, NavIconMore, NavIconMoreAlert } from "./icons"
 
 type BottomNavButtonProps = DetailedHTMLProps<
   ButtonHTMLAttributes<HTMLButtonElement>,
@@ -111,13 +105,13 @@ export const BottomNav = () => {
     navigate("/portfolio")
   }, [navigate])
 
-  const handleNftClick = useCallback(() => {
+  const handleStakingClick = useCallback(() => {
     sendAnalyticsEvent({
       ...ANALYTICS_PAGE,
       name: "Goto",
-      action: "NFTs button",
+      action: "Staking button",
     })
-    window.open(TALISMAN_WEB_APP_NFTS_URL, "_blank")
+    window.open(TALISMAN_WEB_APP_STAKING_URL, "_blank")
     window.close()
   }, [])
 
@@ -175,11 +169,11 @@ export const BottomNav = () => {
         </Tooltip>
         <Tooltip placement="top">
           <TooltipTrigger asChild>
-            <BottomNavButton onClick={handleNftClick}>
-              <NavIconNft />
+            <BottomNavButton onClick={handleStakingClick}>
+              <ZapIcon className="self-center text-lg" />
             </BottomNavButton>
           </TooltipTrigger>
-          <TooltipContent>{t("View NFTs")}</TooltipContent>
+          <TooltipContent>{t("Staking")}</TooltipContent>
         </Tooltip>
         <RecentActivityButton />
         <Tooltip placement="top">
