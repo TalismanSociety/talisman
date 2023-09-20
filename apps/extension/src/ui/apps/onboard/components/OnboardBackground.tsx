@@ -5,7 +5,7 @@ import { useOnboard } from "../context"
 
 const BG_CONFIG: MysticalPhysicsV3 = {
   ...MYSTICAL_PHYSICS_V3,
-  blur: 0,
+  // blur: 0,
   artifacts: 4,
   radiusMax: 1.4,
 }
@@ -18,17 +18,11 @@ Background.displayName = "Background"
 
 export const OnboardBackground = () => {
   const { stage } = useOnboard()
-
-  const style: CSSProperties = useMemo(
-    () => ({
-      /* opacity: 1 - stage * 0.2 */
-    }),
-    [stage]
-  )
+  const style: CSSProperties = useMemo(() => ({ opacity: 1 - stage * 0.2 }), [stage])
 
   return (
-    // <div className="transition-opacity duration-[2.5s] ease-in-out" style={style}>
-    <Background />
-    // </div>
+    <div className="transition-opacity duration-[2.5s] ease-in-out" style={style}>
+      <Background />
+    </div>
   )
 }
