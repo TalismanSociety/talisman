@@ -1,10 +1,11 @@
 import { Locator, Page, expect } from "@playwright/test";
-import Common from "./common.page";
+import Common from "./common";
 
 export default class Settings extends Common {
     readonly inputPassword: Locator
     readonly btnViewPhrase: Locator
     readonly textPhrase: Locator
+    readonly btnDontRemind: Locator
     readonly btnToggle: Locator
     readonly iconClosePopup: Locator
     readonly textAccountCount: Locator
@@ -27,17 +28,20 @@ export default class Settings extends Common {
     readonly btnDragRpc: Locator
     readonly btnDeleteRpc: Locator
     readonly ckbTestnet: Locator
+    readonly btnReveal: Locator
+    readonly ckbBackup: Locator
 
     constructor(readonly page: Page) {
         super(page)
         this.inputPassword = page.locator('input[name="password"]')
         this.btnViewPhrase = page.locator('button[type="submit"]')
-        this.textPhrase = page.locator('span.bg-black-tertiary')
-        this.btnToggle = page.locator('label div')
+        this.textPhrase = page.locator('span.bg-black-tertiary > span:not([class])')
+        this.btnDontRemind = page.locator('div:has-text("Don\'t remind me again") + label > div')
+        this.btnToggle = page.locator('label > div')
         this.iconClosePopup = page.locator('header button')
         this.textAccountCount = page.locator('div.text-primary.mr-3')
         this.inputName = page.locator('input[name="name"]')
-        this.inputAddress = page.locator('input[name="address"]')
+        this.inputAddress = page.locator('input[name="searchAddress"]')
         this.inputOldPwd = page.locator('input[name="currentPw"]')
         this.inputNewPwd = page.locator('input[name="newPw"]')
         this.inputConfirmPwd = page.locator('input[name="newPwConfirm"]')
@@ -55,6 +59,8 @@ export default class Settings extends Common {
         this.btnDragRpc = page.locator('//input[contains(@name, "rpcs")]/preceding-sibling::button')
         this.btnDeleteRpc = page.locator('//input[contains(@name, "rpcs")]/following-sibling::button')
         this.ckbTestnet = page.locator('input.form-checkbox ~ span')
+        this.ckbBackup = page.getByRole('checkbox', { name: 'I have backed up'})
+        this.btnReveal = page.locator('div:has-text("Copy to clipboard") + div button')
     }
 
     btnEthNetwork = (networkName: string) => this.page.locator(`//button[@role="button" and div[text()="${networkName}"]]`);

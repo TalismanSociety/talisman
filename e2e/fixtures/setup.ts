@@ -1,7 +1,9 @@
 import { BrowserContext, Page, test as base, chromium } from '@playwright/test'
-import Common from '../pages/common.page'
-import Onboarding from '../pages/onboarding.page'
-import Settings from '../pages/settings.page'
+import Common from '../pages/common'
+import Onboarding from '../pages/onboarding'
+import Portfolio from '../pages/portfolio'
+import Modal from '../pages/modal'
+import Settings from '../pages/settings'
 
 export const test = base.extend<{
     context: BrowserContext
@@ -9,6 +11,8 @@ export const test = base.extend<{
     appPage: Page
     common: Common
     onboarding: Onboarding
+    portfolio: Portfolio
+    modal: Modal
     settings: Settings
 }>({
     context: async ({}, use) => {
@@ -38,6 +42,12 @@ export const test = base.extend<{
     },
     onboarding: async ({page}, use) => {
         await use(new Onboarding(page))
+    },
+    portfolio: async ({page}, use) => {
+        await use(new Portfolio(page))
+    },
+    modal: async ({page}, use) => {
+        await use(new Modal(page))
     },
     settings: async ({page}, use) => {
         await use(new Settings(page))
