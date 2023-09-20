@@ -37,18 +37,20 @@ const generateCharacteristics = (
     rx,
     ry,
     style: {
-      transitionProperty: "all",
+      transitionProperty: "transform",
       transformBox: "fill-box",
       transformOrigin: "center",
       transform: `rotate(${Math.round(Math.random() * 360)}deg)`,
       transitionDuration: `${duration}ms`,
-      transitionDelay: "100ms", // prevents flickering on FF
+      // transitionDelay: "100ms", // prevents flickering on FF
       transitionTimingFunction: initialized ? "ease-in-out" : "ease-out",
-      opacity: Number(
-        (config.opacityMin + Math.random() * (config.opacityMax - config.opacityMin)).toFixed(2)
-      ),
+      // opacity: Number(
+      //   (config.opacityMin + Math.random() * (config.opacityMax - config.opacityMin)).toFixed(2)
+      // ),
     },
   }
+
+  console.log(ellipsis)
 
   return {
     ellipsis,
