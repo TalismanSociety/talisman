@@ -65,15 +65,14 @@ export const Connect: FC<{ className?: string }> = ({ className }) => {
   const { items: connected, toggle, set, clear } = useSet<string>()
   const ethereum = !!authRequest?.request?.ethereum
 
-  const accounts = useMemo(
-    () =>
-      authRequest && allAccounts
-        ? allAccounts.filter(({ type }) =>
-            authRequest.request.ethereum ? type === "ethereum" : type !== "ethereum"
-          )
-        : [],
-    [allAccounts, authRequest]
-  )
+  const accounts = useMemo(() => {
+    if (!authRequest || !allAccounts) return []
+
+    // all accounts if polkadot, only ethereum accounts if ethereum
+    return authRequest.request.ethereum
+      ? allAccounts.filter(({ type }) => type === "ethereum")
+      : allAccounts
+  }, [allAccounts, authRequest])
 
   const handleToggle = useCallback(
     (address: string) => () => {
