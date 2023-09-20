@@ -6,6 +6,7 @@ export const data = {
 	ethName: 'Ethereum',
 	dotAddress: '1YmEYgtfPbwx5Jos1PjKDWRpuJWSpTzytwZgYan6kgiquNS',
 	ethAddress: '0x13f71F57cd0FF4d3ca1129F369a0895B8E743Cc6',
+	ethTestnet: 'Goerli',
 	evmNetworks: [
 		{
 			rpc: 'https://rpc.dogechain.dog',

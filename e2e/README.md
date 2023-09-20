@@ -11,8 +11,8 @@ Go to the e2e directory and install dependencies.
 
 > Add environment variables to the `.env` file in the root of the e2e directory.
 
-- `SEED_PHRASE`: wallet seed phrase.
-- `PASSWORD`: wallet password.
+- `TESTING_PASSWORD`: wallet password.
+- `TESTING_SEEDPHRASE`: wallet seed phrase.
 
 ## Run tests
 

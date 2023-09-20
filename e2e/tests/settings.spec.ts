@@ -129,11 +129,11 @@ test.describe('Settings', () => {
         });
     });
 
-    test('General > enable/disable testnets', async ({settings}) => {
-        await test.step('go to Networks & Tokens > Manage Ethereum Networks. check testnet is disabled', 
+    test('General > enable/disable testnets', async ({page, settings}) => {
+        await test.step('go to Networks & Tokens > Manage Networks. check testnet is disabled', 
         async () => {
             await settings.getByRole('link', 'Networks & Tokens').click();
-            await settings.getByRole('button', 'Manage Ethereum Networks').click();
+            await settings.getByRole('button', 'Manage Networks').click();
             await expect(settings.btnTestnets).not.toBeVisible();
         });
         await test.step('go to General. enable testnets option', 
@@ -141,52 +141,50 @@ test.describe('Settings', () => {
             await settings.getByRole('link', 'General').click();
             await settings.btnToggle.nth(1).click();
         });
-        await test.step('go to Networks & Tokens > Manage Ethereum Networks. check testnet is enabled', 
+        await test.step('go to Networks & Tokens > Manage Networks. check testnet is enabled', 
         async () => {
             await settings.getByRole('link', 'Networks & Tokens').click();
-            await settings.getByRole('button', 'Manage Ethereum Networks').click();
-            await expect(settings.btnTestnets.first()).toBeVisible();
+            await settings.getByRole('button', 'Manage Networks').click();
+            await settings.inputSearchNetworks.fill(data.ethTestnet);
+            await settings.btnEthNetwork(data.ethTestnet).waitFor();
         });
-        await test.step('go General. disable testnets option', 
+        await test.step('go to General. disable testnets option', 
         async () => {
             await settings.getByRole('link', 'General').click();
             await settings.btnToggle.nth(1).click();
         });
-        await test.step('go to Networks & Tokens > Manage Ethereum Networks. check testnet is disabled', 
+        await test.step('go to Networks & Tokens > Manage Networks. check testnet is disabled', 
         async () => {
             await settings.getByRole('link', 'Networks & Tokens').click();
-            await settings.getByRole('button', 'Manage Ethereum Networks').click();
-            await expect(settings.btnTestnets).not.toBeVisible();
+            await settings.getByRole('button', 'Manage Networks').click();
+            await settings.inputSearchNetworks.fill(data.ethTestnet);
+            await settings.btnEthNetwork(data.ethTestnet).waitFor({state: 'hidden'});
         });
     });
 
-    test('Manage Ethereum Networks > enable/disable testnets', async ({settings}) => {
-        let totalEthNetworks = 0, totalTestnets = 0, totalAllNetworks = 0;
-        await test.step('go to Networks & Tokens > Manage Ethereum Networks. check testnet is disabled', async () => {
+    test('Manage Networks > enable/disable testnets', async ({page, settings}) => {
+        await test.step('go to Networks & Tokens > Manage Networks. check testnet is disabled', async () => {
             await settings.getByRole('link', 'Networks & Tokens').click();
-            await settings.getByRole('button', 'Manage Ethereum Networks').click();
-            await expect(settings.btnTestnets).not.toBeVisible();
-            totalEthNetworks = await settings.btnEthNetworks.count();
+            await settings.getByRole('button', 'Manage Networks').click();
+            await settings.inputSearchNetworks.fill(data.ethTestnet);
+            await settings.btnEthNetwork(data.ethTestnet).waitFor({state: 'hidden'});
         });
         await test.step('click Enable testnets. check testnet is enabled', async () => {
             await settings.getByRole('button', 'Enable testnets').click();
-            await expect(settings.btnTestnets.first()).toBeVisible();
-            totalTestnets = await settings.btnTestnets.count();
-            totalAllNetworks = await settings.btnEthNetworks.count();
-            expect(totalAllNetworks).toBe(totalEthNetworks + totalTestnets);
+            await settings.inputSearchNetworks.fill(data.ethTestnet);
+            await settings.btnEthNetwork(data.ethTestnet).waitFor();
         });
         await test.step('click Enable testnets. check testnet is disabled', async () => {
             await settings.getByRole('button', 'Enable testnets').click();
-            await expect(settings.btnTestnets.first()).not.toBeVisible();
-            totalEthNetworks = await settings.btnEthNetworks.count();
-            expect(totalEthNetworks).toBe(totalAllNetworks - totalTestnets);
+            await settings.inputSearchNetworks.fill(data.ethTestnet);
+            await settings.btnEthNetwork(data.ethTestnet).waitFor({state: 'hidden'});
         });
     });
 
-    test('Manage Ethereum Networks > Add/Remove EVM Network', async ({settings}) => {
-        await test.step('go to Networks & Tokens > Manage Ethereum Networks', async () => {
+    test('Manage Networks > Add/Remove EVM Network', async ({page, settings}) => {
+        await test.step('go to Networks & Tokens > Manage Networks', async () => {
             await settings.getByRole('link', 'Networks & Tokens').click();
-            await settings.getByRole('button', 'Manage Ethereum Networks').click();
+            await settings.getByRole('button', 'Manage Networks').click();
         });
         for (const evm of data.evmNetworks) {
             const { rpc, rpc2, ...inputs } = evm;
@@ -199,7 +197,7 @@ test.describe('Settings', () => {
                 await settings.inputTokenSymbol.press('Tab');
                 await settings.textError.getByText('required').last().waitFor();
                 await settings.inputTokenDecimals.press('Tab');
-                await settings.textError.getByText('invalid number').waitFor();
+                await settings.textError.getByText('Must be a number').waitFor();
                 await expect(settings.getByRole('button', 'Add Network')).toBeDisabled();
             });
             await test.step('add a RPC URL', async () => {
@@ -243,6 +241,7 @@ test.describe('Settings', () => {
             });
             await test.step('add network. check network list shows the newly added network', async () => {
                 await settings.getByRole('button', 'Add Network').click();
+                await settings.inputSearchNetworks.fill(inputs.name);
                 const loc = settings.btnEthNetwork(inputs.name);
                 await loc.waitFor();
                 await loc.getByText('custom').waitFor();

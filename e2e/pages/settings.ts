@@ -30,6 +30,7 @@ export default class Settings extends Common {
     readonly ckbTestnet: Locator
     readonly btnReveal: Locator
     readonly ckbBackup: Locator
+    readonly inputSearchNetworks: Locator
 
     constructor(readonly page: Page) {
         super(page)
@@ -61,6 +62,7 @@ export default class Settings extends Common {
         this.ckbTestnet = page.locator('input.form-checkbox ~ span')
         this.ckbBackup = page.getByRole('checkbox', { name: 'I have backed up'})
         this.btnReveal = page.locator('div:has-text("Copy to clipboard") + div button')
+        this.inputSearchNetworks = page.getByPlaceholder('Search networks')
     }
 
     btnEthNetwork = (networkName: string) => this.page.locator(`//button[@role="button" and div[text()="${networkName}"]]`);
