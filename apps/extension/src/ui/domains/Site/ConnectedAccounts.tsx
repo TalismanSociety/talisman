@@ -139,6 +139,7 @@ export const ConnectedAccounts: FC = () => {
           status={site.ethAddresses.length ? "connected" : "disconnected"}
           connectedAddresses={site.ethAddresses}
           isSingleProvider={!site.addresses}
+          infoText={t("Account connected via the Ethereum provider")}
         >
           <EthAccounts site={site} />
         </ConnectAccountsContainer>
@@ -149,6 +150,7 @@ export const ConnectedAccounts: FC = () => {
           status={site.addresses.length ? "connected" : "disconnected"}
           connectedAddresses={site.addresses}
           isSingleProvider={!site.ethAddresses}
+          infoText={t("Accounts connected via the Polkadot provider")}
         >
           <SubAccounts site={site} />
         </ConnectAccountsContainer>

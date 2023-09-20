@@ -67,7 +67,7 @@ const ConnectAccountsExpandedContainer: FC<{
   label: string
   status: SiteConnectionStatus
   connectedAddresses: string[]
-  infoText?: string
+  infoText: string
   children: ReactNode
 }> = ({ label, status, connectedAddresses, infoText, children }) => {
   const accounts = useAccounts()
@@ -80,7 +80,7 @@ const ConnectAccountsExpandedContainer: FC<{
     <ConnectionStatusContainer status={status} className="bg-black">
       <div className="bg-grey-900 px-6 py-3">
         <div className="flex flex-col">
-          <div className={infoText ? "border-grey-800 border-b pb-3" : ""}>
+          <div className="border-grey-800 border-b pb-3">
             <div className="text-body-secondary hover:text-body flex w-full py-2">
               <div className="flex w-12 shrink-0">
                 <ConnectedSiteIndicator status={status} />
@@ -91,12 +91,10 @@ const ConnectAccountsExpandedContainer: FC<{
               )}
             </div>
           </div>
-          {infoText && (
-            <span className="text-grey-600 flex items-center gap-1 pt-3 text-xs">
-              <InfoIcon />
-              <span>{infoText}</span>
-            </span>
-          )}
+          <span className="text-grey-600 flex items-center gap-1 pt-3 text-xs">
+            <InfoIcon />
+            <span>{infoText}</span>
+          </span>
         </div>
       </div>
       <div>{children}</div>
@@ -108,9 +106,9 @@ const ConnectAccountsAccordionContainer: FC<{
   label: string
   status: SiteConnectionStatus
   connectedAddresses: string[]
-  infoText?: string
+  infoText: string
   children: ReactNode
-}> = ({ label, status, connectedAddresses, children }) => {
+}> = ({ label, status, connectedAddresses, infoText, children }) => {
   const { isOpen, toggle } = useOpenClose()
   const accounts = useAccounts()
 
@@ -120,19 +118,25 @@ const ConnectAccountsAccordionContainer: FC<{
 
   return (
     <ConnectionStatusContainer status={status} className="bg-black">
-      <button
-        type="button"
-        onClick={toggle}
-        className="bg-grey-900 hover:bg-grey-800 text-body-secondary hover:text-body  flex h-24 w-full items-center gap-6 px-6 text-left"
-      >
-        <div className="flex w-12 shrink-0 justify-center">
-          <ConnectedSiteIndicator status={status} />
+      <button type="button" onClick={toggle} className="bg-grey-900 w-full px-6 py-3">
+        <div className="flex flex-col">
+          <div className={"border-grey-800 border-b pb-3"}>
+            <div className="flex w-full gap-6 py-2">
+              <div className="flex grow items-center gap-3 text-left">
+                <ConnectedSiteIndicator status={status} />
+                <div className="text-body">{label}</div>
+              </div>
+              {status !== "disabled" && (
+                <ConnectedAccountsSummary connectedAccounts={connectedAccounts} />
+              )}
+              <AccordionIcon isOpen={isOpen} />
+            </div>
+          </div>
+          <span className="text-grey-600 flex items-center gap-1 pt-3 text-xs">
+            <InfoIcon />
+            <span>{infoText}</span>
+          </span>
         </div>
-        <div className="text-body grow ">{label}</div>
-        {status !== "disabled" && (
-          <ConnectedAccountsSummary connectedAccounts={connectedAccounts} />
-        )}
-        <AccordionIcon isOpen={isOpen} />
       </button>
       <Accordion isOpen={isOpen}>{children}</Accordion>
     </ConnectionStatusContainer>
@@ -144,7 +148,7 @@ export const ConnectAccountsContainer: FC<{
   status: SiteConnectionStatus
   connectedAddresses: string[]
   isSingleProvider?: boolean
-  infoText?: string
+  infoText: string
   children: ReactNode
 }> = ({ label, status, connectedAddresses, infoText, children, isSingleProvider }) => {
   const Container = isSingleProvider
