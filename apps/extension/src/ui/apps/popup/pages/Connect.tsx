@@ -140,6 +140,9 @@ export const Connect: FC<{ className?: string }> = ({ className }) => {
             status="disabled"
             connectedAddresses={connected}
             label={ethereum ? t("Ethereum") : t("Polkadot")}
+            infoText={t(`Accounts will be connected via the {{type}} provider`, {
+              type: ethereum ? "Ethereum" : "Polkadot",
+            })}
             isSingleProvider
           >
             {!ethereum && (

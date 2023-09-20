@@ -1,5 +1,6 @@
 import { AccountJsonAny } from "@core/domains/accounts/types"
 import { Accordion, AccordionIcon } from "@talisman/components/Accordion"
+import { InfoIcon } from "@talismn/icons"
 import { classNames } from "@talismn/util"
 import { AccountsStack } from "@ui/apps/dashboard/routes/Settings/Accounts/AccountIconsStack"
 import useAccounts from "@ui/hooks/useAccounts"
@@ -66,8 +67,9 @@ const ConnectAccountsExpandedContainer: FC<{
   label: string
   status: SiteConnectionStatus
   connectedAddresses: string[]
+  infoText?: string
   children: ReactNode
-}> = ({ label, status, connectedAddresses, children }) => {
+}> = ({ label, status, connectedAddresses, infoText, children }) => {
   const accounts = useAccounts()
 
   const connectedAccounts = useMemo(() => {
@@ -76,14 +78,26 @@ const ConnectAccountsExpandedContainer: FC<{
 
   return (
     <ConnectionStatusContainer status={status} className="bg-black">
-      <div className="bg-grey-900 text-body-secondary hover:text-body  flex h-24 w-full items-center gap-6 px-6 text-left">
-        <div className="flex w-12 shrink-0 justify-center">
-          <ConnectedSiteIndicator status={status} />
+      <div className="bg-grey-900 px-6 py-3">
+        <div className="flex flex-col">
+          <div className={infoText ? "border-grey-800 border-b pb-3" : ""}>
+            <div className="text-body-secondary hover:text-body flex w-full py-2">
+              <div className="flex w-12 shrink-0">
+                <ConnectedSiteIndicator status={status} />
+              </div>
+              <div className="text-body grow">{label}</div>
+              {status !== "disabled" && (
+                <ConnectedAccountsSummary connectedAccounts={connectedAccounts} />
+              )}
+            </div>
+          </div>
+          {infoText && (
+            <span className="text-grey-600 flex items-center gap-1 pt-3 text-xs">
+              <InfoIcon />
+              <span>{infoText}</span>
+            </span>
+          )}
         </div>
-        <div className="text-body grow ">{label}</div>
-        {status !== "disabled" && (
-          <ConnectedAccountsSummary connectedAccounts={connectedAccounts} />
-        )}
       </div>
       <div>{children}</div>
     </ConnectionStatusContainer>
@@ -94,6 +108,7 @@ const ConnectAccountsAccordionContainer: FC<{
   label: string
   status: SiteConnectionStatus
   connectedAddresses: string[]
+  infoText?: string
   children: ReactNode
 }> = ({ label, status, connectedAddresses, children }) => {
   const { isOpen, toggle } = useOpenClose()
@@ -129,14 +144,20 @@ export const ConnectAccountsContainer: FC<{
   status: SiteConnectionStatus
   connectedAddresses: string[]
   isSingleProvider?: boolean
+  infoText?: string
   children: ReactNode
-}> = ({ label, status, connectedAddresses, children, isSingleProvider }) => {
+}> = ({ label, status, connectedAddresses, infoText, children, isSingleProvider }) => {
   const Container = isSingleProvider
     ? ConnectAccountsExpandedContainer
     : ConnectAccountsAccordionContainer
 
   return (
-    <Container label={label} status={status} connectedAddresses={connectedAddresses}>
+    <Container
+      label={label}
+      status={status}
+      connectedAddresses={connectedAddresses}
+      infoText={infoText}
+    >
       {children}
     </Container>
   )
