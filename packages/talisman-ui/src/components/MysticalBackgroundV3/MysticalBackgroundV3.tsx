@@ -1,3 +1,4 @@
+import { classNames } from "@talismn/util"
 import { CSSProperties, memo, useLayoutEffect, useMemo, useRef } from "react"
 import { useMeasure } from "react-use"
 
@@ -23,7 +24,7 @@ export const MysticalBackgroundV3 = ({
   )
 
   return (
-    <div ref={refSize} className={className} style={style}>
+    <div ref={refSize} className={classNames("overflow-hidden", className)} style={style}>
       <CelestialArtifacts config={mergedConfig} size={size} />
     </div>
   )
