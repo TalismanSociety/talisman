@@ -3,6 +3,7 @@ import { Address } from "@core/types/base"
 import { ChainId, EvmNetworkId } from "@talismn/chaindata-provider"
 import { classNames } from "@talismn/util"
 import { ChainLogo } from "@ui/domains/Asset/ChainLogo"
+import { TokenLogo } from "@ui/domains/Asset/TokenLogo"
 import { AssetBalanceCellValue } from "@ui/domains/Portfolio/AssetBalanceCellValue"
 import { NoTokensMessage } from "@ui/domains/Portfolio/NoTokensMessage"
 import { useTranslation } from "react-i18next"
@@ -58,7 +59,7 @@ type AssetRowProps = {
 
 const ChainTokenBalances = ({ chainId, balances }: AssetRowProps) => {
   const { t } = useTranslation()
-  const { chainOrNetwork, summary, symbol, detailRows, status, networkType } =
+  const { chainOrNetwork, summary, symbol, tokenId, detailRows, status, networkType } =
     useChainTokenBalances({ chainId, balances })
 
   // wait for data to load
@@ -74,10 +75,11 @@ const ChainTokenBalances = ({ chainId, balances }: AssetRowProps) => {
       >
         <div className="flex">
           <div className="p-8 text-xl">
-            <ChainLogo id={chainOrNetwork.id} />
+            <TokenLogo tokenId={tokenId} />
           </div>
           <div className="flex grow flex-col justify-center gap-2 whitespace-nowrap">
             <div className="base text-body flex items-center font-bold">
+              <ChainLogo className="mr-2" id={chainOrNetwork.id} />
               <span className="mr-2">{chainOrNetwork.name}</span>
               <CopyAddressButton symbol={symbol} networkId={chainOrNetwork.id} />
               <SendFundsButton symbol={symbol} networkId={chainOrNetwork.id} />
