@@ -286,7 +286,7 @@ jobs:
   e2e_test:
     name: "Run e2e tests"
     runs-on: ubuntu-latest
-    if: ${{ github.event.action == 'ready_for_review' }}
+    if: ${{ !github.event.pull_request.draft }}
     defaults:
       run:
         working-directory: e2e
@@ -306,7 +306,8 @@ jobs:
       - name: Run e2e tests
         run: xvfb-run -a yarn e2e:test
         env:
-          PASSWORD: ${{ secrets.TESTING_PASSWORD }}
+          TESTING_PASSWORD: ${{ secrets.TESTING_PASSWORD }}
+          TESTING_SEEDPHRASE: ${{ secrets.TESTING_SEEDPHRASE }}
       - name: Upload test results
         if: failure()
         uses: actions/upload-artifact@v3
