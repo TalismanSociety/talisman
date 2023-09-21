@@ -44,7 +44,7 @@ const adjustPopupSize = async () => {
     const width = 400 + deltaWidth
     const height = 600 + deltaHeight
 
-    if (width !== window.outerWidth || height !== window.outerHeight) {
+    if ((width !== window.outerWidth || height !== window.outerHeight) && width > 0 && height > 0) {
       Browser.windows.update(Browser.windows.WINDOW_ID_CURRENT, {
         width,
         height,
