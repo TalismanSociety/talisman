@@ -56,14 +56,14 @@ export const useCelestialArtifact = ({
 
     // On mount, useState will have an initial position & size & color for the artifact.
     //
-    // Then once that initial state has rendered (thanks to useLayoutEffect) we will begin our first
-    // transition to the second position & size & color by calling `update` here.
+    // Then once that initial state has rendered (thanks to useLayoutEffect & setTimeout) we will
+    // begin our first transition to the second position & size & color by calling `update` here.
     //
     // For this first transition, `initialized` will be `false` - so we will get a slightly different
     // transition timing function (ease-in-out instead of ease-out).
     //
     // After that, `update` will call itself every `duration` interval, up until we unmount and set `active` to false.
-    update()
+    setTimeout(update, 30)
 
     return () => {
       active = false
