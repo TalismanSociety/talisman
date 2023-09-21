@@ -44,7 +44,10 @@ const adjustPopupSize = async () => {
     const width = 400 + deltaWidth
     const height = 600 + deltaHeight
 
-    if ((width !== window.outerWidth || height !== window.outerHeight) && width > 0 && height > 0) {
+    if (!(width > 0 && height > 0))
+      throw new Error(`Invalid width (${width}) or height (${height})`)
+
+    if (width !== window.outerWidth || height !== window.outerHeight) {
       Browser.windows.update(Browser.windows.WINDOW_ID_CURRENT, {
         width,
         height,
@@ -53,8 +56,8 @@ const adjustPopupSize = async () => {
       // store delta to open next popups at the right size
       await appStore.set({ popupSizeDelta: [deltaWidth, deltaHeight] })
     }
-  } catch (err) {
-    log.error("Failed to adjust popup size", { err })
+  } catch (cause) {
+    log.error("Failed to adjust popup size", { cause })
   }
 }
 
