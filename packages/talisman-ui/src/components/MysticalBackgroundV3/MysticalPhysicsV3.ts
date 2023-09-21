@@ -13,7 +13,7 @@ export type MysticalPhysicsV3 = {
 
 export const MYSTICAL_PHYSICS_V3: MysticalPhysicsV3 = {
   artifacts: 3,
-  blur: 24,
+  blur: 0,
   opacityMin: 0.2,
   opacityMax: 0.4,
   durationMin: 8000,

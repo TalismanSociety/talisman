@@ -5,7 +5,6 @@ import { useOnboard } from "../context"
 
 const BG_CONFIG: MysticalPhysicsV3 = {
   ...MYSTICAL_PHYSICS_V3,
-  // blur: 0,
   artifacts: 4,
   radiusMax: 1.4,
 }
