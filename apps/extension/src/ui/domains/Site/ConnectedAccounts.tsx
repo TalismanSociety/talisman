@@ -1,121 +1,160 @@
-import { ProviderType } from "@core/domains/sitesAuthorised/types"
-import { Spacer } from "@talisman/components/Spacer"
-import { useAnalytics } from "@ui/hooks/useAnalytics"
-import useAuthorisedSiteById from "@ui/hooks/useAuthorisedSiteById"
-import useAuthorisedSiteProviders from "@ui/hooks/useAuthorisedSiteProviders"
-import { useConnectedAccounts } from "@ui/hooks/useConnectedAccounts"
-import {
-  ChangeEventHandler,
-  FC,
-  PropsWithChildren,
-  useCallback,
-  useEffect,
-  useMemo,
-  useState,
-} from "react"
+import { AccountJsonAny } from "@core/domains/accounts/types"
+import { AuthorizedSite } from "@core/domains/sitesAuthorised/types"
+import { api } from "@ui/api"
+import { useCurrentSite } from "@ui/apps/popup/context/CurrentSiteContext"
+import useAccounts from "@ui/hooks/useAccounts"
+import { useAuthorisedSites } from "@ui/hooks/useAuthorisedSites"
+import { FC, Fragment, useCallback, useMemo } from "react"
 import { useTranslation } from "react-i18next"
-import { Checkbox, Tooltip, TooltipContent, TooltipTrigger } from "talisman-ui"
 
-import { NetworkSelect } from "../Ethereum/NetworkSelect"
-import { ConnectAccountToggleButton } from "./ConnectAccountToggleButton"
-import { ProviderTypeSwitch } from "./ProviderTypeSwitch"
+import { ConnectAccountsContainer } from "./ConnectAccountsContainer"
+import { ConnectAccountToggleButtonRow } from "./ConnectAccountToggleButtonRow"
 
-const SectionTitle: FC<PropsWithChildren> = ({ children }) => {
-  return <h3 className="mb-4 text-base">{children}</h3>
-}
-
-type ConnectedAccountsProps = {
-  siteId: string
-}
-
-export const ConnectedAccounts: FC<ConnectedAccountsProps> = ({ siteId }) => {
+const SubAccounts: FC<{ site: AuthorizedSite | null }> = ({ site }) => {
   const { t } = useTranslation()
-  const { genericEvent } = useAnalytics()
-  const { authorizedProviders, defaultProvider } = useAuthorisedSiteProviders(siteId)
-  const [providerType, setProviderType] = useState<ProviderType>(defaultProvider)
-  const { accounts, showEthAccounts, setShowEthAccounts } = useConnectedAccounts(
-    siteId,
-    providerType
+  const accounts = useAccounts("owned")
+  const evmAccounts = useMemo(
+    () =>
+      accounts.map(
+        (acc) => [acc, site?.addresses?.includes(acc.address)] as [AccountJsonAny, boolean]
+      ),
+    [accounts, site?.addresses]
   )
-  const { ethChainId, setEthChainId, url } = useAuthorisedSiteById(siteId, providerType)
 
-  useEffect(() => {
-    // reset if this info loads after render
-    setProviderType(defaultProvider)
-  }, [defaultProvider])
-
-  const title = useMemo(() => {
-    switch (providerType) {
-      case "polkadot":
-        return t("Active account(s)")
-      case "ethereum":
-        return t("Active account")
-      default:
-        throw new Error(`Unknown provider type: ${providerType}`)
-    }
-  }, [providerType, t])
-
-  const handleShowEthAccountsChanged: ChangeEventHandler<HTMLInputElement> = useCallback(
-    (e) => {
-      if (!e.target.checked)
-        for (const account of accounts.filter((a) => a.isConnected && a.type === "ethereum"))
-          account.toggle()
-      setShowEthAccounts(e.target.checked)
+  const handleAccountClick = useCallback(
+    (address: string) => () => {
+      if (!site?.id) return
+      const isConnected = site?.addresses?.includes(address)
+      const current = site?.addresses ?? []
+      const addresses = isConnected ? current?.filter((a) => a !== address) : [...current, address]
+      api.authorizedSiteUpdate(site?.id, { addresses })
     },
-    [accounts, setShowEthAccounts]
+    [site?.addresses, site?.id]
+  )
+
+  const handleDisconnectAllClick = useCallback(() => {
+    if (!site?.id) return
+    api.authorizedSiteUpdate(site?.id, { addresses: [] })
+  }, [site?.id])
+
+  const handleConnectAllClick = useCallback(() => {
+    if (!site?.id) return
+    api.authorizedSiteUpdate(site?.id, { addresses: accounts.map((a) => a.address) })
+  }, [accounts, site?.id])
+
+  return (
+    <>
+      <div className="mb-2 mt-6 flex w-full items-center justify-end gap-4 px-8 text-xs">
+        <button
+          type="button"
+          className="text-body-secondary hover:text-grey-300"
+          onClick={handleDisconnectAllClick}
+        >
+          {t("Disconnect All")}
+        </button>
+        <div className="bg-body-disabled h-[1rem] w-0.5 "></div>
+        <button
+          type="button"
+          className="text-body-secondary hover:text-grey-300"
+          text-body-secondary
+          onClick={handleConnectAllClick}
+        >
+          {t("Connect All")}
+        </button>
+      </div>
+      {evmAccounts.map(([acc, isConnected], idx) => (
+        <Fragment key={acc.address}>
+          {!!idx && <AccountSeparator />}
+          <ConnectAccountToggleButtonRow
+            account={acc}
+            checked={isConnected}
+            onClick={handleAccountClick(acc.address)}
+          />
+        </Fragment>
+      ))}
+    </>
+  )
+}
+
+const AccountSeparator = () => <div className="bg-grey-800 mx-6 h-0.5"></div>
+
+const EthAccounts: FC<{ site: AuthorizedSite | null }> = ({ site }) => {
+  const accounts = useAccounts("owned")
+  const evmAccounts = useMemo(
+    () =>
+      accounts
+        .filter((acc) => acc.type === "ethereum")
+        .map(
+          (acc) => [acc, site?.ethAddresses?.includes(acc.address)] as [AccountJsonAny, boolean]
+        ),
+    [accounts, site?.ethAddresses]
+  )
+
+  const handleAccountClick = useCallback(
+    (address: string) => async () => {
+      if (!site?.id) return
+      const isConnected = site?.ethAddresses?.includes(address)
+      const ethAddresses = isConnected ? [] : [address]
+      await api.authorizedSiteUpdate(site?.id, { ethAddresses })
+    },
+    [site?.ethAddresses, site?.id]
   )
 
   return (
-    <div>
-      {authorizedProviders.length > 1 && (
-        <div className="mb-4 flex w-full justify-end text-xs ">
-          <ProviderTypeSwitch
-            authorizedProviders={authorizedProviders}
-            defaultProvider={defaultProvider}
-            onChange={setProviderType}
+    <>
+      {evmAccounts.map(([acc, isConnected], idx) => (
+        <Fragment key={acc.address}>
+          {!!idx && <AccountSeparator />}
+          <ConnectAccountToggleButtonRow
+            account={acc}
+            showAddress
+            checked={isConnected}
+            onClick={handleAccountClick(acc.address)}
           />
-        </div>
-      )}
-      {providerType === "ethereum" ? (
-        <>
-          <SectionTitle>{t("Network")}</SectionTitle>
-          <NetworkSelect
-            className="!w-full [&>button]:!w-full"
-            withTestnets
-            defaultChainId={ethChainId.toString()}
-            onChange={(chainId) => {
-              genericEvent("evm network changed", { chainId, url })
-              setEthChainId(parseInt(chainId, 10))
-            }}
-          />
-          <Spacer small />
-        </>
-      ) : null}
-      <div className="flex w-full justify-between">
-        <SectionTitle>{title}</SectionTitle>
-        {providerType === "polkadot" && (
-          <Tooltip>
-            <TooltipTrigger className="text-body-secondary mb-4 text-sm leading-10">
-              <Checkbox onChange={handleShowEthAccountsChanged} defaultChecked={showEthAccounts}>
-                {t("Show Eth accounts")}
-              </Checkbox>
-            </TooltipTrigger>
-            <TooltipContent>{t("Some apps do not work with Ethereum accounts")}</TooltipContent>
-          </Tooltip>
-        )}
-      </div>
+        </Fragment>
+      ))}
+    </>
+  )
+}
 
-      <section className="flex flex-col gap-4 pb-12">
-        {accounts?.map(({ isConnected, toggle, ...account }) => (
-          <ConnectAccountToggleButton
-            key={account.address}
-            className={"account"}
-            account={account}
-            value={isConnected}
-            onChange={toggle}
-          />
-        ))}
-      </section>
+export const ConnectedAccounts: FC = () => {
+  const { t } = useTranslation()
+
+  const currentSite = useCurrentSite()
+  const authorisedSites = useAuthorisedSites()
+  const site = useMemo(
+    () => (currentSite?.id ? authorisedSites[currentSite?.id] : null),
+    [authorisedSites, currentSite?.id]
+  )
+
+  return (
+    <div className="flex w-full flex-col gap-6 pb-12">
+      <div className="text-body-secondary my-2 text-xs">
+        {t("Select which account(s) to connect to")}{" "}
+        <span className="text-body font-bold">{site?.id}</span>
+      </div>
+      {site?.ethAddresses && (
+        <ConnectAccountsContainer
+          label={t("Ethereum")}
+          status={site.ethAddresses.length ? "connected" : "disconnected"}
+          connectedAddresses={site.ethAddresses}
+          isSingleProvider={!site.addresses}
+          infoText={t("Account connected via the Ethereum provider")}
+        >
+          <EthAccounts site={site} />
+        </ConnectAccountsContainer>
+      )}
+      {site?.addresses && (
+        <ConnectAccountsContainer
+          label={t("Polkadot")}
+          status={site.addresses.length ? "connected" : "disconnected"}
+          connectedAddresses={site.addresses}
+          isSingleProvider={!site.ethAddresses}
+          infoText={t("Accounts connected via the Polkadot provider")}
+        >
+          <SubAccounts site={site} />
+        </ConnectAccountsContainer>
+      )}
     </div>
   )
 }

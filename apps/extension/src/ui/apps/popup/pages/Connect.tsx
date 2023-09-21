@@ -1,3 +1,4 @@
+import { ProviderType } from "@core/domains/sitesAuthorised/types"
 import { KnownRequestIdOnly } from "@core/libs/requests/types"
 import { isTalismanHostname } from "@core/page"
 import { AppPill } from "@talisman/components/AppPill"
@@ -5,22 +6,26 @@ import { notify } from "@talisman/components/Notifications"
 import useSet from "@talisman/hooks/useSet"
 import { InfoIcon } from "@talismn/icons"
 import { api } from "@ui/api"
-import { ConnectAccountToggleButton } from "@ui/domains/Site/ConnectAccountToggleButton"
+import { ConnectAccountsContainer } from "@ui/domains/Site/ConnectAccountsContainer"
+import { ConnectAccountToggleButtonRow } from "@ui/domains/Site/ConnectAccountToggleButtonRow"
 import useAccounts from "@ui/hooks/useAccounts"
+import { useAccountsSubscribe } from "@ui/hooks/useAccountsSubscribe"
 import { useAnalytics } from "@ui/hooks/useAnalytics"
 import { useRequest } from "@ui/hooks/useRequest"
-import { ChangeEventHandler, FC, useCallback, useEffect, useMemo, useState } from "react"
+import { capitalize } from "lodash"
+import { FC, useCallback, useEffect, useMemo } from "react"
 import { Trans, useTranslation } from "react-i18next"
 import { useParams } from "react-router-dom"
-import { Button, Drawer, Tooltip, TooltipContent, TooltipTrigger } from "talisman-ui"
-import { Checkbox } from "talisman-ui"
+import { Button, Drawer } from "talisman-ui"
 
 import { PopupContent, PopupFooter, PopupHeader, PopupLayout } from "../Layout/PopupLayout"
 
-const NoEthAccountWarning = ({
+const NoAccountWarning = ({
   onIgnoreClick,
   onAddAccountClick,
+  type,
 }: {
+  type: ProviderType
   onIgnoreClick: () => void
   onAddAccountClick: () => void
 }) => {
@@ -32,12 +37,12 @@ const NoEthAccountWarning = ({
           <InfoIcon className="text-primary-500 inline-block text-[4rem]" />
         </div>
         <p className="text-body-secondary text-center">
-          <Trans t={t}>
-            This application requires an <br />
-            <strong className="text-body">Ethereum account</strong> to connect.
-            <br />
-            Would you like to create or import one ?
-          </Trans>
+          <Trans
+            t={t}
+            defaults="This application requires a <br/><strong>{{type}} account</strong> to connect.<br/>Would you like to create or import one ?"
+            components={{ strong: <strong className="text-body" />, br: <br /> }}
+            values={{ type: capitalize(type) }}
+          />
         </p>
         <div className="mt-4 grid grid-cols-2 gap-8">
           <Button onClick={onIgnoreClick}>No</Button>
@@ -55,33 +60,25 @@ export const Connect: FC<{ className?: string }> = ({ className }) => {
   const { id } = useParams<"id">() as KnownRequestIdOnly<"auth">
   const authRequest = useRequest(id)
   const { popupOpenEvent } = useAnalytics()
+  const accountsReady = useAccountsSubscribe() // hack to prevent no accounts drawer flashing
   const allAccounts = useAccounts(isTalismanHostname(authRequest?.url) ? "all" : "owned")
-  const { items: connected, toggle, set } = useSet<string>()
+  const { items: connected, toggle, set, clear } = useSet<string>()
   const ethereum = !!authRequest?.request?.ethereum
-  const [showEthAccounts, setShowEthAccounts] = useState(false)
 
-  const accounts = useMemo(
-    () =>
-      authRequest && allAccounts
-        ? allAccounts.filter(
-            ({ type }) =>
-              showEthAccounts ||
-              (authRequest.request.ethereum ? type === "ethereum" : type !== "ethereum")
-          )
-        : [],
-    [allAccounts, authRequest, showEthAccounts]
-  )
+  const accounts = useMemo(() => {
+    if (!authRequest || !allAccounts) return []
+
+    // all accounts if polkadot, only ethereum accounts if ethereum
+    return authRequest.request.ethereum
+      ? allAccounts.filter(({ type }) => type === "ethereum")
+      : allAccounts
+  }, [allAccounts, authRequest])
 
   const handleToggle = useCallback(
     (address: string) => () => {
       ethereum ? set([address]) : toggle(address)
     },
     [ethereum, set, toggle]
-  )
-
-  const isMissingEthAccount = useMemo(
-    () => ethereum && !!allAccounts.length && !accounts.length,
-    [accounts.length, allAccounts.length, ethereum]
   )
 
   const authorise = useCallback(async () => {
@@ -110,7 +107,7 @@ export const Connect: FC<{ className?: string }> = ({ className }) => {
     popupOpenEvent("connect")
   }, [popupOpenEvent])
 
-  const handleNoEthAccountClose = useCallback(
+  const handleNoAccountClose = useCallback(
     (navigateToAddAccount: boolean) => () => {
       if (navigateToAddAccount) {
         api.dashboardOpen("/accounts/add")
@@ -121,17 +118,9 @@ export const Connect: FC<{ className?: string }> = ({ className }) => {
     [ignore, reject]
   )
 
-  const handleShowEthAccountsChanged: ChangeEventHandler<HTMLInputElement> = useCallback(
-    (e) => {
-      if (!e.target.checked)
-        for (const account of accounts.filter(
-          (a) => connected.includes(a.address) && a.type === "ethereum"
-        ))
-          toggle(account.address)
-      setShowEthAccounts(e.target.checked)
-    },
-    [accounts, connected, toggle]
-  )
+  const handleConnectAllClick = useCallback(() => {
+    set(accounts.map((account) => account.address))
+  }, [accounts, set])
 
   if (!authRequest) return null
 
@@ -140,39 +129,56 @@ export const Connect: FC<{ className?: string }> = ({ className }) => {
       <PopupHeader>
         <AppPill url={authRequest.url} />
       </PopupHeader>
-
       <PopupContent>
-        <h3 className="mb-12 mt-0 pt-10 text-center text-sm font-bold">
+        <h3 className="text-body-secondary mb-6 mt-0 pt-10 text-sm">
           {ethereum
             ? t("Choose the account you'd like to connect")
             : t("Choose the account(s) you'd like to connect")}
         </h3>
-        {!ethereum && (
-          <div className="text-body-secondary my-4 text-sm">
-            <Tooltip>
-              <TooltipTrigger className="text-body-secondary mb-4 text-sm leading-10">
-                <Checkbox onChange={handleShowEthAccountsChanged} defaultChecked={showEthAccounts}>
-                  {t("Show Eth accounts")}
-                </Checkbox>
-              </TooltipTrigger>
-              <TooltipContent>{t("Some apps do not work with Ethereum accounts")}</TooltipContent>
-            </Tooltip>
-          </div>
-        )}
         <section className="flex flex-col gap-4">
-          {accounts.map((account) => (
-            <ConnectAccountToggleButton
-              key={account.address}
-              account={account}
-              value={connected.includes(account?.address)}
-              onChange={handleToggle(account.address)}
-            />
-          ))}
-
-          {isMissingEthAccount && (
-            <NoEthAccountWarning
-              onIgnoreClick={handleNoEthAccountClose(false)}
-              onAddAccountClick={handleNoEthAccountClose(true)}
+          <ConnectAccountsContainer
+            status="disabled"
+            connectedAddresses={connected}
+            label={ethereum ? t("Ethereum") : t("Polkadot")}
+            infoText={t(`Accounts will be connected via the {{type}} provider`, {
+              type: ethereum ? "Ethereum" : "Polkadot",
+            })}
+            isSingleProvider
+          >
+            {!ethereum && (
+              <div className="mb-2 mt-6 flex w-full items-center justify-end gap-4 px-8 text-xs">
+                <button
+                  type="button"
+                  className="text-body-secondary hover:text-grey-300"
+                  onClick={clear}
+                >
+                  {t("Disconnect All")}
+                </button>
+                <div className="bg-body-disabled h-[1rem] w-0.5 "></div>
+                <button
+                  type="button"
+                  className="text-body-secondary hover:text-grey-300"
+                  text-body-secondary
+                  onClick={handleConnectAllClick}
+                >
+                  {t("Connect All")}
+                </button>
+              </div>
+            )}
+            {accounts.map((account) => (
+              <ConnectAccountToggleButtonRow
+                key={account.address}
+                account={account}
+                checked={connected.includes(account?.address)}
+                onClick={handleToggle(account.address)}
+              />
+            ))}
+          </ConnectAccountsContainer>
+          {!!accountsReady && !accounts.length && (
+            <NoAccountWarning
+              type={ethereum ? "ethereum" : "polkadot"}
+              onIgnoreClick={handleNoAccountClose(false)}
+              onAddAccountClick={handleNoAccountClose(true)}
             />
           )}
         </section>

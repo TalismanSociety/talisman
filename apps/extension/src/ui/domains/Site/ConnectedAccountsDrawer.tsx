@@ -27,7 +27,7 @@ const ConnectedAccountsDrawer: FC<Props> = ({ open, onClose }) => {
           </IconButton>
         </header>
         <ScrollContainer innerClassName="px-12">
-          <ConnectedAccounts siteId={id} />
+          <ConnectedAccounts />
         </ScrollContainer>
       </div>
     </Drawer>
