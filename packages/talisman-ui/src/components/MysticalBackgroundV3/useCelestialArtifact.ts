@@ -99,7 +99,7 @@ const generateArtifact = ({
   const height = Math.round(width * (1 - config.ellipsisRatio * Math.random()))
 
   const x = Math.round(Math.random() * parentSize.width)
-  const y = Math.round(Math.random() * parentSize.height - Math.max(width / 2, height / 2) / 2)
+  const y = Math.round(Math.random() * parentSize.height)
 
   const color = forceColor ?? Color.hsv(Math.random() * 360, 100, 100).hex()
   const opacity = randBetween(config.opacityMin, config.opacityMax)
