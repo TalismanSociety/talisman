@@ -16,6 +16,7 @@ export type CelestialArtifactProps = {
   /** Forces the artifact to use this color, instead of a randomly selected one */
   color?: string
 }
+
 export const useCelestialArtifact = ({
   config,
   parentSize,
@@ -42,7 +43,6 @@ export const useCelestialArtifact = ({
   )
 
   const [artifact, setArtifact] = useState(generate)
-
   useLayoutEffect(() => {
     let active = true
     const update = () => {
@@ -103,12 +103,7 @@ const generateArtifact = ({
 
   const color = forceColor ?? Color.hsv(Math.random() * 360, 100, 100).hex()
   const opacity = randBetween(config.opacityMin, config.opacityMax)
-
-  // start from the randomly generated opacity for this element
-  const startColor = Color(color).alpha(opacity).hexa()
-
-  // end as completely transparent
-  const endColor = Color(color).alpha(0).hexa()
+  const background = artifactBg(color, opacity)
 
   // This defines the base unit used in the `scale3d()` transform func.
   //
@@ -135,8 +130,11 @@ const generateArtifact = ({
   const tScale = `scale3d(${width / backgroundResolution}, ${height / backgroundResolution}, 1)`
   const transform = `${tCenterOrigin} ${tTranslate} ${tRotate} ${tScale}`
 
-  // debug
-  // const transform = `${tCenterOrigin} translate3d(${parentSize.width / 2}px, ${parentSize.height / 2}px, 0) scale3d(600, 600, 1)`
+  // NOTE: This transform can be handy for debugging the transition, because it keeps the
+  // artifact non-rotated and in the center of the screen.
+  // const transform = `${tCenterOrigin} translate3d(${parentSize.width / 2}px, ${
+  //   parentSize.height / 2
+  // }px, 0) ${tScale}`
 
   // TODO: Render two ellipses, and transition `opacity` to go from the colour of one to the colour of the other :)
   const ellipsis: CSSProperties = {
@@ -146,44 +144,32 @@ const generateArtifact = ({
     top: 0,
     left: 0,
 
-    // The performant transition properties are `transform`, `opacity` and `filter`
-    transitionProperty: "transform opacity",
+    // The performant transition properties are `transform`, `opacity` and `filter`.
+    // But the value of `transition-property` is set inside the <CelestialArtifact /> component, not here.
+    // (It needs to be changed as part of the opacity transition).
+    // transitionProperty: "transform",
     transitionDuration: `${duration}ms`,
     transitionTimingFunction: initialized ? "ease-in-out" : "ease-out",
 
     transformOrigin: "center",
     transform,
 
-    background: `radial-gradient(at center, ${startColor} 0%, ${endColor} 50%)`,
+    background,
     borderRadius: "50%",
     userSelect: "none",
   }
 
-  console.log(
-    JSON.stringify(
-      {
-        artifactIndex,
-        duration,
-        initialized,
-        color,
-        opacity,
-        parentSize,
-        maxSize,
-        width,
-        height,
-        x,
-        y,
-        tCenterOrigin,
-        tTranslate,
-        tRotate,
-        tScale,
-      },
-      null,
-      2
-    )
-  )
-
   return ellipsis
+}
+
+const artifactBg = (color: string, opacity: number) => {
+  // start from the randomly generated opacity for this element in the center
+  const startColor = Color(color).alpha(opacity).hexa()
+
+  // end as completely transparent at the edges
+  const endColor = Color(color).alpha(0).hexa()
+
+  return `radial-gradient(at center, ${startColor} 0%, ${endColor} 50%)`
 }
 
 const randBetween = (minimum: number, maximum: number) =>
