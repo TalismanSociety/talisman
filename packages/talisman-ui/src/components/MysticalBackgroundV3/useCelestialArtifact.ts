@@ -136,7 +136,6 @@ const generateArtifact = ({
   //   parentSize.height / 2
   // }px, 0) ${tScale}`
 
-  // TODO: Render two ellipses, and transition `opacity` to go from the colour of one to the colour of the other :)
   const ellipsis: CSSProperties = {
     position: "absolute",
     width: `${backgroundResolution}px`,

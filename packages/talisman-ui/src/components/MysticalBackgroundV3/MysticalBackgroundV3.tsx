@@ -102,7 +102,7 @@ const CelestialArtifact = memo((celestialProps: CelestialArtifactProps) => {
       <div
         ref={transitionInRef}
         className="opacity-0 transition-[transform] [&.trigger-transition]:opacity-100 [&.trigger-transition]:transition-[transform,opacity]"
-        style={useMemo(() => ({ ...artifact }), [artifact])}
+        style={artifact}
       />
     </>
   )
