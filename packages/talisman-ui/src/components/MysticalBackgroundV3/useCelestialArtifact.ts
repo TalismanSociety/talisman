@@ -163,7 +163,15 @@ const generateArtifact = ({
 
 const artifactBg = (color: string, opacity: number) => {
   // start from the randomly generated opacity for this element in the center
-  const startColor = Color(color).alpha(opacity).hexa()
+  //
+  // we multiply the generated opacity by 0.9 for legacy reasons:
+  // in the past we would set the opacity of the background startColor to 0.9,
+  // and then also set the element's opacity the randomly generated opacity
+  //
+  // but now we just combine both opacities into the background startColor
+  const startColor = Color(color)
+    .alpha(0.9 * opacity)
+    .hexa()
 
   // end as completely transparent at the edges
   const endColor = Color(color).alpha(0).hexa()
