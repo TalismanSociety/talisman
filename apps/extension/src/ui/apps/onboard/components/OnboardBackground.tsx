@@ -17,7 +17,6 @@ Background.displayName = "Background"
 
 export const OnboardBackground = () => {
   const { stage } = useOnboard()
-
   const style: CSSProperties = useMemo(() => ({ opacity: 1 - stage * 0.2 }), [stage])
 
   return (

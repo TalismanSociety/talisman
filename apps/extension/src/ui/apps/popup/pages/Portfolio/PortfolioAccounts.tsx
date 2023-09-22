@@ -165,10 +165,9 @@ const AccountsList = ({ className, options }: { className?: string; options: Acc
   </div>
 )
 
-const AccountsBgConfig: MysticalPhysicsV3 = {
+const BG_CONFIG: MysticalPhysicsV3 = {
   ...MYSTICAL_PHYSICS_V3,
   artifacts: 2,
-  blur: 0,
   radiusMin: 4,
   radiusMax: 4,
   opacityMin: 0.5,
@@ -219,11 +218,11 @@ const Accounts = ({
 
 const AllAccountsHeaderBackground = () => {
   const colors = useFirstAccountColors()
-  const config = useMemo(() => ({ ...AccountsBgConfig, colors }), [colors])
+  const config = useMemo(() => ({ ...BG_CONFIG, colors }), [colors])
 
   return (
     <MysticalBackground
-      className="absolute left-0 top-0 h-full w-full overflow-hidden rounded-sm"
+      className="absolute left-0 top-0 h-full w-full rounded-sm"
       config={config}
     />
   )
