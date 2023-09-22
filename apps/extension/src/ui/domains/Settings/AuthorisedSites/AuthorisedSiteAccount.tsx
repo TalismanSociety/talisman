@@ -29,14 +29,12 @@ export const AuthorisedSiteAccount: FC<{
           address={account.address}
           genesisHash={account.genesisHash}
         />
-        <div className="text-body-secondary text-md overflow-x-hidden text-ellipsis whitespace-nowrap">
+        <div className="text-body-secondary truncate text-base">
           {account.name ?? <Address address={account.address} />}
         </div>
         <AccountTypeIcon origin={account.origin} className="text-primary-500 text-md" />
       </div>
-      <div>
-        <Toggle checked={isConnected} onChange={handleChange} />
-      </div>
+      <Toggle checked={isConnected} onChange={handleChange} />
     </div>
   )
 }
