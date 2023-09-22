@@ -287,11 +287,13 @@ jobs:
     name: "Run e2e tests"
     runs-on: ubuntu-latest
     if: ${{ !github.event.pull_request.draft }}
-    needs: [build]
+    needs: build
     defaults:
       run:
         working-directory: e2e
     steps:
+      - name: List contents of dist folder
+        run: ls -R ./apps/extension/dist
       - name: Checkout repo
         uses: actions/checkout@v3
       - name: Setup Node.js environment
@@ -308,7 +310,6 @@ jobs:
         run: xvfb-run -a yarn e2e:test
         env:
           TESTING_PASSWORD: ${{ secrets.TESTING_PASSWORD }}
-          TESTING_SEEDPHRASE: ${{ secrets.TESTING_SEEDPHRASE }}
       - name: Upload test results
         if: failure()
         uses: actions/upload-artifact@v3
