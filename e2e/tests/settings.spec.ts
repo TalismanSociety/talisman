@@ -311,34 +311,35 @@ test.describe('Settings', () => {
             await expect(common.getByRole('link', 'Talisman')).toHaveAttribute('href', 'https://talisman.xyz');
         });
         await test.step('check external URLs are correct', async () => {
-            await common.getByRole('button', 'Help and Support').click();
-            await context.waitForEvent('page').then(async page => {
-                expect(page.url()).toBe('https://discord.com/invite/EF3Zf4R5bD')
-                await page.close();
+            await test.step('go to About. check Talisman URL is correct', async () => {
+                await common.getByRole('link', 'About').click();
+                await expect(common.getByRole('link', 'Talisman')).toHaveAttribute('href', 'https://talisman.xyz');
             });
-
-            await common.getByRole('button', 'Docs').click();
-            await context.waitForEvent('page').then(async page => {
-                expect(page.url()).toBe('https://docs.talisman.xyz/talisman/introduction/welcome-to-the-paraverse')
-                await page.close();
-            });
-
-            await common.getByRole('button', 'Changelog').click();
-            await context.waitForEvent('page').then(async page => {
-                expect(page.url()).toBe('https://docs.talisman.xyz/talisman/prepare-for-your-journey/wallet-release-notes')
-                await page.close();
-            });
-
-            await common.getByRole('button', 'Privacy Policy').click();
-            await context.waitForEvent('page').then(async page => {
-                expect(page.url()).toBe('https://docs.talisman.xyz/talisman/prepare-for-your-journey/privacy-policy')
-                await page.close();
-            });
+            await test.step('check external URLs are correct', async () => {
+                await common.getByRole('button', 'Help and Support').click();
+                await expect.poll(() => context.pages().length).toBe(2);
+                await expect(context.pages()[1]).toHaveURL('https://discord.com/invite/EF3Zf4R5bD')
+                await context.pages()[1].close();
     
-            await common.getByRole('button', 'Terms of Use').click();
-            await context.waitForEvent('page').then(async page => {
-                expect(page.url()).toBe('https://docs.talisman.xyz/talisman/prepare-for-your-journey/terms-of-use')
-                await page.close();
+                await common.getByRole('button', 'Docs').click();
+                await expect.poll(() => context.pages().length).toBe(2);
+                await expect(context.pages()[1]).toHaveURL('https://docs.talisman.xyz/talisman/introduction/welcome-to-the-paraverse')
+                await context.pages()[1].close();
+    
+                await common.getByRole('button', 'Changelog').click();
+                await expect.poll(() => context.pages().length).toBe(2);
+                await expect(context.pages()[1]).toHaveURL('https://docs.talisman.xyz/talisman/prepare-for-your-journey/wallet-release-notes')
+                await context.pages()[1].close();
+    
+                await common.getByRole('button', 'Privacy Policy').click();
+                await expect.poll(() => context.pages().length).toBe(2);
+                await expect(context.pages()[1]).toHaveURL('https://docs.talisman.xyz/talisman/prepare-for-your-journey/privacy-policy')
+                await context.pages()[1].close();
+    
+                await common.getByRole('button', 'Terms of Use').click();
+                await expect.poll(() => context.pages().length).toBe(2);
+                await expect(context.pages()[1]).toHaveURL('https://docs.talisman.xyz/talisman/prepare-for-your-journey/terms-of-use')
+                await context.pages()[1].close();
             });
         });
     });

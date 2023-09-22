@@ -1,6 +1,6 @@
 export const data = {
 	password: process.env.TESTING_PASSWORD as string,
-	seedPhrase: process.env.TESTING_SEEDPHRASE as string,
+	seedPhrase: 'test test test test test test test test test test test junk',
 	dotAccountName: 'My Polkadot',
 	dotName: 'Polkadot',
 	ethName: 'Ethereum',
