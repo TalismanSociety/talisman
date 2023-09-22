@@ -18,9 +18,9 @@ const BackupNotificationDisplay = () => {
   return (
     <DashboardNotification
       icon={<InfoIcon />}
-      title={t("Please backup your account.")}
+      title={t("Please backup your recovery phrases.")}
       description={t(
-        "If you don't backup your recovery phrase you may lose access to all your funds."
+        "If you don't backup your recovery phrases, you may lose access to all your funds."
       )}
       action={t("Backup Now")}
       onActionClick={handleBackupNowClick}
