@@ -15,6 +15,7 @@ import { AccountIcon } from "@ui/domains/Account/AccountIcon"
 import { AccountTypeIcon } from "@ui/domains/Account/AccountTypeIcon"
 import Fiat from "@ui/domains/Asset/Fiat"
 import { TokensAndFiat } from "@ui/domains/Asset/TokensAndFiat"
+import { useSelectedCurrency } from "@ui/hooks/useCurrency"
 import { FC, useCallback, useMemo, useState } from "react"
 import { Trans, useTranslation } from "react-i18next"
 import { Button, Checkbox, Tooltip, TooltipContent, TooltipTrigger } from "talisman-ui"
@@ -40,6 +41,8 @@ const JsonAccount: FC<{ account: JsonImportAccount; onSelect: (select: boolean) 
       return { tokenId, symbol: balances[0].token?.symbol, balances: new Balances(balances) }
     })
   }, [account])
+
+  const currency = useSelectedCurrency()
 
   return (
     <Tooltip>
@@ -67,7 +70,7 @@ const JsonAccount: FC<{ account: JsonImportAccount; onSelect: (select: boolean) 
               <Tooltip placement="bottom-end">
                 <TooltipTrigger asChild>
                   <div>
-                    <Fiat amount={account.balances.sum.fiat("usd").total} />
+                    <Fiat amount={account.balances.sum.fiat(currency).total} />
                   </div>
                 </TooltipTrigger>
                 {!!tokenBalances.length && (

@@ -3,6 +3,7 @@ import { WithTooltip } from "@talisman/components/Tooltip"
 import { AlertCircleIcon, LoaderIcon } from "@talismn/icons"
 import { classNames, encodeAnyAddress } from "@talismn/util"
 import useAccounts from "@ui/hooks/useAccounts"
+import { useSelectedCurrency } from "@ui/hooks/useCurrency"
 import { isEvmToken } from "@ui/util/isEvmToken"
 import { Suspense, lazy, useEffect, useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
@@ -72,6 +73,8 @@ const TotalValueRow = () => {
   } = useSendFunds()
   const amount = sendMax ? maxAmount : transfer
 
+  const currency = useSelectedCurrency()
+
   const totalValue = useMemo(() => {
     // Not all tokens have a fiat rate. if one of the 3 tokens doesn't have a rate, don't show the row
     if (
@@ -83,12 +86,12 @@ const TotalValueRow = () => {
     )
       return null
 
-    const fiatAmount = amount.fiat("usd") ?? 0
-    const fiatFee = estimatedFee.fiat("usd") ?? 0
-    const fiatTip = tip?.fiat("usd") ?? 0
+    const fiatAmount = amount.fiat(currency) ?? 0
+    const fiatFee = estimatedFee.fiat(currency) ?? 0
+    const fiatTip = tip?.fiat(currency) ?? 0
 
     return fiatAmount + fiatFee + fiatTip
-  }, [amount, estimatedFee, feeTokenRates, tip, tipTokenRates, tokenRates])
+  }, [amount, currency, estimatedFee, feeTokenRates, tip, tipTokenRates, tokenRates])
 
   if (!totalValue) return null
 

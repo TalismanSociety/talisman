@@ -49,7 +49,7 @@ export const EthSignBodyDefault: FC = () => {
               withIcon
               tokenId={nativeToken.id}
               tokens={amount.tokens}
-              fiat={amount.fiat("usd")}
+              fiat={amount}
               decimals={nativeToken.decimals}
               symbol={nativeToken.symbol}
             />

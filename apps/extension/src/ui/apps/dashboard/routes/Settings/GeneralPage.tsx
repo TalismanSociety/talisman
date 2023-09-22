@@ -3,6 +3,7 @@ import { Setting } from "@talisman/components/Setting"
 import {
   BellIcon,
   ChevronRightIcon,
+  DollarSignIcon,
   EyeOffIcon,
   FlagIcon,
   KeyIcon,
@@ -108,6 +109,13 @@ export const GeneralPage = () => {
             to={`/settings/language`}
           />
         )}
+        <CtaButton
+          iconLeft={DollarSignIcon}
+          iconRight={ChevronRightIcon}
+          title={t("Currency")}
+          subtitle={t("Set the currency of your wallet")}
+          to={`/settings/currency`}
+        />
         <Setting
           iconLeft={UserIcon}
           title={t("Account avatars")}

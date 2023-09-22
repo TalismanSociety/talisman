@@ -9,6 +9,7 @@ import { classNames, planckToTokens, tokensToPlanck } from "@talismn/util"
 import { SendFundsWizardPage, useSendFundsWizard } from "@ui/apps/popup/pages/SendFunds/context"
 import { useAccountByAddress } from "@ui/hooks/useAccountByAddress"
 import { useAddressBook } from "@ui/hooks/useAddressBook"
+import { useSelectedCurrency } from "@ui/hooks/useCurrency"
 import { useFormattedAddress } from "@ui/hooks/useFormattedAddress"
 import useToken from "@ui/hooks/useToken"
 import { isEvmToken } from "@ui/util/isEvmToken"
@@ -28,13 +29,13 @@ import {
 } from "react"
 import { Container } from "react-dom"
 import { Trans, useTranslation } from "react-i18next"
-import { Drawer } from "talisman-ui"
-import { Button, PillButton } from "talisman-ui"
+import { Button, Drawer, PillButton } from "talisman-ui"
 
 import { AccountIcon } from "../Account/AccountIcon"
 import { AccountTypeIcon } from "../Account/AccountTypeIcon"
 import { Address } from "../Account/Address"
 import { ChainLogo } from "../Asset/ChainLogo"
+import currencyConfig from "../Asset/currencyConfig"
 import Fiat from "../Asset/Fiat"
 import { TokenLogo } from "../Asset/TokenLogo"
 import Tokens from "../Asset/Tokens"
@@ -219,13 +220,15 @@ const FiatInput = () => {
     resizeFiatInput,
   } = useSendFunds()
 
+  const currency = useSelectedCurrency()
+
   const defaultValue = useMemo(
     () =>
       normalizeStringNumber(
-        sendMax && maxAmount ? maxAmount.fiat("usd") : transfer?.fiat("usd"),
+        sendMax && maxAmount ? maxAmount.fiat(currency) : transfer?.fiat(currency),
         2
       ),
-    [maxAmount, sendMax, transfer]
+    [currency, maxAmount, sendMax, transfer]
   )
 
   // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -280,7 +283,7 @@ const FiatInput = () => {
           isEstimatingMaxAmount ? "text-grey-800" : "peer-placeholder-shown:text-body-disabled"
         )}
       >
-        $
+        {currencyConfig[currency]?.unicodeCharacter}
       </div>
     </div>
   )
@@ -299,7 +302,7 @@ const FiatDisplay = () => {
 
   return (
     <DisplayContainer>
-      <Fiat amount={value.fiat("usd") ?? 0} noCountUp />
+      <Fiat amount={value} noCountUp />
     </DisplayContainer>
   )
 }
@@ -406,7 +409,7 @@ const TokenRow = ({ onEditClick }: { onEditClick: () => void }) => {
               />
             </div>
             <div className="text-body-disabled">
-              <Fiat amount={balance.transferable.fiat("usd")} noCountUp isBalance />
+              <Fiat amount={balance.transferable} noCountUp isBalance />
             </div>
           </>
         )}

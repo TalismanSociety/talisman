@@ -8,6 +8,7 @@ import { Statistics } from "@ui/domains/Portfolio/Statistics"
 import { useDisplayBalances } from "@ui/domains/Portfolio/useDisplayBalances"
 import { useAnalytics } from "@ui/hooks/useAnalytics"
 import { useAppState } from "@ui/hooks/useAppState"
+import { useSelectedCurrency } from "@ui/hooks/useCurrency"
 import { useHasAccounts } from "@ui/hooks/useHasAccounts"
 import { useEffect, useMemo } from "react"
 import { useTranslation } from "react-i18next"
@@ -18,19 +19,26 @@ const FullscreenPortfolioAssets = ({ balances }: { balances: Balances }) => {
   const { t } = useTranslation()
   const balancesToDisplay = useDisplayBalances(balances)
 
+  const currency = useSelectedCurrency()
+
   const { portfolio, available, locked } = useMemo(() => {
-    const { total, frozen, reserved, transferable } = balancesToDisplay.sum.fiat("usd")
+    const { total, frozen, reserved, transferable } = balancesToDisplay.sum.fiat(currency)
     return {
       portfolio: total,
       available: transferable,
       locked: frozen + reserved,
     }
-  }, [balancesToDisplay.sum])
+  }, [balancesToDisplay.sum, currency])
 
   return (
     <>
       <div className="flex w-full gap-8">
-        <Statistics className="max-w-[40%]" title={t("Total Portfolio Value")} fiat={portfolio} />
+        <Statistics
+          className="max-w-[40%]"
+          title={t("Total Portfolio Value")}
+          fiat={portfolio}
+          showCurrencyToggle
+        />
         <Statistics className="max-w-[40%]" title={t("Locked")} fiat={locked} locked />
         <Statistics className="max-w-[40%]" title={t("Available")} fiat={available} />
       </div>

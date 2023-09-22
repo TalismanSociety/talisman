@@ -8,6 +8,7 @@ import { useDisplayBalances } from "@ui/domains/Portfolio/useDisplayBalances"
 import { useTokenBalancesSummary } from "@ui/domains/Portfolio/useTokenBalancesSummary"
 import { useAnalytics } from "@ui/hooks/useAnalytics"
 import useBalances from "@ui/hooks/useBalances"
+import { useSelectedCurrency } from "@ui/hooks/useCurrency"
 import { useSearchParamsSelectedAccount } from "@ui/hooks/useSearchParamsSelectedAccount"
 import { useCallback, useEffect, useMemo } from "react"
 import { useTranslation } from "react-i18next"
@@ -17,11 +18,15 @@ import { IconButton } from "talisman-ui"
 const PageContent = ({ balances, symbol }: { balances: Balances; symbol: string }) => {
   const navigate = useNavigate()
   const balancesToDisplay = useDisplayBalances(balances)
+  const currency = useSelectedCurrency()
   const { token } = useTokenBalancesSummary(balancesToDisplay)
 
   const handleBackBtnClick = useCallback(() => navigate(-1), [navigate])
 
-  const total = useMemo(() => balancesToDisplay.sum.fiat("usd").total, [balancesToDisplay])
+  const total = useMemo(
+    () => balancesToDisplay.sum.fiat(currency).total,
+    [balancesToDisplay.sum, currency]
+  )
 
   const { t } = useTranslation()
 

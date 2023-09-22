@@ -12,6 +12,7 @@ import { usePortfolio } from "@ui/domains/Portfolio/context"
 import { useDisplayBalances } from "@ui/domains/Portfolio/useDisplayBalances"
 import { useAnalytics } from "@ui/hooks/useAnalytics"
 import useBalances from "@ui/hooks/useBalances"
+import { useSelectedCurrency } from "@ui/hooks/useCurrency"
 import { useFormattedAddress } from "@ui/hooks/useFormattedAddress"
 import { useSearchParamsSelectedAccount } from "@ui/hooks/useSearchParamsSelectedAccount"
 import { useSearchParamsSelectedFolder } from "@ui/hooks/useSearchParamsSelectedFolder"
@@ -67,6 +68,7 @@ const PageContent = ({
   )
 
   const balancesToDisplay = useDisplayBalances(balances)
+  const currency = useSelectedCurrency()
   const { open: openCopyAddressModal } = useCopyAddressModal()
   const { canSendFunds, cannotSendFundsReason, openSendFundsPopup } = useSendFundsPopup(account)
 
@@ -117,7 +119,7 @@ const PageContent = ({
               {account ? (
                 <Address address={formattedAddress} />
               ) : (
-                <Fiat amount={balances.sum.fiat("usd").total} isBalance />
+                <Fiat amount={balances.sum.fiat(currency).total} isBalance />
               )}
             </div>
           </div>

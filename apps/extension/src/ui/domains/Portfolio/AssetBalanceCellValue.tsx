@@ -59,7 +59,7 @@ export const AssetBalanceCellValue = ({
             </div>
           ) : null}
         </div>
-        <div>{fiat === null ? "-" : <Fiat currency="usd" amount={fiat} isBalance />}</div>
+        <div>{fiat === null ? "-" : <Fiat amount={fiat} isBalance />}</div>
       </div>
     </WithTooltip>
   )

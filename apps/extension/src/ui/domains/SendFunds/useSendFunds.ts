@@ -15,6 +15,7 @@ import { useBalance } from "@ui/hooks/useBalance"
 import useBalancesByAddress from "@ui/hooks/useBalancesByAddress"
 import { useBalancesHydrate } from "@ui/hooks/useBalancesHydrate"
 import useChain from "@ui/hooks/useChain"
+import { useSelectedCurrency } from "@ui/hooks/useCurrency"
 import { useEvmNetwork } from "@ui/hooks/useEvmNetwork"
 import { useTip } from "@ui/hooks/useTip"
 import useToken from "@ui/hooks/useToken"
@@ -172,6 +173,7 @@ const useSendFundsProvider = () => {
   const { tokensMap } = useTokens(true)
   const tokenRatesMap = useTokenRatesMap()
   const balances = useBalancesByAddress(from as string)
+  const currency = useSelectedCurrency()
   const token = useToken(tokenId)
   const tokenRates = useTokenRates(tokenId)
   const balance = useBalance(from as string, tokenId as string)
@@ -492,10 +494,10 @@ const useSendFundsProvider = () => {
       resizeTokensInput()
     }
     if (refFiatInput.current) {
-      refFiatInput.current.value = maxAmount.fiat("usd")?.toString() ?? ""
+      refFiatInput.current.value = maxAmount.fiat(currency)?.toString() ?? ""
       resizeFiatInput()
     }
-  }, [maxAmount, resizeFiatInput, resizeTokensInput, set, token])
+  }, [currency, maxAmount, resizeFiatInput, resizeTokensInput, set, token])
 
   const signMethod: SignMethod = useMemo(() => {
     if (!fromAccount || !token) return "unknown"

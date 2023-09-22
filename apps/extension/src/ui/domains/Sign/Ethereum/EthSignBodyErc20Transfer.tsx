@@ -1,6 +1,7 @@
 import { BalanceFormatter } from "@core/domains/balances"
 import { CustomErc20Token } from "@core/domains/tokens/types"
 import { TokenLogo } from "@ui/domains/Asset/TokenLogo"
+import { useSelectedCurrency } from "@ui/hooks/useCurrency"
 import useToken from "@ui/hooks/useToken"
 import { useTokenRates } from "@ui/hooks/useTokenRates"
 import useTokens from "@ui/hooks/useTokens"
@@ -20,6 +21,7 @@ export const EthSignBodyErc20Transfer: FC = () => {
   const { account, network, transactionInfo } = useEthSignKnownTransactionRequest()
 
   const nativeToken = useToken(network?.nativeToken?.id)
+  const currency = useSelectedCurrency()
 
   const { from, value, to } = useMemo(() => {
     return {
@@ -77,7 +79,7 @@ export const EthSignBodyErc20Transfer: FC = () => {
           tokens={amount.tokens}
           decimals={transactionInfo.asset.decimals}
           symbol={symbol}
-          fiat={amount.fiat("usd")}
+          fiat={amount.fiat(currency)}
           withIcon
         />
       </div>

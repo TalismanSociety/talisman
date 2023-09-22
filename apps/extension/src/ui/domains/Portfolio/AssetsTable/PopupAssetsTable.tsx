@@ -9,6 +9,7 @@ import Fiat from "@ui/domains/Asset/Fiat"
 import Tokens from "@ui/domains/Asset/Tokens"
 import { useAnalytics } from "@ui/hooks/useAnalytics"
 import { useBalancesStatus } from "@ui/hooks/useBalancesStatus"
+import { useSelectedCurrency } from "@ui/hooks/useCurrency"
 import { useSearchParamsSelectedAccount } from "@ui/hooks/useSearchParamsSelectedAccount"
 import { MouseEventHandler, ReactNode, useCallback, useMemo } from "react"
 import { Trans, useTranslation } from "react-i18next"
@@ -186,7 +187,7 @@ const AssetRow = ({ balances, locked }: AssetRowProps) => {
               />
             </div>
             <div className="text-body-secondary leading-base text-xs">
-              {fiat === null ? "-" : <Fiat currency="usd" amount={fiat} isBalance />}
+              {fiat === null ? "-" : <Fiat amount={fiat} isBalance />}
             </div>
           </div>
         </div>
@@ -250,7 +251,7 @@ const BalancesGroup = ({ label, fiatAmount, className, children }: GroupProps) =
       >
         <div className="text-body-secondary grow text-left">{label}</div>
         <div className="text-body-secondary truncate">
-          <Fiat amount={fiatAmount} currency="usd" isBalance />
+          <Fiat amount={fiatAmount} isBalance />
         </div>
         <div className="text-body-secondary text-md flex flex-col justify-center">
           <AccordionIcon isOpen={isOpen} />
@@ -273,11 +274,13 @@ export const PopupAssetsTable = ({ balances }: GroupedAssetsTableProps) => {
     skeletons,
   } = usePortfolioSymbolBalances(balances)
 
+  const currency = useSelectedCurrency()
+
   // calculate totals
   const { total, totalAvailable, totalLocked } = useMemo(() => {
-    const { total, transferable, locked, reserved } = balances.sum.fiat("usd")
+    const { total, transferable, locked, reserved } = balances.sum.fiat(currency)
     return { total, totalAvailable: transferable, totalLocked: locked + reserved }
-  }, [balances])
+  }, [balances.sum, currency])
 
   const { t } = useTranslation()
 
@@ -291,7 +294,7 @@ export const PopupAssetsTable = ({ balances }: GroupedAssetsTableProps) => {
             <div className="text-md flex items-center gap-2">
               <div className="text-body grow text-left">{t("Total")}</div>
               <div className="text-body-secondary truncate">
-                <Fiat amount={total} currency="usd" isBalance />
+                <Fiat amount={total} isBalance />
               </div>
             </div>
             <div className="h-8" />
