@@ -292,8 +292,6 @@ jobs:
       run:
         working-directory: e2e
     steps:
-      - name: List contents of dist folder
-        run: ls -R ./apps/extension/dist
       - name: Checkout repo
         uses: actions/checkout@v3
       - name: Setup Node.js environment
