@@ -28,8 +28,8 @@ export default class Portfolio extends Common {
         this.headerSend = page.locator('button:has-text("Asset") + div button:last-child')
         
         this.networkIcon = page.locator('div[class*="grid"] img')
-        this.networkName = page.locator('div[class*="grid"] div.base > :first-child')
-        this.networkCopyAddress = page.locator('div[class*="grid"] div.base > :nth-child(2)')
+        this.networkName = page.locator('div[class*="grid"] div.base > img + span')
+        this.networkCopyAddress = page.locator('div[class*="grid"] div.base > span + button')
     }
 
     getNetwork = (networkName: string) => this.page.locator(`ul[role="listbox"] > li >> text="${networkName}"`)

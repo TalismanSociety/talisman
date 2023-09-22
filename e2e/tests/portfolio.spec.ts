@@ -48,7 +48,7 @@ test.describe('Portfolio', async () => {
         });
     });
 
-    test('Copy Address ', async ({page, portfolio, modal}) => {
+    test('Copy Address', async ({page, portfolio, modal}) => {
         let network: string, address: string;
         await test.step('click on an asset listed on Portfolio', async () => {
             await portfolio.assetList.first().click();
