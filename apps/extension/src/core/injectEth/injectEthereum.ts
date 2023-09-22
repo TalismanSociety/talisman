@@ -2,6 +2,7 @@ import { log } from "@core/log"
 import { logProxy } from "@core/log/logProxy"
 import { SendRequest } from "@core/types"
 
+import { announceProvider } from "./eip6963"
 import { getInjectableEvmProvider } from "./getInjectableEvmProvider"
 
 type TalismanWindow = Window &
@@ -65,6 +66,9 @@ export const injectEthereum = (sendRequest: SendRequest) => {
     windowInject.web3 = { currentProvider: talismanEth }
 
     window.dispatchEvent(new Event("ethereum#initialized"))
+
+    // eip-6963 wallet announcement
+    announceProvider(talismanEth)
   } else if (WITH_LOG_PROXY) {
     windowInject.ethereum = logProxy(windowInject.ethereum)
   }
