@@ -29,20 +29,17 @@ export const getEvmNetworkFormSchema = (evmNetworkId?: string) =>
         .test("rpcs-unique", i18next.t("Must be unique"), function (rpcs) {
           if (!rpcs?.length) return true
           const urls = rpcs.map((rpc) => rpc.url)
-          const error = urls
-            .map((url, i) => {
-              const prevUrls = urls.slice(0, i)
-              if (prevUrls.includes(url)) {
-                return this.createError({
-                  message: i18next.t("Must be unique"),
-                  path: `rpcs[${i}].url`,
-                })
-              }
-              return
-            })
-            .find(Boolean)
+          const duplicate = urls.filter((url, i) => {
+            const prevUrls = urls.slice(0, i)
+            return prevUrls.includes(url)
+          })
 
-          if (error) return error
+          if (duplicate.length) {
+            return this.createError({
+              message: i18next.t("Must be unique"),
+              path: `rpcs[${urls.lastIndexOf(duplicate[0])}].url`,
+            })
+          }
 
           return true
         })
