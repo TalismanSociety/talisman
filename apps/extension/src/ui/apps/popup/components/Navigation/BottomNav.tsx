@@ -182,7 +182,7 @@ export const BottomNav = () => {
               <NavIconExpand />
             </BottomNavButton>
           </TooltipTrigger>
-          <TooltipContent>{t("Expand Portfolio View")}</TooltipContent>
+          <TooltipContent>{t("Fullscreen View")}</TooltipContent>
         </Tooltip>
         <Tooltip placement="top">
           <TooltipTrigger asChild>
