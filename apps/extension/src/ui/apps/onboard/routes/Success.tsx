@@ -20,8 +20,9 @@ export const SuccessPage = () => {
         <div className="text-center text-lg">Welcome, brave Seeker!</div>
         <img src={imgHandOrb} className="w-[23rem]" alt="Talisman Hand Logo" />
         <div className="text-body-secondary text-center">
-          Your wallet has been forged in the fires of Talisman. You're ready to get started with
-          Talisman.
+          Your wallet has been forged in the fires of Talisman.
+          <br />
+          You're ready to get started!
         </div>
         <Button primary onClick={completeOnboarding}>
           Enter Talisman
