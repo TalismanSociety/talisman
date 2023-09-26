@@ -18,6 +18,7 @@ import { AddressDisplay } from "./AddressDisplay"
 import { SendFundsFeeTooltip } from "./SendFundsFeeTooltip"
 import { SendFundsHardwareEthereum } from "./SendFundsHardwareEthereum"
 import { SendFundsHardwareSubstrate } from "./SendFundsHardwareSubstrate"
+import { useNetworkDetails } from "./useNetworkDetails"
 import { useSendFunds } from "./useSendFunds"
 
 const SendFundsQrSubstrate = lazy(() => import("./SendFundsQrSubstrate"))
@@ -37,17 +38,7 @@ const AmountDisplay = () => {
 }
 
 const NetworkDisplay = () => {
-  const { chain, evmNetwork } = useSendFunds()
-
-  const { networkId, networkName } = useMemo(
-    () => ({
-      networkId: (chain ?? evmNetwork)?.id,
-      networkName:
-        chain?.name ??
-        (evmNetwork ? `${evmNetwork?.name}${evmNetwork?.substrateChain ? " (Ethereum)" : ""}` : ""),
-    }),
-    [chain, evmNetwork]
-  )
+  const { networkId, networkName } = useNetworkDetails()
 
   if (!networkId) return null
 
