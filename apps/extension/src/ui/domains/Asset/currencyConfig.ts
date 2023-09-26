@@ -11,6 +11,19 @@ import jpyIcon from "./currencyIcons/jpy.svg?url"
 import rubIcon from "./currencyIcons/rub.svg?url"
 import usdIcon from "./currencyIcons/usd.svg?url"
 
+export const currencyOrder: TokenRateCurrency[] = [
+  "btc",
+  "eth",
+  "dot",
+  "usd",
+  "aud",
+  "cny",
+  "eur",
+  "gbp",
+  "jpy",
+  "rub",
+]
+
 const currencyConfig: Partial<
   Record<TokenRateCurrency, { unicodeCharacter: string; name: string; icon: string }>
 > = {

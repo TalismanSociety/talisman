@@ -113,7 +113,7 @@ export const GeneralPage = () => {
           iconLeft={DollarSignIcon}
           iconRight={ChevronRightIcon}
           title={t("Currency")}
-          subtitle={t("Set the currency of your wallet")}
+          subtitle={t("Set currencies for viewing your portolio value")}
           to={`/settings/currency`}
         />
         <Setting
