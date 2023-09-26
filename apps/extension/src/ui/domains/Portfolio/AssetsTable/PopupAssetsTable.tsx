@@ -88,7 +88,8 @@ const AssetRow = ({ balances, locked }: AssetRowProps) => {
   const { account } = useSearchParamsSelectedAccount()
   const status = useBalancesStatus(balances)
 
-  const { token, summary } = useTokenBalancesSummary(balances)
+  const currency = useSelectedCurrency()
+  const { token, summary, rates } = useTokenBalancesSummary(balances)
   const { showNomPoolBanner, dismissNomPoolBanner } = useNomPoolStakingBanner()
   const showBanner = showNomPoolBanner({
     chainId: token?.chain?.id,
@@ -152,18 +153,23 @@ const AssetRow = ({ balances, locked }: AssetRowProps) => {
           <div className="relative grow">
             {/* we want content from this cell to be hidden if there are too many tokens to display on right cell */}
             <div className="absolute left-0 top-0 flex w-full flex-col gap-2 overflow-hidden text-left">
-              <div className="text-body flex items-center gap-3 whitespace-nowrap text-sm font-bold">
-                {token.symbol}
-                {!!token.isTestnet && (
-                  <span className="text-tiny bg-alert-warn/10 text-alert-warn rounded px-3 py-1 font-light">
-                    {t("Testnet")}
-                  </span>
+              <div className="flex items-center gap-3">
+                <div className="text-body flex items-center gap-3 whitespace-nowrap text-sm font-bold">
+                  {token.symbol}
+                  {!!token.isTestnet && (
+                    <span className="text-tiny bg-alert-warn/10 text-alert-warn rounded px-3 py-1 font-light">
+                      {t("Testnet")}
+                    </span>
+                  )}
+                </div>
+                {!!networkIds.length && (
+                  <div className="text-base">
+                    <NetworksLogoStack networkIds={networkIds} max={3} />
+                  </div>
                 )}
               </div>
-              {!!networkIds.length && (
-                <div className="text-base">
-                  <NetworksLogoStack networkIds={networkIds} />
-                </div>
+              {rates !== undefined && (
+                <Fiat amount={rates[currency]} className="text-body-secondary text-xs" />
               )}
             </div>
           </div>

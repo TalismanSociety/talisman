@@ -1,6 +1,7 @@
 import { Balances } from "@core/domains/balances/types"
 import { ChevronLeftIcon, CopyIcon, SendIcon } from "@talismn/icons"
 import { classNames } from "@talismn/util"
+import Fiat from "@ui/domains/Asset/Fiat"
 import { TokenLogo } from "@ui/domains/Asset/TokenLogo"
 import { useCopyAddressModal } from "@ui/domains/CopyAddress"
 import { DashboardAssetDetails } from "@ui/domains/Portfolio/AssetDetails"
@@ -10,6 +11,7 @@ import { Statistics } from "@ui/domains/Portfolio/Statistics"
 import { useDisplayBalances } from "@ui/domains/Portfolio/useDisplayBalances"
 import { useTokenBalancesSummary } from "@ui/domains/Portfolio/useTokenBalancesSummary"
 import { useAnalytics } from "@ui/hooks/useAnalytics"
+import { useSelectedCurrency } from "@ui/hooks/useCurrency"
 import { useSendFundsPopup } from "@ui/hooks/useSendFundsPopup"
 import { useCallback, useEffect, useMemo } from "react"
 import { useTranslation } from "react-i18next"
@@ -19,7 +21,8 @@ import { Tooltip, TooltipContent, TooltipTrigger } from "talisman-ui"
 const PageContent = ({ balances, symbol }: { balances: Balances; symbol: string }) => {
   const navigate = useNavigate()
   const balancesToDisplay = useDisplayBalances(balances)
-  const { token, summary } = useTokenBalancesSummary(balancesToDisplay)
+  const currency = useSelectedCurrency()
+  const { token, rates, summary } = useTokenBalancesSummary(balancesToDisplay)
   const { open: openCopyAddressModal } = useCopyAddressModal()
   const { genericEvent } = useAnalytics()
   const { account } = useSelectedAccount()
@@ -52,11 +55,14 @@ const PageContent = ({ balances, symbol }: { balances: Balances; symbol: string 
             <ChevronLeftIcon />
             <span className="text-sm">{t("Asset")}</span>
           </button>
-          <div className="flex items-center gap-4">
-            <div className="w-12 shrink-0 text-lg">
-              <TokenLogo tokenId={token?.id} />
+          <div className="flex items-center gap-6">
+            <div className="text-3xl">
+              <TokenLogo tokenId={token?.id} className="text-3xl" />
             </div>
-            <div className="text-md">{token?.symbol}</div>
+            <div>
+              <div className="text-md">{token?.symbol}</div>
+              {rates && <Fiat amount={rates[currency]} className="text-body-secondary" />}
+            </div>
             <div className="flex flex-wrap">
               <Tooltip>
                 <TooltipTrigger

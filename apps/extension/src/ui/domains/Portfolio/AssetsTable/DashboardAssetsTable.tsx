@@ -2,8 +2,10 @@ import { TALISMAN_WEB_APP_STAKING_URL } from "@core/constants"
 import { Balances } from "@core/domains/balances/types"
 import { ExternalLinkIcon, XIcon, ZapIcon } from "@talismn/icons"
 import { classNames } from "@talismn/util"
+import Fiat from "@ui/domains/Asset/Fiat"
 import { useAnalytics } from "@ui/hooks/useAnalytics"
 import { useBalancesStatus } from "@ui/hooks/useBalancesStatus"
+import { useSelectedCurrency } from "@ui/hooks/useCurrency"
 import { FC, useCallback } from "react"
 import { Trans, useTranslation } from "react-i18next"
 import { useNavigate } from "react-router-dom"
@@ -56,7 +58,8 @@ const AssetRow = ({ balances }: AssetRowProps) => {
 
   const status = useBalancesStatus(balances)
 
-  const { token, summary } = useTokenBalancesSummary(balances)
+  const currency = useSelectedCurrency()
+  const { token, rates, summary } = useTokenBalancesSummary(balances)
   const { showNomPoolBanner, dismissNomPoolBanner } = useNomPoolStakingBanner()
   const showBanner = showNomPoolBanner({
     chainId: token?.chain?.id,
@@ -130,18 +133,23 @@ const AssetRow = ({ balances }: AssetRowProps) => {
               <TokenLogo tokenId={token.id} />
             </div>
             <div className="flex grow flex-col justify-center gap-2">
-              <div className="text-body flex items-center gap-4 text-base font-bold">
-                {token.symbol}
-                {!!token.isTestnet && (
-                  <span className="text-tiny bg-alert-warn/10 text-alert-warn rounded px-3 py-1 font-light">
-                    {t("Testnet")}
-                  </span>
+              <div className="flex items-center gap-3">
+                <div className="text-body flex items-center gap-4 text-base font-bold">
+                  {token.symbol}
+                  {!!token.isTestnet && (
+                    <span className="text-tiny bg-alert-warn/10 text-alert-warn rounded px-3 py-1 font-light">
+                      {t("Testnet")}
+                    </span>
+                  )}
+                </div>
+                {!!networkIds.length && (
+                  <div>
+                    <NetworksLogoStack networkIds={networkIds} max={3} />
+                  </div>
                 )}
               </div>
-              {!!networkIds.length && (
-                <div>
-                  <NetworksLogoStack networkIds={networkIds} />
-                </div>
+              {rates !== undefined && (
+                <Fiat amount={rates[currency]} className="text-body-secondary" />
               )}
             </div>
           </div>
