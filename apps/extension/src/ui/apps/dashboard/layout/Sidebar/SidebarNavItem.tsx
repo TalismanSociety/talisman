@@ -24,7 +24,10 @@ export const SidebarNavItem = ({
     <ResponsiveTooltip tooltip={title} className={className}>
       <NavItem
         {...props}
-        className={classNames("flex-col md:text-center lg:flex-row lg:text-left", navItemClassName)}
+        className={classNames(
+          "flex-col py-6 md:text-center lg:flex-row lg:text-left",
+          navItemClassName
+        )}
         contentClassName={classNames("hidden md:block", contentClassName)}
       >
         {isExternalLink ? (

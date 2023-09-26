@@ -97,7 +97,7 @@ export const MainSidebar = () => {
   }, [genericEvent, navigate])
 
   return (
-    <Nav className="gap-2 p-4 text-sm lg:p-12 lg:text-base">
+    <Nav className="gap-1 p-4 text-sm lg:px-12 lg:pb-12 lg:pt-6 lg:text-base">
       <SidebarNavItem
         title={t("Add Account")}
         to="/accounts/add"
