@@ -4,7 +4,7 @@ import { FadeIn } from "@talisman/components/FadeIn"
 import { HeaderBlock } from "@talisman/components/HeaderBlock"
 import { notify } from "@talisman/components/Notifications"
 import { Chain } from "@talismn/chaindata-provider"
-import { SeedIcon } from "@talismn/icons"
+import { SecretIcon } from "@talismn/icons"
 import { api } from "@ui/api"
 import { AccountAddMnemonicDropdown } from "@ui/domains/Account/AccountAdd/AccountAddDerived/AccountAddMnemonicDropdown"
 import { ChainLogo } from "@ui/domains/Asset/ChainLogo"
@@ -118,7 +118,7 @@ const MnemonicButton: FC<{ label: string }> = ({ label }) => {
       onClick={handleClick}
       className="bg-grey-800 hover:bg-grey-700 hover:text-grey-200 inline-flex max-w-full items-center gap-2 overflow-hidden rounded px-3 py-1 pb-1"
     >
-      <SeedIcon className="shrink-0" />
+      <SecretIcon className="shrink-0" />
       <span className="truncate">{label}</span>
     </button>
   )

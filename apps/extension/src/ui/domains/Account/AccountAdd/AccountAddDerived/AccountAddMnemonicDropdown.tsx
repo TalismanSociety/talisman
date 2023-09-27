@@ -1,5 +1,5 @@
 import { AccountJsonAny } from "@core/domains/accounts/types"
-import { PlusIcon, SeedIcon } from "@talismn/icons"
+import { PlusIcon, SecretIcon } from "@talismn/icons"
 import useAccounts from "@ui/hooks/useAccounts"
 import { useMnemonics } from "@ui/hooks/useMnemonics"
 import { FC, useCallback, useMemo } from "react"
@@ -69,7 +69,7 @@ export const AccountAddMnemonicDropdown: FC<{
       renderItem={(o) => (
         <div className="text-body-secondary flex w-full items-center gap-6 overflow-hidden">
           <div className="bg-body/10 text-md rounded-full p-4">
-            {o.value === "new" ? <PlusIcon /> : <SeedIcon />}
+            {o.value === "new" ? <PlusIcon /> : <SecretIcon />}
           </div>
           <div className="grow truncate text-sm">{o.label}</div>
           {o.value !== "new" && (

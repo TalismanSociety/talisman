@@ -3,7 +3,7 @@ import {
   AlertCircleIcon,
   GlobeIcon,
   LinkIcon,
-  SeedIcon,
+  SecretIcon,
   ShieldIcon,
   SlidersIcon,
   TalismanHandIcon,
@@ -31,7 +31,7 @@ export const SettingsSidebar = () => {
           </span>
         }
         to="/settings/mnemonics"
-        icon={<SeedIcon />}
+        icon={<SecretIcon />}
       />
       <SidebarNavItem title={t("Address Book")} to="/settings/address-book" icon={<UsersIcon />} />
       <SidebarNavItem

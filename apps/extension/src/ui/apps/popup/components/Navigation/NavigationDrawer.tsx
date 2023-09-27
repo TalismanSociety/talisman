@@ -6,10 +6,10 @@ import {
   AlertCircleIcon,
   ExternalLinkIcon,
   ImageIcon,
+  KeyIcon,
   LockIcon,
   PlusIcon,
   RepeatIcon,
-  SeedIcon,
   SendIcon,
   SettingsIcon,
   UsersIcon,
@@ -151,7 +151,7 @@ export const NavigationDrawer: FC = () => {
                 <ExternalLinkIcon />
               </span>
             </NavItem>
-            <NavItem icon={<SeedIcon />} onClick={handleBackupClick}>
+            <NavItem icon={<KeyIcon />} onClick={handleBackupClick}>
               <span className="flex items-center">
                 {t("Backup Wallet")}
                 {!allBackedUp && <AlertCircleIcon className="text-primary ml-2 inline text-sm" />}
@@ -169,7 +169,7 @@ export const NavigationDrawer: FC = () => {
             onClick={handleLock}
           >
             <div className="border-1 border-grey-800 h-0 w-11/12 border-t" />
-            <div className="flex w-full items-end justify-center gap-6 rounded-none py-12  pr-4 text-center">
+            <div className="flex w-full items-end justify-center gap-6 rounded-none py-12 pr-4 text-center">
               <LockIcon className="text-lg" />
               <span>{t("Lock Wallet")}</span>
             </div>

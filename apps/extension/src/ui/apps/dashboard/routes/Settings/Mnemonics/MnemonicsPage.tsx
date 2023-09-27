@@ -9,7 +9,7 @@ import {
   InfoIcon,
   MoreHorizontalIcon,
   PolkadotVaultIcon,
-  SeedIcon,
+  SecretIcon,
 } from "@talismn/icons"
 import { classNames } from "@talismn/util"
 import { AccountIcon } from "@ui/domains/Account/AccountIcon"
@@ -149,7 +149,7 @@ const MnemonicRow: FC<{ mnemonic: Mnemonic }> = ({ mnemonic }) => {
         )}
       >
         <div className="bg-body-secondary/10 flex h-[4rem] w-[4rem] shrink-0 items-center justify-center rounded-full">
-          <SeedIcon className="text-body-secondary text-lg" />
+          <SecretIcon className="text-body-secondary text-lg" />
         </div>
         <div className="flex grow flex-col gap-2 overflow-hidden">
           <div className="flex items-center gap-2">
