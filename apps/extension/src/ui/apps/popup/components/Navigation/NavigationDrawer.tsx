@@ -162,14 +162,17 @@ export const NavigationDrawer: FC = () => {
             </NavItem>
           </Nav>
         </ScrollContainer>
-        <footer className="border-grey-800 border-t">
+        <footer>
           <button
             type="button"
-            className="text-body-secondary hover:bg-grey-800 hover:text-body flex w-full items-end justify-center gap-6 rounded-none py-12 pr-4 text-center"
+            className="text-body-secondary hover:bg-grey-800 hover:text-body flex w-full flex-col items-center"
             onClick={handleLock}
           >
-            <LockIcon className="text-lg" />
-            <span>{t("Lock Wallet")}</span>
+            <div className="border-1 border-grey-800 h-0 w-11/12 border-t" />
+            <div className="flex w-full items-end justify-center gap-6 rounded-none py-12  pr-4 text-center">
+              <LockIcon className="text-lg" />
+              <span>{t("Lock Wallet")}</span>
+            </div>
           </button>
         </footer>
       </div>
