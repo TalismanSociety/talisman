@@ -4,6 +4,16 @@ import { useTranslation } from "react-i18next"
 
 import { useSendFunds } from "./useSendFunds"
 
+/**
+ * Returns a function that formats a network name for display.
+ * @returns A function that formats a network name for display.
+ * @description
+ * For networks which have both a Substrate and Ethereum chain, the network name will be formatted as:
+ *   Network Name (Substrate) or Network Name (Ethereum)
+ *
+ * For networks which have only a Substrate or Ethereum chain, the network name will be formatted as:
+ *   Network Name
+ **/
 export const useFormatNetworkName = () => {
   const [t] = useTranslation()
 
