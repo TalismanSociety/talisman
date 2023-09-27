@@ -25,6 +25,7 @@ export { ReactComponent as SwapIcon } from "./icons/swap.svg"
 export { ReactComponent as TableIcon } from "./icons/table.svg"
 export { ReactComponent as TalismanHandIcon } from "./icons/talisman-hand.svg"
 export { ReactComponent as UsbIcon } from "./icons/usb.svg"
+export { ReactComponent as UserRightIcon } from "./icons/user-right.svg"
 export { ReactComponent as VoteIcon } from "./icons/vote.svg"
 
 export {
