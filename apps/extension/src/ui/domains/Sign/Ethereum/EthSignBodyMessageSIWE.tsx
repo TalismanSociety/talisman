@@ -98,8 +98,9 @@ export const EthSignBodyMessageSIWE: FC<{
           </div>
         </div>
         {!!siwe.statement && (
-          <div className="bg-grey-850 text-body-secondary leading-paragraph mb-16 w-full rounded-sm p-4 text-center text-sm">
-            {siwe.statement}
+          <div className="bg-grey-850  mb-16 w-full rounded-sm p-4 text-sm">
+            <div className="text-body-disabled text-xs">{t("Statement")}</div>
+            <div className="text-body leading-paragraph mt-2">{siwe.statement}</div>
           </div>
         )}
         <ViewDetailsButton onClick={open} />
