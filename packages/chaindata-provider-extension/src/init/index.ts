@@ -5,8 +5,6 @@ import { Chain } from "@talismn/chaindata-provider"
 // yarn workspace @talismn/chaindata-provider-extension generate-init-data
 import initChainsResponse from "./chains.json"
 import initEvmNetworksResponse from "./evm-networks.json"
-import initTokensResponse from "./tokens.json"
 
 export const fetchInitChains = async () => initChainsResponse as Chain[]
 export const fetchInitEvmNetworks = async () => initEvmNetworksResponse
-export const fetchInitTokens = async () => initTokensResponse

@@ -1,7 +1,7 @@
 import { Metadata, StorageKey, TypeRegistry, decorateStorage } from "@polkadot/types"
 import type { Registry } from "@polkadot/types-codec/types"
 import { ChainConnector } from "@talismn/chain-connector"
-import { BalanceMetadata, Chain, ChainId } from "@talismn/chaindata-provider"
+import { BalancesMetadata, Chain, ChainId } from "@talismn/chaindata-provider"
 import { hasOwnProperty } from "@talismn/util"
 import groupBy from "lodash/groupBy"
 
@@ -149,8 +149,8 @@ export const findChainMeta = <TBalanceModule extends AnyNewBalanceModule>(
   moduleType: InferModuleType<TBalanceModule>,
   chain?: Chain
 ): InferChainMeta<TBalanceModule> | undefined => {
-  type FoundMeta = BalanceMetadata & { metadata?: InferChainMeta<TBalanceModule> }
-  return (chain?.balanceMetadata ?? []).find(
+  type FoundMeta = BalancesMetadata & { metadata?: InferChainMeta<TBalanceModule> }
+  return (chain?.balancesMetadata ?? []).find(
     (meta): meta is FoundMeta => meta.moduleType === moduleType
   )?.metadata
 }

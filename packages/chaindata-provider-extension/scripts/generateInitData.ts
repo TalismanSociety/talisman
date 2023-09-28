@@ -1,7 +1,7 @@
 import fs from "fs"
 import path from "path"
 
-import { fetchChains, fetchEvmNetworks, fetchTokens } from "../src/graphql"
+import { fetchChains, fetchEvmNetworks } from "../src/net"
 
 async function generateInitData() {
   fs.writeFileSync(
@@ -11,10 +11,6 @@ async function generateInitData() {
   fs.writeFileSync(
     path.resolve(__dirname, "../src/init/evm-networks.json"),
     JSON.stringify(await fetchEvmNetworks(), null, 2)
-  )
-  fs.writeFileSync(
-    path.resolve(__dirname, "../src/init/tokens.json"),
-    JSON.stringify(await fetchTokens(), null, 2)
   )
 }
 

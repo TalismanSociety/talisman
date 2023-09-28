@@ -1,4 +1,4 @@
-import { ChainId } from "./Chain"
+import { BalancesConfig, BalancesMetadata, ChainId } from "./Chain"
 import { TokenId } from "./Token"
 
 export type EvmNetworkList = Record<EvmNetworkId, EvmNetwork | CustomEvmNetwork>
@@ -18,8 +18,10 @@ export type EvmNetwork = {
   tokens: Array<{ id: TokenId }> | null
   explorerUrl: string | null
   rpcs: Array<EthereumRpc> | null
-  isHealthy: boolean
   substrateChain: { id: ChainId } | null
+
+  balancesConfig: Array<BalancesConfig>
+  balancesMetadata: Array<BalancesMetadata>
 }
 export type CustomEvmNetwork = EvmNetwork & {
   isCustom: true
@@ -29,5 +31,4 @@ export type CustomEvmNetwork = EvmNetwork & {
 
 export type EthereumRpc = {
   url: string // The url of this ethereum RPC
-  isHealthy: boolean // The health status of this ethereum RPC
 }

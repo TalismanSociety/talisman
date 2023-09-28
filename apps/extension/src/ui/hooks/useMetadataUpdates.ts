@@ -66,7 +66,7 @@ export const useMetadataUpdates = (genesisHash?: HexString, specVersion?: number
       const hasMetadata = !!metadata
       const isMetadataUpToDate =
         specVersion === undefined ? !!metadata : metadata?.specVersion === specVersion
-      const rpcUrl = chain?.rpcs?.filter((rpc) => rpc.isHealthy)?.[0]?.url
+      const rpcUrl = chain?.rpcs?.[0]?.url
       const updateUrl = rpcUrl
         ? `https://polkadot.js.org/apps/?rpc=${encodeURIComponent(rpcUrl)}#/settings/metadata`
         : undefined

@@ -6,7 +6,7 @@ import { WsProvider } from "@polkadot/api"
 import { assert, u8aToHex } from "@polkadot/util"
 import { CustomSubNativeToken, subNativeTokenId } from "@talismn/balances-substrate-native"
 import {
-  BalanceMetadata,
+  BalancesMetadata,
   CustomChain,
   githubUnknownTokenLogoUrl,
 } from "@talismn/chaindata-provider"
@@ -31,7 +31,7 @@ export class ChainsHandler extends ExtensionHandler {
   }
 
   private chainUpsert: MessageHandler<"pri(chains.upsert)"> = async (chain) => {
-    let customBalanceMetadata: BalanceMetadata[] | undefined = undefined
+    let customBalancesMetadata: BalancesMetadata[] | undefined = undefined
     if (chain.id === `custom-${chain.genesisHash}`) {
       // When saving custom chains, download the chain metadata and build some SCALE types so we can fetch balances.
       //
@@ -82,7 +82,7 @@ export class ChainsHandler extends ExtensionHandler {
       // TODO: Use this inside the balance modules instead of TypeRegistry
       // const metadataSubshape = transformMetadataV14(metadata)
 
-      customBalanceMetadata = [
+      customBalancesMetadata = [
         {
           moduleType: "substrate-native",
           metadata: {
@@ -139,8 +139,7 @@ export class ChainsHandler extends ExtensionHandler {
         chainspecQrUrl: existingChain?.chainspecQrUrl ?? null,
         latestMetadataQrUrl: existingChain?.latestMetadataQrUrl ?? null,
         isUnknownFeeToken: existingChain?.isUnknownFeeToken ?? false,
-        rpcs: chain.rpcs.map(({ url }) => ({ url, isHealthy: true })),
-        isHealthy: true,
+        rpcs: chain.rpcs.map(({ url }) => ({ url })),
         evmNetworks: existingChain?.evmNetworks ?? [],
 
         parathreads: existingChain?.parathreads ?? [],
@@ -148,7 +147,8 @@ export class ChainsHandler extends ExtensionHandler {
         paraId: existingChain?.paraId ?? null,
         relay: existingChain?.relay ?? null,
 
-        balanceMetadata: customBalanceMetadata ?? existingChain?.balanceMetadata ?? [],
+        balancesConfig: [],
+        balancesMetadata: customBalancesMetadata ?? existingChain?.balancesMetadata ?? [],
 
         // CustomChain
         isCustom: true,

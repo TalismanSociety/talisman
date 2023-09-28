@@ -6,29 +6,32 @@
     "name": "Acala",
     "themeColor": "#e61059",
     "logo": "https://raw.githubusercontent.com/TalismanSociety/chaindata/v3/assets/chains/acala.svg",
-    "nativeToken": {
-      "id": "787-evm-native-aca"
-    },
-    "tokens": [
-      {
-        "id": "787-evm-native-aca"
-      }
-    ],
+    "nativeToken": null,
+    "tokens": [],
     "explorerUrl": "https://blockscout.acala.network",
     "rpcs": [
       {
-        "url": "https://eth-rpc-acala.aca-api.network",
-        "isHealthy": true
+        "url": "https://eth-rpc-acala.aca-api.network"
       },
       {
-        "url": "https://rpc.evm.acala.network",
-        "isHealthy": true
+        "url": "https://rpc.evm.acala.network"
       }
     ],
-    "isHealthy": true,
     "substrateChain": {
       "id": "acala"
-    }
+    },
+    "balancesConfig": [
+      {
+        "moduleType": "evm-native",
+        "moduleConfig": {
+          "symbol": "ACA",
+          "decimals": 18,
+          "coingeckoId": "acala",
+          "mirrorOf": "acala-substrate-native-aca"
+        }
+      }
+    ],
+    "balancesMetadata": []
   },
   {
     "id": "42161",
@@ -37,600 +40,689 @@
     "name": "Arbitrum",
     "themeColor": "#2d374b",
     "logo": "https://raw.githubusercontent.com/TalismanSociety/chaindata/v3/assets/chains/42161.svg",
-    "nativeToken": {
-      "id": "42161-evm-native-eth"
-    },
-    "tokens": [
-      {
-        "id": "42161-evm-native-eth"
-      }
-    ],
+    "nativeToken": null,
+    "tokens": [],
     "explorerUrl": "https://arbiscan.io/",
     "rpcs": [
       {
-        "url": "https://arb1.arbitrum.io/rpc",
-        "isHealthy": true
+        "url": "https://arb1.arbitrum.io/rpc"
       },
       {
-        "url": "https://rpc.ankr.com/arbitrum",
-        "isHealthy": true
+        "url": "https://rpc.ankr.com/arbitrum"
       }
     ],
-    "isHealthy": true,
-    "substrateChain": null
+    "substrateChain": null,
+    "balancesConfig": [
+      {
+        "moduleType": "evm-native",
+        "moduleConfig": {
+          "coingeckoId": "ethereum",
+          "dcentName": "ARBITRUM"
+        }
+      }
+    ],
+    "balancesMetadata": []
   },
   {
     "id": "592",
     "isTestnet": false,
-    "sortIndex": 17,
+    "sortIndex": 15,
     "name": "Astar",
     "themeColor": "#03b0fb",
     "logo": "https://raw.githubusercontent.com/TalismanSociety/chaindata/v3/assets/chains/astar.svg",
-    "nativeToken": {
-      "id": "592-evm-native-astr"
-    },
-    "tokens": [
-      {
-        "id": "592-evm-erc20-0x1fe622e91e54d6ad00b01917351ea6081426764a"
-      },
-      {
-        "id": "592-evm-erc20-0x3795c36e7d12a8c252a20c5a7b455f7c57b60283"
-      },
-      {
-        "id": "592-evm-erc20-0x4bf769b05e832fcdc9053fffbc78ca889acb5e1e"
-      },
-      {
-        "id": "592-evm-erc20-0x6a2d262d56735dba19dd70682b39f6be9a931d98"
-      },
-      {
-        "id": "592-evm-erc20-0x6de33698e9e9b787e09d3bd7771ef63557e148bb"
-      },
-      {
-        "id": "592-evm-erc20-0x75364d4f779d0bd0facd9a218c67f87dd9aff3b4"
-      },
-      {
-        "id": "592-evm-erc20-0x7756a83563f0f56937a6fdf668e7d9f387c0d199"
-      },
-      {
-        "id": "592-evm-erc20-0x7f27352d5f83db87a5a3e00f4b07cc2138d8ee52"
-      },
-      {
-        "id": "592-evm-erc20-0x81ecac0d6be0550a00ff064a4f9dd2400585fe9c"
-      },
-      {
-        "id": "592-evm-erc20-0xad543f18cff85c77e140e3e5e3c3392f6ba9d5ca"
-      },
-      {
-        "id": "592-evm-erc20-0xaeaaf0e2c81af264101b9129c00f4440ccf0f720"
-      },
-      {
-        "id": "592-evm-erc20-0xb361dad0cc1a03404b650a69d9a5adb5af8a531f"
-      },
-      {
-        "id": "592-evm-erc20-0xdd90e5e87a2081dcf0391920868ebc2ffb81a1af"
-      },
-      {
-        "id": "592-evm-erc20-0xfcde4a87b8b6fa58326bb462882f1778158b02f1"
-      },
-      {
-        "id": "592-evm-native-astr"
-      }
-    ],
+    "nativeToken": null,
+    "tokens": [],
     "explorerUrl": "https://blockscout.com/astar",
     "rpcs": [
       {
-        "url": "https://evm.astar.network",
-        "isHealthy": true
+        "url": "https://evm.astar.network"
       },
       {
-        "url": "https://astar-rpc.dwellir.com",
-        "isHealthy": true
+        "url": "https://astar-rpc.dwellir.com"
       },
       {
-        "url": "https://astar.api.onfinality.io/public",
-        "isHealthy": true
+        "url": "https://astar.api.onfinality.io/public"
       }
     ],
-    "isHealthy": true,
     "substrateChain": {
       "id": "astar"
-    }
+    },
+    "balancesConfig": [
+      {
+        "moduleType": "evm-native",
+        "moduleConfig": {
+          "symbol": "ASTR",
+          "decimals": 18,
+          "coingeckoId": "astar"
+        }
+      },
+      {
+        "moduleType": "evm-erc20",
+        "moduleConfig": {
+          "tokens": [
+            {
+              "symbol": "PKEX",
+              "contractAddress": "0x1fE622E91e54D6AD00B01917351Ea6081426764A",
+              "coingeckoId": "polkaex"
+            },
+            {
+              "symbol": "USDT",
+              "contractAddress": "0x3795C36e7D12A8c252A20C5a7B455f7c57b60283",
+              "coingeckoId": "tether"
+            },
+            {
+              "symbol": "BUSD",
+              "contractAddress": "0x4Bf769b05E832FCdc9053fFFBC78Ca889aCb5E1E",
+              "coingeckoId": "binance-usd"
+            },
+            {
+              "symbol": "USDC",
+              "contractAddress": "0x6a2d262D56735DbA19Dd70682B39F6bE9a931D98",
+              "coingeckoId": "usd-coin"
+            },
+            {
+              "symbol": "DAI",
+              "contractAddress": "0x6De33698e9e9b787e09d3Bd7771ef63557E148bb",
+              "coingeckoId": "dai"
+            },
+            {
+              "symbol": "SDN",
+              "contractAddress": "0x75364D4F779d0Bd0facD9a218c67f87dD9Aff3b4",
+              "coingeckoId": "shiden"
+            },
+            {
+              "symbol": "CRV",
+              "contractAddress": "0x7756a83563f0f56937a6fdf668e7d9f387c0d199",
+              "coingeckoId": "curve-dao-token"
+            },
+            {
+              "symbol": "BNB",
+              "contractAddress": "0x7f27352D5F83Db87a5A3E00f4B07Cc2138D8ee52",
+              "coingeckoId": "binancecoin"
+            },
+            {
+              "symbol": "WETH",
+              "contractAddress": "0x81ECac0D6Be0550A00FF064a4f9dd2400585FE9c",
+              "coingeckoId": "weth"
+            },
+            {
+              "symbol": "WBTC",
+              "contractAddress": "0xad543f18cff85c77e140e3e5e3c3392f6ba9d5ca",
+              "coingeckoId": "wrapped-bitcoin"
+            },
+            {
+              "symbol": "WASTAR",
+              "contractAddress": "0xAeaaf0e2c81Af264101B9129C00F4440cCF0F720",
+              "coingeckoId": "astar"
+            },
+            {
+              "symbol": "ESW",
+              "contractAddress": "0xb361dad0cc1a03404b650a69d9a5adb5af8a531f"
+            },
+            {
+              "symbol": "MATIC",
+              "contractAddress": "0xdd90E5E87A2081Dcf0391920868eBc2FFB81a1aF",
+              "coingeckoId": "matic-network"
+            },
+            {
+              "symbol": "AAVE",
+              "contractAddress": "0xfcde4a87b8b6fa58326bb462882f1778158b02f1",
+              "coingeckoId": "aave"
+            }
+          ]
+        }
+      }
+    ],
+    "balancesMetadata": []
   },
   {
     "id": "56",
     "isTestnet": false,
-    "sortIndex": 24,
+    "sortIndex": 22,
     "name": "Binance Smart Chain",
     "themeColor": "#f3ba2f",
     "logo": "https://raw.githubusercontent.com/TalismanSociety/chaindata/v3/assets/chains/56.svg",
-    "nativeToken": {
-      "id": "56-evm-native-bnb"
-    },
-    "tokens": [
-      {
-        "id": "56-evm-native-bnb"
-      }
-    ],
+    "nativeToken": null,
+    "tokens": [],
     "explorerUrl": "https://bscscan.com",
     "rpcs": [
       {
-        "url": "https://rpc.ankr.com/bsc",
-        "isHealthy": true
+        "url": "https://rpc.ankr.com/bsc"
       },
       {
-        "url": "https://bsc-dataseed2.binance.org",
-        "isHealthy": true
+        "url": "https://bsc-dataseed2.binance.org"
       },
       {
-        "url": "https://bsc-dataseed3.binance.org",
-        "isHealthy": true
+        "url": "https://bsc-dataseed3.binance.org"
       },
       {
-        "url": "https://bsc-dataseed4.binance.org",
-        "isHealthy": true
+        "url": "https://bsc-dataseed4.binance.org"
       }
     ],
-    "isHealthy": true,
-    "substrateChain": null
+    "substrateChain": null,
+    "balancesConfig": [
+      {
+        "moduleType": "evm-native",
+        "moduleConfig": {
+          "symbol": "BNB",
+          "decimals": 18,
+          "coingeckoId": "binancecoin",
+          "dcentName": "BSC"
+        }
+      }
+    ],
+    "balancesMetadata": []
   },
   {
     "id": "46",
     "isTestnet": false,
-    "sortIndex": 46,
+    "sortIndex": 44,
     "name": "Darwinia",
     "themeColor": "#db378a",
     "logo": "https://raw.githubusercontent.com/TalismanSociety/chaindata/v3/assets/chains/darwinia.svg",
-    "nativeToken": {
-      "id": "46-evm-native-ring"
-    },
-    "tokens": [
-      {
-        "id": "46-evm-native-ring"
-      }
-    ],
+    "nativeToken": null,
+    "tokens": [],
     "explorerUrl": "https://darwinia.subview.xyz",
     "rpcs": [
       {
-        "url": "https://rpc.darwinia.network",
-        "isHealthy": true
+        "url": "https://rpc.darwinia.network"
       }
     ],
-    "isHealthy": true,
     "substrateChain": {
       "id": "darwinia"
-    }
+    },
+    "balancesConfig": [
+      {
+        "moduleType": "evm-native",
+        "moduleConfig": {
+          "symbol": "RING",
+          "decimals": 18,
+          "coingeckoId": "darwinia-network-native-token",
+          "mirrorOf": "darwinia-substrate-native-ring"
+        }
+      }
+    ],
+    "balancesMetadata": []
   },
   {
     "id": "2021",
     "isTestnet": false,
-    "sortIndex": 52,
+    "sortIndex": 50,
     "name": "Edgeware",
     "themeColor": "#ff3b80",
     "logo": "https://raw.githubusercontent.com/TalismanSociety/chaindata/v3/assets/chains/edgeware.svg",
-    "nativeToken": {
-      "id": "2021-evm-native-edg"
-    },
-    "tokens": [
-      {
-        "id": "2021-evm-native-edg"
-      }
-    ],
+    "nativeToken": null,
+    "tokens": [],
     "explorerUrl": "https://edgscan.live",
     "rpcs": [
       {
-        "url": "https://mainnet2.edgewa.re/evm",
-        "isHealthy": true
+        "url": "https://mainnet2.edgewa.re/evm"
       },
       {
-        "url": "https://edgeware-evm.jelliedowl.net",
-        "isHealthy": true
+        "url": "https://edgeware-evm.jelliedowl.net"
       },
       {
-        "url": "https://mainnet3.edgewa.re/evm",
-        "isHealthy": true
+        "url": "https://mainnet3.edgewa.re/evm"
       },
       {
-        "url": "https://mainnet4.edgewa.re/evm",
-        "isHealthy": true
-      },
-      {
-        "url": "https://mainnet5.edgewa.re/evm",
-        "isHealthy": false
+        "url": "https://mainnet4.edgewa.re/evm"
       }
     ],
-    "isHealthy": true,
     "substrateChain": {
       "id": "edgeware"
-    }
+    },
+    "balancesConfig": [
+      {
+        "moduleType": "evm-native",
+        "moduleConfig": {
+          "symbol": "EDG",
+          "decimals": 18,
+          "coingeckoId": "edgeware"
+        }
+      }
+    ],
+    "balancesMetadata": []
   },
   {
     "id": "1",
     "isTestnet": false,
-    "sortIndex": 57,
-    "name": "Ethereum",
-    "themeColor": "#8a92b2",
+    "sortIndex": 58,
+    "name": "Ethereum Mainnet",
+    "themeColor": "#62688f",
     "logo": "https://raw.githubusercontent.com/TalismanSociety/chaindata/v3/assets/chains/1.svg",
-    "nativeToken": {
-      "id": "1-evm-native-eth"
-    },
-    "tokens": [
-      {
-        "id": "1-evm-erc20-0x471ea49dd8e60e697f4cac262b5fafcc307506e4"
-      },
-      {
-        "id": "1-evm-erc20-0x67f6b5bc5670fd29bcc8af3d6633b2840aba2f30"
-      },
-      {
-        "id": "1-evm-erc20-0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48"
-      },
-      {
-        "id": "1-evm-erc20-0xc221b7e65ffc80de234bbb6667abdd46593d34f0"
-      },
-      {
-        "id": "1-evm-erc20-0xdac17f958d2ee523a2206206994597c13d831ec7"
-      },
-      {
-        "id": "1-evm-native-eth"
-      }
-    ],
+    "nativeToken": null,
+    "tokens": [],
     "explorerUrl": "https://etherscan.io",
     "rpcs": [
       {
-        "url": "https://rpc.ankr.com/eth",
-        "isHealthy": true
+        "url": "https://rpc.ankr.com/eth"
       },
       {
-        "url": "https://eth.api.onfinality.io/public",
-        "isHealthy": true
+        "url": "https://eth.api.onfinality.io/public"
       },
       {
-        "url": "https://eth.llamarpc.com",
-        "isHealthy": true
+        "url": "https://eth.llamarpc.com"
       }
     ],
-    "isHealthy": true,
-    "substrateChain": null
+    "substrateChain": null,
+    "balancesConfig": [
+      {
+        "moduleType": "evm-native",
+        "moduleConfig": {
+          "coingeckoId": "ethereum",
+          "dcentName": "ETHEREUM"
+        }
+      },
+      {
+        "moduleType": "evm-erc20",
+        "moduleConfig": {
+          "tokens": [
+            {
+              "symbol": "xcRMRK",
+              "contractAddress": "0x471Ea49dd8E60E697f4cac262b5fafCc307506e4",
+              "coingeckoId": "rmrk"
+            },
+            {
+              "symbol": "ASTAR",
+              "contractAddress": "0x67f6b5bc5670fd29bcc8af3d6633b2840aba2f30",
+              "coingeckoId": "astar"
+            },
+            {
+              "symbol": "USDC",
+              "contractAddress": "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48",
+              "coingeckoId": "usd-coin"
+            },
+            {
+              "symbol": "WCFG",
+              "contractAddress": "0xc221b7e65ffc80de234bbb6667abdd46593d34f0",
+              "coingeckoId": "wrapped-centrifuge"
+            },
+            {
+              "symbol": "USDT",
+              "contractAddress": "0xdac17f958d2ee523a2206206994597c13d831ec7",
+              "coingeckoId": "tether"
+            }
+          ]
+        }
+      }
+    ],
+    "balancesMetadata": []
   },
   {
     "id": "100",
     "isTestnet": false,
-    "sortIndex": 63,
+    "sortIndex": 66,
     "name": "Gnosis",
     "themeColor": "#8e8e9e",
     "logo": "https://raw.githubusercontent.com/TalismanSociety/chaindata/v3/assets/chains/100.svg",
-    "nativeToken": {
-      "id": "100-evm-native-xdai"
-    },
-    "tokens": [
-      {
-        "id": "100-evm-native-xdai"
-      }
-    ],
+    "nativeToken": null,
+    "tokens": [],
     "explorerUrl": "https://blockscout.com/xdai/mainnet/",
     "rpcs": [
       {
-        "url": "https://rpc.ankr.com/gnosis",
-        "isHealthy": true
+        "url": "https://rpc.ankr.com/gnosis"
       },
       {
-        "url": "https://gnosis-mainnet.public.blastapi.io",
-        "isHealthy": true
+        "url": "https://gnosis-mainnet.public.blastapi.io"
       },
       {
-        "url": "https://rpc.gnosischain.com/",
-        "isHealthy": true
+        "url": "https://rpc.gnosischain.com/"
       }
     ],
-    "isHealthy": true,
-    "substrateChain": null
+    "substrateChain": null,
+    "balancesConfig": [
+      {
+        "moduleType": "evm-native",
+        "moduleConfig": {
+          "symbol": "xDAI",
+          "decimals": 18,
+          "coingeckoId": "xdai"
+        }
+      }
+    ],
+    "balancesMetadata": []
   },
   {
     "id": "1284",
     "isTestnet": false,
-    "sortIndex": 99,
+    "sortIndex": 105,
     "name": "Moonbeam",
     "themeColor": "#53cbc9",
     "logo": "https://raw.githubusercontent.com/TalismanSociety/chaindata/v3/assets/chains/moonbeam.svg",
-    "nativeToken": {
-      "id": "1284-evm-native-glmr"
-    },
-    "tokens": [
-      {
-        "id": "1284-evm-erc20-0x65b09ef8c5a096c5fd3a80f1f7369e56eb932412"
-      },
-      {
-        "id": "1284-evm-erc20-0x818ec0a7fe18ff94269904fced6ae3dae6d6dc0b"
-      },
-      {
-        "id": "1284-evm-erc20-0x8f552a71efe5eefc207bf75485b356a0b3f01ec9"
-      },
-      {
-        "id": "1284-evm-erc20-0x931715fee2d06333043d11f658c8ce934ac61d0c"
-      },
-      {
-        "id": "1284-evm-erc20-0xffffffff1fcacbd218edc0eba20fc2308c778080"
-      },
-      {
-        "id": "1284-evm-erc20-0xffffffffa922fef94566104a6e5a35a4fcddaa9f"
-      },
-      {
-        "id": "1284-evm-native-glmr"
-      }
-    ],
+    "nativeToken": null,
+    "tokens": [],
     "explorerUrl": "https://moonbeam.moonscan.io/",
     "rpcs": [
       {
-        "url": "https://rpc.api.moonbeam.network",
-        "isHealthy": true
+        "url": "https://rpc.api.moonbeam.network"
       },
       {
-        "url": "https://moonbeam.api.onfinality.io/public",
-        "isHealthy": true
+        "url": "https://moonbeam.api.onfinality.io/public"
       },
       {
-        "url": "https://moonbeam-rpc.dwellir.com",
-        "isHealthy": true
+        "url": "https://moonbeam-rpc.dwellir.com"
       }
     ],
-    "isHealthy": true,
     "substrateChain": {
       "id": "moonbeam"
-    }
+    },
+    "balancesConfig": [
+      {
+        "moduleType": "evm-native",
+        "moduleConfig": {
+          "symbol": "GLMR",
+          "decimals": 18,
+          "coingeckoId": "moonbeam",
+          "mirrorOf": "moonbeam-substrate-native-glmr"
+        }
+      },
+      {
+        "moduleType": "evm-erc20",
+        "moduleConfig": {
+          "tokens": [
+            {
+              "symbol": "BEANS",
+              "contractAddress": "0x65b09ef8c5A096C5Fd3A80f1F7369E56eB932412",
+              "coingeckoId": "moonbeans"
+            },
+            {
+              "symbol": "madUSDC",
+              "contractAddress": "0x8f552a71EFE5eeFc207Bf75485b356A0b3f01eC9",
+              "coingeckoId": "usd-coin"
+            },
+            {
+              "symbol": "multiUSDC",
+              "contractAddress": "0x818ec0a7fe18ff94269904fced6ae3dae6d6dc0b",
+              "coingeckoId": "usd-coin"
+            },
+            {
+              "symbol": "whUSDC",
+              "contractAddress": "0x931715fee2d06333043d11f658c8ce934ac61d0c",
+              "coingeckoId": "usd-coin"
+            },
+            {
+              "symbol": "xcDOT",
+              "contractAddress": "0xFfFFfFff1FcaCBd218EDc0EbA20Fc2308C778080",
+              "coingeckoId": "polkadot"
+            },
+            {
+              "symbol": "xcACA",
+              "contractAddress": "0xffffFFffa922Fef94566104a6e5A35a4fCDDAA9f",
+              "coingeckoId": "acala"
+            }
+          ]
+        }
+      }
+    ],
+    "balancesMetadata": []
   },
   {
     "id": "1285",
     "isTestnet": false,
-    "sortIndex": 101,
+    "sortIndex": 107,
     "name": "Moonriver",
     "themeColor": "#f2b705",
     "logo": "https://raw.githubusercontent.com/TalismanSociety/chaindata/v3/assets/chains/moonriver.svg",
-    "nativeToken": {
-      "id": "1285-evm-native-movr"
-    },
-    "tokens": [
-      {
-        "id": "1285-evm-erc20-0xc2392dd3e3fed2c8ed9f7f0bdf6026fcd1348453"
-      },
-      {
-        "id": "1285-evm-erc20-0xe3f5a90f9cb311505cd691a46596599aa1a0ad7d"
-      },
-      {
-        "id": "1285-evm-erc20-0xffffffff893264794d9d57e1e0e21e0042af5a0a"
-      },
-      {
-        "id": "1285-evm-native-movr"
-      }
-    ],
+    "nativeToken": null,
+    "tokens": [],
     "explorerUrl": "https://moonriver.moonscan.io/",
     "rpcs": [
       {
-        "url": "https://rpc.api.moonriver.moonbeam.network",
-        "isHealthy": true
+        "url": "https://rpc.api.moonriver.moonbeam.network"
       },
       {
-        "url": "https://moonriver.api.onfinality.io/public",
-        "isHealthy": true
+        "url": "https://moonriver.api.onfinality.io/public"
       },
       {
-        "url": "https://moonriver-rpc.dwellir.com",
-        "isHealthy": true
+        "url": "https://moonriver-rpc.dwellir.com"
       }
     ],
-    "isHealthy": true,
     "substrateChain": {
       "id": "moonriver"
-    }
+    },
+    "balancesConfig": [
+      {
+        "moduleType": "evm-native",
+        "moduleConfig": {
+          "symbol": "MOVR",
+          "decimals": 18,
+          "coingeckoId": "moonriver",
+          "mirrorOf": "moonriver-substrate-native-movr"
+        }
+      },
+      {
+        "moduleType": "evm-erc20",
+        "moduleConfig": {
+          "tokens": [
+            {
+              "symbol": "BEANS",
+              "contractAddress": "0xC2392DD3e3fED2c8Ed9f7f0bDf6026fcd1348453",
+              "coingeckoId": "moonbeans"
+            },
+            {
+              "symbol": "USDC",
+              "contractAddress": "0xE3F5a90F9cb311505cd691a46596599aA1A0AD7D",
+              "coingeckoId": "usd-coin"
+            },
+            {
+              "symbol": "xcRMRK",
+              "contractAddress": "0xffffffFF893264794d9d57E1E0E21E0042aF5A0A",
+              "coingeckoId": "rmrk"
+            }
+          ]
+        }
+      }
+    ],
+    "balancesMetadata": []
   },
   {
     "id": "137",
     "isTestnet": false,
-    "sortIndex": 119,
+    "sortIndex": 129,
     "name": "Polygon",
     "themeColor": "#8f5ae8",
     "logo": "https://raw.githubusercontent.com/TalismanSociety/chaindata/v3/assets/chains/137.svg",
-    "nativeToken": {
-      "id": "137-evm-native-matic"
-    },
-    "tokens": [
-      {
-        "id": "137-evm-erc20-0x2791bca1f2de4661ed88a30c99a7a9449aa84174"
-      },
-      {
-        "id": "137-evm-erc20-0xc2132d05d31c914a87c6611c10748aeb04b58e8f"
-      },
-      {
-        "id": "137-evm-erc20-0xd6df932a45c0f255f85145f286ea0b292b21c90b"
-      },
-      {
-        "id": "137-evm-native-matic"
-      }
-    ],
+    "nativeToken": null,
+    "tokens": [],
     "explorerUrl": "https://polygonscan.com/",
     "rpcs": [
       {
-        "url": "https://polygon-rpc.com/",
-        "isHealthy": true
+        "url": "https://polygon-rpc.com/"
       },
       {
-        "url": "https://rpc.ankr.com/polygon",
-        "isHealthy": true
+        "url": "https://rpc.ankr.com/polygon"
       },
       {
-        "url": "https://polygon-mainnet.public.blastapi.io",
-        "isHealthy": true
+        "url": "https://polygon-mainnet.public.blastapi.io"
       }
     ],
-    "isHealthy": true,
-    "substrateChain": null
+    "substrateChain": null,
+    "balancesConfig": [
+      {
+        "moduleType": "evm-native",
+        "moduleConfig": {
+          "symbol": "MATIC",
+          "decimals": 18,
+          "coingeckoId": "matic-network",
+          "dcentName": "POLYGON"
+        }
+      },
+      {
+        "moduleType": "evm-erc20",
+        "moduleConfig": {
+          "tokens": [
+            {
+              "symbol": "AAVE",
+              "contractAddress": "0xD6DF932A45C0f255f85145f286eA0b292B21C90B",
+              "coingeckoId": "aave"
+            },
+            {
+              "symbol": "USDC",
+              "contractAddress": "0x2791Bca1f2de4661ED88A30C99A7a9449Aa84174",
+              "coingeckoId": "usd-coin"
+            },
+            {
+              "symbol": "USDT",
+              "contractAddress": "0xc2132D05D31c914a87C6611C10748AEb04B58e8F",
+              "coingeckoId": "tether"
+            }
+          ]
+        }
+      }
+    ],
+    "balancesMetadata": []
   },
   {
     "id": "336",
     "isTestnet": false,
-    "sortIndex": 128,
+    "sortIndex": 141,
     "name": "Shiden",
     "themeColor": "#bba5e1",
     "logo": "https://raw.githubusercontent.com/TalismanSociety/chaindata/v3/assets/chains/shiden-kusama.svg",
-    "nativeToken": {
-      "id": "336-evm-native-sdn"
-    },
-    "tokens": [
-      {
-        "id": "336-evm-native-sdn"
-      }
-    ],
+    "nativeToken": null,
+    "tokens": [],
     "explorerUrl": "https://blockscout.com/shiden",
     "rpcs": [
       {
-        "url": "https://evm.shiden.astar.network",
-        "isHealthy": true
+        "url": "https://evm.shiden.astar.network"
       },
       {
-        "url": "https://shiden.api.onfinality.io/public",
-        "isHealthy": true
+        "url": "https://shiden.api.onfinality.io/public"
       },
       {
-        "url": "https://shiden-rpc.dwellir.com",
-        "isHealthy": true
+        "url": "https://shiden-rpc.dwellir.com"
       }
     ],
-    "isHealthy": true,
     "substrateChain": {
       "id": "shiden-kusama"
-    }
+    },
+    "balancesConfig": [
+      {
+        "moduleType": "evm-native",
+        "moduleConfig": {
+          "symbol": "SDN",
+          "decimals": 18,
+          "coingeckoId": "shiden"
+        }
+      }
+    ],
+    "balancesMetadata": []
   },
   {
     "id": "5",
     "isTestnet": true,
-    "sortIndex": 217,
+    "sortIndex": 227,
     "name": "Goerli",
     "themeColor": "#8a92b2",
     "logo": "https://raw.githubusercontent.com/TalismanSociety/chaindata/v3/assets/chains/5.svg",
-    "nativeToken": {
-      "id": "5-evm-native-eth"
-    },
-    "tokens": [
-      {
-        "id": "5-evm-native-eth"
-      }
-    ],
+    "nativeToken": null,
+    "tokens": [],
     "explorerUrl": "https://goerli.etherscan.io",
     "rpcs": [
       {
-        "url": "https://rpc.ankr.com/eth_goerli",
-        "isHealthy": true
+        "url": "https://rpc.ankr.com/eth_goerli"
       }
     ],
-    "isHealthy": true,
-    "substrateChain": null
+    "substrateChain": null,
+    "balancesConfig": [
+      {
+        "moduleType": "evm-native",
+        "moduleConfig": {
+          "coingeckoId": "goerli-eth"
+        }
+      }
+    ],
+    "balancesMetadata": []
   },
   {
     "id": "1287",
     "isTestnet": true,
-    "sortIndex": 251,
+    "sortIndex": 261,
     "name": "Moonbase Alpha",
     "themeColor": "#4cb1b3",
     "logo": "https://raw.githubusercontent.com/TalismanSociety/chaindata/v3/assets/chains/moonbase-alpha-testnet.svg",
-    "nativeToken": {
-      "id": "1287-evm-native-dev"
-    },
-    "tokens": [
-      {
-        "id": "1287-evm-native-dev"
-      }
-    ],
+    "nativeToken": null,
+    "tokens": [],
     "explorerUrl": "https://moonbase.moonscan.io/",
     "rpcs": [
       {
-        "url": "https://rpc.api.moonbase.moonbeam.network",
-        "isHealthy": true
+        "url": "https://rpc.api.moonbase.moonbeam.network"
       },
       {
-        "url": "https://moonbeam-alpha.api.onfinality.io/public",
-        "isHealthy": true
+        "url": "https://moonbeam-alpha.api.onfinality.io/public"
       }
     ],
-    "isHealthy": true,
     "substrateChain": {
       "id": "moonbase-alpha-testnet"
-    }
-  },
-  {
-    "id": "11155111",
-    "isTestnet": true,
-    "sortIndex": 280,
-    "name": "Sepolia",
-    "themeColor": "#8a92b2",
-    "logo": "https://raw.githubusercontent.com/TalismanSociety/chaindata/v3/assets/chains/11155111.svg",
-    "nativeToken": {
-      "id": "11155111-evm-native-eth"
     },
-    "tokens": [
+    "balancesConfig": [
       {
-        "id": "11155111-evm-native-eth"
+        "moduleType": "evm-native",
+        "moduleConfig": {
+          "symbol": "DEV",
+          "decimals": 18,
+          "mirrorOf": "moonbase-alpha-testnet-substrate-native-dev"
+        }
       }
     ],
-    "explorerUrl": "https://sepolia.etherscan.io",
-    "rpcs": [
-      {
-        "url": "https://rpc.sepolia.org",
-        "isHealthy": true
-      }
-    ],
-    "isHealthy": true,
-    "substrateChain": null
+    "balancesMetadata": []
   },
   {
     "id": "81",
     "isTestnet": true,
-    "sortIndex": 283,
+    "sortIndex": 293,
     "name": "Shibuya",
     "themeColor": "#bba5e1",
     "logo": "https://raw.githubusercontent.com/TalismanSociety/chaindata/v3/assets/chains/shibuya-testnet.svg",
-    "nativeToken": {
-      "id": "81-evm-native-sby"
-    },
-    "tokens": [
-      {
-        "id": "81-evm-native-sby"
-      }
-    ],
+    "nativeToken": null,
+    "tokens": [],
     "explorerUrl": "https://blockscout.com/shibuya",
     "rpcs": [
       {
-        "url": "https://evm.shibuya.astar.network",
-        "isHealthy": true
+        "url": "https://evm.shibuya.astar.network"
       }
     ],
-    "isHealthy": true,
     "substrateChain": {
       "id": "shibuya-testnet"
-    }
+    },
+    "balancesConfig": [
+      {
+        "moduleType": "evm-native",
+        "moduleConfig": {
+          "symbol": "SBY",
+          "decimals": 18
+        }
+      }
+    ],
+    "balancesMetadata": []
   },
   {
     "id": "688",
     "isTestnet": true,
-    "sortIndex": 319,
+    "sortIndex": 330,
     "name": "Watr Testnet",
     "themeColor": "#f5f5f3",
     "logo": "https://raw.githubusercontent.com/TalismanSociety/chaindata/v3/assets/chains/rococo-watr-testnet.svg",
-    "nativeToken": {
-      "id": "688-evm-native-watrd"
-    },
-    "tokens": [
-      {
-        "id": "688-evm-native-watrd"
-      }
-    ],
+    "nativeToken": null,
+    "tokens": [],
     "explorerUrl": "https://explorer.watr.org/",
     "rpcs": [
       {
-        "url": "https://rpc.dev.watr.org",
-        "isHealthy": true
+        "url": "https://rpc.dev.watr.org"
       }
     ],
-    "isHealthy": true,
     "substrateChain": {
       "id": "rococo-watr-testnet"
-    }
+    },
+    "balancesConfig": [
+      {
+        "moduleType": "evm-native",
+        "moduleConfig": {
+          "symbol": "WATRD",
+          "decimals": 18
+        }
+      }
+    ],
+    "balancesMetadata": []
   }
 ]

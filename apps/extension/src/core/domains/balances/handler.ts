@@ -71,8 +71,8 @@ export class BalancesHandler extends ExtensionHandler {
         ]
           // filter out requested chains/evmNetworks which don't exist
           .filter(([chainOrNetwork]) => chainOrNetwork !== undefined)
-          // filter out requested chains/evmNetworks which aren't healthy
-          .filter(([chainOrNetwork]) => chainOrNetwork.isHealthy)
+          // filter out requested chains/evmNetworks which have no rpcs
+          .filter(([chainOrNetwork]) => (chainOrNetwork.rpcs?.length ?? 0) > 0)
 
           // convert chains and evmNetworks into a list of tokenIds
           .flatMap(([chainOrNetwork, addresses]) =>

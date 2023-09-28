@@ -34,11 +34,8 @@ export const balanceModules = defaultBalanceModules.map((mod) =>
   mod({ chainConnectors, chaindataProvider })
 )
 
-type ChainIdAndHealth = Pick<Chain, "id" | "isHealthy" | "genesisHash" | "account">
-type EvmNetworkIdAndHealth = Pick<
-  EvmNetwork,
-  "id" | "isHealthy" | "nativeToken" | "substrateChain"
-> & {
+type ChainIdAndRpcs = Pick<Chain, "id" | "genesisHash" | "account" | "rpcs">
+type EvmNetworkIdAndRpcs = Pick<EvmNetwork, "id" | "nativeToken" | "substrateChain" | "rpcs"> & {
   erc20Tokens: Array<Pick<Erc20Token, "id" | "contractAddress">>
   substrateChainAccountFormat: string | null
 }
@@ -58,8 +55,8 @@ export class BalanceStore {
   #subscriptionsGeneration = 0
   #closeSubscriptionCallbacks: Array<Promise<() => void>> = []
 
-  #chains: ChainIdAndHealth[] = []
-  #evmNetworks: EvmNetworkIdAndHealth[] = []
+  #chains: ChainIdAndRpcs[] = []
+  #evmNetworks: EvmNetworkIdAndRpcs[] = []
   #tokens: ReplaySubject<TokenIdAndType[]> = new ReplaySubject(1)
 
   /**
@@ -103,20 +100,20 @@ export class BalanceStore {
           byNetwork[evmNetwork.id].push(pick(token, ["id", "contractAddress"]))
 
           return byNetwork
-        }, {} as { [key: EvmNetworkId]: EvmNetworkIdAndHealth["erc20Tokens"] })
+        }, {} as { [key: EvmNetworkId]: EvmNetworkIdAndRpcs["erc20Tokens"] })
 
         // TODO: Only connect to chains on which the user has a non-zero balance.
         this.setChains(
           // substrate chains
           Object.values(chains ?? {})
             .filter((chain) => (settings.useTestnets ? true : !chain.isTestnet))
-            .map((chain) => pick(chain, ["id", "isHealthy", "genesisHash", "account"])),
+            .map((chain) => pick(chain, ["id", "genesisHash", "account", "rpcs"])),
 
           // evm chains
           Object.values(evmNetworks ?? {})
             .filter((evmNetwork) => (settings.useTestnets ? true : !evmNetwork.isTestnet))
             .map((evmNetwork) => ({
-              ...pick(evmNetwork, ["id", "isHealthy", "nativeToken", "substrateChain"]),
+              ...pick(evmNetwork, ["id", "nativeToken", "substrateChain", "rpcs"]),
               erc20Tokens: erc20TokensByNetwork[evmNetwork.id],
               substrateChainAccountFormat:
                 (evmNetwork.substrateChain && chains[evmNetwork.substrateChain.id]?.account) ||
@@ -195,8 +192,8 @@ export class BalanceStore {
    *                 Chains with a different health status to what is in the store will be updated.
    */
   async setChains(
-    newChains: ChainIdAndHealth[],
-    newEvmNetworks: EvmNetworkIdAndHealth[],
+    newChains: ChainIdAndRpcs[],
+    newEvmNetworks: EvmNetworkIdAndRpcs[],
     tokens: TokenList
   ) {
     // Check for updates
@@ -375,11 +372,10 @@ export class BalanceStore {
     const addresses = await firstValueFrom(this.#addresses)
     const tokens = await firstValueFrom(this.#tokens)
     const chainDetails = Object.fromEntries(
-      this.#chains.map(({ id, isHealthy, genesisHash }) => [id, { isHealthy, genesisHash }])
+      this.#chains.map(({ id, genesisHash, rpcs }) => [id, { genesisHash, rpcs }])
     )
-
-    const evmNetworkHealthy = Object.fromEntries(
-      this.#evmNetworks.map((evmNetwork) => [evmNetwork.id, evmNetwork.isHealthy])
+    const evmNetworkDetails = Object.fromEntries(
+      this.#evmNetworks.map(({ id, rpcs }) => [id, { rpcs }])
     )
 
     // For the following TODOs, try and put them inside the relevant balance module when it makes sense.
@@ -391,11 +387,11 @@ export class BalanceStore {
     //
     const addressesByTokenByModule: Record<string, AddressesByToken<Token>> = {}
     tokens.forEach((token) => {
-      // filter out tokens on chains/evmNetworks which aren't healthy
-      const isHealthy =
-        (token.chain?.id && chainDetails[token.chain.id]?.isHealthy) ||
-        (token.evmNetwork?.id && evmNetworkHealthy[token.evmNetwork.id])
-      if (!isHealthy) return
+      // filter out tokens on chains/evmNetworks which have no rpcs
+      const hasRpcs =
+        (token.chain?.id && (chainDetails[token.chain.id]?.rpcs?.length ?? 0) > 0) ||
+        (token.evmNetwork?.id && (evmNetworkDetails[token.evmNetwork.id]?.rpcs?.length ?? 0) > 0)
+      if (!hasRpcs) return
 
       if (!addressesByTokenByModule[token.type]) addressesByTokenByModule[token.type] = {}
       // filter out substrate addresses which have a genesis hash that doesn't match the genesisHash of the token's chain

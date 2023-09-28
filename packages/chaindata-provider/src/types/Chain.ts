@@ -25,7 +25,6 @@ export type Chain = {
   latestMetadataQrUrl: string | null // A url to a qr code with the latest metadata for this chain
   isUnknownFeeToken: boolean // Indicates if chain may use a different fee token than it's native token
   rpcs: Array<SubstrateRpc> | null // Some public RPCs for connecting to this chain's network
-  isHealthy: boolean // The health status of this chain's RPCs
   evmNetworks: Array<{ id: EvmNetworkId }>
 
   parathreads: Array<Pick<Chain, "id" | "paraId" | "name">> | null // The parathreads of this relayChain, if some exist
@@ -33,7 +32,8 @@ export type Chain = {
   paraId: number | null // The paraId of this chain, if it is a parachain
   relay: Pick<Chain, "id"> | null // The parent relayChain of this parachain, if this chain is a parachain
 
-  balanceMetadata: Array<BalanceMetadata>
+  balancesConfig: Array<BalancesConfig>
+  balancesMetadata: Array<BalancesMetadata>
 }
 export type CustomChain = Chain & {
   isCustom: true
@@ -41,6 +41,7 @@ export type CustomChain = Chain & {
 
 export type SubstrateRpc = {
   url: string // The url of this RPC
-  isHealthy: boolean // The health status of this RPC
 }
-export type BalanceMetadata = { moduleType: string; metadata: unknown }
+
+export type BalancesConfig = { moduleType: string; moduleConfig: unknown }
+export type BalancesMetadata = { moduleType: string; metadata: unknown }

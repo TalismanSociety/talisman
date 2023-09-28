@@ -375,12 +375,13 @@ export class EthHandler extends ExtensionHandler {
       nativeToken: newToken ? { id: newToken.id } : null,
       tokens: [],
       explorerUrl: (network.blockExplorerUrls || [])[0],
-      rpcs: (network.rpcUrls || []).map((url) => ({ url, isHealthy: true })),
-      isHealthy: true,
+      rpcs: (network.rpcUrls || []).map((url) => ({ url })),
       substrateChain: null,
       isCustom: true,
       explorerUrls: network.blockExplorerUrls || [],
       iconUrls: network.iconUrls || [],
+      balancesConfig: [],
+      balancesMetadata: [],
     }
 
     await chaindataProvider.addCustomEvmNetwork(newNetwork)
@@ -427,9 +428,10 @@ export class EthHandler extends ExtensionHandler {
         nativeToken: { id: newToken.id },
         tokens: existingNetwork?.tokens ?? [],
         explorerUrl: network.blockExplorerUrl ?? null,
-        rpcs: network.rpcs.map(({ url }) => ({ url, isHealthy: true })),
-        isHealthy: true,
+        rpcs: network.rpcs.map(({ url }) => ({ url })),
         substrateChain: existingNetwork?.substrateChain ?? null,
+        balancesConfig: [],
+        balancesMetadata: [],
         // CustomEvmNetwork
         isCustom: true,
         explorerUrls: network.blockExplorerUrl ? [network.blockExplorerUrl] : [],
