@@ -83,7 +83,7 @@ export const EthSignBodyMessageSIWE: FC<{
   }, [siwe, request])
 
   return (
-    <div className="flex h-full w-full flex-col items-center">
+    <div className="scrollable scrollable-800 flex h-full max-h-full w-full flex-col items-center overflow-auto">
       <div className="my-12 flex w-full flex-col items-center">
         <div className="bg-grey-800 rounded-full p-5">
           <UserRightIcon className="text-primary text-[2.8rem]" />
