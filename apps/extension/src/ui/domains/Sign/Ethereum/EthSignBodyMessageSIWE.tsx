@@ -73,9 +73,9 @@ export const EthSignBodyMessageSIWE: FC<{
 
   const isValidUrl = useMemo(() => {
     try {
-      const siweUrl = new URL(siwe.uri)
+      // current webapp's domain must be the same as the siwe's domain
       const currUrl = new URL(request.url)
-      return siweUrl.origin === currUrl.origin
+      return siwe.domain === currUrl.hostname
     } catch (err) {
       log.error(err)
       return false
