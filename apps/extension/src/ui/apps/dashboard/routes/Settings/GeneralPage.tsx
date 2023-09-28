@@ -12,7 +12,6 @@ import {
 } from "@talismn/icons"
 import { AvatarTypeSelect } from "@ui/domains/Settings/AvatarTypeSelect"
 import { useAppState } from "@ui/hooks/useAppState"
-import { useIsFeatureEnabled } from "@ui/hooks/useFeatures"
 import { useSetting } from "@ui/hooks/useSettings"
 import { Trans, useTranslation } from "react-i18next"
 import { CtaButton, Toggle, Tooltip, TooltipContent, TooltipTrigger } from "talisman-ui"
@@ -24,7 +23,6 @@ export const GeneralPage = () => {
   const [hasSpiritKey] = useAppState("hasSpiritKey")
   const [useTestnets, setUseTestnets] = useSetting("useTestnets")
   const [hideBalances, setHideBalances] = useSetting("hideBalances")
-  const i18nEnabled = useIsFeatureEnabled("I18N")
   const [identiconType, setIdenticonType] = useSetting("identiconType")
   const [allowNotifications, setAllowNotifications] = useSetting("allowNotifications")
   const [spiritClanFeatures, setSpiritClanFeatures] = useSetting("spiritClanFeatures")
@@ -100,15 +98,13 @@ export const GeneralPage = () => {
         >
           <Toggle checked={hideBalances} onChange={(e) => setHideBalances(e.target.checked)} />
         </Setting>
-        {i18nEnabled && (
-          <CtaButton
-            iconLeft={FlagIcon}
-            iconRight={ChevronRightIcon}
-            title={t("Language")}
-            subtitle={t("Change the wallet display language")}
-            to={`/settings/language`}
-          />
-        )}
+        <CtaButton
+          iconLeft={FlagIcon}
+          iconRight={ChevronRightIcon}
+          title={t("Language")}
+          subtitle={t("Change the wallet display language")}
+          to={`/settings/language`}
+        />
         <CtaButton
           iconLeft={DollarSignIcon}
           iconRight={ChevronRightIcon}
