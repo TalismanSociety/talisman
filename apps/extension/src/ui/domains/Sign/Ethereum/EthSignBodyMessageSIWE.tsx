@@ -97,6 +97,11 @@ export const EthSignBodyMessageSIWE: FC<{
             <SignParamAccountButton address={account.address} withIcon />
           </div>
         </div>
+        {!!siwe.statement && (
+          <div className="bg-grey-850 text-body-secondary leading-paragraph mb-16 w-full rounded-sm p-4 text-center text-sm">
+            {siwe.statement}
+          </div>
+        )}
         <ViewDetailsButton onClick={open} />
       </div>
       <div className="grow"></div>
