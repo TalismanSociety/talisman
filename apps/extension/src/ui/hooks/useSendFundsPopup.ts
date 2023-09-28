@@ -41,6 +41,12 @@ export const useSendFundsPopup = (
         canSendFunds: false,
         cannotSendFundsReason: t("No tokens available to send"),
       }
+    if (accounts.length === 0) {
+      return {
+        canSendFunds: false,
+        cannotSendFundsReason: t("No accounts available"),
+      }
+    }
     if (to) {
       if (account && !isCompatibleAddress(account.address, to))
         return {
