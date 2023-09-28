@@ -19,6 +19,7 @@ import { api } from "@ui/api"
 import { AnalyticsPage, sendAnalyticsEvent } from "@ui/api/analytics"
 import { useNavigationContext } from "@ui/apps/popup/context/NavigationContext"
 import { BuildVersionPill } from "@ui/domains/Build/BuildVersionPill"
+import { useHasAccounts } from "@ui/hooks/useHasAccounts"
 import useMnemonicBackup from "@ui/hooks/useMnemonicBackup"
 import { FC, useCallback } from "react"
 import { useTranslation } from "react-i18next"
@@ -35,6 +36,7 @@ const ANALYTICS_PAGE: AnalyticsPage = {
 export const NavigationDrawer: FC = () => {
   const { t } = useTranslation()
   const { isOpen, close } = useNavigationContext()
+  const hasAccounts = useHasAccounts()
 
   const handleLock = useCallback(async () => {
     sendAnalyticsEvent({
@@ -133,9 +135,11 @@ export const NavigationDrawer: FC = () => {
             <NavItem icon={<PlusIcon />} onClick={handleAddAccountClick}>
               {t("Add Account")}
             </NavItem>
-            <NavItem icon={<SendIcon />} onClick={handleSendFundsClick}>
-              {t("Send Funds")}
-            </NavItem>
+            {hasAccounts && (
+              <NavItem icon={<SendIcon />} onClick={handleSendFundsClick}>
+                {t("Send Funds")}
+              </NavItem>
+            )}
             <NavItem icon={<UsersIcon />} onClick={handleAddressBookClick}>
               {t("Address Book")}
             </NavItem>
