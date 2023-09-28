@@ -106,6 +106,7 @@ export const migrateSeedStoreToMultiple: Migration = {
             name: "Polkadot Vault Verifier Certificate",
             source: SOURCES.Legacy,
             cipher: vcCipher,
+            confirmed: true, // verifier certificate is always confirmed, because it was imported manually
           },
         })
       }
