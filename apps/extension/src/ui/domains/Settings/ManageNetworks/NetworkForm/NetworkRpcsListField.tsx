@@ -178,10 +178,12 @@ export const NetworkRpcsListField = ({ placeholder = "https://" }: { placeholder
       </DndContext>
       <button
         type="button"
-        className="text-body-secondary hover:text-body flex gap-2 self-start text-sm"
+        className="text-body-secondary hover:text-body disabled:text-body-disabled flex gap-2 self-start text-sm disabled:cursor-not-allowed"
+        disabled={rpcs.length >= 10}
         onClick={handleAddRpc}
       >
-        <PlusIcon className="transition-none" /> {t("Add another RPC")}
+        <PlusIcon className="transition-none" />{" "}
+        {rpcs.length >= 10 ? t("Maximum 10 RPCs allowed") : t("Add another RPC")}
       </button>
     </FormFieldContainer>
   )

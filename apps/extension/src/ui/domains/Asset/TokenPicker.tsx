@@ -20,6 +20,7 @@ import { FC, useCallback, useMemo, useRef, useState } from "react"
 import { useTranslation } from "react-i18next"
 import { useIntersection } from "react-use"
 
+import { useFormatNetworkName } from "../SendFunds/useNetworkDetails"
 import { ChainLogoBase } from "./ChainLogo"
 import Fiat from "./Fiat"
 import { TokenLogo } from "./TokenLogo"
@@ -189,6 +190,7 @@ const TokensList: FC<TokensListProps> = ({
   const { evmNetworksMap } = useEvmNetworks(useTestnets)
   const { tokens: allTokens } = useTokens(useTestnets)
   const tokenRatesMap = useTokenRatesMap()
+  const formatNetworkName = useFormatNetworkName()
 
   const balances = useBalances(ownedOnly ? "owned" : "all")
   const currency = useSelectedCurrency()
@@ -240,11 +242,7 @@ const TokensList: FC<TokensListProps> = ({
           id: token.id,
           token,
           chainNameSearch: chain?.name ?? evmNetwork?.name,
-          chainName:
-            chain?.name ??
-            (evmNetwork
-              ? `${evmNetwork?.name}${evmNetwork?.substrateChain ? ` (${t("Ethereum")})` : ""}`
-              : ""),
+          chainName: formatNetworkName(chain ?? undefined, evmNetwork ?? undefined),
           chainLogo: chain?.logo ?? evmNetwork?.logo,
           hasFiatRate: !!tokenRatesMap[token.id],
         }
@@ -254,7 +252,7 @@ const TokensList: FC<TokensListProps> = ({
     chainsMap,
     evmNetworksMap,
     filterAccountCompatibleTokens,
-    t,
+    formatNetworkName,
     tokenFilter,
     tokenRatesMap,
   ])

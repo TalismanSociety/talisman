@@ -26,7 +26,24 @@ export const getEvmNetworkFormSchema = (evmNetworkId?: string) =>
         .of(yup.object({ url: yup.string().trim().required(i18next.t("Required")) }))
         .required(i18next.t("Required"))
         .min(1, i18next.t("RPC URL required"))
-        .test("rpcs", i18next.t("Chain ID mismatch"), async function (rpcs) {
+        .test("rpcs-unique", i18next.t("Must be unique"), function (rpcs) {
+          if (!rpcs?.length) return true
+          const urls = rpcs.map((rpc) => rpc.url)
+          const duplicate = urls.filter((url, i) => {
+            const prevUrls = urls.slice(0, i)
+            return prevUrls.includes(url)
+          })
+
+          if (duplicate.length) {
+            return this.createError({
+              message: i18next.t("Must be unique"),
+              path: `rpcs[${urls.lastIndexOf(duplicate[0])}].url`,
+            })
+          }
+
+          return true
+        })
+        .test("rpcs-valid", i18next.t("Chain ID mismatch"), async function (rpcs) {
           if (!rpcs?.length) return true
           let targetId = evmNetworkId
           for (const rpc of rpcs) {

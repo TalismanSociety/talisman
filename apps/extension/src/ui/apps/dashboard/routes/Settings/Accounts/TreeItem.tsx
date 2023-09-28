@@ -108,7 +108,6 @@ export const TreeFolderItem = forwardRef<HTMLDivElement, Props & { item: UiTreeF
     const { t } = useTranslation()
     const {
       balances,
-      childCount,
       clone,
       handleProps,
       item,
@@ -160,7 +159,7 @@ export const TreeFolderItem = forwardRef<HTMLDivElement, Props & { item: UiTreeF
             )}
           />
           <div className="flex flex-col">
-            <Fiat amount={totalUsd} isBalance />
+            <Fiat amount={totalUsd} isBalance noCountUp={clone} />
           </div>
 
           <ContextMenu placement="bottom-end">
@@ -183,17 +182,6 @@ export const TreeFolderItem = forwardRef<HTMLDivElement, Props & { item: UiTreeF
               </ContextMenuItem>
             </ContextMenuContent>
           </ContextMenu>
-
-          {clone && childCount && childCount > 0 ? (
-            <span
-              className={classNames(
-                "bg-black-tertiary text-primary rounded-xs absolute -right-5 -top-5 flex h-12 w-12 items-center justify-center text-xs",
-                clone && "select-none"
-              )}
-            >
-              {childCount}
-            </span>
-          ) : null}
         </div>
 
         {!clone && !collapsed && item.tree.length === 0 ? (

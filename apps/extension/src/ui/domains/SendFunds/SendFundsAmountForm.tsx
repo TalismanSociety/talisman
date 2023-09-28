@@ -43,6 +43,7 @@ import { TokensAndFiat } from "../Asset/TokensAndFiat"
 import { EthFeeSelect } from "../Ethereum/GasSettings/EthFeeSelect"
 import { AddToAddressBookDrawer } from "./AddToAddressBookDrawer"
 import { SendFundsFeeTooltip } from "./SendFundsFeeTooltip"
+import { useNetworkDetails } from "./useNetworkDetails"
 import { useSendFunds } from "./useSendFunds"
 
 const normalizeStringNumber = (value?: string | number | null, decimals = 18) => {
@@ -420,19 +421,8 @@ const TokenRow = ({ onEditClick }: { onEditClick: () => void }) => {
 
 const NetworkRow = () => {
   const [t] = useTranslation()
-  const { chain, evmNetwork } = useSendFunds()
 
-  const { networkId, networkName } = useMemo(
-    () => ({
-      networkId: (chain ?? evmNetwork)?.id,
-      networkName:
-        chain?.name ??
-        (evmNetwork
-          ? `${evmNetwork?.name}${evmNetwork?.substrateChain ? ` (${t("Ethereum")})` : ""}`
-          : ""),
-    }),
-    [chain, evmNetwork, t]
-  )
+  const { networkId, networkName } = useNetworkDetails()
 
   return (
     <div className="flex w-full items-center justify-between">

@@ -49,11 +49,12 @@ export const ledgerNetworks = [
   //   name: "statemint",
   //   genesisHash: "0x68d56f15f85d3136970ec16946040bc1752654e906147f7e43e9d539d7c3de2f",
   // },
-  {
-    name: "centrifuge",
-    genesisHash: "0xb3db41421702df9a7fcac62b53ffeac85f7853cc4e689e0b93aeb3db18c09d82",
-    label: "Centrifuge",
-  },
+  // Removed because no longer maintained https://support.ledger.com/hc/en-us/articles/11158925739677-Centrifuge-CFG-
+  // {
+  //   name: "centrifuge",
+  //   genesisHash: "0xb3db41421702df9a7fcac62b53ffeac85f7853cc4e689e0b93aeb3db18c09d82",
+  //   label: "Centrifuge",
+  // },
   {
     name: "aleph-node",
     genesisHash: "0x70255b4d28de0fc4e1a193d7e175ad1ccef431598211c55538f1018651a0344e",
