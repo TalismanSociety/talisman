@@ -4,7 +4,6 @@ import { log } from "@core/log"
 import { hexToString } from "@polkadot/util"
 import { ParsedMessage } from "@spruceid/siwe-parser"
 import { UserRightIcon } from "@talismn/icons"
-import { NetworkLogo } from "@ui/domains/Ethereum/NetworkLogo"
 import { useEvmNetwork } from "@ui/hooks/useEvmNetwork"
 import { FC, useMemo } from "react"
 import { useTranslation } from "react-i18next"
@@ -24,6 +23,8 @@ const ViewDetailsContent: FC<{
 }> = ({ account, request, siwe, onClose }) => {
   const { t } = useTranslation("request")
   const evmNetwork = useEvmNetwork(String(siwe.chainId))
+
+  const message = useMemo(() => hexToString(request.request), [request.request])
 
   return (
     <div className="bg-grey-850 flex max-h-[60rem] w-full flex-col gap-12 p-12">
@@ -50,7 +51,7 @@ const ViewDetailsContent: FC<{
         <ViewDetailsField label={t("Message")}>
           <div className="mt-2 pr-2">
             <pre className="text-body-secondary scrollable scrollable-700 bg-grey-800 rounded-xs w-full overflow-x-auto p-4">
-              {hexToString(request.request)}
+              {message}
             </pre>
           </div>
         </ViewDetailsField>
@@ -68,7 +69,6 @@ export const EthSignBodyMessageSIWE: FC<{
   siwe: ParsedMessage
 }> = ({ account, request, siwe }) => {
   const { t } = useTranslation("request")
-  const evmNetwork = useEvmNetwork(String(siwe.chainId))
   const { isOpen, open, close } = useOpenClose()
 
   const isValidUrl = useMemo(() => {
@@ -96,13 +96,6 @@ export const EthSignBodyMessageSIWE: FC<{
             <span>{t("with")}</span>
             <SignParamAccountButton address={account.address} withIcon />
           </div>
-          {evmNetwork && (
-            <div className="flex max-w-full items-center justify-center truncate">
-              <span>{t("on")}</span>
-              <NetworkLogo className="mx-3 shrink-0" ethChainId={evmNetwork?.id} />
-              <span className="text-body truncate font-bold">{evmNetwork?.name}</span>
-            </div>
-          )}
         </div>
         <ViewDetailsButton onClick={open} />
       </div>
