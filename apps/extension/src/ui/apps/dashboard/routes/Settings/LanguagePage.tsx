@@ -2,10 +2,7 @@ import { languages } from "@core/i18nConfig"
 import { HeaderBlock } from "@talisman/components/HeaderBlock"
 import { Spacer } from "@talisman/components/Spacer"
 import { CheckIcon } from "@talismn/icons"
-import { useIsFeatureEnabled } from "@ui/hooks/useFeatures"
-import { useEffect } from "react"
 import { useTranslation } from "react-i18next"
-import { useNavigate } from "react-router-dom"
 
 import { DashboardLayout } from "../../layout/DashboardLayout"
 
@@ -35,19 +32,9 @@ const LanguageButton = ({
 
 export const LanguagePage = () => {
   const { t, i18n } = useTranslation("admin")
-  const i18nEnabled = useIsFeatureEnabled("I18N")
-  const navigate = useNavigate()
 
   const currentLang = i18n.language
   const changeLang = (lang?: keyof typeof languages) => lang && i18n.changeLanguage(lang)
-
-  // TODO remove this useEffect when i18n is enabled by default
-  useEffect(() => {
-    if (!i18nEnabled) {
-      // redirect to general settings page
-      navigate("/settings/general")
-    }
-  }, [i18nEnabled, navigate])
 
   return (
     <DashboardLayout centered withBack backTo="/settings/general">
