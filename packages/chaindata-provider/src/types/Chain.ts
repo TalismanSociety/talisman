@@ -33,6 +33,8 @@ export type Chain = {
   relay: Pick<Chain, "id"> | null // The parent relayChain of this parachain, if this chain is a parachain
 
   balancesConfig: Array<BalancesConfig>
+  // TODO: Delete (has its own store now)
+  /** @deprecated has its own store now */
   balancesMetadata: Array<BalancesMetadata>
 }
 export type CustomChain = Chain & {

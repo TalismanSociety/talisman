@@ -1,9 +1,23 @@
+import * as $ from "@talismn/subshape-fork"
+
 import { MetadataV14 } from "./capi"
 import log from "./log"
 
 export type TyMV14 = MetadataV14["tys"][0]
 export type PalletMV14 = MetadataV14["pallets"][0]
 export type StorageEntryMV14 = NonNullable<PalletMV14["storage"]>["entries"][0]
+
+export const getMetadataVersion = (metadataRpc: `0x${string}`) => {
+  // https://docs.substrate.io/build/application-development/#metadata-system
+  const magicNumber = 1635018093
+
+  const { version } = $.object(
+    $.field("magicNumber", $.constant<typeof magicNumber>(magicNumber, $.u32)),
+    $.field("version", $.u8)
+  ).decode($.decodeHex(metadataRpc))
+
+  return version
+}
 
 export const filterMetadataPalletsAndItems = (
   metadata: MetadataV14,

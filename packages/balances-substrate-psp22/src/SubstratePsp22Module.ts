@@ -126,7 +126,7 @@ export const SubPsp22Module: NewBalanceModule<
       const tokens: Record<string, SubPsp22Token> = {}
       for (const tokenConfig of moduleConfig?.tokens || []) {
         try {
-          let symbol = tokenConfig?.symbol ?? "Unknown"
+          let symbol = tokenConfig?.symbol ?? "Unit"
           let decimals = tokenConfig?.decimals ?? 0
           const existentialDeposit = tokenConfig?.ed ?? "0"
           const contractAddress = tokenConfig?.contractAddress ?? undefined

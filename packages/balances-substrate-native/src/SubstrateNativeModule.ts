@@ -1,4 +1,4 @@
-import { Metadata, TypeRegistry, createType, decorateConstants } from "@polkadot/types"
+import { TypeRegistry, createType } from "@polkadot/types"
 import { assert, compactFromU8a, u8aToHex, u8aToString } from "@polkadot/util"
 import { defineMethod } from "@substrate/txwrapper-core"
 import {
@@ -29,10 +29,14 @@ import {
   githubTokenLogoUrl,
 } from "@talismn/chaindata-provider"
 import {
+  $metadataV14,
+  PalletMV14,
+  StorageEntryMV14,
   filterMetadataPalletsAndItems,
-  metadataIsV14,
-  mutateMetadata,
-} from "@talismn/mutate-metadata"
+  getMetadataVersion,
+  transformMetadataV14,
+} from "@talismn/scale"
+import * as $ from "@talismn/subshape-fork"
 import { Deferred, blake2Concat, decodeAnyAddress, isEthereumAddress } from "@talismn/util"
 import { combineLatest, map, scan, share, switchAll } from "rxjs"
 
@@ -72,9 +76,6 @@ const AccountInfoOverrides: { [key: ChainId]: string } = {
   // crown-sterlin is not yet on metadata v14
   "crown-sterling": NoSufficientsAccountInfoFallback,
 
-  // crust-parachain is not yet on metadata v14
-  "crust-parachain": NoSufficientsAccountInfoFallback,
-
   // crust is not yet on metadata v14
   "crust": NoSufficientsAccountInfoFallback,
 
@@ -113,10 +114,11 @@ export type SubNativeChainMeta = {
   existentialDeposit: string | null
   nominationPoolsPalletId: string | null
   crowdloanPalletId: string | null
-  metadata: `0x${string}` | null
+  minMetadata: `0x${string}` | null
   metadataVersion: number
 }
 
+// TODO: Include common token properties e.g. dcentName, coingeckoId
 export type SubNativeModuleConfig = {
   disable?: boolean
 }
@@ -166,10 +168,6 @@ export const SubNativeModule: NewBalanceModule<
   return {
     ...DefaultBalanceModule("substrate-native"),
 
-    /**
-     * This method is currently executed on [a squid](https://github.com/TalismanSociety/chaindata-squid/blob/0ee02818bf5caa7362e3f3664e55ef05ec8df078/src/steps/fetchDataForChains.ts#L286-L314).
-     * In a future version of the balance libraries, we may build some kind of async scheduling system which will keep the chainmeta for each chain up to date without relying on a squid.
-     */
     async fetchSubstrateChainMeta(chainId, moduleConfig) {
       const isTestnet = (await chaindataProvider.getChain(chainId))?.isTestnet || false
 
@@ -181,7 +179,7 @@ export const SubNativeModule: NewBalanceModule<
           existentialDeposit: null,
           nominationPoolsPalletId: null,
           crowdloanPalletId: null,
-          metadata: null,
+          minMetadata: null,
           metadataVersion: 0,
         }
 
@@ -190,78 +188,76 @@ export const SubNativeModule: NewBalanceModule<
         chainConnector.send(chainId, "system_properties", []),
       ])
 
+      const metadataVersion = getMetadataVersion(metadataRpc)
+
       const { tokenSymbol, tokenDecimals } = chainProperties
 
-      const symbol: string =
-        (Array.isArray(tokenSymbol) ? tokenSymbol[0] : tokenSymbol) || "Unknown"
+      const symbol: string = (Array.isArray(tokenSymbol) ? tokenSymbol[0] : tokenSymbol) ?? "Unit"
       const decimals: number =
-        (Array.isArray(tokenDecimals) ? tokenDecimals[0] : tokenDecimals) || 0
+        (Array.isArray(tokenDecimals) ? tokenDecimals[0] : tokenDecimals) ?? 0
 
-      const pjsMetadata: Metadata = new Metadata(new TypeRegistry(), metadataRpc)
-      pjsMetadata.registry.setMetadata(pjsMetadata)
+      if (metadataVersion !== 14)
+        return {
+          isTestnet,
+          symbol,
+          decimals,
+          existentialDeposit: null,
+          nominationPoolsPalletId: null,
+          crowdloanPalletId: null,
+          minMetadata: null,
+          metadataVersion,
+        }
 
-      const constants = decorateConstants(
-        pjsMetadata.registry,
-        pjsMetadata.asLatest,
-        pjsMetadata.version
-      )
-      const existentialDeposit = constants?.balances?.existentialDeposit
-        ? constants.balances.existentialDeposit.toString()
+      const metadata = $metadataV14.decode($.decodeHex(metadataRpc))
+      const subshape = transformMetadataV14(metadata)
+
+      const existentialDeposit = (
+        subshape.pallets.Balances?.constants.ExistentialDeposit?.codec.decode?.(
+          subshape.pallets.Balances.constants.ExistentialDeposit.value
+        ) ?? 0n
+      ).toString()
+      const nominationPoolsPalletId = subshape.pallets.NominationPools?.constants.PalletId?.value
+        ? Buffer.from(subshape.pallets.NominationPools?.constants.PalletId?.value).toString("hex")
         : null
-      const nominationPoolsPalletId = constants?.nominationPools?.palletId
-        ? Buffer.from(constants.nominationPools.palletId.toU8a()).toString("hex")
-        : null
-      const crowdloanPalletId = constants?.crowdloan?.palletId
-        ? Buffer.from(constants.crowdloan.palletId.toU8a()).toString("hex")
+      const crowdloanPalletId = subshape.pallets.Crowdloan?.constants.PalletId?.value
+        ? Buffer.from(subshape.pallets.Crowdloan?.constants.PalletId?.value).toString("hex")
         : null
 
-      const balanceMetadata = await mutateMetadata(metadataRpc, (metadata) => {
-        // we can't parse metadata < v14
-        //
-        // as of v14 the type information required to interact with a chain is included in the chain metadata
-        // https://github.com/paritytech/substrate/pull/8615
-        //
-        // before this change, the client needed to already know the type information ahead of time
-        if (!metadataIsV14(metadata)) return null
+      const isSystemPallet = (pallet: PalletMV14) => pallet.name === "System"
+      const isAccountItem = (item: StorageEntryMV14) => item.name === "Account"
 
-        const isSystemPallet = (pallet: { name: string }) => pallet.name === "System"
-        const isAccountItem = (item: { name: string }) => item.name === "Account"
+      const isBalancesPallet = (pallet: PalletMV14) => pallet.name === "Balances"
+      const isLocksItem = (item: StorageEntryMV14) => item.name === "Locks"
 
-        const isBalancesPallet = (pallet: { name: string }) => pallet.name === "Balances"
-        const isLocksItem = (item: { name: string }) => item.name === "Locks"
+      const isNomPoolsPallet = (pallet: PalletMV14) => pallet.name === "NominationPools"
+      const isPoolMembersItem = (item: StorageEntryMV14) => item.name === "PoolMembers"
+      const isBondedPoolsItem = (item: StorageEntryMV14) => item.name === "BondedPools"
+      const isMetadataItem = (item: StorageEntryMV14) => item.name === "Metadata"
 
-        const isNomPoolsPallet = (pallet: { name: string }) => pallet.name === "NominationPools"
-        const isPoolMembersItem = (item: { name: string }) => item.name === "PoolMembers"
-        const isBondedPoolsItem = (item: { name: string }) => item.name === "BondedPools"
-        const isMetadataItem = (item: { name: string }) => item.name === "Metadata"
+      const isStakingPallet = (pallet: PalletMV14) => pallet.name === "Staking"
+      const isLedgerItem = (item: StorageEntryMV14) => item.name === "Ledger"
 
-        const isStakingPallet = (pallet: { name: string }) => pallet.name === "Staking"
-        const isLedgerItem = (item: { name: string }) => item.name === "Ledger"
+      const isCrowdloanPallet = (pallet: PalletMV14) => pallet.name === "Crowdloan"
+      const isFundsItem = (item: StorageEntryMV14) => item.name === "Funds"
 
-        const isCrowdloanPallet = (pallet: { name: string }) => pallet.name === "Crowdloan"
-        const isFundsItem = (item: { name: string }) => item.name === "Funds"
+      const isParasPallet = (pallet: PalletMV14) => pallet.name === "Paras"
+      const isParachainsItem = (item: StorageEntryMV14) => item.name === "Parachains"
 
-        const isParasPallet = (pallet: { name: string }) => pallet.name === "Paras"
-        const isParachainsItem = (item: { name: string }) => item.name === "Parachains"
+      // TODO: Handle metadata v15
+      filterMetadataPalletsAndItems(metadata, [
+        { pallet: isSystemPallet, items: [isAccountItem] },
+        { pallet: isBalancesPallet, items: [isLocksItem] },
+        {
+          pallet: isNomPoolsPallet,
+          items: [isPoolMembersItem, isBondedPoolsItem, isMetadataItem],
+        },
+        { pallet: isStakingPallet, items: [isLedgerItem] },
+        { pallet: isCrowdloanPallet, items: [isFundsItem] },
+        { pallet: isParasPallet, items: [isParachainsItem] },
+      ])
+      metadata.extrinsic.signedExtensions = []
 
-        filterMetadataPalletsAndItems(metadata, [
-          { pallet: isSystemPallet, items: [isAccountItem] },
-          { pallet: isBalancesPallet, items: [isLocksItem] },
-          {
-            pallet: isNomPoolsPallet,
-            items: [isPoolMembersItem, isBondedPoolsItem, isMetadataItem],
-          },
-          { pallet: isStakingPallet, items: [isLedgerItem] },
-          { pallet: isCrowdloanPallet, items: [isFundsItem] },
-          { pallet: isParasPallet, items: [isParachainsItem] },
-        ])
-
-        // ditch the chain's signedExtensions, we don't need them for balance lookups
-        // and the polkadot.js TypeRegistry will complain when it can't find the types for them
-        metadata.value.extrinsic.signedExtensions = []
-
-        return metadata
-      })
+      const minMetadata = $.encodeHexPrefixed($metadataV14.encode(metadata)) as `0x${string}`
 
       return {
         isTestnet,
@@ -270,15 +266,11 @@ export const SubNativeModule: NewBalanceModule<
         existentialDeposit,
         nominationPoolsPalletId,
         crowdloanPalletId,
-        metadata: balanceMetadata,
-        metadataVersion: pjsMetadata.version,
+        minMetadata,
+        metadataVersion,
       }
     },
 
-    /**
-     * This method is currently executed on [a squid](https://github.com/TalismanSociety/chaindata-squid/blob/0ee02818bf5caa7362e3f3664e55ef05ec8df078/src/steps/fetchDataForChains.ts#L331-L336).
-     * In a future version of the balance libraries, we may build some kind of async scheduling system which will keep the list of tokens for each chain up to date without relying on a squid.
-     */
     async fetchSubstrateChainTokens(chainId, chainMeta, moduleConfig) {
       if (moduleConfig?.disable === true) return {}
 
@@ -455,11 +447,11 @@ async function buildQueries(
 
     const chainMeta = findChainMeta<typeof SubNativeModule>("substrate-native", chain)
     const hasMetadataV14 =
-      chainMeta?.metadata !== undefined &&
-      chainMeta?.metadata !== null &&
+      chainMeta?.minMetadata !== undefined &&
+      chainMeta?.minMetadata !== null &&
       chainMeta?.metadataVersion >= 14
     const typeRegistry = hasMetadataV14
-      ? getOrCreateTypeRegistry(chainId, chainMeta.metadata ?? undefined)
+      ? getOrCreateTypeRegistry(chainId, chainMeta.minMetadata ?? undefined)
       : new TypeRegistry()
 
     return addresses.flatMap((address) => {
@@ -674,10 +666,10 @@ export async function subscribeNompoolStaking(
     }
     const chainMeta = findChainMeta<typeof SubNativeModule>("substrate-native", chain)
     const typeRegistry =
-      chainMeta?.metadata !== undefined &&
-      chainMeta?.metadata !== null &&
+      chainMeta?.minMetadata !== undefined &&
+      chainMeta?.minMetadata !== null &&
       chainMeta?.metadataVersion >= 14
-        ? getOrCreateTypeRegistry(chainId, chainMeta.metadata)
+        ? getOrCreateTypeRegistry(chainId, chainMeta.minMetadata)
         : new TypeRegistry()
 
     type PoolMembers = {
@@ -1020,10 +1012,10 @@ async function subscribeCrowdloans(
     }
     const chainMeta = findChainMeta<typeof SubNativeModule>("substrate-native", chain)
     const typeRegistry =
-      chainMeta?.metadata !== undefined &&
-      chainMeta?.metadata !== null &&
+      chainMeta?.minMetadata !== undefined &&
+      chainMeta?.minMetadata !== null &&
       chainMeta?.metadataVersion >= 14
-        ? getOrCreateTypeRegistry(chainId, chainMeta.metadata)
+        ? getOrCreateTypeRegistry(chainId, chainMeta.minMetadata)
         : new TypeRegistry()
 
     const subscribeParaIds = (callback: SubscriptionCallback<Array<number[]>>) => {

@@ -1,14 +1,16 @@
 import { Dexie } from "dexie"
 
-import { BalanceJson } from "./types"
+import { BalanceJson, MiniMetadata } from "./types"
 
 export class TalismanBalancesDatabase extends Dexie {
   balances!: Dexie.Table<BalanceJson, string>
+  miniMetadatas!: Dexie.Table<MiniMetadata, string>
 
   constructor() {
     super("TalismanBalances")
 
     // https://dexie.org/docs/Tutorial/Design#database-versioning
+    // TODO: Increment version
     this.version(1).stores({
       // You only need to specify properties that you wish to index.
       // The object store will allow any properties on your stored objects but you can only query them by indexed properties
@@ -17,6 +19,8 @@ export class TalismanBalancesDatabase extends Dexie {
       // Never index properties containing images, movies or large (huge) strings. Store them in IndexedDB, yes! but just don’t index them!
       // https://dexie.org/docs/Version/Version.stores()#warning
       balances: "id, source, status, address, tokenId",
+
+      miniMetadatas: "id, source, chainId, specName, specVersion",
     })
 
     // this.on("ready", async () => {})

@@ -21,6 +21,8 @@ export type EvmNetwork = {
   substrateChain: { id: ChainId } | null
 
   balancesConfig: Array<BalancesConfig>
+  // TODO: Delete (has its own store now)
+  /** @deprecated has its own store now */
   balancesMetadata: Array<BalancesMetadata>
 }
 export type CustomEvmNetwork = EvmNetwork & {
