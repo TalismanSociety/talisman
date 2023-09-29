@@ -44,7 +44,7 @@ Browser.runtime.onInstalled.addListener(async ({ reason, previousVersion }) => {
     await migrationRunner.isComplete
   } else if (reason === "update") {
     // Main migrations will occur on login to ensure that password is present for any migrations that require it
-    passwordStore.isLoggedIn.subscribe(async (isLoggedIn) => {
+    const sub = passwordStore.isLoggedIn.subscribe(async (isLoggedIn) => {
       if (isLoggedIn) {
         const password = passwordStore.getPassword()
         if (!password) return
@@ -53,7 +53,10 @@ Browser.runtime.onInstalled.addListener(async ({ reason, previousVersion }) => {
         const migrationRunner = new MigrationRunner(migrations, false, {
           password,
         })
+
         await migrationRunner.isComplete
+        // only do this once
+        sub.unsubscribe()
       }
     })
     // run any legacy migrations
