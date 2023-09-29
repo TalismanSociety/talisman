@@ -181,6 +181,7 @@ const ConnectAccountMethodButtons = () => {
             ? t("Connect your D'CENT Biometric Wallet")
             : t("Not supported on this browser")
         }
+        disabled={IS_FIREFOX}
         networks={["polkadot", "ethereum"]}
         to={`/accounts/add/dcent`}
       />
