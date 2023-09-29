@@ -44,7 +44,7 @@ export const TALISMAN_WEB_APP_TRANSPORT_URL = "https://app.talisman.xyz/transfer
 // Used for testing the full buying flow
 // The tokens available at this endpoint are not in sync with the production endpoint
 // export const BANXA_URL = "https://talisman.banxa-sandbox.com/"
-export const BANXA_URL = "https://talisman.banxa.com/"
+export const BANXA_URL = "https://checkout.banxa.com/"
 
 export const NOM_POOL_SUPPORTED_CHAINS = ["polkadot"]
 export const NOM_POOL_MIN_DEPOSIT: Record<string, string> = {
