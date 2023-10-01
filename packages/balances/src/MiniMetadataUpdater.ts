@@ -91,26 +91,30 @@ export class MiniMetadataUpdater {
       .map(([chainId]) => chainId)
 
     const concurrency = 4
-    await PromisePool.withConcurrency(concurrency)
-      .for(needUpdates)
-      .process(async (chainId) => {
-        log.info(`Updating metadata for chain ${chainId}`)
-        const chain = chains.get(chainId)
-        if (!chain) return
+    ;(
+      await PromisePool.withConcurrency(concurrency)
+        .for(needUpdates)
+        .process(async (chainId) => {
+          log.info(`Updating metadata for chain ${chainId}`)
+          const chain = chains.get(chainId)
+          if (!chain) return
 
-        const { specName, specVersion } = chain
-        if (specName === null) return
-        if (specVersion === null) return
+          const { specName, specVersion } = chain
+          if (specName === null) return
+          if (specVersion === null) return
 
-        await PromisePool.withConcurrency(1)
-          // TODO: port the other modules too
-          .for(this.#balanceModules.filter(({ type }) => type === "substrate-native"))
-          .process(async (mod) => {
-            const balancesConfig =
-              chain.balancesConfig.find(({ moduleType }) => moduleType === mod.type) ?? {}
+          for (const mod of this.#balanceModules.filter(({ type }) =>
+            // TODO: port the other modules too
+            ["substrate-native", "substrate-assets"].includes(type)
+          )) {
+            const balancesConfig = chain.balancesConfig.find(
+              ({ moduleType }) => moduleType === mod.type
+            )
+            const moduleConfig = balancesConfig?.moduleConfig ?? {}
 
-            const metadata = await mod.fetchSubstrateChainMeta(chainId, balancesConfig)
-            const tokens = await mod.fetchSubstrateChainTokens(chainId, metadata, balancesConfig)
+            // TODO: Pass metadataRpc into this function so that it only needs to be fetched once
+            const metadata = await mod.fetchSubstrateChainMeta(chainId, moduleConfig)
+            const tokens = await mod.fetchSubstrateChainTokens(chainId, metadata, moduleConfig)
 
             // update tokens in chaindata
             await this.#chaindataProvider.updateChainTokens(
@@ -121,26 +125,27 @@ export class MiniMetadataUpdater {
 
             // update miniMetadatas
             const { miniMetadata: data, metadataVersion: version, ...extra } = metadata
-            balancesDb.miniMetadatas.put({
+            await balancesDb.miniMetadatas.put({
               id: this.deriveId({
                 source: mod.type,
                 chainId,
                 specName,
                 specVersion,
-                balancesConfig: JSON.stringify(balancesConfig),
+                balancesConfig: JSON.stringify(moduleConfig),
               }),
               source: mod.type,
               chainId,
               specName,
               specVersion,
-              balancesConfig: JSON.stringify(balancesConfig),
+              balancesConfig: JSON.stringify(moduleConfig),
               // TODO: Standardise return value from `fetchSubstrateChainMeta`
               version,
               data,
               extra,
             })
-          })
-      })
+          }
+        })
+    ).errors.forEach((error) => log.error("Error updating chain metadata", error))
   }
 
   async statuses(chains: Array<Pick<Chain, "id" | "specName" | "specVersion" | "balancesConfig">>) {
@@ -154,9 +159,9 @@ export class MiniMetadataUpdater {
         return [
           [
             chainId,
-            // TODO: port the other modules too
             this.#balanceModules
-              .filter(({ type }) => type === "substrate-native")
+              // TODO: port the other modules too
+              .filter(({ type }) => ["substrate-native", "substrate-assets"].includes(type))
               .map(({ type: source }) =>
                 this.deriveId({
                   source,
@@ -164,7 +169,8 @@ export class MiniMetadataUpdater {
                   specName: specName,
                   specVersion: specVersion,
                   balancesConfig: JSON.stringify(
-                    balancesConfig.find(({ moduleType }) => moduleType === source) ?? {}
+                    balancesConfig.find(({ moduleType }) => moduleType === source)?.moduleConfig ??
+                      {}
                   ),
                 })
               ),

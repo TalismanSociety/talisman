@@ -285,7 +285,7 @@ export const SubNativeModule: NewBalanceModule<
         symbol,
         decimals,
         logo: githubTokenLogoUrl(id),
-        existentialDeposit: existentialDeposit || "0",
+        existentialDeposit: existentialDeposit ?? "0",
         chain: { id: chainId },
       }
 
