@@ -110,6 +110,7 @@ export class MiniMetadataUpdater {
               "substrate-assets",
               "substrate-tokens",
               "substrate-equilibrium",
+              "substrate-psp22",
             ].includes(type)
           )) {
             const balancesConfig = chain.balancesConfig.find(
@@ -172,6 +173,7 @@ export class MiniMetadataUpdater {
                   "substrate-assets",
                   "substrate-tokens",
                   "substrate-equilibrium",
+                  "substrate-psp22",
                 ].includes(type)
               )
               .map(({ type: source }) =>

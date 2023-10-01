@@ -10,7 +10,13 @@ import {
 } from "@polkadot/util"
 import { defineMethod } from "@substrate/txwrapper-core"
 import { ChainConnector } from "@talismn/chain-connector"
-import { ChainId, NewTokenType, SubChainId, githubTokenLogoUrl } from "@talismn/chaindata-provider"
+import {
+  BalancesConfigTokenParams,
+  ChainId,
+  NewTokenType,
+  SubChainId,
+  githubTokenLogoUrl,
+} from "@talismn/chaindata-provider"
 import isEqual from "lodash/isEqual"
 
 import { DefaultBalanceModule, NewBalanceModule, NewTransferParamsType } from "../BalanceModule"
@@ -43,13 +49,14 @@ export type SubPsp22ChainMeta = {
 }
 
 export type SubPsp22ModuleConfig = {
-  tokens?: Array<{
-    symbol?: string
-    decimals?: number
-    ed?: string
-    contractAddress?: string
-    coingeckoId?: string
-  }>
+  tokens?: Array<
+    {
+      symbol?: string
+      decimals?: number
+      ed?: string
+      contractAddress?: string
+    } & BalancesConfigTokenParams
+  >
 }
 
 export type SubPsp22Balance = NewBalanceType<
@@ -93,20 +100,12 @@ export const SubPsp22Module: NewBalanceModule<
   return {
     ...DefaultBalanceModule("substrate-psp22"),
 
-    /**
-     * This method is currently executed on [a squid](https://github.com/TalismanSociety/chaindata-squid/blob/0ee02818bf5caa7362e3f3664e55ef05ec8df078/src/steps/fetchDataForChains.ts#L286-L314).
-     * In a future version of the balance libraries, we may build some kind of async scheduling system which will keep the chainmeta for each chain up to date without relying on a squid.
-     */
     async fetchSubstrateChainMeta(chainId) {
       const isTestnet = (await chaindataProvider.getChain(chainId))?.isTestnet || false
 
       return { isTestnet }
     },
 
-    /**
-     * This method is currently executed on [a squid](https://github.com/TalismanSociety/chaindata-squid/blob/0ee02818bf5caa7362e3f3664e55ef05ec8df078/src/steps/fetchDataForChains.ts#L331-L336).
-     * In a future version of the balance libraries, we may build some kind of async scheduling system which will keep the list of tokens for each chain up to date without relying on a squid.
-     */
     async fetchSubstrateChainTokens(chainId, chainMeta, moduleConfig) {
       const { isTestnet } = chainMeta
 
@@ -116,13 +115,12 @@ export const SubPsp22Module: NewBalanceModule<
       const contractCall = makeContractCaller({ chainConnector, chainId, registry })
 
       const tokens: Record<string, SubPsp22Token> = {}
-      for (const tokenConfig of moduleConfig?.tokens || []) {
+      for (const tokenConfig of moduleConfig?.tokens ?? []) {
         try {
           let symbol = tokenConfig?.symbol ?? "Unit"
           let decimals = tokenConfig?.decimals ?? 0
           const existentialDeposit = tokenConfig?.ed ?? "0"
           const contractAddress = tokenConfig?.contractAddress ?? undefined
-          const coingeckoId = tokenConfig?.coingeckoId ?? undefined
 
           if (contractAddress === undefined) continue
 
@@ -175,11 +173,15 @@ export const SubPsp22Module: NewBalanceModule<
             symbol,
             decimals,
             logo: githubTokenLogoUrl(id),
-            coingeckoId,
             existentialDeposit,
             contractAddress,
             chain: { id: chainId },
           }
+
+          if (tokenConfig?.symbol) token.symbol = tokenConfig?.symbol
+          if (tokenConfig?.coingeckoId) token.coingeckoId = tokenConfig?.coingeckoId
+          if (tokenConfig?.dcentName) token.dcentName = tokenConfig?.dcentName
+          if (tokenConfig?.mirrorOf) token.mirrorOf = tokenConfig?.mirrorOf
 
           tokens[token.id] = token
         } catch (error) {
