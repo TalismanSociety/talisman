@@ -68,6 +68,7 @@ export class MiniMetadataUpdater {
     )
   }
 
+  // TODO: Also update evmNetworks
   async update(chainIds: ChainId[]) {
     const chains = new Map(
       (await this.#chaindataProvider.chainsArray()).map((chain) => [chain.id, chain])

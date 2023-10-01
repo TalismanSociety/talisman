@@ -5,8 +5,11 @@ import { ExtensionHandler } from "@core/libs/Handler"
 import { chaindataProvider } from "@core/rpcs/chaindata"
 import { Port, RequestIdOnly } from "@core/types/base"
 import { assert } from "@polkadot/util"
+import { MiniMetadataUpdater } from "@talismn/balances"
 import { githubUnknownTokenLogoUrl } from "@talismn/chaindata-provider"
 import { MessageTypes, RequestTypes, ResponseType } from "core/types"
+
+import { balanceModules } from "../balances/store"
 
 export default class TokensHandler extends ExtensionHandler {
   public async handle<TMessageType extends MessageTypes>(
@@ -21,7 +24,12 @@ export default class TokensHandler extends ExtensionHandler {
       // token handlers -----------------------------------------------------
       // --------------------------------------------------------------------
       case "pri(tokens.subscribe)":
-        return chaindataProvider.hydrateTokens()
+        return chaindataProvider
+          .hydrateTokens()
+          .then(() => chaindataProvider.chainIds())
+          .then((chainIds) =>
+            new MiniMetadataUpdater(chaindataProvider, balanceModules).update(chainIds)
+          )
 
       // --------------------------------------------------------------------
       // ERC20 token handlers -----------------------------------------------------
