@@ -20,7 +20,7 @@ import { requestStore } from "../libs/requests/store"
 import Extension from "./Extension"
 import { extensionStores } from "./stores"
 
-jest.mock("@talismn/chaindata-provider-extension/src/graphql")
+jest.mock("@talismn/chaindata-provider-extension/src/net")
 jest.setTimeout(10000)
 
 // Mock the hasSpiritKey module to return false
