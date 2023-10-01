@@ -105,7 +105,12 @@ export class MiniMetadataUpdater {
 
           for (const mod of this.#balanceModules.filter(({ type }) =>
             // TODO: port the other modules too
-            ["substrate-native", "substrate-assets", "substrate-tokens"].includes(type)
+            [
+              "substrate-native",
+              "substrate-assets",
+              "substrate-tokens",
+              "substrate-equilibrium",
+            ].includes(type)
           )) {
             const balancesConfig = chain.balancesConfig.find(
               ({ moduleType }) => moduleType === mod.type
@@ -162,7 +167,12 @@ export class MiniMetadataUpdater {
             this.#balanceModules
               // TODO: port the other modules too
               .filter(({ type }) =>
-                ["substrate-native", "substrate-assets", "substrate-tokens"].includes(type)
+                [
+                  "substrate-native",
+                  "substrate-assets",
+                  "substrate-tokens",
+                  "substrate-equilibrium",
+                ].includes(type)
               )
               .map(({ type: source }) =>
                 this.deriveId({

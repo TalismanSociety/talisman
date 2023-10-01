@@ -3,6 +3,7 @@ import { AbstractInt } from "@polkadot/types-codec"
 import { assert } from "@polkadot/util"
 import { defineMethod } from "@substrate/txwrapper-core"
 import {
+  BalancesConfigTokenParams,
   ChainId,
   ChaindataProvider,
   NewTokenType,
@@ -10,10 +11,13 @@ import {
   githubTokenLogoUrl,
 } from "@talismn/chaindata-provider"
 import {
+  $metadataV14,
+  PalletMV14,
+  StorageEntryMV14,
   filterMetadataPalletsAndItems,
-  metadataIsV14,
-  mutateMetadata,
-} from "@talismn/mutate-metadata"
+  getMetadataVersion,
+} from "@talismn/scale"
+import * as $ from "@talismn/subshape-fork"
 import { decodeAnyAddress } from "@talismn/util"
 
 import { DefaultBalanceModule, NewBalanceModule, NewTransferParamsType } from "../BalanceModule"
@@ -50,12 +54,17 @@ declare module "@talismn/chaindata-provider/plugins" {
 
 export type SubEquilibriumChainMeta = {
   isTestnet: boolean
-  metadata: `0x${string}` | null
+  miniMetadata: `0x${string}` | null
   metadataVersion: number
 }
 
 export type SubEquilibriumModuleConfig = {
   disable?: boolean
+  tokens?: Array<
+    {
+      assetId?: string
+    } & BalancesConfigTokenParams
+  >
 }
 
 export type SubEquilibriumBalance = NewBalanceType<
@@ -101,64 +110,47 @@ export const SubEquilibriumModule: NewBalanceModule<
   return {
     ...DefaultBalanceModule("substrate-equilibrium"),
 
-    /**
-     * This method is currently executed on [a squid](https://github.com/TalismanSociety/chaindata-squid/blob/0ee02818bf5caa7362e3f3664e55ef05ec8df078/src/steps/fetchDataForChains.ts#L286-L314).
-     * In a future version of the balance libraries, we may build some kind of async scheduling system which will keep the chainmeta for each chain up to date without relying on a squid.
-     */
     async fetchSubstrateChainMeta(chainId, moduleConfig) {
       const isTestnet = (await chaindataProvider.getChain(chainId))?.isTestnet || false
 
       // default to disabled
-      if (moduleConfig?.disable !== false) return { isTestnet, metadata: null, metadataVersion: 0 }
+      if (moduleConfig?.disable !== false)
+        return { isTestnet, miniMetadata: null, metadataVersion: 0 }
 
       const metadataRpc = await chainConnector.send(chainId, "state_getMetadata", [])
+      const metadataVersion = getMetadataVersion(metadataRpc)
 
-      const pjsMetadata: Metadata = new Metadata(new TypeRegistry(), metadataRpc)
-      pjsMetadata.registry.setMetadata(pjsMetadata)
+      if (metadataVersion !== 14) return { isTestnet, miniMetadata: null, metadataVersion }
 
-      const metadata = await mutateMetadata(metadataRpc, (metadata) => {
-        // we can't parse metadata < v14
-        //
-        // as of v14 the type information required to interact with a chain is included in the chain metadata
-        // https://github.com/paritytech/substrate/pull/8615
-        //
-        // before this change, the client needed to already know the type information ahead of time
-        if (!metadataIsV14(metadata)) return null
+      const metadata = $metadataV14.decode($.decodeHex(metadataRpc))
 
-        const isEqAssetsPallet = (pallet: { name: string }) => pallet.name === "EqAssets"
-        const isAssetsItem = (item: { name: string }) => item.name === "Assets"
+      const isEqAssetsPallet = (pallet: PalletMV14) => pallet.name === "EqAssets"
+      const isAssetsItem = (item: StorageEntryMV14) => item.name === "Assets"
 
-        const isSystemPallet = (pallet: { name: string }) => pallet.name === "System"
-        const isAccountItem = (item: { name: string }) => item.name === "Account"
+      const isSystemPallet = (pallet: PalletMV14) => pallet.name === "System"
+      const isAccountItem = (item: StorageEntryMV14) => item.name === "Account"
 
-        filterMetadataPalletsAndItems(metadata, [
-          { pallet: isEqAssetsPallet, items: [isAssetsItem] },
-          { pallet: isSystemPallet, items: [isAccountItem] },
-        ])
+      // TODO: Handle metadata v15
+      filterMetadataPalletsAndItems(metadata, [
+        { pallet: isEqAssetsPallet, items: [isAssetsItem] },
+        { pallet: isSystemPallet, items: [isAccountItem] },
+      ])
+      metadata.extrinsic.signedExtensions = []
 
-        // ditch the chain's signedExtensions, we don't need them for balance lookups
-        // and the polkadot.js TypeRegistry will complain when it can't find the types for them
-        metadata.value.extrinsic.signedExtensions = []
-
-        return metadata
-      })
+      const miniMetadata = $.encodeHexPrefixed($metadataV14.encode(metadata)) as `0x${string}`
 
       return {
         isTestnet,
-        metadata,
-        metadataVersion: pjsMetadata.version,
+        miniMetadata,
+        metadataVersion,
       }
     },
 
-    /**
-     * This method is currently executed on [a squid](https://github.com/TalismanSociety/chaindata-squid/blob/0ee02818bf5caa7362e3f3664e55ef05ec8df078/src/steps/fetchDataForChains.ts#L331-L336).
-     * In a future version of the balance libraries, we may build some kind of async scheduling system which will keep the list of tokens for each chain up to date without relying on a squid.
-     */
     async fetchSubstrateChainTokens(chainId, chainMeta, moduleConfig) {
       // default to disabled
       if (moduleConfig?.disable !== false) return {}
 
-      const { isTestnet, metadata: metadataRpc, metadataVersion } = chainMeta
+      const { isTestnet, miniMetadata: metadataRpc, metadataVersion } = chainMeta
 
       const registry = new TypeRegistry()
       if (metadataRpc !== null && metadataVersion >= 14)
@@ -178,10 +170,14 @@ export const SubEquilibriumModule: NewBalanceModule<
           if (!asset) return
           if (!asset?.id) return
 
-          const assetId = asset.id
-          const symbol = tokenSymbolFromU64Id(assetId)
+          const assetId = asset.id.toString(10)
+          const symbol = tokenSymbolFromU64Id(asset.id)
           const id = subEquilibriumTokenId(chainId, symbol)
           const decimals = DEFAULT_DECIMALS
+
+          const tokenConfig = (moduleConfig?.tokens ?? []).find(
+            (token) => token.assetId === assetId
+          )
 
           const token: SubEquilibriumToken = {
             id,
@@ -192,9 +188,14 @@ export const SubEquilibriumModule: NewBalanceModule<
             logo: githubTokenLogoUrl(id),
             // TODO: Fetch the ED
             existentialDeposit: "0",
-            assetId: assetId.toString(10),
+            assetId,
             chain: { id: chainId },
           }
+
+          if (tokenConfig?.symbol) token.symbol = tokenConfig?.symbol
+          if (tokenConfig?.coingeckoId) token.coingeckoId = tokenConfig?.coingeckoId
+          if (tokenConfig?.dcentName) token.dcentName = tokenConfig?.dcentName
+          if (tokenConfig?.mirrorOf) token.mirrorOf = tokenConfig?.mirrorOf
 
           tokens[token.id] = token
         })
@@ -343,10 +344,10 @@ async function buildQueries(
 
     const chainMeta = findChainMeta<typeof SubEquilibriumModule>("substrate-equilibrium", chain)
     const registry =
-      chainMeta?.metadata !== undefined &&
-      chainMeta?.metadata !== null &&
+      chainMeta?.miniMetadata !== undefined &&
+      chainMeta?.miniMetadata !== null &&
       chainMeta?.metadataVersion >= 14
-        ? getOrCreateTypeRegistry(chainId, chainMeta.metadata)
+        ? getOrCreateTypeRegistry(chainId, chainMeta.miniMetadata)
         : new TypeRegistry()
 
     return Array.from(addresses).flatMap((address): RpcStateQuery<Balance[]> | [] => {
