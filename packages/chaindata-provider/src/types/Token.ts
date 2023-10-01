@@ -22,9 +22,9 @@ export type TokenTypes = {
  *
  * Each variant comes from a plugin in use by the consuming app.
  *
- * For example, in an app with the `substrate-native`, `evm-native`, `substrate-orml` and `evm-erc20` plugins:
+ * For example, in an app with the `substrate-native`, `evm-native`, `substrate-tokens` and `evm-erc20` plugins:
  *
- *     type Token = SubNativeToken | EvmNativeToken | SubOrmlToken | EvmErc20Token
+ *     type Token = SubNativeToken | EvmNativeToken | SubTokensToken | EvmErc20Token
  *
  * If `TokenTypes` is empty then `Token` will fall back to the common `IToken` interface, which every token must implement.
  */

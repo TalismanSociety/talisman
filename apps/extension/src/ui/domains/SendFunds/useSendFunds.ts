@@ -67,7 +67,6 @@ const useIsSendingEnough = (
         case "evm-native":
           return true
         case "substrate-native":
-        case "substrate-orml":
         case "substrate-assets":
         case "substrate-tokens":
         case "substrate-psp22":

@@ -668,9 +668,28 @@
     "balancesMetadata": []
   },
   {
+    "id": "11155111",
+    "isTestnet": true,
+    "sortIndex": 291,
+    "name": "Sepolia",
+    "themeColor": "#8a92b2",
+    "logo": "https://raw.githubusercontent.com/TalismanSociety/chaindata/v3/assets/chains/11155111.svg",
+    "nativeToken": null,
+    "tokens": [],
+    "explorerUrl": "https://sepolia.etherscan.io",
+    "rpcs": [
+      {
+        "url": "https://rpc.sepolia.org"
+      }
+    ],
+    "substrateChain": null,
+    "balancesConfig": [],
+    "balancesMetadata": []
+  },
+  {
     "id": "81",
     "isTestnet": true,
-    "sortIndex": 293,
+    "sortIndex": 294,
     "name": "Shibuya",
     "themeColor": "#bba5e1",
     "logo": "https://raw.githubusercontent.com/TalismanSociety/chaindata/v3/assets/chains/shibuya-testnet.svg",
@@ -699,7 +718,7 @@
   {
     "id": "688",
     "isTestnet": true,
-    "sortIndex": 330,
+    "sortIndex": 331,
     "name": "Watr Testnet",
     "themeColor": "#f5f5f3",
     "logo": "https://raw.githubusercontent.com/TalismanSociety/chaindata/v3/assets/chains/rococo-watr-testnet.svg",

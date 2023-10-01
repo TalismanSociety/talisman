@@ -80,7 +80,7 @@ const useSupportedTokenIds = (chains?: Chain[], tokens?: Token[], address?: stri
       substrateTokenIds:
         supportedTokens
           ?.filter((t) => {
-            if (!["substrate-native", "substrate-orml"].includes(t.type)) return false
+            if (!["substrate-native"].includes(t.type)) return false
             const chain = chains?.find((c) => c.id === t.chain?.id)
             return chain && chain.account !== "secp256k1"
           })

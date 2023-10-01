@@ -6,11 +6,9 @@ import { Token } from "@talismn/chaindata-provider"
 // ACA, BNC and KAR use native (orml won't work)
 // INTR, KINT and MGX use orml (native won't work)
 export const UNTRANSFERABLE_TOKENS = [
-  "acala-substrate-orml-aca",
-  "bifrost-kusama-substrate-orml-bnc",
-  "bifrost-polkadot-substrate-orml-bnc",
+  "bifrost-kusama-substrate-tokens-bnc",
+  "bifrost-polkadot-substrate-tokens-bnc",
   "interlay-substrate-native-intr",
-  "karura-substrate-orml-kar",
   "kintsugi-substrate-native-kint",
   "mangata-substrate-native-mgx",
 ]
@@ -20,7 +18,6 @@ export const isTransferableToken = (t: Token) => {
 
   switch (t.type) {
     case "substrate-native":
-    case "substrate-orml":
     case "substrate-assets":
     case "substrate-tokens":
     case "substrate-psp22":

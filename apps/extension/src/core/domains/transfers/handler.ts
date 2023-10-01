@@ -50,7 +50,6 @@ export default class AssetTransferHandler extends ExtensionHandler {
       const tokenType = token.type
       if (
         tokenType === "substrate-native" ||
-        tokenType === "substrate-orml" ||
         tokenType === "substrate-assets" ||
         tokenType === "substrate-tokens" ||
         tokenType === "substrate-psp22" ||
@@ -112,7 +111,6 @@ export default class AssetTransferHandler extends ExtensionHandler {
     const tokenType = token.type
     if (
       tokenType === "substrate-native" ||
-      tokenType === "substrate-orml" ||
       tokenType === "substrate-assets" ||
       tokenType === "substrate-tokens" ||
       tokenType === "substrate-psp22" ||

@@ -193,7 +193,6 @@ export default class AssetTransfersRpc {
     if (
       !(
         "substrate-native" === palletModule.type ||
-        "substrate-orml" === palletModule.type ||
         "substrate-assets" === palletModule.type ||
         "substrate-tokens" === palletModule.type ||
         "substrate-psp22" === palletModule.type ||

@@ -19,6 +19,7 @@
     "chainspecQrUrl": "https://metadata.parity.io/qr/polkadot_specs.png",
     "latestMetadataQrUrl": "https://metadata.parity.io/qr/polkadot_metadata_latest.apng",
     "isUnknownFeeToken": false,
+    "feeToken": null,
     "rpcs": [
       {
         "url": "wss://rpc.ibp.network/polkadot"
@@ -330,6 +331,7 @@
     "chainspecQrUrl": "https://metadata.parity.io/qr/kusama_specs.png",
     "latestMetadataQrUrl": "https://metadata.parity.io/qr/kusama_metadata_latest.apng",
     "isUnknownFeeToken": false,
+    "feeToken": null,
     "rpcs": [
       {
         "url": "wss://rpc.ibp.network/kusama"
@@ -685,6 +687,7 @@
     "chainspecQrUrl": null,
     "latestMetadataQrUrl": null,
     "isUnknownFeeToken": false,
+    "feeToken": null,
     "rpcs": [
       {
         "url": "wss://rpc2.3dpass.org"
@@ -709,7 +712,7 @@
     "chainName": "Acala",
     "implName": "acala",
     "specName": "acala",
-    "specVersion": "2200",
+    "specVersion": "2210",
     "nativeToken": null,
     "tokens": [],
     "account": "*25519",
@@ -717,6 +720,7 @@
     "chainspecQrUrl": "https://metadata.novasama.io/qr/acala_specs.png",
     "latestMetadataQrUrl": "https://metadata.novasama.io/qr/acala_metadata_latest.apng",
     "isUnknownFeeToken": false,
+    "feeToken": null,
     "rpcs": [
       {
         "url": "wss://acala-polkadot.api.onfinality.io/public-ws"
@@ -964,6 +968,7 @@
     "chainspecQrUrl": null,
     "latestMetadataQrUrl": null,
     "isUnknownFeeToken": false,
+    "feeToken": null,
     "rpcs": [
       {
         "url": "wss://rpc-parachain.ajuna.network"
@@ -1001,6 +1006,7 @@
     "chainspecQrUrl": "https://metadata.novasama.io/qr/aleph-node_specs.png",
     "latestMetadataQrUrl": "https://metadata.novasama.io/qr/aleph-node_metadata_latest.apng",
     "isUnknownFeeToken": false,
+    "feeToken": null,
     "rpcs": [
       {
         "url": "wss://ws.azero.dev"
@@ -1076,6 +1082,7 @@
     "chainspecQrUrl": "https://metadata.novasama.io/qr/altair_specs.png",
     "latestMetadataQrUrl": "https://metadata.novasama.io/qr/altair_metadata_latest.apng",
     "isUnknownFeeToken": false,
+    "feeToken": null,
     "rpcs": [
       {
         "url": "wss://altair.api.onfinality.io/public-ws"
@@ -1120,6 +1127,7 @@
     "chainspecQrUrl": "https://metadata.novasama.io/qr/amplitude_specs.png",
     "latestMetadataQrUrl": "https://metadata.novasama.io/qr/amplitude_metadata_latest.apng",
     "isUnknownFeeToken": false,
+    "feeToken": null,
     "rpcs": [
       {
         "url": "wss://amplitude-rpc.dwellir.com"
@@ -1179,6 +1187,7 @@
     "chainspecQrUrl": null,
     "latestMetadataQrUrl": null,
     "isUnknownFeeToken": false,
+    "feeToken": null,
     "rpcs": [
       {
         "url": "wss://odyssey.aresprotocol.io"
@@ -1218,6 +1227,7 @@
     "chainspecQrUrl": "https://metadata.novasama.io/qr/astar_specs.png",
     "latestMetadataQrUrl": "https://metadata.novasama.io/qr/astar_metadata_latest.apng",
     "isUnknownFeeToken": false,
+    "feeToken": null,
     "rpcs": [
       {
         "url": "wss://astar.api.onfinality.io/public-ws"
@@ -1358,6 +1368,7 @@
     "chainspecQrUrl": null,
     "latestMetadataQrUrl": null,
     "isUnknownFeeToken": false,
+    "feeToken": null,
     "rpcs": [
       {
         "url": "wss://automata.api.onfinality.io/public-ws"
@@ -1400,6 +1411,7 @@
     "chainspecQrUrl": null,
     "latestMetadataQrUrl": null,
     "isUnknownFeeToken": false,
+    "feeToken": null,
     "rpcs": [
       {
         "url": "wss://public-rpc.mainnet.aventus.io"
@@ -1434,6 +1446,7 @@
     "chainspecQrUrl": "https://metadata.novasama.io/qr/bajun_specs.png",
     "latestMetadataQrUrl": null,
     "isUnknownFeeToken": false,
+    "feeToken": null,
     "rpcs": [
       {
         "url": "wss://bajun.api.onfinality.io/public-ws"
@@ -1481,6 +1494,7 @@
     "chainspecQrUrl": "https://metadata.novasama.io/qr/basilisk_specs.png",
     "latestMetadataQrUrl": "https://metadata.novasama.io/qr/basilisk_metadata_latest.apng",
     "isUnknownFeeToken": false,
+    "feeToken": null,
     "rpcs": [
       {
         "url": "wss://rpc.basilisk.cloud"
@@ -1594,6 +1608,7 @@
     "chainspecQrUrl": "https://metadata.novasama.io/qr/bifrost_specs.png",
     "latestMetadataQrUrl": null,
     "isUnknownFeeToken": false,
+    "feeToken": null,
     "rpcs": [
       {
         "url": "wss://bifrost-parachain.api.onfinality.io/public-ws"
@@ -1748,6 +1763,7 @@
     "chainspecQrUrl": "https://metadata.novasama.io/qr/bifrost_polkadot_specs.png",
     "latestMetadataQrUrl": "https://metadata.novasama.io/qr/bifrost_polkadot_metadata_latest.apng",
     "isUnknownFeeToken": false,
+    "feeToken": null,
     "rpcs": [
       {
         "url": "wss://bifrost-polkadot.api.onfinality.io/public-ws"
@@ -1845,6 +1861,7 @@
     "chainspecQrUrl": "https://metadata.novasama.io/qr/pioneer-runtime_specs.png",
     "latestMetadataQrUrl": "https://metadata.novasama.io/qr/pioneer-runtime_metadata_latest.apng",
     "isUnknownFeeToken": false,
+    "feeToken": null,
     "rpcs": [
       {
         "url": "wss://pioneer.api.onfinality.io/public-ws"
@@ -1921,6 +1938,7 @@
     "chainspecQrUrl": null,
     "latestMetadataQrUrl": null,
     "isUnknownFeeToken": false,
+    "feeToken": null,
     "rpcs": [
       {
         "url": "wss://mainnet.bitgreen.org"
@@ -1955,6 +1973,7 @@
     "chainspecQrUrl": null,
     "latestMetadataQrUrl": null,
     "isUnknownFeeToken": false,
+    "feeToken": null,
     "rpcs": [
       {
         "url": "wss://entrypoint-finney.opentensor.ai:443"
@@ -1994,6 +2013,7 @@
     "chainspecQrUrl": "https://metadata.novasama.io/qr/calamari_specs.png",
     "latestMetadataQrUrl": "https://metadata.novasama.io/qr/calamari_metadata_latest.apng",
     "isUnknownFeeToken": false,
+    "feeToken": null,
     "rpcs": [
       {
         "url": "wss://calamari.systems"
@@ -2035,6 +2055,7 @@
     "chainspecQrUrl": "https://metadata.novasama.io/qr/centrifuge_specs.png",
     "latestMetadataQrUrl": "https://metadata.novasama.io/qr/centrifuge_metadata_latest.apng",
     "isUnknownFeeToken": false,
+    "feeToken": null,
     "rpcs": [
       {
         "url": "wss://centrifuge-parachain.api.onfinality.io/public-ws"
@@ -2071,7 +2092,7 @@
     "chainName": "Cere Mainnet Beta",
     "implName": "substrate-node",
     "specName": "node",
-    "specVersion": "47000",
+    "specVersion": "47100",
     "nativeToken": null,
     "tokens": [],
     "account": "*25519",
@@ -2079,6 +2100,7 @@
     "chainspecQrUrl": null,
     "latestMetadataQrUrl": null,
     "isUnknownFeeToken": false,
+    "feeToken": null,
     "rpcs": [
       {
         "url": "wss://archive.mainnet.cere.network/ws"
@@ -2114,6 +2136,7 @@
     "chainspecQrUrl": null,
     "latestMetadataQrUrl": null,
     "isUnknownFeeToken": false,
+    "feeToken": null,
     "rpcs": [
       {
         "url": "wss://mainnet.chainx.org/ws"
@@ -2153,6 +2176,7 @@
     "chainspecQrUrl": "https://metadata.novasama.io/qr/clover-mainnet_specs.png",
     "latestMetadataQrUrl": "https://metadata.novasama.io/qr/clover-mainnet_metadata_latest.apng",
     "isUnknownFeeToken": false,
+    "feeToken": null,
     "rpcs": [
       {
         "url": "wss://clover.api.onfinality.io/public-ws"
@@ -2197,6 +2221,7 @@
     "chainspecQrUrl": null,
     "latestMetadataQrUrl": null,
     "isUnknownFeeToken": false,
+    "feeToken": null,
     "rpcs": [
       {
         "url": "wss://sys.ibp.network/collectives-polkadot"
@@ -2246,6 +2271,7 @@
     "chainspecQrUrl": null,
     "latestMetadataQrUrl": null,
     "isUnknownFeeToken": false,
+    "feeToken": null,
     "rpcs": [
       {
         "url": "wss://composable.api.onfinality.io/public-ws"
@@ -2382,6 +2408,7 @@
     "chainspecQrUrl": null,
     "latestMetadataQrUrl": null,
     "isUnknownFeeToken": false,
+    "feeToken": null,
     "rpcs": [
       {
         "url": "wss://rpc.mainnet.creditcoin.network/ws"
@@ -2414,6 +2441,7 @@
     "chainspecQrUrl": null,
     "latestMetadataQrUrl": null,
     "isUnknownFeeToken": false,
+    "feeToken": null,
     "rpcs": [
       {
         "url": "wss://blockchain.crownsterling.io"
@@ -2446,6 +2474,7 @@
     "chainspecQrUrl": null,
     "latestMetadataQrUrl": null,
     "isUnknownFeeToken": false,
+    "feeToken": null,
     "rpcs": [
       {
         "url": "wss://crust-parachain.crustapps.net"
@@ -2487,6 +2516,7 @@
     "chainspecQrUrl": "https://metadata.novasama.io/qr/crust-collator_specs.png",
     "latestMetadataQrUrl": "https://metadata.novasama.io/qr/crust-collator_metadata_latest.apng",
     "isUnknownFeeToken": false,
+    "feeToken": null,
     "rpcs": [
       {
         "url": "wss://rpc-shadow.crust.network/"
@@ -2528,6 +2558,7 @@
     "chainspecQrUrl": null,
     "latestMetadataQrUrl": null,
     "isUnknownFeeToken": false,
+    "feeToken": null,
     "rpcs": [
       {
         "url": "wss://crust.api.onfinality.io/public-ws"
@@ -2570,6 +2601,7 @@
     "chainspecQrUrl": "https://metadata.novasama.io/qr/ipci_specs.png",
     "latestMetadataQrUrl": "https://metadata.novasama.io/qr/ipci_metadata_latest.apng",
     "isUnknownFeeToken": false,
+    "feeToken": null,
     "rpcs": [
       {
         "url": "wss://kusama.rpc.ipci.io"
@@ -2604,6 +2636,7 @@
     "chainspecQrUrl": null,
     "latestMetadataQrUrl": null,
     "isUnknownFeeToken": false,
+    "feeToken": null,
     "rpcs": [
       {
         "url": "wss://rpc.darwinia.network"
@@ -2655,6 +2688,7 @@
     "chainspecQrUrl": "https://metadata.novasama.io/qr/crab2_specs.png",
     "latestMetadataQrUrl": "https://metadata.novasama.io/qr/crab2_metadata_latest.apng",
     "isUnknownFeeToken": false,
+    "feeToken": null,
     "rpcs": [
       {
         "url": "wss://crab.api.onfinality.io/public-ws"
@@ -2705,6 +2739,7 @@
     "chainspecQrUrl": null,
     "latestMetadataQrUrl": null,
     "isUnknownFeeToken": false,
+    "feeToken": null,
     "rpcs": [
       {
         "url": "wss://ws-rpc.debio.network"
@@ -2737,6 +2772,7 @@
     "chainspecQrUrl": null,
     "latestMetadataQrUrl": null,
     "isUnknownFeeToken": false,
+    "feeToken": null,
     "rpcs": [
       {
         "url": "wss://mainnet-node.dock.io"
@@ -2760,15 +2796,15 @@
     "id": "dora-factory",
     "isTestnet": false,
     "sortIndex": 48,
-    "genesisHash": "0x577d331ca43646f547cdaa07ad0aa387a383a93416764480665103081f3eaf14",
-    "prefix": 128,
+    "genesisHash": null,
+    "prefix": null,
     "name": "Dora Factory",
     "themeColor": "#000000",
     "logo": "https://raw.githubusercontent.com/TalismanSociety/chaindata/v3/assets/chains/dora-factory.svg",
-    "chainName": "Dorafactory Network",
-    "implName": "DORA KSM Parachain",
-    "specName": "DORA KSM Parachain",
-    "specVersion": "33",
+    "chainName": null,
+    "implName": null,
+    "specName": null,
+    "specVersion": null,
     "nativeToken": null,
     "tokens": [],
     "account": "*25519",
@@ -2776,6 +2812,7 @@
     "chainspecQrUrl": "https://metadata.novasama.io/qr/dora%20ksm%20parachain_metadata_latest.apng",
     "latestMetadataQrUrl": "https://metadata.novasama.io/qr/dora%20ksm%20parachain_metadata_latest.apng",
     "isUnknownFeeToken": false,
+    "feeToken": null,
     "rpcs": [
       {
         "url": "wss://kusama.dorafactory.org"
@@ -2817,6 +2854,7 @@
     "chainspecQrUrl": "https://metadata.novasama.io/qr/edgeware_specs.png",
     "latestMetadataQrUrl": "https://metadata.novasama.io/qr/edgeware_metadata_latest.apng",
     "isUnknownFeeToken": false,
+    "feeToken": null,
     "rpcs": [
       {
         "url": "wss://edgeware.api.onfinality.io/public-ws"
@@ -2858,7 +2896,7 @@
     "chainName": "Encointer on Kusama",
     "implName": "encointer-parachain",
     "specName": "encointer-parachain",
-    "specVersion": "15",
+    "specVersion": "16",
     "nativeToken": null,
     "tokens": [],
     "account": "*25519",
@@ -2866,6 +2904,7 @@
     "chainspecQrUrl": "https://metadata.novasama.io/qr/encointer-parachain_specs.png",
     "latestMetadataQrUrl": "https://metadata.novasama.io/qr/encointer-parachain_metadata_latest.apng",
     "isUnknownFeeToken": false,
+    "feeToken": null,
     "rpcs": [
       {
         "url": "wss://sys.ibp.network/encointer-kusama"
@@ -2916,6 +2955,7 @@
     "chainspecQrUrl": null,
     "latestMetadataQrUrl": null,
     "isUnknownFeeToken": false,
+    "feeToken": null,
     "rpcs": [
       {
         "url": "wss://rpc.matrix.blockchain.enjin.io"
@@ -2953,6 +2993,7 @@
     "chainspecQrUrl": null,
     "latestMetadataQrUrl": null,
     "isUnknownFeeToken": false,
+    "feeToken": null,
     "rpcs": [
       {
         "url": "wss://rpc.relay.blockchain.enjin.io"
@@ -2988,7 +3029,7 @@
     "chainName": "Equilibrium parachain",
     "implName": "Equilibrium-parachain",
     "specName": "Equilibrium-parachain",
-    "specVersion": "32",
+    "specVersion": "33",
     "nativeToken": {
       "id": "equilibrium-polkadot-substrate-equilibrium-eq"
     },
@@ -2998,6 +3039,7 @@
     "chainspecQrUrl": null,
     "latestMetadataQrUrl": null,
     "isUnknownFeeToken": false,
+    "feeToken": "equilibrium-polkadot-substrate-equilibrium-eq",
     "rpcs": [
       {
         "url": "wss://equilibrium-rpc.dwellir.com"
@@ -3099,6 +3141,7 @@
     "chainspecQrUrl": null,
     "latestMetadataQrUrl": null,
     "isUnknownFeeToken": false,
+    "feeToken": null,
     "rpcs": [
       {
         "url": "wss://ws.fragnova.network"
@@ -3131,6 +3174,7 @@
     "chainspecQrUrl": null,
     "latestMetadataQrUrl": null,
     "isUnknownFeeToken": false,
+    "feeToken": null,
     "rpcs": [
       {
         "url": "wss://frequency-rpc.dwellir.com"
@@ -3171,6 +3215,7 @@
     "chainspecQrUrl": null,
     "latestMetadataQrUrl": null,
     "isUnknownFeeToken": false,
+    "feeToken": null,
     "rpcs": [
       {
         "url": "wss://rpc.geminis.network"
@@ -3205,6 +3250,7 @@
     "chainspecQrUrl": null,
     "latestMetadataQrUrl": null,
     "isUnknownFeeToken": false,
+    "feeToken": null,
     "rpcs": [
       {
         "url": "wss://node.ksm.genshiro.io"
@@ -3252,6 +3298,7 @@
     "chainspecQrUrl": null,
     "latestMetadataQrUrl": null,
     "isUnknownFeeToken": false,
+    "feeToken": null,
     "rpcs": [
       {
         "url": "wss://node.genshiro.io"
@@ -3270,15 +3317,15 @@
     "id": "gm",
     "isTestnet": false,
     "sortIndex": 65,
-    "genesisHash": "0x19a3733beb9cb8a970a308d835599e9005e02dc007a35440e461a451466776f8",
-    "prefix": 7013,
+    "genesisHash": null,
+    "prefix": null,
     "name": "GM",
     "themeColor": "#e07445",
     "logo": "https://raw.githubusercontent.com/TalismanSociety/chaindata/v3/assets/chains/gm.svg",
-    "chainName": "GM Parachain",
-    "implName": "gm_parachain",
-    "specName": "gm_parachain",
-    "specVersion": "8",
+    "chainName": null,
+    "implName": null,
+    "specName": null,
+    "specVersion": null,
     "nativeToken": null,
     "tokens": [],
     "account": "*25519",
@@ -3286,6 +3333,7 @@
     "chainspecQrUrl": "https://metadata.novasama.io/qr/gm_parachain_specs.png",
     "latestMetadataQrUrl": "https://metadata.novasama.io/qr/gm_parachain_metadata_latest.apng",
     "isUnknownFeeToken": false,
+    "feeToken": null,
     "rpcs": [
       {
         "url": "wss://leemo.gmordie.com"
@@ -3343,6 +3391,7 @@
     "chainspecQrUrl": null,
     "latestMetadataQrUrl": null,
     "isUnknownFeeToken": false,
+    "feeToken": null,
     "rpcs": [
       {
         "url": "wss://c2.hashed.network"
@@ -3377,6 +3426,7 @@
     "chainspecQrUrl": null,
     "latestMetadataQrUrl": null,
     "isUnknownFeeToken": false,
+    "feeToken": null,
     "rpcs": [
       {
         "url": "wss://explorer-rpc-ws.mainnet.stages.humanode.io"
@@ -3409,6 +3459,7 @@
     "chainspecQrUrl": "https://metadata.novasama.io/qr/hydradx_specs.png",
     "latestMetadataQrUrl": "https://metadata.novasama.io/qr/hydradx_metadata_latest.apng",
     "isUnknownFeeToken": true,
+    "feeToken": null,
     "rpcs": [
       {
         "url": "wss://hydradx.api.onfinality.io/public-ws"
@@ -3570,6 +3621,7 @@
     "chainspecQrUrl": "https://metadata.novasama.io/qr/integritee-parachain_specs.png",
     "latestMetadataQrUrl": "https://metadata.novasama.io/qr/integritee-parachain_metadata_latest.apng",
     "isUnknownFeeToken": false,
+    "feeToken": null,
     "rpcs": [
       {
         "url": "wss://integritee-kusama.api.onfinality.io/public-ws"
@@ -3614,6 +3666,7 @@
     "chainspecQrUrl": null,
     "latestMetadataQrUrl": null,
     "isUnknownFeeToken": false,
+    "feeToken": null,
     "rpcs": [
       {
         "url": "wss://integritee-rpc.dwellir.com"
@@ -3660,6 +3713,7 @@
     "chainspecQrUrl": "https://metadata.novasama.io/qr/interlay-parachain_specs.png",
     "latestMetadataQrUrl": "https://metadata.novasama.io/qr/interlay-parachain_metadata_latest.apng",
     "isUnknownFeeToken": false,
+    "feeToken": "interlay-substrate-tokens-intr",
     "rpcs": [
       {
         "url": "wss://interlay.api.onfinality.io/public-ws"
@@ -3812,6 +3866,7 @@
     "chainspecQrUrl": "https://metadata.novasama.io/qr/tinkernet_node_specs.png",
     "latestMetadataQrUrl": "https://metadata.novasama.io/qr/tinkernet_node_metadata_latest.apng",
     "isUnknownFeeToken": false,
+    "feeToken": null,
     "rpcs": [
       {
         "url": "wss://invarch-tinkernet.api.onfinality.io/public-ws"
@@ -3846,6 +3901,7 @@
     "chainspecQrUrl": null,
     "latestMetadataQrUrl": null,
     "isUnknownFeeToken": false,
+    "feeToken": null,
     "rpcs": [
       {
         "url": "wss://rpc.joystream.org"
@@ -3885,6 +3941,7 @@
     "chainspecQrUrl": null,
     "latestMetadataQrUrl": null,
     "isUnknownFeeToken": false,
+    "feeToken": null,
     "rpcs": [
       {
         "url": "wss://jur-mainnet-archive-rpc-1.icebergnodes.io"
@@ -3920,6 +3977,7 @@
     "chainspecQrUrl": "https://metadata.novasama.io/qr/kabocha-parachain_specs.png",
     "latestMetadataQrUrl": "https://metadata.novasama.io/qr/kabocha-parachain_metadata_latest.apng",
     "isUnknownFeeToken": false,
+    "feeToken": null,
     "rpcs": [
       {
         "url": "wss://kabocha.jelliedowl.net"
@@ -3954,6 +4012,7 @@
     "chainspecQrUrl": "https://metadata.novasama.io/qr/totem-parachain_specs.png",
     "latestMetadataQrUrl": "https://metadata.novasama.io/qr/totem-parachain_metadata_latest.apng",
     "isUnknownFeeToken": false,
+    "feeToken": null,
     "rpcs": [
       {
         "url": "wss://kapex-rpc.dwellir.com"
@@ -3991,6 +4050,7 @@
     "chainspecQrUrl": "https://metadata.novasama.io/qr/karura_specs.png",
     "latestMetadataQrUrl": "https://metadata.novasama.io/qr/karura_metadata_latest.apng",
     "isUnknownFeeToken": false,
+    "feeToken": null,
     "rpcs": [
       {
         "url": "wss://karura.api.onfinality.io/public-ws"
@@ -4399,6 +4459,7 @@
     "chainspecQrUrl": "https://metadata.novasama.io/qr/khala_specs.png",
     "latestMetadataQrUrl": null,
     "isUnknownFeeToken": false,
+    "feeToken": null,
     "rpcs": [
       {
         "url": "wss://khala.api.onfinality.io/public-ws"
@@ -4446,6 +4507,7 @@
     "chainspecQrUrl": "https://metadata.novasama.io/qr/kilt-spiritnet_specs.png",
     "latestMetadataQrUrl": "https://metadata.novasama.io/qr/kilt-spiritnet_metadata_latest.apng",
     "isUnknownFeeToken": false,
+    "feeToken": null,
     "rpcs": [
       {
         "url": "wss://spiritnet.api.onfinality.io/public-ws"
@@ -4495,6 +4557,7 @@
     "chainspecQrUrl": "https://metadata.novasama.io/qr/kintsugi-parachain_specs.png",
     "latestMetadataQrUrl": "https://metadata.novasama.io/qr/kintsugi-parachain_metadata_latest.apng",
     "isUnknownFeeToken": false,
+    "feeToken": "kintsugi-substrate-tokens-kint",
     "rpcs": [
       {
         "url": "wss://kintsugi.api.onfinality.io/public-ws"
@@ -4651,6 +4714,7 @@
     "chainspecQrUrl": null,
     "latestMetadataQrUrl": null,
     "isUnknownFeeToken": false,
+    "feeToken": null,
     "rpcs": [
       {
         "url": "wss://kusama-kpron-rpc.apron.network/"
@@ -4685,6 +4749,7 @@
     "chainspecQrUrl": null,
     "latestMetadataQrUrl": null,
     "isUnknownFeeToken": false,
+    "feeToken": null,
     "rpcs": [
       {
         "url": "wss://wss-krest.peaq.network/"
@@ -4726,6 +4791,7 @@
     "chainspecQrUrl": null,
     "latestMetadataQrUrl": null,
     "isUnknownFeeToken": false,
+    "feeToken": null,
     "rpcs": [
       {
         "url": "wss://rpc.kulupu.corepaper.org/ws"
@@ -4758,6 +4824,7 @@
     "chainspecQrUrl": "https://metadata.novasama.io/qr/statemine_specs.png",
     "latestMetadataQrUrl": "https://metadata.novasama.io/qr/statemine_metadata_latest.apng",
     "isUnknownFeeToken": false,
+    "feeToken": null,
     "rpcs": [
       {
         "url": "wss://sys.ibp.network/statemine"
@@ -4844,6 +4911,7 @@
     "chainspecQrUrl": null,
     "latestMetadataQrUrl": null,
     "isUnknownFeeToken": false,
+    "feeToken": null,
     "rpcs": [
       {
         "url": "wss://sys.ibp.network/bridgehub-kusama"
@@ -4887,6 +4955,7 @@
     "chainspecQrUrl": null,
     "latestMetadataQrUrl": null,
     "isUnknownFeeToken": false,
+    "feeToken": null,
     "rpcs": [
       {
         "url": "wss://ws.kusari.network"
@@ -4919,6 +4988,7 @@
     "chainspecQrUrl": "https://metadata.novasama.io/qr/kylin_specs.png",
     "latestMetadataQrUrl": "https://metadata.novasama.io/qr/kylin_metadata_latest.apng",
     "isUnknownFeeToken": false,
+    "feeToken": null,
     "rpcs": [
       {
         "url": "wss://polkadot.kylin-node.co.uk"
@@ -4953,6 +5023,7 @@
     "chainspecQrUrl": "https://metadata.novasama.io/qr/litentry-parachain_specs.png",
     "latestMetadataQrUrl": "https://metadata.novasama.io/qr/litentry-parachain_metadata_latest.apng",
     "isUnknownFeeToken": false,
+    "feeToken": null,
     "rpcs": [
       {
         "url": "wss://litentry-rpc.dwellir.com"
@@ -4997,6 +5068,7 @@
     "chainspecQrUrl": "https://metadata.novasama.io/qr/litmus-parachain_specs.png",
     "latestMetadataQrUrl": "https://metadata.novasama.io/qr/litmus-parachain_metadata_latest.apng",
     "isUnknownFeeToken": false,
+    "feeToken": null,
     "rpcs": [
       {
         "url": "wss://rpc.litmus-parachain.litentry.io"
@@ -5031,6 +5103,7 @@
     "chainspecQrUrl": null,
     "latestMetadataQrUrl": null,
     "isUnknownFeeToken": false,
+    "feeToken": null,
     "rpcs": [
       {
         "url": "wss://rpc01.logion.network"
@@ -5065,6 +5138,7 @@
     "chainspecQrUrl": "https://metadata.novasama.io/qr/mangata-parachain_specs.png",
     "latestMetadataQrUrl": "https://metadata.novasama.io/qr/mangata-parachain_metadata_latest.apng",
     "isUnknownFeeToken": false,
+    "feeToken": "mangata-substrate-tokens-mgx",
     "rpcs": [
       {
         "url": "wss://kusama-archive.mangata.online"
@@ -5116,6 +5190,7 @@
     "chainspecQrUrl": null,
     "latestMetadataQrUrl": null,
     "isUnknownFeeToken": false,
+    "feeToken": null,
     "rpcs": [
       {
         "url": "wss://ws.manta.systems"
@@ -5142,7 +5217,7 @@
     "chainName": "Moonbeam",
     "implName": "moonbeam",
     "specName": "moonbeam",
-    "specVersion": "2403",
+    "specVersion": "2501",
     "nativeToken": null,
     "tokens": [],
     "account": "secp256k1",
@@ -5150,6 +5225,7 @@
     "chainspecQrUrl": null,
     "latestMetadataQrUrl": null,
     "isUnknownFeeToken": false,
+    "feeToken": null,
     "rpcs": [
       {
         "url": "wss://moonbeam.api.onfinality.io/public-ws"
@@ -5199,7 +5275,7 @@
     "chainName": "Moonriver",
     "implName": "moonriver",
     "specName": "moonriver",
-    "specVersion": "2500",
+    "specVersion": "2501",
     "nativeToken": null,
     "tokens": [],
     "account": "secp256k1",
@@ -5207,6 +5283,7 @@
     "chainspecQrUrl": null,
     "latestMetadataQrUrl": null,
     "isUnknownFeeToken": false,
+    "feeToken": null,
     "rpcs": [
       {
         "url": "wss://moonriver.api.onfinality.io/public-ws"
@@ -5261,6 +5338,7 @@
     "chainspecQrUrl": "https://metadata.novasama.io/qr/appchain_specs.png",
     "latestMetadataQrUrl": "https://metadata.novasama.io/qr/appchain_metadata_latest.apng",
     "isUnknownFeeToken": false,
+    "feeToken": null,
     "rpcs": [
       {
         "url": "wss://ws-rpc.myriad.social"
@@ -5300,6 +5378,7 @@
     "chainspecQrUrl": null,
     "latestMetadataQrUrl": null,
     "isUnknownFeeToken": false,
+    "feeToken": null,
     "rpcs": [
       {
         "url": "wss://rpc.neatcoin.org/ws"
@@ -5332,6 +5411,7 @@
     "chainspecQrUrl": null,
     "latestMetadataQrUrl": null,
     "isUnknownFeeToken": false,
+    "feeToken": null,
     "rpcs": [
       {
         "url": "wss://mainnet.nftmart.io/rpc/ws"
@@ -5371,6 +5451,7 @@
     "chainspecQrUrl": "https://metadata.novasama.io/qr/nodle-para_specs.png",
     "latestMetadataQrUrl": "https://metadata.novasama.io/qr/nodle-para_metadata_latest.apng",
     "isUnknownFeeToken": false,
+    "feeToken": null,
     "rpcs": [
       {
         "url": "wss://nodle-parachain.api.onfinality.io/public-ws"
@@ -5416,6 +5497,7 @@
     "chainspecQrUrl": null,
     "latestMetadataQrUrl": null,
     "isUnknownFeeToken": false,
+    "feeToken": null,
     "rpcs": [
       {
         "url": "wss://rpc.oak.tech"
@@ -5450,6 +5532,7 @@
     "chainspecQrUrl": null,
     "latestMetadataQrUrl": null,
     "isUnknownFeeToken": false,
+    "feeToken": null,
     "rpcs": [
       {
         "url": "wss://psc-parachain.coming.chat"
@@ -5484,6 +5567,7 @@
     "chainspecQrUrl": "https://metadata.novasama.io/qr/origintrail-parachain_specs.png",
     "latestMetadataQrUrl": "https://metadata.novasama.io/qr/origintrail-parachain_metadata_latest.apng",
     "isUnknownFeeToken": false,
+    "feeToken": null,
     "rpcs": [
       {
         "url": "wss://parachain-rpc.origin-trail.network"
@@ -5518,6 +5602,7 @@
     "chainspecQrUrl": "https://metadata.novasama.io/qr/parallel_specs.png",
     "latestMetadataQrUrl": "https://metadata.novasama.io/qr/parallel_metadata_latest.apng",
     "isUnknownFeeToken": false,
+    "feeToken": null,
     "rpcs": [
       {
         "url": "wss://rpc.parallel.fi"
@@ -5552,6 +5637,7 @@
     "chainspecQrUrl": "https://metadata.novasama.io/qr/heiko_specs.png",
     "latestMetadataQrUrl": "https://metadata.novasama.io/qr/heiko_metadata_latest.apng",
     "isUnknownFeeToken": false,
+    "feeToken": null,
     "rpcs": [
       {
         "url": "wss://parallel-heiko.api.onfinality.io/public-ws"
@@ -5589,6 +5675,7 @@
     "chainspecQrUrl": null,
     "latestMetadataQrUrl": null,
     "isUnknownFeeToken": false,
+    "feeToken": null,
     "rpcs": [
       {
         "url": "wss://rpc-pendulum.prd.pendulumchain.tech"
@@ -5651,6 +5738,7 @@
     "chainspecQrUrl": "https://metadata.novasama.io/qr/phala_specs.png",
     "latestMetadataQrUrl": "https://metadata.novasama.io/qr/phala_metadata_latest.apng",
     "isUnknownFeeToken": false,
+    "feeToken": null,
     "rpcs": [
       {
         "url": "wss://phala.api.onfinality.io/public-ws"
@@ -5698,6 +5786,7 @@
     "chainspecQrUrl": "https://metadata.novasama.io/qr/picasso_specs.png",
     "latestMetadataQrUrl": null,
     "isUnknownFeeToken": false,
+    "feeToken": null,
     "rpcs": [
       {
         "url": "wss://rpc.composablenodes.tech"
@@ -5982,6 +6071,7 @@
     "chainspecQrUrl": null,
     "latestMetadataQrUrl": null,
     "isUnknownFeeToken": false,
+    "feeToken": null,
     "rpcs": [
       {
         "url": "wss://polkadex.api.onfinality.io/public-ws"
@@ -6007,15 +6097,15 @@
     "id": "polkadex-standalone",
     "isTestnet": false,
     "sortIndex": 125,
-    "genesisHash": null,
-    "prefix": null,
+    "genesisHash": "0x3920bcb4960a1eef5580cd5367ff3f430eef052774f78468852f7b9cb39f8a3c",
+    "prefix": 88,
     "name": "Polkadex Standalone",
     "themeColor": "#e6007a",
     "logo": "https://raw.githubusercontent.com/TalismanSociety/chaindata/v3/assets/chains/polkadex-standalone.svg",
-    "chainName": null,
-    "implName": null,
-    "specName": null,
-    "specVersion": null,
+    "chainName": "Polkadex Main Network",
+    "implName": "polkadex-official",
+    "specName": "node",
+    "specVersion": "310",
     "nativeToken": null,
     "tokens": [],
     "account": "*25519",
@@ -6023,6 +6113,7 @@
     "chainspecQrUrl": "https://metadata.novasama.io/qr/node_specs.png",
     "latestMetadataQrUrl": "https://metadata.novasama.io/qr/node_metadata_latest.apng",
     "isUnknownFeeToken": false,
+    "feeToken": null,
     "rpcs": [
       {
         "url": "wss://mainnet.polkadex.trade"
@@ -6062,6 +6153,7 @@
     "chainspecQrUrl": "https://metadata.novasama.io/qr/statemint_specs.png",
     "latestMetadataQrUrl": "https://metadata.novasama.io/qr/statemint_metadata_latest.apng",
     "isUnknownFeeToken": false,
+    "feeToken": null,
     "rpcs": [
       {
         "url": "wss://sys.ibp.network/statemint"
@@ -6141,6 +6233,7 @@
     "chainspecQrUrl": null,
     "latestMetadataQrUrl": null,
     "isUnknownFeeToken": false,
+    "feeToken": null,
     "rpcs": [
       {
         "url": "wss://polkadot-bridge-hub-rpc.polkadot.io"
@@ -6178,6 +6271,7 @@
     "chainspecQrUrl": "https://metadata.novasama.io/qr/polymesh_mainnet_specs.png",
     "latestMetadataQrUrl": "https://metadata.novasama.io/qr/polymesh_mainnet_metadata_latest.apng",
     "isUnknownFeeToken": false,
+    "feeToken": null,
     "rpcs": [
       {
         "url": "wss://mainnet-rpc.polymesh.network"
@@ -6217,6 +6311,7 @@
     "chainspecQrUrl": "https://metadata.novasama.io/qr/quartz_specs.png",
     "latestMetadataQrUrl": "https://metadata.novasama.io/qr/quartz_metadata_latest.apng",
     "isUnknownFeeToken": false,
+    "feeToken": null,
     "rpcs": [
       {
         "url": "wss://quartz.api.onfinality.io/public-ws"
@@ -6270,6 +6365,7 @@
     "chainspecQrUrl": "https://metadata.novasama.io/qr/robonomics_specs.png",
     "latestMetadataQrUrl": "https://metadata.novasama.io/qr/robonomics_metadata_latest.apng",
     "isUnknownFeeToken": false,
+    "feeToken": null,
     "rpcs": [
       {
         "url": "wss://robonomics.api.onfinality.io/public-ws"
@@ -6320,6 +6416,7 @@
     "chainspecQrUrl": null,
     "latestMetadataQrUrl": null,
     "isUnknownFeeToken": false,
+    "feeToken": null,
     "rpcs": [
       {
         "url": "wss://api-sakura.clover.finance"
@@ -6354,6 +6451,7 @@
     "chainspecQrUrl": null,
     "latestMetadataQrUrl": null,
     "isUnknownFeeToken": false,
+    "feeToken": null,
     "rpcs": [
       {
         "url": "wss://mainnet.sherpax.io"
@@ -6386,6 +6484,7 @@
     "chainspecQrUrl": "https://metadata.novasama.io/qr/shiden_specs.png",
     "latestMetadataQrUrl": "https://metadata.novasama.io/qr/shiden_metadata_latest.apng",
     "isUnknownFeeToken": false,
+    "feeToken": null,
     "rpcs": [
       {
         "url": "wss://shiden.api.onfinality.io/public-ws"
@@ -6437,6 +6536,7 @@
     "chainspecQrUrl": null,
     "latestMetadataQrUrl": null,
     "isUnknownFeeToken": false,
+    "feeToken": null,
     "rpcs": [
       {
         "url": "wss://ws.parachain-collator-1.c1.sora2.soramitsu.co.jp"
@@ -6478,6 +6578,7 @@
     "chainspecQrUrl": null,
     "latestMetadataQrUrl": null,
     "isUnknownFeeToken": false,
+    "feeToken": null,
     "rpcs": [
       {
         "url": "wss://sora.api.onfinality.io/public-ws"
@@ -6526,6 +6627,7 @@
     "chainspecQrUrl": null,
     "latestMetadataQrUrl": null,
     "isUnknownFeeToken": false,
+    "feeToken": null,
     "rpcs": [
       {
         "url": "wss://parachain-rpc.subdao.org"
@@ -6560,6 +6662,7 @@
     "chainspecQrUrl": null,
     "latestMetadataQrUrl": null,
     "isUnknownFeeToken": false,
+    "feeToken": null,
     "rpcs": [
       {
         "url": "wss://para.subsocial.network"
@@ -6594,6 +6697,7 @@
     "chainspecQrUrl": null,
     "latestMetadataQrUrl": null,
     "isUnknownFeeToken": false,
+    "feeToken": null,
     "rpcs": [
       {
         "url": "wss://rpc-1.kusama.node.zero.io"
@@ -6605,7 +6709,46 @@
     "relay": {
       "id": "kusama"
     },
-    "balancesConfig": [],
+    "balancesConfig": [
+      {
+        "moduleType": "substrate-orml",
+        "moduleConfig": {
+          "disable": true
+        }
+      },
+      {
+        "moduleType": "substrate-tokens",
+        "moduleConfig": {
+          "tokens": [
+            {
+              "symbol": "DOT",
+              "decimals": 10,
+              "ed": "0",
+              "onChainId": "{\"Token\":\"DOT\"}",
+              "coingeckoId": "polkadot"
+            },
+            {
+              "symbol": "GAME",
+              "decimals": 10,
+              "ed": "0",
+              "onChainId": "{\"Token\":\"GAME\"}"
+            },
+            {
+              "symbol": "PLAY",
+              "decimals": 10,
+              "ed": "0",
+              "onChainId": "{\"Token\":\"PLAY\"}"
+            },
+            {
+              "symbol": "ZERO",
+              "decimals": 18,
+              "ed": "0",
+              "onChainId": "{\"Token\":\"ZERO\"}"
+            }
+          ]
+        }
+      }
+    ],
     "balancesMetadata": []
   },
   {
@@ -6628,6 +6771,7 @@
     "chainspecQrUrl": null,
     "latestMetadataQrUrl": null,
     "isUnknownFeeToken": false,
+    "feeToken": null,
     "rpcs": [
       {
         "url": "wss://ws.swapdex.network"
@@ -6667,6 +6811,7 @@
     "chainspecQrUrl": null,
     "latestMetadataQrUrl": null,
     "isUnknownFeeToken": false,
+    "feeToken": null,
     "rpcs": [
       {
         "url": "wss://ws.t3rn.io"
@@ -6701,6 +6846,7 @@
     "chainspecQrUrl": "https://metadata.novasama.io/qr/mainnet_specs.png",
     "latestMetadataQrUrl": null,
     "isUnknownFeeToken": false,
+    "feeToken": null,
     "rpcs": [
       {
         "url": "wss://mainnet.ternoa.network"
@@ -6733,6 +6879,7 @@
     "chainspecQrUrl": null,
     "latestMetadataQrUrl": null,
     "isUnknownFeeToken": false,
+    "feeToken": null,
     "rpcs": [
       {
         "url": "wss://public-01.mainnet.thebifrost.io/wss"
@@ -6768,6 +6915,7 @@
     "chainspecQrUrl": "https://metadata.novasama.io/qr/turing_specs.png",
     "latestMetadataQrUrl": "https://metadata.novasama.io/qr/turing_metadata_latest.apng",
     "isUnknownFeeToken": false,
+    "feeToken": null,
     "rpcs": [
       {
         "url": "wss://turing-rpc.dwellir.com"
@@ -6797,7 +6945,7 @@
     "chainName": "UNIQUE",
     "implName": "unique",
     "specName": "unique",
-    "specVersion": "942057",
+    "specVersion": "943061",
     "nativeToken": null,
     "tokens": [],
     "account": "*25519",
@@ -6805,6 +6953,7 @@
     "chainspecQrUrl": "https://metadata.novasama.io/qr/unique_specs.png",
     "latestMetadataQrUrl": "https://metadata.novasama.io/qr/unique_metadata_latest.apng",
     "isUnknownFeeToken": false,
+    "feeToken": null,
     "rpcs": [
       {
         "url": "wss://ws.unique.network"
@@ -6855,6 +7004,7 @@
     "chainspecQrUrl": null,
     "latestMetadataQrUrl": null,
     "isUnknownFeeToken": false,
+    "feeToken": null,
     "rpcs": [
       {
         "url": "wss://rpc.vara-network.io"
@@ -6887,6 +7037,7 @@
     "chainspecQrUrl": "https://metadata.novasama.io/qr/zeitgeist_specs.png",
     "latestMetadataQrUrl": "https://metadata.novasama.io/qr/zeitgeist_metadata_latest.apng",
     "isUnknownFeeToken": false,
+    "feeToken": null,
     "rpcs": [
       {
         "url": "wss://zeitgeist.api.onfinality.io/public-ws"
@@ -6934,6 +7085,7 @@
     "chainspecQrUrl": "https://metadata.parity.io/qr/westend_specs.png",
     "latestMetadataQrUrl": "https://metadata.parity.io/qr/westend_metadata_latest.apng",
     "isUnknownFeeToken": false,
+    "feeToken": null,
     "rpcs": [
       {
         "url": "wss://rpc.ibp.network/westend"
@@ -7054,6 +7206,7 @@
     "chainspecQrUrl": null,
     "latestMetadataQrUrl": null,
     "isUnknownFeeToken": false,
+    "feeToken": null,
     "rpcs": [
       {
         "url": "wss://rococo-rpc.polkadot.io"
@@ -7362,6 +7515,7 @@
     "chainspecQrUrl": null,
     "latestMetadataQrUrl": null,
     "isUnknownFeeToken": false,
+    "feeToken": null,
     "rpcs": [
       {
         "url": "wss://rpc-test.ajuna.network"
@@ -7394,6 +7548,7 @@
     "chainspecQrUrl": null,
     "latestMetadataQrUrl": null,
     "isUnknownFeeToken": false,
+    "feeToken": null,
     "rpcs": [
       {
         "url": "wss://ws.test.azero.dev"
@@ -7429,6 +7584,7 @@
     "chainspecQrUrl": null,
     "latestMetadataQrUrl": null,
     "isUnknownFeeToken": false,
+    "feeToken": null,
     "rpcs": [
       {
         "url": "wss://rpc-foucoco.pendulumchain.tech"
@@ -7463,6 +7619,7 @@
     "chainspecQrUrl": null,
     "latestMetadataQrUrl": null,
     "isUnknownFeeToken": false,
+    "feeToken": null,
     "rpcs": [
       {
         "url": "wss://contextfree.api.onfinality.io/public-ws"
@@ -7498,6 +7655,7 @@
     "chainspecQrUrl": null,
     "latestMetadataQrUrl": null,
     "isUnknownFeeToken": false,
+    "feeToken": null,
     "rpcs": [
       {
         "url": "wss://public-rpc.public-testnet.aventus.io"
@@ -7532,6 +7690,7 @@
     "chainspecQrUrl": null,
     "latestMetadataQrUrl": null,
     "isUnknownFeeToken": false,
+    "feeToken": null,
     "rpcs": [
       {
         "url": "wss://rpc-rococo.bajun.network"
@@ -7550,15 +7709,15 @@
     "id": "rococo-basilisk-testnet",
     "isTestnet": true,
     "sortIndex": 186,
-    "genesisHash": null,
-    "prefix": null,
+    "genesisHash": "0x317498e4a13cc902ee6b1886686101ac2dbc37a3bc1456f3ce7ee6d0efb45c50",
+    "prefix": 10041,
     "name": "Basilisk Testnet",
     "themeColor": "#4cffaf",
     "logo": "https://raw.githubusercontent.com/TalismanSociety/chaindata/v3/assets/chains/rococo-basilisk-testnet.svg",
-    "chainName": null,
-    "implName": null,
-    "specName": null,
-    "specVersion": null,
+    "chainName": "Basilisk testnet",
+    "implName": "basilisk",
+    "specName": "basilisk",
+    "specVersion": "106",
     "nativeToken": null,
     "tokens": [],
     "account": "*25519",
@@ -7566,6 +7725,7 @@
     "chainspecQrUrl": null,
     "latestMetadataQrUrl": null,
     "isUnknownFeeToken": false,
+    "feeToken": null,
     "rpcs": [
       {
         "url": "wss://basilisk-rococo-rpc.play.hydration.cloud"
@@ -7600,6 +7760,7 @@
     "chainspecQrUrl": null,
     "latestMetadataQrUrl": null,
     "isUnknownFeeToken": false,
+    "feeToken": null,
     "rpcs": [
       {
         "url": "wss://beresheet.jelliedowl.net"
@@ -7632,6 +7793,7 @@
     "chainspecQrUrl": null,
     "latestMetadataQrUrl": null,
     "isUnknownFeeToken": false,
+    "feeToken": null,
     "rpcs": [
       {
         "url": "wss://bifrost-rpc.rococo.liebi.com/ws"
@@ -7658,7 +7820,7 @@
     "chainName": "Catalyst Testnet",
     "implName": "centrifuge",
     "specName": "centrifuge",
-    "specVersion": "1020",
+    "specVersion": "1000",
     "nativeToken": null,
     "tokens": [],
     "account": "*25519",
@@ -7666,6 +7828,7 @@
     "chainspecQrUrl": null,
     "latestMetadataQrUrl": null,
     "isUnknownFeeToken": false,
+    "feeToken": null,
     "rpcs": [
       {
         "url": "wss://fullnode.catalyst.cntrfg.com"
@@ -7700,6 +7863,7 @@
     "chainspecQrUrl": null,
     "latestMetadataQrUrl": null,
     "isUnknownFeeToken": false,
+    "feeToken": null,
     "rpcs": [
       {
         "url": "wss://archive.testnet.cere.network/ws"
@@ -7735,6 +7899,7 @@
     "chainspecQrUrl": null,
     "latestMetadataQrUrl": null,
     "isUnknownFeeToken": false,
+    "feeToken": null,
     "rpcs": [
       {
         "url": "wss://testnet-rpc0.cess.cloud/ws/"
@@ -7767,6 +7932,7 @@
     "chainspecQrUrl": null,
     "latestMetadataQrUrl": null,
     "isUnknownFeeToken": false,
+    "feeToken": null,
     "rpcs": [
       {
         "url": "wss://sys.ibp.network/collectives-westend"
@@ -7804,6 +7970,7 @@
     "chainspecQrUrl": null,
     "latestMetadataQrUrl": null,
     "isUnknownFeeToken": false,
+    "feeToken": null,
     "rpcs": [
       {
         "url": "wss://rococo-contracts-rpc.polkadot.io"
@@ -7838,6 +8005,7 @@
     "chainspecQrUrl": null,
     "latestMetadataQrUrl": null,
     "isUnknownFeeToken": false,
+    "feeToken": null,
     "rpcs": [
       {
         "url": "wss://rpc.testnet.creditcoin.network/ws"
@@ -7870,6 +8038,7 @@
     "chainspecQrUrl": null,
     "latestMetadataQrUrl": null,
     "isUnknownFeeToken": false,
+    "feeToken": null,
     "rpcs": [
       {
         "url": "wss://fraa-dancebox-rpc.a.dancebox.tanssi.network"
@@ -7902,6 +8071,7 @@
     "chainspecQrUrl": null,
     "latestMetadataQrUrl": null,
     "isUnknownFeeToken": false,
+    "feeToken": null,
     "rpcs": [
       {
         "url": "wss://ws-rpc.testnet.debio.network"
@@ -7934,6 +8104,7 @@
     "chainspecQrUrl": null,
     "latestMetadataQrUrl": null,
     "isUnknownFeeToken": false,
+    "feeToken": null,
     "rpcs": [
       {
         "url": "wss://gesell.encointer.org"
@@ -7966,6 +8137,7 @@
     "chainspecQrUrl": null,
     "latestMetadataQrUrl": null,
     "isUnknownFeeToken": false,
+    "feeToken": null,
     "rpcs": [
       {
         "url": "wss://rococo.api.encointer.org"
@@ -8000,6 +8172,7 @@
     "chainspecQrUrl": null,
     "latestMetadataQrUrl": null,
     "isUnknownFeeToken": false,
+    "feeToken": null,
     "rpcs": [
       {
         "url": "wss://rpc.matrix.canary.enjin.io"
@@ -8034,6 +8207,7 @@
     "chainspecQrUrl": null,
     "latestMetadataQrUrl": null,
     "isUnknownFeeToken": false,
+    "feeToken": null,
     "rpcs": [
       {
         "url": "wss://rpc.relay.canary.enjin.io"
@@ -8066,6 +8240,7 @@
     "chainspecQrUrl": null,
     "latestMetadataQrUrl": null,
     "isUnknownFeeToken": false,
+    "feeToken": null,
     "rpcs": [
       {
         "url": "wss://ethos.jur.io"
@@ -8100,6 +8275,7 @@
     "chainspecQrUrl": null,
     "latestMetadataQrUrl": null,
     "isUnknownFeeToken": false,
+    "feeToken": null,
     "rpcs": [
       {
         "url": "wss://testnet.dev.svcs.ferrumnetwork.io"
@@ -8132,6 +8308,7 @@
     "chainspecQrUrl": null,
     "latestMetadataQrUrl": null,
     "isUnknownFeeToken": false,
+    "feeToken": null,
     "rpcs": [
       {
         "url": "wss://frequency-rococo-rpc.dwellir.com"
@@ -8169,6 +8346,7 @@
     "chainspecQrUrl": null,
     "latestMetadataQrUrl": null,
     "isUnknownFeeToken": false,
+    "feeToken": null,
     "rpcs": [
       {
         "url": "wss://rococo-hydradx-rpc.hydration.dev"
@@ -8203,6 +8381,7 @@
     "chainspecQrUrl": null,
     "latestMetadataQrUrl": null,
     "isUnknownFeeToken": false,
+    "feeToken": null,
     "rpcs": [
       {
         "url": "wss://rococo.api.integritee.network"
@@ -8237,6 +8416,7 @@
     "chainspecQrUrl": null,
     "latestMetadataQrUrl": null,
     "isUnknownFeeToken": false,
+    "feeToken": null,
     "rpcs": [
       {
         "url": "wss://api-testnet.interlay.io/parachain/"
@@ -8269,6 +8449,7 @@
     "chainspecQrUrl": null,
     "latestMetadataQrUrl": null,
     "isUnknownFeeToken": false,
+    "feeToken": null,
     "rpcs": [
       {
         "url": "wss://testnet-china.ipse.io"
@@ -8307,6 +8488,7 @@
     "chainspecQrUrl": null,
     "latestMetadataQrUrl": null,
     "isUnknownFeeToken": false,
+    "feeToken": null,
     "rpcs": [
       {
         "url": "wss://testnet.jur.io"
@@ -8339,6 +8521,7 @@
     "chainspecQrUrl": null,
     "latestMetadataQrUrl": null,
     "isUnknownFeeToken": false,
+    "feeToken": null,
     "rpcs": [
       {
         "url": "wss://testnet.karmaco.in/testnet/ws"
@@ -8371,6 +8554,7 @@
     "chainspecQrUrl": null,
     "latestMetadataQrUrl": null,
     "isUnknownFeeToken": false,
+    "feeToken": null,
     "rpcs": [
       {
         "url": "wss://kate.avail.tools/ws"
@@ -8403,6 +8587,7 @@
     "chainspecQrUrl": null,
     "latestMetadataQrUrl": null,
     "isUnknownFeeToken": false,
+    "feeToken": null,
     "rpcs": [
       {
         "url": "wss://full-nodes.kilt.io:9944/"
@@ -8435,6 +8620,7 @@
     "chainspecQrUrl": null,
     "latestMetadataQrUrl": null,
     "isUnknownFeeToken": false,
+    "feeToken": null,
     "rpcs": [
       {
         "url": "wss://peregrine.kilt.io/parachain-public-ws/"
@@ -8467,6 +8653,7 @@
     "chainspecQrUrl": null,
     "latestMetadataQrUrl": null,
     "isUnknownFeeToken": false,
+    "feeToken": null,
     "rpcs": [
       {
         "url": "wss://api-dev-kintsugi.interlay.io/parachain"
@@ -8499,6 +8686,7 @@
     "chainspecQrUrl": null,
     "latestMetadataQrUrl": null,
     "isUnknownFeeToken": false,
+    "feeToken": null,
     "rpcs": [
       {
         "url": "wss://rpc.rococo-parachain-sg.litentry.io"
@@ -8517,15 +8705,15 @@
     "id": "logion-testnet-standalone",
     "isTestnet": true,
     "sortIndex": 253,
-    "genesisHash": "0xa980b64e029e4e27078c3380b4e12f22b8340c357c9beacc3f2986b80079b44f",
+    "genesisHash": "0x97d09155a17b13181033b89bf4c74b373b501a9ebb434ef353511e797ee8287b",
     "prefix": 2021,
     "name": "Logion Testnet",
     "themeColor": "#000000",
     "logo": "https://raw.githubusercontent.com/TalismanSociety/chaindata/v3/assets/chains/logion-testnet-standalone.svg",
-    "chainName": "Chimay",
+    "chainName": "Rochefort Testnet",
     "implName": "logion",
     "specName": "logion",
-    "specVersion": "8",
+    "specVersion": "1",
     "nativeToken": null,
     "tokens": [],
     "account": "*25519",
@@ -8533,6 +8721,7 @@
     "chainspecQrUrl": null,
     "latestMetadataQrUrl": null,
     "isUnknownFeeToken": false,
+    "feeToken": null,
     "rpcs": [
       {
         "url": "wss://chimay.logion.network"
@@ -8565,6 +8754,7 @@
     "chainspecQrUrl": null,
     "latestMetadataQrUrl": null,
     "isUnknownFeeToken": false,
+    "feeToken": null,
     "rpcs": [
       {
         "url": "wss://test-rpc01.logion.network"
@@ -8597,6 +8787,7 @@
     "chainspecQrUrl": null,
     "latestMetadataQrUrl": null,
     "isUnknownFeeToken": false,
+    "feeToken": null,
     "rpcs": [
       {
         "url": "wss://collator-01-ws-rococo.mangata.online"
@@ -8631,6 +8822,7 @@
     "chainspecQrUrl": null,
     "latestMetadataQrUrl": null,
     "isUnknownFeeToken": false,
+    "feeToken": null,
     "rpcs": [
       {
         "url": "wss://c1.md5.hashed.live"
@@ -8657,7 +8849,7 @@
     "chainName": "Moonbase Alpha",
     "implName": "moonbase",
     "specName": "moonbase",
-    "specVersion": "2500",
+    "specVersion": "2501",
     "nativeToken": null,
     "tokens": [],
     "account": "secp256k1",
@@ -8665,6 +8857,7 @@
     "chainspecQrUrl": null,
     "latestMetadataQrUrl": null,
     "isUnknownFeeToken": false,
+    "feeToken": null,
     "rpcs": [
       {
         "url": "wss://moonbeam-alpha.api.onfinality.io/public-ws"
@@ -8707,6 +8900,7 @@
     "chainspecQrUrl": null,
     "latestMetadataQrUrl": null,
     "isUnknownFeeToken": false,
+    "feeToken": null,
     "rpcs": [
       {
         "url": "wss://ws-rpc.testnet.myriad.social"
@@ -8739,6 +8933,7 @@
     "chainspecQrUrl": null,
     "latestMetadataQrUrl": null,
     "isUnknownFeeToken": false,
+    "feeToken": null,
     "rpcs": [
       {
         "url": "wss://nodle-paradis.api.onfinality.io/public-ws"
@@ -8773,6 +8968,7 @@
     "chainspecQrUrl": null,
     "latestMetadataQrUrl": null,
     "isUnknownFeeToken": false,
+    "feeToken": null,
     "rpcs": [
       {
         "url": "wss://ws-opal.unique.network"
@@ -8814,6 +9010,7 @@
     "chainspecQrUrl": null,
     "latestMetadataQrUrl": null,
     "isUnknownFeeToken": false,
+    "feeToken": null,
     "rpcs": [
       {
         "url": "wss://parachain-testnet-rpc.origin-trail.network/"
@@ -8848,6 +9045,7 @@
     "chainspecQrUrl": null,
     "latestMetadataQrUrl": null,
     "isUnknownFeeToken": false,
+    "feeToken": null,
     "rpcs": [
       {
         "url": "wss://pangolin-rpc.darwinia.network"
@@ -8882,6 +9080,7 @@
     "chainspecQrUrl": null,
     "latestMetadataQrUrl": null,
     "isUnknownFeeToken": false,
+    "feeToken": null,
     "rpcs": [
       {
         "url": "wss://pangoro-rpc.darwinia.network"
@@ -8914,6 +9113,7 @@
     "chainspecQrUrl": null,
     "latestMetadataQrUrl": null,
     "isUnknownFeeToken": false,
+    "feeToken": null,
     "rpcs": [
       {
         "url": "wss://poc5.phala.network/ws"
@@ -8946,6 +9146,7 @@
     "chainspecQrUrl": null,
     "latestMetadataQrUrl": null,
     "isUnknownFeeToken": false,
+    "feeToken": null,
     "rpcs": [
       {
         "url": "wss://picasso-rococo-rpc-lb.composablenodes.tech"
@@ -8980,6 +9181,7 @@
     "chainspecQrUrl": null,
     "latestMetadataQrUrl": null,
     "isUnknownFeeToken": false,
+    "feeToken": null,
     "rpcs": [
       {
         "url": "wss://testnet-rpc.polymesh.live"
@@ -9012,6 +9214,7 @@
     "chainspecQrUrl": null,
     "latestMetadataQrUrl": null,
     "isUnknownFeeToken": false,
+    "feeToken": null,
     "rpcs": [
       {
         "url": "wss://rhala-node.phala.network/ws"
@@ -9046,6 +9249,7 @@
     "chainspecQrUrl": null,
     "latestMetadataQrUrl": null,
     "isUnknownFeeToken": false,
+    "feeToken": null,
     "rpcs": [
       {
         "url": "wss://rococo-asset-hub-rpc.polkadot.io"
@@ -9080,6 +9284,7 @@
     "chainspecQrUrl": null,
     "latestMetadataQrUrl": null,
     "isUnknownFeeToken": false,
+    "feeToken": null,
     "rpcs": [
       {
         "url": "wss://rococo-bridge-hub-rpc.polkadot.io"
@@ -9097,7 +9302,7 @@
   {
     "id": "sherpax-testnet",
     "isTestnet": true,
-    "sortIndex": 291,
+    "sortIndex": 292,
     "genesisHash": null,
     "prefix": null,
     "name": "Sherpax",
@@ -9114,6 +9319,7 @@
     "chainspecQrUrl": null,
     "latestMetadataQrUrl": null,
     "isUnknownFeeToken": false,
+    "feeToken": null,
     "rpcs": [
       {
         "url": "wss://sherpax-testnet.chainx.org"
@@ -9129,7 +9335,7 @@
   {
     "id": "shibuya-testnet",
     "isTestnet": true,
-    "sortIndex": 292,
+    "sortIndex": 293,
     "genesisHash": "0xddb89973361a170839f80f152d2e9e38a376a5a7eccefcade763f46a8e567019",
     "prefix": 5,
     "name": "Shibuya",
@@ -9138,7 +9344,7 @@
     "chainName": "Shibuya Testnet",
     "implName": "shibuya",
     "specName": "shibuya",
-    "specVersion": "108",
+    "specVersion": "109",
     "nativeToken": null,
     "tokens": [],
     "account": "*25519",
@@ -9146,6 +9352,7 @@
     "chainspecQrUrl": null,
     "latestMetadataQrUrl": null,
     "isUnknownFeeToken": false,
+    "feeToken": null,
     "rpcs": [
       {
         "url": "wss://shibuya-rpc.dwellir.com"
@@ -9168,7 +9375,7 @@
   {
     "id": "skyekiwi-testnet",
     "isTestnet": true,
-    "sortIndex": 294,
+    "sortIndex": 295,
     "genesisHash": "0xb5bfb91886508f2b7abc78bec8dffef3c9ad43e3b46caec6b581292f0e5b52ce",
     "prefix": 42,
     "name": "SkyeKiwi",
@@ -9185,6 +9392,7 @@
     "chainspecQrUrl": null,
     "latestMetadataQrUrl": null,
     "isUnknownFeeToken": false,
+    "feeToken": null,
     "rpcs": [
       {
         "url": "wss://staging.rpc.skye.kiwi"
@@ -9200,7 +9408,7 @@
   {
     "id": "rococo-societal-testnet",
     "isTestnet": true,
-    "sortIndex": 296,
+    "sortIndex": 297,
     "genesisHash": null,
     "prefix": null,
     "name": "Societal",
@@ -9217,6 +9425,7 @@
     "chainspecQrUrl": null,
     "latestMetadataQrUrl": null,
     "isUnknownFeeToken": false,
+    "feeToken": null,
     "rpcs": [
       {
         "url": "wss://node-ws-rococo.testnet.sctl.link"
@@ -9234,7 +9443,7 @@
   {
     "id": "rococo-subsocial-testnet",
     "isTestnet": true,
-    "sortIndex": 298,
+    "sortIndex": 299,
     "genesisHash": "0x01f15f9d48ea279640cb35267bfd33a88bb4c21ebb00b129e9bc2d2236aaafdb",
     "prefix": 28,
     "name": "SoonsocialX",
@@ -9243,7 +9452,7 @@
     "chainName": "SoonSocial",
     "implName": "soonsocial-parachain",
     "specName": "soonsocial-parachain",
-    "specVersion": "2705",
+    "specVersion": "2706",
     "nativeToken": null,
     "tokens": [],
     "account": "*25519",
@@ -9251,6 +9460,7 @@
     "chainspecQrUrl": null,
     "latestMetadataQrUrl": null,
     "isUnknownFeeToken": false,
+    "feeToken": null,
     "rpcs": [
       {
         "url": "wss://rco-para.subsocial.network"
@@ -9268,7 +9478,7 @@
   {
     "id": "rococo-sora-testnet",
     "isTestnet": true,
-    "sortIndex": 299,
+    "sortIndex": 300,
     "genesisHash": "0x8685a8d3e57fa8024b91b8ead6cc97acf953889c6fb0a355602826a1e2db198f",
     "prefix": 420,
     "name": "Sora Testnet",
@@ -9285,6 +9495,7 @@
     "chainspecQrUrl": null,
     "latestMetadataQrUrl": null,
     "isUnknownFeeToken": false,
+    "feeToken": null,
     "rpcs": [
       {
         "url": "wss://ws.parachain-collator-1.c1.stg1.sora2.soramitsu.co.jp"
@@ -9302,7 +9513,7 @@
   {
     "id": "sora-substrate-testnet",
     "isTestnet": true,
-    "sortIndex": 300,
+    "sortIndex": 301,
     "genesisHash": "0x3266816be9fa51b32cfea58d3e33ca77246bc9618595a4300e44c8856a8d8a17",
     "prefix": 69,
     "name": "Sora Testnet",
@@ -9311,7 +9522,7 @@
     "chainName": "SORA-staging Testnet",
     "implName": "sora-substrate",
     "specName": "sora-substrate",
-    "specVersion": "63",
+    "specVersion": "64",
     "nativeToken": null,
     "tokens": [],
     "account": "*25519",
@@ -9319,6 +9530,7 @@
     "chainspecQrUrl": null,
     "latestMetadataQrUrl": null,
     "isUnknownFeeToken": false,
+    "feeToken": null,
     "rpcs": [
       {
         "url": "wss://ws.framenode-1.s1.stg1.sora2.soramitsu.co.jp"
@@ -9343,7 +9555,7 @@
   {
     "id": "subspace-gemini-1-testnet",
     "isTestnet": true,
-    "sortIndex": 309,
+    "sortIndex": 310,
     "genesisHash": "0x9ee86eefc3cc61c71a7751bba7f25e442da2512f408e6286153b3ccc055dccf0",
     "prefix": 2254,
     "name": "Subspace Gemini",
@@ -9360,6 +9572,7 @@
     "chainspecQrUrl": null,
     "latestMetadataQrUrl": null,
     "isUnknownFeeToken": false,
+    "feeToken": null,
     "rpcs": [
       {
         "url": "wss://eu.gemini-1b.subspace.network/ws"
@@ -9375,7 +9588,7 @@
   {
     "id": "subspace-gemini-2-a-testnet",
     "isTestnet": true,
-    "sortIndex": 310,
+    "sortIndex": 311,
     "genesisHash": "0x43d10ffd50990380ffe6c9392145431d630ae67e89dbc9c014cac2a417759101",
     "prefix": 2254,
     "name": "Subspace Gemini 2a",
@@ -9392,6 +9605,7 @@
     "chainspecQrUrl": null,
     "latestMetadataQrUrl": null,
     "isUnknownFeeToken": false,
+    "feeToken": null,
     "rpcs": [
       {
         "url": "wss://eu-0.gemini-2a.subspace.network/ws"
@@ -9407,7 +9621,7 @@
   {
     "id": "sumi-testnet",
     "isTestnet": true,
-    "sortIndex": 312,
+    "sortIndex": 313,
     "genesisHash": "0x6ec5e8eaf4627331d77e3ee130a1c8507d78a9367c66634e3f1cec59258ec540",
     "prefix": 42,
     "name": "Sumi Testnet",
@@ -9424,6 +9638,7 @@
     "chainspecQrUrl": null,
     "latestMetadataQrUrl": null,
     "isUnknownFeeToken": false,
+    "feeToken": null,
     "rpcs": [
       {
         "url": "wss://testnet1.sumi.xyz"
@@ -9439,7 +9654,7 @@
   {
     "id": "t-0-rn-testnet",
     "isTestnet": true,
-    "sortIndex": 313,
+    "sortIndex": 314,
     "genesisHash": "0x569de72a10e8426ea1d3515dd473a57af15a38b6dda3b714bdd6968cf928e011",
     "prefix": 42,
     "name": "t0rn",
@@ -9448,7 +9663,7 @@
     "chainName": "t0rn",
     "implName": "Circuit Collator",
     "specName": "t0rn",
-    "specVersion": "154",
+    "specVersion": "156",
     "nativeToken": null,
     "tokens": [],
     "account": "*25519",
@@ -9456,6 +9671,7 @@
     "chainspecQrUrl": null,
     "latestMetadataQrUrl": null,
     "isUnknownFeeToken": false,
+    "feeToken": null,
     "rpcs": [
       {
         "url": "wss://ws.t0rn.io"
@@ -9473,7 +9689,7 @@
   {
     "id": "ternoa-alphanet-testnet",
     "isTestnet": true,
-    "sortIndex": 316,
+    "sortIndex": 317,
     "genesisHash": "0x18bcdb75a0bba577b084878db2dc2546eb21504eaad4b564bb7d47f9d02b6ace",
     "prefix": 42,
     "name": "Ternoa Alphanet",
@@ -9490,6 +9706,7 @@
     "chainspecQrUrl": null,
     "latestMetadataQrUrl": null,
     "isUnknownFeeToken": false,
+    "feeToken": null,
     "rpcs": [
       {
         "url": "wss://alphanet.ternoa.com"
@@ -9505,7 +9722,7 @@
   {
     "id": "thebifrost-testnet",
     "isTestnet": true,
-    "sortIndex": 318,
+    "sortIndex": 319,
     "genesisHash": "0x15b34a3b7443c73fa1f687cce2d8e5981f6a2eaad54809a6b6af28e83d2adaff",
     "prefix": 42,
     "name": "The Bifrost Testnet",
@@ -9522,6 +9739,7 @@
     "chainspecQrUrl": null,
     "latestMetadataQrUrl": null,
     "isUnknownFeeToken": false,
+    "feeToken": null,
     "rpcs": [
       {
         "url": "wss://public-01.testnet.thebifrost.io/ws"
@@ -9540,7 +9758,7 @@
   {
     "id": "rococo-turing-testnet",
     "isTestnet": true,
-    "sortIndex": 321,
+    "sortIndex": 322,
     "genesisHash": "0xd54f0988402deb4548538626ce37e4a318441ea0529ca369400ebec4e04dfe4b",
     "prefix": 51,
     "name": "Turing Testnet",
@@ -9557,6 +9775,7 @@
     "chainspecQrUrl": null,
     "latestMetadataQrUrl": null,
     "isUnknownFeeToken": false,
+    "feeToken": null,
     "rpcs": [
       {
         "url": "wss://rpc.turing-staging.oak.tech"
@@ -9574,7 +9793,7 @@
   {
     "id": "rococo-unit-network-testnet",
     "isTestnet": true,
-    "sortIndex": 324,
+    "sortIndex": 325,
     "genesisHash": null,
     "prefix": null,
     "name": "Unit",
@@ -9591,6 +9810,7 @@
     "chainspecQrUrl": null,
     "latestMetadataQrUrl": null,
     "isUnknownFeeToken": false,
+    "feeToken": null,
     "rpcs": [
       {
         "url": "wss://www.unitnode3.info:443"
@@ -9608,7 +9828,7 @@
   {
     "id": "vara-incentivized-testnet",
     "isTestnet": true,
-    "sortIndex": 326,
+    "sortIndex": 327,
     "genesisHash": "0x9b86ea7366584c5ddf67de243433fcc05732864933258de9467db46eb9bef8b5",
     "prefix": 137,
     "name": "Vara Incentivized Testnet",
@@ -9625,6 +9845,7 @@
     "chainspecQrUrl": null,
     "latestMetadataQrUrl": null,
     "isUnknownFeeToken": false,
+    "feeToken": null,
     "rpcs": [
       {
         "url": "wss://vit.vara-network.io"
@@ -9640,7 +9861,7 @@
   {
     "id": "rococo-watr-testnet",
     "isTestnet": true,
-    "sortIndex": 329,
+    "sortIndex": 330,
     "genesisHash": "0xb53c620c41860278fa3068a5367c8eedceefce8a7c29237d830bc09a71737b5d",
     "prefix": 19,
     "name": "Watr Testnet",
@@ -9657,6 +9878,7 @@
     "chainspecQrUrl": null,
     "latestMetadataQrUrl": null,
     "isUnknownFeeToken": false,
+    "feeToken": null,
     "rpcs": [
       {
         "url": "wss://rpc.dev.watr.org"
@@ -9678,7 +9900,7 @@
   {
     "id": "web-3-games-testnet",
     "isTestnet": true,
-    "sortIndex": 331,
+    "sortIndex": 332,
     "genesisHash": null,
     "prefix": null,
     "name": "Web3Games",
@@ -9695,6 +9917,7 @@
     "chainspecQrUrl": null,
     "latestMetadataQrUrl": null,
     "isUnknownFeeToken": false,
+    "feeToken": null,
     "rpcs": [
       {
         "url": "wss://devnet.web3games.org"
@@ -9710,7 +9933,7 @@
   {
     "id": "westend-asset-hub-testnet",
     "isTestnet": true,
-    "sortIndex": 333,
+    "sortIndex": 334,
     "genesisHash": "0x67f9723393ef76214df0118c34bbbd3dbebc8ed46a10973a8c969d48fe7598c9",
     "prefix": 42,
     "name": "Westend Asset Hub",
@@ -9727,6 +9950,7 @@
     "chainspecQrUrl": null,
     "latestMetadataQrUrl": null,
     "isUnknownFeeToken": false,
+    "feeToken": null,
     "rpcs": [
       {
         "url": "wss://sys.ibp.network/westmint"
@@ -9759,7 +9983,7 @@
   {
     "id": "xsocial-testnet",
     "isTestnet": true,
-    "sortIndex": 337,
+    "sortIndex": 338,
     "genesisHash": "0x1333ee260a234d3a246b85239e279bbdc7618db7188f2dd73f7322963fcd4d02",
     "prefix": 42,
     "name": "xSocial",
@@ -9776,6 +10000,7 @@
     "chainspecQrUrl": null,
     "latestMetadataQrUrl": null,
     "isUnknownFeeToken": false,
+    "feeToken": null,
     "rpcs": [
       {
         "url": "wss://xsocial.subsocial.network"
@@ -9791,7 +10016,7 @@
   {
     "id": "rococo-zeitgeist-testnet",
     "isTestnet": true,
-    "sortIndex": 339,
+    "sortIndex": 340,
     "genesisHash": "0xb90cd3a37b4793c6494b78962986f4f6ed3ec2eda91a6b84fd8457d24f606b9c",
     "prefix": 73,
     "name": "Zeitgeist Battery Station",
@@ -9808,6 +10033,7 @@
     "chainspecQrUrl": null,
     "latestMetadataQrUrl": null,
     "isUnknownFeeToken": false,
+    "feeToken": null,
     "rpcs": [
       {
         "url": "wss://bsr.zeitgeist.pm"

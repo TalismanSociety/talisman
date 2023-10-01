@@ -6906,60 +6906,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@subsquid/scale-codec@npm:^1.1.1":
-  version: 1.1.1
-  resolution: "@subsquid/scale-codec@npm:1.1.1"
-  dependencies:
-    "@subsquid/util-internal-hex": ^0.0.2
-    "@subsquid/util-internal-json": ^0.2.1
-  checksum: ccf5f92f851dd43d7632b4e40109227914a1552011cee412748fc8f212383c0d2a62d1c4f6abb6619eec99f8387c8fe2beb1e1e731e0e29260b1c7f474887a9d
-  languageName: node
-  linkType: hard
-
-"@subsquid/substrate-metadata@npm:^2.3.0":
-  version: 2.3.0
-  resolution: "@subsquid/substrate-metadata@npm:2.3.0"
-  dependencies:
-    "@subsquid/scale-codec": ^1.1.1
-    "@subsquid/util-internal": ^1.1.0
-    "@subsquid/util-naming": ^0.0.2
-  checksum: 6c6f37c4e6d3a6a5f496e721a87cb5ebcfbc9d351a01bed0d6fb85066a26a6642668b384d54c6c650a0770ed0df9690afc67f5c6aa7edd956d864abc14680e22
-  languageName: node
-  linkType: hard
-
-"@subsquid/util-internal-hex@npm:^0.0.2":
-  version: 0.0.2
-  resolution: "@subsquid/util-internal-hex@npm:0.0.2"
-  checksum: 6dff15384dead458788b9d00733df1a31e2641bb45aa639cce6dacbf36e3013d51dc24c6c683ec6cefa85545e494701472ae08c5f41b6990b6baca202a1ddc7c
-  languageName: node
-  linkType: hard
-
-"@subsquid/util-internal-json@npm:^0.2.1":
-  version: 0.2.1
-  resolution: "@subsquid/util-internal-json@npm:0.2.1"
-  dependencies:
-    "@subsquid/util-internal-hex": ^0.0.2
-  checksum: 34ab08ee15ccb608445d3eb3bada339c7ef6262d0a82223d00fda0cd8498e183a13246d7eea3813ac8719615b86f743fc31b38c459dc71e8a3591c329365da30
-  languageName: node
-  linkType: hard
-
-"@subsquid/util-internal@npm:^1.1.0":
-  version: 1.1.0
-  resolution: "@subsquid/util-internal@npm:1.1.0"
-  checksum: dca082f26b52bf5c57bbb8ddf97a37e3e3cf45b741c57aacc9d7c155a69e63608e4ea3bf765cc0c9cbb6eddaa5ba6c38095dccdda7f4528f8c976a4cbbd726c9
-  languageName: node
-  linkType: hard
-
-"@subsquid/util-naming@npm:^0.0.2":
-  version: 0.0.2
-  resolution: "@subsquid/util-naming@npm:0.0.2"
-  dependencies:
-    camelcase: ^6.3.0
-    inflected: ^2.1.0
-  checksum: a77c8ab58914573cb57b2623464f2d5c0c543a7769d8242de4a7ef73d491884831e06a06cf8945cbee74fce00f35679cd7c8d235ba826d4b196edd64c9791904
-  languageName: node
-  linkType: hard
-
 "@substrate/connect-extension-protocol@npm:^1.0.1":
   version: 1.0.1
   resolution: "@substrate/connect-extension-protocol@npm:1.0.1"
@@ -7376,7 +7322,6 @@ __metadata:
     "@talismn/chain-connector-evm": "workspace:*"
     "@talismn/chaindata-provider": "workspace:*"
     "@talismn/eslint-config": "workspace:*"
-    "@talismn/mutate-metadata": "workspace:*"
     "@talismn/scale": "workspace:*"
     "@talismn/subshape-fork": ^0.0.1
     "@talismn/token-rates": "workspace:*"
@@ -7541,23 +7486,6 @@ __metadata:
     typescript: ^4.6.4
   peerDependencies:
     react: ">=18.2.0"
-  languageName: unknown
-  linkType: soft
-
-"@talismn/mutate-metadata@workspace:*, @talismn/mutate-metadata@workspace:packages/mutate-metadata":
-  version: 0.0.0-use.local
-  resolution: "@talismn/mutate-metadata@workspace:packages/mutate-metadata"
-  dependencies:
-    "@subsquid/scale-codec": ^1.1.1
-    "@subsquid/substrate-metadata": ^2.3.0
-    "@talismn/eslint-config": "workspace:*"
-    "@talismn/tsconfig": "workspace:*"
-    "@types/jest": ^27.5.1
-    anylogger: ^1.0.11
-    eslint: ^8.4.0
-    jest: ^28.1.0
-    ts-jest: ^28.0.2
-    typescript: ^4.6.4
   languageName: unknown
   linkType: soft
 
@@ -11242,7 +11170,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"camelcase@npm:^6.0.0, camelcase@npm:^6.2.0, camelcase@npm:^6.3.0":
+"camelcase@npm:^6.0.0, camelcase@npm:^6.2.0":
   version: 6.3.0
   resolution: "camelcase@npm:6.3.0"
   checksum: 8c96818a9076434998511251dcb2761a94817ea17dbdc37f47ac080bd088fc62c7369429a19e2178b993497132c8cbcf5cc1f44ba963e76782ba469c0474938d
@@ -16404,13 +16332,6 @@ __metadata:
   version: 1.0.4
   resolution: "infer-owner@npm:1.0.4"
   checksum: 181e732764e4a0611576466b4b87dac338972b839920b2a8cde43642e4ed6bd54dc1fb0b40874728f2a2df9a1b097b8ff83b56d5f8f8e3927f837fdcb47d8a89
-  languageName: node
-  linkType: hard
-
-"inflected@npm:^2.1.0":
-  version: 2.1.0
-  resolution: "inflected@npm:2.1.0"
-  checksum: 1e3fb2d24ec6c774977dd5ed884c6097b6525f66edecfdca0845ab4023d35f02af1057de50cd69cdc5829d0bd5ba69fd7fb41d4d8abdf85ee243bf2bbf65995d
   languageName: node
   linkType: hard
 

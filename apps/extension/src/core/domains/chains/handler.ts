@@ -139,6 +139,7 @@ export class ChainsHandler extends ExtensionHandler {
         chainspecQrUrl: existingChain?.chainspecQrUrl ?? null,
         latestMetadataQrUrl: existingChain?.latestMetadataQrUrl ?? null,
         isUnknownFeeToken: existingChain?.isUnknownFeeToken ?? false,
+        feeToken: existingChain?.feeToken ?? null,
         rpcs: chain.rpcs.map(({ url }) => ({ url })),
         evmNetworks: existingChain?.evmNetworks ?? [],
 

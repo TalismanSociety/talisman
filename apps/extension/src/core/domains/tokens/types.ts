@@ -9,7 +9,6 @@ export type {
   EvmNativeToken,
   CustomSubNativeToken as CustomNativeToken,
   SubNativeToken as NativeToken,
-  SubOrmlToken as OrmlToken,
 } from "@talismn/balances"
 export type { IToken, Token, TokenId, TokenList } from "@talismn/chaindata-provider"
 export type { TokenRateCurrency, TokenRates } from "@talismn/token-rates"
@@ -26,7 +25,6 @@ export type CustomEvmErc20TokenCreate = Pick<
  * TODO: Refactor to remove the old types and replace with the new types:
  *   NativeToken -> SubNativeToken
  *   CustomNativeToken -> CustomSubNativeToken
- *   OrmlToken -> SubOrmlToken
  *   Erc20Token -> EvmErc20Token
  *   CustomErc20Token -> CustomEvmErc20Token
  *   CustomErc20TokenCreate -> CustomEvmErc20TokenCreate

@@ -3,7 +3,7 @@ import {
   SubAssetsToken,
   SubEquilibriumToken,
   SubNativeToken,
-  SubOrmlToken,
+  SubPsp22Token,
   SubTokensToken,
 } from "@talismn/balances"
 
@@ -11,16 +11,16 @@ export const isSubToken = <T extends Token>(
   token?:
     | T
     | null
-    | SubOrmlToken
-    | SubNativeToken
-    | SubEquilibriumToken
-    | SubTokensToken
     | SubAssetsToken
+    | SubEquilibriumToken
+    | SubNativeToken
+    | SubPsp22Token
+    | SubTokensToken
 ): token is
-  | SubOrmlToken
-  | SubNativeToken
+  | SubAssetsToken
   | SubEquilibriumToken
-  | SubTokensToken
-  | SubAssetsToken => {
+  | SubNativeToken
+  | SubPsp22Token
+  | SubTokensToken => {
   return !!token?.chain
 }

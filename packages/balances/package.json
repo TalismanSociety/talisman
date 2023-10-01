@@ -31,7 +31,6 @@
     "@talismn/chain-connector": "workspace:*",
     "@talismn/chain-connector-evm": "workspace:*",
     "@talismn/chaindata-provider": "workspace:*",
-    "@talismn/mutate-metadata": "workspace:*",
     "@talismn/scale": "workspace:*",
     "@talismn/subshape-fork": "^0.0.1",
     "@talismn/token-rates": "workspace:*",

@@ -24,6 +24,7 @@ export type Chain = {
   chainspecQrUrl: string | null // A url to a qr code with the chainspec for this chain
   latestMetadataQrUrl: string | null // A url to a qr code with the latest metadata for this chain
   isUnknownFeeToken: boolean // Indicates if chain may use a different fee token than it's native token
+  feeToken: string | null
   rpcs: Array<SubstrateRpc> | null // Some public RPCs for connecting to this chain's network
   evmNetworks: Array<{ id: EvmNetworkId }>
 
