@@ -5,7 +5,7 @@ import { twox128 } from "@talismn/scale"
 import { liveQuery } from "dexie"
 import { from } from "rxjs"
 
-import { AnyBalanceModule } from "./helpers"
+import { AnyBalanceModule } from "./modules/util"
 import { db as balancesDb } from "./TalismanBalancesDatabase"
 import { MiniMetadata, MiniMetadataStatus } from "./types"
 

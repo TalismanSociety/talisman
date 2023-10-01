@@ -20,7 +20,7 @@ import { SignTypedDataVersion, personalSign, signTypedData } from "@metamask/eth
 import keyring from "@polkadot/ui-keyring"
 import { assert } from "@polkadot/util"
 import { HexString } from "@polkadot/util/types"
-import { evmNativeTokenId } from "@talismn/balances-evm-native"
+import { evmNativeTokenId } from "@talismn/balances"
 import { CustomEvmNetwork, githubUnknownTokenLogoUrl } from "@talismn/chaindata-provider"
 import { ethers } from "ethers"
 

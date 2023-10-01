@@ -21,7 +21,7 @@ import {
   createSubscriptionId,
   deleteSubscriptionId,
 } from "@talismn/balances"
-import { balanceModules as defaultBalanceModules } from "@talismn/balances-default-modules"
+import { defaultBalanceModules } from "@talismn/balances"
 import { Token, TokenList } from "@talismn/chaindata-provider"
 import { encodeAnyAddress } from "@talismn/util"
 import { Dexie, liveQuery } from "dexie"

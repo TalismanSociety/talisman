@@ -1,7 +1,7 @@
 import { Balances } from "@core/domains/balances/types"
 import { Address } from "@core/types/base"
 import { sortBigBy } from "@talisman/util/bigHelper"
-import { BalanceLockType, filterBaseLocks, getLockTitle } from "@talismn/balances-substrate-native"
+import { BalanceLockType, filterBaseLocks, getLockTitle } from "@talismn/balances"
 import { ChainId, EvmNetworkId } from "@talismn/chaindata-provider"
 import { useBalancesStatus } from "@ui/hooks/useBalancesStatus"
 import useChain from "@ui/hooks/useChain"

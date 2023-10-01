@@ -1,15 +1,16 @@
 import { ChainId } from "@core/domains/chains/types"
 import { EvmNetworkId } from "@core/domains/ethereum/types"
 import { RequestIdOnly } from "@core/types/base"
-import type { CustomEvmErc20Token as CustomErc20Token } from "@talismn/balances-evm-erc20"
-import { CustomEvmErc20Token } from "@talismn/balances-evm-erc20"
-export type { EvmErc20Token as Erc20Token } from "@talismn/balances-evm-erc20"
-export type { CustomEvmNativeToken, EvmNativeToken } from "@talismn/balances-evm-native"
+import type { CustomEvmErc20Token as CustomErc20Token } from "@talismn/balances"
+import { CustomEvmErc20Token } from "@talismn/balances"
 export type {
+  EvmErc20Token as Erc20Token,
+  CustomEvmNativeToken,
+  EvmNativeToken,
   CustomSubNativeToken as CustomNativeToken,
   SubNativeToken as NativeToken,
-} from "@talismn/balances-substrate-native"
-export type { SubOrmlToken as OrmlToken } from "@talismn/balances-substrate-orml"
+  SubOrmlToken as OrmlToken,
+} from "@talismn/balances"
 export type { IToken, Token, TokenId, TokenList } from "@talismn/chaindata-provider"
 export type { TokenRateCurrency, TokenRates } from "@talismn/token-rates"
 export type { CustomErc20Token }

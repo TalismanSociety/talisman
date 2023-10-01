@@ -2,8 +2,8 @@ import { ChainList, EvmNetworkList, TokenList } from "@talismn/chaindata-provide
 import { TokenRateCurrency, TokenRates, TokenRatesList } from "@talismn/token-rates"
 import { BigMath, NonFunctionProperties, isArrayOf, planckToTokens } from "@talismn/util"
 
-import { filterMirrorTokens } from "../helpers"
 import log from "../log"
+import { filterMirrorTokens } from "../modules/util"
 import {
   AmountWithLabel,
   BalanceJson,

@@ -7,7 +7,7 @@ import { getMetadataDef, getMetadataRpcFromDef } from "@core/util/getMetadataDef
 import { Keyring } from "@polkadot/keyring"
 import { assert, hexToU8a, u8aConcat, u8aToU8a } from "@polkadot/util"
 import { HexString } from "@polkadot/util/types"
-import { SubNativeToken } from "@talismn/balances-substrate-native"
+import { SubNativeToken } from "@talismn/balances"
 import { Chain } from "@talismn/chaindata-provider"
 import * as $ from "scale-codec"
 

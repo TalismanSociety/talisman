@@ -4,7 +4,7 @@ import { generateQrAddNetworkSpecs, generateQrUpdateNetworkMetadata } from "@cor
 import { chaindataProvider } from "@core/rpcs/chaindata"
 import { WsProvider } from "@polkadot/api"
 import { assert, u8aToHex } from "@polkadot/util"
-import { CustomSubNativeToken, subNativeTokenId } from "@talismn/balances-substrate-native"
+import { CustomSubNativeToken, subNativeTokenId } from "@talismn/balances"
 import {
   BalancesMetadata,
   CustomChain,
