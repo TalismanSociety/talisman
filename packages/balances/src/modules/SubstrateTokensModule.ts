@@ -1,7 +1,8 @@
-import { Metadata, TypeRegistry } from "@polkadot/types"
+import { TypeRegistry } from "@polkadot/types"
 import { assert } from "@polkadot/util"
 import { UnsignedTransaction, defineMethod } from "@substrate/txwrapper-core"
 import {
+  BalancesConfigTokenParams,
   ChainId,
   ChaindataProvider,
   NewTokenType,
@@ -9,10 +10,13 @@ import {
   githubTokenLogoUrl,
 } from "@talismn/chaindata-provider"
 import {
+  $metadataV14,
+  PalletMV14,
+  StorageEntryMV14,
   filterMetadataPalletsAndItems,
-  metadataIsV14,
-  mutateMetadata,
-} from "@talismn/mutate-metadata"
+  getMetadataVersion,
+} from "@talismn/scale"
+import * as $ from "@talismn/subshape-fork"
 import { decodeAnyAddress } from "@talismn/util"
 
 import { DefaultBalanceModule, NewBalanceModule, NewTransferParamsType } from "../BalanceModule"
@@ -49,18 +53,19 @@ declare module "@talismn/chaindata-provider/plugins" {
 
 export type SubTokensChainMeta = {
   isTestnet: boolean
-  metadata: `0x${string}` | null
+  miniMetadata: `0x${string}` | null
   metadataVersion: number
 }
 
 export type SubTokensModuleConfig = {
-  tokens?: Array<{
-    symbol?: string
-    decimals?: number
-    ed?: string
-    onChainId?: string | number
-    coingeckoId?: string
-  }>
+  tokens?: Array<
+    {
+      symbol?: string
+      decimals?: number
+      ed?: string
+      onChainId?: string | number
+    } & BalancesConfigTokenParams
+  >
 }
 
 export type SubTokensBalance = NewBalanceType<
@@ -108,63 +113,47 @@ export const SubTokensModule: NewBalanceModule<
   return {
     ...DefaultBalanceModule("substrate-tokens"),
 
-    /**
-     * This method is currently executed on [a squid](https://github.com/TalismanSociety/chaindata-squid/blob/0ee02818bf5caa7362e3f3664e55ef05ec8df078/src/steps/fetchDataForChains.ts#L286-L314).
-     * In a future version of the balance libraries, we may build some kind of async scheduling system which will keep the chainmeta for each chain up to date without relying on a squid.
-     */
-    async fetchSubstrateChainMeta(chainId) {
+    async fetchSubstrateChainMeta(chainId, moduleConfig) {
       const isTestnet = (await chaindataProvider.getChain(chainId))?.isTestnet || false
 
+      // TODO: Pass metadataRpc into this function so that it only needs to be fetched once
+      // Once that's done, we can always return the metadataVersion here, even if we're not using it
+      if ((moduleConfig?.tokens ?? []).length < 1)
+        return { isTestnet, miniMetadata: null, metadataVersion: 0 }
+
       const metadataRpc = await chainConnector.send(chainId, "state_getMetadata", [])
+      const metadataVersion = getMetadataVersion(metadataRpc)
 
-      const pjsMetadata: Metadata = new Metadata(new TypeRegistry(), metadataRpc)
-      pjsMetadata.registry.setMetadata(pjsMetadata)
+      if (metadataVersion !== 14) return { isTestnet, miniMetadata: null, metadataVersion }
 
-      const metadata = await mutateMetadata(metadataRpc, (metadata) => {
-        // we can't parse metadata < v14
-        //
-        // as of v14 the type information required to interact with a chain is included in the chain metadata
-        // https://github.com/paritytech/substrate/pull/8615
-        //
-        // before this change, the client needed to already know the type information ahead of time
-        if (!metadataIsV14(metadata)) return null
+      const metadata = $metadataV14.decode($.decodeHex(metadataRpc))
 
-        const isTokensPallet = (pallet: { name: string }) => pallet.name === "Tokens"
-        const isAccountsItem = (item: { name: string }) => item.name === "Accounts"
+      const isTokensPallet = (pallet: PalletMV14) => pallet.name === "Tokens"
+      const isAccountsItem = (item: StorageEntryMV14) => item.name === "Accounts"
 
-        filterMetadataPalletsAndItems(metadata, [
-          { pallet: isTokensPallet, items: [isAccountsItem] },
-        ])
+      // TODO: Handle metadata v15
+      filterMetadataPalletsAndItems(metadata, [{ pallet: isTokensPallet, items: [isAccountsItem] }])
+      metadata.extrinsic.signedExtensions = []
 
-        // ditch the chain's signedExtensions, we don't need them for balance lookups
-        // and the polkadot.js TypeRegistry will complain when it can't find the types for them
-        metadata.value.extrinsic.signedExtensions = []
-
-        return metadata
-      })
+      const miniMetadata = $.encodeHexPrefixed($metadataV14.encode(metadata)) as `0x${string}`
 
       return {
         isTestnet,
-        metadata,
-        metadataVersion: pjsMetadata.version,
+        miniMetadata,
+        metadataVersion,
       }
     },
 
-    /**
-     * This method is currently executed on [a squid](https://github.com/TalismanSociety/chaindata-squid/blob/0ee02818bf5caa7362e3f3664e55ef05ec8df078/src/steps/fetchDataForChains.ts#L331-L336).
-     * In a future version of the balance libraries, we may build some kind of async scheduling system which will keep the list of tokens for each chain up to date without relying on a squid.
-     */
     async fetchSubstrateChainTokens(chainId, chainMeta, moduleConfig) {
       const { isTestnet } = chainMeta
 
       const tokens: Record<string, SubTokensToken> = {}
-      for (const tokenConfig of moduleConfig?.tokens || []) {
+      for (const tokenConfig of moduleConfig?.tokens ?? []) {
         try {
           const symbol = tokenConfig?.symbol ?? "Unit"
           const decimals = tokenConfig?.decimals ?? 0
           const existentialDeposit = tokenConfig?.ed ?? "0"
           const onChainId = tokenConfig?.onChainId ?? undefined
-          const coingeckoId = tokenConfig?.coingeckoId ?? undefined
 
           if (onChainId === undefined) continue
 
@@ -176,11 +165,15 @@ export const SubTokensModule: NewBalanceModule<
             symbol,
             decimals,
             logo: githubTokenLogoUrl(id),
-            coingeckoId,
             existentialDeposit,
             onChainId,
             chain: { id: chainId },
           }
+
+          if (tokenConfig?.symbol) token.symbol = tokenConfig?.symbol
+          if (tokenConfig?.coingeckoId) token.coingeckoId = tokenConfig?.coingeckoId
+          if (tokenConfig?.dcentName) token.dcentName = tokenConfig?.dcentName
+          if (tokenConfig?.mirrorOf) token.mirrorOf = tokenConfig?.mirrorOf
 
           tokens[token.id] = token
         } catch (error) {
@@ -368,10 +361,10 @@ async function buildQueries(
 
     const chainMeta = findChainMeta<typeof SubTokensModule>("substrate-tokens", chain)
     const registry =
-      chainMeta?.metadata !== undefined &&
-      chainMeta?.metadata !== null &&
+      chainMeta?.miniMetadata !== undefined &&
+      chainMeta?.miniMetadata !== null &&
       chainMeta?.metadataVersion >= 14
-        ? getOrCreateTypeRegistry(chainId, chainMeta.metadata)
+        ? getOrCreateTypeRegistry(chainId, chainMeta.miniMetadata)
         : new TypeRegistry()
 
     return addresses.flatMap((address): RpcStateQuery<Balance> | [] => {
