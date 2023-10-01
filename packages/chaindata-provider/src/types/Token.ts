@@ -62,6 +62,19 @@ export type IToken = {
   evmNetwork?: { id: EvmNetworkId } | null
 }
 
+/**
+ * A selection of fields which can be set as part of the `BalancesConfig` section on chaindata for any module type.
+ *
+ * Generally speaking, these fields will override any defaults set by the module itself.
+ *
+ * E.g. if the module determines a native token to have the symbol `IBTC`, but we want to show it
+ * as `iBTC`, we can set the `symbol` field in chaindata at: `chains.interlay.balancesConfig.substrate-native.symbol`.
+ */
+export type BalancesConfigTokenParams = Pick<
+  Partial<IToken>,
+  "symbol" | "coingeckoId" | "dcentName" | "mirrorOf"
+>
+
 /** Used by plugins to help define their custom `TokenType` */
 export type NewTokenType<
   ModuleType extends string,

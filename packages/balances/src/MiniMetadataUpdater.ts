@@ -1,10 +1,12 @@
+import { u8aToHex } from "@polkadot/util"
 import { PromisePool } from "@supercharge/promise-pool"
 import { Chain, ChainId } from "@talismn/chaindata-provider"
 import { ChaindataProviderExtension } from "@talismn/chaindata-provider-extension"
-import { twox128 } from "@talismn/scale"
+import { twox64 } from "@talismn/scale"
 import { liveQuery } from "dexie"
 import { from } from "rxjs"
 
+import log from "./log"
 import { AnyBalanceModule } from "./modules/util"
 import { db as balancesDb } from "./TalismanBalancesDatabase"
 import { MiniMetadata, MiniMetadataStatus } from "./types"
@@ -52,57 +54,133 @@ export class MiniMetadataUpdater {
     chainId,
     specName,
     specVersion,
-  }: Pick<MiniMetadata, "source" | "chainId" | "specName" | "specVersion">) {
-    return twox128.hash(new TextEncoder().encode(`${source}${chainId}${specName}${specVersion}`))
+    balancesConfig,
+  }: Pick<
+    MiniMetadata,
+    "source" | "chainId" | "specName" | "specVersion" | "balancesConfig"
+  >): string {
+    return u8aToHex(
+      twox64.hash(
+        new TextEncoder().encode(`${source}${chainId}${specName}${specVersion}${balancesConfig}`)
+      ),
+      undefined,
+      false
+    )
   }
 
-  // async update(chainIds: ChainId[]) {
-  //   const chains = await this.#chaindataProvider.chainsArray()
-  //   const statuses = await this.statuses(chains)
-  // }
+  async update(chainIds: ChainId[]) {
+    const chains = new Map(
+      (await this.#chaindataProvider.chainsArray()).map((chain) => [chain.id, chain])
+    )
+    const filteredChains = chainIds.flatMap((chainId) => chains.get(chainId) ?? [])
 
-  async statuses(chains: Array<Pick<Chain, "id" | "specName" | "specVersion" | "balancesConfig">>) {
-    const statuses = new Map<ChainId, MiniMetadataStatus>()
+    const ids = await balancesDb.miniMetadatas.orderBy("id").primaryKeys()
+    const { wantedIdsByChain, statusesByChain } = await this.statuses(filteredChains)
 
-    const sources = this.#balanceModules.map((mod) => mod.type)
+    // clean up store
+    const wantedIds = Array.from(wantedIdsByChain.values()).flatMap((ids) => ids)
+    const unwantedIds = ids.filter((id) => !wantedIds.includes(id))
+
+    if (unwantedIds.length > 0) {
+      log.info(`Pruning ${unwantedIds.length} miniMetadatas`)
+      await balancesDb.miniMetadatas.bulkDelete(unwantedIds)
+    }
+
+    const needUpdates = Array.from(statusesByChain.entries())
+      .filter(([, status]) => status !== "good")
+      .map(([chainId]) => chainId)
 
     const concurrency = 4
     await PromisePool.withConcurrency(concurrency)
-      .for(chains)
-      .process(async (chain: Pick<Chain, "id" | "specName" | "specVersion" | "balancesConfig">) => {
-        if (chain.specName === null) return
-        if (chain.specVersion === null) return
+      .for(needUpdates)
+      .process(async (chainId) => {
+        log.info(`Updating metadata for chain ${chainId}`)
+        const chain = chains.get(chainId)
+        if (!chain) return
 
-        for (const source of sources) {
-          const id = this.deriveId({
-            source,
-            chainId: chain.id,
-            specName: chain.specName,
-            specVersion: chain.specVersion,
+        const { specName, specVersion } = chain
+        if (specName === null) return
+        if (specVersion === null) return
+
+        await PromisePool.withConcurrency(1)
+          // TODO: port the other modules too
+          .for(this.#balanceModules.filter(({ type }) => type === "substrate-native"))
+          .process(async (mod) => {
+            const balancesConfig =
+              chain.balancesConfig.find(({ moduleType }) => moduleType === mod.type) ?? {}
+
+            const metadata = await mod.fetchSubstrateChainMeta(chainId, balancesConfig)
+            const tokens = await mod.fetchSubstrateChainTokens(chainId, metadata, balancesConfig)
+
+            // update tokens in chaindata
+            await this.#chaindataProvider.updateChainTokens(
+              chainId,
+              mod.type,
+              Object.values(tokens)
+            )
+
+            // update miniMetadatas
+            const { miniMetadata: data, metadataVersion: version, ...extra } = metadata
+            balancesDb.miniMetadatas.put({
+              id: this.deriveId({
+                source: mod.type,
+                chainId,
+                specName,
+                specVersion,
+                balancesConfig: JSON.stringify(balancesConfig),
+              }),
+              source: mod.type,
+              chainId,
+              specName,
+              specVersion,
+              balancesConfig: JSON.stringify(balancesConfig),
+              // TODO: Standardise return value from `fetchSubstrateChainMeta`
+              version,
+              data,
+              extra,
+            })
           })
-
-          const metadata = await balancesDb.miniMetadatas.get(id)
-          if (metadata === undefined) {
-            if (!statuses.has(chain.id) || statuses.get(chain.id) === "good")
-              statuses.set(chain.id, "none")
-            return
-          }
-
-          const chainBalancesConfig = JSON.stringify(
-            chain.balancesConfig.find(({ moduleType }) => moduleType === source) ?? null
-          )
-
-          if (metadata.balancesConfig !== chainBalancesConfig) {
-            return statuses.set(chain.id, "outdated")
-          }
-
-          if (!statuses.has(chain.id)) return statuses.set(chain.id, "good")
-        }
-
-        return
       })
+  }
 
-    return statuses
+  async statuses(chains: Array<Pick<Chain, "id" | "specName" | "specVersion" | "balancesConfig">>) {
+    const ids = await balancesDb.miniMetadatas.orderBy("id").primaryKeys()
+
+    const wantedIdsByChain = new Map<string, string[]>(
+      chains.flatMap(({ id: chainId, specName, specVersion, balancesConfig }) => {
+        if (specName === null) return []
+        if (specVersion === null) return []
+
+        return [
+          [
+            chainId,
+            // TODO: port the other modules too
+            this.#balanceModules
+              .filter(({ type }) => type === "substrate-native")
+              .map(({ type: source }) =>
+                this.deriveId({
+                  source,
+                  chainId: chainId,
+                  specName: specName,
+                  specVersion: specVersion,
+                  balancesConfig: JSON.stringify(
+                    balancesConfig.find(({ moduleType }) => moduleType === source) ?? {}
+                  ),
+                })
+              ),
+          ],
+        ]
+      })
+    )
+
+    const statusesByChain = new Map<string, MiniMetadataStatus>(
+      Array.from(wantedIdsByChain.entries()).map(([chainId, wantedIds]) => [
+        chainId,
+        wantedIds.every((wantedId) => ids.includes(wantedId)) ? "good" : "none",
+      ])
+    )
+
+    return { wantedIdsByChain, statusesByChain }
   }
 
   /** Subscribe to the metadata for a chain */
@@ -114,17 +192,6 @@ export class MiniMetadataUpdater {
           .toArray()
           .then((array) => array[0])
       )
-    )
-  }
-
-  test() {
-    balancesDb.miniMetadatas.get(
-      this.deriveId({
-        source: "substrate-native",
-        chainId: "polkadot",
-        specName: "polkadot",
-        specVersion: "2007",
-      })
     )
   }
 }

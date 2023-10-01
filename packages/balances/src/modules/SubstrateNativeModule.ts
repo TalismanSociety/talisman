@@ -3,6 +3,7 @@ import { assert, compactFromU8a, u8aToHex, u8aToString } from "@polkadot/util"
 import { defineMethod } from "@substrate/txwrapper-core"
 import { ChainConnector } from "@talismn/chain-connector"
 import {
+  BalancesConfigTokenParams,
   ChainId,
   ChaindataProvider,
   NewTokenType,
@@ -114,14 +115,14 @@ export type SubNativeChainMeta = {
   existentialDeposit: string | null
   nominationPoolsPalletId: string | null
   crowdloanPalletId: string | null
-  minMetadata: `0x${string}` | null
+  miniMetadata: `0x${string}` | null
   metadataVersion: number
 }
 
 // TODO: Include common token properties e.g. dcentName, coingeckoId
 export type SubNativeModuleConfig = {
   disable?: boolean
-}
+} & BalancesConfigTokenParams
 
 export type SubNativeBalance = NewBalanceType<
   ModuleType,
@@ -179,7 +180,7 @@ export const SubNativeModule: NewBalanceModule<
           existentialDeposit: null,
           nominationPoolsPalletId: null,
           crowdloanPalletId: null,
-          minMetadata: null,
+          miniMetadata: null,
           metadataVersion: 0,
         }
 
@@ -204,7 +205,7 @@ export const SubNativeModule: NewBalanceModule<
           existentialDeposit: null,
           nominationPoolsPalletId: null,
           crowdloanPalletId: null,
-          minMetadata: null,
+          miniMetadata: null,
           metadataVersion,
         }
 
@@ -257,7 +258,7 @@ export const SubNativeModule: NewBalanceModule<
       ])
       metadata.extrinsic.signedExtensions = []
 
-      const minMetadata = $.encodeHexPrefixed($metadataV14.encode(metadata)) as `0x${string}`
+      const miniMetadata = $.encodeHexPrefixed($metadataV14.encode(metadata)) as `0x${string}`
 
       return {
         isTestnet,
@@ -266,7 +267,7 @@ export const SubNativeModule: NewBalanceModule<
         existentialDeposit,
         nominationPoolsPalletId,
         crowdloanPalletId,
-        minMetadata,
+        miniMetadata,
         metadataVersion,
       }
     },
@@ -287,6 +288,11 @@ export const SubNativeModule: NewBalanceModule<
         existentialDeposit: existentialDeposit || "0",
         chain: { id: chainId },
       }
+
+      if (moduleConfig?.symbol) nativeToken.symbol = moduleConfig?.symbol
+      if (moduleConfig?.coingeckoId) nativeToken.coingeckoId = moduleConfig?.coingeckoId
+      if (moduleConfig?.dcentName) nativeToken.dcentName = moduleConfig?.dcentName
+      if (moduleConfig?.mirrorOf) nativeToken.mirrorOf = moduleConfig?.mirrorOf
 
       return { [nativeToken.id]: nativeToken }
     },
@@ -447,11 +453,11 @@ async function buildQueries(
 
     const chainMeta = findChainMeta<typeof SubNativeModule>("substrate-native", chain)
     const hasMetadataV14 =
-      chainMeta?.minMetadata !== undefined &&
-      chainMeta?.minMetadata !== null &&
+      chainMeta?.miniMetadata !== undefined &&
+      chainMeta?.miniMetadata !== null &&
       chainMeta?.metadataVersion >= 14
     const typeRegistry = hasMetadataV14
-      ? getOrCreateTypeRegistry(chainId, chainMeta.minMetadata ?? undefined)
+      ? getOrCreateTypeRegistry(chainId, chainMeta.miniMetadata ?? undefined)
       : new TypeRegistry()
 
     return addresses.flatMap((address) => {
@@ -666,10 +672,10 @@ export async function subscribeNompoolStaking(
     }
     const chainMeta = findChainMeta<typeof SubNativeModule>("substrate-native", chain)
     const typeRegistry =
-      chainMeta?.minMetadata !== undefined &&
-      chainMeta?.minMetadata !== null &&
+      chainMeta?.miniMetadata !== undefined &&
+      chainMeta?.miniMetadata !== null &&
       chainMeta?.metadataVersion >= 14
-        ? getOrCreateTypeRegistry(chainId, chainMeta.minMetadata)
+        ? getOrCreateTypeRegistry(chainId, chainMeta.miniMetadata)
         : new TypeRegistry()
 
     type PoolMembers = {
@@ -1012,10 +1018,10 @@ async function subscribeCrowdloans(
     }
     const chainMeta = findChainMeta<typeof SubNativeModule>("substrate-native", chain)
     const typeRegistry =
-      chainMeta?.minMetadata !== undefined &&
-      chainMeta?.minMetadata !== null &&
+      chainMeta?.miniMetadata !== undefined &&
+      chainMeta?.miniMetadata !== null &&
       chainMeta?.metadataVersion >= 14
-        ? getOrCreateTypeRegistry(chainId, chainMeta.minMetadata)
+        ? getOrCreateTypeRegistry(chainId, chainMeta.miniMetadata)
         : new TypeRegistry()
 
     const subscribeParaIds = (callback: SubscriptionCallback<Array<number[]>>) => {

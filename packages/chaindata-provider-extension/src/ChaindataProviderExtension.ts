@@ -473,6 +473,24 @@ export class ChaindataProviderExtension implements ChaindataProvider {
     }
   }
 
+  async updateChainTokens(chainId: ChainId, source: string, newTokens: Token[]) {
+    // TODO: Test logos and fall back to unknown token logo url
+    // (Maybe put the test into each balance module itself)
+
+    const existingChainTokens = await this.#db.tokens
+      .filter((token) => token.chain?.id === chainId && token.type === source)
+      .toArray()
+
+    const notCustomTokenIds = existingChainTokens
+      .filter((token) => !("isCustom" in token && token.isCustom))
+      .map((token) => token.id)
+    const customTokenIds = existingChainTokens
+      .filter((token) => "isCustom" in token && token.isCustom)
+      .map((token) => token.id)
+
+    await this.#db.tokens.bulkDelete(notCustomTokenIds)
+    await this.#db.tokens.bulkPut(newTokens.filter((token) => !customTokenIds.includes(token.id)))
+  }
   /**
    * Hydrate the db with the latest tokens from subsquid.
    * Hydration is skipped when the last successful hydration was less than minimumHydrationInterval ms ago.

@@ -41,7 +41,7 @@ export class ChainsHandler extends ExtensionHandler {
       if (!rpcUrl) throw new Error("No valid RPC found")
 
       const ws = new WsProvider(rpcUrl.url, 0)
-      // TODO: Store minMetadata with genesisHash|specName|specVersion index for scheduled background task
+      // TODO: Store miniMetadata with genesisHash|specName|specVersion index for scheduled background task
       const metadataRpc = await (async () => {
         try {
           await ws.connect()
@@ -78,7 +78,7 @@ export class ChainsHandler extends ExtensionHandler {
       ])
       metadata.extrinsic.signedExtensions = []
 
-      const minMetadata = $.encodeHexPrefixed($metadataV14.encode(metadata))
+      const miniMetadata = $.encodeHexPrefixed($metadataV14.encode(metadata))
       // TODO: Use this inside the balance modules instead of TypeRegistry
       // const metadataSubshape = transformMetadataV14(metadata)
 
@@ -92,7 +92,7 @@ export class ChainsHandler extends ExtensionHandler {
             existentialDeposit,
             nominationPoolsPalletId: null, // TODO: Extract this from the metadata (NominationPools pallet constants)
             crowdloanPalletId: null, // TODO: Extract this from the metadata (Crowdloan pallet constants)
-            metadata: minMetadata,
+            metadata: miniMetadata,
             metadataVersion: metadata.version,
           },
         },

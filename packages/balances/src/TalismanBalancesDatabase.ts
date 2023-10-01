@@ -11,7 +11,7 @@ export class TalismanBalancesDatabase extends Dexie {
 
     // https://dexie.org/docs/Tutorial/Design#database-versioning
     // TODO: Increment version
-    this.version(1).stores({
+    this.version(2).stores({
       // You only need to specify properties that you wish to index.
       // The object store will allow any properties on your stored objects but you can only query them by indexed properties
       // https://dexie.org/docs/API-Reference#declare-database

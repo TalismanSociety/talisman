@@ -37,7 +37,7 @@ export const filterMetadataPalletsAndItems = (
   const items = palletsAndItems.flatMap(({ pallet: palletFilter, items }) => {
     const pallet = metadata.pallets.find(palletFilter)
     if (!pallet || !pallet.storage) {
-      log.warn("Failed to find pallet", palletFilter)
+      log.debug("Failed to find pallet", palletFilter)
       return []
     }
 
