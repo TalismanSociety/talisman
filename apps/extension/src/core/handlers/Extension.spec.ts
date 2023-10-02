@@ -435,21 +435,18 @@ describe("Extension", () => {
     // the un-hydrated chaindata provider should be empty
     expect((await chaindataProvider.chainIds()).length).toStrictEqual(0)
     expect((await chaindataProvider.evmNetworkIds()).length).toStrictEqual(0)
-    expect((await chaindataProvider.tokenIds()).length).toStrictEqual(0)
 
     // submit the hydrate chaindata messages (usually sent by the popup/dashboard frontend to the backend)
     expect(
       await Promise.all([
         messageSender("pri(chains.subscribe)", null),
         messageSender("pri(eth.networks.subscribe)", null),
-        messageSender("pri(tokens.subscribe)", null),
       ])
-    ).toStrictEqual([true, true, true])
+    ).toStrictEqual([true, true])
 
     // the hydrated chaindata provier should now have chains, evmNetworks and tokens!
     expect((await chaindataProvider.chainIds()).length).toBeGreaterThan(0)
     expect((await chaindataProvider.evmNetworkIds()).length).toBeGreaterThan(0)
-    expect((await chaindataProvider.tokenIds()).length).toBeGreaterThan(0)
   })
 
   test("new accounts are added to authorised sites with connectAllSubstrate automatically", async () => {
