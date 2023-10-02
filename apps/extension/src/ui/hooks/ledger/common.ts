@@ -1,6 +1,16 @@
 import { DEBUG } from "@core/constants"
 import { t } from "i18next"
 
+export class LedgerError extends Error {
+  statusCode?: number
+
+  constructor(message?: string, name?: string, statusCode?: number) {
+    super(message)
+    this.name = name || "Error"
+    this.statusCode = statusCode
+  }
+}
+
 export const ERROR_LEDGER_EVM_CANNOT_SIGN_SUBSTRATE =
   "This transaction cannot be signed via an Ethereum Ledger account."
 export const ERROR_LEDGER_NO_APP = "There is no Ledger app available for this network."
@@ -72,9 +82,7 @@ export type LedgerErrorProps = {
 
 const capitalize = (str: string) => (str.length > 1 ? str[0].toUpperCase() + str.slice(1) : str)
 
-export const getLedgerErrorProps = (err: Error, appName: string): LedgerErrorProps => {
-  const error = err as Error & { name?: string; statusCode?: number }
-
+export const getLedgerErrorProps = (err: LedgerError, appName: string): LedgerErrorProps => {
   // Generic errors
   switch (err.name) {
     case "SecurityError":
@@ -95,8 +103,15 @@ export const getLedgerErrorProps = (err: Error, appName: string): LedgerErrorPro
         requiresManualRetry: false,
       }
 
+    case "UnsupportedVersion": // For ethereum only
+      return {
+        status: "error",
+        message: t("Please update your Ledger Ethereum app."),
+        requiresManualRetry: false,
+      }
+
     case "TransportStatusError": {
-      switch (error.statusCode) {
+      switch (err.statusCode) {
         case 27404: // locked
         case 27010:
           return {
