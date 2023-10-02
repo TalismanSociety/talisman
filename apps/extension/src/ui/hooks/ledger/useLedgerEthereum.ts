@@ -1,3 +1,4 @@
+import { LEDGER_ETHEREUM_MIN_VERSION } from "@core/constants"
 import { getEthLedgerDerivationPath } from "@core/domains/ethereum/helpers"
 import { log } from "@core/log"
 import LedgerEthereumApp from "@ledgerhq/hw-app-eth"
@@ -6,18 +7,18 @@ import TransportWebUSB from "@ledgerhq/hw-transport-webusb"
 import { throwAfter } from "@talismn/util"
 import { useCallback, useEffect, useMemo, useRef, useState } from "react"
 import { useTranslation } from "react-i18next"
+import { gte } from "semver"
 
 import { useSetInterval } from "../useSetInterval"
-import { LedgerStatus, getLedgerErrorProps } from "./common"
+import { LedgerError, LedgerStatus, getLedgerErrorProps } from "./common"
 
 export const useLedgerEthereum = (persist = false) => {
   const { t } = useTranslation()
   const [isLoading, setIsLoading] = useState(false)
   const [refreshCounter, setRefreshCounter] = useState(0)
-  const [ledgerError, setLedgerError] = useState<Error>()
+  const [ledgerError, setLedgerError] = useState<LedgerError>()
   const [isReady, setIsReady] = useState(false)
   const [ledger, setLedger] = useState<LedgerEthereumApp | null>(null)
-
   const refConnecting = useRef(false)
   const refTransport = useRef<Transport | null>(null)
 
@@ -52,12 +53,15 @@ export const useLedgerEthereum = (persist = false) => {
         ledger.getAddress(getEthLedgerDerivationPath("LedgerLive")),
         throwAfter(5_000, "Timeout"),
       ])
+      const { version } = await ledger.getAppConfiguration()
+      if (!gte(version, LEDGER_ETHEREUM_MIN_VERSION))
+        throw new LedgerError("Unsupported version", "UnsupportedVersion")
 
       setLedgerError(undefined)
       setLedger(ledger)
       setIsReady(true)
     } catch (err) {
-      log.error("connectLedger Ethereum : " + (err as Error).message, { err })
+      log.error("connectLedger Ethereum : " + (err as LedgerError).message, { err })
 
       try {
         await refTransport.current?.close()
@@ -67,7 +71,7 @@ export const useLedgerEthereum = (persist = false) => {
         // ignore
       }
       setLedger(null)
-      setLedgerError(err as Error)
+      setLedgerError(err as LedgerError)
     }
 
     refConnecting.current = false
