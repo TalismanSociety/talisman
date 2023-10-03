@@ -58,39 +58,48 @@ export const FooterContent = ({ withFee = false }: { withFee?: boolean }) => {
   return (
     <>
       {withFee && <EstimatedFeesRow />}
-      {account.origin === AccountType.Talisman && (
-        <div className="grid w-full grid-cols-2 gap-12">
-          <Button disabled={processing} onClick={reject}>
-            {t("Cancel")}
-          </Button>
-          <Button disabled={processing} processing={processing} primary onClick={approve}>
-            {t("Approve")}
-          </Button>
-        </div>
-      )}
-      {account.origin && [AccountType.Dcent, AccountType.Ledger].includes(account.origin) && (
-        <Suspense fallback={null}>
-          <SignHardwareSubstrate
-            fee={withFee ? fee?.toString() : undefined}
-            payload={request.payload}
-            onSigned={approveHardware}
-            onCancel={reject}
-            containerId="main"
-          />
-        </Suspense>
-      )}
-      {account.origin === AccountType.Qr && (
-        <Suspense fallback={null}>
-          <QrSubstrate
-            payload={request.payload}
-            account={account as AccountJsonQr}
-            genesisHash={chain?.genesisHash ?? account?.genesisHash ?? undefined}
-            onSignature={approveQr}
-            onReject={reject}
-            containerId="main"
-          />
-        </Suspense>
-      )}
+      {(() => {
+        switch (account.origin) {
+          case AccountType.Dcent:
+          case AccountType.Ledger:
+            return (
+              <Suspense fallback={null}>
+                <SignHardwareSubstrate
+                  fee={withFee ? fee?.toString() : undefined}
+                  payload={request.payload}
+                  onSigned={approveHardware}
+                  onCancel={reject}
+                  containerId="main"
+                />
+              </Suspense>
+            )
+          case AccountType.Qr:
+            return (
+              <Suspense fallback={null}>
+                <QrSubstrate
+                  payload={request.payload}
+                  account={account as AccountJsonQr}
+                  genesisHash={chain?.genesisHash ?? account?.genesisHash ?? undefined}
+                  onSignature={approveQr}
+                  onReject={reject}
+                  containerId="main"
+                />
+              </Suspense>
+            )
+          case AccountType.Talisman:
+          default:
+            return (
+              <div className="grid w-full grid-cols-2 gap-12">
+                <Button disabled={processing} onClick={reject}>
+                  {t("Cancel")}
+                </Button>
+                <Button disabled={processing} processing={processing} primary onClick={approve}>
+                  {t("Approve")}
+                </Button>
+              </div>
+            )
+        }
+      })()}
     </>
   )
 }
