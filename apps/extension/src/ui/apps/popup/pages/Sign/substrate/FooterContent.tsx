@@ -62,6 +62,8 @@ export const FooterContent = ({ withFee = false }: { withFee?: boolean }) => {
         switch (account.origin) {
           case AccountType.Dcent:
           case AccountType.Ledger:
+          case // @ts-expect-error incomplete migration, remove once migration is completed
+          "HARDWARE":
             return (
               <Suspense fallback={null}>
                 <SignHardwareSubstrate

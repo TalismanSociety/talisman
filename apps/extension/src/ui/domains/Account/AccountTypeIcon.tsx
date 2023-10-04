@@ -17,7 +17,12 @@ export const AccountTypeIcon: FC<AccountTypeIconProps> = ({ origin, showLinked, 
   const { Icon, tooltip } = useMemo(() => {
     if (!!showLinked && origin === AccountType.Talisman)
       return { Icon: LinkIcon, tooltip: t("Local account") }
-    if (origin === AccountType.Ledger) return { Icon: UsbIcon, tooltip: t("Ledger account") }
+    if (
+      origin === AccountType.Ledger ||
+      // @ts-expect-error incomplete migration, remove once migration is completed
+      origin === "HARDWARE"
+    )
+      return { Icon: UsbIcon, tooltip: t("Ledger account") }
     if (origin === AccountType.Qr)
       return { Icon: PolkadotVaultIcon, tooltip: t("Polkadot Vault account") }
     if (origin === AccountType.Watched) return { Icon: EyeIcon, tooltip: t("Watched account") }
