@@ -29,6 +29,9 @@ export const injectEthereum = (sendRequest: SendRequest) => {
   log.debug("Injecting talismanEth")
   windowInject.talismanEth = talismanEth
 
+  // eip-6963 wallet announcement
+  announceProvider(talismanEth)
+
   // also inject on window.ethereum if it is not defined
   // this allows users to just disable metamask if they want to use Talisman instead
   if (windowInject.ethereum === undefined) {
@@ -66,9 +69,6 @@ export const injectEthereum = (sendRequest: SendRequest) => {
     windowInject.web3 = { currentProvider: talismanEth }
 
     window.dispatchEvent(new Event("ethereum#initialized"))
-
-    // eip-6963 wallet announcement
-    announceProvider(talismanEth)
   } else if (WITH_LOG_PROXY) {
     windowInject.ethereum = logProxy(windowInject.ethereum)
   }
