@@ -15,6 +15,15 @@ export const shouldFixBrokenMigration = atom<boolean>({
     ({ setSelf }) => {
       const hasError = window.localStorage.getItem("mnemonicMigrationError")
       setSelf(hasError === "true")
+
+      const listen = (e: StorageEvent) => {
+        if (e.key === "mnemonicMigrationError") {
+          setSelf(e.newValue === "true")
+        }
+      }
+
+      window.addEventListener("storage", listen)
+      return () => window.removeEventListener("storage", listen)
     },
   ],
 })
@@ -25,7 +34,7 @@ export const useFixBrokenMigrationModal = () => {
   const shouldFix = useRecoilValue(shouldFixBrokenMigration)
 
   useEffect(() => {
-    setIsOpen(shouldFix)
+    if (shouldFix) setIsOpen(shouldFix)
   }, [setIsOpen, shouldFix, location]) // reset modal when location changes
 
   return { isOpen, close }
