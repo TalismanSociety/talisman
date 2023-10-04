@@ -13,8 +13,14 @@ const useMnemonicBackup = () => {
   const mnemonics = useMnemonics()
   const location = useLocation()
 
-  const allBackedUp = useMemo(() => mnemonics.every((mnemonic) => mnemonic.confirmed), [mnemonics])
-  const anyBackedUp = useMemo(() => mnemonics.some((mnemonic) => mnemonic.confirmed), [mnemonics])
+  const allBackedUp = useMemo(
+    () => mnemonics.length > 0 && mnemonics.every((mnemonic) => mnemonic.confirmed),
+    [mnemonics]
+  )
+  const anyBackedUp = useMemo(
+    () => mnemonics.length > 0 && mnemonics.some((mnemonic) => mnemonic.confirmed),
+    [mnemonics]
+  )
 
   const isSnoozed = useMemo(() => {
     return Boolean(hideBackupWarningUntil && hideBackupWarningUntil > Date.now() && !anyBackedUp)
