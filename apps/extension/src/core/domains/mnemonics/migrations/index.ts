@@ -9,7 +9,7 @@ import {
   createLegacySeedPhraseStore,
   createLegacyVerifierCertificateMnemonicStore,
 } from "../legacy/store"
-import { encryptMnemonic, mnemonicsStore } from "../store"
+import { MnemonicErrors, encryptMnemonic, mnemonicsStore } from "../store"
 
 enum SOURCES {
   Imported = "imported",
@@ -36,7 +36,13 @@ const mnemonicAccountTypes: AccountType[] = [
 
 const getMnemonicHash = async (cipher: string, password: string) => {
   const { val: mnemonic, err } = await decryptMnemonic(cipher, password)
-  if (err) throw new Error(mnemonic)
+  if (err) {
+    if (mnemonic === MnemonicErrors.IncorrectPassword) {
+      // set a value in localStorage storage
+      window.localStorage.setItem("mnemonicMigrationError", "true")
+    }
+    throw new Error(mnemonic)
+  }
   const hash = md5(mnemonic)
 
   const encrypted = await encryptMnemonic(mnemonic, password)

@@ -19,6 +19,9 @@ const BraveWarningPopupBanner = lazy(
   () => import("@ui/domains/Settings/BraveWarning/BraveWarningPopupBanner")
 )
 const MigratePasswordAlert = lazy(() => import("@ui/domains/Settings/MigratePasswordAlert"))
+const ErrorDetectedAlert = lazy(
+  () => import("@ui/domains/Settings/MigratePassword/Fix119MigrationError/ErrorDetectedAlert")
+)
 
 const AccountAvatar = () => {
   const location = useLocation()
@@ -43,6 +46,7 @@ const PortfolioContent = () => (
     <Suspense fallback={null}>
       <BraveWarningPopupBanner />
       <MigratePasswordAlert />
+      <ErrorDetectedAlert />
       {/* <AnalyticsAlert /> */}
     </Suspense>
   </>

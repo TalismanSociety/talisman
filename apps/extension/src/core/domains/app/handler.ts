@@ -8,9 +8,11 @@ import type {
   RequestRoute,
   SendFundsOpenRequest,
 } from "@core/domains/app/types"
+import { createLegacySeedPhraseStore, encryptMnemonic } from "@core/domains/mnemonics/legacy/store"
 import { genericSubscription } from "@core/handlers/subscriptions"
 import { talismanAnalytics } from "@core/libs/Analytics"
 import { ExtensionHandler } from "@core/libs/Handler"
+import { MigrationRunner, migrations } from "@core/libs/migrations"
 import { requestStore } from "@core/libs/requests/store"
 import { windowManager } from "@core/libs/WindowManager"
 import type { MessageTypes, RequestTypes, ResponseType } from "@core/types"
@@ -22,6 +24,7 @@ import { Subject } from "rxjs"
 import Browser from "webextension-polyfill"
 
 import { authenticateLegacyMethod } from "../accounts/legacy"
+import { decryptMnemonic } from "../mnemonics/legacy/helpers"
 import { changePassword } from "./helpers"
 import { protector } from "./protector"
 import { PasswordStoreData } from "./store.password"
@@ -156,6 +159,34 @@ export default class AppHandler extends ExtensionHandler {
     return true
   }
 
+  private async recoverMnemonic({ password }: RequestTypes["pri(app.recoverMnemonic)"]) {
+    // this should only happen once
+    const mnemonicMigrationError = window.localStorage.getItem("mnemonicMigrationError")
+    if (!mnemonicMigrationError) return false
+
+    const seedPhraseStore = createLegacySeedPhraseStore()
+    const hashedPw = await this.stores.password.getHashedPassword(password)
+    const { cipher } = await seedPhraseStore.get()
+    assert(cipher, "Seed phrase not found")
+    // decrypt cipher using legacy method
+    const { val: mnemonic, err } = await decryptMnemonic(cipher, password)
+    if (err) throw new Error(mnemonic)
+
+    // encrypt mnemonic using new method
+    const newEncryptedCipher = await encryptMnemonic(mnemonic, hashedPw)
+    await seedPhraseStore.set({ cipher: newEncryptedCipher })
+    // now run the migrations again
+    const migrationRunner = new MigrationRunner(migrations, false, {
+      password: hashedPw,
+    })
+
+    await migrationRunner.isComplete
+    if (migrationRunner.status.value === "error") throw new Error("Recovery failed")
+
+    window.localStorage.removeItem("mnemonicMigrationError")
+    return true
+  }
+
   private async resetWallet() {
     // delete all the accounts
     keyring.getAccounts().forEach((acc) => keyring.forgetAccount(acc.address))
@@ -247,6 +278,9 @@ export default class AppHandler extends ExtensionHandler {
 
       case "pri(app.checkPassword)":
         return await this.checkPassword(request as RequestTypes["pri(app.checkPassword)"])
+
+      case "pri(app.recoverMnemonic)":
+        return await this.recoverMnemonic(request as RequestTypes["pri(app.recoverMnemonic)"])
 
       case "pri(app.dashboardOpen)":
         return await this.dashboardOpen(request as RequestRoute)

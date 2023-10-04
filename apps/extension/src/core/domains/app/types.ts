@@ -68,6 +68,7 @@ export interface AppMessages {
   "pri(app.lock)": [null, boolean]
   "pri(app.changePassword)": [ChangePasswordRequest, boolean]
   "pri(app.checkPassword)": [CheckPasswordRequest, boolean]
+  "pri(app.recoverMnemonic)": [CheckPasswordRequest, boolean]
   "pri(app.dashboardOpen)": [RequestRoute, boolean]
   "pri(app.onboardOpen)": [null, boolean]
   "pri(app.popupOpen)": [null, boolean]

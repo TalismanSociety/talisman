@@ -20,6 +20,9 @@ export const api: MessageTypes = {
   changePassword: (currentPw, newPw, newPwConfirm) =>
     messageService.sendMessage("pri(app.changePassword)", { currentPw, newPw, newPwConfirm }),
   checkPassword: (password) => messageService.sendMessage("pri(app.checkPassword)", { password }),
+  recoverMnemonic: (password) =>
+    messageService.sendMessage("pri(app.recoverMnemonic)", { password }),
+
   authStatus: () => messageService.sendMessage("pri(app.authStatus)"),
   authStatusSubscribe: (cb) => messageService.subscribe("pri(app.authStatus.subscribe)", null, cb),
   dashboardOpen: (route) => messageService.sendMessage("pri(app.dashboardOpen)", { route }),
