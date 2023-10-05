@@ -261,52 +261,55 @@ const TokensList: FC<TokensListProps> = ({
     // wait until balances are loaded
     if (!accountBalances.count) return []
 
+    // the each property spreads the array under the hood, reuse the result to optimize performance for many accounts
+    const arAccountBalances = accountBalances.each
+
+    const tokensWithPosBalance = accountCompatibleTokens
+      .map((t) => ({
+        ...t,
+        balances: arAccountBalances.filter((b) => b.tokenId === t.id),
+      }))
+      .filter((t) => showEmptyBalances || t.balances.some((bal) => bal.transferable.planck > 0n))
+      .map((t) => ({
+        ...t,
+        balances: new Balances(t.balances),
+      }))
+
     // sort alphabetically by symbol + chain name
-    const results = sortBy(
-      sortBy(
-        accountCompatibleTokens
-          .map((t) => ({
-            ...t,
-            balances: new Balances(accountBalances.each.filter((b) => b.tokenId === t.id)),
-          }))
-          .filter(
-            (t) => showEmptyBalances || t.balances.each.some((bal) => bal.transferable.planck > 0n)
-          ),
-        "chainName"
-      ),
-      "token.symbol"
-    ).sort((a, b) => {
-      // transferable tokens first
-      const isTransferableA = isTransferableToken(a.token)
-      const isTransferableB = isTransferableToken(b.token)
-      if (isTransferableA && !isTransferableB) return -1
-      if (!isTransferableA && isTransferableB) return 1
+    const results = sortBy(sortBy(tokensWithPosBalance, "chainName"), "token.symbol").sort(
+      (a, b) => {
+        // transferable tokens first
+        const isTransferableA = isTransferableToken(a.token)
+        const isTransferableB = isTransferableToken(b.token)
+        if (isTransferableA && !isTransferableB) return -1
+        if (!isTransferableA && isTransferableB) return 1
 
-      // selected token first
-      if (a.id === selected) return -1
-      if (b.id === selected) return 1
+        // selected token first
+        if (a.id === selected) return -1
+        if (b.id === selected) return 1
 
-      // sort by fiat balance
-      const aFiat = a.balances.sum.fiat(currency).transferable
-      const bFiat = b.balances.sum.fiat(currency).transferable
-      if (aFiat > bFiat) return -1
-      if (aFiat < bFiat) return 1
+        // sort by fiat balance
+        const aFiat = a.balances.sum.fiat(currency).transferable
+        const bFiat = b.balances.sum.fiat(currency).transferable
+        if (aFiat > bFiat) return -1
+        if (aFiat < bFiat) return 1
 
-      // sort by "has a balance or not" (values don't matter)
-      const aHasBalance = !!a.balances.each.find((bal) => bal.transferable.planck > 0n)
-      const bHasBalance = !!b.balances.each.find((bal) => bal.transferable.planck > 0n)
-      if (aHasBalance && !bHasBalance) return -1
-      if (!aHasBalance && bHasBalance) return 1
+        // sort by "has a balance or not" (values don't matter)
+        const aHasBalance = !!a.balances.each.find((bal) => bal.transferable.planck > 0n)
+        const bHasBalance = !!b.balances.each.find((bal) => bal.transferable.planck > 0n)
+        if (aHasBalance && !bHasBalance) return -1
+        if (!aHasBalance && bHasBalance) return 1
 
-      // polkadot and kusama should appear first
-      if (a.token.id === "polkadot-substrate-native-dot") return -1
-      if (b.token.id === "polkadot-substrate-native-dot") return 1
-      if (a.token.id === "kusama-substrate-native-ksm") return -1
-      if (b.token.id === "kusama-substrate-native-ksm") return 1
+        // polkadot and kusama should appear first
+        if (a.token.id === "polkadot-substrate-native-dot") return -1
+        if (b.token.id === "polkadot-substrate-native-dot") return 1
+        if (a.token.id === "kusama-substrate-native-ksm") return -1
+        if (b.token.id === "kusama-substrate-native-ksm") return 1
 
-      // keep alphabetical sort
-      return 0
-    })
+        // keep alphabetical sort
+        return 0
+      }
+    )
 
     return results
   }, [accountBalances, accountCompatibleTokens, showEmptyBalances, selected, currency])
