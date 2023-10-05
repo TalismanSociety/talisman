@@ -8,9 +8,10 @@ import { Runtime } from "webextension-polyfill"
 import Extension from "./Extension"
 import { extensionStores, tabStores } from "./stores"
 import Tabs from "./Tabs"
+import { worker } from "./worker"
 
-const extension = new Extension(extensionStores)
-const tabs = new Tabs(tabStores)
+const extension = new Extension(extensionStores, worker)
+const tabs = new Tabs(tabStores, worker)
 
 // dev mode logs shouldn't log content for these messages
 const OBFUSCATE_LOG_MESSAGES: MessageTypes[] = [

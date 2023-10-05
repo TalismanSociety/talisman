@@ -5,6 +5,7 @@ import {
   getLocalStorage,
   setLocalStorage,
 } from "@core/handlers/stores"
+import { worker } from "@core/handlers/worker"
 /* eslint-disable no-console */
 import { AccountsStore } from "@polkadot/extension-base/stores"
 import keyring from "@polkadot/ui-keyring"
@@ -33,7 +34,7 @@ describe("App handler when password is not trimmed", () => {
   async function createExtension(): Promise<Extension> {
     await cryptoWaitReady()
 
-    return new Extension(extensionStores)
+    return new Extension(extensionStores, worker)
   }
 
   afterAll(async () => {
@@ -179,7 +180,7 @@ describe("App handler when password is trimmed", () => {
   async function createExtension(): Promise<Extension> {
     await cryptoWaitReady()
 
-    return new Extension(extensionStores)
+    return new Extension(extensionStores, worker)
   }
 
   afterAll(async () => {

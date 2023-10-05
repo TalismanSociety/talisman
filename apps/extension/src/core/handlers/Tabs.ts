@@ -65,13 +65,13 @@ export default class Tabs extends TabsHandler {
   #rpcState = new RpcState()
   readonly #routes: Record<string, TabsHandler> = {}
 
-  constructor(stores: TabStore) {
-    super(stores)
+  constructor(stores: TabStore, worker: Worker) {
+    super(stores, worker)
 
     // routing to sub-handlers
     this.#routes = {
-      eth: new EthTabsHandler(stores),
-      talisman: new TalismanHandler(stores),
+      eth: new EthTabsHandler(stores, worker),
+      talisman: new TalismanHandler(stores, worker),
     }
   }
 

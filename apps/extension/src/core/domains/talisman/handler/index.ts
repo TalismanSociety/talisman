@@ -12,9 +12,9 @@ export default class TalismanHandler extends TabsHandler {
   readonly #customTokensSubscriptions = new ObservableSubscriptions()
   readonly #customSubstrateChainsSubscriptions = new ObservableSubscriptions()
 
-  constructor(stores: TabStore) {
-    super(stores)
-    this.#subHandlers = [new TalismanRpcHandler(stores)]
+  constructor(stores: TabStore, worker: Worker) {
+    super(stores, worker)
+    this.#subHandlers = [new TalismanRpcHandler(stores, worker)]
   }
 
   public async handle<TMessageType extends MessageTypes>(

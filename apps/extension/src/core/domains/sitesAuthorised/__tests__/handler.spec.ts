@@ -3,6 +3,7 @@
 import { TALISMAN_WEB_APP_DOMAIN } from "@core/constants"
 import Extension from "@core/handlers/Extension"
 import { extensionStores } from "@core/handlers/stores"
+import { worker } from "@core/handlers/worker"
 /* eslint-disable no-console */
 import { AccountsStore } from "@polkadot/extension-base/stores"
 import keyring from "@polkadot/ui-keyring"
@@ -25,7 +26,7 @@ describe("Sites Authorised Handler", () => {
   async function createExtension(): Promise<Extension> {
     await cryptoWaitReady()
 
-    return new Extension(extensionStores)
+    return new Extension(extensionStores, worker)
   }
 
   afterAll(async () => {

@@ -14,13 +14,19 @@ interface THandler {
 
 abstract class BaseHandler<TStore extends Store> implements THandler {
   #stores: TStore
+  #worker: Worker
 
-  constructor(stores: TStore) {
+  constructor(stores: TStore, worker: Worker) {
     this.#stores = stores
+    this.#worker = worker
   }
 
   protected get stores() {
     return this.#stores
+  }
+
+  protected get worker() {
+    return this.#worker
   }
 
   abstract handle<TMessageType extends keyof RequestSignatures>(
