@@ -267,10 +267,10 @@ const TokensList: FC<TokensListProps> = ({
         accountCompatibleTokens
           .map((t) => ({
             ...t,
-            balances: accountBalances.find({ tokenId: t.id }),
+            balances: new Balances(accountBalances.each.filter((b) => b.tokenId === t.id)),
           }))
           .filter(
-            (t) => showEmptyBalances || t.balances.each.find((bal) => bal.transferable.planck > 0n)
+            (t) => showEmptyBalances || t.balances.each.some((bal) => bal.transferable.planck > 0n)
           ),
         "chainName"
       ),
@@ -293,8 +293,8 @@ const TokensList: FC<TokensListProps> = ({
       if (aFiat < bFiat) return 1
 
       // sort by "has a balance or not" (values don't matter)
-      const aHasBalance = !!a.balances.sorted.find((bal) => bal.transferable.planck > 0n)
-      const bHasBalance = !!b.balances.sorted.find((bal) => bal.transferable.planck > 0n)
+      const aHasBalance = !!a.balances.each.find((bal) => bal.transferable.planck > 0n)
+      const bHasBalance = !!b.balances.each.find((bal) => bal.transferable.planck > 0n)
       if (aHasBalance && !bHasBalance) return -1
       if (!aHasBalance && bHasBalance) return 1
 
