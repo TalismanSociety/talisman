@@ -43,26 +43,31 @@ Browser.runtime.onInstalled.addListener(async ({ reason, previousVersion }) => {
     const migrationRunner = new MigrationRunner(migrations, true)
     await migrationRunner.isComplete
   } else if (reason === "update") {
-    // Main migrations will occur on login to ensure that password is present for any migrations that require it
-    const sub = passwordStore.isLoggedIn.subscribe(async (isLoggedIn) => {
-      if (isLoggedIn) {
-        const password = passwordStore.getPassword()
-        if (!password) return
-        // instantiate the migrations runner with migrations to run
-        // this will run any migrations that have not already been run
-        const migrationRunner = new MigrationRunner(migrations, false, {
-          password,
-        })
-
-        await migrationRunner.isComplete
-        // only do this once
-        sub.unsubscribe()
-      }
-    })
     // run any legacy migrations
     if (previousVersion) {
       await migrateConnectAllSubstrate(previousVersion)
     }
+  }
+})
+
+// run migrations on first login after startup
+// Migrations occur on login to ensure that password is present for any migrations that require it
+const migrationSub = passwordStore.isLoggedIn.subscribe(async (isLoggedIn) => {
+  if (isLoggedIn) {
+    const password = passwordStore.getPassword()
+    if (!password) {
+      Sentry.captureMessage("Unabe to run migrations, no password present")
+      return
+    }
+    // instantiate the migrations runner with migrations to run
+    // this will run any migrations that have not already been run
+    const migrationRunner = new MigrationRunner(migrations, false, {
+      password,
+    })
+
+    await migrationRunner.isComplete
+    // only do this once
+    migrationSub.unsubscribe()
   }
 })
 
