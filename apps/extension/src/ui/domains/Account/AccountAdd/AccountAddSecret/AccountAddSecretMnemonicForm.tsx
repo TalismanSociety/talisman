@@ -247,6 +247,12 @@ export const AccountAddSecretMnemonicForm = () => {
     })
   }, [setValue, type])
 
+  useEffect(() => {
+    return () => {
+      setValue("mnemonic", "")
+    }
+  }, [setValue])
+
   return (
     <div className="flex w-full flex-col gap-8">
       <HeaderBlock
