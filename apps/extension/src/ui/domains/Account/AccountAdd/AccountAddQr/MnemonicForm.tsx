@@ -1,7 +1,7 @@
 import { yupResolver } from "@hookform/resolvers/yup"
 import { FadeIn } from "@talisman/components/FadeIn"
 import { api } from "@ui/api"
-import { useMemo } from "react"
+import { useEffect, useMemo } from "react"
 import { useForm } from "react-hook-form"
 import { Trans, useTranslation } from "react-i18next"
 import { Button, FormFieldTextarea } from "talisman-ui"
@@ -48,6 +48,7 @@ export const MnemonicForm = ({ onSubmit, onCancel }: FormProps) => {
     register,
     handleSubmit,
     watch,
+    setValue,
     formState: { errors, isValid, isSubmitting },
   } = useForm<FormData>({
     mode: "onChange",
@@ -56,6 +57,12 @@ export const MnemonicForm = ({ onSubmit, onCancel }: FormProps) => {
 
   const { mnemonic } = watch()
   const wordCount = useMemo(() => cleanupMnemonic(mnemonic).split(" ").length ?? 0, [mnemonic])
+
+  useEffect(() => {
+    return () => {
+      setValue("mnemonic", "")
+    }
+  }, [setValue])
 
   return (
     <FadeIn>
