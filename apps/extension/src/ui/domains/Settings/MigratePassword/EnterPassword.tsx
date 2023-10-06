@@ -1,6 +1,6 @@
 import { yupResolver } from "@hookform/resolvers/yup"
 import { api } from "@ui/api"
-import { useCallback } from "react"
+import { useCallback, useEffect } from "react"
 import { useForm } from "react-hook-form"
 import { Trans, useTranslation } from "react-i18next"
 import { ModalDialog } from "talisman-ui"
@@ -27,6 +27,7 @@ export const EnterPasswordForm = () => {
     register,
     handleSubmit,
     setError,
+    setValue,
     formState: { errors, isValid, isSubmitting },
   } = useForm<FormData>({
     mode: "onChange",
@@ -50,6 +51,12 @@ export const EnterPasswordForm = () => {
     },
     [setPassword, setMnemonic, setError, t, mnemonicId]
   )
+
+  useEffect(() => {
+    return () => {
+      setValue("password", "")
+    }
+  }, [setValue])
 
   return (
     <ModalDialog title="Security Upgrade">

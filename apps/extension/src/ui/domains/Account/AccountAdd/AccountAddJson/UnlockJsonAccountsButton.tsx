@@ -39,6 +39,7 @@ export const UnlockJsonAccountsButton: FC = () => {
     resetField,
     setFocus,
     setError,
+    setValue,
     clearErrors,
     formState: { errors, isValid, isSubmitting },
   } = useForm<FormData>({
@@ -98,6 +99,12 @@ export const UnlockJsonAccountsButton: FC = () => {
   useEffect(() => {
     if (isOpen) setTimeout(() => setFocus("password"), 50)
   }, [isOpen, setFocus])
+
+  useEffect(() => {
+    return () => {
+      setValue("password", "")
+    }
+  }, [setValue])
 
   if (!isMultiAccounts) return null
 
