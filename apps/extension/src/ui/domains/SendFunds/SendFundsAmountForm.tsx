@@ -239,10 +239,11 @@ const FiatInput = () => {
 
       const text = e.target.value ?? ""
       const num = Number(text)
+      const tokenRate = tokenRates?.[currency]
 
-      if (token && tokenRates?.usd && text.length && !isNaN(num)) {
+      if (token && tokenRate && text.length && !isNaN(num)) {
         const fiat = parseFloat(text)
-        const tokens = (fiat / tokenRates.usd).toFixed(Math.ceil(token.decimals / 3))
+        const tokens = (fiat / tokenRate).toFixed(Math.ceil(token.decimals / 3))
         set("amount", tokensToPlanck(tokens, token.decimals))
       } else remove("amount")
     }, 250),
