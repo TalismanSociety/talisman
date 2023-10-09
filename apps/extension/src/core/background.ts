@@ -53,7 +53,7 @@ Browser.runtime.onInstalled.addListener(async ({ reason, previousVersion }) => {
 // run migrations on first login after startup
 // Migrations occur on login to ensure that password is present for any migrations that require it
 const migrationSub = passwordStore.isLoggedIn.subscribe(async (isLoggedIn) => {
-  if (isLoggedIn) {
+  if (isLoggedIn === "TRUE") {
     const password = passwordStore.getPassword()
     if (!password) {
       Sentry.captureMessage("Unabe to run migrations, no password present")
