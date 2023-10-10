@@ -1,6 +1,6 @@
 import { ProviderType } from "@core/domains/sitesAuthorised/types"
 import { KnownRequestIdOnly } from "@core/libs/requests/types"
-import { isTalismanHostname } from "@core/page"
+import { isTalismanUrl } from "@core/page"
 import { AppPill } from "@talisman/components/AppPill"
 import { notify } from "@talisman/components/Notifications"
 import useSet from "@talisman/hooks/useSet"
@@ -61,7 +61,7 @@ export const Connect: FC<{ className?: string }> = ({ className }) => {
   const authRequest = useRequest(id)
   const { popupOpenEvent } = useAnalytics()
   const accountsReady = useAccountsSubscribe() // hack to prevent no accounts drawer flashing
-  const allAccounts = useAccounts(isTalismanHostname(authRequest?.url) ? "all" : "owned")
+  const allAccounts = useAccounts(isTalismanUrl(authRequest?.url) ? "all" : "owned")
   const { items: connected, toggle, set, clear } = useSet<string>()
   const ethereum = !!authRequest?.request?.ethereum
 

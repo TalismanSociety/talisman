@@ -2,7 +2,7 @@ import { AccountJsonAny } from "@core/domains/accounts/types"
 import { AuthorizedSite } from "@core/domains/sitesAuthorised/types"
 import { api } from "@ui/api"
 import { useCurrentSite } from "@ui/apps/popup/context/CurrentSiteContext"
-import useAccounts from "@ui/hooks/useAccounts"
+import { useAccountsForSite } from "@ui/hooks/useAccountsForSite"
 import { useAuthorisedSites } from "@ui/hooks/useAuthorisedSites"
 import { FC, Fragment, useCallback, useMemo } from "react"
 import { useTranslation } from "react-i18next"
@@ -12,8 +12,9 @@ import { ConnectAccountToggleButtonRow } from "./ConnectAccountToggleButtonRow"
 
 const SubAccounts: FC<{ site: AuthorizedSite | null }> = ({ site }) => {
   const { t } = useTranslation()
-  const accounts = useAccounts("owned")
-  const evmAccounts = useMemo(
+  const accounts = useAccountsForSite(site)
+
+  const activeAccounts = useMemo(
     () =>
       accounts.map(
         (acc) => [acc, site?.addresses?.includes(acc.address)] as [AccountJsonAny, boolean]
@@ -56,13 +57,12 @@ const SubAccounts: FC<{ site: AuthorizedSite | null }> = ({ site }) => {
         <button
           type="button"
           className="text-body-secondary hover:text-grey-300"
-          text-body-secondary
           onClick={handleConnectAllClick}
         >
           {t("Connect All")}
         </button>
       </div>
-      {evmAccounts.map(([acc, isConnected], idx) => (
+      {activeAccounts.map(([acc, isConnected], idx) => (
         <Fragment key={acc.address}>
           {!!idx && <AccountSeparator />}
           <ConnectAccountToggleButtonRow
@@ -79,8 +79,8 @@ const SubAccounts: FC<{ site: AuthorizedSite | null }> = ({ site }) => {
 const AccountSeparator = () => <div className="bg-grey-800 mx-6 h-0.5"></div>
 
 const EthAccounts: FC<{ site: AuthorizedSite | null }> = ({ site }) => {
-  const accounts = useAccounts("owned")
-  const evmAccounts = useMemo(
+  const accounts = useAccountsForSite(site)
+  const activeAccounts = useMemo(
     () =>
       accounts
         .filter((acc) => acc.type === "ethereum")
@@ -102,7 +102,7 @@ const EthAccounts: FC<{ site: AuthorizedSite | null }> = ({ site }) => {
 
   return (
     <>
-      {evmAccounts.map(([acc, isConnected], idx) => (
+      {activeAccounts.map(([acc, isConnected], idx) => (
         <Fragment key={acc.address}>
           {!!idx && <AccountSeparator />}
           <ConnectAccountToggleButtonRow
