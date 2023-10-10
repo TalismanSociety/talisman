@@ -158,7 +158,6 @@ export const Connect: FC<{ className?: string }> = ({ className }) => {
                 <button
                   type="button"
                   className="text-body-secondary hover:text-grey-300"
-                  text-body-secondary
                   onClick={handleConnectAllClick}
                 >
                   {t("Connect All")}
