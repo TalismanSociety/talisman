@@ -31,7 +31,7 @@ import { TabStore } from "@core/handlers/stores"
 import { talismanAnalytics } from "@core/libs/Analytics"
 import { TabsHandler } from "@core/libs/Handler"
 import { log } from "@core/log"
-import { isTalismanHostname } from "@core/page"
+import { isTalismanUrl } from "@core/page"
 import type { MessageTypes, RequestType, ResponseType, SubscriptionMessageTypes } from "@core/types"
 import type { Port } from "@core/types/base"
 import { urlToDomain } from "@core/util/urlToDomain"
@@ -107,7 +107,7 @@ export default class Tabs extends TabsHandler {
     return getPublicAccounts(
       Object.values(accountsObservable.subject.getValue()),
       filterAccountsByAddresses(site.addresses, anyType),
-      { includeWatchedAccounts: isTalismanHostname(site.url) }
+      { includeWatchedAccounts: isTalismanUrl(site.url) }
     )
   }
 
