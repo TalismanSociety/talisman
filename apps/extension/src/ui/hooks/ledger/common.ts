@@ -70,6 +70,11 @@ export const ledgerNetworks = [
     genesisHash: "0x70255b4d28de0fc4e1a193d7e175ad1ccef431598211c55538f1018651a0344e",
     label: "Aleph Zero",
   },
+  {
+    name: "pendulum",
+    genesisHash: "0x5d3c298622d5634ed019bf61ea4b71655030015bde9beb0d6a24743714462c86",
+    label: "Pendulum",
+  },
 ]
 
 export type LedgerStatus = "ready" | "warning" | "error" | "connecting" | "unknown"
