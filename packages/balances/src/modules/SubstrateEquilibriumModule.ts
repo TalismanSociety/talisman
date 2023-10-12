@@ -22,6 +22,7 @@ import { decodeAnyAddress } from "@talismn/util"
 
 import { DefaultBalanceModule, NewBalanceModule, NewTransferParamsType } from "../BalanceModule"
 import log from "../log"
+import { db as balancesDb } from "../TalismanBalancesDatabase"
 import { AddressesByToken, Amount, Balance, Balances, NewBalanceType } from "../types"
 import {
   GetOrCreateTypeRegistry,
@@ -110,15 +111,13 @@ export const SubEquilibriumModule: NewBalanceModule<
   return {
     ...DefaultBalanceModule("substrate-equilibrium"),
 
-    async fetchSubstrateChainMeta(chainId, moduleConfig) {
+    async fetchSubstrateChainMeta(chainId, moduleConfig, metadataRpc) {
       const isTestnet = (await chaindataProvider.getChain(chainId))?.isTestnet || false
+      if (metadataRpc === undefined) return { isTestnet, miniMetadata: null, metadataVersion: 0 }
 
-      // default to disabled
-      if (moduleConfig?.disable !== false)
-        return { isTestnet, miniMetadata: null, metadataVersion: 0 }
-
-      const metadataRpc = await chainConnector.send(chainId, "state_getMetadata", [])
       const metadataVersion = getMetadataVersion(metadataRpc)
+      // default to disabled
+      if (moduleConfig?.disable !== false) return { isTestnet, miniMetadata: null, metadataVersion }
 
       if (metadataVersion !== 14) return { isTestnet, miniMetadata: null, metadataVersion }
 
@@ -313,6 +312,12 @@ async function buildQueries(
 ): Promise<Array<RpcStateQuery<Balance[]>>> {
   const chains = await chaindataProvider.chains()
   const tokens = await chaindataProvider.tokens()
+  const miniMetadatas = new Map(
+    (await balancesDb.miniMetadatas.toArray()).map((miniMetadata) => [
+      miniMetadata.id,
+      miniMetadata,
+    ])
+  )
 
   // equilibrium returns all chain tokens for each address in the one query
   // so, we only need to make one query per address, rather than one query per token per address
@@ -342,7 +347,11 @@ async function buildQueries(
       return []
     }
 
-    const chainMeta = findChainMeta<typeof SubEquilibriumModule>("substrate-equilibrium", chain)
+    const chainMeta = findChainMeta<typeof SubEquilibriumModule>(
+      miniMetadatas,
+      "substrate-equilibrium",
+      chain
+    )
     const registry =
       chainMeta?.miniMetadata !== undefined &&
       chainMeta?.miniMetadata !== null &&

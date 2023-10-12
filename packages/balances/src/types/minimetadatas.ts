@@ -1,4 +1,25 @@
+import { u8aToHex } from "@polkadot/util"
 import { ChainId } from "@talismn/chaindata-provider"
+import { twox64 } from "@talismn/scale"
+
+/** For fast db access, you can calculate the primary key for a miniMetadata using this method */
+export const deriveMiniMetadataId = ({
+  source,
+  chainId,
+  specName,
+  specVersion,
+  balancesConfig,
+}: Pick<
+  MiniMetadata,
+  "source" | "chainId" | "specName" | "specVersion" | "balancesConfig"
+>): string =>
+  u8aToHex(
+    twox64.hash(
+      new TextEncoder().encode(`${source}${chainId}${specName}${specVersion}${balancesConfig}`)
+    ),
+    undefined,
+    false
+  )
 
 export type MiniMetadataStatus =
   /** Metadata is up to date */

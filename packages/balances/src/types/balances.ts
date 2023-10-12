@@ -3,7 +3,6 @@ import { TokenRateCurrency, TokenRates, TokenRatesList } from "@talismn/token-ra
 import { BigMath, NonFunctionProperties, isArrayOf, planckToTokens } from "@talismn/util"
 
 import log from "../log"
-import { filterMirrorTokens } from "../modules/util"
 import {
   AmountWithLabel,
   BalanceJson,
@@ -608,4 +607,9 @@ export class SumBalancesFormatter {
   fiat(currency: TokenRateCurrency) {
     return new FiatSumBalancesFormatter(this.#balances, currency)
   }
+}
+
+export const filterMirrorTokens = (balance: Balance, i: number, balances: Balance[]) => {
+  const mirrorOf = balance.token?.mirrorOf
+  return !mirrorOf || !balances.find((b) => b.tokenId === mirrorOf)
 }

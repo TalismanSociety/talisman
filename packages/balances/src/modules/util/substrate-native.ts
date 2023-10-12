@@ -1,15 +1,16 @@
 import type { Registry } from "@polkadot/types-codec/types"
 import { BN, bnToU8a, hexToU8a, stringToU8a, u8aConcat, u8aToHex } from "@polkadot/util"
 import { blake2AsU8a } from "@polkadot/util-crypto"
+import upperFirst from "lodash/upperFirst"
+import { Observable } from "rxjs"
+
 import {
   Balance,
   BalanceFormatter,
   LockedAmount,
   SubscriptionCallback,
   UnsubscribeFn,
-} from "@talismn/balances"
-import upperFirst from "lodash/upperFirst"
-import { Observable } from "rxjs"
+} from "../../types"
 
 /**
  * Converts a subscription function into an Observable

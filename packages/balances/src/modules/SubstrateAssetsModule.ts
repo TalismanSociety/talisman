@@ -21,6 +21,7 @@ import { decodeAnyAddress } from "@talismn/util"
 
 import { DefaultBalanceModule, NewBalanceModule, NewTransferParamsType } from "../BalanceModule"
 import log from "../log"
+import { db as balancesDb } from "../TalismanBalancesDatabase"
 import { AddressesByToken, Amount, Balance, Balances, NewBalanceType } from "../types"
 import {
   GetOrCreateTypeRegistry,
@@ -110,16 +111,13 @@ export const SubAssetsModule: NewBalanceModule<
   return {
     ...DefaultBalanceModule("substrate-assets"),
 
-    async fetchSubstrateChainMeta(chainId, moduleConfig) {
+    async fetchSubstrateChainMeta(chainId, moduleConfig, metadataRpc) {
       const isTestnet = (await chaindataProvider.getChain(chainId))?.isTestnet || false
+      if (metadataRpc === undefined) return { isTestnet, miniMetadata: null, metadataVersion: 0 }
 
-      // TODO: Pass metadataRpc into this function so that it only needs to be fetched once
-      // Once that's done, we can always return the metadataVersion here, even if we're not using it
-      if ((moduleConfig?.tokens ?? []).length < 1)
-        return { isTestnet, miniMetadata: null, metadataVersion: 0 }
-
-      const metadataRpc = await chainConnector.send(chainId, "state_getMetadata", [])
       const metadataVersion = getMetadataVersion(metadataRpc)
+      if ((moduleConfig?.tokens ?? []).length < 1)
+        return { isTestnet, miniMetadata: null, metadataVersion }
 
       if (metadataVersion !== 14) return { isTestnet, miniMetadata: null, metadataVersion }
 
@@ -337,6 +335,12 @@ async function buildQueries(
 ): Promise<Array<RpcStateQuery<Balance>>> {
   const chains = await chaindataProvider.chains()
   const tokens = await chaindataProvider.tokens()
+  const miniMetadatas = new Map(
+    (await balancesDb.miniMetadatas.toArray()).map((miniMetadata) => [
+      miniMetadata.id,
+      miniMetadata,
+    ])
+  )
 
   return Object.entries(addressesByToken).flatMap(([tokenId, addresses]) => {
     const token = tokens[tokenId]
@@ -362,7 +366,11 @@ async function buildQueries(
       return []
     }
 
-    const chainMeta = findChainMeta<typeof SubAssetsModule>("substrate-assets", chain)
+    const chainMeta = findChainMeta<typeof SubAssetsModule>(
+      miniMetadatas,
+      "substrate-assets",
+      chain
+    )
     const registry =
       chainMeta?.miniMetadata !== undefined &&
       chainMeta?.miniMetadata !== null &&

@@ -1,7 +1,7 @@
 import { Metadata, StorageKey, TypeRegistry, decorateStorage } from "@polkadot/types"
 import type { Registry } from "@polkadot/types-codec/types"
 import { ChainConnector } from "@talismn/chain-connector"
-import { BalancesMetadata, Chain, ChainId } from "@talismn/chaindata-provider"
+import { Chain, ChainId } from "@talismn/chaindata-provider"
 import { hasOwnProperty } from "@talismn/util"
 import groupBy from "lodash/groupBy"
 
@@ -19,11 +19,12 @@ import {
 import log from "../../log"
 import {
   AddressesByToken,
-  Balance,
   BalanceJson,
   Balances,
+  MiniMetadata,
   SubscriptionCallback,
   UnsubscribeFn,
+  deriveMiniMetadataId,
 } from "../../types"
 
 /**
@@ -146,18 +147,36 @@ export type InferTransferParams<T extends AnyNewBalanceModule> =
  * associated with the given balanceModule for the given chain.
  */
 export const findChainMeta = <TBalanceModule extends AnyNewBalanceModule>(
+  miniMetadatas: Map<string, MiniMetadata>,
   moduleType: InferModuleType<TBalanceModule>,
   chain?: Chain
 ): InferChainMeta<TBalanceModule> | undefined => {
-  type FoundMeta = BalancesMetadata & { metadata?: InferChainMeta<TBalanceModule> }
-  return (chain?.balancesMetadata ?? []).find(
-    (meta): meta is FoundMeta => meta.moduleType === moduleType
-  )?.metadata
-}
+  if (!chain) return undefined
+  if (!chain.specName) return undefined
+  if (!chain.specVersion) return undefined
 
-export const filterMirrorTokens = (balance: Balance, i: number, balances: Balance[]) => {
-  const mirrorOf = balance.token?.mirrorOf
-  return !mirrorOf || !balances.find((b) => b.tokenId === mirrorOf)
+  // TODO: This is spaghetti to import this here, it should be injected into each balance module or something.
+  const metadataId = deriveMiniMetadataId({
+    source: moduleType,
+    chainId: chain.id,
+    specName: chain.specName,
+    specVersion: chain.specVersion,
+    balancesConfig: JSON.stringify(
+      chain.balancesConfig.find((config) => config.moduleType === moduleType)?.moduleConfig ?? {}
+    ),
+  })
+
+  // TODO: Fix this (needs to fetch miniMetadata without being async)
+  const miniMetadata = miniMetadatas.get(metadataId)
+  const chainMeta: InferChainMeta<TBalanceModule> | undefined = miniMetadata
+    ? {
+        metadata: miniMetadata.data,
+        metadataVersion: miniMetadata.version,
+        ...JSON.parse(miniMetadata.extra),
+      }
+    : undefined
+
+  return chainMeta
 }
 
 export const getValidSubscriptionIds = () => {

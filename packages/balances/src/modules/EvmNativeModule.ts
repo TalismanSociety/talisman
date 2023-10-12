@@ -1,4 +1,5 @@
 import {
+  BalancesConfigTokenParams,
   EvmChainId,
   EvmNetworkId,
   NewTokenType,
@@ -39,10 +40,9 @@ export type EvmNativeChainMeta = {
 }
 
 export type EvmNativeModuleConfig = {
-  symbol?: string
+  symbol?: number
   decimals?: number
-  coingeckoId?: string
-}
+} & BalancesConfigTokenParams
 
 export type EvmNativeBalance = NewBalanceType<
   ModuleType,
@@ -87,10 +87,8 @@ export const EvmNativeModule: NewBalanceModule<
     async fetchEvmChainTokens(chainId, chainMeta, moduleConfig) {
       const { isTestnet } = chainMeta
 
-      const symbol = moduleConfig?.symbol || "ETH"
+      const symbol = moduleConfig?.symbol ?? "ETH"
       const decimals = typeof moduleConfig?.decimals === "number" ? moduleConfig.decimals : 18
-      const coingeckoId =
-        typeof moduleConfig?.coingeckoId === "string" ? moduleConfig.coingeckoId : undefined
 
       const id = evmNativeTokenId(chainId, symbol)
       const nativeToken: EvmNativeToken = {
@@ -100,9 +98,13 @@ export const EvmNativeModule: NewBalanceModule<
         symbol,
         decimals,
         logo: githubTokenLogoUrl(id),
-        coingeckoId,
         evmNetwork: { id: chainId },
       }
+
+      if (moduleConfig?.symbol) nativeToken.symbol = moduleConfig?.symbol
+      if (moduleConfig?.coingeckoId) nativeToken.coingeckoId = moduleConfig?.coingeckoId
+      if (moduleConfig?.dcentName) nativeToken.dcentName = moduleConfig?.dcentName
+      if (moduleConfig?.mirrorOf) nativeToken.mirrorOf = moduleConfig?.mirrorOf
 
       return { [nativeToken.id]: nativeToken }
     },

@@ -24,6 +24,7 @@ import { combineLatest, map, scan, share, switchAll } from "rxjs"
 
 import { DefaultBalanceModule, NewBalanceModule, NewTransferParamsType } from "../BalanceModule"
 import log from "../log"
+import { db as balancesDb } from "../TalismanBalancesDatabase"
 import {
   AddressesByToken,
   Amount,
@@ -119,7 +120,6 @@ export type SubNativeChainMeta = {
   metadataVersion: number
 }
 
-// TODO: Include common token properties e.g. dcentName, coingeckoId
 export type SubNativeModuleConfig = {
   disable?: boolean
 } & BalancesConfigTokenParams
@@ -169,10 +169,10 @@ export const SubNativeModule: NewBalanceModule<
   return {
     ...DefaultBalanceModule("substrate-native"),
 
-    async fetchSubstrateChainMeta(chainId, moduleConfig) {
+    async fetchSubstrateChainMeta(chainId, moduleConfig, metadataRpc) {
       const isTestnet = (await chaindataProvider.getChain(chainId))?.isTestnet || false
 
-      if (moduleConfig?.disable === true)
+      if (moduleConfig?.disable === true || metadataRpc === undefined)
         return {
           isTestnet,
           symbol: "",
@@ -184,10 +184,7 @@ export const SubNativeModule: NewBalanceModule<
           metadataVersion: 0,
         }
 
-      const [metadataRpc, chainProperties] = await Promise.all([
-        chainConnector.send(chainId, "state_getMetadata", []),
-        chainConnector.send(chainId, "system_properties", []),
-      ])
+      const chainProperties = await chainConnector.send(chainId, "system_properties", [])
 
       const metadataVersion = getMetadataVersion(metadataRpc)
 
@@ -426,6 +423,12 @@ async function buildQueries(
 ): Promise<Array<RpcStateQuery<Balance>>> {
   const chains = await chaindataProvider.chains()
   const tokens = await chaindataProvider.tokens()
+  const miniMetadatas = new Map(
+    (await balancesDb.miniMetadatas.toArray()).map((miniMetadata) => [
+      miniMetadata.id,
+      miniMetadata,
+    ])
+  )
 
   return Object.entries(addressesByToken).flatMap(([tokenId, addresses]) => {
     const token = tokens[tokenId]
@@ -451,7 +454,11 @@ async function buildQueries(
       return []
     }
 
-    const chainMeta = findChainMeta<typeof SubNativeModule>("substrate-native", chain)
+    const chainMeta = findChainMeta<typeof SubNativeModule>(
+      miniMetadatas,
+      "substrate-native",
+      chain
+    )
     const hasMetadataV14 =
       chainMeta?.miniMetadata !== undefined &&
       chainMeta?.miniMetadata !== null &&
@@ -625,12 +632,19 @@ export async function subscribeNompoolStaking(
 ) {
   const chains = await chaindataProvider.chains()
   const tokens = await chaindataProvider.tokens()
+  const miniMetadatas = new Map(
+    (await balancesDb.miniMetadatas.toArray()).map((miniMetadata) => [
+      miniMetadata.id,
+      miniMetadata,
+    ])
+  )
   const nomPoolTokenIds = Object.entries(tokens)
     .filter(([, token]) => {
       // ignore non-native tokens
       if (token.type !== "substrate-native") return false
       // ignore tokens on chains with no nompools pallet
       const chainMeta = findChainMeta<typeof SubNativeModule>(
+        miniMetadatas,
         "substrate-native",
         chains[token.chain.id]
       )
@@ -670,7 +684,11 @@ export async function subscribeNompoolStaking(
       log.warn(`Chain ${chainId} for token ${tokenId} not found`)
       continue
     }
-    const chainMeta = findChainMeta<typeof SubNativeModule>("substrate-native", chain)
+    const chainMeta = findChainMeta<typeof SubNativeModule>(
+      miniMetadatas,
+      "substrate-native",
+      chain
+    )
     const typeRegistry =
       chainMeta?.miniMetadata !== undefined &&
       chainMeta?.miniMetadata !== null &&
@@ -971,12 +989,19 @@ async function subscribeCrowdloans(
 ) {
   const chains = await chaindataProvider.chains()
   const tokens = await chaindataProvider.tokens()
+  const miniMetadatas = new Map(
+    (await balancesDb.miniMetadatas.toArray()).map((miniMetadata) => [
+      miniMetadata.id,
+      miniMetadata,
+    ])
+  )
   const crowdloanTokenIds = Object.entries(tokens)
     .filter(([, token]) => {
       // ignore non-native tokens
       if (token.type !== "substrate-native") return
       // ignore tokens on chains with no crowdloans pallet
       const chainMeta = findChainMeta<typeof SubNativeModule>(
+        miniMetadatas,
         "substrate-native",
         chains[token.chain.id]
       )
@@ -1016,7 +1041,11 @@ async function subscribeCrowdloans(
       log.warn(`Chain ${chainId} for token ${tokenId} not found`)
       continue
     }
-    const chainMeta = findChainMeta<typeof SubNativeModule>("substrate-native", chain)
+    const chainMeta = findChainMeta<typeof SubNativeModule>(
+      miniMetadatas,
+      "substrate-native",
+      chain
+    )
     const typeRegistry =
       chainMeta?.miniMetadata !== undefined &&
       chainMeta?.miniMetadata !== null &&

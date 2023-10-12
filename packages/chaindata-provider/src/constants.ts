@@ -22,19 +22,27 @@ export const chaindataEvmNetworkByIdUrl = (evmNetworkId: string) =>
 // GitHub Repo Constants
 //
 
+export const githubApi = "https://api.github.com"
+
+export const githubChaindataOrg = "TalismanSociety"
+export const githubChaindataRepo = "chaindata"
 export const githubChaindataBranch = "main"
-export const githubChaindataBaseUrl = `https://raw.githubusercontent.com/TalismanSociety/chaindata/${githubChaindataBranch}`
+
+export const githubChaindataBaseUrl = `https://raw.githubusercontent.com/${githubChaindataOrg}/${githubChaindataRepo}/${githubChaindataBranch}`
 
 export const githubChainsUrl = `${githubChaindataBaseUrl}/chaindata.json`
 export const githubTestnetChainsUrl = `${githubChaindataBaseUrl}/testnets-chaindata.json`
 export const githubEvmNetworksUrl = `${githubChaindataBaseUrl}/evm-networks.json`
 
+export const githubChaindataChainsAssetsDir = "assets/chains"
+export const githubChaindataTokensAssetsDir = "assets/tokens"
+
 export const githubChainLogoUrl = (chainId: ChainId) =>
-  `${githubChaindataBaseUrl}/assets/chains/${chainId}.svg`
+  `${githubChaindataBaseUrl}/${githubChaindataChainsAssetsDir}/${chainId}.svg`
 export const githubEvmNetworkLogoUrl = (networkId: EvmNetworkId) =>
-  `${githubChaindataBaseUrl}/assets/chains/${networkId}.svg`
+  `${githubChaindataBaseUrl}/${githubChaindataChainsAssetsDir}/${networkId}.svg`
 export const githubTokenLogoUrl = (tokenId: TokenId) =>
-  `${githubChaindataBaseUrl}/assets/tokens/${tokenId}.svg`
+  `${githubChaindataBaseUrl}/${githubChaindataTokensAssetsDir}/${tokenId}.svg`
 
 export const githubUnknownChainLogoUrl = githubChainLogoUrl("unknown")
 export const githubUnknownTokenLogoUrl = githubTokenLogoUrl("unknown")

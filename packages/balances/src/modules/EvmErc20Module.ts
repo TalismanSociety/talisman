@@ -1,5 +1,6 @@
 import { assert } from "@polkadot/util"
 import {
+  BalancesConfigTokenParams,
   EvmChainId,
   EvmNetworkId,
   NewTokenType,
@@ -56,12 +57,13 @@ export type EvmErc20ChainMeta = {
 }
 
 export type EvmErc20ModuleConfig = {
-  tokens?: Array<{
-    symbol?: string
-    decimals?: number
-    coingeckoId?: string
-    contractAddress?: string
-  }>
+  tokens?: Array<
+    {
+      symbol?: string
+      decimals?: number
+      contractAddress?: string
+    } & BalancesConfigTokenParams
+  >
 }
 
 export type EvmErc20Balance = NewBalanceType<
@@ -110,7 +112,7 @@ export const EvmErc20Module: NewBalanceModule<
       const { isTestnet } = chainMeta
 
       const tokens: Record<string, EvmErc20Token> = {}
-      for (const tokenConfig of moduleConfig?.tokens || []) {
+      for (const tokenConfig of moduleConfig?.tokens ?? []) {
         const contractAddress = tokenConfig?.contractAddress
         if (!contractAddress) continue
 
@@ -131,15 +133,13 @@ export const EvmErc20Module: NewBalanceModule<
           }
         })()
 
-        const symbol = tokenConfig?.symbol || contractSymbol || "ETH"
+        const symbol = tokenConfig?.symbol ?? contractSymbol ?? "ETH"
         const decimals =
           typeof tokenConfig?.decimals === "number"
             ? tokenConfig.decimals
             : typeof contractDecimals === "number"
             ? contractDecimals
             : 18
-        const coingeckoId =
-          typeof tokenConfig?.coingeckoId === "string" ? tokenConfig.coingeckoId : undefined
 
         if (!symbol || typeof decimals !== "number") continue
 
@@ -151,10 +151,14 @@ export const EvmErc20Module: NewBalanceModule<
           symbol,
           decimals,
           logo: githubTokenLogoUrl(id),
-          coingeckoId,
           contractAddress,
           evmNetwork: { id: chainId },
         }
+
+        if (tokenConfig?.symbol) token.symbol = tokenConfig?.symbol
+        if (tokenConfig?.coingeckoId) token.coingeckoId = tokenConfig?.coingeckoId
+        if (tokenConfig?.dcentName) token.dcentName = tokenConfig?.dcentName
+        if (tokenConfig?.mirrorOf) token.mirrorOf = tokenConfig?.mirrorOf
 
         tokens[token.id] = token
       }

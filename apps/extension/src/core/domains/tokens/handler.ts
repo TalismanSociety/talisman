@@ -2,6 +2,8 @@ import { getErc20TokenId } from "@core/domains/ethereum/helpers"
 import { CustomErc20Token, CustomErc20TokenCreate } from "@core/domains/tokens/types"
 import { talismanAnalytics } from "@core/libs/Analytics"
 import { ExtensionHandler } from "@core/libs/Handler"
+import { chainConnector } from "@core/rpcs/chain-connector"
+import { chainConnectorEvm } from "@core/rpcs/chain-connector-evm"
 import { chaindataProvider } from "@core/rpcs/chaindata"
 import { Port, RequestIdOnly } from "@core/types/base"
 import { assert } from "@polkadot/util"
@@ -10,6 +12,8 @@ import { githubUnknownTokenLogoUrl } from "@talismn/chaindata-provider"
 import { MessageTypes, RequestTypes, ResponseType } from "core/types"
 
 import { balanceModules } from "../balances/store"
+
+const chainConnectors = { substrate: chainConnector, evm: chainConnectorEvm }
 
 export default class TokensHandler extends ExtensionHandler {
   public async handle<TMessageType extends MessageTypes>(
@@ -28,7 +32,9 @@ export default class TokensHandler extends ExtensionHandler {
           .hydrateTokens()
           .then(() => chaindataProvider.chainIds())
           .then((chainIds) =>
-            new MiniMetadataUpdater(chaindataProvider, balanceModules).update(chainIds)
+            new MiniMetadataUpdater(chainConnectors, chaindataProvider, balanceModules).update(
+              chainIds
+            )
           )
 
       // --------------------------------------------------------------------

@@ -1,15 +1,15 @@
-import { u8aToHex } from "@polkadot/util"
 import { PromisePool } from "@supercharge/promise-pool"
 import { Chain, ChainId } from "@talismn/chaindata-provider"
 import { ChaindataProviderExtension } from "@talismn/chaindata-provider-extension"
-import { twox64 } from "@talismn/scale"
+import { availableTokenLogoFilenames } from "@talismn/chaindata-provider-extension/src/net"
 import { liveQuery } from "dexie"
 import { from } from "rxjs"
 
+import { ChainConnectors } from "./BalanceModule"
 import log from "./log"
 import { AnyBalanceModule } from "./modules/util"
 import { db as balancesDb } from "./TalismanBalancesDatabase"
-import { MiniMetadata, MiniMetadataStatus } from "./types"
+import { MiniMetadataStatus, deriveMiniMetadataId } from "./types"
 
 /**
  * A substrate dapp needs access to a set of types when it wants to communicate with a blockchain node.
@@ -37,35 +37,18 @@ import { MiniMetadata, MiniMetadataStatus } from "./types"
  * trimmed-down metadatas, which we'll refer to as `MiniMetadatas`.
  */
 export class MiniMetadataUpdater {
+  #chainConnectors: ChainConnectors
   #chaindataProvider: ChaindataProviderExtension
   #balanceModules: Array<AnyBalanceModule>
 
   constructor(
+    chainConnectors: ChainConnectors,
     chaindataProvider: ChaindataProviderExtension,
     balanceModules: Array<AnyBalanceModule>
   ) {
+    this.#chainConnectors = chainConnectors
     this.#chaindataProvider = chaindataProvider
     this.#balanceModules = balanceModules
-  }
-
-  /** For fast db access, you can calculate the primary key for a miniMetadata using this method */
-  deriveId({
-    source,
-    chainId,
-    specName,
-    specVersion,
-    balancesConfig,
-  }: Pick<
-    MiniMetadata,
-    "source" | "chainId" | "specName" | "specVersion" | "balancesConfig"
-  >): string {
-    return u8aToHex(
-      twox64.hash(
-        new TextEncoder().encode(`${source}${chainId}${specName}${specVersion}${balancesConfig}`)
-      ),
-      undefined,
-      false
-    )
   }
 
   // TODO: Also update evmNetworks
@@ -91,6 +74,8 @@ export class MiniMetadataUpdater {
       .filter(([, status]) => status !== "good")
       .map(([chainId]) => chainId)
 
+    const availableTokenLogos = await availableTokenLogoFilenames()
+
     const concurrency = 4
     ;(
       await PromisePool.withConcurrency(concurrency)
@@ -104,36 +89,33 @@ export class MiniMetadataUpdater {
           if (specName === null) return
           if (specVersion === null) return
 
-          for (const mod of this.#balanceModules.filter(({ type }) =>
-            // TODO: port the other modules too
-            [
-              "substrate-native",
-              "substrate-assets",
-              "substrate-tokens",
-              "substrate-equilibrium",
-              "substrate-psp22",
-            ].includes(type)
-          )) {
+          const metadataRpc = await this.#chainConnectors.substrate?.send(
+            chainId,
+            "state_getMetadata",
+            []
+          )
+
+          for (const mod of this.#balanceModules) {
             const balancesConfig = chain.balancesConfig.find(
               ({ moduleType }) => moduleType === mod.type
             )
             const moduleConfig = balancesConfig?.moduleConfig ?? {}
 
-            // TODO: Pass metadataRpc into this function so that it only needs to be fetched once
-            const metadata = await mod.fetchSubstrateChainMeta(chainId, moduleConfig)
+            const metadata = await mod.fetchSubstrateChainMeta(chainId, moduleConfig, metadataRpc)
             const tokens = await mod.fetchSubstrateChainTokens(chainId, metadata, moduleConfig)
 
             // update tokens in chaindata
             await this.#chaindataProvider.updateChainTokens(
               chainId,
               mod.type,
-              Object.values(tokens)
+              Object.values(tokens),
+              availableTokenLogos
             )
 
             // update miniMetadatas
-            const { miniMetadata: data, metadataVersion: version, ...extra } = metadata
+            const { miniMetadata: data, metadataVersion: version, ...extra } = metadata ?? {}
             await balancesDb.miniMetadatas.put({
-              id: this.deriveId({
+              id: deriveMiniMetadataId({
                 source: mod.type,
                 chainId,
                 specName,
@@ -148,7 +130,7 @@ export class MiniMetadataUpdater {
               // TODO: Standardise return value from `fetchSubstrateChainMeta`
               version,
               data,
-              extra,
+              extra: JSON.stringify(extra),
             })
           }
         })
@@ -166,29 +148,17 @@ export class MiniMetadataUpdater {
         return [
           [
             chainId,
-            this.#balanceModules
-              // TODO: port the other modules too
-              .filter(({ type }) =>
-                [
-                  "substrate-native",
-                  "substrate-assets",
-                  "substrate-tokens",
-                  "substrate-equilibrium",
-                  "substrate-psp22",
-                ].includes(type)
-              )
-              .map(({ type: source }) =>
-                this.deriveId({
-                  source,
-                  chainId: chainId,
-                  specName: specName,
-                  specVersion: specVersion,
-                  balancesConfig: JSON.stringify(
-                    balancesConfig.find(({ moduleType }) => moduleType === source)?.moduleConfig ??
-                      {}
-                  ),
-                })
-              ),
+            this.#balanceModules.map(({ type: source }) =>
+              deriveMiniMetadataId({
+                source,
+                chainId: chainId,
+                specName: specName,
+                specVersion: specVersion,
+                balancesConfig: JSON.stringify(
+                  balancesConfig.find(({ moduleType }) => moduleType === source)?.moduleConfig ?? {}
+                ),
+              })
+            ),
           ],
         ]
       })

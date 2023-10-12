@@ -109,7 +109,8 @@ interface BalanceModuleSubstrate<
   /** Pre-processes any substrate chain metadata required by this module ahead of time */
   fetchSubstrateChainMeta(
     chainId: ChainId,
-    moduleConfig?: TModuleConfig
+    moduleConfig?: TModuleConfig,
+    metadataRpc?: `0x${string}`
   ): Promise<TChainMeta | null>
 
   /** Detects which tokens are available on a given substrate chain */

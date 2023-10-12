@@ -11,6 +11,8 @@ import {
   Token,
   TokenId,
   TokenList,
+  githubTokenLogoUrl,
+  githubUnknownTokenLogoUrl,
 } from "@talismn/chaindata-provider"
 import { PromiseExtended, Transaction, TransactionMode, liveQuery } from "dexie"
 import { Observable, from } from "rxjs"
@@ -473,13 +475,29 @@ export class ChaindataProviderExtension implements ChaindataProvider {
     }
   }
 
-  async updateChainTokens(chainId: ChainId, source: string, newTokens: Token[]) {
+  async updateChainTokens(
+    chainId: ChainId,
+    source: string,
+    newTokens: Token[],
+    availableTokenLogoFilenames: string[]
+  ) {
     // TODO: Test logos and fall back to unknown token logo url
     // (Maybe put the test into each balance module itself)
 
     const existingChainTokens = await this.#db.tokens
       .filter((token) => token.chain?.id === chainId && token.type === source)
       .toArray()
+
+    newTokens.forEach((token) => {
+      const symbolLogo = token.symbol.toLowerCase().replace(/ /g, "_")
+      if (availableTokenLogoFilenames.includes(`${symbolLogo}.svg`)) {
+        return (token.logo = githubTokenLogoUrl(symbolLogo))
+      }
+
+      // TODO: Use coingeckoId logo if exists
+
+      return (token.logo = githubUnknownTokenLogoUrl)
+    })
 
     const notCustomTokenIds = existingChainTokens
       .filter((token) => !("isCustom" in token && token.isCustom))
