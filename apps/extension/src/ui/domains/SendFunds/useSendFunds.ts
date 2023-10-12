@@ -401,14 +401,6 @@ const useSendFundsProvider = () => {
       if (token && balance && transfer && balance.transferable.planck < transfer.planck)
         return { isValid: false, error: t("Insufficient {{symbol}}", { symbol: token.symbol }) }
 
-      const txError = evmTransaction?.error || subTransaction?.error
-      if (txError)
-        return {
-          isValid: false,
-          error: t("Failed to validate transaction"),
-          errorDetails: (txError as Error)?.message ?? txError?.toString?.() ?? t("Unknown error"),
-        }
-
       if (
         !from ||
         !to ||
@@ -452,6 +444,14 @@ const useSendFundsProvider = () => {
           }),
         }
       }
+
+      const txError = evmTransaction?.error || subTransaction?.error
+      if (txError)
+        return {
+          isValid: false,
+          error: t("Failed to validate transaction"),
+          errorDetails: (txError as Error)?.message ?? txError?.toString?.() ?? t("Unknown error"),
+        }
 
       return { isValid: true, error: undefined }
     } catch (err) {
