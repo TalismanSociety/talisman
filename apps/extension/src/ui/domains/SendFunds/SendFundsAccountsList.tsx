@@ -26,11 +26,13 @@ export type SendFundsAccount = {
 
 type AccountRowProps = {
   account: SendFundsAccount
+  genesisHash?: string | null
   selected: boolean
   showBalances?: boolean
   token?: Token
   onClick?: () => void
   disabled?: boolean
+  noFormat?: boolean
 }
 
 const AccountTokenBalance = ({ token, balance }: { token?: Token; balance?: Balance }) => {
@@ -63,13 +65,23 @@ const AccountTokenBalance = ({ token, balance }: { token?: Token; balance?: Bala
 
 const AccountRow: FC<AccountRowProps> = ({
   account,
+  genesisHash,
+  noFormat,
   selected,
   onClick,
   showBalances,
   token,
   disabled,
 }) => {
-  const formattedAddress = useFormattedAddress(account?.address, account?.genesisHash)
+  const formattedAddress = useFormattedAddress(
+    account?.address,
+    genesisHash ?? account?.genesisHash
+  )
+
+  const displayAddress = useMemo(
+    () => (noFormat ? account?.address : formattedAddress),
+    [noFormat, account?.address, formattedAddress]
+  )
 
   return (
     <button
@@ -93,12 +105,12 @@ const AccountRow: FC<AccountRowProps> = ({
           <div className="flex items-center gap-2">
             <div className="truncate">
               {account.name ?? (
-                <Address address={formattedAddress} startCharCount={6} endCharCount={6} noTooltip />
+                <Address address={displayAddress} startCharCount={6} endCharCount={6} noTooltip />
               )}
             </div>
             <AccountTypeIcon origin={account.origin} className="text-primary" />
           </div>
-          <Address className="text-body-secondary text-xs" address={formattedAddress} />
+          <Address className="text-body-secondary text-xs" address={displayAddress} />
         </div>
         {selected && <CheckCircleIcon className="ml-3 inline shrink-0" />}
       </div>
@@ -109,6 +121,8 @@ const AccountRow: FC<AccountRowProps> = ({
 
 type SendFundsAccountsListProps = {
   accounts: SendFundsAccount[]
+  genesisHash?: string | null
+  noFormat?: boolean
   selected?: string | null
   onSelect?: (address: string) => void
   header?: ReactNode
@@ -121,6 +135,8 @@ type SendFundsAccountsListProps = {
 export const SendFundsAccountsList: FC<SendFundsAccountsListProps> = ({
   selected,
   accounts,
+  noFormat,
+  genesisHash,
   onSelect,
   header,
   allowZeroBalance,
@@ -173,6 +189,8 @@ export const SendFundsAccountsList: FC<SendFundsAccountsListProps> = ({
           selected={account.address === selected}
           key={account.address}
           account={account}
+          genesisHash={genesisHash}
+          noFormat={noFormat}
           onClick={handleAccountClick(account.address)}
           showBalances={showBalances}
           token={token}
