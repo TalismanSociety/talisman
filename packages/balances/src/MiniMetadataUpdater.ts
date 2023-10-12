@@ -1,7 +1,9 @@
 import { PromisePool } from "@supercharge/promise-pool"
 import { Chain, ChainId, EvmNetworkId } from "@talismn/chaindata-provider"
-import { ChaindataProviderExtension } from "@talismn/chaindata-provider-extension"
-import { availableTokenLogoFilenames } from "@talismn/chaindata-provider-extension/src/net"
+import {
+  ChaindataProviderExtension,
+  availableTokenLogoFilenames,
+} from "@talismn/chaindata-provider-extension"
 import { liveQuery } from "dexie"
 import { from } from "rxjs"
 

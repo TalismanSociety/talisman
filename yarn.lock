@@ -7321,6 +7321,7 @@ __metadata:
     "@talismn/chain-connector": "workspace:*"
     "@talismn/chain-connector-evm": "workspace:*"
     "@talismn/chaindata-provider": "workspace:*"
+    "@talismn/chaindata-provider-extension": "workspace:*"
     "@talismn/eslint-config": "workspace:*"
     "@talismn/scale": "workspace:*"
     "@talismn/subshape-fork": ^0.0.1
