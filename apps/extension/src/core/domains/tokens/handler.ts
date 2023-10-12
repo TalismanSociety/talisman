@@ -30,11 +30,14 @@ export default class TokensHandler extends ExtensionHandler {
       case "pri(tokens.subscribe)":
         return chaindataProvider
           .hydrateTokens()
-          .then(() => chaindataProvider.chainIds())
-          .then((chainIds) =>
+          .then(() =>
+            Promise.all([chaindataProvider.chainIds(), chaindataProvider.evmNetworkIds()])
+          )
+          .then(([chainIds, evmNetworkIds]) =>
             // TODO: refresh balance subscriptions when this is complete
             new MiniMetadataUpdater(chainConnectors, chaindataProvider, balanceModules).update(
-              chainIds
+              chainIds,
+              evmNetworkIds
             )
           )
 

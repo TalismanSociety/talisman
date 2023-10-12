@@ -509,6 +509,42 @@ export class ChaindataProviderExtension implements ChaindataProvider {
     await this.#db.tokens.bulkDelete(notCustomTokenIds)
     await this.#db.tokens.bulkPut(newTokens.filter((token) => !customTokenIds.includes(token.id)))
   }
+
+  async updateEvmNetworkTokens(
+    evmNetworkId: EvmNetworkId,
+    source: string,
+    newTokens: Token[],
+    availableTokenLogoFilenames: string[]
+  ) {
+    // TODO: Test logos and fall back to unknown token logo url
+    // (Maybe put the test into each balance module itself)
+
+    const existingEvmNetworkTokens = await this.#db.tokens
+      .filter((token) => token.evmNetwork?.id === evmNetworkId && token.type === source)
+      .toArray()
+
+    newTokens.forEach((token) => {
+      const symbolLogo = token.symbol.toLowerCase().replace(/ /g, "_")
+      if (availableTokenLogoFilenames.includes(`${symbolLogo}.svg`)) {
+        return (token.logo = githubTokenLogoUrl(symbolLogo))
+      }
+
+      // TODO: Use coingeckoId logo if exists
+
+      return (token.logo = githubUnknownTokenLogoUrl)
+    })
+
+    const notCustomTokenIds = existingEvmNetworkTokens
+      .filter((token) => !("isCustom" in token && token.isCustom))
+      .map((token) => token.id)
+    const customTokenIds = existingEvmNetworkTokens
+      .filter((token) => "isCustom" in token && token.isCustom)
+      .map((token) => token.id)
+
+    await this.#db.tokens.bulkDelete(notCustomTokenIds)
+    await this.#db.tokens.bulkPut(newTokens.filter((token) => !customTokenIds.includes(token.id)))
+  }
+
   /**
    * Hydrate the db with the latest tokens from subsquid.
    * Hydration is skipped when the last successful hydration was less than minimumHydrationInterval ms ago.

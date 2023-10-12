@@ -1,5 +1,5 @@
 import { PromisePool } from "@supercharge/promise-pool"
-import { Chain, ChainId } from "@talismn/chaindata-provider"
+import { Chain, ChainId, EvmNetworkId } from "@talismn/chaindata-provider"
 import { ChaindataProviderExtension } from "@talismn/chaindata-provider-extension"
 import { availableTokenLogoFilenames } from "@talismn/chaindata-provider-extension/src/net"
 import { liveQuery } from "dexie"
@@ -53,11 +53,18 @@ export class MiniMetadataUpdater {
 
   // TODO: Also update evmNetworks
   // and their tokens
-  async update(chainIds: ChainId[]) {
+  async update(chainIds: ChainId[], evmNetworkIds: EvmNetworkId[]) {
     const chains = new Map(
       (await this.#chaindataProvider.chainsArray()).map((chain) => [chain.id, chain])
     )
     const filteredChains = chainIds.flatMap((chainId) => chains.get(chainId) ?? [])
+
+    const evmNetworks = new Map(
+      (await this.#chaindataProvider.evmNetworksArray()).map((evmNetwork) => [
+        evmNetwork.id,
+        evmNetwork,
+      ])
+    )
 
     const ids = await balancesDb.miniMetadatas.orderBy("id").primaryKeys()
     const { wantedIdsByChain, statusesByChain } = await this.statuses(filteredChains)
@@ -136,6 +143,34 @@ export class MiniMetadataUpdater {
           }
         })
     ).errors.forEach((error) => log.error("Error updating chain metadata", error))
+
+    const evmNetworkConcurrency = 10
+    await PromisePool.withConcurrency(evmNetworkConcurrency)
+      // TODO: Only update networks which need it
+      .for(evmNetworkIds)
+      .process(async (evmNetworkId) => {
+        log.info(`Updating tokens for evmNetwork ${evmNetworkId}`)
+        const evmNetwork = evmNetworks.get(evmNetworkId)
+        if (!evmNetwork) return
+
+        for (const mod of this.#balanceModules) {
+          const balancesConfig = evmNetwork.balancesConfig.find(
+            ({ moduleType }) => moduleType === mod.type
+          )
+          const moduleConfig = balancesConfig?.moduleConfig ?? {}
+
+          const chainMeta = await mod.fetchEvmChainMeta(evmNetworkId, moduleConfig)
+          const tokens = await mod.fetchEvmChainTokens(evmNetworkId, chainMeta, moduleConfig)
+
+          // update tokens in chaindata
+          await this.#chaindataProvider.updateEvmNetworkTokens(
+            evmNetworkId,
+            mod.type,
+            Object.values(tokens),
+            availableTokenLogos
+          )
+        }
+      })
   }
 
   async statuses(chains: Array<Pick<Chain, "id" | "specName" | "specVersion" | "balancesConfig">>) {
