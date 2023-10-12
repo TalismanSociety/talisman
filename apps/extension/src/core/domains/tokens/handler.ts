@@ -32,6 +32,7 @@ export default class TokensHandler extends ExtensionHandler {
           .hydrateTokens()
           .then(() => chaindataProvider.chainIds())
           .then((chainIds) =>
+            // TODO: refresh balance subscriptions when this is complete
             new MiniMetadataUpdater(chainConnectors, chaindataProvider, balanceModules).update(
               chainIds
             )

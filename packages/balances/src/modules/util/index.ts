@@ -170,7 +170,7 @@ export const findChainMeta = <TBalanceModule extends AnyNewBalanceModule>(
   const miniMetadata = miniMetadatas.get(metadataId)
   const chainMeta: InferChainMeta<TBalanceModule> | undefined = miniMetadata
     ? {
-        metadata: miniMetadata.data,
+        miniMetadata: miniMetadata.data,
         metadataVersion: miniMetadata.version,
         ...JSON.parse(miniMetadata.extra),
       }
