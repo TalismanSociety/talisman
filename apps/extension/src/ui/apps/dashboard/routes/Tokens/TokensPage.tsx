@@ -21,11 +21,15 @@ import { ListButton, PillButton } from "talisman-ui"
 
 import { DashboardLayout } from "../../layout/DashboardLayout"
 
-const CustomPill = () => (
-  <div className="bg-primary/10 text-primary inline-block rounded p-4 text-xs font-light">
-    Custom
-  </div>
-)
+const CustomPill = () => {
+  const { t } = useTranslation("admin")
+
+  return (
+    <div className="bg-primary/10 text-primary inline-block rounded p-4 text-xs font-light">
+      {t("Custom")}
+    </div>
+  )
+}
 
 const TokenRow = ({ token }: { token: Erc20Token }) => {
   const navigate = useNavigate()
@@ -88,7 +92,7 @@ export const TokensPage = () => {
       .map((network) => ({
         network,
         tokens: sortBy(
-          erc20Tokens.filter((t) => t.evmNetwork?.id === network.id),
+          erc20Tokens.filter((t) => t.evmNetwork?.id === network.id && t.isDefault),
           "symbol"
         ),
       }))

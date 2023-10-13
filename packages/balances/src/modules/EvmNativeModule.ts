@@ -95,9 +95,10 @@ export const EvmNativeModule: NewBalanceModule<
         id,
         type: "evm-native",
         isTestnet,
+        isDefault: true,
         symbol,
         decimals,
-        logo: githubTokenLogoUrl(id),
+        logo: moduleConfig?.logo || githubTokenLogoUrl(id),
         evmNetwork: { id: chainId },
       }
 

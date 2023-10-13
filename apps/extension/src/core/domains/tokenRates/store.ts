@@ -68,7 +68,11 @@ export class TokenRatesStore {
   async hydrateStore(): Promise<boolean> {
     try {
       const tokens = await chaindataProvider.tokens()
-      await this.updateTokenRates(tokens)
+      // TODO change filter to enabled tokens
+      const enabledTokens = Object.fromEntries(
+        Object.entries(tokens).filter(([, token]) => token.isDefault !== false)
+      )
+      await this.updateTokenRates(enabledTokens)
 
       return true
     } catch (error) {

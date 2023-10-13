@@ -365,9 +365,12 @@ export class EthHandler extends ExtensionHandler {
         }
       : null
 
+    const existingNetwork = await chaindataProvider.getEvmNetwork(networkId)
+
     const newNetwork: CustomEvmNetwork = {
       id: networkId,
       isTestnet: false,
+      isDefault: existingNetwork?.isDefault ?? false,
       sortIndex: null,
       name: network.chainName,
       themeColor: "#505050",
@@ -421,6 +424,7 @@ export class EthHandler extends ExtensionHandler {
         // EvmNetwork
         id: network.id,
         isTestnet: network.isTestnet,
+        isDefault: existingNetwork?.isDefault ?? false,
         sortIndex: existingNetwork?.sortIndex ?? null,
         name: network.name,
         themeColor: "#505050",

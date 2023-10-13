@@ -182,9 +182,10 @@ export const SubEquilibriumModule: NewBalanceModule<
             id,
             type: "substrate-equilibrium",
             isTestnet,
+            isDefault: tokenConfig?.isDefault ?? true,
             symbol,
             decimals,
-            logo: githubTokenLogoUrl(id),
+            logo: tokenConfig?.logo || githubTokenLogoUrl(id),
             // TODO: Fetch the ED
             existentialDeposit: "0",
             assetId,

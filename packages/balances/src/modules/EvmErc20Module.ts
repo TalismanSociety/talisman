@@ -113,25 +113,38 @@ export const EvmErc20Module: NewBalanceModule<
 
       const tokens: Record<string, EvmErc20Token> = {}
       for (const tokenConfig of moduleConfig?.tokens ?? []) {
-        const contractAddress = tokenConfig?.contractAddress
-        if (!contractAddress) continue
+        const { contractAddress, symbol: contractSymbol, decimals: contractDecimals } = tokenConfig
+        // TODO : in chaindata's build, filter out all tokens that don't have any of these
+        if (!contractAddress || !contractSymbol || contractDecimals === undefined) {
+          console.warn("ignoring token on chain %s", chainId, tokenConfig)
+          continue
+        }
 
-        const [contractSymbol, contractDecimals] = await (async () => {
-          const evmNetwork = await chaindataProvider.getEvmNetwork(chainId)
-          if (!evmNetwork) return []
+        // const [contractSymbol, contractDecimals] = await (async () => {
+        //   if (tokenConfig.symbol && tokenConfig.decimals !== undefined)
+        //     return [tokenConfig.symbol, tokenConfig.decimals]
 
-          const provider = await chainConnector.getProviderForEvmNetwork(evmNetwork)
-          if (!provider) return []
+        //   const evmNetwork = await chaindataProvider.getEvmNetwork(chainId)
+        //   if (!evmNetwork) return []
 
-          const contract = new ethers.Contract(contractAddress, erc20Abi, provider)
+        //   const provider = await chainConnector.getProviderForEvmNetwork(evmNetwork)
+        //   if (!provider) return []
 
-          try {
-            return [await contract.symbol(), await contract.decimals()]
-          } catch (error) {
-            log.error(`Failed to retrieve contract symbol and decimals`, String(error))
-            return []
-          }
-        })()
+        //   console.log(
+        //     "fetching symbol & decimals for network %s contract %s",
+        //     chainId,
+        //     contractAddress
+        //   )
+
+        //   const contract = new ethers.Contract(contractAddress, erc20Abi, provider)
+
+        //   try {
+        //     return [await contract.symbol(), await contract.decimals()]
+        //   } catch (error) {
+        //     log.error(`Failed to retrieve contract symbol and decimals`, String(error))
+        //     return []
+        //   }
+        // })()
 
         const symbol = tokenConfig?.symbol ?? contractSymbol ?? "ETH"
         const decimals =
@@ -148,9 +161,10 @@ export const EvmErc20Module: NewBalanceModule<
           id,
           type: "evm-erc20",
           isTestnet,
+          isDefault: tokenConfig.isDefault ?? true,
           symbol,
           decimals,
-          logo: githubTokenLogoUrl(id),
+          logo: tokenConfig?.logo || githubTokenLogoUrl(id),
           contractAddress,
           evmNetwork: { id: chainId },
         }
@@ -181,6 +195,7 @@ export const EvmErc20Module: NewBalanceModule<
         zeroBalanceSubscriptionIntervalCounter = (zeroBalanceSubscriptionIntervalCounter + 1) % 5
 
         try {
+          console.log("fetching erc20 balances", addressesByToken)
           const tokens = await chaindataProvider.tokens()
 
           // regroup tokens by network

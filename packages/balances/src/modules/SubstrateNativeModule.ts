@@ -275,13 +275,15 @@ export const SubNativeModule: NewBalanceModule<
       const { isTestnet, symbol, decimals, existentialDeposit } = chainMeta
 
       const id = subNativeTokenId(chainId, symbol)
+      console.log("updating logo for %s", id, moduleConfig?.logo)
       const nativeToken: SubNativeToken = {
         id,
         type: "substrate-native",
         isTestnet,
+        isDefault: moduleConfig?.isDefault ?? true,
         symbol,
         decimals,
-        logo: githubTokenLogoUrl(id),
+        logo: moduleConfig?.logo || githubTokenLogoUrl(id),
         existentialDeposit: existentialDeposit ?? "0",
         chain: { id: chainId },
       }

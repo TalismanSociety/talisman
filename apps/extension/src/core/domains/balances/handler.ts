@@ -107,7 +107,7 @@ export class BalancesHandler extends ExtensionHandler {
             .map(([tokenId, addresses]) => [tokens[tokenId], addresses] as const),
         ]
           // filter out tokens which don't exist
-          .filter(([token]) => token !== undefined)
+          .filter(([token]) => token !== undefined && token.isDefault !== false) // TODO filter based on if token is enabled
 
           // group each `{ [token.id]: addresses }` by token.type
           .reduce((byModule, [token, addresses]) => {

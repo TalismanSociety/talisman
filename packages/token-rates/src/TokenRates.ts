@@ -32,6 +32,8 @@ export async function fetchTokenRates(tokens: Record<TokenId, IToken>) {
     // ignore testnet tokens
     .filter(({ isTestnet }) => !isTestnet)
 
+    // TODO enabled tokens only
+    .filter(({ isDefault }) => isDefault !== false)
     // ignore tokens which don't have a coingeckoId
     .filter(hasCoingeckoId)
 

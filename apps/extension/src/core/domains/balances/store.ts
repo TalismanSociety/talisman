@@ -222,12 +222,14 @@ export class BalanceStore {
 
     // update tokens
     this.#tokens.next(
-      Object.values(tokens).map(({ id, type, chain, evmNetwork }) => ({
-        id,
-        type,
-        chain,
-        evmNetwork,
-      }))
+      Object.values(tokens)
+        .filter((t) => t.isDefault !== false) // TODO filter based on enabled state
+        .map(({ id, type, chain, evmNetwork }) => ({
+          id,
+          type,
+          chain,
+          evmNetwork,
+        }))
     )
 
     // Delete stored balances for chains and networks which no longer exist

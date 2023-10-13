@@ -80,6 +80,7 @@ export class MiniMetadataUpdater {
       await balancesDb.miniMetadatas.bulkDelete(unwantedIds)
     }
 
+    // TODO fix this to detect changes in a token config (ex: set a coingecko id or a logo in chaindata)
     const needUpdates = Array.from(statusesByChain.entries())
       .filter(([, status]) => status !== "good")
       .map(([chainId]) => chainId)
@@ -163,6 +164,7 @@ export class MiniMetadataUpdater {
 
           const chainMeta = await mod.fetchEvmChainMeta(evmNetworkId, moduleConfig)
           const tokens = await mod.fetchEvmChainTokens(evmNetworkId, chainMeta, moduleConfig)
+          // console.log("update tokens %s", evmNetworkId, { moduleConfig, tokens })
 
           // update tokens in chaindata
           await this.#chaindataProvider.updateEvmNetworkTokens(

@@ -44,6 +44,7 @@ export type IToken = {
   id: TokenId
   type: string
   isTestnet: boolean
+  isDefault?: boolean
   symbol: string
   decimals: number
   logo: string
@@ -72,7 +73,7 @@ export type IToken = {
  */
 export type BalancesConfigTokenParams = Pick<
   Partial<IToken>,
-  "symbol" | "coingeckoId" | "dcentName" | "mirrorOf"
+  "symbol" | "coingeckoId" | "dcentName" | "mirrorOf" | "logo" | "isDefault"
 >
 
 /** Used by plugins to help define their custom `TokenType` */

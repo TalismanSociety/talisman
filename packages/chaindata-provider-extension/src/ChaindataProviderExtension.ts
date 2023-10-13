@@ -459,10 +459,11 @@ export class ChaindataProviderExtension implements ChaindataProvider {
       await this.#db.transaction("rw", this.#db.evmNetworks, async () => {
         await this.#db.evmNetworks.filter((network) => !("isCustom" in network)).delete()
         // add all except ones matching custom existing ones (user may customize built-in networks)
+
         const customNetworks = await this.#db.evmNetworks.toArray()
-        const newNetworks = evmNetworks.filter((network) =>
-          customNetworks.every((existing) => existing.id !== network.id)
-        )
+        const newNetworks = evmNetworks
+          .filter((n) => n.isDefault) // TODO remove
+          .filter((network) => customNetworks.every((existing) => existing.id !== network.id))
         await this.#db.evmNetworks.bulkPut(newNetworks)
       })
       this.#lastHydratedEvmNetworksAt = now
@@ -481,6 +482,7 @@ export class ChaindataProviderExtension implements ChaindataProvider {
     newTokens: Token[],
     availableTokenLogoFilenames: string[]
   ) {
+    console.log("UPDATE CHAIN TOKENS", chainId, newTokens)
     // TODO: Test logos and fall back to unknown token logo url
     // (Maybe put the test into each balance module itself)
 
@@ -489,6 +491,8 @@ export class ChaindataProviderExtension implements ChaindataProvider {
       .toArray()
 
     newTokens.forEach((token) => {
+      if (token.logo) return
+
       const symbolLogo = token.symbol.toLowerCase().replace(/ /g, "_")
       if (availableTokenLogoFilenames.includes(`${symbolLogo}.svg`)) {
         return (token.logo = githubTokenLogoUrl(symbolLogo))
@@ -524,6 +528,8 @@ export class ChaindataProviderExtension implements ChaindataProvider {
       .toArray()
 
     newTokens.forEach((token) => {
+      if (token.logo) return
+
       const symbolLogo = token.symbol.toLowerCase().replace(/ /g, "_")
       if (availableTokenLogoFilenames.includes(`${symbolLogo}.svg`)) {
         return (token.logo = githubTokenLogoUrl(symbolLogo))
