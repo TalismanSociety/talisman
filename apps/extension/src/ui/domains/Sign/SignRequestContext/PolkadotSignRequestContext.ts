@@ -67,7 +67,7 @@ const usePolkadotSigningRequestProvider = ({
     cancelSignFn: api.cancelSignRequest,
   })
 
-  const { chains } = useChains(true)
+  const { chains } = useChains("all")
   const chain = useMemo(() => {
     if (!signingRequest) return
     const { genesisHash } = (signingRequest?.request?.payload ?? {}) as SignerPayloadJSON

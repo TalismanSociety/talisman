@@ -88,7 +88,7 @@ export const SubSignXcmTransferAssets = () => {
   const { data: extrinsic } = useExtrinsic(payload)
   const { tokensMap } = useTokens(true)
   const tokenRates = useTokenRatesMap()
-  const { chains } = useChains(true)
+  const { chains } = useChains("all")
 
   const props = useMemo(() => {
     if (!chain) throw new Error("Unknown chain")

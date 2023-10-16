@@ -111,6 +111,8 @@ export const EvmNativeModule: NewBalanceModule<
     },
 
     async subscribeBalances(addressesByToken, callback) {
+      // TODO remove
+      log.debug("subscribeBalances", "evm-native", addressesByToken)
       let subscriptionActive = true
       const subscriptionInterval = 6_000 // 6_000ms == 6 seconds
       const cache = new Map<EvmNetworkId, BalanceJsonList>()
@@ -167,6 +169,8 @@ export const EvmNativeModule: NewBalanceModule<
     },
 
     async fetchBalances(addressesByToken) {
+      // TODO remove
+      log.debug("subscribeBalances", "evm-native", addressesByToken)
       const evmNetworks = await chaindataProvider.evmNetworks()
       const tokens = await chaindataProvider.tokens()
 

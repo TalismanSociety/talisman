@@ -3,7 +3,7 @@ import { CustomEvmNetwork, EvmNetwork, EvmNetworkId } from "@core/domains/ethere
 import { useEvmNetworks } from "./useEvmNetworks"
 
 export const useEvmNetwork = (id?: EvmNetworkId): EvmNetwork | CustomEvmNetwork | undefined => {
-  const { evmNetworksMap } = useEvmNetworks(true)
+  const { evmNetworksMap } = useEvmNetworks("all")
 
   return id ? evmNetworksMap[id] : undefined
 }

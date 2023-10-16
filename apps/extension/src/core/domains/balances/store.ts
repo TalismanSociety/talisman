@@ -29,6 +29,9 @@ import isEqual from "lodash/isEqual"
 import pick from "lodash/pick"
 import { ReplaySubject, Subject, combineLatest, firstValueFrom } from "rxjs"
 
+import { enabledChainsStore, isChainEnabled } from "../chains/store.enabledChains"
+import { enabledEvmNetworksStore, isEvmNetworkEnabled } from "../ethereum/store.enabledEvmNetworks"
+
 const chainConnectors = { substrate: chainConnector, evm: chainConnectorEvm }
 export const balanceModules = defaultBalanceModules.map((mod) =>
   mod({ chainConnectors, chaindataProvider })
@@ -87,9 +90,13 @@ export class BalanceStore {
       // evmNetworks
       liveQuery(async () => await chaindataProvider.evmNetworks()),
       // tokens
-      liveQuery(async () => await chaindataProvider.tokens())
+      liveQuery(async () => await chaindataProvider.tokens()),
+      // enabled state of evm networks
+      enabledEvmNetworksStore.observable,
+      // enabled state of substrate chains
+      enabledChainsStore.observable
     ).subscribe({
-      next: ([settings, chains, evmNetworks, tokens]) => {
+      next: ([settings, chains, evmNetworks, tokens, enabledEvmNetworks, enabledChains]) => {
         const erc20TokensByNetwork = Object.values(tokens).reduce((byNetwork, token) => {
           if (token.type !== "evm-erc20") return byNetwork
 
@@ -106,12 +113,14 @@ export class BalanceStore {
         this.setChains(
           // substrate chains
           Object.values(chains ?? {})
+            .filter((chain) => isChainEnabled(chain, enabledChains))
             .filter((chain) => (settings.useTestnets ? true : !chain.isTestnet))
             .map((chain) => pick(chain, ["id", "genesisHash", "account", "rpcs"])),
 
           // evm chains
           Object.values(evmNetworks ?? {})
             .filter((evmNetwork) => (settings.useTestnets ? true : !evmNetwork.isTestnet))
+            .filter((evmNetwork) => isEvmNetworkEnabled(evmNetwork, enabledEvmNetworks))
             .map((evmNetwork) => ({
               ...pick(evmNetwork, ["id", "nativeToken", "substrateChain", "rpcs"]),
               erc20Tokens: erc20TokensByNetwork[evmNetwork.id],

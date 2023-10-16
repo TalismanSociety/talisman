@@ -1,22 +1,32 @@
+import {
+  enabledEvmNetworksStore,
+  isEvmNetworkEnabled,
+} from "@core/domains/ethereum/store.enabledEvmNetworks"
 import { EvmNetwork } from "@core/domains/ethereum/types"
+import { isCustomEvmNetwork } from "@talismn/chaindata-provider"
 import { ChevronRightIcon } from "@talismn/icons"
 import { sendAnalyticsEvent } from "@ui/api/analytics"
 import { ChainLogo } from "@ui/domains/Asset/ChainLogo"
+import { useEvmNetworkEnabledState } from "@ui/hooks/useEvmNetworkEnabledState"
 import { useEvmNetworks } from "@ui/hooks/useEvmNetworks"
 import { useSetting } from "@ui/hooks/useSettings"
-import { isCustomEvmNetwork } from "@ui/util/isCustomEvmNetwork"
 import sortBy from "lodash/sortBy"
-import { useCallback, useMemo, useRef } from "react"
+import { ChangeEventHandler, useCallback, useMemo, useRef } from "react"
 import { useNavigate } from "react-router-dom"
 import { useIntersection } from "react-use"
-import { ListButton } from "talisman-ui"
+import { ListButton, Toggle } from "talisman-ui"
 
 import { ANALYTICS_PAGE } from "./analytics"
 import { CustomPill, TestnetPill } from "./Pills"
 
 export const EvmNetworksList = ({ search }: { search?: string }) => {
   const [useTestnets] = useSetting("useTestnets")
-  const { evmNetworks } = useEvmNetworks(useTestnets)
+  const { evmNetworks: allEvmNetworks } = useEvmNetworks("all")
+  const evmNetworks = useMemo(
+    () => (useTestnets ? allEvmNetworks : allEvmNetworks.filter((n) => !n.isTestnet)),
+    [allEvmNetworks, useTestnets]
+  )
+  const networksEnabledState = useEvmNetworkEnabledState()
 
   const [filteredEvmNetworks, exactMatches] = useMemo(() => {
     if (search === undefined || search.length < 1) return [evmNetworks, [] as string[]] as const
@@ -50,18 +60,39 @@ export const EvmNetworksList = ({ search }: { search?: string }) => {
       return 0
     })
   }, [exactMatches, filteredEvmNetworks])
+
+  const handleNetworkEnabledChanged = useCallback(
+    (network: EvmNetwork) => (enable: boolean) => {
+      enabledEvmNetworksStore.setEnabled(network.id, enable)
+    },
+    []
+  )
+
   if (!sortedNetworks) return null
 
   return (
     <div className="flex flex-col gap-4">
       {sortedNetworks.map((network) => (
-        <EvmNetworksListItem key={network.id} network={network} />
+        <EvmNetworksListItem
+          key={network.id}
+          network={network}
+          isEnabled={isEvmNetworkEnabled(network, networksEnabledState)}
+          onEnableChanged={handleNetworkEnabledChanged(network)}
+        />
       ))}
     </div>
   )
 }
 
-const EvmNetworksListItem = ({ network }: { network: EvmNetwork }) => {
+const EvmNetworksListItem = ({
+  network,
+  isEnabled,
+  onEnableChanged,
+}: {
+  network: EvmNetwork
+  isEnabled: boolean
+  onEnableChanged: (enable: boolean) => void
+}) => {
   const navigate = useNavigate()
   const handleNetworkClick = useCallback(() => {
     sendAnalyticsEvent({
@@ -82,19 +113,34 @@ const EvmNetworksListItem = ({ network }: { network: EvmNetwork }) => {
     rootMargin: "1000px",
   })
 
+  const handleEnableChanged: ChangeEventHandler<HTMLInputElement> = useCallback(
+    (e) => {
+      onEnableChanged(e.target.checked)
+    },
+    [onEnableChanged]
+  )
+
   const buttonContent = intersection?.isIntersecting ? (
     <>
       <ChainLogo className="rounded-full text-xl" id={network.id} />
-      <div className="text-body grow">{network.name}</div>
+      <div className="text-body">{network.name}</div>
       {network.isTestnet && <TestnetPill />}
       {isCustomEvmNetwork(network) && <CustomPill />}
+      <div className="min-w-[4.4rem] shrink-0 grow"></div>
       <ChevronRightIcon className="text-lg transition-none" />
     </>
   ) : null
 
   return (
-    <ListButton ref={refButton} key={network.id} role="button" onClick={handleNetworkClick}>
-      {buttonContent}
-    </ListButton>
+    <div className="relative h-28">
+      <ListButton ref={refButton} key={network.id} role="button" onClick={handleNetworkClick}>
+        {buttonContent}
+      </ListButton>
+      <Toggle
+        className="absolute right-24 top-8"
+        checked={isEnabled}
+        onChange={handleEnableChanged}
+      />
+    </div>
   )
 }

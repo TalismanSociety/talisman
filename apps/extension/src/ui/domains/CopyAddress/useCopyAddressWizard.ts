@@ -168,7 +168,7 @@ export const useCopyAddressWizardProvider = ({ inputs }: { inputs: CopyAddressWi
   }, [])
 
   const accounts = useAccounts()
-  const { chainsMap } = useChains(true)
+  const { chainsMap } = useChains("enabledWithTestnets")
   const { tokensMap } = useTokens(true)
 
   const setTokenId = useCallback(

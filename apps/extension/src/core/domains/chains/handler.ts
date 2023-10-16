@@ -122,6 +122,7 @@ export class ChainsHandler extends ExtensionHandler {
       const newChain: CustomChain = {
         id: chain.id,
         isTestnet: chain.isTestnet,
+        isDefault: false,
         sortIndex: existingChain?.sortIndex ?? null,
         genesisHash: chain.genesisHash,
         prefix: existingChain?.prefix ?? 42, // TODO: query this

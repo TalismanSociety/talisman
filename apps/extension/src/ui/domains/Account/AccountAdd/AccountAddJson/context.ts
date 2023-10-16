@@ -69,8 +69,8 @@ const createPairFromJson = ({ encoded, encoding, address, meta }: KeyringPair$Js
 
 const useAccountsBalances = (pairs: KeyringPair[] | undefined) => {
   const addresses = useMemo(() => pairs?.map((p) => encodeAnyAddress(p.address)) ?? [], [pairs])
-  const { chains } = useChains(false)
-  const { evmNetworks } = useEvmNetworks(false)
+  const { chains } = useChains("enabledWithoutTestnets")
+  const { evmNetworks } = useEvmNetworks("enabledWithoutTestnets")
 
   const balanceParams = useMemo(() => {
     if (!addresses.length) return {}
@@ -201,7 +201,7 @@ const useJsonAccountImportProvider = () => {
     [existingAccounts, file]
   )
 
-  const { chains } = useChains(true)
+  const { chains } = useChains("all")
   const accountBalances = useAccountsBalances(pairs)
 
   const accounts = useMemo<JsonImportAccount[] | undefined>(() => {

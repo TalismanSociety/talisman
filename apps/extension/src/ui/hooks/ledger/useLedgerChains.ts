@@ -4,7 +4,7 @@ import { useMemo } from "react"
 import { ledgerNetworks } from "./common"
 
 export const useLedgerChains = () => {
-  const { chains } = useChains(true)
+  const { chains } = useChains("all")
 
   const ledgerChains = useMemo(
     () =>

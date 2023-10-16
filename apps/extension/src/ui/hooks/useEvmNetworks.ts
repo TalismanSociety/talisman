@@ -1,4 +1,6 @@
 import {
+  allEvmNetworksMapState,
+  allEvmNetworksState,
   evmNetworksWithTestnetsMapState,
   evmNetworksWithTestnetsState,
   evmNetworksWithoutTestnetsMapState,
@@ -7,23 +9,42 @@ import {
 import { useMemo } from "react"
 import { useRecoilValue } from "recoil"
 
-export const useEvmNetworks = (withTestnets: boolean) => {
+// use only for networks list that is used to enable/disable networks
+export const useAllEvmNetworks = () => useRecoilValue(allEvmNetworksState)
+
+type EvmNetworksFilter = "all" | "enabledWithTestnets" | "enabledWithoutTestnets"
+
+export const useEvmNetworks = (filter: EvmNetworksFilter) => {
+  const allEvmNetworks = useRecoilValue(allEvmNetworksState)
   const evmNetworksWithTestnets = useRecoilValue(evmNetworksWithTestnetsState)
   const evmNetworksWithoutTestnets = useRecoilValue(evmNetworksWithoutTestnetsState)
+  const allEvmNetworksMap = useRecoilValue(allEvmNetworksMapState)
   const evmNetworksWithTestnetsMap = useRecoilValue(evmNetworksWithTestnetsMapState)
   const evmNetworksWithoutTestnetsMap = useRecoilValue(evmNetworksWithoutTestnetsMapState)
 
-  return useMemo(
-    () => ({
-      evmNetworks: withTestnets ? evmNetworksWithTestnets : evmNetworksWithoutTestnets,
-      evmNetworksMap: withTestnets ? evmNetworksWithTestnetsMap : evmNetworksWithoutTestnetsMap,
-    }),
-    [
-      evmNetworksWithTestnets,
-      evmNetworksWithTestnetsMap,
-      evmNetworksWithoutTestnets,
-      evmNetworksWithoutTestnetsMap,
-      withTestnets,
-    ]
-  )
+  return useMemo(() => {
+    switch (filter) {
+      case "all":
+        return { evmNetworks: allEvmNetworks, evmNetworksMap: allEvmNetworksMap }
+      case "enabledWithTestnets":
+        return {
+          evmNetworks: evmNetworksWithTestnets,
+          evmNetworksMap: evmNetworksWithTestnetsMap,
+        }
+      case "enabledWithoutTestnets":
+      default:
+        return {
+          evmNetworks: evmNetworksWithoutTestnets,
+          evmNetworksMap: evmNetworksWithoutTestnetsMap,
+        }
+    }
+  }, [
+    allEvmNetworks,
+    allEvmNetworksMap,
+    evmNetworksWithTestnets,
+    evmNetworksWithTestnetsMap,
+    evmNetworksWithoutTestnets,
+    evmNetworksWithoutTestnetsMap,
+    filter,
+  ])
 }

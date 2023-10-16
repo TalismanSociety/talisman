@@ -81,7 +81,9 @@ export const TokensPage = () => {
   const navigate = useNavigate()
 
   const [useTestnets] = useSetting("useTestnets")
-  const { evmNetworks } = useEvmNetworks(useTestnets)
+  const { evmNetworks } = useEvmNetworks(
+    useTestnets ? "enabledWithTestnets" : "enabledWithoutTestnets"
+  )
   const { tokens } = useTokens(useTestnets)
   const erc20Tokens = useMemo(() => sortBy(tokens.filter(isErc20Token), "symbol"), [tokens])
 

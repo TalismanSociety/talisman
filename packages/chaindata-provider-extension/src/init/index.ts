@@ -6,7 +6,12 @@ import { Chain, EvmNetwork } from "@talismn/chaindata-provider"
 import initChainsResponse from "./chains.json"
 import initEvmNetworksResponse from "./evm-networks.json"
 
-export const fetchInitChains = async () => initChainsResponse as Chain[]
+// TODO remove the .map() after fixing init data
+export const fetchInitChains = async () =>
+  initChainsResponse.map((n) => ({
+    ...n,
+    isDefault: (n as any).isDefault === undefined ? true : (n as any).isDefault,
+  }))
 
 // TODO remove the .map() after fixing init data
 export const fetchInitEvmNetworks = async () =>

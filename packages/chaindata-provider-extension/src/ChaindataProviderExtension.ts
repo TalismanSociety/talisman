@@ -24,6 +24,10 @@ import { fetchChain, fetchChains, fetchEvmNetwork, fetchEvmNetworks } from "./ne
 import { isITokenPartial, isToken } from "./parseTokensResponse"
 import { TalismanChaindataDatabase } from "./TalismanChaindataDatabase"
 
+// removes the need to reference @talismn/balances in this package. should we ?
+const getNativeTokenId = (chainId: EvmNetworkId, moduleType: string, tokenSymbol: string) =>
+  `${chainId}-${moduleType}-${tokenSymbol}`.toLowerCase().replace(/ /g, "-")
+
 const minimumHydrationInterval = 300_000 // 300_000ms = 300s = 5 minutes
 
 export type ChaindataProviderExtensionOptions = {
@@ -415,6 +419,17 @@ export class ChaindataProviderExtension implements ChaindataProvider {
         var chains = addCustomChainRpcs(await fetchInitChains(), this.#onfinalityApiKey) // eslint-disable-line no-var
       }
 
+      // TODO remove
+      log.debug("hydrateChains", chains)
+
+      // TODO check if alec is this the right way to set native token
+      for (const chain of chains) {
+        const symbol = (
+          chain.balancesConfig.find((c) => c.moduleType === "substrate-native")?.moduleConfig as any
+        )?.symbol
+        chain.nativeToken = { id: getNativeTokenId(chain.id, "substrate-native", symbol) }
+      }
+
       await this.#db.transaction("rw", this.#db.chains, () => {
         this.#db.chains.filter((chain) => !("isCustom" in chain)).delete()
         this.#db.chains.bulkPut(chains)
@@ -455,6 +470,18 @@ export class ChaindataProviderExtension implements ChaindataProvider {
         // which will be better for our users than to have nothing at all.
         var evmNetworks: EvmNetwork[] = await fetchInitEvmNetworks() // eslint-disable-line no-var
       }
+
+      // TODO check if alec is this the right way to set native token
+      // set native token
+      for (const evmNetwork of evmNetworks) {
+        const symbol = (
+          evmNetwork.balancesConfig.find((c) => c.moduleType === "evm-native")?.moduleConfig as any
+        )?.symbol
+        evmNetwork.nativeToken = { id: getNativeTokenId(evmNetwork.id, "evm-native", symbol) }
+      }
+
+      // TODO remove
+      log.debug("hydrateEvmNetworks", evmNetworks)
 
       await this.#db.transaction("rw", this.#db.evmNetworks, async () => {
         await this.#db.evmNetworks.filter((network) => !("isCustom" in network)).delete()
@@ -510,8 +537,10 @@ export class ChaindataProviderExtension implements ChaindataProvider {
       .filter((token) => "isCustom" in token && token.isCustom)
       .map((token) => token.id)
 
-    await this.#db.tokens.bulkDelete(notCustomTokenIds)
-    await this.#db.tokens.bulkPut(newTokens.filter((token) => !customTokenIds.includes(token.id)))
+    await this.#db.transaction("rw", this.#db.tokens, async () => {
+      await this.#db.tokens.bulkDelete(notCustomTokenIds)
+      await this.#db.tokens.bulkPut(newTokens.filter((token) => !customTokenIds.includes(token.id)))
+    })
   }
 
   async updateEvmNetworkTokens(

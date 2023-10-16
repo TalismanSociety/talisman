@@ -119,7 +119,7 @@ export const EthSignMoonXTokensTransfer: FC = () => {
 
   const target = useMemo(() => decodeMultilocation(destination), [destination])
 
-  const { chains } = useChains(true)
+  const { chains } = useChains("all")
   const targetChain = useMemo(
     () =>
       target
