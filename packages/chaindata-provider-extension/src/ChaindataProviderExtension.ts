@@ -424,9 +424,9 @@ export class ChaindataProviderExtension implements ChaindataProvider {
 
       // TODO check if alec is this the right way to set native token
       for (const chain of chains) {
-        const symbol = (
-          chain.balancesConfig.find((c) => c.moduleType === "substrate-native")?.moduleConfig as any
-        )?.symbol
+        const symbol = // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        (chain.balancesConfig.find((c) => c.moduleType === "substrate-native")?.moduleConfig as any)
+          ?.symbol
         chain.nativeToken = { id: getNativeTokenId(chain.id, "substrate-native", symbol) }
       }
 
@@ -474,9 +474,9 @@ export class ChaindataProviderExtension implements ChaindataProvider {
       // TODO check if alec is this the right way to set native token
       // set native token
       for (const evmNetwork of evmNetworks) {
-        const symbol = (
-          evmNetwork.balancesConfig.find((c) => c.moduleType === "evm-native")?.moduleConfig as any
-        )?.symbol
+        const symbol = // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        (evmNetwork.balancesConfig.find((c) => c.moduleType === "evm-native")?.moduleConfig as any)
+          ?.symbol
         evmNetwork.nativeToken = { id: getNativeTokenId(evmNetwork.id, "evm-native", symbol) }
       }
 
@@ -509,7 +509,6 @@ export class ChaindataProviderExtension implements ChaindataProvider {
     newTokens: Token[],
     availableTokenLogoFilenames: string[]
   ) {
-    console.log("UPDATE CHAIN TOKENS", chainId, newTokens)
     // TODO: Test logos and fall back to unknown token logo url
     // (Maybe put the test into each balance module itself)
 
