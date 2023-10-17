@@ -54,16 +54,6 @@ export class MiniMetadataUpdater {
   }
 
   private async updateEvmNetworks(evmNetworkIds: EvmNetworkId[]) {
-    const rand = crypto.randomUUID()
-
-    const keyGlobal = `[${crypto.randomUUID()}] - updateEvmNetworkTokens(${
-      evmNetworkIds.length
-    } ids)`
-    const key1 = `[${crypto.randomUUID()}] - build evm tokens list`
-    const key2 = `[${crypto.randomUUID()}] - update evm tokens list`
-
-    console.time(keyGlobal)
-
     const evmNetworks = new Map(
       (await this.#chaindataProvider.evmNetworksArray()).map((evmNetwork) => [
         evmNetwork.id,
@@ -71,13 +61,10 @@ export class MiniMetadataUpdater {
       ])
     )
 
-    let allEvmTokens: TokenList = {}
+    const allEvmTokens: TokenList = {}
     const evmNetworkConcurrency = 10
 
-    console.time(key1)
-    // TODO rework this : all tokens should be updated in one go from chaindata's all.json file.
     await PromisePool.withConcurrency(evmNetworkConcurrency)
-      // TODO: Only update networks which need it
       .for(evmNetworkIds)
       .process(async (evmNetworkId) => {
         //log.info(`Updating tokens for evmNetwork ${evmNetworkId}`)
@@ -90,18 +77,15 @@ export class MiniMetadataUpdater {
           )
           const moduleConfig = balancesConfig?.moduleConfig ?? {}
 
-          // chainMeta arg only needs the isTestnet property, let's save a db roundtrip
+          // chainMeta arg only needs the isTestnet property, let's save a db roundtrip for now
           const isTestnet = evmNetwork.isTestnet ?? false
           const tokens = await mod.fetchEvmChainTokens(evmNetworkId, { isTestnet }, moduleConfig)
 
-          allEvmTokens = { ...allEvmTokens, ...tokens }
+          for (const [tokenId, token] of Object.entries(tokens)) allEvmTokens[tokenId] = token
         }
       })
-    console.timeEnd(key1)
-    console.time(key2)
-    await this.#chaindataProvider.updateAllEvmNetworkTokens(Object.values(allEvmTokens))
-    console.timeEnd(key2)
-    console.timeEnd(keyGlobal)
+
+    await this.#chaindataProvider.updateEvmNetworkTokens(Object.values(allEvmTokens))
   }
 
   private async updateSubstrateChains(chainIds: ChainId[]) {
