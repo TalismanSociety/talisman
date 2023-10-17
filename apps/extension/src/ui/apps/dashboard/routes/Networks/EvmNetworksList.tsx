@@ -29,12 +29,21 @@ export const EvmNetworksList = ({ search }: { search?: string }) => {
   const networksEnabledState = useEvmNetworkEnabledState()
 
   const [filteredEvmNetworks, exactMatches] = useMemo(() => {
-    if (search === undefined || search.length < 1) return [evmNetworks, [] as string[]] as const
-    const lowerSearch = search.toLowerCase()
+    const lowerSearch = search?.toLowerCase() ?? ""
 
-    const filter = (network: EvmNetwork) =>
-      network.name?.toLowerCase().includes(lowerSearch) ||
-      network.nativeToken?.id.toLowerCase().includes(lowerSearch)
+    const filter = (network: EvmNetwork) => {
+      if (!lowerSearch)
+        return (
+          network.isDefault ||
+          networksEnabledState[network.id] !== undefined ||
+          isCustomEvmNetwork(network)
+        )
+
+      return (
+        network.name?.toLowerCase().includes(lowerSearch) ||
+        network.nativeToken?.id.toLowerCase().includes(lowerSearch)
+      )
+    }
 
     const filtered = evmNetworks.filter(filter)
     const exactMatches = filtered.flatMap((network) =>
@@ -45,7 +54,7 @@ export const EvmNetworksList = ({ search }: { search?: string }) => {
     )
 
     return [filtered, exactMatches] as const
-  }, [evmNetworks, search])
+  }, [evmNetworks, networksEnabledState, search])
 
   const sortedNetworks = useMemo(() => {
     const byName = sortBy(filteredEvmNetworks, "name")
