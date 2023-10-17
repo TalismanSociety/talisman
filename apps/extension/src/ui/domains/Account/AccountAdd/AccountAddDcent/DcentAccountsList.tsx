@@ -10,7 +10,7 @@ import { DcentAccountRow } from "./DcentAccountRow"
 import { DcentAccountInfo, getDcentCoinTypeFromToken } from "./util"
 
 const useAccountInfos = () => {
-  const { tokens } = useTokens(true)
+  const { tokens } = useTokens("enabledWithTestnets")
   const { data: accounts, isLoading, error } = useDcentAccountInfo()
 
   // a dcent account entry is 1 token for 1 address

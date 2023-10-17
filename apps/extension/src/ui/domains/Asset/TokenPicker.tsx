@@ -192,7 +192,9 @@ const TokensList: FC<TokensListProps> = ({
   const { evmNetworksMap } = useEvmNetworks(
     useTestnets ? "enabledWithTestnets" : "enabledWithoutTestnets"
   )
-  const { tokens: allTokens } = useTokens(useTestnets)
+  const { tokens: allTokens } = useTokens(
+    useTestnets ? "enabledWithTestnets" : "enabledWithoutTestnets"
+  )
   const tokenRatesMap = useTokenRatesMap()
   const formatNetworkName = useFormatNetworkName()
 

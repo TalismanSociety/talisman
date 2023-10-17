@@ -86,7 +86,7 @@ export const SubSignXcmTransferAssets = () => {
   const { t } = useTranslation("request")
   const { chain, payload, account } = usePolkadotSigningRequest()
   const { data: extrinsic } = useExtrinsic(payload)
-  const { tokensMap } = useTokens(true)
+  const { tokensMap } = useTokens("all")
   const tokenRates = useTokenRatesMap()
   const { chains } = useChains("all")
 

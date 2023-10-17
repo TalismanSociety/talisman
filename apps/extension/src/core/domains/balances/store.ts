@@ -31,6 +31,7 @@ import { ReplaySubject, Subject, combineLatest, firstValueFrom } from "rxjs"
 
 import { enabledChainsStore, isChainEnabled } from "../chains/store.enabledChains"
 import { enabledEvmNetworksStore, isEvmNetworkEnabled } from "../ethereum/store.enabledEvmNetworks"
+import { enabledTokensStore, isTokenEnabled } from "../tokens/store.enabledTokens"
 
 const chainConnectors = { substrate: chainConnector, evm: chainConnectorEvm }
 export const balanceModules = defaultBalanceModules.map((mod) =>
@@ -94,10 +95,30 @@ export class BalanceStore {
       // enabled state of evm networks
       enabledEvmNetworksStore.observable,
       // enabled state of substrate chains
-      enabledChainsStore.observable
+      enabledChainsStore.observable,
+      // enable state of tokens
+      enabledTokensStore.observable
     ).subscribe({
-      next: ([settings, chains, evmNetworks, tokens, enabledEvmNetworks, enabledChains]) => {
-        const erc20TokensByNetwork = Object.values(tokens).reduce((byNetwork, token) => {
+      next: ([
+        settings,
+        chains,
+        evmNetworks,
+        tokens,
+        enabledEvmNetworks,
+        enabledChains,
+        enabledTokens,
+      ]) => {
+        const arChains = Object.values(chains ?? {})
+          .filter((chain) => isChainEnabled(chain, enabledChains))
+          .filter((chain) => (settings.useTestnets ? true : !chain.isTestnet))
+        const arEvmNetworks = Object.values(evmNetworks ?? {})
+          .filter((evmNetwork) => (settings.useTestnets ? true : !evmNetwork.isTestnet))
+          .filter((evmNetwork) => isEvmNetworkEnabled(evmNetwork, enabledEvmNetworks))
+        const arTokens = Object.values(tokens ?? {})
+          .filter((token) => (settings.useTestnets ? true : !token.isTestnet))
+          .filter((token) => isTokenEnabled(token, enabledTokens))
+
+        const erc20TokensByNetwork = arTokens.reduce((byNetwork, token) => {
           if (token.type !== "evm-erc20") return byNetwork
 
           const { evmNetwork } = token
@@ -112,25 +133,18 @@ export class BalanceStore {
         // TODO: Only connect to chains on which the user has a non-zero balance.
         this.setChains(
           // substrate chains
-          Object.values(chains ?? {})
-            .filter((chain) => isChainEnabled(chain, enabledChains))
-            .filter((chain) => (settings.useTestnets ? true : !chain.isTestnet))
-            .map((chain) => pick(chain, ["id", "genesisHash", "account", "rpcs"])),
+          arChains.map((chain) => pick(chain, ["id", "genesisHash", "account", "rpcs"])),
 
           // evm chains
-          Object.values(evmNetworks ?? {})
-            .filter((evmNetwork) => (settings.useTestnets ? true : !evmNetwork.isTestnet))
-            .filter((evmNetwork) => isEvmNetworkEnabled(evmNetwork, enabledEvmNetworks))
-            .map((evmNetwork) => ({
-              ...pick(evmNetwork, ["id", "nativeToken", "substrateChain", "rpcs"]),
-              erc20Tokens: erc20TokensByNetwork[evmNetwork.id],
-              substrateChainAccountFormat:
-                (evmNetwork.substrateChain && chains[evmNetwork.substrateChain.id]?.account) ||
-                null,
-            })),
+          arEvmNetworks.map((evmNetwork) => ({
+            ...pick(evmNetwork, ["id", "nativeToken", "substrateChain", "rpcs"]),
+            erc20Tokens: erc20TokensByNetwork[evmNetwork.id],
+            substrateChainAccountFormat:
+              (evmNetwork.substrateChain && chains[evmNetwork.substrateChain.id]?.account) || null,
+          })),
 
           // tokens
-          tokens
+          Object.fromEntries(arTokens.map((token) => [token.id, token]))
         )
       },
       error: (error) => {
@@ -231,14 +245,12 @@ export class BalanceStore {
 
     // update tokens
     this.#tokens.next(
-      Object.values(tokens)
-        .filter((t) => t.isDefault !== false) // TODO filter based on enabled state
-        .map(({ id, type, chain, evmNetwork }) => ({
-          id,
-          type,
-          chain,
-          evmNetwork,
-        }))
+      Object.values(tokens).map(({ id, type, chain, evmNetwork }) => ({
+        id,
+        type,
+        chain,
+        evmNetwork,
+      }))
     )
 
     // Delete stored balances for chains and networks which no longer exist

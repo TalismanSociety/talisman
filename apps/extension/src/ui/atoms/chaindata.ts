@@ -8,6 +8,7 @@ import {
   enabledEvmNetworksStore,
   isEvmNetworkEnabled,
 } from "@core/domains/ethereum/store.enabledEvmNetworks"
+import { EnabledTokens, enabledTokensStore } from "@core/domains/tokens/store.enabledTokens"
 import { chaindataProvider } from "@core/rpcs/chaindata"
 import {
   Chain,
@@ -188,8 +189,21 @@ export const chainsWithoutTestnetsMapState = selector<ChainList>({
   },
 })
 
-const rawTokenListState = atom<TokenList>({
-  key: "rawTokenListState",
+export const tokensEnabledState = atom<EnabledTokens>({
+  key: "tokensEnabledState",
+  default: {},
+  effects: [
+    ({ setSelf }) => {
+      const sub = enabledTokensStore.observable.subscribe(setSelf)
+      return () => {
+        sub.unsubscribe()
+      }
+    },
+  ],
+})
+
+export const allTokensMapState = atom<TokenList>({
+  key: "allTokensMapState",
   default: {},
   effects: [
     // sync from db
@@ -204,10 +218,24 @@ const rawTokenListState = atom<TokenList>({
   ],
 })
 
+export const allTokensState = selector<Token[]>({
+  key: "allTokensState",
+  get: ({ get }) => {
+    const tokensMap = get(allTokensMapState)
+    const chainsMap = get(allChainsMapState)
+    const evmNetworksMap = get(allEvmNetworksMapState)
+    return Object.values(tokensMap).filter(
+      (token) =>
+        (token.chain && chainsMap[token.chain.id]) ||
+        (token.evmNetwork && evmNetworksMap[token.evmNetwork.id])
+    )
+  },
+})
+
 export const tokensWithTestnetsState = selector<Token[]>({
   key: "tokensWithTestnetsState",
   get: ({ get }) => {
-    const tokensMap = get(rawTokenListState)
+    const tokensMap = get(allTokensState)
     const chainsMap = get(chainsWithTestnetsMapState)
     const evmNetworksMap = get(evmNetworksWithTestnetsMapState)
     return Object.values(tokensMap).filter(
@@ -255,7 +283,7 @@ export const tokenQuery = selectorFamily({
   get:
     (tokenId: TokenId | null | undefined) =>
     ({ get }) => {
-      const tokens = get(tokensWithTestnetsMapState)
+      const tokens = get(allTokensMapState)
       return tokenId ? tokens[tokenId] : undefined
     },
 })

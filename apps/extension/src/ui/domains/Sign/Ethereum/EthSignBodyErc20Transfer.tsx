@@ -36,7 +36,7 @@ export const EthSignBodyErc20Transfer: FC = () => {
     [account, from]
   )
 
-  const { tokens } = useTokens(true)
+  const { tokens } = useTokens("all")
   const token = useMemo(() => {
     return network
       ? (tokens?.find(

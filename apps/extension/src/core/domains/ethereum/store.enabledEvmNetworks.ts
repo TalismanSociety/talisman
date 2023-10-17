@@ -6,6 +6,7 @@ export type EnabledEvmNetworks = Record<EvmNetworkId, boolean>
 
 /**
  * Stores the enabled state of each EVM network, if and only if the user has overriden it.
+ * Enabled state is stored aside of the database table, to allow for bulk reset of the table on a regular basis
  * Default enabled state is stored in the chaindata-provider, in the isDefault property.
  * We only store overrides here to reduce storage consumption.
  */

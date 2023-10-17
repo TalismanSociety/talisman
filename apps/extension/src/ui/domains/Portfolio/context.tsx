@@ -46,7 +46,7 @@ const useAllNetworks = ({ balances, type }: { type?: AccountAddressType; balance
   const { t } = useTranslation()
   const [useTestnets] = useSetting("useTestnets")
   const { chains } = useChains(useTestnets ? "enabledWithTestnets" : "enabledWithoutTestnets")
-  const { tokens } = useTokens(useTestnets)
+  const { tokens } = useTokens(useTestnets ? "enabledWithTestnets" : "enabledWithoutTestnets")
   const { evmNetworks } = useEvmNetworks(
     useTestnets ? "enabledWithTestnets" : "enabledWithoutTestnets"
   )
@@ -123,7 +123,7 @@ const usePortfolioProvider = () => {
   const [useTestnets] = useSetting("useTestnets")
   const { account } = useSelectedAccount()
   const { chains } = useChains(useTestnets ? "enabledWithTestnets" : "enabledWithoutTestnets")
-  const { tokens } = useTokens(useTestnets)
+  const { tokens } = useTokens(useTestnets ? "enabledWithTestnets" : "enabledWithoutTestnets")
   const { evmNetworks } = useEvmNetworks(
     useTestnets ? "enabledWithTestnets" : "enabledWithoutTestnets"
   )
