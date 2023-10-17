@@ -425,8 +425,10 @@ export class ChaindataProviderExtension implements ChaindataProvider {
       // TODO check if alec is this the right way to set native token
       for (const chain of chains) {
         const symbol = // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        (chain.balancesConfig.find((c) => c.moduleType === "substrate-native")?.moduleConfig as any)
-          ?.symbol
+          (
+            chain.balancesConfig.find((c) => c.moduleType === "substrate-native")
+              ?.moduleConfig as any
+          )?.symbol
         chain.nativeToken = { id: getNativeTokenId(chain.id, "substrate-native", symbol) }
       }
 
@@ -475,8 +477,10 @@ export class ChaindataProviderExtension implements ChaindataProvider {
       // set native token
       for (const evmNetwork of evmNetworks) {
         const symbol = // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        (evmNetwork.balancesConfig.find((c) => c.moduleType === "evm-native")?.moduleConfig as any)
-          ?.symbol
+          (
+            evmNetwork.balancesConfig.find((c) => c.moduleType === "evm-native")
+              ?.moduleConfig as any
+          )?.symbol
         evmNetwork.nativeToken = { id: getNativeTokenId(evmNetwork.id, "evm-native", symbol) }
       }
 
@@ -488,9 +492,9 @@ export class ChaindataProviderExtension implements ChaindataProvider {
         // add all except ones matching custom existing ones (user may customize built-in networks)
 
         const customNetworks = await this.#db.evmNetworks.toArray()
-        const newNetworks = evmNetworks
-          .filter((n) => n.isDefault) // TODO remove
-          .filter((network) => customNetworks.every((existing) => existing.id !== network.id))
+        const newNetworks = evmNetworks.filter((network) =>
+          customNetworks.every((existing) => existing.id !== network.id)
+        )
         await this.#db.evmNetworks.bulkPut(newNetworks)
       })
       this.#lastHydratedEvmNetworksAt = now
@@ -550,10 +554,20 @@ export class ChaindataProviderExtension implements ChaindataProvider {
   ) {
     // TODO: Test logos and fall back to unknown token logo url
     // (Maybe put the test into each balance module itself)
+    const rand = crypto.randomUUID()
+    const key = `[${rand}] existingEvmNetworkTokens ${evmNetworkId} ${source} - newTokens count ${newTokens.length}`
 
+    console.time(key)
     const existingEvmNetworkTokens = await this.#db.tokens
-      .filter((token) => token.evmNetwork?.id === evmNetworkId && token.type === source)
+      .filter((token) => token.type === source)
+      .filter((token) => token.evmNetwork?.id === evmNetworkId)
       .toArray()
+    console.timeEnd(key)
+    console.log(
+      "existingEvmNetworkTokens %d count : ",
+      evmNetworkId,
+      existingEvmNetworkTokens.length
+    )
 
     newTokens.forEach((token) => {
       if (token.logo) return
@@ -575,8 +589,94 @@ export class ChaindataProviderExtension implements ChaindataProvider {
       .filter((token) => "isCustom" in token && token.isCustom)
       .map((token) => token.id)
 
+    const tokensToUpdate = newTokens.filter((token) => !customTokenIds.includes(token.id))
+    const key2 = `[${rand}] updating tokens for ${evmNetworkId} (${notCustomTokenIds.length} deletes, ${tokensToUpdate.length} updates)`
+    console.time(key2)
     await this.#db.tokens.bulkDelete(notCustomTokenIds)
-    await this.#db.tokens.bulkPut(newTokens.filter((token) => !customTokenIds.includes(token.id)))
+    await this.#db.tokens.bulkPut(tokensToUpdate)
+    console.timeEnd(key2)
+  }
+
+  async updateAllEvmNetworkTokens(newTokens: Token[]) {
+    console.log("updating %d evm tokens", newTokens.length)
+    const existingEvmNetworkTokens = await this.#db.tokens.toArray()
+
+    // // TODO: Test logos and fall back to unknown token logo url
+    // // (Maybe put the test into each balance module itself)
+    // const rand = crypto.randomUUID()
+    // const key = `[${rand}] existingEvmNetworkTokens ${evmNetworkId} ${source} - newTokens count ${newTokens.length}`
+
+    // console.time(key)
+    // const existingEvmNetworkTokens = await this.#db.tokens
+    //   .filter((token) => token.type === source)
+    //   .filter((token) => token.evmNetwork?.id === evmNetworkId)
+    //   .toArray()
+    // console.timeEnd(key)
+    // console.log(
+    //   "existingEvmNetworkTokens %d count : ",
+    //   evmNetworkId,
+    //   existingEvmNetworkTokens.length
+    // )
+
+    // newTokens.forEach((token) => {
+    //   if (token.logo) return
+
+    //   const symbolLogo = token.symbol.toLowerCase().replace(/ /g, "_")
+    //   if (availableTokenLogoFilenames.includes(`${symbolLogo}.svg`)) {
+    //     return (token.logo = githubTokenLogoUrl(symbolLogo))
+    //   }
+
+    //   // TODO: Use coingeckoId logo if exists
+
+    //   return (token.logo = githubUnknownTokenLogoUrl)
+    // })
+
+    const isCustomToken = (token: Token) => "isCustom" in token && token.isCustom
+
+    const notCustomTokenIds: string[] = []
+    const customTokenIds: string[] = []
+
+    for (const token of existingEvmNetworkTokens) {
+      if (isCustomToken(token)) customTokenIds.push(token.id)
+      else notCustomTokenIds.push(token.id)
+    }
+
+    const tokensToUpdate = newTokens.filter((token) => !customTokenIds.includes(token.id))
+
+    this.#db.transaction("rw", this.#db.tokens, async () => {
+      // delete all existing non custom tokens
+      await this.#db.tokens.bulkDelete(notCustomTokenIds)
+
+      // force update on all non custom tokens
+      await this.#db.tokens.bulkPut(tokensToUpdate)
+    })
+
+    // // delete all non custom tokens
+
+    // // const { notCustomTokenIds, customTokenIds } = existingEvmNetworkTokens.reduce((acc, token) => {
+    // //   if (isCustomToken(token)) {
+    // //     acc.customTokenIds.push(token.id)
+    // //   } else {
+    // //     acc.notCustomTokenIds.push(token.id)
+    // //   }
+    // //   return acc
+    // //  }, {
+    // //   notCustomTokenIds: [] as string[],
+    // //   customTokenIds: [] as string[]
+    // // })
+
+    // // const notCustomTokenIds = existingEvmNetworkTokens
+    // //   .filter((token) => !isCustomToken(token))
+    // //   .map((token) => token.id)
+    // // const customTokenIds = existingEvmNetworkTokens
+    // //   .filter((token) => "isCustom" in token && token.isCustom)
+    // //   .map((token) => token.id)
+
+    // const key2 = `[${rand}] updating tokens for ${evmNetworkId} (${notCustomTokenIds.length} deletes, ${tokensToUpdate.length} updates)`
+    // console.time(key2)
+    // await this.#db.tokens.bulkDelete(notCustomTokenIds)
+
+    // console.timeEnd(key2)
   }
 
   /**
