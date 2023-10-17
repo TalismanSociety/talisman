@@ -67,7 +67,6 @@ export class MiniMetadataUpdater {
     await PromisePool.withConcurrency(evmNetworkConcurrency)
       .for(evmNetworkIds)
       .process(async (evmNetworkId) => {
-        //log.info(`Updating tokens for evmNetwork ${evmNetworkId}`)
         const evmNetwork = evmNetworks.get(evmNetworkId)
         if (!evmNetwork) return
 
@@ -111,9 +110,7 @@ export class MiniMetadataUpdater {
       .filter(([, status]) => status !== "good")
       .map(([chainId]) => chainId)
 
-    console.time("availableTokenLogoFilenames")
     const availableTokenLogos = await availableTokenLogoFilenames()
-    console.timeEnd("availableTokenLogoFilenames")
 
     const concurrency = 4
     ;(

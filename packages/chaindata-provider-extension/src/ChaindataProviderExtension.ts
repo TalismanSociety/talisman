@@ -424,11 +424,11 @@ export class ChaindataProviderExtension implements ChaindataProvider {
 
       // TODO check if alec is this the right way to set native token
       for (const chain of chains) {
-        const symbol = // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          (
-            chain.balancesConfig.find((c) => c.moduleType === "substrate-native")
-              ?.moduleConfig as any
-          )?.symbol
+        const nativeTokenModule = chain.balancesConfig.find(
+          (c) => c.moduleType === "substrate-native"
+        )
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const symbol = (nativeTokenModule?.moduleConfig as any)?.symbol
         chain.nativeToken = { id: getNativeTokenId(chain.id, "substrate-native", symbol) }
       }
 
@@ -476,16 +476,13 @@ export class ChaindataProviderExtension implements ChaindataProvider {
       // TODO check if alec is this the right way to set native token
       // set native token
       for (const evmNetwork of evmNetworks) {
-        const symbol = // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          (
-            evmNetwork.balancesConfig.find((c) => c.moduleType === "evm-native")
-              ?.moduleConfig as any
-          )?.symbol
+        const nativeTokenModule = evmNetwork.balancesConfig.find(
+          (c) => c.moduleType === "evm-native"
+        )
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const symbol = (nativeTokenModule?.moduleConfig as any)?.symbol
         evmNetwork.nativeToken = { id: getNativeTokenId(evmNetwork.id, "evm-native", symbol) }
       }
-
-      // TODO remove
-      log.debug("hydrateEvmNetworks", evmNetworks)
 
       await this.#db.transaction("rw", this.#db.evmNetworks, async () => {
         await this.#db.evmNetworks.filter((network) => !("isCustom" in network)).delete()
@@ -547,7 +544,9 @@ export class ChaindataProviderExtension implements ChaindataProvider {
   }
 
   async updateEvmNetworkTokens(newTokens: Token[]) {
-    const existingEvmNetworkTokens = await this.#db.tokens.toArray()
+    const existingEvmNetworkTokens = await this.#db.tokens
+      .filter((t) => t.type.startsWith("evm-"))
+      .toArray()
 
     const isCustomToken = (token: Token) => "isCustom" in token && token.isCustom
 
