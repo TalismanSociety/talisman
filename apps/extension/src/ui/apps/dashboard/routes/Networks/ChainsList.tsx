@@ -103,8 +103,8 @@ const ChainsListItem = ({
   }, [navigate, chain.id])
 
   // there are lots of chains so we should only render visible rows to prevent performance issues
-  const refButton = useRef<HTMLButtonElement>(null)
-  const intersection = useIntersection(refButton, {
+  const refContainer = useRef<HTMLDivElement>(null)
+  const intersection = useIntersection(refContainer, {
     root: null,
     rootMargin: "1000px",
   })
@@ -116,27 +116,27 @@ const ChainsListItem = ({
     [onEnableChanged]
   )
 
-  const buttonContent = intersection?.isIntersecting ? (
+  const rowContent = intersection?.isIntersecting ? (
     <>
-      <ChainLogo className="rounded-full text-xl" id={chain.id} />
-      <div className="text-body grow truncate">{chain.name}</div>
-      {chain.isTestnet && <TestnetPill />}
-      {isCustomChain(chain) && <CustomPill />}
-      <div className="min-w-[4.4rem] shrink-0 grow"></div>
-      <ChevronRightIcon className="transition-noneshrink-0 text-lg" />
-    </>
-  ) : null
-
-  return (
-    <div className="relative h-28">
-      <ListButton ref={refButton} key={chain.id} role="button" onClick={handleChainClick}>
-        {buttonContent}
+      <ListButton key={chain.id} role="button" onClick={handleChainClick}>
+        <ChainLogo className="rounded-full text-xl" id={chain.id} />
+        <div className="text-body truncate">{chain.name}</div>
+        {chain.isTestnet && <TestnetPill />}
+        {isCustomChain(chain) && <CustomPill />}
+        <div className="min-w-[4.4rem] shrink-0 grow"></div>
+        <ChevronRightIcon className="transition-noneshrink-0 text-lg" />
       </ListButton>
       <Toggle
         className="absolute right-20 top-4 p-4"
         checked={isEnabled}
         onChange={handleEnableChanged}
       />
+    </>
+  ) : null
+
+  return (
+    <div ref={refContainer} className="relative h-28">
+      {rowContent}
     </div>
   )
 }

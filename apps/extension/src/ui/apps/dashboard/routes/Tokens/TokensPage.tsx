@@ -17,9 +17,10 @@ import { useTokensEnabledState } from "@ui/hooks/useTokensEnabledState"
 import { isCustomErc20Token } from "@ui/util/isCustomErc20Token"
 import { isErc20Token } from "@ui/util/isErc20Token"
 import sortBy from "lodash/sortBy"
-import { ChangeEventHandler, FC, useCallback, useMemo, useState } from "react"
+import { ChangeEventHandler, FC, useCallback, useMemo, useRef, useState } from "react"
 import { useTranslation } from "react-i18next"
 import { useNavigate } from "react-router-dom"
+import { useIntersection } from "react-use"
 import { ListButton, PillButton, Toggle } from "talisman-ui"
 
 import { DashboardLayout } from "../../layout/DashboardLayout"
@@ -48,8 +49,15 @@ const TokenRow = ({ token }: { token: Erc20Token }) => {
     [token.id]
   )
 
-  return (
-    <div className="relative h-28 w-full">
+  // there are lots of tokens so we should only render visible rows to prevent performance issues
+  const refContainer = useRef<HTMLDivElement>(null)
+  const intersection = useIntersection(refContainer, {
+    root: null,
+    rootMargin: "1000px",
+  })
+
+  const rowContent = intersection?.isIntersecting ? (
+    <>
       <ListButton onClick={() => navigate(`./${token.id}`)}>
         <TokenLogo tokenId={token.id} className="rounded-full text-xl" />
         <div className="flex flex-col !items-start justify-center overflow-hidden">
@@ -65,6 +73,12 @@ const TokenRow = ({ token }: { token: Erc20Token }) => {
         checked={isEnabled}
         onChange={handleEnableChanged}
       />
+    </>
+  ) : null
+
+  return (
+    <div ref={refContainer} className="relative h-28 w-full">
+      {rowContent}
     </div>
   )
 }

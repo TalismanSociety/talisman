@@ -116,8 +116,8 @@ const EvmNetworksListItem = ({
   }, [navigate, network.id])
 
   // there are lots of networks so we should only render visible rows to prevent performance issues
-  const refButton = useRef<HTMLButtonElement>(null)
-  const intersection = useIntersection(refButton, {
+  const refContainer = useRef<HTMLDivElement>(null)
+  const intersection = useIntersection(refContainer, {
     root: null,
     rootMargin: "1000px",
   })
@@ -129,27 +129,27 @@ const EvmNetworksListItem = ({
     [onEnableChanged]
   )
 
-  const buttonContent = intersection?.isIntersecting ? (
+  const rowContent = intersection?.isIntersecting ? (
     <>
-      <ChainLogo className="rounded-full text-xl" id={network.id} />
-      <div className="text-body truncate">{network.name}</div>
-      {network.isTestnet && <TestnetPill />}
-      {isCustomEvmNetwork(network) && <CustomPill />}
-      <div className="min-w-[5rem] shrink-0 grow"></div>
-      <ChevronRightIcon className="shrink-0 text-lg transition-none" />
-    </>
-  ) : null
-
-  return (
-    <div className="relative h-28">
-      <ListButton ref={refButton} key={network.id} role="button" onClick={handleNetworkClick}>
-        {buttonContent}
+      <ListButton key={network.id} role="button" onClick={handleNetworkClick}>
+        <ChainLogo className="rounded-full text-xl" id={network.id} />
+        <div className="text-body truncate">{network.name}</div>
+        {network.isTestnet && <TestnetPill />}
+        {isCustomEvmNetwork(network) && <CustomPill />}
+        <div className="min-w-[5rem] shrink-0 grow"></div>
+        <ChevronRightIcon className="shrink-0 text-lg transition-none" />
       </ListButton>
       <Toggle
         className="absolute right-20 top-4 p-4"
         checked={isEnabled}
         onChange={handleEnableChanged}
       />
+    </>
+  ) : null
+
+  return (
+    <div ref={refContainer} className="relative h-28">
+      {rowContent}
     </div>
   )
 }
