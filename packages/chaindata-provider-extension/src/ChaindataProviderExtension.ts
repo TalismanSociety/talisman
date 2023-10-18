@@ -8,6 +8,7 @@ import {
   EvmNetwork,
   EvmNetworkId,
   EvmNetworkList,
+  IToken,
   Token,
   TokenId,
   TokenList,
@@ -290,14 +291,35 @@ export class ChaindataProviderExtension implements ChaindataProvider {
   }
 
   async resetEvmNetwork(evmNetworkId: EvmNetworkId) {
-    const builtInEvmNetwork = await fetchEvmNetwork(evmNetworkId)
+    const builtInEvmNetwork: EvmNetwork = await fetchEvmNetwork(evmNetworkId)
     if (!builtInEvmNetwork) throw new Error("Cannot reset non-built-in EVM network")
-    if (!builtInEvmNetwork.nativeToken?.id)
+
+    const nativeModule = builtInEvmNetwork.balancesConfig.find(
+      (c: { moduleType: string }) => c.moduleType === "evm-native"
+    )
+    if (!nativeModule?.moduleConfig)
       throw new Error("Failed to lookup native token (no token exists for network)")
-    const builtInNativeToken = null // await fetchToken(builtInEvmNetwork.nativeToken.id)
-    if (!isITokenPartial(builtInNativeToken)) throw new Error("Failed to lookup native token")
-    if (!isToken(builtInNativeToken))
-      throw new Error("Failed to lookup native token (isToken test failed)")
+
+    const { symbol, decimals, coingeckoId, logo, mirrorOf, dcentName } =
+      nativeModule.moduleConfig as IToken
+    if (!symbol) throw new Error("Missing native token symbol")
+    if (!decimals) throw new Error("Missing native token decimals")
+
+    const builtInNativeToken: IToken = {
+      id: getNativeTokenId(evmNetworkId, "evm-native", symbol),
+      type: "evm-native",
+      evmNetwork: { id: evmNetworkId },
+      isTestnet: builtInEvmNetwork.isTestnet ?? false,
+      isDefault: true,
+      symbol,
+      decimals,
+      coingeckoId,
+      logo,
+      mirrorOf,
+      dcentName,
+    }
+
+    builtInEvmNetwork.nativeToken = { id: builtInNativeToken.id }
 
     try {
       return await this.#db.transaction("rw", this.#db.evmNetworks, this.#db.tokens, async () => {
@@ -309,7 +331,7 @@ export class ChaindataProviderExtension implements ChaindataProvider {
 
         // reprovision them from subsquid data
         await this.#db.evmNetworks.put(builtInEvmNetwork)
-        await this.#db.tokens.put(builtInNativeToken)
+        await this.#db.tokens.put(builtInNativeToken as never)
       })
     } catch (cause) {
       throw new Error("Failed to reset evm network", { cause })
