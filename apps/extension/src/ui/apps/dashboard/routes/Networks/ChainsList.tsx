@@ -119,11 +119,11 @@ const ChainsListItem = ({
   const buttonContent = intersection?.isIntersecting ? (
     <>
       <ChainLogo className="rounded-full text-xl" id={chain.id} />
-      <div className="text-body grow">{chain.name}</div>
+      <div className="text-body grow truncate">{chain.name}</div>
       {chain.isTestnet && <TestnetPill />}
       {isCustomChain(chain) && <CustomPill />}
       <div className="min-w-[4.4rem] shrink-0 grow"></div>
-      <ChevronRightIcon className="text-lg transition-none" />
+      <ChevronRightIcon className="transition-noneshrink-0 text-lg" />
     </>
   ) : null
 
@@ -133,7 +133,7 @@ const ChainsListItem = ({
         {buttonContent}
       </ListButton>
       <Toggle
-        className="absolute right-24 top-8"
+        className="absolute right-20 top-4 p-4"
         checked={isEnabled}
         onChange={handleEnableChanged}
       />

@@ -132,11 +132,11 @@ const EvmNetworksListItem = ({
   const buttonContent = intersection?.isIntersecting ? (
     <>
       <ChainLogo className="rounded-full text-xl" id={network.id} />
-      <div className="text-body">{network.name}</div>
+      <div className="text-body truncate">{network.name}</div>
       {network.isTestnet && <TestnetPill />}
       {isCustomEvmNetwork(network) && <CustomPill />}
-      <div className="min-w-[4.4rem] shrink-0 grow"></div>
-      <ChevronRightIcon className="text-lg transition-none" />
+      <div className="min-w-[5rem] shrink-0 grow"></div>
+      <ChevronRightIcon className="shrink-0 text-lg transition-none" />
     </>
   ) : null
 
@@ -146,7 +146,7 @@ const EvmNetworksListItem = ({
         {buttonContent}
       </ListButton>
       <Toggle
-        className="absolute right-24 top-8"
+        className="absolute right-20 top-4 p-4"
         checked={isEnabled}
         onChange={handleEnableChanged}
       />

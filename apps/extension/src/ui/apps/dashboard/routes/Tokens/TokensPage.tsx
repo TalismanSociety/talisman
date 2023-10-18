@@ -49,22 +49,19 @@ const TokenRow = ({ token }: { token: Erc20Token }) => {
   )
 
   return (
-    <div className="relative h-28">
+    <div className="relative h-28 w-full">
       <ListButton onClick={() => navigate(`./${token.id}`)}>
         <TokenLogo tokenId={token.id} className="rounded-full text-xl" />
-        <div className="flex grow flex-col !items-start justify-center">
-          {network && (
-            <>
-              <div className="text-body">{token.symbol}</div>
-              <div className="text-body-secondary text-sm">{network?.name ?? ""}</div>
-            </>
-          )}
+        <div className="flex flex-col !items-start justify-center overflow-hidden">
+          <div className="text-body max-w-full truncate">{token.symbol}</div>
+          <div className="text-body-secondary truncate text-sm">{network?.name ?? ""}</div>
         </div>
         {isCustomErc20Token(token) && <CustomPill />}
-        <ChevronRightIcon className="text-lg transition-none" />
+        <div className="min-w-[5rem] shrink-0 grow"></div>
+        <ChevronRightIcon className="shrink-0 text-lg transition-none" />
       </ListButton>
       <Toggle
-        className="absolute right-24 top-8"
+        className="absolute right-20 top-4 p-4"
         checked={isEnabled}
         onChange={handleEnableChanged}
       />
