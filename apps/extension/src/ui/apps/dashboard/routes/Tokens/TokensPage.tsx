@@ -174,13 +174,14 @@ export const TokensPage = () => {
   )
 
   const groups = useMemo(() => {
-    return allTokensByNetwork.map((n) => ({
-      ...n,
-      enabledCount: n.tokens.filter((t) => isTokenEnabled(t, enabledTokens)).length,
-      totalCount: n.tokens.length,
-      tokens: filterTokens(n.tokens),
-    }))
-    //.filter(({ tokens }) => tokens.length)
+    return allTokensByNetwork
+      .map((n) => ({
+        ...n,
+        enabledCount: n.tokens.filter((t) => isTokenEnabled(t, enabledTokens)).length,
+        totalCount: n.tokens.length,
+        tokens: filterTokens(n.tokens),
+      }))
+      .filter(({ tokens }) => tokens.length)
   }, [allTokensByNetwork, enabledTokens, filterTokens])
 
   const handleAddToken = useCallback(() => {
