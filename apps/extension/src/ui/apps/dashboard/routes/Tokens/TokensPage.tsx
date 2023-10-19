@@ -92,11 +92,6 @@ const NetworkTokensGroup: FC<{
   totalCount: number
 }> = ({ network, tokens, enabledCount, totalCount }) => {
   const { isOpen, toggle } = useOpenClose()
-  // const enabledTokens = useTokensEnabledState()
-  // const enabledTokensCount = useMemo(
-  //   () => tokens.filter((t) => isTokenEnabled(t, enabledTokens)).length,
-  //   [enabledTokens, tokens]
-  // )
 
   return (
     <div className="flex flex-col gap-4">
