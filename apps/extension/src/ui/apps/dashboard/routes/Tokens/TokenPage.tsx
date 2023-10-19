@@ -9,12 +9,13 @@ import { AssetLogoBase } from "@ui/domains/Asset/AssetLogo"
 import { NetworkSelect } from "@ui/domains/Ethereum/NetworkSelect"
 import { useAnalyticsPageView } from "@ui/hooks/useAnalyticsPageView"
 import { useEvmNetwork } from "@ui/hooks/useEvmNetwork"
+import { useKnownErc20Token } from "@ui/hooks/useKnownErc20Token"
 import useToken from "@ui/hooks/useToken"
 import { isCustomErc20Token } from "@ui/util/isCustomErc20Token"
 import { useCallback, useEffect, useMemo, useState } from "react"
 import { Trans, useTranslation } from "react-i18next"
 import { useNavigate, useParams } from "react-router-dom"
-import { ModalDialog } from "talisman-ui"
+import { ModalDialog, Toggle } from "talisman-ui"
 import { Modal } from "talisman-ui"
 import { Button, FormFieldContainer, FormFieldInputText } from "talisman-ui"
 
@@ -100,6 +101,11 @@ export const TokenPage = () => {
   )
   const network = useEvmNetwork(erc20Token?.evmNetwork?.id)
 
+  const { isEnabled, setEnabled } = useKnownErc20Token(
+    erc20Token?.evmNetwork?.id,
+    erc20Token?.contractAddress
+  )
+
   useEffect(() => {
     // if token doesn't exist, redirect to tokens page
     if (token === null) navigate("/tokens")
@@ -115,13 +121,9 @@ export const TokenPage = () => {
           tokenSymbol: erc20Token.symbol,
           networkName: network.name,
         })}
-        text={
-          isCustomErc20Token(erc20Token)
-            ? t(
-                "Tokens can be created by anyone and named however they like, even to imitate existing tokens. Always ensure you have verified the token address before adding a custom token."
-              )
-            : t("This ERC-20 token is supported by Talisman by default. It can't be removed.")
-        }
+        text={t(
+          "Tokens can be created by anyone and named however they like, even to imitate existing tokens. Always ensure you have verified the token address before adding a custom token."
+        )}
       />
       <form className="my-20 space-y-4">
         <FormFieldContainer label="Network">
@@ -171,16 +173,25 @@ export const TokenPage = () => {
             />
           </FormFieldContainer>
         </div>
+        <div>
+          <FormFieldContainer label={t("Display balances")}>
+            <Toggle checked={isEnabled} onChange={(e) => setEnabled(e.target.checked)}>
+              <span className={"text-grey-300"}>{isEnabled ? t("Yes") : t("No")}</span>
+            </Toggle>
+          </FormFieldContainer>
+        </div>
         <div className="flex justify-end py-8">
           <Button
             className="h-24 w-[24rem] text-base"
-            disabled={!isCustomErc20Token(erc20Token)}
             type="button"
-            primary
+            disabled={!isCustomErc20Token(token)}
             onClick={open}
           >
             {t("Remove Token")}
           </Button>
+          {/* <Button className="h-24 w-[24rem] text-base" primary={!isEnabled} onClick={toggleEnabled}>
+            {isEnabled ? t("Disable Token") : t("Enable Token")}
+          </Button> */}
         </div>
       </form>
       <ConfirmRemove open={isOpen} onClose={close} token={erc20Token} />

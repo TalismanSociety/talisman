@@ -50,7 +50,7 @@ export const Dropdown = <T extends Record<string, unknown>>({
         <div className={"text-body-secondary inline-block max-h-[20rem] w-full"}>
           <Listbox.Button
             className={classNames(
-              "bg-grey-800 hover:text-grey-300 flex w-full items-center gap-8 p-8 text-left",
+              "bg-grey-800 enabled:hover:text-grey-300 disabled:bg-field disabled:text-body-disabled flex w-full items-center gap-8 p-8 text-left",
               open ? "rounded-t-sm" : "rounded-sm",
               buttonClassName
             )}
@@ -58,7 +58,7 @@ export const Dropdown = <T extends Record<string, unknown>>({
             <div className="flex flex-grow flex-col justify-center overflow-hidden">
               {value ? renderItem(value, propertyLabel) : placeholder}
             </div>
-            <ChevronDownIcon className="shrink-0 text-[1.2em]" />
+            {!disabled && <ChevronDownIcon className="shrink-0 text-[1.2em]" />}
           </Listbox.Button>
           <div className="relative w-full">
             <div className="bg-grey-800 scrollable scrollable-700 absolute left-0 top-0 z-10 max-h-[30rem] w-full overflow-y-auto overflow-x-hidden rounded-b-sm">
