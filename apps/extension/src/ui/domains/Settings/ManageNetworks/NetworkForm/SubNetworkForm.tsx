@@ -14,13 +14,21 @@ import useChain from "@ui/hooks/useChain"
 import useChains from "@ui/hooks/useChains"
 import { useCoinGeckoTokenImageUrl } from "@ui/hooks/useCoinGeckoTokenImageUrl"
 import { useIsBuiltInChain } from "@ui/hooks/useIsBuiltInChain"
+import { useKnownChain } from "@ui/hooks/useKnownChain"
 import { useSetting } from "@ui/hooks/useSettings"
 import useToken from "@ui/hooks/useToken"
-import { ReactNode, useCallback, useEffect, useMemo, useRef, useState } from "react"
+import { FC, ReactNode, useCallback, useEffect, useMemo, useRef, useState } from "react"
 import { FormProvider, useForm } from "react-hook-form"
 import { Trans, useTranslation } from "react-i18next"
 import { useDebounce } from "react-use"
-import { Button, Checkbox, Dropdown, FormFieldContainer, FormFieldInputText } from "talisman-ui"
+import {
+  Button,
+  Checkbox,
+  Dropdown,
+  FormFieldContainer,
+  FormFieldInputText,
+  Toggle,
+} from "talisman-ui"
 
 import { getSubNetworkFormSchema } from "./getSubNetworkFormSchema"
 import { getSubstrateRpcInfo } from "./helpers"
@@ -31,6 +39,23 @@ import { ResetSubNetworkButton } from "./ResetSubNetworkButton"
 type SubNetworkFormProps = {
   chainId?: ChainId
   onSubmitted?: () => void
+}
+
+const EnableNetworkToggle: FC<{ chainId?: string }> = ({ chainId }) => {
+  const { t } = useTranslation("admin")
+  const { chain, isEnabled, setEnabled } = useKnownChain(chainId)
+
+  if (!chain) return null
+
+  return (
+    <div className="pt-8">
+      <FormFieldContainer label={t("Display balances")}>
+        <Toggle checked={isEnabled} onChange={(e) => setEnabled(e.target.checked)}>
+          <span className={"text-grey-300"}>{isEnabled ? t("Yes") : t("No")}</span>
+        </Toggle>
+      </FormFieldContainer>
+    </div>
+  )
 }
 
 export const SubNetworkForm = ({ chainId, onSubmitted }: SubNetworkFormProps) => {
@@ -311,6 +336,7 @@ export const SubNetworkForm = ({ chainId, onSubmitted }: SubNetworkFormProps) =>
               <span className="text-body-secondary">{t("This is a testnet")}</span>
             </Checkbox>
           </div>
+          <EnableNetworkToggle chainId={chainId} />
           <div className="text-alert-warn">{submitError}</div>
           <div className="flex justify-between">
             <div>

@@ -16,13 +16,14 @@ import { useEvmChainInfo } from "@ui/hooks/useEvmChainInfo"
 import { useEvmNetwork } from "@ui/hooks/useEvmNetwork"
 import { useEvmNetworks } from "@ui/hooks/useEvmNetworks"
 import { useIsBuiltInEvmNetwork } from "@ui/hooks/useIsBuiltInEvmNetwork"
+import { useKnownEvmNetwork } from "@ui/hooks/useKnownEvmNetwork"
 import { useSetting } from "@ui/hooks/useSettings"
 import useToken from "@ui/hooks/useToken"
 import { ChangeEventHandler, FC, useCallback, useEffect, useMemo, useRef, useState } from "react"
 import { FormProvider, useForm } from "react-hook-form"
 import { Trans, useTranslation } from "react-i18next"
 import { useDebounce } from "react-use"
-import { Button, Checkbox, FormFieldContainer, FormFieldInputText } from "talisman-ui"
+import { Button, Checkbox, FormFieldContainer, FormFieldInputText, Toggle } from "talisman-ui"
 
 import { getEvmNetworkFormSchema } from "./getEvmNetworkFormSchema"
 import { getEvmRpcChainId } from "./helpers"
@@ -33,6 +34,23 @@ import { ResetEvmNetworkButton } from "./ResetEvmNetworkButton"
 type EvmNetworkFormProps = {
   evmNetworkId?: EvmNetworkId
   onSubmitted?: () => void
+}
+
+const EnableNetworkToggle: FC<{ evmNetworkId?: string }> = ({ evmNetworkId }) => {
+  const { t } = useTranslation("admin")
+  const { evmNetwork, isEnabled, setEnabled } = useKnownEvmNetwork(evmNetworkId)
+
+  if (!evmNetwork) return null
+
+  return (
+    <div className="pt-8">
+      <FormFieldContainer label={t("Display balances")}>
+        <Toggle checked={isEnabled} onChange={(e) => setEnabled(e.target.checked)}>
+          <span className={"text-grey-300"}>{isEnabled ? t("Yes") : t("No")}</span>
+        </Toggle>
+      </FormFieldContainer>
+    </div>
+  )
 }
 
 export const EvmNetworkForm: FC<EvmNetworkFormProps> = ({ evmNetworkId, onSubmitted }) => {
@@ -129,7 +147,7 @@ export const EvmNetworkForm: FC<EvmNetworkFormProps> = ({ evmNetworkId, onSubmit
     if (evmNetworkId || !id) return
 
     if (evmNetworks?.some((n) => n.id === id)) {
-      if (!errors.id) setError("id", { message: t("already exists") })
+      if (!errors.id) setError("id", { message: t("Network already exists") })
     } else {
       if (errors.id) clearErrors("id")
       autoFill()
@@ -262,6 +280,7 @@ export const EvmNetworkForm: FC<EvmNetworkFormProps> = ({ evmNetworkId, onSubmit
               <span className="text-body-secondary">{t("This is a testnet")}</span>
             </Checkbox>
           </div>
+          <EnableNetworkToggle evmNetworkId={evmNetworkId} />
           <div className="text-alert-warn">{submitError}</div>
           <div className="flex justify-between">
             <div>

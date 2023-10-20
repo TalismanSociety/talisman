@@ -3,8 +3,8 @@ import { Chain, isCustomChain } from "@talismn/chaindata-provider"
 import { ChevronRightIcon } from "@talismn/icons"
 import { sendAnalyticsEvent } from "@ui/api/analytics"
 import { ChainLogo } from "@ui/domains/Asset/ChainLogo"
-import { useChainEnabledState } from "@ui/hooks/useChainEnabledState"
 import useChains from "@ui/hooks/useChains"
+import { useEnabledChainsState } from "@ui/hooks/useEnabledChainsState"
 import { useSetting } from "@ui/hooks/useSettings"
 import sortBy from "lodash/sortBy"
 import { ChangeEventHandler, useCallback, useMemo, useRef } from "react"
@@ -22,7 +22,7 @@ export const ChainsList = ({ search }: { search?: string }) => {
     () => (useTestnets ? allChains : allChains.filter((n) => !n.isTestnet)),
     [allChains, useTestnets]
   )
-  const networksEnabledState = useChainEnabledState()
+  const networksEnabledState = useEnabledChainsState()
 
   const [filteredChains, exactMatches] = useMemo(() => {
     if (search === undefined || search.length < 1) return [chains, [] as string[]] as const

@@ -11,11 +11,11 @@ import { ChainLogo } from "@ui/domains/Asset/ChainLogo"
 import { TokenLogo } from "@ui/domains/Asset/TokenLogo"
 import { EnableTestnetPillButton } from "@ui/domains/Settings/EnableTestnetPillButton"
 import { useAnalyticsPageView } from "@ui/hooks/useAnalyticsPageView"
+import { useEnabledTokensState } from "@ui/hooks/useEnabledTokensState"
 import { useEvmNetwork } from "@ui/hooks/useEvmNetwork"
 import { useEvmNetworks } from "@ui/hooks/useEvmNetworks"
 import { useSetting } from "@ui/hooks/useSettings"
 import useTokens from "@ui/hooks/useTokens"
-import { useTokensEnabledState } from "@ui/hooks/useTokensEnabledState"
 import { isCustomErc20Token } from "@ui/util/isCustomErc20Token"
 import { isErc20Token } from "@ui/util/isErc20Token"
 import sortBy from "lodash/sortBy"
@@ -40,7 +40,7 @@ const CustomPill = () => {
 const TokenRow = ({ token }: { token: Erc20Token }) => {
   const navigate = useNavigate()
   const network = useEvmNetwork(token.evmNetwork?.id)
-  const enabledTokens = useTokensEnabledState()
+  const enabledTokens = useEnabledTokensState()
 
   const isEnabled = useMemo(() => isTokenEnabled(token, enabledTokens), [token, enabledTokens])
 
@@ -133,7 +133,7 @@ export const TokensPage = () => {
   const { tokens } = useTokens("all")
   const erc20Tokens = useMemo(() => sortBy(tokens.filter(isErc20Token), "symbol"), [tokens])
   const [search, setSearch] = useState("")
-  const enabledTokens = useTokensEnabledState()
+  const enabledTokens = useEnabledTokensState()
 
   const allTokensByNetwork = useMemo(() => {
     if (!evmNetworks || !erc20Tokens) return []

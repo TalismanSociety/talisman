@@ -7,7 +7,7 @@ import { isCustomEvmNetwork } from "@talismn/chaindata-provider"
 import { ChevronRightIcon } from "@talismn/icons"
 import { sendAnalyticsEvent } from "@ui/api/analytics"
 import { ChainLogo } from "@ui/domains/Asset/ChainLogo"
-import { useEvmNetworkEnabledState } from "@ui/hooks/useEvmNetworkEnabledState"
+import { useEnabledEvmNetworksState } from "@ui/hooks/useEnabledEvmNetworksState"
 import { useEvmNetworks } from "@ui/hooks/useEvmNetworks"
 import { useSetting } from "@ui/hooks/useSettings"
 import sortBy from "lodash/sortBy"
@@ -26,7 +26,7 @@ export const EvmNetworksList = ({ search }: { search?: string }) => {
     () => (useTestnets ? allEvmNetworks : allEvmNetworks.filter((n) => !n.isTestnet)),
     [allEvmNetworks, useTestnets]
   )
-  const networksEnabledState = useEvmNetworkEnabledState()
+  const networksEnabledState = useEnabledEvmNetworksState()
 
   const [filteredEvmNetworks, exactMatches] = useMemo(() => {
     const lowerSearch = search?.toLowerCase() ?? ""

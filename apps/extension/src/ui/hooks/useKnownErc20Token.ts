@@ -2,8 +2,8 @@ import { enabledTokensStore, isTokenEnabled } from "@core/domains/tokens/store.e
 import { isErc20Token } from "@ui/util/isErc20Token"
 import { useCallback, useMemo } from "react"
 
+import { useEnabledTokensState } from "./useEnabledTokensState"
 import useTokens from "./useTokens"
-import { useTokensEnabledState } from "./useTokensEnabledState"
 
 export const useKnownErc20Token = (
   evmNetworkId: string | undefined | null,
@@ -12,7 +12,7 @@ export const useKnownErc20Token = (
   const { tokens: allTokens } = useTokens("all")
   const allErc20Tokens = useMemo(() => allTokens.filter(isErc20Token), [allTokens])
 
-  const enabledTokens = useTokensEnabledState()
+  const enabledTokens = useEnabledTokensState()
 
   const token = useMemo(() => {
     const lowerContractAddress = contractAddress?.toLowerCase()
