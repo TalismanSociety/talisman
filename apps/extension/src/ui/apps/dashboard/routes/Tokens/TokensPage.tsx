@@ -202,7 +202,7 @@ export const TokensPage = () => {
         text={
           <Trans
             t={t}
-            defaults="Enable, add or delete custom ERC20 tokens.<br />Please consider enabling only the tokens you're interested in, to prevent any performance issue.<br/>The tokens list is provided by Coingecko."
+            defaults="Enable, add or delete custom ERC20 tokens.<br/>Tokens list is provided by Coingecko."
           />
         }
       />

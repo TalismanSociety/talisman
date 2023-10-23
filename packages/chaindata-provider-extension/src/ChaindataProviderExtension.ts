@@ -445,12 +445,15 @@ export class ChaindataProviderExtension implements ChaindataProvider {
       log.debug("hydrateChains", chains)
 
       // TODO check if alec is this the right way to set native token
+      // note : many chains don't have a native module provisionned from chaindata => breaks edit network screen and probably send funds and tx screens
       for (const chain of chains) {
         const nativeTokenModule = chain.balancesConfig.find(
           (c) => c.moduleType === "substrate-native"
         )
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const symbol = (nativeTokenModule?.moduleConfig as any)?.symbol
+        if (!symbol) continue
+
         chain.nativeToken = { id: getNativeTokenId(chain.id, "substrate-native", symbol) }
       }
 
@@ -559,9 +562,29 @@ export class ChaindataProviderExtension implements ChaindataProvider {
       .filter((token) => "isCustom" in token && token.isCustom)
       .map((token) => token.id)
 
-    await this.#db.transaction("rw", this.#db.tokens, async () => {
+    // // workaround for chains that don't have a native token provisionned from chaindata
+    // // TODO : remove when fixed in chaindata
+    // const chain = await this.#db.chains.get(chainId)
+    // let shouldUpdateChain = false
+    // if (
+    //   chain &&
+    //   (!chain.nativeToken?.id || !newTokens.find((token) => token.id === chain.nativeToken?.id))
+    // ) {
+    //   const token = newTokens.find(
+    //     (token) => token.type === "substrate-native" && token?.chain?.id === chainId
+    //   )
+    //   if (token) {
+    //     chain.nativeToken = { id: token.id }
+    //     shouldUpdateChain = true
+    //   }
+    // }
+
+    // console.log("updateChainTokens %s %s", chainId, shouldUpdateChain, chain)
+
+    await this.#db.transaction("rw", this.#db.tokens, this.#db.chains, async () => {
       await this.#db.tokens.bulkDelete(notCustomTokenIds)
       await this.#db.tokens.bulkPut(newTokens.filter((token) => !customTokenIds.includes(token.id)))
+      //if (chain && shouldUpdateChain) await this.#db.chains.put(chain)
     })
   }
 
