@@ -56,6 +56,7 @@ export const SendFundsAccountPicker = () => {
       <ScrollContainer className=" bg-black-secondary border-grey-700 scrollable h-full w-full grow overflow-x-hidden border-t">
         <SendFundsAccountsList
           accounts={accounts}
+          genesisHash={chain?.genesisHash}
           selected={from}
           onSelect={handleSelect}
           showBalances

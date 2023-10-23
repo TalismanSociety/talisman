@@ -43,6 +43,7 @@ import { TokensAndFiat } from "../Asset/TokensAndFiat"
 import { EthFeeSelect } from "../Ethereum/GasSettings/EthFeeSelect"
 import { AddToAddressBookDrawer } from "./AddToAddressBookDrawer"
 import { SendFundsFeeTooltip } from "./SendFundsFeeTooltip"
+import { useGenesisHashFromTokenId } from "./useGenesisHashFromTokenId"
 import { useNetworkDetails } from "./useNetworkDetails"
 import { useSendFunds } from "./useSendFunds"
 
@@ -77,31 +78,48 @@ const Container: FC<ContainerProps> = (props) => {
   )
 }
 
-type AddressPillButtonProps = { address?: string | null; className?: string; onClick?: () => void }
+type AddressPillButtonProps = {
+  address?: string | null
+  genesisHash?: string | null
+  className?: string
+  onClick?: () => void
+}
 
-const AddressPillButton: FC<AddressPillButtonProps> = ({ address, className, onClick }) => {
+const AddressPillButton: FC<AddressPillButtonProps> = ({
+  address,
+  genesisHash,
+  className,
+  onClick,
+}) => {
   const account = useAccountByAddress(address as string)
   const contact = useContact(address)
 
-  const { name, genesisHash } = useMemo(() => {
+  const { name, genesisHash: accountGenesisHash } = useMemo(() => {
     if (account) return account
     if (contact) return { name: contact.name, genesisHash: undefined }
     return { name: undefined, genesisHash: undefined }
   }, [account, contact])
 
-  const formattedAddress = useFormattedAddress(address ?? undefined, genesisHash)
+  const formattedAddress = useFormattedAddress(
+    address ?? undefined,
+    genesisHash ?? accountGenesisHash
+  )
+  const displayAddress = useMemo(
+    () => (account ? formattedAddress : address) ?? undefined,
+    [account, address, formattedAddress]
+  )
 
   if (!address) return null
 
   return (
     <PillButton className={classNames("h-16 max-w-full !px-4", className)} onClick={onClick}>
       <div className="text-body flex h-16 max-w-full flex-nowrap items-center gap-4 overflow-x-hidden text-base">
-        <AccountIcon className="!text-lg" address={address} genesisHash={genesisHash} />
+        <AccountIcon className="!text-lg" address={address} genesisHash={accountGenesisHash} />
         <div className="leading-base grow truncate">
           {name ? (
-            <WithTooltip tooltip={address}>{name}</WithTooltip>
+            <WithTooltip tooltip={displayAddress}>{name}</WithTooltip>
           ) : (
-            <Address address={formattedAddress} startCharCount={6} endCharCount={6} />
+            <Address address={displayAddress} startCharCount={6} endCharCount={6} />
           )}
         </div>
         <AccountTypeIcon origin={account?.origin} className="text-primary-500" />
@@ -631,7 +649,8 @@ const AddContact = () => {
 
 export const SendFundsAmountForm = () => {
   const { t } = useTranslation("send-funds")
-  const { from, to, goto } = useSendFundsWizard()
+  const { from, to, goto, tokenId } = useSendFundsWizard()
+  const genesisHash = useGenesisHashFromTokenId(tokenId)
 
   const handleGotoClick = useCallback(
     (page: SendFundsWizardPage) => () => {
@@ -658,6 +677,7 @@ export const SendFundsAmountForm = () => {
             <AddressPillButton
               className="!max-w-[260px]"
               address={from}
+              genesisHash={genesisHash}
               onClick={handleGotoClick("from")}
             />
           </div>
@@ -668,6 +688,7 @@ export const SendFundsAmountForm = () => {
             <AddressPillButton
               className="!max-w-[260px]"
               address={to}
+              genesisHash={genesisHash}
               onClick={handleGotoClick("to")}
             />
             <AddContact />

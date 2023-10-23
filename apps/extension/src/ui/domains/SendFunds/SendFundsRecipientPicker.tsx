@@ -194,6 +194,7 @@ export const SendFundsRecipientPicker = () => {
           <SendFundsAccountsList
             allowZeroBalance
             accounts={newAddresses}
+            noFormat // preserve user input chain format
             selected={to}
             onSelect={handleSelect}
           />
@@ -201,6 +202,7 @@ export const SendFundsRecipientPicker = () => {
         <SendFundsAccountsList
           allowZeroBalance
           accounts={contacts}
+          genesisHash={chain?.genesisHash}
           selected={to}
           onSelect={handleSelect}
           header={
@@ -213,6 +215,7 @@ export const SendFundsRecipientPicker = () => {
         <SendFundsAccountsList
           allowZeroBalance
           accounts={myAccounts}
+          genesisHash={chain?.genesisHash}
           selected={to}
           onSelect={handleSelect}
           header={
@@ -228,6 +231,7 @@ export const SendFundsRecipientPicker = () => {
         <SendFundsAccountsList
           allowZeroBalance
           accounts={watchedAccounts}
+          genesisHash={chain?.genesisHash}
           selected={to}
           onSelect={handleSelect}
           header={
