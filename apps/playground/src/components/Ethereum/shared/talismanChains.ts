@@ -2,6 +2,8 @@ import { Chain } from "wagmi"
 import {
   arbitrum,
   avalanche,
+  base,
+  baseGoerli,
   bsc,
   bscTestnet,
   gnosis,
@@ -225,4 +227,6 @@ export const talismanChains: Chain[] = [
   mandalaTestnet,
   karura,
   acala,
+  base,
+  baseGoerli,
 ].sort((a, b) => a.name.localeCompare(b.name))

@@ -1,5 +1,4 @@
-import { ethers } from "ethers"
-import { useCallback, useMemo } from "react"
+import { useCallback } from "react"
 import { useForm } from "react-hook-form"
 import { Button } from "talisman-ui"
 import {
@@ -8,6 +7,7 @@ import {
   useContractWrite,
   useNetwork,
   usePrepareContractWrite,
+  useWalletClient,
 } from "wagmi"
 
 import { TestBasics, useDeployment } from "../../../contracts"
@@ -31,9 +31,11 @@ export const ContractTestBasics = () => {
 }
 
 const ContractTestBasicsInner = () => {
-  const { isConnected, address: from, connector } = useAccount()
+  const { isConnected } = useAccount()
   const { chain } = useNetwork()
   const { address } = useDeployment("TestBasics", chain?.id)
+
+  const { data: walletClient } = useWalletClient()
 
   const { data: readData, isLoading: readIsLoading } = useContractRead({
     address,
@@ -73,43 +75,15 @@ const ContractTestBasicsInner = () => {
 
   // allows testing an impossible contract interaction (transfer more than you have to test)
   const handleSendUnchecked = useCallback(async () => {
-    if (!connector) return
+    if (!walletClient || !address) return
 
-    const ci = new ethers.utils.Interface(TestBasics.abi)
-
-    const funcFragment = ci.fragments.find(
-      (f) => f.type === "function" && f.name === "setValue"
-    ) as ethers.utils.FunctionFragment
-
-    const data = ci.encodeFunctionData(funcFragment, [newValue])
-
-    const provider = await connector.getProvider()
-    await provider.request({
-      method: "eth_sendTransaction",
-      params: [
-        {
-          from,
-          to: address,
-          data,
-        },
-      ],
+    await walletClient.writeContract({
+      abi: TestBasics.abi,
+      address,
+      functionName: "setValue",
+      args: [newValue],
     })
-  }, [address, connector, from, newValue])
-
-  const parsedError = useMemo(() => {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const errorData = (error as any)?.data?.data
-    if (!errorData) return undefined
-
-    try {
-      const contract = new ethers.utils.Interface(TestBasics.abi)
-      return contract.parseError(errorData)
-    } catch (err) {
-      // eslint-disable-next-line no-console
-      console.error("Failed to parse error")
-      return null
-    }
-  }, [error])
+  }, [address, newValue, walletClient])
 
   if (!isConnected) return null
 
@@ -138,12 +112,7 @@ const ContractTestBasicsInner = () => {
               </div>
               <div>
                 {!isLoading && newValue && error && (
-                  <pre className="text-alert-error h-96 p-2">
-                    {JSON.stringify(error, undefined, 2)}
-
-                    {parsedError &&
-                      `\n\ndecoded error : ${JSON.stringify(parsedError, undefined, 2)}`}
-                  </pre>
+                  <pre className="text-alert-error h-96 p-2">{error.message}</pre>
                 )}
               </div>
               <div className="flex gap-4">
