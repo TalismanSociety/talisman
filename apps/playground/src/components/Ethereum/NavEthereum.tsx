@@ -36,12 +36,6 @@ export const NavEthereum = () => {
       >
         Sign
       </Link>
-      <Link
-        to="/ethereum/behavior"
-        className={classNames(location.pathname === "/ethereum/behavior" && "text-primary-500")}
-      >
-        Behavior
-      </Link>
     </div>
   )
 }

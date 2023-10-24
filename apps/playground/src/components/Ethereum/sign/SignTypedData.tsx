@@ -6,9 +6,9 @@ import {
   recoverTypedSignature,
 } from "@metamask/eth-sig-util"
 import { classNames } from "@talismn/util"
-import { ethers } from "ethers"
 import { useCallback, useMemo, useState } from "react"
 import { Button } from "talisman-ui"
+import { getAddress } from "viem"
 import { useAccount, useNetwork } from "wagmi"
 
 import { Section } from "../../shared/Section"
@@ -283,9 +283,7 @@ const SignTypedDataInner = () => {
             <span
               className={classNames(
                 "font-mono",
-                signedBy &&
-                  ethers.utils.getAddress(signedBy ?? "SIGNED_BY") ===
-                    ethers.utils.getAddress(address ?? "ADDRESS")
+                signedBy && getAddress(signedBy ?? "SIGNED_BY") === getAddress(address ?? "ADDRESS")
                   ? "text-alert-success"
                   : "text-alert-error"
               )}
