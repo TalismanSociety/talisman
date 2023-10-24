@@ -183,12 +183,19 @@ export const getGasSettingsEip1559 = (
 export const getTotalFeesFromGasSettings = (
   gasSettings: EthGasSettings,
   estimatedGas: BigNumberish,
-  baseFeePerGas?: BigNumberish | null
+  baseFeePerGas: BigNumberish | null | undefined,
+  l1Fee: BigNumberish
 ) => {
+  // L1 fee needs to be included in estimatedFee and maxFee to keep the same UX behavior whether or not the chain is a L2
+
+  const zero = ethers.BigNumber.from("0")
+  const hasL1Fee = BigNumber.from(l1Fee).gt(zero)
+
   if (gasSettings.type === 2) {
     if (baseFeePerGas === undefined)
       throw new Error("baseFeePerGas argument is required for type 2 fee computation")
     return {
+      estimatedL1DataFee: hasL1Fee ? BigNumber.from(l1Fee) : null,
       estimatedFee: BigNumber.from(
         BigNumber.from(baseFeePerGas).lt(gasSettings.maxFeePerGas)
           ? baseFeePerGas
@@ -199,17 +206,26 @@ export const getTotalFeesFromGasSettings = (
           BigNumber.from(estimatedGas).lt(gasSettings.gasLimit)
             ? estimatedGas
             : gasSettings.gasLimit
-        ),
+        )
+        .add(l1Fee),
       maxFee: BigNumber.from(gasSettings.maxFeePerGas)
         .add(gasSettings.maxPriorityFeePerGas)
-        .mul(gasSettings.gasLimit),
+        .mul(gasSettings.gasLimit)
+        // OP Stack docs : Spikes in Ethereum gas prices may result in users paying a higher or lower than estimated L1 data fee, by up to 25%
+        // https://community.optimism.io/docs/developers/build/transaction-fees/#the-l1-data-fee
+        .add(BigNumber.from(l1Fee).mul(125).div(100)),
     }
   } else {
     return {
-      estimatedFee: BigNumber.from(gasSettings.gasPrice).mul(
-        BigNumber.from(estimatedGas).lt(gasSettings.gasLimit) ? estimatedGas : gasSettings.gasLimit
-      ),
-      maxFee: BigNumber.from(gasSettings.gasPrice).mul(gasSettings.gasLimit),
+      estimatedL1DataFee: hasL1Fee ? BigNumber.from(l1Fee) : null,
+      estimatedFee: BigNumber.from(gasSettings.gasPrice)
+        .mul(
+          BigNumber.from(estimatedGas).lt(gasSettings.gasLimit)
+            ? estimatedGas
+            : gasSettings.gasLimit
+        )
+        .add(l1Fee),
+      maxFee: BigNumber.from(gasSettings.gasPrice).mul(gasSettings.gasLimit).add(l1Fee),
     }
   }
 }

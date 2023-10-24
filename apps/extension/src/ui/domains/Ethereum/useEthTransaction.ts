@@ -28,6 +28,7 @@ import { BigNumber, ethers } from "ethers"
 import { useEffect, useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
 
+import { useEthEstimateL1DataFee } from "./useEthEstimateL1DataFee"
 import { useIsValidEthTransaction } from "./useIsValidEthTransaction"
 
 // gasPrice isn't reliable on polygon & mumbai, see https://github.com/ethers-io/ethers.js/issues/2828#issuecomment-1283014250
@@ -431,17 +432,24 @@ export const useEthTransaction = (
     if (!lockTransaction) setTransaction(liveUpdatingTransaction)
   }, [liveUpdatingTransaction, lockTransaction])
 
+  const { data: l1DataFeeEstimate, error: l1FeeError } = useEthEstimateL1DataFee(
+    provider,
+    transaction
+  )
+
   // TODO replace this wierd object name with something else... gasInfo ?
   const txDetails: EthTransactionDetails | undefined = useMemo(() => {
-    if (!gasPrice || !estimatedGas || !transaction || !gasSettings) return undefined
+    if (!gasPrice || !estimatedGas || !transaction || !gasSettings || !l1DataFeeEstimate)
+      return undefined
 
     // if type 2 transaction, wait for baseFee to be available
     if (gasSettings?.type === 2 && !baseFeePerGas) return undefined
 
-    const { estimatedFee, maxFee } = getTotalFeesFromGasSettings(
+    const { estimatedFee, maxFee, estimatedL1DataFee } = getTotalFeesFromGasSettings(
       gasSettings,
       estimatedGas,
-      baseFeePerGas
+      baseFeePerGas,
+      l1DataFeeEstimate
     )
 
     return {
@@ -449,10 +457,19 @@ export const useEthTransaction = (
       gasPrice,
       baseFeePerGas,
       estimatedFee,
+      estimatedL1DataFee,
       maxFee,
       baseFeeTrend: feeHistoryAnalysis?.baseFeeTrend,
     }
-  }, [baseFeePerGas, estimatedGas, feeHistoryAnalysis, gasPrice, gasSettings, transaction])
+  }, [
+    baseFeePerGas,
+    estimatedGas,
+    feeHistoryAnalysis?.baseFeeTrend,
+    gasPrice,
+    gasSettings,
+    l1DataFeeEstimate,
+    transaction,
+  ])
 
   // use staleIsValid to prevent disabling approve button each time there is a new block (triggers gas check)
   const { isValid, error: isValidError } = useIsValidEthTransaction(provider, transaction, priority)
@@ -463,6 +480,7 @@ export const useEthTransaction = (
       nonceError ??
       blockFeeDataError ??
       errorTransactionInfo ??
+      l1FeeError ??
       isValidError) as Error & { code?: string; error?: Error }
 
     const userFriendlyError = getEthersErrorLabelFromCode(anyError?.code)
@@ -477,7 +495,15 @@ export const useEthTransaction = (
       }
 
     return { error: undefined, errorDetails: undefined }
-  }, [blockFeeDataError, isValidError, errorEip1559Support, errorTransactionInfo, nonceError, t])
+  }, [
+    errorEip1559Support,
+    nonceError,
+    blockFeeDataError,
+    errorTransactionInfo,
+    l1FeeError,
+    isValidError,
+    t,
+  ])
 
   const isLoading = useMemo(
     () => tx && !transactionInfo && !txDetails && !error,

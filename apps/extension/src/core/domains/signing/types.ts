@@ -155,7 +155,8 @@ export type EthTransactionDetails = {
   estimatedGas: BigNumberish
   gasPrice: BigNumberish
   estimatedFee: BigNumberish
-  maxFee: BigNumberish // TODO yeet !
+  estimatedL1DataFee: BigNumberish | null
+  maxFee: BigNumberish
   baseFeePerGas?: BigNumberish | null
   baseFeeTrend?: EthBaseFeeTrend
 }

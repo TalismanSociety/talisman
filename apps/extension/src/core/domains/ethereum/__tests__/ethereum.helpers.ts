@@ -35,8 +35,9 @@ describe("Test ethereum helpers", () => {
         gasLimit: 22000,
       },
       21000,
-      baseFeePerGas
-    ) //
+      baseFeePerGas,
+      0
+    )
 
     const expectedEstimatedFee = ethers.utils.parseUnits("42000000000000", "wei").toString()
     const expectedMaxFee = ethers.utils.parseUnits("44000000000000", "wei").toString()
@@ -54,7 +55,8 @@ describe("Test ethereum helpers", () => {
         gasLimit: 22000,
       },
       21000,
-      baseFeePerGas
+      baseFeePerGas,
+      0
     )
 
     const expectedEstimatedFee = ethers.utils.parseUnits("52500000000000", "wei").toString()
@@ -72,7 +74,8 @@ describe("Test ethereum helpers", () => {
         gasLimit: 22000,
       },
       21000,
-      baseFeePerGas
+      baseFeePerGas,
+      0
     )
 
     const expectedEstimatedFee = ethers.utils.parseUnits("210000", "gwei").toString()

@@ -82,22 +82,38 @@ const ViewDetailsContent: FC<ViewDetailsContentProps> = ({ onClose }) => {
     genericEvent("open sign transaction view details", { type: "ethereum" })
   }, [genericEvent])
 
-  const [estimatedFee, maximumFee] = useMemo(
+  const [estimatedFee, maximumFee, estimatedL1DataFee, estimatedL2Fee] = useMemo(
     () =>
       txDetails && nativeToken
         ? [
             new BalanceFormatter(
-              BigNumber.from(txDetails?.estimatedFee).toString(),
-              nativeToken?.decimals,
+              BigNumber.from(txDetails.estimatedFee).toString(),
+              nativeToken.decimals,
               nativeTokenRates
             ),
             new BalanceFormatter(
-              BigNumber.from(txDetails?.maxFee).toString(),
-              nativeToken?.decimals,
+              BigNumber.from(txDetails.maxFee).toString(),
+              nativeToken.decimals,
               nativeTokenRates
             ),
+            txDetails.estimatedL1DataFee
+              ? new BalanceFormatter(
+                  BigNumber.from(txDetails.estimatedL1DataFee).toString(),
+                  nativeToken.decimals,
+                  nativeTokenRates
+                )
+              : null,
+            txDetails.estimatedL1DataFee
+              ? new BalanceFormatter(
+                  BigNumber.from(txDetails.estimatedFee)
+                    .sub(txDetails.estimatedL1DataFee)
+                    .toString(),
+                  nativeToken.decimals,
+                  nativeTokenRates
+                )
+              : null,
           ]
-        : [null, null],
+        : [null, null, null],
     [nativeToken, nativeTokenRates, txDetails]
   )
 
@@ -215,6 +231,48 @@ const ViewDetailsContent: FC<ViewDetailsContentProps> = ({ onClose }) => {
             ) : (
               t("N/A")
             )}
+          </ViewDetailsField>
+        )}
+        {estimatedL1DataFee && estimatedL2Fee && nativeToken && (
+          <ViewDetailsField label={t("Layer 2")}>
+            <ViewDetailsGrid>
+              <ViewDetailsGridRow
+                left={t("Layer 1 data fee")}
+                right={
+                  <>
+                    <Tokens
+                      amount={estimatedL1DataFee.tokens}
+                      decimals={nativeToken.decimals}
+                      symbol={nativeToken.symbol}
+                    />
+                    {estimatedL1DataFee && nativeTokenRates ? (
+                      <>
+                        {" "}
+                        / <Fiat amount={estimatedL1DataFee} noCountUp />
+                      </>
+                    ) : null}
+                  </>
+                }
+              />
+              <ViewDetailsGridRow
+                left={t("Layer 2 fee")}
+                right={
+                  <>
+                    <Tokens
+                      amount={estimatedL2Fee.tokens}
+                      decimals={nativeToken.decimals}
+                      symbol={nativeToken.symbol}
+                    />
+                    {estimatedL2Fee && nativeTokenRates ? (
+                      <>
+                        {" "}
+                        / <Fiat amount={estimatedL2Fee} noCountUp />
+                      </>
+                    ) : null}
+                  </>
+                }
+              />
+            </ViewDetailsGrid>
           </ViewDetailsField>
         )}
         <ViewDetailsField label={t("Total Fee")}>

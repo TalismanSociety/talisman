@@ -100,8 +100,19 @@ const PriorityOption = ({
 }: PriorityOptionProps) => {
   const { estimatedFee, maxFee } = useMemo(() => {
     const gasSettings = getGasSettings(gasSettingsByPriority, priority)
-    return getTotalFeesFromGasSettings(gasSettings, txDetails.estimatedGas, txDetails.baseFeePerGas)
-  }, [gasSettingsByPriority, priority, txDetails.baseFeePerGas, txDetails.estimatedGas])
+    return getTotalFeesFromGasSettings(
+      gasSettings,
+      txDetails.estimatedGas,
+      txDetails.baseFeePerGas,
+      txDetails.estimatedL1DataFee ?? 0
+    )
+  }, [
+    gasSettingsByPriority,
+    priority,
+    txDetails.baseFeePerGas,
+    txDetails.estimatedGas,
+    txDetails.estimatedL1DataFee,
+  ])
 
   const options = useFeePriorityOptionsUI()
 
