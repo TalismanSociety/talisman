@@ -1,8 +1,15 @@
-import { CustomEvmNetwork, EvmNetwork, EvmNetworkId } from "@talismn/chaindata-provider"
+import {
+  ChaindataTokenProvider,
+  CustomEvmNetwork,
+  EvmNetwork,
+  EvmNetworkId,
+} from "@talismn/chaindata-provider"
 import { ChaindataEvmNetworkProvider } from "@talismn/chaindata-provider"
 import { ethers } from "ethers"
+import { PublicClient } from "viem"
 
 import { RPC_CALL_TIMEOUT } from "./constants"
+import { clearPublicClientCache, getEvmNetworkPublicClient } from "./getEvmNetworkClient"
 import log from "./log"
 import { BatchRpcProvider, StandardRpcProvider, addOnfinalityApiKey, getHealthyRpc } from "./util"
 
@@ -22,6 +29,7 @@ export type ChainConnectorEvmOptions = {
 
 export class ChainConnectorEvm {
   #chaindataEvmNetworkProvider: ChaindataEvmNetworkProvider
+  #chaindataTokenProvider: ChaindataTokenProvider
   #onfinalityApiKey?: string
 
   // cache for providers
@@ -46,9 +54,11 @@ export class ChainConnectorEvm {
 
   constructor(
     chaindataEvmNetworkProvider: ChaindataEvmNetworkProvider,
+    chaindataTokenProvider: ChaindataTokenProvider,
     options?: ChainConnectorEvmOptions
   ) {
     this.#chaindataEvmNetworkProvider = chaindataEvmNetworkProvider
+    this.#chaindataTokenProvider = chaindataTokenProvider
     this.#onfinalityApiKey = options?.onfinalityApiKey ?? undefined
   }
 
@@ -94,6 +104,17 @@ export class ChainConnectorEvm {
     return (await this.#providerCache.get(cacheKey)) ?? null
   }
 
+  public async getPublicClientForEvmNetwork(
+    evmNetworkId: EvmNetworkId
+  ): Promise<PublicClient | null> {
+    const network = await this.#chaindataEvmNetworkProvider.getEvmNetwork(evmNetworkId)
+    if (!network?.nativeToken?.id) return null
+    const nativeToken = await this.#chaindataTokenProvider.getToken(network.nativeToken.id)
+    if (!nativeToken) return null
+
+    return getEvmNetworkPublicClient(network, nativeToken)
+  }
+
   clearRpcProvidersCache(evmNetworkId?: EvmNetworkId, clearRpcUrlsCache = true) {
     if (evmNetworkId) {
       this.#providerCache.delete(getEvmNetworkProviderCacheKey(evmNetworkId, false))
@@ -103,6 +124,7 @@ export class ChainConnectorEvm {
       this.#providerCache.clear()
       if (clearRpcUrlsCache) this.#rpcUrlsCache.clear()
     }
+    clearPublicClientCache(evmNetworkId)
   }
 
   private rotateRpcUrls(evmNetworkId: EvmNetworkId) {

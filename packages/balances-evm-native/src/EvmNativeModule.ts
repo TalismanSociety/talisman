@@ -15,8 +15,8 @@ import {
   githubTokenLogoUrl,
 } from "@talismn/chaindata-provider"
 import { hasOwnProperty, isEthereumAddress } from "@talismn/util"
-import { ethers } from "ethers"
 import isEqual from "lodash/isEqual"
+import { PublicClient } from "viem"
 
 import log from "./log"
 
@@ -193,10 +193,11 @@ export const EvmNativeModule: NewBalanceModule<
             const evmNetwork = evmNetworks[evmNetworkId]
             if (!evmNetwork) throw new Error(`Evm network ${evmNetworkId} not found`)
 
-            const provider = await chainConnectors.evm.getProviderForEvmNetwork(evmNetwork, {
-              batch: true,
-            })
-            if (!provider)
+            const publicClient = await chainConnectors.evm.getPublicClientForEvmNetwork(
+              evmNetworkId
+            )
+
+            if (!publicClient)
               throw new Error(`Could not get rpc provider for evm network ${evmNetworkId}`)
 
             // fetch all balances
@@ -212,7 +213,7 @@ export const EvmNativeModule: NewBalanceModule<
                   evmNetworkId,
                   tokenId,
 
-                  free: await getFreeBalance(provider, address),
+                  free: await getFreeBalance(publicClient, address),
                 })
             )
 
@@ -249,21 +250,22 @@ export const EvmNativeModule: NewBalanceModule<
   }
 }
 
-async function getFreeBalance(
-  provider: ethers.providers.JsonRpcProvider,
-  address: Address
-): Promise<string> {
+async function getFreeBalance(publicClient: PublicClient, address: Address): Promise<string> {
   if (!isEthereumAddress(address)) return "0"
 
   try {
-    return ((await provider.getBalance(address)).toBigInt() ?? 0n).toString()
+    return (await publicClient.getBalance({ address })).toString()
   } catch (error) {
-    const errorMessage = hasOwnProperty(error, "message") ? error.message : error
+    const errorMessage = hasOwnProperty(error, "shortMessage")
+      ? error.shortMessage
+      : hasOwnProperty(error, "message")
+      ? error.message
+      : error
     log.warn(
-      `Failed to get balance from chain ${provider.network.chainId} for address ${address}: ${errorMessage}`
+      `Failed to get balance from chain ${publicClient.chain?.id} for address ${address}: ${errorMessage}`
     )
     throw new Error(
-      `Failed to get balance from chain ${provider.network.chainId} for address ${address}`,
+      `Failed to get balance from chain ${publicClient.chain?.id} for address ${address}`,
       { cause: error as Error }
     )
   }
