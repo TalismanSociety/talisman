@@ -29,7 +29,7 @@
     "@talismn/tsconfig": "workspace:*",
     "@types/react": "18.0.14",
     "@types/react-dom": "18.0.5",
-    "eslint": "^8.15.0",
+    "eslint": "^8.52.0",
     "react": "18.2.0",
     "react-dom": "18.2.0",
     "typescript": "^5.2.2"
