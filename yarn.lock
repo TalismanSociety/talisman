@@ -7341,7 +7341,7 @@ __metadata:
     eslint: ^8.4.0
     jest: ^28.1.0
     ts-jest: ^28.0.2
-    typescript: ^4.6.4
+    typescript: ^5.2.2
   languageName: unknown
   linkType: soft
 
@@ -7363,7 +7363,7 @@ __metadata:
     jest: ^28.1.0
     lodash: 4.17.21
     ts-jest: ^28.0.2
-    typescript: ^4.6.4
+    typescript: ^5.2.2
   peerDependencies:
     "@polkadot/util": 11.x
   languageName: unknown
@@ -7386,7 +7386,7 @@ __metadata:
     jest: ^28.1.0
     lodash: 4.17.21
     ts-jest: ^28.0.2
-    typescript: ^4.6.4
+    typescript: ^5.2.2
   languageName: unknown
   linkType: soft
 
@@ -7440,7 +7440,7 @@ __metadata:
     eslint: ^8.4.0
     jest: ^28.1.0
     ts-jest: ^28.0.2
-    typescript: ^4.6.4
+    typescript: ^5.2.2
   peerDependencies:
     "@polkadot/types": 10.x
     "@polkadot/util": 11.x
@@ -7466,7 +7466,7 @@ __metadata:
     eslint: ^8.4.0
     jest: ^28.1.0
     ts-jest: ^28.0.2
-    typescript: ^4.6.4
+    typescript: ^5.2.2
   peerDependencies:
     "@polkadot/types": 10.x
     "@polkadot/util": 11.x
@@ -7496,7 +7496,7 @@ __metadata:
     lodash: 4.17.21
     rxjs: ^7.8.1
     ts-jest: ^28.0.2
-    typescript: ^4.6.4
+    typescript: ^5.2.2
   peerDependencies:
     "@polkadot/types": 10.x
     "@polkadot/util": 11.x
@@ -7522,7 +7522,7 @@ __metadata:
     eslint: ^8.4.0
     jest: ^28.1.0
     ts-jest: ^28.0.2
-    typescript: ^4.6.4
+    typescript: ^5.2.2
   peerDependencies:
     "@polkadot/types": 10.x
     "@polkadot/util": 11.x
@@ -7551,7 +7551,7 @@ __metadata:
     jest: ^28.1.0
     lodash: 4.17.21
     ts-jest: ^28.0.2
-    typescript: ^4.6.4
+    typescript: ^5.2.2
   peerDependencies:
     "@polkadot/api-contract": ^10.x
     "@polkadot/types": 10.x
@@ -7578,7 +7578,7 @@ __metadata:
     eslint: ^8.4.0
     jest: ^28.1.0
     ts-jest: ^28.0.2
-    typescript: ^4.6.4
+    typescript: ^5.2.2
   peerDependencies:
     "@polkadot/types": 10.x
     "@polkadot/util": 11.x
@@ -7606,7 +7606,7 @@ __metadata:
     jest: ^28.1.0
     lodash: 4.17.21
     ts-jest: ^28.0.2
-    typescript: ^4.6.4
+    typescript: ^5.2.2
   peerDependencies:
     "@polkadot/types": 10.x
   languageName: unknown
@@ -7628,7 +7628,7 @@ __metadata:
     jest: ^28.1.0
     lodash: 4.17.21
     ts-jest: ^28.0.2
-    typescript: ^4.6.4
+    typescript: ^5.2.2
   languageName: unknown
   linkType: soft
 
@@ -7651,7 +7651,7 @@ __metadata:
     eventemitter3: ^5.0.0
     jest: ^28.1.0
     ts-jest: ^28.0.2
-    typescript: ^4.6.4
+    typescript: ^5.2.2
   peerDependencies:
     "@polkadot/rpc-provider": 10.x
     "@polkadot/util": 11.x
@@ -7686,7 +7686,7 @@ __metadata:
     rxjs: ^7.8.1
     ts-jest: ^28.0.2
     ts-node: ^10.9.1
-    typescript: ^4.6.4
+    typescript: ^5.2.2
   languageName: unknown
   linkType: soft
 
@@ -7700,7 +7700,7 @@ __metadata:
     eslint: ^8.4.0
     jest: ^28.1.0
     ts-jest: ^28.0.2
-    typescript: ^4.6.4
+    typescript: ^5.2.2
   languageName: unknown
   linkType: soft
 
@@ -7716,7 +7716,7 @@ __metadata:
     eslint: ^8.4.0
     jest: ^28.1.0
     ts-jest: ^28.0.2
-    typescript: ^4.6.4
+    typescript: ^5.2.2
   languageName: unknown
   linkType: soft
 
@@ -7748,7 +7748,7 @@ __metadata:
     react: 18.2.0
     react-icons: ^4.10.1
     ts-jest: ^28.0.2
-    typescript: ^4.6.4
+    typescript: ^5.2.2
   peerDependencies:
     react: ">=18.2.0"
   languageName: unknown
@@ -7767,7 +7767,7 @@ __metadata:
     eslint: ^8.4.0
     jest: ^28.1.0
     ts-jest: ^28.0.2
-    typescript: ^4.6.4
+    typescript: ^5.2.2
   languageName: unknown
   linkType: soft
 
@@ -7785,7 +7785,7 @@ __metadata:
     eslint: ^8.4.0
     jest: ^28.1.0
     ts-jest: ^28.0.2
-    typescript: ^4.6.4
+    typescript: ^5.2.2
   peerDependencies:
     "@polkadot/types": 10.x
   languageName: unknown
@@ -7806,7 +7806,7 @@ __metadata:
     nanoid: 3.3.6
     react: 18.2.0
     react-dom: 18.2.0
-    typescript: 4.6.4
+    typescript: ^5.2.2
   peerDependencies:
     react: "*"
     react-dom: "*"
@@ -7825,7 +7825,7 @@ __metadata:
     eslint: ^8.4.0
     jest: ^28.1.0
     ts-jest: ^28.0.2
-    typescript: ^4.6.4
+    typescript: ^5.2.2
     wat-the-crypto: ^0.0.3
   languageName: unknown
   linkType: soft
@@ -7850,7 +7850,7 @@ __metadata:
     eslint: ^8.4.0
     jest: ^28.1.0
     ts-jest: ^28.0.2
-    typescript: ^4.6.4
+    typescript: ^5.2.2
   languageName: unknown
   linkType: soft
 
@@ -7875,7 +7875,7 @@ __metadata:
     jest: ^28.1.0
     tailwind-merge: ^1.13.2
     ts-jest: ^28.0.2
-    typescript: ^4.6.4
+    typescript: ^5.2.2
   peerDependencies:
     "@polkadot/keyring": 12.x
     "@polkadot/util": 12.x
@@ -24212,7 +24212,7 @@ __metadata:
     react-router-dom: 6.14.1
     react-use: 17.4.0
     tailwindcss: ^3.3.2
-    typescript: 4.6.4
+    typescript: ^5.2.2
   peerDependencies:
     "@floating-ui/react": ">=0.20.1"
     "@headlessui/react": ">=1.7.13"
@@ -25204,16 +25204,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"typescript@npm:4.6.4":
-  version: 4.6.4
-  resolution: "typescript@npm:4.6.4"
-  bin:
-    tsc: bin/tsc
-    tsserver: bin/tsserver
-  checksum: e7bfcc39cd4571a63a54e5ea21f16b8445268b9900bf55aee0e02ad981be576acc140eba24f1af5e3c1457767c96cea6d12861768fb386cf3ffb34013718631a
-  languageName: node
-  linkType: hard
-
 "typescript@npm:4.9.4":
   version: 4.9.4
   resolution: "typescript@npm:4.9.4"
@@ -25254,13 +25244,13 @@ __metadata:
   languageName: node
   linkType: hard
 
-"typescript@patch:typescript@4.6.4#~builtin<compat/typescript>":
-  version: 4.6.4
-  resolution: "typescript@patch:typescript@npm%3A4.6.4#~builtin<compat/typescript>::version=4.6.4&hash=7ad353"
+"typescript@npm:^5.2.2":
+  version: 5.2.2
+  resolution: "typescript@npm:5.2.2"
   bin:
     tsc: bin/tsc
     tsserver: bin/tsserver
-  checksum: 1cb434fbc637d347be90e3a0c6cd05e33c38f941713c8786d3031faf1842c2c148ba91d2fac01e7276b0ae3249b8633f1660e32686cc7a8c6a8fd5361dc52c66
+  checksum: 7912821dac4d962d315c36800fe387cdc0a6298dba7ec171b350b4a6e988b51d7b8f051317786db1094bd7431d526b648aba7da8236607febb26cf5b871d2d3c
   languageName: node
   linkType: hard
 
@@ -25301,6 +25291,16 @@ __metadata:
     tsc: bin/tsc
     tsserver: bin/tsserver
   checksum: 21e88b0a0c0226f9cb9fd25b9626fb05b4c0f3fddac521844a13e1f30beb8f14e90bd409a9ac43c812c5946d714d6e0dee12d5d02dfc1c562c5aacfa1f49b606
+  languageName: node
+  linkType: hard
+
+"typescript@patch:typescript@^5.2.2#~builtin<compat/typescript>":
+  version: 5.2.2
+  resolution: "typescript@patch:typescript@npm%3A5.2.2#~builtin<compat/typescript>::version=5.2.2&hash=7ad353"
+  bin:
+    tsc: bin/tsc
+    tsserver: bin/tsserver
+  checksum: 07106822b4305de3f22835cbba949a2b35451cad50888759b6818421290ff95d522b38ef7919e70fb381c5fe9c1c643d7dea22c8b31652a717ddbd57b7f4d554
   languageName: node
   linkType: hard
 
