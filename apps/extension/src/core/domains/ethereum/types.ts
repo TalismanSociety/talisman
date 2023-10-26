@@ -5,8 +5,11 @@ import { BaseRequest, BaseRequestId, RequestIdOnly } from "@core/types/base"
 import { HexString } from "@polkadot/util/types"
 import { EvmNetworkId } from "@talismn/chaindata-provider"
 import { BigNumberish, ethers } from "ethers"
+import type { Address as EvmAddress } from "viem"
 
 import { WalletTransactionTransferInfo } from "../transactions"
+
+export type { EvmAddress }
 
 export type {
   EvmNetwork,

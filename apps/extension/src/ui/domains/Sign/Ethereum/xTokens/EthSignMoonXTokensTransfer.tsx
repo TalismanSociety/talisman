@@ -1,3 +1,4 @@
+import { EvmAddress } from "@core/domains/ethereum/types"
 import { hexToU8a } from "@polkadot/util"
 import { Address } from "@talismn/balances"
 import { encodeAnyAddress } from "@talismn/util"
@@ -78,7 +79,7 @@ export const EthSignMoonXTokensTransfer: FC = () => {
       "destination"
     )
     const amount = getContractCallArg<BigNumber>(transactionInfo.contractCall, "amount")
-    const currencyAddress = getContractCallArg<string>(
+    const currencyAddress = getContractCallArg<EvmAddress>(
       transactionInfo.contractCall,
       "currency_address"
     )

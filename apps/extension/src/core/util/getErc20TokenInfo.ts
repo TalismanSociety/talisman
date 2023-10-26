@@ -1,4 +1,4 @@
-import { EvmNetworkId } from "@core/domains/ethereum/types"
+import { EvmAddress, EvmNetworkId } from "@core/domains/ethereum/types"
 import { CustomErc20TokenCreate } from "@core/domains/tokens/types"
 import { ethers } from "ethers"
 import { Client } from "viem"
@@ -12,7 +12,7 @@ import { getErc20ContractData, getErc20ContractDataOld } from "./getErc20Contrac
 export const getErc20TokenInfoOld = async (
   provider: ethers.providers.JsonRpcProvider,
   evmNetworkId: EvmNetworkId,
-  contractAddress: string
+  contractAddress: EvmAddress
 ): Promise<CustomErc20TokenCreate> => {
   const [{ decimals, symbol }, coinGeckoData] = await Promise.all([
     getErc20ContractDataOld(provider, contractAddress),

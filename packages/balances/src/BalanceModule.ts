@@ -2,7 +2,6 @@ import { UnsignedTransaction } from "@substrate/txwrapper-core"
 import { ChainConnector } from "@talismn/chain-connector"
 import { ChainConnectorEvm } from "@talismn/chain-connector-evm"
 import { ChainId, ChaindataProvider, IToken } from "@talismn/chaindata-provider"
-import { ethers } from "ethers"
 
 import { AddressesByToken, Balances, SubscriptionCallback, UnsubscribeFn } from "./types"
 
@@ -17,9 +16,8 @@ export type DefaultTransferParams = undefined
 
 export type NewTransferParamsType<T extends Record<string, unknown>> = BaseTransferParams & T
 
-export type TransferTokenTx =
-  | { type: "substrate"; tx: UnsignedTransaction }
-  | { type: "evm"; tx: ethers.providers.TransactionRequest }
+export type TransferTokenTx = { type: "substrate"; tx: UnsignedTransaction }
+// | { type: "evm"; tx: TransactionRequest }
 
 export type ChainConnectors = { substrate?: ChainConnector; evm?: ChainConnectorEvm }
 export type Hydrate = {

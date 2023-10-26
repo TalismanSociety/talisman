@@ -267,7 +267,7 @@ export const SubPsp22Module: NewBalanceModule<
           })
 
           if (token.contractAddress === undefined) {
-            log.debug(`Token ${tokenId} of type ${token.type} doesn't have a contractAddress`)
+            log.debug(`Token ${tokenId} of type substrate-psp22 doesn't have a contractAddress`)
             return []
           }
 

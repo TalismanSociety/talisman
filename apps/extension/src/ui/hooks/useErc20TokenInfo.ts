@@ -1,26 +1,27 @@
+import { EvmAddress } from "@core/domains/ethereum/types"
 import { CustomErc20TokenCreate } from "@core/domains/tokens/types"
-import { getErc20TokenInfoOld } from "@core/util/getErc20TokenInfo"
+import { getErc20TokenInfo } from "@core/util/getErc20TokenInfo"
 import { EvmNetworkId } from "@talismn/chaindata-provider"
-import { useEthereumProvider } from "@ui/domains/Ethereum/useEthereumProvider"
+import { usePublicClient } from "@ui/domains/Ethereum/useEthereumProvider"
 import { useEffect, useState } from "react"
 
-export const useErc20TokenInfo = (evmNetworkId?: EvmNetworkId, contractAddress?: string) => {
+export const useErc20TokenInfo = (evmNetworkId?: EvmNetworkId, contractAddress?: EvmAddress) => {
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState<Error>()
   const [token, setToken] = useState<CustomErc20TokenCreate>()
 
-  const provider = useEthereumProvider(evmNetworkId)
+  const publicClient = usePublicClient(evmNetworkId)
 
   useEffect(() => {
     setError(undefined)
     setToken(undefined)
-    if (!evmNetworkId || !provider || !contractAddress) return
+    if (!evmNetworkId || !publicClient || !contractAddress) return
     setIsLoading(true)
-    getErc20TokenInfoOld(provider, evmNetworkId, contractAddress)
+    getErc20TokenInfo(publicClient, evmNetworkId, contractAddress)
       .then(setToken)
       .catch(setError)
       .finally(() => setIsLoading(false))
-  }, [contractAddress, evmNetworkId, provider])
+  }, [contractAddress, evmNetworkId, publicClient])
 
   return { isLoading, error, token }
 }
