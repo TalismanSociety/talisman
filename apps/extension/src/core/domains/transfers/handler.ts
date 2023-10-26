@@ -218,7 +218,7 @@ export default class AssetTransferHandler extends ExtensionHandler {
       const password = this.stores.password.getPassword()
       assert(password, "Unauthorised")
 
-      const privateKey = getPrivateKey(pair, password)
+      const privateKey = getPrivateKey(pair, password, "u8a")
       const wallet = new Wallet(privateKey, provider)
 
       const { hash } = await wallet.sendTransaction(transaction)

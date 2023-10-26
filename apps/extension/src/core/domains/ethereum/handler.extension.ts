@@ -23,12 +23,14 @@ import { HexString } from "@polkadot/util/types"
 import { evmNativeTokenId } from "@talismn/balances-evm-native"
 import { CustomEvmNetwork, githubUnknownTokenLogoUrl } from "@talismn/chaindata-provider"
 import { ethers } from "ethers"
+import { privateKeyToAccount } from "viem/accounts"
 
 import { getHostName } from "../app/helpers"
 import { getHumanReadableErrorMessage } from "./errors"
 import { rebuildTransactionRequestNumbers } from "./helpers"
 import { getProviderForEvmNetworkId } from "./rpcProviders"
 import { getTransactionCount, incrementTransactionCount } from "./transactionCountManager"
+import { getViemSendTransactionParams } from "./viemMigration"
 
 export class EthHandler extends ExtensionHandler {
   private signAndSendApproveHardware: MessageHandler<"pri(eth.signing.approveSignAndSendHardware)"> =
@@ -85,22 +87,25 @@ export class EthHandler extends ExtensionHandler {
     assert(queued, "Unable to find request")
     const { resolve, reject, ethChainId, account, url } = queued
 
-    const provider = await getProviderForEvmNetworkId(ethChainId)
-    assert(provider, "Unable to find provider for chain " + ethChainId)
-
     // rebuild BigNumber property values (converted to json when serialized)
     const tx = rebuildTransactionRequestNumbers(transaction)
-    tx.nonce = await getTransactionCount(account.address, ethChainId)
+    if (tx.nonce === undefined) tx.nonce = await getTransactionCount(account.address, ethChainId)
 
     const result = await getPairForAddressSafely(account.address, async (pair) => {
+      const client = await chainConnectorEvm.getWalletClientForEvmNetwork(ethChainId)
+      assert(client, "Missing client for chain " + ethChainId)
+
       const password = this.stores.password.getPassword()
       assert(password, "Unauthorised")
-      const privateKey = getPrivateKey(pair, password)
-      const signer = new ethers.Wallet(privateKey, provider)
 
-      const { hash } = await signer.sendTransaction(tx)
+      const privateKey = getPrivateKey(pair, password, "hex")
+      const account = privateKeyToAccount(privateKey)
 
-      return hash
+      return await client.sendTransaction({
+        chain: client.chain,
+        account,
+        ...getViemSendTransactionParams(tx),
+      })
     })
 
     if (result.ok) {
@@ -186,7 +191,7 @@ export class EthHandler extends ExtensionHandler {
     const result = await getPairForAddressSafely(unsigned.from, async (pair) => {
       const password = this.stores.password.getPassword()
       assert(password, "Unauthorised")
-      const privateKey = getPrivateKey(pair, password)
+      const privateKey = getPrivateKey(pair, password, "u8a")
       const signer = new ethers.Wallet(privateKey, provider)
 
       const { hash } = await signer.sendTransaction(tx)
@@ -259,7 +264,7 @@ export class EthHandler extends ExtensionHandler {
     const { val, ok } = await getPairForAddressSafely(queued.account.address, async (pair) => {
       const pw = this.stores.password.getPassword()
       assert(pw, "Unauthorised")
-      const privateKey = getPrivateKey(pair, pw)
+      const privateKey = getPrivateKey(pair, pw, "buffer")
       let signature: string
 
       if (method === "personal_sign") {

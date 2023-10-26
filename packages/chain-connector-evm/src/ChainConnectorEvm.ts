@@ -6,10 +6,11 @@ import {
 } from "@talismn/chaindata-provider"
 import { ChaindataEvmNetworkProvider } from "@talismn/chaindata-provider"
 import { ethers } from "ethers"
-import { PublicClient } from "viem"
+import { Account, PublicClient, WalletClient } from "viem"
 
 import { RPC_CALL_TIMEOUT } from "./constants"
-import { clearPublicClientCache, getEvmNetworkPublicClient } from "./getEvmNetworkClient"
+import { clearPublicClientCache, getEvmNetworkPublicClient } from "./getEvmNetworkPublicClient"
+import { getEvmNetworkWalletClient } from "./getEvmNetworkWalletClient"
 import log from "./log"
 import { BatchRpcProvider, StandardRpcProvider, addOnfinalityApiKey, getHealthyRpc } from "./util"
 
@@ -113,6 +114,18 @@ export class ChainConnectorEvm {
     if (!nativeToken) return null
 
     return getEvmNetworkPublicClient(network, nativeToken)
+  }
+
+  public async getWalletClientForEvmNetwork(
+    evmNetworkId: EvmNetworkId,
+    account?: `0x${string}` | Account
+  ): Promise<WalletClient | null> {
+    const network = await this.#chaindataEvmNetworkProvider.getEvmNetwork(evmNetworkId)
+    if (!network?.nativeToken?.id) return null
+    const nativeToken = await this.#chaindataTokenProvider.getToken(network.nativeToken.id)
+    if (!nativeToken) return null
+
+    return getEvmNetworkWalletClient(network, nativeToken, account)
   }
 
   clearRpcProvidersCache(evmNetworkId?: EvmNetworkId, clearRpcUrlsCache = true) {

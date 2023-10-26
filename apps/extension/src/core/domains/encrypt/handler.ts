@@ -27,7 +27,7 @@ export default class EncryptHandler extends ExtensionHandler {
       const pw = this.stores.password.getPassword()
       assert(pw, "Unable to retreive password from store.")
 
-      const pk = getPrivateKey(pair, pw)
+      const pk = getPrivateKey(pair, pw, "u8a")
       const kp = { publicKey: pair.publicKey, secretKey: u8aToU8a(pk) } as Keypair
 
       assert(kp.secretKey.length === 64, "Talisman secretKey is incorrect length")
@@ -66,7 +66,7 @@ export default class EncryptHandler extends ExtensionHandler {
       const pw = this.stores.password.getPassword()
       assert(pw, "Unable to retreive password from store.")
 
-      const pk = getPrivateKey(pair, pw)
+      const pk = getPrivateKey(pair, pw, "u8a")
 
       assert(pk.length === 64, "Talisman secretKey is incorrect length")
 
