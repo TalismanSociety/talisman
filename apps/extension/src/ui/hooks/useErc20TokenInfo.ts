@@ -1,5 +1,5 @@
 import { CustomErc20TokenCreate } from "@core/domains/tokens/types"
-import { getErc20TokenInfo } from "@core/util/getErc20TokenInfo"
+import { getErc20TokenInfoOld } from "@core/util/getErc20TokenInfo"
 import { EvmNetworkId } from "@talismn/chaindata-provider"
 import { useEthereumProvider } from "@ui/domains/Ethereum/useEthereumProvider"
 import { useEffect, useState } from "react"
@@ -16,7 +16,7 @@ export const useErc20TokenInfo = (evmNetworkId?: EvmNetworkId, contractAddress?:
     setToken(undefined)
     if (!evmNetworkId || !provider || !contractAddress) return
     setIsLoading(true)
-    getErc20TokenInfo(provider, evmNetworkId, contractAddress)
+    getErc20TokenInfoOld(provider, evmNetworkId, contractAddress)
       .then(setToken)
       .catch(setError)
       .finally(() => setIsLoading(false))

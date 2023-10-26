@@ -33,7 +33,6 @@ import { chainConnectorEvm } from "@core/rpcs/chain-connector-evm"
 import { chaindataProvider } from "@core/rpcs/chaindata"
 import type { RequestSignatures, RequestTypes, ResponseType } from "@core/types"
 import { Port } from "@core/types/base"
-import { getErc20TokenInfo } from "@core/util/getErc20TokenInfo"
 import { urlToDomain } from "@core/util/urlToDomain"
 import keyring from "@polkadot/ui-keyring"
 import { accounts as accountsObservable } from "@polkadot/ui-keyring/observable/accounts"
@@ -45,6 +44,7 @@ import { throwAfter } from "@talismn/util"
 import { PublicClient, createClient, getAddress, http, recoverMessageAddress, toHex } from "viem"
 import { hexToNumber } from "viem/utils"
 
+import { getErc20TokenInfo } from "../../util/getErc20TokenInfo"
 import {
   ERROR_DUPLICATE_AUTH_REQUEST_MESSAGE,
   requestAuthoriseSite,
@@ -57,7 +57,6 @@ import {
   sanitizeWatchAssetRequestParam,
 } from "./helpers"
 import { requestAddNetwork, requestWatchAsset } from "./requests"
-import { getProviderForEthereumNetwork, getProviderForEvmNetworkId } from "./rpcProviders"
 import { Web3WalletPermission, Web3WalletPermissionTarget } from "./types"
 
 interface EthAuthorizedSite extends AuthorizedSite {
@@ -363,7 +362,7 @@ export class EthTabsHandler extends TabsHandler {
         ETH_ERROR_UNKNOWN_CHAIN_NOT_CONFIGURED
       )
 
-    const provider = await getProviderForEthereumNetwork(ethereumNetwork, { batch: true })
+    const provider = await chainConnectorEvm.getPublicClientForEvmNetwork(ethereumNetwork.id)
     if (!provider)
       throw new EthProviderRpcError(
         `Failed to connect to network ${ethChainId}`,
@@ -481,8 +480,8 @@ export class EthTabsHandler extends TabsHandler {
         if (existing)
           throw new EthProviderRpcError("Asset already exists", ETH_ERROR_EIP1474_INVALID_PARAMS)
 
-        const provider = await getProviderForEvmNetworkId(ethChainId.toString())
-        if (!provider)
+        const client = await chainConnectorEvm.getPublicClientForEvmNetwork(ethChainId.toString())
+        if (!client)
           throw new EthProviderRpcError(
             "Network not supported",
             ETH_ERROR_EIP1993_CHAIN_DISCONNECTED
@@ -490,7 +489,7 @@ export class EthTabsHandler extends TabsHandler {
 
         try {
           // eslint-disable-next-line no-var
-          var tokenInfo = await getErc20TokenInfo(provider, ethChainId.toString(), address)
+          var tokenInfo = await getErc20TokenInfo(client, ethChainId.toString(), address)
         } catch (err) {
           throw new EthProviderRpcError("Asset not found", ETH_ERROR_EIP1474_INVALID_PARAMS)
         }
