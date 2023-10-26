@@ -48,7 +48,7 @@ export type EthRequestGetBlock = PromisifyArray<[BlockTag, boolean]>
 export type EthRequestTxHashOnly = PromisifyArray<[string]>
 
 export type EthRequestSign = [string, string]
-export type EthRequestRecoverAddress = [string, string]
+export type EthRequestRecoverAddress = [string, `0x${string}`]
 
 export type EthRequestSendTx = [TransactionRequest]
 
@@ -56,6 +56,7 @@ export type EthRequestAddEthereumChain = [AddEthereumChainParameter]
 
 export type EthRequestSwitchEthereumChain = [{ chainId: string }]
 
+// TODO : nuke all this and use viem's EIP1193RequestFn<WalletRpcSchema> ?
 export interface EthRequestSignatures {
   eth_requestAccounts: [null, InjectedAccount[]]
   eth_gasPrice: [null, string]
