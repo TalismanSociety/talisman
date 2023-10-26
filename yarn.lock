@@ -5,12 +5,80 @@ __metadata:
   version: 6
   cacheKey: 8
 
+"@acala-network/api-derive@npm:6.0.0":
+  version: 6.0.0
+  resolution: "@acala-network/api-derive@npm:6.0.0"
+  dependencies:
+    "@acala-network/types": 6.0.0
+  peerDependencies:
+    "@polkadot/api": ^10.9.1
+  checksum: 8656e7b65bfef498cac780d7beb0d3e43a59b5343d09a8b28ce7ec3537494b7477b0162a01b4f6c53260cfa7fa63c59e311b3a254020da6a104832826e6099ed
+  languageName: node
+  linkType: hard
+
+"@acala-network/api@npm:^6.0.0":
+  version: 6.0.0
+  resolution: "@acala-network/api@npm:6.0.0"
+  dependencies:
+    "@acala-network/api-derive": 6.0.0
+    "@acala-network/types": 6.0.0
+  peerDependencies:
+    "@polkadot/api": ^10.9.1
+  checksum: 5ec48f880b80ad7a9acf070dbd90938e6aae8248407a283c19560e80b21179fae35f4e4d828d9f1ac300be4e119800ece834df2c96f02dbc35e73be1e83da8ad
+  languageName: node
+  linkType: hard
+
+"@acala-network/contracts@npm:4.3.4":
+  version: 4.3.4
+  resolution: "@acala-network/contracts@npm:4.3.4"
+  checksum: 65cfa0dbd2aba323168232385c7651ccd4ae65262f8032780998d4a7d96b0de7066a13390628b901f05dcfc20f134dc549c8aada3ad452d9aa9b5bc673ca6ae0
+  languageName: node
+  linkType: hard
+
+"@acala-network/eth-providers@npm:^2.7.8":
+  version: 2.7.8
+  resolution: "@acala-network/eth-providers@npm:2.7.8"
+  dependencies:
+    "@acala-network/contracts": 4.3.4
+    "@acala-network/eth-transactions": 2.7.8
+    bn.js: ~5.2.0
+    ethers: ~5.7.0
+    graphql: ~16.0.1
+    graphql-request: ~3.6.1
+    lru-cache: ~7.8.2
+  peerDependencies:
+    "@acala-network/api": ~6.0.0
+    "@polkadot/api": ^10.9.1
+  checksum: 6aee2f8322068883078da4a8909964a930b652c222ca5a0063b81797e80d7ee3b8e78b06de05b8decd86d9d91e7af4973b10ae0bde75697efff4a6ad7fc3fbb9
+  languageName: node
+  linkType: hard
+
+"@acala-network/eth-transactions@npm:2.7.8":
+  version: 2.7.8
+  resolution: "@acala-network/eth-transactions@npm:2.7.8"
+  dependencies:
+    ethers: ~5.7.0
+  peerDependencies:
+    "@polkadot/util-crypto": ^12.4.2
+  checksum: b28badf1fb1141532d2f00bf83062f937147e11972291f8752660fb1d3657e62cc2a97ef16ee7fd26490ff6fcb1a728370a78ec68714d25943962f8fb29be4e7
+  languageName: node
+  linkType: hard
+
 "@acala-network/type-definitions@npm:5.1.1":
   version: 5.1.1
   resolution: "@acala-network/type-definitions@npm:5.1.1"
   peerDependencies:
     "@polkadot/types": ^10.5.1
   checksum: c73a2d0af8bac9ca44b96cfab3ccd13d1545df0756e6a21061afbef5f034edac52429a9a119e198a44b32e4bedc81e87aae9597b6cf5078b4e9e40b307d87bb5
+  languageName: node
+  linkType: hard
+
+"@acala-network/types@npm:6.0.0":
+  version: 6.0.0
+  resolution: "@acala-network/types@npm:6.0.0"
+  peerDependencies:
+    "@polkadot/api": ^10.9.1
+  checksum: d5187f6eccf46e094cda7a69e23c6fd1f8221da4f1e7d30964c9769bb40795e0aa25c5a400c51b3ae4a2bb9dcc47996738febe08b7b4f2378ece7aa14461a74d
   languageName: node
   linkType: hard
 
@@ -7616,6 +7684,8 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@talismn/chain-connector-evm@workspace:packages/chain-connector-evm"
   dependencies:
+    "@acala-network/api": ^6.0.0
+    "@acala-network/eth-providers": ^2.7.8
     "@talismn/chaindata-provider": "workspace:*"
     "@talismn/eslint-config": "workspace:*"
     "@talismn/tsconfig": "workspace:*"
@@ -10969,7 +11039,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"bn.js@npm:^5.0.0, bn.js@npm:^5.1.1, bn.js@npm:^5.2.0, bn.js@npm:^5.2.1":
+"bn.js@npm:^5.0.0, bn.js@npm:^5.1.1, bn.js@npm:^5.2.0, bn.js@npm:^5.2.1, bn.js@npm:~5.2.0":
   version: 5.2.1
   resolution: "bn.js@npm:5.2.1"
   checksum: 3dd8c8d38055fedfa95c1d5fc3c99f8dd547b36287b37768db0abab3c239711f88ff58d18d155dd8ad902b0b0cee973747b7ae20ea12a09473272b0201c9edd3
@@ -12411,6 +12481,15 @@ __metadata:
   dependencies:
     node-fetch: ^2.6.11
   checksum: 704b3519ab7de488328cc49a52cf1aa14132ec748382be5b9557b22398c33ffa7f8c2530e8a97ed8cb55da52b0a9740a9791d361271c4591910501682d981d9c
+  languageName: node
+  linkType: hard
+
+"cross-fetch@npm:^3.0.6":
+  version: 3.1.8
+  resolution: "cross-fetch@npm:3.1.8"
+  dependencies:
+    node-fetch: ^2.6.12
+  checksum: 78f993fa099eaaa041122ab037fe9503ecbbcb9daef234d1d2e0b9230a983f64d645d088c464e21a247b825a08dc444a6e7064adfa93536d3a9454b4745b3632
   languageName: node
   linkType: hard
 
@@ -14324,7 +14403,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"ethers@npm:5.7.2, ethers@npm:^5.7.1, ethers@npm:^5.7.2":
+"ethers@npm:5.7.2, ethers@npm:^5.7.1, ethers@npm:^5.7.2, ethers@npm:~5.7.0":
   version: 5.7.2
   resolution: "ethers@npm:5.7.2"
   dependencies:
@@ -14721,6 +14800,13 @@ __metadata:
   version: 11.0.0
   resolution: "extract-files@npm:11.0.0"
   checksum: 39ebd92772e9a1e30d1e3112fb7db85d353c8243640635668b615ac1d605ceb79fbb13d17829dd308993ef37bb189ad99817f79ab164ae95c9bb3df9f440bd16
+  languageName: node
+  linkType: hard
+
+"extract-files@npm:^9.0.0":
+  version: 9.0.0
+  resolution: "extract-files@npm:9.0.0"
+  checksum: c31781d090f8d8f62cc541f1023b39ea863f24bd6fb3d4011922d71cbded70cef8191f2b70b43ec6cb5c5907cdad1dc5e9f29f78228936c10adc239091d8ab64
   languageName: node
   linkType: hard
 
@@ -15795,6 +15881,19 @@ __metadata:
   languageName: node
   linkType: hard
 
+"graphql-request@npm:~3.6.1":
+  version: 3.6.1
+  resolution: "graphql-request@npm:3.6.1"
+  dependencies:
+    cross-fetch: ^3.0.6
+    extract-files: ^9.0.0
+    form-data: ^3.0.0
+  peerDependencies:
+    graphql: 14.x || 15.x
+  checksum: 15e98c29760fca8ce230459dd2448a56eca54f7fcce9cb5f3fd82c9af1e31bfb5a85b67ef405479d9a45acae4d2a1f278ebda6ca1950cad9a5b40dc215b82dd3
+  languageName: node
+  linkType: hard
+
 "graphql-tag@npm:^2.11.0, graphql-tag@npm:^2.12.6":
   version: 2.12.6
   resolution: "graphql-tag@npm:2.12.6"
@@ -15819,6 +15918,13 @@ __metadata:
   version: 16.7.1
   resolution: "graphql@npm:16.7.1"
   checksum: c924d8428daf0e96a5ea43e9bc3cd1b6802899907d284478ac8f705c8fd233a0a51eef915f7569fb5de8acb2e85b802ccc6c85c2b157ad805c1e9adba5a299bd
+  languageName: node
+  linkType: hard
+
+"graphql@npm:~16.0.1":
+  version: 16.0.1
+  resolution: "graphql@npm:16.0.1"
+  checksum: e2fbddc78ac93b84af5b1871cdced5ce796102373b91f888983e8bae26856788833aa641f5da15b9e4da05cef2edcc82b744a86a27e7e1ef6c9ce422571ab16c
   languageName: node
   linkType: hard
 
@@ -19271,6 +19377,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"lru-cache@npm:~7.8.2":
+  version: 7.8.2
+  resolution: "lru-cache@npm:7.8.2"
+  checksum: 58b5d9881581f9db23ebd9491a84e9268a1841bafd0e5dcb5492589bffffaa7cf3e07acb197a9bf98477eb6c55eb5f21a0176a63bc69bd39c5a531d93c61b652
+  languageName: node
+  linkType: hard
+
 "lru-queue@npm:^0.1.0":
   version: 0.1.0
   resolution: "lru-queue@npm:0.1.0"
@@ -20167,6 +20280,20 @@ __metadata:
     encoding:
       optional: true
   checksum: 249d0666a9497553384d46b5ab296ba223521ac88fed4d8a17d6ee6c2efb0fc890f3e8091cafe7f9fba8151a5b8d925db2671543b3409a56c3cd522b468b47b3
+  languageName: node
+  linkType: hard
+
+"node-fetch@npm:^2.6.12":
+  version: 2.7.0
+  resolution: "node-fetch@npm:2.7.0"
+  dependencies:
+    whatwg-url: ^5.0.0
+  peerDependencies:
+    encoding: ^0.1.0
+  peerDependenciesMeta:
+    encoding:
+      optional: true
+  checksum: d76d2f5edb451a3f05b15115ec89fc6be39de37c6089f1b6368df03b91e1633fd379a7e01b7ab05089a25034b2023d959b47e59759cb38d88341b2459e89d6e5
   languageName: node
   linkType: hard
 

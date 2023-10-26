@@ -1,7 +1,8 @@
 import { throwAfter } from "@talismn/util"
 import { ethers } from "ethers"
+import { AcalaJsonRpcProvider } from "@acala-network/eth-providers"
 
-import { RPC_HEALTHCHECK_TIMEOUT } from "./constants"
+import { ACALA_NETWORK_IDS, RPC_HEALTHCHECK_TIMEOUT } from "./constants"
 import { EvmJsonRpcBatchProvider } from "./EvmJsonRpcBatchProvider"
 import log from "./log"
 
@@ -45,6 +46,8 @@ export const isHealthyRpc = async (url: string, chainId: number) => {
   }
 }
 
+export const isAcalaNetwork = (chainId: number) => ACALA_NETWORK_IDS.includes(chainId);
+
 export const getHealthyRpc = async (rpcUrls: string[], network: ethers.providers.Network) => {
   for (const rpcUrl of rpcUrls) if (await isHealthyRpc(rpcUrl, network.chainId)) return rpcUrl
 
@@ -64,6 +67,18 @@ export const isUnhealthyRpcError = (err: any) => {
 }
 
 export class StandardRpcProvider extends ethers.providers.JsonRpcProvider {
+  async send(method: string, params: Array<unknown>): Promise<unknown> {
+    try {
+      return await super.send(method, params)
+    } catch (err) {
+      // emit error so rpc manager considers this rpc unhealthy
+      if (isUnhealthyRpcError(err)) this.emit("error", err)
+      throw err
+    }
+  }
+}
+
+export class AcalaRpcProvider extends AcalaJsonRpcProvider {
   async send(method: string, params: Array<unknown>): Promise<unknown> {
     try {
       return await super.send(method, params)
