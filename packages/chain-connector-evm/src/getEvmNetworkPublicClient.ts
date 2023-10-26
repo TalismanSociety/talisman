@@ -2,6 +2,7 @@ import { EvmNetwork, Token } from "@talismn/chaindata-provider"
 import { PublicClient, createPublicClient, fallback, http } from "viem"
 
 import { clearChainsCache, getChainFromEvmNetwork } from "./getChainFromEvmNetwork"
+import { addOnfinalityApiKey } from "./util"
 
 const BATCH_WAIT = 25
 const BATCH_SIZE = 30
@@ -16,9 +17,14 @@ export const clearPublicClientCache = (evmNetworkId?: string) => {
   else publicClientCache.clear()
 }
 
+type PublicClientOptions = {
+  onFinalityApiKey?: string
+}
+
 export const getEvmNetworkPublicClient = (
   evmNetwork: EvmNetwork,
-  nativeToken: Token
+  nativeToken: Token,
+  options: PublicClientOptions = {}
 ): PublicClient => {
   const chain = getChainFromEvmNetwork(evmNetwork, nativeToken)
 
@@ -33,7 +39,13 @@ export const getEvmNetworkPublicClient = (
             wait: BATCH_WAIT,
           },
         })
-      : fallback(evmNetwork.rpcs.map((rpc) => http(rpc.url, { batch: { wait: BATCH_WAIT } })))
+      : fallback(
+          evmNetwork.rpcs.map((rpc) =>
+            http(addOnfinalityApiKey(rpc.url, options.onFinalityApiKey), {
+              batch: { wait: BATCH_WAIT },
+            })
+          )
+        )
 
     publicClientCache.set(evmNetwork.id, createPublicClient({ chain, transport, batch }))
   }

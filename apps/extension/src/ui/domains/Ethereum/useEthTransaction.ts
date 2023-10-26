@@ -34,7 +34,7 @@ import { useIsValidEthTransaction } from "./useIsValidEthTransaction"
 const UNRELIABLE_GASPRICE_NETWORK_IDS = [137, 80001]
 
 const useNonce = (
-  address: string | undefined,
+  address: `0x${string}` | undefined,
   evmNetworkId: EvmNetworkId | undefined,
   forcedValue?: number
 ) => {
@@ -377,7 +377,7 @@ export const useEthTransaction = (
   const { transactionInfo, error: errorTransactionInfo } = useTransactionInfo(provider, tx)
   const { hasEip1559Support, error: errorEip1559Support } = useHasEip1559Support(provider)
   const { nonce, error: nonceError } = useNonce(
-    tx?.from,
+    tx?.from as `0x${string}` | undefined,
     tx?.chainId?.toString(),
     isReplacement && tx?.nonce ? BigNumber.from(tx.nonce).toNumber() : undefined
   )

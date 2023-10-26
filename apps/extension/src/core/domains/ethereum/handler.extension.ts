@@ -10,7 +10,6 @@ import {
 import { talismanAnalytics } from "@core/libs/Analytics"
 import { ExtensionHandler } from "@core/libs/Handler"
 import { requestStore } from "@core/libs/requests/store"
-import { log } from "@core/log"
 import { chainConnectorEvm } from "@core/rpcs/chain-connector-evm"
 import { chaindataProvider } from "@core/rpcs/chaindata"
 import { MessageHandler, MessageTypes, RequestTypes, ResponseType } from "@core/types"
@@ -22,13 +21,12 @@ import { assert } from "@polkadot/util"
 import { HexString } from "@polkadot/util/types"
 import { evmNativeTokenId } from "@talismn/balances-evm-native"
 import { CustomEvmNetwork, githubUnknownTokenLogoUrl } from "@talismn/chaindata-provider"
-import { ethers } from "ethers"
+import { isEthereumAddress } from "@talismn/util"
 import { privateKeyToAccount } from "viem/accounts"
 
 import { getHostName } from "../app/helpers"
 import { getHumanReadableErrorMessage } from "./errors"
 import { rebuildTransactionRequestNumbers } from "./helpers"
-import { getProviderForEvmNetworkId } from "./rpcProviders"
 import { getTransactionCount, incrementTransactionCount } from "./transactionCountManager"
 import { getViemSendTransactionParams } from "./viemMigration"
 
@@ -46,17 +44,19 @@ export class EthHandler extends ExtensionHandler {
           account: { address: accountAddress },
         } = queued
 
-        const provider = await getProviderForEvmNetworkId(ethChainId)
-        assert(provider, "Unable to find provider for chain " + ethChainId)
+        const client = await chainConnectorEvm.getPublicClientForEvmNetwork(ethChainId)
+        assert(client, "Unable to find client for chain " + ethChainId)
 
-        const { chainId, hash, from } = await provider.sendTransaction(signedPayload)
+        const hash = await client.sendRawTransaction({
+          serializedTransaction: signedPayload,
+        })
 
-        watchEthereumTransaction(chainId.toString(), hash, unsigned, {
+        watchEthereumTransaction(ethChainId, hash, unsigned, {
           siteUrl: queued.url,
           notifications: true,
         })
 
-        incrementTransactionCount(from, chainId.toString())
+        if (unsigned.from) incrementTransactionCount(unsigned.from, ethChainId)
 
         resolve(hash)
 
@@ -67,7 +67,7 @@ export class EthHandler extends ExtensionHandler {
           method,
           hostName: ok ? host : null,
           dapp: queued.url,
-          chain: chainId,
+          chain: Number(ethChainId),
           networkType: "ethereum",
           hardwareType: account?.meta.hardwareType,
         })
@@ -86,6 +86,8 @@ export class EthHandler extends ExtensionHandler {
     const queued = requestStore.getRequest(id)
     assert(queued, "Unable to find request")
     const { resolve, reject, ethChainId, account, url } = queued
+
+    assert(isEthereumAddress(account.address), "Invalid ethereum address")
 
     // rebuild BigNumber property values (converted to json when serialized)
     const tx = rebuildTransactionRequestNumbers(transaction)
@@ -147,14 +149,14 @@ export class EthHandler extends ExtensionHandler {
     assert(unsigned.chainId, "chainId is not defined")
     const evmNetworkId = unsigned.chainId.toString()
 
-    const provider = await getProviderForEvmNetworkId(evmNetworkId)
-    assert(provider, `Unable to find provider for chain ${unsigned.chainId}`)
+    const client = await chainConnectorEvm.getWalletClientForEvmNetwork(evmNetworkId)
+    assert(client, "Missing client for chain " + evmNetworkId)
 
     // rebuild BigNumber property values (converted to json when serialized)
     const tx = rebuildTransactionRequestNumbers(unsigned)
 
     try {
-      const { hash } = await provider.sendTransaction(signed)
+      const hash = await client.sendRawTransaction({ serializedTransaction: signed })
 
       // long running operation, we do not want this inside getPairForAddressSafely
       watchEthereumTransaction(evmNetworkId, hash, tx, {
@@ -182,21 +184,23 @@ export class EthHandler extends ExtensionHandler {
     assert(unsigned.from, "from is not defined")
     const evmNetworkId = unsigned.chainId.toString()
 
-    const provider = await getProviderForEvmNetworkId(evmNetworkId)
-    assert(provider, `Unable to find provider for chain ${unsigned.chainId}`)
-
     // rebuild BigNumber property values (converted to json when serialized)
     const tx = rebuildTransactionRequestNumbers(unsigned)
 
     const result = await getPairForAddressSafely(unsigned.from, async (pair) => {
+      const client = await chainConnectorEvm.getWalletClientForEvmNetwork(evmNetworkId)
+      assert(client, "Missing client for chain " + evmNetworkId)
+
       const password = this.stores.password.getPassword()
       assert(password, "Unauthorised")
-      const privateKey = getPrivateKey(pair, password, "u8a")
-      const signer = new ethers.Wallet(privateKey, provider)
+      const privateKey = getPrivateKey(pair, password, "hex")
+      const account = privateKeyToAccount(privateKey)
 
-      const { hash } = await signer.sendTransaction(tx)
-
-      return hash as HexString
+      return await client.sendTransaction({
+        chain: client.chain,
+        account,
+        ...getViemSendTransactionParams(tx),
+      })
     })
 
     if (result.ok) {
@@ -528,18 +532,13 @@ export class EthHandler extends ExtensionHandler {
     }
 
   private ethRequest: MessageHandler<"pri(eth.request)"> = async ({ chainId, method, params }) => {
-    const provider = await getProviderForEvmNetworkId(chainId, { batch: true })
-    assert(provider, `No healthy RPCs available for chain ${chainId}`)
-    try {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      return await provider.send(method, params as unknown as any[])
-    } catch (err) {
-      log.error("[ethRequest]", { err })
-      // errors raised from batches are raw (number code), errors raised from ethers JsonProvider are wrapped by ethers (text code)
-      // throw error as-is so frontend can figure it out on it's own it, while keeping access to underlying error message
-      // any component interested in knowing what the error is about should use @core/domains/ethereum/errors helpers
-      throw err
-    }
+    const client = await chainConnectorEvm.getPublicClientForEvmNetwork(chainId)
+    assert(client, `No client for chain ${chainId}`)
+
+    return client.request({
+      method: method as never,
+      params: params as never,
+    })
   }
 
   public async handle<TMessageType extends MessageTypes>(

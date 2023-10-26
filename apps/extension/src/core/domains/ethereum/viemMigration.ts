@@ -5,6 +5,40 @@ import { BigNumber, ethers } from "ethers"
 import { accessListify } from "ethers/lib/utils"
 import { AccessList } from "viem"
 
+import { EthGasSettings } from "./types"
+
+type ViemGasSettings =
+  | {
+      type: "legacy"
+      gas?: bigint
+      gasPrice?: bigint
+    }
+  | {
+      type: "eip1559"
+      gas?: bigint
+      maxFeePerGas?: bigint
+      maxPriorityFeePerGas?: bigint
+    }
+
+export const ethGasSettingsToViemGasSettings = (settings: EthGasSettings): ViemGasSettings => {
+  return settings.type === 2
+    ? ({
+        type: "eip1559",
+        gas: settings.gasLimit ? BigNumber.from(settings.gasLimit).toBigInt() : undefined,
+        maxFeePerGas: settings.maxFeePerGas
+          ? BigNumber.from(settings.maxFeePerGas).toBigInt()
+          : undefined,
+        maxPriorityFeePerGas: settings.maxPriorityFeePerGas
+          ? BigNumber.from(settings.maxPriorityFeePerGas).toBigInt()
+          : undefined,
+      } as const)
+    : ({
+        type: "legacy",
+        gas: settings.gasLimit ? BigNumber.from(settings.gasLimit).toBigInt() : undefined,
+        gasPrice: settings.gasPrice ? BigNumber.from(settings.gasPrice).toBigInt() : undefined,
+      } as const)
+}
+
 export const getViemGasSettings = (tx: ethers.providers.TransactionRequest) => {
   return tx.type === 2
     ? ({

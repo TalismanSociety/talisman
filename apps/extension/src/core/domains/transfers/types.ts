@@ -33,7 +33,7 @@ export interface RequestAssetTransferEthHardware {
   amount: string
   to: Address
   unsigned: ethers.providers.TransactionRequest
-  signedTransaction: string
+  signedTransaction: `0x${string}`
 }
 
 export interface RequestAssetTransferApproveSign {

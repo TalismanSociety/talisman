@@ -103,7 +103,7 @@ export const addSubstrateTransaction = async (
 export const updateTransactionStatus = async (
   hash: string,
   status: TransactionStatus,
-  blockNumber?: number
+  blockNumber?: bigint | number
 ) => {
   try {
     await db.transactions.update(hash, { status, blockNumber: blockNumber?.toString() })

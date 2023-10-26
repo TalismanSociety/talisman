@@ -7,9 +7,10 @@ import {
 } from "@core/domains/ethereum/types"
 import { Token } from "@core/domains/tokens/types"
 import { assert } from "@polkadot/util"
-import { isEthereumAddress } from "@polkadot/util-crypto"
 import { erc20Abi } from "@talismn/balances-evm-erc20"
+import { isEthereumAddress } from "@talismn/util"
 import { BigNumber, BigNumberish, ethers } from "ethers"
+import { encodeFunctionData, getAddress, isAddress } from "viem"
 import * as yup from "yup"
 
 const DERIVATION_PATHS_PATTERNS = {
@@ -30,7 +31,10 @@ export const getEthLedgerDerivationPath = (type: LedgerEthDerivationPathType, in
   return getDerivationPathFromPattern(index, DERIVATION_PATHS_PATTERNS[type])
 }
 
-export const getEthTransferTransactionBase = async (
+/**
+ * @deprecated use viem
+ */
+export const getEthTransferTransactionBaseOld = async (
   evmNetworkId: EvmNetworkId,
   from: string,
   to: string,
@@ -60,6 +64,40 @@ export const getEthTransferTransactionBase = async (
     from,
     ...tx,
   }
+}
+
+export const getEthTransferTransactionBase = async (
+  evmNetworkId: EvmNetworkId,
+  from: string,
+  to: string,
+  token: Token,
+  planck: bigint
+) => {
+  assert(evmNetworkId, "evmNetworkId is required")
+  assert(token, "token is required")
+  assert(planck, "planck is required")
+  assert(isAddress(from), "from address is required")
+  assert(isAddress(to), "to address is required")
+
+  if (token.type === "evm-native") {
+    return {
+      from,
+      value: planck,
+      to: getAddress(to),
+    }
+  } else if (token.type === "evm-erc20") {
+    const data = encodeFunctionData({
+      abi: erc20Abi,
+      functionName: "transfer",
+      args: [to, planck],
+    })
+
+    return {
+      from,
+      to: getAddress(token.contractAddress),
+      data,
+    }
+  } else throw new Error(`Invalid token type ${token.type} - token ${token.id}`)
 }
 
 export const getErc20TokenId = (

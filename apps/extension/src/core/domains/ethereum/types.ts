@@ -60,7 +60,7 @@ export interface AnyEthRequestChainId extends AnyEthRequest {
 }
 
 export type EthNonceRequest = {
-  address: string
+  address: `0x${string}`
   evmNetworkId: EvmNetworkId
 }
 

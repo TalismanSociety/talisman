@@ -2,6 +2,8 @@ import { EvmNetwork, Token } from "@talismn/chaindata-provider"
 import { Chain } from "viem"
 import * as chains from "viem/chains"
 
+import { addOnfinalityApiKey } from "./util"
+
 // viem chains benefit from multicall config & other viem goodies
 const VIEM_CHAINS = Object.keys(chains).reduce((acc, curr) => {
   const chain = chains[curr as keyof typeof chains]
@@ -16,14 +18,23 @@ export const clearChainsCache = (evmNetworkId?: string) => {
   else chainsCache.clear()
 }
 
-export const getChainFromEvmNetwork = (evmNetwork: EvmNetwork, nativeToken: Token): Chain => {
+export type ChainOptions = {
+  onFinalityApiKey?: string
+}
+
+export const getChainFromEvmNetwork = (
+  evmNetwork: EvmNetwork,
+  nativeToken: Token,
+  options: ChainOptions = {}
+): Chain => {
   if (!evmNetwork?.nativeToken?.id) throw new Error("Undefined native token")
   if (evmNetwork.nativeToken.id !== nativeToken.id) throw new Error("Native token mismatch")
 
   const { symbol, decimals } = nativeToken
 
   if (!chainsCache.has(evmNetwork.id)) {
-    const chainRpcs = evmNetwork.rpcs?.map((rpc) => rpc.url) ?? []
+    const chainRpcs =
+      evmNetwork.rpcs?.map((rpc) => addOnfinalityApiKey(rpc.url, options.onFinalityApiKey)) ?? []
 
     const viemChain = VIEM_CHAINS[Number(evmNetwork.id)] ?? {}
 

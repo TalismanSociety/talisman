@@ -3,12 +3,19 @@ import { Account, WalletClient, createWalletClient, http } from "viem"
 
 import { getChainFromEvmNetwork } from "./getChainFromEvmNetwork"
 
+type WalletClientOptions = {
+  account?: `0x${string}` | Account
+  onFinalityApiKey?: string
+}
+
 export const getEvmNetworkWalletClient = (
   evmNetwork: EvmNetwork,
   nativeToken: Token,
-  account?: `0x${string}` | Account
+  options: WalletClientOptions = {}
 ): WalletClient => {
-  const chain = getChainFromEvmNetwork(evmNetwork, nativeToken)
+  const chain = getChainFromEvmNetwork(evmNetwork, nativeToken, {
+    onFinalityApiKey: options.onFinalityApiKey,
+  })
 
-  return createWalletClient({ chain, transport: http(), account })
+  return createWalletClient({ chain, transport: http(), account: options.account })
 }

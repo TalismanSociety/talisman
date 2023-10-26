@@ -1,5 +1,5 @@
 import { AccountType } from "@core/domains/accounts/types"
-import { getEthTransferTransactionBase } from "@core/domains/ethereum/helpers"
+import { getEthTransferTransactionBaseOld } from "@core/domains/ethereum/helpers"
 import { AssetTransferMethod } from "@core/domains/transfers/types"
 import { log } from "@core/log"
 import { HexString } from "@polkadot/util/types"
@@ -108,7 +108,7 @@ const useEvmTransaction = (
     if (!isEvmToken(token) || !token.evmNetwork?.id || !from || !token || !amount || !to)
       setTx(undefined)
     else {
-      getEthTransferTransactionBase(token.evmNetwork.id, from, to, token, amount)
+      getEthTransferTransactionBaseOld(token.evmNetwork.id, from, to, token, amount)
         .then(setTx)
         .catch((err) => {
           setEvmInvalidTxError(err)

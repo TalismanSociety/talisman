@@ -7779,7 +7779,6 @@ __metadata:
     "@types/lodash": ^4.14.180
     anylogger: ^1.0.11
     eslint: ^8.52.0
-    ethers: 5.7.2
     jest: ^28.1.0
     lodash: 4.17.21
     ts-jest: ^28.0.2
