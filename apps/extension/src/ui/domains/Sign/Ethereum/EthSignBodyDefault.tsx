@@ -18,7 +18,7 @@ export const EthSignBodyDefault: FC = () => {
   const nativeTokenRates = useTokenRates(nativeToken?.id)
 
   const amount = useMemo(() => {
-    return nativeToken && transactionInfo?.value?.gt(0)
+    return nativeToken && transactionInfo?.value && transactionInfo.value > 0n
       ? new BalanceFormatter(
           transactionInfo.value.toString(),
           nativeToken.decimals,

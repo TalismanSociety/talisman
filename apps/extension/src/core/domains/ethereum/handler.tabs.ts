@@ -10,6 +10,7 @@ import {
 import { CustomErc20Token } from "@core/domains/tokens/types"
 import i18next from "@core/i18nConfig"
 import {
+  ETH_ERROR_EIP1474_INTERNAL_ERROR,
   ETH_ERROR_EIP1474_INVALID_INPUT,
   ETH_ERROR_EIP1474_INVALID_PARAMS,
   ETH_ERROR_EIP1474_RESOURCE_UNAVAILABLE,
@@ -35,7 +36,15 @@ import { isEthereumAddress } from "@polkadot/util-crypto"
 import { convertAddress } from "@talisman/util/convertAddress"
 import { githubUnknownTokenLogoUrl } from "@talismn/chaindata-provider"
 import { throwAfter } from "@talismn/util"
-import { PublicClient, createClient, getAddress, http, recoverMessageAddress, toHex } from "viem"
+import {
+  PublicClient,
+  RpcError,
+  createClient,
+  getAddress,
+  http,
+  recoverMessageAddress,
+  toHex,
+} from "viem"
 import { hexToNumber } from "viem/utils"
 
 import { getErc20TokenInfo } from "../../util/getErc20TokenInfo"
@@ -811,7 +820,7 @@ export class EthTabsHandler extends TabsHandler {
     }
   }
 
-  handle<TMessageType extends keyof RequestSignatures>(
+  async handle<TMessageType extends keyof RequestSignatures>(
     id: string,
     type: TMessageType,
     request: RequestTypes[TMessageType],
@@ -822,9 +831,20 @@ export class EthTabsHandler extends TabsHandler {
       case "pub(eth.subscribe)":
         return this.ethSubscribe(id, url, port)
 
-      case "pub(eth.request)":
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        return this.ethRequest(id, url, request as AnyEthRequest, port) as any
+      case "pub(eth.request)": {
+        try {
+          return await this.ethRequest(id, url, request as AnyEthRequest, port)
+        } catch (err) {
+          if (err instanceof EthProviderRpcError) throw err
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          const { code, shortMessage, message } = err as RpcError
+          throw new EthProviderRpcError(
+            shortMessage ?? message ?? "Internal error",
+            code ?? ETH_ERROR_EIP1474_INTERNAL_ERROR,
+            shortMessage ? message : undefined
+          )
+        }
+      }
 
       default:
         throw new Error(`Unable to handle message of type ${type}`)

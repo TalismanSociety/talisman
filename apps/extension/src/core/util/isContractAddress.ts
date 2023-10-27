@@ -19,9 +19,6 @@ export const isContractAddressOld = async (
 export const isContractAddress = async (client: PublicClient, address: EvmAddress) => {
   try {
     const code = await client.getBytecode({ address })
-    // TODO remove log
-    // eslint-disable-next-line no-console
-    console.log("isContractAddress remove after checking", { code })
     return code !== "0x"
   } catch (error) {
     // not a contract

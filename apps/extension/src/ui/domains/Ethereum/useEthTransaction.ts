@@ -23,10 +23,11 @@ import { getEthTransactionInfo } from "@core/util/getEthTransactionInfo"
 import { FeeHistoryAnalysis, getFeeHistoryAnalysis } from "@core/util/getFeeHistoryAnalysis"
 import { useQuery } from "@tanstack/react-query"
 import { api } from "@ui/api"
-import { useEthereumProvider } from "@ui/domains/Ethereum/useEthereumProvider"
+import { useEthereumProvider, usePublicClient } from "@ui/domains/Ethereum/useEthereumProvider"
 import { BigNumber, ethers } from "ethers"
 import { useEffect, useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
+import { PublicClient } from "viem"
 
 import { useIsValidEthTransaction } from "./useIsValidEthTransaction"
 
@@ -184,19 +185,19 @@ const useBlockFeeData = (
 }
 
 const useTransactionInfo = (
-  provider: ethers.providers.JsonRpcProvider | undefined,
+  publicClient: PublicClient | undefined,
   tx: ethers.providers.TransactionRequest | undefined
 ) => {
   const { data, ...rest } = useQuery({
     // check tx as boolean as it's not pure
-    queryKey: ["transactionInfo", provider?.network?.chainId, tx],
+    queryKey: ["transactionInfo", publicClient?.chain?.id, tx],
     queryFn: async () => {
-      if (!provider || !tx) return null
-      return await getEthTransactionInfo(provider, tx)
+      if (!publicClient || !tx) return null
+      return await getEthTransactionInfo(publicClient, tx)
     },
     refetchInterval: false,
     refetchOnWindowFocus: false, // prevents error to be cleared when window gets focus
-    enabled: !!provider && !!tx,
+    enabled: !!publicClient && !!tx,
   })
 
   return { transactionInfo: data ?? undefined, ...rest }
@@ -374,7 +375,8 @@ export const useEthTransaction = (
   isReplacement = false
 ) => {
   const provider = useEthereumProvider(tx?.chainId?.toString())
-  const { transactionInfo, error: errorTransactionInfo } = useTransactionInfo(provider, tx)
+  const publicClient = usePublicClient(tx?.chainId?.toString())
+  const { transactionInfo, error: errorTransactionInfo } = useTransactionInfo(publicClient, tx)
   const { hasEip1559Support, error: errorEip1559Support } = useHasEip1559Support(provider)
   const { nonce, error: nonceError } = useNonce(
     tx?.from as `0x${string}` | undefined,
