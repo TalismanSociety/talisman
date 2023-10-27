@@ -20,12 +20,7 @@ import {
   ETH_ERROR_UNKNOWN_CHAIN_NOT_CONFIGURED,
   EthProviderRpcError,
 } from "@core/injectEth/EthProviderRpcError"
-import {
-  AnyEthRequest,
-  EthProviderMessage,
-  EthRequestArguments,
-  EthRequestSignArguments,
-} from "@core/injectEth/types"
+import { AnyEthRequest } from "@core/injectEth/types"
 import { TabsHandler } from "@core/libs/Handler"
 import { log } from "@core/log"
 import { chainConnectorEvm } from "@core/rpcs/chain-connector-evm"
@@ -56,7 +51,14 @@ import {
   sanitizeWatchAssetRequestParam,
 } from "./helpers"
 import { requestAddNetwork, requestWatchAsset } from "./requests"
-import { Web3WalletPermission, Web3WalletPermissionTarget } from "./types"
+import {
+  EthProviderMessage,
+  EthRequestArguments,
+  EthRequestArgumentsViem,
+  EthRequestSignArguments,
+  Web3WalletPermission,
+  Web3WalletPermissionTarget,
+} from "./types"
 
 interface EthAuthorizedSite extends AuthorizedSite {
   ethChainId: number
@@ -755,7 +757,7 @@ export class EthTabsHandler extends TabsHandler {
       case "personal_ecRecover": {
         const {
           params: [message, signature],
-        } = request as EthRequestArguments<"personal_ecRecover">
+        } = request as EthRequestArgumentsViem<"personal_ecRecover">
         return recoverMessageAddress({ message, signature })
         //return recoverPersonalSignature({ data, signature })
       }
