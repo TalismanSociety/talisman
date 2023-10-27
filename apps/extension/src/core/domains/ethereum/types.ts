@@ -15,7 +15,7 @@ import type { InjectedAccount } from "@polkadot/extension-inject/types"
 import { HexString } from "@polkadot/util/types"
 import { EvmNetworkId } from "@talismn/chaindata-provider"
 import { BigNumberish, ethers } from "ethers"
-import type { Address as EvmAddress } from "viem"
+import type { AddEthereumChainParameter, Address as EvmAddress } from "viem"
 import { PublicRpcSchema, RpcSchema, WalletRpcSchema } from "viem"
 
 import { WalletTransactionTransferInfo } from "../transactions"
@@ -88,13 +88,20 @@ type TalismanRpcSchema = [
     Method: "personal_ecRecover"
     Parameters: [signedData: `0x${string}`, signature: `0x${string}`]
     ReturnType: EvmAddress
+  },
+  {
+    // TODO see if we can remove this
+    // override for now because of result type mismatch
+    Method: "wallet_requestPermissions"
+    Parameters: [permissions: { eth_accounts: Record<string, unknown> }]
+    ReturnType: Web3WalletPermission[]
   }
 ]
 
 export type FullRpcSchema = [...PublicRpcSchema, ...WalletRpcSchema, ...TalismanRpcSchema]
 
-export type EthRequestSignaturesPublic = RpcSchemaMap<PublicRpcSchema>
-export type EthRequestSignaturesWallet = RpcSchemaMap<WalletRpcSchema>
+// export type EthRequestSignaturesPublic = RpcSchemaMap<PublicRpcSchema>
+// export type EthRequestSignaturesWallet = RpcSchemaMap<WalletRpcSchema>
 export type EthRequestSignaturesFull = RpcSchemaMap<FullRpcSchema>
 
 // TODO : replace EthRequestSignatures by EthRequestSignaturesViem
@@ -162,10 +169,13 @@ export interface EthRequestArguments<T extends EthRequestTypes> {
   readonly params: EthRequestSignatures[T][0]
 }
 
-export interface EthRequestArgumentsViem<T extends keyof EthRequestSignaturesFull> {
+export type EthRequestArgumentsViem<T extends keyof EthRequestSignaturesFull> = {
   readonly method: T
   readonly params: EthRequestSignaturesFull[T][0]
 }
+
+export type EthRequestResultViem<T extends keyof EthRequestSignaturesFull> =
+  EthRequestSignaturesFull[T][1]
 
 export type EthRequestSignArguments = EthRequestArguments<
   | "personal_sign"
@@ -179,21 +189,21 @@ export interface EthProviderMessage {
   readonly type: string
   readonly data: unknown
 }
-export type AddEthereumChainParameter = {
-  /** A 0x-prefixed hexadecimal string */
-  chainId: string
-  chainName: string
-  nativeCurrency: {
-    name: string
-    /** 2-6 characters long */
-    symbol: string
-    decimals: 18
-  }
-  rpcUrls: string[]
-  blockExplorerUrls?: string[]
-  /** Currently ignored by metamask */
-  iconUrls?: string[]
-}
+// export type AddEthereumChainParameter = {
+//   /** A 0x-prefixed hexadecimal string */
+//   chainId: string
+//   chainName: string
+//   nativeCurrency: {
+//     name: string
+//     /** 2-6 characters long */
+//     symbol: string
+//     decimals: 18
+//   }
+//   rpcUrls: string[]
+//   blockExplorerUrls?: string[]
+//   /** Currently ignored by metamask */
+//   iconUrls?: string[]
+// }
 
 export type EthTxSignAndSend = {
   unsigned: ethers.providers.TransactionRequest

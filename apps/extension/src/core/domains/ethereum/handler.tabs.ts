@@ -55,6 +55,7 @@ import {
   EthProviderMessage,
   EthRequestArguments,
   EthRequestArgumentsViem,
+  EthRequestResultViem,
   EthRequestSignArguments,
   Web3WalletPermission,
   Web3WalletPermissionTarget,
@@ -286,9 +287,9 @@ export class EthTabsHandler extends TabsHandler {
 
   private addEthereumChain = async (
     url: string,
-    request: EthRequestArguments<"wallet_addEthereumChain">,
+    request: EthRequestArgumentsViem<"wallet_addEthereumChain">,
     port: Port
-  ) => {
+  ): Promise<EthRequestResultViem<"wallet_addEthereumChain">> => {
     const {
       params: [network],
     } = request
@@ -347,8 +348,8 @@ export class EthTabsHandler extends TabsHandler {
 
   private switchEthereumChain = async (
     url: string,
-    request: EthRequestArguments<"wallet_switchEthereumChain">
-  ) => {
+    request: EthRequestArgumentsViem<"wallet_switchEthereumChain">
+  ): Promise<EthRequestResultViem<"wallet_switchEthereumChain">> => {
     const {
       params: [{ chainId: hexChainId }],
     } = request
@@ -457,9 +458,9 @@ export class EthTabsHandler extends TabsHandler {
 
   private addWatchAssetRequest = async (
     url: string,
-    request: EthRequestArguments<"wallet_watchAsset">,
+    request: EthRequestArgumentsViem<"wallet_watchAsset">,
     port: Port
-  ) => {
+  ): Promise<EthRequestResultViem<"wallet_watchAsset">> => {
     if (!isValidWatchAssetRequestParam(request.params))
       throw new EthProviderRpcError("Invalid parameter", ETH_ERROR_EIP1474_INVALID_PARAMS)
 
@@ -553,7 +554,7 @@ export class EthTabsHandler extends TabsHandler {
   ) {
     const {
       params: [txRequest],
-    } = request as EthRequestArguments<"eth_sendTransaction">
+    } = request
 
     const site = await this.getSiteDetails(url, txRequest.from)
 
@@ -622,9 +623,9 @@ export class EthTabsHandler extends TabsHandler {
 
   private async requestPermissions(
     url: string,
-    request: EthRequestArguments<"wallet_requestPermissions">,
+    request: EthRequestArgumentsViem<"wallet_requestPermissions">,
     port: Port
-  ): Promise<Web3WalletPermission[]> {
+  ): Promise<EthRequestResultViem<"wallet_requestPermissions">> {
     if (request.params.length !== 1)
       throw new EthProviderRpcError(
         "This method expects an array with only 1 entry",
@@ -697,6 +698,7 @@ export class EthTabsHandler extends TabsHandler {
     )
       await this.checkAccountAuthorised(url)
 
+    // TODO typecheck return types against EthRequestArgumentsViem / EthRequestResultsViem
     switch (request.method) {
       case "eth_requestAccounts":
         await this.requestPermissions(
@@ -773,7 +775,7 @@ export class EthTabsHandler extends TabsHandler {
         //auth-less test dapp : rsksmart.github.io/metamask-rsk-custom-network/
         return this.addWatchAssetRequest(
           url,
-          request as EthRequestArguments<"wallet_watchAsset">,
+          request as EthRequestArgumentsViem<"wallet_watchAsset">,
           port
         )
 
@@ -781,7 +783,7 @@ export class EthTabsHandler extends TabsHandler {
         //auth-less test dapp : rsksmart.github.io/metamask-rsk-custom-network/
         return this.addEthereumChain(
           url,
-          request as EthRequestArguments<"wallet_addEthereumChain">,
+          request as EthRequestArgumentsViem<"wallet_addEthereumChain">,
           port
         )
 
@@ -789,7 +791,7 @@ export class EthTabsHandler extends TabsHandler {
         //auth-less test dapp : rsksmart.github.io/metamask-rsk-custom-network/
         return this.switchEthereumChain(
           url,
-          request as EthRequestArguments<"wallet_switchEthereumChain">
+          request as EthRequestArgumentsViem<"wallet_switchEthereumChain">
         )
 
       // https://docs.metamask.io/guide/rpc-api.html#wallet-getpermissions
@@ -800,7 +802,7 @@ export class EthTabsHandler extends TabsHandler {
       case "wallet_requestPermissions":
         return this.requestPermissions(
           url,
-          request as EthRequestArguments<"wallet_requestPermissions">,
+          request as EthRequestArgumentsViem<"wallet_requestPermissions">,
           port
         )
 

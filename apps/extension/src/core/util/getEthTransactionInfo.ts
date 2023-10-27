@@ -5,7 +5,7 @@ import { BigNumber, ethers } from "ethers"
 import { abiErc1155, abiErc20, abiErc721, abiErc721Metadata, abiMoonStaking } from "./abi"
 import { abiMoonConvictionVoting } from "./abi/abiMoonConvictionVoting"
 import { abiMoonXTokens } from "./abi/abiMoonXTokens"
-import { isContractAddress } from "./isContractAddress"
+import { isContractAddressOld } from "./isContractAddress"
 
 export type ContractType =
   | "ERC20"
@@ -75,7 +75,7 @@ export const getEthTransactionInfo = async (
   // transactions that provision a contract have an empty 'to' field
   const targetAddress = tx.to ? ethers.utils.getAddress(tx.to) : undefined
 
-  const isContractCall = targetAddress ? await isContractAddress(provider, targetAddress) : false
+  const isContractCall = targetAddress ? await isContractAddressOld(provider, targetAddress) : false
 
   const result: TransactionInfo = {
     targetAddress,
