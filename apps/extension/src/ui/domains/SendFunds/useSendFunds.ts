@@ -292,6 +292,30 @@ const useSendFundsProvider = () => {
     subTransaction?.partialFee,
   ])
 
+  const maxFee = useMemo(() => {
+    if (evmTransaction?.txDetails?.maxFee) {
+      return new BalanceFormatter(
+        BigNumber.from(evmTransaction.txDetails.maxFee).toBigInt(),
+        feeToken?.decimals,
+        feeTokenRates
+      )
+    }
+    if (subTransaction?.partialFee) {
+      return new BalanceFormatter(
+        BigInt(subTransaction.partialFee),
+        feeToken?.decimals,
+        feeTokenRates
+      )
+    }
+    return null
+  }, [
+    evmTransaction?.txDetails?.maxFee,
+    feeToken?.decimals,
+    feeTokenRates,
+    subTransaction?.partialFee,
+  ])
+
+  // for display purposes
   const costBreakdown = useMemo(() => {
     try {
       const transferAmount = sendMax ? maxAmount : transfer
@@ -328,6 +352,50 @@ const useSendFundsProvider = () => {
   }, [
     balances,
     estimatedFee,
+    feeToken,
+    maxAmount,
+    requiresTip,
+    sendMax,
+    tip,
+    tipToken,
+    token,
+    tokenRates,
+    tokenRatesMap,
+    tokensMap,
+    transfer,
+  ])
+
+  // for insufficient fee check
+  const maxCostBreakdown = useMemo(() => {
+    try {
+      const transferAmount = sendMax ? maxAmount : transfer
+      if (!token || !feeToken || !transferAmount || !maxFee || (requiresTip && (!tip || !tipToken)))
+        return null
+
+      const spend: Record<TokenId, bigint> = {}
+      spend[token.id] = transferAmount.planck
+      spend[feeToken.id] = (spend[feeToken.id] ?? 0n) + maxFee.planck
+      if (tip && tipToken && tip.planck > 0n)
+        spend[tipToken.id] = (spend[tipToken.id] ?? 0n) + tip.planck
+
+      const res = Object.entries(spend).map(([tokenId, amount]) => ({
+        token: tokensMap[tokenId],
+        cost: new BalanceFormatter(amount, tokensMap[tokenId].decimals, tokenRates),
+        balance: new BalanceFormatter(
+          balances.find({ tokenId }).sorted[0]?.transferable.planck,
+          tokensMap[tokenId].decimals,
+          tokenRatesMap[tokenId]
+        ),
+      }))
+
+      return res
+    } catch (err) {
+      log.error("Failed to compute cost breakdown", { err })
+      return null
+    }
+  }, [
+    balances,
+    maxFee,
     feeToken,
     maxAmount,
     requiresTip,
@@ -406,7 +474,7 @@ const useSendFundsProvider = () => {
         !to ||
         !(transfer || (sendMax && maxAmount)) ||
         !tokenId ||
-        !costBreakdown ||
+        !maxCostBreakdown ||
         !tokensToBeReaped ||
         !feeToken ||
         !feeTokenBalance ||
@@ -427,7 +495,7 @@ const useSendFundsProvider = () => {
           error: t("Insufficient {{symbol}} to pay for fees", { symbol: feeToken.symbol }),
         }
 
-      for (const cost of costBreakdown)
+      for (const cost of maxCostBreakdown)
         if (cost.balance.planck < cost.cost.planck)
           return {
             isValid: false,
@@ -460,7 +528,7 @@ const useSendFundsProvider = () => {
     }
   }, [
     balance,
-    costBreakdown,
+    maxCostBreakdown,
     evmInvalidTxError,
     evmTransaction?.error,
     from,
