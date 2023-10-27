@@ -17,6 +17,7 @@ import type {
 } from "@ethersproject/providers"
 // Compliant with https://eips.ethereum.org/EIPS/eip-1193
 import type { InjectedAccount } from "@polkadot/extension-inject/types"
+import { PublicRpcSchema, RpcSchema, WalletRpcSchema } from "viem"
 
 type Promisify<T> = T | Promise<T>
 
@@ -56,7 +57,27 @@ export type EthRequestAddEthereumChain = [AddEthereumChainParameter]
 
 export type EthRequestSwitchEthereumChain = [{ chainId: string }]
 
-// TODO : nuke all this and use viem's EIP1193RequestFn<WalletRpcSchema> ?
+type RpcSchemaMap<TRpcSchema extends RpcSchema> = {
+  [K in TRpcSchema[number]["Method"]]: [
+    Extract<TRpcSchema[number], { Method: K }>["Parameters"],
+    Extract<TRpcSchema[number], { Method: K }>["ReturnType"]
+  ]
+}
+
+// type RpcSchemaMapBetter<TRpcSchema extends RpcSchema> = {
+//   [K in TRpcSchema[number]["Method"]]: {
+//     parameters: Extract<TRpcSchema[number], { Method: K }>["Parameters"]
+//     returnType: Extract<TRpcSchema[number], { Method: K }>["ReturnType"]
+//   }
+// }
+
+export type FullRpcSchema = [...PublicRpcSchema, ...WalletRpcSchema]
+
+export type EthRequestSignaturesPublic = RpcSchemaMap<PublicRpcSchema>
+export type EthRequestSignaturesWallet = RpcSchemaMap<WalletRpcSchema>
+export type EthRequestSignaturesFull = RpcSchemaMap<FullRpcSchema>
+
+// TODO : replace EthRequestSignatures by EthRequestSignaturesViem
 export interface EthRequestSignatures {
   eth_requestAccounts: [null, InjectedAccount[]]
   eth_gasPrice: [null, string]
@@ -130,8 +151,8 @@ export type EthRequestSignArguments = EthRequestArguments<
 >
 
 export interface AnyEthRequest {
-  readonly method: EthRequestTypes
-  readonly params: EthRequestSignatures[EthRequestTypes][0]
+  readonly method: string
+  readonly params?: readonly unknown[] | object
 }
 
 export interface EthProviderMessage {

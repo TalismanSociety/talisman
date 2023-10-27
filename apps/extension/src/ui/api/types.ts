@@ -58,7 +58,6 @@ import {
   ResponseAssetTransferFeeQuery,
 } from "@core/domains/transfers/types"
 import { MetadataDef } from "@core/inject/types"
-import { EthResponseType } from "@core/injectEth/types"
 import { ValidRequests } from "@core/libs/requests/types"
 import { UnsubscribeFn } from "@core/types"
 import { AddressesByChain } from "@core/types/base"
@@ -279,7 +278,7 @@ export default interface MessageTypes {
     signedTransaction: HexString
   ) => Promise<boolean>
   ethCancelSign: (id: SigningRequestID<"eth-sign" | "eth-send">) => Promise<boolean>
-  ethRequest: <T extends AnyEthRequestChainId>(request: T) => Promise<EthResponseType<T["method"]>>
+  ethRequest: (request: AnyEthRequestChainId) => Promise<unknown>
   ethGetTransactionsCount: (address: `0x${string}`, evmNetworkId: EvmNetworkId) => Promise<number>
   ethNetworkAddGetRequests: () => Promise<AddEthereumChainRequest[]>
   ethNetworkAddApprove: (id: AddEthereumChainRequestId) => Promise<boolean>

@@ -1,8 +1,3 @@
-// import {
-//   ETH_ERROR_EIP1474_INTERNAL_ERROR,
-//   EthProviderRpcError,
-// } from "@core/injectEth/EthProviderRpcError"
-import { EthRequestSignatures, EthRequestTypes } from "@core/injectEth/types"
 import { log } from "@core/log"
 import { EvmNetworkId } from "@talismn/chaindata-provider"
 import { api } from "@ui/api"
@@ -15,12 +10,7 @@ const ethereumRequest =
   (chainId: EvmNetworkId): ViemRequest =>
   async (method: string, params?: unknown[]) => {
     try {
-      // TODO cleanup typings
-      return await api.ethRequest({
-        chainId,
-        method: method as keyof EthRequestSignatures,
-        params: params as EthRequestSignatures[EthRequestTypes][0],
-      })
+      return await api.ethRequest({ chainId, method, params })
     } catch (err) {
       log.error("[provider.request] error on %s", method, { err })
       throw err

@@ -9,18 +9,17 @@ import {
   ETH_ERROR_EIP1993_USER_REJECTED,
   EthProviderRpcError,
 } from "./EthProviderRpcError"
-import type {
-  EthRequestArguments,
-  EthRequestSignatures,
-  EthRequestTypes,
-  EthResponseType,
-} from "./types"
+
+interface RequestArguments {
+  readonly method: string
+  readonly params?: readonly unknown[] | object
+}
 
 interface JsonRpcRequest {
   id: string | undefined
   jsonrpc: "2.0"
   method: string
-  params?: Array<any>
+  params?: Array<unknown>
 }
 
 interface JsonRpcResponse {
@@ -81,14 +80,8 @@ export const getInjectableEvmProvider = (sendRequest: SendRequest) => {
     log.debug("Talisman provider initializing")
 
     const [resChainId, resAccounts] = await Promise.all([
-      sendRequest("pub(eth.request)", {
-        method: "eth_chainId",
-        params: null,
-      }),
-      sendRequest("pub(eth.request)", {
-        method: "eth_accounts",
-        params: null,
-      }),
+      sendRequest("pub(eth.request)", { method: "eth_chainId" }),
+      sendRequest("pub(eth.request)", { method: "eth_accounts" }),
     ])
 
     const chainId = resChainId as string
@@ -146,9 +139,7 @@ export const getInjectableEvmProvider = (sendRequest: SendRequest) => {
 
   const waitReady = initialize()
 
-  const request = async <TEthMessageType extends keyof EthRequestSignatures>(
-    args: EthRequestArguments<TEthMessageType>
-  ): Promise<EthResponseType<TEthMessageType>> => {
+  const request = async (args: RequestArguments): Promise<unknown> => {
     try {
       log.debug("[talismanEth.request] request %s", args.method, args.params)
       await waitReady
@@ -184,8 +175,8 @@ export const getInjectableEvmProvider = (sendRequest: SendRequest) => {
 
     if (typeof methodOrPayload === "string")
       return request({
-        method: methodOrPayload as keyof EthRequestSignatures,
-        params: paramsOrCallback as any,
+        method: methodOrPayload,
+        params: paramsOrCallback,
       })
     else {
       return request(methodOrPayload).then(paramsOrCallback)
@@ -197,10 +188,7 @@ export const getInjectableEvmProvider = (sendRequest: SendRequest) => {
 
     const { method, params, ...rest } = payload
     try {
-      const result = await request({
-        method: method as EthRequestTypes,
-        params: params as any,
-      })
+      const result = await request({ method, params })
       callback(null, { ...rest, method, result })
     } catch (err) {
       const error = err as Error
@@ -213,7 +201,7 @@ export const getInjectableEvmProvider = (sendRequest: SendRequest) => {
     log.debug("[talismanEth.enable]")
 
     // some frameworks such as web3modal requires this method to exist
-    return request({ method: "eth_requestAccounts", params: null })
+    return request({ method: "eth_requestAccounts" })
   }
 
   provider.isConnected = isConnected

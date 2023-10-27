@@ -25,7 +25,6 @@ import {
   EthProviderMessage,
   EthRequestArguments,
   EthRequestSignArguments,
-  EthRequestSignatures,
 } from "@core/injectEth/types"
 import { TabsHandler } from "@core/libs/Handler"
 import { log } from "@core/log"
@@ -387,10 +386,7 @@ export class EthTabsHandler extends TabsHandler {
     return site?.ethChainId ?? DEFAULT_ETH_CHAIN_ID
   }
 
-  private async getFallbackRequest<K extends keyof EthRequestSignatures>(
-    url: string,
-    request: EthRequestArguments<K>
-  ): Promise<unknown> {
+  private async getFallbackRequest(url: string, request: AnyEthRequest): Promise<unknown> {
     // obtain the chain id without checking auth.
     // note: this method is only called if method doesn't require auth, or if auth is already checked
     const chainId = await this.getChainId(url)
@@ -678,10 +674,10 @@ export class EthTabsHandler extends TabsHandler {
     return this.getPermissions(url)
   }
 
-  private async ethRequest<TEthMessageType extends keyof EthRequestSignatures>(
+  private async ethRequest(
     id: string,
     url: string,
-    request: EthRequestArguments<TEthMessageType>,
+    request: AnyEthRequest,
     port: Port
   ): Promise<unknown> {
     if (
