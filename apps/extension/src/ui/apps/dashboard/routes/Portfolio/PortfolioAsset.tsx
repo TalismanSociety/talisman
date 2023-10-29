@@ -11,7 +11,6 @@ import { Statistics } from "@ui/domains/Portfolio/Statistics"
 import { useDisplayBalances } from "@ui/domains/Portfolio/useDisplayBalances"
 import { useTokenBalancesSummary } from "@ui/domains/Portfolio/useTokenBalancesSummary"
 import { useAnalytics } from "@ui/hooks/useAnalytics"
-import { useSelectedCurrency } from "@ui/hooks/useCurrency"
 import { useSendFundsPopup } from "@ui/hooks/useSendFundsPopup"
 import { useCallback, useEffect, useMemo } from "react"
 import { useTranslation } from "react-i18next"
@@ -21,8 +20,7 @@ import { Tooltip, TooltipContent, TooltipTrigger } from "talisman-ui"
 const PageContent = ({ balances, symbol }: { balances: Balances; symbol: string }) => {
   const navigate = useNavigate()
   const balancesToDisplay = useDisplayBalances(balances)
-  const currency = useSelectedCurrency()
-  const { token, rates, summary } = useTokenBalancesSummary(balancesToDisplay)
+  const { token, rate, summary } = useTokenBalancesSummary(balancesToDisplay)
   const { open: openCopyAddressModal } = useCopyAddressModal()
   const { genericEvent } = useAnalytics()
   const { account } = useSelectedAccount()
@@ -61,7 +59,7 @@ const PageContent = ({ balances, symbol }: { balances: Balances; symbol: string 
             </div>
             <div>
               <div className="text-md">{token?.symbol}</div>
-              {rates && <Fiat amount={rates[currency]} className="text-body-secondary" />}
+              {rate && <Fiat amount={rate} className="text-body-secondary" />}
             </div>
             <div className="flex flex-wrap">
               <Tooltip>

@@ -19,7 +19,7 @@ const PageContent = ({ balances, symbol }: { balances: Balances; symbol: string 
   const navigate = useNavigate()
   const balancesToDisplay = useDisplayBalances(balances)
   const currency = useSelectedCurrency()
-  const { token, rates } = useTokenBalancesSummary(balancesToDisplay)
+  const { token, rate } = useTokenBalancesSummary(balancesToDisplay)
 
   const handleBackBtnClick = useCallback(() => navigate(-1), [navigate])
 
@@ -45,7 +45,7 @@ const PageContent = ({ balances, symbol }: { balances: Balances; symbol: string 
             <div>{t("Total")}</div>
           </div>
           <div className="text-md flex justify-between font-bold">
-            {rates && <Fiat amount={rates[currency]} />}
+            {rate && <Fiat amount={rate} />}
             <div>
               <Fiat amount={total} isBalance />
             </div>

@@ -88,8 +88,7 @@ const AssetRow = ({ balances, locked }: AssetRowProps) => {
   const { account } = useSearchParamsSelectedAccount()
   const status = useBalancesStatus(balances)
 
-  const currency = useSelectedCurrency()
-  const { token, summary, rates } = useTokenBalancesSummary(balances)
+  const { token, summary, rate } = useTokenBalancesSummary(balances)
   const { showNomPoolBanner, dismissNomPoolBanner } = useNomPoolStakingBanner()
   const showBanner = showNomPoolBanner({
     chainId: token?.chain?.id,
@@ -168,9 +167,7 @@ const AssetRow = ({ balances, locked }: AssetRowProps) => {
                   </div>
                 )}
               </div>
-              {rates !== undefined && (
-                <Fiat amount={rates[currency]} className="text-body-secondary text-xs" />
-              )}
+              {rate !== undefined && <Fiat amount={rate} className="text-body-secondary text-xs" />}
             </div>
           </div>
           <div

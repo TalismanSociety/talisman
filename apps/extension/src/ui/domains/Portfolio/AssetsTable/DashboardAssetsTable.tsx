@@ -5,7 +5,6 @@ import { classNames } from "@talismn/util"
 import Fiat from "@ui/domains/Asset/Fiat"
 import { useAnalytics } from "@ui/hooks/useAnalytics"
 import { useBalancesStatus } from "@ui/hooks/useBalancesStatus"
-import { useSelectedCurrency } from "@ui/hooks/useCurrency"
 import { FC, useCallback } from "react"
 import { Trans, useTranslation } from "react-i18next"
 import { useNavigate } from "react-router-dom"
@@ -58,8 +57,7 @@ const AssetRow = ({ balances }: AssetRowProps) => {
 
   const status = useBalancesStatus(balances)
 
-  const currency = useSelectedCurrency()
-  const { token, rates, summary } = useTokenBalancesSummary(balances)
+  const { token, rate, summary } = useTokenBalancesSummary(balances)
   const { showNomPoolBanner, dismissNomPoolBanner } = useNomPoolStakingBanner()
   const showBanner = showNomPoolBanner({
     chainId: token?.chain?.id,
@@ -148,9 +146,7 @@ const AssetRow = ({ balances }: AssetRowProps) => {
                   </div>
                 )}
               </div>
-              {rates !== undefined && (
-                <Fiat amount={rates[currency]} className="text-body-secondary" />
-              )}
+              {rate !== undefined && <Fiat amount={rate} className="text-body-secondary" />}
             </div>
           </div>
         </div>
