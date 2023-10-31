@@ -1,4 +1,4 @@
-/* eslint-env es6 */
+/* eslint-env es2022 */
 /** @type {import('ts-jest').InitialOptionsTsJest} */
 const { defaults } = require("jest-config")
 const { pathsToModuleNameMapper } = require("ts-jest")
@@ -15,7 +15,7 @@ module.exports = {
     "^rxjs/internal/(.*)$": "rxjs/dist/cjs/internal/$1",
     ...pathsToModuleNameMapper(compilerOptions.paths, {
       prefix: "<rootDir>/src",
-    })
+    }),
   },
   extraGlobals: ["Math"],
   moduleFileExtensions: [...defaults.moduleFileExtensions, "ts", "tsx"],

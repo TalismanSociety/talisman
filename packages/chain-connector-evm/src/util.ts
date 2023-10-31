@@ -1,6 +1,6 @@
+import { AcalaJsonRpcProvider } from "@acala-network/eth-providers"
 import { throwAfter } from "@talismn/util"
 import { ethers } from "ethers"
-import { AcalaJsonRpcProvider } from "@acala-network/eth-providers"
 
 import { ACALA_NETWORK_IDS, RPC_HEALTHCHECK_TIMEOUT } from "./constants"
 import { EvmJsonRpcBatchProvider } from "./EvmJsonRpcBatchProvider"
@@ -46,7 +46,7 @@ export const isHealthyRpc = async (url: string, chainId: number) => {
   }
 }
 
-export const isAcalaNetwork = (chainId: number) => ACALA_NETWORK_IDS.includes(chainId);
+export const isAcalaNetwork = (chainId: number) => ACALA_NETWORK_IDS.includes(chainId)
 
 export const getHealthyRpc = async (rpcUrls: string[], network: ethers.providers.Network) => {
   for (const rpcUrl of rpcUrls) if (await isHealthyRpc(rpcUrl, network.chainId)) return rpcUrl
