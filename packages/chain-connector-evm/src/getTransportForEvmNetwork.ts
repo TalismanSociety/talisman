@@ -1,6 +1,7 @@
 import { EvmNetwork } from "@talismn/chaindata-provider"
-import { custom, fallback, http } from "viem"
+import { custom, fallback } from "viem"
 
+import { talismanHttp } from "./tmp/talismanHttp"
 import { AcalaRpcProvider, addOnfinalityApiKey, isAcalaNetwork } from "./util"
 
 const HTTP_BATCH_WAIT = 25
@@ -25,7 +26,8 @@ export const getTransportForEvmNetwork = (
     })
 
     return custom({
-      request: (method: string, params = []) => {
+      request: (request) => {
+        const { method, params } = request as { method: string; params: unknown[] }
         // TODO check if params are good
         // eslint-disable-next-line no-console
         console.warn("acala request", { method, params })
@@ -36,7 +38,7 @@ export const getTransportForEvmNetwork = (
 
   return fallback(
     evmNetwork.rpcs.map((rpc) =>
-      http(addOnfinalityApiKey(rpc.url, options.onFinalityApiKey), {
+      talismanHttp(addOnfinalityApiKey(rpc.url, options.onFinalityApiKey), {
         batch: { wait: HTTP_BATCH_WAIT, batchSize: HTTP_BATCH_SIZE },
         retryCount: 0,
       })
