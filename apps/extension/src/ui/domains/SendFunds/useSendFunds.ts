@@ -283,44 +283,47 @@ const useSendFundsProvider = () => {
     tokenRates,
   ])
 
-  const estimatedFee = useMemo(() => {
+  const [estimatedFee, maxFee] = useMemo(() => {
     if (evmTransaction?.txDetails?.estimatedFee) {
-      return new BalanceFormatter(
-        BigNumber.from(evmTransaction.txDetails.estimatedFee).toBigInt(),
-        feeToken?.decimals,
-        feeTokenRates
-      )
+      return [
+        new BalanceFormatter(
+          BigNumber.from(evmTransaction.txDetails.estimatedFee).toBigInt(),
+          feeToken?.decimals,
+          feeTokenRates
+        ),
+        new BalanceFormatter(
+          BigNumber.from(evmTransaction.txDetails.maxFee).toBigInt(),
+          feeToken?.decimals,
+          feeTokenRates
+        ),
+      ]
     }
     if (subTransaction?.partialFee) {
-      return new BalanceFormatter(
+      const fee = new BalanceFormatter(
         BigInt(subTransaction.partialFee),
         feeToken?.decimals,
         feeTokenRates
       )
+      return [fee, fee]
     }
-    return null
+    return [null, null]
   }, [
     evmTransaction?.txDetails?.estimatedFee,
+    evmTransaction?.txDetails?.maxFee,
     feeToken?.decimals,
     feeTokenRates,
     subTransaction?.partialFee,
   ])
 
-  const costBreakdown = useMemo(() => {
+  const maxCostBreakdown = useMemo(() => {
     try {
       const transferAmount = sendMax ? maxAmount : transfer
-      if (
-        !token ||
-        !feeToken ||
-        !transferAmount ||
-        !estimatedFee ||
-        (requiresTip && (!tip || !tipToken))
-      )
+      if (!token || !feeToken || !transferAmount || !maxFee || (requiresTip && (!tip || !tipToken)))
         return null
 
       const spend: Record<TokenId, bigint> = {}
       spend[token.id] = transferAmount.planck
-      spend[feeToken.id] = (spend[feeToken.id] ?? 0n) + estimatedFee.planck
+      spend[feeToken.id] = (spend[feeToken.id] ?? 0n) + maxFee.planck
       if (tip && tipToken && tip.planck > 0n)
         spend[tipToken.id] = (spend[tipToken.id] ?? 0n) + tip.planck
 
@@ -341,7 +344,7 @@ const useSendFundsProvider = () => {
     }
   }, [
     balances,
-    estimatedFee,
+    maxFee,
     feeToken,
     maxAmount,
     requiresTip,
@@ -356,7 +359,7 @@ const useSendFundsProvider = () => {
   ])
 
   const tokensToBeReaped = useMemo(() => {
-    return costBreakdown
+    return maxCostBreakdown
       ?.map(({ token, cost, balance }) => {
         const remaining = balance.planck - cost.planck
 
@@ -383,7 +386,7 @@ const useSendFundsProvider = () => {
           amount: BalanceFormatter
         }[]
       | undefined
-  }, [costBreakdown, sendMax, tokenRatesMap])
+  }, [maxCostBreakdown, sendMax, tokenRatesMap])
 
   const { data: recipientBalance } = useRecipientBalance(token, to)
 
@@ -420,7 +423,7 @@ const useSendFundsProvider = () => {
         !to ||
         !(transfer || (sendMax && maxAmount)) ||
         !tokenId ||
-        !costBreakdown ||
+        !maxCostBreakdown ||
         !tokensToBeReaped ||
         !feeToken ||
         !feeTokenBalance ||
@@ -441,7 +444,7 @@ const useSendFundsProvider = () => {
           error: t("Insufficient {{symbol}} to pay for fees", { symbol: feeToken.symbol }),
         }
 
-      for (const cost of costBreakdown)
+      for (const cost of maxCostBreakdown)
         if (cost.balance.planck < cost.cost.planck)
           return {
             isValid: false,
@@ -474,7 +477,7 @@ const useSendFundsProvider = () => {
     }
   }, [
     balance,
-    costBreakdown,
+    maxCostBreakdown,
     evmInvalidTxError,
     evmTransaction?.error,
     from,
