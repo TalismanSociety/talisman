@@ -26,9 +26,8 @@ import { privateKeyToAccount } from "viem/accounts"
 
 import { getHostName } from "../app/helpers"
 import { getHumanReadableErrorMessage } from "./errors"
-import { rebuildTransactionRequestNumbers } from "./helpers"
+import { parseTransactionRequest } from "./helpers"
 import { getTransactionCount, incrementTransactionCount } from "./transactionCountManager"
-import { getViemSendTransactionParams } from "./viemMigration"
 
 export class EthHandler extends ExtensionHandler {
   private signAndSendApproveHardware: MessageHandler<"pri(eth.signing.approveSignAndSendHardware)"> =
@@ -90,7 +89,7 @@ export class EthHandler extends ExtensionHandler {
     assert(isEthereumAddress(account.address), "Invalid ethereum address")
 
     // rebuild BigNumber property values (converted to json when serialized)
-    const tx = rebuildTransactionRequestNumbers(transaction)
+    const tx = parseTransactionRequest(transaction)
     if (tx.nonce === undefined) tx.nonce = await getTransactionCount(account.address, ethChainId)
 
     const result = await getPairForAddressSafely(account.address, async (pair) => {
@@ -106,13 +105,13 @@ export class EthHandler extends ExtensionHandler {
       return await client.sendTransaction({
         chain: client.chain,
         account,
-        ...getViemSendTransactionParams(tx),
+        ...tx,
       })
     })
 
     if (result.ok) {
       // long running operation, we do not want this inside getPairForAddressSafely
-      watchEthereumTransaction(ethChainId, result.val, tx, {
+      watchEthereumTransaction(ethChainId, result.val, transaction, {
         siteUrl: queued.url,
         notifications: true,
       })
@@ -142,24 +141,21 @@ export class EthHandler extends ExtensionHandler {
   }
 
   private sendSigned: MessageHandler<"pri(eth.signing.sendSigned)"> = async ({
+    evmNetworkId,
     unsigned,
     signed,
     transferInfo,
   }) => {
-    assert(unsigned.chainId, "chainId is not defined")
-    const evmNetworkId = unsigned.chainId.toString()
+    assert(evmNetworkId, "chainId is not defined")
 
     const client = await chainConnectorEvm.getWalletClientForEvmNetwork(evmNetworkId)
     assert(client, "Missing client for chain " + evmNetworkId)
-
-    // rebuild BigNumber property values (converted to json when serialized)
-    const tx = rebuildTransactionRequestNumbers(unsigned)
 
     try {
       const hash = await client.sendRawTransaction({ serializedTransaction: signed })
 
       // long running operation, we do not want this inside getPairForAddressSafely
-      watchEthereumTransaction(evmNetworkId, hash, tx, {
+      watchEthereumTransaction(evmNetworkId, hash, unsigned, {
         notifications: true,
         transferInfo,
       })
@@ -177,15 +173,14 @@ export class EthHandler extends ExtensionHandler {
   }
 
   private signAndSend: MessageHandler<"pri(eth.signing.signAndSend)"> = async ({
+    evmNetworkId,
     unsigned,
     transferInfo,
   }) => {
-    assert(unsigned.chainId, "chainId is not defined")
+    assert(evmNetworkId, "chainId is not defined")
     assert(unsigned.from, "from is not defined")
-    const evmNetworkId = unsigned.chainId.toString()
 
     // rebuild BigNumber property values (converted to json when serialized)
-    const tx = rebuildTransactionRequestNumbers(unsigned)
 
     const result = await getPairForAddressSafely(unsigned.from, async (pair) => {
       const client = await chainConnectorEvm.getWalletClientForEvmNetwork(evmNetworkId)
@@ -196,16 +191,18 @@ export class EthHandler extends ExtensionHandler {
       const privateKey = getPrivateKey(pair, password, "hex")
       const account = privateKeyToAccount(privateKey)
 
+      const tx = parseTransactionRequest(unsigned)
+
       return await client.sendTransaction({
         chain: client.chain,
         account,
-        ...getViemSendTransactionParams(tx),
+        ...tx,
       })
     })
 
     if (result.ok) {
       // long running operation, we do not want this inside getPairForAddressSafely
-      watchEthereumTransaction(evmNetworkId, result.val, tx, {
+      watchEthereumTransaction(evmNetworkId, result.val, unsigned, {
         notifications: true,
         transferInfo,
       })

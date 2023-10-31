@@ -2,7 +2,6 @@ import { BalanceFormatter } from "@core/domains/balances"
 import { useEthSignTransactionRequest } from "@ui/domains/Sign/SignRequestContext"
 import useToken from "@ui/hooks/useToken"
 import { useTokenRates } from "@ui/hooks/useTokenRates"
-import { ethers } from "ethers"
 import { FC, useMemo } from "react"
 import { useTranslation } from "react-i18next"
 
@@ -26,11 +25,6 @@ export const EthSignBodyDefault: FC = () => {
         )
       : null
   }, [nativeToken, nativeTokenRates, transactionInfo?.value])
-
-  const { from } = useMemo(
-    () => request as Required<ethers.providers.TransactionRequest>,
-    [request]
-  )
 
   if (!transactionInfo) return null
   if (!network) return null
@@ -56,7 +50,7 @@ export const EthSignBodyDefault: FC = () => {
           </div>
           <div className="flex">
             <span>{t("from")} </span>
-            <SignParamAccountButton address={from} withIcon />
+            <SignParamAccountButton address={request.from} withIcon />
           </div>
           <div className="flex">
             <span>{transactionInfo.isContractCall ? t("to contract") : t("to account")} </span>
@@ -76,7 +70,7 @@ export const EthSignBodyDefault: FC = () => {
           <div>{t("You are submitting a transaction")}</div>
           <div className="flex">
             <span>{t("with")}</span>
-            <SignParamAccountButton address={from} withIcon />
+            <SignParamAccountButton address={request.from} withIcon />
           </div>
           {request.to ? (
             <div className="flex">

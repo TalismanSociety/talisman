@@ -3,24 +3,30 @@ import type { CustomErc20Token } from "@core/domains/tokens/types"
 import { AnyEthRequest } from "@core/injectEth/types"
 import { BaseRequest, BaseRequestId, RequestIdOnly } from "@core/types/base"
 import { BlockWithTransactions } from "@ethersproject/abstract-provider"
-import type {
-  Block,
-  BlockTag,
-  TransactionReceipt,
-  TransactionRequest,
-  TransactionResponse,
-} from "@ethersproject/providers"
+// import type {
+//   Block,
+//   BlockTag,
+//   TransactionReceipt,
+//   TransactionRequest,
+//   TransactionResponse,
+// } from "@ethersproject/providers"
 // Compliant with https://eips.ethereum.org/EIPS/eip-1193
 import type { InjectedAccount } from "@polkadot/extension-inject/types"
 import { HexString } from "@polkadot/util/types"
 import { EvmNetworkId } from "@talismn/chaindata-provider"
 import { BigNumberish, ethers } from "ethers"
-import type { AddEthereumChainParameter, Address as EvmAddress } from "viem"
+import type {
+  AddEthereumChainParameter,
+  EIP1193Parameters,
+  Address as EvmAddress,
+  Chain as EvmChain,
+  TransactionRequest,
+} from "viem"
 import { PublicRpcSchema, RpcSchema, WalletRpcSchema } from "viem"
 
 import { WalletTransactionTransferInfo } from "../transactions"
 
-export type { EvmAddress }
+export type { EvmAddress, EvmChain }
 
 export type {
   EvmNetwork,
@@ -41,28 +47,31 @@ type PromisifyArray<T extends Array<any>> = {
   [K in keyof T]: Promisify<T[K]>
 }
 
-export type EthRequestGetBalance = PromisifyArray<[string, BlockTag]>
+export type EthRequestGetBalance = PromisifyArray<[string, ethers.providers.BlockTag]>
 
-export type EthRequestGetStorage = PromisifyArray<[string, BigNumberish, BlockTag]>
+export type EthRequestGetStorage = PromisifyArray<[string, BigNumberish, ethers.providers.BlockTag]>
 
-export type EthRequestGetTxCount = PromisifyArray<[string, BlockTag]>
+export type EthRequestGetTxCount = PromisifyArray<[string, ethers.providers.BlockTag]>
 
-export type EthRequestBlockTagOnly = PromisifyArray<[BlockTag]>
+export type EthRequestBlockTagOnly = PromisifyArray<[ethers.providers.BlockTag]>
 
 export type EthRequestSendRawTx = PromisifyArray<[string]>
 
-export type EthRequestCall = [TransactionRequest, Promise<BlockTag>]
+export type EthRequestCall = [
+  ethers.providers.TransactionRequest,
+  Promise<ethers.providers.BlockTag>
+]
 
-export type EthRequestEstimateGas = [TransactionRequest, string]
+export type EthRequestEstimateGas = [ethers.providers.TransactionRequest, string]
 
-export type EthRequestGetBlock = PromisifyArray<[BlockTag, boolean]>
+export type EthRequestGetBlock = PromisifyArray<[ethers.providers.BlockTag, boolean]>
 
 export type EthRequestTxHashOnly = PromisifyArray<[string]>
 
 export type EthRequestSign = [string, string]
 export type EthRequestRecoverAddress = [string, `0x${string}`]
 
-export type EthRequestSendTx = [TransactionRequest]
+export type EthRequestSendTx = [ethers.providers.TransactionRequest]
 
 export type EthRequestAddEthereumChain = [AddEthereumChainParameter]
 
@@ -88,6 +97,21 @@ type TalismanRpcSchema = [
     Method: "personal_ecRecover"
     Parameters: [signedData: `0x${string}`, signature: `0x${string}`]
     ReturnType: EvmAddress
+  },
+  {
+    Method: "eth_signTypedData"
+    Parameters: [message: unknown[], from: EvmAddress]
+    ReturnType: `0x${string}`
+  },
+  {
+    Method: "eth_signTypedData_v1"
+    Parameters: [message: unknown[], from: EvmAddress]
+    ReturnType: `0x${string}`
+  },
+  {
+    Method: "eth_signTypedData_v3"
+    Parameters: [from: EvmAddress, message: string]
+    ReturnType: `0x${string}`
   },
   {
     // TODO see if we can remove this
@@ -118,14 +142,14 @@ export interface EthRequestSignatures {
   eth_getTransactionCount: [EthRequestGetTxCount, string]
   eth_getBlockTransactionCountByHash: [EthRequestBlockTagOnly, string]
   eth_getBlockTransactionCountByNumber: [EthRequestBlockTagOnly, string]
-  eth_getCode: [EthRequestBlockTagOnly, Block]
-  eth_sendRawTransaction: [EthRequestSendRawTx, TransactionResponse]
+  eth_getCode: [EthRequestBlockTagOnly, ethers.providers.Block]
+  eth_sendRawTransaction: [EthRequestSendRawTx, ethers.providers.TransactionResponse]
   eth_call: [EthRequestCall, string]
   estimateGas: [EthRequestEstimateGas, string]
-  eth_getBlockByHash: [EthRequestGetBlock, Block | BlockWithTransactions]
-  eth_getBlockByNumber: [EthRequestGetBlock, Block | BlockWithTransactions]
-  eth_getTransactionByHash: [EthRequestTxHashOnly, TransactionResponse]
-  eth_getTransactionReceipt: [EthRequestTxHashOnly, TransactionReceipt]
+  eth_getBlockByHash: [EthRequestGetBlock, ethers.providers.Block | BlockWithTransactions]
+  eth_getBlockByNumber: [EthRequestGetBlock, ethers.providers.Block | BlockWithTransactions]
+  eth_getTransactionByHash: [EthRequestTxHashOnly, ethers.providers.TransactionResponse]
+  eth_getTransactionReceipt: [EthRequestTxHashOnly, ethers.providers.TransactionReceipt]
   personal_sign: [EthRequestSign, string]
   eth_signTypedData: [EthRequestSign, string]
   eth_signTypedData_v1: [EthRequestSign, string]
@@ -160,24 +184,27 @@ export interface EthRequestSignatures {
   wallet_requestPermissions: [[RequestedPermissions], Web3WalletPermission[]]
 }
 
-export type EthRequestTypes = keyof EthRequestSignatures
+// export type EthRequestTypes = keyof EthRequestSignatures
+// TODO yeet
 export type EthResponseTypes = EthRequestSignatures[keyof EthRequestSignatures][1]
-export type EthResponseType<T extends EthRequestTypes> = EthRequestSignatures[T][1]
-export type EthRequestParams = EthRequestSignatures[keyof EthRequestSignatures][0]
-export interface EthRequestArguments<T extends EthRequestTypes> {
-  readonly method: T
-  readonly params: EthRequestSignatures[T][0]
-}
+//export type EthResponseType<T extends EthRequestTypes> = EthRequestSignatures[T][1]
+//export type EthRequestParams = EthRequestSignatures[keyof EthRequestSignatures][0]
+// export interface EthRequestArguments<T extends EthRequestTypes> {
+//   readonly method: T
+//   readonly params: EthRequestSignatures[T][0]
+// }
 
 export type EthRequestArgumentsViem<T extends keyof EthRequestSignaturesFull> = {
   readonly method: T
   readonly params: EthRequestSignaturesFull[T][0]
 }
 
+export type EthRequestArgsViem = EIP1193Parameters<FullRpcSchema>
+
 export type EthRequestResultViem<T extends keyof EthRequestSignaturesFull> =
   EthRequestSignaturesFull[T][1]
 
-export type EthRequestSignArguments = EthRequestArguments<
+export type EthRequestSignArguments = EthRequestArgumentsViem<
   | "personal_sign"
   | "eth_signTypedData"
   | "eth_signTypedData_v1"
@@ -206,17 +233,19 @@ export interface EthProviderMessage {
 // }
 
 export type EthTxSignAndSend = {
-  unsigned: ethers.providers.TransactionRequest
+  evmNetworkId: EvmNetworkId
+  unsigned: TransactionRequest<string>
   transferInfo?: WalletTransactionTransferInfo
 }
 export type EthTxSendSigned = {
-  unsigned: ethers.providers.TransactionRequest
+  evmNetworkId: EvmNetworkId
+  unsigned: TransactionRequest<string>
   signed: `0x${string}`
   transferInfo?: WalletTransactionTransferInfo
 }
 
 export declare type EthApproveSignAndSend = KnownSigningRequestIdOnly<ETH_SEND> & {
-  transaction: ethers.providers.TransactionRequest
+  transaction: TransactionRequest<string>
 }
 
 export type EthRequestSigningApproveSignature = KnownSigningRequestIdOnly<ETH_SIGN> & {
@@ -224,7 +253,7 @@ export type EthRequestSigningApproveSignature = KnownSigningRequestIdOnly<ETH_SI
 }
 
 export type EthRequestSignAndSendApproveSignature = KnownSigningRequestIdOnly<ETH_SEND> & {
-  unsigned: ethers.providers.TransactionRequest
+  unsigned: TransactionRequest<string>
   signedPayload: `0x${string}`
 }
 
@@ -299,18 +328,20 @@ export interface EthMessages {
   "pri(eth.networks.upsert)": [RequestUpsertCustomEvmNetwork, boolean]
 }
 
-export type EthGasSettingsLegacy = {
-  type: 0
-  gasLimit: BigNumberish
-  gasPrice: BigNumberish
+export type EthGasSettingsLegacy<TQuantity = bigint> = {
+  type: "legacy" | "eip2930"
+  gas: TQuantity
+  gasPrice: TQuantity
 }
-export type EthGasSettingsEip1559 = {
-  type: 2
-  gasLimit: BigNumberish
-  maxFeePerGas: BigNumberish
-  maxPriorityFeePerGas: BigNumberish
+export type EthGasSettingsEip1559<TQuantity = bigint> = {
+  type: "eip1559"
+  gas: TQuantity
+  maxFeePerGas: TQuantity
+  maxPriorityFeePerGas: TQuantity
 }
-export type EthGasSettings = EthGasSettingsLegacy | EthGasSettingsEip1559
+export type EthGasSettings<TQuantity = bigint> =
+  | EthGasSettingsLegacy<TQuantity>
+  | EthGasSettingsEip1559<TQuantity>
 
 export type LedgerEthDerivationPathType = "LedgerLive" | "Legacy" | "BIP44"
 

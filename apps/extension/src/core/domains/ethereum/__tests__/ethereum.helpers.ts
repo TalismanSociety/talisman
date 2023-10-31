@@ -1,4 +1,5 @@
 import { ethers } from "ethers"
+import { parseGwei } from "viem"
 
 import {
   getEthDerivationPath,
@@ -8,8 +9,8 @@ import {
   isSafeImageUrl,
 } from "../helpers"
 
-const baseFeePerGas = ethers.utils.parseUnits("2", "gwei")
-const maxPriorityFeePerGas = ethers.utils.parseUnits("8", "gwei")
+const baseFeePerGas = parseGwei("2")
+const maxPriorityFeePerGas = parseGwei("2")
 
 describe("Test ethereum helpers", () => {
   test("getMaxFeePerGas 0 block", async () => {
@@ -29,12 +30,12 @@ describe("Test ethereum helpers", () => {
   test("getTotalFeesFromGasSettings - EIP1559 maxFee lower than baseFee", () => {
     const { estimatedFee, maxFee } = getTotalFeesFromGasSettings(
       {
-        type: 2,
-        maxFeePerGas: ethers.utils.parseUnits("1.5", "gwei"),
-        maxPriorityFeePerGas: ethers.utils.parseUnits("0.5", "gwei"),
-        gasLimit: 22000,
+        type: "eip1559",
+        maxFeePerGas: parseGwei("1.5"),
+        maxPriorityFeePerGas: parseGwei("0.5"),
+        gas: 22000n,
       },
-      21000,
+      21000n,
       baseFeePerGas
     ) //
 
@@ -48,12 +49,12 @@ describe("Test ethereum helpers", () => {
   test("getTotalFeesFromGasSettings - EIP1559 classic", () => {
     const { estimatedFee, maxFee } = getTotalFeesFromGasSettings(
       {
-        type: 2,
-        maxFeePerGas: ethers.utils.parseUnits("3.5", "gwei"),
-        maxPriorityFeePerGas: ethers.utils.parseUnits("0.5", "gwei"),
-        gasLimit: 22000,
+        type: "eip1559",
+        maxFeePerGas: parseGwei("3.5"),
+        maxPriorityFeePerGas: parseGwei("0.5"),
+        gas: 22000n,
       },
-      21000,
+      21000n,
       baseFeePerGas
     )
 
@@ -67,11 +68,11 @@ describe("Test ethereum helpers", () => {
   test("getTotalFeesFromGasSettings - Legacy", () => {
     const { estimatedFee, maxFee } = getTotalFeesFromGasSettings(
       {
-        type: 0,
-        gasPrice: baseFeePerGas.add(maxPriorityFeePerGas),
-        gasLimit: 22000,
+        type: "legacy",
+        gasPrice: baseFeePerGas + maxPriorityFeePerGas,
+        gas: 22000n,
       },
-      21000,
+      21000n,
       baseFeePerGas
     )
 

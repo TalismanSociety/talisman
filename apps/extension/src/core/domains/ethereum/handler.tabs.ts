@@ -62,7 +62,7 @@ import {
 import { requestAddNetwork, requestWatchAsset } from "./requests"
 import {
   EthProviderMessage,
-  EthRequestArguments,
+  EthRequestArgsViem,
   EthRequestArgumentsViem,
   EthRequestResultViem,
   EthRequestSignArguments,
@@ -84,7 +84,10 @@ export class EthTabsHandler extends TabsHandler {
     }
   }
 
-  async getSiteDetails(url: string, authorisedAddress?: string): Promise<EthAuthorizedSite> {
+  private async getSiteDetails(
+    url: string,
+    authorisedAddress?: string
+  ): Promise<EthAuthorizedSite> {
     let site
 
     try {
@@ -101,7 +104,7 @@ export class EthTabsHandler extends TabsHandler {
     return site as EthAuthorizedSite
   }
 
-  async getPublicClient(url: string, authorisedAddress?: string): Promise<PublicClient> {
+  private async getPublicClient(url: string, authorisedAddress?: string): Promise<PublicClient> {
     const site = await this.getSiteDetails(url, authorisedAddress)
 
     const ethereumNetwork = await chaindataProvider.getEvmNetwork(site.ethChainId.toString())
@@ -429,12 +432,17 @@ export class EthTabsHandler extends TabsHandler {
       method
     )
     // on https://astar.network, params are in reverse order
-    if (isMessageFirst && isEthereumAddress(params[0]) && !isEthereumAddress(params[1]))
+    if (
+      typeof params[0] === "string" &&
+      isMessageFirst &&
+      isEthereumAddress(params[0]) &&
+      !isEthereumAddress(params[1])
+    )
       isMessageFirst = false
 
     const [uncheckedMessage, from] = isMessageFirst
       ? [params[0], getAddress(params[1])]
-      : [params[1], getAddress(params[0])]
+      : [params[1], getAddress(params[0] as string)]
 
     // message is either a raw string or a hex string or an object (signTypedData_v1)
     const message =
@@ -558,24 +566,28 @@ export class EthTabsHandler extends TabsHandler {
 
   private async sendTransaction(
     url: string,
-    request: EthRequestArguments<"eth_sendTransaction">,
+    { params: [txRequest] }: EthRequestArgumentsViem<"eth_sendTransaction">,
     port: Port
   ) {
-    const {
-      params: [txRequest],
-    } = request
-
     const site = await this.getSiteDetails(url, txRequest.from)
 
-    // ensure chainId isn't an hex (ex: Zerion)
-    if (typeof txRequest.chainId === "string" && (txRequest.chainId as string).startsWith("0x"))
-      txRequest.chainId = parseInt(txRequest.chainId, 16)
+    {
+      // eventhough not standard, some transactions specify a chainId in the request
+      // throw an error if it's not the current tab's chainId
 
-    // checks that the request targets currently selected network
-    if (txRequest.chainId && site.ethChainId !== txRequest.chainId)
-      throw new EthProviderRpcError("Wrong network", ETH_ERROR_EIP1474_INVALID_PARAMS)
+      let specifiedChainId = (txRequest as unknown as { chainId?: string | number }).chainId
+
+      // ensure chainId isn't an hex (ex: Zerion)
+      if (typeof specifiedChainId === "string" && (specifiedChainId as string).startsWith("0x"))
+        specifiedChainId = parseInt(specifiedChainId, 16)
+
+      // checks that the request targets currently selected network
+      if (specifiedChainId && Number(site.ethChainId) !== Number(specifiedChainId))
+        throw new EthProviderRpcError("Wrong network", ETH_ERROR_EIP1474_INVALID_PARAMS)
+    }
 
     try {
+      // ensure that we have a valid provider for the current network
       await this.getPublicClient(url, txRequest.from)
     } catch (error) {
       throw new EthProviderRpcError("Network not supported", ETH_ERROR_EIP1993_CHAIN_DISCONNECTED)
@@ -585,7 +597,7 @@ export class EthTabsHandler extends TabsHandler {
 
     // allow only the currently selected account in "from" field
     if (txRequest.from?.toLowerCase() !== address.toLowerCase())
-      throw new EthProviderRpcError("Unknown from account", ETH_ERROR_EIP1474_INVALID_INPUT)
+      throw new EthProviderRpcError("Invalid from account", ETH_ERROR_EIP1474_INVALID_INPUT)
 
     const pair = keyring.getPair(address)
 
@@ -598,11 +610,7 @@ export class EthTabsHandler extends TabsHandler {
 
     return signAndSendEth(
       url,
-      {
-        // locks the chainId in case the dapp's chainId changes after signing request creation
-        chainId: site.ethChainId,
-        ...txRequest,
-      },
+      txRequest,
       site.ethChainId.toString(),
       {
         address,
@@ -618,7 +626,7 @@ export class EthTabsHandler extends TabsHandler {
       // url validation carried out inside stores.sites.getSiteFromUrl
       site = await this.stores.sites.getSiteFromUrl(url)
     } catch (error) {
-      //no-op
+      // no-op
     }
 
     return site?.ethPermissions
@@ -689,7 +697,7 @@ export class EthTabsHandler extends TabsHandler {
   private async ethRequest(
     id: string,
     url: string,
-    request: AnyEthRequest,
+    request: EthRequestArgsViem,
     port: Port
   ): Promise<unknown> {
     if (
@@ -776,7 +784,7 @@ export class EthTabsHandler extends TabsHandler {
       case "eth_sendTransaction":
         return this.sendTransaction(
           url,
-          request as EthRequestArguments<"eth_sendTransaction">,
+          request as EthRequestArgumentsViem<"eth_sendTransaction">,
           port
         )
 
@@ -833,7 +841,7 @@ export class EthTabsHandler extends TabsHandler {
 
       case "pub(eth.request)": {
         try {
-          return await this.ethRequest(id, url, request as AnyEthRequest, port)
+          return await this.ethRequest(id, url, request as EthRequestArgsViem, port)
         } catch (err) {
           if (err instanceof EthProviderRpcError) throw err
           // eslint-disable-next-line @typescript-eslint/no-explicit-any

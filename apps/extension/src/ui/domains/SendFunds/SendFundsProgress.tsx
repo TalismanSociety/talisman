@@ -73,7 +73,7 @@ const TxReplaceActions: FC<{ tx: WalletTransaction }> = ({ tx }) => {
   )
 }
 
-const useStatusDetails = (tx: WalletTransaction) => {
+const useStatusDetails = (tx?: WalletTransaction) => {
   const { t } = useTranslation("send-funds")
   const { title, subtitle, extra, animStatus } = useMemo<{
     title: string
@@ -81,6 +81,14 @@ const useStatusDetails = (tx: WalletTransaction) => {
     animStatus: ProcessAnimationStatus
     extra?: string
   }>(() => {
+    // missing tx can occur while loading
+    if (!tx)
+      return {
+        title: "",
+        subtitle: "",
+        animStatus: "processing",
+      }
+
     const isReplacementCancel =
       tx.networkType === "evm" &&
       tx.isReplacement &&
@@ -138,7 +146,7 @@ const useStatusDetails = (tx: WalletTransaction) => {
 }
 
 type SendFundsProgressBaseProps = {
-  tx: WalletTransaction
+  tx?: WalletTransaction
   className?: string
   blockNumber?: string
   onClose?: () => void
@@ -184,7 +192,7 @@ const SendFundsProgressBase: FC<SendFundsProgressBaseProps> = ({
             extra
           )}
         </div>
-        {tx.status === "pending" && <TxReplaceActions tx={tx} />}
+        {tx?.status === "pending" && <TxReplaceActions tx={tx} />}
       </div>
       <Button fullWidth onClick={onClose}>
         {t("Close")}
@@ -243,16 +251,16 @@ const SendFundsProgressProgressEvm: FC<SendFundsProgressEvmProps> = ({
   )
 }
 
-const UNKNOWN_TX: WalletTransaction = {
-  hash: "",
-  networkType: "evm",
-  status: "unknown",
-  evmNetworkId: "",
-  account: "",
-  unsigned: {},
-  nonce: 0,
-  timestamp: 0,
-}
+// const UNKNOWN_TX: WalletTransaction = {
+//   hash: "",
+//   networkType: "evm",
+//   status: "unknown",
+//   evmNetworkId: "",
+//   account: "",
+//   unsigned: null,
+//   nonce: 0,
+//   timestamp: 0,
+// }
 
 type SendFundsProgressProps = {
   hash: HexString
@@ -274,9 +282,7 @@ export const SendFundsProgress: FC<SendFundsProgressProps> = ({
   // tx is null if not found in db
   if (tx === null) {
     const href = getBlockExplorerUrl(evmNetwork, chain, hash)
-    return (
-      <SendFundsProgressBase tx={UNKNOWN_TX} href={href} className={className} onClose={onClose} />
-    )
+    return <SendFundsProgressBase href={href} className={className} onClose={onClose} />
   }
 
   if (tx?.networkType === "substrate")

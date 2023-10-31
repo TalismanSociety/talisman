@@ -1,31 +1,65 @@
-import { EvmNetworkId } from "@core/domains/ethereum/types"
-import {
-  getExtensionEthereumProvider,
-  getExtensionPublicClient,
-} from "@ui/domains/Ethereum/getExtensionEthereumProvider"
-import { ethers } from "ethers"
+import { EvmNetwork, EvmNetworkId } from "@core/domains/ethereum/types"
+import { log } from "@core/log"
+import { EvmNativeToken } from "@talismn/balances-evm-native"
+import { api } from "@ui/api"
+import { useEvmNetwork } from "@ui/hooks/useEvmNetwork"
+import useToken from "@ui/hooks/useToken"
 import { useMemo } from "react"
-import { PublicClient } from "viem"
+import { PublicClient, createPublicClient, custom } from "viem"
 
-/**
- * @deprecated use usePublicClient instead
- */
-export const useEthereumProvider = (
-  evmNetworkId?: EvmNetworkId
-): ethers.providers.JsonRpcProvider | undefined => {
-  const provider = useMemo(() => {
-    if (!evmNetworkId) return undefined
-    return getExtensionEthereumProvider(evmNetworkId)
-  }, [evmNetworkId])
+type ViemRequest = (arg: { method: string; params?: unknown[] }) => Promise<unknown>
 
-  return provider
+const viemRequest =
+  (chainId: EvmNetworkId): ViemRequest =>
+  async ({ method, params }) => {
+    try {
+      return await api.ethRequest({ chainId, method, params })
+    } catch (err) {
+      log.error("[provider.request] error on %s", method, { err })
+      throw err
+      // TODO check that we get proper error codes
+      // const { message, code, data } = err as EthProviderRpcError
+      // throw new EthProviderRpcError(message, code ?? ETH_ERROR_EIP1474_INTERNAL_ERROR, data)
+    }
+  }
+
+export const getExtensionPublicClient = (
+  evmNetwork: EvmNetwork,
+  nativeToken: EvmNativeToken
+): PublicClient => {
+  const name = evmNetwork.name ?? `EVM Chain ${evmNetwork.id}`
+
+  return createPublicClient({
+    chain: {
+      id: Number(evmNetwork.id),
+      name: name,
+      network: name,
+      nativeCurrency: {
+        symbol: nativeToken.symbol,
+        decimals: nativeToken.decimals,
+        name: nativeToken.symbol,
+      },
+      rpcUrls: {
+        // rpcs are a typescript requirement, won't be used by the custom transport
+        public: { http: [] },
+        default: { http: [] },
+      },
+    },
+    // TODO check timers, decide if they should be here (remove them on backend) or clear them here and use defaults on backend
+    transport: custom({
+      request: viemRequest(evmNetwork.id),
+    }),
+  })
 }
 
 export const usePublicClient = (evmNetworkId?: EvmNetworkId): PublicClient | undefined => {
+  const evmNetwork = useEvmNetwork(evmNetworkId)
+  const nativeToken = useToken(evmNetwork?.nativeToken?.id)
+
   const publicClient = useMemo(() => {
-    if (!evmNetworkId) return undefined
-    return getExtensionPublicClient(evmNetworkId)
-  }, [evmNetworkId])
+    if (!evmNetwork || nativeToken?.type !== "evm-native") return undefined
+    return getExtensionPublicClient(evmNetwork, nativeToken)
+  }, [evmNetwork, nativeToken])
 
   return publicClient
 }

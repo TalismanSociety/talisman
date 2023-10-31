@@ -11,10 +11,11 @@ import { useAnalytics } from "@ui/hooks/useAnalytics"
 import useToken from "@ui/hooks/useToken"
 import { useTokenRates } from "@ui/hooks/useTokenRates"
 import { BigNumber, BigNumberish } from "ethers"
-import { formatEther, formatUnits } from "ethers/lib/utils"
+import { formatEther } from "ethers/lib/utils"
 import { FC, PropsWithChildren, ReactNode, useCallback, useEffect, useMemo } from "react"
 import { useTranslation } from "react-i18next"
 import { Button, Drawer, PillButton } from "talisman-ui"
+import { formatGwei } from "viem"
 
 import { Message } from "../Message"
 import { useEthSignTransactionRequest } from "../SignRequestContext"
@@ -36,12 +37,12 @@ type ViewDetailsContentProps = {
   onClose: () => void
 }
 
-const Gwei: FC<{ value: BigNumberish | null | undefined }> = ({ value }) => {
+const Gwei: FC<{ value: bigint | null | undefined }> = ({ value }) => {
   const { t } = useTranslation("request")
   return (
     <>
-      {value
-        ? t("{{value}} GWEI", { value: formatDecimals(formatUnits(value, "gwei")) })
+      {value !== null && value !== undefined
+        ? t("{{value}} GWEI", { value: formatDecimals(formatGwei(value)) })
         : t("N/A")}
     </>
   )
@@ -140,7 +141,7 @@ const ViewDetailsContent: FC<ViewDetailsContentProps> = ({ onClose }) => {
         />
         <ViewDetailsAddress
           label={t("To")}
-          address={request.to}
+          address={request.to ?? undefined}
           blockExplorerUrl={network?.explorerUrl}
         />
         <ViewDetailsField label={t("Value to be transferred")} breakAll>
@@ -158,7 +159,7 @@ const ViewDetailsContent: FC<ViewDetailsContentProps> = ({ onClose }) => {
                 typeof networkUsage === "number" ? `${Math.round(networkUsage * 100)}%` : t("N/A")
               }
             />
-            {transaction?.type === 2 && (
+            {transaction?.type === "eip1559" && (
               <>
                 <ViewDetailsGridRow
                   left={t("Base fee per gas")}
@@ -181,7 +182,7 @@ const ViewDetailsContent: FC<ViewDetailsContentProps> = ({ onClose }) => {
           <ViewDetailsField label={`${t("Gas settings")} (${feePriorityOptions[priority].label})`}>
             {transaction ? (
               <ViewDetailsGrid>
-                {transaction?.type === 2 ? (
+                {transaction?.type === "eip1559" ? (
                   <>
                     <ViewDetailsGridRow left={t("Type")} right="EIP-1559" />
 
@@ -205,11 +206,7 @@ const ViewDetailsContent: FC<ViewDetailsContentProps> = ({ onClose }) => {
                 )}
                 <ViewDetailsGridRow
                   left={t("Gas limit")}
-                  right={
-                    transaction?.gasLimit
-                      ? BigNumber.from(transaction.gasLimit)?.toNumber()
-                      : t("N/A")
-                  }
+                  right={transaction?.gas ? transaction.gas.toString() : t("N/A")}
                 />
               </ViewDetailsGrid>
             ) : (

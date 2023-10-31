@@ -4,10 +4,10 @@ import { TypeRegistry } from "@polkadot/types"
 import { HexString } from "@polkadot/util/types"
 import { SignerPayloadJSON } from "@substrate/txwrapper-core"
 import { Address } from "@talismn/balances"
-import { ethers } from "ethers"
+import { EvmNetworkId } from "@talismn/chaindata-provider"
 import merge from "lodash/merge"
+import { Hex, TransactionRequest } from "viem"
 
-import { serializeTransactionRequestBigNumbers } from "../ethereum/helpers"
 import { TransactionStatus } from "./types"
 
 type AddTransactionOptions = {
@@ -23,23 +23,24 @@ const DEFAULT_OPTIONS: AddTransactionOptions = {
 }
 
 export const addEvmTransaction = async (
-  hash: string,
-  unsigned: ethers.providers.TransactionRequest,
+  evmNetworkId: EvmNetworkId,
+  hash: Hex,
+  unsigned: TransactionRequest<string>,
   options: AddTransactionOptions = {}
 ) => {
   const { siteUrl, label, tokenId, value, to } = merge(structuredClone(DEFAULT_OPTIONS), options)
 
   try {
-    if (!unsigned.chainId || !unsigned.from || unsigned.nonce === undefined)
+    if (!evmNetworkId || !unsigned.from || unsigned.nonce === undefined)
       throw new Error("Invalid transaction")
 
-    const evmNetworkId = String(unsigned.chainId)
-    const nonce = ethers.BigNumber.from(unsigned.nonce).toNumber()
     const isReplacement =
       (await db.transactions
         .filter(
           (row) =>
-            row.networkType === "evm" && row.evmNetworkId === evmNetworkId && row.nonce === nonce
+            row.networkType === "evm" &&
+            row.evmNetworkId === evmNetworkId &&
+            row.nonce === unsigned.nonce
         )
         .count()) > 0
 
@@ -48,9 +49,9 @@ export const addEvmTransaction = async (
       networkType: "evm",
       evmNetworkId,
       account: unsigned.from,
-      nonce,
+      nonce: unsigned.nonce,
       isReplacement,
-      unsigned: serializeTransactionRequestBigNumbers(unsigned),
+      unsigned,
       status: "pending",
       siteUrl,
       label,

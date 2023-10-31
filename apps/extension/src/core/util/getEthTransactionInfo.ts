@@ -2,7 +2,7 @@ import { EvmAddress } from "@core/domains/ethereum/types"
 import * as Sentry from "@sentry/browser"
 import { getContractCallArg } from "@ui/domains/Sign/Ethereum/getContractCallArg"
 import { BigNumber, ethers } from "ethers"
-import { PublicClient, getAddress, getContract, parseAbi } from "viem"
+import { PublicClient, TransactionRequestBase, getAddress, getContract, parseAbi } from "viem"
 
 import { abiErc1155, abiErc20, abiErc721, abiMoonStaking } from "./abi"
 import { abiMoonConvictionVoting } from "./abi/abiMoonConvictionVoting"
@@ -81,7 +81,7 @@ export type KnownTransactionInfo = Required<TransactionInfo>
 
 export const getEthTransactionInfo = async (
   publicClient: PublicClient,
-  tx: ethers.providers.TransactionRequest
+  tx: TransactionRequestBase
 ): Promise<TransactionInfo | undefined> => {
   // transactions that provision a contract have an empty 'to' field
   const targetAddress = tx.to ? getAddress(tx.to) : undefined
@@ -101,8 +101,8 @@ export const getEthTransactionInfo = async (
   if (
     tx.data &&
     targetAddress &&
-    tx.chainId &&
-    [1284, 1285, 1287].includes(tx.chainId) &&
+    publicClient?.chain?.id &&
+    [1284, 1285, 1287].includes(publicClient.chain.id) &&
     !!MOON_CHAIN_PRECOMPILE_ADDRESSES[targetAddress]
   ) {
     const { contractType, abi } = MOON_CHAIN_PRECOMPILE_ADDRESSES[targetAddress]
@@ -118,7 +118,7 @@ export const getEthTransactionInfo = async (
 
       return result
     } catch (err) {
-      Sentry.captureException(err, { extra: { to: tx.to, chainId: tx.chainId } })
+      Sentry.captureException(err, { extra: { to: tx.to, chainId: publicClient.chain.id } })
     }
   }
 
@@ -154,23 +154,24 @@ export const getEthTransactionInfo = async (
             decimals,
           }
         } else if (contractType === "ERC721") {
-          const tokenId = getContractCallArg<BigNumber>(contractCall, "tokenId")!.toBigInt()
+          const tokenId = getContractCallArg<BigNumber>(contractCall, "tokenId")?.toBigInt()
+          if (tokenId) {
+            try {
+              const contract = getContract({
+                address: targetAddress,
+                abi: KNOWN_ABI.ERC721,
+                publicClient,
+              })
+              const [name, symbol, tokenURI] = await Promise.all([
+                contract.read.name(),
+                contract.read.symbol(),
+                tokenId ? contract.read.tokenURI([tokenId]) : undefined,
+              ])
 
-          try {
-            const contract = getContract({
-              address: targetAddress,
-              abi: KNOWN_ABI.ERC721,
-              publicClient,
-            })
-            const [name, symbol, tokenURI] = await Promise.all([
-              contract.read.name(),
-              contract.read.symbol(),
-              tokenId ? contract.read.tokenURI([tokenId]) : undefined,
-            ])
-
-            result.asset = { name, symbol, tokenId, tokenURI, decimals: 1 }
-          } catch (err) {
-            // some NFTs don't implement the metadata functions
+              result.asset = { name, symbol, tokenId, tokenURI, decimals: 1 }
+            } catch (err) {
+              // some NFTs don't implement the metadata functions
+            }
           }
         }
 

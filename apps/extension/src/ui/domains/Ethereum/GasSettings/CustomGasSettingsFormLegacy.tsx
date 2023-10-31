@@ -1,4 +1,4 @@
-import { EthGasSettingsLegacy } from "@core/domains/ethereum/types"
+import { EthGasSettingsLegacy, EvmNetworkId } from "@core/domains/ethereum/types"
 import { EthTransactionDetails, GasSettingsByPriorityLegacy } from "@core/domains/signing/types"
 import { log } from "@core/log"
 import { yupResolver } from "@hookform/resolvers/yup"
@@ -15,9 +15,10 @@ import { useTranslation } from "react-i18next"
 import { useDebounce } from "react-use"
 import { IconButton } from "talisman-ui"
 import { Button, FormFieldContainer, FormFieldInputText } from "talisman-ui"
+import { TransactionRequest, formatGwei } from "viem"
 import * as yup from "yup"
 
-import { useEthereumProvider } from "../useEthereumProvider"
+import { usePublicClient } from "../useEthereumProvider"
 import { useIsValidEthTransaction } from "../useIsValidEthTransaction"
 import { Indicator, MessageRow } from "./common"
 
@@ -31,9 +32,9 @@ type FormData = {
 }
 
 const gasSettingsFromFormData = (formData: FormData): EthGasSettingsLegacy => ({
-  type: 0,
-  gasPrice: BigNumber.from(Math.round(formData.gasPrice * Math.pow(10, 9))),
-  gasLimit: BigNumber.from(formData.gasLimit),
+  type: "legacy",
+  gasPrice: BigInt(Math.round(formData.gasPrice * Math.pow(10, 9))),
+  gas: BigInt(formData.gasLimit),
 })
 
 const schema = yup
@@ -44,7 +45,8 @@ const schema = yup
   .required()
 
 const useIsValidGasSettings = (
-  tx: ethers.providers.TransactionRequest,
+  evmNetworkId: EvmNetworkId,
+  tx: TransactionRequest,
   gasPrice: number,
   gasLimit: number
 ) => {
@@ -70,7 +72,7 @@ const useIsValidGasSettings = (
     [gasPrice, gasLimit]
   )
 
-  const provider = useEthereumProvider(tx.chainId?.toString())
+  const provider = usePublicClient(evmNetworkId)
 
   const txPrepared = useMemo(() => {
     try {
@@ -78,7 +80,7 @@ const useIsValidGasSettings = (
       return {
         ...tx,
         ...gasSettingsFromFormData(debouncedFormData),
-      } as ethers.providers.TransactionRequest
+      } as TransactionRequest
     } catch (err) {
       // any bad input throws here, ignore
       return undefined
@@ -99,7 +101,7 @@ const useIsValidGasSettings = (
 
 type CustomGasSettingsFormLegacyProps = {
   networkUsage?: number
-  tx: ethers.providers.TransactionRequest
+  tx: TransactionRequest
   tokenId: string
   txDetails: EthTransactionDetails
   gasSettingsByPriority: GasSettingsByPriorityLegacy
@@ -121,16 +123,16 @@ export const CustomGasSettingsFormLegacy: FC<CustomGasSettingsFormLegacyProps> =
 
   useEffect(() => {
     genericEvent("open custom gas settings", {
-      network: tx.chainId,
+      network: Number(txDetails.evmNetworkId),
       gasType: gasSettingsByPriority?.type,
     })
-  }, [gasSettingsByPriority?.type, genericEvent, tx.chainId])
+  }, [gasSettingsByPriority?.type, genericEvent, txDetails.evmNetworkId])
 
   const customSettings = gasSettingsByPriority.custom
 
   const networkGasPrice = useMemo(
     () =>
-      formatDecimals(ethers.utils.formatUnits(txDetails.gasPrice as string, "gwei"), undefined, {
+      formatDecimals(formatGwei(txDetails.gasPrice), undefined, {
         notation: "standard",
       }),
     [txDetails.gasPrice]
@@ -143,9 +145,9 @@ export const CustomGasSettingsFormLegacy: FC<CustomGasSettingsFormLegacyProps> =
           notation: "standard",
         })
       ),
-      gasLimit: BigNumber.from(customSettings.gasLimit).toNumber(),
+      gasLimit: BigNumber.from(customSettings.gas).toNumber(),
     }),
-    [customSettings.gasLimit, customSettings.gasPrice]
+    [customSettings.gas, customSettings.gasPrice]
   )
 
   const {
@@ -223,7 +225,7 @@ export const CustomGasSettingsFormLegacy: FC<CustomGasSettingsFormLegacyProps> =
         const gasSettings = gasSettingsFromFormData(formData)
 
         genericEvent("set custom gas settings", {
-          network: tx.chainId,
+          network: Number(txDetails.evmNetworkId),
           gasType: gasSettings.type,
         })
 
@@ -233,11 +235,11 @@ export const CustomGasSettingsFormLegacy: FC<CustomGasSettingsFormLegacyProps> =
         notify({ title: "Error", subtitle: (err as Error).message, type: "error" })
       }
     },
-    [genericEvent, onConfirm, tx.chainId]
+    [genericEvent, onConfirm, txDetails.evmNetworkId]
   )
 
   const { isValid: isGasSettingsValid, isLoading: isLoadingGasSettingsValid } =
-    useIsValidGasSettings(tx, gasPrice, gasLimit)
+    useIsValidGasSettings(txDetails.evmNetworkId, tx, gasPrice, gasLimit)
 
   const showMaxFeeTotal = isFormValid && isGasSettingsValid && !isLoadingGasSettingsValid
 

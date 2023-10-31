@@ -1,4 +1,4 @@
-import { getEthTransferTransactionBase } from "@core/domains/ethereum/helpers"
+import { getEthTransferTransactionBase, parseGasSettings } from "@core/domains/ethereum/helpers"
 import {
   getTransactionCount,
   incrementTransactionCount,
@@ -26,7 +26,6 @@ import * as Sentry from "@sentry/browser"
 import { isEthereumAddress, planckToTokens } from "@talismn/util"
 import { privateKeyToAccount } from "viem/accounts"
 
-import { ethGasSettingsToViemGasSettings } from "../ethereum/viemMigration"
 import { transferAnalytics } from "./helpers"
 
 export default class AssetTransferHandler extends ExtensionHandler {
@@ -211,13 +210,8 @@ export default class AssetTransferHandler extends ExtensionHandler {
       BigInt(amount ?? 0)
     )
 
-    const viemGasSettings = ethGasSettingsToViemGasSettings(gasSettings)
-
-    const transaction = {
-      ...transfer,
-      ...viemGasSettings,
-      nonce: await getTransactionCount(fromAddress, evmNetworkId),
-    }
+    const parsedGasSettings = parseGasSettings(gasSettings)
+    const nonce = await getTransactionCount(fromAddress, evmNetworkId)
 
     const result = await getPairForAddressSafely(fromAddress, async (pair) => {
       const client = await chainConnectorEvm.getWalletClientForEvmNetwork(evmNetworkId)
@@ -232,7 +226,9 @@ export default class AssetTransferHandler extends ExtensionHandler {
       const hash = await client.sendTransaction({
         chain: client.chain,
         account,
-        ...transaction,
+        ...transfer,
+        ...parsedGasSettings,
+        nonce,
       })
 
       incrementTransactionCount(fromAddress, evmNetworkId)

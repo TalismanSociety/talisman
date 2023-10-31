@@ -1,3 +1,4 @@
+import { serializeTransactionRequest } from "@core/domains/ethereum/helpers"
 import { EthTransactionDetails } from "@core/domains/signing/types"
 import { EvmWalletTransaction, WalletTransaction } from "@core/domains/transactions/types"
 import { HexString } from "@polkadot/util/types"
@@ -125,7 +126,7 @@ const EvmDrawerContent: FC<{
     networkUsage,
     isLoading,
     isValid,
-  } = useEthReplaceTransaction(tx.unsigned, type, isLocked)
+  } = useEthReplaceTransaction(tx.unsigned, tx.evmNetworkId, type, isLocked)
 
   const account = useAccountByAddress(tx.account)
 
@@ -136,11 +137,12 @@ const EvmDrawerContent: FC<{
     setIsProcessing(true)
     try {
       const transferInfo = getTransferInfo(tx)
-      const newHash = await api.ethSignAndSend(transaction, transferInfo)
+      const serialized = serializeTransactionRequest(transaction)
+      const newHash = await api.ethSignAndSend(tx.evmNetworkId, serialized, transferInfo)
       api.analyticsCapture({
         eventName: `transaction ${type}`,
         options: {
-          chainId: transaction.chainId,
+          chainId: Number(tx.evmNetworkId),
           networkType: "ethereum",
         },
       })
@@ -166,11 +168,17 @@ const EvmDrawerContent: FC<{
       setIsProcessing(true)
       try {
         const transferInfo = getTransferInfo(tx)
-        const newHash = await api.ethSendSigned(transaction, signature, transferInfo)
+        const serialized = serializeTransactionRequest(transaction)
+        const newHash = await api.ethSendSigned(
+          tx.evmNetworkId,
+          serialized,
+          signature,
+          transferInfo
+        )
         api.analyticsCapture({
           eventName: `transaction ${type}`,
           options: {
-            chainId: transaction.chainId,
+            chainId: Number(tx.evmNetworkId),
             networkType: "ethereum",
           },
         })

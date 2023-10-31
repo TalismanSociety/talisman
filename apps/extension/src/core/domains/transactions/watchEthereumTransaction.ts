@@ -5,27 +5,27 @@ import { chainConnectorEvm } from "@core/rpcs/chain-connector-evm"
 import { chaindataProvider } from "@core/rpcs/chaindata"
 import * as Sentry from "@sentry/browser"
 import { EvmNetworkId } from "@talismn/chaindata-provider"
-import { ethers } from "ethers"
 import { nanoid } from "nanoid"
 import urlJoin from "url-join"
+import { TransactionRequest } from "viem"
 
 import { WatchTransactionOptions } from "./types"
 
 export const watchEthereumTransaction = async (
-  ethChainId: EvmNetworkId,
+  evmNetworkId: EvmNetworkId,
   hash: `0x${string}`,
-  unsigned: ethers.providers.TransactionRequest,
+  unsigned: TransactionRequest<string>,
   options: WatchTransactionOptions = {}
 ) => {
   try {
     const { siteUrl, notifications, transferInfo = {} } = options
     const withNotifications = !!(notifications && (await settingsStore.get("allowNotifications")))
 
-    const ethereumNetwork = await chaindataProvider.getEvmNetwork(ethChainId)
-    if (!ethereumNetwork) throw new Error(`Could not find ethereum network ${ethChainId}`)
+    const ethereumNetwork = await chaindataProvider.getEvmNetwork(evmNetworkId)
+    if (!ethereumNetwork) throw new Error(`Could not find ethereum network ${evmNetworkId}`)
 
-    const client = await chainConnectorEvm.getPublicClientForEvmNetwork(ethChainId)
-    if (!client) throw new Error(`No client for network ${ethChainId} (${ethereumNetwork.name})`)
+    const client = await chainConnectorEvm.getPublicClientForEvmNetwork(evmNetworkId)
+    if (!client) throw new Error(`No client for network ${evmNetworkId} (${ethereumNetwork.name})`)
 
     const networkName = ethereumNetwork.name ?? "unknown network"
     const txUrl = ethereumNetwork.explorerUrl
@@ -36,7 +36,7 @@ export const watchEthereumTransaction = async (
     if (withNotifications) await createNotification("submitted", networkName, txUrl)
 
     try {
-      await addEvmTransaction(hash, unsigned, { siteUrl, ...transferInfo })
+      await addEvmTransaction(evmNetworkId, hash, unsigned, { siteUrl, ...transferInfo })
 
       const receipt = await client.waitForTransactionReceipt({
         hash,
@@ -64,6 +64,6 @@ export const watchEthereumTransaction = async (
       else console.error("Failed to watch transaction", { err })
     }
   } catch (err) {
-    Sentry.captureException(err, { tags: { ethChainId } })
+    Sentry.captureException(err, { tags: { ethChainId: evmNetworkId } })
   }
 }

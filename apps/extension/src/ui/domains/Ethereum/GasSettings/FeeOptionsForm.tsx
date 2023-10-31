@@ -11,7 +11,6 @@ import { ChevronRightIcon } from "@talismn/icons"
 import { classNames } from "@talismn/util"
 import { TokensAndFiat } from "@ui/domains/Asset/TokensAndFiat"
 import useToken from "@ui/hooks/useToken"
-import { BigNumber } from "ethers"
 import { FC, useCallback, useMemo } from "react"
 import { Trans, useTranslation } from "react-i18next"
 import { Tooltip, TooltipContent, TooltipTrigger } from "talisman-ui"
@@ -34,8 +33,8 @@ const getGasSettings = (
 }
 
 const Eip1559FeeTooltip: FC<{
-  estimatedFee: BigNumber
-  maxFee: BigNumber
+  estimatedFee: bigint
+  maxFee: bigint
   tokenId: string
 }> = ({ estimatedFee, maxFee, tokenId }) => {
   const { t } = useTranslation("request")

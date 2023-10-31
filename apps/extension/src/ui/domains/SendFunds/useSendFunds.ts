@@ -1,12 +1,17 @@
 import { AccountType } from "@core/domains/accounts/types"
-import { getEthTransferTransactionBaseOld } from "@core/domains/ethereum/helpers"
+import {
+  getEthTransferTransactionBase,
+  serializeGasSettings,
+  serializeTransactionRequest,
+} from "@core/domains/ethereum/helpers"
+import { EvmAddress } from "@core/domains/ethereum/types"
 import { AssetTransferMethod } from "@core/domains/transfers/types"
 import { log } from "@core/log"
 import { HexString } from "@polkadot/util/types"
 import { provideContext } from "@talisman/util/provideContext"
 import { Address, Balance, BalanceFormatter } from "@talismn/balances"
 import { Token, TokenId } from "@talismn/chaindata-provider"
-import { formatDecimals, sleep } from "@talismn/util"
+import { formatDecimals, isEthereumAddress, sleep } from "@talismn/util"
 import { useQuery } from "@tanstack/react-query"
 import { api } from "@ui/api"
 import { useSendFundsWizard } from "@ui/apps/popup/pages/SendFunds/context"
@@ -25,10 +30,11 @@ import useTokens from "@ui/hooks/useTokens"
 import { isEvmToken } from "@ui/util/isEvmToken"
 import { isSubToken } from "@ui/util/isSubToken"
 import { isTransferableToken } from "@ui/util/isTransferableToken"
-import { BigNumber, ethers } from "ethers"
+import { BigNumber } from "ethers"
 import { useCallback, useEffect, useMemo, useRef, useState } from "react"
 import { useTranslation } from "react-i18next"
 import { useLocation } from "react-router-dom"
+import { TransactionRequest } from "viem"
 
 import { useEthTransaction } from "../Ethereum/useEthTransaction"
 import { useFeeToken } from "./useFeeToken"
@@ -92,23 +98,30 @@ const useIsSendingEnough = (
 }
 
 const useEvmTransaction = (
-  tokenId?: string,
+  tokenId?: TokenId,
   from?: string,
   to?: string,
-  amount?: string,
+  planck?: string,
   isLocked?: boolean
 ) => {
   const token = useToken(tokenId)
 
   const [evmInvalidTxError, setEvmInvalidTxError] = useState<Error | undefined>()
-  const [tx, setTx] = useState<ethers.providers.TransactionRequest>()
+  const [tx, setTx] = useState<TransactionRequest>()
 
   useEffect(() => {
     setEvmInvalidTxError(undefined)
-    if (!isEvmToken(token) || !token.evmNetwork?.id || !from || !token || !amount || !to)
+    if (
+      !isEvmToken(token) ||
+      !token.evmNetwork?.id ||
+      !token ||
+      !planck ||
+      !isEthereumAddress(from) ||
+      !isEthereumAddress(to)
+    )
       setTx(undefined)
     else {
-      getEthTransferTransactionBaseOld(token.evmNetwork.id, from, to, token, amount)
+      getEthTransferTransactionBase(token.evmNetwork.id, from, to, token, BigInt(planck))
         .then(setTx)
         .catch((err) => {
           setEvmInvalidTxError(err)
@@ -117,10 +130,11 @@ const useEvmTransaction = (
           console.error("Failed to populate transaction", { err })
         })
     }
-  }, [from, to, token, amount])
+  }, [from, to, token, planck])
 
-  const result = useEthTransaction(tx, isLocked)
+  const result = useEthTransaction(tx, token?.evmNetwork?.id, isLocked)
 
+  // TODO result seems weird, fix typings
   return { evmTransaction: tx ? { tx, ...result } : undefined, evmInvalidTxError }
 }
 
@@ -542,13 +556,16 @@ const useSendFundsProvider = () => {
       } else if (token.evmNetwork?.id) {
         if (!transfer) throw new Error("Missing send amount")
         if (!evmTransaction?.gasSettings) throw new Error("Missing gas settings")
+        if (!isEthereumAddress(from)) throw new Error("Invalid sender address")
+        if (!isEthereumAddress(to)) throw new Error("Invalid recipient address")
+        const gasSettings = serializeGasSettings(evmTransaction.gasSettings)
         const { hash } = await api.assetTransferEth(
           token.evmNetwork.id,
           token.id,
           from,
           to,
           value.planck.toString(),
-          evmTransaction.gasSettings
+          gasSettings
         )
         await sleep(500) // wait for dexie to pick up change in transactions table, prevents having "unfound transaction" flickering in progress screen
         gotoProgress({ hash, networkIdOrHash: token.evmNetwork?.id })
@@ -587,12 +604,13 @@ const useSendFundsProvider = () => {
           return
         }
         if (evmTransaction?.transaction && amount && token?.evmNetwork?.id && to) {
+          const serialized = serializeTransactionRequest(evmTransaction.transaction)
           const { hash } = await api.assetTransferEthHardware(
             token?.evmNetwork.id,
             token.id,
             amount,
-            to,
-            evmTransaction.transaction,
+            to as EvmAddress,
+            serialized,
             signature
           )
           await sleep(500) // wait for dexie to pick up change in transactions table, prevents having "unfound transaction" flickering in progress screen
