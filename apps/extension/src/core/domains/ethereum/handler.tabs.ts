@@ -63,8 +63,8 @@ import { requestAddNetwork, requestWatchAsset } from "./requests"
 import {
   EthProviderMessage,
   EthRequestArgsViem,
-  EthRequestArgumentsViem,
-  EthRequestResultViem,
+  EthRequestArguments,
+  EthRequestResult,
   EthRequestSignArguments,
   Web3WalletPermission,
   Web3WalletPermissionTarget,
@@ -299,9 +299,9 @@ export class EthTabsHandler extends TabsHandler {
 
   private addEthereumChain = async (
     url: string,
-    request: EthRequestArgumentsViem<"wallet_addEthereumChain">,
+    request: EthRequestArguments<"wallet_addEthereumChain">,
     port: Port
-  ): Promise<EthRequestResultViem<"wallet_addEthereumChain">> => {
+  ): Promise<EthRequestResult<"wallet_addEthereumChain">> => {
     const {
       params: [network],
     } = request
@@ -360,8 +360,8 @@ export class EthTabsHandler extends TabsHandler {
 
   private switchEthereumChain = async (
     url: string,
-    request: EthRequestArgumentsViem<"wallet_switchEthereumChain">
-  ): Promise<EthRequestResultViem<"wallet_switchEthereumChain">> => {
+    request: EthRequestArguments<"wallet_switchEthereumChain">
+  ): Promise<EthRequestResult<"wallet_switchEthereumChain">> => {
     const {
       params: [{ chainId: hexChainId }],
     } = request
@@ -419,9 +419,11 @@ export class EthTabsHandler extends TabsHandler {
     })
   }
 
-  private signMessage = async (url: string, request: EthRequestSignArguments, port: Port) => {
-    const { params, method } = request as EthRequestSignArguments
-
+  private signMessage = async (
+    url: string,
+    { params, method }: EthRequestSignArguments,
+    port: Port
+  ) => {
     // eth_signTypedData requires a non-empty array of parameters, else throw (uniswap will then call v4)
     if (method === "eth_signTypedData") {
       if (!Array.isArray(params[0]))
@@ -475,9 +477,9 @@ export class EthTabsHandler extends TabsHandler {
 
   private addWatchAssetRequest = async (
     url: string,
-    request: EthRequestArgumentsViem<"wallet_watchAsset">,
+    request: EthRequestArguments<"wallet_watchAsset">,
     port: Port
-  ): Promise<EthRequestResultViem<"wallet_watchAsset">> => {
+  ): Promise<EthRequestResult<"wallet_watchAsset">> => {
     if (!isValidWatchAssetRequestParam(request.params))
       throw new EthProviderRpcError("Invalid parameter", ETH_ERROR_EIP1474_INVALID_PARAMS)
 
@@ -566,7 +568,7 @@ export class EthTabsHandler extends TabsHandler {
 
   private async sendTransaction(
     url: string,
-    { params: [txRequest] }: EthRequestArgumentsViem<"eth_sendTransaction">,
+    { params: [txRequest] }: EthRequestArguments<"eth_sendTransaction">,
     port: Port
   ) {
     const site = await this.getSiteDetails(url, txRequest.from)
@@ -640,9 +642,9 @@ export class EthTabsHandler extends TabsHandler {
 
   private async requestPermissions(
     url: string,
-    request: EthRequestArgumentsViem<"wallet_requestPermissions">,
+    request: EthRequestArguments<"wallet_requestPermissions">,
     port: Port
-  ): Promise<EthRequestResultViem<"wallet_requestPermissions">> {
+  ): Promise<EthRequestResult<"wallet_requestPermissions">> {
     if (request.params.length !== 1)
       throw new EthProviderRpcError(
         "This method expects an array with only 1 entry",
@@ -776,40 +778,24 @@ export class EthTabsHandler extends TabsHandler {
       case "personal_ecRecover": {
         const {
           params: [message, signature],
-        } = request as EthRequestArgumentsViem<"personal_ecRecover">
+        } = request
         return recoverMessageAddress({ message, signature })
-        //return recoverPersonalSignature({ data, signature })
       }
 
       case "eth_sendTransaction":
-        return this.sendTransaction(
-          url,
-          request as EthRequestArgumentsViem<"eth_sendTransaction">,
-          port
-        )
+        return this.sendTransaction(url, request, port)
 
       case "wallet_watchAsset":
         //auth-less test dapp : rsksmart.github.io/metamask-rsk-custom-network/
-        return this.addWatchAssetRequest(
-          url,
-          request as EthRequestArgumentsViem<"wallet_watchAsset">,
-          port
-        )
+        return this.addWatchAssetRequest(url, request, port)
 
       case "wallet_addEthereumChain":
         //auth-less test dapp : rsksmart.github.io/metamask-rsk-custom-network/
-        return this.addEthereumChain(
-          url,
-          request as EthRequestArgumentsViem<"wallet_addEthereumChain">,
-          port
-        )
+        return this.addEthereumChain(url, request, port)
 
       case "wallet_switchEthereumChain":
         //auth-less test dapp : rsksmart.github.io/metamask-rsk-custom-network/
-        return this.switchEthereumChain(
-          url,
-          request as EthRequestArgumentsViem<"wallet_switchEthereumChain">
-        )
+        return this.switchEthereumChain(url, request)
 
       // https://docs.metamask.io/guide/rpc-api.html#wallet-getpermissions
       case "wallet_getPermissions":
@@ -817,11 +803,7 @@ export class EthTabsHandler extends TabsHandler {
 
       // https://docs.metamask.io/guide/rpc-api.html#wallet-requestpermissions
       case "wallet_requestPermissions":
-        return this.requestPermissions(
-          url,
-          request as EthRequestArgumentsViem<"wallet_requestPermissions">,
-          port
-        )
+        return this.requestPermissions(url, request, port)
 
       default:
         return this.getFallbackRequest(url, request)
