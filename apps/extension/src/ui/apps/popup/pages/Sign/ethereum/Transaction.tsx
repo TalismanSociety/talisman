@@ -217,7 +217,7 @@ export const EthSignTransactionRequest = () => {
                   {t("Cancel")}
                 </Button>
                 <Button
-                  disabled={!transaction || processing || isLoading || !isValid}
+                  disabled={!transaction || isLoading || !isValid}
                   processing={processing}
                   primary
                   onClick={approve}
