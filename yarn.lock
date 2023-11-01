@@ -7991,6 +7991,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@talismn/scale@workspace:packages/scale"
   dependencies:
+    "@polkadot/util-crypto": ^11.1.1
     "@talismn/eslint-config": "workspace:*"
     "@talismn/subshape-fork": ^0.0.1
     "@talismn/tsconfig": "workspace:*"
@@ -8003,6 +8004,8 @@ __metadata:
     typescript: ^5.2.2
     wasm-feature-detect: ^1.6.0
     wat-the-crypto: ^0.0.3
+  peerDependencies:
+    "@polkadot/util-crypto": ^11.x
   languageName: unknown
   linkType: soft
 
