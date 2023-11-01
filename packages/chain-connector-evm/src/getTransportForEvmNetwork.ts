@@ -28,9 +28,6 @@ export const getTransportForEvmNetwork = (
     return custom({
       request: (request) => {
         const { method, params } = request as { method: string; params: unknown[] }
-        // TODO check if params are good
-        // eslint-disable-next-line no-console
-        console.warn("acala request", { method, params })
         return ethersProvider.send(method, params)
       },
     })
