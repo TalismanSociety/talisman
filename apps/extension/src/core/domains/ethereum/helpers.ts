@@ -9,7 +9,7 @@ import {
 import { Token } from "@core/domains/tokens/types"
 import { assert } from "@polkadot/util"
 import { erc20Abi } from "@talismn/balances-evm-erc20"
-import { isEthereumAddress } from "@talismn/util"
+import { isBigInt, isEthereumAddress } from "@talismn/util"
 import {
   Hex,
   TransactionRequest,
@@ -310,13 +310,12 @@ export const getTotalFeesFromGasSettings = (
   baseFeePerGas?: bigint | null
 ) => {
   if (gasSettings.type === "eip1559") {
-    if (baseFeePerGas === undefined || baseFeePerGas === null)
+    if (!isBigInt(baseFeePerGas))
       throw new Error("baseFeePerGas argument is required for type 2 fee computation")
     return {
       estimatedFee:
-        (baseFeePerGas < gasSettings.maxFeePerGas
-          ? baseFeePerGas
-          : gasSettings.maxFeePerGas + gasSettings.maxPriorityFeePerGas) *
+        (gasSettings.maxPriorityFeePerGas +
+          (baseFeePerGas < gasSettings.maxFeePerGas ? baseFeePerGas : gasSettings.maxFeePerGas)) *
         (estimatedGas < gasSettings.gas ? estimatedGas : gasSettings.gas),
       maxFee: (gasSettings.maxFeePerGas + gasSettings.maxPriorityFeePerGas) * gasSettings.gas,
     }
