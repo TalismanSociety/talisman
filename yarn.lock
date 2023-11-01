@@ -8000,6 +8000,7 @@ __metadata:
     jest: ^28.1.0
     ts-jest: ^28.0.2
     typescript: ^5.2.2
+    wasm-feature-detect: ^1.6.0
     wat-the-crypto: ^0.0.3
   languageName: unknown
   linkType: soft
@@ -26430,6 +26431,13 @@ __metadata:
   dependencies:
     makeerror: 1.0.12
   checksum: ad7a257ea1e662e57ef2e018f97b3c02a7240ad5093c392186ce0bcf1f1a60bbadd520d073b9beb921ed99f64f065efb63dfc8eec689a80e569f93c1c5d5e16c
+  languageName: node
+  linkType: hard
+
+"wasm-feature-detect@npm:^1.6.0":
+  version: 1.6.0
+  resolution: "wasm-feature-detect@npm:1.6.0"
+  checksum: c392cb6da270c71f5f23e1be02169d6bb296d7524ecc186924ec91b1b8bd74d3b3651ee1dc6b651b262fc855bb5a0890a02ee01222a925d8bf22de2b38242933
   languageName: node
   linkType: hard
 
