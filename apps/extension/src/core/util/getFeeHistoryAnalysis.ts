@@ -34,32 +34,10 @@ export const getFeeHistoryAnalysis = async (
   publicClient: PublicClient
 ): Promise<FeeHistoryAnalysis> => {
   try {
-    // const rawHistoryFee = await provider.send("eth_feeHistory", [
-    //   ethers.utils.hexValue(BLOCKS_HISTORY_LENGTH),
-    //   "latest",
-    //   REWARD_PERCENTILES,
-    // ])
     const feeHistory = await publicClient.getFeeHistory({
-      blockTag: "latest",
       blockCount: BLOCKS_HISTORY_LENGTH,
       rewardPercentiles: REWARD_PERCENTILES,
     })
-
-    // instrument for information - remove asap
-    // if (!feeHistory.reward)
-    //   Sentry.captureMessage(`No reward on fee history`, {
-    //     extra: { chain: publicClient.chain?.id },
-    //   })
-
-    // parse hex values
-    // const feeHistory: FeeHistory = {
-    //   oldestBlock: parseInt(rawHistoryFee.oldestBlock, 16),
-    //   baseFeePerGas: rawHistoryFee.baseFeePerGas.map((fee: string) => BigNumber.from(fee)),
-    //   gasUsedRatio: rawHistoryFee.gasUsedRatio as (number | null)[],
-    //   reward: rawHistoryFee.reward
-    //     ? rawHistoryFee.reward.map((reward: string[]) => reward.map((r) => BigNumber.from(r)))
-    //     : null,
-    // }
 
     // how busy the network is over this period
     // values can be null (ex astar)

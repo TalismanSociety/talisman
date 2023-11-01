@@ -41,7 +41,7 @@ const useNonce = (
   forcedValue?: number
 ) => {
   const { data, ...rest } = useQuery({
-    queryKey: ["nonce", address, evmNetworkId, forcedValue],
+    queryKey: ["useNonce", address, evmNetworkId, forcedValue],
     queryFn: () => {
       if (forcedValue !== undefined) return forcedValue
       return address && evmNetworkId ? api.ethGetTransactionsCount(address, evmNetworkId) : null
@@ -59,20 +59,11 @@ const useHasEip1559Support = (publicClient: PublicClient | undefined) => {
       if (!publicClient) return null
 
       try {
-        const [{ baseFeePerGas }] = await Promise.all([
-          // check that block has a baseFeePerGas
-          // publicClient.send("eth_getBlockByNumber", ["latest", false]),
-          publicClient.getBlock({ blockTag: "latest", includeTransactions: false }),
-
-          // check that method eth_feeHistory exists. This will throw with code -32601 if it doesn't.
-          //publicClient.send("eth_feeHistory", [ethers.utils.hexValue(1), "latest", [10]]),
-          publicClient.getFeeHistory({
-            blockCount: 1,
-            blockTag: "latest",
-            rewardPercentiles: [10],
-          }),
-        ])
-        return baseFeePerGas !== undefined
+        publicClient.chain?.fees?.defaultPriorityFee
+        const {
+          baseFeePerGas: [baseFee],
+        } = await publicClient.getFeeHistory({ blockCount: 1, rewardPercentiles: [] })
+        return baseFee > 0n
       } catch (err) {
         // TODO check that feeHistory returns -32601 when method doesn't exist
         const error = err as Error & { code?: number }
@@ -98,7 +89,7 @@ const useBlockFeeData = (
 ) => {
   const { data, ...rest } = useQuery({
     queryKey: [
-      "block",
+      "useBlockFeeData",
       publicClient?.chain?.id,
       tx && serializeTransactionRequest(tx),
       withFeeOptions,
@@ -111,12 +102,12 @@ const useBlockFeeData = (
 
       const [
         gasPrice,
-        { gasLimit: blockGasLimit, baseFeePerGas, gasUsed, number: blockNumber },
+        { gasLimit: blockGasLimit, baseFeePerGas, gasUsed },
         feeHistoryAnalysis,
         estimatedGas,
       ] = await Promise.all([
         publicClient.getGasPrice(),
-        publicClient.getBlock({ blockTag: "latest" }),
+        publicClient.getBlock(),
         withFeeOptions ? getFeeHistoryAnalysis(publicClient) : undefined,
         // estimate gas may change over time for contract calls, so we need to refresh it every time we prepare the tx to prevent an invalid transaction
         publicClient.estimateGas({ account, to, value, data }),
@@ -124,7 +115,7 @@ const useBlockFeeData = (
 
       if (feeHistoryAnalysis && !UNRELIABLE_GASPRICE_NETWORK_IDS.includes(publicClient.chain.id)) {
         // minimum maxPriorityPerGas value required to be considered valid into next block is equal to `gasPrice - baseFee`
-        let minimumMaxPriorityFeePerGas = gasPrice - (baseFeePerGas ?? 0n)
+        let minimumMaxPriorityFeePerGas = gasPrice - feeHistoryAnalysis.nextBaseFee
         if (minimumMaxPriorityFeePerGas < 0n) {
           // on a busy network, when there is a sudden lowering of amount of transactions, it can happen that baseFeePerGas is higher than gPrice
           minimumMaxPriorityFeePerGas = 0n
@@ -152,11 +143,10 @@ const useBlockFeeData = (
       return {
         estimatedGas,
         gasPrice,
-        baseFeePerGas,
+        baseFeePerGas: feeHistoryAnalysis?.nextBaseFee ?? baseFeePerGas,
         blockGasLimit,
         networkUsage,
         feeHistoryAnalysis,
-        blockNumber,
       }
     },
     enabled: !!tx && !!publicClient && withFeeOptions !== undefined,
@@ -186,7 +176,11 @@ const useTransactionInfo = (
 ) => {
   const { data, ...rest } = useQuery({
     // check tx as boolean as it's not pure
-    queryKey: ["transactionInfo", publicClient?.chain?.id, tx && serializeTransactionRequest(tx)],
+    queryKey: [
+      "useTransactionInfo",
+      publicClient?.chain?.id,
+      tx && serializeTransactionRequest(tx),
+    ],
     queryFn: async () => {
       if (!publicClient || !tx) return null
       return await getEthTransactionInfo(publicClient, tx)
