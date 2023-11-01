@@ -27,6 +27,7 @@
   },
   "dependencies": {
     "@talismn/subshape-fork": "^0.0.1",
+    "@talismn/util": "workspace:*",
     "anylogger": "^1.0.11",
     "wasm-feature-detect": "^1.6.0",
     "wat-the-crypto": "^0.0.3"

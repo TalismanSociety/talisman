@@ -7994,6 +7994,7 @@ __metadata:
     "@talismn/eslint-config": "workspace:*"
     "@talismn/subshape-fork": ^0.0.1
     "@talismn/tsconfig": "workspace:*"
+    "@talismn/util": "workspace:*"
     "@types/jest": ^27.5.1
     anylogger: ^1.0.11
     eslint: ^8.52.0
