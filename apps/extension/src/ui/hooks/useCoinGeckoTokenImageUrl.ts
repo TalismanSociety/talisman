@@ -20,7 +20,7 @@ export const useCoinGeckoTokenImageUrl = (coingeckoTokenId: string | null) => {
     refetchOnWindowFocus: false,
     refetchOnMount: false,
     queryFn: () =>
-      coingeckoTokenId && !!qTokens.data?.find((t) => t.id === coingeckoTokenId)
+      coingeckoTokenId && qTokens.data && !!qTokens.data.find((t) => t.id === coingeckoTokenId)
         ? getCoinGeckoToken(coingeckoTokenId)
         : null,
   })

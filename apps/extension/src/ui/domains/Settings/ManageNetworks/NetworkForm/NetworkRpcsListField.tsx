@@ -1,3 +1,4 @@
+import { RequestUpsertCustomChain } from "@core/domains/chains/types"
 import { RequestUpsertCustomEvmNetwork } from "@core/domains/ethereum/types"
 import {
   DndContext,
@@ -8,29 +9,21 @@ import {
   useSensor,
   useSensors,
 } from "@dnd-kit/core"
-import { SortableContext, sortableKeyboardCoordinates } from "@dnd-kit/sortable"
-import { useSortable } from "@dnd-kit/sortable"
+import { SortableContext, sortableKeyboardCoordinates, useSortable } from "@dnd-kit/sortable"
 import { CSS } from "@dnd-kit/utilities"
-import { DragIcon, PlusIcon, TrashIcon } from "@talismn/icons"
-import { FC, useCallback, useMemo } from "react"
-import {
-  FieldArrayWithId,
-  FieldErrors,
-  UseFormRegister,
-  UseFormTrigger,
-  useFieldArray,
-  useFormContext,
-} from "react-hook-form"
+import { DragIcon, LoaderIcon, PlusIcon, TrashIcon } from "@talismn/icons"
+import { FC, useCallback, useMemo, useRef, useState } from "react"
+import { FieldArrayWithId, FieldPathValue, useFieldArray, useFormContext } from "react-hook-form"
 import { useTranslation } from "react-i18next"
 import { FormFieldContainer, FormFieldInputText } from "talisman-ui"
 
+import { getSubstrateRpcInfo, wsRegEx } from "./Substrate/helpers"
 import { useRegisterFieldWithDebouncedValidation } from "./useRegisterFieldWithDebouncedValidation"
 
+type RequestUpsertNetwork = RequestUpsertCustomChain | RequestUpsertCustomEvmNetwork
+
 type SortableRpcItemProps = {
-  register: UseFormRegister<RequestUpsertCustomEvmNetwork>
-  trigger: UseFormTrigger<RequestUpsertCustomEvmNetwork>
-  rpc: FieldArrayWithId<RequestUpsertCustomEvmNetwork, "rpcs", "id">
-  errors?: FieldErrors<RequestUpsertCustomEvmNetwork>["rpcs"]
+  rpc: FieldArrayWithId<RequestUpsertNetwork, "rpcs", "id">
   canDelete?: boolean
   canDrag?: boolean
   onDelete?: () => void
@@ -41,15 +34,21 @@ type SortableRpcItemProps = {
 const SortableRpcField: FC<SortableRpcItemProps> = ({
   rpc,
   index,
-  errors,
-  register,
-  trigger,
   canDelete,
   canDrag,
   onDelete,
   placeholder,
 }) => {
   const { attributes, listeners, setNodeRef, transform, transition } = useSortable({ id: rpc.id })
+  const [fetchingGenesisHash, setFetchingGenesisHash] = useState(false)
+  const { t } = useTranslation()
+  const {
+    register,
+    trigger,
+    setError,
+    setValue,
+    formState: { errors },
+  } = useFormContext<RequestUpsertNetwork>()
 
   const style = {
     transform: CSS.Transform.toString(transform),
@@ -58,12 +57,47 @@ const SortableRpcField: FC<SortableRpcItemProps> = ({
 
   const dragHandleProps = canDrag ? { ...attributes, ...listeners } : {}
 
+  const latestRequestRef = useRef(0)
+  const getGenesisHash = useCallback(
+    async <K extends `rpcs.${number}.url`>(
+      name: K,
+      value: FieldPathValue<RequestUpsertNetwork, K>
+    ) => {
+      await (async () => {
+        try {
+          if (!value) return
+          setFetchingGenesisHash(true)
+          const refId = latestRequestRef.current + 1
+          latestRequestRef.current = refId
+
+          if (!wsRegEx.test(value)) return setError(name, { message: t("Invalid URL") })
+
+          const rpcInfo = await getSubstrateRpcInfo(value)
+
+          // Failed connections take longer to return than successful ones, so
+          // we compare current ref to the one used for this method call,
+          // and no-op if it has changed to prevent race condition where bad result clobbers good one
+          if (latestRequestRef.current !== refId) return
+          if (!rpcInfo?.genesisHash) {
+            return setError(name, { message: t("Failed to connect") })
+          }
+          setValue(`rpcs.${index}.genesisHash`, rpcInfo.genesisHash)
+        } catch (error) {
+          return setError(name, { message: t("Failed to connect") })
+        }
+      })()
+      setFetchingGenesisHash(false)
+    },
+    [index, setError, setValue, t]
+  )
+
   // debounced validation to check url as soon as possible
   const fieldRegistration = useRegisterFieldWithDebouncedValidation(
     `rpcs.${index}.url`,
     250,
     trigger,
-    register
+    register,
+    getGenesisHash
   )
 
   return (
@@ -86,15 +120,17 @@ const SortableRpcField: FC<SortableRpcItemProps> = ({
             <button
               type="button"
               className="allow-focus text-md mr-[-1.2rem] px-2 opacity-80 outline-none hover:opacity-100 focus:opacity-100 disabled:opacity-50"
+              disabled={fetchingGenesisHash}
               onClick={onDelete}
             >
-              <TrashIcon className="transition-none" />
+              {!fetchingGenesisHash && <TrashIcon className="transition-none" />}
+              {fetchingGenesisHash && <LoaderIcon className="animate-spin-slow transition-none" />}
             </button>
           )
         }
       />
       <div className="text-alert-warn h-8 max-w-full overflow-hidden text-ellipsis whitespace-nowrap py-2 text-right text-xs uppercase leading-none">
-        {errors?.[index]?.url?.message}
+        {errors?.rpcs?.[index]?.url?.message}
       </div>
     </div>
   )
@@ -102,20 +138,16 @@ const SortableRpcField: FC<SortableRpcItemProps> = ({
 
 export const NetworkRpcsListField = ({ placeholder = "https://" }: { placeholder?: string }) => {
   const { t } = useTranslation("admin")
-  const {
-    register,
-    trigger,
-    formState: { errors },
-    watch,
-  } = useFormContext<RequestUpsertCustomEvmNetwork>()
+  const { watch, control } = useFormContext<RequestUpsertNetwork>()
 
   const {
     fields: rpcs,
     append,
     remove,
     move,
-  } = useFieldArray<RequestUpsertCustomEvmNetwork>({
+  } = useFieldArray<RequestUpsertNetwork>({
     name: "rpcs",
+    control,
   })
 
   const handleRemove = useCallback(
@@ -163,13 +195,10 @@ export const NetworkRpcsListField = ({ placeholder = "https://" }: { placeholder
               <SortableRpcField
                 key={rpc.id}
                 index={index}
-                register={register}
-                trigger={trigger}
                 rpc={rpc}
                 canDelete={canDelete}
                 canDrag={arr.length > 1}
                 onDelete={handleRemove(index)}
-                errors={errors.rpcs}
                 placeholder={placeholder}
               />
             ))}

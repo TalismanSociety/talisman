@@ -1,0 +1,107 @@
+import { RequestUpsertCustomChain } from "@core/domains/chains/types"
+import { CustomNativeToken } from "@core/domains/tokens/types"
+import { yupResolver } from "@hookform/resolvers/yup"
+import { SubNativeToken } from "@talismn/balances-substrate-native"
+import { Chain, ChainId, CustomChain } from "@talismn/chaindata-provider"
+import useChain from "@ui/hooks/useChain"
+import { useIsBuiltInChain } from "@ui/hooks/useIsBuiltInChain"
+import useToken from "@ui/hooks/useToken"
+import { isCustomChain } from "@ui/util/isCustomChain"
+import { useEffect, useMemo, useRef } from "react"
+import { useForm } from "react-hook-form"
+import { useTranslation } from "react-i18next"
+
+import { ResetSubNetworkButton } from "../ResetSubNetworkButton"
+import { SubNetworkForm } from "./Form"
+import { RemoveSubNetworkButton } from "./RemoveSubNetworkButton"
+import { subNetworkFormSchema } from "./schema"
+import { SubNetworkFormBaseProps } from "./types"
+
+export type SubNetworkFormEditProps = SubNetworkFormBaseProps & {
+  chainId?: ChainId
+}
+
+export const SubNetworkFormEdit = ({ chainId, onSubmitted }: SubNetworkFormEditProps) => {
+  const { t } = useTranslation("admin")
+  const isBuiltInChain = useIsBuiltInChain(chainId)
+
+  const chain = useChain(chainId)
+  const nativeToken = useToken(chain?.nativeToken?.id) as
+    | CustomNativeToken
+    | SubNativeToken
+    | undefined
+  const defaultValues = useMemo(() => {
+    return chain ? chainToFormData(chain, nativeToken) : undefined
+  }, [chain, nativeToken])
+
+  const isCustom = useMemo(() => !!chain && isCustomChain(chain), [chain])
+
+  // because of the RPC checks, do not validate on each change
+  const formProps = useForm<RequestUpsertCustomChain>({
+    mode: "onBlur",
+    defaultValues,
+
+    resolver: yupResolver(subNetworkFormSchema),
+  })
+
+  const { reset } = formProps
+
+  // initialize form with existing values (edit mode), only once, needed
+  // to get nested fields to show up
+  const initialized = useRef(false)
+  useEffect(() => {
+    if (defaultValues && !initialized.current) {
+      reset(defaultValues)
+      initialized.current = true
+    }
+  }, [defaultValues, reset])
+
+  const [showRemove, showReset] = useMemo(
+    () =>
+      isCustom && isBuiltInChain.isFetched
+        ? [!isBuiltInChain.data, !!isBuiltInChain.data]
+        : [false, false],
+    [isCustom, isBuiltInChain.data, isBuiltInChain.isFetched]
+  )
+
+  // on edit screen, wait for existing chain to be loaded
+  if (chainId && !defaultValues) return null
+
+  return (
+    <SubNetworkForm
+      formProps={formProps}
+      onSubmitted={onSubmitted}
+      title={isCustom ? t("Edit Custom Substrate Network") : t("Edit Substrate Network")}
+      submitButtonText={t("Update Network")}
+    >
+      <div>
+        {chain && showRemove && <RemoveSubNetworkButton chain={chain} />}
+        {chain && showReset && <ResetSubNetworkButton chain={chain} />}
+      </div>
+    </SubNetworkForm>
+  )
+}
+
+const chainToFormData = (
+  chain?: Chain | CustomChain,
+  nativeToken?: SubNativeToken | CustomNativeToken
+): RequestUpsertCustomChain | undefined => {
+  if (!chain) return undefined
+
+  return {
+    id: chain.id,
+    isTestnet: chain.isTestnet,
+    genesisHash: chain.genesisHash,
+    name: chain.name ?? "",
+    chainLogoUrl: chain.logo ?? null,
+    nativeTokenSymbol: nativeToken?.symbol ?? "Unit",
+    nativeTokenDecimals: nativeToken?.decimals ?? 0,
+    nativeTokenCoingeckoId: nativeToken?.coingeckoId ?? null,
+    nativeTokenLogoUrl: nativeToken?.logo ?? null,
+    accountFormat: chain.account,
+    subscanUrl: chain.subscanUrl,
+    rpcs:
+      chain?.rpcs?.map((rpc) => ({ url: rpc.url, genesisHash: chain.genesisHash ?? undefined })) ??
+      [],
+  }
+}

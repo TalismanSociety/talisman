@@ -27,8 +27,8 @@ import { Button, Checkbox, FormFieldContainer, FormFieldInputText } from "talism
 import { getEvmNetworkFormSchema } from "./getEvmNetworkFormSchema"
 import { getEvmRpcChainId } from "./helpers"
 import { NetworkRpcsListField } from "./NetworkRpcsListField"
-import { RemoveEvmNetworkButton } from "./RemoveEvmNetworkButton"
 import { ResetEvmNetworkButton } from "./ResetEvmNetworkButton"
+import { RemoveEvmNetworkButton } from "./Substrate/RemoveEvmNetworkButton"
 
 type EvmNetworkFormProps = {
   evmNetworkId?: EvmNetworkId
