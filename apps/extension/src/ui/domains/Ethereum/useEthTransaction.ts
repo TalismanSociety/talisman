@@ -22,10 +22,10 @@ import {
 import { ETH_ERROR_EIP1474_METHOD_NOT_FOUND } from "@core/injectEth/EthProviderRpcError"
 import { getEthTransactionInfo } from "@core/util/getEthTransactionInfo"
 import { FeeHistoryAnalysis, getFeeHistoryAnalysis } from "@core/util/getFeeHistoryAnalysis"
+import { isBigInt } from "@talismn/util"
 import { useQuery } from "@tanstack/react-query"
 import { api } from "@ui/api"
 import { usePublicClient } from "@ui/domains/Ethereum/useEthereumProvider"
-import { useAlec } from "@ui/hooks/useAlec"
 import { useEffect, useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
 import { PublicClient, TransactionRequest } from "viem"
@@ -147,8 +147,7 @@ const useBlockFeeData = (
               : feeHistoryAnalysis.maxPriorityPerGasOptions.low
       }
 
-      const networkUsage =
-        !gasUsed || !blockGasLimit ? undefined : Number((gasUsed * 100n) / blockGasLimit) / 100
+      const networkUsage = Number((gasUsed * 100n) / blockGasLimit) / 100
 
       return {
         estimatedGas,
@@ -207,12 +206,7 @@ const getEthGasSettingsFromTransaction = (
   blockGasLimit: bigint | undefined,
   isContractCall: boolean | undefined = true // default to worse scenario
 ) => {
-  if (
-    !tx ||
-    hasEip1559Support === undefined ||
-    blockGasLimit === undefined ||
-    estimatedGas === undefined
-  )
+  if (!tx || hasEip1559Support === undefined || !isBigInt(blockGasLimit) || !isBigInt(estimatedGas))
     return undefined
 
   const { gasPrice, maxFeePerGas, maxPriorityFeePerGas } = tx
@@ -264,8 +258,15 @@ const useGasSettings = ({
   const [customSettings, setCustomSettings] = useState<EthGasSettings>()
 
   const gasSettingsByPriority: GasSettingsByPriority | undefined = useMemo(() => {
-    if (hasEip1559Support === undefined || !estimatedGas || !gasPrice || !blockGasLimit || !tx)
+    if (
+      hasEip1559Support === undefined ||
+      !isBigInt(estimatedGas) ||
+      !isBigInt(gasPrice) ||
+      !isBigInt(blockGasLimit) ||
+      !tx
+    )
       return undefined
+
     const gas = getGasLimit(blockGasLimit, estimatedGas, tx, isContractCall)
     const suggestedSettings = getEthGasSettingsFromTransaction(
       tx,
@@ -276,7 +277,7 @@ const useGasSettings = ({
     )
 
     if (hasEip1559Support) {
-      if (!feeHistoryAnalysis || !baseFeePerGas) return undefined
+      if (!feeHistoryAnalysis || !isBigInt(baseFeePerGas)) return undefined
 
       const mapMaxPriority = feeHistoryAnalysis.maxPriorityPerGasOptions
 
@@ -375,20 +376,14 @@ export const useEthTransaction = (
   lockTransaction = false,
   isReplacement = false
 ) => {
-  useAlec("tx", tx)
   const publicClient = usePublicClient(evmNetworkId)
-  useAlec("publicClient", publicClient)
   const { transactionInfo, error: errorTransactionInfo } = useTransactionInfo(publicClient, tx)
   const { hasEip1559Support, error: errorEip1559Support } = useHasEip1559Support(publicClient)
-  useAlec("hasEip1559Support", hasEip1559Support)
-  useAlec("errorEip1559Support", errorEip1559Support)
   const { nonce, error: nonceError } = useNonce(
     tx?.from as `0x${string}` | undefined,
     evmNetworkId,
     isReplacement && tx?.nonce ? tx.nonce : undefined
   )
-  useAlec("nonce", nonce)
-  useAlec("nonceError", nonceError)
   const {
     gasPrice,
     networkUsage,
@@ -398,13 +393,6 @@ export const useEthTransaction = (
     estimatedGas,
     error: blockFeeDataError,
   } = useBlockFeeData(publicClient, tx, hasEip1559Support)
-  useAlec("gasPrice", gasPrice)
-  useAlec("networkUsage", networkUsage)
-  useAlec("baseFeePerGas", baseFeePerGas)
-  useAlec("blockGasLimit", blockGasLimit)
-  useAlec("feeHistoryAnalysis", feeHistoryAnalysis)
-  useAlec("estimatedGas", estimatedGas)
-  useAlec("blockFeeDataError", blockFeeDataError)
 
   const [priority, setPriority] = useState<EthPriorityOptionName>()
 
@@ -447,11 +435,17 @@ export const useEthTransaction = (
 
   // TODO replace this wierd object name with something else... gasInfo ?
   const txDetails: EthTransactionDetails | undefined = useMemo(() => {
-    if (!evmNetworkId || !gasPrice || !estimatedGas || !transaction || !gasSettings)
+    if (
+      !evmNetworkId ||
+      !isBigInt(gasPrice) ||
+      !isBigInt(estimatedGas) ||
+      !transaction ||
+      !gasSettings
+    )
       return undefined
 
     // if eip1559 transaction, wait for baseFee to be available
-    if (gasSettings?.type === "eip1559" && !baseFeePerGas) return undefined
+    if (gasSettings?.type === "eip1559" && !isBigInt(baseFeePerGas)) return undefined
 
     const { estimatedFee, maxFee } = getTotalFeesFromGasSettings(
       gasSettings,
@@ -511,12 +505,6 @@ export const useEthTransaction = (
     () => tx && !transactionInfo && !txDetails && !error,
     [tx, transactionInfo, txDetails, error]
   )
-
-  useAlec("transactionInfo", transactionInfo)
-  useAlec("transaction", transaction)
-  useAlec("txDetails", txDetails)
-  useAlec("gasSettings", gasSettings)
-  useAlec("gasSettingsByPriority", gasSettingsByPriority)
 
   return {
     transactionInfo,
