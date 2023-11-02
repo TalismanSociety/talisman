@@ -24,11 +24,11 @@ import { Trans, useTranslation } from "react-i18next"
 import { useDebounce } from "react-use"
 import { Button, Checkbox, FormFieldContainer, FormFieldInputText } from "talisman-ui"
 
+import { NetworkRpcsListField } from "../NetworkRpcsListField"
 import { getEvmNetworkFormSchema } from "./getEvmNetworkFormSchema"
 import { getEvmRpcChainId } from "./helpers"
-import { NetworkRpcsListField } from "./NetworkRpcsListField"
+import { RemoveEvmNetworkButton } from "./RemoveEvmNetworkButton"
 import { ResetEvmNetworkButton } from "./ResetEvmNetworkButton"
-import { RemoveEvmNetworkButton } from "./Substrate/RemoveEvmNetworkButton"
 
 type EvmNetworkFormProps = {
   evmNetworkId?: EvmNetworkId
@@ -63,7 +63,6 @@ export const EvmNetworkForm: FC<EvmNetworkFormProps> = ({ evmNetworkId, onSubmit
     clearErrors,
     setError,
     reset,
-    trigger,
     formState: { errors, isValid, isSubmitting, isDirty, touchedFields },
   } = formProps
 
@@ -74,10 +73,9 @@ export const EvmNetworkForm: FC<EvmNetworkFormProps> = ({ evmNetworkId, onSubmit
   useEffect(() => {
     if (evmNetworkId && defaultValues && !initialized.current) {
       reset(defaultValues)
-      trigger("rpcs")
       initialized.current = true
     }
-  }, [defaultValues, evmNetworkId, reset, trigger])
+  }, [defaultValues, evmNetworkId, reset])
 
   // auto detect chain id based on RPC url (add mode only)
   const rpcChainId = useRpcChainId(rpcs?.[0]?.url)

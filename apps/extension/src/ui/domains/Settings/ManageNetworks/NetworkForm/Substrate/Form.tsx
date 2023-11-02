@@ -12,8 +12,8 @@ import { FormProvider, UseFormReturn } from "react-hook-form"
 import { Trans, useTranslation } from "react-i18next"
 import { Button, Checkbox, FormFieldContainer, FormFieldInputText } from "talisman-ui"
 
-import { NetworkRpcsListField } from "../NetworkRpcsListField"
 import { AccountFormatDropdown } from "./AccountFormatDropdown"
+import { SubNetworkRpcsListField } from "./SubNetworkRpcsListField"
 import { SubNetworkFormBaseProps } from "./types"
 
 type SubNetworkFormProps = SubNetworkFormBaseProps & {
@@ -75,7 +75,7 @@ export const SubNetworkForm = ({
       <HeaderBlock title={title} text={t("Only ever add RPCs you trust.")} />
       <form className="mt-24 space-y-4" onSubmit={submitForm(submit)}>
         <FormProvider {...formProps}>
-          <NetworkRpcsListField placeholder="wss://" />
+          <SubNetworkRpcsListField />
           <div className="grid grid-cols-12 gap-12">
             <FormFieldContainer
               className="col-span-7"

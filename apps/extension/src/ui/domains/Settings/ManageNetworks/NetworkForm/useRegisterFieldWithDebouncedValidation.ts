@@ -10,6 +10,9 @@ import {
   UseFormTrigger,
 } from "react-hook-form"
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export type ExtraValidationCb = (...args: any[]) => Promise<void>
+
 // inspired from https://github.com/react-hook-form/react-hook-form/issues/40
 export const useRegisterFieldWithDebouncedValidation = <
   TFieldValues extends FieldValues,
@@ -19,7 +22,7 @@ export const useRegisterFieldWithDebouncedValidation = <
   delay: number,
   trigger: UseFormTrigger<TFieldValues>,
   register: UseFormRegister<TFieldValues>,
-  extraValidationCb?: (name: TFieldPath, value: FieldValues[TFieldPath]) => Promise<void>,
+  extraValidationCb?: ExtraValidationCb,
   options?: RegisterOptions<TFieldValues, FieldPath<TFieldValues>>
 ) => {
   const useFormRegisterReturn: UseFormRegisterReturn = register(name, options)
@@ -27,7 +30,7 @@ export const useRegisterFieldWithDebouncedValidation = <
 
   // eslint-disable-next-line react-hooks/exhaustive-deps
   const debouncedTrigger = useCallback(
-    debounce(async (value: FieldValues[TFieldPath]) => {
+    debounce(async (value: TFieldValues[TFieldPath]) => {
       trigger(name)
       extraValidationCb && (await extraValidationCb(name, value))
     }, delay),

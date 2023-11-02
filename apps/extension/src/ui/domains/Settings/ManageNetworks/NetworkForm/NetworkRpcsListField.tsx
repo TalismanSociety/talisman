@@ -12,13 +12,15 @@ import {
 import { SortableContext, sortableKeyboardCoordinates, useSortable } from "@dnd-kit/sortable"
 import { CSS } from "@dnd-kit/utilities"
 import { DragIcon, LoaderIcon, PlusIcon, TrashIcon } from "@talismn/icons"
-import { FC, useCallback, useMemo, useRef, useState } from "react"
-import { FieldArrayWithId, FieldPathValue, useFieldArray, useFormContext } from "react-hook-form"
+import { FC, useCallback, useMemo } from "react"
+import { FieldArrayWithId, useFieldArray, useFormContext } from "react-hook-form"
 import { useTranslation } from "react-i18next"
 import { FormFieldContainer, FormFieldInputText } from "talisman-ui"
 
-import { getSubstrateRpcInfo, wsRegEx } from "./Substrate/helpers"
-import { useRegisterFieldWithDebouncedValidation } from "./useRegisterFieldWithDebouncedValidation"
+import {
+  ExtraValidationCb,
+  useRegisterFieldWithDebouncedValidation,
+} from "./useRegisterFieldWithDebouncedValidation"
 
 type RequestUpsertNetwork = RequestUpsertCustomChain | RequestUpsertCustomEvmNetwork
 
@@ -29,24 +31,24 @@ type SortableRpcItemProps = {
   onDelete?: () => void
   index: number
   placeholder: string
+  isLoading?: boolean
+  extraValidationCb?: ExtraValidationCb
 }
 
-const SortableRpcField: FC<SortableRpcItemProps> = ({
+export const SortableRpcField: FC<SortableRpcItemProps> = ({
   rpc,
   index,
   canDelete,
   canDrag,
   onDelete,
   placeholder,
+  isLoading = false,
+  extraValidationCb,
 }) => {
   const { attributes, listeners, setNodeRef, transform, transition } = useSortable({ id: rpc.id })
-  const [fetchingGenesisHash, setFetchingGenesisHash] = useState(false)
-  const { t } = useTranslation()
   const {
     register,
     trigger,
-    setError,
-    setValue,
     formState: { errors },
   } = useFormContext<RequestUpsertNetwork>()
 
@@ -57,47 +59,13 @@ const SortableRpcField: FC<SortableRpcItemProps> = ({
 
   const dragHandleProps = canDrag ? { ...attributes, ...listeners } : {}
 
-  const latestRequestRef = useRef(0)
-  const getGenesisHash = useCallback(
-    async <K extends `rpcs.${number}.url`>(
-      name: K,
-      value: FieldPathValue<RequestUpsertNetwork, K>
-    ) => {
-      await (async () => {
-        try {
-          if (!value) return
-          setFetchingGenesisHash(true)
-          const refId = latestRequestRef.current + 1
-          latestRequestRef.current = refId
-
-          if (!wsRegEx.test(value)) return setError(name, { message: t("Invalid URL") })
-
-          const rpcInfo = await getSubstrateRpcInfo(value)
-
-          // Failed connections take longer to return than successful ones, so
-          // we compare current ref to the one used for this method call,
-          // and no-op if it has changed to prevent race condition where bad result clobbers good one
-          if (latestRequestRef.current !== refId) return
-          if (!rpcInfo?.genesisHash) {
-            return setError(name, { message: t("Failed to connect") })
-          }
-          setValue(`rpcs.${index}.genesisHash`, rpcInfo.genesisHash)
-        } catch (error) {
-          return setError(name, { message: t("Failed to connect") })
-        }
-      })()
-      setFetchingGenesisHash(false)
-    },
-    [index, setError, setValue, t]
-  )
-
   // debounced validation to check url as soon as possible
   const fieldRegistration = useRegisterFieldWithDebouncedValidation(
     `rpcs.${index}.url`,
     250,
     trigger,
     register,
-    getGenesisHash
+    extraValidationCb
   )
 
   return (
@@ -120,11 +88,11 @@ const SortableRpcField: FC<SortableRpcItemProps> = ({
             <button
               type="button"
               className="allow-focus text-md mr-[-1.2rem] px-2 opacity-80 outline-none hover:opacity-100 focus:opacity-100 disabled:opacity-50"
-              disabled={fetchingGenesisHash}
+              disabled={isLoading}
               onClick={onDelete}
             >
-              {!fetchingGenesisHash && <TrashIcon className="transition-none" />}
-              {fetchingGenesisHash && <LoaderIcon className="animate-spin-slow transition-none" />}
+              {!isLoading && <TrashIcon className="transition-none" />}
+              {isLoading && <LoaderIcon className="animate-spin-slow transition-none" />}
             </button>
           )
         }
@@ -136,7 +104,13 @@ const SortableRpcField: FC<SortableRpcItemProps> = ({
   )
 }
 
-export const NetworkRpcsListField = ({ placeholder = "https://" }: { placeholder?: string }) => {
+export const NetworkRpcsListField = ({
+  placeholder = "https://",
+  FieldComponent = SortableRpcField,
+}: {
+  placeholder?: string
+  FieldComponent?: React.ComponentType<SortableRpcItemProps>
+}) => {
   const { t } = useTranslation("admin")
   const { watch, control } = useFormContext<RequestUpsertNetwork>()
 
@@ -192,7 +166,7 @@ export const NetworkRpcsListField = ({ placeholder = "https://" }: { placeholder
         <SortableContext items={rpcIds}>
           <div className="flex w-full flex-col gap-2">
             {rpcs.map((rpc, index, arr) => (
-              <SortableRpcField
+              <FieldComponent
                 key={rpc.id}
                 index={index}
                 rpc={rpc}

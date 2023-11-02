@@ -11,9 +11,9 @@ import { useEffect, useMemo, useRef } from "react"
 import { useForm } from "react-hook-form"
 import { useTranslation } from "react-i18next"
 
-import { ResetSubNetworkButton } from "../ResetSubNetworkButton"
 import { SubNetworkForm } from "./Form"
 import { RemoveSubNetworkButton } from "./RemoveSubNetworkButton"
+import { ResetSubNetworkButton } from "./ResetSubNetworkButton"
 import { subNetworkFormSchema } from "./schema"
 import { SubNetworkFormBaseProps } from "./types"
 
