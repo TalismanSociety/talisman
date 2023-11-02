@@ -1,4 +1,4 @@
-import { getEthersErrorLabelFromCode } from "@core/domains/ethereum/errors"
+import { getHumanReadableErrorMessage } from "@core/domains/ethereum/errors"
 import {
   getGasLimit,
   getGasSettingsEip1559,
@@ -481,7 +481,7 @@ export const useEthTransaction = (
       errorTransactionInfo ??
       isValidError) as Error & { code?: string; error?: Error }
 
-    const userFriendlyError = getEthersErrorLabelFromCode(anyError?.code)
+    const userFriendlyError = getHumanReadableErrorMessage(anyError)
 
     // if ethers.js error, display underlying error that shows the RPC's error message
     const errorToDisplay = anyError?.error ?? anyError

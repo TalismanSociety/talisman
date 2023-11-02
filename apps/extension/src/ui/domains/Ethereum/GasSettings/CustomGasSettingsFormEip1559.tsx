@@ -10,14 +10,13 @@ import { ArrowRightIcon, InfoIcon, LoaderIcon } from "@talismn/icons"
 import { formatDecimals } from "@talismn/util"
 import { TokensAndFiat } from "@ui/domains/Asset/TokensAndFiat"
 import { useAnalytics } from "@ui/hooks/useAnalytics"
-import { BigNumber, ethers } from "ethers"
 import { FC, FormEventHandler, useCallback, useEffect, useMemo, useRef, useState } from "react"
 import { useForm } from "react-hook-form"
 import { useTranslation } from "react-i18next"
 import { useDebounce } from "react-use"
 import { IconButton } from "talisman-ui"
 import { Button, FormFieldContainer, FormFieldInputText } from "talisman-ui"
-import { TransactionRequest, formatGwei } from "viem"
+import { TransactionRequest, formatGwei, parseGwei } from "viem"
 import * as yup from "yup"
 
 import { NetworkUsage } from "../NetworkUsage"
@@ -158,22 +157,17 @@ export const CustomGasSettingsFormEip1559: FC<CustomGasSettingsFormEip1559Props>
     () => ({
       maxBaseFee: Number(
         formatDecimals(
-          ethers.utils.formatUnits(
-            BigNumber.from(customSettings.maxFeePerGas).sub(customSettings.maxPriorityFeePerGas),
-            "gwei"
-          ),
+          formatGwei(customSettings.maxFeePerGas - customSettings.maxPriorityFeePerGas),
           undefined,
           { notation: "standard" }
         )
       ),
       maxPriorityFee: Number(
-        formatDecimals(
-          ethers.utils.formatUnits(customSettings.maxPriorityFeePerGas, "gwei"),
-          undefined,
-          { notation: "standard" }
-        )
+        formatDecimals(formatGwei(customSettings.maxPriorityFeePerGas), undefined, {
+          notation: "standard",
+        })
       ),
-      gasLimit: BigNumber.from(customSettings.gas).toNumber(),
+      gasLimit: Number(customSettings.gas),
     }),
     [customSettings]
   )
@@ -208,9 +202,7 @@ export const CustomGasSettingsFormEip1559: FC<CustomGasSettingsFormEip1559Props>
 
   const totalMaxFee = useMemo(() => {
     try {
-      return BigNumber.from(ethers.utils.parseUnits(String(maxBaseFee), "gwei"))
-        .add(ethers.utils.parseUnits(String(maxPriorityFee), "gwei"))
-        .mul(gasLimit)
+      return (parseGwei(String(maxBaseFee)) + parseGwei(String(maxPriorityFee))) * BigInt(gasLimit)
     } catch (err) {
       return null
     }
@@ -226,31 +218,28 @@ export const CustomGasSettingsFormEip1559: FC<CustomGasSettingsFormEip1559Props>
     else if (
       maxBaseFee &&
       txDetails.baseFeePerGas &&
-      BigNumber.from(ethers.utils.parseUnits(String(maxBaseFee), "gwei")).lt(
-        getMaxFeePerGas(txDetails.baseFeePerGas, 0n, 20, false)
-      )
+      parseGwei(String(maxBaseFee)) < getMaxFeePerGas(txDetails.baseFeePerGas, 0n, 20, false)
     )
       warningFee = t("Max Base Fee seems too low for current network conditions")
     // if higher than highest possible fee after 20 blocks
     else if (
       txDetails.baseFeePerGas &&
       maxBaseFee &&
-      BigNumber.from(ethers.utils.parseUnits(String(maxBaseFee), "gwei")).gt(
-        getMaxFeePerGas(txDetails.baseFeePerGas, 0n, 20)
-      )
+      parseGwei(String(maxBaseFee)) > getMaxFeePerGas(txDetails.baseFeePerGas, 0n, 20)
     )
       warningFee = t("Max Base Fee seems higher than required")
     else if (
       maxPriorityFee &&
-      BigNumber.from(ethers.utils.parseUnits(String(maxPriorityFee), "gwei")).gt(
-        BigNumber.from(2).mul(highSettings?.maxPriorityFeePerGas)
-      )
+      parseGwei(String(maxPriorityFee)) > 2n * highSettings.maxPriorityFeePerGas
+      // BigNumber.from(ethers.utils.parseUnits(String(maxPriorityFee), "gwei")).gt(
+      //   BigNumber.from(2).mul(highSettings?.maxPriorityFeePerGas)
+      // )
     )
       warningFee = t("Max Priority Fee seems higher than required")
 
     if (errors.gasLimit?.type === "min") errorGasLimit = t("Gas Limit minimum value is 21000")
     else if (errors.gasLimit) errorGasLimit = t("Gas Limit is invalid")
-    else if (BigNumber.from(txDetails.estimatedGas).gt(gasLimit))
+    else if (txDetails.estimatedGas > gasLimit)
       errorGasLimit = t("Gas Limit too low, transaction likely to fail")
 
     return {

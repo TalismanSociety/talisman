@@ -8,14 +8,13 @@ import { ArrowRightIcon, InfoIcon, LoaderIcon } from "@talismn/icons"
 import { formatDecimals } from "@talismn/util"
 import { TokensAndFiat } from "@ui/domains/Asset/TokensAndFiat"
 import { useAnalytics } from "@ui/hooks/useAnalytics"
-import { BigNumber, ethers } from "ethers"
 import { FC, FormEventHandler, useCallback, useEffect, useMemo, useRef, useState } from "react"
 import { useForm } from "react-hook-form"
 import { useTranslation } from "react-i18next"
 import { useDebounce } from "react-use"
 import { IconButton } from "talisman-ui"
 import { Button, FormFieldContainer, FormFieldInputText } from "talisman-ui"
-import { TransactionRequest, formatGwei } from "viem"
+import { TransactionRequest, formatGwei, parseGwei } from "viem"
 import * as yup from "yup"
 
 import { usePublicClient } from "../useEthereumProvider"
@@ -141,11 +140,11 @@ export const CustomGasSettingsFormLegacy: FC<CustomGasSettingsFormLegacyProps> =
   const defaultValues: FormData = useMemo(
     () => ({
       gasPrice: Number(
-        formatDecimals(ethers.utils.formatUnits(customSettings.gasPrice, "gwei"), undefined, {
+        formatDecimals(formatGwei(customSettings.gasPrice), undefined, {
           notation: "standard",
         })
       ),
-      gasLimit: BigNumber.from(customSettings.gas).toNumber(),
+      gasLimit: Number(customSettings.gas),
     }),
     [customSettings.gas, customSettings.gasPrice]
   )
@@ -176,7 +175,7 @@ export const CustomGasSettingsFormLegacy: FC<CustomGasSettingsFormLegacyProps> =
 
   const totalMaxFee = useMemo(() => {
     try {
-      return BigNumber.from(ethers.utils.parseUnits(String(gasPrice), "gwei")).mul(gasLimit)
+      return parseGwei(String(gasPrice)) * BigInt(gasLimit)
     } catch (err) {
       return null
     }
@@ -187,22 +186,14 @@ export const CustomGasSettingsFormLegacy: FC<CustomGasSettingsFormLegacyProps> =
     let errorGasLimit = ""
 
     if (errors.gasPrice) warningFee = t("Gas price is invalid")
-    else if (
-      gasPrice &&
-      BigNumber.from(ethers.utils.parseUnits(String(gasPrice), "gwei")).lt(txDetails.gasPrice)
-    )
+    else if (gasPrice && parseGwei(String(gasPrice)) < txDetails.gasPrice)
       warningFee = t("Gas price seems too low for current network conditions")
-    else if (
-      gasPrice &&
-      BigNumber.from(ethers.utils.parseUnits(String(gasPrice), "gwei")).gt(
-        BigNumber.from(txDetails.gasPrice).mul(2)
-      )
-    )
+    else if (gasPrice && parseGwei(String(gasPrice)) > txDetails.gasPrice * 2n)
       warningFee = t("Gas price seems higher than required")
 
     if (errors.gasLimit?.type === "min") errorGasLimit = t("Gas Limit minimum value is 21000")
     else if (errors.gasLimit) errorGasLimit = t("Gas Limit is invalid")
-    else if (BigNumber.from(txDetails.estimatedGas).gt(gasLimit))
+    else if (txDetails.estimatedGas > BigInt(gasLimit))
       errorGasLimit = t("Gas Limit too low, transaction likely to fail")
 
     return {
