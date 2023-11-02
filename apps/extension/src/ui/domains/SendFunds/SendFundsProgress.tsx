@@ -10,7 +10,6 @@ import { useSendFundsWizard } from "@ui/apps/popup/pages/SendFunds/context"
 import useChainByGenesisHash from "@ui/hooks/useChainByGenesisHash"
 import { useEvmNetwork } from "@ui/hooks/useEvmNetwork"
 import useTransactionByHash from "@ui/hooks/useTransactionByHash"
-import { ethers } from "ethers"
 import { FC, useCallback, useMemo, useState } from "react"
 import { Trans, useTranslation } from "react-i18next"
 import { Button, PillButton, ProcessAnimation, ProcessAnimationStatus } from "talisman-ui"
@@ -93,7 +92,7 @@ const useStatusDetails = (tx?: WalletTransaction) => {
       tx.networkType === "evm" &&
       tx.isReplacement &&
       tx.unsigned.value &&
-      ethers.BigNumber.from(tx.unsigned.value).isZero()
+      BigInt(tx.unsigned.value) === 0n
 
     switch (tx.status) {
       case "unknown":

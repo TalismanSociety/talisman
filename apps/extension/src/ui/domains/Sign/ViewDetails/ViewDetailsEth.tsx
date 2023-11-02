@@ -10,7 +10,6 @@ import { NetworkUsage } from "@ui/domains/Ethereum/NetworkUsage"
 import { useAnalytics } from "@ui/hooks/useAnalytics"
 import useToken from "@ui/hooks/useToken"
 import { useTokenRates } from "@ui/hooks/useTokenRates"
-import { BigNumber, BigNumberish } from "ethers"
 import { formatEther } from "ethers/lib/utils"
 import { FC, PropsWithChildren, ReactNode, useCallback, useEffect, useMemo } from "react"
 import { useTranslation } from "react-i18next"
@@ -71,7 +70,7 @@ const ViewDetailsContent: FC<ViewDetailsContentProps> = ({ onClose }) => {
 
   const nativeToken = useToken(network?.nativeToken?.id)
   const formatEthValue = useCallback(
-    (value?: BigNumberish) => {
+    (value: bigint = 0n) => {
       return value ? `${formatEther(value)} ${nativeToken?.symbol ?? ""}` : null
     },
     [nativeToken?.symbol]
@@ -87,16 +86,8 @@ const ViewDetailsContent: FC<ViewDetailsContentProps> = ({ onClose }) => {
     () =>
       txDetails && nativeToken
         ? [
-            new BalanceFormatter(
-              BigNumber.from(txDetails?.estimatedFee).toString(),
-              nativeToken?.decimals,
-              nativeTokenRates
-            ),
-            new BalanceFormatter(
-              BigNumber.from(txDetails?.maxFee).toString(),
-              nativeToken?.decimals,
-              nativeTokenRates
-            ),
+            new BalanceFormatter(txDetails.estimatedFee, nativeToken?.decimals, nativeTokenRates),
+            new BalanceFormatter(txDetails.maxFee, nativeToken?.decimals, nativeTokenRates),
           ]
         : [null, null],
     [nativeToken, nativeTokenRates, txDetails]
@@ -145,7 +136,7 @@ const ViewDetailsContent: FC<ViewDetailsContentProps> = ({ onClose }) => {
           blockExplorerUrl={network?.explorerUrl}
         />
         <ViewDetailsField label={t("Value to be transferred")} breakAll>
-          {formatEthValue(request.value)}
+          {formatEthValue(transaction?.value)}
         </ViewDetailsField>
         <ViewDetailsField label={t("Network")}>
           <ViewDetailsGrid>

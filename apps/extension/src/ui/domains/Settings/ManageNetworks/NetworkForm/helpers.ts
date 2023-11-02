@@ -1,7 +1,7 @@
 import { WsProvider } from "@polkadot/api"
 import { EvmNetworkId } from "@talismn/chaindata-provider"
 import { sleep } from "@talismn/util"
-import { ethers } from "ethers"
+import { createClient, hexToNumber, http } from "viem"
 
 // because of validation the same query is done 3 times minimum per url, make all await same promise
 const rpcChainIdCache = new Map<string, Promise<EvmNetworkId | null>>()
@@ -13,10 +13,11 @@ export const getEvmRpcChainId = (rpcUrl: string): Promise<string | null> => {
   const cached = rpcChainIdCache.get(rpcUrl)
   if (cached) return cached
 
-  const provider = new ethers.providers.StaticJsonRpcProvider(rpcUrl)
-  const request = provider
-    .send("eth_chainId", [])
-    .then((hexChainId) => String(parseInt(hexChainId, 16)))
+  const client = createClient({ transport: http(rpcUrl) })
+
+  const request = client
+    .request({ method: "eth_chainId" })
+    .then((hexChainId) => String(hexToNumber(hexChainId)))
     .catch(() => null)
 
   rpcChainIdCache.set(rpcUrl, request)

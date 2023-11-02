@@ -30,7 +30,6 @@ import useTokens from "@ui/hooks/useTokens"
 import { isEvmToken } from "@ui/util/isEvmToken"
 import { isSubToken } from "@ui/util/isSubToken"
 import { isTransferableToken } from "@ui/util/isTransferableToken"
-import { BigNumber } from "ethers"
 import { useCallback, useEffect, useMemo, useRef, useState } from "react"
 import { useTranslation } from "react-i18next"
 import { useLocation } from "react-router-dom"
@@ -256,8 +255,7 @@ const useSendFundsProvider = () => {
         }
         case "evm-native": {
           if (!evmTransaction?.txDetails?.maxFee) return null
-          const val =
-            balance.transferable.planck - BigNumber.from(evmTransaction.txDetails.maxFee).toBigInt()
+          const val = balance.transferable.planck - evmTransaction.txDetails.maxFee
           return evmTransaction?.txDetails?.maxFee
             ? new BalanceFormatter(val > 0n ? val : 0n, token.decimals, tokenRates)
             : null
@@ -287,15 +285,11 @@ const useSendFundsProvider = () => {
     if (evmTransaction?.txDetails?.estimatedFee) {
       return [
         new BalanceFormatter(
-          BigNumber.from(evmTransaction.txDetails.estimatedFee).toBigInt(),
+          evmTransaction.txDetails.estimatedFee,
           feeToken?.decimals,
           feeTokenRates
         ),
-        new BalanceFormatter(
-          BigNumber.from(evmTransaction.txDetails.maxFee).toBigInt(),
-          feeToken?.decimals,
-          feeTokenRates
-        ),
+        new BalanceFormatter(evmTransaction.txDetails.maxFee, feeToken?.decimals, feeTokenRates),
       ]
     }
     if (subTransaction?.partialFee) {

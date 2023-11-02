@@ -12,8 +12,6 @@ import { useAccountByAddress } from "@ui/hooks/useAccountByAddress"
 import { useAnalyticsPageView } from "@ui/hooks/useAnalyticsPageView"
 import { useBalance } from "@ui/hooks/useBalance"
 import { useEvmNetwork } from "@ui/hooks/useEvmNetwork"
-import { BigNumber } from "ethers"
-import { ethers } from "ethers"
 import { FC, useCallback, useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
 import { Button, Drawer, useOpenCloseWithData } from "talisman-ui"
@@ -57,21 +55,13 @@ export const EvmEstimatedFeeTooltip: FC<{
         <div className="grid grid-cols-2 gap-2">
           <div>{t("Estimated fee:")}</div>
           <div className="text-right">
-            <TokensAndFiat
-              planck={ethers.BigNumber.from(txDetails.estimatedFee).toBigInt()}
-              tokenId={feeTokenId}
-              noCountUp
-            />
+            <TokensAndFiat planck={txDetails.estimatedFee} tokenId={feeTokenId} noCountUp />
           </div>
           {!!txDetails?.maxFee && (
             <>
               <div>{t("Max. fee:")}</div>
               <div className="text-right">
-                <TokensAndFiat
-                  planck={ethers.BigNumber.from(txDetails.maxFee).toBigInt()}
-                  tokenId={feeTokenId}
-                  noCountUp
-                />
+                <TokensAndFiat planck={txDetails.maxFee} tokenId={feeTokenId} noCountUp />
               </div>
             </>
           )}
@@ -267,7 +257,7 @@ const EvmDrawerContent: FC<{
           <div>
             {txDetails?.estimatedFee ? (
               <TokensAndFiat
-                planck={BigNumber.from(txDetails.estimatedFee).toString()}
+                planck={txDetails.estimatedFee}
                 tokenId={evmNetwork?.nativeToken?.id}
               />
             ) : null}

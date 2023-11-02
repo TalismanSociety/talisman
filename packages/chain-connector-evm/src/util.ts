@@ -1,10 +1,6 @@
 import { AcalaJsonRpcProvider } from "@acala-network/eth-providers"
-import { throwAfter } from "@talismn/util"
-import { ethers } from "ethers"
 
-import { ACALA_NETWORK_IDS, RPC_HEALTHCHECK_TIMEOUT } from "./constants"
-// import { EvmJsonRpcBatchProvider } from "./EvmJsonRpcBatchProvider"
-import log from "./log"
+import { ACALA_NETWORK_IDS } from "./constants"
 
 /**
  * Helper function to add our onfinality api key to a public onfinality RPC url.
@@ -26,27 +22,27 @@ export const addOnfinalityApiKey = (rpcUrl: string, onfinalityApiKey?: string) =
 
 // TODO yeet everything below
 
-export const isHealthyRpc = async (url: string, chainId: number) => {
-  try {
-    // StaticJsonRpcProvider is better suited for this as it will not do health check requests on it's own
-    const provider = new ethers.providers.StaticJsonRpcProvider(url, {
-      chainId,
-      name: `EVM Network ${chainId}`,
-    })
+// export const isHealthyRpc = async (url: string, chainId: number) => {
+//   try {
+//     // StaticJsonRpcProvider is better suited for this as it will not do health check requests on it's own
+//     const provider = new ethers.providers.StaticJsonRpcProvider(url, {
+//       chainId,
+//       name: `EVM Network ${chainId}`,
+//     })
 
-    // check that RPC responds in time
-    const rpcChainId = await Promise.race([
-      provider.send("eth_chainId", []),
-      throwAfter(RPC_HEALTHCHECK_TIMEOUT, "timeout"),
-    ])
+//     // check that RPC responds in time
+//     const rpcChainId = await Promise.race([
+//       provider.send("eth_chainId", []),
+//       throwAfter(RPC_HEALTHCHECK_TIMEOUT, "timeout"),
+//     ])
 
-    // with expected chain id
-    return parseInt(rpcChainId, 16) === chainId
-  } catch (err) {
-    log.error("Unhealthy EVM RPC %s", url, { err })
-    return false
-  }
-}
+//     // with expected chain id
+//     return parseInt(rpcChainId, 16) === chainId
+//   } catch (err) {
+//     log.error("Unhealthy EVM RPC %s", url, { err })
+//     return false
+//   }
+// }
 
 export const isAcalaNetwork = (chainId: number) => ACALA_NETWORK_IDS.includes(chainId)
 
