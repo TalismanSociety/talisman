@@ -24,7 +24,7 @@ import {
 
 type RequestUpsertNetwork = RequestUpsertCustomChain | RequestUpsertCustomEvmNetwork
 
-type SortableRpcItemProps = {
+export type SortableRpcItemProps = {
   rpc: FieldArrayWithId<RequestUpsertNetwork, "rpcs", "id">
   canDelete?: boolean
   canDrag?: boolean

@@ -30,6 +30,7 @@ export const SubNetworkFormEdit = ({ chainId, onSubmitted }: SubNetworkFormEditP
     | CustomNativeToken
     | SubNativeToken
     | undefined
+
   const defaultValues = useMemo(() => {
     return chain ? chainToFormData(chain, nativeToken) : undefined
   }, [chain, nativeToken])
@@ -40,12 +41,10 @@ export const SubNetworkFormEdit = ({ chainId, onSubmitted }: SubNetworkFormEditP
   const formProps = useForm<RequestUpsertCustomChain>({
     mode: "onBlur",
     defaultValues,
-
     resolver: yupResolver(subNetworkFormSchema),
   })
 
   const { reset } = formProps
-
   // initialize form with existing values (edit mode), only once, needed
   // to get nested fields to show up
   const initialized = useRef(false)
@@ -96,7 +95,7 @@ const chainToFormData = (
     chainLogoUrl: chain.logo ?? null,
     nativeTokenSymbol: nativeToken?.symbol ?? "Unit",
     nativeTokenDecimals: nativeToken?.decimals ?? 0,
-    nativeTokenCoingeckoId: nativeToken?.coingeckoId ?? null,
+    nativeTokenCoingeckoId: nativeToken?.coingeckoId ?? "",
     nativeTokenLogoUrl: nativeToken?.logo ?? null,
     accountFormat: chain.account,
     subscanUrl: chain.subscanUrl,

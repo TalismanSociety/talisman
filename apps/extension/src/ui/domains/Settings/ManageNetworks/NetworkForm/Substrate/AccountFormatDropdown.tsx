@@ -49,7 +49,7 @@ export const AccountFormatDropdown = ({
     () =>
       selectedFormat
         ? accountFormatOptions.find((option) => selectedFormat === option.value)
-        : undefined,
+        : accountFormatOptions[0],
     [selectedFormat]
   )
 

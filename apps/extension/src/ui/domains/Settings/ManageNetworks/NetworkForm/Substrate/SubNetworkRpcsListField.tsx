@@ -1,19 +1,14 @@
 import { RequestUpsertCustomChain } from "@core/domains/chains/types"
 import { FC, useCallback, useRef, useState } from "react"
-import { FieldArrayWithId, FieldPathValue, useFormContext } from "react-hook-form"
+import { FieldPathValue, useFormContext } from "react-hook-form"
 import { useTranslation } from "react-i18next"
 
-import { NetworkRpcsListField, SortableRpcField } from "../NetworkRpcsListField"
+import {
+  NetworkRpcsListField,
+  SortableRpcField,
+  SortableRpcItemProps,
+} from "../NetworkRpcsListField"
 import { getSubstrateRpcInfo, wsRegEx } from "./helpers"
-
-type SortableRpcItemProps = {
-  rpc: FieldArrayWithId<RequestUpsertCustomChain, "rpcs", "id">
-  canDelete?: boolean
-  canDrag?: boolean
-  onDelete?: () => void
-  index: number
-  placeholder: string
-}
 
 const SubSortableRpcField: FC<SortableRpcItemProps> = (props) => {
   const [fetchingGenesisHash, setFetchingGenesisHash] = useState(false)
