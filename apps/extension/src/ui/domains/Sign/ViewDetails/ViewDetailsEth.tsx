@@ -159,8 +159,13 @@ const ViewDetailsContent: FC<ViewDetailsContentProps> = ({ onClose }) => {
                 typeof networkUsage === "number" ? `${Math.round(networkUsage * 100)}%` : t("N/A")
               }
             />
+
             {transaction?.type === "eip1559" && (
               <>
+                <ViewDetailsGridRow
+                  left={t("Gas price")}
+                  right={<Gwei value={txDetails?.gasPrice} />}
+                />
                 <ViewDetailsGridRow
                   left={t("Base fee per gas")}
                   right={<Gwei value={txDetails?.baseFeePerGas} />}

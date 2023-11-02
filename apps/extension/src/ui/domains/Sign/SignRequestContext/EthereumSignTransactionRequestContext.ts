@@ -70,6 +70,7 @@ const useEthSignTransactionRequestProvider = ({ id }: KnownSigningRequestIdOnly<
       } catch (err) {
         log.error("failed to approve hardware", { err })
         baseRequest.setStatus.error((err as Error).message)
+        setIsPayloadLocked(false)
       }
     },
     [baseRequest, transaction]

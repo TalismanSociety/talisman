@@ -98,8 +98,19 @@ export const getHumanReadableErrorMessage = (error: unknown) => {
     code,
     reason,
     error: serverError,
+    shortMessage,
+    details,
+  } = error as {
+    code?: string
+    reason?: string
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  } = error as { code?: string; reason?: string; error?: any }
+    error?: any
+    shortMessage?: string
+    details?: string
+  }
+
+  if (details) return details
+  if (shortMessage) return shortMessage
 
   if (serverError) {
     const message = serverError.error?.message ?? serverError.reason ?? serverError.message

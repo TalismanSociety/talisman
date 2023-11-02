@@ -1,14 +1,17 @@
 import { settingsStore } from "@core/domains/app"
 import { addEvmTransaction, updateTransactionStatus } from "@core/domains/transactions/helpers"
+import { log } from "@core/log"
 import { createNotification } from "@core/notifications"
 import { chainConnectorEvm } from "@core/rpcs/chain-connector-evm"
 import { chaindataProvider } from "@core/rpcs/chaindata"
 import * as Sentry from "@sentry/browser"
 import { EvmNetworkId } from "@talismn/chaindata-provider"
+import { sleep, throwAfter } from "@talismn/util"
 import { nanoid } from "nanoid"
 import urlJoin from "url-join"
-import { TransactionRequest } from "viem"
+import { Hex, TransactionReceipt, TransactionRequest } from "viem"
 
+import { resetTransactionCount } from "../ethereum/transactionCountManager"
 import { WatchTransactionOptions } from "./types"
 
 export const watchEthereumTransaction = async (
@@ -38,9 +41,21 @@ export const watchEthereumTransaction = async (
     try {
       await addEvmTransaction(evmNetworkId, hash, unsigned, { siteUrl, ...transferInfo })
 
-      const receipt = await client.waitForTransactionReceipt({
-        hash,
-      })
+      // Observed on polygon network (tried multiple rpcs) that waitForTransactionReceipt throws TransactionNotFoundError & BlockNotFoundError randomly
+      // so we retry as long as we don't get a receipt, with a timeout on our side
+      const getTransactionReceipt = async (hash: Hex): Promise<TransactionReceipt> => {
+        try {
+          return await client.waitForTransactionReceipt({ hash })
+        } catch (err) {
+          await sleep(4000)
+          return getTransactionReceipt(hash)
+        }
+      }
+
+      const receipt = await Promise.race([
+        getTransactionReceipt(hash),
+        throwAfter(5 * 60_000, "Transaction not found"),
+      ])
 
       // to test failing transactions, swap on busy AMM pools with a 0.05% slippage limit
       updateTransactionStatus(
@@ -57,7 +72,11 @@ export const watchEthereumTransaction = async (
           txUrl
         )
     } catch (err) {
+      log.error("watchEthereumTransaction error: ", { err })
       updateTransactionStatus(hash, "error")
+
+      // observed on polygon, some submitted transactions are not found, in which case we must reset the nonce counter to avoid being stuck
+      resetTransactionCount(unsigned.from, evmNetworkId)
 
       if (withNotifications) await createNotification("error", networkName, txUrl, err as Error)
       // eslint-disable-next-line no-console

@@ -42,3 +42,8 @@ export const incrementTransactionCount = (address: string, evmNetworkId: EvmNetw
 
   dicTransactionCount.set(key, count + 1)
 }
+
+export const resetTransactionCount = (address: string, evmNetworkId: EvmNetworkId) => {
+  const key = getKey(address, evmNetworkId)
+  dicTransactionCount.delete(key)
+}

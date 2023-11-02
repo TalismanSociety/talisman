@@ -1,6 +1,7 @@
 import { AccountJsonAny, AccountType } from "@core/domains/accounts/types"
 import { EthSignMessageMethod } from "@core/domains/signing/types"
 import { HexString } from "@polkadot/util/types"
+import { EvmNetworkId } from "@talismn/chaindata-provider"
 import { FC, Suspense, lazy } from "react"
 
 import SignDcentEthereum from "./SignDcentEthereum"
@@ -8,6 +9,7 @@ import SignDcentEthereum from "./SignDcentEthereum"
 const SignLedgerEthereum = lazy(() => import("./SignLedgerEthereum"))
 
 export type SignHardwareEthereumProps = {
+  evmNetworkId?: EvmNetworkId
   account: AccountJsonAny
   method: EthSignMessageMethod | "eth_sendTransaction"
   // eslint-disable-next-line @typescript-eslint/no-explicit-any

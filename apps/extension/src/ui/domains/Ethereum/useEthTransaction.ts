@@ -217,7 +217,7 @@ const getEthGasSettingsFromTransaction = (
 
   if (!hasEip1559Support && gas && gasPrice) {
     return {
-      type: "eip2930",
+      type: "legacy",
       gas,
       gasPrice,
     } as EthGasSettingsLegacy

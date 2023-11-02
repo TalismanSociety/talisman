@@ -1,13 +1,15 @@
 import { EthBaseFeeTrend } from "@core/domains/signing/types"
+import { log } from "@core/log"
 import * as Sentry from "@sentry/browser"
-import { PublicClient, parseGwei } from "viem"
+import { PublicClient, formatGwei, parseGwei } from "viem"
 
-const BLOCKS_HISTORY_LENGTH = 4
+const BLOCKS_HISTORY_LENGTH = 5
 const REWARD_PERCENTILES = [10, 20, 30]
+const LIVE_DEBUG = true
 
 type EthBasePriorityOptionsEip1559 = Record<"low" | "medium" | "high", bigint>
 
-export const DEFAULT_ETH_PRIORITY_OPTIONS: EthBasePriorityOptionsEip1559 = {
+const DEFAULT_ETH_PRIORITY_OPTIONS: EthBasePriorityOptionsEip1559 = {
   low: parseGwei("1.5"),
   medium: parseGwei("1.6"),
   high: parseGwei("1.7"),
@@ -85,11 +87,11 @@ export const getFeeHistoryAnalysis = async (
       ? "increasing"
       : "toTheMoon"
 
-    return {
+    const result: FeeHistoryAnalysis = {
       maxPriorityPerGasOptions: {
         low: medMaxPriorityFeePerGas[0],
-        medium: medMaxPriorityFeePerGas[1],
-        high: medMaxPriorityFeePerGas[2],
+        medium: (medMaxPriorityFeePerGas[1] * 102n) / 100n,
+        high: (medMaxPriorityFeePerGas[2] * 104n) / 100n,
       },
       avgGasUsedRatio: avgGasUsedRatio,
       isValid: !feeHistory.gasUsedRatio.includes(0), // if a 0 is found, not all blocks contained a transaction
@@ -98,6 +100,29 @@ export const getFeeHistoryAnalysis = async (
       nextBaseFee,
       baseFeeTrend,
     }
+
+    if (LIVE_DEBUG) {
+      log.log(
+        "rewards",
+        feeHistory.reward?.map((arr) => arr.map((reward) => `${formatGwei(reward)} GWEI`))
+      )
+      log.log("baseFee", `${formatGwei(result.nextBaseFee)} GWEI`)
+      log.log(
+        "medMaxPriorityFeePerGas",
+        medMaxPriorityFeePerGas.map((fee) => `${formatGwei(fee)} GWEI`)
+      )
+      log.log(
+        "maxPriorityPerGasOptions",
+        [
+          result.maxPriorityPerGasOptions.low,
+          result.maxPriorityPerGasOptions.medium,
+          result.maxPriorityPerGasOptions.high,
+        ].map((fee) => `${formatGwei(fee)} GWEI`)
+      )
+      log.log("=========================================")
+    }
+
+    return result
   } catch (err) {
     Sentry.captureException(err)
     throw new Error("Failed to load fee history", { cause: err as Error })

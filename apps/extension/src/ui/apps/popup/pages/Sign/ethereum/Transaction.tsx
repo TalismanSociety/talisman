@@ -17,7 +17,6 @@ import { EthSignBody } from "@ui/domains/Sign/Ethereum/EthSignBody"
 import { SignAlertMessage } from "@ui/domains/Sign/SignAlertMessage"
 import { SignHardwareEthereum } from "@ui/domains/Sign/SignHardwareEthereum"
 import { useEthSignTransactionRequest } from "@ui/domains/Sign/SignRequestContext"
-import { useAlec } from "@ui/hooks/useAlec"
 import { Suspense, useCallback, useEffect, useMemo } from "react"
 import { useTranslation } from "react-i18next"
 import { Button, Tooltip, TooltipContent, TooltipTrigger } from "talisman-ui"
@@ -132,8 +131,6 @@ export const EthSignTransactionRequest = () => {
     [setPriority, setReady]
   )
 
-  useAlec("EthSignTransactionRequest", { transaction, txDetails, network })
-
   return (
     <PopupLayout>
       <PopupHeader right={<SignAccountAvatar account={account} />}>
@@ -203,6 +200,7 @@ export const EthSignTransactionRequest = () => {
             ) : null}
             {account && request && account.isHardware ? (
               <SignHardwareEthereum
+                evmNetworkId={network?.id}
                 method="eth_sendTransaction"
                 payload={transaction}
                 account={account}

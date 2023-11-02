@@ -2,16 +2,24 @@ import { AccountJsonHardwareEthereum } from "@core/domains/accounts/types"
 import { EthSignMessageMethod } from "@core/domains/signing/types"
 import i18next from "@core/i18nConfig"
 import { log } from "@core/log"
-import { bufferToHex, isHexString, stripHexPrefix } from "@ethereumjs/util"
+import { bufferToHex, stripHexPrefix } from "@ethereumjs/util"
 import LedgerEthereumApp from "@ledgerhq/hw-app-eth"
 import { SignTypedDataVersion, TypedDataUtils } from "@metamask/eth-sig-util"
 import { classNames } from "@talismn/util"
 import { useLedgerEthereum } from "@ui/hooks/ledger/useLedgerEthereum"
-import { ethers } from "ethers"
 import { FC, useCallback, useEffect, useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
 import { Drawer } from "talisman-ui"
 import { Button } from "talisman-ui"
+import {
+  Signature,
+  TransactionRequest,
+  TransactionSerializable,
+  hexToBigInt,
+  isHex,
+  serializeTransaction,
+  signatureToHex,
+} from "viem"
 
 import {
   LedgerConnectionStatus,
@@ -20,106 +28,93 @@ import {
 import { LedgerSigningStatus } from "./LedgerSigningStatus"
 import { SignHardwareEthereumProps } from "./SignHardwareEthereum"
 
+const toSignature = ({ v, r, s }: { v: string | number; r: string; s: string }): Signature => ({
+  v: typeof v === "string" ? hexToBigInt(`0x${v}`) : BigInt(v),
+  r: `0x${r}`,
+  s: `0x${s}`,
+})
+
 const signWithLedger = async (
   ledger: LedgerEthereumApp,
+  chainId: number,
   method: EthSignMessageMethod | "eth_sendTransaction",
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  payload: any,
+  payload: unknown,
   accountPath: string
 ): Promise<`0x${string}`> => {
-  // TODO Uncomment wen this method actually works
-  // if (["eth_signTypedData", "eth_signTypedData_v3", "eth_signTypedData_v4"].includes(method)) {
-  //   const jsonMessage = typeof payload === "string" ? JSON.parse(payload) : payload
+  switch (method) {
+    case "eth_signTypedData_v3":
+    case "eth_signTypedData_v4": {
+      const jsonMessage = typeof payload === "string" ? JSON.parse(payload) : payload
 
-  //   const sig = await ledger.signEIP712Message(accountPath, jsonMessage)
-  //   sig.r = "0x" + sig.r
-  //   sig.s = "0x" + sig.s
-  //   return ethers.utils.joinSignature(sig) as `0x${string}`
-  // }
+      try {
+        // Nano S doesn't support signEIP712Message, fallback to signEIP712HashedMessage in case of error
+        // see https://github.com/LedgerHQ/ledger-live/tree/develop/libs/ledgerjs/packages/hw-app-eth#signeip712message
 
-  if (method === "eth_signTypedData_v4") {
-    const jsonMessage = typeof payload === "string" ? JSON.parse(payload) : payload
+        // eslint-disable-next-line no-var
+        var sig = await ledger.signEIP712Message(accountPath, jsonMessage)
+      } catch {
+        // fallback for ledger Nano S
+        const { domain, types, primaryType, message } = TypedDataUtils.sanitizeData(jsonMessage)
+        const domainSeparatorHex = TypedDataUtils.hashStruct(
+          "EIP712Domain",
+          domain,
+          types,
+          SignTypedDataVersion.V4
+        ).toString("hex")
+        const hashStructMessageHex = TypedDataUtils.hashStruct(
+          primaryType as string,
+          message,
+          types,
+          SignTypedDataVersion.V4
+        ).toString("hex")
 
-    // at this time we cannot use ledger.signEIP712Message() (see comments above) without altering the payload (missing salt & wrong time for chainId)
-    // => let's hash using MM libraries, what's annoying is that the user will only see those hashes on his ledger
+        sig = await ledger.signEIP712HashedMessage(
+          accountPath,
+          domainSeparatorHex,
+          hashStructMessageHex
+        )
+      }
 
-    const { domain, types, primaryType, message } = TypedDataUtils.sanitizeData(jsonMessage)
-    const domainSeparatorHex = TypedDataUtils.hashStruct(
-      "EIP712Domain",
-      domain,
-      types,
-      SignTypedDataVersion.V4
-    ).toString("hex")
-    const hashStructMessageHex = TypedDataUtils.hashStruct(
-      primaryType as string,
-      message,
-      types,
-      SignTypedDataVersion.V4
-    ).toString("hex")
-
-    const sig = await ledger.signEIP712HashedMessage(
-      accountPath,
-      domainSeparatorHex,
-      hashStructMessageHex
-    )
-    sig.r = "0x" + sig.r
-    sig.s = "0x" + sig.s
-    return ethers.utils.joinSignature(sig) as `0x${string}`
-  }
-  if (method === "personal_sign") {
-    // ensure that it is hex encoded
-    const messageHex = isHexString(payload) ? payload : bufferToHex(Buffer.from(payload, "utf8"))
-
-    const sig = await ledger.signPersonalMessage(accountPath, stripHexPrefix(messageHex))
-    sig.r = "0x" + sig.r
-    sig.s = "0x" + sig.s
-    return ethers.utils.joinSignature(sig) as `0x${string}`
-  }
-  if (method === "eth_sendTransaction") {
-    const {
-      accessList,
-      to,
-      nonce,
-      gasLimit,
-      gasPrice,
-      data,
-      value,
-      chainId,
-      type,
-      maxPriorityFeePerGas,
-      maxFeePerGas,
-    } = await ethers.utils.resolveProperties(payload as ethers.providers.TransactionRequest)
-
-    const baseTx: ethers.utils.UnsignedTransaction = {
-      to,
-      gasLimit,
-      chainId,
-      type,
+      return signatureToHex(toSignature(sig))
     }
 
-    if (nonce !== undefined) baseTx.nonce = ethers.BigNumber.from(nonce).toNumber()
-    if (maxPriorityFeePerGas) baseTx.maxPriorityFeePerGas = maxPriorityFeePerGas
-    if (maxFeePerGas) baseTx.maxFeePerGas = maxFeePerGas
-    if (gasPrice) baseTx.gasPrice = gasPrice
-    if (data) baseTx.data = data
-    if (value) baseTx.value = value
-    if (accessList) baseTx.accessList = accessList
+    case "personal_sign": {
+      // ensure that it is hex encoded
+      const messageHex = isHex(payload)
+        ? payload
+        : bufferToHex(Buffer.from(payload as string, "utf8"))
 
-    const unsignedTx = stripHexPrefix(ethers.utils.serializeTransaction(baseTx))
-    const sig = await ledger.signTransaction(accountPath, unsignedTx, null) // resolver)
+      const sig = await ledger.signPersonalMessage(accountPath, stripHexPrefix(messageHex))
 
-    return ethers.utils.serializeTransaction(baseTx, {
-      v: ethers.BigNumber.from("0x" + sig.v).toNumber(),
-      r: "0x" + sig.r,
-      s: "0x" + sig.s,
-    }) as `0x${string}`
+      return signatureToHex(toSignature(sig))
+    }
+
+    case "eth_sendTransaction": {
+      const txRequest = payload as TransactionRequest
+      const baseTx: TransactionSerializable = {
+        ...txRequest,
+        // viem's legacy serialization changes the chainId once deserialized, tx can't be submitted
+        // can be tested on BSC
+        type: txRequest.type === "legacy" ? "eip2930" : "eip1559",
+        chainId,
+      }
+
+      const serialized = serializeTransaction(baseTx)
+
+      const sig = await ledger.signTransaction(accountPath, stripHexPrefix(serialized), null)
+
+      return serializeTransaction(baseTx, toSignature(sig))
+    }
+
+    default: {
+      throw new Error(i18next.t("This type of message cannot be signed with ledger."))
+    }
   }
-
-  // sign typed data v0, v1, v3...
-  throw new Error(i18next.t("This type of message cannot be signed with ledger."))
 }
 
 const SignLedgerEthereum: FC<SignHardwareEthereumProps> = ({
+  evmNetworkId,
   account,
   className = "",
   method,
@@ -134,6 +129,11 @@ const SignLedgerEthereum: FC<SignHardwareEthereumProps> = ({
   const [isSigned, setIsSigned] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const { ledger, refresh, status, message, isReady, requiresManualRetry } = useLedgerEthereum()
+
+  const inputsReady = useMemo(
+    () => !!payload && (method !== "eth_sendTransaction" || !!evmNetworkId),
+    [evmNetworkId, method, payload]
+  )
 
   // reset
   useEffect(() => {
@@ -156,14 +156,13 @@ const SignLedgerEthereum: FC<SignHardwareEthereumProps> = ({
   }, [refresh, setError])
 
   const signLedger = useCallback(async () => {
-    if (!ledger || !onSigned) {
-      return
-    }
+    if (!ledger || !onSigned || !inputsReady) return
 
     setError(null)
     try {
       const signature = await signWithLedger(
         ledger,
+        Number(evmNetworkId),
         method,
         payload,
         (account as AccountJsonHardwareEthereum).path
@@ -186,7 +185,7 @@ const SignLedgerEthereum: FC<SignHardwareEthereumProps> = ({
         )
       else setError(error.reason ?? error.message)
     }
-  }, [ledger, onSigned, method, payload, account, t])
+  }, [ledger, onSigned, inputsReady, evmNetworkId, method, payload, account, t])
 
   const handleSendClick = useCallback(() => {
     setIsSigning(true)
@@ -201,7 +200,13 @@ const SignLedgerEthereum: FC<SignHardwareEthereumProps> = ({
       {!error && (
         <>
           {isReady ? (
-            <Button className="w-full" primary processing={isSigning} onClick={handleSendClick}>
+            <Button
+              className="w-full"
+              disabled={!inputsReady}
+              primary
+              processing={isSigning}
+              onClick={handleSendClick}
+            >
               {t("Approve on Ledger")}
             </Button>
           ) : (
