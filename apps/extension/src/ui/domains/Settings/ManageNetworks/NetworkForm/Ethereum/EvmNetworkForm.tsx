@@ -25,10 +25,10 @@ import { useDebounce } from "react-use"
 import { Button, Checkbox, FormFieldContainer, FormFieldInputText } from "talisman-ui"
 
 import { NetworkRpcsListField } from "../NetworkRpcsListField"
-import { getEvmNetworkFormSchema } from "./getEvmNetworkFormSchema"
 import { getEvmRpcChainId } from "./helpers"
 import { RemoveEvmNetworkButton } from "./RemoveEvmNetworkButton"
 import { ResetEvmNetworkButton } from "./ResetEvmNetworkButton"
+import { evmNetworkFormSchema } from "./schema"
 
 type EvmNetworkFormProps = {
   evmNetworkId?: EvmNetworkId
@@ -44,14 +44,12 @@ export const EvmNetworkForm: FC<EvmNetworkFormProps> = ({ evmNetworkId, onSubmit
 
   const { defaultValues, isCustom, isEditMode, evmNetwork } = useEditMode(evmNetworkId)
   const tEditMode = evmNetworkId ? t("Edit") : t("Add")
-
-  const schema = useMemo(() => getEvmNetworkFormSchema(evmNetworkId), [evmNetworkId])
-
   // because of the RPC checks, do not validate on each change
   const formProps = useForm<RequestUpsertCustomEvmNetwork>({
     mode: "onBlur",
     defaultValues,
-    resolver: yupResolver(schema),
+    context: { evmNetworkId },
+    resolver: yupResolver(evmNetworkFormSchema),
   })
 
   const {
