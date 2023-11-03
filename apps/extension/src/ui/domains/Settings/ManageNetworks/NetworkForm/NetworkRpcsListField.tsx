@@ -1,4 +1,3 @@
-import { RequestUpsertCustomChain } from "@core/domains/chains/types"
 import { RequestUpsertCustomEvmNetwork } from "@core/domains/ethereum/types"
 import {
   DndContext,
@@ -17,15 +16,16 @@ import { FieldArrayWithId, useFieldArray, useFormContext } from "react-hook-form
 import { useTranslation } from "react-i18next"
 import { FormFieldContainer, FormFieldInputText } from "talisman-ui"
 
+import { SubNetworkFormData } from "./Substrate/types"
 import {
   ExtraValidationCb,
   useRegisterFieldWithDebouncedValidation,
 } from "./useRegisterFieldWithDebouncedValidation"
 
-type RequestUpsertNetwork = RequestUpsertCustomChain | RequestUpsertCustomEvmNetwork
+type RpcFormData = SubNetworkFormData | RequestUpsertCustomEvmNetwork
 
 export type SortableRpcItemProps = {
-  rpc: FieldArrayWithId<RequestUpsertNetwork, "rpcs", "id">
+  rpc: FieldArrayWithId<RpcFormData, "rpcs", "id">
   canDelete?: boolean
   canDrag?: boolean
   onDelete?: () => void
@@ -50,7 +50,7 @@ export const SortableRpcField: FC<SortableRpcItemProps> = ({
     register,
     trigger,
     formState: { errors },
-  } = useFormContext<RequestUpsertNetwork>()
+  } = useFormContext<RpcFormData>()
 
   const style = {
     transform: CSS.Transform.toString(transform),
@@ -112,14 +112,14 @@ export const NetworkRpcsListField = ({
   FieldComponent?: React.ComponentType<SortableRpcItemProps>
 }) => {
   const { t } = useTranslation("admin")
-  const { watch, control } = useFormContext<RequestUpsertNetwork>()
+  const { watch, control } = useFormContext<RpcFormData>()
 
   const {
     fields: rpcs,
     append,
     remove,
     move,
-  } = useFieldArray<RequestUpsertNetwork>({
+  } = useFieldArray<RpcFormData>({
     name: "rpcs",
     control,
   })

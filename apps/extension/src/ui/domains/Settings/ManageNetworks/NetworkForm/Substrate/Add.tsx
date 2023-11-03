@@ -1,4 +1,3 @@
-import { RequestUpsertCustomChain } from "@core/domains/chains/types"
 import { yupResolver } from "@hookform/resolvers/yup"
 import { useQuery } from "@tanstack/react-query"
 import useChains from "@ui/hooks/useChains"
@@ -10,9 +9,9 @@ import { useDebounce } from "react-use"
 import { SubNetworkForm } from "./Form"
 import { getSubstrateRpcInfo } from "./helpers"
 import { subNetworkFormSchema } from "./schema"
-import { SubNetworkFormBaseProps } from "./types"
+import { SubNetworkFormBaseProps, SubNetworkFormData } from "./types"
 
-const DEFAULT_VALUES: Partial<RequestUpsertCustomChain> = {
+const DEFAULT_VALUES: Partial<SubNetworkFormData> = {
   accountFormat: "*25519",
   rpcs: [{ url: "" }], // provides one empty row
 }
@@ -23,7 +22,7 @@ export const SubNetworkFormAdd = ({ onSubmitted }: SubNetworkFormBaseProps) => {
   const { chains } = useChains(true)
 
   // because of the RPC checks, do not validate on each change
-  const formProps = useForm<RequestUpsertCustomChain>({
+  const formProps = useForm<SubNetworkFormData>({
     mode: "onBlur",
     defaultValues: DEFAULT_VALUES,
     resolver: yupResolver(subNetworkFormSchema),

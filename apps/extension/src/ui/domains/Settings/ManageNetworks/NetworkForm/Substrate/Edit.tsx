@@ -1,4 +1,3 @@
-import { RequestUpsertCustomChain } from "@core/domains/chains/types"
 import { CustomNativeToken } from "@core/domains/tokens/types"
 import { yupResolver } from "@hookform/resolvers/yup"
 import { SubNativeToken } from "@talismn/balances-substrate-native"
@@ -15,7 +14,7 @@ import { SubNetworkForm } from "./Form"
 import { RemoveSubNetworkButton } from "./RemoveSubNetworkButton"
 import { ResetSubNetworkButton } from "./ResetSubNetworkButton"
 import { subNetworkFormSchema } from "./schema"
-import { SubNetworkFormBaseProps } from "./types"
+import { SubNetworkFormBaseProps, SubNetworkFormData } from "./types"
 
 export type SubNetworkFormEditProps = SubNetworkFormBaseProps & {
   chainId?: ChainId
@@ -38,7 +37,7 @@ export const SubNetworkFormEdit = ({ chainId, onSubmitted }: SubNetworkFormEditP
   const isCustom = useMemo(() => !!chain && isCustomChain(chain), [chain])
 
   // because of the RPC checks, do not validate on each change
-  const formProps = useForm<RequestUpsertCustomChain>({
+  const formProps = useForm<SubNetworkFormData>({
     mode: "onBlur",
     defaultValues,
     resolver: yupResolver(subNetworkFormSchema),
@@ -84,7 +83,7 @@ export const SubNetworkFormEdit = ({ chainId, onSubmitted }: SubNetworkFormEditP
 const chainToFormData = (
   chain?: Chain | CustomChain,
   nativeToken?: SubNativeToken | CustomNativeToken
-): RequestUpsertCustomChain | undefined => {
+): SubNetworkFormData | undefined => {
   if (!chain) return undefined
 
   return {

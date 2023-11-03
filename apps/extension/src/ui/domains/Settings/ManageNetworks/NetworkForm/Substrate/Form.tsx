@@ -14,10 +14,10 @@ import { Button, Checkbox, FormFieldContainer, FormFieldInputText } from "talism
 
 import { AccountFormatDropdown } from "./AccountFormatDropdown"
 import { SubNetworkRpcsListField } from "./SubNetworkRpcsListField"
-import { SubNetworkFormBaseProps } from "./types"
+import { SubNetworkFormBaseProps, SubNetworkFormData } from "./types"
 
 type SubNetworkFormProps = SubNetworkFormBaseProps & {
-  formProps: UseFormReturn<RequestUpsertCustomChain>
+  formProps: UseFormReturn<SubNetworkFormData>
   title: string
   submitButtonText: string
   children?: ReactNode
@@ -55,12 +55,14 @@ export const SubNetworkForm = ({
 
   const [submitError, setSubmitError] = useState<string>()
   const submit = useCallback(
-    async (chain: RequestUpsertCustomChain) => {
+    async (chain: SubNetworkFormData) => {
+      const requestData: RequestUpsertCustomChain = {
+        ...chain,
+        rpcs: chain.rpcs.map((rpc) => ({ url: rpc.url })),
+        nativeTokenLogoUrl,
+      }
       try {
-        await api.chainUpsert({
-          ...chain,
-          nativeTokenLogoUrl,
-        })
+        await api.chainUpsert(requestData)
         if (chain.isTestnet && !useTestnets) setUseTestnets(true)
         onSubmitted?.()
       } catch (err) {

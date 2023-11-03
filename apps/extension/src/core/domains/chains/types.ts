@@ -33,7 +33,7 @@ export type RequestUpsertCustomChain = {
   nativeTokenLogoUrl: string | null
   accountFormat: string | null
   subscanUrl: string | null
-  rpcs: { url: string; genesisHash?: SignerPayloadGenesisHash }[]
+  rpcs: { url: string }[]
 }
 
 export interface ChainsMessages {

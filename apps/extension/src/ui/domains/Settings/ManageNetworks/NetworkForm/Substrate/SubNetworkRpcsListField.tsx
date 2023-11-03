@@ -1,4 +1,3 @@
-import { RequestUpsertCustomChain } from "@core/domains/chains/types"
 import { FC, useCallback, useRef, useState } from "react"
 import { FieldPathValue, useFormContext } from "react-hook-form"
 import { useTranslation } from "react-i18next"
@@ -9,18 +8,19 @@ import {
   SortableRpcItemProps,
 } from "../NetworkRpcsListField"
 import { getSubstrateRpcInfo, wsRegEx } from "./helpers"
+import { SubNetworkFormData } from "./types"
 
 const SubSortableRpcField: FC<SortableRpcItemProps> = (props) => {
   const [fetchingGenesisHash, setFetchingGenesisHash] = useState(false)
   const { t } = useTranslation()
   const { index } = props
-  const { setError, setValue } = useFormContext<RequestUpsertCustomChain>()
+  const { setError, setValue } = useFormContext<SubNetworkFormData>()
 
   const latestRequestRef = useRef(0)
   const getGenesisHash = useCallback(
     async (
       name: `rpcs.${number}.url`,
-      value: FieldPathValue<RequestUpsertCustomChain, `rpcs.${number}.url`>
+      value: FieldPathValue<SubNetworkFormData, `rpcs.${number}.url`>
     ) => {
       await (async () => {
         try {
