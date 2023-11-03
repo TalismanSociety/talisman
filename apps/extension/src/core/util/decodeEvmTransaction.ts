@@ -12,18 +12,6 @@ import { abiMoonConvictionVoting } from "./abi/abiMoonConvictionVoting"
 import { abiMoonXTokens } from "./abi/abiMoonXTokens"
 import { isContractAddress } from "./isContractAddress"
 
-const KNOWN_ABI = {
-  ERC20: parseAbi(abiErc20),
-  ERC721: parseAbi(abiErc721),
-  ERC1155: parseAbi(abiErc1155),
-  MoonStaking: abiMoonStaking,
-  MoonConvictionVoting: abiMoonConvictionVoting,
-  MoonXTokens: abiMoonXTokens,
-  unknown: null,
-} as const
-
-export type ContractType = keyof typeof KNOWN_ABI
-
 const MOON_CHAIN_PRECOMPILES = [
   {
     address: "0x0000000000000000000000000000000000000800",
@@ -57,7 +45,7 @@ const STANDARD_CONTRACTS = [
   },
 ] as const
 
-export const decodeEvmTransaction = async <TContractType extends ContractType>(
+export const decodeEvmTransaction = async (
   publicClient: PublicClient,
   tx: TransactionRequestBase
 ) => {
@@ -76,7 +64,7 @@ export const decodeEvmTransaction = async <TContractType extends ContractType>(
           //const { contractType, abi } = precompile
           const contractCall = decodeFunctionData({ abi, data })
           return {
-            contractType: contractType as TContractType,
+            contractType,
             contractCall,
             targetAddress,
             isContractCall: true,
@@ -95,7 +83,7 @@ export const decodeEvmTransaction = async <TContractType extends ContractType>(
 
           const contract = getContract({
             address: targetAddress,
-            abi: KNOWN_ABI.ERC20,
+            abi,
             publicClient,
           })
 
@@ -106,7 +94,7 @@ export const decodeEvmTransaction = async <TContractType extends ContractType>(
           ])
 
           return {
-            contractType: contractType as TContractType,
+            contractType,
             contractCall,
             abi,
             targetAddress,
@@ -129,7 +117,7 @@ export const decodeEvmTransaction = async <TContractType extends ContractType>(
 
           const contract = getContract({
             address: targetAddress,
-            abi: KNOWN_ABI.ERC721,
+            abi,
             publicClient,
           })
 
@@ -151,7 +139,7 @@ export const decodeEvmTransaction = async <TContractType extends ContractType>(
             : undefined
 
           return {
-            contractType: contractType as TContractType,
+            contractType,
             contractCall,
             abi,
             targetAddress,
@@ -166,7 +154,7 @@ export const decodeEvmTransaction = async <TContractType extends ContractType>(
     }
   }
 
-  return { contractType: "unknown" as TContractType, targetAddress, isContractCall, value }
+  return { contractType: "unknown", targetAddress, isContractCall, value }
 }
 
 export type DecodedEvmTransaction = Awaited<ReturnType<typeof decodeEvmTransaction>>
