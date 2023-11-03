@@ -16,7 +16,6 @@ export const getEvmRpcChainId = (rpcUrl: string): Promise<string | null> => {
     .send("eth_chainId", [])
     .then((hexChainId) => String(parseInt(hexChainId, 16)))
     .catch(() => null)
-
   rpcChainIdCache.set(rpcUrl, request)
 
   return request

@@ -48,7 +48,6 @@ export const SortableRpcField: FC<SortableRpcItemProps> = ({
   const { attributes, listeners, setNodeRef, transform, transition } = useSortable({ id: rpc.id })
   const {
     register,
-    trigger,
     formState: { errors },
   } = useFormContext<RpcFormData>()
 
@@ -63,7 +62,6 @@ export const SortableRpcField: FC<SortableRpcItemProps> = ({
   const fieldRegistration = useRegisterFieldWithDebouncedValidation(
     `rpcs.${index}.url`,
     250,
-    trigger,
     register,
     extraValidationCb
   )

@@ -36,9 +36,8 @@ export const SubNetworkFormEdit = ({ chainId, onSubmitted }: SubNetworkFormEditP
 
   const isCustom = useMemo(() => !!chain && isCustomChain(chain), [chain])
 
-  // because of the RPC checks, do not validate on each change
   const formProps = useForm<SubNetworkFormData>({
-    mode: "onBlur",
+    mode: "all",
     defaultValues,
     resolver: yupResolver(subNetworkFormSchema),
   })

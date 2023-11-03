@@ -21,9 +21,8 @@ export const SubNetworkFormAdd = ({ onSubmitted }: SubNetworkFormBaseProps) => {
 
   const { chains } = useChains(true)
 
-  // because of the RPC checks, do not validate on each change
   const formProps = useForm<SubNetworkFormData>({
-    mode: "onBlur",
+    mode: "all",
     defaultValues: DEFAULT_VALUES,
     resolver: yupResolver(subNetworkFormSchema),
   })

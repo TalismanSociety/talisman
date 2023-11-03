@@ -44,9 +44,9 @@ export const EvmNetworkForm: FC<EvmNetworkFormProps> = ({ evmNetworkId, onSubmit
 
   const { defaultValues, isCustom, isEditMode, evmNetwork } = useEditMode(evmNetworkId)
   const tEditMode = evmNetworkId ? t("Edit") : t("Add")
-  // because of the RPC checks, do not validate on each change
+
   const formProps = useForm<RequestUpsertCustomEvmNetwork>({
-    mode: "onBlur",
+    mode: "all",
     defaultValues,
     context: { evmNetworkId },
     resolver: yupResolver(evmNetworkFormSchema),

@@ -7,7 +7,6 @@ import {
   RegisterOptions,
   UseFormRegister,
   UseFormRegisterReturn,
-  UseFormTrigger,
 } from "react-hook-form"
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -20,7 +19,6 @@ export const useRegisterFieldWithDebouncedValidation = <
 >(
   name: TFieldPath,
   delay: number,
-  trigger: UseFormTrigger<TFieldValues>,
   register: UseFormRegister<TFieldValues>,
   extraValidationCb?: ExtraValidationCb,
   options?: RegisterOptions<TFieldValues, FieldPath<TFieldValues>>
@@ -29,20 +27,12 @@ export const useRegisterFieldWithDebouncedValidation = <
   const { onChange } = useFormRegisterReturn
 
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  const debouncedTrigger = useCallback(
-    debounce(async (value: TFieldValues[TFieldPath]) => {
-      trigger(name)
-      extraValidationCb && (await extraValidationCb(name, value))
-    }, delay),
-    [trigger, extraValidationCb, delay]
-  )
-
   const handleChange = useCallback(
-    (e: Parameters<ChangeHandler>[0]) => {
+    debounce(async (e: Parameters<ChangeHandler>[0]) => {
       onChange(e)
-      debouncedTrigger(e.target.value)
-    },
-    [onChange, debouncedTrigger]
+      extraValidationCb && (await extraValidationCb(name, e.target.value))
+    }, delay),
+    [name, onChange, extraValidationCb, delay]
   )
 
   return {

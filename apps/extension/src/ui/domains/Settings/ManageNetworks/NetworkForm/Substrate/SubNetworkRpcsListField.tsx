@@ -33,7 +33,6 @@ const SubSortableRpcField: FC<SortableRpcItemProps> = (props) => {
           if (!wsRegEx.test(value)) return setError(name, { message: t("Invalid URL") })
 
           const rpcInfo = await getSubstrateRpcInfo(value)
-
           // Failed connections take longer to return than successful ones, so
           // we compare current ref to the one used for this method call,
           // and no-op if it has changed to prevent race condition where bad result clobbers good one

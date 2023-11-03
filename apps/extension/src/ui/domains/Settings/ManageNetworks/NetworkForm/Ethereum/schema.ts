@@ -22,7 +22,38 @@ export const evmNetworkFormSchema = yup
     blockExplorerUrl: yup.string().url(i18next.t("Invalid URL")),
     rpcs: yup
       .array()
-      .of(yup.object({ url: yup.string().trim().required(i18next.t("Required")) }))
+      .of(
+        yup
+          .object({ url: yup.string().trim().required(i18next.t("Required")) })
+          .test(
+            "rpc-valid",
+            i18next.t("Chain ID mismatch"),
+            async function (rpc, { path, options, createError }) {
+              if (!rpc || !rpc.url) return true
+              let targetId = options.context?.evmNetworkId as string | undefined
+              try {
+                const chainId = await getEvmRpcChainId(rpc.url)
+                if (!chainId)
+                  return createError({
+                    message: i18next.t("Failed to connect"),
+                    path: `${path}.url`,
+                  })
+                if (!targetId) targetId = chainId
+                if (chainId !== targetId)
+                  return createError({
+                    message: i18next.t("Chain ID mismatch"),
+                    path: `${path}.url`,
+                  })
+              } catch (error) {
+                return createError({
+                  message: i18next.t("Failed to connect"),
+                  path: `${path}.url`,
+                })
+              }
+              return true
+            }
+          )
+      )
       .required(i18next.t("Required"))
       .min(1, i18next.t("RPC URL required"))
       .test("rpcs-unique", i18next.t("Must be unique"), function (rpcs) {
@@ -40,34 +71,6 @@ export const evmNetworkFormSchema = yup
           })
         }
 
-        return true
-      })
-      .test("rpcs-valid", i18next.t("Chain ID mismatch"), async function (rpcs) {
-        if (!rpcs?.length) return true
-
-        let targetId = this.options.context?.evmNetworkId as string | undefined
-        for (const rpc of rpcs) {
-          try {
-            if (!rpc.url) continue
-            const chainId = await getEvmRpcChainId(rpc.url)
-            if (!chainId)
-              return this.createError({
-                message: i18next.t("Failed to connect"),
-                path: `rpcs[${rpcs.indexOf(rpc)}].url`,
-              })
-            if (!targetId) targetId = chainId
-            if (chainId !== targetId)
-              return this.createError({
-                message: i18next.t("Chain ID mismatch"),
-                path: `rpcs[${rpcs.indexOf(rpc)}].url`,
-              })
-          } catch (error) {
-            return this.createError({
-              message: i18next.t("Failed to connect"),
-              path: `rpcs[${rpcs.indexOf(rpc)}].url`,
-            })
-          }
-        }
         return true
       }),
   })
