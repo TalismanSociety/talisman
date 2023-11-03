@@ -1,2 +1,2 @@
-export { SubNetworkForm } from "./SubNetworkForm"
-export { EvmNetworkForm } from "./EvmNetworkForm"
+export { SubNetworkFormEdit, SubNetworkFormAdd } from "./Substrate"
+export { EvmNetworkForm } from "./Ethereum/EvmNetworkForm"
