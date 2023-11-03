@@ -102,7 +102,7 @@ export const EthSignTransactionRequest = () => {
     approveHardware,
     isPayloadLocked,
     setIsPayloadLocked,
-    transactionInfo,
+    decodedTx,
     gasSettingsByPriority,
     setCustomSettings,
     setReady,
@@ -138,7 +138,7 @@ export const EthSignTransactionRequest = () => {
       </PopupHeader>
       <PopupContent>
         <div className="scrollable scrollable-800 text-body-secondary h-full overflow-y-auto text-center">
-          <EthSignBody transactionInfo={transactionInfo} isReady={!isLoading} />
+          <EthSignBody decodedTx={decodedTx} isReady={!isLoading} />
         </div>
       </PopupContent>
       {!isLoading && (

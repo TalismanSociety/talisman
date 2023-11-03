@@ -5,31 +5,30 @@ import { useSelectedCurrency } from "@ui/hooks/useCurrency"
 import useToken from "@ui/hooks/useToken"
 import { useTokenRates } from "@ui/hooks/useTokenRates"
 import useTokens from "@ui/hooks/useTokens"
-import { BigNumber } from "ethers"
 import { FC, useMemo } from "react"
 import { useTranslation } from "react-i18next"
 
 import { SignContainer } from "../SignContainer"
 import { SignViewBodyShimmer } from "../Views/SignViewBodyShimmer"
-import { getContractCallArg } from "./getContractCallArg"
+import { getContractCallArg2 } from "./getContractCallArg"
 import { SignParamAccountButton } from "./shared"
 import { SignParamTokensButton } from "./shared/SignParamTokensButton"
 import { useEthSignKnownTransactionRequest } from "./shared/useEthSignKnownTransactionRequest"
 
 export const EthSignBodyErc20Transfer: FC = () => {
   const { t } = useTranslation("request")
-  const { account, network, transactionInfo } = useEthSignKnownTransactionRequest()
+  const { account, network, decodedTx } = useEthSignKnownTransactionRequest()
 
   const nativeToken = useToken(network?.nativeToken?.id)
   const currency = useSelectedCurrency()
 
   const { from, value, to } = useMemo(() => {
     return {
-      from: getContractCallArg<string>(transactionInfo.contractCall, "from"),
-      to: getContractCallArg<string>(transactionInfo.contractCall, "to"),
-      value: getContractCallArg<BigNumber>(transactionInfo.contractCall, "amount"),
+      from: getContractCallArg2(decodedTx, "from"),
+      to: getContractCallArg2(decodedTx, "to"),
+      value: getContractCallArg2(decodedTx, "amount"),
     }
-  }, [transactionInfo?.contractCall])
+  }, [decodedTx])
 
   const isOnBehalf = useMemo(
     () => account && from && account.address.toLowerCase() !== from.toLowerCase(),
@@ -43,41 +42,44 @@ export const EthSignBodyErc20Transfer: FC = () => {
           (t) =>
             t.type === "evm-erc20" &&
             t.evmNetwork?.id === network.id &&
-            t.contractAddress === transactionInfo.targetAddress
+            t.contractAddress === decodedTx.targetAddress
         ) as CustomErc20Token)
       : undefined
-  }, [network, tokens, transactionInfo.targetAddress])
+  }, [network, tokens, decodedTx.targetAddress])
 
   const tokenRates = useTokenRates(token?.id)
 
   const { amount, symbol } = useMemo(() => {
-    const symbol = token?.symbol ?? (transactionInfo.asset.symbol as string)
+    const symbol = token?.symbol ?? (decodedTx.asset?.symbol as string)
     const amount = value
-      ? new BalanceFormatter(value.toString(), transactionInfo.asset.decimals, tokenRates)
+      ? new BalanceFormatter(value.toString(), decodedTx.asset?.decimals, tokenRates)
       : undefined
 
     return { amount, symbol }
-  }, [
-    tokenRates,
-    token?.symbol,
-    transactionInfo.asset.decimals,
-    transactionInfo.asset.symbol,
-    value,
-  ])
+  }, [tokenRates, token?.symbol, decodedTx.asset?.decimals, decodedTx.asset?.symbol, value])
 
-  if (!amount || !nativeToken || !account || !network || !to) return <SignViewBodyShimmer />
+  if (
+    !decodedTx.targetAddress ||
+    !decodedTx.asset?.decimals ||
+    !amount ||
+    !nativeToken ||
+    !account ||
+    !network ||
+    !to
+  )
+    return <SignViewBodyShimmer />
 
   return (
     <SignContainer networkType="ethereum" title={t("Transfer Request")}>
       <div>{t("You are transferring")}</div>
       <div className="flex">
         <SignParamTokensButton
-          address={transactionInfo.targetAddress}
+          address={decodedTx.targetAddress}
           network={network}
           tokenId={token?.id}
-          erc20={{ evmNetworkId: network.id, contractAddress: transactionInfo.targetAddress }}
+          erc20={{ evmNetworkId: network.id, contractAddress: decodedTx.targetAddress }}
           tokens={amount.tokens}
-          decimals={transactionInfo.asset.decimals}
+          decimals={decodedTx.asset.decimals}
           symbol={symbol}
           fiat={amount.fiat(currency)}
           withIcon

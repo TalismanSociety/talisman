@@ -20,7 +20,7 @@ import {
   GasSettingsByPriority,
 } from "@core/domains/signing/types"
 import { ETH_ERROR_EIP1474_METHOD_NOT_FOUND } from "@core/injectEth/EthProviderRpcError"
-import { getEthTransactionInfo } from "@core/util/getEthTransactionInfo"
+import { decodeEvmTransaction, getEthTransactionInfoOld } from "@core/util/getEthTransactionInfo"
 import { FeeHistoryAnalysis, getFeeHistoryAnalysis } from "@core/util/getFeeHistoryAnalysis"
 import { isBigInt } from "@talismn/util"
 import { useQuery } from "@tanstack/react-query"
@@ -170,6 +170,29 @@ const useBlockFeeData = (
   }
 }
 
+const useDecodeEvmTransaction = (
+  publicClient: PublicClient | undefined,
+  tx: TransactionRequest | undefined
+) => {
+  const { data, ...rest } = useQuery({
+    // check tx as boolean as it's not pure
+    queryKey: [
+      "useDecodeEvmTransaction",
+      publicClient?.chain?.id,
+      tx && serializeTransactionRequest(tx),
+    ],
+    queryFn: async () => {
+      if (!publicClient || !tx) return null
+      return await decodeEvmTransaction(publicClient, tx)
+    },
+    refetchInterval: false,
+    refetchOnWindowFocus: false, // prevents error to be cleared when window gets focus
+    enabled: !!publicClient && !!tx,
+  })
+
+  return { decodedTx: data, ...rest }
+}
+
 const useTransactionInfo = (
   publicClient: PublicClient | undefined,
   tx: TransactionRequest | undefined
@@ -183,7 +206,7 @@ const useTransactionInfo = (
     ],
     queryFn: async () => {
       if (!publicClient || !tx) return null
-      return await getEthTransactionInfo(publicClient, tx)
+      return await getEthTransactionInfoOld(publicClient, tx)
     },
     refetchInterval: false,
     refetchOnWindowFocus: false, // prevents error to be cleared when window gets focus
@@ -372,6 +395,7 @@ export const useEthTransaction = (
 ) => {
   const publicClient = usePublicClient(evmNetworkId)
   const { transactionInfo, error: errorTransactionInfo } = useTransactionInfo(publicClient, tx)
+  const { decodedTx } = useDecodeEvmTransaction(publicClient, tx)
   const { hasEip1559Support, error: errorEip1559Support } = useHasEip1559Support(publicClient)
   const { nonce, error: nonceError } = useNonce(
     tx?.from as `0x${string}` | undefined,
@@ -501,6 +525,7 @@ export const useEthTransaction = (
   )
 
   return {
+    decodedTx,
     transactionInfo,
     transaction,
     txDetails,

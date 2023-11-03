@@ -32,6 +32,7 @@ const useEthSignTransactionRequestProvider = ({ id }: KnownSigningRequestIdOnly<
   const [isPayloadLocked, setIsPayloadLocked] = useState(false)
 
   const {
+    decodedTx,
     transaction,
     transactionInfo,
     txDetails,
@@ -86,6 +87,7 @@ const useEthSignTransactionRequestProvider = ({ id }: KnownSigningRequestIdOnly<
     errorDetails,
     network,
     networkUsage,
+    decodedTx,
     transaction,
     transactionInfo,
     approve,

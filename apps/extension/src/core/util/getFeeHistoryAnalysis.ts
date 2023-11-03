@@ -5,7 +5,7 @@ import { PublicClient, formatGwei, parseGwei } from "viem"
 
 const BLOCKS_HISTORY_LENGTH = 5
 const REWARD_PERCENTILES = [10, 20, 30]
-const LIVE_DEBUG = true
+const LIVE_DEBUG = false
 
 type EthBasePriorityOptionsEip1559 = Record<"low" | "medium" | "high", bigint>
 

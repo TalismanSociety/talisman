@@ -1,4 +1,4 @@
-import { TransactionInfo } from "@core/util/getEthTransactionInfo"
+import { DecodedEvmTransaction } from "@core/util/getEthTransactionInfo"
 import { ErrorBoundary, FallbackRender } from "@sentry/react"
 import { FC } from "react"
 
@@ -22,14 +22,14 @@ import { EthSignMoonStakingUnstake } from "./staking/EthSignMoonStakingUnstake"
 import { EthSignMoonXTokensTransfer } from "./xTokens/EthSignMoonXTokensTransfer"
 
 type EthSignBodyProps = {
-  transactionInfo?: TransactionInfo
+  decodedTx?: DecodedEvmTransaction | null
   isReady: boolean
 }
 
-const getComponentFromKnownContractCall = (transactionInfo: TransactionInfo) => {
-  const { contractType, contractCall } = transactionInfo
+const getComponentFromKnownContractCall = (decodedTx: DecodedEvmTransaction) => {
+  const { contractType, contractCall } = decodedTx
 
-  switch (`${contractType}.${contractCall?.name}`) {
+  switch (`${contractType}.${contractCall?.functionName}`) {
     case "ERC20.transfer":
     case "ERC20.transferFrom":
       return EthSignBodyErc20Transfer
@@ -72,10 +72,10 @@ const getComponentFromKnownContractCall = (transactionInfo: TransactionInfo) => 
 
 const Fallback: FallbackRender = () => <EthSignBodyDefault />
 
-export const EthSignBody: FC<EthSignBodyProps> = ({ transactionInfo, isReady }) => {
-  if (!isReady || !transactionInfo) return <SignViewBodyShimmer />
+export const EthSignBody: FC<EthSignBodyProps> = ({ decodedTx, isReady }) => {
+  if (!isReady || !decodedTx) return <SignViewBodyShimmer />
 
-  const Component = getComponentFromKnownContractCall(transactionInfo)
+  const Component = getComponentFromKnownContractCall(decodedTx)
 
   if (Component)
     return (

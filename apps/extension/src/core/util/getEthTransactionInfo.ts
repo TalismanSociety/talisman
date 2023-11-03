@@ -186,12 +186,12 @@ export type TransactionInfo = {
 
 export type KnownTransactionInfo = Required<TransactionInfo>
 
-const getViemTransactionInfo = async (publicClient: PublicClient, tx: TransactionRequestBase) => {
-  // : Promise<UnknownTransactionInfo<TContractType> | undefined>
+export const decodeEvmTransaction = async <TContractType extends ContractType>(
+  publicClient: PublicClient,
+  tx: TransactionRequestBase
+) => {
   // transactions that provision a contract have an empty 'to' field
   const { to: targetAddress, value, data } = tx
-  // const targetAddress = tx.to ? getAddress(tx.to) : undefined
-  // const value = tx.value ? BigNumber.from(tx.value).toBigInt() : undefined
 
   const isContractCall = targetAddress
     ? await isContractAddress(publicClient, targetAddress)
@@ -204,7 +204,14 @@ const getViemTransactionInfo = async (publicClient: PublicClient, tx: Transactio
         if (address === targetAddress) {
           //const { contractType, abi } = precompile
           const contractCall = decodeFunctionData({ abi, data })
-          return { contractType, contractCall, targetAddress, isContractCall: true, value }
+          return {
+            contractType: contractType as TContractType,
+            contractCall,
+            targetAddress,
+            isContractCall: true,
+            value,
+            abi,
+          }
         }
       }
     }
@@ -227,8 +234,9 @@ const getViemTransactionInfo = async (publicClient: PublicClient, tx: Transactio
         ])
 
         return {
-          contractType,
+          contractType: contractType as TContractType,
           contractCall,
+          abi,
           targetAddress,
           isContractCall: true,
           value,
@@ -269,20 +277,35 @@ const getViemTransactionInfo = async (publicClient: PublicClient, tx: Transactio
             }
           : undefined
 
-        return { contractType, contractCall, targetAddress, isContractCall: true, value, asset }
+        return {
+          contractType: contractType as TContractType,
+          contractCall,
+          abi,
+          targetAddress,
+          isContractCall: true,
+          value,
+          asset,
+        }
       }
     }
   }
 
-  return { contractType: "unknown", targetAddress, isContractCall, value }
+  return { contractType: "unknown" as TContractType, targetAddress, isContractCall, value }
 }
 
-export const getEthTransactionInfo = async (
+// export type DecodedEvmTransaction<TContractType extends ContractType> = Awaited<
+//   ReturnType<typeof decodeEvmTransaction<TContractType>>
+//   >
+
+export type DecodedEvmTransaction = Awaited<ReturnType<typeof decodeEvmTransaction>>
+
+/** @deprecated */
+export const getEthTransactionInfoOld = async (
   publicClient: PublicClient,
   tx: TransactionRequestBase
 ): Promise<TransactionInfo> => {
   try {
-    const test = await getViemTransactionInfo(publicClient, tx)
+    const test = await decodeEvmTransaction(publicClient, tx)
     log.log("test", test)
   } catch (err) {
     log.log("failed test", { err })
