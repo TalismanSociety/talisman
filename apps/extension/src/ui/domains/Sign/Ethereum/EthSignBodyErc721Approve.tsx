@@ -1,7 +1,6 @@
 import { getNftMetadata } from "@core/util/getNftMetadata"
 import { useQuery } from "@tanstack/react-query"
 import { SignAlertMessage } from "@ui/domains/Sign/SignAlertMessage"
-import { BigNumber } from "ethers"
 import { FC, useMemo } from "react"
 import { useTranslation } from "react-i18next"
 import { UnsafeImage } from "talisman-ui"
@@ -30,7 +29,7 @@ export const EthSignBodyErc721Approve: FC = () => {
     return {
       operator: getContractCallArg(decodedTx, "operator"),
       approve: operator !== ZERO_ADDRESS,
-      tokenId: BigNumber.from(getContractCallArg(decodedTx, "tokenId")),
+      tokenId: getContractCallArg(decodedTx, "tokenId"),
     }
   }, [decodedTx])
 
