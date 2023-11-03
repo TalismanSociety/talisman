@@ -9,6 +9,7 @@ import keyring from "@polkadot/ui-keyring"
 import { assert } from "@polkadot/util"
 import { cryptoWaitReady } from "@polkadot/util-crypto"
 import * as Sentry from "@sentry/browser"
+import { watCryptoWaitReady } from "@talismn/scale"
 import Browser, { Runtime } from "webextension-polyfill"
 
 import { passwordStore } from "./domains/app"
@@ -92,7 +93,12 @@ Browser.runtime.onConnect.addListener((_port): void => {
 !DEBUG && Browser.runtime.setUninstallURL("https://goto.talisman.xyz/uninstall")
 
 // initial setup
-cryptoWaitReady()
+Promise.all([
+  // wait for `@polkadot/util-crypto` to be ready (it needs to load some wasm)
+  cryptoWaitReady(),
+  // wait for `@talismn/scale` to be ready (it needs to load some wasm)
+  watCryptoWaitReady(),
+])
   .then((): void => {
     // load all the keyring data
     keyring.loadAll({

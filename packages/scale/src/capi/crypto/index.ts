@@ -1,3 +1,5 @@
+export { watCryptoWaitReady } from "./util"
+
 //export * as hex from "./hex"
 export * as ss58 from "./ss58"
 
