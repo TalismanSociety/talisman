@@ -19,7 +19,7 @@ export const CopyAddressButton = ({
   const { account: searchParamsSelectedAccount } = useSearchParamsSelectedAccount()
   const { account: selectedAccount } = useSelectedAccount()
   const [useTestnets] = useSetting("useTestnets")
-  const { tokens } = useTokens(useTestnets)
+  const { tokens } = useTokens(useTestnets ? "enabledWithTestnets" : "enabledWithoutTestnets")
 
   const account = searchParamsSelectedAccount ?? selectedAccount
 

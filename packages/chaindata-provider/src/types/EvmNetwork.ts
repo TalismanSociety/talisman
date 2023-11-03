@@ -7,6 +7,7 @@ export type EvmNetworkId = string
 export type EvmNetwork = {
   id: EvmNetworkId
   isTestnet: boolean
+  isDefault: boolean
   sortIndex: number | null
   name: string | null
   themeColor: string | null

@@ -6,6 +6,8 @@ const sortNetworks = (a: EvmNetwork | CustomEvmNetwork, b: EvmNetwork | CustomEv
   (a.name || "").localeCompare(b.name || "")
 
 export const useSortedEvmNetworks = (withTestnets: boolean) => {
-  const { evmNetworks } = useEvmNetworks(withTestnets)
+  const { evmNetworks } = useEvmNetworks(
+    withTestnets ? "enabledWithTestnets" : "enabledWithoutTestnets"
+  )
   return useMemo(() => evmNetworks.concat().sort(sortNetworks), [evmNetworks])
 }

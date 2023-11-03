@@ -45,9 +45,11 @@ const getNetworkTokenSymbols = ({
 const useAllNetworks = ({ balances, type }: { type?: AccountAddressType; balances?: Balances }) => {
   const { t } = useTranslation()
   const [useTestnets] = useSetting("useTestnets")
-  const { chains } = useChains(useTestnets)
-  const { tokens } = useTokens(useTestnets)
-  const { evmNetworks } = useEvmNetworks(useTestnets)
+  const { chains } = useChains(useTestnets ? "enabledWithTestnets" : "enabledWithoutTestnets")
+  const { tokens } = useTokens(useTestnets ? "enabledWithTestnets" : "enabledWithoutTestnets")
+  const { evmNetworks } = useEvmNetworks(
+    useTestnets ? "enabledWithTestnets" : "enabledWithoutTestnets"
+  )
   const [safeNetworks, setSafeNetworks] = useState<NetworkOption[]>([])
 
   const networks = useMemo(() => {
@@ -120,9 +122,11 @@ const useAllNetworks = ({ balances, type }: { type?: AccountAddressType; balance
 const usePortfolioProvider = () => {
   const [useTestnets] = useSetting("useTestnets")
   const { account } = useSelectedAccount()
-  const { chains } = useChains(useTestnets)
-  const { tokens } = useTokens(useTestnets)
-  const { evmNetworks } = useEvmNetworks(useTestnets)
+  const { chains } = useChains(useTestnets ? "enabledWithTestnets" : "enabledWithoutTestnets")
+  const { tokens } = useTokens(useTestnets ? "enabledWithTestnets" : "enabledWithoutTestnets")
+  const { evmNetworks } = useEvmNetworks(
+    useTestnets ? "enabledWithTestnets" : "enabledWithoutTestnets"
+  )
   const hydrate = useBalancesHydrate()
   const balances = useBalances()
   const myBalances = useBalances("portfolio")

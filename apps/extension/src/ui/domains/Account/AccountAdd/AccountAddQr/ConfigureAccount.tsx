@@ -27,7 +27,7 @@ export const ConfigureAccount = () => {
   const { state, dispatch, submitConfigure } = useAccountAddQr()
 
   const [useTestnets] = useSetting("useTestnets")
-  const { chains } = useChains(useTestnets)
+  const { chains } = useChains(useTestnets ? "enabledWithTestnets" : "enabledWithoutTestnets")
   const addressesByChain = useMemo(() => {
     if (state.type !== "CONFIGURE") return
 

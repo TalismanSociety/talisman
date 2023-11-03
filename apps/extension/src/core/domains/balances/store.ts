@@ -29,6 +29,10 @@ import isEqual from "lodash/isEqual"
 import pick from "lodash/pick"
 import { ReplaySubject, Subject, combineLatest, firstValueFrom } from "rxjs"
 
+import { enabledChainsStore, isChainEnabled } from "../chains/store.enabledChains"
+import { enabledEvmNetworksStore, isEvmNetworkEnabled } from "../ethereum/store.enabledEvmNetworks"
+import { enabledTokensStore, isTokenEnabled } from "../tokens/store.enabledTokens"
+
 const chainConnectors = { substrate: chainConnector, evm: chainConnectorEvm }
 export const balanceModules = defaultBalanceModules.map((mod) =>
   mod({ chainConnectors, chaindataProvider })
@@ -87,42 +91,73 @@ export class BalanceStore {
       // evmNetworks
       liveQuery(async () => await chaindataProvider.evmNetworks()),
       // tokens
-      liveQuery(async () => await chaindataProvider.tokens())
+      liveQuery(async () => await chaindataProvider.tokens()),
+      // enabled state of evm networks
+      enabledEvmNetworksStore.observable,
+      // enabled state of substrate chains
+      enabledChainsStore.observable,
+      // enable state of tokens
+      enabledTokensStore.observable
     ).subscribe({
-      next: ([settings, chains, evmNetworks, tokens]) => {
-        const erc20TokensByNetwork = Object.values(tokens).reduce((byNetwork, token) => {
-          if (token.type !== "evm-erc20") return byNetwork
+      next: ([
+        settings,
+        chains,
+        evmNetworks,
+        tokens,
+        enabledEvmNetworks,
+        enabledChains,
+        enabledTokens,
+      ]) => {
+        const enabledChainsList = Object.fromEntries(
+          Object.entries(chains ?? {}).filter(
+            ([, chain]) =>
+              isChainEnabled(chain, enabledChains) &&
+              (settings.useTestnets ? true : !chain.isTestnet)
+          )
+        )
+        const enabledEvmNetworksList = Object.fromEntries(
+          Object.entries(evmNetworks ?? {}).filter(
+            ([, evmNetwork]) =>
+              isEvmNetworkEnabled(evmNetwork, enabledEvmNetworks) &&
+              (settings.useTestnets ? true : !evmNetwork.isTestnet)
+          )
+        )
+        const enabledTokensList = Object.fromEntries(
+          Object.entries(tokens ?? {}).filter(
+            ([, token]) =>
+              (enabledEvmNetworksList[token.evmNetwork?.id ?? ""] ||
+                enabledChainsList[token.chain?.id || ""]) &&
+              isTokenEnabled(token, enabledTokens) &&
+              (settings.useTestnets ? true : !token.isTestnet)
+          )
+        )
 
-          const { evmNetwork } = token
-          if (!evmNetwork) return byNetwork
+        const arErc20Tokens = Object.values(enabledTokensList).filter((t) => t.type === "evm-erc20")
 
-          if (!byNetwork[evmNetwork.id]) byNetwork[evmNetwork.id] = []
-          byNetwork[evmNetwork.id].push(pick(token, ["id", "contractAddress"]))
+        const erc20TokensByEvmNetwork = Object.keys(enabledEvmNetworks).reduce(
+          (groupByNetwork, evmNetworkId) => {
+            const tokens = arErc20Tokens.filter((t) => t.evmNetwork?.id === evmNetworkId)
+            if (tokens.length)
+              groupByNetwork[evmNetworkId] = tokens.map((t) =>
+                pick(t as Erc20Token, ["id", "contractAddress"])
+              )
+            return groupByNetwork
+          },
+          {} as { [key: EvmNetworkId]: EvmNetworkIdAndRpcs["erc20Tokens"] }
+        )
 
-          return byNetwork
-        }, {} as { [key: EvmNetworkId]: EvmNetworkIdAndRpcs["erc20Tokens"] })
+        const chainsToFetch = Object.values(enabledChainsList).map((chain) =>
+          pick(chain, ["id", "genesisHash", "account", "rpcs"])
+        )
+        const evmNetworksToFetch = Object.values(enabledEvmNetworksList).map((evmNetwork) => ({
+          ...pick(evmNetwork, ["id", "nativeToken", "substrateChain", "rpcs"]),
+          erc20Tokens: erc20TokensByEvmNetwork[evmNetwork.id],
+          substrateChainAccountFormat:
+            (evmNetwork.substrateChain && chains[evmNetwork.substrateChain.id]?.account) || null,
+        }))
 
         // TODO: Only connect to chains on which the user has a non-zero balance.
-        this.setChains(
-          // substrate chains
-          Object.values(chains ?? {})
-            .filter((chain) => (settings.useTestnets ? true : !chain.isTestnet))
-            .map((chain) => pick(chain, ["id", "genesisHash", "account", "rpcs"])),
-
-          // evm chains
-          Object.values(evmNetworks ?? {})
-            .filter((evmNetwork) => (settings.useTestnets ? true : !evmNetwork.isTestnet))
-            .map((evmNetwork) => ({
-              ...pick(evmNetwork, ["id", "nativeToken", "substrateChain", "rpcs"]),
-              erc20Tokens: erc20TokensByNetwork[evmNetwork.id],
-              substrateChainAccountFormat:
-                (evmNetwork.substrateChain && chains[evmNetwork.substrateChain.id]?.account) ||
-                null,
-            })),
-
-          // tokens
-          tokens
-        )
+        this.setChains(chainsToFetch, evmNetworksToFetch, enabledTokensList)
       },
       error: (error) => {
         if (error.cause?.name === Dexie.errnames.DatabaseClosed) return
@@ -365,6 +400,7 @@ export class BalanceStore {
 
     if (this.#subscriptionsState !== "Closed") return
     this.setSubscriptionsState("Open")
+    log.log("Opening balance subscriptions")
 
     const subscriptionId = createSubscriptionId()
 

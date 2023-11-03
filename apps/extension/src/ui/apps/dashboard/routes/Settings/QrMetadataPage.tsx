@@ -126,7 +126,7 @@ const MnemonicButton: FC<{ label: string }> = ({ label }) => {
 
 const MetadataPortalContent = () => {
   const { t } = useTranslation("admin")
-  const { chains } = useChains(true)
+  const { chains } = useChains("all")
   const [chain, setChain] = useState<Chain | null>(null)
   const [tab, setTab] = useState<"specs" | "metadata">("specs")
 

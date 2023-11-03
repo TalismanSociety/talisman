@@ -113,25 +113,12 @@ export const EvmErc20Module: NewBalanceModule<
 
       const tokens: Record<string, EvmErc20Token> = {}
       for (const tokenConfig of moduleConfig?.tokens ?? []) {
-        const contractAddress = tokenConfig?.contractAddress
-        if (!contractAddress) continue
-
-        const [contractSymbol, contractDecimals] = await (async () => {
-          const evmNetwork = await chaindataProvider.getEvmNetwork(chainId)
-          if (!evmNetwork) return []
-
-          const provider = await chainConnector.getProviderForEvmNetwork(evmNetwork)
-          if (!provider) return []
-
-          const contract = new ethers.Contract(contractAddress, erc20Abi, provider)
-
-          try {
-            return [await contract.symbol(), await contract.decimals()]
-          } catch (error) {
-            log.error(`Failed to retrieve contract symbol and decimals`, String(error))
-            return []
-          }
-        })()
+        const { contractAddress, symbol: contractSymbol, decimals: contractDecimals } = tokenConfig
+        // TODO : in chaindata's build, filter out all tokens that don't have any of these
+        if (!contractAddress || !contractSymbol || contractDecimals === undefined) {
+          log.warn("ignoring token on chain %s", chainId, tokenConfig)
+          continue
+        }
 
         const symbol = tokenConfig?.symbol ?? contractSymbol ?? "ETH"
         const decimals =
@@ -148,9 +135,10 @@ export const EvmErc20Module: NewBalanceModule<
           id,
           type: "evm-erc20",
           isTestnet,
+          isDefault: tokenConfig.isDefault ?? true,
           symbol,
           decimals,
-          logo: githubTokenLogoUrl(id),
+          logo: tokenConfig?.logo || githubTokenLogoUrl(id),
           contractAddress,
           evmNetwork: { id: chainId },
         }
@@ -170,6 +158,9 @@ export const EvmErc20Module: NewBalanceModule<
       let subscriptionActive = true
       const subscriptionInterval = 6_000 // 6_000ms == 6 seconds
       const cache = new Map<EvmNetworkId, BalanceJsonList>()
+
+      // TODO remove this log
+      log.debug("subscribeBalances", "evm-erc20", addressesByToken)
 
       // for chains with a zero balance we only call fetchBalances once every 5 subscriptionIntervals
       // if subscriptionInterval is 6 seconds, this means we only poll chains with a zero balance every 30 seconds
@@ -230,6 +221,8 @@ export const EvmErc20Module: NewBalanceModule<
     },
 
     async fetchBalances(addressesByToken) {
+      // TODO remove this log
+      log.debug("fetchBalances", "evm-erc20", addressesByToken)
       const evmNetworks = await chaindataProvider.evmNetworks()
       const tokens = await chaindataProvider.tokens()
 

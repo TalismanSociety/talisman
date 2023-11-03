@@ -11,6 +11,7 @@ import { AssetLogoBase } from "@ui/domains/Asset/AssetLogo"
 import { NetworkSelect } from "@ui/domains/Ethereum/NetworkSelect"
 import { useAnalyticsPageView } from "@ui/hooks/useAnalyticsPageView"
 import { useErc20TokenInfo } from "@ui/hooks/useErc20TokenInfo"
+import { useKnownErc20Token } from "@ui/hooks/useKnownErc20Token"
 import { useSortedEvmNetworks } from "@ui/hooks/useSortedEvmNetworks"
 import { useCallback, useEffect, useMemo, useState } from "react"
 import { useForm } from "react-hook-form"
@@ -38,6 +39,7 @@ export const AddCustomTokenPage = () => {
   useAnalyticsPageView(ANALYTICS_PAGE)
   const navigate = useNavigate()
   const networks = useSortedEvmNetworks(true)
+
   const [error, setError] = useState<string>()
 
   // our only user inputs are chain and contract
@@ -74,6 +76,13 @@ export const AddCustomTokenPage = () => {
   })
 
   const { contractAddress, evmNetworkId, symbol, decimals } = watch()
+
+  const {
+    token: knownToken,
+    isEnabled,
+    setEnabled,
+  } = useKnownErc20Token(evmNetworkId, contractAddress)
+
   const {
     isLoading,
     error: tokenInfoError,
@@ -105,14 +114,18 @@ export const AddCustomTokenPage = () => {
         assert(tokenInfo, "Missing token info")
         assert(tokenInfo.contractAddress === token.contractAddress, "Token mismatch")
         assert(tokenInfo.evmNetworkId === token.evmNetworkId, "Token mismatch")
-        // save the object composed with CoinGecko and chain data
-        await api.addCustomErc20Token(tokenInfo)
+
+        if (knownToken && !isEnabled) await setEnabled(true)
+        else {
+          // save the object composed with CoinGecko and chain data
+          await api.addCustomErc20Token(tokenInfo)
+        }
         navigate("/tokens")
       } catch (err) {
         setError(`Failed to add the token : ${(err as Error)?.message ?? ""}`)
       }
     },
-    [navigate, tokenInfo]
+    [isEnabled, knownToken, navigate, setEnabled, tokenInfo]
   )
 
   const addressErrorMessage = useMemo(() => {
@@ -198,10 +211,10 @@ export const AddCustomTokenPage = () => {
             icon={PlusIcon}
             type="submit"
             primary
-            disabled={!isValid || isLoading || !!tokenInfoError}
+            disabled={isEnabled || !isValid || isLoading || !!tokenInfoError}
             processing={isSubmitting}
           >
-            {t("Add Token")}
+            {knownToken ? t("Enable Token") : t("Add Token")}
           </Button>
         </div>
       </form>

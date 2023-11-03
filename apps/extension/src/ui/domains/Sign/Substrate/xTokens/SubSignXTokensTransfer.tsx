@@ -109,9 +109,9 @@ export const SubSignXTokensTransfer = () => {
   const { t } = useTranslation("request")
   const { chain, payload, account } = usePolkadotSigningRequest()
   const { data: extrinsic } = useExtrinsic(payload)
-  const { tokens } = useTokens(true)
+  const { tokens } = useTokens("all")
   const tokenRates = useTokenRatesMap()
-  const { chains } = useChains(true)
+  const { chains } = useChains("all")
 
   const props = useMemo(() => {
     assert(extrinsic, "No extrinsic")

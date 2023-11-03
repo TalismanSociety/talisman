@@ -1,5 +1,5 @@
 import { PromisePool } from "@supercharge/promise-pool"
-import { Chain, ChainId, EvmNetworkId } from "@talismn/chaindata-provider"
+import { Chain, ChainId, EvmNetworkId, TokenList } from "@talismn/chaindata-provider"
 import {
   ChaindataProviderExtension,
   availableTokenLogoFilenames,
@@ -53,20 +53,45 @@ export class MiniMetadataUpdater {
     this.#balanceModules = balanceModules
   }
 
-  // TODO: Also update evmNetworks
-  // and their tokens
-  async update(chainIds: ChainId[], evmNetworkIds: EvmNetworkId[]) {
-    const chains = new Map(
-      (await this.#chaindataProvider.chainsArray()).map((chain) => [chain.id, chain])
-    )
-    const filteredChains = chainIds.flatMap((chainId) => chains.get(chainId) ?? [])
-
+  private async updateEvmNetworks(evmNetworkIds: EvmNetworkId[]) {
     const evmNetworks = new Map(
       (await this.#chaindataProvider.evmNetworksArray()).map((evmNetwork) => [
         evmNetwork.id,
         evmNetwork,
       ])
     )
+
+    const allEvmTokens: TokenList = {}
+    const evmNetworkConcurrency = 10
+
+    await PromisePool.withConcurrency(evmNetworkConcurrency)
+      .for(evmNetworkIds)
+      .process(async (evmNetworkId) => {
+        const evmNetwork = evmNetworks.get(evmNetworkId)
+        if (!evmNetwork) return
+
+        for (const mod of this.#balanceModules.filter((m) => m.type.startsWith("evm-"))) {
+          const balancesConfig = evmNetwork.balancesConfig.find(
+            ({ moduleType }) => moduleType === mod.type
+          )
+          const moduleConfig = balancesConfig?.moduleConfig ?? {}
+
+          // chainMeta arg only needs the isTestnet property, let's save a db roundtrip for now
+          const isTestnet = evmNetwork.isTestnet ?? false
+          const tokens = await mod.fetchEvmChainTokens(evmNetworkId, { isTestnet }, moduleConfig)
+
+          for (const [tokenId, token] of Object.entries(tokens)) allEvmTokens[tokenId] = token
+        }
+      })
+
+    await this.#chaindataProvider.updateEvmNetworkTokens(Object.values(allEvmTokens))
+  }
+
+  private async updateSubstrateChains(chainIds: ChainId[]) {
+    const chains = new Map(
+      (await this.#chaindataProvider.chainsArray()).map((chain) => [chain.id, chain])
+    )
+    const filteredChains = chainIds.flatMap((chainId) => chains.get(chainId) ?? [])
 
     const ids = await balancesDb.miniMetadatas.orderBy("id").primaryKeys()
     const { wantedIdsByChain, statusesByChain } = await this.statuses(filteredChains)
@@ -80,6 +105,7 @@ export class MiniMetadataUpdater {
       await balancesDb.miniMetadatas.bulkDelete(unwantedIds)
     }
 
+    // TODO fix this to detect changes in a token config (ex: set a coingecko id or a logo in chaindata)
     const needUpdates = Array.from(statusesByChain.entries())
       .filter(([, status]) => status !== "good")
       .map(([chainId]) => chainId)
@@ -145,34 +171,12 @@ export class MiniMetadataUpdater {
           }
         })
     ).errors.forEach((error) => log.error("Error updating chain metadata", error))
+  }
 
-    const evmNetworkConcurrency = 10
-    await PromisePool.withConcurrency(evmNetworkConcurrency)
-      // TODO: Only update networks which need it
-      .for(evmNetworkIds)
-      .process(async (evmNetworkId) => {
-        log.info(`Updating tokens for evmNetwork ${evmNetworkId}`)
-        const evmNetwork = evmNetworks.get(evmNetworkId)
-        if (!evmNetwork) return
-
-        for (const mod of this.#balanceModules) {
-          const balancesConfig = evmNetwork.balancesConfig.find(
-            ({ moduleType }) => moduleType === mod.type
-          )
-          const moduleConfig = balancesConfig?.moduleConfig ?? {}
-
-          const chainMeta = await mod.fetchEvmChainMeta(evmNetworkId, moduleConfig)
-          const tokens = await mod.fetchEvmChainTokens(evmNetworkId, chainMeta, moduleConfig)
-
-          // update tokens in chaindata
-          await this.#chaindataProvider.updateEvmNetworkTokens(
-            evmNetworkId,
-            mod.type,
-            Object.values(tokens),
-            availableTokenLogos
-          )
-        }
-      })
+  // TODO: Also update evmNetworks
+  // and their tokens
+  async update(chainIds: ChainId[], evmNetworkIds: EvmNetworkId[]) {
+    await Promise.all([this.updateSubstrateChains(chainIds), this.updateEvmNetworks(evmNetworkIds)])
   }
 
   async statuses(chains: Array<Pick<Chain, "id" | "specName" | "specVersion" | "balancesConfig">>) {

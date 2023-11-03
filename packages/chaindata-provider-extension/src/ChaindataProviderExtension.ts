@@ -8,6 +8,7 @@ import {
   EvmNetwork,
   EvmNetworkId,
   EvmNetworkList,
+  IToken,
   Token,
   TokenId,
   TokenList,
@@ -23,6 +24,10 @@ import log from "./log"
 import { fetchChain, fetchChains, fetchEvmNetwork, fetchEvmNetworks } from "./net"
 import { isITokenPartial, isToken } from "./parseTokensResponse"
 import { TalismanChaindataDatabase } from "./TalismanChaindataDatabase"
+
+// removes the need to reference @talismn/balances in this package. should we ?
+const getNativeTokenId = (chainId: EvmNetworkId, moduleType: string, tokenSymbol: string) =>
+  `${chainId}-${moduleType}-${tokenSymbol}`.toLowerCase().replace(/ /g, "-")
 
 const minimumHydrationInterval = 300_000 // 300_000ms = 300s = 5 minutes
 
@@ -286,14 +291,35 @@ export class ChaindataProviderExtension implements ChaindataProvider {
   }
 
   async resetEvmNetwork(evmNetworkId: EvmNetworkId) {
-    const builtInEvmNetwork = await fetchEvmNetwork(evmNetworkId)
+    const builtInEvmNetwork: EvmNetwork = await fetchEvmNetwork(evmNetworkId)
     if (!builtInEvmNetwork) throw new Error("Cannot reset non-built-in EVM network")
-    if (!builtInEvmNetwork.nativeToken?.id)
+
+    const nativeModule = builtInEvmNetwork.balancesConfig.find(
+      (c: { moduleType: string }) => c.moduleType === "evm-native"
+    )
+    if (!nativeModule?.moduleConfig)
       throw new Error("Failed to lookup native token (no token exists for network)")
-    const builtInNativeToken = null // await fetchToken(builtInEvmNetwork.nativeToken.id)
-    if (!isITokenPartial(builtInNativeToken)) throw new Error("Failed to lookup native token")
-    if (!isToken(builtInNativeToken))
-      throw new Error("Failed to lookup native token (isToken test failed)")
+
+    const { symbol, decimals, coingeckoId, logo, mirrorOf, dcentName } =
+      nativeModule.moduleConfig as IToken
+    if (!symbol) throw new Error("Missing native token symbol")
+    if (!decimals) throw new Error("Missing native token decimals")
+
+    const builtInNativeToken: IToken = {
+      id: getNativeTokenId(evmNetworkId, "evm-native", symbol),
+      type: "evm-native",
+      evmNetwork: { id: evmNetworkId },
+      isTestnet: builtInEvmNetwork.isTestnet ?? false,
+      isDefault: true,
+      symbol,
+      decimals,
+      coingeckoId,
+      logo,
+      mirrorOf,
+      dcentName,
+    }
+
+    builtInEvmNetwork.nativeToken = { id: builtInNativeToken.id }
 
     try {
       return await this.#db.transaction("rw", this.#db.evmNetworks, this.#db.tokens, async () => {
@@ -305,7 +331,7 @@ export class ChaindataProviderExtension implements ChaindataProvider {
 
         // reprovision them from subsquid data
         await this.#db.evmNetworks.put(builtInEvmNetwork)
-        await this.#db.tokens.put(builtInNativeToken)
+        await this.#db.tokens.put(builtInNativeToken as never)
       })
     } catch (cause) {
       throw new Error("Failed to reset evm network", { cause })
@@ -415,6 +441,22 @@ export class ChaindataProviderExtension implements ChaindataProvider {
         var chains = addCustomChainRpcs(await fetchInitChains(), this.#onfinalityApiKey) // eslint-disable-line no-var
       }
 
+      // TODO remove
+      log.debug("hydrateChains", chains)
+
+      // TODO check if alec is this the right way to set native token
+      // note : many chains don't have a native module provisionned from chaindata => breaks edit network screen and probably send funds and tx screens
+      for (const chain of chains) {
+        const nativeTokenModule = chain.balancesConfig.find(
+          (c) => c.moduleType === "substrate-native"
+        )
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const symbol = (nativeTokenModule?.moduleConfig as any)?.symbol
+        if (!symbol) continue
+
+        chain.nativeToken = { id: getNativeTokenId(chain.id, "substrate-native", symbol) }
+      }
+
       await this.#db.transaction("rw", this.#db.chains, () => {
         this.#db.chains.filter((chain) => !("isCustom" in chain)).delete()
         this.#db.chains.bulkPut(chains)
@@ -456,9 +498,21 @@ export class ChaindataProviderExtension implements ChaindataProvider {
         var evmNetworks: EvmNetwork[] = await fetchInitEvmNetworks() // eslint-disable-line no-var
       }
 
+      // TODO check if alec is this the right way to set native token
+      // set native token
+      for (const evmNetwork of evmNetworks) {
+        const nativeTokenModule = evmNetwork.balancesConfig.find(
+          (c) => c.moduleType === "evm-native"
+        )
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const symbol = (nativeTokenModule?.moduleConfig as any)?.symbol
+        evmNetwork.nativeToken = { id: getNativeTokenId(evmNetwork.id, "evm-native", symbol) }
+      }
+
       await this.#db.transaction("rw", this.#db.evmNetworks, async () => {
         await this.#db.evmNetworks.filter((network) => !("isCustom" in network)).delete()
         // add all except ones matching custom existing ones (user may customize built-in networks)
+
         const customNetworks = await this.#db.evmNetworks.toArray()
         const newNetworks = evmNetworks.filter((network) =>
           customNetworks.every((existing) => existing.id !== network.id)
@@ -489,6 +543,8 @@ export class ChaindataProviderExtension implements ChaindataProvider {
       .toArray()
 
     newTokens.forEach((token) => {
+      if (token.logo) return
+
       const symbolLogo = token.symbol.toLowerCase().replace(/ /g, "_")
       if (availableTokenLogoFilenames.includes(`${symbolLogo}.svg`)) {
         return (token.logo = githubTokenLogoUrl(symbolLogo))
@@ -506,43 +562,56 @@ export class ChaindataProviderExtension implements ChaindataProvider {
       .filter((token) => "isCustom" in token && token.isCustom)
       .map((token) => token.id)
 
-    await this.#db.tokens.bulkDelete(notCustomTokenIds)
-    await this.#db.tokens.bulkPut(newTokens.filter((token) => !customTokenIds.includes(token.id)))
+    // // workaround for chains that don't have a native token provisionned from chaindata
+    // // TODO : remove when fixed in chaindata
+    // const chain = await this.#db.chains.get(chainId)
+    // let shouldUpdateChain = false
+    // if (
+    //   chain &&
+    //   (!chain.nativeToken?.id || !newTokens.find((token) => token.id === chain.nativeToken?.id))
+    // ) {
+    //   const token = newTokens.find(
+    //     (token) => token.type === "substrate-native" && token?.chain?.id === chainId
+    //   )
+    //   if (token) {
+    //     chain.nativeToken = { id: token.id }
+    //     shouldUpdateChain = true
+    //   }
+    // }
+
+    // console.log("updateChainTokens %s %s", chainId, shouldUpdateChain, chain)
+
+    await this.#db.transaction("rw", this.#db.tokens, this.#db.chains, async () => {
+      await this.#db.tokens.bulkDelete(notCustomTokenIds)
+      await this.#db.tokens.bulkPut(newTokens.filter((token) => !customTokenIds.includes(token.id)))
+      //if (chain && shouldUpdateChain) await this.#db.chains.put(chain)
+    })
   }
 
-  async updateEvmNetworkTokens(
-    evmNetworkId: EvmNetworkId,
-    source: string,
-    newTokens: Token[],
-    availableTokenLogoFilenames: string[]
-  ) {
-    // TODO: Test logos and fall back to unknown token logo url
-    // (Maybe put the test into each balance module itself)
-
+  async updateEvmNetworkTokens(newTokens: Token[]) {
     const existingEvmNetworkTokens = await this.#db.tokens
-      .filter((token) => token.evmNetwork?.id === evmNetworkId && token.type === source)
+      .filter((t) => t.type.startsWith("evm-"))
       .toArray()
 
-    newTokens.forEach((token) => {
-      const symbolLogo = token.symbol.toLowerCase().replace(/ /g, "_")
-      if (availableTokenLogoFilenames.includes(`${symbolLogo}.svg`)) {
-        return (token.logo = githubTokenLogoUrl(symbolLogo))
-      }
+    const isCustomToken = (token: Token) => "isCustom" in token && token.isCustom
 
-      // TODO: Use coingeckoId logo if exists
+    const notCustomTokenIds: string[] = []
+    const customTokenIds: string[] = []
 
-      return (token.logo = githubUnknownTokenLogoUrl)
+    for (const token of existingEvmNetworkTokens) {
+      if (isCustomToken(token)) customTokenIds.push(token.id)
+      else notCustomTokenIds.push(token.id)
+    }
+
+    const tokensToUpdate = newTokens.filter((token) => !customTokenIds.includes(token.id))
+
+    this.#db.transaction("rw", this.#db.tokens, async () => {
+      // delete all existing non custom tokens
+      await this.#db.tokens.bulkDelete(notCustomTokenIds)
+
+      // force update on all non custom tokens
+      await this.#db.tokens.bulkPut(tokensToUpdate)
     })
-
-    const notCustomTokenIds = existingEvmNetworkTokens
-      .filter((token) => !("isCustom" in token && token.isCustom))
-      .map((token) => token.id)
-    const customTokenIds = existingEvmNetworkTokens
-      .filter((token) => "isCustom" in token && token.isCustom)
-      .map((token) => token.id)
-
-    await this.#db.tokens.bulkDelete(notCustomTokenIds)
-    await this.#db.tokens.bulkPut(newTokens.filter((token) => !customTokenIds.includes(token.id)))
   }
 
   /**
