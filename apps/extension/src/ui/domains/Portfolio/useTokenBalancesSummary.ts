@@ -155,5 +155,11 @@ export const useTokenBalancesSummary = (balances: Balances) => {
     return summary
   }, [currency, tokenBalanceRates, tokenBalances.count, tokenBalances.each])
 
-  return { token, summary, tokenBalances, tokenBalanceRates }
+  return {
+    token,
+    rate: token?.id !== undefined ? tokenBalanceRates[token?.id]?.[currency] : undefined,
+    summary,
+    tokenBalances,
+    tokenBalanceRates,
+  }
 }

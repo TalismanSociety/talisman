@@ -1,4 +1,5 @@
 import { convertAddress } from "@talisman/util/convertAddress"
+import { shortenAddress } from "@talisman/util/shortenAddress"
 import { Address as TAddress } from "@talismn/balances"
 import { ChainId, EvmNetworkId } from "@talismn/chaindata-provider"
 import { CopyIcon, ExternalLinkIcon } from "@talismn/icons"
@@ -16,18 +17,18 @@ import urlJoin from "url-join"
 
 import { AccountIcon } from "../Account/AccountIcon"
 import { AccountTypeIcon } from "../Account/AccountTypeIcon"
-import { Address } from "../Account/Address"
 
 const useBlockExplorerUrl = (
   address?: TAddress | null,
   chainId?: ChainId | null,
-  evmNetworkId?: EvmNetworkId | null
+  evmNetworkId?: EvmNetworkId | null,
+  shouldFormatAddress = true
 ) => {
   const chain = useChain(chainId as string)
   const evmNetwork = useEvmNetwork(evmNetworkId as string)
   const resolvedAddress = useMemo(() => {
-    return chain && address ? convertAddress(address, chain.prefix) : address
-  }, [address, chain])
+    return shouldFormatAddress && chain && address ? convertAddress(address, chain.prefix) : address
+  }, [address, chain, shouldFormatAddress])
 
   return useMemo(() => {
     if (resolvedAddress && evmNetwork?.explorerUrl)
@@ -90,7 +91,12 @@ export const AddressDisplay: FC<AddressDisplayProps> = ({
   const account = useAccountByAddress(address)
   const contact = useContact(address)
   const chain = useChain(chainId as string)
-  const blockExplorerUrl = useBlockExplorerUrl(address, chainId, evmNetworkId)
+  const blockExplorerUrl = useBlockExplorerUrl(
+    address,
+    chainId,
+    evmNetworkId,
+    !!account || !!contact
+  )
 
   const resolvedAddress = useMemo(() => {
     return chain && address ? convertAddress(address, chain.prefix) : address
@@ -99,18 +105,13 @@ export const AddressDisplay: FC<AddressDisplayProps> = ({
   const [onChainId] = useOnChainId(resolvedAddress ?? undefined)
 
   const text = useMemo(
-    () =>
-      account?.name ??
-      contact?.name ??
-      (resolvedAddress ? (
-        <Address address={resolvedAddress} startCharCount={6} endCharCount={6} noTooltip />
-      ) : null),
-    [account?.name, contact?.name, resolvedAddress]
+    () => account?.name ?? contact?.name ?? (address ? shortenAddress(address, 6, 6) : null),
+    [account?.name, address, contact?.name]
   )
 
   const handleCopyAddress = useCallback(() => {
-    copyAddress(resolvedAddress as string)
-  }, [resolvedAddress])
+    copyAddress((!!account || !!contact ? resolvedAddress : address) as string)
+  }, [account, address, contact, resolvedAddress])
 
   if (!address || !resolvedAddress || !text) return null
 
@@ -118,7 +119,7 @@ export const AddressDisplay: FC<AddressDisplayProps> = ({
     <Tooltip>
       <TooltipContent>
         <AddressTooltip
-          address={address}
+          address={account ? resolvedAddress : address} // don't show both formats for talisman accounts
           resolvedAddress={resolvedAddress}
           onChainId={onChainId ?? undefined}
           chainName={chain?.name}

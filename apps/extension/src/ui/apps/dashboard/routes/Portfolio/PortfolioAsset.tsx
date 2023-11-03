@@ -1,6 +1,7 @@
 import { Balances } from "@core/domains/balances/types"
 import { ChevronLeftIcon, CopyIcon, SendIcon } from "@talismn/icons"
 import { classNames } from "@talismn/util"
+import Fiat from "@ui/domains/Asset/Fiat"
 import { TokenLogo } from "@ui/domains/Asset/TokenLogo"
 import { useCopyAddressModal } from "@ui/domains/CopyAddress"
 import { DashboardAssetDetails } from "@ui/domains/Portfolio/AssetDetails"
@@ -19,7 +20,7 @@ import { Tooltip, TooltipContent, TooltipTrigger } from "talisman-ui"
 const PageContent = ({ balances, symbol }: { balances: Balances; symbol: string }) => {
   const navigate = useNavigate()
   const balancesToDisplay = useDisplayBalances(balances)
-  const { token, summary } = useTokenBalancesSummary(balancesToDisplay)
+  const { token, rate, summary } = useTokenBalancesSummary(balancesToDisplay)
   const { open: openCopyAddressModal } = useCopyAddressModal()
   const { genericEvent } = useAnalytics()
   const { account } = useSelectedAccount()
@@ -52,11 +53,14 @@ const PageContent = ({ balances, symbol }: { balances: Balances; symbol: string 
             <ChevronLeftIcon />
             <span className="text-sm">{t("Asset")}</span>
           </button>
-          <div className="flex items-center gap-4">
-            <div className="w-12 shrink-0 text-lg">
-              <TokenLogo tokenId={token?.id} />
+          <div className="flex items-center gap-6">
+            <div className="text-3xl">
+              <TokenLogo tokenId={token?.id} className="text-3xl" />
             </div>
-            <div className="text-md">{token?.symbol}</div>
+            <div>
+              <div className="text-md">{token?.symbol}</div>
+              {rate && <Fiat amount={rate} className="text-body-secondary" />}
+            </div>
             <div className="flex flex-wrap">
               <Tooltip>
                 <TooltipTrigger

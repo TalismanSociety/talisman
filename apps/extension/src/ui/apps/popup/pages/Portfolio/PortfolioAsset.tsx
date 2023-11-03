@@ -19,7 +19,7 @@ const PageContent = ({ balances, symbol }: { balances: Balances; symbol: string 
   const navigate = useNavigate()
   const balancesToDisplay = useDisplayBalances(balances)
   const currency = useSelectedCurrency()
-  const { token } = useTokenBalancesSummary(balancesToDisplay)
+  const { token, rate } = useTokenBalancesSummary(balancesToDisplay)
 
   const handleBackBtnClick = useCallback(() => navigate(-1), [navigate])
 
@@ -41,11 +41,11 @@ const PageContent = ({ balances, symbol }: { balances: Balances; symbol: string 
         </div>
         <div className="flex grow flex-col gap-1 pl-2 text-sm">
           <div className="text-body-secondary flex justify-between">
-            <div>{t("Asset")}</div>
+            <div>{symbol}</div>
             <div>{t("Total")}</div>
           </div>
           <div className="text-md flex justify-between font-bold">
-            <div>{symbol}</div>
+            {rate && <Fiat amount={rate} />}
             <div>
               <Fiat amount={total} isBalance />
             </div>

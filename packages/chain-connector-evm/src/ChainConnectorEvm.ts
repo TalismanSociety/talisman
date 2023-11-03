@@ -4,7 +4,14 @@ import { ethers } from "ethers"
 
 import { RPC_CALL_TIMEOUT } from "./constants"
 import log from "./log"
-import { BatchRpcProvider, StandardRpcProvider, addOnfinalityApiKey, getHealthyRpc } from "./util"
+import {
+  AcalaRpcProvider,
+  BatchRpcProvider,
+  StandardRpcProvider,
+  addOnfinalityApiKey,
+  getHealthyRpc,
+  isAcalaNetwork,
+} from "./util"
 
 export type GetProviderOptions = {
   /** If true, returns a provider which will batch requests */
@@ -160,6 +167,8 @@ export class ChainConnectorEvm {
       const provider =
         batch === true
           ? new BatchRpcProvider(connection, network)
+          : isAcalaNetwork(network.chainId)
+          ? new AcalaRpcProvider(connection, network)
           : new StandardRpcProvider(connection, network)
 
       // in case an error is thrown, rotate rpc urls cache

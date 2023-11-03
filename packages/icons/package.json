@@ -33,11 +33,11 @@
     "@talismn/tsconfig": "workspace:*",
     "@types/jest": "^27.5.1",
     "@types/react": "18.0.14",
-    "eslint": "^8.4.0",
+    "eslint": "^8.52.0",
     "jest": "^28.1.0",
     "react": "18.2.0",
     "ts-jest": "^28.0.2",
-    "typescript": "^4.6.4"
+    "typescript": "^5.2.2"
   },
   "peerDependencies": {
     "react": ">=18.2.0"

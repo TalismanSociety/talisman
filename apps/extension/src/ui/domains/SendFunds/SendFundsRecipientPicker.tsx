@@ -174,7 +174,7 @@ export const SendFundsRecipientPicker = () => {
     <div className="flex h-full min-h-full w-full flex-col overflow-hidden">
       <div className="flex min-h-fit w-full items-center gap-8 px-12 pb-8">
         <div className="font-bold">{t("To")}</div>
-        <div className="grow">
+        <div className="mx-1 grow overflow-hidden px-1">
           <SearchInput
             onValidate={handleValidate}
             // eslint-disable-next-line jsx-a11y/no-autofocus
@@ -183,7 +183,7 @@ export const SendFundsRecipientPicker = () => {
             placeholder={t("Enter address")}
             after={
               isEnsLookup && isEnsFetching ? (
-                <LoaderIcon className="text-body-disabled animate-spin-slow" />
+                <LoaderIcon className="text-body-disabled animate-spin-slow shrink-0" />
               ) : null
             }
           />
@@ -194,6 +194,7 @@ export const SendFundsRecipientPicker = () => {
           <SendFundsAccountsList
             allowZeroBalance
             accounts={newAddresses}
+            noFormat // preserve user input chain format
             selected={to}
             onSelect={handleSelect}
           />
@@ -201,6 +202,7 @@ export const SendFundsRecipientPicker = () => {
         <SendFundsAccountsList
           allowZeroBalance
           accounts={contacts}
+          genesisHash={chain?.genesisHash}
           selected={to}
           onSelect={handleSelect}
           header={
@@ -213,6 +215,7 @@ export const SendFundsRecipientPicker = () => {
         <SendFundsAccountsList
           allowZeroBalance
           accounts={myAccounts}
+          genesisHash={chain?.genesisHash}
           selected={to}
           onSelect={handleSelect}
           header={
@@ -228,6 +231,7 @@ export const SendFundsRecipientPicker = () => {
         <SendFundsAccountsList
           allowZeroBalance
           accounts={watchedAccounts}
+          genesisHash={chain?.genesisHash}
           selected={to}
           onSelect={handleSelect}
           header={

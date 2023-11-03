@@ -87,7 +87,7 @@ export const SearchInput: FC<SearchInputProps> = ({
       ref={ref}
       className={classNames("text-base", className)}
       containerProps={containerProps}
-      before={<SearchIcon className="text-body-disabled" />}
+      before={<SearchIcon className="text-body-disabled shrink-0" />}
       after={
         after ??
         (!!search && (
