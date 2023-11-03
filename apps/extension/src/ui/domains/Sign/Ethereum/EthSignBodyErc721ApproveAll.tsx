@@ -4,22 +4,22 @@ import { useTranslation } from "react-i18next"
 import { SignAlertMessage } from "../SignAlertMessage"
 import { SignContainer } from "../SignContainer"
 import { SignViewBodyShimmer } from "../Views/SignViewBodyShimmer"
-import { getContractCallArgOld } from "./getContractCallArg"
+import { getContractCallArg } from "./getContractCallArg"
 import { SignParamAccountButton, SignParamNetworkAddressButton } from "./shared"
 import { useEthSignKnownTransactionRequest } from "./shared/useEthSignKnownTransactionRequest"
 
 export const EthSignBodyErc721ApproveAll: FC = () => {
   const { t } = useTranslation("request")
-  const { account, network, transactionInfo } = useEthSignKnownTransactionRequest()
+  const { account, network, decodedTx } = useEthSignKnownTransactionRequest()
 
   const { operator, approve } = useMemo(() => {
     return {
-      operator: getContractCallArgOld<string>(transactionInfo.contractCall, "operator"),
-      approve: getContractCallArgOld<boolean>(transactionInfo.contractCall, "approved"),
+      operator: getContractCallArg<string>(decodedTx, "operator"),
+      approve: getContractCallArg<boolean>(decodedTx, "approved"),
     }
-  }, [transactionInfo.contractCall])
+  }, [decodedTx])
 
-  if (!operator || !account || !network) return <SignViewBodyShimmer />
+  if (!operator || !account || !network || !decodedTx.targetAddress) return <SignViewBodyShimmer />
 
   return (
     <SignContainer
@@ -49,11 +49,11 @@ export const EthSignBodyErc721ApproveAll: FC = () => {
         <SignParamNetworkAddressButton network={network} address={operator} />
       </div>
       <div className="flex">
-        <div>{t("to transfer all")}</div>
+        <div className="shrink-0">{t("to transfer all")}</div>
         <SignParamNetworkAddressButton
-          address={transactionInfo.targetAddress}
+          address={decodedTx.targetAddress}
           network={network}
-          name={transactionInfo.asset?.name}
+          name={decodedTx.asset?.name}
         />
       </div>
       <div className="flex">

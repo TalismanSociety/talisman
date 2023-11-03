@@ -1,4 +1,4 @@
-import { DecodedEvmTransaction } from "@core/util/getEthTransactionInfo"
+import { DecodedEvmTransaction } from "@core/util/decodeEvmTransaction"
 import { ErrorBoundary, FallbackRender } from "@sentry/react"
 import { FC } from "react"
 

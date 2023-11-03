@@ -17,6 +17,14 @@ import { WalletTransactionTransferInfo } from "../transactions"
 
 export type { EvmAddress, EvmChain }
 
+export type AnyEvmError = {
+  message?: string
+  shortMessage?: string
+  details?: string
+  code?: number
+  cause?: AnyEvmError
+}
+
 export type {
   EvmNetwork,
   CustomEvmNetwork,

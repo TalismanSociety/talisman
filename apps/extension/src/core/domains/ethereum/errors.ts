@@ -1,6 +1,8 @@
 import { log } from "@core/log"
 
-export const getEthersErrorLabelFromCode = (code: number) => {
+import { AnyEvmError } from "./types"
+
+export const getErrorLabelFromCode = (code: number) => {
   // https://github.com/ethereum/EIPs/blob/master/EIPS/eip-1474.md
   switch (code) {
     case -32700:
@@ -34,42 +36,46 @@ export const getEthersErrorLabelFromCode = (code: number) => {
   }
 }
 
+export const getEvmErrorCause = (error: AnyEvmError): AnyEvmError => {
+  return error.cause ? getEvmErrorCause(error.cause) : error
+}
+
 // turns errors into short and human readable message.
 // main use case is teling the user why a transaction failed without going into details and clutter the UI
 export const getHumanReadableErrorMessage = (error: unknown) => {
   if (!error) return undefined
 
-  const {
-    reason,
-    error: serverError,
-    shortMessage,
-    details,
-    code,
-  } = error as {
-    reason?: string
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    error?: any
-    shortMessage?: string
-    details?: string
-    code?: number
-  }
+  const { message, shortMessage, details, code } = error as AnyEvmError
 
   if (details) return details
 
   if (shortMessage) return shortMessage
 
-  if (serverError) {
-    const message = serverError.error?.message ?? serverError.reason ?? serverError.message
-    return message
-      .replace("VM Exception while processing transaction: reverted with reason string ", "")
-      .replace("VM Exception while processing transaction: revert", "")
-      .replace("VM Exception while processing transaction:", "")
-      .trim()
-  }
+  // if (serverError) {
+  //   const message = serverError.error?.message ?? serverError.reason ?? serverError.message
+  //   return message
+  //     .replace("VM Exception while processing transaction: reverted with reason string ", "")
+  //     .replace("VM Exception while processing transaction: revert", "")
+  //     .replace("VM Exception while processing transaction:", "")
+  //     .trim()
+  // }
 
-  if (reason === "processing response error") return "Invalid transaction"
+  // if (reason === "processing response error") return "Invalid transaction"
 
-  if (reason) return reason
+  // if (reason) return reason
 
-  if (code) return getEthersErrorLabelFromCode(code)
+  if (code) return getErrorLabelFromCode(code)
+
+  if (message) return message
+
+  return undefined
+}
+
+export const cleanupEvmErrorMessage = (message: string) => {
+  if (!message) return "Unknown error"
+  return message
+    .replace("VM Exception while processing transaction: reverted with reason string ", "")
+    .replace("VM Exception while processing transaction: revert", "")
+    .replace("VM Exception while processing transaction:", "")
+    .trim()
 }

@@ -1,21 +1,17 @@
-import { BigNumber } from "ethers"
 import { FC, useMemo } from "react"
 import { useTranslation } from "react-i18next"
 
 import { SignContainer } from "../../SignContainer"
 import { SignViewIconHeader } from "../../Views/SignViewIconHeader"
 import { SignViewStakingStakeMore } from "../../Views/staking/SignViewStakingStakeMore"
-import { getContractCallArgOld } from "../getContractCallArg"
+import { getContractCallArg } from "../getContractCallArg"
 import { useEthSignKnownTransactionRequest } from "../shared/useEthSignKnownTransactionRequest"
 
 export const EthSignMoonStakingStakeMore: FC = () => {
   const { t } = useTranslation("request")
-  const { network, transactionInfo } = useEthSignKnownTransactionRequest()
+  const { network, decodedTx } = useEthSignKnownTransactionRequest()
 
-  const more = useMemo(
-    () => getContractCallArgOld<BigNumber>(transactionInfo.contractCall, "more")?.toBigInt(),
-    [transactionInfo.contractCall]
-  )
+  const more = useMemo(() => getContractCallArg<bigint>(decodedTx, "more"), [decodedTx])
 
   if (!network?.nativeToken?.id || !more) return null
 

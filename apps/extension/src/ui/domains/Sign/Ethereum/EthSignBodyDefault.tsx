@@ -11,22 +11,18 @@ import { SignParamTokensDisplay } from "./shared/SignParamTokensDisplay"
 
 export const EthSignBodyDefault: FC = () => {
   const { t } = useTranslation("request")
-  const { network, transactionInfo, request } = useEthSignTransactionRequest()
+  const { network, request, decodedTx } = useEthSignTransactionRequest()
 
   const nativeToken = useToken(network?.nativeToken?.id)
   const nativeTokenRates = useTokenRates(nativeToken?.id)
 
   const amount = useMemo(() => {
-    return nativeToken && transactionInfo?.value && transactionInfo.value > 0n
-      ? new BalanceFormatter(
-          transactionInfo.value.toString(),
-          nativeToken.decimals,
-          nativeTokenRates
-        )
+    return nativeToken && decodedTx?.value && decodedTx.value > 0n
+      ? new BalanceFormatter(decodedTx.value.toString(), nativeToken.decimals, nativeTokenRates)
       : null
-  }, [nativeToken, nativeTokenRates, transactionInfo?.value])
+  }, [nativeToken, nativeTokenRates, decodedTx?.value])
 
-  if (!transactionInfo) return null
+  if (!decodedTx) return null
   if (!network) return null
   if (!nativeToken) return null
 
@@ -53,8 +49,8 @@ export const EthSignBodyDefault: FC = () => {
             <SignParamAccountButton address={request.from} withIcon />
           </div>
           <div className="flex">
-            <span>{transactionInfo.isContractCall ? t("to contract") : t("to account")} </span>
-            {transactionInfo.isContractCall ? (
+            <span>{decodedTx.isContractCall ? t("to contract") : t("to account")} </span>
+            {decodedTx.isContractCall ? (
               <SignParamNetworkAddressButton network={network} address={request.to} />
             ) : (
               <SignParamAccountButton
@@ -80,9 +76,9 @@ export const EthSignBodyDefault: FC = () => {
           ) : null}
         </>
       )}
-      {transactionInfo.contractCall?.name && (
+      {decodedTx.contractCall?.functionName && (
         <div>
-          {t("method:")} <span className="text-white">{transactionInfo.contractCall.name}</span>
+          {t("method:")} <span className="text-white">{decodedTx.contractCall.functionName}</span>
         </div>
       )}
     </SignContainer>

@@ -1,15 +1,5 @@
-import { DecodedEvmTransaction } from "@core/util/getEthTransactionInfo"
-import { ethers } from "ethers"
+import { DecodedEvmTransaction } from "@core/util/decodeEvmTransaction"
 import { getAbiItem } from "viem"
-
-/** @deprecated */
-export const getContractCallArgOld = <T>(
-  contractCall: ethers.utils.TransactionDescription,
-  argName: string
-): T | undefined => {
-  const paramIndex = contractCall.functionFragment.inputs.findIndex((arg) => arg.name === argName)
-  return contractCall.args[paramIndex] as T
-}
 
 export const getContractCallArg = <TResult>(
   decodedTx: DecodedEvmTransaction,

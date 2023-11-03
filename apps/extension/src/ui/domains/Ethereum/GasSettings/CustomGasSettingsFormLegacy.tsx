@@ -17,8 +17,8 @@ import { Button, FormFieldContainer, FormFieldInputText } from "talisman-ui"
 import { TransactionRequest, formatGwei, parseGwei } from "viem"
 import * as yup from "yup"
 
-import { usePublicClient } from "../useEthereumProvider"
 import { useIsValidEthTransaction } from "../useIsValidEthTransaction"
+import { usePublicClient } from "../usePublicClient"
 import { Indicator, MessageRow } from "./common"
 
 const INPUT_PROPS = {

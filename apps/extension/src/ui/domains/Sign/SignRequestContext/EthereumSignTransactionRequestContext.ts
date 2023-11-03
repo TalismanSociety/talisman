@@ -34,7 +34,6 @@ const useEthSignTransactionRequestProvider = ({ id }: KnownSigningRequestIdOnly<
   const {
     decodedTx,
     transaction,
-    transactionInfo,
     txDetails,
     priority,
     setPriority,
@@ -89,7 +88,6 @@ const useEthSignTransactionRequestProvider = ({ id }: KnownSigningRequestIdOnly<
     networkUsage,
     decodedTx,
     transaction,
-    transactionInfo,
     approve,
     approveHardware,
     isPayloadLocked,

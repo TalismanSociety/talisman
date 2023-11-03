@@ -56,16 +56,11 @@ const ViewDetailsContent: FC<ViewDetailsContentProps> = ({ onClose }) => {
     txDetails,
     priority,
     transaction,
-    transactionInfo,
+    decodedTx,
     error,
     errorDetails,
   } = useEthSignTransactionRequest()
   const { genericEvent } = useAnalytics()
-
-  const txInfo = useMemo(() => {
-    if (transactionInfo && transactionInfo.contractType !== "unknown") return transactionInfo
-    return undefined
-  }, [transactionInfo])
 
   const nativeToken = useToken(network?.nativeToken?.id)
   const formatEthValue = useCallback(
@@ -117,10 +112,10 @@ const ViewDetailsContent: FC<ViewDetailsContentProps> = ({ onClose }) => {
     <div className="bg-grey-850 flex max-h-[60rem] w-full flex-col gap-12 p-12">
       <div className="scrollable scrollable-700 flex-grow overflow-y-auto pr-4 text-sm leading-[2rem]">
         <div className="text-body-secondary">{t("Details")}</div>
-        {!!txInfo?.isContractCall && (
+        {!!decodedTx?.isContractCall && (
           <ViewDetailsField label={t("Contract type and method")}>
-            {txInfo?.contractType
-              ? `${txInfo?.contractType} : ${txInfo?.contractCall?.name ?? t("N/A")}`
+            {decodedTx?.contractType
+              ? `${decodedTx?.contractType} : ${decodedTx?.contractCall?.functionName ?? t("N/A")}`
               : t("Unknown")}
           </ViewDetailsField>
         )}

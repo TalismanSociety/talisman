@@ -46,9 +46,15 @@ export const getExtensionPublicClient = (
       },
     },
     // TODO check timers, decide if they should be here (remove them on backend) or clear them here and use defaults on backend
-    transport: custom({
-      request: viemRequest(evmNetwork.id),
-    }),
+    transport: custom(
+      {
+        request: viemRequest(evmNetwork.id),
+      },
+      {
+        // backend will retry 3 times, no need to retry here
+        retryCount: 0,
+      }
+    ),
   })
 }
 

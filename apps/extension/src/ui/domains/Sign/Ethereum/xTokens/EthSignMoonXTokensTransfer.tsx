@@ -8,14 +8,13 @@ import { useCoinGeckoTokenRates } from "@ui/hooks/useCoingeckoTokenRates"
 import { useErc20TokenInfo } from "@ui/hooks/useErc20TokenInfo"
 import useToken from "@ui/hooks/useToken"
 import useTokens from "@ui/hooks/useTokens"
-import { BigNumber } from "ethers"
 import { FC, useMemo } from "react"
 import { useTranslation } from "react-i18next"
 
 import { SignContainer } from "../../SignContainer"
 import { SignViewIconHeader } from "../../Views/SignViewIconHeader"
 import { SignViewXTokensTransfer } from "../../Views/transfer/SignViewCrossChainTransfer"
-import { getContractCallArgOld } from "../getContractCallArg"
+import { getContractCallArg } from "../getContractCallArg"
 import { useEthSignKnownTransactionRequest } from "../shared/useEthSignKnownTransactionRequest"
 
 type DecodedMultilocation = {
@@ -69,27 +68,18 @@ const decodeMultilocation = (multilocation?: {
 
 export const EthSignMoonXTokensTransfer: FC = () => {
   const { t } = useTranslation("request")
-  const { network, transactionInfo, account } = useEthSignKnownTransactionRequest()
+  const { network, decodedTx, account } = useEthSignKnownTransactionRequest()
   const substrateChain = useChain(network?.substrateChain?.id)
   const { tokens } = useTokens(true)
 
-  const { destination, amount, currencyAddress } = useMemo(() => {
-    const destination = getContractCallArgOld<{ parents: number; interior: string[] }>(
-      transactionInfo.contractCall,
-      "destination"
-    )
-    const amount = getContractCallArgOld<BigNumber>(transactionInfo.contractCall, "amount")
-    const currencyAddress = getContractCallArgOld<EvmAddress>(
-      transactionInfo.contractCall,
-      "currency_address"
-    )
-
-    return {
-      destination,
-      amount: amount?.toBigInt(),
-      currencyAddress,
-    }
-  }, [transactionInfo.contractCall])
+  const [destination, amount, currencyAddress] = useMemo(
+    () => [
+      getContractCallArg<{ parents: number; interior: string[] }>(decodedTx, "destination"),
+      getContractCallArg<bigint>(decodedTx, "amount"),
+      getContractCallArg<EvmAddress>(decodedTx, "currency_address"),
+    ],
+    [decodedTx]
+  )
 
   const erc20 = useErc20TokenInfo(network?.id, currencyAddress)
   const nativeToken = useToken(network?.nativeToken?.id)

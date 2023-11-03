@@ -531,7 +531,6 @@ export class EthHandler extends ExtensionHandler {
   private ethRequest: MessageHandler<"pri(eth.request)"> = async ({ chainId, method, params }) => {
     const client = await chainConnectorEvm.getPublicClientForEvmNetwork(chainId)
     assert(client, `No client for chain ${chainId}`)
-
     return client.request({
       method: method as never,
       params: params as never,

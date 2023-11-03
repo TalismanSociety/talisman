@@ -20,12 +20,12 @@ import {
   GasSettingsByPriority,
 } from "@core/domains/signing/types"
 import { ETH_ERROR_EIP1474_METHOD_NOT_FOUND } from "@core/injectEth/EthProviderRpcError"
-import { decodeEvmTransaction, getEthTransactionInfoOld } from "@core/util/getEthTransactionInfo"
+import { decodeEvmTransaction } from "@core/util/decodeEvmTransaction"
 import { FeeHistoryAnalysis, getFeeHistoryAnalysis } from "@core/util/getFeeHistoryAnalysis"
 import { isBigInt } from "@talismn/util"
 import { useQuery } from "@tanstack/react-query"
 import { api } from "@ui/api"
-import { usePublicClient } from "@ui/domains/Ethereum/useEthereumProvider"
+import { usePublicClient } from "@ui/domains/Ethereum/usePublicClient"
 import { useEffect, useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
 import { PublicClient, TransactionRequest } from "viem"
@@ -191,29 +191,6 @@ const useDecodeEvmTransaction = (
   })
 
   return { decodedTx: data, ...rest }
-}
-
-const useTransactionInfo = (
-  publicClient: PublicClient | undefined,
-  tx: TransactionRequest | undefined
-) => {
-  const { data, ...rest } = useQuery({
-    // check tx as boolean as it's not pure
-    queryKey: [
-      "useTransactionInfo",
-      publicClient?.chain?.id,
-      tx && serializeTransactionRequest(tx),
-    ],
-    queryFn: async () => {
-      if (!publicClient || !tx) return null
-      return await getEthTransactionInfoOld(publicClient, tx)
-    },
-    refetchInterval: false,
-    refetchOnWindowFocus: false, // prevents error to be cleared when window gets focus
-    enabled: !!publicClient && !!tx,
-  })
-
-  return { transactionInfo: data ?? undefined, ...rest }
 }
 
 const getEthGasSettingsFromTransaction = (
@@ -394,8 +371,7 @@ export const useEthTransaction = (
   isReplacement = false
 ) => {
   const publicClient = usePublicClient(evmNetworkId)
-  const { transactionInfo, error: errorTransactionInfo } = useTransactionInfo(publicClient, tx)
-  const { decodedTx } = useDecodeEvmTransaction(publicClient, tx)
+  const { decodedTx, isLoading: isDecoding } = useDecodeEvmTransaction(publicClient, tx)
   const { hasEip1559Support, error: errorEip1559Support } = useHasEip1559Support(publicClient)
   const { nonce, error: nonceError } = useNonce(
     tx?.from as `0x${string}` | undefined,
@@ -436,7 +412,7 @@ export const useEthTransaction = (
     blockGasLimit,
     feeHistoryAnalysis,
     isReplacement,
-    isContractCall: transactionInfo?.isContractCall,
+    isContractCall: decodedTx?.isContractCall,
   })
 
   const liveUpdatingTransaction = useMemo(() => {
@@ -502,31 +478,26 @@ export const useEthTransaction = (
     const anyError = (errorEip1559Support ??
       nonceError ??
       blockFeeDataError ??
-      errorTransactionInfo ??
-      isValidError) as Error & { code?: string; error?: Error }
+      isValidError) as Error
 
     const userFriendlyError = getHumanReadableErrorMessage(anyError)
 
-    // if ethers.js error, display underlying error that shows the RPC's error message
-    const errorToDisplay = anyError?.error ?? anyError
-
-    if (errorToDisplay)
+    if (anyError)
       return {
         error: userFriendlyError ?? t("Failed to prepare transaction"),
-        errorDetails: errorToDisplay.message,
+        errorDetails: anyError.message,
       }
 
     return { error: undefined, errorDetails: undefined }
-  }, [blockFeeDataError, isValidError, errorEip1559Support, errorTransactionInfo, nonceError, t])
+  }, [blockFeeDataError, isValidError, errorEip1559Support, nonceError, t])
 
   const isLoading = useMemo(
-    () => tx && !transactionInfo && !txDetails && !error,
-    [tx, transactionInfo, txDetails, error]
+    () => tx && isDecoding && !txDetails && !error,
+    [tx, isDecoding, txDetails, error]
   )
 
   return {
     decodedTx,
-    transactionInfo,
     transaction,
     txDetails,
     gasSettings,

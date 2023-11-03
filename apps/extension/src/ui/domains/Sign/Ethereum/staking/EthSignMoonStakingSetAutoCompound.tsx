@@ -4,20 +4,14 @@ import { useTranslation } from "react-i18next"
 import { SignContainer } from "../../SignContainer"
 import { SignViewIconHeader } from "../../Views/SignViewIconHeader"
 import { SignViewStakingSetAutoCompound } from "../../Views/staking/SignViewStakingSetAutoCompound"
-import { getContractCallArgOld } from "../getContractCallArg"
+import { getContractCallArg } from "../getContractCallArg"
 import { useEthSignKnownTransactionRequest } from "../shared/useEthSignKnownTransactionRequest"
 
 export const EthSignMoonStakingSetAutoCompound: FC = () => {
   const { t } = useTranslation("request")
-  const { network, transactionInfo } = useEthSignKnownTransactionRequest()
+  const { network, decodedTx } = useEthSignKnownTransactionRequest()
 
-  const { autoCompound } = useMemo(() => {
-    const autoCompound = getContractCallArgOld<number>(transactionInfo.contractCall, "value")
-
-    return {
-      autoCompound,
-    }
-  }, [transactionInfo.contractCall])
+  const autoCompound = useMemo(() => getContractCallArg<number>(decodedTx, "value"), [decodedTx])
 
   if (!network?.nativeToken?.id || autoCompound === undefined) return null
 

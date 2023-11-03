@@ -1,41 +1,40 @@
 import { getNftMetadata } from "@core/util/getNftMetadata"
 import { useQuery } from "@tanstack/react-query"
-import { BigNumber, BigNumberish } from "ethers"
 import { FC, useMemo } from "react"
 import { useTranslation } from "react-i18next"
 import { UnsafeImage } from "talisman-ui"
 
 import { SignContainer } from "../SignContainer"
 import { SignViewBodyShimmer } from "../Views/SignViewBodyShimmer"
-import { getContractCallArgOld } from "./getContractCallArg"
+import { getContractCallArg } from "./getContractCallArg"
 import { SignParamAccountButton, SignParamNetworkAddressButton } from "./shared"
 import { useEthSignKnownTransactionRequest } from "./shared/useEthSignKnownTransactionRequest"
 
 export const EthSignBodyErc721Transfer: FC = () => {
   const { t } = useTranslation("request")
-  const { account, network, transactionInfo } = useEthSignKnownTransactionRequest()
+  const { account, network, decodedTx } = useEthSignKnownTransactionRequest()
+
+  const asset = decodedTx.asset as { tokenURI?: string; name?: string } | undefined
 
   const qMetadata = useQuery({
-    queryKey: [transactionInfo.asset?.tokenURI],
-    queryFn: () => getNftMetadata(transactionInfo.asset?.tokenURI, 96, 96),
+    queryKey: [asset?.tokenURI],
+    queryFn: () => getNftMetadata(asset?.tokenURI, 96, 96),
   })
 
   const { from, to, tokenId } = useMemo(() => {
     return {
-      from: getContractCallArgOld<string>(transactionInfo.contractCall, "from"),
-      to: getContractCallArgOld<string>(transactionInfo.contractCall, "to"),
-      tokenId: BigNumber.from(
-        getContractCallArgOld<BigNumberish>(transactionInfo.contractCall, "tokenId")
-      ),
+      from: getContractCallArg<string>(decodedTx, "from"),
+      to: getContractCallArg<string>(decodedTx, "to"),
+      tokenId: getContractCallArg<bigint>(decodedTx, "tokenId"),
     }
-  }, [transactionInfo.contractCall])
+  }, [decodedTx])
 
   const { name, image } = useMemo(
     () => ({
-      name: qMetadata?.data?.name ?? `${transactionInfo?.asset?.name} #${tokenId.toString()}`,
+      name: qMetadata?.data?.name ?? `${asset?.name} #${tokenId.toString()}`,
       image: qMetadata?.data?.image,
     }),
-    [qMetadata?.data?.image, qMetadata?.data?.name, tokenId, transactionInfo?.asset?.name]
+    [asset?.name, qMetadata?.data?.image, qMetadata?.data?.name, tokenId]
   )
 
   const isOnBehalf = useMemo(
@@ -43,14 +42,15 @@ export const EthSignBodyErc721Transfer: FC = () => {
     [account, from]
   )
 
-  if (qMetadata.isLoading || !from || !to || !account || !network) return <SignViewBodyShimmer />
+  if (qMetadata.isLoading || !from || !to || !account || !network || !decodedTx.targetAddress)
+    return <SignViewBodyShimmer />
 
   return (
     <SignContainer networkType="ethereum" title={t("NFT Transfer Request")}>
       <div className="flex">
         <div>{t("Transfer")}</div>
         <SignParamNetworkAddressButton
-          address={transactionInfo.targetAddress}
+          address={decodedTx.targetAddress}
           network={network}
           name={name}
         />
