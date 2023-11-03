@@ -12,30 +12,10 @@ import DcentWebConnector from "dcent-web-connector"
 import { FC, useCallback, useEffect, useState } from "react"
 import { useTranslation } from "react-i18next"
 import { Button } from "talisman-ui"
-import {
-  Signature,
-  TransactionRequest,
-  TransactionSerializable,
-  hexToBigInt,
-  serializeTransaction,
-} from "viem"
+import { TransactionRequest, TransactionSerializable } from "viem"
 
 import { ErrorMessageDrawer } from "./ErrorMessageDrawer"
 import { SignHardwareEthereumProps } from "./SignHardwareEthereum"
-
-const toSignature = ({
-  sign_v,
-  sign_r,
-  sign_s,
-}: {
-  sign_v: string | number
-  sign_r: string
-  sign_s: string
-}): Signature => ({
-  v: typeof sign_v === "string" ? hexToBigInt(`0x${sign_v}`) : BigInt(sign_v),
-  r: `0x${sign_r}`,
-  s: `0x${sign_s}`,
-})
 
 const signWithDcent = async (
   chainId: number,
@@ -73,36 +53,6 @@ const signWithDcent = async (
         type: txRequest.type === "legacy" ? "eip2930" : "eip1559",
         chainId,
       }
-      // console.log("baseTx", baseTx)
-
-      // const {
-      //   accessList,
-      //   to,
-      //   nonce,
-      //   gasLimit,
-      //   gasPrice,
-      //   data,
-      //   value,
-      //   chainId,
-      //   type,
-      //   maxPriorityFeePerGas,
-      //   maxFeePerGas,
-      // } = await ethers.utils.resolveProperties(payload as ethers.providers.TransactionRequest)
-
-      // const baseTx: ethers.utils.UnsignedTransaction = {
-      //   to,
-      //   gasLimit,
-      //   chainId,
-      //   type,
-      // }
-
-      // if (nonce !== undefined) baseTx.nonce = ethers.BigNumber.from(nonce).toNumber()
-      // if (maxPriorityFeePerGas) baseTx.maxPriorityFeePerGas = maxPriorityFeePerGas
-      // if (maxFeePerGas) baseTx.maxFeePerGas = maxFeePerGas
-      // if (gasPrice) baseTx.gasPrice = gasPrice
-      // if (data) baseTx.data = data
-      // if (value) baseTx.value = value
-      // if (accessList) baseTx.accessList = accessList
 
       // Note : most fields can't be undefined
       const args = [
@@ -126,15 +76,7 @@ const signWithDcent = async (
 
       const sig = await dcent.getEthereumSignedTransaction(...args)
 
-      // console.log("dcent sig", { sig })
-
-      return serializeTransaction(baseTx, toSignature(sig))
-
-      // return ethers.utils.serializeTransaction(baseTx, {
-      //   v: ethers.BigNumber.from(result.sign_v).toNumber(),
-      //   r: result.sign_r,
-      //   s: result.sign_s,
-      // }) as `0x${string}`
+      return `0x${sig.signed}`
     }
     // other message types are unsupported
     // case "eth_signTypedData":
