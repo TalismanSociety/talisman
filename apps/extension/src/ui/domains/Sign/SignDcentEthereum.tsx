@@ -9,15 +9,36 @@ import { classNames } from "@talismn/util"
 import { DcentError, dcent } from "@ui/util/dcent"
 import { useBringPopupBackInFront } from "@ui/util/dcent/useBringPopupBackInFront"
 import DcentWebConnector from "dcent-web-connector"
-import { ethers } from "ethers"
 import { FC, useCallback, useEffect, useState } from "react"
 import { useTranslation } from "react-i18next"
 import { Button } from "talisman-ui"
+import {
+  Signature,
+  TransactionRequest,
+  TransactionSerializable,
+  hexToBigInt,
+  serializeTransaction,
+} from "viem"
 
 import { ErrorMessageDrawer } from "./ErrorMessageDrawer"
 import { SignHardwareEthereumProps } from "./SignHardwareEthereum"
 
+const toSignature = ({
+  sign_v,
+  sign_r,
+  sign_s,
+}: {
+  sign_v: string | number
+  sign_r: string
+  sign_s: string
+}): Signature => ({
+  v: typeof sign_v === "string" ? hexToBigInt(`0x${sign_v}`) : BigInt(sign_v),
+  r: `0x${sign_r}`,
+  s: `0x${sign_s}`,
+})
+
 const signWithDcent = async (
+  chainId: number,
   method: EthSignMessageMethod | "eth_sendTransaction",
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   payload: any,
@@ -44,62 +65,76 @@ const signWithDcent = async (
     }
 
     case "eth_sendTransaction": {
-      const {
-        accessList,
-        to,
-        nonce,
-        gasLimit,
-        gasPrice,
-        data,
-        value,
+      const txRequest = payload as TransactionRequest
+      const baseTx: TransactionSerializable = {
+        ...txRequest,
+        // viem's legacy serialization changes the chainId once deserialized, tx can't be submitted
+        // can be tested on BSC
+        type: txRequest.type === "legacy" ? "eip2930" : "eip1559",
         chainId,
-        type,
-        maxPriorityFeePerGas,
-        maxFeePerGas,
-      } = await ethers.utils.resolveProperties(payload as ethers.providers.TransactionRequest)
-
-      const baseTx: ethers.utils.UnsignedTransaction = {
-        to,
-        gasLimit,
-        chainId,
-        type,
       }
+      // console.log("baseTx", baseTx)
 
-      if (nonce !== undefined) baseTx.nonce = ethers.BigNumber.from(nonce).toNumber()
-      if (maxPriorityFeePerGas) baseTx.maxPriorityFeePerGas = maxPriorityFeePerGas
-      if (maxFeePerGas) baseTx.maxFeePerGas = maxFeePerGas
-      if (gasPrice) baseTx.gasPrice = gasPrice
-      if (data) baseTx.data = data
-      if (value) baseTx.value = value
-      if (accessList) baseTx.accessList = accessList
+      // const {
+      //   accessList,
+      //   to,
+      //   nonce,
+      //   gasLimit,
+      //   gasPrice,
+      //   data,
+      //   value,
+      //   chainId,
+      //   type,
+      //   maxPriorityFeePerGas,
+      //   maxFeePerGas,
+      // } = await ethers.utils.resolveProperties(payload as ethers.providers.TransactionRequest)
+
+      // const baseTx: ethers.utils.UnsignedTransaction = {
+      //   to,
+      //   gasLimit,
+      //   chainId,
+      //   type,
+      // }
+
+      // if (nonce !== undefined) baseTx.nonce = ethers.BigNumber.from(nonce).toNumber()
+      // if (maxPriorityFeePerGas) baseTx.maxPriorityFeePerGas = maxPriorityFeePerGas
+      // if (maxFeePerGas) baseTx.maxFeePerGas = maxFeePerGas
+      // if (gasPrice) baseTx.gasPrice = gasPrice
+      // if (data) baseTx.data = data
+      // if (value) baseTx.value = value
+      // if (accessList) baseTx.accessList = accessList
 
       // Note : most fields can't be undefined
       const args = [
         DcentWebConnector.coinType.ETHEREUM,
-        ethers.BigNumber.from(nonce).toString(),
-        type === 2 ? undefined : gasPrice?.toString(),
-        gasLimit?.toString() ?? "21000",
-        to,
-        value?.toString() ?? "0",
-        data ?? "0x",
+        (baseTx.nonce ?? 0).toString(), // ethers.BigNumber.from(nonce).toString(),
+        baseTx.type === "eip1559" ? undefined : baseTx.gasPrice?.toString(), // type === 2 ? undefined : gasPrice?.toString(),
+        baseTx.gas?.toString() ?? "21000",
+        baseTx.to,
+        baseTx.value?.toString() ?? "0",
+        baseTx.data ?? "0x",
         accountPath,
         chainId,
       ]
 
-      if (type === 2)
+      if (baseTx.type === "eip1559")
         args.push(2, {
-          accessList: accessList ?? [],
-          maxPriorityFeePerGas: maxPriorityFeePerGas?.toString(),
-          maxFeePerGas: maxFeePerGas?.toString(),
+          accessList: baseTx.accessList ?? [],
+          maxPriorityFeePerGas: baseTx.maxPriorityFeePerGas?.toString(),
+          maxFeePerGas: baseTx.maxFeePerGas?.toString(),
         })
 
-      const result = await dcent.getEthereumSignedTransaction(...args)
+      const sig = await dcent.getEthereumSignedTransaction(...args)
 
-      return ethers.utils.serializeTransaction(baseTx, {
-        v: ethers.BigNumber.from(result.sign_v).toNumber(),
-        r: result.sign_r,
-        s: result.sign_s,
-      }) as `0x${string}`
+      // console.log("dcent sig", { sig })
+
+      return serializeTransaction(baseTx, toSignature(sig))
+
+      // return ethers.utils.serializeTransaction(baseTx, {
+      //   v: ethers.BigNumber.from(result.sign_v).toNumber(),
+      //   r: result.sign_r,
+      //   s: result.sign_s,
+      // }) as `0x${string}`
     }
     // other message types are unsupported
     // case "eth_signTypedData":
@@ -111,6 +146,7 @@ const signWithDcent = async (
 }
 
 const SignDcentEthereum: FC<SignHardwareEthereumProps> = ({
+  evmNetworkId,
   account,
   method,
   payload,
@@ -141,7 +177,12 @@ const SignDcentEthereum: FC<SignHardwareEthereumProps> = ({
     try {
       // this will open the bridge page that may hide Talisman popup => bring talisman back in front
       startListening()
-      const signature = await signWithDcent(method, payload, (account as AccountJsonDcent).path)
+      const signature = await signWithDcent(
+        Number(evmNetworkId),
+        method,
+        payload,
+        (account as AccountJsonDcent).path
+      )
       stopListening()
 
       await onSigned({ signature })
@@ -157,7 +198,17 @@ const SignDcentEthereum: FC<SignHardwareEthereumProps> = ({
     }
     onSentToDevice?.(false)
     setIsSigning(false)
-  }, [onSigned, payload, account, onSentToDevice, startListening, method, stopListening, t])
+  }, [
+    onSigned,
+    payload,
+    account,
+    onSentToDevice,
+    startListening,
+    evmNetworkId,
+    method,
+    stopListening,
+    t,
+  ])
 
   return (
     <div className={classNames("flex w-full flex-col gap-6", className)}>
