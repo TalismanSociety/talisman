@@ -51,19 +51,6 @@ export const getHumanReadableErrorMessage = (error: unknown) => {
 
   if (shortMessage) return shortMessage
 
-  // if (serverError) {
-  //   const message = serverError.error?.message ?? serverError.reason ?? serverError.message
-  //   return message
-  //     .replace("VM Exception while processing transaction: reverted with reason string ", "")
-  //     .replace("VM Exception while processing transaction: revert", "")
-  //     .replace("VM Exception while processing transaction:", "")
-  //     .trim()
-  // }
-
-  // if (reason === "processing response error") return "Invalid transaction"
-
-  // if (reason) return reason
-
   if (code) return getErrorLabelFromCode(code)
 
   if (message) return message

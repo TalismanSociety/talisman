@@ -41,38 +41,6 @@ export const getEthLedgerDerivationPath = (type: LedgerEthDerivationPathType, in
   return getDerivationPathFromPattern(index, DERIVATION_PATHS_PATTERNS[type])
 }
 
-// export const getEthTransferTransactionBaseOld = async (
-//   evmNetworkId: EvmNetworkId,
-//   from: string,
-//   to: string,
-//   token: Token,
-//   planck: string
-// ): Promise<ethers.providers.TransactionRequest> => {
-//   assert(evmNetworkId, "evmNetworkId is required")
-//   assert(token, "token is required")
-//   assert(planck, "planck is required")
-//   assert(isEthereumAddress(from), "from address is required")
-//   assert(isEthereumAddress(to), "to address is required")
-
-//   let tx: ethers.providers.TransactionRequest
-
-//   if (token.type === "evm-native") {
-//     tx = {
-//       value: ethers.BigNumber.from(planck),
-//       to: ethers.utils.getAddress(to),
-//     }
-//   } else if (token.type === "evm-erc20") {
-//     const contract = new ethers.Contract(token.contractAddress, erc20Abi)
-//     tx = await contract.populateTransaction["transfer"](to, ethers.BigNumber.from(planck))
-//   } else throw new Error(`Invalid token type ${token.type} - token ${token.id}`)
-
-//   return {
-//     chainId: parseInt(evmNetworkId, 10),
-//     from,
-//     ...tx,
-//   }
-// }
-
 export const getEthTransferTransactionBase = async (
   evmNetworkId: EvmNetworkId,
   from: EvmAddress,
@@ -218,29 +186,6 @@ export const parseRpcTransactionRequestBase = (
 
   return txBase
 }
-/** @deprecated */
-export const rebuildGasSettings = (
-  gasSettings: EthGasSettings<Hex | bigint>
-): EthGasSettings<bigint> => {
-  return gasSettings.type === "eip1559"
-    ? {
-        type: "eip1559",
-        gas: isHex(gasSettings.gas) ? hexToBigInt(gasSettings.gas) : gasSettings.gas,
-        maxFeePerGas: isHex(gasSettings.maxFeePerGas)
-          ? hexToBigInt(gasSettings.maxFeePerGas)
-          : gasSettings.maxFeePerGas,
-        maxPriorityFeePerGas: isHex(gasSettings.maxPriorityFeePerGas)
-          ? hexToBigInt(gasSettings.maxPriorityFeePerGas)
-          : gasSettings.maxPriorityFeePerGas,
-      }
-    : {
-        type: gasSettings.type,
-        gas: isHex(gasSettings.gas) ? hexToBigInt(gasSettings.gas) : gasSettings.gas,
-        gasPrice: isHex(gasSettings.gasPrice)
-          ? hexToBigInt(gasSettings.gasPrice)
-          : gasSettings.gasPrice,
-      }
-}
 
 const TX_GAS_LIMIT_DEFAULT = 250000n
 const TX_GAS_LIMIT_MIN = 21000n
@@ -348,39 +293,11 @@ export const prepareTransaction = (
   txBase: TransactionRequestBase,
   gasSettings: EthGasSettings,
   nonce: number
-): TransactionRequest => {
-  return {
-    ...txBase,
-    ...gasSettings,
-    nonce,
-  }
-
-  // const {
-  //   chainId,
-  //   data,
-  //   from,
-  //   to,
-  //   value = BigNumber.from(0),
-  //   accessList,
-  //   ccipReadEnabled,
-  //   customData,
-  // } = tx
-
-  // const transaction: ethers.providers.TransactionRequest = {
-  //   chainId,
-  //   from,
-  //   to,
-  //   value,
-  //   nonce: BigNumber.from(nonce),
-  //   data,
-  //   ...gasSettings,
-  // }
-  // if (accessList) transaction.accessList = accessList
-  // if (customData) transaction.customData = customData
-  // if (ccipReadEnabled !== undefined) transaction.ccipReadEnabled = ccipReadEnabled
-
-  // return transaction
-}
+): TransactionRequest => ({
+  ...txBase,
+  ...gasSettings,
+  nonce,
+})
 
 const testNoScriptTag = (text?: string) => !text?.toLowerCase().includes("<script")
 

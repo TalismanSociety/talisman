@@ -88,7 +88,6 @@ export class EthHandler extends ExtensionHandler {
 
     assert(isEthereumAddress(account.address), "Invalid ethereum address")
 
-    // rebuild BigNumber property values (converted to json when serialized)
     const tx = parseTransactionRequest(transaction)
     if (tx.nonce === undefined) tx.nonce = await getTransactionCount(account.address, ethChainId)
 
@@ -110,7 +109,6 @@ export class EthHandler extends ExtensionHandler {
     })
 
     if (result.ok) {
-      // long running operation, we do not want this inside getPairForAddressSafely
       watchEthereumTransaction(ethChainId, result.val, transaction, {
         siteUrl: queued.url,
         notifications: true,
@@ -154,7 +152,6 @@ export class EthHandler extends ExtensionHandler {
     try {
       const hash = await client.sendRawTransaction({ serializedTransaction: signed })
 
-      // long running operation, we do not want this inside getPairForAddressSafely
       watchEthereumTransaction(evmNetworkId, hash, unsigned, {
         notifications: true,
         transferInfo,
@@ -180,8 +177,6 @@ export class EthHandler extends ExtensionHandler {
     assert(evmNetworkId, "chainId is not defined")
     assert(unsigned.from, "from is not defined")
 
-    // rebuild BigNumber property values (converted to json when serialized)
-
     const result = await getPairForAddressSafely(unsigned.from, async (pair) => {
       const client = await chainConnectorEvm.getWalletClientForEvmNetwork(evmNetworkId)
       assert(client, "Missing client for chain " + evmNetworkId)
@@ -201,7 +196,6 @@ export class EthHandler extends ExtensionHandler {
     })
 
     if (result.ok) {
-      // long running operation, we do not want this inside getPairForAddressSafely
       watchEthereumTransaction(evmNetworkId, result.val, unsigned, {
         notifications: true,
         transferInfo,
@@ -531,6 +525,7 @@ export class EthHandler extends ExtensionHandler {
   private ethRequest: MessageHandler<"pri(eth.request)"> = async ({ chainId, method, params }) => {
     const client = await chainConnectorEvm.getPublicClientForEvmNetwork(chainId)
     assert(client, `No client for chain ${chainId}`)
+
     return client.request({
       method: method as never,
       params: params as never,

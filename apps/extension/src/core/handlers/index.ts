@@ -105,26 +105,19 @@ const talismanHandler = <TMessageType extends MessageTypes>(
       // only send message back to port if it's still connected, unfortunately this check is not reliable in all browsers
       if (port) {
         try {
-          switch (message) {
-            case "pub(eth.request)":
-            case "pri(eth.request)": {
-              const evmError = getEvmErrorCause(error)
-              port.postMessage({
-                id,
-                error: cleanupEvmErrorMessage(
-                  (message === "pri(eth.request)" && evmError.details) ||
-                    (evmError.shortMessage ?? evmError.message ?? "Unknown error")
-                ),
-                code: error.code,
-                isEthProviderRpcError: true,
-              })
-              break
-            }
-            default: {
-              port.postMessage({ id, error: error.message })
-              break
-            }
-          }
+          if (["pub(eth.request)", "pri(eth.request)"].includes(message)) {
+            const evmError = getEvmErrorCause(error)
+            // TODO test on dapps if behavior is different without data
+            port.postMessage({
+              id,
+              error: cleanupEvmErrorMessage(
+                (message === "pri(eth.request)" && evmError.details) ||
+                  (evmError.shortMessage ?? evmError.message ?? "Unknown error")
+              ),
+              code: error.code,
+              isEthProviderRpcError: true,
+            })
+          } else port.postMessage({ id, error: error.message })
         } catch (caughtError) {
           /**
            * no-op

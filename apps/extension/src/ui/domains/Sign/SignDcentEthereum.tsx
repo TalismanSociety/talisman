@@ -57,8 +57,8 @@ const signWithDcent = async (
       // Note : most fields can't be undefined
       const args = [
         DcentWebConnector.coinType.ETHEREUM,
-        (baseTx.nonce ?? 0).toString(), // ethers.BigNumber.from(nonce).toString(),
-        baseTx.type === "eip1559" ? undefined : baseTx.gasPrice?.toString(), // type === 2 ? undefined : gasPrice?.toString(),
+        (baseTx.nonce ?? 0).toString(),
+        baseTx.type === "eip1559" ? undefined : baseTx.gasPrice?.toString(),
         baseTx.gas?.toString() ?? "21000",
         baseTx.to,
         baseTx.value?.toString() ?? "0",

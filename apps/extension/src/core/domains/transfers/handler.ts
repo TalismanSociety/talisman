@@ -1,4 +1,8 @@
-import { getEthTransferTransactionBase, parseGasSettings } from "@core/domains/ethereum/helpers"
+import {
+  getEthTransferTransactionBase,
+  parseGasSettings,
+  prepareTransaction,
+} from "@core/domains/ethereum/helpers"
 import {
   getTransactionCount,
   incrementTransactionCount,
@@ -26,6 +30,7 @@ import * as Sentry from "@sentry/browser"
 import { isEthereumAddress, planckToTokens } from "@talismn/util"
 import { privateKeyToAccount } from "viem/accounts"
 
+import { serializeTransactionRequest } from "../ethereum/helpers"
 import { transferAnalytics } from "./helpers"
 
 export default class AssetTransferHandler extends ExtensionHandler {
@@ -213,6 +218,9 @@ export default class AssetTransferHandler extends ExtensionHandler {
     const parsedGasSettings = parseGasSettings(gasSettings)
     const nonce = await getTransactionCount(fromAddress, evmNetworkId)
 
+    const transaction = prepareTransaction(transfer, parsedGasSettings, nonce)
+    const unsigned = serializeTransactionRequest(transaction)
+
     const result = await getPairForAddressSafely(fromAddress, async (pair) => {
       const client = await chainConnectorEvm.getWalletClientForEvmNetwork(evmNetworkId)
       assert(client, "Missing client for chain " + evmNetworkId)
@@ -226,9 +234,7 @@ export default class AssetTransferHandler extends ExtensionHandler {
       const hash = await client.sendTransaction({
         chain: client.chain,
         account,
-        ...transfer,
-        ...parsedGasSettings,
-        nonce,
+        ...transaction,
       })
 
       incrementTransactionCount(fromAddress, evmNetworkId)
@@ -237,9 +243,10 @@ export default class AssetTransferHandler extends ExtensionHandler {
     })
 
     if (result.ok) {
-      // watchEthereumTransaction(evmNetworkId, result.val.hash, transaction, {
-      //   transferInfo: { tokenId: token.id, value: amount, to: toAddress },
-      // })
+      // TODO test this
+      watchEthereumTransaction(evmNetworkId, result.val.hash, unsigned, {
+        transferInfo: { tokenId: token.id, value: amount, to: toAddress },
+      })
 
       transferAnalytics({
         network: { evmNetworkId },

@@ -45,7 +45,7 @@ import {
   recoverMessageAddress,
   toHex,
 } from "viem"
-import { hexToNumber } from "viem/utils"
+import { hexToNumber, isHex } from "viem/utils"
 
 import { getErc20TokenInfo } from "../../util/getErc20TokenInfo"
 import {
@@ -62,7 +62,7 @@ import {
 import { requestAddNetwork, requestWatchAsset } from "./requests"
 import {
   EthProviderMessage,
-  EthRequestArgsViem,
+  EthRequestArgs,
   EthRequestArguments,
   EthRequestResult,
   EthRequestSignArguments,
@@ -335,7 +335,7 @@ export class EthTabsHandler extends TabsHandler {
             client.request({ method: "eth_chainId" }),
             throwAfter(10_000, "timeout"), // 10 sec timeout
           ])
-          const rpcChainId = hexToNumber(rpcChainIdHex as `0x${string}`)
+          const rpcChainId = hexToNumber(rpcChainIdHex)
 
           assert(rpcChainId === chainId, "chainId mismatch")
         } catch (err) {
@@ -580,8 +580,7 @@ export class EthTabsHandler extends TabsHandler {
       let specifiedChainId = (txRequest as unknown as { chainId?: string | number }).chainId
 
       // ensure chainId isn't an hex (ex: Zerion)
-      if (typeof specifiedChainId === "string" && (specifiedChainId as string).startsWith("0x"))
-        specifiedChainId = parseInt(specifiedChainId, 16)
+      if (isHex(specifiedChainId)) specifiedChainId = hexToNumber(specifiedChainId)
 
       // checks that the request targets currently selected network
       if (specifiedChainId && Number(site.ethChainId) !== Number(specifiedChainId))
@@ -699,7 +698,7 @@ export class EthTabsHandler extends TabsHandler {
   private async ethRequest(
     id: string,
     url: string,
-    request: EthRequestArgsViem,
+    request: EthRequestArgs,
     port: Port
   ): Promise<unknown> {
     if (
@@ -747,25 +746,6 @@ export class EthTabsHandler extends TabsHandler {
         // public method, no need to auth (returns undefined if not authorized yet)
         // legacy, but still used by etherscan prior calling eth_watchAsset
         return (await this.getChainId(url)).toString()
-
-      // TODO check if this is ever called, it doesn't exist in viem's public rpc schema
-      // case "estimateGas": {
-      //   const { params } = request as EthRequestArguments<"estimateGas">
-      //   console.log("estimateGas", params)
-      //   if (params[1] && params[1] !== "latest") {
-      //     throw new EthProviderRpcError(
-      //       "estimateGas does not support blockTag",
-      //       ETH_ERROR_EIP1474_INVALID_PARAMS
-      //     )
-      //   }
-
-      //   await this.checkAccountAuthorised(url, params[0].from)
-
-      //   const req = ethers.providers.JsonRpcProvider.hexlifyTransaction(params[0])
-      //   const provider = await this.getProvider(url)
-      //   const result = await provider.estimateGas(req)
-      //   return result.toHexString()
-      // }
 
       case "personal_sign":
       case "eth_signTypedData":
@@ -823,7 +803,7 @@ export class EthTabsHandler extends TabsHandler {
 
       case "pub(eth.request)": {
         try {
-          return await this.ethRequest(id, url, request as EthRequestArgsViem, port)
+          return await this.ethRequest(id, url, request as EthRequestArgs, port)
         } catch (err) {
           if (err instanceof EthProviderRpcError) throw err
           // eslint-disable-next-line @typescript-eslint/no-explicit-any

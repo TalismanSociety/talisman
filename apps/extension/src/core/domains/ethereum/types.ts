@@ -33,7 +33,7 @@ export type {
   EthereumRpc,
 } from "@talismn/chaindata-provider"
 
-// define here the rpc methods that do not exist in viem or need to be overriden
+// define here the rpc methods that do not exist in viem or that need to be overriden
 type TalismanRpcSchema = [
   {
     Method: "personal_ecRecover"
@@ -91,7 +91,8 @@ export type EthRequestArguments<T extends EthRequestMethod> = {
   readonly params: EthRequestParams<T>
 }
 
-export type EthRequestArgsViem = EIP1193Parameters<FullRpcSchema>
+// TODO yeet ?
+export type EthRequestArgs = EIP1193Parameters<FullRpcSchema>
 export type EthRequestSignArguments = EthRequestArguments<
   | "personal_sign"
   | "eth_signTypedData"
