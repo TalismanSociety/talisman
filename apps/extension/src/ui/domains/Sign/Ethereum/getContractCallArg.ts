@@ -2,7 +2,8 @@ import { DecodedEvmTransaction } from "@core/util/getEthTransactionInfo"
 import { ethers } from "ethers"
 import { getAbiItem } from "viem"
 
-export const getContractCallArg = <T>(
+/** @deprecated */
+export const getContractCallArgOld = <T>(
   contractCall: ethers.utils.TransactionDescription,
   argName: string
 ): T | undefined => {
@@ -10,20 +11,18 @@ export const getContractCallArg = <T>(
   return contractCall.args[paramIndex] as T
 }
 
-export const getContractCallArg2 = <TResult>(
+export const getContractCallArg = <TResult>(
   decodedTx: DecodedEvmTransaction,
   argName: string
-): TResult | undefined => {
-  if (decodedTx.contractCall && decodedTx.abi) {
-    const methodDef = getAbiItem({
-      abi: decodedTx.abi,
-      args: decodedTx.contractCall.args,
-      name: decodedTx.contractCall.functionName,
-    })
+): TResult => {
+  if (!decodedTx.contractCall || !decodedTx.abi) throw new Error("Missing contract call or abi")
 
-    const argIndex = methodDef.inputs.findIndex((input) => input.name === argName)
-    return decodedTx.contractCall.args?.[argIndex] as TResult
-  }
+  const methodDef = getAbiItem({
+    abi: decodedTx.abi,
+    args: decodedTx.contractCall.args,
+    name: decodedTx.contractCall.functionName,
+  })
 
-  return undefined
+  const argIndex = methodDef.inputs.findIndex((input) => input.name === argName)
+  return decodedTx.contractCall.args?.[argIndex] as TResult
 }

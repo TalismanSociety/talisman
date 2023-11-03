@@ -7,7 +7,7 @@ import { UnsafeImage } from "talisman-ui"
 
 import { SignContainer } from "../SignContainer"
 import { SignViewBodyShimmer } from "../Views/SignViewBodyShimmer"
-import { getContractCallArg } from "./getContractCallArg"
+import { getContractCallArgOld } from "./getContractCallArg"
 import { SignParamAccountButton, SignParamNetworkAddressButton } from "./shared"
 import { useEthSignKnownTransactionRequest } from "./shared/useEthSignKnownTransactionRequest"
 
@@ -22,10 +22,10 @@ export const EthSignBodyErc721Transfer: FC = () => {
 
   const { from, to, tokenId } = useMemo(() => {
     return {
-      from: getContractCallArg<string>(transactionInfo.contractCall, "from"),
-      to: getContractCallArg<string>(transactionInfo.contractCall, "to"),
+      from: getContractCallArgOld<string>(transactionInfo.contractCall, "from"),
+      to: getContractCallArgOld<string>(transactionInfo.contractCall, "to"),
       tokenId: BigNumber.from(
-        getContractCallArg<BigNumberish>(transactionInfo.contractCall, "tokenId")
+        getContractCallArgOld<BigNumberish>(transactionInfo.contractCall, "tokenId")
       ),
     }
   }, [transactionInfo.contractCall])

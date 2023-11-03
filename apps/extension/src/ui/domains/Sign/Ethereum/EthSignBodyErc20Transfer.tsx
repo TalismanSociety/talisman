@@ -1,4 +1,5 @@
 import { BalanceFormatter } from "@core/domains/balances"
+import { EvmAddress } from "@core/domains/ethereum/types"
 import { CustomErc20Token } from "@core/domains/tokens/types"
 import { TokenLogo } from "@ui/domains/Asset/TokenLogo"
 import { useSelectedCurrency } from "@ui/hooks/useCurrency"
@@ -10,7 +11,7 @@ import { useTranslation } from "react-i18next"
 
 import { SignContainer } from "../SignContainer"
 import { SignViewBodyShimmer } from "../Views/SignViewBodyShimmer"
-import { getContractCallArg2 } from "./getContractCallArg"
+import { getContractCallArg } from "./getContractCallArg"
 import { SignParamAccountButton } from "./shared"
 import { SignParamTokensButton } from "./shared/SignParamTokensButton"
 import { useEthSignKnownTransactionRequest } from "./shared/useEthSignKnownTransactionRequest"
@@ -24,9 +25,9 @@ export const EthSignBodyErc20Transfer: FC = () => {
 
   const { from, value, to } = useMemo(() => {
     return {
-      from: getContractCallArg2(decodedTx, "from"),
-      to: getContractCallArg2(decodedTx, "to"),
-      value: getContractCallArg2(decodedTx, "amount"),
+      from: getContractCallArg<EvmAddress>(decodedTx, "from"),
+      to: getContractCallArg<EvmAddress>(decodedTx, "to"),
+      value: getContractCallArg<bigint>(decodedTx, "amount"),
     }
   }, [decodedTx])
 

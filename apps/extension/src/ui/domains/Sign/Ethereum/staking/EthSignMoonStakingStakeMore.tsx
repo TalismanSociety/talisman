@@ -5,7 +5,7 @@ import { useTranslation } from "react-i18next"
 import { SignContainer } from "../../SignContainer"
 import { SignViewIconHeader } from "../../Views/SignViewIconHeader"
 import { SignViewStakingStakeMore } from "../../Views/staking/SignViewStakingStakeMore"
-import { getContractCallArg } from "../getContractCallArg"
+import { getContractCallArgOld } from "../getContractCallArg"
 import { useEthSignKnownTransactionRequest } from "../shared/useEthSignKnownTransactionRequest"
 
 export const EthSignMoonStakingStakeMore: FC = () => {
@@ -13,7 +13,7 @@ export const EthSignMoonStakingStakeMore: FC = () => {
   const { network, transactionInfo } = useEthSignKnownTransactionRequest()
 
   const more = useMemo(
-    () => getContractCallArg<BigNumber>(transactionInfo.contractCall, "more")?.toBigInt(),
+    () => getContractCallArgOld<BigNumber>(transactionInfo.contractCall, "more")?.toBigInt(),
     [transactionInfo.contractCall]
   )
 

@@ -4,7 +4,7 @@ import { useTranslation } from "react-i18next"
 import { SignContainer } from "../../SignContainer"
 import { SignViewIconHeader } from "../../Views/SignViewIconHeader"
 import { SignViewStakingSetAutoCompound } from "../../Views/staking/SignViewStakingSetAutoCompound"
-import { getContractCallArg } from "../getContractCallArg"
+import { getContractCallArgOld } from "../getContractCallArg"
 import { useEthSignKnownTransactionRequest } from "../shared/useEthSignKnownTransactionRequest"
 
 export const EthSignMoonStakingSetAutoCompound: FC = () => {
@@ -12,7 +12,7 @@ export const EthSignMoonStakingSetAutoCompound: FC = () => {
   const { network, transactionInfo } = useEthSignKnownTransactionRequest()
 
   const { autoCompound } = useMemo(() => {
-    const autoCompound = getContractCallArg<number>(transactionInfo.contractCall, "value")
+    const autoCompound = getContractCallArgOld<number>(transactionInfo.contractCall, "value")
 
     return {
       autoCompound,

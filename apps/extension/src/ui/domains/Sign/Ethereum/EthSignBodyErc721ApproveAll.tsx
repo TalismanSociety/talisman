@@ -4,7 +4,7 @@ import { useTranslation } from "react-i18next"
 import { SignAlertMessage } from "../SignAlertMessage"
 import { SignContainer } from "../SignContainer"
 import { SignViewBodyShimmer } from "../Views/SignViewBodyShimmer"
-import { getContractCallArg } from "./getContractCallArg"
+import { getContractCallArgOld } from "./getContractCallArg"
 import { SignParamAccountButton, SignParamNetworkAddressButton } from "./shared"
 import { useEthSignKnownTransactionRequest } from "./shared/useEthSignKnownTransactionRequest"
 
@@ -14,8 +14,8 @@ export const EthSignBodyErc721ApproveAll: FC = () => {
 
   const { operator, approve } = useMemo(() => {
     return {
-      operator: getContractCallArg<string>(transactionInfo.contractCall, "operator"),
-      approve: getContractCallArg<boolean>(transactionInfo.contractCall, "approved"),
+      operator: getContractCallArgOld<string>(transactionInfo.contractCall, "operator"),
+      approve: getContractCallArgOld<boolean>(transactionInfo.contractCall, "approved"),
     }
   }, [transactionInfo.contractCall])
 

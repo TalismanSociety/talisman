@@ -10,7 +10,7 @@ import { Trans, useTranslation } from "react-i18next"
 import { SignAlertMessage } from "../SignAlertMessage"
 import { SignContainer } from "../SignContainer"
 import { SignViewBodyShimmer } from "../Views/SignViewBodyShimmer"
-import { getContractCallArg } from "./getContractCallArg"
+import { getContractCallArgOld } from "./getContractCallArg"
 import {
   SignParamAccountButton,
   SignParamNetworkAddressButton,
@@ -48,11 +48,11 @@ export const EthSignBodyErc20Approve: FC = () => {
   const nativeToken = useToken(network?.nativeToken?.id)
 
   const { spender, allowance, isInfinite } = useMemo(() => {
-    const rawAllowance = getContractCallArg<BigNumber>(transactionInfo.contractCall, "amount")
+    const rawAllowance = getContractCallArgOld<BigNumber>(transactionInfo.contractCall, "amount")
     const isInfinite = rawAllowance?.toHexString() === ALLOWANCE_UNLIMITED
 
     return {
-      spender: getContractCallArg<string>(transactionInfo.contractCall, "spender"),
+      spender: getContractCallArgOld<string>(transactionInfo.contractCall, "spender"),
       allowance:
         rawAllowance && !isInfinite
           ? new BalanceFormatter(

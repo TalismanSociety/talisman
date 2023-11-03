@@ -6,7 +6,7 @@ import { useTranslation } from "react-i18next"
 import { SignContainer } from "../../SignContainer"
 import { SignViewIconHeader } from "../../Views/SignViewIconHeader"
 import { SignViewStakingStake } from "../../Views/staking/SignViewStakingStake"
-import { getContractCallArg } from "../getContractCallArg"
+import { getContractCallArgOld } from "../getContractCallArg"
 import { useEthSignKnownTransactionRequest } from "../shared/useEthSignKnownTransactionRequest"
 
 export const EthSignMoonStakingStake: FC = () => {
@@ -15,8 +15,8 @@ export const EthSignMoonStakingStake: FC = () => {
   const token = useToken(network?.nativeToken?.id)
 
   const { planck, autoCompound } = useMemo(() => {
-    const amount = getContractCallArg<BigNumber>(transactionInfo.contractCall, "amount")
-    const autoCompound = getContractCallArg<number>(transactionInfo.contractCall, "autoCompound")
+    const amount = getContractCallArgOld<BigNumber>(transactionInfo.contractCall, "amount")
+    const autoCompound = getContractCallArgOld<number>(transactionInfo.contractCall, "autoCompound")
 
     return {
       planck: amount?.toBigInt(),

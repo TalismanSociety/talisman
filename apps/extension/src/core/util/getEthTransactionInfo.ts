@@ -1,7 +1,7 @@
 import { EvmAddress } from "@core/domains/ethereum/types"
 import { log } from "@core/log"
 import * as Sentry from "@sentry/browser"
-import { getContractCallArg } from "@ui/domains/Sign/Ethereum/getContractCallArg"
+import { getContractCallArgOld } from "@ui/domains/Sign/Ethereum/getContractCallArg"
 import { BigNumber, ethers } from "ethers"
 import {
   PublicClient,
@@ -382,7 +382,7 @@ export const getEthTransactionInfoOld = async (
             decimals,
           }
         } else if (contractType === "ERC721") {
-          const tokenId = getContractCallArg<BigNumber>(contractCall, "tokenId")?.toBigInt()
+          const tokenId = getContractCallArgOld<BigNumber>(contractCall, "tokenId")?.toBigInt()
           if (tokenId) {
             try {
               const contract = getContract({

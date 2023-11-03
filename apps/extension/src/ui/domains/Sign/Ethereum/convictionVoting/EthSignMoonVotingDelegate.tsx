@@ -5,7 +5,7 @@ import { useTranslation } from "react-i18next"
 import { SignContainer } from "../../SignContainer"
 import { SignViewVotingDelegate } from "../../Views/convictionVoting/SignViewVotingDelegate"
 import { SignViewIconHeader } from "../../Views/SignViewIconHeader"
-import { getContractCallArg } from "../getContractCallArg"
+import { getContractCallArgOld } from "../getContractCallArg"
 import { useEthSignKnownTransactionRequest } from "../shared/useEthSignKnownTransactionRequest"
 
 export const EthSignMoonVotingDelegate: FC = () => {
@@ -13,13 +13,13 @@ export const EthSignMoonVotingDelegate: FC = () => {
   const { network, transactionInfo } = useEthSignKnownTransactionRequest()
 
   const { amount, representative, conviction, trackId } = useMemo(() => {
-    const representative = getContractCallArg<string>(
+    const representative = getContractCallArgOld<string>(
       transactionInfo.contractCall,
       "representative"
     )
-    const amount = getContractCallArg<BigNumber>(transactionInfo.contractCall, "amount")
-    const conviction = getContractCallArg<number>(transactionInfo.contractCall, "conviction")
-    const trackId = getContractCallArg<number>(transactionInfo.contractCall, "trackId")
+    const amount = getContractCallArgOld<BigNumber>(transactionInfo.contractCall, "amount")
+    const conviction = getContractCallArgOld<number>(transactionInfo.contractCall, "conviction")
+    const trackId = getContractCallArgOld<number>(transactionInfo.contractCall, "trackId")
 
     return {
       representative,

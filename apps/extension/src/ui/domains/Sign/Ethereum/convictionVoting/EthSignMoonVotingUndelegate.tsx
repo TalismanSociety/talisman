@@ -4,7 +4,7 @@ import { useTranslation } from "react-i18next"
 import { SignContainer } from "../../SignContainer"
 import { SignViewVotingUndelegate } from "../../Views/convictionVoting/SignViewVotingUndelegate"
 import { SignViewIconHeader } from "../../Views/SignViewIconHeader"
-import { getContractCallArg } from "../getContractCallArg"
+import { getContractCallArgOld } from "../getContractCallArg"
 import { useEthSignKnownTransactionRequest } from "../shared/useEthSignKnownTransactionRequest"
 
 export const EthSignMoonVotingUndelegate: FC = () => {
@@ -12,7 +12,7 @@ export const EthSignMoonVotingUndelegate: FC = () => {
   const { network, transactionInfo } = useEthSignKnownTransactionRequest()
 
   const trackId = useMemo(
-    () => getContractCallArg<number>(transactionInfo.contractCall, "trackId"),
+    () => getContractCallArgOld<number>(transactionInfo.contractCall, "trackId"),
     [transactionInfo.contractCall]
   )
 

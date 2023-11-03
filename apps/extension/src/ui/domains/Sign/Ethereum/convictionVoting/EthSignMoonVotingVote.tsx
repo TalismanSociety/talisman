@@ -5,7 +5,7 @@ import { useTranslation } from "react-i18next"
 import { SignContainer } from "../../SignContainer"
 import { SignViewVotingVote } from "../../Views/convictionVoting/SignViewVotingVote"
 import { SignViewIconHeader } from "../../Views/SignViewIconHeader"
-import { getContractCallArg } from "../getContractCallArg"
+import { getContractCallArgOld } from "../getContractCallArg"
 import { useEthSignKnownTransactionRequest } from "../shared/useEthSignKnownTransactionRequest"
 
 export const EthSignMoonVotingVote: FC = () => {
@@ -30,9 +30,9 @@ export const EthSignMoonVotingVote: FC = () => {
   }, [t, transactionInfo.contractCall.name])
 
   const { voteAmount, pollIndex, conviction } = useMemo(() => {
-    const pollIndex = getContractCallArg<number>(transactionInfo.contractCall, "pollIndex")
-    const voteAmount = getContractCallArg<BigNumber>(transactionInfo.contractCall, "voteAmount")
-    const conviction = getContractCallArg<number>(transactionInfo.contractCall, "conviction")
+    const pollIndex = getContractCallArgOld<number>(transactionInfo.contractCall, "pollIndex")
+    const voteAmount = getContractCallArgOld<BigNumber>(transactionInfo.contractCall, "voteAmount")
+    const conviction = getContractCallArgOld<number>(transactionInfo.contractCall, "conviction")
 
     return {
       pollIndex,

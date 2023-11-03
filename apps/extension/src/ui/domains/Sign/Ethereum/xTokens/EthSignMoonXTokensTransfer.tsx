@@ -15,7 +15,7 @@ import { useTranslation } from "react-i18next"
 import { SignContainer } from "../../SignContainer"
 import { SignViewIconHeader } from "../../Views/SignViewIconHeader"
 import { SignViewXTokensTransfer } from "../../Views/transfer/SignViewCrossChainTransfer"
-import { getContractCallArg } from "../getContractCallArg"
+import { getContractCallArgOld } from "../getContractCallArg"
 import { useEthSignKnownTransactionRequest } from "../shared/useEthSignKnownTransactionRequest"
 
 type DecodedMultilocation = {
@@ -74,12 +74,12 @@ export const EthSignMoonXTokensTransfer: FC = () => {
   const { tokens } = useTokens(true)
 
   const { destination, amount, currencyAddress } = useMemo(() => {
-    const destination = getContractCallArg<{ parents: number; interior: string[] }>(
+    const destination = getContractCallArgOld<{ parents: number; interior: string[] }>(
       transactionInfo.contractCall,
       "destination"
     )
-    const amount = getContractCallArg<BigNumber>(transactionInfo.contractCall, "amount")
-    const currencyAddress = getContractCallArg<EvmAddress>(
+    const amount = getContractCallArgOld<BigNumber>(transactionInfo.contractCall, "amount")
+    const currencyAddress = getContractCallArgOld<EvmAddress>(
       transactionInfo.contractCall,
       "currency_address"
     )
