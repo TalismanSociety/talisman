@@ -22,6 +22,5 @@ export const getErc20ContractData = async (
     publicClient: client,
   })
   const [symbol, decimals] = await Promise.all([contract.read.symbol(), contract.read.decimals()])
-  //const [symbol, decimals] = await Promise.all([erc20.symbol(), erc20.decimals()])
   return { symbol, decimals }
 }

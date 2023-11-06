@@ -38,7 +38,6 @@ const signWithLedger = async (
   ledger: LedgerEthereumApp,
   chainId: number,
   method: EthSignMessageMethod | "eth_sendTransaction",
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   payload: unknown,
   accountPath: string
 ): Promise<`0x${string}`> => {

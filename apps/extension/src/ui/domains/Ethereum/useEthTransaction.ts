@@ -54,7 +54,7 @@ const useNonce = (
 // TODO : could be skipped for networks that we know already support it, but need to keep checking for legacy network in case they upgrade
 const useHasEip1559Support = (publicClient: PublicClient | undefined) => {
   const { data, ...rest } = useQuery({
-    queryKey: ["hasEip1559Support", publicClient?.chain?.id],
+    queryKey: ["useHasEip1559Support", publicClient?.chain?.id],
     queryFn: async () => {
       if (!publicClient) return null
 

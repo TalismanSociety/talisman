@@ -15,11 +15,8 @@ const viemRequest =
     try {
       return await api.ethRequest({ chainId, method, params })
     } catch (err) {
-      log.error("[provider.request] error on %s", method, { err })
+      log.error("publicClient request error : %s", method, { err })
       throw err
-      // TODO check that we get proper error codes
-      // const { message, code, data } = err as EthProviderRpcError
-      // throw new EthProviderRpcError(message, code ?? ETH_ERROR_EIP1474_INTERNAL_ERROR, data)
     }
   }
 
@@ -40,18 +37,17 @@ export const getExtensionPublicClient = (
         name: nativeToken.symbol,
       },
       rpcUrls: {
-        // rpcs are a typescript requirement, won't be used by the custom transport
+        // rpcs are a typescript requirement, but won't be used by the custom transport
         public: { http: [] },
         default: { http: [] },
       },
     },
-    // TODO check timers, decide if they should be here (remove them on backend) or clear them here and use defaults on backend
     transport: custom(
       {
         request: viemRequest(evmNetwork.id),
       },
       {
-        // backend will retry 3 times, no need to retry here
+        // backend will retry, at it's own transport level
         retryCount: 0,
       }
     ),

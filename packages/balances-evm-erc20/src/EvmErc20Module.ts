@@ -18,7 +18,7 @@ import {
 } from "@talismn/chaindata-provider"
 import { hasOwnProperty, isEthereumAddress } from "@talismn/util"
 import isEqual from "lodash/isEqual"
-import { PublicClient } from "viem"
+import { PublicClient, getContract } from "viem"
 
 import { erc20Abi } from "./erc20Abi"
 import log from "./log"
@@ -118,16 +118,14 @@ export const EvmErc20Module: NewBalanceModule<
           const publicClient = await chainConnector.getPublicClientForEvmNetwork(chainId)
           if (!publicClient) return []
 
-          const contract = {
+          const contract = getContract({
             abi: erc20Abi,
             address: contractAddress as `0x${string}`,
-          }
+            publicClient,
+          })
 
           try {
-            return Promise.all([
-              publicClient.readContract({ ...contract, functionName: "symbol" }),
-              publicClient.readContract({ ...contract, functionName: "decimals" }),
-            ])
+            return Promise.all([contract.read.symbol(), contract.read.decimals()])
           } catch (error) {
             log.error(`Failed to retrieve contract symbol and decimals`, String(error))
             return []
@@ -372,7 +370,6 @@ async function getFreeBalance(
     })
 
     return res.toString()
-    //((await contract.balanceOf(accountAddress)).toBigInt() ?? 0n).toString()
   } catch (error) {
     const errorMessage = hasOwnProperty(error, "shortMessage")
       ? error.shortMessage

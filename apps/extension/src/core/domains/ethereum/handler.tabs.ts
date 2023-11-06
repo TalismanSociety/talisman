@@ -206,7 +206,7 @@ export class EthTabsHandler extends TabsHandler {
             if (!site) return
             siteId = site.id
             if (site.ethChainId && site.ethAddresses?.length) {
-              chainId = typeof site?.ethChainId !== "undefined" ? toHex(site.ethChainId) : undefined
+              chainId = site?.ethChainId !== undefined ? toHex(site.ethChainId) : undefined
               accounts = site.ethAddresses ?? []
 
               // check that the network is still registered before broadcasting
@@ -241,7 +241,7 @@ export class EthTabsHandler extends TabsHandler {
 
       try {
         // new state for this dapp
-        chainId = typeof site?.ethChainId !== "undefined" ? toHex(site.ethChainId) : undefined
+        chainId = site?.ethChainId !== undefined ? toHex(site.ethChainId) : undefined
         //TODO check eth addresses still exist
         accounts = site?.ethAddresses ?? []
         connected = !!accounts.length
@@ -332,7 +332,7 @@ export class EthTabsHandler extends TabsHandler {
     await Promise.all(
       network.rpcUrls.map(async (rpcUrl) => {
         try {
-          const client = createClient({ transport: http(rpcUrl) })
+          const client = createClient({ transport: http(rpcUrl, { retryCount: 1 }) })
           const rpcChainIdHex = await Promise.race([
             client.request({ method: "eth_chainId" }),
             throwAfter(10_000, "timeout"), // 10 sec timeout
@@ -578,7 +578,6 @@ export class EthTabsHandler extends TabsHandler {
     {
       // eventhough not standard, some transactions specify a chainId in the request
       // throw an error if it's not the current tab's chainId
-
       let specifiedChainId = (txRequest as unknown as { chainId?: string | number }).chainId
 
       // ensure chainId isn't an hex (ex: Zerion)
@@ -718,7 +717,7 @@ export class EthTabsHandler extends TabsHandler {
     )
       await this.checkAccountAuthorised(url)
 
-    // TODO typecheck return types against EthRequestArgumentsViem / EthRequestResultsViem
+    // TODO typecheck return types against rpc schema
     switch (request.method) {
       case "eth_requestAccounts":
         await this.requestPermissions(
@@ -754,7 +753,7 @@ export class EthTabsHandler extends TabsHandler {
       case "eth_signTypedData_v1":
       case "eth_signTypedData_v3":
       case "eth_signTypedData_v4": {
-        return this.signMessage(url, request as EthRequestSignArguments, port)
+        return this.signMessage(url, request, port)
       }
 
       case "personal_ecRecover": {

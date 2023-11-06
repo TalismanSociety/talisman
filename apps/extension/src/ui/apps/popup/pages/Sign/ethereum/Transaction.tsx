@@ -1,3 +1,4 @@
+import { EvmAddress } from "@core/domains/ethereum/types"
 import { EthPriorityOptionName } from "@core/domains/signing/types"
 import { AppPill } from "@talisman/components/AppPill"
 import { WithTooltip } from "@talisman/components/Tooltip"
@@ -23,7 +24,7 @@ import { Button, Tooltip, TooltipContent, TooltipTrigger } from "talisman-ui"
 
 import { SignAccountAvatar } from "../SignAccountAvatar"
 
-const useEvmBalance = (address: string, evmNetworkId: EvmNetworkId | undefined) => {
+const useEvmBalance = (address: EvmAddress, evmNetworkId: EvmNetworkId | undefined) => {
   const publicClient = usePublicClient(evmNetworkId)
   return useEthBalance(publicClient, address)
 }
@@ -109,7 +110,7 @@ export const EthSignTransactionRequest = () => {
     isValid,
     networkUsage,
   } = useEthSignTransactionRequest()
-  const { balance } = useEvmBalance(account?.address, network?.id)
+  const { balance } = useEvmBalance(account?.address as EvmAddress, network?.id)
 
   const { processing, errorMessage } = useMemo(() => {
     return {

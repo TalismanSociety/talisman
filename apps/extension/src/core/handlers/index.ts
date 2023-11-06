@@ -107,7 +107,6 @@ const talismanHandler = <TMessageType extends MessageTypes>(
         try {
           if (["pub(eth.request)", "pri(eth.request)"].includes(message)) {
             const evmError = getEvmErrorCause(error)
-            // TODO test on dapps if behavior is different without data
             port.postMessage({
               id,
               error: cleanupEvmErrorMessage(

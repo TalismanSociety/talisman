@@ -12,7 +12,6 @@ export type SignHardwareEthereumProps = {
   evmNetworkId?: EvmNetworkId
   account: AccountJsonAny
   method: EthSignMessageMethod | "eth_sendTransaction"
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   payload: unknown // string message, typed object for eip712, TransactionRequest for tx
   containerId?: string
   className?: string

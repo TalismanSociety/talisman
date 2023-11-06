@@ -4,7 +4,6 @@ import {
   serializeGasSettings,
   serializeTransactionRequest,
 } from "@core/domains/ethereum/helpers"
-import { EvmAddress } from "@core/domains/ethereum/types"
 import { AssetTransferMethod } from "@core/domains/transfers/types"
 import { log } from "@core/log"
 import { HexString } from "@polkadot/util/types"
@@ -133,7 +132,6 @@ const useEvmTransaction = (
 
   const result = useEthTransaction(tx, token?.evmNetwork?.id, isLocked)
 
-  // TODO result seems weird, fix typings
   return { evmTransaction: tx ? { tx, ...result } : undefined, evmInvalidTxError }
 }
 
@@ -600,13 +598,18 @@ const useSendFundsProvider = () => {
           gotoProgress({ hash, networkIdOrHash: chain.genesisHash })
           return
         }
-        if (evmTransaction?.transaction && amount && token?.evmNetwork?.id && to) {
+        if (
+          evmTransaction?.transaction &&
+          amount &&
+          token?.evmNetwork?.id &&
+          isEthereumAddress(to)
+        ) {
           const serialized = serializeTransactionRequest(evmTransaction.transaction)
           const { hash } = await api.assetTransferEthHardware(
-            token?.evmNetwork.id,
+            token.evmNetwork.id,
             token.id,
             amount,
-            to as EvmAddress,
+            to,
             serialized,
             signature
           )

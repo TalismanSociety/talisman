@@ -30,7 +30,7 @@ import {
   metadataIsV14,
   mutateMetadata,
 } from "@talismn/mutate-metadata"
-import { decodeAnyAddress } from "@talismn/util"
+import { decodeAnyAddress, isBigInt } from "@talismn/util"
 
 import log from "./log"
 
@@ -446,7 +446,7 @@ const DEFAULT_DECIMALS = 9
 
 const tokenSymbolFromU64Id = (u64: number | bigint | AbstractInt) => {
   const bytes = []
-  let num = typeof u64 === "number" ? BigInt(u64) : typeof u64 === "bigint" ? u64 : u64.toBigInt()
+  let num = typeof u64 === "number" ? BigInt(u64) : isBigInt(u64) ? u64 : u64.toBigInt()
   do {
     bytes.unshift(Number(num % 256n))
     num = num / 256n

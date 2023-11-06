@@ -280,7 +280,7 @@ export default interface MessageTypes {
   ) => Promise<boolean>
   ethCancelSign: (id: SigningRequestID<"eth-sign" | "eth-send">) => Promise<boolean>
   ethRequest: (request: AnyEthRequestChainId) => Promise<unknown>
-  ethGetTransactionsCount: (address: `0x${string}`, evmNetworkId: EvmNetworkId) => Promise<number>
+  ethGetTransactionsCount: (address: EvmAddress, evmNetworkId: EvmNetworkId) => Promise<number>
   ethNetworkAddGetRequests: () => Promise<AddEthereumChainRequest[]>
   ethNetworkAddApprove: (id: AddEthereumChainRequestId) => Promise<boolean>
   ethNetworkAddCancel: (is: AddEthereumChainRequestId) => Promise<boolean>

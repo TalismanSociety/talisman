@@ -1,10 +1,11 @@
+import { EvmAddress } from "@core/domains/ethereum/types"
 import { isEthereumAddress } from "@talismn/util"
 import { useQuery } from "@tanstack/react-query"
 import { PublicClient } from "viem"
 
 export const useEthBalance = (
   publicClient: PublicClient | undefined,
-  address: string | undefined
+  address: EvmAddress | undefined
 ) => {
   const { data: balance, ...rest } = useQuery({
     queryKey: ["useEthBalance", publicClient?.chain?.id, address],

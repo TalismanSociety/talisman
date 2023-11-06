@@ -2,11 +2,6 @@ import {
   parseRpcTransactionRequestBase,
   serializeTransactionRequest,
 } from "@core/domains/ethereum/helpers"
-// import { rebuildTransactionRequestNumbers } from "@core/domains/ethereum/helpers"
-// import {
-//   parseRpcTransactionRequestBase,
-//   parseTransactionRequest,
-// } from "@core/domains/ethereum/viemMigration"
 import { KnownSigningRequestIdOnly } from "@core/domains/signing/types"
 import { log } from "@core/log"
 import { HexString } from "@polkadot/util/types"

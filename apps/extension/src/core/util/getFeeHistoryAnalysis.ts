@@ -34,13 +34,6 @@ export const getFeeHistoryAnalysis = async (
       rewardPercentiles: REWARD_PERCENTILES,
     })
 
-    // how busy the network is over this period
-    // values can be null (ex astar)
-    // TODO check that with viem values can't be null
-    // const avgGasUsedRatio = feeHistory.gasUsedRatio.includes(null)
-    //   ? null
-    //   : (feeHistory.gasUsedRatio as number[]).reduce((prev, curr) => prev + curr, 0) /
-    //   feeHistory.gasUsedRatio.length
     const avgGasUsedRatio =
       (feeHistory.gasUsedRatio as number[]).reduce((prev, curr) => prev + curr, 0) /
       feeHistory.gasUsedRatio.length

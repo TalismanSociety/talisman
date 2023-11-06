@@ -7,6 +7,7 @@ import {
   GasSettingsByPriority,
 } from "@core/domains/signing/types"
 import { BalanceFormatter } from "@talismn/balances"
+import { TokenId } from "@talismn/chaindata-provider"
 import { ChevronRightIcon } from "@talismn/icons"
 import { classNames } from "@talismn/util"
 import { TokensAndFiat } from "@ui/domains/Asset/TokensAndFiat"
@@ -35,7 +36,7 @@ const getGasSettings = (
 const Eip1559FeeTooltip: FC<{
   estimatedFee: bigint
   maxFee: bigint
-  tokenId: string
+  tokenId: TokenId
 }> = ({ estimatedFee, maxFee, tokenId }) => {
   const { t } = useTranslation("request")
   const token = useToken(tokenId)

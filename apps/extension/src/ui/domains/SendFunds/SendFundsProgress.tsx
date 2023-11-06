@@ -250,17 +250,6 @@ const SendFundsProgressProgressEvm: FC<SendFundsProgressEvmProps> = ({
   )
 }
 
-// const UNKNOWN_TX: WalletTransaction = {
-//   hash: "",
-//   networkType: "evm",
-//   status: "unknown",
-//   evmNetworkId: "",
-//   account: "",
-//   unsigned: null,
-//   nonce: 0,
-//   timestamp: 0,
-// }
-
 type SendFundsProgressProps = {
   hash: HexString
   networkIdOrHash: string

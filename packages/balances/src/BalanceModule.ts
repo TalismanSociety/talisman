@@ -17,7 +17,6 @@ export type DefaultTransferParams = undefined
 export type NewTransferParamsType<T extends Record<string, unknown>> = BaseTransferParams & T
 
 export type TransferTokenTx = { type: "substrate"; tx: UnsignedTransaction }
-// | { type: "evm"; tx: TransactionRequest }
 
 export type ChainConnectors = { substrate?: ChainConnector; evm?: ChainConnectorEvm }
 export type Hydrate = {
