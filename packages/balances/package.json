@@ -43,10 +43,10 @@
     "rxjs": "^7.8.1"
   },
   "devDependencies": {
-    "@polkadot/api-contract": "^10.1.4",
-    "@polkadot/types": "^10.1.4",
-    "@polkadot/util": "^11.1.1",
-    "@polkadot/util-crypto": "^11.1.1",
+    "@polkadot/api-contract": "^10.9.1",
+    "@polkadot/types": "^10.9.1",
+    "@polkadot/util": "^12.3.2",
+    "@polkadot/util-crypto": "^12.3.2",
     "@substrate/txwrapper-core": "*",
     "@talismn/eslint-config": "workspace:*",
     "@talismn/tsconfig": "workspace:*",
@@ -58,10 +58,10 @@
     "typescript": "^5.2.2"
   },
   "peerDependencies": {
-    "@polkadot/api-contract": "^10.x",
+    "@polkadot/api-contract": "10.x",
     "@polkadot/types": "10.x",
-    "@polkadot/util": "11.x",
-    "@polkadot/util-crypto": "11.x",
+    "@polkadot/util": "12.x",
+    "@polkadot/util-crypto": "12.x",
     "@substrate/txwrapper-core": "4.x"
   },
   "preconstruct": {
