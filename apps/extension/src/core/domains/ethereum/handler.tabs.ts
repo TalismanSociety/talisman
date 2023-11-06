@@ -52,6 +52,7 @@ import {
   ERROR_DUPLICATE_AUTH_REQUEST_MESSAGE,
   requestAuthoriseSite,
 } from "../sitesAuthorised/requests"
+import { getEvmErrorCause } from "./errors"
 import {
   getErc20TokenId,
   isValidAddEthereumRequestParam,
@@ -61,6 +62,7 @@ import {
 } from "./helpers"
 import { requestAddNetwork, requestWatchAsset } from "./requests"
 import {
+  AnyEvmError,
   EthProviderMessage,
   EthRequestArgs,
   EthRequestArguments,
@@ -805,14 +807,20 @@ export class EthTabsHandler extends TabsHandler {
         try {
           return await this.ethRequest(id, url, request as EthRequestArgs, port)
         } catch (err) {
+          // error may already be formatted by our handler
           if (err instanceof EthProviderRpcError) throw err
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          const { code, shortMessage, message } = err as RpcError
-          throw new EthProviderRpcError(
+
+          const { code, message, shortMessage, details } = err as RpcError
+          const cause = getEvmErrorCause(err as AnyEvmError)
+
+          const myError = new EthProviderRpcError(
             shortMessage ?? message ?? "Internal error",
             code ?? ETH_ERROR_EIP1474_INTERNAL_ERROR,
-            shortMessage ? message : undefined
+            // assume if data property is present, it's an EVM revert => dapp expects that underlying error object
+            cause.data ? cause : details
           )
+
+          throw myError
         }
       }
 

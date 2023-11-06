@@ -115,6 +115,7 @@ const talismanHandler = <TMessageType extends MessageTypes>(
                   (evmError.shortMessage ?? evmError.message ?? "Unknown error")
               ),
               code: error.code,
+              rpcData: evmError.data, // don't use "data" as property name or viem will interpret it differently
               isEthProviderRpcError: true,
             })
           } else port.postMessage({ id, error: error.message })

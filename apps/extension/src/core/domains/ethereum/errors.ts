@@ -36,8 +36,9 @@ export const getErrorLabelFromCode = (code: number) => {
   }
 }
 
-export const getEvmErrorCause = (error: AnyEvmError): AnyEvmError => {
-  return error.cause ? getEvmErrorCause(error.cause) : error
+export const getEvmErrorCause = (err: unknown): AnyEvmError => {
+  const error = err as AnyEvmError
+  return error?.cause ? getEvmErrorCause(error.cause) : error
 }
 
 // turns errors into short and human readable message.

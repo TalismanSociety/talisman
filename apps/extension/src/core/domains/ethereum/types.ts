@@ -23,6 +23,7 @@ export type AnyEvmError = {
   details?: string
   code?: number
   cause?: AnyEvmError
+  data?: unknown
 }
 
 export type {

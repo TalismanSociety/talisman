@@ -8,6 +8,7 @@ import {
   ETH_ERROR_EIP1474_INTERNAL_ERROR,
   ETH_ERROR_EIP1993_USER_REJECTED,
   EthProviderRpcError,
+  WrappedEthProviderRpcError,
 } from "./EthProviderRpcError"
 
 interface RequestArguments {
@@ -150,7 +151,7 @@ export const getInjectableEvmProvider = (sendRequest: SendRequest) => {
     } catch (err) {
       log.debug("[talismanEth.request] error on %s", args.method, { err })
 
-      const { code, message, data } = err as EthProviderRpcError
+      const { code, message, rpcData } = err as WrappedEthProviderRpcError
 
       if (code > 0) {
         // standard wallet error (user rejected, etc.)
@@ -164,7 +165,7 @@ export const getInjectableEvmProvider = (sendRequest: SendRequest) => {
         throw new EthProviderRpcError(
           "Internal JSON-RPC error.",
           ETH_ERROR_EIP1474_INTERNAL_ERROR,
-          { code, message, data }
+          rpcData
         )
       }
     }
