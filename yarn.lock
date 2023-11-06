@@ -8118,7 +8118,6 @@ __metadata:
     "@types/lodash": ^4.14.180
     anylogger: ^1.0.11
     eslint: ^8.52.0
-    ethers: 5.7.2
     jest: ^28.1.0
     lodash: 4.17.21
     ts-jest: ^28.0.2
@@ -15468,7 +15467,6 @@ __metadata:
     eslint: ^8.52.0
     eslint-webpack-plugin: ^4.0.1
     eth-phishing-detect: latest
-    ethers: 5.7.2
     fake-indexeddb: 4.0.1
     fork-ts-checker-notifier-webpack-plugin: ^6.0.0
     fork-ts-checker-webpack-plugin: ^7.2.14
