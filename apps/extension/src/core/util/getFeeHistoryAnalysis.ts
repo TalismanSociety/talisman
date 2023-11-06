@@ -15,13 +15,6 @@ const DEFAULT_ETH_PRIORITY_OPTIONS: EthBasePriorityOptionsEip1559 = {
   high: parseGwei("1.7"),
 }
 
-// type FeeHistory = {
-//   oldestBlock: bigint
-//   baseFeePerGas: bigint[]
-//   gasUsedRatio: (number)[] // can have null values (ex astar)
-//   reward?: BigNumber[][] // TODO find network that doesn't return this property, for testing
-// }
-
 export type FeeHistoryAnalysis = {
   maxPriorityPerGasOptions: EthBasePriorityOptionsEip1559
   avgGasUsedRatio: number
@@ -121,7 +114,6 @@ export const getFeeHistoryAnalysis = async (
       )
       log.log("=========================================")
     }
-
     return result
   } catch (err) {
     Sentry.captureException(err)

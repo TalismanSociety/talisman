@@ -50,7 +50,7 @@ export const getEthTransferTransactionBase = async (
 ) => {
   assert(evmNetworkId, "evmNetworkId is required")
   assert(token, "token is required")
-  assert(planck, "planck is required")
+  assert(typeof planck === "bigint", "planck is required")
   assert(isAddress(from), "from address is required")
   assert(isAddress(to), "to address is required")
 
