@@ -24,7 +24,7 @@
     "nanoid": "3.3.6"
   },
   "devDependencies": {
-    "@polkadot/util-crypto": "12.3.2",
+    "@polkadot/util-crypto": "^12.3.2",
     "@talismn/eslint-config": "workspace:*",
     "@talismn/tsconfig": "workspace:*",
     "@types/react": "18.0.14",

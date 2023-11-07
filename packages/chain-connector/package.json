@@ -33,7 +33,7 @@
     "eventemitter3": "^5.0.0"
   },
   "devDependencies": {
-    "@polkadot/rpc-provider": "^10.1.4",
+    "@polkadot/rpc-provider": "^10.9.1",
     "@polkadot/util": "^12.3.2",
     "@polkadot/x-global": "^12.3.2",
     "@polkadot/x-ws": "^12.3.2",
