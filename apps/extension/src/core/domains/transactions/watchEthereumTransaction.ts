@@ -57,12 +57,15 @@ export const watchEthereumTransaction = async (
         throwAfter(5 * 60_000, "Transaction not found"),
       ])
 
-      // to test failing transactions, swap on busy AMM pools with a 0.05% slippage limit
-      updateTransactionStatus(
-        hash,
-        receipt.status === "success" ? "success" : "error",
-        receipt.blockNumber
-      )
+      // check hash which may be incorrect for cancelled tx, in which case receipt includes the replacement tx hash
+      if (receipt.transactionHash === hash) {
+        // to test failing transactions, swap on busy AMM pools with a 0.05% slippage limit
+        updateTransactionStatus(
+          hash,
+          receipt.status === "success" ? "success" : "error",
+          receipt.blockNumber
+        )
+      }
 
       // success if associated to a block number
       if (withNotifications)
