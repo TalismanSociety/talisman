@@ -30,6 +30,7 @@ import { useEffect, useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
 import { PublicClient, TransactionRequest } from "viem"
 
+import { useEthEstimateL1DataFee } from "./useEthEstimateL1DataFee"
 import { useIsValidEthTransaction } from "./useIsValidEthTransaction"
 
 // gasPrice isn't reliable on polygon & mumbai, see https://github.com/ethers-io/ethers.js/issues/2828#issuecomment-1283014250
@@ -427,12 +428,18 @@ export const useEthTransaction = (
     if (!lockTransaction) setTransaction(liveUpdatingTransaction)
   }, [liveUpdatingTransaction, lockTransaction])
 
+  const { data: estimatedL1DataFee, error: l1FeeError } = useEthEstimateL1DataFee(
+    publicClient,
+    transaction
+  )
+
   // TODO replace this wierd object name with something else... gasInfo ?
-  const txDetails: EthTransactionDetails | undefined = useMemo(() => {
+  const txDetails = useMemo<EthTransactionDetails | undefined>(() => {
     if (
       !evmNetworkId ||
       !isBigInt(gasPrice) ||
       !isBigInt(estimatedGas) ||
+      !isBigInt(estimatedL1DataFee) ||
       !transaction ||
       !gasSettings
     )
@@ -444,7 +451,8 @@ export const useEthTransaction = (
     const { estimatedFee, maxFee } = getTotalFeesFromGasSettings(
       gasSettings,
       estimatedGas,
-      baseFeePerGas
+      baseFeePerGas,
+      estimatedL1DataFee
     )
 
     return {
@@ -453,6 +461,7 @@ export const useEthTransaction = (
       gasPrice,
       baseFeePerGas,
       estimatedFee,
+      estimatedL1DataFee,
       maxFee,
       baseFeeTrend: feeHistoryAnalysis?.baseFeeTrend,
     }
@@ -463,6 +472,7 @@ export const useEthTransaction = (
     feeHistoryAnalysis?.baseFeeTrend,
     gasPrice,
     gasSettings,
+    estimatedL1DataFee,
     transaction,
   ])
 
@@ -478,6 +488,7 @@ export const useEthTransaction = (
     const anyError = (errorEip1559Support ??
       nonceError ??
       blockFeeDataError ??
+      l1FeeError ??
       isValidError) as Error
 
     const userFriendlyError = getHumanReadableErrorMessage(anyError)
@@ -489,7 +500,7 @@ export const useEthTransaction = (
       }
 
     return { error: undefined, errorDetails: undefined }
-  }, [blockFeeDataError, isValidError, errorEip1559Support, nonceError, t])
+  }, [errorEip1559Support, nonceError, blockFeeDataError, l1FeeError, isValidError, t])
 
   const isLoading = useMemo(
     () => tx && isDecoding && !txDetails && !error,
