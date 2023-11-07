@@ -18,6 +18,10 @@ class EnabledChainsStore extends StorageProvider<EnabledChains> {
     const enabledNetworks = await this.get()
     await this.set({ ...enabledNetworks, [networkId]: enabled })
   }
+
+  async resetEnabled(networkId: ChainId) {
+    await this.delete(networkId)
+  }
 }
 
 export const enabledChainsStore = new EnabledChainsStore()
