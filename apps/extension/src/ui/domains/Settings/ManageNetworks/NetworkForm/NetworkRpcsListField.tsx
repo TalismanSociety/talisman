@@ -8,48 +8,48 @@ import {
   useSensor,
   useSensors,
 } from "@dnd-kit/core"
-import { SortableContext, sortableKeyboardCoordinates } from "@dnd-kit/sortable"
-import { useSortable } from "@dnd-kit/sortable"
+import { SortableContext, sortableKeyboardCoordinates, useSortable } from "@dnd-kit/sortable"
 import { CSS } from "@dnd-kit/utilities"
-import { DragIcon, PlusIcon, TrashIcon } from "@talismn/icons"
+import { DragIcon, LoaderIcon, PlusIcon, TrashIcon } from "@talismn/icons"
 import { FC, useCallback, useMemo } from "react"
-import {
-  FieldArrayWithId,
-  FieldErrors,
-  UseFormRegister,
-  UseFormTrigger,
-  useFieldArray,
-  useFormContext,
-} from "react-hook-form"
+import { FieldArrayWithId, useFieldArray, useFormContext } from "react-hook-form"
 import { useTranslation } from "react-i18next"
 import { FormFieldContainer, FormFieldInputText } from "talisman-ui"
 
-import { useRegisterFieldWithDebouncedValidation } from "./useRegisterFieldWithDebouncedValidation"
+import { SubNetworkFormData } from "./Substrate/types"
+import {
+  ExtraValidationCb,
+  useRegisterFieldWithDebouncedValidation,
+} from "./useRegisterFieldWithDebouncedValidation"
 
-type SortableRpcItemProps = {
-  register: UseFormRegister<RequestUpsertCustomEvmNetwork>
-  trigger: UseFormTrigger<RequestUpsertCustomEvmNetwork>
-  rpc: FieldArrayWithId<RequestUpsertCustomEvmNetwork, "rpcs", "id">
-  errors?: FieldErrors<RequestUpsertCustomEvmNetwork>["rpcs"]
+type RpcFormData = SubNetworkFormData | RequestUpsertCustomEvmNetwork
+
+export type SortableRpcItemProps = {
+  rpc: FieldArrayWithId<RpcFormData, "rpcs", "id">
   canDelete?: boolean
   canDrag?: boolean
   onDelete?: () => void
   index: number
   placeholder: string
+  isLoading?: boolean
+  extraValidationCb?: ExtraValidationCb
 }
 
-const SortableRpcField: FC<SortableRpcItemProps> = ({
+export const SortableRpcField: FC<SortableRpcItemProps> = ({
   rpc,
   index,
-  errors,
-  register,
-  trigger,
   canDelete,
   canDrag,
   onDelete,
   placeholder,
+  isLoading = false,
+  extraValidationCb,
 }) => {
   const { attributes, listeners, setNodeRef, transform, transition } = useSortable({ id: rpc.id })
+  const {
+    register,
+    formState: { errors },
+  } = useFormContext<RpcFormData>()
 
   const style = {
     transform: CSS.Transform.toString(transform),
@@ -62,8 +62,8 @@ const SortableRpcField: FC<SortableRpcItemProps> = ({
   const fieldRegistration = useRegisterFieldWithDebouncedValidation(
     `rpcs.${index}.url`,
     250,
-    trigger,
-    register
+    register,
+    extraValidationCb
   )
 
   return (
@@ -86,36 +86,40 @@ const SortableRpcField: FC<SortableRpcItemProps> = ({
             <button
               type="button"
               className="allow-focus text-md mr-[-1.2rem] px-2 opacity-80 outline-none hover:opacity-100 focus:opacity-100 disabled:opacity-50"
+              disabled={isLoading}
               onClick={onDelete}
             >
-              <TrashIcon className="transition-none" />
+              {!isLoading && <TrashIcon className="transition-none" />}
+              {isLoading && <LoaderIcon className="animate-spin-slow transition-none" />}
             </button>
           )
         }
       />
       <div className="text-alert-warn h-8 max-w-full overflow-hidden text-ellipsis whitespace-nowrap py-2 text-right text-xs uppercase leading-none">
-        {errors?.[index]?.url?.message}
+        {errors?.rpcs?.[index]?.url?.message}
       </div>
     </div>
   )
 }
 
-export const NetworkRpcsListField = ({ placeholder = "https://" }: { placeholder?: string }) => {
+export const NetworkRpcsListField = ({
+  placeholder = "https://",
+  FieldComponent = SortableRpcField,
+}: {
+  placeholder?: string
+  FieldComponent?: React.ComponentType<SortableRpcItemProps>
+}) => {
   const { t } = useTranslation("admin")
-  const {
-    register,
-    trigger,
-    formState: { errors },
-    watch,
-  } = useFormContext<RequestUpsertCustomEvmNetwork>()
+  const { watch, control } = useFormContext<RpcFormData>()
 
   const {
     fields: rpcs,
     append,
     remove,
     move,
-  } = useFieldArray<RequestUpsertCustomEvmNetwork>({
+  } = useFieldArray<RpcFormData>({
     name: "rpcs",
+    control,
   })
 
   const handleRemove = useCallback(
@@ -160,16 +164,13 @@ export const NetworkRpcsListField = ({ placeholder = "https://" }: { placeholder
         <SortableContext items={rpcIds}>
           <div className="flex w-full flex-col gap-2">
             {rpcs.map((rpc, index, arr) => (
-              <SortableRpcField
+              <FieldComponent
                 key={rpc.id}
                 index={index}
-                register={register}
-                trigger={trigger}
                 rpc={rpc}
                 canDelete={canDelete}
                 canDrag={arr.length > 1}
                 onDelete={handleRemove(index)}
-                errors={errors.rpcs}
                 placeholder={placeholder}
               />
             ))}

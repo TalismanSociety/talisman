@@ -20,9 +20,9 @@
    See the License for the specific language governing permissions and
    limitations under the License.
  */
-import { Blake2b } from "wat-the-crypto"
 
 import * as base58 from "./base58"
+import { Blake2b } from "./util"
 
 export function encode(prefix: number, payload: Uint8Array, checksumLength?: number): string {
   return base58.encode(encodeRaw(prefix, payload, checksumLength))

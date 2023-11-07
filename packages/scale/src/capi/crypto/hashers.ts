@@ -18,9 +18,11 @@
    See the License for the specific language governing permissions and
    limitations under the License.
  */
+
 import * as $ from "@talismn/subshape-fork"
 import { EncodeBuffer } from "@talismn/subshape-fork"
-import { Blake2b, Xxhash } from "wat-the-crypto"
+
+import { Blake2b, Xxhash } from "./util"
 
 export abstract class Hasher {
   abstract create(): Hashing
