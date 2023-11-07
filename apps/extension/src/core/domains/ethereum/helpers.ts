@@ -252,23 +252,36 @@ export const getGasSettingsEip1559 = (
 export const getTotalFeesFromGasSettings = (
   gasSettings: EthGasSettings,
   estimatedGas: bigint,
-  baseFeePerGas?: bigint | null
+  baseFeePerGas: bigint | null | undefined,
+  l1Fee: bigint
 ) => {
+  // L1 fee needs to be included in estimatedFee and maxFee to keep the same UX behavior whether or not the chain is a L2
+  const estimatedL1DataFee = l1Fee > 0n ? l1Fee : null
+
+  // OP Stack docs : Spikes in Ethereum gas prices may result in users paying a higher or lower than estimated L1 data fee, by up to 25%
+  // https://community.optimism.io/docs/developers/build/transaction-fees/#the-l1-data-fee
+  const maxL1Fee = (l1Fee * 125n) / 100n
+
   if (gasSettings.type === "eip1559") {
     if (!isBigInt(baseFeePerGas))
       throw new Error("baseFeePerGas argument is required for type 2 fee computation")
     return {
+      estimatedL1DataFee,
       estimatedFee:
         (gasSettings.maxPriorityFeePerGas +
           (baseFeePerGas < gasSettings.maxFeePerGas ? baseFeePerGas : gasSettings.maxFeePerGas)) *
-        (estimatedGas < gasSettings.gas ? estimatedGas : gasSettings.gas),
-      maxFee: (gasSettings.maxFeePerGas + gasSettings.maxPriorityFeePerGas) * gasSettings.gas,
+          (estimatedGas < gasSettings.gas ? estimatedGas : gasSettings.gas) +
+        l1Fee,
+      maxFee:
+        (gasSettings.maxFeePerGas + gasSettings.maxPriorityFeePerGas) * gasSettings.gas + maxL1Fee,
     }
   } else {
     return {
+      estimatedL1DataFee,
       estimatedFee:
-        gasSettings.gasPrice * (estimatedGas < gasSettings.gas ? estimatedGas : gasSettings.gas),
-      maxFee: gasSettings.gasPrice * gasSettings.gas,
+        gasSettings.gasPrice * (estimatedGas < gasSettings.gas ? estimatedGas : gasSettings.gas) +
+        l1Fee,
+      maxFee: gasSettings.gasPrice * gasSettings.gas + maxL1Fee,
     }
   }
 }
