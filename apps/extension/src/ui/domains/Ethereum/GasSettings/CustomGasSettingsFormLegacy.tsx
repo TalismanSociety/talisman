@@ -1,3 +1,4 @@
+import { getHumanReadableErrorMessage } from "@core/domains/ethereum/errors"
 import { EthGasSettingsLegacy, EvmNetworkId } from "@core/domains/ethereum/types"
 import { EthTransactionDetails, GasSettingsByPriorityLegacy } from "@core/domains/signing/types"
 import { log } from "@core/log"
@@ -12,7 +13,7 @@ import { FC, FormEventHandler, useCallback, useEffect, useMemo, useRef, useState
 import { useForm } from "react-hook-form"
 import { useTranslation } from "react-i18next"
 import { useDebounce } from "react-use"
-import { IconButton } from "talisman-ui"
+import { IconButton, Tooltip, TooltipContent, TooltipTrigger } from "talisman-ui"
 import { Button, FormFieldContainer, FormFieldInputText } from "talisman-ui"
 import { TransactionRequest, formatGwei, parseGwei } from "viem"
 import * as yup from "yup"
@@ -229,8 +230,11 @@ export const CustomGasSettingsFormLegacy: FC<CustomGasSettingsFormLegacyProps> =
     [genericEvent, onConfirm, txDetails.evmNetworkId]
   )
 
-  const { isValid: isGasSettingsValid, isLoading: isLoadingGasSettingsValid } =
-    useIsValidGasSettings(txDetails.evmNetworkId, tx, gasPrice, gasLimit)
+  const {
+    isValid: isGasSettingsValid,
+    isLoading: isLoadingGasSettingsValid,
+    error: gasSettingsError,
+  } = useIsValidGasSettings(txDetails.evmNetworkId, tx, gasPrice, gasLimit)
 
   const showMaxFeeTotal = isFormValid && isGasSettingsValid && !isLoadingGasSettingsValid
 
@@ -337,7 +341,14 @@ export const CustomGasSettingsFormLegacy: FC<CustomGasSettingsFormLegacyProps> =
           ) : isLoadingGasSettingsValid ? (
             <LoaderIcon className="animate-spin-slow text-body-secondary inline-block" />
           ) : (
-            <span className="text-alert-error">{t("Invalid settings")}</span>
+            <Tooltip>
+              <TooltipTrigger className="text-alert-error">
+                {t("Invalid transaction")}
+              </TooltipTrigger>
+              {!!gasSettingsError && (
+                <TooltipContent>{getHumanReadableErrorMessage(gasSettingsError)}</TooltipContent>
+              )}
+            </Tooltip>
           )}
         </div>
       </div>
