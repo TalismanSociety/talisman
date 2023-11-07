@@ -1,5 +1,6 @@
 import imgHandOrb from "@talisman/theme/images/onboard_hand_orb.png"
 import { AnalyticsPage } from "@ui/api/analytics"
+import { useAnalyticsPageView } from "@ui/hooks/useAnalyticsPageView"
 import { Button } from "talisman-ui"
 
 import { useOnboard } from "../context"
@@ -13,6 +14,7 @@ const SUCCESS_PAGE: AnalyticsPage = {
 }
 
 export const SuccessPage = () => {
+  useAnalyticsPageView(SUCCESS_PAGE)
   const { completeOnboarding } = useOnboard()
   return (
     <OnboardLayout analytics={SUCCESS_PAGE}>
