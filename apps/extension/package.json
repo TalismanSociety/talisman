@@ -137,7 +137,7 @@
     "typescript": "^5.2.2",
     "url-join": "^5.0.0",
     "uuid": "^8.3.2",
-    "viem": "^1.18.3",
+    "viem": "^1.18.9",
     "webextension-polyfill": "0.8.0",
     "webpack": "^5.88.1",
     "webpack-cli": "^4.10.0",

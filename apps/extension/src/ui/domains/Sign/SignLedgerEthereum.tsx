@@ -28,11 +28,23 @@ import {
 import { LedgerSigningStatus } from "./LedgerSigningStatus"
 import { SignHardwareEthereumProps } from "./SignHardwareEthereum"
 
-const toSignature = ({ v, r, s }: { v: string | number; r: string; s: string }): Signature => ({
-  v: typeof v === "string" ? hexToBigInt(`0x${v}`) : BigInt(v),
-  r: `0x${r}`,
-  s: `0x${s}`,
-})
+const toSignature = ({ v, r, s }: { v: string | number; r: string; s: string }): Signature => {
+  const parseV = (v: string | number) => {
+    const parsed = typeof v === "string" ? hexToBigInt(`0x${v}`) : BigInt(v)
+
+    // ideally this should be done in viem
+    if (parsed === 0n) return 27n
+    if (parsed === 1n) return 28n
+
+    return parsed
+  }
+
+  return {
+    v: parseV(v),
+    r: `0x${r}`,
+    s: `0x${s}`,
+  }
+}
 
 const signWithLedger = async (
   ledger: LedgerEthereumApp,

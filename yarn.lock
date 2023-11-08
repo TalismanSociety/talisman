@@ -7857,7 +7857,7 @@ __metadata:
     lodash: 4.17.21
     ts-jest: ^28.0.2
     typescript: ^5.2.2
-    viem: ^1.18.3
+    viem: ^1.18.9
   peerDependencies:
     "@polkadot/util": 11.x
   languageName: unknown
@@ -7880,7 +7880,7 @@ __metadata:
     lodash: 4.17.21
     ts-jest: ^28.0.2
     typescript: ^5.2.2
-    viem: ^1.18.3
+    viem: ^1.18.9
   languageName: unknown
   linkType: soft
 
@@ -8122,7 +8122,7 @@ __metadata:
     lodash: 4.17.21
     ts-jest: ^28.0.2
     typescript: ^5.2.2
-    viem: ^1.18.3
+    viem: ^1.18.9
   languageName: unknown
   linkType: soft
 
@@ -15527,7 +15527,7 @@ __metadata:
     url: ^0.11.0
     url-join: ^5.0.0
     uuid: ^8.3.2
-    viem: ^1.18.3
+    viem: ^1.18.9
     webextension-polyfill: 0.8.0
     webpack: ^5.88.1
     webpack-bundle-analyzer: ^4.9.0
@@ -27151,9 +27151,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"viem@npm:^1.18.3":
-  version: 1.18.3
-  resolution: "viem@npm:1.18.3"
+"viem@npm:^1.18.9":
+  version: 1.18.9
+  resolution: "viem@npm:1.18.9"
   dependencies:
     "@adraffy/ens-normalize": 1.9.4
     "@noble/curves": 1.2.0
@@ -27168,7 +27168,7 @@ __metadata:
   peerDependenciesMeta:
     typescript:
       optional: true
-  checksum: 263eb99ee46c586a743a37e15e3079546c5ee681d541b5d42db41eeae27638dbeabc6542ac620bdb5e3eaecae1ec3f2ad04cf4693f3f3105bed64a495ff925bd
+  checksum: 4bcd28a3bc2e0ff2f19a8de2c779dfdc0c7a479fe2c103a03cb4faa96450241075ddbc7e39bde4db9d8ad8e1dbc4d394223cdae00f8e135c2748ba354a2e2665
   languageName: node
   linkType: hard
 
