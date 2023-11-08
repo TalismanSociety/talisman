@@ -22540,7 +22540,7 @@ __metadata:
     tailwindcss: ^3.3.2
     talisman-ui: "workspace:*"
     typescript: 5.2.2
-    viem: ^1.16.6
+    viem: ^1.18.9
     vite: ^4.4.3
     vite-plugin-svgr: ^2.2.1
     wagmi: ^1.4.5
