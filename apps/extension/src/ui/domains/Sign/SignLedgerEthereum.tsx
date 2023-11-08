@@ -124,6 +124,25 @@ const signWithLedger = async (
   }
 }
 
+const ErrorDrawer: FC<{ error: string | null; containerId?: string; onClose: () => void }> = ({
+  error,
+  containerId,
+  onClose,
+}) => {
+  // save error so the content doesn't disappear before the drawer closing animation
+  const [savedError, setSavedError] = useState<string | null>()
+
+  useEffect(() => {
+    if (error) setSavedError(error)
+  }, [error])
+
+  return (
+    <Drawer anchor="bottom" isOpen={!!error && !!savedError} containerId={containerId}>
+      <LedgerSigningStatus message={savedError ?? ""} status={"error"} confirm={onClose} />
+    </Drawer>
+  )
+}
+
 const SignLedgerEthereum: FC<SignHardwareEthereumProps> = ({
   evmNetworkId,
   account,
@@ -209,6 +228,11 @@ const SignLedgerEthereum: FC<SignHardwareEthereumProps> = ({
       .finally(() => setIsSigning(false))
   }, [onSentToDevice, signLedger])
 
+  const handleClearErrorClick = useCallback(() => {
+    onSentToDevice?.(false)
+    setError(null)
+  }, [onSentToDevice])
+
   return (
     <div className={classNames("flex w-full flex-col gap-6", className)}>
       {!error && (
@@ -235,16 +259,7 @@ const SignLedgerEthereum: FC<SignHardwareEthereumProps> = ({
           {t("Cancel")}
         </Button>
       )}
-      {error && (
-        <Drawer anchor="bottom" isOpen containerId={containerId}>
-          {/* Shouldn't be a LedgerSigningStatus, just an error message */}
-          <LedgerSigningStatus
-            message={error ? error : ""}
-            status={error ? "error" : isSigning ? "signing" : undefined}
-            confirm={onCancel}
-          />
-        </Drawer>
-      )}
+      <ErrorDrawer error={error} containerId={containerId} onClose={handleClearErrorClick} />
     </div>
   )
 }
