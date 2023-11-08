@@ -74,13 +74,6 @@ type EthRequestSignaturesMap<TRpcSchema extends RpcSchema> = {
   ]
 }
 
-// type EthRequestSignaturesMapBetter<TRpcSchema extends RpcSchema> = {
-//   [K in TRpcSchema[number]["Method"]]: {
-//     parameters: Extract<TRpcSchema[number], { Method: K }>["Parameters"]
-//     returnType: Extract<TRpcSchema[number], { Method: K }>["ReturnType"]
-//   }
-// }
-
 export type EthRequestSignatures = EthRequestSignaturesMap<FullRpcSchema>
 
 export type EthRequestMethod = keyof EthRequestSignatures
