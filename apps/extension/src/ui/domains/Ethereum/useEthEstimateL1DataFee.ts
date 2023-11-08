@@ -27,34 +27,6 @@ const getEthL1DataFee = async (publicClient: PublicClient, serializedTx: Hex): P
   }
 }
 
-// const getUnsignedTransaction = (
-//   tx: ethers.providers.TransactionRequest | undefined
-// ): UnsignedTransaction | null => {
-//   if (!tx) return null
-//   if (tx.nonce === undefined) return null
-
-//   const gasSettings =
-//     tx.type === 2
-//       ? {
-//           maxPriorityFeePerGas: tx.maxPriorityFeePerGas,
-//           maxFeePerGas: tx.maxFeePerGas,
-//         }
-//       : {
-//           gasLimit: tx.gasLimit,
-//           gasPrice: tx.gasPrice,
-//         }
-
-//   return {
-//     to: tx.to,
-//     nonce: BigNumber.from(tx.nonce).toNumber(),
-//     chainId: tx.chainId,
-//     value: tx.value,
-//     data: tx.data,
-//     type: tx.type,
-//     ...gasSettings,
-//   }
-// }
-
 export const useEthEstimateL1DataFee = (
   publicClient: PublicClient | undefined,
   tx: TransactionRequest | undefined
