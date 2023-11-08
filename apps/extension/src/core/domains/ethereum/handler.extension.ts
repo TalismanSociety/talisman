@@ -123,7 +123,7 @@ export class EthHandler extends ExtensionHandler {
         type: "evm sign and send",
         hostName: ok ? host : null,
         dapp: url,
-        chain: ethChainId,
+        chain: Number(ethChainId),
         networkType: "ethereum",
       })
 
@@ -159,7 +159,7 @@ export class EthHandler extends ExtensionHandler {
 
       talismanAnalytics.captureDelayed("send transaction", {
         type: "evm send signed",
-        chain: evmNetworkId,
+        chain: Number(evmNetworkId),
         networkType: "ethereum",
       })
 
@@ -203,7 +203,7 @@ export class EthHandler extends ExtensionHandler {
 
       talismanAnalytics.captureDelayed("send transaction", {
         type: "evm sign and send",
-        chain: evmNetworkId,
+        chain: Number(evmNetworkId),
         networkType: "ethereum",
       })
 
@@ -241,7 +241,7 @@ export class EthHandler extends ExtensionHandler {
       isHardware: true,
       hostName: ok ? host : null,
       dapp: url,
-      chain: queued.ethChainId,
+      chain: Number(queued.ethChainId),
       networkType: "ethereum",
       hardwareType: account?.meta.hardwareType,
     })
@@ -295,7 +295,7 @@ export class EthHandler extends ExtensionHandler {
         isHardware: true,
         hostName: ok ? host : null,
         dapp: queued.url,
-        chain: queued.ethChainId,
+        chain: Number(queued.ethChainId),
         networkType: "ethereum",
       })
 
@@ -325,7 +325,7 @@ export class EthHandler extends ExtensionHandler {
     talismanAnalytics.captureDelayed("sign reject", {
       method: queued.method,
       dapp: queued.url,
-      chain: queued.ethChainId,
+      chain: Number(queued.ethChainId),
     })
 
     return true
