@@ -7,11 +7,11 @@ import {
   GasSettingsByPriority,
 } from "@core/domains/signing/types"
 import { BalanceFormatter } from "@talismn/balances"
+import { TokenId } from "@talismn/chaindata-provider"
 import { ChevronRightIcon } from "@talismn/icons"
 import { classNames } from "@talismn/util"
 import { TokensAndFiat } from "@ui/domains/Asset/TokensAndFiat"
 import useToken from "@ui/hooks/useToken"
-import { BigNumber } from "ethers"
 import { FC, useCallback, useMemo } from "react"
 import { Trans, useTranslation } from "react-i18next"
 import { Tooltip, TooltipContent, TooltipTrigger } from "talisman-ui"
@@ -34,9 +34,9 @@ const getGasSettings = (
 }
 
 const Eip1559FeeTooltip: FC<{
-  estimatedFee: BigNumber
-  maxFee: BigNumber
-  tokenId: string
+  estimatedFee: bigint
+  maxFee: bigint
+  tokenId: TokenId
 }> = ({ estimatedFee, maxFee, tokenId }) => {
   const { t } = useTranslation("request")
   const token = useToken(tokenId)

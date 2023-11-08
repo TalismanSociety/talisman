@@ -3,11 +3,11 @@ import { EvmNetworkId } from "@core/domains/ethereum/types"
 import type { EthSignRequest, SubstrateSigningRequest } from "@core/domains/signing/types"
 import { requestStore } from "@core/libs/requests/store"
 import type { Port } from "@core/types/base"
-import type { TransactionRequest } from "@ethersproject/providers"
+import { RpcTransactionRequest } from "viem"
 
 export const signAndSendEth = (
   url: string,
-  request: TransactionRequest,
+  request: RpcTransactionRequest,
   ethChainId: EvmNetworkId,
   account: AccountJson,
   port: Port

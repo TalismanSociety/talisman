@@ -10,11 +10,10 @@ import { NetworkUsage } from "@ui/domains/Ethereum/NetworkUsage"
 import { useAnalytics } from "@ui/hooks/useAnalytics"
 import useToken from "@ui/hooks/useToken"
 import { useTokenRates } from "@ui/hooks/useTokenRates"
-import { BigNumber, BigNumberish } from "ethers"
-import { formatEther, formatUnits } from "ethers/lib/utils"
 import { FC, PropsWithChildren, ReactNode, useCallback, useEffect, useMemo } from "react"
 import { useTranslation } from "react-i18next"
 import { Button, Drawer, PillButton } from "talisman-ui"
+import { formatEther, formatGwei } from "viem"
 
 import { Message } from "../Message"
 import { useEthSignTransactionRequest } from "../SignRequestContext"
@@ -36,12 +35,12 @@ type ViewDetailsContentProps = {
   onClose: () => void
 }
 
-const Gwei: FC<{ value: BigNumberish | null | undefined }> = ({ value }) => {
+const Gwei: FC<{ value: bigint | null | undefined }> = ({ value }) => {
   const { t } = useTranslation("request")
   return (
     <>
-      {value
-        ? t("{{value}} GWEI", { value: formatDecimals(formatUnits(value, "gwei")) })
+      {value !== null && value !== undefined
+        ? t("{{value}} GWEI", { value: formatDecimals(formatGwei(value)) })
         : t("N/A")}
     </>
   )
@@ -57,20 +56,15 @@ const ViewDetailsContent: FC<ViewDetailsContentProps> = ({ onClose }) => {
     txDetails,
     priority,
     transaction,
-    transactionInfo,
+    decodedTx,
     error,
     errorDetails,
   } = useEthSignTransactionRequest()
   const { genericEvent } = useAnalytics()
 
-  const txInfo = useMemo(() => {
-    if (transactionInfo && transactionInfo.contractType !== "unknown") return transactionInfo
-    return undefined
-  }, [transactionInfo])
-
   const nativeToken = useToken(network?.nativeToken?.id)
   const formatEthValue = useCallback(
-    (value?: BigNumberish) => {
+    (value: bigint = 0n) => {
       return value ? `${formatEther(value)} ${nativeToken?.symbol ?? ""}` : null
     },
     [nativeToken?.symbol]
@@ -86,16 +80,8 @@ const ViewDetailsContent: FC<ViewDetailsContentProps> = ({ onClose }) => {
     () =>
       txDetails && nativeToken
         ? [
-            new BalanceFormatter(
-              BigNumber.from(txDetails?.estimatedFee).toString(),
-              nativeToken?.decimals,
-              nativeTokenRates
-            ),
-            new BalanceFormatter(
-              BigNumber.from(txDetails?.maxFee).toString(),
-              nativeToken?.decimals,
-              nativeTokenRates
-            ),
+            new BalanceFormatter(txDetails.estimatedFee, nativeToken?.decimals, nativeTokenRates),
+            new BalanceFormatter(txDetails.maxFee, nativeToken?.decimals, nativeTokenRates),
           ]
         : [null, null],
     [nativeToken, nativeTokenRates, txDetails]
@@ -126,10 +112,10 @@ const ViewDetailsContent: FC<ViewDetailsContentProps> = ({ onClose }) => {
     <div className="bg-grey-850 flex max-h-[60rem] w-full flex-col gap-12 p-12">
       <div className="scrollable scrollable-700 flex-grow overflow-y-auto pr-4 text-sm leading-[2rem]">
         <div className="text-body-secondary">{t("Details")}</div>
-        {!!txInfo?.isContractCall && (
+        {!!decodedTx?.isContractCall && (
           <ViewDetailsField label={t("Contract type and method")}>
-            {txInfo?.contractType
-              ? `${txInfo?.contractType} : ${txInfo?.contractCall?.name ?? t("N/A")}`
+            {decodedTx?.contractType
+              ? `${decodedTx?.contractType} : ${decodedTx?.contractCall?.functionName ?? t("N/A")}`
               : t("Unknown")}
           </ViewDetailsField>
         )}
@@ -140,11 +126,11 @@ const ViewDetailsContent: FC<ViewDetailsContentProps> = ({ onClose }) => {
         />
         <ViewDetailsAddress
           label={t("To")}
-          address={request.to}
+          address={request.to ?? undefined}
           blockExplorerUrl={network?.explorerUrl}
         />
         <ViewDetailsField label={t("Value to be transferred")} breakAll>
-          {formatEthValue(request.value)}
+          {formatEthValue(transaction?.value)}
         </ViewDetailsField>
         <ViewDetailsField label={t("Network")}>
           <ViewDetailsGrid>
@@ -158,8 +144,13 @@ const ViewDetailsContent: FC<ViewDetailsContentProps> = ({ onClose }) => {
                 typeof networkUsage === "number" ? `${Math.round(networkUsage * 100)}%` : t("N/A")
               }
             />
-            {transaction?.type === 2 && (
+
+            {transaction?.type === "eip1559" && (
               <>
+                <ViewDetailsGridRow
+                  left={t("Gas price")}
+                  right={<Gwei value={txDetails?.gasPrice} />}
+                />
                 <ViewDetailsGridRow
                   left={t("Base fee per gas")}
                   right={<Gwei value={txDetails?.baseFeePerGas} />}
@@ -181,7 +172,7 @@ const ViewDetailsContent: FC<ViewDetailsContentProps> = ({ onClose }) => {
           <ViewDetailsField label={`${t("Gas settings")} (${feePriorityOptions[priority].label})`}>
             {transaction ? (
               <ViewDetailsGrid>
-                {transaction?.type === 2 ? (
+                {transaction?.type === "eip1559" ? (
                   <>
                     <ViewDetailsGridRow left={t("Type")} right="EIP-1559" />
 
@@ -205,11 +196,7 @@ const ViewDetailsContent: FC<ViewDetailsContentProps> = ({ onClose }) => {
                 )}
                 <ViewDetailsGridRow
                   left={t("Gas limit")}
-                  right={
-                    transaction?.gasLimit
-                      ? BigNumber.from(transaction.gasLimit)?.toNumber()
-                      : t("N/A")
-                  }
+                  right={transaction?.gas ? transaction.gas.toString() : t("N/A")}
                 />
               </ViewDetailsGrid>
             ) : (

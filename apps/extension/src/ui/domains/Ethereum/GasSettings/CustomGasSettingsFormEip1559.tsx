@@ -1,26 +1,28 @@
+import { getHumanReadableErrorMessage } from "@core/domains/ethereum/errors"
 import { getMaxFeePerGas } from "@core/domains/ethereum/helpers"
-import { EthGasSettingsEip1559 } from "@core/domains/ethereum/types"
+import { EthGasSettingsEip1559, EvmNetworkId } from "@core/domains/ethereum/types"
 import { EthTransactionDetails, GasSettingsByPriorityEip1559 } from "@core/domains/signing/types"
 import { log } from "@core/log"
 import { yupResolver } from "@hookform/resolvers/yup"
 import { notify } from "@talisman/components/Notifications"
 import { WithTooltip } from "@talisman/components/Tooltip"
+import { TokenId } from "@talismn/chaindata-provider"
 import { ArrowRightIcon, InfoIcon, LoaderIcon } from "@talismn/icons"
 import { formatDecimals } from "@talismn/util"
 import { TokensAndFiat } from "@ui/domains/Asset/TokensAndFiat"
 import { useAnalytics } from "@ui/hooks/useAnalytics"
-import { BigNumber, ethers } from "ethers"
 import { FC, FormEventHandler, useCallback, useEffect, useMemo, useRef, useState } from "react"
 import { useForm } from "react-hook-form"
 import { useTranslation } from "react-i18next"
 import { useDebounce } from "react-use"
-import { IconButton } from "talisman-ui"
+import { IconButton, Tooltip, TooltipContent, TooltipTrigger } from "talisman-ui"
 import { Button, FormFieldContainer, FormFieldInputText } from "talisman-ui"
+import { TransactionRequest, formatGwei, parseGwei } from "viem"
 import * as yup from "yup"
 
 import { NetworkUsage } from "../NetworkUsage"
-import { useEthereumProvider } from "../useEthereumProvider"
 import { useIsValidEthTransaction } from "../useIsValidEthTransaction"
+import { usePublicClient } from "../usePublicClient"
 import { Indicator, MessageRow } from "./common"
 
 const INPUT_PROPS = {
@@ -34,12 +36,12 @@ type FormData = {
 }
 
 const gasSettingsFromFormData = (formData: FormData): EthGasSettingsEip1559 => ({
-  type: 2,
-  maxFeePerGas: BigNumber.from(
+  type: "eip1559",
+  maxFeePerGas: BigInt(
     Math.round((formData.maxBaseFee + formData.maxPriorityFee) * Math.pow(10, 9))
   ),
-  maxPriorityFeePerGas: BigNumber.from(Math.round(formData.maxPriorityFee * Math.pow(10, 9))),
-  gasLimit: BigNumber.from(formData.gasLimit),
+  maxPriorityFeePerGas: BigInt(Math.round(formData.maxPriorityFee * Math.pow(10, 9))),
+  gas: BigInt(formData.gasLimit),
 })
 
 const schema = yup
@@ -51,7 +53,8 @@ const schema = yup
   .required()
 
 const useIsValidGasSettings = (
-  tx: ethers.providers.TransactionRequest,
+  evmNetworkId: EvmNetworkId,
+  tx: TransactionRequest,
   maxBaseFee: number,
   maxPriorityFee: number,
   gasLimit: number
@@ -79,7 +82,7 @@ const useIsValidGasSettings = (
     [maxBaseFee, maxPriorityFee, gasLimit]
   )
 
-  const provider = useEthereumProvider(tx.chainId?.toString())
+  const publicClient = usePublicClient(evmNetworkId)
 
   const txPrepared = useMemo(() => {
     try {
@@ -87,7 +90,7 @@ const useIsValidGasSettings = (
       return {
         ...tx,
         ...gasSettingsFromFormData(debouncedFormData),
-      } as ethers.providers.TransactionRequest
+      } as TransactionRequest
     } catch (err) {
       // any bad input throws here, ignore
       return undefined
@@ -95,7 +98,7 @@ const useIsValidGasSettings = (
   }, [debouncedFormData, tx])
 
   const { isLoading: isValidationLoading, ...rest } = useIsValidEthTransaction(
-    provider,
+    publicClient,
     txPrepared,
     "custom"
   )
@@ -107,8 +110,8 @@ const useIsValidGasSettings = (
 }
 
 type CustomGasSettingsFormEip1559Props = {
-  tx: ethers.providers.TransactionRequest
-  tokenId: string
+  tx: TransactionRequest
+  tokenId: TokenId
   txDetails: EthTransactionDetails
   gasSettingsByPriority: GasSettingsByPriorityEip1559
   onConfirm: (gasSettings: EthGasSettingsEip1559) => void
@@ -128,10 +131,10 @@ export const CustomGasSettingsFormEip1559: FC<CustomGasSettingsFormEip1559Props>
 
   useEffect(() => {
     genericEvent("open custom gas settings", {
-      network: tx.chainId,
+      network: Number(txDetails.evmNetworkId),
       gasType: gasSettingsByPriority?.type,
     })
-  }, [gasSettingsByPriority?.type, genericEvent, tx.chainId])
+  }, [gasSettingsByPriority?.type, genericEvent, txDetails.evmNetworkId])
 
   const { customSettings, highSettings } = useMemo(
     () => ({
@@ -143,34 +146,29 @@ export const CustomGasSettingsFormEip1559: FC<CustomGasSettingsFormEip1559Props>
 
   const baseFee = useMemo(
     () =>
-      formatDecimals(
-        ethers.utils.formatUnits(txDetails.baseFeePerGas as string, "gwei"),
-        undefined,
-        { notation: "standard" }
-      ),
-    [txDetails.baseFeePerGas]
+      txDetails.baseFeePerGas
+        ? formatDecimals(formatGwei(txDetails.baseFeePerGas), undefined, {
+            notation: "standard",
+          })
+        : t("N/A"),
+    [t, txDetails.baseFeePerGas]
   )
 
   const defaultValues: FormData = useMemo(
     () => ({
       maxBaseFee: Number(
         formatDecimals(
-          ethers.utils.formatUnits(
-            BigNumber.from(customSettings.maxFeePerGas).sub(customSettings.maxPriorityFeePerGas),
-            "gwei"
-          ),
+          formatGwei(customSettings.maxFeePerGas - customSettings.maxPriorityFeePerGas),
           undefined,
           { notation: "standard" }
         )
       ),
       maxPriorityFee: Number(
-        formatDecimals(
-          ethers.utils.formatUnits(customSettings.maxPriorityFeePerGas, "gwei"),
-          undefined,
-          { notation: "standard" }
-        )
+        formatDecimals(formatGwei(customSettings.maxPriorityFeePerGas), undefined, {
+          notation: "standard",
+        })
       ),
-      gasLimit: BigNumber.from(customSettings.gasLimit).toNumber(),
+      gasLimit: Number(customSettings.gas),
     }),
     [customSettings]
   )
@@ -205,9 +203,7 @@ export const CustomGasSettingsFormEip1559: FC<CustomGasSettingsFormEip1559Props>
 
   const totalMaxFee = useMemo(() => {
     try {
-      return BigNumber.from(ethers.utils.parseUnits(String(maxBaseFee), "gwei"))
-        .add(ethers.utils.parseUnits(String(maxPriorityFee), "gwei"))
-        .mul(gasLimit)
+      return (parseGwei(String(maxBaseFee)) + parseGwei(String(maxPriorityFee))) * BigInt(gasLimit)
     } catch (err) {
       return null
     }
@@ -223,31 +219,25 @@ export const CustomGasSettingsFormEip1559: FC<CustomGasSettingsFormEip1559Props>
     else if (
       maxBaseFee &&
       txDetails.baseFeePerGas &&
-      BigNumber.from(ethers.utils.parseUnits(String(maxBaseFee), "gwei")).lt(
-        getMaxFeePerGas(txDetails.baseFeePerGas, 0, 20, false)
-      )
+      parseGwei(String(maxBaseFee)) < getMaxFeePerGas(txDetails.baseFeePerGas, 0n, 20, false)
     )
       warningFee = t("Max Base Fee seems too low for current network conditions")
     // if higher than highest possible fee after 20 blocks
     else if (
       txDetails.baseFeePerGas &&
       maxBaseFee &&
-      BigNumber.from(ethers.utils.parseUnits(String(maxBaseFee), "gwei")).gt(
-        getMaxFeePerGas(txDetails.baseFeePerGas, 0, 20)
-      )
+      parseGwei(String(maxBaseFee)) > getMaxFeePerGas(txDetails.baseFeePerGas, 0n, 20)
     )
       warningFee = t("Max Base Fee seems higher than required")
     else if (
       maxPriorityFee &&
-      BigNumber.from(ethers.utils.parseUnits(String(maxPriorityFee), "gwei")).gt(
-        BigNumber.from(2).mul(highSettings?.maxPriorityFeePerGas)
-      )
+      parseGwei(String(maxPriorityFee)) > 2n * highSettings.maxPriorityFeePerGas
     )
       warningFee = t("Max Priority Fee seems higher than required")
 
     if (errors.gasLimit?.type === "min") errorGasLimit = t("Gas Limit minimum value is 21000")
     else if (errors.gasLimit) errorGasLimit = t("Gas Limit is invalid")
-    else if (BigNumber.from(txDetails.estimatedGas).gt(gasLimit))
+    else if (txDetails.estimatedGas > gasLimit)
       errorGasLimit = t("Gas Limit too low, transaction likely to fail")
 
     return {
@@ -273,7 +263,7 @@ export const CustomGasSettingsFormEip1559: FC<CustomGasSettingsFormEip1559Props>
         const gasSettings = gasSettingsFromFormData(formData)
 
         genericEvent("set custom gas settings", {
-          network: tx.chainId,
+          network: Number(txDetails.evmNetworkId),
           gasType: gasSettings.type,
         })
 
@@ -283,11 +273,14 @@ export const CustomGasSettingsFormEip1559: FC<CustomGasSettingsFormEip1559Props>
         notify({ title: "Error", subtitle: (err as Error).message, type: "error" })
       }
     },
-    [genericEvent, onConfirm, tx.chainId]
+    [genericEvent, onConfirm, txDetails.evmNetworkId]
   )
 
-  const { isValid: isGasSettingsValid, isLoading: isLoadingGasSettingsValid } =
-    useIsValidGasSettings(tx, maxBaseFee, maxPriorityFee, gasLimit)
+  const {
+    isValid: isGasSettingsValid,
+    isLoading: isLoadingGasSettingsValid,
+    error: gasSettingsError,
+  } = useIsValidGasSettings(txDetails.evmNetworkId, tx, maxBaseFee, maxPriorityFee, gasLimit)
 
   const showMaxFeeTotal = isFormValid && isGasSettingsValid && !isLoadingGasSettingsValid
 
@@ -414,7 +407,14 @@ export const CustomGasSettingsFormEip1559: FC<CustomGasSettingsFormEip1559Props>
           ) : isLoadingGasSettingsValid ? (
             <LoaderIcon className="animate-spin-slow text-body-secondary inline-block" />
           ) : (
-            <span className="text-alert-error">{t("Invalid settings")}</span>
+            <Tooltip>
+              <TooltipTrigger className="text-alert-error">
+                {t("Invalid transaction")}
+              </TooltipTrigger>
+              {!!gasSettingsError && (
+                <TooltipContent>{getHumanReadableErrorMessage(gasSettingsError)}</TooltipContent>
+              )}
+            </Tooltip>
           )}
         </div>
       </div>

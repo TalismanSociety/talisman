@@ -8,7 +8,7 @@ import { SignParamButton } from "./SignParamButton"
 
 type SignParamErc20TokenButtonProps = {
   network: EvmNetwork | CustomEvmNetwork
-  asset: { name: string; symbol: string; decimals: number; image?: string }
+  asset: { symbol?: string }
   address: string
   withIcon?: boolean
   className?: string

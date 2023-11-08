@@ -10,4 +10,15 @@ export const log = {
   warn: (message: any, ...args: any[]) => DEBUG && console.warn(message, ...args),
   log: (message: any, ...args: any[]) => DEBUG && console.log(message, ...args),
   debug: (message: any, ...args: any[]) => DEBUG && console.debug(message, ...args),
+
+  timer: (label: string) => {
+    if (!DEBUG) return () => {}
+
+    const timeKey = `${label} (${crypto.randomUUID()})`
+    console.time(timeKey)
+
+    return () => {
+      console.timeEnd(timeKey)
+    }
+  },
 }
