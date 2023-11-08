@@ -185,7 +185,10 @@ const SignLedgerEthereum: FC<SignHardwareEthereumProps> = ({
     } catch (err) {
       const error = err as Error & { statusCode?: number; reason?: string }
       // if user rejects from device
-      if (error.statusCode === 27013) return
+      if (error.statusCode === 27013) {
+        onSentToDevice?.(false)
+        return
+      }
 
       log.error("ledger sign Ethereum", { error })
 
@@ -196,7 +199,7 @@ const SignLedgerEthereum: FC<SignHardwareEthereumProps> = ({
         )
       else setError(error.reason ?? error.message)
     }
-  }, [ledger, onSigned, inputsReady, evmNetworkId, method, payload, account, t])
+  }, [ledger, onSigned, inputsReady, evmNetworkId, method, payload, account, t, onSentToDevice])
 
   const handleSendClick = useCallback(() => {
     setIsSigning(true)
