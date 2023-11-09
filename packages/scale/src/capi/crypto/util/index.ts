@@ -9,10 +9,44 @@ import { Hasher } from "wat-the-crypto/types/common/hasher"
 // and falls back to `./nosimd` re-exports for devices which do not.
 //
 
+/**
+ * Show a useful error message when someone attempts to use one of the classes
+ * from this lib without waiting for them to be initialized.
+ */
+class UninitializedHasher implements Hasher {
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars, @typescript-eslint/no-explicit-any
+  constructor(...args: any[]) {
+    throw new Error(
+      `This class cannot be used before @talismn/scale has initialized it. Please await 'watCryptoWaitReady' before attempting to construct this class.`
+    )
+  }
+
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  update(input: Uint8Array): void {
+    throw new Error(
+      `This class cannot be used before @talismn/scale has initialized it. Please await 'watCryptoWaitReady' before attempting to construct this class.`
+    )
+  }
+
+  digest(): Uint8Array {
+    throw new Error(
+      `This class cannot be used before @talismn/scale has initialized it. Please await 'watCryptoWaitReady' before attempting to construct this class.`
+    )
+  }
+  digestInto(digest: Uint8Array): void {
+    digest.set(this.digest())
+  }
+  dispose(): void {
+    throw new Error(
+      `This class cannot be used before @talismn/scale has initialized it. Please await 'watCryptoWaitReady' before attempting to construct this class.`
+    )
+  }
+}
+
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-export let Blake2b: new (...args: any[]) => Hasher
+export let Blake2b: new (...args: any[]) => Hasher = UninitializedHasher
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-export let Xxhash: new (...args: any[]) => Hasher
+export let Xxhash: new (...args: any[]) => Hasher = UninitializedHasher
 
 let readyPromise: Promise<void> | null = null
 
