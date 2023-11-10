@@ -1,4 +1,8 @@
 export const abiErc721 = [
+  "function symbol() view returns (string)",
+  "function name() view returns (string)",
+  "function tokenURI(uint256 tokenId) view returns (string)",
+
   "function supportsInterface(bytes4 interfaceId) external view returns (bool)",
   "function balanceOf(address owner) external view returns (uint256)",
   "function ownerOf(uint256 tokenId) external view returns (address)",

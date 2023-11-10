@@ -2,53 +2,70 @@ import { settingsStore } from "@core/domains/app"
 import { addEvmTransaction, updateTransactionStatus } from "@core/domains/transactions/helpers"
 import { log } from "@core/log"
 import { createNotification } from "@core/notifications"
+import { chainConnectorEvm } from "@core/rpcs/chain-connector-evm"
 import { chaindataProvider } from "@core/rpcs/chaindata"
 import * as Sentry from "@sentry/browser"
 import { EvmNetworkId } from "@talismn/chaindata-provider"
-import { ethers } from "ethers"
+import { sleep, throwAfter } from "@talismn/util"
 import { nanoid } from "nanoid"
 import urlJoin from "url-join"
+import { Hex, TransactionReceipt, TransactionRequest } from "viem"
 
-import { getProviderForEthereumNetwork } from "../ethereum/rpcProviders"
+import { resetTransactionCount } from "../ethereum/transactionCountManager"
 import { WatchTransactionOptions } from "./types"
 
 export const watchEthereumTransaction = async (
-  ethChainId: EvmNetworkId,
-  txHash: string,
-  unsigned: ethers.providers.TransactionRequest,
+  evmNetworkId: EvmNetworkId,
+  hash: `0x${string}`,
+  unsigned: TransactionRequest<string>,
   options: WatchTransactionOptions = {}
 ) => {
   try {
     const { siteUrl, notifications, transferInfo = {} } = options
     const withNotifications = !!(notifications && (await settingsStore.get("allowNotifications")))
 
-    const ethereumNetwork = await chaindataProvider.getEvmNetwork(ethChainId)
-    if (!ethereumNetwork) throw new Error(`Could not find ethereum network ${ethChainId}`)
+    const ethereumNetwork = await chaindataProvider.getEvmNetwork(evmNetworkId)
+    if (!ethereumNetwork) throw new Error(`Could not find ethereum network ${evmNetworkId}`)
 
-    const provider = await getProviderForEthereumNetwork(ethereumNetwork, { batch: true })
-    if (!provider)
-      throw new Error(`No provider for network ${ethChainId} (${ethereumNetwork.name})`)
+    const client = await chainConnectorEvm.getPublicClientForEvmNetwork(evmNetworkId)
+    if (!client) throw new Error(`No client for network ${evmNetworkId} (${ethereumNetwork.name})`)
 
     const networkName = ethereumNetwork.name ?? "unknown network"
     const txUrl = ethereumNetwork.explorerUrl
-      ? urlJoin(ethereumNetwork.explorerUrl, "tx", txHash)
+      ? urlJoin(ethereumNetwork.explorerUrl, "tx", hash)
       : nanoid()
 
     // PENDING
     if (withNotifications) await createNotification("submitted", networkName, txUrl)
 
     try {
-      await addEvmTransaction(txHash, unsigned, { siteUrl, ...transferInfo })
+      await addEvmTransaction(evmNetworkId, hash, unsigned, { siteUrl, ...transferInfo })
 
-      const receipt = await provider.waitForTransaction(txHash)
+      // Observed on polygon network (tried multiple rpcs) that waitForTransactionReceipt throws TransactionNotFoundError & BlockNotFoundError randomly
+      // so we retry as long as we don't get a receipt, with a timeout on our side
+      const getTransactionReceipt = async (hash: Hex): Promise<TransactionReceipt> => {
+        try {
+          return await client.waitForTransactionReceipt({ hash })
+        } catch (err) {
+          await sleep(4000)
+          return getTransactionReceipt(hash)
+        }
+      }
 
-      // to test failing transactions, swap on busy AMM pools with a 0.05% slippage limit
-      // status 0 = error
-      // status 1 = ok
-      // TODO are there other statuses ?
-      if (receipt.status === undefined || ![0, 1].includes(receipt.status))
-        log.warn("Unknown evm tx status", receipt)
-      updateTransactionStatus(txHash, receipt.status ? "success" : "error", receipt.blockNumber)
+      const receipt = await Promise.race([
+        getTransactionReceipt(hash),
+        throwAfter(5 * 60_000, "Transaction not found"),
+      ])
+
+      // check hash which may be incorrect for cancelled tx, in which case receipt includes the replacement tx hash
+      if (receipt.transactionHash === hash) {
+        // to test failing transactions, swap on busy AMM pools with a 0.05% slippage limit
+        updateTransactionStatus(
+          hash,
+          receipt.status === "success" ? "success" : "error",
+          receipt.blockNumber
+        )
+      }
 
       // success if associated to a block number
       if (withNotifications)
@@ -58,13 +75,17 @@ export const watchEthereumTransaction = async (
           txUrl
         )
     } catch (err) {
-      updateTransactionStatus(txHash, "unknown")
+      log.error("watchEthereumTransaction error: ", { err })
+      updateTransactionStatus(hash, "error")
+
+      // observed on polygon, some submitted transactions are not found, in which case we must reset the nonce counter to avoid being stuck
+      resetTransactionCount(unsigned.from, evmNetworkId)
 
       if (withNotifications) await createNotification("error", networkName, txUrl, err as Error)
       // eslint-disable-next-line no-console
       else console.error("Failed to watch transaction", { err })
     }
   } catch (err) {
-    Sentry.captureException(err, { tags: { ethChainId } })
+    Sentry.captureException(err, { tags: { ethChainId: evmNetworkId } })
   }
 }

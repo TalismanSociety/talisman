@@ -1,4 +1,5 @@
-import { getProviderForEvmNetworkId } from "./rpcProviders"
+import { chainConnectorEvm } from "@core/rpcs/chain-connector-evm"
+
 import { EvmNetworkId } from "./types"
 
 const dicTransactionCount = new Map<string, number>()
@@ -9,13 +10,13 @@ const getKey = (address: string, evmNetworkId: EvmNetworkId) =>
 /*
   To be called to set a valid nonce for a transaction
 */
-export const getTransactionCount = async (address: string, evmNetworkId: EvmNetworkId) => {
+export const getTransactionCount = async (address: `0x${string}`, evmNetworkId: EvmNetworkId) => {
   const key = getKey(address, evmNetworkId)
 
-  const provider = await getProviderForEvmNetworkId(evmNetworkId)
+  const provider = await chainConnectorEvm.getPublicClientForEvmNetwork(evmNetworkId)
   if (!provider) throw new Error(`Could not find provider for EVM chain ${evmNetworkId}`)
 
-  const transactionCount = await provider.getTransactionCount(address)
+  const transactionCount = await provider.getTransactionCount({ address })
 
   if (!dicTransactionCount.has(key)) {
     // initial value
@@ -40,4 +41,9 @@ export const incrementTransactionCount = (address: string, evmNetworkId: EvmNetw
     throw new Error(`Missing transaction count for ${address} on network ${evmNetworkId}`)
 
   dicTransactionCount.set(key, count + 1)
+}
+
+export const resetTransactionCount = (address: string, evmNetworkId: EvmNetworkId) => {
+  const key = getKey(address, evmNetworkId)
+  dicTransactionCount.delete(key)
 }

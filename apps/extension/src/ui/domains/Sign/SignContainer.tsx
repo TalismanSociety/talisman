@@ -22,6 +22,8 @@ export const SignContainer: FC<SignContainerProps> = ({
   header,
   networkType,
 }) => {
+  const alertContainer = document.getElementById("sign-alerts-inject") as Element
+
   return (
     <FadeIn className={classNames("flex h-full flex-col pt-8", className)}>
       {header}
@@ -31,7 +33,7 @@ export const SignContainer: FC<SignContainerProps> = ({
         {networkType === "ethereum" && <ViewDetailsEth />}
         {networkType === "substrate" && <ViewDetailsSub />}
       </div>
-      {alert && createPortal(alert, document.getElementById("sign-alerts-inject") as Element)}
+      {alert && alertContainer && createPortal(alert, alertContainer)}
     </FadeIn>
   )
 }

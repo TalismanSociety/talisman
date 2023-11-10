@@ -12,6 +12,10 @@ export const useOnChainId = (address?: string) => {
     },
     enabled: !!address,
     cacheTime: Infinity,
+    refetchInterval: false,
+    refetchOnMount: false,
+    refetchOnWindowFocus: false,
+    refetchOnReconnect: false,
     initialData: () => address && onChainIdsCache.get(address)?.onChainId,
     onSuccess: (onChainId) => {
       if (!address) return

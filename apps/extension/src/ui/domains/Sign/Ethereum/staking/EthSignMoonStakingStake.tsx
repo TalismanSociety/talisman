@@ -1,5 +1,4 @@
 import useToken from "@ui/hooks/useToken"
-import { BigNumber } from "ethers"
 import { FC, useMemo } from "react"
 import { useTranslation } from "react-i18next"
 
@@ -11,18 +10,16 @@ import { useEthSignKnownTransactionRequest } from "../shared/useEthSignKnownTran
 
 export const EthSignMoonStakingStake: FC = () => {
   const { t } = useTranslation("request")
-  const { network, transactionInfo } = useEthSignKnownTransactionRequest()
+  const { network, decodedTx } = useEthSignKnownTransactionRequest()
   const token = useToken(network?.nativeToken?.id)
 
-  const { planck, autoCompound } = useMemo(() => {
-    const amount = getContractCallArg<BigNumber>(transactionInfo.contractCall, "amount")
-    const autoCompound = getContractCallArg<number>(transactionInfo.contractCall, "autoCompound")
-
-    return {
-      planck: amount?.toBigInt(),
-      autoCompound,
-    }
-  }, [transactionInfo.contractCall])
+  const [planck, autoCompound] = useMemo(
+    () => [
+      getContractCallArg<bigint>(decodedTx, "amount"),
+      getContractCallArg<number>(decodedTx, "autoCompound"),
+    ],
+    [decodedTx]
+  )
 
   if (!network?.nativeToken?.id || !planck || !token) return null
 

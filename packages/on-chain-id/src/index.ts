@@ -30,18 +30,18 @@ export class OnChainId {
   async resolveNames(names: string[]): Promise<Map<string, string | null>> {
     const resolvedNames = new Map<string, string | null>(names.map((name) => [name, null]))
 
-    const provider = await this.chainConnectors.evm?.getProviderForEvmNetworkId(
+    const client = await this.chainConnectors.evm?.getPublicClientForEvmNetwork(
       this.networkIdEthereum
     )
-    if (!provider) {
-      log.warn(`Could not find Ethereum provider in OnChainId::resolveNames`)
+    if (!client) {
+      log.warn(`Could not find Ethereum client in OnChainId::resolveNames`)
       return resolvedNames
     }
 
     const results = await Promise.allSettled(
       names.map(async (name) => {
         try {
-          const address = await provider.resolveName(name)
+          const address = await client.getEnsAddress({ name })
           name !== null && resolvedNames.set(name, address)
         } catch (cause) {
           throw new Error(`Failed to resolve address for ENS domain '${name}'`, { cause })
@@ -159,11 +159,11 @@ export class OnChainId {
   async lookupEnsAddresses(addresses: string[]): Promise<OnChainIds> {
     const onChainIds: OnChainIds = new Map(addresses.map((address) => [address, null]))
 
-    const provider = await this.chainConnectors.evm?.getProviderForEvmNetworkId(
+    const client = await this.chainConnectors.evm?.getPublicClientForEvmNetwork(
       this.networkIdEthereum
     )
-    if (!provider) {
-      log.warn(`Could not find Ethereum provider in OnChainId::lookupEnsAddresses`)
+    if (!client) {
+      log.warn(`Could not find Ethereum client in OnChainId::lookupEnsAddresses`)
       return onChainIds
     }
 
@@ -173,7 +173,7 @@ export class OnChainId {
         if (!isEthereumAddress(address)) return
 
         try {
-          const domain = await provider.lookupAddress(address)
+          const domain = await client.getEnsName({ address })
           domain !== null && onChainIds.set(address, domain)
         } catch (cause) {
           throw new Error(

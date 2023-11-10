@@ -1,3 +1,4 @@
+import { serializeTransactionRequest } from "@core/domains/ethereum/helpers"
 import { EthTransactionDetails } from "@core/domains/signing/types"
 import { EvmWalletTransaction, WalletTransaction } from "@core/domains/transactions/types"
 import { HexString } from "@polkadot/util/types"
@@ -11,8 +12,6 @@ import { useAccountByAddress } from "@ui/hooks/useAccountByAddress"
 import { useAnalyticsPageView } from "@ui/hooks/useAnalyticsPageView"
 import { useBalance } from "@ui/hooks/useBalance"
 import { useEvmNetwork } from "@ui/hooks/useEvmNetwork"
-import { BigNumber } from "ethers"
-import { ethers } from "ethers"
 import { FC, useCallback, useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
 import { Button, Drawer, useOpenCloseWithData } from "talisman-ui"
@@ -56,21 +55,13 @@ export const EvmEstimatedFeeTooltip: FC<{
         <div className="grid grid-cols-2 gap-2">
           <div>{t("Estimated fee:")}</div>
           <div className="text-right">
-            <TokensAndFiat
-              planck={ethers.BigNumber.from(txDetails.estimatedFee).toBigInt()}
-              tokenId={feeTokenId}
-              noCountUp
-            />
+            <TokensAndFiat planck={txDetails.estimatedFee} tokenId={feeTokenId} noCountUp />
           </div>
           {!!txDetails?.maxFee && (
             <>
               <div>{t("Max. fee:")}</div>
               <div className="text-right">
-                <TokensAndFiat
-                  planck={ethers.BigNumber.from(txDetails.maxFee).toBigInt()}
-                  tokenId={feeTokenId}
-                  noCountUp
-                />
+                <TokensAndFiat planck={txDetails.maxFee} tokenId={feeTokenId} noCountUp />
               </div>
             </>
           )}
@@ -125,7 +116,7 @@ const EvmDrawerContent: FC<{
     networkUsage,
     isLoading,
     isValid,
-  } = useEthReplaceTransaction(tx.unsigned, type, isLocked)
+  } = useEthReplaceTransaction(tx.unsigned, tx.evmNetworkId, type, isLocked)
 
   const account = useAccountByAddress(tx.account)
 
@@ -136,11 +127,12 @@ const EvmDrawerContent: FC<{
     setIsProcessing(true)
     try {
       const transferInfo = getTransferInfo(tx)
-      const newHash = await api.ethSignAndSend(transaction, transferInfo)
+      const serialized = serializeTransactionRequest(transaction)
+      const newHash = await api.ethSignAndSend(tx.evmNetworkId, serialized, transferInfo)
       api.analyticsCapture({
         eventName: `transaction ${type}`,
         options: {
-          chainId: transaction.chainId,
+          chainId: Number(tx.evmNetworkId),
           networkType: "ethereum",
         },
       })
@@ -166,11 +158,17 @@ const EvmDrawerContent: FC<{
       setIsProcessing(true)
       try {
         const transferInfo = getTransferInfo(tx)
-        const newHash = await api.ethSendSigned(transaction, signature, transferInfo)
+        const serialized = serializeTransactionRequest(transaction)
+        const newHash = await api.ethSendSigned(
+          tx.evmNetworkId,
+          serialized,
+          signature,
+          transferInfo
+        )
         api.analyticsCapture({
           eventName: `transaction ${type}`,
           options: {
-            chainId: transaction.chainId,
+            chainId: Number(tx.evmNetworkId),
             networkType: "ethereum",
           },
         })
@@ -259,7 +257,7 @@ const EvmDrawerContent: FC<{
           <div>
             {txDetails?.estimatedFee ? (
               <TokensAndFiat
-                planck={BigNumber.from(txDetails.estimatedFee).toString()}
+                planck={txDetails.estimatedFee}
                 tokenId={evmNetwork?.nativeToken?.id}
               />
             ) : null}

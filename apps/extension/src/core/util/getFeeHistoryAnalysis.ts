@@ -1,75 +1,51 @@
 import { EthBaseFeeTrend } from "@core/domains/signing/types"
+import { log } from "@core/log"
 import * as Sentry from "@sentry/browser"
-import { BigNumber, ethers } from "ethers"
-import { parseUnits } from "ethers/lib/utils"
+import { PublicClient, formatGwei, parseGwei } from "viem"
 
-const BLOCKS_HISTORY_LENGTH = 4
+const BLOCKS_HISTORY_LENGTH = 5
 const REWARD_PERCENTILES = [10, 20, 30]
+const LIVE_DEBUG = false
 
-type EthBasePriorityOptionsEip1559 = Record<"low" | "medium" | "high", BigNumber>
+type EthBasePriorityOptionsEip1559 = Record<"low" | "medium" | "high", bigint>
 
-export const DEFAULT_ETH_PRIORITY_OPTIONS: EthBasePriorityOptionsEip1559 = {
-  low: parseUnits("1.5", "gwei"),
-  medium: parseUnits("1.6", "gwei"),
-  high: parseUnits("1.7", "gwei"),
-}
-
-type FeeHistory = {
-  oldestBlock: number
-  baseFeePerGas: BigNumber[]
-  gasUsedRatio: (number | null)[] // can have null values (ex astar)
-  reward?: BigNumber[][] // TODO find network that doesn't return this property, for testing
+const DEFAULT_ETH_PRIORITY_OPTIONS: EthBasePriorityOptionsEip1559 = {
+  low: parseGwei("1.5"),
+  medium: parseGwei("1.6"),
+  high: parseGwei("1.7"),
 }
 
 export type FeeHistoryAnalysis = {
   maxPriorityPerGasOptions: EthBasePriorityOptionsEip1559
-  avgGasUsedRatio: number | null
+  avgGasUsedRatio: number
   isValid: boolean
-  avgBaseFeePerGas: BigNumber
+  avgBaseFeePerGas: bigint
   isBaseFeeIdle: boolean
-  nextBaseFee: BigNumber
+  nextBaseFee: bigint
   baseFeeTrend: EthBaseFeeTrend
 }
 
 export const getFeeHistoryAnalysis = async (
-  provider: ethers.providers.JsonRpcProvider
+  publicClient: PublicClient
 ): Promise<FeeHistoryAnalysis> => {
   try {
-    const rawHistoryFee = await provider.send("eth_feeHistory", [
-      ethers.utils.hexValue(BLOCKS_HISTORY_LENGTH),
-      "latest",
-      REWARD_PERCENTILES,
-    ])
+    const feeHistory = await publicClient.getFeeHistory({
+      blockCount: BLOCKS_HISTORY_LENGTH,
+      rewardPercentiles: REWARD_PERCENTILES,
+    })
 
-    // instrument for information - remove asap
-    if (!rawHistoryFee.reward)
-      Sentry.captureMessage(`No reward on fee history`, { extra: { chain: provider.network.name } })
-
-    // parse hex values
-    const feeHistory: FeeHistory = {
-      oldestBlock: parseInt(rawHistoryFee.oldestBlock, 16),
-      baseFeePerGas: rawHistoryFee.baseFeePerGas.map((fee: string) => BigNumber.from(fee)),
-      gasUsedRatio: rawHistoryFee.gasUsedRatio as (number | null)[],
-      reward: rawHistoryFee.reward
-        ? rawHistoryFee.reward.map((reward: string[]) => reward.map((r) => BigNumber.from(r)))
-        : null,
-    }
-
-    // how busy the network is over this period
-    // values can be null (ex astar)
-    const avgGasUsedRatio = feeHistory.gasUsedRatio.includes(null)
-      ? null
-      : (feeHistory.gasUsedRatio as number[]).reduce((prev, curr) => prev + curr, 0) /
-        feeHistory.gasUsedRatio.length
+    const avgGasUsedRatio =
+      (feeHistory.gasUsedRatio as number[]).reduce((prev, curr) => prev + curr, 0) /
+      feeHistory.gasUsedRatio.length
 
     // lookup the max priority fee per gas based on our percentiles options
     // use a median to exclude extremes, to limits edge cases in low network activity conditions
-    const medMaxPriorityFeePerGas: BigNumber[] = []
+    const medMaxPriorityFeePerGas: bigint[] = []
     if (feeHistory.reward) {
       const percentilesCount = REWARD_PERCENTILES.length
       for (let i = 0; i < percentilesCount; i++) {
-        const values = feeHistory.reward.map((arr) => BigNumber.from(arr[i]))
-        const sorted = values.sort((a, b) => (a.eq(b) ? 0 : a.gt(b) ? 1 : -1))
+        const values = feeHistory.reward.map((arr) => arr[i])
+        const sorted = values.sort((a, b) => (a === b ? 0 : a > b ? 1 : -1))
         const median = sorted[Math.floor((sorted.length - 1) / 2)]
         medMaxPriorityFeePerGas.push(median)
       }
@@ -81,27 +57,27 @@ export const getFeeHistoryAnalysis = async (
       )
 
     // last entry of the array is the base fee for next block, exclude it from further averages
-    const nextBaseFee = feeHistory.baseFeePerGas.pop() as BigNumber
+    const nextBaseFee = feeHistory.baseFeePerGas.pop() as bigint
 
-    const isBaseFeeIdle = feeHistory.baseFeePerGas.every((fee) => fee.eq(nextBaseFee))
+    const isBaseFeeIdle = feeHistory.baseFeePerGas.every((fee) => fee === nextBaseFee)
 
-    const avgBaseFeePerGas = feeHistory.baseFeePerGas
-      .reduce((prev, curr) => prev.add(curr), BigNumber.from(0))
-      .div(feeHistory.baseFeePerGas.length)
+    const avgBaseFeePerGas =
+      feeHistory.baseFeePerGas.reduce((prev, curr) => prev + curr, 0n) /
+      BigInt(feeHistory.baseFeePerGas.length)
 
     const baseFeeTrend = isBaseFeeIdle
       ? "idle"
-      : nextBaseFee.lt(avgBaseFeePerGas)
+      : nextBaseFee < avgBaseFeePerGas
       ? "decreasing"
       : !avgGasUsedRatio || avgGasUsedRatio < 0.9
       ? "increasing"
       : "toTheMoon"
 
-    return {
+    const result: FeeHistoryAnalysis = {
       maxPriorityPerGasOptions: {
         low: medMaxPriorityFeePerGas[0],
-        medium: medMaxPriorityFeePerGas[1],
-        high: medMaxPriorityFeePerGas[2],
+        medium: (medMaxPriorityFeePerGas[1] * 102n) / 100n,
+        high: (medMaxPriorityFeePerGas[2] * 104n) / 100n,
       },
       avgGasUsedRatio: avgGasUsedRatio,
       isValid: !feeHistory.gasUsedRatio.includes(0), // if a 0 is found, not all blocks contained a transaction
@@ -110,6 +86,28 @@ export const getFeeHistoryAnalysis = async (
       nextBaseFee,
       baseFeeTrend,
     }
+
+    if (LIVE_DEBUG) {
+      log.log(
+        "rewards",
+        feeHistory.reward?.map((arr) => arr.map((reward) => `${formatGwei(reward)} GWEI`))
+      )
+      log.log("baseFee", `${formatGwei(result.nextBaseFee)} GWEI`)
+      log.log(
+        "medMaxPriorityFeePerGas",
+        medMaxPriorityFeePerGas.map((fee) => `${formatGwei(fee)} GWEI`)
+      )
+      log.log(
+        "maxPriorityPerGasOptions",
+        [
+          result.maxPriorityPerGasOptions.low,
+          result.maxPriorityPerGasOptions.medium,
+          result.maxPriorityPerGasOptions.high,
+        ].map((fee) => `${formatGwei(fee)} GWEI`)
+      )
+      log.log("=========================================")
+    }
+    return result
   } catch (err) {
     Sentry.captureException(err)
     throw new Error("Failed to load fee history", { cause: err as Error })
