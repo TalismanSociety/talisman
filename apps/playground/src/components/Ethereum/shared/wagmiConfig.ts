@@ -1,5 +1,5 @@
 import { TalismanConnector } from "@talismn/wagmi-connector"
-import { Chain, configureChains, createClient } from "wagmi"
+import { Chain, configureChains, createConfig } from "wagmi"
 import { InjectedConnector } from "wagmi/connectors/injected"
 import { MetaMaskConnector } from "wagmi/connectors/metaMask"
 import { publicProvider } from "wagmi/providers/public"
@@ -11,11 +11,11 @@ for (const chain of talismanChains) chainsMap[chain.id] = chain
 
 // Configure chains & providers with the Alchemy provider.
 // Two popular providers are Alchemy (alchemy.com) and Infura (infura.io)
-const { chains, provider } = configureChains(Object.values(chainsMap), [publicProvider()])
+const { chains, publicClient } = configureChains(Object.values(chainsMap), [publicProvider()])
 
-// Set up client
-export const wagmiClient = createClient({
+export const wagmiConfig = createConfig({
   autoConnect: true,
+  publicClient,
   connectors: [
     new MetaMaskConnector({ chains }),
     new TalismanConnector({ chains }),
@@ -27,5 +27,4 @@ export const wagmiClient = createClient({
       },
     }),
   ],
-  provider,
 })

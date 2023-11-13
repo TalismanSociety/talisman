@@ -1,11 +1,11 @@
-import { ethers } from "ethers"
 import { FC, useCallback, useEffect, useState } from "react"
-import { useAccount, useNetwork } from "wagmi"
+import { useNetwork, usePublicClient, useWalletClient } from "wagmi"
 
 import { PgContractType, useDeployment } from "../../../contracts/deployments"
 
 export const ContractConnect: FC<{ contract: PgContractType }> = ({ contract }) => {
-  const { connector, address: from } = useAccount()
+  const { data: walletClient } = useWalletClient()
+  const publicClient = usePublicClient()
   const { chain } = useNetwork()
   const { address, setAddress, bytecode, forgetAddress } = useDeployment(contract, chain?.id ?? 0)
   const [isDeploying, setIsDeploying] = useState(false)
@@ -20,19 +20,14 @@ export const ContractConnect: FC<{ contract: PgContractType }> = ({ contract }) 
     setIsDeploying(true)
     setError(undefined)
     try {
-      const provider = await connector?.getProvider()
-      if (!provider || !chain) return
+      if (!walletClient) throw new Error("No wallet client")
 
-      const web3Provider = new ethers.providers.Web3Provider(provider)
-      const transaction: ethers.providers.TransactionRequest = {
-        from,
-        data: bytecode,
-        chainId: chain.id,
-      }
-
-      const txHash = await web3Provider.send("eth_sendTransaction", [transaction])
-
-      const receipt = await web3Provider.waitForTransaction(txHash)
+      const hash = await walletClient.sendTransaction({
+        data: bytecode as `0x${string}`,
+      })
+      const receipt = await publicClient.waitForTransactionReceipt({
+        hash,
+      })
 
       if (!receipt.contractAddress) throw new Error("No contract address in receipt")
 
@@ -43,7 +38,7 @@ export const ContractConnect: FC<{ contract: PgContractType }> = ({ contract }) 
       setError(err as Error)
     }
     setIsDeploying(false)
-  }, [bytecode, chain, connector, from, setAddress])
+  }, [bytecode, publicClient, setAddress, walletClient])
 
   if (!chain) return <div>Disconnected</div>
 
