@@ -467,7 +467,7 @@ export class Websocket implements ProviderInterface {
         ? this.#onSocketMessageResult(response)
         : this.#onSocketMessageSubscribe(response)
     } catch (e) {
-      this.#emit("error", (e as Error).message)
+      this.#emit("error", new Error("Invalid websocket message received", { cause: e }))
     }
   }
 
