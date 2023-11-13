@@ -1,7 +1,6 @@
 import { getNftMetadata } from "@core/util/getNftMetadata"
 import { useQuery } from "@tanstack/react-query"
 import { SignAlertMessage } from "@ui/domains/Sign/SignAlertMessage"
-import { BigNumber } from "ethers"
 import { FC, useMemo } from "react"
 import { useTranslation } from "react-i18next"
 import { UnsafeImage } from "talisman-ui"
@@ -16,31 +15,34 @@ const ZERO_ADDRESS = "0x0000000000000000000000000000000000000000"
 
 export const EthSignBodyErc721Approve: FC = () => {
   const { t } = useTranslation("request")
-  const { account, network, transactionInfo } = useEthSignKnownTransactionRequest()
+  const { account, network, decodedTx } = useEthSignKnownTransactionRequest()
+
+  const asset = decodedTx.asset as { name?: string; tokenURI?: string } | undefined
 
   const qMetadata = useQuery({
-    queryKey: [transactionInfo.asset?.tokenURI],
-    queryFn: () => getNftMetadata(transactionInfo.asset?.tokenURI, 96, 96),
+    queryKey: [asset?.tokenURI],
+    queryFn: () => getNftMetadata(asset?.tokenURI, 96, 96),
   })
 
   const { operator, approve, tokenId } = useMemo(() => {
-    const operator = getContractCallArg(transactionInfo.contractCall, "operator")
+    const operator = getContractCallArg(decodedTx, "operator")
     return {
-      operator: getContractCallArg(transactionInfo.contractCall, "operator"),
+      operator: getContractCallArg(decodedTx, "operator"),
       approve: operator !== ZERO_ADDRESS,
-      tokenId: BigNumber.from(getContractCallArg(transactionInfo.contractCall, "tokenId")),
+      tokenId: getContractCallArg(decodedTx, "tokenId"),
     }
-  }, [transactionInfo.contractCall])
+  }, [decodedTx])
 
   const { name, image } = useMemo(
     () => ({
-      name: qMetadata?.data?.name ?? `${transactionInfo?.asset?.name} #${tokenId.toString()}`,
+      name: qMetadata?.data?.name ?? `${asset?.name} #${tokenId.toString()}`,
       image: qMetadata?.data?.image,
     }),
-    [qMetadata?.data?.image, qMetadata?.data?.name, tokenId, transactionInfo?.asset?.name]
+    [qMetadata?.data?.image, qMetadata?.data?.name, tokenId, asset?.name]
   )
 
-  if (qMetadata.isLoading || !operator || !account || !network) return <SignViewBodyShimmer />
+  if (qMetadata.isLoading || !operator || !account || !network || !decodedTx.targetAddress)
+    return <SignViewBodyShimmer />
 
   return (
     <SignContainer
@@ -72,7 +74,7 @@ export const EthSignBodyErc721Approve: FC = () => {
       <div className="flex">
         <div>{t("to transfer")}</div>
         <SignParamNetworkAddressButton
-          address={transactionInfo.targetAddress}
+          address={decodedTx.targetAddress}
           network={network}
           name={name}
         />

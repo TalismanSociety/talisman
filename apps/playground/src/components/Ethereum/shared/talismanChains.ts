@@ -158,6 +158,51 @@ const shiden: Chain = {
   },
 }
 
+const mandalaTestnet: Chain = {
+  id: 595,
+  name: "Mandala Testnet",
+  network: "Mandala Testnet",
+  nativeCurrency: {
+    name: "ACA",
+    symbol: "ACA",
+    decimals: 18,
+  },
+  rpcUrls: {
+    default: { http: ["https://mandala-rpc.aca-staging.network"] },
+    public: { http: ["https://mandala-rpc.aca-staging.network"] },
+  },
+}
+
+const acala: Chain = {
+  id: 787,
+  name: "Acala EVM+",
+  network: "Acala Acala EVM+",
+  nativeCurrency: {
+    name: "ACA",
+    symbol: "ACA",
+    decimals: 18,
+  },
+  rpcUrls: {
+    default: { http: ["https://rpc.evm.acala.network"] },
+    public: { http: ["https://rpc.evm.acala.network"] },
+  },
+}
+
+const karura: Chain = {
+  id: 686,
+  name: "Karura EVM+",
+  network: "Karura EVM+",
+  nativeCurrency: {
+    name: "KAR",
+    symbol: "KAR",
+    decimals: 18,
+  },
+  rpcUrls: {
+    default: { http: ["https://eth-rpc-karura.aca-api.network"] },
+    public: { http: ["https://eth-rpc-karura.aca-api.network"] },
+  },
+}
+
 export const talismanChains: Chain[] = [
   moonbeam,
   moonbase,
@@ -177,4 +222,7 @@ export const talismanChains: Chain[] = [
   optimismGoerli,
   polygon,
   polygonMumbai,
+  mandalaTestnet,
+  karura,
+  acala,
 ].sort((a, b) => a.name.localeCompare(b.name))

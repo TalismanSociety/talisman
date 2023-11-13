@@ -71,12 +71,7 @@ export const EthSignMessageRequest = () => {
                   <Button disabled={processing} onClick={reject}>
                     {t("Cancel")}
                   </Button>
-                  <Button
-                    disabled={processing || !isValid}
-                    processing={processing}
-                    primary
-                    onClick={approve}
-                  >
+                  <Button disabled={!isValid} processing={processing} primary onClick={approve}>
                     {t("Approve")}
                   </Button>
                 </div>

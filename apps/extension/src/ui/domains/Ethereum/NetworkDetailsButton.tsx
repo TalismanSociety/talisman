@@ -1,8 +1,8 @@
-import { AddEthereumChainParameter } from "@core/domains/ethereum/types"
 import { useOpenClose } from "@talisman/hooks/useOpenClose"
 import { FC, useCallback, useMemo } from "react"
 import { useTranslation } from "react-i18next"
 import { Button, Drawer, PillButton } from "talisman-ui"
+import { AddEthereumChainParameter } from "viem"
 
 import { ViewDetailsField } from "../Sign/ViewDetails/ViewDetailsField"
 
@@ -25,11 +25,11 @@ export const NetworksDetailsButton: FC<{
 
   const { name, rpcs, chainId, tokenSymbol, blockExplorers } = useMemo(() => {
     return {
-      name: network?.chainName || "N/A",
-      rpcs: network?.rpcUrls?.join("\n") || "N/A",
-      chainId: tryParseIntFromHex(network?.chainId),
-      tokenSymbol: network?.nativeCurrency?.symbol || "N/A",
-      blockExplorers: network?.blockExplorerUrls?.join("\n"),
+      name: network.chainName || "N/A",
+      rpcs: network.rpcUrls?.join("\n") || "N/A",
+      chainId: tryParseIntFromHex(network.chainId),
+      tokenSymbol: network.nativeCurrency?.symbol || "N/A",
+      blockExplorers: network.blockExplorerUrls?.join("\n"),
     }
   }, [network, tryParseIntFromHex])
 

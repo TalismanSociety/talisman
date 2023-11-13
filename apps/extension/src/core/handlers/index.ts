@@ -1,4 +1,5 @@
 import { PORT_EXTENSION } from "@core/constants"
+import { cleanupEvmErrorMessage, getEvmErrorCause } from "@core/domains/ethereum/errors"
 import { AnyEthRequest } from "@core/injectEth/types"
 import { log } from "@core/log"
 import { assert } from "@polkadot/util"
@@ -104,15 +105,19 @@ const talismanHandler = <TMessageType extends MessageTypes>(
       // only send message back to port if it's still connected, unfortunately this check is not reliable in all browsers
       if (port) {
         try {
-          if (["pub(eth.request)", "pri(eth.request)"].includes(message))
+          if (["pub(eth.request)", "pri(eth.request)"].includes(message)) {
+            const evmError = getEvmErrorCause(error)
             port.postMessage({
               id,
-              error: error.message,
+              error: cleanupEvmErrorMessage(
+                (message === "pri(eth.request)" && evmError.details) ||
+                  (evmError.shortMessage ?? evmError.message ?? "Unknown error")
+              ),
               code: error.code,
-              data: error.data,
+              rpcData: evmError.data, // don't use "data" as property name or viem will interpret it differently
               isEthProviderRpcError: true,
             })
-          else port.postMessage({ id, error: error.message })
+          } else port.postMessage({ id, error: error.message })
         } catch (caughtError) {
           /**
            * no-op

@@ -30,8 +30,8 @@
     "@talismn/chaindata-provider": "workspace:*",
     "@talismn/util": "workspace:*",
     "anylogger": "^1.0.11",
-    "ethers": "5.7.2",
-    "lodash": "4.17.21"
+    "lodash": "4.17.21",
+    "viem": "^1.18.9"
   },
   "devDependencies": {
     "@talismn/eslint-config": "workspace:*",

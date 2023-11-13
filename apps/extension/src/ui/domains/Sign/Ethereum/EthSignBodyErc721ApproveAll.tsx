@@ -10,16 +10,16 @@ import { useEthSignKnownTransactionRequest } from "./shared/useEthSignKnownTrans
 
 export const EthSignBodyErc721ApproveAll: FC = () => {
   const { t } = useTranslation("request")
-  const { account, network, transactionInfo } = useEthSignKnownTransactionRequest()
+  const { account, network, decodedTx } = useEthSignKnownTransactionRequest()
 
   const { operator, approve } = useMemo(() => {
     return {
-      operator: getContractCallArg<string>(transactionInfo.contractCall, "operator"),
-      approve: getContractCallArg<boolean>(transactionInfo.contractCall, "approved"),
+      operator: getContractCallArg<string>(decodedTx, "operator"),
+      approve: getContractCallArg<boolean>(decodedTx, "approved"),
     }
-  }, [transactionInfo.contractCall])
+  }, [decodedTx])
 
-  if (!operator || !account || !network) return <SignViewBodyShimmer />
+  if (!operator || !account || !network || !decodedTx.targetAddress) return <SignViewBodyShimmer />
 
   return (
     <SignContainer
@@ -49,11 +49,11 @@ export const EthSignBodyErc721ApproveAll: FC = () => {
         <SignParamNetworkAddressButton network={network} address={operator} />
       </div>
       <div className="flex">
-        <div>{t("to transfer all")}</div>
+        <div className="shrink-0">{t("to transfer all")}</div>
         <SignParamNetworkAddressButton
-          address={transactionInfo.targetAddress}
+          address={decodedTx.targetAddress}
           network={network}
-          name={transactionInfo.asset?.name}
+          name={decodedTx.asset?.name}
         />
       </div>
       <div className="flex">

@@ -1,4 +1,3 @@
-import type { AddEthereumChainParameter } from "@core/domains/ethereum/types"
 import {
   ETH_NETWORK_ADD_PREFIX,
   WATCH_ASSET_PREFIX,
@@ -9,6 +8,7 @@ import type { CustomErc20Token } from "@core/domains/tokens/types"
 import { requestStore } from "@core/libs/requests/store"
 import type { Port } from "@core/types/base"
 import { urlToDomain } from "@core/util/urlToDomain"
+import { AddEthereumChainParameter } from "viem"
 
 class AddNetworkError extends Error {}
 

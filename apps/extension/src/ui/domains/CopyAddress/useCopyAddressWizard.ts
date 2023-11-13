@@ -16,8 +16,8 @@ import useToken from "@ui/hooks/useToken"
 import useTokens from "@ui/hooks/useTokens"
 import { copyAddress } from "@ui/util/copyAddress"
 import { isEvmToken } from "@ui/util/isEvmToken"
-import { ethers } from "ethers"
 import { useCallback, useEffect, useMemo, useState } from "react"
+import { getAddress } from "viem"
 
 import { CopyAddressWizardInputs } from "./types"
 import { useCopyAddressModal } from "./useCopyAddressModal"
@@ -91,7 +91,7 @@ const getNextRoute = (inputs: CopyAddressWizardInputs): CopyAddressWizardPage =>
 const getFormattedAddress = (address?: Address, chain?: Chain) => {
   if (address) {
     try {
-      if (isEthereumAddress(address)) return ethers.utils.getAddress(address) // enforces format for checksum
+      if (isEthereumAddress(address)) return getAddress(address) // enforces format for checksum
 
       return convertAddress(address, chain?.prefix ?? null)
     } catch (err) {

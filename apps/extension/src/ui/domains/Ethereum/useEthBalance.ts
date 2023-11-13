@@ -1,21 +1,23 @@
+import { EvmAddress } from "@core/domains/ethereum/types"
+import { isEthereumAddress } from "@talismn/util"
 import { useQuery } from "@tanstack/react-query"
-import { ethers } from "ethers"
+import { PublicClient } from "viem"
 
 export const useEthBalance = (
-  provider: ethers.providers.JsonRpcProvider | undefined,
-  address: string | undefined
+  publicClient: PublicClient | undefined,
+  address: EvmAddress | undefined
 ) => {
   const { data: balance, ...rest } = useQuery({
-    queryKey: ["useEthBalance", provider?.network?.chainId, address],
+    queryKey: ["useEthBalance", publicClient?.chain?.id, address],
     queryFn: () => {
-      if (!provider || !address) return null
-      return provider.getBalance(address)
+      if (!publicClient || !isEthereumAddress(address)) return null
+      return publicClient.getBalance({ address })
     },
     refetchInterval: 12_000,
     refetchOnMount: false,
     refetchOnReconnect: false,
     refetchOnWindowFocus: false,
-    enabled: !!provider?.network && !!address,
+    enabled: !!publicClient?.chain?.id && isEthereumAddress(address),
   })
 
   return { balance, ...rest }

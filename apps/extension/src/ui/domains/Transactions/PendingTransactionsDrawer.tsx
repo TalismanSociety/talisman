@@ -24,7 +24,6 @@ import { useTokenRates } from "@ui/hooks/useTokenRates"
 import { getTransactionHistoryUrl } from "@ui/util/getTransactionHistoryUrl"
 import formatDistanceToNowStrict from "date-fns/formatDistanceToNowStrict"
 import { useLiveQuery } from "dexie-react-hooks"
-import { BigNumber } from "ethers"
 import sortBy from "lodash/sortBy"
 import { FC, PropsWithChildren, forwardRef, useCallback, useEffect, useMemo, useState } from "react"
 import { Trans, useTranslation } from "react-i18next"
@@ -348,10 +347,7 @@ const TransactionRowEvm: FC<TransactionRowEvmProps> = ({
   const [isCtxMenuOpen, setIsCtxMenuOpen] = useState(false)
 
   const amount = useMemo(
-    () =>
-      token && value
-        ? new BalanceFormatter(BigNumber.from(value).toBigInt(), token.decimals, tokenRates)
-        : null,
+    () => (token && value ? new BalanceFormatter(value, token.decimals, tokenRates) : null),
     [token, tokenRates, value]
   )
 

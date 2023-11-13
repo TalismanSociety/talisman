@@ -1,6 +1,5 @@
 import { assert } from "@polkadot/util"
 import {
-  Address,
   AddressesByToken,
   Amount,
   Balance,
@@ -18,10 +17,10 @@ import {
   githubTokenLogoUrl,
 } from "@talismn/chaindata-provider"
 import { hasOwnProperty, isEthereumAddress } from "@talismn/util"
-import { ethers } from "ethers"
 import isEqual from "lodash/isEqual"
+import { PublicClient, getContract } from "viem"
 
-import erc20Abi from "./erc20.json"
+import { erc20Abi } from "./erc20Abi"
 import log from "./log"
 
 export { erc20Abi }
@@ -36,7 +35,7 @@ export const evmErc20TokenId = (
 export type EvmErc20Token = NewTokenType<
   ModuleType,
   {
-    contractAddress: string
+    contractAddress: `0x${string}`
     evmNetwork: { id: EvmNetworkId } | null
   }
 >
@@ -61,7 +60,7 @@ export type EvmErc20ModuleConfig = {
     symbol?: string
     decimals?: number
     coingeckoId?: string
-    contractAddress?: string
+    contractAddress?: `0x${string}`
   }>
 }
 
@@ -116,16 +115,17 @@ export const EvmErc20Module: NewBalanceModule<
         if (!contractAddress) continue
 
         const [contractSymbol, contractDecimals] = await (async () => {
-          const evmNetwork = await chaindataProvider.getEvmNetwork(chainId)
-          if (!evmNetwork) return []
+          const publicClient = await chainConnector.getPublicClientForEvmNetwork(chainId)
+          if (!publicClient) return []
 
-          const provider = await chainConnector.getProviderForEvmNetwork(evmNetwork)
-          if (!provider) return []
-
-          const contract = new ethers.Contract(contractAddress, erc20Abi, provider)
+          const contract = getContract({
+            abi: erc20Abi,
+            address: contractAddress as `0x${string}`,
+            publicClient,
+          })
 
           try {
-            return [await contract.symbol(), await contract.decimals()]
+            return Promise.all([contract.read.symbol(), contract.read.decimals()])
           } catch (error) {
             log.error(`Failed to retrieve contract symbol and decimals`, String(error))
             return []
@@ -245,10 +245,8 @@ export const EvmErc20Module: NewBalanceModule<
               const evmNetwork = evmNetworks[evmNetworkId]
               if (!evmNetwork) throw new Error(`Evm network ${evmNetworkId} not found`)
 
-              const provider = await chainConnectors.evm.getProviderForEvmNetwork(evmNetwork, {
-                batch: true,
-              })
-              if (!provider)
+              const publicClient = await chainConnector.getPublicClientForEvmNetwork(evmNetworkId)
+              if (!publicClient)
                 throw new Error(`Could not get rpc provider for evm network ${evmNetworkId}`)
 
               const tokensAndAddresses = Object.entries(addressesByToken).reduce(
@@ -277,8 +275,6 @@ export const EvmErc20Module: NewBalanceModule<
 
               // fetch all balances
               const balanceRequests = tokensAndAddresses.flatMap(([token, addresses]) => {
-                const contract = new ethers.Contract(token.contractAddress, erc20Abi, provider)
-
                 return addresses.map(
                   async (address) =>
                     new Balance({
@@ -291,7 +287,11 @@ export const EvmErc20Module: NewBalanceModule<
                       evmNetworkId,
                       tokenId: token.id,
 
-                      free: await getFreeBalance(contract, address),
+                      free: await getFreeBalance(
+                        publicClient,
+                        token.contractAddress as `0x${string}`,
+                        address as `0x${string}`
+                      ),
                     })
                 )
               })
@@ -354,18 +354,33 @@ function groupAddressesByTokenByEvmNetwork(
   }, {} as Record<string, AddressesByToken<EvmErc20Token>>)
 }
 
-async function getFreeBalance(contract: ethers.Contract, address: Address): Promise<string> {
-  if (!isEthereumAddress(address)) return "0"
+async function getFreeBalance(
+  publicClient: PublicClient,
+  contractAddress: `0x${string}`,
+  accountAddress: `0x${string}`
+): Promise<string> {
+  if (!isEthereumAddress(accountAddress)) return "0"
 
   try {
-    return ((await contract.balanceOf(address)).toBigInt() ?? 0n).toString()
+    const res = await publicClient.readContract({
+      abi: erc20Abi,
+      address: contractAddress,
+      functionName: "balanceOf",
+      args: [accountAddress],
+    })
+
+    return res.toString()
   } catch (error) {
-    const errorMessage = hasOwnProperty(error, "message") ? error.message : error
+    const errorMessage = hasOwnProperty(error, "shortMessage")
+      ? error.shortMessage
+      : hasOwnProperty(error, "message")
+      ? error.message
+      : error
     log.warn(
-      `Failed to get balance from contract ${contract.address} for address ${address}: ${errorMessage}`
+      `Failed to get balance from contract ${contractAddress} (chain ${publicClient.chain?.id}) for address ${accountAddress}: ${errorMessage}`
     )
     throw new Error(
-      `Failed to get balance from contract ${contract.address} for address ${address}`,
+      `Failed to get balance from contract ${contractAddress} (chain ${publicClient.chain?.id}) for address ${accountAddress}`,
       { cause: error as Error }
     )
   }

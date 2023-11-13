@@ -9,12 +9,9 @@ import { useEthSignKnownTransactionRequest } from "../shared/useEthSignKnownTran
 
 export const EthSignMoonVotingUndelegate: FC = () => {
   const { t } = useTranslation("request")
-  const { network, transactionInfo } = useEthSignKnownTransactionRequest()
+  const { network, decodedTx } = useEthSignKnownTransactionRequest()
 
-  const trackId = useMemo(
-    () => getContractCallArg<number>(transactionInfo.contractCall, "trackId"),
-    [transactionInfo.contractCall]
-  )
+  const trackId = useMemo(() => getContractCallArg<number>(decodedTx, "trackId"), [decodedTx])
 
   if (!network?.nativeToken?.id || trackId === undefined) return null
 

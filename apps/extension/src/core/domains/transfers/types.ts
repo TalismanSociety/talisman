@@ -3,7 +3,7 @@ import { SignerPayloadJSON } from "@core/domains/signing/types"
 import { TokenId } from "@core/domains/tokens/types"
 import { HexString } from "@polkadot/util/types"
 import { Address } from "@talismn/balances"
-import { ethers } from "ethers"
+import { TransactionRequest } from "viem"
 
 import { EthGasSettings, EvmNetworkId } from "../ethereum/types"
 import { WalletTransactionTransferInfo } from "../transactions"
@@ -25,15 +25,15 @@ export interface RequestAssetTransferEth {
   fromAddress: string
   toAddress: string
   amount: string
-  gasSettings: EthGasSettings
+  gasSettings: EthGasSettings<string>
 }
 export interface RequestAssetTransferEthHardware {
   evmNetworkId: EvmNetworkId
   tokenId: TokenId
   amount: string
   to: Address
-  unsigned: ethers.providers.TransactionRequest
-  signedTransaction: string
+  unsigned: TransactionRequest<string>
+  signedTransaction: `0x${string}`
 }
 
 export interface RequestAssetTransferApproveSign {
