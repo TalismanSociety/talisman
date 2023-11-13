@@ -4,6 +4,7 @@ import { log } from "@core/log"
 import { createNotification } from "@core/notifications"
 import { chainConnectorEvm } from "@core/rpcs/chain-connector-evm"
 import { chaindataProvider } from "@core/rpcs/chaindata"
+import { assert } from "@polkadot/util"
 import * as Sentry from "@sentry/browser"
 import { EvmNetworkId } from "@talismn/chaindata-provider"
 import { sleep, throwAfter } from "@talismn/util"
@@ -57,6 +58,7 @@ export const watchEthereumTransaction = async (
         throwAfter(5 * 60_000, "Transaction not found"),
       ])
 
+      assert(receipt, "Transaction to watch not found")
       // check hash which may be incorrect for cancelled tx, in which case receipt includes the replacement tx hash
       if (receipt.transactionHash === hash) {
         // to test failing transactions, swap on busy AMM pools with a 0.05% slippage limit
