@@ -15555,6 +15555,7 @@ __metadata:
     sinon-chrome: ^3.0.1
     stream-http: ^3.2.0
     style-loader: 3.3.3
+    subshape: ^0.14.0
     tailwindcss: ^3.3.2
     talisman-ui: "workspace:*"
     terser-webpack-plugin: 5.3.9
@@ -25377,6 +25378,13 @@ __metadata:
   version: 4.1.1
   resolution: "stylis@npm:4.1.1"
   checksum: e9b0a086996a94c44d45933287731313f6ecdbf9334410231d882d31a1890fb36e34a7b163487e2d7f992c2044e4cb37179810fc6f758f359a431343c2374ed2
+  languageName: node
+  linkType: hard
+
+"subshape@npm:^0.14.0":
+  version: 0.14.0
+  resolution: "subshape@npm:0.14.0"
+  checksum: 171a2d55db431917e1206b3cd9b4df976406fb12358f4932aff77d8d67f5564aec6909803ab3b95374876dcfc55c5a9582d0f2c164903e9996289cfcac8dfbd9
   languageName: node
   linkType: hard
 
