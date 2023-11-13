@@ -53,6 +53,7 @@ export const useLedgerEthereum = (persist = false) => {
         ledger.getAddress(getEthLedgerDerivationPath("LedgerLive")),
         throwAfter(5_000, "Timeout"),
       ])
+
       const { version } = await ledger.getAppConfiguration()
       if (!gte(version, LEDGER_ETHEREUM_MIN_VERSION))
         throw new LedgerError("Unsupported version", "UnsupportedVersion")

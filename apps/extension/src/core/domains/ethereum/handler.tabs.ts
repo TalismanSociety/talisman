@@ -337,6 +337,7 @@ export class EthTabsHandler extends TabsHandler {
             client.request({ method: "eth_chainId" }),
             throwAfter(10_000, "timeout"), // 10 sec timeout
           ])
+          assert(!!rpcChainIdHex, `No chainId returned for ${rpcUrl}`)
           const rpcChainId = hexToNumber(rpcChainIdHex)
 
           assert(rpcChainId === chainId, "chainId mismatch")
