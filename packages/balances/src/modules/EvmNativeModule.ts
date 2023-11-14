@@ -41,7 +41,7 @@ export type EvmNativeChainMeta = {
 }
 
 export type EvmNativeModuleConfig = {
-  symbol?: number
+  symbol?: string
   decimals?: number
 } & BalancesConfigTokenParams
 
