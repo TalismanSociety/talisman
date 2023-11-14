@@ -28,10 +28,6 @@ const config = (env) => ({
       "@substrate/txwrapper-core",
       "@talismn/chaindata-provider-extension",
       "@metamask/eth-sig-util",
-      "@acala-network/types",
-      "@acala-network/eth-providers",
-      "@acala-network/eth-transactions",
-      "@acala-network/api-derive",
     ],
 
     // Wallet injected scripts

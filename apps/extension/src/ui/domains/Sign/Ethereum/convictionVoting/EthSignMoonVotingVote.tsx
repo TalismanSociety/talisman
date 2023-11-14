@@ -1,4 +1,3 @@
-import { BigNumber } from "ethers"
 import { FC, useMemo } from "react"
 import { useTranslation } from "react-i18next"
 
@@ -10,10 +9,10 @@ import { useEthSignKnownTransactionRequest } from "../shared/useEthSignKnownTran
 
 export const EthSignMoonVotingVote: FC = () => {
   const { t } = useTranslation("request")
-  const { network, transactionInfo } = useEthSignKnownTransactionRequest()
+  const { network, decodedTx } = useEthSignKnownTransactionRequest()
 
   const { title, icon } = useMemo(() => {
-    switch (transactionInfo.contractCall.name) {
+    switch (decodedTx.contractCall?.functionName) {
       case "voteYes":
         return {
           title: t("Vote Yes"),
@@ -27,19 +26,16 @@ export const EthSignMoonVotingVote: FC = () => {
       default:
         return {}
     }
-  }, [t, transactionInfo.contractCall.name])
+  }, [t, decodedTx.contractCall?.functionName])
 
-  const { voteAmount, pollIndex, conviction } = useMemo(() => {
-    const pollIndex = getContractCallArg<number>(transactionInfo.contractCall, "pollIndex")
-    const voteAmount = getContractCallArg<BigNumber>(transactionInfo.contractCall, "voteAmount")
-    const conviction = getContractCallArg<number>(transactionInfo.contractCall, "conviction")
-
-    return {
-      pollIndex,
-      voteAmount: voteAmount?.toBigInt(),
-      conviction,
-    }
-  }, [transactionInfo.contractCall])
+  const [pollIndex, voteAmount, conviction] = useMemo(
+    () => [
+      getContractCallArg<number>(decodedTx, "pollIndex"),
+      getContractCallArg<bigint>(decodedTx, "voteAmount"),
+      getContractCallArg<number>(decodedTx, "conviction"),
+    ],
+    [decodedTx]
+  )
 
   if (
     !network?.nativeToken?.id ||

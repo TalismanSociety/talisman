@@ -1,6 +1,8 @@
+import { EvmAddress } from "@core/domains/ethereum/types"
 import { EthPriorityOptionName } from "@core/domains/signing/types"
 import { AppPill } from "@talisman/components/AppPill"
 import { WithTooltip } from "@talisman/components/Tooltip"
+import { EvmNetworkId, TokenId } from "@talismn/chaindata-provider"
 import { InfoIcon } from "@talismn/icons"
 import {
   PopupContent,
@@ -11,7 +13,7 @@ import {
 import { TokensAndFiat } from "@ui/domains/Asset/TokensAndFiat"
 import { EthFeeSelect } from "@ui/domains/Ethereum/GasSettings/EthFeeSelect"
 import { useEthBalance } from "@ui/domains/Ethereum/useEthBalance"
-import { useEthereumProvider } from "@ui/domains/Ethereum/useEthereumProvider"
+import { usePublicClient } from "@ui/domains/Ethereum/usePublicClient"
 import { EthSignBody } from "@ui/domains/Sign/Ethereum/EthSignBody"
 import { SignAlertMessage } from "@ui/domains/Sign/SignAlertMessage"
 import { SignHardwareEthereum } from "@ui/domains/Sign/SignHardwareEthereum"
@@ -22,9 +24,9 @@ import { Button, Tooltip, TooltipContent, TooltipTrigger } from "talisman-ui"
 
 import { SignAccountAvatar } from "../SignAccountAvatar"
 
-const useEvmBalance = (address: string, evmNetworkId: string | undefined) => {
-  const provider = useEthereumProvider(evmNetworkId)
-  return useEthBalance(provider, address)
+const useEvmBalance = (address: EvmAddress, evmNetworkId: EvmNetworkId | undefined) => {
+  const publicClient = usePublicClient(evmNetworkId)
+  return useEthBalance(publicClient, address)
 }
 
 const FeeTooltip = ({
@@ -33,10 +35,10 @@ const FeeTooltip = ({
   tokenId,
   balance,
 }: {
-  estimatedFee: string | bigint | undefined
-  maxFee: string | bigint | undefined
-  tokenId: string | undefined
-  balance: string | bigint | null | undefined
+  estimatedFee: bigint | undefined
+  maxFee: bigint | undefined
+  tokenId: TokenId | undefined
+  balance: bigint | null | undefined
 }) => {
   const { t } = useTranslation("request")
 
@@ -101,14 +103,14 @@ export const EthSignTransactionRequest = () => {
     approveHardware,
     isPayloadLocked,
     setIsPayloadLocked,
-    transactionInfo,
+    decodedTx,
     gasSettingsByPriority,
     setCustomSettings,
     setReady,
     isValid,
     networkUsage,
   } = useEthSignTransactionRequest()
-  const { balance } = useEvmBalance(account?.address, network?.id)
+  const { balance } = useEvmBalance(account?.address as EvmAddress, network?.id)
 
   const { processing, errorMessage } = useMemo(() => {
     return {
@@ -137,7 +139,7 @@ export const EthSignTransactionRequest = () => {
       </PopupHeader>
       <PopupContent>
         <div className="scrollable scrollable-800 text-body-secondary h-full overflow-y-auto text-center">
-          <EthSignBody transactionInfo={transactionInfo} isReady={!isLoading} />
+          <EthSignBody decodedTx={decodedTx} isReady={!isLoading} />
         </div>
       </PopupContent>
       {!isLoading && (
@@ -164,14 +166,14 @@ export const EthSignTransactionRequest = () => {
                       <TooltipContent>
                         <FeeTooltip
                           tokenId={network.nativeToken.id}
-                          estimatedFee={txDetails.estimatedFee.toString()}
-                          maxFee={txDetails.maxFee.toString()}
-                          balance={balance?.toString()}
+                          estimatedFee={txDetails.estimatedFee}
+                          maxFee={txDetails.maxFee}
+                          balance={balance}
                         />
                       </TooltipContent>
                     </Tooltip>
                   </div>
-                  <div>{transaction?.type === 2 && t("Priority")}</div>
+                  <div>{transaction?.type === "eip1559" && t("Priority")}</div>
                 </div>
                 <div className="flex items-center justify-between">
                   <div>
@@ -182,7 +184,7 @@ export const EthSignTransactionRequest = () => {
                   </div>
                   <div>
                     <EthFeeSelect
-                      tx={request}
+                      tx={transaction}
                       tokenId={network.nativeToken.id}
                       disabled={isPayloadLocked}
                       gasSettingsByPriority={gasSettingsByPriority}
@@ -199,6 +201,7 @@ export const EthSignTransactionRequest = () => {
             ) : null}
             {account && request && account.isHardware ? (
               <SignHardwareEthereum
+                evmNetworkId={network?.id}
                 method="eth_sendTransaction"
                 payload={transaction}
                 account={account}
@@ -213,7 +216,7 @@ export const EthSignTransactionRequest = () => {
                   {t("Cancel")}
                 </Button>
                 <Button
-                  disabled={!transaction || processing || isLoading || !isValid}
+                  disabled={!transaction || isLoading || !isValid}
                   processing={processing}
                   primary
                   onClick={approve}

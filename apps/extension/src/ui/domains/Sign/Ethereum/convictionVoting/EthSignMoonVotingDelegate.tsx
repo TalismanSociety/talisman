@@ -1,4 +1,3 @@
-import { BigNumber } from "ethers"
 import { FC, useMemo } from "react"
 import { useTranslation } from "react-i18next"
 
@@ -10,24 +9,17 @@ import { useEthSignKnownTransactionRequest } from "../shared/useEthSignKnownTran
 
 export const EthSignMoonVotingDelegate: FC = () => {
   const { t } = useTranslation("request")
-  const { network, transactionInfo } = useEthSignKnownTransactionRequest()
+  const { network, decodedTx } = useEthSignKnownTransactionRequest()
 
-  const { amount, representative, conviction, trackId } = useMemo(() => {
-    const representative = getContractCallArg<string>(
-      transactionInfo.contractCall,
-      "representative"
-    )
-    const amount = getContractCallArg<BigNumber>(transactionInfo.contractCall, "amount")
-    const conviction = getContractCallArg<number>(transactionInfo.contractCall, "conviction")
-    const trackId = getContractCallArg<number>(transactionInfo.contractCall, "trackId")
-
-    return {
-      representative,
-      amount: amount?.toBigInt(),
-      conviction,
-      trackId,
-    }
-  }, [transactionInfo.contractCall])
+  const [representative, amount, conviction, trackId] = useMemo(
+    () => [
+      getContractCallArg<string>(decodedTx, "representative"),
+      getContractCallArg<bigint>(decodedTx, "amount"),
+      getContractCallArg<number>(decodedTx, "conviction"),
+      getContractCallArg<number>(decodedTx, "trackId"),
+    ],
+    [decodedTx]
+  )
 
   if (
     !network?.nativeToken?.id ||

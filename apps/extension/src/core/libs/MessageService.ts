@@ -5,7 +5,7 @@
 
 import {
   ETH_ERROR_EIP1474_INTERNAL_ERROR,
-  EthProviderRpcError,
+  WrappedEthProviderRpcError,
 } from "@core/injectEth/EthProviderRpcError"
 import { log } from "@core/log"
 import type {
@@ -132,7 +132,7 @@ export default class MessageService {
     data: TransportResponseMessage<TMessageType> & {
       subscription?: string
       code?: number
-      data?: unknown
+      rpcData?: unknown
       isEthProviderRpcError?: boolean
     }
   ): void {
@@ -159,10 +159,10 @@ export default class MessageService {
     else if (data.error) {
       if (data.isEthProviderRpcError) {
         handler.reject(
-          new EthProviderRpcError(
+          new WrappedEthProviderRpcError(
             data.error,
             data.code ?? ETH_ERROR_EIP1474_INTERNAL_ERROR,
-            data.data
+            data.rpcData
           )
         )
       } else handler.reject(new Error(data.error))

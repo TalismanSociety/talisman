@@ -460,12 +460,15 @@ export class Websocket implements ProviderInterface {
 
   #onSocketMessage = (message: MessageEvent<string>): void => {
     // log.debug(() => ["received", message.data])
+    try {
+      const response = JSON.parse(message.data) as UnknownJsonRpcResponse
 
-    const response = JSON.parse(message.data) as UnknownJsonRpcResponse
-
-    return isUndefined(response.method)
-      ? this.#onSocketMessageResult(response)
-      : this.#onSocketMessageSubscribe(response)
+      return isUndefined(response.method)
+        ? this.#onSocketMessageResult(response)
+        : this.#onSocketMessageSubscribe(response)
+    } catch (e) {
+      this.#emit("error", new Error("Invalid websocket message received", { cause: e }))
+    }
   }
 
   #onSocketMessageResult = (response: UnknownJsonRpcResponse): void => {

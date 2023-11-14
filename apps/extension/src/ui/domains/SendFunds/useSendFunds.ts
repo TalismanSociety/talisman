@@ -1,12 +1,16 @@
 import { AccountType } from "@core/domains/accounts/types"
-import { getEthTransferTransactionBase } from "@core/domains/ethereum/helpers"
+import {
+  getEthTransferTransactionBase,
+  serializeGasSettings,
+  serializeTransactionRequest,
+} from "@core/domains/ethereum/helpers"
 import { AssetTransferMethod } from "@core/domains/transfers/types"
 import { log } from "@core/log"
 import { HexString } from "@polkadot/util/types"
 import { provideContext } from "@talisman/util/provideContext"
 import { Address, Balance, BalanceFormatter } from "@talismn/balances"
 import { Token, TokenId } from "@talismn/chaindata-provider"
-import { formatDecimals, sleep } from "@talismn/util"
+import { formatDecimals, isEthereumAddress, sleep } from "@talismn/util"
 import { useQuery } from "@tanstack/react-query"
 import { api } from "@ui/api"
 import { useSendFundsWizard } from "@ui/apps/popup/pages/SendFunds/context"
@@ -25,10 +29,10 @@ import useTokens from "@ui/hooks/useTokens"
 import { isEvmToken } from "@ui/util/isEvmToken"
 import { isSubToken } from "@ui/util/isSubToken"
 import { isTransferableToken } from "@ui/util/isTransferableToken"
-import { BigNumber, ethers } from "ethers"
 import { useCallback, useEffect, useMemo, useRef, useState } from "react"
 import { useTranslation } from "react-i18next"
 import { useLocation } from "react-router-dom"
+import { TransactionRequest } from "viem"
 
 import { useEthTransaction } from "../Ethereum/useEthTransaction"
 import { useFeeToken } from "./useFeeToken"
@@ -91,23 +95,30 @@ const useIsSendingEnough = (
 }
 
 const useEvmTransaction = (
-  tokenId?: string,
+  tokenId?: TokenId,
   from?: string,
   to?: string,
-  amount?: string,
+  planck?: string,
   isLocked?: boolean
 ) => {
   const token = useToken(tokenId)
 
   const [evmInvalidTxError, setEvmInvalidTxError] = useState<Error | undefined>()
-  const [tx, setTx] = useState<ethers.providers.TransactionRequest>()
+  const [tx, setTx] = useState<TransactionRequest>()
 
   useEffect(() => {
     setEvmInvalidTxError(undefined)
-    if (!isEvmToken(token) || !token.evmNetwork?.id || !from || !token || !amount || !to)
+    if (
+      !isEvmToken(token) ||
+      !token.evmNetwork?.id ||
+      !token ||
+      !planck ||
+      !isEthereumAddress(from) ||
+      !isEthereumAddress(to)
+    )
       setTx(undefined)
     else {
-      getEthTransferTransactionBase(token.evmNetwork.id, from, to, token, amount)
+      getEthTransferTransactionBase(token.evmNetwork.id, from, to, token, BigInt(planck))
         .then(setTx)
         .catch((err) => {
           setEvmInvalidTxError(err)
@@ -116,9 +127,9 @@ const useEvmTransaction = (
           console.error("Failed to populate transaction", { err })
         })
     }
-  }, [from, to, token, amount])
+  }, [from, to, token, planck])
 
-  const result = useEthTransaction(tx, isLocked)
+  const result = useEthTransaction(tx, token?.evmNetwork?.id, isLocked)
 
   return { evmTransaction: tx ? { tx, ...result } : undefined, evmInvalidTxError }
 }
@@ -241,8 +252,7 @@ const useSendFundsProvider = () => {
         }
         case "evm-native": {
           if (!evmTransaction?.txDetails?.maxFee) return null
-          const val =
-            balance.transferable.planck - BigNumber.from(evmTransaction.txDetails.maxFee).toBigInt()
+          const val = balance.transferable.planck - evmTransaction.txDetails.maxFee
           return evmTransaction?.txDetails?.maxFee
             ? new BalanceFormatter(val > 0n ? val : 0n, token.decimals, tokenRates)
             : null
@@ -272,15 +282,11 @@ const useSendFundsProvider = () => {
     if (evmTransaction?.txDetails?.estimatedFee) {
       return [
         new BalanceFormatter(
-          BigNumber.from(evmTransaction.txDetails.estimatedFee).toBigInt(),
+          evmTransaction.txDetails.estimatedFee,
           feeToken?.decimals,
           feeTokenRates
         ),
-        new BalanceFormatter(
-          BigNumber.from(evmTransaction.txDetails.maxFee).toBigInt(),
-          feeToken?.decimals,
-          feeTokenRates
-        ),
+        new BalanceFormatter(evmTransaction.txDetails.maxFee, feeToken?.decimals, feeTokenRates),
       ]
     }
     if (subTransaction?.partialFee) {
@@ -544,13 +550,16 @@ const useSendFundsProvider = () => {
       } else if (token.evmNetwork?.id) {
         if (!transfer) throw new Error("Missing send amount")
         if (!evmTransaction?.gasSettings) throw new Error("Missing gas settings")
+        if (!isEthereumAddress(from)) throw new Error("Invalid sender address")
+        if (!isEthereumAddress(to)) throw new Error("Invalid recipient address")
+        const gasSettings = serializeGasSettings(evmTransaction.gasSettings)
         const { hash } = await api.assetTransferEth(
           token.evmNetwork.id,
           token.id,
           from,
           to,
           value.planck.toString(),
-          evmTransaction.gasSettings
+          gasSettings
         )
         await sleep(500) // wait for dexie to pick up change in transactions table, prevents having "unfound transaction" flickering in progress screen
         gotoProgress({ hash, networkIdOrHash: token.evmNetwork?.id })
@@ -588,13 +597,19 @@ const useSendFundsProvider = () => {
           gotoProgress({ hash, networkIdOrHash: chain.genesisHash })
           return
         }
-        if (evmTransaction?.transaction && amount && token?.evmNetwork?.id && to) {
+        if (
+          evmTransaction?.transaction &&
+          amount &&
+          token?.evmNetwork?.id &&
+          isEthereumAddress(to)
+        ) {
+          const serialized = serializeTransactionRequest(evmTransaction.transaction)
           const { hash } = await api.assetTransferEthHardware(
-            token?.evmNetwork.id,
+            token.evmNetwork.id,
             token.id,
             amount,
             to,
-            evmTransaction.transaction,
+            serialized,
             signature
           )
           await sleep(500) // wait for dexie to pick up change in transactions table, prevents having "unfound transaction" flickering in progress screen

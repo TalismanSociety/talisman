@@ -437,11 +437,11 @@ export default class AccountsHandler extends ExtensionHandler {
     const { err, val } = await getPairForAddressSafely(address, async (pair) => {
       assert(pair.type === "ethereum", "Private key cannot be exported for this account type")
 
-      const pk = getPrivateKey(pair, pw as string)
+      const pk = getPrivateKey(pair, pw as string, "hex")
 
       talismanAnalytics.capture("account export", { type: pair.type, mode: "pk" })
 
-      return pk.toString("hex")
+      return pk
     })
 
     if (err) throw new Error(val as string)

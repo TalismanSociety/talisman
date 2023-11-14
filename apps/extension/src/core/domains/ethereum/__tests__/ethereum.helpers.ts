@@ -1,4 +1,4 @@
-import { ethers } from "ethers"
+import { parseGwei } from "viem"
 
 import {
   getEthDerivationPath,
@@ -8,78 +8,71 @@ import {
   isSafeImageUrl,
 } from "../helpers"
 
-const baseFeePerGas = ethers.utils.parseUnits("2", "gwei")
-const maxPriorityFeePerGas = ethers.utils.parseUnits("8", "gwei")
+const baseFeePerGas = parseGwei("2")
+const maxPriorityFeePerGas = parseGwei("8")
 
 describe("Test ethereum helpers", () => {
   test("getMaxFeePerGas 0 block", async () => {
-    const result = getMaxFeePerGas(baseFeePerGas, maxPriorityFeePerGas, 0).toString()
-    const expected = ethers.utils.parseUnits("10", "gwei").toString()
+    const result = getMaxFeePerGas(baseFeePerGas, maxPriorityFeePerGas, 0)
+    const expected = parseGwei("10")
 
     expect(result).toEqual(expected)
   })
 
   test("getMaxFeePerGas 8 block", async () => {
-    const result = getMaxFeePerGas(baseFeePerGas, maxPriorityFeePerGas, 8).toString()
-    const expected = ethers.utils.parseUnits("13131569026", "wei").toString()
+    const result = getMaxFeePerGas(baseFeePerGas, maxPriorityFeePerGas, 8)
 
-    expect(result).toEqual(expected)
+    expect(result).toEqual(13131569026n)
   })
 
   test("getTotalFeesFromGasSettings - EIP1559 maxFee lower than baseFee", () => {
     const { estimatedFee, maxFee } = getTotalFeesFromGasSettings(
       {
-        type: 2,
-        maxFeePerGas: ethers.utils.parseUnits("1.5", "gwei"),
-        maxPriorityFeePerGas: ethers.utils.parseUnits("0.5", "gwei"),
-        gasLimit: 22000,
+        type: "eip1559",
+        maxFeePerGas: parseGwei("1.5"),
+        maxPriorityFeePerGas: parseGwei("0.5"),
+        gas: 22000n,
       },
-      21000,
-      baseFeePerGas
-    ) //
+      21000n,
+      baseFeePerGas,
+      0n
+    )
 
-    const expectedEstimatedFee = ethers.utils.parseUnits("42000000000000", "wei").toString()
-    const expectedMaxFee = ethers.utils.parseUnits("44000000000000", "wei").toString()
-
-    expect(estimatedFee.toString()).toEqual(expectedEstimatedFee)
-    expect(maxFee.toString()).toEqual(expectedMaxFee)
+    expect(estimatedFee).toEqual(42000000000000n)
+    expect(maxFee).toEqual(44000000000000n)
   })
 
   test("getTotalFeesFromGasSettings - EIP1559 classic", () => {
     const { estimatedFee, maxFee } = getTotalFeesFromGasSettings(
       {
-        type: 2,
-        maxFeePerGas: ethers.utils.parseUnits("3.5", "gwei"),
-        maxPriorityFeePerGas: ethers.utils.parseUnits("0.5", "gwei"),
-        gasLimit: 22000,
+        type: "eip1559",
+        maxFeePerGas: parseGwei("3.5"),
+        maxPriorityFeePerGas: parseGwei("0.5"),
+        gas: 22000n,
       },
-      21000,
-      baseFeePerGas
+      21000n,
+      baseFeePerGas,
+      0n
     )
 
-    const expectedEstimatedFee = ethers.utils.parseUnits("52500000000000", "wei").toString()
-    const expectedMaxFee = ethers.utils.parseUnits("88000000000000", "wei").toString()
-
-    expect(estimatedFee.toString()).toEqual(expectedEstimatedFee)
-    expect(maxFee.toString()).toEqual(expectedMaxFee)
+    expect(estimatedFee).toEqual(52500000000000n)
+    expect(maxFee).toEqual(88000000000000n)
   })
 
   test("getTotalFeesFromGasSettings - Legacy", () => {
     const { estimatedFee, maxFee } = getTotalFeesFromGasSettings(
       {
-        type: 0,
-        gasPrice: baseFeePerGas.add(maxPriorityFeePerGas),
-        gasLimit: 22000,
+        type: "legacy",
+        gasPrice: baseFeePerGas + maxPriorityFeePerGas,
+        gas: 22000n,
       },
-      21000,
-      baseFeePerGas
+      21000n,
+      baseFeePerGas,
+      0n
     )
 
-    const expectedEstimatedFee = ethers.utils.parseUnits("210000", "gwei").toString()
-    const expectedMaxFee = ethers.utils.parseUnits("220000", "gwei").toString()
-
-    expect(estimatedFee.toString()).toEqual(expectedEstimatedFee)
-    expect(maxFee.toString()).toEqual(expectedMaxFee)
+    expect(estimatedFee).toEqual(parseGwei("210000"))
+    expect(maxFee).toEqual(parseGwei("220000"))
   })
 
   test("getEthDerivationPath", () => {

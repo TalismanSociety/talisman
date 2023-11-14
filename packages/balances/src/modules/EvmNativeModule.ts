@@ -6,12 +6,13 @@ import {
   githubTokenLogoUrl,
 } from "@talismn/chaindata-provider"
 import { hasOwnProperty, isEthereumAddress } from "@talismn/util"
-import { ethers } from "ethers"
 import isEqual from "lodash/isEqual"
+import { PublicClient } from "viem"
 
 import { DefaultBalanceModule, NewBalanceModule } from "../BalanceModule"
 import log from "../log"
 import { Address, Amount, Balance, BalanceJsonList, Balances, NewBalanceType } from "../types"
+import { abiMulticall } from "./abis/multicall"
 
 type ModuleType = "evm-native"
 
@@ -192,16 +193,21 @@ export const EvmNativeModule: NewBalanceModule<
             const evmNetwork = evmNetworks[evmNetworkId]
             if (!evmNetwork) throw new Error(`Evm network ${evmNetworkId} not found`)
 
-            const provider = await chainConnectors.evm.getProviderForEvmNetwork(evmNetwork, {
-              batch: true,
-            })
-            if (!provider)
+            const publicClient = await chainConnectors.evm.getPublicClientForEvmNetwork(
+              evmNetworkId
+            )
+
+            if (!publicClient)
               throw new Error(`Could not get rpc provider for evm network ${evmNetworkId}`)
 
             // fetch all balances
-            const balanceRequests = addresses.map(
-              async (address) =>
-                new Balance({
+            const freeBalances = await getFreeBalances(publicClient, addresses)
+
+            const balanceResults = addresses
+              .map((address, i) => {
+                if (freeBalances[i] === "error") return false
+
+                return new Balance({
                   source: "evm-native",
 
                   status: "live",
@@ -211,26 +217,13 @@ export const EvmNativeModule: NewBalanceModule<
                   evmNetworkId,
                   tokenId,
 
-                  free: await getFreeBalance(provider, address),
+                  free: freeBalances[i].toString(),
                 })
-            )
-
-            // wait for balance fetches to complete
-            const balanceResults = await Promise.allSettled(balanceRequests)
-
-            // filter out errors
-            const balances = balanceResults
-              .map((result) => {
-                if (result.status === "rejected") {
-                  log.debug(result.reason)
-                  return false
-                }
-                return result.value
               })
               .filter((balance): balance is Balance => balance !== false)
 
             // return to caller
-            return new Balances(balances)
+            return new Balances(balanceResults)
           })
         )
       )
@@ -249,21 +242,78 @@ export const EvmNativeModule: NewBalanceModule<
 }
 
 async function getFreeBalance(
-  provider: ethers.providers.JsonRpcProvider,
+  publicClient: PublicClient,
   address: Address
-): Promise<string> {
-  if (!isEthereumAddress(address)) return "0"
+): Promise<bigint | "error"> {
+  if (!isEthereumAddress(address)) return 0n
 
   try {
-    return ((await provider.getBalance(address)).toBigInt() ?? 0n).toString()
+    return await publicClient.getBalance({ address })
   } catch (error) {
-    const errorMessage = hasOwnProperty(error, "message") ? error.message : error
+    const errorMessage = hasOwnProperty(error, "shortMessage")
+      ? error.shortMessage
+      : hasOwnProperty(error, "message")
+      ? error.message
+      : error
     log.warn(
-      `Failed to get balance from chain ${provider.network.chainId} for address ${address}: ${errorMessage}`
+      `Failed to get balance from chain ${publicClient.chain?.id} for address ${address}: ${errorMessage}`
     )
-    throw new Error(
-      `Failed to get balance from chain ${provider.network.chainId} for address ${address}`,
-      { cause: error as Error }
-    )
+    return "error"
   }
+}
+
+async function getFreeBalances(
+  publicClient: PublicClient,
+  addresses: Address[]
+): Promise<(bigint | "error")[]> {
+  // if multicall is available, use it to save RPC rate limits
+  if (publicClient.batch?.multicall && publicClient.chain?.contracts?.multicall3?.address) {
+    try {
+      const ethAddresses = addresses.filter(isEthereumAddress)
+
+      const addressMulticall = publicClient.chain.contracts.multicall3.address
+
+      const callResults = await publicClient.multicall({
+        contracts: ethAddresses.map((address) => ({
+          address: addressMulticall,
+          abi: abiMulticall,
+          functionName: "getEthBalance",
+          args: [address],
+        })),
+      })
+
+      const ethBalanceResults = Object.fromEntries(
+        ethAddresses.map((address, i) => {
+          const { error } = callResults[i]
+          if (error) {
+            const errorMessage = hasOwnProperty(error, "shortMessage")
+              ? error.shortMessage
+              : hasOwnProperty(error, "message")
+              ? error.message
+              : error
+            log.warn(
+              `Failed to get balance from chain ${publicClient.chain?.id} for address ${address}: ${errorMessage}`
+            )
+          }
+
+          return [address, callResults[i].result ?? ("error" as const)]
+        })
+      )
+
+      // default to 0 for non evm addresses
+      return addresses.map((address) => ethBalanceResults[address] ?? 0n)
+    } catch (err) {
+      const errorMessage = hasOwnProperty(err, "shortMessage")
+        ? err.shortMessage
+        : hasOwnProperty(err, "message")
+        ? err.message
+        : err
+      log.warn(
+        `Failed to get balance from chain ${publicClient.chain?.id} for ${addresses.length} addresses: ${errorMessage}`
+      )
+      return addresses.map(() => "error")
+    }
+  }
+
+  return Promise.all(addresses.map((address) => getFreeBalance(publicClient, address)))
 }

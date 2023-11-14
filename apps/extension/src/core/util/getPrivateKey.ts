@@ -12,7 +12,7 @@ const SEED_LENGTH = 32
 const SEED_OFFSET = PKCS8_HEADER.length
 
 // built from reverse engineering polkadot keyring
-export const getPrivateKey = (pair: KeyringPair, password: string) => {
+const getU8aPrivateKey = (pair: KeyringPair, password: string) => {
   if (pair.isLocked) pair.unlock(password)
 
   const json = pair.toJson(password)
@@ -34,5 +34,30 @@ export const getPrivateKey = (pair: KeyringPair, password: string) => {
     if (!u8aEq(divider, PKCS8_DIVIDER)) throw new Error("Invalid Pkcs8 divider found in body")
   }
 
-  return u8aToBuffer(privateKey)
+  return privateKey
+}
+
+type PrivateKeyFormat = "u8a" | "hex" | "buffer"
+type PrivateKeyOutput<T = PrivateKeyFormat> = T extends "u8a"
+  ? Uint8Array
+  : T extends "hex"
+  ? `0x${string}`
+  : Buffer
+
+export const getPrivateKey = <F extends PrivateKeyFormat>(
+  pair: KeyringPair,
+  password: string,
+  format: F
+): PrivateKeyOutput<F> => {
+  const privateKey = getU8aPrivateKey(pair, password)
+
+  switch (format) {
+    case "hex":
+      return `0x${Buffer.from(privateKey).toString("hex")}` as PrivateKeyOutput<F>
+    case "u8a":
+      return u8aToBuffer(privateKey) as PrivateKeyOutput<F>
+    case "buffer":
+    default:
+      return privateKey as PrivateKeyOutput<F>
+  }
 }

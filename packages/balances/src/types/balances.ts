@@ -1,6 +1,6 @@
 import { ChainList, EvmNetworkList, TokenList } from "@talismn/chaindata-provider"
 import { TokenRateCurrency, TokenRates, TokenRatesList } from "@talismn/token-rates"
-import { BigMath, NonFunctionProperties, isArrayOf, planckToTokens } from "@talismn/util"
+import { BigMath, NonFunctionProperties, isArrayOf, isBigInt, planckToTokens } from "@talismn/util"
 
 import log from "../log"
 import {
@@ -300,7 +300,7 @@ export class Balance {
 
   #format = (balance: bigint | string) =>
     new BalanceFormatter(
-      typeof balance === "bigint" ? balance.toString() : balance,
+      isBigInt(balance) ? balance.toString() : balance,
       this.decimals || undefined,
       this.#db?.tokenRates && this.#db.tokenRates[this.tokenId]
     )
@@ -456,7 +456,7 @@ export class BalanceFormatter {
     decimals?: number | undefined,
     fiatRatios?: TokenRates
   ) {
-    this.#planck = typeof planck === "bigint" ? planck.toString() : planck ?? "0"
+    this.#planck = isBigInt(planck) ? planck.toString() : planck ?? "0"
     this.#decimals = decimals || 0
     this.#fiatRatios = fiatRatios || null
   }

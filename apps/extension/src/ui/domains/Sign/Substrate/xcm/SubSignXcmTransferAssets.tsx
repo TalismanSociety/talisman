@@ -1,12 +1,7 @@
 import { AccountJsonAny } from "@core/domains/accounts/types"
 import { log } from "@core/log"
-import {
-  FungibilityV1,
-  VersionedMultiAssets,
-  VersionedMultiLocation,
-} from "@polkadot/types/interfaces/xcm"
 import { Address } from "@talismn/balances"
-import { Chain, TokenId } from "@talismn/chaindata-provider"
+import { Chain, TokenId, TokenList } from "@talismn/chaindata-provider"
 import { encodeAnyAddress } from "@talismn/util"
 import useChains from "@ui/hooks/useChains"
 import { useExtrinsic } from "@ui/hooks/useExtrinsic"
@@ -17,42 +12,65 @@ import { useTranslation } from "react-i18next"
 
 import { SignContainer } from "../../SignContainer"
 import { usePolkadotSigningRequest } from "../../SignRequestContext"
+import { SignViewBodyShimmer } from "../../Views/SignViewBodyShimmer"
 import { SignViewIconHeader } from "../../Views/SignViewIconHeader"
 import { SignViewXTokensTransfer } from "../../Views/transfer/SignViewCrossChainTransfer"
+import { $versionedMultiAssets, VersionedMultiAssets } from "../shapes/VersionedMultiAssets"
+import { $versionedMultiLocation, VersionedMultiLocation } from "../shapes/VersionedMultiLocation"
 
 const getMultiAssetTokenId = (
   multiAsset: VersionedMultiAssets | undefined,
-  chain: Chain | null | undefined
+  chain: Chain | null | undefined,
+  tokens: TokenList
 ): { tokenId: TokenId; value: bigint } => {
-  if (multiAsset?.isV1) {
+  if (multiAsset?.type === "V3") {
     // our view only support displaying one asset
-    if (multiAsset.asV1.length === 1) {
-      const asset = multiAsset.asV1[0]
-      const fungible = asset.getAtIndex(1) as FungibilityV1 // property fungibility isn't mapped properly on pjs typings
+    if (multiAsset.value.length === 1) {
+      const asset = multiAsset.value[0]
 
-      if (asset?.id.isConcrete && fungible.isFungible) {
-        if (asset.id.asConcrete.interior.isHere && chain?.nativeToken?.id) {
-          return { tokenId: chain.nativeToken.id, value: fungible.asFungible.toBigInt() }
+      if (asset?.id.type === "Concrete" && asset.fun.type === "Fungible") {
+        const value = asset.fun.value
+        const interior = asset.id.value.interior
+        if (interior.type === "Here" && chain?.nativeToken?.id) {
+          return { tokenId: chain.nativeToken.id, value }
+        }
+        if (interior.type === "X2") {
+          if (
+            interior.value[0].type === "PalletInstance" &&
+            interior.value[0].value === 50 &&
+            interior.value[1].type === "GeneralIndex"
+          ) {
+            // Assets pallet
+            const assetId = interior.value[1].value
+            // at this stage we don't know the symbol but we know the start of the id
+            const search = `${chain?.id}-substrate-assets-${assetId}`
+            const tokenId = Object.keys(tokens).find((id) => id.startsWith(search))
+
+            if (!tokenId) throw new Error("Unknown multi asset")
+
+            return { tokenId, value }
+          }
         }
       }
     }
   }
 
   // throw an error so the sign popup fallbacks to default view
+  log.warn("Unknown multi asset", { multiAsset, chain })
   throw new Error("Unknown multi asset")
 }
 
-const getTargetChainId = (
-  multiLocation: VersionedMultiLocation | undefined,
+const getTargetChain = (
+  multiLocation: VersionedMultiLocation,
   chain: Chain | null | undefined,
   chains: Chain[]
 ): Chain => {
-  if (multiLocation?.isV1) {
+  if (multiLocation.type === "V3") {
     // const parents = multiLocation.asV1.parents.toNumber()
-    const interior = multiLocation.asV1.interior
-    if (interior.isHere && chain) return chain
-    if (interior.isX1 && chain && interior.asX1.isParachain) {
-      const paraId = interior.asX1.asParachain.toNumber()
+    const interior = multiLocation.value.interior
+    if (interior.type === "Here" && chain) return chain
+    if (interior.type === "X1" && chain && interior.value.type === "Parachain") {
+      const paraId = interior.value.value
       const relayId = chain.relay ? chain.relay.id : chain.id
       const targetChain = chains.find((c) => c.relay?.id === relayId && c.paraId === paraId)
       if (targetChain) return targetChain
@@ -60,7 +78,7 @@ const getTargetChainId = (
   }
 
   // throw an error so the sign popup fallbacks to default view
-  log.warn("Unknown multi location", multiLocation?.toHuman())
+  log.warn("Unknown multi location", multiLocation)
   throw new Error("Unknown multi location")
 }
 
@@ -68,17 +86,17 @@ const getTargetAccount = (
   multiLocation: VersionedMultiLocation | undefined,
   account: AccountJsonAny
 ): Address => {
-  if (multiLocation?.isV1) {
+  if (multiLocation?.type === "V3") {
     // const parents = multiLocation.asV1.parents.toNumber()
-    const interior = multiLocation.asV1.interior
-    if (interior.isHere && account) return account.address
-    if (interior.isX1) {
-      if (interior.asX1.isAccountKey20) return interior.asX1.asAccountKey20.key.toString()
-      if (interior.asX1.isAccountId32) return interior.asX1.asAccountId32.id.toString()
+    const interior = multiLocation.value.interior
+    if (interior.type === "Here" && account) return account.address
+    if (interior.type === "X1") {
+      if (interior.value.type === "AccountKey20") return encodeAnyAddress(interior.value.key)
+      if (interior.value.type === "AccountId32") return encodeAnyAddress(interior.value.id)
     }
   }
   // throw an error so the sign popup fallbacks to default view
-  log.warn("Unknown multi location", multiLocation?.toHuman())
+  log.warn("Unknown multi location", multiLocation)
   throw new Error("Unknown multi location")
 }
 
@@ -91,22 +109,19 @@ export const SubSignXcmTransferAssets = () => {
   const { chains } = useChains("all")
 
   const props = useMemo(() => {
+    if (Object.keys(tokensMap).length === 0) return null
     if (!chain) throw new Error("Unknown chain")
     if (!extrinsic) throw new Error("Unknown extrinsic")
 
-    // Note: breaks here fore statemine assets. hoping that next version of @polkadot/api will fix it
-    const dest = extrinsic.registry.createType("VersionedMultiLocation", extrinsic.method.args[0])
-    const beneficiary = extrinsic.registry.createType(
-      "VersionedMultiLocation",
-      extrinsic.method.args[1]
-    )
-    const assets = extrinsic.registry.createType("VersionedMultiAssets", extrinsic.method.args[2])
+    const dest = $versionedMultiLocation.decode(extrinsic.method.args[0].toU8a())
+    const beneficiary = $versionedMultiLocation.decode(extrinsic.method.args[1].toU8a())
+    const assets = $versionedMultiAssets.decode(extrinsic.method.args[2].toU8a())
 
-    const { tokenId, value } = getMultiAssetTokenId(assets, chain)
+    const { tokenId, value } = getMultiAssetTokenId(assets, chain, tokensMap)
     const token = tokensMap[tokenId]
     if (!token) throw new Error("Unknown token")
 
-    const toNetwork = getTargetChainId(dest, chain, chains)
+    const toNetwork = getTargetChain(dest, chain, chains)
     const toAddress = getTargetAccount(beneficiary, account)
 
     return {
@@ -121,6 +136,8 @@ export const SubSignXcmTransferAssets = () => {
       toAddress: encodeAnyAddress(toAddress, toNetwork.prefix ?? undefined),
     }
   }, [chain, extrinsic, tokensMap, chains, account, tokenRates, payload.address])
+
+  if (!props) return <SignViewBodyShimmer />
 
   return (
     <SignContainer

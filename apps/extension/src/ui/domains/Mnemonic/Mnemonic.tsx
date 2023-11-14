@@ -75,7 +75,7 @@ export const Mnemonic: FC<MnemonicProps> = ({ onReveal, mnemonic, topRight }) =>
             mnemonic.split(" ").map((word, i) => (
               <span className="bg-black-tertiary text-body rounded px-8 py-4" key={`mnemonic-${i}`}>
                 <span className="text-grey-500 select-none">{i + 1}. </span>
-                <span>{word}</span>
+                <span className="notranslate">{word}</span>
               </span>
             ))}
           <button

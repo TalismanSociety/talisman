@@ -1,8 +1,8 @@
 import { classNames } from "@talismn/util"
-import { ethers } from "ethers"
-import { useCallback, useMemo } from "react"
+import { useCallback, useEffect, useState } from "react"
 import { useForm } from "react-hook-form"
 import { Button } from "talisman-ui"
+import { recoverMessageAddress } from "viem"
 import { useAccount, useSignMessage } from "wagmi"
 
 import { Section } from "../../shared/Section"
@@ -68,10 +68,12 @@ const PersonalSignInner = () => {
     signMessage?.()
   }, [signMessage])
 
-  const signedBy = useMemo(
-    () => (signature ? ethers.utils.verifyMessage(message, signature) : null),
-    [signature, message]
-  )
+  const [signedBy, setSignedBy] = useState<`0x${string}`>()
+
+  useEffect(() => {
+    setSignedBy(undefined)
+    if (signature) recoverMessageAddress({ message, signature }).then(setSignedBy)
+  }, [message, signature])
 
   if (!isConnected) return null
 

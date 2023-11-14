@@ -26,13 +26,11 @@
     "clean": "rm -rf dist && rm -rf .turbo rm -rf node_modules"
   },
   "dependencies": {
-    "@acala-network/api": "^6.0.0",
-    "@acala-network/eth-providers": "^2.7.8",
     "@talismn/chaindata-provider": "workspace:*",
     "@talismn/util": "workspace:*",
     "anylogger": "^1.0.11",
-    "ethers": "5.7.2",
-    "lodash": "4.17.21"
+    "lodash": "4.17.21",
+    "viem": "^1.18.9"
   },
   "devDependencies": {
     "@talismn/eslint-config": "workspace:*",

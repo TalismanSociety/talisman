@@ -1,12 +1,30 @@
 import type { ETH_SEND, ETH_SIGN, KnownSigningRequestIdOnly } from "@core/domains/signing/types"
 import type { CustomErc20Token } from "@core/domains/tokens/types"
-import { AnyEthRequest, EthProviderMessage, EthResponseTypes } from "@core/injectEth/types"
+import { AnyEthRequest } from "@core/injectEth/types"
 import { BaseRequest, BaseRequestId, RequestIdOnly } from "@core/types/base"
 import { HexString } from "@polkadot/util/types"
 import { EvmNetworkId } from "@talismn/chaindata-provider"
-import { BigNumberish, ethers } from "ethers"
+import type {
+  AddEthereumChainParameter,
+  EIP1193Parameters,
+  Address as EvmAddress,
+  Chain as EvmChain,
+  TransactionRequest,
+} from "viem"
+import { PublicRpcSchema, RpcSchema, WalletRpcSchema } from "viem"
 
 import { WalletTransactionTransferInfo } from "../transactions"
+
+export type { EvmAddress, EvmChain }
+
+export type AnyEvmError = {
+  message?: string
+  shortMessage?: string
+  details?: string
+  code?: number
+  cause?: AnyEvmError
+  data?: unknown
+}
 
 export type {
   EvmNetwork,
@@ -16,34 +34,86 @@ export type {
   EthereumRpc,
 } from "@talismn/chaindata-provider"
 
-export type AddEthereumChainParameter = {
-  /** A 0x-prefixed hexadecimal string */
-  chainId: string
-  chainName: string
-  nativeCurrency: {
-    name: string
-    /** 2-6 characters long */
-    symbol: string
-    decimals: 18
+// define here the rpc methods that do not exist in viem or that need to be overriden
+type TalismanRpcSchema = [
+  {
+    Method: "personal_ecRecover"
+    Parameters: [signedData: `0x${string}`, signature: `0x${string}`]
+    ReturnType: EvmAddress
+  },
+  {
+    Method: "eth_signTypedData"
+    Parameters: [message: unknown[], from: EvmAddress]
+    ReturnType: `0x${string}`
+  },
+  {
+    Method: "eth_signTypedData_v1"
+    Parameters: [message: unknown[], from: EvmAddress]
+    ReturnType: `0x${string}`
+  },
+  {
+    Method: "eth_signTypedData_v3"
+    Parameters: [from: EvmAddress, message: string]
+    ReturnType: `0x${string}`
+  },
+  {
+    // TODO see if we can remove this one
+    // override for now because of result type mismatch
+    Method: "wallet_requestPermissions"
+    Parameters: [permissions: { eth_accounts: Record<string, unknown> }]
+    ReturnType: Web3WalletPermission[]
   }
-  rpcUrls: string[]
-  blockExplorerUrls?: string[]
-  /** Currently ignored by metamask */
-  iconUrls?: string[]
+]
+
+export type FullRpcSchema = [...PublicRpcSchema, ...WalletRpcSchema, ...TalismanRpcSchema]
+
+type EthRequestSignaturesMap<TRpcSchema extends RpcSchema> = {
+  [K in TRpcSchema[number]["Method"]]: [
+    Extract<TRpcSchema[number], { Method: K }>["Parameters"],
+    Extract<TRpcSchema[number], { Method: K }>["ReturnType"]
+  ]
+}
+
+export type EthRequestSignatures = EthRequestSignaturesMap<FullRpcSchema>
+
+export type EthRequestMethod = keyof EthRequestSignatures
+export type EthRequestParams<T extends EthRequestMethod> = EthRequestSignatures[T][0]
+export type EthRequestResult<T extends EthRequestMethod> = EthRequestSignatures[T][1]
+
+export type EthRequestArguments<T extends EthRequestMethod> = {
+  readonly method: T
+  readonly params: EthRequestParams<T>
+}
+
+// TODO yeet ?
+export type EthRequestArgs = EIP1193Parameters<FullRpcSchema>
+export type EthRequestSignArguments = EthRequestArguments<
+  | "personal_sign"
+  | "eth_signTypedData"
+  | "eth_signTypedData_v1"
+  | "eth_signTypedData_v3"
+  | "eth_signTypedData_v4"
+>
+
+export interface EthProviderMessage {
+  readonly type: string
+  readonly data: unknown
 }
 
 export type EthTxSignAndSend = {
-  unsigned: ethers.providers.TransactionRequest
+  evmNetworkId: EvmNetworkId
+  unsigned: TransactionRequest<string>
   transferInfo?: WalletTransactionTransferInfo
 }
 export type EthTxSendSigned = {
-  unsigned: ethers.providers.TransactionRequest
+  evmNetworkId: EvmNetworkId
+  unsigned: TransactionRequest<string>
   signed: `0x${string}`
   transferInfo?: WalletTransactionTransferInfo
 }
 
 export declare type EthApproveSignAndSend = KnownSigningRequestIdOnly<ETH_SEND> & {
-  transaction: ethers.providers.TransactionRequest
+  transaction: TransactionRequest<string>
 }
 
 export type EthRequestSigningApproveSignature = KnownSigningRequestIdOnly<ETH_SIGN> & {
@@ -51,7 +121,7 @@ export type EthRequestSigningApproveSignature = KnownSigningRequestIdOnly<ETH_SI
 }
 
 export type EthRequestSignAndSendApproveSignature = KnownSigningRequestIdOnly<ETH_SEND> & {
-  unsigned: ethers.providers.TransactionRequest
+  unsigned: TransactionRequest<string>
   signedPayload: `0x${string}`
 }
 
@@ -60,7 +130,7 @@ export interface AnyEthRequestChainId extends AnyEthRequest {
 }
 
 export type EthNonceRequest = {
-  address: string
+  address: `0x${string}`
   evmNetworkId: EvmNetworkId
 }
 
@@ -97,11 +167,11 @@ export type RequestUpsertCustomEvmNetwork = {
 
 export interface EthMessages {
   // all ethereum calls
-  "pub(eth.request)": [AnyEthRequest, EthResponseTypes]
+  "pub(eth.request)": [AnyEthRequest, unknown]
   "pub(eth.subscribe)": [null, boolean, EthProviderMessage]
   "pub(eth.mimicMetaMask)": [null, boolean]
   // eth signing message signatures
-  "pri(eth.request)": [AnyEthRequestChainId, EthResponseTypes]
+  "pri(eth.request)": [AnyEthRequestChainId, unknown]
   "pri(eth.transactions.count)": [EthNonceRequest, number]
   "pri(eth.signing.signAndSend)": [EthTxSignAndSend, HexString]
   "pri(eth.signing.sendSigned)": [EthTxSendSigned, HexString]
@@ -126,18 +196,20 @@ export interface EthMessages {
   "pri(eth.networks.upsert)": [RequestUpsertCustomEvmNetwork, boolean]
 }
 
-export type EthGasSettingsLegacy = {
-  type: 0
-  gasLimit: BigNumberish
-  gasPrice: BigNumberish
+export type EthGasSettingsLegacy<TQuantity = bigint> = {
+  type: "legacy" | "eip2930"
+  gas: TQuantity
+  gasPrice: TQuantity
 }
-export type EthGasSettingsEip1559 = {
-  type: 2
-  gasLimit: BigNumberish
-  maxFeePerGas: BigNumberish
-  maxPriorityFeePerGas: BigNumberish
+export type EthGasSettingsEip1559<TQuantity = bigint> = {
+  type: "eip1559"
+  gas: TQuantity
+  maxFeePerGas: TQuantity
+  maxPriorityFeePerGas: TQuantity
 }
-export type EthGasSettings = EthGasSettingsLegacy | EthGasSettingsEip1559
+export type EthGasSettings<TQuantity = bigint> =
+  | EthGasSettingsLegacy<TQuantity>
+  | EthGasSettingsEip1559<TQuantity>
 
 export type LedgerEthDerivationPathType = "LedgerLive" | "Legacy" | "BIP44"
 

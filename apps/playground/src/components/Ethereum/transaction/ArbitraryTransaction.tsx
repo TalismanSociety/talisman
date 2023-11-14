@@ -1,8 +1,8 @@
-import { parseEther } from "ethers/lib/utils"
 import { useMemo } from "react"
 import { useForm } from "react-hook-form"
 import { useLocalStorage } from "react-use"
 import { Button } from "talisman-ui"
+import { parseEther } from "viem"
 import { useAccount, usePrepareSendTransaction, useSendTransaction } from "wagmi"
 
 import { Section } from "../../shared/Section"
@@ -35,14 +35,12 @@ const SendTokensInner = () => {
     () => ({
       to: formData.to,
       value: formData.amount ? parseEther(formData.amount) : undefined,
-      data: formData.data || undefined,
+      data: (formData.data as `0x${string}`) || undefined,
     }),
     [formData.amount, formData.data, formData.to]
   )
 
-  const { config } = usePrepareSendTransaction({
-    request,
-  })
+  const { config } = usePrepareSendTransaction(request)
 
   const {
     sendTransaction,

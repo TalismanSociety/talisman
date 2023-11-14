@@ -260,10 +260,19 @@ export const api: MessageTypes = {
     }),
 
   // eth related messages
-  ethSignAndSend: (unsigned, transferInfo) =>
-    messageService.sendMessage("pri(eth.signing.signAndSend)", { unsigned, transferInfo }),
-  ethSendSigned: (unsigned, signed, transferInfo) =>
-    messageService.sendMessage("pri(eth.signing.sendSigned)", { unsigned, signed, transferInfo }),
+  ethSignAndSend: (evmNetworkId, unsigned, transferInfo) =>
+    messageService.sendMessage("pri(eth.signing.signAndSend)", {
+      evmNetworkId,
+      unsigned,
+      transferInfo,
+    }),
+  ethSendSigned: (evmNetworkId, unsigned, signed, transferInfo) =>
+    messageService.sendMessage("pri(eth.signing.sendSigned)", {
+      evmNetworkId,
+      unsigned,
+      signed,
+      transferInfo,
+    }),
   ethApproveSign: (id) =>
     messageService.sendMessage("pri(eth.signing.approveSign)", {
       id,

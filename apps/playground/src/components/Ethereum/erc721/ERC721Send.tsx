@@ -1,16 +1,14 @@
-import { BigNumber, ethers } from "ethers"
 import { useCallback, useEffect, useState } from "react"
 import { useForm } from "react-hook-form"
 import { useLocalStorage } from "react-use"
 import { Button } from "talisman-ui"
 import {
-  erc20ABI,
   erc721ABI,
   useAccount,
   useContractRead,
   useContractWrite,
   usePrepareContractWrite,
-  useSendTransaction,
+  useWalletClient,
 } from "wagmi"
 
 import { TransactionReceipt } from "../shared/TransactionReceipt"
@@ -65,8 +63,8 @@ const DEFAULT_VALUE: FormData = {
 }
 
 export const ERC721Send = () => {
-  const { isConnected, address, connector } = useAccount()
-
+  const { isConnected, address } = useAccount()
+  const { data: walletClient } = useWalletClient()
   const [contractAddress] = useErc721Contract()
   const [defaultValues, setDefaultValues] = useLocalStorage("pg:send-erc721", DEFAULT_VALUE)
 
@@ -85,7 +83,7 @@ export const ERC721Send = () => {
     address: contractAddress as `0x${string}`,
     abi: erc721ABI,
     functionName: "tokenURI",
-    args: [BigNumber.from(formData.tokenId)],
+    args: [BigInt(formData.tokenId)],
     enabled: !!contractAddress && !!formData.tokenId?.length,
     watch: true,
   })
@@ -104,33 +102,17 @@ export const ERC721Send = () => {
     abi: erc721ABI,
     functionName: "safeTransferFrom",
     enabled: !!contractAddress && !!balanceOfSelfData,
-    args: [
-      address as `0x${string}`,
-      formData.recipient as `0x${string}`,
-      BigNumber.from(formData.tokenId),
-    ],
-  })
-
-  const { isLoading: writeIsLoading } = useContractWrite({
-    address: contractAddress as `0x${string}`,
-    abi: erc721ABI,
-    functionName: "safeTransferFrom",
-    mode: "recklesslyUnprepared",
-    args: [
-      address as `0x${string}`,
-      formData.recipient as `0x${string}`,
-      BigNumber.from(formData.tokenId),
-    ],
+    args: [address as `0x${string}`, formData.recipient as `0x${string}`, BigInt(formData.tokenId)],
   })
 
   const {
-    sendTransaction,
+    write: sendTransaction,
     isLoading: sendIsLoading,
     isSuccess: sendIsSuccess,
     isError: sendIsError,
     data: senddata,
     error: sendError,
-  } = useSendTransaction(config)
+  } = useContractWrite(config)
 
   const onSubmit = (data: FormData) => {
     setDefaultValues(data)
@@ -139,32 +121,19 @@ export const ERC721Send = () => {
 
   // allows testing an impossible contract interaction (transfer more than you have to test)
   const handleSendUnchecked = useCallback(async () => {
-    if (!connector) return
+    if (!walletClient) return
 
-    const ci = new ethers.utils.Interface(erc20ABI)
-
-    const funcFragment = ci.fragments.find(
-      (f) => f.type === "function" && f.name === "transfer"
-    ) as ethers.utils.FunctionFragment
-
-    const data = ci.encodeFunctionData(funcFragment, [
-      address,
-      formData.recipient,
-      formData.tokenId,
-    ])
-
-    const provider = await connector.getProvider()
-    await provider.request({
-      method: "eth_sendTransaction",
-      params: [
-        {
-          from: address,
-          to: contractAddress,
-          data,
-        },
+    walletClient.writeContract({
+      address: contractAddress as `0x${string}`,
+      abi: erc721ABI,
+      functionName: "safeTransferFrom",
+      args: [
+        address as `0x${string}`,
+        formData.recipient as `0x${string}`,
+        BigInt(formData.tokenId),
       ],
     })
-  }, [address, connector, contractAddress, formData])
+  }, [address, contractAddress, formData.recipient, formData.tokenId, walletClient])
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const [metadata, setMetadata] = useState<any>()
@@ -235,7 +204,7 @@ export const ERC721Send = () => {
               </Button>
               <Button
                 type="button"
-                processing={writeIsLoading}
+                processing={sendIsLoading}
                 disabled={!isValid || isSubmitting}
                 onClick={handleSendUnchecked}
                 small
