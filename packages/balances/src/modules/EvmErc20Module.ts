@@ -35,7 +35,7 @@ export const evmErc20TokenId = (
 export type EvmErc20Token = NewTokenType<
   ModuleType,
   {
-    contractAddress: `0x${string}`
+    contractAddress: string
     evmNetwork: { id: EvmNetworkId } | null
   }
 >
@@ -60,7 +60,7 @@ export type EvmErc20ModuleConfig = {
     {
       symbol?: string
       decimals?: number
-      contractAddress?: `0x${string}`
+      contractAddress?: string
     } & BalancesConfigTokenParams
   >
 }
