@@ -18,6 +18,10 @@ export const chaindataEvmNetworksSummaryUrl = `${chaindataUrl}/evmNetworks/summa
 export const chaindataEvmNetworkByIdUrl = (evmNetworkId: string) =>
   `${chaindataUrl}/evmNetworks/byId/${evmNetworkId}.json`
 
+export const chaindataTokensAllUrl = `${chaindataUrl}/tokens/all.json`
+
+export const chaindataMiniMetadatasAllUrl = `${chaindataUrl}/miniMetadatas/all.json`
+
 //
 // GitHub Repo Constants
 //

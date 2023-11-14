@@ -1,7 +1,7 @@
 import fs from "fs"
 import path from "path"
 
-import { fetchChains, fetchEvmNetworks } from "../src/net"
+import { fetchChains, fetchEvmNetworks, fetchMiniMetadatas, fetchTokens } from "../src/net"
 
 async function generateInitData() {
   fs.writeFileSync(
@@ -11,6 +11,14 @@ async function generateInitData() {
   fs.writeFileSync(
     path.resolve(__dirname, "../src/init/evm-networks.json"),
     JSON.stringify(await fetchEvmNetworks(), null, 2)
+  )
+  fs.writeFileSync(
+    path.resolve(__dirname, "../src/init/tokens.json"),
+    JSON.stringify(await fetchTokens(), null, 2)
+  )
+  fs.writeFileSync(
+    path.resolve(__dirname, "../src/init/mini-metadatas.json"),
+    JSON.stringify(await fetchMiniMetadatas(), null, 2)
   )
 }
 

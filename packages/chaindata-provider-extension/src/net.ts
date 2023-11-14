@@ -3,6 +3,8 @@ import {
   chaindataChainsAllUrl,
   chaindataEvmNetworkByIdUrl,
   chaindataEvmNetworksAllUrl,
+  chaindataMiniMetadatasAllUrl,
+  chaindataTokensAllUrl,
   githubApi,
   githubChaindataOrg,
   githubChaindataRepo,
@@ -16,6 +18,11 @@ export const fetchChain = async (chainId: string) =>
 export const fetchEvmNetworks = async () => await (await fetch(chaindataEvmNetworksAllUrl)).json()
 export const fetchEvmNetwork = async (evmNetworkId: string) =>
   await (await fetch(chaindataEvmNetworkByIdUrl(evmNetworkId))).json()
+
+export const fetchTokens = async () => await (await fetch(chaindataTokensAllUrl)).json()
+
+export const fetchMiniMetadatas = async () =>
+  await (await fetch(chaindataMiniMetadatasAllUrl)).json()
 
 export const availableTokenLogoFilenames = async (): Promise<string[]> =>
   (
