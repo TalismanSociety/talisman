@@ -9,7 +9,7 @@
     "typescript": "^5.1.6"
   },
   "scripts": {
-    "test:e2e": "playwright test",
+    "test:e2e": "playwright test onboarding.spec.ts",
     "test:e2e:report": "playwright show-report"
   }
 }

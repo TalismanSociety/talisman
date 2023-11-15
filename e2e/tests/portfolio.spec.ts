@@ -6,7 +6,8 @@ import Modal from "../pages/modal"
 test.describe("Portfolio", async () => {
   test.beforeEach(async ({ page, onboarding, portfolio }) => {
     await test.step("create new wallet", async () => {
-      await onboarding.getByRole("button", "Get Started").click()
+      await onboarding.page.getByTestId("get-started-button").click()
+      // await onboarding.getByRole("button", "Get Started").click()
       await onboarding.importPolkadotWallet(data.password, data.seedPhrase, data.dotAccountName)
       await page.waitForURL("**/portfolio")
       expect(await portfolio.waitForNetworks()).not.toBeNull()

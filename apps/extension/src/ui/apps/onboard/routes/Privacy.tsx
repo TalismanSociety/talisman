@@ -80,7 +80,12 @@ export const PrivacyPage = () => {
           </div>
         </Trans>
         <div className="mt-40 flex w-full gap-8">
-          <Button className="bg-transparent" fullWidth onClick={handleClick(false)}>
+          <Button
+            className="bg-transparent"
+            fullWidth
+            onClick={handleClick(false)}
+            data-testid="privacy-reject-btn"
+          >
             {t("No thanks")}
           </Button>
           <Button onClick={handleClick(true)} fullWidth primary>

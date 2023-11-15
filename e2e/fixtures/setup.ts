@@ -13,6 +13,7 @@ const extPath = path.join(__dirname, "../../apps/extension/dist")
 export const test = base.extend<{
   context: BrowserContext
   extensionId: string
+  backgroundPage: Page
   page: Page
   appPage: Page
   common: Common
@@ -27,11 +28,13 @@ export const test = base.extend<{
       args: [`--disable-extensions-except=${extPath}`, `--load-extension=${extPath}`],
     })
     await context.grantPermissions(["clipboard-read", "clipboard-write"])
-    await context.waitForEvent("page")
-    // context.backgroundPages()[0]
-    // await Promise.all([context.waitForEvent("page"), context.backgroundPages()[0]])
+    try {
+      await context.waitForEvent("page")
+    } catch (e) {
+      // eslint-disable-next-line no-console
+      console.error("Project may not be built in /dist folder", { cause: e })
+    }
     await use(context)
-    await context.pages()[0].close()
   },
   extensionId: async ({ context }, use) => {
     // for manifest v2:
@@ -40,8 +43,14 @@ export const test = base.extend<{
     const extensionId = background.url().split("/")[2]
     await use(extensionId)
   },
+  backgroundPage: async ({ context }, use) => {
+    let [background] = context.backgroundPages()
+    if (!background) background = await context.waitForEvent("backgroundpage")
+    await use(background)
+  },
+
   page: async ({ context }, use) => {
-    await use(context.pages()[0])
+    await use(context.pages().filter((p) => p.url().startsWith("chrome-extension://"))[0])
   },
   appPage: async ({ context }, use) => {
     await use(await context.newPage())

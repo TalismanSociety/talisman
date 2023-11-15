@@ -71,7 +71,13 @@ export const WelcomePage = () => {
           </div>
         </div>
         <div className="welcome-button flex w-[44rem] flex-col gap-8">
-          <Button primary icon={ArrowRightIcon} onClick={handleNextClick()}>
+          <Button
+            primary
+            icon={ArrowRightIcon}
+            onClick={handleNextClick()}
+            data-testid="get-started-button"
+            name="get-started-btn"
+          >
             {t("Get Started")}
           </Button>
           <div className="text-body-secondary text-center text-sm leading-[2rem]">
