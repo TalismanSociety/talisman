@@ -9,7 +9,7 @@
     "typescript": "^5.1.6"
   },
   "scripts": {
-    "e2e:test": "playwright test",
-    "e2e:report": "playwright show-report"
+    "test:e2e": "playwright test",
+    "test:e2e:report": "playwright show-report"
   }
 }
