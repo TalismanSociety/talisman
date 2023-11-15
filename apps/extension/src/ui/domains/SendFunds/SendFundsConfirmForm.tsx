@@ -1,8 +1,9 @@
 import { ScrollContainer } from "@talisman/components/ScrollContainer"
 import { WithTooltip } from "@talisman/components/Tooltip"
-import { AlertCircleIcon, LoaderIcon } from "@talisman/theme/icons"
+import { AlertCircleIcon, LoaderIcon } from "@talismn/icons"
 import { classNames, encodeAnyAddress } from "@talismn/util"
 import useAccounts from "@ui/hooks/useAccounts"
+import { useSelectedCurrency } from "@ui/hooks/useCurrency"
 import { isEvmToken } from "@ui/util/isEvmToken"
 import { Suspense, lazy, useEffect, useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
@@ -15,11 +16,12 @@ import { TokensAndFiat } from "../Asset/TokensAndFiat"
 import { EthFeeSelect } from "../Ethereum/GasSettings/EthFeeSelect"
 import { AddressDisplay } from "./AddressDisplay"
 import { SendFundsFeeTooltip } from "./SendFundsFeeTooltip"
+import { SendFundsHardwareEthereum } from "./SendFundsHardwareEthereum"
+import { SendFundsHardwareSubstrate } from "./SendFundsHardwareSubstrate"
+import { useNetworkDetails } from "./useNetworkDetails"
 import { useSendFunds } from "./useSendFunds"
 
 const SendFundsQrSubstrate = lazy(() => import("./SendFundsQrSubstrate"))
-const SendFundsLedgerSubstrate = lazy(() => import("./SendFundsLedgerSubstrate"))
-const SendFundsLedgerEthereum = lazy(() => import("./SendFundsLedgerEthereum"))
 
 const AmountDisplay = () => {
   const { sendMax, maxAmount, transfer, token } = useSendFunds()
@@ -36,17 +38,7 @@ const AmountDisplay = () => {
 }
 
 const NetworkDisplay = () => {
-  const { chain, evmNetwork } = useSendFunds()
-
-  const { networkId, networkName } = useMemo(
-    () => ({
-      networkId: (chain ?? evmNetwork)?.id,
-      networkName:
-        chain?.name ??
-        (evmNetwork ? `${evmNetwork?.name}${evmNetwork?.substrateChain ? " (Ethereum)" : ""}` : ""),
-    }),
-    [chain, evmNetwork]
-  )
+  const { networkId, networkName } = useNetworkDetails()
 
   if (!networkId) return null
 
@@ -72,6 +64,8 @@ const TotalValueRow = () => {
   } = useSendFunds()
   const amount = sendMax ? maxAmount : transfer
 
+  const currency = useSelectedCurrency()
+
   const totalValue = useMemo(() => {
     // Not all tokens have a fiat rate. if one of the 3 tokens doesn't have a rate, don't show the row
     if (
@@ -83,12 +77,12 @@ const TotalValueRow = () => {
     )
       return null
 
-    const fiatAmount = amount.fiat("usd") ?? 0
-    const fiatFee = estimatedFee.fiat("usd") ?? 0
-    const fiatTip = tip?.fiat("usd") ?? 0
+    const fiatAmount = amount.fiat(currency) ?? 0
+    const fiatFee = estimatedFee.fiat(currency) ?? 0
+    const fiatTip = tip?.fiat(currency) ?? 0
 
     return fiatAmount + fiatFee + fiatTip
-  }, [amount, estimatedFee, feeTokenRates, tip, tipTokenRates, tokenRates])
+  }, [amount, currency, estimatedFee, feeTokenRates, tip, tipTokenRates, tokenRates])
 
   if (!totalValue) return null
 
@@ -107,7 +101,7 @@ const TotalValueRow = () => {
 }
 
 export const ExternalRecipientWarning = () => {
-  const { t } = useTranslation()
+  const { t } = useTranslation("send-funds")
   const { to } = useSendFunds()
   const accounts = useAccounts("owned")
 
@@ -166,8 +160,8 @@ const SendButton = () => {
           </Button>
         )}
         {signMethod === "qrSubstrate" && <SendFundsQrSubstrate />}
-        {signMethod === "ledgerSubstrate" && <SendFundsLedgerSubstrate />}
-        {signMethod === "ledgerEthereum" && <SendFundsLedgerEthereum />}
+        {signMethod === "hardwareSubstrate" && <SendFundsHardwareSubstrate />}
+        {signMethod === "hardwareEthereum" && <SendFundsHardwareEthereum />}
       </div>
     </Suspense>
   )
@@ -301,39 +295,31 @@ export const SendFundsConfirmForm = () => {
         <div className="h-32 text-lg font-bold">{t("You are sending")}</div>
         <div className="w-full grow">
           <div className="bg-grey-900 text-body-secondary flex flex-col rounded px-12 py-8 leading-[140%]">
-            <div className="flex min-h-[32px] items-center justify-between gap-8">
-              <div className="text-body-secondary align-top">{t("Amount")}</div>
-              <div className="text-body overflow-x-hidden">
-                <AmountDisplay />
-              </div>
+            <div className="text-body flex h-16 items-center justify-between gap-8">
+              <div className="text-body-secondary">{t("Amount")}</div>
+              <AmountDisplay />
             </div>
-            <div className="flex min-h-[32px] items-center justify-between gap-8">
+            <div className="flex h-16 items-center justify-between gap-8">
               <div className="text-body-secondary">{t("From")}</div>
-              <div className="text-body overflow-x-hidden">
-                <AddressDisplay
-                  className="h-16"
-                  address={from}
-                  chainId={chain?.id}
-                  evmNetworkId={evmNetwork?.id}
-                />
-              </div>
+              <AddressDisplay
+                className="h-16"
+                address={from}
+                chainId={chain?.id}
+                evmNetworkId={evmNetwork?.id}
+              />
             </div>
-            <div className="flex min-h-[32px] items-center justify-between gap-8">
+            <div className="flex h-16 items-center justify-between gap-8">
               <div className="text-body-secondary">{t("To")}</div>
-              <div className="text-body overflow-x-hidden">
-                <AddressDisplay
-                  className="h-16"
-                  address={to}
-                  chainId={chain?.id}
-                  evmNetworkId={evmNetwork?.id}
-                />
-              </div>
+              <AddressDisplay
+                className="h-16"
+                address={to}
+                chainId={chain?.id}
+                evmNetworkId={evmNetwork?.id}
+              />
             </div>
-            <div className="flex min-h-[32px] items-center justify-between gap-8">
-              <div className="text-body-secondary align-top">{t("Network")}</div>
-              <div className="text-body overflow-x-hidden">
-                <NetworkDisplay />
-              </div>
+            <div className="text-body flex h-16 items-center justify-between gap-8">
+              <div className="text-body-secondary">{t("Network")}</div>
+              <NetworkDisplay />
             </div>
             <div className="py-8">
               <hr className="text-grey-800" />

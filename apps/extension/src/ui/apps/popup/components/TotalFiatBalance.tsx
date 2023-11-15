@@ -1,17 +1,13 @@
-import {
-  ArrowDownIcon,
-  CreditCardIcon,
-  EyeIcon,
-  EyeOffIcon,
-  PaperPlaneIcon,
-} from "@talisman/theme/icons"
+import { ArrowDownIcon, CreditCardIcon, EyeIcon, EyeOffIcon, SendIcon } from "@talismn/icons"
 import { classNames } from "@talismn/util"
 import { api } from "@ui/api"
 import { AnalyticsEventName, AnalyticsPage, sendAnalyticsEvent } from "@ui/api/analytics"
+import currencyConfig from "@ui/domains/Asset/currencyConfig"
 import { Fiat } from "@ui/domains/Asset/Fiat"
 import { useCopyAddressModal } from "@ui/domains/CopyAddress"
 import { useAnalytics } from "@ui/hooks/useAnalytics"
 import useBalances from "@ui/hooks/useBalances"
+import { useSelectedCurrency, useToggleCurrency } from "@ui/hooks/useCurrency"
 import { useIsFeatureEnabled } from "@ui/hooks/useFeatures"
 import { useSetting } from "@ui/hooks/useSettings"
 import { ComponentProps, MouseEventHandler, useCallback, useMemo } from "react"
@@ -25,8 +21,9 @@ type Props = {
 
 export const TotalFiatBalance = ({ className, mouseOver }: Props) => {
   const { t } = useTranslation()
-
   const balances = useBalances("portfolio")
+  const currency = useSelectedCurrency()
+  const toggleCurrency = useToggleCurrency()
 
   const [hideBalances, setHideBalances] = useSetting("hideBalances")
   const { genericEvent } = useAnalytics()
@@ -54,12 +51,23 @@ export const TotalFiatBalance = ({ className, mouseOver }: Props) => {
           {hideBalances ? <EyeIcon /> : <EyeOffIcon />}
         </button>
       </div>
-      <Fiat
-        className="font-surtExpanded text-lg"
-        amount={balances.sum.fiat("usd").total}
-        currency="usd"
-        isBalance
-      />
+      <div className="flex items-center gap-2">
+        <button
+          className="bg-grey-800 border-grey-750 text-body-secondary hover:bg-grey-700 pointer-events-auto flex h-14 w-14 items-center justify-center rounded-full border text-center transition-colors duration-100 ease-out"
+          onClick={(event) => {
+            event.stopPropagation()
+            toggleCurrency()
+          }}
+        >
+          {currencyConfig[currency]?.unicodeCharacter}
+        </button>
+        <Fiat
+          className="font-surtExpanded text-lg"
+          amount={balances.sum.fiat(currency).total}
+          isBalance
+          currencyDisplay="code"
+        />
+      </div>
       <TopActions />
     </div>
   )
@@ -67,7 +75,7 @@ export const TotalFiatBalance = ({ className, mouseOver }: Props) => {
 
 const ANALYTICS_PAGE: AnalyticsPage = {
   container: "Popup",
-  feature: "Porfolio",
+  feature: "Portfolio",
   featureVersion: 2,
   page: "Portfolio Home",
 }
@@ -96,7 +104,7 @@ const TopActions = () => {
         analyticsName: "Goto",
         analyticsAction: "Send Funds button",
         label: t("Send"),
-        icon: PaperPlaneIcon,
+        icon: SendIcon,
         action: () => api.sendFundsOpen().then(() => window.close()),
       },
     ]

@@ -1,5 +1,5 @@
 import { FadeIn } from "@talisman/components/FadeIn"
-import { LoaderIcon } from "@talisman/theme/icons"
+import { LoaderIcon } from "@talismn/icons"
 import { useTranslation } from "react-i18next"
 
 export const SignViewBodyShimmer = () => {

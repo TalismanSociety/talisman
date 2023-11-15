@@ -2,7 +2,9 @@ import { AccountJsonAny } from "@core/domains/accounts/types"
 import { EthSignRequest } from "@core/domains/signing/types"
 import { log } from "@core/log"
 import { isHexString, stripHexPrefix } from "@ethereumjs/util"
+import { hexToString } from "@polkadot/util"
 import * as Sentry from "@sentry/browser"
+import { ParsedMessage } from "@spruceid/siwe-parser"
 import { classNames, isEthereumAddress } from "@talismn/util"
 import { Message } from "@ui/domains/Sign/Message"
 import { useEvmNetwork } from "@ui/hooks/useEvmNetwork"
@@ -11,6 +13,7 @@ import { FC, useMemo } from "react"
 import { useTranslation } from "react-i18next"
 
 import { SignAlertMessage } from "../SignAlertMessage"
+import { EthSignBodyMessageSIWE } from "./EthSignBodyMessageSIWE"
 import { SignParamAccountButton, SignParamNetworkAddressButton } from "./shared"
 
 const useEthSignMessage = (request: EthSignRequest) => {
@@ -68,7 +71,24 @@ const useEthSignMessage = (request: EthSignRequest) => {
     return request.request
   }, [request.request, typedMessage])
 
-  return { isTypedData, text, verifyingAddress, chainId, ethChainId, isInvalidVerifyingContract }
+  const siwe = useMemo(() => {
+    try {
+      const text = hexToString(request.request)
+      return new ParsedMessage(text)
+    } catch (err) {
+      return null
+    }
+  }, [request.request])
+
+  return {
+    siwe,
+    isTypedData,
+    text,
+    verifyingAddress,
+    chainId,
+    ethChainId,
+    isInvalidVerifyingContract,
+  }
 }
 
 export type EthSignBodyMessageProps = {
@@ -78,9 +98,11 @@ export type EthSignBodyMessageProps = {
 
 export const EthSignBodyMessage: FC<EthSignBodyMessageProps> = ({ account, request }) => {
   const { t } = useTranslation("request")
-  const { isTypedData, text, verifyingAddress, ethChainId, isInvalidVerifyingContract } =
+  const { siwe, isTypedData, text, verifyingAddress, ethChainId, isInvalidVerifyingContract } =
     useEthSignMessage(request)
   const evmNetwork = useEvmNetwork(ethChainId)
+
+  if (siwe) return <EthSignBodyMessageSIWE account={account} request={request} siwe={siwe} />
 
   return (
     <div className="text-body-secondary flex h-full w-full flex-col items-center pt-8">
@@ -91,7 +113,7 @@ export const EthSignBodyMessage: FC<EthSignBodyMessageProps> = ({ account, reque
         <div className="p-2">
           {isTypedData ? t("You are signing typed data") : t("You are signing a message")}{" "}
         </div>
-        <div className="flex items-start p-1">
+        <div className="flex max-w-full items-start p-1">
           <div>{t("with")}</div>
           <SignParamAccountButton address={account.address} withIcon />
         </div>

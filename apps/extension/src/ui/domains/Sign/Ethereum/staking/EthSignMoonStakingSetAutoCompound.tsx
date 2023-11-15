@@ -9,15 +9,9 @@ import { useEthSignKnownTransactionRequest } from "../shared/useEthSignKnownTran
 
 export const EthSignMoonStakingSetAutoCompound: FC = () => {
   const { t } = useTranslation("request")
-  const { network, transactionInfo } = useEthSignKnownTransactionRequest()
+  const { network, decodedTx } = useEthSignKnownTransactionRequest()
 
-  const { autoCompound } = useMemo(() => {
-    const autoCompound = getContractCallArg<number>(transactionInfo.contractCall, "value")
-
-    return {
-      autoCompound,
-    }
-  }, [transactionInfo.contractCall])
+  const autoCompound = useMemo(() => getContractCallArg<number>(decodedTx, "value"), [decodedTx])
 
   if (!network?.nativeToken?.id || autoCompound === undefined) return null
 

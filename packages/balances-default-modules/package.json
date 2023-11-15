@@ -32,16 +32,17 @@
     "@talismn/balances-substrate-equilibrium": "workspace:*",
     "@talismn/balances-substrate-native": "workspace:*",
     "@talismn/balances-substrate-orml": "workspace:*",
+    "@talismn/balances-substrate-psp22": "workspace:*",
     "@talismn/balances-substrate-tokens": "workspace:*"
   },
   "devDependencies": {
     "@talismn/eslint-config": "workspace:*",
     "@talismn/tsconfig": "workspace:*",
     "@types/jest": "^27.5.1",
-    "eslint": "^8.4.0",
+    "eslint": "^8.52.0",
     "jest": "^28.1.0",
     "ts-jest": "^28.0.2",
-    "typescript": "^4.6.4"
+    "typescript": "^5.2.2"
   },
   "eslintConfig": {
     "root": true,

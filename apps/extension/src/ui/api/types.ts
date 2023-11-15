@@ -1,25 +1,32 @@
 import { Trees } from "@core/domains/accounts/helpers.catalog"
-import { AccountAddressType, RequestAccountCreateHardware } from "@core/domains/accounts/types"
-import type { AccountJson, RequestAccountsCatalogAction } from "@core/domains/accounts/types"
-import { MnemonicSubscriptionResult } from "@core/domains/accounts/types"
+import {
+  AccountAddressType,
+  RequestAccountCreateLedgerSubstrate,
+} from "@core/domains/accounts/types"
+import type {
+  AccountJson,
+  RequestAccountCreateOptions,
+  RequestAccountsCatalogAction,
+  RequestAddressLookup,
+} from "@core/domains/accounts/types"
 import {
   AnalyticsCaptureRequest,
   LoggedinType,
   ModalOpenRequest,
-  OnboardedType,
   SendFundsOpenRequest,
 } from "@core/domains/app/types"
 import {
-  AddressesByEvmNetwork,
+  AddressesAndEvmNetwork,
+  AddressesAndTokens,
   BalanceJson,
   BalancesUpdate,
   RequestBalance,
   RequestNomPoolStake,
   ResponseNomPoolStake,
 } from "@core/domains/balances/types"
-import { ChainId } from "@core/domains/chains/types"
+import { ChainId, RequestUpsertCustomChain } from "@core/domains/chains/types"
 import type { DecryptRequestId, EncryptRequestId } from "@core/domains/encrypt/types"
-import { AddEthereumChainRequestId } from "@core/domains/ethereum/types"
+import { AddEthereumChainRequestId, EvmAddress } from "@core/domains/ethereum/types"
 import {
   AddEthereumChainRequest,
   AnyEthRequestChainId,
@@ -29,6 +36,7 @@ import {
   WatchAssetRequestId,
 } from "@core/domains/ethereum/types"
 import { MetadataUpdateStatus, RequestMetadataId } from "@core/domains/metadata/types"
+import { RequestSetVerifierCertParams } from "@core/domains/mnemonics/types"
 import {
   SignerPayloadGenesisHash,
   SignerPayloadJSON,
@@ -50,27 +58,24 @@ import {
   ResponseAssetTransferFeeQuery,
 } from "@core/domains/transfers/types"
 import { MetadataDef } from "@core/inject/types"
-import { EthResponseType } from "@core/injectEth/types"
 import { ValidRequests } from "@core/libs/requests/types"
 import { UnsubscribeFn } from "@core/types"
 import { AddressesByChain } from "@core/types/base"
 import type { KeyringPair$Json } from "@polkadot/keyring/types"
+import { KeypairType } from "@polkadot/util-crypto/types"
 import type { HexString } from "@polkadot/util/types"
-import { Address } from "@talismn/balances"
-import { ethers } from "ethers"
+import { TransactionRequest } from "viem"
 
 export default interface MessageTypes {
   unsubscribe: (id: string) => Promise<null>
   // UNSORTED
-  onboard: (pass: string, passConfirm: string, mnemonic?: string) => Promise<OnboardedType>
+  onboardCreatePassword: (pass: string, passConfirm: string) => Promise<boolean>
   authenticate: (pass: string) => Promise<boolean>
   lock: () => Promise<boolean>
   changePassword: (currentPw: string, newPw: string, newPwConfirm: string) => Promise<boolean>
   checkPassword: (password: string) => Promise<boolean>
   authStatus: () => Promise<LoggedinType>
   authStatusSubscribe: (cb: (val: LoggedinType) => void) => UnsubscribeFn
-  onboardStatus: () => Promise<OnboardedType>
-  onboardStatusSubscribe: (cb: (val: OnboardedType) => void) => UnsubscribeFn
   dashboardOpen: (route: string) => Promise<boolean>
   onboardOpen: () => Promise<boolean>
   popupOpen: () => Promise<boolean>
@@ -102,25 +107,38 @@ export default interface MessageTypes {
   subscribeRequests: (cb: (request: ValidRequests[]) => void) => UnsubscribeFn
 
   // mnemonic message types -------------------------------------------------------
-  mnemonicUnlock: (pass: string) => Promise<string>
-  mnemonicConfirm: (confirmed: boolean) => Promise<boolean>
-  mnemonicSubscribe: (cb: (val: MnemonicSubscriptionResult) => void) => UnsubscribeFn
-  addressFromMnemonic: (mnemonic: string, type?: AccountAddressType) => Promise<string>
+  mnemonicUnlock: (mnemonicId: string, pass: string) => Promise<string>
+  mnemonicConfirm: (mnemonicId: string, confirmed: boolean) => Promise<boolean>
+  mnemonicRename: (mnemonicId: string, name: string) => Promise<boolean>
+  mnemonicDelete: (mnemonicId: string) => Promise<boolean>
+  validateMnemonic: (mnemonic: string) => Promise<boolean>
+  setVerifierCertMnemonic: (...params: RequestSetVerifierCertParams) => Promise<boolean>
 
   // account message types ---------------------------------------------------
-  accountCreate: (name: string, type: AccountAddressType) => Promise<string>
-  accountCreateFromSeed: (name: string, seed: string, type?: AccountAddressType) => Promise<string>
-  accountCreateFromJson: (unlockedPairs: KeyringPair$Json[]) => Promise<string[]>
-  accountCreateHardware: (
-    request: Omit<RequestAccountCreateHardware, "hardwareType">
+  accountCreate: (
+    name: string,
+    type: AccountAddressType,
+    options: RequestAccountCreateOptions
   ) => Promise<string>
-  accountCreateHardwareEthereum: (name: string, address: string, path: string) => Promise<string>
+  accountCreateFromSuri: (name: string, suri: string, type?: AccountAddressType) => Promise<string>
+  accountCreateFromJson: (unlockedPairs: KeyringPair$Json[]) => Promise<string[]>
+  accountCreateLedger: (request: RequestAccountCreateLedgerSubstrate) => Promise<string>
+  accountCreateLedgerEthereum: (name: string, address: string, path: string) => Promise<string>
+  accountCreateDcent: (
+    name: string,
+    address: string,
+    type: KeypairType,
+    path: string,
+    tokenIds: TokenId[]
+  ) => Promise<string>
   accountCreateQr: (name: string, address: string, genesisHash: HexString | null) => Promise<string>
   accountCreateWatched: (name: string, address: string, isPortfolio: boolean) => Promise<string>
   accountExternalSetIsPortfolio: (address: string, isPortfolio: boolean) => Promise<boolean>
   accountsSubscribe: (cb: (accounts: AccountJson[]) => void) => UnsubscribeFn
   accountsCatalogSubscribe: (cb: (trees: Trees) => void) => UnsubscribeFn
   accountsCatalogRunActions: (actions: RequestAccountsCatalogAction[]) => Promise<boolean>
+  accountsOnChainIdsResolveNames: (names: string[]) => Promise<Record<string, string | null>>
+  accountsOnChainIdsLookupAddresses: (addresses: string[]) => Promise<Record<string, string | null>>
   accountForget: (address: string) => Promise<boolean>
   accountExport: (
     address: string,
@@ -129,8 +147,9 @@ export default interface MessageTypes {
   ) => Promise<{ exportedJson: KeyringPair$Json }>
   accountExportPrivateKey: (address: string, password: string) => Promise<string>
   accountRename: (address: string, name: string) => Promise<boolean>
-  accountValidateMnemonic: (mnemonic: string) => Promise<boolean>
-  setVerifierCertMnemonic: (mnemonic: string) => Promise<boolean>
+  validateDerivationPath: (derivationPath: string, type: AccountAddressType) => Promise<boolean>
+  addressLookup: (lookup: RequestAddressLookup) => Promise<string>
+  getNextDerivationPath: (mnemonicId: string, type: AccountAddressType) => Promise<string>
 
   // balance message types ---------------------------------------------------
   getBalance: ({
@@ -146,7 +165,8 @@ export default interface MessageTypes {
   balances: (cb: () => void) => UnsubscribeFn
   balancesByParams: (
     addressesByChain: AddressesByChain,
-    addressesByEvmNetwork: AddressesByEvmNetwork,
+    addressesAndEvmNetworks: AddressesAndEvmNetwork,
+    addressesAndTokens: AddressesAndTokens,
     cb: (balances: BalancesUpdate) => void
   ) => UnsubscribeFn
 
@@ -157,6 +177,8 @@ export default interface MessageTypes {
   authorizedSiteSubscribe: (id: string, cb: (sites: AuthorizedSite) => void) => UnsubscribeFn
   authorizedSiteForget: (id: string, type: ProviderType) => Promise<boolean>
   authorizedSiteUpdate: (id: string, authorisedSite: AuthorisedSiteUpdate) => Promise<boolean>
+  authorizedSitesDisconnectAll: (type: ProviderType) => Promise<boolean>
+  authorizedSitesForgetAll: (type: ProviderType) => Promise<boolean>
 
   // authorization requests message types ------------------------------------
   authrequestApprove: (id: AuthRequestId, addresses: AuthRequestAddresses) => Promise<boolean>
@@ -170,10 +192,13 @@ export default interface MessageTypes {
 
   // chain message types
   chains: (cb: () => void) => UnsubscribeFn
+  chainUpsert: (chain: RequestUpsertCustomChain) => Promise<boolean>
+  chainRemove: (id: string) => Promise<boolean>
+  chainReset: (id: string) => Promise<boolean>
   generateChainSpecsQr: (genesisHash: SignerPayloadGenesisHash) => Promise<HexString>
   generateChainMetadataQr: (
     genesisHash: SignerPayloadGenesisHash,
-    specVersion: number
+    specVersion?: number
   ) => Promise<HexString>
 
   // token message types
@@ -199,17 +224,17 @@ export default interface MessageTypes {
   assetTransferEth: (
     evmNetworkId: EvmNetworkId,
     tokenId: TokenId,
-    fromAddress: string,
-    toAddress: string,
+    fromAddress: EvmAddress,
+    toAddress: EvmAddress,
     amount: string,
-    gasSettings: EthGasSettings
+    gasSettings: EthGasSettings<string>
   ) => Promise<ResponseAssetTransfer>
   assetTransferEthHardware: (
     evmNetworkId: EvmNetworkId,
     tokenId: TokenId,
     amount: string,
-    to: Address,
-    unsigned: ethers.providers.TransactionRequest,
+    to: EvmAddress,
+    unsigned: TransactionRequest<string>,
     signedTransaction: HexString
   ) => Promise<ResponseAssetTransfer>
   assetTransferCheckFees: (
@@ -229,11 +254,13 @@ export default interface MessageTypes {
 
   // eth related messages
   ethSignAndSend: (
-    unsigned: ethers.providers.TransactionRequest,
+    evmNetworkId: EvmNetworkId,
+    unsigned: TransactionRequest<string>,
     transferInfo?: WalletTransactionTransferInfo
   ) => Promise<HexString>
   ethSendSigned: (
-    unsigned: ethers.providers.TransactionRequest,
+    evmNetworkId: EvmNetworkId,
+    unsigned: TransactionRequest<string>,
     signed: HexString,
     transferInfo?: WalletTransactionTransferInfo
   ) => Promise<HexString>
@@ -244,16 +271,16 @@ export default interface MessageTypes {
   ) => Promise<boolean>
   ethApproveSignAndSend: (
     id: SigningRequestID<"eth-send">,
-    transaction: ethers.providers.TransactionRequest
+    transaction: TransactionRequest<string>
   ) => Promise<boolean>
   ethApproveSignAndSendHardware: (
     id: SigningRequestID<"eth-send">,
-    unsigned: ethers.providers.TransactionRequest,
+    unsigned: TransactionRequest<string>,
     signedTransaction: HexString
   ) => Promise<boolean>
   ethCancelSign: (id: SigningRequestID<"eth-sign" | "eth-send">) => Promise<boolean>
-  ethRequest: <T extends AnyEthRequestChainId>(request: T) => Promise<EthResponseType<T["method"]>>
-  ethGetTransactionsCount: (address: string, evmNetworkId: EvmNetworkId) => Promise<number>
+  ethRequest: (request: AnyEthRequestChainId) => Promise<unknown>
+  ethGetTransactionsCount: (address: EvmAddress, evmNetworkId: EvmNetworkId) => Promise<number>
   ethNetworkAddGetRequests: () => Promise<AddEthereumChainRequest[]>
   ethNetworkAddApprove: (id: AddEthereumChainRequestId) => Promise<boolean>
   ethNetworkAddCancel: (is: AddEthereumChainRequestId) => Promise<boolean>

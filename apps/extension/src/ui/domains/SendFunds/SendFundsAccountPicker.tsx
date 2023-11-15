@@ -49,13 +49,14 @@ export const SendFundsAccountPicker = () => {
     <div className="flex h-full min-h-full w-full flex-col overflow-hidden">
       <div className="flex min-h-fit w-full items-center gap-8 px-12 pb-8">
         <div className="font-bold">{"From"}</div>
-        <div className="grow">
+        <div className="mx-1 grow overflow-hidden px-1">
           <SearchInput onChange={setSearch} placeholder={t("Search by account name")} />
         </div>
       </div>
       <ScrollContainer className=" bg-black-secondary border-grey-700 scrollable h-full w-full grow overflow-x-hidden border-t">
         <SendFundsAccountsList
           accounts={accounts}
+          genesisHash={chain?.genesisHash}
           selected={from}
           onSelect={handleSelect}
           showBalances

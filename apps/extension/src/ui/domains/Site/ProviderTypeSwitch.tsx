@@ -1,4 +1,5 @@
 import { ProviderType } from "@core/domains/sitesAuthorised/types"
+import { FadeIn } from "@talisman/components/FadeIn"
 import { classNames } from "@talismn/util"
 import {
   CSSProperties,
@@ -29,7 +30,7 @@ const Button = forwardRef<
     ref={ref}
     disabled={!authorised || selected}
     className={classNames(
-      "z-10 px-[0.5em] transition-colors duration-150",
+      "z-10 h-full px-[0.5em] transition-colors duration-150",
       selected && "text-body-black"
     )}
     onClick={onClick}
@@ -50,10 +51,7 @@ export const ProviderTypeSwitch = ({
   const refPolkadot = useRef<HTMLButtonElement>(null)
   const refEthereum = useRef<HTMLButtonElement>(null)
 
-  const [selectionOverlay, setSelectionOverlay] = useState<CSSProperties>({
-    left: 0,
-    width: 0,
-  })
+  const [selectionOverlay, setSelectionOverlay] = useState<CSSProperties | null>(null)
 
   useEffect(() => {
     if (!refPolkadot.current || !refEthereum.current) return
@@ -83,11 +81,11 @@ export const ProviderTypeSwitch = ({
   return (
     <div
       className={classNames(
-        "bg-grey-800 text-body-secondary leading-paragraph inline-block rounded-full p-[0.2em]",
+        "bg-grey-800 text-body-secondary inline-block h-14 rounded-full p-[0.25em]",
         className
       )}
     >
-      <div className="relative z-0 flex items-center gap-[-0.5em]">
+      <div className="relative z-0 flex h-full items-center gap-[-0.5em]">
         <Button
           ref={refPolkadot}
           selected={selected === "polkadot"}
@@ -104,10 +102,14 @@ export const ProviderTypeSwitch = ({
         >
           {t("Ethereum")}
         </Button>
-        <div
-          className="bg-primary absolute top-0 h-full rounded-full transition-all duration-150 ease-in-out"
-          style={selectionOverlay}
-        />
+        {selectionOverlay && (
+          <FadeIn>
+            <div
+              className="bg-primary absolute top-0 h-full rounded-full transition-all duration-150 ease-in-out"
+              style={selectionOverlay}
+            />
+          </FadeIn>
+        )}
       </div>
     </div>
   )

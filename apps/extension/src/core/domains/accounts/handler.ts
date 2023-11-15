@@ -1,11 +1,19 @@
-import { getPrimaryAccount, sortAccounts } from "@core/domains/accounts/helpers"
+import {
+  formatSuri,
+  getNextDerivationPathForMnemonic,
+  isValidAnyAddress,
+  sortAccounts,
+} from "@core/domains/accounts/helpers"
+import { lookupAddresses, resolveNames } from "@core/domains/accounts/helpers.onChainIds"
+import { AccountsCatalogData, emptyCatalog } from "@core/domains/accounts/store.catalog"
 import type {
   RequestAccountCreate,
+  RequestAccountCreateDcent,
   RequestAccountCreateExternal,
   RequestAccountCreateFromJson,
-  RequestAccountCreateFromSeed,
-  RequestAccountCreateHardware,
-  RequestAccountCreateHardwareEthereum,
+  RequestAccountCreateFromSuri,
+  RequestAccountCreateLedgerEthereum,
+  RequestAccountCreateLedgerSubstrate,
   RequestAccountCreateWatched,
   RequestAccountExport,
   RequestAccountExportPrivateKey,
@@ -13,40 +21,35 @@ import type {
   RequestAccountForget,
   RequestAccountRename,
   RequestAccountsCatalogAction,
+  RequestAddressLookup,
+  RequestNextDerivationPath,
+  RequestValidateDerivationPath,
   ResponseAccountExport,
 } from "@core/domains/accounts/types"
-import { AccountTypes } from "@core/domains/accounts/types"
-import { getEthDerivationPath } from "@core/domains/ethereum/helpers"
+import { AccountImportSources, AccountType } from "@core/domains/accounts/types"
 import { getPairForAddressSafely } from "@core/handlers/helpers"
 import { genericAsyncSubscription } from "@core/handlers/subscriptions"
 import { talismanAnalytics } from "@core/libs/Analytics"
 import { ExtensionHandler } from "@core/libs/Handler"
+import { chaindataProvider } from "@core/rpcs/chaindata"
 import type { MessageTypes, RequestTypes, ResponseType } from "@core/types"
 import { Port } from "@core/types/base"
 import { getPrivateKey } from "@core/util/getPrivateKey"
-import { createPair } from "@polkadot/keyring"
+import { createPair, encodeAddress } from "@polkadot/keyring"
+import { KeyringPair$Meta } from "@polkadot/keyring/types"
 import keyring from "@polkadot/ui-keyring"
 import { assert } from "@polkadot/util"
-import {
-  ethereumEncode,
-  isEthereumAddress,
-  mnemonicGenerate,
-  mnemonicValidate,
-} from "@polkadot/util-crypto"
-import { addressFromMnemonic } from "@talisman/util/addressFromMnemonic"
+import { ethereumEncode, isEthereumAddress, mnemonicValidate } from "@polkadot/util-crypto"
+import { HexString } from "@polkadot/util/types"
+import { addressFromSuri } from "@talisman/util/addressFromSuri"
+import { isValidDerivationPath } from "@talisman/util/isValidDerivationPath"
 import { decodeAnyAddress, encodeAnyAddress, sleep } from "@talismn/util"
 import { combineLatest } from "rxjs"
 
-import { AccountsCatalogData, emptyCatalog } from "./store.catalog"
+import { SOURCES } from "../mnemonics/store"
 
 export default class AccountsHandler extends ExtensionHandler {
-  // we can only create a new account if we have an existing stored seed
-  // requires:
-  //   - password
-  //   - stored seed (unlocked with password)
-  //   - derivation path
-
-  private async accountCreate({ name, type }: RequestAccountCreate): Promise<string> {
+  private async accountCreate({ name, type, ...options }: RequestAccountCreate): Promise<string> {
     const password = this.stores.password.getPassword()
     assert(password, "Not logged in")
 
@@ -54,94 +57,112 @@ export default class AccountsHandler extends ExtensionHandler {
     const existing = allAccounts.find((account) => account.meta?.name === name)
     assert(!existing, "An account with this name already exists")
 
-    const rootAccount = getPrimaryAccount(true)
-
-    const isEthereum = type === "ethereum"
-    const getDerivationPath = (accountIndex: number) =>
-      // for ethereum accounts, use same derivation path as metamask in case user wants to share seed with it
-      isEthereum ? getEthDerivationPath(accountIndex) : `//${accountIndex}`
-
-    const seedResult = await this.stores.seedPhrase.getSeed(password)
-    if (seedResult.err) throw new Error(seedResult.val)
-
-    let seed = seedResult.val
-    let shouldStoreSeed = false
-    // currently shouldn't be possible to not have a seed, but it will be soon
-    if (!seed) {
-      seed = mnemonicGenerate()
-      shouldStoreSeed = true
-    }
-
-    // currently shouldn't be possible to not have a root account, but it will be soon
-    if (!rootAccount) {
-      const { pair } = keyring.addUri(seed, password, {
-        name,
-        origin: AccountTypes.TALISMAN,
-      })
-      talismanAnalytics.capture("account create", { type, method: "parent" })
-      if (shouldStoreSeed) await this.stores.seedPhrase.add(seed, password)
-      return pair.address
+    let derivedMnemonicId: string
+    let mnemonic: string
+    if ("mnemonicId" in options) {
+      derivedMnemonicId = options.mnemonicId
+      const mnemonicResult = await this.stores.mnemonics.getMnemonic(derivedMnemonicId, password)
+      if (mnemonicResult.err || !mnemonicResult.val) throw new Error("Mnemonic not stored locally")
+      mnemonic = mnemonicResult.val
     } else {
-      let accountIndex
-      let derivedAddress: string | null = null
-      for (accountIndex = 0; accountIndex <= 1000; accountIndex += 1) {
-        derivedAddress = addressFromMnemonic(`${seed}${getDerivationPath(accountIndex)}`, type)
-
-        const exists = keyring.getAccounts().some(({ address }) => address === derivedAddress)
-        if (exists) continue
-
-        break
-      }
-
-      assert(derivedAddress, "Reached maximum number of derived accounts")
-
-      const { pair } = keyring.addUri(
-        `${seed}${getDerivationPath(accountIndex)}`,
+      const newMnemonicId = await this.stores.mnemonics.add(
+        `${name} Recovery Phrase`,
+        options.mnemonic,
         password,
-        {
-          name,
-          origin: AccountTypes.DERIVED,
-          parent: rootAccount.address,
-          derivationPath: getDerivationPath(accountIndex),
-        },
-        type
+        SOURCES.Generated,
+        options.confirmed
       )
-
-      talismanAnalytics.capture("account create", { type, method: "derived" })
-      return pair.address
+      if (newMnemonicId.err) throw new Error("Failed to store new mnemonic")
+      derivedMnemonicId = newMnemonicId.val
+      mnemonic = options.mnemonic
     }
+
+    let derivationPath: string
+    if (typeof options.derivationPath === "string") {
+      derivationPath = options.derivationPath
+    } else {
+      const { val, err } = getNextDerivationPathForMnemonic(mnemonic, type)
+      if (err) throw new Error(val)
+      else derivationPath = val
+    }
+
+    const suri = formatSuri(mnemonic, derivationPath)
+    const resultingAddress = encodeAnyAddress(addressFromSuri(suri, type))
+    assert(
+      allAccounts.every((acc) => encodeAnyAddress(acc.address) !== resultingAddress),
+      "Account already exists"
+    )
+
+    const { pair } = keyring.addUri(
+      suri,
+      password,
+      {
+        name,
+        origin: AccountType.Talisman,
+        derivedMnemonicId,
+        derivationPath,
+      },
+      type
+    )
+
+    talismanAnalytics.capture("account create", { type, method: "derived" })
+    return pair.address
   }
 
-  private async accountCreateSeed({
+  private async accountCreateSuri({
     name,
-    seed,
+    suri,
     type,
-  }: RequestAccountCreateFromSeed): Promise<string> {
+  }: RequestAccountCreateFromSuri): Promise<string> {
     const password = this.stores.password.getPassword()
     assert(password, "Not logged in")
 
-    // get seed and compare against master seed - cannot import root seed
-    const rootSeedResult = await this.stores.seedPhrase.getSeed(password)
-    if (rootSeedResult.err) throw new Error("Global seed not available")
-    const rootSeed = rootSeedResult.val
-
-    assert(rootSeed !== seed.trim(), "Cannot re-import your master seed")
-
-    const seedAddress = addressFromMnemonic(seed, type)
+    const expectedAddress = addressFromSuri(suri, type)
 
     const notExists = !keyring
       .getAccounts()
-      .some((acc) => acc.address.toLowerCase() === seedAddress.toLowerCase())
+      .some((acc) => acc.address.toLowerCase() === expectedAddress.toLowerCase())
     assert(notExists, "Account already exists")
+
+    //suri includes the derivation path if any
+    const splitIdx = suri.indexOf("/")
+    const mnemonic = splitIdx === -1 ? suri : suri.slice(0, splitIdx)
+    const derivationPath = splitIdx === -1 ? "" : suri.slice(splitIdx)
+
+    const meta: KeyringPair$Meta = {
+      name,
+      origin: AccountType.Talisman,
+    }
+
+    // suri could be a private key instead of a mnemonic
+    if (mnemonicValidate(mnemonic)) {
+      const derivedMnemonicId = await this.stores.mnemonics.getExistingId(mnemonic)
+
+      if (derivedMnemonicId) {
+        meta.derivedMnemonicId = derivedMnemonicId
+        meta.derivationPath = derivationPath
+      } else {
+        const result = await this.stores.mnemonics.add(
+          `${name} Recovery Phrase`,
+          mnemonic,
+          password,
+          SOURCES.Imported,
+          true
+        )
+        if (result.ok) {
+          meta.derivedMnemonicId = result.val
+          meta.derivationPath = derivationPath
+        } else throw new Error("Failed to store mnemonic", { cause: result.val })
+      }
+    } else {
+      meta.importSource = AccountImportSources.PK
+    }
 
     try {
       const { pair } = keyring.addUri(
-        seed,
+        suri,
         password,
-        {
-          name,
-          origin: AccountTypes.SEED,
-        },
+        meta,
         type // if undefined, defaults to keyring's default (sr25519 atm)
       )
 
@@ -163,7 +184,8 @@ export default class AccountsHandler extends ExtensionHandler {
     for (const json of unlockedPairs) {
       const pair = keyring.createFromJson(json, {
         name: json.meta?.name || "Json Import",
-        origin: AccountTypes.JSON,
+        origin: AccountType.Talisman,
+        importSource: AccountImportSources.JSON,
       })
 
       const notExists = !keyring
@@ -187,11 +209,11 @@ export default class AccountsHandler extends ExtensionHandler {
     return addresses
   }
 
-  private accountsCreateHardwareEthereum({
+  private accountsCreateLedgerEthereum({
     name,
     address,
     path,
-  }: RequestAccountCreateHardwareEthereum): string {
+  }: RequestAccountCreateLedgerEthereum): string {
     assert(isEthereumAddress(address), "Not an Ethereum address")
 
     // ui-keyring's addHardware method only supports substrate accounts, cannot set ethereum type
@@ -209,7 +231,7 @@ export default class AccountsHandler extends ExtensionHandler {
         name,
         hardwareType: "ledger",
         isHardware: true,
-        origin: AccountTypes.HARDWARE,
+        origin: AccountType.Ledger,
         path,
       },
       null
@@ -224,19 +246,70 @@ export default class AccountsHandler extends ExtensionHandler {
     return pair.address
   }
 
-  private accountsCreateHardware({
+  private async accountCreateDcent({
+    name,
+    address,
+    type,
+    path,
+    tokenIds,
+  }: RequestAccountCreateDcent) {
+    if (type === "ethereum") assert(isEthereumAddress(address), "Not an Ethereum address")
+    else assert(isValidAnyAddress(address), "Not a Substrate address")
+
+    const meta: KeyringPair$Meta = {
+      name,
+      isHardware: true,
+      origin: AccountType.Dcent,
+      path,
+      tokenIds,
+    }
+
+    // hopefully in the future D'CENT will be able to sign on any chain, and code below can be simply removed.
+    // keep this basic check for now to avoid polluting the messaging interface, as polkadot is the only token supported by D'CENT.
+    if (tokenIds.length === 1 && tokenIds[0] === "polkadot-substrate-native-dot") {
+      const chain = await chaindataProvider.getChain("polkadot")
+      meta.genesisHash = chain?.genesisHash?.startsWith?.("0x")
+        ? (chain.genesisHash as HexString)
+        : null
+    }
+
+    // ui-keyring's addHardware method only supports substrate accounts, cannot set ethereum type
+    // => create the pair without helper
+    const pair = createPair(
+      {
+        type,
+        toSS58: type === "ethereum" ? ethereumEncode : encodeAddress,
+      },
+      {
+        publicKey: decodeAnyAddress(address),
+        secretKey: new Uint8Array(),
+      },
+      meta,
+      null
+    )
+
+    // add to the underlying keyring, allowing not to specify a password
+    keyring.keyring.addPair(pair)
+    keyring.saveAccount(pair)
+
+    talismanAnalytics.capture("account create", { type, method: "dcent" })
+
+    return pair.address
+  }
+
+  private accountsCreateLedger({
     accountIndex,
     address,
     addressOffset,
     genesisHash,
     name,
-  }: Omit<RequestAccountCreateHardware, "hardwareType">): string {
+  }: RequestAccountCreateLedgerSubstrate): string {
     const { pair } = keyring.addHardware(address, "ledger", {
       accountIndex,
       addressOffset,
       genesisHash,
       name,
-      origin: AccountTypes.HARDWARE,
+      origin: AccountType.Ledger,
     })
 
     talismanAnalytics.capture("account create", { type: "substrate", method: "hardware" })
@@ -257,7 +330,7 @@ export default class AccountsHandler extends ExtensionHandler {
       isQr: true,
       name,
       genesisHash,
-      origin: AccountTypes.QR,
+      origin: AccountType.Qr,
     })
 
     talismanAnalytics.capture("account create", { type: "substrate", method: "qr" })
@@ -294,7 +367,7 @@ export default class AccountsHandler extends ExtensionHandler {
         name,
         isExternal: true,
         isPortfolio: !!isPortfolio,
-        origin: AccountTypes.WATCHED,
+        origin: AccountType.Watched,
       },
       null
     )
@@ -364,11 +437,11 @@ export default class AccountsHandler extends ExtensionHandler {
     const { err, val } = await getPairForAddressSafely(address, async (pair) => {
       assert(pair.type === "ethereum", "Private key cannot be exported for this account type")
 
-      const pk = getPrivateKey(pair, pw as string)
+      const pk = getPrivateKey(pair, pw as string, "hex")
 
       talismanAnalytics.capture("account export", { type: pair.type, mode: "pk" })
 
-      return pk.toString("hex")
+      return pk
     })
 
     if (err) throw new Error(val as string)
@@ -435,17 +508,41 @@ export default class AccountsHandler extends ExtensionHandler {
     return this.stores.accountsCatalog.runActions(actions)
   }
 
-  private accountValidateMnemonic(mnemonic: string): boolean {
-    return mnemonicValidate(mnemonic)
+  private async addressLookup(lookup: RequestAddressLookup): Promise<string> {
+    if ("mnemonicId" in lookup) {
+      const { mnemonicId, derivationPath, type } = lookup
+
+      const password = this.stores.password.getPassword()
+      assert(password, "Not logged in")
+      const mnemonicResult = await this.stores.mnemonics.getMnemonic(mnemonicId, password)
+      assert(mnemonicResult.ok && mnemonicResult.val, "Mnemonic not stored locally")
+
+      const suri = formatSuri(mnemonicResult.val, derivationPath)
+      return addressFromSuri(suri, type)
+    } else {
+      const { suri, type } = lookup
+      return addressFromSuri(suri, type)
+    }
   }
 
-  private async setVerifierCertMnemonic(mnemonic: string) {
-    const isValidMnemonic = mnemonicValidate(mnemonic)
-    assert(isValidMnemonic, "Invalid mnemonic")
+  private validateDerivationPath({ derivationPath, type }: RequestValidateDerivationPath): boolean {
+    return isValidDerivationPath(derivationPath, type)
+  }
+
+  private async getNextDerivationPath({
+    mnemonicId,
+    type,
+  }: RequestNextDerivationPath): Promise<string> {
     const password = this.stores.password.getPassword()
-    if (!password) throw new Error("Unauthorised")
-    await this.stores.verifierCertificateMnemonic.add(mnemonic, password)
-    return true
+    assert(password, "Not logged in")
+
+    const { val: mnemonic, ok } = await this.stores.mnemonics.getMnemonic(mnemonicId, password)
+    assert(ok && mnemonic, "Mnemonic not stored locally")
+
+    const { val: derivationPath, ok: ok2 } = getNextDerivationPathForMnemonic(mnemonic, type)
+    assert(ok2, "Failed to lookup next available derivation path")
+
+    return derivationPath
   }
 
   public async handle<TMessageType extends MessageTypes>(
@@ -457,14 +554,16 @@ export default class AccountsHandler extends ExtensionHandler {
     switch (type) {
       case "pri(accounts.create)":
         return this.accountCreate(request as RequestAccountCreate)
-      case "pri(accounts.create.seed)":
-        return this.accountCreateSeed(request as RequestAccountCreateFromSeed)
+      case "pri(accounts.create.suri)":
+        return this.accountCreateSuri(request as RequestAccountCreateFromSuri)
       case "pri(accounts.create.json)":
         return this.accountCreateJson(request as RequestAccountCreateFromJson)
-      case "pri(accounts.create.hardware.substrate)":
-        return this.accountsCreateHardware(request as RequestAccountCreateHardware)
-      case "pri(accounts.create.hardware.ethereum)":
-        return this.accountsCreateHardwareEthereum(request as RequestAccountCreateHardwareEthereum)
+      case "pri(accounts.create.dcent)":
+        return this.accountCreateDcent(request as RequestAccountCreateDcent)
+      case "pri(accounts.create.ledger.substrate)":
+        return this.accountsCreateLedger(request as RequestAccountCreateLedgerSubstrate)
+      case "pri(accounts.create.ledger.ethereum)":
+        return this.accountsCreateLedgerEthereum(request as RequestAccountCreateLedgerEthereum)
       case "pri(accounts.create.qr.substrate)":
         return this.accountsCreateQr(request as RequestAccountCreateExternal)
       case "pri(accounts.create.watched)":
@@ -485,10 +584,16 @@ export default class AccountsHandler extends ExtensionHandler {
         return this.accountsCatalogSubscribe(id, port)
       case "pri(accounts.catalog.runActions)":
         return this.accountsCatalogRunActions(request as RequestAccountsCatalogAction[])
-      case "pri(accounts.validateMnemonic)":
-        return this.accountValidateMnemonic(request as string)
-      case "pri(accounts.setVerifierCertMnemonic)":
-        return this.setVerifierCertMnemonic(request as string)
+      case "pri(accounts.validateDerivationPath)":
+        return this.validateDerivationPath(request as RequestValidateDerivationPath)
+      case "pri(accounts.address.lookup)":
+        return this.addressLookup(request as RequestAddressLookup)
+      case "pri(accounts.derivationPath.next)":
+        return this.getNextDerivationPath(request as RequestNextDerivationPath)
+      case "pri(accounts.onChainIds.resolveNames)":
+        return Object.fromEntries(await resolveNames(request as string[]))
+      case "pri(accounts.onChainIds.lookupAddresses)":
+        return Object.fromEntries(await lookupAddresses(request as string[]))
       default:
         throw new Error(`Unable to handle message of type ${type}`)
     }

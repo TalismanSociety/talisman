@@ -1,14 +1,15 @@
-import { DEBUG, TEST } from "@core/constants"
+import { DEBUG } from "@core/constants"
 import { db } from "@core/db"
 import { AccountsHandler } from "@core/domains/accounts"
-import { verifierCertificateMnemonicStore } from "@core/domains/accounts/store.verifierCertificateMnemonic"
-import { AccountTypes, RequestAddressFromMnemonic } from "@core/domains/accounts/types"
+import { AccountType } from "@core/domains/accounts/types"
 import AppHandler from "@core/domains/app/handler"
 import { featuresStore } from "@core/domains/app/store.features"
 import { BalancesHandler } from "@core/domains/balances"
+import { ChainsHandler } from "@core/domains/chains"
 import { EncryptHandler } from "@core/domains/encrypt"
 import { EthHandler } from "@core/domains/ethereum"
 import { MetadataHandler } from "@core/domains/metadata"
+import MnemonicHandler from "@core/domains/mnemonics/handler"
 import { SigningHandler } from "@core/domains/signing"
 import { SitesAuthorisationHandler } from "@core/domains/sitesAuthorised"
 import { SubHandler } from "@core/domains/substrate/handler.extension"
@@ -20,16 +21,15 @@ import { ExtensionStore } from "@core/handlers/stores"
 import { unsubscribe } from "@core/handlers/subscriptions"
 import { talismanAnalytics } from "@core/libs/Analytics"
 import { ExtensionHandler } from "@core/libs/Handler"
-import { generateQrAddNetworkSpecs, generateQrUpdateNetworkMetadata } from "@core/libs/QrGenerator"
 import { log } from "@core/log"
+import { isTalismanHostname } from "@core/page"
 import { MessageTypes, RequestType, ResponseType } from "@core/types"
 import { Port, RequestIdOnly } from "@core/types/base"
+import { awaitKeyringLoaded } from "@core/util/awaitKeyringLoaded"
 import { CONFIG_RATE_LIMIT_ERROR, getConfig } from "@core/util/getConfig"
 import { fetchHasSpiritKey } from "@core/util/hasSpiritKey"
 import keyring from "@polkadot/ui-keyring"
-import { assert, u8aToHex } from "@polkadot/util"
 import * as Sentry from "@sentry/browser"
-import { addressFromMnemonic } from "@talisman/util/addressFromMnemonic"
 import { db as balancesDb } from "@talismn/balances"
 import { liveQuery } from "dexie"
 import Browser from "webextension-polyfill"
@@ -47,12 +47,14 @@ export default class Extension extends ExtensionHandler {
     // routing to sub-handlers
     this.#routes = {
       accounts: new AccountsHandler(stores),
+      chains: new ChainsHandler(stores),
       app: new AppHandler(stores),
       assets: new AssetTransferHandler(stores),
       balances: new BalancesHandler(stores),
       encrypt: new EncryptHandler(stores),
       eth: new EthHandler(stores),
       metadata: new MetadataHandler(stores),
+      mnemonic: new MnemonicHandler(stores),
       signing: new SigningHandler(stores),
       sites: new SitesAuthorisationHandler(stores),
       tokenRates: new TokenRatesHandler(stores),
@@ -71,33 +73,27 @@ export default class Extension extends ExtensionHandler {
       stores.password.resetAutoLockTimer(this.#autoLockTimeout)
     })
 
-    // Resets password update notification at extension restart if user has asked to ignore it previously
-    stores.password.set({ ignorePasswordUpdate: false })
+    awaitKeyringLoaded().then(() => {
+      // Watches keyring to do things that depend on type of accounts added
+      keyring.accounts.subject.subscribe(async (addresses) => {
+        const sites = await stores.sites.get()
 
-    // Watches keyring to do things that depend on type of accounts added
-    // Delayed by 2 sec so that keyring accounts will have loaded
-    setTimeout(
-      () =>
-        keyring.accounts.subject.subscribe(async (addresses) => {
-          const sites = await stores.sites.get()
+        Object.entries(sites)
+          .filter(([, site]) => site.connectAllSubstrate)
+          .forEach(async ([url, autoAddSite]) => {
+            const newAddresses = Object.values(addresses)
+              .filter(
+                ({ json: { meta } }) =>
+                  isTalismanHostname(autoAddSite.url) || meta.origin !== AccountType.Watched
+              )
+              .filter(({ json: { address } }) => !autoAddSite.addresses?.includes(address))
+              .map(({ json: { address } }) => address)
 
-          Object.entries(sites)
-            .filter(([, site]) => site.connectAllSubstrate)
-            .forEach(async ([url, autoAddSite]) => {
-              const newAddresses = Object.values(addresses)
-                .filter(
-                  ({ json: { address, meta } }) =>
-                    meta.origin !== AccountTypes.WATCHED &&
-                    !autoAddSite.addresses?.includes(address)
-                )
-                .map(({ json: { address } }) => address)
-
-              autoAddSite.addresses = [...(autoAddSite.addresses || []), ...newAddresses]
-              await stores.sites.updateSite(url, autoAddSite)
-            })
-        }),
-      DEBUG || TEST ? 0 : 2000
-    )
+            autoAddSite.addresses = [...(autoAddSite.addresses || []), ...newAddresses]
+            await stores.sites.updateSite(url, autoAddSite)
+          })
+      })
+    })
 
     // setup polling for config from github
     setTimeout(async () => {
@@ -212,7 +208,7 @@ export default class Extension extends ExtensionHandler {
   private checkSpiritKeyOwnership() {
     // wait 10 seconds as this check is low priority
     // also need to be wait for keyring to be loaded and accounts populated
-    setTimeout(async () => {
+    awaitKeyringLoaded().then(async () => {
       try {
         const hasSpiritKey = await fetchHasSpiritKey()
         const currentSpiritKey = await this.stores.app.get("hasSpiritKey")
@@ -225,7 +221,7 @@ export default class Extension extends ExtensionHandler {
         // ignore, don't update app store nor posthog property
         log.error("Failed to check Spirit Key ownership", { err })
       }
-    }, 10_000)
+    })
 
     // in case reporting to posthog fails, set a timer so that every 5 min we will re-attempt
     setInterval(async () => {
@@ -279,58 +275,7 @@ export default class Extension extends ExtensionHandler {
     // Then try remaining which are present in this class
     // --------------------------------------------------------------------
     switch (type) {
-      // --------------------------------------------------------------------
-      // mnemonic handlers --------------------------------------------------
-      // --------------------------------------------------------------------
-      case "pri(mnemonic.unlock)": {
-        const transformedPw = await this.stores.password.transformPassword(
-          request as RequestType<"pri(mnemonic.unlock)">
-        )
-        assert(transformedPw, "Password error")
-
-        const seedResult = await this.stores.seedPhrase.getSeed(transformedPw)
-        assert(seedResult.val, "No mnemonic present")
-        assert(seedResult.ok, seedResult.val)
-        return seedResult.val
-      }
-
-      case "pri(mnemonic.confirm)":
-        return await this.stores.seedPhrase.setConfirmed(request as boolean)
-
-      case "pri(mnemonic.subscribe)":
-        return this.stores.seedPhrase.subscribe(id, port)
-
-      case "pri(mnemonic.address)": {
-        const { mnemonic, type } = request as RequestAddressFromMnemonic
-        return addressFromMnemonic(mnemonic, type)
-      }
-
-      // --------------------------------------------------------------------
-      // chain handlers -----------------------------------------------------
-      // --------------------------------------------------------------------
-      case "pri(chains.subscribe)":
-        return this.stores.chains.hydrateStore()
-
-      case "pri(chains.generateQr.addNetworkSpecs)": {
-        const vaultCipher = await verifierCertificateMnemonicStore.get("cipher")
-        assert(vaultCipher, "No Polkadot Vault Verifier Certificate Mnemonic found")
-
-        const { genesisHash } = request as RequestType<"pri(chains.generateQr.addNetworkSpecs)">
-        const data = await generateQrAddNetworkSpecs(genesisHash)
-        // serialize as hex for transfer
-        return u8aToHex(data)
-      }
-
-      case "pri(chains.generateQr.updateNetworkMetadata)": {
-        const vaultCipher = await verifierCertificateMnemonicStore.get("cipher")
-        assert(vaultCipher, "No Polkadot Vault Verifier Certificate Mnemonic found")
-
-        const { genesisHash, specVersion } =
-          request as RequestType<"pri(chains.generateQr.updateNetworkMetadata)">
-        const data = await generateQrUpdateNetworkMetadata(genesisHash, specVersion)
-        // serialize as hex for transfer
-        return u8aToHex(data)
-      }
+      // NOTE: The remaining message handlers which used to be here have now all been moved into subhandlers :)
 
       default:
         throw new Error(`Unable to handle message of type ${type}`)

@@ -8,7 +8,7 @@ export type NotificationType = "submitted" | "success" | "error"
 const getNotificationOptions = (
   type: NotificationType,
   networkName: string,
-  error?: Error & { reason?: string }
+  error?: Error & { shortMessage?: string; reason?: string }
 ): Browser.Notifications.CreateNotificationOptions => {
   switch (type) {
     case "submitted":
@@ -29,7 +29,11 @@ const getNotificationOptions = (
       return {
         type: "basic",
         title: "Transaction failed",
-        message: error?.reason ?? error?.message ?? `Failed transaction on ${networkName}.`,
+        message:
+          error?.shortMessage ??
+          error?.reason ??
+          error?.message ??
+          `Failed transaction on ${networkName}.`,
         iconUrl: "/images/tx-nok.png",
       }
   }

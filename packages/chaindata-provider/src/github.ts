@@ -15,4 +15,5 @@ export const githubEvmNetworkLogoUrl = (networkId: EvmNetworkId) =>
 export const githubTokenLogoUrl = (tokenId: TokenId) =>
   `${githubChaindataBaseUrl}/assets/tokens/${tokenId}.svg`
 
+export const githubUnknownChainLogoUrl = githubChainLogoUrl("unknown")
 export const githubUnknownTokenLogoUrl = githubTokenLogoUrl("unknown")

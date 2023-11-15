@@ -1,3 +1,4 @@
+import { TALISMAN_WEB_APP_URL } from "@core/constants"
 import { ProviderType } from "@core/domains/sitesAuthorised/types"
 import { HeaderBlock } from "@talisman/components/HeaderBlock"
 import { Spacer } from "@talisman/components/Spacer"
@@ -7,6 +8,7 @@ import { useEffect, useMemo, useState } from "react"
 import { Trans, useTranslation } from "react-i18next"
 
 import { AuthorizedSite } from "./AuthorisedSite"
+import { AuthorisedSitesBatchActions } from "./AuthorisedSiteBatchActions"
 
 export const AuthorisedSites = () => {
   const { t } = useTranslation("admin")
@@ -28,47 +30,69 @@ export const AuthorisedSites = () => {
     })
   }, [providerType, sites])
 
-  const hasEthereumTrustedSites = useMemo(() => {
-    if (!sites) return false
-    return Object.keys(sites).some((id: string) => {
-      const site = sites[id]
-      return !!site.ethAddresses
-    })
-  }, [sites])
+  const { hasPolkadotSites, hasEthereumSites } = useMemo(
+    () => ({
+      hasPolkadotSites: Object.values(sites).some((site) => !!site.addresses),
+      hasEthereumSites: Object.values(sites).some((site) => !!site.ethAddresses),
+    }),
+    [sites]
+  )
+
+  const showBatchActions = useMemo(
+    () =>
+      (providerType === "polkadot" && hasPolkadotSites) ||
+      (providerType === "ethereum" && hasEthereumSites),
+    [hasEthereumSites, hasPolkadotSites, providerType]
+  )
 
   useEffect(() => {
     //when forgetting last ethereum site, force switch to polkadot
-    if (providerType === "ethereum" && !hasEthereumTrustedSites) setProviderType("polkadot")
-  }, [hasEthereumTrustedSites, providerType])
+    if (providerType === "ethereum" && !hasEthereumSites) setProviderType("polkadot")
+  }, [hasEthereumSites, providerType])
 
   return (
     <>
       <HeaderBlock
-        title={t("Trusted Sites")}
+        title={t("Connected Sites")}
         text={t("Manage the sites that have access to your accounts")}
       />
       <Spacer large />
-      {hasEthereumTrustedSites ? (
-        <ProviderTypeSwitch defaultProvider="polkadot" onChange={setProviderType} />
-      ) : null}
+      <div className="flex items-center justify-between">
+        <div>
+          {hasEthereumSites ? (
+            <ProviderTypeSwitch
+              className="text-xs [&>div]:h-full"
+              defaultProvider="polkadot"
+              onChange={setProviderType}
+            />
+          ) : null}
+        </div>
+        {showBatchActions && <AuthorisedSitesBatchActions providerType={providerType} />}
+      </div>
       <Spacer small />
-      <div className="flex flex-col gap-7">
+      <div className="flex flex-col gap-4">
         {siteIds.map((id) => (
           <AuthorizedSite key={`${providerType}-${id}`} id={id} provider={providerType} />
         ))}
-        {!sites ||
-          (Object.keys(sites).length === 0 && (
-            <div className="bg-grey-850 w-full rounded p-8">
-              <Trans t={t}>
-                You haven't connected to any sites yet. Why not start with the{" "}
-                <a href="https://app.talisman.xyz" target="_blank" className="text-primary">
-                  Talisman Web App
-                </a>
-                ?
-              </Trans>
-            </div>
-          ))}
-        {sites && !hasEthereumTrustedSites && providerType === "ethereum" && (
+        {providerType === "polkadot" && !hasPolkadotSites && (
+          <div className="bg-grey-850 text-body-secondary w-full rounded p-8">
+            <Trans
+              t={t}
+              components={{
+                Link: (
+                  // eslint-disable-next-line jsx-a11y/anchor-has-content
+                  <a
+                    href={TALISMAN_WEB_APP_URL}
+                    target="_blank"
+                    className="text-grey-200 hover:text-body"
+                  ></a>
+                ),
+              }}
+              defaults="You haven't connected to any Polkadot sites yet. Why not start with <Link>Talisman Portal</Link>?"
+            ></Trans>
+          </div>
+        )}
+        {sites && !hasEthereumSites && providerType === "ethereum" && (
           // This should never be displayed unless we decide to display the provider switcher without check
           <div className="bg-grey-850 w-full rounded p-8">
             {t("You haven't connected to any Ethereum sites yet.")}

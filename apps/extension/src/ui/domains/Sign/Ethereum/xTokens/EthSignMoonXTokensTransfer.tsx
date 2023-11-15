@@ -1,3 +1,4 @@
+import { EvmAddress } from "@core/domains/ethereum/types"
 import { hexToU8a } from "@polkadot/util"
 import { Address } from "@talismn/balances"
 import { encodeAnyAddress } from "@talismn/util"
@@ -7,7 +8,6 @@ import { useCoinGeckoTokenRates } from "@ui/hooks/useCoingeckoTokenRates"
 import { useErc20TokenInfo } from "@ui/hooks/useErc20TokenInfo"
 import useToken from "@ui/hooks/useToken"
 import useTokens from "@ui/hooks/useTokens"
-import { BigNumber } from "ethers"
 import { FC, useMemo } from "react"
 import { useTranslation } from "react-i18next"
 
@@ -68,27 +68,18 @@ const decodeMultilocation = (multilocation?: {
 
 export const EthSignMoonXTokensTransfer: FC = () => {
   const { t } = useTranslation("request")
-  const { network, transactionInfo, account } = useEthSignKnownTransactionRequest()
+  const { network, decodedTx, account } = useEthSignKnownTransactionRequest()
   const substrateChain = useChain(network?.substrateChain?.id)
   const { tokens } = useTokens(true)
 
-  const { destination, amount, currencyAddress } = useMemo(() => {
-    const destination = getContractCallArg<{ parents: number; interior: string[] }>(
-      transactionInfo.contractCall,
-      "destination"
-    )
-    const amount = getContractCallArg<BigNumber>(transactionInfo.contractCall, "amount")
-    const currencyAddress = getContractCallArg<string>(
-      transactionInfo.contractCall,
-      "currency_address"
-    )
-
-    return {
-      destination,
-      amount: amount?.toBigInt(),
-      currencyAddress,
-    }
-  }, [transactionInfo.contractCall])
+  const [destination, amount, currencyAddress] = useMemo(
+    () => [
+      getContractCallArg<{ parents: number; interior: string[] }>(decodedTx, "destination"),
+      getContractCallArg<bigint>(decodedTx, "amount"),
+      getContractCallArg<EvmAddress>(decodedTx, "currency_address"),
+    ],
+    [decodedTx]
+  )
 
   const erc20 = useErc20TokenInfo(network?.id, currencyAddress)
   const nativeToken = useToken(network?.nativeToken?.id)
@@ -102,8 +93,12 @@ export const EthSignMoonXTokensTransfer: FC = () => {
     }
 
     const token = tokens.find(
-      (t) => t.type === "evm-erc20" && t.contractAddress === currencyAddress
+      (t) =>
+        t.type === "evm-erc20" &&
+        t.evmNetwork?.id === network?.id &&
+        t.contractAddress === currencyAddress
     )
+
     if (token) {
       const { decimals, symbol, coingeckoId, logo } = token
       return { decimals, symbol, coingeckoId, image: logo }
@@ -111,7 +106,7 @@ export const EthSignMoonXTokensTransfer: FC = () => {
 
     const { decimals, symbol, coingeckoId, image } = erc20.token || {}
     return { decimals, symbol, coingeckoId, image: image }
-  }, [currencyAddress, erc20.token, nativeToken, tokens])
+  }, [currencyAddress, erc20.token, nativeToken, network?.id, tokens])
 
   const target = useMemo(() => decodeMultilocation(destination), [destination])
 

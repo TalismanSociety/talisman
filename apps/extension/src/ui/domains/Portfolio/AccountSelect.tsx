@@ -3,8 +3,8 @@ import { AccountType } from "@core/domains/accounts/types"
 import { FloatingPortal, autoUpdate, useFloating } from "@floating-ui/react"
 import { Listbox } from "@headlessui/react"
 import { isEthereumAddress } from "@polkadot/util-crypto"
-import { ChevronDownIcon, EyeIcon, TalismanHandIcon } from "@talisman/theme/icons"
 import { Balance, Balances } from "@talismn/balances"
+import { ChevronDownIcon, EyeIcon, TalismanHandIcon } from "@talismn/icons"
 import { classNames } from "@talismn/util"
 import { AccountFolderIcon } from "@ui/domains/Account/AccountFolderIcon"
 import { AccountIcon } from "@ui/domains/Account/AccountIcon"
@@ -15,6 +15,7 @@ import { useSelectedAccount } from "@ui/domains/Portfolio/SelectedAccountContext
 import useAccountsCatalog from "@ui/hooks/useAccountsCatalog"
 import { useAnalytics } from "@ui/hooks/useAnalytics"
 import useBalances from "@ui/hooks/useBalances"
+import { useSelectedCurrency } from "@ui/hooks/useCurrency"
 import { useSetting } from "@ui/hooks/useSettings"
 import { forwardRef, useCallback, useMemo } from "react"
 import { useTranslation } from "react-i18next"
@@ -52,9 +53,13 @@ export const AccountSelect = () => {
   const { account: selectedAccount, accounts, select } = useSelectedAccount()
   const balances = useBalances()
   const catalog = useAccountsCatalog()
+  const currency = useSelectedCurrency()
 
   const portfolioBalances = useBalances("portfolio")
-  const totalUsd = useMemo(() => portfolioBalances.sum.fiat("usd").total, [portfolioBalances])
+  const totalFiat = useMemo(
+    () => portfolioBalances.sum.fiat(currency).total,
+    [currency, portfolioBalances.sum]
+  )
 
   const balancesByAddress = useMemo(() => {
     // we use this to avoid looping over the balances list n times, where n is the number of accounts in the wallet
@@ -84,7 +89,8 @@ export const AccountSelect = () => {
               folderId,
               name: account?.name ?? t("Unknown Account"),
               address: item.address,
-              total: new Balances(balancesByAddress.get(item.address) ?? []).sum.fiat("usd").total,
+              total: new Balances(balancesByAddress.get(item.address) ?? []).sum.fiat(currency)
+                .total,
               genesisHash: account?.genesisHash,
               origin: account?.origin,
               isPortfolio: !!account?.isPortfolio,
@@ -98,7 +104,7 @@ export const AccountSelect = () => {
                 name: item.name,
                 total: new Balances(
                   item.tree.flatMap((account) => balancesByAddress.get(account.address) ?? [])
-                ).sum.fiat("usd").total,
+                ).sum.fiat(currency).total,
                 addresses: item.tree.map((account) => account.address),
               },
               ...item.tree.flatMap(treeItemToOptions(treeName, key)),
@@ -109,7 +115,7 @@ export const AccountSelect = () => {
       catalog.portfolio.flatMap(treeItemToOptions("portfolio")),
       catalog.watched.flatMap(treeItemToOptions("watched")),
     ]
-  }, [catalog, accounts, t, balancesByAddress])
+  }, [catalog.portfolio, catalog.watched, accounts, t, balancesByAddress, currency])
 
   const selectedItem = useMemo(
     () =>
@@ -152,16 +158,19 @@ export const AccountSelect = () => {
     <Listbox value={selectedItem} onChange={onChange}>
       {({ open }) => (
         <>
-          <Listbox.Button ref={refs.setReference} className="w-full text-left">
-            <Item
-              ref={refs.setReference}
-              key={selectedItem?.key}
-              item={selectedItem}
-              totalUsd={totalUsd}
-              open={open}
-              button
-            />
-          </Listbox.Button>
+          {accounts.length === 0 && <NoAccountsItem />}
+          {accounts.length > 0 && (
+            <Listbox.Button ref={refs.setReference} className="w-full text-left">
+              <Item
+                ref={refs.setReference}
+                key={selectedItem?.key}
+                item={selectedItem}
+                totalFiat={totalFiat}
+                open={open}
+                button
+              />
+            </Listbox.Button>
+          )}
 
           <FloatingPortal>
             <div
@@ -185,7 +194,7 @@ export const AccountSelect = () => {
                   value="all-accounts"
                   onClick={() => trackClick()}
                 >
-                  <Item current={selectedItem === undefined} totalUsd={totalUsd} />
+                  <Item current={selectedItem === undefined} totalFiat={totalFiat} />
                 </Listbox.Option>
                 {portfolioItems.map((item) =>
                   item.type === "account" &&
@@ -255,10 +264,10 @@ type ItemProps = {
   current?: boolean
   button?: boolean
   open?: boolean
-  totalUsd?: number
+  totalFiat?: number
 }
 const Item = forwardRef<HTMLDivElement, ItemProps>(function Item(
-  { item, collapsed, current, button, open, totalUsd },
+  { item, collapsed, current, button, open, totalFiat },
   ref
 ) {
   const { t } = useTranslation()
@@ -272,7 +281,11 @@ const Item = forwardRef<HTMLDivElement, ItemProps>(function Item(
   const icon = isAllAccounts ? (
     <AllAccountsIcon className="shrink-0 text-3xl" />
   ) : isAccount ? (
-    <AccountIcon className="shrink-0 text-3xl" address={item.address} />
+    <AccountIcon
+      className="shrink-0 text-3xl"
+      address={item.address}
+      genesisHash={item.genesisHash}
+    />
   ) : isFolder ? (
     <AccountFolderIcon className="shrink-0 text-3xl" />
   ) : null
@@ -316,12 +329,7 @@ const Item = forwardRef<HTMLDivElement, ItemProps>(function Item(
         )}
       >
         {name}
-        <Fiat
-          amount={item?.total !== undefined ? item.total : totalUsd}
-          currency="usd"
-          isBalance
-          noCountUp
-        />
+        <Fiat amount={item?.total !== undefined ? item.total : totalFiat} isBalance noCountUp />
       </div>
       {(button || (isFolder && !collapsed)) && (
         <ChevronDownIcon className={classNames("shrink-0 text-lg", button && "hidden lg:block")} />
@@ -355,3 +363,13 @@ const FolderItem = forwardRef<HTMLDivElement, FolderItemProps>(function FolderIt
     </div>
   )
 })
+
+const NoAccountsItem = () => (
+  <div className="text-body-secondary flex w-full cursor-pointer flex-col items-center gap-4 rounded-sm p-5 lg:flex-row">
+    <div className="bg-body-disabled h-20 w-20 rounded-[2rem]">&nbsp;</div>
+    <div className="hidden max-w-full flex-grow flex-col items-center justify-center gap-2 overflow-hidden md:flex lg:items-start">
+      No Accounts
+      <Fiat amount={0.0} />
+    </div>
+  </div>
+)

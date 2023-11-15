@@ -15,6 +15,9 @@
     "lint": "eslint src --max-warnings 0",
     "clean": "rm -rf dist && rm -rf .turbo rm -rf node_modules"
   },
+  "dependencies": {
+    "@talismn/icons": "workspace:*"
+  },
   "devDependencies": {
     "@floating-ui/react": "0.24.3",
     "@headlessui/react": "1.7.13",
@@ -26,7 +29,7 @@
     "@types/react-dom": "18.0.5",
     "autoprefixer": "^10.4.12",
     "color": "4.2.3",
-    "eslint": "^8.15.0",
+    "eslint": "^8.52.0",
     "framer-motion": "10.12.18",
     "lottie-react": "2.4.0",
     "postcss": "^8.4.20",
@@ -35,7 +38,7 @@
     "react-router-dom": "6.14.1",
     "react-use": "17.4.0",
     "tailwindcss": "^3.3.2",
-    "typescript": "4.6.4"
+    "typescript": "^5.2.2"
   },
   "peerDependencies": {
     "@floating-ui/react": ">=0.20.1",

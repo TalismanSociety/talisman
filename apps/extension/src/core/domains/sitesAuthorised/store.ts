@@ -1,5 +1,6 @@
 import { AuthorizedSite, AuthorizedSites, ProviderType } from "@core/domains/sitesAuthorised/types"
 import { SubscribableByIdStorageProvider } from "@core/libs/Store"
+import { isTalismanHostname } from "@core/page"
 import { urlToDomain } from "@core/util/urlToDomain"
 import { assert } from "@polkadot/util"
 import { convertAddress } from "@talisman/util/convertAddress"
@@ -33,11 +34,11 @@ export class SitesAuthorizedStore extends SubscribableByIdStorageProvider<
     })
   }
 
-  async getSiteFromUrl(url: string) {
+  getSiteFromUrl(url: string): Promise<AuthorizedSite> {
     const { val, err } = urlToDomain(url)
     if (err) throw new Error(val)
 
-    return await this.get(val)
+    return this.get(val)
   }
 
   public async ensureUrlAuthorized(
@@ -88,6 +89,42 @@ export class SitesAuthorizedStore extends SubscribableByIdStorageProvider<
       sites[id] = {
         ...sites[id],
         ...props,
+      }
+      return sites
+    })
+  }
+
+  async forgetAllSites(type: ProviderType) {
+    await this.mutate((sites) => {
+      for (const host of Object.keys(sites)) {
+        if (type === "ethereum") {
+          if (!sites[host].addresses) delete sites[host]
+          else {
+            delete sites[host].ethAddresses
+            delete sites[host].ethPermissions
+            delete sites[host].ethChainId
+          }
+        }
+        // don't forget Talisman web app
+        if (type === "polkadot" && !isTalismanHostname(host)) {
+          if (!sites[host].ethAddresses) delete sites[host]
+          else {
+            delete sites[host].addresses
+            delete sites[host].connectAllSubstrate
+          }
+        }
+      }
+      return sites
+    })
+  }
+
+  async disconnectAllSites(type: ProviderType) {
+    await this.mutate((sites) => {
+      for (const host of Object.keys(sites)) {
+        // disconnect all accounts unless it's Talisman web app
+        if (type === "polkadot" && sites[host].addresses && !isTalismanHostname(host))
+          sites[host].addresses = []
+        if (type === "ethereum" && sites[host].ethAddresses) sites[host].ethAddresses = []
       }
       return sites
     })

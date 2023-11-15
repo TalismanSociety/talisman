@@ -2,8 +2,8 @@ import { AccountsCatalogTree } from "@core/domains/accounts/helpers.catalog"
 import { AccountJsonAny } from "@core/domains/accounts/types"
 import { DraggableAttributes, useDroppable } from "@dnd-kit/core"
 import { SyntheticListenerMap } from "@dnd-kit/core/dist/hooks/utilities"
-import { ChevronDownIcon, DragIcon, MoreHorizontalIcon } from "@talisman/theme/icons"
 import { Balances } from "@talismn/balances"
+import { ChevronDownIcon, DragIcon, MoreHorizontalIcon } from "@talismn/icons"
 import { classNames } from "@talismn/util"
 import { AccountContextMenu } from "@ui/apps/dashboard/routes/Portfolio/AccountContextMenu"
 import { AccountFolderIcon } from "@ui/domains/Account/AccountFolderIcon"
@@ -12,6 +12,7 @@ import { AccountTypeIcon } from "@ui/domains/Account/AccountTypeIcon"
 import { Address } from "@ui/domains/Account/Address"
 import Fiat from "@ui/domains/Asset/Fiat"
 import { useBalanceDetails } from "@ui/hooks/useBalanceDetails"
+import { useFormattedAddressForAccount } from "@ui/hooks/useFormattedAddress"
 import { CSSProperties, ReactNode, forwardRef, useMemo } from "react"
 import { useTranslation } from "react-i18next"
 import { ContextMenu, ContextMenuContent, ContextMenuItem, ContextMenuTrigger } from "talisman-ui"
@@ -58,6 +59,8 @@ export const TreeAccountItem = forwardRef<HTMLDivElement, Props & { item: UiTree
     )
     const { totalUsd } = useBalanceDetails(accountBalances)
 
+    const formattedAddress = useFormattedAddressForAccount(account)
+
     if (!account) return null
     return (
       <TreeItemWrapper {...props} ref={wrapperRef}>
@@ -70,18 +73,22 @@ export const TreeAccountItem = forwardRef<HTMLDivElement, Props & { item: UiTree
           style={style}
         >
           <DragButton {...handleProps?.attributes} {...handleProps?.listeners} />
-          <AccountIcon className="text-xl" address={item.address} />
+          <AccountIcon
+            className="text-xl"
+            address={item.address}
+            genesisHash={account?.genesisHash}
+          />
           <div className="flex grow flex-col gap-2 overflow-hidden">
             <div className="flex items-center gap-2">
               <div className="overflow-hidden text-ellipsis whitespace-nowrap">{account.name}</div>
               <AccountTypeIcon className="text-primary" origin={account.origin} />
             </div>
             <div className="text-body-secondary text-sm">
-              <Address address={item.address} />
+              <Address address={formattedAddress} />
             </div>
           </div>
           <div className="flex flex-col gap-2">
-            <Fiat amount={totalUsd} currency="usd" isBalance />
+            <Fiat amount={totalUsd} isBalance />
           </div>
 
           <AccountContextMenu
@@ -101,7 +108,6 @@ export const TreeFolderItem = forwardRef<HTMLDivElement, Props & { item: UiTreeF
     const { t } = useTranslation()
     const {
       balances,
-      childCount,
       clone,
       handleProps,
       item,
@@ -153,7 +159,7 @@ export const TreeFolderItem = forwardRef<HTMLDivElement, Props & { item: UiTreeF
             )}
           />
           <div className="flex flex-col">
-            <Fiat amount={totalUsd} currency="usd" isBalance />
+            <Fiat amount={totalUsd} isBalance noCountUp={clone} />
           </div>
 
           <ContextMenu placement="bottom-end">
@@ -176,17 +182,6 @@ export const TreeFolderItem = forwardRef<HTMLDivElement, Props & { item: UiTreeF
               </ContextMenuItem>
             </ContextMenuContent>
           </ContextMenu>
-
-          {clone && childCount && childCount > 0 ? (
-            <span
-              className={classNames(
-                "bg-black-tertiary text-primary rounded-xs absolute -right-5 -top-5 flex h-12 w-12 items-center justify-center text-xs",
-                clone && "select-none"
-              )}
-            >
-              {childCount}
-            </span>
-          ) : null}
         </div>
 
         {!clone && !collapsed && item.tree.length === 0 ? (

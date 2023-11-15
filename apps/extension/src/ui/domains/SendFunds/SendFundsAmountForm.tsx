@@ -2,14 +2,15 @@ import { log } from "@core/log"
 import { isEthereumAddress } from "@polkadot/util-crypto"
 import { WithTooltip } from "@talisman/components/Tooltip"
 import { useOpenClose } from "@talisman/hooks/useOpenClose"
-import { AlertCircleIcon, InfoIcon, SwapIcon, UserPlusIcon } from "@talisman/theme/icons"
 import { convertAddress } from "@talisman/util/convertAddress"
 import { AccountAddressType } from "@talisman/util/getAddressType"
-import { shortenAddress } from "@talisman/util/shortenAddress"
+import { AlertCircleIcon, InfoIcon, SwapIcon, UserPlusIcon } from "@talismn/icons"
 import { classNames, planckToTokens, tokensToPlanck } from "@talismn/util"
 import { SendFundsWizardPage, useSendFundsWizard } from "@ui/apps/popup/pages/SendFunds/context"
 import { useAccountByAddress } from "@ui/hooks/useAccountByAddress"
 import { useAddressBook } from "@ui/hooks/useAddressBook"
+import { useSelectedCurrency } from "@ui/hooks/useCurrency"
+import { useFormattedAddress } from "@ui/hooks/useFormattedAddress"
 import useToken from "@ui/hooks/useToken"
 import { isEvmToken } from "@ui/util/isEvmToken"
 import { isSubToken } from "@ui/util/isSubToken"
@@ -28,12 +29,13 @@ import {
 } from "react"
 import { Container } from "react-dom"
 import { Trans, useTranslation } from "react-i18next"
-import { Drawer } from "talisman-ui"
-import { Button, PillButton } from "talisman-ui"
+import { Button, Drawer, PillButton } from "talisman-ui"
 
 import { AccountIcon } from "../Account/AccountIcon"
 import { AccountTypeIcon } from "../Account/AccountTypeIcon"
+import { Address } from "../Account/Address"
 import { ChainLogo } from "../Asset/ChainLogo"
+import currencyConfig from "../Asset/currencyConfig"
 import Fiat from "../Asset/Fiat"
 import { TokenLogo } from "../Asset/TokenLogo"
 import Tokens from "../Asset/Tokens"
@@ -41,6 +43,8 @@ import { TokensAndFiat } from "../Asset/TokensAndFiat"
 import { EthFeeSelect } from "../Ethereum/GasSettings/EthFeeSelect"
 import { AddToAddressBookDrawer } from "./AddToAddressBookDrawer"
 import { SendFundsFeeTooltip } from "./SendFundsFeeTooltip"
+import { useGenesisHashFromTokenId } from "./useGenesisHashFromTokenId"
+import { useNetworkDetails } from "./useNetworkDetails"
 import { useSendFunds } from "./useSendFunds"
 
 const normalizeStringNumber = (value?: string | number | null, decimals = 18) => {
@@ -74,26 +78,49 @@ const Container: FC<ContainerProps> = (props) => {
   )
 }
 
-type AddressPillButtonProps = { address?: string | null; className?: string; onClick?: () => void }
+type AddressPillButtonProps = {
+  address?: string | null
+  genesisHash?: string | null
+  className?: string
+  onClick?: () => void
+}
 
-const AddressPillButton: FC<AddressPillButtonProps> = ({ address, className, onClick }) => {
+const AddressPillButton: FC<AddressPillButtonProps> = ({
+  address,
+  genesisHash,
+  className,
+  onClick,
+}) => {
   const account = useAccountByAddress(address as string)
   const contact = useContact(address)
 
-  const { name, genesisHash } = useMemo(() => {
+  const { name, genesisHash: accountGenesisHash } = useMemo(() => {
     if (account) return account
     if (contact) return { name: contact.name, genesisHash: undefined }
     return { name: undefined, genesisHash: undefined }
   }, [account, contact])
+
+  const formattedAddress = useFormattedAddress(
+    address ?? undefined,
+    genesisHash ?? accountGenesisHash
+  )
+  const displayAddress = useMemo(
+    () => (account ? formattedAddress : address) ?? undefined,
+    [account, address, formattedAddress]
+  )
 
   if (!address) return null
 
   return (
     <PillButton className={classNames("h-16 max-w-full !px-4", className)} onClick={onClick}>
       <div className="text-body flex h-16 max-w-full flex-nowrap items-center gap-4 overflow-x-hidden text-base">
-        <AccountIcon className="!text-lg" address={address} genesisHash={genesisHash} />
-        <div className="leading-base grow overflow-hidden text-ellipsis whitespace-nowrap">
-          {name ?? shortenAddress(address, 6, 6)}
+        <AccountIcon className="!text-lg" address={address} genesisHash={accountGenesisHash} />
+        <div className="leading-base grow truncate">
+          {name ? (
+            <WithTooltip tooltip={displayAddress}>{name}</WithTooltip>
+          ) : (
+            <Address address={displayAddress} startCharCount={6} endCharCount={6} />
+          )}
         </div>
         <AccountTypeIcon origin={account?.origin} className="text-primary-500" />
       </div>
@@ -212,13 +239,15 @@ const FiatInput = () => {
     resizeFiatInput,
   } = useSendFunds()
 
+  const currency = useSelectedCurrency()
+
   const defaultValue = useMemo(
     () =>
       normalizeStringNumber(
-        sendMax && maxAmount ? maxAmount.fiat("usd") : transfer?.fiat("usd"),
+        sendMax && maxAmount ? maxAmount.fiat(currency) : transfer?.fiat(currency),
         2
       ),
-    [maxAmount, sendMax, transfer]
+    [currency, maxAmount, sendMax, transfer]
   )
 
   // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -228,10 +257,11 @@ const FiatInput = () => {
 
       const text = e.target.value ?? ""
       const num = Number(text)
+      const tokenRate = tokenRates?.[currency]
 
-      if (token && tokenRates?.usd && text.length && !isNaN(num)) {
+      if (token && tokenRate && text.length && !isNaN(num)) {
         const fiat = parseFloat(text)
-        const tokens = (fiat / tokenRates.usd).toFixed(Math.ceil(token.decimals / 3))
+        const tokens = (fiat / tokenRate).toFixed(Math.ceil(token.decimals / 3))
         set("amount", tokensToPlanck(tokens, token.decimals))
       } else remove("amount")
     }, 250),
@@ -273,18 +303,14 @@ const FiatInput = () => {
           isEstimatingMaxAmount ? "text-grey-800" : "peer-placeholder-shown:text-body-disabled"
         )}
       >
-        $
+        {currencyConfig[currency]?.unicodeCharacter}
       </div>
     </div>
   )
 }
 
 const DisplayContainer: FC<PropsWithChildren> = ({ children }) => {
-  return (
-    <div className="text-body-secondary max-w-[264px] overflow-hidden text-ellipsis whitespace-nowrap text-sm">
-      {children}
-    </div>
-  )
+  return <div className="text-body-secondary max-w-[264px] truncate text-sm">{children}</div>
 }
 
 const FiatDisplay = () => {
@@ -296,7 +322,7 @@ const FiatDisplay = () => {
 
   return (
     <DisplayContainer>
-      <Fiat amount={value.fiat("usd") ?? 0} noCountUp />
+      <Fiat amount={value} noCountUp />
     </DisplayContainer>
   )
 }
@@ -403,7 +429,7 @@ const TokenRow = ({ onEditClick }: { onEditClick: () => void }) => {
               />
             </div>
             <div className="text-body-disabled">
-              <Fiat amount={balance.transferable.fiat("usd")} noCountUp isBalance />
+              <Fiat amount={balance.transferable} noCountUp isBalance />
             </div>
           </>
         )}
@@ -414,19 +440,8 @@ const TokenRow = ({ onEditClick }: { onEditClick: () => void }) => {
 
 const NetworkRow = () => {
   const [t] = useTranslation()
-  const { chain, evmNetwork } = useSendFunds()
 
-  const { networkId, networkName } = useMemo(
-    () => ({
-      networkId: (chain ?? evmNetwork)?.id,
-      networkName:
-        chain?.name ??
-        (evmNetwork
-          ? `${evmNetwork?.name}${evmNetwork?.substrateChain ? ` (${t("Ethereum")})` : ""}`
-          : ""),
-    }),
-    [chain, evmNetwork, t]
-  )
+  const { networkId, networkName } = useNetworkDetails()
 
   return (
     <div className="flex w-full items-center justify-between">
@@ -493,7 +508,7 @@ const FeesSummary = () => {
         </div>
         <div
           className={classNames(
-            "flex grow items-center justify-end gap-2 overflow-hidden text-ellipsis whitespace-nowrap",
+            "flex grow items-center justify-end gap-2 truncate",
             isLoading && estimatedFee && "animate-pulse"
           )}
         >
@@ -634,7 +649,8 @@ const AddContact = () => {
 
 export const SendFundsAmountForm = () => {
   const { t } = useTranslation("send-funds")
-  const { from, to, goto } = useSendFundsWizard()
+  const { from, to, goto, tokenId } = useSendFundsWizard()
+  const genesisHash = useGenesisHashFromTokenId(tokenId)
 
   const handleGotoClick = useCallback(
     (page: SendFundsWizardPage) => () => {
@@ -661,6 +677,7 @@ export const SendFundsAmountForm = () => {
             <AddressPillButton
               className="!max-w-[260px]"
               address={from}
+              genesisHash={genesisHash}
               onClick={handleGotoClick("from")}
             />
           </div>
@@ -671,6 +688,7 @@ export const SendFundsAmountForm = () => {
             <AddressPillButton
               className="!max-w-[260px]"
               address={to}
+              genesisHash={genesisHash}
               onClick={handleGotoClick("to")}
             />
             <AddContact />

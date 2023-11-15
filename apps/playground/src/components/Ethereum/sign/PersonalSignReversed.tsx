@@ -1,15 +1,17 @@
 import { classNames } from "@talismn/util"
-import { ethers } from "ethers"
-import { useCallback, useMemo, useState } from "react"
+import { useCallback, useEffect, useMemo, useState } from "react"
 import { Button } from "talisman-ui"
-import { useAccount } from "wagmi"
+import { recoverMessageAddress } from "viem"
+import { useAccount, useWalletClient } from "wagmi"
 
 import { Section } from "../../shared/Section"
 
 export const PersonalSignReversed = () => {
-  const { isConnected, address, connector } = useAccount()
+  const { isConnected, address } = useAccount()
 
-  const [signature, setSignature] = useState<string>()
+  const { data: walletClient } = useWalletClient()
+
+  const [signature, setSignature] = useState<`0x${string}`>()
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState<Error>()
 
@@ -19,23 +21,25 @@ export const PersonalSignReversed = () => {
     setError(undefined)
     setIsLoading(true)
     try {
-      const provider = await connector?.getProvider()
-      setSignature(
-        await provider.request({
-          method: "personal_sign",
-          params: [address, message],
-        })
-      )
+      if (walletClient && address)
+        setSignature(
+          await walletClient.request({
+            method: "personal_sign",
+            params: [address, message as `0x${string}`],
+          })
+        )
     } catch (err) {
       setError(err as Error)
     }
     setIsLoading(false)
-  }, [address, connector, message])
+  }, [address, message, walletClient])
 
-  const signedBy = useMemo(
-    () => (signature ? ethers.utils.verifyMessage(message, signature) : null),
-    [signature, message]
-  )
+  const [signedBy, setSignedBy] = useState<`0x${string}`>()
+
+  useEffect(() => {
+    setSignedBy(undefined)
+    if (signature) recoverMessageAddress({ message, signature }).then(setSignedBy)
+  }, [message, signature])
 
   if (!isConnected) return null
 

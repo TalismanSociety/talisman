@@ -1,13 +1,15 @@
+import { TALISMAN_WEB_APP_STAKING_URL } from "@core/constants"
 import { Balances } from "@core/domains/balances/types"
 import { Accordion, AccordionIcon } from "@talisman/components/Accordion"
 import { FadeIn } from "@talisman/components/FadeIn"
 import { useOpenClose } from "@talisman/hooks/useOpenClose"
-import { ExternalLinkIcon, LockIcon, XIcon, ZapIcon } from "@talisman/theme/icons"
-import { useBalancesStatus } from "@talismn/balances-react"
+import { ExternalLinkIcon, LockIcon, XIcon, ZapIcon } from "@talismn/icons"
 import { classNames } from "@talismn/util"
 import Fiat from "@ui/domains/Asset/Fiat"
 import Tokens from "@ui/domains/Asset/Tokens"
 import { useAnalytics } from "@ui/hooks/useAnalytics"
+import { useBalancesStatus } from "@ui/hooks/useBalancesStatus"
+import { useSelectedCurrency } from "@ui/hooks/useCurrency"
 import { useSearchParamsSelectedAccount } from "@ui/hooks/useSearchParamsSelectedAccount"
 import { MouseEventHandler, ReactNode, useCallback, useMemo } from "react"
 import { Trans, useTranslation } from "react-i18next"
@@ -86,7 +88,7 @@ const AssetRow = ({ balances, locked }: AssetRowProps) => {
   const { account } = useSearchParamsSelectedAccount()
   const status = useBalancesStatus(balances)
 
-  const { token, summary } = useTokenBalancesSummary(balances)
+  const { token, summary, rate } = useTokenBalancesSummary(balances)
   const { showNomPoolBanner, dismissNomPoolBanner } = useNomPoolStakingBanner()
   const showBanner = showNomPoolBanner({
     chainId: token?.chain?.id,
@@ -105,7 +107,7 @@ const AssetRow = ({ balances, locked }: AssetRowProps) => {
   }, [account, genericEvent, navigate, token])
 
   const handleClickStakingBanner = useCallback(() => {
-    window.open("https://app.talisman.xyz/staking")
+    window.open(TALISMAN_WEB_APP_STAKING_URL)
     genericEvent("open web app staking from banner", { from: "popup", symbol: token?.symbol })
   }, [genericEvent, token?.symbol])
 
@@ -150,19 +152,22 @@ const AssetRow = ({ balances, locked }: AssetRowProps) => {
           <div className="relative grow">
             {/* we want content from this cell to be hidden if there are too many tokens to display on right cell */}
             <div className="absolute left-0 top-0 flex w-full flex-col gap-2 overflow-hidden text-left">
-              <div className="text-body flex items-center gap-3 whitespace-nowrap text-sm font-bold">
-                {token.symbol}
-                {!!token.isTestnet && (
-                  <span className="text-tiny bg-alert-warn/10 text-alert-warn rounded px-3 py-1 font-light">
-                    {t("Testnet")}
-                  </span>
+              <div className="flex items-center gap-3">
+                <div className="text-body flex items-center gap-3 whitespace-nowrap text-sm font-bold">
+                  {token.symbol}
+                  {!!token.isTestnet && (
+                    <span className="text-tiny bg-alert-warn/10 text-alert-warn rounded px-3 py-1 font-light">
+                      {t("Testnet")}
+                    </span>
+                  )}
+                </div>
+                {!!networkIds.length && (
+                  <div className="text-base">
+                    <NetworksLogoStack networkIds={networkIds} max={3} />
+                  </div>
                 )}
               </div>
-              {!!networkIds.length && (
-                <div className="text-base">
-                  <NetworksLogoStack networkIds={networkIds} />
-                </div>
-              )}
+              {rate !== undefined && <Fiat amount={rate} className="text-body-secondary text-xs" />}
             </div>
           </div>
           <div
@@ -185,7 +190,7 @@ const AssetRow = ({ balances, locked }: AssetRowProps) => {
               />
             </div>
             <div className="text-body-secondary leading-base text-xs">
-              {fiat === null ? "-" : <Fiat currency="usd" amount={fiat} isBalance />}
+              {fiat === null ? "-" : <Fiat amount={fiat} isBalance />}
             </div>
           </div>
         </div>
@@ -244,14 +249,14 @@ const BalancesGroup = ({ label, fiatAmount, className, children }: GroupProps) =
     <div className="flex flex-col gap-6">
       <button
         type="button"
-        className={classNames("text-md flex cursor-pointer items-center gap-2", className)}
+        className={classNames("flex cursor-pointer items-center gap-2 text-sm", className)}
         onClick={toggle}
       >
-        <div className="text-body grow text-left">{label}</div>
-        <div className="text-body-secondary overflow-hidden text-ellipsis whitespace-nowrap">
-          <Fiat amount={fiatAmount} currency="usd" isBalance />
+        <div className="text-body-secondary grow text-left">{label}</div>
+        <div className="text-body-secondary truncate">
+          <Fiat amount={fiatAmount} isBalance />
         </div>
-        <div className="text-body-secondary flex flex-col justify-center text-lg">
+        <div className="text-body-secondary text-md flex flex-col justify-center">
           <AccordionIcon isOpen={isOpen} />
         </div>
       </button>
@@ -272,11 +277,13 @@ export const PopupAssetsTable = ({ balances }: GroupedAssetsTableProps) => {
     skeletons,
   } = usePortfolioSymbolBalances(balances)
 
+  const currency = useSelectedCurrency()
+
   // calculate totals
-  const { totalAvailable, totalLocked } = useMemo(() => {
-    const { transferable, locked, reserved } = balances.sum.fiat("usd")
-    return { totalAvailable: transferable, totalLocked: locked + reserved }
-  }, [balances])
+  const { total, totalAvailable, totalLocked } = useMemo(() => {
+    const { total, transferable, locked, reserved } = balances.sum.fiat(currency)
+    return { total, totalAvailable: transferable, totalLocked: locked + reserved }
+  }, [balances.sum, currency])
 
   const { t } = useTranslation()
 
@@ -285,6 +292,17 @@ export const PopupAssetsTable = ({ balances }: GroupedAssetsTableProps) => {
   return (
     <FadeIn>
       <div>
+        {!!account && (
+          <>
+            <div className="text-md flex items-center gap-2">
+              <div className="text-body grow text-left">{t("Total")}</div>
+              <div className="text-body-secondary truncate">
+                <Fiat amount={total} isBalance />
+              </div>
+            </div>
+            <div className="h-8" />
+          </>
+        )}
         <BalancesGroup label={t("Available")} fiatAmount={totalAvailable}>
           {available.map(([symbol, b]) => (
             <AssetRow key={symbol} balances={b} />

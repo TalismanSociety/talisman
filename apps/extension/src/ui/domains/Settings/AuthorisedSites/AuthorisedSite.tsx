@@ -77,8 +77,13 @@ export const AuthorizedSite: FC<{
           <Title name={origin} domain={id} />
         </div>
         <div className="text-body-secondary grow">{origin === "" ? "" : id}</div>
-        <div className="text-primary mr-3">{connected?.length}</div>
-        <div>
+        <div className="text-primary mr-3 shrink-0 text-right">
+          {t("{{connectedCount}} of {{totalCount}}", {
+            connectedCount: connected?.length ?? 0,
+            totalCount: availableAddresses?.length ?? 0,
+          })}
+        </div>
+        <div className="text-lg">
           <AccordionIcon isOpen={isOpen} />
         </div>
       </button>

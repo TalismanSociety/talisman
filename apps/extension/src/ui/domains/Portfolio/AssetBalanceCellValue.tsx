@@ -1,7 +1,7 @@
 import { WithTooltip } from "@talisman/components/Tooltip"
-import { LockIcon } from "@talisman/theme/icons"
-import { BalancesStatus } from "@talismn/balances-react"
+import { LockIcon } from "@talismn/icons"
 import { classNames } from "@talismn/util"
+import { BalancesStatus } from "@ui/hooks/useBalancesStatus"
 import BigNumber from "bignumber.js"
 import { ReactNode } from "react"
 
@@ -59,7 +59,7 @@ export const AssetBalanceCellValue = ({
             </div>
           ) : null}
         </div>
-        <div>{fiat === null ? "-" : <Fiat currency="usd" amount={fiat} isBalance />}</div>
+        <div>{fiat === null ? "-" : <Fiat amount={fiat} isBalance />}</div>
       </div>
     </WithTooltip>
   )

@@ -11,6 +11,7 @@ const SimpleLocalizeDownloadPlugin = require("./SimpleLocalizeDownloadPlugin")
 const { getManifestVersionName } = require("./utils.js")
 
 const manifestPath = path.join(__dirname, "..", "public", "manifest.json")
+const faviconsSrcPath = path.join(__dirname, "..", "public", "favicon*.*")
 
 const config = (env) =>
   merge(common(env), {
@@ -41,24 +42,25 @@ const config = (env) =>
               manifest.name = `${manifest.name} - Dev`
               manifest.browser_action.default_title = `${manifest.browser_action.default_title} - Dev`
 
-              for (const key in manifest.icons) {
-                const filename = manifest.icons[key]
-                const name = filename.split(".").slice(0, -1).join()
-                const extension = filename.split(".").slice(-1).join()
-
-                manifest.icons[key] = `${name}-dev.${extension}`
-              }
-
               // Return the modified manifest
               return JSON.stringify(manifest, null, 2)
             },
           },
           {
+            from: "favicon*-dev*",
+            to: ({ absoluteFilename }) =>
+              path.join(
+                distDir,
+                path.basename(absoluteFilename).replace(/-(?:prod|canary|dev)/, "")
+              ),
+            context: "public",
+          },
+          {
             from: ".",
             to: distDir,
             context: "public",
-            // do not copy the manifest, that's handled separately
-            filter: (filepath) => filepath !== manifestPath,
+            // do not copy the manifest or the favicons, they're handled separately
+            globOptions: { ignore: [manifestPath, faviconsSrcPath] },
           },
         ],
       }),

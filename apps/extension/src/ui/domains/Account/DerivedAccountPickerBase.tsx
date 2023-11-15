@@ -1,6 +1,6 @@
-import { Balance } from "@core/domains/balances/types"
+import { Balances } from "@core/domains/balances/types"
 import { AccountJson } from "@polkadot/extension-base/background/types"
-import { CheckCircleIcon } from "@talisman/theme/icons"
+import { CheckCircleIcon } from "@talismn/icons"
 import { classNames } from "@talismn/util"
 import { useBalanceDetails } from "@ui/hooks/useBalanceDetails"
 import { FC, ReactNode, useCallback } from "react"
@@ -69,7 +69,7 @@ const AccountButton: FC<AccountButtonProps> = ({
         <Tooltip>
           <TooltipTrigger asChild>
             <span className={classNames(isBalanceLoading && "animate-pulse")}>
-              <Fiat className="leading-none" amount={totalUsd} currency="usd" />
+              <Fiat className="leading-none" amount={totalUsd} />
             </span>
           </TooltipTrigger>
           {balanceDetails && (
@@ -94,7 +94,7 @@ export type DerivedAccountBase = AccountJson & {
   name: string
   accountIndex: number
   address: string
-  balances: Balance[]
+  balances: Balances
   isBalanceLoading: boolean
   connected?: boolean
   selected?: boolean

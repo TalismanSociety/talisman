@@ -1,10 +1,10 @@
 import { isEthereumAddress } from "@polkadot/util-crypto"
 import { ScrollContainer } from "@talisman/components/ScrollContainer"
 import { SearchInput } from "@talisman/components/SearchInput"
-import { CheckCircleIcon } from "@talisman/theme/icons"
 import { shortenAddress } from "@talisman/util/shortenAddress"
 import { Address, Balance } from "@talismn/balances"
 import { Token, TokenId } from "@talismn/chaindata-provider"
+import { CheckCircleIcon } from "@talismn/icons"
 import { classNames } from "@talismn/util"
 import useAccounts from "@ui/hooks/useAccounts"
 import useBalances from "@ui/hooks/useBalances"
@@ -54,7 +54,7 @@ const AccountTokenBalance = ({ token, balance }: { token?: Token; balance?: Bala
         />
       </div>
       <div className="text-body-secondary text-xs">
-        <Fiat amount={balance.transferable.fiat("usd")} currency="usd" isBalance noCountUp />
+        <Fiat amount={balance.transferable} isBalance noCountUp />
       </div>
     </div>
   )

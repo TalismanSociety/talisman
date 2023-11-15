@@ -1,6 +1,6 @@
-import { CopyIcon, ExternalLinkIcon } from "@talisman/theme/icons"
 import { shortenAddress } from "@talisman/util/shortenAddress"
 import { TokenId } from "@talismn/chaindata-provider"
+import { CopyIcon, ExternalLinkIcon } from "@talismn/icons"
 import { AccountIcon } from "@ui/domains/Account/AccountIcon"
 import { TokenLogo } from "@ui/domains/Asset/TokenLogo"
 import { TokensAndFiat } from "@ui/domains/Asset/TokensAndFiat"

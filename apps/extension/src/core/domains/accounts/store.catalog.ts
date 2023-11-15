@@ -7,16 +7,13 @@ import {
   runActionsOnTrees,
 } from "@core/domains/accounts/helpers.catalog"
 import { AccountJsonAny } from "@core/domains/accounts/types"
-import { SubscribableStorageProvider } from "@core/libs/Store"
+import { StorageProvider } from "@core/libs/Store"
 
 // AccountsCatalogData is here in case we want to use this to store anything
 // else in addition to the two `Tree` objects in the future
 export type AccountsCatalogData = Trees
 
-export class AccountsCatalogStore extends SubscribableStorageProvider<
-  AccountsCatalogData,
-  "pri(mnemonic.subscribe)"
-> {
+export class AccountsCatalogStore extends StorageProvider<AccountsCatalogData> {
   /**
    * This method will modify the store when given some actions to run.
    */

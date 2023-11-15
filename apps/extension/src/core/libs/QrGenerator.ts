@@ -1,5 +1,5 @@
-import { verifierCertificateMnemonicStore } from "@core/domains/accounts/store.verifierCertificateMnemonic"
-import { passwordStore } from "@core/domains/app"
+import { appStore, passwordStore } from "@core/domains/app"
+import { mnemonicsStore } from "@core/domains/mnemonics/store"
 import { SignerPayloadGenesisHash } from "@core/domains/signing/types"
 import { log } from "@core/log"
 import { chaindataProvider } from "@core/rpcs/chaindata"
@@ -21,14 +21,24 @@ const getEncryptionForChain = (chain: Chain) => {
   }
 }
 
+export const getVerifierMnemonic = async () => {
+  const pw = passwordStore.getPassword()
+  assert(pw, "Unauthorised")
+
+  const mnemonicId = await appStore.get("vaultVerifierCertificateMnemonicId")
+  assert(mnemonicId !== undefined, "Verifier mnemonic not found")
+  assert(mnemonicId !== null, "Talisman configured to not use verifier mnemonic")
+
+  const { ok, val: mnemonic } = await mnemonicsStore.getMnemonic(mnemonicId, pw)
+  if (!ok || !mnemonic) throw new Error("Failed to get verifier mnemonic", { cause: mnemonic })
+  return mnemonic
+}
+
 const signWithVerifierCertMnemonic = async (unsigned: Uint8Array) => {
   try {
-    const pw = passwordStore.getPassword()
-    assert(pw, "Unauthorised")
-    const { ok, val: seedVal } = await verifierCertificateMnemonicStore.getSeed(pw)
-    assert(ok && seedVal, "Failed to get seed")
+    const mnemonic = await getVerifierMnemonic()
     const keyring = new Keyring()
-    const signingPair = keyring.createFromUri(seedVal, {}, "sr25519")
+    const signingPair = keyring.createFromUri(mnemonic, {}, "sr25519")
 
     // For network specs, sign the specs (not the entire payload)
     const { type, publicKey } = signingPair
@@ -121,7 +131,10 @@ const $updateNetworkMetadataPayload = $.object(
   $.field("genesis_hash", $.sizedUint8Array(32))
 )
 
-export const generateQrUpdateNetworkMetadata = async (genesisHash: string, specVersion: number) => {
+export const generateQrUpdateNetworkMetadata = async (
+  genesisHash: string,
+  specVersion?: number
+) => {
   const metadataDef = await getMetadataDef(genesisHash, specVersion)
   const metadataRpc = getMetadataRpcFromDef(metadataDef)
   assert(metadataRpc, "Failed to fetch metadata")

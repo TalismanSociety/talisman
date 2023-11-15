@@ -1,6 +1,6 @@
 import { Token } from "@core/domains/tokens/types"
 import { useOpenClose } from "@talisman/hooks/useOpenClose"
-import { ChevronRightIcon, XIcon } from "@talisman/theme/icons"
+import { ChevronRightIcon, XIcon } from "@talismn/icons"
 import { classNames } from "@talismn/util"
 import useToken from "@ui/hooks/useToken"
 import { useCallback } from "react"
@@ -93,7 +93,7 @@ export const TokenAmountField = ({
         )}
       </div>
       <Modal isOpen={isOpen} onDismiss={close}>
-        <div className=" text-body-secondary bg-grey-850 flex h-[50rem] w-[42rem] flex-col overflow-hidden rounded">
+        <div className=" text-body-secondary bg-grey-850 border-grey-800 flex h-[50rem] w-[42rem] flex-col overflow-hidden rounded border">
           <div className="flex w-full items-center p-10">
             <div className="w-12"></div>
             <div className="flex-grow text-center">{t("Select a token")}</div>

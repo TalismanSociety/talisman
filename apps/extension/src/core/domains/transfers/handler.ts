@@ -1,6 +1,8 @@
-import { DEBUG } from "@core/constants"
-import { getEthTransferTransactionBase, rebuildGasSettings } from "@core/domains/ethereum/helpers"
-import { getProviderForEvmNetworkId } from "@core/domains/ethereum/rpcProviders"
+import {
+  getEthTransferTransactionBase,
+  parseGasSettings,
+  prepareTransaction,
+} from "@core/domains/ethereum/helpers"
 import {
   getTransactionCount,
   incrementTransactionCount,
@@ -17,18 +19,18 @@ import {
 import { getPairForAddressSafely, getPairFromAddress } from "@core/handlers/helpers"
 import { ExtensionHandler } from "@core/libs/Handler"
 import { log } from "@core/log"
+import { chainConnectorEvm } from "@core/rpcs/chain-connector-evm"
 import { chaindataProvider } from "@core/rpcs/chaindata"
 import type { RequestSignatures, RequestTypes, ResponseType } from "@core/types"
 import { Port } from "@core/types/base"
 import { getPrivateKey } from "@core/util/getPrivateKey"
 import { validateHexString } from "@core/util/validateHexString"
-import { TransactionRequest } from "@ethersproject/abstract-provider"
 import { assert } from "@polkadot/util"
-import { HexString } from "@polkadot/util/types"
 import * as Sentry from "@sentry/browser"
-import { planckToTokens } from "@talismn/util"
-import { Wallet, ethers } from "ethers"
+import { isEthereumAddress, planckToTokens } from "@talismn/util"
+import { privateKeyToAccount } from "viem/accounts"
 
+import { serializeTransactionRequest } from "../ethereum/helpers"
 import { transferAnalytics } from "./helpers"
 
 export default class AssetTransferHandler extends ExtensionHandler {
@@ -53,6 +55,7 @@ export default class AssetTransferHandler extends ExtensionHandler {
         tokenType === "substrate-orml" ||
         tokenType === "substrate-assets" ||
         tokenType === "substrate-tokens" ||
+        tokenType === "substrate-psp22" ||
         tokenType === "substrate-equilibrium"
       ) {
         try {
@@ -114,6 +117,7 @@ export default class AssetTransferHandler extends ExtensionHandler {
       tokenType === "substrate-orml" ||
       tokenType === "substrate-assets" ||
       tokenType === "substrate-tokens" ||
+      tokenType === "substrate-psp22" ||
       tokenType === "substrate-equilibrium"
     ) {
       const pair = getPairFromAddress(fromAddress) // no need for an unlocked pair for fee estimation
@@ -151,14 +155,20 @@ export default class AssetTransferHandler extends ExtensionHandler {
     signedTransaction,
   }: RequestAssetTransferEthHardware): Promise<ResponseAssetTransfer> {
     try {
-      const provider = await getProviderForEvmNetworkId(evmNetworkId)
-      if (!provider) throw new Error(`Could not find provider for network ${evmNetworkId}`)
+      const client = await chainConnectorEvm.getPublicClientForEvmNetwork(evmNetworkId)
+      if (!client) throw new Error(`Could not find provider for network ${evmNetworkId}`)
 
       const token = await chaindataProvider.getToken(tokenId)
       if (!token) throw new Error(`Invalid tokenId ${tokenId}`)
 
-      const { from, to, hash } = await provider.sendTransaction(signedTransaction)
-      if (!to) throw new Error("Unable to transfer - no recipient address given")
+      const { from, to } = unsigned
+      if (!from) throw new Error("Unable to transfer - no from address specified")
+      if (!to) throw new Error("Unable to transfer - no recipient address specified")
+
+      const hash = await client?.sendRawTransaction({
+        serializedTransaction: signedTransaction,
+      })
+      if (!hash) throw new Error("Failed to submit - no hash returned")
 
       watchEthereumTransaction(evmNetworkId, hash, unsigned, {
         transferInfo: { tokenId: token.id, value: amount, to },
@@ -174,11 +184,10 @@ export default class AssetTransferHandler extends ExtensionHandler {
 
       incrementTransactionCount(from, evmNetworkId)
 
-      return { hash } as { hash: HexString }
+      return { hash }
     } catch (err) {
       const error = err as Error & { reason?: string; error?: Error }
-      // eslint-disable-next-line no-console
-      DEBUG && console.error(error.message, { err })
+      log.error(error.message, { err })
       Sentry.captureException(err, { extra: { tokenId, evmNetworkId } })
       throw new Error(error?.error?.message ?? error.reason ?? "Failed to send transaction")
     }
@@ -195,39 +204,47 @@ export default class AssetTransferHandler extends ExtensionHandler {
     const token = await chaindataProvider.getToken(tokenId)
     if (!token) throw new Error(`Invalid tokenId ${tokenId}`)
 
-    const provider = await getProviderForEvmNetworkId(evmNetworkId)
-    if (!provider) throw new Error(`Could not find provider for network ${evmNetworkId}`)
+    assert(isEthereumAddress(fromAddress), "Invalid from address")
+    assert(isEthereumAddress(toAddress), "Invalid to address")
 
     const transfer = await getEthTransferTransactionBase(
       evmNetworkId,
-      ethers.utils.getAddress(fromAddress),
-      ethers.utils.getAddress(toAddress),
+      fromAddress,
+      toAddress,
       token,
-      amount
+      BigInt(amount ?? 0)
     )
 
-    const transaction: TransactionRequest = {
-      nonce: await getTransactionCount(fromAddress, evmNetworkId),
-      ...rebuildGasSettings(gasSettings),
-      ...transfer,
-    }
+    const parsedGasSettings = parseGasSettings(gasSettings)
+    const nonce = await getTransactionCount(fromAddress, evmNetworkId)
+
+    const transaction = prepareTransaction(transfer, parsedGasSettings, nonce)
+    const unsigned = serializeTransactionRequest(transaction)
 
     const result = await getPairForAddressSafely(fromAddress, async (pair) => {
+      const client = await chainConnectorEvm.getWalletClientForEvmNetwork(evmNetworkId)
+      assert(client, "Missing client for chain " + evmNetworkId)
+
       const password = this.stores.password.getPassword()
       assert(password, "Unauthorised")
 
-      const privateKey = getPrivateKey(pair, password)
-      const wallet = new Wallet(privateKey, provider)
+      const privateKey = getPrivateKey(pair, password, "hex")
+      const account = privateKeyToAccount(privateKey)
 
-      const { hash } = await wallet.sendTransaction(transaction)
+      const hash = await client.sendTransaction({
+        chain: client.chain,
+        account,
+        ...transaction,
+      })
 
       incrementTransactionCount(fromAddress, evmNetworkId)
 
-      return { hash } as { hash: HexString }
+      return { hash }
     })
 
     if (result.ok) {
-      watchEthereumTransaction(evmNetworkId, result.val.hash, transaction, {
+      // TODO test this
+      watchEthereumTransaction(evmNetworkId, result.val.hash, unsigned, {
         transferInfo: { tokenId: token.id, value: amount, to: toAddress },
       })
 

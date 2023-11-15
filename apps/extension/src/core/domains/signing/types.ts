@@ -1,22 +1,17 @@
-import {
-  AccountJson,
-  AccountJsonHardwareEthereum,
-  AccountJsonHardwareSubstrate,
-} from "@core/domains/accounts/types"
+import { AccountJsonAny } from "@core/domains/accounts/types"
 import {
   EthGasSettingsEip1559,
   EthGasSettingsLegacy,
   EvmNetworkId,
 } from "@core/domains/ethereum/types"
 import { BaseRequest, BaseRequestId } from "@core/types/base"
-import type { TransactionRequest as EthTransactionRequest } from "@ethersproject/abstract-provider"
 import {
   RequestSigningApproveSignature as PolkadotRequestSigningApproveSignature,
   RequestSign,
   ResponseSigning,
 } from "@polkadot/extension-base/background/types"
 import type { SignerPayloadJSON, SignerPayloadRaw } from "@polkadot/types/types"
-import { BigNumberish } from "ethers"
+import { RpcTransactionRequest } from "viem"
 
 export type { ResponseSigning, SignerPayloadJSON, SignerPayloadRaw } // Make this available elsewhere also
 
@@ -53,13 +48,13 @@ const SUBSTRATE_SIGN: SUBSTRATE_SIGN = "substrate-sign"
 
 export interface SubstrateSigningRequest extends BaseSigningRequest<SUBSTRATE_SIGN> {
   request: RequestSign
-  account: AccountJson | AccountJsonHardwareSubstrate
+  account: AccountJsonAny
 }
 
 export interface EthBaseSignRequest<T extends ETH_SIGN | ETH_SEND> extends BaseSigningRequest<T> {
   ethChainId: EvmNetworkId
-  account: AccountJson | AccountJsonHardwareEthereum
-  request: string | EthTransactionRequest
+  account: AccountJsonAny
+  request: string | RpcTransactionRequest
 }
 
 export type ETH_SIGN = "eth-sign"
@@ -73,19 +68,22 @@ export const SIGNING_TYPES = {
   ETH_SEND,
   SUBSTRATE_SIGN,
 }
+
+export type EthSignMessageMethod =
+  | "personal_sign"
+  | "eth_signTypedData"
+  | "eth_signTypedData_v1"
+  | "eth_signTypedData_v3"
+  | "eth_signTypedData_v4"
+
 export interface EthSignRequest extends EthBaseSignRequest<ETH_SIGN> {
   request: string
   ethChainId: EvmNetworkId
-  method:
-    | "personal_sign"
-    | "eth_signTypedData"
-    | "eth_signTypedData_v1"
-    | "eth_signTypedData_v3"
-    | "eth_signTypedData_v4"
+  method: EthSignMessageMethod
 }
 
 export interface EthSignAndSendRequest extends EthBaseSignRequest<ETH_SEND> {
-  request: EthTransactionRequest
+  request: RpcTransactionRequest
   ethChainId: EvmNetworkId
   method: "eth_sendTransaction"
 }
@@ -153,11 +151,13 @@ export type GasSettingsByPriority = GasSettingsByPriorityEip1559 | GasSettingsBy
 export type EthBaseFeeTrend = "idle" | "decreasing" | "increasing" | "toTheMoon"
 
 export type EthTransactionDetails = {
-  estimatedGas: BigNumberish
-  gasPrice: BigNumberish
-  estimatedFee: BigNumberish
-  maxFee: BigNumberish // TODO yeet !
-  baseFeePerGas?: BigNumberish | null
+  evmNetworkId: EvmNetworkId
+  estimatedGas: bigint
+  gasPrice: bigint
+  estimatedFee: bigint
+  estimatedL1DataFee: bigint | null
+  maxFee: bigint
+  baseFeePerGas?: bigint | null
   baseFeeTrend?: EthBaseFeeTrend
 }
 

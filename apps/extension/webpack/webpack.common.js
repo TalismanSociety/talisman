@@ -90,7 +90,6 @@ const config = (env) => ({
       "@talisman": path.resolve(srcDir, "@talisman/"),
       "@core": path.resolve(srcDir, "core/"),
       "@ui": path.resolve(srcDir, "ui/"),
-      //"styled-components": path.resolve(__dirname, "../../..", "node_modules", "styled-components"), // prevents duplication of styled components https://styled-components.com/docs/faqs#why-am-i-getting-a-warning-about-several-instances-of-module-on-the-page
       // https://github.com/facebook/react/issues/20235
       // fix for @polkadot/react-identicons which uses react 16
       "react/jsx-runtime": path.resolve("../../node_modules/react/jsx-runtime.js"),

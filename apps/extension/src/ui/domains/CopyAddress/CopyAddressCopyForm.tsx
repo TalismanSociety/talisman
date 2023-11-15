@@ -1,15 +1,16 @@
 import { isEthereumAddress } from "@polkadot/util-crypto"
 import { FadeIn } from "@talisman/components/FadeIn"
 import { useOpenClose } from "@talisman/hooks/useOpenClose"
-import { AlertCircleIcon, CopyIcon, InfoIcon } from "@talisman/theme/icons"
 import { shortenAddress } from "@talisman/util/shortenAddress"
-import { Address } from "@talismn/balances"
+import { Address as TAddress } from "@talismn/balances"
+import { AlertCircleIcon, CopyIcon, InfoIcon } from "@talismn/icons"
 import { classNames, encodeAnyAddress } from "@talismn/util"
 import { useAccountByAddress } from "@ui/hooks/useAccountByAddress"
 import useAccounts from "@ui/hooks/useAccounts"
 import useChain from "@ui/hooks/useChain"
 import { useContact } from "@ui/hooks/useContact"
 import { useEvmNetwork } from "@ui/hooks/useEvmNetwork"
+import { useFormattedAddress } from "@ui/hooks/useFormattedAddress"
 import useToken from "@ui/hooks/useToken"
 import { isEvmToken } from "@ui/util/isEvmToken"
 import { isSubToken } from "@ui/util/isSubToken"
@@ -20,6 +21,7 @@ import { Button, PillButton, Tooltip, TooltipContent, TooltipTrigger } from "tal
 
 import { AccountIcon } from "../Account/AccountIcon"
 import { AccountTypeIcon } from "../Account/AccountTypeIcon"
+import { Address } from "../Account/Address"
 import { ChainLogo } from "../Asset/ChainLogo"
 import { TokenLogo } from "../Asset/TokenLogo"
 import { CopyAddressLayout } from "./CopyAddressLayout"
@@ -43,14 +45,16 @@ const AddressPillButton: FC<AddressPillButtonProps> = ({ address, className, onC
     return { name: undefined, genesisHash: undefined }
   }, [account, contact])
 
+  const formattedAddress = useFormattedAddress(address ?? undefined, genesisHash)
+
   if (!address) return null
 
   return (
     <PillButton className={classNames("h-16 max-w-[240px] !px-4", className)} onClick={onClick}>
       <div className="text-body flex h-16 max-w-full flex-nowrap items-center gap-4 overflow-x-hidden text-base">
         <AccountIcon className="!text-lg" address={address} genesisHash={genesisHash} />
-        <div className="leading-base grow overflow-hidden text-ellipsis whitespace-nowrap">
-          {name ?? shortenAddress(address, 6, 6)}
+        <div className="leading-base grow truncate">
+          {name ?? <Address address={formattedAddress} startCharCount={6} endCharCount={6} />}
         </div>
         <AccountTypeIcon origin={account?.origin} className="text-primary" />
       </div>
@@ -85,7 +89,7 @@ const TokenPillButton: FC<TokenPillButtonProps> = ({ tokenId, className, onClick
 
 type NetworkPillButtonProps = {
   chainId?: string | null
-  address: Address
+  address: TAddress
   className?: string
   onClick?: () => void
 }

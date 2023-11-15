@@ -1,6 +1,7 @@
 import {
   AuthRequestApprove,
   AuthorizedSite,
+  RequestAuthorizedSiteBatchOp,
   RequestAuthorizedSiteForget,
   RequestAuthorizedSiteUpdate,
 } from "@core/domains/sitesAuthorised/types"
@@ -18,6 +19,16 @@ import { ignoreRequest } from "./requests"
 export default class SitesAuthorisationHandler extends ExtensionHandler {
   private async authorizedForget({ id, type }: RequestAuthorizedSiteForget) {
     await this.stores.sites.forgetSite(id, type)
+    return true
+  }
+
+  private async disconnectAll({ type }: RequestAuthorizedSiteBatchOp): Promise<boolean> {
+    await this.stores.sites.disconnectAllSites(type)
+    return true
+  }
+
+  private async forgetAll({ type }: RequestAuthorizedSiteBatchOp): Promise<boolean> {
+    await this.stores.sites.forgetAllSites(type)
     return true
   }
 
@@ -88,6 +99,12 @@ export default class SitesAuthorisationHandler extends ExtensionHandler {
 
       case "pri(sites.update)":
         return this.authorizedUpdate(request as RequestAuthorizedSiteUpdate)
+
+      case "pri(sites.disconnect.all)":
+        return this.disconnectAll(request as RequestAuthorizedSiteBatchOp)
+
+      case "pri(sites.forget.all)":
+        return this.forgetAll(request as RequestAuthorizedSiteBatchOp)
 
       // --------------------------------------------------------------------
       // authorised site requests handlers ----------------------------------

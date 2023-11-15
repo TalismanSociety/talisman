@@ -27,8 +27,12 @@ const getComponentFromTxDetails = (extrinsic: GenericExtrinsic | null | undefine
       return SubSignConvictionVotingUndelegate
     case "convictionVoting.vote":
       return SubSignConvictionVotingVote
+    case "xcmPallet.reserveTransferAssets":
     case "xcmPallet.limitedReserveTransferAssets":
+    case "xcmPallet.limitedTeleportAssets":
+    case "polkadotXcm.reserveTransferAssets":
     case "polkadotXcm.limitedReserveTransferAssets":
+    case "polkadotXcm.limitedTeleportAssets":
       return SubSignXcmTransferAssets
     case "xTokens.transfer":
       return SubSignXTokensTransfer

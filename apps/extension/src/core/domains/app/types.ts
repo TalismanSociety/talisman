@@ -3,10 +3,9 @@ import { ValidRequests } from "@core/libs/requests/types"
 import { Address } from "@core/types/base"
 import { Properties } from "posthog-js"
 
-export interface RequestOnboard {
+export interface RequestOnboardCreatePassword {
   pass: string
   passConfirm: string
-  mnemonic?: string
 }
 
 export interface RequestLogin {
@@ -33,7 +32,6 @@ export type FeatureVariants = Partial<{
   BUY_CRYPTO: boolean
   LINK_TX_HISTORY: boolean
   LINK_STAKING: boolean
-  I18N: boolean
   USE_ONFINALITY_API_KEY: boolean
   TEST_VARIANT: "VARIANT1" | "VARIANT2" // keep this one for string type checking
 }>
@@ -63,9 +61,7 @@ export interface RequestAllowPhishingSite {
 }
 
 export interface AppMessages {
-  "pri(app.onboard)": [RequestOnboard, OnboardedType]
-  "pri(app.onboardStatus)": [null, OnboardedType]
-  "pri(app.onboardStatus.subscribe)": [null, boolean, OnboardedType]
+  "pri(app.onboardCreatePassword)": [RequestOnboardCreatePassword, boolean]
   "pri(app.authenticate)": [RequestLogin, boolean]
   "pri(app.authStatus)": [null, LoggedinType]
   "pri(app.authStatus.subscribe)": [null, boolean, LoggedinType]

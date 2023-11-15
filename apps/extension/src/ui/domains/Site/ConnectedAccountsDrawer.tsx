@@ -1,6 +1,6 @@
 import { AppPill } from "@talisman/components/AppPill"
 import { ScrollContainer } from "@talisman/components/ScrollContainer"
-import { XIcon } from "@talisman/theme/icons"
+import { XIcon } from "@talismn/icons"
 import { useCurrentSite } from "@ui/apps/popup/context/CurrentSiteContext"
 import { FC } from "react"
 import { Drawer } from "talisman-ui"
@@ -27,7 +27,7 @@ const ConnectedAccountsDrawer: FC<Props> = ({ open, onClose }) => {
           </IconButton>
         </header>
         <ScrollContainer innerClassName="px-12">
-          <ConnectedAccounts siteId={id} />
+          <ConnectedAccounts />
         </ScrollContainer>
       </div>
     </Drawer>

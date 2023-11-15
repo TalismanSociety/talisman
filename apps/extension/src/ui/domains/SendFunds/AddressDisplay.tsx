@@ -1,13 +1,14 @@
-import { CopyIcon, ExternalLinkIcon } from "@talisman/theme/icons"
 import { convertAddress } from "@talisman/util/convertAddress"
 import { shortenAddress } from "@talisman/util/shortenAddress"
-import { Address } from "@talismn/balances"
+import { Address as TAddress } from "@talismn/balances"
 import { ChainId, EvmNetworkId } from "@talismn/chaindata-provider"
+import { CopyIcon, ExternalLinkIcon } from "@talismn/icons"
 import { classNames } from "@talismn/util"
 import { useAccountByAddress } from "@ui/hooks/useAccountByAddress"
 import useChain from "@ui/hooks/useChain"
 import { useContact } from "@ui/hooks/useContact"
 import { useEvmNetwork } from "@ui/hooks/useEvmNetwork"
+import { useOnChainId } from "@ui/hooks/useOnChainId"
 import { copyAddress } from "@ui/util/copyAddress"
 import { FC, useCallback, useMemo } from "react"
 import { useTranslation } from "react-i18next"
@@ -18,15 +19,16 @@ import { AccountIcon } from "../Account/AccountIcon"
 import { AccountTypeIcon } from "../Account/AccountTypeIcon"
 
 const useBlockExplorerUrl = (
-  address?: Address | null,
+  address?: TAddress | null,
   chainId?: ChainId | null,
-  evmNetworkId?: EvmNetworkId | null
+  evmNetworkId?: EvmNetworkId | null,
+  shouldFormatAddress = true
 ) => {
   const chain = useChain(chainId as string)
   const evmNetwork = useEvmNetwork(evmNetworkId as string)
   const resolvedAddress = useMemo(() => {
-    return chain && address ? convertAddress(address, chain.prefix) : address
-  }, [address, chain])
+    return shouldFormatAddress && chain && address ? convertAddress(address, chain.prefix) : address
+  }, [address, chain, shouldFormatAddress])
 
   return useMemo(() => {
     if (resolvedAddress && evmNetwork?.explorerUrl)
@@ -37,9 +39,44 @@ const useBlockExplorerUrl = (
   }, [chain?.subscanUrl, evmNetwork?.explorerUrl, resolvedAddress])
 }
 
+const AddressTooltip: FC<{
+  address: string
+  resolvedAddress: string
+  onChainId?: string
+  chainName?: string | null
+}> = ({ address, resolvedAddress, onChainId, chainName }) => {
+  const { t } = useTranslation()
+
+  return (
+    <div className="flex flex-col gap-2">
+      {typeof onChainId === "string" && (
+        <div className="flex gap-1">
+          <div>{t("Domain:")}</div>
+          <div>{onChainId}</div>
+        </div>
+      )}
+
+      {address === resolvedAddress && <>{resolvedAddress}</>}
+
+      {address !== resolvedAddress && (
+        <div className="flex flex-col gap-1">
+          <div>{t("Original address:")}</div>
+          <div>{address}</div>
+        </div>
+      )}
+      {address !== resolvedAddress && (
+        <div className="flex flex-col gap-1">
+          <div>{t("{{chainName}} format:", { chainName: chainName || "Generic" })}</div>
+          <div>{resolvedAddress}</div>
+        </div>
+      )}
+    </div>
+  )
+}
+
 type AddressDisplayProps = {
   // allow undefined but force developer to fill the property so he doesn't forget
-  address: Address | null | undefined
+  address: TAddress | null | undefined
   chainId: ChainId | null | undefined
   evmNetworkId: EvmNetworkId | null | undefined
   className?: string
@@ -51,36 +88,42 @@ export const AddressDisplay: FC<AddressDisplayProps> = ({
   evmNetworkId,
   className,
 }) => {
-  const { t } = useTranslation()
   const account = useAccountByAddress(address)
   const contact = useContact(address)
   const chain = useChain(chainId as string)
-  const blockExplorerUrl = useBlockExplorerUrl(address, chainId, evmNetworkId)
+  const blockExplorerUrl = useBlockExplorerUrl(
+    address,
+    chainId,
+    evmNetworkId,
+    !!account || !!contact
+  )
 
   const resolvedAddress = useMemo(() => {
     return chain && address ? convertAddress(address, chain.prefix) : address
   }, [address, chain])
 
+  const [onChainId] = useOnChainId(resolvedAddress ?? undefined)
+
   const text = useMemo(
-    () => account?.name ?? contact?.name ?? shortenAddress(resolvedAddress ?? "", 6, 6),
-    [account?.name, contact?.name, resolvedAddress]
+    () => account?.name ?? contact?.name ?? (address ? shortenAddress(address, 6, 6) : null),
+    [account?.name, address, contact?.name]
   )
 
   const handleCopyAddress = useCallback(() => {
-    copyAddress(resolvedAddress as string)
-  }, [resolvedAddress])
+    copyAddress((!!account || !!contact ? resolvedAddress : address) as string)
+  }, [account, address, contact, resolvedAddress])
 
-  if (!resolvedAddress || !text) return null
+  if (!address || !resolvedAddress || !text) return null
 
   return (
     <Tooltip>
       <TooltipContent>
-        <div>{t("Original address:")}</div>
-        <div style={{ marginTop: 2 }}>{address}</div>
-        <div style={{ marginTop: 4 }}>
-          {t("{{chainName}} format:", { chainName: chain?.name || "Generic" })}
-        </div>
-        <div style={{ marginTop: 2 }}>{resolvedAddress}</div>
+        <AddressTooltip
+          address={account ? resolvedAddress : address} // don't show both formats for talisman accounts
+          resolvedAddress={resolvedAddress}
+          onChainId={onChainId ?? undefined}
+          chainName={chain?.name}
+        />
       </TooltipContent>
       <TooltipTrigger
         className={classNames(
@@ -93,9 +136,7 @@ export const AddressDisplay: FC<AddressDisplayProps> = ({
           address={resolvedAddress}
           genesisHash={account?.genesisHash}
         />
-        <div className="leading-base grow overflow-hidden text-ellipsis whitespace-nowrap">
-          {text}
-        </div>
+        <div className="leading-base grow truncate">{text}</div>
         <AccountTypeIcon origin={account?.origin} className="text-primary" />
         {blockExplorerUrl ? (
           <a href={blockExplorerUrl} target="_blank" className="text-grey-300 hover:text-white">

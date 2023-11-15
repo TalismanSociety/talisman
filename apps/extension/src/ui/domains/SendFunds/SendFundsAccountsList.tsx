@@ -1,20 +1,22 @@
 import { AccountType } from "@core/domains/accounts/types"
-import { CheckCircleIcon } from "@talisman/theme/icons"
-import { shortenAddress } from "@talisman/util/shortenAddress"
 import { Balance } from "@talismn/balances"
 import { Token } from "@talismn/chaindata-provider"
+import { CheckCircleIcon } from "@talismn/icons"
 import { classNames } from "@talismn/util"
 import useBalances from "@ui/hooks/useBalances"
+import { useSelectedCurrency } from "@ui/hooks/useCurrency"
+import { useFormattedAddress } from "@ui/hooks/useFormattedAddress"
 import useToken from "@ui/hooks/useToken"
 import { FC, ReactNode, useCallback, useMemo } from "react"
 import { useTranslation } from "react-i18next"
 
 import { AccountIcon } from "../Account/AccountIcon"
 import { AccountTypeIcon } from "../Account/AccountTypeIcon"
+import { Address } from "../Account/Address"
 import Fiat from "../Asset/Fiat"
 import Tokens from "../Asset/Tokens"
 
-type SendFundsAccount = {
+export type SendFundsAccount = {
   address: string
   origin?: AccountType
   name?: string
@@ -24,14 +26,18 @@ type SendFundsAccount = {
 
 type AccountRowProps = {
   account: SendFundsAccount
+  genesisHash?: string | null
   selected: boolean
   showBalances?: boolean
   token?: Token
   onClick?: () => void
   disabled?: boolean
+  noFormat?: boolean
 }
 
 const AccountTokenBalance = ({ token, balance }: { token?: Token; balance?: Balance }) => {
+  const currency = useSelectedCurrency()
+
   if (!balance || !token) return null
 
   return (
@@ -51,7 +57,7 @@ const AccountTokenBalance = ({ token, balance }: { token?: Token; balance?: Bala
         />
       </div>
       <div className="text-body-secondary text-xs">
-        <Fiat amount={balance.transferable.fiat("usd")} currency="usd" isBalance noCountUp />
+        <Fiat amount={balance.transferable.fiat(currency)} isBalance noCountUp />
       </div>
     </div>
   )
@@ -59,12 +65,24 @@ const AccountTokenBalance = ({ token, balance }: { token?: Token; balance?: Bala
 
 const AccountRow: FC<AccountRowProps> = ({
   account,
+  genesisHash,
+  noFormat,
   selected,
   onClick,
   showBalances,
   token,
   disabled,
 }) => {
+  const formattedAddress = useFormattedAddress(
+    account?.address,
+    genesisHash ?? account?.genesisHash
+  )
+
+  const displayAddress = useMemo(
+    () => (noFormat ? account?.address : formattedAddress),
+    [noFormat, account?.address, formattedAddress]
+  )
+
   return (
     <button
       type="button"
@@ -83,10 +101,17 @@ const AccountRow: FC<AccountRowProps> = ({
         className="!text-lg"
       />
       <div className="flex grow items-center overflow-hidden">
-        <div className="overflow-hidden text-ellipsis whitespace-nowrap">
-          {account.name ?? shortenAddress(account.address, 6, 6)}
+        <div className="flex flex-col space-y-2">
+          <div className="flex items-center gap-2">
+            <div className="truncate">
+              {account.name ?? (
+                <Address address={displayAddress} startCharCount={6} endCharCount={6} noTooltip />
+              )}
+            </div>
+            <AccountTypeIcon origin={account.origin} className="text-primary" />
+          </div>
+          <Address className="text-body-secondary text-xs" address={displayAddress} />
         </div>
-        <AccountTypeIcon origin={account.origin} className="text-primary ml-3 inline" />
         {selected && <CheckCircleIcon className="ml-3 inline shrink-0" />}
       </div>
       {showBalances && <AccountTokenBalance token={token} balance={account.balance} />}
@@ -96,6 +121,8 @@ const AccountRow: FC<AccountRowProps> = ({
 
 type SendFundsAccountsListProps = {
   accounts: SendFundsAccount[]
+  genesisHash?: string | null
+  noFormat?: boolean
   selected?: string | null
   onSelect?: (address: string) => void
   header?: ReactNode
@@ -108,6 +135,8 @@ type SendFundsAccountsListProps = {
 export const SendFundsAccountsList: FC<SendFundsAccountsListProps> = ({
   selected,
   accounts,
+  noFormat,
+  genesisHash,
   onSelect,
   header,
   allowZeroBalance,
@@ -160,6 +189,8 @@ export const SendFundsAccountsList: FC<SendFundsAccountsListProps> = ({
           selected={account.address === selected}
           key={account.address}
           account={account}
+          genesisHash={genesisHash}
+          noFormat={noFormat}
           onClick={handleAccountClick(account.address)}
           showBalances={showBalances}
           token={token}

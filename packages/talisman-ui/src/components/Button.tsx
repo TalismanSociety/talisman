@@ -1,7 +1,6 @@
+import { LoaderIcon } from "@talismn/icons"
 import { classNames } from "@talismn/util"
 import { FC, SVGProps, useMemo } from "react"
-
-import { IconLoader } from "../icons"
 
 export type ButtonProps = React.DetailedHTMLProps<
   React.ButtonHTMLAttributes<HTMLButtonElement>,
@@ -55,7 +54,7 @@ export const Button: FC<ButtonProps> = ({
       type="button"
       disabled={disabled || processing}
       className={classNames(
-        "bg relative inline-flex  items-center justify-center rounded outline-none transition-colors ",
+        "bg relative inline-flex  items-center justify-center rounded outline-none",
         small ? "h-20 px-8 text-sm" : "text-md h-28 px-12",
         fullWidth ? "w-full" : "",
         colors,
@@ -83,10 +82,10 @@ export const Button: FC<ButtonProps> = ({
       {!disabled && processing && (
         <div
           className={classNames(
-            "absolute top-0 left-0 flex h-full w-full flex-col items-center justify-center"
+            "absolute left-0 top-0 flex h-full w-full flex-col items-center justify-center"
           )}
         >
-          <IconLoader className="animate-spin-slow text-lg" />
+          <LoaderIcon className="animate-spin-slow text-lg" />
         </div>
       )}
     </button>

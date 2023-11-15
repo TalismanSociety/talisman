@@ -71,6 +71,8 @@ export declare type RequestAuthorizedSiteUpdate = {
 
 export declare type RequestAuthorizedSiteForget = { id: string; type: ProviderType }
 
+export declare type RequestAuthorizedSiteBatchOp = { type: ProviderType }
+
 // authorized sites message signatures
 export interface AuthorisedSiteMessages {
   // authorization requests message signatures
@@ -85,6 +87,8 @@ export interface AuthorisedSiteMessages {
   "pri(sites.byid.subscribe)": [RequestIdOnly, boolean, AuthorizedSite]
   "pri(sites.forget)": [RequestAuthorizedSiteForget, boolean]
   "pri(sites.update)": [RequestAuthorizedSiteUpdate, boolean]
+  "pri(sites.disconnect.all)": [RequestAuthorizedSiteBatchOp, boolean]
+  "pri(sites.forget.all)": [RequestAuthorizedSiteBatchOp, boolean]
 
   // public messages
   "pub(authorize.tab)": [RequestAuthorizeTab, boolean]

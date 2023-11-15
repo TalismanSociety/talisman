@@ -49,6 +49,7 @@ export type IToken = {
   decimals: number
   logo: string
   coingeckoId?: string
+  dcentName?: string
   // Example use-case:
   // An account on moonbeam has tokens via both the substrate and evm APIs
   // We want to show both (i.e. GLMR on Moonbeam Parachain & GLMR on Moonbeam EVM Blockchain) but

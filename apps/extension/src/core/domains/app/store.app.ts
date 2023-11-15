@@ -1,10 +1,10 @@
 import { DEBUG, IS_FIREFOX } from "@core/constants"
-import { SubscribableStorageProvider } from "@core/libs/Store"
+import { StorageProvider } from "@core/libs/Store"
 import { assert } from "@polkadot/util"
 import { gt } from "semver"
 import Browser from "webextension-polyfill"
 
-import { migratePasswordV2ToV1 } from "./migrations"
+import { migratePasswordV2ToV1 } from "../../libs/migrations/legacyMigrations"
 
 type ONBOARDED_TRUE = "TRUE"
 type ONBOARDED_FALSE = "FALSE"
@@ -30,6 +30,7 @@ export type AppStoreData = {
   showDotNomPoolStakingBanner: boolean
   needsSpiritKeyUpdate: boolean
   popupSizeDelta: [number, number]
+  vaultVerifierCertificateMnemonicId?: string | null
 }
 
 const ANALYTICS_VERSION = "1.5.0"
@@ -41,17 +42,14 @@ export const DEFAULT_APP_STATE: AppStoreData = {
   hasBraveWarningBeenShown: false,
   // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
   analyticsRequestShown: gt(process.env.VERSION!, ANALYTICS_VERSION), // assume user has onboarded with analytics if current version is newer
-  hasFunds: true, // false after onboarding with a newly created account
+  hasFunds: false,
   hasSpiritKey: false,
   needsSpiritKeyUpdate: false,
   showDotNomPoolStakingBanner: true,
   popupSizeDelta: [0, IS_FIREFOX ? 30 : 0],
 }
 
-export class AppStore extends SubscribableStorageProvider<
-  AppStoreData,
-  "pri(app.onboardStatus.subscribe)"
-> {
+export class AppStore extends StorageProvider<AppStoreData> {
   // keeps track of 'onboarding requests' per session so that each dapp can only cause the onboarding tab to focus once
   onboardingRequestsByUrl: { [url: string]: boolean } = {}
 
@@ -88,8 +86,8 @@ export class AppStore extends SubscribableStorageProvider<
     return (await this.get("onboarded")) === TRUE
   }
 
-  async setOnboarded(hasFunds: boolean) {
-    return (await this.set({ onboarded: TRUE, hasFunds })).onboarded
+  async setOnboarded() {
+    return (await this.set({ onboarded: TRUE })).onboarded
   }
 
   async ensureOnboarded() {

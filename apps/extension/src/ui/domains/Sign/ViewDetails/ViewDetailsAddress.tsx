@@ -1,4 +1,4 @@
-import { CopyIcon, ExternalLinkIcon } from "@talisman/theme/icons"
+import { CopyIcon, ExternalLinkIcon } from "@talismn/icons"
 import { encodeAnyAddress } from "@talismn/util"
 import { AccountIcon } from "@ui/domains/Account/AccountIcon"
 import { Address } from "@ui/domains/Account/Address"
@@ -30,7 +30,7 @@ export const ViewDetailsAddress: FC<
     else copyAddress(formatted)
   }, [blockExplorerUrl, formatted])
 
-  if (!formatted) return <>"N/A"</>
+  if (!formatted) return null
 
   return (
     <ViewDetailsField {...fieldProps}>

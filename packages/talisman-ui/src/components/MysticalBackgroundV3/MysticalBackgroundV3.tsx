@@ -1,140 +1,111 @@
 import { classNames } from "@talismn/util"
-import { CSSProperties, FC, memo, useEffect, useMemo, useRef, useState } from "react"
-import { useMeasure, useMouse } from "react-use"
+import { CSSProperties, memo, useLayoutEffect, useMemo, useRef } from "react"
+import { useMeasure } from "react-use"
 
 import { MYSTICAL_PHYSICS_V3, MysticalPhysicsV3 } from "./MysticalPhysicsV3"
-import { ParentSize, useCelestialArtifact } from "./useCelestialArtifact"
-import { useWindowHovered } from "./useWindowHovered"
+import { CelestialArtifactProps, ParentSize, useCelestialArtifact } from "./useCelestialArtifact"
 
-const CelestialArtifact = memo(
-  ({
-    parentSize,
-    config,
-    x,
-    y,
-    color,
-  }: {
-    parentSize: ParentSize
-    config: MysticalPhysicsV3
+export const MysticalBackgroundV3 = ({
+  className,
+  config,
+}: {
+  config?: Partial<MysticalPhysicsV3>
+  className?: string
+}) => {
+  const [refSize, size] = useMeasure<HTMLDivElement>()
+  const mergedConfig = useMemo(() => ({ ...MYSTICAL_PHYSICS_V3, ...(config ?? {}) }), [config])
 
-    // force target position if this artifact is an acolyte
-    x?: number
-    y?: number
+  const style = useMemo<CSSProperties>(
+    () => ({
+      filter: mergedConfig.blur > 0 ? `blur(${mergedConfig.blur}px)` : undefined,
+      userSelect: "none",
+    }),
+    [mergedConfig.blur]
+  )
 
-    // force color
-    color?: string
-  }) => {
-    const [id] = useState(() => crypto.randomUUID())
-    const artifact = useCelestialArtifact(config, parentSize, x, y, color)
+  return (
+    <div ref={refSize} className={classNames("overflow-hidden", className)} style={style}>
+      <CelestialArtifacts config={mergedConfig} size={size} />
+    </div>
+  )
+}
 
-    const refInitialized = useRef(false)
-
-    useEffect(() => {
-      refInitialized.current = false
-    }, [])
-
-    const [style1, style2] = useMemo<[CSSProperties, CSSProperties]>(
-      () => [
-        {
-          stopColor: artifact.color,
-          stopOpacity: 0.9,
-          transitionProperty: "stop-color",
-          transitionDuration: `${artifact.duration}ms`,
-          transitionDelay: "100ms", // prevents flickering on FF
-        },
-        {
-          stopColor: artifact.color,
-          stopOpacity: 0,
-          transitionProperty: "stop-color",
-          transitionDuration: `${artifact.duration}ms`,
-          transitionDelay: "100ms",
-        },
-      ],
-      [artifact.color, artifact.duration]
-    )
-
-    return (
-      <g>
-        <defs>
-          <radialGradient id={id} cx="50%" cy="50%" r="50%" fx="50%" fy="50%">
-            <stop offset="0%" style={style1} />
-            <stop offset="90%" style={style2} />
-          </radialGradient>
-        </defs>
-        <ellipse {...artifact.ellipsis} fill={`url(#${id})`}></ellipse>
-      </g>
-    )
-  }
-)
-
-CelestialArtifact.displayName = "CelestialArtifact"
-
-const CelestialArtifacts: FC<{
-  size: ParentSize
-  config: MysticalPhysicsV3
-  acolyte?: { x: number; y: number }
-}> = ({ size, config, acolyte }) => {
-  const artifactKeys = useMemo(() => Array.from(Array(config.artifacts).keys()), [config.artifacts])
+const CelestialArtifacts = ({ size, config }: { size: ParentSize; config: MysticalPhysicsV3 }) => {
+  const artifactKeys = useMemo(() => [...Array(config.artifacts).keys()], [config.artifacts])
   if (!size.width || !size.height) return null
 
   return (
     <>
-      {artifactKeys.map((i) => (
+      {artifactKeys.map((key, index) => (
         <CelestialArtifact
-          key={i}
-          parentSize={size}
+          key={key}
           config={config}
-          color={config.colors?.[i % config.colors.length]}
+          parentSize={size}
+          artifactIndex={index}
+          color={config.colors?.[index % config.colors.length]}
         />
       ))}
-      {config.withAcolyte && (
-        <CelestialArtifact
-          parentSize={size}
-          config={config}
-          {...acolyte}
-          color={config.colors?.[artifactKeys.length % config.colors.length]}
-        />
-      )}
     </>
   )
 }
 
-export const MysticalBackgroundV3 = ({
-  className,
-  config = MYSTICAL_PHYSICS_V3,
-}: {
-  config?: MysticalPhysicsV3
-  className?: string
-}) => {
-  const [refSize, size] = useMeasure<HTMLDivElement>()
-  const refMouseLocation = useRef<SVGSVGElement>(null)
-  const { elX, elY, elW, elH } = useMouse(refMouseLocation)
+const CelestialArtifact = memo((celestialProps: CelestialArtifactProps) => {
+  const artifact = useCelestialArtifact(celestialProps)
 
-  // useMouse doesn't detect if cursor goes out of the screen, so we also need to check for window hovering
-  const isWindowHovered = useWindowHovered()
+  // initialize prevBackgroundRef with initial value of background
+  const prevBackgroundRef = useRef<CSSProperties["background"]>(artifact.background)
 
-  // props for the artifact that follows mouse cursor
-  // changes a lot when hovering, do not memoize
-  const acolyte =
-    isWindowHovered && !!elX && !!elY && elX > 0 && elX < elW && elY > 0 && elY < elH
-      ? { x: elX, y: elY }
-      : undefined
+  // this div will fade out (opacity 100 -> 0) with bg set to `prevBackgroundRef.current`
+  const transitionOutRef = useRef<HTMLDivElement>(null)
 
-  const viewBox = useMemo(() => `0 0 ${size.width} ${size.height}`, [size.width, size.height])
-  const style = useMemo(() => ({ transform: `blur(${config.blur}ptx)` }), [config.blur])
+  // this div will fade in (opacity 0 -> 100) with bg set to `artifact.background`
+  const transitionInRef = useRef<HTMLDivElement>(null)
+
+  useLayoutEffect(() => {
+    if (!transitionOutRef.current || !transitionInRef.current) return
+
+    // update prevBackgroundRef for next transition
+    prevBackgroundRef.current = artifact.background
+
+    // get references to color-out and color-in (via opacity) artifacts
+    const fromBg = transitionOutRef.current
+    const toBg = transitionInRef.current
+
+    // add opacity transition trigger
+    setTimeout(() => {
+      fromBg.classList.add("trigger-transition")
+      toBg.classList.add("trigger-transition")
+    }, 30)
+
+    return () => {
+      // remove trigger in preparation for next transition
+      fromBg.classList.remove("trigger-transition")
+      toBg.classList.remove("trigger-transition")
+    }
+  }, [artifact.background])
 
   return (
-    <div ref={refSize} className={className}>
-      <svg
-        ref={refMouseLocation}
-        width={size.width}
-        height={size.height}
-        viewBox={viewBox}
-        className={classNames(className)}
-        style={style}
-      >
-        <CelestialArtifacts config={config} size={size} acolyte={acolyte} />
-      </svg>
-    </div>
+    // To achieve a smooth color transition without killing browser performance, we have to render
+    // two artifacts for each artifact - one in the previous color and one in the new color.
+    //
+    // Then instead of using a css transition on the artifact color (bad for performance), we use a css
+    // transition on the opacity to fade between the two artifacts.
+    //
+    // Also, we need to make sure that `transition-property` only includes `opacity` when we're actually running our transition.
+    // We don't want it to be there when we reset the `opacity` back to the initial value.
+    // (100 for transitionOutRef, 0 for transitionInRef)
+    <>
+      <div
+        ref={transitionOutRef}
+        className="opacity-100 transition-[transform] [&.trigger-transition]:opacity-0 [&.trigger-transition]:transition-[transform,opacity]"
+        style={useMemo(() => ({ ...artifact, background: prevBackgroundRef.current }), [artifact])}
+      />
+      <div
+        ref={transitionInRef}
+        className="opacity-0 transition-[transform] [&.trigger-transition]:opacity-100 [&.trigger-transition]:transition-[transform,opacity]"
+        style={artifact}
+      />
+    </>
   )
-}
+})
+CelestialArtifact.displayName = "CelestialArtifact"

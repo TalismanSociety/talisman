@@ -1,6 +1,7 @@
 {
   "name": "talisman",
   "version": "0.0.0",
+  "license": "GPL-3.0-or-later",
   "private": true,
   "workspaces": [
     "apps/*",
@@ -34,8 +35,8 @@
     "@commitlint/config-conventional": "^17.0.0",
     "@talismn/eslint-config": "workspace:*",
     "@testing-library/react": "^14.0.0",
-    "@typescript-eslint/eslint-plugin": "^5.33.0",
-    "@typescript-eslint/parser": "^5.33.0",
+    "@typescript-eslint/eslint-plugin": "^6.9.0",
+    "@typescript-eslint/parser": "^6.9.0",
     "concurrently": "^7.6.0",
     "husky": "^8.0.3",
     "import-sort-style-module": "^6.0.0",

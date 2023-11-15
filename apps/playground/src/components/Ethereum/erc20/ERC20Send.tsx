@@ -1,16 +1,15 @@
-import { ethers } from "ethers"
-import { parseUnits } from "ethers/lib/utils"
 import { useCallback } from "react"
 import { useForm } from "react-hook-form"
 import { useLocalStorage } from "react-use"
 import { Button } from "talisman-ui"
+import { parseUnits } from "viem"
 import {
   erc20ABI,
   useAccount,
   useContractRead,
   useContractWrite,
   usePrepareContractWrite,
-  useSendTransaction,
+  useWalletClient,
 } from "wagmi"
 
 import { TransactionReceipt } from "../shared/TransactionReceipt"
@@ -24,8 +23,8 @@ const DEFAULT_VALUE: FormData = {
 }
 
 export const ERC20Send = () => {
-  const { isConnected, address, connector } = useAccount()
-
+  const { isConnected, address } = useAccount()
+  const { data: walletClient } = useWalletClient()
   const [contractAddress] = useErc20Contract()
   const [defaultValues, setDefaultValues] = useLocalStorage("pg:send-erc20", DEFAULT_VALUE)
 
@@ -40,7 +39,7 @@ export const ERC20Send = () => {
 
   const formData = watch()
 
-  const { data: decimals } = useContractRead({
+  const { data: decimals = 18 } = useContractRead({
     address: contractAddress as `0x${string}`,
     abi: erc20ABI,
     functionName: "decimals",
@@ -64,55 +63,32 @@ export const ERC20Send = () => {
     args: [formData.recipient as `0x${string}`, parseUnits(formData.amount, decimals)],
   })
 
-  const { isLoading: writeIsLoading } = useContractWrite({
-    address: contractAddress as `0x${string}`,
-    abi: erc20ABI,
-    functionName: "transfer",
-    mode: "recklesslyUnprepared",
-    args: [formData.recipient as `0x${string}`, parseUnits(formData.amount, decimals)],
-  })
-
   const {
-    sendTransaction,
+    isLoading: writeIsLoading,
+    write: send,
+    error: sendError,
     isLoading: sendIsLoading,
     isSuccess: sendIsSuccess,
     isError: sendIsError,
     data: senddata,
-    error: sendError,
-  } = useSendTransaction(config)
+  } = useContractWrite(config)
 
   const onSubmit = (data: FormData) => {
     setDefaultValues(data)
-    sendTransaction?.()
+    send?.()
   }
 
   // allows testing an impossible contract interaction (transfer more than you have to test)
   const handleSendUnchecked = useCallback(async () => {
-    if (!connector) return
+    if (!walletClient) return
 
-    const ci = new ethers.utils.Interface(erc20ABI)
-
-    const funcFragment = ci.fragments.find(
-      (f) => f.type === "function" && f.name === "transfer"
-    ) as ethers.utils.FunctionFragment
-
-    const data = ci.encodeFunctionData(funcFragment, [
-      formData.recipient,
-      parseUnits(formData.amount, decimals),
-    ])
-
-    const provider = await connector.getProvider()
-    await provider.request({
-      method: "eth_sendTransaction",
-      params: [
-        {
-          from: address,
-          to: contractAddress,
-          data,
-        },
-      ],
+    walletClient.writeContract({
+      address: contractAddress as `0x${string}`,
+      abi: erc20ABI,
+      functionName: "transfer",
+      args: [formData.recipient as `0x${string}`, parseUnits(formData.amount, decimals)],
     })
-  }, [address, connector, contractAddress, decimals, formData.amount, formData.recipient])
+  }, [contractAddress, decimals, formData.amount, formData.recipient, walletClient])
 
   if (!isConnected) return null
 

@@ -17,7 +17,6 @@
     "@metamask/eth-sig-util": "5.1.0",
     "@talismn/wagmi-connector": "^0.2.0",
     "buffer": "^6.0.3",
-    "ethers": "^5.7.2",
     "react": "18.2.0",
     "react-dom": "18.2.0",
     "react-error-boundary": "^4.0.4",
@@ -25,7 +24,8 @@
     "react-router-dom": "6.14.1",
     "react-use": "^17.4.0",
     "talisman-ui": "workspace:*",
-    "wagmi": "^0.12.12"
+    "viem": "^1.18.9",
+    "wagmi": "^1.4.5"
   },
   "devDependencies": {
     "@openzeppelin/contracts": "^4.9.2",
@@ -39,7 +39,7 @@
     "hardhat": "^2.16.1",
     "postcss": "^8.4.20",
     "tailwindcss": "^3.3.2",
-    "typescript": "4.9.4",
+    "typescript": "5.2.2",
     "vite": "^4.4.3",
     "vite-plugin-svgr": "^2.2.1"
   },

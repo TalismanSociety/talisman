@@ -1,6 +1,5 @@
 import { WithTooltip } from "@talisman/components/Tooltip"
-import { InfoIcon } from "@talisman/theme/icons"
-import { ethers } from "ethers"
+import { InfoIcon } from "@talismn/icons"
 import { useTranslation } from "react-i18next"
 
 import { TokensAndFiat } from "../Asset/TokensAndFiat"
@@ -25,7 +24,7 @@ export const SendFundsFeeTooltip = () => {
               <div>{t("Max. fee:")}</div>
               <div className="text-right">
                 <TokensAndFiat
-                  planck={ethers.BigNumber.from(evmTransaction.txDetails.maxFee).toBigInt()}
+                  planck={evmTransaction.txDetails.maxFee}
                   tokenId={feeToken.id}
                   noCountUp
                 />

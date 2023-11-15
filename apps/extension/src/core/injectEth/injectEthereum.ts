@@ -2,6 +2,7 @@ import { log } from "@core/log"
 import { logProxy } from "@core/log/logProxy"
 import { SendRequest } from "@core/types"
 
+import { announceProvider } from "./eip6963"
 import { getInjectableEvmProvider } from "./getInjectableEvmProvider"
 
 type TalismanWindow = Window &
@@ -27,6 +28,9 @@ export const injectEthereum = (sendRequest: SendRequest) => {
 
   log.debug("Injecting talismanEth")
   windowInject.talismanEth = talismanEth
+
+  // eip-6963 wallet announcement
+  announceProvider(talismanEth)
 
   // also inject on window.ethereum if it is not defined
   // this allows users to just disable metamask if they want to use Talisman instead

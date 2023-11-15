@@ -1,11 +1,11 @@
 import {
   CheckCircleIcon,
-  RefreshIcon,
+  RefreshCwIcon,
   VoteIcon,
   XCircleIcon,
   ZapIcon,
   ZapOffIcon,
-} from "@talisman/theme/icons"
+} from "@talismn/icons"
 import { classNames } from "@talismn/util"
 import { FC, useMemo } from "react"
 
@@ -24,7 +24,7 @@ const getIcon = (type: SignIconType) => {
     case "vote":
       return VoteIcon
     case "transfer":
-      return RefreshIcon
+      return RefreshCwIcon
   }
 }
 

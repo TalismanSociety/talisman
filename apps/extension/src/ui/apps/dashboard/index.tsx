@@ -12,17 +12,19 @@ import { SelectedAccountProvider } from "@ui/domains/Portfolio/SelectedAccountCo
 import { useIsLoggedIn } from "@ui/hooks/useIsLoggedIn"
 import { useIsOnboarded } from "@ui/hooks/useIsOnboarded"
 import { useModalSubscription } from "@ui/hooks/useModalSubscription"
-import { FC, PropsWithChildren, Suspense, lazy, useEffect, useRef } from "react"
+import { FC, PropsWithChildren, Suspense, useEffect, useRef } from "react"
 import { useTranslation } from "react-i18next"
 import { Navigate, Route, Routes, useMatch } from "react-router-dom"
 
 import { DashboardLayout } from "./layout/DashboardLayout"
-import { AccounAddDerivedPage } from "./routes/AccountAdd/AccountAddDerivedPage"
-import { AccountAddQrWizard } from "./routes/AccountAdd/AccountAddQrWizard"
-import { AccountAddSecretWizard } from "./routes/AccountAdd/AccountAddSecretWizard"
-import { AccountAddTypePickerPage } from "./routes/AccountAdd/AccountAddTypePickerPage"
+import { AccountAddMenu } from "./routes/AccountAdd"
+import { AccountAddDcentDashboardWizard } from "./routes/AccountAdd/AccountAddDcentWizard"
+import { AccountAddDerivedPage } from "./routes/AccountAdd/AccountAddDerivedPage"
+import { AccountAddJsonPage } from "./routes/AccountAdd/AccountAddJsonPage"
+import { AccountAddLedgerDashboardWizard } from "./routes/AccountAdd/AccountAddLedgerWizard"
+import { AccountAddQrDashboardWizard } from "./routes/AccountAdd/AccountAddQrWizard"
+import { AccountAddSecretDashboardWizard } from "./routes/AccountAdd/AccountAddSecretWizard"
 import { AccountAddWatchedPage } from "./routes/AccountAdd/AccountAddWatchedPage"
-import { AccountAddJsonPage } from "./routes/AccountAddJson"
 import { NetworkPage } from "./routes/Networks/NetworkPage"
 import { NetworksPage } from "./routes/Networks/NetworksPage"
 import { PhishingPage } from "./routes/PhishingPage"
@@ -36,17 +38,17 @@ import { AddressBookPage } from "./routes/Settings/AddressBookPage"
 import { AnalyticsOptInPage } from "./routes/Settings/AnalyticsOptInPage"
 import { AutoLockTimerPage } from "./routes/Settings/AutoLockTimerPage"
 import { ChangePasswordPage } from "./routes/Settings/ChangePasswordPage"
-import { LanguageSettingsPage } from "./routes/Settings/LanguageSettingsPage"
-import { OptionsPage } from "./routes/Settings/OptionsPage"
-import { SecurityPrivacySettingsPage } from "./routes/Settings/SecurityPrivacySettingsPage"
-import { SettingsPage } from "./routes/Settings/SettingsPage"
-import { TrustedSitesPage } from "./routes/Settings/TrustedSitesPage"
+import { ConnectedSitesPage } from "./routes/Settings/ConnectedSitesPage"
+import CurrencySettingsPage from "./routes/Settings/CurrencySettingsPage"
+import { GeneralPage } from "./routes/Settings/GeneralPage"
+import { LanguagePage } from "./routes/Settings/LanguagePage"
+import { MnemonicsPage } from "./routes/Settings/Mnemonics/MnemonicsPage"
+import { NetworksTokensPage } from "./routes/Settings/NetworksTokensPage"
+import { QrMetadataPage } from "./routes/Settings/QrMetadataPage"
+import { SecurityPrivacyPage } from "./routes/Settings/SecurityPrivacyPage"
 import { AddCustomTokenPage } from "./routes/Tokens/AddCustomTokenPage"
 import { TokenPage } from "./routes/Tokens/TokenPage"
 import { TokensPage } from "./routes/Tokens/TokensPage"
-
-// lazy load this one to prevent polkadot/hw-ledger to be loaded (slow)
-const AccountAddLedgerWizard = lazy(() => import("./routes/AccountAdd/AccountAddLedgerWizard"))
 
 const DashboardInner = () => {
   const isLoggedIn = useIsLoggedIn()
@@ -91,29 +93,35 @@ const DashboardInner = () => {
         <Route path="portfolio/*" element={<PortfolioRoutes />} />
         <Route path="accounts">
           <Route path="add">
-            <Route path="" element={<AccountAddTypePickerPage />} />
-            <Route path="derived" element={<AccounAddDerivedPage />} />
+            <Route index element={<AccountAddMenu />} />
+            <Route path="derived" element={<AccountAddDerivedPage />} />
             <Route path="json" element={<AccountAddJsonPage />} />
-            <Route path="secret/*" element={<AccountAddSecretWizard />} />
-            <Route path="ledger/*" element={<AccountAddLedgerWizard />} />
-            <Route path="qr/*" element={<AccountAddQrWizard />} />
+            <Route path="secret/*" element={<AccountAddSecretDashboardWizard />} />
+            <Route path="ledger/*" element={<AccountAddLedgerDashboardWizard />} />
+            <Route path="qr/*" element={<AccountAddQrDashboardWizard />} />
             <Route path="watched" element={<AccountAddWatchedPage />} />
-            <Route path="*" element={<Navigate to="" replace />} />
+            <Route path="dcent/*" element={<AccountAddDcentDashboardWizard />} />
+            <Route path="*" element={<Navigate to="/accounts/add" replace />} />
           </Route>
           <Route path="" element={<Navigate to="/portfolio" />} />
         </Route>
         <Route path="settings">
-          <Route path="" element={<SettingsPage />} />
-          <Route path="connected-sites" element={<TrustedSitesPage />} />
+          <Route path="" element={<Navigate to="/settings/general" replace />} />
+          <Route path="general" element={<GeneralPage />} />
+          <Route path="language" element={<LanguagePage />} />
+          <Route path="currency" element={<CurrencySettingsPage />} />
           <Route path="address-book" element={<AddressBookPage />} />
-          <Route path="options" element={<OptionsPage />} />
+          <Route path="connected-sites" element={<ConnectedSitesPage />} />
+          <Route path="mnemonics" element={<MnemonicsPage />} />
           <Route path="accounts" element={<AccountsPage />} />
-          <Route path="language" element={<LanguageSettingsPage />} />
-          <Route path="security-privacy-settings" element={<SecurityPrivacySettingsPage />} />
+          <Route path="security-privacy-settings" element={<SecurityPrivacyPage />} />
           <Route path="change-password" element={<ChangePasswordPage />} />
           <Route path="autolock" element={<AutoLockTimerPage />} />
+          <Route path="networks-tokens" element={<NetworksTokensPage />} />
+          <Route path="qr-metadata" element={<QrMetadataPage />} />
           <Route path="about" element={<AboutPage />} />
           <Route path="analytics" element={<AnalyticsOptInPage />} />
+          <Route path="*" element={<Navigate to="" replace />} />
         </Route>
         <Route path="tokens">
           <Route path="" element={<TokensPage />} />
@@ -121,9 +129,11 @@ const DashboardInner = () => {
           <Route path=":id" element={<TokenPage />} />
         </Route>
         <Route path="networks">
-          <Route path="" element={<NetworksPage />} />
-          <Route path="add" element={<NetworkPage />} />
-          <Route path=":id" element={<NetworkPage />} />
+          <Route path="" element={<Navigate to="/networks/ethereum" replace />} />
+          <Route path=":networksType" element={<NetworksPage />} />
+          <Route path=":networksType/add" element={<NetworkPage />} />
+          <Route path=":networksType/:id" element={<NetworkPage />} />
+          <Route path="*" element={<Navigate to="" replace />} />
         </Route>
         <Route path="*" element={<Navigate to="/portfolio" replace />} />
       </Routes>

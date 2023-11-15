@@ -12,7 +12,7 @@ declare namespace NodeJS {
     readonly SENTRY_AUTH_TOKEN?: string
     readonly SIMPLE_LOCALIZE_API_KEY?: string
     readonly SIMPLE_LOCALIZE_PROJECT_TOKEN?: string
-    readonly BUILD?: "production" | "canary" | "ci"
+    readonly BUILD?: "production" | "canary" | "ci" | "qa" | "dev"
 
     // dev utilities
     readonly PASSWORD?: string
@@ -85,12 +85,6 @@ declare module "*.module.sass" {
 }
 
 declare module "react-router-transition"
-
-declare module "@ui/*" {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const content: any
-  export default content
-}
 
 declare module "*.svg" {
   import React = require("react")

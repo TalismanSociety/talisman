@@ -85,7 +85,7 @@ const AccountInfoOverrides: { [key: ChainId]: string } = {
   "nftmart": RegularAccountInfoFallback,
 }
 
-const subNativeTokenId = (chainId: ChainId, tokenSymbol: string) =>
+export const subNativeTokenId = (chainId: ChainId, tokenSymbol: string) =>
   `${chainId}-substrate-native-${tokenSymbol}`.toLowerCase().replace(/ /g, "-")
 
 export type SubNativeToken = NewTokenType<
@@ -496,18 +496,33 @@ async function buildQueries(
           "account",
           decodeAnyAddress(address)
         )
-        const stateKey = hasMetadataV14
-          ? storageHelper.stateKey
-          : (() => {
-              const addressBytes = decodeAnyAddress(address)
-              const addressHash = blake2Concat(addressBytes).replace(/^0x/, "")
-              const moduleHash = "26aa394eea5630e07c48ae0c9558cef7" // util_crypto.xxhashAsHex("System", 128);
-              const storageHash = "b99d880ec681799c0cf30e8886371da9" // util_crypto.xxhashAsHex("Account", 128);
-              const moduleStorageHash = `${moduleHash}${storageHash}` // System.Account is the state_storage key prefix for nativeToken balances
-              const stateKey = `0x${moduleStorageHash}${addressHash}`
-              return stateKey
-            })()
-        if (!stateKey) return
+        const getFallbackStateKey = () => {
+          const addressBytes = decodeAnyAddress(address)
+          const addressHash = blake2Concat(addressBytes).replace(/^0x/, "")
+          const moduleHash = "26aa394eea5630e07c48ae0c9558cef7" // util_crypto.xxhashAsHex("System", 128);
+          const storageHash = "b99d880ec681799c0cf30e8886371da9" // util_crypto.xxhashAsHex("Account", 128);
+          const moduleStorageHash = `${moduleHash}${storageHash}` // System.Account is the state_storage key prefix for nativeToken balances
+          return `0x${moduleStorageHash}${addressHash}`
+        }
+
+        /**
+         * NOTE: For many MetadataV14 chains, it is not valid to encode an ethereum address into this System.Account state call.
+         * However, because we have always made that state call in the past, existing users will have the result (a balance of `0`)
+         * cached in their BalancesDB.
+         *
+         * So, until we refactor the storage of this module in a way which nukes the existing cached balances, we'll need to continue
+         * making these invalid state calls to keep those balances from showing as `cached` or `stale`.
+         *
+         * Current logic:
+         *
+         *     stateKey: string = hasMetadataV14 && storageHelper.stateKey ? storageHelper.stateKey : getFallbackStateKey()
+         *
+         * Future (ideal) logic:
+         *
+         *     stateKey: string | undefined = hasMetadataV14 ? storageHelper.stateKey : getFallbackStateKey()
+         */
+        const stateKey =
+          hasMetadataV14 && storageHelper.stateKey ? storageHelper.stateKey : getFallbackStateKey()
 
         const decodeResult = (change: string | null) => {
           // BEGIN: Handle chains which use metadata < v14

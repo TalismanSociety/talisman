@@ -166,7 +166,7 @@ export const SubTokensModule: NewBalanceModule<
       const tokens: Record<string, SubTokensToken> = {}
       for (const tokenConfig of moduleConfig?.tokens || []) {
         try {
-          const symbol = tokenConfig?.symbol ?? "Unknown"
+          const symbol = tokenConfig?.symbol ?? "Unit"
           const decimals = tokenConfig?.decimals ?? 0
           const existentialDeposit = tokenConfig?.ed ?? "0"
           const onChainId = tokenConfig?.onChainId ?? undefined
