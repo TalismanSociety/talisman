@@ -13,6 +13,7 @@ const extPath = path.join(__dirname, "../../apps/extension/dist")
 export const test = base.extend<{
   context: BrowserContext
   extensionId: string
+  extensionUrl: string
   backgroundPage: Page
   page: Page
   appPage: Page
@@ -35,20 +36,20 @@ export const test = base.extend<{
       console.error("Project may not be built in /dist folder", { cause: e })
     }
     await use(context)
-  },
-  extensionId: async ({ context }, use) => {
-    // for manifest v2:
-    let [background] = context.backgroundPages()
-    if (!background) background = await context.waitForEvent("backgroundpage")
-    const extensionId = background.url().split("/")[2]
-    await use(extensionId)
+    await context.close()
   },
   backgroundPage: async ({ context }, use) => {
     let [background] = context.backgroundPages()
     if (!background) background = await context.waitForEvent("backgroundpage")
     await use(background)
   },
-
+  extensionId: async ({ backgroundPage }, use) => {
+    const extensionId = backgroundPage.url().split("/")[2]
+    await use(extensionId)
+  },
+  extensionUrl: async ({ extensionId }, use) => {
+    await use(`chrome-extension://${extensionId}`)
+  },
   page: async ({ context }, use) => {
     await use(context.pages().filter((p) => p.url().startsWith("chrome-extension://"))[0])
   },

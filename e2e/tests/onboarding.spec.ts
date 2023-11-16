@@ -6,19 +6,19 @@ test.describe("Onboarding", async () => {
     await context.close()
   })
 
-  test("Can onboard with No account", async ({ onboarding, extensionId }) => {
-    const baseUrl = `chrome-extension://${extensionId}/onboarding.html`
+  test("Can onboard with No account", async ({ onboarding, portfolio, extensionUrl }) => {
+    const onboardUrl = `${extensionUrl}/onboarding.html`
     await test.step("Welcome page", async () => {
       await onboarding.page.waitForLoadState("domcontentloaded")
-      expect(onboarding.page.url()).toBe(baseUrl)
+      expect(onboarding.page.url()).toBe(onboardUrl)
       const button = onboarding.page.getByTestId("get-started-button")
       await button.click()
-      expect(onboarding.page.url()).toBe(`${baseUrl}#/password`)
+      await onboarding.page.waitForURL(`${onboardUrl}#/password`)
     })
 
     await test.step("Enter password", async () => {
       await onboarding.page.waitForLoadState("domcontentloaded")
-      expect(onboarding.page.url()).toBe(`${baseUrl}#/password`)
+      expect(onboarding.page.url()).toBe(`${onboardUrl}#/password`)
       const pwBox = onboarding.page.getByTestId("password-input1")
       await expect(pwBox).toBeEditable()
       await pwBox.first().fill(data.password, { timeout: 3000 })
@@ -31,17 +31,39 @@ test.describe("Onboarding", async () => {
       expect(submitButton).toBeEnabled()
       expect(onboarding.page)
       await submitButton.click()
-      await onboarding.page.waitForURL(`${baseUrl}#/privacy`)
+      await onboarding.page.waitForURL(`${onboardUrl}#/privacy`)
     })
 
     await test.step("Privacy", async () => {
       await onboarding.page.waitForLoadState("domcontentloaded")
-      expect(onboarding.page.url()).toBe(`${baseUrl}#/privacy`)
+      expect(onboarding.page.url()).toBe(`${onboardUrl}#/privacy`)
       const rejectButton = onboarding.page.getByTestId("privacy-reject-btn")
       expect(rejectButton).toBeEnabled()
       await rejectButton.click()
 
-      await onboarding.page.waitForURL(`${baseUrl}#/accounts/add`)
+      await onboarding.page.waitForURL(`${onboardUrl}#/accounts/add`)
+    })
+
+    await test.step("Account page", async () => {
+      await onboarding.page.waitForLoadState("domcontentloaded")
+      expect(onboarding.page.url()).toBe(`${onboardUrl}#/accounts/add`)
+      const skipButton = onboarding.page.getByTestId("do-it-later-btn")
+      expect(skipButton).toBeEnabled()
+      await skipButton.click()
+
+      await onboarding.page.waitForURL(`${onboardUrl}#/success`)
+    })
+
+    await test.step("Success page", async () => {
+      await onboarding.page.waitForLoadState("domcontentloaded")
+      expect(onboarding.page.url()).toBe(`${onboardUrl}#/success`)
+      const continueButton = onboarding.page.getByTestId("continue-btn")
+      expect(continueButton).toBeEnabled()
+      await continueButton.click()
+
+      expect(onboarding.page.isClosed())
+      await portfolio.page.waitForLoadState("domcontentloaded")
+      expect(portfolio.page.url()).toBe(`${extensionUrl}/dashboard.html#/portfolio?onboarded`)
     })
   })
 })
