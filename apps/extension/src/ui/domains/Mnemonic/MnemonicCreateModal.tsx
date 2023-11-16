@@ -79,6 +79,7 @@ const MnemonicFormInner = () => {
         <Checkbox
           onChange={(e) => setAcknowledged(e.target.checked)}
           className="text-body-secondary hover:text-body [&>span]:leading-paragraph  !gap-8"
+          data-testid="acknowledge-checkbox"
         >
           {t(
             "I acknowledge that the loss of my recovery phrase will result in the loss of all the assets in my wallet"
@@ -98,6 +99,7 @@ const MnemonicFormInner = () => {
         fullWidth
         onClick={handleContinueClick}
         disabled={!acknowledged}
+        data-testid="mnemonic-form-submit-btn"
       >
         {t("Continue")}
       </Button>
@@ -107,7 +109,7 @@ const MnemonicFormInner = () => {
 
 const MnemonicCreateForm = () => {
   return (
-    <div className={classNames("flex flex-col gap-12")}>
+    <div className={classNames("flex flex-col gap-12")} data-testid="mnemonic-create-form">
       <Description />
       <MnemonicFormInner />
     </div>

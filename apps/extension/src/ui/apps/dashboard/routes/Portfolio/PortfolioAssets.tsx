@@ -29,7 +29,7 @@ const FullscreenPortfolioAssets = ({ balances }: { balances: Balances }) => {
 
   return (
     <>
-      <div className="flex w-full gap-8">
+      <div className="flex w-full gap-8" data-testid="portfolio-assets-page">
         <Statistics
           className="max-w-[40%]"
           title={t("Total Portfolio Value")}
