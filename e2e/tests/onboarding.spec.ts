@@ -2,12 +2,9 @@ import data from "../fixtures/data"
 import test, { expect } from "../fixtures/setup"
 
 test.describe("Onboarding", async () => {
-  test.afterEach(async ({ context }) => {
-    await context.close()
-  })
-
-  test("Can onboard with No account", async ({ onboarding, portfolio, extensionUrl }) => {
+  test.beforeEach(async ({ onboarding, extensionUrl }) => {
     const onboardUrl = `${extensionUrl}/onboarding.html`
+
     await test.step("Welcome page", async () => {
       await onboarding.page.waitForLoadState("domcontentloaded")
       expect(onboarding.page.url()).toBe(onboardUrl)
@@ -43,6 +40,14 @@ test.describe("Onboarding", async () => {
 
       await onboarding.page.waitForURL(`${onboardUrl}#/accounts/add`)
     })
+  })
+
+  test.afterEach(async ({ context }) => {
+    await context.close()
+  })
+
+  test("Can onboard with no account", async ({ onboarding, portfolio, extensionUrl }) => {
+    const onboardUrl = `${extensionUrl}/onboarding.html`
 
     await test.step("Account page", async () => {
       await onboarding.page.waitForLoadState("domcontentloaded")
@@ -64,6 +69,7 @@ test.describe("Onboarding", async () => {
       expect(onboarding.page.isClosed())
       await portfolio.page.waitForLoadState("domcontentloaded")
       expect(portfolio.page.url()).toBe(`${extensionUrl}/dashboard.html#/portfolio?onboarded`)
+      await expect(onboarding.page.getByTestId("no-accounts-banner")).toBeInViewport()
     })
   })
 })
