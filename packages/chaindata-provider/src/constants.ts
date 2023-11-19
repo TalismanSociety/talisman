@@ -19,6 +19,8 @@ export const chaindataEvmNetworkByIdUrl = (evmNetworkId: string) =>
   `${chaindataUrl}/evmNetworks/byId/${evmNetworkId}.json`
 
 export const chaindataTokensAllUrl = `${chaindataUrl}/tokens/all.json`
+export const chaindataTokenByIdUrl = (tokenId: string) =>
+  `${chaindataUrl}/tokens/byId/${tokenId}.json`
 
 export const chaindataMiniMetadatasAllUrl = `${chaindataUrl}/miniMetadatas/all.json`
 

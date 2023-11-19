@@ -21,7 +21,14 @@ import { Observable, from } from "rxjs"
 import { addCustomChainRpcs } from "./addCustomChainRpcs"
 import { fetchInitChains, fetchInitEvmNetworks, fetchInitTokens } from "./init"
 import log from "./log"
-import { fetchChain, fetchChains, fetchEvmNetwork, fetchEvmNetworks, fetchTokens } from "./net"
+import {
+  fetchChain,
+  fetchChains,
+  fetchEvmNetwork,
+  fetchEvmNetworks,
+  fetchToken,
+  fetchTokens,
+} from "./net"
 import { isITokenPartial, isToken, parseTokensResponse } from "./parseTokensResponse"
 import { TalismanChaindataDatabase } from "./TalismanChaindataDatabase"
 
@@ -221,7 +228,7 @@ export class ChaindataProviderExtension implements ChaindataProvider {
     if (!builtInChain) throw new Error("Cannot reset non-built-in chain")
     if (!builtInChain.nativeToken?.id)
       throw new Error("Failed to lookup native token (no token exists for chain)")
-    const builtInNativeToken = null // await fetchToken(builtInChain.nativeToken.id)
+    const builtInNativeToken = await fetchToken(builtInChain?.nativeToken?.id)
     if (!isITokenPartial(builtInNativeToken)) throw new Error("Failed to lookup native token")
     if (!isToken(builtInNativeToken))
       throw new Error("Failed to lookup native token (isToken test failed)")

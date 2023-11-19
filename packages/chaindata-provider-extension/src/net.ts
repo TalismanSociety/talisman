@@ -4,6 +4,7 @@ import {
   chaindataEvmNetworkByIdUrl,
   chaindataEvmNetworksAllUrl,
   chaindataMiniMetadatasAllUrl,
+  chaindataTokenByIdUrl,
   chaindataTokensAllUrl,
   githubApi,
   githubChaindataOrg,
@@ -20,6 +21,8 @@ export const fetchEvmNetwork = async (evmNetworkId: string) =>
   await (await fetch(chaindataEvmNetworkByIdUrl(evmNetworkId))).json()
 
 export const fetchTokens = async () => await (await fetch(chaindataTokensAllUrl)).json()
+export const fetchToken = async (tokenId: string) =>
+  await (await fetch(chaindataTokenByIdUrl(tokenId))).json()
 
 export const fetchMiniMetadatas = async () =>
   await (await fetch(chaindataMiniMetadatasAllUrl)).json()
