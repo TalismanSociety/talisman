@@ -27,7 +27,15 @@ export const initSentry = (sentry: typeof SentryBrowser | typeof SentryReact) =>
       /(disconnected from wss)[(]?:\/\/[\w./:-]+: \d+:: Normal Closure[)]?/,
     ],
     // prevents sending the event if user has disabled error tracking
-    beforeSend: async (event) => ((await firstValueFrom(useErrorTracking)) ? event : null),
+    beforeSend: async (event) => {
+      const errorTracking = await firstValueFrom(useErrorTracking)
+
+      // Print to console in development (because we won't be using sentry in that env)
+      // eslint-disable-next-line no-console
+      if (DEBUG) console.error("[DEBUG] Sentry event occurred", event)
+
+      return errorTracking ? event : null
+    },
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     beforeBreadcrumb: (breadCrumb, hint) => {
       if (breadCrumb.data?.url) {
