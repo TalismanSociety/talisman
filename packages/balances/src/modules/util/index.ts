@@ -165,7 +165,7 @@ export const findChainMeta = <TBalanceModule extends AnyNewBalanceModule>(
     specName: chain.specName,
     specVersion: chain.specVersion,
     balancesConfig: JSON.stringify(
-      chain.balancesConfig.find((config) => config.moduleType === moduleType)?.moduleConfig ?? {}
+      chain.balancesConfig?.find((config) => config.moduleType === moduleType)?.moduleConfig ?? {}
     ),
   })
 
