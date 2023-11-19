@@ -4,7 +4,7 @@ import { CustomNativeToken } from "@core/domains/tokens/types"
 import { yupResolver } from "@hookform/resolvers/yup"
 import { HeaderBlock } from "@talisman/components/HeaderBlock"
 import { isCustomEvmNetwork } from "@talismn/chaindata-provider"
-import { ArrowRightIcon } from "@talismn/icons"
+import { ArrowRightIcon, RotateCcwIcon } from "@talismn/icons"
 import { classNames } from "@talismn/util"
 import { useQuery } from "@tanstack/react-query"
 import { api } from "@ui/api"
@@ -23,7 +23,16 @@ import { ChangeEventHandler, FC, useCallback, useEffect, useMemo, useRef, useSta
 import { FormProvider, useForm } from "react-hook-form"
 import { Trans, useTranslation } from "react-i18next"
 import { useDebounce } from "react-use"
-import { Button, Checkbox, FormFieldContainer, FormFieldInputText, Toggle } from "talisman-ui"
+import {
+  Button,
+  Checkbox,
+  FormFieldContainer,
+  FormFieldInputText,
+  Toggle,
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "talisman-ui"
 
 import { NetworkRpcsListField } from "../NetworkRpcsListField"
 import { getEvmRpcChainId } from "./helpers"
@@ -38,17 +47,33 @@ type EvmNetworkFormProps = {
 
 const EnableNetworkToggle: FC<{ evmNetworkId?: string }> = ({ evmNetworkId }) => {
   const { t } = useTranslation("admin")
-  const { evmNetwork, isEnabled, setEnabled } = useKnownEvmNetwork(evmNetworkId)
+  const { evmNetwork, isEnabled, setEnabled, isEnabledOrDisabledByUser, resetToTalismanDefault } =
+    useKnownEvmNetwork(evmNetworkId)
 
   if (!evmNetwork) return null
 
   return (
     <div className="pt-8">
-      {/* TODO: Show reset "Display balances" to default button */}
       <FormFieldContainer label={t("Display balances")}>
-        <Toggle checked={isEnabled} onChange={(e) => setEnabled(e.target.checked)}>
-          <span className={"text-grey-300"}>{isEnabled ? t("Yes") : t("No")}</span>
-        </Toggle>
+        <div className="flex gap-3">
+          <Toggle checked={isEnabled} onChange={(e) => setEnabled(e.target.checked)}>
+            <span className={"text-grey-300"}>{isEnabled ? t("Yes") : t("No")}</span>
+          </Toggle>
+          {isEnabledOrDisabledByUser && (
+            <Tooltip>
+              <TooltipTrigger
+                className="text-primary text-xs"
+                type="button"
+                onClick={resetToTalismanDefault}
+              >
+                <RotateCcwIcon />
+              </TooltipTrigger>
+              <TooltipContent>
+                <div>{t("Reset to default")}</div>
+              </TooltipContent>
+            </Tooltip>
+          )}
+        </div>
       </FormFieldContainer>
     </div>
   )

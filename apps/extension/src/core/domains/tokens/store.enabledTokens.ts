@@ -20,6 +20,10 @@ class EnabledTokensStore extends StorageProvider<EnabledTokens> {
     const enabledTokens = await this.get()
     await this.set({ ...enabledTokens, [tokenId]: enabled })
   }
+
+  async resetEnabled(tokenId: TokenId) {
+    await this.delete(tokenId)
+  }
 }
 
 export const enabledTokensStore = new EnabledTokensStore()

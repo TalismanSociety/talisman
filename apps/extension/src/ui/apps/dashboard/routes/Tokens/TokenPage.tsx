@@ -3,6 +3,7 @@ import * as Sentry from "@sentry/browser"
 import { HeaderBlock } from "@talisman/components/HeaderBlock"
 import { notify } from "@talisman/components/Notifications"
 import { useOpenClose } from "@talisman/hooks/useOpenClose"
+import { RotateCcwIcon } from "@talismn/icons"
 import { api } from "@ui/api"
 import { AnalyticsPage } from "@ui/api/analytics"
 import { AssetLogoBase } from "@ui/domains/Asset/AssetLogo"
@@ -16,7 +17,7 @@ import { useCallback, useEffect, useMemo, useState } from "react"
 import { Trans, useTranslation } from "react-i18next"
 import { useNavigate, useParams } from "react-router-dom"
 import { ModalDialog, Toggle } from "talisman-ui"
-import { Modal } from "talisman-ui"
+import { Modal, Tooltip, TooltipContent, TooltipTrigger } from "talisman-ui"
 import { Button, FormFieldContainer, FormFieldInputText } from "talisman-ui"
 
 import { DashboardLayout } from "../../layout/DashboardLayout"
@@ -101,10 +102,8 @@ export const TokenPage = () => {
   )
   const network = useEvmNetwork(erc20Token?.evmNetwork?.id)
 
-  const { isEnabled, setEnabled } = useKnownErc20Token(
-    erc20Token?.evmNetwork?.id,
-    erc20Token?.contractAddress
-  )
+  const { isEnabled, setEnabled, isEnabledOrDisabledByUser, resetToTalismanDefault } =
+    useKnownErc20Token(erc20Token?.evmNetwork?.id, erc20Token?.contractAddress)
 
   useEffect(() => {
     // if token doesn't exist, redirect to tokens page
@@ -174,11 +173,26 @@ export const TokenPage = () => {
           </FormFieldContainer>
         </div>
         <div>
-          {/* TODO: Show reset "Display balances" to default button */}
           <FormFieldContainer label={t("Display balances")}>
-            <Toggle checked={isEnabled} onChange={(e) => setEnabled(e.target.checked)}>
-              <span className={"text-grey-300"}>{isEnabled ? t("Yes") : t("No")}</span>
-            </Toggle>
+            <div className="flex gap-3">
+              <Toggle checked={isEnabled} onChange={(e) => setEnabled(e.target.checked)}>
+                <span className={"text-grey-300"}>{isEnabled ? t("Yes") : t("No")}</span>
+              </Toggle>
+              {isEnabledOrDisabledByUser && (
+                <Tooltip>
+                  <TooltipTrigger
+                    className="text-primary text-xs"
+                    type="button"
+                    onClick={resetToTalismanDefault}
+                  >
+                    <RotateCcwIcon />
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    <div>{t("Reset to default")}</div>
+                  </TooltipContent>
+                </Tooltip>
+              )}
+            </div>
           </FormFieldContainer>
         </div>
         <div className="flex justify-end py-8">

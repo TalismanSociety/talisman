@@ -17,7 +17,7 @@ export const useKnownChain = (chainId: string | null | undefined) => {
 
   const setEnabled = useCallback(
     (enable: boolean) => {
-      if (!chainId || !chain) throw new Error("Chain not found")
+      if (!chainId || !chain) throw new Error(`Chain '${chainId}' not found`)
       enabledChainsStore.setEnabled(chainId, enable)
     },
     [chain, chainId]
@@ -28,7 +28,7 @@ export const useKnownChain = (chainId: string | null | undefined) => {
     [chainId, enabledChains]
   )
   const resetToTalismanDefault = useCallback(() => {
-    if (!chainId || !chain) throw new Error("Chain not found")
+    if (!chainId || !chain) throw new Error(`Chain '${chainId}' not found`)
     enabledChainsStore.resetEnabled(chainId)
   }, [chain, chainId])
 

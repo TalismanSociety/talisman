@@ -41,5 +41,28 @@ export const useKnownErc20Token = (
     await setEnabled(!isEnabled)
   }, [isEnabled, setEnabled, token])
 
-  return { token, isEnabled, setEnabled, toggleEnabled }
+  const isEnabledOrDisabledByUser = useMemo(
+    () => token && token.id in enabledTokens,
+    [token, enabledTokens]
+  )
+  const resetToTalismanDefault = useCallback(() => {
+    if (!token) throw new Error("Token not found")
+    enabledTokensStore.resetEnabled(token.id)
+  }, [token])
+
+  return {
+    token,
+
+    isEnabled,
+
+    setEnabled,
+    toggleEnabled,
+
+    /**
+     * If true, enabled/disabled state comes from the user configuration.
+     * If false, enabled/disabled state comes from chaindata default value.
+     */
+    isEnabledOrDisabledByUser,
+    resetToTalismanDefault,
+  }
 }

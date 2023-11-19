@@ -20,11 +20,34 @@ export const useKnownEvmNetwork = (evmNetworkId: string | null | undefined) => {
 
   const setEnabled = useCallback(
     (enable: boolean) => {
-      if (!evmNetworkId || !evmNetwork) throw new Error("EvmNetwork not found")
-      enabledEvmNetworksStore.setEnabled(evmNetworkId ?? undefined, enable)
+      if (!evmNetworkId || !evmNetwork) throw new Error(`EvmNetwork '${evmNetworkId}' not found`)
+      enabledEvmNetworksStore.setEnabled(evmNetworkId, enable)
     },
     [evmNetwork, evmNetworkId]
   )
 
-  return { evmNetwork, isEnabled, isKnown, setEnabled }
+  const isEnabledOrDisabledByUser = useMemo(
+    () => evmNetworkId !== null && evmNetworkId !== undefined && evmNetworkId in enabledEvmNetworks,
+    [evmNetworkId, enabledEvmNetworks]
+  )
+  const resetToTalismanDefault = useCallback(() => {
+    if (!evmNetworkId || !evmNetwork) throw new Error(`EvmNetwork '${evmNetworkId}' not found`)
+    enabledEvmNetworksStore.resetEnabled(evmNetworkId)
+  }, [evmNetwork, evmNetworkId])
+
+  return {
+    evmNetwork,
+
+    isEnabled,
+    isKnown,
+
+    setEnabled,
+
+    /**
+     * If true, enabled/disabled state comes from the user configuration.
+     * If false, enabled/disabled state comes from chaindata default value.
+     */
+    isEnabledOrDisabledByUser,
+    resetToTalismanDefault,
+  }
 }

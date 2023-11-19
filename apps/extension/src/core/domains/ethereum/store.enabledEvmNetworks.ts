@@ -19,6 +19,10 @@ class EnabledEvmNetworksStore extends StorageProvider<EnabledEvmNetworks> {
     const enabledEvmNetworks = await this.get()
     await this.set({ ...enabledEvmNetworks, [networkId]: enabled })
   }
+
+  async resetEnabled(networkId: EvmNetworkId) {
+    await this.delete(networkId)
+  }
 }
 
 export const enabledEvmNetworksStore = new EnabledEvmNetworksStore()
