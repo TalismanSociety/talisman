@@ -621,42 +621,42 @@ export class ChaindataProviderExtension implements ChaindataProvider {
    * @returns A promise which resolves to true if the db has been hydrated, or false if the hydration was skipped.
    */
   async hydrateTokens() {
-    // const now = Date.now()
-    // if (now - this.#lastHydratedTokensAt < minimumHydrationInterval) return false
+    //   const now = Date.now()
+    //   if (now - this.#lastHydratedTokensAt < minimumHydrationInterval) return false
     //
-    // const dbHasTokens = (await this.#db.tokens.count()) > 0
+    //   const dbHasTokens = (await this.#db.tokens.count()) > 0
     //
-    // try {
     //   try {
-    //     var tokens = parseTokensResponse(await fetchTokens()) // eslint-disable-line no-var
-    //     if (tokens.length <= 0) throw new Error("Ignoring empty chaindata tokens response")
+    //     try {
+    //       var tokens = parseTokensResponse(await fetchTokens()) // eslint-disable-line no-var
+    //       if (tokens.length <= 0) throw new Error("Ignoring empty chaindata tokens response")
+    //     } catch (error) {
+    //       if (dbHasTokens) throw error
+    //
+    //       // On first start-up (db is empty), if we fail to fetch tokens then we should
+    //       // initialize the DB with the list of tokens inside our init/tokens.json file.
+    //       // This data will represent a relatively recent copy of what's in the squid,
+    //       // which will be better for our users than to have nothing at all.
+    //       var tokens = parseTokensResponse(await fetchInitTokens()) // eslint-disable-line no-var
+    //     }
+    //
+    //     await this.#db.transaction("rw", this.#db.tokens, async () => {
+    //       await this.#db.tokens.filter((token) => !("isCustom" in token)).delete()
+    //       // add all except ones matching custom existing ones (user may customize built-in tokens)
+    //       const customTokens = await this.#db.tokens.toArray()
+    //       const newTokens = tokens.filter((token) =>
+    //         customTokens.every((existing) => existing.id !== token.id)
+    //       )
+    //       await this.#db.tokens.bulkPut(newTokens)
+    //     })
+    //     this.#lastHydratedTokensAt = now
+    //
+    //     return true
     //   } catch (error) {
-    //     if (dbHasTokens) throw error
+    //     log.warn(`Failed to hydrate tokens from chaindata`, error)
     //
-    //     // On first start-up (db is empty), if we fail to fetch tokens then we should
-    //     // initialize the DB with the list of tokens inside our init/tokens.json file.
-    //     // This data will represent a relatively recent copy of what's in the squid,
-    //     // which will be better for our users than to have nothing at all.
-    //     var tokens = parseTokensResponse(await fetchInitTokens()) // eslint-disable-line no-var
+    //     return false
     //   }
-    //
-    //   await this.#db.transaction("rw", this.#db.tokens, async () => {
-    //     await this.#db.tokens.filter((token) => !("isCustom" in token)).delete()
-    //     // add all except ones matching custom existing ones (user may customize built-in tokens)
-    //     const customTokens = await this.#db.tokens.toArray()
-    //     const newTokens = tokens.filter((token) =>
-    //       customTokens.every((existing) => existing.id !== token.id)
-    //     )
-    //     await this.#db.tokens.bulkPut(newTokens)
-    //   })
-    //   this.#lastHydratedTokensAt = now
-    //
-    //   return true
-    // } catch (error) {
-    //   log.warn(`Failed to hydrate tokens from chaindata`, error)
-    //
-    //   return false
-    // }
   }
 
   async getIsBuiltInChain(chainId: ChainId) {

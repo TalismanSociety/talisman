@@ -1,5 +1,5 @@
-import { TypeRegistry, createType } from "@polkadot/types"
-import { assert, compactFromU8a, u8aToHex, u8aToString } from "@polkadot/util"
+import { TypeRegistry, createType, i128 } from "@polkadot/types"
+import { assert, u8aToHex, u8aToString } from "@polkadot/util"
 import { defineMethod } from "@substrate/txwrapper-core"
 import { ChainConnector } from "@talismn/chain-connector"
 import {
@@ -40,8 +40,10 @@ import {
   RpcStateQuery,
   RpcStateQueryHelper,
   StorageHelper,
+  buildStorageDecoders,
   createTypeRegistryCache,
   findChainMeta,
+  getUniqueChainIds,
 } from "./util"
 import {
   asObservable,
@@ -432,6 +434,15 @@ async function buildQueries(
     ])
   )
 
+  const uniqueChainIds = getUniqueChainIds(addressesByToken, tokens)
+  const chainStorageDecoders = buildStorageDecoders({
+    chainIds: uniqueChainIds,
+    chains,
+    miniMetadatas,
+    moduleType: "substrate-native",
+    decoders: { baseDecoder: ["system", "account"], locksDecoder: ["balances", "locks"] },
+  })
+
   return Object.entries(addressesByToken).flatMap(([tokenId, addresses]) => {
     const token = tokens[tokenId]
     if (!token) {
@@ -456,7 +467,7 @@ async function buildQueries(
       return []
     }
 
-    const chainMeta = findChainMeta<typeof SubNativeModule>(
+    const [chainMeta] = findChainMeta<typeof SubNativeModule>(
       miniMetadatas,
       "substrate-native",
       chain
@@ -503,6 +514,7 @@ async function buildQueries(
           "account",
           decodeAnyAddress(address)
         )
+        const storageDecoder = chainStorageDecoders.get(chainId)?.baseDecoder
         const getFallbackStateKey = () => {
           const addressBytes = decodeAnyAddress(address)
           const addressHash = blake2Concat(addressBytes).replace(/^0x/, "")
@@ -559,12 +571,20 @@ async function buildQueries(
           // END: Handle chains which use metadata < v14
 
           // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          const decoded: any = hasMetadataV14 ? storageHelper.decode(change) : oldChainBalance
+          const decoded: any =
+            hasMetadataV14 && storageDecoder
+              ? change === null
+                ? null
+                : storageDecoder.decode($.decodeHex(change))
+              : oldChainBalance
 
-          let free = (decoded?.data?.free?.toBigInt?.() ?? 0n).toString()
-          let reserved = (decoded?.data?.reserved?.toBigInt?.() ?? 0n).toString()
-          let miscFrozen = (decoded?.data?.miscFrozen?.toBigInt?.() ?? 0n).toString()
-          let feeFrozen = (decoded?.data?.feeFrozen?.toBigInt?.() ?? 0n).toString()
+          const bigIntOrCodecToBigInt = (value: bigint | i128): bigint =>
+            typeof value === "bigint" ? value : value?.toBigInt?.()
+
+          let free = (bigIntOrCodecToBigInt(decoded?.data?.free) ?? 0n).toString()
+          let reserved = (bigIntOrCodecToBigInt(decoded?.data?.reserved) ?? 0n).toString()
+          let miscFrozen = (bigIntOrCodecToBigInt(decoded?.data?.miscFrozen) ?? 0n).toString()
+          let feeFrozen = (bigIntOrCodecToBigInt(decoded?.data?.feeFrozen) ?? 0n).toString()
 
           // we use the evm-native module to fetch native token balances for ethereum addresses on ethereum networks
           // but on moonbeam, moonriver and other chains which use ethereum addresses instead of substrate addresses,
@@ -593,13 +613,15 @@ async function buildQueries(
           "locks",
           decodeAnyAddress(address)
         )
+        const storageDecoder = chainStorageDecoders.get(chainId)?.locksDecoder
         const stateKey = storageHelper.stateKey
         if (!stateKey) return
         const decodeResult = (change: string | null) => {
           if (change === null) return new Balance(balanceJson)
 
           // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          const decoded: any = storageHelper.decode(change)
+          const decoded: any =
+            storageDecoder && change !== null ? storageDecoder.decode($.decodeHex(change)) : null
           balanceJson.locks = [
             ...balanceJson.locks.slice(0, 2),
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -645,7 +667,7 @@ export async function subscribeNompoolStaking(
       // ignore non-native tokens
       if (token.type !== "substrate-native") return false
       // ignore tokens on chains with no nompools pallet
-      const chainMeta = findChainMeta<typeof SubNativeModule>(
+      const [chainMeta] = findChainMeta<typeof SubNativeModule>(
         miniMetadatas,
         "substrate-native",
         chains[token.chain.id]
@@ -665,6 +687,20 @@ export async function subscribeNompoolStaking(
       // remove tokens which aren't nom pool tokens
       .filter(([tokenId]) => nomPoolTokenIds.includes(tokenId))
   )
+
+  const uniqueChainIds = getUniqueChainIds(addressesByNomPoolToken, tokens)
+  const chainStorageDecoders = buildStorageDecoders({
+    chainIds: uniqueChainIds,
+    chains,
+    miniMetadatas,
+    moduleType: "substrate-native",
+    decoders: {
+      poolMembersDecoder: ["nominationPools", "poolMembers"],
+      bondedPoolsDecoder: ["nominationPools", "bondedPools"],
+      ledgerDecoder: ["staking", "ledger"],
+      metadataDecoder: ["nominationPools", "metadata"],
+    },
+  })
 
   for (const [tokenId, addresses] of Object.entries(addressesByNomPoolToken)) {
     const token = tokens[tokenId]
@@ -686,7 +722,7 @@ export async function subscribeNompoolStaking(
       log.warn(`Chain ${chainId} for token ${tokenId} not found`)
       continue
     }
-    const chainMeta = findChainMeta<typeof SubNativeModule>(
+    const [chainMeta] = findChainMeta<typeof SubNativeModule>(
       miniMetadatas,
       "substrate-native",
       chain
@@ -709,6 +745,7 @@ export async function subscribeNompoolStaking(
       addresses: string[],
       callback: SubscriptionCallback<PoolMembers[]>
     ) => {
+      const storageDecoder = chainStorageDecoders.get(chainId)?.poolMembersDecoder
       const queries = addresses.flatMap((address): RpcStateQuery<PoolMembers> | [] => {
         const storageHelper = new StorageHelper(
           typeRegistry,
@@ -720,13 +757,14 @@ export async function subscribeNompoolStaking(
         if (!stateKey) return []
         const decodeResult = (change: string | null) => {
           // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          const decoded: any = storageHelper.decode(change)
+          const decoded: any =
+            storageDecoder && change !== null ? storageDecoder.decode($.decodeHex(change)) : null
 
-          const poolId: string | undefined = decoded?.value?.poolId?.toString?.()
-          const points: string | undefined = decoded?.value?.points?.toString?.()
+          const poolId: string | undefined = decoded?.poolId?.toString?.()
+          const points: string | undefined = decoded?.points?.toString?.()
           const unbondingEras: Array<{ era: string; amount: string }> =
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            Array.from(decoded?.value?.unbondingEras ?? []).flatMap((entry: any) => {
+            Array.from(decoded?.unbondingEras ?? []).flatMap((entry: any) => {
               const [key, value] = Array.from(entry)
 
               const era = key?.toString?.()
@@ -753,6 +791,7 @@ export async function subscribeNompoolStaking(
     ) => {
       if (poolIds.length === 0) callback(null, [])
 
+      const storageDecoder = chainStorageDecoders.get(chainId)?.bondedPoolsDecoder
       const queries = poolIds.flatMap((poolId): RpcStateQuery<PoolPoints> | [] => {
         const storageHelper = new StorageHelper(
           typeRegistry,
@@ -764,9 +803,10 @@ export async function subscribeNompoolStaking(
         if (!stateKey) return []
         const decodeResult = (change: string | null) => {
           // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          const decoded: any = storageHelper.decode(change)
+          const decoded: any =
+            storageDecoder && change !== null ? storageDecoder.decode($.decodeHex(change)) : null
 
-          const points: string | undefined = decoded?.value?.points?.toString?.()
+          const points: string | undefined = decoded?.points?.toString?.()
 
           return { poolId, points }
         }
@@ -782,6 +822,7 @@ export async function subscribeNompoolStaking(
     const subscribePoolStake = (poolIds: string[], callback: SubscriptionCallback<PoolStake[]>) => {
       if (poolIds.length === 0) callback(null, [])
 
+      const storageDecoder = chainStorageDecoders.get(chainId)?.ledgerDecoder
       const queries = poolIds.flatMap((poolId): RpcStateQuery<PoolStake> | [] => {
         if (!chainMeta?.nominationPoolsPalletId) return []
         const storageHelper = new StorageHelper(
@@ -794,9 +835,10 @@ export async function subscribeNompoolStaking(
         if (!stateKey) return []
         const decodeResult = (change: string | null) => {
           // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          const decoded: any = storageHelper.decode(change)
+          const decoded: any =
+            storageDecoder && change !== null ? storageDecoder.decode($.decodeHex(change)) : null
 
-          const activeStake: string | undefined = decoded?.value?.active?.toString?.()
+          const activeStake: string | undefined = decoded?.active?.toString?.()
 
           return { poolId, activeStake }
         }
@@ -815,6 +857,7 @@ export async function subscribeNompoolStaking(
     ) => {
       if (poolIds.length === 0) callback(null, [])
 
+      const storageDecoder = chainStorageDecoders.get(chainId)?.metadataDecoder
       const queries = poolIds.flatMap((poolId): RpcStateQuery<PoolMetadata> | [] => {
         if (!chainMeta?.nominationPoolsPalletId) return []
         const storageHelper = new StorageHelper(typeRegistry, "nominationPools", "metadata", poolId)
@@ -822,11 +865,10 @@ export async function subscribeNompoolStaking(
         if (!stateKey) return []
         const decodeResult = (change: string | null) => {
           // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          const decoded: any = storageHelper.decode(change)
+          const decoded: any =
+            storageDecoder && change !== null ? storageDecoder.decode($.decodeHex(change)) : null
 
-          const bytes: Uint8Array | undefined = decoded?.toU8a?.()
-          const [offset] = bytes ? compactFromU8a(bytes) : [0]
-          const metadata = u8aToString(bytes?.slice(offset * 2))
+          const metadata = u8aToString(decoded)
 
           return { poolId, metadata }
         }
@@ -1002,7 +1044,7 @@ async function subscribeCrowdloans(
       // ignore non-native tokens
       if (token.type !== "substrate-native") return
       // ignore tokens on chains with no crowdloans pallet
-      const chainMeta = findChainMeta<typeof SubNativeModule>(
+      const [chainMeta] = findChainMeta<typeof SubNativeModule>(
         miniMetadatas,
         "substrate-native",
         chains[token.chain.id]
@@ -1022,6 +1064,15 @@ async function subscribeCrowdloans(
       // remove tokens which aren't crowdloan tokens
       .filter(([tokenId]) => crowdloanTokenIds.includes(tokenId))
   )
+
+  const uniqueChainIds = getUniqueChainIds(addressesByCrowdloanToken, tokens)
+  const chainStorageDecoders = buildStorageDecoders({
+    chainIds: uniqueChainIds,
+    chains,
+    miniMetadatas,
+    moduleType: "substrate-native",
+    decoders: { parachainsDecoder: ["paras", "parachains"], fundsDecoder: ["crowdloan", "funds"] },
+  })
 
   for (const [tokenId, addresses] of Object.entries(addressesByCrowdloanToken)) {
     const token = tokens[tokenId]
@@ -1043,7 +1094,7 @@ async function subscribeCrowdloans(
       log.warn(`Chain ${chainId} for token ${tokenId} not found`)
       continue
     }
-    const chainMeta = findChainMeta<typeof SubNativeModule>(
+    const [chainMeta] = findChainMeta<typeof SubNativeModule>(
       miniMetadatas,
       "substrate-native",
       chain
@@ -1056,16 +1107,18 @@ async function subscribeCrowdloans(
         : new TypeRegistry()
 
     const subscribeParaIds = (callback: SubscriptionCallback<Array<number[]>>) => {
+      const storageDecoder = chainStorageDecoders.get(chainId)?.parachainsDecoder
       const queries = [0].flatMap((): RpcStateQuery<number[]> | [] => {
         const storageHelper = new StorageHelper(typeRegistry, "paras", "parachains")
         const stateKey = storageHelper.stateKey
         if (!stateKey) return []
         const decodeResult = (change: string | null): number[] => {
           // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          const decoded: any = storageHelper.decode(change)
+          const decoded: any =
+            storageDecoder && change !== null ? storageDecoder.decode($.decodeHex(change)) : null
 
           // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          const paraIds = (decoded ?? [])?.map?.((paraId: any) => paraId?.toNumber?.())
+          const paraIds = decoded ?? []
 
           return paraIds
         }
@@ -1082,19 +1135,20 @@ async function subscribeCrowdloans(
       paraIds: number[],
       callback: SubscriptionCallback<ParaFundIndex[]>
     ) => {
+      const storageDecoder = chainStorageDecoders.get(chainId)?.fundsDecoder
       const queries = paraIds.flatMap((paraId): RpcStateQuery<ParaFundIndex> | [] => {
         const storageHelper = new StorageHelper(typeRegistry, "crowdloan", "funds", paraId)
         const stateKey = storageHelper.stateKey
         if (!stateKey) return []
         const decodeResult = (change: string | null) => {
           // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          const decoded: any = storageHelper.decode(change)
+          const decoded: any =
+            storageDecoder && change !== null ? storageDecoder.decode($.decodeHex(change)) : null
 
-          const firstPeriod = decoded?.value?.firstPeriod?.toString?.() ?? ""
-          const lastPeriod = decoded?.value?.lastPeriod?.toString?.() ?? ""
+          const firstPeriod = decoded?.firstPeriod?.toString?.() ?? ""
+          const lastPeriod = decoded?.lastPeriod?.toString?.() ?? ""
           const fundPeriod = `${firstPeriod}-${lastPeriod}`
-          const fundIndex =
-            decoded?.value?.fundIndex?.toNumber?.() ?? decoded?.value?.trieIndex?.toNumber?.()
+          const fundIndex = decoded?.fundIndex ?? decoded?.trieIndex
 
           return { paraId, fundPeriod, fundIndex }
         }

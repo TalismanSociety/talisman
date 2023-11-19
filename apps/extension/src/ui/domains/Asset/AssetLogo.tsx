@@ -10,7 +10,10 @@ import { FC, useCallback, useEffect, useMemo, useState } from "react"
 
 const isTalismanLogo = (url?: string | null) => {
   if (!url) return false
-  return /^https:\/\/raw.githubusercontent.com\/TalismanSociety\/chaindata\//i.test(url)
+  return (
+    /^https:\/\/raw.githubusercontent.com\/TalismanSociety\/chaindata\//i.test(url) &&
+    !/assets\/tokens\/coingecko/i.test(url)
+  )
 }
 
 type AssetLogoBaseProps = {

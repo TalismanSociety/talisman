@@ -44,6 +44,7 @@ const EnableNetworkToggle: FC<{ evmNetworkId?: string }> = ({ evmNetworkId }) =>
 
   return (
     <div className="pt-8">
+      {/* TODO: Show reset "Display balances" to default button */}
       <FormFieldContainer label={t("Display balances")}>
         <Toggle checked={isEnabled} onChange={(e) => setEnabled(e.target.checked)}>
           <span className={"text-grey-300"}>{isEnabled ? t("Yes") : t("No")}</span>

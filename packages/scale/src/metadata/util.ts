@@ -1,7 +1,7 @@
 import * as $ from "@talismn/subshape-fork"
 
-import { MetadataV14 } from "./capi"
-import log from "./log"
+import { MetadataV14 } from "../capi"
+import log from "../log"
 
 export type TyMV14 = MetadataV14["tys"][0]
 export type PalletMV14 = MetadataV14["pallets"][0]

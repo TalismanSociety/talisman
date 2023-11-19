@@ -1,8 +1,11 @@
 import { Metadata, StorageKey, TypeRegistry, decorateStorage } from "@polkadot/types"
 import type { Registry } from "@polkadot/types-codec/types"
 import { ChainConnector } from "@talismn/chain-connector"
-import { Chain, ChainId } from "@talismn/chaindata-provider"
+import { Chain, ChainId, ChainList, TokenList } from "@talismn/chaindata-provider"
+import { $metadataV14, getShape } from "@talismn/scale"
+import * as $ from "@talismn/subshape-fork"
 import { hasOwnProperty } from "@talismn/util"
+import camelCase from "lodash/camelCase"
 import groupBy from "lodash/groupBy"
 
 import {
@@ -150,10 +153,10 @@ export const findChainMeta = <TBalanceModule extends AnyNewBalanceModule>(
   miniMetadatas: Map<string, MiniMetadata>,
   moduleType: InferModuleType<TBalanceModule>,
   chain?: Chain
-): InferChainMeta<TBalanceModule> | undefined => {
-  if (!chain) return undefined
-  if (!chain.specName) return undefined
-  if (!chain.specVersion) return undefined
+): [InferChainMeta<TBalanceModule> | undefined, MiniMetadata | undefined] => {
+  if (!chain) return [undefined, undefined]
+  if (!chain.specName) return [undefined, undefined]
+  if (!chain.specVersion) return [undefined, undefined]
 
   // TODO: This is spaghetti to import this here, it should be injected into each balance module or something.
   const metadataId = deriveMiniMetadataId({
@@ -176,7 +179,7 @@ export const findChainMeta = <TBalanceModule extends AnyNewBalanceModule>(
       }
     : undefined
 
-  return chainMeta
+  return [chainMeta, miniMetadata]
 }
 
 export const getValidSubscriptionIds = () => {
@@ -195,7 +198,16 @@ export const createSubscriptionId = () => {
   subscriptionIds.add(subscriptionId)
   localStorage.setItem(
     "TalismanBalancesSubscriptionIds",
-    [...subscriptionIds].filter(Boolean).join(",")
+    [...subscriptionIds]
+      .filter(Boolean)
+      .filter((storageId) =>
+        // filter super old IDs (they tend to stick around when the background script is restarted)
+        //
+        // test if the difference between `now` and `then` (subscriptionId - storageId) is greater than 1 week in milliseconds (604_800_000)
+        // if so, `storageId` is definitely super old and we can just prune it from localStorage
+        parseInt(subscriptionId, 10) - parseInt(storageId, 10) >= 604_800_000 ? false : true
+      )
+      .join(",")
   )
 
   return subscriptionId
@@ -214,22 +226,33 @@ export const deleteSubscriptionId = () => {
 
 /**
  * Sets all balance statuses from `live-${string}` to either `live` or `cached`
+ *
+ * You should make sure that the input collection `balances` is mutable, because the statuses
+ * will be changed in-place as a performance consideration.
  */
 export const deriveStatuses = (
-  validSubscriptionIds: string[],
+  validSubscriptionIds: Set<string>,
   balances: BalanceJson[]
-): BalanceJson[] =>
-  balances.map((balance) => {
+): BalanceJson[] => {
+  balances.forEach((balance) => {
     if (balance.status === "live" || balance.status === "cache" || balance.status === "stale")
       return balance
 
-    if (validSubscriptionIds.length < 1) return { ...balance, status: "cache" }
+    if (validSubscriptionIds.size < 1) {
+      balance.status = "cache"
+      return balance
+    }
 
-    if (!validSubscriptionIds.includes(balance.status.slice("live-".length)))
-      return { ...balance, status: "cache" }
+    if (!validSubscriptionIds.has(balance.status.slice("live-".length))) {
+      balance.status = "cache"
+      return balance
+    }
 
-    return { ...balance, status: "live" }
+    balance.status = "live"
+    return balance
   })
+  return balances
+}
 
 /**
  * Used by a variety of balance modules to help encode and decode substrate state calls.
@@ -434,3 +457,78 @@ export class RpcStateQueryHelper<T> {
     })
   }
 }
+
+export const subshapeStorageDecoder =
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  (miniMetadata: MiniMetadata, module: string, method: string) => {
+    if (miniMetadata.version !== 14) {
+      log.warn(
+        `Cannot decode metadata version ${miniMetadata.version} (${miniMetadata.chainId} ${miniMetadata.source})`
+      )
+      return
+    }
+
+    module = camelCase(module)
+    method = camelCase(method)
+
+    const metadata = $metadataV14.decode($.decodeHex(miniMetadata.data))
+
+    const typeId = metadata.pallets
+      .find((pallet) => camelCase(pallet.name) === module)
+      ?.storage?.entries?.find((entry) => camelCase(entry.name) === method)?.value
+
+    if (!typeId) {
+      log.warn(
+        `Type definition not found in metadata for ${module}::${method} (${miniMetadata.chainId} ${miniMetadata.source})`
+      )
+      return
+    }
+
+    return getShape(metadata, typeId)
+  }
+
+export const getUniqueChainIds = (
+  addressesByToken: AddressesByToken<{ id: string }>,
+  tokens: TokenList
+): ChainId[] => [
+  ...new Set(
+    Object.keys(addressesByToken)
+      .map((tokenId) => tokens[tokenId]?.chain?.id)
+      .flatMap((chainId) => (chainId ? [chainId] : []))
+  ),
+]
+export const buildStorageDecoders = <
+  TBalanceModule extends AnyNewBalanceModule,
+  TDecoders extends { [key: string]: [string, string] }
+>({
+  chainIds,
+  chains,
+  miniMetadatas,
+  moduleType,
+  decoders,
+}: {
+  chainIds: ChainId[]
+  chains: ChainList
+  miniMetadatas: Map<string, MiniMetadata>
+  moduleType: InferModuleType<TBalanceModule>
+  decoders: TDecoders
+}) =>
+  new Map(
+    [...chainIds].flatMap((chainId) => {
+      const chain = chains[chainId]
+      if (!chain) return []
+
+      const [, miniMetadata] = findChainMeta<TBalanceModule>(miniMetadatas, moduleType, chain)
+      if (!miniMetadata) return []
+      if (miniMetadata.version < 14) return []
+
+      const builtDecoders = Object.fromEntries(
+        Object.entries(decoders).map(
+          ([key, [module, method]]: [keyof TDecoders, [string, string]]) =>
+            [key, subshapeStorageDecoder(miniMetadata, module, method)] as const
+        )
+      ) as { [Property in keyof TDecoders]: $.AnyShape | undefined }
+
+      return [[chainId, builtDecoders]]
+    })
+  )

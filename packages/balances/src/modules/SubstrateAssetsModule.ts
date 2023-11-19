@@ -28,8 +28,10 @@ import {
   RpcStateQuery,
   RpcStateQueryHelper,
   StorageHelper,
+  buildStorageDecoders,
   createTypeRegistryCache,
   findChainMeta,
+  getUniqueChainIds,
 } from "./util"
 
 type ModuleType = "substrate-assets"
@@ -343,6 +345,15 @@ async function buildQueries(
     ])
   )
 
+  const uniqueChainIds = getUniqueChainIds(addressesByToken, tokens)
+  const chainStorageDecoders = buildStorageDecoders({
+    chainIds: uniqueChainIds,
+    chains,
+    miniMetadatas,
+    moduleType: "substrate-assets",
+    decoders: { storageDecoder: ["assets", "account"] },
+  })
+
   return Object.entries(addressesByToken).flatMap(([tokenId, addresses]) => {
     const token = tokens[tokenId]
     if (!token) {
@@ -367,7 +378,7 @@ async function buildQueries(
       return []
     }
 
-    const chainMeta = findChainMeta<typeof SubAssetsModule>(
+    const [chainMeta] = findChainMeta<typeof SubAssetsModule>(
       miniMetadatas,
       "substrate-assets",
       chain
@@ -387,6 +398,7 @@ async function buildQueries(
         token.assetId,
         decodeAnyAddress(address)
       )
+      const storageDecoder = chainStorageDecoders.get(chainId)?.storageDecoder
       const stateKey = storageHelper.stateKey
       if (!stateKey) return []
       const decodeResult = (change: string | null) => {
@@ -398,15 +410,16 @@ async function buildQueries(
         //   extra: null
         // }>
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const balance: any = (storageHelper.decode(change) as any)?.value ?? {
-          balance: "0",
-          isFrozen: false,
-        }
-        const isFrozen = balance?.isFrozen?.toHuman?.()
-        const amount = (balance?.balance?.toBigInt?.() ?? 0n).toString()
+        const balance: any = ((storageDecoder && change !== null
+          ? storageDecoder.decode($.decodeHex(change))
+          : // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            null) as any) ?? { balance: 0n, status: "Liquid" }
+
+        const isFrozen = balance?.status === "Frozen"
+        const amount = (balance?.balance ?? 0n).toString()
 
         const free = token.isFrozen || isFrozen ? "0" : amount
-        const frozen = token.isFrozen ? amount : "0"
+        const frozen = token.isFrozen || isFrozen ? amount : "0"
 
         return new Balance({
           source: "substrate-assets",

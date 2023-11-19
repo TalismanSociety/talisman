@@ -29,8 +29,10 @@ import {
   RpcStateQuery,
   RpcStateQueryHelper,
   StorageHelper,
+  buildStorageDecoders,
   createTypeRegistryCache,
   findChainMeta,
+  getUniqueChainIds,
 } from "./util"
 
 type ModuleType = "substrate-equilibrium"
@@ -320,6 +322,15 @@ async function buildQueries(
     ])
   )
 
+  const uniqueChainIds = getUniqueChainIds(addressesByToken, tokens)
+  const chainStorageDecoders = buildStorageDecoders({
+    chainIds: uniqueChainIds,
+    chains,
+    miniMetadatas,
+    moduleType: "substrate-equilibrium",
+    decoders: { storageDecoder: ["system", "account"] },
+  })
+
   // equilibrium returns all chain tokens for each address in the one query
   // so, we only need to make one query per address, rather than one query per token per address
   const addressesByChain = new Map<string, Set<string>>()
@@ -348,7 +359,7 @@ async function buildQueries(
       return []
     }
 
-    const chainMeta = findChainMeta<typeof SubEquilibriumModule>(
+    const [chainMeta] = findChainMeta<typeof SubEquilibriumModule>(
       miniMetadatas,
       "substrate-equilibrium",
       chain
@@ -368,6 +379,7 @@ async function buildQueries(
         decodeAnyAddress(address)
       )
       const stateKey = storageHelper.stateKey
+      const storageDecoder = chainStorageDecoders.get(chainId)?.storageDecoder
       if (!stateKey) return []
       const decodeResult = (change: string | null) => {
         // e.g.
@@ -409,18 +421,20 @@ async function buildQueries(
         //   }
         // }
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const balances: any = storageHelper.decode(change)
+        const balances: any =
+          storageDecoder && change !== null ? storageDecoder.decode($.decodeHex(change)) : null
 
         const tokenBalances = Object.fromEntries(
-          (balances?.data?.value?.balance || [])
+          (balances?.data?.balance ?? [])
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
             .map((balance: any) => ({
-              id: balance?.[0]?.toBigInt?.().toString?.(),
-              free: balance?.[1]?.isPositive
-                ? balance?.[1]?.asPositive?.toBigInt?.().toString()
-                : balance?.[1]?.isNegative
-                ? (balance?.[1]?.asNegative?.toBigInt?.() * -1n).toString()
-                : "0",
+              id: (balance?.[0] ?? 0n)?.toString?.(),
+              free:
+                balance?.[1]?.type === "Positive"
+                  ? (balance?.[1]?.value ?? 0n).toString()
+                  : balance?.[1]?.type === "Negative"
+                  ? ((balance?.[1]?.value ?? 0n) * -1n).toString()
+                  : "0",
             }))
             .map(({ id, free }: { id?: string; free?: string }) => [id, free])
         )

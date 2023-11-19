@@ -28,8 +28,10 @@ import {
   RpcStateQuery,
   RpcStateQueryHelper,
   StorageHelper,
+  buildStorageDecoders,
   createTypeRegistryCache,
   findChainMeta,
+  getUniqueChainIds,
 } from "./util"
 
 type ModuleType = "substrate-tokens"
@@ -340,6 +342,15 @@ async function buildQueries(
     ])
   )
 
+  const uniqueChainIds = getUniqueChainIds(addressesByToken, tokens)
+  const chainStorageDecoders = buildStorageDecoders({
+    chainIds: uniqueChainIds,
+    chains,
+    miniMetadatas,
+    moduleType: "substrate-tokens",
+    decoders: { storageDecoder: ["tokens", "accounts"] },
+  })
+
   return Object.entries(addressesByToken).flatMap(([tokenId, addresses]) => {
     const token = tokens[tokenId]
     if (!token) {
@@ -364,7 +375,7 @@ async function buildQueries(
       return []
     }
 
-    const chainMeta = findChainMeta<typeof SubTokensModule>(
+    const [chainMeta] = findChainMeta<typeof SubTokensModule>(
       miniMetadatas,
       "substrate-tokens",
       chain
@@ -391,25 +402,28 @@ async function buildQueries(
           }
         })()
       )
+      const storageDecoder = chainStorageDecoders.get(chainId)?.storageDecoder
       const stateKey = storageHelper.stateKey
       if (!stateKey) return []
       const decodeResult = (change: string | null) => {
         // e.g.
         // {
-        //   free: 33,765,103,752,560
-        //   reserved: 0
-        //   frozen: 0
+        //   free: 33,765,103,752,560n
+        //   reserved: 0n
+        //   frozen: 0n
         // }
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const balance = (storageHelper.decode(change) as any) ?? {
-          free: "0",
-          reserved: "0",
-          frozen: "0",
+        const balance = ((storageDecoder && change !== null
+          ? storageDecoder.decode($.decodeHex(change))
+          : // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            null) as any) ?? {
+          free: 0n,
+          reserved: 0n,
+          frozen: 0n,
         }
 
-        const free = (balance?.free?.toBigInt?.() ?? 0n).toString()
-        const reserved = (balance?.reserved?.toBigInt?.() ?? 0n).toString()
-        const frozen = (balance?.frozen?.toBigInt?.() ?? 0n).toString()
+        const free = (balance?.free ?? 0n).toString()
+        const reserved = (balance?.reserved ?? 0n).toString()
+        const frozen = (balance?.frozen ?? 0n).toString()
 
         return new Balance({
           source: "substrate-tokens",
