@@ -4,6 +4,8 @@ import {
   ChaindataProviderExtension,
   availableTokenLogoFilenames,
 } from "@talismn/chaindata-provider-extension"
+import { fetchInitMiniMetadatas } from "@talismn/chaindata-provider-extension/src/init"
+import { fetchMiniMetadatas } from "@talismn/chaindata-provider-extension/src/net"
 import { liveQuery } from "dexie"
 import { from } from "rxjs"
 
@@ -11,7 +13,9 @@ import { ChainConnectors } from "./BalanceModule"
 import log from "./log"
 import { AnyBalanceModule } from "./modules/util"
 import { db as balancesDb } from "./TalismanBalancesDatabase"
-import { MiniMetadataStatus, deriveMiniMetadataId } from "./types"
+import { MiniMetadata, MiniMetadataStatus, deriveMiniMetadataId } from "./types"
+
+const minimumHydrationInterval = 300_000 // 300_000ms = 300s = 5 minutes
 
 /**
  * A substrate dapp needs access to a set of types when it wants to communicate with a blockchain node.
@@ -39,6 +43,8 @@ import { MiniMetadataStatus, deriveMiniMetadataId } from "./types"
  * trimmed-down metadatas, which we'll refer to as `MiniMetadatas`.
  */
 export class MiniMetadataUpdater {
+  #lastHydratedMiniMetadatasAt = 0
+
   #chainConnectors: ChainConnectors
   #chaindataProvider: ChaindataProviderExtension
   #balanceModules: Array<AnyBalanceModule>
@@ -53,38 +59,86 @@ export class MiniMetadataUpdater {
     this.#balanceModules = balanceModules
   }
 
-  private async updateEvmNetworks(evmNetworkIds: EvmNetworkId[]) {
-    const evmNetworks = new Map(
-      (await this.#chaindataProvider.evmNetworksArray()).map((evmNetwork) => [
-        evmNetwork.id,
-        evmNetwork,
+  /** Subscribe to the metadata for a chain */
+  subscribe(chainId: ChainId) {
+    return from(
+      liveQuery(() =>
+        balancesDb.miniMetadatas
+          .filter((m) => m.chainId === chainId)
+          .toArray()
+          .then((array) => array[0])
+      )
+    )
+  }
+
+  async update(chainIds: ChainId[], evmNetworkIds: EvmNetworkId[]) {
+    await Promise.all([this.updateSubstrateChains(chainIds), this.updateEvmNetworks(evmNetworkIds)])
+  }
+
+  async statuses(chains: Array<Pick<Chain, "id" | "specName" | "specVersion" | "balancesConfig">>) {
+    const ids = await balancesDb.miniMetadatas.orderBy("id").primaryKeys()
+
+    const wantedIdsByChain = new Map<string, string[]>(
+      chains.flatMap(({ id: chainId, specName, specVersion, balancesConfig }) => {
+        if (specName === null) return []
+        if (specVersion === null) return []
+
+        return [
+          [
+            chainId,
+            this.#balanceModules
+              .filter((m) => m.type.startsWith("substrate-"))
+              .map(({ type: source }) =>
+                deriveMiniMetadataId({
+                  source,
+                  chainId: chainId,
+                  specName: specName,
+                  specVersion: specVersion,
+                  balancesConfig: JSON.stringify(
+                    balancesConfig.find(({ moduleType }) => moduleType === source)?.moduleConfig ??
+                      {}
+                  ),
+                })
+              ),
+          ],
+        ]
+      })
+    )
+
+    const statusesByChain = new Map<string, MiniMetadataStatus>(
+      Array.from(wantedIdsByChain.entries()).map(([chainId, wantedIds]) => [
+        chainId,
+        wantedIds.every((wantedId) => ids.includes(wantedId)) ? "good" : "none",
       ])
     )
 
-    const allEvmTokens: TokenList = {}
-    const evmNetworkConcurrency = 10
+    return { wantedIdsByChain, statusesByChain }
+  }
 
-    await PromisePool.withConcurrency(evmNetworkConcurrency)
-      .for(evmNetworkIds)
-      .process(async (evmNetworkId) => {
-        const evmNetwork = evmNetworks.get(evmNetworkId)
-        if (!evmNetwork) return
-
-        for (const mod of this.#balanceModules.filter((m) => m.type.startsWith("evm-"))) {
-          const balancesConfig = evmNetwork.balancesConfig.find(
-            ({ moduleType }) => moduleType === mod.type
-          )
-          const moduleConfig = balancesConfig?.moduleConfig ?? {}
-
-          // chainMeta arg only needs the isTestnet property, let's save a db roundtrip for now
-          const isTestnet = evmNetwork.isTestnet ?? false
-          const tokens = await mod.fetchEvmChainTokens(evmNetworkId, { isTestnet }, moduleConfig)
-
-          for (const [tokenId, token] of Object.entries(tokens)) allEvmTokens[tokenId] = token
-        }
-      })
-
-    await this.#chaindataProvider.updateEvmNetworkTokens(Object.values(allEvmTokens))
+  async hydrateFromChaindata() {
+    const now = Date.now()
+    if (now - this.#lastHydratedMiniMetadatasAt < minimumHydrationInterval) return false
+    const dbHasMiniMetadatas = (await balancesDb.miniMetadatas.count()) > 0
+    try {
+      try {
+        var miniMetadatas: MiniMetadata[] = await fetchMiniMetadatas() // eslint-disable-line no-var
+        if (miniMetadatas.length <= 0)
+          throw new Error("Ignoring empty chaindata miniMetadatas response")
+      } catch (error) {
+        if (dbHasMiniMetadatas) throw error
+        // On first start-up (db is empty), if we fail to fetch miniMetadatas then we should
+        // initialize the DB with the list of miniMetadatas inside our init/mini-metadatas.json file.
+        // This data will represent a relatively recent copy of what's in chaindata,
+        // which will be better for our users than to have nothing at all.
+        var miniMetadatas: MiniMetadata[] = await fetchInitMiniMetadatas() // eslint-disable-line no-var
+      }
+      await balancesDb.miniMetadatas.bulkPut(miniMetadatas)
+      this.#lastHydratedMiniMetadatasAt = now
+      return true
+    } catch (error) {
+      log.warn(`Failed to hydrate miniMetadatas from chaindata`, error)
+      return false
+    }
   }
 
   private async updateSubstrateChains(chainIds: ChainId[]) {
@@ -105,7 +159,6 @@ export class MiniMetadataUpdater {
       await balancesDb.miniMetadatas.bulkDelete(unwantedIds)
     }
 
-    // TODO fix this to detect changes in a token config (ex: set a coingecko id or a logo in chaindata)
     const needUpdates = Array.from(statusesByChain.entries())
       .filter(([, status]) => status !== "good")
       .map(([chainId]) => chainId)
@@ -131,7 +184,7 @@ export class MiniMetadataUpdater {
             []
           )
 
-          for (const mod of this.#balanceModules) {
+          for (const mod of this.#balanceModules.filter((m) => m.type.startsWith("substrate-"))) {
             const balancesConfig = chain.balancesConfig.find(
               ({ moduleType }) => moduleType === mod.type
             )
@@ -173,58 +226,37 @@ export class MiniMetadataUpdater {
     ).errors.forEach((error) => log.error("Error updating chain metadata", error))
   }
 
-  // TODO: Also update evmNetworks
-  // and their tokens
-  async update(chainIds: ChainId[], evmNetworkIds: EvmNetworkId[]) {
-    await Promise.all([this.updateSubstrateChains(chainIds), this.updateEvmNetworks(evmNetworkIds)])
-  }
-
-  async statuses(chains: Array<Pick<Chain, "id" | "specName" | "specVersion" | "balancesConfig">>) {
-    const ids = await balancesDb.miniMetadatas.orderBy("id").primaryKeys()
-
-    const wantedIdsByChain = new Map<string, string[]>(
-      chains.flatMap(({ id: chainId, specName, specVersion, balancesConfig }) => {
-        if (specName === null) return []
-        if (specVersion === null) return []
-
-        return [
-          [
-            chainId,
-            this.#balanceModules.map(({ type: source }) =>
-              deriveMiniMetadataId({
-                source,
-                chainId: chainId,
-                specName: specName,
-                specVersion: specVersion,
-                balancesConfig: JSON.stringify(
-                  balancesConfig.find(({ moduleType }) => moduleType === source)?.moduleConfig ?? {}
-                ),
-              })
-            ),
-          ],
-        ]
-      })
-    )
-
-    const statusesByChain = new Map<string, MiniMetadataStatus>(
-      Array.from(wantedIdsByChain.entries()).map(([chainId, wantedIds]) => [
-        chainId,
-        wantedIds.every((wantedId) => ids.includes(wantedId)) ? "good" : "none",
+  private async updateEvmNetworks(evmNetworkIds: EvmNetworkId[]) {
+    const evmNetworks = new Map(
+      (await this.#chaindataProvider.evmNetworksArray()).map((evmNetwork) => [
+        evmNetwork.id,
+        evmNetwork,
       ])
     )
 
-    return { wantedIdsByChain, statusesByChain }
-  }
+    const allEvmTokens: TokenList = {}
+    const evmNetworkConcurrency = 10
 
-  /** Subscribe to the metadata for a chain */
-  subscribe(chainId: ChainId) {
-    return from(
-      liveQuery(() =>
-        balancesDb.miniMetadatas
-          .filter((m) => m.chainId === chainId)
-          .toArray()
-          .then((array) => array[0])
-      )
-    )
+    await PromisePool.withConcurrency(evmNetworkConcurrency)
+      .for(evmNetworkIds)
+      .process(async (evmNetworkId) => {
+        const evmNetwork = evmNetworks.get(evmNetworkId)
+        if (!evmNetwork) return
+
+        for (const mod of this.#balanceModules.filter((m) => m.type.startsWith("evm-"))) {
+          const balancesConfig = evmNetwork.balancesConfig.find(
+            ({ moduleType }) => moduleType === mod.type
+          )
+          const moduleConfig = balancesConfig?.moduleConfig ?? {}
+
+          // chainMeta arg only needs the isTestnet property, let's save a db roundtrip for now
+          const isTestnet = evmNetwork.isTestnet ?? false
+          const tokens = await mod.fetchEvmChainTokens(evmNetworkId, { isTestnet }, moduleConfig)
+
+          for (const [tokenId, token] of Object.entries(tokens)) allEvmTokens[tokenId] = token
+        }
+      })
+
+    await this.#chaindataProvider.updateEvmNetworkTokens(Object.values(allEvmTokens))
   }
 }

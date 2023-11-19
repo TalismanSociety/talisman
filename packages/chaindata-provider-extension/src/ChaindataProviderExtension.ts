@@ -19,10 +19,10 @@ import { PromiseExtended, Transaction, TransactionMode, liveQuery } from "dexie"
 import { Observable, from } from "rxjs"
 
 import { addCustomChainRpcs } from "./addCustomChainRpcs"
-import { fetchInitChains, fetchInitEvmNetworks } from "./init"
+import { fetchInitChains, fetchInitEvmNetworks, fetchInitTokens } from "./init"
 import log from "./log"
-import { fetchChain, fetchChains, fetchEvmNetwork, fetchEvmNetworks } from "./net"
-import { isITokenPartial, isToken } from "./parseTokensResponse"
+import { fetchChain, fetchChains, fetchEvmNetwork, fetchEvmNetworks, fetchTokens } from "./net"
+import { isITokenPartial, isToken, parseTokensResponse } from "./parseTokensResponse"
 import { TalismanChaindataDatabase } from "./TalismanChaindataDatabase"
 
 // removes the need to reference @talismn/balances in this package. should we ?
@@ -407,7 +407,6 @@ export class ChaindataProviderExtension implements ChaindataProvider {
           // call inner hydration methods
           this.hydrateChains(),
           this.hydrateEvmNetworks(),
-          this.hydrateTokens(),
         ])
       )
         // return true if any hydration occurred
@@ -595,19 +594,25 @@ export class ChaindataProviderExtension implements ChaindataProvider {
 
     const isCustomToken = (token: Token) => "isCustom" in token && token.isCustom
 
-    const notCustomTokenIds: string[] = []
-    const customTokenIds: string[] = []
+    // don't override custom tokens
+    const customTokenIds = new Set<string>()
+
+    // delete non-custom tokens which aren't in `newTokens`
+    const deleteTokenIds = new Set<string>()
 
     for (const token of existingEvmNetworkTokens) {
-      if (isCustomToken(token)) customTokenIds.push(token.id)
-      else notCustomTokenIds.push(token.id)
+      if (isCustomToken(token)) customTokenIds.add(token.id)
+      else deleteTokenIds.add(token.id)
     }
 
-    const tokensToUpdate = newTokens.filter((token) => !customTokenIds.includes(token.id))
+    const tokensToUpdate = newTokens.filter((token) => {
+      deleteTokenIds.delete(token.id)
+      return !customTokenIds.has(token.id)
+    })
 
     this.#db.transaction("rw", this.#db.tokens, async () => {
       // delete all existing non custom tokens
-      await this.#db.tokens.bulkDelete(notCustomTokenIds)
+      await this.#db.tokens.bulkDelete([...deleteTokenIds])
 
       // force update on all non custom tokens
       await this.#db.tokens.bulkPut(tokensToUpdate)
@@ -620,43 +625,61 @@ export class ChaindataProviderExtension implements ChaindataProvider {
    *
    * @returns A promise which resolves to true if the db has been hydrated, or false if the hydration was skipped.
    */
-  async hydrateTokens() {
-    //   const now = Date.now()
-    //   if (now - this.#lastHydratedTokensAt < minimumHydrationInterval) return false
-    //
-    //   const dbHasTokens = (await this.#db.tokens.count()) > 0
-    //
-    //   try {
-    //     try {
-    //       var tokens = parseTokensResponse(await fetchTokens()) // eslint-disable-line no-var
-    //       if (tokens.length <= 0) throw new Error("Ignoring empty chaindata tokens response")
-    //     } catch (error) {
-    //       if (dbHasTokens) throw error
-    //
-    //       // On first start-up (db is empty), if we fail to fetch tokens then we should
-    //       // initialize the DB with the list of tokens inside our init/tokens.json file.
-    //       // This data will represent a relatively recent copy of what's in the squid,
-    //       // which will be better for our users than to have nothing at all.
-    //       var tokens = parseTokensResponse(await fetchInitTokens()) // eslint-disable-line no-var
-    //     }
-    //
-    //     await this.#db.transaction("rw", this.#db.tokens, async () => {
-    //       await this.#db.tokens.filter((token) => !("isCustom" in token)).delete()
-    //       // add all except ones matching custom existing ones (user may customize built-in tokens)
-    //       const customTokens = await this.#db.tokens.toArray()
-    //       const newTokens = tokens.filter((token) =>
-    //         customTokens.every((existing) => existing.id !== token.id)
-    //       )
-    //       await this.#db.tokens.bulkPut(newTokens)
-    //     })
-    //     this.#lastHydratedTokensAt = now
-    //
-    //     return true
-    //   } catch (error) {
-    //     log.warn(`Failed to hydrate tokens from chaindata`, error)
-    //
-    //     return false
-    //   }
+  async hydrateTokens(chainIdFilter?: ChainId[]) {
+    const now = Date.now()
+    if (now - this.#lastHydratedTokensAt < minimumHydrationInterval) return false
+    const dbHasTokens = (await this.#db.tokens.count()) > 0
+    try {
+      try {
+        var tokens = parseTokensResponse(await fetchTokens()) // eslint-disable-line no-var
+        if (tokens.length <= 0) throw new Error("Ignoring empty chaindata tokens response")
+      } catch (error) {
+        if (dbHasTokens) throw error
+        // On first start-up (db is empty), if we fail to fetch tokens then we should
+        // initialize the DB with the list of tokens inside our init/tokens.json file.
+        // This data will represent a relatively recent copy of what's in the squid,
+        // which will be better for our users than to have nothing at all.
+        var tokens = parseTokensResponse(await fetchInitTokens()) // eslint-disable-line no-var
+      }
+      await this.#db.transaction("rw", this.#db.tokens, async () => {
+        const deleteChains = chainIdFilter ? new Set(chainIdFilter) : undefined
+        await this.#db.tokens
+          .filter((token) => {
+            // don't delete custom tokens
+            if ("isCustom" in token) return false
+
+            // delete all other tokens if chainIdFilter is not specified
+            if (deleteChains === undefined) return true
+
+            // delete tokens on chainIdFilter chains is it is specified
+            if (!token.chain?.id) return true
+            if (deleteChains.has(token.chain.id)) return true
+
+            return false
+          })
+          .delete()
+
+        // add all except ones matching custom existing ones (user may customize built-in tokens)
+        const customTokenIds = new Set((await this.#db.tokens.toArray()).map((token) => token.id))
+        const newTokens = tokens.filter((token) => {
+          // don't replace custom tokens
+          if (customTokenIds.has(token.id)) return false
+
+          if (deleteChains === undefined) return true
+
+          if (!token.chain?.id) return true
+          if (deleteChains.has(token.chain.id)) return true
+
+          return false
+        })
+        await this.#db.tokens.bulkPut(newTokens)
+      })
+      this.#lastHydratedTokensAt = now
+      return true
+    } catch (error) {
+      log.warn(`Failed to hydrate tokens from chaindata`, error)
+      return false
+    }
   }
 
   async getIsBuiltInChain(chainId: ChainId) {

@@ -1,6 +1,5 @@
 import { DEBUG } from "@core/constants"
 import { getNomPoolStake } from "@core/domains/balances/helpers"
-import { balanceModules } from "@core/domains/balances/store"
 import {
   Balances,
   RequestBalance,
@@ -9,6 +8,7 @@ import {
 } from "@core/domains/balances/types"
 import { createSubscription, unsubscribe } from "@core/handlers/subscriptions"
 import { ExtensionHandler } from "@core/libs/Handler"
+import { balanceModules } from "@core/rpcs/balance-modules"
 import { chaindataProvider } from "@core/rpcs/chaindata"
 import { Port } from "@core/types/base"
 import { AddressesByToken } from "@talismn/balances"

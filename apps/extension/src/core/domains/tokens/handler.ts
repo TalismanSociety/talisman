@@ -2,18 +2,12 @@ import { getErc20TokenId } from "@core/domains/ethereum/helpers"
 import { CustomErc20Token, CustomErc20TokenCreate } from "@core/domains/tokens/types"
 import { talismanAnalytics } from "@core/libs/Analytics"
 import { ExtensionHandler } from "@core/libs/Handler"
-import { chainConnector } from "@core/rpcs/chain-connector"
-import { chainConnectorEvm } from "@core/rpcs/chain-connector-evm"
 import { chaindataProvider } from "@core/rpcs/chaindata"
+import { miniMetadataUpdater } from "@core/rpcs/mini-metadata-updater"
 import { Port, RequestIdOnly } from "@core/types/base"
 import { assert } from "@polkadot/util"
-import { MiniMetadataUpdater } from "@talismn/balances"
 import { githubUnknownTokenLogoUrl } from "@talismn/chaindata-provider"
 import { MessageTypes, RequestTypes, ResponseType } from "core/types"
-
-import { balanceModules } from "../balances/store"
-
-const chainConnectors = { substrate: chainConnector, evm: chainConnectorEvm }
 
 export default class TokensHandler extends ExtensionHandler {
   public async handle<TMessageType extends MessageTypes>(
@@ -27,22 +21,29 @@ export default class TokensHandler extends ExtensionHandler {
       // --------------------------------------------------------------------
       // token handlers -----------------------------------------------------
       // --------------------------------------------------------------------
-      case "pri(tokens.subscribe)":
-        return chaindataProvider
-          .hydrateTokens()
-          .then(() =>
-            Promise.all([chaindataProvider.chainIds(), chaindataProvider.evmNetworkIds()])
-          )
-          .then(([chainIds, evmNetworkIds]) =>
-            // TODO: refresh balance subscriptions when this is complete
-            new MiniMetadataUpdater(chainConnectors, chaindataProvider, balanceModules).update(
-              chainIds,
-              evmNetworkIds
-            )
-          )
+      case "pri(tokens.subscribe)": {
+        await miniMetadataUpdater.hydrateFromChaindata()
+
+        const chains = await chaindataProvider.chainsArray()
+        const { statusesByChain } = await miniMetadataUpdater.statuses(chains)
+        const goodChains = [...statusesByChain.entries()].flatMap(([chainId, status]) =>
+          status === "good" ? chainId : []
+        )
+        await chaindataProvider.hydrateTokens(goodChains)
+
+        const [chainIds, evmNetworkIds] = await Promise.all([
+          chaindataProvider.chainIds(),
+          chaindataProvider.evmNetworkIds(),
+        ])
+
+        // TODO: Run this on a timer or something instead of when subscribing to tokens
+        await miniMetadataUpdater.update(chainIds, evmNetworkIds)
+
+        return
+      }
 
       // --------------------------------------------------------------------
-      // ERC20 token handlers -----------------------------------------------------
+      // ERC20 token handlers -----------------------------------------------
       // --------------------------------------------------------------------
 
       case "pri(tokens.erc20.custom.add)": {

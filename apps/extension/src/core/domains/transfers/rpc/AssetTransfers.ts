@@ -1,4 +1,3 @@
-import { balanceModules } from "@core/domains/balances/store"
 import { SignerPayloadJSON } from "@core/domains/signing/types"
 import {
   WalletTransactionTransferInfo,
@@ -6,6 +5,7 @@ import {
   watchSubstrateTransaction,
 } from "@core/domains/transactions"
 import { AssetTransferMethod, ResponseAssetTransferFeeQuery } from "@core/domains/transfers/types"
+import { balanceModules } from "@core/rpcs/balance-modules"
 import { chainConnector } from "@core/rpcs/chain-connector"
 import { chaindataProvider } from "@core/rpcs/chaindata"
 import { Address } from "@core/types/base"

@@ -5,8 +5,7 @@ import { EvmNetwork, EvmNetworkId } from "@core/domains/ethereum/types"
 import { Erc20Token } from "@core/domains/tokens/types"
 import { unsubscribe } from "@core/handlers/subscriptions"
 import { log } from "@core/log"
-import { chainConnector } from "@core/rpcs/chain-connector"
-import { chainConnectorEvm } from "@core/rpcs/chain-connector-evm"
+import { balanceModules } from "@core/rpcs/balance-modules"
 import { chaindataProvider } from "@core/rpcs/chaindata"
 import { Addresses, Port } from "@core/types/base"
 import { validateHexString } from "@core/util/validateHexString"
@@ -17,11 +16,11 @@ import * as Sentry from "@sentry/browser"
 import {
   AddressesByToken,
   BalanceStatusLive,
+  MiniMetadata,
   db as balancesDb,
   createSubscriptionId,
   deleteSubscriptionId,
 } from "@talismn/balances"
-import { defaultBalanceModules } from "@talismn/balances"
 import { Token, TokenList } from "@talismn/chaindata-provider"
 import { encodeAnyAddress } from "@talismn/util"
 import { Dexie, liveQuery } from "dexie"
@@ -32,11 +31,6 @@ import { ReplaySubject, Subject, combineLatest, firstValueFrom } from "rxjs"
 import { enabledChainsStore, isChainEnabled } from "../chains/store.enabledChains"
 import { enabledEvmNetworksStore, isEvmNetworkEnabled } from "../ethereum/store.enabledEvmNetworks"
 import { enabledTokensStore, isTokenEnabled } from "../tokens/store.enabledTokens"
-
-const chainConnectors = { substrate: chainConnector, evm: chainConnectorEvm }
-export const balanceModules = defaultBalanceModules.map((mod) =>
-  mod({ chainConnectors, chaindataProvider })
-)
 
 type ChainIdAndRpcs = Pick<Chain, "id" | "genesisHash" | "account" | "rpcs">
 type EvmNetworkIdAndRpcs = Pick<EvmNetwork, "id" | "nativeToken" | "substrateChain" | "rpcs"> & {
@@ -62,6 +56,7 @@ export class BalanceStore {
   #chains: ChainIdAndRpcs[] = []
   #evmNetworks: EvmNetworkIdAndRpcs[] = []
   #tokens: ReplaySubject<TokenIdAndType[]> = new ReplaySubject(1)
+  #miniMetadataIds = new Set<string>()
 
   /**
    * A map of accounts to query balances for, in the format:
@@ -92,6 +87,8 @@ export class BalanceStore {
       liveQuery(async () => await chaindataProvider.evmNetworks()),
       // tokens
       liveQuery(async () => await chaindataProvider.tokens()),
+      // miniMetadatas
+      liveQuery(async () => await balancesDb.miniMetadatas.toArray()),
       // enabled state of evm networks
       enabledEvmNetworksStore.observable,
       // enabled state of substrate chains
@@ -104,6 +101,7 @@ export class BalanceStore {
         chains,
         evmNetworks,
         tokens,
+        miniMetadatas,
         enabledEvmNetworks,
         enabledChains,
         enabledTokens,
@@ -157,7 +155,7 @@ export class BalanceStore {
         }))
 
         // TODO: Only connect to chains on which the user has a non-zero balance.
-        this.setChains(chainsToFetch, evmNetworksToFetch, enabledTokensList)
+        this.setChains(chainsToFetch, evmNetworksToFetch, enabledTokensList, miniMetadatas)
       },
       error: (error) => {
         if (error.cause?.name === Dexie.errnames.DatabaseClosed) return
@@ -229,7 +227,8 @@ export class BalanceStore {
   async setChains(
     newChains: ChainIdAndRpcs[],
     newEvmNetworks: EvmNetworkIdAndRpcs[],
-    tokens: TokenList
+    tokens: TokenList,
+    miniMetadatas: MiniMetadata[]
   ) {
     // Check for updates
     const existingChainsMap = Object.fromEntries(this.#chains.map((chain) => [chain.id, chain]))
@@ -244,7 +243,11 @@ export class BalanceStore {
       newEvmNetworks.every((newEvmNetwork) =>
         isEqual(newEvmNetwork, existingEvmNetworksMap[newEvmNetwork.id])
       )
-    if (noChainChanges && noEvmNetworkChanges) return
+    const existingMiniMetadataIds = this.#miniMetadataIds
+    const noMiniMetadataChanges =
+      existingMiniMetadataIds.size === miniMetadatas.length &&
+      miniMetadatas.every((m) => existingMiniMetadataIds.has(m.id))
+    if (noChainChanges && noEvmNetworkChanges && noMiniMetadataChanges) return
 
     // Update chains and networks
     this.#chains = newChains
@@ -264,6 +267,8 @@ export class BalanceStore {
         evmNetwork,
       }))
     )
+
+    this.#miniMetadataIds = new Set(miniMetadatas.map((m) => m.id))
 
     // Delete stored balances for chains and networks which no longer exist
     await this.deleteBalances((balance) => {
