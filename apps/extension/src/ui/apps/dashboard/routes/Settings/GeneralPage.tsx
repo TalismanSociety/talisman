@@ -3,11 +3,11 @@ import { Setting } from "@talisman/components/Setting"
 import {
   BellIcon,
   ChevronRightIcon,
+  CoinsIcon,
   DollarSignIcon,
   EyeOffIcon,
   FlagIcon,
   KeyIcon,
-  TerminalIcon,
   UserIcon,
 } from "@talismn/icons"
 import { AvatarTypeSelect } from "@ui/domains/Settings/AvatarTypeSelect"
@@ -21,8 +21,8 @@ import { DashboardLayout } from "../../layout/DashboardLayout"
 export const GeneralPage = () => {
   const { t } = useTranslation("admin")
   const [hasSpiritKey] = useAppState("hasSpiritKey")
-  const [useTestnets, setUseTestnets] = useSetting("useTestnets")
   const [hideBalances, setHideBalances] = useSetting("hideBalances")
+  const [hideDust, setHideDust] = useSetting("hideDust")
   const [identiconType, setIdenticonType] = useSetting("identiconType")
   const [allowNotifications, setAllowNotifications] = useSetting("allowNotifications")
   const [spiritClanFeatures, setSpiritClanFeatures] = useSetting("spiritClanFeatures")
@@ -62,26 +62,6 @@ export const GeneralPage = () => {
           </Tooltip>
         </Setting>
         <Setting
-          iconLeft={TerminalIcon}
-          title={t("Enable testnets")}
-          subtitle={
-            <>
-              {t("Connect to test networks")}
-              <span> | </span>
-              <a
-                className="text-grey-200 hover:text-body"
-                href="https://paritytech.github.io/polkadot-testnet-faucet"
-                target="_blank"
-                rel="noreferrer"
-              >
-                {t("Faucets")}
-              </a>
-            </>
-          }
-        >
-          <Toggle checked={useTestnets} onChange={(e) => setUseTestnets(e.target.checked)} />
-        </Setting>
-        <Setting
           iconLeft={BellIcon}
           title={t("Allow notifications")}
           subtitle={t("Allow Talisman to send you notifications about transactions in progress")}
@@ -93,10 +73,17 @@ export const GeneralPage = () => {
         </Setting>
         <Setting
           iconLeft={EyeOffIcon}
-          title={t("Hide balances")}
-          subtitle={t("Blurs your portfolio and account balances")}
+          title={t("Blur balances")}
+          subtitle={t("Conceal your portfolio and account balances")}
         >
           <Toggle checked={hideBalances} onChange={(e) => setHideBalances(e.target.checked)} />
+        </Setting>
+        <Setting
+          iconLeft={CoinsIcon}
+          title={t("Hide small balances")}
+          subtitle={t("Hide tokens with a balance below US$1")}
+        >
+          <Toggle checked={hideDust} onChange={(e) => setHideDust(e.target.checked)} />
         </Setting>
         <CtaButton
           iconLeft={FlagIcon}
