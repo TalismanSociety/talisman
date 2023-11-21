@@ -26,7 +26,7 @@
     "clean": "rm -rf dist && rm -rf .turbo rm -rf node_modules"
   },
   "dependencies": {
-    "@talismn/subshape-fork": "^0.0.1",
+    "@talismn/subshape-fork": "^0.0.2",
     "@talismn/util": "workspace:*",
     "anylogger": "^1.0.11",
     "wasm-feature-detect": "^1.6.0",

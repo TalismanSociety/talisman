@@ -7486,7 +7486,7 @@ __metadata:
     "@talismn/chaindata-provider-extension": "workspace:*"
     "@talismn/eslint-config": "workspace:*"
     "@talismn/scale": "workspace:*"
-    "@talismn/subshape-fork": ^0.0.1
+    "@talismn/subshape-fork": ^0.0.2
     "@talismn/token-rates": "workspace:*"
     "@talismn/tsconfig": "workspace:*"
     "@talismn/util": "workspace:*"
@@ -7701,7 +7701,7 @@ __metadata:
   dependencies:
     "@polkadot/util-crypto": ^12.3.2
     "@talismn/eslint-config": "workspace:*"
-    "@talismn/subshape-fork": ^0.0.1
+    "@talismn/subshape-fork": ^0.0.2
     "@talismn/tsconfig": "workspace:*"
     "@talismn/util": "workspace:*"
     "@types/jest": ^27.5.1
@@ -7717,10 +7717,10 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@talismn/subshape-fork@npm:^0.0.1":
-  version: 0.0.1
-  resolution: "@talismn/subshape-fork@npm:0.0.1"
-  checksum: 424ded6811a5bbe67143e21c95b006de4d4e139ff663998509d1de07376e061ea5c714619b7c2e4fd27f7171c043d2193a66caf02198b73e2f77bc1c00c7a037
+"@talismn/subshape-fork@npm:^0.0.2":
+  version: 0.0.2
+  resolution: "@talismn/subshape-fork@npm:0.0.2"
+  checksum: 2886de2f3cff38e834a3a45f9d55e4cfd71e6c5865ed0890cb122c343edaf8c7c51b81d0047daf70aa117e5b2ffda5ab58dd6596814f9444640f6cf109aa803f
   languageName: node
   linkType: hard
 
@@ -14646,7 +14646,7 @@ __metadata:
     "@talismn/on-chain-id": "workspace:*"
     "@talismn/orb": "workspace:*"
     "@talismn/scale": "workspace:*"
-    "@talismn/subshape-fork": ^0.0.1
+    "@talismn/subshape-fork": ^0.0.2
     "@talismn/token-rates": "workspace:*"
     "@talismn/tsconfig": "workspace:*"
     "@talismn/util": "workspace:*"
