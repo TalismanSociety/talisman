@@ -95,7 +95,13 @@ const config = (env) => {
       minimizer: [new TerserPlugin({ terserOptions: { compress: true } })],
       splitChunks: {
         chunks: (chunk) =>
-          !["background", "vendor-background", "content_script", "page"].includes(chunk.name),
+          ![
+            "background",
+            "vendor-background",
+            "vendor-background-init-data",
+            "content_script",
+            "page",
+          ].includes(chunk.name),
         minSize: 0,
         maxSize: 4 * 1024 * 1024,
         maxInitialRequests: Infinity,

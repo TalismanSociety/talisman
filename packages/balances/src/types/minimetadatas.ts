@@ -52,7 +52,7 @@ export type MiniMetadata = {
   version: number
 
   /** The miniMetadata encoded as a hex string */
-  data: `0x${string}`
+  data: `0x${string}` | null
 
   /**
    * Some balance modules need a little bit of extra data in addition to the miniMetadata.

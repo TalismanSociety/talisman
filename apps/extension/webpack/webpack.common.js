@@ -24,10 +24,16 @@ const config = (env) => ({
     "background": { import: path.join(coreDir, "background.ts"), dependOn: "vendor-background" },
 
     // Background.js manually-specified code-splits (to keep background.js under 4MB)
-    "vendor-background": [
-      "@substrate/txwrapper-core",
-      "@talismn/chaindata-provider-extension",
-      "@metamask/eth-sig-util",
+    // We can't automatically chunk these because we need to manually specify the imports in our extension manifest
+    "vendor-background": {
+      import: ["@metamask/eth-sig-util", "@substrate/txwrapper-core"],
+      dependOn: "vendor-background-init-data",
+    },
+    "vendor-background-init-data": [
+      "@talismn/chaindata-provider-extension/init/chains",
+      "@talismn/chaindata-provider-extension/init/evm-networks",
+      "@talismn/chaindata-provider-extension/init/mini-metadatas",
+      "@talismn/chaindata-provider-extension/init/tokens",
     ],
 
     // Wallet injected scripts

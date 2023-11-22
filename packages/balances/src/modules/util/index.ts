@@ -471,6 +471,7 @@ export const subshapeStorageDecoder =
     module = camelCase(module)
     method = camelCase(method)
 
+    if (miniMetadata.data === null) return
     const metadata = $metadataV14.decode($.decodeHex(miniMetadata.data))
 
     const typeId = metadata.pallets

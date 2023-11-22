@@ -4,8 +4,7 @@ import {
   ChaindataProviderExtension,
   availableTokenLogoFilenames,
 } from "@talismn/chaindata-provider-extension"
-import { fetchInitMiniMetadatas } from "@talismn/chaindata-provider-extension/src/init"
-import { fetchMiniMetadatas } from "@talismn/chaindata-provider-extension/src/net"
+import { fetchInitMiniMetadatas, fetchMiniMetadatas } from "@talismn/chaindata-provider-extension"
 import { liveQuery } from "dexie"
 import { from } from "rxjs"
 
