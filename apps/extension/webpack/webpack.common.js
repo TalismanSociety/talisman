@@ -27,14 +27,18 @@ const config = (env) => ({
     // We can't automatically chunk these because we need to manually specify the imports in our extension manifest
     "vendor-background": {
       import: ["@metamask/eth-sig-util", "@substrate/txwrapper-core"],
-      dependOn: "vendor-background-init-data",
+      dependOn: [
+        "vendor-background-init-chains",
+        "vendor-background-init-tokens",
+        "vendor-background-init-metadata",
+      ],
     },
-    "vendor-background-init-data": [
+    "vendor-background-init-chains": [
       "@talismn/chaindata-provider-extension/init/chains",
       "@talismn/chaindata-provider-extension/init/evm-networks",
-      "@talismn/chaindata-provider-extension/init/mini-metadatas",
-      "@talismn/chaindata-provider-extension/init/tokens",
     ],
+    "vendor-background-init-tokens": "@talismn/chaindata-provider-extension/init/tokens",
+    "vendor-background-init-metadata": "@talismn/chaindata-provider-extension/init/mini-metadatas",
 
     // Wallet injected scripts
     "content_script": path.join(coreDir, "content_script.ts"),

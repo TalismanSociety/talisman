@@ -17,7 +17,13 @@
     }
   ],
   "background": {
-    "scripts": ["vendor-background-init-data.js", "vendor-background.js", "background.js"],
+    "scripts": [
+      "vendor-background-init-chains.js",
+      "vendor-background-init-tokens.js",
+      "vendor-background-init-metadata.js",
+      "vendor-background.js",
+      "background.js"
+    ],
     "persistent": true
   },
   "web_accessible_resources": ["page.js", "dashboard.js.map"],

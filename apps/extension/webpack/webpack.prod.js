@@ -98,7 +98,9 @@ const config = (env) => {
           ![
             "background",
             "vendor-background",
-            "vendor-background-init-data",
+            "vendor-background-init-chains",
+            "vendor-background-init-tokens",
+            "vendor-background-init-metadata",
             "content_script",
             "page",
           ].includes(chunk.name),
