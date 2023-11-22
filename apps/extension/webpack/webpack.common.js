@@ -23,21 +23,25 @@ const config = (env) => ({
     // Wallet service workers
     "background": { import: path.join(coreDir, "background.ts"), dependOn: "vendor-background" },
 
-    // Background.js manually-specified code-splits (to keep background.js under 4MB)
-    // We can't automatically chunk these because we need to manually specify the imports in our extension manifest
+    // Background.js manually-specified code-splits (to keep background.js under 4MB).
+    // We can't automatically chunk these because we need to manually specify the imports in our extension manifest.
+    // Also, `dependOn` seems to break the build (background script doesn't start) when there's more than one entry in it.
+    // So, I've daisy-chained each entry to `dependOn` the next.
     "vendor-background": {
       import: ["@metamask/eth-sig-util", "@substrate/txwrapper-core"],
-      dependOn: [
-        "vendor-background-init-chains",
-        "vendor-background-init-tokens",
-        "vendor-background-init-metadata",
-      ],
+      dependOn: "vendor-background-init-chains",
     },
-    "vendor-background-init-chains": [
-      "@talismn/chaindata-provider-extension/init/chains",
-      "@talismn/chaindata-provider-extension/init/evm-networks",
-    ],
-    "vendor-background-init-tokens": "@talismn/chaindata-provider-extension/init/tokens",
+    "vendor-background-init-chains": {
+      import: [
+        "@talismn/chaindata-provider-extension/init/chains",
+        "@talismn/chaindata-provider-extension/init/evm-networks",
+      ],
+      dependOn: "vendor-background-init-tokens",
+    },
+    "vendor-background-init-tokens": {
+      import: "@talismn/chaindata-provider-extension/init/tokens",
+      dependOn: "vendor-background-init-metadata",
+    },
     "vendor-background-init-metadata": "@talismn/chaindata-provider-extension/init/mini-metadatas",
 
     // Wallet injected scripts
