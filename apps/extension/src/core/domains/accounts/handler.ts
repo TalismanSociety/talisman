@@ -49,6 +49,14 @@ import { combineLatest } from "rxjs"
 import { SOURCES } from "../mnemonics/store"
 
 export default class AccountsHandler extends ExtensionHandler {
+  private async captureAccountCreateEvent(type: string | undefined, method: string) {
+    talismanAnalytics.capture("account create", {
+      type,
+      method,
+      isOnboarded: await this.stores.app.getIsOnboarded(),
+    })
+  }
+
   private async accountCreate({ name, type, ...options }: RequestAccountCreate): Promise<string> {
     const password = this.stores.password.getPassword()
     assert(password, "Not logged in")
@@ -105,7 +113,7 @@ export default class AccountsHandler extends ExtensionHandler {
       type
     )
 
-    talismanAnalytics.capture("account create", { type, method: "derived" })
+    this.captureAccountCreateEvent(type, "derived")
     return pair.address
   }
 
@@ -166,7 +174,7 @@ export default class AccountsHandler extends ExtensionHandler {
         type // if undefined, defaults to keyring's default (sr25519 atm)
       )
 
-      talismanAnalytics.capture("account create", { type, method: "seed" })
+      this.captureAccountCreateEvent(type, "seed")
 
       return pair.address
     } catch (error) {
@@ -203,17 +211,17 @@ export default class AccountsHandler extends ExtensionHandler {
       keyring.encryptAccount(pair, password)
       addresses.push(pair.address)
 
-      talismanAnalytics.capture("account create", { type: pair.type, method: "json" })
+      this.captureAccountCreateEvent(pair.type, "json")
     }
 
     return addresses
   }
 
-  private accountsCreateLedgerEthereum({
+  private async accountsCreateLedgerEthereum({
     name,
     address,
     path,
-  }: RequestAccountCreateLedgerEthereum): string {
+  }: RequestAccountCreateLedgerEthereum) {
     assert(isEthereumAddress(address), "Not an Ethereum address")
 
     // ui-keyring's addHardware method only supports substrate accounts, cannot set ethereum type
@@ -241,7 +249,7 @@ export default class AccountsHandler extends ExtensionHandler {
     keyring.keyring.addPair(pair)
     keyring.saveAccount(pair)
 
-    talismanAnalytics.capture("account create", { type: "ethereum", method: "hardware" })
+    this.captureAccountCreateEvent("ethereum", "hardware")
 
     return pair.address
   }
@@ -292,7 +300,7 @@ export default class AccountsHandler extends ExtensionHandler {
     keyring.keyring.addPair(pair)
     keyring.saveAccount(pair)
 
-    talismanAnalytics.capture("account create", { type, method: "dcent" })
+    this.captureAccountCreateEvent(type, "dcent")
 
     return pair.address
   }
@@ -312,7 +320,7 @@ export default class AccountsHandler extends ExtensionHandler {
       origin: AccountType.Ledger,
     })
 
-    talismanAnalytics.capture("account create", { type: "substrate", method: "hardware" })
+    this.captureAccountCreateEvent("substrate", "hardware")
 
     return pair.address
   }
@@ -333,7 +341,7 @@ export default class AccountsHandler extends ExtensionHandler {
       origin: AccountType.Qr,
     })
 
-    talismanAnalytics.capture("account create", { type: "substrate", method: "qr" })
+    this.captureAccountCreateEvent("substrate", "qr")
 
     return pair.address
   }
@@ -376,10 +384,10 @@ export default class AccountsHandler extends ExtensionHandler {
     keyring.keyring.addPair(pair)
     keyring.saveAccount(pair)
 
-    talismanAnalytics.capture("add watched account", {
-      type: isEthereumAddress(safeAddress) ? "ethereum" : "substrate",
-      method: "watched",
-    })
+    this.captureAccountCreateEvent(
+      isEthereumAddress(safeAddress) ? "ethereum" : "substrate",
+      "watched"
+    )
 
     return pair.address
   }
