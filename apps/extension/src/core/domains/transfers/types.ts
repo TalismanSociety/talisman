@@ -9,7 +9,7 @@ import { EthGasSettings, EvmNetworkId } from "../ethereum/types"
 import { WalletTransactionTransferInfo } from "../transactions"
 
 // Asset Transfer Messages
-export type AssetTransferMethod = "transferKeepAlive" | "transfer" | "transferAll"
+export type AssetTransferMethod = "transferKeepAlive" | "transferAllowDeath" | "transferAll"
 export interface RequestAssetTransfer {
   chainId: ChainId
   tokenId: TokenId

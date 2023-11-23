@@ -19,7 +19,7 @@ export type NewTransferParamsType<T extends Record<string, unknown>> = BaseTrans
 
 export type TransferTokenTx =
   | { type: "substrate"; tx: UnsignedTransaction }
-  | { type: "evm"; tx: ethers.providers.TransactionRequest }
+  | { type: "evm"; tx: ethers.providers.TransactionRequest } // TODO should this be migrated to viem equivalent?
 
 export type ChainConnectors = { substrate?: ChainConnector; evm?: ChainConnectorEvm }
 export type Hydrate = {
