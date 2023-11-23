@@ -218,7 +218,9 @@ export default class AssetTransfersRpc {
       specVersion,
       transactionVersion,
       tip,
-      transferMethod: method,
+      // has to be cast to any because typing of the balance modules doesn't allow different types per module
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      transferMethod: method as any,
     })
 
     assert(transaction, `Failed to construct tx for token '${token.id}'`)
