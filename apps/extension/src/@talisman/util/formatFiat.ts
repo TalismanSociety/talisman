@@ -6,9 +6,26 @@ export const fiatDecimalSeparator = parts.find((p) => p.type === "decimal")?.val
 
 export const fiatGroupSeparator = parts.find((p) => p.type === "group")?.value ?? ","
 
-export const formatFiat = (amount = 0, currency = "usd") =>
-  new Intl.NumberFormat(undefined, {
-    style: "currency",
-    currency,
-    currencyDisplay: "narrowSymbol",
-  }).format(amount)
+export const formatFiat = (
+  amount = 0,
+  currency: Intl.NumberFormatOptions["currency"] | undefined,
+  currencyDisplay?: string
+) => {
+  const formatted = new Intl.NumberFormat(
+    undefined,
+    currency === undefined
+      ? {}
+      : {
+          style: "currency",
+          currency,
+          currencyDisplay: currencyDisplay ?? "narrowSymbol",
+        }
+  ).format(amount)
+
+  // Hack to get trailing ISO code instead of leading
+  if (currency !== undefined && currencyDisplay === "code") {
+    return formatted.replace(`${currency.toUpperCase()}`, "").trim() + " " + currency.toUpperCase()
+  }
+
+  return formatted
+}

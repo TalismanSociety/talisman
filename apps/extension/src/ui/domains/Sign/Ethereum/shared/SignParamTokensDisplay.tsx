@@ -1,3 +1,4 @@
+import { BalanceFormatter } from "@talismn/balances"
 import { classNames } from "@talismn/util"
 import { AssetLogo, CoingeckoLogoRequest } from "@ui/domains/Asset/AssetLogo"
 import Fiat from "@ui/domains/Asset/Fiat"
@@ -10,7 +11,7 @@ type SignParamTokensDisplayProps = {
   tokens: string | number | null
   decimals: number
   symbol: string
-  fiat?: number | null
+  fiat?: number | BalanceFormatter | null
   withIcon?: boolean
   className?: string
 }
@@ -42,7 +43,7 @@ export const SignParamTokensDisplay: FC<SignParamTokensDisplayProps> = ({
       </span>
       {typeof fiat === "number" && (
         <span>
-          (<Fiat amount={fiat} currency="usd" noCountUp />)
+          (<Fiat amount={fiat} noCountUp />)
         </span>
       )}
     </span>

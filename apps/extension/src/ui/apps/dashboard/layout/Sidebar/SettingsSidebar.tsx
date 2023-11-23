@@ -3,7 +3,7 @@ import {
   AlertCircleIcon,
   GlobeIcon,
   LinkIcon,
-  SeedIcon,
+  SecretIcon,
   ShieldIcon,
   SlidersIcon,
   TalismanHandIcon,
@@ -20,7 +20,7 @@ export const SettingsSidebar = () => {
   const { showBackupNotification } = useMnemonicBackup()
 
   return (
-    <Nav className="gap-2 p-4 text-sm lg:p-12 lg:text-base">
+    <Nav className="gap-1 p-4 text-sm lg:px-12 lg:pb-12 lg:pt-6 lg:text-base">
       <SidebarNavItem title={t("General")} to="/settings/general" icon={<SlidersIcon />} />
       <SidebarNavItem title={t("Accounts")} to="/settings/accounts" icon={<UserIcon />} />
       <SidebarNavItem
@@ -31,7 +31,7 @@ export const SettingsSidebar = () => {
           </span>
         }
         to="/settings/mnemonics"
-        icon={<SeedIcon />}
+        icon={<SecretIcon />}
       />
       <SidebarNavItem title={t("Address Book")} to="/settings/address-book" icon={<UsersIcon />} />
       <SidebarNavItem

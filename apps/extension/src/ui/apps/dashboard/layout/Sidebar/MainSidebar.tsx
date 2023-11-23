@@ -2,17 +2,19 @@ import {
   TALISMAN_WEB_APP_CROWDLOANS_URL,
   TALISMAN_WEB_APP_NFTS_URL,
   TALISMAN_WEB_APP_STAKING_URL,
+  TALISMAN_WEB_APP_TRANSPORT_URL,
 } from "@core/constants"
 import { Nav } from "@talisman/components/Nav"
 import {
-  ClockIcon,
   CreditCardIcon,
   DownloadAlertIcon,
+  HistoryIcon,
   ImageIcon,
+  PieChartIcon,
   PlusIcon,
+  RepeatIcon,
   SettingsIcon,
   StarIcon,
-  UserIcon,
   ZapIcon,
 } from "@talismn/icons"
 import { useBuyTokensModal } from "@ui/domains/Asset/Buy/BuyTokensModalContext"
@@ -67,6 +69,12 @@ export const MainSidebar = () => {
     return false
   }, [account?.address, genericEvent])
 
+  const handleTransportClick = useCallback(() => {
+    genericEvent("open web app transport", { from: "sidebar" })
+    window.open(TALISMAN_WEB_APP_TRANSPORT_URL, "_blank")
+    return false
+  }, [genericEvent])
+
   const handleCrowdloansClick = useCallback(() => {
     genericEvent("open web app crowdloans", { from: "sidebar", target: "crowdloans" })
     window.open(TALISMAN_WEB_APP_CROWDLOANS_URL, "_blank")
@@ -89,12 +97,18 @@ export const MainSidebar = () => {
   }, [genericEvent, navigate])
 
   return (
-    <Nav className="gap-2 p-4 text-sm lg:p-12 lg:text-base">
+    <Nav className="gap-1 p-4 text-sm lg:px-12 lg:pb-12 lg:pt-6 lg:text-base">
+      <SidebarNavItem
+        title={t("Add Account")}
+        to="/accounts/add"
+        onClick={handleAddAccountClick}
+        icon={<PlusIcon />}
+      />
       <SidebarNavItem
         title={t("Portfolio")}
         to="/portfolio"
         onClick={handlePortfolioClick}
-        icon={<UserIcon />}
+        icon={<PieChartIcon />}
       />
       {showBuyCryptoButton && (
         <SidebarNavItem
@@ -103,13 +117,6 @@ export const MainSidebar = () => {
           icon={<CreditCardIcon />}
         />
       )}
-      <SidebarNavItem
-        title={t("Add Account")}
-        to="/accounts/add"
-        onClick={handleAddAccountClick}
-        icon={<PlusIcon />}
-      />
-
       {showStaking && (
         <SidebarNavItem
           title={t("Staking")}
@@ -118,6 +125,12 @@ export const MainSidebar = () => {
           icon={<ZapIcon />}
         />
       )}
+      <SidebarNavItem
+        title={t("Transport")}
+        onClick={handleTransportClick}
+        isExternalLink
+        icon={<RepeatIcon />}
+      />
       <SidebarNavItem
         title={t("NFTs")}
         onClick={handleNftsClick}
@@ -134,7 +147,7 @@ export const MainSidebar = () => {
         <SidebarNavItem
           title={t("Transaction History")}
           onClick={handleTxHistoryClick}
-          icon={<ClockIcon />}
+          icon={<HistoryIcon />}
           isExternalLink
         />
       )}

@@ -3,6 +3,7 @@ import { api } from "@ui/api"
 import { AnalyticsPage, sendAnalyticsEvent } from "@ui/api/analytics"
 import { NoAccounts as NoAccountsComponent } from "@ui/domains/Portfolio/EmptyStates/NoAccounts"
 import { useAnalyticsPageView } from "@ui/hooks/useAnalyticsPageView"
+import { useSelectedCurrency } from "@ui/hooks/useCurrency"
 import { useCallback } from "react"
 import { useTranslation } from "react-i18next"
 import { PillButton } from "talisman-ui"
@@ -45,6 +46,7 @@ export const NoAccountsPopup = () => {
 
 export const NoAccounts = () => {
   const { t } = useTranslation()
+  const currency = useSelectedCurrency()
 
   return (
     <div className="flex flex-col items-center gap-16">
@@ -54,7 +56,7 @@ export const NoAccounts = () => {
           <span className="text-body-disabled font-surtExpanded text-lg font-bold">
             {(0).toLocaleString("en-us", {
               style: "currency",
-              currency: "usd",
+              currency,
               currencyDisplay: "narrowSymbol",
             })}
           </span>

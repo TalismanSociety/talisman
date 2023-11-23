@@ -8,6 +8,7 @@ import { useDisplayBalances } from "@ui/domains/Portfolio/useDisplayBalances"
 import { useTokenBalancesSummary } from "@ui/domains/Portfolio/useTokenBalancesSummary"
 import { useAnalytics } from "@ui/hooks/useAnalytics"
 import useBalances from "@ui/hooks/useBalances"
+import { useSelectedCurrency } from "@ui/hooks/useCurrency"
 import { useSearchParamsSelectedAccount } from "@ui/hooks/useSearchParamsSelectedAccount"
 import { useCallback, useEffect, useMemo } from "react"
 import { useTranslation } from "react-i18next"
@@ -17,11 +18,15 @@ import { IconButton } from "talisman-ui"
 const PageContent = ({ balances, symbol }: { balances: Balances; symbol: string }) => {
   const navigate = useNavigate()
   const balancesToDisplay = useDisplayBalances(balances)
-  const { token } = useTokenBalancesSummary(balancesToDisplay)
+  const currency = useSelectedCurrency()
+  const { token, rate } = useTokenBalancesSummary(balancesToDisplay)
 
   const handleBackBtnClick = useCallback(() => navigate(-1), [navigate])
 
-  const total = useMemo(() => balancesToDisplay.sum.fiat("usd").total, [balancesToDisplay])
+  const total = useMemo(
+    () => balancesToDisplay.sum.fiat(currency).total,
+    [balancesToDisplay.sum, currency]
+  )
 
   const { t } = useTranslation()
 
@@ -36,11 +41,11 @@ const PageContent = ({ balances, symbol }: { balances: Balances; symbol: string 
         </div>
         <div className="flex grow flex-col gap-1 pl-2 text-sm">
           <div className="text-body-secondary flex justify-between">
-            <div>{t("Asset")}</div>
+            <div>{symbol}</div>
             <div>{t("Total")}</div>
           </div>
           <div className="text-md flex justify-between font-bold">
-            <div>{symbol}</div>
+            {rate && <Fiat amount={rate} />}
             <div>
               <Fiat amount={total} isBalance />
             </div>

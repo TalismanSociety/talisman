@@ -6,6 +6,7 @@ import { classNames } from "@talismn/util"
 import { api } from "@ui/api"
 import { ChainLogo } from "@ui/domains/Asset/ChainLogo"
 import Fiat from "@ui/domains/Asset/Fiat"
+import { TokenLogo } from "@ui/domains/Asset/TokenLogo"
 import Tokens from "@ui/domains/Asset/Tokens"
 import { useCopyAddressModal } from "@ui/domains/CopyAddress"
 import { useSelectedAccount } from "@ui/domains/Portfolio/SelectedAccountContext"
@@ -28,7 +29,7 @@ type AssetRowProps = {
 }
 
 const ChainTokenBalances = ({ chainId, balances }: AssetRowProps) => {
-  const { chainOrNetwork, summary, symbol, detailRows, status, networkType } =
+  const { chainOrNetwork, summary, symbol, tokenId, detailRows, status, networkType } =
     useChainTokenBalances({ chainId, balances })
 
   // wait for data to load
@@ -43,11 +44,12 @@ const ChainTokenBalances = ({ chainId, balances }: AssetRowProps) => {
         )}
       >
         <div className="text-xl">
-          <ChainLogo id={chainOrNetwork.id} />
+          <TokenLogo tokenId={tokenId} />
         </div>
         <div className="flex grow flex-col justify-center gap-2 pr-8">
           <div className="flex justify-between font-bold text-white">
             <div className="flex items-center">
+              <ChainLogo className="mr-2" id={chainOrNetwork.id} />
               <span className="mr-2">{chainOrNetwork.name}</span>
               <CopyAddressButton symbol={symbol} networkId={chainOrNetwork.id} />
               <SendFundsButton symbol={symbol} networkId={chainOrNetwork.id} shouldClose />
@@ -111,7 +113,7 @@ const ChainTokenBalances = ({ chainId, balances }: AssetRowProps) => {
                 ) : null}
               </div>
               <div className="text-xs">
-                {row.fiat === null ? "-" : <Fiat currency="usd" amount={row.fiat} isBalance />}
+                {row.fiat === null ? "-" : <Fiat amount={row.fiat} isBalance />}
               </div>
             </div>
           </div>

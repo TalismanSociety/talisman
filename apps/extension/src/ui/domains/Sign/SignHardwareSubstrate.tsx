@@ -25,6 +25,8 @@ const getSignHardwareComponent = (account: AccountJsonAny | null) => {
     case AccountType.Dcent:
       return SignDcentSubstrate
     case AccountType.Ledger:
+    case // @ts-expect-error incomplete migration, remove once migration is completed
+    "HARDWARE":
       return SignLedgerSubstrate
     default:
       throw new Error(`Unknown sign hardware component for account origin ${account?.origin}`)

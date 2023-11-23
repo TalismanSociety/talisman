@@ -1,4 +1,7 @@
-import { rebuildTransactionRequestNumbers } from "@core/domains/ethereum/helpers"
+import {
+  parseRpcTransactionRequestBase,
+  serializeTransactionRequest,
+} from "@core/domains/ethereum/helpers"
 import { KnownSigningRequestIdOnly } from "@core/domains/signing/types"
 import { log } from "@core/log"
 import { HexString } from "@polkadot/util/types"
@@ -15,8 +18,8 @@ const useEthSignTransactionRequestProvider = ({ id }: KnownSigningRequestIdOnly<
   const signingRequest = useRequest(id)
   const network = useEvmNetwork(signingRequest?.ethChainId)
 
-  const transactionRequest = useMemo(
-    () => (signingRequest ? rebuildTransactionRequestNumbers(signingRequest.request) : undefined),
+  const txBase = useMemo(
+    () => (signingRequest ? parseRpcTransactionRequestBase(signingRequest.request) : undefined),
     [signingRequest]
   )
 
@@ -24,8 +27,8 @@ const useEthSignTransactionRequestProvider = ({ id }: KnownSigningRequestIdOnly<
   const [isPayloadLocked, setIsPayloadLocked] = useState(false)
 
   const {
+    decodedTx,
     transaction,
-    transactionInfo,
     txDetails,
     priority,
     setPriority,
@@ -36,7 +39,7 @@ const useEthSignTransactionRequestProvider = ({ id }: KnownSigningRequestIdOnly<
     gasSettingsByPriority,
     setCustomSettings,
     isValid,
-  } = useEthTransaction(transactionRequest, isPayloadLocked)
+  } = useEthTransaction(txBase, signingRequest?.ethChainId, isPayloadLocked)
 
   const baseRequest = useAnySigningRequest({
     currentRequest: signingRequest,
@@ -45,7 +48,10 @@ const useEthSignTransactionRequestProvider = ({ id }: KnownSigningRequestIdOnly<
   })
 
   const approve = useCallback(() => {
-    return baseRequest && baseRequest.approve(transaction)
+    if (!baseRequest) throw new Error("Missing base request")
+    if (!transaction) throw new Error("Missing transaction")
+    const serialized = serializeTransactionRequest(transaction)
+    return baseRequest && baseRequest.approve(serialized)
   }, [baseRequest, transaction])
 
   const approveHardware = useCallback(
@@ -53,11 +59,13 @@ const useEthSignTransactionRequestProvider = ({ id }: KnownSigningRequestIdOnly<
       if (!baseRequest || !transaction || !baseRequest.id) return
       baseRequest.setStatus.processing("Approving request")
       try {
-        await api.ethApproveSignAndSendHardware(baseRequest.id, transaction, signature)
+        const serialized = serializeTransactionRequest(transaction)
+        await api.ethApproveSignAndSendHardware(baseRequest.id, serialized, signature)
         baseRequest.setStatus.success("Approved")
       } catch (err) {
         log.error("failed to approve hardware", { err })
         baseRequest.setStatus.error((err as Error).message)
+        setIsPayloadLocked(false)
       }
     },
     [baseRequest, transaction]
@@ -73,8 +81,8 @@ const useEthSignTransactionRequestProvider = ({ id }: KnownSigningRequestIdOnly<
     errorDetails,
     network,
     networkUsage,
+    decodedTx,
     transaction,
-    transactionInfo,
     approve,
     approveHardware,
     isPayloadLocked,

@@ -55,13 +55,16 @@ module.exports = class SimpleLocalizeDownloadPlugin {
       "SimpleLocalizeDownloadPlugin",
       async ({ options }, callback) => {
         const languages = await simpleLocalizeFetch(
-          `https://cdn.simplelocalize.io/${projectToken}/_latest/_languages`
+          "https://api.simplelocalize.io/api/v1/languages"
         )
           .catch((error) => {
             console.error("Failed to fetch languages list:", error)
             return []
           })
-          .then((result) => Object.fromEntries(result.map((lang) => [lang.key, lang.name])))
+          .then((result) => {
+            if (result.status !== 200) throw new Error("Bad response from SimpleLocalize")
+            return Object.fromEntries(result.data.map((lang) => [lang.key, lang.name]))
+          })
 
         setSupportedLanguages(
           options,

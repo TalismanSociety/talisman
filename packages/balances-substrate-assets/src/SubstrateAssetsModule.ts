@@ -218,8 +218,7 @@ export const SubAssetsModule: NewBalanceModule<
 
           const existentialDeposit =
             unsafeAssetsAsset?.value?.minBalance?.toBigInt?.()?.toString?.() ?? "0"
-          const symbol =
-            tokenConfig.symbol ?? unsafeAssetsMetadata?.symbol?.toHuman?.() ?? "Unknown"
+          const symbol = tokenConfig.symbol ?? unsafeAssetsMetadata?.symbol?.toHuman?.() ?? "Unit"
           const decimals = unsafeAssetsMetadata?.decimals?.toNumber?.() ?? 0
           const isFrozen = unsafeAssetsMetadata?.isFrozen?.toHuman?.() ?? false
           const coingeckoId =

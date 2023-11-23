@@ -28,9 +28,10 @@ export const SidebarNavItem = ({
         contentClassName={classNames("hidden md:block", contentClassName)}
       >
         {isExternalLink ? (
-          <>
-            <span>{children ?? title}</span> <ExternalLinkIcon className="hidden lg:inline" />
-          </>
+          <span className="inline-flex items-center">
+            <span>{children ?? title}</span>
+            <ExternalLinkIcon className="ml-2 hidden lg:inline" />
+          </span>
         ) : (
           <>{children ?? title}</>
         )}

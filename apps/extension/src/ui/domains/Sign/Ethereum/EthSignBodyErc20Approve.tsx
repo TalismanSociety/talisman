@@ -1,11 +1,12 @@
 import { BalanceFormatter } from "@core/domains/balances"
 import { CustomErc20Token } from "@core/domains/tokens/types"
+import { assert } from "@polkadot/util"
 import useToken from "@ui/hooks/useToken"
 import { useTokenRates } from "@ui/hooks/useTokenRates"
 import useTokens from "@ui/hooks/useTokens"
-import { BigNumber } from "ethers"
 import { FC, useMemo } from "react"
 import { Trans, useTranslation } from "react-i18next"
+import { toHex } from "viem"
 
 import { SignAlertMessage } from "../SignAlertMessage"
 import { SignContainer } from "../SignContainer"
@@ -23,7 +24,7 @@ const ALLOWANCE_UNLIMITED = "0xfffffffffffffffffffffffffffffffffffffffffffffffff
 
 export const EthSignBodyErc20Approve: FC = () => {
   const { t } = useTranslation("request")
-  const { account, network, transactionInfo } = useEthSignKnownTransactionRequest()
+  const { account, network, decodedTx } = useEthSignKnownTransactionRequest()
 
   const { tokens } = useTokens(true)
   const token = useMemo(() => {
@@ -32,40 +33,47 @@ export const EthSignBodyErc20Approve: FC = () => {
           (t) =>
             t.type === "evm-erc20" &&
             t.evmNetwork?.id === network.id &&
-            t.contractAddress === transactionInfo.targetAddress
+            t.contractAddress === decodedTx.targetAddress
         ) as CustomErc20Token)
       : undefined
-  }, [network, tokens, transactionInfo.targetAddress])
+  }, [network, tokens, decodedTx.targetAddress])
 
   const tokenRates = useTokenRates(token?.id)
 
   const { symbol } = useMemo(() => {
-    const symbol = token?.symbol ?? (transactionInfo.asset.symbol as string)
+    assert(decodedTx.asset?.symbol, "missing asset symbol")
+    const symbol = token?.symbol ?? (decodedTx.asset.symbol as string)
 
     return { symbol }
-  }, [token?.symbol, transactionInfo.asset.symbol])
+  }, [token?.symbol, decodedTx.asset?.symbol])
 
   const nativeToken = useToken(network?.nativeToken?.id)
 
   const { spender, allowance, isInfinite } = useMemo(() => {
-    const rawAllowance = getContractCallArg<BigNumber>(transactionInfo.contractCall, "amount")
-    const isInfinite = rawAllowance?.toHexString() === ALLOWANCE_UNLIMITED
+    assert(decodedTx.asset?.decimals !== undefined, "missing asset decimals")
+    const rawAllowance = getContractCallArg<bigint>(decodedTx, "amount")
+    const isInfinite = toHex(rawAllowance) === ALLOWANCE_UNLIMITED
 
     return {
-      spender: getContractCallArg<string>(transactionInfo.contractCall, "spender"),
+      spender: getContractCallArg<string>(decodedTx, "spender"),
       allowance:
         rawAllowance && !isInfinite
-          ? new BalanceFormatter(
-              rawAllowance.toString(),
-              transactionInfo.asset.decimals,
-              tokenRates
-            )
+          ? new BalanceFormatter(rawAllowance.toString(), decodedTx.asset.decimals, tokenRates)
           : undefined,
       isInfinite,
     }
-  }, [tokenRates, transactionInfo.asset.decimals, transactionInfo.contractCall])
+  }, [decodedTx, tokenRates])
 
-  if (!nativeToken || !spender || !account || !network) return <SignViewBodyShimmer />
+  if (
+    !nativeToken ||
+    !spender ||
+    !account ||
+    !network ||
+    !decodedTx.targetAddress ||
+    !decodedTx.asset?.symbol ||
+    decodedTx.asset?.decimals === undefined
+  )
+    return <SignViewBodyShimmer />
 
   return (
     <SignContainer
@@ -102,20 +110,20 @@ export const EthSignBodyErc20Approve: FC = () => {
         <div>{isInfinite ? t("to spend infinite") : t("to spend")}</div>
         {allowance ? (
           <SignParamTokensButton
-            address={transactionInfo.targetAddress}
+            address={decodedTx.targetAddress}
             network={network}
             tokenId={token?.id}
-            erc20={{ evmNetworkId: network.id, contractAddress: transactionInfo.targetAddress }}
+            erc20={{ evmNetworkId: network.id, contractAddress: decodedTx.targetAddress }}
             tokens={allowance.tokens}
-            decimals={transactionInfo.asset.decimals}
+            decimals={decodedTx.asset.decimals}
             symbol={symbol}
-            fiat={allowance.fiat("usd")}
+            fiat={allowance}
             withIcon
           />
         ) : (
           <SignParamErc20TokenButton
-            address={transactionInfo.targetAddress}
-            asset={transactionInfo.asset}
+            address={decodedTx.targetAddress}
+            asset={decodedTx.asset}
             network={network}
             withIcon
           />

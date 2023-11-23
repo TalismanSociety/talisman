@@ -46,3 +46,23 @@ export class EthProviderRpcError extends Error {
     Object.setPrototypeOf(this, EthProviderRpcError.prototype)
   }
 }
+
+/**
+ * Wrapped error so viem doesn't see the "data" property
+ */
+export class WrappedEthProviderRpcError extends Error {
+  code: number
+  message: string
+  rpcData?: unknown //hex encoded error or underlying error object
+
+  constructor(message: string, code: number, rpcData?: unknown) {
+    super(message)
+
+    this.code = code
+    this.message = message
+    this.rpcData = rpcData
+
+    // Set the prototype explicitly.
+    Object.setPrototypeOf(this, WrappedEthProviderRpcError.prototype)
+  }
+}

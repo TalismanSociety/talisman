@@ -3,6 +3,7 @@ import { Chain } from "@core/domains/chains/types"
 import { Token } from "@core/domains/tokens/types"
 import { TokenRatesList } from "@talismn/token-rates"
 import { usePortfolio } from "@ui/domains/Portfolio/context"
+import { useSelectedCurrency } from "@ui/hooks/useCurrency"
 import BigNumber from "bignumber.js"
 import { useMemo } from "react"
 
@@ -74,6 +75,7 @@ export const useTokenBalancesSummary = (balances: Balances) => {
     () => getBestTokenForSymbol(tokenBalances, tokens, chains),
     [chains, tokenBalances, tokens]
   )
+  const currency = useSelectedCurrency()
 
   const tokenBalanceRates = useMemo(
     () =>
@@ -113,27 +115,27 @@ export const useTokenBalancesSummary = (balances: Balances) => {
         totalTokens: totalTokens.plus(b.total.tokens),
         totalFiat:
           b.token && tokenBalanceRates[b.token.id]
-            ? (totalFiat ?? 0) + (b.total.fiat("usd") ?? 0)
+            ? (totalFiat ?? 0) + (b.total.fiat(currency) ?? 0)
             : totalFiat,
         lockedTokens: lockedTokens.plus(b.frozen.tokens).plus(b.reserved.tokens),
         lockedFiat:
           b.token && tokenBalanceRates[b.token.id]
-            ? (lockedFiat ?? 0) + (b.frozen.fiat("usd") ?? 0) + (b.reserved.fiat("usd") ?? 0)
+            ? (lockedFiat ?? 0) + (b.frozen.fiat(currency) ?? 0) + (b.reserved.fiat(currency) ?? 0)
             : lockedFiat,
         reservedTokens: reservedTokens.plus(b.reserved.tokens),
         reservedFiat:
           b.token && tokenBalanceRates[b.token.id]
-            ? (reservedFiat ?? 0) + (b.reserved.fiat("usd") ?? 0)
+            ? (reservedFiat ?? 0) + (b.reserved.fiat(currency) ?? 0)
             : reservedFiat,
         frozenTokens: frozenTokens.plus(b.frozen.tokens),
         frozenFiat:
           b.token && tokenBalanceRates[b.token.id]
-            ? (frozenFiat ?? 0) + (b.frozen.fiat("usd") ?? 0)
+            ? (frozenFiat ?? 0) + (b.frozen.fiat(currency) ?? 0)
             : frozenFiat,
         availableTokens: availableTokens.plus(b.transferable.tokens),
         availableFiat:
           b.token && tokenBalanceRates[b.token.id]
-            ? (availableFiat ?? 0) + (b.transferable.fiat("usd") ?? 0)
+            ? (availableFiat ?? 0) + (b.transferable.fiat(currency) ?? 0)
             : availableFiat,
       }),
       {
@@ -151,7 +153,13 @@ export const useTokenBalancesSummary = (balances: Balances) => {
     )
 
     return summary
-  }, [tokenBalanceRates, tokenBalances])
+  }, [currency, tokenBalanceRates, tokenBalances.count, tokenBalances.each])
 
-  return { token, summary, tokenBalances, tokenBalanceRates }
+  return {
+    token,
+    rate: token?.id !== undefined ? tokenBalanceRates[token?.id]?.[currency] : undefined,
+    summary,
+    tokenBalances,
+    tokenBalanceRates,
+  }
 }

@@ -1,8 +1,8 @@
 import { log } from "@core/log"
 import type { ResponseType, SendRequest } from "@core/types"
 import type { ProviderInterfaceCallback } from "@polkadot/rpc-provider/types"
-import { HexString } from "@polkadot/util/types"
-import { CustomChain, CustomEvmNetwork, Token } from "@talismn/chaindata-provider"
+import type { HexString } from "@polkadot/util/types"
+import type { CustomChain, CustomEvmNetwork, Token } from "@talismn/chaindata-provider"
 
 type TalismanWindow = typeof globalThis & {
   talismanSub?: ReturnType<typeof rpcProvider> & ReturnType<typeof tokensProvider>

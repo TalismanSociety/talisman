@@ -1,4 +1,3 @@
-import { BigNumber } from "ethers"
 import { FC, useMemo } from "react"
 import { useTranslation } from "react-i18next"
 
@@ -10,12 +9,9 @@ import { useEthSignKnownTransactionRequest } from "../shared/useEthSignKnownTran
 
 export const EthSignMoonStakingStakeLess: FC = () => {
   const { t } = useTranslation("request")
-  const { network, transactionInfo } = useEthSignKnownTransactionRequest()
+  const { network, decodedTx } = useEthSignKnownTransactionRequest()
 
-  const less = useMemo(
-    () => getContractCallArg<BigNumber>(transactionInfo.contractCall, "less")?.toBigInt(),
-    [transactionInfo.contractCall]
-  )
+  const less = useMemo(() => getContractCallArg<bigint>(decodedTx, "less"), [decodedTx])
 
   if (!network?.nativeToken?.id || !less) return null
 

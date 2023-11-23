@@ -1,4 +1,5 @@
 import { ProviderType } from "@core/domains/sitesAuthorised/types"
+import { FadeIn } from "@talisman/components/FadeIn"
 import { classNames } from "@talismn/util"
 import {
   CSSProperties,
@@ -50,10 +51,7 @@ export const ProviderTypeSwitch = ({
   const refPolkadot = useRef<HTMLButtonElement>(null)
   const refEthereum = useRef<HTMLButtonElement>(null)
 
-  const [selectionOverlay, setSelectionOverlay] = useState<CSSProperties>({
-    left: 0,
-    width: 0,
-  })
+  const [selectionOverlay, setSelectionOverlay] = useState<CSSProperties | null>(null)
 
   useEffect(() => {
     if (!refPolkadot.current || !refEthereum.current) return
@@ -104,10 +102,14 @@ export const ProviderTypeSwitch = ({
         >
           {t("Ethereum")}
         </Button>
-        <div
-          className="bg-primary absolute top-0 h-full rounded-full transition-all duration-150 ease-in-out"
-          style={selectionOverlay}
-        />
+        {selectionOverlay && (
+          <FadeIn>
+            <div
+              className="bg-primary absolute top-0 h-full rounded-full transition-all duration-150 ease-in-out"
+              style={selectionOverlay}
+            />
+          </FadeIn>
+        )}
       </div>
     </div>
   )

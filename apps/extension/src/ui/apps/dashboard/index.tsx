@@ -39,10 +39,12 @@ import { AnalyticsOptInPage } from "./routes/Settings/AnalyticsOptInPage"
 import { AutoLockTimerPage } from "./routes/Settings/AutoLockTimerPage"
 import { ChangePasswordPage } from "./routes/Settings/ChangePasswordPage"
 import { ConnectedSitesPage } from "./routes/Settings/ConnectedSitesPage"
+import CurrencySettingsPage from "./routes/Settings/CurrencySettingsPage"
 import { GeneralPage } from "./routes/Settings/GeneralPage"
 import { LanguagePage } from "./routes/Settings/LanguagePage"
 import { MnemonicsPage } from "./routes/Settings/Mnemonics/MnemonicsPage"
 import { NetworksTokensPage } from "./routes/Settings/NetworksTokensPage"
+import { QrMetadataPage } from "./routes/Settings/QrMetadataPage"
 import { SecurityPrivacyPage } from "./routes/Settings/SecurityPrivacyPage"
 import { AddCustomTokenPage } from "./routes/Tokens/AddCustomTokenPage"
 import { TokenPage } from "./routes/Tokens/TokenPage"
@@ -107,6 +109,7 @@ const DashboardInner = () => {
           <Route path="" element={<Navigate to="/settings/general" replace />} />
           <Route path="general" element={<GeneralPage />} />
           <Route path="language" element={<LanguagePage />} />
+          <Route path="currency" element={<CurrencySettingsPage />} />
           <Route path="address-book" element={<AddressBookPage />} />
           <Route path="connected-sites" element={<ConnectedSitesPage />} />
           <Route path="mnemonics" element={<MnemonicsPage />} />
@@ -115,6 +118,7 @@ const DashboardInner = () => {
           <Route path="change-password" element={<ChangePasswordPage />} />
           <Route path="autolock" element={<AutoLockTimerPage />} />
           <Route path="networks-tokens" element={<NetworksTokensPage />} />
+          <Route path="qr-metadata" element={<QrMetadataPage />} />
           <Route path="about" element={<AboutPage />} />
           <Route path="analytics" element={<AnalyticsOptInPage />} />
           <Route path="*" element={<Navigate to="" replace />} />
@@ -125,9 +129,11 @@ const DashboardInner = () => {
           <Route path=":id" element={<TokenPage />} />
         </Route>
         <Route path="networks">
-          <Route path="" element={<NetworksPage />} />
-          <Route path="add" element={<NetworkPage />} />
-          <Route path=":id" element={<NetworkPage />} />
+          <Route path="" element={<Navigate to="/networks/ethereum" replace />} />
+          <Route path=":networksType" element={<NetworksPage />} />
+          <Route path=":networksType/add" element={<NetworkPage />} />
+          <Route path=":networksType/:id" element={<NetworkPage />} />
+          <Route path="*" element={<Navigate to="" replace />} />
         </Route>
         <Route path="*" element={<Navigate to="/portfolio" replace />} />
       </Routes>

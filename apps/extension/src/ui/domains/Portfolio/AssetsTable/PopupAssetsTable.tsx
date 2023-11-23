@@ -9,6 +9,7 @@ import Fiat from "@ui/domains/Asset/Fiat"
 import Tokens from "@ui/domains/Asset/Tokens"
 import { useAnalytics } from "@ui/hooks/useAnalytics"
 import { useBalancesStatus } from "@ui/hooks/useBalancesStatus"
+import { useSelectedCurrency } from "@ui/hooks/useCurrency"
 import { useSearchParamsSelectedAccount } from "@ui/hooks/useSearchParamsSelectedAccount"
 import { MouseEventHandler, ReactNode, useCallback, useMemo } from "react"
 import { Trans, useTranslation } from "react-i18next"
@@ -87,7 +88,7 @@ const AssetRow = ({ balances, locked }: AssetRowProps) => {
   const { account } = useSearchParamsSelectedAccount()
   const status = useBalancesStatus(balances)
 
-  const { token, summary } = useTokenBalancesSummary(balances)
+  const { token, summary, rate } = useTokenBalancesSummary(balances)
   const { showNomPoolBanner, dismissNomPoolBanner } = useNomPoolStakingBanner()
   const showBanner = showNomPoolBanner({
     chainId: token?.chain?.id,
@@ -151,19 +152,22 @@ const AssetRow = ({ balances, locked }: AssetRowProps) => {
           <div className="relative grow">
             {/* we want content from this cell to be hidden if there are too many tokens to display on right cell */}
             <div className="absolute left-0 top-0 flex w-full flex-col gap-2 overflow-hidden text-left">
-              <div className="text-body flex items-center gap-3 whitespace-nowrap text-sm font-bold">
-                {token.symbol}
-                {!!token.isTestnet && (
-                  <span className="text-tiny bg-alert-warn/10 text-alert-warn rounded px-3 py-1 font-light">
-                    {t("Testnet")}
-                  </span>
+              <div className="flex items-center gap-3">
+                <div className="text-body flex items-center gap-3 whitespace-nowrap text-sm font-bold">
+                  {token.symbol}
+                  {!!token.isTestnet && (
+                    <span className="text-tiny bg-alert-warn/10 text-alert-warn rounded px-3 py-1 font-light">
+                      {t("Testnet")}
+                    </span>
+                  )}
+                </div>
+                {!!networkIds.length && (
+                  <div className="text-base">
+                    <NetworksLogoStack networkIds={networkIds} max={3} />
+                  </div>
                 )}
               </div>
-              {!!networkIds.length && (
-                <div className="text-base">
-                  <NetworksLogoStack networkIds={networkIds} />
-                </div>
-              )}
+              {rate !== undefined && <Fiat amount={rate} className="text-body-secondary text-xs" />}
             </div>
           </div>
           <div
@@ -186,7 +190,7 @@ const AssetRow = ({ balances, locked }: AssetRowProps) => {
               />
             </div>
             <div className="text-body-secondary leading-base text-xs">
-              {fiat === null ? "-" : <Fiat currency="usd" amount={fiat} isBalance />}
+              {fiat === null ? "-" : <Fiat amount={fiat} isBalance />}
             </div>
           </div>
         </div>
@@ -250,7 +254,7 @@ const BalancesGroup = ({ label, fiatAmount, className, children }: GroupProps) =
       >
         <div className="text-body-secondary grow text-left">{label}</div>
         <div className="text-body-secondary truncate">
-          <Fiat amount={fiatAmount} currency="usd" isBalance />
+          <Fiat amount={fiatAmount} isBalance />
         </div>
         <div className="text-body-secondary text-md flex flex-col justify-center">
           <AccordionIcon isOpen={isOpen} />
@@ -273,11 +277,13 @@ export const PopupAssetsTable = ({ balances }: GroupedAssetsTableProps) => {
     skeletons,
   } = usePortfolioSymbolBalances(balances)
 
+  const currency = useSelectedCurrency()
+
   // calculate totals
   const { total, totalAvailable, totalLocked } = useMemo(() => {
-    const { total, transferable, locked, reserved } = balances.sum.fiat("usd")
+    const { total, transferable, locked, reserved } = balances.sum.fiat(currency)
     return { total, totalAvailable: transferable, totalLocked: locked + reserved }
-  }, [balances])
+  }, [balances.sum, currency])
 
   const { t } = useTranslation()
 
@@ -291,7 +297,7 @@ export const PopupAssetsTable = ({ balances }: GroupedAssetsTableProps) => {
             <div className="text-md flex items-center gap-2">
               <div className="text-body grow text-left">{t("Total")}</div>
               <div className="text-body-secondary truncate">
-                <Fiat amount={total} currency="usd" isBalance />
+                <Fiat amount={total} isBalance />
               </div>
             </div>
             <div className="h-8" />

@@ -40,6 +40,7 @@ import { KeyringPair$Meta } from "@polkadot/keyring/types"
 import keyring from "@polkadot/ui-keyring"
 import { assert } from "@polkadot/util"
 import { ethereumEncode, isEthereumAddress, mnemonicValidate } from "@polkadot/util-crypto"
+import { HexString } from "@polkadot/util/types"
 import { addressFromSuri } from "@talisman/util/addressFromSuri"
 import { isValidDerivationPath } from "@talisman/util/isValidDerivationPath"
 import { decodeAnyAddress, encodeAnyAddress, sleep } from "@talismn/util"
@@ -267,7 +268,9 @@ export default class AccountsHandler extends ExtensionHandler {
     // keep this basic check for now to avoid polluting the messaging interface, as polkadot is the only token supported by D'CENT.
     if (tokenIds.length === 1 && tokenIds[0] === "polkadot-substrate-native-dot") {
       const chain = await chaindataProvider.getChain("polkadot")
-      meta.genesisHash = chain?.genesisHash
+      meta.genesisHash = chain?.genesisHash?.startsWith?.("0x")
+        ? (chain.genesisHash as HexString)
+        : null
     }
 
     // ui-keyring's addHardware method only supports substrate accounts, cannot set ethereum type
@@ -434,11 +437,11 @@ export default class AccountsHandler extends ExtensionHandler {
     const { err, val } = await getPairForAddressSafely(address, async (pair) => {
       assert(pair.type === "ethereum", "Private key cannot be exported for this account type")
 
-      const pk = getPrivateKey(pair, pw as string)
+      const pk = getPrivateKey(pair, pw as string, "hex")
 
       talismanAnalytics.capture("account export", { type: pair.type, mode: "pk" })
 
-      return pk.toString("hex")
+      return pk
     })
 
     if (err) throw new Error(val as string)

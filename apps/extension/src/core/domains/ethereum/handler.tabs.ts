@@ -10,6 +10,7 @@ import {
 import { CustomErc20Token } from "@core/domains/tokens/types"
 import i18next from "@core/i18nConfig"
 import {
+  ETH_ERROR_EIP1474_INTERNAL_ERROR,
   ETH_ERROR_EIP1474_INVALID_INPUT,
   ETH_ERROR_EIP1474_INVALID_PARAMS,
   ETH_ERROR_EIP1474_RESOURCE_UNAVAILABLE,
@@ -20,21 +21,14 @@ import {
   ETH_ERROR_UNKNOWN_CHAIN_NOT_CONFIGURED,
   EthProviderRpcError,
 } from "@core/injectEth/EthProviderRpcError"
-import {
-  AnyEthRequest,
-  EthProviderMessage,
-  EthRequestArguments,
-  EthRequestSignArguments,
-  EthRequestSignatures,
-} from "@core/injectEth/types"
+import { AnyEthRequest } from "@core/injectEth/types"
 import { TabsHandler } from "@core/libs/Handler"
 import { log } from "@core/log"
+import { chainConnectorEvm } from "@core/rpcs/chain-connector-evm"
 import { chaindataProvider } from "@core/rpcs/chaindata"
 import type { RequestSignatures, RequestTypes, ResponseType } from "@core/types"
 import { Port } from "@core/types/base"
-import { getErc20TokenInfo } from "@core/util/getErc20TokenInfo"
 import { urlToDomain } from "@core/util/urlToDomain"
-import { recoverPersonalSignature } from "@metamask/eth-sig-util"
 import keyring from "@polkadot/ui-keyring"
 import { accounts as accountsObservable } from "@polkadot/ui-keyring/observable/accounts"
 import { assert } from "@polkadot/util"
@@ -42,12 +36,23 @@ import { isEthereumAddress } from "@polkadot/util-crypto"
 import { convertAddress } from "@talisman/util/convertAddress"
 import { githubUnknownTokenLogoUrl } from "@talismn/chaindata-provider"
 import { throwAfter } from "@talismn/util"
-import { ethers, providers } from "ethers"
+import {
+  PublicClient,
+  RpcError,
+  createClient,
+  getAddress,
+  http,
+  recoverMessageAddress,
+  toHex,
+} from "viem"
+import { hexToNumber, isHex } from "viem/utils"
 
+import { getErc20TokenInfo } from "../../util/getErc20TokenInfo"
 import {
   ERROR_DUPLICATE_AUTH_REQUEST_MESSAGE,
   requestAuthoriseSite,
 } from "../sitesAuthorised/requests"
+import { getEvmErrorCause } from "./errors"
 import {
   getErc20TokenId,
   isValidAddEthereumRequestParam,
@@ -56,8 +61,16 @@ import {
   sanitizeWatchAssetRequestParam,
 } from "./helpers"
 import { requestAddNetwork, requestWatchAsset } from "./requests"
-import { getProviderForEthereumNetwork, getProviderForEvmNetworkId } from "./rpcProviders"
-import { Web3WalletPermission, Web3WalletPermissionTarget } from "./types"
+import {
+  AnyEvmError,
+  EthProviderMessage,
+  EthRequestArgs,
+  EthRequestArguments,
+  EthRequestResult,
+  EthRequestSignArguments,
+  Web3WalletPermission,
+  Web3WalletPermissionTarget,
+} from "./types"
 
 interface EthAuthorizedSite extends AuthorizedSite {
   ethChainId: number
@@ -73,7 +86,10 @@ export class EthTabsHandler extends TabsHandler {
     }
   }
 
-  async getSiteDetails(url: string, authorisedAddress?: string): Promise<EthAuthorizedSite> {
+  private async getSiteDetails(
+    url: string,
+    authorisedAddress?: string
+  ): Promise<EthAuthorizedSite> {
     let site
 
     try {
@@ -90,14 +106,14 @@ export class EthTabsHandler extends TabsHandler {
     return site as EthAuthorizedSite
   }
 
-  async getProvider(url: string, authorisedAddress?: string): Promise<providers.JsonRpcProvider> {
+  private async getPublicClient(url: string, authorisedAddress?: string): Promise<PublicClient> {
     const site = await this.getSiteDetails(url, authorisedAddress)
 
     const ethereumNetwork = await chaindataProvider.getEvmNetwork(site.ethChainId.toString())
     if (!ethereumNetwork)
       throw new EthProviderRpcError("Network not supported", ETH_ERROR_EIP1993_CHAIN_DISCONNECTED)
 
-    const provider = await getProviderForEthereumNetwork(ethereumNetwork, { batch: true })
+    const provider = await chainConnectorEvm.getPublicClientForEvmNetwork(ethereumNetwork.id)
     if (!provider)
       throw new EthProviderRpcError(
         `No provider for network ${ethereumNetwork.id} (${ethereumNetwork.name})`,
@@ -156,7 +172,7 @@ export class EthTabsHandler extends TabsHandler {
       )
         .filter(({ type }) => type === "ethereum")
         // send as
-        .map(({ address }) => ethers.utils.getAddress(address).toLowerCase())
+        .map(({ address }) => getAddress(address).toLowerCase())
     )
   }
 
@@ -190,10 +206,7 @@ export class EthTabsHandler extends TabsHandler {
             if (!site) return
             siteId = site.id
             if (site.ethChainId && site.ethAddresses?.length) {
-              chainId =
-                typeof site?.ethChainId !== "undefined"
-                  ? ethers.utils.hexValue(site.ethChainId)
-                  : undefined
+              chainId = site?.ethChainId !== undefined ? toHex(site.ethChainId) : undefined
               accounts = site.ethAddresses ?? []
 
               // check that the network is still registered before broadcasting
@@ -228,10 +241,7 @@ export class EthTabsHandler extends TabsHandler {
 
       try {
         // new state for this dapp
-        chainId =
-          typeof site?.ethChainId !== "undefined"
-            ? ethers.utils.hexValue(site.ethChainId)
-            : undefined
+        chainId = site?.ethChainId !== undefined ? toHex(site.ethChainId) : undefined
         //TODO check eth addresses still exist
         accounts = site?.ethAddresses ?? []
         connected = !!accounts.length
@@ -259,7 +269,7 @@ export class EthTabsHandler extends TabsHandler {
         if (connected && chainId && prevAccounts?.join() !== accounts.join()) {
           sendToClient({
             type: "accountsChanged",
-            data: accounts.map((ac) => ethers.utils.getAddress(ac).toLowerCase()),
+            data: accounts.map((ac) => getAddress(ac).toLowerCase()),
           })
         }
       } catch (err) {
@@ -293,7 +303,7 @@ export class EthTabsHandler extends TabsHandler {
     url: string,
     request: EthRequestArguments<"wallet_addEthereumChain">,
     port: Port
-  ) => {
+  ): Promise<EthRequestResult<"wallet_addEthereumChain">> => {
     const {
       params: [network],
     } = request
@@ -322,14 +332,15 @@ export class EthTabsHandler extends TabsHandler {
     await Promise.all(
       network.rpcUrls.map(async (rpcUrl) => {
         try {
-          const provider = new providers.JsonRpcProvider(rpcUrl)
-          const providerChainIdHex: string = await Promise.race([
-            provider.send("eth_chainId", []),
+          const client = createClient({ transport: http(rpcUrl, { retryCount: 1 }) })
+          const rpcChainIdHex = await Promise.race([
+            client.request({ method: "eth_chainId" }),
             throwAfter(10_000, "timeout"), // 10 sec timeout
           ])
-          const providerChainId = parseInt(providerChainIdHex, 16)
+          assert(!!rpcChainIdHex, `No chainId returned for ${rpcUrl}`)
+          const rpcChainId = hexToNumber(rpcChainIdHex)
 
-          assert(providerChainId === chainId, "chainId mismatch")
+          assert(rpcChainId === chainId, "chainId mismatch")
         } catch (err) {
           log.error({ err })
           throw new EthProviderRpcError("Invalid rpc " + rpcUrl, ETH_ERROR_EIP1474_INVALID_PARAMS)
@@ -353,7 +364,7 @@ export class EthTabsHandler extends TabsHandler {
   private switchEthereumChain = async (
     url: string,
     request: EthRequestArguments<"wallet_switchEthereumChain">
-  ) => {
+  ): Promise<EthRequestResult<"wallet_switchEthereumChain">> => {
     const {
       params: [{ chainId: hexChainId }],
     } = request
@@ -368,7 +379,7 @@ export class EthTabsHandler extends TabsHandler {
         ETH_ERROR_UNKNOWN_CHAIN_NOT_CONFIGURED
       )
 
-    const provider = await getProviderForEthereumNetwork(ethereumNetwork, { batch: true })
+    const provider = await chainConnectorEvm.getPublicClientForEvmNetwork(ethereumNetwork.id)
     if (!provider)
       throw new EthProviderRpcError(
         `Failed to connect to network ${ethChainId}`,
@@ -393,35 +404,29 @@ export class EthTabsHandler extends TabsHandler {
     return site?.ethChainId ?? DEFAULT_ETH_CHAIN_ID
   }
 
-  private async getFallbackRequest<K extends keyof EthRequestSignatures>(
-    url: string,
-    request: EthRequestArguments<K>
-  ): Promise<unknown> {
+  private async getFallbackRequest(url: string, request: AnyEthRequest): Promise<unknown> {
     // obtain the chain id without checking auth.
     // note: this method is only called if method doesn't require auth, or if auth is already checked
     const chainId = await this.getChainId(url)
+    const publicClient = await chainConnectorEvm.getPublicClientForEvmNetwork(chainId.toString())
 
-    const ethereumNetwork = await chaindataProvider.getEvmNetwork(chainId.toString())
-    if (!ethereumNetwork)
+    if (!publicClient)
       throw new EthProviderRpcError(
         `Unknown network ${chainId}`,
         ETH_ERROR_UNKNOWN_CHAIN_NOT_CONFIGURED
       )
 
-    const provider = await getProviderForEthereumNetwork(ethereumNetwork, { batch: true })
-    if (!provider)
-      throw new EthProviderRpcError(
-        `Failed to connect to network ${chainId}`,
-        ETH_ERROR_EIP1993_CHAIN_DISCONNECTED
-      )
-
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    return provider.send(request.method, request.params as unknown as any[])
+    return publicClient.request({
+      method: request.method as never,
+      params: request.params as never,
+    })
   }
 
-  private signMessage = async (url: string, request: EthRequestSignArguments, port: Port) => {
-    const { params, method } = request as EthRequestSignArguments
-
+  private signMessage = async (
+    url: string,
+    { params, method }: EthRequestSignArguments,
+    port: Port
+  ) => {
     // eth_signTypedData requires a non-empty array of parameters, else throw (uniswap will then call v4)
     if (method === "eth_signTypedData") {
       if (!Array.isArray(params[0]))
@@ -432,12 +437,17 @@ export class EthTabsHandler extends TabsHandler {
       method
     )
     // on https://astar.network, params are in reverse order
-    if (isMessageFirst && isEthereumAddress(params[0]) && !isEthereumAddress(params[1]))
+    if (
+      typeof params[0] === "string" &&
+      isMessageFirst &&
+      isEthereumAddress(params[0]) &&
+      !isEthereumAddress(params[1])
+    )
       isMessageFirst = false
 
     const [uncheckedMessage, from] = isMessageFirst
-      ? [params[0], ethers.utils.getAddress(params[1])]
-      : [params[1], ethers.utils.getAddress(params[0])]
+      ? [params[0], getAddress(params[1])]
+      : [params[1], getAddress(params[0] as string)]
 
     // message is either a raw string or a hex string or an object (signTypedData_v1)
     const message =
@@ -448,7 +458,7 @@ export class EthTabsHandler extends TabsHandler {
     const address = site.ethAddresses[0]
     const pair = keyring.getPair(address)
 
-    if (!address || !pair || ethers.utils.getAddress(address) !== ethers.utils.getAddress(from)) {
+    if (!address || !pair || getAddress(address) !== getAddress(from)) {
       throw new EthProviderRpcError(
         `No account available for ${url}`,
         ETH_ERROR_EIP1993_UNAUTHORIZED
@@ -461,7 +471,7 @@ export class EthTabsHandler extends TabsHandler {
       message,
       site.ethChainId.toString(),
       {
-        address: ethers.utils.getAddress(address),
+        address: getAddress(address),
         ...pair.meta,
       },
       port
@@ -472,7 +482,7 @@ export class EthTabsHandler extends TabsHandler {
     url: string,
     request: EthRequestArguments<"wallet_watchAsset">,
     port: Port
-  ) => {
+  ): Promise<EthRequestResult<"wallet_watchAsset">> => {
     if (!isValidWatchAssetRequestParam(request.params))
       throw new EthProviderRpcError("Invalid parameter", ETH_ERROR_EIP1474_INVALID_PARAMS)
 
@@ -491,8 +501,8 @@ export class EthTabsHandler extends TabsHandler {
         if (existing)
           throw new EthProviderRpcError("Asset already exists", ETH_ERROR_EIP1474_INVALID_PARAMS)
 
-        const provider = await getProviderForEvmNetworkId(ethChainId.toString())
-        if (!provider)
+        const client = await chainConnectorEvm.getPublicClientForEvmNetwork(ethChainId.toString())
+        if (!client)
           throw new EthProviderRpcError(
             "Network not supported",
             ETH_ERROR_EIP1993_CHAIN_DISCONNECTED
@@ -500,7 +510,7 @@ export class EthTabsHandler extends TabsHandler {
 
         try {
           // eslint-disable-next-line no-var
-          var tokenInfo = await getErc20TokenInfo(provider, ethChainId.toString(), address)
+          var tokenInfo = await getErc20TokenInfo(client, ethChainId.toString(), address)
         } catch (err) {
           throw new EthProviderRpcError("Asset not found", ETH_ERROR_EIP1474_INVALID_PARAMS)
         }
@@ -561,25 +571,27 @@ export class EthTabsHandler extends TabsHandler {
 
   private async sendTransaction(
     url: string,
-    request: EthRequestArguments<"eth_sendTransaction">,
+    { params: [txRequest] }: EthRequestArguments<"eth_sendTransaction">,
     port: Port
   ) {
-    const {
-      params: [txRequest],
-    } = request as EthRequestArguments<"eth_sendTransaction">
-
     const site = await this.getSiteDetails(url, txRequest.from)
 
-    // ensure chainId isn't an hex (ex: Zerion)
-    if (typeof txRequest.chainId === "string" && (txRequest.chainId as string).startsWith("0x"))
-      txRequest.chainId = parseInt(txRequest.chainId, 16)
+    {
+      // eventhough not standard, some transactions specify a chainId in the request
+      // throw an error if it's not the current tab's chainId
+      let specifiedChainId = (txRequest as unknown as { chainId?: string | number }).chainId
 
-    // checks that the request targets currently selected network
-    if (txRequest.chainId && site.ethChainId !== txRequest.chainId)
-      throw new EthProviderRpcError("Wrong network", ETH_ERROR_EIP1474_INVALID_PARAMS)
+      // ensure chainId isn't an hex (ex: Zerion)
+      if (isHex(specifiedChainId)) specifiedChainId = hexToNumber(specifiedChainId)
+
+      // checks that the request targets currently selected network
+      if (specifiedChainId && Number(site.ethChainId) !== Number(specifiedChainId))
+        throw new EthProviderRpcError("Wrong network", ETH_ERROR_EIP1474_INVALID_PARAMS)
+    }
 
     try {
-      await this.getProvider(url, txRequest.from)
+      // ensure that we have a valid provider for the current network
+      await this.getPublicClient(url, txRequest.from)
     } catch (error) {
       throw new EthProviderRpcError("Network not supported", ETH_ERROR_EIP1993_CHAIN_DISCONNECTED)
     }
@@ -588,7 +600,7 @@ export class EthTabsHandler extends TabsHandler {
 
     // allow only the currently selected account in "from" field
     if (txRequest.from?.toLowerCase() !== address.toLowerCase())
-      throw new EthProviderRpcError("Unknown from account", ETH_ERROR_EIP1474_INVALID_INPUT)
+      throw new EthProviderRpcError("Invalid from account", ETH_ERROR_EIP1474_INVALID_INPUT)
 
     const pair = keyring.getPair(address)
 
@@ -601,11 +613,7 @@ export class EthTabsHandler extends TabsHandler {
 
     return signAndSendEth(
       url,
-      {
-        // locks the chainId in case the dapp's chainId changes after signing request creation
-        chainId: site.ethChainId,
-        ...txRequest,
-      },
+      txRequest,
       site.ethChainId.toString(),
       {
         address,
@@ -621,7 +629,7 @@ export class EthTabsHandler extends TabsHandler {
       // url validation carried out inside stores.sites.getSiteFromUrl
       site = await this.stores.sites.getSiteFromUrl(url)
     } catch (error) {
-      //no-op
+      // no-op
     }
 
     return site?.ethPermissions
@@ -637,7 +645,7 @@ export class EthTabsHandler extends TabsHandler {
     url: string,
     request: EthRequestArguments<"wallet_requestPermissions">,
     port: Port
-  ): Promise<Web3WalletPermission[]> {
+  ): Promise<EthRequestResult<"wallet_requestPermissions">> {
     if (request.params.length !== 1)
       throw new EthProviderRpcError(
         "This method expects an array with only 1 entry",
@@ -689,19 +697,19 @@ export class EthTabsHandler extends TabsHandler {
     return this.getPermissions(url)
   }
 
-  private async ethRequest<TEthMessageType extends keyof EthRequestSignatures>(
+  private async ethRequest(
     id: string,
     url: string,
-    request: EthRequestArguments<TEthMessageType>,
+    request: EthRequestArgs,
     port: Port
   ): Promise<unknown> {
     if (
       ![
         "eth_requestAccounts",
         "eth_accounts",
-        "eth_chainId",
-        "eth_blockNumber",
-        "net_version",
+        "eth_chainId", // TODO check if necessary ?
+        "eth_blockNumber", // TODO check if necessary ?
+        "net_version", // TODO check if necessary ?
         "wallet_switchEthereumChain",
         "wallet_addEthereumChain",
         "wallet_watchAsset",
@@ -710,6 +718,7 @@ export class EthTabsHandler extends TabsHandler {
     )
       await this.checkAccountAuthorised(url)
 
+    // TODO typecheck return types against rpc schema
     switch (request.method) {
       case "eth_requestAccounts":
         await this.requestPermissions(
@@ -733,74 +742,42 @@ export class EthTabsHandler extends TabsHandler {
 
       case "eth_chainId":
         // public method, no need to auth (returns undefined if not authorized yet)
-        return ethers.utils.hexValue(await this.getChainId(url))
+        return toHex(await this.getChainId(url))
 
       case "net_version":
         // public method, no need to auth (returns undefined if not authorized yet)
         // legacy, but still used by etherscan prior calling eth_watchAsset
         return (await this.getChainId(url)).toString()
 
-      case "estimateGas": {
-        const { params } = request as EthRequestArguments<"estimateGas">
-        if (params[1] && params[1] !== "latest") {
-          throw new EthProviderRpcError(
-            "estimateGas does not support blockTag",
-            ETH_ERROR_EIP1474_INVALID_PARAMS
-          )
-        }
-
-        await this.checkAccountAuthorised(url, params[0].from)
-
-        const req = ethers.providers.JsonRpcProvider.hexlifyTransaction(params[0])
-        const provider = await this.getProvider(url)
-        const result = await provider.estimateGas(req)
-        return result.toHexString()
-      }
-
       case "personal_sign":
       case "eth_signTypedData":
       case "eth_signTypedData_v1":
       case "eth_signTypedData_v3":
       case "eth_signTypedData_v4": {
-        return this.signMessage(url, request as EthRequestSignArguments, port)
+        return this.signMessage(url, request, port)
       }
 
       case "personal_ecRecover": {
         const {
-          params: [data, signature],
-        } = request as EthRequestArguments<"personal_ecRecover">
-        return recoverPersonalSignature({ data, signature })
+          params: [message, signature],
+        } = request
+        return recoverMessageAddress({ message, signature })
       }
 
       case "eth_sendTransaction":
-        return this.sendTransaction(
-          url,
-          request as EthRequestArguments<"eth_sendTransaction">,
-          port
-        )
+        return this.sendTransaction(url, request, port)
 
       case "wallet_watchAsset":
         //auth-less test dapp : rsksmart.github.io/metamask-rsk-custom-network/
-        return this.addWatchAssetRequest(
-          url,
-          request as EthRequestArguments<"wallet_watchAsset">,
-          port
-        )
+        return this.addWatchAssetRequest(url, request, port)
 
       case "wallet_addEthereumChain":
         //auth-less test dapp : rsksmart.github.io/metamask-rsk-custom-network/
-        return this.addEthereumChain(
-          url,
-          request as EthRequestArguments<"wallet_addEthereumChain">,
-          port
-        )
+        return this.addEthereumChain(url, request, port)
 
       case "wallet_switchEthereumChain":
         //auth-less test dapp : rsksmart.github.io/metamask-rsk-custom-network/
-        return this.switchEthereumChain(
-          url,
-          request as EthRequestArguments<"wallet_switchEthereumChain">
-        )
+        return this.switchEthereumChain(url, request)
 
       // https://docs.metamask.io/guide/rpc-api.html#wallet-getpermissions
       case "wallet_getPermissions":
@@ -808,18 +785,14 @@ export class EthTabsHandler extends TabsHandler {
 
       // https://docs.metamask.io/guide/rpc-api.html#wallet-requestpermissions
       case "wallet_requestPermissions":
-        return this.requestPermissions(
-          url,
-          request as EthRequestArguments<"wallet_requestPermissions">,
-          port
-        )
+        return this.requestPermissions(url, request, port)
 
       default:
         return this.getFallbackRequest(url, request)
     }
   }
 
-  handle<TMessageType extends keyof RequestSignatures>(
+  async handle<TMessageType extends keyof RequestSignatures>(
     id: string,
     type: TMessageType,
     request: RequestTypes[TMessageType],
@@ -830,9 +803,26 @@ export class EthTabsHandler extends TabsHandler {
       case "pub(eth.subscribe)":
         return this.ethSubscribe(id, url, port)
 
-      case "pub(eth.request)":
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        return this.ethRequest(id, url, request as AnyEthRequest, port) as any
+      case "pub(eth.request)": {
+        try {
+          return await this.ethRequest(id, url, request as EthRequestArgs, port)
+        } catch (err) {
+          // error may already be formatted by our handler
+          if (err instanceof EthProviderRpcError) throw err
+
+          const { code, message, shortMessage, details } = err as RpcError
+          const cause = getEvmErrorCause(err as AnyEvmError)
+
+          const myError = new EthProviderRpcError(
+            shortMessage ?? message ?? "Internal error",
+            code ?? ETH_ERROR_EIP1474_INTERNAL_ERROR,
+            // assume if data property is present, it's an EVM revert => dapp expects that underlying error object
+            cause.data ? cause : details
+          )
+
+          throw myError
+        }
+      }
 
       default:
         throw new Error(`Unable to handle message of type ${type}`)

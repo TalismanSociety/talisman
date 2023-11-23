@@ -17,7 +17,7 @@ export const SettingsHeader = () => {
   }, [genericEvent, navigate])
 
   return (
-    <header className="p-4 md:p-12">
+    <header className="p-4 md:px-12 md:pb-6 md:pt-12">
       <SidebarNavItem
         title={t("Back")}
         to="/portfolio"

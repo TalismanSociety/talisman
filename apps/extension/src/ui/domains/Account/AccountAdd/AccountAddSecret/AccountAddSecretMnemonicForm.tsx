@@ -10,7 +10,6 @@ import { api } from "@ui/api"
 import { AccountIcon } from "@ui/domains/Account/AccountIcon"
 import { AccountTypeSelector } from "@ui/domains/Account/AccountTypeSelector"
 import useAccounts from "@ui/hooks/useAccounts"
-import { Wallet } from "ethers"
 import { useCallback, useEffect, useMemo, useState } from "react"
 import { useForm } from "react-hook-form"
 import { useTranslation } from "react-i18next"
@@ -24,6 +23,8 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from "talisman-ui"
+import { isHex } from "viem"
+import { privateKeyToAccount } from "viem/accounts"
 import * as yup from "yup"
 
 import { AccountAddDerivationMode, useAccountAddSecret } from "./context"
@@ -39,10 +40,10 @@ const cleanupMnemonic = (input = "") =>
 
 const isValidEthPrivateKey = (privateKey?: string) => {
   if (!privateKey) return false
-
   try {
-    new Wallet(privateKey)
-    return true
+    const hexPrivateKey = privateKey?.startsWith("0x") ? privateKey : `0x${privateKey}`
+    if (!isHex(hexPrivateKey)) return false
+    return !!privateKeyToAccount(hexPrivateKey)
   } catch (err) {
     return false
   }
@@ -246,6 +247,12 @@ export const AccountAddSecretMnemonicForm = () => {
       shouldValidate: true,
     })
   }, [setValue, type])
+
+  useEffect(() => {
+    return () => {
+      setValue("mnemonic", "")
+    }
+  }, [setValue])
 
   return (
     <div className="flex w-full flex-col gap-8">

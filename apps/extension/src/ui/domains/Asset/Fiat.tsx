@@ -1,27 +1,32 @@
-import { TokenRateCurrency } from "@core/domains/tokens/types"
 import { fiatDecimalSeparator, fiatGroupSeparator, formatFiat } from "@talisman/util/formatFiat"
+import { BalanceFormatter } from "@talismn/balances"
 import { classNames } from "@talismn/util"
+import { useSelectedCurrency } from "@ui/hooks/useCurrency"
 import { useRevealableBalance } from "@ui/hooks/useRevealableBalance"
 import { FC, useCallback, useMemo } from "react"
 import CountUp from "react-countup"
 
 type FiatProps = {
-  amount?: number | null
-  currency?: TokenRateCurrency | null
+  amount?: number | BalanceFormatter | null
   className?: string
   as?: "span" | "div"
   noCountUp?: boolean
   isBalance?: boolean
+  currencyDisplay?: string
 }
 
 type DisplayValueProps = {
   amount: number
   currency?: Intl.NumberFormatOptions["currency"]
+  currencyDisplay?: string
   noCountUp?: boolean
 }
 
-const DisplayValue: FC<DisplayValueProps> = ({ amount, currency, noCountUp }) => {
-  const format = useCallback((amount = 0) => formatFiat(amount, currency), [currency])
+const DisplayValue: FC<DisplayValueProps> = ({ amount, currency, currencyDisplay, noCountUp }) => {
+  const format = useCallback(
+    (amount = 0) => formatFiat(amount, currency, currencyDisplay),
+    [currency, currencyDisplay]
+  )
   const formatted = useMemo(() => format(amount), [format, amount])
 
   if (noCountUp) return <>{formatted}</>
@@ -42,15 +47,17 @@ const DisplayValue: FC<DisplayValueProps> = ({ amount, currency, noCountUp }) =>
 
 export const Fiat = ({
   amount,
-  currency,
   className,
   noCountUp = false,
   isBalance = false,
+  currencyDisplay,
 }: FiatProps) => {
   const { refReveal, isRevealable, isRevealed, isHidden, effectiveNoCountUp } =
     useRevealableBalance(isBalance, noCountUp)
 
   const render = amount !== null && amount !== undefined
+
+  const currency = useSelectedCurrency()
 
   return (
     <span
@@ -64,8 +71,9 @@ export const Fiat = ({
     >
       {render && (
         <DisplayValue
-          amount={isHidden ? 0 : amount}
-          currency={currency || undefined}
+          amount={isHidden ? 0 : typeof amount === "number" ? amount : amount.fiat(currency) ?? 0}
+          currency={currency}
+          currencyDisplay={currencyDisplay}
           noCountUp={effectiveNoCountUp}
         />
       )}

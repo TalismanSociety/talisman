@@ -49,7 +49,7 @@ export const DcentAccountTokenRow: FC<{
           />
         </div>
         <div className="text-grey-500 text-xs">
-          <Fiat amount={balance.fiat("usd")} currency={"usd"} isBalance />
+          <Fiat amount={balance} isBalance />
         </div>
       </div>
     </div>

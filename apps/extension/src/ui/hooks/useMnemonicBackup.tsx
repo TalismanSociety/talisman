@@ -13,22 +13,36 @@ const useMnemonicBackup = () => {
   const mnemonics = useMnemonics()
   const location = useLocation()
 
-  const allBackedUp = useMemo(() => mnemonics.every((mnemonic) => mnemonic.confirmed), [mnemonics])
+  const hasMnemonics = useMemo(() => mnemonics.length > 0, [mnemonics])
+
+  const allBackedUp = useMemo(
+    () => !hasMnemonics || mnemonics.every((mnemonic) => mnemonic.confirmed),
+    [mnemonics, hasMnemonics]
+  )
+  const anyBackedUp = useMemo(
+    () => hasMnemonics && mnemonics.some((mnemonic) => mnemonic.confirmed),
+    [mnemonics, hasMnemonics]
+  )
 
   const isSnoozed = useMemo(() => {
-    return Boolean(hideBackupWarningUntil && hideBackupWarningUntil > Date.now() && !allBackedUp)
-  }, [hideBackupWarningUntil, allBackedUp])
+    return Boolean(hideBackupWarningUntil && hideBackupWarningUntil > Date.now() && !anyBackedUp)
+  }, [hideBackupWarningUntil, anyBackedUp])
 
   // whether we must show the big backup warning modal
   const showBackupWarning = useMemo(
-    () => !isSnoozed && !allBackedUp && hasFunds && location.pathname !== "/settings/mnemonics",
-    [isSnoozed, allBackedUp, hasFunds, location.pathname]
+    () =>
+      !isSnoozed &&
+      hasMnemonics &&
+      !anyBackedUp &&
+      hasFunds &&
+      location.pathname !== "/settings/mnemonics",
+    [isSnoozed, anyBackedUp, hasMnemonics, hasFunds, location.pathname]
   )
 
   // whether we must show the small backup warning notification in dashboard
   const showBackupNotification = useMemo(
-    () => !showBackupWarning && !allBackedUp && isSnoozed && hasFunds,
-    [showBackupWarning, allBackedUp, isSnoozed, hasFunds]
+    () => !showBackupWarning && !allBackedUp,
+    [showBackupWarning, allBackedUp]
   )
 
   // toggle menmonic confirmed

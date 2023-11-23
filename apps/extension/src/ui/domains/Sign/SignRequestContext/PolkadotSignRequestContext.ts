@@ -28,16 +28,22 @@ const usePartialFee = (
     queryFn: async () => {
       if (!payload || !chain || !extrinsic) return null
 
-      const [blockHash, runtimeVersion] = await Promise.all([
-        api.subSend<HexString>(chain.id, "chain_getBlockHash", [], false),
-        api.subSend<IRuntimeVersionBase>(chain.id, "state_getRuntimeVersion", [], true),
-      ])
-
       // fake sign it so fees can be queried
-      const { address, nonce, genesisHash } = payload as SignerPayloadJSON
-      extrinsic.signFake(address, { nonce, blockHash, genesisHash, runtimeVersion })
+      const { blockHash, address, nonce, genesisHash, specVersion, transactionVersion } =
+        payload as SignerPayloadJSON
 
-      const { partialFee } = await getExtrinsicDispatchInfo(chain.id, extrinsic, blockHash)
+      extrinsic.signFake(address, {
+        nonce,
+        blockHash,
+        genesisHash,
+        runtimeVersion: {
+          specVersion,
+          transactionVersion,
+          // other fields aren't necessary for signing
+        } as IRuntimeVersionBase,
+      })
+
+      const { partialFee } = await getExtrinsicDispatchInfo(chain.id, extrinsic)
 
       return BigInt(partialFee)
     },

@@ -1,12 +1,16 @@
 import { AccountType } from "@core/domains/accounts/types"
-import { getEthTransferTransactionBase } from "@core/domains/ethereum/helpers"
+import {
+  getEthTransferTransactionBase,
+  serializeGasSettings,
+  serializeTransactionRequest,
+} from "@core/domains/ethereum/helpers"
 import { AssetTransferMethod } from "@core/domains/transfers/types"
 import { log } from "@core/log"
 import { HexString } from "@polkadot/util/types"
 import { provideContext } from "@talisman/util/provideContext"
 import { Address, Balance, BalanceFormatter } from "@talismn/balances"
 import { Token, TokenId } from "@talismn/chaindata-provider"
-import { formatDecimals, sleep } from "@talismn/util"
+import { formatDecimals, isEthereumAddress, sleep } from "@talismn/util"
 import { useQuery } from "@tanstack/react-query"
 import { api } from "@ui/api"
 import { useSendFundsWizard } from "@ui/apps/popup/pages/SendFunds/context"
@@ -15,6 +19,7 @@ import { useBalance } from "@ui/hooks/useBalance"
 import useBalancesByAddress from "@ui/hooks/useBalancesByAddress"
 import { useBalancesHydrate } from "@ui/hooks/useBalancesHydrate"
 import useChain from "@ui/hooks/useChain"
+import { useSelectedCurrency } from "@ui/hooks/useCurrency"
 import { useEvmNetwork } from "@ui/hooks/useEvmNetwork"
 import { useTip } from "@ui/hooks/useTip"
 import useToken from "@ui/hooks/useToken"
@@ -24,10 +29,10 @@ import useTokens from "@ui/hooks/useTokens"
 import { isEvmToken } from "@ui/util/isEvmToken"
 import { isSubToken } from "@ui/util/isSubToken"
 import { isTransferableToken } from "@ui/util/isTransferableToken"
-import { BigNumber, ethers } from "ethers"
 import { useCallback, useEffect, useMemo, useRef, useState } from "react"
 import { useTranslation } from "react-i18next"
 import { useLocation } from "react-router-dom"
+import { TransactionRequest } from "viem"
 
 import { useEthTransaction } from "../Ethereum/useEthTransaction"
 import { useFeeToken } from "./useFeeToken"
@@ -91,23 +96,30 @@ const useIsSendingEnough = (
 }
 
 const useEvmTransaction = (
-  tokenId?: string,
+  tokenId?: TokenId,
   from?: string,
   to?: string,
-  amount?: string,
+  planck?: string,
   isLocked?: boolean
 ) => {
   const token = useToken(tokenId)
 
   const [evmInvalidTxError, setEvmInvalidTxError] = useState<Error | undefined>()
-  const [tx, setTx] = useState<ethers.providers.TransactionRequest>()
+  const [tx, setTx] = useState<TransactionRequest>()
 
   useEffect(() => {
     setEvmInvalidTxError(undefined)
-    if (!isEvmToken(token) || !token.evmNetwork?.id || !from || !token || !amount || !to)
+    if (
+      !isEvmToken(token) ||
+      !token.evmNetwork?.id ||
+      !token ||
+      !planck ||
+      !isEthereumAddress(from) ||
+      !isEthereumAddress(to)
+    )
       setTx(undefined)
     else {
-      getEthTransferTransactionBase(token.evmNetwork.id, from, to, token, amount)
+      getEthTransferTransactionBase(token.evmNetwork.id, from, to, token, BigInt(planck))
         .then(setTx)
         .catch((err) => {
           setEvmInvalidTxError(err)
@@ -116,9 +128,9 @@ const useEvmTransaction = (
           console.error("Failed to populate transaction", { err })
         })
     }
-  }, [from, to, token, amount])
+  }, [from, to, token, planck])
 
-  const result = useEthTransaction(tx, isLocked)
+  const result = useEthTransaction(tx, token?.evmNetwork?.id, isLocked)
 
   return { evmTransaction: tx ? { tx, ...result } : undefined, evmInvalidTxError }
 }
@@ -172,6 +184,7 @@ const useSendFundsProvider = () => {
   const { tokensMap } = useTokens(true)
   const tokenRatesMap = useTokenRatesMap()
   const balances = useBalancesByAddress(from as string)
+  const currency = useSelectedCurrency()
   const token = useToken(tokenId)
   const tokenRates = useTokenRates(tokenId)
   const balance = useBalance(from as string, tokenId as string)
@@ -240,8 +253,7 @@ const useSendFundsProvider = () => {
         }
         case "evm-native": {
           if (!evmTransaction?.txDetails?.maxFee) return null
-          const val =
-            balance.transferable.planck - BigNumber.from(evmTransaction.txDetails.maxFee).toBigInt()
+          const val = balance.transferable.planck - evmTransaction.txDetails.maxFee
           return evmTransaction?.txDetails?.maxFee
             ? new BalanceFormatter(val > 0n ? val : 0n, token.decimals, tokenRates)
             : null
@@ -267,44 +279,43 @@ const useSendFundsProvider = () => {
     tokenRates,
   ])
 
-  const estimatedFee = useMemo(() => {
+  const [estimatedFee, maxFee] = useMemo(() => {
     if (evmTransaction?.txDetails?.estimatedFee) {
-      return new BalanceFormatter(
-        BigNumber.from(evmTransaction.txDetails.estimatedFee).toBigInt(),
-        feeToken?.decimals,
-        feeTokenRates
-      )
+      return [
+        new BalanceFormatter(
+          evmTransaction.txDetails.estimatedFee,
+          feeToken?.decimals,
+          feeTokenRates
+        ),
+        new BalanceFormatter(evmTransaction.txDetails.maxFee, feeToken?.decimals, feeTokenRates),
+      ]
     }
     if (subTransaction?.partialFee) {
-      return new BalanceFormatter(
+      const fee = new BalanceFormatter(
         BigInt(subTransaction.partialFee),
         feeToken?.decimals,
         feeTokenRates
       )
+      return [fee, fee]
     }
-    return null
+    return [null, null]
   }, [
     evmTransaction?.txDetails?.estimatedFee,
+    evmTransaction?.txDetails?.maxFee,
     feeToken?.decimals,
     feeTokenRates,
     subTransaction?.partialFee,
   ])
 
-  const costBreakdown = useMemo(() => {
+  const maxCostBreakdown = useMemo(() => {
     try {
       const transferAmount = sendMax ? maxAmount : transfer
-      if (
-        !token ||
-        !feeToken ||
-        !transferAmount ||
-        !estimatedFee ||
-        (requiresTip && (!tip || !tipToken))
-      )
+      if (!token || !feeToken || !transferAmount || !maxFee || (requiresTip && (!tip || !tipToken)))
         return null
 
       const spend: Record<TokenId, bigint> = {}
       spend[token.id] = transferAmount.planck
-      spend[feeToken.id] = (spend[feeToken.id] ?? 0n) + estimatedFee.planck
+      spend[feeToken.id] = (spend[feeToken.id] ?? 0n) + maxFee.planck
       if (tip && tipToken && tip.planck > 0n)
         spend[tipToken.id] = (spend[tipToken.id] ?? 0n) + tip.planck
 
@@ -325,7 +336,7 @@ const useSendFundsProvider = () => {
     }
   }, [
     balances,
-    estimatedFee,
+    maxFee,
     feeToken,
     maxAmount,
     requiresTip,
@@ -340,7 +351,7 @@ const useSendFundsProvider = () => {
   ])
 
   const tokensToBeReaped = useMemo(() => {
-    return costBreakdown
+    return maxCostBreakdown
       ?.map(({ token, cost, balance }) => {
         const remaining = balance.planck - cost.planck
 
@@ -367,7 +378,7 @@ const useSendFundsProvider = () => {
           amount: BalanceFormatter
         }[]
       | undefined
-  }, [costBreakdown, sendMax, tokenRatesMap])
+  }, [maxCostBreakdown, sendMax, tokenRatesMap])
 
   const { data: recipientBalance } = useRecipientBalance(token, to)
 
@@ -399,20 +410,12 @@ const useSendFundsProvider = () => {
       if (token && balance && transfer && balance.transferable.planck < transfer.planck)
         return { isValid: false, error: t("Insufficient {{symbol}}", { symbol: token.symbol }) }
 
-      const txError = evmTransaction?.error || subTransaction?.error
-      if (txError)
-        return {
-          isValid: false,
-          error: t("Failed to validate transaction"),
-          errorDetails: (txError as Error)?.message ?? txError?.toString?.() ?? t("Unknown error"),
-        }
-
       if (
         !from ||
         !to ||
         !(transfer || (sendMax && maxAmount)) ||
         !tokenId ||
-        !costBreakdown ||
+        !maxCostBreakdown ||
         !tokensToBeReaped ||
         !feeToken ||
         !feeTokenBalance ||
@@ -433,7 +436,7 @@ const useSendFundsProvider = () => {
           error: t("Insufficient {{symbol}} to pay for fees", { symbol: feeToken.symbol }),
         }
 
-      for (const cost of costBreakdown)
+      for (const cost of maxCostBreakdown)
         if (cost.balance.planck < cost.cost.planck)
           return {
             isValid: false,
@@ -451,6 +454,14 @@ const useSendFundsProvider = () => {
         }
       }
 
+      const txError = evmTransaction?.error || subTransaction?.error
+      if (txError)
+        return {
+          isValid: false,
+          error: t("Failed to validate transaction"),
+          errorDetails: (txError as Error)?.message ?? txError?.toString?.() ?? t("Unknown error"),
+        }
+
       return { isValid: true, error: undefined }
     } catch (err) {
       log.error("checkIsValid", { err })
@@ -458,7 +469,7 @@ const useSendFundsProvider = () => {
     }
   }, [
     balance,
-    costBreakdown,
+    maxCostBreakdown,
     evmInvalidTxError,
     evmTransaction?.error,
     from,
@@ -492,10 +503,10 @@ const useSendFundsProvider = () => {
       resizeTokensInput()
     }
     if (refFiatInput.current) {
-      refFiatInput.current.value = maxAmount.fiat("usd")?.toString() ?? ""
+      refFiatInput.current.value = maxAmount.fiat(currency)?.toString() ?? ""
       resizeFiatInput()
     }
-  }, [maxAmount, resizeFiatInput, resizeTokensInput, set, token])
+  }, [currency, maxAmount, resizeFiatInput, resizeTokensInput, set, token])
 
   const signMethod: SignMethod = useMemo(() => {
     if (!fromAccount || !token) return "unknown"
@@ -540,13 +551,16 @@ const useSendFundsProvider = () => {
       } else if (token.evmNetwork?.id) {
         if (!transfer) throw new Error("Missing send amount")
         if (!evmTransaction?.gasSettings) throw new Error("Missing gas settings")
+        if (!isEthereumAddress(from)) throw new Error("Invalid sender address")
+        if (!isEthereumAddress(to)) throw new Error("Invalid recipient address")
+        const gasSettings = serializeGasSettings(evmTransaction.gasSettings)
         const { hash } = await api.assetTransferEth(
           token.evmNetwork.id,
           token.id,
           from,
           to,
           value.planck.toString(),
-          evmTransaction.gasSettings
+          gasSettings
         )
         await sleep(500) // wait for dexie to pick up change in transactions table, prevents having "unfound transaction" flickering in progress screen
         gotoProgress({ hash, networkIdOrHash: token.evmNetwork?.id })
@@ -584,13 +598,19 @@ const useSendFundsProvider = () => {
           gotoProgress({ hash, networkIdOrHash: chain.genesisHash })
           return
         }
-        if (evmTransaction?.transaction && amount && token?.evmNetwork?.id && to) {
+        if (
+          evmTransaction?.transaction &&
+          amount &&
+          token?.evmNetwork?.id &&
+          isEthereumAddress(to)
+        ) {
+          const serialized = serializeTransactionRequest(evmTransaction.transaction)
           const { hash } = await api.assetTransferEthHardware(
-            token?.evmNetwork.id,
+            token.evmNetwork.id,
             token.id,
             amount,
             to,
-            evmTransaction.transaction,
+            serialized,
             signature
           )
           await sleep(500) // wait for dexie to pick up change in transactions table, prevents having "unfound transaction" flickering in progress screen

@@ -20,7 +20,7 @@ export const MainHeader = () => {
   const { t } = useTranslation()
   const { genericEvent } = useAnalytics()
 
-  const { account } = useSelectedAccount()
+  const { account, accounts } = useSelectedAccount()
 
   const { open: openCopyAddressModal } = useCopyAddressModal()
   const handleCopyClick = useCallback(() => {
@@ -32,26 +32,33 @@ export const MainHeader = () => {
   }, [account, genericEvent, openCopyAddressModal])
 
   return (
-    <header className="p-4 md:p-12">
+    <header className="p-4 md:px-12 md:pb-6 md:pt-12">
       <AccountSelect />
       {/* Pills for large screens */}
       <div className="hidden flex-col items-center gap-4 p-4 pb-0 md:flex lg:flex-row">
         <SendPillButton className="!px-4" icon={SendIcon}>
           {t("Send")}
         </SendPillButton>
-        <PillButton className="!px-4" icon={ArrowDownIcon} onClick={handleCopyClick}>
+        <PillButton
+          className="!px-4"
+          icon={ArrowDownIcon}
+          onClick={handleCopyClick}
+          disabled={accounts.length === 0}
+        >
           {t("Receive")}
         </PillButton>
         <div className="hidden flex-grow lg:block" />
-        <AccountContextMenu
-          analyticsFrom="dashboard portfolio"
-          placement="bottom-start"
-          trigger={
-            <PillButton className="!px-4">
-              <MoreHorizontalIcon className="shrink-0" />
-            </PillButton>
-          }
-        />
+        {accounts.length > 0 && (
+          <AccountContextMenu
+            analyticsFrom="dashboard portfolio"
+            placement="bottom-start"
+            trigger={
+              <PillButton className="!px-4">
+                <MoreHorizontalIcon className="shrink-0" />
+              </PillButton>
+            }
+          />
+        )}
       </div>
       {/* Buttons for small screens */}
       <div className="flex justify-center py-2 md:hidden">
@@ -61,17 +68,20 @@ export const MainHeader = () => {
         <IconButton
           className="hover:bg-grey-800 rounded-xs p-1 !text-base"
           onClick={handleCopyClick}
+          disabled={accounts.length === 0}
         >
           <ArrowDownIcon />
         </IconButton>
-        <AccountContextMenu
-          analyticsFrom="dashboard portfolio"
-          trigger={
-            <IconButton className="hover:bg-grey-800 rounded-xs p-1 !text-base">
-              <MoreHorizontalIcon />
-            </IconButton>
-          }
-        />
+        {accounts.length > 0 && (
+          <AccountContextMenu
+            analyticsFrom="dashboard portfolio"
+            trigger={
+              <IconButton className="hover:bg-grey-800 rounded-xs p-1 !text-base">
+                <MoreHorizontalIcon />
+              </IconButton>
+            }
+          />
+        )}
       </div>
     </header>
   )

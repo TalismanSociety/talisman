@@ -30,7 +30,7 @@ export const ViewDetailsAddress: FC<
     else copyAddress(formatted)
   }, [blockExplorerUrl, formatted])
 
-  if (!formatted) return <>"N/A"</>
+  if (!formatted) return null
 
   return (
     <ViewDetailsField {...fieldProps}>

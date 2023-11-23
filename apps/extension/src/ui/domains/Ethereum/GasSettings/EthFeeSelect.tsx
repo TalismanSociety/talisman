@@ -8,9 +8,9 @@ import { TokenId } from "@core/domains/tokens/types"
 import { useOpenClose } from "@talisman/hooks/useOpenClose"
 import { classNames } from "@talismn/util"
 import { useAnalytics } from "@ui/hooks/useAnalytics"
-import { ethers } from "ethers"
 import { FC, useCallback, useEffect, useState } from "react"
 import { Drawer, PillButton } from "talisman-ui"
+import { TransactionRequest } from "viem"
 
 import { useFeePriorityOptionsUI } from "./common"
 import { CustomGasSettingsFormEip1559 } from "./CustomGasSettingsFormEip1559"
@@ -28,7 +28,7 @@ const OpenFeeSelectTracker = () => {
 }
 
 type EthFeeSelectProps = {
-  tx: ethers.providers.TransactionRequest
+  tx: TransactionRequest
   tokenId: TokenId
   disabled?: boolean
   txDetails: EthTransactionDetails

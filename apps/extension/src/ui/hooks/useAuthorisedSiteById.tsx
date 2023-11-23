@@ -5,7 +5,7 @@ import {
   AuthorizedSiteId,
   ProviderType,
 } from "@core/domains/sitesAuthorised/types"
-import { isTalismanHostname } from "@core/page"
+import { isTalismanUrl } from "@core/page"
 import { api } from "@ui/api"
 import { useCallback, useEffect, useMemo, useState } from "react"
 
@@ -16,7 +16,7 @@ const useAuthorisedSiteById = (id: AuthorizedSiteId, type: ProviderType) => {
   const sites = useAuthorisedSites()
   const availableAddresses = useAccountAddresses(
     type === "ethereum",
-    isTalismanHostname(sites[id]?.url) ? "all" : "owned"
+    isTalismanUrl(sites[id]?.url) ? "all" : "owned"
   )
 
   const connected = useMemo(() => {

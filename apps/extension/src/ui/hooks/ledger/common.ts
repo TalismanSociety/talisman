@@ -1,6 +1,16 @@
 import { DEBUG } from "@core/constants"
 import { t } from "i18next"
 
+export class LedgerError extends Error {
+  statusCode?: number
+
+  constructor(message?: string, name?: string, statusCode?: number) {
+    super(message)
+    this.name = name || "Error"
+    this.statusCode = statusCode
+  }
+}
+
 export const ERROR_LEDGER_EVM_CANNOT_SIGN_SUBSTRATE =
   "This transaction cannot be signed via an Ethereum Ledger account."
 export const ERROR_LEDGER_NO_APP = "There is no Ledger app available for this network."
@@ -49,15 +59,21 @@ export const ledgerNetworks = [
   //   name: "statemint",
   //   genesisHash: "0x68d56f15f85d3136970ec16946040bc1752654e906147f7e43e9d539d7c3de2f",
   // },
-  {
-    name: "centrifuge",
-    genesisHash: "0xb3db41421702df9a7fcac62b53ffeac85f7853cc4e689e0b93aeb3db18c09d82",
-    label: "Centrifuge",
-  },
+  // Removed because no longer maintained https://support.ledger.com/hc/en-us/articles/11158925739677-Centrifuge-CFG-
+  // {
+  //   name: "centrifuge",
+  //   genesisHash: "0xb3db41421702df9a7fcac62b53ffeac85f7853cc4e689e0b93aeb3db18c09d82",
+  //   label: "Centrifuge",
+  // },
   {
     name: "aleph-node",
     genesisHash: "0x70255b4d28de0fc4e1a193d7e175ad1ccef431598211c55538f1018651a0344e",
     label: "Aleph Zero",
+  },
+  {
+    name: "pendulum",
+    genesisHash: "0x5d3c298622d5634ed019bf61ea4b71655030015bde9beb0d6a24743714462c86",
+    label: "Pendulum",
   },
 ]
 
@@ -71,9 +87,7 @@ export type LedgerErrorProps = {
 
 const capitalize = (str: string) => (str.length > 1 ? str[0].toUpperCase() + str.slice(1) : str)
 
-export const getLedgerErrorProps = (err: Error, appName: string): LedgerErrorProps => {
-  const error = err as Error & { name?: string; statusCode?: number }
-
+export const getLedgerErrorProps = (err: LedgerError, appName: string): LedgerErrorProps => {
   // Generic errors
   switch (err.name) {
     case "SecurityError":
@@ -94,8 +108,15 @@ export const getLedgerErrorProps = (err: Error, appName: string): LedgerErrorPro
         requiresManualRetry: false,
       }
 
+    case "UnsupportedVersion": // For ethereum only
+      return {
+        status: "error",
+        message: t("Please update your Ledger Ethereum app."),
+        requiresManualRetry: false,
+      }
+
     case "TransportStatusError": {
-      switch (error.statusCode) {
+      switch (err.statusCode) {
         case 27404: // locked
         case 27010:
           return {

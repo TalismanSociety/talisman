@@ -1,7 +1,7 @@
 import { SignerPayloadJSON } from "@core/domains/signing/types"
 import { Address } from "@talismn/balances"
 import { EvmNetworkId, TokenId } from "@talismn/chaindata-provider"
-import { ethers } from "ethers"
+import { TransactionRequest } from "viem"
 
 // unknown for substrate txs from dapps
 export type TransactionStatus = "unknown" | "pending" | "success" | "error" | "replaced"
@@ -33,7 +33,7 @@ export type WalletTransactionBase = WalletTransactionTransferInfo & {
 export type EvmWalletTransaction = WalletTransactionBase & {
   networkType: "evm"
   evmNetworkId: EvmNetworkId
-  unsigned: ethers.providers.TransactionRequest
+  unsigned: TransactionRequest<string>
 }
 
 export type SubWalletTransaction = WalletTransactionBase & {

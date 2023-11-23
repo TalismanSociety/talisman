@@ -1,15 +1,24 @@
-import { ethers } from "ethers"
 import { useCallback, useRef, useState } from "react"
-import { erc721ABI, useAccount, useContractRead, useNetwork } from "wagmi"
+import {
+  erc721ABI,
+  useAccount,
+  useContractRead,
+  useNetwork,
+  usePublicClient,
+  useWalletClient,
+} from "wagmi"
 
 import { useDeployment } from "../../../contracts"
 import { useErc721Contract } from "./context"
 
 export const ERC721ContractSelect = () => {
   const { chain } = useNetwork()
-  const { isConnected, address: account, connector } = useAccount()
+  const { isConnected, address: account } = useAccount()
 
   const [address, setAddress] = useErc721Contract()
+
+  const { data: walletClient } = useWalletClient()
+  const publicClient = usePublicClient()
 
   const { bytecode } = useDeployment("TestERC721", chain?.id ?? 0)
   const [isDeploying, setIsDeploying] = useState(false)
@@ -20,18 +29,15 @@ export const ERC721ContractSelect = () => {
     setIsDeploying(true)
     setDeployError(undefined)
     try {
-      const provider = await connector?.getProvider()
-      if (!provider || !chain) return
+      if (!walletClient) throw new Error("No wallet client")
 
-      const web3Provider = new ethers.providers.Web3Provider(provider)
-      const transaction: ethers.providers.TransactionRequest = {
-        from: account,
-        data: bytecode,
-        chainId: chain.id,
-      }
+      const hash = await walletClient.sendTransaction({
+        data: bytecode as `0x${string}`,
+      })
+      const receipt = await publicClient.waitForTransactionReceipt({
+        hash,
+      })
 
-      const txHash = await web3Provider.send("eth_sendTransaction", [transaction])
-      const receipt = await web3Provider.waitForTransaction(txHash)
       if (!receipt.contractAddress) throw new Error("No contract address in receipt")
 
       setAddress(receipt.contractAddress as `0x${string}`)
@@ -42,7 +48,7 @@ export const ERC721ContractSelect = () => {
       setDeployError(err as Error)
     }
     setIsDeploying(false)
-  }, [account, bytecode, chain, connector, setAddress])
+  }, [bytecode, publicClient, setAddress, walletClient])
 
   const { data: symbol, error: errorSymbol } = useContractRead({
     address: address as `0x${string}`,

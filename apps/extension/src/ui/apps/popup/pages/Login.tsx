@@ -3,6 +3,7 @@ import { SuspenseTracker } from "@talisman/components/SuspenseTracker"
 import { HandMonoTransparentLogo } from "@talisman/theme/logos"
 import { classNames } from "@talismn/util"
 import { api } from "@ui/api"
+import { LoginBackground } from "@ui/apps/popup/components/LoginBackground"
 import { useAnalytics } from "@ui/hooks/useAnalytics"
 import { useFirstAccountColors } from "@ui/hooks/useFirstAccountColors"
 import { Suspense, useCallback, useEffect, useLayoutEffect, useRef, useState } from "react"
@@ -15,7 +16,6 @@ import {
 } from "react-hook-form"
 import { useTranslation } from "react-i18next"
 import { Button, FormFieldInputText } from "talisman-ui"
-import { LoginBackground } from "talisman-ui"
 import * as yup from "yup"
 
 import { PopupContent, PopupFooter, PopupLayout } from "../Layout/PopupLayout"
@@ -36,14 +36,7 @@ const INPUT_CONTAINER_PROPS = { className: "bg-white/10" }
 const Background = () => {
   const colors = useFirstAccountColors()
 
-  return (
-    <LoginBackground
-      width={400}
-      height={600}
-      colors={colors}
-      className="absolute left-0 top-0 m-0 block h-full w-full overflow-hidden "
-    />
-  )
+  return <LoginBackground className="absolute left-0 top-0 h-full w-full" colors={colors} />
 }
 
 const Login = ({ setShowResetWallet }: { setShowResetWallet: () => void }) => {

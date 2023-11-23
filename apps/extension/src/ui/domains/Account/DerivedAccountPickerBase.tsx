@@ -69,7 +69,7 @@ const AccountButton: FC<AccountButtonProps> = ({
         <Tooltip>
           <TooltipTrigger asChild>
             <span className={classNames(isBalanceLoading && "animate-pulse")}>
-              <Fiat className="leading-none" amount={totalUsd} currency="usd" />
+              <Fiat className="leading-none" amount={totalUsd} />
             </span>
           </TooltipTrigger>
           {balanceDetails && (

@@ -22,6 +22,10 @@ export const initSentry = (sentry: typeof SentryBrowser | typeof SentryReact) =>
     release: process.env.RELEASE,
     sampleRate: 1,
     maxBreadcrumbs: 20,
+    ignoreErrors: [
+      /(No window with id: )(\d+).?/,
+      /(disconnected from wss)[(]?:\/\/[\w./:-]+: \d+:: Normal Closure[)]?/,
+    ],
     // prevents sending the event if user has disabled error tracking
     beforeSend: async (event) => ((await firstValueFrom(useErrorTracking)) ? event : null),
     // eslint-disable-next-line @typescript-eslint/no-unused-vars

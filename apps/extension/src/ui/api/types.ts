@@ -24,9 +24,9 @@ import {
   RequestNomPoolStake,
   ResponseNomPoolStake,
 } from "@core/domains/balances/types"
-import { ChainId } from "@core/domains/chains/types"
+import { ChainId, RequestUpsertCustomChain } from "@core/domains/chains/types"
 import type { DecryptRequestId, EncryptRequestId } from "@core/domains/encrypt/types"
-import { AddEthereumChainRequestId } from "@core/domains/ethereum/types"
+import { AddEthereumChainRequestId, EvmAddress } from "@core/domains/ethereum/types"
 import {
   AddEthereumChainRequest,
   AnyEthRequestChainId,
@@ -58,15 +58,13 @@ import {
   ResponseAssetTransferFeeQuery,
 } from "@core/domains/transfers/types"
 import { MetadataDef } from "@core/inject/types"
-import { EthResponseType } from "@core/injectEth/types"
 import { ValidRequests } from "@core/libs/requests/types"
 import { UnsubscribeFn } from "@core/types"
 import { AddressesByChain } from "@core/types/base"
 import type { KeyringPair$Json } from "@polkadot/keyring/types"
 import { KeypairType } from "@polkadot/util-crypto/types"
 import type { HexString } from "@polkadot/util/types"
-import { Address } from "@talismn/balances"
-import { ethers } from "ethers"
+import { TransactionRequest } from "viem"
 
 export default interface MessageTypes {
   unsubscribe: (id: string) => Promise<null>
@@ -179,6 +177,8 @@ export default interface MessageTypes {
   authorizedSiteSubscribe: (id: string, cb: (sites: AuthorizedSite) => void) => UnsubscribeFn
   authorizedSiteForget: (id: string, type: ProviderType) => Promise<boolean>
   authorizedSiteUpdate: (id: string, authorisedSite: AuthorisedSiteUpdate) => Promise<boolean>
+  authorizedSitesDisconnectAll: (type: ProviderType) => Promise<boolean>
+  authorizedSitesForgetAll: (type: ProviderType) => Promise<boolean>
 
   // authorization requests message types ------------------------------------
   authrequestApprove: (id: AuthRequestId, addresses: AuthRequestAddresses) => Promise<boolean>
@@ -192,10 +192,13 @@ export default interface MessageTypes {
 
   // chain message types
   chains: (cb: () => void) => UnsubscribeFn
+  chainUpsert: (chain: RequestUpsertCustomChain) => Promise<boolean>
+  chainRemove: (id: string) => Promise<boolean>
+  chainReset: (id: string) => Promise<boolean>
   generateChainSpecsQr: (genesisHash: SignerPayloadGenesisHash) => Promise<HexString>
   generateChainMetadataQr: (
     genesisHash: SignerPayloadGenesisHash,
-    specVersion: number
+    specVersion?: number
   ) => Promise<HexString>
 
   // token message types
@@ -221,17 +224,17 @@ export default interface MessageTypes {
   assetTransferEth: (
     evmNetworkId: EvmNetworkId,
     tokenId: TokenId,
-    fromAddress: string,
-    toAddress: string,
+    fromAddress: EvmAddress,
+    toAddress: EvmAddress,
     amount: string,
-    gasSettings: EthGasSettings
+    gasSettings: EthGasSettings<string>
   ) => Promise<ResponseAssetTransfer>
   assetTransferEthHardware: (
     evmNetworkId: EvmNetworkId,
     tokenId: TokenId,
     amount: string,
-    to: Address,
-    unsigned: ethers.providers.TransactionRequest,
+    to: EvmAddress,
+    unsigned: TransactionRequest<string>,
     signedTransaction: HexString
   ) => Promise<ResponseAssetTransfer>
   assetTransferCheckFees: (
@@ -251,11 +254,13 @@ export default interface MessageTypes {
 
   // eth related messages
   ethSignAndSend: (
-    unsigned: ethers.providers.TransactionRequest,
+    evmNetworkId: EvmNetworkId,
+    unsigned: TransactionRequest<string>,
     transferInfo?: WalletTransactionTransferInfo
   ) => Promise<HexString>
   ethSendSigned: (
-    unsigned: ethers.providers.TransactionRequest,
+    evmNetworkId: EvmNetworkId,
+    unsigned: TransactionRequest<string>,
     signed: HexString,
     transferInfo?: WalletTransactionTransferInfo
   ) => Promise<HexString>
@@ -266,16 +271,16 @@ export default interface MessageTypes {
   ) => Promise<boolean>
   ethApproveSignAndSend: (
     id: SigningRequestID<"eth-send">,
-    transaction: ethers.providers.TransactionRequest
+    transaction: TransactionRequest<string>
   ) => Promise<boolean>
   ethApproveSignAndSendHardware: (
     id: SigningRequestID<"eth-send">,
-    unsigned: ethers.providers.TransactionRequest,
+    unsigned: TransactionRequest<string>,
     signedTransaction: HexString
   ) => Promise<boolean>
   ethCancelSign: (id: SigningRequestID<"eth-sign" | "eth-send">) => Promise<boolean>
-  ethRequest: <T extends AnyEthRequestChainId>(request: T) => Promise<EthResponseType<T["method"]>>
-  ethGetTransactionsCount: (address: string, evmNetworkId: EvmNetworkId) => Promise<number>
+  ethRequest: (request: AnyEthRequestChainId) => Promise<unknown>
+  ethGetTransactionsCount: (address: EvmAddress, evmNetworkId: EvmNetworkId) => Promise<number>
   ethNetworkAddGetRequests: () => Promise<AddEthereumChainRequest[]>
   ethNetworkAddApprove: (id: AddEthereumChainRequestId) => Promise<boolean>
   ethNetworkAddCancel: (is: AddEthereumChainRequestId) => Promise<boolean>

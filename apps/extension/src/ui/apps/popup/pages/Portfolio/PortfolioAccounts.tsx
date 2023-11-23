@@ -20,6 +20,7 @@ import useAccounts from "@ui/hooks/useAccounts"
 import useAccountsCatalog from "@ui/hooks/useAccountsCatalog"
 import { useAnalytics } from "@ui/hooks/useAnalytics"
 import useBalances from "@ui/hooks/useBalances"
+import { useSelectedCurrency } from "@ui/hooks/useCurrency"
 import { useFirstAccountColors } from "@ui/hooks/useFirstAccountColors"
 import { useFormattedAddress } from "@ui/hooks/useFormattedAddress"
 import { useHasAccounts } from "@ui/hooks/useHasAccounts"
@@ -28,8 +29,7 @@ import { MouseEventHandler, Suspense, useCallback, useEffect, useMemo, useRef } 
 import { useTranslation } from "react-i18next"
 import { useNavigate } from "react-router-dom"
 import { useHoverDirty } from "react-use"
-import { IconButton, MysticalPhysicsV3 } from "talisman-ui"
-import { MYSTICAL_PHYSICS_V3, MysticalBackground } from "talisman-ui"
+import { IconButton, MYSTICAL_PHYSICS_V3, MysticalBackground, MysticalPhysicsV3 } from "talisman-ui"
 
 const ANALYTICS_PAGE: AnalyticsPage = {
   container: "Popup",
@@ -165,10 +165,9 @@ const AccountsList = ({ className, options }: { className?: string; options: Acc
   </div>
 )
 
-const AccountsBgConfig: MysticalPhysicsV3 = {
+const BG_CONFIG: MysticalPhysicsV3 = {
   ...MYSTICAL_PHYSICS_V3,
   artifacts: 2,
-  blur: 0,
   radiusMin: 4,
   radiusMax: 4,
   opacityMin: 0.5,
@@ -219,11 +218,11 @@ const Accounts = ({
 
 const AllAccountsHeaderBackground = () => {
   const colors = useFirstAccountColors()
-  const config = useMemo(() => ({ ...AccountsBgConfig, colors }), [colors])
+  const config = useMemo(() => ({ ...BG_CONFIG, colors }), [colors])
 
   return (
     <MysticalBackground
-      className="absolute left-0 top-0 h-full w-full overflow-hidden rounded-sm"
+      className="absolute left-0 top-0 h-full w-full rounded-sm"
       config={config}
     />
   )
@@ -284,6 +283,7 @@ const FolderHeader = ({ folder, folderTotal }: { folder: TreeFolder; folderTotal
 
 export const PortfolioAccounts = () => {
   const balances = useBalances()
+  const currency = useSelectedCurrency()
   const accounts = useAccounts()
   const catalog = useAccountsCatalog()
   const { folder, treeName: folderTreeName } = useSearchParamsSelectedFolder()
@@ -321,7 +321,8 @@ export const PortfolioAccounts = () => {
               type: "account",
               name: account?.name ?? t("Unknown Account"),
               address: item.address,
-              total: new Balances(balancesByAddress.get(item.address) ?? []).sum.fiat("usd").total,
+              total: new Balances(balancesByAddress.get(item.address) ?? []).sum.fiat(currency)
+                .total,
               genesisHash: account?.genesisHash,
               origin: account?.origin,
               isPortfolio: !!account?.isPortfolio,
@@ -333,7 +334,7 @@ export const PortfolioAccounts = () => {
               name: item.name,
               total: new Balances(
                 item.tree.flatMap((account) => balancesByAddress.get(account.address) ?? [])
-              ).sum.fiat("usd").total,
+              ).sum.fiat(currency).total,
               addresses: item.tree.map((account) => account.address),
             }
       }
@@ -342,16 +343,25 @@ export const PortfolioAccounts = () => {
       portfolioTree.map(treeItemToOption("portfolio")),
       watchedTree.map(treeItemToOption("watched")),
     ]
-  }, [folder, folderTreeName, catalog, accounts, t, balancesByAddress])
+  }, [
+    folder,
+    folderTreeName,
+    catalog.portfolio,
+    catalog.watched,
+    accounts,
+    t,
+    balancesByAddress,
+    currency,
+  ])
 
   const folderTotal = useMemo(
     () =>
       folder
         ? new Balances(
             folder.tree.flatMap((account) => balancesByAddress.get(account.address) ?? [])
-          ).sum.fiat("usd").total
+          ).sum.fiat(currency).total
         : undefined,
-    [balancesByAddress, folder]
+    [balancesByAddress, currency, folder]
   )
 
   useEffect(() => {

@@ -110,6 +110,14 @@ export const chainsQuery = graphql(`
   }
 `)
 
+export const chainByIdQuery = graphql(`
+  query chainById($chainId: String!) {
+    chainById(id: $chainId) {
+      ...Chain
+    }
+  }
+`)
+
 export const evmNetworksQuery = graphql(`
   query evmNetworks {
     evmNetworks(orderBy: sortIndex_ASC) {
@@ -147,6 +155,8 @@ export const tokenByIdQuery = graphql(`
 //
 
 export const fetchChains = async () => (await request(graphqlUrl, chainsQuery)).chains
+export const fetchChain = async (chainId: string) =>
+  (await request(graphqlUrl, chainByIdQuery, { chainId })).chainById
 
 export const fetchEvmNetworks = async () =>
   (await request(graphqlUrl, evmNetworksQuery)).evmNetworks

@@ -175,6 +175,9 @@ export const api: MessageTypes = {
   authorizedSiteForget: (id, type) => messageService.sendMessage("pri(sites.forget)", { id, type }),
   authorizedSiteUpdate: (id, authorisedSite) =>
     messageService.sendMessage("pri(sites.update)", { id, authorisedSite }),
+  authorizedSitesDisconnectAll: (type) =>
+    messageService.sendMessage("pri(sites.disconnect.all)", { type }),
+  authorizedSitesForgetAll: (type) => messageService.sendMessage("pri(sites.forget.all)", { type }),
 
   // authorization requests messages ------------------------------------
   authrequestApprove: (id, addresses) =>
@@ -188,6 +191,9 @@ export const api: MessageTypes = {
 
   // chain message types
   chains: (cb) => messageService.subscribe("pri(chains.subscribe)", null, cb),
+  chainUpsert: (chain) => messageService.sendMessage("pri(chains.upsert)", chain),
+  chainRemove: (id) => messageService.sendMessage("pri(chains.remove)", { id }),
+  chainReset: (id) => messageService.sendMessage("pri(chains.reset)", { id }),
   generateChainSpecsQr: (genesisHash) =>
     messageService.sendMessage("pri(chains.generateQr.addNetworkSpecs)", { genesisHash }),
   generateChainMetadataQr: (genesisHash, specVersion) =>
@@ -254,10 +260,19 @@ export const api: MessageTypes = {
     }),
 
   // eth related messages
-  ethSignAndSend: (unsigned, transferInfo) =>
-    messageService.sendMessage("pri(eth.signing.signAndSend)", { unsigned, transferInfo }),
-  ethSendSigned: (unsigned, signed, transferInfo) =>
-    messageService.sendMessage("pri(eth.signing.sendSigned)", { unsigned, signed, transferInfo }),
+  ethSignAndSend: (evmNetworkId, unsigned, transferInfo) =>
+    messageService.sendMessage("pri(eth.signing.signAndSend)", {
+      evmNetworkId,
+      unsigned,
+      transferInfo,
+    }),
+  ethSendSigned: (evmNetworkId, unsigned, signed, transferInfo) =>
+    messageService.sendMessage("pri(eth.signing.sendSigned)", {
+      evmNetworkId,
+      unsigned,
+      signed,
+      transferInfo,
+    }),
   ethApproveSign: (id) =>
     messageService.sendMessage("pri(eth.signing.approveSign)", {
       id,
