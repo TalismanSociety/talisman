@@ -24,6 +24,7 @@ type SearchInputProps = {
   containerClassName?: string
   autoFocus?: boolean
   placeholder?: string
+  initialValue?: string
   after?: ReactNode
   onChange?: (search: string) => void
   onValidate?: () => void
@@ -35,12 +36,13 @@ export const SearchInput: FC<SearchInputProps> = ({
   small,
   autoFocus,
   placeholder,
+  initialValue,
   after,
   onChange,
   onValidate,
 }) => {
   const ref = useRef<HTMLInputElement>(null)
-  const [search, setSearch] = useDebouncedState("", 200)
+  const [search, setSearch] = useDebouncedState(initialValue ?? "", 200)
 
   const handleSearchChange: ChangeEventHandler<HTMLInputElement> = useCallback(
     (e) => {
@@ -82,6 +84,7 @@ export const SearchInput: FC<SearchInputProps> = ({
       containerProps={containerProps}
       before={<SearchIcon className="text-body-disabled shrink-0" />}
       after={after}
+      defaultValue={initialValue}
       placeholder={placeholder}
       onChange={handleSearchChange}
       onKeyUp={handleKeyUp}

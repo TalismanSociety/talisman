@@ -5,7 +5,7 @@ import { useCallback } from "react"
 import { TokenPicker } from "../Asset/TokenPicker"
 
 export const SendFundsTokenPicker = () => {
-  const { from, tokenId, set } = useSendFundsWizard()
+  const { from, tokenId, tokenSymbol, set } = useSendFundsWizard()
 
   const handleTokenSelect = useCallback(
     (tokenId: TokenId) => {
@@ -14,5 +14,13 @@ export const SendFundsTokenPicker = () => {
     [set]
   )
 
-  return <TokenPicker ownedOnly address={from} selected={tokenId} onSelect={handleTokenSelect} />
+  return (
+    <TokenPicker
+      ownedOnly
+      address={from}
+      initialSearch={tokenSymbol}
+      selected={tokenId}
+      onSelect={handleTokenSelect}
+    />
+  )
 }
