@@ -6,6 +6,7 @@ import {
 } from "@core/domains/ethereum/helpers"
 import { AssetTransferMethod } from "@core/domains/transfers/types"
 import { log } from "@core/log"
+import { roundToFirstInteger } from "@core/util/roundToFirstInteger"
 import { HexString } from "@polkadot/util/types"
 import { provideContext } from "@talisman/util/provideContext"
 import { Address, Balance, BalanceFormatter } from "@talismn/balances"
@@ -535,6 +536,11 @@ const useSendFundsProvider = () => {
       if (!token) throw new Error("Token not found")
 
       setIsProcessing(true)
+
+      api.analyticsCapture({
+        eventName: "asset transfer fiat value",
+        options: { value: roundToFirstInteger(value.fiat("usd") ?? 0) ?? "0" },
+      })
 
       if (token.chain?.id && chain?.genesisHash) {
         const { hash } = await api.assetTransfer(
