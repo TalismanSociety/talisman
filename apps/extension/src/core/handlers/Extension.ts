@@ -27,6 +27,7 @@ import { MessageTypes, RequestType, ResponseType } from "@core/types"
 import { Port, RequestIdOnly } from "@core/types/base"
 import { awaitKeyringLoaded } from "@core/util/awaitKeyringLoaded"
 import { CONFIG_RATE_LIMIT_ERROR, getConfig } from "@core/util/getConfig"
+import { hasGhostsOfThePast } from "@core/util/hasGhostsOfThePast"
 import { fetchHasSpiritKey } from "@core/util/hasSpiritKey"
 import keyring from "@polkadot/ui-keyring"
 import * as Sentry from "@sentry/browser"
@@ -93,6 +94,9 @@ export default class Extension extends ExtensionHandler {
             await stores.sites.updateSite(url, autoAddSite)
           })
       })
+
+      this.checkSpiritKeyOwnership()
+      this.checkGhostsOfThePastOwnership()
     })
 
     // setup polling for config from github
@@ -103,7 +107,6 @@ export default class Extension extends ExtensionHandler {
 
     this.initDb()
     this.initWalletFunding()
-    this.checkSpiritKeyOwnership()
     this.cleanup()
   }
 
@@ -205,23 +208,19 @@ export default class Extension extends ExtensionHandler {
     })
   }
 
-  private checkSpiritKeyOwnership() {
-    // wait 10 seconds as this check is low priority
-    // also need to be wait for keyring to be loaded and accounts populated
-    awaitKeyringLoaded().then(async () => {
-      try {
-        const hasSpiritKey = await fetchHasSpiritKey()
-        const currentSpiritKey = await this.stores.app.get("hasSpiritKey")
+  private async checkSpiritKeyOwnership() {
+    try {
+      const hasSpiritKey = await fetchHasSpiritKey()
+      const currentSpiritKey = await this.stores.app.get("hasSpiritKey")
 
-        if (currentSpiritKey !== hasSpiritKey) {
-          await this.stores.app.set({ hasSpiritKey, needsSpiritKeyUpdate: true })
-          await this.updateSpiritKeyOwnership(hasSpiritKey)
-        }
-      } catch (err) {
-        // ignore, don't update app store nor posthog property
-        log.error("Failed to check Spirit Key ownership", { err })
+      if (currentSpiritKey !== hasSpiritKey) {
+        await this.stores.app.set({ hasSpiritKey, needsSpiritKeyUpdate: true })
+        await this.updateSpiritKeyOwnership(hasSpiritKey)
       }
-    })
+    } catch (err) {
+      // ignore, don't update app store nor posthog property
+      log.error("Failed to check Spirit Key ownership", { err })
+    }
 
     // in case reporting to posthog fails, set a timer so that every 5 min we will re-attempt
     setInterval(async () => {
@@ -241,6 +240,18 @@ export default class Extension extends ExtensionHandler {
       return
     }
     await this.stores.app.set({ needsSpiritKeyUpdate: false })
+  }
+
+  private async checkGhostsOfThePastOwnership() {
+    try {
+      const hasGhosts = await hasGhostsOfThePast()
+      const hasGhostsNft = Object.values(hasGhosts).some((g) => g)
+      await talismanAnalytics.capture("Ghosts of the past ownership", {
+        $set: { hasGhostsOfThePast: hasGhostsNft },
+      })
+    } catch (err) {
+      log.error("Failed to check Ghosts of the Past ownership", { err })
+    }
   }
 
   public async handle<TMessageType extends MessageTypes>(

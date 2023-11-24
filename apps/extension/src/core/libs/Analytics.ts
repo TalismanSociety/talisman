@@ -90,7 +90,6 @@ class TalismanAnalytics {
     // accounts
     const accounts = keyring.getAccounts()
     if (accounts.length > 0) {
-      posthog.capture("accounts count", { $set: keyring.getAccounts().length })
       // account type breakdown
       const accountBreakdown = accounts.reduce(
         (result, account) => {
@@ -145,10 +144,6 @@ class TalismanAnalytics {
       throw error
     }
 
-    posthog.capture("balances fiat sum", {
-      $set: roundToFirstInteger(balances.sum.fiat("usd").total),
-    })
-
     // balances top 5 tokens/networks
     // get Balance list per chain/evmNetwork and token
     const balancesPerChainToken: Record<string, Balance[]> = balances.each
@@ -180,8 +175,12 @@ class TalismanAnalytics {
       .slice(0, 5)
 
     posthog.capture("balances top tokens", topChainTokens)
-    posthog.capture("balances main token", {
-      $set: `{${topChainTokens[0].chainId}-${topChainTokens[0].tokenId}}`,
+    posthog.capture("balances report", {
+      $set: {
+        accountsCount: keyring.getAccounts().length,
+        totalFiatValue: roundToFirstInteger(balances.sum.fiat("usd").total),
+        topToken: `${topChainTokens[0].chainId}: ${topChainTokens[0].tokenId}`,
+      },
     })
   }
 }
