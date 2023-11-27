@@ -22,6 +22,7 @@ const config = (env) => ({
 
     // Wallet service workers
     "background": { import: path.join(coreDir, "background.ts"), dependOn: "vendor-background" },
+    "worker": { import: path.join(coreDir, "worker.ts"), dependOn: "vendor-background" },
 
     // Background.js manually-specified code-splits (to keep background.js under 4MB)
     "vendor-background": [

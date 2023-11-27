@@ -19,6 +19,7 @@ import { signSubstrate } from "../domains/signing/requests"
 import { requestStore } from "../libs/requests/store"
 import Extension from "./Extension"
 import { extensionStores } from "./stores"
+import { worker } from "./worker"
 
 jest.mock("@talismn/chaindata-provider-extension/src/graphql")
 jest.setTimeout(10000)
@@ -53,7 +54,7 @@ describe("Extension", () => {
       },
     })
 
-    return new Extension(extensionStores)
+    return new Extension(extensionStores, worker)
   }
 
   const getAccount = async (): Promise<string> => {

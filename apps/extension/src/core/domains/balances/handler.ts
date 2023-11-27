@@ -9,6 +9,7 @@ import {
 } from "@core/domains/balances/types"
 import { createSubscription, unsubscribe } from "@core/handlers/subscriptions"
 import { ExtensionHandler } from "@core/libs/Handler"
+import { log } from "@core/log"
 import { chaindataProvider } from "@core/rpcs/chaindata"
 import { Port } from "@core/types/base"
 import { AddressesByToken } from "@talismn/balances"
@@ -33,6 +34,11 @@ export class BalancesHandler extends ExtensionHandler {
         return getNomPoolStake(request as RequestNomPoolStake)
 
       case "pri(balances.subscribe)":
+        try {
+          this.worker.postMessage(["subscribe", "balances", "plz"])
+        } catch (err) {
+          log.error("worker.postMessage", err)
+        }
         return this.stores.balances.subscribe(id, port)
 
       // TODO: Replace this call with something internal to the balances store

@@ -41,25 +41,25 @@ export default class Extension extends ExtensionHandler {
   #configUpdater?: NodeJS.Timeout
   #autoLockTimeout = 0
 
-  constructor(stores: ExtensionStore) {
-    super(stores)
+  constructor(stores: ExtensionStore, worker: Worker) {
+    super(stores, worker)
 
     // routing to sub-handlers
     this.#routes = {
-      accounts: new AccountsHandler(stores),
-      chains: new ChainsHandler(stores),
-      app: new AppHandler(stores),
-      assets: new AssetTransferHandler(stores),
-      balances: new BalancesHandler(stores),
-      encrypt: new EncryptHandler(stores),
-      eth: new EthHandler(stores),
-      metadata: new MetadataHandler(stores),
-      mnemonic: new MnemonicHandler(stores),
-      signing: new SigningHandler(stores),
-      sites: new SitesAuthorisationHandler(stores),
-      tokenRates: new TokenRatesHandler(stores),
-      tokens: new TokensHandler(stores),
-      substrate: new SubHandler(stores),
+      accounts: new AccountsHandler(stores, worker),
+      chains: new ChainsHandler(stores, worker),
+      app: new AppHandler(stores, worker),
+      assets: new AssetTransferHandler(stores, worker),
+      balances: new BalancesHandler(stores, worker),
+      encrypt: new EncryptHandler(stores, worker),
+      eth: new EthHandler(stores, worker),
+      metadata: new MetadataHandler(stores, worker),
+      mnemonic: new MnemonicHandler(stores, worker),
+      signing: new SigningHandler(stores, worker),
+      sites: new SitesAuthorisationHandler(stores, worker),
+      tokenRates: new TokenRatesHandler(stores, worker),
+      tokens: new TokensHandler(stores, worker),
+      substrate: new SubHandler(stores, worker),
     }
 
     // connect auto lock timeout setting to the password store
