@@ -17,6 +17,7 @@ const isCompatibleAddress = (from: Address, to: Address) => {
 export const useSendFundsPopup = (
   account: AccountJsonAny | undefined,
   tokenId?: TokenId,
+  tokenSymbol?: string,
   to?: Address
 ) => {
   const { t } = useTranslation()
@@ -64,8 +65,8 @@ export const useSendFundsPopup = (
 
   const openSendFundsPopup = useCallback(() => {
     if (!canSendFunds) return
-    api.sendFundsOpen({ from: account?.address, tokenId, to })
-  }, [account?.address, canSendFunds, to, tokenId])
+    api.sendFundsOpen({ from: account?.address, tokenId, tokenSymbol, to })
+  }, [account?.address, canSendFunds, to, tokenId, tokenSymbol])
 
   return { canSendFunds, cannotSendFundsReason, openSendFundsPopup }
 }

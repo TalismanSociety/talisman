@@ -375,6 +375,7 @@ const TokensList: FC<TokensListProps> = ({
 type TokenPickerProps = {
   address?: string
   selected?: TokenId
+  initialSearch?: string
   showEmptyBalances?: boolean
   allowUntransferable?: boolean
   ownedOnly?: boolean
@@ -386,6 +387,7 @@ type TokenPickerProps = {
 export const TokenPicker: FC<TokenPickerProps> = ({
   address,
   selected,
+  initialSearch = "",
   showEmptyBalances,
   allowUntransferable,
   ownedOnly,
@@ -394,7 +396,7 @@ export const TokenPicker: FC<TokenPickerProps> = ({
   onSelect,
 }) => {
   const { t } = useTranslation()
-  const [search, setSearch] = useState("")
+  const [search, setSearch] = useState(initialSearch)
 
   return (
     <div
@@ -404,8 +406,9 @@ export const TokenPicker: FC<TokenPickerProps> = ({
         <SearchInput
           onChange={setSearch}
           placeholder={t("Search by token or network name")}
+          initialValue={initialSearch}
           // eslint-disable-next-line jsx-a11y/no-autofocus
-          autoFocus
+          autoFocus={!initialSearch}
         />
       </div>
       <ScrollContainer className="bg-black-secondary border-grey-700 scrollable h-full w-full grow overflow-x-hidden border-t">
