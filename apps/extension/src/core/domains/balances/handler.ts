@@ -15,6 +15,10 @@ import { AddressesByToken } from "@talismn/balances"
 import { Token } from "@talismn/chaindata-provider"
 import { MessageTypes, RequestTypes, ResponseType } from "core/types"
 
+import { enabledChainsStore, isChainEnabled } from "../chains/store.enabledChains"
+import { enabledEvmNetworksStore, isEvmNetworkEnabled } from "../ethereum/store.enabledEvmNetworks"
+import { enabledTokensStore, isTokenEnabled } from "../tokens/store.enabledTokens"
+
 export class BalancesHandler extends ExtensionHandler {
   public async handle<TMessageType extends MessageTypes>(
     id: string,
@@ -49,11 +53,15 @@ export class BalancesHandler extends ExtensionHandler {
         // Collect the required data from chaindata.
         //
 
-        const [chains, evmNetworks, tokens] = await Promise.all([
-          chaindataProvider.chains(),
-          chaindataProvider.evmNetworks(),
-          chaindataProvider.tokens(),
-        ])
+        const [chains, evmNetworks, tokens, enabledTokens, enabledChains, enabledEvmNetworks] =
+          await Promise.all([
+            chaindataProvider.chains(),
+            chaindataProvider.evmNetworks(),
+            chaindataProvider.tokens(),
+            enabledTokensStore.get(),
+            enabledChainsStore.get(),
+            enabledEvmNetworksStore.get(),
+          ])
 
         //
         // Convert the inputs of `addressesByChain` and `addressesAndEvmNetworks` into what we need
@@ -63,11 +71,13 @@ export class BalancesHandler extends ExtensionHandler {
         const addressesByToken: AddressesByToken<Token> = [
           ...Object.entries(addressesByChain)
             // convert chainIds into chains
-            .map(([chainId, addresses]) => [chains[chainId], addresses] as const),
+            .map(([chainId, addresses]) => [chains[chainId], addresses] as const)
+            .filter(([chain]) => isChainEnabled(chain, enabledChains)),
 
           ...addressesAndEvmNetworks.evmNetworks
             // convert evmNetworkIds into evmNetworks
-            .map(({ id }) => [evmNetworks[id], addressesAndEvmNetworks.addresses] as const),
+            .map(({ id }) => [evmNetworks[id], addressesAndEvmNetworks.addresses] as const)
+            .filter(([evmNetwork]) => isEvmNetworkEnabled(evmNetwork, enabledEvmNetworks)),
         ]
           // filter out requested chains/evmNetworks which don't exist
           .filter(([chainOrNetwork]) => chainOrNetwork !== undefined)
@@ -76,7 +86,12 @@ export class BalancesHandler extends ExtensionHandler {
 
           // convert chains and evmNetworks into a list of tokenIds
           .flatMap(([chainOrNetwork, addresses]) =>
-            (chainOrNetwork.tokens || []).map(({ id: tokenId }) => [tokenId, addresses] as const)
+            Object.values(tokens)
+              .filter(
+                (t) => t.chain?.id === chainOrNetwork.id || t.evmNetwork?.id === chainOrNetwork.id
+              )
+              .filter((t) => isTokenEnabled(t, enabledTokens))
+              .map((t) => [t.id, addresses] as const)
           )
 
           // collect all of the addresses for each tokenId into a map of { [tokenId]: addresses }

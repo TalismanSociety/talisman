@@ -25,14 +25,19 @@ const PagerButton: FC<{ disabled?: boolean; children: ReactNode; onClick?: () =>
   </button>
 )
 
-const AccountButtonShimmer = () => (
+const AccountButtonShimmer: FC<{ withBalances: boolean }> = ({ withBalances }) => (
   <div className={"bg-grey-850 flex h-32 w-full items-center gap-8 rounded px-8"}>
     <div className="bg-grey-750 inline-block h-16 w-16 animate-pulse rounded-full"></div>
     <div className="flex grow flex-col gap-2">
       <div className="rounded-xs bg-grey-750 h-[1.6rem] w-[13rem] animate-pulse"></div>
       <div className="rounded-xs bg-grey-750 h-[1.4rem] w-[6.8rem] animate-pulse"></div>
     </div>
-    <div className="rounded-xs bg-grey-750 h-[1.8rem] w-[6.8rem] animate-pulse"></div>
+    <div
+      className={classNames(
+        "rounded-xs bg-grey-750 h-[1.8rem] w-[6.8rem] animate-pulse",
+        !withBalances && "invisible"
+      )}
+    ></div>
     <div className="rounded-xs bg-grey-750 h-[2rem] w-[2rem] animate-pulse"></div>
   </div>
 )
@@ -46,6 +51,7 @@ const AccountButton: FC<AccountButtonProps> = ({
   selected,
   onClick,
   isBalanceLoading,
+  withBalances,
 }) => {
   const { balanceDetails, totalUsd } = useBalanceDetails(balances)
 
@@ -66,18 +72,20 @@ const AccountButton: FC<AccountButtonProps> = ({
         </div>
       </div>
       <div className="flex items-center justify-end gap-2">
-        <Tooltip>
-          <TooltipTrigger asChild>
-            <span className={classNames(isBalanceLoading && "animate-pulse")}>
-              <Fiat className="leading-none" amount={totalUsd} />
-            </span>
-          </TooltipTrigger>
-          {balanceDetails && (
-            <TooltipContent>
-              <div className="whitespace-pre-wrap text-right">{balanceDetails}</div>
-            </TooltipContent>
-          )}
-        </Tooltip>
+        {withBalances && (
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <span className={classNames(isBalanceLoading && "animate-pulse")}>
+                <Fiat className="leading-none" amount={totalUsd} />
+              </span>
+            </TooltipTrigger>
+            {balanceDetails && (
+              <TooltipContent>
+                <div className="whitespace-pre-wrap text-right">{balanceDetails}</div>
+              </TooltipContent>
+            )}
+          </Tooltip>
+        )}
       </div>
       <div className="flex w-12 shrink-0 flex-col items-center justify-center">
         {connected ? (
@@ -96,16 +104,19 @@ export type DerivedAccountBase = AccountJson & {
   address: string
   balances: Balances
   isBalanceLoading: boolean
+
   connected?: boolean
   selected?: boolean
 }
 
 type AccountButtonProps = DerivedAccountBase & {
+  withBalances: boolean
   onClick: () => void
 }
 
 type DerivedAccountPickerBaseProps = {
   accounts: (DerivedAccountBase | null)[]
+  withBalances: boolean
   canPageBack?: boolean
   disablePaging?: boolean
   onPagerFirstClick?: () => void
@@ -122,6 +133,7 @@ export const DerivedAccountPickerBase: FC<DerivedAccountPickerBaseProps> = ({
   onPagerPrevClick,
   onPagerNextClick,
   onAccountClick,
+  withBalances = true,
 }) => {
   const handleToggleAccount = useCallback(
     (acc: DerivedAccountBase) => () => {
@@ -137,11 +149,12 @@ export const DerivedAccountPickerBase: FC<DerivedAccountPickerBaseProps> = ({
           account ? (
             <AccountButton
               key={account.address}
+              withBalances={withBalances}
               {...account}
               onClick={handleToggleAccount(account)}
             />
           ) : (
-            <AccountButtonShimmer key={i} />
+            <AccountButtonShimmer key={i} withBalances={withBalances} />
           )
         )}
       </div>
