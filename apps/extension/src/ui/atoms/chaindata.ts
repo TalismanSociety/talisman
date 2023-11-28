@@ -235,10 +235,10 @@ export const allTokensState = selector<Token[]>({
 export const tokensWithTestnetsState = selector<Token[]>({
   key: "tokensWithTestnetsState",
   get: ({ get }) => {
-    const tokensMap = get(allTokensState)
+    const tokens = get(allTokensState)
     const chainsMap = get(chainsWithTestnetsMapState)
     const evmNetworksMap = get(evmNetworksWithTestnetsMapState)
-    return Object.values(tokensMap).filter(
+    return tokens.filter(
       (token) =>
         (token.chain && chainsMap[token.chain.id]) ||
         (token.evmNetwork && evmNetworksMap[token.evmNetwork.id])
