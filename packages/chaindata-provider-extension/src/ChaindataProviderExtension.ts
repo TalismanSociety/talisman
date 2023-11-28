@@ -568,25 +568,6 @@ export class ChaindataProviderExtension implements ChaindataProvider {
       .filter((token) => "isCustom" in token && token.isCustom)
       .map((token) => token.id)
 
-    // // workaround for chains that don't have a native token provisionned from chaindata
-    // // TODO : remove when fixed in chaindata
-    // const chain = await this.#db.chains.get(chainId)
-    // let shouldUpdateChain = false
-    // if (
-    //   chain &&
-    //   (!chain.nativeToken?.id || !newTokens.find((token) => token.id === chain.nativeToken?.id))
-    // ) {
-    //   const token = newTokens.find(
-    //     (token) => token.type === "substrate-native" && token?.chain?.id === chainId
-    //   )
-    //   if (token) {
-    //     chain.nativeToken = { id: token.id }
-    //     shouldUpdateChain = true
-    //   }
-    // }
-
-    // console.log("updateChainTokens %s %s", chainId, shouldUpdateChain, chain)
-
     await this.#db.transaction("rw", this.#db.tokens, this.#db.chains, async () => {
       await this.#db.tokens.bulkDelete(notCustomTokenIds)
       await this.#db.tokens.bulkPut(newTokens.filter((token) => !customTokenIds.includes(token.id)))
@@ -650,7 +631,8 @@ export class ChaindataProviderExtension implements ChaindataProvider {
       }
       await this.#db.transaction("rw", this.#db.tokens, async () => {
         const deleteChains = chainIdFilter ? new Set(chainIdFilter) : undefined
-        await this.#db.tokens
+
+        const tokensToDelete = (await this.#db.tokens.toArray())
           .filter((token) => {
             // don't delete custom tokens
             if ("isCustom" in token) return false
@@ -659,12 +641,13 @@ export class ChaindataProviderExtension implements ChaindataProvider {
             if (deleteChains === undefined) return true
 
             // delete tokens on chainIdFilter chains is it is specified
-            if (!token.chain?.id) return true
-            if (deleteChains.has(token.chain.id)) return true
+            if (token.chain?.id && deleteChains.has(token.chain.id)) return true
 
             return false
           })
-          .delete()
+          .map((token) => token.id)
+
+        if (tokensToDelete.length) await this.#db.tokens.bulkDelete(tokensToDelete)
 
         // add all except ones matching custom existing ones (user may customize built-in tokens)
         const customTokenIds = new Set((await this.#db.tokens.toArray()).map((token) => token.id))
@@ -679,6 +662,7 @@ export class ChaindataProviderExtension implements ChaindataProvider {
 
           return false
         })
+
         await this.#db.tokens.bulkPut(newTokens)
       })
       this.#lastHydratedTokensAt = now

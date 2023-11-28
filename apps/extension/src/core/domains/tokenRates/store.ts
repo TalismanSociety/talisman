@@ -7,7 +7,9 @@ import { TokenList } from "@talismn/chaindata-provider"
 import { fetchTokenRates } from "@talismn/token-rates"
 import { Subscription, liveQuery } from "dexie"
 import debounce from "lodash/debounce"
-import { BehaviorSubject } from "rxjs"
+import { BehaviorSubject, combineLatest } from "rxjs"
+
+import { enabledTokensStore, filterEnabledTokens } from "../tokens/store.enabledTokens"
 
 const MIN_REFRESH_INTERVAL = 60_000 // 60_000ms = 60s = 1 minute
 const REFRESH_INTERVAL = 300_000 // 5 minutes
@@ -42,10 +44,15 @@ export class TokenRatesStore {
 
         // refresh when token list changes : crucial for first popup load after install or db migration
         const obsTokens = liveQuery(() => chaindataProvider.tokens())
-        subTokenList = obsTokens.subscribe(
-          debounce(async (tokens) => {
-            if (this.#subscriptions.observed) await this.updateTokenRates(tokens)
-          }, 500) // debounce to delay in case on first load first token list is empty
+        const obsEnabledTokens = enabledTokensStore.observable
+
+        subTokenList = combineLatest([obsTokens, obsEnabledTokens]).subscribe(
+          debounce(async ([tokens, enabledTokens]) => {
+            if (this.#subscriptions.observed) {
+              const tokensList = filterEnabledTokens(tokens, enabledTokens)
+              await this.updateTokenRates(tokensList)
+            }
+          }, 500)
         )
       } else {
         // watching state check
@@ -67,12 +74,14 @@ export class TokenRatesStore {
 
   async hydrateStore(): Promise<boolean> {
     try {
-      const tokens = await chaindataProvider.tokens()
-      // TODO change filter to enabled tokens
-      const enabledTokens = Object.fromEntries(
-        Object.entries(tokens).filter(([, token]) => token.isDefault !== false)
-      )
-      await this.updateTokenRates(enabledTokens)
+      const [tokens, enabledTokens] = await Promise.all([
+        chaindataProvider.tokens(),
+        enabledTokensStore.get(),
+      ])
+
+      const tokensList = filterEnabledTokens(tokens, enabledTokens)
+
+      await this.updateTokenRates(tokensList)
 
       return true
     } catch (error) {
@@ -81,6 +90,7 @@ export class TokenRatesStore {
     }
   }
 
+  // warning : make sure the tokens list only includes enabled tokens
   private async updateTokenRates(tokens: TokenList): Promise<void> {
     const now = Date.now()
     const strTokenIds = Object.keys(tokens ?? {}).join(",")

@@ -1,5 +1,5 @@
 import { StorageProvider } from "@core/libs/Store"
-import { Token, TokenId } from "@talismn/chaindata-provider"
+import { Token, TokenId, TokenList } from "@talismn/chaindata-provider"
 
 import { CustomErc20Token, CustomEvmNativeToken, CustomNativeToken } from "./types"
 
@@ -38,4 +38,10 @@ export const isTokenEnabled = (
   enabledTokens: EnabledTokens
 ) => {
   return enabledTokens[token.id] ?? (isCustomToken(token) || token.isDefault)
+}
+
+export const filterEnabledTokens = (tokens: TokenList, enabledTokens: EnabledTokens) => {
+  return Object.fromEntries(
+    Object.entries(tokens).filter(([, token]) => isTokenEnabled(token as Token, enabledTokens))
+  ) as TokenList
 }
