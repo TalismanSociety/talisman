@@ -15,13 +15,14 @@ import {
   ChainId,
   NewTokenType,
   SubChainId,
+  TokenList,
   githubTokenLogoUrl,
 } from "@talismn/chaindata-provider"
 import isEqual from "lodash/isEqual"
 
 import { DefaultBalanceModule, NewBalanceModule, NewTransferParamsType } from "../BalanceModule"
 import log from "../log"
-import { Amount, Balance, BalanceJson, Balances, NewBalanceType } from "../types"
+import { AddressesByToken, Amount, Balance, BalanceJson, Balances, NewBalanceType } from "../types"
 import psp22Abi from "./abis/psp22.json"
 
 type ModuleType = "substrate-psp22"
@@ -203,11 +204,15 @@ export const SubPsp22Module: NewBalanceModule<
       const subscriptionInterval = 12_000 // 12_000ms == 12 seconds
       const cache = new Map<string, BalanceJson>()
 
+      const tokens = await chaindataProvider.tokens()
+
       const poll = async () => {
         if (!subscriptionActive) return
 
         try {
-          const balances = await this.fetchBalances(addressesByToken)
+          assert(chainConnectors.substrate, "This module requires a substrate chain connector")
+
+          const balances = await fetchBalances(chainConnectors.substrate, tokens, addressesByToken)
 
           // Don't call callback with balances which have not changed since the last poll.
           const updatedBalances = new Balances(
@@ -238,81 +243,7 @@ export const SubPsp22Module: NewBalanceModule<
 
       const tokens = await chaindataProvider.tokens()
 
-      const registry = new TypeRegistry()
-      const Psp22Abi = new Abi(psp22Abi)
-
-      const balanceRequests = Object.entries(addressesByToken)
-        .flatMap(([tokenId, addresses]) => addresses.map((address) => [tokenId, address]))
-        .flatMap(async ([tokenId, address]) => {
-          const token = tokens[tokenId]
-          if (!token) {
-            log.debug(`Token ${tokenId} not found`)
-            return []
-          }
-
-          if (token.type !== "substrate-psp22") {
-            log.debug(`This module doesn't handle tokens of type ${token.type}`)
-            return []
-          }
-
-          const contractCall = makeContractCaller({
-            chainConnector,
-            chainId: token.chain.id,
-            registry,
-          })
-
-          if (token.contractAddress === undefined) {
-            log.debug(`Token ${tokenId} of type substrate-psp22 doesn't have a contractAddress`)
-            return []
-          }
-
-          const result = await contractCall(
-            address,
-            token.contractAddress,
-            registry.createType(
-              "Vec<u8>",
-              Psp22Abi.findMessage("PSP22::balance_of").toU8a([
-                // ACCOUNT
-                address,
-              ])
-            )
-          )
-
-          const balance = registry
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            .createType("Balance", hexToU8a((result.toJSON()?.result as any)?.ok?.data).slice(1))
-            .toString()
-
-          return new Balance({
-            source: "substrate-psp22",
-
-            status: "live",
-
-            address,
-            multiChainId: { subChainId: token.chain.id },
-            chainId: token.chain.id,
-            tokenId,
-
-            free: balance,
-          })
-        })
-
-      // wait for balance fetches to complete
-      const balanceResults = await Promise.allSettled(balanceRequests)
-
-      // filter out errors
-      const balances = balanceResults
-        .map((result) => {
-          if (result.status === "rejected") {
-            log.debug(result.reason)
-            return false
-          }
-          return result.value
-        })
-        .filter((balance): balance is Balance => balance !== false)
-
-      // return to caller
-      return new Balances(balances)
+      return fetchBalances(chainConnectors.substrate, tokens, addressesByToken)
     },
 
     async transferToken({
@@ -435,3 +366,85 @@ const makeContractCaller =
         ),
       ])
     )
+
+const fetchBalances = async (
+  chainConnector: ChainConnector,
+  tokens: TokenList,
+  addressesByToken: AddressesByToken<SubPsp22Token>
+) => {
+  const registry = new TypeRegistry()
+  const Psp22Abi = new Abi(psp22Abi)
+
+  const balanceRequests = Object.entries(addressesByToken)
+    .flatMap(([tokenId, addresses]) => addresses.map((address) => [tokenId, address]))
+    .flatMap(async ([tokenId, address]) => {
+      const token = tokens[tokenId]
+      if (!token) {
+        log.debug(`Token ${tokenId} not found`)
+        return []
+      }
+
+      if (token.type !== "substrate-psp22") {
+        log.debug(`This module doesn't handle tokens of type ${token.type}`)
+        return []
+      }
+
+      const contractCall = makeContractCaller({
+        chainConnector,
+        chainId: token.chain.id,
+        registry,
+      })
+
+      if (token.contractAddress === undefined) {
+        log.debug(`Token ${tokenId} of type substrate-psp22 doesn't have a contractAddress`)
+        return []
+      }
+
+      const result = await contractCall(
+        address,
+        token.contractAddress,
+        registry.createType(
+          "Vec<u8>",
+          Psp22Abi.findMessage("PSP22::balance_of").toU8a([
+            // ACCOUNT
+            address,
+          ])
+        )
+      )
+
+      const balance = registry
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        .createType("Balance", hexToU8a((result.toJSON()?.result as any)?.ok?.data).slice(1))
+        .toString()
+
+      return new Balance({
+        source: "substrate-psp22",
+
+        status: "live",
+
+        address,
+        multiChainId: { subChainId: token.chain.id },
+        chainId: token.chain.id,
+        tokenId,
+
+        free: balance,
+      })
+    })
+
+  // wait for balance fetches to complete
+  const balanceResults = await Promise.allSettled(balanceRequests)
+
+  // filter out errors
+  const balances = balanceResults
+    .map((result) => {
+      if (result.status === "rejected") {
+        log.debug(result.reason)
+        return false
+      }
+      return result.value
+    })
+    .filter((balance): balance is Balance => balance !== false)
+
+  // return to caller
+  return new Balances(balances)
+}

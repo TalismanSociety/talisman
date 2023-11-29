@@ -1,8 +1,10 @@
 import { assert } from "@polkadot/util"
+import { ChainConnectorEvm } from "@talismn/chain-connector-evm"
 import {
   BalancesConfigTokenParams,
   EvmChainId,
   EvmNetworkId,
+  EvmNetworkList,
   NewTokenType,
   TokenList,
   githubTokenLogoUrl,
@@ -165,14 +167,15 @@ export const EvmErc20Module: NewBalanceModule<
       // if subscriptionInterval is 6 seconds, this means we only poll chains with a zero balance every 30 seconds
       let zeroBalanceSubscriptionIntervalCounter = 0
 
+      const evmNetworks = await chaindataProvider.evmNetworks()
+      const tokens = await chaindataProvider.tokens()
+
       const poll = async () => {
         if (!subscriptionActive) return
 
         zeroBalanceSubscriptionIntervalCounter = (zeroBalanceSubscriptionIntervalCounter + 1) % 5
 
         try {
-          const tokens = await chaindataProvider.tokens()
-
           // regroup tokens by network
           const addressesByTokenByEvmNetwork = groupAddressesByTokenByEvmNetwork(
             addressesByToken,
@@ -194,7 +197,14 @@ export const EvmErc20Module: NewBalanceModule<
             }
 
             try {
-              const balances = await this.fetchBalances(addressesByToken)
+              if (!chainConnectors.evm)
+                throw new Error(`This module requires an evm chain connector`)
+              const balances = await fetchBalances(
+                chainConnectors.evm,
+                evmNetworks,
+                tokens,
+                addressesByToken
+              )
 
               // Don't call callback with balances which have not changed since the last poll.
               const json = balances.toJSON()
@@ -220,109 +230,119 @@ export const EvmErc20Module: NewBalanceModule<
     },
 
     async fetchBalances(addressesByToken) {
+      if (!chainConnectors.evm) throw new Error(`This module requires an evm chain connector`)
+
       // TODO remove this log
       log.debug("fetchBalances", "evm-erc20", addressesByToken)
       const evmNetworks = await chaindataProvider.evmNetworks()
       const tokens = await chaindataProvider.tokens()
 
-      const addressesByTokenGroupedByEvmNetwork = groupAddressesByTokenByEvmNetwork(
-        addressesByToken,
-        tokens
-      )
-
-      const balances = (
-        await Promise.allSettled(
-          Object.entries(addressesByTokenGroupedByEvmNetwork).map(
-            async ([evmNetworkId, addressesByToken]) => {
-              if (!chainConnectors.evm)
-                throw new Error(`This module requires an evm chain connector`)
-
-              const evmNetwork = evmNetworks[evmNetworkId]
-              if (!evmNetwork) throw new Error(`Evm network ${evmNetworkId} not found`)
-
-              const publicClient = await chainConnector.getPublicClientForEvmNetwork(evmNetworkId)
-              if (!publicClient)
-                throw new Error(`Could not get rpc provider for evm network ${evmNetworkId}`)
-
-              const tokensAndAddresses = Object.entries(addressesByToken).reduce(
-                (tokensAndAddresses, [tokenId, addresses]) => {
-                  const token = tokens[tokenId]
-                  if (!token) {
-                    log.debug(`Token ${tokenId} not found`)
-                    return tokensAndAddresses
-                  }
-
-                  // TODO: Fix @talismn/balances-react: it shouldn't pass every token to every module
-                  if (token.type !== "evm-erc20") {
-                    log.debug(`This module doesn't handle tokens of type ${token.type}`)
-                    return tokensAndAddresses
-                  }
-
-                  const tokenAndAddresses: [EvmErc20Token | CustomEvmErc20Token, string[]] = [
-                    token,
-                    addresses,
-                  ]
-
-                  return [...tokensAndAddresses, tokenAndAddresses]
-                },
-                [] as Array<[EvmErc20Token | CustomEvmErc20Token, string[]]>
-              )
-
-              // fetch all balances
-              const balanceRequests = tokensAndAddresses.flatMap(([token, addresses]) => {
-                return addresses.map(
-                  async (address) =>
-                    new Balance({
-                      source: "evm-erc20",
-
-                      status: "live",
-
-                      address: address,
-                      multiChainId: { evmChainId: evmNetwork.id },
-                      evmNetworkId,
-                      tokenId: token.id,
-
-                      free: await getFreeBalance(
-                        publicClient,
-                        token.contractAddress as `0x${string}`,
-                        address as `0x${string}`
-                      ),
-                    })
-                )
-              })
-
-              // wait for balance fetches to complete
-              const balanceResults = await Promise.allSettled(balanceRequests)
-
-              // filter out errors
-              const balances = balanceResults
-                .map((result) => {
-                  if (result.status === "rejected") {
-                    log.debug(result.reason)
-                    return false
-                  }
-                  return result.value
-                })
-                .filter((balance): balance is Balance => balance !== false)
-
-              // return to caller
-              return new Balances(balances)
-            }
-          )
-        )
-      )
-        .map((result) => {
-          if (result.status === "rejected") {
-            log.debug(result.reason)
-            return false
-          }
-          return result.value
-        })
-        .filter((balances): balances is Balances => balances !== false)
-
-      return balances.reduce((allBalances, balances) => allBalances.add(balances), new Balances([]))
+      return fetchBalances(chainConnectors.evm, evmNetworks, tokens, addressesByToken)
     },
   }
+}
+
+const fetchBalances = async (
+  evmChainConnector: ChainConnectorEvm,
+  evmNetworks: EvmNetworkList,
+  tokens: TokenList,
+  addressesByToken: AddressesByToken<EvmErc20Token>
+) => {
+  const addressesByTokenGroupedByEvmNetwork = groupAddressesByTokenByEvmNetwork(
+    addressesByToken,
+    tokens
+  )
+
+  const balances = (
+    await Promise.allSettled(
+      Object.entries(addressesByTokenGroupedByEvmNetwork).map(
+        async ([evmNetworkId, addressesByToken]) => {
+          if (!evmChainConnector) throw new Error(`This module requires an evm chain connector`)
+
+          const evmNetwork = evmNetworks[evmNetworkId]
+          if (!evmNetwork) throw new Error(`Evm network ${evmNetworkId} not found`)
+
+          const publicClient = await evmChainConnector.getPublicClientForEvmNetwork(evmNetworkId)
+          if (!publicClient)
+            throw new Error(`Could not get rpc provider for evm network ${evmNetworkId}`)
+
+          const tokensAndAddresses = Object.entries(addressesByToken).reduce(
+            (tokensAndAddresses, [tokenId, addresses]) => {
+              const token = tokens[tokenId]
+              if (!token) {
+                log.debug(`Token ${tokenId} not found`)
+                return tokensAndAddresses
+              }
+
+              // TODO: Fix @talismn/balances-react: it shouldn't pass every token to every module
+              if (token.type !== "evm-erc20") {
+                log.debug(`This module doesn't handle tokens of type ${token.type}`)
+                return tokensAndAddresses
+              }
+
+              const tokenAndAddresses: [EvmErc20Token | CustomEvmErc20Token, string[]] = [
+                token,
+                addresses,
+              ]
+
+              return [...tokensAndAddresses, tokenAndAddresses]
+            },
+            [] as Array<[EvmErc20Token | CustomEvmErc20Token, string[]]>
+          )
+
+          // fetch all balances
+          const balanceRequests = tokensAndAddresses.flatMap(([token, addresses]) => {
+            return addresses.map(
+              async (address) =>
+                new Balance({
+                  source: "evm-erc20",
+
+                  status: "live",
+
+                  address: address,
+                  multiChainId: { evmChainId: evmNetwork.id },
+                  evmNetworkId,
+                  tokenId: token.id,
+
+                  free: await getFreeBalance(
+                    publicClient,
+                    token.contractAddress as `0x${string}`,
+                    address as `0x${string}`
+                  ),
+                })
+            )
+          })
+
+          // wait for balance fetches to complete
+          const balanceResults = await Promise.allSettled(balanceRequests)
+
+          // filter out errors
+          const balances = balanceResults
+            .map((result) => {
+              if (result.status === "rejected") {
+                log.debug(result.reason)
+                return false
+              }
+              return result.value
+            })
+            .filter((balance): balance is Balance => balance !== false)
+
+          // return to caller
+          return new Balances(balances)
+        }
+      )
+    )
+  )
+    .map((result) => {
+      if (result.status === "rejected") {
+        log.debug(result.reason)
+        return false
+      }
+      return result.value
+    })
+    .filter((balances): balances is Balances => balances !== false)
+
+  return balances.reduce((allBalances, balances) => allBalances.add(balances), new Balances([]))
 }
 
 function groupAddressesByTokenByEvmNetwork(
