@@ -1,8 +1,4 @@
-import {
-  DEFAULT_SETTINGS,
-  SettingsStoreData,
-  settingsStore,
-} from "@core/domains/app/store.settings"
+import { DEFAULT_SETTINGS, SettingsStoreData, settingsStore } from "@core/domains/app"
 import { GetRecoilValue, RecoilState, atom, selectorFamily, useRecoilState } from "recoil"
 
 const settingsState = atom<SettingsStoreData>({

@@ -80,7 +80,7 @@ export const WelcomePage = () => {
               <a
                 href="https://docs.talisman.xyz/legal-and-security/terms-of-use"
                 target="_blank"
-                rel="noreferrer"
+                rel="noreferrer noopener"
                 className="text-body"
                 onClick={handleLinkClick("Terms of Service")}
               >
@@ -90,7 +90,7 @@ export const WelcomePage = () => {
               <a
                 href="https://docs.talisman.xyz/talisman/legal-and-security/privacy-policy"
                 target="_blank"
-                rel="noreferrer"
+                rel="noreferrer noopener"
                 className="text-body"
                 onClick={handleLinkClick("Privacy Policy")}
               >

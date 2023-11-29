@@ -37,7 +37,7 @@ export const NetworksTokensPage = () => {
                 className="text-grey-200 hover:text-body"
                 href="https://paritytech.github.io/polkadot-testnet-faucet"
                 target="_blank"
-                rel="noreferrer"
+                rel="noreferrer noopener"
               >
                 {t("Faucets")}
               </a>

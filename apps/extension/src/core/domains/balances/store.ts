@@ -1,4 +1,4 @@
-import { settingsStore } from "@core/domains/app/store.settings"
+import { settingsStore } from "@core/domains/app"
 import { Balance, BalanceJson, Balances, RequestBalance } from "@core/domains/balances/types"
 import { Chain } from "@core/domains/chains/types"
 import { EvmNetwork, EvmNetworkId } from "@core/domains/ethereum/types"

@@ -24,6 +24,7 @@ import {
 } from "@ui/domains/Account/AccountRenameModal"
 import { CopyAddressModal, CopyAddressModalProvider } from "@ui/domains/CopyAddress"
 import { SelectedAccountProvider } from "@ui/domains/Portfolio/SelectedAccountContext"
+import { DatabaseErrorAlert } from "@ui/domains/Settings/DatabaseErrorAlert"
 import { useIsLoggedIn } from "@ui/hooks/useIsLoggedIn"
 import { useIsOnboarded } from "@ui/hooks/useIsOnboarded"
 import { Suspense, useEffect, useMemo } from "react"
@@ -112,6 +113,7 @@ const InnerPopup = () => {
                       <AccountExportModal />
                       <AccountExportPrivateKeyModal />
                       <CopyAddressModal />
+                      <DatabaseErrorAlert container="popup" />
                     </CopyAddressModalProvider>
                   </NavigationProvider>
                 </CurrentSiteProvider>

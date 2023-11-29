@@ -2,8 +2,8 @@ import { DEBUG } from "@core/constants"
 import { db } from "@core/db"
 import { AccountsHandler } from "@core/domains/accounts"
 import { AccountType } from "@core/domains/accounts/types"
+import { featuresStore } from "@core/domains/app"
 import AppHandler from "@core/domains/app/handler"
-import { featuresStore } from "@core/domains/app/store.features"
 import { BalancesHandler } from "@core/domains/balances"
 import { ChainsHandler } from "@core/domains/chains"
 import { EncryptHandler } from "@core/domains/encrypt"
@@ -72,6 +72,19 @@ export default class Extension extends ExtensionHandler {
     // update the autolock timer whenever a setting is changed
     Browser.storage.onChanged.addListener(() => {
       stores.password.resetAutoLockTimer(this.#autoLockTimeout)
+    })
+
+    // reset the databaseUnavailable and databaseQuotaExceeded flags on start-up
+    this.stores.errors.set({ databaseUnavailable: false, databaseQuotaExceeded: false })
+
+    // prune old db error logs
+    const now = Date.now()
+    const pruneLogFilter = (timestamp: number) => now - timestamp <= 1_209_600_000 // 14 days in milliseconds
+    this.stores.errors.mutate((store) => {
+      store.DexieAbortLog = store.DexieAbortLog.filter(pruneLogFilter)
+      store.DexieDatabaseClosedLog = store.DexieDatabaseClosedLog.filter(pruneLogFilter)
+      store.DexieQuotaExceededLog = store.DexieQuotaExceededLog.filter(pruneLogFilter)
+      return store
     })
 
     awaitKeyringLoaded().then(() => {

@@ -1,4 +1,4 @@
-import passwordStore from "@core/domains/app/store.password"
+import { passwordStore } from "@core/domains/app"
 import { useOpenClose } from "@talisman/hooks/useOpenClose"
 import { useCallback, useEffect } from "react"
 import { useLocation } from "react-router-dom"

@@ -1,4 +1,4 @@
-import { AddressBookContact } from "@core/domains/app/store.addressBook"
+import { AddressBookContact } from "@core/domains/app"
 
 type ModalProps = { isOpen: boolean; close: () => void }
 export type ExistingContactComponentProps = { contact: AddressBookContact }

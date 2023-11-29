@@ -1,4 +1,4 @@
-import { DEFAULT_APP_STATE } from "@core/domains/app/store.app"
+import { DEFAULT_APP_STATE } from "@core/domains/app"
 import { renderHook } from "@testing-library/react"
 import { RecoilRoot } from "recoil"
 
