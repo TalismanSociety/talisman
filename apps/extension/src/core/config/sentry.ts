@@ -1,9 +1,12 @@
 import { DEBUG } from "@core/constants"
-import { errorsStore, settingsStore } from "@core/domains/app"
+import { settingsStore } from "@core/domains/app"
+import {
+  trackIndexedDbErrorExtras,
+  triggerIndexedDbUnavailablePopup,
+} from "@core/domains/app/store.errors"
 import * as SentryBrowser from "@sentry/browser"
 import * as SentryReact from "@sentry/react"
 import { Event } from "@sentry/types"
-import { Dexie, DexieError } from "dexie"
 import { ReplaySubject, firstValueFrom } from "rxjs"
 
 const normalizeUrl = (url: string) => {
@@ -26,10 +29,14 @@ export const initSentry = (sentry: typeof SentryBrowser | typeof SentryReact) =>
     ignoreErrors: [
       /(No window with id: )(\d+).?/,
       /(disconnected from wss)[(]?:\/\/[\w./:-]+: \d+:: Normal Closure[)]?/,
+      /^disconnected from .+: [0-9]+:: .+$/,
+      /^unsubscribed from .+: [0-9]+:: .+$/,
     ],
     // prevents sending the event if user has disabled error tracking
-    beforeSend: async (event) => {
+    beforeSend: async (event, hint) => {
       const errorTracking = await firstValueFrom(useErrorTracking)
+
+      await trackIndexedDbErrorExtras(event, hint)
 
       // Print to console in development (because we won't be using sentry in that env)
       // eslint-disable-next-line no-console
@@ -71,88 +78,11 @@ export const initSentry = (sentry: typeof SentryBrowser | typeof SentryReact) =>
     })
   })
 
+  window.addEventListener("error", (event) => {
+    triggerIndexedDbUnavailablePopup(event.error)
+  })
   window.addEventListener("unhandledrejection", (event) => {
-    const rootError = event.reason
-
-    const errorChain = []
-    for (let error = rootError; error !== undefined; error = error?.cause) {
-      errorChain.push(error)
-    }
-
-    if (errorChain.some((error) => error instanceof Dexie.DexieError)) {
-      // handle dexie errors
-
-      const dexieError: DexieError = errorChain.find((error) => error instanceof Dexie.DexieError)
-      if (
-        dexieError.name === Dexie.errnames.Abort &&
-        // only follow this branch if the AbortError's `inner` error is not a QuotaExceeded error
-        dexieError.inner?.name !== Dexie.errnames.QuotaExceeded
-      ) {
-        // eslint-disable-next-line no-console
-        DEBUG && console.warn("Setting databaseUnavailable to true", event)
-        errorsStore.mutate((store) => {
-          store.databaseUnavailable = true
-          store.DexieAbortLog.push(Date.now())
-          return store
-        })
-
-        event.preventDefault()
-        return
-      }
-
-      if (dexieError.name === Dexie.errnames.DatabaseClosed) {
-        // eslint-disable-next-line no-console
-        DEBUG && console.warn("Setting databaseUnavailable to true", event)
-        errorsStore.mutate((store) => {
-          store.databaseUnavailable = true
-          store.DexieDatabaseClosedLog.push(Date.now())
-          return store
-        })
-
-        event.preventDefault()
-        return
-      }
-
-      if (
-        dexieError.name === Dexie.errnames.QuotaExceeded ||
-        // can sometimes be raised as the `inner` error of an AbortError
-        dexieError.inner?.name === Dexie.errnames.QuotaExceeded
-      ) {
-        // eslint-disable-next-line no-console
-        DEBUG && console.warn("Setting databaseQuotaExceeded to true", event)
-        errorsStore.mutate((store) => {
-          store.databaseQuotaExceeded = true
-          store.DexieQuotaExceededLog.push(Date.now())
-          return store
-        })
-
-        event.preventDefault()
-        return
-      }
-    } else {
-      // handle non-dexie errors
-
-      if (
-        rootError instanceof Error &&
-        rootError.message.match(/^disconnected from .+: [0-9]+:: .+$/)
-      ) {
-        // eslint-disable-next-line no-console
-        DEBUG && console.warn("An unhandled disconnection has been caught", event)
-        event.preventDefault()
-        return
-      }
-
-      if (
-        rootError instanceof Error &&
-        rootError.message.match(/^unsubscribed from .+: [0-9]+:: .+$/)
-      ) {
-        // eslint-disable-next-line no-console
-        DEBUG && console.warn("An uncatchable polkadotjs error has been caught", event)
-        event.preventDefault()
-        return
-      }
-    }
-
-    sentry.captureEvent(rootError)
+    triggerIndexedDbUnavailablePopup(event.reason)
+    sentry.captureEvent(event.reason)
   })
 }
