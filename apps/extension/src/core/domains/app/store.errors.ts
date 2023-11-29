@@ -6,6 +6,7 @@ import { ReplaySubject, firstValueFrom } from "rxjs"
 export interface ErrorsStoreData {
   databaseUnavailable: boolean
   databaseQuotaExceeded: boolean
+  StartupLog: number[]
   DexieAbortLog: number[]
   DexieDatabaseClosedLog: number[]
   DexieQuotaExceededLog: number[]
@@ -16,6 +17,7 @@ export class ErrorsStore extends StorageProvider<ErrorsStoreData> {}
 export const ERRORS_STORE_INITIAL_DATA: ErrorsStoreData = {
   databaseUnavailable: false,
   databaseQuotaExceeded: false,
+  StartupLog: [],
   DexieAbortLog: [],
   DexieDatabaseClosedLog: [],
   DexieQuotaExceededLog: [],

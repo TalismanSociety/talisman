@@ -81,6 +81,8 @@ export default class Extension extends ExtensionHandler {
     const now = Date.now()
     const pruneLogFilter = (timestamp: number) => now - timestamp <= 1_209_600_000 // 14 days in milliseconds
     this.stores.errors.mutate((store) => {
+      store.StartupLog.push(now)
+      store.StartupLog = store.StartupLog.filter(pruneLogFilter)
       store.DexieAbortLog = store.DexieAbortLog.filter(pruneLogFilter)
       store.DexieDatabaseClosedLog = store.DexieDatabaseClosedLog.filter(pruneLogFilter)
       store.DexieQuotaExceededLog = store.DexieQuotaExceededLog.filter(pruneLogFilter)
