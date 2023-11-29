@@ -1,6 +1,7 @@
 import { enabledChainsStore, isChainEnabled } from "@core/domains/chains/store.enabledChains"
 import { Chain, isCustomChain } from "@talismn/chaindata-provider"
 import { ChevronRightIcon } from "@talismn/icons"
+import { classNames } from "@talismn/util"
 import { sendAnalyticsEvent } from "@ui/api/analytics"
 import { ChainLogo } from "@ui/domains/Asset/ChainLogo"
 import useChains from "@ui/hooks/useChains"
@@ -69,16 +70,21 @@ export const ChainsList = ({ search }: { search?: string }) => {
   const enableAll = useCallback(
     (enable = false) =>
       () => {
-        enabledChainsStore.set(Object.fromEntries(chains.map((n) => [n.id, enable])))
+        enabledChainsStore.set(Object.fromEntries(filteredChains.map((n) => [n.id, enable])))
       },
-    [chains]
+    [filteredChains]
   )
 
   if (!sortedChains) return null
 
   return (
     <div className="flex flex-col gap-4">
-      <div className="flex w-full items-center justify-end gap-4">
+      <div
+        className={classNames(
+          "flex w-full items-center justify-end gap-4",
+          !filteredChains.length && "invisible"
+        )}
+      >
         <button
           type="button"
           onClick={enableAll(true)}
