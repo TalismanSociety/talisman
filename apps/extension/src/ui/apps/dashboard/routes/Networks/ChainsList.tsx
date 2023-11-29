@@ -8,6 +8,7 @@ import { useEnabledChainsState } from "@ui/hooks/useEnabledChainsState"
 import { useSetting } from "@ui/hooks/useSettings"
 import sortBy from "lodash/sortBy"
 import { ChangeEventHandler, useCallback, useMemo, useRef } from "react"
+import { useTranslation } from "react-i18next"
 import { useNavigate } from "react-router-dom"
 import { useIntersection } from "react-use"
 import { ListButton, Toggle } from "talisman-ui"
@@ -16,6 +17,7 @@ import { ANALYTICS_PAGE } from "./analytics"
 import { CustomPill, TestnetPill } from "./Pills"
 
 export const ChainsList = ({ search }: { search?: string }) => {
+  const { t } = useTranslation("admin")
   const [useTestnets] = useSetting("useTestnets")
   const { chains: allChains } = useChains("all")
   const chains = useMemo(
@@ -64,10 +66,35 @@ export const ChainsList = ({ search }: { search?: string }) => {
     []
   )
 
+  const enableAll = useCallback(
+    (enable = false) =>
+      () => {
+        enabledChainsStore.set(Object.fromEntries(chains.map((n) => [n.id, enable])))
+      },
+    [chains]
+  )
+
   if (!sortedChains) return null
 
   return (
     <div className="flex flex-col gap-4">
+      <div className="flex w-full items-center justify-end gap-4">
+        <button
+          type="button"
+          onClick={enableAll(true)}
+          className="text-body-disabled hover:text-body-secondary text-xs"
+        >
+          {t("Enable all")}
+        </button>
+        <div className="bg-body-disabled h-6 w-0.5"></div>
+        <button
+          type="button"
+          onClick={enableAll(false)}
+          className="text-body-disabled hover:text-body-secondary text-xs"
+        >
+          {t("Disable all")}
+        </button>
+      </div>
       {sortedChains.map((chain) => (
         <ChainsListItem
           key={chain.id}

@@ -1,7 +1,7 @@
 import { ChainId, EvmNetworkId, TokenId } from "./types"
 
 // @dev : temporarily change branch here when testing changes in chaindata
-const CHAINDATA_BRANCH = "feat/per-branch-data"
+const CHAINDATA_BRANCH = "main"
 
 //
 // Chaindata published files (dist folder)
