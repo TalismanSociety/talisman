@@ -217,7 +217,7 @@ export default class AccountsHandler extends ExtensionHandler {
     return addresses
   }
 
-  private async accountsCreateLedgerEthereum({
+  private accountsCreateLedgerEthereum({
     name,
     address,
     path,

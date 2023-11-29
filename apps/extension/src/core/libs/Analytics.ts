@@ -177,7 +177,9 @@ class TalismanAnalytics {
     posthog.capture("balances top tokens", topChainTokens)
     posthog.capture("balances report", {
       $set: {
-        accountsCount: keyring.getAccounts().length,
+        accountsCount: keyring
+          .getAccounts()
+          .filter(({ meta }) => meta.origin !== AccountType.Watched).length,
         totalFiatValue: roundToFirstInteger(balances.sum.fiat("usd").total),
         topToken: `${topChainTokens[0].chainId}: ${topChainTokens[0].tokenId}`,
       },

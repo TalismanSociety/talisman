@@ -18,21 +18,21 @@ export const hasErc721Nft = async ({
   const evmAddresses = keyring
     .getPairs()
     .filter(({ type, meta }) => type === "ethereum" && meta.origin !== AccountType.Watched)
-    .map(({ address }) => address)
+    .map(({ address }) => address as Address)
 
   const client = await chainConnectorEvm.getPublicClientForEvmNetwork(evmNetworkId)
   if (!client) throw new Error(`Unable to connect to EVM network: ${evmNetworkId}`)
 
-  const data = await client.multicall({
-    contracts: evmAddresses.map((address) => ({
-      address: contractAddress,
-      abi: parseAbi(abiErc721),
-      functionName: "balanceOf",
-      args: [address],
-    })),
-  })
-
-  return Object.fromEntries(
-    evmAddresses.map((address, i) => [address, (data[i].result as bigint) > 0n])
+  const data = await Promise.all(
+    evmAddresses.map((address) =>
+      client.readContract({
+        address: contractAddress,
+        abi: parseAbi(abiErc721),
+        functionName: "balanceOf",
+        args: [address],
+      })
+    )
   )
+
+  return Object.fromEntries(evmAddresses.map((address, i) => [address, data[i] > 0n]))
 }
