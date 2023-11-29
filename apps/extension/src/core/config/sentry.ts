@@ -19,7 +19,7 @@ settingsStore.observable.subscribe((settings) => useErrorTracking.next(settings.
 
 export const initSentry = (sentry: typeof SentryBrowser | typeof SentryReact) => {
   sentry.init({
-    enabled: !DEBUG,
+    enabled: true,
     environment: process.env.BUILD,
     dsn: process.env.SENTRY_DSN,
     integrations: [new SentryBrowser.BrowserTracing()],
@@ -34,14 +34,16 @@ export const initSentry = (sentry: typeof SentryBrowser | typeof SentryReact) =>
     ],
     // prevents sending the event if user has disabled error tracking
     beforeSend: async (event, hint) => {
-      const errorTracking = await firstValueFrom(useErrorTracking)
-
+      // Track extra information about IndexedDB errors
       await trackIndexedDbErrorExtras(event, hint)
 
-      // Print to console in development (because we won't be using sentry in that env)
-      // eslint-disable-next-line no-console
-      if (DEBUG) console.error("[DEBUG] Sentry event occurred", event)
+      // Print to console instead of Sentry in DEBUG/development builds
+      if (DEBUG) {
+        console.error("[DEBUG] Sentry event occurred", event) // eslint-disable-line no-console
+        return null
+      }
 
+      const errorTracking = await firstValueFrom(useErrorTracking)
       return errorTracking ? event : null
     },
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
