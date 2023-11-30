@@ -202,6 +202,7 @@ export const SubPsp22Module: NewBalanceModule<
     async subscribeBalances(addressesByToken, callback) {
       let subscriptionActive = true
       const subscriptionInterval = 12_000 // 12_000ms == 12 seconds
+      const initDelay = 3_000 // 3000ms == 3 seconds
       const cache = new Map<string, BalanceJson>()
 
       const tokens = await chaindataProvider.tokens()
@@ -231,7 +232,8 @@ export const SubPsp22Module: NewBalanceModule<
           setTimeout(poll, subscriptionInterval)
         }
       }
-      setTimeout(poll, subscriptionInterval)
+
+      setTimeout(poll, initDelay)
 
       return () => {
         subscriptionActive = false

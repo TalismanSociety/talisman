@@ -158,6 +158,7 @@ export const EvmErc20Module: NewBalanceModule<
     async subscribeBalances(addressesByToken, callback) {
       let subscriptionActive = true
       const subscriptionInterval = 6_000 // 6_000ms == 6 seconds
+      const initDelay = 1_500 // 1_500ms == 1.5 seconds
       const cache = new Map<EvmNetworkId, BalanceJsonList>()
 
       // TODO remove this log
@@ -222,7 +223,8 @@ export const EvmErc20Module: NewBalanceModule<
           setTimeout(poll, subscriptionInterval)
         }
       }
-      setTimeout(poll, subscriptionInterval)
+
+      setTimeout(poll, initDelay)
 
       return () => {
         subscriptionActive = false

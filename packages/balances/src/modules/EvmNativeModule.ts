@@ -127,6 +127,7 @@ export const EvmNativeModule: NewBalanceModule<
       log.debug("subscribeBalances", "evm-native", addressesByToken)
       let subscriptionActive = true
       const subscriptionInterval = 6_000 // 6_000ms == 6 seconds
+      const initDelay = 500 // 500ms == 0.5 seconds
       const cache = new Map<EvmNetworkId, BalanceJsonList>()
 
       // for chains with a zero balance we only call fetchBalances once every 5 subscriptionIntervals
@@ -183,7 +184,8 @@ export const EvmNativeModule: NewBalanceModule<
           setTimeout(poll, subscriptionInterval)
         }
       }
-      setTimeout(poll, subscriptionInterval)
+
+      setTimeout(poll, initDelay)
 
       return () => {
         subscriptionActive = false
