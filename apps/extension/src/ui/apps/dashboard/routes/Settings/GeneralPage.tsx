@@ -46,7 +46,7 @@ export const GeneralPage = () => {
           <Setting
             iconLeft={RefreshCwIcon}
             title={t("Reload Talisman")}
-            subtitle={t("Close all wallet tabs and restart the background script")}
+            subtitle={t("Close and restart Talisman, this can help to resolve error states")}
           >
             <Button primary small onClick={runtimeReload}>
               Reload
