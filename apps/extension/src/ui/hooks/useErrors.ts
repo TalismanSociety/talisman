@@ -1,4 +1,8 @@
-import { ERRORS_STORE_INITIAL_DATA, ErrorsStoreData, errorsStore } from "@core/domains/app"
+import {
+  ERRORS_STORE_INITIAL_DATA,
+  ErrorsStoreData,
+  errorsStore,
+} from "@core/domains/app/store.errors"
 import { GetRecoilValue, RecoilState, atom, selectorFamily, useRecoilState } from "recoil"
 
 const errorsStoreState = atom<ErrorsStoreData>({

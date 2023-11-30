@@ -1,4 +1,4 @@
-import { settingsStore } from "@core/domains/app"
+import { settingsStore } from "@core/domains/app/store.settings"
 import { addEvmTransaction, updateTransactionStatus } from "@core/domains/transactions/helpers"
 import { log } from "@core/log"
 import { createNotification } from "@core/notifications"

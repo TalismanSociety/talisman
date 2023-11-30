@@ -1,4 +1,4 @@
-import { AddressBookContact, addressBookStore } from "@core/domains/app"
+import { AddressBookContact, addressBookStore } from "@core/domains/app/store.addressBook"
 import { useCallback } from "react"
 import { useTranslation } from "react-i18next"
 import { atom, useRecoilValue } from "recoil"

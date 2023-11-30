@@ -1,4 +1,4 @@
-import { appStore } from "@core/domains/app"
+import { appStore } from "@core/domains/app/store.app"
 import { Migration, MigrationFunction } from "@core/libs/migrations/types"
 import keyring from "@polkadot/ui-keyring"
 import { assert } from "@polkadot/util"

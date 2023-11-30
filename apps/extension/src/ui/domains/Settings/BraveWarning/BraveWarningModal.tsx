@@ -1,4 +1,4 @@
-import { appStore } from "@core/domains/app"
+import { appStore } from "@core/domains/app/store.app"
 import imgBraveFlag from "@talisman/theme/images/brave_flag.gif"
 import { FC, useCallback, useEffect, useState } from "react"
 import { Trans, useTranslation } from "react-i18next"

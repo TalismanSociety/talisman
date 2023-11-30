@@ -1,4 +1,4 @@
-import { AddressBookContact } from "@core/domains/app"
+import { AddressBookContact } from "@core/domains/app/store.addressBook"
 import { act, renderHook, waitFor } from "@testing-library/react"
 import { RecoilRoot } from "recoil"
 

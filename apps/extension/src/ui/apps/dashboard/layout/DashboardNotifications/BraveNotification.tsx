@@ -1,4 +1,4 @@
-import { appStore } from "@core/domains/app"
+import { appStore } from "@core/domains/app/store.app"
 import { useIsBrave } from "@talisman/hooks/useIsBrave"
 import { useOpenClose } from "@talisman/hooks/useOpenClose"
 import { BraveIcon } from "@talismn/icons"
@@ -6,8 +6,7 @@ import { BraveWarningModal } from "@ui/domains/Settings/BraveWarning/BraveWarnin
 import { useAppState } from "@ui/hooks/useAppState"
 import { useCallback, useMemo } from "react"
 import { useTranslation } from "react-i18next"
-import { ModalDialog } from "talisman-ui"
-import { Modal } from "talisman-ui"
+import { Modal, ModalDialog } from "talisman-ui"
 
 import { DashboardNotification } from "./DashboardNotification"
 

@@ -1,4 +1,8 @@
-import { FEATURE_STORE_INITIAL_DATA, FeaturesStoreData, featuresStore } from "@core/domains/app"
+import {
+  FEATURE_STORE_INITIAL_DATA,
+  FeaturesStoreData,
+  featuresStore,
+} from "@core/domains/app/store.features"
 import { FeatureFlag, FeatureVariants } from "@core/domains/app/types"
 import { RecoilState, atom, selectorFamily, useRecoilValue } from "recoil"
 

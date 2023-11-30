@@ -1,5 +1,6 @@
 import { AccountAddressType } from "@core/domains/accounts/types"
-import { passwordStore, settingsStore } from "@core/domains/app"
+import { passwordStore } from "@core/domains/app/store.password"
+import { settingsStore } from "@core/domains/app/store.settings"
 import { provideContext } from "@talisman/util/provideContext"
 import { api } from "@ui/api"
 import { useAppState } from "@ui/hooks/useAppState"

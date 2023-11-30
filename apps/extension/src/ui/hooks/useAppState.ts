@@ -1,4 +1,4 @@
-import { AppStoreData, DEFAULT_APP_STATE, appStore } from "@core/domains/app"
+import { AppStoreData, DEFAULT_APP_STATE, appStore } from "@core/domains/app/store.app"
 import { RecoilState, atom, selectorFamily, useRecoilState } from "recoil"
 
 export const appState = atom<AppStoreData>({

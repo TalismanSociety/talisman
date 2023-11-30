@@ -1,15 +1,9 @@
 import { accountsCatalogStore } from "@core/domains/accounts"
 import { AccountsCatalogData } from "@core/domains/accounts/store.catalog"
-import {
-  AppStoreData,
-  ErrorsStoreData,
-  PasswordStoreData,
-  SettingsStoreData,
-  appStore,
-  errorsStore,
-  passwordStore,
-  settingsStore,
-} from "@core/domains/app"
+import { AppStoreData, appStore } from "@core/domains/app/store.app"
+import { ErrorsStoreData, errorsStore } from "@core/domains/app/store.errors"
+import { PasswordStoreData, passwordStore } from "@core/domains/app/store.password"
+import { SettingsStoreData, settingsStore } from "@core/domains/app/store.settings"
 import { balanceStore } from "@core/domains/balances"
 import { MnemonicData, mnemonicsStore } from "@core/domains/mnemonics/store"
 import { sitesAuthorisationStore } from "@core/domains/sitesAuthorised"

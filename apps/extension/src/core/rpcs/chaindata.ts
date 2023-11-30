@@ -1,5 +1,5 @@
 import { API_KEY_ONFINALITY } from "@core/constants"
-import { featuresStore } from "@core/domains/app"
+import { featuresStore } from "@core/domains/app/store.features"
 import { ChaindataProviderExtension } from "@talismn/chaindata-provider-extension"
 
 export const chaindataProvider = new ChaindataProviderExtension()

@@ -1,9 +1,9 @@
 import { DEBUG } from "@core/constants"
-import { settingsStore } from "@core/domains/app"
 import {
   trackIndexedDbErrorExtras,
   triggerIndexedDbUnavailablePopup,
 } from "@core/domains/app/store.errors"
+import { settingsStore } from "@core/domains/app/store.settings"
 import * as SentryBrowser from "@sentry/browser"
 import * as SentryReact from "@sentry/react"
 import { Event } from "@sentry/types"
