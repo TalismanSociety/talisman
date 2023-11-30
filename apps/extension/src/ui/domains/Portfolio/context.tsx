@@ -1,6 +1,7 @@
 import { AccountAddressType } from "@core/domains/accounts/types"
 import { Balances } from "@core/domains/balances/types"
 import { Token } from "@core/domains/tokens/types"
+import { KeypairType } from "@polkadot/util-crypto/types"
 import { provideContext } from "@talisman/util/provideContext"
 import { ChainId, EvmNetworkId } from "@talismn/chaindata-provider"
 import { useSelectedAccount } from "@ui/domains/Portfolio/SelectedAccountContext"
@@ -136,7 +137,7 @@ const usePortfolioProvider = () => {
     [account, balances, myBalances]
   )
 
-  const accountType = useMemo(() => {
+  const accountType = useMemo<KeypairType | undefined>(() => {
     if (account?.type === "ethereum") return "ethereum"
     if (account?.type) return "sr25519" // all substrate
     return undefined
@@ -169,6 +170,7 @@ const usePortfolioProvider = () => {
     hydrate,
     allBalances,
     isLoading,
+    accountType,
   }
 }
 

@@ -1,15 +1,8 @@
-import {
-  DEFAULT_PORTFOLIO_TOKENS_ETHEREUM,
-  DEFAULT_PORTFOLIO_TOKENS_SUBSTRATE,
-} from "@core/constants"
 import { Balance, Balances } from "@core/domains/balances/types"
 import { FiatSumBalancesFormatter } from "@talismn/balances"
 import { TokenRateCurrency } from "@talismn/token-rates"
 import { useSelectedCurrency } from "@ui/hooks/useCurrency"
 import { useMemo } from "react"
-
-import { usePortfolio } from "../context"
-import { useSelectedAccount } from "../SelectedAccountContext"
 
 type SymbolBalances = [string, Balances]
 const sortSymbolBalancesBy =
@@ -147,38 +140,5 @@ export const usePortfolioSymbolBalances = (balances: Balances) => {
     [currency, symbolBalances]
   )
 
-  const { account, accounts } = useSelectedAccount()
-  const { networkFilter } = usePortfolio()
-
-  const hasEthereumAccount = useMemo(() => accounts.some((a) => a.type === "ethereum"), [accounts])
-
-  // if specific account we have 2 rows minimum, if all accounts we have 4
-  const skeletons = useMemo(() => {
-    // in this case we don't know the number of min rows, balances should be already loaded anyway
-    if (networkFilter) return symbolBalances.length ? 0 : 1
-
-    // If no accounts then it means "all accounts", expect all default tokens (substrate + eth)
-    // if account has a genesis hash then we expect only 1 chain
-    // otherwise we expect default tokens for account type
-    const expectedRows = (() => {
-      if (!account)
-        return (
-          DEFAULT_PORTFOLIO_TOKENS_SUBSTRATE.length +
-          (hasEthereumAccount ? DEFAULT_PORTFOLIO_TOKENS_ETHEREUM.length : 0)
-        )
-      if (account.genesisHash) return 1
-
-      // DEFAULT_TOKENS are only shown for accounts with no balance
-      const accountHasSomeBalance =
-        balances.find({ address: account?.address }).sum.planck.total > 0n
-      if (accountHasSomeBalance) return 0
-
-      if (account.type === "ethereum") return DEFAULT_PORTFOLIO_TOKENS_ETHEREUM.length
-      return DEFAULT_PORTFOLIO_TOKENS_SUBSTRATE.length
-    })()
-
-    return symbolBalances.length < expectedRows ? expectedRows - symbolBalances.length : 0
-  }, [account, hasEthereumAccount, networkFilter, balances, symbolBalances.length])
-
-  return { symbolBalances, availableSymbolBalances, lockedSymbolBalances, skeletons }
+  return { symbolBalances, availableSymbolBalances, lockedSymbolBalances }
 }

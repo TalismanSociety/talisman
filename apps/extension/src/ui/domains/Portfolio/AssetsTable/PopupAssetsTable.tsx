@@ -17,68 +17,15 @@ import { useNavigate } from "react-router-dom"
 
 import { TokenLogo } from "../../Asset/TokenLogo"
 import { useNomPoolStakingBanner } from "../NomPoolStakingContext"
-import { useSelectedAccount } from "../SelectedAccountContext"
 import { StaleBalancesIcon } from "../StaleBalancesIcon"
 import { useTokenBalancesSummary } from "../useTokenBalancesSummary"
 import { NetworksLogoStack } from "./NetworksLogoStack"
 import { usePortfolioNetworkIds } from "./usePortfolioNetworkIds"
 import { usePortfolioSymbolBalances } from "./usePortfolioSymbolBalances"
 
-const getSkeletonOpacity = (index: number) => {
-  // tailwind parses files to find classes that it should include
-  // so we can't dynamically compute the className
-  switch (index) {
-    case 0:
-      return "opacity-100"
-    case 1:
-      return "opacity-90"
-    case 2:
-      return "opacity-80"
-    case 3:
-      return "opacity-70"
-    case 4:
-      return "opacity-60"
-    case 5:
-      return "opacity-50"
-    case 6:
-      return "opacity-40"
-    case 7:
-      return "opacity-30"
-    case 8:
-      return "opacity-20"
-    case 9:
-      return "opacity-10"
-    default:
-      return "opacity-0"
-  }
-}
-
 type AssetRowProps = {
   balances: Balances
   locked?: boolean
-}
-
-const AssetRowSkeleton = ({ className }: { className?: string }) => {
-  return (
-    <div
-      className={classNames(
-        "bg-black-secondary flex h-28 items-center gap-6 rounded-sm px-6",
-        className
-      )}
-    >
-      <div className="bg-grey-700 h-16 w-16 animate-pulse rounded-full px-6 text-xl"></div>
-      <div className="grow space-y-1">
-        <div className="flex justify-between gap-1">
-          <div className="bg-grey-700 rounded-xs h-7 w-20 animate-pulse"></div>
-          <div className="bg-grey-700 rounded-xs h-7 w-[10rem] animate-pulse"></div>
-        </div>
-        <div className="flex justify-between gap-1">
-          <div className="bg-grey-700 rounded-xs h-7 w-10 animate-pulse"></div>
-          <div className="bg-grey-700 rounded-xs h-7 w-[6rem] animate-pulse"></div>
-        </div>
-      </div>
-    </div>
-  )
 }
 
 const AssetRow = ({ balances, locked }: AssetRowProps) => {
@@ -268,16 +215,13 @@ const BalancesGroup = ({ label, fiatAmount, className, children }: GroupProps) =
 }
 
 export const PopupAssetsTable = ({ balances }: GroupedAssetsTableProps) => {
-  const { account } = useSelectedAccount()
+  const { t } = useTranslation()
+  const { account } = useSearchParamsSelectedAccount()
+  const currency = useSelectedCurrency()
 
   // group by status by token (symbol)
-  const {
-    availableSymbolBalances: available,
-    lockedSymbolBalances: locked,
-    skeletons,
-  } = usePortfolioSymbolBalances(balances)
-
-  const currency = useSelectedCurrency()
+  const { availableSymbolBalances: available, lockedSymbolBalances: locked } =
+    usePortfolioSymbolBalances(balances)
 
   // calculate totals
   const { total, totalAvailable, totalLocked } = useMemo(() => {
@@ -285,9 +229,14 @@ export const PopupAssetsTable = ({ balances }: GroupedAssetsTableProps) => {
     return { total, totalAvailable: transferable, totalLocked: locked + reserved }
   }, [balances.sum, currency])
 
-  const { t } = useTranslation()
-
-  if (!available.length && !locked.length) return null
+  if (!available.length && !locked.length)
+    return (
+      <FadeIn>
+        <div className="text-body-secondary bg-black-secondary rounded-sm py-10 text-center text-xs">
+          {account ? t("No assets to display for this account.") : t("No assets to display.")}
+        </div>
+      </FadeIn>
+    )
 
   return (
     <FadeIn>
@@ -307,10 +256,7 @@ export const PopupAssetsTable = ({ balances }: GroupedAssetsTableProps) => {
           {available.map(([symbol, b]) => (
             <AssetRow key={symbol} balances={b} />
           ))}
-          {[...Array(skeletons).keys()].map((i) => (
-            <AssetRowSkeleton key={i} className={getSkeletonOpacity(i)} />
-          ))}
-          {!skeletons && !available.length && (
+          {!available.length && (
             <div className="text-body-secondary bg-black-secondary rounded-sm py-10 text-center text-xs">
               {account
                 ? t("There are no available balances for this account.")

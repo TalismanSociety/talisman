@@ -5,6 +5,7 @@ import {
 import { AccountJsonAny } from "@core/domains/accounts/types"
 import { Balance, Balances } from "@core/domains/balances/types"
 import { useSelectedAccount } from "@ui/domains/Portfolio/SelectedAccountContext"
+import { useSearchParamsSelectedAccount } from "@ui/hooks/useSearchParamsSelectedAccount"
 import { useMemo } from "react"
 
 // TODO: default tokens should be controlled from chaindata
@@ -37,7 +38,11 @@ const shouldDisplayBalance = (account: AccountJsonAny | undefined, balances: Bal
 }
 
 export const useDisplayBalances = (balances: Balances) => {
-  const { account } = useSelectedAccount()
+  const { account: dashboardAccount } = useSelectedAccount()
+  const { account: popupAccount } = useSearchParamsSelectedAccount()
 
-  return useMemo(() => balances.find(shouldDisplayBalance(account, balances)), [account, balances])
+  return useMemo(
+    () => balances.find(shouldDisplayBalance(dashboardAccount || popupAccount, balances)),
+    [balances, dashboardAccount, popupAccount]
+  )
 }
