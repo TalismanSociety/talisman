@@ -8,6 +8,7 @@ import { ChevronLeftIcon, ChevronRightIcon, CopyIcon, EyeIcon } from "@talismn/i
 import { classNames } from "@talismn/util"
 import { AnalyticsPage, sendAnalyticsEvent } from "@ui/api/analytics"
 import { AccountsLogoStack } from "@ui/apps/dashboard/routes/Settings/Accounts/AccountsLogoStack"
+import { NewFeaturesButton } from "@ui/apps/popup/components/NewFeaturesButton"
 import { TotalFiatBalance } from "@ui/apps/popup/components/TotalFiatBalance"
 import { AccountFolderIcon } from "@ui/domains/Account/AccountFolderIcon"
 import { AccountIcon } from "@ui/domains/Account/AccountIcon"
@@ -194,6 +195,7 @@ const Accounts = ({
   return (
     <div className="flex w-full flex-col gap-4 pb-12">
       {!folder && <AllAccountsHeader />}
+      {!folder && <NewFeaturesButton />}
       {folder && <FolderHeader folder={folder} folderTotal={folderTotal} />}
 
       {hasPortfolioOptions && (

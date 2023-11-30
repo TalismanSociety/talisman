@@ -14,6 +14,7 @@ import { NoAccounts } from "../NoAccounts"
 import { PortfolioAccounts } from "./PortfolioAccounts"
 import { PortfolioAsset } from "./PortfolioAsset"
 import { PortfolioAssets } from "./PortfolioAssets"
+import { PortfolioWhatsNew, PortfolioWhatsNewHeader } from "./PortfolioWhatsNew"
 
 const BraveWarningPopupBanner = lazy(
   () => import("@ui/domains/Settings/BraveWarning/BraveWarningPopupBanner")
@@ -36,6 +37,7 @@ const AccountAvatar = () => {
 const PortfolioContent = () => (
   <>
     <Routes>
+      <Route path="whats-new" element={<PortfolioWhatsNew />} />
       <Route path="assets" element={<PortfolioAssets />} />
       <Route path=":symbol" element={<PortfolioAsset />} />
       <Route path="" element={<PortfolioAccounts />} />
@@ -61,16 +63,24 @@ export const Portfolio = () => {
       <NomPoolStakingBannerProvider>
         {/* share layout to prevent sidebar flickering when navigating between the 2 pages */}
         <PopupLayout withBottomNav>
-          {isAuthorised ? (
-            <header className="my-8 flex h-[3.6rem] w-full shrink-0 items-center justify-between gap-4 px-12">
-              <ConnectedAccountsPill />
-              <EvmNetworkSelectPill />
-            </header>
-          ) : (
-            <PopupHeader right={<AccountAvatar />}>
-              <ConnectedAccountsPill />
-            </PopupHeader>
-          )}
+          <Routes>
+            <Route path="whats-new" element={<PortfolioWhatsNewHeader />} />
+            <Route
+              path=""
+              element={
+                isAuthorised ? (
+                  <header className="my-8 flex h-[3.6rem] w-full shrink-0 items-center justify-between gap-4 px-12">
+                    <ConnectedAccountsPill />
+                    <EvmNetworkSelectPill />
+                  </header>
+                ) : (
+                  <PopupHeader right={<AccountAvatar />}>
+                    <ConnectedAccountsPill />
+                  </PopupHeader>
+                )
+              }
+            />
+          </Routes>
           <PopupContent>
             {hasAccounts === false ? <NoAccounts /> : <PortfolioContent />}
           </PopupContent>
