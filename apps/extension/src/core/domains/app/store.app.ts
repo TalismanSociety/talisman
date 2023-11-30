@@ -106,7 +106,7 @@ export class AppStore extends StorageProvider<AppStoreData> {
 export const appStore = new AppStore()
 
 if (DEBUG) {
-  // helper for developers, allowing ot reset settings by calling resetAppSettings() in dev console
+  // helper for developers, allowing to reset settings by calling resetAppSettings() in dev console
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   ;(window as any).resetAppSettings = () => {
     appStore.set({

@@ -74,6 +74,21 @@ export default class Extension extends ExtensionHandler {
       stores.password.resetAutoLockTimer(this.#autoLockTimeout)
     })
 
+    // reset the databaseUnavailable and databaseQuotaExceeded flags on start-up
+    this.stores.errors.set({ databaseUnavailable: false, databaseQuotaExceeded: false })
+
+    // prune old db error logs
+    const now = Date.now()
+    const pruneLogFilter = (timestamp: number) => now - timestamp <= 1_209_600_000 // 14 days in milliseconds
+    this.stores.errors.mutate((store) => {
+      store.StartupLog.push(now)
+      store.StartupLog = store.StartupLog.filter(pruneLogFilter)
+      store.DexieAbortLog = store.DexieAbortLog.filter(pruneLogFilter)
+      store.DexieDatabaseClosedLog = store.DexieDatabaseClosedLog.filter(pruneLogFilter)
+      store.DexieQuotaExceededLog = store.DexieQuotaExceededLog.filter(pruneLogFilter)
+      return store
+    })
+
     awaitKeyringLoaded().then(() => {
       // Watches keyring to do things that depend on type of accounts added
       keyring.accounts.subject.subscribe(async (addresses) => {

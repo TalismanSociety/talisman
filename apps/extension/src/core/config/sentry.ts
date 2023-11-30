@@ -1,4 +1,8 @@
 import { DEBUG } from "@core/constants"
+import {
+  trackIndexedDbErrorExtras,
+  triggerIndexedDbUnavailablePopup,
+} from "@core/domains/app/store.errors"
 import { settingsStore } from "@core/domains/app/store.settings"
 import * as SentryBrowser from "@sentry/browser"
 import * as SentryReact from "@sentry/react"
@@ -15,7 +19,7 @@ settingsStore.observable.subscribe((settings) => useErrorTracking.next(settings.
 
 export const initSentry = (sentry: typeof SentryBrowser | typeof SentryReact) => {
   sentry.init({
-    enabled: !DEBUG,
+    enabled: true,
     environment: process.env.BUILD,
     dsn: process.env.SENTRY_DSN,
     integrations: [new SentryBrowser.BrowserTracing()],
@@ -25,9 +29,23 @@ export const initSentry = (sentry: typeof SentryBrowser | typeof SentryReact) =>
     ignoreErrors: [
       /(No window with id: )(\d+).?/,
       /(disconnected from wss)[(]?:\/\/[\w./:-]+: \d+:: Normal Closure[)]?/,
+      /^disconnected from .+: [0-9]+:: .+$/,
+      /^unsubscribed from .+: [0-9]+:: .+$/,
     ],
     // prevents sending the event if user has disabled error tracking
-    beforeSend: async (event) => ((await firstValueFrom(useErrorTracking)) ? event : null),
+    beforeSend: async (event, hint) => {
+      // Track extra information about IndexedDB errors
+      await trackIndexedDbErrorExtras(event, hint)
+
+      // Print to console instead of Sentry in DEBUG/development builds
+      if (DEBUG) {
+        console.error("[DEBUG] Sentry event occurred", event) // eslint-disable-line no-console
+        return null
+      }
+
+      const errorTracking = await firstValueFrom(useErrorTracking)
+      return errorTracking ? event : null
+    },
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     beforeBreadcrumb: (breadCrumb, hint) => {
       if (breadCrumb.data?.url) {
@@ -62,7 +80,11 @@ export const initSentry = (sentry: typeof SentryBrowser | typeof SentryReact) =>
     })
   })
 
+  window.addEventListener("error", (event) => {
+    triggerIndexedDbUnavailablePopup(event.error)
+  })
   window.addEventListener("unhandledrejection", (event) => {
+    triggerIndexedDbUnavailablePopup(event.reason)
     sentry.captureEvent(event.reason)
   })
 }

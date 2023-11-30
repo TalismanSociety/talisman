@@ -1,3 +1,4 @@
+import { settingsStore } from "@core/domains/app/store.settings"
 import { Chain, ChainId } from "@core/domains/chains/types"
 import { log } from "@core/log"
 import { NotificationType, createNotification } from "@core/notifications"
@@ -12,7 +13,6 @@ import * as Sentry from "@sentry/browser"
 import { SignerPayloadJSON } from "@substrate/txwrapper-core"
 import { Err, Ok, Result } from "ts-results"
 
-import { settingsStore } from "../app"
 import { addSubstrateTransaction, getExtrinsicHash, updateTransactionStatus } from "./helpers"
 import { WatchTransactionOptions } from "./types"
 

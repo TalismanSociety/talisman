@@ -169,5 +169,4 @@ export const getHashedPassword = async (
   }
 }
 
-const passwordStore = new PasswordStore("password", initialData)
-export default passwordStore
+export const passwordStore = new PasswordStore("password", initialData)

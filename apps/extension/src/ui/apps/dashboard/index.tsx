@@ -9,6 +9,7 @@ import { AccountRenameModalProvider } from "@ui/domains/Account/AccountRenameMod
 import { BuyTokensModalProvider } from "@ui/domains/Asset/Buy/BuyTokensModalContext"
 import { CopyAddressModalProvider } from "@ui/domains/CopyAddress"
 import { SelectedAccountProvider } from "@ui/domains/Portfolio/SelectedAccountContext"
+import { DatabaseErrorAlert } from "@ui/domains/Settings/DatabaseErrorAlert"
 import { useIsLoggedIn } from "@ui/hooks/useIsLoggedIn"
 import { useIsOnboarded } from "@ui/hooks/useIsOnboarded"
 import { useModalSubscription } from "@ui/hooks/useModalSubscription"
@@ -163,6 +164,7 @@ const Dashboard = () => (
                     <RenameFolderModalProvider>
                       <DeleteFolderModalProvider>
                         <DashboardInner />
+                        <DatabaseErrorAlert container="fullscreen" />
                       </DeleteFolderModalProvider>
                     </RenameFolderModalProvider>
                   </NewFolderModalProvider>

@@ -2,7 +2,7 @@ import "@core/util/enableLogsInDevelopment"
 import "@core/i18nConfig"
 
 import { IS_FIREFOX } from "@core/constants"
-import { appStore } from "@core/domains/app"
+import { appStore } from "@core/domains/app/store.app"
 import { log } from "@core/log"
 import { renderTalisman } from "@ui"
 import Popup from "@ui/apps/popup"
