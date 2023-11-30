@@ -58,7 +58,7 @@ const useSupportedTokenIds = (chains?: Chain[], tokens?: Token[], address?: stri
   useEffect(() => {
     // pull up to date list from github
     // note that there is a 5min cache on github files
-    fetch(`${githubChaindataBaseUrl}/tokens-buyable.json`)
+    fetch(`${githubChaindataBaseUrl}/data/tokens-buyable.json`)
       .then(async (response) => {
         const tokenIds: string[] = await response.json()
         setSupportedTokenIds(tokenIds)
