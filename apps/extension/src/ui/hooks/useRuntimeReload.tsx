@@ -1,8 +1,9 @@
 import { AnalyticsPage, sendAnalyticsEvent } from "@ui/api/analytics"
 import { useCallback, useState } from "react"
+import Browser from "webextension-polyfill"
 
 export const useRuntimeReload = (analyticsPage: AnalyticsPage) => {
-  const [hasRuntimeReloadFn] = useState(() => typeof window?.chrome?.runtime?.reload === "function")
+  const [hasRuntimeReloadFn] = useState(() => typeof Browser?.runtime?.reload === "function")
   const runtimeReload = useCallback(() => {
     sendAnalyticsEvent({
       ...analyticsPage,
@@ -10,7 +11,7 @@ export const useRuntimeReload = (analyticsPage: AnalyticsPage) => {
       action: "Reload Talisman button",
     })
 
-    chrome.runtime.reload()
+    Browser.runtime.reload()
   }, [analyticsPage])
 
   return [hasRuntimeReloadFn, runtimeReload] as const
