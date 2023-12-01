@@ -54,7 +54,7 @@ export const getErc20ContractData = async (
         contract.read.symbol(),
         contract.read.decimals(),
       ])
-      symbol = hexToString(bytesSymbol)
+      symbol = hexToString(bytesSymbol).replace(/\0/g, "").trim() // remove NULL characters
     } else {
       throw e
     }
