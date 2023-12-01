@@ -49,7 +49,7 @@ export const NoAccounts = () => {
   const currency = useSelectedCurrency()
 
   return (
-    <div className="flex flex-col items-center gap-16">
+    <div className="flex flex-col items-center gap-16 pb-12">
       <div className="flex flex-col items-center gap-8">
         <div className="flex flex-col items-center justify-center gap-6">
           <span className="text-body-secondary">{t("No accounts")}</span>
