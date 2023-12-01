@@ -1,4 +1,3 @@
-import { CreditCardIcon, SendIcon } from "@talismn/icons"
 import { api } from "@ui/api"
 import { AnalyticsPage, sendAnalyticsEvent } from "@ui/api/analytics"
 import { NoAccounts as NoAccountsComponent } from "@ui/domains/Portfolio/EmptyStates/NoAccounts"
@@ -6,7 +5,6 @@ import { useAnalyticsPageView } from "@ui/hooks/useAnalyticsPageView"
 import { useSelectedCurrency } from "@ui/hooks/useCurrency"
 import { useCallback } from "react"
 import { useTranslation } from "react-i18next"
-import { PillButton } from "talisman-ui"
 
 const ANALYTICS_PAGE: AnalyticsPage = {
   container: "Popup",
@@ -15,10 +13,19 @@ const ANALYTICS_PAGE: AnalyticsPage = {
   page: "Popup - No Accounts",
 }
 
-export const NoAccountsPopup = () => {
+export const NoAccountsPopup = ({ hasSomeAccounts }: { hasSomeAccounts?: boolean }) => {
   useAnalyticsPageView(ANALYTICS_PAGE)
 
-  const handleAddAccountClick = useCallback(() => {
+  const onDeposit = useCallback(() => {
+    sendAnalyticsEvent({
+      ...ANALYTICS_PAGE,
+      name: "Goto",
+      action: "add funds",
+    })
+    api.dashboardOpen(`/portfolio?buyTokens`)
+  }, [])
+
+  const onAddAccount = useCallback(() => {
     sendAnalyticsEvent({
       ...ANALYTICS_PAGE,
       name: "Goto",
@@ -27,7 +34,7 @@ export const NoAccountsPopup = () => {
     api.dashboardOpen("/accounts/add")
   }, [])
 
-  const handleWatchAccountClick = useCallback(() => {
+  const onWatchAccount = useCallback(() => {
     sendAnalyticsEvent({
       ...ANALYTICS_PAGE,
       name: "Goto",
@@ -38,13 +45,15 @@ export const NoAccountsPopup = () => {
 
   return (
     <NoAccountsComponent
-      handleAddAccountClick={handleAddAccountClick}
-      handleWatchAccountClick={handleWatchAccountClick}
+      hasSomeAccounts={hasSomeAccounts}
+      onDeposit={onDeposit}
+      onAddAccount={onAddAccount}
+      onWatchAccount={onWatchAccount}
     />
   )
 }
 
-export const NoAccounts = () => {
+export const NoAccounts = ({ hasSomeAccounts }: { hasSomeAccounts?: boolean }) => {
   const { t } = useTranslation()
   const currency = useSelectedCurrency()
 
@@ -61,24 +70,8 @@ export const NoAccounts = () => {
             })}
           </span>
         </div>
-        <div className="flex justify-center gap-4">
-          <PillButton
-            disabled
-            className="disabled:bg-body-secondary pointer-events-auto disabled:bg-opacity-[0.15] disabled:opacity-100"
-            icon={SendIcon}
-          >
-            Send
-          </PillButton>
-          <PillButton
-            disabled
-            className="disabled:bg-body-secondary pointer-events-auto disabled:bg-opacity-[0.15] disabled:opacity-100"
-            icon={CreditCardIcon}
-          >
-            Buy
-          </PillButton>
-        </div>
       </div>
-      <NoAccountsPopup />
+      <NoAccountsPopup hasSomeAccounts={hasSomeAccounts} />
     </div>
   )
 }

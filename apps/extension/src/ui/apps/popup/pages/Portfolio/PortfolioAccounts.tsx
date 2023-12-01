@@ -10,6 +10,7 @@ import { AnalyticsPage, sendAnalyticsEvent } from "@ui/api/analytics"
 import { AccountsLogoStack } from "@ui/apps/dashboard/routes/Settings/Accounts/AccountsLogoStack"
 import { NewFeaturesButton } from "@ui/apps/popup/components/NewFeaturesButton"
 import { TotalFiatBalance } from "@ui/apps/popup/components/TotalFiatBalance"
+import { NoAccountsPopup } from "@ui/apps/popup/pages/NoAccounts"
 import { AccountFolderIcon } from "@ui/domains/Account/AccountFolderIcon"
 import { AccountIcon } from "@ui/domains/Account/AccountIcon"
 import { AccountTypeIcon } from "@ui/domains/Account/AccountTypeIcon"
@@ -193,7 +194,7 @@ const Accounts = ({
   const hasWatchedOptions = watchedOptions.length > 0
 
   return (
-    <div className="flex w-full flex-col gap-4 pb-12">
+    <div className="flex w-full flex-col gap-4">
       {!folder && <AllAccountsHeader />}
       {!folder && <NewFeaturesButton />}
       {folder && <FolderHeader folder={folder} folderTotal={folderTotal} />}
@@ -371,13 +372,14 @@ export const PortfolioAccounts = () => {
   }, [popupOpenEvent])
 
   return (
-    <FadeIn>
+    <FadeIn className="flex flex-col gap-12 pb-12">
       <Accounts
         folder={folder}
         folderTotal={folderTotal}
         portfolioOptions={portfolioOptions}
         watchedOptions={watchedOptions}
       />
+      <NoAccountsPopup hasSomeAccounts />
     </FadeIn>
   )
 }
