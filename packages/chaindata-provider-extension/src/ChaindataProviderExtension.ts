@@ -679,8 +679,12 @@ export class ChaindataProviderExtension implements ChaindataProvider {
   }
 
   async getIsBuiltInEvmNetwork(evmNetworkId: EvmNetworkId) {
-    const evmNetwork = await fetchEvmNetwork(evmNetworkId)
-    return !!evmNetwork
+    try {
+      const evmNetwork = await fetchEvmNetwork(evmNetworkId)
+      return !!evmNetwork
+    } catch (e) {
+      return false
+    }
   }
 
   transaction<U>(
