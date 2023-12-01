@@ -189,8 +189,7 @@ export const usePortfolioSymbolBalances = (balances: Balances) => {
       // DEFAULT_TOKENS are only shown for accounts with no visible balance
       const addressBalances = balances.find({ address: account?.address })
       const accountHasSomeBalance = hideDust
-        ? addressBalances.each.flatMap((b) => b.token?.coingeckoId ?? []).length === 0 ||
-          addressBalances.sum.fiat("usd").total >= 1
+        ? addressBalances.sum.fiat("usd").total >= 1
         : addressBalances.sum.planck.total > 0n
 
       if (accountHasSomeBalance) return 0
