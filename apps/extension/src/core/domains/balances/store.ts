@@ -55,7 +55,7 @@ export class BalanceStore {
 
   #chains: ChainIdAndRpcs[] = []
   #evmNetworks: EvmNetworkIdAndRpcs[] = []
-  #tokens: ReplaySubject<TokenIdAndType[]> = new ReplaySubject(1)
+  #tokens: TokenIdAndType[] = []
   #miniMetadataIds = new Set<string>()
 
   /**
@@ -154,7 +154,6 @@ export class BalanceStore {
             (evmNetwork.substrateChain && chains[evmNetwork.substrateChain.id]?.account) || null,
         }))
 
-        // TODO: Only connect to chains on which the user has a non-zero balance.
         this.setChains(chainsToFetch, evmNetworksToFetch, enabledTokensList, miniMetadatas)
       },
       error: (error) => {
@@ -247,25 +246,26 @@ export class BalanceStore {
     const noMiniMetadataChanges =
       existingMiniMetadataIds.size === miniMetadatas.length &&
       miniMetadatas.every((m) => existingMiniMetadataIds.has(m.id))
-    if (noChainChanges && noEvmNetworkChanges && noMiniMetadataChanges) return
+
+    const newTokens = Object.values(tokens).map(({ id, type, chain, evmNetwork }) => ({
+      id,
+      type,
+      chain,
+      evmNetwork,
+    }))
+    const existingTokens = this.#tokens
+    const noTokenChanges = isEqual(newTokens, existingTokens)
+
+    if (noChainChanges && noEvmNetworkChanges && noMiniMetadataChanges && noTokenChanges) return
 
     // Update chains and networks
     this.#chains = newChains
     this.#evmNetworks = newEvmNetworks
+    this.#tokens = newTokens
 
     const chainsMap = Object.fromEntries(this.#chains.map((chain) => [chain.id, chain]))
     const evmNetworksMap = Object.fromEntries(
       this.#evmNetworks.map((evmNetwork) => [evmNetwork.id, evmNetwork])
-    )
-
-    // update tokens
-    this.#tokens.next(
-      Object.values(tokens).map(({ id, type, chain, evmNetwork }) => ({
-        id,
-        type,
-        chain,
-        evmNetwork,
-      }))
     )
 
     this.#miniMetadataIds = new Set(miniMetadatas.map((m) => m.id))
@@ -411,7 +411,7 @@ export class BalanceStore {
 
     const generation = this.#subscriptionsGeneration
     const addresses = await firstValueFrom(this.#addresses)
-    const tokens = await firstValueFrom(this.#tokens)
+    const tokens = this.#tokens
     const chainDetails = Object.fromEntries(
       this.#chains.map(({ id, genesisHash, rpcs }) => [id, { genesisHash, rpcs }])
     )
