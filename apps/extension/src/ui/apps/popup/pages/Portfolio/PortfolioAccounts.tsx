@@ -288,6 +288,7 @@ export const PortfolioAccounts = () => {
   const balances = useBalances()
   const currency = useSelectedCurrency()
   const accounts = useAccounts()
+  const ownedAccounts = useAccounts("owned")
   const catalog = useAccountsCatalog()
   const { folder, treeName: folderTreeName } = useSearchParamsSelectedFolder()
   const { popupOpenEvent } = useAnalytics()
@@ -367,6 +368,9 @@ export const PortfolioAccounts = () => {
     [balancesByAddress, currency, folder]
   )
 
+  const hasFunds = useMemo(() => balances.sum.planck.total > 0n, [balances])
+  const showGetStartedPopup = !hasFunds && ownedAccounts.length <= 2
+
   useEffect(() => {
     popupOpenEvent("portfolio accounts")
   }, [popupOpenEvent])
@@ -379,7 +383,7 @@ export const PortfolioAccounts = () => {
         portfolioOptions={portfolioOptions}
         watchedOptions={watchedOptions}
       />
-      <NoAccountsPopup hasSomeAccounts />
+      {showGetStartedPopup && <NoAccountsPopup hasSomeAccounts={!!accounts.length} />}
     </FadeIn>
   )
 }
