@@ -88,7 +88,7 @@ export const PortfolioWhatsNewHeader = () => {
             className="bg-grey-800 text-tiny hover:bg-grey-750 focus:bg-grey-750 rounded-sm p-4 text-white"
             onClick={dismiss}
           >
-            Dismiss
+            {t("Dismiss")}
           </button>
         )}
       </div>

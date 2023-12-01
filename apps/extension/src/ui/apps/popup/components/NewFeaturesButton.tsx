@@ -82,7 +82,7 @@ export const NewFeaturesButton = ({ className }: Props) => {
         <div className="text-tiny text-grey-200 flex gap-2">
           <span>{t("See What's New on {{version}}", { version: `v${process.env.VERSION}` })}</span>
           <button className="underline" onClick={handleDismissClick} type="button">
-            Dismiss
+            {t("Dismiss")}
           </button>
         </div>
       </div>

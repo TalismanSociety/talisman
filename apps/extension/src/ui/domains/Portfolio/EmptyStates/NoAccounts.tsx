@@ -52,35 +52,35 @@ export const NoAccounts = ({
         {hasSomeAccounts ? (
           <GetStartedButton className="flex flex-1 flex-col gap-4" onClick={onDeposit}>
             <DepositIcon className="text-lg" />
-            <div className="text-base font-bold text-white">Deposit</div>
+            <div className="text-base font-bold text-white">{t("Deposit")}</div>
             <div className="text-tiny text-body-secondary">
-              Add funds to begin your Talisman journey
+              {t("Add funds to begin your Talisman journey")}
             </div>
           </GetStartedButton>
         ) : (
           <GetStartedButton className="flex flex-1 flex-col gap-4" onClick={onAddAccount}>
             <PlusIcon className="text-primary text-lg" />
-            <div className="text-base font-bold text-white">Add account</div>
+            <div className="text-base font-bold text-white">{t("Add account")}</div>
             <div className="text-tiny text-body-secondary">
-              Create or import an existing account
+              {t("Create or import an existing account")}
             </div>
           </GetStartedButton>
         )}
 
         <GetStartedButton className="flex flex-1 flex-col gap-4" onClick={onWatchAccount}>
           <TryItIcon className="text-lg text-[#ff6c4b]" />
-          <div className="text-base font-bold text-white">Try it</div>
+          <div className="text-base font-bold text-white">{t("Try it")}</div>
           <div className="text-tiny text-body-secondary">
-            Follow an account without importing a seed
+            {t("Follow an account without importing a seed")}
           </div>
         </GetStartedButton>
       </div>
 
       <GetStartedButton className="flex w-full items-center justify-between gap-4 p-8 pr-4">
         <div className="flex flex-col gap-4">
-          <div className="text-base font-bold text-white">Learn More</div>
+          <div className="text-base font-bold text-white">{t("Learn More")}</div>
           <div className="text-tiny text-body-secondary">
-            Discover how Talisman can elevate your web3 journey
+            {t("Discover how Talisman can elevate your web3 journey")}
           </div>
         </div>
         <ChevronRightIcon className="text-primary text-lg" />
