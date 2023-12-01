@@ -26,7 +26,7 @@ export const PortfolioWhatsNew = () => {
   const { t } = useTranslation()
 
   return (
-    <div className="text-body-secondary flex flex-col gap-12 text-base">
+    <div className="text-body-secondary flex flex-col gap-12 text-sm">
       <img className="pointer-events-none w-full rounded-sm" src={HeroUrl} alt="a hero banner" />
       <div>
         <Trans t={t}>
@@ -74,7 +74,7 @@ export const PortfolioWhatsNewHeader = () => {
           <ChevronLeftIcon />
         </button>
       </div>
-      <div>
+      <div className="font-bold">
         <Trans t={t}>
           What's <span className="text-primary">New</span>
         </Trans>
