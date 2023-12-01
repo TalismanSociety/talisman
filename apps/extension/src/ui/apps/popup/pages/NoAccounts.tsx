@@ -1,4 +1,4 @@
-import { CreditCardIcon, PaperPlaneIcon } from "@talismn/icons"
+import { CreditCardIcon, SendIcon } from "@talismn/icons"
 import { api } from "@ui/api"
 import { AnalyticsPage, sendAnalyticsEvent } from "@ui/api/analytics"
 import { NoAccounts as NoAccountsComponent } from "@ui/domains/Portfolio/EmptyStates/NoAccounts"
@@ -65,7 +65,7 @@ export const NoAccounts = () => {
           <PillButton
             disabled
             className="disabled:bg-body-secondary pointer-events-auto disabled:bg-opacity-[0.15] disabled:opacity-100"
-            icon={PaperPlaneIcon}
+            icon={SendIcon}
           >
             Send
           </PillButton>
