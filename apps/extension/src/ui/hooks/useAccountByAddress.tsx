@@ -9,8 +9,14 @@ const filterByUnencodedAddress =
   (account: AccountJsonAny): boolean =>
     account.address === address
 
-const filterByEncodedAddress = (address: string) =>
-  filterByUnencodedAddress(encodeAnyAddress(address, 42))
+const filterByEncodedAddress = (address: string) => {
+  try {
+    return filterByUnencodedAddress(encodeAnyAddress(address, 42))
+  } catch (e) {
+    // address is not valid
+    return () => false
+  }
+}
 
 export const useAccountByAddress = (address?: string | null) => {
   const accounts = useAccounts()
