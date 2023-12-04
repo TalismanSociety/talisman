@@ -2,7 +2,7 @@
   {
     "id": "787",
     "isTestnet": false,
-    "sortIndex": 6,
+    "sortIndex": 5,
     "name": "Acala",
     "themeColor": "#e61059",
     "logo": "https://raw.githubusercontent.com/TalismanSociety/chaindata/v3/assets/chains/acala.svg",
@@ -62,7 +62,7 @@
   {
     "id": "592",
     "isTestnet": false,
-    "sortIndex": 17,
+    "sortIndex": 14,
     "name": "Astar",
     "themeColor": "#03b0fb",
     "logo": "https://raw.githubusercontent.com/TalismanSociety/chaindata/v3/assets/chains/astar.svg",
@@ -139,7 +139,7 @@
   {
     "id": "56",
     "isTestnet": false,
-    "sortIndex": 24,
+    "sortIndex": 21,
     "name": "Binance Smart Chain",
     "themeColor": "#f3ba2f",
     "logo": "https://raw.githubusercontent.com/TalismanSociety/chaindata/v3/assets/chains/56.svg",
@@ -176,7 +176,7 @@
   {
     "id": "46",
     "isTestnet": false,
-    "sortIndex": 46,
+    "sortIndex": 39,
     "name": "Darwinia",
     "themeColor": "#db378a",
     "logo": "https://raw.githubusercontent.com/TalismanSociety/chaindata/v3/assets/chains/darwinia.svg",
@@ -203,7 +203,7 @@
   {
     "id": "2021",
     "isTestnet": false,
-    "sortIndex": 52,
+    "sortIndex": 44,
     "name": "Edgeware",
     "themeColor": "#ff3b80",
     "logo": "https://raw.githubusercontent.com/TalismanSociety/chaindata/v3/assets/chains/edgeware.svg",
@@ -246,9 +246,9 @@
   {
     "id": "1",
     "isTestnet": false,
-    "sortIndex": 57,
-    "name": "Ethereum",
-    "themeColor": "#8a92b2",
+    "sortIndex": 49,
+    "name": "Ethereum Mainnet",
+    "themeColor": "#62688f",
     "logo": "https://raw.githubusercontent.com/TalismanSociety/chaindata/v3/assets/chains/1.svg",
     "nativeToken": {
       "id": "1-evm-native-eth"
@@ -262,6 +262,9 @@
       },
       {
         "id": "1-evm-erc20-0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48"
+      },
+      {
+        "id": "1-evm-erc20-0xae7ab96520de3a18e5e111b5eaab095312d7fe84"
       },
       {
         "id": "1-evm-erc20-0xc221b7e65ffc80de234bbb6667abdd46593d34f0"
@@ -294,7 +297,7 @@
   {
     "id": "100",
     "isTestnet": false,
-    "sortIndex": 63,
+    "sortIndex": 54,
     "name": "Gnosis",
     "themeColor": "#8e8e9e",
     "logo": "https://raw.githubusercontent.com/TalismanSociety/chaindata/v3/assets/chains/100.svg",
@@ -327,7 +330,7 @@
   {
     "id": "1284",
     "isTestnet": false,
-    "sortIndex": 99,
+    "sortIndex": 83,
     "name": "Moonbeam",
     "themeColor": "#53cbc9",
     "logo": "https://raw.githubusercontent.com/TalismanSociety/chaindata/v3/assets/chains/moonbeam.svg",
@@ -351,6 +354,9 @@
         "id": "1284-evm-erc20-0xffffffff1fcacbd218edc0eba20fc2308c778080"
       },
       {
+        "id": "1284-evm-erc20-0xffffffff99dabe1a8de0ea22baa6fd48fde96f6c"
+      },
+      {
         "id": "1284-evm-erc20-0xffffffffa922fef94566104a6e5a35a4fcddaa9f"
       },
       {
@@ -364,11 +370,11 @@
         "isHealthy": true
       },
       {
-        "url": "https://moonbeam.api.onfinality.io/public",
+        "url": "https://moonbeam-rpc.dwellir.com",
         "isHealthy": true
       },
       {
-        "url": "https://moonbeam-rpc.dwellir.com",
+        "url": "https://moonbeam.api.onfinality.io/public",
         "isHealthy": true
       }
     ],
@@ -380,7 +386,7 @@
   {
     "id": "1285",
     "isTestnet": false,
-    "sortIndex": 101,
+    "sortIndex": 85,
     "name": "Moonriver",
     "themeColor": "#f2b705",
     "logo": "https://raw.githubusercontent.com/TalismanSociety/chaindata/v3/assets/chains/moonriver.svg",
@@ -408,11 +414,11 @@
         "isHealthy": true
       },
       {
-        "url": "https://moonriver.api.onfinality.io/public",
+        "url": "https://moonriver-rpc.dwellir.com",
         "isHealthy": true
       },
       {
-        "url": "https://moonriver-rpc.dwellir.com",
+        "url": "https://moonriver.api.onfinality.io/public",
         "isHealthy": true
       }
     ],
@@ -424,7 +430,7 @@
   {
     "id": "137",
     "isTestnet": false,
-    "sortIndex": 119,
+    "sortIndex": 103,
     "name": "Polygon",
     "themeColor": "#8f5ae8",
     "logo": "https://raw.githubusercontent.com/TalismanSociety/chaindata/v3/assets/chains/137.svg",
@@ -466,7 +472,7 @@
   {
     "id": "336",
     "isTestnet": false,
-    "sortIndex": 128,
+    "sortIndex": 110,
     "name": "Shiden",
     "themeColor": "#bba5e1",
     "logo": "https://raw.githubusercontent.com/TalismanSociety/chaindata/v3/assets/chains/shiden-kusama.svg",
@@ -485,11 +491,11 @@
         "isHealthy": true
       },
       {
-        "url": "https://shiden.api.onfinality.io/public",
+        "url": "https://shiden-rpc.dwellir.com",
         "isHealthy": true
       },
       {
-        "url": "https://shiden-rpc.dwellir.com",
+        "url": "https://shiden.api.onfinality.io/public",
         "isHealthy": true
       }
     ],
@@ -501,7 +507,7 @@
   {
     "id": "5",
     "isTestnet": true,
-    "sortIndex": 217,
+    "sortIndex": 147,
     "name": "Goerli",
     "themeColor": "#8a92b2",
     "logo": "https://raw.githubusercontent.com/TalismanSociety/chaindata/v3/assets/chains/5.svg",
@@ -526,7 +532,7 @@
   {
     "id": "1287",
     "isTestnet": true,
-    "sortIndex": 251,
+    "sortIndex": 165,
     "name": "Moonbase Alpha",
     "themeColor": "#4cb1b3",
     "logo": "https://raw.githubusercontent.com/TalismanSociety/chaindata/v3/assets/chains/moonbase-alpha-testnet.svg",
@@ -557,7 +563,7 @@
   {
     "id": "11155111",
     "isTestnet": true,
-    "sortIndex": 280,
+    "sortIndex": 180,
     "name": "Sepolia",
     "themeColor": "#8a92b2",
     "logo": "https://raw.githubusercontent.com/TalismanSociety/chaindata/v3/assets/chains/11155111.svg",
@@ -582,7 +588,7 @@
   {
     "id": "81",
     "isTestnet": true,
-    "sortIndex": 283,
+    "sortIndex": 182,
     "name": "Shibuya",
     "themeColor": "#bba5e1",
     "logo": "https://raw.githubusercontent.com/TalismanSociety/chaindata/v3/assets/chains/shibuya-testnet.svg",
@@ -609,7 +615,7 @@
   {
     "id": "688",
     "isTestnet": true,
-    "sortIndex": 319,
+    "sortIndex": 202,
     "name": "Watr Testnet",
     "themeColor": "#f5f5f3",
     "logo": "https://raw.githubusercontent.com/TalismanSociety/chaindata/v3/assets/chains/rococo-watr-testnet.svg",
