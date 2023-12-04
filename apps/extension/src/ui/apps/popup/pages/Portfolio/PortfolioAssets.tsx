@@ -9,12 +9,12 @@ import Fiat from "@ui/domains/Asset/Fiat"
 import { useCopyAddressModal } from "@ui/domains/CopyAddress"
 import { PopupAssetsTable } from "@ui/domains/Portfolio/AssetsTable"
 import { usePortfolio } from "@ui/domains/Portfolio/context"
+import { useSelectedAccount } from "@ui/domains/Portfolio/SelectedAccountContext"
 import { useDisplayBalances } from "@ui/domains/Portfolio/useDisplayBalances"
 import { useAnalytics } from "@ui/hooks/useAnalytics"
 import useBalances from "@ui/hooks/useBalances"
 import { useSelectedCurrency } from "@ui/hooks/useCurrency"
 import { useFormattedAddress } from "@ui/hooks/useFormattedAddress"
-import { useSearchParamsSelectedAccount } from "@ui/hooks/useSearchParamsSelectedAccount"
 import { useSearchParamsSelectedFolder } from "@ui/hooks/useSearchParamsSelectedFolder"
 import { useSendFundsPopup } from "@ui/hooks/useSendFundsPopup"
 import { useCallback, useEffect, useMemo } from "react"
@@ -35,7 +35,7 @@ const PageContent = ({
   allBalances: Balances
   networkBalances: Balances
 }) => {
-  const { account } = useSearchParamsSelectedAccount()
+  const { account } = useSelectedAccount()
   const { folder } = useSearchParamsSelectedFolder()
 
   const formattedAddress = useFormattedAddress(account?.address, account?.genesisHash)
