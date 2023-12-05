@@ -326,7 +326,10 @@ const schemaAddEthereumRequest = yup.object().shape({
     })
     .required(),
   rpcUrls: yup.array().of(yup.string().required().test("noScriptTag", testNoScriptTag)).required(),
-  blockExplorerUrls: yup.array().of(yup.string().required().test("noScriptTag", testNoScriptTag)),
+  blockExplorerUrls: yup
+    .array()
+    .of(yup.string().required().test("noScriptTag", testNoScriptTag))
+    .nullable(),
   iconUrls: yup.array().of(yup.string().test("noScriptTag", testNoScriptTag)),
 })
 
