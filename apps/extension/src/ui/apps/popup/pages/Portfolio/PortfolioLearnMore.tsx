@@ -5,6 +5,12 @@ import { MouseEventHandler, ReactNode, useCallback } from "react"
 import { useTranslation } from "react-i18next"
 import { useNavigate } from "react-router-dom"
 
+import AdvancedAccountManagementUrl from "./assets/Learn More - Advanced Account Management.png"
+import MakeItYoursUrl from "./assets/Learn More - Make it Yours.png"
+import SafeguardYourAssetsUrl from "./assets/Learn More - Safeguard Your Assets.png"
+import SeamlessUserExperienceUrl from "./assets/Learn More - Seamless User Experience.png"
+import WorksWithExternalDevicesUrl from "./assets/Learn More - Works with External Devices.png"
+
 const ANALYTICS_PAGE: AnalyticsPage = {
   container: "Popup",
   feature: "Portfolio",
@@ -25,13 +31,13 @@ export const PortfolioLearnMore = () => {
   const { t } = useTranslation()
 
   return (
-    <div className="text-body-secondary flex flex-col gap-12 text-sm">
+    <div className="text-body-secondary flex flex-col gap-12 pb-12 text-sm">
       <LearnMoreSection
         title={t("Make it Yours")}
         subtitle={t("Sort and organize accounts into folders")}
         button={<LearnMoreButton onClick={goToSettingsAccounts} />}
       >
-        <img className="bg-body-black w-full rounded pt-[50%]" alt="demo screenshot" />
+        <img className="bg-body-black w-full rounded" alt="demo screenshot" src={MakeItYoursUrl} />
       </LearnMoreSection>
 
       <LearnMoreSection
@@ -39,7 +45,11 @@ export const PortfolioLearnMore = () => {
         subtitle={t("Switch currencies with just one click")}
         button={<LearnMoreButton onClick={goToSettingsCurrency} />}
       >
-        <img className="bg-body-black w-full rounded pt-[50%]" alt="demo screenshot" />
+        <img
+          className="bg-body-black w-full rounded"
+          alt="demo screenshot"
+          src={SeamlessUserExperienceUrl}
+        />
       </LearnMoreSection>
 
       <LearnMoreSection
@@ -47,7 +57,11 @@ export const PortfolioLearnMore = () => {
         subtitle={t("Import your favorite hardware device")}
         button={<LearnMoreButton onClick={goToAddAccounts} />}
       >
-        <img className="bg-body-black w-full rounded pt-[50%]" alt="demo screenshot" />
+        <img
+          className="bg-body-black w-full rounded"
+          alt="demo screenshot"
+          src={WorksWithExternalDevicesUrl}
+        />
       </LearnMoreSection>
 
       <LearnMoreSection
@@ -55,7 +69,11 @@ export const PortfolioLearnMore = () => {
         subtitle={t("Create and manage multiple mnemonics")}
         button={<LearnMoreButton onClick={goToSettingsMnemonics} />}
       >
-        <img className="bg-body-black w-full rounded pt-[50%]" alt="demo screenshot" />
+        <img
+          className="bg-body-black w-full rounded"
+          alt="demo screenshot"
+          src={AdvancedAccountManagementUrl}
+        />
       </LearnMoreSection>
 
       <LearnMoreSection
@@ -69,7 +87,11 @@ export const PortfolioLearnMore = () => {
           />
         }
       >
-        <img className="bg-body-black w-full rounded pt-[50%]" alt="demo screenshot" />
+        <img
+          className="bg-body-black w-full rounded"
+          alt="demo screenshot"
+          src={SafeguardYourAssetsUrl}
+        />
       </LearnMoreSection>
     </div>
   )

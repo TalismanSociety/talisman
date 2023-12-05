@@ -5,7 +5,7 @@ import { useCallback } from "react"
 import { Trans, useTranslation } from "react-i18next"
 import { useNavigate } from "react-router-dom"
 
-import HeroUrl from "./PortfolioWhatsNewHero.png"
+import HeroUrl from "./assets/Whats New - Hero.png"
 
 const ANALYTICS_PAGE: AnalyticsPage = {
   container: "Popup",

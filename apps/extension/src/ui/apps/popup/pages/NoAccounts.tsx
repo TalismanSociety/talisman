@@ -1,6 +1,6 @@
 import { api } from "@ui/api"
 import { AnalyticsPage, sendAnalyticsEvent } from "@ui/api/analytics"
-import { AllAccountsHeader } from "@ui/apps/popup/pages/Portfolio/PortfolioAccounts"
+import { AllAccountsHeader } from "@ui/apps/popup/components/AllAccountsHeader"
 import { NoAccounts as NoAccountsComponent } from "@ui/domains/Portfolio/EmptyStates/NoAccounts"
 import { useAnalyticsPageView } from "@ui/hooks/useAnalyticsPageView"
 import { useCallback } from "react"
