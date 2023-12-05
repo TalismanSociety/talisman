@@ -1,3 +1,4 @@
+import { api } from "@ui/api"
 import { AnalyticsPage, sendAnalyticsEvent } from "@ui/api/analytics"
 import { useBuyTokensModal } from "@ui/domains/Asset/Buy/BuyTokensModalContext"
 import { NoAccounts } from "@ui/domains/Portfolio/EmptyStates/NoAccounts"
@@ -44,7 +45,21 @@ export const NoAccountsFullscreen = () => {
     navigate("/accounts/add/watched")
   }, [navigate])
 
+  const onLearnMore = useCallback(() => {
+    sendAnalyticsEvent({
+      ...ANALYTICS_PAGE,
+      name: "Goto",
+      action: "learn more",
+    })
+    api.popupOpen("#/portfolio/learn-more")
+  }, [])
+
   return (
-    <NoAccounts onDeposit={onDeposit} onAddAccount={onAddAccount} onWatchAccount={onWatchAccount} />
+    <NoAccounts
+      onDeposit={onDeposit}
+      onAddAccount={onAddAccount}
+      onWatchAccount={onWatchAccount}
+      onLearnMore={onLearnMore}
+    />
   )
 }

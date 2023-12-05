@@ -75,7 +75,7 @@ export interface AppMessages {
   "pri(app.checkPassword)": [CheckPasswordRequest, boolean]
   "pri(app.dashboardOpen)": [RequestRoute, boolean]
   "pri(app.onboardOpen)": [null, boolean]
-  "pri(app.popupOpen)": [null, boolean]
+  "pri(app.popupOpen)": [string | undefined, boolean]
   "pri(app.modalOpen.request)": [ModalOpenRequest, boolean]
   "pri(app.sendFunds.open)": [SendFundsOpenRequest, boolean]
   "pri(app.modalOpen.subscribe)": [null, boolean, ModalOpenRequest]

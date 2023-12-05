@@ -117,7 +117,7 @@ class WindowManager {
 
     const popupCreateArgs: Browser.Windows.CreateCreateDataType = {
       ...WINDOW_OPTS,
-      url: Browser.runtime.getURL(`popup.html${argument ? argument : ""}`),
+      url: Browser.runtime.getURL(`popup.html${argument ?? ""}`),
       top,
       left,
       width: WINDOW_OPTS.width + widthDelta,

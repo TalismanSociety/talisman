@@ -12,7 +12,7 @@ import useAccounts from "@ui/hooks/useAccounts"
 import { useAnalyticsPageView } from "@ui/hooks/useAnalyticsPageView"
 import useChains from "@ui/hooks/useChains"
 import useTokens from "@ui/hooks/useTokens"
-import { useCallback, useEffect, useMemo, useState } from "react"
+import { useCallback, useEffect, useMemo, useRef, useState } from "react"
 import { useForm } from "react-hook-form"
 import { useTranslation } from "react-i18next"
 import { Button, Dropdown, DropdownOptionRender } from "talisman-ui"
@@ -139,6 +139,27 @@ export const BuyTokensForm = () => {
     tokens,
     address
   )
+
+  const autoSelectFirstAccountInit = useRef(false)
+  useEffect(() => {
+    if (autoSelectFirstAccountInit.current) return
+
+    if (address !== undefined) {
+      autoSelectFirstAccountInit.current = true
+      return
+    }
+    if (accounts?.length !== 1) {
+      autoSelectFirstAccountInit.current = true
+      return
+    }
+
+    setValue("address", accounts[0]?.address, {
+      shouldTouch: true,
+      shouldDirty: true,
+      shouldValidate: true,
+    })
+    autoSelectFirstAccountInit.current = true
+  }, [accounts, accounts?.length, address, setValue])
 
   const submit = useCallback(
     async (formData: FormData) => {

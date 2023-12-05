@@ -231,7 +231,7 @@ const AllAccountsHeaderBackground = () => {
   )
 }
 
-const AllAccountsHeader = () => {
+export const AllAccountsHeader = ({ disabled }: { disabled?: boolean }) => {
   const navigate = useNavigate()
   const handleClick = useCallback(() => navigate("/portfolio/assets"), [navigate])
   const ref = useRef<HTMLDivElement>(null)
@@ -243,19 +243,23 @@ const AllAccountsHeader = () => {
       <button
         className={classNames(
           "flex h-full w-full items-center justify-end gap-4 overflow-hidden rounded-sm p-6 text-lg",
-          "hover:bg-grey-800 bg-black-secondary text-body-secondary transition-colors duration-75 hover:text-white"
+          "bg-black-secondary text-body-secondary transition-colors duration-75",
+          !disabled && "hover:bg-grey-800 hover:text-white"
         )}
-        onClick={handleClick}
+        onClick={!disabled ? handleClick : undefined}
         disabled={hasAccounts === false}
       >
-        <Suspense fallback={<SuspenseTracker name="AllAccountsHeaderBackground" />}>
-          <AllAccountsHeaderBackground />
-        </Suspense>
+        {!disabled && (
+          <Suspense fallback={<SuspenseTracker name="AllAccountsHeaderBackground" />}>
+            <AllAccountsHeaderBackground />
+          </Suspense>
+        )}
         {hasAccounts && <ChevronRightIcon className="z-10" />}
       </button>
       <TotalFiatBalance
         className="pointer-events-none absolute left-0 top-0 h-full w-full px-6"
         mouseOver={isHovered}
+        disabled={disabled}
       />
     </div>
   )

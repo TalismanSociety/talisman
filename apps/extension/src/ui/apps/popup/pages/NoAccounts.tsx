@@ -1,10 +1,10 @@
 import { api } from "@ui/api"
 import { AnalyticsPage, sendAnalyticsEvent } from "@ui/api/analytics"
+import { AllAccountsHeader } from "@ui/apps/popup/pages/Portfolio/PortfolioAccounts"
 import { NoAccounts as NoAccountsComponent } from "@ui/domains/Portfolio/EmptyStates/NoAccounts"
 import { useAnalyticsPageView } from "@ui/hooks/useAnalyticsPageView"
-import { useSelectedCurrency } from "@ui/hooks/useCurrency"
 import { useCallback } from "react"
-import { useTranslation } from "react-i18next"
+import { useNavigate } from "react-router-dom"
 
 const ANALYTICS_PAGE: AnalyticsPage = {
   container: "Popup",
@@ -16,32 +16,27 @@ const ANALYTICS_PAGE: AnalyticsPage = {
 export const NoAccountsPopup = ({ hasSomeAccounts }: { hasSomeAccounts?: boolean }) => {
   useAnalyticsPageView(ANALYTICS_PAGE)
 
+  const navigate = useNavigate()
+
   const onDeposit = useCallback(() => {
-    sendAnalyticsEvent({
-      ...ANALYTICS_PAGE,
-      name: "Goto",
-      action: "add funds",
-    })
+    sendAnalyticsEvent({ ...ANALYTICS_PAGE, name: "Goto", action: "add funds" })
     api.dashboardOpen(`/portfolio?buyTokens`)
   }, [])
 
   const onAddAccount = useCallback(() => {
-    sendAnalyticsEvent({
-      ...ANALYTICS_PAGE,
-      name: "Goto",
-      action: "add account",
-    })
+    sendAnalyticsEvent({ ...ANALYTICS_PAGE, name: "Goto", action: "add account" })
     api.dashboardOpen("/accounts/add")
   }, [])
 
   const onWatchAccount = useCallback(() => {
-    sendAnalyticsEvent({
-      ...ANALYTICS_PAGE,
-      name: "Goto",
-      action: "watch account",
-    })
+    sendAnalyticsEvent({ ...ANALYTICS_PAGE, name: "Goto", action: "watch account" })
     api.dashboardOpen("/accounts/add/watched")
   }, [])
+
+  const onLearnMore = useCallback(() => {
+    sendAnalyticsEvent({ ...ANALYTICS_PAGE, name: "Goto", action: "learn more" })
+    navigate("/portfolio/learn-more")
+  }, [navigate])
 
   return (
     <NoAccountsComponent
@@ -49,29 +44,14 @@ export const NoAccountsPopup = ({ hasSomeAccounts }: { hasSomeAccounts?: boolean
       onDeposit={onDeposit}
       onAddAccount={onAddAccount}
       onWatchAccount={onWatchAccount}
+      onLearnMore={onLearnMore}
     />
   )
 }
 
-export const NoAccounts = ({ hasSomeAccounts }: { hasSomeAccounts?: boolean }) => {
-  const { t } = useTranslation()
-  const currency = useSelectedCurrency()
-
-  return (
-    <div className="flex flex-col items-center gap-16 pb-12">
-      <div className="flex flex-col items-center gap-8">
-        <div className="flex flex-col items-center justify-center gap-6">
-          <span className="text-body-secondary">{t("No accounts")}</span>
-          <span className="text-body-disabled font-surtExpanded text-lg font-bold">
-            {(0).toLocaleString("en-us", {
-              style: "currency",
-              currency,
-              currencyDisplay: "narrowSymbol",
-            })}
-          </span>
-        </div>
-      </div>
-      <NoAccountsPopup hasSomeAccounts={hasSomeAccounts} />
-    </div>
-  )
-}
+export const NoAccounts = ({ hasSomeAccounts }: { hasSomeAccounts?: boolean }) => (
+  <div className="flex flex-col items-center gap-16 pb-12">
+    <AllAccountsHeader disabled />
+    <NoAccountsPopup hasSomeAccounts={hasSomeAccounts} />
+  </div>
+)

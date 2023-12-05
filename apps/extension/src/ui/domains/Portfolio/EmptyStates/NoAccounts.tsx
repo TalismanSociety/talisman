@@ -10,6 +10,7 @@ type NoAccountsProps = {
   onAddAccount: () => void
   onWatchAccount: () => void
   onDeposit: () => void
+  onLearnMore: () => void
 }
 
 export const NoAccounts = ({
@@ -18,6 +19,7 @@ export const NoAccounts = ({
   onAddAccount,
   onWatchAccount,
   onDeposit,
+  onLearnMore,
 }: NoAccountsProps) => {
   const { t } = useTranslation()
 
@@ -76,7 +78,10 @@ export const NoAccounts = ({
         </GetStartedButton>
       </div>
 
-      <GetStartedButton className="flex w-full items-center justify-between gap-4 p-8 pr-4">
+      <GetStartedButton
+        className="flex w-full items-center justify-between gap-4 p-8 pr-4"
+        onClick={onLearnMore}
+      >
         <div className="flex flex-col gap-4">
           <div className="text-base font-bold text-white">{t("Learn More")}</div>
           <div className="text-tiny text-body-secondary">

@@ -4,6 +4,5 @@ import { useAccountsSubscribe } from "./useAccountsSubscribe"
 
 export const useHasAccounts = () => {
   const accounts = useAccountsSubscribe()
-  const hasAccounts = useMemo(() => accounts && accounts.length > 0, [accounts])
-  return hasAccounts
+  return useMemo(() => Boolean(accounts && accounts.length > 0), [accounts])
 }

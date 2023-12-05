@@ -4,6 +4,7 @@ import { HeaderBlock } from "@talisman/components/HeaderBlock"
 import { Spacer } from "@talisman/components/Spacer"
 import { ChevronRightIcon, PlusIcon } from "@talismn/icons"
 import { AnalyticsPage, sendAnalyticsEvent } from "@ui/api/analytics"
+import { DashboardLayout } from "@ui/apps/dashboard/layout/DashboardLayout"
 import { TokenLogo } from "@ui/domains/Asset/TokenLogo"
 import { EnableTestnetPillButton } from "@ui/domains/Settings/EnableTestnetPillButton"
 import { useAnalyticsPageView } from "@ui/hooks/useAnalyticsPageView"
@@ -18,8 +19,6 @@ import { FC, useCallback, useMemo } from "react"
 import { useTranslation } from "react-i18next"
 import { useNavigate } from "react-router-dom"
 import { ListButton, PillButton } from "talisman-ui"
-
-import { DashboardLayout } from "../../layout/DashboardLayout"
 
 const CustomPill = () => (
   <div className="bg-primary/10 text-primary inline-block rounded p-4 text-xs font-light">
