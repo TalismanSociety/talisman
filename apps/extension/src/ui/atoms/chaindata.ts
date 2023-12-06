@@ -118,7 +118,7 @@ export const allChainsState = atom<(Chain | CustomChain)[]>({
       const sub = obs.subscribe(setSelf)
       return () => sub.unsubscribe()
     },
-    // instruct backend to keep db syncrhonized while this atom is in use
+    // instruct backend to keep db synchronized while this atom is in use
     () => api.chains(NO_OP),
   ],
 })
@@ -187,7 +187,7 @@ export const allTokensMapState = atom<TokenList>({
 
       return () => sub.unsubscribe()
     },
-    // instruct backend to keep db syncrhonized while this atom is in use
+    // instruct backend to keep db synchronized while this atom is in use
     () => api.tokens(NO_OP),
   ],
 })

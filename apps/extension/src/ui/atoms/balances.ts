@@ -36,7 +36,7 @@ const rawBalancesState = atom<BalanceJson[]>({
 
       return () => sub.unsubscribe()
     },
-    // instruct backend to keep db syncrhonized while this atom is in use
+    // instruct backend to keep db synchronized while this atom is in use
     () => api.balances(NO_OP),
   ],
   /**
