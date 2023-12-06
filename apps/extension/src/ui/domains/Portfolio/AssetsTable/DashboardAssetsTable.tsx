@@ -5,7 +5,7 @@ import { classNames } from "@talismn/util"
 import Fiat from "@ui/domains/Asset/Fiat"
 import { useAnalytics } from "@ui/hooks/useAnalytics"
 import { useBalancesStatus } from "@ui/hooks/useBalancesStatus"
-import { useCallback, useEffect } from "react"
+import { useCallback } from "react"
 import { Trans, useTranslation } from "react-i18next"
 import { useNavigate } from "react-router-dom"
 
@@ -162,13 +162,6 @@ export const DashboardAssetsTable = ({ balances }: AssetsTableProps) => {
   // group by token (symbol)
   const { account } = useSelectedAccount()
   const { symbolBalances } = usePortfolioSymbolBalances(balances)
-
-  useEffect(() => {
-    console.log({
-      balances: balances.toJSON(),
-      symbolBalances: symbolBalances.map(([, b]) => b.toJSON()),
-    })
-  }, [balances, symbolBalances])
 
   // assume balance subscription is initializing if there are no balances
   if (!balances.count) return null
