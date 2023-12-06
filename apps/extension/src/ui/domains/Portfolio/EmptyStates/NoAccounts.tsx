@@ -8,7 +8,7 @@ type NoAccountsProps = {
   className?: string
   hasSomeAccounts?: boolean
   onAddAccount: () => void
-  onWatchAccount: () => void
+  onTryTalisman: () => void
   onDeposit: () => void
   onLearnMore: () => void
 }
@@ -17,7 +17,7 @@ export const NoAccounts = ({
   className,
   hasSomeAccounts,
   onAddAccount,
-  onWatchAccount,
+  onTryTalisman,
   onDeposit,
   onLearnMore,
 }: NoAccountsProps) => {
@@ -69,7 +69,7 @@ export const NoAccounts = ({
           </GetStartedButton>
         )}
 
-        <GetStartedButton className="flex flex-1 flex-col gap-4" onClick={onWatchAccount}>
+        <GetStartedButton className="flex flex-1 flex-col gap-4" onClick={onTryTalisman}>
           <TryItIcon className="text-lg text-[#ff6c4b]" />
           <div className="text-base font-bold text-white">{t("Try it")}</div>
           <div className="text-tiny text-body-secondary">

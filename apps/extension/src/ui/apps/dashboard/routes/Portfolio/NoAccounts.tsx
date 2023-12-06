@@ -36,14 +36,14 @@ export const NoAccountsFullscreen = () => {
     navigate("/accounts/add")
   }, [navigate])
 
-  const onWatchAccount = useCallback(() => {
+  const onTryTalisman = useCallback(() => {
     sendAnalyticsEvent({
       ...ANALYTICS_PAGE,
       name: "Goto",
-      action: "watch account",
+      action: "try talisman",
     })
-    navigate("/accounts/add/watched")
-  }, [navigate])
+    api.popupOpen("#/portfolio/try-talisman")
+  }, [])
 
   const onLearnMore = useCallback(() => {
     sendAnalyticsEvent({
@@ -58,7 +58,7 @@ export const NoAccountsFullscreen = () => {
     <NoAccounts
       onDeposit={onDeposit}
       onAddAccount={onAddAccount}
-      onWatchAccount={onWatchAccount}
+      onTryTalisman={onTryTalisman}
       onLearnMore={onLearnMore}
     />
   )

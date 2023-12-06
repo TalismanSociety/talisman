@@ -28,10 +28,10 @@ export const NoAccountsPopup = ({ hasSomeAccounts }: { hasSomeAccounts?: boolean
     api.dashboardOpen("/accounts/add")
   }, [])
 
-  const onWatchAccount = useCallback(() => {
-    sendAnalyticsEvent({ ...ANALYTICS_PAGE, name: "Goto", action: "watch account" })
-    api.dashboardOpen("/accounts/add/watched")
-  }, [])
+  const onTryTalisman = useCallback(() => {
+    sendAnalyticsEvent({ ...ANALYTICS_PAGE, name: "Goto", action: "try talisman" })
+    navigate("/portfolio/try-talisman")
+  }, [navigate])
 
   const onLearnMore = useCallback(() => {
     sendAnalyticsEvent({ ...ANALYTICS_PAGE, name: "Goto", action: "learn more" })
@@ -43,7 +43,7 @@ export const NoAccountsPopup = ({ hasSomeAccounts }: { hasSomeAccounts?: boolean
       hasSomeAccounts={hasSomeAccounts}
       onDeposit={onDeposit}
       onAddAccount={onAddAccount}
-      onWatchAccount={onWatchAccount}
+      onTryTalisman={onTryTalisman}
       onLearnMore={onLearnMore}
     />
   )

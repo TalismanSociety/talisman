@@ -15,6 +15,7 @@ import { PortfolioAccounts } from "./PortfolioAccounts"
 import { PortfolioAsset } from "./PortfolioAsset"
 import { PortfolioAssets } from "./PortfolioAssets"
 import { PortfolioLearnMore, PortfolioLearnMoreHeader } from "./PortfolioLearnMore"
+import { PortfolioTryTalisman, PortfolioTryTalismanHeader } from "./PortfolioTryTalisman"
 import { PortfolioWhatsNew, PortfolioWhatsNewHeader } from "./PortfolioWhatsNew"
 
 const BraveWarningPopupBanner = lazy(
@@ -64,6 +65,7 @@ export const PortfolioHeader = ({ isAuthorised }: { isAuthorised?: boolean }) =>
   <Routes>
     <Route path="whats-new" element={<PortfolioWhatsNewHeader />} />
     <Route path="learn-more" element={<PortfolioLearnMoreHeader />} />
+    <Route path="try-talisman" element={<PortfolioTryTalismanHeader />} />
     <Route
       path=""
       element={
@@ -87,6 +89,7 @@ const HasAccountsPortfolioContent = () => (
     <Routes>
       <Route path="whats-new" element={<PortfolioWhatsNew />} />
       <Route path="learn-more" element={<PortfolioLearnMore />} />
+      <Route path="try-talisman" element={<PortfolioTryTalisman />} />
       <Route path="assets" element={<PortfolioAssets />} />
       <Route path=":symbol" element={<PortfolioAsset />} />
       <Route path="" element={<PortfolioAccounts />} />
@@ -102,6 +105,7 @@ const HasAccountsPortfolioContent = () => (
 const NoAccountsPortfolioContent = () => (
   <Routes>
     <Route path="learn-more" element={<PortfolioLearnMore />} />
+    <Route path="try-talisman" element={<PortfolioTryTalisman />} />
     <Route path="" element={<NoAccounts />} />
   </Routes>
 )
