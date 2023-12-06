@@ -1,5 +1,5 @@
 import { shortenAddress } from "@talisman/util/shortenAddress"
-import { CheckCircleIcon, ChevronLeftIcon, LoaderIcon } from "@talismn/icons"
+import { ArrowUpLeftIcon, CheckCircleIcon, ChevronLeftIcon, LoaderIcon } from "@talismn/icons"
 import { classNames, encodeAnyAddress } from "@talismn/util"
 import { api } from "@ui/api"
 import { AnalyticsPage, sendAnalyticsEvent } from "@ui/api/analytics"
@@ -81,6 +81,12 @@ export const PortfolioTryTalisman = () => {
     }
   }, [t, address, navigate])
 
+  const allAccounts = useAccounts()
+  const goToPortfolio = useCallback(() => {
+    sendAnalyticsEvent({ ...ANALYTICS_PAGE, name: "Goto", action: "Portfolio (added accounts)" })
+    return navigate("/portfolio")
+  }, [navigate])
+
   return (
     <div className="text-body-secondary flex flex-col gap-12 pb-12 text-sm">
       <div className="flex flex-col gap-8">
@@ -130,6 +136,19 @@ export const PortfolioTryTalisman = () => {
           />
         ))}
       </div>
+
+      {allAccounts.length > 0 && (
+        <button type="button" className="flex flex-col items-center gap-3" onClick={goToPortfolio}>
+          <div className="text-body-secondary text-xs">
+            {allAccounts.length === 1
+              ? t("{{number}} Account Added", { number: allAccounts.length })
+              : t("{{number}} Accounts Added", { number: allAccounts.length })}
+          </div>
+          <div className="text-primary flex items-center gap-2 text-base font-bold">
+            <ArrowUpLeftIcon className="text-lg" /> {t("View in Portfolio")}
+          </div>
+        </button>
+      )}
     </div>
   )
 }
@@ -200,7 +219,7 @@ export const PortfolioTryTalismanHeader = () => {
   const navigate = useNavigate()
 
   const goToPortfolio = useCallback(() => {
-    sendAnalyticsEvent({ ...ANALYTICS_PAGE, name: "Goto", action: "Portfolio" })
+    sendAnalyticsEvent({ ...ANALYTICS_PAGE, name: "Goto", action: "Portfolio (back)" })
     return navigate("/portfolio")
   }, [navigate])
 
