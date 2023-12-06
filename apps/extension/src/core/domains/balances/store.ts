@@ -461,10 +461,7 @@ export class BalanceStore {
 
     if (missingBalances.length) {
       const updates = Object.entries(new Balances(missingBalances).toJSON()).map(
-        ([id, balance]) => ({
-          id,
-          ...balance,
-        })
+        ([id, balance]) => ({ id, ...balance })
       )
       await balancesDb.balances.bulkPut(updates)
     }

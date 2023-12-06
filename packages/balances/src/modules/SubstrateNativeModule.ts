@@ -299,8 +299,9 @@ export const SubNativeModule: NewBalanceModule<
     },
 
     getPlaceholderBalance(tokenId, address): SubNativeBalance {
-      const match = /([\d\w]+)-substrate-native/.exec(tokenId)
-      const chainId = match?.[0]
+      const match = /([\d\w-]+)-substrate-native/.exec(tokenId)
+      const chainId = match?.[1]
+      console.log("token to chain : ", tokenId, chainId)
       if (!chainId) throw new Error(`Can't detect chainId for token ${tokenId}`)
 
       return {

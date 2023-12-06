@@ -190,8 +190,9 @@ export const SubTokensModule: NewBalanceModule<
     },
 
     getPlaceholderBalance(tokenId, address): SubTokensBalance {
-      const match = /([\d\w]+)-substrate-tokens/.exec(tokenId)
-      const chainId = match?.[0]
+      const match = /([\d\w-]+)-substrate-tokens/.exec(tokenId)
+      const chainId = match?.[1]
+      console.log("token to chain : ", tokenId, chainId)
       if (!chainId) throw new Error(`Can't detect chainId for token ${tokenId}`)
 
       return {

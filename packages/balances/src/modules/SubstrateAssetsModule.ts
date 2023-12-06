@@ -243,8 +243,8 @@ export const SubAssetsModule: NewBalanceModule<
     },
 
     getPlaceholderBalance(tokenId, address): SubAssetsBalance {
-      const match = /([\d\w]+)-substrate-assets/.exec(tokenId)
-      const chainId = match?.[0]
+      const match = /([\d\w-]+)-substrate-assets/.exec(tokenId)
+      const chainId = match?.[1]
       if (!chainId) throw new Error(`Can't detect chainId for token ${tokenId}`)
 
       return {

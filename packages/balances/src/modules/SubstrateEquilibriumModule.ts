@@ -212,8 +212,9 @@ export const SubEquilibriumModule: NewBalanceModule<
     },
 
     getPlaceholderBalance(tokenId, address): SubEquilibriumBalance {
-      const match = /([\d\w]+)-substrate-equilibrium/.exec(tokenId)
-      const chainId = match?.[0]
+      const match = /([\d\w-]+)-substrate-equilibrium/.exec(tokenId)
+      const chainId = match?.[1]
+      console.log("token to chain : ", tokenId, chainId)
       if (!chainId) throw new Error(`Can't detect chainId for token ${tokenId}`)
 
       return {
