@@ -51,6 +51,8 @@ export type BalanceStatus =
   | "cache"
   // balance was retrieved from the chain but we're unable to create a new subscription
   | "stale"
+  // balance has never been retrieved yet
+  | "initializing"
 
 /** `IBalance` is a common interface which all balance types must implement. */
 export type IBalance = {

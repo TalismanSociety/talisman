@@ -12,6 +12,7 @@ import { validateHexString } from "@core/util/validateHexString"
 import keyring from "@polkadot/ui-keyring"
 import { SingleAddress } from "@polkadot/ui-keyring/observable/types"
 import { assert } from "@polkadot/util"
+import { isEthereumAddress } from "@polkadot/util-crypto"
 import * as Sentry from "@sentry/browser"
 import {
   AddressesByToken,
@@ -413,19 +414,12 @@ export class BalanceStore {
     const addresses = await firstValueFrom(this.#addresses)
     const tokens = this.#tokens
     const chainDetails = Object.fromEntries(
-      this.#chains.map(({ id, genesisHash, rpcs }) => [id, { genesisHash, rpcs }])
+      this.#chains.map(({ id, genesisHash, rpcs, account }) => [id, { genesisHash, rpcs, account }])
     )
     const evmNetworkDetails = Object.fromEntries(
       this.#evmNetworks.map(({ id, rpcs }) => [id, { rpcs }])
     )
 
-    // For the following TODOs, try and put them inside the relevant balance module when it makes sense.
-    // Otherwise fall back to writing the workaround in here (but also then add it to the web app portfolio!)
-    //
-    // TODO: Don't fetch evm balances for substrate addresses
-    // TODO: Don't fetch evm balances for ethereum accounts on chains whose native account format is secp256k1 (i.e. moonbeam/river/base)
-    //       On these chains we can fetch the balance purely via substrate (and fetching via both evm+substrate will double up the balance)
-    //
     const addressesByTokenByModule: Record<string, AddressesByToken<Token>> = {}
     tokens.forEach((token) => {
       // filter out tokens on chains/evmNetworks which have no rpcs
@@ -435,14 +429,46 @@ export class BalanceStore {
       if (!hasRpcs) return
 
       if (!addressesByTokenByModule[token.type]) addressesByTokenByModule[token.type] = {}
-      // filter out substrate addresses which have a genesis hash that doesn't match the genesisHash of the token's chain
-      addressesByTokenByModule[token.type][token.id] = Object.keys(addresses).filter(
-        (address) =>
-          !token.chain ||
-          !addresses[address] ||
-          addresses[address]?.includes(chainDetails[token.chain.id]?.genesisHash ?? "")
-      )
+
+      addressesByTokenByModule[token.type][token.id] = Object.keys(addresses)
+        .filter(
+          // filter out substrate addresses which have a genesis hash that doesn't match the genesisHash of the token's chain
+          (address) =>
+            !token.chain ||
+            !addresses[address] ||
+            addresses[address]?.includes(chainDetails[token.chain.id]?.genesisHash ?? "")
+        )
+        .filter((address) => {
+          // for each account, fetch balances only from compatible chains
+          return isEthereumAddress(address)
+            ? !!token.evmNetwork?.id || chainDetails[token.chain?.id ?? ""]?.account === "secp256k1"
+            : !!token.chain?.id
+        })
     })
+
+    // create placeholder rows for all missing balances, so FE knows they are initializing
+    const missingBalances: BalanceJson[] = []
+    const existingBalances = await balancesDb.balances.toArray()
+
+    for (const balanceModule of balanceModules) {
+      const addressesByToken = addressesByTokenByModule[balanceModule.type] ?? {}
+      for (const [tokenId, addresses] of Object.entries(addressesByToken))
+        for (const address of addresses) {
+          if (!existingBalances.find((b) => b.address === address && b.tokenId === tokenId))
+            missingBalances.push(balanceModule.getPlaceholderBalance(tokenId, address))
+        }
+    }
+
+    if (missingBalances.length) {
+      const updates = Object.entries(new Balances(missingBalances).toJSON()).map(
+        ([id, balance]) => ({
+          id,
+          ...balance,
+          status: BalanceStatusLive(subscriptionId),
+        })
+      )
+      await balancesDb.balances.bulkPut(updates)
+    }
 
     const closeSubscriptionCallbacks = balanceModules.map((balanceModule) =>
       balanceModule.subscribeBalances(

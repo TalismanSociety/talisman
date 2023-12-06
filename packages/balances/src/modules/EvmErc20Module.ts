@@ -155,6 +155,19 @@ export const EvmErc20Module: NewBalanceModule<
       return tokens
     },
 
+    getPlaceholderBalance(tokenId, address): EvmErc20Balance {
+      const evmNetworkId = tokenId.split("-")[0] as EvmNetworkId
+      return {
+        source: "evm-erc20",
+        status: "initializing",
+        address: address,
+        multiChainId: { evmChainId: evmNetworkId },
+        evmNetworkId,
+        tokenId,
+        free: "0",
+      }
+    },
+
     async subscribeBalances(addressesByToken, callback) {
       let subscriptionActive = true
       const subscriptionInterval = 6_000 // 6_000ms == 6 seconds

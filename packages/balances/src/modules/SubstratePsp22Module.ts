@@ -198,6 +198,22 @@ export const SubPsp22Module: NewBalanceModule<
       return tokens
     },
 
+    getPlaceholderBalance(tokenId, address): SubPsp22Balance {
+      const match = /([\d\w]+)-substrate-psp22/.exec(tokenId)
+      const chainId = match?.[0]
+      if (!chainId) throw new Error(`Can't detect chainId for token ${tokenId}`)
+
+      return {
+        source: "substrate-psp22",
+        status: "initializing",
+        address,
+        multiChainId: { subChainId: chainId },
+        chainId,
+        tokenId,
+        free: "0",
+      }
+    },
+
     // TODO: Don't create empty subscriptions
     async subscribeBalances(addressesByToken, callback) {
       let subscriptionActive = true

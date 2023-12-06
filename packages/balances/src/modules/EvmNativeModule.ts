@@ -122,6 +122,19 @@ export const EvmNativeModule: NewBalanceModule<
       return { [nativeToken.id]: nativeToken }
     },
 
+    getPlaceholderBalance(tokenId, address): EvmNativeBalance {
+      const evmNetworkId = tokenId.split("-")[0] as EvmNetworkId
+      return {
+        source: "evm-native",
+        status: "initializing",
+        address: address,
+        multiChainId: { evmChainId: evmNetworkId },
+        evmNetworkId,
+        tokenId,
+        free: "0",
+      }
+    },
+
     async subscribeBalances(addressesByToken, callback) {
       // TODO remove
       log.debug("subscribeBalances", "evm-native", addressesByToken)
