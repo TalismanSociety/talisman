@@ -464,7 +464,6 @@ export class BalanceStore {
         ([id, balance]) => ({
           id,
           ...balance,
-          status: BalanceStatusLive(subscriptionId),
         })
       )
       await balancesDb.balances.bulkPut(updates)
