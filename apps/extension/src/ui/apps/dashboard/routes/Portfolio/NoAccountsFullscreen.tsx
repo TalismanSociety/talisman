@@ -56,6 +56,7 @@ export const NoAccountsFullscreen = () => {
 
   return (
     <NoAccounts
+      fullscreen
       onDeposit={onDeposit}
       onAddAccount={onAddAccount}
       onTryTalisman={onTryTalisman}

@@ -10,7 +10,7 @@ import { useHasAccounts } from "@ui/hooks/useHasAccounts"
 import { useEffect, useMemo } from "react"
 import { useTranslation } from "react-i18next"
 
-import { NoAccountsFullscreen } from "./NoAccounts"
+import { NoAccountsFullscreen } from "./NoAccountsFullscreen"
 
 const FullscreenPortfolioAssets = ({ balances }: { balances: Balances }) => {
   const { t } = useTranslation()
