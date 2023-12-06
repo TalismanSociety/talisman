@@ -201,7 +201,6 @@ export const SubPsp22Module: NewBalanceModule<
     getPlaceholderBalance(tokenId, address): SubPsp22Balance {
       const match = /([\d\w-]+)-substrate-psp22/.exec(tokenId)
       const chainId = match?.[1]
-      console.log("token to chain : ", tokenId, chainId)
       if (!chainId) throw new Error(`Can't detect chainId for token ${tokenId}`)
 
       return {
