@@ -30,7 +30,6 @@ const filterNoTestnet = ({ isTestnet }: { isTestnet?: boolean }) => isTestnet ==
 
 export const evmNetworksEnabledState = atom<EnabledEvmNetworks>({
   key: "evmNetworksEnabledState",
-  default: {},
   effects: [
     ({ setSelf }) => {
       const sub = enabledEvmNetworksStore.observable.subscribe(setSelf)
@@ -43,7 +42,6 @@ export const evmNetworksEnabledState = atom<EnabledEvmNetworks>({
 
 export const allEvmNetworksState = atom<(EvmNetwork | CustomEvmNetwork)[]>({
   key: "allEvmNetworksState",
-  default: [],
   effects: [
     // sync from db
     ({ setSelf }) => {
@@ -83,16 +81,6 @@ export const evmNetworksWithTestnetsMapState = selector<EvmNetworkList>({
   },
 })
 
-// export const evmNetworkQuery = selectorFamily({
-//   key: "evmNetworkQuery",
-//   get:
-//     (evmNetworkId: EvmNetworkId) =>
-//     ({ get }) => {
-//       const networks = get(evmNetworksWithTestnetsMapState)
-//       return networks[evmNetworkId]
-//     },
-// })
-
 export const evmNetworksWithoutTestnetsState = selector({
   key: "evmNetworksWithoutTestnetsState",
   get: ({ get }) => {
@@ -111,7 +99,6 @@ export const evmNetworksWithoutTestnetsMapState = selector<EvmNetworkList>({
 
 export const chainsEnabledState = atom<EnabledChains>({
   key: "chainsEnabledState",
-  default: {},
   effects: [
     ({ setSelf }) => {
       const sub = enabledChainsStore.observable.subscribe(setSelf)
@@ -124,7 +111,6 @@ export const chainsEnabledState = atom<EnabledChains>({
 
 export const allChainsState = atom<(Chain | CustomChain)[]>({
   key: "allChainsState",
-  default: [],
   effects: [
     // sync from db
     ({ setSelf }) => {
@@ -132,7 +118,7 @@ export const allChainsState = atom<(Chain | CustomChain)[]>({
       const sub = obs.subscribe(setSelf)
       return () => sub.unsubscribe()
     },
-    // instruct backend to keep db syncrhonized while this atom is in use
+    // instruct backend to keep db synchronized while this atom is in use
     () => api.chains(NO_OP),
   ],
 })
@@ -163,16 +149,6 @@ export const chainsWithTestnetsMapState = selector<ChainList>({
   },
 })
 
-// export const chainQuery = selectorFamily({
-//   key: "chainQuery",
-//   get:
-//     (chainId: ChainId) =>
-//     ({ get }) => {
-//       const networks = get(chainsWithTestnetsMapState)
-//       return networks[chainId]
-//     },
-// })
-
 export const chainsWithoutTestnetsState = selector({
   key: "chainsWithoutTestnetsState",
   get: ({ get }) => {
@@ -191,7 +167,6 @@ export const chainsWithoutTestnetsMapState = selector<ChainList>({
 
 export const tokensEnabledState = atom<EnabledTokens>({
   key: "tokensEnabledState",
-  default: {},
   effects: [
     ({ setSelf }) => {
       const sub = enabledTokensStore.observable.subscribe(setSelf)
@@ -204,7 +179,6 @@ export const tokensEnabledState = atom<EnabledTokens>({
 
 export const allTokensMapState = atom<TokenList>({
   key: "allTokensMapState",
-  default: {},
   effects: [
     // sync from db
     ({ setSelf }) => {
@@ -213,7 +187,7 @@ export const allTokensMapState = atom<TokenList>({
 
       return () => sub.unsubscribe()
     },
-    // instruct backend to keep db syncrhonized while this atom is in use
+    // instruct backend to keep db synchronized while this atom is in use
     () => api.tokens(NO_OP),
   ],
 })
@@ -235,10 +209,10 @@ export const allTokensState = selector<Token[]>({
 export const tokensWithTestnetsState = selector<Token[]>({
   key: "tokensWithTestnetsState",
   get: ({ get }) => {
-    const tokensMap = get(allTokensState)
+    const tokens = get(allTokensState)
     const chainsMap = get(chainsWithTestnetsMapState)
     const evmNetworksMap = get(evmNetworksWithTestnetsMapState)
-    return Object.values(tokensMap).filter(
+    return tokens.filter(
       (token) =>
         (token.chain && chainsMap[token.chain.id]) ||
         (token.evmNetwork && evmNetworksMap[token.evmNetwork.id])

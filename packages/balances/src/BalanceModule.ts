@@ -3,7 +3,14 @@ import { ChainConnector } from "@talismn/chain-connector"
 import { ChainConnectorEvm } from "@talismn/chain-connector-evm"
 import { ChainId, ChaindataProvider, IToken } from "@talismn/chaindata-provider"
 
-import { AddressesByToken, Balances, SubscriptionCallback, UnsubscribeFn } from "./types"
+import {
+  Address,
+  AddressesByToken,
+  BalanceJson,
+  Balances,
+  SubscriptionCallback,
+  UnsubscribeFn,
+} from "./types"
 
 export type ExtendableTokenType = IToken
 export type ExtendableChainMeta = Record<string, unknown> | undefined
@@ -83,6 +90,10 @@ export const DefaultBalanceModule = <
     return () => {}
   },
 
+  getPlaceholderBalance() {
+    throw new Error("Balance placeholder is not implemented in this module.")
+  },
+
   async fetchBalances() {
     throw new Error("Balance fetching is not implemented in this module.")
   },
@@ -152,6 +163,9 @@ interface BalanceModuleCommon<
     addressesByToken: AddressesByToken<TTokenType>,
     callback: SubscriptionCallback<Balances>
   ): Promise<UnsubscribeFn>
+
+  /** Used to provision balances in db while they are fetching for the first time */
+  getPlaceholderBalance(tokenId: TTokenType["id"], address: Address): BalanceJson
 
   /** Fetch balances for this module with optional filtering */
   fetchBalances(addressesByToken: AddressesByToken<TTokenType>): Promise<Balances>

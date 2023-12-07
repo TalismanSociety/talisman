@@ -1,13 +1,17 @@
 import { formatSuri } from "@core/domains/accounts/helpers"
 import { AccountAddressType, RequestAccountCreateFromSuri } from "@core/domains/accounts/types"
 import { AddressesAndEvmNetwork } from "@core/domains/balances/types"
+import { isChainEnabled } from "@core/domains/chains/store.enabledChains"
 import { getEthDerivationPath } from "@core/domains/ethereum/helpers"
+import { isEvmNetworkEnabled } from "@core/domains/ethereum/store.enabledEvmNetworks"
 import { AddressesByChain } from "@core/types/base"
 import { convertAddress } from "@talisman/util/convertAddress"
 import { api } from "@ui/api"
 import useAccounts from "@ui/hooks/useAccounts"
 import useBalancesByParams from "@ui/hooks/useBalancesByParams"
 import useChains from "@ui/hooks/useChains"
+import { useEnabledChainsState } from "@ui/hooks/useEnabledChainsState"
+import { useEnabledEvmNetworksState } from "@ui/hooks/useEnabledEvmNetworksState"
 import { useEvmNetworks } from "@ui/hooks/useEvmNetworks"
 import { FC, useCallback, useEffect, useMemo, useState } from "react"
 
@@ -70,8 +74,11 @@ const useDerivedAccounts = (
     }
   }, [itemsPerPage, mnemonic, name, pageIndex, type])
 
-  const { chains } = useChains("all")
+  const { chains } = useChains("enabledWithoutTestnets")
   const { evmNetworks } = useEvmNetworks("enabledWithoutTestnets")
+
+  const enabledChains = useEnabledChainsState()
+  const enabledEvmNetworks = useEnabledEvmNetworksState()
 
   const { expectedBalancesCount, addressesByChain, addressesAndEvmNetworks } = useMemo(() => {
     const expectedBalancesCount =
@@ -87,21 +94,23 @@ const useDerivedAccounts = (
 
     const evmNetworkIds = type === "ethereum" ? BALANCE_CHECK_EVM_NETWORK_IDS : []
     const chainIds = type === "ethereum" ? [] : BALANCE_CHECK_SUBSTRATE_CHAIN_IDS
-    const testChains = (chains || []).filter((chain) => chainIds.includes(chain.id))
 
     const addressesByChain: AddressesByChain =
       type === "ethereum"
         ? {}
-        : testChains.reduce(
-            (prev, curr) => ({
-              ...prev,
-              [curr.id]: derivedAccounts
-                .filter((acc) => !!acc)
-                .map((acc) => acc as DerivedFromMnemonicAccount)
-                .map((account) => convertAddress(account.address, curr.prefix)),
-            }),
-            {}
-          )
+        : (chains || [])
+            .filter((chain) => chainIds.includes(chain.id))
+            .filter((chain) => isChainEnabled(chain, enabledChains))
+            .reduce(
+              (prev, curr) => ({
+                ...prev,
+                [curr.id]: derivedAccounts
+                  .filter((acc) => !!acc)
+                  .map((acc) => acc as DerivedFromMnemonicAccount)
+                  .map((account) => convertAddress(account.address, curr.prefix)),
+              }),
+              {}
+            )
 
     const addressesAndEvmNetworks: AddressesAndEvmNetwork =
       type === "ethereum"
@@ -112,6 +121,7 @@ const useDerivedAccounts = (
               .filter(Boolean) as string[],
             evmNetworks: (evmNetworks || [])
               .filter((chain) => evmNetworkIds.includes(chain.id))
+              .filter((chain) => isEvmNetworkEnabled(chain, enabledEvmNetworks))
               .map(({ id, nativeToken }) => ({
                 id,
                 nativeToken: { id: nativeToken?.id as string },
@@ -124,7 +134,14 @@ const useDerivedAccounts = (
       addressesByChain,
       addressesAndEvmNetworks,
     }
-  }, [chains, derivedAccounts, evmNetworks, type])
+  }, [chains, derivedAccounts, enabledChains, enabledEvmNetworks, evmNetworks, type])
+
+  const withBalances = useMemo(
+    () =>
+      (addressesByChain && Object.values(addressesByChain).some((addresses) => addresses.length)) ||
+      !!addressesAndEvmNetworks?.evmNetworks.length,
+    [addressesAndEvmNetworks?.evmNetworks.length, addressesByChain]
+  )
 
   const balances = useBalancesByParams({
     addressesByChain,
@@ -176,6 +193,7 @@ const useDerivedAccounts = (
 
   return {
     accounts,
+    withBalances,
     error,
   }
 }
@@ -198,7 +216,7 @@ export const DerivedFromMnemonicAccountPicker: FC<DerivedAccountPickerProps> = (
   const itemsPerPage = 5
   const [pageIndex, setPageIndex] = useState(0)
   const [selectedAccounts, setSelectedAccounts] = useState<RequestAccountCreateFromSuri[]>([])
-  const { accounts, error } = useDerivedAccounts(
+  const { accounts, withBalances, error } = useDerivedAccounts(
     name,
     mnemonic,
     type,
@@ -232,6 +250,7 @@ export const DerivedFromMnemonicAccountPicker: FC<DerivedAccountPickerProps> = (
     <>
       <DerivedAccountPickerBase
         accounts={accounts}
+        withBalances={withBalances}
         canPageBack={pageIndex > 0}
         onAccountClick={handleToggleAccount}
         onPagerFirstClick={handlePageFirst}

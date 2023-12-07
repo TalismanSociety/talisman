@@ -1,14 +1,14 @@
 import { Balances } from "@talismn/balances"
-import { renderHook } from "@testing-library/react"
-import { RecoilRoot } from "recoil"
+import { renderHook, waitFor } from "@testing-library/react"
 
+import { TestWrapper } from "../../../../tests/TestWrapper"
 import { useBalances } from "../useBalances"
 
 describe("useBalances tests", () => {
   test("Can get useBalances data", async () => {
     const { result } = renderHook(() => useBalances(), {
-      wrapper: RecoilRoot,
+      wrapper: TestWrapper,
     })
-    expect(result.current).toBeInstanceOf(Balances)
+    await waitFor(() => expect(result.current).toBeInstanceOf(Balances))
   })
 })

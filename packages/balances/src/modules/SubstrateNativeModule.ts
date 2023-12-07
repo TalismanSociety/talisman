@@ -298,6 +298,27 @@ export const SubNativeModule: NewBalanceModule<
       return { [nativeToken.id]: nativeToken }
     },
 
+    getPlaceholderBalance(tokenId, address): SubNativeBalance {
+      const match = /([\d\w-]+)-substrate-native/.exec(tokenId)
+      const chainId = match?.[1]
+      if (!chainId) throw new Error(`Can't detect chainId for token ${tokenId}`)
+
+      return {
+        source: "substrate-native",
+        status: "initializing",
+        address,
+        multiChainId: { subChainId: chainId },
+        chainId,
+        tokenId,
+        free: "0",
+        reserves: [{ label: "reserved", amount: "0" }],
+        locks: [
+          { label: "fees", amount: "0", includeInTransferable: true, excludeFromFeePayable: true },
+          { label: "misc", amount: "0" },
+        ],
+      }
+    },
+
     async subscribeBalances(addressesByToken, callback) {
       assert(chainConnectors.substrate, "This module requires a substrate chain connector")
 

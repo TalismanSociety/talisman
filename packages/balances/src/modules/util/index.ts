@@ -235,8 +235,7 @@ export const deriveStatuses = (
   balances: BalanceJson[]
 ): BalanceJson[] => {
   balances.forEach((balance) => {
-    if (balance.status === "live" || balance.status === "cache" || balance.status === "stale")
-      return balance
+    if (["live", "cache", "stale", "initializing"].includes(balance.status)) return balance
 
     if (validSubscriptionIds.size < 1) {
       balance.status = "cache"

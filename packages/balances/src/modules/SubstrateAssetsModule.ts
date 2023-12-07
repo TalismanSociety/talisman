@@ -242,6 +242,23 @@ export const SubAssetsModule: NewBalanceModule<
       return tokens
     },
 
+    getPlaceholderBalance(tokenId, address): SubAssetsBalance {
+      const match = /([\d\w-]+)-substrate-assets/.exec(tokenId)
+      const chainId = match?.[1]
+      if (!chainId) throw new Error(`Can't detect chainId for token ${tokenId}`)
+
+      return {
+        source: "substrate-assets",
+        status: "initializing",
+        address,
+        multiChainId: { subChainId: chainId },
+        chainId,
+        tokenId,
+        free: "0",
+        locks: "0",
+      }
+    },
+
     // TODO: Don't create empty subscriptions
     async subscribeBalances(addressesByToken, callback) {
       const queries = await buildQueries(

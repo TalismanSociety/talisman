@@ -211,6 +211,22 @@ export const SubEquilibriumModule: NewBalanceModule<
       return tokens
     },
 
+    getPlaceholderBalance(tokenId, address): SubEquilibriumBalance {
+      const match = /([\d\w-]+)-substrate-equilibrium/.exec(tokenId)
+      const chainId = match?.[1]
+      if (!chainId) throw new Error(`Can't detect chainId for token ${tokenId}`)
+
+      return {
+        source: "substrate-equilibrium",
+        status: "initializing",
+        address,
+        multiChainId: { subChainId: chainId },
+        chainId,
+        tokenId,
+        free: "0",
+      }
+    },
+
     // TODO: Don't create empty subscriptions
     async subscribeBalances(addressesByToken, callback) {
       const queries = await buildQueries(
