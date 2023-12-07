@@ -3,11 +3,11 @@ import { AccountJsonAny } from "@core/domains/accounts/types"
 import { WithTooltip } from "@talisman/components/Tooltip"
 import { classNames } from "@talismn/util"
 import { AllAccountsIcon } from "@ui/domains/Account/AllAccountsIcon"
-import { useSearchParamsSelectedAccount } from "@ui/hooks/useSearchParamsSelectedAccount"
 import { useSearchParamsSelectedFolder } from "@ui/hooks/useSearchParamsSelectedFolder"
 import { useMemo } from "react"
 import { useTranslation } from "react-i18next"
 
+import { useSelectedAccount } from "../Portfolio/SelectedAccountContext"
 import { AccountFolderIcon } from "./AccountFolderIcon"
 import { AccountIcon } from "./AccountIcon"
 
@@ -44,7 +44,7 @@ export const CurrentAccountAvatar = ({
   className?: string
   withTooltip?: boolean
 }) => {
-  const { account } = useSearchParamsSelectedAccount()
+  const { account } = useSelectedAccount()
   const { folder } = useSearchParamsSelectedFolder()
   const { t } = useTranslation()
   const tooltip = useMemo(() => {

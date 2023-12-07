@@ -146,6 +146,10 @@ const usePortfolioProvider = () => {
   const networks = useAllNetworks({ balances: allBalances, type: accountType })
   const [networkFilter, setNetworkFilter] = useState<NetworkOption>()
 
+  useEffect(() => {
+    if (networkFilter && !networks.includes(networkFilter)) setNetworkFilter(undefined)
+  }, [networkFilter, networks])
+
   const networkBalances = useMemo(() => {
     if (!networkFilter) return allBalances
     const { chainId, evmNetworkId } = networkFilter

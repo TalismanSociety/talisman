@@ -20,7 +20,12 @@ export type ModalOpenRequestBuy = {
   modalType: "buy"
 }
 export type ModalOpenRequest = ModalOpenRequestBuy
-export type SendFundsOpenRequest = { from?: Address; tokenId?: TokenId; to?: Address }
+export type SendFundsOpenRequest = {
+  from?: Address
+  tokenId?: TokenId
+  tokenSymbol?: string
+  to?: Address
+}
 
 export interface AnalyticsCaptureRequest {
   eventName: string

@@ -67,7 +67,7 @@ export const EnterPasswordForm = () => {
           <a
             href="https://medium.com/we-are-talisman/talismans-security-model-1e60391694c0"
             target="_blank"
-            rel="noreferrer"
+            rel="noreferrer noopener"
             className="text-white opacity-100"
           >
             Learn more

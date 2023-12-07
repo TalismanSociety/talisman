@@ -1,4 +1,4 @@
-import { appStore } from "@core/domains/app"
+import { appStore } from "@core/domains/app/store.app"
 import { api } from "@ui/api"
 import { useCallback, useMemo } from "react"
 import { useLocation } from "react-router-dom"

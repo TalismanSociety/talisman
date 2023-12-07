@@ -58,7 +58,7 @@ export const AnalyticsOptInInfo: FC<{
           <a
             href="https://docs.talisman.xyz/talisman/legal-and-security/privacy-policy"
             target="_blank"
-            rel="noreferrer"
+            rel="noreferrer noopener"
             className="hover:text-grey-300 active:text-grey-300 underline"
           >
             Privacy Policy

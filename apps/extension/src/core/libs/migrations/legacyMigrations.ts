@@ -1,6 +1,6 @@
 import { TALISMAN_WEB_APP_DOMAIN } from "@core/constants"
 import { hasQrCodeAccounts } from "@core/domains/accounts/helpers"
-import passwordStore from "@core/domains/app/store.password"
+import { passwordStore } from "@core/domains/app/store.password"
 import { createLegacyVerifierCertificateMnemonicStore } from "@core/domains/mnemonics/legacy/store"
 import { mnemonicsStore } from "@core/domains/mnemonics/store"
 import sitesAuthorisedStore from "@core/domains/sitesAuthorised/store"

@@ -107,6 +107,8 @@ const config = (env) => ({
       // https://github.com/facebook/react/issues/20235
       // fix for @polkadot/react-identicons which uses react 16
       "react/jsx-runtime": path.resolve("../../node_modules/react/jsx-runtime.js"),
+      // dexie uses `dist/modern/dexie.min.mjs` in production, which makes for terrible sourcemaps
+      "dexie": path.resolve("../../node_modules/dexie/dist/modern/dexie.mjs"),
     },
     extensions: [".ts", ".tsx", ".js", ".css"],
     fallback: {

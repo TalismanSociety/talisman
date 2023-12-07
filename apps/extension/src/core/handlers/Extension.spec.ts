@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-non-null-assertion */
 import { TALISMAN_WEB_APP_DOMAIN } from "@core/constants"
 import { db } from "@core/db"
-import { passwordStore } from "@core/domains/app"
+import { passwordStore } from "@core/domains/app/store.password"
 import { chaindataProvider } from "@core/rpcs/chaindata"
 import RequestExtrinsicSign from "@polkadot/extension-base/background/RequestExtrinsicSign"
 import { AccountsStore } from "@polkadot/extension-base/stores"

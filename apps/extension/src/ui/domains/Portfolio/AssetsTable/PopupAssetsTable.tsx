@@ -10,13 +10,13 @@ import Tokens from "@ui/domains/Asset/Tokens"
 import { useAnalytics } from "@ui/hooks/useAnalytics"
 import { useBalancesStatus } from "@ui/hooks/useBalancesStatus"
 import { useSelectedCurrency } from "@ui/hooks/useCurrency"
-import { useSearchParamsSelectedAccount } from "@ui/hooks/useSearchParamsSelectedAccount"
 import { MouseEventHandler, ReactNode, useCallback, useMemo } from "react"
 import { Trans, useTranslation } from "react-i18next"
 import { useNavigate } from "react-router-dom"
 
 import { TokenLogo } from "../../Asset/TokenLogo"
 import { useNomPoolStakingBanner } from "../NomPoolStakingContext"
+import { useSelectedAccount } from "../SelectedAccountContext"
 import { StaleBalancesIcon } from "../StaleBalancesIcon"
 import { useTokenBalancesSummary } from "../useTokenBalancesSummary"
 import { NetworksLogoStack } from "./NetworksLogoStack"
@@ -32,7 +32,7 @@ const AssetRow = ({ balances, locked }: AssetRowProps) => {
   const networkIds = usePortfolioNetworkIds(balances)
   const { genericEvent } = useAnalytics()
 
-  const { account } = useSearchParamsSelectedAccount()
+  const { account } = useSelectedAccount()
   const status = useBalancesStatus(balances)
 
   const { token, summary, rate } = useTokenBalancesSummary(balances)
@@ -225,7 +225,7 @@ const BalancesGroup = ({ label, fiatAmount, className, children }: GroupProps) =
 
 export const PopupAssetsTable = ({ balances }: GroupedAssetsTableProps) => {
   const { t } = useTranslation()
-  const { account } = useSearchParamsSelectedAccount()
+  const { account } = useSelectedAccount()
   const currency = useSelectedCurrency()
 
   // group by status by token (symbol)

@@ -3,34 +3,56 @@ import { Setting } from "@talisman/components/Setting"
 import {
   BellIcon,
   ChevronRightIcon,
+  CoinsIcon,
   DollarSignIcon,
   EyeOffIcon,
   FlagIcon,
   KeyIcon,
-  TerminalIcon,
+  RefreshCwIcon,
   UserIcon,
 } from "@talismn/icons"
+import { AnalyticsPage } from "@ui/api/analytics"
 import { AvatarTypeSelect } from "@ui/domains/Settings/AvatarTypeSelect"
 import { useAppState } from "@ui/hooks/useAppState"
+import { useRuntimeReload } from "@ui/hooks/useRuntimeReload"
 import { useSetting } from "@ui/hooks/useSettings"
 import { Trans, useTranslation } from "react-i18next"
-import { CtaButton, Toggle, Tooltip, TooltipContent, TooltipTrigger } from "talisman-ui"
+import { Button, CtaButton, Toggle, Tooltip, TooltipContent, TooltipTrigger } from "talisman-ui"
 
 import { DashboardLayout } from "../../layout/DashboardLayout"
+
+const ANALYTICS_PAGE: AnalyticsPage = {
+  container: "Fullscreen",
+  feature: "Settings",
+  featureVersion: 1,
+  page: "General",
+}
 
 export const GeneralPage = () => {
   const { t } = useTranslation("admin")
   const [hasSpiritKey] = useAppState("hasSpiritKey")
-  const [useTestnets, setUseTestnets] = useSetting("useTestnets")
   const [hideBalances, setHideBalances] = useSetting("hideBalances")
+  const [hideDust, setHideDust] = useSetting("hideDust")
   const [identiconType, setIdenticonType] = useSetting("identiconType")
   const [allowNotifications, setAllowNotifications] = useSetting("allowNotifications")
   const [spiritClanFeatures, setSpiritClanFeatures] = useSetting("spiritClanFeatures")
+  const [hasRuntimeReloadFn, runtimeReload] = useRuntimeReload(ANALYTICS_PAGE)
 
   return (
     <DashboardLayout centered>
       <HeaderBlock title={t("General")} text={t("General settings")} />
       <div className="mt-16 flex flex-col gap-4">
+        {hasRuntimeReloadFn ? (
+          <Setting
+            iconLeft={RefreshCwIcon}
+            title={t("Reload Talisman")}
+            subtitle={t("Close and restart Talisman, this can help to resolve error states")}
+          >
+            <Button primary small onClick={runtimeReload}>
+              Reload
+            </Button>
+          </Setting>
+        ) : null}
         <Setting
           iconLeft={KeyIcon}
           title={t("Pre-release features")}
@@ -40,7 +62,7 @@ export const GeneralPage = () => {
                 className="text-grey-200 hover:text-body"
                 href="https://docs.talisman.xyz/talisman/explore-the-paraverse/talisman-portal/spirit-keys-and-commendations#sprit-keys"
                 target="_blank"
-                rel="noreferrer"
+                rel="noreferrer noopener"
               >
                 Spirit Key NFT
               </a>{" "}
@@ -62,26 +84,6 @@ export const GeneralPage = () => {
           </Tooltip>
         </Setting>
         <Setting
-          iconLeft={TerminalIcon}
-          title={t("Enable testnets")}
-          subtitle={
-            <>
-              {t("Connect to test networks")}
-              <span> | </span>
-              <a
-                className="text-grey-200 hover:text-body"
-                href="https://paritytech.github.io/polkadot-testnet-faucet"
-                target="_blank"
-                rel="noreferrer"
-              >
-                {t("Faucets")}
-              </a>
-            </>
-          }
-        >
-          <Toggle checked={useTestnets} onChange={(e) => setUseTestnets(e.target.checked)} />
-        </Setting>
-        <Setting
           iconLeft={BellIcon}
           title={t("Allow notifications")}
           subtitle={t("Allow Talisman to send you notifications about transactions in progress")}
@@ -93,10 +95,17 @@ export const GeneralPage = () => {
         </Setting>
         <Setting
           iconLeft={EyeOffIcon}
-          title={t("Hide balances")}
-          subtitle={t("Blurs your portfolio and account balances")}
+          title={t("Blur balances")}
+          subtitle={t("Conceal your portfolio and account balances")}
         >
           <Toggle checked={hideBalances} onChange={(e) => setHideBalances(e.target.checked)} />
+        </Setting>
+        <Setting
+          iconLeft={CoinsIcon}
+          title={t("Hide small balances")}
+          subtitle={t("Hide tokens with a balance below US$1")}
+        >
+          <Toggle checked={hideDust} onChange={(e) => setHideDust(e.target.checked)} />
         </Setting>
         <CtaButton
           iconLeft={FlagIcon}

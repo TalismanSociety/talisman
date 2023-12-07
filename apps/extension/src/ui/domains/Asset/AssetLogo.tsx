@@ -34,8 +34,7 @@ export const AssetLogoBase = ({ id, className, url, rounded }: AssetLogoBaseProp
   const handleError = useCallback(() => setSrc(UNKNOWN_TOKEN_URL), [])
 
   const imgClassName = useMemo(
-    () =>
-      classNames("relative block h-[1em] w-[1em] shrink-0", rounded && "rounded-full", className),
+    () => classNames("relative block w-[1em] shrink-0", rounded && "rounded-full", className),
     [className, rounded]
   )
 
