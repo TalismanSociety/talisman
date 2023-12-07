@@ -93,6 +93,12 @@ const AccountInfoOverrides: { [key: ChainId]: string } = {
 export const subNativeTokenId = (chainId: ChainId, tokenSymbol: string) =>
   `${chainId}-substrate-native-${tokenSymbol}`.toLowerCase().replace(/ /g, "-")
 
+const getChainIdFromTokenId = (tokenId: string) => {
+  const match = /^([\d\w-]+)-substrate-native/.exec(tokenId)
+  if (!match?.[1]) throw new Error(`Can't detect chainId for token ${tokenId}`)
+  return match?.[1]
+}
+
 export type SubNativeToken = NewTokenType<
   ModuleType,
   {
@@ -299,9 +305,7 @@ export const SubNativeModule: NewBalanceModule<
     },
 
     getPlaceholderBalance(tokenId, address): SubNativeBalance {
-      const match = /([\d\w-]+)-substrate-native/.exec(tokenId)
-      const chainId = match?.[1]
-      if (!chainId) throw new Error(`Can't detect chainId for token ${tokenId}`)
+      const chainId = getChainIdFromTokenId(tokenId)
 
       return {
         source: "substrate-native",

@@ -40,6 +40,12 @@ type ModuleType = "substrate-equilibrium"
 const subEquilibriumTokenId = (chainId: ChainId, tokenSymbol: string) =>
   `${chainId}-substrate-equilibrium-${tokenSymbol}`.toLowerCase().replace(/ /g, "-")
 
+const getChainIdFromTokenId = (tokenId: string) => {
+  const match = /^([\d\w-]+)-substrate-equilibrium/.exec(tokenId)
+  if (!match?.[1]) throw new Error(`Can't detect chainId for token ${tokenId}`)
+  return match?.[1]
+}
+
 export type SubEquilibriumToken = NewTokenType<
   ModuleType,
   {
@@ -212,9 +218,7 @@ export const SubEquilibriumModule: NewBalanceModule<
     },
 
     getPlaceholderBalance(tokenId, address): SubEquilibriumBalance {
-      const match = /([\d\w-]+)-substrate-equilibrium/.exec(tokenId)
-      const chainId = match?.[1]
-      if (!chainId) throw new Error(`Can't detect chainId for token ${tokenId}`)
+      const chainId = getChainIdFromTokenId(tokenId)
 
       return {
         source: "substrate-equilibrium",

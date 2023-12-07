@@ -30,6 +30,12 @@ type ModuleType = "substrate-psp22"
 const subPsp22TokenId = (chainId: ChainId, tokenSymbol: string) =>
   `${chainId}-substrate-psp22-${tokenSymbol}`.toLowerCase().replace(/ /g, "-")
 
+const getChainIdFromTokenId = (tokenId: string) => {
+  const match = /^([\d\w-]+)-substrate-psp22/.exec(tokenId)
+  if (!match?.[1]) throw new Error(`Can't detect chainId for token ${tokenId}`)
+  return match?.[1]
+}
+
 export type SubPsp22Token = NewTokenType<
   ModuleType,
   {
@@ -199,9 +205,7 @@ export const SubPsp22Module: NewBalanceModule<
     },
 
     getPlaceholderBalance(tokenId, address): SubPsp22Balance {
-      const match = /([\d\w-]+)-substrate-psp22/.exec(tokenId)
-      const chainId = match?.[1]
-      if (!chainId) throw new Error(`Can't detect chainId for token ${tokenId}`)
+      const chainId = getChainIdFromTokenId(tokenId)
 
       return {
         source: "substrate-psp22",

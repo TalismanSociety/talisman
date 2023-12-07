@@ -30,6 +30,12 @@ type ModuleType = "evm-native"
 export const evmNativeTokenId = (chainId: EvmNetworkId, tokenSymbol: string) =>
   `${chainId}-evm-native-${tokenSymbol}`.toLowerCase().replace(/ /g, "-")
 
+const getEvmNetworkIdFromTokenId = (tokenId: string) => {
+  const evmNetworkId = tokenId.split("-")[0] as EvmNetworkId
+  if (!evmNetworkId) throw new Error(`Can't detect chainId for token ${tokenId}`)
+  return evmNetworkId
+}
+
 export type EvmNativeToken = NewTokenType<
   ModuleType,
   {
@@ -123,7 +129,7 @@ export const EvmNativeModule: NewBalanceModule<
     },
 
     getPlaceholderBalance(tokenId, address): EvmNativeBalance {
-      const evmNetworkId = tokenId.split("-")[0] as EvmNetworkId
+      const evmNetworkId = getEvmNetworkIdFromTokenId(tokenId)
       return {
         source: "evm-native",
         status: "initializing",

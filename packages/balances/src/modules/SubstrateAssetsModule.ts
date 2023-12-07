@@ -39,6 +39,12 @@ type ModuleType = "substrate-assets"
 const subAssetTokenId = (chainId: ChainId, assetId: string, tokenSymbol: string) =>
   `${chainId}-substrate-assets-${assetId}-${tokenSymbol}`.toLowerCase().replace(/ /g, "-")
 
+const getChainIdFromTokenId = (tokenId: string) => {
+  const match = /^([\d\w-]+)-substrate-assets/.exec(tokenId)
+  if (!match?.[1]) throw new Error(`Can't detect chainId for token ${tokenId}`)
+  return match?.[1]
+}
+
 export type SubAssetsToken = NewTokenType<
   ModuleType,
   {
@@ -243,9 +249,7 @@ export const SubAssetsModule: NewBalanceModule<
     },
 
     getPlaceholderBalance(tokenId, address): SubAssetsBalance {
-      const match = /([\d\w-]+)-substrate-assets/.exec(tokenId)
-      const chainId = match?.[1]
-      if (!chainId) throw new Error(`Can't detect chainId for token ${tokenId}`)
+      const chainId = getChainIdFromTokenId(tokenId)
 
       return {
         source: "substrate-assets",

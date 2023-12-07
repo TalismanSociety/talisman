@@ -34,6 +34,12 @@ export const evmErc20TokenId = (
   tokenContractAddress: EvmErc20Token["contractAddress"]
 ) => `${chainId}-evm-erc20-${tokenContractAddress}`.toLowerCase()
 
+const getEvmNetworkIdFromTokenId = (tokenId: string) => {
+  const evmNetworkId = tokenId.split("-")[0] as EvmNetworkId
+  if (!evmNetworkId) throw new Error(`Can't detect chainId for token ${tokenId}`)
+  return evmNetworkId
+}
+
 export type EvmErc20Token = NewTokenType<
   ModuleType,
   {
@@ -156,7 +162,7 @@ export const EvmErc20Module: NewBalanceModule<
     },
 
     getPlaceholderBalance(tokenId, address): EvmErc20Balance {
-      const evmNetworkId = tokenId.split("-")[0] as EvmNetworkId
+      const evmNetworkId = getEvmNetworkIdFromTokenId(tokenId)
       return {
         source: "evm-erc20",
         status: "initializing",
