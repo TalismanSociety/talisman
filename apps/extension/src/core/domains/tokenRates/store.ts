@@ -1,4 +1,5 @@
 import { db } from "@core/db"
+import { enabledTokensStore, filterEnabledTokens } from "@core/domains/tokens/store.enabledTokens"
 import { unsubscribe } from "@core/handlers/subscriptions"
 import { log } from "@core/log"
 import { chaindataProvider } from "@core/rpcs/chaindata"
@@ -8,8 +9,6 @@ import { fetchTokenRates } from "@talismn/token-rates"
 import { Subscription, liveQuery } from "dexie"
 import debounce from "lodash/debounce"
 import { BehaviorSubject, combineLatest } from "rxjs"
-
-import { enabledTokensStore, filterEnabledTokens } from "../tokens/store.enabledTokens"
 
 const MIN_REFRESH_INTERVAL = 60_000 // 60_000ms = 60s = 1 minute
 const REFRESH_INTERVAL = 300_000 // 5 minutes
