@@ -1,6 +1,8 @@
-import { NOM_POOL_MIN_DEPOSIT, NOM_POOL_SUPPORTED_CHAINS } from "@core/constants"
 import { appStore } from "@core/domains/app/store.app"
 import { ResponseNomPoolStake } from "@core/domains/balances/types"
+import { NOM_POOL_MIN_DEPOSIT, NOM_POOL_SUPPORTED_CHAINS } from "@core/domains/staking/constants"
+import { isNomPoolChain } from "@core/domains/staking/helpers"
+import { NomPoolSupportedChain } from "@core/domains/staking/types"
 import { Address } from "@core/types/base"
 import * as Sentry from "@sentry/browser"
 import { provideContext } from "@talisman/util/provideContext"
@@ -27,7 +29,8 @@ const useShowNomPoolStakingBannerProvider = () => {
     .filter(({ type }) => type === "sr25519")
     .map(({ address }) => address)
 
-  const [showBannerSetting] = useAppState("showStakingBanner")
+  const [hideBannerSetting] = useAppState("hideStakingBanner")
+  const showBannerSetting = NOM_POOL_SUPPORTED_CHAINS.length > hideBannerSetting.length
 
   useEffect(() => {
     NOM_POOL_SUPPORTED_CHAINS.forEach((chainId) => {
@@ -78,17 +81,22 @@ const useShowNomPoolStakingBannerProvider = () => {
     [eligibleAddressBalances, setUpdateKey, updateKey]
   )
 
-  const dismissNomPoolBanner = useCallback(() => appStore.set({ showStakingBanner: false }), [])
+  const dismissNomPoolBanner = useCallback(
+    (chainId?: NomPoolSupportedChain) =>
+      appStore.mutate((existing) => {
+        const newValue = chainId ? [chainId] : NOM_POOL_SUPPORTED_CHAINS
+        return {
+          ...existing,
+          hideStakingBanner: Array.from(new Set([...existing.hideStakingBanner, ...newValue])),
+        }
+      }),
+    []
+  )
 
   const showTokenNomPoolBanner = useCallback(
     ({ token, addresses }: { token?: Token; addresses: Address[] }) => {
       const chainId = token?.chain?.id
-      if (
-        !chainId ||
-        !NOM_POOL_SUPPORTED_CHAINS.includes(chainId) ||
-        token.type !== "substrate-native"
-      )
-        return false
+      if (!chainId || !isNomPoolChain(chainId) || token.type !== "substrate-native") return false
 
       const eligible = substrateAddresses.filter((address) => {
         if (!addresses.includes(address)) return false
@@ -100,9 +108,9 @@ const useShowNomPoolStakingBannerProvider = () => {
         )
       })
 
-      return showBannerSetting && !isLoading && eligible.length > 0
+      return !hideBannerSetting.includes(chainId) && !isLoading && eligible.length > 0
     },
-    [substrateAddresses, isLoading, showBannerSetting, nomPoolStake, eligibleAddressBalances]
+    [substrateAddresses, isLoading, hideBannerSetting, nomPoolStake, eligibleAddressBalances]
   )
 
   const showNomPoolBanner = useCallback(

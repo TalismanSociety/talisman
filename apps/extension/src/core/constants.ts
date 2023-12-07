@@ -46,14 +46,6 @@ export const TALISMAN_WEB_APP_TRANSPORT_URL = "https://app.talisman.xyz/transfer
 // export const BANXA_URL = "https://talisman.banxa-sandbox.com/"
 export const BANXA_URL = "https://checkout.banxa.com/"
 
-export const NOM_POOL_SUPPORTED_CHAINS = ["polkadot", "kusama", "aleph-zero", "vara"]
-export const NOM_POOL_MIN_DEPOSIT: Record<string, string> = {
-  "polkadot": "10000000000",
-  "kusama": "1667000000",
-  "aleph-zero": "100000000000",
-  "vara": "100000000000",
-}
-
 export const POLKADOT_VAULT_DOCS_URL =
   "https://docs.talisman.xyz/talisman/navigating-the-paraverse/account-management/import-from-parity-signer-or-polkadot-vault"
 export const RELEASE_NOTES_URL =

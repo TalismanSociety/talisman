@@ -1,4 +1,5 @@
 import { DEBUG, IS_FIREFOX } from "@core/constants"
+import { NomPoolSupportedChain } from "@core/domains/staking/types"
 import { StorageProvider } from "@core/libs/Store"
 import { assert } from "@polkadot/util"
 import { gt } from "semver"
@@ -27,7 +28,7 @@ export type AppStoreData = {
   hasFunds: boolean
   hideBackupWarningUntil?: number
   hasSpiritKey: boolean
-  showStakingBanner: boolean
+  hideStakingBanner: NomPoolSupportedChain[]
   needsSpiritKeyUpdate: boolean
   popupSizeDelta: [number, number]
   vaultVerifierCertificateMnemonicId?: string | null
@@ -45,7 +46,7 @@ export const DEFAULT_APP_STATE: AppStoreData = {
   hasFunds: false,
   hasSpiritKey: false,
   needsSpiritKeyUpdate: false,
-  showStakingBanner: true,
+  hideStakingBanner: [],
   popupSizeDelta: [0, IS_FIREFOX ? 30 : 0],
 }
 
@@ -113,7 +114,7 @@ if (DEBUG) {
       hideBraveWarning: false,
       hasBraveWarningBeenShown: false,
       analyticsRequestShown: false,
-      showStakingBanner: true,
+      hideStakingBanner: [],
       hideBackupWarningUntil: undefined,
     })
   }

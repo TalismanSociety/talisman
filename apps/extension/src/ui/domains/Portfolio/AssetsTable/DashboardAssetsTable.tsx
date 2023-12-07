@@ -1,5 +1,6 @@
 import { TALISMAN_WEB_APP_STAKING_URL } from "@core/constants"
 import { Balances } from "@core/domains/balances/types"
+import { isNomPoolChain } from "@core/domains/staking/helpers"
 import { ExternalLinkIcon, XIcon, ZapIcon } from "@talismn/icons"
 import { classNames } from "@talismn/util"
 import Fiat from "@ui/domains/Asset/Fiat"
@@ -79,9 +80,11 @@ const AssetRow = ({ balances }: AssetRowProps) => {
   }, [genericEvent, token?.symbol])
 
   const handleDismissStakingBanner = useCallback(() => {
-    dismissNomPoolBanner()
+    const unsafeChainId = token?.chain?.id
+    const chainId = unsafeChainId && isNomPoolChain(unsafeChainId) ? unsafeChainId : undefined
+    dismissNomPoolBanner(chainId)
     genericEvent("dismiss staking banner", { from: "dashboard", symbol: token?.symbol })
-  }, [genericEvent, dismissNomPoolBanner, token?.symbol])
+  }, [genericEvent, dismissNomPoolBanner, token?.symbol, token?.chain?.id])
 
   if (!token || !summary) return null
 

@@ -61,8 +61,8 @@ test("Can get onboarded appState data", async () => {
 })
 
 test("Can get showStakingBanner appState data", async () => {
-  const { result } = renderHook(() => useAppState("showStakingBanner"), {
+  const { result } = renderHook(() => useAppState("hideStakingBanner"), {
     wrapper: RecoilRoot,
   })
-  expect(result.current[0]).toBe(DEFAULT_APP_STATE.showStakingBanner)
+  expect(result.current[0]).toBe(DEFAULT_APP_STATE.hideStakingBanner)
 })

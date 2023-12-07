@@ -1,20 +1,25 @@
-import { NOM_POOL_SUPPORTED_CHAINS } from "@core/constants"
 import {
   NomPoolStakedBalance,
   RequestNomPoolStake,
   ResponseNomPoolStake,
 } from "@core/domains/balances/types"
+import { NOM_POOL_SUPPORTED_CHAINS } from "@core/domains/staking/constants"
 import { chainConnector } from "@core/rpcs/chain-connector"
 import { getTypeRegistry } from "@core/util/getTypeRegistry"
 import { Metadata } from "@polkadot/types"
 import { RpcStateQuery, RpcStateQueryHelper, StorageHelper } from "@talismn/balances"
 import { decodeAnyAddress } from "@talismn/util"
 
+import { NomPoolSupportedChain } from "./types"
+
+export const isNomPoolChain = (chainId: string): chainId is NomPoolSupportedChain =>
+  NOM_POOL_SUPPORTED_CHAINS.includes(chainId as NomPoolSupportedChain)
+
 export const getNomPoolStake = async ({
   addresses,
   chainId = "polkadot",
 }: RequestNomPoolStake): Promise<ResponseNomPoolStake> => {
-  if (!NOM_POOL_SUPPORTED_CHAINS.includes(chainId))
+  if (!isNomPoolChain(chainId))
     throw new Error(`Chain ${chainId} not supported for nomination pools`)
 
   const { registry, metadataRpc } = await getTypeRegistry(chainId)

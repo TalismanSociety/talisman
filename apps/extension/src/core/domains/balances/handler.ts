@@ -1,5 +1,4 @@
 import { DEBUG } from "@core/constants"
-import { getNomPoolStake } from "@core/domains/balances/helpers"
 import { balanceModules } from "@core/domains/balances/store"
 import {
   Balances,
@@ -7,6 +6,7 @@ import {
   RequestBalancesByParamsSubscribe,
   RequestNomPoolStake,
 } from "@core/domains/balances/types"
+import { getNomPoolStake } from "@core/domains/staking/helpers"
 import { createSubscription, unsubscribe } from "@core/handlers/subscriptions"
 import { ExtensionHandler } from "@core/libs/Handler"
 import { chaindataProvider } from "@core/rpcs/chaindata"
