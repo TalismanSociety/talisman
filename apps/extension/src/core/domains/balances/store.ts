@@ -413,7 +413,6 @@ export class BalanceStore {
     if (this.#subscriptionsState !== "Closed") return
     this.setSubscriptionsState("Open")
     log.log("Opening balance subscriptions")
-    console.log("opening balances sub")
 
     const subscriptionId = createSubscriptionId()
 
