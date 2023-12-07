@@ -1,4 +1,3 @@
-import { log } from "@core/log"
 import {
   Address,
   BalanceJson,

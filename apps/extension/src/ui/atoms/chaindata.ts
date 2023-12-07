@@ -9,7 +9,6 @@ import {
   isEvmNetworkEnabled,
 } from "@core/domains/ethereum/store.enabledEvmNetworks"
 import { EnabledTokens, enabledTokensStore } from "@core/domains/tokens/store.enabledTokens"
-import { log } from "@core/log"
 import { chaindataProvider } from "@core/rpcs/chaindata"
 import {
   Chain,
