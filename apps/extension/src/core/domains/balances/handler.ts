@@ -8,6 +8,21 @@ import {
   RequestBalancesByParamsSubscribe,
   RequestNomPoolStake,
 } from "@core/domains/balances/types"
+import {
+  EnabledChains,
+  enabledChainsStore,
+  isChainEnabled,
+} from "@core/domains/chains/store.enabledChains"
+import {
+  EnabledEvmNetworks,
+  enabledEvmNetworksStore,
+  isEvmNetworkEnabled,
+} from "@core/domains/ethereum/store.enabledEvmNetworks"
+import {
+  EnabledTokens,
+  enabledTokensStore,
+  isTokenEnabled,
+} from "@core/domains/tokens/store.enabledTokens"
 import { createSubscription, unsubscribe } from "@core/handlers/subscriptions"
 import { ExtensionHandler } from "@core/libs/Handler"
 import { balanceModules } from "@core/rpcs/balance-modules"
@@ -19,14 +34,6 @@ import { MessageTypes, RequestTypes, ResponseType } from "core/types"
 import { liveQuery } from "dexie"
 import { isEqual } from "lodash"
 import { BehaviorSubject, combineLatest } from "rxjs"
-
-import { EnabledChains, enabledChainsStore, isChainEnabled } from "../chains/store.enabledChains"
-import {
-  EnabledEvmNetworks,
-  enabledEvmNetworksStore,
-  isEvmNetworkEnabled,
-} from "../ethereum/store.enabledEvmNetworks"
-import { EnabledTokens, enabledTokensStore, isTokenEnabled } from "../tokens/store.enabledTokens"
 
 export class BalancesHandler extends ExtensionHandler {
   public async handle<TMessageType extends MessageTypes>(
