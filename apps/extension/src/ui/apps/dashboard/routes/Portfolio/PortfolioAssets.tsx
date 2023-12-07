@@ -16,18 +16,17 @@ import { NoAccountsFullscreen } from "./NoAccounts"
 
 const FullscreenPortfolioAssets = ({ balances }: { balances: Balances }) => {
   const { t } = useTranslation()
-  const balancesToDisplay = useDisplayBalances(balances)
 
   const currency = useSelectedCurrency()
 
   const { portfolio, available, locked } = useMemo(() => {
-    const { total, frozen, reserved, transferable } = balancesToDisplay.sum.fiat(currency)
+    const { total, frozen, reserved, transferable } = balances.sum.fiat(currency)
     return {
       portfolio: total,
       available: transferable,
       locked: frozen + reserved,
     }
-  }, [balancesToDisplay.sum, currency])
+  }, [balances.sum, currency])
 
   return (
     <>
@@ -45,7 +44,7 @@ const FullscreenPortfolioAssets = ({ balances }: { balances: Balances }) => {
         <NetworkPicker />
       </div>
       <div className="mt-6">
-        <DashboardAssetsTable balances={balancesToDisplay} />
+        <DashboardAssetsTable balances={balances} />
       </div>
     </>
   )
@@ -74,7 +73,7 @@ const EnableNetworkMessage: FC<{ type?: "substrate" | "evm" }> = ({ type }) => {
 
 const PageContent = () => {
   const { networkBalances, evmNetworks, chains, accountType } = usePortfolio()
-  const balancesToDisplay = useDisplayBalances(networkBalances)
+  const balances = useDisplayBalances(networkBalances)
   const hasAccounts = useHasAccounts()
 
   if (hasAccounts === undefined) return null
@@ -95,7 +94,7 @@ const PageContent = () => {
   )
     return <EnableNetworkMessage type="evm" />
 
-  return <FullscreenPortfolioAssets balances={balancesToDisplay} />
+  return <FullscreenPortfolioAssets balances={balances} />
 }
 
 export const PortfolioAssets = () => {

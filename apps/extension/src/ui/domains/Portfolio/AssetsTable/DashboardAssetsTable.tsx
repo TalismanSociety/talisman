@@ -137,16 +137,23 @@ const AssetRow = ({ balances }: AssetRowProps) => {
           />
         </div>
         <div className="text-right">
-          <AssetBalanceCellValue
-            render
-            tokens={summary.availableTokens}
-            fiat={summary.availableFiat}
-            symbol={token.symbol}
-            balancesStatus={status}
-            className={classNames(
-              status.status === "fetching" && "animate-pulse transition-opacity"
-            )}
-          />
+          {status.status === "initializing" ? (
+            <div className="flex h-[6.6rem]  w-full flex-col items-end justify-center gap-2 px-8">
+              <div className="bg-grey-700 rounded-xs h-8 w-[10rem] animate-pulse"></div>
+              <div className="bg-grey-700 rounded-xs h-8 w-[6rem] animate-pulse"></div>
+            </div>
+          ) : (
+            <AssetBalanceCellValue
+              render
+              tokens={summary.availableTokens}
+              fiat={summary.availableFiat}
+              symbol={token.symbol}
+              balancesStatus={status}
+              className={classNames(
+                status.status === "fetching" && "animate-pulse transition-opacity"
+              )}
+            />
+          )}
         </div>
       </button>
     </>
