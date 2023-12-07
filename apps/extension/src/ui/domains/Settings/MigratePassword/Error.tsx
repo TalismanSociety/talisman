@@ -25,9 +25,9 @@ export const MigratePasswordError = () => {
                 team on{" "}
                 <a
                   className="text-white opacity-100"
-                  href="https://discord.gg/2EmmfrTN"
+                  href="https://discord.gg/talisman"
                   target="_blank"
-                  rel="noreferrer"
+                  rel="noreferrer noopener"
                 >
                   Discord
                 </a>
@@ -58,9 +58,9 @@ export const MigratePasswordError = () => {
             If this problem continues, please contact our support team on{" "}
             <a
               className="text-white opacity-100"
-              href="https://discord.gg/2EmmfrTN"
+              href="https://discord.gg/talisman"
               target="_blank"
-              rel="noreferrer"
+              rel="noreferrer noopener"
             >
               Discord
             </a>

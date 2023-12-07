@@ -129,10 +129,11 @@ export const AddCustomTokenPage = () => {
   )
 
   const addressErrorMessage = useMemo(() => {
-    // error code may be filled by ethers provider
+    // error code may be filled by viem provider
     const error = tokenInfoError as Error & { code?: string }
+
     if (error?.code === "NETWORK_ERROR") return t("Failed to connect")
-    else if (error) return t("Invalid address")
+    else if (error) return t("Not a valid token address")
     else return undefined
   }, [t, tokenInfoError])
 

@@ -2,7 +2,7 @@ import { db } from "@core/db"
 import { log } from "@core/log"
 import { checkHost } from "@polkadot/phishing"
 import * as Sentry from "@sentry/browser"
-import Dexie from "dexie"
+import { Dexie } from "dexie"
 import metamaskInitialData from "eth-phishing-detect/src/config.json"
 import MetamaskDetector from "eth-phishing-detect/src/detector"
 import { decompressFromUTF16 } from "lz-string"
@@ -70,29 +70,33 @@ export default class ParaverseProtector {
   async initialise() {
     // restore persisted data
     return new Promise<boolean>((resolve) => {
-      db.on.ready.subscribe(() => {
-        db.phishing.bulkGet(["polkadot", "phishfort", "metamask"]).then((persisted) => {
-          ;(persisted.filter(Boolean) as ProtectorStorage[]).forEach(
-            ({ source, compressedHostList, hostList, commitSha }) => {
-              const fullData = hostList
-                ? hostList
-                : JSON.parse(
-                    // todo remove decompressFromUTF16 in next release
-                    (compressedHostList && decompressFromUTF16(compressedHostList)) || "{}"
-                  )
+      db.on(
+        "ready",
+        () => {
+          db.phishing.bulkGet(["polkadot", "phishfort", "metamask"]).then((persisted) => {
+            ;(persisted.filter(Boolean) as ProtectorStorage[]).forEach(
+              ({ source, compressedHostList, hostList, commitSha }) => {
+                const fullData = hostList
+                  ? hostList
+                  : JSON.parse(
+                      // todo remove decompressFromUTF16 in next release
+                      (compressedHostList && decompressFromUTF16(compressedHostList)) || "{}"
+                    )
 
-              if (!fullData) return
+                if (!fullData) return
 
-              this.#commits[source] = commitSha
+                this.#commits[source] = commitSha
 
-              if (source === "metamask") {
-                this.#metamaskDetector = new MetamaskDetector(fullData as MetaMaskDetectorConfig)
-              } else this.lists[source] = fullData
-            }
-          )
-          resolve(true)
-        })
-      }, false)
+                if (source === "metamask") {
+                  this.#metamaskDetector = new MetamaskDetector(fullData as MetaMaskDetectorConfig)
+                } else this.lists[source] = fullData
+              }
+            )
+            resolve(true)
+          })
+        },
+        false
+      )
     }).catch((err) => {
       // in the case of any error, the user should only be unprotected until the first update runs (30 seconds)
       log.error(err)

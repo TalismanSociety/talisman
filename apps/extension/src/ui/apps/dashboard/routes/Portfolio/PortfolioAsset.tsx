@@ -26,7 +26,11 @@ const PageContent = ({ balances, symbol }: { balances: Balances; symbol: string 
   const { account } = useSelectedAccount()
 
   // don't set the token id here because it could be one of many
-  const { canSendFunds, cannotSendFundsReason, openSendFundsPopup } = useSendFundsPopup(account)
+  const { canSendFunds, cannotSendFundsReason, openSendFundsPopup } = useSendFundsPopup(
+    account,
+    undefined,
+    symbol
+  )
 
   const handleCopyAddressClick = useCallback(() => {
     openCopyAddressModal({ mode: "copy", address: account?.address })

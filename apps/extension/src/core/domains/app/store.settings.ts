@@ -8,6 +8,7 @@ export interface SettingsStoreData {
   identiconType: IdenticonType
   useAnalyticsTracking?: boolean // undefined during onboarding
   hideBalances: boolean
+  hideDust: boolean
   allowNotifications: boolean
   selectedAccount?: string // undefined = show all accounts
   collapsedFolders?: string[] // persists the collapsed folders in the dashboard account picker
@@ -25,6 +26,7 @@ export const DEFAULT_SETTINGS: SettingsStoreData = {
   identiconType: "talisman-orb",
   useAnalyticsTracking: undefined, // undefined for onboarding
   hideBalances: false,
+  hideDust: false,
   allowNotifications: true,
   autoLockTimeout: 0,
   spiritClanFeatures: true,

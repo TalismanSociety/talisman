@@ -1,5 +1,5 @@
 import { hasPrivateKey } from "@core/domains/accounts/helpers"
-import { passwordStore } from "@core/domains/app"
+import { passwordStore } from "@core/domains/app/store.password"
 import type { Address } from "@core/types/base"
 import { KeyringPair } from "@polkadot/keyring/types"
 import keyring from "@polkadot/ui-keyring"

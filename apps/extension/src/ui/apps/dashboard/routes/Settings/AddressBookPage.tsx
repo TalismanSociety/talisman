@@ -79,6 +79,7 @@ const AddressBookContactItem = ({ contact, handleDelete, handleEdit }: ContactIt
   const { canSendFunds, cannotSendFundsReason, openSendFundsPopup } = useSendFundsPopup(
     account,
     undefined,
+    undefined,
     contact.address
   )
 

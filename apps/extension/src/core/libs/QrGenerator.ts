@@ -1,4 +1,5 @@
-import { appStore, passwordStore } from "@core/domains/app"
+import { appStore } from "@core/domains/app/store.app"
+import { passwordStore } from "@core/domains/app/store.password"
 import { mnemonicsStore } from "@core/domains/mnemonics/store"
 import { SignerPayloadGenesisHash } from "@core/domains/signing/types"
 import { log } from "@core/log"

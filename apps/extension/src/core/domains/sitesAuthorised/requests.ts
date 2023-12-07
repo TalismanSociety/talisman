@@ -23,7 +23,7 @@ export const requestAuthoriseSite = async (
   // Do not enqueue duplicate authorization requests.
   const isDuplicate = requestStore
     .getAllRequests("auth")
-    .some((request) => request.idStr === domain)
+    .some((req) => req.idStr === domain && req.request.ethereum === request.ethereum)
 
   if (isDuplicate) {
     throw new AuthError(ERROR_DUPLICATE_AUTH_REQUEST_MESSAGE)

@@ -3,7 +3,7 @@ import {
   LegacyAccountTypes as AccountTypes,
 } from "@core/domains/accounts/migrations"
 import { AccountAddressType } from "@core/domains/accounts/types"
-import { passwordStore } from "@core/domains/app"
+import { passwordStore } from "@core/domains/app/store.password"
 import { getEthDerivationPath } from "@core/domains/ethereum/helpers"
 import { createLegacySeedPhraseStore } from "@core/domains/mnemonics/legacy/store"
 import { AccountsStore } from "@polkadot/extension-base/stores"

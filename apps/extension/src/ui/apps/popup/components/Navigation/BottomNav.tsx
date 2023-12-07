@@ -4,9 +4,9 @@ import { AlertCircleIcon, HistoryIcon, PieChartIcon, ZapIcon } from "@talismn/ic
 import { classNames } from "@talismn/util"
 import { api } from "@ui/api"
 import { AnalyticsPage, sendAnalyticsEvent } from "@ui/api/analytics"
+import { useSelectedAccount } from "@ui/domains/Portfolio/SelectedAccountContext"
 import { PendingTransactionsDrawer } from "@ui/domains/Transactions/PendingTransactionsDrawer"
 import useMnemonicBackup from "@ui/hooks/useMnemonicBackup"
-import { useSearchParamsSelectedAccount } from "@ui/hooks/useSearchParamsSelectedAccount"
 import { useSearchParamsSelectedFolder } from "@ui/hooks/useSearchParamsSelectedFolder"
 import { useLiveQuery } from "dexie-react-hooks"
 import { ButtonHTMLAttributes, DetailedHTMLProps, forwardRef, useCallback } from "react"
@@ -93,7 +93,7 @@ export const BottomNav = () => {
   const navigate = useNavigate()
   const location = useLocation()
   const { folder } = useSearchParamsSelectedFolder()
-  const { account } = useSearchParamsSelectedAccount()
+  const { account } = useSelectedAccount()
   const { open } = useNavigationContext()
 
   const handleHomeClick = useCallback(() => {

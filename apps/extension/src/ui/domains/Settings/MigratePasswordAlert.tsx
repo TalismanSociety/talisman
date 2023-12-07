@@ -38,7 +38,7 @@ export const AlertCard = ({ className, onAccept }: Props) => {
               <a
                 href="https://medium.com/we-are-talisman/talismans-security-model-1e60391694c0"
                 target="_blank"
-                rel="noreferrer"
+                rel="noreferrer noopener"
                 className="text-body underline"
               >
                 Learn more

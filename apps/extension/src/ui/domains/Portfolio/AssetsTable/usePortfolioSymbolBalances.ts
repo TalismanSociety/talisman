@@ -2,6 +2,7 @@ import { Balance, Balances } from "@core/domains/balances/types"
 import { FiatSumBalancesFormatter } from "@talismn/balances"
 import { TokenRateCurrency } from "@talismn/token-rates"
 import { useSelectedCurrency } from "@ui/hooks/useCurrency"
+import { useSetting } from "@ui/hooks/useSettings"
 import { useMemo } from "react"
 
 type SymbolBalances = [string, Balances]
@@ -86,11 +87,11 @@ const sortSymbolBalancesBy =
 
 export const usePortfolioSymbolBalances = (balances: Balances) => {
   const currency = useSelectedCurrency()
+  const [hideDust] = useSetting("hideDust")
 
   // group balances by token symbol
   // TODO: Move the association between a token on multiple chains into the backend / subsquid.
   // We will eventually need to handle the scenario where two tokens with the same symbol are not the same token.
-  // Also, we might want to separate testnet tokens from non-testnet tokens.
   const symbolBalances: SymbolBalances[] = useMemo(() => {
     const groupedByToken = balances.each.reduce<Record<string, Balance[]>>((acc, b) => {
       if (!b.token) return acc
@@ -105,7 +106,14 @@ export const usePortfolioSymbolBalances = (balances: Balances) => {
     return Object.entries(groupedByToken)
       .map(([key, tokenBalances]): SymbolBalances => [key, new Balances(tokenBalances)])
       .sort(sortSymbolBalancesBy("total", currency))
-  }, [balances.each, currency])
+      .filter(
+        hideDust
+          ? ([, balances]) =>
+              balances.each.flatMap((b) => b.token?.coingeckoId ?? []).length === 0 ||
+              balances.sum.fiat("usd").total >= 1
+          : () => true
+      )
+  }, [balances.each, currency, hideDust])
 
   const availableSymbolBalances = useMemo(() => {
     const available = symbolBalances

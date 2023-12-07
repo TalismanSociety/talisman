@@ -62,7 +62,7 @@ export const SecurityPrivacyPage = () => {
                   className="text-grey-200 hover:text-body"
                   href="https://www.sentry.io"
                   target="_blank"
-                  rel="noreferrer"
+                  rel="noreferrer noopener"
                 >
                   Sentry
                 </a>

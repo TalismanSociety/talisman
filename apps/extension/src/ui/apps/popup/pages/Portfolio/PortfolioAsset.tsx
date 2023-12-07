@@ -4,12 +4,12 @@ import Fiat from "@ui/domains/Asset/Fiat"
 import { TokenLogo } from "@ui/domains/Asset/TokenLogo"
 import { PopupAssetDetails } from "@ui/domains/Portfolio/AssetDetails"
 import { usePortfolio } from "@ui/domains/Portfolio/context"
+import { useSelectedAccount } from "@ui/domains/Portfolio/SelectedAccountContext"
 import { useDisplayBalances } from "@ui/domains/Portfolio/useDisplayBalances"
 import { useTokenBalancesSummary } from "@ui/domains/Portfolio/useTokenBalancesSummary"
 import { useAnalytics } from "@ui/hooks/useAnalytics"
 import useBalances from "@ui/hooks/useBalances"
 import { useSelectedCurrency } from "@ui/hooks/useCurrency"
-import { useSearchParamsSelectedAccount } from "@ui/hooks/useSearchParamsSelectedAccount"
 import { useCallback, useEffect, useMemo } from "react"
 import { useTranslation } from "react-i18next"
 import { Navigate, useNavigate, useParams, useSearchParams } from "react-router-dom"
@@ -62,7 +62,7 @@ const PageContent = ({ balances, symbol }: { balances: Balances; symbol: string 
 export const PortfolioAsset = () => {
   const { symbol } = useParams()
   const [search] = useSearchParams()
-  const { account } = useSearchParamsSelectedAccount()
+  const { account } = useSelectedAccount()
   const allBalances = useBalances()
   const { networkBalances } = usePortfolio()
   const { popupOpenEvent } = useAnalytics()

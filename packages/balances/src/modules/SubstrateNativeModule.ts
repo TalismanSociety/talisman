@@ -42,6 +42,7 @@ import {
   StorageHelper,
   buildStorageDecoders,
   createTypeRegistryCache,
+  detectTransferMethod,
   findChainMeta,
   getUniqueChainIds,
 } from "./util"
@@ -149,6 +150,11 @@ declare module "@talismn/balances/plugins" {
   }
 }
 
+export type BalancesCommonTransferMethods = "transferKeepAlive" | "transferAll"
+export type BalancesTransferMethods = "transferAllowDeath" | BalancesCommonTransferMethods
+export type BalancesLegacyTransferMethods = "transfer" | BalancesCommonTransferMethods
+export type BalancesAllTransferMethods = BalancesLegacyTransferMethods | BalancesTransferMethods
+
 export type SubNativeTransferParams = NewTransferParamsType<{
   registry: TypeRegistry
   metadataRpc: `0x${string}`
@@ -158,7 +164,7 @@ export type SubNativeTransferParams = NewTransferParamsType<{
   specVersion: number
   transactionVersion: number
   tip?: string
-  transferMethod: "transfer" | "transferKeepAlive" | "transferAll"
+  transferMethod: BalancesAllTransferMethods
 }>
 
 export const SubNativeModule: NewBalanceModule<
@@ -415,8 +421,21 @@ export const SubNativeModule: NewBalanceModule<
 
       const sendAll = transferMethod === "transferAll"
 
+      let method: BalancesAllTransferMethods = transferMethod
+      if (transferMethod === "transferAllowDeath") {
+        try {
+          method = detectTransferMethod(metadataRpc)
+        } catch (cause) {
+          log.debug(
+            new Error(
+              `An error occured while detecting the presence of the deprecated Balances::transfer call on chain ${chainId}`,
+              { cause }
+            )
+          )
+        }
+      }
+
       const pallet = "balances"
-      const method = transferMethod
       const args = sendAll ? { dest: to, keepAlive: false } : { dest: to, value: amount }
 
       const unsigned = defineMethod(

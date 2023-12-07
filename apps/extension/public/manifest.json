@@ -8,6 +8,10 @@
     "default_title": "Talisman",
     "default_popup": "popup.html?embedded#/portfolio"
   },
+  "options_ui": {
+    "page": "dashboard.html#/settings/general",
+    "open_in_tab": true
+  },
   "content_scripts": [
     {
       "matches": ["file://*/*", "http://*/*", "https://*/*"],

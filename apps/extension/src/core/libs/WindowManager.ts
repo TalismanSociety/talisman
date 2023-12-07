@@ -1,5 +1,5 @@
 import { IS_FIREFOX } from "@core/constants"
-import { appStore } from "@core/domains/app"
+import { appStore } from "@core/domains/app/store.app"
 import { RequestRoute } from "@core/domains/app/types"
 import { log } from "@core/log"
 import { sleep } from "@talismn/util"
