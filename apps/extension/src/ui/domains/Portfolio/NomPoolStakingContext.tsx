@@ -4,7 +4,7 @@ import { ResponseNomPoolStake } from "@core/domains/balances/types"
 import { Address } from "@core/types/base"
 import * as Sentry from "@sentry/browser"
 import { provideContext } from "@talisman/util/provideContext"
-import { ChainId } from "@talismn/chaindata-provider"
+import { ChainId, Token } from "@talismn/chaindata-provider"
 import { api } from "@ui/api"
 import useAccounts from "@ui/hooks/useAccounts"
 import { useAppState } from "@ui/hooks/useAppState"
@@ -21,19 +21,19 @@ const useShowNomPoolStakingBannerProvider = () => {
   const [updateKey, setUpdateKey] = useState<Record<ChainId, string>>({})
 
   const balances = useBalances()
-  const accounts = useAccounts()
+  const accounts = useAccounts("owned")
   // only balances on substrate accounts are eligible for nom pool staking
   const substrateAddresses = accounts
-    .filter(({ type, origin }) => type === "sr25519" && origin !== "WATCHED")
+    .filter(({ type }) => type === "sr25519")
     .map(({ address }) => address)
 
-  const [showBannerSetting] = useAppState("showDotNomPoolStakingBanner")
+  const [showBannerSetting] = useAppState("showStakingBanner")
 
   useEffect(() => {
     NOM_POOL_SUPPORTED_CHAINS.forEach((chainId) => {
       const balancesForChain = balances.find({ chainId }).sorted
 
-      // for each address, get the free balance after account for ED and minimum staking deposit
+      // for each address, get the free balance after accounting for ED and minimum staking deposit
       const newEligibleAddressBalances: Record<Address, bigint> = Object.fromEntries(
         balancesForChain
           .map((balance): [string, bigint] => [
@@ -78,14 +78,17 @@ const useShowNomPoolStakingBannerProvider = () => {
     [eligibleAddressBalances, setUpdateKey, updateKey]
   )
 
-  const dismissNomPoolBanner = useCallback(
-    () => appStore.set({ showDotNomPoolStakingBanner: false }),
-    []
-  )
+  const dismissNomPoolBanner = useCallback(() => appStore.set({ showStakingBanner: false }), [])
 
-  const showNomPoolBanner = useCallback(
-    ({ chainId, addresses }: { chainId?: string; addresses: Address[] }) => {
-      if (!chainId || !NOM_POOL_SUPPORTED_CHAINS.includes(chainId)) return false
+  const showTokenNomPoolBanner = useCallback(
+    ({ token, addresses }: { token?: Token; addresses: Address[] }) => {
+      const chainId = token?.chain?.id
+      if (
+        !chainId ||
+        !NOM_POOL_SUPPORTED_CHAINS.includes(chainId) ||
+        token.type !== "substrate-native"
+      )
+        return false
 
       const eligible = substrateAddresses.filter((address) => {
         if (!addresses.includes(address)) return false
@@ -102,7 +105,27 @@ const useShowNomPoolStakingBannerProvider = () => {
     [substrateAddresses, isLoading, showBannerSetting, nomPoolStake, eligibleAddressBalances]
   )
 
-  return { showNomPoolBanner, dismissNomPoolBanner }
+  const showNomPoolBanner = useCallback(
+    ({ addresses }: { addresses: Address[] }) => {
+      const addressHasNotStaked: Record<Address, boolean> = {}
+      Object.values(nomPoolStake).forEach((chainNomPoolData) => {
+        if (!chainNomPoolData) return
+        Object.entries(chainNomPoolData).forEach(([address, stake]) => {
+          // eligible if stake is null, or stake for previously-checked chain is null
+          addressHasNotStaked[address] = addressHasNotStaked[address] || stake === null
+        })
+      })
+
+      const eligible = substrateAddresses.filter((address) => {
+        if (!addresses.includes(address)) return false
+        return Boolean(eligibleAddressBalances[address]) && addressHasNotStaked[address]
+      })
+      return showBannerSetting && !isLoading && eligible.length > 0
+    },
+    [substrateAddresses, isLoading, showBannerSetting, nomPoolStake, eligibleAddressBalances]
+  )
+
+  return { showNomPoolBanner, showTokenNomPoolBanner, dismissNomPoolBanner }
 }
 
 export const [NomPoolStakingBannerProvider, useNomPoolStakingBanner] = provideContext(

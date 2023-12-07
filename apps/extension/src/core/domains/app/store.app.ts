@@ -27,7 +27,7 @@ export type AppStoreData = {
   hasFunds: boolean
   hideBackupWarningUntil?: number
   hasSpiritKey: boolean
-  showDotNomPoolStakingBanner: boolean
+  showStakingBanner: boolean
   needsSpiritKeyUpdate: boolean
   popupSizeDelta: [number, number]
   vaultVerifierCertificateMnemonicId?: string | null
@@ -45,7 +45,7 @@ export const DEFAULT_APP_STATE: AppStoreData = {
   hasFunds: false,
   hasSpiritKey: false,
   needsSpiritKeyUpdate: false,
-  showDotNomPoolStakingBanner: true,
+  showStakingBanner: true,
   popupSizeDelta: [0, IS_FIREFOX ? 30 : 0],
 }
 
@@ -113,7 +113,7 @@ if (DEBUG) {
       hideBraveWarning: false,
       hasBraveWarningBeenShown: false,
       analyticsRequestShown: false,
-      showDotNomPoolStakingBanner: true,
+      showStakingBanner: true,
       hideBackupWarningUntil: undefined,
     })
   }

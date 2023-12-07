@@ -58,9 +58,9 @@ const AssetRow = ({ balances }: AssetRowProps) => {
   const status = useBalancesStatus(balances)
 
   const { token, rate, summary } = useTokenBalancesSummary(balances)
-  const { showNomPoolBanner, dismissNomPoolBanner } = useNomPoolStakingBanner()
-  const showBanner = showNomPoolBanner({
-    chainId: token?.chain?.id,
+  const { showTokenNomPoolBanner, dismissNomPoolBanner } = useNomPoolStakingBanner()
+  const showBanner = showTokenNomPoolBanner({
+    token,
     addresses: Array.from(new Set(balances.each.map((b) => b.address))),
   })
 
@@ -106,7 +106,7 @@ const AssetRow = ({ balances }: AssetRowProps) => {
                     </span>
                   ),
                 }}
-                defaults="<Highlight>Earn ~15% yield on your {{symbol}}.</Highlight> This balance is
+                defaults="<Highlight>Earn yield on your {{symbol}}.</Highlight> This balance is
                 eligible for Nomination Pool Staking via the Talisman Portal. <LinkIcon />"
                 values={{ symbol: token.symbol }}
               />

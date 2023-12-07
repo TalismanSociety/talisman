@@ -60,9 +60,9 @@ test("Can get onboarded appState data", async () => {
   expect(result.current[0]).toBe(DEFAULT_APP_STATE.onboarded)
 })
 
-test("Can get showDotNomPoolStakingBanner appState data", async () => {
-  const { result } = renderHook(() => useAppState("showDotNomPoolStakingBanner"), {
+test("Can get showStakingBanner appState data", async () => {
+  const { result } = renderHook(() => useAppState("showStakingBanner"), {
     wrapper: RecoilRoot,
   })
-  expect(result.current[0]).toBe(DEFAULT_APP_STATE.showDotNomPoolStakingBanner)
+  expect(result.current[0]).toBe(DEFAULT_APP_STATE.showStakingBanner)
 })
