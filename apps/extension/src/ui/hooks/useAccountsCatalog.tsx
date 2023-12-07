@@ -1,16 +1,6 @@
-import { Trees } from "@core/domains/accounts/helpers.catalog"
-import { api } from "@ui/api"
-import { BehaviorSubject } from "rxjs"
+import { accountsCatalogState } from "@ui/atoms/accounts"
+import { useRecoilValue } from "recoil"
 
-import { useMessageSubscription } from "./useMessageSubscription"
-
-const INITIAL_VALUE: Trees = { portfolio: [], watched: [] }
-
-const subscribe = (subject: BehaviorSubject<Trees>) =>
-  api.accountsCatalogSubscribe((trees) => subject.next(trees))
-
-// TODO migrate to recoil
-export const useAccountsCatalog = () =>
-  useMessageSubscription("accountsCatalogSubscribe", INITIAL_VALUE, subscribe)
+export const useAccountsCatalog = () => useRecoilValue(accountsCatalogState)
 
 export default useAccountsCatalog

@@ -1,9 +1,8 @@
-import { AppStoreData, DEFAULT_APP_STATE, appStore } from "@core/domains/app/store.app"
+import { AppStoreData, appStore } from "@core/domains/app/store.app"
 import { RecoilState, atom, selectorFamily, useRecoilState } from "recoil"
 
 export const appState = atom<AppStoreData>({
   key: "appState",
-  default: DEFAULT_APP_STATE,
   effects: [
     ({ setSelf }) => {
       const sub = appStore.observable.subscribe(setSelf)

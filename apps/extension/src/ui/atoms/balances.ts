@@ -1,3 +1,4 @@
+import { log } from "@core/log"
 import {
   Address,
   BalanceJson,
@@ -13,6 +14,7 @@ import { liveQuery } from "dexie"
 import { atom, selector, selectorFamily } from "recoil"
 import { debounceTime, first, from, merge } from "rxjs"
 
+import { AccountsFilter, accountsQuery } from "./accounts"
 import {
   chainsWithTestnetsMapState,
   evmNetworksWithTestnetsMapState,
@@ -24,15 +26,25 @@ const NO_OP = () => {}
 
 const rawBalancesState = atom<BalanceJson[]>({
   key: "rawBalancesState",
+  default: [],
   effects: [
     // sync from db
     ({ setSelf }) => {
+      console.log("rawBalancesState start")
+      const stop = log.timer("rawBalancesState")
+      let done = false
       const obs = from(liveQuery(() => balancesDb.balances.toArray()))
 
       // backend will do a lot of updates to the balances table
       // debounce to mitigate performance issues
       // also, we only need the first value to hydrate the atom
-      const sub = merge(obs.pipe(first()), obs.pipe(debounceTime(500))).subscribe(setSelf)
+      const sub = merge(obs.pipe(first()), obs.pipe(debounceTime(500))).subscribe((v) => {
+        if (!done) {
+          done = true
+          stop()
+        }
+        setSelf(v)
+      })
 
       return () => sub.unsubscribe()
     },
@@ -102,5 +114,19 @@ export const balancesQuery = selectorFamily({
       )
 
       return new Balances(filteredBalances)
+    },
+})
+
+export const balancesFilterQuery = selectorFamily({
+  key: "balancesFilterQuery",
+  get:
+    (accountsFilter: AccountsFilter) =>
+    ({ get }) => {
+      const allBalances = get(allBalancesState)
+      const accounts = get(accountsQuery(accountsFilter))
+
+      return new Balances(
+        allBalances.each.filter((b) => accounts.some((a) => a.address === b.address))
+      )
     },
 })

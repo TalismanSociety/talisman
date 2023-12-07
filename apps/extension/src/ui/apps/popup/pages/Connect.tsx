@@ -9,7 +9,6 @@ import { api } from "@ui/api"
 import { ConnectAccountsContainer } from "@ui/domains/Site/ConnectAccountsContainer"
 import { ConnectAccountToggleButtonRow } from "@ui/domains/Site/ConnectAccountToggleButtonRow"
 import useAccounts from "@ui/hooks/useAccounts"
-import { useAccountsSubscribe } from "@ui/hooks/useAccountsSubscribe"
 import { useAnalytics } from "@ui/hooks/useAnalytics"
 import { useRequest } from "@ui/hooks/useRequest"
 import { capitalize } from "lodash"
@@ -60,7 +59,6 @@ export const Connect: FC<{ className?: string }> = ({ className }) => {
   const { id } = useParams<"id">() as KnownRequestIdOnly<"auth">
   const authRequest = useRequest(id)
   const { popupOpenEvent } = useAnalytics()
-  const accountsReady = useAccountsSubscribe() // hack to prevent no accounts drawer flashing
   const allAccounts = useAccounts(isTalismanUrl(authRequest?.url) ? "all" : "owned")
   const { items: connected, toggle, set, clear } = useSet<string>()
   const ethereum = !!authRequest?.request?.ethereum
@@ -173,7 +171,7 @@ export const Connect: FC<{ className?: string }> = ({ className }) => {
               />
             ))}
           </ConnectAccountsContainer>
-          {!!accountsReady && !accounts.length && (
+          {!accounts.length && (
             <NoAccountWarning
               type={ethereum ? "ethereum" : "polkadot"}
               onIgnoreClick={handleNoAccountClose(false)}

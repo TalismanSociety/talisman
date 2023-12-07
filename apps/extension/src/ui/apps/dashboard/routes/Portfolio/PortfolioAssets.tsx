@@ -76,8 +76,6 @@ const PageContent = () => {
   const balances = useDisplayBalances(networkBalances)
   const hasAccounts = useHasAccounts()
 
-  if (hasAccounts === undefined) return null
-
   if (!hasAccounts)
     return (
       <div className="mt-[3.8rem] flex grow items-center justify-center">
