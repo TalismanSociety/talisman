@@ -9,7 +9,6 @@ import { DefaultValue, atom, selector, selectorFamily } from "recoil"
 const NO_OP = () => {}
 export const tokenRatesState = atom<DbTokenRates[]>({
   key: "tokenRatesState",
-  default: [],
   effects: [
     // sync from db
     ({ setSelf }) => {
