@@ -59,8 +59,8 @@ const AssetRow = ({ balances }: AssetRowProps) => {
   const status = useBalancesStatus(balances)
 
   const { token, rate, summary } = useTokenBalancesSummary(balances)
-  const { showTokenNomPoolBanner, dismissNomPoolBanner } = useStakingBanner()
-  const showBanner = showTokenNomPoolBanner({
+  const { showTokenStakingBanner, dismissStakingBanner } = useStakingBanner()
+  const showBanner = showTokenStakingBanner({
     token,
     addresses: Array.from(new Set(balances.each.map((b) => b.address))),
   })
@@ -82,9 +82,9 @@ const AssetRow = ({ balances }: AssetRowProps) => {
   const handleDismissStakingBanner = useCallback(() => {
     const unsafeChainId = token?.chain?.id
     const chainId = unsafeChainId && isNomPoolChain(unsafeChainId) ? unsafeChainId : undefined
-    dismissNomPoolBanner(chainId)
+    dismissStakingBanner(chainId)
     genericEvent("dismiss staking banner", { from: "dashboard", symbol: token?.symbol })
-  }, [genericEvent, dismissNomPoolBanner, token?.symbol, token?.chain?.id])
+  }, [genericEvent, dismissStakingBanner, token?.symbol, token?.chain?.id])
 
   if (!token || !summary) return null
 

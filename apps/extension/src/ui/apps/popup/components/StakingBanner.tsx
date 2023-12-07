@@ -6,13 +6,13 @@ import { MouseEventHandler, useCallback, useMemo } from "react"
 import { Trans, useTranslation } from "react-i18next"
 
 export const StakingBanner = ({ addresses }: { addresses: string[] }) => {
-  const { showNomPoolBanner, dismissNomPoolBanner } = useStakingBanner()
+  const { showStakingBanner, dismissStakingBanner } = useStakingBanner()
   const { genericEvent } = useAnalytics()
   const { t } = useTranslation()
 
   const showNomPoolStakingBanner = useMemo(
-    () => showNomPoolBanner({ addresses }),
-    [addresses, showNomPoolBanner]
+    () => showStakingBanner({ addresses }),
+    [addresses, showStakingBanner]
   )
 
   const handleClickStakingBanner = useCallback(() => {
@@ -24,10 +24,10 @@ export const StakingBanner = ({ addresses }: { addresses: string[] }) => {
     (e) => {
       e.preventDefault()
       e.stopPropagation()
-      dismissNomPoolBanner()
+      dismissStakingBanner()
       genericEvent("dismiss staking banner", { from: "popup" })
     },
-    [genericEvent, dismissNomPoolBanner]
+    [genericEvent, dismissStakingBanner]
   )
 
   return (

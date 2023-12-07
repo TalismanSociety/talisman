@@ -1,6 +1,10 @@
 import { appStore } from "@core/domains/app/store.app"
 import { ResponseNomPoolStake } from "@core/domains/balances/types"
-import { NOM_POOL_MIN_DEPOSIT, NOM_POOL_SUPPORTED_CHAINS } from "@core/domains/staking/constants"
+import {
+  NOM_POOL_MIN_DEPOSIT,
+  NOM_POOL_SUPPORTED_CHAINS,
+  STAKING_BANNER_CHAINS,
+} from "@core/domains/staking/constants"
 import { isNomPoolChain } from "@core/domains/staking/helpers"
 import { NomPoolSupportedChain } from "@core/domains/staking/types"
 import { Address } from "@core/types/base"
@@ -14,7 +18,7 @@ import useBalances from "@ui/hooks/useBalances"
 import { useCallback, useEffect, useState } from "react"
 import { useDebounce } from "react-use"
 
-const useShowStakingBannerProvider = () => {
+const useNomPoolStakingEligibility = () => {
   const [isLoading, setIsLoading] = useState(false)
   const [eligibleAddressBalances, setEligibleAddressBalances] = useState<Record<Address, bigint>>(
     {}
@@ -81,19 +85,7 @@ const useShowStakingBannerProvider = () => {
     [eligibleAddressBalances, setUpdateKey, updateKey]
   )
 
-  const dismissNomPoolBanner = useCallback(
-    (chainId?: NomPoolSupportedChain) =>
-      appStore.mutate((existing) => {
-        const newValue = chainId ? [chainId] : NOM_POOL_SUPPORTED_CHAINS
-        return {
-          ...existing,
-          hideStakingBanner: Array.from(new Set([...existing.hideStakingBanner, ...newValue])),
-        }
-      }),
-    []
-  )
-
-  const showTokenNomPoolBanner = useCallback(
+  const nomPoolStakingTokenEligible = useCallback(
     ({ token, addresses }: { token?: Token; addresses: Address[] }) => {
       const chainId = token?.chain?.id
       if (!chainId || !isNomPoolChain(chainId) || token.type !== "substrate-native") return false
@@ -113,7 +105,7 @@ const useShowStakingBannerProvider = () => {
     [substrateAddresses, isLoading, hideBannerSetting, nomPoolStake, eligibleAddressBalances]
   )
 
-  const showNomPoolBanner = useCallback(
+  const nomPoolStakingAddressesEligible = useCallback(
     ({ addresses }: { addresses: Address[] }) => {
       const addressHasNotStaked: Record<Address, boolean> = {}
       Object.values(nomPoolStake).forEach((chainNomPoolData) => {
@@ -124,16 +116,56 @@ const useShowStakingBannerProvider = () => {
         })
       })
 
-      const eligible = substrateAddresses.filter((address) => {
-        if (!addresses.includes(address)) return false
-        return Boolean(eligibleAddressBalances[address]) && addressHasNotStaked[address]
+      const eligible = substrateAddresses.filter((subAddress) => {
+        if (!addresses.includes(subAddress)) return false
+        return Boolean(eligibleAddressBalances[subAddress]) && addressHasNotStaked[subAddress]
       })
       return showBannerSetting && !isLoading && eligible.length > 0
     },
     [substrateAddresses, isLoading, showBannerSetting, nomPoolStake, eligibleAddressBalances]
   )
 
-  return { showNomPoolBanner, showTokenNomPoolBanner, dismissNomPoolBanner }
+  return { nomPoolStakingAddressesEligible, nomPoolStakingTokenEligible, isLoading }
+}
+
+const useShowStakingBannerProvider = () => {
+  const {
+    nomPoolStakingAddressesEligible,
+    nomPoolStakingTokenEligible,
+    isLoading: nomPoolsLoading,
+  } = useNomPoolStakingEligibility()
+
+  const isLoading = nomPoolsLoading
+
+  const dismissStakingBanner = useCallback(
+    (chainId?: NomPoolSupportedChain) =>
+      appStore.mutate((existing) => {
+        const newValue = chainId ? [chainId] : STAKING_BANNER_CHAINS
+        return {
+          ...existing,
+          hideStakingBanner: Array.from(new Set([...existing.hideStakingBanner, ...newValue])),
+        }
+      }),
+    []
+  )
+
+  const showTokenStakingBanner = useCallback(
+    ({ token, addresses }: { token?: Token; addresses: Address[] }) => {
+      const nomPoolsEligible = nomPoolStakingTokenEligible({ token, addresses })
+      return nomPoolsEligible && !isLoading
+    },
+    [nomPoolStakingTokenEligible, isLoading]
+  )
+
+  const showStakingBanner = useCallback(
+    ({ addresses }: { addresses: Address[] }) => {
+      const nomPoolsEligible = nomPoolStakingAddressesEligible({ addresses })
+      return nomPoolsEligible && !isLoading
+    },
+    [nomPoolStakingAddressesEligible, isLoading]
+  )
+
+  return { showStakingBanner, showTokenStakingBanner, dismissStakingBanner }
 }
 
 export const [StakingBannerProvider, useStakingBanner] = provideContext(

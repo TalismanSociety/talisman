@@ -12,3 +12,5 @@ export const NOM_POOL_MIN_DEPOSIT: Record<NomPoolSupportedChain, string> = {
   "aleph-zero": "100000000000",
   "vara": "100000000000",
 }
+
+export const STAKING_BANNER_CHAINS = [...NOM_POOL_SUPPORTED_CHAINS]
