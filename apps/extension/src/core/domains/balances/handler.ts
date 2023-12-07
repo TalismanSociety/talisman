@@ -28,7 +28,13 @@ import { ExtensionHandler } from "@core/libs/Handler"
 import { balanceModules } from "@core/rpcs/balance-modules"
 import { chaindataProvider } from "@core/rpcs/chaindata"
 import { AddressesByChain, Port } from "@core/types/base"
-import { AddressesByToken, MiniMetadata, UnsubscribeFn, db as balancesDb } from "@talismn/balances"
+import {
+  AddressesByToken,
+  BalanceJson,
+  MiniMetadata,
+  UnsubscribeFn,
+  db as balancesDb,
+} from "@talismn/balances"
 import { ChainId, ChainList, EvmNetworkList, Token, TokenList } from "@talismn/chaindata-provider"
 import { MessageTypes, RequestTypes, ResponseType } from "core/types"
 import { liveQuery } from "dexie"
@@ -139,6 +145,16 @@ const subscribeBalancesByParams = async (
   obsSubscriptionParams.subscribe(async ({ addressesByTokenByModule }) => {
     // close previous subscriptions
     await Promise.all(closeSubscriptionCallbacks)
+
+    // create placeholder rows for all missing balances, so FE knows they are initializing
+    const initBalances: BalanceJson[] = []
+    for (const balanceModule of balanceModules) {
+      const addressesByToken = addressesByTokenByModule[balanceModule.type] ?? {}
+      for (const [tokenId, addresses] of Object.entries(addressesByToken))
+        for (const address of addresses)
+          initBalances.push(balanceModule.getPlaceholderBalance(tokenId, address))
+    }
+    callback({ type: "upsert", balances: new Balances(initBalances).toJSON() })
 
     // subscribe to balances by params
     closeSubscriptionCallbacks = balanceModules.map((balanceModule) =>
