@@ -89,7 +89,9 @@ export class TokenRatesStore {
     }
   }
 
-  // warning : make sure the tokens list only includes enabled tokens
+  /**
+   * WARNING: Make sure the tokens list `tokens` only includes enabled tokens.
+   */
   private async updateTokenRates(tokens: TokenList): Promise<void> {
     const now = Date.now()
     const strTokenIds = Object.keys(tokens ?? {}).join(",")
