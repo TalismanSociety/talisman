@@ -1,6 +1,6 @@
 import { PortfolioProvider } from "@ui/domains/Portfolio/context"
-import { NomPoolStakingBannerProvider } from "@ui/domains/Portfolio/NomPoolStakingContext"
 import { useSelectedAccount } from "@ui/domains/Portfolio/SelectedAccountContext"
+import { NomPoolStakingBannerProvider } from "@ui/domains/Staking/context"
 import { useEffect } from "react"
 import { Route, Routes, useSearchParams } from "react-router-dom"
 

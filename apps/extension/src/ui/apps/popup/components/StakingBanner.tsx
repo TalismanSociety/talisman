@@ -1,12 +1,12 @@
 import { TALISMAN_WEB_APP_STAKING_URL } from "@core/constants"
 import { ExternalLinkIcon, XIcon, ZapIcon } from "@talismn/icons"
-import { useNomPoolStakingBanner } from "@ui/domains/Portfolio/NomPoolStakingContext"
+import { useStakingBanner } from "@ui/domains/Staking/context"
 import { useAnalytics } from "@ui/hooks/useAnalytics"
 import { MouseEventHandler, useCallback, useMemo } from "react"
 import { Trans, useTranslation } from "react-i18next"
 
 export const StakingBanner = ({ addresses }: { addresses: string[] }) => {
-  const { showNomPoolBanner, dismissNomPoolBanner } = useNomPoolStakingBanner()
+  const { showNomPoolBanner, dismissNomPoolBanner } = useStakingBanner()
   const { genericEvent } = useAnalytics()
   const { t } = useTranslation()
 

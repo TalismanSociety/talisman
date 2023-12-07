@@ -14,7 +14,7 @@ import useBalances from "@ui/hooks/useBalances"
 import { useCallback, useEffect, useState } from "react"
 import { useDebounce } from "react-use"
 
-const useShowNomPoolStakingBannerProvider = () => {
+const useShowStakingBannerProvider = () => {
   const [isLoading, setIsLoading] = useState(false)
   const [eligibleAddressBalances, setEligibleAddressBalances] = useState<Record<Address, bigint>>(
     {}
@@ -136,6 +136,6 @@ const useShowNomPoolStakingBannerProvider = () => {
   return { showNomPoolBanner, showTokenNomPoolBanner, dismissNomPoolBanner }
 }
 
-export const [NomPoolStakingBannerProvider, useNomPoolStakingBanner] = provideContext(
-  useShowNomPoolStakingBannerProvider
+export const [StakingBannerProvider, useStakingBanner] = provideContext(
+  useShowStakingBannerProvider
 )

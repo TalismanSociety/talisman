@@ -11,8 +11,8 @@ import { Trans, useTranslation } from "react-i18next"
 import { useNavigate } from "react-router-dom"
 
 import { TokenLogo } from "../../Asset/TokenLogo"
+import { useStakingBanner } from "../../Staking/context"
 import { AssetBalanceCellValue } from "../AssetBalanceCellValue"
-import { useNomPoolStakingBanner } from "../NomPoolStakingContext"
 import { useTokenBalancesSummary } from "../useTokenBalancesSummary"
 import { NetworksLogoStack } from "./NetworksLogoStack"
 import { usePortfolioNetworkIds } from "./usePortfolioNetworkIds"
@@ -59,7 +59,7 @@ const AssetRow = ({ balances }: AssetRowProps) => {
   const status = useBalancesStatus(balances)
 
   const { token, rate, summary } = useTokenBalancesSummary(balances)
-  const { showTokenNomPoolBanner, dismissNomPoolBanner } = useNomPoolStakingBanner()
+  const { showTokenNomPoolBanner, dismissNomPoolBanner } = useStakingBanner()
   const showBanner = showTokenNomPoolBanner({
     token,
     addresses: Array.from(new Set(balances.each.map((b) => b.address))),
