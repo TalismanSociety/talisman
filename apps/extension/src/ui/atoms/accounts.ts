@@ -1,6 +1,5 @@
 import { Trees } from "@core/domains/accounts/helpers.catalog"
 import { AccountJsonAny, AccountType } from "@core/domains/accounts/types"
-import { log } from "@core/log"
 import { api } from "@ui/api"
 import { atom, selectorFamily } from "recoil"
 
@@ -11,19 +10,7 @@ const rawAccountsState = atom<AccountJsonAny[]>({
   key: "rawAccountsState",
   effects: [
     ({ setSelf }) => {
-      console.log("rawAccountsState start")
-      const stop = log.timer("rawAccountsState")
-      let done = false
-      const unsubscribe = api.accountsSubscribe((v) => {
-        if (!done) {
-          done = true
-          stop()
-        } else {
-          console.warn("update rawAccountState ")
-        }
-
-        setSelf(v)
-      })
+      const unsubscribe = api.accountsSubscribe(setSelf)
       return () => unsubscribe()
     },
   ],
@@ -59,18 +46,7 @@ export const accountsCatalogState = atom<Trees>({
   key: "accountsCatalogState",
   effects: [
     ({ setSelf }) => {
-      console.log("accountsCatalogState start")
-      const stop = log.timer("accountsCatalogState")
-      let done = false
-      const unsubscribe = api.accountsCatalogSubscribe((v) => {
-        if (!done) {
-          done = true
-          stop()
-        } else {
-          console.warn("update accountsCatalogState ")
-        }
-        setSelf(v)
-      })
+      const unsubscribe = api.accountsCatalogSubscribe(setSelf)
       return () => unsubscribe()
     },
   ],

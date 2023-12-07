@@ -43,8 +43,6 @@ const chainDataMainState = atom<{
   key: "chainDataMainState",
   effects: [
     ({ setSelf }) => {
-      const stop = log.timer("chainDataMainState")
-      let done = false
       const obsTokens = liveQuery(() => chaindataProvider.tokens())
       const obsEvmNetworks = liveQuery(() => chaindataProvider.evmNetworksArray())
       const obsChains = liveQuery(() => chaindataProvider.chainsArray())
@@ -65,10 +63,6 @@ const chainDataMainState = atom<{
           enabledEvmNetworksState,
           enabledChainsState,
         ]) => {
-          if (!done) {
-            done = true
-            stop()
-          }
           setSelf({
             tokens,
             evmNetworks,

@@ -30,21 +30,12 @@ const rawBalancesState = atom<BalanceJson[]>({
   effects: [
     // sync from db
     ({ setSelf }) => {
-      console.log("rawBalancesState start")
-      const stop = log.timer("rawBalancesState")
-      let done = false
       const obs = from(liveQuery(() => balancesDb.balances.toArray()))
 
       // backend will do a lot of updates to the balances table
       // debounce to mitigate performance issues
       // also, we only need the first value to hydrate the atom
-      const sub = merge(obs.pipe(first()), obs.pipe(debounceTime(500))).subscribe((v) => {
-        if (!done) {
-          done = true
-          stop()
-        }
-        setSelf(v)
-      })
+      const sub = merge(obs.pipe(first()), obs.pipe(debounceTime(500))).subscribe(setSelf)
 
       return () => sub.unsubscribe()
     },
