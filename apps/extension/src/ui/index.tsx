@@ -24,20 +24,18 @@ export const renderTalisman = (app: ReactNode) => {
   const root = createRoot(container)
   root.render(
     <React.StrictMode>
-      <Suspense fallback={<SuspenseTracker name="Root" />}>
-        <ErrorBoundary>
-          <ErrorBoundaryDatabaseMigration>
-            <RecoilRoot>
-              <Suspense fallback={<SuspenseTracker name="RecoilRoot" />}>
-                <QueryClientProvider client={queryClient}>
-                  <HashRouter>{app}</HashRouter>
-                  <NotificationsContainer />
-                </QueryClientProvider>
-              </Suspense>
-            </RecoilRoot>
-          </ErrorBoundaryDatabaseMigration>
-        </ErrorBoundary>
-      </Suspense>
+      <ErrorBoundary>
+        <ErrorBoundaryDatabaseMigration>
+          <RecoilRoot>
+            <Suspense fallback={<SuspenseTracker name="RecoilRoot" />}>
+              <QueryClientProvider client={queryClient}>
+                <HashRouter>{app}</HashRouter>
+                <NotificationsContainer />
+              </QueryClientProvider>
+            </Suspense>
+          </RecoilRoot>
+        </ErrorBoundaryDatabaseMigration>
+      </ErrorBoundary>
     </React.StrictMode>
   )
 }
