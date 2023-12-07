@@ -391,7 +391,13 @@ export class BalanceStore {
     port.onDisconnect.addListener((): void => {
       unsubscribe(id)
       subscription.unsubscribe()
-      if (!this.#subscribers.observed) this.closeSubscriptions()
+
+      setTimeout(() => {
+        // wait 5 seconds to prevent subscription restart for these use cases :
+        // - popup loses focus and user reopens it right away
+        // - user opens popup and opens dashboard from it, which closes the popup
+        if (!this.#subscribers.observed) this.closeSubscriptions()
+      }, 5_000)
     })
 
     return true
@@ -407,6 +413,7 @@ export class BalanceStore {
     if (this.#subscriptionsState !== "Closed") return
     this.setSubscriptionsState("Open")
     log.log("Opening balance subscriptions")
+    console.log("opening balances sub")
 
     const subscriptionId = createSubscriptionId()
 
