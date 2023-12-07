@@ -449,12 +449,13 @@ export class BalanceStore {
     // create placeholder rows for all missing balances, so FE knows they are initializing
     const missingBalances: BalanceJson[] = []
     const existingBalances = await balancesDb.balances.toArray()
+    const existingBalancesKeys = new Set(existingBalances.map((b) => `${b.tokenId}:${b.address}`))
 
     for (const balanceModule of balanceModules) {
       const addressesByToken = addressesByTokenByModule[balanceModule.type] ?? {}
       for (const [tokenId, addresses] of Object.entries(addressesByToken))
         for (const address of addresses) {
-          if (!existingBalances.find((b) => b.address === address && b.tokenId === tokenId))
+          if (!existingBalancesKeys.has(`${tokenId}:${address}`))
             missingBalances.push(balanceModule.getPlaceholderBalance(tokenId, address))
         }
     }
