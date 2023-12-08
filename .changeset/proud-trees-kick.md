@@ -1,5 +1,4 @@
 ---
-"@talismn/balances-substrate-native": patch
 "@talismn/balances": patch
 ---
 
