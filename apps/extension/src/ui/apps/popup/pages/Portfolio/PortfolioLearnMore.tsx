@@ -6,7 +6,6 @@ import { useTranslation } from "react-i18next"
 import { useNavigate } from "react-router-dom"
 
 import AdvancedAccountManagementUrl from "./assets/Learn More - Advanced Account Management.png"
-import MakeItYoursUrl from "./assets/Learn More - Make it Yours.png"
 import SafeguardYourAssetsUrl from "./assets/Learn More - Safeguard Your Assets.png"
 import SeamlessUserExperienceUrl from "./assets/Learn More - Seamless User Experience.png"
 import WorksWithExternalDevicesUrl from "./assets/Learn More - Works with External Devices.png"
@@ -22,7 +21,6 @@ const newGoToFn = (analyticsAction: string, dashboardPath: string) => () => {
   sendAnalyticsEvent({ ...ANALYTICS_PAGE, name: "Goto", action: analyticsAction })
   return api.dashboardOpen(dashboardPath)
 }
-const goToSettingsAccounts = newGoToFn("Manage accounts", "/settings/accounts")
 const goToSettingsCurrency = newGoToFn("Change currencies", "/settings/currency")
 const goToAddAccounts = newGoToFn("Add accounts", "/accounts/add")
 const goToSettingsMnemonics = newGoToFn("Manage mnemonics", "/settings/mnemonics")
@@ -32,14 +30,6 @@ export const PortfolioLearnMore = () => {
 
   return (
     <div className="text-body-secondary flex flex-col gap-12 pb-12 text-sm">
-      <LearnMoreSection
-        title={t("Make it Yours")}
-        subtitle={t("Sort and organize accounts into folders")}
-        button={<LearnMoreButton onClick={goToSettingsAccounts} />}
-      >
-        <img className="bg-body-black w-full rounded" alt="demo screenshot" src={MakeItYoursUrl} />
-      </LearnMoreSection>
-
       <LearnMoreSection
         title={t("Seamless User Experience")}
         subtitle={t("Switch currencies with just one click")}
