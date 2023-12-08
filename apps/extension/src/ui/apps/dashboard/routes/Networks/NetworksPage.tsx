@@ -43,7 +43,7 @@ export const NetworksPage = () => {
       withBack
       backTo="/settings/networks-tokens"
     >
-      <HeaderBlock title={t("Manage Networks")} text={t("View, edit and delete custom networks")} />
+      <HeaderBlock title={t("Manage Networks")} text={t("Add, enable and disable networks")} />
       <Spacer large />
       <div className="flex justify-end gap-4">
         <ProviderTypeSwitch
