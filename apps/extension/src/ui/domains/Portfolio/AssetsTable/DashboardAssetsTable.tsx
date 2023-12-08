@@ -4,6 +4,7 @@ import { ExternalLinkIcon, XIcon, ZapIcon } from "@talismn/icons"
 import { classNames } from "@talismn/util"
 import Fiat from "@ui/domains/Asset/Fiat"
 import { useAnalytics } from "@ui/hooks/useAnalytics"
+import useBalances from "@ui/hooks/useBalances"
 import { useBalancesStatus } from "@ui/hooks/useBalancesStatus"
 import { useCallback } from "react"
 import { Trans, useTranslation } from "react-i18next"
@@ -170,8 +171,9 @@ export const DashboardAssetsTable = ({ balances }: AssetsTableProps) => {
   const { account } = useSelectedAccount()
   const { symbolBalances } = usePortfolioSymbolBalances(balances)
 
-  // assume balance subscription is initializing if there are no balances
-  if (!balances.count) return null
+  // assume balance subscription is initializing if there are no balances at all in the db
+  const allBalances = useBalances("all")
+  if (!allBalances.count) return null
 
   if (!symbolBalances.length)
     return (

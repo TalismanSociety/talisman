@@ -61,7 +61,12 @@ export const NetworksPage = () => {
       </div>
       <Spacer small />
       <div className="flex gap-4">
-        <SearchInput onChange={setSearch} placeholder={t("Search networks")} />
+        <SearchInput
+          onChange={setSearch}
+          placeholder={
+            networksType === "polkadot" ? t("Search networks") : t("Search for more networks")
+          }
+        />
       </div>
       <Spacer small />
       {/* The `FadeIn` with the `key` is a dirty workaround for https://github.com/streamich/react-use/issues/2376 */}
