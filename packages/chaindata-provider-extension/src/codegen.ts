@@ -30,6 +30,7 @@ const config: CodegenConfig = {
           // defaults to `any` - let's go with `unknown` instead :)
           JSON: "unknown",
         },
+        useTypeImports: true,
       },
       hooks: { afterAllFileWrite: ["prettier --write"] },
     },
