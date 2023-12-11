@@ -127,7 +127,7 @@ const useNomPoolStakingEligibility = () => {
     [substrateAddresses, isLoading, showBannerSetting, nomPoolStake, eligibleAddressBalances]
   )
 
-  return { nomPoolStakingAddressesEligible, nomPoolStakingTokenEligible, isLoading }
+  return { nomPoolStakingAddressesEligible, nomPoolStakingTokenEligible }
 }
 
 type EvmLsdEligibility = Record<Address, Array<keyof typeof EVM_LSD_PAIRS>>
@@ -189,16 +189,11 @@ const useEvmLsdStakingEligibility = () => {
 }
 
 const useShowStakingBannerProvider = () => {
-  const {
-    nomPoolStakingAddressesEligible,
-    nomPoolStakingTokenEligible,
-    isLoading: nomPoolsLoading,
-  } = useNomPoolStakingEligibility()
+  const { nomPoolStakingAddressesEligible, nomPoolStakingTokenEligible } =
+    useNomPoolStakingEligibility()
 
   const { evmLsdStakingAddressesEligible, evmLsdStakingTokenEligible } =
     useEvmLsdStakingEligibility()
-
-  const isLoading = nomPoolsLoading
 
   const { t } = useTranslation()
 
@@ -221,28 +216,27 @@ const useShowStakingBannerProvider = () => {
       if (lsdTokenBases.includes(token?.id || ""))
         result = evmLsdStakingTokenEligible({ token, addresses })
       else result = nomPoolStakingTokenEligible({ token, addresses })
-
-      return result && !isLoading
+      return result
     },
-    [nomPoolStakingTokenEligible, evmLsdStakingTokenEligible, isLoading]
+    [nomPoolStakingTokenEligible, evmLsdStakingTokenEligible]
   )
 
   const showStakingBanner = useCallback(
     ({ addresses }: { addresses: Address[] }) => {
       let result = nomPoolStakingAddressesEligible({ addresses })
       result = result || evmLsdStakingAddressesEligible({ addresses })
-      return result && !isLoading
+      return result
     },
-    [nomPoolStakingAddressesEligible, evmLsdStakingAddressesEligible, isLoading]
+    [nomPoolStakingAddressesEligible, evmLsdStakingAddressesEligible]
   )
 
   const getStakingMessage = useCallback(
     ({ token }: { token?: Token }) => {
       const lsdTokenBases = Object.values(EVM_LSD_PAIRS).map(({ base }) => base)
       if (lsdTokenBases.includes(token?.id || ""))
-        return t("This balance is eligible for Nomination Pool Staking via the Talisman Portal.")
-      else if (token?.chain?.id && isNomPoolChain(token.chain.id))
         return t("This balance is eligible for Liquid Staking via the Talisman Portal.")
+      else if (token?.chain?.id && isNomPoolChain(token.chain.id))
+        return t("This balance is eligible for Nomination Pool Staking via the Talisman Portal.")
       return
     },
     [t]
