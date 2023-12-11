@@ -312,8 +312,16 @@ export const PortfolioAccounts = () => {
     [balancesByAddress, currency, folder]
   )
 
-  const hasFunds = useMemo(() => balances.sum.planck.total > 0n, [balances])
-  const showGetStartedPopup = !hasFunds && ownedAccounts.length <= 2
+  // TODO: Use `hasFunds` flag from `useAppState`
+  // That flag is added by this PR: https://github.com/TalismanSociety/talisman/pull/1101
+  const hasFunds = useMemo(
+    () =>
+      balances
+        .filterNonZero("total")
+        .each.some((b) => ownedAccounts.some((a) => a.address === b.address)),
+    [balances, ownedAccounts]
+  )
+  const showGetStartedPopup = balances.count > 0 && !hasFunds && ownedAccounts.length <= 2
 
   useEffect(() => {
     popupOpenEvent("portfolio accounts")
@@ -327,7 +335,11 @@ export const PortfolioAccounts = () => {
         portfolioOptions={portfolioOptions}
         watchedOptions={watchedOptions}
       />
-      {showGetStartedPopup && <NoAccountsPopup hasSomeAccounts={!!accounts.length} />}
+      {showGetStartedPopup && (
+        <FadeIn>
+          <NoAccountsPopup hasSomeAccounts={!!ownedAccounts.length} />
+        </FadeIn>
+      )}
     </FadeIn>
   )
 }

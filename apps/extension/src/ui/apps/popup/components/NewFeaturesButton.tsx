@@ -79,8 +79,8 @@ export const NewFeaturesButton = ({ className }: Props) => {
             Your Wallet Just <span className="text-primary">Got Better</span>
           </Trans>
         </div>
-        <div className="text-tiny text-grey-200 flex gap-2">
-          <span>{t("See What's New on {{version}}", { version: `v${process.env.VERSION}` })}</span>
+        <div className="text-tiny text-grey-200 flex gap-3">
+          <span>{t("See what's new on {{version}}", { version: `v${process.env.VERSION}` })}</span>
           <button className="underline" onClick={handleDismissClick} type="button">
             {t("Dismiss")}
           </button>

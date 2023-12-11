@@ -143,16 +143,23 @@ export const BuyTokensForm = () => {
   const autoSelectFirstAccountInit = useRef(false)
   useEffect(() => {
     if (autoSelectFirstAccountInit.current) return
+    // TODO: This check can be removed once https://github.com/TalismanSociety/talisman/pull/1101 is merged,
+    // that PR adds react suspense to the useAccounts hook, so checking for the scenario that the list hasn't
+    // loaded yet will no longer be necessary.
+    if (accounts?.length === 0) return
 
     if (address !== undefined) {
+      // disable auto-select if an address has already been picked
       autoSelectFirstAccountInit.current = true
       return
     }
     if (accounts?.length !== 1) {
+      // disable auto-select if user has more than one account
       autoSelectFirstAccountInit.current = true
       return
     }
 
+    // auto-select the one available account
     setValue("address", accounts[0]?.address, {
       shouldTouch: true,
       shouldDirty: true,

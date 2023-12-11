@@ -53,8 +53,8 @@ export const WelcomePage = () => {
   return (
     <OnboardLayout analytics={ANALYTICS_PAGE}>
       <div className="my-[8rem] flex flex-col items-center justify-center gap-32 ">
-        <div className="welcome-text flex flex-col items-center text-center xl:w-[76rem]">
-          <div className="flex flex-col items-center gap-24 text-white xl:w-[65.2rem]">
+        <div className="welcome-text flex flex-col items-center gap-14 text-center xl:w-[76rem]">
+          <div className="flex flex-col items-center gap-10 text-white xl:w-[65.2rem]">
             <TalismanWhiteLogo className="h-auto w-96" />
             <div className="font-whyteInkTrap text-[8rem] leading-none tracking-tight lg:text-[12rem]">
               <Trans

@@ -1,3 +1,4 @@
+import { HandMonoLogo } from "@talisman/theme/logos"
 import { ChevronLeftIcon } from "@talismn/icons"
 import { AnalyticsPage, sendAnalyticsEvent } from "@ui/api/analytics"
 import { useSetting } from "@ui/hooks/useSettings"
@@ -27,7 +28,20 @@ export const PortfolioWhatsNew = () => {
 
   return (
     <div className="text-body-secondary flex flex-col gap-12 text-sm">
-      <img className="pointer-events-none w-full rounded-sm" src={HeroUrl} alt="a hero banner" />
+      <div className="relative">
+        <img
+          className="pointer-events-none relative w-full rounded-sm"
+          src={HeroUrl}
+          alt="a hero banner"
+        />
+        <div className="pointer-events-none absolute left-0 top-0 flex h-full w-full flex-col gap-4 p-8">
+          <div className="font-whyteInkTrap flex items-center gap-1 text-sm tracking-tight text-white">
+            <HandMonoLogo className="text-base" />
+            Talisman
+          </div>
+          <div className="text-primary text-2xl font-extrabold">V{process.env.VERSION}</div>
+        </div>
+      </div>
       <div>
         <Trans t={t}>
           <span className="text-body">💹 Real-Time Price Tracking:</span> Stay updated with live

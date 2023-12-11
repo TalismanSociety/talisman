@@ -84,7 +84,7 @@ export const NoAccounts = ({
             <TryItIcon className="text-lg text-[#ff6c4b]" />
             <div className="text-base font-bold text-white">{t("Try it")}</div>
             <div className="text-tiny text-body-secondary">
-              {t("Follow an account without importing a seed")}
+              {t("Explore Talisman without importing an account")}
             </div>
           </GetStartedButton>
         </div>

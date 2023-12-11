@@ -67,7 +67,7 @@ export const PortfolioHeader = ({ isAuthorised }: { isAuthorised?: boolean }) =>
     <Route path="learn-more" element={<PortfolioLearnMoreHeader />} />
     <Route path="try-talisman" element={<PortfolioTryTalismanHeader />} />
     <Route
-      path=""
+      path="*"
       element={
         isAuthorised ? (
           <header className="my-8 flex h-[3.6rem] w-full shrink-0 items-center justify-between gap-4 px-12">

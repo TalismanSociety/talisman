@@ -6,7 +6,7 @@ import { AnalyticsPage, sendAnalyticsEvent } from "@ui/api/analytics"
 import { AccountIcon } from "@ui/domains/Account/AccountIcon"
 import { Address } from "@ui/domains/Account/Address"
 import useAccounts from "@ui/hooks/useAccounts"
-import { useCallback, useMemo, useState } from "react"
+import { ChangeEventHandler, FormEventHandler, useCallback, useMemo, useState } from "react"
 import { Trans, useTranslation } from "react-i18next"
 import { useNavigate } from "react-router-dom"
 
@@ -17,33 +17,13 @@ const ANALYTICS_PAGE: AnalyticsPage = {
   page: "Try Talisman",
 }
 
-const POPULAR_ACCOUNTS = [
-  {
-    name: "Swader",
-    address: "5CK8D1sKNwF473wbuBP6NuhQfPaWUetNsWUNAAzVwTfxqjfr",
-    description: "200+ NFTs",
-  },
-  {
-    name: "Gavin Wood",
-    address: "5F7LiCA6T4DWUDRQyFAWsRqVwxrJEznUtcw4WNnb5fe6snCH",
-    description: "Polkadot founder",
-  },
-  {
-    name: "Jay",
-    address: "5DfAiCavECjh37Bdgy7q5ib7AtjJmvZDmSkVBoBXPjVWXCST",
-    description: "$1M+ assets",
-  },
-  {
-    name: "Bill Laboon",
-    address: "5HjZCeVcUVpThHNMyMBMKqN5ajph9CkDmZhn9BK48TmC3K4Y",
-    description: "50+ Crowdloans",
-  },
-  {
-    name: "Vitalik.eth",
-    address: "0xd8da6bf26964af9d7eed9e03e53415d37aa96045",
-    description: "Vitalik Buterin",
-  },
-  { address: "0x804c4c527f3b278a1b328ebe239359e1c1008398", description: "$13M+ EVM assets" },
+const POPULAR_ACCOUNTS: Array<{ name?: string; address: string; description?: string }> = [
+  { name: "Vitalik Buterin", address: "0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96045" },
+  { name: "Mark Cuban", address: "0x95abda53bc5e9fbbdce34603614018d32ced219e" },
+  { name: "Steve Aoki", address: "0xe4bBCbFf51e61D0D95FcC5016609aC8354B177C4" },
+  { name: "sassal.eth", address: "0x648aA14e4424e0825A5cE739C8C68610e143FB79" },
+  { name: "Bill Laboon", address: "5HjZCeVcUVpThHNMyMBMKqN5ajph9CkDmZhn9BK48TmC3K4Y" },
+  { name: "Gavin Wood", address: "5F7LiCA6T4DWUDRQyFAWsRqVwxrJEznUtcw4WNnb5fe6snCH" },
 ]
 
 export const PortfolioTryTalisman = () => {
@@ -54,32 +34,55 @@ export const PortfolioTryTalisman = () => {
   const [error, setError] = useState<string | null>(null)
 
   const [address, setAddress] = useState("")
-  const onSubmit = useCallback(async () => {
-    setPending(true)
+  const onSubmit = useCallback<FormEventHandler>(
+    async (event) => {
+      event.preventDefault()
 
-    sendAnalyticsEvent({
-      ...ANALYTICS_PAGE,
-      name: "Interact",
-      action: "Add watched account (custom)",
-    })
+      setPending(true)
 
-    const isPortfolio = true
+      sendAnalyticsEvent({
+        ...ANALYTICS_PAGE,
+        name: "Interact",
+        action: "Add watched account (custom)",
+      })
 
-    try {
-      const resultAddress = await api.accountCreateWatched(
-        shortenAddress(address),
-        address,
-        isPortfolio
-      )
+      const isPortfolio = true
 
-      setPending(false)
-      setError(null)
-      if (resultAddress) navigate("/portfolio")
-    } catch {
-      setPending(false)
-      setError(t("Please enter a valid Polkadot or Ethereum address"))
-    }
-  }, [t, address, navigate])
+      try {
+        // throws if address is invalid
+        encodeAnyAddress(address)
+
+        const resultAddress = await api.accountCreateWatched(
+          shortenAddress(address),
+          address,
+          isPortfolio
+        )
+
+        setPending(false)
+        setError(null)
+        if (resultAddress) navigate("/portfolio")
+      } catch {
+        setPending(false)
+        setError(t("Please enter a valid Polkadot or Ethereum address"))
+      }
+    },
+    [t, address, navigate]
+  )
+  const onInputChange = useCallback<ChangeEventHandler<HTMLInputElement>>((event) => {
+    const address = event.target.value
+    const isValid = (() => {
+      try {
+        encodeAnyAddress(address)
+        return true
+      } catch {
+        return false
+      }
+    })()
+
+    // remove error before submission if address is valid
+    if (isValid) setError(null)
+    setAddress(event.target.value)
+  }, [])
 
   const allAccounts = useAccounts()
   const goToPortfolio = useCallback(() => {
@@ -90,10 +93,8 @@ export const PortfolioTryTalisman = () => {
   return (
     <div className="text-body-secondary flex flex-col gap-12 pb-12 text-sm">
       <div className="flex flex-col gap-8">
-        <div className="leading-paragraph px-8 text-center text-xs">
-          {t(
-            "You can explore all the cool things about Talisman without importing your private key"
-          )}
+        <div className="leading-paragraph px-16 text-center text-xs">
+          {t("Explore Talisman’s unique features without importing a recovery phrase")}
         </div>
         <form className="flex flex-col gap-4" onSubmit={onSubmit}>
           <div className="flex gap-4">
@@ -102,7 +103,7 @@ export const PortfolioTryTalisman = () => {
               className="bg-black-secondary text-body placeholder:text-body-disabled w-full rounded px-8 py-6"
               placeholder={t("Enter any wallet address")}
               value={address}
-              onChange={(e) => setAddress(e.target.value)}
+              onChange={onInputChange}
             />
             <button
               className={classNames(
