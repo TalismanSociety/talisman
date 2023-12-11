@@ -5,8 +5,17 @@ import { api } from "@ui/api"
 import { AnalyticsPage, sendAnalyticsEvent } from "@ui/api/analytics"
 import { AccountIcon } from "@ui/domains/Account/AccountIcon"
 import { Address } from "@ui/domains/Account/Address"
+import { AddressFieldEnsBadge } from "@ui/domains/Account/AddressFieldEnsBadge"
 import useAccounts from "@ui/hooks/useAccounts"
-import { ChangeEventHandler, FormEventHandler, useCallback, useMemo, useState } from "react"
+import { useResolveEnsName } from "@ui/hooks/useResolveEnsName"
+import {
+  ChangeEventHandler,
+  FormEventHandler,
+  useCallback,
+  useEffect,
+  useMemo,
+  useState,
+} from "react"
 import { Trans, useTranslation } from "react-i18next"
 import { useNavigate } from "react-router-dom"
 
@@ -33,7 +42,33 @@ export const PortfolioTryTalisman = () => {
   const [pending, setPending] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
+  const [searchAddress, setSearchAddress] = useState("")
   const [address, setAddress] = useState("")
+  const [ensLookup, { isLookup: isEnsLookup, isFetching: isEnsFetching }] =
+    useResolveEnsName(searchAddress)
+
+  useEffect(() => {
+    const isValidAddress = (() => {
+      try {
+        encodeAnyAddress(searchAddress)
+        return true
+      } catch {
+        return false
+      }
+    })()
+    const isValid = isEnsLookup || isValidAddress
+
+    // remove error before submission if address is valid
+    if (isValid) setError(null)
+
+    if (isEnsLookup) {
+      if (isEnsFetching) return setAddress("")
+      return setAddress(ensLookup ?? (ensLookup === null ? "invalid" : ""))
+    }
+
+    setAddress(searchAddress)
+  }, [ensLookup, isEnsFetching, isEnsLookup, searchAddress])
+
   const onSubmit = useCallback<FormEventHandler>(
     async (event) => {
       event.preventDefault()
@@ -53,7 +88,7 @@ export const PortfolioTryTalisman = () => {
         encodeAnyAddress(address)
 
         const resultAddress = await api.accountCreateWatched(
-          shortenAddress(address),
+          isEnsLookup ? searchAddress : shortenAddress(address),
           address,
           isPortfolio
         )
@@ -66,22 +101,10 @@ export const PortfolioTryTalisman = () => {
         setError(t("Please enter a valid Polkadot or Ethereum address"))
       }
     },
-    [t, address, navigate]
+    [address, isEnsLookup, searchAddress, navigate, t]
   )
   const onInputChange = useCallback<ChangeEventHandler<HTMLInputElement>>((event) => {
-    const address = event.target.value
-    const isValid = (() => {
-      try {
-        encodeAnyAddress(address)
-        return true
-      } catch {
-        return false
-      }
-    })()
-
-    // remove error before submission if address is valid
-    if (isValid) setError(null)
-    setAddress(event.target.value)
+    setSearchAddress(event.target.value)
   }, [])
 
   const allAccounts = useAccounts()
@@ -98,13 +121,27 @@ export const PortfolioTryTalisman = () => {
         </div>
         <form className="flex flex-col gap-4" onSubmit={onSubmit}>
           <div className="flex gap-4">
-            <input
-              type="text"
-              className="bg-black-secondary text-body placeholder:text-body-disabled w-full rounded px-8 py-6"
-              placeholder={t("Enter any wallet address")}
-              value={address}
-              onChange={onInputChange}
-            />
+            <div className="relative w-full">
+              <input
+                type="text"
+                className={classNames(
+                  "bg-black-secondary text-body placeholder:text-body-disabled w-full rounded px-8 py-6",
+                  isEnsLookup && "pr-16"
+                )}
+                placeholder={t("Enter any wallet address")}
+                value={searchAddress}
+                onChange={onInputChange}
+              />
+              <div className="absolute right-4 top-0 flex h-full items-center">
+                <AddressFieldEnsBadge
+                  small
+                  isEnsLookup={isEnsLookup}
+                  isEnsFetching={isEnsFetching}
+                  ensLookup={ensLookup}
+                />
+              </div>
+            </div>
+
             <button
               className={classNames(
                 "text-body-disabled border-body-disabled rounded border px-8 py-6",
