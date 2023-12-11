@@ -1,4 +1,9 @@
-import { NomPoolSupportedChain } from "./types"
+import {
+  EvmLsdSupportedChain,
+  EvmLsdSupportedPair,
+  NomPoolSupportedChain,
+  StakingSupportedChain,
+} from "./types"
 
 export const NOM_POOL_SUPPORTED_CHAINS: NomPoolSupportedChain[] = [
   "polkadot",
@@ -13,4 +18,16 @@ export const NOM_POOL_MIN_DEPOSIT: Record<NomPoolSupportedChain, string> = {
   "vara": "100000000000",
 }
 
-export const STAKING_BANNER_CHAINS = [...NOM_POOL_SUPPORTED_CHAINS]
+export const EVM_LSD_PAIRS: Record<string, EvmLsdSupportedPair> = {
+  "1-eth-steth": {
+    base: "1-evm-native-eth",
+    derivative: "1-evm-erc20-0xae7ab96520de3a18e5e111b5eaab095312d7fe84",
+  },
+}
+
+export const EVM_LSD_SUPPORTED_CHAINS: EvmLsdSupportedChain[] = ["1"]
+
+export const STAKING_BANNER_CHAINS: StakingSupportedChain[] = [
+  ...NOM_POOL_SUPPORTED_CHAINS,
+  ...EVM_LSD_SUPPORTED_CHAINS,
+]

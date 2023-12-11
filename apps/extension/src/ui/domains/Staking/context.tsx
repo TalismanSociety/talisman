@@ -1,12 +1,13 @@
 import { appStore } from "@core/domains/app/store.app"
 import { ResponseNomPoolStake } from "@core/domains/balances/types"
 import {
+  EVM_LSD_PAIRS,
   NOM_POOL_MIN_DEPOSIT,
   NOM_POOL_SUPPORTED_CHAINS,
   STAKING_BANNER_CHAINS,
 } from "@core/domains/staking/constants"
 import { isNomPoolChain } from "@core/domains/staking/helpers"
-import { NomPoolSupportedChain } from "@core/domains/staking/types"
+import { StakingSupportedChain } from "@core/domains/staking/types"
 import { Address } from "@core/types/base"
 import * as Sentry from "@sentry/browser"
 import { provideContext } from "@talisman/util/provideContext"
@@ -15,7 +16,8 @@ import { api } from "@ui/api"
 import useAccounts from "@ui/hooks/useAccounts"
 import { useAppState } from "@ui/hooks/useAppState"
 import useBalances from "@ui/hooks/useBalances"
-import { useCallback, useEffect, useState } from "react"
+import { useCallback, useEffect, useMemo, useState } from "react"
+import { useTranslation } from "react-i18next"
 import { useDebounce } from "react-use"
 
 const useNomPoolStakingEligibility = () => {
@@ -128,6 +130,64 @@ const useNomPoolStakingEligibility = () => {
   return { nomPoolStakingAddressesEligible, nomPoolStakingTokenEligible, isLoading }
 }
 
+type EvmLsdEligibility = Record<Address, Array<keyof typeof EVM_LSD_PAIRS>>
+
+const useEvmLsdStakingEligibility = () => {
+  const balances = useBalances()
+  const accounts = useAccounts("owned")
+  // only balances on ethereum accounts are eligible for lido staking
+  const ethereumAddresses = accounts
+    .filter(({ type }) => type === "ethereum")
+    .map(({ address }) => address)
+
+  const eligibleAddresses = useMemo(() => {
+    const resultAddresses: EvmLsdEligibility = {}
+
+    Object.entries(EVM_LSD_PAIRS).forEach(([pairName, { base, derivative }]) => {
+      const balancePairs = balances.find([{ tokenId: base }, { tokenId: derivative }])
+
+      // for each address, determine whether it has a balance of the base token but not the derivative
+      ethereumAddresses.forEach((address) => {
+        const derivativeBalance = balancePairs.find({ address, tokenId: derivative })
+        const baseBalance = balancePairs.find({ address, tokenId: base })
+        if (baseBalance.sorted.length > 0 && baseBalance.sorted[0].free.planck > 0n) {
+          if (
+            derivativeBalance.sorted.length === 0 ||
+            derivativeBalance.sorted[0].free.planck === 0n
+          )
+            resultAddresses[address] = [...(resultAddresses[address] || []), pairName]
+        }
+      })
+    })
+    return resultAddresses
+  }, [balances, ethereumAddresses])
+
+  const evmLsdStakingAddressesEligible = useCallback(
+    ({ addresses }: { addresses: Address[] }) => {
+      const eligible = addresses.filter((address) => eligibleAddresses[address]?.length > 0)
+      return eligible.length > 0
+    },
+    [eligibleAddresses]
+  )
+
+  const evmLsdStakingTokenEligible = useCallback(
+    ({ token, addresses }: { token?: Token; addresses: Address[] }) => {
+      const matchingAddresses = Object.keys(eligibleAddresses).filter((address) =>
+        addresses.includes(address)
+      )
+      if (matchingAddresses.length === 0) return false
+      const eligiblePairs = Array.from(
+        new Set(matchingAddresses.map((address) => eligibleAddresses[address]).flat())
+      )
+      const eligibleBases = eligiblePairs.map((pairName) => EVM_LSD_PAIRS[pairName].base)
+      return eligibleBases.includes(token?.id || "")
+    },
+    [eligibleAddresses]
+  )
+
+  return { evmLsdStakingAddressesEligible, evmLsdStakingTokenEligible }
+}
+
 const useShowStakingBannerProvider = () => {
   const {
     nomPoolStakingAddressesEligible,
@@ -135,10 +195,15 @@ const useShowStakingBannerProvider = () => {
     isLoading: nomPoolsLoading,
   } = useNomPoolStakingEligibility()
 
+  const { evmLsdStakingAddressesEligible, evmLsdStakingTokenEligible } =
+    useEvmLsdStakingEligibility()
+
   const isLoading = nomPoolsLoading
 
+  const { t } = useTranslation()
+
   const dismissStakingBanner = useCallback(
-    (chainId?: NomPoolSupportedChain) =>
+    (chainId?: StakingSupportedChain) =>
       appStore.mutate((existing) => {
         const newValue = chainId ? [chainId] : STAKING_BANNER_CHAINS
         return {
@@ -151,21 +216,39 @@ const useShowStakingBannerProvider = () => {
 
   const showTokenStakingBanner = useCallback(
     ({ token, addresses }: { token?: Token; addresses: Address[] }) => {
-      const nomPoolsEligible = nomPoolStakingTokenEligible({ token, addresses })
-      return nomPoolsEligible && !isLoading
+      let result = false
+      const lsdTokenBases = Object.values(EVM_LSD_PAIRS).map(({ base }) => base)
+      if (lsdTokenBases.includes(token?.id || ""))
+        result = evmLsdStakingTokenEligible({ token, addresses })
+      else result = nomPoolStakingTokenEligible({ token, addresses })
+
+      return result && !isLoading
     },
-    [nomPoolStakingTokenEligible, isLoading]
+    [nomPoolStakingTokenEligible, evmLsdStakingTokenEligible, isLoading]
   )
 
   const showStakingBanner = useCallback(
     ({ addresses }: { addresses: Address[] }) => {
-      const nomPoolsEligible = nomPoolStakingAddressesEligible({ addresses })
-      return nomPoolsEligible && !isLoading
+      let result = nomPoolStakingAddressesEligible({ addresses })
+      result = result || evmLsdStakingAddressesEligible({ addresses })
+      return result && !isLoading
     },
-    [nomPoolStakingAddressesEligible, isLoading]
+    [nomPoolStakingAddressesEligible, evmLsdStakingAddressesEligible, isLoading]
   )
 
-  return { showStakingBanner, showTokenStakingBanner, dismissStakingBanner }
+  const getStakingMessage = useCallback(
+    ({ token }: { token?: Token }) => {
+      const lsdTokenBases = Object.values(EVM_LSD_PAIRS).map(({ base }) => base)
+      if (lsdTokenBases.includes(token?.id || ""))
+        return t("This balance is eligible for Nomination Pool Staking via the Talisman Portal.")
+      else if (token?.chain?.id && isNomPoolChain(token.chain.id))
+        return t("This balance is eligible for Liquid Staking via the Talisman Portal.")
+      return
+    },
+    [t]
+  )
+
+  return { showStakingBanner, showTokenStakingBanner, dismissStakingBanner, getStakingMessage }
 }
 
 export const [StakingBannerProvider, useStakingBanner] = provideContext(

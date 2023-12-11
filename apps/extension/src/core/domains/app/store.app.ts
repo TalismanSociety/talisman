@@ -1,5 +1,5 @@
 import { DEBUG, IS_FIREFOX } from "@core/constants"
-import { NomPoolSupportedChain } from "@core/domains/staking/types"
+import { StakingSupportedChain } from "@core/domains/staking/types"
 import { StorageProvider } from "@core/libs/Store"
 import { assert } from "@polkadot/util"
 import { gt } from "semver"
@@ -28,7 +28,7 @@ export type AppStoreData = {
   hasFunds: boolean
   hideBackupWarningUntil?: number
   hasSpiritKey: boolean
-  hideStakingBanner: NomPoolSupportedChain[]
+  hideStakingBanner: StakingSupportedChain[]
   needsSpiritKeyUpdate: boolean
   popupSizeDelta: [number, number]
   vaultVerifierCertificateMnemonicId?: string | null
