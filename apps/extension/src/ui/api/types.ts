@@ -309,4 +309,7 @@ export default interface MessageTypes {
     specVersion?: number,
     blockHash?: HexString
   ) => Promise<MetadataDef | undefined>
+
+  assetDiscoveryStartScan: (full: boolean) => Promise<boolean>
+  assetDiscoveryStopScan: () => Promise<boolean>
 }

@@ -37,6 +37,7 @@ import { NewFolderModalProvider } from "./routes/Settings/Accounts/NewFolderModa
 import { RenameFolderModalProvider } from "./routes/Settings/Accounts/RenameFolderModal"
 import { AddressBookPage } from "./routes/Settings/AddressBookPage"
 import { AnalyticsOptInPage } from "./routes/Settings/AnalyticsOptInPage"
+import { AssetDiscoveryPage } from "./routes/Settings/AssetDiscoveryPage"
 import { AutoLockTimerPage } from "./routes/Settings/AutoLockTimerPage"
 import { ChangePasswordPage } from "./routes/Settings/ChangePasswordPage"
 import { ConnectedSitesPage } from "./routes/Settings/ConnectedSitesPage"
@@ -122,6 +123,7 @@ const DashboardInner = () => {
           <Route path="qr-metadata" element={<QrMetadataPage />} />
           <Route path="about" element={<AboutPage />} />
           <Route path="analytics" element={<AnalyticsOptInPage />} />
+          <Route path="asset-discovery" element={<AssetDiscoveryPage />} />
           <Route path="*" element={<Navigate to="" replace />} />
         </Route>
         <Route path="tokens">

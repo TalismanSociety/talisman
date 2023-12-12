@@ -331,4 +331,9 @@ export const api: MessageTypes = {
       specVersion,
       blockHash,
     }),
+
+  // asset discovery
+  assetDiscoveryStartScan: (full) =>
+    messageService.sendMessage("pri(assetDiscovery.scan.start)", { full }),
+  assetDiscoveryStopScan: () => messageService.sendMessage("pri(assetDiscovery.scan.stop)", null),
 }
