@@ -6,12 +6,12 @@ import {
   NOM_POOL_SUPPORTED_CHAINS,
   STAKING_BANNER_CHAINS,
 } from "@core/domains/staking/constants"
-import { isNomPoolChain } from "@core/domains/staking/helpers"
+import { isNomPoolChain, isStakingSupportedChain } from "@core/domains/staking/helpers"
 import { StakingSupportedChain } from "@core/domains/staking/types"
 import { Address } from "@core/types/base"
 import * as Sentry from "@sentry/browser"
 import { provideContext } from "@talisman/util/provideContext"
-import { ChainId, Token } from "@talismn/chaindata-provider"
+import { ChainId, IToken, Token } from "@talismn/chaindata-provider"
 import { api } from "@ui/api"
 import useAccounts from "@ui/hooks/useAccounts"
 import { useAppState } from "@ui/hooks/useAppState"
@@ -20,54 +20,77 @@ import { useCallback, useEffect, useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
 import { useDebounce } from "react-use"
 
+import { colours } from "./helpers"
+
+type ChainAddressBalances = Record<ChainId, Record<Address, bigint>>
+
+const safelyGetExistentialDeposit = (token?: IToken | null): bigint => {
+  if (token && "existentialDeposit" in token && typeof token.existentialDeposit === "string")
+    return BigInt(token.existentialDeposit)
+  return 0n
+}
+
 const useNomPoolStakingEligibility = () => {
-  const [isLoading, setIsLoading] = useState(false)
-  const [eligibleAddressBalances, setEligibleAddressBalances] = useState<Record<Address, bigint>>(
-    {}
-  )
+  const [isLoading, setIsLoading] = useState(true)
+  const [eligibleAddressBalances, setEligibleAddressBalances] = useState<ChainAddressBalances>({})
   const [nomPoolStake, setNomPoolStake] = useState<Record<ChainId, ResponseNomPoolStake>>({})
   const [updateKey, setUpdateKey] = useState<Record<ChainId, string>>({})
 
   const balances = useBalances()
   const accounts = useAccounts("owned")
   // only balances on substrate accounts are eligible for nom pool staking
-  const substrateAddresses = accounts
-    .filter(({ type }) => type === "sr25519")
-    .map(({ address }) => address)
-
-  const [hideBannerSetting] = useAppState("hideStakingBanner")
-  const showBannerSetting = NOM_POOL_SUPPORTED_CHAINS.length > hideBannerSetting.length
+  const substrateAddresses = useMemo(
+    () => accounts.filter(({ type }) => type === "sr25519").map(({ address }) => address),
+    [accounts]
+  )
 
   useEffect(() => {
     NOM_POOL_SUPPORTED_CHAINS.forEach((chainId) => {
-      const balancesForChain = balances.find({ chainId }).sorted
+      const balancesForChain = balances.find({ chainId, source: "substrate-native" })
 
       // for each address, get the free balance after accounting for ED and minimum staking deposit
-      const newEligibleAddressBalances: Record<Address, bigint> = Object.fromEntries(
-        balancesForChain
-          .map((balance): [string, bigint] => [
-            balance.address,
-            balance.free.planck -
-              (balance.token &&
-              "existentialDeposit" in balance.token &&
-              typeof balance.token.existentialDeposit === "string"
-                ? BigInt(balance.token.existentialDeposit)
-                : 0n) -
-              BigInt(NOM_POOL_MIN_DEPOSIT[chainId] || 0),
-          ])
-          .filter(([, available]) => available > 0n)
+      const addressAvailableBalances: Record<Address, bigint> = substrateAddresses.reduce(
+        (acc, address) => {
+          const addressBalances = balancesForChain.find({ address })
+          if (!addressBalances) return acc
+          addressBalances.sorted.forEach((balance) => {
+            // if the balance is less than the ED - minimum stake, it is not eligible
+            // however because we aggregate balances across accounts here, we don't want to store available values of less than 0
+            const realAvailable =
+              balance.free.planck -
+              safelyGetExistentialDeposit(balance.token) -
+              BigInt(NOM_POOL_MIN_DEPOSIT[chainId] || 0)
+            const available = realAvailable > 0n ? realAvailable : 0n
+            acc[address] = address in acc ? acc[address] + available : available
+          })
+          return acc
+        },
+        {} as Record<Address, bigint>
       )
-      setEligibleAddressBalances(newEligibleAddressBalances)
+
+      const positiveEligibleAddressBalances: Record<Address, bigint> = Object.fromEntries(
+        Object.entries(addressAvailableBalances).filter(([, available]) => available > 0n)
+      )
+      setEligibleAddressBalances((existing) => ({
+        ...existing,
+        [chainId]: positiveEligibleAddressBalances,
+      }))
     })
-  }, [balances, setEligibleAddressBalances])
+  }, [balances, setEligibleAddressBalances, substrateAddresses])
 
   useDebounce(
     () => {
       setIsLoading(true)
-      const eligibleAddresses = Object.keys(eligibleAddressBalances)
-      if (eligibleAddresses.length === 0) return
+      const eligibleChains = Object.keys(eligibleAddressBalances)
+      if (eligibleChains.length === 0) return
 
       const nomPoolPromises = NOM_POOL_SUPPORTED_CHAINS.map((chainId) => {
+        const eligibleAddressesBalances = eligibleAddressBalances[chainId]
+        const eligibleAddresses = eligibleAddressesBalances
+          ? Object.keys(eligibleAddressesBalances)
+          : []
+        if (eligibleAddresses.length == 0) return Promise.resolve()
+
         const key = `${chainId}|${eligibleAddresses.join("-")}`
         if (updateKey[chainId] && key === updateKey[chainId]) return Promise.resolve()
         setUpdateKey((prev) => ({ ...prev, [chainId]: key }))
@@ -92,19 +115,18 @@ const useNomPoolStakingEligibility = () => {
       const chainId = token?.chain?.id
       if (!chainId || !isNomPoolChain(chainId) || token.type !== "substrate-native") return false
 
-      const eligible = substrateAddresses.filter((address) => {
-        if (!addresses.includes(address)) return false
-
+      const eligible = addresses.filter((address) => {
+        if (!substrateAddresses.includes(address)) return false
         return (
-          Boolean(eligibleAddressBalances[address]) &&
+          Boolean(eligibleAddressBalances[chainId][address]) &&
           nomPoolStake[chainId] &&
           nomPoolStake[chainId][address] === null
         )
       })
 
-      return !hideBannerSetting.includes(chainId) && !isLoading && eligible.length > 0
+      return !isLoading && eligible.length > 0
     },
-    [substrateAddresses, isLoading, hideBannerSetting, nomPoolStake, eligibleAddressBalances]
+    [substrateAddresses, isLoading, nomPoolStake, eligibleAddressBalances]
   )
 
   const nomPoolStakingAddressesEligible = useCallback(
@@ -122,9 +144,9 @@ const useNomPoolStakingEligibility = () => {
         if (!addresses.includes(subAddress)) return false
         return Boolean(eligibleAddressBalances[subAddress]) && addressHasNotStaked[subAddress]
       })
-      return showBannerSetting && !isLoading && eligible.length > 0
+      return !isLoading && eligible.length > 0
     },
-    [substrateAddresses, isLoading, showBannerSetting, nomPoolStake, eligibleAddressBalances]
+    [substrateAddresses, isLoading, nomPoolStake, eligibleAddressBalances]
   )
 
   return { nomPoolStakingAddressesEligible, nomPoolStakingTokenEligible }
@@ -194,6 +216,7 @@ const useShowStakingBannerProvider = () => {
 
   const { evmLsdStakingAddressesEligible, evmLsdStakingTokenEligible } =
     useEvmLsdStakingEligibility()
+  const [hideBannerSetting] = useAppState("hideStakingBanner")
 
   const { t } = useTranslation()
 
@@ -216,18 +239,23 @@ const useShowStakingBannerProvider = () => {
       if (lsdTokenBases.includes(token?.id || ""))
         result = evmLsdStakingTokenEligible({ token, addresses })
       else result = nomPoolStakingTokenEligible({ token, addresses })
-      return result
+      return (
+        result &&
+        !hideBannerSetting.includes(
+          (token?.chain?.id || token?.evmNetwork?.id) as StakingSupportedChain
+        )
+      )
     },
-    [nomPoolStakingTokenEligible, evmLsdStakingTokenEligible]
+    [nomPoolStakingTokenEligible, evmLsdStakingTokenEligible, hideBannerSetting]
   )
 
   const showStakingBanner = useCallback(
     ({ addresses }: { addresses: Address[] }) => {
       let result = nomPoolStakingAddressesEligible({ addresses })
       result = result || evmLsdStakingAddressesEligible({ addresses })
-      return result
+      return result && hideBannerSetting.length < STAKING_BANNER_CHAINS.length
     },
-    [nomPoolStakingAddressesEligible, evmLsdStakingAddressesEligible]
+    [nomPoolStakingAddressesEligible, evmLsdStakingAddressesEligible, hideBannerSetting]
   )
 
   const getStakingMessage = useCallback(
@@ -242,7 +270,21 @@ const useShowStakingBannerProvider = () => {
     [t]
   )
 
-  return { showStakingBanner, showTokenStakingBanner, dismissStakingBanner, getStakingMessage }
+  const getBannerColours = useCallback(({ token }: { token?: Token }) => {
+    const chainId = token?.chain?.id || token?.evmNetwork?.id
+    if (chainId && isStakingSupportedChain(chainId)) {
+      return colours[chainId as StakingSupportedChain]
+    }
+    return
+  }, [])
+
+  return {
+    showStakingBanner,
+    showTokenStakingBanner,
+    dismissStakingBanner,
+    getStakingMessage,
+    getBannerColours,
+  }
 }
 
 export const [StakingBannerProvider, useStakingBanner] = provideContext(
