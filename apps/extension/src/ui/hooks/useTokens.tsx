@@ -5,7 +5,7 @@ import {
   tokensWithTestnetsState,
   tokensWithoutTestnetsMapState,
   tokensWithoutTestnetsState,
-} from "@ui/atoms/chaindata"
+} from "@ui/atoms"
 import { useMemo } from "react"
 import { useRecoilValue } from "recoil"
 

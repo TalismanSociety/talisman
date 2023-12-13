@@ -1,32 +1,13 @@
-import { db } from "@core/db"
 import { TokenId } from "@talismn/chaindata-provider"
 import { DbTokenRates, TokenRateCurrency } from "@talismn/token-rates"
-import { api } from "@ui/api"
-import { settingQuery } from "@ui/hooks/useSettings"
-import { liveQuery } from "dexie"
-import { DefaultValue, atom, selector, selectorFamily } from "recoil"
+import { DefaultValue, selector, selectorFamily } from "recoil"
 
-import { walletDataState } from "./main"
-
-const NO_OP = () => {}
-// export const tokenRatesState = atom<DbTokenRates[]>({
-//   key: "tokenRatesState",
-//   effects: [
-//     // sync from db
-//     ({ setSelf }) => {
-//       const obs = liveQuery(() => db.tokenRates.toArray())
-//       const sub = obs.subscribe(setSelf)
-//       return () => sub.unsubscribe()
-//     },
-//     // instruct backend to keep db synchronized while this atom is in use
-//     () => api.tokenRates(NO_OP),
-//   ],
-// })
+import { mainState, settingQuery } from "./main"
 
 export const tokenRatesState = selector<DbTokenRates[]>({
   key: "tokenRatesState",
   get: ({ get }) => {
-    const { tokenRates } = get(walletDataState)
+    const { tokenRates } = get(mainState)
     return tokenRates
   },
 })

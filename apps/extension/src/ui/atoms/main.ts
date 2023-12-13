@@ -21,13 +21,13 @@ import {
 import { DbTokenRates } from "@talismn/token-rates"
 import { api } from "@ui/api"
 import { liveQuery } from "dexie"
-import { atom } from "recoil"
+import { GetRecoilValue, atom, selectorFamily } from "recoil"
 import { Subject, combineLatest } from "rxjs"
 
 const NO_OP = () => {}
 
-// load these entities in parallel in this atom to prevent recoil/suspense to load them sequentially
-export const walletDataState = atom<{
+// load these entities in parallel in this atom to prevent suspense to load them sequentially
+export const mainState = atom<{
   settings: SettingsStoreData
   appState: AppStoreData
   accounts: AccountJsonAny[]
@@ -40,7 +40,7 @@ export const walletDataState = atom<{
   enabledTokensState: EnabledTokens
   tokenRates: DbTokenRates[]
 }>({
-  key: "walletDataState",
+  key: "mainState",
   effects: [
     ({ setSelf }) => {
       const obsTokens = liveQuery(() => chaindataProvider.tokens())
@@ -107,4 +107,32 @@ export const walletDataState = atom<{
     () => api.ethereumNetworks(NO_OP),
     () => api.tokenRates(NO_OP),
   ],
+})
+
+export const settingQuery = selectorFamily({
+  key: "settingQuery",
+  get:
+    <K extends keyof SettingsStoreData>(key: K) =>
+    <V extends SettingsStoreData[K]>({ get }: { get: GetRecoilValue }): V => {
+      const { settings } = get(mainState)
+      return settings[key] as V
+    },
+  set: (key) => (_, value) => {
+    // update the rxjs observable so the derived recoil atom is updated
+    settingsStore.set({ [key]: value })
+  },
+})
+
+export const appStateQuery = selectorFamily({
+  key: "appStateQuery",
+  get:
+    <K extends keyof AppStoreData, V extends AppStoreData[K]>(key: K) =>
+    ({ get }): V => {
+      const { appState } = get(mainState)
+      return appState[key] as V
+    },
+  set: (key) => (_, value) => {
+    // update the rxjs observable so the derived recoil atom is updated
+    appStore.set({ [key]: value })
+  },
 })

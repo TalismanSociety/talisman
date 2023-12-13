@@ -27,7 +27,7 @@ import { SelectedAccountProvider } from "@ui/domains/Portfolio/SelectedAccountCo
 import { DatabaseErrorAlert } from "@ui/domains/Settings/DatabaseErrorAlert"
 import { useIsLoggedIn } from "@ui/hooks/useIsLoggedIn"
 import { useIsOnboarded } from "@ui/hooks/useIsOnboarded"
-import { Suspense, useEffect, useMemo } from "react"
+import { Suspense, useEffect } from "react"
 import { Navigate, Route, Routes } from "react-router-dom"
 
 import { BackupWarningDrawer } from "./components/BackupWarningDrawer"
@@ -50,7 +50,7 @@ const InnerPopup = () => {
 
   // force onboarding if not onboarded
   useEffect(() => {
-    if (isOnboarded === "FALSE") {
+    if (!isOnboarded) {
       // give focus to the onboarding tab
       api.onboardOpen()
       // most browsers automatically close the extension popup when giving focus to the onboarding tab
@@ -59,15 +59,7 @@ const InnerPopup = () => {
     }
   }, [isOnboarded])
 
-  // wait until we have onboarding and authentication statuses
-  const isLoading = useMemo(
-    () => [isLoggedIn, isOnboarded].includes("UNKNOWN"),
-    [isLoggedIn, isOnboarded]
-  )
-
-  if (isLoading) return null
-
-  if (isLoggedIn === "FALSE") return <LoginViewManager />
+  if (!isLoggedIn) return <LoginViewManager />
 
   return (
     <FadeIn className="h-full w-full">
