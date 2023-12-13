@@ -6,8 +6,9 @@ import { awaitKeyringLoaded } from "@core/util/awaitKeyringLoaded"
 import keyring from "@polkadot/ui-keyring"
 import PromisePool from "@supercharge/promise-pool"
 import { erc20Abi } from "@talismn/balances"
-import { ChainId, EvmNetworkId } from "@talismn/chaindata-provider"
+import { EvmNetworkId, Token } from "@talismn/chaindata-provider"
 import { isEthereumAddress } from "@talismn/util"
+import { groupBy, sortBy } from "lodash"
 import chunk from "lodash/chunk"
 import Browser from "webextension-polyfill"
 
@@ -15,96 +16,58 @@ import { enabledEvmNetworksStore, isEvmNetworkEnabled } from "../ethereum/store.
 import { EvmAddress } from "../ethereum/types"
 import { enabledTokensStore, isTokenEnabled } from "../tokens/store.enabledTokens"
 import { assetDiscoveryStore } from "./store"
-import { AssetDiscoveryResult, RequestAssetDiscoveryStartScan } from "./types"
+import { DiscoveredBalance, RequestAssetDiscoveryStartScan } from "./types"
 
 const MANUAL_SCAN_MAX_CONCURRENT_NETWORK = 4
 const BALANCES_FETCH_CHUNK_SIZE = 100
 
-/**
- * To avoid creating empty balance rows for each token/account couple, we will use cursors :
- * for each chain keep track of the latest token/account that was scanned, and process them alphabetically
- */
 class AssetDiscoveryScanner {
+  // as scan can be both manually started resumed (2 triggers),
+  // track resumed scans to prevent them from running twice simultaneously
+  #resumedScans: string[] = []
+
   constructor() {
     this.init()
   }
 
   private async init(): Promise<void> {
     setTimeout(async () => {
-      const currentScanId = await assetDiscoveryStore.get("currentScanId")
-      if (currentScanId) this.resumeScan()
-    }, 10_000)
+      this.resumeScan()
+      // resume after 15 sec to not interfere with other startup routines
+    }, 15_000)
   }
 
   public async startScan({ full }: RequestAssetDiscoveryStartScan): Promise<boolean> {
     if (await assetDiscoveryStore.get("currentScanId")) throw new Error("Scan already in progress")
 
-    // 0. Clear scan table
+    // 1. Clear scan table
     await db.assetDiscovery.clear()
 
-    // 1. Set scan status in state
+    // 2. Set scan status in state
+    await awaitKeyringLoaded()
+    const currentScanAccounts = keyring
+      .getAccounts()
+      .filter((acc) => isEthereumAddress(acc.address))
+      .map((acc) => acc.address)
+
     await assetDiscoveryStore.set({
       currentScanId: crypto.randomUUID(),
       currentScanFull: full,
       currentScanType: "manual",
-      status: "scanning",
+      currentScanProgressPercent: 0,
+      currentScanCursors: {},
+      currentScanAccounts,
     })
 
-    // 2. Provision scan table with empty rows for each disabled token/account combination
-    const [allTokens, evmNetworks, enabledTokens, enabledEvmNetworks] = await Promise.all([
-      chaindataProvider.tokensArray(),
-      chaindataProvider.evmNetworks(),
-      enabledTokensStore.get(),
-      enabledEvmNetworksStore.get(),
-      awaitKeyringLoaded(), // ensures we can pickup all accounts
-    ])
-
-    const tokenIds = allTokens
-      .filter((token) => {
-        if (token.type !== "evm-erc20") return false
-        const evmNetwork = evmNetworks[token.evmNetwork?.id ?? ""]
-        if (!evmNetwork) return false
-        if (full)
-          return (
-            !isEvmNetworkEnabled(evmNetwork, enabledEvmNetworks) ||
-            !isTokenEnabled(token, enabledTokens)
-          )
-        return (
-          isEvmNetworkEnabled(evmNetwork, enabledEvmNetworks) &&
-          !isTokenEnabled(token, enabledTokens)
-        )
-      })
-      .map(({ id }) => id)
-
-    const addresses = keyring
-      .getAccounts()
-      .filter((acc) => isEthereumAddress(acc.address))
-      .map((acc) => acc.address)
-    const results = tokenIds.flatMap((tokenId) =>
-      addresses.map<AssetDiscoveryResult>((address) => ({
-        id: `${tokenId}::${address}`,
-        tokenId,
-        address,
-        balance: null,
-        status: "pending",
-      }))
-    )
-
-    await db.assetDiscovery.bulkAdd(results)
-
-    // 3. TODO Start scan
+    // 3. Start scan
     this.resumeScan()
 
     return true
   }
 
   public async stopScan(): Promise<boolean> {
-    const currentScanId = await assetDiscoveryStore.get("currentScanId")
-    if (currentScanId)
-      await assetDiscoveryStore.set({
-        currentScanId: null,
-        status: "cancelled",
-      })
+    await assetDiscoveryStore.set({ currentScanId: null })
+    await db.assetDiscovery.clear()
 
     return true
   }
@@ -113,88 +76,159 @@ class AssetDiscoveryScanner {
     const currentScanId = await assetDiscoveryStore.get("currentScanId")
     if (!currentScanId) return
 
-    const results = await db.assetDiscovery.filter((r) => r.status === "pending").toArray()
-    const tokens = await chaindataProvider.tokens()
+    // ensure a scan can't run twice in parallel
+    if (this.#resumedScans.includes(currentScanId)) return
+    this.#resumedScans.push(currentScanId)
 
-    // group tokens by network
-    const tokensByNetwork: Record<EvmNetworkId | ChainId, AssetDiscoveryResult[]> = {}
-    results.forEach((result) => {
-      const token = tokens[result.tokenId]
-      if (!token) return
-      const networkId = token.evmNetwork?.id ?? token.chain?.id
-      if (!networkId) {
-        log.warn(`No networkId found for token ${result.tokenId}`)
-        // TODO mark result as errored
-        return
+    const {
+      currentScanFull: isFullScan,
+      currentScanAccounts: addresses,
+      currentScanCursors: cursors,
+    } = await assetDiscoveryStore.get()
+
+    const [allTokens, evmNetworks, enabledTokens, enabledEvmNetworks] = await Promise.all([
+      chaindataProvider.tokensArray(),
+      chaindataProvider.evmNetworks(),
+      enabledTokensStore.get(),
+      enabledEvmNetworksStore.get(),
+    ])
+
+    const tokensMap = Object.fromEntries(allTokens.map((token) => [token.id, token]))
+
+    const tokensToScan = allTokens.filter((token) => {
+      if (token.type === "evm-erc20") {
+        const evmNetwork = evmNetworks[token.evmNetwork?.id ?? ""]
+        if (!evmNetwork) return false
+        if (isFullScan)
+          return (
+            !isEvmNetworkEnabled(evmNetwork, enabledEvmNetworks) ||
+            !isTokenEnabled(token, enabledTokens)
+          )
+        return (
+          isEvmNetworkEnabled(evmNetwork, enabledEvmNetworks) &&
+          !isTokenEnabled(token, enabledTokens)
+        )
       }
-      if (!tokensByNetwork[networkId]) tokensByNetwork[networkId] = []
-      tokensByNetwork[networkId].push(result)
+
+      return false
     })
 
-    // process 4 networks at a time
+    const tokensByNetwork: Record<EvmNetworkId, Token[]> = groupBy(
+      tokensToScan,
+      (t) => t.evmNetwork?.id || t.chain!.id
+    )
+
+    const totalChecks = tokensToScan.length * addresses.length
+    const totalTokens = tokensToScan.length
+
+    // process multiple networks at a time
     await PromisePool.withConcurrency(MANUAL_SCAN_MAX_CONCURRENT_NETWORK)
       .for(Object.keys(tokensByNetwork))
       .process(async (networkId) => {
         if (currentScanId !== (await assetDiscoveryStore.get("currentScanId"))) return
+        try {
+          const client = await chainConnectorEvm.getPublicClientForEvmNetwork(networkId)
+          if (!client) return
 
-        const networkResults = tokensByNetwork[networkId]
-        if (!networkResults) {
-          //TODO error the rows
-          return
-        }
-
-        const client = await chainConnectorEvm.getPublicClientForEvmNetwork(networkId)
-        if (!client) {
-          //TODO error the rows
-          return
-        }
-
-        //Split into chunks of 50
-        const chunks = chunk(networkResults, BALANCES_FETCH_CHUNK_SIZE)
-
-        for (const chunk of chunks) {
-          // //console.log("fetching %d on %s", chunk.length, networkId)
-          const res = await Promise.allSettled(
-            chunk.map(async (result) => {
-              const token = tokens[result.tokenId]
-              if (!token) {
-                throw new Error(`No token found for tokenId ${result.tokenId}`)
-              }
-
-              if (token.type === "evm-erc20") {
-                const balance = await client.readContract({
-                  abi: erc20Abi,
-                  address: token.contractAddress as EvmAddress,
-                  functionName: "balanceOf",
-                  args: [result.address as EvmAddress],
-                })
-                return balance.toString()
-              }
-
-              throw new Error("Unsupported token type")
-            })
+          // build the list of token+address to check balances for
+          const allChecks = sortBy(
+            tokensByNetwork[networkId]
+              .map((t) => addresses.map((a) => ({ tokenId: t.id, address: a })))
+              .flat(),
+            (c) => `${c.tokenId}::${c.address}`
           )
+          let startIndex = 0
 
-          if (currentScanId !== (await assetDiscoveryStore.get("currentScanId"))) return
+          // skip checks that were already scanned
+          if (cursors[networkId]) {
+            const { tokenId, address } = cursors[networkId]
+            startIndex =
+              1 + allChecks.findIndex((c) => c.tokenId === tokenId && c.address === address)
+          }
 
-          const updates = chunk
-            .map((chunk, i) => [chunk, res[i]] as const)
-            .map<AssetDiscoveryResult>(([chunk, res]) => ({
-              ...chunk,
-              balance: res.status === "fulfilled" ? res.value : null,
-              status: res.status === "fulfilled" ? "success" : "error",
-            }))
+          const remainingChecks = allChecks.slice(startIndex)
 
-          await db.assetDiscovery.bulkPut(updates)
+          //Split into chunks of 50 token+id
+          const chunkedChecks = chunk(remainingChecks, BALANCES_FETCH_CHUNK_SIZE)
+
+          for (const checks of chunkedChecks) {
+            const res = await Promise.allSettled(
+              checks.map(async (check) => {
+                const token = tokensMap[check.tokenId]
+                if (!token) {
+                  throw new Error(`No token found for tokenId ${check.tokenId}`)
+                }
+
+                if (token.type === "evm-erc20") {
+                  const balance = await client.readContract({
+                    abi: erc20Abi,
+                    address: token.contractAddress as EvmAddress,
+                    functionName: "balanceOf",
+                    args: [check.address as EvmAddress],
+                  })
+                  return balance.toString()
+                }
+
+                throw new Error("Unsupported token type")
+              })
+            )
+
+            const newBalances = checks
+              .map((check, i) => [check, res[i]] as const)
+              .filter(([, res]) => res.status === "fulfilled" && res.value !== "0")
+              .map<DiscoveredBalance>(([{ address, tokenId }, res]) => ({
+                id: `${tokenId}::${address}`,
+                tokenId,
+                address,
+                balance: (res as PromiseFulfilledResult<string>).value,
+              }))
+
+            const newState = await assetDiscoveryStore.mutate((prev) => {
+              if (prev.currentScanId !== currentScanId) return prev
+
+              const currentScanCursors = {
+                ...prev.currentScanCursors,
+                [networkId]: {
+                  address: checks[checks.length - 1].address,
+                  tokenId: checks[checks.length - 1].tokenId,
+                  scanned: (prev.currentScanCursors[networkId]?.scanned ?? 0) + checks.length,
+                },
+              }
+
+              const totalScanned = Object.values(currentScanCursors).reduce(
+                (acc, cur) => acc + cur.scanned,
+                0
+              )
+              const currentScanProgressPercent = Math.round((100 * totalScanned) / totalChecks)
+
+              return {
+                ...prev,
+                currentScanCursors,
+                currentScanProgressPercent,
+                currentScanTokensCount: totalTokens,
+              }
+            })
+
+            if (newState.currentScanId === currentScanId)
+              if (newBalances.length) await db.assetDiscovery.bulkPut(newBalances)
+          }
+        } catch (err) {
+          log.error(`Could not scan network ${networkId}`, { err })
         }
       })
 
-    await assetDiscoveryStore.set({
-      currentScanId: null,
-      lastScanTimestamp: Date.now(),
-      lastScanAccounts: [...new Set(results.map((r) => r.address))],
-      lastScanFull: await assetDiscoveryStore.get("currentScanFull"),
-      status: "completed",
+    await assetDiscoveryStore.mutate((prev) => {
+      if (prev.currentScanId !== currentScanId) return prev
+      return {
+        ...prev,
+        currentScanId: null,
+        currentScanProgressPercent: 100, // force 100% to account for networks that could not be scanned
+        currentScanCursors: {},
+        lastScanTimestamp: Date.now(),
+        lastScanAccounts: addresses,
+        lastScanFull: prev.currentScanFull,
+        status: "idle",
+      }
     })
   }
 }
@@ -203,4 +237,4 @@ export const assetDiscoveryScanner = new AssetDiscoveryScanner()
 
 // safety measure
 if (Browser.extension.getBackgroundPage() !== window)
-  throw new Error("@core/domains/assetDiscovery/store cannot be imported from front end")
+  throw new Error("@core/domains/assetDiscovery/store cannot be accessed from front end")

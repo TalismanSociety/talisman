@@ -1,5 +1,5 @@
 import { ProtectorSources, ProtectorStorage } from "@core/domains/app/protector/ParaverseProtector"
-import { AssetDiscoveryResult } from "@core/domains/assetDiscovery/types"
+import { DiscoveredBalance } from "@core/domains/assetDiscovery/types"
 import { WalletTransaction } from "@core/domains/transactions/types"
 import { MetadataDef } from "@core/inject/types"
 import { DbTokenRates } from "@talismn/token-rates"
@@ -12,7 +12,7 @@ export class TalismanDatabase extends Dexie {
   metadata!: Dexie.Table<MetadataDef, string>
   phishing!: Dexie.Table<ProtectorStorage, ProtectorSources>
   transactions!: Dexie.Table<WalletTransaction, string>
-  assetDiscovery!: Dexie.Table<AssetDiscoveryResult, string>
+  assetDiscovery!: Dexie.Table<DiscoveredBalance, string>
 
   constructor() {
     super("Talisman")
@@ -54,7 +54,7 @@ export class TalismanDatabase extends Dexie {
       metadata: "genesisHash",
       phishing: "source, commitSha",
       transactions: "hash, status, timestamp",
-      assetDiscovery: "id, tokenId, address, status",
+      assetDiscovery: "id, tokenId, address",
     })
   }
 }

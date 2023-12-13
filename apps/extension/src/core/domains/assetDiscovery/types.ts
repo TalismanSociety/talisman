@@ -1,13 +1,11 @@
 import { Address } from "@talismn/balances"
 import { TokenId } from "@talismn/chaindata-provider"
 
-export type AssetDiscoveryResult = {
+export type DiscoveredBalance = {
   id: string
   address: Address
   tokenId: TokenId
-  balance: string | null
-  status: "pending" | "success" | "error"
-  // timestamp: number
+  balance: string
 }
 
 export type RequestAssetDiscoveryStartScan = {

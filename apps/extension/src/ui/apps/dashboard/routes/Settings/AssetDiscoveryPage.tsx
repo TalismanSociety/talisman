@@ -1,7 +1,7 @@
 import { db } from "@core/db"
 import { AccountJsonAny } from "@core/domains/accounts/types"
 import { AssetDiscoveryScanState, assetDiscoveryStore } from "@core/domains/assetDiscovery/store"
-import { AssetDiscoveryResult } from "@core/domains/assetDiscovery/types"
+import { DiscoveredBalance } from "@core/domains/assetDiscovery/types"
 import {
   enabledEvmNetworksStore,
   isEvmNetworkEnabled,
@@ -11,9 +11,9 @@ import { TokenId } from "@core/domains/tokens/types"
 import { log } from "@core/log"
 import { HeaderBlock } from "@talisman/components/HeaderBlock"
 import { Spacer } from "@talisman/components/Spacer"
-import { BalanceFormatter } from "@talismn/balances"
+import { Address, BalanceFormatter } from "@talismn/balances"
 import { EvmNetworkId } from "@talismn/chaindata-provider"
-import { ChevronDownIcon, DiamondIcon, InfoIcon, PlusIcon, SearchIcon } from "@talismn/icons"
+import { ChevronDownIcon, DiamondIcon, InfoIcon, PlusIcon, SearchIcon, XIcon } from "@talismn/icons"
 import { classNames } from "@talismn/util"
 import { api } from "@ui/api"
 import { AnalyticsPage } from "@ui/api/analytics"
@@ -40,8 +40,8 @@ import { Button, Tooltip, TooltipContent, TooltipTrigger } from "talisman-ui"
 import { DashboardLayout } from "../../layout/DashboardLayout"
 import { AccountsStack } from "./Accounts/AccountIconsStack"
 
-const assetDiscoveryResultsState = atom<AssetDiscoveryResult[]>({
-  key: "assetDiscoveryResultsState",
+const assetDiscoveryBalancesState = atom<DiscoveredBalance[]>({
+  key: "assetDiscoveryBalancesState",
   effects: [
     // sync from db
     ({ setSelf }) => {
@@ -72,42 +72,39 @@ const assetDiscoveryScanState = atom<AssetDiscoveryScanState>({
 })
 
 const scanProgress = selector<{
-  scanned: number
-  total: number
   percent: number
-  balances: AssetDiscoveryResult[]
-  balancesByTokenId: Record<TokenId, AssetDiscoveryResult[]>
+  balances: DiscoveredBalance[]
+  balancesByTokenId: Record<TokenId, DiscoveredBalance[]>
   tokensCount: number
+  accounts: Address[]
   accountsCount: number
   isInProgress: boolean
 }>({
   key: "scanProgress",
   get: ({ get }) => {
-    const results = get(assetDiscoveryResultsState)
-    const total = results.length
-    const scanned = results.filter((r) => r.status !== "pending").length
-    const balances = results.filter((r) => r.balance !== null && r.balance !== "0")
+    const {
+      currentScanProgressPercent: percent,
+      currentScanAccounts: accounts,
+      currentScanTokensCount: tokensCount,
+      currentScanId,
+    } = get(assetDiscoveryScanState)
+    const balances = get(assetDiscoveryBalancesState)
+
     const balancesByTokenId = groupBy(balances, (a) => a.tokenId)
-    const tokensCount = [...new Set(results.map((r) => r.tokenId))].length
-    const accountsCount = [...new Set(results.map((r) => r.address))].length
-    const isInProgress = scanned !== total
+
     return {
-      scanned,
-      total,
-      percent: Math.round((scanned / total) * 100),
+      percent,
       balances,
       balancesByTokenId,
       tokensCount,
-      accountsCount,
-      isInProgress,
+      accounts,
+      accountsCount: accounts.length,
+      isInProgress: !!currentScanId,
     }
   },
 })
 
-const AssetRow: FC<{ tokenId: TokenId; assets: AssetDiscoveryResult[] }> = ({
-  tokenId,
-  assets,
-}) => {
+const AssetRow: FC<{ tokenId: TokenId; assets: DiscoveredBalance[] }> = ({ tokenId, assets }) => {
   const { t } = useTranslation("admin")
   const token = useToken(tokenId)
   const evmNetwork = useEvmNetwork(token?.evmNetwork?.id)
@@ -203,9 +200,14 @@ const AssetRow: FC<{ tokenId: TokenId; assets: AssetDiscoveryResult[] }> = ({
 const AssetTable: FC = () => {
   const { t } = useTranslation("admin")
 
-  const { total, balancesByTokenId: assetsByTokenId } = useRecoilValue(scanProgress)
+  // force loading these atoms to resolve the suspense, this prevent flickering when rows appears
+  useTokens("enabledWithoutTestnets")
+  useEvmNetworks("enabledWithoutTestnets")
+  useTokenRates()
 
-  if (!total) return null
+  const { balances, balancesByTokenId: assetsByTokenId } = useRecoilValue(scanProgress)
+
+  if (!balances.length) return null
 
   return (
     <div className="text-body flex w-full min-w-[45rem] flex-col gap-4 text-left text-base">
@@ -232,7 +234,7 @@ const ANALYTICS_PAGE: AnalyticsPage = {
 
 const Header: FC = () => {
   const { t } = useTranslation("admin")
-  const { scanned, total, tokensCount, accountsCount, percent, isInProgress } =
+  const { balances, accountsCount, tokensCount, percent, isInProgress } =
     useRecoilValue(scanProgress)
 
   const handleScanClick = useCallback(
@@ -243,14 +245,19 @@ const Header: FC = () => {
     },
     []
   )
+  const handleCaancelScanClick = useCallback(async () => {
+    const stop = log.timer("stop scan")
+    await api.assetDiscoveryStopScan()
+    stop()
+  }, [])
 
   return (
     <div className="bg-grey-850 flex h-[8.6rem] items-center gap-8 rounded-sm px-8">
       <DiamondIcon
-        className={classNames("text-lg", total ? "text-primary" : "text-body-secondary")}
+        className={classNames("text-lg", isInProgress ? "text-primary" : "text-body-secondary")}
       />
       <div className="flex grow flex-col gap-4 pr-10">
-        {total ? (
+        {isInProgress || balances.length ? (
           <>
             <div className="flex text-base">
               <div className="grow">
@@ -268,7 +275,10 @@ const Header: FC = () => {
             </div>
             <div className="bg-grey-800 relative flex h-4 overflow-hidden rounded-lg">
               <div
-                className="bg-primary-500 absolute left-0 top-0 h-4 w-full rounded-lg transition-transform duration-300 ease-out"
+                className={classNames(
+                  "bg-primary-500 absolute left-0 top-0 h-4 w-full rounded-lg",
+                  percent && "transition-transform duration-300 ease-out" // no animation on restart
+                )}
                 style={{
                   transform: `translateX(-${100 - percent}%)`,
                 }}
@@ -284,15 +294,28 @@ const Header: FC = () => {
           </>
         )}
       </div>
-      <button
-        onClick={handleScanClick(true)}
-        className="bg-primary flex h-16 items-center gap-2 rounded-full px-4 text-xs text-black"
-      >
-        <SearchIcon className="text-base" />
-        <div className="text-sm">{t("Scan")}</div>
-        <div className="mx-1 h-full w-0.5 bg-black/10"></div>
-        <ChevronDownIcon className="text-base" />
-      </button>
+      {isInProgress ? (
+        <Button
+          small
+          onClick={handleCaancelScanClick}
+          iconLeft={XIcon}
+          className="h-16 min-w-[10.5rem] rounded-full px-4 pr-6"
+        >
+          {t("Cancel")}
+        </Button>
+      ) : (
+        <Button
+          small
+          primary
+          onClick={handleScanClick(true)}
+          className="h-16 min-w-[10.5rem] rounded-full px-4 pr-6 [&>div>div]:flex [&>div>div]:h-full [&>div>div]:items-center [&>div>div]:gap-2 [&>div]:h-full"
+        >
+          <SearchIcon className="text-base" />
+          <div className="text-sm">{t("Scan")}</div>
+          <div className="mx-1 h-full w-0.5 shrink-0 bg-black/10"></div>
+          <ChevronDownIcon className="text-base" />
+        </Button>
+      )}
     </div>
   )
 }
@@ -300,13 +323,9 @@ const Header: FC = () => {
 const ScanInfo: FC = () => {
   const { t } = useTranslation("admin")
 
-  const {
-    balancesByTokenId: assetsByTokenId,
-    total,
-    scanned,
-    isInProgress,
-  } = useRecoilValue(scanProgress)
-  const { status, lastScanAccounts, lastScanTimestamp } = useRecoilValue(assetDiscoveryScanState)
+  const { balancesByTokenId, balances } = useRecoilValue(scanProgress)
+  const { currentScanId, lastScanAccounts, lastScanTimestamp } =
+    useRecoilValue(assetDiscoveryScanState)
 
   const enabledEvmNetworks = useEnabledEvmNetworksState()
   const enabledTokens = useEnabledTokensState()
@@ -314,7 +333,7 @@ const ScanInfo: FC = () => {
   const { evmNetworksMap } = useEvmNetworks("all")
 
   const canEnable = useMemo(() => {
-    const tokenIds = Object.keys(assetsByTokenId)
+    const tokenIds = Object.keys(balancesByTokenId)
     return tokenIds.some((tokenId) => {
       const token = tokensMap[tokenId]
       const evmNetwork = evmNetworksMap[token?.evmNetwork?.id ?? ""]
@@ -323,19 +342,19 @@ const ScanInfo: FC = () => {
         !isTokenEnabled(token, enabledTokens)
       )
     })
-  }, [assetsByTokenId, enabledEvmNetworks, enabledTokens, evmNetworksMap, tokensMap])
+  }, [balancesByTokenId, enabledEvmNetworks, enabledTokens, evmNetworksMap, tokensMap])
 
   const enableAll = useCallback(async () => {
-    const tokenIds = Object.keys(assetsByTokenId)
+    const tokenIds = Object.keys(balancesByTokenId)
     const evmNetworkIds = [
       ...new Set(tokenIds.map((tokenId) => tokensMap[tokenId]?.evmNetwork?.id).filter(Boolean)),
     ] as EvmNetworkId[]
     await enabledEvmNetworksStore.set(Object.fromEntries(evmNetworkIds.map((id) => [id, true])))
     await enabledTokensStore.set(Object.fromEntries(tokenIds.map((id) => [id, true])))
-  }, [assetsByTokenId, tokensMap])
+  }, [balancesByTokenId, tokensMap])
 
   const description = useMemo(() => {
-    if (status === "scanning") return t("Scan in progress...")
+    if (currentScanId) return t("Scan in progress...")
     if (lastScanTimestamp && lastScanAccounts.length) {
       const date = new Date(lastScanTimestamp)
       return t("Last scanned {{accountsCount}} accounts at {{timestamp}}", {
@@ -344,12 +363,12 @@ const ScanInfo: FC = () => {
       })
     }
     return null
-  }, [lastScanAccounts.length, lastScanTimestamp, status, t])
+  }, [lastScanAccounts.length, lastScanTimestamp, currentScanId, t])
 
   return (
     <div className="flex h-16 w-full items-center px-8">
       <div className="text-body-disabled grow">{description}</div>
-      {!!total && (
+      {!!balances.length && (
         <Button
           disabled={!canEnable}
           onClick={enableAll}
