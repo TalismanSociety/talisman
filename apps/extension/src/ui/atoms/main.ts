@@ -47,10 +47,8 @@ export const mainState = atom<{
       const obsEvmNetworks = liveQuery(() => chaindataProvider.evmNetworksArray())
       const obsChains = liveQuery(() => chaindataProvider.chainsArray())
       const obsTokenRates = liveQuery(() => db.tokenRates.toArray())
-      const obsAccounts = new Subject<AccountJsonAny[]>()
-      const unsubAccounts = api.accountsSubscribe((v) => obsAccounts.next(v))
       const obsAccountsCatalog = new Subject<Trees>()
-      const unsubAccountsCatalog = api.accountsCatalogSubscribe((v) => obsAccountsCatalog.next(v))
+      const obsAccounts = new Subject<AccountJsonAny[]>()
 
       const stop = log.timer("walletDataState")
       const obsChainData = combineLatest([
@@ -95,6 +93,9 @@ export const mainState = atom<{
           })
         }
       )
+
+      const unsubAccountsCatalog = api.accountsCatalogSubscribe((v) => obsAccountsCatalog.next(v))
+      const unsubAccounts = api.accountsSubscribe((v) => obsAccounts.next(v))
 
       return () => {
         obsChainData.unsubscribe()
