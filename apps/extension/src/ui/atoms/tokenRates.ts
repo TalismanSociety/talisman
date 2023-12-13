@@ -6,19 +6,29 @@ import { settingQuery } from "@ui/hooks/useSettings"
 import { liveQuery } from "dexie"
 import { DefaultValue, atom, selector, selectorFamily } from "recoil"
 
+import { walletDataState } from "./main"
+
 const NO_OP = () => {}
-export const tokenRatesState = atom<DbTokenRates[]>({
+// export const tokenRatesState = atom<DbTokenRates[]>({
+//   key: "tokenRatesState",
+//   effects: [
+//     // sync from db
+//     ({ setSelf }) => {
+//       const obs = liveQuery(() => db.tokenRates.toArray())
+//       const sub = obs.subscribe(setSelf)
+//       return () => sub.unsubscribe()
+//     },
+//     // instruct backend to keep db synchronized while this atom is in use
+//     () => api.tokenRates(NO_OP),
+//   ],
+// })
+
+export const tokenRatesState = selector<DbTokenRates[]>({
   key: "tokenRatesState",
-  effects: [
-    // sync from db
-    ({ setSelf }) => {
-      const obs = liveQuery(() => db.tokenRates.toArray())
-      const sub = obs.subscribe(setSelf)
-      return () => sub.unsubscribe()
-    },
-    // instruct backend to keep db synchronized while this atom is in use
-    () => api.tokenRates(NO_OP),
-  ],
+  get: ({ get }) => {
+    const { tokenRates } = get(walletDataState)
+    return tokenRates
+  },
 })
 
 export const tokenRatesMapState = selector({

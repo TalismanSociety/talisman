@@ -1,16 +1,25 @@
 import { AppStoreData, appStore } from "@core/domains/app/store.app"
-import { RecoilState, atom, selectorFamily, useRecoilState } from "recoil"
+import { walletDataState } from "@ui/atoms/main"
+import { RecoilState, selector, selectorFamily, useRecoilState } from "recoil"
 
-export const appState = atom<AppStoreData>({
+// export const appState = atom<AppStoreData>({
+//   key: "appState",
+//   effects: [
+//     ({ setSelf }) => {
+//       const sub = appStore.observable.subscribe(setSelf)
+//       return () => {
+//         sub.unsubscribe()
+//       }
+//     },
+//   ],
+// })
+
+export const appState = selector({
   key: "appState",
-  effects: [
-    ({ setSelf }) => {
-      const sub = appStore.observable.subscribe(setSelf)
-      return () => {
-        sub.unsubscribe()
-      }
-    },
-  ],
+  get: ({ get }) => {
+    const { appState } = get(walletDataState)
+    return appState
+  },
 })
 
 const appStateQuery = selectorFamily({

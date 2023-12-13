@@ -1,19 +1,29 @@
 import { Trees } from "@core/domains/accounts/helpers.catalog"
 import { AccountJsonAny, AccountType } from "@core/domains/accounts/types"
 import { api } from "@ui/api"
-import { atom, selectorFamily } from "recoil"
+import { atom, selector, selectorFamily } from "recoil"
+
+import { walletDataState } from "./main"
 
 /**
  * Accounts
  */
-const rawAccountsState = atom<AccountJsonAny[]>({
+// const rawAccountsState = atom<AccountJsonAny[]>({
+//   key: "rawAccountsState",
+//   effects: [
+//     ({ setSelf }) => {
+//       const unsubscribe = api.accountsSubscribe(setSelf)
+//       return () => unsubscribe()
+//     },
+//   ],
+// })
+
+const rawAccountsState = selector<AccountJsonAny[]>({
   key: "rawAccountsState",
-  effects: [
-    ({ setSelf }) => {
-      const unsubscribe = api.accountsSubscribe(setSelf)
-      return () => unsubscribe()
-    },
-  ],
+  get: ({ get }) => {
+    const { accounts } = get(walletDataState)
+    return accounts
+  },
 })
 
 export type AccountsFilter = "all" | "watched" | "owned" | "portfolio"
@@ -42,12 +52,20 @@ export const accountsQuery = selectorFamily({
 /**
  * Accounts Catalog
  */
-export const accountsCatalogState = atom<Trees>({
+// export const accountsCatalogState = atom<Trees>({
+//   key: "accountsCatalogState",
+//   effects: [
+//     ({ setSelf }) => {
+//       const unsubscribe = api.accountsCatalogSubscribe(setSelf)
+//       return () => unsubscribe()
+//     },
+//   ],
+// })
+
+export const accountsCatalogState = selector<Trees>({
   key: "accountsCatalogState",
-  effects: [
-    ({ setSelf }) => {
-      const unsubscribe = api.accountsCatalogSubscribe(setSelf)
-      return () => unsubscribe()
-    },
-  ],
+  get: ({ get }) => {
+    const { accountsCatalog } = get(walletDataState)
+    return accountsCatalog
+  },
 })

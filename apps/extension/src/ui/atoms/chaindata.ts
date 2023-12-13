@@ -26,12 +26,67 @@ import { liveQuery } from "dexie"
 import { atom, selector, selectorFamily } from "recoil"
 import { combineLatest } from "rxjs"
 
+import { walletDataState } from "./main"
+
 const NO_OP = () => {}
 
 const filterNoTestnet = ({ isTestnet }: { isTestnet?: boolean }) => isTestnet === false
 
 // load these entities in parallel in this atom to prevent recoil/suspense to load them sequentially
-const chainDataMainState = atom<{
+// const chainDataMainState = atom<{
+//   evmNetworks: (EvmNetwork | CustomEvmNetwork)[]
+//   chains: (Chain | CustomChain)[]
+//   tokens: TokenList
+//   enabledEvmNetworksState: EnabledEvmNetworks
+//   enabledChainsState: EnabledChains
+//   enabledTokensState: EnabledTokens
+// }>({
+//   key: "chainDataMainState",
+//   effects: [
+//     ({ setSelf }) => {
+//       const obsTokens = liveQuery(() => chaindataProvider.tokens())
+//       const obsEvmNetworks = liveQuery(() => chaindataProvider.evmNetworksArray())
+//       const obsChains = liveQuery(() => chaindataProvider.chainsArray())
+
+//       const obsChainData = combineLatest([
+//         obsTokens,
+//         obsEvmNetworks,
+//         obsChains,
+//         enabledTokensStore.observable,
+//         enabledEvmNetworksStore.observable,
+//         enabledChainsStore.observable,
+//       ]).subscribe(
+//         ([
+//           tokens,
+//           evmNetworks,
+//           chains,
+//           enabledTokensState,
+//           enabledEvmNetworksState,
+//           enabledChainsState,
+//         ]) => {
+//           setSelf({
+//             tokens,
+//             evmNetworks,
+//             chains,
+//             enabledTokensState,
+//             enabledEvmNetworksState,
+//             enabledChainsState,
+//           })
+//         }
+//       )
+
+//       return () => {
+//         obsChainData.unsubscribe()
+//       }
+//     },
+//     // instruct backend to keep db synchronized while this atom is in use
+//     () => api.tokens(NO_OP),
+//     () => api.chains(NO_OP),
+//     () => api.ethereumNetworks(NO_OP),
+//   ],
+// })
+
+const chainDataMainState = selector<{
   evmNetworks: (EvmNetwork | CustomEvmNetwork)[]
   chains: (Chain | CustomChain)[]
   tokens: TokenList
@@ -40,48 +95,24 @@ const chainDataMainState = atom<{
   enabledTokensState: EnabledTokens
 }>({
   key: "chainDataMainState",
-  effects: [
-    ({ setSelf }) => {
-      const obsTokens = liveQuery(() => chaindataProvider.tokens())
-      const obsEvmNetworks = liveQuery(() => chaindataProvider.evmNetworksArray())
-      const obsChains = liveQuery(() => chaindataProvider.chainsArray())
-
-      const obsChainData = combineLatest([
-        obsTokens,
-        obsEvmNetworks,
-        obsChains,
-        enabledTokensStore.observable,
-        enabledEvmNetworksStore.observable,
-        enabledChainsStore.observable,
-      ]).subscribe(
-        ([
-          tokens,
-          evmNetworks,
-          chains,
-          enabledTokensState,
-          enabledEvmNetworksState,
-          enabledChainsState,
-        ]) => {
-          setSelf({
-            tokens,
-            evmNetworks,
-            chains,
-            enabledTokensState,
-            enabledEvmNetworksState,
-            enabledChainsState,
-          })
-        }
-      )
-
-      return () => {
-        obsChainData.unsubscribe()
-      }
-    },
-    // instruct backend to keep db synchronized while this atom is in use
-    () => api.tokens(NO_OP),
-    () => api.chains(NO_OP),
-    () => api.ethereumNetworks(NO_OP),
-  ],
+  get: ({ get }) => {
+    const {
+      evmNetworks,
+      chains,
+      tokens,
+      enabledEvmNetworksState,
+      enabledChainsState,
+      enabledTokensState,
+    } = get(walletDataState)
+    return {
+      evmNetworks,
+      chains,
+      tokens,
+      enabledEvmNetworksState,
+      enabledChainsState,
+      enabledTokensState,
+    }
+  },
 })
 
 export const evmNetworksEnabledState = selector<EnabledEvmNetworks>({

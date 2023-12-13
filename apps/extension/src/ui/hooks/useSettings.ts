@@ -1,16 +1,25 @@
 import { SettingsStoreData, settingsStore } from "@core/domains/app/store.settings"
-import { GetRecoilValue, RecoilState, atom, selectorFamily, useRecoilState } from "recoil"
+import { walletDataState } from "@ui/atoms/main"
+import { GetRecoilValue, RecoilState, selector, selectorFamily, useRecoilState } from "recoil"
 
-const settingsState = atom<SettingsStoreData>({
+// const settingsState = atom<SettingsStoreData>({
+//   key: "settingsState",
+//   effects: [
+//     ({ setSelf }) => {
+//       const sub = settingsStore.observable.subscribe(setSelf)
+//       return () => {
+//         sub.unsubscribe()
+//       }
+//     },
+//   ],
+// })
+
+const settingsState = selector({
   key: "settingsState",
-  effects: [
-    ({ setSelf }) => {
-      const sub = settingsStore.observable.subscribe(setSelf)
-      return () => {
-        sub.unsubscribe()
-      }
-    },
-  ],
+  get: ({ get }) => {
+    const { settings } = get(walletDataState)
+    return settings
+  },
 })
 
 export const settingQuery = selectorFamily({
