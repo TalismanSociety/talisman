@@ -204,9 +204,6 @@ export const TokenPage = () => {
           >
             {t("Remove Token")}
           </Button>
-          {/* <Button className="h-24 w-[24rem] text-base" primary={!isEnabled} onClick={toggleEnabled}>
-            {isEnabled ? t("Disable Token") : t("Enable Token")}
-          </Button> */}
         </div>
       </form>
       <ConfirmRemove open={isOpen} onClose={close} token={erc20Token} />
