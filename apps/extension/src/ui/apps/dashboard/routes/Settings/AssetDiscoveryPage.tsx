@@ -11,14 +11,24 @@ import { TokenId } from "@core/domains/tokens/types"
 import { log } from "@core/log"
 import { HeaderBlock } from "@talisman/components/HeaderBlock"
 import { Spacer } from "@talisman/components/Spacer"
+import { shortenAddress } from "@talisman/util/shortenAddress"
 import { Address, BalanceFormatter } from "@talismn/balances"
 import { EvmNetworkId, TokenList } from "@talismn/chaindata-provider"
-import { ChevronDownIcon, DiamondIcon, InfoIcon, PlusIcon, SearchIcon, XIcon } from "@talismn/icons"
+import {
+  CheckCircleIcon,
+  ChevronDownIcon,
+  DiamondIcon,
+  InfoIcon,
+  PlusIcon,
+  SearchIcon,
+  XIcon,
+} from "@talismn/icons"
 import { fetchTokenRates } from "@talismn/token-rates"
 import { classNames } from "@talismn/util"
 import { useQuery } from "@tanstack/react-query"
 import { api } from "@ui/api"
 import { AnalyticsPage } from "@ui/api/analytics"
+import { AccountIcon } from "@ui/domains/Account/AccountIcon"
 import Fiat from "@ui/domains/Asset/Fiat"
 import { TokenLogo } from "@ui/domains/Asset/TokenLogo"
 import Tokens from "@ui/domains/Asset/Tokens"
@@ -37,10 +47,47 @@ import { FC, useCallback, useMemo } from "react"
 import { Trans, useTranslation } from "react-i18next"
 import { atom, selector, useRecoilValue } from "recoil"
 import { debounceTime, first, from, merge } from "rxjs"
-import { Button, Tooltip, TooltipContent, TooltipTrigger } from "talisman-ui"
+import {
+  Button,
+  ContextMenu,
+  ContextMenuContent,
+  ContextMenuItem,
+  ContextMenuTrigger,
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "talisman-ui"
 
 import { DashboardLayout } from "../../layout/DashboardLayout"
 import { AccountsStack } from "./Accounts/AccountIconsStack"
+
+const AccountTooltip: FC<{ addresses: Address[] }> = ({ addresses }) => {
+  const allAccounts = useAccounts("all")
+  const accounts = useMemo(
+    () =>
+      [...new Set(addresses)]
+        .map((add) => allAccounts.find((acc) => acc.address === add))
+        .filter(Boolean) as AccountJsonAny[],
+    [allAccounts, addresses]
+  )
+  const { t } = useTranslation("admin")
+  return (
+    <div className="text-body-disabled flex flex-col gap-2 p-2 text-left text-xs">
+      <div>{t("Accounts")}</div>
+      <div className="bg-body-disabled/50 mb-2 h-0.5 w-full" />
+      {accounts.map((account) => (
+        <div
+          key={account.address}
+          className="flex w-[30rem] items-center gap-2 overflow-hidden whitespace-nowrap text-sm"
+        >
+          <AccountIcon address={account.address} genesisHash={account.genesisHash} />
+          <div className="text-body grow truncate">{account.name}</div>
+          <div>{shortenAddress(account.address)}</div>
+        </div>
+      ))}
+    </div>
+  )
+}
 
 const assetDiscoveryBalancesState = atom<DiscoveredBalance[]>({
   key: "assetDiscoveryBalancesState",
@@ -184,7 +231,12 @@ const AssetRow: FC<{ tokenId: TokenId; assets: DiscoveredBalance[] }> = ({ token
   if (!token || !evmNetwork) return null
 
   return (
-    <div className="bg-grey-900 grid h-32 grid-cols-[30%_25%_30%_15%] items-center rounded-sm px-8">
+    <div
+      className={classNames(
+        "bg-grey-900 grid h-32 grid-cols-[25%_25%_30%_20%] items-center rounded-sm px-8",
+        isEnabled && "opacity-50"
+      )}
+    >
       <div className="flex items-center gap-6">
         <div>
           <TokenLogo tokenId={tokenId} className="shrink-0 text-xl" />
@@ -192,7 +244,14 @@ const AssetRow: FC<{ tokenId: TokenId; assets: DiscoveredBalance[] }> = ({ token
         <div className="flex flex-col gap-1">
           <div>{token.symbol}</div>
           <div>
-            <AccountsStack accounts={accounts} />
+            <Tooltip>
+              <TooltipTrigger>
+                <AccountsStack accounts={accounts} />
+              </TooltipTrigger>
+              <TooltipContent>
+                <AccountTooltip addresses={accounts.map((a) => a.address)} />
+              </TooltipContent>
+            </Tooltip>
           </div>
         </div>
       </div>
@@ -223,8 +282,15 @@ const AssetRow: FC<{ tokenId: TokenId; assets: DiscoveredBalance[] }> = ({ token
         )}
       </div>
       <div className="pl-4 text-right">
-        <Button small disabled={isEnabled} onClick={enable} primary className="h-16 rounded-sm">
-          {t("Activate")}
+        <Button
+          small
+          disabled={isEnabled}
+          onClick={enable}
+          primary
+          className="disabled:text-primary-500 h-16 w-56 rounded-sm"
+          icon={isEnabled ? CheckCircleIcon : undefined}
+        >
+          {isEnabled ? t("Activated") : t("Activate")}
         </Button>
       </div>
     </div>
@@ -245,7 +311,7 @@ const AssetTable: FC = () => {
 
   return (
     <div className="text-body flex w-full min-w-[45rem] flex-col gap-4 text-left text-base">
-      <div className="text-body-disabled grid grid-cols-[30%_25%_30%_15%] px-8 text-sm font-normal">
+      <div className="text-body-disabled grid grid-cols-[25%_25%_30%_20%] px-8 text-sm font-normal">
         <div>{t("Asset")}</div>
         <div>{t("Network")}</div>
         <div className="text-right">{t("Balance")}</div>
@@ -338,17 +404,27 @@ const Header: FC = () => {
           {t("Cancel")}
         </Button>
       ) : (
-        <Button
-          small
-          primary
-          onClick={handleScanClick(true)}
-          className="h-16 min-w-[10.5rem] rounded-full px-4 pr-6 [&>div>div]:flex [&>div>div]:h-full [&>div>div]:items-center [&>div>div]:gap-2 [&>div]:h-full"
-        >
-          <SearchIcon className="text-base" />
-          <div className="text-sm">{t("Scan")}</div>
-          <div className="mx-1 h-full w-0.5 shrink-0 bg-black/10"></div>
-          <ChevronDownIcon className="text-base" />
-        </Button>
+        <ContextMenu placement="bottom-end">
+          <ContextMenuTrigger
+            className={classNames(
+              "bg-primary flex h-16 items-center gap-2 rounded-full border border-transparent px-4 text-xs text-black",
+              "focus:border focus:border-white focus:ring-2 focus:ring-white active:border-transparent"
+            )}
+          >
+            <SearchIcon className="text-base" />
+            <div className="text-sm">{t("Scan")}</div>
+            <div className="mx-1 h-full w-0.5 shrink-0 bg-black/10"></div>
+            <ChevronDownIcon className="text-base" />
+          </ContextMenuTrigger>
+          <ContextMenuContent>
+            <ContextMenuItem onClick={handleScanClick(false)}>
+              {t("Scan only active networks")}
+            </ContextMenuItem>
+            <ContextMenuItem onClick={handleScanClick(true)}>
+              {t("Scan all networks")}
+            </ContextMenuItem>
+          </ContextMenuContent>
+        </ContextMenu>
       )}
     </div>
   )
@@ -406,7 +482,7 @@ const ScanInfo: FC = () => {
         <Button
           disabled={!canEnable}
           onClick={enableAll}
-          className="h-16"
+          className="h-16 rounded-sm"
           iconLeft={PlusIcon}
           small
           primary
