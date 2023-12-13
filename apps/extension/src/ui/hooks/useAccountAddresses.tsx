@@ -1,4 +1,4 @@
-import { AccountsFilter } from "@ui/atoms/accounts"
+import { AccountsFilter } from "@ui/atoms"
 
 import { useAccounts } from "./useAccounts"
 

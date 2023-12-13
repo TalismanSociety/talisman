@@ -35,7 +35,7 @@ export const PrivacyPage = () => {
         action: `Manage your privacy - ${allowTracking ? "I agree" : "No thanks"}`,
       })
       updateData({ allowTracking })
-      isLoggedIn === "TRUE" ? navigate("/accounts/add") : setOnboarded()
+      isLoggedIn ? navigate("/accounts/add") : setOnboarded()
     },
     [navigate, updateData, isLoggedIn, setOnboarded]
   )

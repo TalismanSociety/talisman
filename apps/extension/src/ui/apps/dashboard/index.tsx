@@ -58,14 +58,14 @@ const DashboardInner = () => {
   useModalSubscription()
 
   useEffect(() => {
-    if (isLoggedIn === "TRUE") wasLoggedIn.current = true
+    if (isLoggedIn) wasLoggedIn.current = true
   }, [isLoggedIn])
 
   // if we're not onboarded, redirect to onboard
   useEffect(() => {
-    if (isOnboarded === "FALSE")
+    if (!isOnboarded)
       window.location.href = window.location.href.replace("dashboard.html", "onboarding.html")
-    else if (isOnboarded === "TRUE" && isLoggedIn === "FALSE") {
+    else if (!isLoggedIn) {
       // if user was logged in and locked the extension from the popup, close the tab
       if (wasLoggedIn.current) window.close()
       // else (open from a bookmark ?), prompt login
@@ -75,9 +75,7 @@ const DashboardInner = () => {
 
   const { t } = useTranslation()
 
-  if (isLoggedIn === "UNKNOWN") return null
-
-  if (isLoggedIn === "FALSE")
+  if (!isLoggedIn)
     return <FullScreenLoader title={t("Waiting")} subtitle={t("Please unlock the Talisman")} />
 
   return (
