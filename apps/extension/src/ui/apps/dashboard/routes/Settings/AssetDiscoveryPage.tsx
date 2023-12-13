@@ -12,9 +12,11 @@ import { log } from "@core/log"
 import { HeaderBlock } from "@talisman/components/HeaderBlock"
 import { Spacer } from "@talisman/components/Spacer"
 import { Address, BalanceFormatter } from "@talismn/balances"
-import { EvmNetworkId } from "@talismn/chaindata-provider"
+import { EvmNetworkId, TokenList } from "@talismn/chaindata-provider"
 import { ChevronDownIcon, DiamondIcon, InfoIcon, PlusIcon, SearchIcon, XIcon } from "@talismn/icons"
+import { fetchTokenRates } from "@talismn/token-rates"
 import { classNames } from "@talismn/util"
+import { useQuery } from "@tanstack/react-query"
 import { api } from "@ui/api"
 import { AnalyticsPage } from "@ui/api/analytics"
 import Fiat from "@ui/domains/Asset/Fiat"
@@ -79,6 +81,7 @@ const scanProgress = selector<{
   accounts: Address[]
   accountsCount: number
   isInProgress: boolean
+  tokenIds: TokenId[]
 }>({
   key: "scanProgress",
   get: ({ get }) => {
@@ -91,6 +94,7 @@ const scanProgress = selector<{
     const balances = get(assetDiscoveryBalancesState)
 
     const balancesByTokenId = groupBy(balances, (a) => a.tokenId)
+    const tokenIds = Object.keys(balancesByTokenId)
 
     return {
       percent,
@@ -100,15 +104,45 @@ const scanProgress = selector<{
       accounts,
       accountsCount: accounts.length,
       isInProgress: !!currentScanId,
+      tokenIds,
     }
   },
 })
+
+const TOKEN_RATES_CACHE: TokenList = {}
+
+// our main token rates store only fetches enabled tokens, this obviously doesn't work here
+const useDiscoveredTokenRates = () => {
+  const { tokenIds } = useRecoilValue(scanProgress)
+  const { tokens } = useTokens("all")
+  const tokenList = useMemo(
+    () => Object.fromEntries(tokens.filter((t) => tokenIds.includes(t.id)).map((t) => [t.id, t])),
+    [tokenIds, tokens]
+  )
+
+  const { data } = useQuery({
+    queryKey: ["useDiscoveredTokenRates", tokenList],
+    queryFn: () => fetchTokenRates(tokenList),
+    refetchInterval: 60_000,
+    refetchOnMount: false,
+    refetchOnWindowFocus: false,
+    refetchOnReconnect: false,
+    retry: false, // don't retry on error, which is most likely due to rate limit
+  })
+
+  return Object.assign(TOKEN_RATES_CACHE, data ?? {})
+}
+
+const useDiscoveredTokenRate = (tokenId: TokenId | undefined) => {
+  const tokenRates = useDiscoveredTokenRates()
+  return tokenId ? tokenRates[tokenId] : undefined
+}
 
 const AssetRow: FC<{ tokenId: TokenId; assets: DiscoveredBalance[] }> = ({ tokenId, assets }) => {
   const { t } = useTranslation("admin")
   const token = useToken(tokenId)
   const evmNetwork = useEvmNetwork(token?.evmNetwork?.id)
-  const tokenRates = useTokenRates(token?.id)
+  const tokenRates = useDiscoveredTokenRate(token?.id)
   const enabledEvmNetworks = useEnabledEvmNetworksState()
   const enabledTokens = useEnabledTokensState()
 
