@@ -10,7 +10,8 @@ import { useEthBalance } from "./useEthBalance"
 export const useIsValidEthTransaction = (
   publicClient: PublicClient | undefined,
   tx: TransactionRequest | undefined,
-  priority: EthPriorityOptionName | undefined
+  priority: EthPriorityOptionName | undefined,
+  isReplacement = false
 ) => {
   const { t } = useTranslation("request")
   const account = useAccountByAddress(tx?.from)
@@ -42,6 +43,9 @@ export const useIsValidEthTransaction = (
       const estimatedGas = await publicClient.estimateGas({
         account: tx.from,
         ...tx,
+        // unless it's a replacement tx, don't provide the nonce
+        // otherwise it would throw a cryptic error on moonbeam networks if previous tx is not finalized
+        nonce: isReplacement ? tx.nonce : undefined,
       })
       return estimatedGas > 0n
     },
