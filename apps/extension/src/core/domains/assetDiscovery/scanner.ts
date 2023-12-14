@@ -10,7 +10,6 @@ import { EvmNetworkId, Token } from "@talismn/chaindata-provider"
 import { isEthereumAddress } from "@talismn/util"
 import { groupBy, sortBy } from "lodash"
 import chunk from "lodash/chunk"
-import Browser from "webextension-polyfill"
 
 import { activeEvmNetworksStore, isEvmNetworkActive } from "../ethereum/store.activeEvmNetworks"
 import { EvmAddress } from "../ethereum/types"
