@@ -24,7 +24,7 @@ export const ChainLogoBase: FC<ChainLogoBaseProps> = ({ id, logo, className }) =
   const handleError = useCallback(() => setSrc(UNKNOWN_NETWORK_URL), [])
 
   const imgClassName = useMemo(
-    () => classNames("relative block w-[1em] shrink-0", className),
+    () => classNames("relative block w-[1em] shrink-0 aspect-square", className),
     [className]
   )
 
