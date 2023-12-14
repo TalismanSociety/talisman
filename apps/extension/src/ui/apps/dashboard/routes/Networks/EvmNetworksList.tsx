@@ -106,7 +106,7 @@ export const EvmNetworksList = ({ search }: { search?: string }) => {
           onClick={enableAll(true)}
           className="text-body-disabled hover:text-body-secondary text-xs"
         >
-          {t("Enable all")}
+          {t("Activate all")}
         </button>
         <div className="bg-body-disabled h-6 w-0.5"></div>
         <button
@@ -114,7 +114,7 @@ export const EvmNetworksList = ({ search }: { search?: string }) => {
           onClick={enableAll(false)}
           className="text-body-disabled hover:text-body-secondary text-xs"
         >
-          {t("Disable all")}
+          {t("Deactivate all")}
         </button>
       </div>
       {sortedNetworks.map((network) => (
