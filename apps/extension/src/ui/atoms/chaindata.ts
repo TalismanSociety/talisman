@@ -1,15 +1,9 @@
-import {
-  EnabledChains,
-  enabledChainsStore,
-  isChainEnabled,
-} from "@core/domains/chains/store.enabledChains"
+import { EnabledChains, isChainEnabled } from "@core/domains/chains/store.enabledChains"
 import {
   EnabledEvmNetworks,
-  enabledEvmNetworksStore,
   isEvmNetworkEnabled,
 } from "@core/domains/ethereum/store.enabledEvmNetworks"
-import { EnabledTokens, enabledTokensStore } from "@core/domains/tokens/store.enabledTokens"
-import { chaindataProvider } from "@core/rpcs/chaindata"
+import { EnabledTokens } from "@core/domains/tokens/store.enabledTokens"
 import {
   Chain,
   ChainList,
@@ -21,73 +15,16 @@ import {
   TokenId,
   TokenList,
 } from "@talismn/chaindata-provider"
-import { api } from "@ui/api"
-import { liveQuery } from "dexie"
-import { atom, selector, selectorFamily } from "recoil"
-import { combineLatest } from "rxjs"
+import { selector, selectorFamily } from "recoil"
 
-const NO_OP = () => {}
+import { mainState } from "./main"
 
 const filterNoTestnet = ({ isTestnet }: { isTestnet?: boolean }) => isTestnet === false
-
-// load these entities in parallel in this atom to prevent recoil/suspense to load them sequentially
-const chainDataMainState = atom<{
-  evmNetworks: (EvmNetwork | CustomEvmNetwork)[]
-  chains: (Chain | CustomChain)[]
-  tokens: TokenList
-  enabledEvmNetworksState: EnabledEvmNetworks
-  enabledChainsState: EnabledChains
-  enabledTokensState: EnabledTokens
-}>({
-  key: "chainDataMainState",
-  effects: [
-    ({ setSelf }) => {
-      const obsTokens = liveQuery(() => chaindataProvider.tokens())
-      const obsEvmNetworks = liveQuery(() => chaindataProvider.evmNetworksArray())
-      const obsChains = liveQuery(() => chaindataProvider.chainsArray())
-
-      const obsChainData = combineLatest([
-        obsTokens,
-        obsEvmNetworks,
-        obsChains,
-        enabledTokensStore.observable,
-        enabledEvmNetworksStore.observable,
-        enabledChainsStore.observable,
-      ]).subscribe(
-        ([
-          tokens,
-          evmNetworks,
-          chains,
-          enabledTokensState,
-          enabledEvmNetworksState,
-          enabledChainsState,
-        ]) => {
-          setSelf({
-            tokens,
-            evmNetworks,
-            chains,
-            enabledTokensState,
-            enabledEvmNetworksState,
-            enabledChainsState,
-          })
-        }
-      )
-
-      return () => {
-        obsChainData.unsubscribe()
-      }
-    },
-    // instruct backend to keep db synchronized while this atom is in use
-    () => api.tokens(NO_OP),
-    () => api.chains(NO_OP),
-    () => api.ethereumNetworks(NO_OP),
-  ],
-})
 
 export const evmNetworksEnabledState = selector<EnabledEvmNetworks>({
   key: "evmNetworksEnabledState",
   get: ({ get }) => {
-    const { enabledEvmNetworksState } = get(chainDataMainState)
+    const { enabledEvmNetworksState } = get(mainState)
     return enabledEvmNetworksState
   },
 })
@@ -95,7 +32,7 @@ export const evmNetworksEnabledState = selector<EnabledEvmNetworks>({
 export const allEvmNetworksState = selector<(EvmNetwork | CustomEvmNetwork)[]>({
   key: "allEvmNetworksState",
   get: ({ get }) => {
-    const { evmNetworks } = get(chainDataMainState)
+    const { evmNetworks } = get(mainState)
     return evmNetworks
   },
 })
@@ -146,7 +83,7 @@ export const evmNetworksWithoutTestnetsMapState = selector<EvmNetworkList>({
 export const chainsEnabledState = selector<EnabledChains>({
   key: "chainsEnabledState",
   get: ({ get }) => {
-    const { enabledChainsState } = get(chainDataMainState)
+    const { enabledChainsState } = get(mainState)
     return enabledChainsState
   },
 })
@@ -154,7 +91,7 @@ export const chainsEnabledState = selector<EnabledChains>({
 export const allChainsState = selector<(Chain | CustomChain)[]>({
   key: "allChainsState",
   get: ({ get }) => {
-    const { chains } = get(chainDataMainState)
+    const { chains } = get(mainState)
     return chains
   },
 })
@@ -204,7 +141,7 @@ export const chainsWithoutTestnetsMapState = selector<ChainList>({
 export const tokensEnabledState = selector<EnabledTokens>({
   key: "tokensEnabledState",
   get: ({ get }) => {
-    const { enabledTokensState } = get(chainDataMainState)
+    const { enabledTokensState } = get(mainState)
     return enabledTokensState
   },
 })
@@ -212,7 +149,7 @@ export const tokensEnabledState = selector<EnabledTokens>({
 export const allTokensMapState = selector<TokenList>({
   key: "allTokensMapState",
   get: ({ get }) => {
-    const { tokens } = get(chainDataMainState)
+    const { tokens } = get(mainState)
     return tokens
   },
 })

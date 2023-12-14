@@ -1,5 +1,6 @@
-import { TALISMAN_WEB_APP_DOMAIN } from "@core/constants"
 /* eslint-disable @typescript-eslint/no-unused-vars */
+import { TALISMAN_WEB_APP_DOMAIN } from "@core/constants"
+import { Trees } from "@core/domains/accounts/helpers.catalog"
 import { AccountJsonAny, AccountType } from "@core/domains/accounts/types"
 import { AnalyticsCaptureRequest } from "@core/domains/app/types"
 import { SitesAuthorizedStore } from "@core/domains/sitesAuthorised/store"
@@ -70,6 +71,17 @@ export const api = {
           type: "sr25519",
         },
       ])
+      return () => undefined
+    }),
+    accountsCatalogSubscribe: jest.fn().mockImplementation((cb: (accounts: Trees) => void) => {
+      cb({
+        portfolio: [
+          { address: ADDRESSES.GAV, type: "account" },
+          { address: ADDRESSES.VITALIK, type: "account" },
+          { address: ADDRESSES.ALICE, type: "account" },
+        ],
+        watched: [],
+      })
       return () => undefined
     }),
     authorizedSitesSubscribe: jest
