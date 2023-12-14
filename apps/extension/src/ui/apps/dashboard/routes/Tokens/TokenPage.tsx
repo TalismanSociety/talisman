@@ -102,8 +102,10 @@ export const TokenPage = () => {
   )
   const network = useEvmNetwork(erc20Token?.evmNetwork?.id)
 
-  const { isEnabled, setEnabled, isEnabledOrDisabledByUser, resetToTalismanDefault } =
-    useKnownErc20Token(erc20Token?.evmNetwork?.id, erc20Token?.contractAddress)
+  const { isActive, setActive, isActiveSetByUser, resetToTalismanDefault } = useKnownErc20Token(
+    erc20Token?.evmNetwork?.id,
+    erc20Token?.contractAddress
+  )
 
   useEffect(() => {
     // if token doesn't exist, redirect to tokens page
@@ -175,10 +177,10 @@ export const TokenPage = () => {
         <div>
           <FormFieldContainer label={t("Display balances")}>
             <div className="flex gap-3">
-              <Toggle checked={isEnabled} onChange={(e) => setEnabled(e.target.checked)}>
-                <span className={"text-grey-300"}>{isEnabled ? t("Yes") : t("No")}</span>
+              <Toggle checked={isActive} onChange={(e) => setActive(e.target.checked)}>
+                <span className={"text-grey-300"}>{isActive ? t("Yes") : t("No")}</span>
               </Toggle>
-              {isEnabledOrDisabledByUser && (
+              {isActiveSetByUser && (
                 <Tooltip>
                   <TooltipTrigger
                     className="text-primary text-xs"

@@ -79,8 +79,8 @@ export const AddCustomTokenPage = () => {
 
   const {
     token: knownToken,
-    isEnabled,
-    setEnabled,
+    isActive,
+    setActive,
   } = useKnownErc20Token(evmNetworkId, contractAddress)
 
   const {
@@ -115,7 +115,7 @@ export const AddCustomTokenPage = () => {
         assert(tokenInfo.contractAddress === token.contractAddress, "Token mismatch")
         assert(tokenInfo.evmNetworkId === token.evmNetworkId, "Token mismatch")
 
-        if (knownToken && !isEnabled) await setEnabled(true)
+        if (knownToken && !isActive) await setActive(true)
         else {
           // save the object composed with CoinGecko and chain data
           await api.addCustomErc20Token(tokenInfo)
@@ -125,7 +125,7 @@ export const AddCustomTokenPage = () => {
         setError(`Failed to add the token : ${(err as Error)?.message ?? ""}`)
       }
     },
-    [isEnabled, knownToken, navigate, setEnabled, tokenInfo]
+    [isActive, knownToken, navigate, setActive, tokenInfo]
   )
 
   const addressErrorMessage = useMemo(() => {
@@ -212,7 +212,7 @@ export const AddCustomTokenPage = () => {
             icon={PlusIcon}
             type="submit"
             primary
-            disabled={isEnabled || !isValid || isLoading || !!tokenInfoError}
+            disabled={isActive || !isValid || isLoading || !!tokenInfoError}
             processing={isSubmitting}
           >
             {knownToken ? t("Enable Token") : t("Add Token")}

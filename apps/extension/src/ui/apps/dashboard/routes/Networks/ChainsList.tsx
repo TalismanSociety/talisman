@@ -1,11 +1,11 @@
-import { enabledChainsStore, isChainEnabled } from "@core/domains/chains/store.enabledChains"
+import { activeChainsStore, isChainActive } from "@core/domains/chains/store.activeChains"
 import { Chain, isCustomChain } from "@talismn/chaindata-provider"
 import { ChevronRightIcon } from "@talismn/icons"
 import { classNames } from "@talismn/util"
 import { sendAnalyticsEvent } from "@ui/api/analytics"
 import { ChainLogo } from "@ui/domains/Asset/ChainLogo"
+import { useActiveChainsState } from "@ui/hooks/useActiveChainsState"
 import useChains from "@ui/hooks/useChains"
-import { useEnabledChainsState } from "@ui/hooks/useEnabledChainsState"
 import { useSetting } from "@ui/hooks/useSettings"
 import sortBy from "lodash/sortBy"
 import { ChangeEventHandler, useCallback, useMemo, useRef } from "react"
@@ -25,7 +25,7 @@ export const ChainsList = ({ search }: { search?: string }) => {
     () => (useTestnets ? allChains : allChains.filter((n) => !n.isTestnet)),
     [allChains, useTestnets]
   )
-  const networksEnabledState = useEnabledChainsState()
+  const networksActiveState = useActiveChainsState()
 
   const [filteredChains, exactMatches] = useMemo(() => {
     if (search === undefined || search.length < 1) return [chains, [] as string[]] as const
@@ -60,17 +60,17 @@ export const ChainsList = ({ search }: { search?: string }) => {
     })
   }, [exactMatches, filteredChains])
 
-  const handleNetworkEnabledChanged = useCallback(
+  const handleNetworkActiveChanged = useCallback(
     (network: Chain) => (enable: boolean) => {
-      enabledChainsStore.setEnabled(network.id, enable)
+      activeChainsStore.setActive(network.id, enable)
     },
     []
   )
 
-  const enableAll = useCallback(
-    (enable = false) =>
+  const activateAll = useCallback(
+    (activate = false) =>
       () => {
-        enabledChainsStore.set(Object.fromEntries(filteredChains.map((n) => [n.id, enable])))
+        activeChainsStore.set(Object.fromEntries(filteredChains.map((n) => [n.id, activate])))
       },
     [filteredChains]
   )
@@ -87,26 +87,26 @@ export const ChainsList = ({ search }: { search?: string }) => {
       >
         <button
           type="button"
-          onClick={enableAll(true)}
+          onClick={activateAll(true)}
           className="text-body-disabled hover:text-body-secondary text-xs"
         >
-          {t("Enable all")}
+          {t("Activate all")}
         </button>
         <div className="bg-body-disabled h-6 w-0.5"></div>
         <button
           type="button"
-          onClick={enableAll(false)}
+          onClick={activateAll(false)}
           className="text-body-disabled hover:text-body-secondary text-xs"
         >
-          {t("Disable all")}
+          {t("Deactivate all")}
         </button>
       </div>
       {sortedChains.map((chain) => (
         <ChainsListItem
           key={chain.id}
           chain={chain}
-          isEnabled={isChainEnabled(chain, networksEnabledState)}
-          onEnableChanged={handleNetworkEnabledChanged(chain)}
+          isActive={isChainActive(chain, networksActiveState)}
+          onEnableChanged={handleNetworkActiveChanged(chain)}
         />
       ))}
     </div>
@@ -115,11 +115,11 @@ export const ChainsList = ({ search }: { search?: string }) => {
 
 const ChainsListItem = ({
   chain,
-  isEnabled,
+  isActive,
   onEnableChanged,
 }: {
   chain: Chain
-  isEnabled: boolean
+  isActive: boolean
   onEnableChanged: (enable: boolean) => void
 }) => {
   const navigate = useNavigate()
@@ -161,7 +161,7 @@ const ChainsListItem = ({
       </ListButton>
       <Toggle
         className="absolute right-20 top-4 p-4"
-        checked={isEnabled}
+        checked={isActive}
         onChange={handleEnableChanged}
       />
     </>

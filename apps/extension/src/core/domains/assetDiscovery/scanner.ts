@@ -12,9 +12,9 @@ import { groupBy, sortBy } from "lodash"
 import chunk from "lodash/chunk"
 import Browser from "webextension-polyfill"
 
-import { enabledEvmNetworksStore, isEvmNetworkEnabled } from "../ethereum/store.enabledEvmNetworks"
+import { activeEvmNetworksStore, isEvmNetworkActive } from "../ethereum/store.activeEvmNetworks"
 import { EvmAddress } from "../ethereum/types"
-import { enabledTokensStore, isTokenEnabled } from "../tokens/store.enabledTokens"
+import { activeTokensStore, isTokenActive } from "../tokens/store.activeTokens"
 import { assetDiscoveryStore } from "./store"
 import { DiscoveredBalance, RequestAssetDiscoveryStartScan } from "./types"
 
@@ -86,11 +86,11 @@ class AssetDiscoveryScanner {
       currentScanCursors: cursors,
     } = await assetDiscoveryStore.get()
 
-    const [allTokens, evmNetworks, enabledTokens, enabledEvmNetworks] = await Promise.all([
+    const [allTokens, evmNetworks, activeTokens, activeEvmNetworks] = await Promise.all([
       chaindataProvider.tokensArray(),
       chaindataProvider.evmNetworks(),
-      enabledTokensStore.get(),
-      enabledEvmNetworksStore.get(),
+      activeTokensStore.get(),
+      activeEvmNetworksStore.get(),
     ])
 
     const tokensMap = Object.fromEntries(allTokens.map((token) => [token.id, token]))
@@ -101,12 +101,11 @@ class AssetDiscoveryScanner {
         if (!evmNetwork) return false
         if (isFullScan)
           return (
-            !isEvmNetworkEnabled(evmNetwork, enabledEvmNetworks) ||
-            !isTokenEnabled(token, enabledTokens)
+            !isEvmNetworkActive(evmNetwork, activeEvmNetworks) ||
+            !isTokenActive(token, activeTokens)
           )
         return (
-          isEvmNetworkEnabled(evmNetwork, enabledEvmNetworks) &&
-          !isTokenEnabled(token, enabledTokens)
+          isEvmNetworkActive(evmNetwork, activeEvmNetworks) && !isTokenActive(token, activeTokens)
         )
       }
 

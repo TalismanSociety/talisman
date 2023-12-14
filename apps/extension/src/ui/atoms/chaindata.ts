@@ -1,9 +1,9 @@
-import { EnabledChains, isChainEnabled } from "@core/domains/chains/store.enabledChains"
+import { ActiveChains, isChainActive } from "@core/domains/chains/store.activeChains"
 import {
-  EnabledEvmNetworks,
-  isEvmNetworkEnabled,
-} from "@core/domains/ethereum/store.enabledEvmNetworks"
-import { EnabledTokens } from "@core/domains/tokens/store.enabledTokens"
+  ActiveEvmNetworks,
+  isEvmNetworkActive,
+} from "@core/domains/ethereum/store.activeEvmNetworks"
+import { ActiveTokens } from "@core/domains/tokens/store.activeTokens"
 import {
   Chain,
   ChainList,
@@ -21,11 +21,11 @@ import { mainState } from "./main"
 
 const filterNoTestnet = ({ isTestnet }: { isTestnet?: boolean }) => isTestnet === false
 
-export const evmNetworksEnabledState = selector<EnabledEvmNetworks>({
-  key: "evmNetworksEnabledState",
+export const evmNetworksActiveState = selector<ActiveEvmNetworks>({
+  key: "evmNetworksActiveState",
   get: ({ get }) => {
-    const { enabledEvmNetworksState } = get(mainState)
-    return enabledEvmNetworksState
+    const { activeEvmNetworksState } = get(mainState)
+    return activeEvmNetworksState
   },
 })
 
@@ -49,10 +49,10 @@ export const evmNetworksWithTestnetsState = selector({
   key: "evmNetworksWithTestnetsState",
   get: ({ get }) => {
     const evmNetworks = get(allEvmNetworksState)
-    const enabledNetworks = get(evmNetworksEnabledState)
+    const activeNetworks = get(evmNetworksActiveState)
 
-    // return only enabled networks
-    return evmNetworks.filter((network) => isEvmNetworkEnabled(network, enabledNetworks))
+    // return only active networks
+    return evmNetworks.filter((network) => isEvmNetworkActive(network, activeNetworks))
   },
 })
 
@@ -80,11 +80,11 @@ export const evmNetworksWithoutTestnetsMapState = selector<EvmNetworkList>({
   },
 })
 
-export const chainsEnabledState = selector<EnabledChains>({
-  key: "chainsEnabledState",
+export const chainsActiveState = selector<ActiveChains>({
+  key: "chainsActiveState",
   get: ({ get }) => {
-    const { enabledChainsState } = get(mainState)
-    return enabledChainsState
+    const { activeChainsState } = get(mainState)
+    return activeChainsState
   },
 })
 
@@ -108,9 +108,8 @@ export const chainsWithTestnetsState = selector({
   key: "chainsWithTestnetsState",
   get: ({ get }) => {
     const chains = get(allChainsState)
-    const enabledNetworks = get(chainsEnabledState)
-    const result = chains.filter((network) => isChainEnabled(network, enabledNetworks))
-    return result
+    const activeNetworks = get(chainsActiveState)
+    return chains.filter((network) => isChainActive(network, activeNetworks))
   },
 })
 
@@ -138,11 +137,11 @@ export const chainsWithoutTestnetsMapState = selector<ChainList>({
   },
 })
 
-export const tokensEnabledState = selector<EnabledTokens>({
-  key: "tokensEnabledState",
+export const tokensActiveState = selector<ActiveTokens>({
+  key: "tokensActiveState",
   get: ({ get }) => {
-    const { enabledTokensState } = get(mainState)
-    return enabledTokensState
+    const { activeTokensState } = get(mainState)
+    return activeTokensState
   },
 })
 

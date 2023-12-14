@@ -1,5 +1,5 @@
 import { EvmNetwork } from "@core/domains/ethereum/types"
-import { enabledTokensStore, isTokenEnabled } from "@core/domains/tokens/store.enabledTokens"
+import { activeTokensStore, isTokenActive } from "@core/domains/tokens/store.activeTokens"
 import { CustomErc20Token, Erc20Token } from "@core/domains/tokens/types"
 import { Accordion, AccordionIcon } from "@talisman/components/Accordion"
 import { HeaderBlock } from "@talisman/components/HeaderBlock"
@@ -10,8 +10,8 @@ import { AnalyticsPage, sendAnalyticsEvent } from "@ui/api/analytics"
 import { ChainLogo } from "@ui/domains/Asset/ChainLogo"
 import { TokenLogo } from "@ui/domains/Asset/TokenLogo"
 import { EnableTestnetPillButton } from "@ui/domains/Settings/EnableTestnetPillButton"
+import { useActiveTokensState } from "@ui/hooks/useActiveTokensState"
 import { useAnalyticsPageView } from "@ui/hooks/useAnalyticsPageView"
-import { useEnabledTokensState } from "@ui/hooks/useEnabledTokensState"
 import { useEvmNetwork } from "@ui/hooks/useEvmNetwork"
 import { useEvmNetworks } from "@ui/hooks/useEvmNetworks"
 import { useSetting } from "@ui/hooks/useSettings"
@@ -40,13 +40,13 @@ const CustomPill = () => {
 const TokenRow = ({ token }: { token: Erc20Token }) => {
   const navigate = useNavigate()
   const network = useEvmNetwork(token.evmNetwork?.id)
-  const enabledTokens = useEnabledTokensState()
+  const activeTokens = useActiveTokensState()
 
-  const isEnabled = useMemo(() => isTokenEnabled(token, enabledTokens), [token, enabledTokens])
+  const isActive = useMemo(() => isTokenActive(token, activeTokens), [token, activeTokens])
 
   const handleEnableChanged: ChangeEventHandler<HTMLInputElement> = useCallback(
     (e) => {
-      enabledTokensStore.setEnabled(token.id, e.target.checked)
+      activeTokensStore.setActive(token.id, e.target.checked)
     },
     [token.id]
   )
@@ -72,7 +72,7 @@ const TokenRow = ({ token }: { token: Erc20Token }) => {
       </ListButton>
       <Toggle
         className="absolute right-20 top-4 p-4"
-        checked={isEnabled}
+        checked={isActive}
         onChange={handleEnableChanged}
       />
     </>
@@ -88,9 +88,10 @@ const TokenRow = ({ token }: { token: Erc20Token }) => {
 const NetworkTokensGroup: FC<{
   network: EvmNetwork
   tokens: Erc20Token[]
-  enabledCount: number
+  activeCount: number
   totalCount: number
-}> = ({ network, tokens, enabledCount, totalCount }) => {
+}> = ({ network, tokens, activeCount, totalCount }) => {
+  const { t } = useTranslation("admin")
   const { isOpen, toggle } = useOpenClose()
 
   return (
@@ -99,7 +100,7 @@ const NetworkTokensGroup: FC<{
         <ChainLogo className="inline text-xl" id={network.id} />{" "}
         <div className="text-md text-body grow truncate">{network.name}</div>
         <div className="text-primary shrink-0">
-          {enabledCount} of {totalCount}
+          {t("{{activeCount}} of {{totalCount}}", { activeCount, totalCount })}
         </div>
         <AccordionIcon className="text-lg" isOpen={isOpen} />
       </ListButton>
@@ -133,7 +134,7 @@ export const TokensPage = () => {
   const { tokens } = useTokens("all")
   const erc20Tokens = useMemo(() => sortBy(tokens.filter(isErc20Token), "symbol"), [tokens])
   const [search, setSearch] = useState("")
-  const enabledTokens = useEnabledTokensState()
+  const activeTokens = useActiveTokensState()
 
   const allTokensByNetwork = useMemo(() => {
     if (!evmNetworks || !erc20Tokens) return []
@@ -147,12 +148,12 @@ export const TokensPage = () => {
         return {
           network,
           tokens,
-          enabledCount: tokens.filter((t) => isTokenEnabled(t, enabledTokens)).length,
+          activeCount: tokens.filter((t) => isTokenActive(t, activeTokens)).length,
           totalCount: tokens.length,
         }
       })
       .filter(({ tokens }) => tokens.length)
-  }, [evmNetworks, erc20Tokens, enabledTokens])
+  }, [evmNetworks, erc20Tokens, activeTokens])
 
   const filterTokens = useCallback(
     (tokens: (Erc20Token | CustomErc20Token)[]) => {
@@ -172,12 +173,12 @@ export const TokensPage = () => {
     return allTokensByNetwork
       .map((n) => ({
         ...n,
-        enabledCount: n.tokens.filter((t) => isTokenEnabled(t, enabledTokens)).length,
+        activeCount: n.tokens.filter((t) => isTokenActive(t, activeTokens)).length,
         totalCount: n.tokens.length,
         tokens: filterTokens(n.tokens),
       }))
       .filter(({ tokens }) => tokens.length)
-  }, [allTokensByNetwork, enabledTokens, filterTokens])
+  }, [allTokensByNetwork, activeTokens, filterTokens])
 
   const handleAddToken = useCallback(() => {
     sendAnalyticsEvent({
@@ -218,12 +219,12 @@ export const TokensPage = () => {
         </PillButton>
       </div>
       <Spacer small />
-      {groups.map(({ network, tokens, enabledCount, totalCount }) => (
+      {groups.map(({ network, tokens, activeCount, totalCount }) => (
         <NetworkTokensGroup
           key={network.id}
           network={network}
           tokens={tokens}
-          enabledCount={enabledCount}
+          activeCount={activeCount}
           totalCount={totalCount}
         />
       ))}

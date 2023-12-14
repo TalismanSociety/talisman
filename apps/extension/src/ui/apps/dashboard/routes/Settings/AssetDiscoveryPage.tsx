@@ -3,10 +3,10 @@ import { AccountJsonAny } from "@core/domains/accounts/types"
 import { AssetDiscoveryScanState, assetDiscoveryStore } from "@core/domains/assetDiscovery/store"
 import { DiscoveredBalance } from "@core/domains/assetDiscovery/types"
 import {
-  enabledEvmNetworksStore,
-  isEvmNetworkEnabled,
-} from "@core/domains/ethereum/store.enabledEvmNetworks"
-import { enabledTokensStore, isTokenEnabled } from "@core/domains/tokens/store.enabledTokens"
+  activeEvmNetworksStore,
+  isEvmNetworkActive,
+} from "@core/domains/ethereum/store.activeEvmNetworks"
+import { activeTokensStore, isTokenActive } from "@core/domains/tokens/store.activeTokens"
 import { TokenId } from "@core/domains/tokens/types"
 import { log } from "@core/log"
 import { HeaderBlock } from "@talisman/components/HeaderBlock"
@@ -33,9 +33,9 @@ import Fiat from "@ui/domains/Asset/Fiat"
 import { TokenLogo } from "@ui/domains/Asset/TokenLogo"
 import Tokens from "@ui/domains/Asset/Tokens"
 import useAccounts from "@ui/hooks/useAccounts"
+import { useActiveEvmNetworksState } from "@ui/hooks/useActiveEvmNetworksState"
+import { useActiveTokensState } from "@ui/hooks/useActiveTokensState"
 import { useAnalyticsPageView } from "@ui/hooks/useAnalyticsPageView"
-import { useEnabledEvmNetworksState } from "@ui/hooks/useEnabledEvmNetworksState"
-import { useEnabledTokensState } from "@ui/hooks/useEnabledTokensState"
 import { useEvmNetwork } from "@ui/hooks/useEvmNetwork"
 import { useEvmNetworks } from "@ui/hooks/useEvmNetworks"
 import useToken from "@ui/hooks/useToken"
@@ -43,7 +43,7 @@ import { useTokenRates } from "@ui/hooks/useTokenRates"
 import useTokens from "@ui/hooks/useTokens"
 import { liveQuery } from "dexie"
 import groupBy from "lodash/groupBy"
-import { FC, useCallback, useMemo } from "react"
+import { FC, ReactNode, useCallback, useMemo } from "react"
 import { Trans, useTranslation } from "react-i18next"
 import { atom, selector, useRecoilValue } from "recoil"
 import { debounceTime, first, from, merge } from "rxjs"
@@ -158,7 +158,7 @@ const scanProgress = selector<{
 
 const TOKEN_RATES_CACHE: TokenList = {}
 
-// our main token rates store only fetches enabled tokens, this obviously doesn't work here
+// our main token rates store only fetches active tokens, this obviously doesn't work here
 const useDiscoveredTokenRates = () => {
   const { tokenIds } = useRecoilValue(scanProgress)
   const { tokens } = useTokens("all")
@@ -190,8 +190,8 @@ const AssetRow: FC<{ tokenId: TokenId; assets: DiscoveredBalance[] }> = ({ token
   const token = useToken(tokenId)
   const evmNetwork = useEvmNetwork(token?.evmNetwork?.id)
   const tokenRates = useDiscoveredTokenRate(token?.id)
-  const enabledEvmNetworks = useEnabledEvmNetworksState()
-  const enabledTokens = useEnabledTokensState()
+  const activeEvmNetworks = useActiveEvmNetworksState()
+  const activeTokens = useActiveTokensState()
 
   const balance = useMemo(() => {
     if (!token) return null
@@ -208,24 +208,24 @@ const AssetRow: FC<{ tokenId: TokenId; assets: DiscoveredBalance[] }> = ({ token
     [allAccounts, assets]
   )
 
-  const isEnabled = useMemo(
+  const isActive = useMemo(
     () =>
       evmNetwork &&
       token &&
-      isEvmNetworkEnabled(evmNetwork, enabledEvmNetworks) &&
-      isTokenEnabled(token, enabledTokens),
-    [enabledEvmNetworks, enabledTokens, evmNetwork, token]
+      isEvmNetworkActive(evmNetwork, activeEvmNetworks) &&
+      isTokenActive(token, activeTokens),
+    [activeEvmNetworks, activeTokens, evmNetwork, token]
   )
 
   const enable = useCallback(() => {
     if (!token || !evmNetwork) return
-    enabledEvmNetworksStore.setEnabled(evmNetwork.id, true)
-    enabledTokensStore.setEnabled(token.id, true)
+    activeEvmNetworksStore.setActive(evmNetwork.id, true)
+    activeTokensStore.setActive(token.id, true)
   }, [evmNetwork, token])
 
   const isInactiveNetwork = useMemo(
-    () => evmNetwork && !isEvmNetworkEnabled(evmNetwork, enabledEvmNetworks),
-    [enabledEvmNetworks, evmNetwork]
+    () => evmNetwork && !isEvmNetworkActive(evmNetwork, activeEvmNetworks),
+    [activeEvmNetworks, evmNetwork]
   )
 
   if (!token || !evmNetwork) return null
@@ -234,7 +234,7 @@ const AssetRow: FC<{ tokenId: TokenId; assets: DiscoveredBalance[] }> = ({ token
     <div
       className={classNames(
         "bg-grey-900 grid h-32 grid-cols-[25%_25%_30%_20%] items-center rounded-sm px-8",
-        isEnabled && "opacity-50"
+        isActive && "opacity-50"
       )}
     >
       <div className="flex items-center gap-6">
@@ -284,13 +284,13 @@ const AssetRow: FC<{ tokenId: TokenId; assets: DiscoveredBalance[] }> = ({ token
       <div className="pl-4 text-right">
         <Button
           small
-          disabled={isEnabled}
+          disabled={isActive}
           onClick={enable}
           primary
           className="disabled:text-primary-500 h-16 w-56 rounded-sm"
-          icon={isEnabled ? CheckCircleIcon : undefined}
+          icon={isActive ? CheckCircleIcon : undefined}
         >
-          {isEnabled ? t("Activated") : t("Activate")}
+          {isActive ? t("Activated") : t("Activate")}
         </Button>
       </div>
     </div>
@@ -362,13 +362,13 @@ const Header: FC = () => {
             <div className="flex text-base">
               <div className="grow">
                 {isInProgress
-                  ? t("Scanning {{tokensCount}} tokens for {{accountsCount}} accounts", {
+                  ? t("Scanning {{tokensCount}} tokens for {{count}} account(s)", {
                       tokensCount,
-                      accountsCount,
+                      count: accountsCount,
                     })
-                  : t("Scanned {{tokensCount}} tokens for {{accountsCount}} accounts", {
+                  : t("Scanned {{tokensCount}} tokens for {{count}} account(s)", {
                       tokensCount,
-                      accountsCount,
+                      count: accountsCount,
                     })}
               </div>
               <div className="text-primary">{percent}%</div>
@@ -430,15 +430,29 @@ const Header: FC = () => {
   )
 }
 
+const AccountsWrapper: FC<{
+  children?: ReactNode
+  accounts: AccountJsonAny[]
+  className?: string
+}> = ({ children, accounts, className }) => {
+  return (
+    <Tooltip>
+      <TooltipTrigger className={className}>{children}</TooltipTrigger>
+      <TooltipContent>
+        <AccountTooltip addresses={accounts.map((a) => a.address)} />
+      </TooltipContent>
+    </Tooltip>
+  )
+}
+
 const ScanInfo: FC = () => {
   const { t } = useTranslation("admin")
 
-  const { balancesByTokenId, balances } = useRecoilValue(scanProgress)
-  const { currentScanId, lastScanAccounts, lastScanTimestamp } =
-    useRecoilValue(assetDiscoveryScanState)
+  const { balancesByTokenId, balances, isInProgress } = useRecoilValue(scanProgress)
+  const { lastScanAccounts, lastScanTimestamp } = useRecoilValue(assetDiscoveryScanState)
 
-  const enabledEvmNetworks = useEnabledEvmNetworksState()
-  const enabledTokens = useEnabledTokensState()
+  const activeEvmNetworks = useActiveEvmNetworksState()
+  const activeTokens = useActiveTokensState()
   const { tokensMap } = useTokens("all")
   const { evmNetworksMap } = useEvmNetworks("all")
 
@@ -448,36 +462,52 @@ const ScanInfo: FC = () => {
       const token = tokensMap[tokenId]
       const evmNetwork = evmNetworksMap[token?.evmNetwork?.id ?? ""]
       return (
-        (token && evmNetwork && !isEvmNetworkEnabled(evmNetwork, enabledEvmNetworks)) ||
-        !isTokenEnabled(token, enabledTokens)
+        (token && evmNetwork && !isEvmNetworkActive(evmNetwork, activeEvmNetworks)) ||
+        !isTokenActive(token, activeTokens)
       )
     })
-  }, [balancesByTokenId, enabledEvmNetworks, enabledTokens, evmNetworksMap, tokensMap])
+  }, [balancesByTokenId, activeEvmNetworks, activeTokens, evmNetworksMap, tokensMap])
 
   const enableAll = useCallback(async () => {
     const tokenIds = Object.keys(balancesByTokenId)
     const evmNetworkIds = [
       ...new Set(tokenIds.map((tokenId) => tokensMap[tokenId]?.evmNetwork?.id).filter(Boolean)),
     ] as EvmNetworkId[]
-    await enabledEvmNetworksStore.set(Object.fromEntries(evmNetworkIds.map((id) => [id, true])))
-    await enabledTokensStore.set(Object.fromEntries(tokenIds.map((id) => [id, true])))
+    await activeEvmNetworksStore.set(Object.fromEntries(evmNetworkIds.map((id) => [id, true])))
+    await activeTokensStore.set(Object.fromEntries(tokenIds.map((id) => [id, true])))
   }, [balancesByTokenId, tokensMap])
 
-  const description = useMemo(() => {
-    if (currentScanId) return t("Scan in progress...")
-    if (lastScanTimestamp && lastScanAccounts.length) {
-      const date = new Date(lastScanTimestamp)
-      return t("Last scanned {{accountsCount}} accounts at {{timestamp}}", {
-        accountsCount: lastScanAccounts.length,
-        timestamp: `${date.toLocaleDateString()} ${date.toLocaleTimeString()}`,
-      })
-    }
-    return null
-  }, [lastScanAccounts.length, lastScanTimestamp, currentScanId, t])
+  const formatedTimestamp = useMemo(() => {
+    const date = new Date(lastScanTimestamp)
+    return `${date.toLocaleDateString()} ${date.toLocaleTimeString()}`
+  }, [lastScanTimestamp])
+
+  const accounts = useAccounts()
+  const lastAccounts = useMemo(
+    () => accounts.filter((a) => lastScanAccounts.includes(a.address)),
+    [accounts, lastScanAccounts]
+  )
 
   return (
     <div className="flex h-16 w-full items-center px-8">
-      <div className="text-body-disabled grow">{description}</div>
+      <div className="text-body-disabled grow">
+        {!isInProgress && !!lastScanTimestamp && !!lastScanAccounts.length && (
+          <Trans
+            t={t}
+            defaults="Last scanned <AccountsWrapper>{{count}} account(s)</AccountsWrapper> at <DateWrapper>{{timestamp}}</DateWrapper>"
+            components={{
+              AccountsWrapper: (
+                <AccountsWrapper
+                  className="text-body-secondary underline"
+                  accounts={lastAccounts}
+                />
+              ),
+              DateWrapper: <span className="text-body-secondary"></span>,
+            }}
+            values={{ count: lastScanAccounts.length, timestamp: formatedTimestamp }}
+          ></Trans>
+        )}
+      </div>
       {!!balances.length && (
         <Button
           disabled={!canEnable}

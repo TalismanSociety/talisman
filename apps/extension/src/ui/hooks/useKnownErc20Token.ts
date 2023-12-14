@@ -1,8 +1,8 @@
-import { enabledTokensStore, isTokenEnabled } from "@core/domains/tokens/store.enabledTokens"
+import { activeTokensStore, isTokenActive } from "@core/domains/tokens/store.activeTokens"
 import { isErc20Token } from "@ui/util/isErc20Token"
 import { useCallback, useMemo } from "react"
 
-import { useEnabledTokensState } from "./useEnabledTokensState"
+import { useActiveTokensState } from "./useActiveTokensState"
 import useTokens from "./useTokens"
 
 export const useKnownErc20Token = (
@@ -12,7 +12,7 @@ export const useKnownErc20Token = (
   const { tokens: allTokens } = useTokens("all")
   const allErc20Tokens = useMemo(() => allTokens.filter(isErc20Token), [allTokens])
 
-  const enabledTokens = useEnabledTokensState()
+  const activeTokens = useActiveTokensState()
 
   const token = useMemo(() => {
     const lowerContractAddress = contractAddress?.toLowerCase()
@@ -23,46 +23,38 @@ export const useKnownErc20Token = (
     )
   }, [allErc20Tokens, contractAddress, evmNetworkId])
 
-  const isEnabled = useMemo(
-    () => token && isTokenEnabled(token, enabledTokens),
-    [enabledTokens, token]
-  )
+  const isActive = useMemo(() => token && isTokenActive(token, activeTokens), [activeTokens, token])
 
-  const setEnabled = useCallback(
-    async (enable: boolean) => {
+  const setActive = useCallback(
+    async (active: boolean) => {
       if (!token) throw new Error("Token not found")
-      await enabledTokensStore.setEnabled(token.id, enable)
+      await activeTokensStore.setActive(token.id, active)
     },
     [token]
   )
 
-  const toggleEnabled = useCallback(async () => {
+  const toggleActive = useCallback(async () => {
     if (!token) throw new Error("Token not found")
-    await setEnabled(!isEnabled)
-  }, [isEnabled, setEnabled, token])
+    await setActive(!isActive)
+  }, [isActive, setActive, token])
 
-  const isEnabledOrDisabledByUser = useMemo(
-    () => token && token.id in enabledTokens,
-    [token, enabledTokens]
-  )
+  const isActiveSetByUser = useMemo(() => token && token.id in activeTokens, [token, activeTokens])
   const resetToTalismanDefault = useCallback(() => {
     if (!token) throw new Error("Token not found")
-    enabledTokensStore.resetEnabled(token.id)
+    activeTokensStore.resetActive(token.id)
   }, [token])
 
   return {
     token,
-
-    isEnabled,
-
-    setEnabled,
-    toggleEnabled,
+    isActive: isActive,
+    setActive,
+    toggleActive,
 
     /**
-     * If true, enabled/disabled state comes from the user configuration.
-     * If false, enabled/disabled state comes from chaindata default value.
+     * If true, active state comes from the user configuration.
+     * If false, active state comes from chaindata default value.
      */
-    isEnabledOrDisabledByUser,
+    isActiveSetByUser,
     resetToTalismanDefault,
   }
 }

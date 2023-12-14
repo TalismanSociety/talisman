@@ -6,7 +6,7 @@ import { FormFieldContainer, Toggle, Tooltip, TooltipContent, TooltipTrigger } f
 
 export const EnableNetworkToggle: FC<{ chainId?: string }> = ({ chainId }) => {
   const { t } = useTranslation("admin")
-  const { chain, isEnabled, setEnabled, isEnabledOrDisabledByUser, resetToTalismanDefault } =
+  const { chain, isActive, setActive, isActiveSetByUser, resetToTalismanDefault } =
     useKnownChain(chainId)
 
   if (!chain) return null
@@ -15,10 +15,10 @@ export const EnableNetworkToggle: FC<{ chainId?: string }> = ({ chainId }) => {
     <div className="pt-8">
       <FormFieldContainer label={t("Display balances")}>
         <div className="flex gap-3">
-          <Toggle checked={isEnabled} onChange={(e) => setEnabled(e.target.checked)}>
-            <span className={"text-grey-300"}>{isEnabled ? t("Yes") : t("No")}</span>
+          <Toggle checked={isActive} onChange={(e) => setActive(e.target.checked)}>
+            <span className={"text-grey-300"}>{isActive ? t("Yes") : t("No")}</span>
           </Toggle>
-          {isEnabledOrDisabledByUser && (
+          {isActiveSetByUser && (
             <Tooltip>
               <TooltipTrigger
                 className="text-primary text-xs"

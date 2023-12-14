@@ -1,17 +1,17 @@
 import { formatSuri } from "@core/domains/accounts/helpers"
 import { AccountAddressType, RequestAccountCreateFromSuri } from "@core/domains/accounts/types"
 import { AddressesAndEvmNetwork } from "@core/domains/balances/types"
-import { isChainEnabled } from "@core/domains/chains/store.enabledChains"
+import { isChainActive } from "@core/domains/chains/store.activeChains"
 import { getEthDerivationPath } from "@core/domains/ethereum/helpers"
-import { isEvmNetworkEnabled } from "@core/domains/ethereum/store.enabledEvmNetworks"
+import { isEvmNetworkActive } from "@core/domains/ethereum/store.activeEvmNetworks"
 import { AddressesByChain } from "@core/types/base"
 import { convertAddress } from "@talisman/util/convertAddress"
 import { api } from "@ui/api"
 import useAccounts from "@ui/hooks/useAccounts"
+import { useActiveChainsState } from "@ui/hooks/useActiveChainsState"
+import { useActiveEvmNetworksState } from "@ui/hooks/useActiveEvmNetworksState"
 import useBalancesByParams from "@ui/hooks/useBalancesByParams"
 import useChains from "@ui/hooks/useChains"
-import { useEnabledChainsState } from "@ui/hooks/useEnabledChainsState"
-import { useEnabledEvmNetworksState } from "@ui/hooks/useEnabledEvmNetworksState"
 import { useEvmNetworks } from "@ui/hooks/useEvmNetworks"
 import { FC, useCallback, useEffect, useMemo, useState } from "react"
 
@@ -77,8 +77,8 @@ const useDerivedAccounts = (
   const { chains } = useChains("enabledWithoutTestnets")
   const { evmNetworks } = useEvmNetworks("enabledWithoutTestnets")
 
-  const enabledChains = useEnabledChainsState()
-  const enabledEvmNetworks = useEnabledEvmNetworksState()
+  const activeChains = useActiveChainsState()
+  const activeEvmNetworks = useActiveEvmNetworksState()
 
   const { expectedBalancesCount, addressesByChain, addressesAndEvmNetworks } = useMemo(() => {
     const expectedBalancesCount =
@@ -100,7 +100,7 @@ const useDerivedAccounts = (
         ? {}
         : (chains || [])
             .filter((chain) => chainIds.includes(chain.id))
-            .filter((chain) => isChainEnabled(chain, enabledChains))
+            .filter((chain) => isChainActive(chain, activeChains))
             .reduce(
               (prev, curr) => ({
                 ...prev,
@@ -121,7 +121,7 @@ const useDerivedAccounts = (
               .filter(Boolean) as string[],
             evmNetworks: (evmNetworks || [])
               .filter((chain) => evmNetworkIds.includes(chain.id))
-              .filter((chain) => isEvmNetworkEnabled(chain, enabledEvmNetworks))
+              .filter((chain) => isEvmNetworkActive(chain, activeEvmNetworks))
               .map(({ id, nativeToken }) => ({
                 id,
                 nativeToken: { id: nativeToken?.id as string },
@@ -134,7 +134,7 @@ const useDerivedAccounts = (
       addressesByChain,
       addressesAndEvmNetworks,
     }
-  }, [chains, derivedAccounts, enabledChains, enabledEvmNetworks, evmNetworks, type])
+  }, [chains, derivedAccounts, activeChains, activeEvmNetworks, evmNetworks, type])
 
   const withBalances = useMemo(
     () =>

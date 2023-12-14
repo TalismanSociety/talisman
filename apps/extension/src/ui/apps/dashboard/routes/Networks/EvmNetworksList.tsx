@@ -1,14 +1,14 @@
 import {
-  enabledEvmNetworksStore,
-  isEvmNetworkEnabled,
-} from "@core/domains/ethereum/store.enabledEvmNetworks"
+  activeEvmNetworksStore,
+  isEvmNetworkActive,
+} from "@core/domains/ethereum/store.activeEvmNetworks"
 import { EvmNetwork } from "@core/domains/ethereum/types"
 import { isCustomEvmNetwork } from "@talismn/chaindata-provider"
 import { ChevronRightIcon } from "@talismn/icons"
 import { classNames } from "@talismn/util"
 import { sendAnalyticsEvent } from "@ui/api/analytics"
 import { ChainLogo } from "@ui/domains/Asset/ChainLogo"
-import { useEnabledEvmNetworksState } from "@ui/hooks/useEnabledEvmNetworksState"
+import { useActiveEvmNetworksState } from "@ui/hooks/useActiveEvmNetworksState"
 import { useEvmNetworks } from "@ui/hooks/useEvmNetworks"
 import { useSetting } from "@ui/hooks/useSettings"
 import sortBy from "lodash/sortBy"
@@ -30,7 +30,7 @@ export const EvmNetworksList = ({ search }: { search?: string }) => {
     () => (useTestnets ? allEvmNetworks : allEvmNetworks.filter((n) => !n.isTestnet)),
     [allEvmNetworks, useTestnets]
   )
-  const networksEnabledState = useEnabledEvmNetworksState()
+  const networksActiveState = useActiveEvmNetworksState()
 
   const [filteredEvmNetworks, exactMatches] = useMemo(() => {
     const lowerSearch = search?.toLowerCase() ?? ""
@@ -39,7 +39,7 @@ export const EvmNetworksList = ({ search }: { search?: string }) => {
       if (!lowerSearch)
         return (
           network.isDefault ||
-          networksEnabledState[network.id] !== undefined ||
+          networksActiveState[network.id] !== undefined ||
           isCustomEvmNetwork(network)
         )
 
@@ -58,7 +58,7 @@ export const EvmNetworksList = ({ search }: { search?: string }) => {
     )
 
     return [filtered, exactMatches] as const
-  }, [evmNetworks, networksEnabledState, search])
+  }, [evmNetworks, networksActiveState, search])
 
   const sortedNetworks = useMemo(() => {
     const byName = sortBy(filteredEvmNetworks, "name")
@@ -74,9 +74,9 @@ export const EvmNetworksList = ({ search }: { search?: string }) => {
     })
   }, [exactMatches, filteredEvmNetworks])
 
-  const handleNetworkEnabledChanged = useCallback(
+  const handleNetworkActiveChanged = useCallback(
     (network: EvmNetwork) => (enable: boolean) => {
-      enabledEvmNetworksStore.setEnabled(network.id, enable)
+      activeEvmNetworksStore.setActive(network.id, enable)
     },
     []
   )
@@ -84,7 +84,7 @@ export const EvmNetworksList = ({ search }: { search?: string }) => {
   const enableAll = useCallback(
     (enable = false) =>
       () => {
-        enabledEvmNetworksStore.set(
+        activeEvmNetworksStore.set(
           Object.fromEntries(filteredEvmNetworks.map((n) => [n.id, enable]))
         )
       },
@@ -121,8 +121,8 @@ export const EvmNetworksList = ({ search }: { search?: string }) => {
         <EvmNetworksListItem
           key={network.id}
           network={network}
-          isEnabled={isEvmNetworkEnabled(network, networksEnabledState)}
-          onEnableChanged={handleNetworkEnabledChanged(network)}
+          isActive={isEvmNetworkActive(network, networksActiveState)}
+          onEnableChanged={handleNetworkActiveChanged(network)}
         />
       ))}
     </div>
@@ -131,11 +131,11 @@ export const EvmNetworksList = ({ search }: { search?: string }) => {
 
 const EvmNetworksListItem = ({
   network,
-  isEnabled,
+  isActive: isActive,
   onEnableChanged,
 }: {
   network: EvmNetwork
-  isEnabled: boolean
+  isActive: boolean
   onEnableChanged: (enable: boolean) => void
 }) => {
   const navigate = useNavigate()
@@ -177,7 +177,7 @@ const EvmNetworksListItem = ({
       </ListButton>
       <Toggle
         className="absolute right-20 top-4 p-4"
-        checked={isEnabled}
+        checked={isActive}
         onChange={handleEnableChanged}
       />
     </>
