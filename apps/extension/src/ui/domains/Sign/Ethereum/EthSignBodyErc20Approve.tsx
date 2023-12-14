@@ -114,7 +114,9 @@ export const EthSignBodyErc20Approve: FC = () => {
         <SignParamNetworkAddressButton network={network} address={spender} />
       </div>
       <div className="flex">
-        <div>{isInfinite ? t("to spend infinite") : t("to spend")}</div>
+        <div>
+          {isRevoke ? t("from spending") : isInfinite ? t("to spend infinite") : t("to spend")}
+        </div>
         {allowance ? (
           <SignParamTokensButton
             address={decodedTx.targetAddress}
