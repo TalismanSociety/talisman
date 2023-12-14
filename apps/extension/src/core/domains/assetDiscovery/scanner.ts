@@ -233,7 +233,3 @@ class AssetDiscoveryScanner {
 }
 
 export const assetDiscoveryScanner = new AssetDiscoveryScanner()
-
-// safety measure
-if (Browser.extension.getBackgroundPage() !== window)
-  throw new Error("@core/domains/assetDiscovery/store cannot be accessed from front end")
