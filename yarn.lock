@@ -5033,6 +5033,18 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@ledgerhq/hw-transport@npm:6.30.1, @ledgerhq/hw-transport@npm:^6.30.1":
+  version: 6.30.1
+  resolution: "@ledgerhq/hw-transport@npm:6.30.1"
+  dependencies:
+    "@ledgerhq/devices": ^8.2.0
+    "@ledgerhq/errors": ^6.16.1
+    "@ledgerhq/logs": ^6.12.0
+    events: ^3.3.0
+  checksum: 71e6c05a8bf27ef494721d7d528ad71082146fc9e62d558f88ed35ffc282e04e5903f687e9606d85a0408bb677576b8b32e9a2c8e267d3f6a963aeec60640931
+  languageName: node
+  linkType: hard
+
 "@ledgerhq/hw-transport@npm:^6.27.1":
   version: 6.28.3
   resolution: "@ledgerhq/hw-transport@npm:6.28.3"
@@ -5052,18 +5064,6 @@ __metadata:
     "@ledgerhq/errors": ^6.12.7
     events: ^3.3.0
   checksum: 7b9a3beec21c5ac73d69187de87f3de90071d5e7efe1e97ae3c6def0e8c9d68758bb8ecc863925da9baad2b7147e637769fd6fff4301f0b57dc0cf86de070bbe
-  languageName: node
-  linkType: hard
-
-"@ledgerhq/hw-transport@npm:^6.30.1":
-  version: 6.30.1
-  resolution: "@ledgerhq/hw-transport@npm:6.30.1"
-  dependencies:
-    "@ledgerhq/devices": ^8.2.0
-    "@ledgerhq/errors": ^6.16.1
-    "@ledgerhq/logs": ^6.12.0
-    events: ^3.3.0
-  checksum: 71e6c05a8bf27ef494721d7d528ad71082146fc9e62d558f88ed35ffc282e04e5903f687e9606d85a0408bb677576b8b32e9a2c8e267d3f6a963aeec60640931
   languageName: node
   linkType: hard
 
@@ -15440,6 +15440,7 @@ __metadata:
     "@headlessui/react": 1.7.13
     "@hookform/resolvers": 2.9.11
     "@ledgerhq/hw-app-eth": 6.35.1
+    "@ledgerhq/hw-transport": 6.30.1
     "@ledgerhq/hw-transport-webusb": 6.28.1
     "@metamask/browser-passworder": 4.1.0
     "@metamask/eth-sig-util": 5.1.0
