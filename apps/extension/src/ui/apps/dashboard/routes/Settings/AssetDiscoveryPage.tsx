@@ -487,7 +487,7 @@ const ScanInfo: FC = () => {
           small
           primary
         >
-          {t("Activate all tokens")}
+          {t("Activate All")}
         </Button>
       )}
     </div>
