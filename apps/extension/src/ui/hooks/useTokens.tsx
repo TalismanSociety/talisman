@@ -1,43 +1,11 @@
-import {
-  allTokensMapState,
-  allTokensState,
-  tokensWithTestnetsMapState,
-  tokensWithTestnetsState,
-  tokensWithoutTestnetsMapState,
-  tokensWithoutTestnetsState,
-} from "@ui/atoms"
-import { useMemo } from "react"
+import { TokensQueryOptions, tokensArrayQuery, tokensMapQuery } from "@ui/atoms"
 import { useRecoilValue } from "recoil"
 
-type TokensFilter = "all" | "enabledWithTestnets" | "enabledWithoutTestnets"
+export const useTokens = (options: TokensQueryOptions) => {
+  const tokens = useRecoilValue(tokensArrayQuery(options))
+  const tokensMap = useRecoilValue(tokensMapQuery(options))
 
-export const useTokens = (filter: TokensFilter) => {
-  const allTokens = useRecoilValue(allTokensState)
-  const allTokensMap = useRecoilValue(allTokensMapState)
-  const tokensWithTestnets = useRecoilValue(tokensWithTestnetsState)
-  const tokensWithoutTestnets = useRecoilValue(tokensWithoutTestnetsState)
-  const tokensWithTestnetsMap = useRecoilValue(tokensWithTestnetsMapState)
-  const tokensWithoutTestnetsMap = useRecoilValue(tokensWithoutTestnetsMapState)
-
-  return useMemo(() => {
-    switch (filter) {
-      case "all":
-        return { tokens: allTokens, tokensMap: allTokensMap }
-      case "enabledWithTestnets":
-        return { tokens: tokensWithTestnets, tokensMap: tokensWithTestnetsMap }
-      case "enabledWithoutTestnets":
-      default:
-        return { tokens: tokensWithoutTestnets, tokensMap: tokensWithoutTestnetsMap }
-    }
-  }, [
-    allTokens,
-    allTokensMap,
-    filter,
-    tokensWithTestnets,
-    tokensWithTestnetsMap,
-    tokensWithoutTestnets,
-    tokensWithoutTestnetsMap,
-  ])
+  return { tokens, tokensMap }
 }
 
 export default useTokens

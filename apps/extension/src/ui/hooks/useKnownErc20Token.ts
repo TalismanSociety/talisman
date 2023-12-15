@@ -9,7 +9,7 @@ export const useKnownErc20Token = (
   evmNetworkId: string | undefined | null,
   contractAddress: string | undefined | null
 ) => {
-  const { tokens: allTokens } = useTokens("all")
+  const { tokens: allTokens } = useTokens({ activeOnly: false, includeTestnets: true })
   const allErc20Tokens = useMemo(() => allTokens.filter(isErc20Token), [allTokens])
 
   const activeTokens = useActiveTokensState()

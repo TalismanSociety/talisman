@@ -6,10 +6,12 @@ import {
 import { ActiveTokens } from "@core/domains/tokens/store.activeTokens"
 import {
   Chain,
+  ChainId,
   ChainList,
   CustomChain,
   CustomEvmNetwork,
   EvmNetwork,
+  EvmNetworkId,
   EvmNetworkList,
   Token,
   TokenId,
@@ -45,8 +47,24 @@ export const allEvmNetworksMapState = selector<EvmNetworkList>({
   },
 })
 
-export const evmNetworksWithTestnetsState = selector({
-  key: "evmNetworksWithTestnetsState",
+export const allEvmNetworksWithoutTestnetsState = selector<(EvmNetwork | CustomEvmNetwork)[]>({
+  key: "allEvmNetworksWithoutTestnetsState",
+  get: ({ get }) => {
+    const { evmNetworks } = get(mainState)
+    return evmNetworks.filter(filterNoTestnet)
+  },
+})
+
+export const allEvmNetworksWithoutTestnetsMapState = selector<EvmNetworkList>({
+  key: "allEvmNetworksWithoutTestnetsMapState",
+  get: ({ get }) => {
+    const evmNetworks = get(allEvmNetworksWithoutTestnetsState)
+    return Object.fromEntries(evmNetworks.map((network) => [network.id, network]))
+  },
+})
+
+export const activeEvmNetworksWithTestnetsState = selector({
+  key: "activeEvmNetworksWithTestnetsState",
   get: ({ get }) => {
     const evmNetworks = get(allEvmNetworksState)
     const activeNetworks = get(evmNetworksActiveState)
@@ -56,28 +74,73 @@ export const evmNetworksWithTestnetsState = selector({
   },
 })
 
-export const evmNetworksWithTestnetsMapState = selector<EvmNetworkList>({
-  key: "evmNetworksWithTestnetsMapState",
+export const activeEvmNetworksWithTestnetsMapState = selector<EvmNetworkList>({
+  key: "activeEvmNetworksWithTestnetsMapState",
   get: ({ get }) => {
-    const evmNetworks = get(evmNetworksWithTestnetsState)
+    const evmNetworks = get(activeEvmNetworksWithTestnetsState)
     return Object.fromEntries(evmNetworks.map((network) => [network.id, network]))
   },
 })
 
-export const evmNetworksWithoutTestnetsState = selector({
-  key: "evmNetworksWithoutTestnetsState",
+export const activeEvmNetworksWithoutTestnetsState = selector({
+  key: "activeEvmNetworksWithoutTestnetsState",
   get: ({ get }) => {
-    const evmNetworks = get(evmNetworksWithTestnetsState)
+    const evmNetworks = get(activeEvmNetworksWithTestnetsState)
     return evmNetworks.filter(filterNoTestnet)
   },
 })
 
-export const evmNetworksWithoutTestnetsMapState = selector<EvmNetworkList>({
-  key: "evmNetworksWithoutTestnetsMapState",
+export const activeEvmNetworksWithoutTestnetsMapState = selector<EvmNetworkList>({
+  key: "activeEvmNetworksWithoutTestnetsMapState",
   get: ({ get }) => {
-    const evmNetworks = get(evmNetworksWithoutTestnetsState)
+    const evmNetworks = get(activeEvmNetworksWithoutTestnetsState)
     return Object.fromEntries(evmNetworks.map((network) => [network.id, network]))
   },
+})
+
+export type EvmNetworksQueryOptions = {
+  activeOnly: boolean
+  includeTestnets: boolean
+}
+
+export const evmNetworksArrayQuery = selectorFamily({
+  key: "evmNetworksArrayQuery",
+  get:
+    ({ activeOnly, includeTestnets }: EvmNetworksQueryOptions) =>
+    ({ get }) => {
+      if (activeOnly)
+        return includeTestnets
+          ? get(activeEvmNetworksWithTestnetsState)
+          : get(activeEvmNetworksWithoutTestnetsState)
+
+      return includeTestnets ? get(allEvmNetworksState) : get(allEvmNetworksWithoutTestnetsState)
+    },
+})
+
+export const evmNetworksMapQuery = selectorFamily({
+  key: "evmNetworksMapQuery",
+  get:
+    ({ activeOnly, includeTestnets }: EvmNetworksQueryOptions) =>
+    ({ get }) => {
+      if (activeOnly)
+        return includeTestnets
+          ? get(activeEvmNetworksWithTestnetsMapState)
+          : get(activeEvmNetworksWithoutTestnetsMapState)
+
+      return includeTestnets
+        ? get(allEvmNetworksMapState)
+        : get(allEvmNetworksWithoutTestnetsMapState)
+    },
+})
+
+export const evmNetworkQuery = selectorFamily({
+  key: "evmNetworkQuery",
+  get:
+    (evmNetworkId: EvmNetworkId | null | undefined) =>
+    ({ get }) => {
+      const evmNetworks = get(allEvmNetworksMapState)
+      return evmNetworkId ? evmNetworks[evmNetworkId] : undefined
+    },
 })
 
 export const chainsActiveState = selector<ActiveChains>({
@@ -104,8 +167,24 @@ export const allChainsMapState = selector<ChainList>({
   },
 })
 
-export const chainsWithTestnetsState = selector({
-  key: "chainsWithTestnetsState",
+export const allChainsWithoutTestnetsState = selector({
+  key: "allChainsWithoutTestnetsState",
+  get: ({ get }) => {
+    const chains = get(allChainsState)
+    return chains.filter(filterNoTestnet)
+  },
+})
+
+export const allChainsWithoutTestnetsMapState = selector<ChainList>({
+  key: "allChainsWithoutTestnetsMapState",
+  get: ({ get }) => {
+    const chains = get(allChainsWithoutTestnetsState)
+    return Object.fromEntries(chains.map((network) => [network.id, network]))
+  },
+})
+
+export const activeChainsWithTestnetsState = selector({
+  key: "activeChainsWithTestnetsState",
   get: ({ get }) => {
     const chains = get(allChainsState)
     const activeNetworks = get(chainsActiveState)
@@ -113,28 +192,71 @@ export const chainsWithTestnetsState = selector({
   },
 })
 
-export const chainsWithTestnetsMapState = selector<ChainList>({
-  key: "chainsWithTestnetsMapState",
+export const activeChainsWithTestnetsMapState = selector<ChainList>({
+  key: "activeChainsWithTestnetsMapState",
   get: ({ get }) => {
-    const chains = get(chainsWithTestnetsState)
+    const chains = get(activeChainsWithTestnetsState)
     return Object.fromEntries(chains.map((network) => [network.id, network]))
   },
 })
 
-export const chainsWithoutTestnetsState = selector({
-  key: "chainsWithoutTestnetsState",
+export const activeChainsWithoutTestnetsState = selector({
+  key: "activeChainsWithoutTestnetsState",
   get: ({ get }) => {
-    const chains = get(chainsWithTestnetsState)
+    const chains = get(activeChainsWithTestnetsState)
     return chains.filter(filterNoTestnet)
   },
 })
 
-export const chainsWithoutTestnetsMapState = selector<ChainList>({
-  key: "chainsWithoutTestnetsMapState",
+export const activeChainsWithoutTestnetsMapState = selector<ChainList>({
+  key: "activeChainsWithoutTestnetsMapState",
   get: ({ get }) => {
-    const chains = get(chainsWithoutTestnetsState)
+    const chains = get(activeChainsWithoutTestnetsState)
     return Object.fromEntries(chains.map((network) => [network.id, network]))
   },
+})
+
+export type ChainsQueryOptions = {
+  activeOnly: boolean
+  includeTestnets: boolean
+}
+
+export const chainsArrayQuery = selectorFamily({
+  key: "chainsArrayQuery",
+  get:
+    ({ activeOnly, includeTestnets }: ChainsQueryOptions) =>
+    ({ get }) => {
+      if (activeOnly)
+        return includeTestnets
+          ? get(activeChainsWithTestnetsState)
+          : get(activeChainsWithoutTestnetsState)
+
+      return includeTestnets ? get(allChainsState) : get(allChainsWithoutTestnetsState)
+    },
+})
+
+export const chainsMapQuery = selectorFamily({
+  key: "chainsMapQuery",
+  get:
+    ({ activeOnly, includeTestnets }: ChainsQueryOptions) =>
+    ({ get }) => {
+      if (activeOnly)
+        return includeTestnets
+          ? get(activeChainsWithTestnetsMapState)
+          : get(activeChainsWithoutTestnetsMapState)
+
+      return includeTestnets ? get(allChainsMapState) : get(allChainsWithoutTestnetsMapState)
+    },
+})
+
+export const chainQuery = selectorFamily({
+  key: "chainQuery",
+  get:
+    (chainId: ChainId | null | undefined) =>
+    ({ get }) => {
+      const chains = get(allChainsMapState)
+      return chainId ? chains[chainId] : undefined
+    },
 })
 
 export const tokensActiveState = selector<ActiveTokens>({
@@ -167,12 +289,36 @@ export const allTokensState = selector<Token[]>({
   },
 })
 
-export const tokensWithTestnetsState = selector<Token[]>({
-  key: "tokensWithTestnetsState",
+export const allTokensWithoutTestnetsState = selector<Token[]>({
+  key: "allTokensWithoutTestnetsState",
+  get: ({ get }) => {
+    const tokensMap = get(allTokensMapState)
+    const chainsMap = get(allChainsWithoutTestnetsMapState)
+    const evmNetworksMap = get(allEvmNetworksWithoutTestnetsMapState)
+    return Object.values(tokensMap)
+      .filter(filterNoTestnet)
+      .filter(
+        (token) =>
+          (token.chain && chainsMap[token.chain.id]) ||
+          (token.evmNetwork && evmNetworksMap[token.evmNetwork.id])
+      )
+  },
+})
+
+export const allTokensWithoutTestnetsMapState = selector<TokenList>({
+  key: "allTokensWithoutTestnetsMapState",
+  get: ({ get }) => {
+    const tokens = get(allTokensWithoutTestnetsState)
+    return Object.fromEntries(tokens.map((token) => [token.id, token]))
+  },
+})
+
+export const activeTokensWithTestnetsState = selector<Token[]>({
+  key: "activeTokensWithTestnetsState",
   get: ({ get }) => {
     const tokens = get(allTokensState)
-    const chainsMap = get(chainsWithTestnetsMapState)
-    const evmNetworksMap = get(evmNetworksWithTestnetsMapState)
+    const chainsMap = get(activeChainsWithTestnetsMapState)
+    const evmNetworksMap = get(activeEvmNetworksWithTestnetsMapState)
     return tokens.filter(
       (token) =>
         (token.chain && chainsMap[token.chain.id]) ||
@@ -181,12 +327,12 @@ export const tokensWithTestnetsState = selector<Token[]>({
   },
 })
 
-export const tokensWithoutTestnetsState = selector<Token[]>({
-  key: "tokensWithoutTestnetsState",
+export const activeTokensWithoutTestnetsState = selector<Token[]>({
+  key: "activeTokensWithoutTestnetsState",
   get: ({ get }) => {
-    const arTokensWithTestnets = get(tokensWithTestnetsState)
-    const chainsWithoutTestnetsMap = get(chainsWithoutTestnetsMapState)
-    const evmNetworksWithoutTestnetsMap = get(evmNetworksWithoutTestnetsMapState)
+    const arTokensWithTestnets = get(activeTokensWithTestnetsState)
+    const chainsWithoutTestnetsMap = get(activeChainsWithoutTestnetsMapState)
+    const evmNetworksWithoutTestnetsMap = get(activeEvmNetworksWithoutTestnetsMapState)
     return arTokensWithTestnets
       .filter(filterNoTestnet)
       .filter(
@@ -197,20 +343,53 @@ export const tokensWithoutTestnetsState = selector<Token[]>({
   },
 })
 
-export const tokensWithTestnetsMapState = selector<TokenList>({
-  key: "tokensWithTestnetsMapState",
+export const activeTokensWithTestnetsMapState = selector<TokenList>({
+  key: "activeTokensWithTestnetsMapState",
   get: ({ get }) => {
-    const arTokens = get(tokensWithTestnetsState)
+    const arTokens = get(activeTokensWithTestnetsState)
     return Object.fromEntries(arTokens.map((token) => [token.id, token]))
   },
 })
 
-export const tokensWithoutTestnetsMapState = selector<TokenList>({
-  key: "tokensWithoutTestnetsMapState",
+export const activeTokensWithoutTestnetsMapState = selector<TokenList>({
+  key: "activeTokensWithoutTestnetsMapState",
   get: ({ get }) => {
-    const arTokens = get(tokensWithTestnetsState)
+    const arTokens = get(activeTokensWithTestnetsState)
     return Object.fromEntries(arTokens.map((token) => [token.id, token]))
   },
+})
+
+export type TokensQueryOptions = {
+  activeOnly: boolean
+  includeTestnets: boolean
+}
+
+export const tokensArrayQuery = selectorFamily({
+  key: "tokensArrayQuery",
+  get:
+    ({ activeOnly, includeTestnets }: TokensQueryOptions) =>
+    ({ get }) => {
+      if (activeOnly)
+        return includeTestnets
+          ? get(activeTokensWithTestnetsState)
+          : get(activeTokensWithoutTestnetsState)
+
+      return includeTestnets ? get(allTokensState) : get(allTokensWithoutTestnetsState)
+    },
+})
+
+export const tokensMapQuery = selectorFamily({
+  key: "tokensMapQuery",
+  get:
+    ({ activeOnly, includeTestnets }: TokensQueryOptions) =>
+    ({ get }) => {
+      if (activeOnly)
+        return includeTestnets
+          ? get(activeTokensWithTestnetsMapState)
+          : get(activeTokensWithoutTestnetsMapState)
+
+      return includeTestnets ? get(allTokensMapState) : get(allTokensWithoutTestnetsMapState)
+    },
 })
 
 export const tokenQuery = selectorFamily({

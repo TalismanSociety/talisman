@@ -104,8 +104,8 @@ export const mainState = atom<{
       }
     },
     () => api.tokens(NO_OP),
-    () => api.chains(NO_OP),
     () => api.ethereumNetworks(NO_OP),
+    () => api.chains(NO_OP),
     () => api.tokenRates(NO_OP),
   ],
 })

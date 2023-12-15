@@ -19,8 +19,8 @@ export const SendFundsButton = ({
   shouldClose?: boolean
 }) => {
   const { account } = useSelectedAccount()
-  const [useTestnets] = useSetting("useTestnets")
-  const { tokens } = useTokens(useTestnets ? "enabledWithTestnets" : "enabledWithoutTestnets")
+  const [includeTestnets] = useSetting("useTestnets")
+  const { tokens } = useTokens({ activeOnly: true, includeTestnets })
 
   const token = tokens?.find(
     (t) =>

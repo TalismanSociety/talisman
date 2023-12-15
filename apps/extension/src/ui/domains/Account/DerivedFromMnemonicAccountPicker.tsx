@@ -74,8 +74,8 @@ const useDerivedAccounts = (
     }
   }, [itemsPerPage, mnemonic, name, pageIndex, type])
 
-  const { chains } = useChains("enabledWithoutTestnets")
-  const { evmNetworks } = useEvmNetworks("enabledWithoutTestnets")
+  const { chains } = useChains({ activeOnly: true, includeTestnets: false })
+  const { evmNetworks } = useEvmNetworks({ activeOnly: true, includeTestnets: false })
 
   const activeChains = useActiveChainsState()
   const activeEvmNetworks = useActiveEvmNetworksState()

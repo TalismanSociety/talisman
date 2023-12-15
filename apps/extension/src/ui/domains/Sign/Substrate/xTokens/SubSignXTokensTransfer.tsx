@@ -142,9 +142,9 @@ export const SubSignXTokensTransfer = () => {
   const { t } = useTranslation("request")
   const { chain, payload, account } = usePolkadotSigningRequest()
   const { data: extrinsic } = useExtrinsic(payload)
-  const { tokens } = useTokens("all")
+  const { tokens } = useTokens({ activeOnly: false, includeTestnets: true })
+  const { chains } = useChains({ activeOnly: false, includeTestnets: true })
   const tokenRates = useTokenRatesMap()
-  const { chains } = useChains("all")
 
   const props = useMemo(() => {
     // wait for tokens to be loaded

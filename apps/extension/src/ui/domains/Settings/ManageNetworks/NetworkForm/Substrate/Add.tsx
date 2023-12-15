@@ -19,7 +19,7 @@ const DEFAULT_VALUES: Partial<SubNetworkFormData> = {
 export const SubNetworkFormAdd = ({ onSubmitted }: SubNetworkFormBaseProps) => {
   const { t } = useTranslation("admin")
 
-  const { chains } = useChains("all")
+  const { chains } = useChains({ activeOnly: false, includeTestnets: true })
 
   const formProps = useForm<SubNetworkFormData>({
     mode: "all",

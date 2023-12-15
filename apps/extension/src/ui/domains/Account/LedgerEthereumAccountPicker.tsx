@@ -72,7 +72,7 @@ const useLedgerEthereumAccounts = (
     setIsBusy(false)
   }, [derivationPathType, isReady, itemsPerPage, ledger, name, pageIndex, t])
 
-  const { evmNetworks } = useEvmNetworks("enabledWithoutTestnets")
+  const { evmNetworks } = useEvmNetworks({ activeOnly: true, includeTestnets: false })
 
   // which balances to fetch
   const activeEvmNetworks = useActiveEvmNetworksState()

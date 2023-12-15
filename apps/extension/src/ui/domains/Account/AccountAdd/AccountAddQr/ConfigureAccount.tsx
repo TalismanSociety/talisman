@@ -26,8 +26,8 @@ export const ConfigureAccount = () => {
   const { t } = useTranslation("admin")
   const { state, dispatch, submitConfigure } = useAccountAddQr()
 
-  const [useTestnets] = useSetting("useTestnets")
-  const { chains } = useChains(useTestnets ? "enabledWithTestnets" : "enabledWithoutTestnets")
+  const [includeTestnets] = useSetting("useTestnets")
+  const { chains } = useChains({ activeOnly: true, includeTestnets })
   const addressesByChain = useMemo(() => {
     if (state.type !== "CONFIGURE") return
 

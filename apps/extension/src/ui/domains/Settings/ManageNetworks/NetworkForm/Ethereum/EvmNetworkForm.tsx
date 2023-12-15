@@ -83,7 +83,7 @@ export const EvmNetworkForm: FC<EvmNetworkFormProps> = ({ evmNetworkId, onSubmit
   const { t } = useTranslation("admin")
   const isBuiltInEvmNetwork = useIsBuiltInEvmNetwork(evmNetworkId)
 
-  const { evmNetworks } = useEvmNetworks("all")
+  const { evmNetworks } = useEvmNetworks({ activeOnly: false, includeTestnets: true })
   const [useTestnets, setUseTestnets] = useSetting("useTestnets")
 
   const { defaultValues, isCustom, isEditMode, evmNetwork } = useEditMode(evmNetworkId)

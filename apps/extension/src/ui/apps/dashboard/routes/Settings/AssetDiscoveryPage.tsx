@@ -161,7 +161,7 @@ const TOKEN_RATES_CACHE: TokenList = {}
 // our main token rates store only fetches active tokens, this obviously doesn't work here
 const useDiscoveredTokenRates = () => {
   const { tokenIds } = useRecoilValue(scanProgress)
-  const { tokens } = useTokens("all")
+  const { tokens } = useTokens({ activeOnly: false, includeTestnets: true })
   const tokenList = useMemo(
     () => Object.fromEntries(tokens.filter((t) => tokenIds.includes(t.id)).map((t) => [t.id, t])),
     [tokenIds, tokens]
@@ -301,8 +301,8 @@ const AssetTable: FC = () => {
   const { t } = useTranslation("admin")
 
   // force loading these atoms to resolve the suspense, this prevent flickering when rows appears
-  useTokens("enabledWithoutTestnets")
-  useEvmNetworks("enabledWithoutTestnets")
+  useTokens({ includeTestnets: false, activeOnly: true })
+  useEvmNetworks({ includeTestnets: false, activeOnly: true })
   useTokenRates()
 
   const { balances, balancesByTokenId: assetsByTokenId } = useRecoilValue(scanProgress)
@@ -453,8 +453,8 @@ const ScanInfo: FC = () => {
 
   const activeEvmNetworks = useActiveEvmNetworksState()
   const activeTokens = useActiveTokensState()
-  const { tokensMap } = useTokens("all")
-  const { evmNetworksMap } = useEvmNetworks("all")
+  const { tokensMap } = useTokens({ activeOnly: false, includeTestnets: true })
+  const { evmNetworksMap } = useEvmNetworks({ activeOnly: false, includeTestnets: true })
 
   const canEnable = useMemo(() => {
     const tokenIds = Object.keys(balancesByTokenId)

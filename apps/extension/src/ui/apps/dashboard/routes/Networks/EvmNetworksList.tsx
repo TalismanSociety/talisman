@@ -24,12 +24,12 @@ import { CustomPill, TestnetPill } from "./Pills"
 export const EvmNetworksList = ({ search }: { search?: string }) => {
   const { t } = useTranslation("admin")
 
-  const [useTestnets] = useSetting("useTestnets")
-  const { evmNetworks: allEvmNetworks } = useEvmNetworks("all")
-  const evmNetworks = useMemo(
-    () => (useTestnets ? allEvmNetworks : allEvmNetworks.filter((n) => !n.isTestnet)),
-    [allEvmNetworks, useTestnets]
-  )
+  const [includeTestnets] = useSetting("useTestnets")
+  const { evmNetworks } = useEvmNetworks({
+    activeOnly: false,
+    includeTestnets,
+  })
+
   const networksActiveState = useActiveEvmNetworksState()
 
   const [filteredEvmNetworks, exactMatches] = useMemo(() => {

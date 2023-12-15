@@ -127,11 +127,9 @@ export const TokensPage = () => {
   useAnalyticsPageView(ANALYTICS_PAGE)
   const navigate = useNavigate()
 
-  const [useTestnets] = useSetting("useTestnets")
-  const { evmNetworks } = useEvmNetworks(
-    useTestnets ? "enabledWithTestnets" : "enabledWithoutTestnets"
-  )
-  const { tokens } = useTokens("all")
+  const [includeTestnets] = useSetting("useTestnets")
+  const { evmNetworks } = useEvmNetworks({ activeOnly: true, includeTestnets })
+  const { tokens } = useTokens({ activeOnly: false, includeTestnets: true })
   const erc20Tokens = useMemo(() => sortBy(tokens.filter(isErc20Token), "symbol"), [tokens])
   const [search, setSearch] = useState("")
   const activeTokens = useActiveTokensState()
