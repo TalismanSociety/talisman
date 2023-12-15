@@ -6,8 +6,10 @@ import { awaitKeyringLoaded } from "@core/util/awaitKeyringLoaded"
 import keyring from "@polkadot/ui-keyring"
 import PromisePool from "@supercharge/promise-pool"
 import { erc20Abi } from "@talismn/balances"
+import { abiMulticall } from "@talismn/balances/src/modules/abis/multicall"
 import { EvmNetworkId, Token } from "@talismn/chaindata-provider"
 import { isEthereumAddress } from "@talismn/util"
+import { isEvmToken } from "@ui/util/isEvmToken"
 import { groupBy, sortBy } from "lodash"
 import chunk from "lodash/chunk"
 
@@ -21,7 +23,7 @@ const MANUAL_SCAN_MAX_CONCURRENT_NETWORK = 4
 const BALANCES_FETCH_CHUNK_SIZE = 100
 
 class AssetDiscoveryScanner {
-  // as scan can be both manually started resumed (2 triggers),
+  // as scan can be both manually started and resumed on startup (2 triggers),
   // track resumed scans to prevent them from running twice simultaneously
   #resumedScans: string[] = []
 
@@ -94,26 +96,21 @@ class AssetDiscoveryScanner {
 
     const tokensMap = Object.fromEntries(allTokens.map((token) => [token.id, token]))
 
-    const tokensToScan = allTokens.filter((token) => {
-      if (token.type === "evm-erc20") {
-        const evmNetwork = evmNetworks[token.evmNetwork?.id ?? ""]
-        if (!evmNetwork) return false
-        if (isFullScan)
-          return (
-            !isEvmNetworkActive(evmNetwork, activeEvmNetworks) ||
-            !isTokenActive(token, activeTokens)
-          )
+    const tokensToScan = allTokens.filter(isEvmToken).filter((token) => {
+      const evmNetwork = evmNetworks[token.evmNetwork?.id ?? ""]
+      if (!evmNetwork) return false
+      if (isFullScan)
         return (
-          isEvmNetworkActive(evmNetwork, activeEvmNetworks) && !isTokenActive(token, activeTokens)
+          !isEvmNetworkActive(evmNetwork, activeEvmNetworks) || !isTokenActive(token, activeTokens)
         )
-      }
-
-      return false
+      return (
+        isEvmNetworkActive(evmNetwork, activeEvmNetworks) && !isTokenActive(token, activeTokens)
+      )
     })
 
     const tokensByNetwork: Record<EvmNetworkId, Token[]> = groupBy(
       tokensToScan,
-      (t) => t.evmNetwork?.id || t.chain!.id
+      (t) => t.evmNetwork?.id
     )
 
     const totalChecks = tokensToScan.length * addresses.length
@@ -163,6 +160,26 @@ class AssetDiscoveryScanner {
                     address: token.contractAddress as EvmAddress,
                     functionName: "balanceOf",
                     args: [check.address as EvmAddress],
+                  })
+                  return balance.toString()
+                }
+
+                if (token.type === "evm-native") {
+                  const addressMulticall = client.chain?.contracts?.multicall3?.address
+                  if (addressMulticall) {
+                    // if multicall is available then fetch balance using this contract call,
+                    // this will allow the client to batch it along with other pending erc20 calls
+                    const balance = await client.readContract({
+                      abi: abiMulticall,
+                      address: addressMulticall,
+                      functionName: "getEthBalance",
+                      args: [check.address as EvmAddress],
+                    })
+                    return balance.toString()
+                  }
+
+                  const balance = await client.getBalance({
+                    address: check.address as EvmAddress,
                   })
                   return balance.toString()
                 }
