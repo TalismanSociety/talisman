@@ -121,7 +121,7 @@ const config = (env) => {
             reuseExistingChunk: true,
           },
           "vendor-talisman": {
-            test: /([\\/]node_modules[\\/](@talismn)[\\/])|(packages[\\/](chaindata-provider-extension[\\/]dist))/,
+            test: /([\\/]node_modules[\\/](@talismn)[\\/])|(packages[\\/](chaindata-provider-extension([\\/]init[\\/](chains|evm-networks|tokens|mini-metadatas))?[\\/]dist))/,
             name: "vendor-talisman",
             priority: -1,
             reuseExistingChunk: true,
