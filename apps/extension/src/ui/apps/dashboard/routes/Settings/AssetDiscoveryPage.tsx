@@ -61,7 +61,7 @@ import {
 import { DashboardLayout } from "../../layout/DashboardLayout"
 import { AccountsStack } from "./Accounts/AccountIconsStack"
 
-const AccountTooltip: FC<{ addresses: Address[] }> = ({ addresses }) => {
+const AccountsTooltip: FC<{ addresses: Address[] }> = ({ addresses }) => {
   const allAccounts = useAccounts("all")
   const accounts = useMemo(
     () =>
@@ -220,7 +220,7 @@ const AssetRow: FC<{ tokenId: TokenId; assets: DiscoveredBalance[] }> = ({ token
   const enable = useCallback(() => {
     if (!token || !evmNetwork) return
     activeEvmNetworksStore.setActive(evmNetwork.id, true)
-    activeTokensStore.setActive(token.id, true)
+    if (token.type !== "evm-native") activeTokensStore.setActive(token.id, true)
   }, [evmNetwork, token])
 
   const isInactiveNetwork = useMemo(
@@ -249,7 +249,7 @@ const AssetRow: FC<{ tokenId: TokenId; assets: DiscoveredBalance[] }> = ({ token
                 <AccountsStack accounts={accounts} />
               </TooltipTrigger>
               <TooltipContent>
-                <AccountTooltip addresses={accounts.map((a) => a.address)} />
+                <AccountsTooltip addresses={accounts.map((a) => a.address)} />
               </TooltipContent>
             </Tooltip>
           </div>
@@ -336,6 +336,11 @@ const Header: FC = () => {
   const { t } = useTranslation("admin")
   const { balances, accountsCount, tokensCount, percent, isInProgress } =
     useRecoilValue(scanProgress)
+  const { evmNetworks: activeNetworks } = useEvmNetworks({
+    includeTestnets: false,
+    activeOnly: true,
+  })
+  const { evmNetworks: allNetworks } = useEvmNetworks({ includeTestnets: false, activeOnly: false })
 
   const handleScanClick = useCallback(
     (full: boolean) => async () => {
@@ -345,7 +350,7 @@ const Header: FC = () => {
     },
     []
   )
-  const handleCaancelScanClick = useCallback(async () => {
+  const handleCancelScanClick = useCallback(async () => {
     const stop = log.timer("stop scan")
     await api.assetDiscoveryStopScan()
     stop()
@@ -397,7 +402,7 @@ const Header: FC = () => {
       {isInProgress ? (
         <Button
           small
-          onClick={handleCaancelScanClick}
+          onClick={handleCancelScanClick}
           iconLeft={XIcon}
           className="h-16 min-w-[10.5rem] rounded-full px-4 pr-6"
         >
@@ -418,10 +423,10 @@ const Header: FC = () => {
           </ContextMenuTrigger>
           <ContextMenuContent>
             <ContextMenuItem onClick={handleScanClick(false)}>
-              {t("Scan only active networks")}
+              {t("Scan active networks")} ({activeNetworks.length})
             </ContextMenuItem>
             <ContextMenuItem onClick={handleScanClick(true)}>
-              {t("Scan all networks")}
+              {t("Scan all networks")} ({allNetworks.length})
             </ContextMenuItem>
           </ContextMenuContent>
         </ContextMenu>
@@ -439,7 +444,7 @@ const AccountsWrapper: FC<{
     <Tooltip>
       <TooltipTrigger className={className}>{children}</TooltipTrigger>
       <TooltipContent>
-        <AccountTooltip addresses={accounts.map((a) => a.address)} />
+        <AccountsTooltip addresses={accounts.map((a) => a.address)} />
       </TooltipContent>
     </Tooltip>
   )
@@ -474,7 +479,11 @@ const ScanInfo: FC = () => {
       ...new Set(tokenIds.map((tokenId) => tokensMap[tokenId]?.evmNetwork?.id).filter(Boolean)),
     ] as EvmNetworkId[]
     await activeEvmNetworksStore.set(Object.fromEntries(evmNetworkIds.map((id) => [id, true])))
-    await activeTokensStore.set(Object.fromEntries(tokenIds.map((id) => [id, true])))
+    await activeTokensStore.set(
+      Object.fromEntries(
+        tokenIds.filter((id) => !id.includes("evm-native")).map((id) => [id, true])
+      )
+    )
   }, [balancesByTokenId, tokensMap])
 
   const formatedTimestamp = useMemo(() => {

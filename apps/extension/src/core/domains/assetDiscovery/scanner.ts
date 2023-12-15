@@ -7,7 +7,7 @@ import keyring from "@polkadot/ui-keyring"
 import PromisePool from "@supercharge/promise-pool"
 import { erc20Abi } from "@talismn/balances"
 import { abiMulticall } from "@talismn/balances/src/modules/abis/multicall"
-import { EvmNetworkId, Token } from "@talismn/chaindata-provider"
+import { EvmNetworkId, Token, TokenId, TokenList } from "@talismn/chaindata-provider"
 import { isEthereumAddress } from "@talismn/util"
 import { isEvmToken } from "@ui/util/isEvmToken"
 import { groupBy, sortBy } from "lodash"
@@ -21,6 +21,19 @@ import { DiscoveredBalance, RequestAssetDiscoveryStartScan } from "./types"
 
 const MANUAL_SCAN_MAX_CONCURRENT_NETWORK = 4
 const BALANCES_FETCH_CHUNK_SIZE = 100
+
+// native tokens should be processed and displayed first
+const getSortableIdentifier = (tokenId: TokenId, address: string, tokens: TokenList) => {
+  const token = tokens[tokenId]
+  if (!token?.evmNetwork?.id) {
+    log.warn("No token or network found for tokenId", tokenId)
+    return `${tokenId}::${address}`
+  }
+
+  return `${token.evmNetwork?.id}::${
+    tokens[tokenId].type === "evm-native" ? "t1" : "t2"
+  }::${tokenId}::${address}`
+}
 
 class AssetDiscoveryScanner {
   // as scan can be both manually started and resumed on startup (2 triggers),
@@ -128,9 +141,9 @@ class AssetDiscoveryScanner {
           // build the list of token+address to check balances for
           const allChecks = sortBy(
             tokensByNetwork[networkId]
-              .map((t) => addresses.map((a) => ({ tokenId: t.id, address: a })))
+              .map((t) => addresses.map((a) => ({ tokenId: t.id, type: t.type, address: a })))
               .flat(),
-            (c) => `${c.tokenId}::${c.address}`
+            (c) => getSortableIdentifier(c.tokenId, c.address, tokensMap)
           )
           let startIndex = 0
 
@@ -192,7 +205,7 @@ class AssetDiscoveryScanner {
               .map((check, i) => [check, res[i]] as const)
               .filter(([, res]) => res.status === "fulfilled" && res.value !== "0")
               .map<DiscoveredBalance>(([{ address, tokenId }, res]) => ({
-                id: `${tokenId}::${address}`,
+                id: getSortableIdentifier(tokenId, address, tokensMap),
                 tokenId,
                 address,
                 balance: (res as PromiseFulfilledResult<string>).value,
