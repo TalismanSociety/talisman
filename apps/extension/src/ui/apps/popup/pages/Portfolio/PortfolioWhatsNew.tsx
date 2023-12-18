@@ -2,11 +2,14 @@ import { HandMonoLogo } from "@talisman/theme/logos"
 import { ChevronLeftIcon } from "@talismn/icons"
 import { AnalyticsPage, sendAnalyticsEvent } from "@ui/api/analytics"
 import { useSetting } from "@ui/hooks/useSettings"
+import DOMPurify from "dompurify"
+import { marked } from "marked"
 import { useCallback } from "react"
 import { Trans, useTranslation } from "react-i18next"
 import { useNavigate } from "react-router-dom"
 
 import HeroUrl from "./assets/Whats New - Hero.png"
+import whatsNewContent from "./assets/Whats New.md"
 
 const ANALYTICS_PAGE: AnalyticsPage = {
   container: "Popup",
@@ -16,53 +19,42 @@ const ANALYTICS_PAGE: AnalyticsPage = {
 }
 
 /**
- * This number should be incremented when we want to show the `What's New` banner
+ * This string should be changed when we want to show the `What's New` banner
  * to users who have dismissed it in the past.
  *
  * E.g. when we have new features to tell them about.
  */
-export const WhatsNewVersion = 1
+export const WhatsNewVersion =
+  /version: (?<version>v[0-9.]+)/im.exec(whatsNewContent)?.groups?.version ?? "0"
 
-export const PortfolioWhatsNew = () => {
-  const { t } = useTranslation()
+const whatsNewHtml = DOMPurify.sanitize(
+  marked(whatsNewContent, { gfm: true, async: false }) as string
+)
 
-  return (
-    <div className="text-body-secondary flex flex-col gap-12 text-sm">
-      <div className="relative">
-        <img
-          className="pointer-events-none relative w-full rounded-sm"
-          src={HeroUrl}
-          alt="a hero banner"
-        />
-        <div className="pointer-events-none absolute left-0 top-0 flex h-full w-full flex-col gap-4 p-8">
-          <div className="font-whyteInkTrap flex items-center gap-1 text-sm tracking-tight text-white">
-            <HandMonoLogo className="text-base" />
-            Talisman
-          </div>
-          <div className="text-primary text-2xl font-extrabold">V{process.env.VERSION}</div>
+export const PortfolioWhatsNew = () => (
+  <div className="text-body-secondary flex flex-col gap-12 text-sm">
+    <div className="relative">
+      <img
+        className="pointer-events-none relative w-full rounded-sm"
+        src={HeroUrl}
+        alt="a hero banner"
+      />
+      <div className="pointer-events-none absolute left-0 top-0 flex h-full w-full flex-col gap-4 p-8">
+        <div className="font-whyteInkTrap flex items-center gap-1 text-sm tracking-tight text-white">
+          <HandMonoLogo className="text-base" />
+          Talisman
         </div>
-      </div>
-      <div>
-        <Trans t={t}>
-          <span className="text-body">💹 Real-Time Price Tracking:</span> Stay updated with live
-          crypto prices
-        </Trans>
-      </div>
-      <div>
-        <Trans t={t}>
-          <span className="text-body">🔄 Simplified Swaps:</span> Exchange crypto faster with our
-          streamlined swap interface
-        </Trans>
-      </div>
-      <div>
-        <Trans t={t}>
-          <span className="text-body">👀 Invisible Mode:</span> Toggle on to hide your balances for
-          added privacy
-        </Trans>
+        <div className="text-primary text-2xl font-extrabold capitalize">{WhatsNewVersion}</div>
       </div>
     </div>
-  )
-}
+    <div>
+      <div
+        className="flex flex-col gap-12 [&_strong]:font-normal [&_strong]:text-white"
+        dangerouslySetInnerHTML={{ __html: whatsNewHtml ?? "" }}
+      />
+    </div>
+  </div>
+)
 
 export const PortfolioWhatsNewHeader = () => {
   const { t } = useTranslation()
@@ -94,7 +86,7 @@ export const PortfolioWhatsNewHeader = () => {
         </Trans>
       </div>
       <div className="flex-1 text-right">
-        {dismissedVersion >= WhatsNewVersion ? (
+        {dismissedVersion === WhatsNewVersion ? (
           <span />
         ) : (
           <button

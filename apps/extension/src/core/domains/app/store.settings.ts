@@ -16,7 +16,7 @@ export interface SettingsStoreData {
   spiritClanFeatures: boolean
   selectableCurrencies: TokenRateCurrency[]
   selectedCurrency: TokenRateCurrency
-  newFeaturesDismissed: number
+  newFeaturesDismissed: string
 }
 
 export class SettingsStore extends StorageProvider<SettingsStoreData> {}
@@ -33,7 +33,7 @@ export const DEFAULT_SETTINGS: SettingsStoreData = {
   spiritClanFeatures: true,
   selectableCurrencies: ["usd", "dot", "eth"],
   selectedCurrency: "usd",
-  newFeaturesDismissed: 0,
+  newFeaturesDismissed: "0",
 }
 
 export const settingsStore = new SettingsStore("settings", DEFAULT_SETTINGS)

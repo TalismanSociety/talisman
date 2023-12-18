@@ -96,6 +96,11 @@ declare module "*.svg" {
 declare module "*.woff"
 declare module "*.woff2"
 
+declare module "*.md" {
+  const value: string
+  export default value
+}
+
 declare module "eth-phishing-detect" {
   const isEthPhishingDomain: (url: string) => boolean
   export default isEthPhishingDomain

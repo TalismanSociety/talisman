@@ -39,7 +39,7 @@ export const NewFeaturesButton = ({ className }: Props) => {
     [setDismissedVersion]
   )
 
-  if (dismissedVersion >= WhatsNewVersion) return null
+  if (dismissedVersion === WhatsNewVersion) return null
 
   return (
     <div
@@ -80,7 +80,7 @@ export const NewFeaturesButton = ({ className }: Props) => {
           </Trans>
         </div>
         <div className="text-tiny text-grey-200 flex gap-3">
-          <span>{t("See what's new on {{version}}", { version: `v${process.env.VERSION}` })}</span>
+          <span>{t("See what's new on {{version}}", { version: WhatsNewVersion })}</span>
           <button className="underline" onClick={handleDismissClick} type="button">
             {t("Dismiss")}
           </button>
