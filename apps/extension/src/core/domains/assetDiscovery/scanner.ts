@@ -13,6 +13,7 @@ import { isEvmToken } from "@ui/util/isEvmToken"
 import { groupBy, sortBy } from "lodash"
 import chunk from "lodash/chunk"
 
+import { settingsStore } from "../app/store.settings"
 import { activeEvmNetworksStore, isEvmNetworkActive } from "../ethereum/store.activeEvmNetworks"
 import { EvmAddress } from "../ethereum/types"
 import { activeTokensStore, isTokenActive } from "../tokens/store.activeTokens"
@@ -100,11 +101,12 @@ class AssetDiscoveryScanner {
       currentScanCursors: cursors,
     } = await assetDiscoveryStore.get()
 
-    const [allTokens, evmNetworks, activeTokens, activeEvmNetworks] = await Promise.all([
+    const [allTokens, evmNetworks, activeTokens, activeEvmNetworks, settings] = await Promise.all([
       chaindataProvider.tokensArray(),
       chaindataProvider.evmNetworks(),
       activeTokensStore.get(),
       activeEvmNetworksStore.get(),
+      settingsStore.get(),
     ])
 
     const tokensMap = Object.fromEntries(allTokens.map((token) => [token.id, token]))
@@ -112,6 +114,7 @@ class AssetDiscoveryScanner {
     const tokensToScan = allTokens.filter(isEvmToken).filter((token) => {
       const evmNetwork = evmNetworks[token.evmNetwork?.id ?? ""]
       if (!evmNetwork) return false
+      if (!settings.useTestnets && (evmNetwork.isTestnet || token.isTestnet)) return false
       if (isFullScan)
         return (
           !isEvmNetworkActive(evmNetwork, activeEvmNetworks) || !isTokenActive(token, activeTokens)

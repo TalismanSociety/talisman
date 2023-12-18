@@ -38,8 +38,8 @@ import { useActiveTokensState } from "@ui/hooks/useActiveTokensState"
 import { useAnalyticsPageView } from "@ui/hooks/useAnalyticsPageView"
 import { useEvmNetwork } from "@ui/hooks/useEvmNetwork"
 import { useEvmNetworks } from "@ui/hooks/useEvmNetworks"
+import { useSetting } from "@ui/hooks/useSettings"
 import useToken from "@ui/hooks/useToken"
-import { useTokenRates } from "@ui/hooks/useTokenRates"
 import useTokens from "@ui/hooks/useTokens"
 import { liveQuery } from "dexie"
 import groupBy from "lodash/groupBy"
@@ -299,12 +299,6 @@ const AssetRow: FC<{ tokenId: TokenId; assets: DiscoveredBalance[] }> = ({ token
 
 const AssetTable: FC = () => {
   const { t } = useTranslation("admin")
-
-  // force loading these atoms to resolve the suspense, this prevent flickering when rows appears
-  useTokens({ includeTestnets: false, activeOnly: true })
-  useEvmNetworks({ includeTestnets: false, activeOnly: true })
-  useTokenRates()
-
   const { balances, balancesByTokenId: assetsByTokenId } = useRecoilValue(scanProgress)
 
   if (!balances.length) return null
@@ -336,11 +330,9 @@ const Header: FC = () => {
   const { t } = useTranslation("admin")
   const { balances, accountsCount, tokensCount, percent, isInProgress } =
     useRecoilValue(scanProgress)
-  const { evmNetworks: activeNetworks } = useEvmNetworks({
-    includeTestnets: false,
-    activeOnly: true,
-  })
-  const { evmNetworks: allNetworks } = useEvmNetworks({ includeTestnets: false, activeOnly: false })
+  const [includeTestnets] = useSetting("useTestnets")
+  const { evmNetworks: activeNetworks } = useEvmNetworks({ activeOnly: true, includeTestnets })
+  const { evmNetworks: allNetworks } = useEvmNetworks({ activeOnly: false, includeTestnets })
 
   const handleScanClick = useCallback(
     (full: boolean) => async () => {
