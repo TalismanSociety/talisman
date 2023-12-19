@@ -26,7 +26,7 @@ function useChainConnectorsProvider(options: ChainConnectorsProviderOptions) {
 
   // evm connector
   const evm = useMemo(
-    () => new ChainConnectorEvm(chaindata, { onfinalityApiKey }),
+    () => new ChainConnectorEvm(chaindata, chaindata, { onfinalityApiKey }),
     [chaindata, onfinalityApiKey]
   )
 
