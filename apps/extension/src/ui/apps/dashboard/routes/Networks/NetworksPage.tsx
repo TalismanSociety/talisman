@@ -28,7 +28,7 @@ const Notice: FC = () => {
       <div className="grow text-sm">
         <Trans
           t={t}
-          defaults="Etherem network settings are taken from the community mantained <EthereumListsLink>Ethereum Lists</EthereumListsLink>. Talisman does not curate or control which RPCs are used for these networks."
+          defaults="Ethereum network settings are taken from the community mantained <EthereumListsLink>Ethereum Lists</EthereumListsLink>. Talisman does not curate or control which RPCs are used for these networks."
           components={{
             EthereumListsLink: (
               // eslint-disable-next-line jsx-a11y/anchor-has-content
