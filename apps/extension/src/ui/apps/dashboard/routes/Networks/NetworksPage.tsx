@@ -2,13 +2,13 @@ import { FadeIn } from "@talisman/components/FadeIn"
 import { HeaderBlock } from "@talisman/components/HeaderBlock"
 import { SearchInput } from "@talisman/components/SearchInput"
 import { Spacer } from "@talisman/components/Spacer"
-import { PlusIcon } from "@talismn/icons"
+import { InfoIcon, PlusIcon } from "@talismn/icons"
 import { sendAnalyticsEvent } from "@ui/api/analytics"
 import { EnableTestnetPillButton } from "@ui/domains/Settings/EnableTestnetPillButton"
 import { ProviderTypeSwitch } from "@ui/domains/Site/ProviderTypeSwitch"
 import { useAnalyticsPageView } from "@ui/hooks/useAnalyticsPageView"
-import { useCallback, useState } from "react"
-import { useTranslation } from "react-i18next"
+import { FC, useCallback, useState } from "react"
+import { Trans, useTranslation } from "react-i18next"
 import { useNavigate } from "react-router-dom"
 import { PillButton } from "talisman-ui"
 
@@ -18,6 +18,32 @@ import { ChainsList } from "./ChainsList"
 import { EvmNetworksList } from "./EvmNetworksList"
 import { useNetworksType } from "./useNetworksType"
 
+const Notice: FC = () => {
+  const { t } = useTranslation("admin")
+  return (
+    <div className="bg-grey-800 text-body-secondary flex items-center gap-8 rounded p-8 py-6">
+      <div>
+        <InfoIcon className="text-lg" />
+      </div>
+      <div className="grow text-sm">
+        <Trans
+          t={t}
+          defaults="Etherem network settings are taken from the community mantained <EthereumListsLink>Ethereum Lists</EthereumListsLink>. Talisman does not curate or control which RPCs are used for these networks."
+          components={{
+            EthereumListsLink: (
+              // eslint-disable-next-line jsx-a11y/anchor-has-content
+              <a
+                href="https://github.com/ethereum-lists/chains"
+                target="_blank"
+                className="text-grey-200 hover:text-body"
+              ></a>
+            ),
+          }}
+        />
+      </div>
+    </div>
+  )
+}
 export const NetworksPage = () => {
   const { t } = useTranslation("admin")
   useAnalyticsPageView(ANALYTICS_PAGE)
@@ -44,6 +70,8 @@ export const NetworksPage = () => {
       backTo="/settings/networks-tokens"
     >
       <HeaderBlock title={t("Manage Networks")} text={t("Add, enable and disable networks")} />
+      <Spacer small />
+      <Notice />
       <Spacer large />
       <div className="flex justify-end gap-4">
         <ProviderTypeSwitch

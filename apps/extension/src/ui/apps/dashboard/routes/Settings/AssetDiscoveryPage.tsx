@@ -13,7 +13,7 @@ import { HeaderBlock } from "@talisman/components/HeaderBlock"
 import { Spacer } from "@talisman/components/Spacer"
 import { shortenAddress } from "@talisman/util/shortenAddress"
 import { Address, BalanceFormatter } from "@talismn/balances"
-import { EvmNetworkId, TokenList } from "@talismn/chaindata-provider"
+import { EvmNetworkId, Token, TokenList } from "@talismn/chaindata-provider"
 import {
   CheckCircleIcon,
   ChevronDownIcon,
@@ -60,6 +60,35 @@ import {
 
 import { DashboardLayout } from "../../layout/DashboardLayout"
 import { AccountsStack } from "./Accounts/AccountIconsStack"
+
+const TokenTypePill: FC<{ type: Token["type"]; className?: string }> = ({ type, className }) => {
+  const { t } = useTranslation("admin")
+
+  const label = useMemo(() => {
+    switch (type) {
+      case "evm-erc20":
+        return t("ERC20")
+      case "evm-native":
+        return t("Native")
+      default:
+        // unsupported for now
+        throw null
+    }
+  }, [t, type])
+
+  if (!label) return null
+
+  return (
+    <span
+      className={classNames(
+        "text-body-disabled rounded-sm border px-2 py-1 text-[1rem]",
+        className
+      )}
+    >
+      {label}
+    </span>
+  )
+}
 
 const AccountsTooltip: FC<{ addresses: Address[] }> = ({ addresses }) => {
   const allAccounts = useAccounts("all")
@@ -233,7 +262,7 @@ const AssetRow: FC<{ tokenId: TokenId; assets: DiscoveredBalance[] }> = ({ token
   return (
     <div
       className={classNames(
-        "bg-grey-900 grid h-32 grid-cols-[25%_25%_30%_20%] items-center rounded-sm px-8",
+        "bg-grey-900 grid h-32 grid-cols-[30%_20%_30%_20%] items-center rounded-sm px-8",
         isActive && "opacity-50"
       )}
     >
@@ -242,7 +271,10 @@ const AssetRow: FC<{ tokenId: TokenId; assets: DiscoveredBalance[] }> = ({ token
           <TokenLogo tokenId={tokenId} className="shrink-0 text-xl" />
         </div>
         <div className="flex flex-col gap-1">
-          <div>{token.symbol}</div>
+          <div className="flex items-center gap-2">
+            <span>{token.symbol}</span>
+            <TokenTypePill type={token.type} className="ml-1" />
+          </div>
           <div>
             <Tooltip>
               <TooltipTrigger>
@@ -305,7 +337,7 @@ const AssetTable: FC = () => {
 
   return (
     <div className="text-body flex w-full min-w-[45rem] flex-col gap-4 text-left text-base">
-      <div className="text-body-disabled grid grid-cols-[25%_25%_30%_20%] px-8 text-sm font-normal">
+      <div className="text-body-disabled grid grid-cols-[30%_20%_30%_20%] px-8 text-sm font-normal">
         <div>{t("Asset")}</div>
         <div>{t("Network")}</div>
         <div className="text-right">{t("Balance")}</div>
@@ -525,6 +557,41 @@ const ScanInfo: FC = () => {
   )
 }
 
+const Notice: FC = () => {
+  const { t } = useTranslation("admin")
+  return (
+    <div className="bg-grey-800 text-body-secondary flex items-center gap-8 rounded p-8 py-6">
+      <div>
+        <InfoIcon className="text-lg" />
+      </div>
+      <div className="grow text-sm">
+        <Trans
+          t={t}
+          defaults="Networks to be scanned are taken from the community maintained <EthereumListsLink>Ethereum Lists</EthereumListsLink>. Talisman does not curate or control which RPCs are used for these networks. ERC20 tokens to be scanned are the ones listed on <CoingeckoLink>Coingecko</CoingeckoLink>."
+          components={{
+            CoingeckoLink: (
+              // eslint-disable-next-line jsx-a11y/anchor-has-content
+              <a
+                href="https://www.coingecko.com/"
+                target="_blank"
+                className="text-grey-200 hover:text-body"
+              ></a>
+            ),
+            EthereumListsLink: (
+              // eslint-disable-next-line jsx-a11y/anchor-has-content
+              <a
+                href="https://github.com/ethereum-lists/chains"
+                target="_blank"
+                className="text-grey-200 hover:text-body"
+              ></a>
+            ),
+          }}
+        />
+      </div>
+    </div>
+  )
+}
+
 export const AssetDiscoveryPage = () => {
   const { t } = useTranslation("admin")
   useAnalyticsPageView(ANALYTICS_PAGE)
@@ -540,13 +607,10 @@ export const AssetDiscoveryPage = () => {
     >
       <HeaderBlock
         title={t("Asset Discovery")}
-        text={
-          <Trans
-            t={t}
-            defaults="Scan for well-known tokens in your accounts and add them to Talisman"
-          />
-        }
+        text={t("Scan for well-known tokens in your accounts and add them to your wallet")}
       />
+      <Spacer small />
+      <Notice />
       <Spacer large />
       <Header />
       <Spacer small />
