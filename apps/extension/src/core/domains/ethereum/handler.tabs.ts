@@ -61,6 +61,7 @@ import {
   sanitizeWatchAssetRequestParam,
 } from "./helpers"
 import { requestAddNetwork, requestWatchAsset } from "./requests"
+import { activeEvmNetworksStore, isEvmNetworkActive } from "./store.activeEvmNetworks"
 import {
   AnyEvmError,
   EthProviderMessage,
@@ -310,9 +311,10 @@ export class EthTabsHandler extends TabsHandler {
 
     const chainId = parseInt(network.chainId, 16)
     const existing = await chaindataProvider.getEvmNetwork(chainId.toString())
+    const activeNetworks = await activeEvmNetworksStore.get()
     // some dapps (ex app.solarbeam.io) call this method without attempting to call wallet_switchEthereumChain first
     // in case network is already registered, dapp expects that we switch to it
-    if (existing)
+    if (existing && isEvmNetworkActive(existing, activeNetworks))
       return this.switchEthereumChain(url, {
         method: "wallet_switchEthereumChain",
         params: [{ chainId: network.chainId }],
@@ -373,7 +375,8 @@ export class EthTabsHandler extends TabsHandler {
     const ethChainId = parseInt(hexChainId, 16)
 
     const ethereumNetwork = await chaindataProvider.getEvmNetwork(ethChainId.toString())
-    if (!ethereumNetwork)
+    const activeNetworks = await activeEvmNetworksStore.get()
+    if (!ethereumNetwork || !isEvmNetworkActive(ethereumNetwork, activeNetworks))
       throw new EthProviderRpcError(
         `Unknown network ${ethChainId}, try adding the chain using wallet_addEthereumChain first`,
         ETH_ERROR_UNKNOWN_CHAIN_NOT_CONFIGURED
@@ -401,6 +404,7 @@ export class EthTabsHandler extends TabsHandler {
     } catch (error) {
       //no-op
     }
+    // TODO what to do if default network is disabled ?
     return site?.ethChainId ?? DEFAULT_ETH_CHAIN_ID
   }
 
