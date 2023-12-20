@@ -12,6 +12,7 @@ import {
   SecretIcon,
 } from "@talismn/icons"
 import { classNames } from "@talismn/util"
+import { DashboardLayout } from "@ui/apps/dashboard/layout/DashboardLayout"
 import { AccountIcon } from "@ui/domains/Account/AccountIcon"
 import { Address } from "@ui/domains/Account/Address"
 import useAccounts from "@ui/hooks/useAccounts"
@@ -21,13 +22,8 @@ import { Trans, useTranslation } from "react-i18next"
 import { useNavigate, useSearchParams } from "react-router-dom"
 import { ContextMenu, ContextMenuContent, ContextMenuItem, ContextMenuTrigger } from "talisman-ui"
 
-import { DashboardLayout } from "../../../layout/DashboardLayout"
 import { AccountsStack } from "../Accounts/AccountIconsStack"
-import {
-  MnemonicBackupModal,
-  MnemonicBackupModalProvider,
-  useMnemonicBackupModal,
-} from "./MnemonicBackupModal"
+import { MnemonicBackupModalProvider, useMnemonicBackupModal } from "./MnemonicBackupModal"
 import {
   MnemonicDeleteModal,
   MnemonicDeleteModalProvider,
@@ -264,6 +260,10 @@ const MnemonicsList = () => {
   )
   const { open: openBackup } = useMnemonicBackupModal()
   const [searchParams, updateSearchParams] = useSearchParams()
+  // useEffect(() => {
+  //   console.log("Dev only remove")
+  //   openBackup(mnemonics[0]?.id)
+  // }, [mnemonics])
 
   useEffect(() => {
     const showBackupModal = searchParams.has("showBackupModal")
@@ -304,7 +304,6 @@ export const MnemonicsPage = () => {
               <Spacer large />
               <BackupReminder />
               <MnemonicsList />
-              <MnemonicBackupModal />
               <MnemonicDeleteModal />
               <MnemonicRenameModal />
               <MnemonicSetPvVerifierModal />

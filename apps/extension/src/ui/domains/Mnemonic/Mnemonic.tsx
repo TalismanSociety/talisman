@@ -1,5 +1,5 @@
 import { notify } from "@talisman/components/Notifications"
-import { CheckIcon, CopyIcon, CursorClickIcon } from "@talismn/icons"
+import { CheckIcon, CopyIcon, EyeIcon, EyeOffIcon } from "@talismn/icons"
 import { classNames } from "@talismn/util"
 import { FC, ReactNode, useCallback, useEffect, useState } from "react"
 import { useTranslation } from "react-i18next"
@@ -48,8 +48,31 @@ export const Mnemonic: FC<MnemonicProps> = ({ onReveal, mnemonic, topRight }) =>
   }, [isCopied])
 
   return (
-    <>
-      <div className="flex items-center justify-between py-4 text-sm">
+    <div>
+      {topRight && <div className="flex items-center justify-end py-4 text-sm">{topRight}</div>}
+      <div className="bg-black-secondary group relative overflow-hidden rounded p-2">
+        <div className="grid min-h-[12.6rem] grid-cols-4 gap-4 p-2">
+          {!!mnemonic &&
+            mnemonic.split(" ").map((word, i) => (
+              <span className="bg-black-tertiary text-body rounded px-8 py-4" key={`mnemonic-${i}`}>
+                <span className="text-grey-500 select-none">{i + 1}. </span>
+                <span className="notranslate">{word}</span>
+              </span>
+            ))}
+          <button
+            type="button"
+            onClick={() => setIsRevealed((isRevealed) => !isRevealed)}
+            className={classNames(
+              "text-body absolute left-0 top-0 flex h-full w-full items-center justify-center rounded-sm transition",
+              !isRevealed && "backdrop-blur-md"
+            )}
+          >
+            {!isRevealed && <EyeIcon className="text-xl" />}
+            {isRevealed && <EyeOffIcon className="text-xl" />}
+          </button>
+        </div>
+      </div>
+      <div className="flex items-center py-4 text-sm">
         <button
           type="button"
           onClick={handleCopy}
@@ -69,27 +92,6 @@ export const Mnemonic: FC<MnemonicProps> = ({ onReveal, mnemonic, topRight }) =>
         </button>
         {topRight}
       </div>
-      <div className="bg-black-secondary group relative overflow-hidden rounded p-2">
-        <div className="grid min-h-[12.6rem] grid-cols-4 gap-4 p-2">
-          {!!mnemonic &&
-            mnemonic.split(" ").map((word, i) => (
-              <span className="bg-black-tertiary text-body rounded px-8 py-4" key={`mnemonic-${i}`}>
-                <span className="text-grey-500 select-none">{i + 1}. </span>
-                <span className="notranslate">{word}</span>
-              </span>
-            ))}
-          <button
-            type="button"
-            onClick={() => setIsRevealed(true)}
-            className={classNames(
-              "text-body absolute left-0 top-0 flex h-full w-full items-center justify-center rounded-sm backdrop-blur-md transition",
-              isRevealed && "opacity-0"
-            )}
-          >
-            <CursorClickIcon className="text-xl" />
-          </button>
-        </div>
-      </div>
-    </>
+    </div>
   )
 }
