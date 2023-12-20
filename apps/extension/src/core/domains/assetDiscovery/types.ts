@@ -8,8 +8,14 @@ export type DiscoveredBalance = {
   balance: string
 }
 
+export enum AssetDiscoveryMode {
+  ALL_NETWORKS = "ALL_NETWORKS",
+  ACTIVE_NETWORKS = "ACTIVE_NETWORKS",
+}
+
 export type RequestAssetDiscoveryStartScan = {
-  full: boolean
+  mode: AssetDiscoveryMode
+  addresses?: Address[]
 }
 
 export interface AssetDiscoveryMessages {

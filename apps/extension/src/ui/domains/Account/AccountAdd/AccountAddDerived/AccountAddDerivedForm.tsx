@@ -1,4 +1,5 @@
 import { AccountAddressType, RequestAccountCreateOptions } from "@core/domains/accounts/types"
+import { AssetDiscoveryMode } from "@core/domains/assetDiscovery/types"
 import { log } from "@core/log"
 import { yupResolver } from "@hookform/resolvers/yup"
 import { Accordion, AccordionIcon } from "@talisman/components/Accordion"
@@ -192,7 +193,11 @@ const AccountAddDerivedFormInner: FC<AccountAddPageProps> = ({ onSuccess }) => {
         // pause to prevent double notification
         await sleep(1000)
 
-        onSuccess(await api.accountCreate(name, type, options))
+        const address = await api.accountCreate(name, type, options)
+
+        onSuccess(address)
+
+        await api.assetDiscoveryStartScan(AssetDiscoveryMode.ACTIVE_NETWORKS, [address])
 
         notifyUpdate(notificationId, {
           type: "success",
@@ -300,7 +305,8 @@ const AccountAddDerivedFormInner: FC<AccountAddPageProps> = ({ onSuccess }) => {
           </FormFieldContainer>
         </AdvancedSettings>
         <Spacer small />
-        <div className="flex w-full justify-end">
+
+        <div className="flex w-full items-center justify-end">
           <Button
             icon={ArrowRightIcon}
             type="submit"

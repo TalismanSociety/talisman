@@ -1,4 +1,5 @@
 import { AccountType } from "@core/domains/accounts/types"
+import { AssetDiscoveryMode } from "@core/domains/assetDiscovery/types"
 import { AddressesAndEvmNetwork } from "@core/domains/balances/types"
 import { log } from "@core/log"
 import { AddressesByChain } from "@core/types/base"
@@ -314,7 +315,7 @@ const useJsonAccountImportProvider = () => {
     return true
   }, [pairs, selectedAccounts])
 
-  const importAccounts = useCallback(() => {
+  const importAccounts = useCallback(async () => {
     assert(selectedAccounts.length, "No accounts selected")
     assert(pairs, "Pairs unavailable")
 
@@ -329,7 +330,11 @@ const useJsonAccountImportProvider = () => {
 
     const unlockedPairs = pairsToImport.map((p) => p.toJson())
 
-    return api.accountCreateFromJson(unlockedPairs)
+    const addresses = await api.accountCreateFromJson(unlockedPairs)
+
+    await api.assetDiscoveryStartScan(AssetDiscoveryMode.ACTIVE_NETWORKS, addresses)
+
+    return addresses
   }, [pairs, selectedAccounts])
 
   return {

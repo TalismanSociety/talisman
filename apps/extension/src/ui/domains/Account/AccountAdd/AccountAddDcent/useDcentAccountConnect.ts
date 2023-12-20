@@ -1,4 +1,5 @@
 import { AccountJsonDcent } from "@core/domains/accounts/types"
+import { AssetDiscoveryMode } from "@core/domains/assetDiscovery/types"
 import { isEthereumAddress } from "@talismn/util"
 import { api } from "@ui/api"
 import { useAccountByAddress } from "@ui/hooks/useAccountByAddress"
@@ -38,14 +39,19 @@ export const useDcentAccountConnect = (accountInfo: DcentAccountInfo, address: s
   }, [isConnected, isUpdateRequired])
 
   const connect = useCallback(
-    (name: string) =>
-      api.accountCreateDcent(
+    async (name: string) => {
+      const addedAddress = await api.accountCreateDcent(
         name,
         address,
         isEthereumAddress(address) ? "ethereum" : "ed25519",
         accountInfo.derivationPath,
         Object.values(accountInfo.tokens).map((t) => t.id)
-      ),
+      )
+      await api.assetDiscoveryStartScan(AssetDiscoveryMode.ACTIVE_NETWORKS, [addedAddress])
+
+      return addedAddress
+    },
+
     [accountInfo.derivationPath, accountInfo.tokens, address]
   )
 

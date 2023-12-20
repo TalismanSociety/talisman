@@ -2,12 +2,13 @@ import { StorageProvider } from "@core/libs/Store"
 import { Address } from "@talismn/balances"
 import { ChainId, EvmNetworkId, TokenId } from "@talismn/chaindata-provider"
 
+import { AssetDiscoveryMode } from "./types"
+
 export type AssetDiscoveryScanType = "manual" // | "automatic"
 
 export type AssetDiscoveryScanState = {
   currentScanId: string | null // a non-null value means that a scan is currently running
-  currentScanFull: boolean
-  currentScanType: AssetDiscoveryScanType
+  currentScanMode: AssetDiscoveryMode
   currentScanProgressPercent: number
   currentScanAccounts: string[]
   currentScanTokensCount: number
@@ -21,20 +22,19 @@ export type AssetDiscoveryScanState = {
   >
   lastScanTimestamp: number
   lastScanAccounts: string[]
-  lastScanFull: boolean
+  lastScanMode: AssetDiscoveryMode
 }
 
 const DEFAULT_STATE: AssetDiscoveryScanState = {
   currentScanId: null,
-  currentScanFull: false,
-  currentScanType: "manual",
+  currentScanMode: AssetDiscoveryMode.ACTIVE_NETWORKS,
   currentScanProgressPercent: 0,
   currentScanAccounts: [],
   currentScanTokensCount: 0,
   currentScanCursors: {},
   lastScanTimestamp: 0,
   lastScanAccounts: [],
-  lastScanFull: false,
+  lastScanMode: AssetDiscoveryMode.ACTIVE_NETWORKS,
 }
 
 class AssetDiscoveryStore extends StorageProvider<AssetDiscoveryScanState> {

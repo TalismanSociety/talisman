@@ -333,7 +333,7 @@ export const api: MessageTypes = {
     }),
 
   // asset discovery
-  assetDiscoveryStartScan: (full) =>
-    messageService.sendMessage("pri(assetDiscovery.scan.start)", { full }),
+  assetDiscoveryStartScan: (mode, addresses) =>
+    messageService.sendMessage("pri(assetDiscovery.scan.start)", { mode, addresses }),
   assetDiscoveryStopScan: () => messageService.sendMessage("pri(assetDiscovery.scan.stop)", null),
 }

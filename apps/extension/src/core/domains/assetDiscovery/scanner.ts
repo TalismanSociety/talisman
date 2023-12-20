@@ -18,7 +18,7 @@ import { activeEvmNetworksStore, isEvmNetworkActive } from "../ethereum/store.ac
 import { EvmAddress } from "../ethereum/types"
 import { activeTokensStore, isTokenActive } from "../tokens/store.activeTokens"
 import { assetDiscoveryStore } from "./store"
-import { DiscoveredBalance, RequestAssetDiscoveryStartScan } from "./types"
+import { AssetDiscoveryMode, DiscoveredBalance, RequestAssetDiscoveryStartScan } from "./types"
 
 const MANUAL_SCAN_MAX_CONCURRENT_NETWORK = 4
 const BALANCES_FETCH_CHUNK_SIZE = 100
@@ -52,27 +52,36 @@ class AssetDiscoveryScanner {
     }, 15_000)
   }
 
-  public async startScan({ full }: RequestAssetDiscoveryStartScan): Promise<boolean> {
-    if (await assetDiscoveryStore.get("currentScanId")) throw new Error("Scan already in progress")
+  public async startScan({ mode, addresses }: RequestAssetDiscoveryStartScan): Promise<boolean> {
+    const prevState = await assetDiscoveryStore.get()
 
-    // 1. Clear scan table
-    await db.assetDiscovery.clear()
+    if (prevState.currentScanId) {
+      // if a scan was already in progress it will be cancelled, merge previous and new addresses
+      addresses = [...prevState.currentScanAccounts, ...(addresses ?? [])]
+    }
 
-    // 2. Set scan status in state
     await awaitKeyringLoaded()
     const currentScanAccounts = keyring
       .getAccounts()
-      .filter((acc) => isEthereumAddress(acc.address))
+      .filter((acc) => isEthereumAddress(acc.address)) // only scan ethereum accounts, for now
       .map((acc) => acc.address)
+      .filter((address) => !addresses || addresses.includes(address))
 
+    // if no scan-compatible address, exit
+    if (!currentScanAccounts.length) return false
+
+    // 1. Set scan status in state
     await assetDiscoveryStore.set({
       currentScanId: crypto.randomUUID(),
-      currentScanFull: full,
-      currentScanType: "manual",
+      currentScanMode: mode,
       currentScanProgressPercent: 0,
       currentScanCursors: {},
       currentScanAccounts,
+      currentScanTokensCount: 0,
     })
+
+    // 2. Clear scan table
+    await db.assetDiscovery.clear()
 
     // 3. Start scan
     this.resumeScan()
@@ -96,7 +105,7 @@ class AssetDiscoveryScanner {
     this.#resumedScans.push(currentScanId)
 
     const {
-      currentScanFull: isFullScan,
+      currentScanMode: mode,
       currentScanAccounts: addresses,
       currentScanCursors: cursors,
     } = await assetDiscoveryStore.get()
@@ -115,7 +124,7 @@ class AssetDiscoveryScanner {
       const evmNetwork = evmNetworks[token.evmNetwork?.id ?? ""]
       if (!evmNetwork) return false
       if (!settings.useTestnets && (evmNetwork.isTestnet || token.isTestnet)) return false
-      if (isFullScan)
+      if (mode === AssetDiscoveryMode.ALL_NETWORKS)
         return (
           !isEvmNetworkActive(evmNetwork, activeEvmNetworks) || !isTokenActive(token, activeTokens)
         )
@@ -226,11 +235,19 @@ class AssetDiscoveryScanner {
                 },
               }
 
+              // Update progress
+              // in case of full scan it takes longer to scan networks
+              // in case of active scan it takes longer to scan tokens
+              // => use the min of both ratios as current progress
               const totalScanned = Object.values(currentScanCursors).reduce(
                 (acc, cur) => acc + cur.scanned,
                 0
               )
-              const currentScanProgressPercent = Math.round((100 * totalScanned) / totalChecks)
+              const tokensProgress = Math.round((100 * totalScanned) / totalChecks)
+              const networksProgress = Math.round(
+                (100 * Object.keys(currentScanCursors).length) / Object.keys(tokensByNetwork).length
+              )
+              const currentScanProgressPercent = Math.min(tokensProgress, networksProgress)
 
               return {
                 ...prev,
@@ -253,11 +270,12 @@ class AssetDiscoveryScanner {
       return {
         ...prev,
         currentScanId: null,
-        currentScanProgressPercent: 100, // force 100% to account for networks that could not be scanned
+        currentScanProgressPercent: 100,
         currentScanCursors: {},
+        currentScanAccounts: [],
         lastScanTimestamp: Date.now(),
-        lastScanAccounts: addresses,
-        lastScanFull: prev.currentScanFull,
+        lastScanAccounts: prev.currentScanAccounts,
+        lastScanMode: prev.currentScanMode,
         status: "idle",
       }
     })

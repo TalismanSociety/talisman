@@ -3,6 +3,7 @@ import {
   RequestAccountCreateLedgerEthereum,
   RequestAccountCreateLedgerSubstrate,
 } from "@core/domains/accounts/types"
+import { AssetDiscoveryMode } from "@core/domains/assetDiscovery/types"
 import { assert } from "@polkadot/util"
 import { provideContext } from "@talisman/util/provideContext"
 import { api } from "@ui/api"
@@ -51,6 +52,8 @@ const useAddLedgerAccountProvider = ({ onSuccess }: { onSuccess: (address: strin
             ? await api.accountCreateLedger(account)
             : await api.accountCreateLedgerEthereum(account.name, account.address, account.path)
         )
+
+      await api.assetDiscoveryStartScan(AssetDiscoveryMode.ACTIVE_NETWORKS, addresses)
 
       return addresses
     },
