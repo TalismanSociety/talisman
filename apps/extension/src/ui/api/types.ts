@@ -133,6 +133,12 @@ export default interface MessageTypes {
   ) => Promise<string>
   accountCreateQr: (name: string, address: string, genesisHash: HexString | null) => Promise<string>
   accountCreateWatched: (name: string, address: string, isPortfolio: boolean) => Promise<string>
+  accountCreateSignet: (
+    name: string,
+    address: string,
+    genesisHash: `0x${string}`,
+    signetUrl: string
+  ) => Promise<string>
   accountExternalSetIsPortfolio: (address: string, isPortfolio: boolean) => Promise<boolean>
   accountsSubscribe: (cb: (accounts: AccountJson[]) => void) => UnsubscribeFn
   accountsCatalogSubscribe: (cb: (trees: Trees) => void) => UnsubscribeFn

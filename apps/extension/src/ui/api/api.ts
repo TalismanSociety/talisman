@@ -125,6 +125,13 @@ export const api: MessageTypes = {
       address,
       isPortfolio,
     }),
+  accountCreateSignet: (name, address, genesisHash, signetUrl) =>
+    messageService.sendMessage("pri(accounts.create.signet)", {
+      name,
+      address,
+      genesisHash,
+      signetUrl,
+    }),
   accountsSubscribe: (cb) => messageService.subscribe("pri(accounts.subscribe)", null, cb),
   accountsCatalogSubscribe: (cb) =>
     messageService.subscribe("pri(accounts.catalog.subscribe)", null, cb),
