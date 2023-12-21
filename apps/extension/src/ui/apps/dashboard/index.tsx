@@ -7,6 +7,7 @@ import { AccountExportPrivateKeyModalProvider } from "@ui/domains/Account/Accoun
 import { AccountRemoveModalProvider } from "@ui/domains/Account/AccountRemoveModal"
 import { AccountRenameModalProvider } from "@ui/domains/Account/AccountRenameModal"
 import { BuyTokensModalProvider } from "@ui/domains/Asset/Buy/BuyTokensModalContext"
+import { AssetDiscoveryDashboardAlert } from "@ui/domains/AssetDiscovery/AssetDiscoveryDashboardAlert"
 import { CopyAddressModalProvider } from "@ui/domains/CopyAddress"
 import { SelectedAccountProvider } from "@ui/domains/Portfolio/SelectedAccountContext"
 import { DatabaseErrorAlert } from "@ui/domains/Settings/DatabaseErrorAlert"
@@ -165,6 +166,7 @@ const Dashboard = () => (
                       <DeleteFolderModalProvider>
                         <DashboardInner />
                         <DatabaseErrorAlert container="fullscreen" />
+                        <AssetDiscoveryDashboardAlert />
                       </DeleteFolderModalProvider>
                     </RenameFolderModalProvider>
                   </NewFolderModalProvider>

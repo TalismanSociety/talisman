@@ -36,6 +36,7 @@ import useAccounts from "@ui/hooks/useAccounts"
 import { useActiveEvmNetworksState } from "@ui/hooks/useActiveEvmNetworksState"
 import { useActiveTokensState } from "@ui/hooks/useActiveTokensState"
 import { useAnalyticsPageView } from "@ui/hooks/useAnalyticsPageView"
+import { useAppState } from "@ui/hooks/useAppState"
 import { useEvmNetwork } from "@ui/hooks/useEvmNetwork"
 import { useEvmNetworks } from "@ui/hooks/useEvmNetworks"
 import { useSetting } from "@ui/hooks/useSettings"
@@ -43,7 +44,7 @@ import useToken from "@ui/hooks/useToken"
 import useTokens from "@ui/hooks/useTokens"
 import { liveQuery } from "dexie"
 import groupBy from "lodash/groupBy"
-import { FC, ReactNode, useCallback, useMemo } from "react"
+import { FC, ReactNode, useCallback, useEffect, useMemo } from "react"
 import { Trans, useTranslation } from "react-i18next"
 import { atom, selector, useRecoilValue } from "recoil"
 import { debounceTime, first, from, merge } from "rxjs"
@@ -595,6 +596,13 @@ const Notice: FC = () => {
 export const AssetDiscoveryPage = () => {
   const { t } = useTranslation("admin")
   useAnalyticsPageView(ANALYTICS_PAGE)
+  const [showAssetDiscoveryAlert, setShowAssetDiscoveryAlert] =
+    useAppState("showAssetDiscoveryAlert")
+
+  // turn off new tokens found alert when user browses this page
+  useEffect(() => {
+    if (showAssetDiscoveryAlert) setShowAssetDiscoveryAlert(false)
+  }, [setShowAssetDiscoveryAlert, showAssetDiscoveryAlert])
 
   return (
     <DashboardLayout

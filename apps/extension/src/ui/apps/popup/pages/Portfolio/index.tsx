@@ -1,4 +1,5 @@
 import { CurrentAccountAvatar } from "@ui/domains/Account/CurrentAccountAvatar"
+import { AssetDiscoveryPopupAlert } from "@ui/domains/AssetDiscovery/AssetDiscoveryPopupAlert"
 import { EvmNetworkSelectPill } from "@ui/domains/Ethereum/EvmNetworkSelectPill"
 import { PortfolioProvider } from "@ui/domains/Portfolio/context"
 import { NomPoolStakingBannerProvider } from "@ui/domains/Portfolio/NomPoolStakingContext"
@@ -40,7 +41,6 @@ const PortfolioContent = () => (
     <Suspense fallback={null}>
       <BraveWarningPopupBanner />
       <MigratePasswordAlert />
-      {/* <AnalyticsAlert /> */}
     </Suspense>
   </>
 )
@@ -71,6 +71,7 @@ export const Portfolio = () => {
           <PopupContent>
             {hasAccounts === false ? <NoAccounts /> : <PortfolioContent />}
           </PopupContent>
+          <AssetDiscoveryPopupAlert />
         </PopupLayout>
       </NomPoolStakingBannerProvider>
     </PortfolioProvider>

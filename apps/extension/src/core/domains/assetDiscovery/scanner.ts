@@ -13,6 +13,7 @@ import { isEvmToken } from "@ui/util/isEvmToken"
 import { groupBy, sortBy } from "lodash"
 import chunk from "lodash/chunk"
 
+import { appStore } from "../app/store.app"
 import { settingsStore } from "../app/store.settings"
 import { activeEvmNetworksStore, isEvmNetworkActive } from "../ethereum/store.activeEvmNetworks"
 import { EvmAddress } from "../ethereum/types"
@@ -79,6 +80,7 @@ class AssetDiscoveryScanner {
       currentScanAccounts,
       currentScanTokensCount: 0,
     })
+    await appStore.set({ showAssetDiscoveryAlert: false })
 
     // 2. Clear scan table
     await db.assetDiscovery.clear()
@@ -279,6 +281,9 @@ class AssetDiscoveryScanner {
         status: "idle",
       }
     })
+
+    // alert user
+    if (await db.assetDiscovery.count()) await appStore.set({ showAssetDiscoveryAlert: true })
   }
 }
 
