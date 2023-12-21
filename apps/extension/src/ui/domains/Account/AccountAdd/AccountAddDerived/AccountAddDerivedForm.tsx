@@ -197,7 +197,7 @@ const AccountAddDerivedFormInner: FC<AccountAddPageProps> = ({ onSuccess }) => {
 
         onSuccess(address)
 
-        await api.assetDiscoveryStartScan(AssetDiscoveryMode.ACTIVE_NETWORKS, [address])
+        api.assetDiscoveryStartScan(AssetDiscoveryMode.ACTIVE_NETWORKS, [address])
 
         notifyUpdate(notificationId, {
           type: "success",

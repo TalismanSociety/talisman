@@ -47,7 +47,7 @@ export const useDcentAccountConnect = (accountInfo: DcentAccountInfo, address: s
         accountInfo.derivationPath,
         Object.values(accountInfo.tokens).map((t) => t.id)
       )
-      await api.assetDiscoveryStartScan(AssetDiscoveryMode.ACTIVE_NETWORKS, [addedAddress])
+      api.assetDiscoveryStartScan(AssetDiscoveryMode.ACTIVE_NETWORKS, [addedAddress])
 
       return addedAddress
     },

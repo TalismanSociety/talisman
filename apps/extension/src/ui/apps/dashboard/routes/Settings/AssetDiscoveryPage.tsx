@@ -62,61 +62,11 @@ import {
 import { DashboardLayout } from "../../layout/DashboardLayout"
 import { AccountsStack } from "./Accounts/AccountIconsStack"
 
-const TokenTypePill: FC<{ type: Token["type"]; className?: string }> = ({ type, className }) => {
-  const { t } = useTranslation("admin")
-
-  const label = useMemo(() => {
-    switch (type) {
-      case "evm-erc20":
-        return t("ERC20")
-      case "evm-native":
-        return t("Native")
-      default:
-        // unsupported for now
-        throw null
-    }
-  }, [t, type])
-
-  if (!label) return null
-
-  return (
-    <span
-      className={classNames(
-        "text-body-disabled rounded-sm border px-2 py-1 text-[1rem]",
-        className
-      )}
-    >
-      {label}
-    </span>
-  )
-}
-
-const AccountsTooltip: FC<{ addresses: Address[] }> = ({ addresses }) => {
-  const allAccounts = useAccounts("all")
-  const accounts = useMemo(
-    () =>
-      [...new Set(addresses)]
-        .map((add) => allAccounts.find((acc) => acc.address === add))
-        .filter(Boolean) as AccountJsonAny[],
-    [allAccounts, addresses]
-  )
-  const { t } = useTranslation("admin")
-  return (
-    <div className="text-body-disabled flex flex-col gap-2 p-2 text-left text-xs">
-      <div>{t("Accounts")}</div>
-      <div className="bg-body-disabled/50 mb-2 h-0.5 w-full" />
-      {accounts.map((account) => (
-        <div
-          key={account.address}
-          className="flex w-[30rem] items-center gap-2 overflow-hidden whitespace-nowrap text-sm"
-        >
-          <AccountIcon address={account.address} genesisHash={account.genesisHash} />
-          <div className="text-body grow truncate">{account.name}</div>
-          <div>{shortenAddress(account.address)}</div>
-        </div>
-      ))}
-    </div>
-  )
+const ANALYTICS_PAGE: AnalyticsPage = {
+  container: "Fullscreen",
+  feature: "Asset Discovery",
+  featureVersion: 1,
+  page: "Settings - Asset Discovery",
 }
 
 const assetDiscoveryBalancesState = atom<DiscoveredBalance[]>({
@@ -213,6 +163,63 @@ const useDiscoveredTokenRates = () => {
 const useDiscoveredTokenRate = (tokenId: TokenId | undefined) => {
   const tokenRates = useDiscoveredTokenRates()
   return tokenId ? tokenRates[tokenId] : undefined
+}
+
+const TokenTypePill: FC<{ type: Token["type"]; className?: string }> = ({ type, className }) => {
+  const { t } = useTranslation("admin")
+
+  const label = useMemo(() => {
+    switch (type) {
+      case "evm-erc20":
+        return t("ERC20")
+      case "evm-native":
+        return t("Native")
+      default:
+        // unsupported for now
+        throw null
+    }
+  }, [t, type])
+
+  if (!label) return null
+
+  return (
+    <span
+      className={classNames(
+        "text-body-disabled rounded-sm border px-2 py-1 text-[1rem]",
+        className
+      )}
+    >
+      {label}
+    </span>
+  )
+}
+
+const AccountsTooltip: FC<{ addresses: Address[] }> = ({ addresses }) => {
+  const allAccounts = useAccounts("all")
+  const accounts = useMemo(
+    () =>
+      [...new Set(addresses)]
+        .map((add) => allAccounts.find((acc) => acc.address === add))
+        .filter(Boolean) as AccountJsonAny[],
+    [allAccounts, addresses]
+  )
+  const { t } = useTranslation("admin")
+  return (
+    <div className="text-body-disabled flex flex-col gap-2 p-2 text-left text-xs">
+      <div>{t("Accounts")}</div>
+      <div className="bg-body-disabled/50 mb-2 h-0.5 w-full" />
+      {accounts.map((account) => (
+        <div
+          key={account.address}
+          className="flex w-[30rem] items-center gap-2 overflow-hidden whitespace-nowrap text-sm"
+        >
+          <AccountIcon address={account.address} genesisHash={account.genesisHash} />
+          <div className="text-body grow truncate">{account.name}</div>
+          <div>{shortenAddress(account.address)}</div>
+        </div>
+      ))}
+    </div>
+  )
 }
 
 const AssetRow: FC<{ tokenId: TokenId; assets: DiscoveredBalance[] }> = ({ tokenId, assets }) => {
@@ -352,13 +359,6 @@ const AssetTable: FC = () => {
   )
 }
 
-const ANALYTICS_PAGE: AnalyticsPage = {
-  container: "Fullscreen",
-  feature: "Asset Discovery",
-  featureVersion: 1,
-  page: "Settings - Asset Discovery",
-}
-
 const Header: FC = () => {
   const { t } = useTranslation("admin")
   const { balances, accountsCount, tokensCount, percent, isInProgress } =
@@ -370,7 +370,7 @@ const Header: FC = () => {
   const handleScanClick = useCallback(
     (mode: AssetDiscoveryMode) => async () => {
       const stop = log.timer("start scan")
-      await api.assetDiscoveryStartScan(mode)
+      api.assetDiscoveryStartScan(mode)
       stop()
     },
     []

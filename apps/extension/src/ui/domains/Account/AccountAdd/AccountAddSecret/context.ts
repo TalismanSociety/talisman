@@ -40,7 +40,7 @@ const useAccountAddSecretProvider = ({ onSuccess }: { onSuccess: (address: strin
     for (const { name, suri, type } of accounts)
       addresses.push(await api.accountCreateFromSuri(name, suri, type))
 
-    await api.assetDiscoveryStartScan(AssetDiscoveryMode.ACTIVE_NETWORKS, addresses)
+    api.assetDiscoveryStartScan(AssetDiscoveryMode.ACTIVE_NETWORKS, addresses)
 
     return addresses
   }, [])

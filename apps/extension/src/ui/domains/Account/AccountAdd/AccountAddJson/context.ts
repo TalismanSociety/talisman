@@ -332,7 +332,7 @@ const useJsonAccountImportProvider = () => {
 
     const addresses = await api.accountCreateFromJson(unlockedPairs)
 
-    await api.assetDiscoveryStartScan(AssetDiscoveryMode.ACTIVE_NETWORKS, addresses)
+    api.assetDiscoveryStartScan(AssetDiscoveryMode.ACTIVE_NETWORKS, addresses)
 
     return addresses
   }, [pairs, selectedAccounts])

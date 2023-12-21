@@ -110,7 +110,7 @@ export const AccountAddWatchedForm = ({ onSuccess }: AccountAddPageProps) => {
       try {
         onSuccess(await api.accountCreateWatched(name, address, isPortfolio))
 
-        await api.assetDiscoveryStartScan(AssetDiscoveryMode.ACTIVE_NETWORKS, [address])
+        api.assetDiscoveryStartScan(AssetDiscoveryMode.ACTIVE_NETWORKS, [address])
 
         notifyUpdate(notificationId, {
           type: "success",

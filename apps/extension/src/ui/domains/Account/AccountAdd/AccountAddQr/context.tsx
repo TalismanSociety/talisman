@@ -199,7 +199,7 @@ const useAccountAddQrContext = ({ onSuccess }: AccountAddPageProps) => {
           lockToNetwork ? genesisHash : null
         )
 
-        await api.assetDiscoveryStartScan(AssetDiscoveryMode.ACTIVE_NETWORKS, [createdAddress])
+        api.assetDiscoveryStartScan(AssetDiscoveryMode.ACTIVE_NETWORKS, [createdAddress])
 
         onSuccess(createdAddress)
         notifyUpdate(notificationId, {

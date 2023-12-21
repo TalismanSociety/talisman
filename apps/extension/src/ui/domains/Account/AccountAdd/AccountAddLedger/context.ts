@@ -53,7 +53,7 @@ const useAddLedgerAccountProvider = ({ onSuccess }: { onSuccess: (address: strin
             : await api.accountCreateLedgerEthereum(account.name, account.address, account.path)
         )
 
-      await api.assetDiscoveryStartScan(AssetDiscoveryMode.ACTIVE_NETWORKS, addresses)
+      api.assetDiscoveryStartScan(AssetDiscoveryMode.ACTIVE_NETWORKS, addresses)
 
       return addresses
     },
