@@ -88,10 +88,12 @@ const useSiwsRequest = ({
       try {
         return siwsParseMessage((request.payload as SignerPayloadRaw)?.data)
       } catch (error) {
-        // Not a valid SIWS message, fall back to regular raw message signing
         return null
       }
     })()
+
+    // Not a valid SIWS message, fall back to regular raw message signing
+    if (siwsMessage === null) return [null, null]
 
     const encodeAddressOrNull = (...args: Parameters<typeof encodeAddress>) => {
       try {
@@ -108,9 +110,9 @@ const useSiwsRequest = ({
     const check = {
       addresses: [
         encodeAddressOrNull((request.payload as SignerPayloadRaw).address),
-        encodeAddressOrNull(siwsMessage?.address ?? ""),
+        encodeAddressOrNull(siwsMessage.address),
       ],
-      domain: siwsMessage?.domain,
+      domain: siwsMessage.domain,
     }
 
     const isValidAddresses =
