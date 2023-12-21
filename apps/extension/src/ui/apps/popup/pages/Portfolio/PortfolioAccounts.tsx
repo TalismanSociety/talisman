@@ -51,6 +51,7 @@ type AccountAccountOption = {
   genesisHash?: string | null
   origin?: AccountType
   isPortfolio?: boolean
+  signetUrl?: string
 }
 
 type AccountOption = FolderAccountOption | AccountAccountOption
@@ -130,7 +131,13 @@ const AccountButton = ({ option }: { option: AccountOption }) => {
       <div className="flex grow flex-col items-start justify-center gap-2 overflow-hidden">
         <div className="text-body flex w-full items-center gap-3 text-base leading-none">
           <div className="overflow-hidden overflow-ellipsis whitespace-nowrap">{option.name}</div>
-          {isAccount && <AccountTypeIcon className="text-primary" origin={option.origin} />}
+          {isAccount && (
+            <AccountTypeIcon
+              className="text-primary"
+              origin={option.origin}
+              signetUrl={option.signetUrl}
+            />
+          )}
           {isAccount && (
             <div className="show-on-hover flex flex-col justify-end">
               <CopyIcon
@@ -291,6 +298,7 @@ export const PortfolioAccounts = () => {
               genesisHash: account?.genesisHash,
               origin: account?.origin,
               isPortfolio: !!account?.isPortfolio,
+              signetUrl: account?.signetUrl as string | undefined,
             }
           : {
               type: "folder",

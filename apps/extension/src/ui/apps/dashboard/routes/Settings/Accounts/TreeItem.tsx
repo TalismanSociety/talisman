@@ -76,7 +76,11 @@ export const TreeAccountItem = forwardRef<HTMLDivElement, Props & { item: UiTree
                 <div className="overflow-hidden text-ellipsis whitespace-nowrap">
                   {account.name}
                 </div>
-                <AccountTypeIcon className="text-primary" origin={account.origin} />
+                <AccountTypeIcon
+                  className="text-primary"
+                  origin={account.origin}
+                  signetUrl={account.signetUrl as string}
+                />
               </div>
               <div className="text-body-secondary text-sm">
                 <Address address={formattedAddress} />

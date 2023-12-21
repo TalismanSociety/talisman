@@ -62,6 +62,12 @@ type AccountJsonDcentOwnProperties = {
 
 export type AccountJsonDcent = AccountJson & AccountJsonDcentOwnProperties
 
+type AccountJsonSignetOwnProperties = {
+  signetUrl: string
+}
+
+export type AccountJsonSignet = AccountJson & AccountJsonSignetOwnProperties
+
 export type AccountJsonAny = (
   | AccountJsonHardwareEthereum
   | AccountJsonHardwareSubstrate
@@ -69,6 +75,7 @@ export type AccountJsonAny = (
   | AccountJsonWatched
   | AccountJsonDcent
   | AccountJson
+  | AccountJsonSignet
 ) & { origin?: AccountType | undefined; derivedMnemonicId?: string; derivationPath?: string } & {
   folderId?: string
   folderName?: string

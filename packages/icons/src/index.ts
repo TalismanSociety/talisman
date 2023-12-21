@@ -23,6 +23,7 @@ export { ReactComponent as PolkadotVaultIcon } from "./icons/polkadot-vault.svg"
 export { ReactComponent as PopupIcon } from "./icons/popup.svg"
 export { ReactComponent as RocketIcon } from "./icons/rocket.svg"
 export { ReactComponent as SecretIcon } from "./icons/secret.svg"
+export { ReactComponent as SignetIcon } from "./icons/signet.svg"
 export { ReactComponent as StarsIcon } from "./icons/stars.svg"
 export { ReactComponent as SwapIcon } from "./icons/swap.svg"
 export { ReactComponent as TableIcon } from "./icons/table.svg"
@@ -318,7 +319,7 @@ export {
   FiZapOff as ZapOffIcon,
   FiZap as ZapIcon,
   FiZoomIn as ZoomInIcon,
-  FiZoomOut as ZoomOutIcon,
+  FiZoomOut as ZoomOutIcon
 } from "react-icons/fi"
 
 export { IoDiamondOutline as DiamondIcon } from "react-icons/io5"

@@ -10,6 +10,7 @@ import { isEvmToken } from "@ui/util/isEvmToken"
 import { useCallback, useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
 
+import { AccountType } from "../../../core/domains/accounts/types"
 import { SendFundsAccountsList } from "./SendFundsAccountsList"
 
 export const SendFundsAccountPicker = () => {
@@ -28,6 +29,8 @@ export const SendFundsAccountPicker = () => {
         .filter((account) => !search || account.name?.toLowerCase().includes(search))
         .filter((account) => {
           if (!token) return false
+
+          if (account.origin === AccountType.Signet) return false
 
           if (isEthereumAddress(account.address))
             return isEvmToken(token) || (chain?.account === "secp256k1" && !account.isHardware)

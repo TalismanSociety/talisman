@@ -46,7 +46,11 @@ export const ConnectAccountToggleButtonRow: FC<{
         </TooltipContent>
       </Tooltip>
     </div>
-    <AccountTypeIcon origin={account.origin} className="text-primary" />
+    <AccountTypeIcon
+      origin={account.origin}
+      className="text-primary"
+      signetUrl={account.signetUrl as string}
+    />
     <div className="grow"></div>
     <div
       className={classNames(
