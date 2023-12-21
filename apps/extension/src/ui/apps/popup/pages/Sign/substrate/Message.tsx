@@ -1,5 +1,7 @@
 import { SignerPayloadRaw } from "@core/domains/signing/types"
+import { encodeAddress } from "@polkadot/keyring"
 import { AppPill } from "@talisman/components/AppPill"
+import { SiwsMessage, parseMessage as siwsParseMessage } from "@talismn/siws"
 import {
   PopupContent,
   PopupFooter,
@@ -9,13 +11,14 @@ import {
 import { AccountPill } from "@ui/domains/Account/AccountPill"
 import { Message } from "@ui/domains/Sign/Message"
 import { usePolkadotSigningRequest } from "@ui/domains/Sign/SignRequestContext"
-import { FC, useEffect, useMemo } from "react"
+import { useEffect, useMemo } from "react"
 import { useTranslation } from "react-i18next"
 
 import { SignAccountAvatar } from "../SignAccountAvatar"
 import { FooterContent } from "./FooterContent"
+import { MessageSiws } from "./MessageSiws"
 
-export const PolkadotSignMessageRequest: FC = () => {
+export const PolkadotSignMessageRequest = () => {
   const { t } = useTranslation("request")
   const { url, request, status, message, account, chain } = usePolkadotSigningRequest()
 
@@ -26,13 +29,23 @@ export const PolkadotSignMessageRequest: FC = () => {
     if (status === "SUCCESS") window.close()
   }, [status])
 
+  const [siwsRequest, siwsValidationError] = useSiwsRequest({ url, request, account })
+
   return (
     <PopupLayout>
       <PopupHeader right={<SignAccountAvatar account={account} ss58Format={chain?.prefix} />}>
         <AppPill url={url} />
       </PopupHeader>
       <PopupContent>
-        {account && request && (
+        {siwsRequest !== null && (
+          <MessageSiws
+            account={account}
+            chain={chain}
+            request={siwsRequest}
+            validationError={siwsValidationError}
+          />
+        )}
+        {siwsRequest === null && account && request && (
           <>
             <div className="text-body-secondary flex h-full w-full flex-col items-center text-center">
               <h1 className="text-body text-md my-12 font-bold leading-9">{"Sign Request"}</h1>
@@ -56,3 +69,59 @@ export const PolkadotSignMessageRequest: FC = () => {
     </PopupLayout>
   )
 }
+
+/**
+ * Given the `url`, `request`, and `account` fields of the `usePolkadotSigningRequest` for a raw message,
+ * this hook will either return a [SiwsMessage] or [null], depending on whether the raw message conforms to the
+ * SIWS (Sign In With Substrate) spec.
+ *
+ * Additionally, this hook will return [SiwsMessage, string] in the event that the raw message confirms to the
+ * SIWS spec, but the domain or address in the message are incorrect.
+ */
+const useSiwsRequest = ({
+  url,
+  request,
+  account,
+}: Pick<ReturnType<typeof usePolkadotSigningRequest>, "url" | "request" | "account">) =>
+  useMemo((): [SiwsMessage | null, string | null] => {
+    const siwsMessage = (() => {
+      try {
+        return siwsParseMessage((request.payload as SignerPayloadRaw)?.data)
+      } catch (error) {
+        // Not a valid SIWS message, fall back to regular raw message signing
+        return null
+      }
+    })()
+
+    const encodeAddressOrNull = (...args: Parameters<typeof encodeAddress>) => {
+      try {
+        return encodeAddress(...args)
+      } catch {
+        return null
+      }
+    }
+
+    const truth = {
+      address: encodeAddressOrNull(account.address),
+      domain: new URL(url).host,
+    }
+    const check = {
+      addresses: [
+        encodeAddressOrNull((request.payload as SignerPayloadRaw).address),
+        encodeAddressOrNull(siwsMessage?.address ?? ""),
+      ],
+      domain: siwsMessage?.domain,
+    }
+
+    const isValidAddresses =
+      truth.address && check.addresses.every((address) => truth.address === address)
+    const isValidDomain = check.domain === truth.domain
+    const isValid = isValidAddresses && isValidDomain
+
+    // A valid SIWS message, but the domain or address is invalid.
+    // We should show an error to the user.
+    if (!isValid) return [siwsMessage, "Invalid Address/Domain"]
+
+    // A valid SIWS message, and the domain and address check out.
+    return [siwsMessage, null]
+  }, [account.address, request.payload, url])

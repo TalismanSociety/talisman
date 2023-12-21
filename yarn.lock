@@ -7726,6 +7726,18 @@ __metadata:
   languageName: unknown
   linkType: soft
 
+"@talismn/siws@npm:^0.0.5":
+  version: 0.0.5
+  resolution: "@talismn/siws@npm:0.0.5"
+  dependencies:
+    "@types/jest": ^29.5.8
+  peerDependencies:
+    "@polkadot/api": ^10.10.1
+    "@polkadot/extension-dapp": ^0.46.5
+  checksum: 01ab60b5086808eef3421a35c3421c9a318db83997766a9a52bce4db9a8557581cab406b5179bf2eb3125db0be7ea21d63c6ae0d37f08deee390a4a4bc994c73
+  languageName: node
+  linkType: hard
+
 "@talismn/subshape-fork@npm:^0.0.2":
   version: 0.0.2
   resolution: "@talismn/subshape-fork@npm:0.0.2"
@@ -8286,6 +8298,16 @@ __metadata:
     jest-matcher-utils: ^27.0.0
     pretty-format: ^27.0.0
   checksum: 7e11c6826aa429ad990dc262e4e4b54aa36573287fddf15773e4137f07d11d3105f0dd9f1baff73252160a057df23f5529bb83b1bf83cd3f45f9460a5ca5c22e
+  languageName: node
+  linkType: hard
+
+"@types/jest@npm:^29.5.8":
+  version: 29.5.11
+  resolution: "@types/jest@npm:29.5.11"
+  dependencies:
+    expect: ^29.0.0
+    pretty-format: ^29.0.0
+  checksum: f892a06ec9f0afa9a61cd7fa316ec614e21d4df1ad301b5a837787e046fcb40dfdf7f264a55e813ac6b9b633cb9d366bd5b8d1cea725e84102477b366df23fdd
   languageName: node
   linkType: hard
 
@@ -14559,7 +14581,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"expect@npm:^29.7.0":
+"expect@npm:^29.0.0, expect@npm:^29.7.0":
   version: 29.7.0
   resolution: "expect@npm:29.7.0"
   dependencies:
@@ -14659,6 +14681,7 @@ __metadata:
     "@talismn/on-chain-id": "workspace:*"
     "@talismn/orb": "workspace:*"
     "@talismn/scale": "workspace:*"
+    "@talismn/siws": ^0.0.5
     "@talismn/subshape-fork": ^0.0.2
     "@talismn/token-rates": "workspace:*"
     "@talismn/tsconfig": "workspace:*"
@@ -22012,7 +22035,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"pretty-format@npm:^29.7.0":
+"pretty-format@npm:^29.0.0, pretty-format@npm:^29.7.0":
   version: 29.7.0
   resolution: "pretty-format@npm:29.7.0"
   dependencies:
