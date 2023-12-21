@@ -1,5 +1,5 @@
 ---
-"@talismn/balances-react": patch
+"@talismn/chain-connector-evm": patch
 ---
 
-Fix incorrect instantiation of `ChainConnectorEvm`
+fix: incorrect instantiation of `ChainConnectorEvm`
