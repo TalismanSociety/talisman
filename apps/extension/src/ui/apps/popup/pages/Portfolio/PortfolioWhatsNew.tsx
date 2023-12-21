@@ -4,7 +4,7 @@ import { AnalyticsPage, sendAnalyticsEvent } from "@ui/api/analytics"
 import { useSetting } from "@ui/hooks/useSettings"
 import DOMPurify from "dompurify"
 import { marked } from "marked"
-import { useCallback } from "react"
+import { useCallback, useMemo } from "react"
 import { Trans, useTranslation } from "react-i18next"
 import { useNavigate } from "react-router-dom"
 
@@ -27,34 +27,41 @@ const ANALYTICS_PAGE: AnalyticsPage = {
 export const WhatsNewVersion =
   /version: (?<version>v[0-9.]+)/im.exec(whatsNewContent)?.groups?.version ?? "0"
 
-const whatsNewHtml = DOMPurify.sanitize(
-  marked(whatsNewContent, { gfm: true, async: false }) as string
-)
+export const PortfolioWhatsNew = () => {
+  const { t } = useTranslation()
 
-export const PortfolioWhatsNew = () => (
-  <div className="text-body-secondary flex flex-col gap-12 text-sm">
-    <div className="relative">
-      <img
-        className="pointer-events-none relative w-full rounded-sm"
-        src={HeroUrl}
-        alt="a hero banner"
-      />
-      <div className="pointer-events-none absolute left-0 top-0 flex h-full w-full flex-col gap-4 p-8">
-        <div className="font-whyteInkTrap flex items-center gap-1 text-sm tracking-tight text-white">
-          <HandMonoLogo className="text-base" />
-          Talisman
+  const whatsNewLocalizedContent = t(whatsNewContent)
+  const whatsNewHtml = useMemo(
+    () =>
+      DOMPurify.sanitize(marked(whatsNewLocalizedContent, { gfm: true, async: false }) as string),
+    [whatsNewLocalizedContent]
+  )
+
+  return (
+    <div className="text-body-secondary flex flex-col gap-12 text-sm">
+      <div className="relative">
+        <img
+          className="pointer-events-none relative w-full rounded-sm"
+          src={HeroUrl}
+          alt="a hero banner"
+        />
+        <div className="pointer-events-none absolute left-0 top-0 flex h-full w-full flex-col gap-4 p-8">
+          <div className="font-whyteInkTrap flex items-center gap-1 text-sm tracking-tight text-white">
+            <HandMonoLogo className="text-base" />
+            Talisman
+          </div>
+          <div className="text-primary text-2xl font-extrabold capitalize">{WhatsNewVersion}</div>
         </div>
-        <div className="text-primary text-2xl font-extrabold capitalize">{WhatsNewVersion}</div>
+      </div>
+      <div>
+        <div
+          className="flex flex-col gap-12 [&_strong]:font-normal [&_strong]:text-white"
+          dangerouslySetInnerHTML={{ __html: whatsNewHtml ?? "" }}
+        />
       </div>
     </div>
-    <div>
-      <div
-        className="flex flex-col gap-12 [&_strong]:font-normal [&_strong]:text-white"
-        dangerouslySetInnerHTML={{ __html: whatsNewHtml ?? "" }}
-      />
-    </div>
-  </div>
-)
+  )
+}
 
 export const PortfolioWhatsNewHeader = () => {
   const { t } = useTranslation()
