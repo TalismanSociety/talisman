@@ -278,6 +278,7 @@ class AssetDiscoveryScanner {
         lastScanTimestamp: Date.now(),
         lastScanAccounts: prev.currentScanAccounts,
         lastScanMode: prev.currentScanMode,
+        lastScanTokensCount: prev.currentScanTokensCount,
         status: "idle",
       }
     })

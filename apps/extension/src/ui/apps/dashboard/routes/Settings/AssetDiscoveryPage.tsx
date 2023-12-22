@@ -113,24 +113,29 @@ const scanProgress = selector<{
   key: "scanProgress",
   get: ({ get }) => {
     const {
-      currentScanProgressPercent: percent,
-      currentScanAccounts: accounts,
-      currentScanTokensCount: tokensCount,
       currentScanId,
+      currentScanProgressPercent: percent,
+      currentScanAccounts,
+      currentScanTokensCount,
+      lastScanAccounts,
+      lastScanTokensCount,
     } = get(assetDiscoveryScanState)
     const balances = get(assetDiscoveryBalancesState)
-
     const balancesByTokenId = groupBy(balances, (a) => a.tokenId)
     const tokenIds = Object.keys(balancesByTokenId)
 
+    const isInProgress = !!currentScanId
+    const accounts = isInProgress ? currentScanAccounts : lastScanAccounts
+    const tokensCount = isInProgress ? currentScanTokensCount : lastScanTokensCount
+
     return {
+      isInProgress,
       percent,
       balances,
       balancesByTokenId,
       tokensCount,
       accounts,
       accountsCount: accounts.length,
-      isInProgress: !!currentScanId,
       tokenIds,
     }
   },

@@ -22,6 +22,7 @@ export type AssetDiscoveryScanState = {
   >
   lastScanTimestamp: number
   lastScanAccounts: string[]
+  lastScanTokensCount: number
   lastScanMode: AssetDiscoveryMode
 }
 
@@ -34,6 +35,7 @@ const DEFAULT_STATE: AssetDiscoveryScanState = {
   currentScanCursors: {},
   lastScanTimestamp: 0,
   lastScanAccounts: [],
+  lastScanTokensCount: 0,
   lastScanMode: AssetDiscoveryMode.ACTIVE_NETWORKS,
 }
 
