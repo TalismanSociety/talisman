@@ -50,8 +50,18 @@ const EstimatedFeesRow: FC = () => {
 
 export const FooterContent = ({ withFee = false }: { withFee?: boolean }) => {
   const { t } = useTranslation("request")
-  const { fee, request, approve, reject, account, chain, approveHardware, approveQr, status } =
-    usePolkadotSigningRequest()
+  const {
+    fee,
+    request,
+    approve,
+    reject,
+    account,
+    chain,
+    approveHardware,
+    approveQr,
+    approveSignet,
+    status,
+  } = usePolkadotSigningRequest()
 
   const processing = useMemo(() => status === "PROCESSING", [status])
 
@@ -95,6 +105,7 @@ export const FooterContent = ({ withFee = false }: { withFee?: boolean }) => {
                 account={account as AccountJsonSignet}
                 onCancel={reject}
                 payload={request.payload}
+                onApprove={approveSignet}
               />
             )
           case AccountType.Talisman:

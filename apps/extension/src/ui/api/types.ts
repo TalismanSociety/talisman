@@ -92,6 +92,7 @@ export default interface MessageTypes {
     signature: HexString
   ) => Promise<boolean>
   approveSignQr: (id: SigningRequestID<"substrate-sign">, signature: HexString) => Promise<boolean>
+  approveSignSignet: (id: SigningRequestID<"substrate-sign">) => Promise<boolean>
 
   // encrypt messages -------------------------------------------------------
   approveEncrypt: (id: EncryptRequestId) => Promise<boolean>

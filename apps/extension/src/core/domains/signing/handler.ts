@@ -3,6 +3,7 @@ import { AccountType } from "@core/domains/accounts/types"
 import type {
   KnownSigningRequestIdOnly,
   RequestSigningApproveSignature,
+  SignerPayloadJSON,
 } from "@core/domains/signing/types"
 import { watchSubstrateTransaction } from "@core/domains/transactions"
 import { getPairForAddressSafely } from "@core/handlers/helpers"
@@ -19,7 +20,9 @@ import { TypeRegistry } from "@polkadot/types"
 import keyring from "@polkadot/ui-keyring"
 import { assert } from "@polkadot/util"
 import { encodeAnyAddress } from "@talismn/util"
+import Browser from "webextension-polyfill"
 
+import { windowManager } from "../../libs/WindowManager"
 import { getHostName } from "../app/helpers"
 
 export default class SigningHandler extends ExtensionHandler {
@@ -171,6 +174,50 @@ export default class SigningHandler extends ExtensionHandler {
     return true
   }
 
+  private async signingApproveSignet({ id }: RequestType<"pri(signing.approveSign.signet)">) {
+    const queued = requestStore.getRequest(id)
+
+    assert(queued, "Unable to find request")
+    assert(typeof queued.account.signetUrl === "string", "Invalid Signet account")
+
+    const { request, reject, url } = queued
+
+    const params = new URLSearchParams({
+      id: queued.id,
+      calldata: (request.payload as SignerPayloadJSON).method,
+      account: queued.account.address,
+      genesisHash: queued.account.genesisHash || "",
+      dapp: url,
+    })
+
+    // close popup to focus on the window so the new tab can be open in window and not tab
+    windowManager.popupClose()
+
+    // open a new tab where the signing will happen
+    const tab = await windowManager.openSignet(
+      `${queued.account.signetUrl}/sign?${params.toString()}`
+    )
+
+    const intervalId = setInterval(async () => {
+      const handleTabClosed = () => {
+        clearInterval(intervalId)
+        reject(new Error("Cancelled"))
+      }
+      try {
+        // tab.id defaults to -1 which will result in error and hence handle tab being closed gracefully
+        const tabRef = await Browser.tabs.get(tab.id ?? -1)
+        if (!tabRef) handleTabClosed()
+      } catch (e) {
+        // tab is closed and hence Browser.tabs.get will throw an error
+        handleTabClosed()
+      }
+    }, 500)
+
+    // TODO: use the tab to listen for close event, if tab is closed, reject the request
+    // at the same time, listen for any message coming from the tab
+    // if a message is sent from the tab that says the request is approved, resolve the request and kill the listener
+  }
+
   public async handle<TMessageType extends MessageTypes>(
     id: string,
     type: TMessageType,
@@ -191,6 +238,8 @@ export default class SigningHandler extends ExtensionHandler {
       case "pri(signing.cancel)":
         return this.signingCancel(request as RequestType<"pri(signing.cancel)">)
 
+      case "pri(signing.approveSign.signet)":
+        return this.signingApproveSignet(request as RequestType<"pri(signing.approveSign.signet)">)
       default:
         throw new Error(`Unable to handle message of type ${type}`)
     }

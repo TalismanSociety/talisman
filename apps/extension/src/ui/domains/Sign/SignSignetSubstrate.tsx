@@ -11,6 +11,7 @@ type Props = {
   account: AccountJsonSignet
   className?: string
   onCancel: () => void
+  onApprove: () => void
   payload: SignerPayloadJSON | SignerPayloadRaw
 }
 
@@ -30,7 +31,13 @@ const SignetSignetError: React.FC<{ call: boolean; network: boolean }> = ({ call
   )
 }
 
-export const SignSignetSubstrate: React.FC<Props> = ({ account, className, onCancel, payload }) => {
+export const SignSignetSubstrate: React.FC<Props> = ({
+  account,
+  className,
+  onApprove,
+  onCancel,
+  payload,
+}) => {
   const { t } = useTranslation()
 
   const error = useMemo(() => {
@@ -53,7 +60,7 @@ export const SignSignetSubstrate: React.FC<Props> = ({ account, className, onCan
       )}
       {!error.call && !error.network && (
         // TODO: handle approve in Signet
-        <Button className="w-full" onClick={onCancel} primary>
+        <Button className="w-full" onClick={onApprove} primary>
           {t("Approve in Signet")}
         </Button>
       )}

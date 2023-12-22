@@ -99,6 +99,10 @@ class WindowManager {
     return true
   }
 
+  public openSignet(route: string) {
+    return this.openTabOnce({ url: route })
+  }
+  
   async popupClose(id?: number) {
     if (id) {
       await Browser.windows.remove(id)
