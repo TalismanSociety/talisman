@@ -2,16 +2,14 @@ import { AccountJsonSignet } from "@core/domains/accounts/types"
 import { SignerPayloadRaw } from "@core/domains/signing/types"
 import { SignerPayloadJSON } from "@substrate/txwrapper-core"
 import { XCircleIcon } from "@talismn/icons"
-import { classNames } from "@talismn/util"
 import { useMemo } from "react"
 import { useTranslation } from "react-i18next"
 import { Button } from "talisman-ui"
 
 type Props = {
   account: AccountJsonSignet
-  className?: string
   onCancel: () => void
-  onApprove: () => void
+  onApprove: () => Promise<void>
   payload: SignerPayloadJSON | SignerPayloadRaw
 }
 
@@ -31,13 +29,7 @@ const SignetSignetError: React.FC<{ call: boolean; network: boolean }> = ({ call
   )
 }
 
-export const SignSignetSubstrate: React.FC<Props> = ({
-  account,
-  className,
-  onApprove,
-  onCancel,
-  payload,
-}) => {
+export const SignSignetSubstrate: React.FC<Props> = ({ account, onApprove, onCancel, payload }) => {
   const { t } = useTranslation()
 
   const error = useMemo(() => {
@@ -51,19 +43,26 @@ export const SignSignetSubstrate: React.FC<Props> = ({
   }, [account.genesisHash, payload])
 
   return (
-    <div className={classNames("flex w-full flex-col gap-6", className)}>
-      <SignetSignetError {...error} />
-      {onCancel && (
-        <Button className="w-full" onClick={onCancel}>
-          {t("Cancel")}
-        </Button>
-      )}
-      {!error.call && !error.network && (
-        // TODO: handle approve in Signet
-        <Button className="w-full" onClick={onApprove} primary>
-          {t("Approve in Signet")}
-        </Button>
-      )}
+    <div className="w-full">
+      <div className={"flex w-full flex-col gap-6"}>
+        <SignetSignetError {...error} />
+        {onCancel && (
+          <Button className="w-full" onClick={onCancel}>
+            {t("Cancel")}
+          </Button>
+        )}
+        {!error.call && !error.network && (
+          // TODO: handle approve in Signet
+          <Button className="w-full" onClick={onApprove} primary>
+            {t("Approve in Signet")}
+          </Button>
+        )}
+      </div>
+      <div>
+        <p>
+          The pop up extension will be closed and may be shown as cancelled in the initiating dapp.
+        </p>
+      </div>
     </div>
   )
 }

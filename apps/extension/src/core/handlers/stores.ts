@@ -6,6 +6,7 @@ import { PasswordStoreData, passwordStore } from "@core/domains/app/store.passwo
 import { SettingsStoreData, settingsStore } from "@core/domains/app/store.settings"
 import { balanceStore } from "@core/domains/balances/store"
 import { MnemonicData, mnemonicsStore } from "@core/domains/mnemonics/store"
+import { signetStore } from "@core/domains/signet/store"
 import { sitesAuthorisationStore } from "@core/domains/sitesAuthorised"
 import sitesAuthorisedStore from "@core/domains/sitesAuthorised/store"
 import { AuthorizedSites } from "@core/domains/sitesAuthorised/types"
@@ -24,6 +25,7 @@ export type ExtensionStore = TabStore & {
   accountsCatalog: typeof accountsCatalogStore
   mnemonics: typeof mnemonicsStore
   password: typeof passwordStore
+  signet: typeof signetStore
 }
 
 type GettableStores = {
@@ -52,6 +54,7 @@ export const tabStores = {
 export const extensionStores = {
   ...tabStores,
   accountsCatalog: accountsCatalogStore,
+  signet: signetStore,
   mnemonics: mnemonicsStore,
   password: passwordStore,
 }

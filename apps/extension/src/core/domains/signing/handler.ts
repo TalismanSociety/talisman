@@ -180,7 +180,7 @@ export default class SigningHandler extends ExtensionHandler {
     assert(queued, "Unable to find request")
     assert(typeof queued.account.signetUrl === "string", "Invalid Signet account")
 
-    const { request, reject, url } = queued
+    const { request, url } = queued
 
     const params = new URLSearchParams({
       id: queued.id,
@@ -190,32 +190,58 @@ export default class SigningHandler extends ExtensionHandler {
       dapp: url,
     })
 
-    // close popup to focus on the window so the new tab can be open in window and not tab
-    windowManager.popupClose()
+    const all = await Browser.windows.getAll()
+    const openerPopupWindow = await Browser.windows.getCurrent()
 
-    // open a new tab where the signing will happen
+    // @dev need some way to actually hide the popup without closing it, any idea how??
+    await Browser.windows.update(openerPopupWindow.id ?? -1, {
+      focused: false,
+      drawAttention: false,
+      left: 0,
+      top: 0,
+      width: 1,
+      height: 1,
+    })
+
+    // find a window that is not popup (the initiating window), signet needs to be opened in a normal window
+    let approvingWindow = all.find(({ type }) => type === "normal")
+
+    // somehow all normal windows are closed, create a new one
+    if (!approvingWindow) approvingWindow = await Browser.windows.create({ focused: true })
+
     const tab = await windowManager.openSignet(
-      `${queued.account.signetUrl}/sign?${params.toString()}`
+      `${queued.account.signetUrl}/sign?${params.toString()}`,
+      approvingWindow.id
     )
 
-    const intervalId = setInterval(async () => {
-      const handleTabClosed = () => {
-        clearInterval(intervalId)
-        reject(new Error("Cancelled"))
-      }
-      try {
-        // tab.id defaults to -1 which will result in error and hence handle tab being closed gracefully
-        const tabRef = await Browser.tabs.get(tab.id ?? -1)
-        if (!tabRef) handleTabClosed()
-      } catch (e) {
-        // tab is closed and hence Browser.tabs.get will throw an error
-        handleTabClosed()
-      }
-    }, 500)
+    await new Promise((resolve, reject) => {
+      const intervalId = setInterval(async () => {
+        const handleTabClosed = async () => {
+          clearInterval(intervalId)
 
-    // TODO: use the tab to listen for close event, if tab is closed, reject the request
-    // at the same time, listen for any message coming from the tab
-    // if a message is sent from the tab that says the request is approved, resolve the request and kill the listener
+          // bring the popup "back to focus"
+          await Browser.windows.update(openerPopupWindow.id ?? -1, {
+            focused: true,
+            drawAttention: true,
+            width: openerPopupWindow.width,
+            height: openerPopupWindow.height,
+            top: openerPopupWindow.top,
+            left: openerPopupWindow.left,
+          })
+          reject(new Error("Signet tab closed."))
+        }
+        try {
+          // tab.id defaults to -1 which will result in error and hence handle tab being closed gracefully
+          const tabRef = await Browser.tabs.get(tab.id ?? -1)
+          if (!tabRef) handleTabClosed()
+        } catch (e) {
+          // tab is closed and hence Browser.tabs.get will throw an error
+          handleTabClosed()
+        }
+      }, 500)
+    })
+
+    return true
   }
 
   public async handle<TMessageType extends MessageTypes>(

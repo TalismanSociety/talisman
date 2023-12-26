@@ -9,7 +9,7 @@ const WINDOW_OPTS: Browser.Windows.CreateCreateDataType & { width: number; heigh
   type: "popup",
   url: Browser.runtime.getURL("popup.html"),
   width: 400,
-  height: 600,
+  height: 600
 }
 
 class WindowManager {
@@ -34,7 +34,7 @@ class WindowManager {
         Browser.tabs.onUpdated.addListener(handler)
       }),
       // promise for the timeout
-      sleep(3000),
+      sleep(3000)
     ])
   }
 
@@ -49,10 +49,12 @@ class WindowManager {
     url,
     baseUrl,
     shouldFocus = true,
+    windowId
   }: {
     url: string
     baseUrl?: string
     shouldFocus?: boolean
+    windowId?: number
   }): Promise<Browser.Tabs.Tab> {
     const queryUrl = baseUrl ?? url
 
@@ -68,7 +70,12 @@ class WindowManager {
         if (!focused) await Browser.windows.update(windowId, { focused: true })
       }
     } else {
-      tab = await Browser.tabs.create({ url })
+      // open tab in a targeted window if windowId is provided
+      if (windowId !== undefined && shouldFocus) {
+        const { focused } = await Browser.windows.get(windowId)
+        if (!focused) await Browser.windows.update(windowId, { focused: true })
+      }
+      tab = await Browser.tabs.create({ url, active: shouldFocus })
     }
 
     // wait for page to be loaded if it isn't
@@ -86,7 +93,7 @@ class WindowManager {
     await this.openTabOnce({
       url: `${baseUrl}${route ? `#${route}` : ""}`,
       baseUrl,
-      shouldFocus: onboarded,
+      shouldFocus: onboarded
     })
     this.#onboardingTabOpening = false
   }
@@ -99,10 +106,10 @@ class WindowManager {
     return true
   }
 
-  public openSignet(route: string) {
-    return this.openTabOnce({ url: route })
+  public openSignet(url: string, windowId?: number) {
+    return this.openTabOnce({ url, windowId })
   }
-  
+
   async popupClose(id?: number) {
     if (id) {
       await Browser.windows.remove(id)
@@ -121,7 +128,7 @@ class WindowManager {
       top: 100 + (currWindow?.top ?? 0),
       left:
         (currWindow?.width ? (currWindow.left ?? 0) + currWindow.width : window.screen.availWidth) -
-        500,
+        500
     }
 
     const popupCreateArgs: Browser.Windows.CreateCreateDataType = {
@@ -130,7 +137,7 @@ class WindowManager {
       top,
       left,
       width: WINDOW_OPTS.width + widthDelta,
-      height: WINDOW_OPTS.height + heightDelta,
+      height: WINDOW_OPTS.height + heightDelta
     }
 
     let popup: Browser.Windows.Window
@@ -143,7 +150,7 @@ class WindowManager {
       popup = await Browser.windows.create({
         ...popupCreateArgs,
         width: WINDOW_OPTS.width,
-        height: WINDOW_OPTS.height,
+        height: WINDOW_OPTS.height
       })
     }
 
