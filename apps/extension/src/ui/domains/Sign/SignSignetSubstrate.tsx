@@ -43,26 +43,19 @@ export const SignSignetSubstrate: React.FC<Props> = ({ account, onApprove, onCan
   }, [account.genesisHash, payload])
 
   return (
-    <div className="w-full">
-      <div className={"flex w-full flex-col gap-6"}>
-        <SignetSignetError {...error} />
-        {onCancel && (
-          <Button className="w-full" onClick={onCancel}>
-            {t("Cancel")}
-          </Button>
-        )}
-        {!error.call && !error.network && (
-          // TODO: handle approve in Signet
-          <Button className="w-full" onClick={onApprove} primary>
-            {t("Approve in Signet")}
-          </Button>
-        )}
-      </div>
-      <div>
-        <p>
-          The pop up extension will be closed and may be shown as cancelled in the initiating dapp.
-        </p>
-      </div>
+    <div className={"flex w-full flex-col gap-6"}>
+      <SignetSignetError {...error} />
+      {onCancel && (
+        <Button className="w-full" onClick={onCancel}>
+          {t("Cancel")}
+        </Button>
+      )}
+      {!error.call && !error.network && (
+        // TODO: handle approve in Signet
+        <Button className="w-full" onClick={onApprove} primary>
+          {t("Approve in Signet")}
+        </Button>
+      )}
     </div>
   )
 }

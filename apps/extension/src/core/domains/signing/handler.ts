@@ -20,7 +20,6 @@ import { TypeRegistry } from "@polkadot/types"
 import keyring from "@polkadot/ui-keyring"
 import { assert } from "@polkadot/util"
 import { encodeAnyAddress } from "@talismn/util"
-import Browser from "webextension-polyfill"
 
 import { windowManager } from "../../libs/WindowManager"
 import { getHostName } from "../app/helpers"
@@ -190,56 +189,9 @@ export default class SigningHandler extends ExtensionHandler {
       dapp: url,
     })
 
-    const all = await Browser.windows.getAll()
-    const openerPopupWindow = await Browser.windows.getCurrent()
+    windowManager.popupClose()
 
-    // @dev need some way to actually hide the popup without closing it, any idea how??
-    await Browser.windows.update(openerPopupWindow.id ?? -1, {
-      focused: false,
-      drawAttention: false,
-      left: 0,
-      top: 0,
-      width: 1,
-      height: 1,
-    })
-
-    // find a window that is not popup (the initiating window), signet needs to be opened in a normal window
-    let approvingWindow = all.find(({ type }) => type === "normal")
-
-    // somehow all normal windows are closed, create a new one
-    if (!approvingWindow) approvingWindow = await Browser.windows.create({ focused: true })
-
-    const tab = await windowManager.openSignet(
-      `${queued.account.signetUrl}/sign?${params.toString()}`,
-      approvingWindow.id
-    )
-
-    await new Promise((resolve, reject) => {
-      const intervalId = setInterval(async () => {
-        const handleTabClosed = async () => {
-          clearInterval(intervalId)
-
-          // bring the popup "back to focus"
-          await Browser.windows.update(openerPopupWindow.id ?? -1, {
-            focused: true,
-            drawAttention: true,
-            width: openerPopupWindow.width,
-            height: openerPopupWindow.height,
-            top: openerPopupWindow.top,
-            left: openerPopupWindow.left,
-          })
-          reject(new Error("Signet tab closed."))
-        }
-        try {
-          // tab.id defaults to -1 which will result in error and hence handle tab being closed gracefully
-          const tabRef = await Browser.tabs.get(tab.id ?? -1)
-          if (!tabRef) handleTabClosed()
-        } catch (e) {
-          // tab is closed and hence Browser.tabs.get will throw an error
-          handleTabClosed()
-        }
-      }, 500)
-    })
+    await windowManager.openSignet(`${queued.account.signetUrl}/sign?${params.toString()}`)
 
     return true
   }

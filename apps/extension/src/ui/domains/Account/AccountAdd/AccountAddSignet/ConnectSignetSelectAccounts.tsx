@@ -1,13 +1,13 @@
 import { HeaderBlock } from "@talisman/components/HeaderBlock"
-import { notify } from "@talisman/components/Notifications"
+import { notify, notifyUpdate } from "@talisman/components/Notifications"
 import { Spacer } from "@talisman/components/Spacer"
 import { ArrowRightIcon } from "@talismn/icons"
+import { api } from "@ui/api"
 import { useCallback, useEffect, useState } from "react"
 import { useTranslation } from "react-i18next"
 import { useNavigate } from "react-router-dom"
 import { Button, Checkbox } from "talisman-ui"
 
-import { api } from "../../../../api"
 import { AccountIcon } from "../../AccountIcon"
 import { Address } from "../../Address"
 import { useSignetConnect } from "./context"
@@ -52,16 +52,32 @@ export const ConnectSignetSelectAccounts = () => {
 
   const handleImport = useCallback(async () => {
     setImporting(true)
+    const selectedVaults = vaults.filter(({ address }) => selectedAccounts?.[address])
+    const notificationId = notify(
+      {
+        type: "processing",
+        title: t("Importing account"),
+        subtitle: t("Please wait"),
+      },
+      { autoClose: false }
+    )
     try {
-      for (const vault of vaults) {
-        if (!selectedAccounts?.[vault.address]) continue
+      for (const vault of selectedVaults) {
         await api.accountCreateSignet(vault.name, vault.address, vault.chain.genesisHash, signetUrl)
       }
+
+      notifyUpdate(notificationId, {
+        type: "success",
+        title: t("Account imported"),
+        subtitle: null,
+      })
+
+      navigate("/settings/accounts")
       // TODO: GO TO SUCCESS PAGE AND NOTIFY USER
     } catch (e) {
       // eslint-disable-next-line no-console
       console.error(e)
-      notify({
+      notifyUpdate(notificationId, {
         type: "error",
         title: "Failed to import accounts",
         subtitle: e instanceof Error ? e.message : undefined,
@@ -69,7 +85,7 @@ export const ConnectSignetSelectAccounts = () => {
     } finally {
       setImporting(false)
     }
-  }, [selectedAccounts, signetUrl, vaults])
+  }, [navigate, selectedAccounts, signetUrl, t, vaults])
 
   return (
     <>
