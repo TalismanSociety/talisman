@@ -8,9 +8,7 @@ export const signet = {
       if (!newTab) return reject("Failed to open new tab")
 
       const intervalId = setInterval(() => {
-        if (newTab.closed) {
-          reject("Canceled")
-        }
+        if (newTab.closed) reject("Canceled")
       }, 500)
 
       const handleNewMessage = (event: MessageEvent) => {

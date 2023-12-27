@@ -73,10 +73,9 @@ export const ConnectSignetPage = () => {
     }
   }, [signetUrl])
 
-  // clear vaults on mount, only to clean up vaults when user clicks "Back" on confirmation page
+  // clean up vaults when user clicks "Back" on confirmation page
   useEffect(() => {
     setVaults([])
-    return () => setIsConnecting(false)
   }, [setVaults])
 
   return (
