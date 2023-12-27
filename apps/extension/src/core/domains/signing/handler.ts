@@ -20,6 +20,7 @@ import { TypeRegistry } from "@polkadot/types"
 import keyring from "@polkadot/ui-keyring"
 import { assert } from "@polkadot/util"
 import { encodeAnyAddress } from "@talismn/util"
+import Browser from "webextension-polyfill"
 
 import { windowManager } from "../../libs/WindowManager"
 import { getHostName } from "../app/helpers"
@@ -189,9 +190,14 @@ export default class SigningHandler extends ExtensionHandler {
       dapp: url,
     })
 
+    // close popup so Signet signing page can be open in full screen normal browser
+    // users will most likely stay on Signet anyway to review the pending tx
+    // so the popup is not needed here and can be closed
     windowManager.popupClose()
-
-    await windowManager.openSignet(`${queued.account.signetUrl}/sign?${params.toString()}`)
+    await Browser.tabs.create({
+      url: `${queued.account.signetUrl}/sign?${params.toString()}`,
+      active: true,
+    })
 
     return true
   }

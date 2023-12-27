@@ -16,8 +16,13 @@ export const ConnectSignetSelectAccounts = () => {
   const { signetUrl, vaults } = useSignetConnect()
   const { t } = useTranslation()
   const navigate = useNavigate()
-  const [selectedAccounts, setSelectedAccounts] = useState<Record<string, boolean> | undefined>()
   const [importing, setImporting] = useState(false)
+  const [selectedAccounts, setSelectedAccounts] = useState(
+    vaults.reduce((acc, vault) => {
+      acc[vault.address] = true
+      return acc
+    }, {} as Record<string, boolean>)
+  )
 
   const handleToggle = useCallback(
     (address: string) => {
@@ -30,21 +35,8 @@ export const ConnectSignetSelectAccounts = () => {
   )
 
   useEffect(() => {
-    if (vaults.length === 0) {
-      navigate("/accounts/add/signet")
-    }
+    if (vaults.length === 0) navigate("/accounts/add/signet")
   }, [navigate, vaults])
-
-  useEffect(() => {
-    if (selectedAccounts === undefined) {
-      setSelectedAccounts(
-        vaults.reduce((acc, vault) => {
-          acc[vault.address] = true
-          return acc
-        }, {} as Record<string, boolean>)
-      )
-    }
-  }, [selectedAccounts, vaults])
 
   const selectedAccountsList = Object.entries(selectedAccounts ?? {})
     .filter(([, selected]) => selected)
@@ -73,7 +65,6 @@ export const ConnectSignetSelectAccounts = () => {
       })
 
       navigate("/settings/accounts")
-      // TODO: GO TO SUCCESS PAGE AND NOTIFY USER
     } catch (e) {
       // eslint-disable-next-line no-console
       console.error(e)

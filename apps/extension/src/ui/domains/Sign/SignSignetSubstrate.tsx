@@ -51,7 +51,6 @@ export const SignSignetSubstrate: React.FC<Props> = ({ account, onApprove, onCan
         </Button>
       )}
       {!error.call && !error.network && (
-        // TODO: handle approve in Signet
         <Button className="w-full" onClick={onApprove} primary>
           {t("Approve in Signet")}
         </Button>

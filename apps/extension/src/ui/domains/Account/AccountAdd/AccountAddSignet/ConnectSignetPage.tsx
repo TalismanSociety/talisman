@@ -9,7 +9,6 @@ import { useNavigate } from "react-router-dom"
 import { Button, FormFieldContainer, FormFieldInputText } from "talisman-ui"
 
 import { useSignetConnect } from "./context"
-import { SignetVault } from "./types"
 
 const Step: FC<{ step: ReactNode; title: ReactNode; children: ReactNode }> = ({
   step,
@@ -37,7 +36,7 @@ export const ConnectSignetPage = () => {
       setIsConnecting(true)
       try {
         // handle connect
-        const res = (await signet.getVaults(signetUrl)) as SignetVault[]
+        const res = await signet.getVaults(signetUrl)
         if (res && res.length > 0) {
           setVaults(res)
           navigate("accounts")
@@ -45,7 +44,16 @@ export const ConnectSignetPage = () => {
           notify({ type: "error", title: t("Connection failed"), subtitle: "No vault selected" })
         }
       } catch (err) {
-        notify({ type: "error", title: t("Connection failed"), subtitle: (err as Error).message })
+        notify({
+          type: "error",
+          title: t("Connection failed"),
+          subtitle:
+            err instanceof Error
+              ? err.message
+              : typeof err === "string"
+              ? err
+              : "Please try again.",
+        })
 
         // eslint-disable-next-line no-console
         console.error("Failed to connect to Signet", { err })
@@ -75,9 +83,7 @@ export const ConnectSignetPage = () => {
     <>
       <HeaderBlock
         title={t("Import Signet Vault (Multisig wallet)")}
-        text={t(
-          "Enter Signet's URL where you have your Signet Vaults setup. You may use a different URL if you are using a self-hosted version of Signet."
-        )}
+        text={t("Signet is coming soon...")}
       />
       <Spacer large />
 
@@ -86,7 +92,7 @@ export const ConnectSignetPage = () => {
           <FormFieldContainer className="mt-8" label={t("Signet URL")}>
             <FormFieldInputText
               disabled={isConnecting}
-              placeholder={t("https://signet.talisman.xyz")}
+              placeholder={"Coming soon"}
               onChange={(e) => setSignetUrl(e.target.value)}
               value={signetUrl}
             />

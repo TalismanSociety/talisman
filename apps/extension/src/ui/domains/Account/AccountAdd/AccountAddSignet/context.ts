@@ -6,8 +6,8 @@ import { SignetVault } from "./types"
 
 const useSignetConnectContext = ({ onSuccess }: AccountAddPageProps) => {
   const [vaults, setVaults] = useState<SignetVault[]>([])
-  // TODO: update this to use the actual signet url
-  const [signetUrl, setSignetUrl] = useState("http://localhost:3000")
+  // TODO: default this to Signet public url when its available
+  const [signetUrl, setSignetUrl] = useState("")
 
   return { onSuccess, signetUrl, setSignetUrl, setVaults, vaults }
 }

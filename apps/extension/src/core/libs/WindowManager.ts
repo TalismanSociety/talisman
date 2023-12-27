@@ -48,13 +48,11 @@ class WindowManager {
   private async openTabOnce({
     url,
     baseUrl,
-    shouldFocus = true,
-    windowId
+    shouldFocus = true
   }: {
     url: string
     baseUrl?: string
     shouldFocus?: boolean
-    windowId?: number
   }): Promise<Browser.Tabs.Tab> {
     const queryUrl = baseUrl ?? url
 
@@ -70,12 +68,7 @@ class WindowManager {
         if (!focused) await Browser.windows.update(windowId, { focused: true })
       }
     } else {
-      // open tab in a targeted window if windowId is provided
-      if (windowId !== undefined && shouldFocus) {
-        const { focused } = await Browser.windows.get(windowId)
-        if (!focused) await Browser.windows.update(windowId, { focused: true })
-      }
-      tab = await Browser.tabs.create({ url, active: shouldFocus })
+      tab = await Browser.tabs.create({ url })
     }
 
     // wait for page to be loaded if it isn't
@@ -104,10 +97,6 @@ class WindowManager {
     await this.openTabOnce({ url: `${baseUrl}#${route}`, baseUrl })
 
     return true
-  }
-
-  public openSignet(url: string, windowId?: number) {
-    return this.openTabOnce({ url, windowId })
   }
 
   async popupClose(id?: number) {

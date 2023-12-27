@@ -1,8 +1,10 @@
+import { SignetVault } from "@ui/domains/Account/AccountAdd/AccountAddSignet/types"
+
 export const signet = {
   getVaults: async (signetUrl: string) => {
     const newTab = window.open(`${signetUrl}/connect`)
 
-    return new Promise((resolve, reject) => {
+    return new Promise<SignetVault[]>((resolve, reject) => {
       if (!newTab) return reject("Failed to open new tab")
 
       const intervalId = setInterval(() => {
@@ -27,7 +29,7 @@ export const signet = {
 
         if (event.data.type === "signet(connect.continue)") {
           close()
-          resolve(event.data.vaults)
+          resolve(event.data.vaults as SignetVault[])
         }
       }
 
