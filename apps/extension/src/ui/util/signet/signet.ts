@@ -8,9 +8,6 @@ export const signet = {
    * @returns
    */
   getVaults: async (signetUrl: string) => {
-    // if overview is present, we get the beginning of the url until overview
-    // otherwise we use the whole url
-    const url = new URL(signetUrl)
     const newTab = window.open(`${signetUrl}connect`)
 
     return new Promise<SignetVault[]>((resolve, reject) => {
@@ -20,6 +17,7 @@ export const signet = {
         if (newTab.closed) reject("Canceled")
       }, 500)
 
+      const url = new URL(signetUrl)
       const handleNewMessage = (event: MessageEvent) => {
         const close = () => {
           clearInterval(intervalId)
