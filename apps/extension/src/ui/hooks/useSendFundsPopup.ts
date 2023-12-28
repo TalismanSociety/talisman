@@ -21,7 +21,6 @@ export const useSendFundsPopup = (
   to?: Address
 ) => {
   const { t } = useTranslation()
-  // @decision exclude
   const accounts = useAccounts("owned")
   const balances = useBalances("owned")
   const transferableBalances = useMemo(
@@ -48,7 +47,6 @@ export const useSendFundsPopup = (
         canSendFunds: false,
         cannotSendFundsReason: t("No tokens available to send"),
       }
-    // @reason including signet would cause this to be skipped for extension with ONLY signet accounts, but the popup will show 0 address
     if (accounts.length === 0) {
       return {
         canSendFunds: false,

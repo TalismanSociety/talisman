@@ -192,8 +192,6 @@ const TokensList: FC<TokensListProps> = ({
   const tokenRatesMap = useTokenRatesMap()
   const formatNetworkName = useFormatNetworkName()
 
-  // @decision exclude
-  // @reason signet accounts aren't owned
   const balances = useBalances(ownedOnly ? "owned" : "all")
   const currency = useSelectedCurrency()
 

@@ -75,13 +75,11 @@ const NoMnemonicMessage = () => {
 }
 
 const useMnemonicAccounts = (mnemonicId: string) => {
-  // @decision exclude signet
   const accounts = useAccounts("owned")
 
   return useMemo(
     () =>
       accounts
-        // @reason can exclude signet, has 0 effect as it's only used to look up for mnemonicId which will never have any for Signet
         .filter((account) => account.derivedMnemonicId === mnemonicId)
         .sort((a1, a2) => (a1.derivationPath ?? "")?.localeCompare(a2.derivationPath ?? "")),
     [accounts, mnemonicId]
