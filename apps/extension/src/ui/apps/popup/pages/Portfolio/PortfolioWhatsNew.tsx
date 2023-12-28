@@ -38,7 +38,7 @@ export const PortfolioWhatsNew = () => {
   )
 
   return (
-    <div className="text-body-secondary flex flex-col gap-12 text-sm">
+    <div className="text-body-secondary flex flex-col gap-12 pb-12 text-sm">
       <div className="relative">
         <img
           className="pointer-events-none relative w-full rounded-sm"
