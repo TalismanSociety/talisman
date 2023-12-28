@@ -13,7 +13,7 @@ import { Address } from "../../Address"
 import { useSignetConnect } from "./context"
 
 export const ConnectSignetSelectAccounts = () => {
-  const { signetUrl, vaults } = useSignetConnect()
+  const { signetUrlOrigin, vaults } = useSignetConnect()
   const { t } = useTranslation()
   const navigate = useNavigate()
   const [importing, setImporting] = useState(false)
@@ -55,7 +55,12 @@ export const ConnectSignetSelectAccounts = () => {
     )
     try {
       for (const vault of selectedVaults) {
-        await api.accountCreateSignet(vault.name, vault.address, vault.chain.genesisHash, signetUrl)
+        await api.accountCreateSignet(
+          vault.name,
+          vault.address,
+          vault.chain.genesisHash,
+          signetUrlOrigin
+        )
       }
 
       notifyUpdate(notificationId, {
@@ -76,7 +81,7 @@ export const ConnectSignetSelectAccounts = () => {
     } finally {
       setImporting(false)
     }
-  }, [navigate, selectedAccounts, signetUrl, t, vaults])
+  }, [navigate, selectedAccounts, signetUrlOrigin, t, vaults])
 
   return (
     <>

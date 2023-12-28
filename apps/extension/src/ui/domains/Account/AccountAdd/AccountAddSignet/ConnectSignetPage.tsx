@@ -3,7 +3,7 @@ import { notify } from "@talisman/components/Notifications"
 import { Spacer } from "@talisman/components/Spacer"
 import { ArrowRightIcon } from "@talismn/icons"
 import { signet } from "@ui/util/signet"
-import { FC, ReactNode, useCallback, useEffect, useMemo, useState } from "react"
+import { FC, ReactNode, useCallback, useEffect, useState } from "react"
 import { useTranslation } from "react-i18next"
 import { useNavigate } from "react-router-dom"
 import { Button, FormFieldContainer, FormFieldInputText } from "talisman-ui"
@@ -26,7 +26,7 @@ const Step: FC<{ step: ReactNode; title: ReactNode; children: ReactNode }> = ({
 
 export const ConnectSignetPage = () => {
   const navigate = useNavigate()
-  const { signetUrl, setSignetUrl, setVaults } = useSignetConnect()
+  const { signetUrl, signetUrlOrigin, setSignetUrl, setVaults } = useSignetConnect()
   const { t } = useTranslation("admin")
   const [isConnecting, setIsConnecting] = useState(false)
 
@@ -36,7 +36,7 @@ export const ConnectSignetPage = () => {
       setIsConnecting(true)
       try {
         // handle connect
-        const res = await signet.getVaults(signetUrl)
+        const res = await signet.getVaults(signetUrlOrigin)
         if (res && res.length > 0) {
           setVaults(res)
           navigate("accounts")
@@ -61,17 +61,8 @@ export const ConnectSignetPage = () => {
         setIsConnecting(false)
       }
     },
-    [navigate, setVaults, signetUrl, t]
+    [navigate, setVaults, signetUrlOrigin, t]
   )
-
-  const isSignetUrlValid = useMemo(() => {
-    try {
-      new URL(signetUrl)
-      return true
-    } catch {
-      return false
-    }
-  }, [signetUrl])
 
   // clean up vaults when user clicks "Back" on confirmation page
   useEffect(() => {
@@ -105,7 +96,7 @@ export const ConnectSignetPage = () => {
             icon={ArrowRightIcon}
             onClick={handleContinue}
             processing={isConnecting}
-            disabled={!isSignetUrlValid}
+            disabled={signetUrlOrigin === ""}
           >
             {t("Connect")}
           </Button>

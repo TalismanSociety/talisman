@@ -1,5 +1,5 @@
 import { provideContext } from "@talisman/util/provideContext"
-import { useState } from "react"
+import { useMemo, useState } from "react"
 
 import { AccountAddPageProps } from "../types"
 import { SignetVault } from "./types"
@@ -9,7 +9,17 @@ const useSignetConnectContext = ({ onSuccess }: AccountAddPageProps) => {
   const [signetUrl, setSignetUrl] = useState("")
   const [vaults, setVaults] = useState<SignetVault[]>([])
 
-  return { onSuccess, signetUrl, setSignetUrl, setVaults, vaults }
+  const signetUrlOrigin = useMemo(() => {
+    try {
+      const withoutOverview = signetUrl.split("overview")[0]
+      const url = new URL(withoutOverview)
+      return url.href
+    } catch (e) {
+      return ""
+    }
+  }, [signetUrl])
+
+  return { onSuccess, signetUrl, signetUrlOrigin, setSignetUrl, setVaults, vaults }
 }
 
 const [SignetConnectProvider, useSignetConnect] = provideContext(useSignetConnectContext)

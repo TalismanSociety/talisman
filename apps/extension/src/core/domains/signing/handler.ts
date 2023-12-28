@@ -195,7 +195,7 @@ export default class SigningHandler extends ExtensionHandler {
     // so the popup is not needed here and can be closed
     windowManager.popupClose()
     await Browser.tabs.create({
-      url: `${queued.account.signetUrl}/sign?${params.toString()}`,
+      url: `${queued.account.signetUrl}sign?${params.toString()}`,
       active: true,
     })
 
