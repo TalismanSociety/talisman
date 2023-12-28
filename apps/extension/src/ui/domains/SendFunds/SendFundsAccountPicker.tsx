@@ -21,6 +21,7 @@ export const SendFundsAccountPicker = () => {
   const token = useToken(tokenId)
   const chain = useChain(token?.chain?.id)
 
+  // @decision exclude
   const allAccounts = useAccounts("owned")
 
   const accounts = useMemo(
@@ -30,6 +31,7 @@ export const SendFundsAccountPicker = () => {
         .filter((account) => {
           if (!token) return false
 
+          // @reason signet should be excluded here anyway for owned accounts, this line can be removed then
           if (account.origin === AccountType.Signet) return false
 
           if (isEthereumAddress(account.address))

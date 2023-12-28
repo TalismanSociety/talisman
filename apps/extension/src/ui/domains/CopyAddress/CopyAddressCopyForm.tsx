@@ -134,11 +134,13 @@ const ExternalAddressWarning = () => {
   const { t } = useTranslation()
   const { address } = useCopyAddressWizard()
 
+  // @decision exclude signet
   const accounts = useAccounts("owned")
 
   const showWarning = useMemo(() => {
     if (!address || !accounts) return false
     const encoded = encodeAnyAddress(address)
+    // @reason signet is external address in most cases
     return !accounts.some((account) => encodeAnyAddress(account.address) === encoded)
   }, [accounts, address])
 

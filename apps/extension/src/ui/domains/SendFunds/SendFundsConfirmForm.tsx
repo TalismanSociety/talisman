@@ -103,11 +103,13 @@ const TotalValueRow = () => {
 export const ExternalRecipientWarning = () => {
   const { t } = useTranslation("send-funds")
   const { to } = useSendFunds()
+  // @decision exclude
   const accounts = useAccounts("owned")
 
   const showWarning = useMemo(() => {
     if (!to || !accounts) return false
     const encoded = encodeAnyAddress(to)
+    // @reason signet shouldn't be included here cus it is likely an external account (e.g. an account that belongs to company, not personal)
     return !accounts.some((account) => encodeAnyAddress(account.address) === encoded)
   }, [accounts, to])
 
