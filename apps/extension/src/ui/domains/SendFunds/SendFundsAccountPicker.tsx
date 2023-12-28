@@ -10,7 +10,6 @@ import { isEvmToken } from "@ui/util/isEvmToken"
 import { useCallback, useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
 
-import { AccountType } from "../../../core/domains/accounts/types"
 import { SendFundsAccountsList } from "./SendFundsAccountsList"
 
 export const SendFundsAccountPicker = () => {
