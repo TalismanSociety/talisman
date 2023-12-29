@@ -1,11 +1,11 @@
 import { mnemonicGenerate } from "@polkadot/util-crypto"
 import { provideContext } from "@talisman/util/provideContext"
-import { AlertTriangleIcon } from "@talismn/icons"
+import { InfoIcon } from "@talismn/icons"
 import { classNames } from "@talismn/util"
 import { Mnemonic } from "@ui/domains/Mnemonic/Mnemonic"
 import { useCallback, useMemo, useState } from "react"
 import { Trans, useTranslation } from "react-i18next"
-import { Button, Checkbox, ModalDialog } from "talisman-ui"
+import { Button, Checkbox, ModalDialog, Tooltip, TooltipContent, TooltipTrigger } from "talisman-ui"
 import { Modal } from "talisman-ui"
 
 import { MnemonicWordCountSwitch } from "./MnemonicWordCountSwitch"
@@ -59,23 +59,22 @@ const MnemonicFormInner = () => {
   return (
     <div className={classNames("flex grow flex-col")}>
       <div>
-        <div className="flex items-center justify-end py-4 text-sm">
-          <MnemonicWordCountSwitch value={wordsCount} onChange={setWordsCount} />
+        <div className="flex items-center justify-end gap-4 py-4 text-sm">
+          <MnemonicWordCountSwitch value={wordsCount} onChange={setWordsCount} />{" "}
+          <Tooltip placement="bottom-end">
+            <TooltipTrigger className="hover:text-body">
+              <InfoIcon className="text-body-secondary inline" />
+            </TooltipTrigger>
+            <TooltipContent>
+              {t(
+                "The 12-word phrase is easier to remember, while the 24-word phrase offers higher entropy and is more resistant to brute force attacks."
+              )}
+            </TooltipContent>
+          </Tooltip>
         </div>
         <Mnemonic mnemonic={mnemonic} onReveal={handleMnemonicRevealed} />
       </div>
-      <div className="bg-grey-750 text-alert-warn mt-8 flex w-full items-center gap-6 rounded-sm p-4">
-        <div className="bg-alert-warn/10 flex flex-col justify-center rounded-full p-2">
-          <AlertTriangleIcon className="shrink-0 text-base" />
-        </div>
-        <div className="text-sm">
-          <p>
-            {t(
-              "Never share your recovery phrase with anyone or enter your recovery phrase in any website. Talisman will never ask you to do it."
-            )}
-          </p>
-        </div>
-      </div>
+
       <div className="mt-6 flex flex-col gap-6 px-4 pt-4">
         <Checkbox
           onChange={(e) => setAcknowledged(e.target.checked)}
