@@ -29,20 +29,7 @@ const config = (env) => ({
     // So, I've daisy-chained each entry to `dependOn` the next.
     "vendor-background": {
       import: ["@metamask/eth-sig-util", "@substrate/txwrapper-core"],
-      dependOn: "vendor-background-init-chains",
     },
-    "vendor-background-init-chains": {
-      import: [
-        "@talismn/chaindata-provider-extension/init/chains",
-        "@talismn/chaindata-provider-extension/init/evm-networks",
-      ],
-      dependOn: "vendor-background-init-tokens",
-    },
-    "vendor-background-init-tokens": {
-      import: "@talismn/chaindata-provider-extension/init/tokens",
-      dependOn: "vendor-background-init-metadata",
-    },
-    "vendor-background-init-metadata": "@talismn/chaindata-provider-extension/init/mini-metadatas",
 
     // Wallet injected scripts
     "content_script": path.join(coreDir, "content_script.ts"),

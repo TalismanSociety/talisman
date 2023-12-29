@@ -12,7 +12,7 @@ export const chains = [
     chainName: "Polkadot",
     implName: "parity-polkadot",
     specName: "polkadot",
-    specVersion: "9431",
+    specVersion: "1000001",
     nativeToken: {
       id: "polkadot-substrate-native-dot",
     },
@@ -29,31 +29,22 @@ export const chains = [
     feeToken: null,
     rpcs: [
       {
-        url: "wss://rpc.ibp.network/polkadot",
-      },
-      {
-        url: "wss://rpc.dotters.network/polkadot",
-      },
-      {
-        url: "wss://polkadot.api.onfinality.io/public-ws",
-      },
-      {
-        url: "wss://1rpc.io/dot",
-      },
-      {
-        url: "wss://polkadot-public-rpc.blockops.network/ws",
-      },
-      {
         url: "wss://polkadot-rpc.dwellir.com",
       },
       {
         url: "wss://polkadot-rpc-tn.dwellir.com",
       },
       {
-        url: "wss://rpc-polkadot.luckyfriday.io",
+        url: "wss://rpc.ibp.network/polkadot",
       },
       {
-        url: "wss://rpc.polkadot.io",
+        url: "wss://rpc.dotters.network/polkadot",
+      },
+      {
+        url: "wss://1rpc.io/dot",
+      },
+      {
+        url: "wss://rpc-polkadot.luckyfriday.io",
       },
       {
         url: "wss://polkadot.public.curie.radiumblock.co/ws",
@@ -105,11 +96,6 @@ export const chains = [
         name: "Clover",
       },
       {
-        id: "coinversation",
-        paraId: 2027,
-        name: "Coinversation",
-      },
-      {
         id: "composable-finance",
         paraId: 2019,
         name: "Composable Finance",
@@ -123,11 +109,6 @@ export const chains = [
         id: "darwinia",
         paraId: 2046,
         name: "Darwinia",
-      },
-      {
-        id: "efinity-polkadot",
-        paraId: 2021,
-        name: "Efinity",
       },
       {
         id: "equilibrium-polkadot",
@@ -155,11 +136,6 @@ export const chains = [
         name: "HydraDX",
       },
       {
-        id: "integritee-polkadot",
-        paraId: 2039,
-        name: "Integritee Shell",
-      },
-      {
         id: "interlay",
         paraId: 2032,
         name: "Interlay",
@@ -180,11 +156,6 @@ export const chains = [
         name: "KILT Spiritnet",
       },
       {
-        id: "kylin",
-        paraId: 2052,
-        name: "Kylin",
-      },
-      {
         id: "litentry",
         paraId: 2013,
         name: "Litentry",
@@ -200,6 +171,11 @@ export const chains = [
         name: "Moonbeam",
       },
       {
+        id: "moonsama",
+        paraId: 3334,
+        name: "Moonsama",
+      },
+      {
         id: "nodle-polkadot",
         paraId: 2026,
         name: "Nodle",
@@ -208,11 +184,6 @@ export const chains = [
         id: "oak",
         paraId: 2090,
         name: "Oak",
-      },
-      {
-        id: "odyssey",
-        paraId: 2028,
-        name: "Ares Odyssey",
       },
       {
         id: "omnibtc",
@@ -228,11 +199,6 @@ export const chains = [
         id: "parallel",
         paraId: 2012,
         name: "Parallel",
-      },
-      {
-        id: "peaq",
-        paraId: 3338,
-        name: "Peaq",
       },
       {
         id: "pendulum",
@@ -265,19 +231,9 @@ export const chains = [
         name: "Collectives",
       },
       {
-        id: "sora-polkadot",
-        paraId: 2025,
-        name: "Sora",
-      },
-      {
         id: "subdao",
         paraId: 2018,
         name: "SubDAO",
-      },
-      {
-        id: "subgame-polkadot",
-        paraId: 2017,
-        name: "SubGame Gamma Polkadot",
       },
       {
         id: "subsocial-polkadot",
@@ -349,31 +305,22 @@ export const chains = [
     feeToken: null,
     rpcs: [
       {
-        url: "wss://rpc.ibp.network/kusama",
-      },
-      {
-        url: "wss://rpc.dotters.network/kusama",
-      },
-      {
-        url: "wss://kusama.api.onfinality.io/public-ws",
-      },
-      {
-        url: "wss://1rpc.io/ksm",
-      },
-      {
-        url: "wss://kusama-public-rpc.blockops.network/ws",
-      },
-      {
         url: "wss://kusama-rpc.dwellir.com",
       },
       {
         url: "wss://kusama-rpc-tn.dwellir.com",
       },
       {
-        url: "wss://rpc-kusama.luckyfriday.io",
+        url: "wss://rpc.ibp.network/kusama",
       },
       {
-        url: "wss://kusama-rpc.polkadot.io",
+        url: "wss://rpc.dotters.network/kusama",
+      },
+      {
+        url: "wss://1rpc.io/ksm",
+      },
+      {
+        url: "wss://rpc-kusama.luckyfriday.io",
       },
       {
         url: "wss://kusama.public.curie.radiumblock.co/ws",
@@ -385,9 +332,9 @@ export const chains = [
     evmNetworks: [],
     parathreads: [
       {
-        id: "aband",
-        paraId: 2257,
-        name: "Aband",
+        id: "acurast",
+        paraId: 2239,
+        name: "Acurast Canary",
       },
       {
         id: "altair",
@@ -417,7 +364,7 @@ export const chains = [
       {
         id: "bitcountry-pioneer",
         paraId: 2096,
-        name: "Bit.Country Pioneer",
+        name: "Pioneer",
       },
       {
         id: "calamari",
@@ -430,11 +377,6 @@ export const chains = [
         name: "Darwinia Crab",
       },
       {
-        id: "dora-factory",
-        paraId: 2115,
-        name: "Dora Factory",
-      },
-      {
         id: "encointer",
         paraId: 1001,
         name: "Encointer",
@@ -445,23 +387,8 @@ export const chains = [
         name: "Genshiro",
       },
       {
-        id: "genshiro-kusama-2",
-        paraId: 2226,
-        name: "Genshiro",
-      },
-      {
-        id: "gm",
-        paraId: 2123,
-        name: "GM",
-      },
-      {
         id: "heiko-kusama",
         paraId: 2085,
-        name: "Parallel Heiko",
-      },
-      {
-        id: "heiko-kusama-2",
-        paraId: 2126,
         name: "Parallel Heiko",
       },
       {
@@ -495,16 +422,6 @@ export const chains = [
         name: "Khala",
       },
       {
-        id: "kico",
-        paraId: 2107,
-        name: "Kico",
-      },
-      {
-        id: "kico-2",
-        paraId: 2235,
-        name: "Kico",
-      },
-      {
         id: "kintsugi",
         paraId: 2092,
         name: "Kintsugi",
@@ -513,6 +430,11 @@ export const chains = [
         id: "kpron",
         paraId: 2019,
         name: "Kpron",
+      },
+      {
+        id: "kreivo",
+        paraId: 2281,
+        name: "Kreivo",
       },
       {
         id: "krest",
@@ -530,29 +452,14 @@ export const chains = [
         name: "Kusama Bridge Hub",
       },
       {
-        id: "listen",
-        paraId: 2118,
-        name: "Listen",
-      },
-      {
         id: "litmus",
         paraId: 2106,
         name: "Litmus",
       },
       {
-        id: "loom-network",
-        paraId: 2080,
-        name: "Loom",
-      },
-      {
         id: "mangata",
         paraId: 2110,
         name: "MangataX",
-      },
-      {
-        id: "mars",
-        paraId: 2008,
-        name: "Mars",
       },
       {
         id: "moonriver",
@@ -565,14 +472,9 @@ export const chains = [
         name: "Picasso",
       },
       {
-        id: "pichiu",
-        paraId: 2102,
-        name: "Pichiu",
-      },
-      {
-        id: "polkasmith",
-        paraId: 2009,
-        name: "PolkaSmith",
+        id: "qpn",
+        paraId: 2274,
+        name: "Quantum Portal",
       },
       {
         id: "quartz",
@@ -580,18 +482,8 @@ export const chains = [
         name: "Quartz",
       },
       {
-        id: "riodefi",
-        paraId: 2227,
-        name: "RioDeFi",
-      },
-      {
         id: "robonomics-kusama",
         paraId: 2048,
-        name: "Robonomics",
-      },
-      {
-        id: "robonomics-kusama-2",
-        paraId: 2240,
         name: "Robonomics",
       },
       {
@@ -605,24 +497,9 @@ export const chains = [
         name: "Crust Shadow",
       },
       {
-        id: "shadow-kusama-2",
-        paraId: 2225,
-        name: "Crust Shadow",
-      },
-      {
         id: "shiden-kusama",
         paraId: 2007,
         name: "Shiden",
-      },
-      {
-        id: "shiden-kusama-2",
-        paraId: 2120,
-        name: "Shiden",
-      },
-      {
-        id: "snow",
-        paraId: 2129,
-        name: "Snow",
       },
       {
         id: "sora-kusama",
@@ -630,19 +507,9 @@ export const chains = [
         name: "Sora",
       },
       {
-        id: "subgame-kusama",
-        paraId: 2018,
-        name: "SubGame Gamma Kusama",
-      },
-      {
-        id: "subsocial-x",
-        paraId: 2100,
-        name: "SubsocialX",
-      },
-      {
-        id: "tanganika",
-        paraId: 2116,
-        name: "Tanganika",
+        id: "t-1-rn",
+        paraId: 3334,
+        name: "t1rn",
       },
       {
         id: "tinker",
@@ -650,19 +517,9 @@ export const chains = [
         name: "InvArch Tinkernet",
       },
       {
-        id: "trustbase",
-        paraId: 2078,
-        name: "TrustBase",
-      },
-      {
         id: "turing",
         paraId: 2114,
         name: "Turing",
-      },
-      {
-        id: "unorthodox",
-        paraId: 2094,
-        name: "Unorthodox",
       },
       {
         id: "zero",
@@ -696,7 +553,7 @@ export const chains = [
     chainName: "3dpass - The Ledger of Things",
     implName: "poscan-runtime",
     specName: "poscan-runtime",
-    specVersion: "113",
+    specVersion: "115",
     nativeToken: {
       id: "3-dpass-substrate-native-p3d",
     },
@@ -727,7 +584,7 @@ export const chains = [
     id: "acala",
     isTestnet: false,
     isDefault: true,
-    sortIndex: 7,
+    sortIndex: 6,
     genesisHash: "0xfc41b9bd8ef8fe53d58c7ea67c794c7ec9a73daf05e6d54b14ff6342c99ba64c",
     prefix: 10,
     name: "Acala",
@@ -828,7 +685,7 @@ export const chains = [
     feeToken: null,
     rpcs: [
       {
-        url: "wss://acala-polkadot.api.onfinality.io/public-ws",
+        url: "wss://acala-rpc.dwellir.com",
       },
       {
         url: "wss://acala-rpc-0.aca-api.network",
@@ -838,12 +695,6 @@ export const chains = [
       },
       {
         url: "wss://acala-rpc-3.aca-api.network/ws",
-      },
-      {
-        url: "wss://acala-rpc.dwellir.com",
-      },
-      {
-        url: "wss://acala.polkawallet.io",
       },
     ],
     evmNetworks: [
@@ -1076,6 +927,48 @@ export const chains = [
     balancesMetadata: [],
   },
   {
+    id: "acurast",
+    isTestnet: false,
+    isDefault: true,
+    sortIndex: 9,
+    genesisHash: "0xce7681fb12aa8f7265d229a9074be0ea1d5e99b53eedcec2deade43857901808",
+    prefix: 42,
+    name: "Acurast Canary",
+    themeColor: "#505050",
+    logo: "https://raw.githubusercontent.com/TalismanSociety/chaindata/main/assets/chains/unknown.svg",
+    chainName: "Acurast Canary",
+    implName: "acurast-parachain",
+    specName: "acurast-parachain",
+    specVersion: "8",
+    nativeToken: {
+      id: "acurast-substrate-native-cacu",
+    },
+    tokens: [
+      {
+        id: "acurast-substrate-native-cacu",
+      },
+    ],
+    account: "*25519",
+    subscanUrl: null,
+    chainspecQrUrl: null,
+    latestMetadataQrUrl: null,
+    isUnknownFeeToken: false,
+    feeToken: null,
+    rpcs: [
+      {
+        url: "wss://acurast-canarynet-ws.prod.gke.papers.tech",
+      },
+    ],
+    evmNetworks: [],
+    parathreads: null,
+    paraId: 2239,
+    relay: {
+      id: "kusama",
+    },
+    balancesConfig: [],
+    balancesMetadata: [],
+  },
+  {
     id: "ajuna",
     isTestnet: false,
     isDefault: true,
@@ -1171,10 +1064,10 @@ export const chains = [
     feeToken: null,
     rpcs: [
       {
-        url: "wss://ws.azero.dev",
+        url: "wss://aleph-zero-rpc.dwellir.com",
       },
       {
-        url: "wss://aleph-zero-rpc.dwellir.com",
+        url: "wss://ws.azero.dev",
       },
     ],
     evmNetworks: [],
@@ -1265,9 +1158,6 @@ export const chains = [
     feeToken: null,
     rpcs: [
       {
-        url: "wss://altair.api.onfinality.io/public-ws",
-      },
-      {
         url: "wss://fullnode.altair.centrifuge.io",
       },
     ],
@@ -1301,7 +1191,7 @@ export const chains = [
     chainName: "Amplitude",
     implName: "amplitude",
     specName: "amplitude",
-    specVersion: "11",
+    specVersion: "12",
     nativeToken: {
       id: "amplitude-substrate-native-ampe",
     },
@@ -1424,7 +1314,7 @@ export const chains = [
     chainName: "Astar",
     implName: "astar",
     specName: "astar",
-    specVersion: "71",
+    specVersion: "72",
     nativeToken: {
       id: "astar-substrate-native-astr",
     },
@@ -1489,16 +1379,13 @@ export const chains = [
     feeToken: null,
     rpcs: [
       {
-        url: "wss://astar.api.onfinality.io/public-ws",
+        url: "wss://astar-rpc.dwellir.com",
       },
       {
         url: "wss://rpc.astar.network",
       },
       {
         url: "wss://1rpc.io/astr",
-      },
-      {
-        url: "wss://astar-rpc.dwellir.com",
       },
       {
         url: "wss://astar.public.curie.radiumblock.co/ws",
@@ -1654,9 +1541,6 @@ export const chains = [
     feeToken: null,
     rpcs: [
       {
-        url: "wss://automata.api.onfinality.io/public-ws",
-      },
-      {
         url: "wss://api.ata.network",
       },
     ],
@@ -1688,7 +1572,7 @@ export const chains = [
     chainName: "AvN Polkadot",
     implName: "avn-parachain",
     specName: "avn-parachain",
-    specVersion: "44",
+    specVersion: "52",
     nativeToken: {
       id: "aventus-substrate-native-avt",
     },
@@ -1746,9 +1630,6 @@ export const chains = [
     isUnknownFeeToken: false,
     feeToken: null,
     rpcs: [
-      {
-        url: "wss://bajun.api.onfinality.io/public-ws",
-      },
       {
         url: "wss://rpc-parachain.bajun.network",
       },
@@ -1830,10 +1711,10 @@ export const chains = [
     feeToken: null,
     rpcs: [
       {
-        url: "wss://rpc.basilisk.cloud",
+        url: "wss://basilisk-rpc.dwellir.com",
       },
       {
-        url: "wss://basilisk-rpc.dwellir.com",
+        url: "wss://rpc.basilisk.cloud",
       },
     ],
     evmNetworks: [],
@@ -1944,7 +1825,7 @@ export const chains = [
     chainName: "Bifrost",
     implName: "bifrost",
     specName: "bifrost",
-    specVersion: "986",
+    specVersion: "987",
     nativeToken: {
       id: "bifrost-kusama-substrate-native-bnc",
     },
@@ -2027,13 +1908,13 @@ export const chains = [
     feeToken: null,
     rpcs: [
       {
-        url: "wss://bifrost-parachain.api.onfinality.io/public-ws",
-      },
-      {
         url: "wss://bifrost-rpc.dwellir.com",
       },
       {
         url: "wss://bifrost-rpc.liebi.com/ws",
+      },
+      {
+        url: "wss://us.bifrost-rpc.liebi.com/ws",
       },
     ],
     evmNetworks: [],
@@ -2246,7 +2127,7 @@ export const chains = [
     chainName: "Bifrost Polkadot",
     implName: "bifrost_polkadot",
     specName: "bifrost_polkadot",
-    specVersion: "984",
+    specVersion: "988",
     nativeToken: {
       id: "bifrost-polkadot-substrate-native-bnc",
     },
@@ -2305,10 +2186,10 @@ export const chains = [
     feeToken: null,
     rpcs: [
       {
-        url: "wss://bifrost-polkadot.api.onfinality.io/public-ws",
+        url: "wss://hk.p.bifrost-rpc.liebi.com/ws",
       },
       {
-        url: "wss://hk.p.bifrost-rpc.liebi.com/ws",
+        url: "wss://eu.bifrost-polkadot-rpc.liebi.com/ws",
       },
     ],
     evmNetworks: [],
@@ -2442,111 +2323,10 @@ export const chains = [
     balancesMetadata: [],
   },
   {
-    id: "bitcountry-pioneer",
-    isTestnet: false,
-    isDefault: true,
-    sortIndex: 73,
-    genesisHash: "0xf22b7850cdd5a7657bbfd90ac86441275bbc57ace3d2698a740c7b0ec4de5ec3",
-    prefix: 268,
-    name: "Bit.Country Pioneer",
-    themeColor: "#f8fcfc",
-    logo: "https://raw.githubusercontent.com/TalismanSociety/chaindata/main/assets/chains/bitcountry-pioneer.svg",
-    chainName: "Pioneer Network",
-    implName: "pioneer-runtime",
-    specName: "pioneer-runtime",
-    specVersion: "19",
-    nativeToken: {
-      id: "bitcountry-pioneer-substrate-native-neer",
-    },
-    tokens: [
-      {
-        id: "bitcountry-pioneer-substrate-native-neer",
-      },
-      {
-        id: "bitcountry-pioneer-substrate-tokens-ksm",
-      },
-      {
-        id: "bitcountry-pioneer-substrate-tokens-kar",
-      },
-      {
-        id: "bitcountry-pioneer-substrate-tokens-aseed",
-      },
-      {
-        id: "bitcountry-pioneer-substrate-tokens-bit",
-      },
-    ],
-    account: "*25519",
-    subscanUrl: "https://pioneer.subscan.io/",
-    chainspecQrUrl: "https://metadata.novasama.io/qr/pioneer-runtime_specs.png",
-    latestMetadataQrUrl: "https://metadata.novasama.io/qr/pioneer-runtime_metadata_latest.apng",
-    isUnknownFeeToken: false,
-    feeToken: null,
-    rpcs: [
-      {
-        url: "wss://pioneer-rpc-3.bit.country/wss",
-      },
-    ],
-    evmNetworks: [],
-    parathreads: null,
-    paraId: 2096,
-    relay: {
-      id: "kusama",
-    },
-    balancesConfig: [
-      {
-        moduleType: "substrate-native",
-        moduleConfig: {
-          coingeckoId: "metaverse-network-pioneer",
-          logo: "https://raw.githubusercontent.com/TalismanSociety/chaindata/main/assets/chains/bitcountry-pioneer.svg",
-        },
-      },
-      {
-        moduleType: "substrate-tokens",
-        moduleConfig: {
-          tokens: [
-            {
-              symbol: "KSM",
-              decimals: 12,
-              ed: "0",
-              onChainId: '{"NativeToken":1}',
-              coingeckoId: "kusama",
-              logo: "https://raw.githubusercontent.com/TalismanSociety/chaindata/main/assets/tokens/ksm.svg",
-            },
-            {
-              symbol: "KAR",
-              decimals: 12,
-              ed: "0",
-              onChainId: '{"NativeToken":2}',
-              coingeckoId: "karura",
-              logo: "https://raw.githubusercontent.com/TalismanSociety/chaindata/main/assets/tokens/kar.svg",
-            },
-            {
-              symbol: "aSEED",
-              decimals: 12,
-              ed: "0",
-              onChainId: '{"Stable":0}',
-              coingeckoId: "ausd-seed-karura",
-              logo: "https://raw.githubusercontent.com/TalismanSociety/chaindata/main/assets/tokens/aseed.svg",
-            },
-            {
-              symbol: "BIT",
-              decimals: 18,
-              ed: "0",
-              onChainId: '{"MiningResource":0}',
-              coingeckoId: "bit",
-              logo: "https://raw.githubusercontent.com/TalismanSociety/chaindata/main/assets/tokens/unknown.svg",
-            },
-          ],
-        },
-      },
-    ],
-    balancesMetadata: [],
-  },
-  {
     id: "bitgreen",
     isTestnet: false,
     isDefault: true,
-    sortIndex: 79,
+    sortIndex: 78,
     genesisHash: "0xc14597baeccb232d662770d2d50ae832ca8c3192693d2b0814e6433f2888ddd6",
     prefix: 42,
     name: "Bitgreen",
@@ -2588,7 +2368,7 @@ export const chains = [
     id: "bittensor",
     isTestnet: false,
     isDefault: true,
-    sortIndex: 84,
+    sortIndex: 83,
     genesisHash: "0x2f0555cc76fc2840a25a6ea3b9637146806f1f44b090c175ffde2a7e5ab36c03",
     prefix: 42,
     name: "Bittensor",
@@ -2597,7 +2377,7 @@ export const chains = [
     chainName: "Bittensor",
     implName: "node-subtensor",
     specName: "node-subtensor",
-    specVersion: "136",
+    specVersion: "140",
     nativeToken: {
       id: "bittensor-substrate-native-tao",
     },
@@ -2712,10 +2492,13 @@ export const chains = [
     feeToken: null,
     rpcs: [
       {
-        url: "wss://centrifuge-parachain.api.onfinality.io/public-ws",
+        url: "wss://centrifuge-rpc.dwellir.com",
       },
       {
         url: "wss://fullnode.centrifuge.io",
+      },
+      {
+        url: "wss://rpc-centrifuge.luckyfriday.io",
       },
     ],
     evmNetworks: [],
@@ -2739,7 +2522,7 @@ export const chains = [
     id: "cere",
     isTestnet: false,
     isDefault: true,
-    sortIndex: 117,
+    sortIndex: 116,
     genesisHash: "0x81443836a9a24caaa23f1241897d1235717535711d1d3fe24eae4fdc942c092c",
     prefix: 54,
     name: "Cere",
@@ -2748,7 +2531,7 @@ export const chains = [
     chainName: "Cere Mainnet Beta",
     implName: "substrate-node",
     specName: "node",
-    specVersion: "47200",
+    specVersion: "48200",
     nativeToken: {
       id: "cere-substrate-native-cere",
     },
@@ -2767,9 +2550,6 @@ export const chains = [
       {
         url: "wss://archive.mainnet.cere.network/ws",
       },
-      {
-        url: "wss://mainnet.cere-archive.republiccrypto-runtime.com:444",
-      },
     ],
     evmNetworks: [],
     parathreads: null,
@@ -2782,7 +2562,7 @@ export const chains = [
     id: "chainx",
     isTestnet: false,
     isDefault: true,
-    sortIndex: 119,
+    sortIndex: 118,
     genesisHash: "0x6ac13efb5b368b97b4934cef6edfdd99c2af51ba5109bfb8dacc116f9c584c10",
     prefix: 44,
     name: "ChainX",
@@ -2830,7 +2610,7 @@ export const chains = [
     id: "clover",
     isTestnet: false,
     isDefault: true,
-    sortIndex: 124,
+    sortIndex: 123,
     genesisHash: "0x5c7bd13edf349b33eb175ffae85210299e324d852916336027391536e686f267",
     prefix: 128,
     name: "Clover",
@@ -2880,7 +2660,7 @@ export const chains = [
     id: "polkadot-collectives",
     isTestnet: false,
     isDefault: true,
-    sortIndex: 131,
+    sortIndex: 129,
     genesisHash: "0x46ee89aa2eedd13e988962630ec9fb7565964cf5023bb351f2b6b25c1b68b0b2",
     prefix: 0,
     name: "Collectives",
@@ -2889,7 +2669,7 @@ export const chains = [
     chainName: "Collectives",
     implName: "collectives",
     specName: "collectives",
-    specVersion: "9430",
+    specVersion: "1000000",
     nativeToken: {
       id: "polkadot-collectives-substrate-native-dot",
     },
@@ -2906,13 +2686,19 @@ export const chains = [
     feeToken: null,
     rpcs: [
       {
+        url: "wss://polkadot-collectives-rpc.dwellir.com",
+      },
+      {
+        url: "wss://polkadot-collectives-rpc-tn.dwellir.com",
+      },
+      {
         url: "wss://sys.ibp.network/collectives-polkadot",
       },
       {
         url: "wss://sys.dotters.network/collectives-polkadot",
       },
       {
-        url: "wss://collectives.api.onfinality.io/public-ws",
+        url: "wss://rpc-collectives-polkadot.luckyfriday.io",
       },
       {
         url: "wss://polkadot-collectives-rpc.polkadot.io",
@@ -2937,7 +2723,7 @@ export const chains = [
     id: "composable-finance",
     isTestnet: false,
     isDefault: true,
-    sortIndex: 134,
+    sortIndex: 131,
     genesisHash: "0xdaab8df776eb52ec604a5df5d388bb62a050a0aaec4556a64265b9d42755552d",
     prefix: 50,
     name: "Composable Finance",
@@ -2946,7 +2732,7 @@ export const chains = [
     chainName: "Composable Finance",
     implName: "composable",
     specName: "composable",
-    specVersion: "10040",
+    specVersion: "10041",
     nativeToken: {
       id: "composable-finance-substrate-native-layr",
     },
@@ -2996,10 +2782,10 @@ export const chains = [
     feeToken: null,
     rpcs: [
       {
-        url: "wss://rpc.composable.finance",
+        url: "wss://composable-rpc.dwellir.com",
       },
       {
-        url: "wss://composable-rpc.dwellir.com",
+        url: "wss://rpc.composable.finance",
       },
     ],
     evmNetworks: [],
@@ -3117,7 +2903,7 @@ export const chains = [
     id: "creditcoin",
     isTestnet: false,
     isDefault: true,
-    sortIndex: 141,
+    sortIndex: 138,
     genesisHash: "0xdd954cbf4000542ef1a15bca509cd89684330bee5e23766c527cdb0d7275e9c2",
     prefix: 42,
     name: "Creditcoin",
@@ -3143,7 +2929,7 @@ export const chains = [
     feeToken: null,
     rpcs: [
       {
-        url: "wss://rpc.mainnet.creditcoin.network/ws",
+        url: "wss://mainnet.creditcoin.network/ws",
       },
     ],
     evmNetworks: [],
@@ -3157,7 +2943,7 @@ export const chains = [
     id: "crown-sterling",
     isTestnet: false,
     isDefault: true,
-    sortIndex: 143,
+    sortIndex: 140,
     genesisHash: "0xce24ecf534daea9cd46e425659ef4950a57dd29d07272b423220129c323a64b7",
     prefix: 0,
     name: "Crown Sterling",
@@ -3197,7 +2983,7 @@ export const chains = [
     id: "crust-parachain",
     isTestnet: false,
     isDefault: true,
-    sortIndex: 144,
+    sortIndex: 141,
     genesisHash: "0x4319cc49ee79495b57a1fec4d2bd43f59052dcc690276de566c2691d6df4f7b8",
     prefix: 88,
     name: "Crust",
@@ -3247,7 +3033,7 @@ export const chains = [
     id: "shadow-kusama",
     isTestnet: false,
     isDefault: true,
-    sortIndex: 145,
+    sortIndex: 142,
     genesisHash: "0xd4c0c08ca49dc7c680c3dac71a7c0703e5b222f4b6c03fe4c5219bb8f22c18dc",
     prefix: 66,
     name: "Crust Shadow",
@@ -3297,7 +3083,7 @@ export const chains = [
     id: "crust",
     isTestnet: false,
     isDefault: true,
-    sortIndex: 147,
+    sortIndex: 143,
     genesisHash: "0x8b404e7ed8789d813982b9cb4c8b664c05b3fbf433309f603af014ec9ce56a8c",
     prefix: 66,
     name: "Crust Standalone",
@@ -3323,7 +3109,7 @@ export const chains = [
     feeToken: null,
     rpcs: [
       {
-        url: "wss://crust.api.onfinality.io/public-ws",
+        url: "wss://crust-mainnet-rpc.dwellir.com",
       },
       {
         url: "wss://rpc.crust.network",
@@ -3348,7 +3134,7 @@ export const chains = [
     id: "ipci",
     isTestnet: false,
     isDefault: true,
-    sortIndex: 153,
+    sortIndex: 149,
     genesisHash: "0x6f0f071506de39058fe9a95bbca983ac0e9c5da3443909574e95d52eb078d348",
     prefix: 32,
     name: "DAO IPCI",
@@ -3390,7 +3176,7 @@ export const chains = [
     id: "darwinia",
     isTestnet: false,
     isDefault: true,
-    sortIndex: 154,
+    sortIndex: 150,
     genesisHash: "0xf0b8924b12e8108550d28870bc03f7b45a947e1b2b9abf81bfb0b89ecb60570e",
     prefix: 18,
     name: "Darwinia",
@@ -3399,7 +3185,7 @@ export const chains = [
     chainName: "Darwinia2",
     implName: "DarwiniaOfficialRust",
     specName: "Darwinia2",
-    specVersion: "6404",
+    specVersion: "6501",
     nativeToken: {
       id: "darwinia-substrate-native-ring",
     },
@@ -3416,13 +3202,13 @@ export const chains = [
     feeToken: null,
     rpcs: [
       {
+        url: "wss://darwinia-rpc.dwellir.com",
+      },
+      {
         url: "wss://rpc.darwinia.network",
       },
       {
         url: "wss://darwinia-rpc.darwiniacommunitydao.xyz",
-      },
-      {
-        url: "wss://darwinia-rpc.dwellir.com",
       },
     ],
     evmNetworks: [
@@ -3450,7 +3236,7 @@ export const chains = [
     id: "crab",
     isTestnet: false,
     isDefault: true,
-    sortIndex: 156,
+    sortIndex: 152,
     genesisHash: "0x86e49c195aeae7c5c4a86ced251f1a28c67b3c35d8289c387ede1776cdd88b24",
     prefix: 42,
     name: "Darwinia Crab",
@@ -3459,7 +3245,7 @@ export const chains = [
     chainName: "Crab2",
     implName: "DarwiniaOfficialRust",
     specName: "Crab2",
-    specVersion: "6404",
+    specVersion: "6510",
     nativeToken: {
       id: "crab-substrate-native-crab",
     },
@@ -3476,13 +3262,13 @@ export const chains = [
     feeToken: null,
     rpcs: [
       {
+        url: "wss://darwiniacrab-rpc.dwellir.com",
+      },
+      {
         url: "wss://crab-rpc.darwinia.network/",
       },
       {
         url: "wss://crab-rpc.darwiniacommunitydao.xyz",
-      },
-      {
-        url: "wss://darwiniacrab-rpc.dwellir.com",
       },
     ],
     evmNetworks: [],
@@ -3506,7 +3292,7 @@ export const chains = [
     id: "debio",
     isTestnet: false,
     isDefault: true,
-    sortIndex: 160,
+    sortIndex: 156,
     genesisHash: "0x996800af345b3109acdada9913e36d1efa98b89e7dcd0b61b70fdbfc13b2fa50",
     prefix: 42,
     name: "DeBio",
@@ -3546,7 +3332,7 @@ export const chains = [
     id: "dock-pos-mainnet",
     isTestnet: false,
     isDefault: true,
-    sortIndex: 168,
+    sortIndex: 166,
     genesisHash: "0x6bfe24dca2a3be10f22212678ac13a6446ec764103c0f3471c71609eac384aae",
     prefix: 22,
     name: "Dock",
@@ -3591,55 +3377,10 @@ export const chains = [
     balancesMetadata: [],
   },
   {
-    id: "dora-factory",
-    isTestnet: false,
-    isDefault: false,
-    sortIndex: 172,
-    genesisHash: null,
-    prefix: null,
-    name: "Dora Factory",
-    themeColor: "#505050",
-    logo: "https://raw.githubusercontent.com/TalismanSociety/chaindata/main/assets/chains/unknown.svg",
-    chainName: null,
-    implName: null,
-    specName: null,
-    specVersion: null,
-    nativeToken: null,
-    tokens: [],
-    account: "*25519",
-    subscanUrl: null,
-    chainspecQrUrl: "https://metadata.novasama.io/qr/dora%20ksm%20parachain_metadata_latest.apng",
-    latestMetadataQrUrl:
-      "https://metadata.novasama.io/qr/dora%20ksm%20parachain_metadata_latest.apng",
-    isUnknownFeeToken: false,
-    feeToken: null,
-    rpcs: [
-      {
-        url: "wss://kusama.dorafactory.org",
-      },
-    ],
-    evmNetworks: [],
-    parathreads: null,
-    paraId: 2115,
-    relay: {
-      id: "kusama",
-    },
-    balancesConfig: [
-      {
-        moduleType: "substrate-native",
-        moduleConfig: {
-          coingeckoId: "dora-factory",
-          logo: "https://raw.githubusercontent.com/TalismanSociety/chaindata/main/assets/tokens/coingecko/dora-factory.webp",
-        },
-      },
-    ],
-    balancesMetadata: [],
-  },
-  {
     id: "edgeware",
     isTestnet: false,
     isDefault: true,
-    sortIndex: 185,
+    sortIndex: 183,
     genesisHash: "0x742a2ca70c2fda6cee4f8df98d64c4c670a052d9568058982dad9d5a7a135c5b",
     prefix: 7,
     name: "Edgeware",
@@ -3664,9 +3405,6 @@ export const chains = [
     isUnknownFeeToken: false,
     feeToken: null,
     rpcs: [
-      {
-        url: "wss://edgeware.api.onfinality.io/public-ws",
-      },
       {
         url: "wss://mainnet2.edgewa.re",
       },
@@ -3697,7 +3435,7 @@ export const chains = [
     id: "encointer",
     isTestnet: false,
     isDefault: true,
-    sortIndex: 197,
+    sortIndex: 193,
     genesisHash: "0x7dd99936c1e9e6d1ce7d90eb6f33bea8393b4bf87677d675aa63c9cb3e8c5b5b",
     prefix: 2,
     name: "Encointer",
@@ -3731,6 +3469,9 @@ export const chains = [
       {
         url: "wss://kusama.api.encointer.org",
       },
+      {
+        url: "wss://ksm-rpc.stakeworld.io/encointer",
+      },
     ],
     evmNetworks: [],
     parathreads: null,
@@ -3753,7 +3494,7 @@ export const chains = [
     id: "enjin-matrixchain",
     isTestnet: false,
     isDefault: true,
-    sortIndex: 201,
+    sortIndex: 197,
     genesisHash: "0x3af4ff48ec76d2efc8476730f423ac07e25ad48f5f4c9dc39c778b164d808615",
     prefix: 1110,
     name: "Enjin Matrixchain",
@@ -3762,7 +3503,7 @@ export const chains = [
     chainName: "Enjin Matrixchain",
     implName: "matrix-enjin",
     specName: "matrix-enjin",
-    specVersion: "605",
+    specVersion: "1002",
     nativeToken: {
       id: "enjin-matrixchain-substrate-native-enj",
     },
@@ -3798,7 +3539,7 @@ export const chains = [
     id: "enjin-relay",
     isTestnet: false,
     isDefault: true,
-    sortIndex: 202,
+    sortIndex: 198,
     genesisHash: "0xd8761d3c88f26dc12875c00d3165f7d67243d56fc85b4cf19937601a7916e5a9",
     prefix: 2135,
     name: "Enjin Relaychain",
@@ -3807,7 +3548,7 @@ export const chains = [
     chainName: "Enjin Relaychain",
     implName: "enjin",
     specName: "enjin",
-    specVersion: "120",
+    specVersion: "1021",
     nativeToken: {
       id: "enjin-relay-substrate-native-enj",
     },
@@ -3849,7 +3590,7 @@ export const chains = [
     id: "equilibrium-polkadot",
     isTestnet: false,
     isDefault: true,
-    sortIndex: 207,
+    sortIndex: 203,
     genesisHash: "0x89d3ec46d2fb43ef5a9713833373d5ea666b092fa8fd68fbc34596036571b907",
     prefix: 68,
     name: "Equilibrium",
@@ -3970,9 +3711,6 @@ export const chains = [
       {
         url: "wss://equilibrium-rpc.dwellir.com",
       },
-      {
-        url: "wss://node.pol.equilibrium.io/",
-      },
     ],
     evmNetworks: [],
     parathreads: null,
@@ -4064,7 +3802,7 @@ export const chains = [
     id: "fragnova",
     isTestnet: false,
     isDefault: true,
-    sortIndex: 238,
+    sortIndex: 234,
     genesisHash: "0x3219b65b821c54e1dc6518a8444568da0b98267170d67c2f698aec40bf8e65c7",
     prefix: 93,
     name: "Fragnova",
@@ -4104,7 +3842,7 @@ export const chains = [
     id: "frequency",
     isTestnet: false,
     isDefault: true,
-    sortIndex: 240,
+    sortIndex: 236,
     genesisHash: "0x4a587bf17a404e3572747add7aab7bbe56e805a5479c6c436f07f36fcc8d3ae1",
     prefix: 90,
     name: "Frequency",
@@ -4152,7 +3890,7 @@ export const chains = [
     id: "geminis",
     isTestnet: false,
     isDefault: true,
-    sortIndex: 252,
+    sortIndex: 248,
     genesisHash: null,
     prefix: null,
     name: "Geminis",
@@ -4188,7 +3926,7 @@ export const chains = [
     id: "genshiro-kusama",
     isTestnet: false,
     isDefault: true,
-    sortIndex: 257,
+    sortIndex: 254,
     genesisHash: "0x9de765698374eb576968c8a764168893fb277e65ad3ddafcfe2c49593fc6d663",
     prefix: 67,
     name: "Genshiro",
@@ -4294,52 +4032,10 @@ export const chains = [
     balancesMetadata: [],
   },
   {
-    id: "genshiro-kusama-2",
-    isTestnet: false,
-    isDefault: true,
-    sortIndex: 258,
-    genesisHash: "0x9de765698374eb576968c8a764168893fb277e65ad3ddafcfe2c49593fc6d663",
-    prefix: 67,
-    name: "Genshiro",
-    themeColor: "#505050",
-    logo: "https://raw.githubusercontent.com/TalismanSociety/chaindata/main/assets/chains/unknown.svg",
-    chainName: "Genshiro",
-    implName: "Gens-parachain",
-    specName: "Gens-parachain",
-    specVersion: "21",
-    nativeToken: {
-      id: "genshiro-kusama-2-substrate-native-unknown",
-    },
-    tokens: [
-      {
-        id: "genshiro-kusama-2-substrate-native-unknown",
-      },
-    ],
-    account: "*25519",
-    subscanUrl: null,
-    chainspecQrUrl: null,
-    latestMetadataQrUrl: null,
-    isUnknownFeeToken: false,
-    feeToken: null,
-    rpcs: [
-      {
-        url: "wss://node.genshiro.io",
-      },
-    ],
-    evmNetworks: [],
-    parathreads: null,
-    paraId: 2226,
-    relay: {
-      id: "kusama",
-    },
-    balancesConfig: [],
-    balancesMetadata: [],
-  },
-  {
     id: "hashed",
     isTestnet: false,
     isDefault: true,
-    sortIndex: 281,
+    sortIndex: 276,
     genesisHash: "0xdce5477cfca571c2cb652f38bbb70429004be3cf9649dd2b4ad9455b2251fe43",
     prefix: 42,
     name: "Hashed",
@@ -4348,7 +4044,7 @@ export const chains = [
     chainName: "Hashed Network",
     implName: "luhn",
     specName: "luhn",
-    specVersion: "2",
+    specVersion: "3",
     nativeToken: {
       id: "hashed-substrate-native-hash",
     },
@@ -4365,7 +4061,13 @@ export const chains = [
     feeToken: null,
     rpcs: [
       {
+        url: "wss://c1.hashed.live",
+      },
+      {
         url: "wss://c2.hashed.network",
+      },
+      {
+        url: "wss://c3.hashed.live",
       },
     ],
     evmNetworks: [],
@@ -4381,7 +4083,7 @@ export const chains = [
     id: "humanode",
     isTestnet: false,
     isDefault: true,
-    sortIndex: 289,
+    sortIndex: 284,
     genesisHash: "0xc56fa32442b2dad76f214b3ae07998e4ca09736e4813724bfb0717caae2c8bee",
     prefix: 5234,
     name: "Humanode",
@@ -4421,7 +4123,7 @@ export const chains = [
     id: "hydradx",
     isTestnet: false,
     isDefault: true,
-    sortIndex: 293,
+    sortIndex: 288,
     genesisHash: "0xafdc188f45c71dacbaa0b62e16a91f726c7b8699a9748cdf715459de6b7f366d",
     prefix: 63,
     name: "HydraDX",
@@ -4430,7 +4132,7 @@ export const chains = [
     chainName: "HydraDX",
     implName: "hydradx",
     specName: "hydradx",
-    specVersion: "185",
+    specVersion: "193",
     nativeToken: {
       id: "hydradx-substrate-native-hdx",
     },
@@ -4496,9 +4198,6 @@ export const chains = [
       },
       {
         url: "wss://rpc.hydradx.cloud",
-      },
-      {
-        url: "wss://rpc-lb.data6.zp-labs.net:8443/hydradx/ws/?token=2ZGuGivPJJAxXiT1hR1Yg2MXGjMrhEBYFjgbdPi",
       },
     ],
     evmNetworks: [],
@@ -4648,7 +4347,7 @@ export const chains = [
     id: "imbue",
     isTestnet: false,
     isDefault: true,
-    sortIndex: 298,
+    sortIndex: 294,
     genesisHash: "0xca93a37c913a25fa8fdb33c7f738afc39379cb71d37874a16d4c091a5aef9f89",
     prefix: 42,
     name: "Imbue",
@@ -4657,7 +4356,7 @@ export const chains = [
     chainName: "imbue kusama",
     implName: "imbue",
     specName: "imbue",
-    specVersion: "9435",
+    specVersion: "1000001",
     nativeToken: {
       id: "imbue-substrate-native-imbu",
     },
@@ -4698,7 +4397,7 @@ export const chains = [
     id: "integritee-kusama",
     isTestnet: false,
     isDefault: true,
-    sortIndex: 301,
+    sortIndex: 297,
     genesisHash: "0xcdedc8eadbfa209d3f207bba541e57c3c58a667b05a2e1d1e86353c9000758da",
     prefix: 13,
     name: "Integritee",
@@ -4746,63 +4445,10 @@ export const chains = [
     balancesMetadata: [],
   },
   {
-    id: "integritee-polkadot",
-    isTestnet: false,
-    isDefault: true,
-    sortIndex: 302,
-    genesisHash: "0xe13e7af377c64e83f95e0d70d5e5c3c01d697a84538776c5b9bbe0e7d7b6034c",
-    prefix: 13,
-    name: "Integritee Shell",
-    themeColor: "#777aac",
-    logo: "https://raw.githubusercontent.com/TalismanSociety/chaindata/main/assets/chains/integritee-polkadot.svg",
-    chainName: "Integritee Shell",
-    implName: "integritee-shell",
-    specName: "integritee-parachain",
-    specVersion: "4",
-    nativeToken: {
-      id: "integritee-polkadot-substrate-native-teer",
-    },
-    tokens: [
-      {
-        id: "integritee-polkadot-substrate-native-teer",
-      },
-    ],
-    account: "*25519",
-    subscanUrl: null,
-    chainspecQrUrl: null,
-    latestMetadataQrUrl: null,
-    isUnknownFeeToken: false,
-    feeToken: null,
-    rpcs: [
-      {
-        url: "wss://integritee-rpc.dwellir.com",
-      },
-      {
-        url: "wss://polkadot.api.integritee.network",
-      },
-    ],
-    evmNetworks: [],
-    parathreads: null,
-    paraId: 2039,
-    relay: {
-      id: "polkadot",
-    },
-    balancesConfig: [
-      {
-        moduleType: "substrate-native",
-        moduleConfig: {
-          coingeckoId: "integritee",
-          logo: "https://raw.githubusercontent.com/TalismanSociety/chaindata/main/assets/chains/integritee-polkadot.svg",
-        },
-      },
-    ],
-    balancesMetadata: [],
-  },
-  {
     id: "interlay",
     isTestnet: false,
     isDefault: true,
-    sortIndex: 303,
+    sortIndex: 298,
     genesisHash: "0xbf88efe70e9e0e916416e8bed61f2b45717f517d7f3523e33c7b001e5ffcbc72",
     prefix: 2032,
     name: "Interlay",
@@ -4874,6 +4520,9 @@ export const chains = [
       },
       {
         url: "wss://api.interlay.io/parachain",
+      },
+      {
+        url: "wss://rpc-interlay.luckyfriday.io/",
       },
     ],
     evmNetworks: [],
@@ -5007,10 +4656,52 @@ export const chains = [
     balancesMetadata: [],
   },
   {
+    id: "invarch",
+    isTestnet: false,
+    isDefault: true,
+    sortIndex: 299,
+    genesisHash: "0x31a7d8914fb31c249b972f18c115f1e22b4b039abbcb03c73b6774c5642f9efe",
+    prefix: 42,
+    name: "InvArch",
+    themeColor: "#30bcd0",
+    logo: "https://raw.githubusercontent.com/TalismanSociety/chaindata/main/assets/chains/invarch.svg",
+    chainName: "InvArch Network",
+    implName: "invarch",
+    specName: "invarch",
+    specVersion: "3",
+    nativeToken: {
+      id: "invarch-substrate-native-varch",
+    },
+    tokens: [
+      {
+        id: "invarch-substrate-native-varch",
+      },
+    ],
+    account: "*25519",
+    subscanUrl: null,
+    chainspecQrUrl: null,
+    latestMetadataQrUrl: null,
+    isUnknownFeeToken: false,
+    feeToken: null,
+    rpcs: [
+      {
+        url: "wss://invarch-rpc.dwellir.com",
+      },
+    ],
+    evmNetworks: [],
+    parathreads: null,
+    paraId: 3340,
+    relay: {
+      id: "polkadot",
+    },
+    balancesConfig: [],
+    balancesMetadata: [],
+  },
+  {
     id: "tinker",
     isTestnet: false,
     isDefault: true,
-    sortIndex: 305,
+    sortIndex: 300,
     genesisHash: "0xd42e9606a995dfe433dc7955dc2a70f495f350f373daa200098ae84437816ad2",
     prefix: 117,
     name: "InvArch Tinkernet",
@@ -5019,7 +4710,7 @@ export const chains = [
     chainName: "InvArch Tinker Network",
     implName: "tinkernet_node",
     specName: "tinkernet_node",
-    specVersion: "19",
+    specVersion: "20",
     nativeToken: {
       id: "tinker-substrate-native-tnkr",
     },
@@ -5052,7 +4743,7 @@ export const chains = [
     id: "joystream",
     isTestnet: false,
     isDefault: true,
-    sortIndex: 318,
+    sortIndex: 313,
     genesisHash: "0x6b5e488e0fa8f9821110d5c13f4c468abcd43ce5e297e62b34c53c3346465956",
     prefix: 126,
     name: "Joystream",
@@ -5100,7 +4791,7 @@ export const chains = [
     id: "jur",
     isTestnet: false,
     isDefault: true,
-    sortIndex: 320,
+    sortIndex: 315,
     genesisHash: "0x58d1393b47b11707978fbc07e77d7b6f7d9aa88d207dc008a52385f7dba6156a",
     prefix: 42,
     name: "Jur",
@@ -5143,7 +4834,7 @@ export const chains = [
     id: "kabocha",
     isTestnet: false,
     isDefault: true,
-    sortIndex: 321,
+    sortIndex: 317,
     genesisHash: "0xfeb426ca713f0f46c96465b8f039890370cf6bfd687c9076ea2843f58a6ae8a7",
     prefix: 27,
     name: "Kabocha",
@@ -5185,7 +4876,7 @@ export const chains = [
     id: "kapex",
     isTestnet: false,
     isDefault: true,
-    sortIndex: 324,
+    sortIndex: 321,
     genesisHash: "0x7838c3c774e887c0a53bcba9e64f702361a1a852d5550b86b58cd73827fa1e1e",
     prefix: 2007,
     name: "Kapex",
@@ -5213,9 +4904,6 @@ export const chains = [
       {
         url: "wss://kapex-rpc.dwellir.com",
       },
-      {
-        url: "wss://k-ui.kapex.network",
-      },
     ],
     evmNetworks: [],
     parathreads: null,
@@ -5230,7 +4918,7 @@ export const chains = [
     id: "karura",
     isTestnet: false,
     isDefault: true,
-    sortIndex: 326,
+    sortIndex: 323,
     genesisHash: "0xbaf5aabe40646d11f0ee8abbdc64f4a4b7674925cba08e4a05ff9ebed6e2126b",
     prefix: 8,
     name: "Karura",
@@ -5415,9 +5103,6 @@ export const chains = [
     feeToken: null,
     rpcs: [
       {
-        url: "wss://karura.api.onfinality.io/public-ws",
-      },
-      {
         url: "wss://karura-rpc-0.aca-api.network",
       },
       {
@@ -5428,9 +5113,6 @@ export const chains = [
       },
       {
         url: "wss://karura-rpc-3.aca-api.network/ws",
-      },
-      {
-        url: "wss://karura-rpc.dwellir.com",
       },
     ],
     evmNetworks: [],
@@ -5853,7 +5535,7 @@ export const chains = [
     id: "khala",
     isTestnet: false,
     isDefault: true,
-    sortIndex: 331,
+    sortIndex: 328,
     genesisHash: "0xd43540ba6d3eb4897c28a77d48cb5b729fea37603cbbfc7a86a73b72adb3be8d",
     prefix: 30,
     name: "Khala",
@@ -5862,7 +5544,7 @@ export const chains = [
     chainName: "Khala",
     implName: "khala",
     specName: "khala",
-    specVersion: "1255",
+    specVersion: "1261",
     nativeToken: {
       id: "khala-substrate-native-pha",
     },
@@ -5878,9 +5560,6 @@ export const chains = [
     isUnknownFeeToken: false,
     feeToken: null,
     rpcs: [
-      {
-        url: "wss://khala.api.onfinality.io/public-ws",
-      },
       {
         url: "wss://khala-rpc.dwellir.com",
       },
@@ -5909,7 +5588,7 @@ export const chains = [
     id: "kilt-spiritnet",
     isTestnet: false,
     isDefault: true,
-    sortIndex: 334,
+    sortIndex: 329,
     genesisHash: "0x411f057b9107718c9624d6aa4a3f23c1653898297f3d4d529d9bb6511a39dd21",
     prefix: 38,
     name: "KILT Spiritnet",
@@ -5934,9 +5613,6 @@ export const chains = [
     isUnknownFeeToken: false,
     feeToken: null,
     rpcs: [
-      {
-        url: "wss://spiritnet.api.onfinality.io/public-ws",
-      },
       {
         url: "wss://kilt-rpc.dwellir.com",
       },
@@ -5965,7 +5641,7 @@ export const chains = [
     id: "kintsugi",
     isTestnet: false,
     isDefault: true,
-    sortIndex: 335,
+    sortIndex: 330,
     genesisHash: "0x9af9a64e6e4da8e3073901c3ff0cc4c3aad9563786d89daf6ad820b6e14a0b8b",
     prefix: 2092,
     name: "Kintsugi",
@@ -6036,7 +5712,7 @@ export const chains = [
     feeToken: "kintsugi-substrate-tokens-kint",
     rpcs: [
       {
-        url: "wss://kintsugi.api.onfinality.io/public-ws",
+        url: "wss://kintsugi-rpc.dwellir.com",
       },
       {
         url: "wss://api-kusama.interlay.io/parachain",
@@ -6184,7 +5860,7 @@ export const chains = [
     id: "kpron",
     isTestnet: false,
     isDefault: true,
-    sortIndex: 340,
+    sortIndex: 335,
     genesisHash: null,
     prefix: null,
     name: "Kpron",
@@ -6217,10 +5893,46 @@ export const chains = [
     balancesMetadata: [],
   },
   {
+    id: "kreivo",
+    isTestnet: false,
+    isDefault: true,
+    sortIndex: 336,
+    genesisHash: null,
+    prefix: null,
+    name: "Kreivo",
+    themeColor: "#505050",
+    logo: "https://raw.githubusercontent.com/TalismanSociety/chaindata/main/assets/chains/unknown.svg",
+    chainName: null,
+    implName: null,
+    specName: null,
+    specVersion: null,
+    nativeToken: null,
+    tokens: [],
+    account: "*25519",
+    subscanUrl: null,
+    chainspecQrUrl: null,
+    latestMetadataQrUrl: null,
+    isUnknownFeeToken: false,
+    feeToken: null,
+    rpcs: [
+      {
+        url: "wss://kreivo.io/",
+      },
+    ],
+    evmNetworks: [],
+    parathreads: null,
+    paraId: 2281,
+    relay: {
+      id: "kusama",
+    },
+    balancesConfig: [],
+    balancesMetadata: [],
+  },
+  {
     id: "krest",
     isTestnet: false,
     isDefault: true,
-    sortIndex: 341,
+    sortIndex: 337,
     genesisHash: "0xb3dd5ad6a82872b30aabaede8f41dfd4ff6c32ff82f8757d034a45be63cf104c",
     prefix: 42,
     name: "Krest",
@@ -6270,7 +5982,7 @@ export const chains = [
     id: "kulupu",
     isTestnet: false,
     isDefault: true,
-    sortIndex: 345,
+    sortIndex: 341,
     genesisHash: "0xf7a99d3cb92853d00d5275c971c132c074636256583fee53b3bbe60d7b8769ba",
     prefix: 16,
     name: "Kulupu",
@@ -6310,7 +6022,7 @@ export const chains = [
     id: "kusama-asset-hub",
     isTestnet: false,
     isDefault: true,
-    sortIndex: 346,
+    sortIndex: 342,
     genesisHash: "0x48239ef607d7928874027a43a67689209727dfb3d3dc5e5b03a39bdc2eda771a",
     prefix: 2,
     name: "Kusama Asset Hub",
@@ -6345,22 +6057,19 @@ export const chains = [
     feeToken: null,
     rpcs: [
       {
-        url: "wss://sys.ibp.network/statemine",
-      },
-      {
-        url: "wss://sys.dotters.network/statemine",
-      },
-      {
-        url: "wss://statemine.api.onfinality.io/public-ws",
-      },
-      {
         url: "wss://statemine-rpc.dwellir.com",
       },
       {
         url: "wss://statemine-rpc-tn.dwellir.com",
       },
       {
-        url: "wss://rpc-statemine.luckyfriday.io",
+        url: "wss://sys.ibp.network/statemine",
+      },
+      {
+        url: "wss://sys.dotters.network/statemine",
+      },
+      {
+        url: "wss://rpc-asset-hub-kusama.luckyfriday.io",
       },
       {
         url: "wss://kusama-asset-hub-rpc.polkadot.io",
@@ -6369,7 +6078,7 @@ export const chains = [
         url: "wss://statemine.public.curie.radiumblock.co/ws",
       },
       {
-        url: "wss://ksm-rpc.stakeworld.io/statemine",
+        url: "wss://ksm-rpc.stakeworld.io/assethub",
       },
     ],
     evmNetworks: [],
@@ -6417,7 +6126,7 @@ export const chains = [
     id: "kusama-bridge-hub",
     isTestnet: false,
     isDefault: true,
-    sortIndex: 347,
+    sortIndex: 343,
     genesisHash: "0x00dcb981df86429de8bbacf9803401f09485366c44efbf53af9ecfab03adc7e5",
     prefix: 2,
     name: "Kusama Bridge Hub",
@@ -6443,6 +6152,12 @@ export const chains = [
     feeToken: null,
     rpcs: [
       {
+        url: "wss://kusama-bridge-hub-rpc.dwellir.com",
+      },
+      {
+        url: "wss://kusama-bridge-hub-rpc-tn.dwellir.com",
+      },
+      {
         url: "wss://sys.ibp.network/bridgehub-kusama",
       },
       {
@@ -6465,80 +6180,10 @@ export const chains = [
     balancesMetadata: [],
   },
   {
-    id: "kusari",
-    isTestnet: false,
-    isDefault: true,
-    sortIndex: 348,
-    genesisHash: null,
-    prefix: null,
-    name: "Kusari",
-    themeColor: "#505050",
-    logo: "https://raw.githubusercontent.com/TalismanSociety/chaindata/main/assets/chains/unknown.svg",
-    chainName: null,
-    implName: null,
-    specName: null,
-    specVersion: null,
-    nativeToken: null,
-    tokens: [],
-    account: "*25519",
-    subscanUrl: null,
-    chainspecQrUrl: null,
-    latestMetadataQrUrl: null,
-    isUnknownFeeToken: false,
-    feeToken: null,
-    rpcs: [
-      {
-        url: "wss://ws.kusari.network",
-      },
-    ],
-    evmNetworks: [],
-    parathreads: null,
-    paraId: null,
-    relay: null,
-    balancesConfig: [],
-    balancesMetadata: [],
-  },
-  {
-    id: "kylin",
-    isTestnet: false,
-    isDefault: false,
-    sortIndex: 349,
-    genesisHash: null,
-    prefix: null,
-    name: "Kylin",
-    themeColor: "#505050",
-    logo: "https://raw.githubusercontent.com/TalismanSociety/chaindata/main/assets/chains/unknown.svg",
-    chainName: null,
-    implName: null,
-    specName: null,
-    specVersion: null,
-    nativeToken: null,
-    tokens: [],
-    account: "*25519",
-    subscanUrl: null,
-    chainspecQrUrl: "https://metadata.novasama.io/qr/kylin_specs.png",
-    latestMetadataQrUrl: "https://metadata.novasama.io/qr/kylin_metadata_latest.apng",
-    isUnknownFeeToken: false,
-    feeToken: null,
-    rpcs: [
-      {
-        url: "wss://polkadot.kylin-node.co.uk",
-      },
-    ],
-    evmNetworks: [],
-    parathreads: null,
-    paraId: 2052,
-    relay: {
-      id: "polkadot",
-    },
-    balancesConfig: [],
-    balancesMetadata: [],
-  },
-  {
     id: "litentry",
     isTestnet: false,
     isDefault: true,
-    sortIndex: 358,
+    sortIndex: 351,
     genesisHash: "0x2fc8bb6ed7c0051bdcf4866c322ed32b6276572713607e3297ccf411b8f14aa9",
     prefix: 31,
     name: "Litentry",
@@ -6547,7 +6192,7 @@ export const chains = [
     chainName: "Litentry",
     implName: "litentry-parachain",
     specName: "litentry-parachain",
-    specVersion: "9168",
+    specVersion: "9170",
     nativeToken: {
       id: "litentry-substrate-native-lit",
     },
@@ -6591,7 +6236,7 @@ export const chains = [
     id: "litmus",
     isTestnet: false,
     isDefault: true,
-    sortIndex: 359,
+    sortIndex: 352,
     genesisHash: "0xda5831fbc8570e3c6336d0d72b8c08f8738beefec812df21ef2afc2982ede09c",
     prefix: 131,
     name: "Litmus",
@@ -6630,25 +6275,25 @@ export const chains = [
     balancesMetadata: [],
   },
   {
-    id: "logion",
+    id: "logion-standalone",
     isTestnet: false,
     isDefault: true,
-    sortIndex: 362,
+    sortIndex: 355,
     genesisHash: "0xe9d7420a5f73edef005ccb8e043500aa5b2458f173912184ea93c14dc035a203",
     prefix: 42,
-    name: "Logion",
+    name: "Logion Standalone",
     themeColor: "#505050",
     logo: "https://raw.githubusercontent.com/TalismanSociety/chaindata/main/assets/chains/unknown.svg",
     chainName: "logion MVP",
     implName: "logion",
     specName: "logion",
-    specVersion: "157",
+    specVersion: "159",
     nativeToken: {
-      id: "logion-substrate-native-lgnt",
+      id: "logion-standalone-substrate-native-lgnt",
     },
     tokens: [
       {
-        id: "logion-substrate-native-lgnt",
+        id: "logion-standalone-substrate-native-lgnt",
       },
     ],
     account: "*25519",
@@ -6673,7 +6318,7 @@ export const chains = [
     id: "mangata",
     isTestnet: false,
     isDefault: true,
-    sortIndex: 370,
+    sortIndex: 363,
     genesisHash: "0xd611f22d291c5b7b69f1e105cca03352984c344c4421977efaa4cbdd1834e2aa",
     prefix: 42,
     name: "MangataX",
@@ -6737,7 +6382,7 @@ export const chains = [
     id: "manta",
     isTestnet: false,
     isDefault: true,
-    sortIndex: 371,
+    sortIndex: 364,
     genesisHash: "0xf3c7ad88f6a80f366c4be216691411ef0622e8b809b1046ea297ef106058d4eb",
     prefix: 77,
     name: "Manta",
@@ -6779,7 +6424,7 @@ export const chains = [
     id: "moonbeam",
     isTestnet: false,
     isDefault: true,
-    sortIndex: 403,
+    sortIndex: 394,
     genesisHash: "0xfe58ea77779b7abda7da4ec526d14db9b1e9cd40a217c34892af80a9b332b76d",
     prefix: 1284,
     name: "Moonbeam",
@@ -6788,7 +6433,7 @@ export const chains = [
     chainName: "Moonbeam",
     implName: "moonbeam",
     specName: "moonbeam",
-    specVersion: "2501",
+    specVersion: "2602",
     nativeToken: {
       id: "moonbeam-substrate-native-glmr",
     },
@@ -6805,19 +6450,16 @@ export const chains = [
     feeToken: null,
     rpcs: [
       {
-        url: "wss://1rpc.io/glmr",
+        url: "wss://moonbeam-rpc.dwellir.com",
       },
       {
-        url: "wss://moonbeam-rpc.dwellir.com",
+        url: "wss://1rpc.io/glmr",
       },
       {
         url: "wss://wss.api.moonbeam.network",
       },
       {
         url: "wss://moonbeam.unitedbloc.com",
-      },
-      {
-        url: "wss://moonbeam.api.onfinality.io/public-ws",
       },
     ],
     evmNetworks: [
@@ -6845,7 +6487,7 @@ export const chains = [
     id: "moonriver",
     isTestnet: false,
     isDefault: true,
-    sortIndex: 405,
+    sortIndex: 396,
     genesisHash: "0x401a1f9dca3da46f5c4091016c8a2f26dcea05865116b286f60f668207d1474b",
     prefix: 1285,
     name: "Moonriver",
@@ -6854,7 +6496,7 @@ export const chains = [
     chainName: "Moonriver",
     implName: "moonriver",
     specName: "moonriver",
-    specVersion: "2501",
+    specVersion: "2602",
     nativeToken: {
       id: "moonriver-substrate-native-movr",
     },
@@ -6879,9 +6521,6 @@ export const chains = [
       {
         url: "wss://moonriver.unitedbloc.com",
       },
-      {
-        url: "wss://moonriver.api.onfinality.io/public-ws",
-      },
     ],
     evmNetworks: [
       {
@@ -6905,10 +6544,52 @@ export const chains = [
     balancesMetadata: [],
   },
   {
+    id: "moonsama",
+    isTestnet: false,
+    isDefault: true,
+    sortIndex: 399,
+    genesisHash: "0x6bf8b9c3871e47f086d01db2022369b19eef313f188d895c6dfe005ad22d5e49",
+    prefix: 2199,
+    name: "Moonsama",
+    themeColor: "#7515ff",
+    logo: "https://raw.githubusercontent.com/TalismanSociety/chaindata/main/assets/chains/moonsama.svg",
+    chainName: "Moonsama Network",
+    implName: "moonsama",
+    specName: "moonsama",
+    specVersion: "8",
+    nativeToken: {
+      id: "moonsama-substrate-native-sama",
+    },
+    tokens: [
+      {
+        id: "moonsama-substrate-native-sama",
+      },
+    ],
+    account: "*25519",
+    subscanUrl: null,
+    chainspecQrUrl: null,
+    latestMetadataQrUrl: null,
+    isUnknownFeeToken: false,
+    feeToken: null,
+    rpcs: [
+      {
+        url: "wss://rpc.moonsama.com/ws",
+      },
+    ],
+    evmNetworks: [],
+    parathreads: null,
+    paraId: 3334,
+    relay: {
+      id: "polkadot",
+    },
+    balancesConfig: [],
+    balancesMetadata: [],
+  },
+  {
     id: "myriad",
     isTestnet: false,
     isDefault: true,
-    sortIndex: 412,
+    sortIndex: 404,
     genesisHash: "0x74ed91fbc18497f011290f9119a2217908649170337b6414a2d44923ade07063",
     prefix: 42,
     name: "Myriad",
@@ -6956,7 +6637,7 @@ export const chains = [
     id: "neatcoin",
     isTestnet: false,
     isDefault: true,
-    sortIndex: 417,
+    sortIndex: 409,
     genesisHash: "0xfbb541421d30423c9a753ffa844b64fd44d823f513bf49e3b73b3a656309a595",
     prefix: 48,
     name: "Neatcoin",
@@ -6996,7 +6677,7 @@ export const chains = [
     id: "nftmart",
     isTestnet: false,
     isDefault: true,
-    sortIndex: 424,
+    sortIndex: 415,
     genesisHash: "0xfcf9074303d8f319ad1bf0195b145871977e7c375883b834247cb01ff22f51f9",
     prefix: 12191,
     name: "NFTMart",
@@ -7044,7 +6725,7 @@ export const chains = [
     id: "nodle-polkadot",
     isTestnet: false,
     isDefault: true,
-    sortIndex: 425,
+    sortIndex: 416,
     genesisHash: "0x97da7ede98d7bad4e36b4d734b6055425a3be036da2a332ea5a7037656427a21",
     prefix: 37,
     name: "Nodle",
@@ -7069,9 +6750,6 @@ export const chains = [
     isUnknownFeeToken: false,
     feeToken: null,
     rpcs: [
-      {
-        url: "wss://nodle-parachain.api.onfinality.io/public-ws",
-      },
       {
         url: "wss://eden-rpc.dwellir.com",
       },
@@ -7098,7 +6776,7 @@ export const chains = [
     id: "oak",
     isTestnet: false,
     isDefault: true,
-    sortIndex: 430,
+    sortIndex: 421,
     genesisHash: null,
     prefix: null,
     name: "Oak",
@@ -7134,7 +6812,7 @@ export const chains = [
     id: "omnibtc",
     isTestnet: false,
     isDefault: true,
-    sortIndex: 439,
+    sortIndex: 430,
     genesisHash: null,
     prefix: null,
     name: "OmniBTC",
@@ -7170,7 +6848,7 @@ export const chains = [
     id: "origintrail-parachain",
     isTestnet: false,
     isDefault: true,
-    sortIndex: 452,
+    sortIndex: 444,
     genesisHash: "0xe7e0962324a3b86c83404dbea483f25fb5dab4c224791c81b756cfc948006174",
     prefix: 101,
     name: "OriginTrail",
@@ -7197,6 +6875,9 @@ export const chains = [
     feeToken: null,
     rpcs: [
       {
+        url: "wss://origintrail-rpc.dwellir.com",
+      },
+      {
         url: "wss://parachain-rpc.origin-trail.network",
       },
     ],
@@ -7213,7 +6894,7 @@ export const chains = [
     id: "parallel",
     isTestnet: false,
     isDefault: true,
-    sortIndex: 459,
+    sortIndex: 451,
     genesisHash: "0xe61a41c53f5dcd0beb09df93b34402aada44cb05117b71059cce40a2723a4e97",
     prefix: 172,
     name: "Parallel",
@@ -7222,7 +6903,7 @@ export const chains = [
     chainName: "Parallel",
     implName: "parallel",
     specName: "parallel",
-    specVersion: "201",
+    specVersion: "202",
     nativeToken: {
       id: "parallel-substrate-native-para",
     },
@@ -7239,6 +6920,9 @@ export const chains = [
     feeToken: null,
     rpcs: [
       {
+        url: "wss://parallel-rpc.dwellir.com",
+      },
+      {
         url: "wss://rpc.parallel.fi",
       },
     ],
@@ -7248,14 +6932,30 @@ export const chains = [
     relay: {
       id: "polkadot",
     },
-    balancesConfig: [],
+    balancesConfig: [
+      {
+        moduleType: "substrate-tokens",
+        moduleConfig: {
+          tokens: [
+            {
+              symbol: "USDT",
+              decimals: 6,
+              ed: "0",
+              onChainId: 102,
+              coingeckoId: "tether",
+              logo: "https://raw.githubusercontent.com/TalismanSociety/chaindata/main/assets/tokens/usdt.svg",
+            },
+          ],
+        },
+      },
+    ],
     balancesMetadata: [],
   },
   {
     id: "heiko-kusama",
     isTestnet: false,
     isDefault: true,
-    sortIndex: 460,
+    sortIndex: 452,
     genesisHash: "0x64a1c658a48b2e70a7fb1ad4c39eea35022568c20fc44a6e2e3d0a57aee6053b",
     prefix: 110,
     name: "Parallel Heiko",
@@ -7264,7 +6964,7 @@ export const chains = [
     chainName: "Parallel Heiko",
     implName: "heiko",
     specName: "heiko",
-    specVersion: "202",
+    specVersion: "203",
     nativeToken: {
       id: "heiko-kusama-substrate-native-hko",
     },
@@ -7297,7 +6997,7 @@ export const chains = [
     id: "pendulum",
     isTestnet: false,
     isDefault: true,
-    sortIndex: 469,
+    sortIndex: 459,
     genesisHash: "0x5d3c298622d5634ed019bf61ea4b71655030015bde9beb0d6a24743714462c86",
     prefix: 56,
     name: "Pendulum",
@@ -7306,7 +7006,7 @@ export const chains = [
     chainName: "Pendulum",
     implName: "pendulum",
     specName: "pendulum",
-    specVersion: "8",
+    specVersion: "10",
     nativeToken: {
       id: "pendulum-substrate-native-pen",
     },
@@ -7328,6 +7028,9 @@ export const chains = [
     isUnknownFeeToken: false,
     feeToken: null,
     rpcs: [
+      {
+        url: "wss://pendulum-rpc.dwellir.com",
+      },
       {
         url: "wss://rpc-pendulum.prd.pendulumchain.tech",
       },
@@ -7376,7 +7079,7 @@ export const chains = [
     id: "phala",
     isTestnet: false,
     isDefault: true,
-    sortIndex: 474,
+    sortIndex: 464,
     genesisHash: "0x1bb969d85965e4bb5a651abbedf21a54b6b31a21f66b5401cc3f1e286268d736",
     prefix: 30,
     name: "Phala",
@@ -7385,7 +7088,7 @@ export const chains = [
     chainName: "Phala",
     implName: "phala",
     specName: "phala",
-    specVersion: "1255",
+    specVersion: "1261",
     nativeToken: {
       id: "phala-substrate-native-pha",
     },
@@ -7401,9 +7104,6 @@ export const chains = [
     isUnknownFeeToken: false,
     feeToken: null,
     rpcs: [
-      {
-        url: "wss://phala.api.onfinality.io/public-ws",
-      },
       {
         url: "wss://phala-rpc.dwellir.com",
       },
@@ -7432,7 +7132,7 @@ export const chains = [
     id: "picasso",
     isTestnet: false,
     isDefault: true,
-    sortIndex: 478,
+    sortIndex: 468,
     genesisHash: "0x6811a339673c9daa897944dcdac99c6e2939cc88245ed21951a0a3c9a2be75bc",
     prefix: 49,
     name: "Picasso",
@@ -7441,7 +7141,7 @@ export const chains = [
     chainName: "Picasso",
     implName: "picasso",
     specName: "picasso",
-    specVersion: "10040",
+    specVersion: "10042",
     nativeToken: {
       id: "picasso-substrate-native-pica",
     },
@@ -7554,10 +7254,10 @@ export const chains = [
     feeToken: null,
     rpcs: [
       {
-        url: "wss://rpc.composablenodes.tech",
+        url: "wss://picasso-rpc.dwellir.com",
       },
       {
-        url: "wss://picasso-rpc.dwellir.com",
+        url: "wss://rpc.composablenodes.tech",
       },
     ],
     evmNetworks: [],
@@ -7845,19 +7545,120 @@ export const chains = [
     balancesMetadata: [],
   },
   {
+    id: "bitcountry-pioneer",
+    isTestnet: false,
+    isDefault: true,
+    sortIndex: 469,
+    genesisHash: "0xf22b7850cdd5a7657bbfd90ac86441275bbc57ace3d2698a740c7b0ec4de5ec3",
+    prefix: 268,
+    name: "Pioneer",
+    themeColor: "#f8fcfc",
+    logo: "https://raw.githubusercontent.com/TalismanSociety/chaindata/main/assets/chains/bitcountry-pioneer.svg",
+    chainName: "Pioneer Network",
+    implName: "pioneer-runtime",
+    specName: "pioneer-runtime",
+    specVersion: "19",
+    nativeToken: {
+      id: "bitcountry-pioneer-substrate-native-neer",
+    },
+    tokens: [
+      {
+        id: "bitcountry-pioneer-substrate-native-neer",
+      },
+      {
+        id: "bitcountry-pioneer-substrate-tokens-ksm",
+      },
+      {
+        id: "bitcountry-pioneer-substrate-tokens-kar",
+      },
+      {
+        id: "bitcountry-pioneer-substrate-tokens-aseed",
+      },
+      {
+        id: "bitcountry-pioneer-substrate-tokens-bit",
+      },
+    ],
+    account: "*25519",
+    subscanUrl: "https://pioneer.subscan.io/",
+    chainspecQrUrl: "https://metadata.novasama.io/qr/pioneer-runtime_specs.png",
+    latestMetadataQrUrl: "https://metadata.novasama.io/qr/pioneer-runtime_metadata_latest.apng",
+    isUnknownFeeToken: false,
+    feeToken: null,
+    rpcs: [
+      {
+        url: "wss://pioneer-rpc-3.bit.country/wss",
+      },
+    ],
+    evmNetworks: [],
+    parathreads: null,
+    paraId: 2096,
+    relay: {
+      id: "kusama",
+    },
+    balancesConfig: [
+      {
+        moduleType: "substrate-native",
+        moduleConfig: {
+          coingeckoId: "metaverse-network-pioneer",
+          logo: "https://raw.githubusercontent.com/TalismanSociety/chaindata/main/assets/chains/bitcountry-pioneer.svg",
+        },
+      },
+      {
+        moduleType: "substrate-tokens",
+        moduleConfig: {
+          tokens: [
+            {
+              symbol: "KSM",
+              decimals: 12,
+              ed: "0",
+              onChainId: '{"NativeToken":1}',
+              coingeckoId: "kusama",
+              logo: "https://raw.githubusercontent.com/TalismanSociety/chaindata/main/assets/tokens/ksm.svg",
+            },
+            {
+              symbol: "KAR",
+              decimals: 12,
+              ed: "0",
+              onChainId: '{"NativeToken":2}',
+              coingeckoId: "karura",
+              logo: "https://raw.githubusercontent.com/TalismanSociety/chaindata/main/assets/tokens/kar.svg",
+            },
+            {
+              symbol: "aSEED",
+              decimals: 12,
+              ed: "0",
+              onChainId: '{"Stable":0}',
+              coingeckoId: "ausd-seed-karura",
+              logo: "https://raw.githubusercontent.com/TalismanSociety/chaindata/main/assets/tokens/aseed.svg",
+            },
+            {
+              symbol: "BIT",
+              decimals: 18,
+              ed: "0",
+              onChainId: '{"MiningResource":0}',
+              coingeckoId: "bit",
+              logo: "https://raw.githubusercontent.com/TalismanSociety/chaindata/main/assets/tokens/unknown.svg",
+            },
+          ],
+        },
+      },
+    ],
+    balancesMetadata: [],
+  },
+  {
     id: "polkadex-polkadot",
     isTestnet: false,
     isDefault: true,
-    sortIndex: 491,
-    genesisHash: "0x3920bcb4960a1eef5580cd5367ff3f430eef052774f78468852f7b9cb39f8a3c",
-    prefix: 88,
+    sortIndex: 481,
+    genesisHash: "0x72f3bba34b1ecd532bccbed46701ad37c4ef329bfe86b7cf014ac06cb92ed47d",
+    prefix: 89,
     name: "Polkadex",
     themeColor: "#e6007a",
     logo: "https://raw.githubusercontent.com/TalismanSociety/chaindata/main/assets/chains/polkadex-polkadot.svg",
-    chainName: "Polkadex Main Network",
-    implName: "polkadex-official",
-    specName: "node",
-    specVersion: "311",
+    chainName: "Parachain",
+    implName: "polkadex-parachain",
+    specName: "polkadex-parachain",
+    specVersion: "9",
     nativeToken: {
       id: "polkadex-polkadot-substrate-native-pdex",
     },
@@ -7874,7 +7675,10 @@ export const chains = [
     feeToken: null,
     rpcs: [
       {
-        url: "wss://polkadex.api.onfinality.io/public-ws",
+        url: "wss://polkadex-rpc.dwellir.com",
+      },
+      {
+        url: "wss://polkadex-parachain.public.curie.radiumblock.co/ws",
       },
     ],
     evmNetworks: [],
@@ -7898,7 +7702,7 @@ export const chains = [
     id: "polkadex-standalone",
     isTestnet: false,
     isDefault: true,
-    sortIndex: 492,
+    sortIndex: 482,
     genesisHash: "0x3920bcb4960a1eef5580cd5367ff3f430eef052774f78468852f7b9cb39f8a3c",
     prefix: 88,
     name: "Polkadex Standalone",
@@ -7907,7 +7711,7 @@ export const chains = [
     chainName: "Polkadex Main Network",
     implName: "polkadex-official",
     specName: "node",
-    specVersion: "311",
+    specVersion: "315",
     nativeToken: {
       id: "polkadex-standalone-substrate-native-pdex",
     },
@@ -7924,7 +7728,7 @@ export const chains = [
     feeToken: null,
     rpcs: [
       {
-        url: "wss://mainnet.polkadex.trade",
+        url: "wss://polkadex.public.curie.radiumblock.co/ws",
       },
     ],
     evmNetworks: [],
@@ -7946,16 +7750,16 @@ export const chains = [
     id: "polkadot-asset-hub",
     isTestnet: false,
     isDefault: true,
-    sortIndex: 493,
+    sortIndex: 483,
     genesisHash: "0x68d56f15f85d3136970ec16946040bc1752654e906147f7e43e9d539d7c3de2f",
     prefix: 0,
     name: "Polkadot Asset Hub",
     themeColor: "#321d47",
     logo: "https://raw.githubusercontent.com/TalismanSociety/chaindata/main/assets/chains/polkadot-asset-hub.svg",
-    chainName: "Polkadot Asset Hub",
+    chainName: "Statemint",
     implName: "statemint",
     specName: "statemint",
-    specVersion: "9430",
+    specVersion: "1000000",
     nativeToken: {
       id: "polkadot-asset-hub-substrate-native-dot",
     },
@@ -7978,19 +7782,19 @@ export const chains = [
     feeToken: null,
     rpcs: [
       {
+        url: "wss://statemint-rpc.dwellir.com",
+      },
+      {
+        url: "wss://statemint-rpc-tn.dwellir.com",
+      },
+      {
         url: "wss://sys.ibp.network/statemint",
       },
       {
         url: "wss://sys.dotters.network/statemint",
       },
       {
-        url: "wss://statemint.api.onfinality.io/public-ws",
-      },
-      {
-        url: "wss://statemint-rpc.dwellir.com",
-      },
-      {
-        url: "wss://statemint-rpc-tn.dwellir.com",
+        url: "wss://rpc-asset-hub-polkadot.luckyfriday.io",
       },
       {
         url: "wss://polkadot-asset-hub-rpc.polkadot.io",
@@ -7999,7 +7803,7 @@ export const chains = [
         url: "wss://statemint.public.curie.radiumblock.co/ws",
       },
       {
-        url: "wss://dot-rpc.stakeworld.io/statemint",
+        url: "wss://dot-rpc.stakeworld.io/assethub",
       },
     ],
     evmNetworks: [],
@@ -8042,7 +7846,7 @@ export const chains = [
     id: "polkadot-bridge-hub",
     isTestnet: false,
     isDefault: true,
-    sortIndex: 494,
+    sortIndex: 484,
     genesisHash: "0xdcf691b5a3fbe24adc99ddc959c0561b973e329b1aef4c4b22e7bb2ddecb4464",
     prefix: 0,
     name: "Polkadot Bridge Hub",
@@ -8051,7 +7855,7 @@ export const chains = [
     chainName: "Polkadot BridgeHub",
     implName: "bridge-hub-polkadot",
     specName: "bridge-hub-polkadot",
-    specVersion: "9430",
+    specVersion: "1000000",
     nativeToken: {
       id: "polkadot-bridge-hub-substrate-native-dot",
     },
@@ -8067,6 +7871,21 @@ export const chains = [
     isUnknownFeeToken: false,
     feeToken: null,
     rpcs: [
+      {
+        url: "wss://polkadot-bridge-hub-rpc.dwellir.com",
+      },
+      {
+        url: "wss://polkadot-bridge-hub-rpc-tn.dwellir.com",
+      },
+      {
+        url: "wss://sys.ibp.network/bridgehub-polkadot",
+      },
+      {
+        url: "wss://sys.dotters.network/bridgehub-polkadot",
+      },
+      {
+        url: "wss://rpc-bridge-hub-polkadot.luckyfriday.io",
+      },
       {
         url: "wss://polkadot-bridge-hub-rpc.polkadot.io",
       },
@@ -8087,7 +7906,7 @@ export const chains = [
     id: "polymesh",
     isTestnet: false,
     isDefault: true,
-    sortIndex: 499,
+    sortIndex: 488,
     genesisHash: "0x6fbd74e5e1d0a61d52ccfe9d4adaed16dd3a7caa37c6bc4d0c2fa12e8b2f4063",
     prefix: 12,
     name: "Polymesh",
@@ -8096,7 +7915,7 @@ export const chains = [
     chainName: "Polymesh Mainnet",
     implName: "polymesh_mainnet",
     specName: "polymesh_mainnet",
-    specVersion: "6000004",
+    specVersion: "6001000",
     nativeToken: {
       id: "polymesh-substrate-native-polyx",
     },
@@ -8132,10 +7951,52 @@ export const chains = [
     balancesMetadata: [],
   },
   {
+    id: "qpn",
+    isTestnet: false,
+    isDefault: true,
+    sortIndex: 502,
+    genesisHash: "0xb410de4201e1188521ab70fbd76aa0762e00fbd98ead5a503816b01f4138a5f3",
+    prefix: 42,
+    name: "Quantum Portal",
+    themeColor: "#505050",
+    logo: "https://raw.githubusercontent.com/TalismanSociety/chaindata/main/assets/chains/unknown.svg",
+    chainName: "Quantum Portal Network",
+    implName: "quantum-portal-network-parachain",
+    specName: "quantum-portal-network-parachain",
+    specVersion: "1",
+    nativeToken: {
+      id: "qpn-substrate-native-qpfrm",
+    },
+    tokens: [
+      {
+        id: "qpn-substrate-native-qpfrm",
+      },
+    ],
+    account: "*25519",
+    subscanUrl: null,
+    chainspecQrUrl: null,
+    latestMetadataQrUrl: null,
+    isUnknownFeeToken: false,
+    feeToken: null,
+    rpcs: [
+      {
+        url: "wss://qpn.svcs.ferrumnetwork.io/",
+      },
+    ],
+    evmNetworks: [],
+    parathreads: null,
+    paraId: 2274,
+    relay: {
+      id: "kusama",
+    },
+    balancesConfig: [],
+    balancesMetadata: [],
+  },
+  {
     id: "quartz",
     isTestnet: false,
     isDefault: true,
-    sortIndex: 530,
+    sortIndex: 520,
     genesisHash: "0xcd4d732201ebe5d6b014edda071c4203e16867305332301dc8d092044b28e554",
     prefix: 255,
     name: "Quartz",
@@ -8160,6 +8021,9 @@ export const chains = [
     isUnknownFeeToken: false,
     feeToken: null,
     rpcs: [
+      {
+        url: "wss://quartz-rpc.dwellir.com",
+      },
       {
         url: "wss://ws-quartz.unique.network",
       },
@@ -8194,7 +8058,7 @@ export const chains = [
     id: "robonomics-kusama",
     isTestnet: false,
     isDefault: true,
-    sortIndex: 544,
+    sortIndex: 531,
     genesisHash: "0x631ccc82a078481584041656af292834e1ae6daab61d2875b4dd0c14bb9b17bc",
     prefix: 32,
     name: "Robonomics",
@@ -8220,13 +8084,7 @@ export const chains = [
     feeToken: null,
     rpcs: [
       {
-        url: "wss://robonomics.api.onfinality.io/public-ws",
-      },
-      {
         url: "wss://kusama.rpc.robonomics.network/",
-      },
-      {
-        url: "wss://robonomics.leemo.me",
       },
       {
         url: "wss://robonomics.0xsamsara.com",
@@ -8253,7 +8111,7 @@ export const chains = [
     id: "sakura",
     isTestnet: false,
     isDefault: true,
-    sortIndex: 549,
+    sortIndex: 534,
     genesisHash: null,
     prefix: null,
     name: "Sakura",
@@ -8286,44 +8144,10 @@ export const chains = [
     balancesMetadata: [],
   },
   {
-    id: "sherpax",
-    isTestnet: false,
-    isDefault: true,
-    sortIndex: 557,
-    genesisHash: null,
-    prefix: null,
-    name: "SherpaX",
-    themeColor: "#34c69a",
-    logo: "https://raw.githubusercontent.com/TalismanSociety/chaindata/main/assets/chains/sherpax.svg",
-    chainName: null,
-    implName: null,
-    specName: null,
-    specVersion: null,
-    nativeToken: null,
-    tokens: [],
-    account: "*25519",
-    subscanUrl: null,
-    chainspecQrUrl: null,
-    latestMetadataQrUrl: null,
-    isUnknownFeeToken: false,
-    feeToken: null,
-    rpcs: [
-      {
-        url: "wss://mainnet.sherpax.io",
-      },
-    ],
-    evmNetworks: [],
-    parathreads: null,
-    paraId: null,
-    relay: null,
-    balancesConfig: [],
-    balancesMetadata: [],
-  },
-  {
     id: "shiden-kusama",
     isTestnet: false,
     isDefault: true,
-    sortIndex: 562,
+    sortIndex: 546,
     genesisHash: "0xf1cf9022c7ebb34b162d5b5e34e705a5a740b2d0ecc1009fb89023e62a488108",
     prefix: 5,
     name: "Shiden",
@@ -8332,7 +8156,7 @@ export const chains = [
     chainName: "Shiden",
     implName: "shiden",
     specName: "shiden",
-    specVersion: "111",
+    specVersion: "113",
     nativeToken: {
       id: "shiden-kusama-substrate-native-sdn",
     },
@@ -8348,9 +8172,6 @@ export const chains = [
     isUnknownFeeToken: false,
     feeToken: null,
     rpcs: [
-      {
-        url: "wss://shiden.api.onfinality.io/public-ws",
-      },
       {
         url: "wss://shiden-rpc.dwellir.com",
       },
@@ -8383,7 +8204,7 @@ export const chains = [
     id: "sora-kusama",
     isTestnet: false,
     isDefault: true,
-    sortIndex: 579,
+    sortIndex: 561,
     genesisHash: "0x6d8d9f145c2177fa83512492cdd80a71e29f22473f4a8943a6292149ac319fb9",
     prefix: 420,
     name: "Sora",
@@ -8392,7 +8213,7 @@ export const chains = [
     chainName: "SORA Kusama",
     implName: "sora_ksm",
     specName: "sora_ksm",
-    specVersion: "7",
+    specVersion: "9",
     nativeToken: {
       id: "sora-kusama-substrate-native-unit",
     },
@@ -8433,7 +8254,7 @@ export const chains = [
     id: "sora-standalone",
     isTestnet: false,
     isDefault: true,
-    sortIndex: 581,
+    sortIndex: 562,
     genesisHash: "0x7e4e32d0feafd4f9c9414b0be86373f9a1efa904809b683453a9af6856d38ad5",
     prefix: 69,
     name: "Sora Standalone",
@@ -8442,7 +8263,7 @@ export const chains = [
     chainName: "SORA",
     implName: "sora-substrate",
     specName: "sora-substrate",
-    specVersion: "68",
+    specVersion: "70",
     nativeToken: {
       id: "sora-standalone-substrate-native-xor",
     },
@@ -8458,9 +8279,6 @@ export const chains = [
     isUnknownFeeToken: false,
     feeToken: null,
     rpcs: [
-      {
-        url: "wss://sora.api.onfinality.io/public-ws",
-      },
       {
         url: "wss://ws.mof.sora.org",
       },
@@ -8490,7 +8308,7 @@ export const chains = [
     id: "subdao",
     isTestnet: false,
     isDefault: true,
-    sortIndex: 591,
+    sortIndex: 570,
     genesisHash: null,
     prefix: null,
     name: "SubDAO",
@@ -8526,7 +8344,7 @@ export const chains = [
     id: "subsocial-polkadot",
     isTestnet: false,
     isDefault: true,
-    sortIndex: 595,
+    sortIndex: 571,
     genesisHash: "0x4a12be580bb959937a1c7a61d5cf24428ed67fa571974b4007645d1886e7c89f",
     prefix: 28,
     name: "Subsocial",
@@ -8535,7 +8353,7 @@ export const chains = [
     chainName: "Subsocial",
     implName: "subsocial-parachain",
     specName: "subsocial-parachain",
-    specVersion: "31",
+    specVersion: "34",
     nativeToken: {
       id: "subsocial-polkadot-substrate-native-sub",
     },
@@ -8568,7 +8386,7 @@ export const chains = [
     id: "zero",
     isTestnet: false,
     isDefault: true,
-    sortIndex: 598,
+    sortIndex: 572,
     genesisHash: "0x2991d4125ac465d64c4c0b915fedd7168b5961b7676480636e3747f1ad64cfb9",
     prefix: 25,
     name: "Subzero",
@@ -8656,13 +8474,13 @@ export const chains = [
     balancesMetadata: [],
   },
   {
-    id: "swapdex",
+    id: "t-1-rn",
     isTestnet: false,
     isDefault: true,
-    sortIndex: 602,
+    sortIndex: 582,
     genesisHash: null,
     prefix: null,
-    name: "Swapdex",
+    name: "t1rn",
     themeColor: "#505050",
     logo: "https://raw.githubusercontent.com/TalismanSociety/chaindata/main/assets/chains/unknown.svg",
     chainName: null,
@@ -8679,29 +8497,23 @@ export const chains = [
     feeToken: null,
     rpcs: [
       {
-        url: "wss://ws.swapdex.network",
+        url: "wss://rpc.t1rn.io",
       },
     ],
     evmNetworks: [],
     parathreads: null,
-    paraId: null,
-    relay: null,
-    balancesConfig: [
-      {
-        moduleType: "substrate-native",
-        moduleConfig: {
-          coingeckoId: "swapdex",
-          logo: "https://raw.githubusercontent.com/TalismanSociety/chaindata/main/assets/tokens/coingecko/swapdex.webp",
-        },
-      },
-    ],
+    paraId: 3334,
+    relay: {
+      id: "kusama",
+    },
+    balancesConfig: [],
     balancesMetadata: [],
   },
   {
     id: "t-3-rn",
     isTestnet: false,
     isDefault: true,
-    sortIndex: 609,
+    sortIndex: 583,
     genesisHash: "0x9a33d1af38c2736ecddbbbcdc2cb2c3023e9b91dc295ac3f1473fe226e5944a7",
     prefix: 9935,
     name: "t3rn",
@@ -8743,7 +8555,7 @@ export const chains = [
     id: "ternoa",
     isTestnet: false,
     isDefault: true,
-    sortIndex: 626,
+    sortIndex: 599,
     genesisHash: "0x6859c81ca95ef624c9dfe4dc6e3381c33e5d6509e35e147092bfbc780f777c4e",
     prefix: 42,
     name: "Ternoa",
@@ -8783,7 +8595,7 @@ export const chains = [
     id: "thebifrost-mainnet",
     isTestnet: false,
     isDefault: true,
-    sortIndex: 630,
+    sortIndex: 603,
     genesisHash: "0x63e1e2390bf7758f2462ad22b950e7e191f3500226ba6f572346ac06ced516fe",
     prefix: 42,
     name: "The Bifrost",
@@ -8792,7 +8604,7 @@ export const chains = [
     chainName: "BIFROST Mainnet",
     implName: "bifrost-mainnet",
     specName: "thebifrost-mainnet",
-    specVersion: "2017",
+    specVersion: "2018",
     nativeToken: {
       id: "thebifrost-mainnet-substrate-native-bfc",
     },
@@ -8809,10 +8621,10 @@ export const chains = [
     feeToken: null,
     rpcs: [
       {
-        url: "wss://public-01.mainnet.thebifrost.io/wss",
+        url: "wss://public-01.mainnet.bifrostnetwork.com/wss",
       },
       {
-        url: "wss://public-02.mainnet.thebifrost.io/wss",
+        url: "wss://public-02.mainnet.bifrostnetwork.com/wss",
       },
     ],
     evmNetworks: [],
@@ -8826,7 +8638,7 @@ export const chains = [
     id: "turing",
     isTestnet: false,
     isDefault: true,
-    sortIndex: 648,
+    sortIndex: 621,
     genesisHash: "0x0f62b701fb12d02237a33b84818c11f621653d2b1614c777973babf4652b535d",
     prefix: 51,
     name: "Turing",
@@ -8835,7 +8647,7 @@ export const chains = [
     chainName: "Turing Network",
     implName: "turing",
     specName: "turing",
-    specVersion: "295",
+    specVersion: "296",
     nativeToken: {
       id: "turing-substrate-native-tur",
     },
@@ -8879,7 +8691,7 @@ export const chains = [
     id: "unique",
     isTestnet: false,
     isDefault: true,
-    sortIndex: 654,
+    sortIndex: 626,
     genesisHash: "0x84322d9cddbf35088f1e54e9a85c967a41a56a4f43445768125e61af166c7d31",
     prefix: 7391,
     name: "Unique",
@@ -8904,6 +8716,9 @@ export const chains = [
     isUnknownFeeToken: false,
     feeToken: null,
     rpcs: [
+      {
+        url: "wss://unique-rpc.dwellir.com",
+      },
       {
         url: "wss://ws.unique.network",
       },
@@ -8938,7 +8753,7 @@ export const chains = [
     id: "vara",
     isTestnet: false,
     isDefault: true,
-    sortIndex: 662,
+    sortIndex: 632,
     genesisHash: "0xfe1b4c55fd4d668101126434206571a7838a8b6b93a6d1b95d607e78e6c53763",
     prefix: 137,
     name: "Vara",
@@ -8947,7 +8762,7 @@ export const chains = [
     chainName: "Vara Network",
     implName: "vara",
     specName: "vara",
-    specVersion: "1010",
+    specVersion: "1020",
     nativeToken: {
       id: "vara-substrate-native-vara",
     },
@@ -8986,7 +8801,7 @@ export const chains = [
     id: "watr",
     isTestnet: false,
     isDefault: true,
-    sortIndex: 672,
+    sortIndex: 642,
     genesisHash: "0x161db6cdc5896fe55ef12b4778fe78dd65d7af43f65c601786b88d7a93ebc58a",
     prefix: 19,
     name: "Watr",
@@ -9028,7 +8843,7 @@ export const chains = [
     id: "zeitgeist",
     isTestnet: false,
     isDefault: true,
-    sortIndex: 696,
+    sortIndex: 667,
     genesisHash: "0x1bf2a2ecb4a868de66ea8610f2ce7c8c43706561b6476031315f6640fe38e060",
     prefix: 73,
     name: "Zeitgeist",
@@ -9053,9 +8868,6 @@ export const chains = [
     isUnknownFeeToken: false,
     feeToken: null,
     rpcs: [
-      {
-        url: "wss://zeitgeist.api.onfinality.io/public-ws",
-      },
       {
         url: "wss://zeitgeist-rpc.dwellir.com",
       },
@@ -9084,7 +8896,7 @@ export const chains = [
     id: "westend-testnet",
     isTestnet: true,
     isDefault: true,
-    sortIndex: 704,
+    sortIndex: 675,
     genesisHash: "0xe143f23803ac50e8f6f8e62695d1ce9e4e1d68aa36c1cd2cfd15340213f3423e",
     prefix: 42,
     name: "Westend",
@@ -9093,7 +8905,7 @@ export const chains = [
     chainName: "Westend",
     implName: "parity-westend",
     specName: "westend",
-    specVersion: "103000",
+    specVersion: "104000",
     nativeToken: {
       id: "westend-testnet-substrate-native-wnd",
     },
@@ -9110,22 +8922,16 @@ export const chains = [
     feeToken: null,
     rpcs: [
       {
-        url: "wss://rpc.ibp.network/westend",
-      },
-      {
-        url: "wss://rpc.dotters.network/westend",
-      },
-      {
-        url: "wss://westend.api.onfinality.io/public-ws",
-      },
-      {
-        url: "wss://westend-rpc.blockops.network/ws",
-      },
-      {
         url: "wss://westend-rpc.dwellir.com",
       },
       {
         url: "wss://westend-rpc-tn.dwellir.com",
+      },
+      {
+        url: "wss://rpc.ibp.network/westend",
+      },
+      {
+        url: "wss://rpc.dotters.network/westend",
       },
       {
         url: "wss://rpc-westend.luckyfriday.io",
@@ -9143,36 +8949,6 @@ export const chains = [
     evmNetworks: [],
     parathreads: [
       {
-        id: "charcoal-testnet",
-        paraId: 2086,
-        name: "Charcoal",
-      },
-      {
-        id: "integritee-testnet",
-        paraId: 2081,
-        name: "Integritee Testnet",
-      },
-      {
-        id: "interlay-testnet-westend",
-        paraId: 2094,
-        name: "Interlay Testnet",
-      },
-      {
-        id: "karura-testnet",
-        paraId: 2005,
-        name: "Wendala",
-      },
-      {
-        id: "kilt-testnet-westend",
-        paraId: 2085,
-        name: "Wilt",
-      },
-      {
-        id: "moonshadow-testnet",
-        paraId: 2002,
-        name: "Moonshadow",
-      },
-      {
         id: "westend-asset-hub-testnet",
         paraId: 1000,
         name: "Westend Asset Hub",
@@ -9187,21 +8963,6 @@ export const chains = [
         paraId: 1001,
         name: "Collectives Testnet",
       },
-      {
-        id: "westend-pichiu-testnet",
-        paraId: 2112,
-        name: "Pichiu Testnet",
-      },
-      {
-        id: "westend-standard-testnet",
-        paraId: 2094,
-        name: "Standard",
-      },
-      {
-        id: "whala-testnet",
-        paraId: 2013,
-        name: "Whala",
-      },
     ],
     paraId: null,
     relay: null,
@@ -9212,7 +8973,7 @@ export const chains = [
     id: "rococo-testnet",
     isTestnet: true,
     isDefault: true,
-    sortIndex: 705,
+    sortIndex: 676,
     genesisHash: "0x6408de7737c59c238890533af25896a2c20608d8b380bb01029acb392781063e",
     prefix: 42,
     name: "Rococo",
@@ -9221,7 +8982,7 @@ export const chains = [
     chainName: "Rococo",
     implName: "parity-rococo-v2.0",
     specName: "rococo",
-    specVersion: "103001",
+    specVersion: "1005000",
     nativeToken: {
       id: "rococo-testnet-substrate-native-roc",
     },
@@ -9244,43 +9005,13 @@ export const chains = [
     evmNetworks: [],
     parathreads: [
       {
-        id: "arctic-testnet-rococo",
-        paraId: 3015,
-        name: "Arctic",
-      },
-      {
-        id: "chainoli-testnet",
-        paraId: 4023,
-        name: "Oli",
-      },
-      {
         id: "encointer-testnet-rococo",
         paraId: 1003,
         name: "Encointer Lietaer",
       },
       {
-        id: "giant-testnet",
-        paraId: 4227,
-        name: "Giant",
-      },
-      {
-        id: "helixstreet-testnet",
-        paraId: 3025,
-        name: "Helixstreet",
-      },
-      {
-        id: "robonomics-testnet",
-        paraId: 2048,
-        name: "Robonomics Testnet",
-      },
-      {
-        id: "rocfinity-testnet",
-        paraId: 2021,
-        name: "Rocfinity",
-      },
-      {
         id: "rococo-acurast-testnet",
-        paraId: 4191,
+        paraId: 2239,
         name: "Acurast",
       },
       {
@@ -9314,24 +9045,9 @@ export const chains = [
         name: "Bifrost Testnet",
       },
       {
-        id: "rococo-bitgreen-testnet",
-        paraId: 20048,
-        name: "Bitgreen Testnet",
-      },
-      {
         id: "rococo-bridge-hub-testnet",
         paraId: 1013,
         name: "Rococo Bridge Hub",
-      },
-      {
-        id: "rococo-catalyst-testnet",
-        paraId: 2031,
-        name: "Catalyst",
-      },
-      {
-        id: "rococo-confti-testnet",
-        paraId: 4094,
-        name: "Confti",
       },
       {
         id: "rococo-contracts-testnet",
@@ -9339,19 +9055,9 @@ export const chains = [
         name: "Contracts",
       },
       {
-        id: "rococo-crust-testnet",
-        paraId: 2012,
-        name: "Crust Testnet",
-      },
-      {
-        id: "rococo-dolphin-testnet",
-        paraId: 2084,
-        name: "Dolphin",
-      },
-      {
-        id: "rococo-ethos-testnet",
-        paraId: 2095,
-        name: "Ethos",
+        id: "rococo-ewx-testnet",
+        paraId: 3345,
+        name: "Rex",
       },
       {
         id: "rococo-frequency-testnet",
@@ -9359,24 +9065,9 @@ export const chains = [
         name: "Frequency Testnet",
       },
       {
-        id: "rococo-genshiro-testnet",
-        paraId: 2024,
-        name: "Genshiro Testnet",
-      },
-      {
         id: "rococo-hydra-dx-testnet",
         paraId: 2034,
         name: "HydraDX Testnet",
-      },
-      {
-        id: "rococo-idiyanale-testnet",
-        paraId: 4222,
-        name: "Idiyanale",
-      },
-      {
-        id: "rococo-imbue-testnet",
-        paraId: 2121,
-        name: "Imbue Testnet",
       },
       {
         id: "rococo-integritee-testnet",
@@ -9384,34 +9075,9 @@ export const chains = [
         name: "Integritee Testnet",
       },
       {
-        id: "rococo-kabocha-testnet",
-        paraId: 2113,
-        name: "Kabocha Testnet",
-      },
-      {
-        id: "rococo-kaizen-testnet",
-        paraId: 2040,
-        name: "Kaizen",
-      },
-      {
-        id: "rococo-kilt-testnet",
-        paraId: 2086,
-        name: "Rilt",
-      },
-      {
         id: "rococo-litentry-testnet",
         paraId: 2106,
         name: "Litentry Testnet",
-      },
-      {
-        id: "rococo-mangata-testnet",
-        paraId: 2110,
-        name: "MangataX Testnet",
-      },
-      {
-        id: "rococo-metaquity-network-testnet",
-        paraId: 4304,
-        name: "Metaquity Network Testnet",
       },
       {
         id: "rococo-md-5-testnet",
@@ -9419,9 +9085,9 @@ export const chains = [
         name: "MD5",
       },
       {
-        id: "rococo-moonsama-testnet",
-        paraId: 2055,
-        name: "Moonsama",
+        id: "rococo-metaquity-network-testnet",
+        paraId: 4304,
+        name: "Metaquity",
       },
       {
         id: "rococo-nodle-testnet",
@@ -9449,19 +9115,9 @@ export const chains = [
         name: "Picasso Testnet",
       },
       {
-        id: "rococo-societal-testnet",
-        paraId: 4253,
-        name: "Societal",
-      },
-      {
         id: "rococo-sora-testnet",
         paraId: 2011,
         name: "Sora Testnet",
-      },
-      {
-        id: "rococo-spreehafen-testnet",
-        paraId: 2116,
-        name: "Spreehafen",
       },
       {
         id: "rococo-subsocial-testnet",
@@ -9469,14 +9125,9 @@ export const chains = [
         name: "SoonsocialX",
       },
       {
-        id: "rococo-subzero-testnet",
-        paraId: 4040,
-        name: "Subzero Testnet",
-      },
-      {
-        id: "rococo-tinkernet-testnet",
-        paraId: 2125,
-        name: "Tinkernet",
+        id: "rococo-trappist-testnet",
+        paraId: 1836,
+        name: "Trappist",
       },
       {
         id: "rococo-turing-testnet",
@@ -9484,19 +9135,14 @@ export const chains = [
         name: "Turing Testnet",
       },
       {
-        id: "rococo-unit-network-testnet",
-        paraId: 4168,
-        name: "Unit",
-      },
-      {
-        id: "rococo-virto-testnet",
-        paraId: 3003,
-        name: "Virto",
-      },
-      {
         id: "rococo-watr-testnet",
         paraId: 2058,
         name: "Watr Testnet",
+      },
+      {
+        id: "rococo-yerba-testnet",
+        paraId: 4292,
+        name: "Yerba",
       },
       {
         id: "rococo-zeitgeist-testnet",
@@ -9504,24 +9150,19 @@ export const chains = [
         name: "Zeitgeist Battery Station",
       },
       {
-        id: "snowbridge-testnet",
-        paraId: 3016,
-        name: "Snowbridge",
+        id: "snowbridge-asset-hub-testnet",
+        paraId: 3416,
+        name: "Snowbridge Asset Hub",
       },
       {
-        id: "stagex-testnet",
-        paraId: 2007,
-        name: "Stagex",
+        id: "snowbridge-bridge-hub-testnet",
+        paraId: 3016,
+        name: "Snowbridge Bridge Hub",
       },
       {
         id: "t-0-rn-testnet",
         paraId: 3333,
         name: "t0rn",
-      },
-      {
-        id: "tangle-testnet-rococo",
-        paraId: 4006,
-        name: "Tangle",
       },
     ],
     paraId: null,
@@ -9530,10 +9171,52 @@ export const chains = [
     balancesMetadata: [],
   },
   {
+    id: "rococo-acurast-testnet",
+    isTestnet: true,
+    isDefault: true,
+    sortIndex: 679,
+    genesisHash: "0x289ef22810bc948d3759b9fe4884d36bc41fc0257428997d827bb89a3468c9f6",
+    prefix: 42,
+    name: "Acurast",
+    themeColor: "#505050",
+    logo: "https://raw.githubusercontent.com/TalismanSociety/chaindata/main/assets/chains/unknown.svg",
+    chainName: "Acurast Testnet",
+    implName: "acurast-parachain",
+    specName: "acurast-parachain",
+    specVersion: "16",
+    nativeToken: {
+      id: "rococo-acurast-testnet-substrate-native-tacu",
+    },
+    tokens: [
+      {
+        id: "rococo-acurast-testnet-substrate-native-tacu",
+      },
+    ],
+    account: "*25519",
+    subscanUrl: null,
+    chainspecQrUrl: null,
+    latestMetadataQrUrl: null,
+    isUnknownFeeToken: false,
+    feeToken: null,
+    rpcs: [
+      {
+        url: "wss://acurast-testnet-ws.prod.gke.papers.tech",
+      },
+    ],
+    evmNetworks: [],
+    parathreads: null,
+    paraId: 2239,
+    relay: {
+      id: "rococo-testnet",
+    },
+    balancesConfig: [],
+    balancesMetadata: [],
+  },
+  {
     id: "ajuna-testnet",
     isTestnet: true,
     isDefault: true,
-    sortIndex: 715,
+    sortIndex: 685,
     genesisHash: "0xd5b8d0f514e793f5f4b18788c36dabb533f39904a4ea4e65ab9f97d673889ac4",
     prefix: 42,
     name: "Ajuna Testnet",
@@ -9573,7 +9256,7 @@ export const chains = [
     id: "aleph-zero-testnet",
     isTestnet: true,
     isDefault: true,
-    sortIndex: 717,
+    sortIndex: 687,
     genesisHash: "0x05d5279c52c484cc80396535a316add7d47b1c5b9e0398dd1f584149341460c5",
     prefix: 42,
     name: "Aleph Zero Testnet",
@@ -9582,7 +9265,7 @@ export const chains = [
     chainName: "Aleph Zero Testnet",
     implName: "aleph-node",
     specName: "aleph-node",
-    specVersion: "67",
+    specVersion: "68",
     nativeToken: {
       id: "aleph-zero-testnet-substrate-native-tzero",
     },
@@ -9599,10 +9282,10 @@ export const chains = [
     feeToken: null,
     rpcs: [
       {
-        url: "wss://ws.test.azero.dev",
+        url: "wss://aleph-zero-testnet-rpc.dwellir.com",
       },
       {
-        url: "wss://aleph-zero-testnet-rpc.dwellir.com",
+        url: "wss://ws.test.azero.dev",
       },
     ],
     evmNetworks: [],
@@ -9616,7 +9299,7 @@ export const chains = [
     id: "rococo-amplitude-testnet",
     isTestnet: true,
     isDefault: true,
-    sortIndex: 722,
+    sortIndex: 692,
     genesisHash: "0xa8d080b07f9c84465aeb9576db5a7838bcbca3ffb78dbfd7d4b56acafc1f29d1",
     prefix: 57,
     name: "Amplitude Testnet",
@@ -9625,7 +9308,7 @@ export const chains = [
     chainName: "Foucoco",
     implName: "foucoco",
     specName: "foucoco",
-    specVersion: "3",
+    specVersion: "4",
     nativeToken: {
       id: "rococo-amplitude-testnet-substrate-native-ampe",
     },
@@ -9658,7 +9341,7 @@ export const chains = [
     id: "automata-contextfree-testnet",
     isTestnet: true,
     isDefault: true,
-    sortIndex: 746,
+    sortIndex: 712,
     genesisHash: "0x6254c948b5eb7199a112cb308be3385c39c8c942625540ac749c77fe2aebc299",
     prefix: 11820,
     name: "Automata ContextFree",
@@ -9684,9 +9367,6 @@ export const chains = [
     feeToken: null,
     rpcs: [
       {
-        url: "wss://contextfree.api.onfinality.io/public-ws",
-      },
-      {
         url: "wss://cf-api.ata.network",
       },
     ],
@@ -9701,7 +9381,7 @@ export const chains = [
     id: "rococo-aventus-testnet",
     isTestnet: true,
     isDefault: true,
-    sortIndex: 750,
+    sortIndex: 716,
     genesisHash: "0xa6ffcef7fb8caadf7f6c5ad8ada65e3eaa90d1604f3eabda546ff1d486865a0c",
     prefix: 42,
     name: "Aventus Testnet",
@@ -9710,7 +9390,7 @@ export const chains = [
     chainName: "AvN Rococo",
     implName: "avn-parachain",
     specName: "avn-parachain",
-    specVersion: "51",
+    specVersion: "52",
     nativeToken: {
       id: "rococo-aventus-testnet-substrate-native-avt",
     },
@@ -9743,8 +9423,8 @@ export const chains = [
     id: "rococo-bajun-testnet",
     isTestnet: true,
     isDefault: true,
-    sortIndex: 752,
-    genesisHash: "0x6e6a74dcc0c20b614cdbbcd80c4b199b1d85eb2c4c74ea24f14e92def7f69e64",
+    sortIndex: 718,
+    genesisHash: "0xd23837b6d1cf809cceea1f70bb0dee2e93d110f01f526117324eec3de6a5206d",
     prefix: 1337,
     name: "Bajun Testnet",
     themeColor: "#505050",
@@ -9752,7 +9432,7 @@ export const chains = [
     chainName: "Bajun Rococo",
     implName: "bajun",
     specName: "bajun",
-    specVersion: "124",
+    specVersion: "129",
     nativeToken: {
       id: "rococo-bajun-testnet-substrate-native-baju",
     },
@@ -9785,7 +9465,7 @@ export const chains = [
     id: "rococo-basilisk-testnet",
     isTestnet: true,
     isDefault: true,
-    sortIndex: 755,
+    sortIndex: 721,
     genesisHash: "0x317498e4a13cc902ee6b1886686101ac2dbc37a3bc1456f3ce7ee6d0efb45c50",
     prefix: 10041,
     name: "Basilisk Testnet",
@@ -9824,50 +9504,10 @@ export const chains = [
     balancesMetadata: [],
   },
   {
-    id: "edgeware-testnet",
-    isTestnet: true,
-    isDefault: true,
-    sortIndex: 760,
-    genesisHash: "0x8da6a03e0989154ff8c1977cbc0cbd55f6879d8759c272a4f3c078cef794bf5f",
-    prefix: 7,
-    name: "Beresheet",
-    themeColor: "#505050",
-    logo: "https://raw.githubusercontent.com/TalismanSociety/chaindata/main/assets/chains/unknown.svg",
-    chainName: "Beresheet v46",
-    implName: "beresheet-node",
-    specName: "beresheet",
-    specVersion: "10054",
-    nativeToken: {
-      id: "edgeware-testnet-substrate-native-tedg",
-    },
-    tokens: [
-      {
-        id: "edgeware-testnet-substrate-native-tedg",
-      },
-    ],
-    account: "*25519",
-    subscanUrl: null,
-    chainspecQrUrl: null,
-    latestMetadataQrUrl: null,
-    isUnknownFeeToken: false,
-    feeToken: null,
-    rpcs: [
-      {
-        url: "wss://beresheet.jelliedowl.net",
-      },
-    ],
-    evmNetworks: [],
-    parathreads: null,
-    paraId: null,
-    relay: null,
-    balancesConfig: [],
-    balancesMetadata: [],
-  },
-  {
     id: "rococo-bifrost-testnet",
     isTestnet: true,
     isDefault: true,
-    sortIndex: 765,
+    sortIndex: 729,
     genesisHash: "0x0c003b98abbedae774f5e13cd6146781317016725ab4db34312ea2681e9901f3",
     prefix: 6,
     name: "Bifrost Testnet",
@@ -9906,96 +9546,11 @@ export const chains = [
     balancesMetadata: [],
   },
   {
-    id: "rococo-catalyst-testnet",
-    isTestnet: true,
-    isDefault: true,
-    sortIndex: 804,
-    genesisHash: "0x6cb9c6d7d3c9150a1f3cd75784834c53a12d5e0c2d4ed9bf694a901be564eac9",
-    prefix: 36,
-    name: "Catalyst",
-    themeColor: "#505050",
-    logo: "https://raw.githubusercontent.com/TalismanSociety/chaindata/main/assets/chains/unknown.svg",
-    chainName: "Catalyst Testnet",
-    implName: "centrifuge",
-    specName: "centrifuge",
-    specVersion: "1023",
-    nativeToken: {
-      id: "rococo-catalyst-testnet-substrate-native-ncfg",
-    },
-    tokens: [
-      {
-        id: "rococo-catalyst-testnet-substrate-native-ncfg",
-      },
-    ],
-    account: "*25519",
-    subscanUrl: null,
-    chainspecQrUrl: null,
-    latestMetadataQrUrl: null,
-    isUnknownFeeToken: false,
-    feeToken: null,
-    rpcs: [
-      {
-        url: "wss://fullnode.catalyst.cntrfg.com",
-      },
-    ],
-    evmNetworks: [],
-    parathreads: null,
-    paraId: 2031,
-    relay: {
-      id: "rococo-testnet",
-    },
-    balancesConfig: [],
-    balancesMetadata: [],
-  },
-  {
-    id: "cere-testnet",
-    isTestnet: true,
-    isDefault: true,
-    sortIndex: 808,
-    genesisHash: "0x42b9b44b4950b6c1edae543a7696caf8d0a160e9bc0424ab4ab217f7a8ba30dc",
-    prefix: 54,
-    name: "Cere Testnet",
-    themeColor: "#505050",
-    logo: "https://raw.githubusercontent.com/TalismanSociety/chaindata/main/assets/chains/unknown.svg",
-    chainName: "Cere Testnet",
-    implName: "substrate-node",
-    specName: "node",
-    specVersion: "48009",
-    nativeToken: {
-      id: "cere-testnet-substrate-native-cere",
-    },
-    tokens: [
-      {
-        id: "cere-testnet-substrate-native-cere",
-      },
-    ],
-    account: "*25519",
-    subscanUrl: null,
-    chainspecQrUrl: null,
-    latestMetadataQrUrl: null,
-    isUnknownFeeToken: false,
-    feeToken: null,
-    rpcs: [
-      {
-        url: "wss://archive.testnet.cere.network/ws",
-      },
-      {
-        url: "wss://testnet.cere-archive.republiccrypto-runtime.com:444",
-      },
-    ],
-    evmNetworks: [],
-    parathreads: null,
-    paraId: null,
-    relay: null,
-    balancesConfig: [],
-    balancesMetadata: [],
-  },
-  {
     id: "cess-testnet",
     isTestnet: true,
     isDefault: true,
-    sortIndex: 810,
-    genesisHash: "0x75510303b0df90843bbe643d0553c2a19f94b5a3fde31d1a7930706d784dc5e5",
+    sortIndex: 768,
+    genesisHash: "0xca533a99f7b21f603f2f7e229bc01d232f92bd2e477e726b183d7ee208dd5796",
     prefix: 11330,
     name: "Cess",
     themeColor: "#505050",
@@ -10003,7 +9558,7 @@ export const chains = [
     chainName: "cess-testnet",
     implName: "cess-node",
     specName: "cess-node",
-    specVersion: "101",
+    specVersion: "102",
     nativeToken: {
       id: "cess-testnet-substrate-native-tcess",
     },
@@ -10034,16 +9589,16 @@ export const chains = [
     id: "westend-collectives-testnet",
     isTestnet: true,
     isDefault: true,
-    sortIndex: 819,
+    sortIndex: 775,
     genesisHash: "0x713daf193a6301583ff467be736da27ef0a72711b248927ba413f573d2b38e44",
     prefix: 0,
     name: "Collectives Testnet",
     themeColor: "#505050",
     logo: "https://raw.githubusercontent.com/TalismanSociety/chaindata/main/assets/chains/unknown.svg",
     chainName: "Westend Collectives",
-    implName: "collectives",
-    specName: "collectives",
-    specVersion: "1000000",
+    implName: "collectives-westend",
+    specName: "collectives-westend",
+    specVersion: "1004000",
     nativeToken: {
       id: "westend-collectives-testnet-substrate-native-wnd",
     },
@@ -10060,10 +9615,19 @@ export const chains = [
     feeToken: null,
     rpcs: [
       {
+        url: "wss://westend-collectives-rpc.dwellir.com",
+      },
+      {
+        url: "wss://westend-collectives-rpc-tn.dwellir.com",
+      },
+      {
         url: "wss://sys.ibp.network/collectives-westend",
       },
       {
         url: "wss://sys.dotters.network/collectives-westend",
+      },
+      {
+        url: "wss://westend-collectives-rpc.polkadot.io",
       },
     ],
     evmNetworks: [],
@@ -10079,7 +9643,7 @@ export const chains = [
     id: "rococo-contracts-testnet",
     isTestnet: true,
     isDefault: true,
-    sortIndex: 827,
+    sortIndex: 782,
     genesisHash: "0xc5442742bb6288bb3835ea1c9032981f06433ee5fc65d6e216c4422c0c19b989",
     prefix: 42,
     name: "Contracts",
@@ -10121,7 +9685,7 @@ export const chains = [
     id: "creditcoin-testnet",
     isTestnet: true,
     isDefault: true,
-    sortIndex: 829,
+    sortIndex: 784,
     genesisHash: "0xc2e43792c8acc075e564558f9a2184a0ffe9b0fd573969599eee9b647358c6cf",
     prefix: 42,
     name: "Creditcoin Testnet",
@@ -10161,7 +9725,7 @@ export const chains = [
     id: "dancebox",
     isTestnet: true,
     isDefault: true,
-    sortIndex: 837,
+    sortIndex: 789,
     genesisHash: "0x27aafd88e5921f5d5c6aebcd728dacbbf5c2a37f63e2eda301f8e0def01c43ea",
     prefix: 42,
     name: "Dancebox",
@@ -10201,7 +9765,7 @@ export const chains = [
     id: "debio-testnet",
     isTestnet: true,
     isDefault: true,
-    sortIndex: 841,
+    sortIndex: 793,
     genesisHash: "0xc15da258748903f5341b1cfb0d9f3afa7ed0bfc59be5e1185b6e303277b5237a",
     prefix: 42,
     name: "DeBio Testnet",
@@ -10241,7 +9805,7 @@ export const chains = [
     id: "encointer-testnet-standalone",
     isTestnet: true,
     isDefault: true,
-    sortIndex: 877,
+    sortIndex: 825,
     genesisHash: "0xa91674169884b8f312efbca48b3ad02bbf93eed0817502092c93f8f8f8a2884b",
     prefix: 42,
     name: "Encointer Gesell",
@@ -10281,7 +9845,7 @@ export const chains = [
     id: "encointer-testnet-rococo",
     isTestnet: true,
     isDefault: true,
-    sortIndex: 878,
+    sortIndex: 826,
     genesisHash: "0x5d2947b8565abdf7112beff1c52b8fb017d86ef11cca9e64644f2fe3de878598",
     prefix: 2,
     name: "Encointer Lietaer",
@@ -10323,7 +9887,7 @@ export const chains = [
     id: "enjin-matrixchain-testnet",
     isTestnet: true,
     isDefault: true,
-    sortIndex: 881,
+    sortIndex: 829,
     genesisHash: "0xa37725fd8943d2a524cb7ecc65da438f9fa644db78ba24dcd0003e2f95645e8f",
     prefix: 9030,
     name: "Enjin Canary Matrixchain",
@@ -10332,7 +9896,7 @@ export const chains = [
     chainName: "Canary Matrixchain",
     implName: "matrix",
     specName: "matrix",
-    specVersion: "605",
+    specVersion: "1003",
     nativeToken: {
       id: "enjin-matrixchain-testnet-substrate-native-cenj",
     },
@@ -10365,7 +9929,7 @@ export const chains = [
     id: "enjin-relay-testnet",
     isTestnet: true,
     isDefault: true,
-    sortIndex: 882,
+    sortIndex: 830,
     genesisHash: "0x735d8773c63e74ff8490fee5751ac07e15bfe2b3b5263be4d683c48dbdfbcd15",
     prefix: 69,
     name: "Enjin Canary Relaychain",
@@ -10374,7 +9938,7 @@ export const chains = [
     chainName: "Canary Relaychain",
     implName: "canary",
     specName: "canary",
-    specVersion: "120",
+    specVersion: "1021",
     nativeToken: {
       id: "enjin-relay-testnet-substrate-native-cenj",
     },
@@ -10402,86 +9966,10 @@ export const chains = [
     balancesMetadata: [],
   },
   {
-    id: "rococo-ethos-testnet",
-    isTestnet: true,
-    isDefault: false,
-    sortIndex: 889,
-    genesisHash: null,
-    prefix: null,
-    name: "Ethos",
-    themeColor: "#505050",
-    logo: "https://raw.githubusercontent.com/TalismanSociety/chaindata/main/assets/chains/unknown.svg",
-    chainName: null,
-    implName: null,
-    specName: null,
-    specVersion: null,
-    nativeToken: null,
-    tokens: [],
-    account: "*25519",
-    subscanUrl: null,
-    chainspecQrUrl: null,
-    latestMetadataQrUrl: null,
-    isUnknownFeeToken: false,
-    feeToken: null,
-    rpcs: [
-      {
-        url: "wss://ethos.jur.io",
-      },
-    ],
-    evmNetworks: [],
-    parathreads: null,
-    paraId: 2095,
-    relay: {
-      id: "rococo-testnet",
-    },
-    balancesConfig: [],
-    balancesMetadata: [],
-  },
-  {
-    id: "ferrum-testnet",
-    isTestnet: true,
-    isDefault: true,
-    sortIndex: 901,
-    genesisHash: "0xdcec1abf0a72c239ee3882c245ac81b2bcd2e9884658a195725d258e3f991410",
-    prefix: 42,
-    name: "Ferrum",
-    themeColor: "#505050",
-    logo: "https://raw.githubusercontent.com/TalismanSociety/chaindata/main/assets/chains/unknown.svg",
-    chainName: "Ferrum Testnet",
-    implName: "ferrum-parachain",
-    specName: "ferrum-parachain",
-    specVersion: "1",
-    nativeToken: {
-      id: "ferrum-testnet-substrate-native-tfrm",
-    },
-    tokens: [
-      {
-        id: "ferrum-testnet-substrate-native-tfrm",
-      },
-    ],
-    account: "*25519",
-    subscanUrl: null,
-    chainspecQrUrl: null,
-    latestMetadataQrUrl: null,
-    isUnknownFeeToken: false,
-    feeToken: null,
-    rpcs: [
-      {
-        url: "wss://testnet.dev.svcs.ferrumnetwork.io",
-      },
-    ],
-    evmNetworks: [],
-    parathreads: null,
-    paraId: null,
-    relay: null,
-    balancesConfig: [],
-    balancesMetadata: [],
-  },
-  {
     id: "rococo-frequency-testnet",
     isTestnet: true,
     isDefault: true,
-    sortIndex: 914,
+    sortIndex: 857,
     genesisHash: "0x0c33dfffa907de5683ae21cc6b4af899b5c4de83f3794ed75b2dc74e1b088e72",
     prefix: 42,
     name: "Frequency Testnet",
@@ -10490,7 +9978,7 @@ export const chains = [
     chainName: "Frequency Rococo",
     implName: "frequency",
     specName: "frequency-rococo",
-    specVersion: "60",
+    specVersion: "64",
     nativeToken: {
       id: "rococo-frequency-testnet-substrate-native-xrqcy",
     },
@@ -10526,18 +10014,24 @@ export const chains = [
     id: "rococo-hydra-dx-testnet",
     isTestnet: true,
     isDefault: true,
-    sortIndex: 970,
-    genesisHash: null,
-    prefix: null,
+    sortIndex: 907,
+    genesisHash: "0x5feea83342ce43200cb12b265cf21dc4e0e603571e2ac237e74ef45fb6913f52",
+    prefix: 63,
     name: "HydraDX Testnet",
     themeColor: "#505050",
     logo: "https://raw.githubusercontent.com/TalismanSociety/chaindata/main/assets/chains/unknown.svg",
-    chainName: null,
-    implName: null,
-    specName: null,
-    specVersion: null,
-    nativeToken: null,
-    tokens: [],
+    chainName: "HydraDX testnet",
+    implName: "hydradx",
+    specName: "hydradx",
+    specVersion: "185",
+    nativeToken: {
+      id: "rococo-hydra-dx-testnet-substrate-native-hdx",
+    },
+    tokens: [
+      {
+        id: "rococo-hydra-dx-testnet-substrate-native-hdx",
+      },
+    ],
     account: "*25519",
     subscanUrl: null,
     chainspecQrUrl: null,
@@ -10546,7 +10040,7 @@ export const chains = [
     feeToken: null,
     rpcs: [
       {
-        url: "wss://rococo-hydradx-rpc.hydration.dev",
+        url: "wss://hydradx-rococo-rpc.play.hydration.cloud",
       },
     ],
     evmNetworks: [],
@@ -10562,7 +10056,7 @@ export const chains = [
     id: "rococo-integritee-testnet",
     isTestnet: true,
     isDefault: true,
-    sortIndex: 978,
+    sortIndex: 914,
     genesisHash: "0xafd7dcd3f6713a1b4bdf9b71edcf37d3ad019ec71743d89012ce227d00e59a08",
     prefix: 13,
     name: "Integritee Testnet",
@@ -10604,7 +10098,7 @@ export const chains = [
     id: "interlay-testnet-standalone",
     isTestnet: true,
     isDefault: true,
-    sortIndex: 979,
+    sortIndex: 915,
     genesisHash: "0x418ae94c9fce02b1ab3b5bc211cd2f2133426f2861d97482bbdfdac1bbb0fb92",
     prefix: 2032,
     name: "Interlay Testnet",
@@ -10644,7 +10138,7 @@ export const chains = [
     id: "ipse-testnet",
     isTestnet: true,
     isDefault: true,
-    sortIndex: 983,
+    sortIndex: 917,
     genesisHash: null,
     prefix: null,
     name: "Ipse",
@@ -10684,7 +10178,7 @@ export const chains = [
     id: "jur-testnet",
     isTestnet: true,
     isDefault: true,
-    sortIndex: 992,
+    sortIndex: 925,
     genesisHash: "0x0446ab8b4c86695018b791cd3cc4481c791f56ef2b4003197568941b5a8d2f9a",
     prefix: 42,
     name: "Jur Testnet",
@@ -10693,7 +10187,7 @@ export const chains = [
     chainName: "Jur Testnet",
     implName: "jur-node",
     specName: "jur-node",
-    specVersion: "122",
+    specVersion: "127",
     nativeToken: {
       id: "jur-testnet-substrate-native-jur",
     },
@@ -10724,7 +10218,7 @@ export const chains = [
     id: "karmachain-testnet",
     isTestnet: true,
     isDefault: true,
-    sortIndex: 998,
+    sortIndex: 929,
     genesisHash: null,
     prefix: null,
     name: "Karmachain",
@@ -10744,7 +10238,7 @@ export const chains = [
     feeToken: null,
     rpcs: [
       {
-        url: "wss://testnet.karmaco.in/testnet/ws",
+        url: "wss://api3.karmaco.in",
       },
     ],
     evmNetworks: [],
@@ -10758,7 +10252,7 @@ export const chains = [
     id: "kate-testnet",
     isTestnet: true,
     isDefault: true,
-    sortIndex: 1000,
+    sortIndex: 931,
     genesisHash: "0xd12003ac837853b062aaccca5ce87ac4838c48447e41db4a3dcfb5bf312350c6",
     prefix: 42,
     name: "Kate",
@@ -10795,50 +10289,10 @@ export const chains = [
     balancesMetadata: [],
   },
   {
-    id: "kilt-testnet-standalone",
-    isTestnet: true,
-    isDefault: false,
-    sortIndex: 1007,
-    genesisHash: "0x702ef00dfc905780f406963494ef3653402f55ac8e995bc6c50706025fe79470",
-    prefix: 38,
-    name: "KILT Mashnet",
-    themeColor: "#f66741",
-    logo: "https://raw.githubusercontent.com/TalismanSociety/chaindata/main/assets/chains/kilt-testnet-standalone.svg",
-    chainName: "KILT Testnet",
-    implName: "mashnet-node",
-    specName: "mashnet-node",
-    specVersion: "8",
-    nativeToken: {
-      id: "kilt-testnet-standalone-substrate-native-kilt",
-    },
-    tokens: [
-      {
-        id: "kilt-testnet-standalone-substrate-native-kilt",
-      },
-    ],
-    account: "*25519",
-    subscanUrl: null,
-    chainspecQrUrl: null,
-    latestMetadataQrUrl: null,
-    isUnknownFeeToken: false,
-    feeToken: null,
-    rpcs: [
-      {
-        url: "wss://full-nodes.kilt.io:9944/",
-      },
-    ],
-    evmNetworks: [],
-    parathreads: null,
-    paraId: null,
-    relay: null,
-    balancesConfig: [],
-    balancesMetadata: [],
-  },
-  {
     id: "kilt-testnet-standalone-2",
     isTestnet: true,
     isDefault: true,
-    sortIndex: 1008,
+    sortIndex: 937,
     genesisHash: "0xa0c6e3bac382b316a68bca7141af1fba507207594c761076847ce358aeedcc21",
     prefix: 38,
     name: "KILT Peregrine",
@@ -10878,8 +10332,8 @@ export const chains = [
     id: "kintsugi-testnet",
     isTestnet: true,
     isDefault: true,
-    sortIndex: 1010,
-    genesisHash: "0x6aace21adb6532273afab3fff430ffae8bb712855a50ce3177dcb9ede55172a4",
+    sortIndex: 939,
+    genesisHash: "0xe3a1cf3db108e3e45c63a4841fe89ba95108b1db14fdec10c2e8a078ff322a67",
     prefix: 2092,
     name: "Kintsugi Testnet",
     themeColor: "#505050",
@@ -10887,7 +10341,7 @@ export const chains = [
     chainName: "Kintsugi",
     implName: "kintsugi-parachain",
     specName: "kintsugi-parachain",
-    specVersion: "1025000",
+    specVersion: "1025003",
     nativeToken: {
       id: "kintsugi-testnet-substrate-native-kint",
     },
@@ -10918,7 +10372,7 @@ export const chains = [
     id: "rococo-litentry-testnet",
     isTestnet: true,
     isDefault: true,
-    sortIndex: 1024,
+    sortIndex: 950,
     genesisHash: "0x6940b1852737722c0aa768710e20105ab8c6a80b63a0339cb99892ffdce38283",
     prefix: 42,
     name: "Litentry Testnet",
@@ -10927,7 +10381,7 @@ export const chains = [
     chainName: "Litentry-rococo",
     implName: "rococo-parachain",
     specName: "rococo-parachain",
-    specVersion: "9168",
+    specVersion: "9171",
     nativeToken: {
       id: "rococo-litentry-testnet-substrate-native-lit",
     },
@@ -10960,7 +10414,7 @@ export const chains = [
     id: "logion-testnet-standalone",
     isTestnet: true,
     isDefault: true,
-    sortIndex: 1025,
+    sortIndex: 951,
     genesisHash: "0x97d09155a17b13181033b89bf4c74b373b501a9ebb434ef353511e797ee8287b",
     prefix: 2021,
     name: "Logion Testnet",
@@ -11000,7 +10454,7 @@ export const chains = [
     id: "logion-testnet-standalone-2",
     isTestnet: true,
     isDefault: true,
-    sortIndex: 1026,
+    sortIndex: 952,
     genesisHash: "0x187898dc7fd56923944e4cda86d7a27408e397292bcbec72fec5f82268c2cfe0",
     prefix: 42,
     name: "Logion Testnet",
@@ -11009,7 +10463,7 @@ export const chains = [
     chainName: "logion Testnet",
     implName: "logion",
     specName: "logion",
-    specVersion: "157",
+    specVersion: "159",
     nativeToken: {
       id: "logion-testnet-standalone-2-substrate-native-lgnt",
     },
@@ -11037,46 +10491,10 @@ export const chains = [
     balancesMetadata: [],
   },
   {
-    id: "rococo-mangata-testnet",
-    isTestnet: true,
-    isDefault: true,
-    sortIndex: 1035,
-    genesisHash: null,
-    prefix: null,
-    name: "MangataX Testnet",
-    themeColor: "#00457a",
-    logo: "https://raw.githubusercontent.com/TalismanSociety/chaindata/main/assets/chains/rococo-mangata-testnet.svg",
-    chainName: null,
-    implName: null,
-    specName: null,
-    specVersion: null,
-    nativeToken: null,
-    tokens: [],
-    account: "*25519",
-    subscanUrl: "https://mangata-testnet.subscan.io/",
-    chainspecQrUrl: null,
-    latestMetadataQrUrl: null,
-    isUnknownFeeToken: false,
-    feeToken: null,
-    rpcs: [
-      {
-        url: "wss://collator-01-ws-rococo.mangata.online",
-      },
-    ],
-    evmNetworks: [],
-    parathreads: null,
-    paraId: 2110,
-    relay: {
-      id: "rococo-testnet",
-    },
-    balancesConfig: [],
-    balancesMetadata: [],
-  },
-  {
     id: "rococo-md-5-testnet",
     isTestnet: true,
     isDefault: true,
-    sortIndex: 1044,
+    sortIndex: 967,
     genesisHash: "0x38656c27a232ae030ad8262ef9d6e6c63ca9fe68affbf5db26a4159340621210",
     prefix: 42,
     name: "MD5",
@@ -11085,7 +10503,7 @@ export const chains = [
     chainName: "MD5 Network",
     implName: "hashed",
     specName: "hashed",
-    specVersion: "2",
+    specVersion: "3",
     nativeToken: {
       id: "rococo-md-5-testnet-substrate-native-md5",
     },
@@ -11115,53 +10533,13 @@ export const chains = [
     balancesMetadata: [],
   },
   {
-    id: "metaquity-network-testnet",
-    isTestnet: true,
-    isDefault: true,
-    sortIndex: 1050,
-    genesisHash: "0x1072ec50040d7d42226e34d1ce90d9401ed9506a0ae16390ce6e18df99a1c4e4",
-    prefix: 666,
-    name: "Metaquity Network Testnet",
-    themeColor: "#505050",
-    logo: "https://raw.githubusercontent.com/TalismanSociety/chaindata/main/assets/chains/unknown.svg",
-    chainName: "Metaquity Testnet",
-    implName: "metaquity-network",
-    specName: "metaquity-network",
-    specVersion: "100",
-    nativeToken: {
-      id: "metaquity-network-testnet-substrate-native-mqty",
-    },
-    tokens: [
-      {
-        id: "metaquity-network-testnet-substrate-native-mqty",
-      },
-    ],
-    account: "*25519",
-    subscanUrl: null,
-    chainspecQrUrl: null,
-    latestMetadataQrUrl: null,
-    isUnknownFeeToken: false,
-    feeToken: null,
-    rpcs: [
-      {
-        url: "wss://rpc.testnet.metaquity.xyz",
-      },
-    ],
-    evmNetworks: [],
-    parathreads: null,
-    paraId: null,
-    relay: null,
-    balancesConfig: [],
-    balancesMetadata: [],
-  },
-  {
     id: "rococo-metaquity-network-testnet",
     isTestnet: true,
     isDefault: true,
-    sortIndex: 1051,
+    sortIndex: 973,
     genesisHash: "0xf4189498d258113b5e7165c496b9e2677b2ab1361e061ff2adff5c7f70d1ea57",
     prefix: 666,
-    name: "Metaquity Network Testnet",
+    name: "Metaquity",
     themeColor: "#505050",
     logo: "https://raw.githubusercontent.com/TalismanSociety/chaindata/main/assets/chains/unknown.svg",
     chainName: "Metaquity Testnet",
@@ -11200,7 +10578,7 @@ export const chains = [
     id: "moonbase-alpha-testnet",
     isTestnet: true,
     isDefault: true,
-    sortIndex: 1063,
+    sortIndex: 984,
     genesisHash: "0x91bc6e169807aaa54802737e1c504b2577d4fafedd5a02c10293b1cd60e39527",
     prefix: 1287,
     name: "Moonbase Alpha",
@@ -11209,7 +10587,7 @@ export const chains = [
     chainName: "Moonbase Alpha",
     implName: "moonbase",
     specName: "moonbase",
-    specVersion: "2601",
+    specVersion: "2602",
     nativeToken: {
       id: "moonbase-alpha-testnet-substrate-native-dev",
     },
@@ -11226,7 +10604,7 @@ export const chains = [
     feeToken: null,
     rpcs: [
       {
-        url: "wss://moonbeam-alpha.api.onfinality.io/public-ws",
+        url: "wss://moonbase-rpc.dwellir.com",
       },
       {
         url: "wss://wss.api.moonbase.moonbeam.network",
@@ -11250,7 +10628,7 @@ export const chains = [
     id: "myriad-testnet",
     isTestnet: true,
     isDefault: true,
-    sortIndex: 1073,
+    sortIndex: 991,
     genesisHash: "0x7d45920ff7956e45ef6107720e41b1cfdbd0a50371d6e9072f67070fb285fe16",
     prefix: 42,
     name: "Myriad Testnet",
@@ -11290,18 +10668,24 @@ export const chains = [
     id: "rococo-nodle-testnet",
     isTestnet: true,
     isDefault: true,
-    sortIndex: 1088,
-    genesisHash: null,
-    prefix: null,
+    sortIndex: 1004,
+    genesisHash: "0x0fd167da222f10dae826a0433fe4daadcf4a36c2a6bd5c1b085857d5b79030af",
+    prefix: 37,
     name: "Nodle Testnet",
     themeColor: "#010717",
     logo: "https://raw.githubusercontent.com/TalismanSociety/chaindata/main/assets/chains/rococo-nodle-testnet.svg",
-    chainName: null,
-    implName: null,
-    specName: null,
-    specVersion: null,
-    nativeToken: null,
-    tokens: [],
+    chainName: "Nodle Testing Parachain",
+    implName: "nodle-para",
+    specName: "nodle-para",
+    specVersion: "25",
+    nativeToken: {
+      id: "rococo-nodle-testnet-substrate-native-notnodl",
+    },
+    tokens: [
+      {
+        id: "rococo-nodle-testnet-substrate-native-notnodl",
+      },
+    ],
     account: "*25519",
     subscanUrl: null,
     chainspecQrUrl: null,
@@ -11310,7 +10694,7 @@ export const chains = [
     feeToken: null,
     rpcs: [
       {
-        url: "wss://nodle-paradis.api.onfinality.io/public-ws",
+        url: "wss://node-6957502816543653888.lh.onfinality.io/ws?apikey=09b04494-3139-4b57-a5d1-e1c4c18748ce",
       },
     ],
     evmNetworks: [],
@@ -11326,7 +10710,7 @@ export const chains = [
     id: "opal-testnet",
     isTestnet: true,
     isDefault: true,
-    sortIndex: 1104,
+    sortIndex: 1020,
     genesisHash: "0xc87870ef90a438d574b8e320f17db372c50f62beb52e479c8ff6ee5b460670b9",
     prefix: 42,
     name: "Opal",
@@ -11335,7 +10719,7 @@ export const chains = [
     chainName: "OPAL by UNIQUE",
     implName: "opal",
     specName: "opal",
-    specVersion: "10010064",
+    specVersion: "10030070",
     nativeToken: {
       id: "opal-testnet-substrate-native-opl",
     },
@@ -11375,7 +10759,7 @@ export const chains = [
     id: "rococo-origin-trail-parachain-testnet",
     isTestnet: true,
     isDefault: true,
-    sortIndex: 1115,
+    sortIndex: 1030,
     genesisHash: "0xf2b8faefcf9c370872d0b4d2eee31d46b4de4a8688153d23d82a39e2d6bc8bbc",
     prefix: 101,
     name: "OriginTrail Testnet",
@@ -11417,7 +10801,7 @@ export const chains = [
     id: "rococo-pangolin-testnet",
     isTestnet: true,
     isDefault: true,
-    sortIndex: 1121,
+    sortIndex: 1036,
     genesisHash: "0xb067215e6232ffeed7cede2f92ac6b65f2121523fa221fc76f2e4430086c6b70",
     prefix: 42,
     name: "Pangolin2",
@@ -11426,7 +10810,7 @@ export const chains = [
     chainName: "Pangolin2",
     implName: "DarwiniaOfficialRust",
     specName: "Pangolin2",
-    specVersion: "6501",
+    specVersion: "6502",
     nativeToken: {
       id: "rococo-pangolin-testnet-substrate-native-pring",
     },
@@ -11459,7 +10843,7 @@ export const chains = [
     id: "pangoro-testnet",
     isTestnet: true,
     isDefault: true,
-    sortIndex: 1122,
+    sortIndex: 1037,
     genesisHash: "0xaaa8b33b723b30b44e45e4e6c01936cc92e7559b4184fb0cee2853d55610fcbf",
     prefix: 18,
     name: "Pangoro2",
@@ -11496,27 +10880,21 @@ export const chains = [
     balancesMetadata: [],
   },
   {
-    id: "phala-testnet",
+    id: "phala-testnet-standalone",
     isTestnet: true,
     isDefault: true,
-    sortIndex: 1127,
-    genesisHash: "0x35e83f8f298c9b90ce08ee860d0eeeece48044c3a3475b7d50b2255994a921a7",
-    prefix: 30,
+    sortIndex: 1042,
+    genesisHash: null,
+    prefix: null,
     name: "Phala Testnet",
-    themeColor: "#cdfa50",
-    logo: "https://raw.githubusercontent.com/TalismanSociety/chaindata/main/assets/chains/phala-testnet.svg",
-    chainName: "Phala Development",
-    implName: "phala-node",
-    specName: "phala-node",
-    specVersion: "1",
-    nativeToken: {
-      id: "phala-testnet-substrate-native-unit",
-    },
-    tokens: [
-      {
-        id: "phala-testnet-substrate-native-unit",
-      },
-    ],
+    themeColor: "#505050",
+    logo: "https://raw.githubusercontent.com/TalismanSociety/chaindata/main/assets/chains/unknown.svg",
+    chainName: null,
+    implName: null,
+    specName: null,
+    specVersion: null,
+    nativeToken: null,
+    tokens: [],
     account: "*25519",
     subscanUrl: null,
     chainspecQrUrl: null,
@@ -11536,10 +10914,50 @@ export const chains = [
     balancesMetadata: [],
   },
   {
+    id: "phala-testnet-standalone-2",
+    isTestnet: true,
+    isDefault: true,
+    sortIndex: 1043,
+    genesisHash: "0xd9b288f9083f852f2729af58476b82b04bc9ed7e07d705614a843c93460974b2",
+    prefix: 30,
+    name: "Phala Testnet",
+    themeColor: "#505050",
+    logo: "https://raw.githubusercontent.com/TalismanSociety/chaindata/main/assets/chains/unknown.svg",
+    chainName: "Phala PoC-6",
+    implName: "phala-node",
+    specName: "phala-node",
+    specVersion: "101",
+    nativeToken: {
+      id: "phala-testnet-standalone-2-substrate-native-pha",
+    },
+    tokens: [
+      {
+        id: "phala-testnet-standalone-2-substrate-native-pha",
+      },
+    ],
+    account: "*25519",
+    subscanUrl: null,
+    chainspecQrUrl: null,
+    latestMetadataQrUrl: null,
+    isUnknownFeeToken: false,
+    feeToken: null,
+    rpcs: [
+      {
+        url: "wss://poc6.phala.network/ws",
+      },
+    ],
+    evmNetworks: [],
+    parathreads: null,
+    paraId: null,
+    relay: null,
+    balancesConfig: [],
+    balancesMetadata: [],
+  },
+  {
     id: "rococo-picasso-testnet",
     isTestnet: true,
     isDefault: true,
-    sortIndex: 1129,
+    sortIndex: 1044,
     genesisHash: "0x1fb83e6e5fafa90d85ac934e3a8efdced33f9adfe3d5552d7af118fe854992d2",
     prefix: 49,
     name: "Picasso Testnet",
@@ -11548,7 +10966,7 @@ export const chains = [
     chainName: "Picasso Testnet (Rococo Relay)",
     implName: "picasso",
     specName: "picasso",
-    specVersion: "10041",
+    specVersion: "10009",
     nativeToken: {
       id: "rococo-picasso-testnet-substrate-native-pica",
     },
@@ -11581,7 +10999,7 @@ export const chains = [
     id: "polymesh-testnet",
     isTestnet: true,
     isDefault: true,
-    sortIndex: 1142,
+    sortIndex: 1054,
     genesisHash: "0x2ace05e703aa50b48c0ccccfc8b424f7aab9a1e2c424ed12e45d20b1e8ffd0d6",
     prefix: 42,
     name: "Polymesh Testnet",
@@ -11590,7 +11008,7 @@ export const chains = [
     chainName: "Polymesh Testnet",
     implName: "polymesh_testnet",
     specName: "polymesh_testnet",
-    specVersion: "6000004",
+    specVersion: "6001000",
     nativeToken: {
       id: "polymesh-testnet-substrate-native-polyx",
     },
@@ -11618,10 +11036,52 @@ export const chains = [
     balancesMetadata: [],
   },
   {
+    id: "rococo-ewx-testnet",
+    isTestnet: true,
+    isDefault: true,
+    sortIndex: 1075,
+    genesisHash: "0xac123be800b7c9a3e3449bb70edd8e3d9008d27826381451eebf94bce1db1fbe",
+    prefix: 42,
+    name: "Rex",
+    themeColor: "#505050",
+    logo: "https://raw.githubusercontent.com/TalismanSociety/chaindata/main/assets/chains/unknown.svg",
+    chainName: "Energy Web X Rococo",
+    implName: "ewx-parachain",
+    specName: "ewx-parachain",
+    specVersion: "50",
+    nativeToken: {
+      id: "rococo-ewx-testnet-substrate-native-vt",
+    },
+    tokens: [
+      {
+        id: "rococo-ewx-testnet-substrate-native-vt",
+      },
+    ],
+    account: "*25519",
+    subscanUrl: null,
+    chainspecQrUrl: null,
+    latestMetadataQrUrl: null,
+    isUnknownFeeToken: false,
+    feeToken: null,
+    rpcs: [
+      {
+        url: "wss://public-rpc.testnet.energywebx.com/",
+      },
+    ],
+    evmNetworks: [],
+    parathreads: null,
+    paraId: 3345,
+    relay: {
+      id: "rococo-testnet",
+    },
+    balancesConfig: [],
+    balancesMetadata: [],
+  },
+  {
     id: "rococo-phala-testnet",
     isTestnet: true,
     isDefault: true,
-    sortIndex: 1165,
+    sortIndex: 1076,
     genesisHash: "0xe0baa740e6aff1d5616cda3f16c5f51ac96bbbd9899583f028045f6ac7e86c5c",
     prefix: 30,
     name: "Rhala",
@@ -11630,7 +11090,7 @@ export const chains = [
     chainName: "Khala",
     implName: "rhala",
     specName: "rhala",
-    specVersion: "1256",
+    specVersion: "1261",
     nativeToken: {
       id: "rococo-phala-testnet-substrate-native-pha",
     },
@@ -11663,7 +11123,7 @@ export const chains = [
     id: "rococo-asset-hub-testnet",
     isTestnet: true,
     isDefault: true,
-    sortIndex: 1173,
+    sortIndex: 1080,
     genesisHash: "0x7c34d42fc815d392057c78b49f2755c753440ccd38bcb0405b3bcfb601d08734",
     prefix: 42,
     name: "Rococo Asset Hub",
@@ -11672,7 +11132,7 @@ export const chains = [
     chainName: "Rococo Asset Hub",
     implName: "statemine",
     specName: "statemine",
-    specVersion: "1003000",
+    specVersion: "1005000",
     nativeToken: {
       id: "rococo-asset-hub-testnet-substrate-native-roc",
     },
@@ -11688,6 +11148,9 @@ export const chains = [
     isUnknownFeeToken: false,
     feeToken: null,
     rpcs: [
+      {
+        url: "wss://rococo-asset-hub-rpc.dwellir.com",
+      },
       {
         url: "wss://rococo-asset-hub-rpc.polkadot.io",
       },
@@ -11705,16 +11168,16 @@ export const chains = [
     id: "rococo-bridge-hub-testnet",
     isTestnet: true,
     isDefault: true,
-    sortIndex: 1174,
+    sortIndex: 1081,
     genesisHash: "0x6de3dc58adbc525bad4ae201a8660c5be8949e10308457b176510c72a413f3a3",
     prefix: 42,
     name: "Rococo Bridge Hub",
     themeColor: "#505050",
     logo: "https://raw.githubusercontent.com/TalismanSociety/chaindata/main/assets/chains/unknown.svg",
     chainName: "Rococo BridgeHub",
-    implName: "bridge-hub-rococo",
-    specName: "bridge-hub-rococo",
-    specVersion: "1003000",
+    implName: "statemine",
+    specName: "statemine",
+    specVersion: "1005000",
     nativeToken: {
       id: "rococo-bridge-hub-testnet-substrate-native-roc",
     },
@@ -11731,6 +11194,9 @@ export const chains = [
     feeToken: null,
     rpcs: [
       {
+        url: "wss://rococo-bridge-hub-rpc.dwellir.com",
+      },
+      {
         url: "wss://rococo-bridge-hub-rpc.polkadot.io",
       },
     ],
@@ -11744,44 +11210,10 @@ export const chains = [
     balancesMetadata: [],
   },
   {
-    id: "sherpax-testnet",
-    isTestnet: true,
-    isDefault: true,
-    sortIndex: 1193,
-    genesisHash: null,
-    prefix: null,
-    name: "Sherpax",
-    themeColor: "#34c69a",
-    logo: "https://raw.githubusercontent.com/TalismanSociety/chaindata/main/assets/chains/sherpax-testnet.svg",
-    chainName: null,
-    implName: null,
-    specName: null,
-    specVersion: null,
-    nativeToken: null,
-    tokens: [],
-    account: "*25519",
-    subscanUrl: null,
-    chainspecQrUrl: null,
-    latestMetadataQrUrl: null,
-    isUnknownFeeToken: false,
-    feeToken: null,
-    rpcs: [
-      {
-        url: "wss://sherpax-testnet.chainx.org",
-      },
-    ],
-    evmNetworks: [],
-    parathreads: null,
-    paraId: null,
-    relay: null,
-    balancesConfig: [],
-    balancesMetadata: [],
-  },
-  {
     id: "shibuya-testnet",
     isTestnet: true,
     isDefault: true,
-    sortIndex: 1195,
+    sortIndex: 1101,
     genesisHash: "0xddb89973361a170839f80f152d2e9e38a376a5a7eccefcade763f46a8e567019",
     prefix: 5,
     name: "Shibuya",
@@ -11790,7 +11222,7 @@ export const chains = [
     chainName: "Shibuya Testnet",
     implName: "shibuya",
     specName: "shibuya",
-    specVersion: "114",
+    specVersion: "115",
     nativeToken: {
       id: "shibuya-testnet-substrate-native-sby",
     },
@@ -11828,7 +11260,7 @@ export const chains = [
     id: "skyekiwi-testnet",
     isTestnet: true,
     isDefault: true,
-    sortIndex: 1203,
+    sortIndex: 1117,
     genesisHash: "0xb5bfb91886508f2b7abc78bec8dffef3c9ad43e3b46caec6b581292f0e5b52ce",
     prefix: 42,
     name: "SkyeKiwi",
@@ -11865,13 +11297,13 @@ export const chains = [
     balancesMetadata: [],
   },
   {
-    id: "rococo-societal-testnet",
+    id: "snowbridge-asset-hub-testnet",
     isTestnet: true,
     isDefault: true,
-    sortIndex: 1207,
+    sortIndex: 1120,
     genesisHash: null,
     prefix: null,
-    name: "Societal",
+    name: "Snowbridge Asset Hub",
     themeColor: "#505050",
     logo: "https://raw.githubusercontent.com/TalismanSociety/chaindata/main/assets/chains/unknown.svg",
     chainName: null,
@@ -11888,12 +11320,48 @@ export const chains = [
     feeToken: null,
     rpcs: [
       {
-        url: "wss://node-ws-rococo.testnet.sctl.link",
+        url: "wss://rococo-rpc.snowbridge.network/assethub",
       },
     ],
     evmNetworks: [],
     parathreads: null,
-    paraId: 4253,
+    paraId: 3416,
+    relay: {
+      id: "rococo-testnet",
+    },
+    balancesConfig: [],
+    balancesMetadata: [],
+  },
+  {
+    id: "snowbridge-bridge-hub-testnet",
+    isTestnet: true,
+    isDefault: true,
+    sortIndex: 1121,
+    genesisHash: null,
+    prefix: null,
+    name: "Snowbridge Bridge Hub",
+    themeColor: "#505050",
+    logo: "https://raw.githubusercontent.com/TalismanSociety/chaindata/main/assets/chains/unknown.svg",
+    chainName: null,
+    implName: null,
+    specName: null,
+    specVersion: null,
+    nativeToken: null,
+    tokens: [],
+    account: "*25519",
+    subscanUrl: null,
+    chainspecQrUrl: null,
+    latestMetadataQrUrl: null,
+    isUnknownFeeToken: false,
+    feeToken: null,
+    rpcs: [
+      {
+        url: "wss://rococo-rpc.snowbridge.network/bridgehub",
+      },
+    ],
+    evmNetworks: [],
+    parathreads: null,
+    paraId: 3016,
     relay: {
       id: "rococo-testnet",
     },
@@ -11904,7 +11372,7 @@ export const chains = [
     id: "rococo-subsocial-testnet",
     isTestnet: true,
     isDefault: true,
-    sortIndex: 1211,
+    sortIndex: 1124,
     genesisHash: "0x01f15f9d48ea279640cb35267bfd33a88bb4c21ebb00b129e9bc2d2236aaafdb",
     prefix: 28,
     name: "SoonsocialX",
@@ -11913,7 +11381,7 @@ export const chains = [
     chainName: "SoonSocial",
     implName: "soonsocial-parachain",
     specName: "soonsocial-parachain",
-    specVersion: "2901",
+    specVersion: "3400",
     nativeToken: {
       id: "rococo-subsocial-testnet-substrate-native-soon",
     },
@@ -11946,7 +11414,7 @@ export const chains = [
     id: "rococo-sora-testnet",
     isTestnet: true,
     isDefault: true,
-    sortIndex: 1212,
+    sortIndex: 1125,
     genesisHash: "0x8685a8d3e57fa8024b91b8ead6cc97acf953889c6fb0a355602826a1e2db198f",
     prefix: 420,
     name: "Sora Testnet",
@@ -11955,13 +11423,13 @@ export const chains = [
     chainName: "SORA Rococo",
     implName: "sora_ksm",
     specName: "sora_ksm",
-    specVersion: "8",
+    specVersion: "10",
     nativeToken: {
-      id: "rococo-sora-testnet-substrate-native-rxor",
+      id: "rococo-sora-testnet-substrate-native-xor",
     },
     tokens: [
       {
-        id: "rococo-sora-testnet-substrate-native-rxor",
+        id: "rococo-sora-testnet-substrate-native-xor",
       },
     ],
     account: "*25519",
@@ -11988,7 +11456,7 @@ export const chains = [
     id: "sora-substrate-testnet",
     isTestnet: true,
     isDefault: true,
-    sortIndex: 1213,
+    sortIndex: 1126,
     genesisHash: "0x3266816be9fa51b32cfea58d3e33ca77246bc9618595a4300e44c8856a8d8a17",
     prefix: 69,
     name: "Sora Testnet",
@@ -11997,7 +11465,7 @@ export const chains = [
     chainName: "SORA-staging Testnet",
     implName: "sora-substrate",
     specName: "sora-substrate",
-    specVersion: "67",
+    specVersion: "70",
     nativeToken: {
       id: "sora-substrate-testnet-substrate-native-xor",
     },
@@ -12037,7 +11505,7 @@ export const chains = [
     id: "subspace-gemini-1-testnet",
     isTestnet: true,
     isDefault: true,
-    sortIndex: 1228,
+    sortIndex: 1133,
     genesisHash: "0x9ee86eefc3cc61c71a7751bba7f25e442da2512f408e6286153b3ccc055dccf0",
     prefix: 2254,
     name: "Subspace Gemini",
@@ -12077,7 +11545,7 @@ export const chains = [
     id: "subspace-gemini-2-a-testnet",
     isTestnet: true,
     isDefault: true,
-    sortIndex: 1229,
+    sortIndex: 1134,
     genesisHash: "0x43d10ffd50990380ffe6c9392145431d630ae67e89dbc9c014cac2a417759101",
     prefix: 2254,
     name: "Subspace Gemini 2a",
@@ -12114,10 +11582,96 @@ export const chains = [
     balancesMetadata: [],
   },
   {
+    id: "subspace-gemini-3-f-testnet",
+    isTestnet: true,
+    isDefault: true,
+    sortIndex: 1135,
+    genesisHash: "0x92e91e657747c41eeabed5129ff51689d2e935b9f6abfbd5dfcb2e1d0d035095",
+    prefix: 2254,
+    name: "Subspace Gemini 3f",
+    themeColor: "#505050",
+    logo: "https://raw.githubusercontent.com/TalismanSociety/chaindata/main/assets/chains/unknown.svg",
+    chainName: "Subspace Gemini 3f",
+    implName: "subspace",
+    specName: "subspace",
+    specVersion: "3",
+    nativeToken: {
+      id: "subspace-gemini-3-f-testnet-substrate-native-tssc",
+    },
+    tokens: [
+      {
+        id: "subspace-gemini-3-f-testnet-substrate-native-tssc",
+      },
+    ],
+    account: "*25519",
+    subscanUrl: null,
+    chainspecQrUrl: null,
+    latestMetadataQrUrl: null,
+    isUnknownFeeToken: false,
+    feeToken: null,
+    rpcs: [
+      {
+        url: "wss://rpc-1.gemini-3f.subspace.network/ws",
+      },
+      {
+        url: "wss://rpc-0.gemini-3f.subspace.network/ws",
+      },
+    ],
+    evmNetworks: [],
+    parathreads: null,
+    paraId: null,
+    relay: null,
+    balancesConfig: [],
+    balancesMetadata: [],
+  },
+  {
+    id: "subspace-gemini-3-g-testnet",
+    isTestnet: true,
+    isDefault: true,
+    sortIndex: 1136,
+    genesisHash: "0x418040fc282f5e5ddd432c46d05297636f6f75ce68d66499ff4cbda69ccd180b",
+    prefix: 2254,
+    name: "Subspace Gemini 3g",
+    themeColor: "#505050",
+    logo: "https://raw.githubusercontent.com/TalismanSociety/chaindata/main/assets/chains/unknown.svg",
+    chainName: "Subspace Gemini 3g",
+    implName: "subspace",
+    specName: "subspace",
+    specVersion: "5",
+    nativeToken: {
+      id: "subspace-gemini-3-g-testnet-substrate-native-tssc",
+    },
+    tokens: [
+      {
+        id: "subspace-gemini-3-g-testnet-substrate-native-tssc",
+      },
+    ],
+    account: "*25519",
+    subscanUrl: null,
+    chainspecQrUrl: null,
+    latestMetadataQrUrl: null,
+    isUnknownFeeToken: false,
+    feeToken: null,
+    rpcs: [
+      {
+        url: "wss://rpc-1.gemini-3g.subspace.network/ws",
+      },
+      {
+        url: "wss://rpc-0.gemini-3g.subspace.network/ws",
+      },
+    ],
+    evmNetworks: [],
+    parathreads: null,
+    paraId: null,
+    relay: null,
+    balancesConfig: [],
+    balancesMetadata: [],
+  },
+  {
     id: "sumi-testnet",
     isTestnet: true,
     isDefault: true,
-    sortIndex: 1231,
+    sortIndex: 1137,
     genesisHash: "0x6ec5e8eaf4627331d77e3ee130a1c8507d78a9367c66634e3f1cec59258ec540",
     prefix: 42,
     name: "Sumi Testnet",
@@ -12157,8 +11711,8 @@ export const chains = [
     id: "t-0-rn-testnet",
     isTestnet: true,
     isDefault: true,
-    sortIndex: 1238,
-    genesisHash: "0xb854e63df88becd122075a26f59846528f1123928c41a450798abfd9eec2036d",
+    sortIndex: 1144,
+    genesisHash: "0xec62ec7bc3bd808f67a63d9a3c709d1426ec5a33cd172938fde8236a0d28ce32",
     prefix: 42,
     name: "t0rn",
     themeColor: "#505050",
@@ -12166,7 +11720,7 @@ export const chains = [
     chainName: "t0rn",
     implName: "Circuit Collator",
     specName: "t0rn",
-    specVersion: "189",
+    specVersion: "5",
     nativeToken: {
       id: "t-0-rn-testnet-substrate-native-t0rn",
     },
@@ -12183,7 +11737,7 @@ export const chains = [
     feeToken: null,
     rpcs: [
       {
-        url: "wss://ws.t0rn.io",
+        url: "wss://rpc.t0rn.io",
       },
     ],
     evmNetworks: [],
@@ -12196,10 +11750,50 @@ export const chains = [
     balancesMetadata: [],
   },
   {
+    id: "tangle-testnet",
+    isTestnet: true,
+    isDefault: true,
+    sortIndex: 1145,
+    genesisHash: "0xea63e6ac7da8699520af7fb540470d63e48eccb33f7273d2e21a935685bf1320",
+    prefix: 42,
+    name: "Tangle",
+    themeColor: "#505050",
+    logo: "https://raw.githubusercontent.com/TalismanSociety/chaindata/main/assets/chains/unknown.svg",
+    chainName: "Tangle Standalone Testnet",
+    implName: "tangle-standalone",
+    specName: "tangle-standalone",
+    specVersion: "502",
+    nativeToken: {
+      id: "tangle-testnet-substrate-native-ttnt",
+    },
+    tokens: [
+      {
+        id: "tangle-testnet-substrate-native-ttnt",
+      },
+    ],
+    account: "*25519",
+    subscanUrl: null,
+    chainspecQrUrl: null,
+    latestMetadataQrUrl: null,
+    isUnknownFeeToken: false,
+    feeToken: null,
+    rpcs: [
+      {
+        url: "wss://rpc-archive.tangle.tools",
+      },
+    ],
+    evmNetworks: [],
+    parathreads: null,
+    paraId: null,
+    relay: null,
+    balancesConfig: [],
+    balancesMetadata: [],
+  },
+  {
     id: "ternoa-alphanet-testnet",
     isTestnet: true,
     isDefault: true,
-    sortIndex: 1248,
+    sortIndex: 1153,
     genesisHash: "0x18bcdb75a0bba577b084878db2dc2546eb21504eaad4b564bb7d47f9d02b6ace",
     prefix: 42,
     name: "Ternoa Alphanet",
@@ -12208,7 +11802,7 @@ export const chains = [
     chainName: "Ternoa Alphanet",
     implName: "alphanet",
     specName: "alphanet",
-    specVersion: "22",
+    specVersion: "24",
     nativeToken: {
       id: "ternoa-alphanet-testnet-substrate-native-caps",
     },
@@ -12239,7 +11833,7 @@ export const chains = [
     id: "thebifrost-testnet",
     isTestnet: true,
     isDefault: true,
-    sortIndex: 1251,
+    sortIndex: 1155,
     genesisHash: "0x15b34a3b7443c73fa1f687cce2d8e5981f6a2eaad54809a6b6af28e83d2adaff",
     prefix: 42,
     name: "The Bifrost Testnet",
@@ -12248,7 +11842,7 @@ export const chains = [
     chainName: "BIFROST Testnet",
     implName: "bifrost-testnet",
     specName: "thebifrost-testnet",
-    specVersion: "459",
+    specVersion: "461",
     nativeToken: {
       id: "thebifrost-testnet-substrate-native-bfc",
     },
@@ -12265,10 +11859,10 @@ export const chains = [
     feeToken: null,
     rpcs: [
       {
-        url: "wss://public-01.testnet.thebifrost.io/ws",
+        url: "wss://public-01.testnet.bifrostnetwork.com/wss",
       },
       {
-        url: "wss://public-02.testnet.thebifrost.io/ws",
+        url: "wss://public-02.testnet.bifrostnetwork.com/wss",
       },
     ],
     evmNetworks: [],
@@ -12279,10 +11873,52 @@ export const chains = [
     balancesMetadata: [],
   },
   {
+    id: "rococo-trappist-testnet",
+    isTestnet: true,
+    isDefault: true,
+    sortIndex: 1173,
+    genesisHash: "0x500ef894568a1d06aa8d4a42b8fede5c9828a5620f4833700878cee2402f5eb5",
+    prefix: 42,
+    name: "Trappist",
+    themeColor: "#505050",
+    logo: "https://raw.githubusercontent.com/TalismanSociety/chaindata/main/assets/chains/unknown.svg",
+    chainName: "Trappist Rococo",
+    implName: "trappist-rococo",
+    specName: "trappist-rococo",
+    specVersion: "11000",
+    nativeToken: {
+      id: "rococo-trappist-testnet-substrate-native-hop",
+    },
+    tokens: [
+      {
+        id: "rococo-trappist-testnet-substrate-native-hop",
+      },
+    ],
+    account: "*25519",
+    subscanUrl: null,
+    chainspecQrUrl: null,
+    latestMetadataQrUrl: null,
+    isUnknownFeeToken: false,
+    feeToken: null,
+    rpcs: [
+      {
+        url: "wss://rococo-trappist-rpc.polkadot.io",
+      },
+    ],
+    evmNetworks: [],
+    parathreads: null,
+    paraId: 1836,
+    relay: {
+      id: "rococo-testnet",
+    },
+    balancesConfig: [],
+    balancesMetadata: [],
+  },
+  {
     id: "rococo-turing-testnet",
     isTestnet: true,
     isDefault: true,
-    sortIndex: 1275,
+    sortIndex: 1179,
     genesisHash: "0xd54f0988402deb4548538626ce37e4a318441ea0529ca369400ebec4e04dfe4b",
     prefix: 51,
     name: "Turing Testnet",
@@ -12291,7 +11927,7 @@ export const chains = [
     chainName: "Turing Staging",
     implName: "turing",
     specName: "turing",
-    specVersion: "295",
+    specVersion: "296",
     nativeToken: {
       id: "rococo-turing-testnet-substrate-native-tur",
     },
@@ -12321,46 +11957,10 @@ export const chains = [
     balancesMetadata: [],
   },
   {
-    id: "rococo-unit-network-testnet",
-    isTestnet: true,
-    isDefault: true,
-    sortIndex: 1281,
-    genesisHash: null,
-    prefix: null,
-    name: "Unit",
-    themeColor: "#505050",
-    logo: "https://raw.githubusercontent.com/TalismanSociety/chaindata/main/assets/chains/unknown.svg",
-    chainName: null,
-    implName: null,
-    specName: null,
-    specVersion: null,
-    nativeToken: null,
-    tokens: [],
-    account: "*25519",
-    subscanUrl: null,
-    chainspecQrUrl: null,
-    latestMetadataQrUrl: null,
-    isUnknownFeeToken: false,
-    feeToken: null,
-    rpcs: [
-      {
-        url: "wss://www.unitnode3.info:443",
-      },
-    ],
-    evmNetworks: [],
-    parathreads: null,
-    paraId: 4168,
-    relay: {
-      id: "rococo-testnet",
-    },
-    balancesConfig: [],
-    balancesMetadata: [],
-  },
-  {
     id: "vara-incentivized-testnet",
     isTestnet: true,
     isDefault: true,
-    sortIndex: 1284,
+    sortIndex: 1184,
     genesisHash: "0x9b86ea7366584c5ddf67de243433fcc05732864933258de9467db46eb9bef8b5",
     prefix: 137,
     name: "Vara Incentivized Testnet",
@@ -12400,7 +12000,7 @@ export const chains = [
     id: "rococo-watr-testnet",
     isTestnet: true,
     isDefault: true,
-    sortIndex: 1296,
+    sortIndex: 1194,
     genesisHash: "0xb53c620c41860278fa3068a5367c8eedceefce8a7c29237d830bc09a71737b5d",
     prefix: 19,
     name: "Watr Testnet",
@@ -12443,53 +12043,19 @@ export const chains = [
     balancesMetadata: [],
   },
   {
-    id: "web-3-games-testnet",
-    isTestnet: true,
-    isDefault: true,
-    sortIndex: 1298,
-    genesisHash: null,
-    prefix: null,
-    name: "Web3Games",
-    themeColor: "#505050",
-    logo: "https://raw.githubusercontent.com/TalismanSociety/chaindata/main/assets/chains/unknown.svg",
-    chainName: null,
-    implName: null,
-    specName: null,
-    specVersion: null,
-    nativeToken: null,
-    tokens: [],
-    account: "*25519",
-    subscanUrl: null,
-    chainspecQrUrl: null,
-    latestMetadataQrUrl: null,
-    isUnknownFeeToken: false,
-    feeToken: null,
-    rpcs: [
-      {
-        url: "wss://devnet.web3games.org",
-      },
-    ],
-    evmNetworks: [],
-    parathreads: null,
-    paraId: null,
-    relay: null,
-    balancesConfig: [],
-    balancesMetadata: [],
-  },
-  {
     id: "westend-asset-hub-testnet",
     isTestnet: true,
     isDefault: true,
-    sortIndex: 1304,
+    sortIndex: 1200,
     genesisHash: "0x67f9723393ef76214df0118c34bbbd3dbebc8ed46a10973a8c969d48fe7598c9",
     prefix: 42,
     name: "Westend Asset Hub",
     themeColor: "#505050",
     logo: "https://raw.githubusercontent.com/TalismanSociety/chaindata/main/assets/chains/unknown.svg",
-    chainName: "Westend Asset Hub",
+    chainName: "Westmint",
     implName: "westmint",
     specName: "westmint",
-    specVersion: "1003000",
+    specVersion: "1004000",
     nativeToken: {
       id: "westend-asset-hub-testnet-substrate-native-wnd",
     },
@@ -12506,22 +12072,22 @@ export const chains = [
     feeToken: null,
     rpcs: [
       {
-        url: "wss://sys.ibp.network/westmint",
-      },
-      {
-        url: "wss://sys.dotters.network/westmint",
-      },
-      {
         url: "wss://westmint-rpc.dwellir.com",
       },
       {
         url: "wss://westmint-rpc-tn.dwellir.com",
       },
       {
+        url: "wss://sys.ibp.network/westmint",
+      },
+      {
+        url: "wss://sys.dotters.network/westmint",
+      },
+      {
         url: "wss://westend-asset-hub-rpc.polkadot.io",
       },
       {
-        url: "wss://wnd-rpc.stakeworld.io/westmint",
+        url: "wss://wnd-rpc.stakeworld.io/assethub",
       },
     ],
     evmNetworks: [],
@@ -12534,10 +12100,64 @@ export const chains = [
     balancesMetadata: [],
   },
   {
+    id: "westend-bridge-hub-testnet",
+    isTestnet: true,
+    isDefault: true,
+    sortIndex: 1201,
+    genesisHash: "0x0441383e31d1266a92b4cb2ddd4c2e3661ac476996db7e5844c52433b81fe782",
+    prefix: 42,
+    name: "Westend Bridge Hub",
+    themeColor: "#505050",
+    logo: "https://raw.githubusercontent.com/TalismanSociety/chaindata/main/assets/chains/unknown.svg",
+    chainName: "Westend BridgeHub",
+    implName: "bridge-hub-westend",
+    specName: "bridge-hub-westend",
+    specVersion: "1004000",
+    nativeToken: {
+      id: "westend-bridge-hub-testnet-substrate-native-wnd",
+    },
+    tokens: [
+      {
+        id: "westend-bridge-hub-testnet-substrate-native-wnd",
+      },
+    ],
+    account: "*25519",
+    subscanUrl: null,
+    chainspecQrUrl: null,
+    latestMetadataQrUrl: null,
+    isUnknownFeeToken: false,
+    feeToken: null,
+    rpcs: [
+      {
+        url: "wss://westend-bridge-hub-rpc.dwellir.com",
+      },
+      {
+        url: "wss://westend-bridge-hub-rpc-tn.dwellir.com",
+      },
+      {
+        url: "wss://sys.ibp.network/bridgehub-westend",
+      },
+      {
+        url: "wss://sys.dotters.network/bridgehub-westend",
+      },
+      {
+        url: "wss://westend-bridge-hub-rpc.polkadot.io",
+      },
+    ],
+    evmNetworks: [],
+    parathreads: null,
+    paraId: 1002,
+    relay: {
+      id: "westend-testnet",
+    },
+    balancesConfig: [],
+    balancesMetadata: [],
+  },
+  {
     id: "xsocial-testnet",
     isTestnet: true,
     isDefault: true,
-    sortIndex: 1314,
+    sortIndex: 1209,
     genesisHash: "0x1333ee260a234d3a246b85239e279bbdc7618db7188f2dd73f7322963fcd4d02",
     prefix: 42,
     name: "xSocial",
@@ -12574,10 +12194,52 @@ export const chains = [
     balancesMetadata: [],
   },
   {
+    id: "rococo-yerba-testnet",
+    isTestnet: true,
+    isDefault: true,
+    sortIndex: 1211,
+    genesisHash: "0x0a7b013f0e80502cb9063c8039f0f1b6bedc4a49e7fbb2eb25d5c61c405ebdff",
+    prefix: 42,
+    name: "Yerba",
+    themeColor: "#505050",
+    logo: "https://raw.githubusercontent.com/TalismanSociety/chaindata/main/assets/chains/unknown.svg",
+    chainName: "Yerba on Rococo",
+    implName: "yerba-rococo",
+    specName: "yerba-rococo",
+    specVersion: "10001",
+    nativeToken: {
+      id: "rococo-yerba-testnet-substrate-native-roc",
+    },
+    tokens: [
+      {
+        id: "rococo-yerba-testnet-substrate-native-roc",
+      },
+    ],
+    account: "*25519",
+    subscanUrl: null,
+    chainspecQrUrl: null,
+    latestMetadataQrUrl: null,
+    isUnknownFeeToken: false,
+    feeToken: null,
+    rpcs: [
+      {
+        url: "wss://rpc.dev.yerba.network",
+      },
+    ],
+    evmNetworks: [],
+    parathreads: null,
+    paraId: 4292,
+    relay: {
+      id: "rococo-testnet",
+    },
+    balancesConfig: [],
+    balancesMetadata: [],
+  },
+  {
     id: "rococo-zeitgeist-testnet",
     isTestnet: true,
     isDefault: true,
-    sortIndex: 1318,
+    sortIndex: 1214,
     genesisHash: "0xb90cd3a37b4793c6494b78962986f4f6ed3ec2eda91a6b84fd8457d24f606b9c",
     prefix: 73,
     name: "Zeitgeist Battery Station",
@@ -12586,7 +12248,7 @@ export const chains = [
     chainName: "Battery Station",
     implName: "zeitgeist",
     specName: "zeitgeist",
-    specVersion: "51",
+    specVersion: "52",
     nativeToken: {
       id: "rococo-zeitgeist-testnet-substrate-native-zbs",
     },
