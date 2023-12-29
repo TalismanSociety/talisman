@@ -57,12 +57,13 @@ const MnemonicFormInner = () => {
   }, [])
 
   return (
-    <div className="flex grow flex-col">
-      <Mnemonic
-        mnemonic={mnemonic}
-        onReveal={handleMnemonicRevealed}
-        topRight={<MnemonicWordCountSwitch value={wordsCount} onChange={setWordsCount} />}
-      />
+    <div className={classNames("flex grow flex-col")}>
+      <div>
+        <div className="flex items-center justify-end py-4 text-sm">
+          <MnemonicWordCountSwitch value={wordsCount} onChange={setWordsCount} />
+        </div>
+        <Mnemonic mnemonic={mnemonic} onReveal={handleMnemonicRevealed} />
+      </div>
       <div className="bg-grey-750 text-alert-warn mt-8 flex w-full items-center gap-6 rounded-sm p-4">
         <div className="bg-alert-warn/10 flex flex-col justify-center rounded-full p-2">
           <AlertTriangleIcon className="shrink-0 text-base" />
@@ -175,7 +176,7 @@ export const MnemonicCreateModal = () => {
 
   return (
     <Modal containerId="main" isOpen={isOpen} onDismiss={cancel}>
-      <ModalDialog className="!w-[64rem]" title={t("New recovery phrase")} onClose={cancel}>
+      <ModalDialog className="!min-w-[64rem]" title={t("New recovery phrase")} onClose={cancel}>
         {!!mnemonic && <MnemonicCreateForm />}
       </ModalDialog>
     </Modal>

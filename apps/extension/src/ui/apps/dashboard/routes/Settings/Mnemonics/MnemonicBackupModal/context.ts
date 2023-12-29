@@ -15,14 +15,14 @@ const useMnemonicBackupModalProvider = () => {
   const [mnemonicId, setMnemonicId] = useState<string | undefined>()
   const mnemonic = useMnemonic(mnemonicId)
 
-  const [stage, setStage] = useState(Stages.Complete)
+  const [stage, setStage] = useState(Stages.Acknowledgement)
 
   const { isOpen, open: innerOpen, close } = useOpenClose()
 
   const open = useCallback(
     (mnemonicId?: string) => {
       setMnemonicId(mnemonicId)
-      setStage(Stages.Complete)
+      setStage(Stages.Acknowledgement)
       innerOpen()
     },
     [innerOpen, setStage]

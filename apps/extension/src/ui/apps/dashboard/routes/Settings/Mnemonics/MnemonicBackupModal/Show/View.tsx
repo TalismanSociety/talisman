@@ -43,7 +43,7 @@ export const ViewMnemonic: FC<ShowMnemonicProps> = ({ mnemonicId, handleComplete
         {t("Only reveal your recovery phrase when in a secure location")}
       </span>
       <div className="flex flex-col gap-16">
-        <Mnemonic onReveal={handleMnemonicReveal} mnemonic={mnemonic ?? ""} />
+        <Mnemonic onReveal={handleMnemonicReveal} mnemonic={mnemonic ?? ""} wideLayoutWhen24 />
         <div className="flex flex-col gap-8">
           <Checkbox
             disabled={!canConfirm}

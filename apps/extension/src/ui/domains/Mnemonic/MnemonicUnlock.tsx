@@ -94,7 +94,7 @@ const BaseMnemonicUnlock: FC<MnemonicUnlockProps> = ({ children, buttonText, tit
   ) : (
     <form
       onSubmit={handleSubmit(submit)}
-      className={`flex w-full flex-col justify-between gap-8 ${DEFAULT_WIDTH}`}
+      className={`flex flex-col justify-between gap-8 ${DEFAULT_WIDTH}`}
     >
       <FormFieldContainer label={title} error={errors.password?.message}>
         <FormFieldInputText
