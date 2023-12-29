@@ -61,7 +61,7 @@ module.exports = {
        *
        *     console.log(content)    // `# Oh **hello**`
        *     console.log(t(content)) // `# Oh **salut**`
-      **/
+       */
       class CustomLexer {
         /**
          * Extracts the translations keys from the file.
