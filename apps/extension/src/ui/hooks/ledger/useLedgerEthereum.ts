@@ -51,7 +51,7 @@ export const useLedgerEthereum = (persist = false) => {
       // this may hang at this point just after plugging the ledger
       await Promise.race([
         ledger.getAddress(getEthLedgerDerivationPath("LedgerLive")),
-        throwAfter(5_000, "Timeout"),
+        throwAfter(5_000, "Timeout on Ledger Ethereum connection"),
       ])
 
       const { version } = await ledger.getAppConfiguration()
