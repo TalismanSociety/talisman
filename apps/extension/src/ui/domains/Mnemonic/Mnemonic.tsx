@@ -51,10 +51,17 @@ export const Mnemonic: FC<MnemonicProps> = ({ onReveal, mnemonic, topRight }) =>
     <div>
       {topRight && <div className="flex items-center justify-end py-4 text-sm">{topRight}</div>}
       <div className="bg-black-secondary group relative overflow-hidden rounded p-2">
-        <div className="grid min-h-[12.6rem] grid-cols-4 gap-4 p-2">
+        <div
+          className={`grid min-h-[12.6rem] grid-cols-4  ${
+            mnemonic && mnemonic.split(" ").length > 12 && "lg:grid-cols-6"
+          } gap-4 p-2`}
+        >
           {!!mnemonic &&
             mnemonic.split(" ").map((word, i) => (
-              <span className="bg-black-tertiary text-body rounded px-8 py-4" key={`mnemonic-${i}`}>
+              <span
+                className="bg-black-tertiary text-body whitespace-nowrap rounded px-8 py-4"
+                key={`mnemonic-${i}`}
+              >
                 <span className="text-grey-500 select-none">{i + 1}. </span>
                 <span className="notranslate">{word}</span>
               </span>

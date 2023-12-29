@@ -52,18 +52,15 @@ type MnemonicUnlockProps = {
   title?: ReactNode
 }
 
-const BaseMnemonicUnlock: FC<MnemonicUnlockProps> = ({
-  className,
-  children,
-  buttonText,
-  title,
-}) => {
+const DEFAULT_WIDTH = "w-[54rem]"
+const LARGE_WIDTH = "lg:w-[74rem]"
+
+const BaseMnemonicUnlock: FC<MnemonicUnlockProps> = ({ children, buttonText, title }) => {
   const { t } = useTranslation()
   const {
     register,
     handleSubmit,
     setError,
-    setValue,
     setFocus,
     formState: { errors, isValid, isSubmitting },
   } = useForm<FormData>({
@@ -90,16 +87,15 @@ const BaseMnemonicUnlock: FC<MnemonicUnlockProps> = ({
     if (!mnemonic) setFocus("password")
   }, [mnemonic, setFocus])
 
-  useEffect(() => {
-    return () => {
-      setValue("password", "")
-    }
-  }, [setValue])
-
   return mnemonic ? (
-    <>{children}</>
+    <div className={`${DEFAULT_WIDTH} ${mnemonic.split(" ").length > 12 && LARGE_WIDTH}`}>
+      {children}
+    </div>
   ) : (
-    <form onSubmit={handleSubmit(submit)} className={className}>
+    <form
+      onSubmit={handleSubmit(submit)}
+      className={`flex w-full flex-col justify-between gap-8 ${DEFAULT_WIDTH}`}
+    >
       <FormFieldContainer label={title} error={errors.password?.message}>
         <FormFieldInputText
           before={<KeyIcon className="h-10 w-10 opacity-50" />}

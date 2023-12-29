@@ -7,23 +7,22 @@ import { useCallback, useState } from "react"
 export enum Stages {
   Acknowledgement = "Acknowledgement",
   Show = "Show",
-  Verify = "Verify",
   Complete = "Complete",
 }
 
 const useMnemonicBackupModalProvider = () => {
   const mnemonics = useMnemonics()
-  const [mnemonicId, setMnemonicId] = useState<string>()
+  const [mnemonicId, setMnemonicId] = useState<string | undefined>()
   const mnemonic = useMnemonic(mnemonicId)
 
-  const [stage, setStage] = useState(Stages.Acknowledgement)
+  const [stage, setStage] = useState(Stages.Complete)
 
   const { isOpen, open: innerOpen, close } = useOpenClose()
 
   const open = useCallback(
     (mnemonicId?: string) => {
       setMnemonicId(mnemonicId)
-      setStage(Stages.Acknowledgement)
+      setStage(Stages.Complete)
       innerOpen()
     },
     [innerOpen, setStage]

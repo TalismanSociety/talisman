@@ -1,17 +1,17 @@
 import { LockIcon, ShieldIcon, XIcon } from "@talismn/icons"
-import { t } from "i18next"
 import { useTranslation } from "react-i18next"
 import { Button } from "talisman-ui"
 
 import { Stages, useMnemonicBackupModal } from "./context"
+import { MnemonicBackupModalBase } from "./MnemonicBackupModalBase"
 
 export const Acknowledgement = () => {
   const { t } = useTranslation("admin")
   const { setStage } = useMnemonicBackupModal()
 
   return (
-    <div>
-      <div className="mb-4 flex flex-col gap-16">
+    <MnemonicBackupModalBase title={t("Before you get started")}>
+      <div className="mb-4 flex !w-[56rem] flex-col gap-16">
         <div className="flex flex-col gap-12">
           <div className="flex gap-6">
             <span className="text-brand-pink flex h-20 items-center rounded-2xl bg-[#FD8FFF1A] p-6">
@@ -51,8 +51,6 @@ export const Acknowledgement = () => {
           {t("Learn More")}
         </a>
       </div>
-    </div>
+    </MnemonicBackupModalBase>
   )
 }
-
-Acknowledgement.title = t("Before you get started")
