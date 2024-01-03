@@ -40,7 +40,10 @@ class RequestCounts {
 
 export class RequestStore {
   // `requests` is the primary list of items that need responding to by the user
-  protected readonly requests: Record<string, AnyRespondableRequest> = {}
+  protected readonly requests: Record<
+    string,
+    { request: AnyRespondableRequest; windowId: number }
+  > = {}
   // `observable` is kept up to date with the list of requests, and ensures that the front end
   // can easily set up a subscription to the data, and the state can show the correct message on the icon
   readonly observable = new ReplaySubject<ValidRequests[]>(1)
@@ -50,20 +53,21 @@ export class RequestStore {
   allRequests<T extends KnownRequestTypes>(
     type?: T
   ): KnownRespondableRequest<T>[] | AnyRespondableRequest[] {
-    if (!type) return Object.values(this.requests)
+    if (!type) return Object.values(this.requests).map((req) => req.request)
 
     // get only values with the matching type
     const requestValues = Object.entries(this.requests)
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars
-      .filter(([key, value]) => key.split(".")[0] === type)
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars
-      .map(([key, value]) => value) as KnownRespondableRequest<T>[]
+      .filter(([key]) => key.split(".")[0] === type)
+      .map(([, value]) => value.request) as KnownRespondableRequest<T>[]
 
     return requestValues
   }
 
   public clearRequests() {
-    Object.keys(this.requests).forEach((key) => delete this.requests[key])
+    Object.keys(this.requests).forEach((key) => {
+      windowManager.popupClose(this.requests[key].windowId)
+      delete this.requests[key]
+    })
     this.observable.next(this.getAllRequests())
   }
 
@@ -90,22 +94,28 @@ export class RequestStore {
         id,
       } as unknown as KnownRequest<T>
 
-      const completeRequest = {
+      const request = {
         ...newRequest,
         ...this.onCompleteRequest(id, resolve, reject),
       } as KnownRespondableRequest<T>
 
-      this.requests[id] = completeRequest
-      this.observable.next(this.getAllRequests())
+      windowManager
+        .popupOpen(`#/${requestOptions.type}/${id}`, () => {
+          if (!this.requests[id]) return
 
-      windowManager.popupOpen(`#/${requestOptions.type}/${id}`, () => {
-        if (!this.requests[id]) return
+          delete this.requests[id]
+          this.observable.next(this.getAllRequests())
 
-        delete this.requests[id]
-        this.observable.next(this.getAllRequests())
-
-        reject(new Error("Cancelled"))
-      })
+          reject(new Error("Cancelled"))
+        })
+        .then((windowId) => {
+          if (windowId === undefined) reject(new Error("Failed to open popup"))
+          else {
+            this.requests[id] = { request, windowId }
+            this.observable.next(this.getAllRequests())
+          }
+        })
+        .catch(reject)
     })
   }
 
@@ -125,6 +135,7 @@ export class RequestStore {
     reject: (error: Error) => void
   ): Resolver<KnownResponse<T>> {
     const complete = (): void => {
+      if (this.requests[id]) windowManager.popupClose(this.requests[id].windowId)
       delete this.requests[id]
       this.observable.next(this.getAllRequests())
     }
@@ -146,13 +157,14 @@ export class RequestStore {
   }
 
   public getRequest<T extends KnownRequestTypes>(id: KnownRequestId<T>) {
-    const request = this.requests[id]
+    const { request } = this.requests[id]
     const requestType = id.split(".")[0] as T
     if (isRequestOfType(request, requestType)) return request as KnownRespondableRequest<T>
     return
   }
 
   public deleteRequest<T extends KnownRequestTypes>(id: KnownRequestId<T>) {
+    if (this.requests[id]) windowManager.popupClose(this.requests[id].windowId)
     delete this.requests[id]
     this.observable.next(this.getAllRequests())
     return

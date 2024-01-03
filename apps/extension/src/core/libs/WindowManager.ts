@@ -99,9 +99,14 @@ class WindowManager {
     return true
   }
 
-  popupClose(): void {
-    this.#windows.forEach((id) => Browser.windows.remove(id))
-    this.#windows = []
+  async popupClose(id?: number) {
+    if (id) {
+      await Browser.windows.remove(id)
+      this.#windows = this.#windows.filter((wid) => wid !== id)
+    } else {
+      await Promise.all(this.#windows.map((wid) => Browser.windows.remove(wid)))
+      this.#windows = []
+    }
   }
 
   async popupOpen(argument?: string, onClose?: () => void) {
@@ -154,6 +159,8 @@ class WindowManager {
         }
       })
     }
+
+    return popup.id
   }
 }
 
