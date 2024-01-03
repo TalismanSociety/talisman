@@ -1,33 +1,7 @@
+import { TogglePill } from "@talisman/components/TogglePill"
 import { useSetting } from "@ui/hooks/useSettings"
-import { FC, useCallback } from "react"
+import { FC } from "react"
 import { useTranslation } from "react-i18next"
-import { PillButton } from "talisman-ui"
-
-const Checked = () => (
-  <svg width="12" height="12" viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg">
-    <path
-      d="M9.11114 3.66675L4.83336 7.94453L2.88892 6.00008"
-      stroke="#D5FF5C"
-      strokeWidth="0.888889"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-    />
-  </svg>
-)
-
-const Unchecked = () => (
-  <svg width="12" height="12" viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg">
-    <rect
-      x="0.333333"
-      y="0.333333"
-      width="11.3333"
-      height="11.3333"
-      rx="2.33333"
-      stroke="currentColor"
-      strokeWidth="0.666667"
-    />
-  </svg>
-)
 
 type EnableTestnetPillButtonProps = {
   className?: string
@@ -37,18 +11,12 @@ export const EnableTestnetPillButton: FC<EnableTestnetPillButtonProps> = ({ clas
   const { t } = useTranslation("admin")
   const [useTestnets, setUseTestnets] = useSetting("useTestnets")
 
-  const handleClick = useCallback(() => {
-    setUseTestnets((prev) => !prev)
-  }, [setUseTestnets])
-
   return (
-    <PillButton
-      icon={useTestnets ? Checked : Unchecked}
-      onClick={handleClick}
-      size="xs"
+    <TogglePill
+      label={t("Enable testnets")}
+      checked={useTestnets}
+      onChange={setUseTestnets}
       className={className}
-    >
-      {t("Enable testnets")}
-    </PillButton>
+    />
   )
 }
