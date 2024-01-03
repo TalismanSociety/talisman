@@ -41,7 +41,7 @@ import {
 import urlJoin from "url-join"
 
 import { ChainLogo } from "../Asset/ChainLogo"
-import Fiat from "../Asset/Fiat"
+import { Fiat } from "../Asset/Fiat"
 import { TokenLogo } from "../Asset/TokenLogo"
 import Tokens from "../Asset/Tokens"
 import { NetworkLogo } from "../Ethereum/NetworkLogo"

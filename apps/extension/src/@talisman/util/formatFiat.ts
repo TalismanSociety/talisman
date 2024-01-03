@@ -9,18 +9,24 @@ export const fiatGroupSeparator = parts.find((p) => p.type === "group")?.value ?
 export const formatFiat = (
   amount = 0,
   currency: Intl.NumberFormatOptions["currency"] | undefined,
-  currencyDisplay?: string
+  currencyDisplay?: string,
+  minimumDecimalPlaces?: number
 ) => {
-  const formatted = new Intl.NumberFormat(
-    undefined,
-    currency === undefined
-      ? {}
-      : {
-          style: "currency",
-          currency,
-          currencyDisplay: currencyDisplay ?? "narrowSymbol",
-        }
-  ).format(amount)
+  const formatOptions: Intl.NumberFormatOptions = {
+    ...(currency !== undefined && {
+      style: "currency",
+      currency,
+      currencyDisplay: currencyDisplay ?? "narrowSymbol",
+    }),
+
+    ...(minimumDecimalPlaces !== undefined && {
+      // NOTE: If minimumFractionDigits is set to an integer greater than `20` then it throws the error:
+      //       `RangeError: minimumFractionDigits value is out of range`
+      minimumFractionDigits: minimumDecimalPlaces <= 20 ? minimumDecimalPlaces : 20,
+    }),
+  }
+
+  const formatted = new Intl.NumberFormat(undefined, formatOptions).format(amount)
 
   // Hack to get trailing ISO code instead of leading
   if (currency !== undefined && currencyDisplay === "code") {

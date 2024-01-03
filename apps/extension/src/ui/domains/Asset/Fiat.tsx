@@ -3,7 +3,7 @@ import { BalanceFormatter } from "@talismn/balances"
 import { classNames } from "@talismn/util"
 import { useSelectedCurrency } from "@ui/hooks/useCurrency"
 import { useRevealableBalance } from "@ui/hooks/useRevealableBalance"
-import { FC, useCallback, useMemo } from "react"
+import { useCallback, useMemo } from "react"
 import CountUp from "react-countup"
 
 type FiatProps = {
@@ -20,29 +20,6 @@ type DisplayValueProps = {
   currency?: Intl.NumberFormatOptions["currency"]
   currencyDisplay?: string
   noCountUp?: boolean
-}
-
-const DisplayValue: FC<DisplayValueProps> = ({ amount, currency, currencyDisplay, noCountUp }) => {
-  const format = useCallback(
-    (amount = 0) => formatFiat(amount, currency, currencyDisplay),
-    [currency, currencyDisplay]
-  )
-  const formatted = useMemo(() => format(amount), [format, amount])
-
-  if (noCountUp) return <>{formatted}</>
-
-  return (
-    <CountUp
-      end={amount}
-      decimals={2}
-      decimal={fiatDecimalSeparator}
-      separator={fiatGroupSeparator}
-      duration={0.4}
-      formattingFn={format}
-      useEasing
-      preserveValue
-    />
-  )
 }
 
 export const Fiat = ({
@@ -81,4 +58,43 @@ export const Fiat = ({
   )
 }
 
-export default Fiat
+const DisplayValue = ({ amount, currency, currencyDisplay, noCountUp }: DisplayValueProps) => {
+  /**
+   * Represents the first non-zero decimal place for numbers between -1 and 1
+   * For example:
+   *
+   *     Input  - Output
+   *     ****** - ******
+   *     99.000 - 0
+   *      1.000 - 0
+   *      0.100 - 1
+   *      0.069 - 2
+   *      0.009 - 3
+   *     -0.009 - 3
+   *     -0.069 - 2
+   *     -0.100 - 1
+   *     -1.000 - 0
+   */
+  const decimalsFactor = Math.abs(Math.min(0, Math.floor(Math.log10(Math.abs(amount)))))
+  const decimalPlaces = amount !== 0 && decimalsFactor > 1 ? decimalsFactor + 1 : 2
+
+  const format = useCallback(
+    (amount = 0) => formatFiat(amount, currency, currencyDisplay, decimalPlaces),
+    [currency, currencyDisplay, decimalPlaces]
+  )
+  const formatted = useMemo(() => format(amount), [format, amount])
+
+  if (noCountUp) return <>{formatted}</>
+  return (
+    <CountUp
+      end={amount}
+      decimals={decimalPlaces}
+      decimal={fiatDecimalSeparator}
+      separator={fiatGroupSeparator}
+      duration={0.4}
+      formattingFn={format}
+      useEasing
+      preserveValue
+    />
+  )
+}

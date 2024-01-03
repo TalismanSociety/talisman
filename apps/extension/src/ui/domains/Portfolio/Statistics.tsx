@@ -6,7 +6,7 @@ import BigNumber from "bignumber.js"
 import { ReactNode } from "react"
 
 import currencyConfig from "../Asset/currencyConfig"
-import Fiat from "../Asset/Fiat"
+import { Fiat } from "../Asset/Fiat"
 import Tokens from "../Asset/Tokens"
 
 type StatisticsProps = {
