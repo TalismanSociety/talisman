@@ -20,6 +20,7 @@ import {
 } from "@talismn/scale"
 import * as $ from "@talismn/subshape-fork"
 import { Deferred, blake2Concat, decodeAnyAddress, isEthereumAddress } from "@talismn/util"
+import isEqual from "lodash/isEqual"
 import { combineLatest, map, scan, share, switchAll } from "rxjs"
 
 import { DefaultBalanceModule, NewBalanceModule, NewTransferParamsType } from "../BalanceModule"
@@ -1215,9 +1216,10 @@ async function subscribeCrowdloans(
       addresses: string[],
       callback: SubscriptionCallback<FundContribution[]>
     ) => {
-      // TODO: Watch system_events in order to subscribe to changes
+      // TODO: Watch system_events in order to subscribe to changes, then redo the contributions query when changes are detected:
       // https://github.com/polkadot-js/api/blob/8fe02a14345b57e6abb8f7f2c2b624cf70c51b23/packages/api-derive/src/crowdloan/ownContributions.ts#L32-L47
-      // then redo query when changes are detected
+      //
+      // For now we just re-fetch all contributions on a timer and then only send them to the subscription callback when they have changed
 
       const queries = funds.map(({ paraId, fundIndex }) => ({
         paraId,
@@ -1227,20 +1229,26 @@ async function subscribeCrowdloans(
         storageKeys: addresses.map((address) => u8aToHex(decodeAnyAddress(address))),
       }))
 
-      Promise.all(
-        queries.map(async ({ paraId, fundIndex, addresses, childKey, storageKeys }) => ({
-          paraId,
-          fundIndex,
-          addresses,
-          result: await chainConnector.send(chainId, "childstate_getStorageEntries", [
-            childKey,
-            storageKeys,
-          ]),
-        }))
-      )
-        .then((queries) => {
-          return queries.flatMap((query) => {
-            const { result } = query
+      // track whether our caller is still subscribed
+      let subscriptionActive = true
+      let previousContributions: FundContribution[] | null = null
+
+      const fetchContributions = async () => {
+        try {
+          const results = await Promise.all(
+            queries.map(async ({ paraId, fundIndex, addresses, childKey, storageKeys }) => ({
+              paraId,
+              fundIndex,
+              addresses,
+              result: await chainConnector.send(chainId, "childstate_getStorageEntries", [
+                childKey,
+                storageKeys,
+              ]),
+            }))
+          )
+
+          const contributions = results.flatMap((queryResult) => {
+            const { paraId, fundIndex, addresses, result } = queryResult
             const storageDataVec = typeRegistry.createType("Vec<Option<StorageData>>", result)
 
             return storageDataVec.flatMap((storageData, index) => {
@@ -1251,18 +1259,50 @@ async function subscribeCrowdloans(
 
               if (amount === undefined || amount === "0") return []
               return {
-                paraId: query.paraId,
-                fundIndex: query.fundIndex,
-                address: query.addresses[index],
+                paraId,
+                fundIndex,
+                address: addresses[index],
                 amount,
               }
             })
           })
-        })
-        .then((contributions) => callback(null, contributions))
-        .catch((error) => callback(error))
 
-      return () => {}
+          // ignore these results if our caller has tried to close this subscription
+          if (!subscriptionActive) return
+
+          // ignore these results if they're the same as what we previously fetched
+          if (isEqual(previousContributions, contributions)) return
+
+          previousContributions = contributions
+          callback(null, contributions)
+        } catch (error) {
+          callback(error)
+        }
+      }
+
+      // set up polling for contributions
+      const crowdloanContributionsPollInterval = 60_000 // 60_000ms === 1 minute
+      const pollContributions = async () => {
+        if (!subscriptionActive) return
+
+        try {
+          await fetchContributions()
+        } catch (error) {
+          // log any errors, but don't cancel the poll for contributions when one fetch fails
+          log.error(error)
+        }
+
+        if (!subscriptionActive) return
+        setTimeout(pollContributions, crowdloanContributionsPollInterval)
+      }
+
+      // start polling
+      pollContributions()
+
+      return () => {
+        // stop polling
+        subscriptionActive = false
+      }
     }
 
     const paraIds$ = asObservable(subscribeParaIds)().pipe(
