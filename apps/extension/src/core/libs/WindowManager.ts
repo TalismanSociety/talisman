@@ -160,7 +160,8 @@ class WindowManager {
       })
     }
 
-    return popup.id
+    // popup is undefined when running tests
+    return popup?.id
   }
 }
 

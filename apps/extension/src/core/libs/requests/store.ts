@@ -1,3 +1,4 @@
+import { TEST } from "@core/constants"
 import { genericSubscription } from "@core/handlers/subscriptions"
 import type { Port } from "@core/types/base"
 import { ReplaySubject, map } from "rxjs"
@@ -42,7 +43,7 @@ export class RequestStore {
   // `requests` is the primary list of items that need responding to by the user
   protected readonly requests: Record<
     string,
-    { request: AnyRespondableRequest; windowId: number }
+    { request: AnyRespondableRequest; windowId?: number } // windowId should always be set, except during ci tests
   > = {}
   // `observable` is kept up to date with the list of requests, and ensures that the front end
   // can easily set up a subscription to the data, and the state can show the correct message on the icon
@@ -109,7 +110,7 @@ export class RequestStore {
           reject(new Error("Cancelled"))
         })
         .then((windowId) => {
-          if (windowId === undefined) reject(new Error("Failed to open popup"))
+          if (windowId === undefined && !TEST) reject(new Error("Failed to open popup"))
           else {
             this.requests[id] = { request, windowId }
             this.observable.next(this.getAllRequests())
