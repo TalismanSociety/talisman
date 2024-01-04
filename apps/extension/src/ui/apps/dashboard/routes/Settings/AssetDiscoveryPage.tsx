@@ -19,6 +19,7 @@ import {
   ChevronDownIcon,
   DiamondIcon,
   InfoIcon,
+  MoreHorizontalIcon,
   PlusIcon,
   SearchIcon,
   XIcon,
@@ -42,10 +43,12 @@ import { useEvmNetworks } from "@ui/hooks/useEvmNetworks"
 import { useSetting } from "@ui/hooks/useSettings"
 import useToken from "@ui/hooks/useToken"
 import useTokens from "@ui/hooks/useTokens"
+import { isErc20Token } from "@ui/util/isErc20Token"
 import { liveQuery } from "dexie"
 import groupBy from "lodash/groupBy"
 import { FC, ReactNode, useCallback, useEffect, useMemo } from "react"
 import { Trans, useTranslation } from "react-i18next"
+import { useNavigate } from "react-router-dom"
 import { atom, selector, useRecoilValue } from "recoil"
 import { debounceTime, first, from, merge } from "rxjs"
 import {
@@ -58,6 +61,7 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from "talisman-ui"
+import urlJoin from "url-join"
 
 import { DashboardLayout } from "../../layout/DashboardLayout"
 import { AccountsStack } from "./Accounts/AccountIconsStack"
@@ -227,6 +231,25 @@ const AccountsTooltip: FC<{ addresses: Address[] }> = ({ addresses }) => {
   )
 }
 
+const useBlockExplorerUrl = (token: Token | undefined) => {
+  const evmNetwork = useEvmNetwork(token?.evmNetwork?.id)
+
+  return useMemo(() => {
+    if (isErc20Token(token) && evmNetwork?.explorerUrl)
+      return urlJoin(evmNetwork.explorerUrl, "token", token.contractAddress)
+
+    return null
+  }, [token, evmNetwork?.explorerUrl])
+}
+
+const useCoingeckoUrl = (token: Token | undefined) => {
+  return useMemo(
+    () =>
+      token?.coingeckoId ? urlJoin("https://coingecko.com/en/coins/", token.coingeckoId) : null,
+    [token]
+  )
+}
+
 const AssetRow: FC<{ tokenId: TokenId; assets: DiscoveredBalance[] }> = ({ tokenId, assets }) => {
   const { t } = useTranslation("admin")
   const token = useToken(tokenId)
@@ -270,12 +293,16 @@ const AssetRow: FC<{ tokenId: TokenId; assets: DiscoveredBalance[] }> = ({ token
     [activeEvmNetworks, evmNetwork]
   )
 
+  const navigate = useNavigate()
+  const blockExplorerUrl = useBlockExplorerUrl(token)
+  const coingeckoUrl = useCoingeckoUrl(token)
+
   if (!token || !evmNetwork) return null
 
   return (
     <div
       className={classNames(
-        "bg-grey-900 grid h-32 grid-cols-[30%_20%_30%_20%] items-center rounded-sm px-8",
+        "bg-grey-900 grid h-32 grid-cols-[30%_20%_25%_25%] items-center rounded-sm px-8",
         isActive && "opacity-50"
       )}
     >
@@ -326,7 +353,7 @@ const AssetRow: FC<{ tokenId: TokenId; assets: DiscoveredBalance[] }> = ({ token
           <span className="text-body-secondary text-sm">-</span>
         )}
       </div>
-      <div className="pl-4 text-right">
+      <div className="flex justify-end gap-6 pl-4 text-right">
         <Button
           small
           disabled={isActive}
@@ -337,6 +364,30 @@ const AssetRow: FC<{ tokenId: TokenId; assets: DiscoveredBalance[] }> = ({ token
         >
           {isActive ? t("Activated") : t("Activate")}
         </Button>
+        {isErc20Token(token) || coingeckoUrl ? (
+          <ContextMenu placement="bottom-end">
+            <ContextMenuTrigger className="hover:text-body bg-grey-800 text-body-secondary hover:bg-grey-700 shrink-0 rounded-sm p-4">
+              <MoreHorizontalIcon />
+            </ContextMenuTrigger>
+            <ContextMenuContent>
+              <ContextMenuItem onClick={() => navigate(`/tokens/${token.id}`)}>
+                {t("Token details")}
+              </ContextMenuItem>
+              {!!blockExplorerUrl && (
+                <ContextMenuItem onClick={() => window.open(blockExplorerUrl, "_blank")}>
+                  {t("View on block explorer")}
+                </ContextMenuItem>
+              )}
+              {coingeckoUrl && (
+                <ContextMenuItem onClick={() => window.open(coingeckoUrl, "_blank")}>
+                  {t("View on Coingecko")}
+                </ContextMenuItem>
+              )}
+            </ContextMenuContent>
+          </ContextMenu>
+        ) : (
+          <div className="h-16 w-16 shrink-0"></div>
+        )}
       </div>
     </div>
   )
@@ -350,7 +401,7 @@ const AssetTable: FC = () => {
 
   return (
     <div className="text-body flex w-full min-w-[45rem] flex-col gap-4 text-left text-base">
-      <div className="text-body-disabled grid grid-cols-[30%_20%_30%_20%] px-8 text-sm font-normal">
+      <div className="text-body-disabled grid grid-cols-[30%_20%_25%_25%] px-8 text-sm font-normal">
         <div>{t("Asset")}</div>
         <div>{t("Network")}</div>
         <div className="text-right">{t("Balance")}</div>

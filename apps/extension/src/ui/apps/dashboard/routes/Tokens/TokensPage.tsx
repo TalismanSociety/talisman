@@ -4,7 +4,7 @@ import { SearchInput } from "@talisman/components/SearchInput"
 import { Spacer } from "@talisman/components/Spacer"
 import { TogglePill } from "@talisman/components/TogglePill"
 import { CustomEvmNetwork, EvmNetwork, EvmNetworkId, Token } from "@talismn/chaindata-provider"
-import { ChevronRightIcon, PlusIcon } from "@talismn/icons"
+import { MoreHorizontalIcon, PlusIcon } from "@talismn/icons"
 import { AnalyticsPage, sendAnalyticsEvent } from "@ui/api/analytics"
 import { TokenLogo } from "@ui/domains/Asset/TokenLogo"
 import { NetworkLogo } from "@ui/domains/Ethereum/NetworkLogo"
@@ -22,7 +22,16 @@ import { FC, useCallback, useEffect, useMemo, useRef, useState } from "react"
 import { Trans, useTranslation } from "react-i18next"
 import { useLocation, useNavigate } from "react-router-dom"
 import { useIntersection } from "react-use"
-import { Button, Dropdown, Toggle } from "talisman-ui"
+import {
+  Button,
+  ContextMenu,
+  ContextMenuContent,
+  ContextMenuItem,
+  ContextMenuTrigger,
+  Dropdown,
+  Toggle,
+} from "talisman-ui"
+import urlJoin from "url-join"
 
 import { DashboardLayout } from "../../layout/DashboardLayout"
 
@@ -30,25 +39,43 @@ const CustomPill = () => {
   const { t } = useTranslation("admin")
 
   return (
-    <div className="bg-primary/10 text-primary inline-block rounded p-4 text-xs font-light">
+    <div className="bg-primary/10 text-primary inline-block rounded p-4 py-2 text-xs font-light">
       {t("Custom")}
     </div>
   )
 }
 
+const useBlockExplorerUrl = (token: Token) => {
+  const evmNetwork = useEvmNetwork(token.evmNetwork?.id)
+
+  return useMemo(() => {
+    if (isErc20Token(token) && evmNetwork?.explorerUrl)
+      return urlJoin(evmNetwork.explorerUrl, "token", token.contractAddress)
+
+    return null
+  }, [token, evmNetwork?.explorerUrl])
+}
+
+const useCoingeckoUrl = (token: Token) => {
+  return useMemo(
+    () =>
+      token.coingeckoId ? urlJoin("https://coingecko.com/en/coins/", token.coingeckoId) : null,
+    [token]
+  )
+}
+
 const TokenRow: FC<{ token: Token }> = ({ token }) => {
+  const { t } = useTranslation("admin")
   const navigate = useNavigate()
 
   const activeTokens = useActiveTokensState()
   const network = useEvmNetwork(token.evmNetwork?.id)
+  const blockExplorerUrl = useBlockExplorerUrl(token)
+  const coingeckoUrl = useCoingeckoUrl(token)
 
   return (
     <div className="relative h-28 w-full">
-      <button
-        type="button"
-        className="bg-grey-850 hover:bg-grey-800 text-body-secondary hover:text-body grid h-28 w-full grid-cols-[40%_40%_20%] items-center truncate rounded-sm px-8 font-normal"
-        onClick={() => navigate(`./${token.id}`)}
-      >
+      <div className="bg-grey-850 text-body-secondary grid h-28 w-full grid-cols-[40%_40%_20%] items-center truncate rounded-sm px-8 pr-6 font-normal">
         <div className="text-body flex items-center gap-4 overflow-hidden">
           <TokenLogo tokenId={token.id} className="shrink-0 text-lg" />
           <div className="truncate">{token.symbol}</div>
@@ -59,18 +86,35 @@ const TokenRow: FC<{ token: Token }> = ({ token }) => {
           <div className="truncate">{network?.name}</div>
         </div>
         <div className="flex w-full items-center justify-end gap-4 text-right">
-          <ChevronRightIcon className="shrink-0 text-lg transition-none" />
+          <Toggle
+            checked={isTokenActive(token, activeTokens)}
+            onChange={(e) => {
+              e.stopPropagation()
+              e.preventDefault()
+              activeTokensStore.setActive(token.id, e.target.checked)
+            }}
+          />
+          <ContextMenu placement="bottom-end">
+            <ContextMenuTrigger className="hover:text-body bg-grey-800 hover:bg-grey-700 rounded-sm p-3">
+              <MoreHorizontalIcon />
+            </ContextMenuTrigger>
+            <ContextMenuContent>
+              <ContextMenuItem onClick={() => navigate(`./${token.id}`)}>
+                {t("Token details")}
+              </ContextMenuItem>
+              {!!blockExplorerUrl && (
+                <ContextMenuItem onClick={() => window.open(blockExplorerUrl, "_blank")}>
+                  {t("View on block explorer")}
+                </ContextMenuItem>
+              )}
+              {coingeckoUrl && (
+                <ContextMenuItem onClick={() => window.open(coingeckoUrl, "_blank")}>
+                  {t("View on Coingecko")}
+                </ContextMenuItem>
+              )}
+            </ContextMenuContent>
+          </ContextMenu>
         </div>
-      </button>
-      <div className="absolute right-24 top-0 flex h-28 flex-col justify-center px-4">
-        <Toggle
-          checked={isTokenActive(token, activeTokens)}
-          onChange={(e) => {
-            e.stopPropagation()
-            e.preventDefault()
-            activeTokensStore.setActive(token.id, e.target.checked)
-          }}
-        />
       </div>
     </div>
   )
