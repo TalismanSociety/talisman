@@ -88,9 +88,10 @@ const DisplayValue = ({
 
   const format = useCallback(
     (amount = 0) => {
-      const formatted = formatFiat(amount, currency, currencyDisplay, decimalPlaces)
-      if (amount !== 0 && isBalance && amount < 0.01) return `< ${formatted}`
-      return formatted
+      if (amount !== 0 && isBalance && amount < 0.01)
+        return `< ${formatFiat(0.01, currency, currencyDisplay, 2)}`
+
+      return formatFiat(amount, currency, currencyDisplay, decimalPlaces)
     },
     [currency, currencyDisplay, decimalPlaces, isBalance]
   )
