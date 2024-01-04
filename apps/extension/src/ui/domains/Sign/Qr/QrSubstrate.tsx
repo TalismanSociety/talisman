@@ -357,15 +357,12 @@ const SendPage = ({
             <div className="text-body-secondary mb-16 mt-10 max-w-md text-center text-sm leading-10">
               <Trans
                 t={t}
-                defaults="Scan the QR code with the Polkadot Vault app on your phone to add the <Chain /> network."
+                defaults="Scan the QR code with the Polkadot Vault app on your phone to add the <Chain><ChainLogo />{{chainName}}</Chain> network."
                 components={{
-                  Chain: (
-                    <div className="text-body inline-flex items-baseline gap-1">
-                      <ChainLogo className="self-center" id={chain?.id} />
-                      {chain?.name ?? "Unknown"}
-                    </div>
-                  ),
+                  Chain: <div className="text-body inline-flex items-baseline gap-1" />,
+                  ChainLogo: <ChainLogo className="self-center" id={chain?.id} />,
                 }}
+                values={{ chainName: chain?.name ?? t("Unknown") }}
               />
             </div>
           </>

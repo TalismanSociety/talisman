@@ -105,13 +105,14 @@ export const QrCode = ({ data, image, imageOptions }: Props) => {
     }
   }, [generation])
 
-  if (error)
-    return (
-      <div className="text-alert-error relative h-full w-full whitespace-pre-wrap bg-white">
-        {error}
-      </div>
-    )
+  if (error) return <QrCodeError error={error} />
   if (!qrCode) return null
 
   return <img className="relative h-full w-full" src={qrCode} alt="" />
 }
+
+export const QrCodeError = ({ error }: { error?: string | null }) => (
+  <div className="text-alert-error relative flex h-full w-full items-center justify-center whitespace-pre-wrap bg-white text-center text-xs">
+    {error}
+  </div>
+)
