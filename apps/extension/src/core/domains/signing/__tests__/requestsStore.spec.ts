@@ -7,6 +7,7 @@ import { AccountsStore } from "@polkadot/extension-base/stores"
 import type { SignerPayloadJSON } from "@polkadot/types/types"
 import keyring from "@polkadot/ui-keyring"
 import { cryptoWaitReady } from "@polkadot/util-crypto"
+import { waitFor } from "@testing-library/dom"
 
 const mnemonic = "seed sock milk update focus rotate barely fade car face mechanic mercy"
 const password = "passw0rd"
@@ -21,7 +22,11 @@ const createAccount = () => {
 
 jest.mock("@core/libs/WindowManager", () => {
   return {
-    windowManager: { popupOpen: jest.fn() },
+    windowManager: {
+      popupOpen: jest.fn().mockImplementation(async () => {
+        return 1
+      }),
+    },
   }
 })
 
@@ -67,7 +72,8 @@ describe("Signing requests store", () => {
       },
       {} as chrome.runtime.Port
     )
-    expect(requestStore.getCounts().get("substrate-sign")).toBe(1)
+
+    await waitFor(() => expect(requestStore.getCounts().get("substrate-sign")).toBe(1))
     expect(windowManager.popupOpen).toBeCalled()
   })
 })
