@@ -10,24 +10,25 @@ type FiatProps = {
   amount?: number | BalanceFormatter | null
   className?: string
   as?: "span" | "div"
-  noCountUp?: boolean
-  isBalance?: boolean
   currencyDisplay?: string
+  isBalance?: boolean
+  noCountUp?: boolean
 }
 
 type DisplayValueProps = {
   amount: number
   currency?: Intl.NumberFormatOptions["currency"]
   currencyDisplay?: string
+  isBalance?: boolean
   noCountUp?: boolean
 }
 
 export const Fiat = ({
   amount,
   className,
-  noCountUp = false,
-  isBalance = false,
   currencyDisplay,
+  isBalance = false,
+  noCountUp = false,
 }: FiatProps) => {
   const { refReveal, isRevealable, isRevealed, isHidden, effectiveNoCountUp } =
     useRevealableBalance(isBalance, noCountUp)
@@ -51,6 +52,7 @@ export const Fiat = ({
           amount={isHidden ? 0 : typeof amount === "number" ? amount : amount.fiat(currency) ?? 0}
           currency={currency}
           currencyDisplay={currencyDisplay}
+          isBalance={isBalance}
           noCountUp={effectiveNoCountUp}
         />
       )}
@@ -58,7 +60,13 @@ export const Fiat = ({
   )
 }
 
-const DisplayValue = ({ amount, currency, currencyDisplay, noCountUp }: DisplayValueProps) => {
+const DisplayValue = ({
+  amount,
+  currency,
+  currencyDisplay,
+  isBalance,
+  noCountUp,
+}: DisplayValueProps) => {
   /**
    * Represents the first non-zero decimal place for numbers between -1 and 1
    * For example:
@@ -76,11 +84,15 @@ const DisplayValue = ({ amount, currency, currencyDisplay, noCountUp }: DisplayV
    *     -1.000 - 0
    */
   const decimalsFactor = Math.abs(Math.min(0, Math.floor(Math.log10(Math.abs(amount)))))
-  const decimalPlaces = amount !== 0 && decimalsFactor > 1 ? decimalsFactor + 1 : 2
+  const decimalPlaces = amount !== 0 && !isBalance && decimalsFactor > 1 ? decimalsFactor + 1 : 2
 
   const format = useCallback(
-    (amount = 0) => formatFiat(amount, currency, currencyDisplay, decimalPlaces),
-    [currency, currencyDisplay, decimalPlaces]
+    (amount = 0) => {
+      const formatted = formatFiat(amount, currency, currencyDisplay, decimalPlaces)
+      if (amount !== 0 && isBalance && amount < 0.01) return `< ${formatted}`
+      return formatted
+    },
+    [currency, currencyDisplay, decimalPlaces, isBalance]
   )
   const formatted = useMemo(() => format(amount), [format, amount])
 
