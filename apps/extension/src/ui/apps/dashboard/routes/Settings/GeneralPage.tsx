@@ -49,7 +49,7 @@ export const GeneralPage = () => {
             subtitle={t("Close and restart Talisman, this can help to resolve error states")}
           >
             <Button primary small onClick={runtimeReload}>
-              Reload
+              {t("Reload")}
             </Button>
           </Setting>
         ) : null}
