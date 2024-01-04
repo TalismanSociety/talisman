@@ -67,7 +67,7 @@ export const TreeAccountItem = forwardRef<HTMLDivElement, Props & { item: UiTree
         <div ref={ref} className="relative flex items-center gap-8" style={style}>
           <div
             className={classNames(
-              "bg-black-secondary flex flex-grow items-center gap-8 rounded-sm border-[1px] border-transparent p-8",
+              "bg-black-secondary flex flex-grow items-center gap-8 overflow-hidden rounded-sm border-[1px] border-transparent p-8",
               depth === 0 && "pl-24",
               depth > 0 && "bg-black-secondary/60"
             )}
@@ -150,7 +150,7 @@ export const TreeFolderItem = forwardRef<HTMLDivElement, Props & { item: UiTreeF
           onKeyDown={(e) => ["Enter", " "].includes(e.key) && onCollapse?.()}
           style={style}
         >
-          <div className="bg-black-secondary flex flex-grow items-center gap-8 rounded-sm border-[1px] border-transparent p-8">
+          <div className="bg-black-secondary flex flex-grow items-center gap-8 overflow-hidden rounded-sm border-[1px] border-transparent p-8">
             <ChevronDownIcon
               className={classNames(
                 "text-body-disabled shrink-0 text-base transition-transform",
