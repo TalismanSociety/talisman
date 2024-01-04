@@ -1,6 +1,7 @@
+import { log } from "@core/log"
 import { decodeString } from "@polkadot/react-qr/util"
 import QrCodeStyling from "@solana/qr-code-styling"
-import { useEffect, useReducer, useRef, useState } from "react"
+import { useEffect, useRef, useState } from "react"
 import { useTranslation } from "react-i18next"
 
 import { FRAME_SIZE, talismanRedHandSvg } from "./constants"
@@ -18,8 +19,8 @@ type Props = {
 export const QrCode = ({ data, image, imageOptions }: Props) => {
   const { t } = useTranslation("request")
   const qrCodeFrames = useRef<Array<string | null> | null>(null)
-
-  const [animGeneration, resetQrAnimation] = useReducer((x) => (x + 1) % Number.MAX_SAFE_INTEGER, 0)
+  const qrCodeFramesReady = useRef(0)
+  const [generation, setGeneration] = useState(0)
   const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
@@ -28,16 +29,24 @@ export const QrCode = ({ data, image, imageOptions }: Props) => {
       return setError(t("Payload is too large to be encoded in a QR code"))
     else setError(null)
 
+    // reset
+    qrCodeFrames.current = null
+    qrCodeFramesReady.current = 0
+    setGeneration((g) => g + 1)
+
     let cancelled = false
     ;(async () => {
       const { default: encode } = await (data.length < FRAME_SIZE
         ? import("./Encoders/MultipartQrEncoder")
         : import("./Encoders/RaptorQrEncoder"))
 
+      if (cancelled) return
+      const stop1 = log.timer("encoding payload")
       const dataFrames = await encode(data)
+      stop1()
 
-      qrCodeFrames.current = new Array(dataFrames.length).fill(null)
-      resetQrAnimation()
+      if (!qrCodeFrames.current) qrCodeFrames.current = new Array(dataFrames.length).fill(null)
+
       for (const [index, dataFrame] of dataFrames.entries()) {
         // stop computing for nothing, happens especially in dev because of strict mode double mount
         if (cancelled) return
@@ -58,7 +67,11 @@ export const QrCode = ({ data, image, imageOptions }: Props) => {
             ...(imageOptions ?? {}),
           },
         }).getRawData("svg")
-        if (blob) qrCodeFrames.current[index] = URL.createObjectURL(blob)
+
+        if (blob) {
+          qrCodeFrames.current[index] = URL.createObjectURL(blob)
+          qrCodeFramesReady.current = index
+        }
       }
     })()
 
@@ -69,30 +82,28 @@ export const QrCode = ({ data, image, imageOptions }: Props) => {
 
   const [qrCode, setQrCode] = useState<string | null>(null)
   useEffect(() => {
-    if (qrCodeFrames.current === null) return setQrCode(null)
-    if (qrCodeFrames.current.length < 1) return setQrCode(null)
-    if (qrCodeFrames.current.length === 1) setQrCode(qrCodeFrames.current[0])
-
-    setQrCode(qrCodeFrames.current[0])
-
-    let active = true
     const interval = 125 // 1000ms/125ms = 8 frames per second
-    const start = Date.now()
-    const animate = () => {
-      if (!active) return
+    let index = 0
 
-      const time = Date.now()
-      const index = Math.floor((time - start) / interval) % (qrCodeFrames.current?.length ?? 0)
+    const renderInterval = setInterval(() => {
+      if (!qrCodeFrames.current?.length) return
 
-      setQrCode(qrCodeFrames.current?.[index] ?? null)
-      requestAnimationFrame(animate)
-    }
-    requestAnimationFrame(animate)
+      if (qrCodeFrames.current.length === 1 && qrCodeFrames.current[0] !== null) {
+        // single frame, display it and stop animating
+        clearInterval(renderInterval)
+        setQrCode(qrCodeFrames.current[0])
+        return
+      }
+
+      // display next frame
+      setQrCode(qrCodeFrames.current?.[index % qrCodeFramesReady.current] ?? null)
+      index++
+    }, interval)
 
     return () => {
-      active = false
+      clearInterval(renderInterval)
     }
-  }, [animGeneration])
+  }, [generation])
 
   if (error)
     return (
