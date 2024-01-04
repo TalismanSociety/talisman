@@ -370,9 +370,11 @@ const AssetRow: FC<{ tokenId: TokenId; assets: DiscoveredBalance[] }> = ({ token
               <MoreHorizontalIcon />
             </ContextMenuTrigger>
             <ContextMenuContent>
-              <ContextMenuItem onClick={() => navigate(`/tokens/${token.id}`)}>
-                {t("Token details")}
-              </ContextMenuItem>
+              {isErc20Token(token) && (
+                <ContextMenuItem onClick={() => navigate(`/tokens/${token.id}`)}>
+                  {t("Token details")}
+                </ContextMenuItem>
+              )}
               {!!blockExplorerUrl && (
                 <ContextMenuItem onClick={() => window.open(blockExplorerUrl, "_blank")}>
                   {t("View on block explorer")}
