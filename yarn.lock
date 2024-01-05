@@ -5648,77 +5648,77 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@polkadot/extension-base@npm:0.46.5":
-  version: 0.46.5
-  resolution: "@polkadot/extension-base@npm:0.46.5"
+"@polkadot/extension-base@npm:0.46.6":
+  version: 0.46.6
+  resolution: "@polkadot/extension-base@npm:0.46.6"
   dependencies:
-    "@polkadot/api": ^10.9.1
-    "@polkadot/extension-chains": 0.46.5
-    "@polkadot/extension-dapp": 0.46.5
-    "@polkadot/extension-inject": 0.46.5
-    "@polkadot/keyring": ^12.3.2
-    "@polkadot/networks": ^12.3.2
-    "@polkadot/phishing": ^0.21.5
-    "@polkadot/rpc-provider": ^10.9.1
-    "@polkadot/types": ^10.9.1
-    "@polkadot/ui-keyring": ^3.5.1
-    "@polkadot/ui-settings": ^3.5.1
-    "@polkadot/util": ^12.3.2
-    "@polkadot/util-crypto": ^12.3.2
+    "@polkadot/api": ^10.11.1
+    "@polkadot/extension-chains": 0.46.6
+    "@polkadot/extension-dapp": 0.46.6
+    "@polkadot/extension-inject": 0.46.6
+    "@polkadot/keyring": ^12.6.1
+    "@polkadot/networks": ^12.6.1
+    "@polkadot/phishing": ^0.22.1
+    "@polkadot/rpc-provider": ^10.11.1
+    "@polkadot/types": ^10.11.1
+    "@polkadot/ui-keyring": ^3.6.4
+    "@polkadot/ui-settings": ^3.6.4
+    "@polkadot/util": ^12.6.1
+    "@polkadot/util-crypto": ^12.6.1
     eventemitter3: ^5.0.1
     rxjs: ^7.8.1
-    tslib: ^2.5.3
-  checksum: ad0c2b7faaa3a3d1aafd959f189012782cf4feb9eb2d46441bd085bfb98eea1fb3f540b1f492760f43dde6b66a2d75f5a086032f9e1109abd353fe50cb665240
+    tslib: ^2.6.2
+  checksum: 949f12aedd78f5ab32ebbf3c741c653cd18d26d379250de511ae8f9869c68eb6fa64e21512263fb9c8f16c13fe8c894f7e306a3fcc7b133f4a80699a9f22c548
   languageName: node
   linkType: hard
 
-"@polkadot/extension-chains@npm:0.46.5":
-  version: 0.46.5
-  resolution: "@polkadot/extension-chains@npm:0.46.5"
+"@polkadot/extension-chains@npm:0.46.6":
+  version: 0.46.6
+  resolution: "@polkadot/extension-chains@npm:0.46.6"
   dependencies:
-    "@polkadot/extension-inject": 0.46.5
-    "@polkadot/networks": ^12.3.2
-    "@polkadot/util": ^12.3.2
-    "@polkadot/util-crypto": ^12.3.2
-    tslib: ^2.5.3
+    "@polkadot/extension-inject": 0.46.6
+    "@polkadot/networks": ^12.6.1
+    "@polkadot/util": ^12.6.1
+    "@polkadot/util-crypto": ^12.6.1
+    tslib: ^2.6.2
   peerDependencies:
     "@polkadot/api": "*"
     "@polkadot/types": "*"
-  checksum: 8c2676bec95c0cb8007876bec47094ea439706296ceba2719c22c7ffb537e29eea87c17077165eb4faffe0b7dcd2ddb24a3c24e89fe84e894b043612a19c04b9
+  checksum: 6c162938d547e31aa596363bde9c23b1a7704b757e6a0ed4b37fc09c8cc9c6370d2c98d93179a48a88c473468caab4ed4c95aca7a1af2cc8c9e32b88648f6534
   languageName: node
   linkType: hard
 
-"@polkadot/extension-dapp@npm:0.46.5":
-  version: 0.46.5
-  resolution: "@polkadot/extension-dapp@npm:0.46.5"
+"@polkadot/extension-dapp@npm:0.46.6":
+  version: 0.46.6
+  resolution: "@polkadot/extension-dapp@npm:0.46.6"
   dependencies:
-    "@polkadot/extension-inject": 0.46.5
-    "@polkadot/util": ^12.3.2
-    "@polkadot/util-crypto": ^12.3.2
-    tslib: ^2.5.3
+    "@polkadot/extension-inject": 0.46.6
+    "@polkadot/util": ^12.6.1
+    "@polkadot/util-crypto": ^12.6.1
+    tslib: ^2.6.2
   peerDependencies:
     "@polkadot/api": "*"
     "@polkadot/util": "*"
     "@polkadot/util-crypto": "*"
-  checksum: 6b60a0c47ef64bc3d76e2a83c4678a0a4317b3b150fc7bcb944d451f6292dd5e95c3a379e7df9dbbbe06290e0dd7a90aaadd37321846a235d17c84c62d845a5c
+  checksum: fb1985fa3488c302fdfc729650304c99d1f7321815111c6bc598433647bc0e371c619f6adbfdee5b6ff7111cb1f0518d7f07bcc2ce5ceb66299701c32e28be91
   languageName: node
   linkType: hard
 
-"@polkadot/extension-inject@npm:0.46.5":
-  version: 0.46.5
-  resolution: "@polkadot/extension-inject@npm:0.46.5"
+"@polkadot/extension-inject@npm:0.46.6":
+  version: 0.46.6
+  resolution: "@polkadot/extension-inject@npm:0.46.6"
   dependencies:
-    "@polkadot/api": ^10.9.1
-    "@polkadot/rpc-provider": ^10.9.1
-    "@polkadot/types": ^10.9.1
-    "@polkadot/util": ^12.3.2
-    "@polkadot/util-crypto": ^12.3.2
-    "@polkadot/x-global": ^12.3.2
-    tslib: ^2.5.3
+    "@polkadot/api": ^10.11.1
+    "@polkadot/rpc-provider": ^10.11.1
+    "@polkadot/types": ^10.11.1
+    "@polkadot/util": ^12.6.1
+    "@polkadot/util-crypto": ^12.6.1
+    "@polkadot/x-global": ^12.6.1
+    tslib: ^2.6.2
   peerDependencies:
     "@polkadot/api": "*"
     "@polkadot/util": "*"
-  checksum: eb0ddce41fc4f1e87757dfcd2ced99d656db4f73542382f22636276a92615f86b9e6e9418e3834773b48d372120b8c44687cdf98c9064e7f21c6f51f6e312438
+  checksum: fe1672b429a5356858bb79d6f0b128a5eac247845aae5d3567f4f1e5e852726de12db9be4caa863f5cb7497e9ba6d4d540428eb266647e039dd9e68e7f159c03
   languageName: node
   linkType: hard
 
@@ -5776,15 +5776,15 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@polkadot/phishing@npm:^0.21.5":
-  version: 0.21.5
-  resolution: "@polkadot/phishing@npm:0.21.5"
+"@polkadot/phishing@npm:^0.22.1":
+  version: 0.22.1
+  resolution: "@polkadot/phishing@npm:0.22.1"
   dependencies:
-    "@polkadot/util": ^12.3.1
-    "@polkadot/util-crypto": ^12.3.1
-    "@polkadot/x-fetch": ^12.3.1
-    tslib: ^2.5.3
-  checksum: 258d696652a369afc82cb06df90494379e358389cbd5b2bbf3590c5def071deabae40efec4f5a4b879a55459be909206faab6b2640aa16384965fe0329e831b9
+    "@polkadot/util": ^12.6.1
+    "@polkadot/util-crypto": ^12.6.1
+    "@polkadot/x-fetch": ^12.6.1
+    tslib: ^2.6.2
+  checksum: a754e596a5a9b683766a9bf0e59c6922a89093e9affad022896cc09c8c30eda671aa37598ae9af809a88a1d60dad0cd30e2420d76c4e2a27214624075098d43e
   languageName: node
   linkType: hard
 
