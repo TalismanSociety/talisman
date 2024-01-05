@@ -1,14 +1,13 @@
 import { requestStore } from "@core/libs/requests/store"
-import { windowManager } from "@core/libs/WindowManager"
 import Browser from "webextension-polyfill"
 
 class IconManager {
   constructor() {
     // update the icon when any of the request stores change
-    requestStore.observable.subscribe(() => this.updateIcon(true))
+    requestStore.observable.subscribe(() => this.updateIcon())
   }
 
-  private updateIcon(shouldClose?: boolean): void {
+  private updateIcon(): void {
     const counts = requestStore.getCounts()
     const signingCount =
       counts.get("eth-send") + counts.get("eth-sign") + counts.get("substrate-sign")
@@ -30,10 +29,6 @@ class IconManager {
       : ""
 
     Browser.browserAction.setBadgeText({ text })
-
-    if (shouldClose && text === "") {
-      windowManager.popupClose()
-    }
   }
 }
 

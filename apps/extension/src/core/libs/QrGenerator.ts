@@ -3,12 +3,12 @@ import { passwordStore } from "@core/domains/app/store.password"
 import { mnemonicsStore } from "@core/domains/mnemonics/store"
 import { SignerPayloadGenesisHash } from "@core/domains/signing/types"
 import { log } from "@core/log"
+import { chainConnector } from "@core/rpcs/chain-connector"
 import { chaindataProvider } from "@core/rpcs/chaindata"
 import { getMetadataDef, getMetadataRpcFromDef } from "@core/util/getMetadataDef"
 import { Keyring } from "@polkadot/keyring"
 import { assert, hexToU8a, u8aConcat, u8aToU8a } from "@polkadot/util"
 import { HexString } from "@polkadot/util/types"
-import { SubNativeToken } from "@talismn/balances"
 import { Chain } from "@talismn/chaindata-provider"
 import * as $ from "scale-codec"
 
@@ -76,18 +76,23 @@ const $addNetworkSpecsPayload = $.object($.field("specs", $.uint8Array))
 export const generateQrAddNetworkSpecs = async (genesisHash: SignerPayloadGenesisHash) => {
   const chain = await chaindataProvider.getChain({ genesisHash } as { genesisHash: HexString })
   assert(chain, "Chain not found")
-  assert(chain.nativeToken?.id, "Chain native token not found")
 
-  const token = (await chaindataProvider.getToken(chain?.nativeToken?.id)) as SubNativeToken
-  assert(token, "Token not found")
+  const systemProperties = await chainConnector.send(chain.id, "system_properties", [])
+
+  const decimals = Array.isArray(systemProperties?.tokenDecimals)
+    ? systemProperties?.tokenDecimals[0]
+    : systemProperties?.tokenDecimals
+  const unit = Array.isArray(systemProperties?.tokenSymbol)
+    ? systemProperties?.tokenSymbol[0]
+    : systemProperties?.tokenSymbol
 
   const specs = $networkSpecs.encode({
     base58prefix: chain.prefix ?? 42,
-    decimals: token.decimals,
+    decimals,
     encryption: getEncryptionForChain(chain),
     genesis_hash: hexToU8a(genesisHash),
     name: chain.specName ?? chain.name ?? chain.id,
-    unit: token.symbol,
+    unit,
     title: chain.name ?? chain.id,
     path_id: `//${(chain.name ?? chain.id)?.toLowerCase()}`,
     // TODO logo should match one of the resources defined in https://github.com/paritytech/parity-signer/tree/master/ios/PolkadotVault/Resources/ChainIcons.xcassets

@@ -17,7 +17,7 @@ const SignMessageInner = () => {
   const [result, setResult] = useState<SignerResult>()
   const [error, setError] = useState<Error>()
   const [isProcessing, setIsProcessing] = useState<boolean>(false)
-  const [message] = useState(() => "Thanos was right.\n".repeat(1_000_000))
+  const [message] = useState(() => "Thanos was right.\n".repeat(10000))
 
   const handleSignMessageClick = useCallback(async () => {
     setError(undefined)

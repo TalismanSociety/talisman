@@ -12,6 +12,7 @@ import type { ExtDef } from "@polkadot/types/extrinsic/signedExtensions/types"
 import type { SignerPayloadJSON } from "@polkadot/types/types"
 import keyring from "@polkadot/ui-keyring"
 import { cryptoWaitReady, signatureVerify } from "@polkadot/util-crypto"
+import { waitFor } from "@testing-library/dom"
 import Browser from "webextension-polyfill"
 
 import { getMessageSenderFn } from "../../../tests/util"
@@ -174,7 +175,7 @@ describe("Extension", () => {
         {} as chrome.runtime.Port
       )
 
-      expect(requestStore.getCounts().get("substrate-sign")).toBe(1)
+      await waitFor(() => expect(requestStore.getCounts().get("substrate-sign")).toBe(1))
 
       const request = requestStore.allRequests("substrate-sign")[0]
 
@@ -251,7 +252,7 @@ describe("Extension", () => {
         {} as chrome.runtime.Port
       )
 
-      expect(requestStore.getCounts().get("substrate-sign")).toBe(1)
+      await waitFor(() => expect(requestStore.getCounts().get("substrate-sign")).toBe(1))
 
       const request = requestStore.allRequests("substrate-sign")[0]
       await expect(
@@ -321,7 +322,7 @@ describe("Extension", () => {
         {} as chrome.runtime.Port
       )
 
-      expect(requestStore.getCounts().get("substrate-sign")).toBe(1)
+      await waitFor(() => expect(requestStore.getCounts().get("substrate-sign")).toBe(1))
 
       const request = requestStore.allRequests("substrate-sign")[0]
       await expect(
@@ -411,7 +412,7 @@ describe("Extension", () => {
         {} as chrome.runtime.Port
       )
 
-      expect(requestStore.getCounts().get("substrate-sign")).toBe(1)
+      await waitFor(() => expect(requestStore.getCounts().get("substrate-sign")).toBe(1))
 
       const request = requestStore.allRequests("substrate-sign")[0]
       await expect(
