@@ -1,11 +1,7 @@
 import type { ChainId } from "@core/domains/chains/types"
+import { chainQuery } from "@ui/atoms"
+import { useRecoilValue } from "recoil"
 
-import { useChains } from "./useChains"
-
-export const useChain = (id?: ChainId) => {
-  const { chainsMap } = useChains(true)
-
-  return id ? chainsMap[id] : undefined
-}
+export const useChain = (id: ChainId | undefined | null) => useRecoilValue(chainQuery(id))
 
 export default useChain

@@ -8,14 +8,19 @@ import {
   EvmNetwork,
   EvmNetworkId,
   EvmNetworkList,
+  IToken,
   Token,
   TokenId,
   TokenList,
+  githubTokenLogoUrl,
+  githubUnknownTokenLogoUrl,
 } from "@talismn/chaindata-provider"
 import { PromiseExtended, Transaction, TransactionMode, liveQuery } from "dexie"
 import { Observable, from } from "rxjs"
 
 import { addCustomChainRpcs } from "./addCustomChainRpcs"
+import { fetchInitChains, fetchInitEvmNetworks, fetchInitTokens } from "./init"
+import log from "./log"
 import {
   fetchChain,
   fetchChains,
@@ -23,11 +28,13 @@ import {
   fetchEvmNetworks,
   fetchToken,
   fetchTokens,
-} from "./graphql"
-import { fetchInitChains, fetchInitEvmNetworks, fetchInitTokens } from "./init"
-import log from "./log"
+} from "./net"
 import { isITokenPartial, isToken, parseTokensResponse } from "./parseTokensResponse"
 import { TalismanChaindataDatabase } from "./TalismanChaindataDatabase"
+
+// removes the need to reference @talismn/balances in this package. should we ?
+const getNativeTokenId = (chainId: EvmNetworkId, moduleType: string, tokenSymbol: string) =>
+  `${chainId}-${moduleType}-${tokenSymbol}`.toLowerCase().replace(/ /g, "-")
 
 const minimumHydrationInterval = 300_000 // 300_000ms = 300s = 5 minutes
 
@@ -221,7 +228,7 @@ export class ChaindataProviderExtension implements ChaindataProvider {
     if (!builtInChain) throw new Error("Cannot reset non-built-in chain")
     if (!builtInChain.nativeToken?.id)
       throw new Error("Failed to lookup native token (no token exists for chain)")
-    const builtInNativeToken = await fetchToken(builtInChain.nativeToken.id)
+    const builtInNativeToken = await fetchToken(builtInChain?.nativeToken?.id)
     if (!isITokenPartial(builtInNativeToken)) throw new Error("Failed to lookup native token")
     if (!isToken(builtInNativeToken))
       throw new Error("Failed to lookup native token (isToken test failed)")
@@ -291,14 +298,35 @@ export class ChaindataProviderExtension implements ChaindataProvider {
   }
 
   async resetEvmNetwork(evmNetworkId: EvmNetworkId) {
-    const builtInEvmNetwork = await fetchEvmNetwork(evmNetworkId)
+    const builtInEvmNetwork: EvmNetwork = await fetchEvmNetwork(evmNetworkId)
     if (!builtInEvmNetwork) throw new Error("Cannot reset non-built-in EVM network")
-    if (!builtInEvmNetwork.nativeToken?.id)
+
+    const nativeModule = builtInEvmNetwork.balancesConfig.find(
+      (c: { moduleType: string }) => c.moduleType === "evm-native"
+    )
+    if (!nativeModule?.moduleConfig)
       throw new Error("Failed to lookup native token (no token exists for network)")
-    const builtInNativeToken = await fetchToken(builtInEvmNetwork.nativeToken.id)
-    if (!isITokenPartial(builtInNativeToken)) throw new Error("Failed to lookup native token")
-    if (!isToken(builtInNativeToken))
-      throw new Error("Failed to lookup native token (isToken test failed)")
+
+    const { symbol, decimals, coingeckoId, logo, mirrorOf, dcentName } =
+      nativeModule.moduleConfig as IToken
+    if (!symbol) throw new Error("Missing native token symbol")
+    if (!decimals) throw new Error("Missing native token decimals")
+
+    const builtInNativeToken: IToken = {
+      id: getNativeTokenId(evmNetworkId, "evm-native", symbol),
+      type: "evm-native",
+      evmNetwork: { id: evmNetworkId },
+      isTestnet: builtInEvmNetwork.isTestnet ?? false,
+      isDefault: true,
+      symbol,
+      decimals,
+      coingeckoId,
+      logo,
+      mirrorOf,
+      dcentName,
+    }
+
+    builtInEvmNetwork.nativeToken = { id: builtInNativeToken.id }
 
     try {
       return await this.#db.transaction("rw", this.#db.evmNetworks, this.#db.tokens, async () => {
@@ -310,7 +338,7 @@ export class ChaindataProviderExtension implements ChaindataProvider {
 
         // reprovision them from subsquid data
         await this.#db.evmNetworks.put(builtInEvmNetwork)
-        await this.#db.tokens.put(builtInNativeToken)
+        await this.#db.tokens.put(builtInNativeToken as never)
       })
     } catch (cause) {
       throw new Error("Failed to reset evm network", { cause })
@@ -386,7 +414,6 @@ export class ChaindataProviderExtension implements ChaindataProvider {
           // call inner hydration methods
           this.hydrateChains(),
           this.hydrateEvmNetworks(),
-          this.hydrateTokens(),
         ])
       )
         // return true if any hydration occurred
@@ -418,6 +445,22 @@ export class ChaindataProviderExtension implements ChaindataProvider {
         // This data will represent a relatively recent copy of what's in the squid,
         // which will be better for our users than to have nothing at all.
         var chains = addCustomChainRpcs(await fetchInitChains(), this.#onfinalityApiKey) // eslint-disable-line no-var
+      }
+
+      // TODO remove
+      log.debug("hydrateChains", chains)
+
+      // TODO check if alec is this the right way to set native token
+      // note : many chains don't have a native module provisionned from chaindata => breaks edit network screen and probably send funds and tx screens
+      for (const chain of chains) {
+        const nativeTokenModule = chain.balancesConfig.find(
+          (c) => c.moduleType === "substrate-native"
+        )
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const symbol = (nativeTokenModule?.moduleConfig as any)?.symbol
+        if (!symbol) continue
+
+        chain.nativeToken = { id: getNativeTokenId(chain.id, "substrate-native", symbol) }
       }
 
       await this.#db.transaction("rw", this.#db.chains, () => {
@@ -461,9 +504,21 @@ export class ChaindataProviderExtension implements ChaindataProvider {
         var evmNetworks: EvmNetwork[] = await fetchInitEvmNetworks() // eslint-disable-line no-var
       }
 
+      // TODO check if alec is this the right way to set native token
+      // set native token
+      for (const evmNetwork of evmNetworks) {
+        const nativeTokenModule = evmNetwork.balancesConfig.find(
+          (c) => c.moduleType === "evm-native"
+        )
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const symbol = (nativeTokenModule?.moduleConfig as any)?.symbol
+        evmNetwork.nativeToken = { id: getNativeTokenId(evmNetwork.id, "evm-native", symbol) }
+      }
+
       await this.#db.transaction("rw", this.#db.evmNetworks, async () => {
         await this.#db.evmNetworks.filter((network) => !("isCustom" in network)).delete()
         // add all except ones matching custom existing ones (user may customize built-in networks)
+
         const customNetworks = await this.#db.evmNetworks.toArray()
         const newNetworks = evmNetworks.filter((network) =>
           customNetworks.every((existing) => existing.id !== network.id)
@@ -480,47 +535,140 @@ export class ChaindataProviderExtension implements ChaindataProvider {
     }
   }
 
+  async updateChainTokens(
+    chainId: ChainId,
+    source: string,
+    newTokens: Token[],
+    availableTokenLogoFilenames: string[]
+  ) {
+    // TODO: Test logos and fall back to unknown token logo url
+    // (Maybe put the test into each balance module itself)
+
+    const existingChainTokens = await this.#db.tokens
+      .filter((token) => token.chain?.id === chainId && token.type === source)
+      .toArray()
+
+    newTokens.forEach((token) => {
+      if (token.logo) return
+
+      const symbolLogo = token.symbol.toLowerCase().replace(/ /g, "_")
+      if (availableTokenLogoFilenames.includes(`${symbolLogo}.svg`)) {
+        return (token.logo = githubTokenLogoUrl(symbolLogo))
+      }
+
+      // TODO: Use coingeckoId logo if exists
+
+      return (token.logo = githubUnknownTokenLogoUrl)
+    })
+
+    const notCustomTokenIds = existingChainTokens
+      .filter((token) => !("isCustom" in token && token.isCustom))
+      .map((token) => token.id)
+    const customTokenIds = existingChainTokens
+      .filter((token) => "isCustom" in token && token.isCustom)
+      .map((token) => token.id)
+
+    await this.#db.transaction("rw", this.#db.tokens, this.#db.chains, async () => {
+      await this.#db.tokens.bulkDelete(notCustomTokenIds)
+      await this.#db.tokens.bulkPut(newTokens.filter((token) => !customTokenIds.includes(token.id)))
+      //if (chain && shouldUpdateChain) await this.#db.chains.put(chain)
+    })
+  }
+
+  async updateEvmNetworkTokens(newTokens: Token[]) {
+    const existingEvmNetworkTokens = await this.#db.tokens
+      .filter((t) => t.type.startsWith("evm-"))
+      .toArray()
+
+    const isCustomToken = (token: Token) => "isCustom" in token && token.isCustom
+
+    // don't override custom tokens
+    const customTokenIds = new Set<string>()
+
+    // delete non-custom tokens which aren't in `newTokens`
+    const deleteTokenIds = new Set<string>()
+
+    for (const token of existingEvmNetworkTokens) {
+      if (isCustomToken(token)) customTokenIds.add(token.id)
+      else deleteTokenIds.add(token.id)
+    }
+
+    const tokensToUpdate = newTokens.filter((token) => {
+      deleteTokenIds.delete(token.id)
+      return !customTokenIds.has(token.id)
+    })
+
+    this.#db.transaction("rw", this.#db.tokens, async () => {
+      // delete all existing non custom tokens
+      await this.#db.tokens.bulkDelete([...deleteTokenIds])
+
+      // force update on all non custom tokens
+      await this.#db.tokens.bulkPut(tokensToUpdate)
+    })
+  }
+
   /**
    * Hydrate the db with the latest tokens from subsquid.
    * Hydration is skipped when the last successful hydration was less than minimumHydrationInterval ms ago.
    *
    * @returns A promise which resolves to true if the db has been hydrated, or false if the hydration was skipped.
    */
-  async hydrateTokens() {
+  async hydrateTokens(chainIdFilter?: ChainId[]) {
     const now = Date.now()
     if (now - this.#lastHydratedTokensAt < minimumHydrationInterval) return false
-
     const dbHasTokens = (await this.#db.tokens.count()) > 0
-
     try {
       try {
         var tokens = parseTokensResponse(await fetchTokens()) // eslint-disable-line no-var
         if (tokens.length <= 0) throw new Error("Ignoring empty chaindata tokens response")
       } catch (error) {
         if (dbHasTokens) throw error
-
         // On first start-up (db is empty), if we fail to fetch tokens then we should
         // initialize the DB with the list of tokens inside our init/tokens.json file.
         // This data will represent a relatively recent copy of what's in the squid,
         // which will be better for our users than to have nothing at all.
         var tokens = parseTokensResponse(await fetchInitTokens()) // eslint-disable-line no-var
       }
-
       await this.#db.transaction("rw", this.#db.tokens, async () => {
-        await this.#db.tokens.filter((token) => !("isCustom" in token)).delete()
+        const deleteChains = chainIdFilter ? new Set(chainIdFilter) : undefined
+
+        const tokensToDelete = (await this.#db.tokens.toArray())
+          .filter((token) => {
+            // don't delete custom tokens
+            if ("isCustom" in token) return false
+
+            // delete all other tokens if chainIdFilter is not specified
+            if (deleteChains === undefined) return true
+
+            // delete tokens on chainIdFilter chains is it is specified
+            if (token.chain?.id && deleteChains.has(token.chain.id)) return true
+
+            return false
+          })
+          .map((token) => token.id)
+
+        if (tokensToDelete.length) await this.#db.tokens.bulkDelete(tokensToDelete)
+
         // add all except ones matching custom existing ones (user may customize built-in tokens)
-        const customTokens = await this.#db.tokens.toArray()
-        const newTokens = tokens.filter((token) =>
-          customTokens.every((existing) => existing.id !== token.id)
-        )
+        const customTokenIds = new Set((await this.#db.tokens.toArray()).map((token) => token.id))
+        const newTokens = tokens.filter((token) => {
+          // don't replace custom tokens
+          if (customTokenIds.has(token.id)) return false
+
+          if (deleteChains === undefined) return true
+
+          if (!token.chain?.id) return true
+          if (deleteChains.has(token.chain.id)) return true
+
+          return false
+        })
+
         await this.#db.tokens.bulkPut(newTokens)
       })
       this.#lastHydratedTokensAt = now
-
       return true
     } catch (error) {
       log.warn(`Failed to hydrate tokens from chaindata`, error)
-
       return false
     }
   }
@@ -531,8 +679,12 @@ export class ChaindataProviderExtension implements ChaindataProvider {
   }
 
   async getIsBuiltInEvmNetwork(evmNetworkId: EvmNetworkId) {
-    const evmNetwork = await fetchEvmNetwork(evmNetworkId)
-    return !!evmNetwork
+    try {
+      const evmNetwork = await fetchEvmNetwork(evmNetworkId)
+      return !!evmNetwork
+    } catch (e) {
+      return false
+    }
   }
 
   transaction<U>(

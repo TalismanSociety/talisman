@@ -11,6 +11,7 @@
 //
 
 export * from "./BalanceModule"
+export * from "./MiniMetadataUpdater"
 export * from "./TalismanBalancesDatabase"
-export * from "./helpers"
+export * from "./modules"
 export * from "./types"

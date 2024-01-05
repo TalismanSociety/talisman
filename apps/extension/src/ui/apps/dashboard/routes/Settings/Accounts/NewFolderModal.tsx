@@ -139,7 +139,9 @@ const NewFolder = ({ onConfirm, onCancel, className }: NewFolderProps) => {
         />
       </FormFieldContainer>
       {catalog.watched.length > 0 && (
-        <Checkbox {...register("followedOnly")}>Followed only</Checkbox>
+        <Checkbox {...register("followedOnly")}>
+          {t("Add this folder to my followed only section")}
+        </Checkbox>
       )}
       <div className="mt-12 grid grid-cols-2 gap-8">
         <Button onClick={onCancel}>{t("Cancel")}</Button>

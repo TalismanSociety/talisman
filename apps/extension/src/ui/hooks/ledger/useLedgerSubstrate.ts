@@ -59,7 +59,10 @@ export const useLedgerSubstrate = (genesis?: string | null, persist = false) => 
         const ledger = new Ledger("webusb", app.name)
 
         // verify that Ledger connection is ready by querying first address
-        await Promise.race([ledger.getAddress(false), throwAfter(5_000, "Timeout")])
+        await Promise.race([
+          ledger.getAddress(false),
+          throwAfter(5_000, "Timeout on Ledger Substrate connection"),
+        ])
 
         setLedger(ledger)
         setError(undefined)

@@ -23,9 +23,9 @@ export type BalanceTypes = {
  *
  * Each variant comes from a plugin in use by the consuming app.
  *
- * For example, in an app with the `substrate-native`, `evm-native`, `substrate-orml` and `evm-erc20` plugins:
+ * For example, in an app with the `substrate-native`, `evm-native`, `substrate-tokens` and `evm-erc20` plugins:
  *
- *     type BalanceJson = SubNativeBalance | EvmNativeBalance | SubOrmlBalance | EvmErc20Balance
+ *     type BalanceJson = SubNativeBalance | EvmNativeBalance | SubTokensBalance | EvmErc20Balance
  *
  * If `BalanceTypes` is empty then `BalanceJson` will fall back to the common `IBalance` interface, which every balance must implement.
  */
@@ -51,6 +51,8 @@ export type BalanceStatus =
   | "cache"
   // balance was retrieved from the chain but we're unable to create a new subscription
   | "stale"
+  // balance has never been retrieved yet
+  | "initializing"
 
 /** `IBalance` is a common interface which all balance types must implement. */
 export type IBalance = {

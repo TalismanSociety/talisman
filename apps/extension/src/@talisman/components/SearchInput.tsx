@@ -1,4 +1,4 @@
-import { SearchIcon } from "@talismn/icons"
+import { SearchIcon, XIcon } from "@talismn/icons"
 import { classNames } from "@talismn/util"
 import { useDebouncedState } from "@ui/hooks/useDebouncedState"
 import {
@@ -11,7 +11,7 @@ import {
   useMemo,
   useRef,
 } from "react"
-import { FormFieldInputContainerProps, FormFieldInputText } from "talisman-ui"
+import { FormFieldInputContainerProps, FormFieldInputText, IconButton } from "talisman-ui"
 
 const INPUT_CONTAINER_PROPS: FormFieldInputContainerProps = {
   small: true,
@@ -77,13 +77,27 @@ export const SearchInput: FC<SearchInputProps> = ({
     [containerClassName, small]
   )
 
+  const handleClear = useCallback(() => {
+    if (!ref.current) return
+    setSearch("")
+    ref.current.value = ""
+    ref.current.blur()
+  }, [setSearch])
+
   return (
     <FormFieldInputText
       ref={ref}
       className={classNames("text-base", className)}
       containerProps={containerProps}
       before={<SearchIcon className="text-body-disabled shrink-0" />}
-      after={after}
+      after={
+        after ??
+        (!!search && (
+          <IconButton onClick={handleClear}>
+            <XIcon />
+          </IconButton>
+        ))
+      }
       defaultValue={initialValue}
       placeholder={placeholder}
       onChange={handleSearchChange}

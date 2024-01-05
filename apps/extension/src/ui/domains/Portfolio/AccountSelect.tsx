@@ -10,7 +10,7 @@ import { AccountFolderIcon } from "@ui/domains/Account/AccountFolderIcon"
 import { AccountIcon } from "@ui/domains/Account/AccountIcon"
 import { AccountTypeIcon } from "@ui/domains/Account/AccountTypeIcon"
 import { AllAccountsIcon } from "@ui/domains/Account/AllAccountsIcon"
-import Fiat from "@ui/domains/Asset/Fiat"
+import { Fiat } from "@ui/domains/Asset/Fiat"
 import { useSelectedAccount } from "@ui/domains/Portfolio/SelectedAccountContext"
 import useAccountsCatalog from "@ui/hooks/useAccountsCatalog"
 import { useAnalytics } from "@ui/hooks/useAnalytics"
@@ -295,7 +295,7 @@ const Item = forwardRef<HTMLDivElement, ItemProps>(function Item(
       {t("All Accounts")}
     </div>
   ) : (
-    <div className="flex w-full items-center gap-2">
+    <div className="flex w-full items-center justify-center gap-2 lg:justify-start">
       <div className="overflow-hidden text-ellipsis whitespace-nowrap text-sm">{item.name}</div>
       {isAccount && <AccountTypeIcon className="text-primary" origin={item.origin} />}
     </div>

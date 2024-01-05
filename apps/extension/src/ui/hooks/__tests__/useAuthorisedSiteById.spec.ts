@@ -3,6 +3,7 @@ import { AuthorizedSiteId, ProviderType } from "@core/domains/sitesAuthorised/ty
 import { act, renderHook, waitFor } from "@testing-library/react"
 
 import { ADDRESSES } from "../../../../tests/constants"
+import { TestWrapper } from "../../../../tests/TestWrapper"
 import useAuthorisedSiteById from "../useAuthorisedSiteById"
 
 type RenderProps = { siteId: AuthorizedSiteId; providerType: ProviderType }
@@ -12,10 +13,11 @@ test("Can get Authorised Site by id", async () => {
     (props: RenderProps) => useAuthorisedSiteById(props.siteId, props.providerType),
     {
       initialProps: { siteId: TALISMAN_WEB_APP_DOMAIN, providerType: "polkadot" },
+      wrapper: TestWrapper,
     }
   )
 
-  expect(result.current.addresses?.length).toBe(2)
+  await waitFor(() => expect(result.current.addresses?.length).toBe(2))
   expect(result.current.connectAllSubstrate).toBe(true)
 
   expect(result.current.availableAddresses).toStrictEqual(Object.values(ADDRESSES))

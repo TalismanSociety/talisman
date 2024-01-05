@@ -126,6 +126,7 @@ export const $metadata = $.object(
 
 export function transformMetadata(metadata: $.Output<typeof $metadata>): FrameMetadata {
   const { ids, types, paths } = transformTys(metadata.tys)
+
   return {
     types,
     paths,
@@ -194,10 +195,17 @@ export function transformMetadata(metadata: $.Output<typeof $metadata>): FrameMe
       additional: getExtensionsCodec("additionalSigned"),
     },
   }
+
   function getExtrinsicParameter(key: "call" | "signature" | "address") {
+    if (!metadata.extrinsic.ty) return $.never
+
     const extrinsicTy = metadata.tys[metadata.extrinsic.ty]
     if (!extrinsicTy) return $.never
-    return ids[extrinsicTy.params.find((x) => x.name.toLowerCase() === key)!.ty!]!
+
+    const id = extrinsicTy.params.find((x) => x.name.toLowerCase() === key)?.ty
+    if (id === undefined) return $.never
+
+    return ids[id]!
   }
   function getExtensionsCodec(key: "ty" | "additionalSigned") {
     return $.object(

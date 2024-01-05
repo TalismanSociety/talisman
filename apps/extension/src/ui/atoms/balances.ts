@@ -13,10 +13,11 @@ import { liveQuery } from "dexie"
 import { atom, selector, selectorFamily } from "recoil"
 import { debounceTime, first, from, merge } from "rxjs"
 
+import { AccountsFilter, accountsQuery } from "./accounts"
 import {
-  chainsWithTestnetsMapState,
-  evmNetworksWithTestnetsMapState,
-  tokensWithTestnetsMapState,
+  activeChainsWithTestnetsMapState,
+  activeEvmNetworksWithTestnetsMapState,
+  activeTokensWithTestnetsMapState,
 } from "./chaindata"
 import { tokenRatesMapState } from "./tokenRates"
 
@@ -37,27 +38,45 @@ const rawBalancesState = atom<BalanceJson[]>({
 
       return () => sub.unsubscribe()
     },
-    // instruct backend to keep db syncrhonized while this atom is in use
+    // instruct backend to keep db synchronized while this atom is in use
     () => api.balances(NO_OP),
   ],
+  /**
+   * Given the following constraints:
+   * 1. We store rawBalances in recoil
+   * 2. We only access rawBalances from one place (the `allBalancesState` selector)
+   *
+   * And the context:
+   * 1. We set the `status` field of every balance inside of the `allBalancesState` selector
+   * 2. Making a full copy of every balance inside of the `allBalancesState` selector, just so we can set the `status` field, is a SLOW process
+   *
+   * Then the following conclusion is true:
+   * 1. It's quicker that we just mutate the existing `rawBalances` inside of this atom, and due to constraint (2) we avoid any of
+   *    the downsides which recoil's `dangerouslyAllowMutability: false` flag is designed to prevent.
+   */
+  dangerouslyAllowMutability: true,
 })
 
 const filteredRawBalancesState = selector({
   key: "filteredRawBalancesState",
   get: ({ get }) => {
-    const tokens = get(tokensWithTestnetsMapState)
+    const tokens = get(activeTokensWithTestnetsMapState)
     const balances = get(rawBalancesState)
 
     return balances.filter((b) => tokens[b.tokenId])
   },
+  /**
+   * The reason we need this is described in the rawBalancesState atom, where it is also set to true
+   */
+  dangerouslyAllowMutability: true,
 })
 
 export const balancesHydrateState = selector<HydrateDb>({
   key: "balancesHydrateState",
   get: ({ get }) => {
-    const chains = get(chainsWithTestnetsMapState)
-    const evmNetworks = get(evmNetworksWithTestnetsMapState)
-    const tokens = get(tokensWithTestnetsMapState)
+    const chains = get(activeChainsWithTestnetsMapState)
+    const evmNetworks = get(activeEvmNetworksWithTestnetsMapState)
+    const tokens = get(activeTokensWithTestnetsMapState)
     const tokenRates = get(tokenRatesMapState)
 
     return { chains, evmNetworks, tokens, tokenRates }
@@ -70,20 +89,8 @@ export const allBalancesState = selector({
     const rawBalances = get(filteredRawBalancesState)
     const hydrate = get(balancesHydrateState)
 
-    return new Balances(deriveStatuses([...getValidSubscriptionIds()], rawBalances), hydrate)
+    return new Balances(deriveStatuses(getValidSubscriptionIds(), rawBalances), hydrate)
   },
-})
-
-const rawBalancesQuery = selectorFamily({
-  key: "rawBalancesByAddressQuery",
-  get:
-    ({ address, tokenId }: { address?: Address; tokenId?: TokenId }) =>
-    ({ get }) => {
-      const balances = get(filteredRawBalancesState)
-      return balances.filter(
-        (b) => (!address || b.address === address) && (!tokenId || b.tokenId === tokenId)
-      )
-    },
 })
 
 export const balancesQuery = selectorFamily({
@@ -91,8 +98,25 @@ export const balancesQuery = selectorFamily({
   get:
     ({ address, tokenId }: { address?: Address; tokenId?: TokenId }) =>
     ({ get }) => {
-      const rawBalances = get(rawBalancesQuery({ address, tokenId }))
-      const hydrate = get(balancesHydrateState)
-      return new Balances(deriveStatuses([...getValidSubscriptionIds()], rawBalances), hydrate)
+      const allBalances = get(allBalancesState)
+      const filteredBalances = allBalances.each.filter(
+        (b) => (!address || b.address === address) && (!tokenId || b.tokenId === tokenId)
+      )
+
+      return new Balances(filteredBalances)
+    },
+})
+
+export const balancesFilterQuery = selectorFamily({
+  key: "balancesFilterQuery",
+  get:
+    (accountsFilter: AccountsFilter) =>
+    ({ get }) => {
+      const allBalances = get(allBalancesState)
+      const accounts = get(accountsQuery(accountsFilter))
+
+      return new Balances(
+        allBalances.each.filter((b) => accounts.some((a) => a.address === b.address))
+      )
     },
 })

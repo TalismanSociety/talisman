@@ -7,7 +7,7 @@ import { TypeRegistry } from "@polkadot/types"
 import { useQuery } from "@tanstack/react-query"
 import useChain from "@ui/hooks/useChain"
 
-import { QrCode } from "./QrCode"
+import { QrCode, QrCodeError } from "./QrCode"
 
 const CMD_SIGN_TX = 0
 const CMD_SIGN_TX_HASH = 1
@@ -67,7 +67,7 @@ export const ExtrinsicQrCode = ({ account, genesisHash, payload }: Props) => {
     retry: false,
   })
 
-  if (isLoading || error) return null
-
+  if (isLoading) return null
+  if (error) return <QrCodeError error={String(error)} />
   return <QrCode data={data} />
 }

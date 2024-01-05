@@ -4,9 +4,10 @@ import { FadeIn } from "@talisman/components/FadeIn"
 import { useOpenClose } from "@talisman/hooks/useOpenClose"
 import { LockIcon } from "@talismn/icons"
 import { classNames } from "@talismn/util"
-import Fiat from "@ui/domains/Asset/Fiat"
+import { Fiat } from "@ui/domains/Asset/Fiat"
 import Tokens from "@ui/domains/Asset/Tokens"
 import { useAnalytics } from "@ui/hooks/useAnalytics"
+import useBalances from "@ui/hooks/useBalances"
 import { useBalancesStatus } from "@ui/hooks/useBalancesStatus"
 import { useSelectedCurrency } from "@ui/hooks/useCurrency"
 import { ReactNode, useCallback, useMemo } from "react"
@@ -21,61 +22,9 @@ import { NetworksLogoStack } from "./NetworksLogoStack"
 import { usePortfolioNetworkIds } from "./usePortfolioNetworkIds"
 import { usePortfolioSymbolBalances } from "./usePortfolioSymbolBalances"
 
-const getSkeletonOpacity = (index: number) => {
-  // tailwind parses files to find classes that it should include
-  // so we can't dynamically compute the className
-  switch (index) {
-    case 0:
-      return "opacity-100"
-    case 1:
-      return "opacity-90"
-    case 2:
-      return "opacity-80"
-    case 3:
-      return "opacity-70"
-    case 4:
-      return "opacity-60"
-    case 5:
-      return "opacity-50"
-    case 6:
-      return "opacity-40"
-    case 7:
-      return "opacity-30"
-    case 8:
-      return "opacity-20"
-    case 9:
-      return "opacity-10"
-    default:
-      return "opacity-0"
-  }
-}
-
 type AssetRowProps = {
   balances: Balances
   locked?: boolean
-}
-
-const AssetRowSkeleton = ({ className }: { className?: string }) => {
-  return (
-    <div
-      className={classNames(
-        "bg-black-secondary flex h-28 items-center gap-6 rounded-sm px-6",
-        className
-      )}
-    >
-      <div className="bg-grey-700 h-16 w-16 animate-pulse rounded-full px-6 text-xl"></div>
-      <div className="grow space-y-1">
-        <div className="flex justify-between gap-1">
-          <div className="bg-grey-700 rounded-xs h-7 w-20 animate-pulse"></div>
-          <div className="bg-grey-700 rounded-xs h-7 w-[10rem] animate-pulse"></div>
-        </div>
-        <div className="flex justify-between gap-1">
-          <div className="bg-grey-700 rounded-xs h-7 w-10 animate-pulse"></div>
-          <div className="bg-grey-700 rounded-xs h-7 w-[6rem] animate-pulse"></div>
-        </div>
-      </div>
-    </div>
-  )
 }
 
 const AssetRow = ({ balances, locked }: AssetRowProps) => {
@@ -150,26 +99,35 @@ const AssetRow = ({ balances, locked }: AssetRowProps) => {
           </div>
           <div
             className={classNames(
-              "flex flex-col gap-2 text-right",
+              "flex flex-col items-end gap-2 text-right",
               status.status === "fetching" && "animate-pulse transition-opacity"
             )}
           >
-            <div
-              className={classNames(
-                "whitespace-nowrap text-sm font-bold",
-                locked ? "text-body-secondary" : "text-white"
-              )}
-            >
-              <Tokens amount={tokens} symbol={token?.symbol} isBalance />
-              {locked ? <LockIcon className="lock ml-2 inline align-baseline text-xs" /> : null}
-              <StaleBalancesIcon
-                className="alert ml-2 inline align-baseline text-sm"
-                staleChains={status.status === "stale" ? status.staleChains : []}
-              />
-            </div>
-            <div className="text-body-secondary leading-base text-xs">
-              {fiat === null ? "-" : <Fiat amount={fiat} isBalance />}
-            </div>
+            {status.status === "initializing" ? (
+              <>
+                <div className="bg-grey-700 rounded-xs h-7 w-[10rem] animate-pulse"></div>
+                <div className="bg-grey-700 rounded-xs h-7 w-[6rem] animate-pulse"></div>
+              </>
+            ) : (
+              <>
+                <div
+                  className={classNames(
+                    "whitespace-nowrap text-sm font-bold",
+                    locked ? "text-body-secondary" : "text-white"
+                  )}
+                >
+                  <Tokens amount={tokens} symbol={token?.symbol} isBalance />
+                  {locked ? <LockIcon className="lock ml-2 inline align-baseline text-xs" /> : null}
+                  <StaleBalancesIcon
+                    className="alert ml-2 inline align-baseline text-sm"
+                    staleChains={status.status === "stale" ? status.staleChains : []}
+                  />
+                </div>
+                <div className="text-body-secondary leading-base text-xs">
+                  {fiat === null ? "-" : <Fiat amount={fiat} isBalance />}
+                </div>
+              </>
+            )}
           </div>
         </div>
       </button>
@@ -214,13 +172,11 @@ const BalancesGroup = ({ label, fiatAmount, className, children }: GroupProps) =
 }
 
 export const PopupAssetsTable = ({ balances }: GroupedAssetsTableProps) => {
+  const { t } = useTranslation()
   const { account } = useSelectedAccount()
   // group by status by token (symbol)
-  const {
-    availableSymbolBalances: available,
-    lockedSymbolBalances,
-    skeletons,
-  } = usePortfolioSymbolBalances(balances)
+  const { availableSymbolBalances: available, lockedSymbolBalances } =
+    usePortfolioSymbolBalances(balances)
 
   const currency = useSelectedCurrency()
 
@@ -230,9 +186,18 @@ export const PopupAssetsTable = ({ balances }: GroupedAssetsTableProps) => {
     return { total, totalAvailable: transferable, totalLocked: locked + reserved }
   }, [balances.sum, currency])
 
-  const { t } = useTranslation()
+  // assume balance subscription is initializing if there are no balances at all in the db
+  const allBalances = useBalances("all")
+  if (!allBalances.count) return null
 
-  if (!available.length && !lockedSymbolBalances.length) return null
+  if (!available.length && !lockedSymbolBalances.length)
+    return (
+      <FadeIn>
+        <div className="text-body-secondary bg-black-secondary rounded-sm py-10 text-center text-xs">
+          {account ? t("No assets to display for this account.") : t("No assets to display.")}
+        </div>
+      </FadeIn>
+    )
 
   return (
     <FadeIn>
@@ -252,10 +217,7 @@ export const PopupAssetsTable = ({ balances }: GroupedAssetsTableProps) => {
           {available.map(([symbol, b]) => (
             <AssetRow key={symbol} balances={b} />
           ))}
-          {[...Array(skeletons).keys()].map((i) => (
-            <AssetRowSkeleton key={i} className={getSkeletonOpacity(i)} />
-          ))}
-          {!skeletons && !available.length && (
+          {!available.length && (
             <div className="text-body-secondary bg-black-secondary rounded-sm py-10 text-center text-xs">
               {account
                 ? t("There are no available balances for this account.")

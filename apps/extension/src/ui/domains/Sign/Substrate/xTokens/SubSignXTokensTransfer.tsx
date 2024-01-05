@@ -3,6 +3,7 @@ import { Codec } from "@polkadot/types-codec/types"
 import { assert } from "@polkadot/util"
 import { Address } from "@talismn/balances"
 import { Chain, Token } from "@talismn/chaindata-provider"
+import * as $ from "@talismn/subshape-fork"
 import { encodeAnyAddress } from "@talismn/util"
 import useChains from "@ui/hooks/useChains"
 import { useExtrinsic } from "@ui/hooks/useExtrinsic"
@@ -11,7 +12,6 @@ import useTokens from "@ui/hooks/useTokens"
 import isEqual from "lodash/isEqual"
 import { useMemo } from "react"
 import { useTranslation } from "react-i18next"
-import * as $ from "subshape"
 
 import { SignContainer } from "../../SignContainer"
 import { usePolkadotSigningRequest } from "../../SignRequestContext"
@@ -142,9 +142,9 @@ export const SubSignXTokensTransfer = () => {
   const { t } = useTranslation("request")
   const { chain, payload, account } = usePolkadotSigningRequest()
   const { data: extrinsic } = useExtrinsic(payload)
-  const { tokens } = useTokens(true)
+  const { tokens } = useTokens({ activeOnly: false, includeTestnets: true })
+  const { chains } = useChains({ activeOnly: false, includeTestnets: true })
   const tokenRates = useTokenRatesMap()
-  const { chains } = useChains(true)
 
   const props = useMemo(() => {
     // wait for tokens to be loaded

@@ -1,11 +1,11 @@
 import { Balances } from "@core/domains/balances/types"
 import { ExternalLinkIcon, XIcon, ZapIcon } from "@talismn/icons"
 import { classNames } from "@talismn/util"
-import Fiat from "@ui/domains/Asset/Fiat"
+import { Fiat } from "@ui/domains/Asset/Fiat"
 import { useShowStakingBanner } from "@ui/domains/Staking/useShowStakingBanner"
 import { useAnalytics } from "@ui/hooks/useAnalytics"
 import { useBalancesStatus } from "@ui/hooks/useBalancesStatus"
-import { FC, useCallback } from "react"
+import { useCallback } from "react"
 import { Trans, useTranslation } from "react-i18next"
 import { useNavigate } from "react-router-dom"
 
@@ -15,36 +15,7 @@ import { useTokenBalancesSummary } from "../useTokenBalancesSummary"
 import { NetworksLogoStack } from "./NetworksLogoStack"
 import { usePortfolioNetworkIds } from "./usePortfolioNetworkIds"
 
-export const AssetRowSkeleton: FC<{ className?: string }> = ({ className }) => {
-  return (
-    <div
-      className={classNames(
-        "text-body-secondary bg-grey-850 mb-4 grid w-full grid-cols-[40%_30%_30%] rounded text-left text-base",
-        className
-      )}
-    >
-      <div>
-        <div className="flex h-[6.6rem]">
-          <div className="p-8 text-xl">
-            <div className="bg-grey-700 h-16 w-16 animate-pulse rounded-full"></div>
-          </div>
-          <div className="flex grow flex-col justify-center gap-2">
-            <div className="bg-grey-700 rounded-xs h-8 w-20 animate-pulse"></div>
-          </div>
-        </div>
-      </div>
-      <div></div>
-      <div>
-        <div className="flex h-full flex-col items-end justify-center gap-2 px-8">
-          <div className="bg-grey-700 rounded-xs h-8 w-[10rem] animate-pulse"></div>
-          <div className="bg-grey-700 rounded-xs h-8 w-[6rem] animate-pulse"></div>
-        </div>
-      </div>
-    </div>
-  )
-}
-
-const AssetRowStakingReminder = ({ balances }: { balances: Balances }) => {
+const AssetRowStakingReminder = ({ balances }: AssetRowProps) => {
   const { t } = useTranslation()
 
   const { token, summary } = useTokenBalancesSummary(balances)
@@ -163,16 +134,23 @@ export const AssetRow = ({ balances }: AssetRowProps) => {
           />
         </div>
         <div className="text-right">
-          <AssetBalanceCellValue
-            render
-            tokens={summary.availableTokens}
-            fiat={summary.availableFiat}
-            symbol={token.symbol}
-            balancesStatus={status}
-            className={classNames(
-              status.status === "fetching" && "animate-pulse transition-opacity"
-            )}
-          />
+          {status.status === "initializing" ? (
+            <div className="flex h-[6.6rem]  w-full flex-col items-end justify-center gap-2 px-8">
+              <div className="bg-grey-700 rounded-xs h-8 w-[10rem] animate-pulse"></div>
+              <div className="bg-grey-700 rounded-xs h-8 w-[6rem] animate-pulse"></div>
+            </div>
+          ) : (
+            <AssetBalanceCellValue
+              render
+              tokens={summary.availableTokens}
+              fiat={summary.availableFiat}
+              symbol={token.symbol}
+              balancesStatus={status}
+              className={classNames(
+                status.status === "fetching" && "animate-pulse transition-opacity"
+              )}
+            />
+          )}
         </div>
       </button>
     </>

@@ -480,7 +480,8 @@ export const useEthTransaction = (
   const { isValid, error: isValidError } = useIsValidEthTransaction(
     publicClient,
     transaction,
-    priority
+    priority,
+    isReplacement
   )
 
   const { t } = useTranslation("request")

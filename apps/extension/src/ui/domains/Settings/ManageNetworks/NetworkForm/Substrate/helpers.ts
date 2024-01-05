@@ -13,9 +13,8 @@ export const getSubstrateRpcInfo = (rpcUrl: string): Promise<SubstrateRpcInfo | 
   const cached = rpcInfoCache.get(rpcUrl)
   if (cached) return cached
 
-  const ws = new WsProvider(rpcUrl, 0)
-
   const request = (async () => {
+    const ws = new WsProvider(rpcUrl, 0)
     try {
       await ws.connect()
       const isReadyTimeout = sleep(2_500).then(() => {

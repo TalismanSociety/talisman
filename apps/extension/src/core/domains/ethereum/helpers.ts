@@ -8,7 +8,7 @@ import {
 } from "@core/domains/ethereum/types"
 import { Token } from "@core/domains/tokens/types"
 import { assert } from "@polkadot/util"
-import { erc20Abi } from "@talismn/balances-evm-erc20"
+import { erc20Abi } from "@talismn/balances"
 import { isBigInt, isEthereumAddress } from "@talismn/util"
 import {
   Hex,
@@ -326,7 +326,10 @@ const schemaAddEthereumRequest = yup.object().shape({
     })
     .required(),
   rpcUrls: yup.array().of(yup.string().required().test("noScriptTag", testNoScriptTag)).required(),
-  blockExplorerUrls: yup.array().of(yup.string().required().test("noScriptTag", testNoScriptTag)),
+  blockExplorerUrls: yup
+    .array()
+    .of(yup.string().required().test("noScriptTag", testNoScriptTag))
+    .nullable(),
   iconUrls: yup.array().of(yup.string().test("noScriptTag", testNoScriptTag)),
 })
 

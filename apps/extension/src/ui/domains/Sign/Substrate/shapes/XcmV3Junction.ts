@@ -1,4 +1,4 @@
-import * as $ from "subshape"
+import * as $ from "@talismn/subshape-fork"
 
 // Type 79 - xcm::v3::junction::NetworkId
 type XcmV3NetworkId =

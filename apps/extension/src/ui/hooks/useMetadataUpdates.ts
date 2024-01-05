@@ -34,7 +34,7 @@ export const useMetadataUpdates = (genesisHash?: HexString, specVersion?: number
   const [isMetadataUpdating, setIsMetadataUpdating] = useState(false)
   const [hasMetadataUpdated, setHasMetadataUpdated] = useState(false)
 
-  const { chains } = useChains(true)
+  const { chains } = useChains({ activeOnly: false, includeTestnets: true })
   const chain = useMemo(
     () => chains.find((c) => c.genesisHash === genesisHash) ?? null,
     [chains, genesisHash]
@@ -66,7 +66,7 @@ export const useMetadataUpdates = (genesisHash?: HexString, specVersion?: number
       const hasMetadata = !!metadata
       const isMetadataUpToDate =
         specVersion === undefined ? !!metadata : metadata?.specVersion === specVersion
-      const rpcUrl = chain?.rpcs?.filter((rpc) => rpc.isHealthy)?.[0]?.url
+      const rpcUrl = chain?.rpcs?.[0]?.url
       const updateUrl = rpcUrl
         ? `https://polkadot.js.org/apps/?rpc=${encodeURIComponent(rpcUrl)}#/settings/metadata`
         : undefined

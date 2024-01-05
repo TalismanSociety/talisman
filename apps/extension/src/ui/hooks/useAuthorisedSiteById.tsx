@@ -25,13 +25,13 @@ const useAuthorisedSiteById = (id: AuthorizedSiteId, type: ProviderType) => {
 
     switch (type) {
       case "polkadot":
-        return connectedPolkadot
+        return connectedPolkadot.filter((address) => availableAddresses.includes(address))
       case "ethereum":
-        return connectedEthereum
+        return connectedEthereum.filter((address) => availableAddresses.includes(address))
       default:
         throw new Error("provider type not set")
     }
-  }, [sites, id, type])
+  }, [sites, id, type, availableAddresses])
 
   const handleUpdate = useCallback(
     (newAddresses: AuthorizedSiteAddresses | undefined) => {

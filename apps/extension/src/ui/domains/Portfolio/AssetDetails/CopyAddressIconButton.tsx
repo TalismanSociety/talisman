@@ -16,8 +16,8 @@ export const CopyAddressButton = ({
   networkId: ChainId | EvmNetworkId | null | undefined
 }) => {
   const { account } = useSelectedAccount()
-  const [useTestnets] = useSetting("useTestnets")
-  const { tokens } = useTokens(useTestnets)
+  const [includeTestnets] = useSetting("useTestnets")
+  const { tokens } = useTokens({ activeOnly: true, includeTestnets })
 
   const token = tokens?.find(
     (t) =>

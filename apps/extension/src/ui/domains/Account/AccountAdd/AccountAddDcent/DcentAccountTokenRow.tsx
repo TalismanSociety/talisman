@@ -1,7 +1,7 @@
 import { BalanceFormatter, Balances } from "@talismn/balances"
 import { Token } from "@talismn/chaindata-provider"
 import { classNames } from "@talismn/util"
-import Fiat from "@ui/domains/Asset/Fiat"
+import { Fiat } from "@ui/domains/Asset/Fiat"
 import { TokenLogo } from "@ui/domains/Asset/TokenLogo"
 import Tokens from "@ui/domains/Asset/Tokens"
 import useChain from "@ui/hooks/useChain"

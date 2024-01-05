@@ -10,7 +10,10 @@ import { FC, useCallback, useEffect, useMemo, useState } from "react"
 
 const isTalismanLogo = (url?: string | null) => {
   if (!url) return false
-  return /^https:\/\/raw.githubusercontent.com\/TalismanSociety\/chaindata\//i.test(url)
+  return (
+    /^https:\/\/raw.githubusercontent.com\/TalismanSociety\/chaindata\//i.test(url) &&
+    !/assets\/tokens\/coingecko/i.test(url)
+  )
 }
 
 type AssetLogoBaseProps = {
@@ -31,7 +34,12 @@ export const AssetLogoBase = ({ id, className, url, rounded }: AssetLogoBaseProp
   const handleError = useCallback(() => setSrc(UNKNOWN_TOKEN_URL), [])
 
   const imgClassName = useMemo(
-    () => classNames("relative block w-[1em] shrink-0", rounded && "rounded-full", className),
+    () =>
+      classNames(
+        "relative block w-[1em] shrink-0 aspect-square",
+        rounded && "rounded-full",
+        className
+      ),
     [className, rounded]
   )
 

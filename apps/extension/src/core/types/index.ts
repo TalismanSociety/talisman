@@ -1,5 +1,6 @@
 import { AccountsMessages } from "@core/domains/accounts/types"
 import { AppMessages } from "@core/domains/app/types"
+import { AssetDiscoveryMessages } from "@core/domains/assetDiscovery/types"
 import { BalancesMessages } from "@core/domains/balances/types"
 import { ChainsMessages } from "@core/domains/chains/types"
 import { EncryptMessages } from "@core/domains/encrypt/types"
@@ -81,7 +82,8 @@ type RequestSignaturesBase = Omit<PolkadotRequestSignatures, RemovedMessages> &
   TalismanMessages &
   TokenMessages &
   TokenRatesMessages &
-  SubstrateMessages
+  SubstrateMessages &
+  AssetDiscoveryMessages
 
 export interface RequestSignatures extends RequestSignaturesBase {
   // Values for RequestSignatures are arrays where the items are [RequestType, ResponseType, SubscriptionMesssageType?]

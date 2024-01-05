@@ -174,6 +174,7 @@ class TalismanAnalytics {
       .map(({ chainId, tokenId }) => ({ chainId, tokenId }))
       .slice(0, 5)
 
+    const topToken = topChainTokens[0]
     posthog.capture("balances top tokens", topChainTokens)
     posthog.capture("balances report", {
       $set: {
@@ -181,7 +182,7 @@ class TalismanAnalytics {
           .getAccounts()
           .filter(({ meta }) => meta.origin !== AccountType.Watched).length,
         totalFiatValue: roundToFirstInteger(balances.sum.fiat("usd").total),
-        topToken: `${topChainTokens[0].chainId}: ${topChainTokens[0].tokenId}`,
+        topToken: topToken ? `${topToken.chainId}: ${topToken.tokenId}` : undefined,
       },
     })
   }

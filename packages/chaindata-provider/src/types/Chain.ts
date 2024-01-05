@@ -7,6 +7,7 @@ export type ChainId = string
 export type Chain = {
   id: ChainId // The ID of this chain
   isTestnet: boolean // Is this chain a testnet?
+  isDefault: boolean // Is this chain enabled by default?
   sortIndex: number | null // The sortIndex of this chain
   genesisHash: string | null // The genesisHash of this chain
   prefix: number | null // The substrate prefix of this chain
@@ -24,8 +25,8 @@ export type Chain = {
   chainspecQrUrl: string | null // A url to a qr code with the chainspec for this chain
   latestMetadataQrUrl: string | null // A url to a qr code with the latest metadata for this chain
   isUnknownFeeToken: boolean // Indicates if chain may use a different fee token than it's native token
+  feeToken: string | null
   rpcs: Array<SubstrateRpc> | null // Some public RPCs for connecting to this chain's network
-  isHealthy: boolean // The health status of this chain's RPCs
   evmNetworks: Array<{ id: EvmNetworkId }>
 
   parathreads: Array<Pick<Chain, "id" | "paraId" | "name">> | null // The parathreads of this relayChain, if some exist
@@ -33,7 +34,10 @@ export type Chain = {
   paraId: number | null // The paraId of this chain, if it is a parachain
   relay: Pick<Chain, "id"> | null // The parent relayChain of this parachain, if this chain is a parachain
 
-  balanceMetadata: Array<BalanceMetadata>
+  balancesConfig: Array<BalancesConfig>
+  // TODO: Delete (has its own store now)
+  /** @deprecated has its own store now */
+  balancesMetadata: Array<BalancesMetadata>
 }
 export type CustomChain = Chain & {
   isCustom: true
@@ -41,6 +45,7 @@ export type CustomChain = Chain & {
 
 export type SubstrateRpc = {
   url: string // The url of this RPC
-  isHealthy: boolean // The health status of this RPC
 }
-export type BalanceMetadata = { moduleType: string; metadata: unknown }
+
+export type BalancesConfig = { moduleType: string; moduleConfig: unknown }
+export type BalancesMetadata = { moduleType: string; metadata: unknown }

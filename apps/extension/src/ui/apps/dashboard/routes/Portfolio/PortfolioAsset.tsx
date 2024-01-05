@@ -1,7 +1,7 @@
 import { Balances } from "@core/domains/balances/types"
 import { ChevronLeftIcon, CopyIcon, SendIcon } from "@talismn/icons"
 import { classNames } from "@talismn/util"
-import Fiat from "@ui/domains/Asset/Fiat"
+import { Fiat } from "@ui/domains/Asset/Fiat"
 import { TokenLogo } from "@ui/domains/Asset/TokenLogo"
 import { useCopyAddressModal } from "@ui/domains/CopyAddress"
 import { DashboardAssetDetails } from "@ui/domains/Portfolio/AssetDetails"
