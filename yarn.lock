@@ -7095,14 +7095,14 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@substrate/txwrapper-core@npm:7.0.1":
-  version: 7.0.1
-  resolution: "@substrate/txwrapper-core@npm:7.0.1"
+"@substrate/txwrapper-core@npm:7.2.0":
+  version: 7.2.0
+  resolution: "@substrate/txwrapper-core@npm:7.2.0"
   dependencies:
-    "@polkadot/api": ^10.7.1
-    "@polkadot/keyring": ^12.2.1
+    "@polkadot/api": ^10.11.2
+    "@polkadot/keyring": ^12.6.1
     memoizee: 0.4.15
-  checksum: 4aca23cab62951b16947f60336687478ff279c80a0245182772069e45fee83f75fa35140f1ca0f30f9df9f4ba2b0f66de362a6ff633f1e31c4c5b9b04878aa9a
+  checksum: bfed75a34d51777289d411e4d79365b7aec997cef52ef3936fc11605ef7d9df2d10fb66be1d01b653f472440c3098b8d5e3125cbb44eeaedc3d7d4b1ad4bc0c5
   languageName: node
   linkType: hard
 
