@@ -67,24 +67,9 @@ const DisplayValue = ({
   isBalance,
   noCountUp,
 }: DisplayValueProps) => {
-  /**
-   * Represents the first non-zero decimal place for numbers between -1 and 1
-   * For example:
-   *
-   *     Input  - Output
-   *     ****** - ******
-   *     99.000 - 0
-   *      1.000 - 0
-   *      0.100 - 1
-   *      0.069 - 2
-   *      0.009 - 3
-   *     -0.009 - 3
-   *     -0.069 - 2
-   *     -0.100 - 1
-   *     -1.000 - 0
-   */
-  const decimalsFactor = Math.abs(Math.min(0, Math.floor(Math.log10(Math.abs(amount)))))
-  const decimalPlaces = amount !== 0 && !isBalance && decimalsFactor > 1 ? decimalsFactor + 1 : 2
+  const decimalPlacesCount = getDecimalPlacesCount(amount)
+  const decimalPlaces =
+    amount !== 0 && !isBalance && decimalPlacesCount > 1 ? decimalPlacesCount + 1 : 2
 
   const format = useCallback(
     (amount = 0) => {
@@ -111,3 +96,28 @@ const DisplayValue = ({
     />
   )
 }
+
+/**
+ * Gets the decimalPlacesCount for a number.
+ *
+ * For any numbers between -1 and 1, decimalPlacesCount represents the first non-zero decimal place.
+ * So for 0.1, decimalPlacesCount is 1. For 0.01, it is 2. For 0.001 it is 3. For 0.0001 it is 4, etc.
+ *
+ * For any numbers less than -1 or greater than 1, decimalPlacesCount is 0.
+ *
+ * Some more examples:
+ *
+ *     Input  - Output
+ *     ****** - ******
+ *     99.000 - 0
+ *      1.000 - 0
+ *      0.100 - 1
+ *      0.069 - 2
+ *      0.009 - 3
+ *     -0.009 - 3
+ *     -0.069 - 2
+ *     -0.100 - 1
+ *     -1.000 - 0
+ */
+const getDecimalPlacesCount = (amount: number) =>
+  Math.abs(Math.min(0, Math.floor(Math.log10(Math.abs(amount)))))
