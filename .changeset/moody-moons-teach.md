@@ -1,7 +1,6 @@
 ---
-"@talismn/balances-evm-native": patch
+"@talismn/balances": patch
 "@talismn/chain-connector-evm": patch
-"@talismn/balances-evm-erc20": patch
 "@talismn/util": patch
 ---
 

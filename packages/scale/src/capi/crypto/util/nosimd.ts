@@ -20,7 +20,6 @@ export class Xxhash implements Hasher {
     return xxhashAsU8a(this.input, (this.rounds * 64) as XxHashBitLength)
   }
   digestInto(digest: Uint8Array): void {
-    // TODO: Test that this correctly mutates the input var to be the value of the digest
     digest.set(this.digest())
   }
   dispose(): void {
@@ -46,7 +45,6 @@ export class Blake2b implements Hasher {
     return blake2AsU8a(this.input, (this.digestSize * 8) as Blake2bBitLength)
   }
   digestInto(digest: Uint8Array): void {
-    // TODO: Test that this correctly mutates the input var to be the value of the digest
     digest.set(this.digest())
   }
   dispose(): void {

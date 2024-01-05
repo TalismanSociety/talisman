@@ -1,3 +1,4 @@
+import { isChainActive } from "@core/domains/chains/store.activeChains"
 import { log } from "@core/log"
 import { AddressesByChain } from "@core/types/base"
 import { convertAddress } from "@talisman/util/convertAddress"
@@ -5,6 +6,7 @@ import { LedgerAccountDefSubstrate } from "@ui/domains/Account/AccountAdd/Accoun
 import { useLedgerSubstrate } from "@ui/hooks/ledger/useLedgerSubstrate"
 import { useLedgerSubstrateApp } from "@ui/hooks/ledger/useLedgerSubstrateApp"
 import useAccounts from "@ui/hooks/useAccounts"
+import { useActiveChainsState } from "@ui/hooks/useActiveChainsState"
 import useBalancesByParams from "@ui/hooks/useBalancesByParams"
 import useChain from "@ui/hooks/useChain"
 import { FC, useCallback, useEffect, useMemo, useState } from "react"
@@ -22,6 +24,11 @@ const useLedgerChainAccounts = (
   const { t } = useTranslation()
   const chain = useChain(chainId)
   const app = useLedgerSubstrateApp(chain?.genesisHash)
+  const activeChains = useActiveChainsState()
+  const withBalances = useMemo(
+    () => !!chain && isChainActive(chain, activeChains),
+    [chain, activeChains]
+  )
 
   const [ledgerAccounts, setLedgerAccounts] = useState<(LedgerSubstrateAccount | undefined)[]>([
     ...Array(itemsPerPage),
@@ -71,17 +78,17 @@ const useLedgerChainAccounts = (
     // start fetching balances only when all accounts are known to prevent recreating subscription 5 times
     if (ledgerAccounts.filter(Boolean).length < ledgerAccounts.length) return undefined
 
-    const result: AddressesByChain = chain
-      ? {
-          [chain.id]: ledgerAccounts
-            .filter((acc) => !!acc)
-            .map((acc) => acc as LedgerSubstrateAccount)
-            .map((account) => convertAddress(account.address, chain.prefix)),
-        }
-      : {}
+    if (!chain || !isChainActive(chain, activeChains)) return {}
+
+    const result: AddressesByChain = {
+      [chain.id]: ledgerAccounts
+        .filter((acc) => !!acc)
+        .map((acc) => acc as LedgerSubstrateAccount)
+        .map((account) => convertAddress(account.address, chain.prefix)),
+    }
 
     return result
-  }, [chain, ledgerAccounts])
+  }, [chain, activeChains, ledgerAccounts])
 
   const balances = useBalancesByParams({ addressesByChain })
 
@@ -129,6 +136,7 @@ const useLedgerChainAccounts = (
     isBusy,
     error,
     connectionStatus,
+    withBalances,
   }
 }
 
@@ -147,7 +155,7 @@ export const LedgerSubstrateAccountPicker: FC<LedgerSubstrateAccountPickerProps>
   const itemsPerPage = 5
   const [pageIndex, setPageIndex] = useState(0)
   const [selectedAccounts, setSelectedAccounts] = useState<LedgerAccountDefSubstrate[]>([])
-  const { accounts, error, isBusy } = useLedgerChainAccounts(
+  const { accounts, withBalances, error, isBusy } = useLedgerChainAccounts(
     chainId,
     selectedAccounts,
     pageIndex,
@@ -176,6 +184,7 @@ export const LedgerSubstrateAccountPicker: FC<LedgerSubstrateAccountPickerProps>
     <>
       <DerivedAccountPickerBase
         accounts={accounts}
+        withBalances={withBalances}
         disablePaging={isBusy}
         canPageBack={pageIndex > 0}
         onAccountClick={handleToggleAccount}

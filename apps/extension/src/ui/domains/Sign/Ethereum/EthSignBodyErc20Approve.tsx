@@ -26,7 +26,7 @@ export const EthSignBodyErc20Approve: FC = () => {
   const { t } = useTranslation("request")
   const { account, network, decodedTx } = useEthSignKnownTransactionRequest()
 
-  const { tokens } = useTokens(true)
+  const { tokens } = useTokens({ activeOnly: false, includeTestnets: true })
   const token = useMemo(() => {
     return network
       ? (tokens?.find(

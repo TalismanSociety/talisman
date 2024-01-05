@@ -4,6 +4,7 @@ import { useMemo } from "react"
 export type BalancesStatus =
   | { status: "live" }
   | { status: "fetching" }
+  | { status: "initializing" }
   | { status: "stale"; staleChains: string[] }
 
 /**
@@ -22,6 +23,8 @@ export const useBalancesStatus = (balances: Balances) =>
     // fetching
     const hasCachedBalances = balances.each.some((b) => b.status === "cache")
     if (hasCachedBalances) return { status: "fetching" }
+
+    if (balances.each.every((b) => b.status === "initializing")) return { status: "initializing" }
 
     // live
     return { status: "live" }

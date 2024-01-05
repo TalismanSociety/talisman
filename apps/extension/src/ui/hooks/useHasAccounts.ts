@@ -1,8 +1,8 @@
 import { useMemo } from "react"
 
-import { useAccountsSubscribe } from "./useAccountsSubscribe"
+import useAccounts from "./useAccounts"
 
 export const useHasAccounts = () => {
-  const accounts = useAccountsSubscribe()
-  return useMemo(() => Boolean(accounts && accounts.length > 0), [accounts])
+  const accounts = useAccounts()
+  return useMemo(() => !!accounts.length, [accounts])
 }

@@ -1,9 +1,7 @@
-import { chainConnector } from "@core/rpcs/chain-connector"
-import { chainConnectorEvm } from "@core/rpcs/chain-connector-evm"
+import { chainConnectors } from "@core/rpcs/balance-modules"
 import { getTypeRegistry } from "@core/util/getTypeRegistry"
 import { OnChainId, OnChainIds } from "@talismn/on-chain-id"
 
-const chainConnectors = { substrate: chainConnector, evm: chainConnectorEvm }
 const chainIdPolkadot = "polkadot"
 
 export const resolveNames = async (names: string[]): Promise<Map<string, string | null>> =>

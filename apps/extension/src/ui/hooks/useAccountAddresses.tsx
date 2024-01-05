@@ -1,4 +1,6 @@
-import useAccounts, { UseAccountsFilter } from "./useAccounts"
+import { AccountsFilter } from "@ui/atoms"
+
+import { useAccounts } from "./useAccounts"
 
 /**
  *
@@ -7,7 +9,7 @@ import useAccounts, { UseAccountsFilter } from "./useAccounts"
  */
 export const useAccountAddresses = (
   ethereumOnly?: boolean,
-  accountFilter?: UseAccountsFilter
+  accountFilter?: AccountsFilter
 ): string[] => {
   const accounts = useAccounts(accountFilter)
   return accounts

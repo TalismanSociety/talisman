@@ -1,6 +1,4 @@
 ---
-"@talismn/balances-default-modules": patch
-"@talismn/balances-substrate-psp22": patch
 "@talismn/balances": patch
 ---
 

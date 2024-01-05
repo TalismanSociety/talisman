@@ -1,11 +1,14 @@
 import { CurrentAccountAvatar } from "@ui/domains/Account/CurrentAccountAvatar"
+import { AssetDiscoveryPopupAlert } from "@ui/domains/AssetDiscovery/AssetDiscoveryPopupAlert"
 import { EvmNetworkSelectPill } from "@ui/domains/Ethereum/EvmNetworkSelectPill"
 import { PortfolioProvider } from "@ui/domains/Portfolio/context"
 import { NomPoolStakingBannerProvider } from "@ui/domains/Portfolio/NomPoolStakingContext"
+import BraveWarningPopupBanner from "@ui/domains/Settings/BraveWarning/BraveWarningPopupBanner"
+import MigratePasswordAlert from "@ui/domains/Settings/MigratePasswordAlert"
 import { ConnectedAccountsPill } from "@ui/domains/Site/ConnectedAccountsPill"
 import { useAuthorisedSites } from "@ui/hooks/useAuthorisedSites"
 import { useHasAccounts } from "@ui/hooks/useHasAccounts"
-import { Suspense, lazy, useMemo } from "react"
+import { Suspense, useMemo } from "react"
 import { Route, Routes, useLocation } from "react-router-dom"
 
 import { useCurrentSite } from "../../context/CurrentSiteContext"
@@ -17,11 +20,6 @@ import { PortfolioAssets } from "./PortfolioAssets"
 import { PortfolioLearnMore, PortfolioLearnMoreHeader } from "./PortfolioLearnMore"
 import { PortfolioTryTalisman, PortfolioTryTalismanHeader } from "./PortfolioTryTalisman"
 import { PortfolioWhatsNew, PortfolioWhatsNewHeader } from "./PortfolioWhatsNew"
-
-const BraveWarningPopupBanner = lazy(
-  () => import("@ui/domains/Settings/BraveWarning/BraveWarningPopupBanner")
-)
-const MigratePasswordAlert = lazy(() => import("@ui/domains/Settings/MigratePasswordAlert"))
 
 export const Portfolio = () => {
   const currentSite = useCurrentSite()
@@ -42,6 +40,7 @@ export const Portfolio = () => {
             {hasAccounts && <HasAccountsPortfolioContent />}
             {!hasAccounts && <NoAccountsPortfolioContent />}
           </PopupContent>
+          <AssetDiscoveryPopupAlert />
         </PopupLayout>
       </NomPoolStakingBannerProvider>
     </PortfolioProvider>
@@ -97,7 +96,6 @@ const HasAccountsPortfolioContent = () => (
     <Suspense fallback={null}>
       <BraveWarningPopupBanner />
       <MigratePasswordAlert />
-      {/* <AnalyticsAlert /> */}
     </Suspense>
   </>
 )

@@ -26,14 +26,14 @@
     "clean": "rm -rf dist && rm -rf .turbo rm -rf node_modules"
   },
   "dependencies": {
-    "@talismn/subshape-fork": "^0.0.1",
+    "@talismn/subshape-fork": "^0.0.2",
     "@talismn/util": "workspace:*",
     "anylogger": "^1.0.11",
     "wasm-feature-detect": "^1.6.0",
     "wat-the-crypto": "^0.0.3"
   },
   "devDependencies": {
-    "@polkadot/util-crypto": "^11.1.1",
+    "@polkadot/util-crypto": "^12.3.2",
     "@talismn/eslint-config": "workspace:*",
     "@talismn/tsconfig": "workspace:*",
     "@types/jest": "^27.5.1",
@@ -43,7 +43,7 @@
     "typescript": "^5.2.2"
   },
   "peerDependencies": {
-    "@polkadot/util-crypto": "^11.x"
+    "@polkadot/util-crypto": "12.x"
   },
   "eslintConfig": {
     "root": true,

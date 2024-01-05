@@ -6,7 +6,7 @@ export const useSearchParamsSelectedAccount = () => {
   const [searchParams] = useSearchParams()
 
   const address = searchParams.get("account")
-  const account = useAccountByAddress(address) ?? undefined
+  const account = useAccountByAddress(address !== "all" ? address : undefined) ?? undefined
 
   return { account }
 }

@@ -1,4 +1,5 @@
 import { AccountAddressType, RequestAccountCreateFromSuri } from "@core/domains/accounts/types"
+import { AssetDiscoveryMode } from "@core/domains/assetDiscovery/types"
 import { getEthDerivationPath } from "@core/domains/ethereum/helpers"
 import { provideContext } from "@talisman/util/provideContext"
 import { api } from "@ui/api"
@@ -38,6 +39,8 @@ const useAccountAddSecretProvider = ({ onSuccess }: { onSuccess: (address: strin
     // proceed sequencially in case mnemonic must be added to the store on first call
     for (const { name, suri, type } of accounts)
       addresses.push(await api.accountCreateFromSuri(name, suri, type))
+
+    api.assetDiscoveryStartScan(AssetDiscoveryMode.ACTIVE_NETWORKS, addresses)
 
     return addresses
   }, [])

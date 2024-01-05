@@ -6,7 +6,7 @@ import { api } from "@ui/api"
 import useChainByGenesisHash from "@ui/hooks/useChainByGenesisHash"
 import { useImageLoaded } from "@ui/hooks/useImageLoaded"
 
-import { QrCode } from "./QrCode"
+import { QrCode, QrCodeError } from "./QrCode"
 import { QrCodeSource, qrCodeLogoForSource } from "./QrCodeSourceSelector"
 
 type Props = {
@@ -55,7 +55,7 @@ export const MetadataQrCode = ({ genesisHash, specVersion, qrCodeSource }: Props
       </>
     )
 
-  if (isLoading || error) return null
-
+  if (isLoading) return null
+  if (error) return <QrCodeError error={String(error)} />
   return <QrCode data={data} />
 }

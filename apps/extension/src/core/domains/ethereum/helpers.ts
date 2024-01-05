@@ -8,7 +8,7 @@ import {
 } from "@core/domains/ethereum/types"
 import { Token } from "@core/domains/tokens/types"
 import { assert } from "@polkadot/util"
-import { erc20Abi } from "@talismn/balances-evm-erc20"
+import { erc20Abi } from "@talismn/balances"
 import { isBigInt, isEthereumAddress } from "@talismn/util"
 import {
   Hex,

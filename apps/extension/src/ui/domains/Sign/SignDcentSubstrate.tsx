@@ -136,7 +136,7 @@ export const SignDcentSubstrate: FC<SignHardwareSubstrateProps> = ({
       // add prefix for ed25519 signature (0x00)
       return onSigned({ signature: `0x00${signed_tx.substring(2)}` })
     } catch (err) {
-      stopListening
+      stopListening()
       log.error("Failed to sign", { err })
       if (err instanceof DcentError) {
         if (err.code !== "user_cancel") setDisplayedErrorMessage(err.message)

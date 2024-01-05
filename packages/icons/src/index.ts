@@ -320,3 +320,5 @@ export {
   FiZoomIn as ZoomInIcon,
   FiZoomOut as ZoomOutIcon,
 } from "react-icons/fi"
+
+export { IoDiamondOutline as DiamondIcon } from "react-icons/io5"

@@ -15,7 +15,11 @@
   "main": "dist/talismn-chaindata-provider-extension.cjs.js",
   "module": "dist/talismn-chaindata-provider-extension.esm.js",
   "files": [
-    "/dist"
+    "/dist",
+    "/init/chains",
+    "/init/evm-networks",
+    "/init/mini-metadatas",
+    "/init/tokens"
   ],
   "engines": {
     "node": ">=18"
@@ -46,6 +50,15 @@
     "ts-jest": "^28.0.2",
     "ts-node": "^10.9.1",
     "typescript": "^5.2.2"
+  },
+  "preconstruct": {
+    "entrypoints": [
+      "index.ts",
+      "init/chains.ts",
+      "init/evm-networks.ts",
+      "init/mini-metadatas.ts",
+      "init/tokens.ts"
+    ]
   },
   "eslintConfig": {
     "root": true,
