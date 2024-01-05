@@ -34,7 +34,7 @@ export const useMetadataUpdates = (genesisHash?: HexString, specVersion?: number
   const [isMetadataUpdating, setIsMetadataUpdating] = useState(false)
   const [hasMetadataUpdated, setHasMetadataUpdated] = useState(false)
 
-  const { chains } = useChains("all")
+  const { chains } = useChains({ activeOnly: false, includeTestnets: true })
   const chain = useMemo(
     () => chains.find((c) => c.genesisHash === genesisHash) ?? null,
     [chains, genesisHash]

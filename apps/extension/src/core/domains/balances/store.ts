@@ -29,9 +29,9 @@ import isEqual from "lodash/isEqual"
 import pick from "lodash/pick"
 import { ReplaySubject, Subject, combineLatest, firstValueFrom } from "rxjs"
 
-import { enabledChainsStore, isChainEnabled } from "../chains/store.enabledChains"
-import { enabledEvmNetworksStore, isEvmNetworkEnabled } from "../ethereum/store.enabledEvmNetworks"
-import { enabledTokensStore, isTokenEnabled } from "../tokens/store.enabledTokens"
+import { activeChainsStore, isChainActive } from "../chains/store.activeChains"
+import { activeEvmNetworksStore, isEvmNetworkActive } from "../ethereum/store.activeEvmNetworks"
+import { activeTokensStore, isTokenActive } from "../tokens/store.activeTokens"
 
 type ChainIdAndRpcs = Pick<Chain, "id" | "genesisHash" | "account" | "rpcs">
 type EvmNetworkIdAndRpcs = Pick<EvmNetwork, "id" | "nativeToken" | "substrateChain" | "rpcs"> & {
@@ -90,12 +90,12 @@ export class BalanceStore {
       liveQuery(async () => await chaindataProvider.tokens()),
       // miniMetadatas
       liveQuery(async () => await balancesDb.miniMetadatas.toArray()),
-      // enabled state of evm networks
-      enabledEvmNetworksStore.observable,
-      // enabled state of substrate chains
-      enabledChainsStore.observable,
+      // active state of evm networks
+      activeEvmNetworksStore.observable,
+      // active state of substrate chains
+      activeChainsStore.observable,
       // enable state of tokens
-      enabledTokensStore.observable
+      activeTokensStore.observable
     ).subscribe({
       next: ([
         settings,
@@ -103,37 +103,36 @@ export class BalanceStore {
         evmNetworks,
         tokens,
         miniMetadatas,
-        enabledEvmNetworks,
-        enabledChains,
-        enabledTokens,
+        activeEvmNetworks,
+        activeChains,
+        activeTokens,
       ]) => {
-        const enabledChainsList = Object.fromEntries(
+        const activeChainsList = Object.fromEntries(
           Object.entries(chains ?? {}).filter(
             ([, chain]) =>
-              isChainEnabled(chain, enabledChains) &&
-              (settings.useTestnets ? true : !chain.isTestnet)
+              isChainActive(chain, activeChains) && (settings.useTestnets ? true : !chain.isTestnet)
           )
         )
-        const enabledEvmNetworksList = Object.fromEntries(
+        const activeEvmNetworksList = Object.fromEntries(
           Object.entries(evmNetworks ?? {}).filter(
             ([, evmNetwork]) =>
-              isEvmNetworkEnabled(evmNetwork, enabledEvmNetworks) &&
+              isEvmNetworkActive(evmNetwork, activeEvmNetworks) &&
               (settings.useTestnets ? true : !evmNetwork.isTestnet)
           )
         )
-        const enabledTokensList = Object.fromEntries(
+        const activeTokensList = Object.fromEntries(
           Object.entries(tokens ?? {}).filter(
             ([, token]) =>
-              (enabledEvmNetworksList[token.evmNetwork?.id ?? ""] ||
-                enabledChainsList[token.chain?.id || ""]) &&
-              isTokenEnabled(token, enabledTokens) &&
+              (activeEvmNetworksList[token.evmNetwork?.id ?? ""] ||
+                activeChainsList[token.chain?.id || ""]) &&
+              isTokenActive(token, activeTokens) &&
               (settings.useTestnets ? true : !token.isTestnet)
           )
         )
 
-        const arErc20Tokens = Object.values(enabledTokensList).filter((t) => t.type === "evm-erc20")
+        const arErc20Tokens = Object.values(activeTokensList).filter((t) => t.type === "evm-erc20")
 
-        const erc20TokensByEvmNetwork = Object.keys(enabledEvmNetworks).reduce(
+        const erc20TokensByEvmNetwork = Object.keys(activeEvmNetworks).reduce(
           (groupByNetwork, evmNetworkId) => {
             const tokens = arErc20Tokens.filter((t) => t.evmNetwork?.id === evmNetworkId)
             if (tokens.length)
@@ -145,17 +144,17 @@ export class BalanceStore {
           {} as { [key: EvmNetworkId]: EvmNetworkIdAndRpcs["erc20Tokens"] }
         )
 
-        const chainsToFetch = Object.values(enabledChainsList).map((chain) =>
+        const chainsToFetch = Object.values(activeChainsList).map((chain) =>
           pick(chain, ["id", "genesisHash", "account", "rpcs"])
         )
-        const evmNetworksToFetch = Object.values(enabledEvmNetworksList).map((evmNetwork) => ({
+        const evmNetworksToFetch = Object.values(activeEvmNetworksList).map((evmNetwork) => ({
           ...pick(evmNetwork, ["id", "nativeToken", "substrateChain", "rpcs"]),
           erc20Tokens: erc20TokensByEvmNetwork[evmNetwork.id],
           substrateChainAccountFormat:
             (evmNetwork.substrateChain && chains[evmNetwork.substrateChain.id]?.account) || null,
         }))
 
-        this.setChains(chainsToFetch, evmNetworksToFetch, enabledTokensList, miniMetadatas)
+        this.setChains(chainsToFetch, evmNetworksToFetch, activeTokensList, miniMetadatas)
       },
       error: (error) => {
         if (error.cause?.name === Dexie.errnames.DatabaseClosed) return

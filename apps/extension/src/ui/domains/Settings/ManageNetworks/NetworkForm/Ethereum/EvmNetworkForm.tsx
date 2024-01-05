@@ -47,7 +47,7 @@ type EvmNetworkFormProps = {
 
 const EnableNetworkToggle: FC<{ evmNetworkId?: string }> = ({ evmNetworkId }) => {
   const { t } = useTranslation("admin")
-  const { evmNetwork, isEnabled, setEnabled, isEnabledOrDisabledByUser, resetToTalismanDefault } =
+  const { evmNetwork, isActive, setActive, isActiveSetByUser, resetToTalismanDefault } =
     useKnownEvmNetwork(evmNetworkId)
 
   if (!evmNetwork) return null
@@ -56,10 +56,10 @@ const EnableNetworkToggle: FC<{ evmNetworkId?: string }> = ({ evmNetworkId }) =>
     <div className="pt-8">
       <FormFieldContainer label={t("Display balances")}>
         <div className="flex gap-3">
-          <Toggle checked={isEnabled} onChange={(e) => setEnabled(e.target.checked)}>
-            <span className={"text-grey-300"}>{isEnabled ? t("Yes") : t("No")}</span>
+          <Toggle checked={isActive} onChange={(e) => setActive(e.target.checked)}>
+            <span className={"text-grey-300"}>{isActive ? t("Yes") : t("No")}</span>
           </Toggle>
-          {isEnabledOrDisabledByUser && (
+          {isActiveSetByUser && (
             <Tooltip>
               <TooltipTrigger
                 className="text-primary text-xs"
@@ -83,7 +83,7 @@ export const EvmNetworkForm: FC<EvmNetworkFormProps> = ({ evmNetworkId, onSubmit
   const { t } = useTranslation("admin")
   const isBuiltInEvmNetwork = useIsBuiltInEvmNetwork(evmNetworkId)
 
-  const { evmNetworks } = useEvmNetworks("all")
+  const { evmNetworks } = useEvmNetworks({ activeOnly: false, includeTestnets: true })
   const [useTestnets, setUseTestnets] = useSetting("useTestnets")
 
   const { defaultValues, isCustom, isEditMode, evmNetwork } = useEditMode(evmNetworkId)

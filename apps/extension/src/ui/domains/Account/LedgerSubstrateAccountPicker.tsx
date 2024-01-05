@@ -1,4 +1,4 @@
-import { isChainEnabled } from "@core/domains/chains/store.enabledChains"
+import { isChainActive } from "@core/domains/chains/store.activeChains"
 import { log } from "@core/log"
 import { AddressesByChain } from "@core/types/base"
 import { convertAddress } from "@talisman/util/convertAddress"
@@ -6,9 +6,9 @@ import { LedgerAccountDefSubstrate } from "@ui/domains/Account/AccountAdd/Accoun
 import { useLedgerSubstrate } from "@ui/hooks/ledger/useLedgerSubstrate"
 import { useLedgerSubstrateApp } from "@ui/hooks/ledger/useLedgerSubstrateApp"
 import useAccounts from "@ui/hooks/useAccounts"
+import { useActiveChainsState } from "@ui/hooks/useActiveChainsState"
 import useBalancesByParams from "@ui/hooks/useBalancesByParams"
 import useChain from "@ui/hooks/useChain"
-import { useEnabledChainsState } from "@ui/hooks/useEnabledChainsState"
 import { FC, useCallback, useEffect, useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
 
@@ -24,10 +24,10 @@ const useLedgerChainAccounts = (
   const { t } = useTranslation()
   const chain = useChain(chainId)
   const app = useLedgerSubstrateApp(chain?.genesisHash)
-  const enabledChains = useEnabledChainsState()
+  const activeChains = useActiveChainsState()
   const withBalances = useMemo(
-    () => !!chain && isChainEnabled(chain, enabledChains),
-    [chain, enabledChains]
+    () => !!chain && isChainActive(chain, activeChains),
+    [chain, activeChains]
   )
 
   const [ledgerAccounts, setLedgerAccounts] = useState<(LedgerSubstrateAccount | undefined)[]>([
@@ -78,7 +78,7 @@ const useLedgerChainAccounts = (
     // start fetching balances only when all accounts are known to prevent recreating subscription 5 times
     if (ledgerAccounts.filter(Boolean).length < ledgerAccounts.length) return undefined
 
-    if (!chain || !isChainEnabled(chain, enabledChains)) return {}
+    if (!chain || !isChainActive(chain, activeChains)) return {}
 
     const result: AddressesByChain = {
       [chain.id]: ledgerAccounts
@@ -88,7 +88,7 @@ const useLedgerChainAccounts = (
     }
 
     return result
-  }, [chain, enabledChains, ledgerAccounts])
+  }, [chain, activeChains, ledgerAccounts])
 
   const balances = useBalancesByParams({ addressesByChain })
 

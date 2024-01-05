@@ -9,20 +9,20 @@ import {
   RequestNomPoolStake,
 } from "@core/domains/balances/types"
 import {
-  EnabledChains,
-  enabledChainsStore,
-  isChainEnabled,
-} from "@core/domains/chains/store.enabledChains"
+  ActiveChains,
+  activeChainsStore,
+  isChainActive,
+} from "@core/domains/chains/store.activeChains"
 import {
-  EnabledEvmNetworks,
-  enabledEvmNetworksStore,
-  isEvmNetworkEnabled,
-} from "@core/domains/ethereum/store.enabledEvmNetworks"
+  ActiveEvmNetworks,
+  activeEvmNetworksStore,
+  isEvmNetworkActive,
+} from "@core/domains/ethereum/store.activeEvmNetworks"
 import {
-  EnabledTokens,
-  enabledTokensStore,
-  isTokenEnabled,
-} from "@core/domains/tokens/store.enabledTokens"
+  ActiveTokens,
+  activeTokensStore,
+  isTokenActive,
+} from "@core/domains/tokens/store.activeTokens"
 import { createSubscription, unsubscribe } from "@core/handlers/subscriptions"
 import { ExtensionHandler } from "@core/libs/Handler"
 import { balanceModules } from "@core/rpcs/balance-modules"
@@ -106,21 +106,21 @@ const subscribeBalancesByParams = async (
     liveQuery(async () => await chaindataProvider.tokens()),
     // miniMetadatas - not used here but we must retrigger the subscription when this changes
     liveQuery(async () => await balancesDb.miniMetadatas.toArray()),
-    // enabled state of evm networks
-    enabledEvmNetworksStore.observable,
-    // enabled state of substrate chains
-    enabledChainsStore.observable,
+    // active state of evm networks
+    activeEvmNetworksStore.observable,
+    // active state of substrate chains
+    activeChainsStore.observable,
     // enable state of tokens
-    enabledTokensStore.observable,
+    activeTokensStore.observable,
   ]).subscribe({
     next: async ([
       chains,
       evmNetworks,
       tokens,
       miniMetadatas,
-      enabledEvmNetworks,
-      enabledChains,
-      enabledTokens,
+      activeEvmNetworks,
+      activeChains,
+      activeTokens,
     ]) => {
       const newSubscriptionParams = getSubscriptionParams(
         addressesByChain,
@@ -129,9 +129,9 @@ const subscribeBalancesByParams = async (
         chains,
         evmNetworks,
         tokens,
-        enabledChains,
-        enabledEvmNetworks,
-        enabledTokens,
+        activeChains,
+        activeEvmNetworks,
+        activeTokens,
         miniMetadatas
       )
 
@@ -186,9 +186,9 @@ const getSubscriptionParams = (
   chains: ChainList,
   evmNetworks: EvmNetworkList,
   tokens: TokenList,
-  enabledChains: EnabledChains,
-  enabledEvmNetworks: EnabledEvmNetworks,
-  enabledTokens: EnabledTokens,
+  activeChains: ActiveChains,
+  activeEvmNetworks: ActiveEvmNetworks,
+  activeTokens: ActiveTokens,
   miniMetadatas: MiniMetadata[]
 ): BalanceSubscriptionParams => {
   //
@@ -199,12 +199,12 @@ const getSubscriptionParams = (
     ...Object.entries(addressesByChain)
       // convert chainIds into chains
       .map(([chainId, addresses]) => [chains[chainId], addresses] as const)
-      .filter(([chain]) => isChainEnabled(chain, enabledChains)),
+      .filter(([chain]) => isChainActive(chain, activeChains)),
 
     ...addressesAndEvmNetworks.evmNetworks
       // convert evmNetworkIds into evmNetworks
       .map(({ id }) => [evmNetworks[id], addressesAndEvmNetworks.addresses] as const)
-      .filter(([evmNetwork]) => isEvmNetworkEnabled(evmNetwork, enabledEvmNetworks)),
+      .filter(([evmNetwork]) => isEvmNetworkActive(evmNetwork, activeEvmNetworks)),
   ]
     // filter out requested chains/evmNetworks which don't exist
     .filter(([chainOrNetwork]) => chainOrNetwork !== undefined)
@@ -215,7 +215,7 @@ const getSubscriptionParams = (
     .flatMap(([chainOrNetwork, addresses]) =>
       Object.values(tokens)
         .filter((t) => t.chain?.id === chainOrNetwork.id || t.evmNetwork?.id === chainOrNetwork.id)
-        .filter((t) => isTokenEnabled(t, enabledTokens))
+        .filter((t) => isTokenActive(t, activeTokens))
         .map((t) => [t.id, addresses] as const)
     )
 

@@ -104,9 +104,9 @@ export const SubSignXcmTransferAssets = () => {
   const { t } = useTranslation("request")
   const { chain, payload, account } = usePolkadotSigningRequest()
   const { data: extrinsic } = useExtrinsic(payload)
-  const { tokensMap } = useTokens("all")
+  const { tokensMap } = useTokens({ activeOnly: false, includeTestnets: true })
+  const { chains } = useChains({ activeOnly: false, includeTestnets: true })
   const tokenRates = useTokenRatesMap()
-  const { chains } = useChains("all")
 
   const props = useMemo(() => {
     if (Object.keys(tokensMap).length === 0) return null

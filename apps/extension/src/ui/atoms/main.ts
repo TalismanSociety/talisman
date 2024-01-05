@@ -3,12 +3,12 @@ import { Trees } from "@core/domains/accounts/helpers.catalog"
 import { AccountJsonAny } from "@core/domains/accounts/types"
 import { AppStoreData, appStore } from "@core/domains/app/store.app"
 import { SettingsStoreData, settingsStore } from "@core/domains/app/store.settings"
-import { EnabledChains, enabledChainsStore } from "@core/domains/chains/store.enabledChains"
+import { ActiveChains, activeChainsStore } from "@core/domains/chains/store.activeChains"
 import {
-  EnabledEvmNetworks,
-  enabledEvmNetworksStore,
-} from "@core/domains/ethereum/store.enabledEvmNetworks"
-import { EnabledTokens, enabledTokensStore } from "@core/domains/tokens/store.enabledTokens"
+  ActiveEvmNetworks,
+  activeEvmNetworksStore,
+} from "@core/domains/ethereum/store.activeEvmNetworks"
+import { ActiveTokens, activeTokensStore } from "@core/domains/tokens/store.activeTokens"
 import { log } from "@core/log"
 import { chaindataProvider } from "@core/rpcs/chaindata"
 import {
@@ -35,9 +35,9 @@ export const mainState = atom<{
   evmNetworks: (EvmNetwork | CustomEvmNetwork)[]
   chains: (Chain | CustomChain)[]
   tokens: TokenList
-  enabledEvmNetworksState: EnabledEvmNetworks
-  enabledChainsState: EnabledChains
-  enabledTokensState: EnabledTokens
+  activeEvmNetworksState: ActiveEvmNetworks
+  activeChainsState: ActiveChains
+  activeTokensState: ActiveTokens
   tokenRates: DbTokenRates[]
 }>({
   key: "mainState",
@@ -60,9 +60,9 @@ export const mainState = atom<{
         obsEvmNetworks,
         obsChains,
         obsTokenRates,
-        enabledTokensStore.observable,
-        enabledEvmNetworksStore.observable,
-        enabledChainsStore.observable,
+        activeTokensStore.observable,
+        activeEvmNetworksStore.observable,
+        activeChainsStore.observable,
       ]).subscribe(
         ([
           settings,
@@ -73,9 +73,9 @@ export const mainState = atom<{
           evmNetworks,
           chains,
           tokenRates,
-          enabledTokensState,
-          enabledEvmNetworksState,
-          enabledChainsState,
+          activeTokensState,
+          activeEvmNetworksState,
+          activeChainsState,
         ]) => {
           stop()
           setSelf({
@@ -87,9 +87,9 @@ export const mainState = atom<{
             evmNetworks,
             chains,
             tokenRates,
-            enabledTokensState,
-            enabledEvmNetworksState,
-            enabledChainsState,
+            activeTokensState,
+            activeEvmNetworksState,
+            activeChainsState,
           })
         }
       )
@@ -104,8 +104,8 @@ export const mainState = atom<{
       }
     },
     () => api.tokens(NO_OP),
-    () => api.chains(NO_OP),
     () => api.ethereumNetworks(NO_OP),
+    () => api.chains(NO_OP),
     () => api.tokenRates(NO_OP),
   ],
 })

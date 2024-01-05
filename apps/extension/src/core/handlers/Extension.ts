@@ -4,6 +4,7 @@ import { AccountsHandler } from "@core/domains/accounts"
 import { AccountType } from "@core/domains/accounts/types"
 import AppHandler from "@core/domains/app/handler"
 import { featuresStore } from "@core/domains/app/store.features"
+import { AssetDiscoveryHandler } from "@core/domains/assetDiscovery/handler"
 import { BalancesHandler } from "@core/domains/balances"
 import { ChainsHandler } from "@core/domains/chains"
 import { EncryptHandler } from "@core/domains/encrypt"
@@ -61,6 +62,7 @@ export default class Extension extends ExtensionHandler {
       tokenRates: new TokenRatesHandler(stores),
       tokens: new TokensHandler(stores),
       substrate: new SubHandler(stores),
+      assetDiscovery: new AssetDiscoveryHandler(stores),
     }
 
     // connect auto lock timeout setting to the password store

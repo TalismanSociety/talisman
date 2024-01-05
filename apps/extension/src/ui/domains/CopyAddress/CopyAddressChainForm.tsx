@@ -79,10 +79,8 @@ const ChainFormatsList = ({
 export const CopyAddressChainForm = () => {
   const { address, setChainId } = useCopyAddressWizard()
   const [search, setSearch] = useState("")
-  const [useTestnets] = useSetting("useTestnets")
-  const { chains, chainsMap } = useChains(
-    useTestnets ? "enabledWithTestnets" : "enabledWithoutTestnets"
-  )
+  const [includeTestnets] = useSetting("useTestnets")
+  const { chains, chainsMap } = useChains({ activeOnly: true, includeTestnets })
   const { t } = useTranslation()
 
   const account = useAccountByAddress(address)

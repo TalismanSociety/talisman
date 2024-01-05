@@ -1,3 +1,4 @@
+import { AssetDiscoveryMode } from "@core/domains/assetDiscovery/types"
 import { VerifierCertificateType } from "@core/domains/mnemonics/types"
 import { HexString } from "@polkadot/util/types"
 import { notify, notifyUpdate } from "@talisman/components/Notifications"
@@ -192,13 +193,15 @@ const useAccountAddQrContext = ({ onSuccess }: AccountAddPageProps) => {
       }
 
       try {
-        onSuccess(
-          await api.accountCreateQr(
-            name || t("My Polkadot Vault Account"),
-            address,
-            lockToNetwork ? genesisHash : null
-          )
+        const createdAddress = await api.accountCreateQr(
+          name || t("My Polkadot Vault Account"),
+          address,
+          lockToNetwork ? genesisHash : null
         )
+
+        api.assetDiscoveryStartScan(AssetDiscoveryMode.ACTIVE_NETWORKS, [createdAddress])
+
+        onSuccess(createdAddress)
         notifyUpdate(notificationId, {
           type: "success",
           title: t("Account imported"),

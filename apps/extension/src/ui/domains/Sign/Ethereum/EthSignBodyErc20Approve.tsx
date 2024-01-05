@@ -26,7 +26,7 @@ export const EthSignBodyErc20Approve: FC = () => {
   const { t } = useTranslation("request")
   const { account, network, decodedTx } = useEthSignKnownTransactionRequest()
 
-  const { tokens } = useTokens("all")
+  const { tokens } = useTokens({ activeOnly: false, includeTestnets: true })
   const token = useMemo(() => {
     return network
       ? (tokens?.find(
@@ -49,7 +49,7 @@ export const EthSignBodyErc20Approve: FC = () => {
 
   const nativeToken = useToken(network?.nativeToken?.id)
 
-  const { spender, allowance, isInfinite } = useMemo(() => {
+  const { spender, allowance, isInfinite, isRevoke } = useMemo(() => {
     assert(decodedTx.asset?.decimals !== undefined, "missing asset decimals")
     const rawAllowance = getContractCallArg<bigint>(decodedTx, "amount")
     const isInfinite = toHex(rawAllowance) === ALLOWANCE_UNLIMITED
@@ -61,6 +61,7 @@ export const EthSignBodyErc20Approve: FC = () => {
           ? new BalanceFormatter(rawAllowance.toString(), decodedTx.asset.decimals, tokenRates)
           : undefined,
       isInfinite,
+      isRevoke: rawAllowance === 0n,
     }
   }, [decodedTx, tokenRates])
 
@@ -79,35 +80,43 @@ export const EthSignBodyErc20Approve: FC = () => {
     <SignContainer
       networkType="ethereum"
       title={
-        <Trans t={t}>
-          This app wants to
-          <br />
-          access your funds
-        </Trans>
+        isRevoke ? (
+          t("Revoke access")
+        ) : (
+          <Trans t={t}>
+            This app wants to
+            <br />
+            access your funds
+          </Trans>
+        )
       }
       alert={
-        <SignAlertMessage>
-          <span className="text-body-secondary">
-            {t(
-              "This contract will have permission to spend tokens on your behalf until manually revoked."
-            )}
-          </span>{" "}
-          <a
-            className="text-white"
-            href="https://docs.talisman.xyz/talisman/navigating-the-paraverse/ethereum-features/token-approvals"
-            target="_blank"
-          >
-            {t("Learn more")}
-          </a>
-        </SignAlertMessage>
+        isRevoke ? null : (
+          <SignAlertMessage>
+            <span className="text-body-secondary">
+              {t(
+                "This contract will have permission to spend tokens on your behalf until manually revoked."
+              )}
+            </span>{" "}
+            <a
+              className="text-white"
+              href="https://docs.talisman.xyz/talisman/navigating-the-paraverse/ethereum-features/token-approvals"
+              target="_blank"
+            >
+              {t("Learn more")}
+            </a>
+          </SignAlertMessage>
+        )
       }
     >
       <div className="flex">
-        <div>{t("Allow")}</div>
+        <div>{isRevoke ? t("Disallow") : t("Allow")}</div>
         <SignParamNetworkAddressButton network={network} address={spender} />
       </div>
       <div className="flex">
-        <div>{isInfinite ? t("to spend infinite") : t("to spend")}</div>
+        <div>
+          {isRevoke ? t("from spending") : isInfinite ? t("to spend infinite") : t("to spend")}
+        </div>
         {allowance ? (
           <SignParamTokensButton
             address={decodedTx.targetAddress}

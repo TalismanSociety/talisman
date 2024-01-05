@@ -15,6 +15,7 @@ import {
   ModalOpenRequest,
   SendFundsOpenRequest,
 } from "@core/domains/app/types"
+import { AssetDiscoveryMode } from "@core/domains/assetDiscovery/types"
 import {
   AddressesAndEvmNetwork,
   AddressesAndTokens,
@@ -64,6 +65,7 @@ import { AddressesByChain } from "@core/types/base"
 import type { KeyringPair$Json } from "@polkadot/keyring/types"
 import { KeypairType } from "@polkadot/util-crypto/types"
 import type { HexString } from "@polkadot/util/types"
+import { Address } from "@talismn/balances"
 import { TransactionRequest } from "viem"
 
 export default interface MessageTypes {
@@ -309,4 +311,7 @@ export default interface MessageTypes {
     specVersion?: number,
     blockHash?: HexString
   ) => Promise<MetadataDef | undefined>
+
+  assetDiscoveryStartScan: (mode: AssetDiscoveryMode, addresses?: Address[]) => Promise<boolean>
+  assetDiscoveryStopScan: () => Promise<boolean>
 }

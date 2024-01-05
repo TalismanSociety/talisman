@@ -181,7 +181,7 @@ const useSendFundsProvider = () => {
   const [isLocked, setIsLocked] = useState(false)
 
   const fromAccount = useAccountByAddress(from)
-  const { tokensMap } = useTokens("all")
+  const { tokensMap } = useTokens({ activeOnly: false, includeTestnets: true })
   const tokenRatesMap = useTokenRatesMap()
   const balances = useBalancesByAddress(from as string)
   const currency = useSelectedCurrency()

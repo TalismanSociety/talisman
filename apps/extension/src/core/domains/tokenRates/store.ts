@@ -1,5 +1,5 @@
 import { db } from "@core/db"
-import { enabledTokensStore, filterEnabledTokens } from "@core/domains/tokens/store.enabledTokens"
+import { activeTokensStore, filterActiveTokens } from "@core/domains/tokens/store.activeTokens"
 import { unsubscribe } from "@core/handlers/subscriptions"
 import { log } from "@core/log"
 import { chaindataProvider } from "@core/rpcs/chaindata"
@@ -43,12 +43,12 @@ export class TokenRatesStore {
 
         // refresh when token list changes : crucial for first popup load after install or db migration
         const obsTokens = liveQuery(() => chaindataProvider.tokens())
-        const obsEnabledTokens = enabledTokensStore.observable
+        const obsActiveTokens = activeTokensStore.observable
 
-        subTokenList = combineLatest([obsTokens, obsEnabledTokens]).subscribe(
-          debounce(async ([tokens, enabledTokens]) => {
+        subTokenList = combineLatest([obsTokens, obsActiveTokens]).subscribe(
+          debounce(async ([tokens, activeTokens]) => {
             if (this.#subscriptions.observed) {
-              const tokensList = filterEnabledTokens(tokens, enabledTokens)
+              const tokensList = filterActiveTokens(tokens, activeTokens)
               await this.updateTokenRates(tokensList)
             }
           }, 500)
@@ -73,12 +73,12 @@ export class TokenRatesStore {
 
   async hydrateStore(): Promise<boolean> {
     try {
-      const [tokens, enabledTokens] = await Promise.all([
+      const [tokens, activeTokens] = await Promise.all([
         chaindataProvider.tokens(),
-        enabledTokensStore.get(),
+        activeTokensStore.get(),
       ])
 
-      const tokensList = filterEnabledTokens(tokens, enabledTokens)
+      const tokensList = filterActiveTokens(tokens, activeTokens)
 
       await this.updateTokenRates(tokensList)
 
@@ -90,7 +90,7 @@ export class TokenRatesStore {
   }
 
   /**
-   * WARNING: Make sure the tokens list `tokens` only includes enabled tokens.
+   * WARNING: Make sure the tokens list `tokens` only includes active tokens.
    */
   private async updateTokenRates(tokens: TokenList): Promise<void> {
     const now = Date.now()

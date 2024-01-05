@@ -15,9 +15,9 @@ import { debounceTime, first, from, merge } from "rxjs"
 
 import { AccountsFilter, accountsQuery } from "./accounts"
 import {
-  chainsWithTestnetsMapState,
-  evmNetworksWithTestnetsMapState,
-  tokensWithTestnetsMapState,
+  activeChainsWithTestnetsMapState,
+  activeEvmNetworksWithTestnetsMapState,
+  activeTokensWithTestnetsMapState,
 } from "./chaindata"
 import { tokenRatesMapState } from "./tokenRates"
 
@@ -60,7 +60,7 @@ const rawBalancesState = atom<BalanceJson[]>({
 const filteredRawBalancesState = selector({
   key: "filteredRawBalancesState",
   get: ({ get }) => {
-    const tokens = get(tokensWithTestnetsMapState)
+    const tokens = get(activeTokensWithTestnetsMapState)
     const balances = get(rawBalancesState)
 
     return balances.filter((b) => tokens[b.tokenId])
@@ -74,9 +74,9 @@ const filteredRawBalancesState = selector({
 export const balancesHydrateState = selector<HydrateDb>({
   key: "balancesHydrateState",
   get: ({ get }) => {
-    const chains = get(chainsWithTestnetsMapState)
-    const evmNetworks = get(evmNetworksWithTestnetsMapState)
-    const tokens = get(tokensWithTestnetsMapState)
+    const chains = get(activeChainsWithTestnetsMapState)
+    const evmNetworks = get(activeEvmNetworksWithTestnetsMapState)
+    const tokens = get(activeTokensWithTestnetsMapState)
     const tokenRates = get(tokenRatesMapState)
 
     return { chains, evmNetworks, tokens, tokenRates }

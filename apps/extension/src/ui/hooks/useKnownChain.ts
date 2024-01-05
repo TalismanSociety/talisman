@@ -1,50 +1,47 @@
-import { enabledChainsStore, isChainEnabled } from "@core/domains/chains/store.enabledChains"
+import { activeChainsStore, isChainActive } from "@core/domains/chains/store.activeChains"
 import { isCustomChain } from "@talismn/chaindata-provider"
 import { useCallback, useMemo } from "react"
 
+import { useActiveChainsState } from "./useActiveChainsState"
 import useChain from "./useChain"
-import { useEnabledChainsState } from "./useEnabledChainsState"
 
 export const useKnownChain = (chainId: string | null | undefined) => {
   const chain = useChain(chainId ?? undefined)
-  const enabledChains = useEnabledChainsState()
+  const activeChains = useActiveChainsState()
 
-  const isEnabled = useMemo(
-    () => chain && isChainEnabled(chain, enabledChains),
-    [enabledChains, chain]
-  )
+  const isActive = useMemo(() => chain && isChainActive(chain, activeChains), [activeChains, chain])
   const isKnown = useMemo(() => chain && !isCustomChain(chain), [chain])
 
-  const setEnabled = useCallback(
+  const setActive = useCallback(
     (enable: boolean) => {
       if (!chainId || !chain) throw new Error(`Chain '${chainId}' not found`)
-      enabledChainsStore.setEnabled(chainId, enable)
+      activeChainsStore.setActive(chainId, enable)
     },
     [chain, chainId]
   )
 
-  const isEnabledOrDisabledByUser = useMemo(
-    () => chainId !== null && chainId !== undefined && chainId in enabledChains,
-    [chainId, enabledChains]
+  const isActiveSetByUser = useMemo(
+    () => chainId !== null && chainId !== undefined && chainId in activeChains,
+    [chainId, activeChains]
   )
   const resetToTalismanDefault = useCallback(() => {
     if (!chainId || !chain) throw new Error(`Chain '${chainId}' not found`)
-    enabledChainsStore.resetEnabled(chainId)
+    activeChainsStore.resetActive(chainId)
   }, [chain, chainId])
 
   return {
     chain,
 
-    isEnabled,
+    isActive,
     isKnown,
 
-    setEnabled,
+    setActive,
 
     /**
-     * If true, enabled/disabled state comes from the user configuration.
-     * If false, enabled/disabled state comes from chaindata default value.
+     * If true, active state comes from the user configuration.
+     * If false, active state comes from chaindata default value.
      */
-    isEnabledOrDisabledByUser,
+    isActiveSetByUser,
     resetToTalismanDefault,
   }
 }

@@ -185,16 +185,10 @@ const TokensList: FC<TokensListProps> = ({
 }) => {
   const { t } = useTranslation()
   const account = useAccountByAddress(address)
-  const [useTestnets] = useSetting("useTestnets")
-  const { chainsMap, chains } = useChains(
-    useTestnets ? "enabledWithTestnets" : "enabledWithoutTestnets"
-  )
-  const { evmNetworksMap } = useEvmNetworks(
-    useTestnets ? "enabledWithTestnets" : "enabledWithoutTestnets"
-  )
-  const { tokens: allTokens } = useTokens(
-    useTestnets ? "enabledWithTestnets" : "enabledWithoutTestnets"
-  )
+  const [includeTestnets] = useSetting("useTestnets")
+  const { chainsMap, chains } = useChains({ activeOnly: true, includeTestnets })
+  const { evmNetworksMap } = useEvmNetworks({ activeOnly: true, includeTestnets })
+  const { tokens: allTokens } = useTokens({ activeOnly: true, includeTestnets })
   const tokenRatesMap = useTokenRatesMap()
   const formatNetworkName = useFormatNetworkName()
 

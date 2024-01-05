@@ -1,53 +1,53 @@
 import {
-  enabledEvmNetworksStore,
-  isEvmNetworkEnabled,
-} from "@core/domains/ethereum/store.enabledEvmNetworks"
+  activeEvmNetworksStore,
+  isEvmNetworkActive,
+} from "@core/domains/ethereum/store.activeEvmNetworks"
 import { isCustomEvmNetwork } from "@talismn/chaindata-provider"
 import { useCallback, useMemo } from "react"
 
-import { useEnabledEvmNetworksState } from "./useEnabledEvmNetworksState"
+import { useActiveEvmNetworksState } from "./useActiveEvmNetworksState"
 import { useEvmNetwork } from "./useEvmNetwork"
 
 export const useKnownEvmNetwork = (evmNetworkId: string | null | undefined) => {
   const evmNetwork = useEvmNetwork(evmNetworkId ?? undefined)
-  const enabledEvmNetworks = useEnabledEvmNetworksState()
+  const activeEvmNetworks = useActiveEvmNetworksState()
 
-  const isEnabled = useMemo(
-    () => evmNetwork && isEvmNetworkEnabled(evmNetwork, enabledEvmNetworks),
-    [enabledEvmNetworks, evmNetwork]
+  const isActive = useMemo(
+    () => evmNetwork && isEvmNetworkActive(evmNetwork, activeEvmNetworks),
+    [activeEvmNetworks, evmNetwork]
   )
   const isKnown = useMemo(() => evmNetwork && !isCustomEvmNetwork(evmNetwork), [evmNetwork])
 
-  const setEnabled = useCallback(
+  const setActive = useCallback(
     (enable: boolean) => {
       if (!evmNetworkId || !evmNetwork) throw new Error(`EvmNetwork '${evmNetworkId}' not found`)
-      enabledEvmNetworksStore.setEnabled(evmNetworkId, enable)
+      activeEvmNetworksStore.setActive(evmNetworkId, enable)
     },
     [evmNetwork, evmNetworkId]
   )
 
-  const isEnabledOrDisabledByUser = useMemo(
-    () => evmNetworkId !== null && evmNetworkId !== undefined && evmNetworkId in enabledEvmNetworks,
-    [evmNetworkId, enabledEvmNetworks]
+  const isActiveSetByUser = useMemo(
+    () => evmNetworkId !== null && evmNetworkId !== undefined && evmNetworkId in activeEvmNetworks,
+    [evmNetworkId, activeEvmNetworks]
   )
   const resetToTalismanDefault = useCallback(() => {
     if (!evmNetworkId || !evmNetwork) throw new Error(`EvmNetwork '${evmNetworkId}' not found`)
-    enabledEvmNetworksStore.resetEnabled(evmNetworkId)
+    activeEvmNetworksStore.resetActive(evmNetworkId)
   }, [evmNetwork, evmNetworkId])
 
   return {
     evmNetwork,
 
-    isEnabled,
+    isActive,
     isKnown,
 
-    setEnabled,
+    setActive,
 
     /**
-     * If true, enabled/disabled state comes from the user configuration.
-     * If false, enabled/disabled state comes from chaindata default value.
+     * If true, active state comes from the user configuration.
+     * If false, active state comes from chaindata default value.
      */
-    isEnabledOrDisabledByUser,
+    isActiveSetByUser,
     resetToTalismanDefault,
   }
 }

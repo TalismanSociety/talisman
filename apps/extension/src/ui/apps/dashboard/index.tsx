@@ -7,6 +7,7 @@ import { AccountExportPrivateKeyModalProvider } from "@ui/domains/Account/Accoun
 import { AccountRemoveModalProvider } from "@ui/domains/Account/AccountRemoveModal"
 import { AccountRenameModalProvider } from "@ui/domains/Account/AccountRenameModal"
 import { BuyTokensModalProvider } from "@ui/domains/Asset/Buy/BuyTokensModalContext"
+import { AssetDiscoveryDashboardAlert } from "@ui/domains/AssetDiscovery/AssetDiscoveryDashboardAlert"
 import { CopyAddressModalProvider } from "@ui/domains/CopyAddress"
 import { SelectedAccountProvider } from "@ui/domains/Portfolio/SelectedAccountContext"
 import { DatabaseErrorAlert } from "@ui/domains/Settings/DatabaseErrorAlert"
@@ -37,6 +38,7 @@ import { NewFolderModalProvider } from "./routes/Settings/Accounts/NewFolderModa
 import { RenameFolderModalProvider } from "./routes/Settings/Accounts/RenameFolderModal"
 import { AddressBookPage } from "./routes/Settings/AddressBookPage"
 import { AnalyticsOptInPage } from "./routes/Settings/AnalyticsOptInPage"
+import { AssetDiscoveryPage } from "./routes/Settings/AssetDiscoveryPage"
 import { AutoLockTimerPage } from "./routes/Settings/AutoLockTimerPage"
 import { ChangePasswordPage } from "./routes/Settings/ChangePasswordPage"
 import { ConnectedSitesPage } from "./routes/Settings/ConnectedSitesPage"
@@ -120,6 +122,7 @@ const DashboardInner = () => {
           <Route path="qr-metadata" element={<QrMetadataPage />} />
           <Route path="about" element={<AboutPage />} />
           <Route path="analytics" element={<AnalyticsOptInPage />} />
+          <Route path="asset-discovery" element={<AssetDiscoveryPage />} />
           <Route path="*" element={<Navigate to="" replace />} />
         </Route>
         <Route path="tokens">
@@ -163,6 +166,7 @@ const Dashboard = () => (
                       <DeleteFolderModalProvider>
                         <DashboardInner />
                         <DatabaseErrorAlert container="fullscreen" />
+                        <AssetDiscoveryDashboardAlert />
                       </DeleteFolderModalProvider>
                     </RenameFolderModalProvider>
                   </NewFolderModalProvider>

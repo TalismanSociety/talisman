@@ -115,8 +115,8 @@ export const BuyTokensForm = () => {
   })
 
   const [address, tokenId] = watch(["address", "tokenId"])
-  const { tokens, tokensMap } = useTokens("enabledWithoutTestnets")
-  const { chains, chainsMap } = useChains("enabledWithoutTestnets")
+  const { tokens, tokensMap } = useTokens({ activeOnly: true, includeTestnets: false })
+  const { chains, chainsMap } = useChains({ activeOnly: true, includeTestnets: false })
 
   const { ethereumTokenIds, substrateTokenIds, filterTokens } = useSupportedTokenIds(
     chains,
