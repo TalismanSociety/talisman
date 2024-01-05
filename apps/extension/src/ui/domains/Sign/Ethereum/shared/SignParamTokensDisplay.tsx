@@ -1,7 +1,7 @@
 import { BalanceFormatter } from "@talismn/balances"
 import { classNames } from "@talismn/util"
 import { AssetLogo, CoingeckoLogoRequest } from "@ui/domains/Asset/AssetLogo"
-import Fiat from "@ui/domains/Asset/Fiat"
+import { Fiat } from "@ui/domains/Asset/Fiat"
 import Tokens from "@ui/domains/Asset/Tokens"
 import { FC } from "react"
 
