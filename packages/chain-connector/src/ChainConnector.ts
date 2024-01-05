@@ -371,14 +371,7 @@ export class ChainConnector {
     if (!chain) throw new Error(`Chain ${chainId} not found in store`)
     const socketUserId = this.addSocketUser(chainId)
 
-    // sort healthy rpcs before unhealthy rpcs
-    const healthyRpcs = (chain.rpcs || [])
-      .filter(({ isHealthy }) => isHealthy)
-      .map(({ url }) => url)
-    const unhealthyRpcs = (chain.rpcs || [])
-      .filter(({ isHealthy }) => !isHealthy)
-      .map(({ url }) => url)
-    const rpcs = [...healthyRpcs, ...unhealthyRpcs]
+    const rpcs = (chain.rpcs ?? []).map(({ url }) => url)
 
     // sort most recently connected rpc to the top of the list (if one exists)
     if (this.#connectionMetaDb) {

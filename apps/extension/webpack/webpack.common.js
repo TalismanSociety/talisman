@@ -23,12 +23,13 @@ const config = (env) => ({
     // Wallet service workers
     "background": { import: path.join(coreDir, "background.ts"), dependOn: "vendor-background" },
 
-    // Background.js manually-specified code-splits (to keep background.js under 4MB)
-    "vendor-background": [
-      "@substrate/txwrapper-core",
-      "@talismn/chaindata-provider-extension",
-      "@metamask/eth-sig-util",
-    ],
+    // Background.js manually-specified code-splits (to keep background.js under 4MB).
+    // We can't automatically chunk these because we need to manually specify the imports in our extension manifest.
+    // Also, `dependOn` seems to break the build (background script doesn't start) when there's more than one entry in it.
+    // So, I've daisy-chained each entry to `dependOn` the next.
+    "vendor-background": {
+      import: ["@metamask/eth-sig-util", "@substrate/txwrapper-core"],
+    },
 
     // Wallet injected scripts
     "content_script": path.join(coreDir, "content_script.ts"),

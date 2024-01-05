@@ -1,8 +1,8 @@
 import { AddressBookContact } from "@core/domains/app/store.addressBook"
 import { act, renderHook, waitFor } from "@testing-library/react"
-import { RecoilRoot } from "recoil"
 
 import { ADDRESSES } from "../../../../tests/constants"
+import { TestWrapper } from "../../../../tests/TestWrapper"
 import { addressBookState, useAddressBook } from "../useAddressBook"
 
 const VITALIK: AddressBookContact = {
@@ -13,7 +13,7 @@ const VITALIK: AddressBookContact = {
 
 test("Can add an address book contact", async () => {
   const { result } = renderHook(() => useAddressBook(), {
-    wrapper: RecoilRoot,
+    wrapper: TestWrapper,
   })
   expect(result.current.contacts.length).toBe(0)
 
@@ -30,7 +30,7 @@ test("Can add an address book contact", async () => {
 test("Can edit an address book contact", async () => {
   const { result } = renderHook(() => useAddressBook(), {
     wrapper: ({ children }) =>
-      RecoilRoot({ children, initializeState: ({ set }) => set(addressBookState, [VITALIK]) }),
+      TestWrapper({ children, initializeState: ({ set }) => set(addressBookState, [VITALIK]) }),
   })
   waitFor(() => {
     expect(result.current.contacts.length).toBe(1)
@@ -48,7 +48,7 @@ test("Can edit an address book contact", async () => {
 test("Editing an address book contact which doesn't exist throws an error", async () => {
   const { result } = renderHook(() => useAddressBook(), {
     wrapper: ({ children }) =>
-      RecoilRoot({ children, initializeState: ({ set }) => set(addressBookState, [VITALIK]) }),
+      TestWrapper({ children, initializeState: ({ set }) => set(addressBookState, [VITALIK]) }),
   })
   waitFor(() => {
     expect(result.current.contacts.length).toBe(1)
@@ -67,7 +67,7 @@ test("Editing an address book contact which doesn't exist throws an error", asyn
 test("Can delete an address book contact", async () => {
   const { result } = renderHook(() => useAddressBook(), {
     wrapper: ({ children }) =>
-      RecoilRoot({ children, initializeState: ({ set }) => set(addressBookState, [VITALIK]) }),
+      TestWrapper({ children, initializeState: ({ set }) => set(addressBookState, [VITALIK]) }),
   })
   waitFor(() => {
     expect(result.current.contacts.length).toBe(1)

@@ -1,12 +1,12 @@
 import { Chain } from "@core/domains/chains/types"
-import { tokensWithTestnetsMapState } from "@ui/atoms"
+import { activeTokensWithTestnetsMapState } from "@ui/atoms"
 import { useMemo } from "react"
 import { useRecoilValue } from "recoil"
 
 const useChainsAndSearchSymbols = <T extends Chain>(
   chains: T[]
 ): Array<T & { searchSymbols: string[] }> => {
-  const tokensWithTestnetsMap = useRecoilValue(tokensWithTestnetsMapState)
+  const tokensWithTestnetsMap = useRecoilValue(activeTokensWithTestnetsMapState)
 
   return useMemo(
     () =>

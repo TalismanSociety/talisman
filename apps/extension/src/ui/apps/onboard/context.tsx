@@ -108,15 +108,12 @@ const Provider = ({
   // if user is already onboarded when he opens onboarding page, redirect to dashboard page
   // only check once, the last page of the workflow will take care of the redirect
   useEffect(() => {
-    if (checked || isOnboarded === "UNKNOWN") return
+    if (checked) return
 
-    if (isOnboarded === "TRUE") window.location.href = "dashboard.html#/portfolio"
+    if (isOnboarded) window.location.href = "dashboard.html#/portfolio"
 
     setChecked(true)
   }, [checked, isOnboarded])
-
-  // Wait until we know if user has already onboarded
-  if (isOnboarded === "UNKNOWN") return null
 
   return <AppOnboardProvider isResettingWallet={resetWallet}>{children}</AppOnboardProvider>
 }

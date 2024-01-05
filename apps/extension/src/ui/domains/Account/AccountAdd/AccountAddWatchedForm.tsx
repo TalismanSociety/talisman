@@ -1,4 +1,5 @@
 import { AccountAddressType } from "@core/domains/accounts/types"
+import { AssetDiscoveryMode } from "@core/domains/assetDiscovery/types"
 import { yupResolver } from "@hookform/resolvers/yup"
 import { notify, notifyUpdate } from "@talisman/components/Notifications"
 import { getAddressType } from "@talisman/util/getAddressType"
@@ -108,6 +109,8 @@ export const AccountAddWatchedForm = ({ onSuccess }: AccountAddPageProps) => {
 
       try {
         onSuccess(await api.accountCreateWatched(name, address, isPortfolio))
+
+        api.assetDiscoveryStartScan(AssetDiscoveryMode.ACTIVE_NETWORKS, [address])
 
         notifyUpdate(notificationId, {
           type: "success",

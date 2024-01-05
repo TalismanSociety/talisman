@@ -1,6 +1,7 @@
 import { AccountAddressType } from "@core/domains/accounts/types"
 import { Balances } from "@core/domains/balances/types"
 import { Token } from "@core/domains/tokens/types"
+import { KeypairType } from "@polkadot/util-crypto/types"
 import { provideContext } from "@talisman/util/provideContext"
 import { ChainId, EvmNetworkId } from "@talismn/chaindata-provider"
 import { useSelectedAccount } from "@ui/domains/Portfolio/SelectedAccountContext"
@@ -44,10 +45,10 @@ const getNetworkTokenSymbols = ({
 
 const useAllNetworks = ({ balances, type }: { type?: AccountAddressType; balances?: Balances }) => {
   const { t } = useTranslation()
-  const [useTestnets] = useSetting("useTestnets")
-  const { chains } = useChains(useTestnets)
-  const { tokens } = useTokens(useTestnets)
-  const { evmNetworks } = useEvmNetworks(useTestnets)
+  const [includeTestnets] = useSetting("useTestnets")
+  const { chains } = useChains({ activeOnly: true, includeTestnets })
+  const { tokens } = useTokens({ activeOnly: true, includeTestnets })
+  const { evmNetworks } = useEvmNetworks({ activeOnly: true, includeTestnets })
   const [safeNetworks, setSafeNetworks] = useState<NetworkOption[]>([])
 
   const networks = useMemo(() => {
@@ -118,11 +119,11 @@ const useAllNetworks = ({ balances, type }: { type?: AccountAddressType; balance
 
 // allows sharing the network filter between pages
 const usePortfolioProvider = () => {
-  const [useTestnets] = useSetting("useTestnets")
+  const [includeTestnets] = useSetting("useTestnets")
   const { account } = useSelectedAccount()
-  const { chains } = useChains(useTestnets)
-  const { tokens } = useTokens(useTestnets)
-  const { evmNetworks } = useEvmNetworks(useTestnets)
+  const { chains } = useChains({ activeOnly: true, includeTestnets })
+  const { tokens } = useTokens({ activeOnly: true, includeTestnets })
+  const { evmNetworks } = useEvmNetworks({ activeOnly: true, includeTestnets })
   const hydrate = useBalancesHydrate()
   const balances = useBalances()
   const myBalances = useBalances("portfolio")
@@ -132,7 +133,7 @@ const usePortfolioProvider = () => {
     [account, balances, myBalances]
   )
 
-  const accountType = useMemo(() => {
+  const accountType = useMemo<KeypairType | undefined>(() => {
     if (account?.type === "ethereum") return "ethereum"
     if (account?.type) return "sr25519" // all substrate
     return undefined
@@ -169,6 +170,7 @@ const usePortfolioProvider = () => {
     hydrate,
     allBalances,
     isLoading,
+    accountType,
   }
 }
 

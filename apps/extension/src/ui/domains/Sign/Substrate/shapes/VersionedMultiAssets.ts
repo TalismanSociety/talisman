@@ -1,4 +1,4 @@
-import * as $ from "subshape"
+import * as $ from "@talismn/subshape-fork"
 
 // Type 379 - bounded_collections::weak_bounded_vec::WeakBoundedVec
 // Param T : 2

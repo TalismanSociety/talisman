@@ -70,7 +70,7 @@ export const EthSignMoonXTokensTransfer: FC = () => {
   const { t } = useTranslation("request")
   const { network, decodedTx, account } = useEthSignKnownTransactionRequest()
   const substrateChain = useChain(network?.substrateChain?.id)
-  const { tokens } = useTokens(true)
+  const { tokens } = useTokens({ activeOnly: false, includeTestnets: true })
 
   const [destination, amount, currencyAddress] = useMemo(
     () => [
@@ -110,7 +110,7 @@ export const EthSignMoonXTokensTransfer: FC = () => {
 
   const target = useMemo(() => decodeMultilocation(destination), [destination])
 
-  const { chains } = useChains(true)
+  const { chains } = useChains({ activeOnly: false, includeTestnets: true })
   const targetChain = useMemo(
     () =>
       target

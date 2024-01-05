@@ -31,6 +31,7 @@ export type AppStoreData = {
   needsSpiritKeyUpdate: boolean
   popupSizeDelta: [number, number]
   vaultVerifierCertificateMnemonicId?: string | null
+  showAssetDiscoveryAlert?: boolean
 }
 
 const ANALYTICS_VERSION = "1.5.0"
@@ -47,6 +48,7 @@ export const DEFAULT_APP_STATE: AppStoreData = {
   needsSpiritKeyUpdate: false,
   showDotNomPoolStakingBanner: true,
   popupSizeDelta: [0, IS_FIREFOX ? 30 : 0],
+  showAssetDiscoveryAlert: false,
 }
 
 export class AppStore extends StorageProvider<AppStoreData> {

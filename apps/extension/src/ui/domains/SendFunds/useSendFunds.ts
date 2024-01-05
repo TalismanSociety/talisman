@@ -72,7 +72,6 @@ const useIsSendingEnough = (
         case "evm-native":
           return true
         case "substrate-native":
-        case "substrate-orml":
         case "substrate-assets":
         case "substrate-tokens":
         case "substrate-psp22":
@@ -182,7 +181,7 @@ const useSendFundsProvider = () => {
   const [isLocked, setIsLocked] = useState(false)
 
   const fromAccount = useAccountByAddress(from)
-  const { tokensMap } = useTokens(true)
+  const { tokensMap } = useTokens({ activeOnly: false, includeTestnets: true })
   const tokenRatesMap = useTokenRatesMap()
   const balances = useBalancesByAddress(from as string)
   const currency = useSelectedCurrency()

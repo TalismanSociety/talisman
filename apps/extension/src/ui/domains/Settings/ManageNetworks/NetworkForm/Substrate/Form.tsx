@@ -13,6 +13,7 @@ import { Trans, useTranslation } from "react-i18next"
 import { Button, Checkbox, FormFieldContainer, FormFieldInputText } from "talisman-ui"
 
 import { AccountFormatDropdown } from "./AccountFormatDropdown"
+import { EnableNetworkToggle } from "./EnableNetworkToggle"
 import { SubNetworkRpcsListField } from "./SubNetworkRpcsListField"
 import { SubNetworkFormBaseProps, SubNetworkFormData } from "./types"
 
@@ -173,6 +174,7 @@ export const SubNetworkForm = ({
               <span className="text-body-secondary">{t("This is a testnet")}</span>
             </Checkbox>
           </div>
+          <EnableNetworkToggle chainId={id} />
           <div className="text-alert-warn">{submitError}</div>
           <div className="flex justify-between">
             <div>{children}</div>

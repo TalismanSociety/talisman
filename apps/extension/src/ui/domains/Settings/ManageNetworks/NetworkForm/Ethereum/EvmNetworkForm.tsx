@@ -3,7 +3,8 @@ import { RequestUpsertCustomEvmNetwork } from "@core/domains/ethereum/types"
 import { CustomNativeToken } from "@core/domains/tokens/types"
 import { yupResolver } from "@hookform/resolvers/yup"
 import { HeaderBlock } from "@talisman/components/HeaderBlock"
-import { ArrowRightIcon } from "@talismn/icons"
+import { isCustomEvmNetwork } from "@talismn/chaindata-provider"
+import { ArrowRightIcon, RotateCcwIcon } from "@talismn/icons"
 import { classNames } from "@talismn/util"
 import { useQuery } from "@tanstack/react-query"
 import { api } from "@ui/api"
@@ -15,14 +16,23 @@ import { useEvmChainInfo } from "@ui/hooks/useEvmChainInfo"
 import { useEvmNetwork } from "@ui/hooks/useEvmNetwork"
 import { useEvmNetworks } from "@ui/hooks/useEvmNetworks"
 import { useIsBuiltInEvmNetwork } from "@ui/hooks/useIsBuiltInEvmNetwork"
+import { useKnownEvmNetwork } from "@ui/hooks/useKnownEvmNetwork"
 import { useSetting } from "@ui/hooks/useSettings"
 import useToken from "@ui/hooks/useToken"
-import { isCustomEvmNetwork } from "@ui/util/isCustomEvmNetwork"
 import { ChangeEventHandler, FC, useCallback, useEffect, useMemo, useRef, useState } from "react"
 import { FormProvider, useForm } from "react-hook-form"
 import { Trans, useTranslation } from "react-i18next"
 import { useDebounce } from "react-use"
-import { Button, Checkbox, FormFieldContainer, FormFieldInputText } from "talisman-ui"
+import {
+  Button,
+  Checkbox,
+  FormFieldContainer,
+  FormFieldInputText,
+  Toggle,
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "talisman-ui"
 
 import { NetworkRpcsListField } from "../NetworkRpcsListField"
 import { getEvmRpcChainId } from "./helpers"
@@ -35,11 +45,45 @@ type EvmNetworkFormProps = {
   onSubmitted?: () => void
 }
 
+const EnableNetworkToggle: FC<{ evmNetworkId?: string }> = ({ evmNetworkId }) => {
+  const { t } = useTranslation("admin")
+  const { evmNetwork, isActive, setActive, isActiveSetByUser, resetToTalismanDefault } =
+    useKnownEvmNetwork(evmNetworkId)
+
+  if (!evmNetwork) return null
+
+  return (
+    <div className="pt-8">
+      <FormFieldContainer label={t("Display balances")}>
+        <div className="flex gap-3">
+          <Toggle checked={isActive} onChange={(e) => setActive(e.target.checked)}>
+            <span className={"text-grey-300"}>{isActive ? t("Yes") : t("No")}</span>
+          </Toggle>
+          {isActiveSetByUser && (
+            <Tooltip>
+              <TooltipTrigger
+                className="text-primary text-xs"
+                type="button"
+                onClick={resetToTalismanDefault}
+              >
+                <RotateCcwIcon />
+              </TooltipTrigger>
+              <TooltipContent>
+                <div>{t("Reset to default")}</div>
+              </TooltipContent>
+            </Tooltip>
+          )}
+        </div>
+      </FormFieldContainer>
+    </div>
+  )
+}
+
 export const EvmNetworkForm: FC<EvmNetworkFormProps> = ({ evmNetworkId, onSubmitted }) => {
   const { t } = useTranslation("admin")
   const isBuiltInEvmNetwork = useIsBuiltInEvmNetwork(evmNetworkId)
 
-  const { evmNetworks } = useEvmNetworks(true)
+  const { evmNetworks } = useEvmNetworks({ activeOnly: false, includeTestnets: true })
   const [useTestnets, setUseTestnets] = useSetting("useTestnets")
 
   const { defaultValues, isCustom, isEditMode, evmNetwork } = useEditMode(evmNetworkId)
@@ -125,7 +169,7 @@ export const EvmNetworkForm: FC<EvmNetworkFormProps> = ({ evmNetworkId, onSubmit
     if (evmNetworkId || !id) return
 
     if (evmNetworks?.some((n) => n.id === id)) {
-      if (!errors.id) setError("id", { message: t("already exists") })
+      if (!errors.id) setError("id", { message: t("Network already exists") })
     } else {
       if (errors.id) clearErrors("id")
       autoFill()
@@ -258,6 +302,7 @@ export const EvmNetworkForm: FC<EvmNetworkFormProps> = ({ evmNetworkId, onSubmit
               <span className="text-body-secondary">{t("This is a testnet")}</span>
             </Checkbox>
           </div>
+          <EnableNetworkToggle evmNetworkId={evmNetworkId} />
           <div className="text-alert-warn">{submitError}</div>
           <div className="flex justify-between">
             <div>

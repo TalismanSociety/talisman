@@ -19,7 +19,7 @@ import { SignTypedDataVersion, personalSign, signTypedData } from "@metamask/eth
 import keyring from "@polkadot/ui-keyring"
 import { assert } from "@polkadot/util"
 import { HexString } from "@polkadot/util/types"
-import { evmNativeTokenId } from "@talismn/balances-evm-native"
+import { evmNativeTokenId } from "@talismn/balances"
 import { CustomEvmNetwork, githubUnknownTokenLogoUrl } from "@talismn/chaindata-provider"
 import { isEthereumAddress } from "@talismn/util"
 import { privateKeyToAccount } from "viem/accounts"
@@ -350,37 +350,50 @@ export class EthHandler extends ExtensionHandler {
 
     assert(queued, "Unable to find request")
 
+    const known = await chaindataProvider.getEvmNetwork(queued.network.chainId)
+    const knownNativeTokenConfig = known?.balancesConfig.find(
+      (mod) => mod.moduleType === "evm-native"
+    )?.moduleConfig as { coingeckoId?: string; logo?: string }
+
+    const isTestnet = known?.isTestnet || queued.network.chainName.toLowerCase().includes("testnet")
+
     const { network, resolve } = queued
     const networkId = parseInt(network.chainId, 16).toString()
     const newToken: CustomEvmNativeToken | null = network.nativeCurrency
       ? {
           id: `${networkId}-evm-native-${network.nativeCurrency.symbol}`.toLowerCase(),
           type: "evm-native",
-          isTestnet: false,
+          isTestnet: isTestnet,
           symbol: network.nativeCurrency.symbol,
           decimals: network.nativeCurrency.decimals,
-          logo: (network.iconUrls || [])[0] || githubUnknownTokenLogoUrl,
+          logo:
+            (network.iconUrls || [knownNativeTokenConfig?.logo])[0] || githubUnknownTokenLogoUrl,
           evmNetwork: { id: networkId },
           isCustom: true,
+          coingeckoId: knownNativeTokenConfig?.coingeckoId,
         }
       : null
 
+    const existingNetwork = await chaindataProvider.getEvmNetwork(networkId)
+
     const newNetwork: CustomEvmNetwork = {
       id: networkId,
-      isTestnet: false,
+      isTestnet: isTestnet,
+      isDefault: existingNetwork?.isDefault ?? false,
       sortIndex: null,
       name: network.chainName,
       themeColor: "#505050",
-      logo: (network.iconUrls || [])[0] ?? null,
+      logo: (network.iconUrls || [known?.logo])[0] ?? null,
       nativeToken: newToken ? { id: newToken.id } : null,
       tokens: [],
       explorerUrl: (network.blockExplorerUrls || [])[0],
-      rpcs: (network.rpcUrls || []).map((url) => ({ url, isHealthy: true })),
-      isHealthy: true,
+      rpcs: (network.rpcUrls || []).map((url) => ({ url })),
       substrateChain: null,
       isCustom: true,
-      explorerUrls: network.blockExplorerUrls || [],
+      explorerUrls: network.blockExplorerUrls || (known?.explorerUrl ? [known.explorerUrl] : []),
       iconUrls: network.iconUrls || [],
+      balancesConfig: [],
+      balancesMetadata: [],
     }
 
     await chaindataProvider.addCustomEvmNetwork(newNetwork)
@@ -420,6 +433,7 @@ export class EthHandler extends ExtensionHandler {
         // EvmNetwork
         id: network.id,
         isTestnet: network.isTestnet,
+        isDefault: existingNetwork?.isDefault ?? false,
         sortIndex: existingNetwork?.sortIndex ?? null,
         name: network.name,
         themeColor: "#505050",
@@ -427,9 +441,10 @@ export class EthHandler extends ExtensionHandler {
         nativeToken: { id: newToken.id },
         tokens: existingNetwork?.tokens ?? [],
         explorerUrl: network.blockExplorerUrl ?? null,
-        rpcs: network.rpcs.map(({ url }) => ({ url, isHealthy: true })),
-        isHealthy: true,
+        rpcs: network.rpcs.map(({ url }) => ({ url })),
         substrateChain: existingNetwork?.substrateChain ?? null,
+        balancesConfig: [],
+        balancesMetadata: [],
         // CustomEvmNetwork
         isCustom: true,
         explorerUrls: network.blockExplorerUrl ? [network.blockExplorerUrl] : [],

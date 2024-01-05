@@ -3,6 +3,7 @@ import { Setting } from "@talisman/components/Setting"
 import { Spacer } from "@talisman/components/Spacer"
 import {
   ChevronRightIcon,
+  DiamondIcon,
   GlobeIcon,
   ListIcon,
   PolkadotVaultIcon,
@@ -26,6 +27,14 @@ export const NetworksTokensPage = () => {
       />
       <Spacer large />
       <div className="flex flex-col gap-4">
+        <CtaButton
+          iconLeft={DiamondIcon}
+          iconRight={ChevronRightIcon}
+          title={t("Asset Discovery")}
+          subtitle={t("Scan for well-known tokens in your accounts and add them to Talisman")}
+          to={`/settings/asset-discovery`}
+        />
+        <div className="via-primary/10 my-4 h-0.5 bg-gradient-to-r from-transparent to-transparent"></div>
         <Setting
           iconLeft={TerminalIcon}
           title={t("Enable testnets")}
@@ -50,7 +59,7 @@ export const NetworksTokensPage = () => {
           iconLeft={GlobeIcon}
           iconRight={ChevronRightIcon}
           title={t("Manage Networks")}
-          subtitle={t("View, edit and delete custom networks")}
+          subtitle={t("Add, enable and disable networks")}
           to={`/networks/ethereum`}
         />
         <CtaButton

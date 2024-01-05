@@ -37,7 +37,7 @@ const DrawerContent: FC<{ onClose: () => void }> = ({ onClose }) => {
     [isTestnet, settingUseTestnets]
   )
 
-  const { evmNetworks } = useEvmNetworks(showTestnets)
+  const { evmNetworks } = useEvmNetworks({ activeOnly: true, includeTestnets: showTestnets })
 
   const [search, setSearch] = useDebouncedState("", 150)
 

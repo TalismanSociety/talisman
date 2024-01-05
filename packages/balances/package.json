@@ -27,17 +27,27 @@
     "clean": "rm -rf dist && rm -rf .turbo rm -rf node_modules"
   },
   "dependencies": {
+    "@supercharge/promise-pool": "^3.1.0",
     "@talismn/chain-connector": "workspace:*",
     "@talismn/chain-connector-evm": "workspace:*",
     "@talismn/chaindata-provider": "workspace:*",
+    "@talismn/chaindata-provider-extension": "workspace:*",
+    "@talismn/scale": "workspace:*",
+    "@talismn/subshape-fork": "^0.0.2",
     "@talismn/token-rates": "workspace:*",
     "@talismn/util": "workspace:*",
     "anylogger": "^1.0.11",
     "dexie": "^3.2.4",
-    "lodash": "4.17.21"
+    "lodash": "4.17.21",
+    "rxjs": "^7.8.1",
+    "viem": "^1.18.9"
   },
   "devDependencies": {
-    "@polkadot/types": "^10.1.4",
+    "@polkadot/api-contract": "^10.9.1",
+    "@polkadot/types": "^10.9.1",
+    "@polkadot/util": "^12.3.2",
+    "@polkadot/util-crypto": "^12.3.2",
+    "@substrate/txwrapper-core": "*",
     "@talismn/eslint-config": "workspace:*",
     "@talismn/tsconfig": "workspace:*",
     "@types/jest": "^27.5.1",
@@ -48,7 +58,11 @@
     "typescript": "^5.2.2"
   },
   "peerDependencies": {
-    "@polkadot/types": "10.x"
+    "@polkadot/api-contract": "10.x",
+    "@polkadot/types": "10.x",
+    "@polkadot/util": "12.x",
+    "@polkadot/util-crypto": "12.x",
+    "@substrate/txwrapper-core": "4.x"
   },
   "preconstruct": {
     "entrypoints": [

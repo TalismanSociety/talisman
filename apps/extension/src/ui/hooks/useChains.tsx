@@ -1,33 +1,11 @@
-import {
-  chainsWithTestnetsMapState,
-  chainsWithTestnetsState,
-  chainsWithoutTestnetsMapState,
-  chainsWithoutTestnetsState,
-} from "@ui/atoms"
-import { useMemo } from "react"
+import { ChainsQueryOptions, chainsArrayQuery, chainsMapQuery } from "@ui/atoms"
 import { useRecoilValue } from "recoil"
 
-export const useChains = (withTestnets: boolean) => {
-  // // keep db data ption("chains")
+export const useChains = (filter: ChainsQueryOptions) => {
+  const chains = useRecoilValue(chainsArrayQuery(filter))
+  const chainsMap = useRecoilValue(chainsMapQuery(filter))
 
-  const chainsWithTestnets = useRecoilValue(chainsWithTestnetsState)
-  const chainsWithoutTestnets = useRecoilValue(chainsWithoutTestnetsState)
-  const chainsWithTestnetsMap = useRecoilValue(chainsWithTestnetsMapState)
-  const chainsWithoutTestnetsMap = useRecoilValue(chainsWithoutTestnetsMapState)
-
-  return useMemo(
-    () => ({
-      chains: withTestnets ? chainsWithTestnets : chainsWithoutTestnets,
-      chainsMap: withTestnets ? chainsWithTestnetsMap : chainsWithoutTestnetsMap,
-    }),
-    [
-      chainsWithTestnets,
-      chainsWithTestnetsMap,
-      chainsWithoutTestnets,
-      chainsWithoutTestnetsMap,
-      withTestnets,
-    ]
-  )
+  return { chains, chainsMap }
 }
 
 export default useChains
