@@ -6,6 +6,7 @@ import AppHandler from "@core/domains/app/handler"
 import { featuresStore } from "@core/domains/app/store.features"
 import { AssetDiscoveryHandler } from "@core/domains/assetDiscovery/handler"
 import { BalancesHandler } from "@core/domains/balances"
+import { trackBalanceTotals } from "@core/domains/balances/trackBalanceTotals"
 import { ChainsHandler } from "@core/domains/chains"
 import { EncryptHandler } from "@core/domains/encrypt"
 import { EthHandler } from "@core/domains/ethereum"
@@ -182,22 +183,11 @@ export default class Extension extends ExtensionHandler {
     //      (or re-use the connection when it's being accessed elsewhere in our code!)
     db.metadata.toArray()
 
-    db.on("ready", async () => {
-      // TODO: Add back this migration logic to delete old data from localStorage/old idb-managed db
-      // (We don't store metadata OR chains in here anymore, so we have no idea whether or not its has already been initialised)
-      // // if store has no chains yet, consider it's a fresh install or legacy version
-      // if ((await db.chains.count()) < 1) {
-      //
-      //   // delete old idb-managed metadata+metadataRpc db
-      //   indexedDB.deleteDatabase("talisman")
-      //
-      //   // TODO: Add this back again, but as an internal part of the @talismn/chaindata-provider-extension lib
-      //   // // initial data provisioning (workaround to wallet beeing installed when subsquid is down)
-      // }
-    })
-
     // marks all pending transaction as status unknown
     updateTransactionsRestart()
+
+    // keeps balance totals table up to date
+    trackBalanceTotals()
   }
 
   private initWalletFunding() {

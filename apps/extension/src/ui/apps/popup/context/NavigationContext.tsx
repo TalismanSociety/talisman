@@ -1,8 +1,13 @@
-import { provideContext } from "@talisman/util/provideContext"
-import { useOpenClose } from "@talisman/hooks/useOpenClose"
+import { useOpenCloseAtom } from "@talisman/hooks/useOpenClose"
+import { atom } from "recoil"
 
-const useNavigationProvider = ({ defaultOpen = false }) => {
-  return useOpenClose(defaultOpen)
+const isNavOpenState = atom<boolean>({
+  key: "isNavOpenState",
+  default: false,
+})
+
+export const useNavigationContext = () => {
+  return useOpenCloseAtom(isNavOpenState)
 }
 
-export const [NavigationProvider, useNavigationContext] = provideContext(useNavigationProvider)
+// export const [NavigationProvider, useNavigationContext] = provideContext(useNavigationProvider)

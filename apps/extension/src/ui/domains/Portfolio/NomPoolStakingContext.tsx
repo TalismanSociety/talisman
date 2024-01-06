@@ -3,7 +3,6 @@ import { appStore } from "@core/domains/app/store.app"
 import { ResponseNomPoolStake } from "@core/domains/balances/types"
 import { Address } from "@core/types/base"
 import * as Sentry from "@sentry/browser"
-import { provideContext } from "@talisman/util/provideContext"
 import { ChainId } from "@talismn/chaindata-provider"
 import { api } from "@ui/api"
 import useAccounts from "@ui/hooks/useAccounts"
@@ -11,8 +10,31 @@ import { useAppState } from "@ui/hooks/useAppState"
 import useBalances from "@ui/hooks/useBalances"
 import { useCallback, useEffect, useState } from "react"
 import { useDebounce } from "react-use"
+//import { atom } from "recoil"
 
-const useShowNomPoolStakingBannerProvider = () => {
+// const eligibleAddressBalancesState = atom<Record<Address, bigint>>({
+//   key: "eligibleAddressBalancesState",
+//   default: {},
+// })
+// const nomPoolStakeState = atom<Record<ChainId, ResponseNomPoolStake>>({
+//   key: "nomPoolStakeState",
+//   default: {},
+// })
+// const updateKeyState = atom<Record<ChainId, string>>({
+//   key: "updateKeyState",
+//   default: {},
+// })
+
+// const nomPoolStakingState = atom({
+//   key: "nomPoolStakingState",
+//   default: {
+//     eligibleAddressBalances: {},
+//     nomPoolStake: {},
+//     updateKey: {},
+//   },
+// })
+
+export const useShowNomPoolStakingBanner = () => {
   const [isLoading, setIsLoading] = useState(false)
   const [eligibleAddressBalances, setEligibleAddressBalances] = useState<Record<Address, bigint>>(
     {}
@@ -104,7 +126,3 @@ const useShowNomPoolStakingBannerProvider = () => {
 
   return { showNomPoolBanner, dismissNomPoolBanner }
 }
-
-export const [NomPoolStakingBannerProvider, useNomPoolStakingBanner] = provideContext(
-  useShowNomPoolStakingBannerProvider
-)

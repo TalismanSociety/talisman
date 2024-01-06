@@ -1,12 +1,12 @@
 import { AccountJsonAny } from "@core/domains/accounts/types"
 import { notify } from "@talisman/components/Notifications"
-import { useOpenClose } from "@talisman/hooks/useOpenClose"
-import { provideContext } from "@talisman/util/provideContext"
+import { useOpenCloseAtom } from "@talisman/hooks/useOpenClose"
 import { CopyIcon, LoaderIcon } from "@talismn/icons"
 import { api } from "@ui/api"
 import { useSensitiveState } from "@ui/hooks/useSensitiveState"
 import { useCallback, useEffect, useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
+import { atom, useRecoilState } from "recoil"
 import { ModalDialog } from "talisman-ui"
 import { Modal } from "talisman-ui"
 import { Button } from "talisman-ui"
@@ -15,18 +15,27 @@ import { useSelectedAccount } from "../Portfolio/SelectedAccountContext"
 import { AccountIcon } from "./AccountIcon"
 import { PasswordUnlock, usePasswordUnlock } from "./PasswordUnlock"
 
-const useAccountExportPrivateKeyModalProvider = () => {
-  const [_account, setAccount] = useState<AccountJsonAny>()
+const accountExportPkAccountState = atom<AccountJsonAny | null>({
+  key: "accountExportPkAccountState",
+  default: null,
+})
+const accountExportPkModalOpenState = atom<boolean>({
+  key: "accountExportPkModalOpenState",
+  default: false,
+})
+
+export const useAccountExportPrivateKeyModal = () => {
+  const [_account, setAccount] = useRecoilState(accountExportPkAccountState)
 
   const { account: selectedAccount } = useSelectedAccount()
-  const { isOpen, open: innerOpen, close } = useOpenClose()
+  const { isOpen, open: innerOpen, close } = useOpenCloseAtom(accountExportPkModalOpenState)
 
   const open = useCallback(
     (account?: AccountJsonAny) => {
-      setAccount(account)
+      setAccount(account ?? null)
       innerOpen()
     },
-    [innerOpen]
+    [innerOpen, setAccount]
   )
 
   useEffect(() => {
@@ -51,8 +60,8 @@ const useAccountExportPrivateKeyModalProvider = () => {
   return { account, canExportAccountFunc, canExportAccount, exportAccount, isOpen, open, close }
 }
 
-export const [AccountExportPrivateKeyModalProvider, useAccountExportPrivateKeyModal] =
-  provideContext(useAccountExportPrivateKeyModalProvider)
+// export const [AccountExportPrivateKeyModalProvider, useAccountExportPrivateKeyModal] =
+//   provideContext(useAccountExportPrivateKeyModalProvider)
 
 const ExportPrivateKeyResult = ({ onClose }: { onClose?: () => void }) => {
   const { t } = useTranslation()

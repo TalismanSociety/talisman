@@ -2,7 +2,6 @@ import { AccountAddressType } from "@core/domains/accounts/types"
 import { Balances } from "@core/domains/balances/types"
 import { Token } from "@core/domains/tokens/types"
 import { KeypairType } from "@polkadot/util-crypto/types"
-import { provideContext } from "@talisman/util/provideContext"
 import { ChainId, EvmNetworkId } from "@talismn/chaindata-provider"
 import { useSelectedAccount } from "@ui/domains/Portfolio/SelectedAccountContext"
 import useBalances from "@ui/hooks/useBalances"
@@ -118,7 +117,7 @@ const useAllNetworks = ({ balances, type }: { type?: AccountAddressType; balance
 }
 
 // allows sharing the network filter between pages
-const usePortfolioProvider = () => {
+export const usePortfolio = () => {
   const [includeTestnets] = useSetting("useTestnets")
   const { account } = useSelectedAccount()
   const { chains } = useChains({ activeOnly: true, includeTestnets })
@@ -173,5 +172,3 @@ const usePortfolioProvider = () => {
     accountType,
   }
 }
-
-export const [PortfolioProvider, usePortfolio] = provideContext(usePortfolioProvider)

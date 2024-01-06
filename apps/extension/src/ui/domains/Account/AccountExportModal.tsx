@@ -1,13 +1,13 @@
 import { AccountJsonAny, AccountType } from "@core/domains/accounts/types"
 import { yupResolver } from "@hookform/resolvers/yup"
 import { PasswordStrength } from "@talisman/components/PasswordStrength"
-import { useOpenClose } from "@talisman/hooks/useOpenClose"
+import { useOpenCloseAtom } from "@talisman/hooks/useOpenClose"
 import downloadJson from "@talisman/util/downloadJson"
-import { provideContext } from "@talisman/util/provideContext"
 import { api } from "@ui/api"
-import { useCallback, useEffect, useMemo, useState } from "react"
+import { useCallback, useEffect, useMemo } from "react"
 import { useForm } from "react-hook-form"
 import { Trans, useTranslation } from "react-i18next"
+import { atom, useRecoilState } from "recoil"
 import { ModalDialog } from "talisman-ui"
 import { Modal } from "talisman-ui"
 import { Button, FormFieldContainer, FormFieldInputText } from "talisman-ui"
@@ -16,18 +16,28 @@ import * as yup from "yup"
 import { useSelectedAccount } from "../Portfolio/SelectedAccountContext"
 import { PasswordUnlock, usePasswordUnlock } from "./PasswordUnlock"
 
-const useAccountExportModalProvider = () => {
-  const [_account, setAccount] = useState<AccountJsonAny>()
+const accountExportAccountState = atom<AccountJsonAny | null>({
+  key: "accountExportAccountState",
+  default: null,
+})
+const accountExportModalOpenState = atom<boolean>({
+  key: "accountExportModalOpenState",
+  default: false,
+})
+
+export const useAccountExportModal = () => {
+  const [_account, setAccount] = useRecoilState(accountExportAccountState)
+  //  const [_account, setAccount] = useState<AccountJsonAny>()
 
   const { account: selectedAccount } = useSelectedAccount()
-  const { isOpen, open: innerOpen, close } = useOpenClose()
+  const { isOpen, open: innerOpen, close } = useOpenCloseAtom(accountExportModalOpenState)
 
   const open = useCallback(
     (account?: AccountJsonAny) => {
-      setAccount(account)
+      setAccount(account ?? null)
       innerOpen()
     },
-    [innerOpen]
+    [innerOpen, setAccount]
   )
 
   useEffect(() => {
@@ -53,9 +63,9 @@ const useAccountExportModalProvider = () => {
   return { account, canExportAccountFunc, canExportAccount, exportAccount, isOpen, open, close }
 }
 
-export const [AccountExportModalProvider, useAccountExportModal] = provideContext(
-  useAccountExportModalProvider
-)
+// export const [AccountExportModalProvider, useAccountExportModal] = provideContext(
+//   useAccountExportModalProvider
+// )
 
 type FormData = {
   newPw: string

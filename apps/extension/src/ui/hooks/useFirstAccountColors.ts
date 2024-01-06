@@ -15,15 +15,18 @@ const accountsState = atom<AccountJsonAny[]>({
     },
   ],
 })
+export const useAccountColors = (address?: string) => {
+  const { bgColor1, bgColor2 } = useTalismanOrb(address ?? "")
+
+  return useMemo(
+    () => (address ? [bgColor1, bgColor2] : TALISMAN_COLORS) as [string, string],
+    [address, bgColor1, bgColor2]
+  )
+}
 
 export const useFirstAccountColors = () => {
   // pick first account and apply it's colors to background
   const [account] = useRecoilValue(accountsState)
 
-  const { bgColor1, bgColor2 } = useTalismanOrb(account?.address ?? "")
-
-  return useMemo(
-    () => (account ? [bgColor1, bgColor2] : TALISMAN_COLORS) as [string, string],
-    [account, bgColor1, bgColor2]
-  )
+  return useAccountColors(account?.address)
 }

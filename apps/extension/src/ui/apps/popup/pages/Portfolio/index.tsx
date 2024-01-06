@@ -1,8 +1,7 @@
+import { SuspenseTracker } from "@talisman/components/SuspenseTracker"
 import { CurrentAccountAvatar } from "@ui/domains/Account/CurrentAccountAvatar"
 import { AssetDiscoveryPopupAlert } from "@ui/domains/AssetDiscovery/AssetDiscoveryPopupAlert"
 import { EvmNetworkSelectPill } from "@ui/domains/Ethereum/EvmNetworkSelectPill"
-import { PortfolioProvider } from "@ui/domains/Portfolio/context"
-import { NomPoolStakingBannerProvider } from "@ui/domains/Portfolio/NomPoolStakingContext"
 import BraveWarningPopupBanner from "@ui/domains/Settings/BraveWarning/BraveWarningPopupBanner"
 import MigratePasswordAlert from "@ui/domains/Settings/MigratePasswordAlert"
 import { ConnectedAccountsPill } from "@ui/domains/Site/ConnectedAccountsPill"
@@ -45,35 +44,36 @@ const PortfolioContent = () => (
   </>
 )
 
-export const Portfolio = () => {
+const Header = () => {
   const currentSite = useCurrentSite()
   const authorisedSites = useAuthorisedSites()
   const isAuthorised = useMemo(
     () => currentSite?.id && authorisedSites[currentSite?.id],
     [authorisedSites, currentSite?.id]
   )
+
+  return isAuthorised ? (
+    <header className="my-8 flex h-[3.6rem] w-full shrink-0 items-center justify-between gap-4 px-12">
+      <ConnectedAccountsPill />
+      <EvmNetworkSelectPill />
+    </header>
+  ) : (
+    <PopupHeader right={<AccountAvatar />}>
+      <ConnectedAccountsPill />
+    </PopupHeader>
+  )
+}
+
+export const Portfolio = () => {
   const hasAccounts = useHasAccounts()
   return (
-    <PortfolioProvider>
-      <NomPoolStakingBannerProvider>
-        {/* share layout to prevent sidebar flickering when navigating between the 2 pages */}
-        <PopupLayout withBottomNav>
-          {isAuthorised ? (
-            <header className="my-8 flex h-[3.6rem] w-full shrink-0 items-center justify-between gap-4 px-12">
-              <ConnectedAccountsPill />
-              <EvmNetworkSelectPill />
-            </header>
-          ) : (
-            <PopupHeader right={<AccountAvatar />}>
-              <ConnectedAccountsPill />
-            </PopupHeader>
-          )}
-          <PopupContent>
-            {hasAccounts === false ? <NoAccounts /> : <PortfolioContent />}
-          </PopupContent>
-          <AssetDiscoveryPopupAlert />
-        </PopupLayout>
-      </NomPoolStakingBannerProvider>
-    </PortfolioProvider>
+    //      {/* share layout to prevent sidebar flickering when navigating between the 2 pages */}
+    <PopupLayout withBottomNav>
+      <Suspense fallback={<SuspenseTracker name="Portfolio Header" />}>
+        <Header />
+      </Suspense>
+      <PopupContent>{hasAccounts === false ? <NoAccounts /> : <PortfolioContent />}</PopupContent>
+      <AssetDiscoveryPopupAlert />
+    </PopupLayout>
   )
 }

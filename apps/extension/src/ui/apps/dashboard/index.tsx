@@ -2,14 +2,8 @@ import { PHISHING_PAGE_REDIRECT } from "@polkadot/extension-base/defaults"
 import { FullScreenLoader } from "@talisman/components/FullScreenLoader"
 import { SuspenseTracker } from "@talisman/components/SuspenseTracker"
 import { api } from "@ui/api"
-import { AccountExportModalProvider } from "@ui/domains/Account/AccountExportModal"
-import { AccountExportPrivateKeyModalProvider } from "@ui/domains/Account/AccountExportPrivateKeyModal"
-import { AccountRemoveModalProvider } from "@ui/domains/Account/AccountRemoveModal"
-import { AccountRenameModalProvider } from "@ui/domains/Account/AccountRenameModal"
 import { BuyTokensModalProvider } from "@ui/domains/Asset/Buy/BuyTokensModalContext"
 import { AssetDiscoveryDashboardAlert } from "@ui/domains/AssetDiscovery/AssetDiscoveryDashboardAlert"
-import { CopyAddressModalProvider } from "@ui/domains/CopyAddress"
-import { SelectedAccountProvider } from "@ui/domains/Portfolio/SelectedAccountContext"
 import { DatabaseErrorAlert } from "@ui/domains/Settings/DatabaseErrorAlert"
 import { useIsLoggedIn } from "@ui/hooks/useIsLoggedIn"
 import { useIsOnboarded } from "@ui/hooks/useIsOnboarded"
@@ -154,29 +148,17 @@ const PreventPhishing: FC<PropsWithChildren> = ({ children }) => {
 // TODO move NewFolderModalProvider, RenameFolderModalProvider, DeleteFolderModalProvider inside the only page that uses them
 const Dashboard = () => (
   <PreventPhishing>
-    <SelectedAccountProvider>
-      <AccountRemoveModalProvider>
-        <AccountRenameModalProvider>
-          <AccountExportModalProvider>
-            <AccountExportPrivateKeyModalProvider>
-              <CopyAddressModalProvider>
-                <BuyTokensModalProvider>
-                  <NewFolderModalProvider>
-                    <RenameFolderModalProvider>
-                      <DeleteFolderModalProvider>
-                        <DashboardInner />
-                        <DatabaseErrorAlert container="fullscreen" />
-                        <AssetDiscoveryDashboardAlert />
-                      </DeleteFolderModalProvider>
-                    </RenameFolderModalProvider>
-                  </NewFolderModalProvider>
-                </BuyTokensModalProvider>
-              </CopyAddressModalProvider>
-            </AccountExportPrivateKeyModalProvider>
-          </AccountExportModalProvider>
-        </AccountRenameModalProvider>
-      </AccountRemoveModalProvider>
-    </SelectedAccountProvider>
+    <BuyTokensModalProvider>
+      <NewFolderModalProvider>
+        <RenameFolderModalProvider>
+          <DeleteFolderModalProvider>
+            <DashboardInner />
+            <DatabaseErrorAlert container="fullscreen" />
+            <AssetDiscoveryDashboardAlert />
+          </DeleteFolderModalProvider>
+        </RenameFolderModalProvider>
+      </NewFolderModalProvider>
+    </BuyTokensModalProvider>
   </PreventPhishing>
 )
 

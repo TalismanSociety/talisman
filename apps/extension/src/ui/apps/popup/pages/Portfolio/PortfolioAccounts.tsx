@@ -1,11 +1,18 @@
-import { AccountsCatalogTree, TreeFolder, TreeItem } from "@core/domains/accounts/helpers.catalog"
-import { AccountType } from "@core/domains/accounts/types"
+import { db } from "@core/db"
+import {
+  AccountsCatalogTree,
+  TreeFolder,
+  TreeItem,
+  Trees,
+} from "@core/domains/accounts/helpers.catalog"
+import { AccountJsonAny, AccountType } from "@core/domains/accounts/types"
+import { settingsStore } from "@core/domains/app/store.settings"
 import { isEthereumAddress } from "@polkadot/util-crypto"
-import { FadeIn } from "@talisman/components/FadeIn"
 import { SuspenseTracker } from "@talisman/components/SuspenseTracker"
-import { Balance, Balances } from "@talismn/balances"
 import { ChevronLeftIcon, ChevronRightIcon, CopyIcon, EyeIcon } from "@talismn/icons"
+import { TokenRateCurrency } from "@talismn/token-rates"
 import { classNames } from "@talismn/util"
+import { api } from "@ui/api"
 import { AnalyticsPage, sendAnalyticsEvent } from "@ui/api/analytics"
 import { AccountsLogoStack } from "@ui/apps/dashboard/routes/Settings/Accounts/AccountsLogoStack"
 import { TotalFiatBalance } from "@ui/apps/popup/components/TotalFiatBalance"
@@ -16,19 +23,17 @@ import { Address } from "@ui/domains/Account/Address"
 import { CurrentAccountAvatar } from "@ui/domains/Account/CurrentAccountAvatar"
 import Fiat from "@ui/domains/Asset/Fiat"
 import { useCopyAddressModal } from "@ui/domains/CopyAddress"
-import useAccounts from "@ui/hooks/useAccounts"
-import useAccountsCatalog from "@ui/hooks/useAccountsCatalog"
 import { useAnalytics } from "@ui/hooks/useAnalytics"
 import useBalances from "@ui/hooks/useBalances"
-import { useSelectedCurrency } from "@ui/hooks/useCurrency"
-import { useFirstAccountColors } from "@ui/hooks/useFirstAccountColors"
-import { useFormattedAddress } from "@ui/hooks/useFormattedAddress"
-import { useHasAccounts } from "@ui/hooks/useHasAccounts"
+import { useAccountColors } from "@ui/hooks/useFirstAccountColors"
 import { useSearchParamsSelectedFolder } from "@ui/hooks/useSearchParamsSelectedFolder"
-import { MouseEventHandler, Suspense, useCallback, useEffect, useMemo, useRef } from "react"
+import { useLiveQuery } from "dexie-react-hooks"
+import { FC, MouseEventHandler, Suspense, useCallback, useEffect, useMemo, useRef } from "react"
 import { useTranslation } from "react-i18next"
 import { useNavigate } from "react-router-dom"
 import { useHoverDirty } from "react-use"
+import { atom, useRecoilValue } from "recoil"
+import { Subject, combineLatest } from "rxjs"
 import { IconButton, MYSTICAL_PHYSICS_V3, MysticalBackground, MysticalPhysicsV3 } from "talisman-ui"
 
 const ANALYTICS_PAGE: AnalyticsPage = {
@@ -101,10 +106,11 @@ const AccountButton = ({ option }: { option: AccountOption }) => {
   )
 
   const isAccount = option.type === "account"
-  const formattedAddress = useFormattedAddress(
-    isAccount ? option.address : undefined,
-    isAccount ? option.genesisHash : undefined
-  )
+  const formattedAddress = isAccount ? option.address : undefined
+  // const formattedAddress =  useFormattedAddress(
+  //   isAccount ? option.address : undefined,
+  //   isAccount ? option.genesisHash : undefined
+  // )
 
   return (
     <button
@@ -176,11 +182,13 @@ const BG_CONFIG: MysticalPhysicsV3 = {
   durationMax: 15000,
 }
 const Accounts = ({
+  accounts,
   folder,
   folderTotal,
   portfolioOptions,
   watchedOptions,
 }: {
+  accounts: AccountJsonAny[]
   folder?: TreeFolder
   folderTotal?: number
   portfolioOptions: AccountOption[]
@@ -193,7 +201,7 @@ const Accounts = ({
 
   return (
     <div className="flex w-full flex-col gap-4 pb-12">
-      {!folder && <AllAccountsHeader />}
+      {!folder && <AllAccountsHeader accounts={accounts} />}
       {folder && <FolderHeader folder={folder} folderTotal={folderTotal} />}
 
       {hasPortfolioOptions && (
@@ -216,8 +224,8 @@ const Accounts = ({
   )
 }
 
-const AllAccountsHeaderBackground = () => {
-  const colors = useFirstAccountColors()
+const AllAccountsHeaderBackground: FC<{ accounts: AccountJsonAny[] }> = ({ accounts }) => {
+  const colors = useAccountColors(accounts?.[0]?.address)
   const config = useMemo(() => ({ ...BG_CONFIG, colors }), [colors])
 
   return (
@@ -228,27 +236,27 @@ const AllAccountsHeaderBackground = () => {
   )
 }
 
-const AllAccountsHeader = () => {
+const AllAccountsHeader: FC<{ accounts: AccountJsonAny[] }> = ({ accounts }) => {
   const navigate = useNavigate()
   const handleClick = useCallback(() => navigate("/portfolio/assets"), [navigate])
   const ref = useRef<HTMLDivElement>(null)
   const isHovered = useHoverDirty(ref)
-  const hasAccounts = useHasAccounts()
 
   return (
     <div ref={ref} className="relative h-[11.4rem] w-full">
       <button
+        type="button"
         className={classNames(
           "flex h-full w-full items-center justify-end gap-4 overflow-hidden rounded-sm p-6 text-lg",
           "hover:bg-grey-800 bg-black-secondary text-body-secondary transition-colors duration-75 hover:text-white"
         )}
         onClick={handleClick}
-        disabled={hasAccounts === false}
+        disabled={!accounts.length}
       >
         <Suspense fallback={<SuspenseTracker name="AllAccountsHeaderBackground" />}>
-          <AllAccountsHeaderBackground />
+          <AllAccountsHeaderBackground accounts={accounts} />
         </Suspense>
-        {hasAccounts && <ChevronRightIcon className="z-10" />}
+        {!!accounts.length && <ChevronRightIcon className="z-10" />}
       </button>
       <TotalFiatBalance
         className="pointer-events-none absolute left-0 top-0 h-full w-full px-6"
@@ -281,25 +289,65 @@ const FolderHeader = ({ folder, folderTotal }: { folder: TreeFolder; folderTotal
   )
 }
 
-export const PortfolioAccounts = () => {
-  const balances = useBalances()
-  const currency = useSelectedCurrency()
-  const accounts = useAccounts()
-  const catalog = useAccountsCatalog()
+// Rendering this component will fire balance subscription and trigger suspense on the main wallet atom
+const BalancesLoader = () => {
+  useBalances()
+
+  return null
+}
+
+// combine all the state needed by this screen into this one atom, to prevent the need to wait for the main wallet atom
+const portfolioAccountsState = atom<{
+  accounts: AccountJsonAny[]
+  catalog: Trees
+  currency: TokenRateCurrency
+}>({
+  key: "portfolioAccountsState",
+  default: {
+    accounts: [] as AccountJsonAny[],
+    catalog: {
+      portfolio: [],
+      watched: [],
+    },
+    currency: "usd",
+  },
+  effects: [
+    ({ setSelf }) => {
+      const obsAccounts = new Subject<AccountJsonAny[]>()
+      const obsAccountsCatalog = new Subject<Trees>()
+
+      combineLatest([obsAccounts, obsAccountsCatalog, settingsStore.observable]).subscribe(
+        ([accounts, catalog, settings]) => {
+          setSelf({ accounts, catalog, currency: settings.selectedCurrency })
+        }
+      )
+
+      const unsubAccounts = api.accountsSubscribe((v) => obsAccounts.next(v))
+      const unsubAccountsCatalog = api.accountsCatalogSubscribe((v) => obsAccountsCatalog.next(v))
+
+      return () => {
+        unsubAccounts()
+        unsubAccountsCatalog()
+      }
+    },
+  ],
+})
+
+const PortfolioAccountsInner: FC<{ suspense: boolean }> = ({ suspense }) => {
+  const { accounts, catalog, currency } = useRecoilValue(portfolioAccountsState)
   const { folder, treeName: folderTreeName } = useSearchParamsSelectedFolder()
   const { popupOpenEvent } = useAnalytics()
   const { t } = useTranslation()
 
-  const balancesByAddress = useMemo(() => {
-    // we use this to avoid looping over the balances list n times, where n is the number of accounts in the wallet
-    // instead, we'll only interate over the balances one time
-    const balancesByAddress: Map<string, Balance[]> = new Map()
-    balances.each.forEach((balance) => {
-      if (!balancesByAddress.has(balance.address)) balancesByAddress.set(balance.address, [])
-      balancesByAddress.get(balance.address)?.push(balance)
-    })
-    return balancesByAddress
-  }, [balances])
+  const balanceTotals = useLiveQuery(() => db.balanceTotals.toArray(), [])
+
+  const balanceByAddress = useMemo(() => {
+    const totals = balanceTotals ?? []
+    const sumPerAddress = Object.fromEntries(
+      totals.filter((t) => t.currency === currency).map((t) => [t.address, t.sum])
+    )
+    return Object.fromEntries(accounts.map((a) => [a.address, sumPerAddress[a.address] ?? 0]))
+  }, [accounts, balanceTotals, currency])
 
   const [portfolioOptions, watchedOptions] = useMemo((): [AccountOption[], AccountOption[]] => {
     const [portfolioTree, watchedTree] = (() => {
@@ -321,8 +369,7 @@ export const PortfolioAccounts = () => {
               type: "account",
               name: account?.name ?? t("Unknown Account"),
               address: item.address,
-              total: new Balances(balancesByAddress.get(item.address) ?? []).sum.fiat(currency)
-                .total,
+              total: balanceByAddress?.[item.address] ?? 0,
               genesisHash: account?.genesisHash,
               origin: account?.origin,
               isPortfolio: !!account?.isPortfolio,
@@ -332,9 +379,10 @@ export const PortfolioAccounts = () => {
               treeName,
               id: item.id,
               name: item.name,
-              total: new Balances(
-                item.tree.flatMap((account) => balancesByAddress.get(account.address) ?? [])
-              ).sum.fiat(currency).total,
+              total: item.tree.reduce(
+                (sum, account) => sum + (balanceByAddress[account.address] ?? 0),
+                0
+              ),
               addresses: item.tree.map((account) => account.address),
             }
       }
@@ -343,39 +391,47 @@ export const PortfolioAccounts = () => {
       portfolioTree.map(treeItemToOption("portfolio")),
       watchedTree.map(treeItemToOption("watched")),
     ]
-  }, [
-    folder,
-    folderTreeName,
-    catalog.portfolio,
-    catalog.watched,
-    accounts,
-    t,
-    balancesByAddress,
-    currency,
-  ])
+  }, [folder, folderTreeName, catalog.portfolio, catalog.watched, accounts, t, balanceByAddress])
 
   const folderTotal = useMemo(
     () =>
       folder
-        ? new Balances(
-            folder.tree.flatMap((account) => balancesByAddress.get(account.address) ?? [])
-          ).sum.fiat(currency).total
+        ? folder.tree.reduce((sum, account) => sum + (balanceByAddress[account.address] ?? 0), 0)
         : undefined,
-    [balancesByAddress, currency, folder]
+    [balanceByAddress, folder]
   )
 
   useEffect(() => {
     popupOpenEvent("portfolio accounts")
   }, [popupOpenEvent])
 
+  //console.log("rendered")
+
   return (
-    <FadeIn>
+    <>
       <Accounts
+        accounts={accounts}
         folder={folder}
         folderTotal={folderTotal}
         portfolioOptions={portfolioOptions}
         watchedOptions={watchedOptions}
       />
-    </FadeIn>
+      {suspense && <BalancesLoader />}
+    </>
+  )
+}
+
+export const PortfolioAccounts = () => {
+  return (
+    <Suspense
+      fallback={
+        <>
+          <SuspenseTracker name="PortfolioAccounts" />
+          <PortfolioAccountsInner suspense={false} />
+        </>
+      }
+    >
+      <PortfolioAccountsInner suspense={true} />
+    </Suspense>
   )
 }

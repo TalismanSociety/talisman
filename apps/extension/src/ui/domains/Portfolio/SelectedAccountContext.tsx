@@ -1,11 +1,12 @@
 import { AccountJsonAny } from "@core/domains/accounts/types"
-import { provideContext } from "@talisman/util/provideContext"
 import useAccounts from "@ui/hooks/useAccounts"
 import { useSearchParamsSelectedAccount } from "@ui/hooks/useSearchParamsSelectedAccount"
 import { useSetting } from "@ui/hooks/useSettings"
 import { useCallback, useMemo } from "react"
 
-const useSelectedAccountProvider = ({ isPopup }: { isPopup?: boolean }) => {
+const isPopup = window.location.pathname === "/popup.html"
+
+export const useSelectedAccount = () => {
   //if isPopup = true, then use account from search parameters.
   const { account: popupAccount } = useSearchParamsSelectedAccount()
   //if isPopup = false, then use address persisted in settings
@@ -18,7 +19,7 @@ const useSelectedAccountProvider = ({ isPopup }: { isPopup?: boolean }) => {
       isPopup
         ? popupAccount
         : accounts.find((account) => account.address === selectedAccountAddress),
-    [accounts, isPopup, popupAccount, selectedAccountAddress]
+    [accounts, popupAccount, selectedAccountAddress]
   )
 
   const select = useCallback(
@@ -31,12 +32,8 @@ const useSelectedAccountProvider = ({ isPopup }: { isPopup?: boolean }) => {
       if (address === undefined || accounts.some((acc) => acc.address === address))
         setSelectedAccountAddress(address)
     },
-    [accounts, isPopup, setSelectedAccountAddress]
+    [accounts, setSelectedAccountAddress]
   )
 
   return { select, accounts, account }
 }
-
-export const [SelectedAccountProvider, useSelectedAccount] = provideContext(
-  useSelectedAccountProvider
-)

@@ -1,26 +1,35 @@
 import { AccountJsonAny } from "@core/domains/accounts/types"
-import { useOpenClose } from "@talisman/hooks/useOpenClose"
-import { provideContext } from "@talisman/util/provideContext"
+import { useOpenCloseAtom } from "@talisman/hooks/useOpenClose"
 import { useSelectedAccount } from "@ui/domains/Portfolio/SelectedAccountContext"
-import { useCallback, useEffect, useState } from "react"
+import { useCallback, useEffect } from "react"
 import { useTranslation } from "react-i18next"
+import { atom, useRecoilState } from "recoil"
 import { ModalDialog } from "talisman-ui"
 import { Modal } from "talisman-ui"
 
 import { AccountRename } from "./AccountRename"
 
-const useAccountRenameModalProvider = () => {
-  const [_account, setAccount] = useState<AccountJsonAny>()
+const accountRenameAccountState = atom<AccountJsonAny | null>({
+  key: "accountRenameAccountState",
+  default: null,
+})
+const accountRenameModalOpenState = atom<boolean>({
+  key: "accountRenameModalOpenState",
+  default: false,
+})
+
+export const useAccountRenameModal = () => {
+  const [_account, setAccount] = useRecoilState(accountRenameAccountState)
 
   const { account: selectedAccount } = useSelectedAccount()
-  const { isOpen, open: innerOpen, close } = useOpenClose()
+  const { isOpen, open: innerOpen, close } = useOpenCloseAtom(accountRenameModalOpenState)
 
   const open = useCallback(
     (account?: AccountJsonAny) => {
-      setAccount(account)
+      setAccount(account ?? null)
       innerOpen()
     },
-    [innerOpen]
+    [innerOpen, setAccount]
   )
 
   useEffect(() => {
@@ -37,10 +46,6 @@ const useAccountRenameModalProvider = () => {
     canRename: Boolean(account),
   }
 }
-
-export const [AccountRenameModalProvider, useAccountRenameModal] = provideContext(
-  useAccountRenameModalProvider
-)
 
 export const AccountRenameModal = () => {
   const { t } = useTranslation()
