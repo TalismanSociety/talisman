@@ -60,9 +60,9 @@ test("Can get onboarded appState data", async () => {
   await waitFor(() => expect(result.current[0]).toBe(DEFAULT_APP_STATE.onboarded))
 })
 
-test("Can get showDotNomPoolStakingBanner appState data", async () => {
-  const { result } = renderHook(() => useAppState("showDotNomPoolStakingBanner"), {
+test("Can get showStakingBanner appState data", async () => {
+  const { result } = renderHook(() => useAppState("hideStakingBanner"), {
     wrapper: TestWrapper,
   })
-  await waitFor(() => expect(result.current[0]).toBe(DEFAULT_APP_STATE.showDotNomPoolStakingBanner))
+  await waitFor(() => expect(result.current[0]).toBe(DEFAULT_APP_STATE.hideStakingBanner))
 })

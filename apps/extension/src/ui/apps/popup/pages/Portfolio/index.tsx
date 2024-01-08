@@ -2,10 +2,10 @@ import { CurrentAccountAvatar } from "@ui/domains/Account/CurrentAccountAvatar"
 import { AssetDiscoveryPopupAlert } from "@ui/domains/AssetDiscovery/AssetDiscoveryPopupAlert"
 import { EvmNetworkSelectPill } from "@ui/domains/Ethereum/EvmNetworkSelectPill"
 import { PortfolioProvider } from "@ui/domains/Portfolio/context"
-import { NomPoolStakingBannerProvider } from "@ui/domains/Portfolio/NomPoolStakingContext"
 import BraveWarningPopupBanner from "@ui/domains/Settings/BraveWarning/BraveWarningPopupBanner"
 import MigratePasswordAlert from "@ui/domains/Settings/MigratePasswordAlert"
 import { ConnectedAccountsPill } from "@ui/domains/Site/ConnectedAccountsPill"
+import { StakingBannerProvider } from "@ui/domains/Staking/context"
 import { useAuthorisedSites } from "@ui/hooks/useAuthorisedSites"
 import { useHasAccounts } from "@ui/hooks/useHasAccounts"
 import { Suspense, useMemo } from "react"
@@ -55,7 +55,7 @@ export const Portfolio = () => {
   const hasAccounts = useHasAccounts()
   return (
     <PortfolioProvider>
-      <NomPoolStakingBannerProvider>
+      <StakingBannerProvider>
         {/* share layout to prevent sidebar flickering when navigating between the 2 pages */}
         <PopupLayout withBottomNav>
           {isAuthorised ? (
@@ -73,7 +73,7 @@ export const Portfolio = () => {
           </PopupContent>
           <AssetDiscoveryPopupAlert />
         </PopupLayout>
-      </NomPoolStakingBannerProvider>
+      </StakingBannerProvider>
     </PortfolioProvider>
   )
 }
