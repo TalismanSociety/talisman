@@ -82,7 +82,6 @@ const config = (env) => {
       new ZipPlugin({
         folder: distDir,
         filename: getArchiveFileName(env),
-        exclude: "*.js.map",
       }),
       new BundleAnalyzerPlugin({
         // analyzerMode defaults to server, spawning a http server which can hang the process
