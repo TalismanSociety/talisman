@@ -67,13 +67,12 @@ const Header = () => {
 export const Portfolio = () => {
   const hasAccounts = useHasAccounts()
   return (
-    //      {/* share layout to prevent sidebar flickering when navigating between the 2 pages */}
     <PopupLayout withBottomNav>
-      <Suspense fallback={<SuspenseTracker name="Portfolio Header" />}>
-        <Header />
-      </Suspense>
+      <Header />
       <PopupContent>{hasAccounts === false ? <NoAccounts /> : <PortfolioContent />}</PopupContent>
-      <AssetDiscoveryPopupAlert />
+      <Suspense fallback={<SuspenseTracker name="AssetDiscoveryPopupAlert" />}>
+        <AssetDiscoveryPopupAlert />
+      </Suspense>
     </PopupLayout>
   )
 }

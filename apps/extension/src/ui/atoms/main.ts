@@ -50,6 +50,7 @@ export const mainState = atom<{
       const obsAccountsCatalog = new Subject<Trees>()
       const obsAccounts = new Subject<AccountJsonAny[]>()
 
+      // console.log("walletDataState.get")
       const stop = log.timer("walletDataState")
       const obsChainData = combineLatest([
         settingsStore.observable,

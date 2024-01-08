@@ -1,8 +1,6 @@
-import { useMemo } from "react"
-
-import useAccounts from "./useAccounts"
+import { usePortfolioAccounts } from "./usePortfolioAccounts"
 
 export const useHasAccounts = () => {
-  const accounts = useAccounts()
-  return useMemo(() => !!accounts.length, [accounts])
+  const { accounts } = usePortfolioAccounts()
+  return !!accounts.length
 }

@@ -64,7 +64,6 @@ const InnerPopup = () => {
           <Route path="*" element={<Navigate to="/portfolio" replace />} />
         </Routes>
       </Suspense>
-
       <Suspense fallback={<SuspenseTracker name="Modals & alerts" />}>
         <AccountRenameModal />
         <AccountRemoveModal />

@@ -1,18 +1,10 @@
 import { db } from "@core/db"
-import {
-  AccountsCatalogTree,
-  TreeFolder,
-  TreeItem,
-  Trees,
-} from "@core/domains/accounts/helpers.catalog"
+import { AccountsCatalogTree, TreeFolder, TreeItem } from "@core/domains/accounts/helpers.catalog"
 import { AccountJsonAny, AccountType } from "@core/domains/accounts/types"
-import { settingsStore } from "@core/domains/app/store.settings"
 import { isEthereumAddress } from "@polkadot/util-crypto"
 import { SuspenseTracker } from "@talisman/components/SuspenseTracker"
 import { ChevronLeftIcon, ChevronRightIcon, CopyIcon, EyeIcon } from "@talismn/icons"
-import { TokenRateCurrency } from "@talismn/token-rates"
 import { classNames } from "@talismn/util"
-import { api } from "@ui/api"
 import { AnalyticsPage, sendAnalyticsEvent } from "@ui/api/analytics"
 import { AccountsLogoStack } from "@ui/apps/dashboard/routes/Settings/Accounts/AccountsLogoStack"
 import { TotalFiatBalance } from "@ui/apps/popup/components/TotalFiatBalance"
@@ -26,14 +18,13 @@ import { useCopyAddressModal } from "@ui/domains/CopyAddress"
 import { useAnalytics } from "@ui/hooks/useAnalytics"
 import useBalances from "@ui/hooks/useBalances"
 import { useAccountColors } from "@ui/hooks/useFirstAccountColors"
+import { usePortfolioAccounts } from "@ui/hooks/usePortfolioAccounts"
 import { useSearchParamsSelectedFolder } from "@ui/hooks/useSearchParamsSelectedFolder"
 import { useLiveQuery } from "dexie-react-hooks"
 import { FC, MouseEventHandler, Suspense, useCallback, useEffect, useMemo, useRef } from "react"
 import { useTranslation } from "react-i18next"
 import { useNavigate } from "react-router-dom"
 import { useHoverDirty } from "react-use"
-import { atom, useRecoilValue } from "recoil"
-import { Subject, combineLatest } from "rxjs"
 import { IconButton, MYSTICAL_PHYSICS_V3, MysticalBackground, MysticalPhysicsV3 } from "talisman-ui"
 
 const ANALYTICS_PAGE: AnalyticsPage = {
@@ -144,18 +135,29 @@ const AccountButton = ({ option }: { option: AccountOption }) => {
           )}
         </div>
         <div className="text-body-secondary flex w-full truncate text-left text-sm leading-none">
-          <Fiat amount={option.total} isBalance />
+          <Suspense fallback={<SuspenseTracker name="Fiat" />}>
+            <Fiat amount={option.total} isBalance />
+          </Suspense>
         </div>
       </div>
       {isAccount && (
-        <Address className="show-on-hover text-body-secondary text-xs" address={formattedAddress} />
+        <Suspense fallback={<SuspenseTracker name="Address" />}>
+          <Address
+            className="show-on-hover text-body-secondary text-xs"
+            address={formattedAddress}
+          />
+        </Suspense>
       )}
       {isAccount && (
         <div className="hide-on-hover text-lg">
           <ChevronRightIcon />
         </div>
       )}
-      {!isAccount && <AccountsLogoStack className="text-sm" addresses={option.addresses} />}
+      {!isAccount && (
+        <Suspense fallback={<SuspenseTracker name="AccountLogoStack" />}>
+          <AccountsLogoStack className="text-sm" addresses={option.addresses} />
+        </Suspense>
+      )}
     </button>
   )
 }
@@ -258,10 +260,12 @@ const AllAccountsHeader: FC<{ accounts: AccountJsonAny[] }> = ({ accounts }) => 
         </Suspense>
         {!!accounts.length && <ChevronRightIcon className="z-10" />}
       </button>
-      <TotalFiatBalance
-        className="pointer-events-none absolute left-0 top-0 h-full w-full px-6"
-        mouseOver={isHovered}
-      />
+      <Suspense fallback={<SuspenseTracker name="TotalFiatBalance" />}>
+        <TotalFiatBalance
+          className="pointer-events-none absolute left-0 top-0 h-full w-full px-6"
+          mouseOver={isHovered}
+        />
+      </Suspense>
     </div>
   )
 }
@@ -296,49 +300,11 @@ const BalancesLoader = () => {
   return null
 }
 
-// combine all the state needed by this screen into this one atom, to prevent the need to wait for the main wallet atom
-const portfolioAccountsState = atom<{
-  accounts: AccountJsonAny[]
-  catalog: Trees
-  currency: TokenRateCurrency
-}>({
-  key: "portfolioAccountsState",
-  default: {
-    accounts: [] as AccountJsonAny[],
-    catalog: {
-      portfolio: [],
-      watched: [],
-    },
-    currency: "usd",
-  },
-  effects: [
-    ({ setSelf }) => {
-      const obsAccounts = new Subject<AccountJsonAny[]>()
-      const obsAccountsCatalog = new Subject<Trees>()
-
-      combineLatest([obsAccounts, obsAccountsCatalog, settingsStore.observable]).subscribe(
-        ([accounts, catalog, settings]) => {
-          setSelf({ accounts, catalog, currency: settings.selectedCurrency })
-        }
-      )
-
-      const unsubAccounts = api.accountsSubscribe((v) => obsAccounts.next(v))
-      const unsubAccountsCatalog = api.accountsCatalogSubscribe((v) => obsAccountsCatalog.next(v))
-
-      return () => {
-        unsubAccounts()
-        unsubAccountsCatalog()
-      }
-    },
-  ],
-})
-
 const PortfolioAccountsInner: FC<{ suspense: boolean }> = ({ suspense }) => {
-  const { accounts, catalog, currency } = useRecoilValue(portfolioAccountsState)
+  const { accounts, catalog, currency } = usePortfolioAccounts()
   const { folder, treeName: folderTreeName } = useSearchParamsSelectedFolder()
   const { popupOpenEvent } = useAnalytics()
   const { t } = useTranslation()
-
   const balanceTotals = useLiveQuery(() => db.balanceTotals.toArray(), [])
 
   const balanceByAddress = useMemo(() => {
@@ -405,7 +371,7 @@ const PortfolioAccountsInner: FC<{ suspense: boolean }> = ({ suspense }) => {
     popupOpenEvent("portfolio accounts")
   }, [popupOpenEvent])
 
-  //console.log("rendered")
+  // console.log("rendered", suspense)
 
   return (
     <>
