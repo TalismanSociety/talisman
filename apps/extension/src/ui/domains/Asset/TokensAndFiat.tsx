@@ -4,7 +4,7 @@ import useToken from "@ui/hooks/useToken"
 import { useTokenRates } from "@ui/hooks/useTokenRates"
 import { FC, useMemo } from "react"
 
-import Fiat from "./Fiat"
+import { Fiat } from "./Fiat"
 import Tokens from "./Tokens"
 
 type TokensAndFiatProps = {

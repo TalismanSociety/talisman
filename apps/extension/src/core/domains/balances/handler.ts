@@ -1,5 +1,4 @@
 import { DEBUG } from "@core/constants"
-import { getNomPoolStake } from "@core/domains/balances/helpers"
 import {
   AddressesAndEvmNetwork,
   AddressesAndTokens,
@@ -18,6 +17,7 @@ import {
   activeEvmNetworksStore,
   isEvmNetworkActive,
 } from "@core/domains/ethereum/store.activeEvmNetworks"
+import { getNomPoolStake } from "@core/domains/staking/helpers"
 import {
   ActiveTokens,
   activeTokensStore,

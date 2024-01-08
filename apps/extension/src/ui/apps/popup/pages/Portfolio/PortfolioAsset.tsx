@@ -1,6 +1,6 @@
 import { Balances } from "@core/domains/balances/types"
 import { ChevronLeftIcon } from "@talismn/icons"
-import Fiat from "@ui/domains/Asset/Fiat"
+import { Fiat } from "@ui/domains/Asset/Fiat"
 import { TokenLogo } from "@ui/domains/Asset/TokenLogo"
 import { PopupAssetDetails } from "@ui/domains/Portfolio/AssetDetails"
 import { usePortfolio } from "@ui/domains/Portfolio/context"

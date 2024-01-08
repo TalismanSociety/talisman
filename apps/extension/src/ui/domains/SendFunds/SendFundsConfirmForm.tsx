@@ -10,7 +10,7 @@ import { useTranslation } from "react-i18next"
 import { Button } from "talisman-ui"
 
 import { ChainLogo } from "../Asset/ChainLogo"
-import Fiat from "../Asset/Fiat"
+import { Fiat } from "../Asset/Fiat"
 import { TokenLogo } from "../Asset/TokenLogo"
 import { TokensAndFiat } from "../Asset/TokensAndFiat"
 import { EthFeeSelect } from "../Ethereum/GasSettings/EthFeeSelect"

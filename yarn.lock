@@ -4613,48 +4613,47 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@ledgerhq/hw-transport-node-hid-noevents@npm:^6.27.16":
-  version: 6.27.16
-  resolution: "@ledgerhq/hw-transport-node-hid-noevents@npm:6.27.16"
+"@ledgerhq/hw-transport-node-hid-noevents@npm:^6.29.1":
+  version: 6.29.1
+  resolution: "@ledgerhq/hw-transport-node-hid-noevents@npm:6.29.1"
   dependencies:
-    "@ledgerhq/devices": ^8.0.4
-    "@ledgerhq/errors": ^6.12.7
-    "@ledgerhq/hw-transport": ^6.28.5
-    "@ledgerhq/logs": ^6.10.1
+    "@ledgerhq/devices": ^8.2.0
+    "@ledgerhq/errors": ^6.16.1
+    "@ledgerhq/hw-transport": ^6.30.1
+    "@ledgerhq/logs": ^6.12.0
     node-hid: ^2.1.2
-  checksum: 068a731f9c242a3435de9412b90030fd2fa1767b9fac20f1deadab308f2b7facf6e76cae09a11b3f558b7680d13a3dde90a811eec7732718141a032bf70d091d
+  checksum: 429c6b08abe1f22c299157b7a79e7fdfd8d7fedfaaa6b82039c18be549a5c23f8d1d5d91aa274e963528afcc35f95beabde94f84e3a39d9e15e2d9be7d85afc8
   languageName: node
   linkType: hard
 
-"@ledgerhq/hw-transport-node-hid-singleton@npm:^6.28.12":
-  version: 6.28.14
-  resolution: "@ledgerhq/hw-transport-node-hid-singleton@npm:6.28.14"
+"@ledgerhq/hw-transport-node-hid-singleton@npm:^6.30.1":
+  version: 6.30.1
+  resolution: "@ledgerhq/hw-transport-node-hid-singleton@npm:6.30.1"
   dependencies:
-    "@ledgerhq/devices": ^8.0.4
-    "@ledgerhq/errors": ^6.12.7
-    "@ledgerhq/hw-transport": ^6.28.5
-    "@ledgerhq/hw-transport-node-hid-noevents": ^6.27.16
-    "@ledgerhq/logs": ^6.10.1
-    lodash: ^4.17.21
+    "@ledgerhq/devices": ^8.2.0
+    "@ledgerhq/errors": ^6.16.1
+    "@ledgerhq/hw-transport": ^6.30.1
+    "@ledgerhq/hw-transport-node-hid-noevents": ^6.29.1
+    "@ledgerhq/logs": ^6.12.0
     node-hid: ^2.1.2
-    usb: ^2.9.0
-  checksum: d3eaa60700207fcb85e964c7598ae814e8abf24d459d6d904139d441030a477aa7450d1971c1927c809b080bc30f0aa838015d9195f01ea753ab48175a7df34b
+    usb: 2.9.0
+  checksum: 7212cd5ec9d9c822545755d0b121835bfa0bf40500ab03b4634c145cb33c12c606e6bb82ed52675abd9fc484e425d516998313e519e2ce426583e6034fc37bef
   languageName: node
   linkType: hard
 
-"@ledgerhq/hw-transport-webhid@npm:^6.27.15":
-  version: 6.27.16
-  resolution: "@ledgerhq/hw-transport-webhid@npm:6.27.16"
+"@ledgerhq/hw-transport-webhid@npm:^6.28.1":
+  version: 6.28.1
+  resolution: "@ledgerhq/hw-transport-webhid@npm:6.28.1"
   dependencies:
-    "@ledgerhq/devices": ^8.0.4
-    "@ledgerhq/errors": ^6.12.7
-    "@ledgerhq/hw-transport": ^6.28.5
-    "@ledgerhq/logs": ^6.10.1
-  checksum: 4e5c237210148183fb7748f71423e51d46675422ac666018160aa5bdb3285ee018b8bd2b11e99d12ba196ec9604860bebaea91531c6b1ed9321b443246659f9a
+    "@ledgerhq/devices": ^8.2.0
+    "@ledgerhq/errors": ^6.16.1
+    "@ledgerhq/hw-transport": ^6.30.1
+    "@ledgerhq/logs": ^6.12.0
+  checksum: 1d6fc5041a29aad5007c8679c223039d3f8af1d55bd7ba170fc117155fd1f1ddc9eca926794626453481f4a33ca805ca80a24e5d422fce9f0fe7fa86404f4fa2
   languageName: node
   linkType: hard
 
-"@ledgerhq/hw-transport-webusb@npm:6.28.1":
+"@ledgerhq/hw-transport-webusb@npm:6.28.1, @ledgerhq/hw-transport-webusb@npm:^6.28.1":
   version: 6.28.1
   resolution: "@ledgerhq/hw-transport-webusb@npm:6.28.1"
   dependencies:
@@ -4663,18 +4662,6 @@ __metadata:
     "@ledgerhq/hw-transport": ^6.30.1
     "@ledgerhq/logs": ^6.12.0
   checksum: 8cb098941d336aa42e0712ef66b31850f2bd5ede6cf4323f5e2fa5804b73518625b7e56c22cc847ee90da1a07d3caa8a33e61ce48089479d302f57be2b901c47
-  languageName: node
-  linkType: hard
-
-"@ledgerhq/hw-transport-webusb@npm:^6.27.15":
-  version: 6.27.16
-  resolution: "@ledgerhq/hw-transport-webusb@npm:6.27.16"
-  dependencies:
-    "@ledgerhq/devices": ^8.0.4
-    "@ledgerhq/errors": ^6.12.7
-    "@ledgerhq/hw-transport": ^6.28.5
-    "@ledgerhq/logs": ^6.10.1
-  checksum: f4141a5305c85a6a14683a7b9a6b9d03df8471e28619d7d725602c5918ab34a521eaaeb9cafc6e41b3893df548076cecbb23176ddbd0548efb7cb7ffa7f8c042
   languageName: node
   linkType: hard
 
@@ -4690,7 +4677,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@ledgerhq/hw-transport@npm:^6.27.1, @ledgerhq/hw-transport@npm:^6.28.4, @ledgerhq/hw-transport@npm:^6.28.5":
+"@ledgerhq/hw-transport@npm:^6.27.1":
   version: 6.28.5
   resolution: "@ledgerhq/hw-transport@npm:6.28.5"
   dependencies:
@@ -5735,32 +5722,32 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@polkadot/hw-ledger-transports@npm:12.3.2":
-  version: 12.3.2
-  resolution: "@polkadot/hw-ledger-transports@npm:12.3.2"
+"@polkadot/hw-ledger-transports@npm:12.6.2":
+  version: 12.6.2
+  resolution: "@polkadot/hw-ledger-transports@npm:12.6.2"
   dependencies:
-    "@ledgerhq/hw-transport": ^6.28.4
-    "@ledgerhq/hw-transport-node-hid-singleton": ^6.28.12
-    "@ledgerhq/hw-transport-webhid": ^6.27.15
-    "@ledgerhq/hw-transport-webusb": ^6.27.15
-    "@polkadot/util": 12.3.2
-    tslib: ^2.5.3
+    "@ledgerhq/hw-transport": ^6.30.1
+    "@ledgerhq/hw-transport-node-hid-singleton": ^6.30.1
+    "@ledgerhq/hw-transport-webhid": ^6.28.1
+    "@ledgerhq/hw-transport-webusb": ^6.28.1
+    "@polkadot/util": 12.6.2
+    tslib: ^2.6.2
   dependenciesMeta:
     "@ledgerhq/hw-transport-node-hid-singleton":
       optional: true
-  checksum: 20ed068e552b60e11df5a0770b6c30b0078356e5afa1415eb0762e1369dd3921c81160f799202da4411106a71dc2aae1f30d2ba3699e47c05b57c09684db96f1
+  checksum: 8e593fc2dcec920b55b65454eb111dd06f90de5f3c687b4ff1a1494b8c5d93a42ed8a90654b52c7b3b25fb0fa625220f5996ffea93542b71b4b665e85c6572b8
   languageName: node
   linkType: hard
 
-"@polkadot/hw-ledger@npm:12.3.2":
-  version: 12.3.2
-  resolution: "@polkadot/hw-ledger@npm:12.3.2"
+"@polkadot/hw-ledger@npm:12.6.2":
+  version: 12.6.2
+  resolution: "@polkadot/hw-ledger@npm:12.6.2"
   dependencies:
-    "@polkadot/hw-ledger-transports": 12.3.2
-    "@polkadot/util": 12.3.2
-    "@zondax/ledger-substrate": ^0.40.7
-    tslib: ^2.5.3
-  checksum: 11c3f215c79980b43a3551ddc085cbb1d6cec5da91d1d077ea045720e7750cbb680c39192b75aa84a0d6b07fccd77345df37777cb029e053b663bc6044570985
+    "@polkadot/hw-ledger-transports": 12.6.2
+    "@polkadot/util": 12.6.2
+    "@zondax/ledger-substrate": ^0.41.3
+    tslib: ^2.6.2
+  checksum: 4eca4b65cad6bb536f9cfff6f1f8ca752271d2bb2146582fbb1b0e751a55bf124a31aa2c5762011d9133579feb0c5ff9a0fdbe46fbfc71157dd45df1ddd2ca54
   languageName: node
   linkType: hard
 
@@ -7726,6 +7713,18 @@ __metadata:
   languageName: unknown
   linkType: soft
 
+"@talismn/siws@npm:^0.0.5":
+  version: 0.0.5
+  resolution: "@talismn/siws@npm:0.0.5"
+  dependencies:
+    "@types/jest": ^29.5.8
+  peerDependencies:
+    "@polkadot/api": ^10.10.1
+    "@polkadot/extension-dapp": ^0.46.5
+  checksum: 01ab60b5086808eef3421a35c3421c9a318db83997766a9a52bce4db9a8557581cab406b5179bf2eb3125db0be7ea21d63c6ae0d37f08deee390a4a4bc994c73
+  languageName: node
+  linkType: hard
+
 "@talismn/subshape-fork@npm:^0.0.2":
   version: 0.0.2
   resolution: "@talismn/subshape-fork@npm:0.0.2"
@@ -8286,6 +8285,16 @@ __metadata:
     jest-matcher-utils: ^27.0.0
     pretty-format: ^27.0.0
   checksum: 7e11c6826aa429ad990dc262e4e4b54aa36573287fddf15773e4137f07d11d3105f0dd9f1baff73252160a057df23f5529bb83b1bf83cd3f45f9460a5ca5c22e
+  languageName: node
+  linkType: hard
+
+"@types/jest@npm:^29.5.8":
+  version: 29.5.11
+  resolution: "@types/jest@npm:29.5.11"
+  dependencies:
+    expect: ^29.0.0
+    pretty-format: ^29.0.0
+  checksum: f892a06ec9f0afa9a61cd7fa316ec614e21d4df1ad301b5a837787e046fcb40dfdf7f264a55e813ac6b9b633cb9d366bd5b8d1cea725e84102477b366df23fdd
   languageName: node
   linkType: hard
 
@@ -9688,9 +9697,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@zondax/ledger-substrate@npm:^0.40.7":
-  version: 0.40.7
-  resolution: "@zondax/ledger-substrate@npm:0.40.7"
+"@zondax/ledger-substrate@npm:^0.41.3":
+  version: 0.41.3
+  resolution: "@zondax/ledger-substrate@npm:0.41.3"
   dependencies:
     "@ledgerhq/hw-transport": ^6.27.1
     bip32: ^4.0.0
@@ -9698,11 +9707,10 @@ __metadata:
     bip39: ^3.0.4
     blakejs: ^1.2.1
     bs58: ^5.0.0
-    chalk: ^4.1.0
     hash.js: ^1.1.7
   bin:
     ledger-substrate: dist/cmd/cli.js
-  checksum: c88f74b8b42482aff880d5d66df430801abc151e16c4a8eddecf787813dc1d56f892a42b7fd0791f43d7c70fb8e3face93aa9f965bb510c77b0cf43ac4a619f6
+  checksum: 2c25cb9b28956a47d7152ef0494c8c5bf4c23a9b3afe1321c6fd0e1c1e531ea5d3325acc7666453b53da22aa7fd269d543d6a382848f9ad91cc554074c3d8eea
   languageName: node
   linkType: hard
 
@@ -14559,7 +14567,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"expect@npm:^29.7.0":
+"expect@npm:^29.0.0, expect@npm:^29.7.0":
   version: 29.7.0
   resolution: "expect@npm:29.7.0"
   dependencies:
@@ -14659,6 +14667,7 @@ __metadata:
     "@talismn/on-chain-id": "workspace:*"
     "@talismn/orb": "workspace:*"
     "@talismn/scale": "workspace:*"
+    "@talismn/siws": ^0.0.5
     "@talismn/subshape-fork": ^0.0.2
     "@talismn/token-rates": "workspace:*"
     "@talismn/tsconfig": "workspace:*"
@@ -22012,7 +22021,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"pretty-format@npm:^29.7.0":
+"pretty-format@npm:^29.0.0, pretty-format@npm:^29.7.0":
   version: 29.7.0
   resolution: "pretty-format@npm:29.7.0"
   dependencies:
@@ -25363,6 +25372,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"tslib@npm:^2.6.2":
+  version: 2.6.2
+  resolution: "tslib@npm:2.6.2"
+  checksum: 329ea56123005922f39642318e3d1f0f8265d1e7fcb92c633e0809521da75eeaca28d2cf96d7248229deb40e5c19adf408259f4b9640afd20d13aecc1430f3ad
+  languageName: node
+  linkType: hard
+
 "tslib@npm:~2.5.0":
   version: 2.5.0
   resolution: "tslib@npm:2.5.0"
@@ -26003,7 +26019,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"usb@npm:^2.9.0":
+"usb@npm:2.9.0":
   version: 2.9.0
   resolution: "usb@npm:2.9.0"
   dependencies:

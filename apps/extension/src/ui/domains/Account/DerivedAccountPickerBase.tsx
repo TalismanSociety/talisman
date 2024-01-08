@@ -6,7 +6,7 @@ import { useBalanceDetails } from "@ui/hooks/useBalanceDetails"
 import { FC, ReactNode, useCallback } from "react"
 import { Checkbox, Tooltip, TooltipContent, TooltipTrigger } from "talisman-ui"
 
-import Fiat from "../Asset/Fiat"
+import { Fiat } from "../Asset/Fiat"
 import { AccountIcon } from "./AccountIcon"
 import { Address } from "./Address"
 

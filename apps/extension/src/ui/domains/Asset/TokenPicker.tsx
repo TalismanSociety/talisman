@@ -22,7 +22,7 @@ import { useIntersection } from "react-use"
 
 import { useFormatNetworkName } from "../SendFunds/useNetworkDetails"
 import { ChainLogoBase } from "./ChainLogo"
-import Fiat from "./Fiat"
+import { Fiat } from "./Fiat"
 import { TokenLogo } from "./TokenLogo"
 import Tokens from "./Tokens"
 
