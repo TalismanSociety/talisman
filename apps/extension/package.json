@@ -28,7 +28,7 @@
     "@polkadot/networks": "*",
     "@polkadot/phishing": "latest",
     "@polkadot/react-identicon": "*",
-    "@polkadot/react-qr": "^2.10.1",
+    "@polkadot/react-qr": "*",
     "@polkadot/ui-keyring": "*",
     "@polkadot/ui-settings": "*",
     "@polkadot/util": "*",
