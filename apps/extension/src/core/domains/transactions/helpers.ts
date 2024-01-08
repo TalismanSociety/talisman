@@ -137,6 +137,11 @@ export const updateTransactionStatus = async (
   }
 }
 
+export const getTransactionStatus = async (hash: string) => {
+  const tx = await db.transactions.get(hash)
+  return tx?.status ?? "unknown"
+}
+
 export const updateTransactionsRestart = async () => {
   try {
     // mark all pending transactions as unknown
