@@ -29,9 +29,9 @@
   },
   "devDependencies": {
     "@alectalisman/preconstruct-cli": "2.3.0-e",
-    "@changesets/cli": "^2.26",
-    "@commitlint/cli": "^17.0.0",
-    "@commitlint/config-conventional": "^17.0.0",
+    "@changesets/cli": "^2.27.1",
+    "@commitlint/cli": "^17.8.1",
+    "@commitlint/config-conventional": "^17.8.1",
     "@talismn/eslint-config": "workspace:*",
     "@testing-library/react": "^14.0.0",
     "@typescript-eslint/eslint-plugin": "^6.9.0",
