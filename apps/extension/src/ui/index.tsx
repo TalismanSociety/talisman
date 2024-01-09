@@ -12,7 +12,7 @@ import { createRoot } from "react-dom/client"
 import { HashRouter } from "react-router-dom"
 import { RecoilRoot } from "recoil"
 
-import { LocationSync } from "./atoms/location"
+import { LocationSync } from "./atoms"
 
 const queryClient = new QueryClient()
 

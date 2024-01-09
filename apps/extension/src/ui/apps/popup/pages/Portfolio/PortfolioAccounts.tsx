@@ -302,7 +302,7 @@ const FolderHeader = ({ folder, folderTotal }: { folder: TreeFolder; folderTotal
   )
 }
 
-// Rendering this component will fire balance subscription and trigger suspense on the main wallet atom
+// Rendering this component will fire balance subscription (& suspense)
 const BalancesLoader = () => {
   useBalances()
 
@@ -417,24 +417,3 @@ export const PortfolioAccounts = () => {
     </>
   )
 }
-
-// export const PortfolioAccounts = () => {
-//   return (
-//     <>
-//       <PortfolioAccountsInner  />
-
-//     </>
-//   )
-//   // return (
-//   //   <Suspense
-//   //     fallback={
-//   //       <>
-//   //         <SuspenseTracker name="PortfolioAccounts" />
-//   //         <PortfolioAccountsInner suspense={false} />
-//   //       </>
-//   //     }
-//   //   >
-
-//   //   </Suspense>
-//   // )
-// }

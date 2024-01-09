@@ -1,3 +1,4 @@
+export * from "./location"
 export * from "./base"
 export * from "./main"
 export * from "./accounts"

@@ -1,6 +1,5 @@
 import { ErrorBoundary } from "@talisman/components/ErrorBoundary"
 import { ScrollContainer } from "@talisman/components/ScrollContainer"
-import { SuspenseTracker } from "@talisman/components/SuspenseTracker"
 import { HandMonoLogo } from "@talisman/theme/logos"
 import { classNames } from "@talismn/util"
 import { api } from "@ui/api"
@@ -9,7 +8,6 @@ import {
   FC,
   HTMLAttributes,
   ReactNode,
-  Suspense,
   useCallback,
   useEffect,
   useRef,
@@ -85,10 +83,10 @@ export const PopupLayout: FC<ContainerProps & { withBottomNav?: boolean }> = ({
       <ErrorBoundary>
         {children}
         {withBottomNav && (
-          <Suspense fallback={<SuspenseTracker name="Layout nav" />}>
+          <>
             <BottomNav />
             <NavigationDrawer />
-          </Suspense>
+          </>
         )}
       </ErrorBoundary>
     </main>

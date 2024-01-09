@@ -1,6 +1,7 @@
+import {} from "@ui/atoms"
+
 import { AccountJsonAny } from "@core/domains/accounts/types"
-import { accountsState } from "@ui/atoms"
-import { searchParamsState } from "@ui/atoms/location"
+import { accountsState, searchParamsState } from "@ui/atoms"
 import { selector, useRecoilValue } from "recoil"
 
 export const searchParamsSelectedAccount = selector<AccountJsonAny | undefined>({
