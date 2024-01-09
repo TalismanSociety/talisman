@@ -14,7 +14,8 @@ export type Chain = {
   name: string | null // The name of this chain
   themeColor: string | null // The theme color for this chain
   logo: string | null // A url to the logo of this chain
-  chainName: string | null // The on-chain name of this chain
+  chainName: string | null // The `system_chain` on-chain name of this chain
+  chainType: string | null // The `system_chainType` on-chain type of this chain
   implName: string | null // The implementation name of this chain
   specName: string | null // The spec name of this chain
   specVersion: string | null // The spec version of this chain
