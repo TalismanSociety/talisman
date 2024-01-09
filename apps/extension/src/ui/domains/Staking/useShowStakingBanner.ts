@@ -5,7 +5,7 @@ import { useAnalytics } from "@ui/hooks/useAnalytics"
 import { useCallback } from "react"
 
 import { useTokenBalancesSummary } from "../Portfolio/useTokenBalancesSummary"
-import { useStakingBanner } from "./context"
+import { useStakingBanner } from "./useStakingBanner"
 
 export const useShowStakingBanner = (balances: Balances) => {
   const { genericEvent } = useAnalytics()

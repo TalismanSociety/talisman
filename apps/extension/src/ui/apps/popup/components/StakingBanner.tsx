@@ -1,11 +1,12 @@
 import { TALISMAN_WEB_APP_STAKING_URL } from "@core/constants"
+import { SuspenseTracker } from "@talisman/components/SuspenseTracker"
 import { ExternalLinkIcon, XIcon, ZapIcon } from "@talismn/icons"
-import { useStakingBanner } from "@ui/domains/Staking/context"
+import { useStakingBanner } from "@ui/domains/Staking/useStakingBanner"
 import { useAnalytics } from "@ui/hooks/useAnalytics"
-import { MouseEventHandler, useCallback, useMemo } from "react"
+import { MouseEventHandler, Suspense, useCallback, useMemo } from "react"
 import { Trans, useTranslation } from "react-i18next"
 
-export const StakingBanner = ({ addresses }: { addresses: string[] }) => {
+export const StakingBannerInner = ({ addresses }: { addresses: string[] }) => {
   const { showStakingBanner, dismissStakingBanner } = useStakingBanner()
   const { genericEvent } = useAnalytics()
   const { t } = useTranslation()
@@ -64,3 +65,9 @@ export const StakingBanner = ({ addresses }: { addresses: string[] }) => {
     </>
   )
 }
+
+export const StakingBanner = ({ addresses }: { addresses: string[] }) => (
+  <Suspense fallback={<SuspenseTracker name="StakingBanner" />}>
+    <StakingBannerInner addresses={addresses} />
+  </Suspense>
+)

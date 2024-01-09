@@ -83,7 +83,7 @@ export const balancesHydrateState = selector<HydrateDb>({
   },
 })
 
-export const allBalancesState = selector({
+const allBalancesState = selector({
   key: "allBalancesState",
   get: ({ get }) => {
     const rawBalances = get(filteredRawBalancesState)
