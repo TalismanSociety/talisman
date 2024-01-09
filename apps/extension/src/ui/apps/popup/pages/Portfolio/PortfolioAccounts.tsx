@@ -1,4 +1,3 @@
-import { db } from "@core/db"
 import { AccountsCatalogTree, TreeFolder, TreeItem } from "@core/domains/accounts/helpers.catalog"
 import { AccountJsonAny, AccountType } from "@core/domains/accounts/types"
 import { isEthereumAddress } from "@polkadot/util-crypto"
@@ -20,8 +19,16 @@ import useBalances from "@ui/hooks/useBalances"
 import { useAccountColors } from "@ui/hooks/useFirstAccountColors"
 import { usePortfolioAccounts } from "@ui/hooks/usePortfolioAccounts"
 import { useSearchParamsSelectedFolder } from "@ui/hooks/useSearchParamsSelectedFolder"
-import { useLiveQuery } from "dexie-react-hooks"
-import { FC, MouseEventHandler, Suspense, useCallback, useEffect, useMemo, useRef } from "react"
+import {
+  FC,
+  MouseEventHandler,
+  Suspense,
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react"
 import { useTranslation } from "react-i18next"
 import { useNavigate } from "react-router-dom"
 import { useHoverDirty } from "react-use"
@@ -139,29 +146,20 @@ const AccountButton = ({ option }: { option: AccountOption }) => {
           )}
         </div>
         <div className="text-body-secondary flex w-full truncate text-left text-sm leading-none">
-          <Suspense fallback={<SuspenseTracker name="Fiat" />}>
-            <Fiat amount={option.total} isBalance />
-          </Suspense>
+          {/* <Suspense fallback={<SuspenseTracker name="Fiat" />}> */}
+          <Fiat amount={option.total} isBalance />
+          {/* </Suspense> */}
         </div>
       </div>
       {isAccount && (
-        <Suspense fallback={<SuspenseTracker name="Address" />}>
-          <Address
-            className="show-on-hover text-body-secondary text-xs"
-            address={formattedAddress}
-          />
-        </Suspense>
+        <Address className="show-on-hover text-body-secondary text-xs" address={formattedAddress} />
       )}
       {isAccount && (
         <div className="hide-on-hover text-lg">
           <ChevronRightIcon />
         </div>
       )}
-      {!isAccount && (
-        <Suspense fallback={<SuspenseTracker name="AccountLogoStack" />}>
-          <AccountsLogoStack className="text-sm" addresses={option.addresses} />
-        </Suspense>
-      )}
+      {!isAccount && <AccountsLogoStack className="text-sm" addresses={option.addresses} />}
     </button>
   )
 }
@@ -270,17 +268,13 @@ const AllAccountsHeader: FC<{ accounts: AccountJsonAny[] }> = ({ accounts }) => 
         onClick={handleClick}
         disabled={!accounts.length}
       >
-        <Suspense fallback={<SuspenseTracker name="AllAccountsHeaderBackground" />}>
-          <AllAccountsHeaderBackground accounts={accounts} />
-        </Suspense>
+        <AllAccountsHeaderBackground accounts={accounts} />
         {!!accounts.length && <ChevronRightIcon className="z-10" />}
       </button>
-      <Suspense fallback={<SuspenseTracker name="TotalFiatBalance" />}>
-        <TotalFiatBalance
-          className="pointer-events-none absolute left-0 top-0 h-full w-full px-6"
-          mouseOver={isHovered}
-        />
-      </Suspense>
+      <TotalFiatBalance
+        className="pointer-events-none absolute left-0 top-0 h-full w-full px-6"
+        mouseOver={isHovered}
+      />
     </div>
   )
 }
@@ -315,17 +309,16 @@ const BalancesLoader = () => {
   return null
 }
 
-const PortfolioAccountsInner: FC<{ suspense: boolean }> = ({ suspense }) => {
-  const { accounts, catalog, currency } = usePortfolioAccounts()
+export const PortfolioAccounts = () => {
+  const { accounts, catalog, currency, balanceTotals } = usePortfolioAccounts()
   const { folder, treeName: folderTreeName } = useSearchParamsSelectedFolder()
   const { popupOpenEvent } = useAnalytics()
   const { t } = useTranslation()
-  const balanceTotals = useLiveQuery(() => db.balanceTotals.toArray(), [])
 
   const balanceByAddress = useMemo(() => {
     const totals = balanceTotals ?? []
     const sumPerAddress = Object.fromEntries(
-      totals.filter((t) => t.currency === currency).map((t) => [t.address, t.sum])
+      totals.filter((t) => t.currency === currency).map((t) => [t.address, t.total])
     )
     return Object.fromEntries(accounts.map((a) => [a.address, sumPerAddress[a.address] ?? 0]))
   }, [accounts, balanceTotals, currency])
@@ -386,7 +379,26 @@ const PortfolioAccountsInner: FC<{ suspense: boolean }> = ({ suspense }) => {
     popupOpenEvent("portfolio accounts")
   }, [popupOpenEvent])
 
-  // console.log("rendered", suspense)
+  // TODO remove
+  // eslint-disable-next-line no-console
+  console.log("rendered")
+  const refRendered = useRef(false)
+  useEffect(() => {
+    if (refRendered.current) return
+    refRendered.current = true
+    // eslint-disable-next-line no-console
+    console.log("rendered")
+  })
+
+  const [fetchBalances, setFetchBalances] = useState(false)
+  useEffect(() => {
+    // start fetching balances 100ms after first render
+    const timeout = setTimeout(() => {
+      setFetchBalances(true)
+    }, 100)
+
+    return () => clearTimeout(timeout)
+  }, [])
 
   return (
     <>
@@ -397,22 +409,32 @@ const PortfolioAccountsInner: FC<{ suspense: boolean }> = ({ suspense }) => {
         portfolioOptions={portfolioOptions}
         watchedOptions={watchedOptions}
       />
-      {suspense && <BalancesLoader />}
+      {fetchBalances && (
+        <Suspense fallback={<SuspenseTracker name="BalancesLoader" />}>
+          <BalancesLoader />
+        </Suspense>
+      )}
     </>
   )
 }
 
-export const PortfolioAccounts = () => {
-  return (
-    <Suspense
-      fallback={
-        <>
-          <SuspenseTracker name="PortfolioAccounts" />
-          <PortfolioAccountsInner suspense={false} />
-        </>
-      }
-    >
-      <PortfolioAccountsInner suspense={true} />
-    </Suspense>
-  )
-}
+// export const PortfolioAccounts = () => {
+//   return (
+//     <>
+//       <PortfolioAccountsInner  />
+
+//     </>
+//   )
+//   // return (
+//   //   <Suspense
+//   //     fallback={
+//   //       <>
+//   //         <SuspenseTracker name="PortfolioAccounts" />
+//   //         <PortfolioAccountsInner suspense={false} />
+//   //       </>
+//   //     }
+//   //   >
+
+//   //   </Suspense>
+//   // )
+// }

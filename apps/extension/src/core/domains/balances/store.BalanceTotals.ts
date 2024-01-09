@@ -1,14 +1,20 @@
 import { db as extensionDb } from "@core/db"
+import { StorageProvider } from "@core/libs/Store"
 import { log } from "@core/log"
 import { chaindataProvider } from "@core/rpcs/chaindata"
 import { awaitKeyringLoaded } from "@core/util/awaitKeyringLoaded"
 import keyring from "@polkadot/ui-keyring"
-import { BalanceJson, Balances, db as balancesDb } from "@talismn/balances"
+import { Address, BalanceJson, Balances, db as balancesDb } from "@talismn/balances"
 import { TokenRatesList } from "@talismn/token-rates"
 import { liveQuery } from "dexie"
 import { combineLatest, debounceTime } from "rxjs"
 
 import { settingsStore } from "../app/store.settings"
+import { BalanceTotal } from "./types"
+
+export const balanceTotalsStore = new StorageProvider<Record<Address, BalanceTotal>>(
+  "balanceTotals"
+)
 
 const MAX_UPDATE_INTERVAL = 2_000 // update every 2 seconds maximum
 
@@ -25,8 +31,6 @@ export const trackBalanceTotals = async () => {
     .pipe(debounceTime(MAX_UPDATE_INTERVAL))
     .subscribe(async ([settings, accounts, tokens, balances, allTokenRates]) => {
       try {
-        const { selectedCurrency: currency } = settings
-
         const tokenRates: TokenRatesList = Object.fromEntries(
           allTokenRates.map(({ tokenId, rates }) => [tokenId, rates])
         )
@@ -38,20 +42,21 @@ export const trackBalanceTotals = async () => {
           return acc
         }, {} as Record<string, BalanceJson[]>)
 
-        const totals = Object.keys(accounts).map((address) => {
-          const balances = new Balances(balancesByAddress[address] ?? [], {
-            tokens,
-            tokenRates,
-          })
-          const sum = balances.sum.fiat(currency).total
+        const totals = Object.fromEntries(
+          Object.keys(accounts).flatMap((address) =>
+            settings.selectableCurrencies.map((currency) => {
+              const balances = new Balances(balancesByAddress[address] ?? [], {
+                tokens,
+                tokenRates,
+              })
+              const total = balances.sum.fiat(currency).total
 
-          return { address, sum, currency }
-        })
+              return [`${address}::${currency}`, { address, total, currency }]
+            })
+          )
+        )
 
-        extensionDb.transaction("rw", extensionDb.balanceTotals, async () => {
-          await extensionDb.balanceTotals.clear()
-          await extensionDb.balanceTotals.bulkAdd(totals)
-        })
+        await balanceTotalsStore.replace(totals)
       } catch (err) {
         log.error("trackBalanceTotals", { err })
       }

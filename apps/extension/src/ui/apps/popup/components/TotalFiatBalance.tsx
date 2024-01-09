@@ -6,9 +6,9 @@ import currencyConfig from "@ui/domains/Asset/currencyConfig"
 import { Fiat } from "@ui/domains/Asset/Fiat"
 import { useCopyAddressModal } from "@ui/domains/CopyAddress"
 import { useAnalytics } from "@ui/hooks/useAnalytics"
-import useBalances from "@ui/hooks/useBalances"
 import { useSelectedCurrency, useToggleCurrency } from "@ui/hooks/useCurrency"
 import { useIsFeatureEnabled } from "@ui/hooks/useFeatures"
+import { usePortfolioAccounts } from "@ui/hooks/usePortfolioAccounts"
 import { useSetting } from "@ui/hooks/useSettings"
 import { ComponentProps, MouseEventHandler, useCallback, useMemo } from "react"
 import { useTranslation } from "react-i18next"
@@ -21,7 +21,7 @@ type Props = {
 
 export const TotalFiatBalance = ({ className, mouseOver }: Props) => {
   const { t } = useTranslation()
-  const balances = useBalances("portfolio")
+  const { balanceTotals, accounts } = usePortfolioAccounts()
   const currency = useSelectedCurrency()
   const toggleCurrency = useToggleCurrency()
 
@@ -36,6 +36,15 @@ export const TotalFiatBalance = ({ className, mouseOver }: Props) => {
     },
     [genericEvent, setHideBalances]
   )
+
+  const portfolioTotal = useMemo(() => {
+    const portfolioAddresses = accounts
+      .filter((acc) => acc.isPortfolio !== false)
+      .map((acc) => acc.address)
+    return balanceTotals
+      .filter((t) => portfolioAddresses.includes(t.address) && t.currency === currency)
+      .reduce((acc, t) => acc + t.total, 0)
+  }, [balanceTotals, accounts, currency])
 
   return (
     <div className={classNames("flex flex-col items-start justify-center gap-4", className)}>
@@ -63,7 +72,7 @@ export const TotalFiatBalance = ({ className, mouseOver }: Props) => {
         </button>
         <Fiat
           className="font-surtExpanded text-lg"
-          amount={balances.sum.fiat(currency).total}
+          amount={portfolioTotal}
           isBalance
           currencyDisplay="code"
         />

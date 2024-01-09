@@ -1,4 +1,3 @@
-import { appStore } from "@core/domains/app/store.app"
 import { useIsBrave } from "@talisman/hooks/useIsBrave"
 import { useOpenClose } from "@talisman/hooks/useOpenClose"
 import { BraveIcon } from "@talismn/icons"
@@ -13,14 +12,14 @@ import { DashboardNotification } from "./DashboardNotification"
 export const BraveWarningNotification = () => {
   const { t } = useTranslation()
   const isBrave = useIsBrave()
-  const [hideBraveWarning] = useAppState("hideBraveWarning")
+  const [hideBraveWarning, setHideBraveWarning] = useAppState("hideBraveWarning")
   const { isOpen, close, open } = useOpenClose()
 
   const showWarning = useMemo(() => isBrave && !hideBraveWarning, [hideBraveWarning, isBrave])
 
   const handleHide = useCallback(() => {
-    appStore.set({ hideBraveWarning: true })
-  }, [])
+    setHideBraveWarning(true)
+  }, [setHideBraveWarning])
 
   if (!showWarning) return null
 

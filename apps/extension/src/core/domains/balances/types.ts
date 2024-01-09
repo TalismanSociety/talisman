@@ -48,7 +48,7 @@ export type ResponseNomPoolStake = Record<Address, NomPoolStakedBalance | null>
 
 export type BalanceTotal = {
   address: Address
-  sum: number
+  total: number
   currency: TokenRateCurrency
 }
 

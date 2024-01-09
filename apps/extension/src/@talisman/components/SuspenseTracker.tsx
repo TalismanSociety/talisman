@@ -15,5 +15,7 @@ export const SuspenseTracker: FC<{ name: string }> = ({ name }) => {
     }
   }, [name])
 
+  console.log("[Suspense] " + name)
+
   return null
 }

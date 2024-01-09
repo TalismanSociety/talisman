@@ -171,13 +171,13 @@ const NoTokens = ({ symbol }: { symbol: string }) => {
 }
 
 export const PopupAssetDetails = ({ balances, symbol }: AssetsTableProps) => {
-  const { balancesByChain: rows, isLoading } = useAssetDetails(balances)
+  const { balancesByChain: rows } = useAssetDetails(balances)
   const hasBalance = useMemo(
     () => rows.some(([, balances]) => balances.each.some((b) => b.total.planck > 0n)),
     [rows]
   )
 
-  if (!hasBalance && isLoading) return null
+  //if (!hasBalance && isLoading) return null
   if (!hasBalance) return <NoTokens symbol={symbol} />
 
   return (

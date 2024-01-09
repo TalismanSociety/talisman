@@ -5,7 +5,7 @@ import { useMemo } from "react"
 import { usePortfolio } from "../context"
 
 export const useAssetDetails = (balances: Balances) => {
-  const { hydrate, isLoading } = usePortfolio()
+  const { hydrate } = usePortfolio()
 
   const chainIds = useMemo<Array<ChainId | EvmNetworkId>>(
     () => [...new Set(balances.each.flatMap((b) => b.chainId ?? b.evmNetworkId ?? []))],
@@ -45,5 +45,5 @@ export const useAssetDetails = (balances: Balances) => {
     [balances, chainIds, hydrate]
   )
 
-  return { balancesByChain, isLoading }
+  return { balancesByChain }
 }

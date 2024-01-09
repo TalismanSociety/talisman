@@ -1,26 +1,33 @@
 import { AccountJsonAny } from "@core/domains/accounts/types"
-import useAccounts from "@ui/hooks/useAccounts"
-import { useSearchParamsSelectedAccount } from "@ui/hooks/useSearchParamsSelectedAccount"
+import { accountsQuery, settingQuery } from "@ui/atoms"
+import { searchParamsSelectedAccount } from "@ui/hooks/useSearchParamsSelectedAccount"
 import { useSetting } from "@ui/hooks/useSettings"
-import { useCallback, useMemo } from "react"
+import { useCallback } from "react"
+import { selector, useRecoilValue } from "recoil"
 
 const isPopup = window.location.pathname === "/popup.html"
 
+export const selectedAccountState = selector<{
+  account: AccountJsonAny | undefined
+  accounts: AccountJsonAny[]
+}>({
+  key: "selectedAccountState",
+  get: ({ get }) => {
+    const popupAccount = get(searchParamsSelectedAccount)
+    const selectedAccountAddress = get(settingQuery("selectedAccount"))
+    const accounts = get(accountsQuery("all"))
+
+    const account = isPopup
+      ? popupAccount
+      : accounts.find((account) => account.address === selectedAccountAddress)
+
+    return { account, accounts }
+  },
+})
+
 export const useSelectedAccount = () => {
-  //if isPopup = true, then use account from search parameters.
-  const { account: popupAccount } = useSearchParamsSelectedAccount()
-  //if isPopup = false, then use address persisted in settings
-  const [selectedAccountAddress, setSelectedAccountAddress] = useSetting("selectedAccount")
-
-  const accounts = useAccounts()
-
-  const account = useMemo(
-    () =>
-      isPopup
-        ? popupAccount
-        : accounts.find((account) => account.address === selectedAccountAddress),
-    [accounts, popupAccount, selectedAccountAddress]
-  )
+  const { account, accounts } = useRecoilValue(selectedAccountState)
+  const [, setSelectedAccountAddress] = useSetting("selectedAccount")
 
   const select = useCallback(
     (accountOrAddress: AccountJsonAny | string | undefined) => {
@@ -32,7 +39,7 @@ export const useSelectedAccount = () => {
       if (address === undefined || accounts.some((acc) => acc.address === address))
         setSelectedAccountAddress(address)
     },
-    [accounts, setSelectedAccountAddress]
+    [setSelectedAccountAddress, accounts]
   )
 
   return { select, accounts, account }
