@@ -130,6 +130,7 @@ export class ChainsHandler extends ExtensionHandler {
         themeColor: existingChain?.themeColor ?? "#505050",
         logo: chain.chainLogoUrl ?? null,
         chainName: existingChain?.chainName ?? "", // TODO: query this
+        chainType: existingChain?.chainType ?? "", // TODO: query this
         implName: existingChain?.implName ?? "", // TODO: query this
         specName: existingChain?.specName ?? "", // TODO: query this
         specVersion: existingChain?.specVersion ?? "", // TODO: query this

@@ -2761,6 +2761,19 @@ export const tokens = [
     },
   },
   {
+    id: "ewx-substrate-native-ewt",
+    type: "substrate-native",
+    isTestnet: false,
+    isDefault: true,
+    symbol: "EWT",
+    decimals: 18,
+    logo: "https://raw.githubusercontent.com/TalismanSociety/chaindata/main/assets/tokens/unknown.svg",
+    existentialDeposit: "0",
+    chain: {
+      id: "ewx",
+    },
+  },
+  {
     id: "fragnova-substrate-native-nova",
     type: "substrate-native",
     isTestnet: false,
