@@ -81,7 +81,7 @@ export const SubNetworkForm = ({
           <SubNetworkRpcsListField />
           <div className="grid grid-cols-12 gap-12">
             <FormFieldContainer
-              className="col-span-7"
+              className="col-span-12 md:col-span-7"
               label={t("Network Name")}
               error={errors.name?.message}
             >
@@ -100,7 +100,7 @@ export const SubNetworkForm = ({
               />
             </FormFieldContainer>
             <FormFieldContainer
-              className="col-span-5"
+              className="col-span-12 md:col-span-5"
               label={t("Account Format")}
               error={errors.accountFormat?.message}
             >
@@ -110,7 +110,7 @@ export const SubNetworkForm = ({
               />
             </FormFieldContainer>
           </div>
-          <div className="grid grid-cols-3 gap-12">
+          <div className="grid grid-cols-1 gap-12 md:grid-cols-3">
             <FormFieldContainer
               label={t("Native Token Coingecko ID")}
               error={errors.nativeTokenCoingeckoId?.message}
