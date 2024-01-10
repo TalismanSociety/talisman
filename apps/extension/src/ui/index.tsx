@@ -25,22 +25,22 @@ export const renderTalisman = (app: ReactNode) => {
   if (!container) throw new Error("#root element not found.")
   const root = createRoot(container)
   root.render(
-    // <React.StrictMode>
-    <ErrorBoundary>
-      <ErrorBoundaryDatabaseMigration>
-        <RecoilRoot>
-          <Suspense fallback={<SuspenseTracker name="RecoilRoot" />}>
-            <QueryClientProvider client={queryClient}>
-              <HashRouter>
-                {app}
-                <LocationSync />
-              </HashRouter>
-              <NotificationsContainer />
-            </QueryClientProvider>
-          </Suspense>
-        </RecoilRoot>
-      </ErrorBoundaryDatabaseMigration>
-    </ErrorBoundary>
-    // </React.StrictMode>
+    <React.StrictMode>
+      <ErrorBoundary>
+        <ErrorBoundaryDatabaseMigration>
+          <RecoilRoot>
+            <Suspense fallback={<SuspenseTracker name="RecoilRoot" />}>
+              <QueryClientProvider client={queryClient}>
+                <HashRouter>
+                  {app}
+                  <LocationSync />
+                </HashRouter>
+                <NotificationsContainer />
+              </QueryClientProvider>
+            </Suspense>
+          </RecoilRoot>
+        </ErrorBoundaryDatabaseMigration>
+      </ErrorBoundary>
+    </React.StrictMode>
   )
 }
