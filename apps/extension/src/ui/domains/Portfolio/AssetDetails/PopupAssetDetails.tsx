@@ -177,7 +177,6 @@ export const PopupAssetDetails = ({ balances, symbol }: AssetsTableProps) => {
     [rows]
   )
 
-  //if (!hasBalance && isLoading) return null
   if (!hasBalance) return <NoTokens symbol={symbol} />
 
   return (

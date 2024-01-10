@@ -41,22 +41,6 @@ const baseAccountsState = atom<{
   ],
 })
 
-// export const accountsState = atom<AccountJsonAny[]>({
-//   key: "accountsState",
-//   effects: [
-//     ({ setSelf }) => {
-//       console.log("accountsState.init")
-//       const stop = log.timer("accountsState")
-//       const unsubscribe = api.accountsSubscribe((v) => {
-//         console.log("accountsState.update")
-//         stop()
-//         setSelf(v)
-//       })
-//       return () => unsubscribe()
-//     },
-//   ],
-// })
-
 export const accountsState = selector({
   key: "accountsState",
   get: ({ get }) => {
@@ -65,25 +49,6 @@ export const accountsState = selector({
   },
 })
 
-/**
- * Accounts Catalog
- */
-// export const accountsCatalogState = atom<Trees>({
-//   key: "accountsCatalogState",
-//   effects: [
-//     ({ setSelf }) => {
-//       console.log("accountsCatalogState.init")
-//       const stop = log.timer("accountsCatalogState")
-//       const unsubscribe = api.accountsCatalogSubscribe((v) => {
-//         console.log("accountsCatalogState.update")
-//         stop()
-//         setSelf(v)
-//       })
-//       return () => unsubscribe()
-//     },
-//   ],
-// })
-
 export const accountsCatalogState = selector({
   key: "accountsCatalogState",
   get: ({ get }) => {
@@ -91,22 +56,6 @@ export const accountsCatalogState = selector({
     return catalog
   },
 })
-
-// export const balanceTotalsState = atom<BalanceTotal[]>({
-//   key: "balanceTotalsState",
-//   effects: [
-//     ({ setSelf }) => {
-//       console.log("balanceTotalsState.init")
-//       const stop = log.timer("balanceTotalsState")
-//       const sub = balanceTotalsStore.observable.subscribe((balanceTotals) => {
-//         console.log("balanceTotalsState.update")
-//         stop()
-//         setSelf(Object.values(balanceTotals))
-//       })
-//       return () => sub.unsubscribe()
-//     },
-//   ],
-// })
 
 export const balanceTotalsState = selector({
   key: "balanceTotalsState",

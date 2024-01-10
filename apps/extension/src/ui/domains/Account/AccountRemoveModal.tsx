@@ -45,10 +45,6 @@ export const useAccountRemoveModal = () => {
   }
 }
 
-// export const [AccountRemoveModalProvider, useAccountRemoveModal] = provideContext(
-//   useAccountRemoveModalProvider
-// )
-
 export const AccountRemoveModal = () => {
   const { t } = useTranslation()
   const { account, close, isOpen } = useAccountRemoveModal()

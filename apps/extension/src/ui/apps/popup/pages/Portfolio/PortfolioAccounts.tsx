@@ -108,6 +108,7 @@ const AccountButton = ({ option }: { option: AccountOption }) => {
   )
 
   const isAccount = option.type === "account"
+  // TODO reimplement
   const formattedAddress = isAccount ? option.address : undefined
   // const formattedAddress =  useFormattedAddress(
   //   isAccount ? option.address : undefined,
@@ -146,9 +147,7 @@ const AccountButton = ({ option }: { option: AccountOption }) => {
           )}
         </div>
         <div className="text-body-secondary flex w-full truncate text-left text-sm leading-none">
-          {/* <Suspense fallback={<SuspenseTracker name="Fiat" />}> */}
           <Fiat amount={option.total} isBalance />
-          {/* </Suspense> */}
         </div>
       </div>
       {isAccount && (

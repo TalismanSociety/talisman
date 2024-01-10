@@ -1,8 +1,4 @@
 import { db } from "@core/db"
-// import { Trees } from "@core/domains/accounts/helpers.catalog"
-// import { AccountJsonAny } from "@core/domains/accounts/types"
-// import { AppStoreData, appStore } from "@core/domains/app/store.app"
-// import { SettingsStoreData, settingsStore } from "@core/domains/app/store.settings"
 import { ActiveChains, activeChainsStore } from "@core/domains/chains/store.activeChains"
 import {
   ActiveEvmNetworks,
@@ -28,8 +24,6 @@ const NO_OP = () => {}
 
 // load these entities in parallel in this atom to prevent suspense to load them sequentially
 export const mainState = atom<{
-  // accounts: AccountJsonAny[]
-  // accountsCatalog: Trees
   evmNetworks: (EvmNetwork | CustomEvmNetwork)[]
   chains: (Chain | CustomChain)[]
   tokens: TokenList
@@ -45,16 +39,12 @@ export const mainState = atom<{
       const obsEvmNetworks = liveQuery(() => chaindataProvider.evmNetworksArray())
       const obsChains = liveQuery(() => chaindataProvider.chainsArray())
       const obsTokenRates = liveQuery(() => db.tokenRates.toArray())
-      // const obsAccountsCatalog = new Subject<Trees>()
-      // const obsAccounts = new Subject<AccountJsonAny[]>()
 
       // TODO remove
       // eslint-disable-next-line no-console
       console.log("mainState.get")
       const stop = log.timer("mainState")
       const obsChainData = combineLatest([
-        // obsAccounts,
-        // obsAccountsCatalog,
         obsTokens,
         obsEvmNetworks,
         obsChains,
@@ -64,8 +54,6 @@ export const mainState = atom<{
         activeChainsStore.observable,
       ]).subscribe(
         ([
-          // accounts,
-          // accountsCatalog,
           tokens,
           evmNetworks,
           chains,
@@ -76,8 +64,6 @@ export const mainState = atom<{
         ]) => {
           stop()
           setSelf({
-            // accounts,
-            // accountsCatalog,
             tokens,
             evmNetworks,
             chains,
@@ -89,13 +75,8 @@ export const mainState = atom<{
         }
       )
 
-      // const unsubAccountsCatalog = api.accountsCatalogSubscribe((v) => obsAccountsCatalog.next(v))
-      // const unsubAccounts = api.accountsSubscribe((v) => obsAccounts.next(v))
-
       return () => {
         obsChainData.unsubscribe()
-        // unsubAccounts()
-        // unsubAccountsCatalog()
       }
     },
     () => api.tokens(NO_OP),

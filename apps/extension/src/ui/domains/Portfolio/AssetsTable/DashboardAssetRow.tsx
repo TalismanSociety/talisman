@@ -99,7 +99,6 @@ export const AssetRow = ({ balances }: AssetRowProps) => {
         type="button"
         className={classNames(
           "text-body-secondary bg-grey-850 hover:bg-grey-800  grid w-full grid-cols-[40%_30%_30%] text-left text-base"
-          //showBanner ? "rounded-b" : "rounded"
         )}
         onClick={handleClick}
       >

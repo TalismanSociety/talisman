@@ -27,7 +27,6 @@ const accountExportModalOpenState = atom<boolean>({
 
 export const useAccountExportModal = () => {
   const [_account, setAccount] = useRecoilState(accountExportAccountState)
-  //  const [_account, setAccount] = useState<AccountJsonAny>()
 
   const { account: selectedAccount } = useSelectedAccount()
   const { isOpen, open: innerOpen, close } = useOpenCloseAtom(accountExportModalOpenState)
@@ -62,10 +61,6 @@ export const useAccountExportModal = () => {
 
   return { account, canExportAccountFunc, canExportAccount, exportAccount, isOpen, open, close }
 }
-
-// export const [AccountExportModalProvider, useAccountExportModal] = provideContext(
-//   useAccountExportModalProvider
-// )
 
 type FormData = {
   newPw: string

@@ -25,7 +25,6 @@ const NO_OP = () => {}
 
 const rawBalancesState = atom<BalanceJson[]>({
   key: "rawBalancesState",
-  //default: [],
   effects: [
     // sync from db
     ({ setSelf }) => {

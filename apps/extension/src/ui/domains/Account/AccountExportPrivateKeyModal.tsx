@@ -60,9 +60,6 @@ export const useAccountExportPrivateKeyModal = () => {
   return { account, canExportAccountFunc, canExportAccount, exportAccount, isOpen, open, close }
 }
 
-// export const [AccountExportPrivateKeyModalProvider, useAccountExportPrivateKeyModal] =
-//   provideContext(useAccountExportPrivateKeyModalProvider)
-
 const ExportPrivateKeyResult = ({ onClose }: { onClose?: () => void }) => {
   const { t } = useTranslation()
   const { account, exportAccount } = useAccountExportPrivateKeyModal()
