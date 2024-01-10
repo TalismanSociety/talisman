@@ -1,13 +1,14 @@
 import { DiamondIcon, XIcon } from "@talismn/icons"
 import { api } from "@ui/api"
-import { useAppState } from "@ui/hooks/useAppState"
-import { useCallback } from "react"
+import { Suspense, useCallback } from "react"
 import { useTranslation } from "react-i18next"
 import { IconButton } from "talisman-ui"
 
-export const AssetDiscoveryPopupAlert = () => {
-  const [showAssetDiscoveryAlert, setShowAssetDiscoveryAlert] =
-    useAppState("showAssetDiscoveryAlert")
+import { useAssetDiscoveryAlert } from "./useAssetDiscoveryAlert"
+
+const AssetDiscoveryPopupAlertInner = () => {
+  const { showAlert, dismissAlert, isInProgress, percent, hasDetectedNewTokens } =
+    useAssetDiscoveryAlert()
   const { t } = useTranslation()
 
   const handleGoToClick = useCallback(async () => {
@@ -15,24 +16,34 @@ export const AssetDiscoveryPopupAlert = () => {
     window.close()
   }, [])
 
-  const handleCloseClick = useCallback(() => {
-    setShowAssetDiscoveryAlert(false)
-  }, [setShowAssetDiscoveryAlert])
-
-  if (!showAssetDiscoveryAlert) return null
+  if (!showAlert) return null
 
   return (
     <div className="bg-grey-800 flex h-16 w-full shrink-0 items-center gap-4 px-12 text-base">
       <DiamondIcon className="text-primary" />
       <div className="grow text-xs">
-        <span>{t("New tokens detected.")}</span>
-        <button type="button" className="ml-2 inline underline" onClick={handleGoToClick}>
-          {t("Review")}
+        <span>{hasDetectedNewTokens ? t("New tokens detected.") : t("Scanning for tokens.")}</span>
+        <button
+          type="button"
+          className="ml-4 inline tabular-nums underline"
+          onClick={handleGoToClick}
+        >
+          {isInProgress
+            ? t(`Progress {{percent}}%`, { percent })
+            : hasDetectedNewTokens
+            ? t("Review")
+            : null}
         </button>
       </div>
-      <IconButton className="p-4" onClick={handleCloseClick}>
+      <IconButton className="p-4" onClick={dismissAlert}>
         <XIcon className="text-base" />
       </IconButton>
     </div>
   )
 }
+
+export const AssetDiscoveryPopupAlert = () => (
+  <Suspense>
+    <AssetDiscoveryPopupAlertInner />
+  </Suspense>
+)
