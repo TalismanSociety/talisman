@@ -58,7 +58,11 @@ export const AccountIcon: FC<AccountIconProps> = ({ address, className, genesisH
       ) : (
         <TalismanOrb seed={address} />
       )}
-      {genesisHash && <ChainBadge genesisHash={genesisHash} />}
+      {genesisHash && (
+        <Suspense>
+          <ChainBadge genesisHash={genesisHash} />
+        </Suspense>
+      )}
     </div>
   )
 }
