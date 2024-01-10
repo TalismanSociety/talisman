@@ -1,17 +1,22 @@
 import { Err, Ok, Result } from "ts-results"
 
+export enum Errors {
+  InvalidURL = "Invalid URL",
+  UnsupportedProtocol = "URL protocol unsupported",
+}
+
 export const urlToDomain = (
   urlStr: string
-): Result<string, "URL protocol unsupported" | "Invalid URL"> => {
+): Result<string, Errors.UnsupportedProtocol | Errors.InvalidURL> => {
   let url: URL
   try {
     url = new URL(urlStr)
   } catch (error) {
-    return Err("Invalid URL")
+    return Err(Errors.InvalidURL)
   }
 
   if (!["http:", "https:", "ipfs:", "ipns:"].includes(url.protocol))
-    return Err("URL protocol unsupported")
+    return Err(Errors.UnsupportedProtocol)
 
   return Ok(url.host)
 }
