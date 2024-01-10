@@ -24,5 +24,3 @@ export const useCurrentSite = () => {
 
   return { id, url, title, favIconUrl, isLoading }
 }
-
-// export const [CurrentSiteProvider, useCurrentSite] = provideContext(useCurrentSiteProviderValue)

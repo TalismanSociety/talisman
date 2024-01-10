@@ -7,6 +7,7 @@ import { AnalyticsPage, sendAnalyticsEvent } from "@ui/api/analytics"
 import { useSelectedAccount } from "@ui/domains/Portfolio/SelectedAccountContext"
 import { PendingTransactionsDrawer } from "@ui/domains/Transactions/PendingTransactionsDrawer"
 import useMnemonicBackup from "@ui/hooks/useMnemonicBackup"
+import { usePopupNavOpenClose } from "@ui/hooks/usePopupNavOpenClose"
 import { useSearchParamsSelectedFolder } from "@ui/hooks/useSearchParamsSelectedFolder"
 import { useLiveQuery } from "dexie-react-hooks"
 import { ButtonHTMLAttributes, DetailedHTMLProps, forwardRef, useCallback } from "react"
@@ -14,7 +15,6 @@ import { Trans, useTranslation } from "react-i18next"
 import { useLocation, useNavigate } from "react-router-dom"
 import { Tooltip, TooltipContent, TooltipTrigger, useOpenClose } from "talisman-ui"
 
-import { useNavigationContext } from "../../context/NavigationContext"
 import { NavIconActivityPending, NavIconExpand, NavIconMore, NavIconMoreAlert } from "./icons"
 
 type BottomNavButtonProps = DetailedHTMLProps<
@@ -94,7 +94,7 @@ export const BottomNav = () => {
   const location = useLocation()
   const { folder } = useSearchParamsSelectedFolder()
   const { account } = useSelectedAccount()
-  const { open } = useNavigationContext()
+  const { open } = usePopupNavOpenClose()
 
   const handleHomeClick = useCallback(() => {
     sendAnalyticsEvent({

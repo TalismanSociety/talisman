@@ -126,6 +126,9 @@ export default class Extension extends ExtensionHandler {
     this.initDb()
     this.initWalletFunding()
     this.cleanup()
+
+    // keeps balance totals table up to date
+    trackBalanceTotals()
   }
 
   private setConfigUpdateTimeout() {
@@ -185,9 +188,6 @@ export default class Extension extends ExtensionHandler {
 
     // marks all pending transaction as status unknown
     updateTransactionsRestart()
-
-    // keeps balance totals table up to date
-    trackBalanceTotals()
   }
 
   private initWalletFunding() {

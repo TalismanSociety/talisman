@@ -1,7 +1,7 @@
 import { ChevronDownIcon } from "@talismn/icons"
 import { classNames } from "@talismn/util"
-import { useCurrentSite } from "@ui/apps/popup/context/CurrentSiteContext"
 import { useAuthorisedSites } from "@ui/hooks/useAuthorisedSites"
+import { useCurrentSite } from "@ui/hooks/useCurrentSite"
 import { useEvmNetwork } from "@ui/hooks/useEvmNetwork"
 import { useMemo } from "react"
 import { Tooltip, TooltipContent, TooltipTrigger, useOpenClose } from "talisman-ui"

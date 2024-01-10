@@ -6,11 +6,11 @@ import BraveWarningPopupBanner from "@ui/domains/Settings/BraveWarning/BraveWarn
 import MigratePasswordAlert from "@ui/domains/Settings/MigratePasswordAlert"
 import { ConnectedAccountsPill } from "@ui/domains/Site/ConnectedAccountsPill"
 import { useAuthorisedSites } from "@ui/hooks/useAuthorisedSites"
+import { useCurrentSite } from "@ui/hooks/useCurrentSite"
 import { useHasAccounts } from "@ui/hooks/useHasAccounts"
 import { Suspense, useMemo } from "react"
 import { Route, Routes, useLocation } from "react-router-dom"
 
-import { useCurrentSite } from "../../context/CurrentSiteContext"
 import { PopupContent, PopupHeader, PopupLayout } from "../../Layout/PopupLayout"
 import { NoAccounts } from "../NoAccounts"
 import { PortfolioAccounts } from "./PortfolioAccounts"

@@ -1,9 +1,9 @@
 import { AccountJsonAny } from "@core/domains/accounts/types"
 import { AuthorizedSite } from "@core/domains/sitesAuthorised/types"
 import { api } from "@ui/api"
-import { useCurrentSite } from "@ui/apps/popup/context/CurrentSiteContext"
 import { useAccountsForSite } from "@ui/hooks/useAccountsForSite"
 import { useAuthorisedSites } from "@ui/hooks/useAuthorisedSites"
+import { useCurrentSite } from "@ui/hooks/useCurrentSite"
 import { FC, Fragment, useCallback, useMemo } from "react"
 import { useTranslation } from "react-i18next"
 
