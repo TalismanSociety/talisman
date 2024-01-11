@@ -1,7 +1,7 @@
 import { api } from "@ui/api"
 import { atom, selector } from "recoil"
 
-import { appStateQuery } from "./base"
+import { appStateQuery } from "./settingsAndApp"
 
 const isLoggedInState = atom<boolean>({
   key: "isLoggedInState",

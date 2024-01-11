@@ -3,7 +3,7 @@ import { BalanceFormatter } from "@talismn/balances"
 import { classNames } from "@talismn/util"
 import { useSelectedCurrency } from "@ui/hooks/useCurrency"
 import { useRevealableBalance } from "@ui/hooks/useRevealableBalance"
-import { useCallback, useMemo } from "react"
+import React, { useCallback, useMemo } from "react"
 import CountUp from "react-countup"
 
 type FiatProps = {
@@ -60,42 +60,40 @@ export const Fiat = ({
   )
 }
 
-const DisplayValue = ({
-  amount,
-  currency,
-  currencyDisplay,
-  isBalance,
-  noCountUp,
-}: DisplayValueProps) => {
-  const decimalPlacesCount = getDecimalPlacesCount(amount)
-  const decimalPlaces =
-    amount !== 0 && !isBalance && decimalPlacesCount > 1 ? decimalPlacesCount + 1 : 2
+// Memoize to smooth up the count up animation
+const DisplayValue = React.memo(
+  ({ amount, currency, currencyDisplay, isBalance, noCountUp }: DisplayValueProps) => {
+    const decimalPlacesCount = getDecimalPlacesCount(amount)
+    const decimalPlaces =
+      amount !== 0 && !isBalance && decimalPlacesCount > 1 ? decimalPlacesCount + 1 : 2
 
-  const format = useCallback(
-    (amount = 0) => {
-      if (amount !== 0 && isBalance && amount < 0.01)
-        return `< ${formatFiat(0.01, currency, currencyDisplay, 2)}`
+    const format = useCallback(
+      (amount = 0) => {
+        if (amount !== 0 && isBalance && amount < 0.01)
+          return `< ${formatFiat(0.01, currency, currencyDisplay, 2)}`
 
-      return formatFiat(amount, currency, currencyDisplay, decimalPlaces)
-    },
-    [currency, currencyDisplay, decimalPlaces, isBalance]
-  )
-  const formatted = useMemo(() => format(amount), [format, amount])
+        return formatFiat(amount, currency, currencyDisplay, decimalPlaces)
+      },
+      [currency, currencyDisplay, decimalPlaces, isBalance]
+    )
+    const formatted = useMemo(() => format(amount), [format, amount])
 
-  if (noCountUp) return <>{formatted}</>
-  return (
-    <CountUp
-      end={amount}
-      decimals={decimalPlaces}
-      decimal={fiatDecimalSeparator}
-      separator={fiatGroupSeparator}
-      duration={0.4}
-      formattingFn={format}
-      useEasing
-      preserveValue
-    />
-  )
-}
+    if (noCountUp) return <>{formatted}</>
+    return (
+      <CountUp
+        end={amount}
+        decimals={decimalPlaces}
+        decimal={fiatDecimalSeparator}
+        separator={fiatGroupSeparator}
+        duration={0.4}
+        formattingFn={format}
+        useEasing
+        preserveValue
+      />
+    )
+  }
+)
+DisplayValue.displayName = "DisplayValue"
 
 /**
  * Gets the decimalPlacesCount for a number.

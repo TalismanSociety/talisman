@@ -17,6 +17,7 @@ import { useCopyAddressModal } from "@ui/domains/CopyAddress"
 import { useAnalytics } from "@ui/hooks/useAnalytics"
 import useBalances from "@ui/hooks/useBalances"
 import { useAccountColors } from "@ui/hooks/useFirstAccountColors"
+import { useFormattedAddress } from "@ui/hooks/useFormattedAddress"
 import { usePortfolioAccounts } from "@ui/hooks/usePortfolioAccounts"
 import { useSearchParamsSelectedFolder } from "@ui/hooks/useSearchParamsSelectedFolder"
 import {
@@ -64,6 +65,16 @@ type AccountAccountOption = {
 
 type AccountOption = FolderAccountOption | AccountAccountOption
 
+const FormattedAddress: FC<{
+  address: string
+  genesisHash?: string | null
+  className?: string
+}> = ({ address, genesisHash, className }) => {
+  const formattedAddress = useFormattedAddress(address, genesisHash)
+
+  return <Address className={className} address={formattedAddress} />
+}
+
 const AccountButton = ({ option }: { option: AccountOption }) => {
   const { open } = useCopyAddressModal()
   const navigate = useNavigate()
@@ -108,12 +119,6 @@ const AccountButton = ({ option }: { option: AccountOption }) => {
   )
 
   const isAccount = option.type === "account"
-  // TODO reimplement
-  const formattedAddress = isAccount ? option.address : undefined
-  // const formattedAddress =  useFormattedAddress(
-  //   isAccount ? option.address : undefined,
-  //   isAccount ? option.genesisHash : undefined
-  // )
 
   return (
     <button
@@ -151,7 +156,13 @@ const AccountButton = ({ option }: { option: AccountOption }) => {
         </div>
       </div>
       {isAccount && (
-        <Address className="show-on-hover text-body-secondary text-xs" address={formattedAddress} />
+        <Suspense>
+          <FormattedAddress
+            address={option.address}
+            genesisHash={option.genesisHash}
+            className="show-on-hover text-body-secondary text-xs"
+          />
+        </Suspense>
       )}
       {isAccount && (
         <div className="hide-on-hover text-lg">
@@ -309,18 +320,10 @@ const BalancesLoader = () => {
 }
 
 export const PortfolioAccounts = () => {
-  const { accounts, catalog, currency, balanceTotals } = usePortfolioAccounts()
+  const { accounts, catalog, balanceTotalPerAccount } = usePortfolioAccounts()
   const { folder, treeName: folderTreeName } = useSearchParamsSelectedFolder()
   const { popupOpenEvent } = useAnalytics()
   const { t } = useTranslation()
-
-  const balanceByAddress = useMemo(() => {
-    const totals = balanceTotals ?? []
-    const sumPerAddress = Object.fromEntries(
-      totals.filter((t) => t.currency === currency).map((t) => [t.address, t.total])
-    )
-    return Object.fromEntries(accounts.map((a) => [a.address, sumPerAddress[a.address] ?? 0]))
-  }, [accounts, balanceTotals, currency])
 
   const [portfolioOptions, watchedOptions] = useMemo((): [AccountOption[], AccountOption[]] => {
     const [portfolioTree, watchedTree] = (() => {
@@ -342,7 +345,7 @@ export const PortfolioAccounts = () => {
               type: "account",
               name: account?.name ?? t("Unknown Account"),
               address: item.address,
-              total: balanceByAddress?.[item.address] ?? 0,
+              total: balanceTotalPerAccount?.[item.address] ?? 0,
               genesisHash: account?.genesisHash,
               origin: account?.origin,
               isPortfolio: !!account?.isPortfolio,
@@ -353,7 +356,7 @@ export const PortfolioAccounts = () => {
               id: item.id,
               name: item.name,
               total: item.tree.reduce(
-                (sum, account) => sum + (balanceByAddress[account.address] ?? 0),
+                (sum, account) => sum + (balanceTotalPerAccount[account.address] ?? 0),
                 0
               ),
               addresses: item.tree.map((account) => account.address),
@@ -364,14 +367,25 @@ export const PortfolioAccounts = () => {
       portfolioTree.map(treeItemToOption("portfolio")),
       watchedTree.map(treeItemToOption("watched")),
     ]
-  }, [folder, folderTreeName, catalog.portfolio, catalog.watched, accounts, t, balanceByAddress])
+  }, [
+    folder,
+    folderTreeName,
+    catalog.portfolio,
+    catalog.watched,
+    accounts,
+    t,
+    balanceTotalPerAccount,
+  ])
 
   const folderTotal = useMemo(
     () =>
       folder
-        ? folder.tree.reduce((sum, account) => sum + (balanceByAddress[account.address] ?? 0), 0)
+        ? folder.tree.reduce(
+            (sum, account) => sum + (balanceTotalPerAccount[account.address] ?? 0),
+            0
+          )
         : undefined,
-    [balanceByAddress, folder]
+    [balanceTotalPerAccount, folder]
   )
 
   useEffect(() => {

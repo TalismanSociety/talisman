@@ -1,5 +1,5 @@
 export * from "./location"
-export * from "./base"
+export * from "./settingsAndApp"
 export * from "./main"
 export * from "./accounts"
 export * from "./chaindata"

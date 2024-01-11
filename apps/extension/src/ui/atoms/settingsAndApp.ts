@@ -5,14 +5,14 @@ import { GetRecoilValue, atom, selectorFamily } from "recoil"
 import { combineLatest } from "rxjs"
 
 // load these two in parallel for faster startup
-export const baseState = atom<{
+export const settingsAndAppState = atom<{
   settings: SettingsStoreData
   appState: AppStoreData
 }>({
-  key: "baseState",
+  key: "settingsAndAppState",
   effects: [
     ({ setSelf }) => {
-      const stop = log.timer("localStorageState")
+      const stop = log.timer("settingsAndAppState")
       combineLatest([settingsStore.observable, appStore.observable]).subscribe(
         ([settings, appState]) => {
           stop()
@@ -28,7 +28,7 @@ export const settingQuery = selectorFamily({
   get:
     <K extends keyof SettingsStoreData>(key: K) =>
     <V extends SettingsStoreData[K]>({ get }: { get: GetRecoilValue }): V => {
-      const { settings } = get(baseState)
+      const { settings } = get(settingsAndAppState)
       return settings[key] as V
     },
   set: (key) => (_, value) => {
@@ -42,7 +42,7 @@ export const appStateQuery = selectorFamily({
   get:
     <K extends keyof AppStoreData, V extends AppStoreData[K]>(key: K) =>
     ({ get }): V => {
-      const { appState } = get(baseState)
+      const { appState } = get(settingsAndAppState)
       return appState[key] as V
     },
   set: (key) => (_, value) => {

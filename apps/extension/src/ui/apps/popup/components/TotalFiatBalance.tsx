@@ -21,7 +21,7 @@ type Props = {
 
 export const TotalFiatBalance = ({ className, mouseOver }: Props) => {
   const { t } = useTranslation()
-  const { balanceTotals, accounts } = usePortfolioAccounts()
+  const { portfolioTotal } = usePortfolioAccounts()
   const currency = useSelectedCurrency()
   const toggleCurrency = useToggleCurrency()
 
@@ -36,15 +36,6 @@ export const TotalFiatBalance = ({ className, mouseOver }: Props) => {
     },
     [genericEvent, setHideBalances]
   )
-
-  const portfolioTotal = useMemo(() => {
-    const portfolioAddresses = accounts
-      .filter((acc) => acc.isPortfolio !== false)
-      .map((acc) => acc.address)
-    return balanceTotals
-      .filter((t) => portfolioAddresses.includes(t.address) && t.currency === currency)
-      .reduce((acc, t) => acc + t.total, 0)
-  }, [balanceTotals, accounts, currency])
 
   return (
     <div className={classNames("flex flex-col items-start justify-center gap-4", className)}>

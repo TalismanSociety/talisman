@@ -1,4 +1,5 @@
 import { BackButton } from "@talisman/components/BackButton"
+import { SuspenseTracker } from "@talisman/components/SuspenseTracker"
 import { classNames } from "@talismn/util"
 import { AnalyticsPage } from "@ui/api/analytics"
 import { AccountExportModal } from "@ui/domains/Account/AccountExportModal"
@@ -8,7 +9,7 @@ import { AccountRenameModal } from "@ui/domains/Account/AccountRenameModal"
 import { BuyTokensModal } from "@ui/domains/Asset/Buy/BuyTokensModal"
 import { CopyAddressModal } from "@ui/domains/CopyAddress"
 import { MigratePasswordModal } from "@ui/domains/Settings/MigratePassword/MigratePasswordModal"
-import { FC, useEffect, useRef } from "react"
+import { FC, Suspense, useEffect, useRef } from "react"
 import { useLocation } from "react-router-dom"
 
 import DashboardNotifications from "./DashboardNotifications"
@@ -53,26 +54,30 @@ export const DashboardLayout: FC<LayoutProps> = ({
           centered && "flex items-start justify-center"
         )}
       >
-        <div
-          className={classNames(
-            "relative w-full",
-            centered && (large ? "max-w-[120rem]" : "max-w-[66rem]")
-          )}
-        >
-          {!!withBack && <BackButton analytics={analytics} className="mb-[3rem]" to={backTo} />}
-          {children}
-        </div>
-        <DashboardNotifications />
+        <Suspense fallback={<SuspenseTracker name="DashboardLayout.main" />}>
+          <div
+            className={classNames(
+              "relative w-full",
+              centered && (large ? "max-w-[120rem]" : "max-w-[66rem]")
+            )}
+          >
+            {!!withBack && <BackButton analytics={analytics} className="mb-[3rem]" to={backTo} />}
+            {children}
+          </div>
+          <DashboardNotifications />
+        </Suspense>
       </section>
-      <BackupWarningModal />
-      <BuyTokensModal />
-      <AccountRenameModal />
-      <AccountExportModal />
-      <AccountExportPrivateKeyModal />
-      <AccountRemoveModal />
-      <CopyAddressModal />
-      <MigratePasswordModal />
-      <OnboardingToast />
+      <Suspense fallback={<SuspenseTracker name="Dashboard modals and notifications" />}>
+        <BackupWarningModal />
+        <BuyTokensModal />
+        <AccountRenameModal />
+        <AccountExportModal />
+        <AccountExportPrivateKeyModal />
+        <AccountRemoveModal />
+        <CopyAddressModal />
+        <MigratePasswordModal />
+        <OnboardingToast />
+      </Suspense>
     </main>
   )
 }
