@@ -1,3 +1,4 @@
+import { SignerPayloadGenesisHash } from "@core/domains/signing/types"
 import { WsProvider } from "@polkadot/api"
 import { sleep } from "@talismn/util"
 
@@ -5,7 +6,10 @@ import { sleep } from "@talismn/util"
 const rpcInfoCache = new Map<string, Promise<SubstrateRpcInfo | null>>()
 
 export const wsRegEx = /^wss?:\/\/.+$/
-type SubstrateRpcInfo = { genesisHash: string; token: { symbol: string; decimals: number } }
+type SubstrateRpcInfo = {
+  genesisHash: SignerPayloadGenesisHash
+  token: { symbol: string; decimals: number }
+}
 export const getSubstrateRpcInfo = (rpcUrl: string): Promise<SubstrateRpcInfo | null> => {
   // check if valid url
   if (!rpcUrl || !wsRegEx.test(rpcUrl)) return Promise.resolve(null)
@@ -24,7 +28,7 @@ export const getSubstrateRpcInfo = (rpcUrl: string): Promise<SubstrateRpcInfo | 
       await Promise.race([ws.isReady, isReadyTimeout])
 
       const [genesisHash, systemProperties] = await Promise.all([
-        ws.send<string>("chain_getBlockHash", [0]),
+        ws.send<SignerPayloadGenesisHash>("chain_getBlockHash", [0]),
         ws.send("system_properties", []),
       ])
       const { tokenSymbol, tokenDecimals } = systemProperties ?? {}

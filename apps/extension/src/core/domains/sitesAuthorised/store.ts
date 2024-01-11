@@ -1,6 +1,6 @@
 import { AuthorizedSite, AuthorizedSites, ProviderType } from "@core/domains/sitesAuthorised/types"
 import { SubscribableByIdStorageProvider } from "@core/libs/Store"
-import { isTalismanHostname } from "@core/page"
+import { isTalismanHostname } from "@core/util/isTalismanHostname"
 import { urlToDomain } from "@core/util/urlToDomain"
 import { assert } from "@polkadot/util"
 import { convertAddress } from "@talisman/util/convertAddress"

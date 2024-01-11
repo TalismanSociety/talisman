@@ -33,6 +33,8 @@ export type AppStoreData = {
   popupSizeDelta: [number, number]
   vaultVerifierCertificateMnemonicId?: string | null
   showAssetDiscoveryAlert?: boolean
+  dismissedAssetDiscoveryAlertScanId?: string
+  isAssetDiscoveryScanPending?: boolean
 }
 
 const ANALYTICS_VERSION = "1.5.0"
