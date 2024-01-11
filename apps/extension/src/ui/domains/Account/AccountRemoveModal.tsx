@@ -1,5 +1,5 @@
 import { AccountJsonAny, AccountType } from "@core/domains/accounts/types"
-import { useOpenCloseAtom } from "@talisman/hooks/useOpenClose"
+import { useRecoilOpenClose } from "@talisman/hooks/useOpenClose"
 import { api } from "@ui/api"
 import { useSelectedAccount } from "@ui/domains/Portfolio/SelectedAccountContext"
 import { useCallback, useEffect, useState } from "react"
@@ -21,7 +21,7 @@ export const useAccountRemoveModal = () => {
   const [_account, setAccount] = useRecoilState(accountRemoveAccountState)
 
   const { account: selectedAccount } = useSelectedAccount()
-  const { isOpen, open: innerOpen, close } = useOpenCloseAtom(accountRemoveModalOpenState)
+  const { isOpen, open: innerOpen, close } = useRecoilOpenClose(accountRemoveModalOpenState)
 
   const open = useCallback(
     (account?: AccountJsonAny) => {

@@ -1,7 +1,7 @@
 import { AccountJsonAny, AccountType } from "@core/domains/accounts/types"
 import { yupResolver } from "@hookform/resolvers/yup"
 import { PasswordStrength } from "@talisman/components/PasswordStrength"
-import { useOpenCloseAtom } from "@talisman/hooks/useOpenClose"
+import { useRecoilOpenClose } from "@talisman/hooks/useOpenClose"
 import downloadJson from "@talisman/util/downloadJson"
 import { api } from "@ui/api"
 import { useCallback, useEffect, useMemo } from "react"
@@ -29,7 +29,7 @@ export const useAccountExportModal = () => {
   const [_account, setAccount] = useRecoilState(accountExportAccountState)
 
   const { account: selectedAccount } = useSelectedAccount()
-  const { isOpen, open: innerOpen, close } = useOpenCloseAtom(accountExportModalOpenState)
+  const { isOpen, open: innerOpen, close } = useRecoilOpenClose(accountExportModalOpenState)
 
   const open = useCallback(
     (account?: AccountJsonAny) => {

@@ -1,4 +1,4 @@
-import { useOpenCloseAtom } from "@talisman/hooks/useOpenClose"
+import { useRecoilOpenClose } from "@talisman/hooks/useOpenClose"
 import { useCallback } from "react"
 import { atom, useRecoilState } from "recoil"
 
@@ -14,7 +14,7 @@ const copyAddressModalOpenState = atom<boolean>({
 })
 
 export const useCopyAddressModal = () => {
-  const { open: innerOpen, close, isOpen } = useOpenCloseAtom(copyAddressModalOpenState)
+  const { open: innerOpen, close, isOpen } = useRecoilOpenClose(copyAddressModalOpenState)
   const [inputs, setInputs] = useRecoilState(copyAddressInputsState)
 
   const open = useCallback(

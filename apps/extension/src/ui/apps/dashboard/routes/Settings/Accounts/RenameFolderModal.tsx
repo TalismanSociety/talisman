@@ -1,27 +1,39 @@
 import { AccountsCatalogTree } from "@core/domains/accounts/helpers.catalog"
 import { yupResolver } from "@hookform/resolvers/yup"
-import { provideContext } from "@talisman/util/provideContext"
 import { api } from "@ui/api"
-import { RefCallback, useCallback, useEffect, useMemo, useRef, useState } from "react"
+import { RefCallback, useCallback, useEffect, useMemo, useRef } from "react"
 import { useForm } from "react-hook-form"
 import { useTranslation } from "react-i18next"
+import { atom, useRecoilState } from "recoil"
 import { Button, Modal, ModalDialog } from "talisman-ui"
 import { FormFieldContainer, FormFieldInputText } from "talisman-ui"
 import * as yup from "yup"
 
-const useRenameFolderModalProvider = () => {
-  const [id, setId] = useState<string | null>(null)
-  const [name, setName] = useState<string | null>(null)
-  const [treeName, setTreeName] = useState<AccountsCatalogTree | null>(null)
-  const [isOpen, setIsOpen] = useState(false)
+const renameFolderModalOpenState = atom<boolean>({
+  key: "renameFolderModalOpenState",
+  default: false,
+})
+const renameFolderItemState = atom<{
+  id: string | null
+  name: string | null
+  treeName: AccountsCatalogTree | null
+}>({
+  key: "renameFolderItemState",
+  default: { id: null, name: null, treeName: null },
+})
 
-  const open = useCallback((id: string, name: string, treeName: AccountsCatalogTree) => {
-    setId(id)
-    setName(name)
-    setTreeName(treeName)
-    setIsOpen(true)
-  }, [])
-  const close = useCallback(() => setIsOpen(false), [])
+export const useRenameFolderModal = () => {
+  const [{ id, name, treeName }, setFolderItem] = useRecoilState(renameFolderItemState)
+  const [isOpen, setIsOpen] = useRecoilState(renameFolderModalOpenState)
+
+  const open = useCallback(
+    (id: string, name: string, treeName: AccountsCatalogTree) => {
+      setFolderItem({ id, name, treeName })
+      setIsOpen(true)
+    },
+    [setFolderItem, setIsOpen]
+  )
+  const close = useCallback(() => setIsOpen(false), [setIsOpen])
 
   useEffect(() => {
     close()
@@ -36,10 +48,6 @@ const useRenameFolderModalProvider = () => {
     close,
   }
 }
-
-export const [RenameFolderModalProvider, useRenameFolderModal] = provideContext(
-  useRenameFolderModalProvider
-)
 
 export const RenameFolderModal = () => {
   const { t } = useTranslation("admin")

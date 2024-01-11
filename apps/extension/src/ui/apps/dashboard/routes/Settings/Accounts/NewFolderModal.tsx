@@ -1,31 +1,22 @@
 import { AccountsCatalogTree } from "@core/domains/accounts/helpers.catalog"
 import { yupResolver } from "@hookform/resolvers/yup"
-import { useOpenClose } from "@talisman/hooks/useOpenClose"
-import { provideContext } from "@talisman/util/provideContext"
+import { useRecoilOpenClose } from "@talisman/hooks/useOpenClose"
 import { api } from "@ui/api"
 import useAccountsCatalog from "@ui/hooks/useAccountsCatalog"
 import { RefCallback, useCallback, useEffect, useMemo, useRef } from "react"
 import { useForm } from "react-hook-form"
 import { useTranslation } from "react-i18next"
+import { atom } from "recoil"
 import { Button, Modal, ModalDialog } from "talisman-ui"
 import { Checkbox, FormFieldContainer, FormFieldInputText } from "talisman-ui"
 import * as yup from "yup"
 
-const useNewFolderModalProvider = () => {
-  const { isOpen, open, close } = useOpenClose()
+const newFolderModalOpenState = atom<boolean>({
+  key: "newFolderModalOpenState",
+  default: false,
+})
 
-  useEffect(() => {
-    close()
-  }, [close])
-
-  return {
-    isOpen,
-    open,
-    close,
-  }
-}
-
-export const [NewFolderModalProvider, useNewFolderModal] = provideContext(useNewFolderModalProvider)
+export const useNewFolderModal = () => useRecoilOpenClose(newFolderModalOpenState)
 
 export const NewFolderModal = () => {
   const { t } = useTranslation("admin")

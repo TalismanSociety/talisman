@@ -2,7 +2,6 @@ import { PHISHING_PAGE_REDIRECT } from "@polkadot/extension-base/defaults"
 import { FullScreenLoader } from "@talisman/components/FullScreenLoader"
 import { SuspenseTracker } from "@talisman/components/SuspenseTracker"
 import { api } from "@ui/api"
-import { BuyTokensModalProvider } from "@ui/domains/Asset/Buy/BuyTokensModalContext"
 import { AssetDiscoveryDashboardAlert } from "@ui/domains/AssetDiscovery/AssetDiscoveryDashboardAlert"
 import { DatabaseErrorAlert } from "@ui/domains/Settings/DatabaseErrorAlert"
 import { useIsLoggedIn } from "@ui/hooks/useIsLoggedIn"
@@ -27,9 +26,6 @@ import { PhishingPage } from "./routes/PhishingPage"
 import { PortfolioRoutes } from "./routes/Portfolio"
 import { AboutPage } from "./routes/Settings/AboutPage"
 import { AccountsPage } from "./routes/Settings/Accounts"
-import { DeleteFolderModalProvider } from "./routes/Settings/Accounts/DeleteFolderModal"
-import { NewFolderModalProvider } from "./routes/Settings/Accounts/NewFolderModal"
-import { RenameFolderModalProvider } from "./routes/Settings/Accounts/RenameFolderModal"
 import { AddressBookPage } from "./routes/Settings/AddressBookPage"
 import { AnalyticsOptInPage } from "./routes/Settings/AnalyticsOptInPage"
 import { AssetDiscoveryPage } from "./routes/Settings/AssetDiscoveryPage"
@@ -148,17 +144,9 @@ const PreventPhishing: FC<PropsWithChildren> = ({ children }) => {
 // TODO move NewFolderModalProvider, RenameFolderModalProvider, DeleteFolderModalProvider inside the only page that uses them
 const Dashboard = () => (
   <PreventPhishing>
-    <BuyTokensModalProvider>
-      <NewFolderModalProvider>
-        <RenameFolderModalProvider>
-          <DeleteFolderModalProvider>
-            <DashboardInner />
-            <DatabaseErrorAlert container="fullscreen" />
-            <AssetDiscoveryDashboardAlert />
-          </DeleteFolderModalProvider>
-        </RenameFolderModalProvider>
-      </NewFolderModalProvider>
-    </BuyTokensModalProvider>
+    <DashboardInner />
+    <DatabaseErrorAlert container="fullscreen" />
+    <AssetDiscoveryDashboardAlert />
   </PreventPhishing>
 )
 

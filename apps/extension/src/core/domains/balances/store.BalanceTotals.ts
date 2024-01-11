@@ -24,9 +24,9 @@ export const trackBalanceTotals = async () => {
   combineLatest([
     settingsStore.observable,
     keyring.accounts.subject,
-    liveQuery(async () => await chaindataProvider.tokens()),
-    liveQuery(async () => await balancesDb.balances.toArray()),
-    liveQuery(async () => await extensionDb.tokenRates.toArray()),
+    liveQuery(() => chaindataProvider.tokens()),
+    liveQuery(() => balancesDb.balances.toArray()),
+    liveQuery(() => extensionDb.tokenRates.toArray()),
   ])
     .pipe(debounceTime(MAX_UPDATE_INTERVAL))
     .subscribe(async ([settings, accounts, tokens, balances, allTokenRates]) => {

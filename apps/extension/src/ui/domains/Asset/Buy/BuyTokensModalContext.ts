@@ -1,8 +1,9 @@
-import { useOpenClose } from "@talisman/hooks/useOpenClose"
-import { provideContext } from "@talisman/util/provideContext"
+import { useRecoilOpenClose } from "@talisman/hooks/useOpenClose"
+import { atom } from "recoil"
 
-const useBuyTokensProvider = () => {
-  return useOpenClose()
-}
+const buyTokensModalOpenState = atom<boolean>({
+  key: "buyTokensModalOpenState",
+  default: false,
+})
 
-export const [BuyTokensModalProvider, useBuyTokensModal] = provideContext(useBuyTokensProvider)
+export const useBuyTokensModal = () => useRecoilOpenClose(buyTokensModalOpenState)
