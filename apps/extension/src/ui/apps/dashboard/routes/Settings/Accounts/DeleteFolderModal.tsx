@@ -1,14 +1,11 @@
 import { AccountsCatalogTree } from "@core/domains/accounts/helpers.catalog"
+import { useGlobalOpenClose } from "@talisman/hooks/useGlobalOpenClose"
 import { api } from "@ui/api"
-import { useCallback, useEffect } from "react"
+import { useCallback } from "react"
 import { Trans, useTranslation } from "react-i18next"
 import { atom, useRecoilState } from "recoil"
 import { Button, Modal, ModalDialog } from "talisman-ui"
 
-const deleteFolderModalOpenState = atom<boolean>({
-  key: "deleteFolderModalOpenState",
-  default: false,
-})
 const deleteFolderItemState = atom<{
   id: string | null
   name: string | null
@@ -20,20 +17,15 @@ const deleteFolderItemState = atom<{
 
 export const useDeleteFolderModal = () => {
   const [{ id, name, treeName }, setFolderItem] = useRecoilState(deleteFolderItemState)
-  const [isOpen, setIsOpen] = useRecoilState(deleteFolderModalOpenState)
+  const { isOpen, open: _open, close } = useGlobalOpenClose("deleteFolderModal")
 
   const open = useCallback(
     (id: string, name: string, treeName: AccountsCatalogTree) => {
       setFolderItem({ id, name, treeName })
-      setIsOpen(true)
+      _open()
     },
-    [setFolderItem, setIsOpen]
+    [setFolderItem, _open]
   )
-  const close = useCallback(() => setIsOpen(false), [setIsOpen])
-
-  useEffect(() => {
-    close()
-  }, [close])
 
   return {
     id,

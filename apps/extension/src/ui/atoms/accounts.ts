@@ -15,9 +15,6 @@ const baseAccountsState = atom<{
   key: "baseAccountsState",
   effects: [
     ({ setSelf }) => {
-      // TODO remove
-      // eslint-disable-next-line no-console
-      console.log("baseAccountsState.init")
       const stop = log.timer("baseAccountsState")
       const obsAccounts = new Subject<AccountJsonAny[]>()
       const obsCatalog = new Subject<Trees>()

@@ -145,9 +145,6 @@ const portfolioNetworkFilterState = atom<NetworkOption | undefined>({
 const portfolioGlobalState = selector({
   key: "portfolioGlobalState",
   get: ({ get }) => {
-    // TODO remove
-    // eslint-disable-next-line no-console
-    console.count("portfolioGlobalState.call")
     const stop = log.timer("portfolioGlobalState")
     const includeTestnets = get(settingQuery("useTestnets"))
     const { account } = get(selectedAccountState)
@@ -169,7 +166,9 @@ const portfolioGlobalState = selector({
     })
     const networkFilter = get(portfolioNetworkFilterState)
     const networkBalances = getNetworkBalances({ networkFilter, allBalances, hydrate })
+
     stop()
+
     return {
       networks,
       networkBalances,

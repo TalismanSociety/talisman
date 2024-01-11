@@ -145,9 +145,9 @@ const useNomPoolStakingEligibility = () => {
       const eligible = addresses.filter((address) => {
         if (!substrateAddresses.includes(address)) return false
         return (
-          Boolean(eligibleAddressBalances[chainId][address]) &&
+          Boolean(eligibleAddressBalances[chainId]?.[address]) &&
           nomPoolStake[chainId] &&
-          nomPoolStake[chainId][address] === null
+          nomPoolStake[chainId]?.[address] === null
         )
       })
 

@@ -7,9 +7,6 @@ let stop: null | (() => void) = null
 const portfolioAccountsState = selector({
   key: "portfolioAccountsState",
   get: ({ get }) => {
-    // TODO remove
-    // eslint-disable-next-line no-console
-    console.log("portfolioAccountsState.get")
     if (!stop) stop = log.timer("portfolioAccountsState")
     const accounts = get(accountsState)
     const catalog = get(accountsCatalogState)

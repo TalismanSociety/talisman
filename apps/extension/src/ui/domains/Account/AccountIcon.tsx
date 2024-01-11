@@ -33,8 +33,7 @@ const ChainBadge = ({ genesisHash }: { genesisHash: string }) => {
 const PolkadotAvatar = ({ seed }: { seed: string }) => {
   const theme = useMemo(() => (isEthereumAddress(seed) ? "ethereum" : "polkadot"), [seed])
   return (
-    // TODO check if suspense is necessary here
-    <Suspense fallback={<div className="identicon-loader"></div>}>
+    <Suspense>
       <IdentIcon
         value={seed}
         theme={theme}

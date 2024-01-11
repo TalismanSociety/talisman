@@ -40,9 +40,6 @@ export const mainState = atom<{
       const obsChains = liveQuery(() => chaindataProvider.chainsArray())
       const obsTokenRates = liveQuery(() => db.tokenRates.toArray())
 
-      // TODO remove
-      // eslint-disable-next-line no-console
-      console.log("mainState.get")
       const stop = log.timer("mainState")
       const obsChainData = combineLatest([
         obsTokens,

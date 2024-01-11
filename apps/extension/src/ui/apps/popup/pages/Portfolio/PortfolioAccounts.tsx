@@ -392,17 +392,6 @@ export const PortfolioAccounts = () => {
     popupOpenEvent("portfolio accounts")
   }, [popupOpenEvent])
 
-  // TODO remove
-  // eslint-disable-next-line no-console
-  console.log("rendered")
-  const refRendered = useRef(false)
-  useEffect(() => {
-    if (refRendered.current) return
-    refRendered.current = true
-    // eslint-disable-next-line no-console
-    console.log("rendered")
-  })
-
   const [fetchBalances, setFetchBalances] = useState(false)
   useEffect(() => {
     // start fetching balances 100ms after first render
