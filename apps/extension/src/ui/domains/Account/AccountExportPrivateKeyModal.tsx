@@ -1,6 +1,6 @@
 import { AccountJsonAny } from "@core/domains/accounts/types"
 import { notify } from "@talisman/components/Notifications"
-import { useRecoilOpenClose } from "@talisman/hooks/useOpenClose"
+import { useGlobalOpenClose } from "@talisman/hooks/useGlobalOpenClose"
 import { CopyIcon, LoaderIcon } from "@talismn/icons"
 import { api } from "@ui/api"
 import { useSensitiveState } from "@ui/hooks/useSensitiveState"
@@ -19,16 +19,12 @@ const accountExportPkAccountState = atom<AccountJsonAny | null>({
   key: "accountExportPkAccountState",
   default: null,
 })
-const accountExportPkModalOpenState = atom<boolean>({
-  key: "accountExportPkModalOpenState",
-  default: false,
-})
 
 export const useAccountExportPrivateKeyModal = () => {
   const [_account, setAccount] = useRecoilState(accountExportPkAccountState)
 
   const { account: selectedAccount } = useSelectedAccount()
-  const { isOpen, open: innerOpen, close } = useRecoilOpenClose(accountExportPkModalOpenState)
+  const { isOpen, open: innerOpen, close } = useGlobalOpenClose("accountExportPkModal")
 
   const open = useCallback(
     (account?: AccountJsonAny) => {

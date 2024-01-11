@@ -1,9 +1,3 @@
-import { useRecoilOpenClose } from "@talisman/hooks/useOpenClose"
-import { atom } from "recoil"
+import { useGlobalOpenClose } from "@talisman/hooks/useGlobalOpenClose"
 
-const isNavOpenState = atom<boolean>({
-  key: "isNavOpenState",
-  default: false,
-})
-
-export const usePopupNavOpenClose = () => useRecoilOpenClose(isNavOpenState)
+export const usePopupNavOpenClose = () => useGlobalOpenClose("popupNav")

@@ -1,9 +1,3 @@
-import { useRecoilOpenClose } from "@talisman/hooks/useOpenClose"
-import { atom } from "recoil"
+import { useGlobalOpenClose } from "@talisman/hooks/useGlobalOpenClose"
 
-const buyTokensModalOpenState = atom<boolean>({
-  key: "buyTokensModalOpenState",
-  default: false,
-})
-
-export const useBuyTokensModal = () => useRecoilOpenClose(buyTokensModalOpenState)
+export const useBuyTokensModal = () => useGlobalOpenClose("buyTokensModal")
