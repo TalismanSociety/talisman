@@ -7,7 +7,7 @@ import { isTransferableToken } from "@ui/util/isTransferableToken"
 import { useCallback } from "react"
 import { Tooltip, TooltipContent, TooltipTrigger } from "talisman-ui"
 
-import { useSelectedAccount } from "../SelectedAccountContext"
+import { useSelectedAccount } from "../useSelectedAccount"
 
 export const SendFundsButton = ({
   symbol,

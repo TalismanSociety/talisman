@@ -11,7 +11,7 @@ import BigNumber from "bignumber.js"
 import { useMemo } from "react"
 import { useTranslation } from "react-i18next"
 
-import { useSelectedAccount } from "../SelectedAccountContext"
+import { useSelectedAccount } from "../useSelectedAccount"
 import { useTokenBalancesSummary } from "../useTokenBalancesSummary"
 
 type DetailRow = {

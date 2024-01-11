@@ -1,6 +1,6 @@
 import { AccountJsonAny } from "@core/domains/accounts/types"
 import { useGlobalOpenClose } from "@talisman/hooks/useGlobalOpenClose"
-import { useSelectedAccount } from "@ui/domains/Portfolio/SelectedAccountContext"
+import { useSelectedAccount } from "@ui/domains/Portfolio/useSelectedAccount"
 import { useCallback, useEffect } from "react"
 import { useTranslation } from "react-i18next"
 import { atom, useRecoilState } from "recoil"

@@ -4,7 +4,7 @@ import { useAccountExportPrivateKeyModal } from "@ui/domains/Account/AccountExpo
 import { useAccountRemoveModal } from "@ui/domains/Account/AccountRemoveModal"
 import { useAccountRenameModal } from "@ui/domains/Account/AccountRenameModal"
 import { useCopyAddressModal } from "@ui/domains/CopyAddress"
-import { useSelectedAccount } from "@ui/domains/Portfolio/SelectedAccountContext"
+import { useSelectedAccount } from "@ui/domains/Portfolio/useSelectedAccount"
 import { useAccountByAddress } from "@ui/hooks/useAccountByAddress"
 import { useAccountToggleIsPortfolio } from "@ui/hooks/useAccountToggleIsPortfolio"
 import { useAnalytics } from "@ui/hooks/useAnalytics"

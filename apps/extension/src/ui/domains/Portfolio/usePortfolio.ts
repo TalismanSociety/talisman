@@ -12,12 +12,13 @@ import {
   settingQuery,
   tokensArrayQuery,
 } from "@ui/atoms"
-import { selectedAccountState } from "@ui/domains/Portfolio/SelectedAccountContext"
 import { isEvmToken } from "@ui/util/isEvmToken"
 import { isSubToken } from "@ui/util/isSubToken"
 import { t } from "i18next"
 import { useEffect } from "react"
 import { atom, selector, useRecoilState, useRecoilValue } from "recoil"
+
+import { selectedAccountState } from "./useSelectedAccount"
 
 export type NetworkOption = {
   id: string // here we'll merge all ids together

@@ -1,4 +1,4 @@
-import { useSelectedAccount } from "@ui/domains/Portfolio/SelectedAccountContext"
+import { useSelectedAccount } from "@ui/domains/Portfolio/useSelectedAccount"
 import { useEffect } from "react"
 import { Route, Routes, useSearchParams } from "react-router-dom"
 

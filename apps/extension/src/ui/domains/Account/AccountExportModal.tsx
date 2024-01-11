@@ -13,7 +13,7 @@ import { Modal } from "talisman-ui"
 import { Button, FormFieldContainer, FormFieldInputText } from "talisman-ui"
 import * as yup from "yup"
 
-import { useSelectedAccount } from "../Portfolio/SelectedAccountContext"
+import { useSelectedAccount } from "../Portfolio/useSelectedAccount"
 import { PasswordUnlock, usePasswordUnlock } from "./PasswordUnlock"
 
 const accountExportAccountState = atom<AccountJsonAny | null>({

@@ -10,12 +10,13 @@ import { AccountIcon } from "@ui/domains/Account/AccountIcon"
 import { AccountTypeIcon } from "@ui/domains/Account/AccountTypeIcon"
 import { AllAccountsIcon } from "@ui/domains/Account/AllAccountsIcon"
 import { Fiat } from "@ui/domains/Asset/Fiat"
-import { useSelectedAccount } from "@ui/domains/Portfolio/SelectedAccountContext"
 import { useAnalytics } from "@ui/hooks/useAnalytics"
 import { usePortfolioAccounts } from "@ui/hooks/usePortfolioAccounts"
 import { useSetting } from "@ui/hooks/useSettings"
 import { forwardRef, useCallback, useMemo } from "react"
 import { useTranslation } from "react-i18next"
+
+import { useSelectedAccount } from "./useSelectedAccount"
 
 type AccountSelectItem =
   | {

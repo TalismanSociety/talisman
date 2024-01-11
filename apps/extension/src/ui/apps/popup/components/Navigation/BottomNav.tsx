@@ -4,7 +4,7 @@ import { AlertCircleIcon, HistoryIcon, PieChartIcon, ZapIcon } from "@talismn/ic
 import { classNames } from "@talismn/util"
 import { api } from "@ui/api"
 import { AnalyticsPage, sendAnalyticsEvent } from "@ui/api/analytics"
-import { useSelectedAccount } from "@ui/domains/Portfolio/SelectedAccountContext"
+import { useSelectedAccount } from "@ui/domains/Portfolio/useSelectedAccount"
 import { PendingTransactionsDrawer } from "@ui/domains/Transactions/PendingTransactionsDrawer"
 import useMnemonicBackup from "@ui/hooks/useMnemonicBackup"
 import { usePopupNavOpenClose } from "@ui/hooks/usePopupNavOpenClose"

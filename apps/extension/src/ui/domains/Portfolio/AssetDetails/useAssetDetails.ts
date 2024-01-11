@@ -2,7 +2,7 @@ import { Balances } from "@core/domains/balances/types"
 import { ChainId, EvmNetworkId } from "@talismn/chaindata-provider"
 import { useMemo } from "react"
 
-import { usePortfolio } from "../context"
+import { usePortfolio } from "../usePortfolio"
 
 export const useAssetDetails = (balances: Balances) => {
   const { hydrate } = usePortfolio()

@@ -11,7 +11,7 @@ import { ModalDialog } from "talisman-ui"
 import { Modal } from "talisman-ui"
 import { Button } from "talisman-ui"
 
-import { useSelectedAccount } from "../Portfolio/SelectedAccountContext"
+import { useSelectedAccount } from "../Portfolio/useSelectedAccount"
 import { AccountIcon } from "./AccountIcon"
 import { PasswordUnlock, usePasswordUnlock } from "./PasswordUnlock"
 

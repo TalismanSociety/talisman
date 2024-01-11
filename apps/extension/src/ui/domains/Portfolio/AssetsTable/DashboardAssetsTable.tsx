@@ -2,7 +2,7 @@ import { Balances } from "@core/domains/balances/types"
 import useBalances from "@ui/hooks/useBalances"
 import { useTranslation } from "react-i18next"
 
-import { useSelectedAccount } from "../SelectedAccountContext"
+import { useSelectedAccount } from "../useSelectedAccount"
 import { AssetRow } from "./DashboardAssetRow"
 import { usePortfolioSymbolBalances } from "./usePortfolioSymbolBalances"
 

@@ -6,7 +6,7 @@ import sortBy from "lodash/sortBy"
 import { useMemo } from "react"
 import { useTranslation } from "react-i18next"
 
-import { usePortfolio } from "../context"
+import { usePortfolio } from "../usePortfolio"
 
 export type PortfolioNetwork = {
   id: ChainId | EvmNetworkId

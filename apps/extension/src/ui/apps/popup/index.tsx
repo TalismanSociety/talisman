@@ -29,7 +29,7 @@ import { SendFundsPage } from "./pages/SendFunds"
 import { EthereumSignRequest } from "./pages/Sign/ethereum"
 import { SubstrateSignRequest } from "./pages/Sign/substrate"
 
-const InnerPopup = () => {
+const Popup = () => {
   const isOnboarded = useIsOnboarded()
   const isLoggedIn = useIsLoggedIn()
 
@@ -76,11 +76,5 @@ const InnerPopup = () => {
     </FadeIn>
   )
 }
-
-const Popup = () => (
-  // <Suspense fallback={<SuspenseTracker name="Popup" />}>
-  <InnerPopup />
-  //</Suspense>
-)
 
 export default Popup

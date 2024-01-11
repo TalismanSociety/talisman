@@ -18,7 +18,7 @@ import {
   ZapIcon,
 } from "@talismn/icons"
 import { useBuyTokensModal } from "@ui/domains/Asset/Buy/BuyTokensModalContext"
-import { useSelectedAccount } from "@ui/domains/Portfolio/SelectedAccountContext"
+import { useSelectedAccount } from "@ui/domains/Portfolio/useSelectedAccount"
 import { useAnalytics } from "@ui/hooks/useAnalytics"
 import { useIsFeatureEnabled } from "@ui/hooks/useFeatures"
 import useMnemonicBackup from "@ui/hooks/useMnemonicBackup"
