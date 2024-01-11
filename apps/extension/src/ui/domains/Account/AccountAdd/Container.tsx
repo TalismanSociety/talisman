@@ -32,11 +32,13 @@ const AccountCreateMethodTypeButton = ({
   subtitle,
   icon,
   methodType,
+  testId,
 }: {
   title: string
   subtitle: string
   icon: ReactNode
   methodType: MethodTypes
+  testId?: string
 }) => {
   const { methodType: selectedMethodType, setMethodType } = useAccountCreateContext()
   const isSelected = selectedMethodType === methodType
@@ -44,6 +46,7 @@ const AccountCreateMethodTypeButton = ({
     <div
       tabIndex={["new", "import", "connect"].indexOf(methodType) + 1}
       role="button"
+      data-testid={testId}
       className={classNames(
         isSelected
           ? `border-grey-50 bg-opacity-5`
@@ -78,12 +81,14 @@ const AccountCreateMethodButton = ({
   networks,
   disabled,
   to,
+  testId,
 }: {
   title: string
   subtitle: string
   networks: Array<"ethereum" | "polkadot">
   disabled?: boolean
   to?: string
+  testId?: string
 }) => {
   const navigate = useNavigate()
   const handleClick = useCallback(() => {
@@ -93,6 +98,7 @@ const AccountCreateMethodButton = ({
   return (
     <button
       type="button"
+      data-testid={testId}
       disabled={disabled}
       onClick={handleClick}
       className={`flex flex-col gap-2 rounded bg-white bg-opacity-[0.02] p-6 ${
@@ -119,12 +125,14 @@ const NewAccountMethodButtons = () => {
   return (
     <>
       <AccountCreateMethodButton
+        testId="new-polkadot-account-btn"
         title={t("New Polkadot Account")}
         subtitle={t("Create new Polkadot account")}
         networks={["polkadot"]}
         to={`/accounts/add/derived?type=sr25519`}
       />
       <AccountCreateMethodButton
+        testId="new-ethereum-account-btn"
         title={t("New Ethereum Account")}
         subtitle={t("Create new Ethereum account")}
         networks={["ethereum"]}
@@ -247,6 +255,7 @@ export const AccountCreateContainer = ({ className }: Props) => {
               subtitle={t("Create a new account")}
               icon={<PlusIcon />}
               methodType="new"
+              testId="new-account-btn"
             />
             <AccountCreateMethodTypeButton
               title={t("Import")}

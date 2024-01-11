@@ -146,6 +146,7 @@ export const PasswordPage = () => {
                   {...register("password")}
                   type="password"
                   placeholder={t("Enter password")}
+                  data-testid="password-input1"
                   autoComplete="new-password"
                   spellCheck={false}
                   data-lpignore
@@ -160,6 +161,7 @@ export const PasswordPage = () => {
                   {...register("passwordConfirm")}
                   type="password"
                   autoComplete="off"
+                  data-testid="password-input2"
                   placeholder={t("Confirm password")}
                   spellCheck={false}
                   data-lpignore
@@ -172,6 +174,7 @@ export const PasswordPage = () => {
               fullWidth
               primary
               type="submit"
+              data-testid="continue-button"
               className={classNames(
                 !isValid && "bg-body/5 transform-gpu cursor-not-allowed backdrop-blur-xl"
               )}

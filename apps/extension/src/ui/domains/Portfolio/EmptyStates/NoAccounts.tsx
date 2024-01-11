@@ -12,7 +12,10 @@ export const NoAccounts = ({ handleAddAccountClick, handleWatchAccountClick }: N
   const { t } = useTranslation()
 
   return (
-    <div className="flex flex-col items-center justify-center gap-8 px-8 text-center md:w-1/2 md:gap-12 md:p-12">
+    <div
+      className="flex flex-col items-center justify-center gap-8 px-8 text-center md:w-1/2 md:gap-12 md:p-12"
+      data-testid="no-accounts-banner"
+    >
       <div className="flex flex-col items-center gap-4 md:gap-12">
         <span className="md:text-lg">{t("Talisman awaits!")}</span>
         <img

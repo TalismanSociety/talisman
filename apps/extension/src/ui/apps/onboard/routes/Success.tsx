@@ -26,7 +26,7 @@ export const SuccessPage = () => {
           <br />
           You're ready to get started!
         </div>
-        <Button primary onClick={completeOnboarding}>
+        <Button primary onClick={completeOnboarding} data-testid="continue-btn">
           Enter Talisman
         </Button>
       </div>

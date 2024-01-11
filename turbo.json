@@ -68,6 +68,9 @@
     },
     "test:watch": {
       "dependsOn": []
+    },
+    "test:e2e": {
+      "dependsOn": ["build", "^test:e2e"]
     }
   }
 }

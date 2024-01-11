@@ -26,6 +26,7 @@ const DoItLaterButton = ({ onDoItLaterClick }: { onDoItLaterClick: () => void })
   return (
     <span className="flex w-full grow justify-end">
       <button
+        data-testid="do-it-later-btn"
         onClick={() => onDoItLaterClick()}
         className="text-body-secondary flex items-center gap-2 align-middle"
       >

@@ -266,6 +266,7 @@ const AccountAddDerivedFormInner: FC<AccountAddPageProps> = ({ onSuccess }) => {
             spellCheck={false}
             autoComplete="off"
             data-lpignore
+            data-testid="account-name-input"
             after={
               address ? (
                 <Tooltip>
@@ -310,6 +311,7 @@ const AccountAddDerivedFormInner: FC<AccountAddPageProps> = ({ onSuccess }) => {
           <Button
             icon={ArrowRightIcon}
             type="submit"
+            data-testid="submit-btn"
             primary
             disabled={!isValid}
             processing={isSubmitting}
