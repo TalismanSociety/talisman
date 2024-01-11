@@ -20,7 +20,7 @@ import { Button, Dropdown, DropdownOptionRender } from "talisman-ui"
 import * as yup from "yup"
 
 import { TokenAmountField } from "../TokenAmountField"
-import { useBuyTokensModal } from "./BuyTokensModalContext"
+import { useBuyTokensModal } from "./useBuyTokensModal"
 
 type FormData = {
   address: string
