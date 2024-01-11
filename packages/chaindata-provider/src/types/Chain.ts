@@ -9,7 +9,7 @@ export type Chain = {
   isTestnet: boolean // Is this chain a testnet?
   isDefault: boolean // Is this chain enabled by default?
   sortIndex: number | null // The sortIndex of this chain
-  genesisHash: string | null // The genesisHash of this chain
+  genesisHash: `0x${string}` | null // The genesisHash of this chain
   prefix: number | null // The substrate prefix of this chain
   name: string | null // The name of this chain
   themeColor: string | null // The theme color for this chain

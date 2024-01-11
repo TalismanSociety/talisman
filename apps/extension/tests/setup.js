@@ -1,10 +1,14 @@
 /* eslint-env es2021 */
 const chrome = require("sinon-chrome")
-const { Crypto } = require("@peculiar/webcrypto")
 const { TextDecoder } = require("@polkadot/x-textdecoder")
 const { TextEncoder } = require("@polkadot/x-textencoder")
 
-global.crypto = new Crypto()
+const { webcrypto } = require("crypto")
+
+Object.defineProperty(globalThis, "crypto", {
+  value: webcrypto,
+})
+global.CryptoKey = webcrypto.CryptoKey
 
 global.TextDecoder = global.TextDecoder ?? TextDecoder
 global.TextEncoder = global.TextEncoder ?? TextEncoder

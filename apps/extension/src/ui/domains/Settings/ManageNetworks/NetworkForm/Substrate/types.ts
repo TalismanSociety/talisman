@@ -5,7 +5,7 @@ export type SubNetworkFormBaseProps = {
   onSubmitted?: () => void
 }
 
-type SubNetworkFormRpcField = RequestUpsertCustomChain["rpcs"][0] & {
+type SubNetworkFormRpcField = RequestUpsertCustomChain["rpcs"][number] & {
   genesisHash?: SignerPayloadGenesisHash
 }
 

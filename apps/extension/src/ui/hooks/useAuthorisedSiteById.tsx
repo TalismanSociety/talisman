@@ -5,7 +5,7 @@ import {
   AuthorizedSiteId,
   ProviderType,
 } from "@core/domains/sitesAuthorised/types"
-import { isTalismanUrl } from "@core/page"
+import { isTalismanUrl } from "@core/util/isTalismanUrl"
 import { api } from "@ui/api"
 import { useCallback, useEffect, useMemo, useState } from "react"
 
