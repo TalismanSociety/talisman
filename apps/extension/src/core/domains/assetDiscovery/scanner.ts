@@ -286,6 +286,21 @@ class AssetDiscoveryScanner {
     // alert user
     if (await db.assetDiscovery.count()) await appStore.set({ showAssetDiscoveryAlert: true })
   }
+
+  public async startPendingScan(): Promise<void> {
+    const isAssetDiscoveryScanPending = await appStore.get("isAssetDiscoveryScanPending")
+    if (!isAssetDiscoveryScanPending) return
+
+    // addresses of all ethereum accounts
+    await awaitKeyringLoaded()
+    const addresses = keyring
+      .getAccounts()
+      .filter((acc) => isEthereumAddress(acc.address))
+      .map((acc) => acc.address)
+
+    await this.startScan({ addresses, mode: AssetDiscoveryMode.ACTIVE_NETWORKS })
+    await appStore.set({ isAssetDiscoveryScanPending: false })
+  }
 }
 
 export const assetDiscoveryScanner = new AssetDiscoveryScanner()
