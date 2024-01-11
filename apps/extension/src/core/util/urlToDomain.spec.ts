@@ -1,6 +1,6 @@
 import { Err, Ok } from "ts-results"
 
-import { urlToDomain } from "./urlToDomain"
+import { Errors, urlToDomain } from "./urlToDomain"
 
 describe("Tests urlToDomain function", () => {
   it("works", () => {
@@ -9,11 +9,10 @@ describe("Tests urlToDomain function", () => {
     expect(urlToDomain("https://something.com/anything?moreStuff=true&yes=more")).toEqual(
       Ok("something.com")
     )
-    expect(urlToDomain("Nope")).toEqual(Err("Invalid URL"))
-    expect(urlToDomain("7ca9d9e7-b68a-4d89-a4b1-a34d9766da3c.com")).toEqual(Err("Invalid URL"))
-    expect(urlToDomain("nope://something.com")).toEqual(Err("URL protocol unsupported"))
+    expect(urlToDomain("Nope").val).toEqual(Err(Errors.InvalidURL).val)
+    expect(urlToDomain("7ca9d9e7-b68a-4d89-a4b1-a34d9766da3c.com").val).toEqual(
+      Err(Errors.InvalidURL).val
+    )
+    expect(urlToDomain("nope://something.com").val).toEqual(Err(Errors.UnsupportedProtocol).val)
   })
 })
-
-// load bearing export
-export {}

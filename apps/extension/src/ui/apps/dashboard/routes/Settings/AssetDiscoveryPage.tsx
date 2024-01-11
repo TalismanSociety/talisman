@@ -1,6 +1,4 @@
-import { db } from "@core/db"
 import { AccountJsonAny } from "@core/domains/accounts/types"
-import { AssetDiscoveryScanState, assetDiscoveryStore } from "@core/domains/assetDiscovery/store"
 import { AssetDiscoveryMode, DiscoveredBalance } from "@core/domains/assetDiscovery/types"
 import {
   activeEvmNetworksStore,
@@ -28,6 +26,7 @@ import { classNames } from "@talismn/util"
 import { useQuery } from "@tanstack/react-query"
 import { api } from "@ui/api"
 import { AnalyticsPage } from "@ui/api/analytics"
+import { assetDiscoveryScanProgress, assetDiscoveryScanState } from "@ui/atoms"
 import { AccountIcon } from "@ui/domains/Account/AccountIcon"
 import { Fiat } from "@ui/domains/Asset/Fiat"
 import { TokenLogo } from "@ui/domains/Asset/TokenLogo"
@@ -43,13 +42,10 @@ import { useSetting } from "@ui/hooks/useSettings"
 import useToken from "@ui/hooks/useToken"
 import useTokens from "@ui/hooks/useTokens"
 import { isErc20Token } from "@ui/util/isErc20Token"
-import { liveQuery } from "dexie"
-import groupBy from "lodash/groupBy"
 import { ChangeEventHandler, FC, ReactNode, useCallback, useEffect, useMemo } from "react"
 import { Trans, useTranslation } from "react-i18next"
 import { useNavigate } from "react-router-dom"
-import { atom, selector, useRecoilValue } from "recoil"
-import { debounceTime, first, from, merge } from "rxjs"
+import { useRecoilValue } from "recoil"
 import {
   Button,
   ContextMenu,
@@ -73,83 +69,11 @@ const ANALYTICS_PAGE: AnalyticsPage = {
   page: "Settings - Asset Discovery",
 }
 
-const assetDiscoveryBalancesState = atom<DiscoveredBalance[]>({
-  key: "assetDiscoveryBalancesState",
-  effects: [
-    // sync from db
-    ({ setSelf }) => {
-      const obs = from(liveQuery(() => db.assetDiscovery.toArray()))
-
-      // backend will do a lot of updates
-      // debounce to mitigate performance issues
-      // also, we only need the first value to hydrate the atom
-      const sub = merge(obs.pipe(first()), obs.pipe(debounceTime(500))).subscribe(setSelf)
-
-      return () => sub.unsubscribe()
-    },
-  ],
-})
-
-const assetDiscoveryScanState = atom<AssetDiscoveryScanState>({
-  key: "assetDiscoveryScanState",
-  effects: [
-    // sync from db
-    ({ setSelf }) => {
-      const sub = assetDiscoveryStore.observable.subscribe(setSelf)
-
-      return () => {
-        sub.unsubscribe()
-      }
-    },
-  ],
-})
-
-const scanProgress = selector<{
-  percent: number
-  balances: DiscoveredBalance[]
-  balancesByTokenId: Record<TokenId, DiscoveredBalance[]>
-  tokensCount: number
-  accounts: Address[]
-  accountsCount: number
-  isInProgress: boolean
-  tokenIds: TokenId[]
-}>({
-  key: "scanProgress",
-  get: ({ get }) => {
-    const {
-      currentScanId,
-      currentScanProgressPercent: percent,
-      currentScanAccounts,
-      currentScanTokensCount,
-      lastScanAccounts,
-      lastScanTokensCount,
-    } = get(assetDiscoveryScanState)
-    const balances = get(assetDiscoveryBalancesState)
-    const balancesByTokenId = groupBy(balances, (a) => a.tokenId)
-    const tokenIds = Object.keys(balancesByTokenId)
-
-    const isInProgress = !!currentScanId
-    const accounts = isInProgress ? currentScanAccounts : lastScanAccounts
-    const tokensCount = isInProgress ? currentScanTokensCount : lastScanTokensCount
-
-    return {
-      isInProgress,
-      percent,
-      balances,
-      balancesByTokenId,
-      tokensCount,
-      accounts,
-      accountsCount: accounts.length,
-      tokenIds,
-    }
-  },
-})
-
 const TOKEN_RATES_CACHE: TokenList = {}
 
 // our main token rates store only fetches active tokens, this obviously doesn't work here
 const useDiscoveredTokenRates = () => {
-  const { tokenIds } = useRecoilValue(scanProgress)
+  const { tokenIds } = useRecoilValue(assetDiscoveryScanProgress)
   const { tokens } = useTokens({ activeOnly: false, includeTestnets: true })
   const tokenList = useMemo(
     () => Object.fromEntries(tokens.filter((t) => tokenIds.includes(t.id)).map((t) => [t.id, t])),
@@ -391,7 +315,7 @@ const AssetRow: FC<{ tokenId: TokenId; assets: DiscoveredBalance[] }> = ({ token
 
 const AssetTable: FC = () => {
   const { t } = useTranslation("admin")
-  const { balances, balancesByTokenId: assetsByTokenId } = useRecoilValue(scanProgress)
+  const { balances, balancesByTokenId } = useRecoilValue(assetDiscoveryScanProgress)
 
   if (!balances.length) return null
 
@@ -404,7 +328,7 @@ const AssetTable: FC = () => {
         <div></div>
       </div>
 
-      {Object.entries(assetsByTokenId).map(([tokenId, assets]) => (
+      {Object.entries(balancesByTokenId).map(([tokenId, assets]) => (
         <AssetRow key={tokenId} tokenId={tokenId} assets={assets} />
       ))}
     </div>
@@ -413,8 +337,9 @@ const AssetTable: FC = () => {
 
 const Header: FC = () => {
   const { t } = useTranslation("admin")
-  const { balances, accountsCount, tokensCount, percent, isInProgress } =
-    useRecoilValue(scanProgress)
+  const { balances, accountsCount, tokensCount, percent, isInProgress } = useRecoilValue(
+    assetDiscoveryScanProgress
+  )
   const [includeTestnets] = useSetting("useTestnets")
   const { evmNetworks: activeNetworks } = useEvmNetworks({ activeOnly: true, includeTestnets })
   const { evmNetworks: allNetworks } = useEvmNetworks({ activeOnly: false, includeTestnets })
@@ -530,7 +455,7 @@ const AccountsWrapper: FC<{
 const ScanInfo: FC = () => {
   const { t } = useTranslation("admin")
 
-  const { balancesByTokenId, balances, isInProgress } = useRecoilValue(scanProgress)
+  const { balancesByTokenId, balances, isInProgress } = useRecoilValue(assetDiscoveryScanProgress)
   const { lastScanAccounts, lastScanTimestamp } = useRecoilValue(assetDiscoveryScanState)
 
   const activeEvmNetworks = useActiveEvmNetworksState()
@@ -651,7 +576,7 @@ export const AssetDiscoveryPage = () => {
   const [showAssetDiscoveryAlert, setShowAssetDiscoveryAlert] =
     useAppState("showAssetDiscoveryAlert")
 
-  // turn off new tokens found alert when user browses this page
+  // hide alert when user browses this page
   useEffect(() => {
     if (showAssetDiscoveryAlert) setShowAssetDiscoveryAlert(false)
   }, [setShowAssetDiscoveryAlert, showAssetDiscoveryAlert])

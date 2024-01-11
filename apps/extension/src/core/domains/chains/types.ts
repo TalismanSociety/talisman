@@ -17,7 +17,7 @@ export type RequestChainGenerateQrUpdateNetworkMetadata = {
 export type RequestUpsertCustomChain = {
   id: ChainId
   isTestnet: boolean
-  genesisHash: string | null
+  genesisHash: HexString | null
   // prefix: number | null
   name: string
   // themeColor: string | null
