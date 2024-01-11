@@ -29,7 +29,7 @@
     "@talismn/subshape-fork": "^0.0.2",
     "@talismn/util": "workspace:*",
     "anylogger": "^1.0.11",
-    "wasm-feature-detect": "^1.6.0",
+    "wasm-feature-detect": "^1.6.1",
     "wat-the-crypto": "^0.0.3"
   },
   "devDependencies": {

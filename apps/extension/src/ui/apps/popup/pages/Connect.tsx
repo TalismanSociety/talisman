@@ -1,6 +1,6 @@
 import { ProviderType } from "@core/domains/sitesAuthorised/types"
 import { KnownRequestIdOnly } from "@core/libs/requests/types"
-import { isTalismanUrl } from "@core/page"
+import { isTalismanUrl } from "@core/util/isTalismanUrl"
 import { AppPill } from "@talisman/components/AppPill"
 import { notify } from "@talisman/components/Notifications"
 import useSet from "@talisman/hooks/useSet"

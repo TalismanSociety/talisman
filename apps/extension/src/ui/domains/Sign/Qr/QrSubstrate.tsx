@@ -2,6 +2,7 @@ import { POLKADOT_VAULT_DOCS_URL } from "@core/constants"
 import { AccountJsonQr } from "@core/domains/accounts/types"
 import { SignerPayloadJSON, SignerPayloadRaw } from "@core/domains/signing/types"
 import { isJsonPayload } from "@core/util/isJsonPayload"
+import { HexString } from "@polkadot/util/types"
 import { Chain } from "@talismn/chaindata-provider"
 import { ChevronLeftIcon, InfoIcon, LoaderIcon, PolkadotVaultIcon } from "@talismn/icons"
 import { classNames } from "@talismn/util"
@@ -45,7 +46,7 @@ type ScanState =
 interface Props {
   account: AccountJsonQr
   className?: string
-  genesisHash?: string
+  genesisHash?: HexString
   onSignature?: (result: { signature: `0x${string}` }) => void
   onReject: () => void
   payload: SignerPayloadJSON | SignerPayloadRaw
@@ -242,7 +243,7 @@ const SendPage = ({
   containerId,
 }: {
   account: AccountJsonQr
-  genesisHash: string | undefined
+  genesisHash: HexString | undefined
   payload: SignerPayloadJSON | SignerPayloadRaw
   reject: () => void
   setScanState: React.Dispatch<React.SetStateAction<ScanState>>
