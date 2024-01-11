@@ -24,7 +24,7 @@ const AssetDiscoveryToast = () => {
         </div>
         <div className="text-body-secondary text-sm tabular-nums">
           {isInProgress
-            ? t("Scan in progress : {{percent}}%", { percent })
+            ? t("Scan in progress: {{percent}}%", { percent })
             : t("Click here to review")}
         </div>
       </div>
