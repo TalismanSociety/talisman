@@ -13,7 +13,6 @@ import { shortenAddress } from "@talisman/util/shortenAddress"
 import { Address, BalanceFormatter } from "@talismn/balances"
 import { EvmNetworkId, Token, TokenList } from "@talismn/chaindata-provider"
 import {
-  CheckCircleIcon,
   ChevronDownIcon,
   DiamondIcon,
   InfoIcon,
@@ -43,7 +42,7 @@ import { useSetting } from "@ui/hooks/useSettings"
 import useToken from "@ui/hooks/useToken"
 import useTokens from "@ui/hooks/useTokens"
 import { isErc20Token } from "@ui/util/isErc20Token"
-import { FC, ReactNode, useCallback, useEffect, useMemo } from "react"
+import { ChangeEventHandler, FC, ReactNode, useCallback, useEffect, useMemo } from "react"
 import { Trans, useTranslation } from "react-i18next"
 import { useNavigate } from "react-router-dom"
 import { useRecoilValue } from "recoil"
@@ -53,6 +52,7 @@ import {
   ContextMenuContent,
   ContextMenuItem,
   ContextMenuTrigger,
+  Toggle,
   Tooltip,
   TooltipContent,
   TooltipTrigger,
@@ -206,11 +206,15 @@ const AssetRow: FC<{ tokenId: TokenId; assets: DiscoveredBalance[] }> = ({ token
     [activeEvmNetworks, activeTokens, evmNetwork, token]
   )
 
-  const enable = useCallback(() => {
-    if (!token || !evmNetwork) return
-    activeEvmNetworksStore.setActive(evmNetwork.id, true)
-    if (token.type !== "evm-native") activeTokensStore.setActive(token.id, true)
-  }, [evmNetwork, token])
+  const handleToggleChange: ChangeEventHandler<HTMLInputElement> = useCallback(
+    (e) => {
+      if (!token || !evmNetwork) return
+      activeEvmNetworksStore.setActive(evmNetwork.id, e.target.checked)
+      if (token.type !== "evm-native" && e.target.checked)
+        activeTokensStore.setActive(token.id, true)
+    },
+    [evmNetwork, token]
+  )
 
   const isInactiveNetwork = useMemo(
     () => evmNetwork && !isEvmNetworkActive(evmNetwork, activeEvmNetworks),
@@ -225,10 +229,9 @@ const AssetRow: FC<{ tokenId: TokenId; assets: DiscoveredBalance[] }> = ({ token
 
   return (
     <div
-      className={classNames(
-        "bg-grey-900 grid h-32 grid-cols-[30%_20%_25%_25%] items-center rounded-sm px-8",
-        isActive && "opacity-50"
-      )}
+      className={
+        "bg-grey-900 grid h-32 grid-cols-[1fr_1fr_1fr_10rem] items-center gap-x-8 rounded-sm px-8"
+      }
     >
       <div className="flex items-center gap-6">
         <div>
@@ -277,17 +280,8 @@ const AssetRow: FC<{ tokenId: TokenId; assets: DiscoveredBalance[] }> = ({ token
           <span className="text-body-secondary text-sm">-</span>
         )}
       </div>
-      <div className="flex justify-end gap-6 pl-4 text-right">
-        <Button
-          small
-          disabled={isActive}
-          onClick={enable}
-          primary
-          className="disabled:text-primary-500 h-16 w-56 rounded-sm"
-          icon={isActive ? CheckCircleIcon : undefined}
-        >
-          {isActive ? t("Activated") : t("Activate")}
-        </Button>
+      <div className="flex justify-end gap-8 pl-4 text-right">
+        <Toggle checked={isActive} onChange={handleToggleChange} />
         {isErc20Token(token) || coingeckoUrl ? (
           <ContextMenu placement="bottom-end">
             <ContextMenuTrigger className="hover:text-body bg-grey-800 text-body-secondary hover:bg-grey-700 shrink-0 rounded-sm p-4">
@@ -327,7 +321,7 @@ const AssetTable: FC = () => {
 
   return (
     <div className="text-body flex w-full min-w-[45rem] flex-col gap-4 text-left text-base">
-      <div className="text-body-disabled grid grid-cols-[30%_20%_25%_25%] px-8 text-sm font-normal">
+      <div className="text-body-disabled grid grid-cols-[1fr_1fr_1fr_10rem] gap-x-8 px-8 text-sm font-normal">
         <div>{t("Asset")}</div>
         <div>{t("Network")}</div>
         <div className="text-right">{t("Balance")}</div>
@@ -534,7 +528,7 @@ const ScanInfo: FC = () => {
           small
           primary
         >
-          {t("Activate All")}
+          {t("Add all tokens")}
         </Button>
       )}
     </div>
@@ -598,7 +592,7 @@ export const AssetDiscoveryPage = () => {
     >
       <HeaderBlock
         title={t("Asset Discovery")}
-        text={t("Scan for well-known tokens in your accounts and add them to your wallet")}
+        text={t("Scan for well-known tokens in your accounts and add them to your portfolio.")}
       />
       <Spacer small />
       <Notice />

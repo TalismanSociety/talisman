@@ -11,7 +11,7 @@ import { ConnectAccountToggleButtonRow } from "@ui/domains/Site/ConnectAccountTo
 import useAccounts from "@ui/hooks/useAccounts"
 import { useAnalytics } from "@ui/hooks/useAnalytics"
 import { useRequest } from "@ui/hooks/useRequest"
-import { capitalize } from "lodash"
+import capitalize from "lodash/capitalize"
 import { FC, useCallback, useEffect, useMemo } from "react"
 import { Trans, useTranslation } from "react-i18next"
 import { useParams } from "react-router-dom"

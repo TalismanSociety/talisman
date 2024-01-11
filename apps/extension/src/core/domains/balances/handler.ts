@@ -38,7 +38,7 @@ import {
 import { ChainId, ChainList, EvmNetworkList, Token, TokenList } from "@talismn/chaindata-provider"
 import { MessageTypes, RequestTypes, ResponseType } from "core/types"
 import { liveQuery } from "dexie"
-import { isEqual } from "lodash"
+import isEqual from "lodash/isEqual"
 import { BehaviorSubject, combineLatest } from "rxjs"
 
 export class BalancesHandler extends ExtensionHandler {

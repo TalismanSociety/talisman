@@ -4,7 +4,7 @@ import { DiscoveredBalance } from "@core/domains/assetDiscovery/types"
 import { Address } from "@talismn/balances"
 import { TokenId } from "@talismn/chaindata-provider"
 import { liveQuery } from "dexie"
-import { groupBy } from "lodash"
+import groupBy from "lodash/groupBy"
 import { atom, selector } from "recoil"
 import { debounceTime, first, from, merge } from "rxjs"
 
