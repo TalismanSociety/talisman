@@ -10,7 +10,7 @@ import { HeaderBlock } from "@talisman/components/HeaderBlock"
 import { Spacer } from "@talisman/components/Spacer"
 import { shortenAddress } from "@talisman/util/shortenAddress"
 import { Address, BalanceFormatter } from "@talismn/balances"
-import { EvmNetworkId, Token, TokenList } from "@talismn/chaindata-provider"
+import { EvmNetworkId, Token } from "@talismn/chaindata-provider"
 import {
   ChevronDownIcon,
   DiamondIcon,
@@ -20,9 +20,7 @@ import {
   SearchIcon,
   XIcon,
 } from "@talismn/icons"
-import { fetchTokenRates } from "@talismn/token-rates"
 import { classNames } from "@talismn/util"
-import { useQuery } from "@tanstack/react-query"
 import { api } from "@ui/api"
 import { AnalyticsPage } from "@ui/api/analytics"
 import { assetDiscoveryScanProgress, assetDiscoveryScanState } from "@ui/atoms"
@@ -41,9 +39,10 @@ import { useSetting } from "@ui/hooks/useSettings"
 import useToken from "@ui/hooks/useToken"
 import useTokens from "@ui/hooks/useTokens"
 import { isErc20Token } from "@ui/util/isErc20Token"
-import { ChangeEventHandler, FC, ReactNode, useCallback, useEffect, useMemo } from "react"
+import { ChangeEventHandler, FC, ReactNode, useCallback, useEffect, useMemo, useRef } from "react"
 import { Trans, useTranslation } from "react-i18next"
 import { useNavigate } from "react-router-dom"
+import { useIntersection } from "react-use"
 import { useRecoilValue } from "recoil"
 import {
   Button,
@@ -58,43 +57,18 @@ import {
 } from "talisman-ui"
 import urlJoin from "url-join"
 
-import { DashboardLayout } from "../../layout/DashboardLayout"
-import { AccountsStack } from "./Accounts/AccountIconsStack"
+import { DashboardLayout } from "../../../layout/DashboardLayout"
+import { AccountsStack } from "../Accounts/AccountIconsStack"
+import {
+  useAssetDiscoveryFetchTokenRates,
+  useAssetDiscoveryTokenRate,
+} from "./useAssetDiscoveryTokenRates"
 
 const ANALYTICS_PAGE: AnalyticsPage = {
   container: "Fullscreen",
   feature: "Asset Discovery",
   featureVersion: 1,
   page: "Settings - Asset Discovery",
-}
-
-const TOKEN_RATES_CACHE: TokenList = {}
-
-// our main token rates store only fetches active tokens, this obviously doesn't work here
-const useDiscoveredTokenRates = () => {
-  const { tokenIds } = useRecoilValue(assetDiscoveryScanProgress)
-  const { tokens } = useTokens({ activeOnly: false, includeTestnets: true })
-  const tokenList = useMemo(
-    () => Object.fromEntries(tokens.filter((t) => tokenIds.includes(t.id)).map((t) => [t.id, t])),
-    [tokenIds, tokens]
-  )
-
-  const { data } = useQuery({
-    queryKey: ["useDiscoveredTokenRates", tokenList],
-    queryFn: () => fetchTokenRates(tokenList),
-    refetchInterval: 60_000,
-    refetchOnMount: false,
-    refetchOnWindowFocus: false,
-    refetchOnReconnect: false,
-    retry: false, // don't retry on error, which is most likely due to rate limit
-  })
-
-  return Object.assign(TOKEN_RATES_CACHE, data ?? {})
-}
-
-const useDiscoveredTokenRate = (tokenId: TokenId | undefined) => {
-  const tokenRates = useDiscoveredTokenRates()
-  return tokenId ? tokenRates[tokenId] : undefined
 }
 
 const TokenTypePill: FC<{ type: Token["type"]; className?: string }> = ({ type, className }) => {
@@ -173,18 +147,21 @@ const useCoingeckoUrl = (token: Token | undefined) => {
   )
 }
 
-const AssetRow: FC<{ tokenId: TokenId; assets: DiscoveredBalance[] }> = ({ tokenId, assets }) => {
+const AssetRowContent: FC<{ tokenId: TokenId; assets: DiscoveredBalance[] }> = ({
+  tokenId,
+  assets,
+}) => {
   const { t } = useTranslation("admin")
   const token = useToken(tokenId)
   const evmNetwork = useEvmNetwork(token?.evmNetwork?.id)
-  const tokenRates = useDiscoveredTokenRate(token?.id)
+  const tokenRates = useAssetDiscoveryTokenRate(token?.id)
   const activeEvmNetworks = useActiveEvmNetworksState()
   const activeTokens = useActiveTokensState()
 
   const balance = useMemo(() => {
     if (!token) return null
     const plancks = assets.reduce((acc, asset) => acc + BigInt(asset.balance ?? 0), 0n)
-    return new BalanceFormatter(plancks, token?.decimals, tokenRates)
+    return new BalanceFormatter(plancks, token?.decimals, tokenRates ?? undefined)
   }, [assets, token, tokenRates])
 
   const allAccounts = useAccounts()
@@ -227,11 +204,7 @@ const AssetRow: FC<{ tokenId: TokenId; assets: DiscoveredBalance[] }> = ({ token
   if (!token || !evmNetwork) return null
 
   return (
-    <div
-      className={
-        "bg-grey-900 grid h-32 grid-cols-[1fr_1fr_1fr_10rem] items-center gap-x-8 rounded-sm px-8"
-      }
-    >
+    <div className="bg-grey-900 grid h-32 grid-cols-[1fr_1fr_1fr_10rem] items-center gap-x-8 rounded-sm px-8">
       <div className="flex items-center gap-6">
         <div>
           <TokenLogo tokenId={tokenId} className="shrink-0 text-xl" />
@@ -272,9 +245,10 @@ const AssetRow: FC<{ tokenId: TokenId; assets: DiscoveredBalance[] }> = ({ token
           decimals={token.decimals}
           symbol={token.symbol}
           isBalance
+          noCountUp
         />
         {tokenRates ? (
-          <Fiat amount={balance} isBalance className="text-body-secondary text-sm" />
+          <Fiat amount={balance} isBalance noCountUp className="text-body-secondary text-sm" />
         ) : (
           <span className="text-body-secondary text-sm">-</span>
         )}
@@ -312,9 +286,27 @@ const AssetRow: FC<{ tokenId: TokenId; assets: DiscoveredBalance[] }> = ({ token
   )
 }
 
+const AssetRow: FC<{ tokenId: TokenId; assets: DiscoveredBalance[] }> = ({ tokenId, assets }) => {
+  const refContainer = useRef<HTMLDivElement>(null)
+  const intersection = useIntersection(refContainer, {
+    root: null,
+    rootMargin: "1000px",
+  })
+
+  // render content only if visible on screen, to prevent performance if many tokens are found. ex: Vitalik's address
+  return (
+    <div ref={refContainer} className={"h-32"}>
+      {!!intersection?.isIntersecting && <AssetRowContent tokenId={tokenId} assets={assets} />}
+    </div>
+  )
+}
+
 const AssetTable: FC = () => {
   const { t } = useTranslation("admin")
-  const { balances, balancesByTokenId } = useRecoilValue(assetDiscoveryScanProgress)
+  const { balances, balancesByTokenId, tokenIds } = useRecoilValue(assetDiscoveryScanProgress)
+
+  // this hook is in charge of fetching the token rates for the tokens that were discovered
+  useAssetDiscoveryFetchTokenRates()
 
   if (!balances.length) return null
 
@@ -327,8 +319,8 @@ const AssetTable: FC = () => {
         <div></div>
       </div>
 
-      {Object.entries(balancesByTokenId).map(([tokenId, assets]) => (
-        <AssetRow key={tokenId} tokenId={tokenId} assets={assets} />
+      {tokenIds.map((tokenId) => (
+        <AssetRow key={tokenId} tokenId={tokenId} assets={balancesByTokenId[tokenId]} />
       ))}
     </div>
   )
