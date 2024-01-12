@@ -24,6 +24,7 @@ export const AllAccountsHeader: FC<{ accounts: AccountJsonAny[] }> = ({ accounts
   const handleClick = useCallback(() => navigate("/portfolio/assets"), [navigate])
   const ref = useRef<HTMLDivElement>(null)
   const isHovered = useHoverDirty(ref)
+  const disabled = useMemo(() => !accounts.length, [accounts.length])
 
   return (
     <div ref={ref} className="relative h-[11.4rem] w-full">
@@ -31,17 +32,19 @@ export const AllAccountsHeader: FC<{ accounts: AccountJsonAny[] }> = ({ accounts
         type="button"
         className={classNames(
           "flex h-full w-full items-center justify-end gap-4 overflow-hidden rounded-sm p-6 text-lg",
-          "hover:bg-grey-800 bg-black-secondary text-body-secondary transition-colors duration-75 hover:text-white"
+          "bg-black-secondary text-body-secondary transition-colors duration-75",
+          !disabled && "hover:bg-grey-800 hover:text-white"
         )}
-        onClick={handleClick}
-        disabled={!accounts.length}
+        onClick={!disabled ? handleClick : undefined}
+        disabled={disabled}
       >
-        <AllAccountsHeaderBackground accounts={accounts} />
-        {!!accounts.length && <ChevronRightIcon className="z-10" />}
+        {!disabled && <AllAccountsHeaderBackground accounts={accounts} />}
+        {!disabled && <ChevronRightIcon className="z-10" />}
       </button>
       <TotalFiatBalance
         className="pointer-events-none absolute left-0 top-0 h-full w-full px-6"
         mouseOver={isHovered}
+        disabled={disabled}
       />
     </div>
   )

@@ -350,20 +350,22 @@ export const PortfolioAccounts = () => {
   }, [])
 
   return (
-    <div className="flex flex-col gap-12 pb-12">
-      <Accounts
-        accounts={accounts}
-        folder={folder}
-        folderTotal={folderTotal}
-        portfolioOptions={portfolioOptions}
-        watchedOptions={watchedOptions}
-      />
+    <>
+      <div className="flex flex-col gap-12 pb-12">
+        <Accounts
+          accounts={accounts}
+          folder={folder}
+          folderTotal={folderTotal}
+          portfolioOptions={portfolioOptions}
+          watchedOptions={watchedOptions}
+        />
+        {showGetStartedPopup && <NoAccountsPopup accounts={accounts} />}
+      </div>
       {fetchBalances && (
         <Suspense fallback={<SuspenseTracker name="BalancesLoader" />}>
           <BalancesLoader />
         </Suspense>
       )}
-      {showGetStartedPopup && <NoAccountsPopup accounts={accounts} />}
-    </div>
+    </>
   )
 }
