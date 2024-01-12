@@ -1,27 +1,25 @@
-import {
-  accountsCatalogState,
-  accountsQuery,
-  accountsState,
-  balanceTotalsState,
-  settingQuery,
-} from "@ui/atoms"
-import { selector, useRecoilValue } from "recoil"
+import { accountsCatalogState, accountsQuery, balanceTotalsState, settingQuery } from "@ui/atoms"
+import { selector, useRecoilValue, waitForAll } from "recoil"
 
 const portfolioAccountsState = selector({
   key: "portfolioAccountsState",
   get: ({ get }) => {
-    const accounts = get(accountsState)
-    const ownedAccounts = get(accountsQuery("owned"))
-    const portfolioAccounts = get(accountsQuery("portfolio"))
-    const catalog = get(accountsCatalogState)
-    const currency = get(settingQuery("selectedCurrency"))
-    const balanceTotals = get(balanceTotalsState).filter((b) => b.currency === currency)
-
-    const sumPerAddress = Object.fromEntries(
-      balanceTotals.filter((t) => t.currency === currency).map((t) => [t.address, t.total])
+    const [accounts, ownedAccounts, portfolioAccounts, catalog, currency, allBalanceTotals] = get(
+      waitForAll([
+        accountsQuery("all"),
+        accountsQuery("owned"),
+        accountsQuery("portfolio"),
+        accountsCatalogState,
+        settingQuery("selectedCurrency"),
+        balanceTotalsState,
+      ])
     )
+
+    const balanceTotals = allBalanceTotals.filter((b) => b.currency === currency)
+
+    const totalPerAddress = Object.fromEntries(balanceTotals.map((t) => [t.address, t.total]))
     const balanceTotalPerAccount = Object.fromEntries(
-      accounts.map((a) => [a.address, sumPerAddress[a.address] ?? 0])
+      accounts.map((a) => [a.address, totalPerAddress[a.address] ?? 0])
     )
 
     const portfolioTotal = portfolioAccounts.reduce(
@@ -47,6 +45,4 @@ const portfolioAccountsState = selector({
   },
 })
 
-export const usePortfolioAccounts = () => {
-  return useRecoilValue(portfolioAccountsState)
-}
+export const usePortfolioAccounts = () => useRecoilValue(portfolioAccountsState)

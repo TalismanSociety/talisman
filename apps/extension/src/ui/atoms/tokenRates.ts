@@ -1,16 +1,24 @@
+import { db } from "@core/db"
 import { TokenId } from "@talismn/chaindata-provider"
 import { DbTokenRates, TokenRateCurrency } from "@talismn/token-rates"
-import { DefaultValue, selector, selectorFamily } from "recoil"
+import { api } from "@ui/api"
+import { liveQuery } from "dexie"
+import { DefaultValue, atom, selector, selectorFamily } from "recoil"
 
-import { mainState } from "./main"
-import { settingQuery } from "./settingsAndApp"
+import { settingQuery } from "./settings"
 
-export const tokenRatesState = selector<DbTokenRates[]>({
+const NO_OP = () => {}
+
+export const tokenRatesState = atom<DbTokenRates[]>({
   key: "tokenRatesState",
-  get: ({ get }) => {
-    const { tokenRates } = get(mainState)
-    return tokenRates
-  },
+  effects: [
+    ({ setSelf }) => {
+      const obsEvmNetworks = liveQuery(() => db.tokenRates.toArray())
+      const sub = obsEvmNetworks.subscribe(setSelf)
+      return () => sub.unsubscribe()
+    },
+    () => api.tokenRates(NO_OP),
+  ],
 })
 
 export const tokenRatesMapState = selector({
@@ -47,9 +55,11 @@ export const selectableCurrenciesState = selector<readonly TokenRateCurrency[]>(
 
 export const selectedCurrencyState = selector<TokenRateCurrency>({
   key: "selectedCurrency",
-  get: ({ get }) =>
-    get(selectableCurrenciesState).includes(get(settingQuery("selectedCurrency")))
+  get: ({ get }) => {
+    const selectableCurrencies = get(selectableCurrenciesState)
+    return selectableCurrencies.includes(get(settingQuery("selectedCurrency")))
       ? get(settingQuery("selectedCurrency"))
-      : get(selectableCurrenciesState).at(0) ?? "usd",
+      : selectableCurrencies.at(0) ?? "usd"
+  },
   set: ({ set }, newValue) => set(settingQuery("selectedCurrency"), newValue),
 })

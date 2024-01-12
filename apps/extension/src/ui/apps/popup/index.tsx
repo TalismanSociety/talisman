@@ -12,8 +12,7 @@ import { AccountRemoveModal } from "@ui/domains/Account/AccountRemoveModal"
 import { AccountRenameModal } from "@ui/domains/Account/AccountRenameModal"
 import { CopyAddressModal } from "@ui/domains/CopyAddress"
 import { DatabaseErrorAlert } from "@ui/domains/Settings/DatabaseErrorAlert"
-import { useIsLoggedIn } from "@ui/hooks/useIsLoggedIn"
-import { useIsOnboarded } from "@ui/hooks/useIsOnboarded"
+import { useLoginCheck } from "@ui/hooks/useLoginCheck"
 import { Suspense, useEffect } from "react"
 import { Navigate, Route, Routes } from "react-router-dom"
 
@@ -30,8 +29,7 @@ import { EthereumSignRequest } from "./pages/Sign/ethereum"
 import { SubstrateSignRequest } from "./pages/Sign/substrate"
 
 const Popup = () => {
-  const isOnboarded = useIsOnboarded()
-  const isLoggedIn = useIsLoggedIn()
+  const { isLoggedIn, isOnboarded } = useLoginCheck()
 
   // force onboarding if not onboarded
   useEffect(() => {

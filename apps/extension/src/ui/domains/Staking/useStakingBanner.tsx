@@ -14,7 +14,7 @@ import useAccounts from "@ui/hooks/useAccounts"
 import { useAppState } from "@ui/hooks/useAppState"
 import { useCallback, useMemo } from "react"
 import { useTranslation } from "react-i18next"
-import { selector, useRecoilValue } from "recoil"
+import { selector, useRecoilValue, waitForAll } from "recoil"
 
 import { colours } from "./helpers"
 
@@ -36,8 +36,7 @@ const ownedBalancesState = selector({
 const nomPoolEligibleAddressBalancesState = selector({
   key: "nomPoolEligibleAddressBalancesState",
   get: ({ get }) => {
-    const balances = get(ownedBalancesState)
-    const accounts = get(accountsQuery("owned"))
+    const [balances, accounts] = get(waitForAll([ownedBalancesState, accountsQuery("owned")]))
 
     const substrateAddresses = accounts
       .filter(({ type }) => type === "sr25519")
@@ -119,8 +118,10 @@ const nomPoolStakedBalancesState = selector({
 })
 
 const useNomPoolStakingEligibility = () => {
-  const eligibleAddressBalances = useRecoilValue(nomPoolEligibleAddressBalancesState)
-  const nomPoolStake = useRecoilValue(nomPoolStakedBalancesState)
+  const [eligibleAddressBalances, nomPoolStake] = useRecoilValue(
+    waitForAll([nomPoolEligibleAddressBalancesState, nomPoolStakedBalancesState])
+  )
+
   const accounts = useAccounts("owned")
   // only balances on substrate accounts are eligible for nom pool staking
   const substrateAddresses = useMemo(
@@ -175,8 +176,9 @@ type EvmLsdEligibility = Record<Address, Array<keyof typeof EVM_LSD_PAIRS>>
 const evmLsdEligibleAddressesState = selector({
   key: "evmLsdEligibleAddressesState",
   get: ({ get }) => {
-    const balances = get(balancesFilterQuery("all"))
-    const accounts = get(accountsQuery("owned"))
+    const [balances, accounts] = get(
+      waitForAll([balancesFilterQuery("owned"), accountsQuery("owned")])
+    )
 
     // only balances on ethereum accounts are eligible for lido staking
     const ethereumAddresses = accounts

@@ -18,13 +18,6 @@ test("Can get hasBraveWarningBeenShown appState data", async () => {
   await waitFor(() => expect(result.current[0]).toBe(DEFAULT_APP_STATE.hasBraveWarningBeenShown))
 })
 
-test("Can get hasFunds appState data", async () => {
-  const { result } = renderHook(() => useAppState("hasFunds"), {
-    wrapper: TestWrapper,
-  })
-  await waitFor(() => expect(result.current[0]).toBe(DEFAULT_APP_STATE.hasFunds))
-})
-
 test("Can get hasSpiritKey appState data", async () => {
   const { result } = renderHook(() => useAppState("hasSpiritKey"), {
     wrapper: TestWrapper,

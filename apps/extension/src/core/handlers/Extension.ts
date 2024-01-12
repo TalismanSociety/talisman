@@ -33,8 +33,6 @@ import { fetchHasSpiritKey } from "@core/util/hasSpiritKey"
 import { isTalismanHostname } from "@core/util/isTalismanHostname"
 import keyring from "@polkadot/ui-keyring"
 import * as Sentry from "@sentry/browser"
-import { db as balancesDb } from "@talismn/balances"
-import { liveQuery } from "dexie"
 import Browser from "webextension-polyfill"
 
 let CONFIG_UPDATE_INTERVAL = 1000 * 60 * 5 // 5 minutes
@@ -124,7 +122,6 @@ export default class Extension extends ExtensionHandler {
     }, 1000) // initial call immediately after extension start
 
     this.initDb()
-    this.initWalletFunding()
     this.cleanup()
 
     // keeps balance totals table up to date
@@ -202,31 +199,6 @@ export default class Extension extends ExtensionHandler {
 
     // marks all pending transaction as status unknown
     updateTransactionsRestart()
-  }
-
-  private initWalletFunding() {
-    // We need to show a specific UI until wallet has funds in it.
-    // Note that hasFunds flag is turned off when onboarding without importing a seed.
-    // Turn on the hasFunds flag as soon as there is a positive balance
-    const subAppStore = this.stores.app.observable.subscribe(({ hasFunds, onboarded }) => {
-      if (hasFunds) {
-        if (onboarded === "TRUE") subAppStore.unsubscribe()
-        return
-      }
-
-      // look only for free balance because reserved and frozen properties are not indexed
-      const obsHasFunds = liveQuery(
-        async () => await balancesDb.balances.filter((balance) => balance.free !== "0").count()
-      )
-      const subBalances = obsHasFunds.subscribe((positiveBalances) => {
-        if (positiveBalances) {
-          if (!hasFunds) talismanAnalytics.capture("wallet funded")
-          this.stores.app.set({ hasFunds: true })
-          subBalances.unsubscribe()
-          subAppStore.unsubscribe()
-        }
-      })
-    })
   }
 
   private async checkSpiritKeyOwnership() {
