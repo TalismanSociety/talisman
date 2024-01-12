@@ -1,12 +1,12 @@
 import { ArrowDownIcon, CreditCardIcon } from "@talismn/icons"
-import { useSelectedAccount } from "@ui/domains/Portfolio/SelectedAccountContext"
+import { useSelectedAccount } from "@ui/domains/Portfolio/useSelectedAccount"
 import { useAnalytics } from "@ui/hooks/useAnalytics"
 import { useIsFeatureEnabled } from "@ui/hooks/useFeatures"
 import { useCallback } from "react"
 import { useTranslation } from "react-i18next"
 import { PillButton } from "talisman-ui"
 
-import { useBuyTokensModal } from "../Asset/Buy/BuyTokensModalContext"
+import { useBuyTokensModal } from "../Asset/Buy/useBuyTokensModal"
 import { useCopyAddressModal } from "../CopyAddress"
 
 type NoTokensMessageProps = {

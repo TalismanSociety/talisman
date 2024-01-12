@@ -1,9 +1,9 @@
 import { ChevronDownIcon } from "@talismn/icons"
 import { classNames } from "@talismn/util"
-import { useCurrentSite } from "@ui/apps/popup/context/CurrentSiteContext"
 import ConnectedAccountsDrawer from "@ui/domains/Site/ConnectedAccountsDrawer"
 import useAccounts from "@ui/hooks/useAccounts"
 import { useAuthorisedSites } from "@ui/hooks/useAuthorisedSites"
+import { useCurrentSite } from "@ui/hooks/useCurrentSite"
 import { FC, useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
 

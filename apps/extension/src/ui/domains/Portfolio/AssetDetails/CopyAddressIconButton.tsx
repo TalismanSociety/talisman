@@ -6,7 +6,7 @@ import { useSetting } from "@ui/hooks/useSettings"
 import useTokens from "@ui/hooks/useTokens"
 import { useCallback } from "react"
 
-import { useSelectedAccount } from "../SelectedAccountContext"
+import { useSelectedAccount } from "../useSelectedAccount"
 
 export const CopyAddressButton = ({
   symbol,

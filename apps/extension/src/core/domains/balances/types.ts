@@ -1,6 +1,7 @@
 import { Address, AddressesByChain } from "@core/types/base"
 import { BalanceJson, BalanceJsonList } from "@talismn/balances"
 import { ChainId, EvmNetwork, EvmNetworkId, TokenId } from "@talismn/chaindata-provider"
+import { TokenRateCurrency } from "@talismn/token-rates"
 
 export { Balances, Balance, BalanceFormatter, filterMirrorTokens } from "@talismn/balances"
 export type { BalanceJson, BalanceJsonList } from "@talismn/balances"
@@ -44,6 +45,12 @@ export type RequestNomPoolStake = {
 }
 
 export type ResponseNomPoolStake = Record<Address, NomPoolStakedBalance | null>
+
+export type BalanceTotal = {
+  address: Address
+  total: number
+  currency: TokenRateCurrency
+}
 
 export interface BalancesMessages {
   // balance message signatures

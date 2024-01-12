@@ -1,17 +1,16 @@
+import { SuspenseTracker } from "@talisman/components/SuspenseTracker"
 import { CurrentAccountAvatar } from "@ui/domains/Account/CurrentAccountAvatar"
 import { AssetDiscoveryPopupAlert } from "@ui/domains/AssetDiscovery/AssetDiscoveryPopupAlert"
 import { EvmNetworkSelectPill } from "@ui/domains/Ethereum/EvmNetworkSelectPill"
-import { PortfolioProvider } from "@ui/domains/Portfolio/context"
 import BraveWarningPopupBanner from "@ui/domains/Settings/BraveWarning/BraveWarningPopupBanner"
 import MigratePasswordAlert from "@ui/domains/Settings/MigratePasswordAlert"
 import { ConnectedAccountsPill } from "@ui/domains/Site/ConnectedAccountsPill"
-import { StakingBannerProvider } from "@ui/domains/Staking/context"
 import { useAuthorisedSites } from "@ui/hooks/useAuthorisedSites"
+import { useCurrentSite } from "@ui/hooks/useCurrentSite"
 import { useHasAccounts } from "@ui/hooks/useHasAccounts"
 import { Suspense, useMemo } from "react"
 import { Route, Routes, useLocation } from "react-router-dom"
 
-import { useCurrentSite } from "../../context/CurrentSiteContext"
 import { PopupContent, PopupHeader, PopupLayout } from "../../Layout/PopupLayout"
 import { NoAccounts } from "../NoAccounts"
 import { PortfolioAccounts } from "./PortfolioAccounts"
@@ -22,28 +21,18 @@ import { PortfolioTryTalisman, PortfolioTryTalismanHeader } from "./PortfolioTry
 import { PortfolioWhatsNew, PortfolioWhatsNewHeader } from "./PortfolioWhatsNew"
 
 export const Portfolio = () => {
-  const currentSite = useCurrentSite()
-  const authorisedSites = useAuthorisedSites()
-  const isAuthorised = useMemo(
-    () => Boolean(currentSite?.id && authorisedSites[currentSite?.id]),
-    [authorisedSites, currentSite?.id]
-  )
   const hasAccounts = useHasAccounts()
-
   return (
-    <PortfolioProvider>
-      <StakingBannerProvider>
-        {/* share layout to prevent sidebar flickering when navigating between the 2 pages */}
-        <PopupLayout withBottomNav>
-          <PortfolioHeader isAuthorised={isAuthorised} />
-          <PopupContent>
-            {hasAccounts && <HasAccountsPortfolioContent />}
-            {!hasAccounts && <NoAccountsPortfolioContent />}
-          </PopupContent>
-          <AssetDiscoveryPopupAlert />
-        </PopupLayout>
-      </StakingBannerProvider>
-    </PortfolioProvider>
+    <PopupLayout withBottomNav>
+      <PortfolioHeader />
+      <PopupContent>
+        {hasAccounts && <HasAccountsPortfolioContent />}
+        {!hasAccounts && <NoAccountsPortfolioContent />}
+      </PopupContent>
+      <Suspense fallback={<SuspenseTracker name="AssetDiscoveryPopupAlert" />}>
+        <AssetDiscoveryPopupAlert />
+      </Suspense>
+    </PopupLayout>
   )
 }
 
@@ -60,28 +49,37 @@ const AccountAvatar = () => {
   )
 }
 
-export const PortfolioHeader = ({ isAuthorised }: { isAuthorised?: boolean }) => (
-  <Routes>
-    <Route path="whats-new" element={<PortfolioWhatsNewHeader />} />
-    <Route path="learn-more" element={<PortfolioLearnMoreHeader />} />
-    <Route path="try-talisman" element={<PortfolioTryTalismanHeader />} />
-    <Route
-      path="*"
-      element={
-        isAuthorised ? (
-          <header className="my-8 flex h-[3.6rem] w-full shrink-0 items-center justify-between gap-4 px-12">
-            <ConnectedAccountsPill />
-            <EvmNetworkSelectPill />
-          </header>
-        ) : (
-          <PopupHeader right={<AccountAvatar />}>
-            <ConnectedAccountsPill />
-          </PopupHeader>
-        )
-      }
-    />
-  </Routes>
-)
+export const PortfolioHeader = () => {
+  const currentSite = useCurrentSite()
+  const authorisedSites = useAuthorisedSites()
+  const isAuthorised = useMemo(
+    () => Boolean(currentSite?.id && authorisedSites[currentSite?.id]),
+    [authorisedSites, currentSite?.id]
+  )
+
+  return (
+    <Routes>
+      <Route path="whats-new" element={<PortfolioWhatsNewHeader />} />
+      <Route path="learn-more" element={<PortfolioLearnMoreHeader />} />
+      <Route path="try-talisman" element={<PortfolioTryTalismanHeader />} />
+      <Route
+        path="*"
+        element={
+          isAuthorised ? (
+            <header className="my-8 flex h-[3.6rem] w-full shrink-0 items-center justify-between gap-4 px-12">
+              <ConnectedAccountsPill />
+              <EvmNetworkSelectPill />
+            </header>
+          ) : (
+            <PopupHeader right={<AccountAvatar />}>
+              <ConnectedAccountsPill />
+            </PopupHeader>
+          )
+        }
+      />
+    </Routes>
+  )
+}
 
 const HasAccountsPortfolioContent = () => (
   <>

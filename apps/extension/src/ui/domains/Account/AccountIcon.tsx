@@ -33,7 +33,7 @@ const ChainBadge = ({ genesisHash }: { genesisHash: string }) => {
 const PolkadotAvatar = ({ seed }: { seed: string }) => {
   const theme = useMemo(() => (isEthereumAddress(seed) ? "ethereum" : "polkadot"), [seed])
   return (
-    <Suspense fallback={<div className="identicon-loader"></div>}>
+    <Suspense>
       <IdentIcon
         value={seed}
         theme={theme}
@@ -58,7 +58,11 @@ export const AccountIcon: FC<AccountIconProps> = ({ address, className, genesisH
       ) : (
         <TalismanOrb seed={address} />
       )}
-      {genesisHash && <ChainBadge genesisHash={genesisHash} />}
+      {genesisHash && (
+        <Suspense>
+          <ChainBadge genesisHash={genesisHash} />
+        </Suspense>
+      )}
     </div>
   )
 }

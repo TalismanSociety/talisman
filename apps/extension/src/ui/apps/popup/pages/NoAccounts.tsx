@@ -1,8 +1,10 @@
+import { AccountJsonAny } from "@core/domains/accounts/types"
 import { api } from "@ui/api"
 import { AnalyticsPage, sendAnalyticsEvent } from "@ui/api/analytics"
 import { AllAccountsHeader } from "@ui/apps/popup/components/AllAccountsHeader"
 import { NoAccounts as NoAccountsComponent } from "@ui/domains/Portfolio/EmptyStates/NoAccounts"
 import { useAnalyticsPageView } from "@ui/hooks/useAnalyticsPageView"
+import { usePortfolioAccounts } from "@ui/hooks/usePortfolioAccounts"
 import { useCallback } from "react"
 import { useNavigate } from "react-router-dom"
 
@@ -13,7 +15,7 @@ const ANALYTICS_PAGE: AnalyticsPage = {
   page: "Popup - No Accounts",
 }
 
-export const NoAccountsPopup = ({ hasSomeAccounts }: { hasSomeAccounts?: boolean }) => {
+export const NoAccountsPopup = ({ accounts }: { accounts: AccountJsonAny[] }) => {
   useAnalyticsPageView(ANALYTICS_PAGE)
 
   const navigate = useNavigate()
@@ -40,7 +42,7 @@ export const NoAccountsPopup = ({ hasSomeAccounts }: { hasSomeAccounts?: boolean
 
   return (
     <NoAccountsComponent
-      hasSomeAccounts={hasSomeAccounts}
+      hasSomeAccounts={!!accounts.length}
       onDeposit={onDeposit}
       onAddAccount={onAddAccount}
       onTryTalisman={onTryTalisman}
@@ -49,9 +51,13 @@ export const NoAccountsPopup = ({ hasSomeAccounts }: { hasSomeAccounts?: boolean
   )
 }
 
-export const NoAccounts = ({ hasSomeAccounts }: { hasSomeAccounts?: boolean }) => (
-  <div className="flex flex-col items-center gap-16 pb-12">
-    <AllAccountsHeader disabled />
-    <NoAccountsPopup hasSomeAccounts={hasSomeAccounts} />
-  </div>
-)
+export const NoAccounts = () => {
+  const { accounts } = usePortfolioAccounts()
+
+  return (
+    <div className="flex flex-col items-center gap-16 pb-12">
+      <AllAccountsHeader accounts={accounts} />
+      <NoAccountsPopup accounts={accounts} />
+    </div>
+  )
+}

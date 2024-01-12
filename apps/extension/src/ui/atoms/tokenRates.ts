@@ -2,7 +2,8 @@ import { TokenId } from "@talismn/chaindata-provider"
 import { DbTokenRates, TokenRateCurrency } from "@talismn/token-rates"
 import { DefaultValue, selector, selectorFamily } from "recoil"
 
-import { mainState, settingQuery } from "./main"
+import { mainState } from "./main"
+import { settingQuery } from "./settingsAndApp"
 
 export const tokenRatesState = selector<DbTokenRates[]>({
   key: "tokenRatesState",

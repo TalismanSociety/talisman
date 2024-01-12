@@ -6,24 +6,11 @@ import { AUTH_PREFIX } from "@core/domains/sitesAuthorised/types"
 import { FadeIn } from "@talisman/components/FadeIn"
 import { SuspenseTracker } from "@talisman/components/SuspenseTracker"
 import { api } from "@ui/api"
-import {
-  AccountExportModal,
-  AccountExportModalProvider,
-} from "@ui/domains/Account/AccountExportModal"
-import {
-  AccountExportPrivateKeyModal,
-  AccountExportPrivateKeyModalProvider,
-} from "@ui/domains/Account/AccountExportPrivateKeyModal"
-import {
-  AccountRemoveModal,
-  AccountRemoveModalProvider,
-} from "@ui/domains/Account/AccountRemoveModal"
-import {
-  AccountRenameModal,
-  AccountRenameModalProvider,
-} from "@ui/domains/Account/AccountRenameModal"
-import { CopyAddressModal, CopyAddressModalProvider } from "@ui/domains/CopyAddress"
-import { SelectedAccountProvider } from "@ui/domains/Portfolio/SelectedAccountContext"
+import { AccountExportModal } from "@ui/domains/Account/AccountExportModal"
+import { AccountExportPrivateKeyModal } from "@ui/domains/Account/AccountExportPrivateKeyModal"
+import { AccountRemoveModal } from "@ui/domains/Account/AccountRemoveModal"
+import { AccountRenameModal } from "@ui/domains/Account/AccountRenameModal"
+import { CopyAddressModal } from "@ui/domains/CopyAddress"
 import { DatabaseErrorAlert } from "@ui/domains/Settings/DatabaseErrorAlert"
 import { useIsLoggedIn } from "@ui/hooks/useIsLoggedIn"
 import { useIsOnboarded } from "@ui/hooks/useIsOnboarded"
@@ -31,8 +18,6 @@ import { Suspense, useEffect } from "react"
 import { Navigate, Route, Routes } from "react-router-dom"
 
 import { BackupWarningDrawer } from "./components/BackupWarningDrawer"
-import { CurrentSiteProvider } from "./context/CurrentSiteContext"
-import { NavigationProvider } from "./context/NavigationContext"
 import { AddCustomErc20Token } from "./pages/AddCustomErc20Token"
 import { AddEthereumNetwork } from "./pages/AddEthereumNetwork"
 import { Connect } from "./pages/Connect"
@@ -44,7 +29,7 @@ import { SendFundsPage } from "./pages/SendFunds"
 import { EthereumSignRequest } from "./pages/Sign/ethereum"
 import { SubstrateSignRequest } from "./pages/Sign/substrate"
 
-const InnerPopup = () => {
+const Popup = () => {
   const isOnboarded = useIsOnboarded()
   const isLoggedIn = useIsLoggedIn()
 
@@ -63,66 +48,33 @@ const InnerPopup = () => {
 
   return (
     <FadeIn className="h-full w-full">
-      <SelectedAccountProvider isPopup>
-        <AccountRemoveModalProvider>
-          <AccountRenameModalProvider>
-            <AccountExportPrivateKeyModalProvider>
-              <AccountExportModalProvider>
-                <CurrentSiteProvider>
-                  <NavigationProvider>
-                    <CopyAddressModalProvider>
-                      <Routes>
-                        <Route path="portfolio/*" element={<Portfolio />}></Route>
-                        <Route path={`${AUTH_PREFIX}/:id`} element={<Connect />}></Route>
-                        <Route
-                          path={`${SIGNING_TYPES.ETH_SIGN}/:id`}
-                          element={<EthereumSignRequest />}
-                        ></Route>
-                        <Route
-                          path={`${SIGNING_TYPES.ETH_SEND}/:id`}
-                          element={<EthereumSignRequest />}
-                        ></Route>
-                        <Route
-                          path={`${SIGNING_TYPES.SUBSTRATE_SIGN}/:id`}
-                          element={<SubstrateSignRequest />}
-                        ></Route>
-                        <Route path={`${METADATA_PREFIX}/:id`} element={<Metadata />}></Route>
-                        <Route path={`${ENCRYPT_ENCRYPT_PREFIX}/:id`} element={<Encrypt />}></Route>
-                        <Route path={`${ENCRYPT_DECRYPT_PREFIX}/:id`} element={<Encrypt />}></Route>
-                        <Route
-                          path={`${ETH_NETWORK_ADD_PREFIX}/:id`}
-                          element={<AddEthereumNetwork />}
-                        ></Route>
-                        <Route
-                          path={`${WATCH_ASSET_PREFIX}/:id`}
-                          element={<AddCustomErc20Token />}
-                        ></Route>
-                        <Route path="send/*" element={<SendFundsPage />} />
-                        <Route path="*" element={<Navigate to="/portfolio" replace />} />
-                      </Routes>
-                      <AccountRenameModal />
-                      <AccountRemoveModal />
-                      <AccountExportModal />
-                      <AccountExportPrivateKeyModal />
-                      <CopyAddressModal />
-                      <DatabaseErrorAlert container="popup" />
-                    </CopyAddressModalProvider>
-                  </NavigationProvider>
-                </CurrentSiteProvider>
-              </AccountExportModalProvider>
-            </AccountExportPrivateKeyModalProvider>
-          </AccountRenameModalProvider>
-        </AccountRemoveModalProvider>
-      </SelectedAccountProvider>
-      <BackupWarningDrawer />
+      <Suspense fallback={<SuspenseTracker name="Routes" />}>
+        <Routes>
+          <Route path="portfolio/*" element={<Portfolio />} />
+          <Route path={`${AUTH_PREFIX}/:id`} element={<Connect />} />
+          <Route path={`${SIGNING_TYPES.ETH_SIGN}/:id`} element={<EthereumSignRequest />} />
+          <Route path={`${SIGNING_TYPES.ETH_SEND}/:id`} element={<EthereumSignRequest />} />
+          <Route path={`${SIGNING_TYPES.SUBSTRATE_SIGN}/:id`} element={<SubstrateSignRequest />} />
+          <Route path={`${METADATA_PREFIX}/:id`} element={<Metadata />} />
+          <Route path={`${ENCRYPT_ENCRYPT_PREFIX}/:id`} element={<Encrypt />} />
+          <Route path={`${ENCRYPT_DECRYPT_PREFIX}/:id`} element={<Encrypt />} />
+          <Route path={`${ETH_NETWORK_ADD_PREFIX}/:id`} element={<AddEthereumNetwork />} />
+          <Route path={`${WATCH_ASSET_PREFIX}/:id`} element={<AddCustomErc20Token />} />
+          <Route path="send/*" element={<SendFundsPage />} />
+          <Route path="*" element={<Navigate to="/portfolio" replace />} />
+        </Routes>
+      </Suspense>
+      <Suspense fallback={<SuspenseTracker name="Modals & alerts" />}>
+        <AccountRenameModal />
+        <AccountRemoveModal />
+        <AccountExportModal />
+        <AccountExportPrivateKeyModal />
+        <CopyAddressModal />
+        <DatabaseErrorAlert container="popup" />
+        <BackupWarningDrawer />
+      </Suspense>
     </FadeIn>
   )
 }
-
-const Popup = () => (
-  <Suspense fallback={<SuspenseTracker name="Popup" />}>
-    <InnerPopup />
-  </Suspense>
-)
 
 export default Popup

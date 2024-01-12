@@ -3,7 +3,7 @@ import { ModalDialog } from "talisman-ui"
 import { Modal } from "talisman-ui"
 
 import { BuyTokensForm } from "./BuyTokensForm"
-import { useBuyTokensModal } from "./BuyTokensModalContext"
+import { useBuyTokensModal } from "./useBuyTokensModal"
 
 // This control is injected directly in the layout of dashboard
 export const BuyTokensModal = () => {

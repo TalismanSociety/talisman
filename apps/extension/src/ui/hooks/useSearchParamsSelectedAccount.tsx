@@ -1,12 +1,24 @@
-import { useSearchParams } from "react-router-dom"
+import {} from "@ui/atoms"
 
-import { useAccountByAddress } from "./useAccountByAddress"
+import { AccountJsonAny } from "@core/domains/accounts/types"
+import { accountsState, searchParamsState } from "@ui/atoms"
+import { selector, useRecoilValue } from "recoil"
+
+export const searchParamsSelectedAccount = selector<AccountJsonAny | undefined>({
+  key: "searchParamsSelectedAccount",
+  get: ({ get }) => {
+    const searchParams = get(searchParamsState)
+    const accounts = get(accountsState)
+
+    const address = searchParams.get("account")
+    const account = accounts.find((acc) => acc.address === address)
+
+    return account
+  },
+})
 
 export const useSearchParamsSelectedAccount = () => {
-  const [searchParams] = useSearchParams()
-
-  const address = searchParams.get("account")
-  const account = useAccountByAddress(address !== "all" ? address : undefined) ?? undefined
+  const account = useRecoilValue(searchParamsSelectedAccount)
 
   return { account }
 }

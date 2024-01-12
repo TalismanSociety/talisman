@@ -18,10 +18,10 @@ import {
 } from "@talismn/icons"
 import { api } from "@ui/api"
 import { AnalyticsPage, sendAnalyticsEvent } from "@ui/api/analytics"
-import { useNavigationContext } from "@ui/apps/popup/context/NavigationContext"
 import { BuildVersionPill } from "@ui/domains/Build/BuildVersionPill"
 import { useHasAccounts } from "@ui/hooks/useHasAccounts"
 import useMnemonicBackup from "@ui/hooks/useMnemonicBackup"
+import { usePopupNavOpenClose } from "@ui/hooks/usePopupNavOpenClose"
 import { FC, useCallback } from "react"
 import { useTranslation } from "react-i18next"
 import { useNavigate } from "react-router-dom"
@@ -36,7 +36,7 @@ const ANALYTICS_PAGE: AnalyticsPage = {
 
 export const NavigationDrawer: FC = () => {
   const { t } = useTranslation()
-  const { isOpen, close } = useNavigationContext()
+  const { isOpen, close } = usePopupNavOpenClose()
   const hasAccounts = useHasAccounts()
   const navigate = useNavigate()
 

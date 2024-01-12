@@ -5,7 +5,7 @@ import { Fiat } from "@ui/domains/Asset/Fiat"
 import { useShowStakingBanner } from "@ui/domains/Staking/useShowStakingBanner"
 import { useAnalytics } from "@ui/hooks/useAnalytics"
 import { useBalancesStatus } from "@ui/hooks/useBalancesStatus"
-import { useCallback } from "react"
+import { Suspense, useCallback } from "react"
 import { Trans, useTranslation } from "react-i18next"
 import { useNavigate } from "react-router-dom"
 
@@ -15,7 +15,7 @@ import { useTokenBalancesSummary } from "../useTokenBalancesSummary"
 import { NetworksLogoStack } from "./NetworksLogoStack"
 import { usePortfolioNetworkIds } from "./usePortfolioNetworkIds"
 
-const AssetRowStakingReminder = ({ balances }: AssetRowProps) => {
+const AssetRowStakingReminderInner = ({ balances }: AssetRowProps) => {
   const { t } = useTranslation()
 
   const { token, summary } = useTokenBalancesSummary(balances)
@@ -57,6 +57,14 @@ const AssetRowStakingReminder = ({ balances }: AssetRowProps) => {
   )
 }
 
+const AssetRowStakingReminder = ({ balances }: AssetRowProps) => {
+  const { showBanner } = useShowStakingBanner(balances)
+
+  if (!showBanner) return null
+
+  return <AssetRowStakingReminderInner balances={balances} />
+}
+
 type AssetRowProps = {
   balances: Balances
 }
@@ -67,7 +75,6 @@ export const AssetRow = ({ balances }: AssetRowProps) => {
   const { genericEvent } = useAnalytics()
 
   const status = useBalancesStatus(balances)
-  const { showBanner } = useShowStakingBanner(balances)
 
   const { token, rate, summary } = useTokenBalancesSummary(balances)
 
@@ -83,14 +90,15 @@ export const AssetRow = ({ balances }: AssetRowProps) => {
   if (!token || !summary) return null
 
   return (
-    <>
-      {showBanner && <AssetRowStakingReminder balances={balances} />}
+    <div className="mb-4 overflow-hidden rounded">
+      <Suspense>
+        <AssetRowStakingReminder balances={balances} />
+      </Suspense>
 
       <button
         type="button"
         className={classNames(
-          "text-body-secondary bg-grey-850 hover:bg-grey-800 mb-4 grid w-full grid-cols-[40%_30%_30%] text-left text-base",
-          showBanner ? "rounded-b" : "rounded"
+          "text-body-secondary bg-grey-850 hover:bg-grey-800  grid w-full grid-cols-[40%_30%_30%] text-left text-base"
         )}
         onClick={handleClick}
       >
@@ -153,6 +161,6 @@ export const AssetRow = ({ balances }: AssetRowProps) => {
           )}
         </div>
       </button>
-    </>
+    </div>
   )
 }

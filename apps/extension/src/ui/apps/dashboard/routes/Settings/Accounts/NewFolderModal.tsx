@@ -1,7 +1,6 @@
 import { AccountsCatalogTree } from "@core/domains/accounts/helpers.catalog"
 import { yupResolver } from "@hookform/resolvers/yup"
-import { useOpenClose } from "@talisman/hooks/useOpenClose"
-import { provideContext } from "@talisman/util/provideContext"
+import { useGlobalOpenClose } from "@talisman/hooks/useGlobalOpenClose"
 import { api } from "@ui/api"
 import useAccountsCatalog from "@ui/hooks/useAccountsCatalog"
 import { RefCallback, useCallback, useEffect, useMemo, useRef } from "react"
@@ -11,21 +10,7 @@ import { Button, Modal, ModalDialog } from "talisman-ui"
 import { Checkbox, FormFieldContainer, FormFieldInputText } from "talisman-ui"
 import * as yup from "yup"
 
-const useNewFolderModalProvider = () => {
-  const { isOpen, open, close } = useOpenClose()
-
-  useEffect(() => {
-    close()
-  }, [close])
-
-  return {
-    isOpen,
-    open,
-    close,
-  }
-}
-
-export const [NewFolderModalProvider, useNewFolderModal] = provideContext(useNewFolderModalProvider)
+export const useNewFolderModal = () => useGlobalOpenClose("newFolderModal")
 
 export const NewFolderModal = () => {
   const { t } = useTranslation("admin")

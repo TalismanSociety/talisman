@@ -2,15 +2,15 @@ import { AccountsCatalogTree, TreeFolder, TreeItem } from "@core/domains/account
 import { useMemo } from "react"
 import { useSearchParams } from "react-router-dom"
 
-import useAccountsCatalog from "./useAccountsCatalog"
+import { usePortfolioAccounts } from "./usePortfolioAccounts"
 
 export const useSearchParamsSelectedFolder = () => {
+  const { catalog } = usePortfolioAccounts()
   const [searchParams] = useSearchParams()
 
   const portfolioFolderId = searchParams.get("folder")
   const watchedFolderId = searchParams.get("watchedFolder")
 
-  const catalog = useAccountsCatalog()
   const [folder, treeName] = useMemo((): [
     TreeFolder | undefined,
     AccountsCatalogTree | undefined

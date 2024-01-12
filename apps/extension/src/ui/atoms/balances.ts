@@ -25,7 +25,6 @@ const NO_OP = () => {}
 
 const rawBalancesState = atom<BalanceJson[]>({
   key: "rawBalancesState",
-  default: [],
   effects: [
     // sync from db
     ({ setSelf }) => {
@@ -83,7 +82,7 @@ export const balancesHydrateState = selector<HydrateDb>({
   },
 })
 
-export const allBalancesState = selector({
+const allBalancesState = selector({
   key: "allBalancesState",
   get: ({ get }) => {
     const rawBalances = get(filteredRawBalancesState)

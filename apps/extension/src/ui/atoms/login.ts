@@ -1,30 +1,27 @@
-import { appStore } from "@core/domains/app/store.app"
 import { api } from "@ui/api"
-import { atom } from "recoil"
-import { Subject, combineLatest } from "rxjs"
+import { atom, selector } from "recoil"
 
-// shortcut to prevent using  walletDataState here, as this hook is used before login
-// fetch both at once as they are always used together
-export const loginState = atom<{ isLoggedIn: boolean; isOnboarded: boolean }>({
-  key: "loginState",
+import { appStateQuery } from "./settingsAndApp"
+
+const isLoggedInState = atom<boolean>({
+  key: "isLoggedInState",
   effects: [
     ({ setSelf }) => {
-      const subjectIsLoggedIn = new Subject<boolean>()
-      const unsubIsLoggedIn = api.authStatusSubscribe((v) => subjectIsLoggedIn.next(v === "TRUE"))
-
-      const sub = combineLatest([appStore.observable, subjectIsLoggedIn]).subscribe(
-        ([appState, isLoggedIn]) => {
-          setSelf({
-            isOnboarded: appState.onboarded === "TRUE",
-            isLoggedIn,
-          })
-        }
-      )
+      const unsub = api.authStatusSubscribe((v) => setSelf(v === "TRUE"))
 
       return () => {
-        sub.unsubscribe()
-        unsubIsLoggedIn()
+        unsub()
       }
     },
   ],
+})
+
+// fetch both at once as they are always used together
+export const loginState = selector<{ isOnboarded: boolean; isLoggedIn: boolean }>({
+  key: "loginState",
+  get: ({ get }) => {
+    const isLoggedIn = get(isLoggedInState)
+    const onboarded = get(appStateQuery("onboarded"))
+    return { isLoggedIn, isOnboarded: onboarded === "TRUE" }
+  },
 })

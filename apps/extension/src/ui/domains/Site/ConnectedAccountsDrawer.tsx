@@ -1,7 +1,7 @@
 import { AppPill } from "@talisman/components/AppPill"
 import { ScrollContainer } from "@talisman/components/ScrollContainer"
 import { XIcon } from "@talismn/icons"
-import { useCurrentSite } from "@ui/apps/popup/context/CurrentSiteContext"
+import { useCurrentSite } from "@ui/hooks/useCurrentSite"
 import { FC } from "react"
 import { Drawer } from "talisman-ui"
 import { IconButton } from "talisman-ui"

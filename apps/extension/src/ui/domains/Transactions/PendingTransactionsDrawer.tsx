@@ -45,7 +45,7 @@ import { Fiat } from "../Asset/Fiat"
 import { TokenLogo } from "../Asset/TokenLogo"
 import Tokens from "../Asset/Tokens"
 import { NetworkLogo } from "../Ethereum/NetworkLogo"
-import { useSelectedAccount } from "../Portfolio/SelectedAccountContext"
+import { useSelectedAccount } from "../Portfolio/useSelectedAccount"
 import { TxReplaceDrawer } from "./TxReplaceDrawer"
 import { TxReplaceType } from "./types"
 

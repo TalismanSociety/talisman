@@ -6,6 +6,7 @@ import AppHandler from "@core/domains/app/handler"
 import { featuresStore } from "@core/domains/app/store.features"
 import { AssetDiscoveryHandler } from "@core/domains/assetDiscovery/handler"
 import { BalancesHandler } from "@core/domains/balances"
+import { trackBalanceTotals } from "@core/domains/balances/store.BalanceTotals"
 import { ChainsHandler } from "@core/domains/chains"
 import { EncryptHandler } from "@core/domains/encrypt"
 import { EthHandler } from "@core/domains/ethereum"
@@ -125,6 +126,9 @@ export default class Extension extends ExtensionHandler {
     this.initDb()
     this.initWalletFunding()
     this.cleanup()
+
+    // keeps balance totals table up to date
+    trackBalanceTotals()
   }
 
   private setConfigUpdateTimeout() {

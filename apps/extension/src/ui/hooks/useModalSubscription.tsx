@@ -1,5 +1,5 @@
 import { api } from "@ui/api"
-import { useBuyTokensModal } from "@ui/domains/Asset/Buy/BuyTokensModalContext"
+import { useBuyTokensModal } from "@ui/domains/Asset/Buy/useBuyTokensModal"
 import { useEffect } from "react"
 import Browser from "webextension-polyfill"
 
