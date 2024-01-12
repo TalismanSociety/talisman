@@ -29,7 +29,7 @@ const AssetRowStakingReminderInner = ({ balances }: AssetRowProps) => {
       className={classNames(
         colours?.["text"],
         colours?.["background"],
-        `flex h-[4.1rem] w-full cursor-pointer items-center justify-between rounded-t bg-gradient-to-b px-8 text-sm`
+        `flex h-[4.1rem] w-full cursor-pointer items-center justify-between rounded-t px-8 text-sm`
       )}
     >
       <button type="button" className="flex items-center gap-4" onClick={handleClickStakingBanner}>
