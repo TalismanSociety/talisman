@@ -1,6 +1,7 @@
 import { EvmAddress } from "@core/domains/ethereum/types"
 import { EthPriorityOptionName } from "@core/domains/signing/types"
 import { AppPill } from "@talisman/components/AppPill"
+import { SuspenseTracker } from "@talisman/components/SuspenseTracker"
 import { WithTooltip } from "@talisman/components/Tooltip"
 import { EvmNetworkId, TokenId } from "@talismn/chaindata-provider"
 import { InfoIcon } from "@talismn/icons"
@@ -18,6 +19,7 @@ import { EthSignBody } from "@ui/domains/Sign/Ethereum/EthSignBody"
 import { SignAlertMessage } from "@ui/domains/Sign/SignAlertMessage"
 import { SignHardwareEthereum } from "@ui/domains/Sign/SignHardwareEthereum"
 import { useEthSignTransactionRequest } from "@ui/domains/Sign/SignRequestContext"
+import { SignViewBodyShimmer } from "@ui/domains/Sign/Views/SignViewBodyShimmer"
 import { Suspense, useCallback, useEffect, useMemo } from "react"
 import { useTranslation } from "react-i18next"
 import { Button, Tooltip, TooltipContent, TooltipTrigger } from "talisman-ui"
@@ -137,21 +139,30 @@ export const EthSignTransactionRequest = () => {
       <PopupHeader right={<SignAccountAvatar account={account} />}>
         <AppPill url={url} />
       </PopupHeader>
-      <PopupContent>
-        <div className="scrollable scrollable-800 text-body-secondary h-full overflow-y-auto text-center">
-          <EthSignBody decodedTx={decodedTx} isReady={!isLoading} />
-        </div>
-      </PopupContent>
-      {!isLoading && (
-        <PopupFooter className="flex flex-col gap-8">
-          <div id="sign-alerts-inject" className="flex flex-col gap-4">
-            {errorMessage && (
-              <SignAlertMessage type="error">
-                <WithTooltip tooltip={errorDetails}>{errorMessage}</WithTooltip>
-              </SignAlertMessage>
-            )}
-          </div>
-          <Suspense fallback={null}>
+      {isLoading ? (
+        <SignViewBodyShimmer />
+      ) : (
+        <Suspense
+          fallback={
+            <>
+              <SignViewBodyShimmer />
+              <SuspenseTracker name="PopupContent" />
+            </>
+          }
+        >
+          <PopupContent>
+            <div className="scrollable scrollable-800 text-body-secondary h-full overflow-y-auto text-center">
+              <EthSignBody decodedTx={decodedTx} isReady={!isLoading} />
+            </div>
+          </PopupContent>
+          <PopupFooter className="flex flex-col gap-8">
+            <div id="sign-alerts-inject" className="flex flex-col gap-4">
+              {errorMessage && (
+                <SignAlertMessage type="error">
+                  <WithTooltip tooltip={errorDetails}>{errorMessage}</WithTooltip>
+                </SignAlertMessage>
+              )}
+            </div>
             {transaction && txDetails && network?.nativeToken ? (
               <div className="text-body-secondary flex flex-col gap-2 text-sm">
                 <div className="flex items-center justify-between">
@@ -225,8 +236,8 @@ export const EthSignTransactionRequest = () => {
                 </Button>
               </div>
             )}
-          </Suspense>
-        </PopupFooter>
+          </PopupFooter>
+        </Suspense>
       )}
     </PopupLayout>
   )
