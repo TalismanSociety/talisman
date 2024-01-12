@@ -34,7 +34,7 @@ export function App(): JSX.Element {
       </div>
 
       {/* Display balances per balance (so, per token per account) */}
-      <div className="grid grid-cols-[repeat(6,_auto)] items-center gap-x-4 gap-y-2">
+      <div className="grid grid-cols-[repeat(5,_auto)] items-center gap-x-4 gap-y-2">
         {balances?.filterNonZero("total").sorted.map((balance) => (
           <Fragment key={balance.id}>
             <img
@@ -42,15 +42,6 @@ export function App(): JSX.Element {
               alt="token logo"
               src={balance.token?.logo}
             />
-
-            <span>
-              <span
-                className={classNames("rounded-sm bg-[#1a1a1a] p-2 text-center font-bold")}
-                style={{ color: balance.token?.themeColor }}
-              >
-                {balance.token?.themeColor}
-              </span>
-            </span>
 
             <span>{balance.status}</span>
 

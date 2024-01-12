@@ -21,6 +21,7 @@ import { useChainConnectors } from "./useChainConnectors"
 import { useChaindata } from "./useChaindata"
 import { useDbCache } from "./useDbCache"
 import { useEnabledChains } from "./useEnabledChains"
+import { useMiniMetadataUpdater } from "./useMiniMetadataUpdater"
 import { useWithTestnets } from "./useWithTestnets"
 
 export type DbEntityType = "chains" | "evmNetworks" | "tokens"
@@ -35,11 +36,11 @@ export const useDbCacheSubscription = (subscribeTo: DbEntityType) => {
   const subscribe = useCallback(() => {
     switch (subscribeTo) {
       case "chains":
-        return subscribeChainDataHydrate(provider, "chains")
+        return subscribeChaindataHydrate(provider, "chains")
       case "evmNetworks":
-        return subscribeChainDataHydrate(provider, "evmNetworks")
+        return subscribeChaindataHydrate(provider, "evmNetworks")
       case "tokens":
-        return subscribeChainDataHydrate(provider, "tokens")
+        return subscribeChaindataHydrate(provider, "tokens")
     }
   }, [provider, subscribeTo])
 
@@ -82,9 +83,18 @@ export function useDbCacheBalancesSubscription() {
   const balanceModules = useBalanceModules()
   const chaindataProvider = useChaindata()
   const chainConnectors = useChainConnectors()
+  const miniMetadataUpdater = useMiniMetadataUpdater()
   const [allAddresses] = useAllAddresses()
   const chains = useChains(withTestnets)
   const allTokens = useTokens(withTestnets)
+
+  // TODO:
+  // Make sure that miniMetadatas are hydrated when tokens are hydrated
+  // Make sure that miniMetadatas are rehydrated when chains/evmNetworks change (I'm preeeetty sure this is necessary)
+  // Make sure that miniMetadata changes cause the balances subscriptions to refresh
+
+  // Provided that the above are handled, then the balance modules should pick up on the latest miniMetadatas
+  // on their own (since they pull them straight out from the db)
 
   const tokens = useMemo(() => {
     if (!enabledChains) return allTokens
@@ -144,7 +154,7 @@ const useTokens = (withTestnets?: boolean) => {
   return withTestnets ? tokensWithTestnetsMap : tokensWithoutTestnetsMap
 }
 
-const subscribeChainDataHydrate = (
+const subscribeChaindataHydrate = (
   provider: ChaindataProvider,
   type: "chains" | "evmNetworks" | "tokens"
 ) => {

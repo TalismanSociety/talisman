@@ -22,6 +22,7 @@ import { ChainConnectorsProvider } from "./useChainConnectors"
 import { ChaindataProvider } from "./useChaindata"
 import { DbCacheProvider } from "./useDbCache"
 import { EnabledChainsProvider } from "./useEnabledChains"
+import { MiniMetadataUpdaterProvider } from "./useMiniMetadataUpdater"
 import { WithTestnetsProvider } from "./useWithTestnets"
 
 export type BalancesProviderProps = {
@@ -70,7 +71,9 @@ export const BalancesProvider = ({
         <ChainConnectorsProvider onfinalityApiKey={onfinalityApiKey}>
           <AllAddressesProvider>
             <BalanceModulesProvider balanceModules={balanceModules}>
-              <DbCacheProvider>{children}</DbCacheProvider>
+              <MiniMetadataUpdaterProvider>
+                <DbCacheProvider>{children}</DbCacheProvider>
+              </MiniMetadataUpdaterProvider>
             </BalanceModulesProvider>
           </AllAddressesProvider>
         </ChainConnectorsProvider>
