@@ -1,65 +1,15 @@
-import { Trees } from "@core/domains/accounts/helpers.catalog"
 import { AccountJsonAny, AccountType } from "@core/domains/accounts/types"
-import { balanceTotalsStore } from "@core/domains/balances/store.BalanceTotals"
-import { BalanceTotal } from "@core/domains/balances/types"
-import { log } from "@core/log"
 import { api } from "@ui/api"
-import { atom, selector, selectorFamily } from "recoil"
-import { Subject, combineLatest } from "rxjs"
+import { atom, selectorFamily } from "recoil"
 
-const baseAccountsState = atom<{
-  accounts: AccountJsonAny[]
-  catalog: Trees
-  balanceTotals: BalanceTotal[]
-}>({
-  key: "baseAccountsState",
+const accountsState = atom<AccountJsonAny[]>({
+  key: "accountsState",
   effects: [
     ({ setSelf }) => {
-      const stop = log.timer("baseAccountsState")
-      const obsAccounts = new Subject<AccountJsonAny[]>()
-      const obsCatalog = new Subject<Trees>()
-
-      const sub = combineLatest([obsAccounts, obsCatalog, balanceTotalsStore.observable]).subscribe(
-        ([accounts, catalog, balanceTotals]) => {
-          stop()
-          setSelf({ accounts, catalog, balanceTotals: Object.values(balanceTotals) })
-        }
-      )
-
-      const unsubAccounts = api.accountsSubscribe((v) => obsAccounts.next(v))
-      const unsubCatalog = api.accountsCatalogSubscribe((v) => obsCatalog.next(v))
-
-      return () => {
-        unsubCatalog()
-        unsubAccounts()
-        sub.unsubscribe()
-      }
+      const unsub = api.accountsSubscribe(setSelf)
+      return () => unsub()
     },
   ],
-})
-
-export const accountsState = selector({
-  key: "accountsState",
-  get: ({ get }) => {
-    const { accounts } = get(baseAccountsState)
-    return accounts
-  },
-})
-
-export const accountsCatalogState = selector({
-  key: "accountsCatalogState",
-  get: ({ get }) => {
-    const { catalog } = get(baseAccountsState)
-    return catalog
-  },
-})
-
-export const balanceTotalsState = selector({
-  key: "balanceTotalsState",
-  get: ({ get }) => {
-    const { balanceTotals } = get(baseAccountsState)
-    return balanceTotals
-  },
 })
 
 export type AccountsFilter = "all" | "watched" | "owned" | "portfolio"

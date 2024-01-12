@@ -1,7 +1,4 @@
-import { loginState } from "@ui/atoms"
+import { isOnboardedState } from "@ui/atoms"
 import { useRecoilValue } from "recoil"
 
-export const useIsOnboarded = () => {
-  const { isOnboarded } = useRecoilValue(loginState)
-  return isOnboarded
-}
+export const useIsOnboarded = () => useRecoilValue(isOnboardedState)

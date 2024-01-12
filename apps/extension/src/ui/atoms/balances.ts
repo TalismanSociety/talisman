@@ -10,7 +10,7 @@ import {
 import { TokenId } from "@talismn/chaindata-provider"
 import { api } from "@ui/api"
 import { liveQuery } from "dexie"
-import { atom, selector, selectorFamily } from "recoil"
+import { atom, selector, selectorFamily, waitForAll } from "recoil"
 import { debounceTime, first, from, merge } from "rxjs"
 
 import { AccountsFilter, accountsQuery } from "./accounts"
@@ -59,8 +59,7 @@ const rawBalancesState = atom<BalanceJson[]>({
 const filteredRawBalancesState = selector({
   key: "filteredRawBalancesState",
   get: ({ get }) => {
-    const tokens = get(activeTokensWithTestnetsMapState)
-    const balances = get(rawBalancesState)
+    const [tokens, balances] = get(waitForAll([activeTokensWithTestnetsMapState, rawBalancesState]))
 
     return balances.filter((b) => tokens[b.tokenId])
   },
@@ -73,10 +72,14 @@ const filteredRawBalancesState = selector({
 export const balancesHydrateState = selector<HydrateDb>({
   key: "balancesHydrateState",
   get: ({ get }) => {
-    const chains = get(activeChainsWithTestnetsMapState)
-    const evmNetworks = get(activeEvmNetworksWithTestnetsMapState)
-    const tokens = get(activeTokensWithTestnetsMapState)
-    const tokenRates = get(tokenRatesMapState)
+    const [chains, evmNetworks, tokens, tokenRates] = get(
+      waitForAll([
+        activeChainsWithTestnetsMapState,
+        activeEvmNetworksWithTestnetsMapState,
+        activeTokensWithTestnetsMapState,
+        tokenRatesMapState,
+      ])
+    )
 
     return { chains, evmNetworks, tokens, tokenRates }
   },
@@ -85,8 +88,7 @@ export const balancesHydrateState = selector<HydrateDb>({
 const allBalancesState = selector({
   key: "allBalancesState",
   get: ({ get }) => {
-    const rawBalances = get(filteredRawBalancesState)
-    const hydrate = get(balancesHydrateState)
+    const [rawBalances, hydrate] = get(waitForAll([filteredRawBalancesState, balancesHydrateState]))
 
     return new Balances(deriveStatuses(getValidSubscriptionIds(), rawBalances), hydrate)
   },
@@ -111,8 +113,9 @@ export const balancesFilterQuery = selectorFamily({
   get:
     (accountsFilter: AccountsFilter) =>
     ({ get }) => {
-      const allBalances = get(allBalancesState)
-      const accounts = get(accountsQuery(accountsFilter))
+      const [allBalances, accounts] = get(
+        waitForAll([allBalancesState, accountsQuery(accountsFilter)])
+      )
 
       return new Balances(
         allBalances.each.filter((b) => accounts.some((a) => a.address === b.address))

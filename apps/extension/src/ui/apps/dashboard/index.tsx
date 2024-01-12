@@ -4,8 +4,7 @@ import { SuspenseTracker } from "@talisman/components/SuspenseTracker"
 import { api } from "@ui/api"
 import { AssetDiscoveryDashboardAlert } from "@ui/domains/AssetDiscovery/AssetDiscoveryDashboardAlert"
 import { DatabaseErrorAlert } from "@ui/domains/Settings/DatabaseErrorAlert"
-import { useIsLoggedIn } from "@ui/hooks/useIsLoggedIn"
-import { useIsOnboarded } from "@ui/hooks/useIsOnboarded"
+import { useLoginCheck } from "@ui/hooks/useLoginCheck"
 import { useModalSubscription } from "@ui/hooks/useModalSubscription"
 import { FC, PropsWithChildren, Suspense, useEffect, useRef } from "react"
 import { useTranslation } from "react-i18next"
@@ -44,8 +43,7 @@ import { TokenPage } from "./routes/Tokens/TokenPage"
 import { TokensPage } from "./routes/Tokens/TokensPage"
 
 const DashboardInner = () => {
-  const isLoggedIn = useIsLoggedIn()
-  const isOnboarded = useIsOnboarded()
+  const { isLoggedIn, isOnboarded } = useLoginCheck()
   const wasLoggedIn = useRef(false)
   useModalSubscription()
 

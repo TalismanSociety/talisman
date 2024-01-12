@@ -330,10 +330,7 @@ export const PortfolioAccounts = () => {
     [balanceTotalPerAccount, folder]
   )
 
-  // TODO: Use `hasFunds` flag from `useAppState`
-  // That flag is added by this PR: https://github.com/TalismanSociety/talisman/pull/1101
-  const hasOwnedFunds = useMemo(() => !!ownedTotal, [ownedTotal])
-  const showGetStartedPopup = !hasOwnedFunds && ownedAccounts.length <= 2
+  const showGetStartedPopup = !ownedTotal && ownedAccounts.length <= 2
 
   useEffect(() => {
     popupOpenEvent("portfolio accounts")
