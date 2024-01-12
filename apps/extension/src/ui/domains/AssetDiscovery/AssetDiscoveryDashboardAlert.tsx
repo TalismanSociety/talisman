@@ -1,5 +1,4 @@
 import { DiamondIcon, XIcon } from "@talismn/icons"
-import { useAppState } from "@ui/hooks/useAppState"
 import { MouseEventHandler, Suspense, useCallback, useEffect } from "react"
 import { useTranslation } from "react-i18next"
 import { useLocation, useNavigate } from "react-router-dom"
@@ -51,18 +50,18 @@ const CloseButton = () => {
 }
 
 export const AssetDiscoveryDashboardAlert = () => {
-  const [showAssetDiscoveryAlert] = useAppState("showAssetDiscoveryAlert")
+  const { showAlert } = useAssetDiscoveryAlert()
   const { t } = useTranslation()
   const location = useLocation()
   const navigate = useNavigate()
 
   useEffect(() => {
-    if (!showAssetDiscoveryAlert || location.pathname === "/settings/asset-discovery") {
+    if (!showAlert || location.pathname === "/settings/asset-discovery") {
       toast.dismiss(ASSET_DISCOVERY_TOAST_ID)
       return
     }
 
-    if (showAssetDiscoveryAlert && !toast.isActive(ASSET_DISCOVERY_TOAST_ID)) {
+    if (showAlert && !toast.isActive(ASSET_DISCOVERY_TOAST_ID)) {
       toast(
         () => (
           <Suspense>
@@ -83,7 +82,7 @@ export const AssetDiscoveryDashboardAlert = () => {
         }
       )
     }
-  }, [location, navigate, showAssetDiscoveryAlert, t])
+  }, [location, navigate, showAlert, t])
 
   return null
 }
