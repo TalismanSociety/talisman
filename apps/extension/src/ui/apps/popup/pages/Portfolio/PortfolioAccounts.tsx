@@ -15,7 +15,7 @@ import { AccountIcon } from "@ui/domains/Account/AccountIcon"
 import { AccountTypeIcon } from "@ui/domains/Account/AccountTypeIcon"
 import { Address } from "@ui/domains/Account/Address"
 import { CurrentAccountAvatar } from "@ui/domains/Account/CurrentAccountAvatar"
-import Fiat from "@ui/domains/Asset/Fiat"
+import { Fiat } from "@ui/domains/Asset/Fiat"
 import { useCopyAddressModal } from "@ui/domains/CopyAddress"
 import useAccounts from "@ui/hooks/useAccounts"
 import useAccountsCatalog from "@ui/hooks/useAccountsCatalog"
@@ -29,6 +29,8 @@ import { useTranslation } from "react-i18next"
 import { useNavigate } from "react-router-dom"
 import { IconButton } from "talisman-ui"
 
+import { StakingBanner } from "../../components/StakingBanner"
+
 const ANALYTICS_PAGE: AnalyticsPage = {
   container: "Popup",
   feature: "Portfolio",
@@ -36,24 +38,26 @@ const ANALYTICS_PAGE: AnalyticsPage = {
   page: "Portfolio Home",
 }
 
-type AccountOption =
-  | {
-      type: "folder"
-      treeName: string
-      id: string
-      name: string
-      total?: number
-      addresses: string[]
-    }
-  | {
-      type: "account"
-      name: string
-      address: string
-      total?: number
-      genesisHash?: string | null
-      origin?: AccountType
-      isPortfolio?: boolean
-    }
+type FolderAccountOption = {
+  type: "folder"
+  treeName: string
+  id: string
+  name: string
+  total?: number
+  addresses: string[]
+}
+
+type AccountAccountOption = {
+  type: "account"
+  name: string
+  address: string
+  total?: number
+  genesisHash?: string | null
+  origin?: AccountType
+  isPortfolio?: boolean
+}
+
+type AccountOption = FolderAccountOption | AccountAccountOption
 
 const AccountButton = ({ option }: { option: AccountOption }) => {
   const { open } = useCopyAddressModal()
@@ -152,16 +156,27 @@ const AccountButton = ({ option }: { option: AccountOption }) => {
   )
 }
 
-const AccountsList = ({ className, options }: { className?: string; options: AccountOption[] }) => (
-  <div className={classNames("flex w-full flex-col gap-4", className)}>
-    {options.map((option) => (
-      <AccountButton
-        key={option.type === "account" ? `account-${option.address}` : option.id}
-        option={option}
-      />
-    ))}
-  </div>
-)
+const accountTypeGuard = (option: AccountOption): option is AccountAccountOption =>
+  option.type === "account"
+
+const AccountsList = ({ className, options }: { className?: string; options: AccountOption[] }) => {
+  const addresses = useMemo(
+    () => options.filter(accountTypeGuard).map(({ address }) => address),
+    [options]
+  )
+
+  return (
+    <div className={classNames("flex w-full flex-col gap-4", className)}>
+      <StakingBanner addresses={addresses} />
+      {options.map((option) => (
+        <AccountButton
+          key={option.type === "account" ? `account-${option.address}` : option.id}
+          option={option}
+        />
+      ))}
+    </div>
+  )
+}
 
 const Accounts = ({
   folder,

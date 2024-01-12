@@ -9,6 +9,8 @@ import { assert } from "@polkadot/util"
 import { githubUnknownTokenLogoUrl } from "@talismn/chaindata-provider"
 import { MessageTypes, RequestTypes, ResponseType } from "core/types"
 
+import { assetDiscoveryScanner } from "../assetDiscovery/scanner"
+
 export default class TokensHandler extends ExtensionHandler {
   public async handle<TMessageType extends MessageTypes>(
     id: string,
@@ -38,6 +40,10 @@ export default class TokensHandler extends ExtensionHandler {
 
         // TODO: Run this on a timer or something instead of when subscribing to tokens
         await miniMetadataUpdater.update(chainIds, evmNetworkIds)
+
+        // triggers a pending scan if any
+        // doing this here as this is the only place where we hydrate tokens from github
+        assetDiscoveryScanner.startPendingScan()
 
         return
       }

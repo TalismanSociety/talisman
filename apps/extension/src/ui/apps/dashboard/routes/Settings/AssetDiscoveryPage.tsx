@@ -1,6 +1,4 @@
-import { db } from "@core/db"
 import { AccountJsonAny } from "@core/domains/accounts/types"
-import { AssetDiscoveryScanState, assetDiscoveryStore } from "@core/domains/assetDiscovery/store"
 import { AssetDiscoveryMode, DiscoveredBalance } from "@core/domains/assetDiscovery/types"
 import {
   activeEvmNetworksStore,
@@ -15,7 +13,6 @@ import { shortenAddress } from "@talisman/util/shortenAddress"
 import { Address, BalanceFormatter } from "@talismn/balances"
 import { EvmNetworkId, Token, TokenList } from "@talismn/chaindata-provider"
 import {
-  CheckCircleIcon,
   ChevronDownIcon,
   DiamondIcon,
   InfoIcon,
@@ -29,8 +26,9 @@ import { classNames } from "@talismn/util"
 import { useQuery } from "@tanstack/react-query"
 import { api } from "@ui/api"
 import { AnalyticsPage } from "@ui/api/analytics"
+import { assetDiscoveryScanProgress, assetDiscoveryScanState } from "@ui/atoms"
 import { AccountIcon } from "@ui/domains/Account/AccountIcon"
-import Fiat from "@ui/domains/Asset/Fiat"
+import { Fiat } from "@ui/domains/Asset/Fiat"
 import { TokenLogo } from "@ui/domains/Asset/TokenLogo"
 import Tokens from "@ui/domains/Asset/Tokens"
 import useAccounts from "@ui/hooks/useAccounts"
@@ -44,19 +42,17 @@ import { useSetting } from "@ui/hooks/useSettings"
 import useToken from "@ui/hooks/useToken"
 import useTokens from "@ui/hooks/useTokens"
 import { isErc20Token } from "@ui/util/isErc20Token"
-import { liveQuery } from "dexie"
-import groupBy from "lodash/groupBy"
-import { FC, ReactNode, useCallback, useEffect, useMemo } from "react"
+import { ChangeEventHandler, FC, ReactNode, useCallback, useEffect, useMemo } from "react"
 import { Trans, useTranslation } from "react-i18next"
 import { useNavigate } from "react-router-dom"
-import { atom, selector, useRecoilValue } from "recoil"
-import { debounceTime, first, from, merge } from "rxjs"
+import { useRecoilValue } from "recoil"
 import {
   Button,
   ContextMenu,
   ContextMenuContent,
   ContextMenuItem,
   ContextMenuTrigger,
+  Toggle,
   Tooltip,
   TooltipContent,
   TooltipTrigger,
@@ -73,83 +69,11 @@ const ANALYTICS_PAGE: AnalyticsPage = {
   page: "Settings - Asset Discovery",
 }
 
-const assetDiscoveryBalancesState = atom<DiscoveredBalance[]>({
-  key: "assetDiscoveryBalancesState",
-  effects: [
-    // sync from db
-    ({ setSelf }) => {
-      const obs = from(liveQuery(() => db.assetDiscovery.toArray()))
-
-      // backend will do a lot of updates
-      // debounce to mitigate performance issues
-      // also, we only need the first value to hydrate the atom
-      const sub = merge(obs.pipe(first()), obs.pipe(debounceTime(500))).subscribe(setSelf)
-
-      return () => sub.unsubscribe()
-    },
-  ],
-})
-
-const assetDiscoveryScanState = atom<AssetDiscoveryScanState>({
-  key: "assetDiscoveryScanState",
-  effects: [
-    // sync from db
-    ({ setSelf }) => {
-      const sub = assetDiscoveryStore.observable.subscribe(setSelf)
-
-      return () => {
-        sub.unsubscribe()
-      }
-    },
-  ],
-})
-
-const scanProgress = selector<{
-  percent: number
-  balances: DiscoveredBalance[]
-  balancesByTokenId: Record<TokenId, DiscoveredBalance[]>
-  tokensCount: number
-  accounts: Address[]
-  accountsCount: number
-  isInProgress: boolean
-  tokenIds: TokenId[]
-}>({
-  key: "scanProgress",
-  get: ({ get }) => {
-    const {
-      currentScanId,
-      currentScanProgressPercent: percent,
-      currentScanAccounts,
-      currentScanTokensCount,
-      lastScanAccounts,
-      lastScanTokensCount,
-    } = get(assetDiscoveryScanState)
-    const balances = get(assetDiscoveryBalancesState)
-    const balancesByTokenId = groupBy(balances, (a) => a.tokenId)
-    const tokenIds = Object.keys(balancesByTokenId)
-
-    const isInProgress = !!currentScanId
-    const accounts = isInProgress ? currentScanAccounts : lastScanAccounts
-    const tokensCount = isInProgress ? currentScanTokensCount : lastScanTokensCount
-
-    return {
-      isInProgress,
-      percent,
-      balances,
-      balancesByTokenId,
-      tokensCount,
-      accounts,
-      accountsCount: accounts.length,
-      tokenIds,
-    }
-  },
-})
-
 const TOKEN_RATES_CACHE: TokenList = {}
 
 // our main token rates store only fetches active tokens, this obviously doesn't work here
 const useDiscoveredTokenRates = () => {
-  const { tokenIds } = useRecoilValue(scanProgress)
+  const { tokenIds } = useRecoilValue(assetDiscoveryScanProgress)
   const { tokens } = useTokens({ activeOnly: false, includeTestnets: true })
   const tokenList = useMemo(
     () => Object.fromEntries(tokens.filter((t) => tokenIds.includes(t.id)).map((t) => [t.id, t])),
@@ -282,11 +206,15 @@ const AssetRow: FC<{ tokenId: TokenId; assets: DiscoveredBalance[] }> = ({ token
     [activeEvmNetworks, activeTokens, evmNetwork, token]
   )
 
-  const enable = useCallback(() => {
-    if (!token || !evmNetwork) return
-    activeEvmNetworksStore.setActive(evmNetwork.id, true)
-    if (token.type !== "evm-native") activeTokensStore.setActive(token.id, true)
-  }, [evmNetwork, token])
+  const handleToggleChange: ChangeEventHandler<HTMLInputElement> = useCallback(
+    (e) => {
+      if (!token || !evmNetwork) return
+      activeEvmNetworksStore.setActive(evmNetwork.id, e.target.checked)
+      if (token.type !== "evm-native" && e.target.checked)
+        activeTokensStore.setActive(token.id, true)
+    },
+    [evmNetwork, token]
+  )
 
   const isInactiveNetwork = useMemo(
     () => evmNetwork && !isEvmNetworkActive(evmNetwork, activeEvmNetworks),
@@ -301,10 +229,9 @@ const AssetRow: FC<{ tokenId: TokenId; assets: DiscoveredBalance[] }> = ({ token
 
   return (
     <div
-      className={classNames(
-        "bg-grey-900 grid h-32 grid-cols-[30%_20%_25%_25%] items-center rounded-sm px-8",
-        isActive && "opacity-50"
-      )}
+      className={
+        "bg-grey-900 grid h-32 grid-cols-[1fr_1fr_1fr_10rem] items-center gap-x-8 rounded-sm px-8"
+      }
     >
       <div className="flex items-center gap-6">
         <div>
@@ -353,17 +280,8 @@ const AssetRow: FC<{ tokenId: TokenId; assets: DiscoveredBalance[] }> = ({ token
           <span className="text-body-secondary text-sm">-</span>
         )}
       </div>
-      <div className="flex justify-end gap-6 pl-4 text-right">
-        <Button
-          small
-          disabled={isActive}
-          onClick={enable}
-          primary
-          className="disabled:text-primary-500 h-16 w-56 rounded-sm"
-          icon={isActive ? CheckCircleIcon : undefined}
-        >
-          {isActive ? t("Activated") : t("Activate")}
-        </Button>
+      <div className="flex justify-end gap-8 pl-4 text-right">
+        <Toggle checked={isActive} onChange={handleToggleChange} />
         {isErc20Token(token) || coingeckoUrl ? (
           <ContextMenu placement="bottom-end">
             <ContextMenuTrigger className="hover:text-body bg-grey-800 text-body-secondary hover:bg-grey-700 shrink-0 rounded-sm p-4">
@@ -397,20 +315,20 @@ const AssetRow: FC<{ tokenId: TokenId; assets: DiscoveredBalance[] }> = ({ token
 
 const AssetTable: FC = () => {
   const { t } = useTranslation("admin")
-  const { balances, balancesByTokenId: assetsByTokenId } = useRecoilValue(scanProgress)
+  const { balances, balancesByTokenId } = useRecoilValue(assetDiscoveryScanProgress)
 
   if (!balances.length) return null
 
   return (
     <div className="text-body flex w-full min-w-[45rem] flex-col gap-4 text-left text-base">
-      <div className="text-body-disabled grid grid-cols-[30%_20%_25%_25%] px-8 text-sm font-normal">
+      <div className="text-body-disabled grid grid-cols-[1fr_1fr_1fr_10rem] gap-x-8 px-8 text-sm font-normal">
         <div>{t("Asset")}</div>
         <div>{t("Network")}</div>
         <div className="text-right">{t("Balance")}</div>
         <div></div>
       </div>
 
-      {Object.entries(assetsByTokenId).map(([tokenId, assets]) => (
+      {Object.entries(balancesByTokenId).map(([tokenId, assets]) => (
         <AssetRow key={tokenId} tokenId={tokenId} assets={assets} />
       ))}
     </div>
@@ -419,8 +337,9 @@ const AssetTable: FC = () => {
 
 const Header: FC = () => {
   const { t } = useTranslation("admin")
-  const { balances, accountsCount, tokensCount, percent, isInProgress } =
-    useRecoilValue(scanProgress)
+  const { balances, accountsCount, tokensCount, percent, isInProgress } = useRecoilValue(
+    assetDiscoveryScanProgress
+  )
   const [includeTestnets] = useSetting("useTestnets")
   const { evmNetworks: activeNetworks } = useEvmNetworks({ activeOnly: true, includeTestnets })
   const { evmNetworks: allNetworks } = useEvmNetworks({ activeOnly: false, includeTestnets })
@@ -536,7 +455,7 @@ const AccountsWrapper: FC<{
 const ScanInfo: FC = () => {
   const { t } = useTranslation("admin")
 
-  const { balancesByTokenId, balances, isInProgress } = useRecoilValue(scanProgress)
+  const { balancesByTokenId, balances, isInProgress } = useRecoilValue(assetDiscoveryScanProgress)
   const { lastScanAccounts, lastScanTimestamp } = useRecoilValue(assetDiscoveryScanState)
 
   const activeEvmNetworks = useActiveEvmNetworksState()
@@ -609,7 +528,7 @@ const ScanInfo: FC = () => {
           small
           primary
         >
-          {t("Activate All")}
+          {t("Add all tokens")}
         </Button>
       )}
     </div>
@@ -657,7 +576,7 @@ export const AssetDiscoveryPage = () => {
   const [showAssetDiscoveryAlert, setShowAssetDiscoveryAlert] =
     useAppState("showAssetDiscoveryAlert")
 
-  // turn off new tokens found alert when user browses this page
+  // hide alert when user browses this page
   useEffect(() => {
     if (showAssetDiscoveryAlert) setShowAssetDiscoveryAlert(false)
   }, [setShowAssetDiscoveryAlert, showAssetDiscoveryAlert])
@@ -673,7 +592,7 @@ export const AssetDiscoveryPage = () => {
     >
       <HeaderBlock
         title={t("Asset Discovery")}
-        text={t("Scan for well-known tokens in your accounts and add them to your wallet")}
+        text={t("Scan for well-known tokens in your accounts and add them to your portfolio.")}
       />
       <Spacer small />
       <Notice />

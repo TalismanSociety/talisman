@@ -10,8 +10,9 @@ import { abiMulticall } from "@talismn/balances/src/modules/abis/multicall"
 import { EvmNetworkId, Token, TokenId, TokenList } from "@talismn/chaindata-provider"
 import { isEthereumAddress } from "@talismn/util"
 import { isEvmToken } from "@ui/util/isEvmToken"
-import { groupBy, sortBy } from "lodash"
 import chunk from "lodash/chunk"
+import groupBy from "lodash/groupBy"
+import sortBy from "lodash/sortBy"
 
 import { appStore } from "../app/store.app"
 import { settingsStore } from "../app/store.settings"
@@ -80,10 +81,15 @@ class AssetDiscoveryScanner {
       currentScanAccounts,
       currentScanTokensCount: 0,
     })
-    await appStore.set({ showAssetDiscoveryAlert: false })
 
     // 2. Clear scan table
     await db.assetDiscovery.clear()
+
+    // 3. Inform the user that a scan is in progress
+    await appStore.set({
+      showAssetDiscoveryAlert: true,
+      dismissedAssetDiscoveryAlertScanId: "",
+    })
 
     // 3. Start scan
     this.resumeScan()
@@ -260,7 +266,19 @@ class AssetDiscoveryScanner {
             })
 
             if (newState.currentScanId === currentScanId)
-              if (newBalances.length) await db.assetDiscovery.bulkPut(newBalances)
+              if (newBalances.length) {
+                await db.assetDiscovery.bulkPut(newBalances)
+
+                // display alert if it has not been explicitely dismissed
+                // happens if user navigated away from asset discovery screen before a new token is found
+                const { showAssetDiscoveryAlert, dismissedAssetDiscoveryAlertScanId } =
+                  await appStore.get()
+                if (
+                  !showAssetDiscoveryAlert &&
+                  dismissedAssetDiscoveryAlertScanId !== currentScanId
+                )
+                  await appStore.set({ showAssetDiscoveryAlert: true })
+              }
           }
         } catch (err) {
           log.error(`Could not scan network ${networkId}`, { err })
@@ -283,8 +301,23 @@ class AssetDiscoveryScanner {
       }
     })
 
-    // alert user
-    if (await db.assetDiscovery.count()) await appStore.set({ showAssetDiscoveryAlert: true })
+    if ((await db.assetDiscovery.count()) === 0)
+      await appStore.set({ showAssetDiscoveryAlert: false })
+  }
+
+  public async startPendingScan(): Promise<void> {
+    const isAssetDiscoveryScanPending = await appStore.get("isAssetDiscoveryScanPending")
+    if (!isAssetDiscoveryScanPending) return
+
+    // addresses of all ethereum accounts
+    await awaitKeyringLoaded()
+    const addresses = keyring
+      .getAccounts()
+      .filter((acc) => isEthereumAddress(acc.address))
+      .map((acc) => acc.address)
+
+    await this.startScan({ addresses, mode: AssetDiscoveryMode.ACTIVE_NETWORKS })
+    await appStore.set({ isAssetDiscoveryScanPending: false })
   }
 }
 

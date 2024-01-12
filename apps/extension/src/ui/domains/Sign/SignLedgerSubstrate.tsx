@@ -1,6 +1,7 @@
 import { SignerPayloadJSON, SignerPayloadRaw } from "@core/domains/signing/types"
 import { log } from "@core/log"
 import { TypeRegistry } from "@polkadot/types"
+import { hexToU8a } from "@polkadot/util"
 import { classNames } from "@talismn/util"
 import { useLedgerSubstrate } from "@ui/hooks/ledger/useLedgerSubstrate"
 import { useAccountByAddress } from "@ui/hooks/useAccountByAddress"
@@ -35,6 +36,7 @@ const SignLedgerSubstrate: FC<SignHardwareSubstrateProps> = ({
   const [isSigning, setIsSigning] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [unsigned, setUnsigned] = useState<Uint8Array>()
+  const [isRaw, setIsRaw] = useState<boolean>()
   const { ledger, refresh, status, message, isReady, requiresManualRetry } = useLedgerSubstrate(
     account?.genesisHash
   )
@@ -51,48 +53,64 @@ const SignLedgerSubstrate: FC<SignHardwareSubstrateProps> = ({
 
   useEffect(() => {
     if (!payload) return
+
     if (isRawPayload(payload)) {
-      setError(t("Message signing is not supported for hardware wallets."))
-    } else {
-      if (payload.signedExtensions) registry.setSignedExtensions(payload.signedExtensions)
-      setUnsigned(
-        registry.createType("ExtrinsicPayload", payload, { version: payload.version }).toU8a(true)
-      )
+      setUnsigned(hexToU8a(payload.data))
+      setIsRaw(true)
+      return
     }
+
+    if (payload.signedExtensions) registry.setSignedExtensions(payload.signedExtensions)
+    const extrinsicPayload = registry.createType("ExtrinsicPayload", payload, {
+      version: payload.version,
+    })
+    setUnsigned(extrinsicPayload.toU8a(true))
+    setIsRaw(false)
   }, [payload, t])
 
-  const _onRefresh = useCallback(() => {
+  const onRefresh = useCallback(() => {
     refresh()
     setError(null)
   }, [refresh, setError])
 
   const signLedger = useCallback(async () => {
-    if (!ledger || !unsigned || !onSigned || !account) {
-      return
-    }
+    if (!ledger || !unsigned || !onSigned || !account) return
 
     setError(null)
 
     try {
-      const { signature } = await ledger.sign(unsigned, account.accountIndex, account.addressOffset)
+      const { signature } = await (isRaw
+        ? ledger.signRaw(unsigned, account.accountIndex, account.addressOffset)
+        : ledger.sign(unsigned, account.accountIndex, account.addressOffset))
 
       // await to keep loader spinning until popup closes
       await onSigned({ signature })
-    } catch (err) {
-      const error = err as Error
-      if (error.message === "Transaction rejected") return
-      if (error.message === "Txn version not supported")
-        setError(
-          t(
-            "This type of transaction is not supported on your ledger. You should check for firmware and app updates in Ledger Live before trying again."
+    } catch (error) {
+      const message = (error as Error)?.message
+      switch (message) {
+        case "Transaction rejected":
+          return
+
+        case "Txn version not supported":
+          return setError(
+            t(
+              "This type of transaction is not supported on your ledger. You should check for firmware and app updates in Ledger Live before trying again."
+            )
           )
-        )
-      else {
-        log.error("ledger sign Substrate : " + error.message, { err })
-        setError(error.message)
+
+        case "Instruction not supported":
+          return setError(
+            t(
+              "This instruction is not supported on your ledger. You should check for firmware and app updates in Ledger Live before trying again."
+            )
+          )
+
+        default:
+          log.error("ledger sign Substrate : " + message, { error })
+          setError(message)
       }
     }
-  }, [account, ledger, onSigned, unsigned, setError, t])
+  }, [ledger, unsigned, onSigned, account, isRaw, t])
 
   useEffect(() => {
     if (isReady && !error && unsigned && !isSigning) {
@@ -105,17 +123,14 @@ const SignLedgerSubstrate: FC<SignHardwareSubstrateProps> = ({
     }
   }, [signLedger, isSigning, error, isReady, onSentToDevice, unsigned])
 
-  const handleCloseDrawer = useCallback(() => {
-    if (payload && isRawPayload(payload)) onCancel?.()
-    else setError(null)
-  }, [onCancel, payload])
+  const handleCloseDrawer = useCallback(() => setError(null), [setError])
 
   return (
     <div className={classNames("flex w-full flex-col gap-6", className)}>
       {!error && (
         <LedgerConnectionStatus
           {...{ ...connectionStatus }}
-          refresh={_onRefresh}
+          refresh={onRefresh}
           hideOnSuccess={true}
         />
       )}

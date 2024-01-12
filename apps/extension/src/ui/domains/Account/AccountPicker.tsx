@@ -14,7 +14,7 @@ import { isEvmToken } from "@ui/util/isEvmToken"
 import { FC, ReactNode, useCallback, useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
 
-import Fiat from "../Asset/Fiat"
+import { Fiat } from "../Asset/Fiat"
 import Tokens from "../Asset/Tokens"
 import { AccountIcon } from "./AccountIcon"
 

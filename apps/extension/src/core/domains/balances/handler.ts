@@ -1,5 +1,4 @@
 import { DEBUG } from "@core/constants"
-import { getNomPoolStake } from "@core/domains/balances/helpers"
 import {
   AddressesAndEvmNetwork,
   AddressesAndTokens,
@@ -18,6 +17,7 @@ import {
   activeEvmNetworksStore,
   isEvmNetworkActive,
 } from "@core/domains/ethereum/store.activeEvmNetworks"
+import { getNomPoolStake } from "@core/domains/staking/helpers"
 import {
   ActiveTokens,
   activeTokensStore,
@@ -38,7 +38,7 @@ import {
 import { ChainId, ChainList, EvmNetworkList, Token, TokenList } from "@talismn/chaindata-provider"
 import { MessageTypes, RequestTypes, ResponseType } from "core/types"
 import { liveQuery } from "dexie"
-import { isEqual } from "lodash"
+import isEqual from "lodash/isEqual"
 import { BehaviorSubject, combineLatest } from "rxjs"
 
 export class BalancesHandler extends ExtensionHandler {

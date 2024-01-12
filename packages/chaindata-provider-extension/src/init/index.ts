@@ -12,7 +12,7 @@ import { Chain, EvmNetwork, Token } from "@talismn/chaindata-provider"
 // `yarn workspace @talismn/chaindata-provider-extension generate-init-data`
 
 export const fetchInitChains = async (): Promise<Chain[]> =>
-  (await import(/* webpackChunkName: "talisman-init-data-chains" */ "./chains")).chains
+  (await import(/* webpackChunkName: "talisman-init-data-chains" */ "./chains")).chains as Chain[]
 export const fetchInitEvmNetworks = async (): Promise<EvmNetwork[]> =>
   (await import(/* webpackChunkName: "talisman-init-data-evm-networks" */ "./evm-networks"))
     .evmNetworks
