@@ -1,9 +1,10 @@
 import { ChainsQueryOptions, chainsArrayQuery, chainsMapQuery } from "@ui/atoms"
-import { useRecoilValue } from "recoil"
+import { useRecoilValue, waitForAll } from "recoil"
 
 export const useChains = (filter: ChainsQueryOptions) => {
-  const chains = useRecoilValue(chainsArrayQuery(filter))
-  const chainsMap = useRecoilValue(chainsMapQuery(filter))
+  const [chains, chainsMap] = useRecoilValue(
+    waitForAll([chainsArrayQuery(filter), chainsMapQuery(filter)])
+  )
 
   return { chains, chainsMap }
 }

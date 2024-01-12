@@ -6,7 +6,6 @@ import {
 } from "@core/domains/ethereum/store.activeEvmNetworks"
 import { activeTokensStore, isTokenActive } from "@core/domains/tokens/store.activeTokens"
 import { TokenId } from "@core/domains/tokens/types"
-import { log } from "@core/log"
 import { HeaderBlock } from "@talisman/components/HeaderBlock"
 import { Spacer } from "@talisman/components/Spacer"
 import { shortenAddress } from "@talisman/util/shortenAddress"
@@ -345,17 +344,13 @@ const Header: FC = () => {
   const { evmNetworks: allNetworks } = useEvmNetworks({ activeOnly: false, includeTestnets })
 
   const handleScanClick = useCallback(
-    (mode: AssetDiscoveryMode) => async () => {
-      const stop = log.timer("start scan")
+    (mode: AssetDiscoveryMode) => () => {
       api.assetDiscoveryStartScan(mode)
-      stop()
     },
     []
   )
-  const handleCancelScanClick = useCallback(async () => {
-    const stop = log.timer("stop scan")
-    await api.assetDiscoveryStopScan()
-    stop()
+  const handleCancelScanClick = useCallback(() => {
+    api.assetDiscoveryStopScan()
   }, [])
 
   return (

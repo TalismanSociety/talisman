@@ -4,7 +4,7 @@ import { EyeIcon, FolderPlusIcon, TalismanHandIcon, UserPlusIcon } from "@talism
 import { AnalyticsPage } from "@ui/api/analytics"
 import { DashboardLayout } from "@ui/apps/dashboard/layout/DashboardLayout"
 import useAccounts from "@ui/hooks/useAccounts"
-import useAccountsCatalog from "@ui/hooks/useAccountsCatalog"
+import { useAccountsCatalog } from "@ui/hooks/useAccountsCatalog"
 import { useAnalyticsPageView } from "@ui/hooks/useAnalyticsPageView"
 import useBalances from "@ui/hooks/useBalances"
 import { useCallback, useMemo } from "react"

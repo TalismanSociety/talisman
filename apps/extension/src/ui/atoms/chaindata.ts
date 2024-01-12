@@ -1,9 +1,15 @@
-import { ActiveChains, isChainActive } from "@core/domains/chains/store.activeChains"
+import {
+  ActiveChains,
+  activeChainsStore,
+  isChainActive,
+} from "@core/domains/chains/store.activeChains"
 import {
   ActiveEvmNetworks,
+  activeEvmNetworksStore,
   isEvmNetworkActive,
 } from "@core/domains/ethereum/store.activeEvmNetworks"
-import { ActiveTokens } from "@core/domains/tokens/store.activeTokens"
+import { ActiveTokens, activeTokensStore } from "@core/domains/tokens/store.activeTokens"
+import { chaindataProvider } from "@core/rpcs/chaindata"
 import {
   Chain,
   ChainId,
@@ -17,26 +23,34 @@ import {
   TokenId,
   TokenList,
 } from "@talismn/chaindata-provider"
-import { selector, selectorFamily } from "recoil"
+import { api } from "@ui/api"
+import { liveQuery } from "dexie"
+import { atom, selector, selectorFamily, waitForAll } from "recoil"
 
-import { mainState } from "./main"
+const NO_OP = () => {}
 
 const filterNoTestnet = ({ isTestnet }: { isTestnet?: boolean }) => isTestnet === false
 
-export const evmNetworksActiveState = selector<ActiveEvmNetworks>({
+export const evmNetworksActiveState = atom<ActiveEvmNetworks>({
   key: "evmNetworksActiveState",
-  get: ({ get }) => {
-    const { activeEvmNetworksState } = get(mainState)
-    return activeEvmNetworksState
-  },
+  effects: [
+    ({ setSelf }) => {
+      const sub = activeEvmNetworksStore.observable.subscribe(setSelf)
+      return () => sub.unsubscribe()
+    },
+  ],
 })
 
-export const allEvmNetworksState = selector<(EvmNetwork | CustomEvmNetwork)[]>({
+export const allEvmNetworksState = atom<(EvmNetwork | CustomEvmNetwork)[]>({
   key: "allEvmNetworksState",
-  get: ({ get }) => {
-    const { evmNetworks } = get(mainState)
-    return evmNetworks
-  },
+  effects: [
+    ({ setSelf }) => {
+      const obsEvmNetworks = liveQuery(() => chaindataProvider.evmNetworksArray())
+      const sub = obsEvmNetworks.subscribe(setSelf)
+      return () => sub.unsubscribe()
+    },
+    () => api.ethereumNetworks(NO_OP),
+  ],
 })
 
 export const allEvmNetworksMapState = selector<EvmNetworkList>({
@@ -50,7 +64,7 @@ export const allEvmNetworksMapState = selector<EvmNetworkList>({
 export const allEvmNetworksWithoutTestnetsState = selector<(EvmNetwork | CustomEvmNetwork)[]>({
   key: "allEvmNetworksWithoutTestnetsState",
   get: ({ get }) => {
-    const { evmNetworks } = get(mainState)
+    const evmNetworks = get(allEvmNetworksState)
     return evmNetworks.filter(filterNoTestnet)
   },
 })
@@ -66,8 +80,9 @@ export const allEvmNetworksWithoutTestnetsMapState = selector<EvmNetworkList>({
 export const activeEvmNetworksWithTestnetsState = selector({
   key: "activeEvmNetworksWithTestnetsState",
   get: ({ get }) => {
-    const evmNetworks = get(allEvmNetworksState)
-    const activeNetworks = get(evmNetworksActiveState)
+    const [evmNetworks, activeNetworks] = get(
+      waitForAll([allEvmNetworksState, evmNetworksActiveState])
+    )
 
     // return only active networks
     return evmNetworks.filter((network) => isEvmNetworkActive(network, activeNetworks))
@@ -143,20 +158,26 @@ export const evmNetworkQuery = selectorFamily({
     },
 })
 
-export const chainsActiveState = selector<ActiveChains>({
+export const chainsActiveState = atom<ActiveChains>({
   key: "chainsActiveState",
-  get: ({ get }) => {
-    const { activeChainsState } = get(mainState)
-    return activeChainsState
-  },
+  effects: [
+    ({ setSelf }) => {
+      const sub = activeChainsStore.observable.subscribe(setSelf)
+      return () => sub.unsubscribe()
+    },
+  ],
 })
 
-export const allChainsState = selector<(Chain | CustomChain)[]>({
+export const allChainsState = atom<(Chain | CustomChain)[]>({
   key: "allChainsState",
-  get: ({ get }) => {
-    const { chains } = get(mainState)
-    return chains
-  },
+  effects: [
+    ({ setSelf }) => {
+      const obsChains = liveQuery(() => chaindataProvider.chainsArray())
+      const sub = obsChains.subscribe(setSelf)
+      return () => sub.unsubscribe()
+    },
+    () => api.chains(NO_OP),
+  ],
 })
 
 export const allChainsMapState = selector<ChainList>({
@@ -186,9 +207,8 @@ export const allChainsWithoutTestnetsMapState = selector<ChainList>({
 export const activeChainsWithTestnetsState = selector({
   key: "activeChainsWithTestnetsState",
   get: ({ get }) => {
-    const chains = get(allChainsState)
-    const activeNetworks = get(chainsActiveState)
-    return chains.filter((network) => isChainActive(network, activeNetworks))
+    const [chains, activeChains] = get(waitForAll([allChainsState, chainsActiveState]))
+    return chains.filter((network) => isChainActive(network, activeChains))
   },
 })
 
@@ -259,28 +279,34 @@ export const chainQuery = selectorFamily({
     },
 })
 
-export const tokensActiveState = selector<ActiveTokens>({
+export const tokensActiveState = atom<ActiveTokens>({
   key: "tokensActiveState",
-  get: ({ get }) => {
-    const { activeTokensState } = get(mainState)
-    return activeTokensState
-  },
+  effects: [
+    ({ setSelf }) => {
+      const sub = activeTokensStore.observable.subscribe(setSelf)
+      return () => sub.unsubscribe()
+    },
+  ],
 })
 
-export const allTokensMapState = selector<TokenList>({
+export const allTokensMapState = atom<TokenList>({
   key: "allTokensMapState",
-  get: ({ get }) => {
-    const { tokens } = get(mainState)
-    return tokens
-  },
+  effects: [
+    ({ setSelf }) => {
+      const obsTokens = liveQuery(() => chaindataProvider.tokens())
+      const sub = obsTokens.subscribe(setSelf)
+      return () => sub.unsubscribe()
+    },
+    () => api.tokens(NO_OP),
+  ],
 })
 
 export const allTokensState = selector<Token[]>({
   key: "allTokensState",
   get: ({ get }) => {
-    const tokensMap = get(allTokensMapState)
-    const chainsMap = get(allChainsMapState)
-    const evmNetworksMap = get(allEvmNetworksMapState)
+    const [tokensMap, chainsMap, evmNetworksMap] = get(
+      waitForAll([allTokensMapState, allChainsMapState, allEvmNetworksMapState])
+    )
     return Object.values(tokensMap).filter(
       (token) =>
         (token.chain && chainsMap[token.chain.id]) ||
@@ -292,9 +318,13 @@ export const allTokensState = selector<Token[]>({
 export const allTokensWithoutTestnetsState = selector<Token[]>({
   key: "allTokensWithoutTestnetsState",
   get: ({ get }) => {
-    const tokensMap = get(allTokensMapState)
-    const chainsMap = get(allChainsWithoutTestnetsMapState)
-    const evmNetworksMap = get(allEvmNetworksWithoutTestnetsMapState)
+    const [tokensMap, chainsMap, evmNetworksMap] = get(
+      waitForAll([
+        allTokensMapState,
+        allChainsWithoutTestnetsMapState,
+        allEvmNetworksWithoutTestnetsMapState,
+      ])
+    )
     return Object.values(tokensMap)
       .filter(filterNoTestnet)
       .filter(
@@ -316,9 +346,13 @@ export const allTokensWithoutTestnetsMapState = selector<TokenList>({
 export const activeTokensWithTestnetsState = selector<Token[]>({
   key: "activeTokensWithTestnetsState",
   get: ({ get }) => {
-    const tokens = get(allTokensState)
-    const chainsMap = get(activeChainsWithTestnetsMapState)
-    const evmNetworksMap = get(activeEvmNetworksWithTestnetsMapState)
+    const [tokens, chainsMap, evmNetworksMap] = get(
+      waitForAll([
+        allTokensState,
+        activeChainsWithTestnetsMapState,
+        activeEvmNetworksWithTestnetsMapState,
+      ])
+    )
     return tokens.filter(
       (token) =>
         (token.chain && chainsMap[token.chain.id]) ||
@@ -330,9 +364,13 @@ export const activeTokensWithTestnetsState = selector<Token[]>({
 export const activeTokensWithoutTestnetsState = selector<Token[]>({
   key: "activeTokensWithoutTestnetsState",
   get: ({ get }) => {
-    const arTokensWithTestnets = get(activeTokensWithTestnetsState)
-    const chainsWithoutTestnetsMap = get(activeChainsWithoutTestnetsMapState)
-    const evmNetworksWithoutTestnetsMap = get(activeEvmNetworksWithoutTestnetsMapState)
+    const [arTokensWithTestnets, chainsWithoutTestnetsMap, evmNetworksWithoutTestnetsMap] = get(
+      waitForAll([
+        activeTokensWithTestnetsState,
+        activeChainsWithoutTestnetsMapState,
+        activeEvmNetworksWithoutTestnetsMapState,
+      ])
+    )
     return arTokensWithTestnets
       .filter(filterNoTestnet)
       .filter(

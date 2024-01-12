@@ -7,8 +7,10 @@ export const useToggleCurrency = () =>
   useRecoilCallback(
     ({ snapshot, set }) =>
       async () => {
-        const selectableCurrencies = await snapshot.getPromise(selectableCurrenciesState)
-        const selectedCurrency = await snapshot.getPromise(selectedCurrencyState)
+        const [selectableCurrencies, selectedCurrency] = await Promise.all([
+          snapshot.getPromise(selectableCurrenciesState),
+          snapshot.getPromise(selectedCurrencyState),
+        ])
 
         set(
           selectedCurrencyState,

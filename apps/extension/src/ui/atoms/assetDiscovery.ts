@@ -8,7 +8,7 @@ import groupBy from "lodash/groupBy"
 import { atom, selector } from "recoil"
 import { debounceTime, first, from, merge } from "rxjs"
 
-export const assetDiscoveryBalancesState = atom<DiscoveredBalance[]>({
+const assetDiscoveryBalancesState = atom<DiscoveredBalance[]>({
   key: "assetDiscoveryBalancesState",
   effects: [
     // sync from db

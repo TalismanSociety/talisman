@@ -1,7 +1,6 @@
 import { AccountAddressType, AccountJsonAny } from "@core/domains/accounts/types"
 import { Balances } from "@core/domains/balances/types"
 import { Token } from "@core/domains/tokens/types"
-import { log } from "@core/log"
 import { HydrateDb } from "@talismn/balances"
 import { Chain, ChainId, EvmNetwork, EvmNetworkId } from "@talismn/chaindata-provider"
 import {
@@ -16,7 +15,7 @@ import { isEvmToken } from "@ui/util/isEvmToken"
 import { isSubToken } from "@ui/util/isSubToken"
 import { t } from "i18next"
 import { useEffect } from "react"
-import { atom, selector, useRecoilState, useRecoilValue } from "recoil"
+import { atom, selector, useRecoilState, useRecoilValue, waitForAll } from "recoil"
 
 import { selectedAccountState } from "./useSelectedAccount"
 
@@ -146,15 +145,18 @@ const portfolioNetworkFilterState = atom<NetworkOption | undefined>({
 const portfolioGlobalState = selector({
   key: "portfolioGlobalState",
   get: ({ get }) => {
-    const stop = log.timer("portfolioGlobalState")
     const includeTestnets = get(settingQuery("useTestnets"))
-    const { account } = get(selectedAccountState)
-    const chains = get(chainsArrayQuery({ activeOnly: true, includeTestnets }))
-    const tokens = get(tokensArrayQuery({ activeOnly: true, includeTestnets }))
-    const evmNetworks = get(evmNetworksArrayQuery({ activeOnly: true, includeTestnets }))
-    const hydrate = get(balancesHydrateState)
-    const balances = get(balancesFilterQuery("all"))
-    const myBalances = get(balancesFilterQuery("portfolio"))
+    const [{ account }, chains, tokens, evmNetworks, hydrate, balances, myBalances] = get(
+      waitForAll([
+        selectedAccountState,
+        chainsArrayQuery({ activeOnly: true, includeTestnets }),
+        tokensArrayQuery({ activeOnly: true, includeTestnets }),
+        evmNetworksArrayQuery({ activeOnly: true, includeTestnets }),
+        balancesHydrateState,
+        balancesFilterQuery("all"),
+        balancesFilterQuery("portfolio"),
+      ])
+    )
 
     const allBalances = account ? balances.find({ address: account.address }) : myBalances
     const accountType = getAccountType(account)
@@ -167,8 +169,6 @@ const portfolioGlobalState = selector({
     })
     const networkFilter = get(portfolioNetworkFilterState)
     const networkBalances = getNetworkBalances({ networkFilter, allBalances, hydrate })
-
-    stop()
 
     return {
       networks,
