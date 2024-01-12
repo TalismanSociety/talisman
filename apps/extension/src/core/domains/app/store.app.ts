@@ -21,11 +21,6 @@ export type AppStoreData = {
   hideBraveWarning: boolean
   hasBraveWarningBeenShown: boolean
   analyticsRequestShown: boolean
-  /**
-   * @deprecated Use hasFunds
-   */
-  showWalletFunding?: boolean
-  hasFunds: boolean
   hideBackupWarningUntil?: number
   hasSpiritKey: boolean
   hideStakingBanner: StakingSupportedChain[]
@@ -46,7 +41,6 @@ export const DEFAULT_APP_STATE: AppStoreData = {
   hasBraveWarningBeenShown: false,
   // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
   analyticsRequestShown: gt(process.env.VERSION!, ANALYTICS_VERSION), // assume user has onboarded with analytics if current version is newer
-  hasFunds: false,
   hasSpiritKey: false,
   needsSpiritKeyUpdate: false,
   hideStakingBanner: [],
@@ -79,12 +73,6 @@ export class AppStore extends StorageProvider<AppStoreData> {
     // Onboarding page won't display with UNKNOWN
     // Initialize to FALSE after install
     if ((await this.get("onboarded")) === UNKNOWN) await this.set({ onboarded: FALSE })
-
-    // migrate showWalletFunding to hasFunds
-    const showWalletFunding = await this.get("showWalletFunding")
-    if (showWalletFunding !== undefined) {
-      await this.set({ hasFunds: !showWalletFunding, showWalletFunding: undefined })
-    }
   }
 
   async getIsOnboarded() {
