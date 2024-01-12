@@ -27,8 +27,6 @@ import { api } from "@ui/api"
 import { liveQuery } from "dexie"
 import { atom, selector, selectorFamily, waitForAll } from "recoil"
 
-//import { mainState } from "./main"
-
 const NO_OP = () => {}
 
 const filterNoTestnet = ({ isTestnet }: { isTestnet?: boolean }) => isTestnet === false
