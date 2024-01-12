@@ -33,7 +33,7 @@ const nomPoolEligibleAddressBalancesState = selector({
   key: "nomPoolEligibleAddressBalancesState",
   get: ({ get }) => {
     const [balances, accounts] = get(
-      waitForAll([balancesFilterQuery("all"), accountsQuery("owned")])
+      waitForAll([balancesFilterQuery("owned"), accountsQuery("owned")])
     )
 
     const substrateAddresses = accounts
@@ -187,7 +187,7 @@ const evmLsdEligibleAddressesState = selector({
   key: "evmLsdEligibleAddressesState",
   get: ({ get }) => {
     const [balances, accounts] = get(
-      waitForAll([balancesFilterQuery("all"), accountsQuery("owned")])
+      waitForAll([balancesFilterQuery("owned"), accountsQuery("owned")])
     )
 
     // only balances on ethereum accounts are eligible for lido staking
