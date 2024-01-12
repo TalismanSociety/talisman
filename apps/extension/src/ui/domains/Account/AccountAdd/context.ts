@@ -1,10 +1,19 @@
 import { provideContext } from "@talisman/util/provideContext"
 import { useState } from "react"
+import { useSearchParams } from "react-router-dom"
 
-export type MethodTypes = "new" | "import" | "connect" | "watched"
+const allMethodTypes = ["new", "import", "connect", "watched"] as const
+export type MethodTypes = (typeof allMethodTypes)[number]
+
+const isMethodType = (item: string | null): item is MethodTypes =>
+  typeof item === "string" && Array.from<string>(allMethodTypes).includes(item)
 
 const useAccountCreate = () => {
-  const [methodType, setMethodType] = useState<MethodTypes>("new")
+  const [searchParams] = useSearchParams()
+  const [methodType, setMethodType] = useState<MethodTypes>(() => {
+    const searchMethodType = searchParams.get("methodType")
+    return isMethodType(searchMethodType) ? searchMethodType : "new"
+  })
 
   return {
     methodType,

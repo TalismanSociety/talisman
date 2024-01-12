@@ -17,9 +17,10 @@ import { PillButton } from "talisman-ui"
 type Props = {
   className?: string
   mouseOver: boolean
+  disabled?: boolean
 }
 
-export const TotalFiatBalance = ({ className, mouseOver }: Props) => {
+export const TotalFiatBalance = ({ className, mouseOver, disabled }: Props) => {
   const { t } = useTranslation()
   const balances = useBalances("portfolio")
   const currency = useSelectedCurrency()
@@ -44,6 +45,7 @@ export const TotalFiatBalance = ({ className, mouseOver }: Props) => {
         <button
           className={classNames(
             "hover:text-body focus:text-body pointer-events-auto opacity-0 transition-opacity",
+            disabled && "hover:text-body-secondary focus:text-body-secondary",
             (hideBalances || mouseOver) && "opacity-100"
           )}
           onClick={toggleHideBalance}
@@ -62,13 +64,13 @@ export const TotalFiatBalance = ({ className, mouseOver }: Props) => {
           {currencyConfig[currency]?.unicodeCharacter}
         </button>
         <Fiat
-          className="font-surtExpanded text-lg"
+          className={classNames("font-surtExpanded text-lg", disabled && "text-body-secondary")}
           amount={balances.sum.fiat(currency).total}
           isBalance
           currencyDisplay="code"
         />
       </div>
-      <TopActions />
+      <TopActions disabled={disabled} />
     </div>
   )
 }
@@ -80,7 +82,7 @@ const ANALYTICS_PAGE: AnalyticsPage = {
   page: "Portfolio Home",
 }
 
-const TopActions = () => {
+const TopActions = ({ disabled }: { disabled?: boolean }) => {
   const { t } = useTranslation()
   const { open: openCopyAddressModal } = useCopyAddressModal()
   const canBuy = useIsFeatureEnabled("BUY_CRYPTO")
@@ -144,6 +146,7 @@ const TopActions = () => {
           className="pointer-events-auto opacity-90"
           onClick={handleClicks[index]}
           icon={action.icon}
+          disabled={disabled}
         >
           {action.label}
         </PillButton>

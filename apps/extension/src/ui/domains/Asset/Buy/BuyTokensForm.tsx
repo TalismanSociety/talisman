@@ -13,7 +13,7 @@ import useAccounts from "@ui/hooks/useAccounts"
 import { useAnalyticsPageView } from "@ui/hooks/useAnalyticsPageView"
 import useChains from "@ui/hooks/useChains"
 import useTokens from "@ui/hooks/useTokens"
-import { useCallback, useMemo } from "react"
+import { useCallback, useEffect, useMemo, useRef } from "react"
 import { useForm } from "react-hook-form"
 import { useTranslation } from "react-i18next"
 import { Button, Dropdown, DropdownOptionRender } from "talisman-ui"
@@ -123,6 +123,34 @@ export const BuyTokensForm = () => {
     tokens,
     address
   )
+
+  const autoSelectFirstAccountInit = useRef(false)
+  useEffect(() => {
+    if (autoSelectFirstAccountInit.current) return
+    // TODO: This check can be removed once https://github.com/TalismanSociety/talisman/pull/1101 is merged,
+    // that PR adds react suspense to the useAccounts hook, so checking for the scenario that the list hasn't
+    // loaded yet will no longer be necessary.
+    if (accounts?.length === 0) return
+
+    if (address !== undefined) {
+      // disable auto-select if an address has already been picked
+      autoSelectFirstAccountInit.current = true
+      return
+    }
+    if (accounts?.length !== 1) {
+      // disable auto-select if user has more than one account
+      autoSelectFirstAccountInit.current = true
+      return
+    }
+
+    // auto-select the one available account
+    setValue("address", accounts[0]?.address, {
+      shouldTouch: true,
+      shouldDirty: true,
+      shouldValidate: true,
+    })
+    autoSelectFirstAccountInit.current = true
+  }, [accounts, accounts?.length, address, setValue])
 
   const submit = useCallback(
     async (formData: FormData) => {

@@ -81,6 +81,10 @@ const config = (env) => ({
         type: "asset",
       },
       {
+        test: /\.md$/i,
+        use: "raw-loader",
+      },
+      {
         test: /\.css$/,
         use: ["style-loader", "css-loader", "postcss-loader"],
       },

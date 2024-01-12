@@ -6,6 +6,7 @@ import { TogglePill } from "@talisman/components/TogglePill"
 import { CustomEvmNetwork, EvmNetwork, EvmNetworkId, Token } from "@talismn/chaindata-provider"
 import { MoreHorizontalIcon, PlusIcon } from "@talismn/icons"
 import { AnalyticsPage, sendAnalyticsEvent } from "@ui/api/analytics"
+import { DashboardLayout } from "@ui/apps/dashboard/layout/DashboardLayout"
 import { TokenLogo } from "@ui/domains/Asset/TokenLogo"
 import { NetworkLogo } from "@ui/domains/Ethereum/NetworkLogo"
 import { EnableTestnetPillButton } from "@ui/domains/Settings/EnableTestnetPillButton"
@@ -32,8 +33,6 @@ import {
   Toggle,
 } from "talisman-ui"
 import urlJoin from "url-join"
-
-import { DashboardLayout } from "../../layout/DashboardLayout"
 
 const CustomPill = () => {
   const { t } = useTranslation("admin")

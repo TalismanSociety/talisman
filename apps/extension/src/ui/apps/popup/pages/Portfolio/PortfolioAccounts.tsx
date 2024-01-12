@@ -2,13 +2,14 @@ import { AccountsCatalogTree, TreeFolder, TreeItem } from "@core/domains/account
 import { AccountType } from "@core/domains/accounts/types"
 import { isEthereumAddress } from "@polkadot/util-crypto"
 import { FadeIn } from "@talisman/components/FadeIn"
-import { SuspenseTracker } from "@talisman/components/SuspenseTracker"
 import { Balance, Balances } from "@talismn/balances"
 import { ChevronLeftIcon, ChevronRightIcon, CopyIcon, EyeIcon } from "@talismn/icons"
 import { classNames } from "@talismn/util"
 import { AnalyticsPage, sendAnalyticsEvent } from "@ui/api/analytics"
 import { AccountsLogoStack } from "@ui/apps/dashboard/routes/Settings/Accounts/AccountsLogoStack"
-import { TotalFiatBalance } from "@ui/apps/popup/components/TotalFiatBalance"
+import { AllAccountsHeader } from "@ui/apps/popup/components/AllAccountsHeader"
+import { NewFeaturesButton } from "@ui/apps/popup/components/NewFeaturesButton"
+import { NoAccountsPopup } from "@ui/apps/popup/pages/NoAccounts"
 import { AccountFolderIcon } from "@ui/domains/Account/AccountFolderIcon"
 import { AccountIcon } from "@ui/domains/Account/AccountIcon"
 import { AccountTypeIcon } from "@ui/domains/Account/AccountTypeIcon"
@@ -21,15 +22,12 @@ import useAccountsCatalog from "@ui/hooks/useAccountsCatalog"
 import { useAnalytics } from "@ui/hooks/useAnalytics"
 import useBalances from "@ui/hooks/useBalances"
 import { useSelectedCurrency } from "@ui/hooks/useCurrency"
-import { useFirstAccountColors } from "@ui/hooks/useFirstAccountColors"
 import { useFormattedAddress } from "@ui/hooks/useFormattedAddress"
-import { useHasAccounts } from "@ui/hooks/useHasAccounts"
 import { useSearchParamsSelectedFolder } from "@ui/hooks/useSearchParamsSelectedFolder"
-import { MouseEventHandler, Suspense, useCallback, useEffect, useMemo, useRef } from "react"
+import { MouseEventHandler, useCallback, useEffect, useMemo } from "react"
 import { useTranslation } from "react-i18next"
 import { useNavigate } from "react-router-dom"
-import { useHoverDirty } from "react-use"
-import { IconButton, MYSTICAL_PHYSICS_V3, MysticalBackground, MysticalPhysicsV3 } from "talisman-ui"
+import { IconButton } from "talisman-ui"
 
 import { StakingBanner } from "../../components/StakingBanner"
 
@@ -180,16 +178,6 @@ const AccountsList = ({ className, options }: { className?: string; options: Acc
   )
 }
 
-const BG_CONFIG: MysticalPhysicsV3 = {
-  ...MYSTICAL_PHYSICS_V3,
-  artifacts: 2,
-  radiusMin: 4,
-  radiusMax: 4,
-  opacityMin: 0.5,
-  opacityMax: 0.5,
-  durationMin: 12000,
-  durationMax: 15000,
-}
 const Accounts = ({
   folder,
   folderTotal,
@@ -207,8 +195,9 @@ const Accounts = ({
   const hasWatchedOptions = watchedOptions.length > 0
 
   return (
-    <div className="flex w-full flex-col gap-4 pb-12">
+    <div className="flex w-full flex-col gap-4">
       {!folder && <AllAccountsHeader />}
+      {!folder && <NewFeaturesButton />}
       {folder && <FolderHeader folder={folder} folderTotal={folderTotal} />}
 
       {hasPortfolioOptions && (
@@ -227,48 +216,6 @@ const Accounts = ({
         </div>
       )}
       {hasWatchedOptions && <AccountsList options={watchedOptions} />}
-    </div>
-  )
-}
-
-const AllAccountsHeaderBackground = () => {
-  const colors = useFirstAccountColors()
-  const config = useMemo(() => ({ ...BG_CONFIG, colors }), [colors])
-
-  return (
-    <MysticalBackground
-      className="absolute left-0 top-0 h-full w-full rounded-sm"
-      config={config}
-    />
-  )
-}
-
-const AllAccountsHeader = () => {
-  const navigate = useNavigate()
-  const handleClick = useCallback(() => navigate("/portfolio/assets"), [navigate])
-  const ref = useRef<HTMLDivElement>(null)
-  const isHovered = useHoverDirty(ref)
-  const hasAccounts = useHasAccounts()
-
-  return (
-    <div ref={ref} className="relative h-[11.4rem] w-full">
-      <button
-        className={classNames(
-          "flex h-full w-full items-center justify-end gap-4 overflow-hidden rounded-sm p-6 text-lg",
-          "hover:bg-grey-800 bg-black-secondary text-body-secondary transition-colors duration-75 hover:text-white"
-        )}
-        onClick={handleClick}
-        disabled={hasAccounts === false}
-      >
-        <Suspense fallback={<SuspenseTracker name="AllAccountsHeaderBackground" />}>
-          <AllAccountsHeaderBackground />
-        </Suspense>
-        {hasAccounts && <ChevronRightIcon className="z-10" />}
-      </button>
-      <TotalFiatBalance
-        className="pointer-events-none absolute left-0 top-0 h-full w-full px-6"
-        mouseOver={isHovered}
-      />
     </div>
   )
 }
@@ -300,6 +247,7 @@ export const PortfolioAccounts = () => {
   const balances = useBalances()
   const currency = useSelectedCurrency()
   const accounts = useAccounts()
+  const ownedAccounts = useAccounts("owned")
   const catalog = useAccountsCatalog()
   const { folder, treeName: folderTreeName } = useSearchParamsSelectedFolder()
   const { popupOpenEvent } = useAnalytics()
@@ -379,18 +327,34 @@ export const PortfolioAccounts = () => {
     [balancesByAddress, currency, folder]
   )
 
+  // TODO: Use `hasFunds` flag from `useAppState`
+  // That flag is added by this PR: https://github.com/TalismanSociety/talisman/pull/1101
+  const hasFunds = useMemo(
+    () =>
+      balances
+        .filterNonZero("total")
+        .each.some((b) => ownedAccounts.some((a) => a.address === b.address)),
+    [balances, ownedAccounts]
+  )
+  const showGetStartedPopup = balances.count > 0 && !hasFunds && ownedAccounts.length <= 2
+
   useEffect(() => {
     popupOpenEvent("portfolio accounts")
   }, [popupOpenEvent])
 
   return (
-    <FadeIn>
+    <FadeIn className="flex flex-col gap-12 pb-12">
       <Accounts
         folder={folder}
         folderTotal={folderTotal}
         portfolioOptions={portfolioOptions}
         watchedOptions={watchedOptions}
       />
+      {showGetStartedPopup && (
+        <FadeIn>
+          <NoAccountsPopup hasSomeAccounts={!!ownedAccounts.length} />
+        </FadeIn>
+      )}
     </FadeIn>
   )
 }
