@@ -1,4 +1,5 @@
 import { db } from "@core/db"
+import { isTestChain } from "@polkadot/util"
 import { HexString } from "@polkadot/util/types"
 import { api } from "@ui/api"
 import { useLiveQuery } from "dexie-react-hooks"
@@ -77,7 +78,20 @@ export const useMetadataUpdates = (genesisHash?: HexString, specVersion?: number
       // consider ready to sign either if we can't update or if an update has been attempted.
       const isReady = !isLoading && (!chain || isMetadataUpToDate || hasMetadataUpdated)
       const hasMetadataUpdateFailed = hasMetadataUpdated && !isMetadataUpToDate
-      const requiresUpdate = !isLoading && (!isKnownChain || !isMetadataUpToDate)
+
+      // PolkadotJs-Apps does not prompt the user to update metadata for chains where this variable is true.
+      //
+      // The variable `isDevelopment` is set up here:
+      // https://github.com/polkadot-js/apps/blob/acd48f9158e559b12384ec562e75d3869fbadedb/packages/react-api/src/Api.tsx#L147
+      //
+      // Which is then used to hide the metadata update prompt here:
+      // https://github.com/polkadot-js/apps/blob/acd48f9158e559b12384ec562e75d3869fbadedb/packages/page-settings/src/useExtensions.ts#L162-L167
+      const metadataNotNeeded =
+        chain?.chainType === "Development" ||
+        chain?.chainType === "Local" ||
+        isTestChain(chain?.chainName)
+
+      const requiresUpdate = !isLoading && !isMetadataUpToDate && !metadataNotNeeded
 
       setResult({
         isReady,

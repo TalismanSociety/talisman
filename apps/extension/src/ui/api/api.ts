@@ -24,7 +24,7 @@ export const api: MessageTypes = {
   authStatusSubscribe: (cb) => messageService.subscribe("pri(app.authStatus.subscribe)", null, cb),
   dashboardOpen: (route) => messageService.sendMessage("pri(app.dashboardOpen)", { route }),
   onboardOpen: () => messageService.sendMessage("pri(app.onboardOpen)"),
-  popupOpen: () => messageService.sendMessage("pri(app.popupOpen)"),
+  popupOpen: (argument?: string) => messageService.sendMessage("pri(app.popupOpen)", argument),
   promptLogin: (closeOnSuccess = false) =>
     messageService.sendMessage("pri(app.promptLogin)", closeOnSuccess),
   approveMetaRequest: (id) => messageService.sendMessage("pri(metadata.approve)", { id }),

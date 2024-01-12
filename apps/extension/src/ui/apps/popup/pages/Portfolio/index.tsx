@@ -16,6 +16,25 @@ import { NoAccounts } from "../NoAccounts"
 import { PortfolioAccounts } from "./PortfolioAccounts"
 import { PortfolioAsset } from "./PortfolioAsset"
 import { PortfolioAssets } from "./PortfolioAssets"
+import { PortfolioLearnMore, PortfolioLearnMoreHeader } from "./PortfolioLearnMore"
+import { PortfolioTryTalisman, PortfolioTryTalismanHeader } from "./PortfolioTryTalisman"
+import { PortfolioWhatsNew, PortfolioWhatsNewHeader } from "./PortfolioWhatsNew"
+
+export const Portfolio = () => {
+  const hasAccounts = useHasAccounts()
+  return (
+    <PopupLayout withBottomNav>
+      <PortfolioHeader />
+      <PopupContent>
+        {hasAccounts && <HasAccountsPortfolioContent />}
+        {!hasAccounts && <NoAccountsPortfolioContent />}
+      </PopupContent>
+      <Suspense fallback={<SuspenseTracker name="AssetDiscoveryPopupAlert" />}>
+        <AssetDiscoveryPopupAlert />
+      </Suspense>
+    </PopupLayout>
+  )
+}
 
 const AccountAvatar = () => {
   const location = useLocation()
@@ -30,9 +49,44 @@ const AccountAvatar = () => {
   )
 }
 
-const PortfolioContent = () => (
+export const PortfolioHeader = () => {
+  const currentSite = useCurrentSite()
+  const authorisedSites = useAuthorisedSites()
+  const isAuthorised = useMemo(
+    () => Boolean(currentSite?.id && authorisedSites[currentSite?.id]),
+    [authorisedSites, currentSite?.id]
+  )
+
+  return (
+    <Routes>
+      <Route path="whats-new" element={<PortfolioWhatsNewHeader />} />
+      <Route path="learn-more" element={<PortfolioLearnMoreHeader />} />
+      <Route path="try-talisman" element={<PortfolioTryTalismanHeader />} />
+      <Route
+        path="*"
+        element={
+          isAuthorised ? (
+            <header className="my-8 flex h-[3.6rem] w-full shrink-0 items-center justify-between gap-4 px-12">
+              <ConnectedAccountsPill />
+              <EvmNetworkSelectPill />
+            </header>
+          ) : (
+            <PopupHeader right={<AccountAvatar />}>
+              <ConnectedAccountsPill />
+            </PopupHeader>
+          )
+        }
+      />
+    </Routes>
+  )
+}
+
+const HasAccountsPortfolioContent = () => (
   <>
     <Routes>
+      <Route path="whats-new" element={<PortfolioWhatsNew />} />
+      <Route path="learn-more" element={<PortfolioLearnMore />} />
+      <Route path="try-talisman" element={<PortfolioTryTalisman />} />
       <Route path="assets" element={<PortfolioAssets />} />
       <Route path=":symbol" element={<PortfolioAsset />} />
       <Route path="" element={<PortfolioAccounts />} />
@@ -44,35 +98,10 @@ const PortfolioContent = () => (
   </>
 )
 
-const Header = () => {
-  const currentSite = useCurrentSite()
-  const authorisedSites = useAuthorisedSites()
-  const isAuthorised = useMemo(
-    () => currentSite?.id && authorisedSites[currentSite?.id],
-    [authorisedSites, currentSite?.id]
-  )
-
-  return isAuthorised ? (
-    <header className="my-8 flex h-[3.6rem] w-full shrink-0 items-center justify-between gap-4 px-12">
-      <ConnectedAccountsPill />
-      <EvmNetworkSelectPill />
-    </header>
-  ) : (
-    <PopupHeader right={<AccountAvatar />}>
-      <ConnectedAccountsPill />
-    </PopupHeader>
-  )
-}
-
-export const Portfolio = () => {
-  const hasAccounts = useHasAccounts()
-  return (
-    <PopupLayout withBottomNav>
-      <Header />
-      <PopupContent>{hasAccounts === false ? <NoAccounts /> : <PortfolioContent />}</PopupContent>
-      <Suspense fallback={<SuspenseTracker name="AssetDiscoveryPopupAlert" />}>
-        <AssetDiscoveryPopupAlert />
-      </Suspense>
-    </PopupLayout>
-  )
-}
+const NoAccountsPortfolioContent = () => (
+  <Routes>
+    <Route path="learn-more" element={<PortfolioLearnMore />} />
+    <Route path="try-talisman" element={<PortfolioTryTalisman />} />
+    <Route path="" element={<NoAccounts />} />
+  </Routes>
+)

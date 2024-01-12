@@ -8,10 +8,12 @@ export const AddressFieldEnsBadge = ({
   ensLookup,
   isEnsLookup,
   isEnsFetching,
+  small,
 }: {
   ensLookup: string | null | undefined
   isEnsLookup: boolean
   isEnsFetching: boolean
+  small?: boolean
 }) => (
   <>
     {isEnsLookup && !ensLookup && isEnsFetching ? (
@@ -24,19 +26,29 @@ export const AddressFieldEnsBadge = ({
         // if we're not in a popup, no need to wrap
         noWrap={!document.getElementById("main")}
       >
-        <PillButton className="h-16 max-w-full !cursor-default !px-4">
-          <div className="text-body flex h-16 max-w-full flex-nowrap items-center gap-4 overflow-x-hidden text-base">
-            <AccountIcon className="text-lg" address={ensLookup} />
-            <div className="leading-base grow truncate">
-              <Address className="text-body" address={ensLookup} noTooltip />
-            </div>
+        {small ? (
+          <>
             {isEnsFetching ? (
               <LoaderIcon className="text-body-disabled animate-spin-slow" />
             ) : (
               <CheckCircleIcon className="text-primary" />
             )}
-          </div>
-        </PillButton>
+          </>
+        ) : (
+          <PillButton className="h-16 max-w-full !cursor-default !px-4">
+            <div className="text-body flex h-16 max-w-full flex-nowrap items-center gap-4 overflow-x-hidden text-base">
+              <AccountIcon className="text-lg" address={ensLookup} />
+              <div className="leading-base grow truncate">
+                <Address className="text-body" address={ensLookup} noTooltip />
+              </div>
+              {isEnsFetching ? (
+                <LoaderIcon className="text-body-disabled animate-spin-slow" />
+              ) : (
+                <CheckCircleIcon className="text-primary" />
+              )}
+            </div>
+          </PillButton>
+        )}
       </WithTooltip>
     )}
   </>

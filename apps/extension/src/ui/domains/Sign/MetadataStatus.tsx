@@ -1,54 +1,95 @@
 import { HexString } from "@polkadot/util/types"
+import { ExternalLinkIcon } from "@talismn/icons"
 import { useMetadataUpdates } from "@ui/hooks/useMetadataUpdates"
-import { FC } from "react"
+import { ReactNode } from "react"
 import { Trans, useTranslation } from "react-i18next"
 
 import { SignAlertMessage } from "./SignAlertMessage"
 
-export const MetadataStatus: FC<{ genesisHash?: HexString; specVersion?: number }> = ({
-  genesisHash,
-  specVersion,
-}) => {
+type Props = {
+  genesisHash?: HexString
+  specVersion?: number
+}
+
+export const MetadataStatus = ({ genesisHash, specVersion }: Props) => {
   const { t } = useTranslation("request")
-  const { updateUrl, isMetadataUpdating, hasMetadataUpdateFailed, requiresUpdate } =
+  const { isKnownChain, isMetadataUpdating, hasMetadataUpdateFailed, updateUrl, requiresUpdate } =
     useMetadataUpdates(genesisHash, specVersion)
 
   if (!genesisHash) return null
 
   if (isMetadataUpdating)
+    return <LoadingAlert>{t("Updating network metadata, please wait.")}</LoadingAlert>
+
+  if (hasMetadataUpdateFailed && updateUrl)
     return (
-      <SignAlertMessage processing className="!my-6" type="warning" iconSize="base">
-        {t("Updating network metadata, please wait.")}
-      </SignAlertMessage>
+      <ErrorAlert>
+        <Trans>
+          Failed to update metadata. Please update metadata manually from the{" "}
+          <a
+            href={updateUrl}
+            target="_blank"
+            rel="noreferrer noopener"
+            className="text-grey-200 hover:text-white"
+          >
+            Polkadot.js portal&nbsp;
+            <ExternalLinkIcon className="inline" />
+          </a>{" "}
+          or your transaction may fail.
+        </Trans>
+      </ErrorAlert>
     )
 
   if (hasMetadataUpdateFailed)
     return (
-      <SignAlertMessage className="!my-6" type="error">
-        {updateUrl ? (
-          <Trans>
-            Failed to update metadata. Please update metadata manually from the{" "}
-            <a href={updateUrl} target="_blank" className="text-grey-200 hover:text-white">
-              Polkadot.js portal
-            </a>{" "}
-            or your transaction may fail.
-          </Trans>
-        ) : (
-          t(
-            "Failed to update metadata. Please update metadata manually or your transaction may fail."
-          )
+      <ErrorAlert>
+        {t(
+          "Failed to update metadata. Please update metadata manually or your transaction may fail."
         )}
-      </SignAlertMessage>
+      </ErrorAlert>
+    )
+
+  if (requiresUpdate && !isKnownChain)
+    return (
+      <ErrorAlert>
+        <Trans t={t}>
+          Network metadata missing.
+          <br />
+          Please{" "}
+          <a
+            href={`${window.location.origin}/dashboard.html#/networks/polkadot/add`}
+            target="_blank"
+            rel="noreferrer noopener"
+            className="text-grey-200 hover:text-white"
+          >
+            add this chain to Talisman&nbsp;
+            <ExternalLinkIcon className="inline" />
+          </a>{" "}
+          in order to update the metadata or your transaction may fail.
+        </Trans>
+      </ErrorAlert>
     )
 
   if (requiresUpdate)
     return (
-      <SignAlertMessage className="!my-6" type="error" iconSize="base">
+      <ErrorAlert>
         {t(
           "This network requires a manual metadata update. Please update or your transaction may fail."
         )}
-      </SignAlertMessage>
+      </ErrorAlert>
     )
 
   return null
 }
+
+const LoadingAlert = ({ children }: { children: ReactNode }) => (
+  <SignAlertMessage className="!my-6" type="warning" iconSize="base" processing>
+    {children}
+  </SignAlertMessage>
+)
+
+const ErrorAlert = ({ children }: { children: ReactNode }) => (
+  <SignAlertMessage className="!my-6" type="error" iconSize="base">
+    {children}
+  </SignAlertMessage>
+)

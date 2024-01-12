@@ -12,7 +12,7 @@ import { useTranslation } from "react-i18next"
 import { useNavigate } from "react-router-dom"
 import { Button } from "talisman-ui"
 
-import { NoAccountsFullscreen } from "./NoAccounts"
+import { NoAccountsFullscreen } from "./NoAccountsFullscreen"
 
 const FullscreenPortfolioAssets = ({ balances }: { balances: Balances }) => {
   const { t } = useTranslation()
