@@ -152,8 +152,6 @@ export const api: MessageTypes = {
   // balance messages ---------------------------------------------------
   getBalance: ({ chainId, evmNetworkId, tokenId, address }) =>
     messageService.sendMessage("pri(balances.get)", { chainId, evmNetworkId, tokenId, address }),
-  getNomPoolStakedBalance: ({ chainId, addresses }) =>
-    messageService.sendMessage("pri(balances.nompools.get)", { chainId, addresses }),
   balances: (cb) => messageService.subscribe("pri(balances.subscribe)", null, cb),
   balancesByParams: (addressesByChain, addressesAndEvmNetworks, addressesAndTokens, cb) =>
     messageService.subscribe(

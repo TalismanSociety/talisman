@@ -5,7 +5,6 @@ import {
   Balances,
   RequestBalance,
   RequestBalancesByParamsSubscribe,
-  RequestNomPoolStake,
 } from "@core/domains/balances/types"
 import {
   ActiveChains,
@@ -17,7 +16,6 @@ import {
   activeEvmNetworksStore,
   isEvmNetworkActive,
 } from "@core/domains/ethereum/store.activeEvmNetworks"
-import { getNomPoolStake } from "@core/domains/staking/helpers"
 import {
   ActiveTokens,
   activeTokensStore,
@@ -54,9 +52,6 @@ export class BalancesHandler extends ExtensionHandler {
       // --------------------------------------------------------------------
       case "pri(balances.get)":
         return this.stores.balances.getBalance(request as RequestBalance)
-
-      case "pri(balances.nompools.get)":
-        return getNomPoolStake(request as RequestNomPoolStake)
 
       case "pri(balances.subscribe)":
         return this.stores.balances.subscribe(id, port)

@@ -1,5 +1,4 @@
 import { appStore } from "@core/domains/app/store.app"
-import { ResponseNomPoolStake } from "@core/domains/balances/types"
 import {
   EVM_LSD_PAIRS,
   NOM_POOL_MIN_DEPOSIT,
@@ -9,9 +8,7 @@ import {
 import { isNomPoolChain, isStakingSupportedChain } from "@core/domains/staking/helpers"
 import { StakingSupportedChain } from "@core/domains/staking/types"
 import { Address } from "@core/types/base"
-import * as Sentry from "@sentry/browser"
 import { ChainId, IToken, Token } from "@talismn/chaindata-provider"
-import { api } from "@ui/api"
 import { accountsQuery, balancesFilterQuery } from "@ui/atoms"
 import useAccounts from "@ui/hooks/useAccounts"
 import { useAppState } from "@ui/hooks/useAppState"
@@ -29,10 +26,17 @@ const safelyGetExistentialDeposit = (token?: IToken | null): bigint => {
   return 0n
 }
 
+const ownedBalancesState = selector({
+  key: "ownedBalancesState",
+  get: ({ get }) => {
+    return get(balancesFilterQuery("owned"))
+  },
+})
+
 const nomPoolEligibleAddressBalancesState = selector({
   key: "nomPoolEligibleAddressBalancesState",
   get: ({ get }) => {
-    const balances = get(balancesFilterQuery("all"))
+    const balances = get(ownedBalancesState)
     const accounts = get(accountsQuery("owned"))
 
     const substrateAddresses = accounts
@@ -74,53 +78,41 @@ const nomPoolEligibleAddressBalancesState = selector({
   },
 })
 
-const NOM_POOL_STAKED_CACHE: Record<string, Promise<ResponseNomPoolStake>> = {}
-
-const getNomPoolStakedBalance = ({
-  chainId,
-  addresses,
-}: {
-  chainId: ChainId
-  addresses: Address[]
-}): Promise<ResponseNomPoolStake> => {
-  const cacheKey = `${chainId}::${addresses.join("-")}`
-
-  if (!NOM_POOL_STAKED_CACHE[cacheKey]) {
-    NOM_POOL_STAKED_CACHE[cacheKey] = api.getNomPoolStakedBalance({
-      chainId,
-      addresses,
-    })
-  }
-
-  return NOM_POOL_STAKED_CACHE[cacheKey]
-}
-
 const nomPoolStakedBalancesState = selector({
   key: "nomPoolStakedBalancesState",
   get: async ({ get }) => {
     const nomPoolEligibleAddressBalances = get(nomPoolEligibleAddressBalancesState)
     const eligibleChains = Object.keys(nomPoolEligibleAddressBalances)
-
-    const result: Record<ChainId, ResponseNomPoolStake> = {}
+    type AddressNomPoolStake = Record<string, null | bigint>
+    const result: Record<ChainId, AddressNomPoolStake> = {}
 
     if (eligibleChains.length === 0) return {}
+    const balances = get(ownedBalancesState)
 
-    const nomPoolPromises = NOM_POOL_SUPPORTED_CHAINS.map(async (chainId) => {
+    NOM_POOL_SUPPORTED_CHAINS.map((chainId) => {
       const eligibleAddressesBalances = nomPoolEligibleAddressBalances[chainId]
       const addresses = eligibleAddressesBalances ? Object.keys(eligibleAddressesBalances) : []
       if (addresses.length == 0) return
 
-      try {
-        result[chainId] = await getNomPoolStakedBalance({
-          chainId,
-          addresses,
-        })
-      } catch (err) {
-        Sentry.captureException(err, { tags: { chainId } })
-      }
-    })
+      result[chainId] = balances
+        .find({ chainId, source: "substrate-native" })
+        .each.reduce((acc, b) => {
+          if (!addresses.includes(b.address)) return acc
 
-    await Promise.allSettled(nomPoolPromises)
+          acc[b.address] = b.reserves.reduce((balanceSum, r) => {
+            if (
+              (r.label === "nompools-staking" || r.label === "nompools-unbonding") &&
+              r.amount.planck > 0n
+            ) {
+              if (balanceSum === null) balanceSum = r.amount.planck
+              else balanceSum += r.amount.planck
+            }
+            return balanceSum
+          }, null as bigint | null)
+
+          return acc
+        }, {} as AddressNomPoolStake)
+    })
 
     return result
   },
@@ -129,7 +121,6 @@ const nomPoolStakedBalancesState = selector({
 const useNomPoolStakingEligibility = () => {
   const eligibleAddressBalances = useRecoilValue(nomPoolEligibleAddressBalancesState)
   const nomPoolStake = useRecoilValue(nomPoolStakedBalancesState)
-
   const accounts = useAccounts("owned")
   // only balances on substrate accounts are eligible for nom pool staking
   const substrateAddresses = useMemo(
