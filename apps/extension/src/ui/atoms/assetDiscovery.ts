@@ -5,8 +5,11 @@ import { Address } from "@talismn/balances"
 import { TokenId } from "@talismn/chaindata-provider"
 import { liveQuery } from "dexie"
 import groupBy from "lodash/groupBy"
+import sortBy from "lodash/sortBy"
 import { atom, selector } from "recoil"
 import { debounceTime, first, from, merge } from "rxjs"
+
+import { tokensMapQuery } from "./chaindata"
 
 const assetDiscoveryBalancesState = atom<DiscoveredBalance[]>({
   key: "assetDiscoveryBalancesState",
@@ -59,9 +62,14 @@ export const assetDiscoveryScanProgress = selector<{
       lastScanAccounts,
       lastScanTokensCount,
     } = get(assetDiscoveryScanState)
+    const tokensMap = get(tokensMapQuery({ activeOnly: false, includeTestnets: true }))
     const balances = get(assetDiscoveryBalancesState)
     const balancesByTokenId = groupBy(balances, (a) => a.tokenId)
-    const tokenIds = Object.keys(balancesByTokenId)
+    const tokenIds = sortBy(
+      Object.keys(balancesByTokenId),
+      (tokenId) => Number(tokensMap[tokenId].evmNetwork?.id ?? 0),
+      (tokenId) => tokensMap[tokenId]?.symbol
+    )
 
     const isInProgress = !!currentScanId
     const accounts = isInProgress ? currentScanAccounts : lastScanAccounts
