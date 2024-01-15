@@ -1,3 +1,4 @@
+import { FadeIn } from "@talisman/components/FadeIn"
 import { ArrowUpRightIcon, ChevronLeftIcon, ExternalLinkIcon } from "@talismn/icons"
 import { api } from "@ui/api"
 import { AnalyticsPage, sendAnalyticsEvent } from "@ui/api/analytics"
@@ -34,13 +35,17 @@ export const PortfolioLearnMore = () => {
   const { t } = useTranslation()
 
   return (
-    <div className="text-body-secondary flex flex-col gap-12 pb-12 text-sm">
+    <FadeIn className="text-body-secondary flex flex-col gap-12 pb-12 text-sm">
       <LearnMoreSection
         title={t("Make it Yours")}
         subtitle={t("Sort and organize accounts into folders")}
         button={<LearnMoreButton onClick={goToSettingsAccounts} />}
       >
-        <img className="bg-body-black w-full rounded" alt="demo screenshot" src={MakeItYoursUrl} />
+        <img
+          className="bg-body-black aspect-[318/156] w-full rounded"
+          alt="demo screenshot"
+          src={MakeItYoursUrl}
+        />
       </LearnMoreSection>
 
       <LearnMoreSection
@@ -49,7 +54,7 @@ export const PortfolioLearnMore = () => {
         button={<LearnMoreButton onClick={goToSettingsCurrency} />}
       >
         <img
-          className="bg-body-black w-full rounded"
+          className="bg-body-black aspect-[318/156] w-full rounded"
           alt="demo screenshot"
           src={SeamlessUserExperienceUrl}
         />
@@ -61,7 +66,7 @@ export const PortfolioLearnMore = () => {
         button={<LearnMoreButton onClick={goToAddHardwareAccounts} />}
       >
         <img
-          className="bg-body-black w-full rounded"
+          className="bg-body-black aspect-[318/156] w-full rounded"
           alt="demo screenshot"
           src={WorksWithExternalDevicesUrl}
         />
@@ -73,7 +78,7 @@ export const PortfolioLearnMore = () => {
         button={<LearnMoreButton onClick={goToSettingsMnemonics} />}
       >
         <img
-          className="bg-body-black w-full rounded"
+          className="bg-body-black aspect-[318/156] w-full rounded"
           alt="demo screenshot"
           src={AdvancedAccountManagementUrl}
         />
@@ -91,12 +96,12 @@ export const PortfolioLearnMore = () => {
         }
       >
         <img
-          className="bg-body-black w-full rounded"
+          className="bg-body-black aspect-[318/156] w-full rounded"
           alt="demo screenshot"
           src={SafeguardYourAssetsUrl}
         />
       </LearnMoreSection>
-    </div>
+    </FadeIn>
   )
 }
 
