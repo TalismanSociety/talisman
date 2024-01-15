@@ -41,7 +41,7 @@ export const PortfolioWhatsNew = () => {
     <div className="text-body-secondary flex flex-col gap-12 pb-12 text-sm">
       <div className="relative">
         <img
-          className="pointer-events-none relative w-full rounded-sm"
+          className="pointer-events-none relative aspect-[1456/752] w-full rounded-sm"
           src={HeroUrl}
           alt="a hero banner"
         />
