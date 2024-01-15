@@ -1,3 +1,4 @@
+import { AssetDiscoveryMode } from "@core/domains/assetDiscovery/types"
 import { shortenAddress } from "@talisman/util/shortenAddress"
 import { ArrowUpLeftIcon, CheckCircleIcon, ChevronLeftIcon, LoaderIcon } from "@talismn/icons"
 import { classNames, encodeAnyAddress } from "@talismn/util"
@@ -92,6 +93,8 @@ export const PortfolioTryTalisman = () => {
           address,
           isPortfolio
         )
+
+        api.assetDiscoveryStartScan(AssetDiscoveryMode.ACTIVE_NETWORKS, [resultAddress])
 
         setPending(false)
         setError(null)
@@ -203,7 +206,7 @@ const FollowAccountButton = ({
   const { t } = useTranslation()
   const allAccounts = useAccounts()
 
-  const onClick = useCallback(() => {
+  const onClick = useCallback(async () => {
     sendAnalyticsEvent({
       ...ANALYTICS_PAGE,
       name: "Interact",
@@ -211,7 +214,13 @@ const FollowAccountButton = ({
     })
 
     const isPortfolio = true
-    api.accountCreateWatched(name ?? shortenAddress(address), address, isPortfolio)
+    const resultAddress = await api.accountCreateWatched(
+      name ?? shortenAddress(address),
+      address,
+      isPortfolio
+    )
+
+    api.assetDiscoveryStartScan(AssetDiscoveryMode.ACTIVE_NETWORKS, [resultAddress])
   }, [address, description, name])
 
   const isAdded = useMemo(
