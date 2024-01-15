@@ -5,16 +5,16 @@ import { chaindataProvider } from "@core/rpcs/chaindata"
 import { awaitKeyringLoaded } from "@core/util/awaitKeyringLoaded"
 import keyring from "@polkadot/ui-keyring"
 import { Address, BalanceJson, Balances, db as balancesDb } from "@talismn/balances"
-import { TokenRatesList } from "@talismn/token-rates"
+import { TokenRateCurrency, TokenRatesList } from "@talismn/token-rates"
 import { liveQuery } from "dexie"
 import { combineLatest, debounceTime } from "rxjs"
 
 import { settingsStore } from "../app/store.settings"
 import { BalanceTotal } from "./types"
 
-export const balanceTotalsStore = new StorageProvider<Record<Address, BalanceTotal>>(
-  "balanceTotals"
-)
+export const balanceTotalsStore = new StorageProvider<
+  Record<`${Address}:${TokenRateCurrency}`, BalanceTotal>
+>("balanceTotals")
 
 const MAX_UPDATE_INTERVAL = 2_000 // update every 2 seconds maximum
 
@@ -43,17 +43,16 @@ export const trackBalanceTotals = async () => {
         }, {} as Record<string, BalanceJson[]>)
 
         const totals = Object.fromEntries(
-          Object.keys(accounts).flatMap((address) =>
-            settings.selectableCurrencies.map((currency) => {
-              const balances = new Balances(balancesByAddress[address] ?? [], {
-                tokens,
-                tokenRates,
-              })
+          Object.keys(accounts).flatMap((address) => {
+            const balances = new Balances(balancesByAddress[address] ?? [], {
+              tokens,
+              tokenRates,
+            })
+            return settings.selectableCurrencies.map((currency) => {
               const total = balances.sum.fiat(currency).total
-
               return [`${address}::${currency}`, { address, total, currency }]
             })
-          )
+          })
         )
 
         await balanceTotalsStore.replace(totals)
