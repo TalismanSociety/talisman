@@ -1,17 +1,6 @@
+import { tabState } from "@ui/atoms"
 import { useMemo } from "react"
-import { atom, useRecoilValue } from "recoil"
-import browser from "webextension-polyfill"
-
-const tabState = atom<browser.Tabs.Tab>({
-  key: "tabState",
-  effects: [
-    ({ setSelf }) => {
-      browser.tabs
-        .query({ active: true, currentWindow: true })
-        .then(([currentTab]) => setSelf(currentTab))
-    },
-  ],
-})
+import { useRecoilValue } from "recoil"
 
 export const useCurrentSite = () => {
   const tab = useRecoilValue(tabState)

@@ -1,10 +1,12 @@
 import { SettingsStoreData, settingsStore } from "@core/domains/app/store.settings"
+import { log } from "@core/log"
 import { GetRecoilValue, atom, selectorFamily } from "recoil"
 
 const settingsState = atom<SettingsStoreData>({
   key: "settingsState",
   effects: [
     ({ setSelf }) => {
+      log.debug("settingsState.init")
       const sub = settingsStore.observable.subscribe(setSelf)
       return () => sub.unsubscribe()
     },
