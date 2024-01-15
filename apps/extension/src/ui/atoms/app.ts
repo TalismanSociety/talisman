@@ -1,10 +1,12 @@
 import { AppStoreData, appStore } from "@core/domains/app/store.app"
+import { log } from "@core/log"
 import { atom, selectorFamily } from "recoil"
 
 const appState = atom<AppStoreData>({
   key: "appState",
   effects: [
     ({ setSelf }) => {
+      log.debug("appState.init")
       const sub = appStore.observable.subscribe(setSelf)
       return () => sub.unsubscribe()
     },

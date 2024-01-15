@@ -9,6 +9,7 @@ import {
   isEvmNetworkActive,
 } from "@core/domains/ethereum/store.activeEvmNetworks"
 import { ActiveTokens, activeTokensStore } from "@core/domains/tokens/store.activeTokens"
+import { log } from "@core/log"
 import { chaindataProvider } from "@core/rpcs/chaindata"
 import {
   Chain,
@@ -35,6 +36,7 @@ export const evmNetworksActiveState = atom<ActiveEvmNetworks>({
   key: "evmNetworksActiveState",
   effects: [
     ({ setSelf }) => {
+      log.debug("evmNetworksActiveState.init")
       const sub = activeEvmNetworksStore.observable.subscribe(setSelf)
       return () => sub.unsubscribe()
     },
@@ -45,6 +47,7 @@ export const allEvmNetworksState = atom<(EvmNetwork | CustomEvmNetwork)[]>({
   key: "allEvmNetworksState",
   effects: [
     ({ setSelf }) => {
+      log.debug("allEvmNetworksState.init")
       const obsEvmNetworks = liveQuery(() => chaindataProvider.evmNetworksArray())
       const sub = obsEvmNetworks.subscribe(setSelf)
       return () => sub.unsubscribe()
@@ -162,6 +165,7 @@ export const chainsActiveState = atom<ActiveChains>({
   key: "chainsActiveState",
   effects: [
     ({ setSelf }) => {
+      log.debug("chainsActiveState.init")
       const sub = activeChainsStore.observable.subscribe(setSelf)
       return () => sub.unsubscribe()
     },
@@ -172,6 +176,7 @@ export const allChainsState = atom<(Chain | CustomChain)[]>({
   key: "allChainsState",
   effects: [
     ({ setSelf }) => {
+      log.debug("allChainsState.init")
       const obsChains = liveQuery(() => chaindataProvider.chainsArray())
       const sub = obsChains.subscribe(setSelf)
       return () => sub.unsubscribe()
@@ -283,6 +288,7 @@ export const tokensActiveState = atom<ActiveTokens>({
   key: "tokensActiveState",
   effects: [
     ({ setSelf }) => {
+      log.debug("tokensActiveState.init")
       const sub = activeTokensStore.observable.subscribe(setSelf)
       return () => sub.unsubscribe()
     },
@@ -293,6 +299,7 @@ export const allTokensMapState = atom<TokenList>({
   key: "allTokensMapState",
   effects: [
     ({ setSelf }) => {
+      log.debug("allTokensMapState.init")
       const obsTokens = liveQuery(() => chaindataProvider.tokens())
       const sub = obsTokens.subscribe(setSelf)
       return () => sub.unsubscribe()

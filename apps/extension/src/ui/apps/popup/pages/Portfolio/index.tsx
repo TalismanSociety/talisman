@@ -1,4 +1,13 @@
 import { SuspenseTracker } from "@talisman/components/SuspenseTracker"
+import {
+  accountsCatalogState,
+  accountsQuery,
+  authorisedSitesState,
+  balanceTotalsState,
+  locationState,
+  settingQuery,
+  tabState,
+} from "@ui/atoms"
 import { CurrentAccountAvatar } from "@ui/domains/Account/CurrentAccountAvatar"
 import { AssetDiscoveryPopupAlert } from "@ui/domains/AssetDiscovery/AssetDiscoveryPopupAlert"
 import { EvmNetworkSelectPill } from "@ui/domains/Ethereum/EvmNetworkSelectPill"
@@ -8,6 +17,7 @@ import { ConnectedAccountsPill } from "@ui/domains/Site/ConnectedAccountsPill"
 import { useAuthorisedSites } from "@ui/hooks/useAuthorisedSites"
 import { useCurrentSite } from "@ui/hooks/useCurrentSite"
 import { useHasAccounts } from "@ui/hooks/useHasAccounts"
+import { useRecoilPreload } from "@ui/hooks/useRecoilPreload"
 import { Suspense, useMemo } from "react"
 import { Route, Routes, useLocation } from "react-router-dom"
 
@@ -21,6 +31,16 @@ import { PortfolioTryTalisman, PortfolioTryTalismanHeader } from "./PortfolioTry
 import { PortfolioWhatsNew, PortfolioWhatsNewHeader } from "./PortfolioWhatsNew"
 
 export const Portfolio = () => {
+  useRecoilPreload(
+    authorisedSitesState,
+    tabState,
+    balanceTotalsState,
+    accountsCatalogState,
+    locationState,
+    accountsQuery("all"),
+    settingQuery("selectedCurrency")
+  )
+
   const hasAccounts = useHasAccounts()
   return (
     <PopupLayout withBottomNav>
@@ -67,15 +87,11 @@ export const PortfolioHeader = () => {
         element={
           isAuthorised ? (
             <header className="my-8 flex h-[3.6rem] w-full shrink-0 items-center justify-between gap-4 px-12">
-              <Suspense fallback={<SuspenseTracker name="PortfolioHeader" />}>
-                <ConnectedAccountsPill />
-                <EvmNetworkSelectPill />
-              </Suspense>
+              <ConnectedAccountsPill />
+              <EvmNetworkSelectPill />
             </header>
           ) : (
-            <PopupHeader right={<AccountAvatar />}>
-              <ConnectedAccountsPill />
-            </PopupHeader>
+            <PopupHeader right={<AccountAvatar />} />
           )
         }
       />
