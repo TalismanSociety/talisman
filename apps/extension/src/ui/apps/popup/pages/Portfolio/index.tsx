@@ -67,8 +67,10 @@ export const PortfolioHeader = () => {
         element={
           isAuthorised ? (
             <header className="my-8 flex h-[3.6rem] w-full shrink-0 items-center justify-between gap-4 px-12">
-              <ConnectedAccountsPill />
-              <EvmNetworkSelectPill />
+              <Suspense fallback={<SuspenseTracker name="PortfolioHeader" />}>
+                <ConnectedAccountsPill />
+                <EvmNetworkSelectPill />
+              </Suspense>
             </header>
           ) : (
             <PopupHeader right={<AccountAvatar />}>
