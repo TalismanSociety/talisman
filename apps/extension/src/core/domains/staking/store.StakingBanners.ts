@@ -111,13 +111,14 @@ export const trackStakingBannerDisplay = async () => {
     combineLatest([keyring.accounts.subject, liveQuery(() => balancesDb.balances.toArray())])
       .pipe(debounceTime(MAX_UPDATE_INTERVAL))
       .subscribe(async ([accounts, rawBalances]) => {
+        const balances = new Balances(rawBalances)
         const substrateAddresses = Object.values(accounts)
           .filter(({ type }) => type === "sr25519")
           .map(({ json }) => json.address)
 
         const showNomPoolBanners = await shouldShowSubstrateNomPoolBanners({
           addresses: substrateAddresses,
-          balances: new Balances(rawBalances),
+          balances,
         })
 
         // only balances on ethereum accounts are eligible for lido staking
@@ -127,7 +128,7 @@ export const trackStakingBannerDisplay = async () => {
 
         const showEvmLsdBanners = await shouldShowEvmLsdBanners({
           addresses: ethereumAddresses,
-          balances: new Balances(rawBalances),
+          balances,
         })
 
         await stakingBannerStore.replace({ nomPool: showNomPoolBanners, evmLsd: showEvmLsdBanners })
