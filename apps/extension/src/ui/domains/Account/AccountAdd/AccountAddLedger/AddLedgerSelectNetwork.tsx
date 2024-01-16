@@ -8,7 +8,7 @@ import { AccountTypeSelector } from "@ui/domains/Account/AccountTypeSelector"
 import { ChainLogo } from "@ui/domains/Asset/ChainLogo"
 import { useLedgerChains } from "@ui/hooks/ledger/useLedgerChains"
 import useChain from "@ui/hooks/useChain"
-import { useCallback, useMemo, useState } from "react"
+import { ChangeEventHandler, useCallback, useMemo, useState } from "react"
 import { useForm } from "react-hook-form"
 import { useTranslation } from "react-i18next"
 import { useNavigate } from "react-router-dom"
@@ -36,6 +36,9 @@ const renderOption = (chain: Chain) => {
 export const AddLedgerSelectNetwork = () => {
   const { t } = useTranslation("admin")
   const { data: defaultValues, updateData } = useAddLedgerAccount()
+  const [substrateLedgerAppType, setSubstrateLedgerAppType] = useState<
+    "substrate-generic" | "substrate-legacy"
+  >()
 
   const navigate = useNavigate()
   const ledgerChains = useLedgerChains()
@@ -97,6 +100,11 @@ export const AddLedgerSelectNetwork = () => {
     [setValue]
   )
 
+  const handleSubstrateAppTypeChange: ChangeEventHandler<HTMLInputElement> = useCallback((e) => {
+    if (e.target.checked)
+      setSubstrateLedgerAppType(e.target.value as "substrate-generic" | "substrate-legacy")
+  }, [])
+
   const chain = useChain(chainId ?? (defaultValues.chainId as string))
 
   const [isLedgerReady, setIsLedgerReady] = useState(false)
@@ -115,21 +123,55 @@ export const AddLedgerSelectNetwork = () => {
         {accountType === "sr25519" && (
           <>
             <h2 className="mb-8 mt-12 text-base">{t("Step 1")}</h2>
-            <Dropdown
-              propertyKey="id"
-              items={ledgerChains}
-              value={chain}
-              placeholder={t("Select a network")}
-              renderItem={renderOption}
-              onChange={handleNetworkChange}
-            />
             <p className="text-body-secondary mt-6">
-              {t("Please note: a Ledger account can only be used on a single network.")}
+              {t("Select the Ledger app that you wish to connect:")}
             </p>
+            <div className="mt-4">
+              <input
+                type="radio"
+                name="substrate-app-type"
+                id="substrate-generic"
+                value="substrate-generic"
+                onChange={handleSubstrateAppTypeChange}
+              />
+              <label htmlFor="substrate-generic" className="text-body-secondary ml-3">
+                {t("Polkadot app (recommended)")}
+              </label>
+            </div>
+            <div>
+              <input
+                type="radio"
+                name="substrate-app-type"
+                id="substrate-legacy"
+                value="substrate-legacy"
+                onChange={handleSubstrateAppTypeChange}
+              />
+              <label htmlFor="substrate-legacy" className="text-body-secondary ml-3">
+                {t("Legacy Polkadot app (network specific)")}
+              </label>
+            </div>
+            <div
+              className={classNames(
+                "mt-8",
+                substrateLedgerAppType === "substrate-legacy" ? "visible" : "invisible"
+              )}
+            >
+              <Dropdown
+                propertyKey="id"
+                items={ledgerChains}
+                value={chain}
+                placeholder={t("Select a network")}
+                renderItem={renderOption}
+                onChange={handleNetworkChange}
+              />
+              <p className="text-body-secondary mt-6">
+                {t("Please note: a Ledger account can only be used on a single network.")}
+              </p>
+            </div>
           </>
         )}
         <div className={classNames("mt-12 h-[20rem]", showStep2 ? "visible" : "invisible")}>
-          {chainId && accountType === "sr25519" && (
+          {showStep2 && chainId && accountType === "sr25519" && (
             <>
               <h2 className="mb-8 mt-0 text-base">{t("Step 2")}</h2>
               <ConnectLedgerSubstrate

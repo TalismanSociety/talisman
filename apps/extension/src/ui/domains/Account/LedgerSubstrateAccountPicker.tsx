@@ -3,8 +3,8 @@ import { log } from "@core/log"
 import { AddressesByChain } from "@core/types/base"
 import { convertAddress } from "@talisman/util/convertAddress"
 import { LedgerAccountDefSubstrate } from "@ui/domains/Account/AccountAdd/AccountAddLedger/context" // Todo
-import { useLedgerSubstrate } from "@ui/hooks/ledger/useLedgerSubstrate"
-import { useLedgerSubstrateApp } from "@ui/hooks/ledger/useLedgerSubstrateApp"
+import { useLedgerSubstrateLegacy } from "@ui/hooks/ledger/useLedgerSubstrateLegacy"
+import { useLedgerSubstrateLegacyApp } from "@ui/hooks/ledger/useLedgerSubstrateLegacyApp"
 import useAccounts from "@ui/hooks/useAccounts"
 import { useActiveChainsState } from "@ui/hooks/useActiveChainsState"
 import useBalancesByParams from "@ui/hooks/useBalancesByParams"
@@ -23,7 +23,7 @@ const useLedgerChainAccounts = (
   const walletAccounts = useAccounts()
   const { t } = useTranslation()
   const chain = useChain(chainId)
-  const app = useLedgerSubstrateApp(chain?.genesisHash)
+  const app = useLedgerSubstrateLegacyApp(chain?.genesisHash)
   const activeChains = useActiveChainsState()
   const withBalances = useMemo(
     () => !!chain && isChainActive(chain, activeChains),
@@ -36,7 +36,7 @@ const useLedgerChainAccounts = (
   const [isBusy, setIsBusy] = useState(false)
   const [error, setError] = useState<string>()
 
-  const { isReady, ledger, ...connectionStatus } = useLedgerSubstrate(chain?.genesisHash)
+  const { isReady, ledger, ...connectionStatus } = useLedgerSubstrateLegacy(chain?.genesisHash)
 
   const loadPage = useCallback(async () => {
     if (!app || !ledger || !isReady || !chain) return
