@@ -14,7 +14,13 @@ import { Button } from "talisman-ui"
 
 import { NoAccountsFullscreen } from "./NoAccountsFullscreen"
 
-const FullscreenPortfolioAssets = ({ balances }: { balances: Balances }) => {
+const FullscreenPortfolioAssets = ({
+  balances,
+  isInitializing,
+}: {
+  balances: Balances
+  isInitializing: boolean
+}) => {
   const { t } = useTranslation()
 
   const currency = useSelectedCurrency()
@@ -44,7 +50,7 @@ const FullscreenPortfolioAssets = ({ balances }: { balances: Balances }) => {
         <NetworkPicker />
       </div>
       <div className="mt-6">
-        <DashboardAssetsTable balances={balances} />
+        <DashboardAssetsTable balances={balances} isInitializing={isInitializing} />
       </div>
     </>
   )
@@ -72,7 +78,7 @@ const EnableNetworkMessage: FC<{ type?: "substrate" | "evm" }> = ({ type }) => {
 }
 
 const PageContent = () => {
-  const { networkBalances, evmNetworks, chains, accountType } = usePortfolio()
+  const { networkBalances, evmNetworks, chains, accountType, isInitializing } = usePortfolio()
   const balances = useDisplayBalances(networkBalances)
   const hasAccounts = useHasAccounts()
 
@@ -92,7 +98,7 @@ const PageContent = () => {
   )
     return <EnableNetworkMessage type="evm" />
 
-  return <FullscreenPortfolioAssets balances={balances} />
+  return <FullscreenPortfolioAssets balances={balances} isInitializing={isInitializing} />
 }
 
 export const PortfolioAssets = () => {
