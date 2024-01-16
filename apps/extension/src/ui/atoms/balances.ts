@@ -1,3 +1,4 @@
+import { log } from "@core/log"
 import {
   Address,
   BalanceJson,
@@ -28,6 +29,7 @@ const rawBalancesState = atom<BalanceJson[]>({
   effects: [
     // sync from db
     ({ setSelf }) => {
+      log.debug("rawBalancesState.init")
       const obs = from(liveQuery(() => balancesDb.balances.toArray()))
 
       // backend will do a lot of updates to the balances table

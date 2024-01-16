@@ -1,4 +1,5 @@
 import { AccountJsonAny, AccountType } from "@core/domains/accounts/types"
+import { log } from "@core/log"
 import { api } from "@ui/api"
 import { atom, selectorFamily } from "recoil"
 
@@ -6,6 +7,7 @@ const accountsState = atom<AccountJsonAny[]>({
   key: "accountsState",
   effects: [
     ({ setSelf }) => {
+      log.debug("accountsState.init")
       const unsub = api.accountsSubscribe(setSelf)
       return () => unsub()
     },

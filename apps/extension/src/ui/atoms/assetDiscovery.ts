@@ -1,6 +1,7 @@
 import { db } from "@core/db"
 import { AssetDiscoveryScanState, assetDiscoveryStore } from "@core/domains/assetDiscovery/store"
 import { DiscoveredBalance } from "@core/domains/assetDiscovery/types"
+import { log } from "@core/log"
 import { Address } from "@talismn/balances"
 import { TokenId } from "@talismn/chaindata-provider"
 import { liveQuery } from "dexie"
@@ -16,6 +17,7 @@ const assetDiscoveryBalancesState = atom<DiscoveredBalance[]>({
   effects: [
     // sync from db
     ({ setSelf }) => {
+      log.debug("assetDiscoveryBalancesState.init")
       const obs = from(liveQuery(() => db.assetDiscovery.toArray()))
 
       // backend will do a lot of updates
@@ -33,6 +35,7 @@ export const assetDiscoveryScanState = atom<AssetDiscoveryScanState>({
   effects: [
     // sync from db
     ({ setSelf }) => {
+      log.debug("assetDiscoveryScanState.init")
       const sub = assetDiscoveryStore.observable.subscribe(setSelf)
 
       return () => {
