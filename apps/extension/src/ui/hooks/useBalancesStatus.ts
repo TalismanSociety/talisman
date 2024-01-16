@@ -20,11 +20,13 @@ export const useBalancesStatus = (balances: Balances) =>
     const staleChains = getStaleChains(balances)
     if (staleChains.length > 0) return { status: "stale", staleChains }
 
-    // fetching
-    const hasCachedBalances = balances.each.some((b) => b.status === "cache")
-    if (hasCachedBalances) return { status: "fetching" }
-
     if (balances.each.every((b) => b.status === "initializing")) return { status: "initializing" }
+
+    // fetching
+    const hasCachedBalances = balances.each.some(
+      (b) => b.status === "cache" || b.status === "initializing"
+    )
+    if (hasCachedBalances) return { status: "fetching" }
 
     // live
     return { status: "live" }

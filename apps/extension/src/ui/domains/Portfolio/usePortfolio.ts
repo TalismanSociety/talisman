@@ -170,6 +170,9 @@ const portfolioGlobalState = selector({
     const networkFilter = get(portfolioNetworkFilterState)
     const networkBalances = getNetworkBalances({ networkFilter, allBalances, hydrate })
 
+    const isInitializing =
+      !allBalances.count || allBalances.each.some((b) => b.status === "initializing")
+
     return {
       networks,
       networkBalances,
@@ -179,6 +182,7 @@ const portfolioGlobalState = selector({
       hydrate,
       allBalances,
       accountType,
+      isInitializing,
     }
   },
 })
@@ -195,6 +199,7 @@ export const usePortfolio = () => {
     networkBalances,
     networks,
     tokens,
+    isInitializing,
   } = useRecoilValue(portfolioGlobalState)
 
   useEffect(() => {
@@ -213,5 +218,6 @@ export const usePortfolio = () => {
     hydrate,
     allBalances,
     accountType,
+    isInitializing,
   }
 }

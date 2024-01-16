@@ -472,6 +472,16 @@ export class BalanceStore {
       await balancesDb.balances.bulkPut(updates)
     }
 
+    // after 30 seconds, change the status of all balances still initializing to stale
+    setTimeout(() => {
+      if (this.#subscriptionsGeneration !== generation) return
+
+      balancesDb.balances
+        .where({ status: "initializing" })
+        .modify({ status: "stale" })
+        .catch((error) => log.error("Failed to update balances", { error }))
+    }, 30_000)
+
     const closeSubscriptionCallbacks = balanceModules.map((balanceModule) =>
       balanceModule.subscribeBalances(
         addressesByTokenByModule[balanceModule.type] ?? {},
