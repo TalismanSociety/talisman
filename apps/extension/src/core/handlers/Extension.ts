@@ -3,10 +3,10 @@ import { db } from "@core/db"
 import { AccountsHandler } from "@core/domains/accounts"
 import { AccountType } from "@core/domains/accounts/types"
 import AppHandler from "@core/domains/app/handler"
+import { trackPopupSummaryData } from "@core/domains/app/popupSummaries"
 import { featuresStore } from "@core/domains/app/store.features"
 import { AssetDiscoveryHandler } from "@core/domains/assetDiscovery/handler"
 import { BalancesHandler } from "@core/domains/balances"
-import { trackBalanceTotals } from "@core/domains/balances/store.BalanceTotals"
 import { ChainsHandler } from "@core/domains/chains"
 import { EncryptHandler } from "@core/domains/encrypt"
 import { EthHandler } from "@core/domains/ethereum"
@@ -124,8 +124,8 @@ export default class Extension extends ExtensionHandler {
     this.initDb()
     this.cleanup()
 
-    // keeps balance totals table up to date
-    trackBalanceTotals()
+    // keeps summary data tables for the popup home screen up to date
+    trackPopupSummaryData()
   }
 
   private setConfigUpdateTimeout() {
