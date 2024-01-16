@@ -472,7 +472,7 @@ export class BalanceStore {
       await balancesDb.balances.bulkPut(updates)
     }
 
-    // after 30 seconds, change the status of all balances still initializing to error
+    // after 30 seconds, change the status of all balances still initializing to stale
     setTimeout(() => {
       if (this.#subscriptionsGeneration !== generation) return
 
