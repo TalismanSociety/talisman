@@ -1,4 +1,5 @@
 import { StakingBannerStatus, stakingBannerStore } from "@core/domains/staking/store.StakingBanners"
+import { log } from "@core/log"
 import { atom } from "recoil"
 
 /**
@@ -11,6 +12,7 @@ export const stakingBannerState = atom<StakingBannerStatus>({
   key: "stakingBannerState",
   effects: [
     ({ setSelf }) => {
+      log.debug("stakingBannerState.init")
       const sub = stakingBannerStore.observable.subscribe(setSelf)
 
       return () => sub.unsubscribe()

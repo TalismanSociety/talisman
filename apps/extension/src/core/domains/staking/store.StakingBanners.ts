@@ -48,7 +48,7 @@ const shouldShowSubstrateNomPoolBanners = async ({
     const addressBalances = addresses.reduce((acc, address) => {
       const addressBalances = balancesForChain.find({ address })
       if (!addressBalances) return acc
-      addressBalances.sorted.forEach((balance) => {
+      addressBalances.each.forEach((balance) => {
         // if the balance is less than the ED - minimum stake, it is not eligible
         // however because we aggregate balances across accounts here, we don't want to store available values of less than 0
         const realAvailable =
@@ -107,11 +107,13 @@ const shouldShowEvmLsdBanners = async ({
 
 export const trackStakingBannerDisplay = async () => {
   await awaitKeyringLoaded()
-  try {
-    combineLatest([keyring.accounts.subject, liveQuery(() => balancesDb.balances.toArray())])
-      .pipe(debounceTime(MAX_UPDATE_INTERVAL))
-      .subscribe(async ([accounts, rawBalances]) => {
+
+  combineLatest([keyring.accounts.subject, liveQuery(() => balancesDb.balances.toArray())])
+    .pipe(debounceTime(MAX_UPDATE_INTERVAL))
+    .subscribe(async ([accounts, rawBalances]) => {
+      try {
         const balances = new Balances(rawBalances)
+
         const substrateAddresses = Object.values(accounts)
           .filter(({ type }) => type === "sr25519")
           .map(({ json }) => json.address)
@@ -132,8 +134,8 @@ export const trackStakingBannerDisplay = async () => {
         })
 
         await stakingBannerStore.replace({ nomPool: showNomPoolBanners, evmLsd: showEvmLsdBanners })
-      })
-  } catch (err) {
-    log.error("trackStakingBannerDisplay", { err })
-  }
+      } catch (err) {
+        log.error("trackStakingBannerDisplay", { err })
+      }
+    })
 }
