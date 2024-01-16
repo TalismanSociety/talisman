@@ -4,7 +4,7 @@ import { CustomNativeToken } from "@core/domains/tokens/types"
 import { yupResolver } from "@hookform/resolvers/yup"
 import { HeaderBlock } from "@talisman/components/HeaderBlock"
 import { isCustomEvmNetwork } from "@talismn/chaindata-provider"
-import { ArrowRightIcon, RotateCcwIcon } from "@talismn/icons"
+import { ArrowRightIcon, InfoIcon, RotateCcwIcon } from "@talismn/icons"
 import { classNames } from "@talismn/util"
 import { useQuery } from "@tanstack/react-query"
 import { api } from "@ui/api"
@@ -22,16 +22,20 @@ import useToken from "@ui/hooks/useToken"
 import { ChangeEventHandler, FC, useCallback, useEffect, useMemo, useRef, useState } from "react"
 import { FormProvider, useForm } from "react-hook-form"
 import { Trans, useTranslation } from "react-i18next"
+import { useNavigate } from "react-router-dom"
 import { useDebounce } from "react-use"
 import {
   Button,
   Checkbox,
   FormFieldContainer,
   FormFieldInputText,
+  Modal,
+  ModalDialog,
   Toggle,
   Tooltip,
   TooltipContent,
   TooltipTrigger,
+  useOpenClose,
 } from "talisman-ui"
 
 import { NetworkRpcsListField } from "../NetworkRpcsListField"
@@ -54,7 +58,21 @@ const EnableNetworkToggle: FC<{ evmNetworkId?: string }> = ({ evmNetworkId }) =>
 
   return (
     <div className="pt-8">
-      <FormFieldContainer label={t("Display balances")}>
+      <FormFieldContainer
+        label={
+          <span className="inline-flex items-center gap-3">
+            <span>{t("Active")}</span>
+            <Tooltip placement="bottom-start">
+              <TooltipTrigger>
+                <InfoIcon />
+              </TooltipTrigger>
+              <TooltipContent>
+                <div>{t("Set as active to fetch token balances for this network")}</div>
+              </TooltipContent>
+            </Tooltip>
+          </span>
+        }
+      >
         <div className="flex gap-3">
           <Toggle checked={isActive} onChange={(e) => setActive(e.target.checked)}>
             <span className={"text-grey-300"}>{isActive ? t("Yes") : t("No")}</span>
@@ -322,6 +340,7 @@ export const EvmNetworkForm: FC<EvmNetworkFormProps> = ({ evmNetworkId, onSubmit
           </div>
         </FormProvider>
       </form>
+      <ExistingNetworkModal evmNetworkId={evmNetworkId !== id ? id : undefined} />
     </>
   )
 }
@@ -382,4 +401,51 @@ const evmNetworkToFormData = (
     tokenDecimals: nativeToken.decimals,
     tokenLogoUrl: nativeToken.logo ?? null,
   }
+}
+
+const ExistingNetworkModal: FC<{ evmNetworkId?: EvmNetworkId }> = ({ evmNetworkId }) => {
+  const { t } = useTranslation("admin")
+  const { evmNetwork, isActive } = useKnownEvmNetwork(evmNetworkId)
+  const { isOpen, open, close } = useOpenClose()
+  const navigate = useNavigate()
+
+  // keep latest data so it doesn't disappear while popup is closing
+  const [networkInfo, setNetworkInfo] = useState({ id: "", name: "" })
+
+  useEffect(() => {
+    if (evmNetwork) {
+      const { id, name } = evmNetwork
+      setNetworkInfo({ id, name: name ?? "Unnamed network" })
+      open()
+    }
+  }, [evmNetwork, open])
+
+  const handleGoToClick = useCallback(() => {
+    close()
+    navigate(`/networks/ethereum/${evmNetworkId}`)
+  }, [close, evmNetworkId, navigate])
+
+  return (
+    <Modal containerId="main" isOpen={isOpen} onDismiss={close}>
+      <ModalDialog title={t("Known network")} onClose={close}>
+        <p className="text-body-secondary">
+          {isActive
+            ? t(
+                "Network {{name}} ({{id}}) already exists. Would you like to review its settings?",
+                networkInfo
+              )
+            : t(
+                "Network {{name}} ({{id}}) already exists but has not been activated. Would you like to review its settings?",
+                networkInfo
+              )}
+        </p>
+        <div className="mt-12 grid grid-cols-2 gap-8">
+          <Button onClick={close}>{t("Close")}</Button>
+          <Button primary onClick={handleGoToClick}>
+            {t("Take me there")}
+          </Button>
+        </div>
+      </ModalDialog>
+    </Modal>
+  )
 }
