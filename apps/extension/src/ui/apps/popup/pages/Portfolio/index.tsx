@@ -8,6 +8,7 @@ import {
   settingQuery,
   tabState,
 } from "@ui/atoms"
+import { stakingBannerState } from "@ui/atoms/stakingBanners"
 import { CurrentAccountAvatar } from "@ui/domains/Account/CurrentAccountAvatar"
 import { AssetDiscoveryPopupAlert } from "@ui/domains/AssetDiscovery/AssetDiscoveryPopupAlert"
 import { EvmNetworkSelectPill } from "@ui/domains/Ethereum/EvmNetworkSelectPill"
@@ -35,6 +36,7 @@ export const Portfolio = () => {
     authorisedSitesState,
     tabState,
     balanceTotalsState,
+    stakingBannerState,
     accountsCatalogState,
     locationState,
     accountsQuery("all"),
