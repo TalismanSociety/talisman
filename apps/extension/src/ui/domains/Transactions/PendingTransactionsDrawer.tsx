@@ -14,7 +14,7 @@ import { LoaderIcon, MoreHorizontalIcon, RocketIcon, XOctagonIcon } from "@talis
 import { classNames } from "@talismn/util"
 import { AnalyticsPage, sendAnalyticsEvent } from "@ui/api/analytics"
 import { useAnalyticsPageView } from "@ui/hooks/useAnalyticsPageView"
-import useChainByGenesisHash from "@ui/hooks/useChainByGenesisHash"
+import { useChainByGenesisHash } from "@ui/hooks/useChainByGenesisHash"
 import { useSelectedCurrency } from "@ui/hooks/useCurrency"
 import { useEvmNetwork } from "@ui/hooks/useEvmNetwork"
 import { useFaviconUrl } from "@ui/hooks/useFaviconUrl"

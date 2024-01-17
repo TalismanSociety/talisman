@@ -23,7 +23,6 @@ import {
 } from "@dnd-kit/core"
 import { SortableContext, verticalListSortingStrategy } from "@dnd-kit/sortable"
 import { CSS } from "@dnd-kit/utilities"
-import { Balances } from "@talismn/balances"
 import { api } from "@ui/api"
 import { useCallback, useEffect, useMemo, useRef, useState } from "react"
 import { createPortal } from "react-dom"
@@ -35,7 +34,7 @@ import { flattenTree, getChildCount, getProjection, removeChildrenOf } from "./u
 
 type Props = {
   accounts: AccountJsonAny[]
-  balances: Balances
+  balanceTotalPerAccount: Record<string, number>
   treeName: AccountsCatalogTree
   tree: UiTree
   indentationWidth?: number
@@ -43,7 +42,7 @@ type Props = {
 
 export const AccountsList = ({
   accounts,
-  balances,
+  balanceTotalPerAccount,
   treeName,
   tree,
   indentationWidth = 50,
@@ -194,7 +193,7 @@ export const AccountsList = ({
               id={item.id}
               depth={item.id === activeId && projected ? projected.depth : item.depth}
               accounts={accounts}
-              balances={balances}
+              balanceTotalPerAccount={balanceTotalPerAccount}
               item={item}
               treeName={treeName}
               indentationWidth={indentationWidth}
@@ -210,7 +209,7 @@ export const AccountsList = ({
                 id={activeId}
                 depth={activeItem.depth}
                 accounts={accounts}
-                balances={balances}
+                balanceTotalPerAccount={balanceTotalPerAccount}
                 item={activeItem}
                 treeName={treeName}
                 clone

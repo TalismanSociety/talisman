@@ -3,7 +3,7 @@ import { SignerPayloadGenesisHash } from "@core/domains/signing/types"
 import { hexToU8a } from "@polkadot/util"
 import { useQuery } from "@tanstack/react-query"
 import { api } from "@ui/api"
-import useChainByGenesisHash from "@ui/hooks/useChainByGenesisHash"
+import { useChainByGenesisHash } from "@ui/hooks/useChainByGenesisHash"
 import { useImageLoaded } from "@ui/hooks/useImageLoaded"
 
 import { QrCode, QrCodeError } from "./QrCode"

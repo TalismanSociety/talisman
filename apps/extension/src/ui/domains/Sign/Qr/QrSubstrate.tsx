@@ -8,7 +8,7 @@ import { ChevronLeftIcon, InfoIcon, LoaderIcon, PolkadotVaultIcon } from "@talis
 import { classNames } from "@talismn/util"
 import { ChainLogo } from "@ui/domains/Asset/ChainLogo"
 import { ScanQr } from "@ui/domains/Sign/Qr/ScanQr"
-import useChainByGenesisHash from "@ui/hooks/useChainByGenesisHash"
+import { useChainByGenesisHash } from "@ui/hooks/useChainByGenesisHash"
 import { ReactElement, useState } from "react"
 import { Trans, useTranslation } from "react-i18next"
 import { Button, Drawer, Tooltip, TooltipContent, TooltipTrigger } from "talisman-ui"
