@@ -5,6 +5,7 @@ import { AnalyticsEventName, AnalyticsPage, sendAnalyticsEvent } from "@ui/api/a
 import currencyConfig from "@ui/domains/Asset/currencyConfig"
 import { Fiat } from "@ui/domains/Asset/Fiat"
 import { useCopyAddressModal } from "@ui/domains/CopyAddress"
+import useAccounts from "@ui/hooks/useAccounts"
 import { useAnalytics } from "@ui/hooks/useAnalytics"
 import { useSelectedCurrency, useToggleCurrency } from "@ui/hooks/useCurrency"
 import { useIsFeatureEnabled } from "@ui/hooks/useFeatures"
@@ -12,7 +13,7 @@ import { usePortfolioAccounts } from "@ui/hooks/usePortfolioAccounts"
 import { useSetting } from "@ui/hooks/useSettings"
 import { ComponentProps, MouseEventHandler, useCallback, useMemo } from "react"
 import { useTranslation } from "react-i18next"
-import { PillButton } from "talisman-ui"
+import { PillButton, Tooltip, TooltipContent, TooltipTrigger } from "talisman-ui"
 
 type Props = {
   className?: string
@@ -85,7 +86,14 @@ const ANALYTICS_PAGE: AnalyticsPage = {
 const TopActions = ({ disabled }: { disabled?: boolean }) => {
   const { t } = useTranslation()
   const { open: openCopyAddressModal } = useCopyAddressModal()
+  const ownedAccounts = useAccounts("owned")
   const canBuy = useIsFeatureEnabled("BUY_CRYPTO")
+
+  const { disableActions, disabledReason } = useMemo(() => {
+    const disableActions = !ownedAccounts.length
+    const disabledReason = disableActions ? t("Add an account to send or receive funds") : undefined
+    return { disableActions, disabledReason }
+  }, [ownedAccounts.length, t])
 
   const topActions = useMemo(() => {
     const topActions: Array<{
@@ -94,6 +102,8 @@ const TopActions = ({ disabled }: { disabled?: boolean }) => {
       label: string
       icon: ComponentProps<typeof PillButton>["icon"]
       action: () => void
+      disabled: boolean
+      disabledReason?: string
     }> = [
       {
         analyticsName: "Goto",
@@ -101,6 +111,8 @@ const TopActions = ({ disabled }: { disabled?: boolean }) => {
         label: t("Receive"),
         icon: ArrowDownIcon,
         action: () => openCopyAddressModal({ mode: "receive" }),
+        disabled: disableActions,
+        disabledReason,
       },
       {
         analyticsName: "Goto",
@@ -108,6 +120,8 @@ const TopActions = ({ disabled }: { disabled?: boolean }) => {
         label: t("Send"),
         icon: SendIcon,
         action: () => api.sendFundsOpen().then(() => window.close()),
+        disabled: disableActions,
+        disabledReason,
       },
     ]
     if (canBuy)
@@ -117,9 +131,11 @@ const TopActions = ({ disabled }: { disabled?: boolean }) => {
         label: t("Buy"),
         icon: CreditCardIcon,
         action: () => api.modalOpen({ modalType: "buy" }).then(() => window.close()),
+        disabled: disableActions,
+        disabledReason,
       })
     return topActions
-  }, [canBuy, openCopyAddressModal, t])
+  }, [canBuy, disableActions, disabledReason, openCopyAddressModal, t])
 
   const handleClicks = useMemo(
     () =>
@@ -141,15 +157,19 @@ const TopActions = ({ disabled }: { disabled?: boolean }) => {
   return (
     <div className="flex justify-center gap-4">
       {topActions.map((action, index) => (
-        <PillButton
-          key={index}
-          className="pointer-events-auto opacity-90"
-          onClick={handleClicks[index]}
-          icon={action.icon}
-          disabled={disabled}
-        >
-          {action.label}
-        </PillButton>
+        <Tooltip key={index}>
+          <TooltipTrigger asChild>
+            <PillButton
+              className="pointer-events-auto opacity-90"
+              onClick={handleClicks[index]}
+              icon={action.icon}
+              disabled={disabled || action.disabled}
+            >
+              {action.label}
+            </PillButton>
+          </TooltipTrigger>
+          {!!action.disabledReason && <TooltipContent>{action.disabledReason}</TooltipContent>}
+        </Tooltip>
       ))}
     </div>
   )
