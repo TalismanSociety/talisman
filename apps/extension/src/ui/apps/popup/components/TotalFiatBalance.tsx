@@ -91,7 +91,7 @@ const TopActions = ({ disabled }: { disabled?: boolean }) => {
 
   const { disableActions, disabledReason } = useMemo(() => {
     const disableActions = !ownedAccounts.length
-    const disabledReason = disableActions ? t("You don't own any accounts yet") : undefined
+    const disabledReason = disableActions ? t("Add an account to send or receive funds") : undefined
     return { disableActions, disabledReason }
   }, [ownedAccounts.length, t])
 
