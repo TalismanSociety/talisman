@@ -8,6 +8,7 @@ import {
   balancesHydrateState,
   chainsArrayQuery,
   evmNetworksArrayQuery,
+  selectedAccountState,
   settingQuery,
   tokensArrayQuery,
 } from "@ui/atoms"
@@ -16,8 +17,6 @@ import { isSubToken } from "@ui/util/isSubToken"
 import { t } from "i18next"
 import { useEffect } from "react"
 import { atom, selector, useRecoilState, useRecoilValue, waitForAll } from "recoil"
-
-import { selectedAccountState } from "./useSelectedAccount"
 
 export type NetworkOption = {
   id: string // here we'll merge all ids together

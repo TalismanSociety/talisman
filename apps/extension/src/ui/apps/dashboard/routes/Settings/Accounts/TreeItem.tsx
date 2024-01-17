@@ -2,7 +2,6 @@ import { AccountsCatalogTree } from "@core/domains/accounts/helpers.catalog"
 import { AccountJsonAny } from "@core/domains/accounts/types"
 import { DraggableAttributes, useDroppable } from "@dnd-kit/core"
 import { SyntheticListenerMap } from "@dnd-kit/core/dist/hooks/utilities"
-import { Balances } from "@talismn/balances"
 import { ChevronDownIcon, DragIcon, MoreHorizontalIcon } from "@talismn/icons"
 import { classNames } from "@talismn/util"
 import { AccountContextMenu } from "@ui/apps/dashboard/routes/Portfolio/AccountContextMenu"
@@ -11,7 +10,6 @@ import { AccountIcon } from "@ui/domains/Account/AccountIcon"
 import { AccountTypeIcon } from "@ui/domains/Account/AccountTypeIcon"
 import { Address } from "@ui/domains/Account/Address"
 import { Fiat } from "@ui/domains/Asset/Fiat"
-import { useBalanceDetails } from "@ui/hooks/useBalanceDetails"
 import { useFormattedAddressForAccount } from "@ui/hooks/useFormattedAddress"
 import { CSSProperties, ReactNode, forwardRef, useMemo } from "react"
 import { useTranslation } from "react-i18next"
@@ -24,7 +22,7 @@ import { UiTreeAccount, UiTreeFolder, UiTreeItem } from "./types"
 
 export interface Props {
   accounts: AccountJsonAny[]
-  balances: Balances
+  balanceTotalPerAccount: Record<string, number>
   childCount?: number
   clone?: boolean
   collapsed?: boolean
@@ -51,13 +49,9 @@ TreeItem.displayName = "TreeItem"
 
 export const TreeAccountItem = forwardRef<HTMLDivElement, Props & { item: UiTreeAccount }>(
   (props, ref) => {
-    const { item, handleProps, style, accounts, balances, wrapperRef, depth } = props
+    const { item, handleProps, style, accounts, balanceTotalPerAccount, wrapperRef, depth } = props
     const account = accounts.find((account) => account.address === item.address)
-    const accountBalances = useMemo(
-      () => balances.find({ address: account?.address }),
-      [account, balances]
-    )
-    const { totalUsd } = useBalanceDetails(accountBalances)
+    const balanceTotal = balanceTotalPerAccount[account?.address ?? ""] ?? 0
 
     const formattedAddress = useFormattedAddressForAccount(account)
 
@@ -89,7 +83,7 @@ export const TreeAccountItem = forwardRef<HTMLDivElement, Props & { item: UiTree
               </div>
             </div>
             <div className="flex flex-col gap-2">
-              <Fiat amount={totalUsd} isBalance />
+              <Fiat amount={balanceTotal} isBalance noCountUp />
             </div>
 
             <AccountContextMenu
@@ -111,7 +105,7 @@ export const TreeFolderItem = forwardRef<HTMLDivElement, Props & { item: UiTreeF
   (props, ref) => {
     const { t } = useTranslation()
     const {
-      balances,
+      balanceTotalPerAccount,
       clone,
       handleProps,
       item,
@@ -124,11 +118,10 @@ export const TreeFolderItem = forwardRef<HTMLDivElement, Props & { item: UiTreeF
     } = props
 
     const addresses = useMemo(() => item.tree.map((item) => item.address), [item])
-    const folderBalances = useMemo(
-      () => balances.find((b) => addresses.includes(b.address)),
-      [addresses, balances]
+    const balanceTotal = useMemo(
+      () => addresses.reduce((sum, address) => sum + (balanceTotalPerAccount[address] ?? 0), 0),
+      [addresses, balanceTotalPerAccount]
     )
-    const { totalUsd } = useBalanceDetails(folderBalances)
     const stopPropagation =
       <T extends Pick<Event, "stopPropagation">>(andThen?: (event: T) => void) =>
       (event: T) => {
@@ -163,7 +156,7 @@ export const TreeFolderItem = forwardRef<HTMLDivElement, Props & { item: UiTreeF
               {addresses.length > 0 && <AccountsLogoStack addresses={addresses} />}
             </div>
             <div className="flex flex-col">
-              <Fiat amount={totalUsd} isBalance noCountUp={clone} />
+              <Fiat amount={balanceTotal} isBalance noCountUp />
             </div>
 
             <ContextMenu placement="bottom-end">

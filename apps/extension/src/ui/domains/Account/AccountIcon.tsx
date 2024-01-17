@@ -2,7 +2,7 @@ import { IdenticonType } from "@core/domains/accounts/types"
 import { Address } from "@core/types/base"
 import { TalismanOrb } from "@talismn/orb"
 import { classNames, isEthereumAddress } from "@talismn/util"
-import useChainByGenesisHash from "@ui/hooks/useChainByGenesisHash"
+import { useChainByGenesisHash } from "@ui/hooks/useChainByGenesisHash"
 import { useSetting } from "@ui/hooks/useSettings"
 import { CSSProperties, FC, Suspense, lazy, useMemo } from "react"
 
