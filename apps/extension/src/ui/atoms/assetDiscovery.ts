@@ -70,7 +70,7 @@ export const assetDiscoveryScanProgress = selector<{
     const balancesByTokenId = groupBy(balances, (a) => a.tokenId)
     const tokenIds = sortBy(
       Object.keys(balancesByTokenId),
-      (tokenId) => Number(tokensMap[tokenId].evmNetwork?.id ?? 0),
+      (tokenId) => Number(tokensMap[tokenId]?.evmNetwork?.id ?? 0),
       (tokenId) => tokensMap[tokenId]?.symbol
     )
 
