@@ -36,9 +36,10 @@ export const accountByAddressQuery = selectorFamily({
       const accountsMap = get(accountsMapState)
       if (!address) return null
       if (accountsMap[address]) return accountsMap[address] as AccountJsonAny
-      // address may be encoded with a specific prefix
       try {
-        return accountsMap[encodeAnyAddress(address, 42)] as AccountJsonAny
+        // address may be encoded with a specific prefix
+        const encoded = encodeAnyAddress(address, 42)
+        if (accountsMap[encoded]) return accountsMap[encoded] as AccountJsonAny
       } catch (err) {
         // invalid address
       }
