@@ -13,4 +13,4 @@
 **<span class="icon" data-icon="ListIcon"></span> Search for custom tokens:** In addition to Talisman's default Ethereum tokens, you can now easily add more. Search for any [Coingecko](https://www.coingecko.com/) token by symbol to add it to your portfolio.  
 <span class="button float-right" data-app="dashboard" data-href="/tokens">Check it out</span>
 
-**🔥 Blazing fast performance:** We've done a major overhaul of wallet performance. Talisman is now faster and smoother than ever before.
+**<span class="icon" data-icon="ZapIcon"></span> Blazing fast performance:** We've done a major overhaul of wallet performance. Talisman is now faster and smoother than ever before.
