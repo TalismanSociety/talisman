@@ -47,7 +47,11 @@ export const Acknowledgement = () => {
         </Button>
       </div>
       <div className="text-center">
-        <a href="/" className="text-body-secondary text-sm">
+        <a
+          href="https://docs.talisman.xyz/talisman/navigating-the-paraverse/account-management/back-up-your-secret-phrase"
+          target="_blank"
+          className="text-body-secondary text-sm"
+        >
           {t("Learn More")}
         </a>
       </div>
