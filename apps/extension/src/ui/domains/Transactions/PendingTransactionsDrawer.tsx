@@ -1,5 +1,6 @@
 import { IS_FIREFOX } from "@core/constants"
 import { db } from "@core/db"
+import { isAcalaEvmPlus } from "@core/domains/ethereum/helpers"
 import {
   EvmWalletTransaction,
   SubWalletTransaction,
@@ -205,7 +206,7 @@ const EvmTxActions: FC<{
       )}
     >
       <div className="relative">
-        {isPending && (
+        {isPending && !isAcalaEvmPlus(tx.evmNetworkId) && (
           <>
             <Tooltip>
               <TooltipTrigger asChild>

@@ -3,6 +3,7 @@ import {
   getGasLimit,
   getGasSettingsEip1559,
   getTotalFeesFromGasSettings,
+  isAcalaEvmPlus,
   prepareTransaction,
   serializeTransactionRequest,
 } from "@core/domains/ethereum/helpers"
@@ -228,6 +229,7 @@ const getEthGasSettingsFromTransaction = (
 }
 
 const useGasSettings = ({
+  evmNetworkId,
   hasEip1559Support,
   baseFeePerGas,
   estimatedGas,
@@ -239,6 +241,7 @@ const useGasSettings = ({
   isReplacement,
   isContractCall,
 }: {
+  evmNetworkId: EvmNetworkId | undefined
   hasEip1559Support: boolean | undefined
   baseFeePerGas: bigint | null | undefined
   estimatedGas: bigint | null | undefined
@@ -262,7 +265,9 @@ const useGasSettings = ({
     )
       return undefined
 
-    const gas = getGasLimit(blockGasLimit, estimatedGas, tx, isContractCall)
+    const gas = isAcalaEvmPlus(evmNetworkId ?? "")
+      ? estimatedGas // use the gas estimation provided by the chain, it is encoding specific values
+      : getGasLimit(blockGasLimit, estimatedGas, tx, isContractCall)
     const suggestedSettings = getEthGasSettingsFromTransaction(
       tx,
       hasEip1559Support,
@@ -343,6 +348,7 @@ const useGasSettings = ({
     gasPrice,
     blockGasLimit,
     tx,
+    evmNetworkId,
     isContractCall,
     isReplacement,
     customSettings,
@@ -404,7 +410,8 @@ export const useEthTransaction = (
   }, [hasEip1559Support, isReplacement, priority])
 
   const { gasSettings, setCustomSettings, gasSettingsByPriority } = useGasSettings({
-    tx: tx,
+    evmNetworkId,
+    tx,
     priority,
     hasEip1559Support,
     baseFeePerGas,
