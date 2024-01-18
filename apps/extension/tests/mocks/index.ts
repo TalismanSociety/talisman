@@ -48,7 +48,6 @@ jest.mock("@core/util/getConfig", () => ({
     Promise.resolve({
       featureFlags: {
         BUY_CRYPTO: true, // nav buttons + button in fund wallet component
-        LINK_TX_HISTORY: true,
         LINK_STAKING: true,
       },
     })

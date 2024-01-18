@@ -35,7 +35,6 @@ export const TALISMAN_CONFIG_URL = "https://talismansociety.github.io/talisman-c
 
 export const TALISMAN_WEB_APP_DOMAIN = "app.talisman.xyz"
 export const TALISMAN_WEB_APP_URL = "https://app.talisman.xyz"
-export const TALISMAN_WEB_APP_TX_HISTORY_URL = "https://app.talisman.xyz/history"
 export const TALISMAN_WEB_APP_NFTS_URL = "https://app.talisman.xyz/nfts"
 export const TALISMAN_WEB_APP_STAKING_URL = "https://app.talisman.xyz/staking"
 export const TALISMAN_WEB_APP_CROWDLOANS_URL = "https://app.talisman.xyz/crowdloans"
