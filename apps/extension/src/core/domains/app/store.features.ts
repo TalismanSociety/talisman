@@ -40,7 +40,6 @@ if (DEBUG && Browser.extension.getBackgroundPage() === window) {
   // @devs : add all feature flags here, comment some if needed for testing
   const DEV_FEATURE_VARIANTS: FeatureVariants = {
     BUY_CRYPTO: true, // nav buttons + button in fund wallet component
-    LINK_TX_HISTORY: true,
     LINK_STAKING: true,
     USE_ONFINALITY_API_KEY: false,
     TEST_VARIANT: "VARIANT1",
