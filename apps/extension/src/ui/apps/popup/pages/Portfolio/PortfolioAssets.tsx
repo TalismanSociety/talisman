@@ -1,26 +1,28 @@
 import { Balance, Balances } from "@core/domains/balances/types"
 import { ChevronLeftIcon, CopyIcon, MoreHorizontalIcon, SendIcon } from "@talismn/icons"
 import { classNames } from "@talismn/util"
+import { api } from "@ui/api"
 import { AccountContextMenu } from "@ui/apps/dashboard/routes/Portfolio/AccountContextMenu"
 import { AccountTypeIcon } from "@ui/domains/Account/AccountTypeIcon"
 import { Address } from "@ui/domains/Account/Address"
 import { CurrentAccountAvatar } from "@ui/domains/Account/CurrentAccountAvatar"
-import Fiat from "@ui/domains/Asset/Fiat"
+import { Fiat } from "@ui/domains/Asset/Fiat"
 import { useCopyAddressModal } from "@ui/domains/CopyAddress"
 import { PopupAssetsTable } from "@ui/domains/Portfolio/AssetsTable"
-import { usePortfolio } from "@ui/domains/Portfolio/context"
-import { useSelectedAccount } from "@ui/domains/Portfolio/SelectedAccountContext"
 import { useDisplayBalances } from "@ui/domains/Portfolio/useDisplayBalances"
+import { usePortfolio } from "@ui/domains/Portfolio/usePortfolio"
+import { useSelectedAccount } from "@ui/domains/Portfolio/useSelectedAccount"
 import { useAnalytics } from "@ui/hooks/useAnalytics"
 import useBalances from "@ui/hooks/useBalances"
 import { useSelectedCurrency } from "@ui/hooks/useCurrency"
 import { useFormattedAddress } from "@ui/hooks/useFormattedAddress"
 import { useSearchParamsSelectedFolder } from "@ui/hooks/useSearchParamsSelectedFolder"
 import { useSendFundsPopup } from "@ui/hooks/useSendFundsPopup"
-import { useCallback, useEffect, useMemo } from "react"
+import { FC, useCallback, useEffect, useMemo } from "react"
 import { useTranslation } from "react-i18next"
 import { useNavigate } from "react-router-dom"
 import {
+  Button,
   ContextMenuTrigger,
   IconButton,
   Tooltip,
@@ -28,13 +30,47 @@ import {
   TooltipTrigger,
 } from "talisman-ui"
 
-const PageContent = ({
-  allBalances,
-  networkBalances,
-}: {
-  allBalances: Balances
-  networkBalances: Balances
-}) => {
+const EnableNetworkMessage: FC<{ type?: "substrate" | "evm" }> = ({ type }) => {
+  const { t } = useTranslation()
+  const handleClick = useCallback(() => {
+    if (type === "substrate") api.dashboardOpen("/networks/polkadot")
+    else if (type === "evm") api.dashboardOpen("/networks/ethereum")
+    else api.dashboardOpen("/networks")
+    window.close()
+  }, [type])
+
+  return (
+    <div className="text-body-secondary mt-56 flex flex-col items-center justify-center gap-8 text-center">
+      <div>{t("Enable some networks to display your assets")}</div>
+      <div>
+        <Button onClick={handleClick} primary small type="button">
+          {t("Manage Networks")}
+        </Button>
+      </div>
+    </div>
+  )
+}
+
+const MainContent: FC<{ balances: Balances }> = ({ balances }) => {
+  const { evmNetworks, chains, isInitializing } = usePortfolio()
+  const { account } = useSelectedAccount()
+
+  if (!account?.type && !evmNetworks.length && !chains.length) return <EnableNetworkMessage />
+  if (account?.type === "sr25519" && !chains.length)
+    return <EnableNetworkMessage type="substrate" />
+  if (
+    account?.type === "ethereum" &&
+    !evmNetworks.length &&
+    !chains.filter((c) => c.account === "secp256k1").length
+  )
+    return <EnableNetworkMessage type="evm" />
+
+  return <PopupAssetsTable balances={balances} isInitializing={isInitializing} />
+}
+
+const PageContent = () => {
+  const allBalances = useBalances()
+  const { networkBalances } = usePortfolio()
   const { account } = useSelectedAccount()
   const { folder } = useSearchParamsSelectedFolder()
 
@@ -166,20 +202,18 @@ const PageContent = ({
         </div>
       </div>
       <div className="py-12">
-        <PopupAssetsTable balances={balancesToDisplay} />
+        <MainContent balances={balancesToDisplay} />
       </div>
     </>
   )
 }
 
 export const PortfolioAssets = () => {
-  const allBalances = useBalances()
-  const { networkBalances } = usePortfolio()
   const { popupOpenEvent } = useAnalytics()
 
   useEffect(() => {
     popupOpenEvent("portfolio assets")
   }, [popupOpenEvent])
 
-  return <PageContent allBalances={allBalances} networkBalances={networkBalances} />
+  return <PageContent />
 }

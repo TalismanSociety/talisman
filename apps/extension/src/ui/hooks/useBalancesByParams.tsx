@@ -45,12 +45,12 @@ export const useBalancesByParams = ({
         async (update) => {
           switch (update.type) {
             case "reset": {
-              const newBalances = new Balances(update.balances, hydrate)
+              const newBalances = new Balances(update.balances)
               return subject.next(newBalances)
             }
 
             case "upsert": {
-              const newBalances = new Balances(update.balances, hydrate)
+              const newBalances = new Balances(update.balances)
               return subject.next(subject.value.add(newBalances))
             }
 
@@ -65,7 +65,7 @@ export const useBalancesByParams = ({
           }
         }
       ),
-    [addressesByChain, addressesAndEvmNetworks, addressesAndTokens, hydrate]
+    [addressesByChain, addressesAndEvmNetworks, addressesAndTokens]
   )
 
   // subscrition must be reinitialized (using the key) if parameters change
@@ -83,6 +83,6 @@ export const useBalancesByParams = ({
   const [debouncedBalances, setDebouncedBalances] = useState<Balances>(() => balances)
   useDebounce(() => setDebouncedBalances(balances), 100, [balances])
 
-  return debouncedBalances
+  return useMemo(() => new Balances(debouncedBalances, hydrate), [debouncedBalances, hydrate])
 }
 export default useBalancesByParams

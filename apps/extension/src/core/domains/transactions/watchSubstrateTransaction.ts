@@ -13,7 +13,12 @@ import * as Sentry from "@sentry/browser"
 import { SignerPayloadJSON } from "@substrate/txwrapper-core"
 import { Err, Ok, Result } from "ts-results"
 
-import { addSubstrateTransaction, getExtrinsicHash, updateTransactionStatus } from "./helpers"
+import {
+  addSubstrateTransaction,
+  getExtrinsicHash,
+  getTransactionStatus,
+  updateTransactionStatus,
+} from "./helpers"
 import { WatchTransactionOptions } from "./types"
 
 const TX_WATCH_TIMEOUT = 90_000 // 90 seconds in milliseconds
@@ -233,11 +238,16 @@ const watchExtrinsicStatus = async (
           chainId,
           extrinsicHash
         )
-        if (err) return
-        const { result, blockNumber, extIndex } = extResult
-        cb(result, blockNumber, extIndex)
+        if (!err) {
+          const { result, blockNumber, extIndex } = extResult
+          cb(result, blockNumber, extIndex)
+        }
       }
     }
+
+    //if still pending after subscription timeout, mark as unknown
+    const status = await getTransactionStatus(extrinsicHash)
+    if (status === "pending") await updateTransactionStatus(extrinsicHash, "unknown")
   }, TX_WATCH_TIMEOUT)
 }
 

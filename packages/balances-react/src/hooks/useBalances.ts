@@ -24,7 +24,7 @@ export function useBalances(addressesByToken: AddressesByToken<Token> | null) {
     () =>
       new Balances(
         deriveStatuses(
-          [...getValidSubscriptionIds()],
+          getValidSubscriptionIds(),
           balances.filter((balance) => {
             // check that this balance is included in our queried balance modules
             if (!balanceModules.map(({ type }) => type).includes(balance.source)) return false

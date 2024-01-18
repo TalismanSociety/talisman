@@ -1,56 +1,25 @@
-import { TALISMAN_WEB_APP_STAKING_URL } from "@core/constants"
 import { Balances } from "@core/domains/balances/types"
 import { Accordion, AccordionIcon } from "@talisman/components/Accordion"
 import { FadeIn } from "@talisman/components/FadeIn"
 import { useOpenClose } from "@talisman/hooks/useOpenClose"
-import { ExternalLinkIcon, LockIcon, XIcon, ZapIcon } from "@talismn/icons"
+import { LockIcon } from "@talismn/icons"
 import { classNames } from "@talismn/util"
-import Fiat from "@ui/domains/Asset/Fiat"
+import { Fiat } from "@ui/domains/Asset/Fiat"
 import Tokens from "@ui/domains/Asset/Tokens"
 import { useAnalytics } from "@ui/hooks/useAnalytics"
 import { useBalancesStatus } from "@ui/hooks/useBalancesStatus"
 import { useSelectedCurrency } from "@ui/hooks/useCurrency"
-import { MouseEventHandler, ReactNode, useCallback, useMemo } from "react"
-import { Trans, useTranslation } from "react-i18next"
+import { ReactNode, useCallback, useMemo } from "react"
+import { useTranslation } from "react-i18next"
 import { useNavigate } from "react-router-dom"
 
 import { TokenLogo } from "../../Asset/TokenLogo"
-import { useNomPoolStakingBanner } from "../NomPoolStakingContext"
-import { useSelectedAccount } from "../SelectedAccountContext"
 import { StaleBalancesIcon } from "../StaleBalancesIcon"
+import { useSelectedAccount } from "../useSelectedAccount"
 import { useTokenBalancesSummary } from "../useTokenBalancesSummary"
 import { NetworksLogoStack } from "./NetworksLogoStack"
 import { usePortfolioNetworkIds } from "./usePortfolioNetworkIds"
 import { usePortfolioSymbolBalances } from "./usePortfolioSymbolBalances"
-
-const getSkeletonOpacity = (index: number) => {
-  // tailwind parses files to find classes that it should include
-  // so we can't dynamically compute the className
-  switch (index) {
-    case 0:
-      return "opacity-100"
-    case 1:
-      return "opacity-90"
-    case 2:
-      return "opacity-80"
-    case 3:
-      return "opacity-70"
-    case 4:
-      return "opacity-60"
-    case 5:
-      return "opacity-50"
-    case 6:
-      return "opacity-40"
-    case 7:
-      return "opacity-30"
-    case 8:
-      return "opacity-20"
-    case 9:
-      return "opacity-10"
-    default:
-      return "opacity-0"
-  }
-}
 
 type AssetRowProps = {
   balances: Balances
@@ -88,11 +57,7 @@ const AssetRow = ({ balances, locked }: AssetRowProps) => {
   const status = useBalancesStatus(balances)
 
   const { token, summary, rate } = useTokenBalancesSummary(balances)
-  const { showNomPoolBanner, dismissNomPoolBanner } = useNomPoolStakingBanner()
-  const showBanner = showNomPoolBanner({
-    chainId: token?.chain?.id,
-    addresses: Array.from(new Set(locked ? [] : balances.each.map((b) => b.address))),
-  })
+
   const navigate = useNavigate()
   const handleClick = useCallback(() => {
     if (!token) return
@@ -104,21 +69,6 @@ const AssetRow = ({ balances, locked }: AssetRowProps) => {
     navigate(`/portfolio/${encodeURIComponent(token.symbol)}?${params.toString()}`)
     genericEvent("goto portfolio asset", { from: "popup", symbol: token.symbol })
   }, [account, genericEvent, navigate, token])
-
-  const handleClickStakingBanner = useCallback(() => {
-    window.open(TALISMAN_WEB_APP_STAKING_URL)
-    genericEvent("open web app staking from banner", { from: "popup", symbol: token?.symbol })
-  }, [genericEvent, token?.symbol])
-
-  const handleDismissStakingBanner: MouseEventHandler<SVGSVGElement> = useCallback(
-    (e) => {
-      e.preventDefault()
-      e.stopPropagation()
-      dismissNomPoolBanner()
-      genericEvent("dismiss staking banner", { from: "popup", symbol: token?.symbol })
-    },
-    [genericEvent, dismissNomPoolBanner, token?.symbol]
-  )
 
   const { tokens, fiat } = useMemo(() => {
     return {
@@ -171,67 +121,45 @@ const AssetRow = ({ balances, locked }: AssetRowProps) => {
           </div>
           <div
             className={classNames(
-              "flex flex-col gap-2 text-right",
+              "flex flex-col items-end gap-2 text-right",
               status.status === "fetching" && "animate-pulse transition-opacity"
             )}
           >
-            <div
-              className={classNames(
-                "whitespace-nowrap text-sm font-bold",
-                locked ? "text-body-secondary" : "text-white"
-              )}
-            >
-              <Tokens amount={tokens} symbol={token?.symbol} isBalance />
-              {locked ? <LockIcon className="lock ml-2 inline align-baseline text-xs" /> : null}
-              <StaleBalancesIcon
-                className="alert ml-2 inline align-baseline text-sm"
-                staleChains={status.status === "stale" ? status.staleChains : []}
-              />
-            </div>
-            <div className="text-body-secondary leading-base text-xs">
-              {fiat === null ? "-" : <Fiat amount={fiat} isBalance />}
-            </div>
+            {status.status === "initializing" ? (
+              <>
+                <div className="bg-grey-700 rounded-xs h-7 w-[10rem] animate-pulse"></div>
+                <div className="bg-grey-700 rounded-xs h-7 w-[6rem] animate-pulse"></div>
+              </>
+            ) : (
+              <>
+                <div
+                  className={classNames(
+                    "whitespace-nowrap text-sm font-bold",
+                    locked ? "text-body-secondary" : "text-white"
+                  )}
+                >
+                  <Tokens amount={tokens} symbol={token?.symbol} isBalance />
+                  {locked ? <LockIcon className="lock ml-2 inline align-baseline text-xs" /> : null}
+                  <StaleBalancesIcon
+                    className="alert ml-2 inline align-baseline text-sm"
+                    staleChains={status.status === "stale" ? status.staleChains : []}
+                  />
+                </div>
+                <div className="text-body-secondary leading-base text-xs">
+                  {fiat === null ? "-" : <Fiat amount={fiat} isBalance />}
+                </div>
+              </>
+            )}
           </div>
         </div>
       </button>
-      {showBanner && (
-        <button
-          type="button"
-          onClick={handleClickStakingBanner}
-          className="staking-banner bg-primary-500 text-primary-500 flex h-28 w-full items-center justify-between rounded-sm bg-opacity-10 p-[1rem]"
-        >
-          <div className="flex gap-2">
-            <div className="self-center">
-              <ZapIcon className="h-[2.6rem] w-[2.6rem]" />
-            </div>
-            <div className="flex flex-col justify-start gap-[0.2rem] text-start text-sm text-white">
-              <span className="font-bold">
-                {t("You're eligible for {{symbol}} staking!", { symbol: token?.symbol })}
-              </span>
-              <div className="inline-flex gap-1 text-xs">
-                <Trans
-                  t={t}
-                  defaults={`Earn ~15% yield on your {{symbol}} on the <Highlight>Portal <ExternalLinkIcon /></Highlight>`}
-                  values={{ symbol: token?.symbol }}
-                  components={{
-                    Highlight: <span className="text-primary-500 flex gap-1" />,
-                    ExternalLinkIcon: <ExternalLinkIcon />,
-                  }}
-                />
-              </div>
-            </div>
-          </div>
-          <div className="self-start">
-            <XIcon role="button" onClick={handleDismissStakingBanner} className="h-6" />
-          </div>
-        </button>
-      )}
     </>
   )
 }
 
 type GroupedAssetsTableProps = {
   balances: Balances
+  isInitializing: boolean
 }
 
 type GroupProps = {
@@ -266,14 +194,12 @@ const BalancesGroup = ({ label, fiatAmount, className, children }: GroupProps) =
   )
 }
 
-export const PopupAssetsTable = ({ balances }: GroupedAssetsTableProps) => {
+export const PopupAssetsTable = ({ balances, isInitializing }: GroupedAssetsTableProps) => {
+  const { t } = useTranslation()
   const { account } = useSelectedAccount()
   // group by status by token (symbol)
-  const {
-    availableSymbolBalances: available,
-    lockedSymbolBalances: locked,
-    skeletons,
-  } = usePortfolioSymbolBalances(balances)
+  const { availableSymbolBalances: available, lockedSymbolBalances } =
+    usePortfolioSymbolBalances(balances)
 
   const currency = useSelectedCurrency()
 
@@ -283,9 +209,14 @@ export const PopupAssetsTable = ({ balances }: GroupedAssetsTableProps) => {
     return { total, totalAvailable: transferable, totalLocked: locked + reserved }
   }, [balances.sum, currency])
 
-  const { t } = useTranslation()
-
-  if (!available.length && !locked.length) return null
+  if (!available.length && !lockedSymbolBalances.length && !isInitializing)
+    return (
+      <FadeIn>
+        <div className="text-body-secondary bg-black-secondary rounded-sm py-10 text-center text-xs">
+          {account ? t("No assets to display for this account.") : t("No assets to display.")}
+        </div>
+      </FadeIn>
+    )
 
   return (
     <FadeIn>
@@ -305,10 +236,8 @@ export const PopupAssetsTable = ({ balances }: GroupedAssetsTableProps) => {
           {available.map(([symbol, b]) => (
             <AssetRow key={symbol} balances={b} />
           ))}
-          {[...Array(skeletons).keys()].map((i) => (
-            <AssetRowSkeleton key={i} className={getSkeletonOpacity(i)} />
-          ))}
-          {!skeletons && !available.length && (
+          {isInitializing && <AssetRowSkeleton />}
+          {!isInitializing && !available.length && (
             <div className="text-body-secondary bg-black-secondary rounded-sm py-10 text-center text-xs">
               {account
                 ? t("There are no available balances for this account.")
@@ -328,10 +257,10 @@ export const PopupAssetsTable = ({ balances }: GroupedAssetsTableProps) => {
           }
           fiatAmount={totalLocked}
         >
-          {locked.map(([symbol, b]) => (
+          {lockedSymbolBalances.map(([symbol, b]) => (
             <AssetRow key={symbol} balances={b} locked />
           ))}
-          {!locked.length && (
+          {!lockedSymbolBalances.length && (
             <div className="text-body-secondary bg-black-secondary rounded-sm py-10 text-center text-xs">
               {account
                 ? t("There are no locked balances.")

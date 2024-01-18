@@ -11,33 +11,20 @@ export const useFeeToken = (tokenId?: string | null) => {
   const feeTokenId = useMemo(() => {
     if (!token) return null
 
-    // TODO specific rules to put in chaindata
-    switch (chain?.id) {
-      case "mangata":
-        return "mangata-substrate-tokens-mgx"
-      case "kintsugi":
-        return "kintsugi-substrate-orml-kint"
-      case "interlay":
-        return "interlay-substrate-orml-intr"
-      case "equilibrium-polkadot":
-        return "equilibrium-polkadot-substrate-equilibrium-eq"
-      default:
-        break
-    }
+    if (typeof chain?.feeToken === "string") return chain.feeToken
 
     switch (token.type) {
       case "evm-erc20":
       case "evm-native":
         return evmNetwork?.nativeToken?.id
       case "substrate-native":
-      case "substrate-orml":
       case "substrate-assets":
       case "substrate-tokens":
       case "substrate-psp22":
       case "substrate-equilibrium":
         return chain?.nativeToken?.id
     }
-  }, [chain?.id, chain?.nativeToken?.id, evmNetwork?.nativeToken?.id, token])
+  }, [chain?.feeToken, chain?.nativeToken?.id, evmNetwork?.nativeToken?.id, token])
 
   return useToken(feeTokenId)
 }

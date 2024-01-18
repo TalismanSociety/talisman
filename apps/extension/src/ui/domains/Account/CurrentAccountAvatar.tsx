@@ -7,7 +7,7 @@ import { useSearchParamsSelectedFolder } from "@ui/hooks/useSearchParamsSelected
 import { useMemo } from "react"
 import { useTranslation } from "react-i18next"
 
-import { useSelectedAccount } from "../Portfolio/SelectedAccountContext"
+import { useSelectedAccount } from "../Portfolio/useSelectedAccount"
 import { AccountFolderIcon } from "./AccountFolderIcon"
 import { AccountIcon } from "./AccountIcon"
 

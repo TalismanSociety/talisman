@@ -1,25 +1,30 @@
 import { AccountJsonAny, AccountType } from "@core/domains/accounts/types"
-import { useOpenClose } from "@talisman/hooks/useOpenClose"
-import { provideContext } from "@talisman/util/provideContext"
+import { useGlobalOpenClose } from "@talisman/hooks/useGlobalOpenClose"
 import { api } from "@ui/api"
-import { useSelectedAccount } from "@ui/domains/Portfolio/SelectedAccountContext"
+import { useSelectedAccount } from "@ui/domains/Portfolio/useSelectedAccount"
 import { useCallback, useEffect, useState } from "react"
 import { Trans, useTranslation } from "react-i18next"
 import { useNavigate } from "react-router-dom"
+import { atom, useRecoilState } from "recoil"
 import { Button, Modal, ModalDialog } from "talisman-ui"
 
-const useAccountRemoveModalProvider = () => {
-  const [_account, setAccount] = useState<AccountJsonAny>()
+const accountRemoveAccountState = atom<AccountJsonAny | null>({
+  key: "accountRemoveAccountState",
+  default: null,
+})
+
+export const useAccountRemoveModal = () => {
+  const [_account, setAccount] = useRecoilState(accountRemoveAccountState)
 
   const { account: selectedAccount } = useSelectedAccount()
-  const { isOpen, open: innerOpen, close } = useOpenClose()
+  const { isOpen, open: innerOpen, close } = useGlobalOpenClose("accountRemoveModal")
 
   const open = useCallback(
     (account?: AccountJsonAny) => {
-      setAccount(account)
+      setAccount(account ?? null)
       innerOpen()
     },
-    [innerOpen]
+    [innerOpen, setAccount]
   )
 
   useEffect(() => {
@@ -35,10 +40,6 @@ const useAccountRemoveModalProvider = () => {
     close,
   }
 }
-
-export const [AccountRemoveModalProvider, useAccountRemoveModal] = provideContext(
-  useAccountRemoveModalProvider
-)
 
 export const AccountRemoveModal = () => {
   const { t } = useTranslation()

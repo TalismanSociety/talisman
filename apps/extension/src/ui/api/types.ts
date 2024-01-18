@@ -15,14 +15,13 @@ import {
   ModalOpenRequest,
   SendFundsOpenRequest,
 } from "@core/domains/app/types"
+import { AssetDiscoveryMode } from "@core/domains/assetDiscovery/types"
 import {
   AddressesAndEvmNetwork,
   AddressesAndTokens,
   BalanceJson,
   BalancesUpdate,
   RequestBalance,
-  RequestNomPoolStake,
-  ResponseNomPoolStake,
 } from "@core/domains/balances/types"
 import { ChainId, RequestUpsertCustomChain } from "@core/domains/chains/types"
 import type { DecryptRequestId, EncryptRequestId } from "@core/domains/encrypt/types"
@@ -64,6 +63,7 @@ import { AddressesByChain } from "@core/types/base"
 import type { KeyringPair$Json } from "@polkadot/keyring/types"
 import { KeypairType } from "@polkadot/util-crypto/types"
 import type { HexString } from "@polkadot/util/types"
+import { Address } from "@talismn/balances"
 import { TransactionRequest } from "viem"
 
 export default interface MessageTypes {
@@ -78,7 +78,7 @@ export default interface MessageTypes {
   authStatusSubscribe: (cb: (val: LoggedinType) => void) => UnsubscribeFn
   dashboardOpen: (route: string) => Promise<boolean>
   onboardOpen: () => Promise<boolean>
-  popupOpen: () => Promise<boolean>
+  popupOpen: (argument?: string) => Promise<boolean>
   promptLogin: (closeOnSuccess?: boolean) => Promise<boolean>
   approveMetaRequest: (id: RequestMetadataId) => Promise<boolean>
   rejectMetaRequest: (id: RequestMetadataId) => Promise<boolean>
@@ -158,10 +158,6 @@ export default interface MessageTypes {
     tokenId,
     address,
   }: RequestBalance) => Promise<BalanceJson | undefined>
-  getNomPoolStakedBalance: ({
-    chainId,
-    addresses,
-  }: RequestNomPoolStake) => Promise<ResponseNomPoolStake>
   balances: (cb: () => void) => UnsubscribeFn
   balancesByParams: (
     addressesByChain: AddressesByChain,
@@ -309,4 +305,7 @@ export default interface MessageTypes {
     specVersion?: number,
     blockHash?: HexString
   ) => Promise<MetadataDef | undefined>
+
+  assetDiscoveryStartScan: (mode: AssetDiscoveryMode, addresses?: Address[]) => Promise<boolean>
+  assetDiscoveryStopScan: () => Promise<boolean>
 }

@@ -2,12 +2,13 @@ import { POLKADOT_VAULT_DOCS_URL } from "@core/constants"
 import { AccountJsonQr } from "@core/domains/accounts/types"
 import { SignerPayloadJSON, SignerPayloadRaw } from "@core/domains/signing/types"
 import { isJsonPayload } from "@core/util/isJsonPayload"
+import { HexString } from "@polkadot/util/types"
 import { Chain } from "@talismn/chaindata-provider"
 import { ChevronLeftIcon, InfoIcon, LoaderIcon, PolkadotVaultIcon } from "@talismn/icons"
 import { classNames } from "@talismn/util"
 import { ChainLogo } from "@ui/domains/Asset/ChainLogo"
 import { ScanQr } from "@ui/domains/Sign/Qr/ScanQr"
-import useChainByGenesisHash from "@ui/hooks/useChainByGenesisHash"
+import { useChainByGenesisHash } from "@ui/hooks/useChainByGenesisHash"
 import { ReactElement, useState } from "react"
 import { Trans, useTranslation } from "react-i18next"
 import { Button, Drawer, Tooltip, TooltipContent, TooltipTrigger } from "talisman-ui"
@@ -45,7 +46,7 @@ type ScanState =
 interface Props {
   account: AccountJsonQr
   className?: string
-  genesisHash?: string
+  genesisHash?: HexString
   onSignature?: (result: { signature: `0x${string}` }) => void
   onReject: () => void
   payload: SignerPayloadJSON | SignerPayloadRaw
@@ -242,7 +243,7 @@ const SendPage = ({
   containerId,
 }: {
   account: AccountJsonQr
-  genesisHash: string | undefined
+  genesisHash: HexString | undefined
   payload: SignerPayloadJSON | SignerPayloadRaw
   reject: () => void
   setScanState: React.Dispatch<React.SetStateAction<ScanState>>
@@ -256,7 +257,7 @@ const SendPage = ({
   return (
     <>
       <div className="flex h-full flex-col items-center justify-end">
-        <div className="relative flex aspect-square w-full max-w-md items-center justify-center rounded-xl bg-white p-10">
+        <div className="relative flex aspect-square w-full max-w-md items-center justify-center rounded-xl bg-white p-12">
           <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2">
             <LoaderIcon className="animate-spin-slow text-body-secondary !text-3xl" />
           </div>
@@ -357,15 +358,12 @@ const SendPage = ({
             <div className="text-body-secondary mb-16 mt-10 max-w-md text-center text-sm leading-10">
               <Trans
                 t={t}
-                defaults="Scan the QR code with the Polkadot Vault app on your phone to add the <Chain /> network."
+                defaults="Scan the QR code with the Polkadot Vault app on your phone to add the <Chain><ChainLogo />{{chainName}}</Chain> network."
                 components={{
-                  Chain: (
-                    <div className="text-body inline-flex items-baseline gap-1">
-                      <ChainLogo className="self-center" id={chain?.id} />
-                      {chain?.name ?? "Unknown"}
-                    </div>
-                  ),
+                  Chain: <div className="text-body inline-flex items-baseline gap-1" />,
+                  ChainLogo: <ChainLogo className="self-center" id={chain?.id} />,
                 }}
+                values={{ chainName: chain?.name ?? t("Unknown") }}
               />
             </div>
           </>

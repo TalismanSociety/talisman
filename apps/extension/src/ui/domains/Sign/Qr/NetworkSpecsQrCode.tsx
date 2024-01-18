@@ -3,10 +3,10 @@ import { SignerPayloadGenesisHash } from "@core/domains/signing/types"
 import { hexToU8a } from "@polkadot/util"
 import { useQuery } from "@tanstack/react-query"
 import { api } from "@ui/api"
-import useChainByGenesisHash from "@ui/hooks/useChainByGenesisHash"
+import { useChainByGenesisHash } from "@ui/hooks/useChainByGenesisHash"
 import { useImageLoaded } from "@ui/hooks/useImageLoaded"
 
-import { QrCode } from "./QrCode"
+import { QrCode, QrCodeError } from "./QrCode"
 import { QrCodeSource, qrCodeLogoForSource } from "./QrCodeSourceSelector"
 
 type Props = { genesisHash: SignerPayloadGenesisHash; qrCodeSource: QrCodeSource }
@@ -51,7 +51,7 @@ export const NetworkSpecsQrCode = ({ genesisHash, qrCodeSource }: Props) => {
       </>
     )
 
-  if (isLoading || error) return null
-
+  if (isLoading) return null
+  if (error) return <QrCodeError error={String(error)} />
   return <QrCode data={data} />
 }

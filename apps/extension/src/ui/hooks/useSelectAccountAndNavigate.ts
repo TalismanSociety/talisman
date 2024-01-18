@@ -1,5 +1,5 @@
 import { encodeAnyAddress } from "@talismn/util"
-import { useSelectedAccount } from "@ui/domains/Portfolio/SelectedAccountContext"
+import { useSelectedAccount } from "@ui/domains/Portfolio/useSelectedAccount"
 import { useEffect, useMemo, useState } from "react"
 import { useNavigate } from "react-router-dom"
 

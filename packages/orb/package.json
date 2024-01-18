@@ -19,22 +19,23 @@
     "clean": "rm -rf dist && rm -rf .turbo rm -rf node_modules"
   },
   "dependencies": {
-    "@polkadot/util-crypto": "12.2.1",
     "blueimp-md5": "2.19.0",
     "color": "4.2.3",
-    "nanoid": "3.3.6"
+    "nanoid": "3.3.7"
   },
   "devDependencies": {
+    "@polkadot/util-crypto": "^12.3.2",
     "@talismn/eslint-config": "workspace:*",
     "@talismn/tsconfig": "workspace:*",
     "@types/react": "18.0.14",
-    "@types/react-dom": "18.0.5",
+    "@types/react-dom": "18.2.18",
     "eslint": "^8.52.0",
     "react": "18.2.0",
     "react-dom": "18.2.0",
     "typescript": "^5.2.2"
   },
   "peerDependencies": {
+    "@polkadot/util-crypto": "12.x",
     "react": "*",
     "react-dom": "*"
   },

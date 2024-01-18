@@ -3,10 +3,10 @@ import { ArrowRightIcon, LoaderIcon, PolkadotVaultIcon } from "@talismn/icons"
 import { AccountIcon } from "@ui/domains/Account/AccountIcon"
 import { Address } from "@ui/domains/Account/Address"
 import { ChainLogo } from "@ui/domains/Asset/ChainLogo"
-import Fiat from "@ui/domains/Asset/Fiat"
+import { Fiat } from "@ui/domains/Asset/Fiat"
 import { useBalanceDetails } from "@ui/hooks/useBalanceDetails"
 import useBalancesByParams from "@ui/hooks/useBalancesByParams"
-import useChainByGenesisHash from "@ui/hooks/useChainByGenesisHash"
+import { useChainByGenesisHash } from "@ui/hooks/useChainByGenesisHash"
 import useChains from "@ui/hooks/useChains"
 import { useSetting } from "@ui/hooks/useSettings"
 import { useMemo } from "react"
@@ -26,8 +26,8 @@ export const ConfigureAccount = () => {
   const { t } = useTranslation("admin")
   const { state, dispatch, submitConfigure } = useAccountAddQr()
 
-  const [useTestnets] = useSetting("useTestnets")
-  const { chains } = useChains(useTestnets)
+  const [includeTestnets] = useSetting("useTestnets")
+  const { chains } = useChains({ activeOnly: true, includeTestnets })
   const addressesByChain = useMemo(() => {
     if (state.type !== "CONFIGURE") return
 

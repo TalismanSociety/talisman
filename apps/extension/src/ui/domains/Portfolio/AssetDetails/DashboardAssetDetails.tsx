@@ -181,9 +181,9 @@ type AssetsTableProps = {
 }
 
 export const DashboardAssetDetails = ({ balances, symbol }: AssetsTableProps) => {
-  const { balancesByChain: rows, isLoading } = useAssetDetails(balances)
+  const { balancesByChain: rows } = useAssetDetails(balances)
 
-  if (rows.length === 0 && !isLoading) return <NoTokensMessage symbol={symbol} />
+  if (rows.length === 0) return <NoTokensMessage symbol={symbol} />
 
   return (
     <div className="text-body-secondary">

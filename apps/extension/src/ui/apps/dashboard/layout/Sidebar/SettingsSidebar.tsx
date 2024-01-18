@@ -11,13 +11,19 @@ import {
   UsersIcon,
 } from "@talismn/icons"
 import useMnemonicBackup from "@ui/hooks/useMnemonicBackup"
+import { Suspense } from "react"
 import { useTranslation } from "react-i18next"
 
 import { SidebarNavItem } from "./SidebarNavItem"
 
+const MnemonicNotification = () => {
+  const { showBackupNotification } = useMnemonicBackup()
+
+  return showBackupNotification ? <AlertCircleIcon className="text-alert-warn" /> : null
+}
+
 export const SettingsSidebar = () => {
   const { t } = useTranslation()
-  const { showBackupNotification } = useMnemonicBackup()
 
   return (
     <Nav className="gap-1 p-4 text-sm lg:px-12 lg:pb-12 lg:pt-6 lg:text-base">
@@ -27,7 +33,9 @@ export const SettingsSidebar = () => {
         title={
           <span className="flex gap-2 align-middle">
             {t("Recovery Phrases")}
-            {showBackupNotification && <AlertCircleIcon className="text-alert-warn" />}
+            <Suspense>
+              <MnemonicNotification />
+            </Suspense>
           </span>
         }
         to="/settings/mnemonics"

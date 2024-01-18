@@ -22,7 +22,7 @@ import { useIntersection } from "react-use"
 
 import { useFormatNetworkName } from "../SendFunds/useNetworkDetails"
 import { ChainLogoBase } from "./ChainLogo"
-import Fiat from "./Fiat"
+import { Fiat } from "./Fiat"
 import { TokenLogo } from "./TokenLogo"
 import Tokens from "./Tokens"
 
@@ -185,10 +185,10 @@ const TokensList: FC<TokensListProps> = ({
 }) => {
   const { t } = useTranslation()
   const account = useAccountByAddress(address)
-  const [useTestnets] = useSetting("useTestnets")
-  const { chainsMap, chains } = useChains(useTestnets)
-  const { evmNetworksMap } = useEvmNetworks(useTestnets)
-  const { tokens: allTokens } = useTokens(useTestnets)
+  const [includeTestnets] = useSetting("useTestnets")
+  const { chainsMap, chains } = useChains({ activeOnly: true, includeTestnets })
+  const { evmNetworksMap } = useEvmNetworks({ activeOnly: true, includeTestnets })
+  const { tokens: allTokens } = useTokens({ activeOnly: true, includeTestnets })
   const tokenRatesMap = useTokenRatesMap()
   const formatNetworkName = useFormatNetworkName()
 

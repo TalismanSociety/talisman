@@ -33,10 +33,14 @@ ZipPlugin.prototype.apply = function (compiler) {
     })
 
     archive.pipe(output)
+    const ignore = [options.filename]
+    if (options.exclude) {
+      ignore.push(options.exclude)
+    }
 
     archive.glob("**/*", {
       cwd: options.folder,
-      ignore: [options.exclude, options.filename],
+      ignore,
     })
 
     archive.finalize()

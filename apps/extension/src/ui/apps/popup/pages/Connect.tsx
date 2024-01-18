@@ -1,6 +1,6 @@
 import { ProviderType } from "@core/domains/sitesAuthorised/types"
 import { KnownRequestIdOnly } from "@core/libs/requests/types"
-import { isTalismanUrl } from "@core/page"
+import { isTalismanUrl } from "@core/util/isTalismanUrl"
 import { AppPill } from "@talisman/components/AppPill"
 import { notify } from "@talisman/components/Notifications"
 import useSet from "@talisman/hooks/useSet"
@@ -9,10 +9,9 @@ import { api } from "@ui/api"
 import { ConnectAccountsContainer } from "@ui/domains/Site/ConnectAccountsContainer"
 import { ConnectAccountToggleButtonRow } from "@ui/domains/Site/ConnectAccountToggleButtonRow"
 import useAccounts from "@ui/hooks/useAccounts"
-import { useAccountsSubscribe } from "@ui/hooks/useAccountsSubscribe"
 import { useAnalytics } from "@ui/hooks/useAnalytics"
 import { useRequest } from "@ui/hooks/useRequest"
-import { capitalize } from "lodash"
+import capitalize from "lodash/capitalize"
 import { FC, useCallback, useEffect, useMemo } from "react"
 import { Trans, useTranslation } from "react-i18next"
 import { useParams } from "react-router-dom"
@@ -45,9 +44,9 @@ const NoAccountWarning = ({
           />
         </p>
         <div className="mt-4 grid grid-cols-2 gap-8">
-          <Button onClick={onIgnoreClick}>No</Button>
+          <Button onClick={onIgnoreClick}>{t("No")}</Button>
           <Button primary onClick={onAddAccountClick}>
-            Yes
+            {t("Yes")}
           </Button>
         </div>
       </div>
@@ -60,7 +59,6 @@ export const Connect: FC<{ className?: string }> = ({ className }) => {
   const { id } = useParams<"id">() as KnownRequestIdOnly<"auth">
   const authRequest = useRequest(id)
   const { popupOpenEvent } = useAnalytics()
-  const accountsReady = useAccountsSubscribe() // hack to prevent no accounts drawer flashing
   const allAccounts = useAccounts(isTalismanUrl(authRequest?.url) ? "all" : "owned")
   const { items: connected, toggle, set, clear } = useSet<string>()
   const ethereum = !!authRequest?.request?.ethereum
@@ -173,7 +171,7 @@ export const Connect: FC<{ className?: string }> = ({ className }) => {
               />
             ))}
           </ConnectAccountsContainer>
-          {!!accountsReady && !accounts.length && (
+          {!accounts.length && (
             <NoAccountWarning
               type={ethereum ? "ethereum" : "polkadot"}
               onIgnoreClick={handleNoAccountClose(false)}

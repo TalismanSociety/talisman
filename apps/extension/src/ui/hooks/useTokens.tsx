@@ -1,31 +1,12 @@
-import {
-  tokensWithTestnetsMapState,
-  tokensWithTestnetsState,
-  tokensWithoutTestnetsMapState,
-  tokensWithoutTestnetsState,
-} from "@ui/atoms/chaindata"
-import { useMemo } from "react"
-import { useRecoilValue } from "recoil"
+import { TokensQueryOptions, tokensArrayQuery, tokensMapQuery } from "@ui/atoms"
+import { useRecoilValue, waitForAll } from "recoil"
 
-export const useTokens = (withTestnets: boolean) => {
-  const tokensWithTestnets = useRecoilValue(tokensWithTestnetsState)
-  const tokensWithoutTestnets = useRecoilValue(tokensWithoutTestnetsState)
-  const tokensWithTestnetsMap = useRecoilValue(tokensWithTestnetsMapState)
-  const tokensWithoutTestnetsMap = useRecoilValue(tokensWithoutTestnetsMapState)
-
-  return useMemo(
-    () => ({
-      tokens: withTestnets ? tokensWithTestnets : tokensWithoutTestnets,
-      tokensMap: withTestnets ? tokensWithTestnetsMap : tokensWithoutTestnetsMap,
-    }),
-    [
-      tokensWithTestnets,
-      tokensWithTestnetsMap,
-      tokensWithoutTestnets,
-      tokensWithoutTestnetsMap,
-      withTestnets,
-    ]
+export const useTokens = (options: TokensQueryOptions) => {
+  const [tokens, tokensMap] = useRecoilValue(
+    waitForAll([tokensArrayQuery(options), tokensMapQuery(options)])
   )
+
+  return { tokens, tokensMap }
 }
 
 export default useTokens

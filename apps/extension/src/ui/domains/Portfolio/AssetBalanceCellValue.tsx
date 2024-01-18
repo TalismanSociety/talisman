@@ -5,7 +5,7 @@ import { BalancesStatus } from "@ui/hooks/useBalancesStatus"
 import BigNumber from "bignumber.js"
 import { ReactNode } from "react"
 
-import Fiat from "../Asset/Fiat"
+import { Fiat } from "../Asset/Fiat"
 import Tokens from "../Asset/Tokens"
 import { StaleBalancesIcon } from "./StaleBalancesIcon"
 

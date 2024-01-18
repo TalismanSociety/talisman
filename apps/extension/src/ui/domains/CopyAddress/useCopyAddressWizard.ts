@@ -10,7 +10,7 @@ import { Chain, ChainId, Token, TokenId } from "@talismn/chaindata-provider"
 import { useAccountByAddress } from "@ui/hooks/useAccountByAddress"
 import useAccounts from "@ui/hooks/useAccounts"
 import useChain from "@ui/hooks/useChain"
-import useChainByGenesisHash from "@ui/hooks/useChainByGenesisHash"
+import { useChainByGenesisHash } from "@ui/hooks/useChainByGenesisHash"
 import useChains from "@ui/hooks/useChains"
 import useToken from "@ui/hooks/useToken"
 import useTokens from "@ui/hooks/useTokens"
@@ -168,8 +168,8 @@ export const useCopyAddressWizardProvider = ({ inputs }: { inputs: CopyAddressWi
   }, [])
 
   const accounts = useAccounts()
-  const { chainsMap } = useChains(true)
-  const { tokensMap } = useTokens(true)
+  const { chainsMap } = useChains({ activeOnly: true, includeTestnets: true })
+  const { tokensMap } = useTokens({ activeOnly: true, includeTestnets: true })
 
   const setTokenId = useCallback(
     (tokenId: TokenId) => {

@@ -4,13 +4,14 @@
 // Adapted from https://github.com/polkadot-js/extension/packages/extension-base/src/page.ts
 import type { Message } from "@polkadot/extension-base/types"
 
-import { DEBUG, TALISMAN_WEB_APP_DOMAIN } from "./constants"
+import { DEBUG } from "./constants"
 import TalismanInjected from "./inject/Injected"
 import { injectExtension } from "./inject/injectExtension"
 import { injectSubstrate } from "./inject/injectSubstrate"
 import type { Injected } from "./inject/types"
 import { injectEthereum } from "./injectEth/injectEthereum"
 import MessageService from "./libs/MessageService"
+import { isTalismanHostname } from "./util/isTalismanHostname"
 
 const messageService = new MessageService({
   origin: "talisman-page",
@@ -37,24 +38,6 @@ const enable = async (origin: string): Promise<Injected> => {
   // Pretty sure there is a bug in Polkadot.js's typings which means this is required
   // Could cause problems if TalismanInjected diverges from Injected
   return new TalismanInjected(messageService.sendMessage) as Injected
-}
-
-export const isTalismanUrl = (url: string | undefined) => {
-  if (!url) return false
-  try {
-    const hostname = new URL(url).hostname
-    return isTalismanHostname(hostname)
-  } catch (e) {
-    return false
-  }
-}
-
-export const isTalismanHostname = (hostname: string | undefined) => {
-  return (
-    hostname === TALISMAN_WEB_APP_DOMAIN ||
-    (DEBUG && hostname?.endsWith(".talisman.pages.dev")) ||
-    (DEBUG && ["localhost", "127.0.0.1"].includes(hostname ?? ""))
-  )
 }
 
 function inject() {

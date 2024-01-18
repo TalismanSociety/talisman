@@ -2,7 +2,7 @@
 
 const childProcess = require("child_process")
 const path = require("path")
-const SentryWebpackPlugin = require("@sentry/webpack-plugin")
+const sentryWebpackPlugin = require("@sentry/webpack-plugin").sentryWebpackPlugin
 
 const srcDir = path.join(__dirname, "..", "src")
 const coreDir = path.join(srcDir, "core")
@@ -67,15 +67,18 @@ const getSentryPlugin = (env) => {
     return
   }
 
-  return new SentryWebpackPlugin({
+  return sentryWebpackPlugin({
     // see https://docs.sentry.io/product/cli/configuration/ for details
     authToken: process.env.SENTRY_AUTH_TOKEN,
     org: "talisman",
     project: "talisman-extension",
     release: getRelease(env),
-    include: distDir,
-    ignore: ["content_script.js", "page.js"],
     cleanArtifacts: true,
+    sourcemaps: {
+      assets: [`${distDir}/**`],
+      ignore: [`${distDir}/content_script.js`, `${distDir}/page.js`],
+      deleteFilesAfterUpload: [`${distDir}/**/*.map`],
+    },
   })
 }
 

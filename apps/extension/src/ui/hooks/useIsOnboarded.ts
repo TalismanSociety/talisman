@@ -1,7 +1,4 @@
-import { useAppState } from "./useAppState"
+import { isOnboardedState } from "@ui/atoms"
+import { useRecoilValue } from "recoil"
 
-export const useIsOnboarded = () => {
-  const [onboarded] = useAppState("onboarded")
-
-  return onboarded ?? "UNKNOWN"
-}
+export const useIsOnboarded = () => useRecoilValue(isOnboardedState)

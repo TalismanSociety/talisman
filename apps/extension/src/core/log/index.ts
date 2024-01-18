@@ -17,8 +17,13 @@ export const log = {
     const timeKey = `${label} (${crypto.randomUUID()})`
     console.time(timeKey)
 
+    let done = false
+
     return () => {
+      if (done) return
+
       console.timeEnd(timeKey)
+      done = true
     }
   },
 }

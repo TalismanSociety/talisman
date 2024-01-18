@@ -1,9 +1,7 @@
 import { CustomEvmNetwork, EvmNetwork, EvmNetworkId } from "@core/domains/ethereum/types"
+import { evmNetworkQuery } from "@ui/atoms"
+import { useRecoilValue } from "recoil"
 
-import { useEvmNetworks } from "./useEvmNetworks"
-
-export const useEvmNetwork = (id?: EvmNetworkId): EvmNetwork | CustomEvmNetwork | undefined => {
-  const { evmNetworksMap } = useEvmNetworks(true)
-
-  return id ? evmNetworksMap[id] : undefined
-}
+export const useEvmNetwork = (
+  id: EvmNetworkId | undefined | null
+): EvmNetwork | CustomEvmNetwork | undefined => useRecoilValue(evmNetworkQuery(id))

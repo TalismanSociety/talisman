@@ -4,8 +4,8 @@ import { SearchInput } from "@talisman/components/SearchInput"
 import { XIcon } from "@talismn/icons"
 import { classNames } from "@talismn/util"
 import { api } from "@ui/api"
-import { useCurrentSite } from "@ui/apps/popup/context/CurrentSiteContext"
 import { useAuthorisedSites } from "@ui/hooks/useAuthorisedSites"
+import { useCurrentSite } from "@ui/hooks/useCurrentSite"
 import { useDebouncedState } from "@ui/hooks/useDebouncedState"
 import { useEvmNetwork } from "@ui/hooks/useEvmNetwork"
 import { useEvmNetworks } from "@ui/hooks/useEvmNetworks"
@@ -37,7 +37,7 @@ const DrawerContent: FC<{ onClose: () => void }> = ({ onClose }) => {
     [isTestnet, settingUseTestnets]
   )
 
-  const { evmNetworks } = useEvmNetworks(showTestnets)
+  const { evmNetworks } = useEvmNetworks({ activeOnly: true, includeTestnets: showTestnets })
 
   const [search, setSearch] = useDebouncedState("", 150)
 

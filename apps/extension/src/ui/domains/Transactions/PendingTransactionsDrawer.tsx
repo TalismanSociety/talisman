@@ -12,21 +12,19 @@ import { BalanceFormatter } from "@talismn/balances"
 import { ChainId, EvmNetworkId } from "@talismn/chaindata-provider"
 import { LoaderIcon, MoreHorizontalIcon, RocketIcon, XOctagonIcon } from "@talismn/icons"
 import { classNames } from "@talismn/util"
-import { AnalyticsPage, sendAnalyticsEvent } from "@ui/api/analytics"
+import { AnalyticsPage } from "@ui/api/analytics"
 import { useAnalyticsPageView } from "@ui/hooks/useAnalyticsPageView"
-import useChainByGenesisHash from "@ui/hooks/useChainByGenesisHash"
+import { useChainByGenesisHash } from "@ui/hooks/useChainByGenesisHash"
 import { useSelectedCurrency } from "@ui/hooks/useCurrency"
 import { useEvmNetwork } from "@ui/hooks/useEvmNetwork"
 import { useFaviconUrl } from "@ui/hooks/useFaviconUrl"
-import { useIsFeatureEnabled } from "@ui/hooks/useFeatures"
 import useToken from "@ui/hooks/useToken"
 import { useTokenRates } from "@ui/hooks/useTokenRates"
-import { getTransactionHistoryUrl } from "@ui/util/getTransactionHistoryUrl"
 import formatDistanceToNowStrict from "date-fns/formatDistanceToNowStrict"
 import { useLiveQuery } from "dexie-react-hooks"
 import sortBy from "lodash/sortBy"
 import { FC, PropsWithChildren, forwardRef, useCallback, useEffect, useMemo, useState } from "react"
-import { Trans, useTranslation } from "react-i18next"
+import { useTranslation } from "react-i18next"
 import {
   Button,
   Drawer,
@@ -41,11 +39,11 @@ import {
 import urlJoin from "url-join"
 
 import { ChainLogo } from "../Asset/ChainLogo"
-import Fiat from "../Asset/Fiat"
+import { Fiat } from "../Asset/Fiat"
 import { TokenLogo } from "../Asset/TokenLogo"
 import Tokens from "../Asset/Tokens"
 import { NetworkLogo } from "../Ethereum/NetworkLogo"
-import { useSelectedAccount } from "../Portfolio/SelectedAccountContext"
+import { useSelectedAccount } from "../Portfolio/useSelectedAccount"
 import { TxReplaceDrawer } from "./TxReplaceDrawer"
 import { TxReplaceType } from "./types"
 
@@ -670,6 +668,7 @@ const TransactionRow: FC<TransactionRowProps> = ({ tx, ...props }) => {
 const TransactionsList: FC<{
   transactions: WalletTransaction[]
 }> = ({ transactions }) => {
+  const { t } = useTranslation("request")
   const sortedTxs: WalletTransaction[] = useMemo(
     // results should already be sorted by the caller, this is just in case
     () => sortBy(transactions, ["timestamp"]).reverse(),
@@ -707,6 +706,11 @@ const TransactionsList: FC<{
           onContextMenuClose={handleContextMenuClose(tx.hash)}
         />
       ))}
+      {!sortedTxs.length && (
+        <div className="text-body-secondary text-center text-sm">
+          {t("No transactions available")}
+        </div>
+      )}
     </div>
   )
 }
@@ -715,20 +719,7 @@ const DrawerContent: FC<{ transactions: WalletTransaction[]; onClose?: () => voi
   transactions,
   onClose,
 }) => {
-  const { account } = useSelectedAccount()
   useAnalyticsPageView(ANALYTICS_PAGE)
-  const showTxHistory = useIsFeatureEnabled("LINK_TX_HISTORY")
-
-  const handleTxHistoryClick = useCallback(() => {
-    sendAnalyticsEvent({
-      ...ANALYTICS_PAGE,
-      name: "Goto",
-      action: "Tx History button",
-    })
-    window.open(getTransactionHistoryUrl(account?.address), "_blank")
-    window.close()
-  }, [account?.address])
-
   const { t } = useTranslation("request")
 
   return (
@@ -736,24 +727,6 @@ const DrawerContent: FC<{ transactions: WalletTransaction[]; onClose?: () => voi
       <h3 className="text-md mt-12 text-center font-bold">{t("Recent Activity")}</h3>
       <p className="text-body-secondary leading-paragraph my-8 w-full px-24 text-center text-sm">
         {t("View recent and pending transactions for the past week.")}
-        {showTxHistory && (
-          <>
-            {" "}
-            <Trans
-              t={t}
-              defaults="For a comprehesive history visit our <Link>transaction history page</Link>"
-              components={{
-                Link: (
-                  <button
-                    type="button"
-                    onClick={handleTxHistoryClick}
-                    className="text-body inline"
-                  />
-                ),
-              }}
-            />
-          </>
-        )}
       </p>
       <TransactionsList transactions={transactions} />
       <div className="p-12">

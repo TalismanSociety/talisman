@@ -6,7 +6,7 @@ import { useSetting } from "@ui/hooks/useSettings"
 import useTokens from "@ui/hooks/useTokens"
 import { useCallback } from "react"
 
-import { useSelectedAccount } from "../SelectedAccountContext"
+import { useSelectedAccount } from "../useSelectedAccount"
 
 export const CopyAddressButton = ({
   symbol,
@@ -16,8 +16,8 @@ export const CopyAddressButton = ({
   networkId: ChainId | EvmNetworkId | null | undefined
 }) => {
   const { account } = useSelectedAccount()
-  const [useTestnets] = useSetting("useTestnets")
-  const { tokens } = useTokens(useTestnets)
+  const [includeTestnets] = useSetting("useTestnets")
+  const { tokens } = useTokens({ activeOnly: true, includeTestnets })
 
   const token = tokens?.find(
     (t) =>

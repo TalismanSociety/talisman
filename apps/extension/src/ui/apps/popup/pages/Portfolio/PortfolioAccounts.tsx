@@ -1,35 +1,31 @@
 import { AccountsCatalogTree, TreeFolder, TreeItem } from "@core/domains/accounts/helpers.catalog"
-import { AccountType } from "@core/domains/accounts/types"
+import { AccountJsonAny, AccountType } from "@core/domains/accounts/types"
 import { isEthereumAddress } from "@polkadot/util-crypto"
-import { FadeIn } from "@talisman/components/FadeIn"
 import { SuspenseTracker } from "@talisman/components/SuspenseTracker"
-import { Balance, Balances } from "@talismn/balances"
 import { ChevronLeftIcon, ChevronRightIcon, CopyIcon, EyeIcon } from "@talismn/icons"
 import { classNames } from "@talismn/util"
 import { AnalyticsPage, sendAnalyticsEvent } from "@ui/api/analytics"
 import { AccountsLogoStack } from "@ui/apps/dashboard/routes/Settings/Accounts/AccountsLogoStack"
-import { TotalFiatBalance } from "@ui/apps/popup/components/TotalFiatBalance"
+import { AllAccountsHeader } from "@ui/apps/popup/components/AllAccountsHeader"
+import { NewFeaturesButton } from "@ui/apps/popup/components/NewFeaturesButton"
+import { StakingBanner } from "@ui/apps/popup/components/StakingBanner"
+import { NoAccountsPopup } from "@ui/apps/popup/pages/NoAccounts"
 import { AccountFolderIcon } from "@ui/domains/Account/AccountFolderIcon"
 import { AccountIcon } from "@ui/domains/Account/AccountIcon"
 import { AccountTypeIcon } from "@ui/domains/Account/AccountTypeIcon"
 import { Address } from "@ui/domains/Account/Address"
 import { CurrentAccountAvatar } from "@ui/domains/Account/CurrentAccountAvatar"
-import Fiat from "@ui/domains/Asset/Fiat"
+import { Fiat } from "@ui/domains/Asset/Fiat"
 import { useCopyAddressModal } from "@ui/domains/CopyAddress"
-import useAccounts from "@ui/hooks/useAccounts"
-import useAccountsCatalog from "@ui/hooks/useAccountsCatalog"
 import { useAnalytics } from "@ui/hooks/useAnalytics"
-import useBalances from "@ui/hooks/useBalances"
-import { useSelectedCurrency } from "@ui/hooks/useCurrency"
-import { useFirstAccountColors } from "@ui/hooks/useFirstAccountColors"
+import { useBalances } from "@ui/hooks/useBalances"
 import { useFormattedAddress } from "@ui/hooks/useFormattedAddress"
-import { useHasAccounts } from "@ui/hooks/useHasAccounts"
+import { usePortfolioAccounts } from "@ui/hooks/usePortfolioAccounts"
 import { useSearchParamsSelectedFolder } from "@ui/hooks/useSearchParamsSelectedFolder"
-import { MouseEventHandler, Suspense, useCallback, useEffect, useMemo, useRef } from "react"
+import { FC, MouseEventHandler, Suspense, useCallback, useEffect, useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
 import { useNavigate } from "react-router-dom"
-import { useHoverDirty } from "react-use"
-import { IconButton, MYSTICAL_PHYSICS_V3, MysticalBackground, MysticalPhysicsV3 } from "talisman-ui"
+import { IconButton } from "talisman-ui"
 
 const ANALYTICS_PAGE: AnalyticsPage = {
   container: "Popup",
@@ -38,24 +34,36 @@ const ANALYTICS_PAGE: AnalyticsPage = {
   page: "Portfolio Home",
 }
 
-type AccountOption =
-  | {
-      type: "folder"
-      treeName: string
-      id: string
-      name: string
-      total?: number
-      addresses: string[]
-    }
-  | {
-      type: "account"
-      name: string
-      address: string
-      total?: number
-      genesisHash?: string | null
-      origin?: AccountType
-      isPortfolio?: boolean
-    }
+type FolderAccountOption = {
+  type: "folder"
+  treeName: string
+  id: string
+  name: string
+  total?: number
+  addresses: string[]
+}
+
+type AccountAccountOption = {
+  type: "account"
+  name: string
+  address: string
+  total?: number
+  genesisHash?: string | null
+  origin?: AccountType
+  isPortfolio?: boolean
+}
+
+type AccountOption = FolderAccountOption | AccountAccountOption
+
+const FormattedAddress: FC<{
+  address: string
+  genesisHash?: string | null
+  className?: string
+}> = ({ address, genesisHash, className }) => {
+  const formattedAddress = useFormattedAddress(address, genesisHash)
+
+  return <Address className={className} address={formattedAddress} />
+}
 
 const AccountButton = ({ option }: { option: AccountOption }) => {
   const { open } = useCopyAddressModal()
@@ -101,10 +109,6 @@ const AccountButton = ({ option }: { option: AccountOption }) => {
   )
 
   const isAccount = option.type === "account"
-  const formattedAddress = useFormattedAddress(
-    isAccount ? option.address : undefined,
-    isAccount ? option.genesisHash : undefined
-  )
 
   return (
     <button
@@ -142,7 +146,13 @@ const AccountButton = ({ option }: { option: AccountOption }) => {
         </div>
       </div>
       {isAccount && (
-        <Address className="show-on-hover text-body-secondary text-xs" address={formattedAddress} />
+        <Suspense>
+          <FormattedAddress
+            address={option.address}
+            genesisHash={option.genesisHash}
+            className="show-on-hover text-body-secondary text-xs"
+          />
+        </Suspense>
       )}
       {isAccount && (
         <div className="hide-on-hover text-lg">
@@ -154,33 +164,36 @@ const AccountButton = ({ option }: { option: AccountOption }) => {
   )
 }
 
-const AccountsList = ({ className, options }: { className?: string; options: AccountOption[] }) => (
-  <div className={classNames("flex w-full flex-col gap-4", className)}>
-    {options.map((option) => (
-      <AccountButton
-        key={option.type === "account" ? `account-${option.address}` : option.id}
-        option={option}
-      />
-    ))}
-  </div>
-)
+const accountTypeGuard = (option: AccountOption): option is AccountAccountOption =>
+  option.type === "account"
 
-const BG_CONFIG: MysticalPhysicsV3 = {
-  ...MYSTICAL_PHYSICS_V3,
-  artifacts: 2,
-  radiusMin: 4,
-  radiusMax: 4,
-  opacityMin: 0.5,
-  opacityMax: 0.5,
-  durationMin: 12000,
-  durationMax: 15000,
+const AccountsList = ({ className, options }: { className?: string; options: AccountOption[] }) => {
+  const addresses = useMemo(
+    () => options.filter(accountTypeGuard).map(({ address }) => address),
+    [options]
+  )
+
+  return (
+    <div className={classNames("flex w-full flex-col gap-4", className)}>
+      <StakingBanner addresses={addresses} />
+      {options.map((option) => (
+        <AccountButton
+          key={option.type === "account" ? `account-${option.address}` : option.id}
+          option={option}
+        />
+      ))}
+    </div>
+  )
 }
+
 const Accounts = ({
+  accounts,
   folder,
   folderTotal,
   portfolioOptions,
   watchedOptions,
 }: {
+  accounts: AccountJsonAny[]
   folder?: TreeFolder
   folderTotal?: number
   portfolioOptions: AccountOption[]
@@ -192,8 +205,9 @@ const Accounts = ({
   const hasWatchedOptions = watchedOptions.length > 0
 
   return (
-    <div className="flex w-full flex-col gap-4 pb-12">
-      {!folder && <AllAccountsHeader />}
+    <div className="flex w-full flex-col gap-4">
+      {!folder && <AllAccountsHeader accounts={accounts} />}
+      {!folder && <NewFeaturesButton />}
       {folder && <FolderHeader folder={folder} folderTotal={folderTotal} />}
 
       {hasPortfolioOptions && (
@@ -212,48 +226,6 @@ const Accounts = ({
         </div>
       )}
       {hasWatchedOptions && <AccountsList options={watchedOptions} />}
-    </div>
-  )
-}
-
-const AllAccountsHeaderBackground = () => {
-  const colors = useFirstAccountColors()
-  const config = useMemo(() => ({ ...BG_CONFIG, colors }), [colors])
-
-  return (
-    <MysticalBackground
-      className="absolute left-0 top-0 h-full w-full rounded-sm"
-      config={config}
-    />
-  )
-}
-
-const AllAccountsHeader = () => {
-  const navigate = useNavigate()
-  const handleClick = useCallback(() => navigate("/portfolio/assets"), [navigate])
-  const ref = useRef<HTMLDivElement>(null)
-  const isHovered = useHoverDirty(ref)
-  const hasAccounts = useHasAccounts()
-
-  return (
-    <div ref={ref} className="relative h-[11.4rem] w-full">
-      <button
-        className={classNames(
-          "flex h-full w-full items-center justify-end gap-4 overflow-hidden rounded-sm p-6 text-lg",
-          "hover:bg-grey-800 bg-black-secondary text-body-secondary transition-colors duration-75 hover:text-white"
-        )}
-        onClick={handleClick}
-        disabled={hasAccounts === false}
-      >
-        <Suspense fallback={<SuspenseTracker name="AllAccountsHeaderBackground" />}>
-          <AllAccountsHeaderBackground />
-        </Suspense>
-        {hasAccounts && <ChevronRightIcon className="z-10" />}
-      </button>
-      <TotalFiatBalance
-        className="pointer-events-none absolute left-0 top-0 h-full w-full px-6"
-        mouseOver={isHovered}
-      />
     </div>
   )
 }
@@ -281,25 +253,19 @@ const FolderHeader = ({ folder, folderTotal }: { folder: TreeFolder; folderTotal
   )
 }
 
+// Rendering this component will fire balance subscription (& suspense)
+const BalancesLoader = () => {
+  useBalances()
+
+  return null
+}
+
 export const PortfolioAccounts = () => {
-  const balances = useBalances()
-  const currency = useSelectedCurrency()
-  const accounts = useAccounts()
-  const catalog = useAccountsCatalog()
+  const { accounts, ownedAccounts, catalog, balanceTotalPerAccount, ownedTotal } =
+    usePortfolioAccounts()
   const { folder, treeName: folderTreeName } = useSearchParamsSelectedFolder()
   const { popupOpenEvent } = useAnalytics()
   const { t } = useTranslation()
-
-  const balancesByAddress = useMemo(() => {
-    // we use this to avoid looping over the balances list n times, where n is the number of accounts in the wallet
-    // instead, we'll only interate over the balances one time
-    const balancesByAddress: Map<string, Balance[]> = new Map()
-    balances.each.forEach((balance) => {
-      if (!balancesByAddress.has(balance.address)) balancesByAddress.set(balance.address, [])
-      balancesByAddress.get(balance.address)?.push(balance)
-    })
-    return balancesByAddress
-  }, [balances])
 
   const [portfolioOptions, watchedOptions] = useMemo((): [AccountOption[], AccountOption[]] => {
     const [portfolioTree, watchedTree] = (() => {
@@ -321,8 +287,7 @@ export const PortfolioAccounts = () => {
               type: "account",
               name: account?.name ?? t("Unknown Account"),
               address: item.address,
-              total: new Balances(balancesByAddress.get(item.address) ?? []).sum.fiat(currency)
-                .total,
+              total: balanceTotalPerAccount?.[item.address] ?? 0,
               genesisHash: account?.genesisHash,
               origin: account?.origin,
               isPortfolio: !!account?.isPortfolio,
@@ -332,9 +297,10 @@ export const PortfolioAccounts = () => {
               treeName,
               id: item.id,
               name: item.name,
-              total: new Balances(
-                item.tree.flatMap((account) => balancesByAddress.get(account.address) ?? [])
-              ).sum.fiat(currency).total,
+              total: item.tree.reduce(
+                (sum, account) => sum + (balanceTotalPerAccount[account.address] ?? 0),
+                0
+              ),
               addresses: item.tree.map((account) => account.address),
             }
       }
@@ -350,32 +316,53 @@ export const PortfolioAccounts = () => {
     catalog.watched,
     accounts,
     t,
-    balancesByAddress,
-    currency,
+    balanceTotalPerAccount,
   ])
 
   const folderTotal = useMemo(
     () =>
       folder
-        ? new Balances(
-            folder.tree.flatMap((account) => balancesByAddress.get(account.address) ?? [])
-          ).sum.fiat(currency).total
+        ? folder.tree.reduce(
+            (sum, account) => sum + (balanceTotalPerAccount[account.address] ?? 0),
+            0
+          )
         : undefined,
-    [balancesByAddress, currency, folder]
+    [balanceTotalPerAccount, folder]
   )
+
+  const showGetStartedPopup = !ownedTotal && ownedAccounts.length <= 2
 
   useEffect(() => {
     popupOpenEvent("portfolio accounts")
   }, [popupOpenEvent])
 
+  const [fetchBalances, setFetchBalances] = useState(false)
+  useEffect(() => {
+    // start fetching balances 100ms after first render
+    const timeout = setTimeout(() => {
+      setFetchBalances(true)
+    }, 100)
+
+    return () => clearTimeout(timeout)
+  }, [])
+
   return (
-    <FadeIn>
-      <Accounts
-        folder={folder}
-        folderTotal={folderTotal}
-        portfolioOptions={portfolioOptions}
-        watchedOptions={watchedOptions}
-      />
-    </FadeIn>
+    <>
+      <div className="flex flex-col gap-12 pb-12">
+        <Accounts
+          accounts={accounts}
+          folder={folder}
+          folderTotal={folderTotal}
+          portfolioOptions={portfolioOptions}
+          watchedOptions={watchedOptions}
+        />
+        {showGetStartedPopup && <NoAccountsPopup accounts={accounts} />}
+      </div>
+      {fetchBalances && (
+        <Suspense fallback={<SuspenseTracker name="BalancesLoader" />}>
+          <BalancesLoader />
+        </Suspense>
+      )}
+    </>
   )
 }

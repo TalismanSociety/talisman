@@ -1,10 +1,14 @@
 import { TALISMAN_CONFIG_URL } from "@core/constants"
 import { FeatureVariants } from "@core/domains/app/types"
 import { log } from "@core/log"
+import { TokenId } from "@talismn/chaindata-provider"
 import toml from "toml"
 
 type Config = {
   featureFlags: FeatureVariants
+  buyTokens: {
+    tokenIds: TokenId[]
+  }
 }
 
 export const CONFIG_RATE_LIMIT_ERROR = "Rate Limit Exceeded"

@@ -1,11 +1,13 @@
 import { DEBUG } from "@core/constants"
 import { AddressesAndEvmNetwork } from "@core/domains/balances/types"
 import { getEthLedgerDerivationPath } from "@core/domains/ethereum/helpers"
+import { isEvmNetworkActive } from "@core/domains/ethereum/store.activeEvmNetworks"
 import { LedgerEthDerivationPathType } from "@core/domains/ethereum/types"
 import { convertAddress } from "@talisman/util/convertAddress"
 import { LedgerAccountDefEthereum } from "@ui/domains/Account/AccountAdd/AccountAddLedger/context"
 import { useLedgerEthereum } from "@ui/hooks/ledger/useLedgerEthereum"
 import useAccounts from "@ui/hooks/useAccounts"
+import { useActiveEvmNetworksState } from "@ui/hooks/useActiveEvmNetworksState"
 import useBalancesByParams from "@ui/hooks/useBalancesByParams"
 import { useEvmNetworks } from "@ui/hooks/useEvmNetworks"
 import { FC, useCallback, useEffect, useMemo, useState } from "react"
@@ -70,9 +72,10 @@ const useLedgerEthereumAccounts = (
     setIsBusy(false)
   }, [derivationPathType, isReady, itemsPerPage, ledger, name, pageIndex, t])
 
-  const { evmNetworks } = useEvmNetworks(false)
+  const { evmNetworks } = useEvmNetworks({ activeOnly: true, includeTestnets: false })
 
   // which balances to fetch
+  const activeEvmNetworks = useActiveEvmNetworksState()
   const addressesAndEvmNetworks = useMemo(() => {
     // start fetching balances only when all accounts are known to prevent recreating subscription 5 times
     if (derivedAccounts.filter(Boolean).length < derivedAccounts.length) return undefined
@@ -84,11 +87,17 @@ const useLedgerEthereumAccounts = (
         .filter(Boolean) as string[],
       evmNetworks: (evmNetworks || [])
         .filter((chain) => BALANCE_CHECK_EVM_NETWORK_IDS.includes(chain.id))
+        .filter((chain) => isEvmNetworkActive(chain, activeEvmNetworks))
         .map(({ id, nativeToken }) => ({ id, nativeToken: { id: nativeToken?.id as string } })),
     }
 
     return result
-  }, [derivedAccounts, evmNetworks])
+  }, [derivedAccounts, activeEvmNetworks, evmNetworks])
+
+  const withBalances = useMemo(
+    () => !!addressesAndEvmNetworks?.evmNetworks.length,
+    [addressesAndEvmNetworks?.evmNetworks.length]
+  )
 
   const balances = useBalancesByParams({ addressesAndEvmNetworks })
 
@@ -127,6 +136,7 @@ const useLedgerEthereumAccounts = (
 
   return {
     accounts,
+    withBalances,
     isBusy,
     error,
     connectionStatus,
@@ -149,7 +159,7 @@ export const LedgerEthereumAccountPicker: FC<LedgerEthereumAccountPickerProps> =
   const itemsPerPage = 5
   const [pageIndex, setPageIndex] = useState(0)
   const [selectedAccounts, setSelectedAccounts] = useState<LedgerAccountDefEthereum[]>([])
-  const { accounts, error, isBusy } = useLedgerEthereumAccounts(
+  const { accounts, error, isBusy, withBalances } = useLedgerEthereumAccounts(
     name,
     derivationPathType,
     selectedAccounts,
@@ -178,6 +188,7 @@ export const LedgerEthereumAccountPicker: FC<LedgerEthereumAccountPickerProps> =
     <>
       <DerivedAccountPickerBase
         accounts={accounts}
+        withBalances={withBalances}
         canPageBack={pageIndex > 0}
         disablePaging={isBusy}
         onAccountClick={handleToggleAccount}

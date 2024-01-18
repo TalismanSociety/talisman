@@ -1,30 +1,31 @@
-import { TALISMAN_WEB_APP_NFTS_URL, TALISMAN_WEB_APP_TRANSPORT_URL } from "@core/constants"
+import { TALISMAN_WEB_APP_STAKING_URL, TALISMAN_WEB_APP_TRANSPORT_URL } from "@core/constants"
 import { Nav, NavItem } from "@talisman/components/Nav"
 import { ScrollContainer } from "@talisman/components/ScrollContainer"
 import { FullColorSmallLogo } from "@talisman/theme/logos"
 import {
   AlertCircleIcon,
   ExternalLinkIcon,
-  ImageIcon,
   KeyIcon,
   LockIcon,
   PlusIcon,
   RepeatIcon,
   SendIcon,
   SettingsIcon,
+  StarsIcon,
   UsersIcon,
   XIcon,
+  ZapIcon,
 } from "@talismn/icons"
 import { api } from "@ui/api"
 import { AnalyticsPage, sendAnalyticsEvent } from "@ui/api/analytics"
-import { useNavigationContext } from "@ui/apps/popup/context/NavigationContext"
 import { BuildVersionPill } from "@ui/domains/Build/BuildVersionPill"
 import { useHasAccounts } from "@ui/hooks/useHasAccounts"
 import useMnemonicBackup from "@ui/hooks/useMnemonicBackup"
+import { usePopupNavOpenClose } from "@ui/hooks/usePopupNavOpenClose"
 import { FC, useCallback } from "react"
 import { useTranslation } from "react-i18next"
-import { Drawer } from "talisman-ui"
-import { IconButton } from "talisman-ui"
+import { useNavigate } from "react-router-dom"
+import { Drawer, IconButton } from "talisman-ui"
 
 const ANALYTICS_PAGE: AnalyticsPage = {
   container: "Popup",
@@ -35,8 +36,9 @@ const ANALYTICS_PAGE: AnalyticsPage = {
 
 export const NavigationDrawer: FC = () => {
   const { t } = useTranslation()
-  const { isOpen, close } = useNavigationContext()
+  const { isOpen, close } = usePopupNavOpenClose()
   const hasAccounts = useHasAccounts()
+  const navigate = useNavigate()
 
   const handleLock = useCallback(async () => {
     sendAnalyticsEvent({
@@ -88,13 +90,13 @@ export const NavigationDrawer: FC = () => {
     window.close()
   }, [])
 
-  const handleNftClick = useCallback(() => {
+  const handleStakingClick = useCallback(() => {
     sendAnalyticsEvent({
       ...ANALYTICS_PAGE,
       name: "Goto",
-      action: "NFTs button",
+      action: "Staking button",
     })
-    window.open(TALISMAN_WEB_APP_NFTS_URL, "_blank")
+    window.open(TALISMAN_WEB_APP_STAKING_URL, "_blank")
     window.close()
   }, [])
 
@@ -118,6 +120,12 @@ export const NavigationDrawer: FC = () => {
     api.dashboardOpen("/settings/general")
     window.close()
   }, [])
+
+  const handleLatestFeaturesClick = useCallback(() => {
+    sendAnalyticsEvent({ ...ANALYTICS_PAGE, name: "Goto", action: "What's New" })
+    navigate("/portfolio/whats-new")
+    close()
+  }, [close, navigate])
 
   return (
     <Drawer className="h-full" containerId="main" anchor="bottom" isOpen={isOpen} onDismiss={close}>
@@ -143,15 +151,15 @@ export const NavigationDrawer: FC = () => {
             <NavItem icon={<UsersIcon />} onClick={handleAddressBookClick}>
               {t("Address Book")}
             </NavItem>
-            <NavItem icon={<RepeatIcon />} onClick={handleTransportClick}>
+            <NavItem icon={<ZapIcon />} onClick={handleStakingClick}>
               <span className="flex items-center gap-2">
-                {t("Transport")}
+                {t("Staking")}
                 <ExternalLinkIcon />
               </span>
             </NavItem>
-            <NavItem icon={<ImageIcon />} onClick={handleNftClick}>
+            <NavItem icon={<RepeatIcon />} onClick={handleTransportClick}>
               <span className="flex items-center gap-2">
-                {t("NFTs")}
+                {t("Transport")}
                 <ExternalLinkIcon />
               </span>
             </NavItem>
@@ -164,6 +172,32 @@ export const NavigationDrawer: FC = () => {
             <NavItem icon={<SettingsIcon />} onClick={handleSettingsClick}>
               {t("Settings")}
             </NavItem>
+            <NavItem
+              icon={<StarsIcon style={{ stroke: "url(#stars-icon-gradient)" }} />}
+              onClick={handleLatestFeaturesClick}
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" style={{ height: "0" }}>
+                <defs>
+                  <linearGradient
+                    id="stars-icon-gradient"
+                    x1="-2.80769"
+                    y1="12"
+                    x2="24.4038"
+                    y2="12"
+                    gradientUnits="userSpaceOnUse"
+                  >
+                    <stop stopColor="white" />
+                    <stop offset="1" stopColor="#f1c8da" />
+                  </linearGradient>
+                </defs>
+              </svg>
+              <span
+                className="bg-clip-text text-transparent"
+                style={{ backgroundImage: "linear-gradient(90deg, #fff -24.04%, #ff61a6 112.02%)" }}
+              >
+                {t("Latest Features")}
+              </span>
+            </NavItem>
           </Nav>
         </ScrollContainer>
         <footer>
@@ -173,8 +207,8 @@ export const NavigationDrawer: FC = () => {
             onClick={handleLock}
           >
             <div className="border-1 border-grey-800 h-0 w-11/12 border-t" />
-            <div className="flex w-full items-end justify-center gap-6 rounded-none py-12 pr-4 text-center">
-              <LockIcon className="text-lg" />
+            <div className="flex w-full items-center justify-center gap-4 p-10">
+              <LockIcon className="text-md" />
               <span>{t("Lock Wallet")}</span>
             </div>
           </button>

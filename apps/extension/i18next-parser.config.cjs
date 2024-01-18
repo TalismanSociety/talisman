@@ -43,9 +43,38 @@ module.exports = {
     // wallet core
     "src/core/**/*.{ts,tsx}",
     // wallet ui
-    "src/ui/**/*.{ts,tsx}",
+    "src/ui/**/*.{ts,tsx,md}",
     // wallet @talisman components
     "src/@talisman/**/*.{ts,tsx}",
   ],
   output: "public/locales/$LOCALE/$NAMESPACE.json",
+
+  lexers: {
+    md: [
+      /**
+       * Custom lexer which extracts markdown files as i18n keys.
+       *
+       * Once these keys are translated, the following will work:
+       *
+       *     import { t } from 'i18next'
+       *     import content from 'MyMarkdownFile.md'
+       *
+       *     console.log(content)    // `# Oh **hello**`
+       *     console.log(t(content)) // `# Oh **salut**`
+       */
+      class CustomLexer {
+        /**
+         * Extracts the translations keys from the file.
+         *
+         * @param {string} content The markdown file contents
+         * @returns {Array<{ key: string }>} The translation keys
+         */
+        extract(content) {
+          return [{ key: content }]
+        }
+
+        on() {}
+      },
+    ],
+  },
 }

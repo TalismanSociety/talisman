@@ -1,37 +1,26 @@
-import { BANXA_URL, DEBUG } from "@core/constants"
+import { BANXA_URL } from "@core/constants"
 import { AccountJsonAny } from "@core/domains/accounts/types"
 import { Chain } from "@core/domains/chains/types"
 import { Token } from "@core/domains/tokens/types"
+import { getConfig } from "@core/util/getConfig"
 import { yupResolver } from "@hookform/resolvers/yup"
 import { isEthereumAddress } from "@polkadot/util-crypto"
-import { githubChaindataBaseUrl } from "@talismn/chaindata-provider"
 import { encodeAnyAddress } from "@talismn/util"
+import { useQuery } from "@tanstack/react-query"
 import { AnalyticsPage, sendAnalyticsEvent } from "@ui/api/analytics"
 import { FormattedAddress } from "@ui/domains/Account/FormattedAddress"
 import useAccounts from "@ui/hooks/useAccounts"
 import { useAnalyticsPageView } from "@ui/hooks/useAnalyticsPageView"
 import useChains from "@ui/hooks/useChains"
 import useTokens from "@ui/hooks/useTokens"
-import { useCallback, useEffect, useMemo, useState } from "react"
+import { useCallback, useEffect, useMemo, useRef } from "react"
 import { useForm } from "react-hook-form"
 import { useTranslation } from "react-i18next"
 import { Button, Dropdown, DropdownOptionRender } from "talisman-ui"
 import * as yup from "yup"
 
 import { TokenAmountField } from "../TokenAmountField"
-import { useBuyTokensModal } from "./BuyTokensModalContext"
-
-// list to keep up to date, it's used when github is unreachable
-const DEFAULT_BUY_TOKEN_IDS = [
-  // SUB
-  "polkadot-substrate-native-dot",
-  "kusama-substrate-native-ksm",
-  "astar-substrate-native-astr",
-  // ETH
-  "moonbeam-substrate-native-glmr",
-  "moonriver-substrate-native-movr",
-  "1-evm-native-eth",
-]
+import { useBuyTokensModal } from "./useBuyTokensModal"
 
 type FormData = {
   address: string
@@ -53,22 +42,17 @@ const ANALYTICS_PAGE: AnalyticsPage = {
 }
 
 const useSupportedTokenIds = (chains?: Chain[], tokens?: Token[], address?: string) => {
-  const [supportedTokenIds, setSupportedTokenIds] = useState<string[]>()
-
-  useEffect(() => {
-    // pull up to date list from github
-    // note that there is a 5min cache on github files
-    fetch(`${githubChaindataBaseUrl}/tokens-buyable.json`)
-      .then(async (response) => {
-        const tokenIds: string[] = await response.json()
-        setSupportedTokenIds(tokenIds)
-      })
-      .catch((err) => {
-        // eslint-disable-next-line no-console
-        DEBUG && console.error(err)
-        setSupportedTokenIds(DEFAULT_BUY_TOKEN_IDS)
-      })
-  }, [])
+  const { data: supportedTokenIds } = useQuery({
+    queryKey: ["buyableTokens"],
+    queryFn: async () => {
+      const config = await getConfig()
+      if (!config) throw new Error("Failed to load config")
+      return config.buyTokens.tokenIds
+    },
+    refetchInterval: false,
+    refetchOnMount: false,
+    refetchOnWindowFocus: false,
+  })
 
   const supportedTokens = useMemo(
     () => tokens?.filter((t) => supportedTokenIds?.includes(t.id)) ?? [],
@@ -80,7 +64,7 @@ const useSupportedTokenIds = (chains?: Chain[], tokens?: Token[], address?: stri
       substrateTokenIds:
         supportedTokens
           ?.filter((t) => {
-            if (!["substrate-native", "substrate-orml"].includes(t.type)) return false
+            if (!["substrate-native"].includes(t.type)) return false
             const chain = chains?.find((c) => c.id === t.chain?.id)
             return chain && chain.account !== "secp256k1"
           })
@@ -131,14 +115,42 @@ export const BuyTokensForm = () => {
   })
 
   const [address, tokenId] = watch(["address", "tokenId"])
-  const { tokens, tokensMap } = useTokens(false)
-  const { chains, chainsMap } = useChains(false)
+  const { tokens, tokensMap } = useTokens({ activeOnly: true, includeTestnets: false })
+  const { chains, chainsMap } = useChains({ activeOnly: true, includeTestnets: false })
 
   const { ethereumTokenIds, substrateTokenIds, filterTokens } = useSupportedTokenIds(
     chains,
     tokens,
     address
   )
+
+  const autoSelectFirstAccountInit = useRef(false)
+  useEffect(() => {
+    if (autoSelectFirstAccountInit.current) return
+    // TODO: This check can be removed once https://github.com/TalismanSociety/talisman/pull/1101 is merged,
+    // that PR adds react suspense to the useAccounts hook, so checking for the scenario that the list hasn't
+    // loaded yet will no longer be necessary.
+    if (accounts?.length === 0) return
+
+    if (address !== undefined) {
+      // disable auto-select if an address has already been picked
+      autoSelectFirstAccountInit.current = true
+      return
+    }
+    if (accounts?.length !== 1) {
+      // disable auto-select if user has more than one account
+      autoSelectFirstAccountInit.current = true
+      return
+    }
+
+    // auto-select the one available account
+    setValue("address", accounts[0]?.address, {
+      shouldTouch: true,
+      shouldDirty: true,
+      shouldValidate: true,
+    })
+    autoSelectFirstAccountInit.current = true
+  }, [accounts, accounts?.length, address, setValue])
 
   const submit = useCallback(
     async (formData: FormData) => {

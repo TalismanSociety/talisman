@@ -6,6 +6,7 @@ import { notify } from "@talisman/components/Notifications"
 import { Chain } from "@talismn/chaindata-provider"
 import { SecretIcon } from "@talismn/icons"
 import { api } from "@ui/api"
+import { chainsMapQuery, evmNetworksMapQuery } from "@ui/atoms"
 import { AccountAddMnemonicDropdown } from "@ui/domains/Account/AccountAdd/AccountAddDerived/AccountAddMnemonicDropdown"
 import { ChainLogo } from "@ui/domains/Asset/ChainLogo"
 import {
@@ -18,6 +19,7 @@ import { NetworkSpecsQrCode } from "@ui/domains/Sign/Qr/NetworkSpecsQrCode"
 import { useAppState } from "@ui/hooks/useAppState"
 import useChains from "@ui/hooks/useChains"
 import { useMnemonic } from "@ui/hooks/useMnemonics"
+import { useRecoilPreload } from "@ui/hooks/useRecoilPreload"
 import { FC, useCallback, useEffect, useMemo, useState } from "react"
 import { Trans, useTranslation } from "react-i18next"
 import { useNavigate } from "react-router-dom"
@@ -126,7 +128,7 @@ const MnemonicButton: FC<{ label: string }> = ({ label }) => {
 
 const MetadataPortalContent = () => {
   const { t } = useTranslation("admin")
-  const { chains } = useChains(true)
+  const { chains } = useChains({ activeOnly: false, includeTestnets: true })
   const [chain, setChain] = useState<Chain | null>(null)
   const [tab, setTab] = useState<"specs" | "metadata">("specs")
 
@@ -215,6 +217,10 @@ const MetadataPortalContent = () => {
 
 export const QrMetadataPage = () => {
   const { t } = useTranslation("admin")
+  useRecoilPreload(
+    chainsMapQuery({ activeOnly: true, includeTestnets: false }),
+    evmNetworksMapQuery({ activeOnly: true, includeTestnets: false })
+  )
   const [certifierMnemonicId] = useAppState("vaultVerifierCertificateMnemonicId")
   const mnemonic = useMnemonic(certifierMnemonicId)
 

@@ -1,9 +1,8 @@
 import { AccountsCatalogTree } from "@core/domains/accounts/helpers.catalog"
 import { yupResolver } from "@hookform/resolvers/yup"
-import { useOpenClose } from "@talisman/hooks/useOpenClose"
-import { provideContext } from "@talisman/util/provideContext"
+import { useGlobalOpenClose } from "@talisman/hooks/useGlobalOpenClose"
 import { api } from "@ui/api"
-import useAccountsCatalog from "@ui/hooks/useAccountsCatalog"
+import { useAccountsCatalog } from "@ui/hooks/useAccountsCatalog"
 import { RefCallback, useCallback, useEffect, useMemo, useRef } from "react"
 import { useForm } from "react-hook-form"
 import { useTranslation } from "react-i18next"
@@ -11,21 +10,7 @@ import { Button, Modal, ModalDialog } from "talisman-ui"
 import { Checkbox, FormFieldContainer, FormFieldInputText } from "talisman-ui"
 import * as yup from "yup"
 
-const useNewFolderModalProvider = () => {
-  const { isOpen, open, close } = useOpenClose()
-
-  useEffect(() => {
-    close()
-  }, [close])
-
-  return {
-    isOpen,
-    open,
-    close,
-  }
-}
-
-export const [NewFolderModalProvider, useNewFolderModal] = provideContext(useNewFolderModalProvider)
+export const useNewFolderModal = () => useGlobalOpenClose("newFolderModal")
 
 export const NewFolderModal = () => {
   const { t } = useTranslation("admin")
@@ -139,7 +124,9 @@ const NewFolder = ({ onConfirm, onCancel, className }: NewFolderProps) => {
         />
       </FormFieldContainer>
       {catalog.watched.length > 0 && (
-        <Checkbox {...register("followedOnly")}>Followed only</Checkbox>
+        <Checkbox {...register("followedOnly")}>
+          {t("Add this folder to my followed only section")}
+        </Checkbox>
       )}
       <div className="mt-12 grid grid-cols-2 gap-8">
         <Button onClick={onCancel}>{t("Cancel")}</Button>

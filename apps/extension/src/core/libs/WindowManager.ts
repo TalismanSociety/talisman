@@ -99,9 +99,14 @@ class WindowManager {
     return true
   }
 
-  popupClose(): void {
-    this.#windows.forEach((id) => Browser.windows.remove(id))
-    this.#windows = []
+  async popupClose(id?: number) {
+    if (id) {
+      await Browser.windows.remove(id)
+      this.#windows = this.#windows.filter((wid) => wid !== id)
+    } else {
+      await Promise.all(this.#windows.map((wid) => Browser.windows.remove(wid)))
+      this.#windows = []
+    }
   }
 
   async popupOpen(argument?: string, onClose?: () => void) {
@@ -117,7 +122,7 @@ class WindowManager {
 
     const popupCreateArgs: Browser.Windows.CreateCreateDataType = {
       ...WINDOW_OPTS,
-      url: Browser.runtime.getURL(`popup.html${argument ? argument : ""}`),
+      url: Browser.runtime.getURL(`popup.html${argument ?? ""}`),
       top,
       left,
       width: WINDOW_OPTS.width + widthDelta,
@@ -154,6 +159,9 @@ class WindowManager {
         }
       })
     }
+
+    // popup is undefined when running tests
+    return popup?.id
   }
 }
 

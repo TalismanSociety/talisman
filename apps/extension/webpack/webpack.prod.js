@@ -82,7 +82,6 @@ const config = (env) => {
       new ZipPlugin({
         folder: distDir,
         filename: getArchiveFileName(env),
-        exclude: "*.js.map",
       }),
       new BundleAnalyzerPlugin({
         // analyzerMode defaults to server, spawning a http server which can hang the process
@@ -109,12 +108,6 @@ const config = (env) => {
           "vendor-substrate": {
             test: /[\\/]node_modules[\\/](@substrate)[\\/]/,
             name: "vendor-substrate",
-            priority: -1,
-            reuseExistingChunk: true,
-          },
-          "vendor-talisman": {
-            test: /([\\/]node_modules[\\/](@talismn)[\\/])|(packages[\\/](chaindata-provider-extension[\\/]dist))/,
-            name: "vendor-talisman",
             priority: -1,
             reuseExistingChunk: true,
           },

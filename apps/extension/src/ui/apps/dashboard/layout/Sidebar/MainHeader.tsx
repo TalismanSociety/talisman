@@ -2,10 +2,10 @@ import { ArrowDownIcon, MoreHorizontalIcon, SendIcon } from "@talismn/icons"
 import { AccountContextMenu } from "@ui/apps/dashboard/routes/Portfolio/AccountContextMenu"
 import { useCopyAddressModal } from "@ui/domains/CopyAddress"
 import { AccountSelect } from "@ui/domains/Portfolio/AccountSelect"
-import { useSelectedAccount } from "@ui/domains/Portfolio/SelectedAccountContext"
+import { useSelectedAccount } from "@ui/domains/Portfolio/useSelectedAccount"
 import { useAnalytics } from "@ui/hooks/useAnalytics"
 import { useSendFundsPopup } from "@ui/hooks/useSendFundsPopup"
-import { ButtonHTMLAttributes, FC, useCallback } from "react"
+import { ButtonHTMLAttributes, FC, Suspense, useCallback } from "react"
 import { useTranslation } from "react-i18next"
 import {
   IconButton,
@@ -87,8 +87,10 @@ export const MainHeader = () => {
   )
 }
 
-const SendPillButton: FC<PillButtonProps> = (props) => {
+const SendPillButtonInner: FC<PillButtonProps> = (props) => {
   const { account } = useSelectedAccount()
+
+  // This reads balances to check for transferable funds and triggers suspense
   const { canSendFunds, cannotSendFundsReason, openSendFundsPopup } = useSendFundsPopup(account)
 
   return canSendFunds ? (
@@ -103,8 +105,18 @@ const SendPillButton: FC<PillButtonProps> = (props) => {
   )
 }
 
-const SendIconButton: FC<Omit<ButtonHTMLAttributes<HTMLButtonElement>, "ref">> = (props) => {
+const SendPillButton: FC<PillButtonProps> = (props) => (
+  <Suspense fallback={<PillButton disabled {...props} />}>
+    <SendPillButtonInner {...props} />
+  </Suspense>
+)
+
+type SendIconButtonProps = Omit<ButtonHTMLAttributes<HTMLButtonElement>, "ref">
+
+const SendIconButtonInner: FC<SendIconButtonProps> = (props) => {
   const { account } = useSelectedAccount()
+
+  // This reads balances to check for transferable funds and triggers suspense
   const { canSendFunds, cannotSendFundsReason, openSendFundsPopup } = useSendFundsPopup(account)
 
   return canSendFunds ? (
@@ -118,3 +130,9 @@ const SendIconButton: FC<Omit<ButtonHTMLAttributes<HTMLButtonElement>, "ref">> =
     </Tooltip>
   )
 }
+
+const SendIconButton: FC<SendIconButtonProps> = (props) => (
+  <Suspense fallback={<IconButton disabled {...props} />}>
+    <SendIconButtonInner {...props} />
+  </Suspense>
+)

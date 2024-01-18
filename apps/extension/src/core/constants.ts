@@ -35,7 +35,6 @@ export const TALISMAN_CONFIG_URL = "https://talismansociety.github.io/talisman-c
 
 export const TALISMAN_WEB_APP_DOMAIN = "app.talisman.xyz"
 export const TALISMAN_WEB_APP_URL = "https://app.talisman.xyz"
-export const TALISMAN_WEB_APP_TX_HISTORY_URL = "https://app.talisman.xyz/history"
 export const TALISMAN_WEB_APP_NFTS_URL = "https://app.talisman.xyz/nfts"
 export const TALISMAN_WEB_APP_STAKING_URL = "https://app.talisman.xyz/staking"
 export const TALISMAN_WEB_APP_CROWDLOANS_URL = "https://app.talisman.xyz/crowdloans"
@@ -45,11 +44,6 @@ export const TALISMAN_WEB_APP_TRANSPORT_URL = "https://app.talisman.xyz/transfer
 // The tokens available at this endpoint are not in sync with the production endpoint
 // export const BANXA_URL = "https://talisman.banxa-sandbox.com/"
 export const BANXA_URL = "https://checkout.banxa.com/"
-
-export const NOM_POOL_SUPPORTED_CHAINS = ["polkadot"]
-export const NOM_POOL_MIN_DEPOSIT: Record<string, string> = {
-  polkadot: "10000000000",
-}
 
 export const POLKADOT_VAULT_DOCS_URL =
   "https://docs.talisman.xyz/talisman/navigating-the-paraverse/account-management/import-from-parity-signer-or-polkadot-vault"

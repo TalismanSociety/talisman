@@ -2,9 +2,9 @@ import { BalanceFormatter } from "@talismn/balances"
 import { useSelectedCurrency } from "@ui/hooks/useCurrency"
 import useToken from "@ui/hooks/useToken"
 import { useTokenRates } from "@ui/hooks/useTokenRates"
-import { FC, useMemo } from "react"
+import { FC, Suspense, useMemo } from "react"
 
-import Fiat from "./Fiat"
+import { Fiat } from "./Fiat"
 import Tokens from "./Tokens"
 
 type TokensAndFiatProps = {
@@ -18,7 +18,7 @@ type TokensAndFiatProps = {
   noFiat?: boolean
 }
 
-export const TokensAndFiat: FC<TokensAndFiatProps> = ({
+const TokensAndFiatInner: FC<TokensAndFiatProps> = ({
   planck,
   tokenId,
   className,
@@ -62,3 +62,9 @@ export const TokensAndFiat: FC<TokensAndFiatProps> = ({
     </span>
   )
 }
+
+export const TokensAndFiat: FC<TokensAndFiatProps> = (props) => (
+  <Suspense>
+    <TokensAndFiatInner {...props} />
+  </Suspense>
+)

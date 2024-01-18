@@ -8,7 +8,6 @@ import { Nav } from "@talisman/components/Nav"
 import {
   CreditCardIcon,
   DownloadAlertIcon,
-  HistoryIcon,
   ImageIcon,
   PieChartIcon,
   PlusIcon,
@@ -17,12 +16,10 @@ import {
   StarIcon,
   ZapIcon,
 } from "@talismn/icons"
-import { useBuyTokensModal } from "@ui/domains/Asset/Buy/BuyTokensModalContext"
-import { useSelectedAccount } from "@ui/domains/Portfolio/SelectedAccountContext"
+import { useBuyTokensModal } from "@ui/domains/Asset/Buy/useBuyTokensModal"
 import { useAnalytics } from "@ui/hooks/useAnalytics"
 import { useIsFeatureEnabled } from "@ui/hooks/useFeatures"
 import useMnemonicBackup from "@ui/hooks/useMnemonicBackup"
-import { getTransactionHistoryUrl } from "@ui/util/getTransactionHistoryUrl"
 import { useCallback } from "react"
 import { useTranslation } from "react-i18next"
 import { useNavigate } from "react-router-dom"
@@ -32,7 +29,6 @@ import { SidebarNavItem } from "./SidebarNavItem"
 export const MainSidebar = () => {
   const { t } = useTranslation()
 
-  const { account } = useSelectedAccount()
   const navigate = useNavigate()
   const { genericEvent } = useAnalytics()
   const showBuyCryptoButton = useIsFeatureEnabled("BUY_CRYPTO")
@@ -61,13 +57,6 @@ export const MainSidebar = () => {
     window.open(TALISMAN_WEB_APP_STAKING_URL, "_blank")
     return false
   }, [genericEvent])
-
-  const showTxHistory = useIsFeatureEnabled("LINK_TX_HISTORY")
-  const handleTxHistoryClick = useCallback(() => {
-    genericEvent("open web app tx history", { from: "sidebar" })
-    window.open(getTransactionHistoryUrl(account?.address), "_blank")
-    return false
-  }, [account?.address, genericEvent])
 
   const handleTransportClick = useCallback(() => {
     genericEvent("open web app transport", { from: "sidebar" })
@@ -143,14 +132,6 @@ export const MainSidebar = () => {
         icon={<StarIcon />}
         isExternalLink
       />
-      {showTxHistory && (
-        <SidebarNavItem
-          title={t("Transaction History")}
-          onClick={handleTxHistoryClick}
-          icon={<HistoryIcon />}
-          isExternalLink
-        />
-      )}
       <SidebarNavItem
         title={t("Settings")}
         to="/settings/general"

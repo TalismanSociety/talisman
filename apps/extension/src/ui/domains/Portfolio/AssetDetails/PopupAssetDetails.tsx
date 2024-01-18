@@ -5,18 +5,18 @@ import { ArrowDownIcon, CreditCardIcon, LockIcon } from "@talismn/icons"
 import { classNames } from "@talismn/util"
 import { api } from "@ui/api"
 import { ChainLogo } from "@ui/domains/Asset/ChainLogo"
-import Fiat from "@ui/domains/Asset/Fiat"
+import { Fiat } from "@ui/domains/Asset/Fiat"
 import { TokenLogo } from "@ui/domains/Asset/TokenLogo"
 import Tokens from "@ui/domains/Asset/Tokens"
 import { useCopyAddressModal } from "@ui/domains/CopyAddress"
-import { useSelectedAccount } from "@ui/domains/Portfolio/SelectedAccountContext"
-import { StaleBalancesIcon } from "@ui/domains/Portfolio/StaleBalancesIcon"
 import { useAnalytics } from "@ui/hooks/useAnalytics"
 import { useIsFeatureEnabled } from "@ui/hooks/useFeatures"
 import { useCallback, useMemo } from "react"
 import { useTranslation } from "react-i18next"
 import { PillButton } from "talisman-ui"
 
+import { StaleBalancesIcon } from "../StaleBalancesIcon"
+import { useSelectedAccount } from "../useSelectedAccount"
 import { CopyAddressButton } from "./CopyAddressIconButton"
 import { PortfolioAccount } from "./PortfolioAccount"
 import { SendFundsButton } from "./SendFundsIconButton"
@@ -171,13 +171,12 @@ const NoTokens = ({ symbol }: { symbol: string }) => {
 }
 
 export const PopupAssetDetails = ({ balances, symbol }: AssetsTableProps) => {
-  const { balancesByChain: rows, isLoading } = useAssetDetails(balances)
+  const { balancesByChain: rows } = useAssetDetails(balances)
   const hasBalance = useMemo(
     () => rows.some(([, balances]) => balances.each.some((b) => b.total.planck > 0n)),
     [rows]
   )
 
-  if (!hasBalance && isLoading) return null
   if (!hasBalance) return <NoTokens symbol={symbol} />
 
   return (

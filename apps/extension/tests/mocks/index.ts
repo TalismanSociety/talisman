@@ -1,6 +1,6 @@
 import { api } from "./api"
 
-jest.mock("@talismn/chaindata-provider-extension/src/graphql")
+jest.mock("@talismn/chaindata-provider-extension/src/net")
 jest.setTimeout(20000)
 
 jest.mock("@talismn/util", () => {
@@ -48,7 +48,6 @@ jest.mock("@core/util/getConfig", () => ({
     Promise.resolve({
       featureFlags: {
         BUY_CRYPTO: true, // nav buttons + button in fund wallet component
-        LINK_TX_HISTORY: true,
         LINK_STAKING: true,
       },
     })

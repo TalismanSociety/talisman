@@ -3,22 +3,20 @@ import { AccountType } from "@core/domains/accounts/types"
 import { FloatingPortal, autoUpdate, useFloating } from "@floating-ui/react"
 import { Listbox } from "@headlessui/react"
 import { isEthereumAddress } from "@polkadot/util-crypto"
-import { Balance, Balances } from "@talismn/balances"
 import { ChevronDownIcon, EyeIcon, TalismanHandIcon } from "@talismn/icons"
 import { classNames } from "@talismn/util"
 import { AccountFolderIcon } from "@ui/domains/Account/AccountFolderIcon"
 import { AccountIcon } from "@ui/domains/Account/AccountIcon"
 import { AccountTypeIcon } from "@ui/domains/Account/AccountTypeIcon"
 import { AllAccountsIcon } from "@ui/domains/Account/AllAccountsIcon"
-import Fiat from "@ui/domains/Asset/Fiat"
-import { useSelectedAccount } from "@ui/domains/Portfolio/SelectedAccountContext"
-import useAccountsCatalog from "@ui/hooks/useAccountsCatalog"
+import { Fiat } from "@ui/domains/Asset/Fiat"
 import { useAnalytics } from "@ui/hooks/useAnalytics"
-import useBalances from "@ui/hooks/useBalances"
-import { useSelectedCurrency } from "@ui/hooks/useCurrency"
+import { usePortfolioAccounts } from "@ui/hooks/usePortfolioAccounts"
 import { useSetting } from "@ui/hooks/useSettings"
 import { forwardRef, useCallback, useMemo } from "react"
 import { useTranslation } from "react-i18next"
+
+import { useSelectedAccount } from "./useSelectedAccount"
 
 type AccountSelectItem =
   | {
@@ -50,27 +48,8 @@ export const AccountSelect = () => {
   })
 
   const { t } = useTranslation()
-  const { account: selectedAccount, accounts, select } = useSelectedAccount()
-  const balances = useBalances()
-  const catalog = useAccountsCatalog()
-  const currency = useSelectedCurrency()
-
-  const portfolioBalances = useBalances("portfolio")
-  const totalFiat = useMemo(
-    () => portfolioBalances.sum.fiat(currency).total,
-    [currency, portfolioBalances.sum]
-  )
-
-  const balancesByAddress = useMemo(() => {
-    // we use this to avoid looping over the balances list n times, where n is the number of accounts in the wallet
-    // instead, we'll only interate over the balances one time
-    const balancesByAddress: Map<string, Balance[]> = new Map()
-    balances.each.forEach((balance) => {
-      if (!balancesByAddress.has(balance.address)) balancesByAddress.set(balance.address, [])
-      balancesByAddress.get(balance.address)?.push(balance)
-    })
-    return balancesByAddress
-  }, [balances])
+  const { account: selectedAccount, select } = useSelectedAccount()
+  const { accounts, catalog, balanceTotalPerAccount, portfolioTotal } = usePortfolioAccounts()
 
   const [portfolioItems, watchedItems] = useMemo((): [AccountSelectItem[], AccountSelectItem[]] => {
     const treeItemToOptions =
@@ -89,8 +68,7 @@ export const AccountSelect = () => {
               folderId,
               name: account?.name ?? t("Unknown Account"),
               address: item.address,
-              total: new Balances(balancesByAddress.get(item.address) ?? []).sum.fiat(currency)
-                .total,
+              total: balanceTotalPerAccount?.[item.address] ?? 0,
               genesisHash: account?.genesisHash,
               origin: account?.origin,
               isPortfolio: !!account?.isPortfolio,
@@ -102,9 +80,10 @@ export const AccountSelect = () => {
                 treeName,
                 id: item.id,
                 name: item.name,
-                total: new Balances(
-                  item.tree.flatMap((account) => balancesByAddress.get(account.address) ?? [])
-                ).sum.fiat(currency).total,
+                total: item.tree.reduce(
+                  (sum, account) => sum + (balanceTotalPerAccount[account.address] ?? 0),
+                  0
+                ),
                 addresses: item.tree.map((account) => account.address),
               },
               ...item.tree.flatMap(treeItemToOptions(treeName, key)),
@@ -115,7 +94,7 @@ export const AccountSelect = () => {
       catalog.portfolio.flatMap(treeItemToOptions("portfolio")),
       catalog.watched.flatMap(treeItemToOptions("watched")),
     ]
-  }, [catalog.portfolio, catalog.watched, accounts, t, balancesByAddress, currency])
+  }, [catalog.portfolio, catalog.watched, accounts, t, balanceTotalPerAccount])
 
   const selectedItem = useMemo(
     () =>
@@ -165,7 +144,7 @@ export const AccountSelect = () => {
                 ref={refs.setReference}
                 key={selectedItem?.key}
                 item={selectedItem}
-                totalFiat={totalFiat}
+                totalFiat={portfolioTotal}
                 open={open}
                 button
               />
@@ -194,7 +173,7 @@ export const AccountSelect = () => {
                   value="all-accounts"
                   onClick={() => trackClick()}
                 >
-                  <Item current={selectedItem === undefined} totalFiat={totalFiat} />
+                  <Item current={selectedItem === undefined} totalFiat={portfolioTotal} />
                 </Listbox.Option>
                 {portfolioItems.map((item) =>
                   item.type === "account" &&

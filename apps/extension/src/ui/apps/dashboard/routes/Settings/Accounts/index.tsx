@@ -3,10 +3,10 @@ import { Spacer } from "@talisman/components/Spacer"
 import { EyeIcon, FolderPlusIcon, TalismanHandIcon, UserPlusIcon } from "@talismn/icons"
 import { AnalyticsPage } from "@ui/api/analytics"
 import { DashboardLayout } from "@ui/apps/dashboard/layout/DashboardLayout"
-import useAccounts from "@ui/hooks/useAccounts"
-import useAccountsCatalog from "@ui/hooks/useAccountsCatalog"
+import { accountsCatalogState, accountsQuery, balanceTotalsState, chainsMapQuery } from "@ui/atoms"
 import { useAnalyticsPageView } from "@ui/hooks/useAnalyticsPageView"
-import useBalances from "@ui/hooks/useBalances"
+import { usePortfolioAccounts } from "@ui/hooks/usePortfolioAccounts"
+import { useRecoilPreload } from "@ui/hooks/useRecoilPreload"
 import { useCallback, useMemo } from "react"
 import { useTranslation } from "react-i18next"
 import { useNavigate } from "react-router-dom"
@@ -27,11 +27,16 @@ const ANALYTICS_PAGE: AnalyticsPage = {
 
 export const AccountsPage = () => {
   const { t } = useTranslation("admin")
+  useRecoilPreload(
+    accountsQuery("all"),
+    accountsCatalogState,
+    balanceTotalsState,
+    chainsMapQuery({ activeOnly: false, includeTestnets: false })
+  )
   useAnalyticsPageView(ANALYTICS_PAGE)
 
-  const accounts = useAccounts()
-  const balances = useBalances()
-  const catalog = useAccountsCatalog()
+  const { balanceTotalPerAccount, catalog, accounts } = usePortfolioAccounts()
+
   const [portfolioUiTree, watchedUiTree] = useMemo(
     (): [UiTree, UiTree] => [withIds(catalog.portfolio), withIds(catalog.watched)],
     [catalog]
@@ -71,7 +76,7 @@ export const AccountsPage = () => {
       )}
       <AccountsList
         accounts={accounts}
-        balances={balances}
+        balanceTotalPerAccount={balanceTotalPerAccount}
         treeName="portfolio"
         tree={portfolioUiTree}
       />
@@ -83,7 +88,7 @@ export const AccountsPage = () => {
       )}
       <AccountsList
         accounts={accounts}
-        balances={balances}
+        balanceTotalPerAccount={balanceTotalPerAccount}
         treeName="watched"
         tree={watchedUiTree}
       />

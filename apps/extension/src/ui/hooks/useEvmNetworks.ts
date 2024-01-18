@@ -1,29 +1,18 @@
 import {
-  evmNetworksWithTestnetsMapState,
-  evmNetworksWithTestnetsState,
-  evmNetworksWithoutTestnetsMapState,
-  evmNetworksWithoutTestnetsState,
-} from "@ui/atoms/chaindata"
-import { useMemo } from "react"
-import { useRecoilValue } from "recoil"
+  EvmNetworksQueryOptions,
+  allEvmNetworksState,
+  evmNetworksArrayQuery,
+  evmNetworksMapQuery,
+} from "@ui/atoms"
+import { useRecoilValue, waitForAll } from "recoil"
 
-export const useEvmNetworks = (withTestnets: boolean) => {
-  const evmNetworksWithTestnets = useRecoilValue(evmNetworksWithTestnetsState)
-  const evmNetworksWithoutTestnets = useRecoilValue(evmNetworksWithoutTestnetsState)
-  const evmNetworksWithTestnetsMap = useRecoilValue(evmNetworksWithTestnetsMapState)
-  const evmNetworksWithoutTestnetsMap = useRecoilValue(evmNetworksWithoutTestnetsMapState)
+// use only for networks list that is used to enable/disable networks
+export const useAllEvmNetworks = () => useRecoilValue(allEvmNetworksState)
 
-  return useMemo(
-    () => ({
-      evmNetworks: withTestnets ? evmNetworksWithTestnets : evmNetworksWithoutTestnets,
-      evmNetworksMap: withTestnets ? evmNetworksWithTestnetsMap : evmNetworksWithoutTestnetsMap,
-    }),
-    [
-      evmNetworksWithTestnets,
-      evmNetworksWithTestnetsMap,
-      evmNetworksWithoutTestnets,
-      evmNetworksWithoutTestnetsMap,
-      withTestnets,
-    ]
+export const useEvmNetworks = (filter: EvmNetworksQueryOptions) => {
+  const [evmNetworks, evmNetworksMap] = useRecoilValue(
+    waitForAll([evmNetworksArrayQuery(filter), evmNetworksMapQuery(filter)])
   )
+
+  return { evmNetworks, evmNetworksMap }
 }

@@ -210,8 +210,8 @@ export default class AppHandler extends ExtensionHandler {
     return true
   }
 
-  private popupOpen(): boolean {
-    // TODO does absolutely nothing ???
+  private popupOpen(argument?: string): boolean {
+    windowManager.popupOpen(argument)
     return true
   }
 
@@ -262,7 +262,7 @@ export default class AppHandler extends ExtensionHandler {
         return this.onboardOpen()
 
       case "pri(app.popupOpen)":
-        return this.popupOpen()
+        return this.popupOpen(request as string | undefined)
 
       case "pri(app.promptLogin)":
         return this.promptLogin(request as boolean)

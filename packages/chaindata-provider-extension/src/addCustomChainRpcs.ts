@@ -5,10 +5,6 @@ import { Chain } from "@talismn/chaindata-provider"
  */
 export const addCustomChainRpcs = (chains: Chain[], onfinalityApiKey?: string): Chain[] =>
   chains.map((chain) => {
-    // only add our custom rpcs when the chain is healthy
-    // the extension won't bother to connect to unhealthy chains
-    if (!chain.isHealthy) return chain
-
     // copy chain instead of mutating
     const chainWithCustomRpcs = { ...chain }
 

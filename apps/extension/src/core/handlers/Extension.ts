@@ -3,7 +3,9 @@ import { db } from "@core/db"
 import { AccountsHandler } from "@core/domains/accounts"
 import { AccountType } from "@core/domains/accounts/types"
 import AppHandler from "@core/domains/app/handler"
+import { trackPopupSummaryData } from "@core/domains/app/popupSummaries"
 import { featuresStore } from "@core/domains/app/store.features"
+import { AssetDiscoveryHandler } from "@core/domains/assetDiscovery/handler"
 import { BalancesHandler } from "@core/domains/balances"
 import { ChainsHandler } from "@core/domains/chains"
 import { EncryptHandler } from "@core/domains/encrypt"
@@ -22,17 +24,15 @@ import { unsubscribe } from "@core/handlers/subscriptions"
 import { talismanAnalytics } from "@core/libs/Analytics"
 import { ExtensionHandler } from "@core/libs/Handler"
 import { log } from "@core/log"
-import { isTalismanHostname } from "@core/page"
 import { MessageTypes, RequestType, ResponseType } from "@core/types"
 import { Port, RequestIdOnly } from "@core/types/base"
 import { awaitKeyringLoaded } from "@core/util/awaitKeyringLoaded"
 import { CONFIG_RATE_LIMIT_ERROR, getConfig } from "@core/util/getConfig"
 import { hasGhostsOfThePast } from "@core/util/hasGhostsOfThePast"
 import { fetchHasSpiritKey } from "@core/util/hasSpiritKey"
+import { isTalismanHostname } from "@core/util/isTalismanHostname"
 import keyring from "@polkadot/ui-keyring"
 import * as Sentry from "@sentry/browser"
-import { db as balancesDb } from "@talismn/balances"
-import { liveQuery } from "dexie"
 import Browser from "webextension-polyfill"
 
 let CONFIG_UPDATE_INTERVAL = 1000 * 60 * 5 // 5 minutes
@@ -61,6 +61,7 @@ export default class Extension extends ExtensionHandler {
       tokenRates: new TokenRatesHandler(stores),
       tokens: new TokensHandler(stores),
       substrate: new SubHandler(stores),
+      assetDiscovery: new AssetDiscoveryHandler(stores),
     }
 
     // connect auto lock timeout setting to the password store
@@ -121,8 +122,10 @@ export default class Extension extends ExtensionHandler {
     }, 1000) // initial call immediately after extension start
 
     this.initDb()
-    this.initWalletFunding()
     this.cleanup()
+
+    // keeps summary data tables for the popup home screen up to date
+    trackPopupSummaryData()
   }
 
   private setConfigUpdateTimeout() {
@@ -196,31 +199,6 @@ export default class Extension extends ExtensionHandler {
 
     // marks all pending transaction as status unknown
     updateTransactionsRestart()
-  }
-
-  private initWalletFunding() {
-    // We need to show a specific UI until wallet has funds in it.
-    // Note that hasFunds flag is turned off when onboarding without importing a seed.
-    // Turn on the hasFunds flag as soon as there is a positive balance
-    const subAppStore = this.stores.app.observable.subscribe(({ hasFunds, onboarded }) => {
-      if (hasFunds) {
-        if (onboarded === "TRUE") subAppStore.unsubscribe()
-        return
-      }
-
-      // look only for free balance because reserved and frozen properties are not indexed
-      const obsHasFunds = liveQuery(
-        async () => await balancesDb.balances.filter((balance) => balance.free !== "0").count()
-      )
-      const subBalances = obsHasFunds.subscribe((positiveBalances) => {
-        if (positiveBalances) {
-          if (!hasFunds) talismanAnalytics.capture("wallet funded")
-          this.stores.app.set({ hasFunds: true })
-          subBalances.unsubscribe()
-          subAppStore.unsubscribe()
-        }
-      })
-    })
   }
 
   private async checkSpiritKeyOwnership() {

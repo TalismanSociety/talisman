@@ -4,7 +4,7 @@ import {
 } from "@core/constants"
 import { AccountJsonAny } from "@core/domains/accounts/types"
 import { Balance, Balances } from "@core/domains/balances/types"
-import { useSelectedAccount } from "@ui/domains/Portfolio/SelectedAccountContext"
+import { useSelectedAccount } from "@ui/domains/Portfolio/useSelectedAccount"
 import { useMemo } from "react"
 
 // TODO: default tokens should be controlled from chaindata

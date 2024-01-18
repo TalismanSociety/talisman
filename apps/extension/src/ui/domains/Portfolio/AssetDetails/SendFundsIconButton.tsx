@@ -7,7 +7,7 @@ import { isTransferableToken } from "@ui/util/isTransferableToken"
 import { useCallback } from "react"
 import { Tooltip, TooltipContent, TooltipTrigger } from "talisman-ui"
 
-import { useSelectedAccount } from "../SelectedAccountContext"
+import { useSelectedAccount } from "../useSelectedAccount"
 
 export const SendFundsButton = ({
   symbol,
@@ -19,8 +19,8 @@ export const SendFundsButton = ({
   shouldClose?: boolean
 }) => {
   const { account } = useSelectedAccount()
-  const [useTestnets] = useSetting("useTestnets")
-  const { tokens } = useTokens(useTestnets)
+  const [includeTestnets] = useSetting("useTestnets")
+  const { tokens } = useTokens({ activeOnly: true, includeTestnets })
 
   const token = tokens?.find(
     (t) =>

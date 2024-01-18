@@ -2,7 +2,7 @@ import { classNames } from "@talismn/util"
 import { MAX_DECIMALS_FORMAT, formatDecimals } from "@talismn/util"
 import { useRevealableBalance } from "@ui/hooks/useRevealableBalance"
 import BigNumber from "bignumber.js"
-import { FC, useMemo } from "react"
+import React, { FC, useMemo } from "react"
 import CountUp from "react-countup"
 import { Tooltip, TooltipContent, TooltipTrigger } from "talisman-ui"
 
@@ -23,7 +23,8 @@ type DisplayValueProps = {
   noCountUp?: boolean
 }
 
-const DisplayValue: FC<DisplayValueProps> = ({ amount, symbol, noCountUp }) => {
+// Memoize to smooth up the count up animation
+const DisplayValue: FC<DisplayValueProps> = React.memo(({ amount, symbol, noCountUp }) => {
   const num = useMemo(
     () => (BigNumber.isBigNumber(amount) ? amount.toNumber() : Number(amount)),
     [amount]
@@ -50,7 +51,8 @@ const DisplayValue: FC<DisplayValueProps> = ({ amount, symbol, noCountUp }) => {
       {symbol ?? ""}
     </>
   )
-}
+})
+DisplayValue.displayName = "DisplayValue"
 
 export const Tokens: FC<TokensProps> = ({
   amount,

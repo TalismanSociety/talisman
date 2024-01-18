@@ -1,4 +1,5 @@
 import { DEBUG, IS_FIREFOX } from "@core/constants"
+import { StakingSupportedChain } from "@core/domains/staking/types"
 import { StorageProvider } from "@core/libs/Store"
 import { assert } from "@polkadot/util"
 import { gt } from "semver"
@@ -20,17 +21,15 @@ export type AppStoreData = {
   hideBraveWarning: boolean
   hasBraveWarningBeenShown: boolean
   analyticsRequestShown: boolean
-  /**
-   * @deprecated Use hasFunds
-   */
-  showWalletFunding?: boolean
-  hasFunds: boolean
   hideBackupWarningUntil?: number
   hasSpiritKey: boolean
-  showDotNomPoolStakingBanner: boolean
+  hideStakingBanner: StakingSupportedChain[]
   needsSpiritKeyUpdate: boolean
   popupSizeDelta: [number, number]
   vaultVerifierCertificateMnemonicId?: string | null
+  showAssetDiscoveryAlert?: boolean
+  dismissedAssetDiscoveryAlertScanId?: string
+  isAssetDiscoveryScanPending?: boolean
 }
 
 const ANALYTICS_VERSION = "1.5.0"
@@ -42,11 +41,11 @@ export const DEFAULT_APP_STATE: AppStoreData = {
   hasBraveWarningBeenShown: false,
   // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
   analyticsRequestShown: gt(process.env.VERSION!, ANALYTICS_VERSION), // assume user has onboarded with analytics if current version is newer
-  hasFunds: false,
   hasSpiritKey: false,
   needsSpiritKeyUpdate: false,
-  showDotNomPoolStakingBanner: true,
+  hideStakingBanner: [],
   popupSizeDelta: [0, IS_FIREFOX ? 30 : 0],
+  showAssetDiscoveryAlert: false,
 }
 
 export class AppStore extends StorageProvider<AppStoreData> {
@@ -74,12 +73,6 @@ export class AppStore extends StorageProvider<AppStoreData> {
     // Onboarding page won't display with UNKNOWN
     // Initialize to FALSE after install
     if ((await this.get("onboarded")) === UNKNOWN) await this.set({ onboarded: FALSE })
-
-    // migrate showWalletFunding to hasFunds
-    const showWalletFunding = await this.get("showWalletFunding")
-    if (showWalletFunding !== undefined) {
-      await this.set({ hasFunds: !showWalletFunding, showWalletFunding: undefined })
-    }
   }
 
   async getIsOnboarded() {
@@ -113,7 +106,7 @@ if (DEBUG) {
       hideBraveWarning: false,
       hasBraveWarningBeenShown: false,
       analyticsRequestShown: false,
-      showDotNomPoolStakingBanner: true,
+      hideStakingBanner: [],
       hideBackupWarningUntil: undefined,
     })
   }

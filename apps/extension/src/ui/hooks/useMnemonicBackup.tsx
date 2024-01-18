@@ -5,9 +5,10 @@ import { useLocation } from "react-router-dom"
 
 import { useAppState } from "./useAppState"
 import { useMnemonics } from "./useMnemonics"
+import { usePortfolioAccounts } from "./usePortfolioAccounts"
 
 const useMnemonicBackup = () => {
-  const [hasFunds] = useAppState("hasFunds")
+  const { ownedTotal } = usePortfolioAccounts()
   const [hideBackupWarningUntil] = useAppState("hideBackupWarningUntil")
   const snoozeBackupReminder = useCallback(() => appStore.snoozeBackupReminder(), [])
   const mnemonics = useMnemonics()
@@ -34,9 +35,9 @@ const useMnemonicBackup = () => {
       !isSnoozed &&
       hasMnemonics &&
       !anyBackedUp &&
-      hasFunds &&
+      !!ownedTotal &&
       location.pathname !== "/settings/mnemonics",
-    [isSnoozed, anyBackedUp, hasMnemonics, hasFunds, location.pathname]
+    [isSnoozed, anyBackedUp, hasMnemonics, ownedTotal, location.pathname]
   )
 
   // whether we must show the small backup warning notification in dashboard

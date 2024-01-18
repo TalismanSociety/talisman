@@ -12,6 +12,7 @@ export type AnalyticsFeature =
   | "Send Funds"
   | "Settings"
   | "Transactions"
+  | "Asset Discovery"
 
 export type AnalyticsPage = {
   container: AnalyticsContainer

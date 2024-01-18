@@ -1,12 +1,8 @@
-import { useSearchParams } from "react-router-dom"
-
-import { useAccountByAddress } from "./useAccountByAddress"
+import { searchParamsSelectedAccount } from "@ui/atoms"
+import { useRecoilValue } from "recoil"
 
 export const useSearchParamsSelectedAccount = () => {
-  const [searchParams] = useSearchParams()
-
-  const address = searchParams.get("account")
-  const account = useAccountByAddress(address) ?? undefined
+  const account = useRecoilValue(searchParamsSelectedAccount)
 
   return { account }
 }

@@ -7,7 +7,7 @@ import { HexString } from "@polkadot/util/types"
 import { provideContext } from "@talisman/util/provideContext"
 import { useQuery } from "@tanstack/react-query"
 import { api } from "@ui/api"
-import useChainByGenesisHash from "@ui/hooks/useChainByGenesisHash"
+import { useChainByGenesisHash } from "@ui/hooks/useChainByGenesisHash"
 import useChains from "@ui/hooks/useChains"
 import { useExtrinsic } from "@ui/hooks/useExtrinsic"
 import { getExtrinsicDispatchInfo } from "@ui/util/getExtrinsicDispatchInfo"
@@ -67,7 +67,7 @@ const usePolkadotSigningRequestProvider = ({
     cancelSignFn: api.cancelSignRequest,
   })
 
-  const { chains } = useChains(true)
+  const { chains } = useChains({ activeOnly: false, includeTestnets: true })
   const chain = useMemo(() => {
     if (!signingRequest) return
     const { genesisHash } = (signingRequest?.request?.payload ?? {}) as SignerPayloadJSON

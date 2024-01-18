@@ -5,23 +5,25 @@ import { AnalyticsEventName, AnalyticsPage, sendAnalyticsEvent } from "@ui/api/a
 import currencyConfig from "@ui/domains/Asset/currencyConfig"
 import { Fiat } from "@ui/domains/Asset/Fiat"
 import { useCopyAddressModal } from "@ui/domains/CopyAddress"
+import useAccounts from "@ui/hooks/useAccounts"
 import { useAnalytics } from "@ui/hooks/useAnalytics"
-import useBalances from "@ui/hooks/useBalances"
 import { useSelectedCurrency, useToggleCurrency } from "@ui/hooks/useCurrency"
 import { useIsFeatureEnabled } from "@ui/hooks/useFeatures"
+import { usePortfolioAccounts } from "@ui/hooks/usePortfolioAccounts"
 import { useSetting } from "@ui/hooks/useSettings"
 import { ComponentProps, MouseEventHandler, useCallback, useMemo } from "react"
 import { useTranslation } from "react-i18next"
-import { PillButton } from "talisman-ui"
+import { PillButton, Tooltip, TooltipContent, TooltipTrigger } from "talisman-ui"
 
 type Props = {
   className?: string
   mouseOver: boolean
+  disabled?: boolean
 }
 
-export const TotalFiatBalance = ({ className, mouseOver }: Props) => {
+export const TotalFiatBalance = ({ className, mouseOver, disabled }: Props) => {
   const { t } = useTranslation()
-  const balances = useBalances("portfolio")
+  const { portfolioTotal } = usePortfolioAccounts()
   const currency = useSelectedCurrency()
   const toggleCurrency = useToggleCurrency()
 
@@ -44,6 +46,7 @@ export const TotalFiatBalance = ({ className, mouseOver }: Props) => {
         <button
           className={classNames(
             "hover:text-body focus:text-body pointer-events-auto opacity-0 transition-opacity",
+            disabled && "hover:text-body-secondary focus:text-body-secondary",
             (hideBalances || mouseOver) && "opacity-100"
           )}
           onClick={toggleHideBalance}
@@ -62,13 +65,13 @@ export const TotalFiatBalance = ({ className, mouseOver }: Props) => {
           {currencyConfig[currency]?.unicodeCharacter}
         </button>
         <Fiat
-          className="font-surtExpanded text-lg"
-          amount={balances.sum.fiat(currency).total}
+          className={classNames("font-surtExpanded text-lg", disabled && "text-body-secondary")}
+          amount={portfolioTotal}
           isBalance
           currencyDisplay="code"
         />
       </div>
-      <TopActions />
+      <TopActions disabled={disabled} />
     </div>
   )
 }
@@ -80,10 +83,17 @@ const ANALYTICS_PAGE: AnalyticsPage = {
   page: "Portfolio Home",
 }
 
-const TopActions = () => {
+const TopActions = ({ disabled }: { disabled?: boolean }) => {
   const { t } = useTranslation()
   const { open: openCopyAddressModal } = useCopyAddressModal()
+  const ownedAccounts = useAccounts("owned")
   const canBuy = useIsFeatureEnabled("BUY_CRYPTO")
+
+  const { disableActions, disabledReason } = useMemo(() => {
+    const disableActions = !ownedAccounts.length
+    const disabledReason = disableActions ? t("Add an account to send or receive funds") : undefined
+    return { disableActions, disabledReason }
+  }, [ownedAccounts.length, t])
 
   const topActions = useMemo(() => {
     const topActions: Array<{
@@ -92,6 +102,8 @@ const TopActions = () => {
       label: string
       icon: ComponentProps<typeof PillButton>["icon"]
       action: () => void
+      disabled: boolean
+      disabledReason?: string
     }> = [
       {
         analyticsName: "Goto",
@@ -99,6 +111,8 @@ const TopActions = () => {
         label: t("Receive"),
         icon: ArrowDownIcon,
         action: () => openCopyAddressModal({ mode: "receive" }),
+        disabled: disableActions,
+        disabledReason,
       },
       {
         analyticsName: "Goto",
@@ -106,6 +120,8 @@ const TopActions = () => {
         label: t("Send"),
         icon: SendIcon,
         action: () => api.sendFundsOpen().then(() => window.close()),
+        disabled: disableActions,
+        disabledReason,
       },
     ]
     if (canBuy)
@@ -115,9 +131,11 @@ const TopActions = () => {
         label: t("Buy"),
         icon: CreditCardIcon,
         action: () => api.modalOpen({ modalType: "buy" }).then(() => window.close()),
+        disabled: disableActions,
+        disabledReason,
       })
     return topActions
-  }, [canBuy, openCopyAddressModal, t])
+  }, [canBuy, disableActions, disabledReason, openCopyAddressModal, t])
 
   const handleClicks = useMemo(
     () =>
@@ -139,14 +157,19 @@ const TopActions = () => {
   return (
     <div className="flex justify-center gap-4">
       {topActions.map((action, index) => (
-        <PillButton
-          key={index}
-          className="pointer-events-auto opacity-90"
-          onClick={handleClicks[index]}
-          icon={action.icon}
-        >
-          {action.label}
-        </PillButton>
+        <Tooltip key={index}>
+          <TooltipTrigger asChild>
+            <PillButton
+              className="pointer-events-auto opacity-90"
+              onClick={handleClicks[index]}
+              icon={action.icon}
+              disabled={disabled || action.disabled}
+            >
+              {action.label}
+            </PillButton>
+          </TooltipTrigger>
+          {!!action.disabledReason && <TooltipContent>{action.disabledReason}</TooltipContent>}
+        </Tooltip>
       ))}
     </div>
   )

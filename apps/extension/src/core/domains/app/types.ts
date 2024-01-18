@@ -35,7 +35,6 @@ export interface AnalyticsCaptureRequest {
 // values must match the flags defined in Posthog
 export type FeatureVariants = Partial<{
   BUY_CRYPTO: boolean
-  LINK_TX_HISTORY: boolean
   LINK_STAKING: boolean
   USE_ONFINALITY_API_KEY: boolean
   TEST_VARIANT: "VARIANT1" | "VARIANT2" // keep this one for string type checking
@@ -75,7 +74,7 @@ export interface AppMessages {
   "pri(app.checkPassword)": [CheckPasswordRequest, boolean]
   "pri(app.dashboardOpen)": [RequestRoute, boolean]
   "pri(app.onboardOpen)": [null, boolean]
-  "pri(app.popupOpen)": [null, boolean]
+  "pri(app.popupOpen)": [string | undefined, boolean]
   "pri(app.modalOpen.request)": [ModalOpenRequest, boolean]
   "pri(app.sendFunds.open)": [SendFundsOpenRequest, boolean]
   "pri(app.modalOpen.subscribe)": [null, boolean, ModalOpenRequest]

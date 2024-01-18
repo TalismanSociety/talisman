@@ -1,14 +1,5 @@
-import { useMemo } from "react"
+import { chainByGenesisHashQuery } from "@ui/atoms"
+import { useRecoilValue } from "recoil"
 
-import { useChains } from "./useChains"
-
-const useChainByGenesisHash = (genesisHash: string | null | undefined) => {
-  const { chains } = useChains(true)
-
-  return useMemo(
-    () => (genesisHash ? chains.find((c) => c.genesisHash === genesisHash) : undefined),
-    [chains, genesisHash]
-  )
-}
-
-export default useChainByGenesisHash
+export const useChainByGenesisHash = (genesisHash: string | null | undefined) =>
+  useRecoilValue(chainByGenesisHashQuery(genesisHash))

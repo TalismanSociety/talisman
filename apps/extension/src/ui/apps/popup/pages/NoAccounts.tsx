@@ -1,12 +1,12 @@
-import { CreditCardIcon, PaperPlaneIcon } from "@talismn/icons"
+import { AccountJsonAny } from "@core/domains/accounts/types"
 import { api } from "@ui/api"
 import { AnalyticsPage, sendAnalyticsEvent } from "@ui/api/analytics"
+import { AllAccountsHeader } from "@ui/apps/popup/components/AllAccountsHeader"
 import { NoAccounts as NoAccountsComponent } from "@ui/domains/Portfolio/EmptyStates/NoAccounts"
 import { useAnalyticsPageView } from "@ui/hooks/useAnalyticsPageView"
-import { useSelectedCurrency } from "@ui/hooks/useCurrency"
+import { usePortfolioAccounts } from "@ui/hooks/usePortfolioAccounts"
 import { useCallback } from "react"
-import { useTranslation } from "react-i18next"
-import { PillButton } from "talisman-ui"
+import { useNavigate } from "react-router-dom"
 
 const ANALYTICS_PAGE: AnalyticsPage = {
   container: "Popup",
@@ -15,70 +15,49 @@ const ANALYTICS_PAGE: AnalyticsPage = {
   page: "Popup - No Accounts",
 }
 
-export const NoAccountsPopup = () => {
+export const NoAccountsPopup = ({ accounts }: { accounts: AccountJsonAny[] }) => {
   useAnalyticsPageView(ANALYTICS_PAGE)
 
-  const handleAddAccountClick = useCallback(() => {
-    sendAnalyticsEvent({
-      ...ANALYTICS_PAGE,
-      name: "Goto",
-      action: "add account",
-    })
+  const navigate = useNavigate()
+
+  const onDeposit = useCallback(() => {
+    sendAnalyticsEvent({ ...ANALYTICS_PAGE, name: "Goto", action: "add funds" })
+    api.dashboardOpen(`/portfolio?buyTokens`)
+  }, [])
+
+  const onAddAccount = useCallback(() => {
+    sendAnalyticsEvent({ ...ANALYTICS_PAGE, name: "Goto", action: "add account" })
     api.dashboardOpen("/accounts/add")
   }, [])
 
-  const handleWatchAccountClick = useCallback(() => {
-    sendAnalyticsEvent({
-      ...ANALYTICS_PAGE,
-      name: "Goto",
-      action: "watch account",
-    })
-    api.dashboardOpen("/accounts/add/watched")
-  }, [])
+  const onTryTalisman = useCallback(() => {
+    sendAnalyticsEvent({ ...ANALYTICS_PAGE, name: "Goto", action: "try talisman" })
+    navigate("/portfolio/try-talisman")
+  }, [navigate])
+
+  const onLearnMore = useCallback(() => {
+    sendAnalyticsEvent({ ...ANALYTICS_PAGE, name: "Goto", action: "learn more" })
+    navigate("/portfolio/learn-more")
+  }, [navigate])
 
   return (
     <NoAccountsComponent
-      handleAddAccountClick={handleAddAccountClick}
-      handleWatchAccountClick={handleWatchAccountClick}
+      hasSomeAccounts={!!accounts.length}
+      onDeposit={onDeposit}
+      onAddAccount={onAddAccount}
+      onTryTalisman={onTryTalisman}
+      onLearnMore={onLearnMore}
     />
   )
 }
 
 export const NoAccounts = () => {
-  const { t } = useTranslation()
-  const currency = useSelectedCurrency()
+  const { accounts } = usePortfolioAccounts()
 
   return (
-    <div className="flex flex-col items-center gap-16">
-      <div className="flex flex-col items-center gap-8">
-        <div className="flex flex-col items-center justify-center gap-6">
-          <span className="text-body-secondary">{t("No accounts")}</span>
-          <span className="text-body-disabled font-surtExpanded text-lg font-bold">
-            {(0).toLocaleString("en-us", {
-              style: "currency",
-              currency,
-              currencyDisplay: "narrowSymbol",
-            })}
-          </span>
-        </div>
-        <div className="flex justify-center gap-4">
-          <PillButton
-            disabled
-            className="disabled:bg-body-secondary pointer-events-auto disabled:bg-opacity-[0.15] disabled:opacity-100"
-            icon={PaperPlaneIcon}
-          >
-            Send
-          </PillButton>
-          <PillButton
-            disabled
-            className="disabled:bg-body-secondary pointer-events-auto disabled:bg-opacity-[0.15] disabled:opacity-100"
-            icon={CreditCardIcon}
-          >
-            Buy
-          </PillButton>
-        </div>
-      </div>
-      <NoAccountsPopup />
+    <div className="flex flex-col items-center gap-16 pb-12">
+      <AllAccountsHeader accounts={accounts} />
+      <NoAccountsPopup accounts={accounts} />
     </div>
   )
 }

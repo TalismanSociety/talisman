@@ -13,7 +13,7 @@ import {
 import { classNames, sleep } from "@talismn/util"
 import { AccountIcon } from "@ui/domains/Account/AccountIcon"
 import { AccountTypeIcon } from "@ui/domains/Account/AccountTypeIcon"
-import Fiat from "@ui/domains/Asset/Fiat"
+import { Fiat } from "@ui/domains/Asset/Fiat"
 import { TokensAndFiat } from "@ui/domains/Asset/TokensAndFiat"
 import { useSelectedCurrency } from "@ui/hooks/useCurrency"
 import { FC, useCallback, useMemo, useState } from "react"

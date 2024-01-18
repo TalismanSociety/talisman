@@ -5,7 +5,7 @@ import { isJsonPayload, isRawPayload } from "@core/util/isJsonPayload"
 import { classNames, planckToTokens } from "@talismn/util"
 import { useQuery } from "@tanstack/react-query"
 import { useAccountByAddress } from "@ui/hooks/useAccountByAddress"
-import useChainByGenesisHash from "@ui/hooks/useChainByGenesisHash"
+import { useChainByGenesisHash } from "@ui/hooks/useChainByGenesisHash"
 import useToken from "@ui/hooks/useToken"
 import { DcentError, dcent } from "@ui/util/dcent"
 import { useBringPopupBackInFront } from "@ui/util/dcent/useBringPopupBackInFront"
@@ -136,7 +136,7 @@ export const SignDcentSubstrate: FC<SignHardwareSubstrateProps> = ({
       // add prefix for ed25519 signature (0x00)
       return onSigned({ signature: `0x00${signed_tx.substring(2)}` })
     } catch (err) {
-      stopListening
+      stopListening()
       log.error("Failed to sign", { err })
       if (err instanceof DcentError) {
         if (err.code !== "user_cancel") setDisplayedErrorMessage(err.message)
