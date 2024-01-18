@@ -1,5 +1,6 @@
 import { AccountJsonAny } from "@core/domains/accounts/types"
-import { selectedAccountState } from "@ui/atoms"
+import { accountByAddressQuery, accountsQuery } from "@ui/atoms"
+import { useSearchParamsSelectedAccount } from "@ui/hooks/useSearchParamsSelectedAccount"
 import { useSetting } from "@ui/hooks/useSettings"
 import { useCallback } from "react"
 import { useRecoilValue } from "recoil"
@@ -7,8 +8,11 @@ import { useRecoilValue } from "recoil"
 const isPopup = window.location.pathname === "/popup.html"
 
 export const useSelectedAccount = () => {
-  const { account, accounts } = useRecoilValue(selectedAccountState)
-  const [, setSelectedAccountAddress] = useSetting("selectedAccount")
+  const accounts = useRecoilValue(accountsQuery("all"))
+  const [selectedAccountAddress, setSelectedAccountAddress] = useSetting("selectedAccount")
+
+  const accountPopup = useSearchParamsSelectedAccount()
+  const dashboardAccount = useRecoilValue(accountByAddressQuery(selectedAccountAddress))
 
   const select = useCallback(
     (accountOrAddress: AccountJsonAny | string | undefined) => {
@@ -22,6 +26,8 @@ export const useSelectedAccount = () => {
     },
     [setSelectedAccountAddress, accounts]
   )
+
+  const account = (isPopup ? accountPopup : dashboardAccount) ?? undefined
 
   return { select, accounts, account }
 }

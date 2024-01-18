@@ -4,7 +4,6 @@ import {
   accountsQuery,
   authorisedSitesState,
   balanceTotalsState,
-  locationState,
   settingQuery,
   tabState,
 } from "@ui/atoms"
@@ -38,7 +37,6 @@ export const Portfolio = () => {
     balanceTotalsState,
     stakingBannerState,
     accountsCatalogState,
-    locationState,
     accountsQuery("all"),
     settingQuery("selectedCurrency")
   )
