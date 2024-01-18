@@ -47,14 +47,14 @@ export const SecurityPrivacyPage = () => {
         <CtaButton
           iconLeft={ClockIcon}
           iconRight={ChevronRightIcon}
-          title={t("Auto-lock Timer")}
+          title={t("Auto-lock timer")}
           subtitle={t("Set a timer to automatically lock your Talisman wallet")}
           to={`/settings/autolock`}
         />
         {useErrorTracking !== undefined && (
           <Setting
             iconLeft={AlertCircleIcon}
-            title={t("Error Reporting")}
+            title={t("Error reporting")}
             subtitle={
               <Trans t={t}>
                 Send anonymised error reports to Talisman (via{" "}
