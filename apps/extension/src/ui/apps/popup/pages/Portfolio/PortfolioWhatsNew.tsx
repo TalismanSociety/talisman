@@ -1,10 +1,13 @@
 import { HandMonoLogo } from "@talisman/theme/logos"
+import * as Icons from "@talismn/icons"
 import { ChevronLeftIcon } from "@talismn/icons"
+import { api } from "@ui/api"
 import { AnalyticsPage, sendAnalyticsEvent } from "@ui/api/analytics"
 import { useSetting } from "@ui/hooks/useSettings"
 import DOMPurify from "dompurify"
 import { marked } from "marked"
-import { useCallback, useMemo } from "react"
+import { useCallback, useLayoutEffect, useMemo, useRef } from "react"
+import { createRoot } from "react-dom/client"
 import { Trans, useTranslation } from "react-i18next"
 import { useNavigate } from "react-router-dom"
 
@@ -16,6 +19,11 @@ const ANALYTICS_PAGE: AnalyticsPage = {
   feature: "Portfolio",
   featureVersion: 2,
   page: "What's New",
+}
+
+const newGoToFn = (dashboardPath: string) => () => {
+  sendAnalyticsEvent({ ...ANALYTICS_PAGE, name: "Goto", action: dashboardPath })
+  return api.dashboardOpen(dashboardPath)
 }
 
 /**
@@ -37,6 +45,8 @@ export const PortfolioWhatsNew = () => {
     [whatsNewLocalizedContent]
   )
 
+  const whatsNewHtmlRef = useWhatsNewNodes(whatsNewHtml)
+
   return (
     <div className="text-body-secondary flex flex-col gap-12 pb-12 text-sm">
       <div className="relative">
@@ -55,7 +65,8 @@ export const PortfolioWhatsNew = () => {
       </div>
       <div>
         <div
-          className="flex flex-col gap-12 [&_strong]:font-normal [&_strong]:text-white"
+          ref={whatsNewHtmlRef}
+          className="[&_a]:text-bold [&_a]:text-grey-200 flex flex-col gap-12 [&_a:hover]:text-white [&_strong]:font-normal [&_strong]:text-white"
           dangerouslySetInnerHTML={{ __html: whatsNewHtml ?? "" }}
         />
       </div>
@@ -107,4 +118,83 @@ export const PortfolioWhatsNewHeader = () => {
       </div>
     </header>
   )
+}
+
+/**
+ * Use this hook to add some 🌶️ spice 🌶️ to the What's New markdown contents.
+ *
+ * Examples:
+ *
+ * You can add this to your markdown to get an icon from `@talismn/icons`:
+ *
+ *     <span class="icon" data-icon="GlobeIcon"></span>
+ *
+ * You can add this to your markdown to get a button which links to any dashboard url:
+ *
+ *     <div class="button" data-app="dashboard" data-href="/networks/ethereum">Check it out</div>
+ */
+const useWhatsNewNodes = (whatsNewHtml: string) => {
+  /** A ref to the `dangerouslySetInnerHTML={{ __html: whatsNewHtml ?? "" }}` div element */
+  const whatsNewHtmlRef = useRef<HTMLDivElement | null>(null)
+
+  useLayoutEffect(() => {
+    const ref = whatsNewHtmlRef.current
+    if (!ref) return
+
+    // set all anchors to have target="_blank"
+    const anchors = ref.querySelectorAll("a")
+    Array.from(anchors).flatMap((anchorRef) => {
+      anchorRef.setAttribute("target", "_blank")
+      anchorRef.setAttribute("rel", "noopener noreferrer")
+    })
+
+    // fancy icon nodes
+    const icons = ref.querySelectorAll(".icon")
+    const iconNodes = Array.from(icons).flatMap((iconRef) => {
+      const iconName = iconRef.getAttribute("data-icon")
+      if (!iconName) return []
+      if (!(iconName in Icons)) return []
+
+      const Icon = Icons[iconName as keyof typeof Icons]
+      return {
+        component: <Icon className="text-primary inline h-[1.25em] w-[1.25em] align-text-bottom" />,
+        ref: iconRef,
+      }
+    })
+
+    // fancy button nodes
+    const buttons = ref.querySelectorAll(".button")
+    const buttonNodes = Array.from(buttons).flatMap((buttonRef) => {
+      const app = buttonRef.getAttribute("data-app")
+      if (app !== "dashboard") return []
+
+      const url = buttonRef.getAttribute("data-href")
+      if (typeof url !== "string") return []
+
+      const goTo = newGoToFn(url)
+      const innerText = buttonRef.innerHTML
+
+      return {
+        component: (
+          <button className="text-bold text-grey-200 hover:text-white" onClick={goTo}>
+            {innerText}{" "}
+            <Icons.ExternalLinkIcon className="inline h-[1.25em] w-[1.25em] align-text-bottom" />
+          </button>
+        ),
+        ref: buttonRef,
+      }
+    })
+
+    // mount the fancy nodes
+    const nodeRoots = [...iconNodes, ...buttonNodes].map(({ component, ref }) => {
+      const root = createRoot(ref)
+      root.render(component)
+      return root
+    })
+
+    // prepare the fancy nodes to be unmounted when this hook unmounts
+    return () => nodeRoots.forEach((root) => root.unmount())
+  }, [whatsNewHtml])
+
+  return whatsNewHtmlRef
 }

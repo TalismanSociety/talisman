@@ -1,9 +1,14 @@
 <!-- version: v1.21.0 -->
 <!-- Update this ^ to change the version number shown in the header of the `What's New` view. -->
 
-**☝️ One-click EVM network opt-in:**
-Easily toggle your network subscriptions on and off for enhanced performance and a tailored wallet experience.
+**<span class="icon" data-icon="DiamondIcon"></span> Automatic asset discovery:** Talisman now automatically finds your ERC-20 tokens and prompts you to add them to your portfolio.  
+<span class="button" data-app="dashboard" data-href="/settings/asset-discovery">Check it out</span>
 
-**🔎 Scan for assets:**
-No longer do you need to add tokens manually to your wallet.  
-You can now automatically discover and display all tokens with balances in your wallet.
+**<span class="icon" data-icon="SearchIcon"></span> Search for custom networks:** In addition to Talisman's default evm networks, you can now easily add more. Search for any [Chainlist](https://chainid.network/) network you want to add by name or chain id.  
+<span class="button" data-app="dashboard" data-href="/networks/ethereum">Check it out</span>
+
+**<span class="icon" data-icon="GlobeIcon"></span> Network selection:** Optimize performance by toggling off the networks you don't use.  
+<span class="button" data-app="dashboard" data-href="/networks/polkadot">Check it out</span>
+
+**<span class="icon" data-icon="ListIcon"></span> Search for custom tokens** In addition to Talisman's default evm tokens, you can now easily add more. Search for any [Coingecko](https://www.coingecko.com/) token by symbol to add it to your portfolio.  
+<span class="button" data-app="dashboard" data-href="/tokens">Check it out</span>
