@@ -98,9 +98,11 @@ export default class TokensHandler extends ExtensionHandler {
         return newTokenId
       }
 
-      case "pri(tokens.erc20.custom.remove)":
-        return chaindataProvider.removeCustomToken((request as RequestIdOnly).id)
-
+      case "pri(tokens.erc20.custom.remove)": {
+        const { id } = request as RequestIdOnly
+        await activeTokensStore.resetActive(id)
+        return chaindataProvider.removeCustomToken(id)
+      }
       default:
         throw new Error(`Unable to handle message of type ${type}`)
     }
