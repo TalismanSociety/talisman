@@ -1,4 +1,4 @@
-import { getTotalFeesFromGasSettings } from "@core/domains/ethereum/helpers"
+import { getTotalFeesFromGasSettings, isAcalaEvmPlus } from "@core/domains/ethereum/helpers"
 import {
   EthPriorityOptionName,
   EthPriorityOptionNameEip1559,
@@ -230,14 +230,16 @@ export const FeeOptionsSelectForm: FC<FeeOptionsSelectProps> = ({
             selected={priority === "recommended"}
           />
         )}
-        <PriorityOption
-          gasSettingsByPriority={gasSettingsByPriority}
-          txDetails={txDetails}
-          tokenId={tokenId}
-          priority={"custom"}
-          onClick={handleSelect("custom")}
-          selected={priority === "custom"}
-        />
+        {!isAcalaEvmPlus(txDetails.evmNetworkId) && (
+          <PriorityOption
+            gasSettingsByPriority={gasSettingsByPriority}
+            txDetails={txDetails}
+            tokenId={tokenId}
+            priority={"custom"}
+            onClick={handleSelect("custom")}
+            selected={priority === "custom"}
+          />
+        )}
         {txDetails.baseFeeTrend ? (
           <div className="mt-8 flex w-full items-center justify-between">
             <div>{t("Base Fee Trend")}</div>

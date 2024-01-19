@@ -1,3 +1,4 @@
+import { isAcalaEvmPlus } from "@core/domains/ethereum/helpers"
 import {
   EvmWalletTransaction,
   SubWalletTransaction,
@@ -45,6 +46,7 @@ const TxReplaceActions: FC<{ tx: WalletTransaction }> = ({ tx }) => {
     [gotoProgress, tx]
   )
 
+  if (tx.networkType === "evm" && isAcalaEvmPlus(tx.evmNetworkId)) return null
   if (tx.status !== "pending" || tx.networkType !== "evm") return null
 
   return (
