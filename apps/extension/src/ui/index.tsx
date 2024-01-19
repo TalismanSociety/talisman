@@ -12,8 +12,6 @@ import { createRoot } from "react-dom/client"
 import { HashRouter } from "react-router-dom"
 import { RecoilRoot } from "recoil"
 
-import { LocationSync } from "./atoms"
-
 const queryClient = new QueryClient()
 
 initSentry(Sentry)
@@ -31,10 +29,7 @@ export const renderTalisman = (app: ReactNode) => {
           <RecoilRoot>
             <Suspense fallback={<SuspenseTracker name="RecoilRoot" />}>
               <QueryClientProvider client={queryClient}>
-                <HashRouter>
-                  {app}
-                  <LocationSync />
-                </HashRouter>
+                <HashRouter>{app}</HashRouter>
                 <NotificationsContainer />
               </QueryClientProvider>
             </Suspense>

@@ -3,12 +3,13 @@ import { FullScreenLoader } from "@talisman/components/FullScreenLoader"
 import { SuspenseTracker } from "@talisman/components/SuspenseTracker"
 import { api } from "@ui/api"
 import { AssetDiscoveryDashboardAlert } from "@ui/domains/AssetDiscovery/AssetDiscoveryDashboardAlert"
+import { useSelectedAccount } from "@ui/domains/Portfolio/useSelectedAccount"
 import { DatabaseErrorAlert } from "@ui/domains/Settings/DatabaseErrorAlert"
 import { useLoginCheck } from "@ui/hooks/useLoginCheck"
 import { useModalSubscription } from "@ui/hooks/useModalSubscription"
 import { FC, PropsWithChildren, Suspense, useEffect, useRef } from "react"
 import { useTranslation } from "react-i18next"
-import { Navigate, Route, Routes, useMatch } from "react-router-dom"
+import { Navigate, Route, Routes, useMatch, useSearchParams } from "react-router-dom"
 
 import { DashboardLayout } from "./layout/DashboardLayout"
 import { AccountAddMenu } from "./routes/AccountAdd"
@@ -43,38 +44,15 @@ import { TokenPage } from "./routes/Tokens/TokenPage"
 import { TokensPage } from "./routes/Tokens/TokensPage"
 
 const DashboardInner = () => {
-  const { isLoggedIn, isOnboarded } = useLoginCheck()
-  const wasLoggedIn = useRef(false)
   useModalSubscription()
-
-  useEffect(() => {
-    if (isLoggedIn) wasLoggedIn.current = true
-  }, [isLoggedIn])
-
-  // if we're not onboarded, redirect to onboard
-  useEffect(() => {
-    if (!isOnboarded)
-      window.location.href = window.location.href.replace("dashboard.html", "onboarding.html")
-    else if (!isLoggedIn) {
-      // if user was logged in and locked the extension from the popup, close the tab
-      if (wasLoggedIn.current) window.close()
-      // else (open from a bookmark ?), prompt login
-      else api.promptLogin(true)
-    }
-  }, [isLoggedIn, isOnboarded])
-
-  const { t } = useTranslation()
-
-  if (!isLoggedIn)
-    return <FullScreenLoader title={t("Waiting")} subtitle={t("Please unlock the Talisman")} />
 
   return (
     // use an empty layout as fallback to prevent flickering
     <Suspense
       fallback={
         <>
-          <SuspenseTracker name="Dashboard" />
           <DashboardLayout />
+          <SuspenseTracker name="Dashboard" />
         </>
       }
     >
@@ -139,10 +117,62 @@ const PreventPhishing: FC<PropsWithChildren> = ({ children }) => {
   return <>{children}</>
 }
 
-// TODO move NewFolderModalProvider, RenameFolderModalProvider, DeleteFolderModalProvider inside the only page that uses them
+const SelectedAccountChecker: FC<PropsWithChildren> = ({ children }) => {
+  // popup may pass an account in the query string
+  // we need to update this before first sidebar render to prevent flickering
+  const { select } = useSelectedAccount()
+  const [searchParams, updateSearchParams] = useSearchParams()
+
+  useEffect(() => {
+    const account = searchParams.get("account")
+    if (!account) return
+
+    const newSearchPrams = new URLSearchParams(searchParams)
+    select(account === "all" ? undefined : account)
+    newSearchPrams.delete("account")
+    updateSearchParams(newSearchPrams, { replace: true })
+  }, [searchParams, select, updateSearchParams])
+
+  // don't render if search param is still there
+  if (searchParams.get("account")) return null
+
+  return <>{children}</>
+}
+
+const LoginChecker: FC<PropsWithChildren> = ({ children }) => {
+  const { t } = useTranslation()
+  const { isLoggedIn, isOnboarded } = useLoginCheck()
+  const wasLoggedIn = useRef(false)
+
+  useEffect(() => {
+    if (isLoggedIn) wasLoggedIn.current = true
+  }, [isLoggedIn])
+
+  // if we're not onboarded, redirect to onboard
+  useEffect(() => {
+    if (!isOnboarded)
+      window.location.href = window.location.href.replace("dashboard.html", "onboarding.html")
+    else if (!isLoggedIn) {
+      // if user was logged in and locked the extension from the popup, close the tab
+      if (wasLoggedIn.current) window.close()
+      // else (open from a bookmark ?), prompt login
+      else api.promptLogin(true)
+    }
+  }, [isLoggedIn, isOnboarded])
+
+  if (!isLoggedIn)
+    return <FullScreenLoader title={t("Waiting")} subtitle={t("Please unlock the Talisman")} />
+
+  return <>{children}</>
+}
+
 const Dashboard = () => (
   <PreventPhishing>
-    <DashboardInner />
+    <LoginChecker>
+      <SelectedAccountChecker>
+        <DashboardInner />
+      </SelectedAccountChecker>
+    </LoginChecker>
     <DatabaseErrorAlert container="fullscreen" />
     <AssetDiscoveryDashboardAlert />
   </PreventPhishing>
