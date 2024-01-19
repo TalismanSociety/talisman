@@ -1,7 +1,7 @@
 import { Trees } from "@core/domains/accounts/helpers.catalog"
 import {
   AccountAddressType,
-  RequestAccountCreateLedgerSubstrate,
+  RequestAccountCreateLedgerSubstrateLegacy,
 } from "@core/domains/accounts/types"
 import type {
   AccountJson,
@@ -122,8 +122,11 @@ export default interface MessageTypes {
   ) => Promise<string>
   accountCreateFromSuri: (name: string, suri: string, type?: AccountAddressType) => Promise<string>
   accountCreateFromJson: (unlockedPairs: KeyringPair$Json[]) => Promise<string[]>
-  accountCreateLedger: (request: RequestAccountCreateLedgerSubstrate) => Promise<string>
+  accountCreateLedgerSubstrateLegacy: (
+    request: RequestAccountCreateLedgerSubstrateLegacy
+  ) => Promise<string>
   accountCreateLedgerEthereum: (name: string, address: string, path: string) => Promise<string>
+  accountCreateLedgerPolkadot: (name: string, address: string, path: string) => Promise<string>
   accountCreateDcent: (
     name: string,
     address: string,

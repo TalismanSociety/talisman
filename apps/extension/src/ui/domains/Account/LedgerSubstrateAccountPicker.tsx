@@ -2,7 +2,7 @@ import { isChainActive } from "@core/domains/chains/store.activeChains"
 import { log } from "@core/log"
 import { AddressesByChain } from "@core/types/base"
 import { convertAddress } from "@talisman/util/convertAddress"
-import { LedgerAccountDefSubstrate } from "@ui/domains/Account/AccountAdd/AccountAddLedger/context" // Todo
+import { LedgerAccountDefSubstrateLegacy } from "@ui/domains/Account/AccountAdd/AccountAddLedger/context" // Todo
 import { useLedgerSubstrateLegacy } from "@ui/hooks/ledger/useLedgerSubstrateLegacy"
 import { useLedgerSubstrateLegacyApp } from "@ui/hooks/ledger/useLedgerSubstrateLegacyApp"
 import useAccounts from "@ui/hooks/useAccounts"
@@ -16,7 +16,7 @@ import { DerivedAccountBase, DerivedAccountPickerBase } from "./DerivedAccountPi
 
 const useLedgerChainAccounts = (
   chainId: string,
-  selectedAccounts: LedgerAccountDefSubstrate[],
+  selectedAccounts: LedgerAccountDefSubstrateLegacy[],
   pageIndex: number,
   itemsPerPage: number
 ) => {
@@ -142,10 +142,10 @@ const useLedgerChainAccounts = (
 
 type LedgerSubstrateAccountPickerProps = {
   chainId: string
-  onChange?: (accounts: LedgerAccountDefSubstrate[]) => void
+  onChange?: (accounts: LedgerAccountDefSubstrateLegacy[]) => void
 }
 
-type LedgerSubstrateAccount = DerivedAccountBase & LedgerAccountDefSubstrate
+type LedgerSubstrateAccount = DerivedAccountBase & LedgerAccountDefSubstrateLegacy
 
 export const LedgerSubstrateAccountPicker: FC<LedgerSubstrateAccountPickerProps> = ({
   chainId,
@@ -154,7 +154,7 @@ export const LedgerSubstrateAccountPicker: FC<LedgerSubstrateAccountPickerProps>
   const { t } = useTranslation()
   const itemsPerPage = 5
   const [pageIndex, setPageIndex] = useState(0)
-  const [selectedAccounts, setSelectedAccounts] = useState<LedgerAccountDefSubstrate[]>([])
+  const [selectedAccounts, setSelectedAccounts] = useState<LedgerAccountDefSubstrateLegacy[]>([])
   const { accounts, withBalances, error, isBusy } = useLedgerChainAccounts(
     chainId,
     selectedAccounts,

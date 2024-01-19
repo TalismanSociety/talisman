@@ -13,7 +13,8 @@ import type {
   RequestAccountCreateFromJson,
   RequestAccountCreateFromSuri,
   RequestAccountCreateLedgerEthereum,
-  RequestAccountCreateLedgerSubstrate,
+  RequestAccountCreateLedgerPolkadot,
+  RequestAccountCreateLedgerSubstrateLegacy,
   RequestAccountCreateWatched,
   RequestAccountExport,
   RequestAccountExportPrivateKey,
@@ -43,6 +44,7 @@ import { ethereumEncode, isEthereumAddress, mnemonicValidate } from "@polkadot/u
 import { HexString } from "@polkadot/util/types"
 import { addressFromSuri } from "@talisman/util/addressFromSuri"
 import { isValidDerivationPath } from "@talisman/util/isValidDerivationPath"
+import { isValidSubstrateAddress } from "@talisman/util/isValidSubstrateAddress"
 import { decodeAnyAddress, encodeAnyAddress, sleep } from "@talismn/util"
 import { combineLatest } from "rxjs"
 
@@ -217,6 +219,42 @@ export default class AccountsHandler extends ExtensionHandler {
     return addresses
   }
 
+  private accountsCreateLedgerPolkadot({
+    name,
+    address,
+    path,
+  }: RequestAccountCreateLedgerPolkadot) {
+    assert(isValidSubstrateAddress(address), "Not an Substrate address")
+
+    // ui-keyring's don't provide a method, yet, to add a ledger account for the new generic polkadot app
+    // => create the pair without helper
+    const pair = createPair(
+      {
+        type: "sr25519",
+        toSS58: encodeAddress,
+      },
+      {
+        publicKey: decodeAnyAddress(address),
+        secretKey: new Uint8Array(),
+      },
+      {
+        name,
+        hardwareType: "ledger",
+        isHardware: true,
+        origin: AccountType.Ledger,
+        path,
+      },
+      null
+    )
+
+    // add to the underlying keyring, allowing not to specify a password
+    keyring.keyring.addPair(pair)
+    keyring.saveAccount(pair)
+
+    this.captureAccountCreateEvent("substrate", "hardware")
+
+    return pair.address
+  }
   private accountsCreateLedgerEthereum({
     name,
     address,
@@ -311,7 +349,7 @@ export default class AccountsHandler extends ExtensionHandler {
     addressOffset,
     genesisHash,
     name,
-  }: RequestAccountCreateLedgerSubstrate): string {
+  }: RequestAccountCreateLedgerSubstrateLegacy): string {
     const { pair } = keyring.addHardware(address, "ledger", {
       accountIndex,
       addressOffset,
@@ -569,9 +607,11 @@ export default class AccountsHandler extends ExtensionHandler {
       case "pri(accounts.create.dcent)":
         return this.accountCreateDcent(request as RequestAccountCreateDcent)
       case "pri(accounts.create.ledger.substrate)":
-        return this.accountsCreateLedger(request as RequestAccountCreateLedgerSubstrate)
+        return this.accountsCreateLedger(request as RequestAccountCreateLedgerSubstrateLegacy)
       case "pri(accounts.create.ledger.ethereum)":
         return this.accountsCreateLedgerEthereum(request as RequestAccountCreateLedgerEthereum)
+      case "pri(accounts.create.ledger.polkadot)":
+        return this.accountsCreateLedgerPolkadot(request as RequestAccountCreateLedgerPolkadot)
       case "pri(accounts.create.qr.substrate)":
         return this.accountsCreateQr(request as RequestAccountCreateExternal)
       case "pri(accounts.create.watched)":

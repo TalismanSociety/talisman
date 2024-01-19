@@ -1,5 +1,5 @@
 import { HeaderBlock } from "@talisman/components/HeaderBlock"
-import { balancesHydrateState } from "@ui/atoms"
+import { balancesHydrateState, tokenRatesState } from "@ui/atoms"
 import { AccountCreateMenu } from "@ui/domains/Account/AccountAdd"
 import { useRecoilPreload } from "@ui/hooks/useRecoilPreload"
 import { useTranslation } from "react-i18next"
@@ -7,8 +7,9 @@ import { useTranslation } from "react-i18next"
 import { DashboardLayout } from "../../layout/DashboardLayout"
 
 export const AccountAddMenu = () => {
-  useRecoilPreload(balancesHydrateState)
   const { t } = useTranslation()
+  useRecoilPreload(balancesHydrateState, tokenRatesState)
+
   return (
     <DashboardLayout centered withBack>
       <div className="flex flex-col gap-16">

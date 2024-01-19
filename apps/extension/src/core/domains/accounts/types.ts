@@ -120,9 +120,17 @@ export interface RequestAccountCreateFromJson {
   unlockedPairs: KeyringPair$Json[]
 }
 
-export type RequestAccountCreateLedgerSubstrate = Omit<RequestAccountCreateHardware, "hardwareType">
+export type RequestAccountCreateLedgerSubstrateLegacy = Omit<
+  RequestAccountCreateHardware,
+  "hardwareType"
+>
 
 export interface RequestAccountCreateLedgerEthereum {
+  name: string
+  address: string
+  path: string
+}
+export interface RequestAccountCreateLedgerPolkadot {
   name: string
   address: string
   path: string
@@ -213,8 +221,9 @@ export interface AccountsMessages {
   "pri(accounts.create)": [RequestAccountCreate, string]
   "pri(accounts.create.suri)": [RequestAccountCreateFromSuri, string]
   "pri(accounts.create.json)": [RequestAccountCreateFromJson, string[]]
-  "pri(accounts.create.ledger.substrate)": [RequestAccountCreateLedgerSubstrate, string]
+  "pri(accounts.create.ledger.substrate)": [RequestAccountCreateLedgerSubstrateLegacy, string]
   "pri(accounts.create.ledger.ethereum)": [RequestAccountCreateLedgerEthereum, string]
+  "pri(accounts.create.ledger.polkadot)": [RequestAccountCreateLedgerPolkadot, string]
   "pri(accounts.create.dcent)": [RequestAccountCreateDcent, string]
   "pri(accounts.create.qr.substrate)": [RequestAccountCreateExternal, string]
   "pri(accounts.create.watched)": [RequestAccountCreateWatched, string]

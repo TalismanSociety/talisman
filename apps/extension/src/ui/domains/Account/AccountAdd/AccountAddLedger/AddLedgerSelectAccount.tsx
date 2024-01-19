@@ -11,6 +11,7 @@ import { Navigate } from "react-router-dom"
 import { Button, Dropdown } from "talisman-ui"
 import * as yup from "yup"
 
+import { LedgerPolkadotAccountPicker } from "../../LedgerPolkadotAccountPicker"
 import { LedgerAccountDef, useAddLedgerAccount } from "./context"
 
 const options: Record<LedgerEthDerivationPathType, string> = {
@@ -129,9 +130,15 @@ export const AddLedgerSelectAccount = () => {
 
   const [derivationPath, setDerivationPath] = useState<LedgerEthDerivationPathType>("LedgerLive")
 
-  if (!data.type) return <Navigate to="/accounts/add/ledger" replace />
-  if (data.type === "sr25519" && !data.chainId)
-    return <Navigate to="/accounts/add/ledger" replace />
+  const isInvalidInputs = useMemo(() => {
+    if (!data.type) return true
+    if (data.type === "sr25519" && !data.substrateAppType) return true
+    if (data.type === "sr25519" && data.substrateAppType === "substrate-legacy" && !data.chainId)
+      return true
+    return false
+  }, [data.chainId, data.substrateAppType, data.type])
+
+  if (isInvalidInputs) return <Navigate to="/accounts/add/ledger" replace />
 
   return (
     <form className="flex max-h-screen flex-col gap-12" onSubmit={handleSubmit(submit)}>
@@ -163,10 +170,17 @@ export const AddLedgerSelectAccount = () => {
           )}
         </p>
         {data.type === "sr25519" && (
-          <LedgerSubstrateAccountPicker
-            chainId={data.chainId as string}
-            onChange={handleAccountsChange}
-          />
+          <>
+            {data.substrateAppType === "substrate-legacy" && (
+              <LedgerSubstrateAccountPicker
+                chainId={data.chainId as string}
+                onChange={handleAccountsChange}
+              />
+            )}
+            {data.substrateAppType === "polkadot" && (
+              <LedgerPolkadotAccountPicker onChange={handleAccountsChange} />
+            )}
+          </>
         )}
         {data.type === "ethereum" && (
           <LedgerEthereumAccountPicker

@@ -7,11 +7,14 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react"
 import { useTranslation } from "react-i18next"
 
 import { useSetInterval } from "../useSetInterval"
-import { LedgerError, LedgerStatus, getLedgerErrorProps } from "./common"
+import {
+  LedgerError,
+  LedgerStatus,
+  getLedgerErrorProps,
+  getPolkadotLedgerDerivationPath,
+} from "./common"
 
-// 0x162, in hex, 354 in decimal: is the official derivation path for Polkadot, chains not on it presently will need to migrate.
-const getPolkadotLedgerDerivationPath = (accountIndex = 0, addressIndex = 0) =>
-  `m/44'/354'/${accountIndex}'/0'/${addressIndex}'`
+const NO_ERRORS = "No errors"
 
 export const useLedgerPolkadot = (persist = false) => {
   const { t } = useTranslation()
@@ -37,7 +40,6 @@ export const useLedgerPolkadot = (persist = false) => {
   const connectLedger = useCallback(async (resetError?: boolean) => {
     if (refConnecting.current) return
     refConnecting.current = true
-
     setIsLoading(true)
     setIsReady(false)
 
@@ -46,33 +48,29 @@ export const useLedgerPolkadot = (persist = false) => {
     if (resetError) setLedgerError(undefined)
 
     try {
+      await refTransport.current?.close()
       refTransport.current = await TransportWebUSB.create()
 
       const ledger = new PolkadotApp(refTransport.current)
 
-      const { locked, errorMessage } = await Promise.race([
+      const version = await Promise.race([
         ledger.getVersion(),
-        throwAfter(5_000, "Timeout on Ledger Polkadot connection") as never,
+        throwAfter(5_000, "Timeout on Ledger Polkadot connection"),
       ])
-      if (errorMessage) {
-        // console.log("errorMessage", errorMessage)
-        setLedgerError(new Error(errorMessage))
-        return
-      }
-      if (locked) {
-        // console.log("locked")
-        setLedgerError(new Error("Ledger is locked"))
-        return
-      }
-      // console.log("ledger props", { locked, ...props })
+      if (version.errorMessage !== NO_ERRORS)
+        throw new LedgerError(version.errorMessage, version.errorMessage, version.returnCode)
+
+      // note: this seem to always return false
+      if (version.locked) throw new LedgerError("Ledger is locked", "Locked", version.returnCode)
 
       // this may hang at this point just after plugging the ledger
-      //const address =
-      await Promise.race([
+      const address = await Promise.race([
         ledger.getAddress(getPolkadotLedgerDerivationPath(), 42, false),
         throwAfter(5_000, "Timeout on Ledger Polkadot connection"),
       ])
-      // console.log("address", address)
+      if (address.errorMessage !== "No errors")
+        throw new LedgerError(address.errorMessage, address.errorMessage, address.returnCode)
+
       setLedgerError(undefined)
       setLedger(ledger)
       setIsReady(true)

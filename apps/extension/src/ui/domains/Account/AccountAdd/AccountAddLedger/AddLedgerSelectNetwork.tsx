@@ -38,7 +38,7 @@ const renderOption = (chain: Chain) => {
 export const AddLedgerSelectNetwork = () => {
   const { t } = useTranslation("admin")
   const { data: defaultValues, updateData } = useAddLedgerAccount()
-  const [substrateLedgerAppType, setSubstrateLedgerAppType] = useState<SubstrateLedgerAppType>()
+  //const [substrateLedgerAppType, setSubstrateLedgerAppType] = useState<SubstrateLedgerAppType>()
 
   const navigate = useNavigate()
   const ledgerChains = useLedgerChains()
@@ -81,18 +81,18 @@ export const AddLedgerSelectNetwork = () => {
     handleSubmit,
     watch,
     setValue,
-    formState: { isValid, isSubmitting },
+    formState: { isValid, isSubmitting, errors },
   } = useForm<FormData>({
     mode: "onChange",
     defaultValues,
     resolver: yupResolver(schema),
   })
 
-  const [accountType, chainId] = watch(["type", "chainId"])
+  const [accountType, chainId, substrateAppType] = watch(["type", "chainId", "substrateAppType"])
 
   const submit = useCallback(
-    async ({ type, chainId }: FormData) => {
-      updateData({ type, chainId })
+    async ({ type, chainId, substrateAppType }: FormData) => {
+      updateData({ type, chainId, substrateAppType })
       navigate("account")
     },
     [navigate, updateData]
@@ -113,9 +113,15 @@ export const AddLedgerSelectNetwork = () => {
     [setValue]
   )
 
-  const handleSubstrateAppTypeChange: ChangeEventHandler<HTMLInputElement> = useCallback((e) => {
-    if (e.target.checked) setSubstrateLedgerAppType(e.target.value as SubstrateLedgerAppType)
-  }, [])
+  const handleSubstrateAppTypeChange: ChangeEventHandler<HTMLInputElement> = useCallback(
+    (e) => {
+      if (e.target.checked)
+        setValue("substrateAppType", e.target.value as SubstrateLedgerAppType, {
+          shouldValidate: true,
+        })
+    },
+    [setValue]
+  )
 
   const chain = useChain(chainId ?? (defaultValues.chainId as string))
 
@@ -123,7 +129,11 @@ export const AddLedgerSelectNetwork = () => {
 
   const showStep2 =
     accountType === "ethereum" ||
-    (accountType === "sr25519" && (chainId || substrateLedgerAppType === "polkadot"))
+    (accountType === "sr25519" && (chainId || substrateAppType === "polkadot"))
+
+  // TODO REMOVE
+  // eslint-disable-next-line no-console
+  console.log({ isValid, isLedgerReady, errors })
 
   return (
     <form className="flex h-full max-h-screen flex-col" onSubmit={handleSubmit(submit)}>
@@ -167,7 +177,7 @@ export const AddLedgerSelectNetwork = () => {
             <div
               className={classNames(
                 "mt-8",
-                substrateLedgerAppType === "substrate-legacy" ? "visible" : "invisible"
+                substrateAppType === "substrate-legacy" ? "visible" : "invisible"
               )}
             >
               <Dropdown
@@ -188,14 +198,14 @@ export const AddLedgerSelectNetwork = () => {
           {showStep2 && accountType === "sr25519" && (
             <>
               <h2 className="mb-8 mt-0 text-base">{t("Step 2")}</h2>
-              {substrateLedgerAppType === "substrate-legacy" && (
+              {substrateAppType === "substrate-legacy" && (
                 <ConnectLedgerSubstrateLegacy
                   className="min-h-[11rem]"
                   onReadyChanged={setIsLedgerReady}
                   chainId={chainId}
                 />
               )}
-              {substrateLedgerAppType === "polkadot" && (
+              {substrateAppType === "polkadot" && (
                 <ConnectLedgerPolkadot
                   className="min-h-[11rem]"
                   onReadyChanged={setIsLedgerReady}
