@@ -30,7 +30,7 @@ export const NetworksTokensPage = () => {
         <CtaButton
           iconLeft={DiamondIcon}
           iconRight={ChevronRightIcon}
-          title={t("Asset Discovery")}
+          title={t("Asset discovery")}
           subtitle={t("Scan for well-known tokens in your accounts and add them to Talisman")}
           to={`/settings/asset-discovery`}
         />
@@ -58,21 +58,21 @@ export const NetworksTokensPage = () => {
         <CtaButton
           iconLeft={GlobeIcon}
           iconRight={ChevronRightIcon}
-          title={t("Manage Networks")}
+          title={t("Manage networks")}
           subtitle={t("Add, enable and disable networks")}
           to={`/networks/ethereum`}
         />
         <CtaButton
           iconLeft={ListIcon}
           iconRight={ChevronRightIcon}
-          title={t("Manage Ethereum Tokens")}
+          title={t("Manage Ethereum tokens")}
           subtitle={t("Add or delete custom ERC20 tokens")}
           to={`/tokens`}
         />
         <CtaButton
           iconLeft={PolkadotVaultIcon}
           iconRight={ChevronRightIcon}
-          title={t("Polkadot Vault Metadata")}
+          title={t("Polkadot Vault metadata")}
           subtitle={t("Register networks on your Polkadot Vault device, or update their metadata")}
           to={`/settings/qr-metadata`}
         />
