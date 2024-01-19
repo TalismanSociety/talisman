@@ -1,4 +1,4 @@
-import { AccountAddressType } from "@core/domains/accounts/types"
+import { AccountAddressType, SubstrateLedgerAppType } from "@core/domains/accounts/types"
 import { Chain } from "@core/domains/chains/types"
 import { yupResolver } from "@hookform/resolvers/yup"
 import { HeaderBlock } from "@talisman/components/HeaderBlock"
@@ -17,11 +17,13 @@ import * as yup from "yup"
 
 import { useAddLedgerAccount } from "./context"
 import { ConnectLedgerEthereum } from "./Shared/ConnectLedgerEthereum"
-import { ConnectLedgerSubstrate } from "./Shared/ConnectLedgerSubstrate"
+import { ConnectLedgerPolkadot } from "./Shared/ConnectLedgerPolkadot"
+import { ConnectLedgerSubstrateLegacy } from "./Shared/ConnectLedgerSubstrateLegacy"
 
 type FormData = {
   chainId: string
   type: AccountAddressType
+  substrateAppType: SubstrateLedgerAppType
 }
 
 const renderOption = (chain: Chain) => {
@@ -36,9 +38,7 @@ const renderOption = (chain: Chain) => {
 export const AddLedgerSelectNetwork = () => {
   const { t } = useTranslation("admin")
   const { data: defaultValues, updateData } = useAddLedgerAccount()
-  const [substrateLedgerAppType, setSubstrateLedgerAppType] = useState<
-    "substrate-generic" | "substrate-legacy"
-  >()
+  const [substrateLedgerAppType, setSubstrateLedgerAppType] = useState<SubstrateLedgerAppType>()
 
   const navigate = useNavigate()
   const ledgerChains = useLedgerChains()
@@ -48,20 +48,33 @@ export const AddLedgerSelectNetwork = () => {
       yup
         .object({
           type: yup.string().oneOf(["sr25519", "ethereum"], ""),
-          chainId: yup.string().when("type", {
-            is: "sr25519",
-            then: yup
-              .string()
-              .required("")
-              .test(
-                "is-ledger-chain",
-                "Network not supported",
-                (id) => !!ledgerChains.find((c) => c.id === id)
-              ),
-          }),
         })
-        .required(),
-    [ledgerChains]
+        .required()
+        .test("validateFormData", t("Invalid parameters"), async (val, ctx) => {
+          const { type, chainId, substrateAppType } = val as FormData
+          if (type === "sr25519") {
+            if (!substrateAppType)
+              return ctx.createError({
+                path: "substrateAppType",
+                message: t("App type not set"),
+                type: "required",
+              })
+            if (substrateAppType === "substrate-legacy") {
+              if (!chainId)
+                return ctx.createError({
+                  path: "chainId",
+                  message: t("Network not set"),
+                })
+              if (!ledgerChains.find((chain) => chain.id === chainId))
+                return ctx.createError({
+                  path: "chainId",
+                  message: t("Network not supported"),
+                })
+            }
+          }
+          return true
+        }),
+    [ledgerChains, t]
   )
 
   const {
@@ -101,15 +114,16 @@ export const AddLedgerSelectNetwork = () => {
   )
 
   const handleSubstrateAppTypeChange: ChangeEventHandler<HTMLInputElement> = useCallback((e) => {
-    if (e.target.checked)
-      setSubstrateLedgerAppType(e.target.value as "substrate-generic" | "substrate-legacy")
+    if (e.target.checked) setSubstrateLedgerAppType(e.target.value as SubstrateLedgerAppType)
   }, [])
 
   const chain = useChain(chainId ?? (defaultValues.chainId as string))
 
   const [isLedgerReady, setIsLedgerReady] = useState(false)
 
-  const showStep2 = accountType === "ethereum" || (accountType === "sr25519" && chainId)
+  const showStep2 =
+    accountType === "ethereum" ||
+    (accountType === "sr25519" && (chainId || substrateLedgerAppType === "polkadot"))
 
   return (
     <form className="flex h-full max-h-screen flex-col" onSubmit={handleSubmit(submit)}>
@@ -130,11 +144,11 @@ export const AddLedgerSelectNetwork = () => {
               <input
                 type="radio"
                 name="substrate-app-type"
-                id="substrate-generic"
-                value="substrate-generic"
+                id="polkadot"
+                value="polkadot"
                 onChange={handleSubstrateAppTypeChange}
               />
-              <label htmlFor="substrate-generic" className="text-body-secondary ml-3">
+              <label htmlFor="polkadot" className="text-body-secondary ml-3">
                 {t("Polkadot app (recommended)")}
               </label>
             </div>
@@ -171,14 +185,22 @@ export const AddLedgerSelectNetwork = () => {
           </>
         )}
         <div className={classNames("mt-12 h-[20rem]", showStep2 ? "visible" : "invisible")}>
-          {showStep2 && chainId && accountType === "sr25519" && (
+          {showStep2 && accountType === "sr25519" && (
             <>
               <h2 className="mb-8 mt-0 text-base">{t("Step 2")}</h2>
-              <ConnectLedgerSubstrate
-                className="min-h-[11rem]"
-                onReadyChanged={setIsLedgerReady}
-                chainId={chainId}
-              />
+              {substrateLedgerAppType === "substrate-legacy" && (
+                <ConnectLedgerSubstrateLegacy
+                  className="min-h-[11rem]"
+                  onReadyChanged={setIsLedgerReady}
+                  chainId={chainId}
+                />
+              )}
+              {substrateLedgerAppType === "polkadot" && (
+                <ConnectLedgerPolkadot
+                  className="min-h-[11rem]"
+                  onReadyChanged={setIsLedgerReady}
+                />
+              )}
             </>
           )}
           {accountType === "ethereum" && (

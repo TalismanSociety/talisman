@@ -11144,13 +11144,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@zondax/ledger-polkadot@npm:0.15.1":
-  version: 0.15.1
-  resolution: "@zondax/ledger-polkadot@npm:0.15.1"
-  dependencies:
-    fast-deep-equal: 3.1.3
-    scale-ts: 1.4.3
-  checksum: 1deccdd91737142fcd389ede6018a794f23fe8f7a58721a5fc55f6f2fc70d9925cf34a92ecc24427c012109c2f6e5e3eac00980babdf670343acee19a4dd559d
+"@zondax/ledger-polkadot@npm:0.16.0":
+  version: 0.16.0
+  resolution: "@zondax/ledger-polkadot@npm:0.16.0"
+  checksum: 65fc6f68c386558ba91ba02a07f91039fb55393550859667ac691b97524dda99a4d65b7f2e6b3d72002ed49b877ae8359d244215793d05f3583751ca091d2999
   languageName: node
   linkType: hard
 
@@ -16374,7 +16371,7 @@ __metadata:
     "@types/webextension-polyfill": 0.9.1
     "@typescript-eslint/eslint-plugin": ^6.9.0
     "@typescript-eslint/parser": ^6.9.0
-    "@zondax/ledger-polkadot": 0.15.1
+    "@zondax/ledger-polkadot": 0.16.0
     anylogger: ^1.0.11
     anylogger-loglevel: ^1.0.0
     archiver: 5.3.1
@@ -16537,17 +16534,17 @@ __metadata:
   languageName: node
   linkType: hard
 
-"fast-deep-equal@npm:3.1.3, fast-deep-equal@npm:^3.1.1, fast-deep-equal@npm:^3.1.3":
-  version: 3.1.3
-  resolution: "fast-deep-equal@npm:3.1.3"
-  checksum: e21a9d8d84f53493b6aa15efc9cfd53dd5b714a1f23f67fb5dc8f574af80df889b3bce25dc081887c6d25457cce704e636395333abad896ccdec03abaf1f3f9d
-  languageName: node
-  linkType: hard
-
 "fast-deep-equal@npm:^2.0.1":
   version: 2.0.1
   resolution: "fast-deep-equal@npm:2.0.1"
   checksum: b701835a87985e0ec4925bdf1f0c1e7eb56309b5d12d534d5b4b69d95a54d65bb16861c081781ead55f73f12d6c60ba668713391ee7fbf6b0567026f579b7b0b
+  languageName: node
+  linkType: hard
+
+"fast-deep-equal@npm:^3.1.1, fast-deep-equal@npm:^3.1.3":
+  version: 3.1.3
+  resolution: "fast-deep-equal@npm:3.1.3"
+  checksum: e21a9d8d84f53493b6aa15efc9cfd53dd5b714a1f23f67fb5dc8f574af80df889b3bce25dc081887c6d25457cce704e636395333abad896ccdec03abaf1f3f9d
   languageName: node
   linkType: hard
 
@@ -25495,13 +25492,6 @@ __metadata:
   version: 0.11.2
   resolution: "scale-codec@npm:0.11.2"
   checksum: c6c07c045102b523a8138b028308dee8b43ea600a3b25cb633000bb4b8c7a8bf930b1f19ba6cd2c1010135dc0cb243f1d048b10d8e4de66ec9d66c5743f36b7d
-  languageName: node
-  linkType: hard
-
-"scale-ts@npm:1.4.3":
-  version: 1.4.3
-  resolution: "scale-ts@npm:1.4.3"
-  checksum: e38a0de457962154f5b491690c5db3104188ee713070338f0178f83857a0fa5bdd44ad26c33eb5fd467e816109f8ff1421928da682154b3ece73521a4ef9133d
   languageName: node
   linkType: hard
 

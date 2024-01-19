@@ -108,6 +108,8 @@ export type AccountsList = Account[]
 
 export type AccountAddressType = KeypairType // keep custom type, might want to add more later on
 
+export type SubstrateLedgerAppType = "substrate-legacy" | "polkadot" // | "polkadot-recovery"
+
 export interface RequestAccountCreateFromSuri {
   name: string
   suri: string
