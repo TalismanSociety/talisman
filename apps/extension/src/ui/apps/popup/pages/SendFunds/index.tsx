@@ -1,4 +1,6 @@
+import { balancesFilterQuery, balancesHydrateState } from "@ui/atoms"
 import { SendFundsProvider } from "@ui/domains/SendFunds/useSendFunds"
+import { useRecoilPreload } from "@ui/hooks/useRecoilPreload"
 import { Route, Routes } from "react-router-dom"
 
 import { SendFundsWizardProvider } from "./context"
@@ -11,6 +13,8 @@ import { SendFundsTo } from "./SendFundsTo"
 import { SendFundsToken } from "./SendFundsToken"
 
 export const SendFundsPage = () => {
+  useRecoilPreload(balancesHydrateState, balancesFilterQuery("all"))
+
   return (
     <SendFundsWizardProvider>
       <SendFundsProvider>

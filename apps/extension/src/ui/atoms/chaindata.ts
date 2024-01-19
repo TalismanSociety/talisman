@@ -8,7 +8,11 @@ import {
   activeEvmNetworksStore,
   isEvmNetworkActive,
 } from "@core/domains/ethereum/store.activeEvmNetworks"
-import { ActiveTokens, activeTokensStore } from "@core/domains/tokens/store.activeTokens"
+import {
+  ActiveTokens,
+  activeTokensStore,
+  isTokenActive,
+} from "@core/domains/tokens/store.activeTokens"
 import { log } from "@core/log"
 import { chaindataProvider } from "@core/rpcs/chaindata"
 import {
@@ -241,6 +245,27 @@ export const activeChainsWithoutTestnetsMapState = selector<ChainList>({
   },
 })
 
+const chainsByGenesisHashMapState = selector({
+  key: "chainsByGenesisHashMapState",
+  get: ({ get }) => {
+    const chains = get(allChainsState)
+    return Object.fromEntries(chains.map((chain) => [chain.genesisHash, chain])) as Record<
+      string,
+      Chain | CustomChain
+    >
+  },
+})
+
+export const chainByGenesisHashQuery = selectorFamily({
+  key: "chainByGenesisHashQuery",
+  get:
+    (genesisHash: string | null | undefined) =>
+    ({ get }) => {
+      const chains = get(chainsByGenesisHashMapState)
+      return genesisHash ? chains[genesisHash] : undefined
+    },
+})
+
 export type ChainsQueryOptions = {
   activeOnly: boolean
   includeTestnets: boolean
@@ -353,17 +378,19 @@ export const allTokensWithoutTestnetsMapState = selector<TokenList>({
 export const activeTokensWithTestnetsState = selector<Token[]>({
   key: "activeTokensWithTestnetsState",
   get: ({ get }) => {
-    const [tokens, chainsMap, evmNetworksMap] = get(
+    const [tokens, chainsMap, evmNetworksMap, activeTokens] = get(
       waitForAll([
         allTokensState,
         activeChainsWithTestnetsMapState,
         activeEvmNetworksWithTestnetsMapState,
+        tokensActiveState,
       ])
     )
     return tokens.filter(
       (token) =>
-        (token.chain && chainsMap[token.chain.id]) ||
-        (token.evmNetwork && evmNetworksMap[token.evmNetwork.id])
+        ((token.chain && chainsMap[token.chain.id]) ||
+          (token.evmNetwork && evmNetworksMap[token.evmNetwork.id])) &&
+        isTokenActive(token, activeTokens)
     )
   },
 })

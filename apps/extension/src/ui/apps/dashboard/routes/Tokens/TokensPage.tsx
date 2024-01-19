@@ -7,6 +7,7 @@ import { CustomEvmNetwork, EvmNetwork, EvmNetworkId, Token } from "@talismn/chai
 import { MoreHorizontalIcon, PlusIcon } from "@talismn/icons"
 import { AnalyticsPage, sendAnalyticsEvent } from "@ui/api/analytics"
 import { DashboardLayout } from "@ui/apps/dashboard/layout/DashboardLayout"
+import { chainsMapQuery, evmNetworksMapQuery, settingQuery, tokensMapQuery } from "@ui/atoms"
 import { TokenLogo } from "@ui/domains/Asset/TokenLogo"
 import { NetworkLogo } from "@ui/domains/Ethereum/NetworkLogo"
 import { EnableTestnetPillButton } from "@ui/domains/Settings/EnableTestnetPillButton"
@@ -14,6 +15,7 @@ import { useActiveTokensState } from "@ui/hooks/useActiveTokensState"
 import { useAnalyticsPageView } from "@ui/hooks/useAnalyticsPageView"
 import { useEvmNetwork } from "@ui/hooks/useEvmNetwork"
 import { useEvmNetworks } from "@ui/hooks/useEvmNetworks"
+import { useRecoilPreload } from "@ui/hooks/useRecoilPreload"
 import { useSetting } from "@ui/hooks/useSettings"
 import useTokens from "@ui/hooks/useTokens"
 import { isCustomErc20Token } from "@ui/util/isCustomErc20Token"
@@ -221,6 +223,12 @@ const ANALYTICS_PAGE: AnalyticsPage = {
 
 export const TokensPage = () => {
   const { t } = useTranslation("admin")
+  useRecoilPreload(
+    settingQuery("useTestnets"),
+    chainsMapQuery({ activeOnly: true, includeTestnets: false }),
+    evmNetworksMapQuery({ activeOnly: true, includeTestnets: false }),
+    tokensMapQuery({ activeOnly: true, includeTestnets: false })
+  )
   useAnalyticsPageView(ANALYTICS_PAGE)
   const navigate = useNavigate()
   const location = useLocation()

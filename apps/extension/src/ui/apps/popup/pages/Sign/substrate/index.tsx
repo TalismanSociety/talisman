@@ -1,10 +1,12 @@
 import { KnownSigningRequestIdOnly } from "@core/domains/signing/types"
 import { isJsonPayload } from "@core/util/isJsonPayload"
+import { SuspenseTracker } from "@talisman/components/SuspenseTracker"
 import { PolkadotSigningRequestProvider } from "@ui/domains/Sign/SignRequestContext"
 import { useRequest } from "@ui/hooks/useRequest"
-import { useMemo } from "react"
+import { Suspense, useMemo } from "react"
 import { useParams } from "react-router-dom"
 
+import { SignPopupShimmer } from "../SignPopupShimmer"
 import { PolkadotSignMessageRequest } from "./Message"
 import { PolkadotSignTransactionRequest } from "./Transaction"
 
@@ -23,9 +25,18 @@ export const SubstrateSignRequest = () => {
   switch (payloadType) {
     case "transaction":
       return (
-        <PolkadotSigningRequestProvider signingRequest={signingRequest}>
-          <PolkadotSignTransactionRequest />
-        </PolkadotSigningRequestProvider>
+        <Suspense
+          fallback={
+            <>
+              <SignPopupShimmer />
+              <SuspenseTracker name="SubstrateSignRequest" />
+            </>
+          }
+        >
+          <PolkadotSigningRequestProvider signingRequest={signingRequest}>
+            <PolkadotSignTransactionRequest />
+          </PolkadotSigningRequestProvider>
+        </Suspense>
       )
 
     case "message":

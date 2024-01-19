@@ -8,8 +8,6 @@ import { useSelectedAccount } from "@ui/domains/Portfolio/useSelectedAccount"
 import { useAccountByAddress } from "@ui/hooks/useAccountByAddress"
 import { useAccountToggleIsPortfolio } from "@ui/hooks/useAccountToggleIsPortfolio"
 import { useAnalytics } from "@ui/hooks/useAnalytics"
-import { useIsFeatureEnabled } from "@ui/hooks/useFeatures"
-import { getTransactionHistoryUrl } from "@ui/util/getTransactionHistoryUrl"
 import React, { forwardRef, useCallback, useMemo } from "react"
 import { useTranslation } from "react-i18next"
 import { useNavigate } from "react-router-dom"
@@ -70,12 +68,6 @@ export const AccountContextMenu = forwardRef<HTMLElement, Props>(function Accoun
     openCopyAddressModal({ mode: "copy", address: account.address })
   }, [account, analyticsFrom, genericEvent, openCopyAddressModal])
 
-  const showTxHistory = useIsFeatureEnabled("LINK_TX_HISTORY")
-  const openTxHistory = useCallback(() => {
-    genericEvent("open web app tx history", { from: analyticsFrom })
-    window.open(getTransactionHistoryUrl(account?.address), "_blank")
-  }, [account?.address, analyticsFrom, genericEvent])
-
   const { open: _openAccountRenameModal } = useAccountRenameModal()
   const canRename = !!account
   const openAccountRenameModal = useCallback(
@@ -126,9 +118,6 @@ export const AccountContextMenu = forwardRef<HTMLElement, Props>(function Accoun
             )}
             {canCopyAddress && (
               <ContextMenuItem onClick={copyAddress}>{t("Copy address")}</ContextMenuItem>
-            )}
-            {showTxHistory && (
-              <ContextMenuItem onClick={openTxHistory}>{t("Transaction history")}</ContextMenuItem>
             )}
             {canRename && (
               <ContextMenuItem onClick={openAccountRenameModal}>{t("Rename")}</ContextMenuItem>

@@ -52,6 +52,7 @@ import {
   ERROR_DUPLICATE_AUTH_REQUEST_MESSAGE,
   requestAuthoriseSite,
 } from "../sitesAuthorised/requests"
+import { activeTokensStore, isTokenActive } from "../tokens/store.activeTokens"
 import { getEvmErrorCause } from "./errors"
 import {
   getErc20TokenId,
@@ -502,7 +503,7 @@ export class EthTabsHandler extends TabsHandler {
 
         const tokenId = getErc20TokenId(ethChainId.toString(), address)
         const existing = await chaindataProvider.getToken(tokenId)
-        if (existing)
+        if (existing && isTokenActive(existing, await activeTokensStore.get()))
           throw new EthProviderRpcError("Asset already exists", ETH_ERROR_EIP1474_INVALID_PARAMS)
 
         const client = await chainConnectorEvm.getPublicClientForEvmNetwork(ethChainId.toString())
@@ -524,7 +525,8 @@ export class EthTabsHandler extends TabsHandler {
           (token) =>
             token.type === "evm-erc20" &&
             token.evmNetwork?.id === ethChainId.toString() &&
-            token.symbol === symbol
+            token.symbol === symbol &&
+            token.contractAddress.toLowerCase() !== address
         )
 
         const warnings: string[] = []

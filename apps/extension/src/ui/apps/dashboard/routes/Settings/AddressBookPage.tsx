@@ -6,6 +6,7 @@ import { AccountAddressType } from "@talisman/util/getAddressType"
 import { CopyIcon, MoreHorizontalIcon, PlusIcon, SendIcon, UserPlusIcon } from "@talismn/icons"
 import { classNames } from "@talismn/util"
 import { AnalyticsPage } from "@ui/api/analytics"
+import { balancesFilterQuery } from "@ui/atoms"
 import { AccountIcon } from "@ui/domains/Account/AccountIcon"
 import { Address } from "@ui/domains/Account/Address"
 import { useCopyAddressModal } from "@ui/domains/CopyAddress"
@@ -18,6 +19,7 @@ import { ProviderTypeSwitch } from "@ui/domains/Site/ProviderTypeSwitch"
 import { useAddressBook } from "@ui/hooks/useAddressBook"
 import { useAnalytics } from "@ui/hooks/useAnalytics"
 import { useAnalyticsPageView } from "@ui/hooks/useAnalyticsPageView"
+import { useRecoilPreload } from "@ui/hooks/useRecoilPreload"
 import { useSendFundsPopup } from "@ui/hooks/useSendFundsPopup"
 import startCase from "lodash/startCase"
 import {
@@ -157,6 +159,8 @@ const contactTypeAddressTypeMap: Record<ProviderType, AccountAddressType> = {
 
 export const AddressBookPage = () => {
   const { t } = useTranslation("admin")
+  // because balances of the send button
+  useRecoilPreload(balancesFilterQuery("owned"))
   const { contacts } = useAddressBook()
   const contactsMap = useMemo(
     () => Object.fromEntries(contacts.map((c) => [c.address, c])),

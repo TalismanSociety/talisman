@@ -1,7 +1,8 @@
 import { log } from "@core/log"
 import { decodeString } from "@polkadot/react-qr/util"
 import QrCodeStyling from "@solana/qr-code-styling"
-import { useEffect, useRef, useState } from "react"
+import { SuspenseTracker } from "@talisman/components/SuspenseTracker"
+import { FC, Suspense, useEffect, useRef, useState } from "react"
 import { useTranslation } from "react-i18next"
 
 import { FRAME_SIZE, talismanRedHandSvg } from "./constants"
@@ -16,7 +17,15 @@ type Props = {
     margin?: number
   }
 }
-export const QrCode = ({ data, image, imageOptions }: Props) => {
+
+// will suspense when importing encoder
+export const QrCode: FC<Props> = (props) => (
+  <Suspense fallback={<SuspenseTracker name="QrCode" />}>
+    <QrCodeInner {...props} />
+  </Suspense>
+)
+
+const QrCodeInner = ({ data, image, imageOptions }: Props) => {
   const { t } = useTranslation("request")
   const qrCodeFrames = useRef<Array<string | null> | null>(null)
   const qrCodeFramesReady = useRef(0)

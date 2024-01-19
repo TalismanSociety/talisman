@@ -23,7 +23,14 @@ import {
 import { classNames } from "@talismn/util"
 import { api } from "@ui/api"
 import { AnalyticsPage } from "@ui/api/analytics"
-import { assetDiscoveryScanProgress, assetDiscoveryScanState } from "@ui/atoms"
+import {
+  appStateQuery,
+  assetDiscoveryScanProgress,
+  assetDiscoveryScanState,
+  evmNetworksMapQuery,
+  settingQuery,
+  tokensMapQuery,
+} from "@ui/atoms"
 import { AccountIcon } from "@ui/domains/Account/AccountIcon"
 import { Fiat } from "@ui/domains/Asset/Fiat"
 import { TokenLogo } from "@ui/domains/Asset/TokenLogo"
@@ -35,6 +42,7 @@ import { useAnalyticsPageView } from "@ui/hooks/useAnalyticsPageView"
 import { useAppState } from "@ui/hooks/useAppState"
 import { useEvmNetwork } from "@ui/hooks/useEvmNetwork"
 import { useEvmNetworks } from "@ui/hooks/useEvmNetworks"
+import { useRecoilPreload } from "@ui/hooks/useRecoilPreload"
 import { useSetting } from "@ui/hooks/useSettings"
 import useToken from "@ui/hooks/useToken"
 import useTokens from "@ui/hooks/useTokens"
@@ -559,6 +567,13 @@ const Notice: FC = () => {
 
 export const AssetDiscoveryPage = () => {
   const { t } = useTranslation("admin")
+  useRecoilPreload(
+    settingQuery("useTestnets"),
+    appStateQuery("showAssetDiscoveryAlert"),
+    evmNetworksMapQuery({ activeOnly: true, includeTestnets: false }),
+    tokensMapQuery({ activeOnly: true, includeTestnets: false })
+  )
+
   useAnalyticsPageView(ANALYTICS_PAGE)
   const [showAssetDiscoveryAlert, setShowAssetDiscoveryAlert] =
     useAppState("showAssetDiscoveryAlert")

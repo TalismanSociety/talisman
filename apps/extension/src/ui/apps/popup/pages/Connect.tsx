@@ -44,9 +44,9 @@ const NoAccountWarning = ({
           />
         </p>
         <div className="mt-4 grid grid-cols-2 gap-8">
-          <Button onClick={onIgnoreClick}>No</Button>
+          <Button onClick={onIgnoreClick}>{t("No")}</Button>
           <Button primary onClick={onAddAccountClick}>
-            Yes
+            {t("Yes")}
           </Button>
         </div>
       </div>

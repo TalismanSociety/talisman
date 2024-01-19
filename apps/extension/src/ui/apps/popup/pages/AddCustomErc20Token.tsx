@@ -2,10 +2,12 @@ import { IS_FIREFOX, UNKNOWN_TOKEN_URL } from "@core/constants"
 import { WatchAssetRequestIdOnly } from "@core/domains/ethereum/types"
 import { AppPill } from "@talisman/components/AppPill"
 import { api } from "@ui/api"
+import { balancesHydrateState } from "@ui/atoms"
 import { CustomErc20TokenViewDetails } from "@ui/domains/Erc20Tokens/CustomErc20TokenViewDetails"
 import { NetworkLogo } from "@ui/domains/Ethereum/NetworkLogo"
 import { SignAlertMessage } from "@ui/domains/Sign/SignAlertMessage"
 import { useEvmNetwork } from "@ui/hooks/useEvmNetwork"
+import { useRecoilPreload } from "@ui/hooks/useRecoilPreload"
 import { useRequest } from "@ui/hooks/useRequest"
 import { FC, PropsWithChildren, useCallback, useState } from "react"
 import { useTranslation } from "react-i18next"
@@ -27,6 +29,7 @@ export const AddCustomErc20Token = () => {
   const [error, setError] = useState<string>()
   const { id } = useParams() as WatchAssetRequestIdOnly
   const request = useRequest(id)
+  useRecoilPreload(balancesHydrateState)
 
   const network = useEvmNetwork(request?.token?.evmNetwork?.id)
 

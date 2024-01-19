@@ -55,7 +55,6 @@ export type BalanceTotal = {
 export interface BalancesMessages {
   // balance message signatures
   "pri(balances.get)": [RequestBalance, BalanceJson]
-  "pri(balances.nompools.get)": [RequestNomPoolStake, ResponseNomPoolStake]
   "pri(balances.subscribe)": [null, boolean, boolean]
   "pri(balances.byparams.subscribe)": [RequestBalancesByParamsSubscribe, boolean, BalancesUpdate]
 }

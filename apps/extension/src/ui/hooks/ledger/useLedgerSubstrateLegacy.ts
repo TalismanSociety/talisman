@@ -6,7 +6,7 @@ import { throwAfter } from "@talismn/util"
 import { useCallback, useEffect, useMemo, useRef, useState } from "react"
 import { useTranslation } from "react-i18next"
 
-import useChainByGenesisHash from "../useChainByGenesisHash"
+import { useChainByGenesisHash } from "../useChainByGenesisHash"
 import { useSetInterval } from "../useSetInterval"
 import {
   ERROR_LEDGER_EVM_CANNOT_SIGN_SUBSTRATE,

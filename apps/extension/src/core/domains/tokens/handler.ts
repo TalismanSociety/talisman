@@ -10,6 +10,7 @@ import { githubUnknownTokenLogoUrl } from "@talismn/chaindata-provider"
 import { MessageTypes, RequestTypes, ResponseType } from "core/types"
 
 import { assetDiscoveryScanner } from "../assetDiscovery/scanner"
+import { activeTokensStore } from "./store.activeTokens"
 
 export default class TokensHandler extends ExtensionHandler {
   public async handle<TMessageType extends MessageTypes>(
@@ -90,12 +91,18 @@ export default class TokensHandler extends ExtensionHandler {
           contractAddress,
         })
 
-        return chaindataProvider.addCustomToken(newToken)
+        const newTokenId = await chaindataProvider.addCustomToken(newToken)
+
+        if (newTokenId) await activeTokensStore.setActive(newTokenId, true)
+
+        return newTokenId
       }
 
-      case "pri(tokens.erc20.custom.remove)":
-        return chaindataProvider.removeCustomToken((request as RequestIdOnly).id)
-
+      case "pri(tokens.erc20.custom.remove)": {
+        const { id } = request as RequestIdOnly
+        await activeTokensStore.resetActive(id)
+        return chaindataProvider.removeCustomToken(id)
+      }
       default:
         throw new Error(`Unable to handle message of type ${type}`)
     }

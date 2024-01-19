@@ -35,7 +35,6 @@ export interface AnalyticsCaptureRequest {
 // values must match the flags defined in Posthog
 export type FeatureVariants = Partial<{
   BUY_CRYPTO: boolean
-  LINK_TX_HISTORY: boolean
   LINK_STAKING: boolean
   USE_ONFINALITY_API_KEY: boolean
   TEST_VARIANT: "VARIANT1" | "VARIANT2" // keep this one for string type checking

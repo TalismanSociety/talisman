@@ -1,7 +1,7 @@
 import { isJsonPayload } from "@core/util/isJsonPayload"
 import { validateHexString } from "@core/util/validateHexString"
 import { AppPill } from "@talisman/components/AppPill"
-import { SuspenseTracker } from "@talisman/components/SuspenseTracker"
+import { classNames } from "@talismn/util"
 import {
   PopupContent,
   PopupFooter,
@@ -13,7 +13,7 @@ import { SignAlertMessage } from "@ui/domains/Sign/SignAlertMessage"
 import { usePolkadotSigningRequest } from "@ui/domains/Sign/SignRequestContext"
 import { SubSignBody } from "@ui/domains/Sign/Substrate/SubSignBody"
 import { SignViewBodyShimmer } from "@ui/domains/Sign/Views/SignViewBodyShimmer"
-import { FC, Suspense, useEffect, useMemo } from "react"
+import { FC, useEffect, useMemo } from "react"
 
 import { SignAccountAvatar } from "../SignAccountAvatar"
 import { FooterContent } from "./FooterContent"
@@ -40,20 +40,16 @@ export const PolkadotSignTransactionRequest: FC = () => {
 
   return (
     <PopupLayout>
-      <PopupHeader right={<SignAccountAvatar account={account} ss58Format={chain?.prefix} />}>
+      <PopupHeader
+        className={classNames(isDecodingExtrinsic && "invisible")}
+        right={<SignAccountAvatar account={account} ss58Format={chain?.prefix} />}
+      >
         <AppPill url={url} />
       </PopupHeader>
       {isDecodingExtrinsic ? (
         <SignViewBodyShimmer />
       ) : (
-        <Suspense
-          fallback={
-            <>
-              <SignViewBodyShimmer />
-              <SuspenseTracker name="PopupContent" />
-            </>
-          }
-        >
+        <>
           <PopupContent>
             <div className="scrollable scrollable-800 text-body-secondary h-full overflow-y-auto text-center">
               <SubSignBody />
@@ -67,7 +63,7 @@ export const PolkadotSignTransactionRequest: FC = () => {
             </div>
             {account && request && <FooterContent withFee />}
           </PopupFooter>
-        </Suspense>
+        </>
       )}
     </PopupLayout>
   )

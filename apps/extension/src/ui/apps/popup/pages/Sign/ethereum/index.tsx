@@ -1,11 +1,14 @@
 import { SigningRequestID } from "@core/domains/signing/types"
+import { SuspenseTracker } from "@talisman/components/SuspenseTracker"
 import {
   EthSignMessageRequestProvider,
   EthSignTransactionRequestProvider,
 } from "@ui/domains/Sign/SignRequestContext"
 import { useRequest } from "@ui/hooks/useRequest"
+import { Suspense } from "react"
 import { useParams } from "react-router-dom"
 
+import { SignPopupShimmer } from "../SignPopupShimmer"
 import { EthSignMessageRequest } from "./Message"
 import { EthSignTransactionRequest } from "./Transaction"
 
@@ -19,9 +22,18 @@ export const EthereumSignRequest = () => {
   switch (signingRequest.type) {
     case "eth-send":
       return (
-        <EthSignTransactionRequestProvider id={signingRequest.id}>
-          <EthSignTransactionRequest />
-        </EthSignTransactionRequestProvider>
+        <Suspense
+          fallback={
+            <>
+              <SignPopupShimmer />
+              <SuspenseTracker name="EthereumSignRequest" />
+            </>
+          }
+        >
+          <EthSignTransactionRequestProvider id={signingRequest.id}>
+            <EthSignTransactionRequest />
+          </EthSignTransactionRequestProvider>
+        </Suspense>
       )
     case "eth-sign":
       return (

@@ -4,9 +4,11 @@ import { SearchInput } from "@talisman/components/SearchInput"
 import { Spacer } from "@talisman/components/Spacer"
 import { InfoIcon, PlusIcon } from "@talismn/icons"
 import { sendAnalyticsEvent } from "@ui/api/analytics"
+import { chainsMapQuery, evmNetworksMapQuery, settingQuery } from "@ui/atoms"
 import { EnableTestnetPillButton } from "@ui/domains/Settings/EnableTestnetPillButton"
 import { ProviderTypeSwitch } from "@ui/domains/Site/ProviderTypeSwitch"
 import { useAnalyticsPageView } from "@ui/hooks/useAnalyticsPageView"
+import { useRecoilPreload } from "@ui/hooks/useRecoilPreload"
 import { FC, useCallback, useState } from "react"
 import { Trans, useTranslation } from "react-i18next"
 import { useNavigate } from "react-router-dom"
@@ -45,6 +47,11 @@ const Notice: FC = () => {
   )
 }
 export const NetworksPage = () => {
+  useRecoilPreload(
+    settingQuery("useTestnets"),
+    chainsMapQuery({ activeOnly: true, includeTestnets: false }),
+    evmNetworksMapQuery({ activeOnly: true, includeTestnets: false })
+  )
   const { t } = useTranslation("admin")
   useAnalyticsPageView(ANALYTICS_PAGE)
   const navigate = useNavigate()
