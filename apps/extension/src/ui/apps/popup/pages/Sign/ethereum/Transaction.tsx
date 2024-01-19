@@ -1,10 +1,10 @@
 import { EvmAddress } from "@core/domains/ethereum/types"
 import { EthPriorityOptionName } from "@core/domains/signing/types"
 import { AppPill } from "@talisman/components/AppPill"
-import { SuspenseTracker } from "@talisman/components/SuspenseTracker"
 import { WithTooltip } from "@talisman/components/Tooltip"
 import { EvmNetworkId, TokenId } from "@talismn/chaindata-provider"
 import { InfoIcon } from "@talismn/icons"
+import { classNames } from "@talismn/util"
 import {
   PopupContent,
   PopupFooter,
@@ -20,7 +20,7 @@ import { SignAlertMessage } from "@ui/domains/Sign/SignAlertMessage"
 import { SignHardwareEthereum } from "@ui/domains/Sign/SignHardwareEthereum"
 import { useEthSignTransactionRequest } from "@ui/domains/Sign/SignRequestContext"
 import { SignViewBodyShimmer } from "@ui/domains/Sign/Views/SignViewBodyShimmer"
-import { Suspense, useCallback, useEffect, useMemo } from "react"
+import { useCallback, useEffect, useMemo } from "react"
 import { useTranslation } from "react-i18next"
 import { Button, Tooltip, TooltipContent, TooltipTrigger } from "talisman-ui"
 
@@ -136,20 +136,16 @@ export const EthSignTransactionRequest = () => {
 
   return (
     <PopupLayout>
-      <PopupHeader right={<SignAccountAvatar account={account} />}>
+      <PopupHeader
+        className={classNames(isLoading && "invisible")}
+        right={<SignAccountAvatar account={account} />}
+      >
         <AppPill url={url} />
       </PopupHeader>
       {isLoading ? (
         <SignViewBodyShimmer />
       ) : (
-        <Suspense
-          fallback={
-            <>
-              <SignViewBodyShimmer />
-              <SuspenseTracker name="PopupContent" />
-            </>
-          }
-        >
+        <>
           <PopupContent>
             <div className="scrollable scrollable-800 text-body-secondary h-full overflow-y-auto text-center">
               <EthSignBody decodedTx={decodedTx} isReady={!isLoading} />
@@ -237,7 +233,7 @@ export const EthSignTransactionRequest = () => {
               </div>
             )}
           </PopupFooter>
-        </Suspense>
+        </>
       )}
     </PopupLayout>
   )
