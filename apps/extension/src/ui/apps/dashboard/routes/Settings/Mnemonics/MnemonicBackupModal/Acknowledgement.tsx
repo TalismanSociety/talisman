@@ -1,3 +1,4 @@
+import { MNEMONIC_BACKUP_DOCS_URL } from "@core/constants"
 import { LockIcon, ShieldIcon, XIcon } from "@talismn/icons"
 import { useTranslation } from "react-i18next"
 import { Button } from "talisman-ui"
@@ -47,11 +48,7 @@ export const Acknowledgement = () => {
         </Button>
       </div>
       <div className="text-center">
-        <a
-          href="https://docs.talisman.xyz/talisman/navigating-the-paraverse/account-management/back-up-your-secret-phrase"
-          target="_blank"
-          className="text-body-secondary text-sm"
-        >
+        <a href={MNEMONIC_BACKUP_DOCS_URL} target="_blank" className="text-body-secondary text-sm">
           {t("Learn More")}
         </a>
       </div>
