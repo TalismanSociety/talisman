@@ -25,8 +25,10 @@ import { isEthereumAddress } from "@talismn/util"
 import { privateKeyToAccount } from "viem/accounts"
 
 import { getHostName } from "../app/helpers"
+import { activeTokensStore } from "../tokens/store.activeTokens"
 import { getHumanReadableErrorMessage } from "./errors"
 import { parseTransactionRequest } from "./helpers"
+import { activeEvmNetworksStore, isEvmNetworkActive } from "./store.activeEvmNetworks"
 import { getTransactionCount, incrementTransactionCount } from "./transactionCountManager"
 
 export class EthHandler extends ExtensionHandler {
@@ -399,6 +401,8 @@ export class EthHandler extends ExtensionHandler {
     await chaindataProvider.addCustomEvmNetwork(newNetwork)
     if (newToken) await chaindataProvider.addCustomToken(newToken)
 
+    await activeEvmNetworksStore.setActive(newNetwork.id, true)
+
     talismanAnalytics.captureDelayed("add network evm", {
       network: network.chainName,
       isCustom: false,
@@ -459,6 +463,8 @@ export class EthHandler extends ExtensionHandler {
 
       await chaindataProvider.addCustomEvmNetwork(newNetwork)
 
+      await activeEvmNetworksStore.setActive(newNetwork.id, true)
+
       // RPCs may have changed, clear cache
       chainConnectorEvm.clearRpcProvidersCache(network.id)
 
@@ -485,6 +491,15 @@ export class EthHandler extends ExtensionHandler {
   }
 
   private ethNetworkReset: MessageHandler<"pri(eth.networks.reset)"> = async (request) => {
+    const network = await chaindataProvider.getEvmNetwork(request.id)
+    const isActive = network && isEvmNetworkActive(network, await activeEvmNetworksStore.get())
+
+    if (isActive) {
+      // network may be active only because it's a custom network,
+      // enforce the value or the network could be deactivated unintentionally
+      activeEvmNetworksStore.setActive(request.id, true)
+    }
+
     await chaindataProvider.resetEvmNetwork(request.id)
 
     talismanAnalytics.capture("reset custom network", {
@@ -524,7 +539,10 @@ export class EthHandler extends ExtensionHandler {
         decimals: Number(token.decimals),
       }
 
-      await chaindataProvider.addCustomToken(safeToken)
+      const newTokenId = await chaindataProvider.addCustomToken(safeToken)
+
+      if (newTokenId) await activeTokensStore.setActive(newTokenId, true)
+
       talismanAnalytics.captureDelayed("add asset evm", {
         contractAddress: token.contractAddress,
         symbol: token.symbol,

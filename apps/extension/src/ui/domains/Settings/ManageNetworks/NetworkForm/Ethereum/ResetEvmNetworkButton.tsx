@@ -4,7 +4,6 @@ import { useOpenClose } from "@talisman/hooks/useOpenClose"
 import { api } from "@ui/api"
 import { FC, useCallback } from "react"
 import { Trans, useTranslation } from "react-i18next"
-import { useNavigate } from "react-router-dom"
 import { ModalDialog } from "talisman-ui"
 import { Button, Modal } from "talisman-ui"
 
@@ -12,14 +11,12 @@ export const ResetEvmNetworkButton: FC<{ network: EvmNetwork | CustomEvmNetwork 
   network,
 }) => {
   const { t } = useTranslation("admin")
-  const navigate = useNavigate()
   const { isOpen, open, close } = useOpenClose()
 
   const handleConfirmReset = useCallback(async () => {
     if (!network) return
     try {
       await api.ethNetworkReset(network.id.toString())
-      navigate("/networks/ethereum")
     } catch (err) {
       notify({
         title: t("Failed to reset"),
@@ -27,7 +24,7 @@ export const ResetEvmNetworkButton: FC<{ network: EvmNetwork | CustomEvmNetwork 
         type: "error",
       })
     }
-  }, [network, navigate, t])
+  }, [network, t])
 
   const networkName = network?.name ?? t("N/A")
 
