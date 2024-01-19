@@ -100,6 +100,8 @@ export class RequestStore {
         ...this.onCompleteRequest(id, resolve, reject),
       } as KnownRespondableRequest<T>
 
+      this.requests[id] = { request }
+
       windowManager
         .popupOpen(`#/${requestOptions.type}/${id}`, () => {
           if (!this.requests[id]) return
@@ -112,7 +114,7 @@ export class RequestStore {
         .then((windowId) => {
           if (windowId === undefined && !TEST) reject(new Error("Failed to open popup"))
           else {
-            this.requests[id] = { request, windowId }
+            this.requests[id].windowId = windowId
             this.observable.next(this.getAllRequests())
           }
         })
