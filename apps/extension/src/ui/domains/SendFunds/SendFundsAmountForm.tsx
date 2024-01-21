@@ -6,9 +6,14 @@ import { convertAddress } from "@talisman/util/convertAddress"
 import { AccountAddressType } from "@talisman/util/getAddressType"
 import { AlertCircleIcon, InfoIcon, SwapIcon, UserPlusIcon } from "@talismn/icons"
 import { classNames, planckToTokens, tokensToPlanck } from "@talismn/util"
-import { SendFundsWizardPage, useSendFundsWizard } from "@ui/apps/popup/pages/SendFunds/context"
+import {
+  SendFundsWizardPage,
+  ToWarning,
+  useSendFundsWizard,
+} from "@ui/apps/popup/pages/SendFunds/context"
 import { useAccountByAddress } from "@ui/hooks/useAccountByAddress"
 import { useAddressBook } from "@ui/hooks/useAddressBook"
+import { useChainByGenesisHash } from "@ui/hooks/useChainByGenesisHash"
 import { useSelectedCurrency } from "@ui/hooks/useCurrency"
 import { useFormattedAddress } from "@ui/hooks/useFormattedAddress"
 import useToken from "@ui/hooks/useToken"
@@ -521,6 +526,50 @@ const FeesSummary = () => {
   )
 }
 
+const DestinationAccountWarning = ({
+  toWarning,
+  genesisHash,
+}: {
+  toWarning: ToWarning
+  genesisHash?: string | null
+}) => {
+  const { t } = useTranslation("send-funds")
+  const chain = useChainByGenesisHash(genesisHash)
+
+  if (!toWarning) return null
+  return (
+    <Container className="text-alert-warn flex items-center gap-4 px-6 py-4">
+      <div className="text-lg">
+        <InfoIcon />
+      </div>
+      <div className={"scrollable scrollable-700 grow overflow-y-auto"}>
+        {toWarning === "AZERO_ID" && (
+          <Trans
+            t={t}
+            defaults="The Azero ID which you entered has been converted to a <Chain><ChainLogo />{{chainName}}</Chain> address. Make sure this is the chain you intend to transfer on."
+            components={{
+              Chain: <div className="text-body inline-flex items-baseline gap-1" />,
+              ChainLogo: <ChainLogo className="self-center" id={chain?.id} />,
+            }}
+            values={{ chainName: chain?.name ?? t("Unknown") }}
+          />
+        )}
+        {toWarning === "DIFFERENT_ACCOUNT_FORMAT" && (
+          <Trans
+            t={t}
+            defaults="The address you entered has been converted to a <Chain><ChainLogo />{{chainName}}</Chain> address. Make sure this is the chain you intend to transfer on."
+            components={{
+              Chain: <div className="text-body inline-flex items-baseline gap-1" />,
+              ChainLogo: <ChainLogo className="self-center" id={chain?.id} />,
+            }}
+            values={{ chainName: chain?.name ?? t("Unknown") }}
+          />
+        )}
+      </div>
+    </Container>
+  )
+}
+
 type ForfeitDetailsProps = {
   tokenId: string
   planck: string
@@ -649,7 +698,7 @@ const AddContact = () => {
 
 export const SendFundsAmountForm = () => {
   const { t } = useTranslation("send-funds")
-  const { from, to, goto, tokenId } = useSendFundsWizard()
+  const { from, to, toWarning, goto, tokenId } = useSendFundsWizard()
   const genesisHash = useGenesisHashFromTokenId(tokenId)
 
   const handleGotoClick = useCallback(
@@ -699,6 +748,7 @@ export const SendFundsAmountForm = () => {
       <div className="w-full space-y-4 text-xs leading-[140%]">
         <TokenRow onEditClick={handleGotoClick("token")} />
         <FeesSummary />
+        <DestinationAccountWarning toWarning={toWarning as ToWarning} genesisHash={genesisHash} />
       </div>
       <ReviewButton />
     </form>

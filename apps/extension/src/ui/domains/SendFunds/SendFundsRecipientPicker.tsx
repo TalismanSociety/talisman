@@ -4,7 +4,8 @@ import { SearchInput } from "@talisman/components/SearchInput"
 import { convertAddress } from "@talisman/util/convertAddress"
 import { isValidAddress } from "@talisman/util/isValidAddress"
 import { EyeIcon, LoaderIcon, TalismanHandIcon, UserIcon } from "@talismn/icons"
-import { useSendFundsWizard } from "@ui/apps/popup/pages/SendFunds/context"
+import { encodeAnyAddress } from "@talismn/util"
+import { ToWarning, useSendFundsWizard } from "@ui/apps/popup/pages/SendFunds/context"
 import useAccounts from "@ui/hooks/useAccounts"
 import { useAddressBook } from "@ui/hooks/useAddressBook"
 import useChain from "@ui/hooks/useChain"
@@ -156,9 +157,27 @@ export const SendFundsRecipientPicker = () => {
 
   const handleSelect = useCallback(
     (address: string) => {
+      const accountFormatDiffersFromChain = (() => {
+        if (!isValidAddressInput) return false
+        if (isEthereumAddress(search)) return false
+        if (search === encodeAnyAddress(search, chain?.prefix ?? 42)) return false
+        return true
+      })()
+
+      // Azns is the only lookup we use for polkadot addresses. If this changes, we will need to use the NsLookupType here.
+      const isAzeroDomainButNotAzero =
+        !address.startsWith("0x") && typeof nsLookup === "string" && chain?.id !== "aleph-zero"
+
+      const toWarning: ToWarning = isAzeroDomainButNotAzero
+        ? "AZERO_ID"
+        : accountFormatDiffersFromChain
+        ? "DIFFERENT_ACCOUNT_FORMAT"
+        : ""
+
       set("to", address, true)
+      set("toWarning", toWarning, true)
     },
-    [set]
+    [chain?.id, chain?.prefix, isValidAddressInput, nsLookup, search, set]
   )
 
   const handleValidate = useCallback(() => {
