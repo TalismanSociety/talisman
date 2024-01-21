@@ -1,13 +1,6 @@
 import { Abi } from "@polkadot/api-contract"
 import { TypeRegistry } from "@polkadot/types"
-import {
-  assert,
-  hexToNumber,
-  hexToU8a,
-  u8aConcatStrict,
-  u8aToHex,
-  u8aToString,
-} from "@polkadot/util"
+import { assert, hexToNumber, hexToU8a, u8aToString } from "@polkadot/util"
 import { defineMethod } from "@substrate/txwrapper-core"
 import { ChainConnector } from "@talismn/chain-connector"
 import {
@@ -24,6 +17,7 @@ import { DefaultBalanceModule, NewBalanceModule, NewTransferParamsType } from ".
 import log from "../log"
 import { AddressesByToken, Amount, Balance, BalanceJson, Balances, NewBalanceType } from "../types"
 import psp22Abi from "./abis/psp22.json"
+import { makeContractCaller } from "./util/makeContractCaller"
 
 type ModuleType = "substrate-psp22"
 
@@ -119,6 +113,7 @@ export const SubPsp22Module: NewBalanceModule<
       const registry = new TypeRegistry()
       const Psp22Abi = new Abi(psp22Abi)
 
+      // TODO: Use `decodeOutput` from `./util/decodeOutput`
       const contractCall = makeContractCaller({ chainConnector, chainId, registry })
 
       const tokens: Record<string, SubPsp22Token> = {}
@@ -297,6 +292,7 @@ export const SubPsp22Module: NewBalanceModule<
 
       const Psp22Abi = new Abi(psp22Abi)
 
+      // TODO: Use `decodeOutput` from `./util/decodeOutput`
       const contractCall = makeContractCaller({ chainConnector, chainId, registry })
 
       const data = registry.createType(
@@ -351,44 +347,6 @@ export const SubPsp22Module: NewBalanceModule<
   }
 }
 
-const makeContractCaller =
-  ({
-    chainConnector,
-    chainId,
-    registry,
-  }: {
-    chainConnector: ChainConnector
-    chainId: string
-    registry: TypeRegistry
-  }) =>
-  async <T extends { toU8a: () => Uint8Array }>(
-    callFrom: string,
-    contractAddress: string,
-    inputData: T
-  ) =>
-    registry.createType(
-      "ContractExecResult",
-      await chainConnector.send(chainId, "state_call", [
-        "ContractsApi_call",
-        u8aToHex(
-          u8aConcatStrict([
-            // origin
-            registry.createType("AccountId", callFrom).toU8a(),
-            // dest
-            registry.createType("AccountId", contractAddress).toU8a(),
-            // value
-            registry.createType("Balance", 0).toU8a(),
-            // gasLimit
-            registry.createType("Option<WeightV2>").toU8a(),
-            // storageDepositLimit
-            registry.createType("Option<Balance>").toU8a(),
-            // inputData
-            inputData.toU8a(),
-          ])
-        ),
-      ])
-    )
-
 const fetchBalances = async (
   chainConnector: ChainConnector,
   tokens: TokenList,
@@ -411,6 +369,7 @@ const fetchBalances = async (
         return []
       }
 
+      // TODO: Use `decodeOutput` from `./util/decodeOutput`
       const contractCall = makeContractCaller({
         chainConnector,
         chainId: token.chain.id,

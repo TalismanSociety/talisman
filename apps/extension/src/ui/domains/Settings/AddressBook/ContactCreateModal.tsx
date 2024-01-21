@@ -4,11 +4,11 @@ import { notify } from "@talisman/components/Notifications"
 import { convertAddress } from "@talisman/util/convertAddress"
 import { isValidSubstrateAddress } from "@talisman/util/isValidSubstrateAddress"
 import { AnalyticsPage, sendAnalyticsEvent } from "@ui/api/analytics"
-import { AddressFieldEnsBadge } from "@ui/domains/Account/AddressFieldEnsBadge"
+import { AddressFieldNsBadge } from "@ui/domains/Account/AddressFieldNsBadge"
 import useAccounts from "@ui/hooks/useAccounts"
 import { useAddressBook } from "@ui/hooks/useAddressBook"
 import { useAnalyticsPageView } from "@ui/hooks/useAnalyticsPageView"
-import { useResolveEnsName } from "@ui/hooks/useResolveEnsName"
+import { useResolveNsName } from "@ui/hooks/useResolveNsName"
 import { useCallback, useEffect, useMemo } from "react"
 import { useForm } from "react-hook-form"
 import { useTranslation } from "react-i18next"
@@ -116,10 +116,9 @@ export const ContactCreateModal = ({ isOpen, close }: ContactModalProps) => {
 
   const { searchAddress } = watch()
 
-  const [ensLookup, { isLookup: isEnsLookup, isFetching: isEnsFetching }] =
-    useResolveEnsName(searchAddress)
+  const [nsLookup, { nsLookupType, isNsLookup, isNsFetching }] = useResolveNsName(searchAddress)
   useEffect(() => {
-    if (!isEnsLookup) {
+    if (!isNsLookup) {
       setValue("address", searchAddress, {
         shouldValidate: true,
         shouldTouch: true,
@@ -128,12 +127,12 @@ export const ContactCreateModal = ({ isOpen, close }: ContactModalProps) => {
       return
     }
 
-    setValue("address", ensLookup ?? (ensLookup === null ? "invalid" : ""), {
+    setValue("address", nsLookup ?? (nsLookup === null ? "invalid" : ""), {
       shouldValidate: true,
       shouldTouch: true,
       shouldDirty: true,
     })
-  }, [ensLookup, isEnsLookup, searchAddress, setValue])
+  }, [nsLookup, isNsLookup, searchAddress, setValue])
 
   const submit = useCallback(
     async (formData: FormValues) => {
@@ -190,10 +189,11 @@ export const ContactCreateModal = ({ isOpen, close }: ContactModalProps) => {
               /* Fixes implicit min-width of approx. 180px */
               size={1}
               after={
-                <AddressFieldEnsBadge
-                  isEnsLookup={isEnsLookup}
-                  isEnsFetching={isEnsFetching}
-                  ensLookup={ensLookup}
+                <AddressFieldNsBadge
+                  nsLookup={nsLookup}
+                  nsLookupType={nsLookupType}
+                  isNsLookup={isNsLookup}
+                  isNsFetching={isNsFetching}
                 />
               }
             />

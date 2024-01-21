@@ -26,6 +26,7 @@
     "clean": "rm -rf dist && rm -rf .turbo rm -rf node_modules"
   },
   "dependencies": {
+    "@azns/resolver-core": "^1.6.0",
     "@talismn/balances": "workspace:*",
     "@talismn/util": "workspace:*",
     "anylogger": "^1.0.11"

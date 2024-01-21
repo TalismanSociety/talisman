@@ -8,7 +8,7 @@ import { useSendFundsWizard } from "@ui/apps/popup/pages/SendFunds/context"
 import useAccounts from "@ui/hooks/useAccounts"
 import { useAddressBook } from "@ui/hooks/useAddressBook"
 import useChain from "@ui/hooks/useChain"
-import { useResolveEnsName } from "@ui/hooks/useResolveEnsName"
+import { useResolveNsName } from "@ui/hooks/useResolveNsName"
 import useToken from "@ui/hooks/useToken"
 import { useCallback, useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
@@ -32,9 +32,7 @@ export const SendFundsRecipientPicker = () => {
     return isFromEthereum ? isEthereumAddress(search) : isValidAddress(search)
   }, [from, isFromEthereum, search])
 
-  const [ensLookup, { isLookup: isEnsLookup, isFetching: isEnsFetching }] = useResolveEnsName(
-    isFromEthereum ? search : undefined
-  )
+  const [nsLookup, { isNsLookup, isNsFetching }] = useResolveNsName(search)
 
   const normalize = useCallback(
     (addr = "") => {
@@ -50,10 +48,7 @@ export const SendFundsRecipientPicker = () => {
   const normalizedFrom = useMemo(() => normalize(from), [from, normalize])
   const normalizedTo = useMemo(() => normalize(to), [to, normalize])
   const normalizedSearch = useMemo(() => normalize(search), [search, normalize])
-  const normalizedEnsLookup = useMemo(
-    () => normalize(ensLookup ?? undefined),
-    [ensLookup, normalize]
-  )
+  const normalizedNsLookup = useMemo(() => normalize(nsLookup ?? undefined), [nsLookup, normalize])
 
   const newAddresses = useMemo(() => {
     const addresses: SendFundsAccount[] = []
@@ -74,13 +69,13 @@ export const SendFundsRecipientPicker = () => {
       addresses.push({ address: search })
 
     if (
-      isEnsLookup &&
-      ensLookup &&
-      (!to || normalizedEnsLookup !== normalizedTo) &&
-      allAccounts.every((account) => normalizedEnsLookup !== normalize(account.address)) &&
-      allContacts.every((contact) => normalizedEnsLookup !== normalize(contact.address))
+      isNsLookup &&
+      nsLookup &&
+      (!to || normalizedNsLookup !== normalizedTo) &&
+      allAccounts.every((account) => normalizedNsLookup !== normalize(account.address)) &&
+      allContacts.every((contact) => normalizedNsLookup !== normalize(contact.address))
     )
-      addresses.push({ name: search, address: ensLookup })
+      addresses.push({ name: search, address: nsLookup })
 
     return addresses
   }, [
@@ -91,9 +86,9 @@ export const SendFundsRecipientPicker = () => {
     normalizedSearch,
     normalizedTo,
     search,
-    isEnsLookup,
-    ensLookup,
-    normalizedEnsLookup,
+    isNsLookup,
+    nsLookup,
+    normalizedNsLookup,
     normalize,
   ])
 
@@ -106,16 +101,16 @@ export const SendFundsRecipientPicker = () => {
             !search ||
             contact.name?.toLowerCase().includes(search) ||
             (isValidAddressInput && normalizedSearch === normalize(contact.address)) ||
-            (isEnsLookup && ensLookup && normalizedEnsLookup === normalize(contact.address))
+            (isNsLookup && nsLookup && normalizedNsLookup === normalize(contact.address))
         ),
     [
       allContacts,
-      ensLookup,
-      isEnsLookup,
+      nsLookup,
+      isNsLookup,
       isFromEthereum,
       isValidAddressInput,
       normalize,
-      normalizedEnsLookup,
+      normalizedNsLookup,
       normalizedSearch,
       search,
     ]
@@ -131,18 +126,18 @@ export const SendFundsRecipientPicker = () => {
             !search ||
             account.name?.toLowerCase().includes(search) ||
             (isValidAddressInput && normalizedSearch === normalize(account.address)) ||
-            (isEnsLookup && ensLookup && normalizedEnsLookup === normalize(account.address))
+            (isNsLookup && nsLookup && normalizedNsLookup === normalize(account.address))
         )
         .filter((account) => !account.genesisHash || account.genesisHash === chain?.genesisHash),
     [
       allAccounts,
       chain?.genesisHash,
-      ensLookup,
-      isEnsLookup,
+      nsLookup,
+      isNsLookup,
       isFromEthereum,
       isValidAddressInput,
       normalize,
-      normalizedEnsLookup,
+      normalizedNsLookup,
       normalizedFrom,
       normalizedSearch,
       search,
@@ -182,7 +177,7 @@ export const SendFundsRecipientPicker = () => {
             onChange={setSearch}
             placeholder={t("Enter address")}
             after={
-              isEnsLookup && isEnsFetching ? (
+              isNsLookup && isNsFetching ? (
                 <LoaderIcon className="text-body-disabled animate-spin-slow shrink-0" />
               ) : null
             }
