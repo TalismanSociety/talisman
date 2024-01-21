@@ -3,6 +3,7 @@ import { Address } from "@core/types/base"
 import { TalismanOrb } from "@talismn/orb"
 import { classNames, isEthereumAddress } from "@talismn/util"
 import { useChainByGenesisHash } from "@ui/hooks/useChainByGenesisHash"
+import { useOnChainId } from "@ui/hooks/useOnChainId"
 import { useSetting } from "@ui/hooks/useSettings"
 import { CSSProperties, FC, Suspense, lazy, useMemo } from "react"
 
@@ -45,6 +46,7 @@ const PolkadotAvatar = ({ seed }: { seed: string }) => {
 }
 
 export const AccountIcon: FC<AccountIconProps> = ({ address, className, genesisHash, type }) => {
+  const [onChainId] = useOnChainId(address)
   const [identiconType] = useSetting("identiconType")
 
   // apply look & feel from props if provided (should only be the case in AvatarTypeSelector)
@@ -56,7 +58,11 @@ export const AccountIcon: FC<AccountIconProps> = ({ address, className, genesisH
       {displayType === "polkadot-identicon" ? (
         <PolkadotAvatar seed={address} />
       ) : (
-        <TalismanOrb seed={address} />
+        <TalismanOrb
+          seed={address}
+          /** Azns is the only lookup we use for polkadot addresses. If this changes, we will need to use the NsLookupType here. */
+          isAzns={!address.startsWith("0x") && typeof onChainId === "string"}
+        />
       )}
       {genesisHash && (
         <Suspense>
