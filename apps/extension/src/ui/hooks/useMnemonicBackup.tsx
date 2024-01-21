@@ -20,30 +20,38 @@ const useMnemonicBackup = () => {
     () => !hasMnemonics || mnemonics.every((mnemonic) => mnemonic.confirmed),
     [mnemonics, hasMnemonics]
   )
-  const anyBackedUp = useMemo(
-    () => hasMnemonics && mnemonics.some((mnemonic) => mnemonic.confirmed),
-    [mnemonics, hasMnemonics]
+
+  const notBackedUpCount = useMemo(
+    () => mnemonics.filter((mnemonic) => !mnemonic.confirmed).length,
+    [mnemonics]
   )
 
   const isSnoozed = useMemo(() => {
-    return Boolean(hideBackupWarningUntil && hideBackupWarningUntil > Date.now() && !anyBackedUp)
-  }, [hideBackupWarningUntil, anyBackedUp])
+    return Boolean(hideBackupWarningUntil && hideBackupWarningUntil > Date.now())
+  }, [hideBackupWarningUntil])
 
-  // whether we must show the big backup warning modal
+  // whether we must show any type of warning
   const showBackupWarning = useMemo(
-    () =>
-      !isSnoozed &&
-      hasMnemonics &&
-      !anyBackedUp &&
-      !!ownedTotal &&
-      location.pathname !== "/settings/mnemonics",
-    [isSnoozed, anyBackedUp, hasMnemonics, ownedTotal, location.pathname]
+    () => !isSnoozed && hasMnemonics && !allBackedUp && !!ownedTotal,
+    [isSnoozed, allBackedUp, hasMnemonics, ownedTotal]
   )
 
-  // whether we must show the small backup warning notification in dashboard
-  const showBackupNotification = useMemo(
-    () => !showBackupWarning && !allBackedUp,
-    [showBackupWarning, allBackedUp]
+  // hide the backup warning banner or modal if we are on the backup page
+  const showBackupWarningBannerOrModal = useMemo(
+    () => showBackupWarning && location.pathname !== "/settings/mnemonics",
+    [showBackupWarning, location.pathname]
+  )
+
+  // if the backup has never been snoozed, we show the backup warning modal
+  const showBackupWarningModal = useMemo(
+    () => showBackupWarningBannerOrModal && hideBackupWarningUntil === undefined,
+    [showBackupWarningBannerOrModal, hideBackupWarningUntil]
+  )
+
+  // otherwise we show the banner notification
+  const showBackupWarningBanner = useMemo(
+    () => showBackupWarningBannerOrModal && !showBackupWarningModal,
+    [showBackupWarningBannerOrModal, showBackupWarningModal]
   )
 
   // toggle menmonic confirmed
@@ -59,10 +67,12 @@ const useMnemonicBackup = () => {
 
   return {
     allBackedUp,
+    notBackedUpCount,
     toggleConfirmed,
     confirm,
     showBackupWarning,
-    showBackupNotification,
+    showBackupWarningModal,
+    showBackupWarningBanner,
     snoozeBackupReminder,
     isSnoozed,
   }

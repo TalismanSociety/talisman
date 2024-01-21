@@ -34,7 +34,7 @@ export const MainSidebar = () => {
   const showBuyCryptoButton = useIsFeatureEnabled("BUY_CRYPTO")
   const showStaking = useIsFeatureEnabled("LINK_STAKING")
 
-  const { isSnoozed } = useMnemonicBackup()
+  const { showBackupWarning } = useMnemonicBackup()
 
   const handlePortfolioClick = useCallback(() => {
     genericEvent("goto portfolio", { from: "sidebar" })
@@ -138,7 +138,7 @@ export const MainSidebar = () => {
         onClick={handleSettingsClick}
         icon={<SettingsIcon />}
       />
-      {isSnoozed && (
+      {showBackupWarning && (
         <SidebarNavItem
           title={t("Backup Wallet")}
           // show only on large screens
