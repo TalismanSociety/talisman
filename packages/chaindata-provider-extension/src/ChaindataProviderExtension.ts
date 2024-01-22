@@ -15,8 +15,14 @@ import {
   githubTokenLogoUrl,
   githubUnknownTokenLogoUrl,
 } from "@talismn/chaindata-provider"
-import { PromiseExtended, Transaction, TransactionMode, liveQuery } from "dexie"
-import { Observable, from } from "rxjs"
+import {
+  Observable as DexieObservable,
+  PromiseExtended,
+  Transaction,
+  TransactionMode,
+  liveQuery,
+} from "dexie"
+import { Observable, lastValueFrom, map } from "rxjs"
 
 import { addCustomChainRpcs } from "./addCustomChainRpcs"
 import { fetchInitChains, fetchInitEvmNetworks, fetchInitTokens } from "./init"
@@ -38,6 +44,16 @@ const getNativeTokenId = (chainId: EvmNetworkId, moduleType: string, tokenSymbol
 
 const minimumHydrationInterval = 300_000 // 300_000ms = 300s = 5 minutes
 
+function dexieToRx<T>(o: DexieObservable<T>): Observable<T> {
+  return new Observable<T>((observer) => {
+    const subscription = o.subscribe({
+      next: (value) => observer.next(value),
+      error: (error) => observer.error(error),
+    })
+    return () => subscription.unsubscribe()
+  })
+}
+
 export type ChaindataProviderExtensionOptions = {
   onfinalityApiKey?: string
 }
@@ -48,10 +64,51 @@ export class ChaindataProviderExtension implements ChaindataProvider {
   #lastHydratedEvmNetworksAt = 0
   #lastHydratedTokensAt = 0
   #onfinalityApiKey?: string
+  #evmNetworks: Observable<(EvmNetwork | CustomEvmNetwork)[]>
+  #chains: Observable<(Chain | CustomChain)[]>
+  #tokens: Observable<Token[]>
 
   constructor(options?: ChaindataProviderExtensionOptions) {
     this.#db = new TalismanChaindataDatabase()
     this.#onfinalityApiKey = options?.onfinalityApiKey ?? undefined
+    this.#tokens = dexieToRx(liveQuery(() => this.#db.tokens.toArray()))
+    this.#evmNetworks = dexieToRx(liveQuery(() => this.#db.evmNetworks.toArray()))
+    this.#chains = dexieToRx(liveQuery(() => this.#db.chains.toArray()))
+  }
+
+  get chainsArrayObservable() {
+    return this.#chains
+  }
+
+  get chainsObservable() {
+    return this.#chains.pipe(
+      map((chains) => Object.fromEntries(chains.map((chains) => [chains.id, chains])) as ChainList)
+    )
+  }
+
+  get evmNetworksArrayObservable() {
+    return this.#evmNetworks
+  }
+
+  get evmNetworksObservable() {
+    return this.#evmNetworks.pipe(
+      map(
+        (evmNetworks) =>
+          Object.fromEntries(
+            evmNetworks.map((evmNetwork) => [evmNetwork.id, evmNetwork])
+          ) as EvmNetworkList
+      )
+    )
+  }
+
+  get tokensArrayObservable() {
+    return this.#tokens
+  }
+
+  get tokensObservable() {
+    return this.#tokens.pipe(
+      map((token) => Object.fromEntries(token.map((chains) => [chains.id, chains])) as TokenList)
+    )
   }
 
   setOnfinalityApiKey(apiKey: string | undefined) {
@@ -60,27 +117,34 @@ export class ChaindataProviderExtension implements ChaindataProvider {
 
   async chainIds(): Promise<ChainId[]> {
     try {
-      return await this.#db.chains.toCollection().primaryKeys()
+      return (await lastValueFrom(this.#chains)).map(({ id }) => id)
     } catch (cause) {
       throw new Error("Failed to get chainIds", { cause })
     }
   }
   async chains(): Promise<ChainList> {
     try {
-      const chains = await this.#db.chains.toArray()
+      const chains = await lastValueFrom(this.#chains)
       return Object.fromEntries(chains.map((chain) => [chain.id, chain]))
     } catch (cause) {
       throw new Error("Failed to get chains", { cause })
     }
   }
+
   async chainsArray() {
     try {
-      return await this.#db.chains.toArray()
+      return await lastValueFrom(this.#chains)
     } catch (cause) {
       throw new Error("Failed to get chains", { cause })
     }
   }
+
   async getChain(chainIdOrQuery: ChainId | Partial<Chain>): Promise<Chain | CustomChain | null> {
+    // TODO read from local observable
+    // const key = `chaindataProvider.getChain(${
+    //   typeof chainIdOrQuery === "object" ? JSON.stringify(chainIdOrQuery) : chainIdOrQuery
+    // }) ${crypto.randomUUID()}`
+    // console.time(key)
     const [chainId, chainQuery] =
       typeof chainIdOrQuery === "string"
         ? // chainId (ChainId)
@@ -95,26 +159,31 @@ export class ChaindataProviderExtension implements ChaindataProvider {
     } catch (cause) {
       throw new Error("Failed to get chain", { cause })
     }
+    // finally {
+    //   console.timeEnd(key)
+    // }
   }
 
   async evmNetworkIds(): Promise<EvmNetworkId[]> {
     try {
-      return await this.#db.evmNetworks.toCollection().primaryKeys()
+      const evmNetworks = await lastValueFrom(this.#evmNetworks)
+      return evmNetworks.map(({ id }) => id)
     } catch (cause) {
       throw new Error("Failed to get evmNetworkIds", { cause })
     }
   }
   async evmNetworks(): Promise<EvmNetworkList> {
     try {
-      const evmNetworks = await this.#db.evmNetworks.toArray()
+      const evmNetworks = await lastValueFrom(this.#evmNetworks)
       return Object.fromEntries(evmNetworks.map((evmNetwork) => [evmNetwork.id, evmNetwork]))
     } catch (cause) {
       throw new Error("Failed to get evmNetworks", { cause })
     }
   }
+
   async evmNetworksArray() {
     try {
-      return await this.#db.evmNetworks.toArray()
+      return await lastValueFrom(this.#evmNetworks)
     } catch (cause) {
       throw new Error("Failed to get evmNetworks", { cause })
     }
@@ -122,6 +191,13 @@ export class ChaindataProviderExtension implements ChaindataProvider {
   async getEvmNetwork(
     evmNetworkIdOrQuery: EvmNetworkId | Partial<EvmNetwork>
   ): Promise<EvmNetwork | CustomEvmNetwork | null> {
+    // TODO read from local observable
+    // const key = `chaindataProvider.getEvmNetwork(${
+    //   typeof evmNetworkIdOrQuery === "object"
+    //     ? JSON.stringify(evmNetworkIdOrQuery)
+    //     : evmNetworkIdOrQuery
+    // }) ${crypto.randomUUID()}`
+    // console.time(key)
     const [evmNetworkId, evmNetworkQuery] =
       typeof evmNetworkIdOrQuery === "string"
         ? // evmNetworkId (EvmNetworkId)
@@ -136,26 +212,31 @@ export class ChaindataProviderExtension implements ChaindataProvider {
     } catch (cause) {
       throw new Error("Failed to get evmNetwork", { cause })
     }
+    // finally {
+    //   console.timeEnd(key)
+    // }
   }
 
   async tokenIds(): Promise<TokenId[]> {
     try {
-      return await this.#db.tokens.toCollection().primaryKeys()
+      const tokens = await lastValueFrom(this.#tokens)
+      return tokens.map(({ id }) => id)
     } catch (cause) {
       throw new Error("Failed to get tokenIds", { cause })
     }
   }
   async tokens(): Promise<TokenList> {
     try {
-      const tokens = await this.#db.tokens.toArray()
+      const tokens = await lastValueFrom(this.#tokens)
       return Object.fromEntries(tokens.map((token) => [token.id, token]))
     } catch (cause) {
       throw new Error("Failed to get tokens", { cause })
     }
   }
+
   async tokensArray() {
     try {
-      return await this.#db.tokens.toArray()
+      return await lastValueFrom(this.#tokens)
     } catch (cause) {
       throw new Error("Failed to get tokens", { cause })
     }
@@ -202,12 +283,9 @@ export class ChaindataProviderExtension implements ChaindataProvider {
   }
 
   subscribeCustomChains() {
-    return from(
-      liveQuery(() =>
-        this.#db.chains
-          .filter((chain): chain is CustomChain => "isCustom" in chain && chain.isCustom)
-          // @ts-expect-error Dexie can't do type assertion on filter
-          .toArray<CustomChain[]>((chains) => chains)
+    return this.#chains.pipe(
+      map((chains) =>
+        chains.filter((chain): chain is CustomChain => "isCustom" in chain && chain.isCustom)
       )
     )
   }
@@ -274,14 +352,11 @@ export class ChaindataProviderExtension implements ChaindataProvider {
   }
 
   subscribeCustomEvmNetworks() {
-    return from(
-      liveQuery(() =>
-        this.#db.evmNetworks
-          .filter(
-            (network): network is CustomEvmNetwork => "isCustom" in network && network.isCustom
-          )
-          // @ts-expect-error Dexie can't do type assertion on filter
-          .toArray<CustomEvmNetwork[]>((networks) => networks)
+    return this.#evmNetworks.pipe(
+      map((networks) =>
+        networks.filter(
+          (network): network is CustomEvmNetwork => "isCustom" in network && network.isCustom
+        )
       )
     )
   }
@@ -373,13 +448,8 @@ export class ChaindataProviderExtension implements ChaindataProvider {
   // Need to explicitly type the return type
   // else TypeScript will resolve it to `IToken` instead
   subscribeCustomTokens(): Observable<Token[]> {
-    return from(
-      liveQuery(() =>
-        this.#db.tokens
-          .filter((token): token is Token => "isCustom" in token)
-          // Dexie can't do type assertion on filter
-          .toArray<Token[]>((tokens) => tokens)
-      )
+    return this.#tokens.pipe(
+      map((tokens) => tokens.filter((token): token is Token => "isCustom" in token))
     )
   }
 

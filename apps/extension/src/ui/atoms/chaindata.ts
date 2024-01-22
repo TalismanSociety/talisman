@@ -29,7 +29,6 @@ import {
   TokenList,
 } from "@talismn/chaindata-provider"
 import { api } from "@ui/api"
-import { liveQuery } from "dexie"
 import { atom, selector, selectorFamily, waitForAll } from "recoil"
 
 const NO_OP = () => {}
@@ -52,8 +51,7 @@ export const allEvmNetworksState = atom<(EvmNetwork | CustomEvmNetwork)[]>({
   effects: [
     ({ setSelf }) => {
       log.debug("allEvmNetworksState.init")
-      const obsEvmNetworks = liveQuery(() => chaindataProvider.evmNetworksArray())
-      const sub = obsEvmNetworks.subscribe(setSelf)
+      const sub = chaindataProvider.evmNetworksArrayObservable.subscribe(setSelf)
       return () => sub.unsubscribe()
     },
     () => api.ethereumNetworks(NO_OP),
@@ -181,8 +179,7 @@ export const allChainsState = atom<(Chain | CustomChain)[]>({
   effects: [
     ({ setSelf }) => {
       log.debug("allChainsState.init")
-      const obsChains = liveQuery(() => chaindataProvider.chainsArray())
-      const sub = obsChains.subscribe(setSelf)
+      const sub = chaindataProvider.chainsArrayObservable.subscribe(setSelf)
       return () => sub.unsubscribe()
     },
     () => api.chains(NO_OP),
@@ -325,8 +322,7 @@ export const allTokensMapState = atom<TokenList>({
   effects: [
     ({ setSelf }) => {
       log.debug("allTokensMapState.init")
-      const obsTokens = liveQuery(() => chaindataProvider.tokens())
-      const sub = obsTokens.subscribe(setSelf)
+      const sub = chaindataProvider.tokensObservable.subscribe(setSelf)
       return () => sub.unsubscribe()
     },
     () => api.tokens(NO_OP),
