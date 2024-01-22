@@ -121,6 +121,15 @@ export class ChaindataProviderExtension implements ChaindataProvider {
     )
   }
 
+  get chainsByGenesisHashObservable() {
+    return this.#chainsSubject.pipe(
+      map(
+        (chains) =>
+          Object.fromEntries(chains.map((chains) => [chains.genesisHash, chains])) as ChainList
+      )
+    )
+  }
+
   get evmNetworksArrayObservable() {
     return this.#evmNetworksSubject
   }
@@ -180,23 +189,19 @@ export class ChaindataProviderExtension implements ChaindataProvider {
     }
   }
 
-  async getChain(chainIdOrQuery: ChainId | Partial<Chain>): Promise<Chain | CustomChain | null> {
-    if (typeof chainIdOrQuery === "string") {
-      await this.#waitReady
-      return this.#chains.find((t) => t.id === chainIdOrQuery) ?? null
-    }
-
-    const [chainId, chainQuery] =
-      typeof chainIdOrQuery === "string"
-        ? // chainId (ChainId)
-          [chainIdOrQuery, undefined]
-        : // chainQuery (Partial<Chain>)
-          [undefined, chainIdOrQuery]
-
+  async getChain(chainIdOrHash: ChainId): Promise<Chain | CustomChain | null> {
     try {
-      return chainId !== undefined
-        ? (await this.#db.chains.get(chainId)) || null
-        : (await this.#db.chains.get(chainQuery)) || null
+      await this.#waitReady
+      return this.#chains.find((t) => t.id === chainIdOrHash) ?? null
+    } catch (cause) {
+      throw new Error("Failed to get chain", { cause })
+    }
+  }
+
+  async getChainByGenesisHash(chainIdOrHash: `0x${string}`): Promise<Chain | CustomChain | null> {
+    try {
+      await this.#waitReady
+      return this.#chains.find((t) => t.genesisHash === chainIdOrHash) ?? null
     } catch (cause) {
       throw new Error("Failed to get chain", { cause })
     }
@@ -228,24 +233,11 @@ export class ChaindataProviderExtension implements ChaindataProvider {
     }
   }
   async getEvmNetwork(
-    evmNetworkIdOrQuery: EvmNetworkId | Partial<EvmNetwork>
+    evmNetworkIdOrQuery: EvmNetworkId
   ): Promise<EvmNetwork | CustomEvmNetwork | null> {
-    if (typeof evmNetworkIdOrQuery === "string") {
+    try {
       await this.#waitReady
       return this.#evmNetworks.find((t) => t.id === evmNetworkIdOrQuery) ?? null
-    }
-
-    const [evmNetworkId, evmNetworkQuery] =
-      typeof evmNetworkIdOrQuery === "string"
-        ? // evmNetworkId (EvmNetworkId)
-          [evmNetworkIdOrQuery, undefined]
-        : // evmNetworkQuery (Partial<EvmNetwork>)
-          [undefined, evmNetworkIdOrQuery]
-
-    try {
-      return evmNetworkId !== undefined
-        ? (await this.#db.evmNetworks.get(evmNetworkId)) || null
-        : (await this.#db.evmNetworks.get(evmNetworkQuery)) || null
     } catch (cause) {
       throw new Error("Failed to get evmNetwork", { cause })
     }
@@ -276,23 +268,10 @@ export class ChaindataProviderExtension implements ChaindataProvider {
       throw new Error("Failed to get tokens", { cause })
     }
   }
-  async getToken(tokenIdOrQuery: TokenId | Partial<Token>): Promise<Token | null> {
-    if (typeof tokenIdOrQuery === "string") {
-      await this.#waitReady
-      return this.#tokens.find((t) => t.id === tokenIdOrQuery) ?? null
-    }
-
-    const [tokenId, tokenQuery] =
-      typeof tokenIdOrQuery === "string"
-        ? // tokenId (TokenId)
-          [tokenIdOrQuery, undefined]
-        : // tokenQuery (Partial<Token>)
-          [undefined, tokenIdOrQuery]
-
+  async getToken(tokenId: TokenId): Promise<Token | null> {
     try {
-      return tokenId !== undefined
-        ? (await this.#db.tokens.get(tokenId)) || null
-        : (await this.#db.tokens.get(tokenQuery)) || null
+      await this.#waitReady
+      return this.#tokens.find((t) => t.id === tokenId) ?? null
     } catch (cause) {
       throw new Error("Failed to get token", { cause })
     }
