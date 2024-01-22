@@ -44,7 +44,7 @@ export const ConnectSignetSelectAccounts = () => {
 
   const handleImport = useCallback(async () => {
     setImporting(true)
-    const selectedVaults = vaults.filter(({ address }) => selectedAccounts?.[address])
+    const selectedVaults = vaults.filter(({ address }) => selectedAccounts[address])
     const notificationId = notify(
       {
         type: "processing",

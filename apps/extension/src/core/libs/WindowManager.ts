@@ -9,7 +9,7 @@ const WINDOW_OPTS: Browser.Windows.CreateCreateDataType & { width: number; heigh
   type: "popup",
   url: Browser.runtime.getURL("popup.html"),
   width: 400,
-  height: 600
+  height: 600,
 }
 
 class WindowManager {
@@ -34,7 +34,7 @@ class WindowManager {
         Browser.tabs.onUpdated.addListener(handler)
       }),
       // promise for the timeout
-      sleep(3000)
+      sleep(3000),
     ])
   }
 
@@ -48,7 +48,7 @@ class WindowManager {
   private async openTabOnce({
     url,
     baseUrl,
-    shouldFocus = true
+    shouldFocus = true,
   }: {
     url: string
     baseUrl?: string
@@ -86,7 +86,7 @@ class WindowManager {
     await this.openTabOnce({
       url: `${baseUrl}${route ? `#${route}` : ""}`,
       baseUrl,
-      shouldFocus: onboarded
+      shouldFocus: onboarded,
     })
     this.#onboardingTabOpening = false
   }
@@ -117,7 +117,7 @@ class WindowManager {
       top: 100 + (currWindow?.top ?? 0),
       left:
         (currWindow?.width ? (currWindow.left ?? 0) + currWindow.width : window.screen.availWidth) -
-        500
+        500,
     }
 
     const popupCreateArgs: Browser.Windows.CreateCreateDataType = {
@@ -126,7 +126,7 @@ class WindowManager {
       top,
       left,
       width: WINDOW_OPTS.width + widthDelta,
-      height: WINDOW_OPTS.height + heightDelta
+      height: WINDOW_OPTS.height + heightDelta,
     }
 
     let popup: Browser.Windows.Window
@@ -139,7 +139,7 @@ class WindowManager {
       popup = await Browser.windows.create({
         ...popupCreateArgs,
         width: WINDOW_OPTS.width,
-        height: WINDOW_OPTS.height
+        height: WINDOW_OPTS.height,
       })
     }
 
