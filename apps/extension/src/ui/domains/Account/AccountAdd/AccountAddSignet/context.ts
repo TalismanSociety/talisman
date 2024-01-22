@@ -4,9 +4,10 @@ import { useMemo, useState } from "react"
 import { AccountAddPageProps } from "../types"
 import { SignetVault } from "./types"
 
+const SIGNET_APP_URL = "https://signet.talisman.xyz"
+
 const useSignetConnectContext = ({ onSuccess }: AccountAddPageProps) => {
-  // TODO: default this to Signet public url when its available
-  const [signetUrl, setSignetUrl] = useState("")
+  const [signetUrl, setSignetUrl] = useState(SIGNET_APP_URL)
   const [vaults, setVaults] = useState<SignetVault[]>([])
 
   const signetUrlOrigin = useMemo(() => {

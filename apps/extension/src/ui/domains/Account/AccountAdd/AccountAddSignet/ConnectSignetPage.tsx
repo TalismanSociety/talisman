@@ -5,10 +5,12 @@ import { ArrowRightIcon } from "@talismn/icons"
 import { signet } from "@ui/util/signet"
 import { FC, ReactNode, useCallback, useEffect, useState } from "react"
 import { useTranslation } from "react-i18next"
-import { useNavigate } from "react-router-dom"
+import { Link, useNavigate } from "react-router-dom"
 import { Button, FormFieldContainer, FormFieldInputText } from "talisman-ui"
 
 import { useSignetConnect } from "./context"
+
+const SIGNET_URL = "https://talisman.xyz/signet"
 
 const Step: FC<{ step: ReactNode; title: ReactNode; children: ReactNode }> = ({
   step,
@@ -73,7 +75,16 @@ export const ConnectSignetPage = () => {
     <>
       <HeaderBlock
         title={t("Import Signet Vault (Multisig wallet)")}
-        text={t("Signet is coming soon...")}
+        text={
+          <>
+            {t(
+              "Signet is the Enterprise & Institutional solution from Talisman, once you have set-up a vault in Signet you can connect below. Find out more at "
+            )}
+            <Link to={SIGNET_URL} target="_blank" className="text-primary-500">
+              {SIGNET_URL}
+            </Link>
+          </>
+        }
       />
       <Spacer large />
 
