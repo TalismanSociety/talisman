@@ -22,7 +22,7 @@ import {
   TransactionMode,
   liveQuery,
 } from "dexie"
-import { Observable, Subject, map } from "rxjs"
+import { Observable, ReplaySubject, map } from "rxjs"
 
 import { addCustomChainRpcs } from "./addCustomChainRpcs"
 import { fetchInitChains, fetchInitEvmNetworks, fetchInitTokens } from "./init"
@@ -66,11 +66,11 @@ export class ChaindataProviderExtension implements ChaindataProvider {
   #onfinalityApiKey?: string
 
   // can't use BehaviorSubjects below as a default value is mandatory, this would trigger a balance db cleanup on startup if we used empty arrays
-  #evmNetworksSubject = new Subject<(EvmNetwork | CustomEvmNetwork)[]>()
+  #evmNetworksSubject = new ReplaySubject<(EvmNetwork | CustomEvmNetwork)[]>(1)
   #evmNetworks: (EvmNetwork | CustomEvmNetwork)[] = []
-  #chainsSubject = new Subject<(Chain | CustomChain)[]>()
+  #chainsSubject = new ReplaySubject<(Chain | CustomChain)[]>(1)
   #chains: (Chain | CustomChain)[] = []
-  #tokensSubject = new Subject<Token[]>()
+  #tokensSubject = new ReplaySubject<Token[]>(1)
   #tokens: Token[] = []
   #waitReady: Promise<void>
 
