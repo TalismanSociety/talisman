@@ -57,17 +57,11 @@ export class ChaindataProviderExtension implements ChaindataProvider {
     this.#db = new TalismanChaindataDatabase()
     this.#onfinalityApiKey = options?.onfinalityApiKey ?? undefined
 
-    liveQuery(() => this.#db.tokens.toArray()).subscribe((v) => {
-      this.#tokensSubject.next(v)
-    })
-
-    liveQuery(() => this.#db.evmNetworks.toArray()).subscribe((v) => {
+    liveQuery(() => this.#db.tokens.toArray()).subscribe((v) => this.#tokensSubject.next(v))
+    liveQuery(() => this.#db.chains.toArray()).subscribe((v) => this.#chainsSubject.next(v))
+    liveQuery(() => this.#db.evmNetworks.toArray()).subscribe((v) =>
       this.#evmNetworksSubject.next(v)
-    })
-
-    liveQuery(() => this.#db.chains.toArray()).subscribe((v) => {
-      this.#chainsSubject.next(v)
-    })
+    )
   }
 
   get chainsArrayObservable() {
