@@ -28,18 +28,14 @@ export const Acknowledgement = () => {
             <span className="text-primary-700 flex h-20 items-center rounded-2xl bg-[#D5FF5C1A] p-6">
               <ShieldIcon className="h-10 w-10" />
             </span>
-            <span>
-              {t(
-                "Back up your recovery phrase by writing it down and storing it in a secure location."
-              )}
-            </span>
+            <span>{t("Write down your recovery phrase and store it in a secure location.")}</span>
           </div>
           <div className="flex gap-6">
             <span className="flex h-20 items-center rounded-2xl bg-[#FD48481A] p-6 text-red-500">
               <XIcon className="h-10 w-10" />
             </span>
             <span>
-              {t("If you lose your recovery phrase, you won't be able to access your funds.")}
+              {t("If you lose your recovery phrase, you will lose access to your funds.")}
             </span>
           </div>
         </div>
