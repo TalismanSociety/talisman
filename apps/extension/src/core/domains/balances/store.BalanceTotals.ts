@@ -24,7 +24,7 @@ export const trackBalanceTotals = async () => {
   combineLatest([
     settingsStore.observable,
     keyring.accounts.subject,
-    chaindataProvider.tokensObservable,
+    chaindataProvider.tokensListObservable,
     liveQuery(() => balancesDb.balances.toArray()),
     liveQuery(() => extensionDb.tokenRates.toArray()),
   ])

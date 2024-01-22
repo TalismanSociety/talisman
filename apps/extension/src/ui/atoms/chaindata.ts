@@ -322,7 +322,7 @@ export const allTokensMapState = atom<TokenList>({
   effects: [
     ({ setSelf }) => {
       log.debug("allTokensMapState.init")
-      const sub = chaindataProvider.tokensObservable.subscribe(setSelf)
+      const sub = chaindataProvider.tokensListObservable.subscribe(setSelf)
       return () => sub.unsubscribe()
     },
     () => api.tokens(NO_OP),
