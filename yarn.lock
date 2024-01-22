@@ -8777,6 +8777,7 @@ __metadata:
   resolution: "@talismn/on-chain-id@workspace:packages/on-chain-id"
   dependencies:
     "@azns/resolver-core": ^1.6.0
+    "@polkadot/api": ^10.9.1
     "@polkadot/types": ^10.9.1
     "@talismn/balances": "workspace:*"
     "@talismn/eslint-config": "workspace:*"
@@ -8789,6 +8790,7 @@ __metadata:
     ts-jest: ^29.1.1
     typescript: ^5.2.2
   peerDependencies:
+    "@polkadot/api": 10.x
     "@polkadot/types": 10.x
   languageName: unknown
   linkType: soft
@@ -11925,8 +11927,8 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "balances-demo@workspace:apps/balances-demo"
   dependencies:
-    "@polkadot/api": ^10.1.4
-    "@polkadot/extension-dapp": ^0.45.3
+    "@polkadot/api": "*"
+    "@polkadot/extension-dapp": "*"
     "@tailwindcss/forms": ^0.5.3
     "@talismn/balances": "workspace:*"
     "@talismn/balances-react": "workspace:*"
