@@ -22,13 +22,7 @@ const colorFromHash = (hash: string) => {
 
 const rotateText = (text: string, nbChars = 0) => text.slice(nbChars) + text.slice(0, nbChars)
 
-type TalismanOrbProps = {
-  seed: string
-  isAzns?: boolean
-  width?: number
-  height?: number
-  className?: string
-}
+type TalismanOrbProps = { seed: string; width?: number; height?: number; className?: string }
 
 export const useTalismanOrb = (seed: string) => {
   return useMemo(() => {
@@ -74,7 +68,6 @@ export const useTalismanOrb = (seed: string) => {
 
 export const TalismanOrb: FC<TalismanOrbProps> = ({
   seed,
-  isAzns = false,
   width = "1em",
   height = "1em",
   className,
@@ -112,20 +105,11 @@ export const TalismanOrb: FC<TalismanOrbProps> = ({
           <g opacity="0.75" transform="scale(0.7) translate(14 14)">
             <path
               d="M12.8101 32.76L32.0001 44.62L51.1901 32.76L32.0001 -0.0699997L12.8101 32.76Z"
-              fill="#fff"
+              fill="white"
             />
             <path
               d="M12.8101 36.48L32.0001 48.43L51.1901 36.48L32.0001 63.93L12.8101 36.48Z"
-              fill="#fff"
-            />
-          </g>
-        )}
-        {!isEthereum && isAzns && (
-          <g opacity="0.75" transform="scale(0.7) translate(5 5)">
-            <path
-              fill="#fff"
-              fillRule="evenodd"
-              d="M65.7 33.5H53.9l-9.3-21.2c-.1-.3-.4-.5-.7-.5H36c-.3 0-.6.2-.7.5L26 33.5H14.3c-.4 0-.8.3-.8.8v5.5c0 .4.3.8.8.8H23l-9 20.6c-.1.2-.1.5.1.7.1.2.4.3.6.3h6.8c.3 0 .6-.2.7-.5L40 19.4l17.8 42.3c.1.3.4.5.7.5h6.8c.3 0 .5-.1.6-.3.1-.2.2-.5.1-.7l-9-20.6h8.7c.4 0 .8-.3.8-.8v-5.5c-.1-.5-.4-.8-.8-.8Z"
+              fill="white"
             />
           </g>
         )}
