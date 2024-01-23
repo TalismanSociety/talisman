@@ -14,4 +14,4 @@ function useChaindataProvider(options: ChaindataProviderOptions = {}) {
   return useMemo(() => new ChaindataProvider({ onfinalityApiKey }), [onfinalityApiKey])
 }
 
-export const [chaindataProvider, useChaindata] = provideContext(useChaindataProvider)
+export const [ChaindataReactProvider, useChaindata] = provideContext(useChaindataProvider)

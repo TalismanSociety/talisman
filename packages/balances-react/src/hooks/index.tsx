@@ -19,7 +19,7 @@ import { ReactNode } from "react"
 import { AllAddressesProvider } from "./useAllAddresses"
 import { BalanceModulesProvider } from "./useBalanceModules"
 import { ChainConnectorsProvider } from "./useChainConnectors"
-import { ChaindataProvider } from "./useChaindata"
+import { ChaindataReactProvider } from "./useChaindata"
 import { DbCacheProvider } from "./useDbCache"
 import { EnabledChainsProvider } from "./useEnabledChains"
 import { WithTestnetsProvider } from "./useWithTestnets"
@@ -66,7 +66,7 @@ export const BalancesProvider = ({
 }: BalancesProviderProps) => (
   <WithTestnetsProvider withTestnets={withTestnets}>
     <EnabledChainsProvider enabledChains={enabledChains}>
-      <ChaindataProvider onfinalityApiKey={onfinalityApiKey}>
+      <ChaindataReactProvider onfinalityApiKey={onfinalityApiKey}>
         <ChainConnectorsProvider onfinalityApiKey={onfinalityApiKey}>
           <AllAddressesProvider>
             <BalanceModulesProvider balanceModules={balanceModules}>
@@ -74,7 +74,7 @@ export const BalancesProvider = ({
             </BalanceModulesProvider>
           </AllAddressesProvider>
         </ChainConnectorsProvider>
-      </ChaindataProvider>
+      </ChaindataReactProvider>
     </EnabledChainsProvider>
   </WithTestnetsProvider>
 )
