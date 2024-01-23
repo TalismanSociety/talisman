@@ -931,6 +931,19 @@ export const tokens = [
     },
   },
   {
+    id: "aventus-substrate-native-avt",
+    type: "substrate-native",
+    isTestnet: false,
+    isDefault: true,
+    symbol: "AVT",
+    decimals: 18,
+    logo: "https://raw.githubusercontent.com/TalismanSociety/chaindata/main/assets/tokens/unknown.svg",
+    existentialDeposit: "0",
+    chain: {
+      id: "aventus",
+    },
+  },
+  {
     id: "bajun-substrate-native-baju",
     type: "substrate-native",
     isTestnet: false,
@@ -1600,6 +1613,7 @@ export const tokens = [
     chain: {
       id: "bifrost-polkadot",
     },
+    coingeckoId: "voucher-dot",
   },
   {
     id: "bifrost-polkadot-substrate-tokens-vfil",
@@ -3063,6 +3077,47 @@ export const tokens = [
     assetId: "517081101363",
     chain: {
       id: "genshiro-kusama",
+    },
+  },
+  {
+    id: "gm-substrate-native-fren",
+    type: "substrate-native",
+    isTestnet: false,
+    isDefault: true,
+    symbol: "FREN",
+    decimals: 12,
+    logo: "https://raw.githubusercontent.com/TalismanSociety/chaindata/main/assets/chains/gm.svg",
+    existentialDeposit: "1000000000",
+    chain: {
+      id: "gm",
+    },
+  },
+  {
+    id: "gm-substrate-tokens-gm",
+    type: "substrate-tokens",
+    isTestnet: false,
+    isDefault: true,
+    symbol: "GM",
+    decimals: 0,
+    logo: "https://raw.githubusercontent.com/TalismanSociety/chaindata/main/assets/tokens/gm.svg",
+    existentialDeposit: "0",
+    onChainId: 1,
+    chain: {
+      id: "gm",
+    },
+  },
+  {
+    id: "gm-substrate-tokens-gn",
+    type: "substrate-tokens",
+    isTestnet: false,
+    isDefault: true,
+    symbol: "GN",
+    decimals: 0,
+    logo: "https://raw.githubusercontent.com/TalismanSociety/chaindata/main/assets/tokens/gn.svg",
+    existentialDeposit: "0",
+    onChainId: 2,
+    chain: {
+      id: "gm",
     },
   },
   {
