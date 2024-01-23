@@ -1,4 +1,5 @@
 import { AccountAddressType } from "@core/domains/accounts/types"
+import { AssetDiscoveryMode } from "@core/domains/assetDiscovery/types"
 import { getEthDerivationPath } from "@core/domains/ethereum/helpers"
 import { yupResolver } from "@hookform/resolvers/yup"
 import { mnemonicValidate } from "@polkadot/util-crypto"
@@ -200,7 +201,11 @@ export const AccountAddSecretMnemonicForm = () => {
           { autoClose: false }
         )
         try {
-          onSuccess(await api.accountCreateFromSuri(name, suri, type))
+          const address = await api.accountCreateFromSuri(name, suri, type)
+
+          api.assetDiscoveryStartScan(AssetDiscoveryMode.ACTIVE_NETWORKS, [address])
+
+          onSuccess(address)
           notifyUpdate(notificationId, {
             type: "success",
             title: t("Account imported"),
@@ -301,7 +306,12 @@ export const AccountAddSecretMnemonicForm = () => {
           <div className="text-alert-warn grow truncate text-right">{errors.mnemonic?.message}</div>
         </div>
         <Spacer small />
-        <DerivationModeDropdown value={mode} onChange={handleModeChange} disabled={isPrivateKey} />
+        <DerivationModeDropdown
+          className={classNames(isPrivateKey && "invisible")}
+          value={mode}
+          onChange={handleModeChange}
+          disabled={isPrivateKey}
+        />
         <FormFieldContainer
           className={classNames("mt-2", mode !== "custom" && "invisible")}
           error={errors.derivationPath?.message}
