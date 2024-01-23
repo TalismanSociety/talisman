@@ -94,11 +94,11 @@ const subscribeBalancesByParams = async (
   // watch for changes to all stores, mainly important for onboarding as they start empty
   combineLatest([
     // chains
-    liveQuery(async () => await chaindataProvider.chains()),
+    chaindataProvider.chainsListObservable,
     // evmNetworks
-    liveQuery(async () => await chaindataProvider.evmNetworks()),
+    chaindataProvider.evmNetworksListObservable,
     // tokens
-    liveQuery(async () => await chaindataProvider.tokens()),
+    chaindataProvider.tokensListObservable,
     // miniMetadatas - not used here but we must retrigger the subscription when this changes
     liveQuery(async () => await balancesDb.miniMetadatas.toArray()),
     // active state of evm networks

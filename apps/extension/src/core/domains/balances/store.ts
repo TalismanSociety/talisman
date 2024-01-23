@@ -83,11 +83,11 @@ export class BalanceStore {
       // settings
       settingsStore.observable,
       // chains
-      liveQuery(async () => await chaindataProvider.chains()),
+      chaindataProvider.chainsListObservable,
       // evmNetworks
-      liveQuery(async () => await chaindataProvider.evmNetworks()),
+      chaindataProvider.evmNetworksListObservable,
       // tokens
-      liveQuery(async () => await chaindataProvider.tokens()),
+      chaindataProvider.tokensListObservable,
       // miniMetadatas
       liveQuery(async () => await balancesDb.miniMetadatas.toArray()),
       // active state of evm networks
