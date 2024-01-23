@@ -9,7 +9,7 @@ import { Chain, EvmNetwork, Token } from "@talismn/chaindata-provider"
 //
 // They should be periodically updated with the latest state of chaindata.
 // You can update them by running the following command:
-// `yarn workspace @talismn/chaindata-provider-extension generate-init-data`
+// `yarn workspace @talismn/chaindata-provider generate-init-data`
 
 export const fetchInitChains = async (): Promise<Chain[]> =>
   (await import(/* webpackChunkName: "talisman-init-data-chains" */ "./chains")).chains as Chain[]

@@ -1,5 +1,4 @@
 ---
-"@talismn/chaindata-provider-extension": patch
 "@talismn/chain-connector-evm": patch
 "@talismn/chaindata-provider": patch
 "@talismn/chain-connector": patch
