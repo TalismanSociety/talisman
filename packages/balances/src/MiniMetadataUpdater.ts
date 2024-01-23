@@ -1,10 +1,11 @@
 import { PromisePool } from "@supercharge/promise-pool"
 import { Chain, ChainId, EvmNetworkId, TokenList } from "@talismn/chaindata-provider"
 import {
-  ChaindataProviderExtension,
+  ChaindataProvider,
   availableTokenLogoFilenames,
-} from "@talismn/chaindata-provider-extension"
-import { fetchInitMiniMetadatas, fetchMiniMetadatas } from "@talismn/chaindata-provider-extension"
+  fetchInitMiniMetadatas,
+  fetchMiniMetadatas,
+} from "@talismn/chaindata-provider"
 import { liveQuery } from "dexie"
 import { from } from "rxjs"
 
@@ -45,12 +46,12 @@ export class MiniMetadataUpdater {
   #lastHydratedMiniMetadatasAt = 0
 
   #chainConnectors: ChainConnectors
-  #chaindataProvider: ChaindataProviderExtension
+  #chaindataProvider: ChaindataProvider
   #balanceModules: Array<AnyBalanceModule>
 
   constructor(
     chainConnectors: ChainConnectors,
-    chaindataProvider: ChaindataProviderExtension,
+    chaindataProvider: ChaindataProvider,
     balanceModules: Array<AnyBalanceModule>
   ) {
     this.#chainConnectors = chainConnectors

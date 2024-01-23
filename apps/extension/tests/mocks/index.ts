@@ -1,6 +1,6 @@
 import { api } from "./api"
 
-jest.mock("@talismn/chaindata-provider-extension/src/net")
+jest.mock("@talismn/chaindata-provider/src/net")
 jest.setTimeout(20000)
 
 jest.mock("@talismn/util", () => {

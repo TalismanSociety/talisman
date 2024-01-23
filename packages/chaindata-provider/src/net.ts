@@ -10,7 +10,7 @@ import {
   githubChaindataOrg,
   githubChaindataRepo,
   githubChaindataTokensAssetsDir,
-} from "@talismn/chaindata-provider"
+} from "./constants"
 
 export const fetchChains = async () => await (await fetch(chaindataChainsAllUrl)).json()
 export const fetchChain = async (chainId: string) =>

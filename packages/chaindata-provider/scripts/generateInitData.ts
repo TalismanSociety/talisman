@@ -25,6 +25,6 @@ async function generateInitData() {
 // Use this command to run this file:
 //
 // ```
-// yarn workspace @talismn/chaindata-provider-extension generate-init-data
+// yarn workspace @talismn/chaindata-provider generate-init-data
 // ```
 generateInitData()

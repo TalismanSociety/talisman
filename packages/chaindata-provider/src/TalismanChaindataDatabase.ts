@@ -1,3 +1,5 @@
+import { Dexie } from "dexie"
+
 import {
   Chain,
   ChainId,
@@ -7,8 +9,7 @@ import {
   EvmNetworkId,
   Token,
   TokenId,
-} from "@talismn/chaindata-provider"
-import { Dexie } from "dexie"
+} from "./types"
 
 export class TalismanChaindataDatabase extends Dexie {
   chains!: Dexie.Table<Chain | CustomChain, ChainId>

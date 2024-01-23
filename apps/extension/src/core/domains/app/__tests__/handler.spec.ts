@@ -15,7 +15,7 @@ import Browser from "webextension-polyfill"
 
 import { getMessageSenderFn } from "../../../../../tests/util"
 
-jest.mock("@talismn/chaindata-provider-extension/src/net")
+jest.mock("@talismn/chaindata-provider/src/net")
 jest.setTimeout(20000)
 
 keyring.loadAll({ store: new AccountsStore() })
