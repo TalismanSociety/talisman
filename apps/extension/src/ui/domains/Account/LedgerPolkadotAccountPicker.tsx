@@ -86,21 +86,15 @@ const useLedgerPolkadotAccounts = (
           (wa) => convertAddress(wa.address, null) === address
         )
 
-        const accountBalances = balances.find({ address })
-
         return {
           ...acc,
           name: existingAccount?.name ?? acc.name,
           connected: !!existingAccount,
           selected: selectedAccounts.some((sa) => sa.address === acc.address),
-          balances: accountBalances,
-          isBalanceLoading:
-            !addressesAndTokens || // show spinner when not fetching yet
-            accountBalances.count < 1 ||
-            accountBalances.each.some((b) => b.status === "cache"),
+          balances: balances.find({ address }),
         }
       }),
-    [ledgerAccounts, walletAccounts, balances, selectedAccounts, addressesAndTokens]
+    [ledgerAccounts, walletAccounts, balances, selectedAccounts]
   )
 
   useEffect(() => {

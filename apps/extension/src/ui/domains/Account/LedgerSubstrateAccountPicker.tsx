@@ -97,16 +97,13 @@ const useLedgerChainAccounts = (
       ledgerAccounts.map((acc) => {
         if (!acc) return null
 
+        const address = convertAddress(acc.address, null)
         const existingAccount = walletAccounts?.find(
-          (wa) =>
-            convertAddress(wa.address, null) === convertAddress(acc.address, null) &&
-            acc.genesisHash === wa.genesisHash
+          (wa) => convertAddress(wa.address, null) === address && acc.genesisHash === wa.genesisHash
         )
 
         const accountBalances = balances.find(
-          (b) =>
-            convertAddress(b.address, null) === convertAddress(acc.address, null) &&
-            b.chainId === chain?.id
+          (b) => convertAddress(b.address, null) === address && b.chainId === chain?.id
         )
 
         return {
@@ -115,13 +112,9 @@ const useLedgerChainAccounts = (
           connected: !!existingAccount,
           selected: selectedAccounts.some((sa) => sa.address === acc.address),
           balances: accountBalances,
-          isBalanceLoading:
-            !addressesByChain || // show spinner when not fetching yet
-            accountBalances.count < 1 ||
-            accountBalances.each.some((b) => b.status === "cache"),
         }
       }),
-    [balances, chain?.id, ledgerAccounts, selectedAccounts, addressesByChain, walletAccounts]
+    [balances, chain?.id, ledgerAccounts, selectedAccounts, walletAccounts]
   )
 
   useEffect(() => {

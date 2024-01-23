@@ -3,7 +3,7 @@ import { AccountJson } from "@polkadot/extension-base/background/types"
 import { CheckCircleIcon } from "@talismn/icons"
 import { classNames } from "@talismn/util"
 import { useBalanceDetails } from "@ui/hooks/useBalanceDetails"
-import { FC, ReactNode, useCallback } from "react"
+import { FC, ReactNode, useCallback, useMemo } from "react"
 import { Checkbox, Tooltip, TooltipContent, TooltipTrigger } from "talisman-ui"
 
 import { Fiat } from "../Asset/Fiat"
@@ -50,10 +50,20 @@ const AccountButton: FC<AccountButtonProps> = ({
   connected,
   selected,
   onClick,
-  isBalanceLoading,
   withBalances,
 }) => {
   const { balanceDetails, totalUsd } = useBalanceDetails(balances)
+
+  const [isInitializing, isLoading] = useMemo(
+    () => [
+      // none are loaded yet
+      balances.count === 0 || balances.each.every((b) => b.status === "initializing"),
+      // some are loaded, some are still loading
+      balances.each.some((b) => b.status === "initializing") &&
+        balances.each.some((b) => b.status === "live"),
+    ],
+    [balances]
+  )
 
   return (
     <button
@@ -73,18 +83,24 @@ const AccountButton: FC<AccountButtonProps> = ({
       </div>
       <div className="flex items-center justify-end gap-2">
         {withBalances && (
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <span className={classNames(isBalanceLoading && "animate-pulse")}>
-                <Fiat className="leading-none" amount={totalUsd} />
-              </span>
-            </TooltipTrigger>
-            {balanceDetails && (
-              <TooltipContent>
-                <div className="whitespace-pre-wrap text-right">{balanceDetails}</div>
-              </TooltipContent>
+          <>
+            {isInitializing ? (
+              <div className="rounded-xs bg-grey-750 h-[1.8rem] w-[6.8rem] animate-pulse"></div>
+            ) : (
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <span className={classNames(isLoading && "animate-pulse")}>
+                    <Fiat className="leading-none" amount={totalUsd} isBalance />
+                  </span>
+                </TooltipTrigger>
+                {balanceDetails && (
+                  <TooltipContent>
+                    <div className="whitespace-pre-wrap text-right">{balanceDetails}</div>
+                  </TooltipContent>
+                )}
+              </Tooltip>
             )}
-          </Tooltip>
+          </>
         )}
       </div>
       <div className="flex w-12 shrink-0 flex-col items-center justify-center">
@@ -103,8 +119,6 @@ export type DerivedAccountBase = AccountJson & {
   accountIndex: number
   address: string
   balances: Balances
-  isBalanceLoading: boolean
-
   connected?: boolean
   selected?: boolean
 }

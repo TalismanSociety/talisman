@@ -1,21 +1,18 @@
 import { DEBUG } from "@core/constants"
-import { AddressesAndEvmNetwork } from "@core/domains/balances/types"
+import { AddressesAndTokens } from "@core/domains/balances/types"
 import { getEthLedgerDerivationPath } from "@core/domains/ethereum/helpers"
-import { isEvmNetworkActive } from "@core/domains/ethereum/store.activeEvmNetworks"
 import { LedgerEthDerivationPathType } from "@core/domains/ethereum/types"
 import { convertAddress } from "@talisman/util/convertAddress"
 import { LedgerAccountDefEthereum } from "@ui/domains/Account/AccountAdd/AccountAddLedger/context"
 import { useLedgerEthereum } from "@ui/hooks/ledger/useLedgerEthereum"
 import useAccounts from "@ui/hooks/useAccounts"
-import { useActiveEvmNetworksState } from "@ui/hooks/useActiveEvmNetworksState"
 import useBalancesByParams from "@ui/hooks/useBalancesByParams"
-import { useEvmNetworks } from "@ui/hooks/useEvmNetworks"
+import useTokens from "@ui/hooks/useTokens"
+import { isEvmToken } from "@ui/util/isEvmToken"
 import { FC, useCallback, useEffect, useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
 
 import { DerivedAccountBase, DerivedAccountPickerBase } from "./DerivedAccountPickerBase"
-
-const BALANCE_CHECK_EVM_NETWORK_IDS = ["1284", "1285", "592", "1"]
 
 const useLedgerEthereumAccounts = (
   name: string,
@@ -72,47 +69,37 @@ const useLedgerEthereumAccounts = (
     setIsBusy(false)
   }, [derivationPathType, isReady, itemsPerPage, ledger, name, pageIndex, t])
 
-  const { evmNetworks } = useEvmNetworks({ activeOnly: true, includeTestnets: false })
+  const { tokens: activeTokens } = useTokens({ activeOnly: true, includeTestnets: false })
 
-  // which balances to fetch
-  const activeEvmNetworks = useActiveEvmNetworksState()
-  const addressesAndEvmNetworks = useMemo(() => {
+  const addressesAndTokens = useMemo<AddressesAndTokens | undefined>(() => {
     // start fetching balances only when all accounts are known to prevent recreating subscription 5 times
-    if (derivedAccounts.filter(Boolean).length < derivedAccounts.length) return undefined
+    if (derivedAccounts.filter(Boolean).length < itemsPerPage) return undefined
 
-    const result: AddressesAndEvmNetwork = {
-      addresses: derivedAccounts
-        .filter((acc) => !!acc)
-        .map((acc) => acc?.address)
-        .filter(Boolean) as string[],
-      evmNetworks: (evmNetworks || [])
-        .filter((chain) => BALANCE_CHECK_EVM_NETWORK_IDS.includes(chain.id))
-        .filter((chain) => isEvmNetworkActive(chain, activeEvmNetworks))
-        .map(({ id, nativeToken }) => ({ id, nativeToken: { id: nativeToken?.id as string } })),
-    }
+    const addresses = derivedAccounts.map((acc) => acc?.address).filter(Boolean) as string[]
+    const tokenIds = activeTokens.filter(isEvmToken).map((t) => t.id)
 
-    return result
-  }, [derivedAccounts, activeEvmNetworks, evmNetworks])
+    return { addresses, tokenIds }
+  }, [activeTokens, derivedAccounts, itemsPerPage])
 
   const withBalances = useMemo(
-    () => !!addressesAndEvmNetworks?.evmNetworks.length,
-    [addressesAndEvmNetworks?.evmNetworks.length]
+    () => !!addressesAndTokens?.tokenIds.length && !!addressesAndTokens.addresses.length,
+    [addressesAndTokens]
   )
 
-  const balances = useBalancesByParams({ addressesAndEvmNetworks })
+  const balances = useBalancesByParams({ addressesAndTokens })
 
   const accounts = useMemo(
     () =>
       derivedAccounts.map((acc) => {
         if (!acc) return null
 
+        const address = convertAddress(acc.address, null)
+
         const existingAccount = walletAccounts?.find(
-          (wa) => convertAddress(wa.address, null) === convertAddress(acc.address, null)
+          (wa) => convertAddress(wa.address, null) === address
         )
 
-        const accountBalances = balances.find(
-          (b) => convertAddress(b.address, null) === convertAddress(acc.address, null)
-        )
+        const accountBalances = balances.find((b) => convertAddress(b.address, null) === address)
 
         return {
           ...acc,
@@ -120,13 +107,9 @@ const useLedgerEthereumAccounts = (
           connected: !!existingAccount,
           selected: selectedAccounts.some((sa) => sa.path === acc.path),
           balances: accountBalances,
-          isBalanceLoading:
-            !addressesAndEvmNetworks ||
-            accountBalances.count < BALANCE_CHECK_EVM_NETWORK_IDS.length ||
-            accountBalances.each.some((b) => b.status === "cache"),
         }
       }),
-    [balances, derivedAccounts, selectedAccounts, addressesAndEvmNetworks, walletAccounts]
+    [balances, derivedAccounts, selectedAccounts, walletAccounts]
   )
 
   useEffect(() => {

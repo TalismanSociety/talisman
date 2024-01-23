@@ -142,26 +142,53 @@ const subscribeBalancesByParams = async (
     await Promise.all(closeSubscriptionCallbacks)
 
     // create placeholder rows for all missing balances, so FE knows they are initializing
-    const initBalances: BalanceJson[] = []
+    // entries from initBalances will be removed as they are updated by the balance modules
+    let initBalances: BalanceJson[] = []
     for (const balanceModule of balanceModules) {
       const addressesByToken = addressesByTokenByModule[balanceModule.type] ?? {}
       for (const [tokenId, addresses] of Object.entries(addressesByToken))
         for (const address of addresses)
           initBalances.push(balanceModule.getPlaceholderBalance(tokenId, address))
     }
+
     callback({ type: "upsert", balances: new Balances(initBalances).toJSON() })
 
-    // subscribe to balances by params
-    closeSubscriptionCallbacks = balanceModules.map((balanceModule) =>
-      balanceModule.subscribeBalances(
-        addressesByTokenByModule[balanceModule.type] ?? {},
-        (error, result) => {
-          // eslint-disable-next-line no-console
-          if (error) DEBUG && console.error(error)
-          else callback({ type: "upsert", balances: (result ?? new Balances([])).toJSON() })
-        }
-      )
+    const timeout = setTimeout(() => {
+      // mark as stale all balances that are still initializing
+      if (initBalances.length) {
+        const staleBalances = initBalances.map((b) => ({ ...b, status: "stale" } as BalanceJson))
+        callback({ type: "upsert", balances: new Balances(staleBalances).toJSON() })
+      }
+    }, 30_000)
+
+    const cancelTimeout = new Promise<UnsubscribeFn>((resolve) =>
+      resolve(() => clearTimeout(timeout))
     )
+
+    // subscribe to balances by params
+    closeSubscriptionCallbacks = [
+      cancelTimeout,
+      ...balanceModules.map((balanceModule) =>
+        balanceModule.subscribeBalances(
+          addressesByTokenByModule[balanceModule.type] ?? {},
+          (error, result) => {
+            // eslint-disable-next-line no-console
+            if (error) DEBUG && console.error(error)
+            else {
+              callback({ type: "upsert", balances: (result ?? new Balances([])).toJSON() })
+
+              // remove balances from initBalances
+              if (result)
+                for (const bal of result.each) {
+                  initBalances = initBalances.filter(
+                    (b) => b.address !== bal.address && b.tokenId !== bal.tokenId
+                  )
+                }
+            }
+          }
+        )
+      ),
+    ]
   })
 
   // unsub on port disconnect
