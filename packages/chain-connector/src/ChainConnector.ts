@@ -1,5 +1,5 @@
 import type { ProviderInterface, ProviderInterfaceCallback } from "@polkadot/rpc-provider/types"
-import { ChainId, ChaindataChainProvider } from "@talismn/chaindata-provider"
+import { ChainId, IChaindataChainProvider } from "@talismn/chaindata-provider"
 import { TalismanConnectionMetaDatabase } from "@talismn/connection-meta"
 import { Deferred, sleep } from "@talismn/util"
 
@@ -59,7 +59,7 @@ type SocketUserId = number
  * handle the websocket connections.
  */
 export class ChainConnector {
-  #chaindataChainProvider: ChaindataChainProvider
+  #chaindataChainProvider: IChaindataChainProvider
   #connectionMetaDb?: TalismanConnectionMetaDatabase
 
   #socketConnections: Record<ChainId, Websocket> = {}
@@ -67,7 +67,7 @@ export class ChainConnector {
   #socketUsers: Record<ChainId, SocketUserId[]> = {}
 
   constructor(
-    chaindataChainProvider: ChaindataChainProvider,
+    chaindataChainProvider: IChaindataChainProvider,
     connectionMetaDb?: TalismanConnectionMetaDatabase
   ) {
     this.#chaindataChainProvider = chaindataChainProvider

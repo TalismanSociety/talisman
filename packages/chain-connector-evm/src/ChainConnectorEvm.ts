@@ -1,5 +1,8 @@
-import { ChaindataTokenProvider, EvmNetworkId } from "@talismn/chaindata-provider"
-import { ChaindataEvmNetworkProvider } from "@talismn/chaindata-provider"
+import {
+  EvmNetworkId,
+  IChaindataEvmNetworkProvider,
+  IChaindataTokenProvider,
+} from "@talismn/chaindata-provider"
 import { Account, PublicClient, WalletClient } from "viem"
 
 import { clearPublicClientCache, getEvmNetworkPublicClient } from "./getEvmNetworkPublicClient"
@@ -10,11 +13,11 @@ export type ChainConnectorEvmOptions = {
 }
 
 export class ChainConnectorEvm {
-  #chaindataProvider: ChaindataEvmNetworkProvider & ChaindataTokenProvider
+  #chaindataProvider: IChaindataEvmNetworkProvider & IChaindataTokenProvider
   #onfinalityApiKey?: string
 
   constructor(
-    chaindataProvider: ChaindataEvmNetworkProvider & ChaindataTokenProvider,
+    chaindataProvider: IChaindataEvmNetworkProvider & IChaindataTokenProvider,
     options?: ChainConnectorEvmOptions
   ) {
     this.#chaindataProvider = chaindataProvider
