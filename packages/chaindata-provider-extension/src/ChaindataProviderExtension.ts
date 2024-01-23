@@ -91,21 +91,14 @@ export class ChaindataProviderExtension implements ChaindataProvider {
   //
 
   get customChainsObservable() {
-    const customChainsFilter = (chains: Array<Chain | CustomChain>) =>
-      chains.filter((chain): chain is CustomChain => "isCustom" in chain && chain.isCustom)
-    return this.chainsObservable.pipe(map(customChainsFilter))
+    return this.chainsObservable.pipe(map(util.customChainsFilter))
   }
   get customChains() {
     return util.wrapObservableWithGetter("Failed to get custom chains", this.customChainsObservable)
   }
 
   get customEvmNetworksObservable() {
-    const customEvmNetworksFilter = (evmNetworks: Array<EvmNetwork | CustomEvmNetwork>) =>
-      evmNetworks.filter(
-        (evmNetwork): evmNetwork is CustomEvmNetwork =>
-          "isCustom" in evmNetwork && evmNetwork.isCustom
-      )
-    return this.evmNetworksObservable.pipe(map(customEvmNetworksFilter))
+    return this.evmNetworksObservable.pipe(map(util.customEvmNetworksFilter))
   }
   get customEvmNetworks() {
     return util.wrapObservableWithGetter(
@@ -115,9 +108,7 @@ export class ChaindataProviderExtension implements ChaindataProvider {
   }
 
   get customTokensObservable() {
-    const customTokensFilter = (tokens: Array<Token>) =>
-      tokens.filter((token) => "isCustom" in token && token.isCustom)
-    return this.tokensObservable.pipe(map(customTokensFilter))
+    return this.tokensObservable.pipe(map(util.customTokensFilter))
   }
   get customTokens() {
     return util.wrapObservableWithGetter("Failed to get custom tokens", this.customTokensObservable)
@@ -188,7 +179,7 @@ export class ChaindataProviderExtension implements ChaindataProvider {
   }
   get chainsByGenesisHash() {
     return util.wrapObservableWithGetter(
-      "Failed to get chains by genesis hash",
+      "Failed to get chains by genesisHash",
       this.chainsByGenesisHashObservable
     )
   }
@@ -199,28 +190,28 @@ export class ChaindataProviderExtension implements ChaindataProvider {
 
   async getChainById(chainId: ChainId) {
     return await util.withErrorReason(
-      "Failed to get chain",
+      "Failed to get chain by id",
       async () => (await this.chainsById)[chainId] ?? null
     )
   }
 
   async getChainByGenesisHash(genesisHash: `0x${string}`) {
     return await util.withErrorReason(
-      "Failed to get chain",
+      "Failed to get chain by genesisHash",
       async () => (await this.chainsByGenesisHash)[genesisHash] ?? null
     )
   }
 
   async getEvmNetworkById(evmNetworkId: EvmNetworkId) {
     return await util.withErrorReason(
-      "Failed to get evmNetwork",
+      "Failed to get evmNetwork by id",
       async () => (await this.evmNetworksById)[evmNetworkId] ?? null
     )
   }
 
   async getTokenById(tokenId: TokenId) {
     return await util.withErrorReason(
-      "Failed to get token",
+      "Failed to get token by id",
       async () => (await this.tokensById)[tokenId] ?? null
     )
   }

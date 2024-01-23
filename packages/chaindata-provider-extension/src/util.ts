@@ -1,4 +1,15 @@
+import {
+  Chain,
+  CustomChain,
+  CustomEvmNetwork,
+  EvmNetwork,
+  Token,
+} from "@talismn/chaindata-provider"
 import { Observable, firstValueFrom } from "rxjs"
+
+//
+// map from Item[] to another type
+//
 
 export const itemsToIds = <T extends { id: string }>(items: T[]): string[] =>
   items.map(({ id }) => id)
@@ -10,6 +21,25 @@ export const itemsToMapByGenesisHash = <T extends { genesisHash: string | null }
   items: T[]
 ): Record<string, T> =>
   Object.fromEntries(items.flatMap((item) => (item.genesisHash ? [[item.genesisHash, item]] : [])))
+
+//
+// filters for Item[] where Item.isCustom == true
+//
+
+export const customChainsFilter = (chains: Array<Chain | CustomChain>) =>
+  chains.filter((chain): chain is CustomChain => "isCustom" in chain && chain.isCustom)
+
+export const customEvmNetworksFilter = (evmNetworks: Array<EvmNetwork | CustomEvmNetwork>) =>
+  evmNetworks.filter(
+    (evmNetwork): evmNetwork is CustomEvmNetwork => "isCustom" in evmNetwork && evmNetwork.isCustom
+  )
+
+export const customTokensFilter = (tokens: Token[]) =>
+  tokens.filter((token) => "isCustom" in token && token.isCustom)
+
+//
+// Utils to Observable methods with one-shot Promise methods
+//
 
 type ObservableReturnType<O> = O extends Observable<infer T> ? T : O
 
