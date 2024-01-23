@@ -284,7 +284,10 @@ export const TokensPage = () => {
       )
 
     return filteredTokens.filter(
-      (t) => !lowerSearch || t.symbol.toLowerCase().includes(lowerSearch)
+      (t) =>
+        !lowerSearch ||
+        t.symbol.toLowerCase().includes(lowerSearch) ||
+        t.contractAddress.toLowerCase().includes(lowerSearch)
     )
   }, [activeTokens, evmNetworkId, filteredTokens, search])
 
