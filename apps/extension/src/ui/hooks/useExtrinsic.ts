@@ -22,7 +22,7 @@ const getFrontEndTypeRegistry = async (
 
   const chain = await (isHex(chainIdOrHash)
     ? chaindataProvider.getChainByGenesisHash(chainIdOrHash)
-    : chaindataProvider.getChain(chainIdOrHash))
+    : chaindataProvider.getChainById(chainIdOrHash))
 
   const genesisHash = (isHex(chainIdOrHash) ? chainIdOrHash : chain?.genesisHash) as HexString
 

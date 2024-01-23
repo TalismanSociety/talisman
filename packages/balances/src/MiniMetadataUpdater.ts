@@ -141,9 +141,7 @@ export class MiniMetadataUpdater {
   }
 
   private async updateSubstrateChains(chainIds: ChainId[]) {
-    const chains = new Map(
-      (await this.#chaindataProvider.chainsArray()).map((chain) => [chain.id, chain])
-    )
+    const chains = new Map((await this.#chaindataProvider.chains).map((chain) => [chain.id, chain]))
     const filteredChains = chainIds.flatMap((chainId) => chains.get(chainId) ?? [])
 
     const ids = await balancesDb.miniMetadatas.orderBy("id").primaryKeys()
@@ -227,10 +225,7 @@ export class MiniMetadataUpdater {
 
   private async updateEvmNetworks(evmNetworkIds: EvmNetworkId[]) {
     const evmNetworks = new Map(
-      (await this.#chaindataProvider.evmNetworksArray()).map((evmNetwork) => [
-        evmNetwork.id,
-        evmNetwork,
-      ])
+      (await this.#chaindataProvider.evmNetworks).map((evmNetwork) => [evmNetwork.id, evmNetwork])
     )
 
     const allEvmTokens: TokenList = {}

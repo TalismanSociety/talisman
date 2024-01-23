@@ -100,9 +100,9 @@ export class ChainsHandler extends ExtensionHandler {
     }
 
     await chaindataProvider.transaction("rw", ["chains", "tokens"], async () => {
-      const existingChain = await chaindataProvider.getChain(chain.id)
+      const existingChain = await chaindataProvider.getChainById(chain.id)
       const existingToken = existingChain?.nativeToken?.id
-        ? await chaindataProvider.getToken(existingChain.nativeToken.id)
+        ? await chaindataProvider.getTokenById(existingChain.nativeToken.id)
         : null
 
       const newToken: CustomSubNativeToken = {

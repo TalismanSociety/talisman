@@ -42,7 +42,7 @@ export class TokenRatesStore {
         }, REFRESH_INTERVAL)
 
         // refresh when token list changes : crucial for first popup load after install or db migration
-        const obsTokens = chaindataProvider.tokensListObservable
+        const obsTokens = chaindataProvider.tokensByIdObservable
         const obsActiveTokens = activeTokensStore.observable
 
         subTokenList = combineLatest([obsTokens, obsActiveTokens]).subscribe(
@@ -74,7 +74,7 @@ export class TokenRatesStore {
   async hydrateStore(): Promise<boolean> {
     try {
       const [tokens, activeTokens] = await Promise.all([
-        chaindataProvider.tokens(),
+        chaindataProvider.tokensById,
         activeTokensStore.get(),
       ])
 

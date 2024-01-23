@@ -83,11 +83,11 @@ export class BalanceStore {
       // settings
       settingsStore.observable,
       // chains
-      chaindataProvider.chainsListObservable,
+      chaindataProvider.chainsByIdObservable,
       // evmNetworks
-      chaindataProvider.evmNetworksListObservable,
+      chaindataProvider.evmNetworksByIdObservable,
       // tokens
-      chaindataProvider.tokensListObservable,
+      chaindataProvider.tokensByIdObservable,
       // miniMetadatas
       liveQuery(async () => await balancesDb.miniMetadatas.toArray()),
       // active state of evm networks
@@ -191,7 +191,7 @@ export class BalanceStore {
     if (existing.count > 0) return existing.sorted[0]?.toJSON()
 
     // no existing balance found, fetch it directly via rpc
-    const token = await chaindataProvider.getToken(tokenId)
+    const token = await chaindataProvider.getTokenById(tokenId)
     if (!token) {
       const error = new Error(`Failed to fetch balance: no token with id ${tokenId}`)
       Sentry.captureException(error)

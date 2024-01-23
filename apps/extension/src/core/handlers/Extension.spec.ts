@@ -434,8 +434,8 @@ describe("Extension", () => {
 
   test("hydrates chaindata when requested", async () => {
     // the un-hydrated chaindata provider should be empty
-    expect((await chaindataProvider.chainIds()).length).toStrictEqual(0)
-    expect((await chaindataProvider.evmNetworkIds()).length).toStrictEqual(0)
+    expect((await chaindataProvider.chainIds).length).toStrictEqual(0)
+    expect((await chaindataProvider.evmNetworkIds).length).toStrictEqual(0)
 
     // submit the hydrate chaindata messages (usually sent by the popup/dashboard frontend to the backend)
     expect(
@@ -447,8 +447,8 @@ describe("Extension", () => {
 
     // the hydrated chaindata provier should now have chains, evmNetworks and tokens!
     await waitFor(async () => {
-      expect((await chaindataProvider.chainIds()).length).toBeGreaterThan(0)
-      expect((await chaindataProvider.evmNetworkIds()).length).toBeGreaterThan(0)
+      expect((await chaindataProvider.chainIds).length).toBeGreaterThan(0)
+      expect((await chaindataProvider.evmNetworkIds).length).toBeGreaterThan(0)
     })
   })
 

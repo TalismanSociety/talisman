@@ -63,7 +63,7 @@ export const getMetadataDef = async (
   let genesisHash = isHex(chainIdOrHash) ? chainIdOrHash : null
   const chain = await (genesisHash
     ? chaindataProvider.getChainByGenesisHash(genesisHash)
-    : chaindataProvider.getChain(chainIdOrHash))
+    : chaindataProvider.getChainById(chainIdOrHash))
   if (!genesisHash) genesisHash = chain?.genesisHash as HexString
 
   // throw if neither a known chainId or genesisHash

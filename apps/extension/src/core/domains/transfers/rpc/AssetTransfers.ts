@@ -56,7 +56,7 @@ export default class AssetTransfersRpc {
 
     assert(signature, "transaction is not signed")
 
-    const token = await chaindataProvider.getToken(tokenId)
+    const token = await chaindataProvider.getTokenById(tokenId)
 
     const hash = await watchSubstrateTransaction(chain, registry, unsigned, signature, {
       transferInfo: {
@@ -168,11 +168,11 @@ export default class AssetTransfersRpc {
     chain: Chain
     signature?: HexString
   }> {
-    const chain = await chaindataProvider.getChain(chainId)
+    const chain = await chaindataProvider.getChainById(chainId)
     assert(chain?.genesisHash, `Chain ${chainId} not found in store`)
     const { genesisHash } = chain
 
-    const token = await chaindataProvider.getToken(tokenId)
+    const token = await chaindataProvider.getTokenById(tokenId)
     assert(token, `Token ${tokenId} not found in store`)
 
     const [blockHash, { block }, nonce, runtimeVersion] = await Promise.all([
