@@ -8,6 +8,7 @@ import { log } from "@core/log"
 import { balanceModules } from "@core/rpcs/balance-modules"
 import { chaindataProvider } from "@core/rpcs/chaindata"
 import { Addresses, Port } from "@core/types/base"
+import { awaitKeyringLoaded } from "@core/util/awaitKeyringLoaded"
 import { validateHexString } from "@core/util/validateHexString"
 import keyring from "@polkadot/ui-keyring"
 import { SingleAddress } from "@polkadot/ui-keyring/observable/types"
@@ -27,7 +28,15 @@ import { encodeAnyAddress } from "@talismn/util"
 import { Dexie, liveQuery } from "dexie"
 import isEqual from "lodash/isEqual"
 import pick from "lodash/pick"
-import { ReplaySubject, Subject, combineLatest, firstValueFrom } from "rxjs"
+import {
+  ReplaySubject,
+  Subject,
+  combineLatest,
+  debounceTime,
+  first,
+  firstValueFrom,
+  merge,
+} from "rxjs"
 
 import { activeChainsStore, isChainActive } from "../chains/store.activeChains"
 import { activeEvmNetworksStore, isEvmNetworkActive } from "../ethereum/store.activeEvmNetworks"
@@ -41,6 +50,9 @@ type EvmNetworkIdAndRpcs = Pick<EvmNetwork, "id" | "nativeToken" | "substrateCha
 type TokenIdAndType = Pick<Token, "id" | "type" | "chain" | "evmNetwork">
 
 type SubscriptionsState = "Closed" | "Closing" | "Open"
+
+// debounce time before restarting subscriptions if one of the inputs change
+const DEBOUNCE_TIMEOUT = 3_000
 
 // TODO: Fix this class up
 //       1. It shouldn't need a whole extra copy of addresses+chains+networks separate to the db
@@ -75,11 +87,17 @@ export class BalanceStore {
    * Initialize the store with a set of addresses and chains.
    */
   constructor() {
-    // subscribe to the account addresseses from the keyring, and add them to list of addresses to query balances for
-    keyring.accounts.subject.subscribe(this.setAccounts.bind(this))
+    awaitKeyringLoaded().then(() => {
+      // accounts can be added to the keyring by batch (ex: multiple accounts imported from a seed phrase)
+      // debounce to ensure the subscriptions arent restarted multiple times unnecessarily
+      merge(
+        keyring.accounts.subject.pipe(first()),
+        keyring.accounts.subject.pipe(debounceTime(DEBOUNCE_TIMEOUT))
+      ).subscribe(this.setAccounts.bind(this))
+    })
 
-    // subscribe to the chainstore and add chains to the list here
-    combineLatest(
+    // subscribe to all the inputs that make up the list of tokens to watch balances for
+    const inputsObservable = combineLatest(
       // settings
       settingsStore.observable,
       // chains
@@ -96,7 +114,15 @@ export class BalanceStore {
       activeChainsStore.observable,
       // enable state of tokens
       activeTokensStore.observable
-    ).subscribe({
+    )
+
+    // prevent restarting subscriptions when settings change rapidly (ex: multiple networks/tokens activated/deactivated rapidly)
+    const debouncedInputsObservable = merge(
+      inputsObservable.pipe(first()),
+      inputsObservable.pipe(debounceTime(DEBOUNCE_TIMEOUT))
+    )
+
+    debouncedInputsObservable.subscribe({
       next: ([
         settings,
         chains,
