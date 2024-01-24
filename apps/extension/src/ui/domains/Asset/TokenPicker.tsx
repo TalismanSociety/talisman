@@ -25,6 +25,7 @@ import { ChainLogoBase } from "./ChainLogo"
 import { Fiat } from "./Fiat"
 import { TokenLogo } from "./TokenLogo"
 import Tokens from "./Tokens"
+import { TokenTypePill } from "./TokenTypePill"
 
 type TokenRowProps = {
   token: Token
@@ -122,8 +123,9 @@ const TokenRow: FC<TokenRowProps> = ({
                 selected ? "text-body-secondary" : "text-body"
               )}
             >
-              <div>
-                {token.symbol}
+              <div className="flex items-center">
+                <span>{token.symbol}</span>
+                <TokenTypePill type={token.type} className="rounded-xs ml-3 px-1 py-0.5" />
                 {selected && <CheckCircleIcon className="ml-3 inline align-text-top" />}
               </div>
               <div className={classNames(isLoading && "animate-pulse")}>
