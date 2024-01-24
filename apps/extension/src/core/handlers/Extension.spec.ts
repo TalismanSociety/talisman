@@ -446,8 +446,10 @@ describe("Extension", () => {
     ).toStrictEqual([true, true])
 
     // the hydrated chaindata provier should now have chains, evmNetworks and tokens!
-    expect((await chaindataProvider.chainIds()).length).toBeGreaterThan(0)
-    expect((await chaindataProvider.evmNetworkIds()).length).toBeGreaterThan(0)
+    await waitFor(async () => {
+      expect((await chaindataProvider.chainIds()).length).toBeGreaterThan(0)
+      expect((await chaindataProvider.evmNetworkIds()).length).toBeGreaterThan(0)
+    })
   })
 
   test("new accounts are added to authorised sites with connectAllSubstrate automatically", async () => {

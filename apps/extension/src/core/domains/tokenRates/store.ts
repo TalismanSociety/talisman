@@ -6,7 +6,7 @@ import { chaindataProvider } from "@core/rpcs/chaindata"
 import { Port } from "@core/types/base"
 import { TokenList } from "@talismn/chaindata-provider"
 import { fetchTokenRates } from "@talismn/token-rates"
-import { Subscription, liveQuery } from "dexie"
+import { Subscription } from "dexie"
 import debounce from "lodash/debounce"
 import { BehaviorSubject, combineLatest } from "rxjs"
 
@@ -42,7 +42,7 @@ export class TokenRatesStore {
         }, REFRESH_INTERVAL)
 
         // refresh when token list changes : crucial for first popup load after install or db migration
-        const obsTokens = liveQuery(() => chaindataProvider.tokens())
+        const obsTokens = chaindataProvider.tokensListObservable
         const obsActiveTokens = activeTokensStore.observable
 
         subTokenList = combineLatest([obsTokens, obsActiveTokens]).subscribe(

@@ -15,21 +15,20 @@ import {
 export interface ChaindataChainProvider {
   chainIds(): Promise<ChainId[]>
   chains(): Promise<ChainList>
-  getChain(chainIdOrQuery: ChainId | Partial<Chain>): Promise<Chain | CustomChain | null>
+  getChain(chainId: ChainId): Promise<Chain | CustomChain | null>
+  getChainByGenesisHash(genesisHash: `0x${string}`): Promise<Chain | CustomChain | null>
 }
 
 export interface ChaindataEvmNetworkProvider {
   evmNetworkIds(): Promise<EvmNetworkId[]>
   evmNetworks(): Promise<EvmNetworkList>
-  getEvmNetwork(
-    evmNetworkIdOrQuery: EvmNetworkId | Partial<EvmNetwork>
-  ): Promise<EvmNetwork | CustomEvmNetwork | null>
+  getEvmNetwork(evmNetworkId: EvmNetworkId): Promise<EvmNetwork | CustomEvmNetwork | null>
 }
 
 export interface ChaindataTokenProvider {
   tokenIds(): Promise<TokenId[]>
   tokens(): Promise<TokenList>
-  getToken(tokenIdOrQuery: TokenId | Partial<Token>): Promise<Token | null>
+  getToken(tokenId: TokenId): Promise<Token | null>
 }
 
 export interface ChaindataProvider

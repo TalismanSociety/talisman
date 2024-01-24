@@ -8,6 +8,7 @@ import { log } from "@core/log"
 import { balanceModules } from "@core/rpcs/balance-modules"
 import { chaindataProvider } from "@core/rpcs/chaindata"
 import { Addresses, Port } from "@core/types/base"
+import { awaitKeyringLoaded } from "@core/util/awaitKeyringLoaded"
 import { validateHexString } from "@core/util/validateHexString"
 import keyring from "@polkadot/ui-keyring"
 import { SingleAddress } from "@polkadot/ui-keyring/observable/types"
@@ -27,7 +28,16 @@ import { encodeAnyAddress } from "@talismn/util"
 import { Dexie, liveQuery } from "dexie"
 import isEqual from "lodash/isEqual"
 import pick from "lodash/pick"
-import { ReplaySubject, Subject, combineLatest, firstValueFrom } from "rxjs"
+import {
+  ReplaySubject,
+  Subject,
+  combineLatest,
+  concat,
+  debounceTime,
+  firstValueFrom,
+  skip,
+  take,
+} from "rxjs"
 
 import { activeChainsStore, isChainActive } from "../chains/store.activeChains"
 import { activeEvmNetworksStore, isEvmNetworkActive } from "../ethereum/store.activeEvmNetworks"
@@ -41,6 +51,9 @@ type EvmNetworkIdAndRpcs = Pick<EvmNetwork, "id" | "nativeToken" | "substrateCha
 type TokenIdAndType = Pick<Token, "id" | "type" | "chain" | "evmNetwork">
 
 type SubscriptionsState = "Closed" | "Closing" | "Open"
+
+// debounce time before restarting subscriptions if one of the inputs change
+const DEBOUNCE_TIMEOUT = 3_000
 
 // TODO: Fix this class up
 //       1. It shouldn't need a whole extra copy of addresses+chains+networks separate to the db
@@ -75,28 +88,45 @@ export class BalanceStore {
    * Initialize the store with a set of addresses and chains.
    */
   constructor() {
-    // subscribe to the account addresseses from the keyring, and add them to list of addresses to query balances for
-    keyring.accounts.subject.subscribe(this.setAccounts.bind(this))
+    awaitKeyringLoaded()
+      .then(() => {
+        // accounts can be added to the keyring by batch (ex: multiple accounts imported from a seed phrase)
+        // debounce to ensure the subscriptions aren't restarted multiple times unnecessarily
+        const obsAccounts = keyring.accounts.subject
+        concat(
+          obsAccounts.pipe(take(1)),
+          obsAccounts.pipe(skip(1)).pipe(debounceTime(DEBOUNCE_TIMEOUT))
+        ).subscribe(this.setAccounts.bind(this))
+      })
+      .catch((err) => log.error("Failed to load keyring", { err }))
 
-    // subscribe to the chainstore and add chains to the list here
-    combineLatest(
+    // subscribe to all the inputs that make up the list of tokens to watch balances for
+    const obsInputs = combineLatest(
       // settings
       settingsStore.observable,
       // chains
-      liveQuery(async () => await chaindataProvider.chains()),
+      chaindataProvider.chainsListObservable,
       // evmNetworks
-      liveQuery(async () => await chaindataProvider.evmNetworks()),
+      chaindataProvider.evmNetworksListObservable,
       // tokens
-      liveQuery(async () => await chaindataProvider.tokens()),
+      chaindataProvider.tokensListObservable,
       // miniMetadatas
-      liveQuery(async () => await balancesDb.miniMetadatas.toArray()),
+      liveQuery(() => balancesDb.miniMetadatas.toArray()),
       // active state of evm networks
       activeEvmNetworksStore.observable,
       // active state of substrate chains
       activeChainsStore.observable,
       // enable state of tokens
       activeTokensStore.observable
-    ).subscribe({
+    )
+
+    // debounce to avoid restarting subscriptions multiple times when settings change rapidly (ex: multiple networks/tokens activated/deactivated rapidly)
+    const obsDebouncedInputs = concat(
+      obsInputs.pipe(take(1)),
+      obsInputs.pipe(skip(1)).pipe(debounceTime(DEBOUNCE_TIMEOUT))
+    )
+
+    obsDebouncedInputs.subscribe({
       next: ([
         settings,
         chains,
@@ -545,6 +575,7 @@ export class BalanceStore {
 
     if (this.#subscriptionsState !== "Open") return
     this.setSubscriptionsState("Closing")
+    log.log("Closing balance subscriptions")
 
     // ignore old subscriptions if they're still closing when we next call `openSubscriptions()`
     this.#subscriptionsGeneration = (this.#subscriptionsGeneration + 1) % Number.MAX_SAFE_INTEGER
@@ -562,6 +593,7 @@ export class BalanceStore {
     }
 
     this.setSubscriptionsState("Closed")
+    log.log("Closed balance subscriptions")
   }
 
   private setSubscriptionsState(newState: SubscriptionsState) {

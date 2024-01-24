@@ -28,7 +28,9 @@ export const SignContainer: FC<SignContainerProps> = ({
     <FadeIn className={classNames("flex h-full flex-col pt-8", className)}>
       {header}
       <h1 className="leading-base text-body mb-12 mt-0 font-sans text-lg font-bold">{title}</h1>
-      <div className="flex w-full flex-col items-center gap-4 py-8">{children}</div>
+      <div className="flex w-full flex-col items-center gap-4 py-8 [&>div]:max-w-full [&>div]:overflow-x-hidden">
+        {children}
+      </div>
       <div className="mb-8 mt-12 grow text-center">
         {networkType === "ethereum" && <ViewDetailsEth />}
         {networkType === "substrate" && <ViewDetailsSub />}

@@ -70,7 +70,7 @@ const JsonAccount: FC<{ account: JsonImportAccount; onSelect: (select: boolean) 
               <Tooltip placement="bottom-end">
                 <TooltipTrigger asChild>
                   <div>
-                    <Fiat amount={account.balances.sum.fiat(currency).total} />
+                    <Fiat amount={account.balances.sum.fiat(currency).total} isBalance />
                   </div>
                 </TooltipTrigger>
                 {!!tokenBalances.length && (
