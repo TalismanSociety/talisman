@@ -8,7 +8,7 @@ import { liveQuery } from "dexie"
 import groupBy from "lodash/groupBy"
 import sortBy from "lodash/sortBy"
 import { atom, selector } from "recoil"
-import { debounceTime, first, from, merge } from "rxjs"
+import { concat, debounceTime, from, skip, take } from "rxjs"
 
 import { tokensMapQuery } from "./chaindata"
 
@@ -23,7 +23,9 @@ const assetDiscoveryBalancesState = atom<DiscoveredBalance[]>({
       // backend will do a lot of updates
       // debounce to mitigate performance issues
       // also, we only need the first value to hydrate the atom
-      const sub = merge(obs.pipe(first()), obs.pipe(debounceTime(500))).subscribe(setSelf)
+      const sub = concat(obs.pipe(take(1)), obs.pipe(skip(1)).pipe(debounceTime(500))).subscribe(
+        setSelf
+      )
 
       return () => sub.unsubscribe()
     },
