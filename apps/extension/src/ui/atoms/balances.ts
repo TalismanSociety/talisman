@@ -1,4 +1,5 @@
 import { log } from "@core/log"
+import { firstThenDebounce } from "@core/util/firstThenDebounce"
 import {
   Address,
   BalanceJson,
@@ -12,7 +13,7 @@ import { TokenId } from "@talismn/chaindata-provider"
 import { api } from "@ui/api"
 import { liveQuery } from "dexie"
 import { atom, selector, selectorFamily, waitForAll } from "recoil"
-import { concat, debounceTime, from, skip, take } from "rxjs"
+import { from } from "rxjs"
 
 import { AccountsFilter, accountsQuery } from "./accounts"
 import {
@@ -30,14 +31,12 @@ const rawBalancesState = atom<BalanceJson[]>({
     // sync from db
     ({ setSelf }) => {
       log.debug("rawBalancesState.init")
-      const obs = from(liveQuery(() => balancesDb.balances.toArray()))
 
       // backend will do a lot of updates to the balances table
       // debounce to mitigate performance issues
-      // also, we only need the first value to hydrate the atom
-      const sub = concat(obs.pipe(take(1)), obs.pipe(skip(1)).pipe(debounceTime(500))).subscribe(
-        setSelf
-      )
+      const sub = from(liveQuery(() => balancesDb.balances.toArray()))
+        .pipe(firstThenDebounce(500))
+        .subscribe(setSelf)
 
       return () => sub.unsubscribe()
     },
