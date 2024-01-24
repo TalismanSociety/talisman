@@ -4,7 +4,7 @@ import { log } from "@core/log"
 import { wrapBytes } from "@polkadot/extension-dapp/wrapBytes"
 import { TypeRegistry } from "@polkadot/types"
 import { assert } from "@polkadot/util"
-import { classNames, sleep } from "@talismn/util"
+import { classNames } from "@talismn/util"
 import { useLedgerPolkadot } from "@ui/hooks/ledger/useLedgerPolkadot"
 import { useAccountByAddress } from "@ui/hooks/useAccountByAddress"
 import { FC, useCallback, useEffect, useMemo, useState } from "react"
@@ -113,14 +113,13 @@ const SignLedgerPolkadot: FC<SignHardwareSubstrateProps> = ({
         throw new Error("not implemented")
       }
     } catch (error) {
-      log.error("polkadot ledger", { error })
-      await sleep(10000)
       const message = (error as Error)?.message
 
       switch (message) {
         // TODO tx rejected
-        // case "Transaction rejected":
-        //   return
+        case "Transaction rejected":
+          window.close() // closing the popup rejects the tx
+          return
 
         // case "Txn version not supported":
         //   return setError(
