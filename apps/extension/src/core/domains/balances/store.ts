@@ -91,15 +91,16 @@ export class BalanceStore {
       .then(() => {
         // accounts can be added to the keyring by batch (ex: multiple accounts imported from a seed phrase)
         // debounce to ensure the subscriptions arent restarted multiple times unnecessarily
+        const obsAccounts = keyring.accounts.subject
         merge(
-          keyring.accounts.subject.pipe(first()),
-          keyring.accounts.subject.pipe(debounceTime(DEBOUNCE_TIMEOUT))
+          obsAccounts.pipe(first()),
+          obsAccounts.pipe(debounceTime(DEBOUNCE_TIMEOUT))
         ).subscribe(this.setAccounts.bind(this))
       })
       .catch((err) => log.error("Failed to load keyring", { err }))
 
     // subscribe to all the inputs that make up the list of tokens to watch balances for
-    const inputsObservable = combineLatest(
+    const obsInputs = combineLatest(
       // settings
       settingsStore.observable,
       // chains
@@ -119,12 +120,12 @@ export class BalanceStore {
     )
 
     // prevent restarting subscriptions when settings change rapidly (ex: multiple networks/tokens activated/deactivated rapidly)
-    const debouncedInputsObservable = merge(
-      inputsObservable.pipe(first()),
-      inputsObservable.pipe(debounceTime(DEBOUNCE_TIMEOUT))
+    const obsDebouncedInputs = merge(
+      obsInputs.pipe(first()),
+      obsInputs.pipe(debounceTime(DEBOUNCE_TIMEOUT))
     )
 
-    debouncedInputsObservable.subscribe({
+    obsDebouncedInputs.subscribe({
       next: ([
         settings,
         chains,
