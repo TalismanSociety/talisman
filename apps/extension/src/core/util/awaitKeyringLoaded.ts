@@ -13,8 +13,11 @@ export const awaitKeyringLoaded = async () => {
   ).length
 
   return new Promise((resolve) => {
-    keyring.accounts.subject.subscribe(async (addresses) => {
-      if (Object.keys(addresses).length === addressCount) resolve(true)
+    const sub = keyring.accounts.subject.subscribe(async (addresses) => {
+      if (Object.keys(addresses).length === addressCount) {
+        sub.unsubscribe()
+        resolve(true)
+      }
     })
   })
 }
