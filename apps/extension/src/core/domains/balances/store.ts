@@ -32,10 +32,11 @@ import {
   ReplaySubject,
   Subject,
   combineLatest,
+  concat,
   debounceTime,
-  first,
   firstValueFrom,
-  merge,
+  skip,
+  take,
 } from "rxjs"
 
 import { activeChainsStore, isChainActive } from "../chains/store.activeChains"
@@ -90,11 +91,11 @@ export class BalanceStore {
     awaitKeyringLoaded()
       .then(() => {
         // accounts can be added to the keyring by batch (ex: multiple accounts imported from a seed phrase)
-        // debounce to ensure the subscriptions arent restarted multiple times unnecessarily
+        // debounce to ensure the subscriptions aren't restarted multiple times unnecessarily
         const obsAccounts = keyring.accounts.subject
-        merge(
-          obsAccounts.pipe(first()),
-          obsAccounts.pipe(debounceTime(DEBOUNCE_TIMEOUT))
+        concat(
+          obsAccounts.pipe(take(1)),
+          obsAccounts.pipe(skip(1)).pipe(debounceTime(DEBOUNCE_TIMEOUT))
         ).subscribe(this.setAccounts.bind(this))
       })
       .catch((err) => log.error("Failed to load keyring", { err }))
@@ -110,7 +111,7 @@ export class BalanceStore {
       // tokens
       chaindataProvider.tokensListObservable,
       // miniMetadatas
-      liveQuery(async () => await balancesDb.miniMetadatas.toArray()),
+      liveQuery(() => balancesDb.miniMetadatas.toArray()),
       // active state of evm networks
       activeEvmNetworksStore.observable,
       // active state of substrate chains
@@ -119,10 +120,10 @@ export class BalanceStore {
       activeTokensStore.observable
     )
 
-    // prevent restarting subscriptions when settings change rapidly (ex: multiple networks/tokens activated/deactivated rapidly)
-    const obsDebouncedInputs = merge(
-      obsInputs.pipe(first()),
-      obsInputs.pipe(debounceTime(DEBOUNCE_TIMEOUT))
+    // debounce to avoid restarting subscriptions multiple times when settings change rapidly (ex: multiple networks/tokens activated/deactivated rapidly)
+    const obsDebouncedInputs = concat(
+      obsInputs.pipe(take(1)),
+      obsInputs.pipe(skip(1)).pipe(debounceTime(DEBOUNCE_TIMEOUT))
     )
 
     obsDebouncedInputs.subscribe({
@@ -574,6 +575,7 @@ export class BalanceStore {
 
     if (this.#subscriptionsState !== "Open") return
     this.setSubscriptionsState("Closing")
+    log.log("Closing balance subscriptions")
 
     // ignore old subscriptions if they're still closing when we next call `openSubscriptions()`
     this.#subscriptionsGeneration = (this.#subscriptionsGeneration + 1) % Number.MAX_SAFE_INTEGER
@@ -591,6 +593,7 @@ export class BalanceStore {
     }
 
     this.setSubscriptionsState("Closed")
+    log.log("Closed balance subscriptions")
   }
 
   private setSubscriptionsState(newState: SubscriptionsState) {
