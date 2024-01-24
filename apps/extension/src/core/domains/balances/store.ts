@@ -87,14 +87,16 @@ export class BalanceStore {
    * Initialize the store with a set of addresses and chains.
    */
   constructor() {
-    awaitKeyringLoaded().then(() => {
-      // accounts can be added to the keyring by batch (ex: multiple accounts imported from a seed phrase)
-      // debounce to ensure the subscriptions arent restarted multiple times unnecessarily
-      merge(
-        keyring.accounts.subject.pipe(first()),
-        keyring.accounts.subject.pipe(debounceTime(DEBOUNCE_TIMEOUT))
-      ).subscribe(this.setAccounts.bind(this))
-    })
+    awaitKeyringLoaded()
+      .then(() => {
+        // accounts can be added to the keyring by batch (ex: multiple accounts imported from a seed phrase)
+        // debounce to ensure the subscriptions arent restarted multiple times unnecessarily
+        merge(
+          keyring.accounts.subject.pipe(first()),
+          keyring.accounts.subject.pipe(debounceTime(DEBOUNCE_TIMEOUT))
+        ).subscribe(this.setAccounts.bind(this))
+      })
+      .catch((err) => log.error("Failed to load keyring", { err }))
 
     // subscribe to all the inputs that make up the list of tokens to watch balances for
     const inputsObservable = combineLatest(
