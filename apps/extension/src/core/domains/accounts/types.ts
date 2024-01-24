@@ -43,6 +43,12 @@ type AccountJsonHardwareEthereumOwnProperties = {
 
 export type AccountJsonHardwareEthereum = AccountJson & AccountJsonHardwareEthereumOwnProperties
 
+type AccountJsonHardwarePolkadotOwnProperties = {
+  isHardware: true
+  path: string
+}
+export type AccountJsonHardwarePolkadot = AccountJson & AccountJsonHardwarePolkadotOwnProperties
+
 type AccountJsonQrOwnProperties = {
   isQr: true
 }
