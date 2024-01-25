@@ -459,6 +459,11 @@ export class EthHandler extends ExtensionHandler {
       await chaindataProvider.addCustomEvmNetwork(newNetwork)
       await activeEvmNetworksStore.setActive(newNetwork.id, true)
 
+      // if symbol changed, id is different and previous native token must be deleted
+      // note: keep this code to allow for cleanup of custom chains edited prior 1.21.0
+      if (existingToken && existingToken.id !== newToken.id)
+        await chaindataProvider.removeToken(existingToken.id)
+
       // RPCs may have changed, clear cache
       chainConnectorEvm.clearRpcProvidersCache(network.id)
 

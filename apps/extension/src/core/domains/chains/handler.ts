@@ -163,6 +163,11 @@ export class ChainsHandler extends ExtensionHandler {
       await chaindataProvider.addCustomChain(newChain)
       await activeChainsStore.setActive(newChain.id, true)
 
+      // if symbol changed, id is different and previous native token must be deleted
+      // note: keep this code to allow for cleanup of custom chains edited prior 1.21.0
+      if (existingToken && existingToken.id !== newToken.id)
+        await chaindataProvider.removeToken(existingToken.id)
+
       talismanAnalytics.capture(`${existingChain ? "update" : "create"} custom chain`, {
         network: chain.id,
       })
