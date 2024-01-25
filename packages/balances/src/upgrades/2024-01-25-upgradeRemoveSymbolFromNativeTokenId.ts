@@ -9,12 +9,12 @@ export const upgradeRemoveSymbolFromNativeTokenId = async (tx: Transaction) => {
   await balancesTable.toCollection().modify((balance) => {
     if (balance?.tokenId?.includes?.("-substrate-native-")) {
       balance.tokenId = balance.tokenId.replace(/-substrate-native-.+$/, "-substrate-native")
-      balance.id = new Balance(balance).id // update the balance id
+      balance.id = new Balance(balance).id
     }
 
     if (balance?.tokenId?.includes?.("-evm-native-")) {
       balance.tokenId = balance.tokenId.replace(/-evm-native-.+$/, "-evm-native")
-      balance.id = new Balance(balance).id // update the balance id
+      balance.id = new Balance(balance).id
     }
   })
 }
