@@ -13,10 +13,8 @@ import {
   activeTokensStore,
   isTokenActive,
 } from "@core/domains/tokens/store.activeTokens"
-import { CustomErc20Token, CustomNativeToken } from "@core/domains/tokens/types"
 import { log } from "@core/log"
 import { chaindataProvider } from "@core/rpcs/chaindata"
-import { CustomEvmNativeToken } from "@talismn/balances"
 import {
   Chain,
   ChainId,
@@ -36,11 +34,6 @@ import { atom, selector, selectorFamily, waitForAll } from "recoil"
 const NO_OP = () => {}
 
 const filterNoTestnet = ({ isTestnet }: { isTestnet?: boolean }) => isTestnet === false
-
-type CustomToken = CustomErc20Token | CustomNativeToken | CustomEvmNativeToken
-const isCustomToken = (token: Token | CustomToken): token is CustomToken => {
-  return "isCustom" in token && !!token.isCustom
-}
 
 export const evmNetworksActiveState = atom<ActiveEvmNetworks>({
   key: "evmNetworksActiveState",
@@ -329,31 +322,7 @@ export const allTokensMapState = atom<TokenList>({
   effects: [
     ({ setSelf }) => {
       log.debug("allTokensMapState.init")
-      const sub = chaindataProvider.tokensListObservable.subscribe((tokensList) => {
-        // ignore native tokens duplicates, this will also ignore duplicate balances
-        // this is necessary for users that had created custom native tokens prior we changed native token ids (v1.21.0)
-        // note: this cleaup takes 3ms on my machine
-        const nativeTokensPerNetwork = Object.values(tokensList)
-          .filter((t) => t.type === "substrate-native" || t.type === "evm-native")
-          .reduce((acc, t) => {
-            const networkId = t.chain?.id || t.evmNetwork?.id
-            if (networkId) {
-              if (!acc[networkId]) acc[networkId] = []
-              acc[networkId].push(t)
-            }
-            return acc
-          }, {} as Record<string, Token[]>)
-
-        // if there is more than 1 native token for a network, ignore all non-custom token
-        for (const nativeTokens of Object.values(nativeTokensPerNetwork))
-          if (nativeTokens.length > 1)
-            for (const token of nativeTokens.filter((t) => isCustomToken(t))) {
-              log.warn("ignoring duplicate native token %s", token.id)
-              delete tokensList[token.id]
-            }
-
-        setSelf(tokensList)
-      })
+      const sub = chaindataProvider.tokensListObservable.subscribe(setSelf)
       return () => sub.unsubscribe()
     },
     () => api.tokens(NO_OP),
