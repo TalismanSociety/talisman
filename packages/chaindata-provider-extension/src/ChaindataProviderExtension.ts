@@ -232,22 +232,20 @@ export class ChaindataProviderExtension implements ChaindataProvider {
   async addCustomChain(customChain: CustomChain) {
     try {
       if (!("isCustom" in customChain)) return
-      return this.#db.chains.put(customChain)
+      return await this.#db.chains.put(customChain)
     } catch (cause) {
       throw new Error("Failed to add custom chain", { cause })
     }
   }
   async removeCustomChain(chainId: ChainId) {
     try {
-      return (
-        this.#db.chains
-          // only affect custom chains
-          .filter((chain) => "isCustom" in chain && chain.isCustom === true)
-          // only affect the provided chainId
-          .filter((chain) => chain.id === chainId)
-          // delete the chain (if exists)
-          .delete()
-      )
+      return await this.#db.chains
+        // only affect custom chains
+        .filter((chain) => "isCustom" in chain && chain.isCustom === true)
+        // only affect the provided chainId
+        .filter((chain) => chain.id === chainId)
+        // delete the chain (if exists)
+        .delete()
     } catch (cause) {
       throw new Error("Failed to remove custom chain", { cause })
     }
@@ -302,7 +300,7 @@ export class ChaindataProviderExtension implements ChaindataProvider {
   async addCustomEvmNetwork(customEvmNetwork: CustomEvmNetwork) {
     try {
       if (!("isCustom" in customEvmNetwork)) return
-      return this.#db.evmNetworks.put(customEvmNetwork)
+      return await this.#db.evmNetworks.put(customEvmNetwork)
     } catch (cause) {
       throw new Error("Failed to add custom evm network", { cause })
     }
@@ -394,7 +392,7 @@ export class ChaindataProviderExtension implements ChaindataProvider {
   async addCustomToken(customToken: Token) {
     try {
       if (!("isCustom" in customToken)) return
-      return this.#db.tokens.put(customToken)
+      return await this.#db.tokens.put(customToken)
     } catch (cause) {
       throw new Error("Failed to add custom token", { cause })
     }
@@ -402,15 +400,13 @@ export class ChaindataProviderExtension implements ChaindataProvider {
 
   async removeCustomToken(tokenId: TokenId) {
     try {
-      return (
-        this.#db.tokens
-          // only affect custom tokens
-          .filter((token) => "isCustom" in token && token.isCustom === true)
-          // only affect the provided token
-          .filter((token) => token.id === tokenId)
-          // delete the token (if exists)
-          .delete()
-      )
+      return await this.#db.tokens
+        // only affect custom tokens
+        .filter((token) => "isCustom" in token && token.isCustom === true)
+        // only affect the provided token
+        .filter((token) => token.id === tokenId)
+        // delete the token (if exists)
+        .delete()
     } catch (cause) {
       throw new Error("Failed to remove custom token", { cause })
     }

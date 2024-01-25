@@ -414,8 +414,8 @@ export class EthHandler extends ExtensionHandler {
   }
 
   private ethNetworkUpsert: MessageHandler<"pri(eth.networks.upsert)"> = async (network) => {
+    const existingNetwork = await chaindataProvider.getEvmNetwork(network.id)
     await chaindataProvider.transaction("rw", ["evmNetworks", "tokens"], async () => {
-      const existingNetwork = await chaindataProvider.getEvmNetwork(network.id)
       const existingToken = existingNetwork?.nativeToken?.id
         ? await chaindataProvider.getToken(existingNetwork.nativeToken.id)
         : null
@@ -467,11 +467,11 @@ export class EthHandler extends ExtensionHandler {
 
       // RPCs may have changed, clear cache
       chainConnectorEvm.clearRpcProvidersCache(network.id)
+    })
 
-      talismanAnalytics.capture(`${existingNetwork ? "update" : "create"} custom network`, {
-        networkType: "evm",
-        network: network.id.toString(),
-      })
+    talismanAnalytics.capture(`${existingNetwork ? "update" : "create"} custom network`, {
+      networkType: "evm",
+      network: network.id.toString(),
     })
 
     return true
