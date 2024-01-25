@@ -94,8 +94,8 @@ export class MiniMetadataUpdater {
                   specName: specName,
                   specVersion: specVersion,
                   balancesConfig: JSON.stringify(
-                    balancesConfig.find(({ moduleType }) => moduleType === source)?.moduleConfig ??
-                      {}
+                    (balancesConfig ?? []).find(({ moduleType }) => moduleType === source)
+                      ?.moduleConfig ?? {}
                   ),
                 })
               ),

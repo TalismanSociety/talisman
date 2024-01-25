@@ -365,7 +365,7 @@ export class EthHandler extends ExtensionHandler {
     const networkId = parseInt(network.chainId, 16).toString()
     const newToken: CustomEvmNativeToken | null = network.nativeCurrency
       ? {
-          id: `${networkId}-evm-native-${network.nativeCurrency.symbol}`.toLowerCase(),
+          id: `${networkId}-evm-native`.toLowerCase(),
           type: "evm-native",
           isTestnet: isTestnet,
           symbol: network.nativeCurrency.symbol,
@@ -425,7 +425,7 @@ export class EthHandler extends ExtensionHandler {
           : null
 
         const newToken: CustomEvmNativeToken = {
-          id: evmNativeTokenId(network.id, network.tokenSymbol),
+          id: evmNativeTokenId(network.id),
           type: "evm-native",
           isTestnet: network.isTestnet,
           symbol: network.tokenSymbol,
@@ -460,15 +460,13 @@ export class EthHandler extends ExtensionHandler {
         }
 
         await chaindataProvider.addCustomToken(newToken)
+        await chaindataProvider.addCustomEvmNetwork(newNetwork)
+        await Dexie.waitFor(activeEvmNetworksStore.setActive(newNetwork.id, true))
 
         // if symbol changed, id is different and previous native token must be deleted
+        // note: keep this code to allow for cleanup of custom chains edited prior 1.21.0
         if (existingToken && existingToken.id !== newToken.id)
           await chaindataProvider.removeToken(existingToken.id)
-
-        await chaindataProvider.addCustomEvmNetwork(newNetwork)
-
-        // must be wrapped in Dexie.waitFor because it's a non-dexie async api
-        Dexie.waitFor(activeEvmNetworksStore.setActive(newNetwork.id, true))
 
         // RPCs may have changed, clear cache
         chainConnectorEvm.clearRpcProvidersCache(network.id)

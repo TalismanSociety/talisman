@@ -10,6 +10,8 @@ import {
 } from "@talismn/chaindata-provider"
 import { Dexie } from "dexie"
 
+import { upgradeRemoveSymbolFromNativeTokenId } from "./upgrades"
+
 export class TalismanChaindataDatabase extends Dexie {
   chains!: Dexie.Table<Chain | CustomChain, ChainId>
   evmNetworks!: Dexie.Table<EvmNetwork | CustomEvmNetwork, EvmNetworkId>
@@ -31,7 +33,13 @@ export class TalismanChaindataDatabase extends Dexie {
       tokens: "id, type, symbol, coingeckoId, dcentName, contractAddress, chain, evmNetwork",
     })
 
-    // this.on("ready", async () => {})
+    this.version(2)
+      .stores({
+        chains: "id, genesisHash, name, nativeToken, tokens, evmNetworks",
+        evmNetworks: "id, name, nativeToken, tokens, substrateChain",
+        tokens: "id, type, symbol, coingeckoId, dcentName, contractAddress, chain, evmNetwork",
+      })
+      .upgrade(upgradeRemoveSymbolFromNativeTokenId)
   }
 }
 

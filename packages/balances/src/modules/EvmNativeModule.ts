@@ -27,8 +27,8 @@ import { abiMulticall } from "./abis/multicall"
 
 type ModuleType = "evm-native"
 
-export const evmNativeTokenId = (chainId: EvmNetworkId, tokenSymbol: string) =>
-  `${chainId}-evm-native-${tokenSymbol}`.toLowerCase().replace(/ /g, "-")
+export const evmNativeTokenId = (chainId: EvmNetworkId) =>
+  `${chainId}-evm-native`.toLowerCase().replace(/ /g, "-")
 
 const getEvmNetworkIdFromTokenId = (tokenId: string) => {
   const evmNetworkId = tokenId.split("-")[0] as EvmNetworkId
@@ -108,7 +108,7 @@ export const EvmNativeModule: NewBalanceModule<
       const symbol = moduleConfig?.symbol ?? "ETH"
       const decimals = typeof moduleConfig?.decimals === "number" ? moduleConfig.decimals : 18
 
-      const id = evmNativeTokenId(chainId, symbol)
+      const id = evmNativeTokenId(chainId)
       const nativeToken: EvmNativeToken = {
         id,
         type: "evm-native",

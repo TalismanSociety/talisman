@@ -33,8 +33,8 @@ import { isITokenPartial, isToken, parseTokensResponse } from "./parseTokensResp
 import { TalismanChaindataDatabase } from "./TalismanChaindataDatabase"
 
 // removes the need to reference @talismn/balances in this package. should we ?
-const getNativeTokenId = (chainId: EvmNetworkId, moduleType: string, tokenSymbol: string) =>
-  `${chainId}-${moduleType}-${tokenSymbol}`.toLowerCase().replace(/ /g, "-")
+const getNativeTokenId = (chainId: EvmNetworkId, moduleType: string) =>
+  `${chainId}-${moduleType}`.toLowerCase().replace(/ /g, "-")
 
 const minimumHydrationInterval = 300_000 // 300_000ms = 300s = 5 minutes
 
@@ -282,10 +282,10 @@ export class ChaindataProviderExtension implements ChaindataProvider {
 
     try {
       return await this.#db.transaction("rw", this.#db.chains, this.#db.tokens, async () => {
-        // delete chain and its native token
-        const chainToDelete = await this.#db.chains.get(chainId)
-        if (chainToDelete?.nativeToken?.id)
-          await this.#db.tokens.delete(chainToDelete.nativeToken.id)
+        // delete chain and its native tokens (ensures cleanup of tokens with legacy ids)
+        await this.#db.tokens
+          .filter((token) => token.type === "substrate-native" && token.chain?.id === chainId)
+          .delete()
         await this.#db.chains.delete(chainId)
 
         // reprovision them from subsquid data
@@ -357,7 +357,7 @@ export class ChaindataProviderExtension implements ChaindataProvider {
     if (!decimals) throw new Error("Missing native token decimals")
 
     const builtInNativeToken: IToken = {
-      id: getNativeTokenId(evmNetworkId, "evm-native", symbol),
+      id: getNativeTokenId(evmNetworkId, "evm-native"),
       type: "evm-native",
       evmNetwork: { id: evmNetworkId },
       isTestnet: builtInEvmNetwork.isTestnet ?? false,
@@ -374,7 +374,10 @@ export class ChaindataProviderExtension implements ChaindataProvider {
 
     try {
       return await this.#db.transaction("rw", this.#db.evmNetworks, this.#db.tokens, async () => {
-        // delete network and its native token
+        // delete chain and its native tokens (ensures cleanup of tokens with legacy ids)
+        await this.#db.tokens
+          .filter((token) => token.type === "evm-native" && token.evmNetwork?.id === evmNetworkId)
+          .delete()
         const networkToDelete = await this.#db.evmNetworks.get(evmNetworkId)
         if (networkToDelete?.nativeToken?.id)
           await this.#db.tokens.delete(networkToDelete.nativeToken.id)
@@ -497,7 +500,7 @@ export class ChaindataProviderExtension implements ChaindataProvider {
         const symbol = (nativeTokenModule?.moduleConfig as any)?.symbol
         if (!symbol) continue
 
-        chain.nativeToken = { id: getNativeTokenId(chain.id, "substrate-native", symbol) }
+        chain.nativeToken = { id: getNativeTokenId(chain.id, "substrate-native") }
       }
 
       await this.#db.transaction("rw", this.#db.chains, () => {
@@ -541,15 +544,9 @@ export class ChaindataProviderExtension implements ChaindataProvider {
         var evmNetworks: EvmNetwork[] = await fetchInitEvmNetworks() // eslint-disable-line no-var
       }
 
-      // TODO check if alec is this the right way to set native token
       // set native token
       for (const evmNetwork of evmNetworks) {
-        const nativeTokenModule = evmNetwork.balancesConfig.find(
-          (c) => c.moduleType === "evm-native"
-        )
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const symbol = (nativeTokenModule?.moduleConfig as any)?.symbol
-        evmNetwork.nativeToken = { id: getNativeTokenId(evmNetwork.id, "evm-native", symbol) }
+        evmNetwork.nativeToken = { id: getNativeTokenId(evmNetwork.id, "evm-native") }
       }
 
       await this.#db.transaction("rw", this.#db.evmNetworks, async () => {

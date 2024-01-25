@@ -5,6 +5,8 @@ import { MetadataDef } from "@core/inject/types"
 import { DbTokenRates } from "@talismn/token-rates"
 import { Dexie } from "dexie"
 
+import { upgradeRemoveSymbolFromNativeTokenId } from "./upgrades"
+
 export const MIGRATION_ERROR_MSG = "Talisman Dexie Migration Error"
 
 export class TalismanDatabase extends Dexie {
@@ -49,13 +51,15 @@ export class TalismanDatabase extends Dexie {
       transactions: "hash, status, timestamp",
     })
 
-    this.version(8).stores({
-      tokenRates: "tokenId",
-      metadata: "genesisHash",
-      phishing: "source, commitSha",
-      transactions: "hash, status, timestamp",
-      assetDiscovery: "id, tokenId, address",
-    })
+    this.version(8)
+      .stores({
+        tokenRates: "tokenId",
+        metadata: "genesisHash",
+        phishing: "source, commitSha",
+        transactions: "hash, status, timestamp",
+        assetDiscovery: "id, tokenId, address",
+      })
+      .upgrade(upgradeRemoveSymbolFromNativeTokenId)
   }
 }
 
