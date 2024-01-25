@@ -99,8 +99,9 @@ export class ChainsHandler extends ExtensionHandler {
       ]
     }
 
+    const existingChain = await chaindataProvider.getChain(chain.id)
+
     await chaindataProvider.transaction("rw", ["chains", "tokens"], async () => {
-      const existingChain = await chaindataProvider.getChain(chain.id)
       const existingToken = existingChain?.nativeToken?.id
         ? await chaindataProvider.getToken(existingChain.nativeToken.id)
         : null
@@ -164,10 +165,9 @@ export class ChainsHandler extends ExtensionHandler {
         await chaindataProvider.removeToken(existingToken.id)
 
       await chaindataProvider.addCustomChain(newChain)
-
-      talismanAnalytics.capture(`${existingChain ? "update" : "create"} custom chain`, {
-        network: chain.id,
-      })
+    })
+    talismanAnalytics.capture(`${existingChain ? "update" : "create"} custom chain`, {
+      network: chain.id,
     })
 
     return true
@@ -203,7 +203,11 @@ export class ChainsHandler extends ExtensionHandler {
         return chaindataProvider.hydrateChains()
 
       case "pri(chains.upsert)":
-        return this.chainUpsert(request as RequestTypes["pri(chains.upsert)"])
+        try {
+          return this.chainUpsert(request as RequestTypes["pri(chains.upsert)"])
+        } catch (err) {
+          throw new Error("Error saving chain", { cause: err })
+        }
 
       case "pri(chains.remove)":
         return this.chainRemove(request as RequestTypes["pri(chains.remove)"])

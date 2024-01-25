@@ -23,6 +23,7 @@ import { HexString } from "@polkadot/util/types"
 import { evmNativeTokenId } from "@talismn/balances"
 import { CustomEvmNetwork, githubUnknownTokenLogoUrl } from "@talismn/chaindata-provider"
 import { isEthereumAddress } from "@talismn/util"
+import Dexie from "dexie"
 import { privateKeyToAccount } from "viem/accounts"
 
 import { getHostName } from "../app/helpers"
@@ -416,6 +417,7 @@ export class EthHandler extends ExtensionHandler {
 
   private ethNetworkUpsert: MessageHandler<"pri(eth.networks.upsert)"> = async (network) => {
     const existingNetwork = await chaindataProvider.getEvmNetwork(network.id)
+
     try {
       await chaindataProvider.transaction("rw", ["evmNetworks", "tokens"], async () => {
         const existingToken = existingNetwork?.nativeToken?.id
@@ -465,7 +467,8 @@ export class EthHandler extends ExtensionHandler {
 
         await chaindataProvider.addCustomEvmNetwork(newNetwork)
 
-        await activeEvmNetworksStore.setActive(newNetwork.id, true)
+        // must be wrapped in Dexie.waitFor because it's a non-dexie async api
+        Dexie.waitFor(activeEvmNetworksStore.setActive(newNetwork.id, true))
 
         // RPCs may have changed, clear cache
         chainConnectorEvm.clearRpcProvidersCache(network.id)
