@@ -23,6 +23,7 @@ import { HexString } from "@polkadot/util/types"
 import { evmNativeTokenId } from "@talismn/balances"
 import { CustomEvmNetwork, githubUnknownTokenLogoUrl } from "@talismn/chaindata-provider"
 import { isEthereumAddress } from "@talismn/util"
+import Dexie from "dexie"
 import { privateKeyToAccount } from "viem/accounts"
 
 import { getHostName } from "../app/helpers"
@@ -416,6 +417,7 @@ export class EthHandler extends ExtensionHandler {
 
   private ethNetworkUpsert: MessageHandler<"pri(eth.networks.upsert)"> = async (network) => {
     const existingNetwork = await chaindataProvider.getEvmNetwork(network.id)
+
     try {
       await chaindataProvider.transaction("rw", ["evmNetworks", "tokens"], async () => {
         const existingToken = existingNetwork?.nativeToken?.id
@@ -459,7 +461,7 @@ export class EthHandler extends ExtensionHandler {
 
         await chaindataProvider.addCustomToken(newToken)
         await chaindataProvider.addCustomEvmNetwork(newNetwork)
-        await activeEvmNetworksStore.setActive(newNetwork.id, true)
+        await Dexie.waitFor(activeEvmNetworksStore.setActive(newNetwork.id, true))
 
         // if symbol changed, id is different and previous native token must be deleted
         // note: keep this code to allow for cleanup of custom chains edited prior 1.21.0

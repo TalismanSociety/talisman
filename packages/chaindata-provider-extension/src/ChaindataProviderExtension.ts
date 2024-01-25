@@ -299,7 +299,7 @@ export class ChaindataProviderExtension implements ChaindataProvider {
 
   async addCustomEvmNetwork(customEvmNetwork: CustomEvmNetwork) {
     try {
-      if (!("isCustom" in customEvmNetwork)) return
+      if (!("isCustom" in customEvmNetwork)) return Promise.resolve()
       return await this.#db.evmNetworks.put(customEvmNetwork)
     } catch (cause) {
       throw new Error("Failed to add custom evm network", { cause })
@@ -394,7 +394,7 @@ export class ChaindataProviderExtension implements ChaindataProvider {
 
   async addCustomToken(customToken: Token) {
     try {
-      if (!("isCustom" in customToken)) return
+      if (!("isCustom" in customToken)) return Promise.resolve()
       return await this.#db.tokens.put(customToken)
     } catch (cause) {
       throw new Error("Failed to add custom token", { cause })

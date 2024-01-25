@@ -20,6 +20,7 @@ import {
 import * as $ from "@talismn/subshape-fork"
 import { sleep } from "@talismn/util"
 import { MessageHandler, MessageTypes, RequestType, RequestTypes, ResponseType } from "core/types"
+import Dexie from "dexie"
 
 import { activeChainsStore } from "./store.activeChains"
 
@@ -101,8 +102,9 @@ export class ChainsHandler extends ExtensionHandler {
       ]
     }
 
+    const existingChain = await chaindataProvider.getChain(chain.id)
+
     await chaindataProvider.transaction("rw", ["chains", "tokens"], async () => {
-      const existingChain = await chaindataProvider.getChain(chain.id)
       const existingToken = existingChain?.nativeToken?.id
         ? await chaindataProvider.getToken(existingChain.nativeToken.id)
         : null
@@ -161,16 +163,16 @@ export class ChainsHandler extends ExtensionHandler {
 
       await chaindataProvider.addCustomToken(newToken)
       await chaindataProvider.addCustomChain(newChain)
-      await activeChainsStore.setActive(newChain.id, true)
+      Dexie.waitFor(await activeChainsStore.setActive(newChain.id, true))
 
       // if symbol changed, id is different and previous native token must be deleted
       // note: keep this code to allow for cleanup of custom chains edited prior 1.21.0
       if (existingToken && existingToken.id !== newToken.id)
         await chaindataProvider.removeToken(existingToken.id)
+    })
 
-      talismanAnalytics.capture(`${existingChain ? "update" : "create"} custom chain`, {
-        network: chain.id,
-      })
+    talismanAnalytics.capture(`${existingChain ? "update" : "create"} custom chain`, {
+      network: chain.id,
     })
 
     return true
@@ -206,7 +208,11 @@ export class ChainsHandler extends ExtensionHandler {
         return chaindataProvider.hydrateChains()
 
       case "pri(chains.upsert)":
-        return this.chainUpsert(request as RequestTypes["pri(chains.upsert)"])
+        try {
+          return this.chainUpsert(request as RequestTypes["pri(chains.upsert)"])
+        } catch (err) {
+          throw new Error("Error saving chain", { cause: err })
+        }
 
       case "pri(chains.remove)":
         return this.chainRemove(request as RequestTypes["pri(chains.remove)"])
