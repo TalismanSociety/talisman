@@ -27,6 +27,7 @@ export const updateAndWaitForUpdatedChaindata = (): Promise<void> => {
           new Error("Failed to hydrate chaindata & update miniMetadata", { cause })
         )
       } finally {
+        activeUpdate = null
         resolve()
       }
     })()
