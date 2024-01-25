@@ -1,7 +1,8 @@
 import { ChainId, EvmNetworkId, TokenId } from "./types"
 
 // @dev : temporarily change branch here when testing changes in chaindata
-const CHAINDATA_BRANCH = "main"
+// const CHAINDATA_BRANCH = "main"
+const CHAINDATA_BRANCH = "feat/remove-symbol-from-native-token-ids"
 
 //
 // Chaindata published files (dist folder)
