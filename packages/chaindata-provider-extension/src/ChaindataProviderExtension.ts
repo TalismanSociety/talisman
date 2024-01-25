@@ -284,10 +284,10 @@ export class ChaindataProviderExtension implements ChaindataProvider {
 
     try {
       return await this.#db.transaction("rw", this.#db.chains, this.#db.tokens, async () => {
-        // delete chain and its native token
-        const chainToDelete = await this.#db.chains.get(chainId)
-        if (chainToDelete?.nativeToken?.id)
-          await this.#db.tokens.delete(chainToDelete.nativeToken.id)
+        // delete chain and its native tokens (ensures cleanup of tokens with legacy ids)
+        await this.#db.tokens
+          .filter((token) => token.type === "substrate-native" && token.chain?.id === chainId)
+          .delete()
         await this.#db.chains.delete(chainId)
 
         // reprovision them from subsquid data
@@ -376,7 +376,10 @@ export class ChaindataProviderExtension implements ChaindataProvider {
 
     try {
       return await this.#db.transaction("rw", this.#db.evmNetworks, this.#db.tokens, async () => {
-        // delete network and its native token
+        // delete chain and its native tokens (ensures cleanup of tokens with legacy ids)
+        await this.#db.tokens
+          .filter((token) => token.type === "evm-native" && token.evmNetwork?.id === evmNetworkId)
+          .delete()
         const networkToDelete = await this.#db.evmNetworks.get(evmNetworkId)
         if (networkToDelete?.nativeToken?.id)
           await this.#db.tokens.delete(networkToDelete.nativeToken.id)
