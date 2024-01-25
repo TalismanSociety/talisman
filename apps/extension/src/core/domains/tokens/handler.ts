@@ -32,7 +32,7 @@ export default class TokensHandler extends ExtensionHandler {
         // doing this here as this is the only place where we hydrate tokens from github
         assetDiscoveryScanner.startPendingScan()
 
-        return
+        return true
       }
 
       // --------------------------------------------------------------------

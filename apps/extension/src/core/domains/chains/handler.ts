@@ -208,7 +208,7 @@ export class ChainsHandler extends ExtensionHandler {
       case "pri(chains.subscribe)":
         // TODO: Run this on a timer or something instead of when subscribing to chains
         await updateAndWaitForUpdatedChaindata()
-        return
+        return true
 
       case "pri(chains.upsert)":
         try {
