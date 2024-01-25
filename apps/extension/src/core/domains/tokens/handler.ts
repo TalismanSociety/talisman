@@ -32,7 +32,7 @@ export default class TokensHandler extends ExtensionHandler {
         const goodChains = [...statusesByChain.entries()].flatMap(([chainId, status]) =>
           status === "good" ? chainId : []
         )
-        await chaindataProvider.hydrateTokens(goodChains)
+        await chaindataProvider.hydrate({ tokensArgs: [goodChains] })
 
         const [chainIds, evmNetworkIds] = await Promise.all([
           chaindataProvider.chainIds(),
