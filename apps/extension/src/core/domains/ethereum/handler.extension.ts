@@ -363,7 +363,7 @@ export class EthHandler extends ExtensionHandler {
     const networkId = parseInt(network.chainId, 16).toString()
     const newToken: CustomEvmNativeToken | null = network.nativeCurrency
       ? {
-          id: `${networkId}-evm-native-${network.nativeCurrency.symbol}`.toLowerCase(),
+          id: `${networkId}-evm-native`.toLowerCase(),
           type: "evm-native",
           isTestnet: isTestnet,
           symbol: network.nativeCurrency.symbol,
@@ -421,7 +421,7 @@ export class EthHandler extends ExtensionHandler {
         : null
 
       const newToken: CustomEvmNativeToken = {
-        id: evmNativeTokenId(network.id, network.tokenSymbol),
+        id: evmNativeTokenId(network.id),
         type: "evm-native",
         isTestnet: network.isTestnet,
         symbol: network.tokenSymbol,
@@ -456,13 +456,7 @@ export class EthHandler extends ExtensionHandler {
       }
 
       await chaindataProvider.addCustomToken(newToken)
-
-      // if symbol changed, id is different and previous native token must be deleted
-      if (existingToken && existingToken.id !== newToken.id)
-        await chaindataProvider.removeToken(existingToken.id)
-
       await chaindataProvider.addCustomEvmNetwork(newNetwork)
-
       await activeEvmNetworksStore.setActive(newNetwork.id, true)
 
       // RPCs may have changed, clear cache

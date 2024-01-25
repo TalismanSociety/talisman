@@ -21,6 +21,8 @@ import * as $ from "@talismn/subshape-fork"
 import { sleep } from "@talismn/util"
 import { MessageHandler, MessageTypes, RequestType, RequestTypes, ResponseType } from "core/types"
 
+import { activeChainsStore } from "./store.activeChains"
+
 export class ChainsHandler extends ExtensionHandler {
   private async validateVaultVerifierCertificateMnemonic() {
     const vaultMnemoicId = await this.stores.app.get("vaultVerifierCertificateMnemonicId")
@@ -106,7 +108,7 @@ export class ChainsHandler extends ExtensionHandler {
         : null
 
       const newToken: CustomSubNativeToken = {
-        id: subNativeTokenId(chain.id, chain.nativeTokenSymbol),
+        id: subNativeTokenId(chain.id),
         type: "substrate-native",
         isTestnet: chain.isTestnet,
         symbol: chain.nativeTokenSymbol,
@@ -158,12 +160,8 @@ export class ChainsHandler extends ExtensionHandler {
       }
 
       await chaindataProvider.addCustomToken(newToken)
-
-      // if symbol changed, id is different and previous native token must be deleted
-      if (existingToken && existingToken.id !== newToken.id)
-        await chaindataProvider.removeToken(existingToken.id)
-
       await chaindataProvider.addCustomChain(newChain)
+      await activeChainsStore.setActive(newChain.id, true)
 
       talismanAnalytics.capture(`${existingChain ? "update" : "create"} custom chain`, {
         network: chain.id,

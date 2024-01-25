@@ -141,7 +141,7 @@ export const useCopyAddressWizardProvider = ({ inputs }: { inputs: CopyAddressWi
     route: getNextRoute(inputs),
   }))
 
-  const ethereum = useToken("1-evm-native-eth")
+  const ethereum = useToken("1-evm-native")
 
   const token = useToken(state.mode === "receive" ? state.tokenId : undefined)
   const chain = useChain(state.mode === "copy" && state.chainId ? state.chainId : token?.chain?.id)

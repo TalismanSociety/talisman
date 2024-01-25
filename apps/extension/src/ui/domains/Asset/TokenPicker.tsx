@@ -303,10 +303,10 @@ const TokensList: FC<TokensListProps> = ({
         if (!aHasBalance && bHasBalance) return 1
 
         // polkadot and kusama should appear first
-        if (a.token.id === "polkadot-substrate-native-dot") return -1
-        if (b.token.id === "polkadot-substrate-native-dot") return 1
-        if (a.token.id === "kusama-substrate-native-ksm") return -1
-        if (b.token.id === "kusama-substrate-native-ksm") return 1
+        if (a.token.id === "polkadot-substrate-native") return -1
+        if (b.token.id === "polkadot-substrate-native") return 1
+        if (a.token.id === "kusama-substrate-native") return -1
+        if (b.token.id === "kusama-substrate-native") return 1
 
         // keep alphabetical sort
         return 0

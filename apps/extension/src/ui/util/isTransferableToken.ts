@@ -8,9 +8,9 @@ import { Token } from "@talismn/chaindata-provider"
 export const UNTRANSFERABLE_TOKENS = [
   "bifrost-kusama-substrate-tokens-bnc",
   "bifrost-polkadot-substrate-tokens-bnc",
-  "interlay-substrate-native-intr",
-  "kintsugi-substrate-native-kint",
-  "mangata-substrate-native-mgx",
+  "interlay-substrate-native",
+  "kintsugi-substrate-native",
+  "mangata-substrate-native",
 ]
 
 export const isTransferableToken = (t: Token) => {
