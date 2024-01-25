@@ -7,6 +7,10 @@ export const upgradeRemoveSymbolFromNativeTokenId = (tx: DbTransaction) => {
     .table<WalletTransaction, string>("transactions")
     .toCollection()
     .modify((wtx) => {
-      if (wtx.tokenId) wtx.tokenId = wtx.tokenId.replace(/-native(-[a-zA-Z0-9]+)$/, "-native")
+      if (wtx?.tokenId?.includes?.("-substrate-native-"))
+        wtx.tokenId.replace(/-substrate-native-.+$/, "-substrate-native")
+
+      if (wtx?.tokenId?.includes?.("-evm-native-"))
+        wtx.tokenId.replace(/-evm-native-.+$/, "-evm-native")
     })
 }

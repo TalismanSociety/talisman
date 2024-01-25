@@ -21,23 +21,17 @@ export class TalismanChaindataDatabase extends Dexie {
     super("TalismanChaindata")
 
     // https://dexie.org/docs/Tutorial/Design#database-versioning
-    this.version(1).stores({
-      // You only need to specify properties that you wish to index.
-      // The object store will allow any properties on your stored objects but you can only query them by indexed properties
-      // https://dexie.org/docs/API-Reference#declare-database
-      //
-      // Never index properties containing images, movies or large (huge) strings. Store them in IndexedDB, yes! but just don’t index them!
-      // https://dexie.org/docs/Version/Version.stores()#warning
-      chains: "id, genesisHash, name, nativeToken, tokens, evmNetworks",
-      evmNetworks: "id, name, nativeToken, tokens, substrateChain",
-      tokens: "id, type, symbol, coingeckoId, dcentName, contractAddress, chain, evmNetwork",
-    })
-
     this.version(2)
       .stores({
-        chains: "id, genesisHash, name, nativeToken, tokens, evmNetworks",
-        evmNetworks: "id, name, nativeToken, tokens, substrateChain",
-        tokens: "id, type, symbol, coingeckoId, dcentName, contractAddress, chain, evmNetwork",
+        // You only need to specify properties that you wish to index.
+        // The object store will allow any properties on your stored objects but you can only query them by indexed properties
+        // https://dexie.org/docs/API-Reference#declare-database
+        //
+        // Never index properties containing images, movies or large (huge) strings. Store them in IndexedDB, yes! but just don’t index them!
+        // https://dexie.org/docs/Version/Version.stores()#warning
+        chains: "id, genesisHash, name",
+        evmNetworks: "id, name",
+        tokens: "id, type, symbol, coingeckoId, dcentName, contractAddress",
       })
       .upgrade(upgradeRemoveSymbolFromNativeTokenId)
   }
