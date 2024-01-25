@@ -27,12 +27,15 @@ export default class TokensHandler extends ExtensionHandler {
       case "pri(tokens.subscribe)": {
         await miniMetadataUpdater.hydrateFromChaindata()
 
+        await chaindataProvider.hydrateChains()
+        await chaindataProvider.hydrateEvmNetworks()
+
         const chains = await chaindataProvider.chainsArray()
         const { statusesByChain } = await miniMetadataUpdater.statuses(chains)
         const goodChains = [...statusesByChain.entries()].flatMap(([chainId, status]) =>
           status === "good" ? chainId : []
         )
-        await chaindataProvider.hydrate({ tokensArgs: [goodChains] })
+        await chaindataProvider.hydrateTokens(goodChains)
 
         const [chainIds, evmNetworkIds] = await Promise.all([
           chaindataProvider.chainIds(),
