@@ -2,13 +2,14 @@ import { db } from "@core/db"
 import { AssetDiscoveryScanState, assetDiscoveryStore } from "@core/domains/assetDiscovery/store"
 import { DiscoveredBalance } from "@core/domains/assetDiscovery/types"
 import { log } from "@core/log"
+import { firstThenDebounce } from "@core/util/firstThenDebounce"
 import { Address } from "@talismn/balances"
 import { TokenId } from "@talismn/chaindata-provider"
 import { liveQuery } from "dexie"
 import groupBy from "lodash/groupBy"
 import sortBy from "lodash/sortBy"
 import { atom, selector } from "recoil"
-import { concat, debounceTime, from, skip, take } from "rxjs"
+import { from } from "rxjs"
 
 import { tokensMapQuery } from "./chaindata"
 
@@ -18,14 +19,12 @@ const assetDiscoveryBalancesState = atom<DiscoveredBalance[]>({
     // sync from db
     ({ setSelf }) => {
       log.debug("assetDiscoveryBalancesState.init")
-      const obs = from(liveQuery(() => db.assetDiscovery.toArray()))
 
       // backend will do a lot of updates
       // debounce to mitigate performance issues
-      // also, we only need the first value to hydrate the atom
-      const sub = concat(obs.pipe(take(1)), obs.pipe(skip(1)).pipe(debounceTime(500))).subscribe(
-        setSelf
-      )
+      const sub = from(liveQuery(() => db.assetDiscovery.toArray()))
+        .pipe(firstThenDebounce(500))
+        .subscribe(setSelf)
 
       return () => sub.unsubscribe()
     },

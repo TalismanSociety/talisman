@@ -9,6 +9,7 @@ import { balanceModules } from "@core/rpcs/balance-modules"
 import { chaindataProvider } from "@core/rpcs/chaindata"
 import { Addresses, Port } from "@core/types/base"
 import { awaitKeyringLoaded } from "@core/util/awaitKeyringLoaded"
+import { firstThenDebounce } from "@core/util/firstThenDebounce"
 import { validateHexString } from "@core/util/validateHexString"
 import keyring from "@polkadot/ui-keyring"
 import { SingleAddress } from "@polkadot/ui-keyring/observable/types"
@@ -28,16 +29,7 @@ import { encodeAnyAddress } from "@talismn/util"
 import { Dexie, liveQuery } from "dexie"
 import isEqual from "lodash/isEqual"
 import pick from "lodash/pick"
-import {
-  ReplaySubject,
-  Subject,
-  combineLatest,
-  concat,
-  debounceTime,
-  firstValueFrom,
-  skip,
-  take,
-} from "rxjs"
+import { ReplaySubject, Subject, combineLatest, firstValueFrom } from "rxjs"
 
 import { activeChainsStore, isChainActive } from "../chains/store.activeChains"
 import { activeEvmNetworksStore, isEvmNetworkActive } from "../ethereum/store.activeEvmNetworks"
@@ -92,16 +84,15 @@ export class BalanceStore {
       .then(() => {
         // accounts can be added to the keyring by batch (ex: multiple accounts imported from a seed phrase)
         // debounce to ensure the subscriptions aren't restarted multiple times unnecessarily
-        const obsAccounts = keyring.accounts.subject
-        concat(
-          obsAccounts.pipe(take(1)),
-          obsAccounts.pipe(skip(1)).pipe(debounceTime(DEBOUNCE_TIMEOUT))
-        ).subscribe(this.setAccounts.bind(this))
+        keyring.accounts.subject
+          .pipe(firstThenDebounce(DEBOUNCE_TIMEOUT))
+          .subscribe(this.setAccounts.bind(this))
       })
       .catch((err) => log.error("Failed to load keyring", { err }))
 
     // subscribe to all the inputs that make up the list of tokens to watch balances for
-    const obsInputs = combineLatest(
+    // debounce to avoid restarting subscriptions multiple times when settings change rapidly (ex: multiple networks/tokens activated/deactivated rapidly)
+    combineLatest([
       // settings
       settingsStore.observable,
       // chains
@@ -117,80 +108,77 @@ export class BalanceStore {
       // active state of substrate chains
       activeChainsStore.observable,
       // enable state of tokens
-      activeTokensStore.observable
-    )
-
-    // debounce to avoid restarting subscriptions multiple times when settings change rapidly (ex: multiple networks/tokens activated/deactivated rapidly)
-    const obsDebouncedInputs = concat(
-      obsInputs.pipe(take(1)),
-      obsInputs.pipe(skip(1)).pipe(debounceTime(DEBOUNCE_TIMEOUT))
-    )
-
-    obsDebouncedInputs.subscribe({
-      next: ([
-        settings,
-        chains,
-        evmNetworks,
-        tokens,
-        miniMetadatas,
-        activeEvmNetworks,
-        activeChains,
-        activeTokens,
-      ]) => {
-        const activeChainsList = Object.fromEntries(
-          Object.entries(chains ?? {}).filter(
-            ([, chain]) =>
-              isChainActive(chain, activeChains) && (settings.useTestnets ? true : !chain.isTestnet)
+      activeTokensStore.observable,
+    ])
+      .pipe(firstThenDebounce(DEBOUNCE_TIMEOUT))
+      .subscribe({
+        next: ([
+          settings,
+          chains,
+          evmNetworks,
+          tokens,
+          miniMetadatas,
+          activeEvmNetworks,
+          activeChains,
+          activeTokens,
+        ]) => {
+          const activeChainsList = Object.fromEntries(
+            Object.entries(chains ?? {}).filter(
+              ([, chain]) =>
+                isChainActive(chain, activeChains) &&
+                (settings.useTestnets ? true : !chain.isTestnet)
+            )
           )
-        )
-        const activeEvmNetworksList = Object.fromEntries(
-          Object.entries(evmNetworks ?? {}).filter(
-            ([, evmNetwork]) =>
-              isEvmNetworkActive(evmNetwork, activeEvmNetworks) &&
-              (settings.useTestnets ? true : !evmNetwork.isTestnet)
+          const activeEvmNetworksList = Object.fromEntries(
+            Object.entries(evmNetworks ?? {}).filter(
+              ([, evmNetwork]) =>
+                isEvmNetworkActive(evmNetwork, activeEvmNetworks) &&
+                (settings.useTestnets ? true : !evmNetwork.isTestnet)
+            )
           )
-        )
-        const activeTokensList = Object.fromEntries(
-          Object.entries(tokens ?? {}).filter(
-            ([, token]) =>
-              (activeEvmNetworksList[token.evmNetwork?.id ?? ""] ||
-                activeChainsList[token.chain?.id || ""]) &&
-              isTokenActive(token, activeTokens) &&
-              (settings.useTestnets ? true : !token.isTestnet)
+          const activeTokensList = Object.fromEntries(
+            Object.entries(tokens ?? {}).filter(
+              ([, token]) =>
+                (activeEvmNetworksList[token.evmNetwork?.id ?? ""] ||
+                  activeChainsList[token.chain?.id || ""]) &&
+                isTokenActive(token, activeTokens) &&
+                (settings.useTestnets ? true : !token.isTestnet)
+            )
           )
-        )
 
-        const arErc20Tokens = Object.values(activeTokensList).filter((t) => t.type === "evm-erc20")
+          const arErc20Tokens = Object.values(activeTokensList).filter(
+            (t) => t.type === "evm-erc20"
+          )
 
-        const erc20TokensByEvmNetwork = Object.keys(activeEvmNetworks).reduce(
-          (groupByNetwork, evmNetworkId) => {
-            const tokens = arErc20Tokens.filter((t) => t.evmNetwork?.id === evmNetworkId)
-            if (tokens.length)
-              groupByNetwork[evmNetworkId] = tokens.map((t) =>
-                pick(t as Erc20Token, ["id", "contractAddress"])
-              )
-            return groupByNetwork
-          },
-          {} as { [key: EvmNetworkId]: EvmNetworkIdAndRpcs["erc20Tokens"] }
-        )
+          const erc20TokensByEvmNetwork = Object.keys(activeEvmNetworks).reduce(
+            (groupByNetwork, evmNetworkId) => {
+              const tokens = arErc20Tokens.filter((t) => t.evmNetwork?.id === evmNetworkId)
+              if (tokens.length)
+                groupByNetwork[evmNetworkId] = tokens.map((t) =>
+                  pick(t as Erc20Token, ["id", "contractAddress"])
+                )
+              return groupByNetwork
+            },
+            {} as { [key: EvmNetworkId]: EvmNetworkIdAndRpcs["erc20Tokens"] }
+          )
 
-        const chainsToFetch = Object.values(activeChainsList).map((chain) =>
-          pick(chain, ["id", "genesisHash", "account", "rpcs"])
-        )
-        const evmNetworksToFetch = Object.values(activeEvmNetworksList).map((evmNetwork) => ({
-          ...pick(evmNetwork, ["id", "nativeToken", "substrateChain", "rpcs"]),
-          erc20Tokens: erc20TokensByEvmNetwork[evmNetwork.id],
-          substrateChainAccountFormat:
-            (evmNetwork.substrateChain && chains[evmNetwork.substrateChain.id]?.account) || null,
-        }))
+          const chainsToFetch = Object.values(activeChainsList).map((chain) =>
+            pick(chain, ["id", "genesisHash", "account", "rpcs"])
+          )
+          const evmNetworksToFetch = Object.values(activeEvmNetworksList).map((evmNetwork) => ({
+            ...pick(evmNetwork, ["id", "nativeToken", "substrateChain", "rpcs"]),
+            erc20Tokens: erc20TokensByEvmNetwork[evmNetwork.id],
+            substrateChainAccountFormat:
+              (evmNetwork.substrateChain && chains[evmNetwork.substrateChain.id]?.account) || null,
+          }))
 
-        this.setChains(chainsToFetch, evmNetworksToFetch, activeTokensList, miniMetadatas)
-      },
-      error: (error) => {
-        if (error.cause?.name === Dexie.errnames.DatabaseClosed) return
-        else Sentry.captureException(error)
-      },
-    })
+          this.setChains(chainsToFetch, evmNetworksToFetch, activeTokensList, miniMetadatas)
+        },
+        error: (error) => {
+          if (error.cause?.name === Dexie.errnames.DatabaseClosed) return
+          else Sentry.captureException(error)
+        },
+      })
 
     // if we already have subscriptions - start polling
     if (this.#subscribers.observed) this.openSubscriptions()
