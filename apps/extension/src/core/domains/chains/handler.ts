@@ -164,7 +164,7 @@ export class ChainsHandler extends ExtensionHandler {
 
       await chaindataProvider.addCustomToken(newToken)
       await chaindataProvider.addCustomChain(newChain)
-      Dexie.waitFor(await activeChainsStore.setActive(newChain.id, true))
+      await Dexie.waitFor(activeChainsStore.setActive(newChain.id, true))
 
       // if symbol changed, id is different and previous native token must be deleted
       // note: keep this code to allow for cleanup of custom chains edited prior 1.21.0
