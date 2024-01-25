@@ -2,7 +2,7 @@ import { WalletTransaction } from "@core/domains/transactions"
 import { Transaction as DbTransaction } from "dexie"
 
 // for DB version 2, Wallet version 1.21.0
-export const upgradeRemoveSymbolFromNativeTokenId = async (tx: DbTransaction) => {
+export const upgradeRemoveSymbolFromNativeTokenId = (tx: DbTransaction) => {
   return tx
     .table<WalletTransaction, string>("transactions")
     .toCollection()
