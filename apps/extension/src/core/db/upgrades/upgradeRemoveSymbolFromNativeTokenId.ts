@@ -7,6 +7,6 @@ export const upgradeRemoveSymbolFromNativeTokenId = async (tx: DbTransaction) =>
     .table<WalletTransaction, string>("transactions")
     .toCollection()
     .modify((wtx) => {
-      if (wtx.tokenId) wtx.tokenId = wtx.tokenId.replace(/-native(-[a-zA-Z0-9])$/, "")
+      if (wtx.tokenId) wtx.tokenId = wtx.tokenId.replace(/-native(-[a-zA-Z0-9]+)$/, "")
     })
 }
