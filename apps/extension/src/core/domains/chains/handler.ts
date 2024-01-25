@@ -2,6 +2,7 @@ import { talismanAnalytics } from "@core/libs/Analytics"
 import { ExtensionHandler } from "@core/libs/Handler"
 import { generateQrAddNetworkSpecs, generateQrUpdateNetworkMetadata } from "@core/libs/QrGenerator"
 import { chaindataProvider } from "@core/rpcs/chaindata"
+import { updateAndWaitForUpdatedChaindata } from "@core/rpcs/mini-metadata-updater"
 import { WsProvider } from "@polkadot/api"
 import { assert, u8aToHex } from "@polkadot/util"
 import { CustomSubNativeToken, subNativeTokenId } from "@talismn/balances"
@@ -205,7 +206,9 @@ export class ChainsHandler extends ExtensionHandler {
       // chain handlers -----------------------------------------------------
       // --------------------------------------------------------------------
       case "pri(chains.subscribe)":
-        return chaindataProvider.hydrateChains()
+        // TODO: Run this on a timer or something instead of when subscribing to chains
+        await updateAndWaitForUpdatedChaindata()
+        return
 
       case "pri(chains.upsert)":
         try {

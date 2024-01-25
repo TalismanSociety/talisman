@@ -13,6 +13,7 @@ import { requestStore } from "@core/libs/requests/store"
 import { log } from "@core/log"
 import { chainConnectorEvm } from "@core/rpcs/chain-connector-evm"
 import { chaindataProvider } from "@core/rpcs/chaindata"
+import { updateAndWaitForUpdatedChaindata } from "@core/rpcs/mini-metadata-updater"
 import { MessageHandler, MessageTypes, RequestTypes, ResponseType } from "@core/types"
 import { Port } from "@core/types/base"
 import { getPrivateKey } from "@core/util/getPrivateKey"
@@ -636,7 +637,9 @@ export class EthHandler extends ExtensionHandler {
         return requestStore.getAllRequests(ETH_NETWORK_ADD_PREFIX)
 
       case "pri(eth.networks.subscribe)":
-        return chaindataProvider.hydrateEvmNetworks()
+        // TODO: Run this on a timer or something instead of when subscribing to evmNetworks
+        await updateAndWaitForUpdatedChaindata()
+        return
 
       case "pri(eth.networks.upsert)":
         return this.ethNetworkUpsert(request as RequestTypes["pri(eth.networks.upsert)"])
