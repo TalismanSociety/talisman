@@ -11,6 +11,7 @@ import {
 import { Dexie } from "dexie"
 
 import { upgradeRemoveSymbolFromNativeTokenId } from "./upgrades"
+import { upgradeAddIsDefaultToExistingChains } from "./upgrades/2024-01-25-upgradeAddIsDefaultToExistingChains"
 
 export class TalismanChaindataDatabase extends Dexie {
   chains!: Dexie.Table<Chain | CustomChain, ChainId>
@@ -34,6 +35,7 @@ export class TalismanChaindataDatabase extends Dexie {
         tokens: "id, type, symbol, coingeckoId, dcentName, contractAddress",
       })
       .upgrade(upgradeRemoveSymbolFromNativeTokenId)
+      .upgrade(upgradeAddIsDefaultToExistingChains)
   }
 }
 
