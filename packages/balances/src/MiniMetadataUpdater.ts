@@ -184,7 +184,7 @@ export class MiniMetadataUpdater {
           )
 
           for (const mod of this.#balanceModules.filter((m) => m.type.startsWith("substrate-"))) {
-            const balancesConfig = chain.balancesConfig.find(
+            const balancesConfig = (chain.balancesConfig ?? []).find(
               ({ moduleType }) => moduleType === mod.type
             )
             const moduleConfig = balancesConfig?.moduleConfig ?? {}
@@ -243,7 +243,7 @@ export class MiniMetadataUpdater {
         if (!evmNetwork) return
 
         for (const mod of this.#balanceModules.filter((m) => m.type.startsWith("evm-"))) {
-          const balancesConfig = evmNetwork.balancesConfig.find(
+          const balancesConfig = (evmNetwork.balancesConfig ?? []).find(
             ({ moduleType }) => moduleType === mod.type
           )
           const moduleConfig = balancesConfig?.moduleConfig ?? {}
