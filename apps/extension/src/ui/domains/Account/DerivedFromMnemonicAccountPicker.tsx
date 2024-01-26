@@ -1,24 +1,18 @@
 import { formatSuri } from "@core/domains/accounts/helpers"
 import { AccountAddressType, RequestAccountCreateFromSuri } from "@core/domains/accounts/types"
 import { AddressesAndEvmNetwork } from "@core/domains/balances/types"
-import { isChainActive } from "@core/domains/chains/store.activeChains"
 import { getEthDerivationPath } from "@core/domains/ethereum/helpers"
-import { isEvmNetworkActive } from "@core/domains/ethereum/store.activeEvmNetworks"
 import { AddressesByChain } from "@core/types/base"
 import { convertAddress } from "@talisman/util/convertAddress"
 import { api } from "@ui/api"
 import useAccounts from "@ui/hooks/useAccounts"
-import { useActiveChainsState } from "@ui/hooks/useActiveChainsState"
-import { useActiveEvmNetworksState } from "@ui/hooks/useActiveEvmNetworksState"
 import useBalancesByParams from "@ui/hooks/useBalancesByParams"
 import useChains from "@ui/hooks/useChains"
 import { useEvmNetworks } from "@ui/hooks/useEvmNetworks"
+import { isAccountCompatibleWithChain } from "@ui/util/isAccountCompatibleWithChain"
 import { FC, useCallback, useEffect, useMemo, useState } from "react"
 
 import { DerivedAccountBase, DerivedAccountPickerBase } from "./DerivedAccountPickerBase"
-
-const BALANCE_CHECK_EVM_NETWORK_IDS = ["1284", "1285", "592", "1"]
-const BALANCE_CHECK_SUBSTRATE_CHAIN_IDS = ["polkadot", "kusama"]
 
 const getDerivationPath = (type: AccountAddressType, index: number) => {
   switch (type) {
@@ -77,64 +71,39 @@ const useDerivedAccounts = (
   const { chains } = useChains({ activeOnly: true, includeTestnets: false })
   const { evmNetworks } = useEvmNetworks({ activeOnly: true, includeTestnets: false })
 
-  const activeChains = useActiveChainsState()
-  const activeEvmNetworks = useActiveEvmNetworksState()
-
-  const { expectedBalancesCount, addressesByChain, addressesAndEvmNetworks } = useMemo(() => {
-    const expectedBalancesCount =
-      type === "ethereum"
-        ? BALANCE_CHECK_EVM_NETWORK_IDS.length
-        : BALANCE_CHECK_SUBSTRATE_CHAIN_IDS.length
-
+  const { addressesByChain, addressesAndEvmNetworks } = useMemo(() => {
     // start fetching balances only when all accounts are known to prevent recreating subscription 5 times
-    if (derivedAccounts.filter(Boolean).length < derivedAccounts.length)
-      return {
-        expectedBalancesCount,
-      }
+    if (derivedAccounts.filter(Boolean).length < derivedAccounts.length) return {}
 
-    const evmNetworkIds = type === "ethereum" ? BALANCE_CHECK_EVM_NETWORK_IDS : []
-    const chainIds = type === "ethereum" ? [] : BALANCE_CHECK_SUBSTRATE_CHAIN_IDS
-
-    const addressesByChain: AddressesByChain =
-      type === "ethereum"
-        ? {}
-        : (chains || [])
-            .filter((chain) => chainIds.includes(chain.id))
-            .filter((chain) => isChainActive(chain, activeChains))
-            .reduce(
-              (prev, curr) => ({
-                ...prev,
-                [curr.id]: derivedAccounts
-                  .filter((acc) => !!acc)
-                  .map((acc) => acc as DerivedFromMnemonicAccount)
-                  .map((account) => convertAddress(account.address, curr.prefix)),
-              }),
-              {}
-            )
+    const addressesByChain: AddressesByChain = chains.reduce(
+      (prev, chain) => ({
+        ...prev,
+        [chain.id]: derivedAccounts
+          .filter((acc): acc is DerivedFromMnemonicAccount & { type: string } => !!acc?.type)
+          .filter(({ type, genesisHash }) => isAccountCompatibleWithChain(chain, type, genesisHash))
+          .map((account) => convertAddress(account.address, chain.prefix)),
+      }),
+      {}
+    )
 
     const addressesAndEvmNetworks: AddressesAndEvmNetwork =
       type === "ethereum"
         ? {
             addresses: derivedAccounts
-              .filter((acc) => !!acc)
-              .map((acc) => acc?.address)
-              .filter(Boolean) as string[],
-            evmNetworks: (evmNetworks || [])
-              .filter((chain) => evmNetworkIds.includes(chain.id))
-              .filter((chain) => isEvmNetworkActive(chain, activeEvmNetworks))
-              .map(({ id, nativeToken }) => ({
-                id,
-                nativeToken: { id: nativeToken?.id as string },
-              })),
+              .filter((acc): acc is DerivedFromMnemonicAccount => !!acc)
+              .map((acc) => acc.address),
+            evmNetworks: (evmNetworks || []).map(({ id, nativeToken }) => ({
+              id,
+              nativeToken: { id: nativeToken?.id as string },
+            })),
           }
         : { addresses: [], evmNetworks: [] }
 
     return {
-      expectedBalancesCount,
       addressesByChain,
       addressesAndEvmNetworks,
     }
-  }, [chains, derivedAccounts, activeChains, activeEvmNetworks, evmNetworks, type])
+  }, [chains, derivedAccounts, evmNetworks, type])
 
   const withBalances = useMemo(
     () =>
@@ -170,20 +139,10 @@ const useDerivedAccounts = (
           selected: selectedAccounts.some((sa) => sa.suri === acc.suri),
           balances: accountBalances,
           isBalanceLoading:
-            (!addressesByChain && !addressesAndEvmNetworks) ||
-            accountBalances.count < expectedBalancesCount ||
-            accountBalances.each.some((b) => b.status === "cache"),
+            !balances.count || accountBalances.each.some((b) => b.status === "initializing"),
         }
       }),
-    [
-      addressesByChain,
-      addressesAndEvmNetworks,
-      balances,
-      derivedAccounts,
-      expectedBalancesCount,
-      selectedAccounts,
-      walletAccounts,
-    ]
+    [balances, derivedAccounts, selectedAccounts, walletAccounts]
   )
 
   useEffect(() => {

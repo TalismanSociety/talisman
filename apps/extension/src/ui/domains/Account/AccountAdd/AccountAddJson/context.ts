@@ -11,13 +11,13 @@ import { base64Decode, decodeAddress, encodeAddress, jsonDecrypt } from "@polkad
 import { EncryptedJson, KeypairType } from "@polkadot/util-crypto/types"
 import { provideContext } from "@talisman/util/provideContext"
 import { Address, Balances } from "@talismn/balances"
-import { Chain } from "@talismn/chaindata-provider"
 import { encodeAnyAddress } from "@talismn/util"
 import { api } from "@ui/api"
 import useAccounts from "@ui/hooks/useAccounts"
 import useBalancesByParams from "@ui/hooks/useBalancesByParams"
 import useChains from "@ui/hooks/useChains"
 import { useEvmNetworks } from "@ui/hooks/useEvmNetworks"
+import { isAccountCompatibleWithChain } from "@ui/util/isAccountCompatibleWithChain"
 import { useCallback, useEffect, useMemo, useState } from "react"
 
 export type JsonImportAccount = {
@@ -58,15 +58,6 @@ const createPairFromJson = ({ encoded, encoding, address, meta }: KeyringPair$Js
     isHex(encoded) ? hexToU8a(encoded) : base64Decode(encoded),
     encType
   )
-}
-
-const isAccountCompatibleWithChain = (
-  chain: Chain,
-  type: KeypairType,
-  genesisHash: `0x${string}` | null | undefined
-) => {
-  if (genesisHash && genesisHash !== chain.genesisHash) return false
-  return type === "ethereum" ? chain.account === "secp256k1" : chain.account !== "secp256k1"
 }
 
 const useAccountsBalances = (pairs: KeyringPair[] = []) => {
