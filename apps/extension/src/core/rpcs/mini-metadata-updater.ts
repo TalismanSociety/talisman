@@ -41,6 +41,7 @@ let activeUpdate: Promise<void> | null = null
 const hydrateChaindataAndMiniMetadata = async () => {
   await Promise.all([
     miniMetadataUpdater.hydrateFromChaindata(),
+    miniMetadataUpdater.hydrateCustomChains(),
     chaindataProvider.hydrateChains(),
     chaindataProvider.hydrateEvmNetworks(),
   ])
