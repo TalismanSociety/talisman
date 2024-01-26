@@ -107,7 +107,9 @@ const useAccountsBalances = (pairs: KeyringPair[] | undefined) => {
     return addresses.reduce((acc, address) => {
       const individualBalances = allBalances.find({ address }).each
 
-      const isLoading = individualBalances.some((b) => b.status === "initializing")
+      // allBalances will be empty until subscription is initialized
+      const isLoading =
+        !allBalances.count || individualBalances.some((b) => b.status === "initializing")
       const balances = new Balances(individualBalances)
 
       return {

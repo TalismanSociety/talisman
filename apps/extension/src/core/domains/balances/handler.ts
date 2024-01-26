@@ -63,8 +63,10 @@ export class BalancesHandler extends ExtensionHandler {
       // TODO: Replace this call with something internal to the balances store
       // i.e. refactor the balances store to allow us to subscribe to arbitrary balances here,
       // instead of being limited to the accounts which are in the wallet's keystore
-      case "pri(balances.byparams.subscribe)":
+      case "pri(balances.byparams.subscribe)": {
+        await updateAndWaitForUpdatedChaindata()
         return subscribeBalancesByParams(id, port, request as RequestBalancesByParamsSubscribe)
+      }
 
       default:
         throw new Error(`Unable to handle message of type ${type}`)
