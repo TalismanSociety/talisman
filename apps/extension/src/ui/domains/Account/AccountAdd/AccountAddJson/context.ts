@@ -7,16 +7,11 @@ import { createPair } from "@polkadot/keyring"
 import { KeyringPair, KeyringPair$Json } from "@polkadot/keyring/types"
 import { KeyringPairs$Json } from "@polkadot/ui-keyring/types"
 import { assert, hexToU8a, isHex, u8aToString } from "@polkadot/util"
-import {
-  base64Decode,
-  decodeAddress,
-  encodeAddress,
-  isEthereumAddress,
-  jsonDecrypt,
-} from "@polkadot/util-crypto"
+import { base64Decode, decodeAddress, encodeAddress, jsonDecrypt } from "@polkadot/util-crypto"
 import { EncryptedJson, KeypairType } from "@polkadot/util-crypto/types"
 import { provideContext } from "@talisman/util/provideContext"
 import { Address, Balances } from "@talismn/balances"
+import { Chain } from "@talismn/chaindata-provider"
 import { encodeAnyAddress } from "@talismn/util"
 import { api } from "@ui/api"
 import useAccounts from "@ui/hooks/useAccounts"
@@ -24,9 +19,6 @@ import useBalancesByParams from "@ui/hooks/useBalancesByParams"
 import useChains from "@ui/hooks/useChains"
 import { useEvmNetworks } from "@ui/hooks/useEvmNetworks"
 import { useCallback, useEffect, useMemo, useState } from "react"
-
-const BALANCE_CHECK_EVM_NETWORK_IDS = ["1284", "1285", "592", "1"]
-const BALANCE_CHECK_SUB_NETWORK_IDS = ["polkadot", "kusama", "astar", "acala"]
 
 export type JsonImportAccount = {
   id: string
@@ -68,35 +60,49 @@ const createPairFromJson = ({ encoded, encoding, address, meta }: KeyringPair$Js
   )
 }
 
-const useAccountsBalances = (pairs: KeyringPair[] | undefined) => {
-  const addresses = useMemo(() => pairs?.map((p) => encodeAnyAddress(p.address)) ?? [], [pairs])
+const isAccountCompatibleWithChain = (
+  chain: Chain,
+  type: KeypairType,
+  genesisHash: `0x${string}` | null | undefined
+) => {
+  if (genesisHash && genesisHash !== chain.genesisHash) return false
+  return type === "ethereum" ? chain.account === "secp256k1" : chain.account !== "secp256k1"
+}
+
+const useAccountsBalances = (pairs: KeyringPair[] = []) => {
+  const accounts = useMemo(
+    () =>
+      pairs.map((p) => ({
+        address: encodeAnyAddress(p.address),
+        type: p.type,
+        genesisHash: p.meta.genesisHash,
+      })),
+    [pairs]
+  )
   const { chains } = useChains({ activeOnly: true, includeTestnets: false })
   const { evmNetworks } = useEvmNetworks({ activeOnly: true, includeTestnets: false })
 
   const balanceParams = useMemo(() => {
-    if (!addresses.length) return {}
+    if (!accounts.length) return {}
 
-    const ethAddresses = addresses?.filter((address) => isEthereumAddress(address))
-    const subAddresses = addresses?.filter((address) => !isEthereumAddress(address))
+    const ethAddresses = accounts
+      ?.filter(({ type }) => type === "ethereum")
+      .map(({ address }) => address)
 
-    const addressesByChain = subAddresses.length
-      ? chains
-          .filter(({ id }) => BALANCE_CHECK_SUB_NETWORK_IDS.includes(id))
-          .reduce(
-            (acc, chain) => ({
-              ...acc,
-              [chain.id]: subAddresses.map((a) => encodeAnyAddress(a)),
-            }),
-            {} as AddressesByChain
-          )
-      : undefined
+    const addressesByChain = chains.reduce(
+      (acc, chain) => ({
+        ...acc,
+        [chain.id]: accounts
+          .filter(({ type, genesisHash }) => isAccountCompatibleWithChain(chain, type, genesisHash))
+          .map((p) => encodeAnyAddress(p.address)),
+      }),
+      {} as AddressesByChain
+    )
 
     const addressesAndEvmNetworks = ethAddresses.length
       ? ({
           addresses: ethAddresses,
-          evmNetworks: evmNetworks
-            .filter(({ id }) => BALANCE_CHECK_EVM_NETWORK_IDS.includes(id))
-            .map(({ id, nativeToken }) => ({ id, nativeToken })),
+          evmNetworks: evmNetworks.map(({ id, nativeToken }) => ({ id, nativeToken })),
         } as AddressesAndEvmNetwork)
       : undefined
 
@@ -106,12 +112,12 @@ const useAccountsBalances = (pairs: KeyringPair[] | undefined) => {
     }
 
     return result
-  }, [addresses, chains, evmNetworks])
+  }, [accounts, chains, evmNetworks])
 
   const allBalances = useBalancesByParams(balanceParams)
 
   return useMemo(() => {
-    return addresses.reduce((acc, address) => {
+    return accounts.reduce((acc, { address }) => {
       const individualBalances = allBalances.find({ address })
       const isLoading =
         !allBalances.count || individualBalances.each.some((b) => b.status === "initializing")
@@ -122,7 +128,7 @@ const useAccountsBalances = (pairs: KeyringPair[] | undefined) => {
         [address]: { balances, isLoading },
       }
     }, {} as Record<Address, { balances: Balances; isLoading: boolean }>)
-  }, [addresses, allBalances])
+  }, [accounts, allBalances])
 }
 
 const useJsonAccountImportProvider = () => {
