@@ -312,7 +312,7 @@ export default class AccountsHandler extends ExtensionHandler {
 
     // hopefully in the future D'CENT will be able to sign on any chain, and code below can be simply removed.
     // keep this basic check for now to avoid polluting the messaging interface, as polkadot is the only token supported by D'CENT.
-    if (tokenIds.length === 1 && tokenIds[0] === "polkadot-substrate-native-dot") {
+    if (tokenIds.length === 1 && tokenIds[0] === "polkadot-substrate-native") {
       const chain = await chaindataProvider.getChain("polkadot")
       meta.genesisHash = chain?.genesisHash?.startsWith?.("0x")
         ? (chain.genesisHash as HexString)
