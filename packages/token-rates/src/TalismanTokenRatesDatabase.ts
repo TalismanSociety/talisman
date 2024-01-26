@@ -18,8 +18,6 @@ export class TalismanTokenRatesDatabase extends Dexie {
       // https://dexie.org/docs/Version/Version.stores()#warning
       tokenRates: "tokenId",
     })
-
-    // this.on("ready", async () => {})
   }
 }
 

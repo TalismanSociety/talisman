@@ -355,7 +355,12 @@ export class BalanceStore {
         // these aren't fetched anymore but were fetched prior to v1.14.0, so we need to clean them up
         const chainId = balance.chainId
         const chain = (chainId && this.#chains.find((chain) => chain.id === chainId)) || undefined
-        const genesisHash = chain?.genesisHash ? validateHexString(chain.genesisHash) : undefined
+        let genesisHash = null
+        try {
+          genesisHash = chain?.genesisHash ? validateHexString(chain.genesisHash) : undefined
+        } catch (cause) {
+          log.warn("Failed to validate hex string", { cause })
+        }
         if (
           genesisHash &&
           addresses[balance.address] && // first check if account has any genesisHashes
