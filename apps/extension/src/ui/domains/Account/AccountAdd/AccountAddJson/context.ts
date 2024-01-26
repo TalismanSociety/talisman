@@ -112,16 +112,9 @@ const useAccountsBalances = (pairs: KeyringPair[] | undefined) => {
 
   return useMemo(() => {
     return addresses.reduce((acc, address) => {
-      const individualBalances = allBalances.find({ address }).each
-      const expectedBalancesNetworksCount = isEthereumAddress(address)
-        ? BALANCE_CHECK_EVM_NETWORK_IDS.length
-        : BALANCE_CHECK_SUB_NETWORK_IDS.length
-      const individualBalancesNetworksCount = [
-        ...new Set(individualBalances.map((b) => b.chainId ?? b.evmNetworkId)),
-      ].length
+      const individualBalances = allBalances.find({ address })
       const isLoading =
-        individualBalancesNetworksCount < expectedBalancesNetworksCount ||
-        individualBalances.some((b) => b.status === "cache")
+        !allBalances.count || individualBalances.each.some((b) => b.status === "initializing")
       const balances = new Balances(individualBalances)
 
       return {
