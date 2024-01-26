@@ -3,7 +3,7 @@ import { useTranslation } from "react-i18next"
 
 import { ledgerNetworks } from "./common"
 
-export const useLedgerSubstrateApp = (genesisHash?: string | null) => {
+export const useLedgerSubstrateLegacyApp = (genesisHash?: string | null) => {
   const { t } = useTranslation()
   return useMemo(
     () =>

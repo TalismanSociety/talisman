@@ -14,12 +14,12 @@ import {
   LedgerStatus,
   getLedgerErrorProps,
 } from "./common"
-import { useLedgerSubstrateApp } from "./useLedgerSubstrateApp"
+import { useLedgerSubstrateLegacyApp } from "./useLedgerSubstrateLegacyApp"
 
-export const useLedgerSubstrate = (genesis?: string | null, persist = false) => {
+export const useLedgerSubstrateLegacy = (genesis?: string | null, persist = false) => {
   const { t } = useTranslation()
   const chain = useChainByGenesisHash(genesis)
-  const app = useLedgerSubstrateApp(genesis)
+  const app = useLedgerSubstrateLegacyApp(genesis)
   const [isLoading, setIsLoading] = useState(false)
   const [refreshCounter, setRefreshCounter] = useState(0)
   const [error, setError] = useState<Error>()

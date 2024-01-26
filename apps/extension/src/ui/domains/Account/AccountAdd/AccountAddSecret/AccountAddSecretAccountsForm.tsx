@@ -2,7 +2,9 @@ import { RequestAccountCreateFromSuri } from "@core/domains/accounts/types"
 import { yupResolver } from "@hookform/resolvers/yup"
 import { HeaderBlock } from "@talisman/components/HeaderBlock"
 import { notify, notifyUpdate } from "@talisman/components/Notifications"
+import { accountsQuery, balancesHydrateState, tokenRatesMapState } from "@ui/atoms"
 import { DerivedFromMnemonicAccountPicker } from "@ui/domains/Account/DerivedFromMnemonicAccountPicker"
+import { useRecoilPreload } from "@ui/hooks/useRecoilPreload"
 import { useCallback, useEffect, useMemo } from "react"
 import { useForm } from "react-hook-form"
 import { useTranslation } from "react-i18next"
@@ -17,6 +19,7 @@ type FormData = {
 }
 
 export const AccountAddSecretAccountsForm = () => {
+  useRecoilPreload(tokenRatesMapState, balancesHydrateState, accountsQuery("all"))
   const { t } = useTranslation("admin")
   const { data, importAccounts, onSuccess } = useAccountAddSecret()
   const navigate = useNavigate()

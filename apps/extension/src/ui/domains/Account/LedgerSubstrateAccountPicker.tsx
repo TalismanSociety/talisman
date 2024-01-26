@@ -2,9 +2,9 @@ import { isChainActive } from "@core/domains/chains/store.activeChains"
 import { log } from "@core/log"
 import { AddressesByChain } from "@core/types/base"
 import { convertAddress } from "@talisman/util/convertAddress"
-import { LedgerAccountDefSubstrate } from "@ui/domains/Account/AccountAdd/AccountAddLedger/context" // Todo
-import { useLedgerSubstrate } from "@ui/hooks/ledger/useLedgerSubstrate"
-import { useLedgerSubstrateApp } from "@ui/hooks/ledger/useLedgerSubstrateApp"
+import { LedgerAccountDefSubstrateLegacy } from "@ui/domains/Account/AccountAdd/AccountAddLedger/context" // Todo
+import { useLedgerSubstrateLegacy } from "@ui/hooks/ledger/useLedgerSubstrateLegacy"
+import { useLedgerSubstrateLegacyApp } from "@ui/hooks/ledger/useLedgerSubstrateLegacyApp"
 import useAccounts from "@ui/hooks/useAccounts"
 import { useActiveChainsState } from "@ui/hooks/useActiveChainsState"
 import useBalancesByParams from "@ui/hooks/useBalancesByParams"
@@ -16,14 +16,14 @@ import { DerivedAccountBase, DerivedAccountPickerBase } from "./DerivedAccountPi
 
 const useLedgerChainAccounts = (
   chainId: string,
-  selectedAccounts: LedgerAccountDefSubstrate[],
+  selectedAccounts: LedgerAccountDefSubstrateLegacy[],
   pageIndex: number,
   itemsPerPage: number
 ) => {
   const walletAccounts = useAccounts()
   const { t } = useTranslation()
   const chain = useChain(chainId)
-  const app = useLedgerSubstrateApp(chain?.genesisHash)
+  const app = useLedgerSubstrateLegacyApp(chain?.genesisHash)
   const activeChains = useActiveChainsState()
   const withBalances = useMemo(
     () => !!chain && isChainActive(chain, activeChains),
@@ -36,7 +36,7 @@ const useLedgerChainAccounts = (
   const [isBusy, setIsBusy] = useState(false)
   const [error, setError] = useState<string>()
 
-  const { isReady, ledger, ...connectionStatus } = useLedgerSubstrate(chain?.genesisHash)
+  const { isReady, ledger, ...connectionStatus } = useLedgerSubstrateLegacy(chain?.genesisHash)
 
   const loadPage = useCallback(async () => {
     if (!app || !ledger || !isReady || !chain) return
@@ -97,16 +97,13 @@ const useLedgerChainAccounts = (
       ledgerAccounts.map((acc) => {
         if (!acc) return null
 
+        const address = convertAddress(acc.address, null)
         const existingAccount = walletAccounts?.find(
-          (wa) =>
-            convertAddress(wa.address, null) === convertAddress(acc.address, null) &&
-            acc.genesisHash === wa.genesisHash
+          (wa) => convertAddress(wa.address, null) === address && acc.genesisHash === wa.genesisHash
         )
 
         const accountBalances = balances.find(
-          (b) =>
-            convertAddress(b.address, null) === convertAddress(acc.address, null) &&
-            b.chainId === chain?.id
+          (b) => convertAddress(b.address, null) === address && b.chainId === chain?.id
         )
 
         return {
@@ -115,13 +112,9 @@ const useLedgerChainAccounts = (
           connected: !!existingAccount,
           selected: selectedAccounts.some((sa) => sa.address === acc.address),
           balances: accountBalances,
-          isBalanceLoading:
-            !addressesByChain || // show spinner when not fetching yet
-            accountBalances.count < 1 ||
-            accountBalances.each.some((b) => b.status === "cache"),
         }
       }),
-    [balances, chain?.id, ledgerAccounts, selectedAccounts, addressesByChain, walletAccounts]
+    [balances, chain?.id, ledgerAccounts, selectedAccounts, walletAccounts]
   )
 
   useEffect(() => {
@@ -142,10 +135,10 @@ const useLedgerChainAccounts = (
 
 type LedgerSubstrateAccountPickerProps = {
   chainId: string
-  onChange?: (accounts: LedgerAccountDefSubstrate[]) => void
+  onChange?: (accounts: LedgerAccountDefSubstrateLegacy[]) => void
 }
 
-type LedgerSubstrateAccount = DerivedAccountBase & LedgerAccountDefSubstrate
+type LedgerSubstrateAccount = DerivedAccountBase & LedgerAccountDefSubstrateLegacy
 
 export const LedgerSubstrateAccountPicker: FC<LedgerSubstrateAccountPickerProps> = ({
   chainId,
@@ -154,7 +147,7 @@ export const LedgerSubstrateAccountPicker: FC<LedgerSubstrateAccountPickerProps>
   const { t } = useTranslation()
   const itemsPerPage = 5
   const [pageIndex, setPageIndex] = useState(0)
-  const [selectedAccounts, setSelectedAccounts] = useState<LedgerAccountDefSubstrate[]>([])
+  const [selectedAccounts, setSelectedAccounts] = useState<LedgerAccountDefSubstrateLegacy[]>([])
   const { accounts, withBalances, error, isBusy } = useLedgerChainAccounts(
     chainId,
     selectedAccounts,

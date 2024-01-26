@@ -6,7 +6,8 @@ import { FC, Suspense, lazy } from "react"
 
 import { SignDcentSubstrate } from "./SignDcentSubstrate"
 
-const SignLedgerSubstrate = lazy(() => import("./SignLedgerSubstrate"))
+const SignLedgerSubstrateLegacy = lazy(() => import("./SignLedgerSubstrateLegacy"))
+const SignLedgerPolkadot = lazy(() => import("./SignLedgerPolkadot"))
 
 export type SignHardwareSubstrateProps = {
   payload: SignerPayloadRaw | SignerPayloadJSON | undefined
@@ -27,7 +28,7 @@ const getSignHardwareComponent = (account: AccountJsonAny | null) => {
     case AccountType.Ledger:
     case // @ts-expect-error incomplete migration, remove once migration is completed
     "HARDWARE":
-      return SignLedgerSubstrate
+      return account.genesisHash ? SignLedgerSubstrateLegacy : SignLedgerPolkadot
     default:
       throw new Error(`Unknown sign hardware component for account origin ${account?.origin}`)
   }
