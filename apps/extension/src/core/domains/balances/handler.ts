@@ -95,49 +95,53 @@ const subscribeBalancesByParams = async (
 
   let closeSubscriptionCallbacks: Promise<UnsubscribeFn>[] = []
 
-  // watch for changes to all stores, mainly important for onboarding as they start empty
-  combineLatest([
-    // chains
-    chaindataProvider.chainsListObservable,
-    // evmNetworks
-    chaindataProvider.evmNetworksListObservable,
-    // tokens
-    chaindataProvider.tokensListObservable,
-    // miniMetadatas - not used here but we must retrigger the subscription when this changes
-    liveQuery(async () => await balancesDb.miniMetadatas.toArray()),
-    // active state of evm networks
-    activeEvmNetworksStore.observable,
-    // active state of substrate chains
-    activeChainsStore.observable,
-    // enable state of tokens
-    activeTokensStore.observable,
-  ]).subscribe({
-    next: async ([
-      chains,
-      evmNetworks,
-      tokens,
-      miniMetadatas,
-      activeEvmNetworks,
-      activeChains,
-      activeTokens,
-    ]) => {
-      const newSubscriptionParams = getSubscriptionParams(
-        addressesByChain,
-        addressesAndEvmNetworks,
-        addressesAndTokens,
+  // wait for chaindata to be hydrated,
+  // then subscribe to chaindata changes and restart subscription if params change
+  updateAndWaitForUpdatedChaindata().then(() => {
+    combineLatest([
+      // chains
+      chaindataProvider.chainsListObservable,
+      // evmNetworks
+      chaindataProvider.evmNetworksListObservable,
+      // tokens
+      chaindataProvider.tokensListObservable,
+      // miniMetadatas - not used here but we must retrigger the subscription when this changes
+      liveQuery(async () => await balancesDb.miniMetadatas.toArray()),
+      // active state of evm networks
+      activeEvmNetworksStore.observable,
+      // active state of substrate chains
+      activeChainsStore.observable,
+      // enable state of tokens
+      activeTokensStore.observable,
+    ]).subscribe({
+      next: ([
         chains,
         evmNetworks,
         tokens,
-        activeChains,
+        miniMetadatas,
         activeEvmNetworks,
+        activeChains,
         activeTokens,
-        miniMetadatas
-      )
+      ]) => {
+        const newSubscriptionParams = getSubscriptionParams(
+          addressesByChain,
+          addressesAndEvmNetworks,
+          addressesAndTokens,
+          chains,
+          evmNetworks,
+          tokens,
+          activeChains,
+          activeEvmNetworks,
+          activeTokens,
+          miniMetadatas
+        )
 
-      // restart subscription only if params change
-      if (!isEqual(obsSubscriptionParams.value, newSubscriptionParams))
-        obsSubscriptionParams.next(newSubscriptionParams)
-    },
+        // restart subscription only if params change
+        if (!isEqual(obsSubscriptionParams.value, newSubscriptionParams)) {
+          obsSubscriptionParams.next(newSubscriptionParams)
+        }
+      },
+    })
   })
 
   // restart subscriptions each type params update
