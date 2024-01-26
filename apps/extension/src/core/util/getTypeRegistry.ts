@@ -30,7 +30,7 @@ export const getTypeRegistry = async (
   const registry = new TypeRegistry()
 
   const chain = await (isHex(chainIdOrHash)
-    ? chaindataProvider.getChain({ genesisHash: chainIdOrHash })
+    ? chaindataProvider.getChainByGenesisHash(chainIdOrHash)
     : chaindataProvider.getChain(chainIdOrHash))
 
   // register typesBundle in registry for legacy (pre metadata v14) chains

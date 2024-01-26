@@ -25,6 +25,7 @@ import { createSubscription, unsubscribe } from "@core/handlers/subscriptions"
 import { ExtensionHandler } from "@core/libs/Handler"
 import { balanceModules } from "@core/rpcs/balance-modules"
 import { chaindataProvider } from "@core/rpcs/chaindata"
+import { updateAndWaitForUpdatedChaindata } from "@core/rpcs/mini-metadata-updater"
 import { AddressesByChain, Port } from "@core/types/base"
 import {
   AddressesByToken,
@@ -54,6 +55,9 @@ export class BalancesHandler extends ExtensionHandler {
         return this.stores.balances.getBalance(request as RequestBalance)
 
       case "pri(balances.subscribe)":
+        // TODO: Run this on a timer or something instead of when subscribing to balances
+        await updateAndWaitForUpdatedChaindata()
+
         return this.stores.balances.subscribe(id, port)
 
       // TODO: Replace this call with something internal to the balances store
@@ -94,11 +98,11 @@ const subscribeBalancesByParams = async (
   // watch for changes to all stores, mainly important for onboarding as they start empty
   combineLatest([
     // chains
-    liveQuery(async () => await chaindataProvider.chains()),
+    chaindataProvider.chainsListObservable,
     // evmNetworks
-    liveQuery(async () => await chaindataProvider.evmNetworks()),
+    chaindataProvider.evmNetworksListObservable,
     // tokens
-    liveQuery(async () => await chaindataProvider.tokens()),
+    chaindataProvider.tokensListObservable,
     // miniMetadatas - not used here but we must retrigger the subscription when this changes
     liveQuery(async () => await balancesDb.miniMetadatas.toArray()),
     // active state of evm networks

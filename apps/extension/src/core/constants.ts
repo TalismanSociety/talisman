@@ -14,17 +14,13 @@ export const IS_FIREFOX = navigator.userAgent.toLowerCase().includes("firefox")
  * A list of tokens to show by default for empty substrate accounts
  */
 export const DEFAULT_PORTFOLIO_TOKENS_SUBSTRATE = [
-  "polkadot-substrate-native-dot",
-  "kusama-substrate-native-ksm",
+  "polkadot-substrate-native",
+  "kusama-substrate-native",
 ]
 /**
  * A list of tokens to show by default for empty ethereum accounts
  */
-export const DEFAULT_PORTFOLIO_TOKENS_ETHEREUM = ["1-evm-native-eth"]
-
-// those are suffixed by chainId or networkId for dedupping chains
-export const DEFAULT_SEND_FUNDS_TOKEN_SUBSTRATE = "polkadot-substrate-native-dot-polkadot"
-export const DEFAULT_SEND_FUNDS_TOKEN_ETHEREUM = "1-evm-native-eth-1"
+export const DEFAULT_PORTFOLIO_TOKENS_ETHEREUM = ["1-evm-native"]
 
 // talisman onfinality api key
 export const API_KEY_ONFINALITY = process.env.API_KEY_ONFINALITY

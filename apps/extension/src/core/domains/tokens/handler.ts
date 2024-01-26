@@ -3,13 +3,14 @@ import { CustomErc20Token, CustomErc20TokenCreate } from "@core/domains/tokens/t
 import { talismanAnalytics } from "@core/libs/Analytics"
 import { ExtensionHandler } from "@core/libs/Handler"
 import { chaindataProvider } from "@core/rpcs/chaindata"
-import { miniMetadataUpdater } from "@core/rpcs/mini-metadata-updater"
+import { updateAndWaitForUpdatedChaindata } from "@core/rpcs/mini-metadata-updater"
 import { Port, RequestIdOnly } from "@core/types/base"
 import { assert } from "@polkadot/util"
 import { githubUnknownTokenLogoUrl } from "@talismn/chaindata-provider"
 import { MessageTypes, RequestTypes, ResponseType } from "core/types"
 
 import { assetDiscoveryScanner } from "../assetDiscovery/scanner"
+import { activeTokensStore } from "./store.activeTokens"
 
 export default class TokensHandler extends ExtensionHandler {
   public async handle<TMessageType extends MessageTypes>(
@@ -24,28 +25,14 @@ export default class TokensHandler extends ExtensionHandler {
       // token handlers -----------------------------------------------------
       // --------------------------------------------------------------------
       case "pri(tokens.subscribe)": {
-        await miniMetadataUpdater.hydrateFromChaindata()
-
-        const chains = await chaindataProvider.chainsArray()
-        const { statusesByChain } = await miniMetadataUpdater.statuses(chains)
-        const goodChains = [...statusesByChain.entries()].flatMap(([chainId, status]) =>
-          status === "good" ? chainId : []
-        )
-        await chaindataProvider.hydrateTokens(goodChains)
-
-        const [chainIds, evmNetworkIds] = await Promise.all([
-          chaindataProvider.chainIds(),
-          chaindataProvider.evmNetworkIds(),
-        ])
-
         // TODO: Run this on a timer or something instead of when subscribing to tokens
-        await miniMetadataUpdater.update(chainIds, evmNetworkIds)
+        await updateAndWaitForUpdatedChaindata()
 
         // triggers a pending scan if any
         // doing this here as this is the only place where we hydrate tokens from github
         assetDiscoveryScanner.startPendingScan()
 
-        return
+        return true
       }
 
       // --------------------------------------------------------------------
@@ -90,12 +77,18 @@ export default class TokensHandler extends ExtensionHandler {
           contractAddress,
         })
 
-        return chaindataProvider.addCustomToken(newToken)
+        const newTokenId = await chaindataProvider.addCustomToken(newToken)
+
+        if (newTokenId) await activeTokensStore.setActive(newTokenId, true)
+
+        return newTokenId
       }
 
-      case "pri(tokens.erc20.custom.remove)":
-        return chaindataProvider.removeCustomToken((request as RequestIdOnly).id)
-
+      case "pri(tokens.erc20.custom.remove)": {
+        const { id } = request as RequestIdOnly
+        await activeTokensStore.resetActive(id)
+        return chaindataProvider.removeCustomToken(id)
+      }
       default:
         throw new Error(`Unable to handle message of type ${type}`)
     }

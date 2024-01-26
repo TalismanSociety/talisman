@@ -1,11 +1,13 @@
 import { PromisePool } from "@supercharge/promise-pool"
-import { Chain, ChainId, EvmNetworkId, TokenList } from "@talismn/chaindata-provider"
+import { Chain, ChainId, CustomChain, EvmNetworkId, TokenList } from "@talismn/chaindata-provider"
 import {
   ChaindataProviderExtension,
   availableTokenLogoFilenames,
+  fetchInitMiniMetadatas,
+  fetchMiniMetadatas,
 } from "@talismn/chaindata-provider-extension"
-import { fetchInitMiniMetadatas, fetchMiniMetadatas } from "@talismn/chaindata-provider-extension"
 import { liveQuery } from "dexie"
+import isEqual from "lodash/isEqual"
 import { from } from "rxjs"
 
 import { ChainConnectors } from "./BalanceModule"
@@ -43,6 +45,7 @@ const minimumHydrationInterval = 300_000 // 300_000ms = 300s = 5 minutes
  */
 export class MiniMetadataUpdater {
   #lastHydratedMiniMetadatasAt = 0
+  #lastHydratedCustomChainsAt = 0
 
   #chainConnectors: ChainConnectors
   #chaindataProvider: ChaindataProviderExtension
@@ -94,8 +97,8 @@ export class MiniMetadataUpdater {
                   specName: specName,
                   specVersion: specVersion,
                   balancesConfig: JSON.stringify(
-                    balancesConfig.find(({ moduleType }) => moduleType === source)?.moduleConfig ??
-                      {}
+                    (balancesConfig ?? []).find(({ moduleType }) => moduleType === source)
+                      ?.moduleConfig ?? {}
                   ),
                 })
               ),
@@ -140,6 +143,70 @@ export class MiniMetadataUpdater {
     }
   }
 
+  async hydrateCustomChains() {
+    const now = Date.now()
+    if (now - this.#lastHydratedCustomChainsAt < minimumHydrationInterval) return false
+
+    const chains = await this.#chaindataProvider.chainsArray()
+    const customChains = chains.filter(
+      (chain): chain is CustomChain => "isCustom" in chain && chain.isCustom
+    )
+
+    const updatedCustomChains: Array<CustomChain> = []
+
+    const concurrency = 4
+    ;(
+      await PromisePool.withConcurrency(concurrency)
+        .for(customChains)
+        .process(async (customChain) => {
+          const send = (method: string, params: unknown[]) =>
+            this.#chainConnectors.substrate?.send(customChain.id, method, params)
+
+          const [genesisHash, runtimeVersion, chainName, chainType] = await Promise.all([
+            send("chain_getBlockHash", [0]),
+            send("state_getRuntimeVersion", []),
+            send("system_chain", []),
+            send("system_chainType", []),
+          ])
+
+          // deconstruct rpc data
+          const { specName, implName } = runtimeVersion
+          const specVersion = String(runtimeVersion.specVersion)
+
+          const changed =
+            customChain.genesisHash !== genesisHash ||
+            customChain.chainName !== chainName ||
+            !isEqual(customChain.chainType, chainType) ||
+            customChain.implName !== implName ||
+            customChain.specName !== specName ||
+            customChain.specVersion !== specVersion
+
+          if (!changed) return
+
+          customChain.genesisHash = genesisHash
+          customChain.chainName = chainName
+          customChain.chainType = chainType
+          customChain.implName = implName
+          customChain.specName = specName
+          customChain.specVersion = specVersion
+
+          updatedCustomChains.push(customChain)
+        })
+    ).errors.forEach((error) => log.error("Error hydrating custom chains", error))
+
+    if (updatedCustomChains.length > 0) {
+      await this.#chaindataProvider.transaction("rw", ["chains"], async () => {
+        for (const updatedCustomChain of updatedCustomChains) {
+          await this.#chaindataProvider.removeCustomChain(updatedCustomChain.id)
+          await this.#chaindataProvider.addCustomChain(updatedCustomChain)
+        }
+      })
+    }
+    if (updatedCustomChains.length > 0) this.#lastHydratedCustomChainsAt = now
+
+    return true
+  }
+
   private async updateSubstrateChains(chainIds: ChainId[]) {
     const chains = new Map(
       (await this.#chaindataProvider.chainsArray()).map((chain) => [chain.id, chain])
@@ -154,13 +221,19 @@ export class MiniMetadataUpdater {
     const unwantedIds = ids.filter((id) => !wantedIds.includes(id))
 
     if (unwantedIds.length > 0) {
-      log.info(`Pruning ${unwantedIds.length} miniMetadatas`)
+      const chainIds = Array.from(
+        new Set((await balancesDb.miniMetadatas.bulkGet(unwantedIds)).map((m) => m?.chainId))
+      )
+      log.info(`Pruning ${unwantedIds.length} miniMetadatas on chains ${chainIds.join(", ")}`)
       await balancesDb.miniMetadatas.bulkDelete(unwantedIds)
     }
 
     const needUpdates = Array.from(statusesByChain.entries())
       .filter(([, status]) => status !== "good")
       .map(([chainId]) => chainId)
+
+    if (needUpdates.length > 0)
+      log.info(`${needUpdates.length} miniMetadatas need updates (${needUpdates.join(", ")})`)
 
     const availableTokenLogos = await availableTokenLogoFilenames()
 
@@ -184,7 +257,7 @@ export class MiniMetadataUpdater {
           )
 
           for (const mod of this.#balanceModules.filter((m) => m.type.startsWith("substrate-"))) {
-            const balancesConfig = chain.balancesConfig.find(
+            const balancesConfig = (chain.balancesConfig ?? []).find(
               ({ moduleType }) => moduleType === mod.type
             )
             const moduleConfig = balancesConfig?.moduleConfig ?? {}
@@ -243,7 +316,7 @@ export class MiniMetadataUpdater {
         if (!evmNetwork) return
 
         for (const mod of this.#balanceModules.filter((m) => m.type.startsWith("evm-"))) {
-          const balancesConfig = evmNetwork.balancesConfig.find(
+          const balancesConfig = (evmNetwork.balancesConfig ?? []).find(
             ({ moduleType }) => moduleType === mod.type
           )
           const moduleConfig = balancesConfig?.moduleConfig ?? {}

@@ -82,7 +82,7 @@ export default class AssetTransfersRpc {
     transferInfo: WalletTransactionTransferInfo
   ) {
     const genesisHash = validateHexString(unsigned.genesisHash)
-    const chain = await chaindataProvider.getChain({ genesisHash })
+    const chain = await chaindataProvider.getChainByGenesisHash(genesisHash)
     if (!chain) throw new Error(`Could not find chain for genesisHash ${genesisHash}`)
 
     const { registry } = await getTypeRegistry(chain.id)

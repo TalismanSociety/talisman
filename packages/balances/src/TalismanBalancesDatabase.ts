@@ -1,6 +1,7 @@
 import { Dexie } from "dexie"
 
 import { BalanceJson, MiniMetadata } from "./types"
+import { upgradeRemoveSymbolFromNativeTokenId } from "./upgrades"
 
 export class TalismanBalancesDatabase extends Dexie {
   balances!: Dexie.Table<BalanceJson, string>
@@ -10,20 +11,18 @@ export class TalismanBalancesDatabase extends Dexie {
     super("TalismanBalances")
 
     // https://dexie.org/docs/Tutorial/Design#database-versioning
-    // TODO: Increment version
-    this.version(2).stores({
-      // You only need to specify properties that you wish to index.
-      // The object store will allow any properties on your stored objects but you can only query them by indexed properties
-      // https://dexie.org/docs/API-Reference#declare-database
-      //
-      // Never index properties containing images, movies or large (huge) strings. Store them in IndexedDB, yes! but just don’t index them!
-      // https://dexie.org/docs/Version/Version.stores()#warning
-      balances: "id, source, status, address, tokenId",
-
-      miniMetadatas: "id, source, chainId, specName, specVersion",
-    })
-
-    // this.on("ready", async () => {})
+    this.version(3)
+      .stores({
+        // You only need to specify properties that you wish to index.
+        // The object store will allow any properties on your stored objects but you can only query them by indexed properties
+        // https://dexie.org/docs/API-Reference#declare-database
+        //
+        // Never index properties containing images, movies or large (huge) strings. Store them in IndexedDB, yes! but just don’t index them!
+        // https://dexie.org/docs/Version/Version.stores()#warning
+        balances: "id, source, status, address, tokenId",
+        miniMetadatas: "id, source, chainId, specName, specVersion",
+      })
+      .upgrade(upgradeRemoveSymbolFromNativeTokenId)
   }
 }
 

@@ -62,7 +62,7 @@ export const getMetadataDef = async (
 ): Promise<MetadataDef | undefined> => {
   let genesisHash = isHex(chainIdOrHash) ? chainIdOrHash : null
   const chain = await (genesisHash
-    ? chaindataProvider.getChain({ genesisHash })
+    ? chaindataProvider.getChainByGenesisHash(genesisHash)
     : chaindataProvider.getChain(chainIdOrHash))
   if (!genesisHash) genesisHash = chain?.genesisHash as HexString
 

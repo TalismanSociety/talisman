@@ -18,7 +18,7 @@ const useNomPoolStakingEligibility = () => {
 
   const accounts = useAccounts("owned")
   // only balances on substrate accounts are eligible for nom pool staking
-  const substrateAddresses = useMemo(
+  const ownedAddresses = useMemo(
     () => accounts.filter(({ type }) => type === "sr25519").map(({ address }) => address),
     [accounts]
   )
@@ -37,10 +37,10 @@ const useNomPoolStakingEligibility = () => {
       if (!addressesEligible) return false
 
       return addresses.some(
-        (address) => substrateAddresses.includes(address) && addressesEligible[address]
+        (address) => ownedAddresses.includes(address) && addressesEligible[address]
       )
     },
-    [substrateAddresses, chainAddressEligibility]
+    [ownedAddresses, chainAddressEligibility]
   )
 
   /**
@@ -58,11 +58,11 @@ const useNomPoolStakingEligibility = () => {
         })
       })
 
-      return substrateAddresses.some(
+      return ownedAddresses.some(
         (subAddress) => addresses.includes(subAddress) && addressEligibility[subAddress]
       )
     },
-    [substrateAddresses, chainAddressEligibility]
+    [ownedAddresses, chainAddressEligibility]
   )
 
   return { nomPoolStakingAddressesEligible, nomPoolStakingTokenEligible }
@@ -71,7 +71,7 @@ const useNomPoolStakingEligibility = () => {
 const useEvmLsdStakingEligibility = () => {
   const chainAddressEligibility = useRecoilValue(stakingBannerState).evmLsd
   const accounts = useAccounts("owned")
-  const evmAddresses = useMemo(
+  const ownedAddresses = useMemo(
     () => accounts.filter(({ type }) => type === "ethereum").map(({ address }) => address),
     [accounts]
   )
@@ -87,18 +87,20 @@ const useEvmLsdStakingEligibility = () => {
         }, {} as Record<Address, boolean>)
 
       return addresses.some(
-        (address) => evmAddresses.includes(address) && eligibleAddresses[address]
+        (address) => ownedAddresses.includes(address) && eligibleAddresses[address]
       )
     },
-    [chainAddressEligibility, evmAddresses]
+    [chainAddressEligibility, ownedAddresses]
   )
 
   const evmLsdStakingTokenEligible = useCallback(
     ({ token, addresses }: { token: Token; addresses: Address[] }) => {
       const addressesEligible = chainAddressEligibility[token.id]
-      return addresses.some((address) => addressesEligible[address])
+      return addresses.some(
+        (address) => ownedAddresses.includes(address) && addressesEligible[address]
+      )
     },
-    [chainAddressEligibility]
+    [chainAddressEligibility, ownedAddresses]
   )
 
   return { evmLsdStakingAddressesEligible, evmLsdStakingTokenEligible }

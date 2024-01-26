@@ -387,3 +387,12 @@ const schemaRequestedPermissions = yup
 
 export const isValidRequestedPermissions = (obj: unknown) =>
   schemaRequestedPermissions.isValidSync(obj)
+
+// Acala EVM+ requires specific gas management
+// https://evmdocs.acala.network/network/gas-parameters
+export const isAcalaEvmPlus = (evmNetworkId: EvmNetworkId) => {
+  return [
+    "787", // Acala
+    "595", // Mandala testnet
+  ].includes(evmNetworkId)
+}

@@ -35,6 +35,7 @@ import { AccountIcon } from "@ui/domains/Account/AccountIcon"
 import { Fiat } from "@ui/domains/Asset/Fiat"
 import { TokenLogo } from "@ui/domains/Asset/TokenLogo"
 import Tokens from "@ui/domains/Asset/Tokens"
+import { TokenTypePill } from "@ui/domains/Asset/TokenTypePill"
 import useAccounts from "@ui/hooks/useAccounts"
 import { useActiveEvmNetworksState } from "@ui/hooks/useActiveEvmNetworksState"
 import { useActiveTokensState } from "@ui/hooks/useActiveTokensState"
@@ -77,35 +78,6 @@ const ANALYTICS_PAGE: AnalyticsPage = {
   feature: "Asset Discovery",
   featureVersion: 1,
   page: "Settings - Asset Discovery",
-}
-
-const TokenTypePill: FC<{ type: Token["type"]; className?: string }> = ({ type, className }) => {
-  const { t } = useTranslation("admin")
-
-  const label = useMemo(() => {
-    switch (type) {
-      case "evm-erc20":
-        return t("ERC20")
-      case "evm-native":
-        return t("Native")
-      default:
-        // unsupported for now
-        throw null
-    }
-  }, [t, type])
-
-  if (!label) return null
-
-  return (
-    <span
-      className={classNames(
-        "text-body-disabled rounded-sm border px-2 py-1 text-[1rem]",
-        className
-      )}
-    >
-      {label}
-    </span>
-  )
 }
 
 const AccountsTooltip: FC<{ addresses: Address[] }> = ({ addresses }) => {

@@ -35,10 +35,6 @@ export const useAccountExportModal = () => {
     [innerOpen, setAccount]
   )
 
-  useEffect(() => {
-    close()
-  }, [selectedAccount, close])
-
   const account = _account ?? selectedAccount
 
   const canExportAccountFunc = (account?: AccountJsonAny) =>
