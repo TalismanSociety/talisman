@@ -8,7 +8,7 @@ import { OnboardBackground } from "./components/OnboardBackground"
 import Context from "./context"
 import OnboardingRoutes from "./routes"
 
-const HydrateFromChainData = () => {
+const HydrateFromChaindata = () => {
   // Loading tokens will cause backend to fetch latest chain/evmNetworks/tokens from github
   // Additionally it will update chains's metadata if necessary
   // This allows displaying balances much faster if user attempts to import accounts later during the onboarding
@@ -27,8 +27,8 @@ const Onboarding = () => {
     <Context resetWallet={resetWalletRef.current}>
       <OnboardBackground />
       <OnboardingRoutes />
-      <Suspense fallback={<SuspenseTracker name="HydrateFromChainData" />}>
-        <HydrateFromChainData />
+      <Suspense fallback={<SuspenseTracker name="HydrateFromChaindata" />}>
+        <HydrateFromChaindata />
       </Suspense>
     </Context>
   )
