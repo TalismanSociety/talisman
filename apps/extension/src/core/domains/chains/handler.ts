@@ -96,8 +96,8 @@ export class ChainsHandler extends ExtensionHandler {
       })
     })
 
-    // ensure miniMetadatas are immediately updated
-    await updateAndWaitForUpdatedChaindata()
+    // ensure miniMetadatas are immediately updated, but don't wait for them to update before returning
+    updateAndWaitForUpdatedChaindata()
 
     return true
   }
