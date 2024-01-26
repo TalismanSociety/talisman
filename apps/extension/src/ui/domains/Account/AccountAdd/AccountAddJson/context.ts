@@ -25,9 +25,6 @@ import useChains from "@ui/hooks/useChains"
 import { useEvmNetworks } from "@ui/hooks/useEvmNetworks"
 import { useCallback, useEffect, useMemo, useState } from "react"
 
-const BALANCE_CHECK_EVM_NETWORK_IDS = ["1284", "1285", "592", "1"]
-const BALANCE_CHECK_SUB_NETWORK_IDS = ["polkadot", "kusama", "astar", "acala"]
-
 export type JsonImportAccount = {
   id: string
   address: string
@@ -80,23 +77,19 @@ const useAccountsBalances = (pairs: KeyringPair[] | undefined) => {
     const subAddresses = addresses?.filter((address) => !isEthereumAddress(address))
 
     const addressesByChain = subAddresses.length
-      ? chains
-          .filter(({ id }) => BALANCE_CHECK_SUB_NETWORK_IDS.includes(id))
-          .reduce(
-            (acc, chain) => ({
-              ...acc,
-              [chain.id]: subAddresses.map((a) => encodeAnyAddress(a)),
-            }),
-            {} as AddressesByChain
-          )
+      ? chains.reduce(
+          (acc, chain) => ({
+            ...acc,
+            [chain.id]: subAddresses.map((a) => encodeAnyAddress(a)),
+          }),
+          {} as AddressesByChain
+        )
       : undefined
 
     const addressesAndEvmNetworks = ethAddresses.length
       ? ({
           addresses: ethAddresses,
-          evmNetworks: evmNetworks
-            .filter(({ id }) => BALANCE_CHECK_EVM_NETWORK_IDS.includes(id))
-            .map(({ id, nativeToken }) => ({ id, nativeToken })),
+          evmNetworks: evmNetworks.map(({ id, nativeToken }) => ({ id, nativeToken })),
         } as AddressesAndEvmNetwork)
       : undefined
 
@@ -113,15 +106,8 @@ const useAccountsBalances = (pairs: KeyringPair[] | undefined) => {
   return useMemo(() => {
     return addresses.reduce((acc, address) => {
       const individualBalances = allBalances.find({ address }).each
-      const expectedBalancesNetworksCount = isEthereumAddress(address)
-        ? BALANCE_CHECK_EVM_NETWORK_IDS.length
-        : BALANCE_CHECK_SUB_NETWORK_IDS.length
-      const individualBalancesNetworksCount = [
-        ...new Set(individualBalances.map((b) => b.chainId ?? b.evmNetworkId)),
-      ].length
-      const isLoading =
-        individualBalancesNetworksCount < expectedBalancesNetworksCount ||
-        individualBalances.some((b) => b.status === "cache")
+
+      const isLoading = individualBalances.some((b) => b.status === "initializing")
       const balances = new Balances(individualBalances)
 
       return {
