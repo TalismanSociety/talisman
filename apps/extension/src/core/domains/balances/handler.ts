@@ -29,6 +29,7 @@ import { updateAndWaitForUpdatedChaindata } from "@core/rpcs/mini-metadata-updat
 import { AddressesByChain, Port } from "@core/types/base"
 import {
   AddressesByToken,
+  Balance,
   BalanceJson,
   MiniMetadata,
   UnsubscribeFn,
@@ -157,7 +158,17 @@ const subscribeBalancesByParams = async (
         for (const address of addresses)
           initBalances.push(balanceModule.getPlaceholderBalance(tokenId, address))
     }
+    const getBalanceKey = (b: BalanceJson | Balance) => `${b.tokenId}:${b.address}`
+    const initBalanceMap = Object.fromEntries(initBalances.map((b) => [getBalanceKey(b), b]))
     callback({ type: "upsert", balances: new Balances(initBalances).toJSON() })
+
+    // after 30 seconds, change the status of all balances still initializing to stale
+    setTimeout(() => {
+      const staleBalances = Object.values(initBalanceMap)
+        .filter((b) => b.status === "initializing")
+        .map((b) => ({ ...b, status: "stale" } as BalanceJson))
+      callback({ type: "upsert", balances: new Balances(staleBalances).toJSON() })
+    }, 30_000)
 
     // subscribe to balances by params
     closeSubscriptionCallbacks = balanceModules.map((balanceModule) =>
@@ -166,7 +177,10 @@ const subscribeBalancesByParams = async (
         (error, result) => {
           // eslint-disable-next-line no-console
           if (error) DEBUG && console.error(error)
-          else callback({ type: "upsert", balances: (result ?? new Balances([])).toJSON() })
+          else {
+            for (const balance of result?.each ?? []) delete initBalanceMap[getBalanceKey(balance)]
+            callback({ type: "upsert", balances: (result ?? new Balances([])).toJSON() })
+          }
         }
       )
     )
