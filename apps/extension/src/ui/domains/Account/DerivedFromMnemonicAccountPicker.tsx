@@ -1,15 +1,10 @@
 import { formatSuri } from "@core/domains/accounts/helpers"
 import { AccountAddressType, RequestAccountCreateFromSuri } from "@core/domains/accounts/types"
-import { AddressesAndEvmNetwork } from "@core/domains/balances/types"
 import { getEthDerivationPath } from "@core/domains/ethereum/helpers"
-import { AddressesByChain } from "@core/types/base"
 import { convertAddress } from "@talisman/util/convertAddress"
 import { api } from "@ui/api"
+import { AccountImportDef, useAccountImportBalances } from "@ui/hooks/useAccountImportBalances"
 import useAccounts from "@ui/hooks/useAccounts"
-import useBalancesByParams from "@ui/hooks/useBalancesByParams"
-import useChains from "@ui/hooks/useChains"
-import { useEvmNetworks } from "@ui/hooks/useEvmNetworks"
-import { isAccountCompatibleWithChain } from "@ui/util/isAccountCompatibleWithChain"
 import { FC, useCallback, useEffect, useMemo, useState } from "react"
 
 import { DerivedAccountBase, DerivedAccountPickerBase } from "./DerivedAccountPickerBase"
@@ -68,54 +63,20 @@ const useDerivedAccounts = (
     }
   }, [itemsPerPage, mnemonic, name, pageIndex, type])
 
-  const { chains } = useChains({ activeOnly: true, includeTestnets: false })
-  const { evmNetworks } = useEvmNetworks({ activeOnly: true, includeTestnets: false })
+  const withBalances = useMemo(() => !!derivedAccounts.filter(Boolean).length, [derivedAccounts])
 
-  const { addressesByChain, addressesAndEvmNetworks } = useMemo(() => {
-    // start fetching balances only when all accounts are known to prevent recreating subscription 5 times
-    if (derivedAccounts.filter(Boolean).length < derivedAccounts.length) return {}
-
-    const addressesByChain: AddressesByChain = chains.reduce(
-      (prev, chain) => ({
-        ...prev,
-        [chain.id]: derivedAccounts
-          .filter((acc): acc is DerivedFromMnemonicAccount & { type: string } => !!acc?.type)
-          .filter(({ type, genesisHash }) => isAccountCompatibleWithChain(chain, type, genesisHash))
-          .map((account) => convertAddress(account.address, chain.prefix)),
-      }),
-      {}
-    )
-
-    const addressesAndEvmNetworks: AddressesAndEvmNetwork =
-      type === "ethereum"
-        ? {
-            addresses: derivedAccounts
-              .filter((acc): acc is DerivedFromMnemonicAccount => !!acc)
-              .map((acc) => acc.address),
-            evmNetworks: (evmNetworks || []).map(({ id, nativeToken }) => ({
-              id,
-              nativeToken: { id: nativeToken?.id as string },
-            })),
-          }
-        : { addresses: [], evmNetworks: [] }
-
-    return {
-      addressesByChain,
-      addressesAndEvmNetworks,
-    }
-  }, [chains, derivedAccounts, evmNetworks, type])
-
-  const withBalances = useMemo(
+  // start fetching balances only once all accounts are loaded to prevent recreating subscription 5 times
+  const accountImportDefs = useMemo<AccountImportDef[]>(
     () =>
-      (addressesByChain && Object.values(addressesByChain).some((addresses) => addresses.length)) ||
-      !!addressesAndEvmNetworks?.evmNetworks.length,
-    [addressesAndEvmNetworks?.evmNetworks.length, addressesByChain]
+      derivedAccounts.filter(Boolean).length === itemsPerPage
+        ? derivedAccounts
+            .filter((acc): acc is DerivedFromMnemonicAccount & { type: string } => !!acc?.type)
+            .map((acc) => ({ address: acc.address, type: acc.type }))
+        : [],
+    [itemsPerPage, derivedAccounts]
   )
 
-  const balances = useBalancesByParams({
-    addressesByChain,
-    addressesAndEvmNetworks,
-  })
+  const balances = useAccountImportBalances(accountImportDefs)
 
   const accounts: (DerivedFromMnemonicAccount | null)[] = useMemo(
     () =>

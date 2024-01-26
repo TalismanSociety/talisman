@@ -1,8 +1,6 @@
 import { AccountType } from "@core/domains/accounts/types"
 import { AssetDiscoveryMode } from "@core/domains/assetDiscovery/types"
-import { AddressesAndEvmNetwork } from "@core/domains/balances/types"
 import { log } from "@core/log"
-import { AddressesByChain } from "@core/types/base"
 import { createPair } from "@polkadot/keyring"
 import { KeyringPair, KeyringPair$Json } from "@polkadot/keyring/types"
 import { KeyringPairs$Json } from "@polkadot/ui-keyring/types"
@@ -13,11 +11,9 @@ import { provideContext } from "@talisman/util/provideContext"
 import { Address, Balances } from "@talismn/balances"
 import { encodeAnyAddress } from "@talismn/util"
 import { api } from "@ui/api"
+import { AccountImportDef, useAccountImportBalances } from "@ui/hooks/useAccountImportBalances"
 import useAccounts from "@ui/hooks/useAccounts"
-import useBalancesByParams from "@ui/hooks/useBalancesByParams"
 import useChains from "@ui/hooks/useChains"
-import { useEvmNetworks } from "@ui/hooks/useEvmNetworks"
-import { isAccountCompatibleWithChain } from "@ui/util/isAccountCompatibleWithChain"
 import { useCallback, useEffect, useMemo, useState } from "react"
 
 export type JsonImportAccount = {
@@ -61,51 +57,15 @@ const createPairFromJson = ({ encoded, encoding, address, meta }: KeyringPair$Js
 }
 
 const useAccountsBalances = (pairs: KeyringPair[] = []) => {
-  const accounts = useMemo(
+  // start fetching balances only once all accounts are loaded to prevent recreating subscription 5 times
+  const accounts = useMemo<AccountImportDef[]>(
     () =>
-      pairs.map((p) => ({
-        address: encodeAnyAddress(p.address),
-        type: p.type,
-        genesisHash: p.meta.genesisHash,
-      })),
+      pairs
+        .filter((p): p is KeyringPair & { type: string } => !!p.type)
+        .map((p) => ({ address: p.address, type: p.type, genesisHash: p.meta?.genesisHash })),
     [pairs]
   )
-  const { chains } = useChains({ activeOnly: true, includeTestnets: false })
-  const { evmNetworks } = useEvmNetworks({ activeOnly: true, includeTestnets: false })
-
-  const balanceParams = useMemo(() => {
-    if (!accounts.length) return {}
-
-    const ethAddresses = accounts
-      ?.filter(({ type }) => type === "ethereum")
-      .map(({ address }) => address)
-
-    const addressesByChain = chains.reduce(
-      (acc, chain) => ({
-        ...acc,
-        [chain.id]: accounts
-          .filter(({ type, genesisHash }) => isAccountCompatibleWithChain(chain, type, genesisHash))
-          .map((p) => encodeAnyAddress(p.address)),
-      }),
-      {} as AddressesByChain
-    )
-
-    const addressesAndEvmNetworks = ethAddresses.length
-      ? ({
-          addresses: ethAddresses,
-          evmNetworks: evmNetworks.map(({ id, nativeToken }) => ({ id, nativeToken })),
-        } as AddressesAndEvmNetwork)
-      : undefined
-
-    const result = {
-      addressesByChain,
-      addressesAndEvmNetworks,
-    }
-
-    return result
-  }, [accounts, chains, evmNetworks])
-
-  const allBalances = useBalancesByParams(balanceParams)
+  const allBalances = useAccountImportBalances(accounts)
 
   return useMemo(() => {
     return accounts.reduce((acc, { address }) => {
