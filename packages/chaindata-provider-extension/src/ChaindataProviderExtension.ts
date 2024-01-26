@@ -213,7 +213,7 @@ export class ChaindataProviderExtension implements ChaindataProvider {
     }
   }
 
-  async tokensArray() {
+  async tokensArray(): Promise<Token[]> {
     try {
       return await firstValueFrom(this.tokensArrayObservable)
     } catch (cause) {
