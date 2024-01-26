@@ -1,14 +1,13 @@
-import { mnemonicGenerate } from "@polkadot/util-crypto"
-import { provideContext } from "@talisman/util/provideContext"
 import { InfoIcon } from "@talismn/icons"
 import { classNames } from "@talismn/util"
 import { Mnemonic } from "@ui/domains/Mnemonic/Mnemonic"
-import { useCallback, useMemo, useState } from "react"
+import { MnemonicWordCountSwitch } from "@ui/domains/Mnemonic/MnemonicWordCountSwitch"
+import { useCallback, useState } from "react"
 import { Trans, useTranslation } from "react-i18next"
-import { Button, Checkbox, ModalDialog, Tooltip, TooltipContent, TooltipTrigger } from "talisman-ui"
-import { Modal } from "talisman-ui"
+import { Button, Checkbox, Tooltip, TooltipContent, TooltipTrigger } from "talisman-ui"
 
-import { MnemonicWordCountSwitch } from "./MnemonicWordCountSwitch"
+import { useMnemonicCreateModal } from "./context"
+import { MnemonicCreateModalDialog } from "./Dialog"
 
 const Description = () => {
   const { t } = useTranslation("admin")
@@ -105,79 +104,14 @@ const MnemonicFormInner = () => {
   )
 }
 
-const MnemonicCreateForm = () => {
-  return (
-    <div className={classNames("flex flex-col gap-12")}>
-      <Description />
-      <MnemonicFormInner />
-    </div>
-  )
-}
-
-type BackupCreateResult = { mnemonic: string; confirmed: boolean } | null
-type BackupCreateResultCallback = { resolve: (result: BackupCreateResult) => void }
-
-const useMnemonicCreateProvider = () => {
-  // keep data in state here to reuse same values if user closes and reopens modal
-  const [wordsCount, setWordsCount] = useState<12 | 24>(12)
-  const [mnemonic12] = useState<string>(mnemonicGenerate(12))
-  const [mnemonic24] = useState<string>(mnemonicGenerate(24))
-
-  const mnemonic = useMemo(() => {
-    switch (wordsCount) {
-      case 12:
-        return mnemonic12
-      case 24:
-        return mnemonic24
-    }
-  }, [mnemonic12, mnemonic24, wordsCount])
-
-  const [callback, setCallback] = useState<BackupCreateResultCallback>()
-
-  const acknowledge = useCallback(
-    (confirmed: boolean) => {
-      if (!callback) return
-      callback.resolve({ mnemonic, confirmed })
-      setCallback(undefined)
-    },
-    [mnemonic, callback]
-  )
-
-  const cancel = useCallback(() => {
-    if (!callback) return
-    callback.resolve(null)
-    setCallback(undefined)
-  }, [callback])
-
-  const generateMnemonic = useCallback(() => {
-    return new Promise<BackupCreateResult>((resolve) => {
-      setCallback({ resolve })
-    })
-  }, [])
-
-  return {
-    mnemonic,
-    isOpen: !!callback,
-    cancel,
-    acknowledge,
-    wordsCount,
-    setWordsCount,
-    generateMnemonic,
-  }
-}
-
-export const [MnemonicCreateModalProvider, useMnemonicCreateModal] =
-  provideContext(useMnemonicCreateProvider)
-
-export const MnemonicCreateModal = () => {
+export const MnemonicCreateForm = () => {
   const { t } = useTranslation("admin")
-  const { mnemonic, cancel, isOpen } = useMnemonicCreateModal()
-
   return (
-    <Modal containerId="main" isOpen={isOpen} onDismiss={cancel}>
-      <ModalDialog className="!min-w-[64rem]" title={t("New recovery phrase")} onClose={cancel}>
-        {!!mnemonic && <MnemonicCreateForm />}
-      </ModalDialog>
-    </Modal>
+    <MnemonicCreateModalDialog title={t("New recovery phrase")}>
+      <div className={"flex flex-col gap-12"}>
+        <Description />
+        <MnemonicFormInner />
+      </div>
+    </MnemonicCreateModalDialog>
   )
 }
