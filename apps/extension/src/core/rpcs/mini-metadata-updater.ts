@@ -1,5 +1,7 @@
 import { balanceModules, chainConnectors } from "@core/rpcs/balance-modules"
 import { chaindataProvider } from "@core/rpcs/chaindata"
+import { awaitKeyringLoaded } from "@core/util/awaitKeyringLoaded"
+import keyring from "@polkadot/ui-keyring"
 import * as Sentry from "@sentry/browser"
 import { MiniMetadataUpdater } from "@talismn/balances"
 
@@ -20,8 +22,15 @@ export const updateAndWaitForUpdatedChaindata = (): Promise<void> => {
   activeUpdate = new Promise((resolve) => {
     ;(async () => {
       try {
-        await hydrateChaindataAndMiniMetadata()
-        await updateCustomMiniMetadata()
+        // run these two promises in parallel, but we only care about the result of the first one
+        const [userHasSubstrateAccounts] = await Promise.all([
+          awaitKeyringLoaded()
+            .then(() => keyring.getAccounts().filter((account) => account.meta.type !== "ethereum"))
+            .then((substrateAccounts) => substrateAccounts.length > 0),
+          hydrateChaindataAndMiniMetadata(),
+        ])
+
+        if (userHasSubstrateAccounts) updateCustomMiniMetadata()
       } catch (cause) {
         Sentry.captureException(
           new Error("Failed to hydrate chaindata & update miniMetadata", { cause })
