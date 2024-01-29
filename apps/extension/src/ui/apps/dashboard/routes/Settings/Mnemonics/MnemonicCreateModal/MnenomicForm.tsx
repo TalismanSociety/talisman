@@ -1,48 +1,16 @@
 import { InfoIcon } from "@talismn/icons"
-import { classNames } from "@talismn/util"
 import { Mnemonic } from "@ui/domains/Mnemonic/Mnemonic"
 import { MnemonicWordCountSwitch } from "@ui/domains/Mnemonic/MnemonicWordCountSwitch"
 import { useCallback, useState } from "react"
-import { Trans, useTranslation } from "react-i18next"
+import { useTranslation } from "react-i18next"
 import { Button, Checkbox, Tooltip, TooltipContent, TooltipTrigger } from "talisman-ui"
 
 import { useMnemonicCreateModal } from "./context"
 import { MnemonicCreateModalDialog } from "./Dialog"
 
-const Description = () => {
-  const { t } = useTranslation("admin")
-  return (
-    <div className="text-body-secondary text-sm">
-      <p>
-        {t(
-          "This recovery phrase can be used to restore your account if you lose access to your device, or forget your password."
-        )}
-      </p>
-      <p className="mt-[1em]">
-        <Trans
-          t={t}
-          components={{
-            Link: (
-              // eslint-disable-next-line jsx-a11y/anchor-has-content
-              <a
-                href="https://docs.talisman.xyz/talisman/navigating-the-paraverse/account-management/back-up-your-secret-phrase"
-                target="_blank"
-                className="text-body opacity-100"
-              ></a>
-            ),
-          }}
-          defaults="We strongly encourage you to back up your recovery phrase by writing it down and storing
-          it in a secure location. <Link>Learn more</Link>"
-        ></Trans>
-      </p>
-    </div>
-  )
-}
-
 const MnemonicFormInner = () => {
   const { t } = useTranslation()
   const { mnemonic, acknowledge, wordsCount, setWordsCount } = useMnemonicCreateModal()
-  const [acknowledged, setAcknowledged] = useState(false)
   const [confirmed, setConfirmed] = useState(false)
   const [canConfirm, setCanConfirm] = useState(false)
 
@@ -56,8 +24,8 @@ const MnemonicFormInner = () => {
   }, [])
 
   return (
-    <div className={classNames("flex grow flex-col")}>
-      <div>
+    <div className="flex grow flex-col gap-16">
+      <div className="flex flex-col gap-4">
         <div className="flex items-center justify-end gap-4 py-4 text-sm">
           <MnemonicWordCountSwitch value={wordsCount} onChange={setWordsCount} />{" "}
           <Tooltip placement="bottom-end">
@@ -71,35 +39,21 @@ const MnemonicFormInner = () => {
             </TooltipContent>
           </Tooltip>
         </div>
-        <Mnemonic mnemonic={mnemonic} onReveal={handleMnemonicRevealed} />
+        <Mnemonic mnemonic={mnemonic} onReveal={handleMnemonicRevealed} wideLayoutWhen24 />
       </div>
 
-      <div className="mt-6 flex flex-col gap-6 px-4 pt-4">
-        <Checkbox
-          onChange={(e) => setAcknowledged(e.target.checked)}
-          className="text-body-secondary hover:text-body [&>span]:leading-paragraph  !gap-8"
-        >
-          {t(
-            "I acknowledge that the loss of my recovery phrase will result in the loss of all the assets in my wallet"
-          )}
-        </Checkbox>
+      <div className="flex flex-col gap-8">
         <Checkbox
           disabled={!canConfirm}
           onChange={(e) => setConfirmed(e.target.checked)}
-          className="text-body-secondary hover:text-body [&>span]:leading-paragraph !gap-8"
+          className="text-body-secondary hover:text-body [&>span]:leading-paragraph !gap-8 text-sm"
         >
-          {t("I have backed up my recovery phrase")}
+          {t("I have backed up my recovery phrase, don’t remind me anymore")}
         </Checkbox>
+        <Button className="mt-8" primary fullWidth onClick={handleContinueClick}>
+          {t("Create Account")}
+        </Button>
       </div>
-      <Button
-        className="mt-8"
-        primary
-        fullWidth
-        onClick={handleContinueClick}
-        disabled={!acknowledged}
-      >
-        {t("Continue")}
-      </Button>
     </div>
   )
 }
@@ -108,8 +62,12 @@ export const MnemonicCreateForm = () => {
   const { t } = useTranslation("admin")
   return (
     <MnemonicCreateModalDialog title={t("New recovery phrase")}>
-      <div className={"flex flex-col gap-12"}>
-        <Description />
+      <div className={"flex flex-col gap-8"}>
+        <div className="text-body-secondary text-sm">
+          {t(
+            "Your recovery phrase gives you access to your wallet and funds. Write it down and store it in a secure location."
+          )}
+        </div>
         <MnemonicFormInner />
       </div>
     </MnemonicCreateModalDialog>
