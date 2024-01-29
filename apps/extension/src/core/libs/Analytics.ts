@@ -70,7 +70,6 @@ class TalismanAnalytics {
     } catch (e) {
       // eslint-disable-next-line no-console
       DEBUG && console.log("error ", { e })
-      Sentry.captureException(e)
     }
   }
 
