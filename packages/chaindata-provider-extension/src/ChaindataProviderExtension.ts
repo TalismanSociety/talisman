@@ -108,7 +108,7 @@ export class ChaindataProviderExtension implements ChaindataProvider {
     )
   }
 
-  get tokensArrayObservable() {
+  get tokensArrayObservable(): ReplaySubject<Token[]> {
     return this.#tokensSubject
   }
 
