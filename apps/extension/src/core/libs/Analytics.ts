@@ -7,7 +7,6 @@ import { Balance, Balances } from "@core/domains/balances/types"
 import { chaindataProvider } from "@core/rpcs/chaindata"
 import { roundToFirstInteger } from "@core/util/roundToFirstInteger"
 import keyring from "@polkadot/ui-keyring"
-import * as Sentry from "@sentry/browser"
 import { db as balancesDb } from "@talismn/balances"
 import posthog, { Properties } from "posthog-js"
 

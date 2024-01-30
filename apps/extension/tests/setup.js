@@ -24,4 +24,3 @@ global.chrome.windows = {
 global.browser.windows = global.chrome.windows
 
 process.env.VERSION = process.env.npm_package_version
-process.env.EXTENSION_PREFIX = "talisman"
