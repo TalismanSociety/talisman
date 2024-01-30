@@ -1,3 +1,4 @@
+import { TEST } from "@core/constants"
 import { balanceModules, chainConnectors } from "@core/rpcs/balance-modules"
 import { chaindataProvider } from "@core/rpcs/chaindata"
 import { awaitKeyringLoaded } from "@core/util/awaitKeyringLoaded"
@@ -30,7 +31,7 @@ export const updateAndWaitForUpdatedChaindata = (): Promise<void> => {
           hydrateChaindataAndMiniMetadata(),
         ])
 
-        if (userHasSubstrateAccounts) updateCustomMiniMetadata()
+        if (userHasSubstrateAccounts) await updateCustomMiniMetadata()
       } catch (cause) {
         Sentry.captureException(
           new Error("Failed to hydrate chaindata & update miniMetadata", { cause })
@@ -65,6 +66,12 @@ const hydrateChaindataAndMiniMetadata = async () => {
 
 /** Builds any missing miniMetadatas (e.g. for the user's custom substrate chains) */
 const updateCustomMiniMetadata = async () => {
+  // Don't update custom minimetadata in tests
+  //
+  // TODO: Remove this, and instead mock the websocket response for all of the called rpc methods.
+  // E.g. state_getMetadata, system_properties, etc
+  if (TEST) return
+
   const [chainIds, evmNetworkIds] = await Promise.all([
     chaindataProvider.chainIds(),
     chaindataProvider.evmNetworkIds(),
