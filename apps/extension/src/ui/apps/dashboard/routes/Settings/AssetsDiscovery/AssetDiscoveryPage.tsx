@@ -137,6 +137,7 @@ const AssetRowContent: FC<{ tokenId: TokenId; assets: DiscoveredBalance[] }> = (
   const tokenRates = useAssetDiscoveryTokenRate(token?.id)
   const activeEvmNetworks = useActiveEvmNetworksState()
   const activeTokens = useActiveTokensState()
+  const originalActiveEvmNetworks = useRef(activeEvmNetworks)
 
   const balance = useMemo(() => {
     if (!token) return null
@@ -164,10 +165,17 @@ const AssetRowContent: FC<{ tokenId: TokenId; assets: DiscoveredBalance[] }> = (
 
   const handleToggleChange: ChangeEventHandler<HTMLInputElement> = useCallback(
     (e) => {
+      const checked = e.target.checked
       if (!token || !evmNetwork) return
-      activeEvmNetworksStore.setActive(evmNetwork.id, e.target.checked)
-      if (token.type !== "evm-native" && e.target.checked)
-        activeTokensStore.setActive(token.id, true)
+      // when unchecking, dont disable the network unless it was originally disabled, except for native tokens
+      if (
+        checked ||
+        (!checked && !originalActiveEvmNetworks.current[evmNetwork.id]) ||
+        token.type === "evm-native"
+      )
+        activeEvmNetworksStore.setActive(evmNetwork.id, checked)
+      // if token is not native, allow it to be toggled. Native tokens are taken care of by the network toggle
+      if (token.type !== "evm-native") activeTokensStore.setActive(token.id, checked)
     },
     [evmNetwork, token]
   )
