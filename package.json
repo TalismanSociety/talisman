@@ -44,7 +44,6 @@
     "prettier": "^2.8.8",
     "prettier-plugin-import-sort": "^0.0.7",
     "prettier-plugin-tailwindcss": "^0.4.1",
-    "socket-mock": "^1.0.1",
     "ts-loader": "9.4.4",
     "turbo": "latest"
   },
