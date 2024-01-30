@@ -2,16 +2,14 @@ import { AddressesAndEvmNetwork } from "@core/domains/balances/types"
 import { AddressesByChain } from "@core/types/base"
 import { validateHexString } from "@core/util/validateHexString"
 import type { KeypairType } from "@polkadot/util-crypto/types"
-import { convertAddress } from "@talisman/util/convertAddress"
 import { Address } from "@talismn/balances"
 import { ChainId } from "@talismn/chaindata-provider"
 import { encodeAnyAddress } from "@talismn/util"
+import { useBalancesByParams } from "@ui/hooks/useBalancesByParams"
+import useChains from "@ui/hooks/useChains"
+import { useEvmNetworks } from "@ui/hooks/useEvmNetworks"
 import { isAccountCompatibleWithChain } from "@ui/util/isAccountCompatibleWithChain"
 import { useMemo } from "react"
-
-import useBalancesByParams from "./useBalancesByParams"
-import useChains from "./useChains"
-import { useEvmNetworks } from "./useEvmNetworks"
 
 export type AccountImportDef = { address: string; type: KeypairType; genesisHash?: string | null }
 
@@ -33,7 +31,7 @@ export const useAccountImportBalances = (accounts: AccountImportDef[]) => {
     const addressesByChain: AddressesByChain = chains.reduce((prev, chain) => {
       const addresses = safeAccounts
         .filter(({ type, genesisHash }) => isAccountCompatibleWithChain(chain, type, genesisHash))
-        .map((account) => convertAddress(account.address, chain.prefix))
+        .map(({ address }) => address)
       if (addresses.length) prev[chain.id] = addresses
       return prev
     }, {} as Record<ChainId, Address[]>)
