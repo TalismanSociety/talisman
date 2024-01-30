@@ -1,8 +1,22 @@
-import { settingsStore } from "@core/domains/app/store.settings"
+import { SettingsStoreData, settingsStore } from "@core/domains/app/store.settings"
 import { Balance, BalanceJson, Balances, RequestBalance } from "@core/domains/balances/types"
+import {
+  ActiveChains,
+  activeChainsStore,
+  isChainActive,
+} from "@core/domains/chains/store.activeChains"
 import { Chain } from "@core/domains/chains/types"
+import {
+  ActiveEvmNetworks,
+  activeEvmNetworksStore,
+  isEvmNetworkActive,
+} from "@core/domains/ethereum/store.activeEvmNetworks"
 import { EvmNetwork } from "@core/domains/ethereum/types"
-import { Erc20Token } from "@core/domains/tokens/types"
+import {
+  ActiveTokens,
+  activeTokensStore,
+  isTokenActive,
+} from "@core/domains/tokens/store.activeTokens"
 import { unsubscribe } from "@core/handlers/subscriptions"
 import { log } from "@core/log"
 import { balanceModules } from "@core/rpcs/balance-modules"
@@ -27,19 +41,12 @@ import {
 import { Token } from "@talismn/chaindata-provider"
 import { encodeAnyAddress } from "@talismn/util"
 import { Dexie, liveQuery } from "dexie"
-import { groupBy } from "lodash"
 import isEqual from "lodash/isEqual"
 import pick from "lodash/pick"
 import { ReplaySubject, Subject, Subscription, combineLatest, firstValueFrom } from "rxjs"
 
-import { activeChainsStore, isChainActive } from "../chains/store.activeChains"
-import { activeEvmNetworksStore, isEvmNetworkActive } from "../ethereum/store.activeEvmNetworks"
-import { activeTokensStore, isTokenActive } from "../tokens/store.activeTokens"
-
 type ChainIdAndRpcs = Pick<Chain, "id" | "genesisHash" | "account" | "rpcs">
-type EvmNetworkIdAndRpcs = Pick<EvmNetwork, "id" | "nativeToken" | "substrateChain" | "rpcs"> & {
-  erc20Tokens: Array<Partial<Pick<Erc20Token, "id" | "contractAddress">>>
-}
+type EvmNetworkIdAndRpcs = Pick<EvmNetwork, "id" | "nativeToken" | "substrateChain" | "rpcs">
 type TokenIdAndType = Pick<Token, "id" | "type" | "chain" | "evmNetwork">
 
 type SubscriptionsState = "Closed" | "Closing" | "Open"
@@ -191,9 +198,10 @@ export class BalanceStore {
 
     // accounts can be added to the keyring by batch (ex: multiple accounts imported from a seed phrase)
     // debounce to ensure the subscriptions aren't restarted multiple times unnecessarily
-    return keyring.accounts.subject
-      .pipe(firstThenDebounce(DEBOUNCE_TIMEOUT))
-      .subscribe(this.setAccounts.bind(this))
+    return keyring.accounts.subject.pipe(firstThenDebounce(DEBOUNCE_TIMEOUT)).subscribe({
+      next: (accounts) => this.setAccounts(accounts),
+      error: (error) => Sentry.captureException(error),
+    })
   }
 
   /**
@@ -204,11 +212,11 @@ export class BalanceStore {
     // debounce to avoid restarting subscriptions multiple times when settings change rapidly (ex: multiple networks/tokens activated/deactivated rapidly)
     return combineLatest([
       // chains
-      chaindataProvider.chainsListObservable,
+      chaindataProvider.chainsArrayObservable,
       // evmNetworks
-      chaindataProvider.evmNetworksListObservable,
+      chaindataProvider.evmNetworksArrayObservable,
       // tokens
-      chaindataProvider.tokensListObservable,
+      chaindataProvider.tokensArrayObservable,
       // miniMetadatas
       liveQuery(() => balancesDb.miniMetadatas.toArray()),
 
@@ -224,37 +232,9 @@ export class BalanceStore {
     ])
       .pipe(firstThenDebounce(DEBOUNCE_TIMEOUT))
       .subscribe({
-        next: ([
-          chains,
-          networks,
-          tokens,
-          miniMetadatas,
-
-          activeChainsMap,
-          activeNetworksMap,
-          activeTokensMap,
-
-          settings,
-        ]) => {
-          const filterByActive = <T extends { isTestnet?: boolean }>(
-            allMap: Record<string, T>,
-            activeMap: Record<string, boolean>,
-            isActiveFn: (item: T, activeMap: Record<string, boolean>) => boolean
-          ): T[] =>
-            Object.values(allMap ?? {})
-              .filter((item) => isActiveFn(item, activeMap))
-              .filter(settings.useTestnets ? () => true : (item) => !item.isTestnet)
-
-          const activeChains = filterByActive(chains, activeChainsMap, isChainActive)
-          const activeNetworks = filterByActive(networks, activeNetworksMap, isEvmNetworkActive)
-          const activeTokens = filterByActive(tokens, activeTokensMap, isTokenActive)
-
-          this.setChains(activeChains, activeNetworks, activeTokens, miniMetadatas)
-        },
-        error: (error) => {
-          if (error.error?.name === Dexie.errnames.DatabaseClosed) return
-          Sentry.captureException(error)
-        },
+        next: (args) => this.setChains(...args),
+        error: (error) =>
+          error?.error?.name !== Dexie.errnames.DatabaseClosed && Sentry.captureException(error),
       })
   }
 
@@ -268,12 +248,32 @@ export class BalanceStore {
    *                 Chains with a different health status to what is in the store will be updated.
    */
   private async setChains(
-    chains: Chain[],
-    evmNetworks: EvmNetwork[],
-    tokens: Token[],
-    miniMetadatas: MiniMetadata[]
+    allChains: Chain[],
+    allEvmNetworks: EvmNetwork[],
+    allTokens: Token[],
+    miniMetadatas: MiniMetadata[],
+
+    activeChainsMap: ActiveChains,
+    activeNetworksMap: ActiveEvmNetworks,
+    activeTokensMap: ActiveTokens,
+
+    settings: SettingsStoreData
   ) {
-    // Check for updates
+    // filter by active chains/networks/tokens
+    const filterByActive = <T extends { isTestnet?: boolean }>(
+      allItems: T[],
+      activeMap: Record<string, boolean>,
+      isActiveFn: (item: T, activeMap: Record<string, boolean>) => boolean
+    ): T[] =>
+      allItems
+        .filter((item) => isActiveFn(item, activeMap))
+        .filter(settings.useTestnets ? () => true : (item) => !item.isTestnet)
+
+    const chains = filterByActive(allChains, activeChainsMap, isChainActive)
+    const evmNetworks = filterByActive(allEvmNetworks, activeNetworksMap, isEvmNetworkActive)
+    const tokens = filterByActive(allTokens, activeTokensMap, isTokenActive)
+
+    // Check for changes since the last call to this.setChains
     const newChains = chains.map((chain) => pick(chain, ["id", "genesisHash", "account", "rpcs"]))
     const existingChainsMap = Object.fromEntries(this.#chains.map((chain) => [chain.id, chain]))
     const noChainChanges =
@@ -283,15 +283,9 @@ export class BalanceStore {
       this.#evmNetworks.map((evmNetwork) => [evmNetwork.id, evmNetwork])
     )
 
-    const erc20Tokens = tokens
-      .filter((t) => t.type === "evm-erc20")
-      .map((t) => pick(t, ["id", "contractAddress", "evmNetwork"]))
-    const erc20TokensByEvmNetwork = groupBy(erc20Tokens, (t) => t.evmNetwork?.id)
-
-    const newEvmNetworks = evmNetworks.map((evmNetwork) => ({
-      ...pick(evmNetwork, ["id", "nativeToken", "substrateChain", "rpcs"]),
-      erc20Tokens: erc20TokensByEvmNetwork[evmNetwork.id],
-    }))
+    const newEvmNetworks = evmNetworks.map((evmNetwork) =>
+      pick(evmNetwork, ["id", "nativeToken", "substrateChain", "rpcs"])
+    )
     const noEvmNetworkChanges =
       newEvmNetworks.length === this.#evmNetworks.length &&
       newEvmNetworks.every((newEvmNetwork) =>
@@ -312,31 +306,28 @@ export class BalanceStore {
     const existingTokens = this.#tokens
     const noTokenChanges = isEqual(newTokens, existingTokens)
 
+    // Ignore this call if nothing has changed since the last call to this.setChains
     if (noChainChanges && noEvmNetworkChanges && noMiniMetadataChanges && noTokenChanges) return
 
-    // Update chains and networks
+    // Update stored chains, evmNetworks, tokens and miniMetadataIds
     this.#chains = newChains
     this.#evmNetworks = newEvmNetworks
     this.#tokens = newTokens
-
-    const chainsMap = Object.fromEntries(this.#chains.map((chain) => [chain.id, chain]))
-    const evmNetworksMap = Object.fromEntries(
-      this.#evmNetworks.map((evmNetwork) => [evmNetwork.id, evmNetwork])
-    )
-
     this.#miniMetadataIds = new Set(miniMetadatas.map((m) => m.id))
 
-    // Delete stored balances for chains and networks which no longer exist
-    const tokenIdsMap = Object.fromEntries(tokens.map((token) => [token.id, true]))
+    // Delete stored balances for chains and evmNetworks which are inactive / no longer exist
+    const chainIds = new Set(this.#chains.map((chain) => chain.id))
+    const evmNetworkIds = new Set(this.#evmNetworks.map((evmNetwork) => evmNetwork.id))
+    const tokenIds = new Set(tokens.map((token) => token.id))
     await this.deleteBalances((balance) => {
       // remove balance if chain/evm network doesn't exist
       if (balance.chainId === undefined && balance.evmNetworkId === undefined) return true
-      if (balance.chainId !== undefined && chainsMap[balance.chainId] === undefined) return true
-      if (balance.evmNetworkId !== undefined && evmNetworksMap[balance.evmNetworkId] === undefined)
+      if (balance.chainId !== undefined && !chainIds.has(balance.chainId)) return true
+      if (balance.evmNetworkId !== undefined && !evmNetworkIds.has(balance.evmNetworkId))
         return true
 
       // remove balance if token doesn't exist
-      if (tokenIdsMap[balance.tokenId] === undefined) return true
+      if (!tokenIds.has(balance.tokenId)) return true
 
       // remove balance if module doesn't exist
       if (!balanceModules.find((module) => module.type === balance.source)) return true
