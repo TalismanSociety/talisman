@@ -292,7 +292,6 @@ const AssetRow: FC<{ tokenId: TokenId; assets: DiscoveredBalance[] }> = ({ token
 const AssetTable: FC = () => {
   const { t } = useTranslation("admin")
   const { balances, balancesByTokenId, tokenIds } = useRecoilValue(assetDiscoveryScanProgress)
-
   // this hook is in charge of fetching the token rates for the tokens that were discovered
   useAssetDiscoveryFetchTokenRates()
 
