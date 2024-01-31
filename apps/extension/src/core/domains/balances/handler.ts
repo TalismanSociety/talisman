@@ -21,7 +21,7 @@ import {
   activeTokensStore,
   isTokenActive,
 } from "@core/domains/tokens/store.activeTokens"
-import { createSubscription, unsubscribe } from "@core/handlers/subscriptions"
+import { createSubscription, portDisconnected, unsubscribe } from "@core/handlers/subscriptions"
 import { ExtensionHandler } from "@core/libs/Handler"
 import { balanceModules } from "@core/rpcs/balance-modules"
 import { chaindataProvider } from "@core/rpcs/chaindata"
@@ -55,11 +55,14 @@ export class BalancesHandler extends ExtensionHandler {
       case "pri(balances.get)":
         return this.stores.balances.getBalance(request as RequestBalance)
 
-      case "pri(balances.subscribe)":
+      case "pri(balances.subscribe)": {
+        const onDisconnected = portDisconnected(port)
+
         // TODO: Run this on a timer or something instead of when subscribing to balances
         await updateAndWaitForUpdatedChaindata()
 
-        return this.stores.balances.subscribe(id, port)
+        return this.stores.balances.subscribe(id, onDisconnected)
+      }
 
       // TODO: Replace this call with something internal to the balances store
       // i.e. refactor the balances store to allow us to subscribe to arbitrary balances here,
@@ -81,10 +84,14 @@ type BalanceSubscriptionParams = {
 const subscribeBalancesByParams = async (
   id: string,
   port: Port,
-  request: RequestBalancesByParamsSubscribe
+  {
+    addressesByChain,
+    addressesAndEvmNetworks,
+    addressesAndTokens,
+  }: RequestBalancesByParamsSubscribe
 ): Promise<boolean> => {
-  const { addressesByChain, addressesAndEvmNetworks, addressesAndTokens } =
-    request as RequestBalancesByParamsSubscribe
+  // create safe onDisconnect handler
+  const onDisconnected = portDisconnected(port)
 
   // create subscription callback
   const callback = createSubscription<"pri(balances.byparams.subscribe)">(id, port)
@@ -180,7 +187,7 @@ const subscribeBalancesByParams = async (
   })
 
   // unsub on port disconnect
-  port.onDisconnect.addListener((): void => {
+  onDisconnected.then((): void => {
     unsubscribe(id)
     byParamsSubscription.unsubscribe()
     balancesUnsubCallbacks.forEach((cb) => cb.then((close) => close()))
