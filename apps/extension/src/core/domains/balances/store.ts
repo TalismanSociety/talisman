@@ -27,7 +27,6 @@ import { firstThenDebounce } from "@core/util/firstThenDebounce"
 import keyring from "@polkadot/ui-keyring"
 import { SingleAddress } from "@polkadot/ui-keyring/observable/types"
 import { assert } from "@polkadot/util"
-import { isEthereumAddress } from "@polkadot/util-crypto"
 import { HexString } from "@polkadot/util/types"
 import * as Sentry from "@sentry/browser"
 import {
@@ -39,6 +38,7 @@ import {
   deleteSubscriptionId,
 } from "@talismn/balances"
 import { Token } from "@talismn/chaindata-provider"
+import { isEthereumAddress } from "@talismn/util"
 import { encodeAnyAddress } from "@talismn/util"
 import { Dexie, liveQuery } from "dexie"
 import isEqual from "lodash/isEqual"
@@ -364,19 +364,34 @@ export class BalanceStore {
 
     // delete cached balances for accounts which don't exist anymore
     this.deleteBalances((balance) => {
+      //
       // remove balance if account doesn't exist
+      //
       if (!balance.address || addresses[balance.address] === undefined) return true
 
+      //
       // delete balances for hardware accounts on chains other than the chain the accounts are locked to
       // these balances aren't fetched anymore, but were fetched prior to v1.14.0, so we need ensure they are cleaned up
+      //
       const chain =
-        (balance.chainId && this.#chains.find((chain) => chain.id === balance.chainId)) || null
+        (balance.chainId && this.#chains.find(({ id }) => id === balance.chainId)) || null
       /** hash of balance chain */
       const genesisHash =
         (chain?.genesisHash?.startsWith?.("0x") && (chain.genesisHash as HexString)) || null
       /** chains which balance account is locked to (is null for non-hardware accounts) */
       const hardwareChains = addresses[balance.address]
       if (genesisHash && hardwareChains && !hardwareChains.includes(genesisHash)) return true
+
+      //
+      // delete balances for accounts on incompatible chains
+      //
+      const evmNetwork =
+        (balance.evmNetworkId && this.#evmNetworks.find(({ id }) => id === balance.evmNetworkId)) ||
+        null
+      const chainSecp256k1Account = chain?.account === "secp256k1"
+
+      if (!isEthereumAddress(balance.address) && !chain) return true
+      if (isEthereumAddress(balance.address) && !(evmNetwork || chainSecp256k1Account)) return true
 
       // keep balance
       return false
