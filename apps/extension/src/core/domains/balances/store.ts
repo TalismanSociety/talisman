@@ -21,7 +21,7 @@ import { unsubscribe } from "@core/handlers/subscriptions"
 import { log } from "@core/log"
 import { balanceModules } from "@core/rpcs/balance-modules"
 import { chaindataProvider } from "@core/rpcs/chaindata"
-import { Addresses, Port } from "@core/types/base"
+import { Addresses } from "@core/types/base"
 import { awaitKeyringLoaded } from "@core/util/awaitKeyringLoaded"
 import { firstThenDebounce } from "@core/util/firstThenDebounce"
 import keyring from "@polkadot/ui-keyring"
@@ -38,8 +38,7 @@ import {
   deleteSubscriptionId,
 } from "@talismn/balances"
 import { Token } from "@talismn/chaindata-provider"
-import { isEthereumAddress } from "@talismn/util"
-import { encodeAnyAddress } from "@talismn/util"
+import { encodeAnyAddress, isEthereumAddress } from "@talismn/util"
 import { Dexie, liveQuery } from "dexie"
 import isEqual from "lodash/isEqual"
 import pick from "lodash/pick"
@@ -116,7 +115,7 @@ export class BalanceStore {
    * @param port - The message port
    * @returns The subscription `Unsubscribe` function
    */
-  async subscribe(id: string, port: Port) {
+  async subscribe(id: string, onDisconnected: Promise<void>) {
     // create subscription
     const subscription = this.#subscribers.subscribe(() => {})
 
@@ -124,7 +123,7 @@ export class BalanceStore {
     this.openSubscriptions()
 
     // close rpcs when the last subscriber disconnects
-    port.onDisconnect.addListener((): void => {
+    onDisconnected.then(() => {
       unsubscribe(id)
       subscription.unsubscribe()
 
