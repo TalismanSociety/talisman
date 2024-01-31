@@ -6,13 +6,13 @@ import keyring from "@polkadot/ui-keyring"
 import * as Sentry from "@sentry/browser"
 import { EvmTokenFetcher, MiniMetadataUpdater } from "@talismn/balances"
 
-export const miniMetadataUpdater = new MiniMetadataUpdater(
+const miniMetadataUpdater = new MiniMetadataUpdater(
   chainConnectors,
   chaindataProvider,
   balanceModules
 )
-
 const evmTokenFetcher = new EvmTokenFetcher(chaindataProvider, balanceModules)
+
 /**
  * Hydrates miniMetadatas and chaindata, then updates miniMetadatas for any custom substrate chains.
  *
@@ -75,18 +75,11 @@ const updateCustomMiniMetadata = async () => {
   if (TEST) return
 
   const chainIds = await chaindataProvider.chainIds()
-
   await miniMetadataUpdater.update(chainIds)
 }
 
 /** Fetches any missing Evm Tokens */
 const updateEvmTokens = async () => {
-  // Don't update evm tokens in tests
-  //
-  // TODO: Remove this, and instead mock the http response for all of the called rpc methods.
-  if (TEST) return
-
   const evmNetworkIds = await chaindataProvider.evmNetworkIds()
-
   await evmTokenFetcher.update(evmNetworkIds)
 }
