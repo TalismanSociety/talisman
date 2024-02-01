@@ -1,4 +1,4 @@
-import { SIGNET_URL } from "@core/constants"
+import { SIGNET_LANDING_URL } from "@core/constants"
 import { HeaderBlock } from "@talisman/components/HeaderBlock"
 import { notify } from "@talisman/components/Notifications"
 import { Spacer } from "@talisman/components/Spacer"
@@ -79,8 +79,8 @@ export const ConnectSignetPage = () => {
             {t(
               "Signet is the Enterprise & Institutional solution from Talisman, once you have set-up a vault in Signet you can connect below. Find out more at "
             )}
-            <Link to={SIGNET_URL} target="_blank" className="text-primary-500">
-              {SIGNET_URL}
+            <Link to={SIGNET_LANDING_URL} target="_blank" className="text-primary-500">
+              {SIGNET_LANDING_URL}
             </Link>
           </>
         }

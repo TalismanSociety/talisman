@@ -13,7 +13,7 @@ import { Address } from "../../Address"
 import { useSignetConnect } from "./context"
 
 export const ConnectSignetSelectAccounts = () => {
-  const { signetUrlOrigin, vaults } = useSignetConnect()
+  const { onSuccess, signetUrlOrigin, vaults } = useSignetConnect()
   const { t } = useTranslation()
   const navigate = useNavigate()
   const [importing, setImporting] = useState(false)
@@ -69,7 +69,7 @@ export const ConnectSignetSelectAccounts = () => {
         subtitle: null,
       })
 
-      navigate("/settings/accounts")
+      onSuccess(selectedVaults[0].address)
     } catch (e) {
       // eslint-disable-next-line no-console
       console.error(e)
@@ -81,7 +81,7 @@ export const ConnectSignetSelectAccounts = () => {
     } finally {
       setImporting(false)
     }
-  }, [navigate, selectedAccounts, signetUrlOrigin, t, vaults])
+  }, [onSuccess, selectedAccounts, signetUrlOrigin, t, vaults])
 
   return (
     <>

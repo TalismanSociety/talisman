@@ -1,10 +1,9 @@
+import { SIGNET_APP_URL } from "@core/constants"
 import { provideContext } from "@talisman/util/provideContext"
 import { useMemo, useState } from "react"
 
 import { AccountAddPageProps } from "../types"
 import { SignetVault } from "./types"
-
-const SIGNET_APP_URL = "https://signet.talisman.xyz"
 
 const useSignetConnectContext = ({ onSuccess }: AccountAddPageProps) => {
   const [signetUrl, setSignetUrl] = useState(SIGNET_APP_URL)
