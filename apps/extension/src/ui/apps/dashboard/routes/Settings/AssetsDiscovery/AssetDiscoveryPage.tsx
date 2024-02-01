@@ -35,6 +35,7 @@ import { AccountIcon } from "@ui/domains/Account/AccountIcon"
 import { Fiat } from "@ui/domains/Asset/Fiat"
 import { TokenLogo } from "@ui/domains/Asset/TokenLogo"
 import Tokens from "@ui/domains/Asset/Tokens"
+import { TokenTypePill } from "@ui/domains/Asset/TokenTypePill"
 import useAccounts from "@ui/hooks/useAccounts"
 import { useActiveEvmNetworksState } from "@ui/hooks/useActiveEvmNetworksState"
 import { useActiveTokensState } from "@ui/hooks/useActiveTokensState"
@@ -77,35 +78,6 @@ const ANALYTICS_PAGE: AnalyticsPage = {
   feature: "Asset Discovery",
   featureVersion: 1,
   page: "Settings - Asset Discovery",
-}
-
-const TokenTypePill: FC<{ type: Token["type"]; className?: string }> = ({ type, className }) => {
-  const { t } = useTranslation("admin")
-
-  const label = useMemo(() => {
-    switch (type) {
-      case "evm-erc20":
-        return t("ERC20")
-      case "evm-native":
-        return t("Native")
-      default:
-        // unsupported for now
-        throw null
-    }
-  }, [t, type])
-
-  if (!label) return null
-
-  return (
-    <span
-      className={classNames(
-        "text-body-disabled rounded-sm border px-2 py-1 text-[1rem]",
-        className
-      )}
-    >
-      {label}
-    </span>
-  )
 }
 
 const AccountsTooltip: FC<{ addresses: Address[] }> = ({ addresses }) => {
@@ -192,10 +164,14 @@ const AssetRowContent: FC<{ tokenId: TokenId; assets: DiscoveredBalance[] }> = (
 
   const handleToggleChange: ChangeEventHandler<HTMLInputElement> = useCallback(
     (e) => {
+      const checked = e.target.checked
       if (!token || !evmNetwork) return
-      activeEvmNetworksStore.setActive(evmNetwork.id, e.target.checked)
-      if (token.type !== "evm-native" && e.target.checked)
-        activeTokensStore.setActive(token.id, true)
+
+      if (checked) activeEvmNetworksStore.setActive(evmNetwork.id, true)
+      // when unchecking, dont disable the network except for native tokens
+      else if (token.type === "evm-native") activeEvmNetworksStore.setActive(evmNetwork.id, false)
+      // if token is not native, allow it to be toggled. Native tokens are taken care of by the network toggle
+      if (token.type !== "evm-native") activeTokensStore.setActive(token.id, checked)
     },
     [evmNetwork, token]
   )
@@ -312,7 +288,6 @@ const AssetRow: FC<{ tokenId: TokenId; assets: DiscoveredBalance[] }> = ({ token
 const AssetTable: FC = () => {
   const { t } = useTranslation("admin")
   const { balances, balancesByTokenId, tokenIds } = useRecoilValue(assetDiscoveryScanProgress)
-
   // this hook is in charge of fetching the token rates for the tokens that were discovered
   useAssetDiscoveryFetchTokenRates()
 

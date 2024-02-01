@@ -16,7 +16,7 @@ import {
   githubUnknownTokenLogoUrl,
 } from "@talismn/chaindata-provider"
 import { PromiseExtended, Transaction, TransactionMode, liveQuery } from "dexie"
-import { Observable, from } from "rxjs"
+import { Observable, ReplaySubject, firstValueFrom, map } from "rxjs"
 
 import { addCustomChainRpcs } from "./addCustomChainRpcs"
 import { fetchInitChains, fetchInitEvmNetworks, fetchInitTokens } from "./init"
@@ -33,8 +33,8 @@ import { isITokenPartial, isToken, parseTokensResponse } from "./parseTokensResp
 import { TalismanChaindataDatabase } from "./TalismanChaindataDatabase"
 
 // removes the need to reference @talismn/balances in this package. should we ?
-const getNativeTokenId = (chainId: EvmNetworkId, moduleType: string, tokenSymbol: string) =>
-  `${chainId}-${moduleType}-${tokenSymbol}`.toLowerCase().replace(/ /g, "-")
+const getNativeTokenId = (chainId: EvmNetworkId, moduleType: string) =>
+  `${chainId}-${moduleType}`.toLowerCase().replace(/ /g, "-")
 
 const minimumHydrationInterval = 300_000 // 300_000ms = 300s = 5 minutes
 
@@ -49,9 +49,77 @@ export class ChaindataProviderExtension implements ChaindataProvider {
   #lastHydratedTokensAt = 0
   #onfinalityApiKey?: string
 
+  #evmNetworksSubject = new ReplaySubject<(EvmNetwork | CustomEvmNetwork)[]>(1)
+  #chainsSubject = new ReplaySubject<(Chain | CustomChain)[]>(1)
+  #tokensSubject = new ReplaySubject<Token[]>(1)
+
   constructor(options?: ChaindataProviderExtensionOptions) {
     this.#db = new TalismanChaindataDatabase()
     this.#onfinalityApiKey = options?.onfinalityApiKey ?? undefined
+
+    liveQuery(() => this.#db.tokens.toArray()).subscribe((v) => this.#tokensSubject.next(v))
+    liveQuery(() => this.#db.chains.toArray()).subscribe((v) => this.#chainsSubject.next(v))
+    liveQuery(() => this.#db.evmNetworks.toArray()).subscribe((v) =>
+      this.#evmNetworksSubject.next(v)
+    )
+  }
+
+  get chainsArrayObservable() {
+    return this.#chainsSubject
+  }
+
+  get chainsIdsObservable() {
+    return this.#chainsSubject.pipe(map((chains) => chains.map(({ id }) => id) as ChainId[]))
+  }
+
+  get chainsListObservable() {
+    return this.#chainsSubject.pipe(
+      map((chains) => Object.fromEntries(chains.map((chains) => [chains.id, chains])) as ChainList)
+    )
+  }
+
+  get chainsByGenesisHashObservable() {
+    return this.#chainsSubject.pipe(
+      map(
+        (chains) =>
+          Object.fromEntries(chains.map((chains) => [chains.genesisHash, chains])) as ChainList
+      )
+    )
+  }
+
+  get evmNetworksArrayObservable() {
+    return this.#evmNetworksSubject
+  }
+
+  get evmNetworksIdsObservable() {
+    return this.#evmNetworksSubject.pipe(
+      map((evmNetworks) => evmNetworks.map(({ id }) => id) as EvmNetworkId[])
+    )
+  }
+
+  get evmNetworksListObservable() {
+    return this.#evmNetworksSubject.pipe(
+      map(
+        (evmNetworks) =>
+          Object.fromEntries(
+            evmNetworks.map((evmNetwork) => [evmNetwork.id, evmNetwork])
+          ) as EvmNetworkList
+      )
+    )
+  }
+
+  get tokensArrayObservable(): ReplaySubject<Token[]> {
+    return this.#tokensSubject
+  }
+
+  get tokensIdsObservable() {
+    return this.#tokensSubject.pipe(map((tokens) => tokens.map(({ id }) => id) as TokenId[]))
+  }
+
+  get tokensListObservable() {
+    return this.#tokensSubject.pipe(
+      map((token) => Object.fromEntries(token.map((chains) => [chains.id, chains])) as TokenList)
+    )
   }
 
   setOnfinalityApiKey(apiKey: string | undefined) {
@@ -60,38 +128,40 @@ export class ChaindataProviderExtension implements ChaindataProvider {
 
   async chainIds(): Promise<ChainId[]> {
     try {
-      return await this.#db.chains.toCollection().primaryKeys()
+      return await firstValueFrom(this.chainsIdsObservable)
     } catch (cause) {
       throw new Error("Failed to get chainIds", { cause })
     }
   }
   async chains(): Promise<ChainList> {
     try {
-      const chains = await this.#db.chains.toArray()
-      return Object.fromEntries(chains.map((chain) => [chain.id, chain]))
+      return await firstValueFrom(this.chainsListObservable)
     } catch (cause) {
       throw new Error("Failed to get chains", { cause })
     }
   }
+
   async chainsArray() {
     try {
-      return await this.#db.chains.toArray()
+      return await firstValueFrom(this.chainsArrayObservable)
     } catch (cause) {
       throw new Error("Failed to get chains", { cause })
     }
   }
-  async getChain(chainIdOrQuery: ChainId | Partial<Chain>): Promise<Chain | CustomChain | null> {
-    const [chainId, chainQuery] =
-      typeof chainIdOrQuery === "string"
-        ? // chainId (ChainId)
-          [chainIdOrQuery, undefined]
-        : // chainQuery (Partial<Chain>)
-          [undefined, chainIdOrQuery]
 
+  async getChain(chainId: ChainId): Promise<Chain | CustomChain | null> {
     try {
-      return chainId !== undefined
-        ? (await this.#db.chains.get(chainId)) || null
-        : (await this.#db.chains.get(chainQuery)) || null
+      const chainsMap = await firstValueFrom(this.chainsListObservable)
+      return chainsMap[chainId] ?? null
+    } catch (cause) {
+      throw new Error("Failed to get chain", { cause })
+    }
+  }
+
+  async getChainByGenesisHash(genesisHash: `0x${string}`): Promise<Chain | CustomChain | null> {
+    try {
+      const chainsMap = await firstValueFrom(this.chainsByGenesisHashObservable)
+      return chainsMap[genesisHash] ?? null
     } catch (cause) {
       throw new Error("Failed to get chain", { cause })
     }
@@ -99,40 +169,30 @@ export class ChaindataProviderExtension implements ChaindataProvider {
 
   async evmNetworkIds(): Promise<EvmNetworkId[]> {
     try {
-      return await this.#db.evmNetworks.toCollection().primaryKeys()
+      return await firstValueFrom(this.evmNetworksIdsObservable)
     } catch (cause) {
       throw new Error("Failed to get evmNetworkIds", { cause })
     }
   }
   async evmNetworks(): Promise<EvmNetworkList> {
     try {
-      const evmNetworks = await this.#db.evmNetworks.toArray()
-      return Object.fromEntries(evmNetworks.map((evmNetwork) => [evmNetwork.id, evmNetwork]))
+      return await firstValueFrom(this.evmNetworksListObservable)
     } catch (cause) {
       throw new Error("Failed to get evmNetworks", { cause })
     }
   }
+
   async evmNetworksArray() {
     try {
-      return await this.#db.evmNetworks.toArray()
+      return await firstValueFrom(this.evmNetworksArrayObservable)
     } catch (cause) {
       throw new Error("Failed to get evmNetworks", { cause })
     }
   }
-  async getEvmNetwork(
-    evmNetworkIdOrQuery: EvmNetworkId | Partial<EvmNetwork>
-  ): Promise<EvmNetwork | CustomEvmNetwork | null> {
-    const [evmNetworkId, evmNetworkQuery] =
-      typeof evmNetworkIdOrQuery === "string"
-        ? // evmNetworkId (EvmNetworkId)
-          [evmNetworkIdOrQuery, undefined]
-        : // evmNetworkQuery (Partial<EvmNetwork>)
-          [undefined, evmNetworkIdOrQuery]
-
+  async getEvmNetwork(evmNetworkId: EvmNetworkId): Promise<EvmNetwork | CustomEvmNetwork | null> {
     try {
-      return evmNetworkId !== undefined
-        ? (await this.#db.evmNetworks.get(evmNetworkId)) || null
-        : (await this.#db.evmNetworks.get(evmNetworkQuery)) || null
+      const evmNetworksMap = await firstValueFrom(this.evmNetworksListObservable)
+      return evmNetworksMap[evmNetworkId] ?? null
     } catch (cause) {
       throw new Error("Failed to get evmNetwork", { cause })
     }
@@ -140,38 +200,30 @@ export class ChaindataProviderExtension implements ChaindataProvider {
 
   async tokenIds(): Promise<TokenId[]> {
     try {
-      return await this.#db.tokens.toCollection().primaryKeys()
+      return await firstValueFrom(this.tokensIdsObservable)
     } catch (cause) {
       throw new Error("Failed to get tokenIds", { cause })
     }
   }
   async tokens(): Promise<TokenList> {
     try {
-      const tokens = await this.#db.tokens.toArray()
-      return Object.fromEntries(tokens.map((token) => [token.id, token]))
+      return await firstValueFrom(this.tokensListObservable)
     } catch (cause) {
       throw new Error("Failed to get tokens", { cause })
     }
   }
-  async tokensArray() {
-    try {
-      return await this.#db.tokens.toArray()
-    } catch (cause) {
-      throw new Error("Failed to get tokens", { cause })
-    }
-  }
-  async getToken(tokenIdOrQuery: TokenId | Partial<Token>): Promise<Token | null> {
-    const [tokenId, tokenQuery] =
-      typeof tokenIdOrQuery === "string"
-        ? // tokenId (TokenId)
-          [tokenIdOrQuery, undefined]
-        : // tokenQuery (Partial<Token>)
-          [undefined, tokenIdOrQuery]
 
+  async tokensArray(): Promise<Token[]> {
     try {
-      return tokenId !== undefined
-        ? (await this.#db.tokens.get(tokenId)) || null
-        : (await this.#db.tokens.get(tokenQuery)) || null
+      return await firstValueFrom(this.tokensArrayObservable)
+    } catch (cause) {
+      throw new Error("Failed to get tokens", { cause })
+    }
+  }
+  async getToken(tokenId: TokenId): Promise<Token | null> {
+    try {
+      const tokensMap = await firstValueFrom(this.tokensListObservable)
+      return tokensMap[tokenId] ?? null
     } catch (cause) {
       throw new Error("Failed to get token", { cause })
     }
@@ -179,35 +231,30 @@ export class ChaindataProviderExtension implements ChaindataProvider {
 
   async addCustomChain(customChain: CustomChain) {
     try {
-      if (!("isCustom" in customChain)) return
-      return this.#db.chains.put(customChain)
+      if (!("isCustom" in customChain && customChain.isCustom)) return
+      return await this.#db.chains.put(customChain)
     } catch (cause) {
       throw new Error("Failed to add custom chain", { cause })
     }
   }
   async removeCustomChain(chainId: ChainId) {
     try {
-      return (
-        this.#db.chains
-          // only affect custom chains
-          .filter((chain) => "isCustom" in chain && chain.isCustom === true)
-          // only affect the provided chainId
-          .filter((chain) => chain.id === chainId)
-          // delete the chain (if exists)
-          .delete()
-      )
+      return await this.#db.chains
+        // only affect custom chains
+        .filter((chain) => "isCustom" in chain && chain.isCustom)
+        // only affect the provided chainId
+        .filter((chain) => chain.id === chainId)
+        // delete the chain (if exists)
+        .delete()
     } catch (cause) {
       throw new Error("Failed to remove custom chain", { cause })
     }
   }
 
   subscribeCustomChains() {
-    return from(
-      liveQuery(() =>
-        this.#db.chains
-          .filter((chain): chain is CustomChain => "isCustom" in chain && chain.isCustom)
-          // @ts-expect-error Dexie can't do type assertion on filter
-          .toArray<CustomChain[]>((chains) => chains)
+    return this.#chainsSubject.pipe(
+      map((chains) =>
+        chains.filter((chain): chain is CustomChain => "isCustom" in chain && chain.isCustom)
       )
     )
   }
@@ -215,11 +262,11 @@ export class ChaindataProviderExtension implements ChaindataProvider {
   setCustomChains(chains: CustomChain[]) {
     return this.#db.transaction("rw", this.#db.chains, async () => {
       const keys = await this.#db.chains
-        .filter((chains) => "isCustom" in chains && Boolean(chains.isCustom))
+        .filter((chain) => "isCustom" in chain && chain.isCustom)
         .primaryKeys()
 
       await this.#db.chains.bulkDelete(keys)
-      await this.#db.chains.bulkPut(chains.filter((network) => network.isCustom))
+      await this.#db.chains.bulkPut(chains.filter((chain) => chain.isCustom))
     })
   }
 
@@ -235,10 +282,10 @@ export class ChaindataProviderExtension implements ChaindataProvider {
 
     try {
       return await this.#db.transaction("rw", this.#db.chains, this.#db.tokens, async () => {
-        // delete chain and its native token
-        const chainToDelete = await this.#db.chains.get(chainId)
-        if (chainToDelete?.nativeToken?.id)
-          await this.#db.tokens.delete(chainToDelete.nativeToken.id)
+        // delete chain and its native tokens (ensures cleanup of tokens with legacy ids)
+        await this.#db.tokens
+          .filter((token) => token.type === "substrate-native" && token.chain?.id === chainId)
+          .delete()
         await this.#db.chains.delete(chainId)
 
         // reprovision them from subsquid data
@@ -252,8 +299,8 @@ export class ChaindataProviderExtension implements ChaindataProvider {
 
   async addCustomEvmNetwork(customEvmNetwork: CustomEvmNetwork) {
     try {
-      if (!("isCustom" in customEvmNetwork)) return
-      return this.#db.evmNetworks.put(customEvmNetwork)
+      if (!("isCustom" in customEvmNetwork && customEvmNetwork.isCustom)) return Promise.resolve()
+      return await this.#db.evmNetworks.put(customEvmNetwork)
     } catch (cause) {
       throw new Error("Failed to add custom evm network", { cause })
     }
@@ -274,14 +321,11 @@ export class ChaindataProviderExtension implements ChaindataProvider {
   }
 
   subscribeCustomEvmNetworks() {
-    return from(
-      liveQuery(() =>
-        this.#db.evmNetworks
-          .filter(
-            (network): network is CustomEvmNetwork => "isCustom" in network && network.isCustom
-          )
-          // @ts-expect-error Dexie can't do type assertion on filter
-          .toArray<CustomEvmNetwork[]>((networks) => networks)
+    return this.#evmNetworksSubject.pipe(
+      map((networks) =>
+        networks.filter(
+          (network): network is CustomEvmNetwork => "isCustom" in network && network.isCustom
+        )
       )
     )
   }
@@ -289,7 +333,7 @@ export class ChaindataProviderExtension implements ChaindataProvider {
   setCustomEvmNetworks(networks: CustomEvmNetwork[]) {
     return this.#db.transaction("rw", this.#db.evmNetworks, async () => {
       const keys = await this.#db.evmNetworks
-        .filter((network) => "isCustom" in network && Boolean(network.isCustom))
+        .filter((network) => "isCustom" in network && network.isCustom)
         .primaryKeys()
 
       await this.#db.evmNetworks.bulkDelete(keys)
@@ -313,7 +357,7 @@ export class ChaindataProviderExtension implements ChaindataProvider {
     if (!decimals) throw new Error("Missing native token decimals")
 
     const builtInNativeToken: IToken = {
-      id: getNativeTokenId(evmNetworkId, "evm-native", symbol),
+      id: getNativeTokenId(evmNetworkId, "evm-native"),
       type: "evm-native",
       evmNetwork: { id: evmNetworkId },
       isTestnet: builtInEvmNetwork.isTestnet ?? false,
@@ -330,7 +374,10 @@ export class ChaindataProviderExtension implements ChaindataProvider {
 
     try {
       return await this.#db.transaction("rw", this.#db.evmNetworks, this.#db.tokens, async () => {
-        // delete network and its native token
+        // delete chain and its native tokens (ensures cleanup of tokens with legacy ids)
+        await this.#db.tokens
+          .filter((token) => token.type === "evm-native" && token.evmNetwork?.id === evmNetworkId)
+          .delete()
         const networkToDelete = await this.#db.evmNetworks.get(evmNetworkId)
         if (networkToDelete?.nativeToken?.id)
           await this.#db.tokens.delete(networkToDelete.nativeToken.id)
@@ -347,8 +394,8 @@ export class ChaindataProviderExtension implements ChaindataProvider {
 
   async addCustomToken(customToken: Token) {
     try {
-      if (!("isCustom" in customToken)) return
-      return this.#db.tokens.put(customToken)
+      if (!("isCustom" in customToken && customToken.isCustom)) return Promise.resolve()
+      return await this.#db.tokens.put(customToken)
     } catch (cause) {
       throw new Error("Failed to add custom token", { cause })
     }
@@ -356,15 +403,13 @@ export class ChaindataProviderExtension implements ChaindataProvider {
 
   async removeCustomToken(tokenId: TokenId) {
     try {
-      return (
-        this.#db.tokens
-          // only affect custom tokens
-          .filter((token) => "isCustom" in token && token.isCustom === true)
-          // only affect the provided token
-          .filter((token) => token.id === tokenId)
-          // delete the token (if exists)
-          .delete()
-      )
+      return await this.#db.tokens
+        // only affect custom tokens
+        .filter((token) => "isCustom" in token && token.isCustom)
+        // only affect the provided token
+        .filter((token) => token.id === tokenId)
+        // delete the token (if exists)
+        .delete()
     } catch (cause) {
       throw new Error("Failed to remove custom token", { cause })
     }
@@ -373,12 +418,9 @@ export class ChaindataProviderExtension implements ChaindataProvider {
   // Need to explicitly type the return type
   // else TypeScript will resolve it to `IToken` instead
   subscribeCustomTokens(): Observable<Token[]> {
-    return from(
-      liveQuery(() =>
-        this.#db.tokens
-          .filter((token): token is Token => "isCustom" in token)
-          // Dexie can't do type assertion on filter
-          .toArray<Token[]>((tokens) => tokens)
+    return this.#tokensSubject.pipe(
+      map((tokens) =>
+        tokens.filter((token): token is Token => "isCustom" in token && token.isCustom)
       )
     )
   }
@@ -386,7 +428,7 @@ export class ChaindataProviderExtension implements ChaindataProvider {
   setCustomTokens(tokens: Token[]) {
     return this.#db.transaction("rw", this.#db.tokens, async () => {
       const keys = await this.#db.tokens
-        .filter((token) => "isCustom" in token && Boolean(token.isCustom))
+        .filter((token) => "isCustom" in token && token.isCustom)
         .primaryKeys()
 
       await this.#db.tokens.bulkDelete(keys)
@@ -407,13 +449,22 @@ export class ChaindataProviderExtension implements ChaindataProvider {
    *
    * @returns A promise which resolves to true if any db table has been hydrated, or false if all hydration has been skipped.
    */
-  async hydrate(): Promise<boolean> {
+  async hydrate({
+    // chainsArgs, // hydrateChains has no args
+    // evmNetworksArgs, // hydrateEvmNetworks has no args
+    tokensArgs,
+  }: {
+    chainsArgs?: Parameters<ChaindataProviderExtension["hydrateChains"]>
+    evmNetworksArgs?: Parameters<ChaindataProviderExtension["hydrateEvmNetworks"]>
+    tokensArgs?: Parameters<ChaindataProviderExtension["hydrateTokens"]>
+  } = {}): Promise<boolean> {
     return (
       (
         await Promise.all([
           // call inner hydration methods
           this.hydrateChains(),
           this.hydrateEvmNetworks(),
+          this.hydrateTokens(...(tokensArgs ? tokensArgs : [])),
         ])
       )
         // return true if any hydration occurred
@@ -447,9 +498,6 @@ export class ChaindataProviderExtension implements ChaindataProvider {
         var chains = addCustomChainRpcs(await fetchInitChains(), this.#onfinalityApiKey) // eslint-disable-line no-var
       }
 
-      // TODO remove
-      log.debug("hydrateChains", chains)
-
       // TODO check if alec is this the right way to set native token
       // note : many chains don't have a native module provisionned from chaindata => breaks edit network screen and probably send funds and tx screens
       for (const chain of chains) {
@@ -460,12 +508,16 @@ export class ChaindataProviderExtension implements ChaindataProvider {
         const symbol = (nativeTokenModule?.moduleConfig as any)?.symbol
         if (!symbol) continue
 
-        chain.nativeToken = { id: getNativeTokenId(chain.id, "substrate-native", symbol) }
+        chain.nativeToken = { id: getNativeTokenId(chain.id, "substrate-native") }
       }
 
-      await this.#db.transaction("rw", this.#db.chains, () => {
-        this.#db.chains.filter((chain) => !("isCustom" in chain)).delete()
-        this.#db.chains.bulkPut(chains)
+      await this.#db.transaction("rw", this.#db.chains, async () => {
+        await this.#db.chains.filter((chain) => !("isCustom" in chain && chain.isCustom)).delete()
+
+        // add all except ones matching custom existing ones (user may customize built-in chains)
+        const customChainIds = (await this.#db.chains.toArray()).map((chain) => chain.id)
+        const newChains = chains.filter((chain) => !customChainIds.includes(chain.id))
+        await this.#db.chains.bulkPut(newChains)
       })
       this.#lastHydratedChainsAt = now
 
@@ -504,25 +556,19 @@ export class ChaindataProviderExtension implements ChaindataProvider {
         var evmNetworks: EvmNetwork[] = await fetchInitEvmNetworks() // eslint-disable-line no-var
       }
 
-      // TODO check if alec is this the right way to set native token
       // set native token
       for (const evmNetwork of evmNetworks) {
-        const nativeTokenModule = evmNetwork.balancesConfig.find(
-          (c) => c.moduleType === "evm-native"
-        )
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const symbol = (nativeTokenModule?.moduleConfig as any)?.symbol
-        evmNetwork.nativeToken = { id: getNativeTokenId(evmNetwork.id, "evm-native", symbol) }
+        evmNetwork.nativeToken = { id: getNativeTokenId(evmNetwork.id, "evm-native") }
       }
 
       await this.#db.transaction("rw", this.#db.evmNetworks, async () => {
-        await this.#db.evmNetworks.filter((network) => !("isCustom" in network)).delete()
-        // add all except ones matching custom existing ones (user may customize built-in networks)
+        await this.#db.evmNetworks
+          .filter((network) => !("isCustom" in network && network.isCustom))
+          .delete()
 
-        const customNetworks = await this.#db.evmNetworks.toArray()
-        const newNetworks = evmNetworks.filter((network) =>
-          customNetworks.every((existing) => existing.id !== network.id)
-        )
+        // add all except ones matching custom existing ones (user may customize built-in networks)
+        const customNetworkIds = (await this.#db.evmNetworks.toArray()).map((network) => network.id)
+        const newNetworks = evmNetworks.filter((network) => !customNetworkIds.includes(network.id))
         await this.#db.evmNetworks.bulkPut(newNetworks)
       })
       this.#lastHydratedEvmNetworksAt = now
@@ -616,26 +662,30 @@ export class ChaindataProviderExtension implements ChaindataProvider {
   async hydrateTokens(chainIdFilter?: ChainId[]) {
     const now = Date.now()
     if (now - this.#lastHydratedTokensAt < minimumHydrationInterval) return false
+
     const dbHasTokens = (await this.#db.tokens.count()) > 0
+
     try {
       try {
         var tokens = parseTokensResponse(await fetchTokens()) // eslint-disable-line no-var
         if (tokens.length <= 0) throw new Error("Ignoring empty chaindata tokens response")
       } catch (error) {
         if (dbHasTokens) throw error
+
         // On first start-up (db is empty), if we fail to fetch tokens then we should
         // initialize the DB with the list of tokens inside our init/tokens.json file.
         // This data will represent a relatively recent copy of what's in the squid,
         // which will be better for our users than to have nothing at all.
         var tokens = parseTokensResponse(await fetchInitTokens()) // eslint-disable-line no-var
       }
+
       await this.#db.transaction("rw", this.#db.tokens, async () => {
         const deleteChains = chainIdFilter ? new Set(chainIdFilter) : undefined
 
         const tokensToDelete = (await this.#db.tokens.toArray())
           .filter((token) => {
             // don't delete custom tokens
-            if ("isCustom" in token) return false
+            if ("isCustom" in token && token.isCustom) return false
 
             // delete all other tokens if chainIdFilter is not specified
             if (deleteChains === undefined) return true
@@ -650,10 +700,10 @@ export class ChaindataProviderExtension implements ChaindataProvider {
         if (tokensToDelete.length) await this.#db.tokens.bulkDelete(tokensToDelete)
 
         // add all except ones matching custom existing ones (user may customize built-in tokens)
-        const customTokenIds = new Set((await this.#db.tokens.toArray()).map((token) => token.id))
+        const customTokenIds = (await this.#db.tokens.toArray()).map((token) => token.id)
         const newTokens = tokens.filter((token) => {
           // don't replace custom tokens
-          if (customTokenIds.has(token.id)) return false
+          if (customTokenIds.includes(token.id)) return false
 
           if (deleteChains === undefined) return true
 
@@ -662,7 +712,6 @@ export class ChaindataProviderExtension implements ChaindataProvider {
 
           return false
         })
-
         await this.#db.tokens.bulkPut(newTokens)
       })
       this.#lastHydratedTokensAt = now

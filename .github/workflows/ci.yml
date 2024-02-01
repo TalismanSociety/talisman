@@ -39,9 +39,6 @@ jobs:
         run: yarn --immutable
       - name: Test
         run: yarn run test
-        env:
-          PORT_PREFIX: talisman
-          EXTENSION_PREFIX: talisman
       - name: Extract short SHA + package version
         id: vars
         run: |
@@ -62,8 +59,6 @@ jobs:
         run: yarn run build:extension:ci
         env:
           COMMIT_SHA_SHORT: ${{ steps.vars.outputs.sha_short }}
-          PORT_PREFIX: talisman
-          EXTENSION_PREFIX: talisman
           API_KEY_ONFINALITY: ${{ secrets.API_KEY_ONFINALITY }}
           POSTHOG_AUTH_TOKEN: ${{ secrets.POSTHOG_AUTH_TOKEN }}
           SIMPLE_LOCALIZE_API_KEY: ${{ secrets.SIMPLE_LOCALIZE_API_KEY }}

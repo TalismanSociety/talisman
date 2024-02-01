@@ -7,7 +7,6 @@ import { Balance, Balances } from "@core/domains/balances/types"
 import { chaindataProvider } from "@core/rpcs/chaindata"
 import { roundToFirstInteger } from "@core/util/roundToFirstInteger"
 import keyring from "@polkadot/ui-keyring"
-import * as Sentry from "@sentry/browser"
 import { db as balancesDb } from "@talismn/balances"
 import posthog, { Properties } from "posthog-js"
 
@@ -70,7 +69,6 @@ class TalismanAnalytics {
     } catch (e) {
       // eslint-disable-next-line no-console
       DEBUG && console.log("error ", { e })
-      Sentry.captureException(e)
     }
   }
 
@@ -159,7 +157,7 @@ class TalismanAnalytics {
       }, {} as { [key: string]: Balance[] })
 
     // get fiat sum object for those arrays of Balances
-    const fiatSumPerChainToken = await Promise.all(
+    const sortedFiatSumPerChainToken = await Promise.all(
       Object.values(balancesPerChainToken).map(async (balances) => {
         const balancesInstance = new Balances(balances, { chains, evmNetworks, tokens, tokenRates })
         return {
@@ -170,7 +168,7 @@ class TalismanAnalytics {
       })
     ).then((fiatBalances) => fiatBalances.sort((a, b) => b.balance - a.balance))
 
-    const topChainTokens = fiatSumPerChainToken
+    const topChainTokens = sortedFiatSumPerChainToken
       .filter(({ balance }) => balance > 0)
       .map(({ chainId, tokenId }) => ({ chainId, tokenId }))
       .slice(0, 5)
@@ -184,6 +182,12 @@ class TalismanAnalytics {
           .filter(({ meta }) => meta.origin !== AccountType.Watched).length,
         totalFiatValue: roundToFirstInteger(balances.sum.fiat("usd").total),
         topToken: topToken ? `${topToken.chainId}: ${topToken.tokenId}` : undefined,
+        tokens: sortedFiatSumPerChainToken
+          .filter((token, index) => token.balance > 1 || index < 10)
+          .map((token) => ({
+            ...token,
+            balance: roundToFirstInteger(token.balance),
+          })),
       },
     })
   }

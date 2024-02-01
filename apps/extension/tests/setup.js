@@ -2,9 +2,11 @@
 const chrome = require("sinon-chrome")
 const { TextDecoder } = require("@polkadot/x-textdecoder")
 const { TextEncoder } = require("@polkadot/x-textencoder")
+const { WebSocket } = require("mock-socket")
 
 const { webcrypto } = require("crypto")
 
+global.WebSocket = WebSocket
 Object.defineProperty(globalThis, "crypto", {
   value: webcrypto,
 })
@@ -24,4 +26,3 @@ global.chrome.windows = {
 global.browser.windows = global.chrome.windows
 
 process.env.VERSION = process.env.npm_package_version
-process.env.EXTENSION_PREFIX = "talisman"

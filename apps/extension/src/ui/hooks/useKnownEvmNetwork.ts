@@ -32,7 +32,7 @@ export const useKnownEvmNetwork = (evmNetworkId: string | null | undefined) => {
   )
   const resetToTalismanDefault = useCallback(() => {
     if (!evmNetworkId || !evmNetwork) throw new Error(`EvmNetwork '${evmNetworkId}' not found`)
-    activeEvmNetworksStore.resetActive(evmNetworkId)
+    return activeEvmNetworksStore.resetActive(evmNetworkId)
   }, [evmNetwork, evmNetworkId])
 
   return {

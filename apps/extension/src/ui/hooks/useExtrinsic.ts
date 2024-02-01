@@ -21,7 +21,7 @@ const getFrontEndTypeRegistry = async (
   const registry = new TypeRegistry()
 
   const chain = await (isHex(chainIdOrHash)
-    ? chaindataProvider.getChain({ genesisHash: chainIdOrHash })
+    ? chaindataProvider.getChainByGenesisHash(chainIdOrHash)
     : chaindataProvider.getChain(chainIdOrHash))
 
   const genesisHash = (isHex(chainIdOrHash) ? chainIdOrHash : chain?.genesisHash) as HexString
