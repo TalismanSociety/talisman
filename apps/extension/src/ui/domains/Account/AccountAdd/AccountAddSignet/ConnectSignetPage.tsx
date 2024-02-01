@@ -1,3 +1,4 @@
+import { SIGNET_URL } from "@core/constants"
 import { HeaderBlock } from "@talisman/components/HeaderBlock"
 import { notify } from "@talisman/components/Notifications"
 import { Spacer } from "@talisman/components/Spacer"
@@ -9,8 +10,6 @@ import { Link, useNavigate } from "react-router-dom"
 import { Button, FormFieldContainer, FormFieldInputText } from "talisman-ui"
 
 import { useSignetConnect } from "./context"
-
-const SIGNET_URL = "https://talisman.xyz/signet"
 
 const Step: FC<{ step: ReactNode; title: ReactNode; children: ReactNode }> = ({
   step,

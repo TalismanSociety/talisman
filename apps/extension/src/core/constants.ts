@@ -36,6 +36,8 @@ export const TALISMAN_WEB_APP_STAKING_URL = "https://app.talisman.xyz/staking"
 export const TALISMAN_WEB_APP_CROWDLOANS_URL = "https://app.talisman.xyz/crowdloans"
 export const TALISMAN_WEB_APP_TRANSPORT_URL = "https://app.talisman.xyz/transfer/transport"
 
+export const SIGNET_URL = "https://talisman.xyz/signet"
+
 // Used for testing the full buying flow
 // The tokens available at this endpoint are not in sync with the production endpoint
 // export const BANXA_URL = "https://talisman.banxa-sandbox.com/"
