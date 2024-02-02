@@ -28,7 +28,7 @@ export const trackBalanceTotals = async () => {
     liveQuery(() => balancesDb.balances.toArray()),
     liveQuery(() => extensionDb.tokenRates.toArray()),
   ])
-    .pipe(throttleTime(MAX_UPDATE_INTERVAL, undefined, { leading: true, trailing: true }))
+    .pipe(throttleTime(MAX_UPDATE_INTERVAL, undefined, { trailing: true }))
     .subscribe(async ([settings, accounts, tokens, balances, allTokenRates]) => {
       try {
         const tokenRates: TokenRatesList = Object.fromEntries(
