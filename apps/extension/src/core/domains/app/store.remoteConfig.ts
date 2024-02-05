@@ -1,25 +1,12 @@
-import { DEBUG, TALISMAN_CONFIG_URL } from "@core/constants"
+import { DEBUG, TEST } from "@core/constants"
 import { StorageProvider } from "@core/libs/Store"
 import { log } from "@core/log"
-import { TokenId } from "@talismn/chaindata-provider"
+import { fetchRemoteConfig } from "@core/util/fetchRemoteConfig"
 import merge from "lodash/merge"
-import toml from "toml"
 
-import { FeatureFlags } from "./types"
+import { RemoteConfigStoreData } from "./types"
 
-export type RemoteConfigStoreData = {
-  featureFlags: FeatureFlags
-  buyTokens: {
-    tokenIds: TokenId[]
-  }
-  coingecko: {
-    apiUrl: string
-    apiKeyName?: string
-    apiKeyValue?: string
-  }
-}
-
-const DEFAULT_CONFIG: RemoteConfigStoreData = {
+export const DEFAULT_REMOTE_CONFIG: RemoteConfigStoreData = {
   featureFlags: {},
   buyTokens: {
     tokenIds: [],
@@ -31,27 +18,12 @@ const DEFAULT_CONFIG: RemoteConfigStoreData = {
 
 const CONFIG_TIMEOUT = 30 * 60 * 1000 // 30 minutes
 
-const fetchConfig = async () => {
-  log.debug("Fetching config.toml")
-  const response = await fetch(TALISMAN_CONFIG_URL)
-
-  if (!response.ok)
-    throw new Error(`Unable to fetch config.toml: ${response.status} ${response.statusText}`)
-
-  const text = await response.text()
-  try {
-    return merge(structuredClone(DEFAULT_CONFIG), toml.parse(text) as RemoteConfigStoreData)
-  } catch (e) {
-    throw new Error("Unable to parse config.toml", { cause: e })
-  }
-}
-
 export class RemoteConfigStore extends StorageProvider<RemoteConfigStoreData> {
   // call this only once, and only from background script
   async init() {
     const updateConfig = async () => {
       try {
-        const config = await fetchConfig()
+        const config = await fetchRemoteConfig()
 
         // safety measure, most likely always an object
         if (!config) return
@@ -65,7 +37,8 @@ export class RemoteConfigStore extends StorageProvider<RemoteConfigStoreData> {
             config.coingecko.apiKeyValue = process.env.COINGECKO_API_KEY_VALUE
         }
 
-        await this.mutate(() => config)
+        // first arg is an empty object so that DEFAULT_REMOTE_CONFIG is not mutated
+        await this.mutate(() => merge({}, DEFAULT_REMOTE_CONFIG, config))
       } catch (err) {
         log.error("Unable to fetch config.toml", { cause: err })
       }
@@ -75,8 +48,8 @@ export class RemoteConfigStore extends StorageProvider<RemoteConfigStoreData> {
     await updateConfig()
 
     // refresh periodically
-    setInterval(updateConfig, CONFIG_TIMEOUT)
+    if (!TEST) setInterval(updateConfig, CONFIG_TIMEOUT)
   }
 }
 
-export const remoteConfigStore = new RemoteConfigStore("remoteConfig", DEFAULT_CONFIG)
+export const remoteConfigStore = new RemoteConfigStore("remoteConfig", DEFAULT_REMOTE_CONFIG)

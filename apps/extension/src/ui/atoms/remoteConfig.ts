@@ -1,5 +1,5 @@
-import { RemoteConfigStoreData, remoteConfigStore } from "@core/domains/app/store.remoteConfig"
-import { FeatureFlag } from "@core/domains/app/types"
+import { remoteConfigStore } from "@core/domains/app/store.remoteConfig"
+import { FeatureFlag, RemoteConfigStoreData } from "@core/domains/app/types"
 import { log } from "@core/log"
 import { atom, selectorFamily } from "recoil"
 

@@ -3,6 +3,18 @@ import { ValidRequests } from "@core/libs/requests/types"
 import { Address } from "@core/types/base"
 import { Properties } from "posthog-js"
 
+export type RemoteConfigStoreData = {
+  featureFlags: FeatureFlags
+  buyTokens: {
+    tokenIds: TokenId[]
+  }
+  coingecko: {
+    apiUrl: string
+    apiKeyName?: string
+    apiKeyValue?: string
+  }
+}
+
 export interface RequestOnboardCreatePassword {
   pass: string
   passConfirm: string
