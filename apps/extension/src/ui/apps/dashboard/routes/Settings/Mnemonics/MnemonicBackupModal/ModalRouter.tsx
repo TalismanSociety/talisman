@@ -1,4 +1,3 @@
-/* eslint-disable react/display-name */
 import { useMemo } from "react"
 import { Modal } from "talisman-ui"
 

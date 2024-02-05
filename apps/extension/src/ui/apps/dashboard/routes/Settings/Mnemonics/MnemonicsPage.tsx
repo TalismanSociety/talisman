@@ -260,10 +260,6 @@ const MnemonicsList = () => {
   )
   const { open: openBackup } = useMnemonicBackupModal()
   const [searchParams, updateSearchParams] = useSearchParams()
-  // useEffect(() => {
-  //   console.log("Dev only remove")
-  //   openBackup(mnemonics[0]?.id)
-  // }, [mnemonics])
 
   useEffect(() => {
     const showBackupModal = searchParams.has("showBackupModal")

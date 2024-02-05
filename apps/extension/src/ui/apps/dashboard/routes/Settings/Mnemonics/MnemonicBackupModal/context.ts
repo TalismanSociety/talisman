@@ -1,4 +1,3 @@
-/* eslint-disable react/display-name */
 import { useOpenClose } from "@talisman/hooks/useOpenClose"
 import { provideContext } from "@talisman/util/provideContext"
 import { useMnemonic, useMnemonics } from "@ui/hooks/useMnemonics"
