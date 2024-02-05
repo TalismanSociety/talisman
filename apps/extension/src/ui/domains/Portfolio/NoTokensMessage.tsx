@@ -1,7 +1,7 @@
 import { ArrowDownIcon, CreditCardIcon } from "@talismn/icons"
 import { useSelectedAccount } from "@ui/domains/Portfolio/useSelectedAccount"
 import { useAnalytics } from "@ui/hooks/useAnalytics"
-import { useIsFeatureEnabled } from "@ui/hooks/useFeatures"
+import { useIsFeatureEnabled } from "@ui/hooks/useIsFeatureEnabled"
 import { useCallback } from "react"
 import { useTranslation } from "react-i18next"
 import { PillButton } from "talisman-ui"

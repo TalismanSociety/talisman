@@ -5,10 +5,10 @@ import { TokenId } from "@talismn/chaindata-provider"
 import merge from "lodash/merge"
 import toml from "toml"
 
-import { FeatureVariants } from "./types"
+import { FeatureFlags } from "./types"
 
 export type RemoteConfigStoreData = {
-  featureFlags: FeatureVariants
+  featureFlags: FeatureFlags
   buyTokens: {
     tokenIds: TokenId[]
   }
