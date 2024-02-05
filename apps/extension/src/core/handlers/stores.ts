@@ -3,6 +3,7 @@ import { AccountsCatalogData } from "@core/domains/accounts/store.catalog"
 import { AppStoreData, appStore } from "@core/domains/app/store.app"
 import { ErrorsStoreData, errorsStore } from "@core/domains/app/store.errors"
 import { PasswordStoreData, passwordStore } from "@core/domains/app/store.password"
+import { RemoteConfigStoreData, remoteConfigStore } from "@core/domains/app/store.remoteConfig"
 import { SettingsStoreData, settingsStore } from "@core/domains/app/store.settings"
 import { balanceStore } from "@core/domains/balances/store"
 import { MnemonicData, mnemonicsStore } from "@core/domains/mnemonics/store"
@@ -18,6 +19,7 @@ export type TabStore = {
   settings: typeof settingsStore
   sites: typeof sitesAuthorisationStore
   tokenRates: typeof tokenRatesStore
+  remoteConfig: typeof remoteConfigStore
 }
 
 export type ExtensionStore = TabStore & {
@@ -34,6 +36,7 @@ type GettableStores = {
   seedPhrase: [typeof mnemonicsStore, MnemonicData]
   settings: [typeof settingsStore, SettingsStoreData]
   sites: [typeof sitesAuthorisedStore, AuthorizedSites]
+  remoteConfig: [typeof remoteConfigStore, RemoteConfigStoreData]
 }
 // Stores that expose the .get method
 type GettableStoreKeys = keyof GettableStores
@@ -47,6 +50,7 @@ export const tabStores = {
   settings: settingsStore,
   sites: sitesAuthorisationStore,
   tokenRates: tokenRatesStore,
+  remoteConfig: remoteConfigStore,
 }
 
 export const extensionStores = {
@@ -64,6 +68,7 @@ const localStorageStores: { [K in GettableStoreKeys]: GettableStores[K][0] } = {
   seedPhrase: mnemonicsStore,
   settings: settingsStore,
   sites: sitesAuthorisedStore,
+  remoteConfig: remoteConfigStore,
 }
 
 // utility functions used in tests
