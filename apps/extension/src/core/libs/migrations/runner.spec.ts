@@ -15,7 +15,7 @@ const badMigration: Migration = {
   backward: migrationBackward,
 }
 
-jest.setTimeout(5000)
+jest.setTimeout(5_000)
 
 describe("MigrationRunner", () => {
   beforeEach(() => {

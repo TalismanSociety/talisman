@@ -1,32 +1,20 @@
 import { AccountType } from "@core/domains/accounts/types"
 import { AssetDiscoveryMode } from "@core/domains/assetDiscovery/types"
-import { AddressesAndEvmNetwork } from "@core/domains/balances/types"
 import { log } from "@core/log"
-import { AddressesByChain } from "@core/types/base"
 import { createPair } from "@polkadot/keyring"
 import { KeyringPair, KeyringPair$Json } from "@polkadot/keyring/types"
 import { KeyringPairs$Json } from "@polkadot/ui-keyring/types"
 import { assert, hexToU8a, isHex, u8aToString } from "@polkadot/util"
-import {
-  base64Decode,
-  decodeAddress,
-  encodeAddress,
-  isEthereumAddress,
-  jsonDecrypt,
-} from "@polkadot/util-crypto"
+import { base64Decode, decodeAddress, encodeAddress, jsonDecrypt } from "@polkadot/util-crypto"
 import { EncryptedJson, KeypairType } from "@polkadot/util-crypto/types"
 import { provideContext } from "@talisman/util/provideContext"
 import { Address, Balances } from "@talismn/balances"
 import { encodeAnyAddress } from "@talismn/util"
 import { api } from "@ui/api"
+import { AccountImportDef, useAccountImportBalances } from "@ui/hooks/useAccountImportBalances"
 import useAccounts from "@ui/hooks/useAccounts"
-import useBalancesByParams from "@ui/hooks/useBalancesByParams"
 import useChains from "@ui/hooks/useChains"
-import { useEvmNetworks } from "@ui/hooks/useEvmNetworks"
 import { useCallback, useEffect, useMemo, useState } from "react"
-
-const BALANCE_CHECK_EVM_NETWORK_IDS = ["1284", "1285", "592", "1"]
-const BALANCE_CHECK_SUB_NETWORK_IDS = ["polkadot", "kusama", "astar", "acala"]
 
 export type JsonImportAccount = {
   id: string
@@ -68,60 +56,22 @@ const createPairFromJson = ({ encoded, encoding, address, meta }: KeyringPair$Js
   )
 }
 
-const useAccountsBalances = (pairs: KeyringPair[] | undefined) => {
-  const addresses = useMemo(() => pairs?.map((p) => encodeAnyAddress(p.address)) ?? [], [pairs])
-  const { chains } = useChains({ activeOnly: true, includeTestnets: false })
-  const { evmNetworks } = useEvmNetworks({ activeOnly: true, includeTestnets: false })
-
-  const balanceParams = useMemo(() => {
-    if (!addresses.length) return {}
-
-    const ethAddresses = addresses?.filter((address) => isEthereumAddress(address))
-    const subAddresses = addresses?.filter((address) => !isEthereumAddress(address))
-
-    const addressesByChain = subAddresses.length
-      ? chains
-          .filter(({ id }) => BALANCE_CHECK_SUB_NETWORK_IDS.includes(id))
-          .reduce(
-            (acc, chain) => ({
-              ...acc,
-              [chain.id]: subAddresses.map((a) => encodeAnyAddress(a)),
-            }),
-            {} as AddressesByChain
-          )
-      : undefined
-
-    const addressesAndEvmNetworks = ethAddresses.length
-      ? ({
-          addresses: ethAddresses,
-          evmNetworks: evmNetworks
-            .filter(({ id }) => BALANCE_CHECK_EVM_NETWORK_IDS.includes(id))
-            .map(({ id, nativeToken }) => ({ id, nativeToken })),
-        } as AddressesAndEvmNetwork)
-      : undefined
-
-    const result = {
-      addressesByChain,
-      addressesAndEvmNetworks,
-    }
-
-    return result
-  }, [addresses, chains, evmNetworks])
-
-  const allBalances = useBalancesByParams(balanceParams)
+const useAccountsBalances = (pairs: KeyringPair[] = []) => {
+  // start fetching balances only once all accounts are loaded to prevent recreating subscription 5 times
+  const accounts = useMemo<AccountImportDef[]>(
+    () =>
+      pairs
+        .filter((p): p is KeyringPair & { type: string } => !!p.type)
+        .map((p) => ({ address: p.address, type: p.type, genesisHash: p.meta?.genesisHash })),
+    [pairs]
+  )
+  const allBalances = useAccountImportBalances(accounts)
 
   return useMemo(() => {
-    return addresses.reduce((acc, address) => {
-      const individualBalances = allBalances.find({ address }).each
-      const expectedBalancesNetworksCount = isEthereumAddress(address)
-        ? BALANCE_CHECK_EVM_NETWORK_IDS.length
-        : BALANCE_CHECK_SUB_NETWORK_IDS.length
-      const individualBalancesNetworksCount = [
-        ...new Set(individualBalances.map((b) => b.chainId ?? b.evmNetworkId)),
-      ].length
+    return accounts.reduce((acc, { address }) => {
+      const individualBalances = allBalances.find({ address })
       const isLoading =
-        individualBalancesNetworksCount < expectedBalancesNetworksCount ||
-        individualBalances.some((b) => b.status === "cache")
+        !allBalances.count || individualBalances.each.some((b) => b.status === "initializing")
       const balances = new Balances(individualBalances)
 
       return {
@@ -129,7 +79,7 @@ const useAccountsBalances = (pairs: KeyringPair[] | undefined) => {
         [address]: { balances, isLoading },
       }
     }, {} as Record<Address, { balances: Balances; isLoading: boolean }>)
-  }, [addresses, allBalances])
+  }, [accounts, allBalances])
 }
 
 const useJsonAccountImportProvider = () => {

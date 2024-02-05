@@ -111,8 +111,12 @@ export default class Extension extends ExtensionHandler {
           })
       })
 
-      this.checkSpiritKeyOwnership()
-      this.checkGhostsOfThePastOwnership()
+      this.stores.app.observable.subscribe(({ onboarded }) => {
+        if (onboarded === "TRUE") {
+          this.checkSpiritKeyOwnership()
+          this.checkGhostsOfThePastOwnership()
+        }
+      })
     })
 
     // setup polling for config from github
