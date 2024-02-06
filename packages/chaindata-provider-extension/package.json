@@ -19,7 +19,8 @@
     "/init/chains",
     "/init/evm-networks",
     "/init/mini-metadatas",
-    "/init/tokens"
+    "/init/tokens",
+    "/net"
   ],
   "engines": {
     "node": ">=18"
@@ -57,7 +58,8 @@
       "init/chains.ts",
       "init/evm-networks.ts",
       "init/mini-metadatas.ts",
-      "init/tokens.ts"
+      "init/tokens.ts",
+      "net.ts"
     ]
   },
   "eslintConfig": {

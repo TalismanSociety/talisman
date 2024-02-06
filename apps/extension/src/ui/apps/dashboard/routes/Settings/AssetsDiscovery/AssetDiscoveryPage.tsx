@@ -164,10 +164,14 @@ const AssetRowContent: FC<{ tokenId: TokenId; assets: DiscoveredBalance[] }> = (
 
   const handleToggleChange: ChangeEventHandler<HTMLInputElement> = useCallback(
     (e) => {
+      const checked = e.target.checked
       if (!token || !evmNetwork) return
-      activeEvmNetworksStore.setActive(evmNetwork.id, e.target.checked)
-      if (token.type !== "evm-native" && e.target.checked)
-        activeTokensStore.setActive(token.id, true)
+
+      if (checked) activeEvmNetworksStore.setActive(evmNetwork.id, true)
+      // when unchecking, dont disable the network except for native tokens
+      else if (token.type === "evm-native") activeEvmNetworksStore.setActive(evmNetwork.id, false)
+      // if token is not native, allow it to be toggled. Native tokens are taken care of by the network toggle
+      if (token.type !== "evm-native") activeTokensStore.setActive(token.id, checked)
     },
     [evmNetwork, token]
   )
@@ -284,7 +288,6 @@ const AssetRow: FC<{ tokenId: TokenId; assets: DiscoveredBalance[] }> = ({ token
 const AssetTable: FC = () => {
   const { t } = useTranslation("admin")
   const { balances, balancesByTokenId, tokenIds } = useRecoilValue(assetDiscoveryScanProgress)
-
   // this hook is in charge of fetching the token rates for the tokens that were discovered
   useAssetDiscoveryFetchTokenRates()
 

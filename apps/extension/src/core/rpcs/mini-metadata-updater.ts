@@ -1,13 +1,17 @@
+import { TEST } from "@core/constants"
 import { balanceModules, chainConnectors } from "@core/rpcs/balance-modules"
 import { chaindataProvider } from "@core/rpcs/chaindata"
+import { awaitKeyringLoaded } from "@core/util/awaitKeyringLoaded"
+import keyring from "@polkadot/ui-keyring"
 import * as Sentry from "@sentry/browser"
-import { MiniMetadataUpdater } from "@talismn/balances"
+import { EvmTokenFetcher, MiniMetadataUpdater } from "@talismn/balances"
 
-export const miniMetadataUpdater = new MiniMetadataUpdater(
+const miniMetadataUpdater = new MiniMetadataUpdater(
   chainConnectors,
   chaindataProvider,
   balanceModules
 )
+const evmTokenFetcher = new EvmTokenFetcher(chaindataProvider, balanceModules)
 
 /**
  * Hydrates miniMetadatas and chaindata, then updates miniMetadatas for any custom substrate chains.
@@ -20,8 +24,16 @@ export const updateAndWaitForUpdatedChaindata = (): Promise<void> => {
   activeUpdate = new Promise((resolve) => {
     ;(async () => {
       try {
-        await hydrateChaindataAndMiniMetadata()
-        await updateCustomMiniMetadata()
+        // run these two promises in parallel, but we only care about the result of the first one
+        const [userHasSubstrateAccounts] = await Promise.all([
+          awaitKeyringLoaded()
+            .then(() => keyring.getAccounts().filter((account) => account.meta.type !== "ethereum"))
+            .then((substrateAccounts) => substrateAccounts.length > 0),
+          hydrateChaindataAndMiniMetadata(),
+        ])
+
+        if (userHasSubstrateAccounts) await updateCustomMiniMetadata()
+        await updateEvmTokens()
       } catch (cause) {
         Sentry.captureException(
           new Error("Failed to hydrate chaindata & update miniMetadata", { cause })
@@ -56,10 +68,18 @@ const hydrateChaindataAndMiniMetadata = async () => {
 
 /** Builds any missing miniMetadatas (e.g. for the user's custom substrate chains) */
 const updateCustomMiniMetadata = async () => {
-  const [chainIds, evmNetworkIds] = await Promise.all([
-    chaindataProvider.chainIds(),
-    chaindataProvider.evmNetworkIds(),
-  ])
+  // Don't update custom minimetadata in tests
+  //
+  // TODO: Remove this, and instead mock the websocket response for all of the called rpc methods.
+  // E.g. state_getMetadata, system_properties, etc
+  if (TEST) return
 
-  await miniMetadataUpdater.update(chainIds, evmNetworkIds)
+  const chainIds = await chaindataProvider.chainIds()
+  await miniMetadataUpdater.update(chainIds)
+}
+
+/** Fetches any missing Evm Tokens */
+const updateEvmTokens = async () => {
+  const evmNetworkIds = await chaindataProvider.evmNetworkIds()
+  await evmTokenFetcher.update(evmNetworkIds)
 }

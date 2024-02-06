@@ -68,12 +68,14 @@ export const useBalancesByParams = ({
     [addressesByChain, addressesAndEvmNetworks, addressesAndTokens]
   )
 
-  // subscrition must be reinitialized (using the key) if parameters change
-  const subscriptionKey = useMemo(() => {
-    return `useBalancesByParams-${md5(JSON.stringify(addressesByChain))}-${md5(
-      JSON.stringify(addressesAndEvmNetworks)
-    )}-${md5(JSON.stringify(addressesAndTokens))}`
-  }, [addressesByChain, addressesAndEvmNetworks, addressesAndTokens])
+  // subscription must be reinitialized (using the key) if parameters change
+  const subscriptionKey = useMemo(
+    () =>
+      `useBalancesByParams-${md5(JSON.stringify(addressesByChain))}-${md5(
+        JSON.stringify(addressesAndEvmNetworks)
+      )}-${md5(JSON.stringify(addressesAndTokens))}`,
+    [addressesByChain, addressesAndEvmNetworks, addressesAndTokens]
+  )
 
   const balances = useMessageSubscription(subscriptionKey, INITIAL_VALUE, subscribe)
 
@@ -83,4 +85,3 @@ export const useBalancesByParams = ({
 
   return useMemo(() => new Balances(debouncedBalances, hydrate), [debouncedBalances, hydrate])
 }
-export default useBalancesByParams

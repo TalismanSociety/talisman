@@ -1,14 +1,10 @@
 import { formatSuri } from "@core/domains/accounts/helpers"
 import { AccountAddressType, RequestAccountCreateFromSuri } from "@core/domains/accounts/types"
-import { AddressesAndTokens } from "@core/domains/balances/types"
 import { getEthDerivationPath } from "@core/domains/ethereum/helpers"
 import { convertAddress } from "@talisman/util/convertAddress"
 import { api } from "@ui/api"
+import { AccountImportDef, useAccountImportBalances } from "@ui/hooks/useAccountImportBalances"
 import useAccounts from "@ui/hooks/useAccounts"
-import useBalancesByParams from "@ui/hooks/useBalancesByParams"
-import useTokens from "@ui/hooks/useTokens"
-import { isEvmToken } from "@ui/util/isEvmToken"
-import { isSubToken } from "@ui/util/isSubToken"
 import { FC, useCallback, useEffect, useMemo, useState } from "react"
 
 import { DerivedAccountBase, DerivedAccountPickerBase } from "./DerivedAccountPickerBase"
@@ -67,22 +63,20 @@ const useDerivedAccounts = (
     }
   }, [itemsPerPage, mnemonic, name, pageIndex, type])
 
-  const { tokens: activeTokens } = useTokens({ activeOnly: true, includeTestnets: false })
+  const withBalances = useMemo(() => !!derivedAccounts.filter(Boolean).length, [derivedAccounts])
 
-  const addressesAndTokens = useMemo<AddressesAndTokens>(() => {
-    const addresses = derivedAccounts.map((acc) => acc?.address).filter(Boolean) as string[]
-    const tokenFilter = type === "ethereum" ? isEvmToken : isSubToken
-    const tokenIds = activeTokens.filter(tokenFilter).map((t) => t.id)
-
-    return { addresses, tokenIds }
-  }, [activeTokens, derivedAccounts, type])
-
-  const withBalances = useMemo(
-    () => !!addressesAndTokens.addresses.length && !!addressesAndTokens.tokenIds.length,
-    [addressesAndTokens]
+  // start fetching balances only once all accounts are loaded to prevent recreating subscription 5 times
+  const accountImportDefs = useMemo<AccountImportDef[]>(
+    () =>
+      derivedAccounts.filter(Boolean).length === itemsPerPage
+        ? derivedAccounts
+            .filter((acc): acc is DerivedFromMnemonicAccount & { type: string } => !!acc?.type)
+            .map((acc) => ({ address: acc.address, type: acc.type }))
+        : [],
+    [itemsPerPage, derivedAccounts]
   )
 
-  const balances = useBalancesByParams({ addressesAndTokens })
+  const balances = useAccountImportBalances(accountImportDefs)
 
   const accounts: (DerivedFromMnemonicAccount | null)[] = useMemo(
     () =>
@@ -104,6 +98,8 @@ const useDerivedAccounts = (
           connected: !!existingAccount,
           selected: selectedAccounts.some((sa) => sa.suri === acc.suri),
           balances: accountBalances,
+          isBalanceLoading:
+            !balances.count || accountBalances.each.some((b) => b.status === "initializing"),
         }
       }),
     [balances, derivedAccounts, selectedAccounts, walletAccounts]

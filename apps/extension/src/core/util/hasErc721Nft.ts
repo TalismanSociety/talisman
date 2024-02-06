@@ -16,9 +16,11 @@ export const hasErc721Nft = async ({
   contractAddress: Address
 }): Promise<Record<Address, boolean>> => {
   const evmAddresses = keyring
-    .getPairs()
-    .filter(({ type, meta }) => type === "ethereum" && meta.origin !== AccountType.Watched)
+    .getAccounts()
+    .filter(({ meta }) => meta.type === "ethereum" && meta.origin !== AccountType.Watched)
     .map(({ address }) => address as Address)
+
+  if (!evmAddresses.length) return {}
 
   const client = await chainConnectorEvm.getPublicClientForEvmNetwork(evmNetworkId)
   if (!client) throw new Error(`Unable to connect to EVM network: ${evmNetworkId}`)

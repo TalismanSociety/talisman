@@ -257,11 +257,6 @@ export const ImportJsonAccountsForm: FC<{ onSuccess: (address: string) => void }
           <JsonAccount key={i} account={acc} onSelect={handleSelect(acc.id)} />
         ))}
       </div>
-      <div className="text-grey-500 mt-6 text-xs">
-        {t(
-          "During the import stage, the displayed balances may represent only a subset of your account holdings."
-        )}
-      </div>
       <div className="mt-16 flex w-full justify-end gap-8">
         <UnlockJsonAccountsButton />
         <Button

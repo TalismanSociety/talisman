@@ -1,14 +1,11 @@
 import { DEBUG } from "@core/constants"
-import { AddressesAndTokens } from "@core/domains/balances/types"
 import { getEthLedgerDerivationPath } from "@core/domains/ethereum/helpers"
 import { LedgerEthDerivationPathType } from "@core/domains/ethereum/types"
 import { convertAddress } from "@talisman/util/convertAddress"
 import { LedgerAccountDefEthereum } from "@ui/domains/Account/AccountAdd/AccountAddLedger/context"
 import { useLedgerEthereum } from "@ui/hooks/ledger/useLedgerEthereum"
+import { AccountImportDef, useAccountImportBalances } from "@ui/hooks/useAccountImportBalances"
 import useAccounts from "@ui/hooks/useAccounts"
-import useBalancesByParams from "@ui/hooks/useBalancesByParams"
-import useTokens from "@ui/hooks/useTokens"
-import { isEvmToken } from "@ui/util/isEvmToken"
 import { FC, useCallback, useEffect, useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
 
@@ -69,24 +66,19 @@ const useLedgerEthereumAccounts = (
     setIsBusy(false)
   }, [derivationPathType, isReady, itemsPerPage, ledger, name, pageIndex, t])
 
-  const { tokens: activeTokens } = useTokens({ activeOnly: true, includeTestnets: false })
+  const withBalances = useMemo(() => !!derivedAccounts?.length, [derivedAccounts?.length])
 
-  const addressesAndTokens = useMemo<AddressesAndTokens | undefined>(() => {
-    // start fetching balances only when all accounts are known to prevent recreating subscription 5 times
-    if (derivedAccounts.filter(Boolean).length < itemsPerPage) return undefined
-
-    const addresses = derivedAccounts.map((acc) => acc?.address).filter(Boolean) as string[]
-    const tokenIds = activeTokens.filter(isEvmToken).map((t) => t.id)
-
-    return { addresses, tokenIds }
-  }, [activeTokens, derivedAccounts, itemsPerPage])
-
-  const withBalances = useMemo(
-    () => !!addressesAndTokens?.tokenIds.length && !!addressesAndTokens.addresses.length,
-    [addressesAndTokens]
+  // start fetching balances only once all accounts are loaded to prevent recreating subscription 5 times
+  const accountImportDefs = useMemo<AccountImportDef[]>(
+    () =>
+      derivedAccounts.filter(Boolean).length
+        ? derivedAccounts
+            .filter((acc): acc is LedgerEthereumAccount => !!acc)
+            .map((acc) => ({ address: acc.address, type: "ethereum" }))
+        : [],
+    [derivedAccounts]
   )
-
-  const balances = useBalancesByParams({ addressesAndTokens })
+  const balances = useAccountImportBalances(accountImportDefs)
 
   const accounts = useMemo(
     () =>
@@ -107,6 +99,8 @@ const useLedgerEthereumAccounts = (
           connected: !!existingAccount,
           selected: selectedAccounts.some((sa) => sa.path === acc.path),
           balances: accountBalances,
+          isBalanceLoading:
+            !balances.count || accountBalances.each.some((b) => b.status === "initializing"),
         }
       }),
     [balances, derivedAccounts, selectedAccounts, walletAccounts]
