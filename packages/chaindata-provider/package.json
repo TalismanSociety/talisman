@@ -20,6 +20,7 @@
     "/init/evm-networks",
     "/init/mini-metadatas",
     "/init/tokens",
+    "/net",
     "/plugins"
   ],
   "engines": {
@@ -53,6 +54,7 @@
       "init/evm-networks.ts",
       "init/mini-metadatas.ts",
       "init/tokens.ts",
+      "net.ts",
       "plugins.ts"
     ]
   },

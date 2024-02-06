@@ -34,11 +34,11 @@ export const useDbCacheSubscription = (subscribeTo: DbEntityType) => {
   const subscribe = useCallback(() => {
     switch (subscribeTo) {
       case "chains":
-        return subscribeChainDataHydrate(provider, "chains")
+        return subscribeChaindataHydrate(provider, "chains")
       case "evmNetworks":
-        return subscribeChainDataHydrate(provider, "evmNetworks")
+        return subscribeChaindataHydrate(provider, "evmNetworks")
       case "tokens":
-        return subscribeChainDataHydrate(provider, "tokens")
+        return subscribeChaindataHydrate(provider, "tokens")
     }
   }, [provider, subscribeTo])
 
@@ -143,7 +143,7 @@ const useTokens = (withTestnets?: boolean) => {
   return withTestnets ? tokensWithTestnetsMap : tokensWithoutTestnetsMap
 }
 
-const subscribeChainDataHydrate = (
+const subscribeChaindataHydrate = (
   provider: IChaindataProvider,
   type: "chains" | "evmNetworks" | "tokens"
 ) => {

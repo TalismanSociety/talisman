@@ -92,8 +92,8 @@ const AccountInfoOverrides: { [key: ChainId]: string } = {
   "nftmart": RegularAccountInfoFallback,
 }
 
-export const subNativeTokenId = (chainId: ChainId, tokenSymbol: string) =>
-  `${chainId}-substrate-native-${tokenSymbol}`.toLowerCase().replace(/ /g, "-")
+export const subNativeTokenId = (chainId: ChainId) =>
+  `${chainId}-substrate-native`.toLowerCase().replace(/ /g, "-")
 
 const getChainIdFromTokenId = (tokenId: string) => {
   const match = /^([\d\w-]+)-substrate-native/.exec(tokenId)
@@ -289,7 +289,7 @@ export const SubNativeModule: NewBalanceModule<
 
       const { isTestnet, symbol, decimals, existentialDeposit } = chainMeta
 
-      const id = subNativeTokenId(chainId, symbol)
+      const id = subNativeTokenId(chainId)
 
       const nativeToken: SubNativeToken = {
         id,

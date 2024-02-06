@@ -131,3 +131,43 @@ export class ObservableSubscriptions {
     this.#subscriptions.delete(id)
   }
 }
+
+/**
+ * Allows us to clean up *subscriptions with an async setup* when a tab disconnects.
+ *
+ * In this example, our subscription cleanup logic will never be run if the tab
+ * is closed before the `port.onDisconnect.addListener` method has been executed.
+ * That is, in the few moments it takes for `updateAndWaitForUpdatedChaindata` to run:
+ *
+ *     case "pri(balances.subscribe)": {
+ *       // set up subscription
+ *       await updateAndWaitForUpdatedChaindata()
+ *       ...
+ *
+ *       // unsafely set up cleanup trigger
+ *       port.onDisconnect.addListener(() => {
+ *         // clean up subscription
+ *         ...
+ *       })
+ *
+ * Using this function we can set up the cleanup trigger before we call `await`
+ * as part of the subscription setup.  
+ * The value returned from this function is a `Promise` which we can safely chain
+ * onto our cleanup logic after we have asynchronously set up our subscription:
+ *
+ *     case "pri(balances.subscribe)": {
+ *       // set up cleanup trigger
+         const onDisconnected = portDisconnected(port)
+ *
+ *       // set up subscription
+ *       await updateAndWaitForUpdatedChaindata()
+ *       ...
+ *
+ *       // safely set up cleanup logic
+ *       onDisconnected.then(() => {
+ *         // clean up subscription
+ *         ...
+ *       })
+ */
+export const portDisconnected = (port: Port) =>
+  new Promise<void>((resolve) => port.onDisconnect.addListener(() => resolve()))

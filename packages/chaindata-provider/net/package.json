@@ -1,0 +1,4 @@
+{
+  "main": "dist/talismn-chaindata-provider-net.cjs.js",
+  "module": "dist/talismn-chaindata-provider-net.esm.js"
+}

@@ -23,7 +23,7 @@ export const NOM_POOL_MIN_DEPOSIT: Record<NomPoolSupportedChain, string> = {
 export const EVM_LSD_PAIRS: Record<EvmNetworkId, Record<string, EvmLsdSupportedPair>> = {
   "1": {
     "1-eth-steth": {
-      base: "1-evm-native-eth",
+      base: "1-evm-native",
       derivative: "1-evm-erc20-0xae7ab96520de3a18e5e111b5eaab095312d7fe84",
     },
   },

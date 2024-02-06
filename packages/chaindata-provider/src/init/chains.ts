@@ -15,11 +15,11 @@ export const chains = [
     specName: "polkadot",
     specVersion: "1000001",
     nativeToken: {
-      id: "polkadot-substrate-native-dot",
+      id: "polkadot-substrate-native",
     },
     tokens: [
       {
-        id: "polkadot-substrate-native-dot",
+        id: "polkadot-substrate-native",
       },
     ],
     account: "*25519",
@@ -29,6 +29,9 @@ export const chains = [
     isUnknownFeeToken: false,
     feeToken: null,
     rpcs: [
+      {
+        url: "wss://apps-rpc.polkadot.io",
+      },
       {
         url: "wss://polkadot-rpc.dwellir.com",
       },
@@ -295,13 +298,13 @@ export const chains = [
     chainType: "Live",
     implName: "parity-kusama",
     specName: "kusama",
-    specVersion: "1000000",
+    specVersion: "1001000",
     nativeToken: {
-      id: "kusama-substrate-native-ksm",
+      id: "kusama-substrate-native",
     },
     tokens: [
       {
-        id: "kusama-substrate-native-ksm",
+        id: "kusama-substrate-native",
       },
     ],
     account: "*25519",
@@ -313,6 +316,9 @@ export const chains = [
     rpcs: [
       {
         url: "wss://kusama-rpc.dwellir.com",
+      },
+      {
+        url: "wss://kusama-rpc.polkadot.io",
       },
       {
         url: "wss://kusama-rpc-tn.dwellir.com",
@@ -568,11 +574,11 @@ export const chains = [
     specName: "poscan-runtime",
     specVersion: "117",
     nativeToken: {
-      id: "3-dpass-substrate-native-p3d",
+      id: "3-dpass-substrate-native",
     },
     tokens: [
       {
-        id: "3-dpass-substrate-native-p3d",
+        id: "3-dpass-substrate-native",
       },
     ],
     account: "*25519",
@@ -609,11 +615,11 @@ export const chains = [
     specName: "acala",
     specVersion: "2230",
     nativeToken: {
-      id: "acala-substrate-native-aca",
+      id: "acala-substrate-native",
     },
     tokens: [
       {
-        id: "acala-substrate-native-aca",
+        id: "acala-substrate-native",
       },
       {
         id: "acala-substrate-tokens-aseed",
@@ -956,11 +962,11 @@ export const chains = [
     specName: "acurast-parachain",
     specVersion: "10",
     nativeToken: {
-      id: "acurast-substrate-native-cacu",
+      id: "acurast-substrate-native",
     },
     tokens: [
       {
-        id: "acurast-substrate-native-cacu",
+        id: "acurast-substrate-native",
       },
     ],
     account: "*25519",
@@ -999,11 +1005,11 @@ export const chains = [
     specName: "ajuna",
     specVersion: "119",
     nativeToken: {
-      id: "ajuna-substrate-native-ajun",
+      id: "ajuna-substrate-native",
     },
     tokens: [
       {
-        id: "ajuna-substrate-native-ajun",
+        id: "ajuna-substrate-native",
       },
     ],
     account: "*25519",
@@ -1043,13 +1049,13 @@ export const chains = [
     chainType: "Live",
     implName: "aleph-node",
     specName: "aleph-node",
-    specVersion: "65",
+    specVersion: "68",
     nativeToken: {
-      id: "aleph-zero-substrate-native-azero",
+      id: "aleph-zero-substrate-native",
     },
     tokens: [
       {
-        id: "aleph-zero-substrate-native-azero",
+        id: "aleph-zero-substrate-native",
       },
       {
         id: "aleph-zero-substrate-psp22-panx",
@@ -1161,11 +1167,11 @@ export const chains = [
     specName: "altair",
     specVersion: "1027",
     nativeToken: {
-      id: "altair-substrate-native-air",
+      id: "altair-substrate-native",
     },
     tokens: [
       {
-        id: "altair-substrate-native-air",
+        id: "altair-substrate-native",
       },
     ],
     account: "*25519",
@@ -1212,11 +1218,11 @@ export const chains = [
     specName: "amplitude",
     specVersion: "13",
     nativeToken: {
-      id: "amplitude-substrate-native-ampe",
+      id: "amplitude-substrate-native",
     },
     tokens: [
       {
-        id: "amplitude-substrate-native-ampe",
+        id: "amplitude-substrate-native",
       },
       {
         id: "amplitude-substrate-tokens-ksm",
@@ -1276,7 +1282,7 @@ export const chains = [
     id: "ares-odyssey",
     isTestnet: false,
     isDefault: true,
-    sortIndex: 40,
+    sortIndex: 41,
     genesisHash: "0x0f3665e2e57fb38fd638145b69e567fb05bbadfd457624f90f15e5dbb31320bb",
     prefix: 34,
     name: "Ares Odyssey Standalone",
@@ -1288,11 +1294,11 @@ export const chains = [
     specName: "ares-odyssey",
     specVersion: "174",
     nativeToken: {
-      id: "ares-odyssey-substrate-native-ares",
+      id: "ares-odyssey-substrate-native",
     },
     tokens: [
       {
-        id: "ares-odyssey-substrate-native-ares",
+        id: "ares-odyssey-substrate-native",
       },
     ],
     account: "*25519",
@@ -1325,7 +1331,7 @@ export const chains = [
     id: "astar",
     isTestnet: false,
     isDefault: true,
-    sortIndex: 45,
+    sortIndex: 46,
     genesisHash: "0x9eb76c5184c4ab8679d2d5d819fdf90b9c001403e9e17da2e14b6d8aec4029c6",
     prefix: 5,
     name: "Astar",
@@ -1335,9 +1341,9 @@ export const chains = [
     chainType: "Live",
     implName: "astar",
     specName: "astar",
-    specVersion: "74",
+    specVersion: "77",
     nativeToken: {
-      id: "astar-substrate-native-astr",
+      id: "astar-substrate-native",
     },
     tokens: [
       {
@@ -1389,7 +1395,7 @@ export const chains = [
         id: "astar-substrate-assets-340282366920938463463374607431768211455-dot",
       },
       {
-        id: "astar-substrate-native-astr",
+        id: "astar-substrate-native",
       },
     ],
     account: "*25519",
@@ -1403,10 +1409,10 @@ export const chains = [
         url: "wss://astar-rpc.dwellir.com",
       },
       {
-        url: "wss://rpc.astar.network",
+        url: "wss://1rpc.io/astr",
       },
       {
-        url: "wss://1rpc.io/astr",
+        url: "wss://rpc.astar.network",
       },
       {
         url: "wss://astar.public.curie.radiumblock.co/ws",
@@ -1537,7 +1543,7 @@ export const chains = [
     id: "automata",
     isTestnet: false,
     isDefault: true,
-    sortIndex: 50,
+    sortIndex: 51,
     genesisHash: "0xc8eda34601b5a48c73f47ee39a3a86a858c34f044185b17dc7d5ad155813dc63",
     prefix: 2349,
     name: "Automata",
@@ -1549,11 +1555,11 @@ export const chains = [
     specName: "automata",
     specVersion: "1000",
     nativeToken: {
-      id: "automata-substrate-native-ata",
+      id: "automata-substrate-native",
     },
     tokens: [
       {
-        id: "automata-substrate-native-ata",
+        id: "automata-substrate-native",
       },
     ],
     account: "*25519",
@@ -1586,7 +1592,7 @@ export const chains = [
     id: "aventus",
     isTestnet: false,
     isDefault: true,
-    sortIndex: 52,
+    sortIndex: 53,
     genesisHash: "0x8b5c955b5c8fd7112562327e3859473df4e3dff49bd72a113dbb668d2cfa20d7",
     prefix: 42,
     name: "Aventus",
@@ -1598,11 +1604,11 @@ export const chains = [
     specName: "avn-parachain",
     specVersion: "57",
     nativeToken: {
-      id: "aventus-substrate-native-avt",
+      id: "aventus-substrate-native",
     },
     tokens: [
       {
-        id: "aventus-substrate-native-avt",
+        id: "aventus-substrate-native",
       },
     ],
     account: "*25519",
@@ -1629,7 +1635,7 @@ export const chains = [
     id: "bajun",
     isTestnet: false,
     isDefault: true,
-    sortIndex: 57,
+    sortIndex: 58,
     genesisHash: "0x35a06bfec2edf0ff4be89a6428ccd9ff5bd0167d618c5a0d4341f9600a458d14",
     prefix: 1337,
     name: "Bajun",
@@ -1641,11 +1647,11 @@ export const chains = [
     specName: "bajun",
     specVersion: "123",
     nativeToken: {
-      id: "bajun-substrate-native-baju",
+      id: "bajun-substrate-native",
     },
     tokens: [
       {
-        id: "bajun-substrate-native-baju",
+        id: "bajun-substrate-native",
       },
     ],
     account: "*25519",
@@ -1683,7 +1689,7 @@ export const chains = [
     id: "basilisk",
     isTestnet: false,
     isDefault: true,
-    sortIndex: 60,
+    sortIndex: 61,
     genesisHash: "0xa85cfb9b9fd4d622a5b28289a02347af987d8f73fa3108450e2b4a11c1ce5755",
     prefix: 10041,
     name: "Basilisk",
@@ -1695,11 +1701,11 @@ export const chains = [
     specName: "basilisk",
     specVersion: "108",
     nativeToken: {
-      id: "basilisk-substrate-native-bsx",
+      id: "basilisk-substrate-native",
     },
     tokens: [
       {
-        id: "basilisk-substrate-native-bsx",
+        id: "basilisk-substrate-native",
       },
       {
         id: "basilisk-substrate-tokens-ksm",
@@ -1842,7 +1848,7 @@ export const chains = [
     id: "bifrost-kusama",
     isTestnet: false,
     isDefault: true,
-    sortIndex: 65,
+    sortIndex: 66,
     genesisHash: "0x9f28c6a68e0fc9646eff64935684f6eeeece527e37bbe1f213d22caa1d9d6bed",
     prefix: 6,
     name: "Bifrost Kusama",
@@ -1852,13 +1858,13 @@ export const chains = [
     chainType: "Live",
     implName: "bifrost",
     specName: "bifrost",
-    specVersion: "990",
+    specVersion: "992",
     nativeToken: {
-      id: "bifrost-kusama-substrate-native-bnc",
+      id: "bifrost-kusama-substrate-native",
     },
     tokens: [
       {
-        id: "bifrost-kusama-substrate-native-bnc",
+        id: "bifrost-kusama-substrate-native",
       },
       {
         id: "bifrost-kusama-substrate-tokens-bnc",
@@ -2145,7 +2151,7 @@ export const chains = [
     id: "bifrost-polkadot",
     isTestnet: false,
     isDefault: true,
-    sortIndex: 67,
+    sortIndex: 68,
     genesisHash: "0x262e1b2ad728475fd6fe88e62d34c200abe6fd693931ddad144059b1eb884e5b",
     prefix: 6,
     name: "Bifrost Polkadot",
@@ -2157,11 +2163,11 @@ export const chains = [
     specName: "bifrost_polkadot",
     specVersion: "992",
     nativeToken: {
-      id: "bifrost-polkadot-substrate-native-bnc",
+      id: "bifrost-polkadot-substrate-native",
     },
     tokens: [
       {
-        id: "bifrost-polkadot-substrate-native-bnc",
+        id: "bifrost-polkadot-substrate-native",
       },
       {
         id: "bifrost-polkadot-substrate-tokens-bnc",
@@ -2355,7 +2361,7 @@ export const chains = [
     id: "bitgreen",
     isTestnet: false,
     isDefault: true,
-    sortIndex: 74,
+    sortIndex: 75,
     genesisHash: "0xc14597baeccb232d662770d2d50ae832ca8c3192693d2b0814e6433f2888ddd6",
     prefix: 42,
     name: "Bitgreen",
@@ -2367,11 +2373,11 @@ export const chains = [
     specName: "bitgreen-parachain",
     specVersion: "1201",
     nativeToken: {
-      id: "bitgreen-substrate-native-bbb",
+      id: "bitgreen-substrate-native",
     },
     tokens: [
       {
-        id: "bitgreen-substrate-native-bbb",
+        id: "bitgreen-substrate-native",
       },
     ],
     account: "*25519",
@@ -2398,7 +2404,7 @@ export const chains = [
     id: "bittensor",
     isTestnet: false,
     isDefault: true,
-    sortIndex: 79,
+    sortIndex: 80,
     genesisHash: "0x2f0555cc76fc2840a25a6ea3b9637146806f1f44b090c175ffde2a7e5ab36c03",
     prefix: 42,
     name: "Bittensor",
@@ -2410,11 +2416,11 @@ export const chains = [
     specName: "node-subtensor",
     specVersion: "141",
     nativeToken: {
-      id: "bittensor-substrate-native-tao",
+      id: "bittensor-substrate-native",
     },
     tokens: [
       {
-        id: "bittensor-substrate-native-tao",
+        id: "bittensor-substrate-native",
       },
     ],
     account: "*25519",
@@ -2447,7 +2453,7 @@ export const chains = [
     id: "calamari",
     isTestnet: false,
     isDefault: true,
-    sortIndex: 102,
+    sortIndex: 106,
     genesisHash: "0x4ac80c99289841dd946ef92765bf659a307d39189b3ce374a92b5f0415ee17a1",
     prefix: 78,
     name: "Calamari",
@@ -2457,13 +2463,13 @@ export const chains = [
     chainType: "Live",
     implName: "calamari",
     specName: "calamari",
-    specVersion: "4600",
+    specVersion: "4610",
     nativeToken: {
-      id: "calamari-substrate-native-kma",
+      id: "calamari-substrate-native",
     },
     tokens: [
       {
-        id: "calamari-substrate-native-kma",
+        id: "calamari-substrate-native",
       },
     ],
     account: "*25519",
@@ -2498,7 +2504,7 @@ export const chains = [
     id: "centrifuge-polkadot",
     isTestnet: false,
     isDefault: true,
-    sortIndex: 113,
+    sortIndex: 117,
     genesisHash: "0xb3db41421702df9a7fcac62b53ffeac85f7853cc4e689e0b93aeb3db18c09d82",
     prefix: 36,
     name: "Centrifuge",
@@ -2510,11 +2516,11 @@ export const chains = [
     specName: "centrifuge",
     specVersion: "1024",
     nativeToken: {
-      id: "centrifuge-polkadot-substrate-native-cfg",
+      id: "centrifuge-polkadot-substrate-native",
     },
     tokens: [
       {
-        id: "centrifuge-polkadot-substrate-native-cfg",
+        id: "centrifuge-polkadot-substrate-native",
       },
     ],
     account: "*25519",
@@ -2555,7 +2561,7 @@ export const chains = [
     id: "cere",
     isTestnet: false,
     isDefault: true,
-    sortIndex: 114,
+    sortIndex: 118,
     genesisHash: "0x81443836a9a24caaa23f1241897d1235717535711d1d3fe24eae4fdc942c092c",
     prefix: 54,
     name: "Cere",
@@ -2565,13 +2571,13 @@ export const chains = [
     chainType: "Live",
     implName: "substrate-node",
     specName: "node",
-    specVersion: "48300",
+    specVersion: "48400",
     nativeToken: {
-      id: "cere-substrate-native-cere",
+      id: "cere-substrate-native",
     },
     tokens: [
       {
-        id: "cere-substrate-native-cere",
+        id: "cere-substrate-native",
       },
     ],
     account: "*25519",
@@ -2596,7 +2602,7 @@ export const chains = [
     id: "chainx",
     isTestnet: false,
     isDefault: true,
-    sortIndex: 116,
+    sortIndex: 120,
     genesisHash: "0x6ac13efb5b368b97b4934cef6edfdd99c2af51ba5109bfb8dacc116f9c584c10",
     prefix: 44,
     name: "ChainX",
@@ -2606,13 +2612,13 @@ export const chains = [
     chainType: "Live",
     implName: "chainx-net",
     specName: "chainx",
-    specVersion: "33",
+    specVersion: "34",
     nativeToken: {
-      id: "chainx-substrate-native-pcx",
+      id: "chainx-substrate-native",
     },
     tokens: [
       {
-        id: "chainx-substrate-native-pcx",
+        id: "chainx-substrate-native",
       },
     ],
     account: "*25519",
@@ -2645,7 +2651,7 @@ export const chains = [
     id: "clover",
     isTestnet: false,
     isDefault: true,
-    sortIndex: 120,
+    sortIndex: 124,
     genesisHash: "0x5c7bd13edf349b33eb175ffae85210299e324d852916336027391536e686f267",
     prefix: 128,
     name: "Clover",
@@ -2659,11 +2665,11 @@ export const chains = [
     specName: "clover-mainnet",
     specVersion: "25",
     nativeToken: {
-      id: "clover-substrate-native-clv",
+      id: "clover-substrate-native",
     },
     tokens: [
       {
-        id: "clover-substrate-native-clv",
+        id: "clover-substrate-native",
       },
     ],
     account: "*25519",
@@ -2698,7 +2704,7 @@ export const chains = [
     id: "polkadot-collectives",
     isTestnet: false,
     isDefault: true,
-    sortIndex: 126,
+    sortIndex: 130,
     genesisHash: "0x46ee89aa2eedd13e988962630ec9fb7565964cf5023bb351f2b6b25c1b68b0b2",
     prefix: 0,
     name: "Collectives",
@@ -2710,11 +2716,11 @@ export const chains = [
     specName: "collectives",
     specVersion: "1000000",
     nativeToken: {
-      id: "polkadot-collectives-substrate-native-dot",
+      id: "polkadot-collectives-substrate-native",
     },
     tokens: [
       {
-        id: "polkadot-collectives-substrate-native-dot",
+        id: "polkadot-collectives-substrate-native",
       },
     ],
     account: "*25519",
@@ -2762,7 +2768,7 @@ export const chains = [
     id: "composable-finance",
     isTestnet: false,
     isDefault: true,
-    sortIndex: 129,
+    sortIndex: 133,
     genesisHash: "0xdaab8df776eb52ec604a5df5d388bb62a050a0aaec4556a64265b9d42755552d",
     prefix: 50,
     name: "Composable Finance",
@@ -2774,11 +2780,11 @@ export const chains = [
     specName: "composable",
     specVersion: "10044",
     nativeToken: {
-      id: "composable-finance-substrate-native-layr",
+      id: "composable-finance-substrate-native",
     },
     tokens: [
       {
-        id: "composable-finance-substrate-native-layr",
+        id: "composable-finance-substrate-native",
       },
       {
         id: "composable-finance-substrate-tokens-dot",
@@ -2943,7 +2949,7 @@ export const chains = [
     id: "creditcoin",
     isTestnet: false,
     isDefault: true,
-    sortIndex: 138,
+    sortIndex: 143,
     genesisHash: "0xdd954cbf4000542ef1a15bca509cd89684330bee5e23766c527cdb0d7275e9c2",
     prefix: 42,
     name: "Creditcoin",
@@ -2955,11 +2961,11 @@ export const chains = [
     specName: "creditcoin-node",
     specVersion: "232",
     nativeToken: {
-      id: "creditcoin-substrate-native-ctc",
+      id: "creditcoin-substrate-native",
     },
     tokens: [
       {
-        id: "creditcoin-substrate-native-ctc",
+        id: "creditcoin-substrate-native",
       },
     ],
     account: "*25519",
@@ -2984,7 +2990,7 @@ export const chains = [
     id: "crown-sterling",
     isTestnet: false,
     isDefault: true,
-    sortIndex: 140,
+    sortIndex: 145,
     genesisHash: "0xce24ecf534daea9cd46e425659ef4950a57dd29d07272b423220129c323a64b7",
     prefix: 0,
     name: "Crown Sterling",
@@ -2998,11 +3004,11 @@ export const chains = [
     specName: "crown-sterling",
     specVersion: "5004",
     nativeToken: {
-      id: "crown-sterling-substrate-native-csov",
+      id: "crown-sterling-substrate-native",
     },
     tokens: [
       {
-        id: "crown-sterling-substrate-native-csov",
+        id: "crown-sterling-substrate-native",
       },
     ],
     account: "*25519",
@@ -3027,7 +3033,7 @@ export const chains = [
     id: "crust-parachain",
     isTestnet: false,
     isDefault: true,
-    sortIndex: 141,
+    sortIndex: 146,
     genesisHash: "0x4319cc49ee79495b57a1fec4d2bd43f59052dcc690276de566c2691d6df4f7b8",
     prefix: 88,
     name: "Crust",
@@ -3039,11 +3045,11 @@ export const chains = [
     specName: "polkadot-crust-parachain",
     specVersion: "5",
     nativeToken: {
-      id: "crust-parachain-substrate-native-cru",
+      id: "crust-parachain-substrate-native",
     },
     tokens: [
       {
-        id: "crust-parachain-substrate-native-cru",
+        id: "crust-parachain-substrate-native",
       },
     ],
     account: "*25519",
@@ -3078,7 +3084,7 @@ export const chains = [
     id: "shadow-kusama",
     isTestnet: false,
     isDefault: true,
-    sortIndex: 142,
+    sortIndex: 147,
     genesisHash: "0xd4c0c08ca49dc7c680c3dac71a7c0703e5b222f4b6c03fe4c5219bb8f22c18dc",
     prefix: 66,
     name: "Crust Shadow",
@@ -3090,11 +3096,11 @@ export const chains = [
     specName: "crust-collator",
     specVersion: "17",
     nativeToken: {
-      id: "shadow-kusama-substrate-native-csm",
+      id: "shadow-kusama-substrate-native",
     },
     tokens: [
       {
-        id: "shadow-kusama-substrate-native-csm",
+        id: "shadow-kusama-substrate-native",
       },
     ],
     account: "*25519",
@@ -3129,7 +3135,7 @@ export const chains = [
     id: "crust",
     isTestnet: false,
     isDefault: true,
-    sortIndex: 143,
+    sortIndex: 148,
     genesisHash: "0x8b404e7ed8789d813982b9cb4c8b664c05b3fbf433309f603af014ec9ce56a8c",
     prefix: 66,
     name: "Crust Standalone",
@@ -3141,11 +3147,11 @@ export const chains = [
     specName: "crust",
     specVersion: "21",
     nativeToken: {
-      id: "crust-substrate-native-cru",
+      id: "crust-substrate-native",
     },
     tokens: [
       {
-        id: "crust-substrate-native-cru",
+        id: "crust-substrate-native",
       },
     ],
     account: "*25519",
@@ -3181,7 +3187,7 @@ export const chains = [
     id: "ipci",
     isTestnet: false,
     isDefault: true,
-    sortIndex: 150,
+    sortIndex: 155,
     genesisHash: "0x6f0f071506de39058fe9a95bbca983ac0e9c5da3443909574e95d52eb078d348",
     prefix: 32,
     name: "DAO IPCI",
@@ -3193,11 +3199,11 @@ export const chains = [
     specName: "ipci",
     specVersion: "5",
     nativeToken: {
-      id: "ipci-substrate-native-mito",
+      id: "ipci-substrate-native",
     },
     tokens: [
       {
-        id: "ipci-substrate-native-mito",
+        id: "ipci-substrate-native",
       },
     ],
     account: "*25519",
@@ -3224,7 +3230,7 @@ export const chains = [
     id: "darwinia",
     isTestnet: false,
     isDefault: true,
-    sortIndex: 151,
+    sortIndex: 156,
     genesisHash: "0xf0b8924b12e8108550d28870bc03f7b45a947e1b2b9abf81bfb0b89ecb60570e",
     prefix: 18,
     name: "Darwinia",
@@ -3234,13 +3240,13 @@ export const chains = [
     chainType: "Live",
     implName: "DarwiniaOfficialRust",
     specName: "Darwinia2",
-    specVersion: "6511",
+    specVersion: "6600",
     nativeToken: {
-      id: "darwinia-substrate-native-ring",
+      id: "darwinia-substrate-native",
     },
     tokens: [
       {
-        id: "darwinia-substrate-native-ring",
+        id: "darwinia-substrate-native",
       },
     ],
     account: "secp256k1",
@@ -3285,7 +3291,7 @@ export const chains = [
     id: "crab",
     isTestnet: false,
     isDefault: true,
-    sortIndex: 153,
+    sortIndex: 158,
     genesisHash: "0x86e49c195aeae7c5c4a86ced251f1a28c67b3c35d8289c387ede1776cdd88b24",
     prefix: 42,
     name: "Darwinia Crab",
@@ -3295,13 +3301,13 @@ export const chains = [
     chainType: "Live",
     implName: "DarwiniaOfficialRust",
     specName: "Crab2",
-    specVersion: "6511",
+    specVersion: "6600",
     nativeToken: {
-      id: "crab-substrate-native-crab",
+      id: "crab-substrate-native",
     },
     tokens: [
       {
-        id: "crab-substrate-native-crab",
+        id: "crab-substrate-native",
       },
     ],
     account: "secp256k1",
@@ -3342,25 +3348,19 @@ export const chains = [
     id: "debio",
     isTestnet: false,
     isDefault: true,
-    sortIndex: 156,
-    genesisHash: "0x996800af345b3109acdada9913e36d1efa98b89e7dcd0b61b70fdbfc13b2fa50",
-    prefix: 42,
+    sortIndex: 161,
+    genesisHash: null,
+    prefix: null,
     name: "DeBio",
     themeColor: "#505050",
     logo: "https://raw.githubusercontent.com/TalismanSociety/chaindata/main/assets/chains/unknown.svg",
-    chainName: "DeBio",
+    chainName: null,
     chainType: null,
-    implName: "debio",
-    specName: "appchain",
-    specVersion: "2041",
-    nativeToken: {
-      id: "debio-substrate-native-dbio",
-    },
-    tokens: [
-      {
-        id: "debio-substrate-native-dbio",
-      },
-    ],
+    implName: null,
+    specName: null,
+    specVersion: null,
+    nativeToken: null,
+    tokens: [],
     account: "*25519",
     subscanUrl: null,
     chainspecQrUrl: null,
@@ -3383,7 +3383,7 @@ export const chains = [
     id: "dock-pos-mainnet",
     isTestnet: false,
     isDefault: true,
-    sortIndex: 165,
+    sortIndex: 170,
     genesisHash: "0x6bfe24dca2a3be10f22212678ac13a6446ec764103c0f3471c71609eac384aae",
     prefix: 22,
     name: "Dock",
@@ -3395,11 +3395,11 @@ export const chains = [
     specName: "dock-pos-main-runtime",
     specVersion: "47",
     nativeToken: {
-      id: "dock-pos-mainnet-substrate-native-dock",
+      id: "dock-pos-mainnet-substrate-native",
     },
     tokens: [
       {
-        id: "dock-pos-mainnet-substrate-native-dock",
+        id: "dock-pos-mainnet-substrate-native",
       },
     ],
     account: "*25519",
@@ -3432,7 +3432,7 @@ export const chains = [
     id: "edgeware",
     isTestnet: false,
     isDefault: true,
-    sortIndex: 183,
+    sortIndex: 190,
     genesisHash: "0x742a2ca70c2fda6cee4f8df98d64c4c670a052d9568058982dad9d5a7a135c5b",
     prefix: 7,
     name: "Edgeware",
@@ -3444,11 +3444,11 @@ export const chains = [
     specName: "edgeware",
     specVersion: "53",
     nativeToken: {
-      id: "edgeware-substrate-native-edg",
+      id: "edgeware-substrate-native",
     },
     tokens: [
       {
-        id: "edgeware-substrate-native-edg",
+        id: "edgeware-substrate-native",
       },
     ],
     account: "*25519",
@@ -3488,7 +3488,7 @@ export const chains = [
     id: "encointer",
     isTestnet: false,
     isDefault: true,
-    sortIndex: 192,
+    sortIndex: 200,
     genesisHash: "0x7dd99936c1e9e6d1ce7d90eb6f33bea8393b4bf87677d675aa63c9cb3e8c5b5b",
     prefix: 2,
     name: "Encointer",
@@ -3500,11 +3500,11 @@ export const chains = [
     specName: "encointer-parachain",
     specVersion: "16",
     nativeToken: {
-      id: "encointer-substrate-native-ksm",
+      id: "encointer-substrate-native",
     },
     tokens: [
       {
-        id: "encointer-substrate-native-ksm",
+        id: "encointer-substrate-native",
       },
     ],
     account: "*25519",
@@ -3548,7 +3548,7 @@ export const chains = [
     id: "ewx",
     isTestnet: false,
     isDefault: true,
-    sortIndex: 196,
+    sortIndex: 204,
     genesisHash: "0x5a51e04b88a4784d205091aa7bada002f3e5da3045e5b05655ee4db2589c33b5",
     prefix: 42,
     name: "Energy Web X",
@@ -3560,11 +3560,11 @@ export const chains = [
     specName: "ewx-parachain",
     specVersion: "54",
     nativeToken: {
-      id: "ewx-substrate-native-ewt",
+      id: "ewx-substrate-native",
     },
     tokens: [
       {
-        id: "ewx-substrate-native-ewt",
+        id: "ewx-substrate-native",
       },
     ],
     account: "*25519",
@@ -3591,7 +3591,7 @@ export const chains = [
     id: "enjin-matrixchain",
     isTestnet: false,
     isDefault: true,
-    sortIndex: 197,
+    sortIndex: 205,
     genesisHash: "0x3af4ff48ec76d2efc8476730f423ac07e25ad48f5f4c9dc39c778b164d808615",
     prefix: 1110,
     name: "Enjin Matrixchain",
@@ -3603,11 +3603,11 @@ export const chains = [
     specName: "matrix-enjin",
     specVersion: "1003",
     nativeToken: {
-      id: "enjin-matrixchain-substrate-native-enj",
+      id: "enjin-matrixchain-substrate-native",
     },
     tokens: [
       {
-        id: "enjin-matrixchain-substrate-native-enj",
+        id: "enjin-matrixchain-substrate-native",
       },
     ],
     account: "*25519",
@@ -3637,7 +3637,7 @@ export const chains = [
     id: "enjin-relay",
     isTestnet: false,
     isDefault: true,
-    sortIndex: 198,
+    sortIndex: 206,
     genesisHash: "0xd8761d3c88f26dc12875c00d3165f7d67243d56fc85b4cf19937601a7916e5a9",
     prefix: 2135,
     name: "Enjin Relaychain",
@@ -3647,13 +3647,13 @@ export const chains = [
     chainType: "Live",
     implName: "enjin",
     specName: "enjin",
-    specVersion: "1024",
+    specVersion: "1025",
     nativeToken: {
-      id: "enjin-relay-substrate-native-enj",
+      id: "enjin-relay-substrate-native",
     },
     tokens: [
       {
-        id: "enjin-relay-substrate-native-enj",
+        id: "enjin-relay-substrate-native",
       },
     ],
     account: "*25519",
@@ -3689,7 +3689,7 @@ export const chains = [
     id: "equilibrium-polkadot",
     isTestnet: false,
     isDefault: true,
-    sortIndex: 203,
+    sortIndex: 211,
     genesisHash: "0x89d3ec46d2fb43ef5a9713833373d5ea666b092fa8fd68fbc34596036571b907",
     prefix: 68,
     name: "Equilibrium",
@@ -3911,25 +3911,19 @@ export const chains = [
     id: "fragnova",
     isTestnet: false,
     isDefault: true,
-    sortIndex: 233,
-    genesisHash: "0x3219b65b821c54e1dc6518a8444568da0b98267170d67c2f698aec40bf8e65c7",
-    prefix: 93,
+    sortIndex: 241,
+    genesisHash: null,
+    prefix: null,
     name: "Fragnova",
     themeColor: "#505050",
     logo: "https://raw.githubusercontent.com/TalismanSociety/chaindata/main/assets/chains/unknown.svg",
-    chainName: "Fragnova",
+    chainName: null,
     chainType: null,
-    implName: "fragnova-hstn",
-    specName: "fragnova",
-    specVersion: "1",
-    nativeToken: {
-      id: "fragnova-substrate-native-nova",
-    },
-    tokens: [
-      {
-        id: "fragnova-substrate-native-nova",
-      },
-    ],
+    implName: null,
+    specName: null,
+    specVersion: null,
+    nativeToken: null,
+    tokens: [],
     account: "*25519",
     subscanUrl: null,
     chainspecQrUrl: null,
@@ -3952,7 +3946,7 @@ export const chains = [
     id: "frequency",
     isTestnet: false,
     isDefault: true,
-    sortIndex: 235,
+    sortIndex: 243,
     genesisHash: "0x4a587bf17a404e3572747add7aab7bbe56e805a5479c6c436f07f36fcc8d3ae1",
     prefix: 90,
     name: "Frequency",
@@ -3962,13 +3956,13 @@ export const chains = [
     chainType: "Live",
     implName: "frequency",
     specName: "frequency",
-    specVersion: "56",
+    specVersion: "64",
     nativeToken: {
-      id: "frequency-substrate-native-frqcy",
+      id: "frequency-substrate-native",
     },
     tokens: [
       {
-        id: "frequency-substrate-native-frqcy",
+        id: "frequency-substrate-native",
       },
     ],
     account: "*25519",
@@ -4001,7 +3995,7 @@ export const chains = [
     id: "geminis",
     isTestnet: false,
     isDefault: true,
-    sortIndex: 245,
+    sortIndex: 253,
     genesisHash: null,
     prefix: null,
     name: "Geminis",
@@ -4038,7 +4032,7 @@ export const chains = [
     id: "genshiro-kusama",
     isTestnet: false,
     isDefault: true,
-    sortIndex: 251,
+    sortIndex: 259,
     genesisHash: "0x9de765698374eb576968c8a764168893fb277e65ad3ddafcfe2c49593fc6d663",
     prefix: 67,
     name: "Genshiro",
@@ -4048,7 +4042,7 @@ export const chains = [
     chainType: "Live",
     implName: "Gens-parachain",
     specName: "Gens-parachain",
-    specVersion: "21",
+    specVersion: "22",
     nativeToken: null,
     tokens: [
       {
@@ -4148,7 +4142,7 @@ export const chains = [
     id: "gm",
     isTestnet: false,
     isDefault: true,
-    sortIndex: 255,
+    sortIndex: 263,
     genesisHash: "0x19a3733beb9cb8a970a308d835599e9005e02dc007a35440e461a451466776f8",
     prefix: 7013,
     name: "GM",
@@ -4160,11 +4154,11 @@ export const chains = [
     specName: "gm_parachain",
     specVersion: "10",
     nativeToken: {
-      id: "gm-substrate-native-fren",
+      id: "gm-substrate-native",
     },
     tokens: [
       {
-        id: "gm-substrate-native-fren",
+        id: "gm-substrate-native",
       },
       {
         id: "gm-substrate-tokens-gm",
@@ -4219,7 +4213,7 @@ export const chains = [
     id: "hashed",
     isTestnet: false,
     isDefault: true,
-    sortIndex: 275,
+    sortIndex: 283,
     genesisHash: "0xdce5477cfca571c2cb652f38bbb70429004be3cf9649dd2b4ad9455b2251fe43",
     prefix: 42,
     name: "Hashed",
@@ -4231,11 +4225,11 @@ export const chains = [
     specName: "luhn",
     specVersion: "3",
     nativeToken: {
-      id: "hashed-substrate-native-hash",
+      id: "hashed-substrate-native",
     },
     tokens: [
       {
-        id: "hashed-substrate-native-hash",
+        id: "hashed-substrate-native",
       },
     ],
     account: "*25519",
@@ -4268,7 +4262,7 @@ export const chains = [
     id: "humanode",
     isTestnet: false,
     isDefault: true,
-    sortIndex: 283,
+    sortIndex: 291,
     genesisHash: "0xc56fa32442b2dad76f214b3ae07998e4ca09736e4813724bfb0717caae2c8bee",
     prefix: 5234,
     name: "Humanode",
@@ -4280,11 +4274,11 @@ export const chains = [
     specName: "humanode",
     specVersion: "114",
     nativeToken: {
-      id: "humanode-substrate-native-hmnd",
+      id: "humanode-substrate-native",
     },
     tokens: [
       {
-        id: "humanode-substrate-native-hmnd",
+        id: "humanode-substrate-native",
       },
     ],
     account: "*25519",
@@ -4309,7 +4303,7 @@ export const chains = [
     id: "hydradx",
     isTestnet: false,
     isDefault: true,
-    sortIndex: 287,
+    sortIndex: 295,
     genesisHash: "0xafdc188f45c71dacbaa0b62e16a91f726c7b8699a9748cdf715459de6b7f366d",
     prefix: 63,
     name: "HydraDX",
@@ -4319,13 +4313,13 @@ export const chains = [
     chainType: "Live",
     implName: "hydradx",
     specName: "hydradx",
-    specVersion: "201",
+    specVersion: "205",
     nativeToken: {
-      id: "hydradx-substrate-native-hdx",
+      id: "hydradx-substrate-native",
     },
     tokens: [
       {
-        id: "hydradx-substrate-native-hdx",
+        id: "hydradx-substrate-native",
       },
       {
         id: "hydradx-substrate-tokens-lrna",
@@ -4534,7 +4528,7 @@ export const chains = [
     id: "imbue",
     isTestnet: false,
     isDefault: true,
-    sortIndex: 293,
+    sortIndex: 301,
     genesisHash: "0xca93a37c913a25fa8fdb33c7f738afc39379cb71d37874a16d4c091a5aef9f89",
     prefix: 42,
     name: "Imbue",
@@ -4546,11 +4540,11 @@ export const chains = [
     specName: "imbue",
     specVersion: "1000001",
     nativeToken: {
-      id: "imbue-substrate-native-imbu",
+      id: "imbue-substrate-native",
     },
     tokens: [
       {
-        id: "imbue-substrate-native-imbu",
+        id: "imbue-substrate-native",
       },
     ],
     account: "*25519",
@@ -4585,7 +4579,7 @@ export const chains = [
     id: "integritee-kusama",
     isTestnet: false,
     isDefault: true,
-    sortIndex: 296,
+    sortIndex: 305,
     genesisHash: "0xcdedc8eadbfa209d3f207bba541e57c3c58a667b05a2e1d1e86353c9000758da",
     prefix: 13,
     name: "Integritee",
@@ -4595,13 +4589,13 @@ export const chains = [
     chainType: "Live",
     implName: "integritee-full",
     specName: "integritee-parachain",
-    specVersion: "38",
+    specVersion: "44",
     nativeToken: {
-      id: "integritee-kusama-substrate-native-teer",
+      id: "integritee-kusama-substrate-native",
     },
     tokens: [
       {
-        id: "integritee-kusama-substrate-native-teer",
+        id: "integritee-kusama-substrate-native",
       },
     ],
     account: "*25519",
@@ -4637,7 +4631,7 @@ export const chains = [
     id: "interlay",
     isTestnet: false,
     isDefault: true,
-    sortIndex: 297,
+    sortIndex: 306,
     genesisHash: "0xbf88efe70e9e0e916416e8bed61f2b45717f517d7f3523e33c7b001e5ffcbc72",
     prefix: 2032,
     name: "Interlay",
@@ -4653,7 +4647,7 @@ export const chains = [
     },
     tokens: [
       {
-        id: "interlay-substrate-native-intr",
+        id: "interlay-substrate-native",
       },
       {
         id: "interlay-substrate-tokens-dot",
@@ -4849,7 +4843,7 @@ export const chains = [
     id: "invarch",
     isTestnet: false,
     isDefault: true,
-    sortIndex: 298,
+    sortIndex: 307,
     genesisHash: "0x31a7d8914fb31c249b972f18c115f1e22b4b039abbcb03c73b6774c5642f9efe",
     prefix: 117,
     name: "InvArch",
@@ -4859,13 +4853,13 @@ export const chains = [
     chainType: "Live",
     implName: "invarch",
     specName: "invarch",
-    specVersion: "4",
+    specVersion: "6",
     nativeToken: {
-      id: "invarch-substrate-native-varch",
+      id: "invarch-substrate-native",
     },
     tokens: [
       {
-        id: "invarch-substrate-native-varch",
+        id: "invarch-substrate-native",
       },
     ],
     account: "*25519",
@@ -4892,7 +4886,7 @@ export const chains = [
     id: "tinker",
     isTestnet: false,
     isDefault: true,
-    sortIndex: 299,
+    sortIndex: 308,
     genesisHash: "0xd42e9606a995dfe433dc7955dc2a70f495f350f373daa200098ae84437816ad2",
     prefix: 117,
     name: "InvArch Tinkernet",
@@ -4904,11 +4898,11 @@ export const chains = [
     specName: "tinkernet_node",
     specVersion: "20",
     nativeToken: {
-      id: "tinker-substrate-native-tnkr",
+      id: "tinker-substrate-native",
     },
     tokens: [
       {
-        id: "tinker-substrate-native-tnkr",
+        id: "tinker-substrate-native",
       },
     ],
     account: "*25519",
@@ -4935,7 +4929,7 @@ export const chains = [
     id: "joystream",
     isTestnet: false,
     isDefault: true,
-    sortIndex: 311,
+    sortIndex: 320,
     genesisHash: "0x6b5e488e0fa8f9821110d5c13f4c468abcd43ce5e297e62b34c53c3346465956",
     prefix: 126,
     name: "Joystream",
@@ -4947,11 +4941,11 @@ export const chains = [
     specName: "joystream-node",
     specVersion: "2001",
     nativeToken: {
-      id: "joystream-substrate-native-joy",
+      id: "joystream-substrate-native",
     },
     tokens: [
       {
-        id: "joystream-substrate-native-joy",
+        id: "joystream-substrate-native",
       },
     ],
     account: "*25519",
@@ -4984,7 +4978,7 @@ export const chains = [
     id: "jur",
     isTestnet: false,
     isDefault: true,
-    sortIndex: 313,
+    sortIndex: 322,
     genesisHash: "0x58d1393b47b11707978fbc07e77d7b6f7d9aa88d207dc008a52385f7dba6156a",
     prefix: 42,
     name: "Jur",
@@ -4996,11 +4990,11 @@ export const chains = [
     specName: "jur-node",
     specVersion: "129",
     nativeToken: {
-      id: "jur-substrate-native-jur",
+      id: "jur-substrate-native",
     },
     tokens: [
       {
-        id: "jur-substrate-native-jur",
+        id: "jur-substrate-native",
       },
     ],
     account: "*25519",
@@ -5028,7 +5022,7 @@ export const chains = [
     id: "kabocha",
     isTestnet: false,
     isDefault: true,
-    sortIndex: 315,
+    sortIndex: 324,
     genesisHash: "0xfeb426ca713f0f46c96465b8f039890370cf6bfd687c9076ea2843f58a6ae8a7",
     prefix: 27,
     name: "Kabocha",
@@ -5040,11 +5034,11 @@ export const chains = [
     specName: "kabocha-parachain",
     specVersion: "28",
     nativeToken: {
-      id: "kabocha-substrate-native-kab",
+      id: "kabocha-substrate-native",
     },
     tokens: [
       {
-        id: "kabocha-substrate-native-kab",
+        id: "kabocha-substrate-native",
       },
     ],
     account: "*25519",
@@ -5071,25 +5065,19 @@ export const chains = [
     id: "kapex",
     isTestnet: false,
     isDefault: true,
-    sortIndex: 319,
-    genesisHash: "0x7838c3c774e887c0a53bcba9e64f702361a1a852d5550b86b58cd73827fa1e1e",
-    prefix: 2007,
+    sortIndex: 328,
+    genesisHash: null,
+    prefix: null,
     name: "Kapex",
     themeColor: "#505050",
     logo: "https://raw.githubusercontent.com/TalismanSociety/chaindata/main/assets/chains/unknown.svg",
-    chainName: "Kapex",
-    chainType: "Live",
-    implName: "totem-parachain",
-    specName: "totem-parachain",
-    specVersion: "4",
-    nativeToken: {
-      id: "kapex-substrate-native-kpx",
-    },
-    tokens: [
-      {
-        id: "kapex-substrate-native-kpx",
-      },
-    ],
+    chainName: null,
+    chainType: null,
+    implName: null,
+    specName: null,
+    specVersion: null,
+    nativeToken: null,
+    tokens: [],
     account: "*25519",
     subscanUrl: null,
     chainspecQrUrl: "https://metadata.novasama.io/qr/totem-parachain_specs.png",
@@ -5114,7 +5102,7 @@ export const chains = [
     id: "karura",
     isTestnet: false,
     isDefault: true,
-    sortIndex: 321,
+    sortIndex: 330,
     genesisHash: "0xbaf5aabe40646d11f0ee8abbdc64f4a4b7674925cba08e4a05ff9ebed6e2126b",
     prefix: 8,
     name: "Karura",
@@ -5126,11 +5114,11 @@ export const chains = [
     specName: "karura",
     specVersion: "2230",
     nativeToken: {
-      id: "karura-substrate-native-kar",
+      id: "karura-substrate-native",
     },
     tokens: [
       {
-        id: "karura-substrate-native-kar",
+        id: "karura-substrate-native",
       },
       {
         id: "karura-substrate-tokens-lksm",
@@ -5732,7 +5720,7 @@ export const chains = [
     id: "khala",
     isTestnet: false,
     isDefault: true,
-    sortIndex: 325,
+    sortIndex: 334,
     genesisHash: "0xd43540ba6d3eb4897c28a77d48cb5b729fea37603cbbfc7a86a73b72adb3be8d",
     prefix: 30,
     name: "Khala",
@@ -5742,13 +5730,13 @@ export const chains = [
     chainType: "Live",
     implName: "khala",
     specName: "khala",
-    specVersion: "1261",
+    specVersion: "1263",
     nativeToken: {
-      id: "khala-substrate-native-pha",
+      id: "khala-substrate-native",
     },
     tokens: [
       {
-        id: "khala-substrate-native-pha",
+        id: "khala-substrate-native",
       },
     ],
     account: "*25519",
@@ -5786,7 +5774,7 @@ export const chains = [
     id: "kilt-spiritnet",
     isTestnet: false,
     isDefault: true,
-    sortIndex: 326,
+    sortIndex: 335,
     genesisHash: "0x411f057b9107718c9624d6aa4a3f23c1653898297f3d4d529d9bb6511a39dd21",
     prefix: 38,
     name: "KILT Spiritnet",
@@ -5798,11 +5786,11 @@ export const chains = [
     specName: "kilt-spiritnet",
     specVersion: "11110",
     nativeToken: {
-      id: "kilt-spiritnet-substrate-native-kilt",
+      id: "kilt-spiritnet-substrate-native",
     },
     tokens: [
       {
-        id: "kilt-spiritnet-substrate-native-kilt",
+        id: "kilt-spiritnet-substrate-native",
       },
     ],
     account: "*25519",
@@ -5840,7 +5828,7 @@ export const chains = [
     id: "kintsugi",
     isTestnet: false,
     isDefault: true,
-    sortIndex: 327,
+    sortIndex: 337,
     genesisHash: "0x9af9a64e6e4da8e3073901c3ff0cc4c3aad9563786d89daf6ad820b6e14a0b8b",
     prefix: 2092,
     name: "Kintsugi",
@@ -5850,13 +5838,13 @@ export const chains = [
     chainType: "Live",
     implName: "kintsugi-parachain",
     specName: "kintsugi-parachain",
-    specVersion: "1025003",
+    specVersion: "1025004",
     nativeToken: {
       id: "kintsugi-substrate-tokens-kint",
     },
     tokens: [
       {
-        id: "kintsugi-substrate-native-kint",
+        id: "kintsugi-substrate-native",
       },
       {
         id: "kintsugi-substrate-tokens-dot",
@@ -6060,7 +6048,7 @@ export const chains = [
     id: "kpron",
     isTestnet: false,
     isDefault: true,
-    sortIndex: 332,
+    sortIndex: 342,
     genesisHash: null,
     prefix: null,
     name: "Kpron",
@@ -6097,7 +6085,7 @@ export const chains = [
     id: "kreivo",
     isTestnet: false,
     isDefault: true,
-    sortIndex: 333,
+    sortIndex: 343,
     genesisHash: null,
     prefix: null,
     name: "Kreivo",
@@ -6134,7 +6122,7 @@ export const chains = [
     id: "krest",
     isTestnet: false,
     isDefault: true,
-    sortIndex: 334,
+    sortIndex: 344,
     genesisHash: "0xb3dd5ad6a82872b30aabaede8f41dfd4ff6c32ff82f8757d034a45be63cf104c",
     prefix: 42,
     name: "Krest",
@@ -6146,11 +6134,11 @@ export const chains = [
     specName: "peaq-node-krest",
     specVersion: "5",
     nativeToken: {
-      id: "krest-substrate-native-krest",
+      id: "krest-substrate-native",
     },
     tokens: [
       {
-        id: "krest-substrate-native-krest",
+        id: "krest-substrate-native",
       },
     ],
     account: "*25519",
@@ -6188,7 +6176,7 @@ export const chains = [
     id: "kulupu",
     isTestnet: false,
     isDefault: true,
-    sortIndex: 338,
+    sortIndex: 348,
     genesisHash: "0xf7a99d3cb92853d00d5275c971c132c074636256583fee53b3bbe60d7b8769ba",
     prefix: 16,
     name: "Kulupu",
@@ -6200,11 +6188,11 @@ export const chains = [
     specName: "kulupu",
     specVersion: "24",
     nativeToken: {
-      id: "kulupu-substrate-native-klp",
+      id: "kulupu-substrate-native",
     },
     tokens: [
       {
-        id: "kulupu-substrate-native-klp",
+        id: "kulupu-substrate-native",
       },
     ],
     account: "*25519",
@@ -6229,7 +6217,7 @@ export const chains = [
     id: "kusama-asset-hub",
     isTestnet: false,
     isDefault: true,
-    sortIndex: 339,
+    sortIndex: 349,
     genesisHash: "0x48239ef607d7928874027a43a67689209727dfb3d3dc5e5b03a39bdc2eda771a",
     prefix: 2,
     name: "Kusama Asset Hub",
@@ -6239,9 +6227,9 @@ export const chains = [
     chainType: "Live",
     implName: "statemine",
     specName: "statemine",
-    specVersion: "1000000",
+    specVersion: "1001001",
     nativeToken: {
-      id: "kusama-asset-hub-substrate-native-ksm",
+      id: "kusama-asset-hub-substrate-native",
     },
     tokens: [
       {
@@ -6254,7 +6242,7 @@ export const chains = [
         id: "kusama-asset-hub-substrate-assets-1984-usdt",
       },
       {
-        id: "kusama-asset-hub-substrate-native-ksm",
+        id: "kusama-asset-hub-substrate-native",
       },
     ],
     account: "*25519",
@@ -6334,7 +6322,7 @@ export const chains = [
     id: "kusama-bridge-hub",
     isTestnet: false,
     isDefault: true,
-    sortIndex: 340,
+    sortIndex: 350,
     genesisHash: "0x00dcb981df86429de8bbacf9803401f09485366c44efbf53af9ecfab03adc7e5",
     prefix: 2,
     name: "Kusama Bridge Hub",
@@ -6344,13 +6332,13 @@ export const chains = [
     chainType: "Live",
     implName: "bridge-hub-kusama",
     specName: "bridge-hub-kusama",
-    specVersion: "1000000",
+    specVersion: "1001000",
     nativeToken: {
-      id: "kusama-bridge-hub-substrate-native-ksm",
+      id: "kusama-bridge-hub-substrate-native",
     },
     tokens: [
       {
-        id: "kusama-bridge-hub-substrate-native-ksm",
+        id: "kusama-bridge-hub-substrate-native",
       },
     ],
     account: "*25519",
@@ -6392,7 +6380,7 @@ export const chains = [
     id: "litentry",
     isTestnet: false,
     isDefault: true,
-    sortIndex: 346,
+    sortIndex: 357,
     genesisHash: "0x2fc8bb6ed7c0051bdcf4866c322ed32b6276572713607e3297ccf411b8f14aa9",
     prefix: 31,
     name: "Litentry",
@@ -6402,13 +6390,13 @@ export const chains = [
     chainType: "Live",
     implName: "litentry-parachain",
     specName: "litentry-parachain",
-    specVersion: "9170",
+    specVersion: "9173",
     nativeToken: {
-      id: "litentry-substrate-native-lit",
+      id: "litentry-substrate-native",
     },
     tokens: [
       {
-        id: "litentry-substrate-native-lit",
+        id: "litentry-substrate-native",
       },
     ],
     account: "*25519",
@@ -6446,7 +6434,7 @@ export const chains = [
     id: "litmus",
     isTestnet: false,
     isDefault: true,
-    sortIndex: 347,
+    sortIndex: 358,
     genesisHash: "0xda5831fbc8570e3c6336d0d72b8c08f8738beefec812df21ef2afc2982ede09c",
     prefix: 131,
     name: "Litmus",
@@ -6458,11 +6446,11 @@ export const chains = [
     specName: "litmus-parachain",
     specVersion: "9151",
     nativeToken: {
-      id: "litmus-substrate-native-lit",
+      id: "litmus-substrate-native",
     },
     tokens: [
       {
-        id: "litmus-substrate-native-lit",
+        id: "litmus-substrate-native",
       },
     ],
     account: "*25519",
@@ -6489,7 +6477,7 @@ export const chains = [
     id: "logion-standalone",
     isTestnet: false,
     isDefault: true,
-    sortIndex: 350,
+    sortIndex: 361,
     genesisHash: "0xe9d7420a5f73edef005ccb8e043500aa5b2458f173912184ea93c14dc035a203",
     prefix: 42,
     name: "Logion Standalone",
@@ -6499,13 +6487,13 @@ export const chains = [
     chainType: "Live",
     implName: "logion",
     specName: "logion",
-    specVersion: "160",
+    specVersion: "161",
     nativeToken: {
-      id: "logion-standalone-substrate-native-lgnt",
+      id: "logion-standalone-substrate-native",
     },
     tokens: [
       {
-        id: "logion-standalone-substrate-native-lgnt",
+        id: "logion-standalone-substrate-native",
       },
     ],
     account: "*25519",
@@ -6530,7 +6518,7 @@ export const chains = [
     id: "mangata",
     isTestnet: false,
     isDefault: true,
-    sortIndex: 359,
+    sortIndex: 372,
     genesisHash: "0xd611f22d291c5b7b69f1e105cca03352984c344c4421977efaa4cbdd1834e2aa",
     prefix: 42,
     name: "MangataX",
@@ -6540,13 +6528,13 @@ export const chains = [
     chainType: "Live",
     implName: "mangata-parachain",
     specName: "mangata-parachain",
-    specVersion: "3100",
+    specVersion: "3200",
     nativeToken: {
       id: "mangata-substrate-tokens-mgx",
     },
     tokens: [
       {
-        id: "mangata-substrate-native-mgx",
+        id: "mangata-substrate-native",
       },
       {
         id: "mangata-substrate-tokens-mgx",
@@ -6595,7 +6583,7 @@ export const chains = [
     id: "manta",
     isTestnet: false,
     isDefault: true,
-    sortIndex: 360,
+    sortIndex: 373,
     genesisHash: "0xf3c7ad88f6a80f366c4be216691411ef0622e8b809b1046ea297ef106058d4eb",
     prefix: 77,
     name: "Manta",
@@ -6607,11 +6595,11 @@ export const chains = [
     specName: "manta",
     specVersion: "4610",
     nativeToken: {
-      id: "manta-substrate-native-manta",
+      id: "manta-substrate-native",
     },
     tokens: [
       {
-        id: "manta-substrate-native-manta",
+        id: "manta-substrate-native",
       },
     ],
     account: "*25519",
@@ -6638,7 +6626,7 @@ export const chains = [
     id: "moonbeam",
     isTestnet: false,
     isDefault: true,
-    sortIndex: 390,
+    sortIndex: 405,
     genesisHash: "0xfe58ea77779b7abda7da4ec526d14db9b1e9cd40a217c34892af80a9b332b76d",
     prefix: 1284,
     name: "Moonbeam",
@@ -6650,11 +6638,11 @@ export const chains = [
     specName: "moonbeam",
     specVersion: "2602",
     nativeToken: {
-      id: "moonbeam-substrate-native-glmr",
+      id: "moonbeam-substrate-native",
     },
     tokens: [
       {
-        id: "moonbeam-substrate-native-glmr",
+        id: "moonbeam-substrate-native",
       },
     ],
     account: "secp256k1",
@@ -6702,7 +6690,7 @@ export const chains = [
     id: "moonriver",
     isTestnet: false,
     isDefault: true,
-    sortIndex: 392,
+    sortIndex: 407,
     genesisHash: "0x401a1f9dca3da46f5c4091016c8a2f26dcea05865116b286f60f668207d1474b",
     prefix: 1285,
     name: "Moonriver",
@@ -6712,13 +6700,13 @@ export const chains = [
     chainType: "Live",
     implName: "moonriver",
     specName: "moonriver",
-    specVersion: "2602",
+    specVersion: "2700",
     nativeToken: {
-      id: "moonriver-substrate-native-movr",
+      id: "moonriver-substrate-native",
     },
     tokens: [
       {
-        id: "moonriver-substrate-native-movr",
+        id: "moonriver-substrate-native",
       },
     ],
     account: "secp256k1",
@@ -6763,7 +6751,7 @@ export const chains = [
     id: "moonsama",
     isTestnet: false,
     isDefault: true,
-    sortIndex: 395,
+    sortIndex: 410,
     genesisHash: "0x6bf8b9c3871e47f086d01db2022369b19eef313f188d895c6dfe005ad22d5e49",
     prefix: 2199,
     name: "Moonsama",
@@ -6775,11 +6763,11 @@ export const chains = [
     specName: "moonsama",
     specVersion: "8",
     nativeToken: {
-      id: "moonsama-substrate-native-sama",
+      id: "moonsama-substrate-native",
     },
     tokens: [
       {
-        id: "moonsama-substrate-native-sama",
+        id: "moonsama-substrate-native",
       },
     ],
     account: "*25519",
@@ -6806,25 +6794,19 @@ export const chains = [
     id: "myriad",
     isTestnet: false,
     isDefault: true,
-    sortIndex: 401,
-    genesisHash: "0x74ed91fbc18497f011290f9119a2217908649170337b6414a2d44923ade07063",
-    prefix: 42,
+    sortIndex: 416,
+    genesisHash: null,
+    prefix: null,
     name: "Myriad",
     themeColor: "#505050",
     logo: "https://raw.githubusercontent.com/TalismanSociety/chaindata/main/assets/chains/unknown.svg",
-    chainName: "Myriad",
+    chainName: null,
     chainType: null,
-    implName: "myriad",
-    specName: "appchain",
-    specVersion: "2036",
-    nativeToken: {
-      id: "myriad-substrate-native-myria",
-    },
-    tokens: [
-      {
-        id: "myriad-substrate-native-myria",
-      },
-    ],
+    implName: null,
+    specName: null,
+    specVersion: null,
+    nativeToken: null,
+    tokens: [],
     account: "*25519",
     subscanUrl: null,
     chainspecQrUrl: "https://metadata.novasama.io/qr/appchain_specs.png",
@@ -6855,7 +6837,7 @@ export const chains = [
     id: "neatcoin",
     isTestnet: false,
     isDefault: true,
-    sortIndex: 406,
+    sortIndex: 421,
     genesisHash: "0xfbb541421d30423c9a753ffa844b64fd44d823f513bf49e3b73b3a656309a595",
     prefix: 48,
     name: "Neatcoin",
@@ -6867,11 +6849,11 @@ export const chains = [
     specName: "neatcoin",
     specVersion: "4",
     nativeToken: {
-      id: "neatcoin-substrate-native-neat",
+      id: "neatcoin-substrate-native",
     },
     tokens: [
       {
-        id: "neatcoin-substrate-native-neat",
+        id: "neatcoin-substrate-native",
       },
     ],
     account: "*25519",
@@ -6896,7 +6878,7 @@ export const chains = [
     id: "nftmart",
     isTestnet: false,
     isDefault: true,
-    sortIndex: 413,
+    sortIndex: 428,
     genesisHash: "0xfcf9074303d8f319ad1bf0195b145871977e7c375883b834247cb01ff22f51f9",
     prefix: 12191,
     name: "NFTMart",
@@ -6908,11 +6890,11 @@ export const chains = [
     specName: "nftmart",
     specVersion: "279",
     nativeToken: {
-      id: "nftmart-substrate-native-nmt",
+      id: "nftmart-substrate-native",
     },
     tokens: [
       {
-        id: "nftmart-substrate-native-nmt",
+        id: "nftmart-substrate-native",
       },
     ],
     account: "*25519",
@@ -6945,7 +6927,7 @@ export const chains = [
     id: "nodle-polkadot",
     isTestnet: false,
     isDefault: true,
-    sortIndex: 414,
+    sortIndex: 429,
     genesisHash: "0x97da7ede98d7bad4e36b4d734b6055425a3be036da2a332ea5a7037656427a21",
     prefix: 37,
     name: "Nodle",
@@ -6955,13 +6937,13 @@ export const chains = [
     chainType: "Live",
     implName: "nodle-para",
     specName: "nodle-para",
-    specVersion: "25",
+    specVersion: "27",
     nativeToken: {
-      id: "nodle-polkadot-substrate-native-nodl",
+      id: "nodle-polkadot-substrate-native",
     },
     tokens: [
       {
-        id: "nodle-polkadot-substrate-native-nodl",
+        id: "nodle-polkadot-substrate-native",
       },
     ],
     account: "*25519",
@@ -6997,7 +6979,7 @@ export const chains = [
     id: "oak",
     isTestnet: false,
     isDefault: true,
-    sortIndex: 420,
+    sortIndex: 435,
     genesisHash: null,
     prefix: null,
     name: "Oak",
@@ -7034,7 +7016,7 @@ export const chains = [
     id: "omnibtc",
     isTestnet: false,
     isDefault: true,
-    sortIndex: 429,
+    sortIndex: 444,
     genesisHash: null,
     prefix: null,
     name: "OmniBTC",
@@ -7071,7 +7053,7 @@ export const chains = [
     id: "origintrail-parachain",
     isTestnet: false,
     isDefault: true,
-    sortIndex: 442,
+    sortIndex: 457,
     genesisHash: "0xe7e0962324a3b86c83404dbea483f25fb5dab4c224791c81b756cfc948006174",
     prefix: 101,
     name: "OriginTrail",
@@ -7083,11 +7065,11 @@ export const chains = [
     specName: "origintrail-parachain",
     specVersion: "121",
     nativeToken: {
-      id: "origintrail-parachain-substrate-native-otp",
+      id: "origintrail-parachain-substrate-native",
     },
     tokens: [
       {
-        id: "origintrail-parachain-substrate-native-otp",
+        id: "origintrail-parachain-substrate-native",
       },
     ],
     account: "*25519",
@@ -7118,7 +7100,7 @@ export const chains = [
     id: "parallel",
     isTestnet: false,
     isDefault: true,
-    sortIndex: 450,
+    sortIndex: 465,
     genesisHash: "0xe61a41c53f5dcd0beb09df93b34402aada44cb05117b71059cce40a2723a4e97",
     prefix: 172,
     name: "Parallel",
@@ -7130,11 +7112,11 @@ export const chains = [
     specName: "parallel",
     specVersion: "204",
     nativeToken: {
-      id: "parallel-substrate-native-para",
+      id: "parallel-substrate-native",
     },
     tokens: [
       {
-        id: "parallel-substrate-native-para",
+        id: "parallel-substrate-native",
       },
       {
         id: "parallel-substrate-tokens-usdt",
@@ -7183,7 +7165,7 @@ export const chains = [
     id: "heiko-kusama",
     isTestnet: false,
     isDefault: true,
-    sortIndex: 451,
+    sortIndex: 466,
     genesisHash: "0x64a1c658a48b2e70a7fb1ad4c39eea35022568c20fc44a6e2e3d0a57aee6053b",
     prefix: 110,
     name: "Parallel Heiko",
@@ -7195,11 +7177,11 @@ export const chains = [
     specName: "heiko",
     specVersion: "204",
     nativeToken: {
-      id: "heiko-kusama-substrate-native-hko",
+      id: "heiko-kusama-substrate-native",
     },
     tokens: [
       {
-        id: "heiko-kusama-substrate-native-hko",
+        id: "heiko-kusama-substrate-native",
       },
     ],
     account: "*25519",
@@ -7226,7 +7208,7 @@ export const chains = [
     id: "pendulum",
     isTestnet: false,
     isDefault: true,
-    sortIndex: 459,
+    sortIndex: 474,
     genesisHash: "0x5d3c298622d5634ed019bf61ea4b71655030015bde9beb0d6a24743714462c86",
     prefix: 56,
     name: "Pendulum",
@@ -7236,13 +7218,13 @@ export const chains = [
     chainType: "Live",
     implName: "pendulum",
     specName: "pendulum",
-    specVersion: "10",
+    specVersion: "12",
     nativeToken: {
-      id: "pendulum-substrate-native-pen",
+      id: "pendulum-substrate-native",
     },
     tokens: [
       {
-        id: "pendulum-substrate-native-pen",
+        id: "pendulum-substrate-native",
       },
       {
         id: "pendulum-substrate-tokens-dot",
@@ -7309,7 +7291,7 @@ export const chains = [
     id: "phala",
     isTestnet: false,
     isDefault: true,
-    sortIndex: 463,
+    sortIndex: 478,
     genesisHash: "0x1bb969d85965e4bb5a651abbedf21a54b6b31a21f66b5401cc3f1e286268d736",
     prefix: 30,
     name: "Phala",
@@ -7319,13 +7301,13 @@ export const chains = [
     chainType: "Live",
     implName: "phala",
     specName: "phala",
-    specVersion: "1261",
+    specVersion: "1263",
     nativeToken: {
-      id: "phala-substrate-native-pha",
+      id: "phala-substrate-native",
     },
     tokens: [
       {
-        id: "phala-substrate-native-pha",
+        id: "phala-substrate-native",
       },
     ],
     account: "*25519",
@@ -7363,7 +7345,7 @@ export const chains = [
     id: "picasso",
     isTestnet: false,
     isDefault: true,
-    sortIndex: 466,
+    sortIndex: 481,
     genesisHash: "0x6811a339673c9daa897944dcdac99c6e2939cc88245ed21951a0a3c9a2be75bc",
     prefix: 49,
     name: "Picasso",
@@ -7375,11 +7357,11 @@ export const chains = [
     specName: "picasso",
     specVersion: "10043",
     nativeToken: {
-      id: "picasso-substrate-native-pica",
+      id: "picasso-substrate-native",
     },
     tokens: [
       {
-        id: "picasso-substrate-native-pica",
+        id: "picasso-substrate-native",
       },
       {
         id: "picasso-substrate-tokens-pica",
@@ -7781,11 +7763,11 @@ export const chains = [
     id: "bitcountry-pioneer",
     isTestnet: false,
     isDefault: true,
-    sortIndex: 467,
+    sortIndex: 482,
     genesisHash: "0xf22b7850cdd5a7657bbfd90ac86441275bbc57ace3d2698a740c7b0ec4de5ec3",
     prefix: 268,
     name: "Pioneer",
-    themeColor: "#f8fcfc",
+    themeColor: "#202123",
     logo: "https://raw.githubusercontent.com/TalismanSociety/chaindata/main/assets/chains/bitcountry-pioneer.svg",
     chainName: "Pioneer Network",
     chainType: "Live",
@@ -7793,11 +7775,11 @@ export const chains = [
     specName: "pioneer-runtime",
     specVersion: "19",
     nativeToken: {
-      id: "bitcountry-pioneer-substrate-native-neer",
+      id: "bitcountry-pioneer-substrate-native",
     },
     tokens: [
       {
-        id: "bitcountry-pioneer-substrate-native-neer",
+        id: "bitcountry-pioneer-substrate-native",
       },
       {
         id: "bitcountry-pioneer-substrate-tokens-ksm",
@@ -7883,7 +7865,7 @@ export const chains = [
     id: "polimec",
     isTestnet: false,
     isDefault: true,
-    sortIndex: 477,
+    sortIndex: 492,
     genesisHash: "0x7eb9354488318e7549c722669dcbdcdc526f1fef1420e7944667212f3601fdbd",
     prefix: 41,
     name: "Polimec",
@@ -7893,13 +7875,13 @@ export const chains = [
     chainType: "Live",
     implName: "polimec-mainnet",
     specName: "polimec-mainnet",
-    specVersion: "3002",
+    specVersion: "4000",
     nativeToken: {
-      id: "polimec-substrate-native-plmc",
+      id: "polimec-substrate-native",
     },
     tokens: [
       {
-        id: "polimec-substrate-native-plmc",
+        id: "polimec-substrate-native",
       },
     ],
     account: "*25519",
@@ -7924,7 +7906,7 @@ export const chains = [
     id: "polkadex-polkadot",
     isTestnet: false,
     isDefault: true,
-    sortIndex: 478,
+    sortIndex: 493,
     genesisHash: "0x72f3bba34b1ecd532bccbed46701ad37c4ef329bfe86b7cf014ac06cb92ed47d",
     prefix: 89,
     name: "Polkadex",
@@ -7934,13 +7916,13 @@ export const chains = [
     chainType: "Live",
     implName: "polkadex-parachain",
     specName: "polkadex-parachain",
-    specVersion: "9",
+    specVersion: "11",
     nativeToken: {
-      id: "polkadex-polkadot-substrate-native-pdex",
+      id: "polkadex-polkadot-substrate-native",
     },
     tokens: [
       {
-        id: "polkadex-polkadot-substrate-native-pdex",
+        id: "polkadex-polkadot-substrate-native",
       },
     ],
     account: "*25519",
@@ -7978,7 +7960,7 @@ export const chains = [
     id: "polkadex-standalone",
     isTestnet: false,
     isDefault: true,
-    sortIndex: 479,
+    sortIndex: 494,
     genesisHash: "0x3920bcb4960a1eef5580cd5367ff3f430eef052774f78468852f7b9cb39f8a3c",
     prefix: 88,
     name: "Polkadex Standalone",
@@ -7988,13 +7970,13 @@ export const chains = [
     chainType: "Live",
     implName: "polkadex-official",
     specName: "node",
-    specVersion: "317",
+    specVersion: "327",
     nativeToken: {
-      id: "polkadex-standalone-substrate-native-pdex",
+      id: "polkadex-standalone-substrate-native",
     },
     tokens: [
       {
-        id: "polkadex-standalone-substrate-native-pdex",
+        id: "polkadex-standalone-substrate-native",
       },
     ],
     account: "*25519",
@@ -8027,7 +8009,7 @@ export const chains = [
     id: "polkadot-asset-hub",
     isTestnet: false,
     isDefault: true,
-    sortIndex: 480,
+    sortIndex: 495,
     genesisHash: "0x68d56f15f85d3136970ec16946040bc1752654e906147f7e43e9d539d7c3de2f",
     prefix: 0,
     name: "Polkadot Asset Hub",
@@ -8039,7 +8021,7 @@ export const chains = [
     specName: "statemint",
     specVersion: "1000000",
     nativeToken: {
-      id: "polkadot-asset-hub-substrate-native-dot",
+      id: "polkadot-asset-hub-substrate-native",
     },
     tokens: [
       {
@@ -8049,7 +8031,7 @@ export const chains = [
         id: "polkadot-asset-hub-substrate-assets-1984-usdt",
       },
       {
-        id: "polkadot-asset-hub-substrate-native-dot",
+        id: "polkadot-asset-hub-substrate-native",
       },
     ],
     account: "*25519",
@@ -8124,7 +8106,7 @@ export const chains = [
     id: "polkadot-bridge-hub",
     isTestnet: false,
     isDefault: true,
-    sortIndex: 481,
+    sortIndex: 496,
     genesisHash: "0xdcf691b5a3fbe24adc99ddc959c0561b973e329b1aef4c4b22e7bb2ddecb4464",
     prefix: 0,
     name: "Polkadot Bridge Hub",
@@ -8136,11 +8118,11 @@ export const chains = [
     specName: "bridge-hub-polkadot",
     specVersion: "1000000",
     nativeToken: {
-      id: "polkadot-bridge-hub-substrate-native-dot",
+      id: "polkadot-bridge-hub-substrate-native",
     },
     tokens: [
       {
-        id: "polkadot-bridge-hub-substrate-native-dot",
+        id: "polkadot-bridge-hub-substrate-native",
       },
     ],
     account: "*25519",
@@ -8185,7 +8167,7 @@ export const chains = [
     id: "polymesh",
     isTestnet: false,
     isDefault: true,
-    sortIndex: 485,
+    sortIndex: 500,
     genesisHash: "0x6fbd74e5e1d0a61d52ccfe9d4adaed16dd3a7caa37c6bc4d0c2fa12e8b2f4063",
     prefix: 12,
     name: "Polymesh",
@@ -8197,11 +8179,11 @@ export const chains = [
     specName: "polymesh_mainnet",
     specVersion: "6001020",
     nativeToken: {
-      id: "polymesh-substrate-native-polyx",
+      id: "polymesh-substrate-native",
     },
     tokens: [
       {
-        id: "polymesh-substrate-native-polyx",
+        id: "polymesh-substrate-native",
       },
     ],
     account: "*25519",
@@ -8234,7 +8216,7 @@ export const chains = [
     id: "qpn",
     isTestnet: false,
     isDefault: true,
-    sortIndex: 498,
+    sortIndex: 514,
     genesisHash: "0xb410de4201e1188521ab70fbd76aa0762e00fbd98ead5a503816b01f4138a5f3",
     prefix: 42,
     name: "Quantum Portal",
@@ -8246,11 +8228,11 @@ export const chains = [
     specName: "quantum-portal-network-parachain",
     specVersion: "1",
     nativeToken: {
-      id: "qpn-substrate-native-qpfrm",
+      id: "qpn-substrate-native",
     },
     tokens: [
       {
-        id: "qpn-substrate-native-qpfrm",
+        id: "qpn-substrate-native",
       },
     ],
     account: "*25519",
@@ -8277,7 +8259,7 @@ export const chains = [
     id: "quartz",
     isTestnet: false,
     isDefault: true,
-    sortIndex: 516,
+    sortIndex: 532,
     genesisHash: "0xcd4d732201ebe5d6b014edda071c4203e16867305332301dc8d092044b28e554",
     prefix: 255,
     name: "Quartz",
@@ -8289,11 +8271,11 @@ export const chains = [
     specName: "quartz",
     specVersion: "10030070",
     nativeToken: {
-      id: "quartz-substrate-native-qtz",
+      id: "quartz-substrate-native",
     },
     tokens: [
       {
-        id: "quartz-substrate-native-qtz",
+        id: "quartz-substrate-native",
       },
     ],
     account: "*25519",
@@ -8340,7 +8322,7 @@ export const chains = [
     id: "robonomics-kusama",
     isTestnet: false,
     isDefault: true,
-    sortIndex: 526,
+    sortIndex: 542,
     genesisHash: "0x631ccc82a078481584041656af292834e1ae6daab61d2875b4dd0c14bb9b17bc",
     prefix: 32,
     name: "Robonomics",
@@ -8352,11 +8334,11 @@ export const chains = [
     specName: "robonomics",
     specVersion: "31",
     nativeToken: {
-      id: "robonomics-kusama-substrate-native-xrt",
+      id: "robonomics-kusama-substrate-native",
     },
     tokens: [
       {
-        id: "robonomics-kusama-substrate-native-xrt",
+        id: "robonomics-kusama-substrate-native",
       },
     ],
     account: "*25519",
@@ -8394,7 +8376,7 @@ export const chains = [
     id: "sakura",
     isTestnet: false,
     isDefault: true,
-    sortIndex: 530,
+    sortIndex: 546,
     genesisHash: null,
     prefix: null,
     name: "Sakura",
@@ -8431,7 +8413,7 @@ export const chains = [
     id: "shiden-kusama",
     isTestnet: false,
     isDefault: true,
-    sortIndex: 542,
+    sortIndex: 558,
     genesisHash: "0xf1cf9022c7ebb34b162d5b5e34e705a5a740b2d0ecc1009fb89023e62a488108",
     prefix: 5,
     name: "Shiden",
@@ -8441,13 +8423,13 @@ export const chains = [
     chainType: "Live",
     implName: "shiden",
     specName: "shiden",
-    specVersion: "113",
+    specVersion: "117",
     nativeToken: {
-      id: "shiden-kusama-substrate-native-sdn",
+      id: "shiden-kusama-substrate-native",
     },
     tokens: [
       {
-        id: "shiden-kusama-substrate-native-sdn",
+        id: "shiden-kusama-substrate-native",
       },
     ],
     account: "*25519",
@@ -8489,25 +8471,19 @@ export const chains = [
     id: "sora-kusama",
     isTestnet: false,
     isDefault: true,
-    sortIndex: 558,
-    genesisHash: "0x6d8d9f145c2177fa83512492cdd80a71e29f22473f4a8943a6292149ac319fb9",
-    prefix: 420,
+    sortIndex: 574,
+    genesisHash: null,
+    prefix: null,
     name: "Sora",
     themeColor: "#fd0100",
     logo: "https://raw.githubusercontent.com/TalismanSociety/chaindata/main/assets/chains/sora-kusama.svg",
-    chainName: "SORA Kusama",
-    chainType: "Live",
-    implName: "sora_ksm",
-    specName: "sora_ksm",
-    specVersion: "9",
-    nativeToken: {
-      id: "sora-kusama-substrate-native-xor",
-    },
-    tokens: [
-      {
-        id: "sora-kusama-substrate-native-xor",
-      },
-    ],
+    chainName: null,
+    chainType: null,
+    implName: null,
+    specName: null,
+    specVersion: null,
+    nativeToken: null,
+    tokens: [],
     account: "*25519",
     subscanUrl: null,
     chainspecQrUrl: null,
@@ -8540,7 +8516,7 @@ export const chains = [
     id: "sora-standalone",
     isTestnet: false,
     isDefault: true,
-    sortIndex: 559,
+    sortIndex: 575,
     genesisHash: "0x7e4e32d0feafd4f9c9414b0be86373f9a1efa904809b683453a9af6856d38ad5",
     prefix: 69,
     name: "Sora Standalone",
@@ -8552,11 +8528,11 @@ export const chains = [
     specName: "sora-substrate",
     specVersion: "71",
     nativeToken: {
-      id: "sora-standalone-substrate-native-xor",
+      id: "sora-standalone-substrate-native",
     },
     tokens: [
       {
-        id: "sora-standalone-substrate-native-xor",
+        id: "sora-standalone-substrate-native",
       },
     ],
     account: "*25519",
@@ -8595,7 +8571,7 @@ export const chains = [
     id: "subdao",
     isTestnet: false,
     isDefault: true,
-    sortIndex: 567,
+    sortIndex: 583,
     genesisHash: null,
     prefix: null,
     name: "SubDAO",
@@ -8632,7 +8608,7 @@ export const chains = [
     id: "subsocial-polkadot",
     isTestnet: false,
     isDefault: true,
-    sortIndex: 568,
+    sortIndex: 584,
     genesisHash: "0x4a12be580bb959937a1c7a61d5cf24428ed67fa571974b4007645d1886e7c89f",
     prefix: 28,
     name: "Subsocial",
@@ -8642,13 +8618,13 @@ export const chains = [
     chainType: "Live",
     implName: "subsocial-parachain",
     specName: "subsocial-parachain",
-    specVersion: "37",
+    specVersion: "39",
     nativeToken: {
-      id: "subsocial-polkadot-substrate-native-sub",
+      id: "subsocial-polkadot-substrate-native",
     },
     tokens: [
       {
-        id: "subsocial-polkadot-substrate-native-sub",
+        id: "subsocial-polkadot-substrate-native",
       },
     ],
     account: "*25519",
@@ -8683,7 +8659,7 @@ export const chains = [
     id: "zero",
     isTestnet: false,
     isDefault: true,
-    sortIndex: 569,
+    sortIndex: 585,
     genesisHash: "0x2991d4125ac465d64c4c0b915fedd7168b5961b7676480636e3747f1ad64cfb9",
     prefix: 25,
     name: "Subzero",
@@ -8695,11 +8671,11 @@ export const chains = [
     specName: "subzero",
     specVersion: "75",
     nativeToken: {
-      id: "zero-substrate-native-zero",
+      id: "zero-substrate-native",
     },
     tokens: [
       {
-        id: "zero-substrate-native-zero",
+        id: "zero-substrate-native",
       },
       {
         id: "zero-substrate-tokens-dot",
@@ -8775,7 +8751,7 @@ export const chains = [
     id: "t-1-rn",
     isTestnet: false,
     isDefault: true,
-    sortIndex: 577,
+    sortIndex: 594,
     genesisHash: "0x422c22194a8ffe4adadd1cd33f45dea8171aabc463f8f929a21f01bcfaacc9c7",
     prefix: 4815,
     name: "t1rn",
@@ -8787,11 +8763,11 @@ export const chains = [
     specName: "t1rn",
     specVersion: "1",
     nativeToken: {
-      id: "t-1-rn-substrate-native-tin",
+      id: "t-1-rn-substrate-native",
     },
     tokens: [
       {
-        id: "t-1-rn-substrate-native-tin",
+        id: "t-1-rn-substrate-native",
       },
     ],
     account: "*25519",
@@ -8818,7 +8794,7 @@ export const chains = [
     id: "t-3-rn",
     isTestnet: false,
     isDefault: true,
-    sortIndex: 578,
+    sortIndex: 595,
     genesisHash: "0x9a33d1af38c2736ecddbbbcdc2cb2c3023e9b91dc295ac3f1473fe226e5944a7",
     prefix: 9935,
     name: "t3rn",
@@ -8830,11 +8806,11 @@ export const chains = [
     specName: "t3rn",
     specVersion: "1",
     nativeToken: {
-      id: "t-3-rn-substrate-native-trn",
+      id: "t-3-rn-substrate-native",
     },
     tokens: [
       {
-        id: "t-3-rn-substrate-native-trn",
+        id: "t-3-rn-substrate-native",
       },
     ],
     account: "*25519",
@@ -8861,7 +8837,7 @@ export const chains = [
     id: "ternoa",
     isTestnet: false,
     isDefault: true,
-    sortIndex: 592,
+    sortIndex: 609,
     genesisHash: "0x6859c81ca95ef624c9dfe4dc6e3381c33e5d6509e35e147092bfbc780f777c4e",
     prefix: 42,
     name: "Ternoa",
@@ -8871,13 +8847,13 @@ export const chains = [
     chainType: "Live",
     implName: "mainnet",
     specName: "mainnet",
-    specVersion: "24",
+    specVersion: "25",
     nativeToken: {
-      id: "ternoa-substrate-native-caps",
+      id: "ternoa-substrate-native",
     },
     tokens: [
       {
-        id: "ternoa-substrate-native-caps",
+        id: "ternoa-substrate-native",
       },
     ],
     account: "*25519",
@@ -8902,7 +8878,7 @@ export const chains = [
     id: "thebifrost-mainnet",
     isTestnet: false,
     isDefault: true,
-    sortIndex: 596,
+    sortIndex: 613,
     genesisHash: "0x63e1e2390bf7758f2462ad22b950e7e191f3500226ba6f572346ac06ced516fe",
     prefix: 42,
     name: "The Bifrost",
@@ -8914,11 +8890,11 @@ export const chains = [
     specName: "thebifrost-mainnet",
     specVersion: "2019",
     nativeToken: {
-      id: "thebifrost-mainnet-substrate-native-bfc",
+      id: "thebifrost-mainnet-substrate-native",
     },
     tokens: [
       {
-        id: "thebifrost-mainnet-substrate-native-bfc",
+        id: "thebifrost-mainnet-substrate-native",
       },
     ],
     account: "*25519",
@@ -8946,7 +8922,7 @@ export const chains = [
     id: "turing",
     isTestnet: false,
     isDefault: true,
-    sortIndex: 614,
+    sortIndex: 631,
     genesisHash: "0x0f62b701fb12d02237a33b84818c11f621653d2b1614c777973babf4652b535d",
     prefix: 51,
     name: "Turing",
@@ -8958,11 +8934,11 @@ export const chains = [
     specName: "turing",
     specVersion: "297",
     nativeToken: {
-      id: "turing-substrate-native-tur",
+      id: "turing-substrate-native",
     },
     tokens: [
       {
-        id: "turing-substrate-native-tur",
+        id: "turing-substrate-native",
       },
     ],
     account: "*25519",
@@ -9000,7 +8976,7 @@ export const chains = [
     id: "unique",
     isTestnet: false,
     isDefault: true,
-    sortIndex: 621,
+    sortIndex: 638,
     genesisHash: "0x84322d9cddbf35088f1e54e9a85c967a41a56a4f43445768125e61af166c7d31",
     prefix: 7391,
     name: "Unique",
@@ -9012,11 +8988,11 @@ export const chains = [
     specName: "unique",
     specVersion: "10030070",
     nativeToken: {
-      id: "unique-substrate-native-unq",
+      id: "unique-substrate-native",
     },
     tokens: [
       {
-        id: "unique-substrate-native-unq",
+        id: "unique-substrate-native",
       },
     ],
     account: "*25519",
@@ -9063,7 +9039,7 @@ export const chains = [
     id: "vara",
     isTestnet: false,
     isDefault: true,
-    sortIndex: 626,
+    sortIndex: 643,
     genesisHash: "0xfe1b4c55fd4d668101126434206571a7838a8b6b93a6d1b95d607e78e6c53763",
     prefix: 137,
     name: "Vara",
@@ -9075,11 +9051,11 @@ export const chains = [
     specName: "vara",
     specVersion: "1050",
     nativeToken: {
-      id: "vara-substrate-native-vara",
+      id: "vara-substrate-native",
     },
     tokens: [
       {
-        id: "vara-substrate-native-vara",
+        id: "vara-substrate-native",
       },
     ],
     account: "*25519",
@@ -9112,7 +9088,7 @@ export const chains = [
     id: "watr",
     isTestnet: false,
     isDefault: true,
-    sortIndex: 636,
+    sortIndex: 654,
     genesisHash: "0x161db6cdc5896fe55ef12b4778fe78dd65d7af43f65c601786b88d7a93ebc58a",
     prefix: 19,
     name: "Watr",
@@ -9124,11 +9100,11 @@ export const chains = [
     specName: "watr-mainnet",
     specVersion: "1240",
     nativeToken: {
-      id: "watr-substrate-native-watr",
+      id: "watr-substrate-native",
     },
     tokens: [
       {
-        id: "watr-substrate-native-watr",
+        id: "watr-substrate-native",
       },
     ],
     account: "*25519",
@@ -9155,7 +9131,7 @@ export const chains = [
     id: "zeitgeist",
     isTestnet: false,
     isDefault: true,
-    sortIndex: 659,
+    sortIndex: 677,
     genesisHash: "0x1bf2a2ecb4a868de66ea8610f2ce7c8c43706561b6476031315f6640fe38e060",
     prefix: 73,
     name: "Zeitgeist",
@@ -9165,13 +9141,13 @@ export const chains = [
     chainType: "Live",
     implName: "zeitgeist",
     specName: "zeitgeist",
-    specVersion: "52",
+    specVersion: "53",
     nativeToken: {
-      id: "zeitgeist-substrate-native-ztg",
+      id: "zeitgeist-substrate-native",
     },
     tokens: [
       {
-        id: "zeitgeist-substrate-native-ztg",
+        id: "zeitgeist-substrate-native",
       },
     ],
     account: "*25519",
@@ -9209,7 +9185,7 @@ export const chains = [
     id: "westend-testnet",
     isTestnet: true,
     isDefault: true,
-    sortIndex: 667,
+    sortIndex: 686,
     genesisHash: "0xe143f23803ac50e8f6f8e62695d1ce9e4e1d68aa36c1cd2cfd15340213f3423e",
     prefix: 42,
     name: "Westend",
@@ -9219,13 +9195,13 @@ export const chains = [
     chainType: "Live",
     implName: "parity-westend",
     specName: "westend",
-    specVersion: "1006000",
+    specVersion: "1006001",
     nativeToken: {
-      id: "westend-testnet-substrate-native-wnd",
+      id: "westend-testnet-substrate-native",
     },
     tokens: [
       {
-        id: "westend-testnet-substrate-native-wnd",
+        id: "westend-testnet-substrate-native",
       },
     ],
     account: "*25519",
@@ -9287,7 +9263,7 @@ export const chains = [
     id: "rococo-testnet",
     isTestnet: true,
     isDefault: true,
-    sortIndex: 668,
+    sortIndex: 687,
     genesisHash: "0x6408de7737c59c238890533af25896a2c20608d8b380bb01029acb392781063e",
     prefix: 42,
     name: "Rococo",
@@ -9299,11 +9275,11 @@ export const chains = [
     specName: "rococo",
     specVersion: "1006002",
     nativeToken: {
-      id: "rococo-testnet-substrate-native-roc",
+      id: "rococo-testnet-substrate-native",
     },
     tokens: [
       {
-        id: "rococo-testnet-substrate-native-roc",
+        id: "rococo-testnet-substrate-native",
       },
     ],
     account: "*25519",
@@ -9489,7 +9465,7 @@ export const chains = [
     id: "rococo-acurast-testnet",
     isTestnet: true,
     isDefault: true,
-    sortIndex: 671,
+    sortIndex: 690,
     genesisHash: "0x289ef22810bc948d3759b9fe4884d36bc41fc0257428997d827bb89a3468c9f6",
     prefix: 42,
     name: "Acurast",
@@ -9501,11 +9477,11 @@ export const chains = [
     specName: "acurast-parachain",
     specVersion: "18",
     nativeToken: {
-      id: "rococo-acurast-testnet-substrate-native-tacu",
+      id: "rococo-acurast-testnet-substrate-native",
     },
     tokens: [
       {
-        id: "rococo-acurast-testnet-substrate-native-tacu",
+        id: "rococo-acurast-testnet-substrate-native",
       },
     ],
     account: "*25519",
@@ -9532,7 +9508,7 @@ export const chains = [
     id: "ajuna-testnet",
     isTestnet: true,
     isDefault: true,
-    sortIndex: 677,
+    sortIndex: 696,
     genesisHash: "0xd5b8d0f514e793f5f4b18788c36dabb533f39904a4ea4e65ab9f97d673889ac4",
     prefix: 42,
     name: "Ajuna Testnet",
@@ -9544,11 +9520,11 @@ export const chains = [
     specName: "ajuna-node",
     specVersion: "100",
     nativeToken: {
-      id: "ajuna-testnet-substrate-native-ajun",
+      id: "ajuna-testnet-substrate-native",
     },
     tokens: [
       {
-        id: "ajuna-testnet-substrate-native-ajun",
+        id: "ajuna-testnet-substrate-native",
       },
     ],
     account: "*25519",
@@ -9573,7 +9549,7 @@ export const chains = [
     id: "aleph-zero-testnet",
     isTestnet: true,
     isDefault: true,
-    sortIndex: 679,
+    sortIndex: 698,
     genesisHash: "0x05d5279c52c484cc80396535a316add7d47b1c5b9e0398dd1f584149341460c5",
     prefix: 42,
     name: "Aleph Zero Testnet",
@@ -9585,11 +9561,11 @@ export const chains = [
     specName: "aleph-node",
     specVersion: "68",
     nativeToken: {
-      id: "aleph-zero-testnet-substrate-native-tzero",
+      id: "aleph-zero-testnet-substrate-native",
     },
     tokens: [
       {
-        id: "aleph-zero-testnet-substrate-native-tzero",
+        id: "aleph-zero-testnet-substrate-native",
       },
     ],
     account: "*25519",
@@ -9617,7 +9593,7 @@ export const chains = [
     id: "rococo-amplitude-testnet",
     isTestnet: true,
     isDefault: true,
-    sortIndex: 684,
+    sortIndex: 704,
     genesisHash: "0xa8d080b07f9c84465aeb9576db5a7838bcbca3ffb78dbfd7d4b56acafc1f29d1",
     prefix: 57,
     name: "Amplitude Testnet",
@@ -9627,13 +9603,13 @@ export const chains = [
     chainType: "Live",
     implName: "foucoco",
     specName: "foucoco",
-    specVersion: "7",
+    specVersion: "8",
     nativeToken: {
-      id: "rococo-amplitude-testnet-substrate-native-ampe",
+      id: "rococo-amplitude-testnet-substrate-native",
     },
     tokens: [
       {
-        id: "rococo-amplitude-testnet-substrate-native-ampe",
+        id: "rococo-amplitude-testnet-substrate-native",
       },
     ],
     account: "*25519",
@@ -9660,7 +9636,7 @@ export const chains = [
     id: "automata-contextfree-testnet",
     isTestnet: true,
     isDefault: true,
-    sortIndex: 704,
+    sortIndex: 724,
     genesisHash: "0x6254c948b5eb7199a112cb308be3385c39c8c942625540ac749c77fe2aebc299",
     prefix: 11820,
     name: "Automata ContextFree",
@@ -9672,11 +9648,11 @@ export const chains = [
     specName: "contextfree",
     specVersion: "1007",
     nativeToken: {
-      id: "automata-contextfree-testnet-substrate-native-ctx",
+      id: "automata-contextfree-testnet-substrate-native",
     },
     tokens: [
       {
-        id: "automata-contextfree-testnet-substrate-native-ctx",
+        id: "automata-contextfree-testnet-substrate-native",
       },
     ],
     account: "*25519",
@@ -9701,7 +9677,7 @@ export const chains = [
     id: "avail-goldberg-testnet",
     isTestnet: true,
     isDefault: true,
-    sortIndex: 707,
+    sortIndex: 727,
     genesisHash: "0x6f09966420b2608d1947ccfb0f2a362450d1fc7fd902c29b67c906eaa965a7ae",
     prefix: 42,
     name: "Avail Goldberg Testnet",
@@ -9711,13 +9687,13 @@ export const chains = [
     chainType: "Live",
     implName: "data-avail",
     specName: "data-avail",
-    specVersion: "18",
+    specVersion: "21",
     nativeToken: {
-      id: "avail-goldberg-testnet-substrate-native-avl",
+      id: "avail-goldberg-testnet-substrate-native",
     },
     tokens: [
       {
-        id: "avail-goldberg-testnet-substrate-native-avl",
+        id: "avail-goldberg-testnet-substrate-native",
       },
     ],
     account: "*25519",
@@ -9745,7 +9721,7 @@ export const chains = [
     id: "rococo-aventus-testnet",
     isTestnet: true,
     isDefault: true,
-    sortIndex: 709,
+    sortIndex: 729,
     genesisHash: "0xa6ffcef7fb8caadf7f6c5ad8ada65e3eaa90d1604f3eabda546ff1d486865a0c",
     prefix: 42,
     name: "Aventus Testnet",
@@ -9757,11 +9733,11 @@ export const chains = [
     specName: "avn-parachain",
     specVersion: "57",
     nativeToken: {
-      id: "rococo-aventus-testnet-substrate-native-avt",
+      id: "rococo-aventus-testnet-substrate-native",
     },
     tokens: [
       {
-        id: "rococo-aventus-testnet-substrate-native-avt",
+        id: "rococo-aventus-testnet-substrate-native",
       },
     ],
     account: "*25519",
@@ -9788,7 +9764,7 @@ export const chains = [
     id: "rococo-bajun-testnet",
     isTestnet: true,
     isDefault: true,
-    sortIndex: 711,
+    sortIndex: 731,
     genesisHash: "0xd23837b6d1cf809cceea1f70bb0dee2e93d110f01f526117324eec3de6a5206d",
     prefix: 1337,
     name: "Bajun Testnet",
@@ -9800,11 +9776,11 @@ export const chains = [
     specName: "bajun",
     specVersion: "129",
     nativeToken: {
-      id: "rococo-bajun-testnet-substrate-native-baju",
+      id: "rococo-bajun-testnet-substrate-native",
     },
     tokens: [
       {
-        id: "rococo-bajun-testnet-substrate-native-baju",
+        id: "rococo-bajun-testnet-substrate-native",
       },
     ],
     account: "*25519",
@@ -9831,7 +9807,7 @@ export const chains = [
     id: "rococo-basilisk-testnet",
     isTestnet: true,
     isDefault: true,
-    sortIndex: 714,
+    sortIndex: 734,
     genesisHash: "0x317498e4a13cc902ee6b1886686101ac2dbc37a3bc1456f3ce7ee6d0efb45c50",
     prefix: 10041,
     name: "Basilisk Testnet",
@@ -9843,11 +9819,11 @@ export const chains = [
     specName: "basilisk",
     specVersion: "108",
     nativeToken: {
-      id: "rococo-basilisk-testnet-substrate-native-bsx",
+      id: "rococo-basilisk-testnet-substrate-native",
     },
     tokens: [
       {
-        id: "rococo-basilisk-testnet-substrate-native-bsx",
+        id: "rococo-basilisk-testnet-substrate-native",
       },
     ],
     account: "*25519",
@@ -9874,7 +9850,7 @@ export const chains = [
     id: "rococo-bifrost-testnet",
     isTestnet: true,
     isDefault: true,
-    sortIndex: 721,
+    sortIndex: 743,
     genesisHash: "0x0c003b98abbedae774f5e13cd6146781317016725ab4db34312ea2681e9901f3",
     prefix: 6,
     name: "Bifrost Testnet",
@@ -9886,11 +9862,11 @@ export const chains = [
     specName: "bifrost_polkadot",
     specVersion: "984",
     nativeToken: {
-      id: "rococo-bifrost-testnet-substrate-native-bnc",
+      id: "rococo-bifrost-testnet-substrate-native",
     },
     tokens: [
       {
-        id: "rococo-bifrost-testnet-substrate-native-bnc",
+        id: "rococo-bifrost-testnet-substrate-native",
       },
     ],
     account: "*25519",
@@ -9917,8 +9893,8 @@ export const chains = [
     id: "cess-testnet",
     isTestnet: true,
     isDefault: true,
-    sortIndex: 759,
-    genesisHash: "0xca533a99f7b21f603f2f7e229bc01d232f92bd2e477e726b183d7ee208dd5796",
+    sortIndex: 783,
+    genesisHash: "0x33729cc9053c7d698504a31caf79d39f8fc592fb50a2412717734df2be791b8a",
     prefix: 11330,
     name: "Cess",
     themeColor: "#505050",
@@ -9929,11 +9905,11 @@ export const chains = [
     specName: "cess-node",
     specVersion: "104",
     nativeToken: {
-      id: "cess-testnet-substrate-native-tcess",
+      id: "cess-testnet-substrate-native",
     },
     tokens: [
       {
-        id: "cess-testnet-substrate-native-tcess",
+        id: "cess-testnet-substrate-native",
       },
     ],
     account: "*25519",
@@ -9958,7 +9934,7 @@ export const chains = [
     id: "westend-collectives-testnet",
     isTestnet: true,
     isDefault: true,
-    sortIndex: 766,
+    sortIndex: 790,
     genesisHash: "0x713daf193a6301583ff467be736da27ef0a72711b248927ba413f573d2b38e44",
     prefix: 0,
     name: "Collectives Testnet",
@@ -9970,11 +9946,11 @@ export const chains = [
     specName: "collectives-westend",
     specVersion: "1006000",
     nativeToken: {
-      id: "westend-collectives-testnet-substrate-native-wnd",
+      id: "westend-collectives-testnet-substrate-native",
     },
     tokens: [
       {
-        id: "westend-collectives-testnet-substrate-native-wnd",
+        id: "westend-collectives-testnet-substrate-native",
       },
     ],
     account: "*25519",
@@ -10013,7 +9989,7 @@ export const chains = [
     id: "rococo-contracts-testnet",
     isTestnet: true,
     isDefault: true,
-    sortIndex: 775,
+    sortIndex: 799,
     genesisHash: "0xc5442742bb6288bb3835ea1c9032981f06433ee5fc65d6e216c4422c0c19b989",
     prefix: 42,
     name: "Contracts",
@@ -10025,11 +10001,11 @@ export const chains = [
     specName: "contracts-rococo",
     specVersion: "10001",
     nativeToken: {
-      id: "rococo-contracts-testnet-substrate-native-roc",
+      id: "rococo-contracts-testnet-substrate-native",
     },
     tokens: [
       {
-        id: "rococo-contracts-testnet-substrate-native-roc",
+        id: "rococo-contracts-testnet-substrate-native",
       },
     ],
     account: "*25519",
@@ -10056,7 +10032,7 @@ export const chains = [
     id: "creditcoin-testnet",
     isTestnet: true,
     isDefault: true,
-    sortIndex: 777,
+    sortIndex: 801,
     genesisHash: "0xc2e43792c8acc075e564558f9a2184a0ffe9b0fd573969599eee9b647358c6cf",
     prefix: 42,
     name: "Creditcoin Testnet",
@@ -10068,11 +10044,11 @@ export const chains = [
     specName: "creditcoin-node",
     specVersion: "231",
     nativeToken: {
-      id: "creditcoin-testnet-substrate-native-ctc",
+      id: "creditcoin-testnet-substrate-native",
     },
     tokens: [
       {
-        id: "creditcoin-testnet-substrate-native-ctc",
+        id: "creditcoin-testnet-substrate-native",
       },
     ],
     account: "*25519",
@@ -10097,7 +10073,7 @@ export const chains = [
     id: "dancebox",
     isTestnet: true,
     isDefault: true,
-    sortIndex: 783,
+    sortIndex: 807,
     genesisHash: "0x27aafd88e5921f5d5c6aebcd728dacbbf5c2a37f63e2eda301f8e0def01c43ea",
     prefix: 42,
     name: "Dancebox",
@@ -10109,11 +10085,11 @@ export const chains = [
     specName: "dancebox",
     specVersion: "400",
     nativeToken: {
-      id: "dancebox-substrate-native-dance",
+      id: "dancebox-substrate-native",
     },
     tokens: [
       {
-        id: "dancebox-substrate-native-dance",
+        id: "dancebox-substrate-native",
       },
     ],
     account: "*25519",
@@ -10138,25 +10114,19 @@ export const chains = [
     id: "debio-testnet",
     isTestnet: true,
     isDefault: true,
-    sortIndex: 787,
-    genesisHash: "0xc15da258748903f5341b1cfb0d9f3afa7ed0bfc59be5e1185b6e303277b5237a",
-    prefix: 42,
+    sortIndex: 811,
+    genesisHash: null,
+    prefix: null,
     name: "DeBio Testnet",
     themeColor: "#505050",
     logo: "https://raw.githubusercontent.com/TalismanSociety/chaindata/main/assets/chains/unknown.svg",
-    chainName: "DeBio Testnet",
+    chainName: null,
     chainType: null,
-    implName: "debio",
-    specName: "appchain",
-    specVersion: "2041",
-    nativeToken: {
-      id: "debio-testnet-substrate-native-dbio",
-    },
-    tokens: [
-      {
-        id: "debio-testnet-substrate-native-dbio",
-      },
-    ],
+    implName: null,
+    specName: null,
+    specVersion: null,
+    nativeToken: null,
+    tokens: [],
     account: "*25519",
     subscanUrl: null,
     chainspecQrUrl: null,
@@ -10179,7 +10149,7 @@ export const chains = [
     id: "encointer-testnet-standalone",
     isTestnet: true,
     isDefault: true,
-    sortIndex: 816,
+    sortIndex: 843,
     genesisHash: "0xe7eafa72eb58d1fdd906202f88d68f660ea6520bdc9c9ad08d6ebf91d14b4405",
     prefix: 42,
     name: "Encointer Gesell",
@@ -10191,11 +10161,11 @@ export const chains = [
     specName: "encointer-node-notee",
     specVersion: "30",
     nativeToken: {
-      id: "encointer-testnet-standalone-substrate-native-ert",
+      id: "encointer-testnet-standalone-substrate-native",
     },
     tokens: [
       {
-        id: "encointer-testnet-standalone-substrate-native-ert",
+        id: "encointer-testnet-standalone-substrate-native",
       },
     ],
     account: "*25519",
@@ -10220,7 +10190,7 @@ export const chains = [
     id: "encointer-testnet-rococo",
     isTestnet: true,
     isDefault: true,
-    sortIndex: 817,
+    sortIndex: 844,
     genesisHash: "0x5d2947b8565abdf7112beff1c52b8fb017d86ef11cca9e64644f2fe3de878598",
     prefix: 2,
     name: "Encointer Lietaer",
@@ -10232,11 +10202,11 @@ export const chains = [
     specName: "encointer-parachain",
     specVersion: "16",
     nativeToken: {
-      id: "encointer-testnet-rococo-substrate-native-roc",
+      id: "encointer-testnet-rococo-substrate-native",
     },
     tokens: [
       {
-        id: "encointer-testnet-rococo-substrate-native-roc",
+        id: "encointer-testnet-rococo-substrate-native",
       },
     ],
     account: "*25519",
@@ -10263,7 +10233,7 @@ export const chains = [
     id: "enjin-matrixchain-testnet",
     isTestnet: true,
     isDefault: true,
-    sortIndex: 821,
+    sortIndex: 848,
     genesisHash: "0xa37725fd8943d2a524cb7ecc65da438f9fa644db78ba24dcd0003e2f95645e8f",
     prefix: 9030,
     name: "Enjin Canary Matrixchain",
@@ -10275,11 +10245,11 @@ export const chains = [
     specName: "matrix",
     specVersion: "1003",
     nativeToken: {
-      id: "enjin-matrixchain-testnet-substrate-native-cenj",
+      id: "enjin-matrixchain-testnet-substrate-native",
     },
     tokens: [
       {
-        id: "enjin-matrixchain-testnet-substrate-native-cenj",
+        id: "enjin-matrixchain-testnet-substrate-native",
       },
     ],
     account: "*25519",
@@ -10306,7 +10276,7 @@ export const chains = [
     id: "enjin-relay-testnet",
     isTestnet: true,
     isDefault: true,
-    sortIndex: 822,
+    sortIndex: 849,
     genesisHash: "0x735d8773c63e74ff8490fee5751ac07e15bfe2b3b5263be4d683c48dbdfbcd15",
     prefix: 69,
     name: "Enjin Canary Relaychain",
@@ -10316,13 +10286,13 @@ export const chains = [
     chainType: "Live",
     implName: "canary",
     specName: "canary",
-    specVersion: "1024",
+    specVersion: "1025",
     nativeToken: {
-      id: "enjin-relay-testnet-substrate-native-cenj",
+      id: "enjin-relay-testnet-substrate-native",
     },
     tokens: [
       {
-        id: "enjin-relay-testnet-substrate-native-cenj",
+        id: "enjin-relay-testnet-substrate-native",
       },
     ],
     account: "*25519",
@@ -10347,7 +10317,7 @@ export const chains = [
     id: "rococo-frequency-testnet",
     isTestnet: true,
     isDefault: true,
-    sortIndex: 848,
+    sortIndex: 875,
     genesisHash: "0x0c33dfffa907de5683ae21cc6b4af899b5c4de83f3794ed75b2dc74e1b088e72",
     prefix: 42,
     name: "Frequency Testnet",
@@ -10359,11 +10329,11 @@ export const chains = [
     specName: "frequency-rococo",
     specVersion: "67",
     nativeToken: {
-      id: "rococo-frequency-testnet-substrate-native-xrqcy",
+      id: "rococo-frequency-testnet-substrate-native",
     },
     tokens: [
       {
-        id: "rococo-frequency-testnet-substrate-native-xrqcy",
+        id: "rococo-frequency-testnet-substrate-native",
       },
     ],
     account: "*25519",
@@ -10393,7 +10363,7 @@ export const chains = [
     id: "rococo-hydra-dx-testnet",
     isTestnet: true,
     isDefault: true,
-    sortIndex: 901,
+    sortIndex: 928,
     genesisHash: "0x5feea83342ce43200cb12b265cf21dc4e0e603571e2ac237e74ef45fb6913f52",
     prefix: 63,
     name: "HydraDX Testnet",
@@ -10405,11 +10375,11 @@ export const chains = [
     specName: "hydradx",
     specVersion: "185",
     nativeToken: {
-      id: "rococo-hydra-dx-testnet-substrate-native-hdx",
+      id: "rococo-hydra-dx-testnet-substrate-native",
     },
     tokens: [
       {
-        id: "rococo-hydra-dx-testnet-substrate-native-hdx",
+        id: "rococo-hydra-dx-testnet-substrate-native",
       },
     ],
     account: "*25519",
@@ -10436,7 +10406,7 @@ export const chains = [
     id: "rococo-integritee-testnet",
     isTestnet: true,
     isDefault: true,
-    sortIndex: 907,
+    sortIndex: 934,
     genesisHash: "0xafd7dcd3f6713a1b4bdf9b71edcf37d3ad019ec71743d89012ce227d00e59a08",
     prefix: 13,
     name: "Integritee Testnet",
@@ -10446,13 +10416,13 @@ export const chains = [
     chainType: "Live",
     implName: "integritee-full",
     specName: "integritee-parachain",
-    specVersion: "41",
+    specVersion: "44",
     nativeToken: {
-      id: "rococo-integritee-testnet-substrate-native-teer",
+      id: "rococo-integritee-testnet-substrate-native",
     },
     tokens: [
       {
-        id: "rococo-integritee-testnet-substrate-native-teer",
+        id: "rococo-integritee-testnet-substrate-native",
       },
     ],
     account: "*25519",
@@ -10479,7 +10449,7 @@ export const chains = [
     id: "interlay-testnet-standalone",
     isTestnet: true,
     isDefault: true,
-    sortIndex: 908,
+    sortIndex: 935,
     genesisHash: "0x418ae94c9fce02b1ab3b5bc211cd2f2133426f2861d97482bbdfdac1bbb0fb92",
     prefix: 2032,
     name: "Interlay Testnet",
@@ -10489,13 +10459,13 @@ export const chains = [
     chainType: "Live",
     implName: "interlay-parachain",
     specName: "interlay-parachain",
-    specVersion: "1025002",
+    specVersion: "1025004",
     nativeToken: {
-      id: "interlay-testnet-standalone-substrate-native-intr",
+      id: "interlay-testnet-standalone-substrate-native",
     },
     tokens: [
       {
-        id: "interlay-testnet-standalone-substrate-native-intr",
+        id: "interlay-testnet-standalone-substrate-native",
       },
     ],
     account: "*25519",
@@ -10520,7 +10490,7 @@ export const chains = [
     id: "ipse-testnet",
     isTestnet: true,
     isDefault: true,
-    sortIndex: 910,
+    sortIndex: 937,
     genesisHash: null,
     prefix: null,
     name: "Ipse",
@@ -10561,7 +10531,7 @@ export const chains = [
     id: "jur-testnet",
     isTestnet: true,
     isDefault: true,
-    sortIndex: 918,
+    sortIndex: 947,
     genesisHash: "0x0446ab8b4c86695018b791cd3cc4481c791f56ef2b4003197568941b5a8d2f9a",
     prefix: 42,
     name: "Jur Testnet",
@@ -10573,11 +10543,11 @@ export const chains = [
     specName: "jur-node",
     specVersion: "129",
     nativeToken: {
-      id: "jur-testnet-substrate-native-jur",
+      id: "jur-testnet-substrate-native",
     },
     tokens: [
       {
-        id: "jur-testnet-substrate-native-jur",
+        id: "jur-testnet-substrate-native",
       },
     ],
     account: "*25519",
@@ -10602,7 +10572,7 @@ export const chains = [
     id: "karmachain-testnet",
     isTestnet: true,
     isDefault: true,
-    sortIndex: 923,
+    sortIndex: 952,
     genesisHash: null,
     prefix: null,
     name: "Karmachain",
@@ -10637,7 +10607,7 @@ export const chains = [
     id: "kilt-testnet-standalone-2",
     isTestnet: true,
     isDefault: true,
-    sortIndex: 929,
+    sortIndex: 958,
     genesisHash: "0xa0c6e3bac382b316a68bca7141af1fba507207594c761076847ce358aeedcc21",
     prefix: 38,
     name: "KILT Peregrine",
@@ -10649,11 +10619,11 @@ export const chains = [
     specName: "mashnet-node",
     specVersion: "11110",
     nativeToken: {
-      id: "kilt-testnet-standalone-2-substrate-native-pilt",
+      id: "kilt-testnet-standalone-2-substrate-native",
     },
     tokens: [
       {
-        id: "kilt-testnet-standalone-2-substrate-native-pilt",
+        id: "kilt-testnet-standalone-2-substrate-native",
       },
     ],
     account: "*25519",
@@ -10678,7 +10648,7 @@ export const chains = [
     id: "kintsugi-testnet",
     isTestnet: true,
     isDefault: true,
-    sortIndex: 931,
+    sortIndex: 960,
     genesisHash: "0xe3a1cf3db108e3e45c63a4841fe89ba95108b1db14fdec10c2e8a078ff322a67",
     prefix: 2092,
     name: "Kintsugi Testnet",
@@ -10690,11 +10660,11 @@ export const chains = [
     specName: "kintsugi-parachain",
     specVersion: "1025004",
     nativeToken: {
-      id: "kintsugi-testnet-substrate-native-kint",
+      id: "kintsugi-testnet-substrate-native",
     },
     tokens: [
       {
-        id: "kintsugi-testnet-substrate-native-kint",
+        id: "kintsugi-testnet-substrate-native",
       },
     ],
     account: "*25519",
@@ -10719,25 +10689,19 @@ export const chains = [
     id: "rococo-litentry-testnet",
     isTestnet: true,
     isDefault: true,
-    sortIndex: 943,
-    genesisHash: "0x6940b1852737722c0aa768710e20105ab8c6a80b63a0339cb99892ffdce38283",
-    prefix: 42,
+    sortIndex: 974,
+    genesisHash: null,
+    prefix: null,
     name: "Litentry Testnet",
     themeColor: "#15ea85",
     logo: "https://raw.githubusercontent.com/TalismanSociety/chaindata/main/assets/chains/rococo-litentry-testnet.svg",
-    chainName: "Litentry-rococo",
+    chainName: null,
     chainType: null,
-    implName: "rococo-parachain",
-    specName: "rococo-parachain",
-    specVersion: "9171",
-    nativeToken: {
-      id: "rococo-litentry-testnet-substrate-native-lit",
-    },
-    tokens: [
-      {
-        id: "rococo-litentry-testnet-substrate-native-lit",
-      },
-    ],
+    implName: null,
+    specName: null,
+    specVersion: null,
+    nativeToken: null,
+    tokens: [],
     account: "*25519",
     subscanUrl: null,
     chainspecQrUrl: null,
@@ -10762,25 +10726,19 @@ export const chains = [
     id: "logion-testnet-standalone",
     isTestnet: true,
     isDefault: true,
-    sortIndex: 944,
-    genesisHash: "0x97d09155a17b13181033b89bf4c74b373b501a9ebb434ef353511e797ee8287b",
-    prefix: 2021,
+    sortIndex: 975,
+    genesisHash: null,
+    prefix: null,
     name: "Logion Testnet",
     themeColor: "#505050",
     logo: "https://raw.githubusercontent.com/TalismanSociety/chaindata/main/assets/chains/unknown.svg",
-    chainName: "Rochefort Testnet",
-    chainType: "Live",
-    implName: "logion",
-    specName: "logion",
-    specVersion: "1",
-    nativeToken: {
-      id: "logion-testnet-standalone-substrate-native-rch",
-    },
-    tokens: [
-      {
-        id: "logion-testnet-standalone-substrate-native-rch",
-      },
-    ],
+    chainName: null,
+    chainType: null,
+    implName: null,
+    specName: null,
+    specVersion: null,
+    nativeToken: null,
+    tokens: [],
     account: "*25519",
     subscanUrl: null,
     chainspecQrUrl: null,
@@ -10803,7 +10761,7 @@ export const chains = [
     id: "logion-testnet-standalone-2",
     isTestnet: true,
     isDefault: true,
-    sortIndex: 945,
+    sortIndex: 976,
     genesisHash: "0x655269c7f7a9162e09b43eca4c667a2f6b3b174935b67f516924b70e489cdfd6",
     prefix: 42,
     name: "Logion Testnet",
@@ -10813,13 +10771,13 @@ export const chains = [
     chainType: "Live",
     implName: "logion",
     specName: "logion",
-    specVersion: "160",
+    specVersion: "161",
     nativeToken: {
-      id: "logion-testnet-standalone-2-substrate-native-lgnt",
+      id: "logion-testnet-standalone-2-substrate-native",
     },
     tokens: [
       {
-        id: "logion-testnet-standalone-2-substrate-native-lgnt",
+        id: "logion-testnet-standalone-2-substrate-native",
       },
     ],
     account: "*25519",
@@ -10844,25 +10802,19 @@ export const chains = [
     id: "rococo-md-5-testnet",
     isTestnet: true,
     isDefault: true,
-    sortIndex: 960,
-    genesisHash: "0x38656c27a232ae030ad8262ef9d6e6c63ca9fe68affbf5db26a4159340621210",
-    prefix: 5000,
+    sortIndex: 992,
+    genesisHash: null,
+    prefix: null,
     name: "MD5",
     themeColor: "#505050",
     logo: "https://raw.githubusercontent.com/TalismanSociety/chaindata/main/assets/chains/unknown.svg",
-    chainName: "MD5 Network",
-    chainType: "Live",
-    implName: "hashed",
-    specName: "hashed",
-    specVersion: "4",
-    nativeToken: {
-      id: "rococo-md-5-testnet-substrate-native-md5",
-    },
-    tokens: [
-      {
-        id: "rococo-md-5-testnet-substrate-native-md5",
-      },
-    ],
+    chainName: null,
+    chainType: null,
+    implName: null,
+    specName: null,
+    specVersion: null,
+    nativeToken: null,
+    tokens: [],
     account: "*25519",
     subscanUrl: null,
     chainspecQrUrl: null,
@@ -10887,7 +10839,7 @@ export const chains = [
     id: "rococo-metaquity-network-testnet",
     isTestnet: true,
     isDefault: true,
-    sortIndex: 966,
+    sortIndex: 999,
     genesisHash: "0x99991e6a3d958463494fb087e38242aeac0e1bc2d5bc4855c0d9653615f1b297",
     prefix: 666,
     name: "Metaquity",
@@ -10899,11 +10851,11 @@ export const chains = [
     specName: "metaquity",
     specVersion: "100",
     nativeToken: {
-      id: "rococo-metaquity-network-testnet-substrate-native-mqty",
+      id: "rococo-metaquity-network-testnet-substrate-native",
     },
     tokens: [
       {
-        id: "rococo-metaquity-network-testnet-substrate-native-mqty",
+        id: "rococo-metaquity-network-testnet-substrate-native",
       },
     ],
     account: "*25519",
@@ -10930,7 +10882,7 @@ export const chains = [
     id: "moonbase-alpha-testnet",
     isTestnet: true,
     isDefault: true,
-    sortIndex: 976,
+    sortIndex: 1010,
     genesisHash: "0x91bc6e169807aaa54802737e1c504b2577d4fafedd5a02c10293b1cd60e39527",
     prefix: 1287,
     name: "Moonbase Alpha",
@@ -10942,11 +10894,11 @@ export const chains = [
     specName: "moonbase",
     specVersion: "2700",
     nativeToken: {
-      id: "moonbase-alpha-testnet-substrate-native-dev",
+      id: "moonbase-alpha-testnet-substrate-native",
     },
     tokens: [
       {
-        id: "moonbase-alpha-testnet-substrate-native-dev",
+        id: "moonbase-alpha-testnet-substrate-native",
       },
     ],
     account: "secp256k1",
@@ -10981,25 +10933,19 @@ export const chains = [
     id: "myriad-testnet",
     isTestnet: true,
     isDefault: true,
-    sortIndex: 984,
-    genesisHash: "0x7d45920ff7956e45ef6107720e41b1cfdbd0a50371d6e9072f67070fb285fe16",
-    prefix: 42,
+    sortIndex: 1018,
+    genesisHash: null,
+    prefix: null,
     name: "Myriad Testnet",
     themeColor: "#505050",
     logo: "https://raw.githubusercontent.com/TalismanSociety/chaindata/main/assets/chains/unknown.svg",
-    chainName: "Myriad Testnet",
+    chainName: null,
     chainType: null,
-    implName: "myriad",
-    specName: "appchain",
-    specVersion: "2036",
-    nativeToken: {
-      id: "myriad-testnet-substrate-native-myria",
-    },
-    tokens: [
-      {
-        id: "myriad-testnet-substrate-native-myria",
-      },
-    ],
+    implName: null,
+    specName: null,
+    specVersion: null,
+    nativeToken: null,
+    tokens: [],
     account: "*25519",
     subscanUrl: null,
     chainspecQrUrl: null,
@@ -11019,10 +10965,51 @@ export const chains = [
     balancesMetadata: [],
   },
   {
+    id: "niskala-testnet",
+    isTestnet: true,
+    isDefault: true,
+    sortIndex: 1031,
+    genesisHash: "0x64e4e9ede7269c444a0052cffa87571a3e9aced2afc89951e46abc9fc2765221",
+    prefix: 42,
+    name: "Niskala Testnet",
+    themeColor: "#057dcd",
+    logo: "https://raw.githubusercontent.com/TalismanSociety/chaindata/main/assets/chains/niskala-testnet.svg",
+    chainName: "Madya Solo Testnet",
+    chainType: "Local",
+    implName: "madya-solo",
+    specName: "madya-solo",
+    specVersion: "101",
+    nativeToken: {
+      id: "niskala-testnet-substrate-native",
+    },
+    tokens: [
+      {
+        id: "niskala-testnet-substrate-native",
+      },
+    ],
+    account: "*25519",
+    subscanUrl: null,
+    chainspecQrUrl: null,
+    latestMetadataQrUrl: null,
+    isUnknownFeeToken: false,
+    feeToken: null,
+    rpcs: [
+      {
+        url: "wss://niskala.mandalachain.io",
+      },
+    ],
+    evmNetworks: [],
+    parathreads: null,
+    paraId: null,
+    relay: null,
+    balancesConfig: [],
+    balancesMetadata: [],
+  },
+  {
     id: "rococo-nodle-testnet",
     isTestnet: true,
     isDefault: true,
-    sortIndex: 996,
+    sortIndex: 1032,
     genesisHash: "0x0fd167da222f10dae826a0433fe4daadcf4a36c2a6bd5c1b085857d5b79030af",
     prefix: 37,
     name: "Nodle Testnet",
@@ -11034,11 +11021,11 @@ export const chains = [
     specName: "nodle-para",
     specVersion: "27",
     nativeToken: {
-      id: "rococo-nodle-testnet-substrate-native-notnodl",
+      id: "rococo-nodle-testnet-substrate-native",
     },
     tokens: [
       {
-        id: "rococo-nodle-testnet-substrate-native-notnodl",
+        id: "rococo-nodle-testnet-substrate-native",
       },
     ],
     account: "*25519",
@@ -11065,7 +11052,7 @@ export const chains = [
     id: "opal-testnet",
     isTestnet: true,
     isDefault: true,
-    sortIndex: 1011,
+    sortIndex: 1047,
     genesisHash: "0xc87870ef90a438d574b8e320f17db372c50f62beb52e479c8ff6ee5b460670b9",
     prefix: 42,
     name: "Opal",
@@ -11077,11 +11064,11 @@ export const chains = [
     specName: "opal",
     specVersion: "10030070",
     nativeToken: {
-      id: "opal-testnet-substrate-native-opl",
+      id: "opal-testnet-substrate-native",
     },
     tokens: [
       {
-        id: "opal-testnet-substrate-native-opl",
+        id: "opal-testnet-substrate-native",
       },
     ],
     account: "*25519",
@@ -11115,7 +11102,7 @@ export const chains = [
     id: "rococo-origin-trail-parachain-testnet",
     isTestnet: true,
     isDefault: true,
-    sortIndex: 1021,
+    sortIndex: 1057,
     genesisHash: "0xf2b8faefcf9c370872d0b4d2eee31d46b4de4a8688153d23d82a39e2d6bc8bbc",
     prefix: 101,
     name: "OriginTrail Testnet",
@@ -11127,11 +11114,11 @@ export const chains = [
     specName: "origintrail-parachain",
     specVersion: "121",
     nativeToken: {
-      id: "rococo-origin-trail-parachain-testnet-substrate-native-otp",
+      id: "rococo-origin-trail-parachain-testnet-substrate-native",
     },
     tokens: [
       {
-        id: "rococo-origin-trail-parachain-testnet-substrate-native-otp",
+        id: "rococo-origin-trail-parachain-testnet-substrate-native",
       },
     ],
     account: "*25519",
@@ -11158,7 +11145,7 @@ export const chains = [
     id: "rococo-pangolin-testnet",
     isTestnet: true,
     isDefault: true,
-    sortIndex: 1028,
+    sortIndex: 1064,
     genesisHash: "0xb067215e6232ffeed7cede2f92ac6b65f2121523fa221fc76f2e4430086c6b70",
     prefix: 42,
     name: "Pangolin2",
@@ -11170,11 +11157,11 @@ export const chains = [
     specName: "Pangolin2",
     specVersion: "6600",
     nativeToken: {
-      id: "rococo-pangolin-testnet-substrate-native-pring",
+      id: "rococo-pangolin-testnet-substrate-native",
     },
     tokens: [
       {
-        id: "rococo-pangolin-testnet-substrate-native-pring",
+        id: "rococo-pangolin-testnet-substrate-native",
       },
     ],
     account: "secp256k1",
@@ -11201,25 +11188,19 @@ export const chains = [
     id: "pangoro-testnet",
     isTestnet: true,
     isDefault: true,
-    sortIndex: 1029,
-    genesisHash: "0xaaa8b33b723b30b44e45e4e6c01936cc92e7559b4184fb0cee2853d55610fcbf",
-    prefix: 18,
+    sortIndex: 1065,
+    genesisHash: null,
+    prefix: null,
     name: "Pangoro2",
     themeColor: "#505050",
     logo: "https://raw.githubusercontent.com/TalismanSociety/chaindata/main/assets/chains/unknown.svg",
-    chainName: "Pangoro2",
+    chainName: null,
     chainType: null,
-    implName: "DarwiniaOfficialRust",
-    specName: "Pangoro2",
-    specVersion: "6405",
-    nativeToken: {
-      id: "pangoro-testnet-substrate-native-oring",
-    },
-    tokens: [
-      {
-        id: "pangoro-testnet-substrate-native-oring",
-      },
-    ],
+    implName: null,
+    specName: null,
+    specVersion: null,
+    nativeToken: null,
+    tokens: [],
     account: "secp256k1",
     subscanUrl: null,
     chainspecQrUrl: null,
@@ -11239,10 +11220,51 @@ export const chains = [
     balancesMetadata: [],
   },
   {
+    id: "paseo-testnet",
+    isTestnet: true,
+    isDefault: true,
+    sortIndex: 1067,
+    genesisHash: "0x74300973617e2936e22d46e94fee5016a1a514747ae108277b770d02b47d37d9",
+    prefix: 42,
+    name: "Paseo",
+    themeColor: "#d6e4e3",
+    logo: "https://raw.githubusercontent.com/TalismanSociety/chaindata/main/assets/chains/paseo-testnet.svg",
+    chainName: "Paseo Testnet",
+    chainType: "Live",
+    implName: "paseo-testnet",
+    specName: "paseo",
+    specVersion: "1000000",
+    nativeToken: {
+      id: "paseo-testnet-substrate-native",
+    },
+    tokens: [
+      {
+        id: "paseo-testnet-substrate-native",
+      },
+    ],
+    account: "*25519",
+    subscanUrl: null,
+    chainspecQrUrl: null,
+    latestMetadataQrUrl: null,
+    isUnknownFeeToken: false,
+    feeToken: null,
+    rpcs: [
+      {
+        url: "wss://paseo.rpc.amforc.com",
+      },
+    ],
+    evmNetworks: [],
+    parathreads: null,
+    paraId: null,
+    relay: null,
+    balancesConfig: [],
+    balancesMetadata: [],
+  },
+  {
     id: "phala-testnet-standalone",
     isTestnet: true,
     isDefault: true,
-    sortIndex: 1034,
+    sortIndex: 1071,
     genesisHash: null,
     prefix: null,
     name: "Phala Testnet",
@@ -11277,7 +11299,7 @@ export const chains = [
     id: "phala-testnet-standalone-2",
     isTestnet: true,
     isDefault: true,
-    sortIndex: 1035,
+    sortIndex: 1072,
     genesisHash: "0xd9b288f9083f852f2729af58476b82b04bc9ed7e07d705614a843c93460974b2",
     prefix: 30,
     name: "Phala Testnet",
@@ -11289,11 +11311,11 @@ export const chains = [
     specName: "phala-node",
     specVersion: "103",
     nativeToken: {
-      id: "phala-testnet-standalone-2-substrate-native-pha",
+      id: "phala-testnet-standalone-2-substrate-native",
     },
     tokens: [
       {
-        id: "phala-testnet-standalone-2-substrate-native-pha",
+        id: "phala-testnet-standalone-2-substrate-native",
       },
     ],
     account: "*25519",
@@ -11318,25 +11340,19 @@ export const chains = [
     id: "rococo-picasso-testnet",
     isTestnet: true,
     isDefault: true,
-    sortIndex: 1036,
-    genesisHash: "0x1fb83e6e5fafa90d85ac934e3a8efdced33f9adfe3d5552d7af118fe854992d2",
-    prefix: 49,
+    sortIndex: 1073,
+    genesisHash: null,
+    prefix: null,
     name: "Picasso Testnet",
     themeColor: "#505050",
     logo: "https://raw.githubusercontent.com/TalismanSociety/chaindata/main/assets/chains/unknown.svg",
-    chainName: "Picasso Testnet (Rococo Relay)",
+    chainName: null,
     chainType: null,
-    implName: "picasso",
-    specName: "picasso",
-    specVersion: "10009",
-    nativeToken: {
-      id: "rococo-picasso-testnet-substrate-native-pica",
-    },
-    tokens: [
-      {
-        id: "rococo-picasso-testnet-substrate-native-pica",
-      },
-    ],
+    implName: null,
+    specName: null,
+    specVersion: null,
+    nativeToken: null,
+    tokens: [],
     account: "*25519",
     subscanUrl: null,
     chainspecQrUrl: null,
@@ -11361,7 +11377,7 @@ export const chains = [
     id: "polymesh-testnet",
     isTestnet: true,
     isDefault: true,
-    sortIndex: 1045,
+    sortIndex: 1082,
     genesisHash: "0x2ace05e703aa50b48c0ccccfc8b424f7aab9a1e2c424ed12e45d20b1e8ffd0d6",
     prefix: 42,
     name: "Polymesh Testnet",
@@ -11373,11 +11389,11 @@ export const chains = [
     specName: "polymesh_testnet",
     specVersion: "6001020",
     nativeToken: {
-      id: "polymesh-testnet-substrate-native-polyx",
+      id: "polymesh-testnet-substrate-native",
     },
     tokens: [
       {
-        id: "polymesh-testnet-substrate-native-polyx",
+        id: "polymesh-testnet-substrate-native",
       },
     ],
     account: "*25519",
@@ -11402,7 +11418,7 @@ export const chains = [
     id: "rococo-ewx-testnet",
     isTestnet: true,
     isDefault: true,
-    sortIndex: 1066,
+    sortIndex: 1103,
     genesisHash: "0xac123be800b7c9a3e3449bb70edd8e3d9008d27826381451eebf94bce1db1fbe",
     prefix: 42,
     name: "Rex",
@@ -11414,11 +11430,11 @@ export const chains = [
     specName: "ewx-parachain",
     specVersion: "54",
     nativeToken: {
-      id: "rococo-ewx-testnet-substrate-native-vt",
+      id: "rococo-ewx-testnet-substrate-native",
     },
     tokens: [
       {
-        id: "rococo-ewx-testnet-substrate-native-vt",
+        id: "rococo-ewx-testnet-substrate-native",
       },
     ],
     account: "*25519",
@@ -11445,7 +11461,7 @@ export const chains = [
     id: "rococo-phala-testnet",
     isTestnet: true,
     isDefault: true,
-    sortIndex: 1067,
+    sortIndex: 1104,
     genesisHash: "0xe0baa740e6aff1d5616cda3f16c5f51ac96bbbd9899583f028045f6ac7e86c5c",
     prefix: 30,
     name: "Rhala",
@@ -11457,11 +11473,11 @@ export const chains = [
     specName: "rhala",
     specVersion: "1261",
     nativeToken: {
-      id: "rococo-phala-testnet-substrate-native-pha",
+      id: "rococo-phala-testnet-substrate-native",
     },
     tokens: [
       {
-        id: "rococo-phala-testnet-substrate-native-pha",
+        id: "rococo-phala-testnet-substrate-native",
       },
     ],
     account: "*25519",
@@ -11488,7 +11504,7 @@ export const chains = [
     id: "rococo-asset-hub-testnet",
     isTestnet: true,
     isDefault: true,
-    sortIndex: 1071,
+    sortIndex: 1108,
     genesisHash: "0x7c34d42fc815d392057c78b49f2755c753440ccd38bcb0405b3bcfb601d08734",
     prefix: 42,
     name: "Rococo Asset Hub",
@@ -11500,11 +11516,11 @@ export const chains = [
     specName: "statemine",
     specVersion: "1006000",
     nativeToken: {
-      id: "rococo-asset-hub-testnet-substrate-native-roc",
+      id: "rococo-asset-hub-testnet-substrate-native",
     },
     tokens: [
       {
-        id: "rococo-asset-hub-testnet-substrate-native-roc",
+        id: "rococo-asset-hub-testnet-substrate-native",
       },
     ],
     account: "*25519",
@@ -11534,7 +11550,7 @@ export const chains = [
     id: "rococo-bridge-hub-testnet",
     isTestnet: true,
     isDefault: true,
-    sortIndex: 1072,
+    sortIndex: 1109,
     genesisHash: "0x6de3dc58adbc525bad4ae201a8660c5be8949e10308457b176510c72a413f3a3",
     prefix: 42,
     name: "Rococo Bridge Hub",
@@ -11544,13 +11560,13 @@ export const chains = [
     chainType: "Live",
     implName: "bridge-hub-rococo",
     specName: "bridge-hub-rococo",
-    specVersion: "1006000",
+    specVersion: "1006001",
     nativeToken: {
-      id: "rococo-bridge-hub-testnet-substrate-native-roc",
+      id: "rococo-bridge-hub-testnet-substrate-native",
     },
     tokens: [
       {
-        id: "rococo-bridge-hub-testnet-substrate-native-roc",
+        id: "rococo-bridge-hub-testnet-substrate-native",
       },
     ],
     account: "*25519",
@@ -11580,7 +11596,7 @@ export const chains = [
     id: "shibuya-testnet",
     isTestnet: true,
     isDefault: true,
-    sortIndex: 1093,
+    sortIndex: 1131,
     genesisHash: "0xddb89973361a170839f80f152d2e9e38a376a5a7eccefcade763f46a8e567019",
     prefix: 5,
     name: "Shibuya",
@@ -11590,13 +11606,13 @@ export const chains = [
     chainType: "Live",
     implName: "shibuya",
     specName: "shibuya",
-    specVersion: "119",
+    specVersion: "120",
     nativeToken: {
-      id: "shibuya-testnet-substrate-native-sby",
+      id: "shibuya-testnet-substrate-native",
     },
     tokens: [
       {
-        id: "shibuya-testnet-substrate-native-sby",
+        id: "shibuya-testnet-substrate-native",
       },
     ],
     account: "*25519",
@@ -11628,25 +11644,19 @@ export const chains = [
     id: "skyekiwi-testnet",
     isTestnet: true,
     isDefault: true,
-    sortIndex: 1108,
-    genesisHash: "0xb5bfb91886508f2b7abc78bec8dffef3c9ad43e3b46caec6b581292f0e5b52ce",
-    prefix: 42,
+    sortIndex: 1146,
+    genesisHash: null,
+    prefix: null,
     name: "SkyeKiwi",
     themeColor: "#505050",
     logo: "https://raw.githubusercontent.com/TalismanSociety/chaindata/main/assets/chains/unknown.svg",
-    chainName: "SkyeKiwi Testnet Alpha",
-    chainType: "Live",
-    implName: "skyekiwi-testnet-alpha",
-    specName: "skyekiwi-testnet-alpha",
-    specVersion: "105",
-    nativeToken: {
-      id: "skyekiwi-testnet-substrate-native-unit",
-    },
-    tokens: [
-      {
-        id: "skyekiwi-testnet-substrate-native-unit",
-      },
-    ],
+    chainName: null,
+    chainType: null,
+    implName: null,
+    specName: null,
+    specVersion: null,
+    nativeToken: null,
+    tokens: [],
     account: "*25519",
     subscanUrl: null,
     chainspecQrUrl: null,
@@ -11669,7 +11679,7 @@ export const chains = [
     id: "snowbridge-asset-hub-testnet",
     isTestnet: true,
     isDefault: true,
-    sortIndex: 1112,
+    sortIndex: 1150,
     genesisHash: null,
     prefix: null,
     name: "Snowbridge Asset Hub",
@@ -11706,7 +11716,7 @@ export const chains = [
     id: "snowbridge-bridge-hub-testnet",
     isTestnet: true,
     isDefault: true,
-    sortIndex: 1113,
+    sortIndex: 1151,
     genesisHash: null,
     prefix: null,
     name: "Snowbridge Bridge Hub",
@@ -11743,7 +11753,7 @@ export const chains = [
     id: "rococo-subsocial-testnet",
     isTestnet: true,
     isDefault: true,
-    sortIndex: 1116,
+    sortIndex: 1154,
     genesisHash: "0x01f15f9d48ea279640cb35267bfd33a88bb4c21ebb00b129e9bc2d2236aaafdb",
     prefix: 28,
     name: "SoonsocialX",
@@ -11755,11 +11765,11 @@ export const chains = [
     specName: "soonsocial-parachain",
     specVersion: "3601",
     nativeToken: {
-      id: "rococo-subsocial-testnet-substrate-native-soon",
+      id: "rococo-subsocial-testnet-substrate-native",
     },
     tokens: [
       {
-        id: "rococo-subsocial-testnet-substrate-native-soon",
+        id: "rococo-subsocial-testnet-substrate-native",
       },
     ],
     account: "*25519",
@@ -11786,7 +11796,7 @@ export const chains = [
     id: "rococo-sora-testnet",
     isTestnet: true,
     isDefault: true,
-    sortIndex: 1117,
+    sortIndex: 1155,
     genesisHash: "0x8685a8d3e57fa8024b91b8ead6cc97acf953889c6fb0a355602826a1e2db198f",
     prefix: 420,
     name: "Sora Testnet",
@@ -11798,11 +11808,11 @@ export const chains = [
     specName: "sora_ksm",
     specVersion: "10",
     nativeToken: {
-      id: "rococo-sora-testnet-substrate-native-xor",
+      id: "rococo-sora-testnet-substrate-native",
     },
     tokens: [
       {
-        id: "rococo-sora-testnet-substrate-native-xor",
+        id: "rococo-sora-testnet-substrate-native",
       },
     ],
     account: "*25519",
@@ -11829,7 +11839,7 @@ export const chains = [
     id: "sora-substrate-testnet",
     isTestnet: true,
     isDefault: true,
-    sortIndex: 1118,
+    sortIndex: 1156,
     genesisHash: "0x3266816be9fa51b32cfea58d3e33ca77246bc9618595a4300e44c8856a8d8a17",
     prefix: 69,
     name: "Sora Testnet",
@@ -11841,11 +11851,11 @@ export const chains = [
     specName: "sora-substrate",
     specVersion: "71",
     nativeToken: {
-      id: "sora-substrate-testnet-substrate-native-xor",
+      id: "sora-substrate-testnet-substrate-native",
     },
     tokens: [
       {
-        id: "sora-substrate-testnet-substrate-native-xor",
+        id: "sora-substrate-testnet-substrate-native",
       },
     ],
     account: "*25519",
@@ -11879,7 +11889,7 @@ export const chains = [
     id: "subspace-gemini-1-testnet",
     isTestnet: true,
     isDefault: true,
-    sortIndex: 1126,
+    sortIndex: 1164,
     genesisHash: "0x9ee86eefc3cc61c71a7751bba7f25e442da2512f408e6286153b3ccc055dccf0",
     prefix: 2254,
     name: "Subspace Gemini",
@@ -11893,11 +11903,11 @@ export const chains = [
     specName: "subspace",
     specVersion: "2",
     nativeToken: {
-      id: "subspace-gemini-1-testnet-substrate-native-tssc",
+      id: "subspace-gemini-1-testnet-substrate-native",
     },
     tokens: [
       {
-        id: "subspace-gemini-1-testnet-substrate-native-tssc",
+        id: "subspace-gemini-1-testnet-substrate-native",
       },
     ],
     account: "*25519",
@@ -11922,7 +11932,7 @@ export const chains = [
     id: "subspace-gemini-2-a-testnet",
     isTestnet: true,
     isDefault: true,
-    sortIndex: 1127,
+    sortIndex: 1165,
     genesisHash: "0x43d10ffd50990380ffe6c9392145431d630ae67e89dbc9c014cac2a417759101",
     prefix: 2254,
     name: "Subspace Gemini 2a",
@@ -11936,11 +11946,11 @@ export const chains = [
     specName: "subspace",
     specVersion: "4",
     nativeToken: {
-      id: "subspace-gemini-2-a-testnet-substrate-native-tssc",
+      id: "subspace-gemini-2-a-testnet-substrate-native",
     },
     tokens: [
       {
-        id: "subspace-gemini-2-a-testnet-substrate-native-tssc",
+        id: "subspace-gemini-2-a-testnet-substrate-native",
       },
     ],
     account: "*25519",
@@ -11965,7 +11975,7 @@ export const chains = [
     id: "subspace-gemini-3-f-testnet",
     isTestnet: true,
     isDefault: true,
-    sortIndex: 1128,
+    sortIndex: 1166,
     genesisHash: "0x92e91e657747c41eeabed5129ff51689d2e935b9f6abfbd5dfcb2e1d0d035095",
     prefix: 2254,
     name: "Subspace Gemini 3f",
@@ -11979,11 +11989,11 @@ export const chains = [
     specName: "subspace",
     specVersion: "3",
     nativeToken: {
-      id: "subspace-gemini-3-f-testnet-substrate-native-tssc",
+      id: "subspace-gemini-3-f-testnet-substrate-native",
     },
     tokens: [
       {
-        id: "subspace-gemini-3-f-testnet-substrate-native-tssc",
+        id: "subspace-gemini-3-f-testnet-substrate-native",
       },
     ],
     account: "*25519",
@@ -12011,7 +12021,7 @@ export const chains = [
     id: "subspace-gemini-3-g-testnet",
     isTestnet: true,
     isDefault: true,
-    sortIndex: 1129,
+    sortIndex: 1167,
     genesisHash: "0x418040fc282f5e5ddd432c46d05297636f6f75ce68d66499ff4cbda69ccd180b",
     prefix: 2254,
     name: "Subspace Gemini 3g",
@@ -12025,11 +12035,11 @@ export const chains = [
     specName: "subspace",
     specVersion: "5",
     nativeToken: {
-      id: "subspace-gemini-3-g-testnet-substrate-native-tssc",
+      id: "subspace-gemini-3-g-testnet-substrate-native",
     },
     tokens: [
       {
-        id: "subspace-gemini-3-g-testnet-substrate-native-tssc",
+        id: "subspace-gemini-3-g-testnet-substrate-native",
       },
     ],
     account: "*25519",
@@ -12057,25 +12067,19 @@ export const chains = [
     id: "sumi-testnet",
     isTestnet: true,
     isDefault: true,
-    sortIndex: 1130,
-    genesisHash: "0x6ec5e8eaf4627331d77e3ee130a1c8507d78a9367c66634e3f1cec59258ec540",
-    prefix: 42,
+    sortIndex: 1168,
+    genesisHash: null,
+    prefix: null,
     name: "Sumi Testnet",
     themeColor: "#505050",
     logo: "https://raw.githubusercontent.com/TalismanSociety/chaindata/main/assets/chains/unknown.svg",
-    chainName: "Staging Testnet",
+    chainName: null,
     chainType: null,
-    implName: "substrate-node",
-    specName: "node",
-    specVersion: "272",
-    nativeToken: {
-      id: "sumi-testnet-substrate-native-sumi",
-    },
-    tokens: [
-      {
-        id: "sumi-testnet-substrate-native-sumi",
-      },
-    ],
+    implName: null,
+    specName: null,
+    specVersion: null,
+    nativeToken: null,
+    tokens: [],
     account: "*25519",
     subscanUrl: null,
     chainspecQrUrl: null,
@@ -12098,7 +12102,7 @@ export const chains = [
     id: "t-0-rn-testnet",
     isTestnet: true,
     isDefault: true,
-    sortIndex: 1137,
+    sortIndex: 1175,
     genesisHash: "0xec62ec7bc3bd808f67a63d9a3c709d1426ec5a33cd172938fde8236a0d28ce32",
     prefix: 42,
     name: "t0rn",
@@ -12110,11 +12114,11 @@ export const chains = [
     specName: "t0rn",
     specVersion: "17",
     nativeToken: {
-      id: "t-0-rn-testnet-substrate-native-t0rn",
+      id: "t-0-rn-testnet-substrate-native",
     },
     tokens: [
       {
-        id: "t-0-rn-testnet-substrate-native-t0rn",
+        id: "t-0-rn-testnet-substrate-native",
       },
     ],
     account: "*25519",
@@ -12141,7 +12145,7 @@ export const chains = [
     id: "tangle-testnet",
     isTestnet: true,
     isDefault: true,
-    sortIndex: 1138,
+    sortIndex: 1176,
     genesisHash: "0x3d22af97d919611e03bbcbda96f65988758865423e89b2d99547a6bb61452db3",
     prefix: 42,
     name: "Tangle",
@@ -12153,11 +12157,11 @@ export const chains = [
     specName: "tangle-testnet",
     specVersion: "602",
     nativeToken: {
-      id: "tangle-testnet-substrate-native-ttnt",
+      id: "tangle-testnet-substrate-native",
     },
     tokens: [
       {
-        id: "tangle-testnet-substrate-native-ttnt",
+        id: "tangle-testnet-substrate-native",
       },
     ],
     account: "*25519",
@@ -12182,7 +12186,7 @@ export const chains = [
     id: "ternoa-alphanet-testnet",
     isTestnet: true,
     isDefault: true,
-    sortIndex: 1147,
+    sortIndex: 1185,
     genesisHash: "0x18bcdb75a0bba577b084878db2dc2546eb21504eaad4b564bb7d47f9d02b6ace",
     prefix: 42,
     name: "Ternoa Alphanet",
@@ -12194,11 +12198,11 @@ export const chains = [
     specName: "alphanet",
     specVersion: "25",
     nativeToken: {
-      id: "ternoa-alphanet-testnet-substrate-native-caps",
+      id: "ternoa-alphanet-testnet-substrate-native",
     },
     tokens: [
       {
-        id: "ternoa-alphanet-testnet-substrate-native-caps",
+        id: "ternoa-alphanet-testnet-substrate-native",
       },
     ],
     account: "*25519",
@@ -12223,7 +12227,7 @@ export const chains = [
     id: "thebifrost-testnet",
     isTestnet: true,
     isDefault: true,
-    sortIndex: 1149,
+    sortIndex: 1187,
     genesisHash: "0x15b34a3b7443c73fa1f687cce2d8e5981f6a2eaad54809a6b6af28e83d2adaff",
     prefix: 42,
     name: "The Bifrost Testnet",
@@ -12233,13 +12237,13 @@ export const chains = [
     chainType: "Live",
     implName: "bifrost-testnet",
     specName: "thebifrost-testnet",
-    specVersion: "462",
+    specVersion: "463",
     nativeToken: {
-      id: "thebifrost-testnet-substrate-native-bfc",
+      id: "thebifrost-testnet-substrate-native",
     },
     tokens: [
       {
-        id: "thebifrost-testnet-substrate-native-bfc",
+        id: "thebifrost-testnet-substrate-native",
       },
     ],
     account: "*25519",
@@ -12267,7 +12271,7 @@ export const chains = [
     id: "rococo-trappist-testnet",
     isTestnet: true,
     isDefault: true,
-    sortIndex: 1167,
+    sortIndex: 1205,
     genesisHash: "0x500ef894568a1d06aa8d4a42b8fede5c9828a5620f4833700878cee2402f5eb5",
     prefix: 42,
     name: "Trappist",
@@ -12279,11 +12283,11 @@ export const chains = [
     specName: "trappist-rococo",
     specVersion: "13000",
     nativeToken: {
-      id: "rococo-trappist-testnet-substrate-native-hop",
+      id: "rococo-trappist-testnet-substrate-native",
     },
     tokens: [
       {
-        id: "rococo-trappist-testnet-substrate-native-hop",
+        id: "rococo-trappist-testnet-substrate-native",
       },
     ],
     account: "*25519",
@@ -12310,7 +12314,7 @@ export const chains = [
     id: "rococo-turing-testnet",
     isTestnet: true,
     isDefault: true,
-    sortIndex: 1172,
+    sortIndex: 1210,
     genesisHash: "0xd54f0988402deb4548538626ce37e4a318441ea0529ca369400ebec4e04dfe4b",
     prefix: 51,
     name: "Turing Testnet",
@@ -12322,11 +12326,11 @@ export const chains = [
     specName: "turing",
     specVersion: "297",
     nativeToken: {
-      id: "rococo-turing-testnet-substrate-native-tur",
+      id: "rococo-turing-testnet-substrate-native",
     },
     tokens: [
       {
-        id: "rococo-turing-testnet-substrate-native-tur",
+        id: "rococo-turing-testnet-substrate-native",
       },
     ],
     account: "*25519",
@@ -12353,25 +12357,19 @@ export const chains = [
     id: "vara-incentivized-testnet",
     isTestnet: true,
     isDefault: true,
-    sortIndex: 1175,
-    genesisHash: "0x9b86ea7366584c5ddf67de243433fcc05732864933258de9467db46eb9bef8b5",
-    prefix: 137,
+    sortIndex: 1213,
+    genesisHash: null,
+    prefix: null,
     name: "Vara Incentivized Testnet",
     themeColor: "#00ffc4",
     logo: "https://raw.githubusercontent.com/TalismanSociety/chaindata/main/assets/chains/vara-incentivized-testnet.svg",
-    chainName: "Vara Incentivized Testnet",
+    chainName: null,
     chainType: null,
-    implName: "vara",
-    specName: "vara",
-    specVersion: "331",
-    nativeToken: {
-      id: "vara-incentivized-testnet-substrate-native-tvara",
-    },
-    tokens: [
-      {
-        id: "vara-incentivized-testnet-substrate-native-tvara",
-      },
-    ],
+    implName: null,
+    specName: null,
+    specVersion: null,
+    nativeToken: null,
+    tokens: [],
     account: "*25519",
     subscanUrl: null,
     chainspecQrUrl: null,
@@ -12394,7 +12392,7 @@ export const chains = [
     id: "rococo-watr-testnet",
     isTestnet: true,
     isDefault: true,
-    sortIndex: 1187,
+    sortIndex: 1225,
     genesisHash: "0xb53c620c41860278fa3068a5367c8eedceefce8a7c29237d830bc09a71737b5d",
     prefix: 19,
     name: "Watr Testnet",
@@ -12406,11 +12404,11 @@ export const chains = [
     specName: "watr-devnet",
     specVersion: "1240",
     nativeToken: {
-      id: "rococo-watr-testnet-substrate-native-watrd",
+      id: "rococo-watr-testnet-substrate-native",
     },
     tokens: [
       {
-        id: "rococo-watr-testnet-substrate-native-watrd",
+        id: "rococo-watr-testnet-substrate-native",
       },
     ],
     account: "*25519",
@@ -12441,7 +12439,7 @@ export const chains = [
     id: "westend-asset-hub-testnet",
     isTestnet: true,
     isDefault: true,
-    sortIndex: 1192,
+    sortIndex: 1230,
     genesisHash: "0x67f9723393ef76214df0118c34bbbd3dbebc8ed46a10973a8c969d48fe7598c9",
     prefix: 42,
     name: "Westend Asset Hub",
@@ -12453,11 +12451,11 @@ export const chains = [
     specName: "westmint",
     specVersion: "1006000",
     nativeToken: {
-      id: "westend-asset-hub-testnet-substrate-native-wnd",
+      id: "westend-asset-hub-testnet-substrate-native",
     },
     tokens: [
       {
-        id: "westend-asset-hub-testnet-substrate-native-wnd",
+        id: "westend-asset-hub-testnet-substrate-native",
       },
     ],
     account: "*25519",
@@ -12499,7 +12497,7 @@ export const chains = [
     id: "westend-bridge-hub-testnet",
     isTestnet: true,
     isDefault: true,
-    sortIndex: 1193,
+    sortIndex: 1231,
     genesisHash: "0x0441383e31d1266a92b4cb2ddd4c2e3661ac476996db7e5844c52433b81fe782",
     prefix: 42,
     name: "Westend Bridge Hub",
@@ -12511,11 +12509,11 @@ export const chains = [
     specName: "bridge-hub-westend",
     specVersion: "1006000",
     nativeToken: {
-      id: "westend-bridge-hub-testnet-substrate-native-wnd",
+      id: "westend-bridge-hub-testnet-substrate-native",
     },
     tokens: [
       {
-        id: "westend-bridge-hub-testnet-substrate-native-wnd",
+        id: "westend-bridge-hub-testnet-substrate-native",
       },
     ],
     account: "*25519",
@@ -12554,7 +12552,7 @@ export const chains = [
     id: "xsocial-testnet",
     isTestnet: true,
     isDefault: true,
-    sortIndex: 1201,
+    sortIndex: 1240,
     genesisHash: "0x1333ee260a234d3a246b85239e279bbdc7618db7188f2dd73f7322963fcd4d02",
     prefix: 42,
     name: "xSocial",
@@ -12566,11 +12564,11 @@ export const chains = [
     specName: "xsocial",
     specVersion: "111",
     nativeToken: {
-      id: "xsocial-testnet-substrate-native-sub",
+      id: "xsocial-testnet-substrate-native",
     },
     tokens: [
       {
-        id: "xsocial-testnet-substrate-native-sub",
+        id: "xsocial-testnet-substrate-native",
       },
     ],
     account: "*25519",
@@ -12595,7 +12593,7 @@ export const chains = [
     id: "rococo-yerba-testnet",
     isTestnet: true,
     isDefault: true,
-    sortIndex: 1203,
+    sortIndex: 1242,
     genesisHash: "0x0a7b013f0e80502cb9063c8039f0f1b6bedc4a49e7fbb2eb25d5c61c405ebdff",
     prefix: 42,
     name: "Yerba",
@@ -12607,11 +12605,11 @@ export const chains = [
     specName: "yerba-rococo",
     specVersion: "10001",
     nativeToken: {
-      id: "rococo-yerba-testnet-substrate-native-roc",
+      id: "rococo-yerba-testnet-substrate-native",
     },
     tokens: [
       {
-        id: "rococo-yerba-testnet-substrate-native-roc",
+        id: "rococo-yerba-testnet-substrate-native",
       },
     ],
     account: "*25519",
@@ -12638,7 +12636,7 @@ export const chains = [
     id: "rococo-zeitgeist-testnet",
     isTestnet: true,
     isDefault: true,
-    sortIndex: 1206,
+    sortIndex: 1245,
     genesisHash: "0xb90cd3a37b4793c6494b78962986f4f6ed3ec2eda91a6b84fd8457d24f606b9c",
     prefix: 73,
     name: "Zeitgeist Battery Station",
@@ -12650,11 +12648,11 @@ export const chains = [
     specName: "zeitgeist",
     specVersion: "53",
     nativeToken: {
-      id: "rococo-zeitgeist-testnet-substrate-native-zbs",
+      id: "rococo-zeitgeist-testnet-substrate-native",
     },
     tokens: [
       {
-        id: "rococo-zeitgeist-testnet-substrate-native-zbs",
+        id: "rococo-zeitgeist-testnet-substrate-native",
       },
     ],
     account: "*25519",
