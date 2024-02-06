@@ -1,13 +1,10 @@
-import { AddressesAndTokens } from "@core/domains/balances/types"
 import { log } from "@core/log"
 import { convertAddress } from "@talisman/util/convertAddress"
 import { LedgerAccountDefPolkadot } from "@ui/domains/Account/AccountAdd/AccountAddLedger/context" // Todo
 import { getPolkadotLedgerDerivationPath } from "@ui/hooks/ledger/common"
 import { useLedgerPolkadot } from "@ui/hooks/ledger/useLedgerPolkadot"
+import { AccountImportDef, useAccountImportBalances } from "@ui/hooks/useAccountImportBalances"
 import useAccounts from "@ui/hooks/useAccounts"
-import useBalancesByParams from "@ui/hooks/useBalancesByParams"
-import useTokens from "@ui/hooks/useTokens"
-import { isSubToken } from "@ui/util/isSubToken"
 import { FC, useCallback, useEffect, useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
 
@@ -63,19 +60,17 @@ const useLedgerPolkadotAccounts = (
     setIsBusy(false)
   }, [isReady, itemsPerPage, ledger, pageIndex, t])
 
-  const { tokens: activeTokens } = useTokens({ activeOnly: true, includeTestnets: false })
-
-  const addressesAndTokens = useMemo<AddressesAndTokens | undefined>(() => {
-    // start fetching balances only when all accounts are known to prevent recreating subscription 5 times
-    if (ledgerAccounts.filter(Boolean).length < ledgerAccounts.length) return undefined
-
-    const addresses = ledgerAccounts.map((acc) => acc?.address).filter(Boolean) as string[]
-    const tokenIds = activeTokens.filter(isSubToken).map((t) => t.id)
-
-    return { addresses, tokenIds }
-  }, [activeTokens, ledgerAccounts])
-
-  const balances = useBalancesByParams({ addressesAndTokens })
+  // start fetching balances only once all accounts are loaded to prevent recreating subscription 5 times
+  const accountImportDefs = useMemo<AccountImportDef[]>(
+    () =>
+      ledgerAccounts.filter(Boolean).length === itemsPerPage
+        ? ledgerAccounts
+            .filter((acc): acc is LedgerPolkadotAccount => !!acc)
+            .map((acc) => ({ address: acc.address, type: "ecdsa", genesisHash: acc.genesisHash }))
+        : [],
+    [itemsPerPage, ledgerAccounts]
+  )
+  const balances = useAccountImportBalances(accountImportDefs)
 
   const accounts: (LedgerPolkadotAccount | null)[] = useMemo(
     () =>
@@ -87,12 +82,16 @@ const useLedgerPolkadotAccounts = (
           (wa) => convertAddress(wa.address, null) === address
         )
 
+        const accountBalances = balances.find((b) => convertAddress(b.address, null) === address)
+
         return {
           ...acc,
           name: existingAccount?.name ?? acc.name,
           connected: !!existingAccount,
           selected: selectedAccounts.some((sa) => sa.address === acc.address),
-          balances: balances.find({ address }),
+          balances: accountBalances,
+          isBalanceLoading:
+            !balances.count || accountBalances.each.some((b) => b.status === "initializing"),
         }
       }),
     [ledgerAccounts, walletAccounts, balances, selectedAccounts]
