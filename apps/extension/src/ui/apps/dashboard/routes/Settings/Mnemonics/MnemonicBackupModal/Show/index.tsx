@@ -1,31 +1,25 @@
 import { MnemonicUnlock } from "@ui/domains/Mnemonic/MnemonicUnlock"
-import { useMemo, useState } from "react"
+import { useMemo } from "react"
 import { useTranslation } from "react-i18next"
 
-import { useMnemonicBackupModal } from "../context"
+import { Stages, useMnemonicBackupModal } from "../context"
 import { MnemonicBackupModalBase } from "../MnemonicBackupModalBase"
 import { Verify } from "./Verify"
 import { ViewMnemonic } from "./View"
 
-enum ShowMnemonicStages {
-  View = "View",
-  Verify = "Verify",
-}
-
 export const ShowMnemonic = () => {
   const { t } = useTranslation("admin")
-  const { mnemonic } = useMnemonicBackupModal()
-  const [showMnemonicStage, setShowMnemonicStage] = useState<ShowMnemonicStages>(
-    ShowMnemonicStages.View
-  )
+  const { mnemonic, stage, setStage } = useMnemonicBackupModal()
+
   const title = useMemo(() => {
-    switch (showMnemonicStage) {
-      case ShowMnemonicStages.View:
-        return t("Backup Recovery Phrase")
-      case ShowMnemonicStages.Verify:
+    switch (stage) {
+      case Stages.Verify:
         return t("Verify Recovery Phrase")
+      case Stages.Show:
+      default:
+        return t("Backup Recovery Phrase")
     }
-  }, [showMnemonicStage, t])
+  }, [stage, t])
 
   if (!mnemonic)
     return (
@@ -46,10 +40,8 @@ export const ShowMnemonic = () => {
             </div>
           }
         >
-          {showMnemonicStage === ShowMnemonicStages.View && (
-            <ViewMnemonic handleComplete={() => setShowMnemonicStage(ShowMnemonicStages.Verify)} />
-          )}
-          {showMnemonicStage === ShowMnemonicStages.Verify && <Verify />}
+          {stage === Stages.Show && <ViewMnemonic handleComplete={() => setStage(Stages.Verify)} />}
+          {stage === Stages.Verify && <Verify />}
         </MnemonicUnlock>
       </div>
     </MnemonicBackupModalBase>

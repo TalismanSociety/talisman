@@ -6,6 +6,7 @@ import { useCallback, useState } from "react"
 export enum Stages {
   Acknowledgement = "Acknowledgement",
   Show = "Show",
+  Verify = "Verify",
   Complete = "Complete",
 }
 

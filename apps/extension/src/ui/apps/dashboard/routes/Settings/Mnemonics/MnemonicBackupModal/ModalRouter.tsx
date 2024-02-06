@@ -14,6 +14,7 @@ export const MnemonicBackupModalRouter = () => {
       case Stages.Acknowledgement:
         return Acknowledgement
       case Stages.Show:
+      case Stages.Verify:
         return ShowMnemonic
       case Stages.Complete:
         return Complete
