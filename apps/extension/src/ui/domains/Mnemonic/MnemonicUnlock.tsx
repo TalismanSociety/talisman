@@ -22,6 +22,7 @@ const schema = yup
 type MnemonicUnlockContext = {
   unlock: (password: string) => Promise<void>
   mnemonic?: string
+  mnemonicId: string
 }
 
 function useMnemonicUnlockContext({ mnemonicId }: { mnemonicId: string }): MnemonicUnlockContext {
@@ -38,6 +39,7 @@ function useMnemonicUnlockContext({ mnemonicId }: { mnemonicId: string }): Mnemo
   return {
     unlock,
     mnemonic,
+    mnemonicId,
   }
 }
 

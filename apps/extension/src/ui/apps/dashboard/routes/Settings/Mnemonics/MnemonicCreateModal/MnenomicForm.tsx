@@ -5,19 +5,19 @@ import { useCallback, useState } from "react"
 import { useTranslation } from "react-i18next"
 import { Button, Checkbox, Tooltip, TooltipContent, TooltipTrigger } from "talisman-ui"
 
-import { useMnemonicCreateModal } from "./context"
+import { Stages, useMnemonicCreateModal } from "./context"
 import { MnemonicCreateModalDialog } from "./Dialog"
 
 const MnemonicFormInner = () => {
   const { t } = useTranslation()
-  const { mnemonic, acknowledge, wordsCount, setWordsCount } = useMnemonicCreateModal()
-  const [confirmed, setConfirmed] = useState(false)
+  const { mnemonic, setConfirmed, wordsCount, setWordsCount, setStage, complete } =
+    useMnemonicCreateModal()
   const [canConfirm, setCanConfirm] = useState(false)
 
   const handleContinueClick = useCallback(() => {
     if (!mnemonic) return
-    acknowledge(confirmed)
-  }, [acknowledge, confirmed, mnemonic])
+    setStage(Stages.Verify)
+  }, [mnemonic, setStage])
 
   const handleMnemonicRevealed = useCallback(() => {
     setCanConfirm(true)
@@ -50,9 +50,20 @@ const MnemonicFormInner = () => {
         >
           {t("I have backed up my recovery phrase, don’t remind me anymore")}
         </Checkbox>
-        <Button className="mt-8" primary fullWidth onClick={handleContinueClick}>
-          {t("Create Account")}
-        </Button>
+        <div className="flex flex-col gap-4">
+          <Button primary fullWidth onClick={handleContinueClick}>
+            {t("Verify recovery phrase")}
+          </Button>
+          <div
+            className="text-body-secondary flex cursor-pointer gap-5 self-end text-sm"
+            onClick={complete}
+            onKeyDown={complete}
+            role="button"
+            tabIndex={0}
+          >
+            {t("Skip verification for now")}
+          </div>
+        </div>
       </div>
     </div>
   )

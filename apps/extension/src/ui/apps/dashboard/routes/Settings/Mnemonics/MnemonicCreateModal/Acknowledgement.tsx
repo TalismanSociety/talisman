@@ -10,7 +10,7 @@ export const Acknowledgement = () => {
   return (
     <MnemonicCreateModalDialog title={t("New recovery phrase")}>
       <div className={"flex justify-center"}>
-        <BaseAcknowledgement onContinueClick={() => setStage(Stages.Show)} />
+        <BaseAcknowledgement onContinueClick={() => setStage(Stages.Create)} />
       </div>
     </MnemonicCreateModalDialog>
   )

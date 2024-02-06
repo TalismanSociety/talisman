@@ -7,12 +7,15 @@ type BackupCreateResultCallback = { resolve: (result: BackupCreateResult) => voi
 
 export enum Stages {
   Acknowledgement = "Acknowledgement",
-  Show = "Create",
+  Create = "Create",
+  Verify = "Verify",
+  Complete = "Complete",
 }
 
 const useMnemonicCreateProvider = () => {
   // keep data in state here to reuse same values if user closes and reopens modal
   const [wordsCount, setWordsCount] = useState<12 | 24>(12)
+  const [confirmed, setConfirmed] = useState(false)
   const [mnemonic12] = useState<string>(mnemonicGenerate(12))
   const [mnemonic24] = useState<string>(mnemonicGenerate(24))
   const [stage, setStage] = useState(Stages.Acknowledgement)
@@ -28,14 +31,11 @@ const useMnemonicCreateProvider = () => {
 
   const [callback, setCallback] = useState<BackupCreateResultCallback>()
 
-  const acknowledge = useCallback(
-    (confirmed: boolean) => {
-      if (!callback) return
-      callback.resolve({ mnemonic, confirmed })
-      setCallback(undefined)
-    },
-    [mnemonic, callback]
-  )
+  const complete = useCallback(() => {
+    if (!callback) return
+    callback.resolve({ mnemonic, confirmed })
+    setCallback(undefined)
+  }, [mnemonic, callback, confirmed])
 
   const cancel = useCallback(() => {
     if (!callback) return
@@ -53,10 +53,11 @@ const useMnemonicCreateProvider = () => {
     mnemonic,
     isOpen: !!callback,
     cancel,
-    acknowledge,
+    complete,
     wordsCount,
     setWordsCount,
     generateMnemonic,
+    setConfirmed,
     stage,
     setStage,
   }

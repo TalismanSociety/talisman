@@ -10,9 +10,9 @@ import { Button, Checkbox } from "talisman-ui"
 import { useMnemonicBackupModal } from "../context"
 import { ShowMnemonicProps } from "./types"
 
-export const ViewMnemonic: FC<ShowMnemonicProps> = ({ mnemonicId, handleComplete }) => {
+export const ViewMnemonic: FC<ShowMnemonicProps> = ({ handleComplete }) => {
   const { t } = useTranslation()
-  const { mnemonic } = useMnemonicUnlock()
+  const { mnemonic, mnemonicId } = useMnemonicUnlock()
   const mnemonicInfo = useMnemonic(mnemonicId)
   const { close } = useMnemonicBackupModal()
   const [canConfirm, setCanConfirm] = useState(() => mnemonicInfo?.confirmed)
@@ -69,7 +69,7 @@ export const ViewMnemonic: FC<ShowMnemonicProps> = ({ mnemonicId, handleComplete
         role="button"
         tabIndex={0}
       >
-        {t("Skip for now")}
+        {t("Skip verification for now")}
       </div>
     </div>
   )

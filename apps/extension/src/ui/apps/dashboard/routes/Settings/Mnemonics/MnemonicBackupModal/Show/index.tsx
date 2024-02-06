@@ -2,7 +2,7 @@ import { MnemonicUnlock } from "@ui/domains/Mnemonic/MnemonicUnlock"
 import { useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
 
-import { Stages, useMnemonicBackupModal } from "../context"
+import { useMnemonicBackupModal } from "../context"
 import { MnemonicBackupModalBase } from "../MnemonicBackupModalBase"
 import { Verify } from "./Verify"
 import { ViewMnemonic } from "./View"
@@ -14,7 +14,7 @@ enum ShowMnemonicStages {
 
 export const ShowMnemonic = () => {
   const { t } = useTranslation("admin")
-  const { mnemonic, setStage } = useMnemonicBackupModal()
+  const { mnemonic } = useMnemonicBackupModal()
   const [showMnemonicStage, setShowMnemonicStage] = useState<ShowMnemonicStages>(
     ShowMnemonicStages.View
   )
@@ -28,7 +28,11 @@ export const ShowMnemonic = () => {
   }, [showMnemonicStage, t])
 
   if (!mnemonic)
-    return <MnemonicBackupModalBase title={"Error"}>No mnemonic available</MnemonicBackupModalBase>
+    return (
+      <MnemonicBackupModalBase title={"Error"}>
+        {t("No mnemonic available")}
+      </MnemonicBackupModalBase>
+    )
 
   return (
     <MnemonicBackupModalBase title={title}>
@@ -43,18 +47,9 @@ export const ShowMnemonic = () => {
           }
         >
           {showMnemonicStage === ShowMnemonicStages.View && (
-            <ViewMnemonic
-              mnemonicId={mnemonic.id}
-              handleComplete={() => setShowMnemonicStage(ShowMnemonicStages.Verify)}
-            />
+            <ViewMnemonic handleComplete={() => setShowMnemonicStage(ShowMnemonicStages.Verify)} />
           )}
-          {showMnemonicStage === ShowMnemonicStages.Verify && (
-            <Verify
-              mnemonicId={mnemonic.id}
-              handleComplete={() => setStage(Stages.Complete)}
-              handleBack={() => setShowMnemonicStage(ShowMnemonicStages.View)}
-            />
-          )}
+          {showMnemonicStage === ShowMnemonicStages.Verify && <Verify />}
         </MnemonicUnlock>
       </div>
     </MnemonicBackupModalBase>
