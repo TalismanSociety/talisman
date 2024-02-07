@@ -11,9 +11,7 @@ const useSignetConnectContext = ({ onSuccess }: AccountAddPageProps) => {
 
   const signetUrlOrigin = useMemo(() => {
     try {
-      const withoutOverview = signetUrl.split("overview")[0]
-      const url = new URL(withoutOverview)
-      return url.href
+      return new URL(signetUrl).origin
     } catch (e) {
       return ""
     }

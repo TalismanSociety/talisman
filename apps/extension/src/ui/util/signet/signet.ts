@@ -1,3 +1,4 @@
+import { addTrailingSlash } from "@core/util/addTrailingSlash"
 import { SignetVault } from "@ui/domains/Account/AccountAdd/AccountAddSignet/types"
 
 export const signet = {
@@ -8,7 +9,7 @@ export const signet = {
    * @returns
    */
   getVaults: async (signetUrl: string) => {
-    const newTab = window.open(`${signetUrl}connect`)
+    const newTab = window.open(`${addTrailingSlash(signetUrl)}connect`)
 
     return new Promise<SignetVault[]>((resolve, reject) => {
       if (!newTab) return reject("Failed to open new tab")

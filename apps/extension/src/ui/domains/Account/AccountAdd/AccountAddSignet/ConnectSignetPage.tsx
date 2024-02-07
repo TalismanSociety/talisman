@@ -1,4 +1,4 @@
-import { SIGNET_LANDING_URL } from "@core/constants"
+import { SIGNET_APP_URL, SIGNET_LANDING_URL } from "@core/constants"
 import { HeaderBlock } from "@talisman/components/HeaderBlock"
 import { notify } from "@talisman/components/Notifications"
 import { Spacer } from "@talisman/components/Spacer"
@@ -92,7 +92,7 @@ export const ConnectSignetPage = () => {
           <FormFieldContainer className="mt-8" label={t("Signet URL")}>
             <FormFieldInputText
               disabled={isConnecting}
-              placeholder={"Coming soon"}
+              placeholder={SIGNET_APP_URL}
               onChange={(e) => setSignetUrl(e.target.value)}
               value={signetUrl}
             />
