@@ -3,12 +3,12 @@ import { api } from "@ui/api"
 import { useCallback, useMemo } from "react"
 import { useLocation } from "react-router-dom"
 
+import useAccounts from "./useAccounts"
 import { useAppState } from "./useAppState"
+import useBalances from "./useBalances"
 import { useMnemonics } from "./useMnemonics"
-import { usePortfolioAccounts } from "./usePortfolioAccounts"
 
 const useMnemonicBackup = () => {
-  const { ownedTotal } = usePortfolioAccounts()
   const [hideBackupWarningUntil] = useAppState("hideBackupWarningUntil")
   const snoozeBackupReminder = useCallback(() => appStore.snoozeBackupReminder(), [])
   const mnemonics = useMnemonics()
@@ -21,10 +21,29 @@ const useMnemonicBackup = () => {
     [mnemonics, hasMnemonics]
   )
 
-  const notBackedUpCount = useMemo(
-    () => mnemonics.filter((mnemonic) => !mnemonic.confirmed).length,
+  const notBackedUp = useMemo(
+    () => mnemonics.filter((mnemonic) => !mnemonic.confirmed),
     [mnemonics]
   )
+
+  const accounts = useAccounts("owned")
+
+  const notBackedUpAddresses = useMemo(
+    () =>
+      accounts
+        .filter(
+          (account) =>
+            account.derivedMnemonicId &&
+            notBackedUp.map((m) => m.id).includes(account.derivedMnemonicId)
+        )
+        .map((account) => account.address),
+    [accounts, notBackedUp]
+  )
+
+  const hasFundsInNotBackedUpAddresses =
+    useBalances("owned")
+      .find(notBackedUpAddresses.map((address) => ({ address })))
+      .filterNonZero("total").sum.planck.total > 0n
 
   const isSnoozed = useMemo(() => {
     return Boolean(hideBackupWarningUntil && hideBackupWarningUntil > Date.now())
@@ -32,8 +51,8 @@ const useMnemonicBackup = () => {
 
   // whether we must show any type of warning
   const showBackupWarning = useMemo(
-    () => !isSnoozed && hasMnemonics && !allBackedUp && !!ownedTotal,
-    [isSnoozed, allBackedUp, hasMnemonics, ownedTotal]
+    () => !isSnoozed && hasMnemonics && !allBackedUp && hasFundsInNotBackedUpAddresses,
+    [isSnoozed, allBackedUp, hasMnemonics, hasFundsInNotBackedUpAddresses]
   )
 
   // hide the backup warning banner or modal if we are on the backup page
@@ -67,7 +86,7 @@ const useMnemonicBackup = () => {
 
   return {
     allBackedUp,
-    notBackedUpCount,
+    notBackedUpCount: notBackedUp.length,
     toggleConfirmed,
     confirm,
     showBackupWarning,
