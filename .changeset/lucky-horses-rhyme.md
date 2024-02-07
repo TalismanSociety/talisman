@@ -1,5 +1,5 @@
 ---
-"@talismn/chaindata-provider-extension": minor
+"@talismn/chaindata-provider": minor
 "@talismn/balances": minor
 ---
 
