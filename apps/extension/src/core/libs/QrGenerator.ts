@@ -73,7 +73,7 @@ const $networkSpecs = $.object(
 const $addNetworkSpecsPayload = $.object($.field("specs", $.uint8Array))
 
 export const generateQrAddNetworkSpecs = async (genesisHash: SignerPayloadGenesisHash) => {
-  const chain = await chaindataProvider.getChainByGenesisHash(genesisHash)
+  const chain = await chaindataProvider.chainByGenesisHash(genesisHash)
   assert(chain, "Chain not found")
 
   const systemProperties = await chainConnector.send(chain.id, "system_properties", [])

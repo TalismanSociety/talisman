@@ -3,4 +3,4 @@
 ---
 
 deprecated get entity with an object filter
-added getChainByGenesisHash method
+added chainByGenesisHash method

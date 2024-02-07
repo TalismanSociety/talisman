@@ -43,18 +43,16 @@ export default class TokensHandler extends ExtensionHandler {
         const token = request as CustomErc20TokenCreate
         const networkId = token.chainId || token.evmNetworkId
         assert(networkId, "A chainId or an evmNetworkId is required")
-        const chain = token.chainId
-          ? await chaindataProvider.getChainById(token.chainId)
-          : undefined
+        const chain = token.chainId ? await chaindataProvider.chainById(token.chainId) : undefined
         const evmNetwork = token.evmNetworkId
-          ? await chaindataProvider.getEvmNetworkById(token.evmNetworkId)
+          ? await chaindataProvider.evmNetworkById(token.evmNetworkId)
           : undefined
         assert(typeof token.contractAddress === "string", "A contract address is required")
         assert(typeof token.symbol === "string", "A token symbol is required")
         assert(typeof token.decimals === "number", "A number of token decimals is required")
 
         const tokenId = getErc20TokenId(networkId, token.contractAddress)
-        const existing = await chaindataProvider.getTokenById(tokenId)
+        const existing = await chaindataProvider.tokenById(tokenId)
         assert(!existing, "This token already exists")
 
         const { symbol, decimals, coingeckoId, contractAddress, image } = token

@@ -147,7 +147,7 @@ export class MiniMetadataUpdater {
     const now = Date.now()
     if (now - this.#lastHydratedCustomChainsAt < minimumHydrationInterval) return false
 
-    const chains = await this.#chaindataProvider.chains
+    const chains = await this.#chaindataProvider.chains()
     const customChains = chains.filter(
       (chain): chain is CustomChain => "isCustom" in chain && chain.isCustom
     )
@@ -208,7 +208,9 @@ export class MiniMetadataUpdater {
   }
 
   private async updateSubstrateChains(chainIds: ChainId[]) {
-    const chains = new Map((await this.#chaindataProvider.chains).map((chain) => [chain.id, chain]))
+    const chains = new Map(
+      (await this.#chaindataProvider.chains()).map((chain) => [chain.id, chain])
+    )
     const filteredChains = chainIds.flatMap((chainId) => chains.get(chainId) ?? [])
 
     const ids = await balancesDb.miniMetadatas.orderBy("id").primaryKeys()

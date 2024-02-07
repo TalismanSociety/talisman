@@ -74,7 +74,7 @@ export class TokenRatesStore {
   async hydrateStore(): Promise<boolean> {
     try {
       const [tokens, activeTokens] = await Promise.all([
-        chaindataProvider.tokensById,
+        chaindataProvider.tokensById(),
         activeTokensStore.get(),
       ])
 

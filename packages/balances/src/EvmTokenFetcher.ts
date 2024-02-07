@@ -22,7 +22,7 @@ export class EvmTokenFetcher {
 
   private async updateEvmNetworks(evmNetworkIds: EvmNetworkId[]) {
     const evmNetworks = new Map(
-      (await this.#chaindataProvider.evmNetworks).map((evmNetwork) => [evmNetwork.id, evmNetwork])
+      (await this.#chaindataProvider.evmNetworks()).map((evmNetwork) => [evmNetwork.id, evmNetwork])
     )
 
     const allEvmTokens: TokenList = {}

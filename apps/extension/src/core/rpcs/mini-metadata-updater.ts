@@ -58,7 +58,7 @@ const hydrateChaindataAndMiniMetadata = async () => {
     chaindataProvider.hydrateEvmNetworks(),
   ])
 
-  const chains = await chaindataProvider.chains
+  const chains = await chaindataProvider.chains()
   const { statusesByChain } = await miniMetadataUpdater.statuses(chains)
   const goodChains = [...statusesByChain.entries()].flatMap(([chainId, status]) =>
     status === "good" ? chainId : []
@@ -74,12 +74,12 @@ const updateCustomMiniMetadata = async () => {
   // E.g. state_getMetadata, system_properties, etc
   if (TEST) return
 
-  const chainIds = await chaindataProvider.chainIds
+  const chainIds = await chaindataProvider.chainIds()
   await miniMetadataUpdater.update(chainIds)
 }
 
 /** Fetches any missing Evm Tokens */
 const updateEvmTokens = async () => {
-  const evmNetworkIds = await chaindataProvider.evmNetworkIds
+  const evmNetworkIds = await chaindataProvider.evmNetworkIds()
   await evmTokenFetcher.update(evmNetworkIds)
 }

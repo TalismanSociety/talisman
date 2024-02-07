@@ -163,7 +163,7 @@ export class BalanceStore {
     if (existing.count > 0) return existing.sorted[0]?.toJSON()
 
     // no existing balance found, fetch it directly via rpc
-    const token = await chaindataProvider.getTokenById(tokenId)
+    const token = await chaindataProvider.tokenById(tokenId)
     if (!token) {
       const error = new Error(`Failed to fetch balance: no token with id ${tokenId}`)
       Sentry.captureException(error)

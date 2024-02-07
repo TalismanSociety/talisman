@@ -6,54 +6,54 @@ import { Token, TokenId } from "./Token"
 
 export interface IChaindataChainProvider {
   chainsObservable: Observable<Chain[]>
-  chains: Promise<Chain[]>
+  chains(): Promise<Chain[]>
 
   customChainsObservable: Observable<CustomChain[]>
-  customChains: Promise<CustomChain[]>
+  customChains(): Promise<CustomChain[]>
 
   chainIdsObservable: Observable<ChainId[]>
-  chainIds: Promise<ChainId[]>
+  chainIds(): Promise<ChainId[]>
 
   chainsByIdObservable: Observable<Record<ChainId, Chain>>
-  chainsById: Promise<Record<ChainId, Chain>>
+  chainsById(): Promise<Record<ChainId, Chain>>
 
   chainsByGenesisHashObservable: Observable<Record<ChainId, Chain>>
-  chainsByGenesisHash: Promise<Record<ChainId, Chain>>
+  chainsByGenesisHash(): Promise<Record<ChainId, Chain>>
 
-  getChainById(chainId: ChainId): Promise<Chain | null>
-  getChainByGenesisHash(genesisHash: `0x${string}`): Promise<Chain | null>
+  chainById(chainId: ChainId): Promise<Chain | null>
+  chainByGenesisHash(genesisHash: `0x${string}`): Promise<Chain | null>
 }
 
 export interface IChaindataEvmNetworkProvider {
   evmNetworksObservable: Observable<EvmNetwork[]>
-  evmNetworks: Promise<EvmNetwork[]>
+  evmNetworks(): Promise<EvmNetwork[]>
 
   customEvmNetworksObservable: Observable<CustomEvmNetwork[]>
-  customEvmNetworks: Promise<CustomEvmNetwork[]>
+  customEvmNetworks(): Promise<CustomEvmNetwork[]>
 
   evmNetworkIdsObservable: Observable<EvmNetworkId[]>
-  evmNetworkIds: Promise<EvmNetworkId[]>
+  evmNetworkIds(): Promise<EvmNetworkId[]>
 
   evmNetworksByIdObservable: Observable<Record<EvmNetworkId, EvmNetwork>>
-  evmNetworksById: Promise<Record<EvmNetworkId, EvmNetwork>>
+  evmNetworksById(): Promise<Record<EvmNetworkId, EvmNetwork>>
 
-  getEvmNetworkById(evmNetworkId: EvmNetworkId): Promise<EvmNetwork | null>
+  evmNetworkById(evmNetworkId: EvmNetworkId): Promise<EvmNetwork | null>
 }
 
 export interface IChaindataTokenProvider {
   tokensObservable: Observable<Token[]>
-  tokens: Promise<Token[]>
+  tokens(): Promise<Token[]>
 
   customTokensObservable: Observable<Token[]>
-  customTokens: Promise<Token[]>
+  customTokens(): Promise<Token[]>
 
   tokenIdsObservable: Observable<TokenId[]>
-  tokenIds: Promise<TokenId[]>
+  tokenIds(): Promise<TokenId[]>
 
   tokensByIdObservable: Observable<Record<TokenId, Token>>
-  tokensById: Promise<Record<TokenId, Token>>
+  tokensById(): Promise<Record<TokenId, Token>>
 
-  getTokenById(tokenId: TokenId): Promise<Token | null>
+  tokenById(tokenId: TokenId): Promise<Token | null>
 }
 
 export interface IChaindataProvider

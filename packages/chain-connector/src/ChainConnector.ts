@@ -74,7 +74,7 @@ export class ChainConnector {
     this.#connectionMetaDb = connectionMetaDb
 
     if (this.#connectionMetaDb) {
-      this.#chaindataChainProvider.chainIds.then((chainIds) => {
+      this.#chaindataChainProvider.chainIds().then((chainIds) => {
         // tidy up connectionMeta for chains which no longer exist
         this.#connectionMetaDb?.chainPriorityRpc.where("id").noneOf(chainIds).delete()
         this.#connectionMetaDb?.chainBackoffInterval.where("id").noneOf(chainIds).delete()
@@ -141,7 +141,7 @@ export class ChainConnector {
     const talismanSub = this.getTalismanSub()
     if (talismanSub !== undefined) {
       try {
-        const chain = await this.#chaindataChainProvider.getChainById(chainId)
+        const chain = await this.#chaindataChainProvider.chainById(chainId)
         if (!chain) throw new Error(`Chain ${chainId} not found in store`)
 
         const { genesisHash } = chain
@@ -198,7 +198,7 @@ export class ChainConnector {
     const talismanSub = this.getTalismanSub()
     if (talismanSub !== undefined) {
       try {
-        const chain = await this.#chaindataChainProvider.getChainById(chainId)
+        const chain = await this.#chaindataChainProvider.chainById(chainId)
         if (!chain) throw new Error(`Chain ${chainId} not found in store`)
 
         const { genesisHash } = chain
@@ -365,7 +365,7 @@ export class ChainConnector {
    * The caller must call disconnectChainSocket with the returned SocketUserId once they are finished with it
    */
   private async connectChainSocket(chainId: ChainId): Promise<[SocketUserId, Websocket]> {
-    const chain = await this.#chaindataChainProvider.getChainById(chainId)
+    const chain = await this.#chaindataChainProvider.chainById(chainId)
     if (!chain) throw new Error(`Chain ${chainId} not found in store`)
     const socketUserId = this.addSocketUser(chainId)
 
