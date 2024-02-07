@@ -1,3 +1,4 @@
+import { execSync } from "child_process"
 import fs from "fs"
 import path from "path"
 
@@ -20,6 +21,8 @@ async function generateInitData() {
     path.resolve(__dirname, "../src/init/mini-metadatas.ts"),
     `export const miniMetadatas = ${JSON.stringify(await fetchMiniMetadatas(), null, 2)}`
   )
+
+  execSync(`prettier --write '${path.resolve(__dirname, "../src/init")}'`, { stdio: "inherit" })
 }
 
 // Use this command to run this file:
