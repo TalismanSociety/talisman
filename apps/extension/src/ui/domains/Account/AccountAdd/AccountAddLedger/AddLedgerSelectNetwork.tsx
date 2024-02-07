@@ -8,7 +8,7 @@ import { AccountTypeSelector } from "@ui/domains/Account/AccountTypeSelector"
 import { ChainLogo } from "@ui/domains/Asset/ChainLogo"
 import { useLedgerChains } from "@ui/hooks/ledger/useLedgerChains"
 import useChain from "@ui/hooks/useChain"
-import { ChangeEventHandler, useCallback, useMemo, useState } from "react"
+import { FC, ReactNode, useCallback, useMemo, useState } from "react"
 import { useForm } from "react-hook-form"
 import { useTranslation } from "react-i18next"
 import { useNavigate } from "react-router-dom"
@@ -32,6 +32,41 @@ const renderOption = (chain: Chain) => {
       <ChainLogo id={chain.id} className="text-[1.25em]" />
       <span className="overflow-hidden text-ellipsis whitespace-nowrap">{chain.name}</span>
     </div>
+  )
+}
+
+const AppVersionButton: FC<{
+  title: ReactNode
+  description: ReactNode
+  extra?: ReactNode
+  selected?: boolean
+  disabled?: boolean
+  onClick?: () => void
+}> = ({ title, description, extra, selected, disabled, onClick }) => {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      className={classNames(
+        "bg-field text-body-secondary group flex flex-col gap-5 rounded border p-8 text-left",
+        "disabled:cursor-not-allowed disabled:opacity-50",
+        selected
+          ? "border-body bg-grey-800"
+          : "border-body-disabled enabled:hover:border-body-secondary enabled:hover:bg-grey-800"
+      )}
+      disabled={disabled}
+    >
+      <div
+        className={classNames(
+          "group-enabled:group-hover:text-body text-base",
+          selected && "text-body"
+        )}
+      >
+        {title}
+      </div>
+      <div className="text-xs">{description}</div>
+      {extra && <div className="text-xs">{extra}</div>}
+    </button>
   )
 }
 
@@ -81,7 +116,7 @@ export const AddLedgerSelectNetwork = () => {
     handleSubmit,
     watch,
     setValue,
-    formState: { isValid, isSubmitting, errors },
+    formState: { isValid, isSubmitting },
   } = useForm<FormData>({
     mode: "onChange",
     defaultValues,
@@ -113,12 +148,11 @@ export const AddLedgerSelectNetwork = () => {
     [setValue]
   )
 
-  const handleSubstrateAppTypeChange: ChangeEventHandler<HTMLInputElement> = useCallback(
-    (e) => {
-      if (e.target.checked)
-        setValue("substrateAppType", e.target.value as SubstrateLedgerAppType, {
-          shouldValidate: true,
-        })
+  const handleSubstrateAppTypeClick = useCallback(
+    (type: SubstrateLedgerAppType) => () => {
+      setValue("substrateAppType", type, {
+        shouldValidate: true,
+      })
     },
     [setValue]
   )
@@ -131,10 +165,6 @@ export const AddLedgerSelectNetwork = () => {
     accountType === "ethereum" ||
     (accountType === "sr25519" && (chainId || substrateAppType === "polkadot"))
 
-  // TODO REMOVE
-  // eslint-disable-next-line no-console
-  console.log({ isValid, isLedgerReady, errors })
-
   return (
     <form className="flex h-full max-h-screen flex-col" onSubmit={handleSubmit(submit)}>
       <div className="flex-grow">
@@ -145,59 +175,53 @@ export const AddLedgerSelectNetwork = () => {
         <Spacer small />
         <AccountTypeSelector defaultType={accountType} onChange={handleTypeChange} />
         {accountType === "sr25519" && (
-          <>
-            <h2 className="mb-8 mt-12 text-base">{t("Step 1")}</h2>
-            <p className="text-body-secondary mt-6">
-              {t("Select the Ledger app that you wish to connect:")}
-            </p>
-            <div className="mt-4">
-              <input
-                type="radio"
-                name="substrate-app-type"
-                id="polkadot"
-                value="polkadot"
-                onChange={handleSubstrateAppTypeChange}
+          <div className="bg-black-secondary mt-12 rounded p-12">
+            <h2 className="text-body-disabled leading-paragraph text-base">
+              {t("1. Choose Ledger App Version")}
+            </h2>
+            <div className="mt-6 grid grid-cols-3 gap-8">
+              <AppVersionButton
+                title={t("Polkadot App")}
+                description={t("Supports all substrate networks")}
+                extra={
+                  <span className="bg-green/10 text-green rounded-[1.2rem] px-4 py-1">
+                    {t("Recommended")}
+                  </span>
+                }
+                selected={substrateAppType === "polkadot"}
+                onClick={handleSubstrateAppTypeClick("polkadot")}
               />
-              <label htmlFor="polkadot" className="text-body-secondary ml-3">
-                {t("Polkadot app (recommended)")}
-              </label>
-            </div>
-            <div>
-              <input
-                type="radio"
-                name="substrate-app-type"
-                id="substrate-legacy"
-                value="substrate-legacy"
-                onChange={handleSubstrateAppTypeChange}
+              <AppVersionButton
+                title={t("Legacy Apps")}
+                description={t("Network-specific substrate apps")}
+                selected={substrateAppType === "substrate-legacy"}
+                onClick={handleSubstrateAppTypeClick("substrate-legacy")}
               />
-              <label htmlFor="substrate-legacy" className="text-body-secondary ml-3">
-                {t("Legacy Polkadot app (network specific)")}
-              </label>
+              <AppVersionButton title={t("Recovery App")} description={t("Coming soon")} disabled />
             </div>
-            <div
-              className={classNames(
-                "mt-8",
-                substrateAppType === "substrate-legacy" ? "visible" : "invisible"
-              )}
-            >
-              <Dropdown
-                propertyKey="id"
-                items={ledgerChains}
-                value={chain}
-                placeholder={t("Select a network")}
-                renderItem={renderOption}
-                onChange={handleNetworkChange}
-              />
-              <p className="text-body-secondary mt-6">
-                {t("Please note: a Ledger account can only be used on a single network.")}
-              </p>
-            </div>
-          </>
+            {substrateAppType === "substrate-legacy" && (
+              <>
+                <h2 className="text-body-disabled leading-paragraph mb-6 mt-12 text-base">
+                  {t("2. Choose Network")}
+                </h2>
+                <Dropdown
+                  propertyKey="id"
+                  items={ledgerChains}
+                  value={chain}
+                  placeholder={t("Select a network")}
+                  renderItem={renderOption}
+                  onChange={handleNetworkChange}
+                />
+                <p className="text-body-disabled mt-6 text-sm">
+                  {t("Please note: a legacy Ledger account can only be used on a single network.")}
+                </p>
+              </>
+            )}
+          </div>
         )}
-        <div className={classNames("mt-12 h-[20rem]", showStep2 ? "visible" : "invisible")}>
+        <div className={classNames("mt-16 h-[20rem]", showStep2 ? "visible" : "invisible")}>
           {showStep2 && accountType === "sr25519" && (
             <>
-              <h2 className="mb-8 mt-0 text-base">{t("Step 2")}</h2>
               {substrateAppType === "substrate-legacy" && (
                 <ConnectLedgerSubstrateLegacy
                   className="min-h-[11rem]"
