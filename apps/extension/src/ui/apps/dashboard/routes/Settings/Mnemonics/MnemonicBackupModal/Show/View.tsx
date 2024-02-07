@@ -62,15 +62,14 @@ export const ViewMnemonic: FC<ShowMnemonicProps> = ({ handleComplete }) => {
           </Button>
         </div>
       </div>
-      <div
-        className="text-body-secondary flex cursor-pointer gap-5 self-end text-sm"
+      <button
+        className="text-body-secondary hover:text-grey-300 flex cursor-pointer gap-5 self-end text-sm"
         onClick={close}
         onKeyDown={close}
-        role="button"
-        tabIndex={0}
+        type="button"
       >
         {t("Skip verification for now")}
-      </div>
+      </button>
     </div>
   )
 }

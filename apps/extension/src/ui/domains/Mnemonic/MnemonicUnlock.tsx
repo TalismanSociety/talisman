@@ -1,6 +1,7 @@
 import { yupResolver } from "@hookform/resolvers/yup"
 import { provideContext } from "@talisman/util/provideContext"
 import { KeyIcon } from "@talismn/icons"
+import { classNames } from "@talismn/util"
 import { api } from "@ui/api"
 import { useSensitiveState } from "@ui/hooks/useSensitiveState"
 import { FC, ReactNode, useCallback, useEffect } from "react"
@@ -90,7 +91,7 @@ const BaseMnemonicUnlock: FC<MnemonicUnlockProps> = ({ children, buttonText, tit
   }, [mnemonic, setFocus])
 
   return mnemonic ? (
-    <div className={`${DEFAULT_WIDTH} ${mnemonic.split(" ").length > 12 && LARGE_WIDTH}`}>
+    <div className={classNames(mnemonic.split(" ").length > 12 ? LARGE_WIDTH : DEFAULT_WIDTH)}>
       {children}
     </div>
   ) : (

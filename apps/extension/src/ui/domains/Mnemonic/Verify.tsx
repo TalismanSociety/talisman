@@ -20,10 +20,10 @@ const WordSlot = ({
     className={classNames(
       "bg-black-tertiary whitespace-nowrap rounded-xl px-6 py-3",
       error
-        ? "text-brand-orange border-brand-orange border border-dotted"
+        ? "text-brand-orange border-brand-orange border border-dashed"
         : active || word
         ? "text-body border-body border border-solid"
-        : "text-body-secondary border-body-secondary border border-dotted"
+        : "text-body-secondary border-body-secondary border border-dashed"
     )}
   >
     <span className="select-none">{number}. </span>
@@ -43,7 +43,7 @@ const WordOption = ({
   <button
     onClick={() => onClick(word)}
     className={classNames(
-      "bg-black-tertiary text-body rounded-xl px-8 py-3",
+      "bg-black-tertiary text-body hover:bg-grey-700 rounded-xl px-8 py-3",
       selected ? "text-opacity-20" : ""
     )}
   >
@@ -142,15 +142,14 @@ export const Verify: FC<VerifyProps> = ({ handleComplete, handleBack, mnemonic }
           >
             {t("Complete Verification")}
           </Button>
-          <div
-            className="text-body-secondary flex cursor-pointer items-center gap-4 text-sm"
+          <button
+            className="text-body-secondary hover:text-grey-300 flex cursor-pointer items-center gap-4 text-sm"
             onClick={handleBack}
             onKeyDown={handleBack}
-            role="button"
-            tabIndex={0}
+            type="button"
           >
             <ChevronLeftIcon /> <span>{t("Back")}</span>
-          </div>
+          </button>
         </div>
       </div>
     </div>

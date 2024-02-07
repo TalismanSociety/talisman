@@ -54,15 +54,14 @@ const MnemonicFormInner = () => {
           <Button primary fullWidth onClick={handleContinueClick}>
             {t("Verify recovery phrase")}
           </Button>
-          <div
-            className="text-body-secondary flex cursor-pointer gap-5 self-end text-sm"
+          <button
+            className="text-body-secondary hover:text-grey-300 flex cursor-pointer gap-5 self-end text-sm"
             onClick={complete}
             onKeyDown={complete}
-            role="button"
-            tabIndex={0}
+            type="button"
           >
             {t("Skip verification for now")}
-          </div>
+          </button>
         </div>
       </div>
     </div>

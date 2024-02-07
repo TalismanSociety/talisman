@@ -40,7 +40,11 @@ export const Acknowledgement = ({ onContinueClick }: { onContinueClick: () => vo
         </Button>
       </div>
       <div className="text-center">
-        <a href={MNEMONIC_BACKUP_DOCS_URL} target="_blank" className="text-body-secondary text-sm">
+        <a
+          href={MNEMONIC_BACKUP_DOCS_URL}
+          target="_blank"
+          className="text-body-secondary hover:text-grey-300 text-sm"
+        >
           {t("Learn More")}
         </a>
       </div>
