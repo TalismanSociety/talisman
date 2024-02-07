@@ -63,7 +63,7 @@ export default class SigningHandler extends ExtensionHandler {
 
       // notify user about transaction progress
       if (isJsonPayload(payload)) {
-        const chains = Object.values(await chaindataProvider.chainsById)
+        const chains = Object.values(await chaindataProvider.chainsById())
         const chain = chains.find((c) => c.genesisHash === payload.genesisHash)
 
         if (chain) {
