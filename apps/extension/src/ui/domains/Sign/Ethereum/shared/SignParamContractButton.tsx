@@ -22,11 +22,11 @@ export const SignParamNetworkAddressButton: FC<SignParamNetworkAddressButtonProp
   className,
 }) => {
   const nativeToken = useToken(network.nativeToken?.id)
-  const isInvalidAddress = useMemo(() => !isEthereumAddress(address), [address])
+  const isInvalidAddress = useMemo(() => address.toLowerCase().startsWith("javascript:"), [address])
 
   return (
     <SignParamButton
-      explorerUrl={network.explorerUrl}
+      explorerUrl={isInvalidAddress ? undefined : network.explorerUrl}
       address={address}
       iconPrefix={
         <AssetLogo
@@ -45,8 +45,11 @@ export const SignParamNetworkAddressButton: FC<SignParamNetworkAddressButtonProp
           </TooltipTrigger>
           <TooltipContent>{address}</TooltipContent>
         </Tooltip>
-      ) : (
+      ) : // could be a text address. ex: swap DYM on https://portal.dymension.xyz/
+      isEthereumAddress(address) ? (
         <Address startCharCount={6} endCharCount={4} address={address} />
+      ) : (
+        address
       )}
     </SignParamButton>
   )
