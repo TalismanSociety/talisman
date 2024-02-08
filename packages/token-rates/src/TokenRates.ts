@@ -3,9 +3,6 @@ import axios from "axios"
 
 import { NewTokenRates, TokenRates, TokenRatesList } from "./types"
 
-// the base url of the v3 coingecko api
-const coingeckoApiUrl = "https://api.coingecko.com/api/v3"
-
 // every currency in this list will be fetched from coingecko
 // comment out unused currencies to save some bandwidth!
 const coingeckoCurrencies: Array<keyof TokenRates> = [
@@ -25,8 +22,21 @@ const coingeckoCurrencies: Array<keyof TokenRates> = [
   "dot",
 ]
 
+type CoingeckoConfig = {
+  apiUrl: string
+  apiKeyName?: string
+  apiKeyValue?: string
+}
+
+const DEFAULT_COINGECKO_CONFIG: CoingeckoConfig = {
+  apiUrl: "https://api.coingecko.com",
+}
+
 // export function tokenRates(tokens: WithCoingeckoId[]): TokenRatesList {}
-export async function fetchTokenRates(tokens: Record<TokenId, IToken>) {
+export async function fetchTokenRates(
+  tokens: Record<TokenId, IToken>,
+  config: CoingeckoConfig = DEFAULT_COINGECKO_CONFIG
+): Promise<TokenRatesList> {
   // create a map from `coingeckoId` -> `tokenId` for each token
   const coingeckoIdToTokenIds = Object.values(tokens)
     // ignore testnet tokens
@@ -51,7 +61,14 @@ export async function fetchTokenRates(tokens: Record<TokenId, IToken>) {
   // construct a coingecko request
   const idsSerialized = coingeckoIds.join(",")
   const currenciesSerialized = coingeckoCurrencies.join(",")
-  const queryUrl = `${coingeckoApiUrl}/simple/price?ids=${idsSerialized}&vs_currencies=${currenciesSerialized}`
+  // note: coingecko api key cannot be passed as header here as it would be camel cased by axios and ignored by the server
+  // need to pass it as a query parameter, and replace all '-' with '_'
+  // TODO => migrate to fetch api
+  const apiKeySuffix =
+    config.apiKeyName && config.apiKeyValue
+      ? `&${config.apiKeyName?.replaceAll("-", "_")}=${config.apiKeyValue}`
+      : ""
+  const queryUrl = `${config.apiUrl}/api/v3/simple/price?ids=${idsSerialized}&vs_currencies=${currenciesSerialized}${apiKeySuffix}`
 
   // fetch the token prices from coingecko
   // the response should be in the format:

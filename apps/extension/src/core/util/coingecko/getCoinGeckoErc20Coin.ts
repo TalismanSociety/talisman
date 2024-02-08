@@ -1,5 +1,7 @@
 import { log } from "@core/log"
 
+import { fetchFromCoingecko } from "./fetchFromCoingecko"
+
 type CoinGeckoAssetPlatform = {
   id: string
   chain_identifier: number
@@ -38,7 +40,7 @@ const getCoinGeckoAssetPlatform = async (assetPlatformId: string) => {
     assetPlatformCache.fetched + ASSETPLATFORM_CACHE_TIMEOUT < Date.now()
   ) {
     try {
-      const fetchAssetPlaforms = await fetch("https://api.coingecko.com/api/v3/asset_platforms")
+      const fetchAssetPlaforms = await fetchFromCoingecko("/api/v3/asset_platforms")
       if (fetchAssetPlaforms.ok) {
         assetPlatformCache.data = await fetchAssetPlaforms.json()
         assetPlatformCache.fetched = Date.now()
@@ -65,10 +67,8 @@ export const getCoinGeckoErc20Coin = async (
   if (!assetPlatform) return null
 
   try {
-    const fetchErc20Coin = await fetch(
-      `https://api.coingecko.com/api/v3/coins/${
-        assetPlatform.id
-      }/contract/${contractAddress.toLowerCase()}`
+    const fetchErc20Coin = await fetchFromCoingecko(
+      `/api/v3/coins/${assetPlatform.id}/contract/${contractAddress.toLowerCase()}`
     )
     const res = await fetchErc20Coin.json()
 
