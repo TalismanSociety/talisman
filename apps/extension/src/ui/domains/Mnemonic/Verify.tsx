@@ -42,9 +42,9 @@ const WordOption = ({
 }) => (
   <button
     onClick={() => onClick(word)}
+    disabled={selected}
     className={classNames(
-      "bg-black-tertiary text-body hover:bg-grey-700 rounded-xl px-8 py-3",
-      selected ? "text-opacity-20" : ""
+      "bg-black-tertiary text-body enabled:hover:bg-grey-700 rounded-xl px-8 py-3 disabled:text-opacity-20"
     )}
   >
     <span className="notranslate">{word}</span>
@@ -145,7 +145,6 @@ export const Verify: FC<VerifyProps> = ({ handleComplete, handleBack, mnemonic }
           <button
             className="text-body-secondary hover:text-grey-300 flex cursor-pointer items-center gap-4 text-sm"
             onClick={handleBack}
-            onKeyDown={handleBack}
             type="button"
           >
             <ChevronLeftIcon /> <span>{t("Back")}</span>
