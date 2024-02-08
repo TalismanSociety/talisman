@@ -22,6 +22,6 @@ export const upgradeRemoveSymbolFromNativeTokenId = async (tx: Transaction) => {
   } catch (err) {
     // error most likely due to duplicate ids => clear the db
     log.error("Failed to upgrade balances native token ids", { err })
-    throw err
+    await balancesTable.clear()
   }
 }
