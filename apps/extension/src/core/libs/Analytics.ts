@@ -104,6 +104,7 @@ class TalismanAnalytics {
           qr: 0,
           dcent: 0,
           watched: 0,
+          signet: 0,
         } as Record<Lowercase<AccountType>, number>
       )
       posthog.capture("accounts breakdown", { accountBreakdown })

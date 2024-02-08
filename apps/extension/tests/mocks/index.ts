@@ -61,8 +61,8 @@ jest.mock("react-i18next", () => ({
   },
 }))
 
-jest.mock("@core/util/getConfig", () => ({
-  getConfig: jest.fn(() =>
+jest.mock("@core/util/fetchRemoteConfig", () => ({
+  fetchRemoteConfig: jest.fn(() =>
     Promise.resolve({
       featureFlags: {
         BUY_CRYPTO: true, // nav buttons + button in fund wallet component

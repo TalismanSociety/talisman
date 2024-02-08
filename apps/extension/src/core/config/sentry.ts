@@ -31,6 +31,7 @@ export const initSentry = (sentry: typeof SentryBrowser | typeof SentryReact) =>
       /(disconnected from wss)[(]?:\/\/[\w./:-]+: \d+:: Normal Closure[)]?/,
       /^disconnected from .+: [0-9]+:: .+$/,
       /^unsubscribed from .+: [0-9]+:: .+$/,
+      /(Could not establish connection. Receiving end does not exist.)/,
     ],
     // prevents sending the event if user has disabled error tracking
     beforeSend: async (event, hint) => {

@@ -18,6 +18,9 @@ declare namespace NodeJS {
     readonly PASSWORD?: string
     readonly TEST_MNEMONIC?: string
     readonly EVM_LOGPROXY?: string
+    readonly COINGECKO_API_DOMAIN?: string
+    readonly COINGECKO_API_KEY_NAME?: string
+    readonly COINGECKO_API_KEY_VALUE?: string
   }
 }
 

@@ -3,6 +3,7 @@ import { AccountType } from "@core/domains/accounts/types"
 import type {
   KnownSigningRequestIdOnly,
   RequestSigningApproveSignature,
+  SignerPayloadJSON,
 } from "@core/domains/signing/types"
 import { watchSubstrateTransaction } from "@core/domains/transactions"
 import { getPairForAddressSafely } from "@core/handlers/helpers"
@@ -12,6 +13,7 @@ import { requestStore } from "@core/libs/requests/store"
 import { chaindataProvider } from "@core/rpcs/chaindata"
 import type { MessageTypes, RequestType, ResponseType } from "@core/types"
 import { Port } from "@core/types/base"
+import { addTrailingSlash } from "@core/util/addTrailingSlash"
 import { getTypeRegistry } from "@core/util/getTypeRegistry"
 import { isJsonPayload } from "@core/util/isJsonPayload"
 import { validateHexString } from "@core/util/validateHexString"
@@ -19,7 +21,9 @@ import { TypeRegistry } from "@polkadot/types"
 import keyring from "@polkadot/ui-keyring"
 import { assert } from "@polkadot/util"
 import { encodeAnyAddress } from "@talismn/util"
+import Browser from "webextension-polyfill"
 
+import { windowManager } from "../../libs/WindowManager"
 import { getHostName } from "../app/helpers"
 
 export default class SigningHandler extends ExtensionHandler {
@@ -171,6 +175,34 @@ export default class SigningHandler extends ExtensionHandler {
     return true
   }
 
+  private async signingApproveSignet({ id }: RequestType<"pri(signing.approveSign.signet)">) {
+    const queued = requestStore.getRequest(id)
+
+    assert(queued, "Unable to find request")
+    assert(typeof queued.account.signetUrl === "string", "Invalid Signet account")
+
+    const { request, url } = queued
+
+    const params = new URLSearchParams({
+      id: queued.id,
+      calldata: (request.payload as SignerPayloadJSON).method,
+      account: queued.account.address,
+      genesisHash: queued.account.genesisHash || "",
+      dapp: url,
+    })
+
+    // close popup so Signet signing page can be open in full screen normal browser
+    // users will most likely stay on Signet anyway to review the pending tx
+    // so the popup is not needed here and can be closed
+    windowManager.popupClose()
+    await Browser.tabs.create({
+      url: `${addTrailingSlash(queued.account.signetUrl)}sign?${params.toString()}`,
+      active: true,
+    })
+
+    return true
+  }
+
   public async handle<TMessageType extends MessageTypes>(
     id: string,
     type: TMessageType,
@@ -191,6 +223,8 @@ export default class SigningHandler extends ExtensionHandler {
       case "pri(signing.cancel)":
         return this.signingCancel(request as RequestType<"pri(signing.cancel)">)
 
+      case "pri(signing.approveSign.signet)":
+        return this.signingApproveSignet(request as RequestType<"pri(signing.approveSign.signet)">)
       default:
         throw new Error(`Unable to handle message of type ${type}`)
     }
