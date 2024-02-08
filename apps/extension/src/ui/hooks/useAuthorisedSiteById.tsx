@@ -14,9 +14,19 @@ import { useAuthorisedSites } from "./useAuthorisedSites"
 
 const useAuthorisedSiteById = (id: AuthorizedSiteId, type: ProviderType) => {
   const sites = useAuthorisedSites()
-  const availableAddresses = useAccountAddresses(
+  const isSiteTalismanUrl = isTalismanUrl(sites[id]?.url)
+  const availableOwnedOrAllAddresses = useAccountAddresses(
     type === "ethereum",
-    isTalismanUrl(sites[id]?.url) ? "all" : "owned"
+    isSiteTalismanUrl ? "all" : "owned"
+  )
+  const signetAddresses = useAccountAddresses(type === "ethereum", "signet")
+
+  const availableAddresses = useMemo(
+    () =>
+      isSiteTalismanUrl
+        ? availableOwnedOrAllAddresses
+        : [...availableOwnedOrAllAddresses, ...signetAddresses],
+    [availableOwnedOrAllAddresses, isSiteTalismanUrl, signetAddresses]
   )
 
   const connected = useMemo(() => {

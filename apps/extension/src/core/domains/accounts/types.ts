@@ -62,6 +62,12 @@ type AccountJsonDcentOwnProperties = {
 
 export type AccountJsonDcent = AccountJson & AccountJsonDcentOwnProperties
 
+type AccountJsonSignetOwnProperties = {
+  signetUrl: string
+}
+
+export type AccountJsonSignet = AccountJson & AccountJsonSignetOwnProperties
+
 export type AccountJsonAny = (
   | AccountJsonHardwareEthereum
   | AccountJsonHardwareSubstrate
@@ -69,6 +75,7 @@ export type AccountJsonAny = (
   | AccountJsonWatched
   | AccountJsonDcent
   | AccountJson
+  | AccountJsonSignet
 ) & { origin?: AccountType | undefined; derivedMnemonicId?: string; derivationPath?: string } & {
   folderId?: string
   folderName?: string
@@ -92,6 +99,7 @@ export enum AccountType {
   Ledger = "LEDGER",
   Dcent = "DCENT",
   Watched = "WATCHED",
+  Signet = "SIGNET",
 }
 export interface AccountMeta extends AccountJson {
   name: string
@@ -137,6 +145,13 @@ export interface RequestAccountCreateWatched {
   name: string
   address: string
   isPortfolio: boolean
+}
+
+export type RequestAccountCreateSignet = {
+  address: string
+  name: string
+  genesisHash: `0x${string}`
+  signetUrl: string
 }
 
 export interface RequestAccountExternalSetIsPortfolio {
@@ -216,6 +231,7 @@ export interface AccountsMessages {
   "pri(accounts.create.dcent)": [RequestAccountCreateDcent, string]
   "pri(accounts.create.qr.substrate)": [RequestAccountCreateExternal, string]
   "pri(accounts.create.watched)": [RequestAccountCreateWatched, string]
+  "pri(accounts.create.signet)": [RequestAccountCreateSignet, string]
   "pri(accounts.forget)": [RequestAccountForget, boolean]
   "pri(accounts.export)": [RequestAccountExport, ResponseAccountExport]
   "pri(accounts.export.pk)": [RequestAccountExportPrivateKey, string]

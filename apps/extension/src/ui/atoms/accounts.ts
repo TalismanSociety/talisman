@@ -47,7 +47,12 @@ export const accountByAddressQuery = selectorFamily({
     },
 })
 
-export type AccountsFilter = "all" | "watched" | "owned" | "portfolio"
+export type AccountsFilter = "all" | "watched" | "owned" | "portfolio" | "signet"
+
+const IS_EXTERNAL: Partial<Record<AccountType, true>> = {
+  [AccountType.Watched]: true,
+  [AccountType.Signet]: true,
+}
 
 export const accountsQuery = selectorFamily({
   key: "accountsQuery",
@@ -58,12 +63,14 @@ export const accountsQuery = selectorFamily({
       switch (filter) {
         case "portfolio":
           return accounts.filter(
-            ({ origin, isPortfolio }) => origin !== AccountType.Watched || isPortfolio
+            ({ origin, isPortfolio }) => !origin || !IS_EXTERNAL[origin] || isPortfolio
           )
         case "watched":
           return accounts.filter(({ origin }) => origin === AccountType.Watched)
         case "owned":
-          return accounts.filter(({ origin }) => origin !== AccountType.Watched)
+          return accounts.filter(({ origin }) => !origin || !IS_EXTERNAL[origin])
+        case "signet":
+          return accounts.filter(({ origin }) => origin === AccountType.Signet)
         case "all":
           return accounts
       }

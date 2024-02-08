@@ -149,7 +149,11 @@ const PageContent = () => {
                   ? folder.name
                   : t("Total Portfolio")}
               </div>
-              <AccountTypeIcon className="text-primary" origin={account?.origin} />
+              <AccountTypeIcon
+                className="text-primary"
+                origin={account?.origin}
+                signetUrl={account?.signetUrl as string}
+              />
             </div>
             <div className={classNames("truncate", account ? "text-body-secondary" : "text-md")}>
               {account ? (
