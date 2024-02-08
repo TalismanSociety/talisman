@@ -20,6 +20,7 @@ import { AllAddressesProvider } from "./useAllAddresses"
 import { BalanceModulesProvider } from "./useBalanceModules"
 import { ChainConnectorsProvider } from "./useChainConnectors"
 import { ChaindataProvider } from "./useChaindata"
+import { CoingeckoConfigProvider } from "./useCoingeckoConfig"
 import { DbCacheProvider } from "./useDbCache"
 import { EnabledChainsProvider } from "./useEnabledChains"
 import { WithTestnetsProvider } from "./useWithTestnets"
@@ -28,6 +29,9 @@ export type BalancesProviderProps = {
   // TODO: Make this array of BalanceModules more type-safe
   balanceModules: Array<(hydrate: Hydrate) => AnyBalanceModule>
   onfinalityApiKey?: string
+  coingeckoApiUrl?: string
+  coingeckoApiKeyName?: string
+  coingeckoApiKeyValue?: string
   withTestnets?: boolean
   /**
    * A list of chain genesisHashes to fetch balances for.
@@ -60,6 +64,9 @@ export type BalancesProviderProps = {
 export const BalancesProvider = ({
   balanceModules,
   onfinalityApiKey,
+  coingeckoApiUrl,
+  coingeckoApiKeyName,
+  coingeckoApiKeyValue,
   withTestnets,
   enabledChains,
   children,
@@ -70,7 +77,13 @@ export const BalancesProvider = ({
         <ChainConnectorsProvider onfinalityApiKey={onfinalityApiKey}>
           <AllAddressesProvider>
             <BalanceModulesProvider balanceModules={balanceModules}>
-              <DbCacheProvider>{children}</DbCacheProvider>
+              <CoingeckoConfigProvider
+                apiUrl={coingeckoApiUrl}
+                apiKeyName={coingeckoApiKeyName}
+                apiKeyValue={coingeckoApiKeyValue}
+              >
+                <DbCacheProvider>{children}</DbCacheProvider>
+              </CoingeckoConfigProvider>
             </BalanceModulesProvider>
           </AllAddressesProvider>
         </ChainConnectorsProvider>

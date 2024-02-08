@@ -9,7 +9,7 @@ import {
 } from "@talismn/balances"
 import { ChaindataProvider, TokenList } from "@talismn/chaindata-provider"
 import { ChaindataProviderExtension } from "@talismn/chaindata-provider-extension"
-import { fetchTokenRates, db as tokenRatesDb } from "@talismn/token-rates"
+import { CoingeckoConfig, fetchTokenRates, db as tokenRatesDb } from "@talismn/token-rates"
 import md5 from "blueimp-md5"
 import { useCallback, useMemo } from "react"
 
@@ -19,6 +19,7 @@ import { useAllAddresses } from "./useAllAddresses"
 import { useBalanceModules } from "./useBalanceModules"
 import { useChainConnectors } from "./useChainConnectors"
 import { useChaindata } from "./useChaindata"
+import { useCoingeckoConfig } from "./useCoingeckoConfig"
 import { useDbCache } from "./useDbCache"
 import { useEnabledChains } from "./useEnabledChains"
 import { useWithTestnets } from "./useWithTestnets"
@@ -52,6 +53,7 @@ export const useDbCacheSubscription = (subscribeTo: DbEntityType) => {
 export function useDbCacheTokenRatesSubscription() {
   const { withTestnets } = useWithTestnets()
   const tokens = useTokens(withTestnets)
+  const coingeckoConfig = useCoingeckoConfig()
 
   const subscriptionKey = useMemo(
     // not super sexy but we need key to change based on this stuff
@@ -67,8 +69,8 @@ export function useDbCacheTokenRatesSubscription() {
 
   const subscription = useCallback(() => {
     if (!Object.values(tokens ?? {}).length) return () => {}
-    return subscribeTokenRates(tokens)
-  }, [tokens])
+    return subscribeTokenRates(tokens, coingeckoConfig)
+  }, [tokens, coingeckoConfig])
 
   useSharedSubscription(subscriptionKey, subscription)
 }
@@ -178,7 +180,7 @@ const subscribeChainDataHydrate = (
   }
 }
 
-const subscribeTokenRates = (tokens: TokenList) => {
+const subscribeTokenRates = (tokens: TokenList, coingeckoConfig: CoingeckoConfig) => {
   const REFRESH_INTERVAL = 300_000 // 6 minutes
   const RETRY_INTERVAL = 5_000 // 5 sec
 
@@ -188,7 +190,7 @@ const subscribeTokenRates = (tokens: TokenList) => {
     try {
       if (timeout) clearTimeout(timeout)
 
-      const tokenRates = await fetchTokenRates(tokens)
+      const tokenRates = await fetchTokenRates(tokens, coingeckoConfig)
       const putTokenRates = Object.entries(tokenRates).map(([tokenId, rates]) => ({
         tokenId,
         rates,
