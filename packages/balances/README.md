@@ -5,7 +5,6 @@
 [![license](https://img.shields.io/github/license/talismansociety/talisman?style=flat-square)](https://github.com/TalismanSociety/talisman/blob/dev/LICENSE)
 [![npm-version](https://img.shields.io/npm/v/@talismn/balances?style=flat-square)](https://www.npmjs.com/package/@talismn/balances)
 [![npm-downloads](https://img.shields.io/npm/dw/@talismn/balances?style=flat-square)](https://www.npmjs.com/package/@talismn/balances)
-[![discord-link](https://img.shields.io/discord/858891448271634473?logo=discord&logoColor=white&style=flat-square)](https://discord.gg/talisman)
 
 **@talismn/balances** is the core of a set of packages used to subscribe to on-chain account token balances.
 

@@ -10,12 +10,12 @@ import { classNames } from "@talismn/util"
 import { sleep } from "@talismn/util"
 import { useQuery } from "@tanstack/react-query"
 import { api } from "@ui/api"
-import { AccountTypeSelector } from "@ui/domains/Account/AccountTypeSelector"
 import {
   MnemonicCreateModal,
   MnemonicCreateModalProvider,
   useMnemonicCreateModal,
-} from "@ui/domains/Mnemonic/MnemonicCreateModal"
+} from "@ui/apps/dashboard/routes/Settings/Mnemonics/MnemonicCreateModal"
+import { AccountTypeSelector } from "@ui/domains/Account/AccountTypeSelector"
 import useAccounts from "@ui/hooks/useAccounts"
 import { useMnemonics } from "@ui/hooks/useMnemonics"
 import { FC, PropsWithChildren, useCallback, useEffect, useMemo } from "react"

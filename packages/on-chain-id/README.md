@@ -5,7 +5,6 @@
 [![license](https://img.shields.io/github/license/talismansociety/talisman?style=flat-square)](https://github.com/TalismanSociety/talisman/blob/dev/LICENSE)
 [![npm-version](https://img.shields.io/npm/v/@talismn/on-chain-id?style=flat-square)](https://www.npmjs.com/package/@talismn/on-chain-id)
 [![npm-downloads](https://img.shields.io/npm/dw/@talismn/on-chain-id?style=flat-square)](https://www.npmjs.com/package/@talismn/on-chain-id)
-[![discord-link](https://img.shields.io/discord/858891448271634473?logo=discord&logoColor=white&style=flat-square)](https://discord.gg/talisman)
 
 **@talismn/on-chain-id** is used to query on-chain identifiers for account addresses in Ethereum and Polkadot.
 

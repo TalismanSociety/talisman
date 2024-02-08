@@ -41,10 +41,10 @@ const ModalContent: FC<{ snooze: () => void }> = ({ snooze }) => {
 }
 
 export const BackupWarningModal = () => {
-  const { showBackupWarning, snoozeBackupReminder } = useMnemonicBackup()
+  const { showBackupWarningModal, snoozeBackupReminder } = useMnemonicBackup()
 
   return (
-    <Modal isOpen={showBackupWarning}>
+    <Modal isOpen={showBackupWarningModal}>
       <ModalContent snooze={snoozeBackupReminder} />
     </Modal>
   )
