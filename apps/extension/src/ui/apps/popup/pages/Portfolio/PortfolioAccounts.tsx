@@ -101,7 +101,6 @@ const AccountButton = ({ option }: { option: AccountOption }) => {
           action: "open copy address",
         })
         open({
-          mode: "copy",
           address: option.address,
         })
       }

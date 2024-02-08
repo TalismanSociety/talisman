@@ -9,11 +9,7 @@ import { useAccountByAddress } from "@ui/hooks/useAccountByAddress"
 import useAccounts from "@ui/hooks/useAccounts"
 import useChain from "@ui/hooks/useChain"
 import { useContact } from "@ui/hooks/useContact"
-import { useEvmNetwork } from "@ui/hooks/useEvmNetwork"
 import { useFormattedAddress } from "@ui/hooks/useFormattedAddress"
-import useToken from "@ui/hooks/useToken"
-import { isEvmToken } from "@ui/util/isEvmToken"
-import { isSubToken } from "@ui/util/isSubToken"
 import { FC, useCallback, useMemo } from "react"
 import { Trans, useTranslation } from "react-i18next"
 import { Drawer } from "talisman-ui"
@@ -23,7 +19,6 @@ import { AccountIcon } from "../Account/AccountIcon"
 import { AccountTypeIcon } from "../Account/AccountTypeIcon"
 import { Address } from "../Account/Address"
 import { ChainLogo } from "../Asset/ChainLogo"
-import { TokenLogo } from "../Asset/TokenLogo"
 import { CopyAddressLayout } from "./CopyAddressLayout"
 import { TextQrCode } from "./TextQrCode"
 import { useCopyAddressWizard } from "./useCopyAddressWizard"
@@ -57,31 +52,6 @@ const AddressPillButton: FC<AddressPillButtonProps> = ({ address, className, onC
           {name ?? <Address address={formattedAddress} startCharCount={6} endCharCount={6} />}
         </div>
         <AccountTypeIcon origin={account?.origin} className="text-primary" />
-      </div>
-    </PillButton>
-  )
-}
-
-type TokenPillButtonProps = { tokenId?: string | null; className?: string; onClick?: () => void }
-
-const TokenPillButton: FC<TokenPillButtonProps> = ({ tokenId, className, onClick }) => {
-  const token = useToken(tokenId as string)
-  const evmNetwork = useEvmNetwork((isEvmToken(token) && token?.evmNetwork?.id) || undefined)
-  const chain = useChain((isSubToken(token) && token?.chain?.id) || undefined)
-
-  if (!tokenId || !token) return null
-
-  return (
-    <PillButton className={classNames("h-16 !px-4 !py-2", className)} onClick={onClick}>
-      <div className="text-body flex  flex-nowrap items-center gap-4 text-base">
-        <div className="relative h-12 w-12 shrink-0">
-          <TokenLogo className="!text-lg" tokenId={tokenId} />
-          <ChainLogo
-            className="border-grey-900 !absolute right-[-2px] top-[-2px] h-6 w-6 rounded-full border-[0.5px]"
-            id={evmNetwork?.id ?? chain?.id ?? undefined}
-          />
-        </div>
-        <div>{token.symbol}</div>
       </div>
     </PillButton>
   )
@@ -201,9 +171,7 @@ const CopyButton = () => {
 
 export const CopyAddressCopyForm = () => {
   const {
-    mode,
     chainId,
-    tokenId,
     formattedAddress,
     logo,
     chain,
@@ -222,46 +190,26 @@ export const CopyAddressCopyForm = () => {
   if (!formattedAddress) return null
 
   return (
-    <CopyAddressLayout title={mode === "receive" ? t("Receive funds") : t("Copy address")}>
+    <CopyAddressLayout title={t("Copy address")}>
       <div className="flex h-full w-full flex-col items-center px-12 pb-12">
         <div className="bg-grey-900 flex w-full flex-col gap-4 rounded px-8 py-4">
-          {mode === "receive" && (
-            <>
-              <div className="text-body-secondary flex h-16 w-full items-center justify-between">
-                <div>{t("Token")}</div>
-                <div>
-                  <TokenPillButton tokenId={tokenId} onClick={goToNetworkOrTokenPage} />
-                </div>
+          <div className="text-body-secondary flex h-16 w-full items-center justify-between">
+            <div>{t("Account")}</div>
+            <div>
+              <AddressPillButton address={formattedAddress} onClick={goToAddressPage} />
+            </div>
+          </div>
+          {chainId !== undefined && (
+            <div className="text-body-secondary flex h-16 w-full items-center justify-between">
+              <div>{t("Network")}</div>
+              <div>
+                <NetworkPillButton
+                  chainId={chainId}
+                  onClick={goToNetworkOrTokenPage}
+                  address={formattedAddress}
+                />
               </div>
-              <div className="text-body-secondary flex h-16 w-full items-center justify-between">
-                <div>{t("Account")}</div>
-                <div>
-                  <AddressPillButton address={formattedAddress} onClick={goToAddressPage} />
-                </div>
-              </div>
-            </>
-          )}
-          {mode === "copy" && (
-            <>
-              <div className="text-body-secondary flex h-16 w-full items-center justify-between">
-                <div>{t("Account")}</div>
-                <div>
-                  <AddressPillButton address={formattedAddress} onClick={goToAddressPage} />
-                </div>
-              </div>
-              {chainId !== undefined && (
-                <div className="text-body-secondary flex h-16 w-full items-center justify-between">
-                  <div>{t("Network")}</div>
-                  <div>
-                    <NetworkPillButton
-                      chainId={chainId}
-                      onClick={goToNetworkOrTokenPage}
-                      address={formattedAddress}
-                    />
-                  </div>
-                </div>
-              )}
-            </>
+            </div>
           )}
         </div>
         <div className="flex w-full grow flex-col items-center justify-center gap-12">

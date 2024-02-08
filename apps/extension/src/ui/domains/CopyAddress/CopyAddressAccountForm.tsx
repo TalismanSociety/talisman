@@ -5,17 +5,12 @@ import { CopyAddressLayout } from "./CopyAddressLayout"
 import { useCopyAddressWizard } from "./useCopyAddressWizard"
 
 export const CopyAddressAccountForm = () => {
-  const { mode, tokenId, address, setAddress } = useCopyAddressWizard()
+  const { address, setAddress } = useCopyAddressWizard()
   const { t } = useTranslation()
 
   return (
     <CopyAddressLayout title={t("Select account")}>
-      <AccountPicker
-        tokenId={mode === "receive" ? tokenId : undefined}
-        selected={address}
-        onSelect={setAddress}
-        allowZeroBalance
-      />
+      <AccountPicker selected={address} onSelect={setAddress} allowZeroBalance />
     </CopyAddressLayout>
   )
 }

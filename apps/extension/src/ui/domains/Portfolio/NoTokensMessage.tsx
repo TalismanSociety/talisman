@@ -20,7 +20,7 @@ export const NoTokensMessage = ({ symbol }: NoTokensMessageProps) => {
   const { open } = useCopyAddressModal()
 
   const handleCopy = useCallback(() => {
-    open({ mode: "receive", address: account?.address })
+    open({ address: account?.address, qr: true })
     genericEvent("open receive", { from: "NoTokensMessage" })
   }, [account?.address, genericEvent, open])
 

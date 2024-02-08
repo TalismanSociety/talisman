@@ -117,7 +117,6 @@ const PageContent = () => {
 
   const copyAddress = useCallback(() => {
     openCopyAddressModal({
-      mode: "copy",
       address: account?.address,
     })
     genericEvent("open copy address", { from: "popup portfolio" })

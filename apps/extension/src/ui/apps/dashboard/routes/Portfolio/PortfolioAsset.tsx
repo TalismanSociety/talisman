@@ -33,7 +33,7 @@ const PageContent = ({ balances, symbol }: { balances: Balances; symbol: string 
   )
 
   const handleCopyAddressClick = useCallback(() => {
-    openCopyAddressModal({ mode: "copy", address: account?.address })
+    openCopyAddressModal({ address: account?.address })
     genericEvent("open copy address", { from: "dashboard portfolio" })
   }, [account?.address, genericEvent, openCopyAddressModal])
 

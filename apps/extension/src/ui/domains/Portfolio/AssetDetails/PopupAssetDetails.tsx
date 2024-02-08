@@ -135,8 +135,8 @@ const NoTokens = ({ symbol }: { symbol: string }) => {
 
   const handleCopy = useCallback(() => {
     open({
-      mode: "receive",
       address: account?.address,
+      qr: true,
     })
     genericEvent("open receive", { from: "asset details" })
   }, [account?.address, genericEvent, open])

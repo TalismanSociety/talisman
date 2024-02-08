@@ -110,7 +110,7 @@ const TopActions = ({ disabled }: { disabled?: boolean }) => {
         analyticsAction: "open receive",
         label: t("Receive"),
         icon: ArrowDownIcon,
-        action: () => openCopyAddressModal({ mode: "receive" }),
+        action: () => openCopyAddressModal(null),
         disabled: disableActions,
         disabledReason,
       },
