@@ -51,7 +51,7 @@ const MnemonicFormInner = () => {
           {t("I have backed up my recovery phrase, don’t remind me anymore")}
         </Checkbox>
         <div className="flex flex-col gap-4">
-          <Button primary fullWidth onClick={handleContinueClick}>
+          <Button primary fullWidth disabled={!canConfirm} onClick={handleContinueClick}>
             {t("Verify recovery phrase")}
           </Button>
           <button
