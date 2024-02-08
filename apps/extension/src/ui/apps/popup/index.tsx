@@ -68,9 +68,10 @@ const Popup = () => {
         <AccountExportModal />
         <AccountExportPrivateKeyModal />
         <CopyAddressModal />
-        <DatabaseErrorAlert container="popup" />
         <BackupWarningDrawer />
       </Suspense>
+      {/* Render outside of suspense or it will never show in case of migration error */}
+      <DatabaseErrorAlert container="popup" />
     </FadeIn>
   )
 }
