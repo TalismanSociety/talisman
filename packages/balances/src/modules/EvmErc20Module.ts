@@ -228,9 +228,13 @@ export const EvmErc20Module: NewBalanceModule<
 
               // Don't call callback with balances which have not changed since the last poll.
               const json = balances.toJSON()
-              if (!isEqual(cache.get(evmNetworkId), json)) {
+              if (!isEqual(cached, json)) {
                 cache.set(evmNetworkId, json)
-                callback(null, balances)
+                // cache contains all balances for a given network, filter out balances that didn't change
+                const changes = Object.entries(json).filter(
+                  ([id, balance]) => !isEqual(cached?.[id], balance)
+                )
+                if (changes.length) callback(null, new Balances(Object.fromEntries(changes)))
               }
             } catch (err) {
               callback(err)

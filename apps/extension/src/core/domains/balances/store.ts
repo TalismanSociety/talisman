@@ -559,7 +559,7 @@ export class BalanceStore {
     }))
 
     // update stored balances
-    await balancesDb.balances.bulkPut(updates)
+    if (updates.length) await balancesDb.balances.bulkPut(updates)
   }
 
   /**
