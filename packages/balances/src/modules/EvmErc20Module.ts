@@ -234,7 +234,7 @@ export const EvmErc20Module: NewBalanceModule<
                 const changes = Object.entries(json).filter(
                   ([id, balance]) => !isEqual(cached?.[id], balance)
                 )
-                if (changes.length > 0) callback(null, new Balances(Object.fromEntries(changes)))
+                if (changes.length) callback(null, new Balances(Object.fromEntries(changes)))
               }
             } catch (err) {
               callback(err)
