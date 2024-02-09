@@ -1,8 +1,8 @@
 {
   "manifest_version": 2,
   "author": "Talisman",
-  "name": "Talisman - Polkadot and Ethereum Wallet",
-  "description": "Talisman is a Polkadot and Ethereum wallet that unlocks a new world of multichain web3 applications in the Paraverse.",
+  "name": "Talisman - Ethereum and Polkadot Wallet",
+  "description": "Talisman is a Ethereum and Polkadot wallet that unlocks a new world of multichain web3 applications.",
   "version": "latest",
   "browser_action": {
     "default_title": "Talisman",
