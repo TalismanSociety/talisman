@@ -1,3 +1,5 @@
+import { fetchFromCoingecko } from "./fetchFromCoingecko"
+
 export type CoinGeckoToken = {
   id: string
   symbol: string
@@ -14,7 +16,7 @@ export type CoinGeckoToken = {
 
 export const getCoinGeckoToken = async (id: string) => {
   try {
-    const fetchErc20Coin = await fetch(`https://api.coingecko.com/api/v3/coins/${id}`)
+    const fetchErc20Coin = await fetchFromCoingecko(`/api/v3/coins/${id}`)
     return fetchErc20Coin.json() as Promise<CoinGeckoToken>
   } catch (err) {
     // most likely invalid id

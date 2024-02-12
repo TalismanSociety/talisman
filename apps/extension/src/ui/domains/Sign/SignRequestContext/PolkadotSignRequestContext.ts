@@ -114,11 +114,24 @@ const usePolkadotSigningRequestProvider = ({
     [baseRequest]
   )
 
+  const approveSignet = useCallback(async () => {
+    baseRequest.setStatus.processing("Approving request")
+    if (!baseRequest || !baseRequest.id) return
+    try {
+      await api.approveSignSignet(baseRequest.id)
+      baseRequest.setStatus.success("Approved")
+    } catch (err) {
+      log.error("failed to approve signet", { err })
+      baseRequest.setStatus.error("Failed to approve sign request")
+    }
+  }, [baseRequest])
+
   return {
     payload,
     signingRequest,
     ...baseRequest,
     chain,
+    approveSignet,
     approveHardware,
     approveQr,
     extrinsic,

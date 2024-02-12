@@ -3,7 +3,7 @@ import { notify } from "@talisman/components/Notifications"
 import { shortenAddress } from "@talisman/util/shortenAddress"
 
 export const copyAddress = async (address: string, title?: string) => {
-  if (!address) return
+  if (!address || address.toLowerCase().startsWith("javascript:")) return
 
   const toastId = `copy_${address}`
 

@@ -37,6 +37,11 @@ export const useSendFundsPopup = (
         canSendFunds: false,
         cannotSendFundsReason: t("Watched accounts cannot send funds"),
       }
+    if (account?.origin === "SIGNET")
+      return {
+        canSendFunds: false,
+        cannotSendFundsReason: t(`Please send funds on Signet: ${account.signetUrl}`),
+      }
     if (tokenId && transferableBalances.sum.planck.transferable === 0n)
       return {
         canSendFunds: false,

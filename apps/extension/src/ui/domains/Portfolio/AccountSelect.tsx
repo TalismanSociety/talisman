@@ -29,6 +29,7 @@ type AccountSelectItem =
       genesisHash?: string | null
       origin?: AccountType
       isPortfolio?: boolean
+      signetUrl?: string
     }
   | {
       type: "folder"
@@ -72,6 +73,7 @@ export const AccountSelect = () => {
               genesisHash: account?.genesisHash,
               origin: account?.origin,
               isPortfolio: !!account?.isPortfolio,
+              signetUrl: account?.signetUrl as string | undefined,
             }
           : [
               {
@@ -276,7 +278,9 @@ const Item = forwardRef<HTMLDivElement, ItemProps>(function Item(
   ) : (
     <div className="flex w-full items-center justify-center gap-2 lg:justify-start">
       <div className="overflow-hidden text-ellipsis whitespace-nowrap text-sm">{item.name}</div>
-      {isAccount && <AccountTypeIcon className="text-primary" origin={item.origin} />}
+      {isAccount && (
+        <AccountTypeIcon className="text-primary" origin={item.origin} signetUrl={item.signetUrl} />
+      )}
     </div>
   )
 

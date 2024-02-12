@@ -7656,7 +7656,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@scure/base@npm:^1.1.3, @scure/base@npm:^1.1.5":
+"@scure/base@npm:^1.1.3, @scure/base@npm:^1.1.5, @scure/base@npm:~1.1.4":
   version: 1.1.5
   resolution: "@scure/base@npm:1.1.5"
   checksum: 9e9ee6088cb3aa0fb91f5a48497d26682c7829df3019b1251d088d166d7a8c0f941c68aaa8e7b96bbad20c71eb210397cb1099062cde3e29d4bad6b975c18519
@@ -7741,6 +7741,16 @@ __metadata:
     "@noble/hashes": ~1.3.0
     "@scure/base": ~1.1.0
   checksum: c5bd6f1328fdbeae2dcdd891825b1610225310e5e62a4942714db51066866e4f7bef242c7b06a1b9dcc8043a4a13412cf5c5df76d3b10aa9e36b82e9b6e3eeaa
+  languageName: node
+  linkType: hard
+
+"@scure/bip39@npm:^1.2.2":
+  version: 1.2.2
+  resolution: "@scure/bip39@npm:1.2.2"
+  dependencies:
+    "@noble/hashes": ~1.3.2
+    "@scure/base": ~1.1.4
+  checksum: cb99505e6d2deef8e55e81df8c563ce8dbfdf1595596dc912bceadcf366c91b05a98130e928ecb090df74efdb20150b64acc4be55bc42768cab4d39a2833d234
   languageName: node
   linkType: hard
 
@@ -16321,6 +16331,7 @@ __metadata:
     "@polkadot/wasm-crypto": "*"
     "@polkadot/x-randomvalues": "*"
     "@recoiljs/refine": ^0.1.1
+    "@scure/bip39": ^1.2.2
     "@sentry/browser": 7.92.0
     "@sentry/integrations": 7.92.0
     "@sentry/react": 7.92.0

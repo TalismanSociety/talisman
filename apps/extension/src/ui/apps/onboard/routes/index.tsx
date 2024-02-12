@@ -8,6 +8,7 @@ import { AccountAddJsonOnboardPage } from "./AddAccount/AccountAddJsonPage"
 import { AccountAddLedgerOnboardWizard } from "./AddAccount/AccountAddLedgerWizard"
 import { AccountAddQrOnboardWizard } from "./AddAccount/AccountAddQrWizard"
 import { AccountAddSecretOnboardWizard } from "./AddAccount/AccountAddSecretWizard"
+import { AccountAddSignetOnboardingWizard } from "./AddAccount/AccountAddSignetWizard"
 import { AccountAddWatchedPage } from "./AddAccount/AccountAddWatchedPage"
 import { PasswordPage } from "./Password"
 import { PrivacyPage } from "./Privacy"
@@ -35,6 +36,7 @@ const OnboardingRoutes = () => {
             <Route path="qr/*" element={<AccountAddQrOnboardWizard />} />
             <Route path="watched" element={<AccountAddWatchedPage />} />
             <Route path="dcent/*" element={<AccountAddDcentOnboardingWizard />} />
+            <Route path="signet/*" element={<AccountAddSignetOnboardingWizard />} />
             <Route path="*" element={<Navigate to="" replace />} />
           </Route>
         </Route>

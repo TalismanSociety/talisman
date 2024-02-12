@@ -1,6 +1,6 @@
 {
   "name": "extension",
-  "version": "1.21.0",
+  "version": "1.22.0",
   "private": true,
   "license": "GPL-3.0-or-later",
   "dependencies": {
@@ -36,6 +36,7 @@
     "@polkadot/wasm-crypto": "*",
     "@polkadot/x-randomvalues": "*",
     "@recoiljs/refine": "^0.1.1",
+    "@scure/bip39": "^1.2.2",
     "@sentry/browser": "7.92.0",
     "@sentry/integrations": "7.92.0",
     "@sentry/react": "7.92.0",

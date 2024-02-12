@@ -55,6 +55,7 @@ export const api: MessageTypes = {
       id,
       signature,
     }),
+  approveSignSignet: (id) => messageService.sendMessage("pri(signing.approveSign.signet)", { id }),
 
   // encrypt messages -------------------------------------------------------
   approveEncrypt: (id) =>
@@ -136,6 +137,13 @@ export const api: MessageTypes = {
       name,
       address,
       isPortfolio,
+    }),
+  accountCreateSignet: (name, address, genesisHash, signetUrl) =>
+    messageService.sendMessage("pri(accounts.create.signet)", {
+      name,
+      address,
+      genesisHash,
+      signetUrl,
     }),
   accountsSubscribe: (cb) => messageService.subscribe("pri(accounts.subscribe)", null, cb),
   accountsCatalogSubscribe: (cb) =>

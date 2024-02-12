@@ -6,14 +6,14 @@ import { notify } from "@talisman/components/Notifications"
 import { Chain } from "@talismn/chaindata-provider"
 import { SecretIcon } from "@talismn/icons"
 import { api } from "@ui/api"
-import { chainsMapQuery, evmNetworksMapQuery } from "@ui/atoms"
-import { AccountAddMnemonicDropdown } from "@ui/domains/Account/AccountAdd/AccountAddDerived/AccountAddMnemonicDropdown"
-import { ChainLogo } from "@ui/domains/Asset/ChainLogo"
 import {
   MnemonicCreateModal,
   MnemonicCreateModalProvider,
   useMnemonicCreateModal,
-} from "@ui/domains/Mnemonic/MnemonicCreateModal"
+} from "@ui/apps/dashboard/routes/Settings/Mnemonics/MnemonicCreateModal"
+import { chainsMapQuery, evmNetworksMapQuery } from "@ui/atoms"
+import { AccountAddMnemonicDropdown } from "@ui/domains/Account/AccountAdd/AccountAddDerived/AccountAddMnemonicDropdown"
+import { ChainLogo } from "@ui/domains/Asset/ChainLogo"
 import { MetadataQrCode } from "@ui/domains/Sign/Qr/MetadataQrCode"
 import { NetworkSpecsQrCode } from "@ui/domains/Sign/Qr/NetworkSpecsQrCode"
 import { useAppState } from "@ui/hooks/useAppState"

@@ -36,6 +36,9 @@ export const TALISMAN_WEB_APP_STAKING_URL = "https://app.talisman.xyz/staking"
 export const TALISMAN_WEB_APP_CROWDLOANS_URL = "https://app.talisman.xyz/crowdloans"
 export const TALISMAN_WEB_APP_TRANSPORT_URL = "https://app.talisman.xyz/transfer/transport"
 
+export const SIGNET_LANDING_URL = "https://talisman.xyz/signet"
+export const SIGNET_APP_URL = "https://signet.talisman.xyz"
+
 // Used for testing the full buying flow
 // The tokens available at this endpoint are not in sync with the production endpoint
 // export const BANXA_URL = "https://talisman.banxa-sandbox.com/"
@@ -45,7 +48,8 @@ export const POLKADOT_VAULT_DOCS_URL =
   "https://docs.talisman.xyz/talisman/navigating-the-paraverse/account-management/import-from-parity-signer-or-polkadot-vault"
 export const RELEASE_NOTES_URL =
   "https://docs.talisman.xyz/talisman/prepare-for-your-journey/wallet-release-notes"
-
+export const MNEMONIC_BACKUP_DOCS_URL =
+  "https://docs.talisman.xyz/talisman/navigating-the-paraverse/account-management/back-up-your-secret-phrase"
 export const UNKNOWN_TOKEN_URL = "/images/unknown-token.svg"
 export const UNKNOWN_NETWORK_URL = "/images/unknown-network.svg"
 

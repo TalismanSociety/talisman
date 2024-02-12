@@ -1,6 +1,5 @@
 import { ProviderType } from "@core/domains/sitesAuthorised/types"
 import { KnownRequestIdOnly } from "@core/libs/requests/types"
-import { isTalismanUrl } from "@core/util/isTalismanUrl"
 import { AppPill } from "@talisman/components/AppPill"
 import { notify } from "@talisman/components/Notifications"
 import useSet from "@talisman/hooks/useSet"
@@ -8,7 +7,7 @@ import { InfoIcon } from "@talismn/icons"
 import { api } from "@ui/api"
 import { ConnectAccountsContainer } from "@ui/domains/Site/ConnectAccountsContainer"
 import { ConnectAccountToggleButtonRow } from "@ui/domains/Site/ConnectAccountToggleButtonRow"
-import useAccounts from "@ui/hooks/useAccounts"
+import { useAccountsForSite } from "@ui/hooks/useAccountsForSite"
 import { useAnalytics } from "@ui/hooks/useAnalytics"
 import { useRequest } from "@ui/hooks/useRequest"
 import capitalize from "lodash/capitalize"
@@ -59,7 +58,7 @@ export const Connect: FC<{ className?: string }> = ({ className }) => {
   const { id } = useParams<"id">() as KnownRequestIdOnly<"auth">
   const authRequest = useRequest(id)
   const { popupOpenEvent } = useAnalytics()
-  const allAccounts = useAccounts(isTalismanUrl(authRequest?.url) ? "all" : "owned")
+  const allAccounts = useAccountsForSite(authRequest?.url ?? null)
   const { items: connected, toggle, set, clear } = useSet<string>()
   const ethereum = !!authRequest?.request?.ethereum
 

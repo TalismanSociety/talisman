@@ -185,6 +185,12 @@ const ConnectAccountMethodButtons = () => {
         networks={["polkadot", "ethereum"]}
         to={`/accounts/add/dcent`}
       />
+      <AccountCreateMethodButton
+        title={t("Connect Signet")}
+        subtitle={t("Connect your Signet Vault")}
+        networks={["polkadot"]}
+        to={`/accounts/add/signet`}
+      />
     </>
   )
 }

@@ -5,7 +5,7 @@ import { isHexString, stripHexPrefix } from "@ethereumjs/util"
 import { hexToString } from "@polkadot/util"
 import * as Sentry from "@sentry/browser"
 import { ParsedMessage } from "@spruceid/siwe-parser"
-import { classNames, isEthereumAddress } from "@talismn/util"
+import { classNames } from "@talismn/util"
 import { Message } from "@ui/domains/Sign/Message"
 import { useEvmNetwork } from "@ui/hooks/useEvmNetwork"
 import { dump as convertToYaml } from "js-yaml"
@@ -33,7 +33,8 @@ const useEthSignMessage = (request: EthSignRequest) => {
         ? parseInt(typedMessage.domain?.chainId)
         : undefined
       const ethChainId = request.ethChainId
-      const isInvalidVerifyingContract = verifyingAddress && !isEthereumAddress(verifyingAddress)
+      const isInvalidVerifyingContract =
+        verifyingAddress && verifyingAddress.toLowerCase().startsWith("javascript:")
       return {
         isTypedData,
         typedMessage,
@@ -118,8 +119,8 @@ export const EthSignBodyMessage: FC<EthSignBodyMessageProps> = ({ account, reque
           <SignParamAccountButton address={account.address} withIcon />
         </div>
         {!!verifyingAddress && !!evmNetwork && (
-          <div className="flex items-start p-1">
-            <div>{t("for contract")}</div>{" "}
+          <div className="flex max-w-full items-start p-1">
+            <div className="whitespace-nowrap">{t("for contract")}</div>{" "}
             <SignParamNetworkAddressButton address={verifyingAddress} network={evmNetwork} />
           </div>
         )}

@@ -1,4 +1,3 @@
-import { isEthereumAddress } from "@polkadot/util-crypto"
 import { CopyIcon, ExternalLinkIcon } from "@talismn/icons"
 import { classNames } from "@talismn/util"
 import { copyAddress } from "@ui/util/copyAddress"
@@ -30,7 +29,7 @@ export const SignParamButton: FC<SignParamButtonProps> = ({
 
   const handleClick = useCallback(() => {
     if (url) window.open(url, "_blank")
-    else if (address && isEthereumAddress(address)) copyAddress(address)
+    else if (address) copyAddress(address)
   }, [address, url])
 
   return (
@@ -42,7 +41,9 @@ export const SignParamButton: FC<SignParamButtonProps> = ({
         className
       )}
     >
-      {iconPrefix && <div className="flex h-full flex-col justify-center">{iconPrefix}</div>}
+      {iconPrefix && (
+        <div className="flex h-full shrink-0 flex-col justify-center">{iconPrefix}</div>
+      )}
       <div className={classNames("max-w-full overflow-hidden text-ellipsis", contentClassName)}>
         {children}
       </div>

@@ -1,10 +1,11 @@
-import { AccountJsonQr, AccountType } from "@core/domains/accounts/types"
+import { AccountJsonQr, AccountJsonSignet, AccountType } from "@core/domains/accounts/types"
 import { InfoIcon, LoaderIcon } from "@talismn/icons"
 import { TokensAndFiat } from "@ui/domains/Asset/TokensAndFiat"
 import { useFeeToken } from "@ui/domains/SendFunds/useFeeToken"
 import { QrSubstrate } from "@ui/domains/Sign/Qr/QrSubstrate"
 import { SignHardwareSubstrate } from "@ui/domains/Sign/SignHardwareSubstrate"
 import { usePolkadotSigningRequest } from "@ui/domains/Sign/SignRequestContext"
+import { SignSignetSubstrate } from "@ui/domains/Sign/SignSignetSubstrate"
 import { FC, Suspense, useMemo } from "react"
 import { useTranslation } from "react-i18next"
 import { Button, Tooltip, TooltipContent, TooltipTrigger } from "talisman-ui"
@@ -49,8 +50,18 @@ const EstimatedFeesRow: FC = () => {
 
 export const FooterContent = ({ withFee = false }: { withFee?: boolean }) => {
   const { t } = useTranslation("request")
-  const { fee, request, approve, reject, account, chain, approveHardware, approveQr, status } =
-    usePolkadotSigningRequest()
+  const {
+    fee,
+    request,
+    approve,
+    reject,
+    account,
+    chain,
+    approveHardware,
+    approveQr,
+    approveSignet,
+    status,
+  } = usePolkadotSigningRequest()
 
   const processing = useMemo(() => status === "PROCESSING", [status])
 
@@ -87,6 +98,15 @@ export const FooterContent = ({ withFee = false }: { withFee?: boolean }) => {
                   containerId="main"
                 />
               </Suspense>
+            )
+          case AccountType.Signet:
+            return (
+              <SignSignetSubstrate
+                account={account as AccountJsonSignet}
+                onCancel={reject}
+                payload={request.payload}
+                onApprove={approveSignet}
+              />
             )
           case AccountType.Talisman:
           default:

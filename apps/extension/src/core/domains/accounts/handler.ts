@@ -15,6 +15,7 @@ import type {
   RequestAccountCreateLedgerEthereum,
   RequestAccountCreateLedgerPolkadot,
   RequestAccountCreateLedgerSubstrateLegacy,
+  RequestAccountCreateSignet,
   RequestAccountCreateWatched,
   RequestAccountExport,
   RequestAccountExportPrivateKey,
@@ -430,6 +431,39 @@ export default class AccountsHandler extends ExtensionHandler {
     return pair.address
   }
 
+  private accountsCreateSignet({
+    address,
+    genesisHash,
+    name,
+    signetUrl,
+  }: RequestAccountCreateSignet) {
+    const pair = createPair(
+      {
+        type: "sr25519",
+        toSS58: encodeAddress,
+      },
+      {
+        publicKey: decodeAnyAddress(address),
+        secretKey: new Uint8Array(),
+      },
+      {
+        name,
+        genesisHash,
+        signetUrl,
+        origin: AccountType.Signet,
+        isPortfolio: false,
+      },
+      null
+    )
+
+    keyring.keyring.addPair(pair)
+    keyring.saveAccount(pair)
+
+    this.captureAccountCreateEvent("substrate", "signet")
+
+    return pair.address
+  }
+
   private accountForget({ address }: RequestAccountForget): boolean {
     const encodedAddress = encodeAnyAddress(address)
     const account = keyring.getAccount(encodedAddress)
@@ -616,6 +650,8 @@ export default class AccountsHandler extends ExtensionHandler {
         return this.accountsCreateQr(request as RequestAccountCreateExternal)
       case "pri(accounts.create.watched)":
         return this.accountCreateWatched(request as RequestAccountCreateWatched)
+      case "pri(accounts.create.signet)":
+        return this.accountsCreateSignet(request as RequestAccountCreateSignet)
       case "pri(accounts.external.setIsPortfolio)":
         return this.accountExternalSetIsPortfolio(request as RequestAccountExternalSetIsPortfolio)
       case "pri(accounts.forget)":

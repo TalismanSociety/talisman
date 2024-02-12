@@ -19,6 +19,7 @@ import { AccountAddJsonPage } from "./routes/AccountAdd/AccountAddJsonPage"
 import { AccountAddLedgerDashboardWizard } from "./routes/AccountAdd/AccountAddLedgerWizard"
 import { AccountAddQrDashboardWizard } from "./routes/AccountAdd/AccountAddQrWizard"
 import { AccountAddSecretDashboardWizard } from "./routes/AccountAdd/AccountAddSecretWizard"
+import { AccountAddSignetDashboardWizard } from "./routes/AccountAdd/AccountAddSignetWizard"
 import { AccountAddWatchedPage } from "./routes/AccountAdd/AccountAddWatchedPage"
 import { NetworkPage } from "./routes/Networks/NetworkPage"
 import { NetworksPage } from "./routes/Networks/NetworksPage"
@@ -68,6 +69,7 @@ const DashboardInner = () => {
             <Route path="qr/*" element={<AccountAddQrDashboardWizard />} />
             <Route path="watched" element={<AccountAddWatchedPage />} />
             <Route path="dcent/*" element={<AccountAddDcentDashboardWizard />} />
+            <Route path="signet/*" element={<AccountAddSignetDashboardWizard />} />
             <Route path="*" element={<Navigate to="/accounts/add" replace />} />
           </Route>
           <Route path="" element={<Navigate to="/portfolio" />} />

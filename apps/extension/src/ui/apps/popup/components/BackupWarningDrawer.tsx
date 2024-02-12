@@ -7,14 +7,14 @@ import { Button, Drawer } from "talisman-ui"
 
 export const BackupWarningDrawer = () => {
   const { t } = useTranslation()
-  const { showBackupWarning, snoozeBackupReminder } = useMnemonicBackup()
+  const { showBackupWarningModal, snoozeBackupReminder } = useMnemonicBackup()
   const openBackup = useCallback(async () => {
     await api.dashboardOpen("/settings/mnemonics")
     window.close()
   }, [])
 
   return (
-    <Drawer containerId="main" isOpen={showBackupWarning} anchor="bottom" onDismiss={close}>
+    <Drawer containerId="main" isOpen={showBackupWarningModal} anchor="bottom" onDismiss={close}>
       <div className="bg-black-tertiary flex max-w-[42rem] flex-col items-center gap-12 rounded-t-xl p-12">
         <AlertCircleIcon className="text-primary-500 h-20 w-20" />
         <div className="flex flex-col gap-5 text-center">
