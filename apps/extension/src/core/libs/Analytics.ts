@@ -147,6 +147,11 @@ class TalismanAnalytics {
     // get Balance list per chain/evmNetwork and token
     const balancesPerChainToken: Record<string, Balance[]> = balances.each
       .filter(Boolean)
+      .filter(
+        (balance) =>
+          (balance.chain === null || !("isCustom" in balance.chain && balance.chain.isCustom)) &&
+          (balance.token === null || !("isCustom" in balance.token && balance.token.isCustom))
+      )
       .reduce((result, balance) => {
         const key = `${balance.chainId || balance.evmNetworkId}-${balance.tokenId}`
 
