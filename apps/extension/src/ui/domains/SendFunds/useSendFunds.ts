@@ -429,7 +429,8 @@ const useSendFundsProvider = () => {
         isSubToken(feeToken) &&
         feeToken.existentialDeposit &&
         feeTokenBalance.transferable.planck - estimatedFee.planck <
-          BigInt(feeToken.existentialDeposit)
+          BigInt(feeToken.existentialDeposit) &&
+        !sendMax
       )
         return {
           isValid: false,
