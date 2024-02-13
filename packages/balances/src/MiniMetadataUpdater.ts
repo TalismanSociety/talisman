@@ -235,7 +235,10 @@ export class MiniMetadataUpdater {
     if (needUpdates.length > 0)
       log.info(`${needUpdates.length} miniMetadatas need updates (${needUpdates.join(", ")})`)
 
-    const availableTokenLogos = await availableTokenLogoFilenames()
+    const availableTokenLogos = await availableTokenLogoFilenames().catch((error) => {
+      log.error("Failed to fetch available token logos", error)
+      return []
+    })
 
     const concurrency = 4
     ;(
