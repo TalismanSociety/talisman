@@ -1,8 +1,8 @@
 import { API_KEY_ONFINALITY } from "@core/constants"
 import { remoteConfigStore } from "@core/domains/app/store.remoteConfig"
-import { ChaindataProviderExtension } from "@talismn/chaindata-provider-extension"
+import { ChaindataProvider } from "@talismn/chaindata-provider"
 
-export const chaindataProvider = new ChaindataProviderExtension()
+export const chaindataProvider = new ChaindataProvider()
 
 remoteConfigStore.observable.subscribe((config) => {
   chaindataProvider.setOnfinalityApiKey(

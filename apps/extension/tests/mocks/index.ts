@@ -3,7 +3,7 @@ import { api } from "./api"
 jest.setTimeout(20_000)
 
 // mock the `yarn preconstruct dev` version of the package
-jest.mock("@talismn/chaindata-provider-extension/src/net")
+jest.mock("@talismn/chaindata-provider/src/net")
 
 // mock the `yarn build:packages` version of the package
 //
@@ -11,12 +11,12 @@ jest.mock("@talismn/chaindata-provider-extension/src/net")
 // so there's a `try {} catch {}` to ignore when it doesn't exist
 try {
   jest.mock(
-    "@talismn/chaindata-provider-extension/net/dist/talismn-chaindata-provider-extension-net.cjs.dev.js",
+    "@talismn/chaindata-provider/net/dist/talismn-chaindata-provider-net.cjs.dev.js",
     () => ({
       ...jest.requireActual(
-        "@talismn/chaindata-provider-extension/net/dist/talismn-chaindata-provider-extension-net.cjs.dev.js"
+        "@talismn/chaindata-provider/net/dist/talismn-chaindata-provider-net.cjs.dev.js"
       ),
-      ...jest.requireActual("@talismn/chaindata-provider-extension/src/__mocks__/net.ts"),
+      ...jest.requireActual("@talismn/chaindata-provider/src/__mocks__/net.ts"),
     })
   )
 } catch {} // eslint-disable-line no-empty

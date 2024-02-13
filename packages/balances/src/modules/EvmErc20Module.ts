@@ -106,7 +106,7 @@ export const EvmErc20Module: NewBalanceModule<
      * In a future version of the balance libraries, we may build some kind of async scheduling system which will keep the chainmeta for each chain up to date without relying on a squid.
      */
     async fetchEvmChainMeta(chainId) {
-      const isTestnet = (await chaindataProvider.getEvmNetwork(chainId))?.isTestnet || false
+      const isTestnet = (await chaindataProvider.evmNetworkById(chainId))?.isTestnet || false
 
       return { isTestnet }
     },
@@ -187,8 +187,8 @@ export const EvmErc20Module: NewBalanceModule<
       // if subscriptionInterval is 6 seconds, this means we only poll chains with a zero balance every 30 seconds
       let zeroBalanceSubscriptionIntervalCounter = 0
 
-      const evmNetworks = await chaindataProvider.evmNetworks()
-      const tokens = await chaindataProvider.tokens()
+      const evmNetworks = await chaindataProvider.evmNetworksById()
+      const tokens = await chaindataProvider.tokensById()
 
       const poll = async () => {
         if (!subscriptionActive) return
@@ -259,8 +259,8 @@ export const EvmErc20Module: NewBalanceModule<
 
       // TODO remove this log
       log.debug("fetchBalances", "evm-erc20", addressesByToken)
-      const evmNetworks = await chaindataProvider.evmNetworks()
-      const tokens = await chaindataProvider.tokens()
+      const evmNetworks = await chaindataProvider.evmNetworksById()
+      const tokens = await chaindataProvider.tokensById()
 
       return fetchBalances(chainConnectors.evm, evmNetworks, tokens, addressesByToken)
     },

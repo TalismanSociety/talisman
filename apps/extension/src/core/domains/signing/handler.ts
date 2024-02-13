@@ -59,7 +59,7 @@ export default class SigningHandler extends ExtensionHandler {
 
         registry = fullRegistry
 
-        const chain = await chaindataProvider.getChainByGenesisHash(genesisHash)
+        const chain = await chaindataProvider.chainByGenesisHash(genesisHash)
         analyticsProperties.chain = chain?.chainName ?? genesisHash
       }
 
@@ -67,7 +67,7 @@ export default class SigningHandler extends ExtensionHandler {
 
       // notify user about transaction progress
       if (isJsonPayload(payload)) {
-        const chains = Object.values(await chaindataProvider.chains())
+        const chains = Object.values(await chaindataProvider.chainsById())
         const chain = chains.find((c) => c.genesisHash === payload.genesisHash)
 
         if (chain) {
@@ -125,7 +125,7 @@ export default class SigningHandler extends ExtensionHandler {
 
     if (isJsonPayload(payload)) {
       const genesisHash = validateHexString(payload.genesisHash)
-      const chain = await chaindataProvider.getChainByGenesisHash(genesisHash)
+      const chain = await chaindataProvider.chainByGenesisHash(genesisHash)
       analyticsProperties.chain = chain?.chainName ?? undefined
 
       if (chain) {

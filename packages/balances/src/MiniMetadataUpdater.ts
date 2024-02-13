@@ -1,11 +1,11 @@
 import { PromisePool } from "@supercharge/promise-pool"
 import { Chain, ChainId, CustomChain } from "@talismn/chaindata-provider"
 import {
-  ChaindataProviderExtension,
+  ChaindataProvider,
   availableTokenLogoFilenames,
   fetchInitMiniMetadatas,
   fetchMiniMetadatas,
-} from "@talismn/chaindata-provider-extension"
+} from "@talismn/chaindata-provider"
 import { liveQuery } from "dexie"
 import isEqual from "lodash/isEqual"
 import { from } from "rxjs"
@@ -48,12 +48,12 @@ export class MiniMetadataUpdater {
   #lastHydratedCustomChainsAt = 0
 
   #chainConnectors: ChainConnectors
-  #chaindataProvider: ChaindataProviderExtension
+  #chaindataProvider: ChaindataProvider
   #balanceModules: Array<AnyBalanceModule>
 
   constructor(
     chainConnectors: ChainConnectors,
-    chaindataProvider: ChaindataProviderExtension,
+    chaindataProvider: ChaindataProvider,
     balanceModules: Array<AnyBalanceModule>
   ) {
     this.#chainConnectors = chainConnectors
@@ -147,7 +147,7 @@ export class MiniMetadataUpdater {
     const now = Date.now()
     if (now - this.#lastHydratedCustomChainsAt < minimumHydrationInterval) return false
 
-    const chains = await this.#chaindataProvider.chainsArray()
+    const chains = await this.#chaindataProvider.chains()
     const customChains = chains.filter(
       (chain): chain is CustomChain => "isCustom" in chain && chain.isCustom
     )
@@ -209,7 +209,7 @@ export class MiniMetadataUpdater {
 
   private async updateSubstrateChains(chainIds: ChainId[]) {
     const chains = new Map(
-      (await this.#chaindataProvider.chainsArray()).map((chain) => [chain.id, chain])
+      (await this.#chaindataProvider.chains()).map((chain) => [chain.id, chain])
     )
     const filteredChains = chainIds.flatMap((chainId) => chains.get(chainId) ?? [])
 

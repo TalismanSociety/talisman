@@ -119,8 +119,8 @@ class AssetDiscoveryScanner {
     } = await assetDiscoveryStore.get()
 
     const [allTokens, evmNetworks, activeTokens, activeEvmNetworks, settings] = await Promise.all([
-      chaindataProvider.tokensArray(),
-      chaindataProvider.evmNetworks(),
+      chaindataProvider.tokens(),
+      chaindataProvider.evmNetworksById(),
       activeTokensStore.get(),
       activeEvmNetworksStore.get(),
       settingsStore.get(),

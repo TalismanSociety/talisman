@@ -355,7 +355,7 @@ export class EthHandler extends ExtensionHandler {
 
     assert(queued, "Unable to find request")
 
-    const known = await chaindataProvider.getEvmNetwork(queued.network.chainId)
+    const known = await chaindataProvider.evmNetworkById(queued.network.chainId)
     const knownNativeTokenConfig = known?.balancesConfig.find(
       (mod) => mod.moduleType === "evm-native"
     )?.moduleConfig as { coingeckoId?: string; logo?: string }
@@ -379,7 +379,7 @@ export class EthHandler extends ExtensionHandler {
         }
       : null
 
-    const existingNetwork = await chaindataProvider.getEvmNetwork(networkId)
+    const existingNetwork = await chaindataProvider.evmNetworkById(networkId)
 
     const newNetwork: CustomEvmNetwork = {
       id: networkId,
@@ -417,12 +417,12 @@ export class EthHandler extends ExtensionHandler {
   }
 
   private ethNetworkUpsert: MessageHandler<"pri(eth.networks.upsert)"> = async (network) => {
-    const existingNetwork = await chaindataProvider.getEvmNetwork(network.id)
+    const existingNetwork = await chaindataProvider.evmNetworkById(network.id)
 
     try {
       await chaindataProvider.transaction("rw", ["evmNetworks", "tokens"], async () => {
         const existingToken = existingNetwork?.nativeToken?.id
-          ? await chaindataProvider.getToken(existingNetwork.nativeToken.id)
+          ? await chaindataProvider.tokenById(existingNetwork.nativeToken.id)
           : null
 
         const newToken: CustomEvmNativeToken = {
@@ -499,7 +499,7 @@ export class EthHandler extends ExtensionHandler {
   }
 
   private ethNetworkReset: MessageHandler<"pri(eth.networks.reset)"> = async (request) => {
-    const network = await chaindataProvider.getEvmNetwork(request.id)
+    const network = await chaindataProvider.evmNetworkById(request.id)
     const isActive = network && isEvmNetworkActive(network, await activeEvmNetworksStore.get())
 
     if (isActive) {

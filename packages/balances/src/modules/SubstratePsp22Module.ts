@@ -108,7 +108,7 @@ export const SubPsp22Module: NewBalanceModule<
     ...DefaultBalanceModule("substrate-psp22"),
 
     async fetchSubstrateChainMeta(chainId) {
-      const isTestnet = (await chaindataProvider.getChain(chainId))?.isTestnet || false
+      const isTestnet = (await chaindataProvider.chainById(chainId))?.isTestnet || false
 
       return { isTestnet }
     },
@@ -225,7 +225,7 @@ export const SubPsp22Module: NewBalanceModule<
       const initDelay = 3_000 // 3000ms == 3 seconds
       const cache = new Map<string, BalanceJson>()
 
-      const tokens = await chaindataProvider.tokens()
+      const tokens = await chaindataProvider.tokensById()
 
       const poll = async () => {
         if (!subscriptionActive) return
@@ -263,7 +263,7 @@ export const SubPsp22Module: NewBalanceModule<
     async fetchBalances(addressesByToken) {
       assert(chainConnectors.substrate, "This module requires a substrate chain connector")
 
-      const tokens = await chaindataProvider.tokens()
+      const tokens = await chaindataProvider.tokensById()
 
       return fetchBalances(chainConnectors.substrate, tokens, addressesByToken)
     },
@@ -283,14 +283,14 @@ export const SubPsp22Module: NewBalanceModule<
       transactionVersion,
       tip,
     }) {
-      const token = await chaindataProvider.getToken(tokenId)
+      const token = await chaindataProvider.tokenById(tokenId)
       assert(token, `Token ${tokenId} not found in store`)
 
       if (token.type !== "substrate-psp22")
         throw new Error(`This module doesn't handle tokens of type ${token.type}`)
 
       const chainId = token.chain.id
-      const chain = await chaindataProvider.getChain(chainId)
+      const chain = await chaindataProvider.chainById(chainId)
       assert(chain?.genesisHash, `Chain ${chainId} not found in store`)
 
       const { genesisHash } = chain

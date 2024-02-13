@@ -1,5 +1,5 @@
 ---
-"@talismn/chaindata-provider-extension": patch
+"@talismn/chaindata-provider": patch
 ---
 
 build: use type import for types only library

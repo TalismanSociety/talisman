@@ -152,7 +152,7 @@ export default class Extension extends ExtensionHandler {
       //   // delete old idb-managed metadata+metadataRpc db
       //   indexedDB.deleteDatabase("talisman")
       //
-      //   // TODO: Add this back again, but as an internal part of the @talismn/chaindata-provider-extension lib
+      //   // TODO: Add this back again, but as an internal part of the @talismn/chaindata-provider lib
       //   // // initial data provisioning (workaround to wallet beeing installed when subsquid is down)
       // }
     })
