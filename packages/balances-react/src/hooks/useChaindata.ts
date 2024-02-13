@@ -1,17 +1,30 @@
-import { ChaindataProvider, ChaindataProviderOptions } from "@talismn/chaindata-provider"
-import { useEffect, useMemo, useState } from "react"
+import { ChainId, EvmNetworkId, TokenId } from "@talismn/chaindata-provider"
+import { useAtomValue } from "jotai"
 
-import { provideContext } from "../util/provideContext"
+import { chaindataAtom, chaindataProviderAtom } from "../atoms/chaindata"
 
-function useChaindataProvider(options: ChaindataProviderOptions = {}) {
-  const [onfinalityApiKey, setOnfinalityApiKey] = useState(options.onfinalityApiKey)
-
-  // make sure we recreate provider only when the onfinalityApiKey changes
-  useEffect(() => {
-    if (options.onfinalityApiKey !== onfinalityApiKey) setOnfinalityApiKey(options.onfinalityApiKey)
-  }, [options.onfinalityApiKey, onfinalityApiKey])
-
-  return useMemo(() => new ChaindataProvider({ onfinalityApiKey }), [onfinalityApiKey])
+export const useChaindataProvider = () => {
+  return useAtomValue(chaindataProviderAtom)
 }
 
-export const [ChaindataReactProvider, useChaindata] = provideContext(useChaindataProvider)
+export const useChaindata = () => {
+  return useAtomValue(chaindataAtom)
+}
+
+export const useChains = () => useChaindata().chainsById
+export const useChain = (chainId?: ChainId) => {
+  const chainsById = useChains()
+  return chainId ? chainsById[chainId] : undefined
+}
+
+export const useEvmNetworks = () => useChaindata().evmNetworksById
+export const useEvmNetwork = (evmNetworkId?: EvmNetworkId) => {
+  const evmNetworksById = useEvmNetworks()
+  return evmNetworkId ? evmNetworksById[evmNetworkId] : undefined
+}
+
+export const useTokens = () => useChaindata().tokensById
+export const useToken = (tokenId?: TokenId) => {
+  const tokensById = useTokens()
+  return tokenId ? tokensById[tokenId] : undefined
+}

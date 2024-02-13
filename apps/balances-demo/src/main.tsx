@@ -2,19 +2,17 @@ import "anylogger-loglevel"
 
 import "./index.css"
 
-import { defaultBalanceModules } from "@talismn/balances"
 import { BalancesProvider } from "@talismn/balances-react"
-import React from "react"
-import ReactDOM from "react-dom/client"
+import { StrictMode } from "react"
+import { createRoot } from "react-dom/client"
 
 import { App } from "./App"
 
 const onfinalityApiKey = undefined
 
-ReactDOM.createRoot(document.getElementById("root") as HTMLElement).render(
-  <React.StrictMode>
+createRoot(document.getElementById("root") as HTMLElement).render(
+  <StrictMode>
     <BalancesProvider
-      balanceModules={defaultBalanceModules}
       onfinalityApiKey={onfinalityApiKey}
       // withTestnets
       // enabledChains={[
@@ -30,5 +28,5 @@ ReactDOM.createRoot(document.getElementById("root") as HTMLElement).render(
     >
       <App />
     </BalancesProvider>
-  </React.StrictMode>
+  </StrictMode>
 )

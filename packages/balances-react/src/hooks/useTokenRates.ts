@@ -1,14 +1,10 @@
 import { TokenId } from "@talismn/chaindata-provider"
+import { useAtomValue } from "jotai"
 
-import { useDbCache } from "./useDbCache"
-import { useDbCacheTokenRatesSubscription } from "./useDbCacheSubscription"
+import { tokenRatesAtom } from "../atoms/tokenRates"
 
-export function useTokenRates() {
-  // keep db data up to date
-  useDbCacheTokenRatesSubscription()
-
-  const { tokenRatesMap } = useDbCache()
-  return tokenRatesMap
+export const useTokenRates = () => {
+  return useAtomValue(tokenRatesAtom)
 }
 
 export function useTokenRate(tokenId?: TokenId) {

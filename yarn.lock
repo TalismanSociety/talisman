@@ -7893,6 +7893,7 @@ __metadata:
     "@talismn/chaindata-provider": "workspace:*"
     "@talismn/connection-meta": "workspace:*"
     "@talismn/eslint-config": "workspace:*"
+    "@talismn/scale": "workspace:*"
     "@talismn/token-rates": "workspace:*"
     "@talismn/tsconfig": "workspace:*"
     "@types/jest": ^27.5.1
@@ -7903,12 +7904,14 @@ __metadata:
     dexie-react-hooks: ^1.1.7
     eslint: ^8.4.0
     jest: ^29.7.0
+    jotai: ^2.6.4
     react: ^18.2.0
     react-use: ^17.4.0
     rxjs: ^7.8.1
     ts-jest: ^29.1.1
     typescript: ^4.6.4
   peerDependencies:
+    "@polkadot/util-crypto": 12.x
     react: "*"
     react-dom: "*"
   languageName: unknown
@@ -11135,6 +11138,7 @@ __metadata:
     "@talismn/balances-react": "workspace:*"
     "@talismn/chaindata-provider": "workspace:*"
     "@talismn/eslint-config": "workspace:*"
+    "@talismn/icons": "workspace:*"
     "@types/react": ^18.0.26
     "@types/react-dom": ^18.2.18
     "@vitejs/plugin-react": ^3.0.0
@@ -18399,6 +18403,21 @@ __metadata:
   bin:
     jiti: bin/jiti.js
   checksum: a7bd5d63921c170eaec91eecd686388181c7828e1fa0657ab374b9372bfc1f383cf4b039e6b272383d5cb25607509880af814a39abdff967322459cca41f2961
+  languageName: node
+  linkType: hard
+
+"jotai@npm:^2.6.4":
+  version: 2.6.4
+  resolution: "jotai@npm:2.6.4"
+  peerDependencies:
+    "@types/react": ">=17.0.0"
+    react: ">=17.0.0"
+  peerDependenciesMeta:
+    "@types/react":
+      optional: true
+    react:
+      optional: true
+  checksum: 1a27de808e13bce97978d33a5f368e00acdfb472bef1d068dffabe036dad3b43bfba1595205a1a47719c9ca7149458ce2b198751040be7f3ef255cb51388675e
   languageName: node
   linkType: hard
 

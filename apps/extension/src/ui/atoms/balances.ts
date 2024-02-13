@@ -1,5 +1,4 @@
 import { log } from "@core/log"
-import { firstThenDebounce } from "@core/util/firstThenDebounce"
 import {
   Address,
   BalanceJson,
@@ -10,6 +9,7 @@ import {
   getValidSubscriptionIds,
 } from "@talismn/balances"
 import { TokenId } from "@talismn/chaindata-provider"
+import { firstThenDebounce } from "@talismn/util"
 import { api } from "@ui/api"
 import { liveQuery } from "dexie"
 import { atom, selector, selectorFamily, waitForAll } from "recoil"

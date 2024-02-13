@@ -1,51 +1,53 @@
-import {
-  AddressesByToken,
-  Balances,
-  deriveStatuses,
-  getValidSubscriptionIds,
-} from "@talismn/balances"
-import { Token } from "@talismn/chaindata-provider"
-import { useMemo } from "react"
+import { Balances } from "@talismn/balances"
+import { useAtomValue, useSetAtom } from "jotai"
+import { useEffect, useMemo } from "react"
 
-import { useBalanceModules } from "./useBalanceModules"
-import { useBalancesHydrate } from "./useBalancesHydrate"
-import { useDbCache } from "./useDbCache"
-import { useDbCacheBalancesSubscription } from "./useDbCacheSubscription"
+import { allAddressesAtom } from "../atoms/allAddresses"
+import { allBalancesAtom } from "../atoms/balances"
 
-export function useBalances(addressesByToken: AddressesByToken<Token> | null) {
-  // keep db data up to date
-  useDbCacheBalancesSubscription()
-
-  const balanceModules = useBalanceModules()
-  const { balances } = useDbCache()
-  const hydrate = useBalancesHydrate()
-
-  return useMemo(
-    () =>
-      new Balances(
-        deriveStatuses(
-          getValidSubscriptionIds(),
-          balances.filter((balance) => {
-            // check that this balance is included in our queried balance modules
-            if (!balanceModules.map(({ type }) => type).includes(balance.source)) return false
-
-            // check that our query includes some tokens and addresses
-            if (!addressesByToken) return false
-
-            // check that this balance is included in our queried tokens
-            if (!Object.keys(addressesByToken).includes(balance.tokenId)) return false
-
-            // check that this balance is included in our queried addresses for this token
-            if (!addressesByToken[balance.tokenId].includes(balance.address)) return false
-
-            // keep this balance
-            return true
-          })
-        ),
-
-        // hydrate balance chains, evmNetworks, tokens and tokenRates
-        hydrate
-      ),
-    [balances, hydrate, balanceModules, addressesByToken]
-  )
+export const useSetBalancesAddresses = (addresses: string[]) => {
+  const setAllAddresses = useSetAtom(allAddressesAtom)
+  useEffect(() => {
+    setAllAddresses(addresses)
+  }, [addresses, setAllAddresses])
 }
+
+export const useBalances = () => {
+  return useAtomValue(allBalancesAtom)
+}
+
+// TODO: Extract to shared definition between extension and @talismn/balances-react
+export type BalancesStatus =
+  | { status: "live" }
+  | { status: "fetching" }
+  | { status: "initializing" }
+  | { status: "stale"; staleChains: string[] }
+
+/**
+ * Given a collection of `Balances`, this hook returns a `BalancesStatus` summary for the collection.
+ *
+ * @param balances The collection of balances to get the status from.
+ * @returns An instance of `BalancesStatus` which represents the status of the balances collection.
+
+ */
+export const useBalancesStatus = (balances: Balances) =>
+  useMemo<BalancesStatus>(() => {
+    // stale
+    const staleChains = getStaleChains(balances)
+    if (staleChains.length > 0) return { status: "stale", staleChains }
+
+    // fetching
+    const hasCachedBalances = balances.each.some((b) => b.status === "cache")
+    if (hasCachedBalances) return { status: "fetching" }
+
+    // live
+    return { status: "live" }
+  }, [balances])
+
+export const getStaleChains = (balances: Balances): string[] => [
+  ...new Set(
+    balances.sorted
+      .filter((b) => b.status === "stale")
+      .map((b) => b.chain?.name ?? b.chainId ?? "Unknown")
+  ),
+]

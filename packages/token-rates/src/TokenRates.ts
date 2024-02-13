@@ -22,13 +22,13 @@ const coingeckoCurrencies: Array<keyof TokenRates> = [
   "dot",
 ]
 
-type CoingeckoConfig = {
+export type CoingeckoConfig = {
   apiUrl: string
   apiKeyName?: string
   apiKeyValue?: string
 }
 
-const DEFAULT_COINGECKO_CONFIG: CoingeckoConfig = {
+export const DEFAULT_COINGECKO_CONFIG: CoingeckoConfig = {
   apiUrl: "https://api.coingecko.com",
 }
 
