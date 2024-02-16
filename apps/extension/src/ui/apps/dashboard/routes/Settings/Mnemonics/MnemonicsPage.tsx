@@ -1,4 +1,4 @@
-import { AccountJsonAny } from "@core/domains/accounts/types"
+import { AccountJsonAny, AccountType } from "@core/domains/accounts/types"
 import { Accordion, AccordionIcon } from "@talisman/components/Accordion"
 import { HeaderBlock } from "@talisman/components/HeaderBlock"
 import { Spacer } from "@talisman/components/Spacer"
@@ -107,6 +107,8 @@ const MnemonicRow: FC<{ mnemonic: Mnemonic }> = ({ mnemonic }) => {
   const refActions = useRef<HTMLDivElement>(null)
   const refBackup = useRef<HTMLButtonElement>(null)
 
+  const hasQrAccount = useAccounts("owned").some(({ origin }) => origin === AccountType.Qr)
+
   const [actionsWidth, setActionsWidth] = useState<number>()
   const actionsStyle = useMemo(() => ({ width: actionsWidth }), [actionsWidth])
 
@@ -191,9 +193,14 @@ const MnemonicRow: FC<{ mnemonic: Mnemonic }> = ({ mnemonic }) => {
                   )}
                 </div>
               </ContextMenuItem>
-              <ContextMenuItem onClick={handleSetVerifierClick} disabled={isVerifier(mnemonic.id)}>
-                {t("Set as Polkadot Vault Verifier Certificate")}
-              </ContextMenuItem>
+              {hasQrAccount && (
+                <ContextMenuItem
+                  onClick={handleSetVerifierClick}
+                  disabled={isVerifier(mnemonic.id)}
+                >
+                  {t("Set as Polkadot Vault Verifier Certificate")}
+                </ContextMenuItem>
+              )}
               <ContextMenuItem onClick={handleDeleteClick} disabled={!canDelete(mnemonic.id)}>
                 {t("Delete")}
               </ContextMenuItem>
