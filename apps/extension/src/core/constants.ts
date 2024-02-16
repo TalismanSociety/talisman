@@ -44,12 +44,20 @@ export const SIGNET_APP_URL = "https://signet.talisman.xyz"
 // export const BANXA_URL = "https://talisman.banxa-sandbox.com/"
 export const BANXA_URL = "https://checkout.banxa.com/"
 
-export const POLKADOT_VAULT_DOCS_URL =
-  "https://docs.talisman.xyz/talisman/navigating-the-paraverse/account-management/import-from-parity-signer-or-polkadot-vault"
-export const RELEASE_NOTES_URL =
-  "https://docs.talisman.xyz/talisman/prepare-for-your-journey/wallet-release-notes"
-export const MNEMONIC_BACKUP_DOCS_URL =
-  "https://docs.talisman.xyz/talisman/navigating-the-paraverse/account-management/back-up-your-secret-phrase"
+// Docs URLs
+
+export const TALISMAN_DOCS_URL_PREFIX = "https://docs.talisman.xyz/talisman"
+export const POLKADOT_VAULT_DOCS_URL = `${TALISMAN_DOCS_URL_PREFIX}/start/importing-external-wallets/import-from-polkadot-vault`
+export const RELEASE_NOTES_URL = `${TALISMAN_DOCS_URL_PREFIX}/about/wallet-release-notes`
+export const SECURITY_DOCS_URL = `${TALISMAN_DOCS_URL_PREFIX}/about/security`
+export const MNEMONIC_BACKUP_DOCS_URL = `${TALISMAN_DOCS_URL_PREFIX}/start/installing-talisman/back-up-your-secret-phrase`
+export const PRIVACY_POLICY_URL = `${TALISMAN_DOCS_URL_PREFIX}/about/privacy-policy`
+export const TERMS_OF_USE_URL = `${TALISMAN_DOCS_URL_PREFIX}/about/terms-of-use`
+export const BRAVE_BALANCES_URL = `${TALISMAN_DOCS_URL_PREFIX}/help-and-support/troubleshooting/balances-on-brave-not-showing`
+export const TOKEN_APPROVALS_URL = `${TALISMAN_DOCS_URL_PREFIX}/navigate/using-talisman-with-a-website-dapp/token-approvals`
+export const SPIRIT_KEYS_DOCS_URL = `${TALISMAN_DOCS_URL_PREFIX}/introduction/talisman-portal/spirit-keys-and-commendations#sprit-keys`
+
+// Images
 export const UNKNOWN_TOKEN_URL = "/images/unknown-token.svg"
 export const UNKNOWN_NETWORK_URL = "/images/unknown-network.svg"
 

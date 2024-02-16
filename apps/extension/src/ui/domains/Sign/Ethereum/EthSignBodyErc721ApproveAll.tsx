@@ -1,3 +1,4 @@
+import { TOKEN_APPROVALS_URL } from "@core/constants"
 import { FC, useMemo } from "react"
 import { useTranslation } from "react-i18next"
 
@@ -33,11 +34,7 @@ export const EthSignBodyErc721ApproveAll: FC = () => {
                 "This contract will have permission to transfer all NFTs from this collection on your behalf until manually revoked."
               )}
             </span>{" "}
-            <a
-              className="text-white"
-              href="https://docs.talisman.xyz/talisman/navigating-the-paraverse/ethereum-features/token-approvals"
-              target="_blank"
-            >
+            <a className="text-white" href={TOKEN_APPROVALS_URL} target="_blank">
               {t("Learn more")}
             </a>
           </SignAlertMessage>
