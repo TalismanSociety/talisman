@@ -97,7 +97,7 @@ export const useLedgerPolkadot = (persist = false) => {
     message: string
     requiresManualRetry: boolean
   }>(() => {
-    if (ledgerError) return getLedgerErrorProps(ledgerError, "Ethereum")
+    if (ledgerError) return getLedgerErrorProps(ledgerError, "Polkadot")
 
     if (isLoading)
       return {

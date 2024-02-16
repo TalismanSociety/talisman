@@ -118,6 +118,7 @@
     "lottie-react": "2.4.0",
     "lz-string": "^1.5.0",
     "marked": "^11.1.0",
+    "metadata-shortener-wasm": "file://home/kheops/Repositories/talisman/metadata-shortener-wasm/pkg",
     "nanoid": "3.3.7",
     "npm": "10.3.0",
     "posthog-js": "^1.96.1",

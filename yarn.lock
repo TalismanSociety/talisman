@@ -10902,6 +10902,18 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@wasm-tool/wasm-pack-plugin@npm:1.7.0":
+  version: 1.7.0
+  resolution: "@wasm-tool/wasm-pack-plugin@npm:1.7.0"
+  dependencies:
+    chalk: ^2.4.1
+    command-exists: ^1.2.7
+    watchpack: ^2.1.1
+    which: ^2.0.2
+  checksum: b0a09f70827b262c4b4689296aae712cc7d9fb742e32eb7e7b720a5b45be1d256864c84c37c8f97de4c762cdae9c35be4a37cdea6832281056921edf4944aea4
+  languageName: node
+  linkType: hard
+
 "@webassemblyjs/ast@npm:1.11.6, @webassemblyjs/ast@npm:^1.11.5":
   version: 1.11.6
   resolution: "@webassemblyjs/ast@npm:1.11.6"
@@ -13076,7 +13088,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"chalk@npm:^2.0.0, chalk@npm:^2.1.0, chalk@npm:^2.4.2":
+"chalk@npm:^2.0.0, chalk@npm:^2.1.0, chalk@npm:^2.4.1, chalk@npm:^2.4.2":
   version: 2.4.2
   resolution: "chalk@npm:2.4.2"
   dependencies:
@@ -13654,7 +13666,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"command-exists@npm:^1.2.8":
+"command-exists@npm:^1.2.7, command-exists@npm:^1.2.8":
   version: 1.2.9
   resolution: "command-exists@npm:1.2.9"
   checksum: 729ae3d88a2058c93c58840f30341b7f82688a573019535d198b57a4d8cb0135ced0ad7f52b591e5b28a90feb2c675080ce916e56254a0f7c15cb2395277cac3
@@ -16439,6 +16451,7 @@ __metadata:
     lottie-react: 2.4.0
     lz-string: ^1.5.0
     marked: ^11.1.0
+    metadata-shortener-wasm: "file://home/kheops/Repositories/talisman/metadata-shortener-wasm/pkg"
     nanoid: 3.3.7
     node-fetch: ^3.3.1
     npm: 10.3.0
@@ -21564,6 +21577,13 @@ __metadata:
     "@types/node":
       optional: true
   checksum: 2201c3f7c58ad2a5b5f7d6b1c644d79bde513e25cb64b51a8c41381ec74bc02cd3423425e34f60c96bf3991f1ec51d65dc8b8e3354cbb060cc9f8226b4666a5a
+  languageName: node
+  linkType: hard
+
+"metadata-shortener-wasm@file://home/kheops/Repositories/talisman/metadata-shortener-wasm/pkg::locator=extension%40workspace%3Aapps%2Fextension":
+  version: 0.1.0
+  resolution: "metadata-shortener-wasm@file://home/kheops/Repositories/talisman/metadata-shortener-wasm/pkg#//home/kheops/Repositories/talisman/metadata-shortener-wasm/pkg::hash=c038d5&locator=extension%40workspace%3Aapps%2Fextension"
+  checksum: 21eeda4ffe63d04a08564776e259d8913cc2ec51686dc071edad46c5e7f1f29bb5d585922e933a60161ceddf974566e6dbdd762bda0639506981f453217eedd9
   languageName: node
   linkType: hard
 
@@ -26846,6 +26866,7 @@ __metadata:
     "@testing-library/react": ^14.0.0
     "@typescript-eslint/eslint-plugin": ^6.9.0
     "@typescript-eslint/parser": ^6.9.0
+    "@wasm-tool/wasm-pack-plugin": 1.7.0
     concurrently: ^7.6.0
     husky: ^8.0.3
     import-sort-style-module: ^6.0.0
@@ -28737,7 +28758,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"watchpack@npm:^2.4.0":
+"watchpack@npm:^2.1.1, watchpack@npm:^2.4.0":
   version: 2.4.0
   resolution: "watchpack@npm:2.4.0"
   dependencies:

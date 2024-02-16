@@ -1,16 +1,22 @@
 import { AccountJsonHardwarePolkadot } from "@core/domains/accounts/types"
 import { SignerPayloadJSON, SignerPayloadRaw } from "@core/domains/signing/types"
 import { log } from "@core/log"
+import { isJsonPayload } from "@core/util/isJsonPayload"
 import { wrapBytes } from "@polkadot/extension-dapp/wrapBytes"
 import { TypeRegistry } from "@polkadot/types"
-import { assert } from "@polkadot/util"
+import { assert, hexToU8a, u8aToHex } from "@polkadot/util"
+import * as $ from "@talismn/subshape-fork"
 import { classNames } from "@talismn/util"
+import { useQuery } from "@tanstack/react-query"
 import { useLedgerPolkadot } from "@ui/hooks/ledger/useLedgerPolkadot"
 import { useAccountByAddress } from "@ui/hooks/useAccountByAddress"
+import { useChainByGenesisHash } from "@ui/hooks/useChainByGenesisHash"
+import useToken from "@ui/hooks/useToken"
+import { stateCall } from "@ui/util/stateCall"
+import initMetadataShortener, { cut_metadata_wrapper } from "metadata-shortener-wasm"
 import { FC, useCallback, useEffect, useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
-import { Drawer } from "talisman-ui"
-import { Button } from "talisman-ui"
+import { Button, Drawer } from "talisman-ui"
 
 import {
   LedgerConnectionStatus,
@@ -27,6 +33,150 @@ function isRawPayload(payload: SignerPayloadJSON | SignerPayloadRaw): payload is
   return !!(payload as SignerPayloadRaw).data
 }
 
+const getMetadataV15 = async (chainId: string, blockHash?: `0x${string}`) => {
+  const registry = new TypeRegistry()
+  const version = registry.createType("u32", 15)
+
+  const result = await stateCall(
+    chainId,
+    "Metadata_metadata_at_version",
+    "Option<OpaqueMetadata>",
+    [version],
+    blockHash,
+    true
+  )
+  // const result2 = await stateCallRaw(
+  //   chainId,
+  //   "Metadata_metadata_at_version",
+  //   [$.u32.encode(15)],
+  //   blockHash,
+  //   true
+  // )
+  //console.log("getMetadataV15", { result, result2 })
+
+  return result.isSome ? result.unwrap() : null
+}
+
+const $shortSpecs = $.object(
+  $.field("base58prefix", $.u16),
+  $.field("decimals", $.u8),
+  $.field("unit", $.str)
+)
+
+//const getShortSpecs = async (chainId: string, blockHash?: `0x${string}`) => {}
+
+const useLedgerPolkadotInputs = (payload: SignerPayloadJSON | SignerPayloadRaw | undefined) => {
+  const jsonPayload = payload && isJsonPayload(payload) ? payload : undefined
+
+  const chain = useChainByGenesisHash(jsonPayload ? jsonPayload.genesisHash : undefined)
+  const nativeToken = useToken(chain?.nativeToken?.id)
+
+  // const hexShortSpecs = useMemo(
+  //   () =>
+  //     chain && nativeToken
+  //       ? u8aToHex(
+  //           $shortSpecs.encode({
+  //             base58prefix: chain.prefix ?? 0,
+  //             decimals: nativeToken.decimals,
+  //             unit: nativeToken.symbol,
+  //           })
+  //         )
+  //       : null,
+  //   [chain, nativeToken]
+  // )
+
+  return useQuery({
+    queryKey: ["useLedgerPolkadotInputs", chain, nativeToken, jsonPayload],
+    queryFn: async () => {
+      if (!chain || !nativeToken || !jsonPayload) return null
+
+      const bytes = await getMetadataV15(chain.id, jsonPayload.blockHash)
+      if (!bytes) return null
+
+      const metadata = u8aToHex(bytes)
+
+      const specs = u8aToHex(
+        $shortSpecs.encode({
+          base58prefix: chain.prefix ?? 0,
+          decimals: nativeToken.decimals,
+          unit: nativeToken.symbol,
+        })
+      )
+
+      const calldata = jsonPayload.method
+
+      await initMetadataShortener()
+
+      //console.log("before cut", { calldata, metadata, specs })
+      const res = cut_metadata_wrapper(calldata, metadata, specs)
+
+      //console.log("useLedgerPolkadotInputs", { res })
+
+      return res
+      // const registry = new TypeRegistry()
+      // const version = registry.createType("u32", 15)
+
+      // const resultRaw = await stateCallRaw(
+      //   chain.id,
+      //   "Metadata_metadata_at_version",
+      //   [version],
+      //   jsonPayload?.blockHash,
+      //   true
+      // )
+
+      // console.log("useLedgerPolkadotInputs.useQuery", { resultRaw })
+
+      // const result = await stateCall(
+      //   chain.id,
+      //   "Metadata_metadata_at_version",
+      //   "Option<OpaqueMetadata>",
+      //   [version],
+      //   jsonPayload?.blockHash,
+      //   true
+      // )
+
+      // if (result.isSome) {
+      //   const metadata = result.unwrap()
+
+      //   // this fails :(
+      //   // const metadatav15 = registry.createType("MetadataV15", metadata)
+
+      //   // console.log("isDecoded", metadata.isDecoded)
+      //   // console.log("metadata.toHex", { hex: metadata.toHex() })
+      //   console.log("human", { human: metadatav15.toHuman() })
+
+      //   return result.unwrap().toHex()
+      // }
+    },
+    refetchInterval: false,
+    retry: false,
+  })
+
+  // useEffect(() => {
+  //   console.log("useLedgerPolkadotInputs.out", { payload, hexMetadataV15, error })
+  // }, [error, hexMetadataV15, payload])
+
+  // useEffect(() => {
+  //   try {
+  //     console.log({ sup })
+  //     initMetadataShortener()
+  //       .then(() => {
+  //         sup()
+  //       })
+  //       .catch((errInit) => {
+  //         console.error("initMetadataShortener", errInit)
+  //       })
+  //   } catch (err) {
+  //     console.error("useLedgerPolkadotInputs", err)
+  //   }
+  // }, [])
+
+  // return {
+  //   hexShortSpecs,
+  //   hexMetadataV15
+  // }
+}
+
 const SignLedgerPolkadot: FC<SignHardwareSubstrateProps> = ({
   className = "",
   onSigned,
@@ -36,12 +186,20 @@ const SignLedgerPolkadot: FC<SignHardwareSubstrateProps> = ({
   containerId,
 }) => {
   const account = useAccountByAddress(payload?.address)
+  // useLedgerPolkadotInputs(payload)
+
   const { t } = useTranslation("request")
   const [isSigning, setIsSigning] = useState(false)
+  const [isSigned, setIsSigned] = useState(false)
   const [error, setError] = useState<string | null>(null)
   //const [unsigned, setUnsigned] = useState<Uint8Array>()
   //const [isRaw, setIsRaw] = useState<boolean>()
   const { ledger, refresh, status, message, isReady, requiresManualRetry } = useLedgerPolkadot()
+
+  // reset
+  useEffect(() => {
+    setIsSigned(false)
+  }, [payload])
 
   const connectionStatus: LedgerConnectionStatusProps = useMemo(
     () => ({
@@ -71,13 +229,20 @@ const SignLedgerPolkadot: FC<SignHardwareSubstrateProps> = ({
   //   setIsRaw(false)
   // }, [payload, t])
 
-  const onRefresh = useCallback(() => {
-    refresh()
-    setError(null)
-  }, [refresh, setError])
+  // const onRefresh = useCallback(() => {
+  //   refresh()
+  //   setError(null)
+  // }, [refresh, setError])
+
+  const { data: shortMetadata, error: errorMetadata } = useLedgerPolkadotInputs(payload)
+
+  const inputsReady = useMemo(
+    () => !!payload && (!isJsonPayload(payload) || shortMetadata),
+    [payload, shortMetadata]
+  )
 
   const signLedger = useCallback(async () => {
-    if (!ledger || !onSigned || !account || !payload) return
+    if (!ledger || !onSigned || !account || !inputsReady || !payload) return
 
     try {
       const derivationPath = (account as AccountJsonHardwarePolkadot).path
@@ -95,6 +260,15 @@ const SignLedgerPolkadot: FC<SignHardwareSubstrateProps> = ({
         const signature = ("0x" + signResult.signature.toString("hex")) as `0x${string}`
         await onSigned({ signature })
       } else {
+        if (errorMetadata && (errorMetadata as Error)?.message) {
+          setError((errorMetadata as Error).message)
+          return
+        }
+        if (!shortMetadata) {
+          setError("Metadata not found")
+          return
+        }
+
         setError(null)
         if (payload.signedExtensions) registry.setSignedExtensions(payload.signedExtensions)
         const extrinsicPayload = registry.createType("ExtrinsicPayload", payload, {
@@ -104,7 +278,7 @@ const SignLedgerPolkadot: FC<SignHardwareSubstrateProps> = ({
         const signResult = await ledger.sign(
           derivationPath,
           Buffer.from(extrinsicPayload.toU8a(true)),
-          Buffer.from("") // TODO
+          Buffer.from(hexToU8a(shortMetadata))
         )
 
         if (signResult.errorMessage !== LEDGER_NO_ERRORS) throw new Error(signResult.errorMessage)
@@ -140,29 +314,43 @@ const SignLedgerPolkadot: FC<SignHardwareSubstrateProps> = ({
           setError(message)
       }
     }
-  }, [ledger, onSigned, account, payload])
+  }, [ledger, onSigned, account, inputsReady, payload, errorMetadata, shortMetadata])
 
-  useEffect(() => {
-    if (isReady && !error && payload && !isSigning) {
-      setIsSigning(true)
-      onSentToDevice?.(true)
-      signLedger().finally(() => {
-        setIsSigning(false)
-        onSentToDevice?.(false)
-      })
-    }
-  }, [signLedger, isSigning, error, isReady, onSentToDevice, payload])
+  const _onRefresh = useCallback(() => {
+    refresh()
+    setError(null)
+  }, [refresh, setError])
+
+  const handleSendClick = useCallback(() => {
+    setIsSigning(true)
+    onSentToDevice?.(true)
+    signLedger()
+      .catch(() => onSentToDevice?.(false))
+      .finally(() => setIsSigning(false))
+  }, [onSentToDevice, signLedger])
 
   const handleCloseDrawer = useCallback(() => setError(null), [setError])
 
   return (
     <div className={classNames("flex w-full flex-col gap-6", className)}>
       {!error && (
-        <LedgerConnectionStatus
-          {...{ ...connectionStatus }}
-          refresh={onRefresh}
-          hideOnSuccess={true}
-        />
+        <>
+          {isReady ? (
+            <Button
+              className="w-full"
+              disabled={!inputsReady}
+              primary
+              processing={isSigning}
+              onClick={handleSendClick}
+            >
+              {t("Approve on Ledger")}
+            </Button>
+          ) : (
+            !isSigned && (
+              <LedgerConnectionStatus {...{ ...connectionStatus }} refresh={_onRefresh} />
+            )
+          )}
+        </>
       )}
       {onCancel && (
         <Button className="w-full" onClick={onCancel}>
