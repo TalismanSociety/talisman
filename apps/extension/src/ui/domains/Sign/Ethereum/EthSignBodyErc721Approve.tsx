@@ -1,3 +1,4 @@
+import { TOKEN_APPROVALS_URL } from "@core/constants"
 import { getNftMetadata } from "@core/util/getNftMetadata"
 import { useQuery } from "@tanstack/react-query"
 import { SignAlertMessage } from "@ui/domains/Sign/SignAlertMessage"
@@ -56,11 +57,7 @@ export const EthSignBodyErc721Approve: FC = () => {
                 "This contract will have permission to transfer this NFT on your behalf until manually revoked."
               )}
             </span>{" "}
-            <a
-              className="text-white"
-              href="https://docs.talisman.xyz/talisman/navigating-the-paraverse/ethereum-features/token-approvals"
-              target="_blank"
-            >
+            <a className="text-white" href={TOKEN_APPROVALS_URL} target="_blank">
               {t("Learn more")}
             </a>
           </SignAlertMessage>

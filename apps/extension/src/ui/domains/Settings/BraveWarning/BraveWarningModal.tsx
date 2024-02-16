@@ -1,3 +1,4 @@
+import { BRAVE_BALANCES_URL } from "@core/constants"
 import { appStore } from "@core/domains/app/store.app"
 import imgBraveFlag from "@talisman/theme/images/brave_flag.gif"
 import { FC, useCallback, useEffect, useState } from "react"
@@ -28,10 +29,7 @@ export const BraveWarningModal: FC<BraveWarningModalProps> = () => {
   }, [])
 
   const handleReadMoreClick = useCallback(() => {
-    window.open(
-      "https://docs.talisman.xyz/talisman/help-and-support/troubleshooting/balances-on-brave-not-showing",
-      "_blank"
-    )
+    window.open(BRAVE_BALANCES_URL, "_blank")
   }, [])
 
   return (
