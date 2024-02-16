@@ -3,6 +3,7 @@ import { Suspense, useMemo, useState } from "react"
 
 import { Balances, BalancesFallback } from "./components/Balances"
 import { BalancesTotal, BalancesTotalFallback } from "./components/BalancesTotal"
+import { Button } from "./components/Button"
 import { useExtensionAccounts } from "./hooks/useExtensionAccounts"
 import { useExtensionSyncCustomChaindata } from "./hooks/useExtensionSyncCustomChaindata"
 
@@ -13,19 +14,41 @@ export function App(): JSX.Element {
   const addresses = useMemo(() => (accounts ?? []).map((account) => account.address), [accounts])
   useSetBalancesAddresses(addresses)
 
-  const [active, setActive] = useState(true)
-  const toggleActive = () => setActive((a) => !a)
+  const [forceSkeletons, setForceSkeletons] = useState(false)
+  const [tableActive, setTableActive] = useState(true)
+  const [headerActive, setHeaderActive] = useState(true)
 
   return (
-    <div className="m-5 flex flex-col gap-5">
+    <div className="m-5 flex flex-col items-center gap-5">
       <h1 className="text-lg">Balances Demo</h1>
-      <button onClick={toggleActive}>Toggle Active ({active ? "active" : "inactive"})</button>
-      <Suspense fallback={<BalancesTotalFallback />}>
-        <BalancesTotal />
-      </Suspense>
-
-      {/* Display balances per balance (so, per token per account) */}
-      {active && (
+      <div className="flex justify-center gap-5">
+        <Button onClick={() => setHeaderActive((a) => !a)}>Toggle Header</Button>
+        <Button onClick={() => setTableActive((a) => !a)}>Toggle Table</Button>
+        <Button
+          onClick={() => {
+            setHeaderActive((a) => !a)
+            setTableActive((a) => !a)
+          }}
+        >
+          Toggle Both
+        </Button>
+        <Button
+          className={forceSkeletons ? "text-primary" : undefined}
+          onClick={() => {
+            setForceSkeletons((a) => !a)
+          }}
+        >
+          Force Skeletons
+        </Button>
+      </div>
+      {headerActive && forceSkeletons && <BalancesTotalFallback />}
+      {headerActive && !forceSkeletons && (
+        <Suspense fallback={<BalancesTotalFallback />}>
+          <BalancesTotal />
+        </Suspense>
+      )}
+      {tableActive && forceSkeletons && <BalancesFallback />}
+      {tableActive && !forceSkeletons && (
         <Suspense fallback={<BalancesFallback />}>
           <Balances />
         </Suspense>

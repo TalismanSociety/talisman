@@ -16,10 +16,7 @@
   "module": "dist/talismn-chaindata-provider.esm.js",
   "files": [
     "/dist",
-    "/init/chains",
-    "/init/evm-networks",
-    "/init/mini-metadatas",
-    "/init/tokens",
+    "/init",
     "/net",
     "/plugins"
   ],

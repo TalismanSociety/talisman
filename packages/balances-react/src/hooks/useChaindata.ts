@@ -1,7 +1,8 @@
 import { ChainId, EvmNetworkId, TokenId } from "@talismn/chaindata-provider"
 import { useAtomValue } from "jotai"
 
-import { chaindataAtom, chaindataProviderAtom } from "../atoms/chaindata"
+import { chaindataAtom } from "../atoms/chaindata"
+import { chaindataProviderAtom } from "../atoms/chaindataProvider"
 
 export const useChaindataProvider = () => {
   return useAtomValue(chaindataProviderAtom)

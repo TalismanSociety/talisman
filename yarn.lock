@@ -7896,6 +7896,7 @@ __metadata:
     "@talismn/scale": "workspace:*"
     "@talismn/token-rates": "workspace:*"
     "@talismn/tsconfig": "workspace:*"
+    "@talismn/util": "workspace:*"
     "@types/jest": ^27.5.1
     "@types/react": ^18.0.17
     anylogger: ^1.0.11
@@ -7905,6 +7906,7 @@ __metadata:
     eslint: ^8.4.0
     jest: ^29.7.0
     jotai: ^2.6.4
+    jotai-effect: ^0.5.0
     react: ^18.2.0
     react-use: ^17.4.0
     rxjs: ^7.8.1
@@ -8199,6 +8201,7 @@ __metadata:
     bignumber.js: ^9.1.2
     eslint: ^8.52.0
     jest: ^29.7.0
+    rxjs: ^7.8.1
     tailwind-merge: ^1.14.0
     ts-jest: ^29.1.1
     typescript: ^5.2.2
@@ -11146,10 +11149,13 @@ __metadata:
     anylogger-loglevel: ^1.0.0
     autoprefixer: ^10.4.12
     eslint: ^7.5.0
+    jotai: ^2.6.4
+    jotai-effect: ^0.5.0
     loglevel: ^1.8.1
     postcss: ^8.4.33
     react: ^18.2.0
     react-dom: ^18.2.0
+    rxjs: ^7.8.1
     tailwindcss: ^3.4.1
     typescript: ^4.9.3
     vite: ^4.4.3
@@ -18403,6 +18409,15 @@ __metadata:
   bin:
     jiti: bin/jiti.js
   checksum: a7bd5d63921c170eaec91eecd686388181c7828e1fa0657ab374b9372bfc1f383cf4b039e6b272383d5cb25607509880af814a39abdff967322459cca41f2961
+  languageName: node
+  linkType: hard
+
+"jotai-effect@npm:^0.5.0":
+  version: 0.5.0
+  resolution: "jotai-effect@npm:0.5.0"
+  peerDependencies:
+    jotai: ">=2.5.0"
+  checksum: 40f392c5c64d7fa5ee5daf6fa1ac30050833ce8e7888474568aa440ac62466afed35d458ac731e80eaf8e4935dcefc26ffd583d82b0b68fa493f1345ebea1738
   languageName: node
   linkType: hard
 

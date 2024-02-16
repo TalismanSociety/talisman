@@ -27,6 +27,7 @@
   },
   "dependencies": {
     "bignumber.js": "^9.1.2",
+    "rxjs": "^7.8.1",
     "tailwind-merge": "^1.14.0"
   },
   "devDependencies": {

@@ -1,94 +1,84 @@
-import { fetchTokenRates, db as tokenRatesDb } from "@talismn/token-rates"
-import { Deferred } from "@talismn/util"
+import { DbTokenRates, fetchTokenRates, db as tokenRatesDb } from "@talismn/token-rates"
 import { liveQuery } from "dexie"
 import { atom } from "jotai"
+import { atomEffect } from "jotai-effect"
 import { atomWithObservable } from "jotai/utils"
 import { from, map } from "rxjs"
 
 import log from "../log"
-import { chaindataAtom } from "./chaindata"
+import { tokensByIdAtom } from "./chaindata"
 import { coingeckoConfigAtom } from "./config"
 
-/** A unique symbol which we use to tell our atoms that we want to trigger their side effects. */
-const INIT = Symbol()
-
-/** Represents a function which when called will clean up a subscription. */
-type Unsubscribe = () => void
-
 export const tokenRatesAtom = atom(async (get) => {
-  const [tokenRates] = await Promise.all([get(tokenRatesDbAtom), get(tokenRatesFetcherAtom)])
+  // runs a timer to keep tokenRates up to date
+  get(tokenRatesFetcherAtomEffect)
 
-  return tokenRates
+  return await get(tokenRatesDbAtom)
 })
 
-const tokenRatesDbAtom = atomWithObservable(() =>
-  from(
-    // retrieve fetched tokenRates from the db
-    liveQuery(() => tokenRatesDb.tokenRates.toArray())
-  ).pipe(map((items) => Object.fromEntries(items.map((item) => [item.tokenId, item.rates]))))
-)
+const tokenRatesDbAtom = atomWithObservable(() => {
+  const dbRatesToMap = (dbRates: DbTokenRates[]) =>
+    Object.fromEntries(dbRates.map(({ tokenId, rates }) => [tokenId, rates]))
 
-// TODO: Make an `atomWithOnMountEffect` method which handles the `INIT` stuff internally
-const tokenRatesFetcherAtom = atom<void, [typeof INIT], Unsubscribe>(
-  () => {},
+  // retrieve fetched tokenRates from the db
+  return from(liveQuery(() => tokenRatesDb.tokenRates.toArray())).pipe(map(dbRatesToMap))
+})
 
-  // We use the `onMount` property to trigger this atom's setter on mount, so that we
-  // can set up our tokenRates subscription.
-  (get) => {
-    const unsubscribed = Deferred<void>()
-    const unsubscribe = () => unsubscribed.resolve()
+const tokenRatesFetcherAtomEffect = atomEffect((get) => {
+  // lets us tear down the existing timer when the effect is restarted
+  const abort = new AbortController()
 
-    ;(async () => {
-      const coingeckoConfig = get(coingeckoConfigAtom)
+  // we have to get these synchronously so that jotai knows to restart our timer when they change
+  const coingeckoConfig = get(coingeckoConfigAtom)
+  const tokensByIdPromise = get(tokensByIdAtom)
 
-      const tokensById = (await get(chaindataAtom)).tokensById
-      const tokenIds = Object.keys(tokensById)
+  ;(async () => {
+    const tokensById = await tokensByIdPromise
+    const tokenIds = Object.keys(tokensById)
 
-      const loopMs = 300_000 // 300_000ms = 300s = 5 minutes
-      const retryTimeout = 5_000 // 5_000ms = 5 seconds
+    const loopMs = 300_000 // 300_000ms = 300s = 5 minutes
+    const retryTimeout = 5_000 // 5_000ms = 5 seconds
 
-      const hydrate = async () => {
-        if (unsubscribed.isResolved()) return
+    const hydrate = async () => {
+      try {
+        if (abort.signal.aborted) return // don't fetch if aborted
+        const tokenRates = await fetchTokenRates(tokensById, coingeckoConfig)
+        const putTokenRates = Object.entries(tokenRates).map(([tokenId, rates]) => ({
+          tokenId,
+          rates,
+        }))
 
-        try {
-          const tokenRates = await fetchTokenRates(tokensById, coingeckoConfig)
-          const putTokenRates = Object.entries(tokenRates).map(([tokenId, rates]) => ({
-            tokenId,
-            rates,
-          }))
+        if (abort.signal.aborted) return // don't insert into db if aborted
+        await tokenRatesDb.transaction("rw", tokenRatesDb.tokenRates, async () => {
+          // override all tokenRates
+          await tokenRatesDb.tokenRates.bulkPut(putTokenRates)
 
-          if (unsubscribed.isResolved()) return
+          // delete tokenRates for tokens which no longer exist
+          const validTokenIds = new Set(tokenIds)
+          const tokenRatesIds = await tokenRatesDb.tokenRates.toCollection().primaryKeys()
+          const deleteIds = tokenRatesIds.filter((id) => !validTokenIds.has(id))
+          if (deleteIds.length > 0) await tokenRatesDb.tokenRates.bulkDelete(deleteIds)
+        })
 
-          await tokenRatesDb.transaction("rw", tokenRatesDb.tokenRates, async () => {
-            // override all tokenRates
-            await tokenRatesDb.tokenRates.bulkPut(putTokenRates)
+        if (abort.signal.aborted) return // don't schedule next loop if aborted
+        setTimeout(hydrate, loopMs)
+      } catch (error) {
+        const retrying = !abort.signal.aborted
+        const messageParts = [
+          "Failed to fetch tokenRates",
+          retrying && `retrying in ${Math.round(retryTimeout / 1000)} seconds`,
+          !retrying && `giving up (timer no longer needed)`,
+        ].filter(Boolean)
+        log.error(messageParts.join(", "), error)
 
-            // delete tokenRates for tokens which no longer exist
-            const validTokenIds = new Set(tokenIds)
-            const tokenRatesIds = await tokenRatesDb.tokenRates.toCollection().primaryKeys()
-            const deleteIds = tokenRatesIds.filter((id) => !validTokenIds.has(id))
-            if (deleteIds.length > 0) await tokenRatesDb.tokenRates.bulkDelete(deleteIds)
-          })
-
-          if (!unsubscribed.isResolved()) setTimeout(hydrate, loopMs)
-        } catch (error) {
-          log.error(
-            `Failed to fetch tokenRates, retrying in ${Math.round(retryTimeout / 1000)} seconds`,
-            error
-          )
-          setTimeout(async () => {
-            hydrate()
-          }, retryTimeout)
-        }
+        if (abort.signal.aborted) return // don't schedule retry if aborted
+        setTimeout(hydrate, retryTimeout)
       }
-
-      // launch the loop
-      hydrate()
-    })()
-
-    return () => {
-      unsubscribe()
     }
-  }
-)
-tokenRatesFetcherAtom.onMount = (dispatch) => dispatch(INIT)
+
+    // launch the loop
+    hydrate()
+  })()
+
+  return () => abort.abort("Unsubscribed")
+})

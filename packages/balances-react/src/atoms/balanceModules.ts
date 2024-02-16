@@ -2,7 +2,7 @@ import { AnyBalanceModule } from "@talismn/balances"
 import { atom } from "jotai"
 
 import { chainConnectorsAtom } from "./chainConnectors"
-import { chaindataProviderAtom } from "./chaindata"
+import { chaindataProviderAtom } from "./chaindataProvider"
 import { balanceModuleCreatorsAtom } from "./config"
 
 export const balanceModulesAtom = atom<Array<AnyBalanceModule>>((get) => {

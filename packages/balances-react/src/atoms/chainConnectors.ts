@@ -4,7 +4,7 @@ import { ChainConnectorEvm } from "@talismn/chain-connector-evm"
 import { connectionMetaDb } from "@talismn/connection-meta"
 import { atom } from "jotai"
 
-import { chaindataProviderAtom } from "./chaindata"
+import { chaindataProviderAtom } from "./chaindataProvider"
 import { onfinalityApiKeyAtom } from "./config"
 
 export const chainConnectorsAtom = atom<ChainConnectors>((get) => {
