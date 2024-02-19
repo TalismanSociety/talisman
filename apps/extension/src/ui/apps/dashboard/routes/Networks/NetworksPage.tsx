@@ -1,12 +1,12 @@
 import { FadeIn } from "@talisman/components/FadeIn"
 import { HeaderBlock } from "@talisman/components/HeaderBlock"
+import { OptionSwitch } from "@talisman/components/OptionSwitch"
 import { SearchInput } from "@talisman/components/SearchInput"
 import { Spacer } from "@talisman/components/Spacer"
 import { InfoIcon, PlusIcon } from "@talismn/icons"
 import { sendAnalyticsEvent } from "@ui/api/analytics"
 import { chainsMapQuery, evmNetworksMapQuery, settingQuery } from "@ui/atoms"
 import { EnableTestnetPillButton } from "@ui/domains/Settings/EnableTestnetPillButton"
-import { ProviderTypeSwitch } from "@ui/domains/Site/ProviderTypeSwitch"
 import { useAnalyticsPageView } from "@ui/hooks/useAnalyticsPageView"
 import { useRecoilPreload } from "@ui/hooks/useRecoilPreload"
 import { FC, useCallback, useState } from "react"
@@ -81,9 +81,13 @@ export const NetworksPage = () => {
       <Notice />
       <Spacer large />
       <div className="flex justify-end gap-4">
-        <ProviderTypeSwitch
+        <OptionSwitch
+          options={[
+            ["ethereum", t("Ethereum")],
+            ["polkadot", t("Polkadot")],
+          ]}
           className="text-xs [&>div]:h-full"
-          defaultProvider={networksType}
+          defaultOption={networksType}
           onChange={setNetworksType}
         />
 

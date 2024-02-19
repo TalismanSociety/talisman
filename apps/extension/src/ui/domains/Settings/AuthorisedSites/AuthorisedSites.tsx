@@ -1,8 +1,8 @@
 import { TALISMAN_WEB_APP_URL } from "@core/constants"
 import { ProviderType } from "@core/domains/sitesAuthorised/types"
 import { HeaderBlock } from "@talisman/components/HeaderBlock"
+import { OptionSwitch } from "@talisman/components/OptionSwitch"
 import { Spacer } from "@talisman/components/Spacer"
-import { ProviderTypeSwitch } from "@ui/domains/Site/ProviderTypeSwitch"
 import { useAuthorisedSites } from "@ui/hooks/useAuthorisedSites"
 import { useEffect, useMemo, useState } from "react"
 import { Trans, useTranslation } from "react-i18next"
@@ -60,9 +60,13 @@ export const AuthorisedSites = () => {
       <div className="flex items-center justify-between">
         <div>
           {hasEthereumSites ? (
-            <ProviderTypeSwitch
+            <OptionSwitch
+              options={[
+                ["ethereum", t("Ethereum")],
+                ["polkadot", t("Polkadot")],
+              ]}
               className="text-xs [&>div]:h-full"
-              defaultProvider="polkadot"
+              defaultOption="ethereum"
               onChange={setProviderType}
             />
           ) : null}
