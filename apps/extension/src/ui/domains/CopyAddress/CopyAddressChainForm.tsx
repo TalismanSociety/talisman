@@ -3,17 +3,20 @@ import { SearchInput } from "@talisman/components/SearchInput"
 import { convertAddress } from "@talisman/util/convertAddress"
 import { shortenAddress } from "@talisman/util/shortenAddress"
 import { Chain, ChainId } from "@talismn/chaindata-provider"
-import { ChevronRightIcon } from "@talismn/icons"
+import { CopyIcon, QrIcon } from "@talismn/icons"
 import { useAccountByAddress } from "@ui/hooks/useAccountByAddress"
 import useChains from "@ui/hooks/useChains"
 import { useSetting } from "@ui/hooks/useSettings"
+import { copyAddress } from "@ui/util/copyAddress"
 import sortBy from "lodash/sortBy"
 import { useCallback, useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
+import { IconButton, Tooltip, TooltipContent, TooltipTrigger } from "talisman-ui"
 
 import { AccountIcon } from "../Account/AccountIcon"
 import { ChainLogo } from "../Asset/ChainLogo"
 import { CopyAddressLayout } from "./CopyAddressLayout"
+import { useCopyAddressModal } from "./useCopyAddressModal"
 import { useCopyAddressWizard } from "./useCopyAddressWizard"
 
 type ChainFormat = {
@@ -24,13 +27,23 @@ type ChainFormat = {
   address: string
 }
 
-const ChainFormatButton = ({ format, onClick }: { format: ChainFormat; onClick?: () => void }) => {
+const ChainFormatButton = ({ format }: { format: ChainFormat }) => {
+  const { t } = useTranslation()
+  const { setChainId } = useCopyAddressWizard()
+  const { close } = useCopyAddressModal()
+
+  const handleQrClick = useCallback(() => {
+    setChainId(format.chainId)
+  }, [format.chainId, setChainId])
+
+  const handleCopyClick = useCallback(() => {
+    copyAddress(format.address).then((success) => {
+      if (success) close()
+    })
+  }, [close, format.address])
+
   return (
-    <button
-      type="button"
-      onClick={onClick}
-      className="text-body-secondary hover:text-body hover:bg-grey-800 flex h-32 w-full items-center gap-4 px-8"
-    >
+    <div className="text-body-secondary hover:text-body hover:bg-grey-800 flex h-32 w-full items-center gap-4 px-8">
       {format.chainId ? (
         <ChainLogo className="shrink-0 text-xl" id={format.chainId} />
       ) : (
@@ -40,44 +53,47 @@ const ChainFormatButton = ({ format, onClick }: { format: ChainFormat; onClick?:
           type="polkadot-identicon"
         />
       )}
-      <div className="flex grow flex-col gap-2 text-left">
-        <div className="text-body">{format.name}</div>
-        <div className="text-body-secondary text-sm">{shortenAddress(format.address, 5, 5)}</div>
+      <div className="flex grow flex-col gap-2 overflow-hidden text-left">
+        <div className="text-body truncate">{format.name}</div>
+        <div className="text-body-secondary truncate text-sm">
+          <Tooltip>
+            <TooltipTrigger>{shortenAddress(format.address, 10, 10)}</TooltipTrigger>
+            <TooltipContent>{format.address}</TooltipContent>
+          </Tooltip>
+        </div>
       </div>
-      <ChevronRightIcon className="text-lg" />
-    </button>
-  )
-}
-
-const ChainFormatsList = ({
-  formats,
-  onSelect,
-}: {
-  formats: ChainFormat[]
-  onSelect?: (chainId: ChainId | null) => void
-}) => {
-  const handleSelect = useCallback(
-    (chainId: ChainId | null) => () => {
-      onSelect?.(chainId)
-    },
-    [onSelect]
-  )
-
-  return (
-    <div className="flex flex-col">
-      {formats.map((format) => (
-        <ChainFormatButton
-          key={format.key}
-          format={format}
-          onClick={handleSelect(format.chainId)}
-        />
-      ))}
+      <div className="flex gap-6">
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <IconButton className="text-md" onClick={handleQrClick}>
+              <QrIcon />
+            </IconButton>
+          </TooltipTrigger>
+          <TooltipContent>{t("Show QR code")}</TooltipContent>
+        </Tooltip>
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <IconButton className="text-md" onClick={handleCopyClick}>
+              <CopyIcon />
+            </IconButton>
+          </TooltipTrigger>
+          <TooltipContent>{t("Copy to clipboard")}</TooltipContent>
+        </Tooltip>
+      </div>
     </div>
   )
 }
 
+const ChainFormatsList = ({ formats }: { formats: ChainFormat[] }) => (
+  <div className="flex flex-col">
+    {formats.map((format) => (
+      <ChainFormatButton key={format.key} format={format} />
+    ))}
+  </div>
+)
+
 export const CopyAddressChainForm = () => {
-  const { address, setChainId } = useCopyAddressWizard()
+  const { address } = useCopyAddressWizard()
   const [search, setSearch] = useState("")
   const [includeTestnets] = useSetting("useTestnets")
   const { chains, chainsMap } = useChains({ activeOnly: true, includeTestnets })
@@ -141,7 +157,7 @@ export const CopyAddressChainForm = () => {
           <SearchInput onChange={setSearch} placeholder={t("Search by network name")} autoFocus />
         </div>
         <ScrollContainer className="bg-black-secondary border-grey-700 scrollable h-full w-full grow overflow-x-hidden border-t">
-          <ChainFormatsList formats={filteredFormats} onSelect={setChainId} />
+          <ChainFormatsList formats={filteredFormats} />
         </ScrollContainer>
       </div>
     </CopyAddressLayout>
