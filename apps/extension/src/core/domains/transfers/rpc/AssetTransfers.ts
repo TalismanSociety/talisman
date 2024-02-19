@@ -56,7 +56,7 @@ export default class AssetTransfersRpc {
 
     assert(signature, "transaction is not signed")
 
-    const token = await chaindataProvider.getToken(tokenId)
+    const token = await chaindataProvider.tokenById(tokenId)
 
     const hash = await watchSubstrateTransaction(chain, registry, unsigned, signature, {
       transferInfo: {
@@ -82,7 +82,7 @@ export default class AssetTransfersRpc {
     transferInfo: WalletTransactionTransferInfo
   ) {
     const genesisHash = validateHexString(unsigned.genesisHash)
-    const chain = await chaindataProvider.getChainByGenesisHash(genesisHash)
+    const chain = await chaindataProvider.chainByGenesisHash(genesisHash)
     if (!chain) throw new Error(`Could not find chain for genesisHash ${genesisHash}`)
 
     const { registry } = await getTypeRegistry(chain.id)
@@ -168,11 +168,11 @@ export default class AssetTransfersRpc {
     chain: Chain
     signature?: HexString
   }> {
-    const chain = await chaindataProvider.getChain(chainId)
+    const chain = await chaindataProvider.chainById(chainId)
     assert(chain?.genesisHash, `Chain ${chainId} not found in store`)
     const { genesisHash } = chain
 
-    const token = await chaindataProvider.getToken(tokenId)
+    const token = await chaindataProvider.tokenById(tokenId)
     assert(token, `Token ${tokenId} not found in store`)
 
     const [blockHash, { block }, nonce, runtimeVersion] = await Promise.all([

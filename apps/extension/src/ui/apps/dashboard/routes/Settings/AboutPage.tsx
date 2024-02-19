@@ -1,3 +1,9 @@
+import {
+  PRIVACY_POLICY_URL,
+  RELEASE_NOTES_URL,
+  TALISMAN_DOCS_URL_PREFIX,
+  TERMS_OF_USE_URL,
+} from "@core/constants"
 import { HeaderBlock } from "@talisman/components/HeaderBlock"
 import {
   CodeIcon,
@@ -44,28 +50,28 @@ export const AboutPage = () => {
         <CtaButton
           title={t("Privacy Policy")}
           subtitle={t("Read our Privacy Policy")}
-          to="https://docs.talisman.xyz/talisman/legal-and-security/privacy-policy"
+          to={PRIVACY_POLICY_URL}
           iconLeft={TalismanHandIcon}
           iconRight={ExternalLinkIcon}
         />
         <CtaButton
           title={t("Terms of Use")}
           subtitle={t("Read our Terms of Use")}
-          to="https://docs.talisman.xyz/talisman/legal-and-security/terms-of-use"
+          to={TERMS_OF_USE_URL}
           iconLeft={MapIcon}
           iconRight={ExternalLinkIcon}
         />
         <CtaButton
           title={t("Docs")}
           subtitle={t("Learn how to use Talisman")}
-          to="https://docs.talisman.xyz"
+          to={TALISMAN_DOCS_URL_PREFIX}
           iconLeft={CodeIcon}
           iconRight={ExternalLinkIcon}
         />
         <CtaButton
           title={t("Changelog")}
           subtitle={t("Review wallet release notes")}
-          to="https://docs.talisman.xyz/talisman/prepare-for-your-journey/wallet-release-notes"
+          to={RELEASE_NOTES_URL}
           iconLeft={GitPullRequestIcon}
           iconRight={ExternalLinkIcon}
         />

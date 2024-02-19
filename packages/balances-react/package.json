@@ -30,7 +30,6 @@
     "@talismn/chain-connector": "workspace:*",
     "@talismn/chain-connector-evm": "workspace:*",
     "@talismn/chaindata-provider": "workspace:*",
-    "@talismn/chaindata-provider-extension": "workspace:*",
     "@talismn/connection-meta": "workspace:*",
     "@talismn/token-rates": "workspace:*",
     "anylogger": "^1.0.11",

@@ -1,3 +1,4 @@
+import { PRIVACY_POLICY_URL } from "@core/constants"
 import { CheckCircleIcon, XIcon } from "@talismn/icons/"
 import { classNames } from "@talismn/util"
 import { FC, ReactNode } from "react"
@@ -56,7 +57,7 @@ export const AnalyticsOptInInfo: FC<{
         <Trans t={t}>
           For more information please read our{" "}
           <a
-            href="https://docs.talisman.xyz/talisman/legal-and-security/privacy-policy"
+            href={PRIVACY_POLICY_URL}
             target="_blank"
             rel="noreferrer noopener"
             className="hover:text-grey-300 active:text-grey-300 underline"

@@ -30,7 +30,7 @@ export default class TalismanHandler extends TabsHandler {
           "pub(talisman.customSubstrateChains.subscribe)",
           id,
           port,
-          chaindataProvider.subscribeCustomChains()
+          chaindataProvider.customChainsObservable
         )
 
       case "pub(talisman.customSubstrateChains.unsubscribe)":
@@ -43,7 +43,7 @@ export default class TalismanHandler extends TabsHandler {
           "pub(talisman.customEvmNetworks.subscribe)",
           id,
           port,
-          chaindataProvider.subscribeCustomEvmNetworks()
+          chaindataProvider.customEvmNetworksObservable
         )
 
       case "pub(talisman.customEvmNetworks.unsubscribe)":
@@ -56,7 +56,7 @@ export default class TalismanHandler extends TabsHandler {
           "pub(talisman.customTokens.subscribe)",
           id,
           port,
-          chaindataProvider.subscribeCustomTokens()
+          chaindataProvider.customTokensObservable
         )
 
       case "pub(talisman.customTokens.unsubscribe)":

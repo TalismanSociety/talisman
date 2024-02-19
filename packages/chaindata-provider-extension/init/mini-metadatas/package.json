@@ -1,4 +1,0 @@
-{
-  "main": "dist/talismn-chaindata-provider-extension-init-mini-metadatas.cjs.js",
-  "module": "dist/talismn-chaindata-provider-extension-init-mini-metadatas.esm.js"
-}

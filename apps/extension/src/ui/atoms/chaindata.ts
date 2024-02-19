@@ -51,7 +51,7 @@ export const allEvmNetworksState = atom<(EvmNetwork | CustomEvmNetwork)[]>({
   effects: [
     ({ setSelf }) => {
       log.debug("allEvmNetworksState.init")
-      const sub = chaindataProvider.evmNetworksArrayObservable.subscribe(setSelf)
+      const sub = chaindataProvider.evmNetworksObservable.subscribe(setSelf)
       return () => sub.unsubscribe()
     },
     () => api.ethereumNetworks(NO_OP),
@@ -179,7 +179,7 @@ export const allChainsState = atom<(Chain | CustomChain)[]>({
   effects: [
     ({ setSelf }) => {
       log.debug("allChainsState.init")
-      const sub = chaindataProvider.chainsArrayObservable.subscribe(setSelf)
+      const sub = chaindataProvider.chainsObservable.subscribe(setSelf)
       return () => sub.unsubscribe()
     },
     () => api.chains(NO_OP),
@@ -322,7 +322,7 @@ export const allTokensMapState = atom<TokenList>({
   effects: [
     ({ setSelf }) => {
       log.debug("allTokensMapState.init")
-      const sub = chaindataProvider.tokensListObservable.subscribe(setSelf)
+      const sub = chaindataProvider.tokensByIdObservable.subscribe(setSelf)
       return () => sub.unsubscribe()
     },
     () => api.tokens(NO_OP),

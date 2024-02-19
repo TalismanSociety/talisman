@@ -22,9 +22,9 @@ export class ChainsHandler extends ExtensionHandler {
 
   private chainUpsert: MessageHandler<"pri(chains.upsert)"> = async (chain) => {
     await chaindataProvider.transaction("rw", ["chains", "tokens"], async () => {
-      const existingChain = await chaindataProvider.getChain(chain.id)
+      const existingChain = await chaindataProvider.chainById(chain.id)
       const existingToken = existingChain?.nativeToken?.id
-        ? await chaindataProvider.getToken(existingChain.nativeToken.id)
+        ? await chaindataProvider.tokenById(existingChain.nativeToken.id)
         : null
       const existingNativeToken = existingToken?.type === "substrate-native" ? existingToken : null
 

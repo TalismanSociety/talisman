@@ -1,3 +1,4 @@
+import { TOKEN_APPROVALS_URL } from "@core/constants"
 import { BalanceFormatter } from "@core/domains/balances"
 import { CustomErc20Token } from "@core/domains/tokens/types"
 import { assert } from "@polkadot/util"
@@ -98,11 +99,7 @@ export const EthSignBodyErc20Approve: FC = () => {
                 "This contract will have permission to spend tokens on your behalf until manually revoked."
               )}
             </span>{" "}
-            <a
-              className="text-white"
-              href="https://docs.talisman.xyz/talisman/navigating-the-paraverse/ethereum-features/token-approvals"
-              target="_blank"
-            >
+            <a className="text-white" href={TOKEN_APPROVALS_URL} target="_blank">
               {t("Learn more")}
             </a>
           </SignAlertMessage>

@@ -113,9 +113,9 @@ class TalismanAnalytics {
     // cache chains, evmNetworks, tokens, tokenRates and balances here to prevent lots of fetch calls
     try {
       /* eslint-disable no-var */
-      var chains = await chaindataProvider.chains()
-      var evmNetworks = await chaindataProvider.evmNetworks()
-      var tokens = await chaindataProvider.tokens()
+      var chains = await chaindataProvider.chainsById()
+      var evmNetworks = await chaindataProvider.evmNetworksById()
+      var tokens = await chaindataProvider.tokensById()
       var tokenRates = Object.fromEntries(
         ((await db.tokenRates.toArray()) || []).map(({ tokenId, rates }) => [tokenId, rates])
       )

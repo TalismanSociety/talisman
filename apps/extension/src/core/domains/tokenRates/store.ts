@@ -10,6 +10,8 @@ import { Subscription } from "dexie"
 import debounce from "lodash/debounce"
 import { BehaviorSubject, combineLatest } from "rxjs"
 
+import { remoteConfigStore } from "../app/store.remoteConfig"
+
 const MIN_REFRESH_INTERVAL = 60_000 // 60_000ms = 60s = 1 minute
 const REFRESH_INTERVAL = 300_000 // 5 minutes
 
@@ -42,7 +44,7 @@ export class TokenRatesStore {
         }, REFRESH_INTERVAL)
 
         // refresh when token list changes : crucial for first popup load after install or db migration
-        const obsTokens = chaindataProvider.tokensListObservable
+        const obsTokens = chaindataProvider.tokensByIdObservable
         const obsActiveTokens = activeTokensStore.observable
 
         subTokenList = combineLatest([obsTokens, obsActiveTokens]).subscribe(
@@ -74,7 +76,7 @@ export class TokenRatesStore {
   async hydrateStore(): Promise<boolean> {
     try {
       const [tokens, activeTokens] = await Promise.all([
-        chaindataProvider.tokens(),
+        chaindataProvider.tokensById(),
         activeTokensStore.get(),
       ])
 
@@ -103,7 +105,8 @@ export class TokenRatesStore {
     this.#lastUpdateTokenIds = strTokenIds
 
     try {
-      const tokenRates = await fetchTokenRates(tokens)
+      const coingecko = await remoteConfigStore.get("coingecko")
+      const tokenRates = await fetchTokenRates(tokens, coingecko)
       const putTokenRates = Object.entries(tokenRates).map(([tokenId, rates]) => ({
         tokenId,
         rates,

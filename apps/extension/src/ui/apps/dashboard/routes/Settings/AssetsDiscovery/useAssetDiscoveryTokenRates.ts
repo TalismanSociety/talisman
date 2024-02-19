@@ -1,3 +1,4 @@
+import { remoteConfigStore } from "@core/domains/app/store.remoteConfig"
 import { log } from "@core/log"
 import { TokenId, TokenList } from "@talismn/chaindata-provider"
 import { TokenRates, TokenRatesList, fetchTokenRates } from "@talismn/token-rates"
@@ -51,9 +52,10 @@ const FETCH_TOKEN_RATES_CACHE: Record<string, Promise<TokenRatesList>> = {}
 // use this to prevent multiple fetches for the same token list
 const safeFetchTokenRates = async (tokenList: TokenList) => {
   const cacheKey = Object.keys(tokenList).join(",")
+  const coingecko = await remoteConfigStore.get("coingecko")
 
   if (!FETCH_TOKEN_RATES_CACHE[cacheKey]) {
-    FETCH_TOKEN_RATES_CACHE[cacheKey] = fetchTokenRates(tokenList).finally(() => {
+    FETCH_TOKEN_RATES_CACHE[cacheKey] = fetchTokenRates(tokenList, coingecko).finally(() => {
       delete FETCH_TOKEN_RATES_CACHE[cacheKey]
     })
   }

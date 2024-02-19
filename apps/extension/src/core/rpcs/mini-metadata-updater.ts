@@ -58,7 +58,7 @@ const hydrateChaindataAndMiniMetadata = async () => {
     chaindataProvider.hydrateEvmNetworks(),
   ])
 
-  const chains = await chaindataProvider.chainsArray()
+  const chains = await chaindataProvider.chains()
   const { statusesByChain } = await miniMetadataUpdater.statuses(chains)
   const goodChains = [...statusesByChain.entries()].flatMap(([chainId, status]) =>
     status === "good" ? chainId : []

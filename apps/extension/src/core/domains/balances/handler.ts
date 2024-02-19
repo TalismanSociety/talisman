@@ -112,11 +112,11 @@ const subscribeBalancesByParams = async (
   // which they depend on changes
   const byParamsSubscription = combineLatest([
     // chains
-    chaindataProvider.chainsListObservable,
+    chaindataProvider.chainsByIdObservable,
     // evmNetworks
-    chaindataProvider.evmNetworksListObservable,
+    chaindataProvider.evmNetworksByIdObservable,
     // tokens
-    chaindataProvider.tokensListObservable,
+    chaindataProvider.tokensByIdObservable,
     // miniMetadatas - not used here but we must retrigger the subscriptions when this changes
     liveQuery(async () => await balancesDb.miniMetadatas.toArray()),
 

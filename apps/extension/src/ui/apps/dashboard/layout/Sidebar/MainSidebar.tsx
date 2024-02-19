@@ -18,7 +18,7 @@ import {
 } from "@talismn/icons"
 import { useBuyTokensModal } from "@ui/domains/Asset/Buy/useBuyTokensModal"
 import { useAnalytics } from "@ui/hooks/useAnalytics"
-import { useIsFeatureEnabled } from "@ui/hooks/useFeatures"
+import { useIsFeatureEnabled } from "@ui/hooks/useIsFeatureEnabled"
 import useMnemonicBackup from "@ui/hooks/useMnemonicBackup"
 import { useCallback } from "react"
 import { useTranslation } from "react-i18next"

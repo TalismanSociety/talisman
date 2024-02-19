@@ -1,4 +1,0 @@
-{
-  "main": "dist/talismn-chaindata-provider-extension-init-chains.cjs.js",
-  "module": "dist/talismn-chaindata-provider-extension-init-chains.esm.js"
-}

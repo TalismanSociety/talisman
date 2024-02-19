@@ -3,6 +3,18 @@ import { ValidRequests } from "@core/libs/requests/types"
 import { Address } from "@core/types/base"
 import { Properties } from "posthog-js"
 
+export type RemoteConfigStoreData = {
+  featureFlags: FeatureFlags
+  buyTokens: {
+    tokenIds: TokenId[]
+  }
+  coingecko: {
+    apiUrl: string
+    apiKeyName?: string
+    apiKeyValue?: string
+  }
+}
+
 export interface RequestOnboardCreatePassword {
   pass: string
   passConfirm: string
@@ -32,14 +44,13 @@ export interface AnalyticsCaptureRequest {
   options?: Properties
 }
 
-// values must match the flags defined in Posthog
-export type FeatureVariants = Partial<{
+// values must match the flags defined in config repository
+export type FeatureFlags = Partial<{
   BUY_CRYPTO: boolean
   LINK_STAKING: boolean
   USE_ONFINALITY_API_KEY: boolean
-  TEST_VARIANT: "VARIANT1" | "VARIANT2" // keep this one for string type checking
 }>
-export type FeatureFlag = keyof FeatureVariants
+export type FeatureFlag = keyof FeatureFlags
 
 type FALSE = "FALSE"
 type TRUE = "TRUE"

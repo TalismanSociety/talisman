@@ -7,8 +7,7 @@ import {
   createSubscriptionId,
   deleteSubscriptionId,
 } from "@talismn/balances"
-import { ChaindataProvider, TokenList } from "@talismn/chaindata-provider"
-import { ChaindataProviderExtension } from "@talismn/chaindata-provider-extension"
+import { ChaindataProvider, IChaindataProvider, TokenList } from "@talismn/chaindata-provider"
 import { fetchTokenRates, db as tokenRatesDb } from "@talismn/token-rates"
 import md5 from "blueimp-md5"
 import { useCallback, useMemo } from "react"
@@ -145,10 +144,10 @@ const useTokens = (withTestnets?: boolean) => {
 }
 
 const subscribeChaindataHydrate = (
-  provider: ChaindataProvider,
+  provider: IChaindataProvider,
   type: "chains" | "evmNetworks" | "tokens"
 ) => {
-  const chaindata = provider as ChaindataProviderExtension
+  const chaindata = provider as ChaindataProvider
   const delay = 300_000 // 300_000ms = 300s = 5 minutes
 
   let timeout: NodeJS.Timeout | null = null
