@@ -4,16 +4,18 @@ import { convertAddress } from "@talisman/util/convertAddress"
 import { shortenAddress } from "@talisman/util/shortenAddress"
 import { Chain, ChainId } from "@talismn/chaindata-provider"
 import { CopyIcon, QrIcon } from "@talismn/icons"
+import { isEthereumAddress } from "@talismn/util"
 import { useAccountByAddress } from "@ui/hooks/useAccountByAddress"
 import useChains from "@ui/hooks/useChains"
 import { useSetting } from "@ui/hooks/useSettings"
 import sortBy from "lodash/sortBy"
 import { useCallback, useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
-import { IconButton, Tooltip, TooltipContent, TooltipTrigger } from "talisman-ui"
+import { IconButton, Tooltip, TooltipContent, TooltipTrigger, useOpenClose } from "talisman-ui"
 
 import { AccountIcon } from "../Account/AccountIcon"
 import { ChainLogo } from "../Asset/ChainLogo"
+import { CopyAddressExchangeWarning } from "./CopyAddressExchangeWarning"
 import { CopyAddressLayout } from "./CopyAddressLayout"
 import { useCopyAddressWizard } from "./useCopyAddressWizard"
 
@@ -33,7 +35,14 @@ const ChainFormatButton = ({ format }: { format: ChainFormat }) => {
     setChainId(format.chainId)
   }, [format.chainId, setChainId])
 
+  const { open: openWarning, isOpen: isWarningOpen, close: closeWarning } = useOpenClose()
+
   const handleCopyClick = useCallback(() => {
+    if (format.chainId === null && !isEthereumAddress(format.address)) openWarning()
+    else copySpecific(format.address, format.chainId)
+  }, [copySpecific, format.address, format.chainId, openWarning])
+
+  const handleWarningContinueClick = useCallback(() => {
     copySpecific(format.address, format.chainId)
   }, [copySpecific, format.address, format.chainId])
 
@@ -77,6 +86,11 @@ const ChainFormatButton = ({ format }: { format: ChainFormat }) => {
           <TooltipContent>{t("Copy to clipboard")}</TooltipContent>
         </Tooltip>
       </div>
+      <CopyAddressExchangeWarning
+        isOpen={isWarningOpen}
+        onDismiss={closeWarning}
+        onContinue={handleWarningContinueClick}
+      />
     </div>
   )
 }
