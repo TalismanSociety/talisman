@@ -1,4 +1,4 @@
-import { AccountAddSecretWizard } from "@ui/domains/Account/AccountAdd/AccountAddSecret/router"
+import { AccountAddSecretWizard } from "@ui/domains/Account/AccountAdd/AccountAddMnemonic/router"
 
 import { AccountAddWrapper } from "./AccountAddWrapper"
 

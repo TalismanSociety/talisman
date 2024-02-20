@@ -73,7 +73,7 @@ type FormData = {
   derivationPath: string
 }
 
-export const AccountAddSecretMnemonicForm = () => {
+export const AccountAddMnemonicForm = () => {
   const { t } = useTranslation("admin")
 
   const { data, updateData, onSuccess } = useAccountAddSecret()

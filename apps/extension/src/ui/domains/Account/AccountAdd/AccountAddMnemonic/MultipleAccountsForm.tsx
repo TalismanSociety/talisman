@@ -16,7 +16,7 @@ type FormData = {
   accounts: RequestAccountCreateFromSuri[]
 }
 
-export const AccountAddSecretAccountsForm = () => {
+export const AccountAddMnemonicAccountsForm = () => {
   const { t } = useTranslation("admin")
   const { data, importAccounts, onSuccess } = useAccountAddSecret()
   const navigate = useNavigate()
