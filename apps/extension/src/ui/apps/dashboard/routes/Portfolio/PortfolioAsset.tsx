@@ -1,9 +1,8 @@
 import { Balances } from "@core/domains/balances/types"
-import { ChevronLeftIcon, CopyIcon, SendIcon } from "@talismn/icons"
+import { ChevronLeftIcon, SendIcon } from "@talismn/icons"
 import { classNames } from "@talismn/util"
 import { Fiat } from "@ui/domains/Asset/Fiat"
 import { TokenLogo } from "@ui/domains/Asset/TokenLogo"
-import { useCopyAddressModal } from "@ui/domains/CopyAddress"
 import { DashboardAssetDetails } from "@ui/domains/Portfolio/AssetDetails"
 import { Statistics } from "@ui/domains/Portfolio/Statistics"
 import { useDisplayBalances } from "@ui/domains/Portfolio/useDisplayBalances"
@@ -21,7 +20,6 @@ const PageContent = ({ balances, symbol }: { balances: Balances; symbol: string 
   const navigate = useNavigate()
   const balancesToDisplay = useDisplayBalances(balances)
   const { token, rate, summary } = useTokenBalancesSummary(balancesToDisplay)
-  const { open: openCopyAddressModal } = useCopyAddressModal()
   const { genericEvent } = useAnalytics()
   const { account } = useSelectedAccount()
 
@@ -31,11 +29,6 @@ const PageContent = ({ balances, symbol }: { balances: Balances; symbol: string 
     undefined,
     symbol
   )
-
-  const handleCopyAddressClick = useCallback(() => {
-    openCopyAddressModal({ address: account?.address })
-    genericEvent("open copy address", { from: "dashboard portfolio" })
-  }, [account?.address, genericEvent, openCopyAddressModal])
 
   const handleSendFundsClick = useCallback(() => {
     openSendFundsPopup()
@@ -66,15 +59,6 @@ const PageContent = ({ balances, symbol }: { balances: Balances; symbol: string 
               {rate && <Fiat amount={rate} className="text-body-secondary" />}
             </div>
             <div className="flex flex-wrap">
-              <Tooltip>
-                <TooltipTrigger
-                  onClick={handleCopyAddressClick}
-                  className="hover:bg-grey-800 text-body-secondary hover:text-body flex h-12 w-12 flex-col items-center justify-center rounded-full text-sm"
-                >
-                  <CopyIcon />
-                </TooltipTrigger>
-                <TooltipContent>{t("Copy address")}</TooltipContent>
-              </Tooltip>
               <Tooltip>
                 <TooltipTrigger
                   onClick={canSendFunds ? handleSendFundsClick : undefined}
