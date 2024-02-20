@@ -1,59 +1,121 @@
+import { AccountJsonAny } from "@core/domains/accounts/types"
 import { ScrollContainer } from "@talisman/components/ScrollContainer"
 import { SearchInput } from "@talisman/components/SearchInput"
 import { shortenAddress } from "@talisman/util/shortenAddress"
-import { Balance } from "@talismn/balances"
-import { CheckCircleIcon } from "@talismn/icons"
-import { classNames } from "@talismn/util"
+import { CheckCircleIcon, ChevronRightIcon, CopyIcon, QrIcon } from "@talismn/icons"
+import { classNames, isEthereumAddress } from "@talismn/util"
 import useAccounts from "@ui/hooks/useAccounts"
-import { FC, ReactNode, useCallback, useMemo, useState } from "react"
+import { useChainByGenesisHash } from "@ui/hooks/useChainByGenesisHash"
+import { isAccountCompatibleWithChain } from "@ui/util/isAccountCompatibleWithChain"
+import { FC, PropsWithChildren, ReactNode, useCallback, useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
+import { IconButton, Tooltip, TooltipContent, TooltipTrigger } from "talisman-ui"
 
 import { AccountIcon } from "../Account/AccountIcon"
+import { AccountTypeIcon } from "../Account/AccountTypeIcon"
 import { CopyAddressLayout } from "./CopyAddressLayout"
 import { useCopyAddressWizard } from "./useCopyAddressWizard"
 
-type AccountPickerAccount = {
-  address: string
-  name?: string
-  genesisHash?: string | null
-  balance?: Balance
-}
-
 type AccountRowProps = {
-  account: AccountPickerAccount
+  account: AccountJsonAny
   selected: boolean
   onClick?: () => void
   disabled?: boolean
 }
 
-const AccountRow: FC<AccountRowProps> = ({ account, selected, onClick, disabled }) => {
-  return (
-    <button
-      type="button"
-      onClick={onClick}
-      tabIndex={0}
-      className={classNames(
+const AccountRowContainer: FC<
+  { onClick?: () => void; isSelected?: boolean } & PropsWithChildren
+> = ({ onClick, isSelected, children }) => {
+  const className = useMemo(
+    () =>
+      classNames(
         "hover:bg-grey-750 focus:bg-grey-700 flex h-[5.8rem] w-full items-center gap-4 px-12 text-left",
-        selected && "bg-grey-800 text-body-secondary",
-        "disabled:cursor-not-allowed disabled:opacity-50"
-      )}
-      disabled={disabled}
-    >
+        isSelected && "bg-grey-800 ",
+        "text-body-secondary hover:text-body"
+      ),
+
+    [isSelected]
+  )
+
+  return onClick ? (
+    <button type="button" onClick={onClick} className={className}>
+      {children}
+    </button>
+  ) : (
+    <div className={className}>{children}</div>
+  )
+}
+
+const AccountRow: FC<AccountRowProps> = ({ account, selected }) => {
+  const { t } = useTranslation()
+  const { setAddress, copySpecific, chain } = useCopyAddressWizard()
+  const accountChain = useChainByGenesisHash(account.genesisHash)
+
+  const canCopySpecific = useMemo(
+    () => isEthereumAddress(account.address) || !!accountChain || !!chain,
+    [account.address, accountChain, chain]
+  )
+
+  const handleCopyClick = useCallback(() => {
+    copySpecific(account.address, account.genesisHash ?? chain?.genesisHash)
+  }, [copySpecific, account.address, account.genesisHash, chain?.genesisHash])
+
+  const handleSelectClick = useCallback(() => {
+    setAddress(account.address)
+  }, [account.address, setAddress])
+
+  return (
+    <AccountRowContainer onClick={canCopySpecific ? undefined : handleSelectClick}>
       <AccountIcon
         address={account.address}
         genesisHash={account.genesisHash}
-        className="!text-lg"
+        className="text-xl"
       />
-      <div className="grow overflow-hidden text-ellipsis whitespace-nowrap">
-        {account.name ?? shortenAddress(account.address, 6, 6)}
-        {selected && <CheckCircleIcon className="ml-3 inline" />}
+      <div className="mr-2 flex grow flex-col items-start gap-2 overflow-hidden">
+        <div className="text-body flex w-full items-center gap-3 overflow-hidden">
+          <div className="text-body truncate">
+            {account.name ?? shortenAddress(account.address, 6, 6)}
+          </div>
+          <AccountTypeIcon className="text-primary inline-block" origin={account.origin} />
+          {selected && <CheckCircleIcon />}
+        </div>
+        <Tooltip>
+          <TooltipTrigger className="text-body-secondary text-left text-xs">
+            {shortenAddress(account.address, 10, 10)}
+          </TooltipTrigger>
+          <TooltipContent>{account.address}</TooltipContent>
+        </Tooltip>
       </div>
-    </button>
+      <div className="flex gap-6">
+        {canCopySpecific ? (
+          <>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <IconButton className="text-md" onClick={handleSelectClick}>
+                  <QrIcon />
+                </IconButton>
+              </TooltipTrigger>
+              <TooltipContent>{t("Show QR code")}</TooltipContent>
+            </Tooltip>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <IconButton className="text-md mr-2" onClick={handleCopyClick}>
+                  <CopyIcon />
+                </IconButton>
+              </TooltipTrigger>
+              <TooltipContent>{t("Copy to clipboard")}</TooltipContent>
+            </Tooltip>
+          </>
+        ) : (
+          <ChevronRightIcon className="text-lg" />
+        )}
+      </div>
+    </AccountRowContainer>
   )
 }
 
 type AccountsListProps = {
-  accounts: AccountPickerAccount[]
+  accounts: AccountJsonAny[]
   selected?: string | null
   onSelect?: (address: string) => void
   header?: ReactNode
@@ -89,15 +151,22 @@ export const AccountsList: FC<AccountsListProps> = ({ selected, accounts, onSele
 }
 
 export const CopyAddressAccountForm = () => {
-  const { address, setAddress } = useCopyAddressWizard()
+  const { address, setAddress, chain } = useCopyAddressWizard()
   const { t } = useTranslation()
   const [search, setSearch] = useState("")
 
   const allAccounts = useAccounts()
 
   const accounts = useMemo(
-    () => allAccounts.filter((account) => !search || account.name?.toLowerCase().includes(search)),
-    [allAccounts, search]
+    () =>
+      allAccounts
+        .filter((account) => !search || account.name?.toLowerCase().includes(search))
+        .filter(
+          (account) =>
+            !chain ||
+            (account.type && isAccountCompatibleWithChain(chain, account.type, account.genesisHash))
+        ),
+    [allAccounts, chain, search]
   )
 
   return (

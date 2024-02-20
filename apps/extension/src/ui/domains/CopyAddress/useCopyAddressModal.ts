@@ -1,8 +1,12 @@
 import { useGlobalOpenClose } from "@talisman/hooks/useGlobalOpenClose"
+import { convertAddress } from "@talisman/util/convertAddress"
+import { isValidSubstrateAddress } from "@talisman/util/isValidSubstrateAddress"
 import { isEthereumAddress } from "@talismn/util"
+import useChains from "@ui/hooks/useChains"
 import { copyAddress } from "@ui/util/copyAddress"
 import { useCallback } from "react"
 import { atom, useRecoilState } from "recoil"
+import { getAddress } from "viem"
 
 import { CopyAddressWizardInputs } from "./types"
 
@@ -13,22 +17,35 @@ const copyAddressInputsState = atom<CopyAddressWizardInputs>({
 
 export const useCopyAddressModal = () => {
   const { open: innerOpen, close, isOpen } = useGlobalOpenClose("copyAddressModal")
+  const { chainsMap } = useChains({ activeOnly: false, includeTestnets: true })
   const [inputs, setInputs] = useRecoilState(copyAddressInputsState)
 
   const open = useCallback(
     (opts: CopyAddressWizardInputs | null) => {
-      // skip wizard for evm addresses
-      if (opts && isEthereumAddress(opts.address) && !opts.qr) {
-        // if qr isn't explicitely set to false, assume we need to display the copy qr button
-        const onQrClick = opts.qr !== false ? () => open({ ...opts, qr: true }) : undefined
-        copyAddress(opts.address, onQrClick)
-      } else {
-        // display the wizard
-        setInputs(opts || {})
-        innerOpen()
+      // skip wizard if we have all information we need, unless qr is explicitely requested
+      if (opts?.address && !opts.qr) {
+        const onQrClick = opts && opts.qr !== false ? () => open({ ...opts, qr: true }) : undefined
+
+        if (isEthereumAddress(opts.address)) {
+          const formatted = getAddress(opts.address)
+          copyAddress(formatted, onQrClick)
+          return
+        }
+
+        const chain = !!opts.chainId && chainsMap[opts.chainId]
+
+        if (chain && isValidSubstrateAddress(opts.address)) {
+          const formatted = convertAddress(opts.address, chain?.prefix ?? null)
+          copyAddress(formatted, onQrClick)
+          return
+        }
       }
+
+      // display the wizard
+      setInputs(opts || {})
+      innerOpen()
     },
-    [innerOpen, setInputs]
+    [chainsMap, innerOpen, setInputs]
   )
 
   return {

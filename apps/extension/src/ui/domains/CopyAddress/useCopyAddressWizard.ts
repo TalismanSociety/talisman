@@ -46,42 +46,11 @@ const isAccountCompatibleWithChain = (
   return account.type === "ethereum" ? chain.account === "secp256k1" : chain.account !== "secp256k1"
 }
 
-// const isAccountCompatibleWithToken = (
-//   accounts: AccountJsonAny[],
-//   chainsMap: Record<ChainId, Chain>,
-//   tokensMap: Record<TokenId, Token>,
-//   address: Address | undefined | null,
-//   tokenId: TokenId | undefined | null
-// ) => {
-//   if (!tokenId || !address) return true
-
-//   const token = tokensMap[tokenId]
-//   const chain = token?.chain?.id ? chainsMap[token?.chain?.id] : null
-//   const account = accounts.find(
-//     (a) => address && convertAddress(a.address, null) === convertAddress(address, null)
-//   )
-
-//   if (!token || !account) return true
-
-//   if (chain) return isAccountCompatibleWithChain(accounts, chainsMap, address, token.chain?.id)
-//   if (account.type === "ethereum") return isEvmToken(token)
-
-//   //
-//   log.warn("Unknown account/token compatibility", { account, token, chain })
-//   return false
-// }
-
 const getNextRoute = (inputs: CopyAddressWizardInputs): CopyAddressWizardPage => {
   // if (inputs.mode === "copy") {
   if (!inputs.address) return "account"
   // chainId beeing null means we want to copy the substrate (generic) format
   if (inputs.chainId === undefined && !isEthereumAddress(inputs.address)) return "chain"
-  //}
-
-  // if (inputs.mode === "receive") {
-  //   if (!inputs.tokenId) return "token"
-  //   if (!inputs.address) return "account"
-  // }
 
   return "copy"
 }
@@ -164,26 +133,7 @@ export const useCopyAddressWizardProvider = ({ inputs }: { inputs: CopyAddressWi
   }, [])
 
   const accounts = useAccounts()
-  const { chainsMap } = useChains({ activeOnly: true, includeTestnets: true })
-  // const { tokensMap } = useTokens({ activeOnly: true, includeTestnets: true })
-
-  // const setTokenId = useCallback(
-  //   (tokenId: TokenId) => {
-  //     // if account & token are not compatible, clear address
-  //     const address = isAccountCompatibleWithToken(
-  //       accounts,
-  //       chainsMap,
-  //       // tokensMap,
-  //       state.address,
-  //       tokenId
-  //     )
-  //       ? state.address
-  //       : undefined
-
-  //     setStateAndUpdateRoute({ tokenId, address })
-  //   },
-  //   [accounts, chainsMap, setStateAndUpdateRoute, state.address, tokensMap]
-  // )
+  const { chains, chainsMap } = useChains({ activeOnly: true, includeTestnets: true })
 
   const setChainId = useCallback(
     (chainId: ChainId | null) => {
@@ -226,9 +176,17 @@ export const useCopyAddressWizardProvider = ({ inputs }: { inputs: CopyAddressWi
 
   const copy = useCallback(async () => {
     if (!formattedAddress) return
-    await copyAddress(formattedAddress)
-    close()
+    if (await copyAddress(formattedAddress)) close()
   }, [close, formattedAddress])
+
+  const copySpecific = useCallback(
+    async (address: string, genesisHash?: string | null) => {
+      const chain = (genesisHash && chains.find((c) => c.genesisHash === genesisHash)) || null
+      const formattedAddress = chain ? convertAddress(address, chain.prefix) : address
+      if (await copyAddress(formattedAddress)) close()
+    },
+    [chains, close]
+  )
 
   const ctx = {
     inputs,
@@ -241,6 +199,7 @@ export const useCopyAddressWizardProvider = ({ inputs }: { inputs: CopyAddressWi
     setAddress,
     chain,
     copy,
+    copySpecific,
     isLogoLoaded,
   }
 
