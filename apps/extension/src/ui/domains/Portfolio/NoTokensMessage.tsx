@@ -1,4 +1,4 @@
-import { ArrowDownIcon, CreditCardIcon } from "@talismn/icons"
+import { CopyIcon, CreditCardIcon } from "@talismn/icons"
 import { useSelectedAccount } from "@ui/domains/Portfolio/useSelectedAccount"
 import { useAnalytics } from "@ui/hooks/useAnalytics"
 import { useIsFeatureEnabled } from "@ui/hooks/useIsFeatureEnabled"
@@ -38,8 +38,8 @@ export const NoTokensMessage = ({ symbol }: NoTokensMessageProps) => {
           : t("You don't have any {{symbol}} in Talisman", { symbol })}
       </div>
       <div className="mt-12 flex justify-center gap-4">
-        <PillButton size="sm" icon={ArrowDownIcon} onClick={handleCopy}>
-          {t("Receive")}
+        <PillButton size="sm" icon={CopyIcon} onClick={handleCopy}>
+          {t("Copy Address")}
         </PillButton>
         {showBuyCrypto && (
           <PillButton size="sm" icon={CreditCardIcon} onClick={handleBuyCryptoClick}>

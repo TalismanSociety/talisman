@@ -15,7 +15,7 @@ export const copyAddress = async (address: string, onQrClick?: () => void) => {
       {
         type: "success",
         title: i18next.t(`Address copied`),
-        subtitle: shortenAddress(address),
+        subtitle: shortenAddress(address, 6, 6),
         right: onQrClick ? (
           <IconButton onClick={onQrClick}>
             <QrIcon />

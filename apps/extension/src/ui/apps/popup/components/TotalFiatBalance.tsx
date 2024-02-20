@@ -1,4 +1,4 @@
-import { ArrowDownIcon, CreditCardIcon, EyeIcon, EyeOffIcon, SendIcon } from "@talismn/icons"
+import { CopyIcon, CreditCardIcon, EyeIcon, EyeOffIcon, SendIcon } from "@talismn/icons"
 import { classNames } from "@talismn/util"
 import { api } from "@ui/api"
 import { AnalyticsEventName, AnalyticsPage, sendAnalyticsEvent } from "@ui/api/analytics"
@@ -108,8 +108,8 @@ const TopActions = ({ disabled }: { disabled?: boolean }) => {
       {
         analyticsName: "Goto",
         analyticsAction: "open receive",
-        label: t("Receive"),
-        icon: ArrowDownIcon,
+        label: t("Copy"),
+        icon: CopyIcon,
         action: () => openCopyAddressModal(null),
         disabled: disableActions,
         disabledReason,

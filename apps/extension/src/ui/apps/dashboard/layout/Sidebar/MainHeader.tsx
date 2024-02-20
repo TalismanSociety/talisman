@@ -1,4 +1,4 @@
-import { ArrowDownIcon, MoreHorizontalIcon, SendIcon } from "@talismn/icons"
+import { ArrowDownIcon, CopyIcon, MoreHorizontalIcon, SendIcon } from "@talismn/icons"
 import { AccountContextMenu } from "@ui/apps/dashboard/routes/Portfolio/AccountContextMenu"
 import { useCopyAddressModal } from "@ui/domains/CopyAddress"
 import { AccountSelect } from "@ui/domains/Portfolio/AccountSelect"
@@ -40,11 +40,11 @@ export const MainHeader = () => {
         </SendPillButton>
         <PillButton
           className="!px-4"
-          icon={ArrowDownIcon}
+          icon={CopyIcon}
           onClick={handleCopyClick}
           disabled={accounts.length === 0}
         >
-          {t("Receive")}
+          {t("Copy")}
         </PillButton>
         <div className="hidden flex-grow lg:block" />
         {accounts.length > 0 && (
