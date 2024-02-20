@@ -1,8 +1,7 @@
-import { CustomEvmNetwork, EvmNetwork } from "@core/domains/ethereum/types"
-import { Erc20Token } from "@core/domains/tokens/types"
+import { CustomEvmNetwork, EvmAddress, EvmNetwork } from "@core/domains/ethereum/types"
 import { AssetLogo } from "@ui/domains/Asset/AssetLogo"
-import useTokens from "@ui/hooks/useTokens"
-import { FC, useMemo } from "react"
+import { useErc20Token } from "@ui/hooks/useErc20Token"
+import { FC } from "react"
 
 import { SignParamButton } from "./SignParamButton"
 
@@ -21,17 +20,7 @@ export const SignParamErc20TokenButton: FC<SignParamErc20TokenButtonProps> = ({
   asset,
   className,
 }) => {
-  const { tokens } = useTokens({ activeOnly: false, includeTestnets: true })
-  const token = useMemo(() => {
-    return network
-      ? (tokens?.find(
-          (t) =>
-            t.type === "evm-erc20" &&
-            t.evmNetwork?.id === network.id &&
-            t.contractAddress === address
-        ) as Erc20Token)
-      : null
-  }, [network, tokens, address])
+  const token = useErc20Token(network.id, address as EvmAddress)
 
   return (
     <SignParamButton
@@ -39,9 +28,7 @@ export const SignParamErc20TokenButton: FC<SignParamErc20TokenButtonProps> = ({
       address={address}
       withIcon={withIcon}
       className={className}
-      iconPrefix={
-        <AssetLogo id={token?.id} erc20={{ evmNetworkId: network.id, contractAddress: address }} />
-      }
+      iconPrefix={<AssetLogo id={token?.id} />}
     >
       <span>{asset.symbol}</span>
     </SignParamButton>
