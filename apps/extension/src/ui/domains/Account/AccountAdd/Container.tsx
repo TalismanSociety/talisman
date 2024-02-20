@@ -1,6 +1,6 @@
 import { IS_FIREFOX } from "@core/constants"
 import { getIsLedgerCapable } from "@core/util/getIsLedgerCapable"
-import { EthereumCircleLogo, PolkadotCircleLogo } from "@talisman/theme/logos"
+import { EthereumCircleBorderedLogo, PolkadotCircleBorderedLogo } from "@talisman/theme/logos"
 import { ChainIcon, EyePlusIcon, FilePlusIcon, PlusIcon } from "@talismn/icons"
 import { classNames } from "@talismn/util"
 import { ReactNode, useCallback, useMemo } from "react"
@@ -68,8 +68,8 @@ const AccountCreateMethodTypeButton = ({
 }
 
 const networkChoices = {
-  polkadot: <PolkadotCircleLogo />,
-  ethereum: <EthereumCircleLogo />,
+  polkadot: <PolkadotCircleBorderedLogo />,
+  ethereum: <EthereumCircleBorderedLogo />,
 }
 
 const AccountCreateMethodButton = ({
@@ -119,16 +119,16 @@ const NewAccountMethodButtons = () => {
   return (
     <>
       <AccountCreateMethodButton
-        title={t("New Polkadot Account")}
-        subtitle={t("Create new Polkadot account")}
-        networks={["polkadot"]}
-        to={`/accounts/add/derived?type=sr25519`}
-      />
-      <AccountCreateMethodButton
         title={t("New Ethereum Account")}
         subtitle={t("Create new Ethereum account")}
         networks={["ethereum"]}
         to={`/accounts/add/derived?type=ethereum`}
+      />
+      <AccountCreateMethodButton
+        title={t("New Polkadot Account")}
+        subtitle={t("Create new Polkadot account")}
+        networks={["polkadot"]}
+        to={`/accounts/add/derived?type=sr25519`}
       />
     </>
   )
@@ -139,16 +139,16 @@ const ImportAccountMethodButtons = () => {
   return (
     <>
       <AccountCreateMethodButton
-        title={t("Import via JSON")}
-        subtitle={t("Import your Polkadot.{js} file")}
-        networks={["polkadot"]}
-        to={`/accounts/add/json`}
-      />
-      <AccountCreateMethodButton
         title={t("Import via Recovery Phrase")}
         subtitle={t("Polkadot or Ethereum account")}
         networks={["polkadot", "ethereum"]}
         to={`/accounts/add/secret`}
+      />
+      <AccountCreateMethodButton
+        title={t("Import via JSON")}
+        subtitle={t("Import your Polkadot.{js} file")}
+        networks={["polkadot"]}
+        to={`/accounts/add/json`}
       />
     </>
   )
@@ -182,7 +182,7 @@ const ConnectAccountMethodButtons = () => {
             : t("Not supported on this browser")
         }
         disabled={IS_FIREFOX}
-        networks={["polkadot", "ethereum"]}
+        networks={["ethereum", "polkadot"]}
         to={`/accounts/add/dcent`}
       />
       <AccountCreateMethodButton
@@ -218,8 +218,8 @@ const AddWatchedAccountButton = () => {
       </div>
       <div className="flex items-center justify-end text-lg">
         {/* flex gap doesn't allow negatives */}
-        <PolkadotCircleLogo className="-mr-[0.6rem]" />
-        <EthereumCircleLogo />
+        <PolkadotCircleBorderedLogo className="-mr-[0.6rem]" />
+        <EthereumCircleBorderedLogo />
       </div>
     </div>
   )
