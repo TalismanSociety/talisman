@@ -57,8 +57,8 @@ const AccountRow: FC<AccountRowProps> = ({ account, selected }) => {
   )
 
   const handleCopyClick = useCallback(() => {
-    copySpecific(account.address, account.genesisHash ?? chain?.genesisHash)
-  }, [copySpecific, account.address, account.genesisHash, chain?.genesisHash])
+    copySpecific(account.address, account.genesisHash ?? chain?.id)
+  }, [copySpecific, account.address, account.genesisHash, chain?.id])
 
   const handleSelectClick = useCallback(() => {
     setAddress(account.address)
@@ -80,8 +80,10 @@ const AccountRow: FC<AccountRowProps> = ({ account, selected }) => {
           {selected && <CheckCircleIcon />}
         </div>
         <Tooltip>
-          <TooltipTrigger className="text-body-secondary text-left text-xs">
-            {shortenAddress(account.address, 10, 10)}
+          <TooltipTrigger asChild>
+            <div className="text-body-secondary text-left text-xs">
+              {shortenAddress(account.address, 10, 10)}
+            </div>
           </TooltipTrigger>
           <TooltipContent>{account.address}</TooltipContent>
         </Tooltip>

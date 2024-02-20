@@ -101,7 +101,7 @@ const getQrLogo = async (
 }
 
 export const useCopyAddressWizardProvider = ({ inputs }: { inputs: CopyAddressWizardInputs }) => {
-  const { close } = useCopyAddressModal()
+  const { open, close } = useCopyAddressModal()
 
   const [state, setState] = useState<CopyAddressWizardState>(() => ({
     ...inputs,
@@ -133,7 +133,7 @@ export const useCopyAddressWizardProvider = ({ inputs }: { inputs: CopyAddressWi
   }, [])
 
   const accounts = useAccounts()
-  const { chains, chainsMap } = useChains({ activeOnly: true, includeTestnets: true })
+  const { chainsMap } = useChains({ activeOnly: true, includeTestnets: true })
 
   const setChainId = useCallback(
     (chainId: ChainId | null) => {
@@ -174,18 +174,29 @@ export const useCopyAddressWizardProvider = ({ inputs }: { inputs: CopyAddressWi
     if (targetChain) setChainId(targetChain.id)
   }, [setChainId, targetChain])
 
+  // called at the end of the wizard
   const copy = useCallback(async () => {
     if (!formattedAddress) return
-    if (await copyAddress(formattedAddress)) close()
-  }, [close, formattedAddress])
 
+    const onQrClick = () => {
+      open({ address: state.address, chainId: state.chainId, qr: true })
+    }
+
+    if (await copyAddress(formattedAddress, onQrClick)) close()
+  }, [close, formattedAddress, open, state.address, state.chainId])
+
+  // shortcut called before the last screen of the wizard
   const copySpecific = useCallback(
-    async (address: string, genesisHash?: string | null) => {
-      const chain = (genesisHash && chains.find((c) => c.genesisHash === genesisHash)) || null
+    async (address: string, chainId?: string | null) => {
+      const chain = chainId ? chainsMap[chainId] : null
       const formattedAddress = chain ? convertAddress(address, chain.prefix) : address
-      if (await copyAddress(formattedAddress)) close()
+      const onQrClick = () => {
+        open({ address, chainId: chain?.id, qr: true })
+      }
+
+      if (await copyAddress(formattedAddress, onQrClick)) close()
     },
-    [chains, close]
+    [chainsMap, close, open]
   )
 
   const ctx = {

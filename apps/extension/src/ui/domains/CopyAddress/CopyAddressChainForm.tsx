@@ -35,7 +35,7 @@ const ChainFormatButton = ({ format }: { format: ChainFormat }) => {
 
   const handleCopyClick = useCallback(() => {
     copySpecific(format.address, format.chainId)
-  }, [copySpecific, format])
+  }, [copySpecific, format.address, format.chainId])
 
   return (
     <div className="text-body-secondary hover:text-body hover:bg-grey-800 flex h-32 w-full items-center gap-4 px-8">
@@ -52,7 +52,9 @@ const ChainFormatButton = ({ format }: { format: ChainFormat }) => {
         <div className="text-body truncate">{format.name}</div>
         <div className="text-body-secondary truncate text-xs">
           <Tooltip>
-            <TooltipTrigger>{shortenAddress(format.address, 10, 10)}</TooltipTrigger>
+            <TooltipTrigger asChild>
+              <div>{shortenAddress(format.address, 10, 10)}</div>
+            </TooltipTrigger>
             <TooltipContent>{format.address}</TooltipContent>
           </Tooltip>
         </div>
