@@ -1,6 +1,7 @@
 import { AccountJsonAny } from "@core/domains/accounts/types"
 import { ScrollContainer } from "@talisman/components/ScrollContainer"
 import { SearchInput } from "@talisman/components/SearchInput"
+import { convertAddress } from "@talisman/util/convertAddress"
 import { shortenAddress } from "@talisman/util/shortenAddress"
 import { CheckCircleIcon, ChevronRightIcon, CopyIcon, QrIcon } from "@talismn/icons"
 import { classNames, isEthereumAddress } from "@talismn/util"
@@ -51,14 +52,19 @@ const AccountRow: FC<AccountRowProps> = ({ account, selected }) => {
   const { setAddress, copySpecific, chain } = useCopyAddressWizard()
   const accountChain = useChainByGenesisHash(account.genesisHash)
 
+  const formatted = useMemo(
+    () => convertAddress(account.address, accountChain?.prefix ?? null),
+    [account.address, accountChain?.prefix]
+  )
+
   const canCopySpecific = useMemo(
     () => isEthereumAddress(account.address) || !!accountChain || !!chain,
     [account.address, accountChain, chain]
   )
 
   const handleCopyClick = useCallback(() => {
-    copySpecific(account.address, account.genesisHash ?? chain?.id)
-  }, [copySpecific, account.address, account.genesisHash, chain?.id])
+    copySpecific(formatted, chain?.id)
+  }, [copySpecific, formatted, chain?.id])
 
   const handleSelectClick = useCallback(() => {
     setAddress(account.address)
@@ -74,7 +80,7 @@ const AccountRow: FC<AccountRowProps> = ({ account, selected }) => {
       <div className="mr-2 flex grow flex-col items-start gap-2 overflow-hidden">
         <div className="text-body flex w-full items-center gap-3 overflow-hidden">
           <div className="text-body truncate">
-            {account.name ?? shortenAddress(account.address, 6, 6)}
+            {account.name ?? shortenAddress(formatted, 6, 6)}
           </div>
           <AccountTypeIcon className="text-primary inline-block" origin={account.origin} />
           {selected && <CheckCircleIcon />}
@@ -82,10 +88,10 @@ const AccountRow: FC<AccountRowProps> = ({ account, selected }) => {
         <Tooltip>
           <TooltipTrigger asChild>
             <div className="text-body-secondary text-left text-xs">
-              {shortenAddress(account.address, 10, 10)}
+              {shortenAddress(formatted, 10, 10)}
             </div>
           </TooltipTrigger>
-          <TooltipContent>{account.address}</TooltipContent>
+          <TooltipContent>{formatted}</TooltipContent>
         </Tooltip>
       </div>
       <div className="flex gap-6">
