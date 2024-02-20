@@ -191,7 +191,7 @@ export const useCopyAddressWizardProvider = ({ inputs }: { inputs: CopyAddressWi
       const chain = chainId ? chainsMap[chainId] : null
       const formattedAddress = chain ? convertAddress(address, chain.prefix) : address
       const onQrClick = () => {
-        open({ address, chainId: chain?.id, qr: true })
+        open({ address, chainId, qr: true })
       }
 
       if (await copyAddress(formattedAddress, onQrClick)) close()

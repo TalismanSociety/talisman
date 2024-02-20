@@ -32,9 +32,10 @@ export const useCopyAddressModal = () => {
           return
         }
 
-        const chain = !!opts.chainId && chainsMap[opts.chainId]
+        const chain = opts.chainId ? chainsMap[opts.chainId] : null
 
-        if (chain && isValidSubstrateAddress(opts.address)) {
+        // `chainId === null` is valid and means we want to display the substrate (generic) format
+        if (opts.chainId !== undefined || (chain && isValidSubstrateAddress(opts.address))) {
           const formatted = convertAddress(opts.address, chain?.prefix ?? null)
           copyAddress(formatted, onQrClick)
           return
