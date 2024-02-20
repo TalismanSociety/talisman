@@ -4,6 +4,7 @@ import { useCopyAddressModal } from "@ui/domains/CopyAddress"
 import { AccountSelect } from "@ui/domains/Portfolio/AccountSelect"
 import { useSelectedAccount } from "@ui/domains/Portfolio/useSelectedAccount"
 import { useAnalytics } from "@ui/hooks/useAnalytics"
+import { useChainByGenesisHash } from "@ui/hooks/useChainByGenesisHash"
 import { useSendFundsPopup } from "@ui/hooks/useSendFundsPopup"
 import { ButtonHTMLAttributes, FC, Suspense, useCallback } from "react"
 import { useTranslation } from "react-i18next"
@@ -21,14 +22,16 @@ export const MainHeader = () => {
   const { genericEvent } = useAnalytics()
 
   const { account, accounts } = useSelectedAccount()
+  const chain = useChainByGenesisHash(account?.genesisHash)
 
   const { open: openCopyAddressModal } = useCopyAddressModal()
   const handleCopyClick = useCallback(() => {
     openCopyAddressModal({
-      address: account?.address, // if account is chain specific, specify the chain ?
+      address: account?.address,
+      chainId: chain?.id,
     })
     genericEvent("open receive", { from: "sidebar" })
-  }, [account, genericEvent, openCopyAddressModal])
+  }, [account?.address, chain?.id, genericEvent, openCopyAddressModal])
 
   return (
     <header className="p-4 md:px-12 md:pb-6 md:pt-12">
