@@ -1,7 +1,7 @@
 import { FeatureFlag } from "@core/domains/app/types"
-import { featureFlagQuery } from "@ui/atoms/remoteConfig"
-import { useRecoilValue } from "recoil"
+import { featureFlagAtomFamily } from "@ui/atoms/remoteConfig"
+import { useAtomValue } from "jotai"
 
 export const useIsFeatureEnabled = (feature: FeatureFlag) => {
-  return useRecoilValue(featureFlagQuery(feature))
+  return useAtomValue(featureFlagAtomFamily(feature))
 }

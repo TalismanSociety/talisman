@@ -1,8 +1,17 @@
-import { AppStoreData } from "@core/domains/app/store.app"
-import { appStateQuery } from "@ui/atoms"
-import { RecoilState, useRecoilState } from "recoil"
+import { AppStoreData, appStore } from "@core/domains/app/store.app"
+import { appStateAtomFamily } from "@ui/atoms"
+import { useAtomValue } from "jotai"
+import { useCallback } from "react"
 
 export const useAppState = <K extends keyof AppStoreData>(key: K) => {
-  const selector = appStateQuery(key) as RecoilState<AppStoreData[K]>
-  return useRecoilState(selector)
+  const value = useAtomValue(appStateAtomFamily(key)) as AppStoreData[K]
+
+  const set = useCallback(
+    (value: AppStoreData[K]) => {
+      appStore.set({ [key]: value })
+    },
+    [key]
+  )
+
+  return [value, set] as const
 }

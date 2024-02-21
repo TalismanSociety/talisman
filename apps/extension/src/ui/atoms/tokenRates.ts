@@ -4,13 +4,39 @@ import { TokenId } from "@talismn/chaindata-provider"
 import { DbTokenRates, TokenRateCurrency } from "@talismn/token-rates"
 import { api } from "@ui/api"
 import { liveQuery } from "dexie"
-import { DefaultValue, atom, selector, selectorFamily } from "recoil"
+import { atom } from "jotai"
+import { atomFamily, atomWithObservable, selectAtom } from "jotai/utils"
+import { DefaultValue, atom as ratom, selector, selectorFamily } from "recoil"
 
 import { settingQuery } from "./settings"
+import { atomWithSubscription } from "./utils/atomWithSubscription"
 
 const NO_OP = () => {}
 
-export const tokenRatesState = atom<DbTokenRates[]>({
+const tokenRatesSubscriptionAtom = atomWithSubscription<void>(
+  () => api.tokenRates(NO_OP),
+  "tokenRatesAtom"
+)
+
+const tokenRatesObservable = atomWithObservable(() => liveQuery(() => db.tokenRates.toArray()))
+
+const tokenRatesAtom = atom(async (get) => {
+  get(tokenRatesSubscriptionAtom)
+  return await get(tokenRatesObservable)
+})
+
+export const tokenRatesMapAtom = selectAtom(tokenRatesAtom, (tokenRates) =>
+  Object.fromEntries(tokenRates.map(({ tokenId, rates }) => [tokenId, rates]))
+)
+
+export const tokenRatesByIdFamily = atomFamily((tokenId: TokenId | null | undefined) =>
+  atom(async (get) => {
+    const tokenRates = await get(tokenRatesMapAtom)
+    return (tokenId && tokenRates[tokenId]) || null
+  })
+)
+
+const tokenRatesState = ratom<DbTokenRates[]>({
   key: "tokenRatesState",
   effects: [
     ({ setSelf }) => {

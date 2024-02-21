@@ -24,7 +24,6 @@ import { classNames } from "@talismn/util"
 import { api } from "@ui/api"
 import { AnalyticsPage } from "@ui/api/analytics"
 import {
-  appStateQuery,
   assetDiscoveryScanProgress,
   assetDiscoveryScanState,
   evmNetworksMapQuery,
@@ -544,7 +543,7 @@ export const AssetDiscoveryPage = () => {
   const { t } = useTranslation("admin")
   useRecoilPreload(
     settingQuery("useTestnets"),
-    appStateQuery("showAssetDiscoveryAlert"),
+    //appStateQuery("showAssetDiscoveryAlert"),
     evmNetworksMapQuery({ activeOnly: true, includeTestnets: false }),
     tokensMapQuery({ activeOnly: true, includeTestnets: false })
   )

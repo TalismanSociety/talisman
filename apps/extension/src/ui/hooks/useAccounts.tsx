@@ -1,8 +1,7 @@
-import { AccountsFilter, accountsQuery } from "@ui/atoms/accounts"
-import { useRecoilValue } from "recoil"
+import { AccountsFilter, accountsByFilterFamily } from "@ui/atoms/accounts"
+import { useAtomValue } from "jotai"
 
-export const useAccounts = (filter: AccountsFilter = "all") => {
-  return useRecoilValue(accountsQuery(filter))
-}
+export const useAccounts = (filter: AccountsFilter = "all") =>
+  useAtomValue(accountsByFilterFamily(filter))
 
 export default useAccounts
