@@ -86,12 +86,12 @@ export const AccountAddMnemonicAccountsForm = () => {
   )
 
   useEffect(() => {
-    if (!data.mnemonic || !data.type) return navigate("/accounts/add/secret")
+    if (!data.mnemonic || !data.type) return navigate("/accounts/add/mnemonic")
   }, [data.mnemonic, data.type, navigate])
 
   const accounts = watch("accounts")
   // invalid state, useEffect above will redirect to previous form
-  if (!data.mnemonic || !data.type) return <Navigate to="/accounts/add/secret" replace />
+  if (!data.mnemonic || !data.type) return <Navigate to="/accounts/add/mnemonic" replace />
 
   return (
     <div className="flex w-full flex-col gap-8">

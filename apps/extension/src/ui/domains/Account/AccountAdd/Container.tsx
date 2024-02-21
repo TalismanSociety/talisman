@@ -142,7 +142,13 @@ const ImportAccountMethodButtons = () => {
         title={t("Import via Recovery Phrase")}
         subtitle={t("Polkadot or Ethereum account")}
         networks={["polkadot", "ethereum"]}
-        to={`/accounts/add/secret`}
+        to={`/accounts/add/mnemonic`}
+      />
+      <AccountCreateMethodButton
+        title={t("Import via Private Key")}
+        subtitle={t("Ethereum account")}
+        networks={["ethereum"]}
+        to={`/accounts/add/pk`}
       />
       <AccountCreateMethodButton
         title={t("Import via JSON")}

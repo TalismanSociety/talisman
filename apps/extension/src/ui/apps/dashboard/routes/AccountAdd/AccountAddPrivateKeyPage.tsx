@@ -1,13 +1,12 @@
 import { DashboardLayout } from "@ui/apps/dashboard/layout/DashboardLayout"
-import { AccountAddSecretWizard } from "@ui/domains/Account/AccountAdd/AccountAddMnemonic/router"
+import { AccountAddPrivateKeyForm } from "@ui/domains/Account/AccountAdd/AccountAddPrivateKeyForm"
 import { useSelectAccountAndNavigate } from "@ui/hooks/useSelectAccountAndNavigate"
 
-export const AccountAddSecretDashboardWizard = () => {
+export const AccountAddPrivateKeyDashboarddWizard = () => {
   const { setAddress } = useSelectAccountAndNavigate("/portfolio")
-
   return (
     <DashboardLayout withBack centered>
-      <AccountAddSecretWizard onSuccess={setAddress} />
+      <AccountAddPrivateKeyForm onSuccess={setAddress} />
     </DashboardLayout>
   )
 }
