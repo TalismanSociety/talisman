@@ -1,6 +1,6 @@
-import { tokensActiveState } from "@ui/atoms"
-import { useRecoilValue } from "recoil"
+import { tokensActiveAtom } from "@ui/atoms"
+import { useAtomValue } from "jotai"
 
 export const useActiveTokensState = () => {
-  return useRecoilValue(tokensActiveState)
+  return useAtomValue(tokensActiveAtom)
 }

@@ -4,14 +4,13 @@ import { EyeIcon, FolderPlusIcon, TalismanHandIcon, UserPlusIcon } from "@talism
 import { AnalyticsPage } from "@ui/api/analytics"
 import { DashboardLayout } from "@ui/apps/dashboard/layout/DashboardLayout"
 import {
-  accountsByFilterFamily,
+  accountsByCategoryAtomFamily,
   accountsCatalogAtom,
   balanceTotalsAtom,
-  chainsMapQuery,
+  chainsMapAtomFamily,
 } from "@ui/atoms"
 import { useAnalyticsPageView } from "@ui/hooks/useAnalyticsPageView"
 import { usePortfolioAccounts } from "@ui/hooks/usePortfolioAccounts"
-import { useRecoilPreload } from "@ui/hooks/useRecoilPreload"
 import { atom, useAtomValue } from "jotai"
 import { useCallback, useMemo } from "react"
 import { useTranslation } from "react-i18next"
@@ -33,22 +32,16 @@ const ANALYTICS_PAGE: AnalyticsPage = {
 
 const preloadAtom = atom((get) =>
   Promise.all([
-    get(accountsByFilterFamily("all")),
+    get(accountsByCategoryAtomFamily("all")),
     get(accountsCatalogAtom),
     get(balanceTotalsAtom),
-    // TODO
+    get(chainsMapAtomFamily({ activeOnly: false, includeTestnets: false })),
   ])
 )
 
 export const AccountsPage = () => {
   const { t } = useTranslation("admin")
   useAtomValue(preloadAtom)
-  useRecoilPreload(
-    // accountsQuery("all"),
-    //accountsCatalogState,
-    //balanceTotalsState,
-    chainsMapQuery({ activeOnly: false, includeTestnets: false })
-  )
   useAnalyticsPageView(ANALYTICS_PAGE)
 
   const { balanceTotalPerAccount, catalog, accounts } = usePortfolioAccounts()

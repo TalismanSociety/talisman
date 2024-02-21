@@ -1,12 +1,18 @@
-import { ChainsQueryOptions, chainsArrayQuery, chainsMapQuery } from "@ui/atoms"
-import { useRecoilValue, waitForAll } from "recoil"
+import { ChainsQueryOptions, chainsArrayAtomFamily, chainsMapAtomFamily } from "@ui/atoms"
+import { atom, useAtomValue } from "jotai"
+import { atomFamily } from "jotai/utils"
 
-export const useChains = (filter: ChainsQueryOptions) => {
-  const [chains, chainsMap] = useRecoilValue(
-    waitForAll([chainsArrayQuery(filter), chainsMapQuery(filter)])
-  )
+const chainsAtomFamily = atomFamily((filter: ChainsQueryOptions) =>
+  atom(async (get) => {
+    const [chains, chainsMap] = await Promise.all([
+      get(chainsArrayAtomFamily(filter)),
+      get(chainsMapAtomFamily(filter)),
+    ])
 
-  return { chains, chainsMap }
-}
+    return { chains, chainsMap }
+  })
+)
+
+export const useChains = (filter: ChainsQueryOptions) => useAtomValue(chainsAtomFamily(filter))
 
 export default useChains

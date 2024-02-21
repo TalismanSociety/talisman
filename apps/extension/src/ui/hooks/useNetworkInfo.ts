@@ -7,7 +7,7 @@ import { useTranslation } from "react-i18next"
 export type NetworkInfoProps = {
   chain?: Chain | null
   evmNetwork?: EvmNetwork | null
-  relay?: Chain
+  relay?: Chain | null
 }
 
 export const getNetworkInfo = (t: TFunction, { chain, evmNetwork, relay }: NetworkInfoProps) => {

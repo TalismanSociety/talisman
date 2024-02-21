@@ -1,6 +1,6 @@
 import { SuspenseTracker } from "@talisman/components/SuspenseTracker"
 import {
-  accountsByFilterFamily,
+  accountsByCategoryAtomFamily,
   accountsCatalogAtom,
   authorisedSitesAtom,
   balanceTotalsAtom,
@@ -33,7 +33,7 @@ import { PortfolioWhatsNew, PortfolioWhatsNewHeader } from "./PortfolioWhatsNew"
 const preloadAtom = atom((get) =>
   Promise.all([
     get(settingsAtomFamily("selectedCurrency")),
-    get(accountsByFilterFamily("all")),
+    get(accountsByCategoryAtomFamily("all")),
     get(accountsCatalogAtom),
     get(authorisedSitesAtom),
     get(tabAtom),

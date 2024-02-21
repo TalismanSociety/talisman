@@ -1,5 +1,5 @@
 import { AppStoreData, appStore } from "@core/domains/app/store.app"
-import { atom } from "jotai"
+import { SetStateAction, atom } from "jotai"
 import { atomFamily } from "jotai/utils"
 
 import { atomWithSubscription } from "./utils/atomWithSubscription"
@@ -11,8 +11,14 @@ export const appStateAtom = atomWithSubscription<AppStoreData>((callback) => {
 }, "appStateAtom")
 
 export const appStateAtomFamily: KeyValueAtomFamily<AppStoreData> = atomFamily((key) =>
-  atom(async (get) => {
-    const state = await get(appStateAtom)
-    return state[key]
-  })
+  atom(
+    async (get) => {
+      const state = await get(appStateAtom)
+      return state[key]
+    },
+    async (get, set, value: SetStateAction<unknown>) => {
+      if (typeof value === "function") value = value((await get(appStateAtom))[key])
+      await appStore.set({ [key]: value })
+    }
+  )
 )

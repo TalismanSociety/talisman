@@ -4,19 +4,20 @@ import { Token } from "@core/domains/tokens/types"
 import { Address, HydrateDb } from "@talismn/balances"
 import { Chain, ChainId, EvmNetwork, EvmNetworkId } from "@talismn/chaindata-provider"
 import {
-  accountByAddressQuery,
-  balancesFilterQuery,
-  balancesHydrateState,
-  chainsArrayQuery,
-  evmNetworksArrayQuery,
-  settingQuery,
-  tokensArrayQuery,
+  accountsByAddressAtomFamily,
+  balancesByAccountCategoryAtomFamily,
+  balancesHydrateAtom,
+  chainsArrayAtomFamily,
+  evmNetworksArrayAtomFamily,
+  settingsAtomFamily,
+  tokensArrayAtomFamily,
 } from "@ui/atoms"
 import { isEvmToken } from "@ui/util/isEvmToken"
 import { isSubToken } from "@ui/util/isSubToken"
 import { t } from "i18next"
+import { atom, useAtom, useAtomValue } from "jotai"
+import { atomFamily } from "jotai/utils"
 import { useEffect } from "react"
-import { atom, selectorFamily, useRecoilState, useRecoilValue, waitForAll } from "recoil"
 
 import { useSelectedAccount } from "./useSelectedAccount"
 
@@ -138,61 +139,107 @@ const getNetworkBalances = ({
   return new Balances(filtered, hydrate)
 }
 
-const portfolioNetworkFilterState = atom<NetworkOption | undefined>({
-  key: "portfolioNetworkFilterState",
-  default: undefined,
-})
+const portfolioNetworkFilterAtom = atom<NetworkOption | undefined>(undefined)
 
-const portfolioGlobalState = selectorFamily({
-  key: "portfolioGlobalState",
-  get:
-    (accountAddress: Address | null | undefined) =>
-    ({ get }) => {
-      const includeTestnets = get(settingQuery("useTestnets"))
-      const [account, chains, tokens, evmNetworks, hydrate, balances, myBalances] = get(
-        waitForAll([
-          accountByAddressQuery(accountAddress),
-          chainsArrayQuery({ activeOnly: true, includeTestnets }),
-          tokensArrayQuery({ activeOnly: true, includeTestnets }),
-          evmNetworksArrayQuery({ activeOnly: true, includeTestnets }),
-          balancesHydrateState,
-          balancesFilterQuery("all"),
-          balancesFilterQuery("portfolio"),
-        ])
-      )
+const portfolioGlobalAtom = atomFamily((accountAddress: Address | null | undefined) =>
+  atom(async (get) => {
+    const includeTestnets = (await get(settingsAtomFamily("useTestnets"))) as boolean
+    const [account, chains, tokens, evmNetworks, hydrate, balances, myBalances] = await Promise.all(
+      [
+        get(accountsByAddressAtomFamily(accountAddress)),
+        get(chainsArrayAtomFamily({ activeOnly: true, includeTestnets })),
+        get(tokensArrayAtomFamily({ activeOnly: true, includeTestnets })),
+        get(evmNetworksArrayAtomFamily({ activeOnly: true, includeTestnets })),
+        get(balancesHydrateAtom),
+        get(balancesByAccountCategoryAtomFamily("all")),
+        get(balancesByAccountCategoryAtomFamily("portfolio")),
+      ]
+    )
 
-      const allBalances = account ? balances.find({ address: account.address }) : myBalances
-      const accountType = getAccountType(account)
-      const networks = getNetworkOptions({
-        tokens,
-        chains,
-        evmNetworks,
-        balances: allBalances,
-        type: accountType,
-      })
-      const networkFilter = get(portfolioNetworkFilterState)
-      const networkBalances = getNetworkBalances({ networkFilter, allBalances, hydrate })
+    const allBalances = account ? balances.find({ address: account.address }) : myBalances
+    const accountType = getAccountType(account)
+    const networks = getNetworkOptions({
+      tokens,
+      chains,
+      evmNetworks,
+      balances: allBalances,
+      type: accountType,
+    })
+    const networkFilter = get(portfolioNetworkFilterAtom)
+    const networkBalances = getNetworkBalances({ networkFilter, allBalances, hydrate })
 
-      const isInitializing =
-        !allBalances.count || allBalances.each.some((b) => b.status === "initializing")
+    const isInitializing =
+      !allBalances.count || allBalances.each.some((b) => b.status === "initializing")
 
-      return {
-        networks,
-        networkBalances,
-        chains,
-        tokens,
-        evmNetworks,
-        hydrate,
-        allBalances,
-        accountType,
-        isInitializing,
-      }
-    },
-})
+    return {
+      networks,
+      networkBalances,
+      chains,
+      tokens,
+      evmNetworks,
+      hydrate,
+      allBalances,
+      accountType,
+      isInitializing,
+    }
+  })
+)
+
+// const portfolioNetworkFilterState = ratom<NetworkOption | undefined>({
+//   key: "portfolioNetworkFilterState",
+//   default: undefined,
+// })
+
+// const portfolioGlobalState = selectorFamily({
+//   key: "portfolioGlobalState",
+//   get:
+//     (accountAddress: Address | null | undefined) =>
+//     ({ get }) => {
+//       const includeTestnets = get(settingQuery("useTestnets"))
+//       const [account, chains, tokens, evmNetworks, hydrate, balances, myBalances] = get(
+//         waitForAll([
+//           accountByAddressQuery(accountAddress),
+//           chainsArrayQuery({ activeOnly: true, includeTestnets }),
+//           tokensArrayQuery({ activeOnly: true, includeTestnets }),
+//           evmNetworksArrayQuery({ activeOnly: true, includeTestnets }),
+//           balancesHydrateState,
+//           balancesFilterQuery("all"),
+//           balancesFilterQuery("portfolio"),
+//         ])
+//       )
+
+//       const allBalances = account ? balances.find({ address: account.address }) : myBalances
+//       const accountType = getAccountType(account)
+//       const networks = getNetworkOptions({
+//         tokens,
+//         chains,
+//         evmNetworks,
+//         balances: allBalances,
+//         type: accountType,
+//       })
+//       const networkFilter = get(portfolioNetworkFilterState)
+//       const networkBalances = getNetworkBalances({ networkFilter, allBalances, hydrate })
+
+//       const isInitializing =
+//         !allBalances.count || allBalances.each.some((b) => b.status === "initializing")
+
+//       return {
+//         networks,
+//         networkBalances,
+//         chains,
+//         tokens,
+//         evmNetworks,
+//         hydrate,
+//         allBalances,
+//         accountType,
+//         isInitializing,
+//       }
+//     },
+// })
 
 // allows sharing the network filter between pages
 export const usePortfolio = () => {
-  const [networkFilter, setNetworkFilter] = useRecoilState(portfolioNetworkFilterState)
+  const [networkFilter, setNetworkFilter] = useAtom(portfolioNetworkFilterAtom)
   const { account } = useSelectedAccount()
 
   const {
@@ -205,7 +252,7 @@ export const usePortfolio = () => {
     networks,
     tokens,
     isInitializing,
-  } = useRecoilValue(portfolioGlobalState(account?.address))
+  } = useAtomValue(portfolioGlobalAtom(account?.address))
 
   useEffect(() => {
     if (networkFilter && !networks.some((n) => n.id === networkFilter.id))

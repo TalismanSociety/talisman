@@ -1,8 +1,8 @@
-import { accountByAddressQuery } from "@ui/atoms"
+import { accountsByAddressAtomFamily } from "@ui/atoms"
+import { useAtomValue } from "jotai"
 import { useSearchParams } from "react-router-dom"
-import { useRecoilValue } from "recoil"
 
 export const useSearchParamsSelectedAccount = () => {
   const [sp] = useSearchParams()
-  return useRecoilValue(accountByAddressQuery(sp.get("account")))
+  return useAtomValue(accountsByAddressAtomFamily(sp.get("account")))
 }

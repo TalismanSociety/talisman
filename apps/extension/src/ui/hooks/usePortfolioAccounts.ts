@@ -1,5 +1,5 @@
 import {
-  accountsByFilterFamily,
+  accountsByCategoryAtomFamily,
   accountsCatalogAtom,
   balanceTotalsAtom,
   settingsAtomFamily,
@@ -9,9 +9,9 @@ import { atom, useAtomValue } from "jotai"
 const portfolioAccountsAtom = atom(async (get) => {
   const [accounts, ownedAccounts, portfolioAccounts, catalog, currency, allBalanceTotals] =
     await Promise.all([
-      get(accountsByFilterFamily("all")),
-      get(accountsByFilterFamily("owned")),
-      get(accountsByFilterFamily("portfolio")),
+      get(accountsByCategoryAtomFamily("all")),
+      get(accountsByCategoryAtomFamily("owned")),
+      get(accountsByCategoryAtomFamily("portfolio")),
       get(accountsCatalogAtom),
       get(settingsAtomFamily("selectedCurrency")),
       get(balanceTotalsAtom),

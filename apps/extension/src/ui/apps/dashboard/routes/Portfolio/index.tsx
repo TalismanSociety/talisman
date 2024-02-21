@@ -1,7 +1,6 @@
-import { balancesFilterQuery } from "@ui/atoms"
+import { balancesByAccountCategoryAtomFamily } from "@ui/atoms"
 import { stakingBannerAtom } from "@ui/atoms/stakingBanners"
 import { useBuyTokensModal } from "@ui/domains/Asset/Buy/useBuyTokensModal"
-import { useRecoilPreload } from "@ui/hooks/useRecoilPreload"
 import { atom, useAtomValue } from "jotai"
 import { useEffect } from "react"
 import { Route, Routes, useSearchParams } from "react-router-dom"
@@ -10,11 +9,12 @@ import { DashboardLayout } from "../../layout/DashboardLayout"
 import { PortfolioAsset } from "./PortfolioAsset"
 import { PortfolioAssets } from "./PortfolioAssets"
 
-const preloadAtom = atom((get) => Promise.all([get(stakingBannerAtom)]))
+const preloadAtom = atom((get) =>
+  Promise.all([get(stakingBannerAtom), get(balancesByAccountCategoryAtomFamily("all"))])
+)
 
 export const PortfolioRoutesInner = () => {
   useAtomValue(preloadAtom)
-  useRecoilPreload(balancesFilterQuery("all"))
 
   return (
     <Routes>

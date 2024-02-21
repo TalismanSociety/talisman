@@ -1,5 +1,7 @@
 import { SOURCES, mnemonicsStore } from "@core/domains/mnemonics/store"
-import { atom, selectorFamily, useRecoilValue } from "recoil"
+import { atomWithSubscription } from "@ui/atoms/utils/atomWithSubscription"
+import { atom, useAtomValue } from "jotai"
+import { atomFamily } from "jotai/utils"
 
 export type Mnemonic = {
   id: string
@@ -8,37 +10,57 @@ export type Mnemonic = {
   source: SOURCES
 }
 
-const mnemonicsState = atom<Mnemonic[]>({
-  key: "mnemonicsState",
-  default: [],
-  effects: [
-    ({ setSelf }) => {
-      const sub = mnemonicsStore.observable.subscribe((data) => {
-        const mnemonics = Object.values(data).map(({ id, name, confirmed, source }) => ({
-          id,
-          name,
-          confirmed,
-          source,
-        }))
-        setSelf(mnemonics)
-      })
-      return () => sub.unsubscribe()
-    },
-  ],
+const mnemonicsAtom = atomWithSubscription<Mnemonic[]>((callback) => {
+  const { unsubscribe } = mnemonicsStore.observable.subscribe((data) => {
+    const mnemonics = Object.values(data).map(({ id, name, confirmed, source }) => ({
+      id,
+      name,
+      confirmed,
+      source,
+    }))
+    callback(mnemonics)
+  })
+  return unsubscribe
 })
 
-const mnemonicsQuery = selectorFamily({
-  key: "mnemonicsQuery",
-  get:
-    (id: string | null | undefined) =>
-    ({ get }) =>
-      get(mnemonicsState).find((m) => m.id === id),
-})
+// const mnemonicsState = atom<Mnemonic[]>({
+//   key: "mnemonicsState",
+//   default: [],
+//   effects: [
+//     ({ setSelf }) => {
+//       const sub = mnemonicsStore.observable.subscribe((data) => {
+//         const mnemonics = Object.values(data).map(({ id, name, confirmed, source }) => ({
+//           id,
+//           name,
+//           confirmed,
+//           source,
+//         }))
+//         setSelf(mnemonics)
+//       })
+//       return () => sub.unsubscribe()
+//     },
+//   ],
+// })
+
+const mnemonicsByIdAtomFamily = atomFamily((id: string | null | undefined) =>
+  atom(async (get) => {
+    const mnemonics = await get(mnemonicsAtom)
+    return mnemonics.find((m) => m.id === id)
+  })
+)
+
+// const mnemonicsQuery = selectorFamily({
+//   key: "mnemonicsQuery",
+//   get:
+//     (id: string | null | undefined) =>
+//     ({ get }) =>
+//       get(mnemonicsState).find((m) => m.id === id),
+// })
 
 export const useMnemonics = () => {
-  return useRecoilValue(mnemonicsState)
+  return useAtomValue(mnemonicsAtom)
 }
 
 export const useMnemonic = (id: string | null | undefined) => {
-  return useRecoilValue(mnemonicsQuery(id))
+  return useAtomValue(mnemonicsByIdAtomFamily(id))
 }
