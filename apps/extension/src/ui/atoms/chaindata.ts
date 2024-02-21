@@ -15,6 +15,7 @@ import {
 } from "@core/domains/tokens/store.activeTokens"
 import { log } from "@core/log"
 import { chaindataProvider } from "@core/rpcs/chaindata"
+import { HexString } from "@polkadot/util/types"
 import {
   Chain,
   ChainId,
@@ -29,13 +30,22 @@ import {
   TokenList,
 } from "@talismn/chaindata-provider"
 import { api } from "@ui/api"
-import { atom, selector, selectorFamily, waitForAll } from "recoil"
+import { atom } from "jotai"
+import { atomFamily, atomWithObservable, selectAtom } from "jotai/utils"
+import { atom as ratom, selector, selectorFamily, waitForAll } from "recoil"
+
+import { atomWithSubscription } from "./utils/atomWithSubscription"
 
 const NO_OP = () => {}
 
 const filterNoTestnet = ({ isTestnet }: { isTestnet?: boolean }) => isTestnet === false
 
-export const evmNetworksActiveState = atom<ActiveEvmNetworks>({
+export const evmNetworksActiveAtom = atomWithSubscription<ActiveEvmNetworks>((callback) => {
+  const sub = activeEvmNetworksStore.observable.subscribe(callback)
+  return () => sub.unsubscribe()
+}, "evmNetworksActiveAtom")
+
+export const evmNetworksActiveState = ratom<ActiveEvmNetworks>({
   key: "evmNetworksActiveState",
   effects: [
     ({ setSelf }) => {
@@ -46,7 +56,20 @@ export const evmNetworksActiveState = atom<ActiveEvmNetworks>({
   ],
 })
 
-export const allEvmNetworksState = atom<(EvmNetwork | CustomEvmNetwork)[]>({
+const allEvmNetworksSubscriptionAtom = atomWithSubscription<void>(
+  () => api.ethereumNetworks(NO_OP),
+  "allEvmNetworksSubscriptionAtom"
+)
+const allEvmNetworksObservableAtom = atomWithObservable(
+  () => chaindataProvider.evmNetworksObservable
+)
+
+export const allEvmNetworksAtom = atom((get) => {
+  get(allEvmNetworksSubscriptionAtom)
+  return get(allEvmNetworksObservableAtom)
+})
+
+export const allEvmNetworksState = ratom<(EvmNetwork | CustomEvmNetwork)[]>({
   key: "allEvmNetworksState",
   effects: [
     ({ setSelf }) => {
@@ -58,6 +81,12 @@ export const allEvmNetworksState = atom<(EvmNetwork | CustomEvmNetwork)[]>({
   ],
 })
 
+const allEvmNetworksMapAtom = selectAtom(
+  allEvmNetworksAtom,
+  (evmNetworks) =>
+    Object.fromEntries(evmNetworks.map((network) => [network.id, network])) as EvmNetworkList
+)
+
 export const allEvmNetworksMapState = selector<EvmNetworkList>({
   key: "allEvmNetworksMapState",
   get: ({ get }) => {
@@ -65,6 +94,10 @@ export const allEvmNetworksMapState = selector<EvmNetworkList>({
     return Object.fromEntries(evmNetworks.map((network) => [network.id, network]))
   },
 })
+
+const allEvmNetworksWithoutTestnetsAtom = selectAtom(allEvmNetworksAtom, (evmNetworks) =>
+  evmNetworks.filter(filterNoTestnet)
+)
 
 export const allEvmNetworksWithoutTestnetsState = selector<(EvmNetwork | CustomEvmNetwork)[]>({
   key: "allEvmNetworksWithoutTestnetsState",
@@ -74,12 +107,28 @@ export const allEvmNetworksWithoutTestnetsState = selector<(EvmNetwork | CustomE
   },
 })
 
+const allEvmNetworksWithoutTestnetsMapAtom = selectAtom(
+  allEvmNetworksWithoutTestnetsAtom,
+  (evmNetworks) =>
+    Object.fromEntries(evmNetworks.map((network) => [network.id, network])) as EvmNetworkList
+)
+
 export const allEvmNetworksWithoutTestnetsMapState = selector<EvmNetworkList>({
   key: "allEvmNetworksWithoutTestnetsMapState",
   get: ({ get }) => {
     const evmNetworks = get(allEvmNetworksWithoutTestnetsState)
     return Object.fromEntries(evmNetworks.map((network) => [network.id, network]))
   },
+})
+
+const activeEvmNetworksWithTestnetsAtom = atom(async (get) => {
+  const [evmNetworks, activeNetworks] = await Promise.all([
+    get(allEvmNetworksAtom),
+    get(evmNetworksActiveAtom),
+  ])
+
+  // return only active networks
+  return evmNetworks.filter((network) => isEvmNetworkActive(network, activeNetworks))
 })
 
 export const activeEvmNetworksWithTestnetsState = selector({
@@ -94,6 +143,12 @@ export const activeEvmNetworksWithTestnetsState = selector({
   },
 })
 
+export const activeEvmNetworksWithTestnetsMapAtom = selectAtom(
+  activeEvmNetworksWithTestnetsAtom,
+  (evmNetworks) =>
+    Object.fromEntries(evmNetworks.map((network) => [network.id, network])) as EvmNetworkList
+)
+
 export const activeEvmNetworksWithTestnetsMapState = selector<EvmNetworkList>({
   key: "activeEvmNetworksWithTestnetsMapState",
   get: ({ get }) => {
@@ -102,6 +157,11 @@ export const activeEvmNetworksWithTestnetsMapState = selector<EvmNetworkList>({
   },
 })
 
+const activeEvmNetworksWithoutTestnetsAtom = selectAtom(
+  activeEvmNetworksWithTestnetsAtom,
+  (evmNetworks) => evmNetworks.filter(filterNoTestnet)
+)
+
 export const activeEvmNetworksWithoutTestnetsState = selector({
   key: "activeEvmNetworksWithoutTestnetsState",
   get: ({ get }) => {
@@ -109,6 +169,12 @@ export const activeEvmNetworksWithoutTestnetsState = selector({
     return evmNetworks.filter(filterNoTestnet)
   },
 })
+
+const activeEvmNetworksWithoutTestnetsMapAtom = selectAtom(
+  activeEvmNetworksWithoutTestnetsAtom,
+  (evmNetworks) =>
+    Object.fromEntries(evmNetworks.map((network) => [network.id, network])) as EvmNetworkList
+)
 
 export const activeEvmNetworksWithoutTestnetsMapState = selector<EvmNetworkList>({
   key: "activeEvmNetworksWithoutTestnetsMapState",
@@ -123,6 +189,18 @@ export type EvmNetworksQueryOptions = {
   includeTestnets: boolean
 }
 
+export const evmNetworksArrayAtomFamily = atomFamily(
+  ({ activeOnly, includeTestnets }: EvmNetworksQueryOptions) =>
+    atom((get) => {
+      if (activeOnly)
+        return includeTestnets
+          ? get(activeEvmNetworksWithTestnetsAtom)
+          : get(activeEvmNetworksWithoutTestnetsAtom)
+
+      return includeTestnets ? get(allEvmNetworksAtom) : get(allEvmNetworksWithoutTestnetsAtom)
+    })
+)
+
 export const evmNetworksArrayQuery = selectorFamily({
   key: "evmNetworksArrayQuery",
   get:
@@ -136,6 +214,20 @@ export const evmNetworksArrayQuery = selectorFamily({
       return includeTestnets ? get(allEvmNetworksState) : get(allEvmNetworksWithoutTestnetsState)
     },
 })
+
+export const evmNetworksArrayMapFamily = atomFamily(
+  ({ activeOnly, includeTestnets }: EvmNetworksQueryOptions) =>
+    atom((get) => {
+      if (activeOnly)
+        return includeTestnets
+          ? get(activeEvmNetworksWithTestnetsMapAtom)
+          : get(activeEvmNetworksWithoutTestnetsMapAtom)
+
+      return includeTestnets
+        ? get(allEvmNetworksMapAtom)
+        : get(allEvmNetworksWithoutTestnetsMapAtom)
+    })
+)
 
 export const evmNetworksMapQuery = selectorFamily({
   key: "evmNetworksMapQuery",
@@ -153,6 +245,13 @@ export const evmNetworksMapQuery = selectorFamily({
     },
 })
 
+export const evmNetworkAtomFamily = atomFamily((evmNetworkId: EvmNetworkId | null | undefined) =>
+  atom(async (get) => {
+    const evmNetworks = await get(allEvmNetworksMapAtom)
+    return evmNetworkId ? evmNetworks[evmNetworkId] : undefined
+  })
+)
+
 export const evmNetworkQuery = selectorFamily({
   key: "evmNetworkQuery",
   get:
@@ -163,7 +262,12 @@ export const evmNetworkQuery = selectorFamily({
     },
 })
 
-export const chainsActiveState = atom<ActiveChains>({
+export const chainsActiveAtom = atomWithSubscription<ActiveChains>((callback) => {
+  const sub = activeChainsStore.observable.subscribe(callback)
+  return () => sub.unsubscribe()
+}, "chainsActiveAtom")
+
+export const chainsActiveState = ratom<ActiveChains>({
   key: "chainsActiveState",
   effects: [
     ({ setSelf }) => {
@@ -174,7 +278,18 @@ export const chainsActiveState = atom<ActiveChains>({
   ],
 })
 
-export const allChainsState = atom<(Chain | CustomChain)[]>({
+const allChainsSubscriptionAtom = atomWithSubscription<void>(
+  () => api.chains(NO_OP),
+  "allChainsSubscriptionAtom"
+)
+const allChainsObservableAtom = atomWithObservable(() => chaindataProvider.chainsObservable)
+
+export const allChainsAtom = atom((get) => {
+  get(allChainsSubscriptionAtom)
+  return get(allChainsObservableAtom)
+})
+
+export const allChainsState = ratom<(Chain | CustomChain)[]>({
   key: "allChainsState",
   effects: [
     ({ setSelf }) => {
@@ -186,6 +301,11 @@ export const allChainsState = atom<(Chain | CustomChain)[]>({
   ],
 })
 
+const allChainsMapAtom = selectAtom(
+  allChainsAtom,
+  (chains) => Object.fromEntries(chains.map((network) => [network.id, network])) as ChainList
+)
+
 export const allChainsMapState = selector<ChainList>({
   key: "allChainsMapState",
   get: ({ get }) => {
@@ -193,6 +313,10 @@ export const allChainsMapState = selector<ChainList>({
     return Object.fromEntries(chains.map((network) => [network.id, network]))
   },
 })
+
+const allChainsWithoutTestnetsAtom = selectAtom(allChainsAtom, (chains) =>
+  chains.filter(filterNoTestnet)
+)
 
 export const allChainsWithoutTestnetsState = selector({
   key: "allChainsWithoutTestnetsState",
@@ -202,12 +326,24 @@ export const allChainsWithoutTestnetsState = selector({
   },
 })
 
+const allChainsWithoutTestnetsMapAtom = selectAtom(
+  allChainsWithoutTestnetsAtom,
+  (chains) => Object.fromEntries(chains.map((network) => [network.id, network])) as ChainList
+)
+
 export const allChainsWithoutTestnetsMapState = selector<ChainList>({
   key: "allChainsWithoutTestnetsMapState",
   get: ({ get }) => {
     const chains = get(allChainsWithoutTestnetsState)
     return Object.fromEntries(chains.map((network) => [network.id, network]))
   },
+})
+
+const activeChainsWithTestnetsAtom = atom(async (get) => {
+  const [chains, activeChains] = await Promise.all([get(allChainsAtom), get(chainsActiveAtom)])
+
+  // return only active networks
+  return chains.filter((network) => isChainActive(network, activeChains))
 })
 
 export const activeChainsWithTestnetsState = selector({
@@ -218,6 +354,11 @@ export const activeChainsWithTestnetsState = selector({
   },
 })
 
+export const activeChainsWithTestnetsMapAtom = selectAtom(
+  activeChainsWithTestnetsAtom,
+  (chains) => Object.fromEntries(chains.map((network) => [network.id, network])) as ChainList
+)
+
 export const activeChainsWithTestnetsMapState = selector<ChainList>({
   key: "activeChainsWithTestnetsMapState",
   get: ({ get }) => {
@@ -225,6 +366,10 @@ export const activeChainsWithTestnetsMapState = selector<ChainList>({
     return Object.fromEntries(chains.map((network) => [network.id, network]))
   },
 })
+
+const activeChainsWithoutTestnetsAtom = selectAtom(activeChainsWithTestnetsAtom, (chains) =>
+  chains.filter(filterNoTestnet)
+)
 
 export const activeChainsWithoutTestnetsState = selector({
   key: "activeChainsWithoutTestnetsState",
@@ -234,6 +379,11 @@ export const activeChainsWithoutTestnetsState = selector({
   },
 })
 
+const activeChainsWithoutTestnetsMapAtom = selectAtom(
+  activeChainsWithoutTestnetsAtom,
+  (chains) => Object.fromEntries(chains.map((network) => [network.id, network])) as ChainList
+)
+
 export const activeChainsWithoutTestnetsMapState = selector<ChainList>({
   key: "activeChainsWithoutTestnetsMapState",
   get: ({ get }) => {
@@ -241,6 +391,15 @@ export const activeChainsWithoutTestnetsMapState = selector<ChainList>({
     return Object.fromEntries(chains.map((network) => [network.id, network]))
   },
 })
+
+const chainsByGenesisHashMapAtom = selectAtom(
+  allChainsAtom,
+  (chains) =>
+    Object.fromEntries(chains.map((chain) => [chain.genesisHash, chain])) as Record<
+      HexString,
+      Chain | CustomChain
+    >
+)
 
 const chainsByGenesisHashMapState = selector({
   key: "chainsByGenesisHashMapState",
@@ -252,6 +411,14 @@ const chainsByGenesisHashMapState = selector({
     >
   },
 })
+
+export const chainByGenesisHashAtomFamily = atomFamily(
+  (genesisHash: HexString | null | undefined) =>
+    atom(async (get) => {
+      const chains = await get(chainsByGenesisHashMapAtom)
+      return (genesisHash && chains[genesisHash]) || null
+    })
+)
 
 export const chainByGenesisHashQuery = selectorFamily({
   key: "chainByGenesisHashQuery",
@@ -268,6 +435,18 @@ export type ChainsQueryOptions = {
   includeTestnets: boolean
 }
 
+export const chainsArrayAtomFamily = atomFamily(
+  ({ activeOnly, includeTestnets }: ChainsQueryOptions) =>
+    atom(async (get) => {
+      if (activeOnly)
+        return includeTestnets
+          ? get(activeChainsWithTestnetsAtom)
+          : get(activeChainsWithoutTestnetsAtom)
+
+      return includeTestnets ? get(allChainsAtom) : get(allChainsWithoutTestnetsAtom)
+    })
+)
+
 export const chainsArrayQuery = selectorFamily({
   key: "chainsArrayQuery",
   get:
@@ -281,6 +460,18 @@ export const chainsArrayQuery = selectorFamily({
       return includeTestnets ? get(allChainsState) : get(allChainsWithoutTestnetsState)
     },
 })
+
+export const chainsMapAtomFamily = atomFamily(
+  ({ activeOnly, includeTestnets }: ChainsQueryOptions) =>
+    atom(async (get) => {
+      if (activeOnly)
+        return includeTestnets
+          ? get(activeChainsWithTestnetsMapAtom)
+          : get(activeChainsWithoutTestnetsMapAtom)
+
+      return includeTestnets ? get(allChainsMapAtom) : get(allChainsWithoutTestnetsMapAtom)
+    })
+)
 
 export const chainsMapQuery = selectorFamily({
   key: "chainsMapQuery",
@@ -296,6 +487,13 @@ export const chainsMapQuery = selectorFamily({
     },
 })
 
+export const chainByIdAtomFamily = atomFamily((chainId: ChainId | null | undefined) =>
+  atom(async (get) => {
+    const chains = await get(allChainsMapAtom)
+    return (chainId && chains[chainId]) || null
+  })
+)
+
 export const chainQuery = selectorFamily({
   key: "chainQuery",
   get:
@@ -306,7 +504,12 @@ export const chainQuery = selectorFamily({
     },
 })
 
-export const tokensActiveState = atom<ActiveTokens>({
+export const tokensActiveAtom = atomWithSubscription<ActiveTokens>((callback) => {
+  const sub = activeTokensStore.observable.subscribe(callback)
+  return () => sub.unsubscribe()
+}, "tokensActiveAtom")
+
+export const tokensActiveState = ratom<ActiveTokens>({
   key: "tokensActiveState",
   effects: [
     ({ setSelf }) => {
@@ -317,7 +520,20 @@ export const tokensActiveState = atom<ActiveTokens>({
   ],
 })
 
-export const allTokensMapState = atom<TokenList>({
+const allTokensMapSubscriptionAtom = atomWithSubscription<void>(
+  () => api.tokens(NO_OP),
+  "allTokensMapSubscriptionAtom"
+)
+const allTokensMapObservableAtom = atomWithObservable<TokenList>(
+  () => chaindataProvider.tokensByIdObservable
+)
+
+export const allTokensMapAtom = atom((get) => {
+  get(allTokensMapSubscriptionAtom)
+  return get(allTokensMapObservableAtom)
+})
+
+export const allTokensMapState = ratom<TokenList>({
   key: "allTokensMapState",
   effects: [
     ({ setSelf }) => {
@@ -327,6 +543,19 @@ export const allTokensMapState = atom<TokenList>({
     },
     () => api.tokens(NO_OP),
   ],
+})
+
+const allTokensAtom = atom(async (get) => {
+  const [tokensMap, chainsMap, evmNetworksMap] = await Promise.all([
+    get(allTokensMapAtom),
+    get(allChainsMapAtom),
+    get(allEvmNetworksMapAtom),
+  ])
+  return Object.values(tokensMap).filter(
+    (token) =>
+      (token.chain && chainsMap[token.chain.id]) ||
+      (token.evmNetwork && evmNetworksMap[token.evmNetwork.id])
+  )
 })
 
 export const allTokensState = selector<Token[]>({
@@ -341,6 +570,21 @@ export const allTokensState = selector<Token[]>({
         (token.evmNetwork && evmNetworksMap[token.evmNetwork.id])
     )
   },
+})
+
+const allTokensWithoutTestnetsAtom = atom(async (get) => {
+  const [tokensMap, chainsMap, evmNetworksMap] = await Promise.all([
+    get(allTokensMapAtom),
+    get(allChainsWithoutTestnetsMapAtom),
+    get(allEvmNetworksWithoutTestnetsMapAtom),
+  ])
+  return Object.values(tokensMap)
+    .filter(filterNoTestnet)
+    .filter(
+      (token) =>
+        (token.chain && chainsMap[token.chain.id]) ||
+        (token.evmNetwork && evmNetworksMap[token.evmNetwork.id])
+    )
 })
 
 export const allTokensWithoutTestnetsState = selector<Token[]>({
@@ -363,12 +607,31 @@ export const allTokensWithoutTestnetsState = selector<Token[]>({
   },
 })
 
+const allTokensWithoutTestnetsMapAtom = selectAtom(allTokensWithoutTestnetsAtom, (tokens) =>
+  Object.fromEntries(tokens.map((token) => [token.id, token]))
+)
+
 export const allTokensWithoutTestnetsMapState = selector<TokenList>({
   key: "allTokensWithoutTestnetsMapState",
   get: ({ get }) => {
     const tokens = get(allTokensWithoutTestnetsState)
     return Object.fromEntries(tokens.map((token) => [token.id, token]))
   },
+})
+
+const activeTokensWithTestnetsAtom = atom(async (get) => {
+  const [tokens, chainsMap, evmNetworksMap, activeTokens] = await Promise.all([
+    get(allTokensAtom),
+    get(activeChainsWithTestnetsMapAtom),
+    get(activeEvmNetworksWithTestnetsMapAtom),
+    get(tokensActiveAtom),
+  ])
+  return tokens.filter(
+    (token) =>
+      ((token.chain && chainsMap[token.chain.id]) ||
+        (token.evmNetwork && evmNetworksMap[token.evmNetwork.id])) &&
+      isTokenActive(token, activeTokens)
+  )
 })
 
 export const activeTokensWithTestnetsState = selector<Token[]>({
@@ -391,6 +654,22 @@ export const activeTokensWithTestnetsState = selector<Token[]>({
   },
 })
 
+const activeTokensWithoutTestnetsAtom = atom(async (get) => {
+  const [arTokensWithTestnets, chainsWithoutTestnetsMap, evmNetworksWithoutTestnetsMap] =
+    await Promise.all([
+      get(activeTokensWithTestnetsAtom),
+      get(activeChainsWithoutTestnetsMapAtom),
+      get(activeEvmNetworksWithoutTestnetsMapAtom),
+    ])
+  return arTokensWithTestnets
+    .filter(filterNoTestnet)
+    .filter(
+      (token) =>
+        (token.chain && chainsWithoutTestnetsMap[token.chain.id]) ||
+        (token.evmNetwork && evmNetworksWithoutTestnetsMap[token.evmNetwork.id])
+    )
+})
+
 export const activeTokensWithoutTestnetsState = selector<Token[]>({
   key: "activeTokensWithoutTestnetsState",
   get: ({ get }) => {
@@ -411,6 +690,11 @@ export const activeTokensWithoutTestnetsState = selector<Token[]>({
   },
 })
 
+export const activeTokensWithTestnetsMapAtom = selectAtom(
+  activeTokensWithTestnetsAtom,
+  (tokens) => Object.fromEntries(tokens.map((token) => [token.id, token])) as TokenList
+)
+
 export const activeTokensWithTestnetsMapState = selector<TokenList>({
   key: "activeTokensWithTestnetsMapState",
   get: ({ get }) => {
@@ -418,6 +702,11 @@ export const activeTokensWithTestnetsMapState = selector<TokenList>({
     return Object.fromEntries(arTokens.map((token) => [token.id, token]))
   },
 })
+
+export const activeTokensWithoutTestnetsMapAtom = selectAtom(
+  activeTokensWithoutTestnetsAtom,
+  (tokens) => Object.fromEntries(tokens.map((token) => [token.id, token])) as TokenList
+)
 
 export const activeTokensWithoutTestnetsMapState = selector<TokenList>({
   key: "activeTokensWithoutTestnetsMapState",
@@ -431,6 +720,18 @@ export type TokensQueryOptions = {
   activeOnly: boolean
   includeTestnets: boolean
 }
+
+export const tokensArrayAtomFamily = atomFamily(
+  ({ activeOnly, includeTestnets }: TokensQueryOptions) =>
+    atom((get) => {
+      if (activeOnly)
+        return includeTestnets
+          ? get(activeTokensWithTestnetsAtom)
+          : get(activeTokensWithoutTestnetsAtom)
+
+      return includeTestnets ? get(allTokensAtom) : get(allTokensWithoutTestnetsAtom)
+    })
+)
 
 export const tokensArrayQuery = selectorFamily({
   key: "tokensArrayQuery",
@@ -446,6 +747,18 @@ export const tokensArrayQuery = selectorFamily({
     },
 })
 
+export const tokensMapAtomFamily = atomFamily(
+  ({ activeOnly, includeTestnets }: TokensQueryOptions) =>
+    atom((get) => {
+      if (activeOnly)
+        return includeTestnets
+          ? get(activeTokensWithTestnetsMapAtom)
+          : get(activeTokensWithoutTestnetsMapAtom)
+
+      return includeTestnets ? get(allTokensMapAtom) : get(allTokensWithoutTestnetsMapAtom)
+    })
+)
+
 export const tokensMapQuery = selectorFamily({
   key: "tokensMapQuery",
   get:
@@ -459,6 +772,13 @@ export const tokensMapQuery = selectorFamily({
       return includeTestnets ? get(allTokensMapState) : get(allTokensWithoutTestnetsMapState)
     },
 })
+
+export const tokenByIdAtomFamily = atomFamily((tokenId: TokenId | null | undefined) =>
+  atom(async (get) => {
+    const tokens = await get(allTokensMapAtom)
+    return (tokenId && tokens[tokenId]) || null
+  })
+)
 
 export const tokenQuery = selectorFamily({
   key: "tokenQuery",

@@ -105,7 +105,7 @@ const getFormattedAddress = (address?: Address, chain?: Chain) => {
 const getQrLogo = async (
   address: string | null,
   isGeneric: boolean,
-  ethereum?: Token,
+  ethereum?: Token | null,
   chain?: Chain
 ) => {
   if (!address) {

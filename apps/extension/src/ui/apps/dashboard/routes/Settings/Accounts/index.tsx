@@ -6,8 +6,7 @@ import { DashboardLayout } from "@ui/apps/dashboard/layout/DashboardLayout"
 import {
   accountsByFilterFamily,
   accountsCatalogAtom,
-  accountsCatalogState,
-  balanceTotalsState,
+  balanceTotalsAtom,
   chainsMapQuery,
 } from "@ui/atoms"
 import { useAnalyticsPageView } from "@ui/hooks/useAnalyticsPageView"
@@ -36,6 +35,7 @@ const preloadAtom = atom((get) =>
   Promise.all([
     get(accountsByFilterFamily("all")),
     get(accountsCatalogAtom),
+    get(balanceTotalsAtom),
     // TODO
   ])
 )
@@ -45,8 +45,8 @@ export const AccountsPage = () => {
   useAtomValue(preloadAtom)
   useRecoilPreload(
     // accountsQuery("all"),
-    accountsCatalogState,
-    balanceTotalsState,
+    //accountsCatalogState,
+    //balanceTotalsState,
     chainsMapQuery({ activeOnly: false, includeTestnets: false })
   )
   useAnalyticsPageView(ANALYTICS_PAGE)

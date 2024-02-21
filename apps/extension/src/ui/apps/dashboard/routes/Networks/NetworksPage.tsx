@@ -4,11 +4,12 @@ import { SearchInput } from "@talisman/components/SearchInput"
 import { Spacer } from "@talisman/components/Spacer"
 import { InfoIcon, PlusIcon } from "@talismn/icons"
 import { sendAnalyticsEvent } from "@ui/api/analytics"
-import { chainsMapQuery, evmNetworksMapQuery, settingQuery } from "@ui/atoms"
+import { chainsMapQuery, evmNetworksMapQuery, settingsAtomFamily } from "@ui/atoms"
 import { EnableTestnetPillButton } from "@ui/domains/Settings/EnableTestnetPillButton"
 import { ProviderTypeSwitch } from "@ui/domains/Site/ProviderTypeSwitch"
 import { useAnalyticsPageView } from "@ui/hooks/useAnalyticsPageView"
 import { useRecoilPreload } from "@ui/hooks/useRecoilPreload"
+import { atom, useAtomValue } from "jotai"
 import { FC, useCallback, useState } from "react"
 import { Trans, useTranslation } from "react-i18next"
 import { useNavigate } from "react-router-dom"
@@ -46,9 +47,18 @@ const Notice: FC = () => {
     </div>
   )
 }
+
+const preloadAtom = atom((get) =>
+  Promise.all([
+    get(settingsAtomFamily("useTestnets")),
+    //TODO
+  ])
+)
+
 export const NetworksPage = () => {
+  useAtomValue(preloadAtom)
   useRecoilPreload(
-    settingQuery("useTestnets"),
+    // settingQuery("useTestnets"),
     chainsMapQuery({ activeOnly: true, includeTestnets: false }),
     evmNetworksMapQuery({ activeOnly: true, includeTestnets: false })
   )

@@ -7,7 +7,7 @@ import { CustomEvmNetwork, EvmNetwork, EvmNetworkId, Token } from "@talismn/chai
 import { MoreHorizontalIcon, PlusIcon } from "@talismn/icons"
 import { AnalyticsPage, sendAnalyticsEvent } from "@ui/api/analytics"
 import { DashboardLayout } from "@ui/apps/dashboard/layout/DashboardLayout"
-import { chainsMapQuery, evmNetworksMapQuery, settingQuery, tokensMapQuery } from "@ui/atoms"
+import { chainsMapQuery, evmNetworksMapQuery, settingsAtomFamily, tokensMapQuery } from "@ui/atoms"
 import { TokenLogo } from "@ui/domains/Asset/TokenLogo"
 import { NetworkLogo } from "@ui/domains/Ethereum/NetworkLogo"
 import { EnableTestnetPillButton } from "@ui/domains/Settings/EnableTestnetPillButton"
@@ -20,6 +20,7 @@ import { useSetting } from "@ui/hooks/useSettings"
 import useTokens from "@ui/hooks/useTokens"
 import { isCustomErc20Token } from "@ui/util/isCustomErc20Token"
 import { isErc20Token } from "@ui/util/isErc20Token"
+import { atom, useAtomValue } from "jotai"
 import sortBy from "lodash/sortBy"
 import { FC, useCallback, useEffect, useMemo, useRef, useState } from "react"
 import { Trans, useTranslation } from "react-i18next"
@@ -221,10 +222,19 @@ const ANALYTICS_PAGE: AnalyticsPage = {
   page: "Settings - Tokens",
 }
 
+const preloadAtom = atom((get) =>
+  Promise.all([
+    get(settingsAtomFamily("useTestnets")),
+    //TODO
+  ])
+)
+
 export const TokensPage = () => {
   const { t } = useTranslation("admin")
+  useAtomValue(preloadAtom)
+
   useRecoilPreload(
-    settingQuery("useTestnets"),
+    //settingQuery("useTestnets"),
     chainsMapQuery({ activeOnly: true, includeTestnets: false }),
     evmNetworksMapQuery({ activeOnly: true, includeTestnets: false }),
     tokensMapQuery({ activeOnly: true, includeTestnets: false })

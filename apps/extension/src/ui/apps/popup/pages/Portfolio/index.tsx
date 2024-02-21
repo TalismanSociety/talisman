@@ -2,11 +2,8 @@ import { SuspenseTracker } from "@talisman/components/SuspenseTracker"
 import {
   accountsByFilterFamily,
   accountsCatalogAtom,
-  accountsCatalogState,
   authorisedSitesAtom,
-  authorisedSitesState,
-  balanceTotalsState,
-  settingQuery,
+  balanceTotalsAtom,
   settingsAtomFamily,
   tabAtom,
 } from "@ui/atoms"
@@ -20,7 +17,6 @@ import { ConnectedAccountsPill } from "@ui/domains/Site/ConnectedAccountsPill"
 import { useAuthorisedSites } from "@ui/hooks/useAuthorisedSites"
 import { useCurrentSite } from "@ui/hooks/useCurrentSite"
 import { useHasAccounts } from "@ui/hooks/useHasAccounts"
-import { useRecoilPreload } from "@ui/hooks/useRecoilPreload"
 import { atom, useAtomValue } from "jotai"
 import { Suspense, useMemo } from "react"
 import { Route, Routes, useLocation } from "react-router-dom"
@@ -42,19 +38,12 @@ const preloadAtom = atom((get) =>
     get(authorisedSitesAtom),
     get(tabAtom),
     get(stakingBannerAtom),
-    // TODO
+    get(balanceTotalsAtom),
   ])
 )
 
 export const Portfolio = () => {
   useAtomValue(preloadAtom)
-  useRecoilPreload(
-    authorisedSitesState,
-    balanceTotalsState,
-    accountsCatalogState,
-    //accountsQuery("all"),
-    settingQuery("selectedCurrency")
-  )
 
   const hasAccounts = useHasAccounts()
   return (

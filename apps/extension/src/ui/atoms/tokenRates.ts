@@ -18,11 +18,11 @@ const tokenRatesSubscriptionAtom = atomWithSubscription<void>(
   "tokenRatesAtom"
 )
 
-const tokenRatesObservable = atomWithObservable(() => liveQuery(() => db.tokenRates.toArray()))
+const tokenRatesObservableAtom = atomWithObservable(() => liveQuery(() => db.tokenRates.toArray()))
 
-const tokenRatesAtom = atom(async (get) => {
+const tokenRatesAtom = atom((get) => {
   get(tokenRatesSubscriptionAtom)
-  return await get(tokenRatesObservable)
+  return get(tokenRatesObservableAtom)
 })
 
 export const tokenRatesMapAtom = selectAtom(tokenRatesAtom, (tokenRates) =>

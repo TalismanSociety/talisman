@@ -27,7 +27,7 @@ import {
   assetDiscoveryScanProgress,
   assetDiscoveryScanState,
   evmNetworksMapQuery,
-  settingQuery,
+  settingsAtomFamily,
   tokensMapQuery,
 } from "@ui/atoms"
 import { AccountIcon } from "@ui/domains/Account/AccountIcon"
@@ -47,6 +47,7 @@ import { useSetting } from "@ui/hooks/useSettings"
 import useToken from "@ui/hooks/useToken"
 import useTokens from "@ui/hooks/useTokens"
 import { isErc20Token } from "@ui/util/isErc20Token"
+import { atom, useAtomValue } from "jotai"
 import { ChangeEventHandler, FC, ReactNode, useCallback, useEffect, useMemo, useRef } from "react"
 import { Trans, useTranslation } from "react-i18next"
 import { useNavigate } from "react-router-dom"
@@ -107,7 +108,7 @@ const AccountsTooltip: FC<{ addresses: Address[] }> = ({ addresses }) => {
   )
 }
 
-const useBlockExplorerUrl = (token: Token | undefined) => {
+const useBlockExplorerUrl = (token: Token | null) => {
   const evmNetwork = useEvmNetwork(token?.evmNetwork?.id)
 
   return useMemo(() => {
@@ -118,7 +119,7 @@ const useBlockExplorerUrl = (token: Token | undefined) => {
   }, [token, evmNetwork?.explorerUrl])
 }
 
-const useCoingeckoUrl = (token: Token | undefined) => {
+const useCoingeckoUrl = (token: Token | null) => {
   return useMemo(
     () =>
       token?.coingeckoId ? urlJoin("https://coingecko.com/en/coins/", token.coingeckoId) : null,
@@ -154,8 +155,8 @@ const AssetRowContent: FC<{ tokenId: TokenId; assets: DiscoveredBalance[] }> = (
 
   const isActive = useMemo(
     () =>
-      evmNetwork &&
-      token &&
+      !!evmNetwork &&
+      !!token &&
       isEvmNetworkActive(evmNetwork, activeEvmNetworks) &&
       isTokenActive(token, activeTokens),
     [activeEvmNetworks, activeTokens, evmNetwork, token]
@@ -539,10 +540,18 @@ const Notice: FC = () => {
   )
 }
 
+const preloadAtom = atom((get) =>
+  Promise.all([
+    get(settingsAtomFamily("useTestnets")),
+    //TODO
+  ])
+)
+
 export const AssetDiscoveryPage = () => {
   const { t } = useTranslation("admin")
+  useAtomValue(preloadAtom)
   useRecoilPreload(
-    settingQuery("useTestnets"),
+    //settingQuery("useTestnets"),
     //appStateQuery("showAssetDiscoveryAlert"),
     evmNetworksMapQuery({ activeOnly: true, includeTestnets: false }),
     tokensMapQuery({ activeOnly: true, includeTestnets: false })

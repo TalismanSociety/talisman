@@ -1,7 +1,7 @@
 import type { TokenId } from "@core/domains/tokens/types"
-import { tokenQuery } from "@ui/atoms"
-import { useRecoilValue } from "recoil"
+import { tokenByIdAtomFamily } from "@ui/atoms"
+import { useAtomValue } from "jotai"
 
-const useToken = (id: TokenId | null | undefined) => useRecoilValue(tokenQuery(id))
+const useToken = (id: TokenId | null | undefined) => useAtomValue(tokenByIdAtomFamily(id))
 
 export default useToken
