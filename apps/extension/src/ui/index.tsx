@@ -25,7 +25,7 @@ export const renderTalisman = (app: ReactNode) => {
     <React.StrictMode>
       <ErrorBoundary>
         <ErrorBoundaryDatabaseMigration>
-          <Suspense fallback={<SuspenseTracker name="RecoilRoot" />}>
+          <Suspense fallback={<SuspenseTracker name="Root" />}>
             <QueryClientProvider client={queryClient}>
               <HashRouter>{app}</HashRouter>
               <NotificationsContainer />
