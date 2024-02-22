@@ -9,7 +9,7 @@ const dismissAtom = atom(false)
 
 export const shouldMigratePasswordAtom = atomWithSubscription<boolean>((callback) => {
   const { unsubscribe } = passwordStore.observable.subscribe(({ isHashed }) => {
-    if (!isHashed) callback(true)
+    callback(!isHashed)
   })
   return unsubscribe
 }, "shouldMigratePasswordAtom")
