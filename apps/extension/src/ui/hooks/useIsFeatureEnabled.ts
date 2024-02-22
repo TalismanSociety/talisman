@@ -1,7 +1,11 @@
 import { FeatureFlag } from "@core/domains/app/types"
-import { featureFlagAtomFamily } from "@ui/atoms/remoteConfig"
+import { remoteConfigAtom } from "@ui/atoms/remoteConfig"
 import { useAtomValue } from "jotai"
+import { useMemo } from "react"
 
 export const useIsFeatureEnabled = (feature: FeatureFlag) => {
-  return useAtomValue(featureFlagAtomFamily(feature))
+  // don't use featureFlagAtomFamily here, because it would suspense the first time each key is called
+  const remoteConfig = useAtomValue(remoteConfigAtom)
+
+  return useMemo(() => !!remoteConfig.featureFlags[feature], [feature, remoteConfig])
 }

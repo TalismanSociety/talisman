@@ -4,7 +4,13 @@ import { SearchInput } from "@talisman/components/SearchInput"
 import { Spacer } from "@talisman/components/Spacer"
 import { InfoIcon, PlusIcon } from "@talismn/icons"
 import { sendAnalyticsEvent } from "@ui/api/analytics"
-import { chainsMapAtomFamily, evmNetworksMapAtomFamily, settingsAtomFamily } from "@ui/atoms"
+import {
+  chainsActiveAtom,
+  chainsMapAtomFamily,
+  evmNetworksActiveAtom,
+  evmNetworksMapAtomFamily,
+  settingsAtomFamily,
+} from "@ui/atoms"
 import { EnableTestnetPillButton } from "@ui/domains/Settings/EnableTestnetPillButton"
 import { ProviderTypeSwitch } from "@ui/domains/Site/ProviderTypeSwitch"
 import { useAnalyticsPageView } from "@ui/hooks/useAnalyticsPageView"
@@ -50,14 +56,16 @@ const Notice: FC = () => {
 const preloadAtom = atom((get) =>
   Promise.all([
     get(settingsAtomFamily("useTestnets")),
-    get(chainsMapAtomFamily({ activeOnly: true, includeTestnets: false })),
-    get(evmNetworksMapAtomFamily({ activeOnly: true, includeTestnets: false })),
+    get(chainsMapAtomFamily({ activeOnly: false, includeTestnets: true })),
+    get(evmNetworksMapAtomFamily({ activeOnly: false, includeTestnets: true })),
+    get(chainsActiveAtom),
+    get(evmNetworksActiveAtom),
   ])
 )
 
 export const NetworksPage = () => {
-  useAtomValue(preloadAtom)
   const { t } = useTranslation("admin")
+  useAtomValue(preloadAtom)
   useAnalyticsPageView(ANALYTICS_PAGE)
   const navigate = useNavigate()
 

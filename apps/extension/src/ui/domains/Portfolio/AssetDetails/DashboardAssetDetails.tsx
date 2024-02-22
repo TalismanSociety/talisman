@@ -154,7 +154,6 @@ const ChainTokenBalances = ({ chainId, balances }: AssetRowProps) => {
               <div>
                 {
                   // Show `Unbonding` next to nompool staked balances which are unbonding
-                  // TODO: Show time until funds are unbonded
                   // eslint-disable-next-line @typescript-eslint/no-explicit-any
                   (row.meta as any)?.type === "nompool" && !!(row.meta as any)?.unbonding && (
                     <div
@@ -166,6 +165,8 @@ const ChainTokenBalances = ({ chainId, balances }: AssetRowProps) => {
                       <div className="text-body flex items-center justify-end gap-2">
                         <div>{t("Unbonding")}</div>
                       </div>
+                      {/* TODO: Show time until funds are unbonded */}
+                      {/* <div>4d 14hr 11min</div> */}
                     </div>
                   )
                 }

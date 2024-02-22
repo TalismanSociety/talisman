@@ -61,7 +61,7 @@ export const balancesHydrateAtom = atom(async (get) => {
   return { chains, evmNetworks, tokens, tokenRates } as HydrateDb
 })
 
-export const allBalancesAtom = atom(async (get) => {
+const allBalancesAtom = atom(async (get) => {
   const [rawBalances, hydrate] = await Promise.all([
     get(filteredRawBalancesAtom),
     get(balancesHydrateAtom),
