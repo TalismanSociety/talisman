@@ -11,7 +11,7 @@
     "@dnd-kit/sortable": "7.0.2",
     "@eth-optimism/contracts-ts": "^0.17.0",
     "@ethereumjs/util": "8.1.0",
-    "@floating-ui/react": "0.26.4",
+    "@floating-ui/react": "0.26.9",
     "@headlessui/react": "1.7.17",
     "@hookform/resolvers": "2.9.11",
     "@ledgerhq/hw-app-eth": "6.35.1",

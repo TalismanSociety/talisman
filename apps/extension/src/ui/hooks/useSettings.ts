@@ -1,19 +1,20 @@
 import { SettingsStoreData, settingsStore } from "@core/domains/app/store.settings"
-import { settingsAtomFamily } from "@ui/atoms"
-import { useAtomValue } from "jotai"
-import { useCallback } from "react"
+import { settingsAtom } from "@ui/atoms"
+import { SetStateAction, useAtomValue } from "jotai"
+import { useCallback, useMemo } from "react"
 
 export const useSetting = <K extends keyof SettingsStoreData, V = SettingsStoreData[K]>(key: K) => {
-  const value = useAtomValue(settingsAtomFamily(key)) as V
+  // don't use settingsAtomFamily here, because it would suspense the first time each key is called
+  const settings = useAtomValue(settingsAtom)
+
+  const value = useMemo(() => settings[key] as V, [key, settings])
 
   const set = useCallback(
-    (valueOrSetter: V | ((prev: V) => V)) => {
+    async (valueOrSetter: SetStateAction<V>) => {
       if (typeof valueOrSetter === "function") {
         const setter = valueOrSetter as (prev: V) => V
-        settingsStore.set({ [key]: setter(value) })
-        return
-      }
-      settingsStore.set({ [key]: valueOrSetter as V })
+        await settingsStore.set({ [key]: setter(value) })
+      } else await settingsStore.set({ [key]: valueOrSetter as V })
     },
     [key, value]
   )

@@ -26,7 +26,6 @@ const accountsMapAtom = atom(async (get) => {
 
 export const accountsByAddressAtomFamily = atomFamily((address: Address | null | undefined) =>
   atom(async (get) => {
-    // necessary await, bad jotai typing
     const accountsMap = await get(accountsMapAtom)
     if (!address) return null
     if (accountsMap[address]) return accountsMap[address] as AccountJsonAny
@@ -43,7 +42,6 @@ export const accountsByAddressAtomFamily = atomFamily((address: Address | null |
 
 export const accountsByCategoryAtomFamily = atomFamily((category: AccountCategory = "all") =>
   atom(async (get) => {
-    // necessary await, bad jotai typing
     const accounts = await get(accountsAtom)
     switch (category) {
       case "portfolio":
@@ -61,68 +59,3 @@ export const accountsByCategoryAtomFamily = atomFamily((category: AccountCategor
     }
   })
 )
-
-// const accountsState = ratom<AccountJsonAny[]>({
-//   key: "accountsState",
-//   effects: [
-//     ({ setSelf }) => {
-//       log.debug("accountsState.init")
-//       const unsub = api.accountsSubscribe(setSelf)
-//       return () => unsub()
-//     },
-//   ],
-// })
-
-// const accountsMapState = rSelector({
-//   key: "accountsMapState",
-//   get: ({ get }) => {
-//     const accounts = get(accountsState)
-//     return Object.fromEntries(accounts.map((account) => [account.address, account])) as Record<
-//       Address,
-//       AccountJsonAny
-//     >
-//   },
-// })
-
-// export const accountByAddressQuery = rSelectorFamily({
-//   key: "accountByAddressQuery",
-//   get:
-//     (address: Address | null | undefined) =>
-//     // eslint-disable-next-line react/display-name
-//     ({ get }) => {
-//       const accountsMap = get(accountsMapState)
-//       if (!address) return null
-//       if (accountsMap[address]) return accountsMap[address] as AccountJsonAny
-//       try {
-//         // address may be encoded with a specific prefix
-//         const encoded = encodeAnyAddress(address, 42)
-//         if (accountsMap[encoded]) return accountsMap[encoded] as AccountJsonAny
-//       } catch (err) {
-//         // invalid address
-//       }
-//       return null
-//     },
-// })
-
-// export const accountsQuery = rSelectorFamily({
-//   key: "accountsQuery",
-//   get:
-//     (filter: AccountCategory = "all") =>
-//     ({ get }) => {
-//       const accounts = get(accountsState)
-//       switch (filter) {
-//         case "portfolio":
-//           return accounts.filter(
-//             ({ origin, isPortfolio }) => !origin || !IS_EXTERNAL[origin] || isPortfolio
-//           )
-//         case "watched":
-//           return accounts.filter(({ origin }) => origin === AccountType.Watched)
-//         case "owned":
-//           return accounts.filter(({ origin }) => !origin || !IS_EXTERNAL[origin])
-//         case "signet":
-//           return accounts.filter(({ origin }) => origin === AccountType.Signet)
-//         case "all":
-//           return accounts
-//       }
-//     },
-// })
