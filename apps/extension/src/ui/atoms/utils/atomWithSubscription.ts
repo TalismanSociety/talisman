@@ -1,71 +1,79 @@
 import { log } from "@core/log"
 import { UnsubscribeFn } from "@core/types"
+import { logObservableUpdate } from "@core/util/logObservableUpdate"
 import { Atom, atom } from "jotai"
-import { atomEffect } from "jotai-effect"
+import { atomEffect as atomWithEffect } from "jotai-effect"
 import { atomWithObservable } from "jotai/utils"
 import { ReplaySubject } from "rxjs"
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-type AtomSubscription<T = any> = (callback: (value: T) => void) => UnsubscribeFn
+type SubscribeFn<T = unknown> = (callback: (value: T) => void) => UnsubscribeFn
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-type SubscriptionData<T = any> = {
+type SubscriptionInfo<T = any> = {
   subject: ReplaySubject<T>
   unsubscribe: UnsubscribeFn | null
   subscribed: boolean
   atomEffect: Atom<T>
-  atomWithObservable: Atom<T | Promise<T>>
+  atomObservable: Atom<T | Promise<T>>
 }
 
-const SUBSCRIPTIONS = new WeakMap<AtomSubscription, SubscriptionData>()
+const SUBSCRIPTIONS = new WeakMap<SubscribeFn, SubscriptionInfo>()
 
-const ensureSubscription = <T>(subscribe: AtomSubscription<T>, debugLabel?: string) => {
+const ensureSubscription = <T>(subscribe: SubscribeFn<T>, debugLabel?: string) => {
   if (!SUBSCRIPTIONS.has(subscribe)) {
-    if (debugLabel) log.debug(`[${debugLabel}] - INITIALIZING`)
+    if (debugLabel) log.debug(`[${debugLabel}] INITIALIZING`)
 
     const subject = new ReplaySubject<T>(1)
 
+    const atomObservable = atomWithObservable(() => subject.pipe(logObservableUpdate(debugLabel)))
+
+    const atomEffect = atomWithEffect(() => {
+      // resume subscribtion on mount
+      ensureSubscription(subscribe, debugLabel ? `${debugLabel} - atomEffect` : undefined)
+
+      // unsubscribe on unmount
+      return () => {
+        // prevent immediate unsubscribe while navigating from one route to another
+        setTimeout(() => {
+          const sub = SUBSCRIPTIONS.get(subscribe)
+          if (sub?.subscribed && sub.unsubscribe && !sub.subject.observed) {
+            if (debugLabel) log.debug(`[${debugLabel}] UNSUBSCRIBING`)
+            sub.subscribed = false
+            sub.unsubscribe()
+            sub.unsubscribe = null
+          }
+        }, 100)
+      }
+    })
+
     SUBSCRIPTIONS.set(subscribe, {
       subject,
-      atomWithObservable: atomWithObservable(() => subject),
-      atomEffect: atomEffect(() => {
-        ensureSubscription(subscribe, debugLabel ? `${debugLabel} - atomEffect` : undefined)
-        return () => {
-          // prevent immediate unsubscribe while navigating from one route to another
-          setTimeout(() => {
-            const sub = SUBSCRIPTIONS.get(subscribe)
-            if (sub?.subscribed && sub.unsubscribe && !sub.subject.observed) {
-              if (debugLabel) log.debug(`[${debugLabel}] - UNSUBSCRIBING`)
-              sub.subscribed = false
-              sub.unsubscribe()
-              sub.unsubscribe = null
-            }
-          }, 100)
-        }
-      }),
+      atomObservable,
+      atomEffect,
       unsubscribe: null,
       subscribed: false,
     })
   }
 
-  const subscription = SUBSCRIPTIONS.get(subscribe) as SubscriptionData<T>
-  if (!subscription.subscribed) {
-    if (debugLabel) log.debug(`[${debugLabel}] - SUBSCRIBING`)
+  const sub = SUBSCRIPTIONS.get(subscribe) as SubscriptionInfo<T>
+  if (!sub.subscribed) {
+    if (debugLabel) log.debug(`[${debugLabel}] SUBSCRIBING`)
 
     // can't just test unsubscribe to be null because some subscriptions (ex balanceTotals) update synchronously, it would cause an infinite render loop
-    // => need a dedicated boolean to be set prior starting the subscription
-    subscription.subscribed = true
-    subscription.unsubscribe = subscribe((value) => {
-      if (debugLabel) log.debug(`[${debugLabel}] - UPDATING`, { value })
-      if (subscription.subscribed) subscription.subject.next(value)
+    // => dedicated boolean to be set prior starting the subscription
+    sub.subscribed = true
+    sub.unsubscribe = subscribe((value) => {
+      if (debugLabel) log.debug(`[${debugLabel}] UPDATING (callback)`, { value })
+      if (sub.subscribed) sub.subject.next(value)
     })
   }
 
-  return subscription
+  return sub
 }
 
-export const atomWithSubscription = <T>(sub: AtomSubscription<T>, debugLabel?: string) =>
+export const atomWithSubscription = <T>(subscribe: SubscribeFn<T>, debugLabel?: string) =>
   atom((get) => {
-    const subscription = ensureSubscription(sub, debugLabel)
-    get(subscription.atomEffect)
-    return get(subscription.atomWithObservable)
+    const sub = ensureSubscription(subscribe, debugLabel)
+    get(sub.atomEffect)
+    return get(sub.atomObservable)
   })

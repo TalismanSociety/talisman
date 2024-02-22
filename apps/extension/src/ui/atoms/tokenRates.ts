@@ -1,11 +1,13 @@
 import { db } from "@core/db"
 import { settingsStore } from "@core/domains/app/store.settings"
+import { logObservableUpdate } from "@core/util/logObservableUpdate"
 import { TokenId } from "@talismn/chaindata-provider"
 import { TokenRateCurrency } from "@talismn/token-rates"
 import { api } from "@ui/api"
 import { liveQuery } from "dexie"
 import { SetStateAction, atom } from "jotai"
 import { atomFamily, atomWithObservable } from "jotai/utils"
+import { from } from "rxjs"
 
 import { settingsAtomFamily } from "./settings"
 import { atomWithSubscription } from "./utils/atomWithSubscription"
@@ -17,7 +19,11 @@ const tokenRatesSubscriptionAtom = atomWithSubscription<void>(
   "tokenRatesAtom"
 )
 
-const tokenRatesObservableAtom = atomWithObservable(() => liveQuery(() => db.tokenRates.toArray()))
+const tokenRatesObservableAtom = atomWithObservable(() =>
+  from(liveQuery(() => db.tokenRates.toArray())).pipe(
+    logObservableUpdate("tokenRatesObservableAtom")
+  )
+)
 
 const tokenRatesAtom = atom((get) => {
   get(tokenRatesSubscriptionAtom)

@@ -14,6 +14,7 @@ import {
   isTokenActive,
 } from "@core/domains/tokens/store.activeTokens"
 import { chaindataProvider } from "@core/rpcs/chaindata"
+import { logObservableUpdate } from "@core/util/logObservableUpdate"
 import { HexString } from "@polkadot/util/types"
 import {
   Chain,
@@ -46,8 +47,8 @@ const allEvmNetworksSubscriptionAtom = atomWithSubscription<void>(
   () => api.ethereumNetworks(NO_OP),
   "allEvmNetworksSubscriptionAtom"
 )
-const allEvmNetworksObservableAtom = atomWithObservable(
-  () => chaindataProvider.evmNetworksObservable
+const allEvmNetworksObservableAtom = atomWithObservable(() =>
+  chaindataProvider.evmNetworksObservable.pipe(logObservableUpdate("allEvmNetworksObservableAtom"))
 )
 
 export const allEvmNetworksAtom = atom((get) => {
@@ -144,7 +145,9 @@ const allChainsSubscriptionAtom = atomWithSubscription<void>(
   () => api.chains(NO_OP),
   "allChainsSubscriptionAtom"
 )
-const allChainsObservableAtom = atomWithObservable(() => chaindataProvider.chainsObservable)
+const allChainsObservableAtom = atomWithObservable(() =>
+  chaindataProvider.chainsObservable.pipe(logObservableUpdate("allChainsObservableAtom"))
+)
 
 export const allChainsAtom = atom((get) => {
   get(allChainsSubscriptionAtom)
@@ -252,7 +255,10 @@ const allTokensMapSubscriptionAtom = atomWithSubscription<void>(
   "allTokensMapSubscriptionAtom"
 )
 const allTokensMapObservableAtom = atomWithObservable<TokenList>(
-  () => chaindataProvider.tokensByIdObservable as Observable<TokenList> // TODO understand why invalid type on prod build
+  () =>
+    chaindataProvider.tokensByIdObservable.pipe(
+      logObservableUpdate("allTokensMapObservableAtom")
+    ) as Observable<TokenList> // TODO understand why invalid type on prod build
 )
 
 export const allTokensMapAtom = atom((get) => {

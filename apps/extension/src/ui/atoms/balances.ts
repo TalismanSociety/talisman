@@ -1,4 +1,5 @@
 import { firstThenDebounce } from "@core/util/firstThenDebounce"
+import { logObservableUpdate } from "@core/util/logObservableUpdate"
 import {
   Address,
   Balances,
@@ -31,7 +32,9 @@ const rawBalancesSubscriptionAtom = atomWithSubscription<void>(
   "rawBalancesSubscriptionAtom"
 )
 const rawBalancesObservableAtom = atomWithObservable(() =>
-  from(liveQuery(() => balancesDb.balances.toArray())).pipe(firstThenDebounce(500))
+  from(liveQuery(() => balancesDb.balances.toArray()))
+    .pipe(firstThenDebounce(500))
+    .pipe(logObservableUpdate("rawBalancesObservableAtom"))
 )
 
 const rawBalancesAtom = atom((get) => {

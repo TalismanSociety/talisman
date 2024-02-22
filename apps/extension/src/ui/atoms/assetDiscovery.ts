@@ -1,6 +1,7 @@
 import { db } from "@core/db"
 import { assetDiscoveryStore } from "@core/domains/assetDiscovery/store"
 import { firstThenDebounce } from "@core/util/firstThenDebounce"
+import { logObservableUpdate } from "@core/util/logObservableUpdate"
 import { liveQuery } from "dexie"
 import { atom } from "jotai"
 import { atomWithObservable } from "jotai/utils"
@@ -13,10 +14,14 @@ import { tokensMapAtomFamily } from "./chaindata"
 const assetDiscoveryBalancesAtom = atomWithObservable(() =>
   // backend will do a lot of updates
   // debounce to mitigate performance issues
-  from(liveQuery(() => db.assetDiscovery.toArray())).pipe(firstThenDebounce(500))
+  from(liveQuery(() => db.assetDiscovery.toArray()))
+    .pipe(firstThenDebounce(500))
+    .pipe(logObservableUpdate("assetDiscoveryBalancesAtom"))
 )
 
-export const assetDiscoveryScanAtom = atomWithObservable(() => assetDiscoveryStore.observable)
+export const assetDiscoveryScanAtom = atomWithObservable(() =>
+  assetDiscoveryStore.observable.pipe(logObservableUpdate("assetDiscoveryScanAtom"))
+)
 
 export const assetDiscoveryScanProgressAtom = atom(async (get) => {
   const {
