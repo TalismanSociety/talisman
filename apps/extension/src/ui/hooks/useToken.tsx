@@ -1,7 +1,14 @@
 import type { TokenId } from "@core/domains/tokens/types"
-import { tokenByIdAtomFamily } from "@ui/atoms"
-import { useAtomValue } from "jotai"
+import { useMemo } from "react"
 
-const useToken = (id: TokenId | null | undefined) => useAtomValue(tokenByIdAtomFamily(id))
+import { useAllTokensMap } from "./useTokens"
+
+const useToken = (id: TokenId | null | undefined) => {
+  // DON'T DO THIS (suspenses once for each key)
+  // return useAtomValue(tokenByIdAtomFamily(id))
+
+  const tokensMap = useAllTokensMap()
+  return useMemo(() => (id && tokensMap[id]) || null, [tokensMap, id])
+}
 
 export default useToken

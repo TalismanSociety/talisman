@@ -55,7 +55,7 @@ export const allEvmNetworksAtom = atom((get) => {
   return get(allEvmNetworksObservableAtom)
 })
 
-const allEvmNetworksMapAtom = atom(async (get) => {
+export const allEvmNetworksMapAtom = atom(async (get) => {
   const evmNetworks = await get(allEvmNetworksAtom)
   return Object.fromEntries(evmNetworks.map((network) => [network.id, network])) as EvmNetworkList
 })
@@ -151,7 +151,7 @@ export const allChainsAtom = atom((get) => {
   return get(allChainsObservableAtom)
 })
 
-const allChainsMapAtom = atom(async (get) => {
+export const allChainsMapAtom = atom(async (get) => {
   const chains = await get(allChainsAtom)
   return Object.fromEntries(chains.map((network) => [network.id, network])) as ChainList
 })
@@ -260,7 +260,7 @@ export const allTokensMapAtom = atom((get) => {
   return get(allTokensMapObservableAtom)
 })
 
-const allTokensAtom = atom(async (get) => {
+export const allTokensAtom = atom(async (get) => {
   const [tokensMap, chainsMap, evmNetworksMap] = await Promise.all([
     get(allTokensMapAtom),
     get(allChainsMapAtom),

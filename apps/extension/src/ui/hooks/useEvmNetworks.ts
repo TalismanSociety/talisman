@@ -1,6 +1,7 @@
 import {
   EvmNetworksQueryOptions,
   allEvmNetworksAtom,
+  allEvmNetworksMapAtom,
   evmNetworksArrayAtomFamily,
   evmNetworksMapAtomFamily,
 } from "@ui/atoms"
@@ -10,6 +11,7 @@ import isEqual from "lodash/isEqual"
 
 // use only for networks list that is used to enable/disable networks
 export const useAllEvmNetworks = () => useAtomValue(allEvmNetworksAtom)
+export const useAllEvmNetworksMap = () => useAtomValue(allEvmNetworksMapAtom)
 
 const evmNetworksAtomFamily = atomFamily(
   (filter: EvmNetworksQueryOptions) =>
