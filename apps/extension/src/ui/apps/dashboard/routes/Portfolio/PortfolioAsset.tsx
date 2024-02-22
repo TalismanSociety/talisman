@@ -32,6 +32,8 @@ const PageContent = ({ balances, symbol }: { balances: Balances; symbol: string 
     symbol
   )
 
+  const canHaveLockedState = Boolean(token?.chain?.id)
+
   const handleCopyAddressClick = useCallback(() => {
     openCopyAddressModal({ mode: "copy", address: account?.address })
     genericEvent("open copy address", { from: "dashboard portfolio" })
@@ -98,23 +100,27 @@ const PageContent = ({ balances, symbol }: { balances: Balances; symbol: string 
           token={token}
           showTokens
         />
-        <Statistics
-          className="max-w-[40%]"
-          title={t("Locked")}
-          tokens={summary.lockedTokens}
-          fiat={summary.lockedFiat}
-          token={token}
-          locked
-          showTokens
-        />
-        <Statistics
-          className="max-w-[40%]"
-          title={t("Available")}
-          tokens={summary.availableTokens}
-          fiat={summary.availableFiat}
-          token={token}
-          showTokens
-        />
+        {canHaveLockedState && (
+          <>
+            <Statistics
+              className="max-w-[40%]"
+              title={t("Locked")}
+              tokens={summary.lockedTokens}
+              fiat={summary.lockedFiat}
+              token={token}
+              locked
+              showTokens
+            />
+            <Statistics
+              className="max-w-[40%]"
+              title={t("Available")}
+              tokens={summary.availableTokens}
+              fiat={summary.availableFiat}
+              token={token}
+              showTokens
+            />
+          </>
+        )}
       </div>
       <div className="mt-24">
         <DashboardAssetDetails balances={balancesToDisplay} symbol={symbol} />
