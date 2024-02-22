@@ -67,7 +67,7 @@ const Login = ({ setShowResetWallet }: { setShowResetWallet: () => void }) => {
         if (result) {
           const qs = new URLSearchParams(window.location.search)
           if (qs.get("closeOnSuccess") === "true") window.close()
-        } else throw new Error(t("Paraverse access denied"))
+        } else throw new Error(t("Talisman access denied"))
       } catch (err) {
         setError("password", { message: (err as Error)?.message ?? t("Unknown error") })
         setFocus("password", { shouldSelect: true })
