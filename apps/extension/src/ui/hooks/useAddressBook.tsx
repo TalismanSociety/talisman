@@ -11,17 +11,6 @@ export const addressBookAtom = atomWithSubscription<AddressBookContact[]>((callb
   return unsubscribe
 }, "addressBookAtom")
 
-// export const addressBookState = atom<AddressBookContact[]>({
-//   key: "addressBookState",
-//   default: [],
-//   effects: [
-//     ({ setSelf }) => {
-//       const sub = addressBookStore.observable.subscribe((data) => setSelf(Object.values(data)))
-//       return () => sub.unsubscribe()
-//     },
-//   ],
-// })
-
 export const useAddressBook = () => {
   const { t } = useTranslation()
   const contacts = useAtomValue(addressBookAtom)

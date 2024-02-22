@@ -21,41 +21,14 @@ const mnemonicsAtom = atomWithSubscription<Mnemonic[]>((callback) => {
     callback(mnemonics)
   })
   return unsubscribe
-})
-
-// const mnemonicsState = atom<Mnemonic[]>({
-//   key: "mnemonicsState",
-//   default: [],
-//   effects: [
-//     ({ setSelf }) => {
-//       const sub = mnemonicsStore.observable.subscribe((data) => {
-//         const mnemonics = Object.values(data).map(({ id, name, confirmed, source }) => ({
-//           id,
-//           name,
-//           confirmed,
-//           source,
-//         }))
-//         setSelf(mnemonics)
-//       })
-//       return () => sub.unsubscribe()
-//     },
-//   ],
-// })
+}, "mnemonicsAtom")
 
 const mnemonicsByIdAtomFamily = atomFamily((id: string | null | undefined) =>
   atom(async (get) => {
     const mnemonics = await get(mnemonicsAtom)
-    return mnemonics.find((m) => m.id === id)
+    return mnemonics.find((m) => m.id === id) ?? null
   })
 )
-
-// const mnemonicsQuery = selectorFamily({
-//   key: "mnemonicsQuery",
-//   get:
-//     (id: string | null | undefined) =>
-//     ({ get }) =>
-//       get(mnemonicsState).find((m) => m.id === id),
-// })
 
 export const useMnemonics = () => {
   return useAtomValue(mnemonicsAtom)

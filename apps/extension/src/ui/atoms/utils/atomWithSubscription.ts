@@ -11,42 +11,52 @@ type AtomSubscription<T = any> = (callback: (value: T) => void) => UnsubscribeFn
 type SubscriptionData<T = any> = {
   subject: ReplaySubject<T>
   unsubscribe: UnsubscribeFn | null
+  subscribed: boolean
   atomEffect: Atom<T>
   atomWithObservable: Atom<T | Promise<T>>
 }
 
 const SUBSCRIPTIONS = new WeakMap<AtomSubscription, SubscriptionData>()
 
-const ensureSubscription = <T>(sub: AtomSubscription<T>, debugLabel?: string) => {
-  if (!SUBSCRIPTIONS.has(sub)) {
+const ensureSubscription = <T>(subscribe: AtomSubscription<T>, debugLabel?: string) => {
+  if (!SUBSCRIPTIONS.has(subscribe)) {
     if (debugLabel) log.debug(`[${debugLabel}] - INITIALIZING`)
 
     const subject = new ReplaySubject<T>(1)
 
-    SUBSCRIPTIONS.set(sub, {
+    SUBSCRIPTIONS.set(subscribe, {
       subject,
       atomWithObservable: atomWithObservable(() => subject),
       atomEffect: atomEffect(() => {
-        ensureSubscription(sub, debugLabel)
+        ensureSubscription(subscribe, debugLabel ? `${debugLabel} - atomEffect` : undefined)
         return () => {
-          const subscription = SUBSCRIPTIONS.get(sub)
-          if (subscription?.unsubscribe) {
-            if (debugLabel) log.debug(`[${debugLabel}] - UNSUBSCRIBING`)
-            subscription.unsubscribe()
-            subscription.unsubscribe = null
-          }
+          // prevent immediate unsubscribe while navigating from one route to another
+          setTimeout(() => {
+            const sub = SUBSCRIPTIONS.get(subscribe)
+            if (sub?.subscribed && sub.unsubscribe && !sub.subject.observed) {
+              if (debugLabel) log.debug(`[${debugLabel}] - UNSUBSCRIBING`)
+              sub.subscribed = false
+              sub.unsubscribe()
+              sub.unsubscribe = null
+            }
+          }, 100)
         }
       }),
       unsubscribe: null,
+      subscribed: false,
     })
   }
 
-  const subscription = SUBSCRIPTIONS.get(sub) as SubscriptionData<T>
-  if (!subscription.unsubscribe) {
+  const subscription = SUBSCRIPTIONS.get(subscribe) as SubscriptionData<T>
+  if (!subscription.subscribed) {
     if (debugLabel) log.debug(`[${debugLabel}] - SUBSCRIBING`)
-    subscription.unsubscribe = sub((value) => {
-      log.debug(`[${debugLabel}] - UPDATING`, { value })
-      subscription.subject.next(value)
+
+    // can't just test unsubscribe to be null because some subscriptions (ex balanceTotals) update synchronously, it would cause an infinite render loop
+    // => need a dedicated boolean to be set prior starting the subscription
+    subscription.subscribed = true
+    subscription.unsubscribe = subscribe((value) => {
+      if (debugLabel) log.debug(`[${debugLabel}] - UPDATING`, { value })
+      if (subscription.subscribed) subscription.subject.next(value)
     })
   }
 
