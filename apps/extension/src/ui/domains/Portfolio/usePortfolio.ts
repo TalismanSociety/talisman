@@ -185,58 +185,6 @@ const portfolioGlobalAtom = atomFamily((accountAddress: Address | null | undefin
   })
 )
 
-// const portfolioNetworkFilterState = ratom<NetworkOption | undefined>({
-//   key: "portfolioNetworkFilterState",
-//   default: undefined,
-// })
-
-// const portfolioGlobalState = selectorFamily({
-//   key: "portfolioGlobalState",
-//   get:
-//     (accountAddress: Address | null | undefined) =>
-//     ({ get }) => {
-//       const includeTestnets = get(settingQuery("useTestnets"))
-//       const [account, chains, tokens, evmNetworks, hydrate, balances, myBalances] = get(
-//         waitForAll([
-//           accountByAddressQuery(accountAddress),
-//           chainsArrayQuery({ activeOnly: true, includeTestnets }),
-//           tokensArrayQuery({ activeOnly: true, includeTestnets }),
-//           evmNetworksArrayQuery({ activeOnly: true, includeTestnets }),
-//           balancesHydrateState,
-//           balancesFilterQuery("all"),
-//           balancesFilterQuery("portfolio"),
-//         ])
-//       )
-
-//       const allBalances = account ? balances.find({ address: account.address }) : myBalances
-//       const accountType = getAccountType(account)
-//       const networks = getNetworkOptions({
-//         tokens,
-//         chains,
-//         evmNetworks,
-//         balances: allBalances,
-//         type: accountType,
-//       })
-//       const networkFilter = get(portfolioNetworkFilterState)
-//       const networkBalances = getNetworkBalances({ networkFilter, allBalances, hydrate })
-
-//       const isInitializing =
-//         !allBalances.count || allBalances.each.some((b) => b.status === "initializing")
-
-//       return {
-//         networks,
-//         networkBalances,
-//         chains,
-//         tokens,
-//         evmNetworks,
-//         hydrate,
-//         allBalances,
-//         accountType,
-//         isInitializing,
-//       }
-//     },
-// })
-
 // allows sharing the network filter between pages
 export const usePortfolio = () => {
   const [networkFilter, setNetworkFilter] = useAtom(portfolioNetworkFilterAtom)

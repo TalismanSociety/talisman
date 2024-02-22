@@ -9,10 +9,6 @@ import { atomFamily } from "jotai/utils"
 import { useEffect, useState } from "react"
 
 const assetDiscoveryTokenRatesAtom = atom<TokenRatesList>({})
-// const assetDiscoveryTokenRatesState = ratom<TokenRatesList>({
-//   key: "assetDiscoveryTokenRatesState",
-//   default: {},
-// })
 
 const assetDiscoveryTokenRatesAtomFamily = atomFamily((tokenId: TokenId = "") =>
   atom((get) => {
@@ -20,17 +16,6 @@ const assetDiscoveryTokenRatesAtomFamily = atomFamily((tokenId: TokenId = "") =>
     return tokenRates[tokenId] ?? null
   })
 )
-
-// const assetDiscoveryTokenRatesQuery = selectorFamily<TokenRates | null, TokenId | undefined>({
-//   key: "assetDiscoveryTokenRatesQuery",
-//   get:
-//     (tokenId: TokenId = "") =>
-//     // eslint-disable-next-line react/display-name
-//     ({ get }): TokenRates | null => {
-//       const tokenRates = get(assetDiscoveryTokenRatesState)
-//       return tokenRates[tokenId] ?? null
-//     },
-// })
 
 export const useAssetDiscoveryTokenRate = (tokenId: TokenId | undefined) =>
   useAtomValue(assetDiscoveryTokenRatesAtomFamily(tokenId))
@@ -43,20 +28,6 @@ const missingTokenRatesAtom = atom(async (get) => {
   ])
   return tokens.filter((t) => !!t.coingeckoId && !tokenRates[t.id] && tokenIds.includes(t.id))
 })
-
-// const missingTokenRatesState = selector({
-//   key: "missingTokenRatesState",
-//   get: ({ get }) => {
-//     const [{ tokenIds }, tokens, tokenRates] = get(
-//       waitForAll([
-//         assetDiscoveryScanProgress,
-//         tokensArrayQuery({ activeOnly: false, includeTestnets: false }),
-//         assetDiscoveryTokenRatesState,
-//       ])
-//     )
-//     return tokens.filter((t) => !!t.coingeckoId && !tokenRates[t.id] && tokenIds.includes(t.id))
-//   },
-// })
 
 const FETCH_TOKEN_RATES_CACHE: Record<string, Promise<TokenRatesList>> = {}
 

@@ -16,40 +16,7 @@ const assetDiscoveryBalancesAtom = atomWithObservable(() =>
   from(liveQuery(() => db.assetDiscovery.toArray())).pipe(firstThenDebounce(500))
 )
 
-// const assetDiscoveryBalancesState = ratom<DiscoveredBalance[]>({
-//   key: "assetDiscoveryBalancesState",
-//   effects: [
-//     // sync from db
-//     ({ setSelf }) => {
-//       log.debug("assetDiscoveryBalancesState.init")
-
-//       // backend will do a lot of updates
-//       // debounce to mitigate performance issues
-//       const sub = from(liveQuery(() => db.assetDiscovery.toArray()))
-//         .pipe(firstThenDebounce(500))
-//         .subscribe(setSelf)
-
-//       return () => sub.unsubscribe()
-//     },
-//   ],
-// })
-
 export const assetDiscoveryScanAtom = atomWithObservable(() => assetDiscoveryStore.observable)
-
-// export const assetDiscoveryScanState = ratom<AssetDiscoveryScanState>({
-//   key: "assetDiscoveryScanState",
-//   effects: [
-//     // sync from db
-//     ({ setSelf }) => {
-//       log.debug("assetDiscoveryScanState.init")
-//       const sub = assetDiscoveryStore.observable.subscribe(setSelf)
-
-//       return () => {
-//         sub.unsubscribe()
-//       }
-//     },
-//   ],
-// })
 
 export const assetDiscoveryScanProgressAtom = atom(async (get) => {
   const {

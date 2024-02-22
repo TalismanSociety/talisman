@@ -3,7 +3,6 @@ import { Address } from "@talismn/balances"
 import { encodeAnyAddress } from "@talismn/util"
 import { api } from "@ui/api"
 import { atom } from "jotai"
-import { selectAtom } from "jotai/utils"
 import { atomFamily } from "jotai/utils"
 
 import { atomWithSubscription } from "./utils/atomWithSubscription"
@@ -17,14 +16,13 @@ const IS_EXTERNAL: Partial<Record<AccountType, true>> = {
 
 const accountsAtom = atomWithSubscription<AccountJsonAny[]>(api.accountsSubscribe, "accountsAtom")
 
-const accountsMapAtom = selectAtom(
-  accountsAtom,
-  (accounts) =>
-    Object.fromEntries(accounts.map((account) => [account.address, account])) as Record<
-      Address,
-      AccountJsonAny
-    >
-)
+const accountsMapAtom = atom(async (get) => {
+  const accounts = await get(accountsAtom)
+  return Object.fromEntries(accounts.map((account) => [account.address, account])) as Record<
+    Address,
+    AccountJsonAny
+  >
+})
 
 export const accountsByAddressAtomFamily = atomFamily((address: Address | null | undefined) =>
   atom(async (get) => {

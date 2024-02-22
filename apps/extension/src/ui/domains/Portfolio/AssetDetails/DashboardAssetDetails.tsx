@@ -6,6 +6,7 @@ import { ChainLogo } from "@ui/domains/Asset/ChainLogo"
 import { TokenLogo } from "@ui/domains/Asset/TokenLogo"
 import { AssetBalanceCellValue } from "@ui/domains/Portfolio/AssetBalanceCellValue"
 import { NoTokensMessage } from "@ui/domains/Portfolio/NoTokensMessage"
+import { Suspense } from "react"
 import { useTranslation } from "react-i18next"
 
 import { CopyAddressButton } from "./CopyAddressIconButton"
@@ -82,7 +83,9 @@ const ChainTokenBalances = ({ chainId, balances }: AssetRowProps) => {
               <ChainLogo className="mr-2" id={chainOrNetwork.id} />
               <span className="mr-2">{chainOrNetwork.name}</span>
               <CopyAddressButton symbol={symbol} networkId={chainOrNetwork.id} />
-              <SendFundsButton symbol={symbol} networkId={chainOrNetwork.id} />
+              <Suspense>
+                <SendFundsButton symbol={symbol} networkId={chainOrNetwork.id} />
+              </Suspense>
             </div>
             <div>{networkType}</div>
           </div>
@@ -151,6 +154,7 @@ const ChainTokenBalances = ({ chainId, balances }: AssetRowProps) => {
               <div>
                 {
                   // Show `Unbonding` next to nompool staked balances which are unbonding
+                  // TODO: Show time until funds are unbonded
                   // eslint-disable-next-line @typescript-eslint/no-explicit-any
                   (row.meta as any)?.type === "nompool" && !!(row.meta as any)?.unbonding && (
                     <div
@@ -162,8 +166,6 @@ const ChainTokenBalances = ({ chainId, balances }: AssetRowProps) => {
                       <div className="text-body flex items-center justify-end gap-2">
                         <div>{t("Unbonding")}</div>
                       </div>
-                      {/* TODO: Show time until funds are unbonded */}
-                      {/* <div>4d 14hr 11min</div> */}
                     </div>
                   )
                 }
