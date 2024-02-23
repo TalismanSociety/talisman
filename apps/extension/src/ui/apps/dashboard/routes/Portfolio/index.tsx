@@ -1,4 +1,9 @@
-import { balancesByAccountCategoryAtomFamily } from "@ui/atoms"
+import {
+  accountsByCategoryAtomFamily,
+  balancesByAccountCategoryAtomFamily,
+  balancesHydrateAtom,
+} from "@ui/atoms"
+import { remoteConfigAtom } from "@ui/atoms/remoteConfig"
 import { stakingBannerAtom } from "@ui/atoms/stakingBanners"
 import { useBuyTokensModal } from "@ui/domains/Asset/Buy/useBuyTokensModal"
 import { atom, useAtomValue } from "jotai"
@@ -10,10 +15,16 @@ import { PortfolioAsset } from "./PortfolioAsset"
 import { PortfolioAssets } from "./PortfolioAssets"
 
 const preloadAtom = atom((get) =>
-  Promise.all([get(stakingBannerAtom), get(balancesByAccountCategoryAtomFamily("all"))])
+  Promise.all([
+    get(balancesByAccountCategoryAtomFamily("all")),
+    get(accountsByCategoryAtomFamily("all")),
+    get(remoteConfigAtom),
+    get(balancesHydrateAtom),
+    get(stakingBannerAtom),
+  ])
 )
 
-export const PortfolioRoutesInner = () => {
+const ContentRoutes = () => {
   useAtomValue(preloadAtom)
 
   return (
@@ -42,7 +53,7 @@ export const PortfolioRoutes = () => {
   return (
     // share layout to prevent sidebar flickering when navigating between the 2 pages
     <DashboardLayout centered large>
-      <PortfolioRoutesInner />
+      <ContentRoutes />
     </DashboardLayout>
   )
 }
