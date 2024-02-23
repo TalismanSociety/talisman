@@ -25,6 +25,7 @@ const mnemonicsAtom = atomWithSubscription<Mnemonic[]>((callback) => {
 
 const mnemonicsByIdAtomFamily = atomFamily((id: string | null | undefined) =>
   atom(async (get) => {
+    if (!id) return null
     const mnemonics = await get(mnemonicsAtom)
     return mnemonics.find((m) => m.id === id) ?? null
   })

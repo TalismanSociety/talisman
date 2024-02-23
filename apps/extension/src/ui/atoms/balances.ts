@@ -27,10 +27,13 @@ import { atomWithSubscription } from "./utils/atomWithSubscription"
 
 const NO_OP = () => {}
 
+// Reading this atom triggers the balances backend subscription
+// Note : unsubscribing has no effect, the backend subscription will keep polling until the port (window or tab) is closed
 const rawBalancesSubscriptionAtom = atomWithSubscription<void>(
   () => api.balances(NO_OP),
   "rawBalancesSubscriptionAtom"
 )
+
 const rawBalancesObservableAtom = atomWithObservable(() =>
   from(liveQuery(() => balancesDb.balances.toArray()))
     .pipe(firstThenDebounce(500))

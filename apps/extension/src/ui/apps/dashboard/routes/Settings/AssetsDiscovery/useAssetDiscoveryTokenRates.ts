@@ -12,6 +12,7 @@ const assetDiscoveryTokenRatesAtom = atom<TokenRatesList>({})
 
 const assetDiscoveryTokenRatesAtomFamily = atomFamily((tokenId: TokenId = "") =>
   atom((get) => {
+    if (!tokenId) return null
     const tokenRates = get(assetDiscoveryTokenRatesAtom)
     return tokenRates[tokenId] ?? null
   })

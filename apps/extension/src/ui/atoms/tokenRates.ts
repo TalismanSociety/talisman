@@ -37,8 +37,9 @@ export const tokenRatesMapAtom = atom(async (get) => {
 
 export const tokenRatesByIdFamily = atomFamily((tokenId: TokenId | null | undefined) =>
   atom(async (get) => {
+    if (!tokenId) return null
     const tokenRates = await get(tokenRatesMapAtom)
-    return (tokenId && tokenRates[tokenId]) || null
+    return tokenRates[tokenId] || null
   })
 )
 

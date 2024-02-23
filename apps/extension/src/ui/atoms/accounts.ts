@@ -26,8 +26,8 @@ const accountsMapAtom = atom(async (get) => {
 
 export const accountsByAddressAtomFamily = atomFamily((address: Address | null | undefined) =>
   atom(async (get) => {
-    const accountsMap = await get(accountsMapAtom)
     if (!address) return null
+    const accountsMap = await get(accountsMapAtom)
     if (accountsMap[address]) return accountsMap[address] as AccountJsonAny
     try {
       // address may be encoded with a specific prefix

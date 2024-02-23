@@ -131,8 +131,9 @@ export const evmNetworksMapAtomFamily = atomFamily(
 
 export const evmNetworkAtomFamily = atomFamily((evmNetworkId: EvmNetworkId | null | undefined) =>
   atom(async (get) => {
+    if (!evmNetworkId) return null
     const evmNetworks = await get(allEvmNetworksMapAtom)
-    return (evmNetworkId && evmNetworks[evmNetworkId]) || null
+    return evmNetworks[evmNetworkId] || null
   })
 )
 
@@ -202,8 +203,9 @@ const chainsByGenesisHashMapAtom = atom(async (get) => {
 export const chainByGenesisHashAtomFamily = atomFamily(
   (genesisHash: HexString | null | undefined) =>
     atom(async (get) => {
+      if (!genesisHash) return null
       const chains = await get(chainsByGenesisHashMapAtom)
-      return (genesisHash && chains[genesisHash]) || null
+      return chains[genesisHash] || null
     })
 )
 
@@ -240,8 +242,9 @@ export const chainsMapAtomFamily = atomFamily(
 
 export const chainByIdAtomFamily = atomFamily((chainId: ChainId | null | undefined) =>
   atom(async (get) => {
+    if (!chainId) return null
     const chains = await get(allChainsMapAtom)
-    return (chainId && chains[chainId]) || null
+    return chains[chainId] || null
   })
 )
 
@@ -373,7 +376,8 @@ export const tokensMapAtomFamily = atomFamily(
 
 export const tokenByIdAtomFamily = atomFamily((tokenId: TokenId | null | undefined) =>
   atom(async (get) => {
+    if (!tokenId) return null
     const tokens = await get(allTokensMapAtom)
-    return (tokenId && tokens[tokenId]) || null
+    return tokens[tokenId] || null
   })
 )
