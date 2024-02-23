@@ -100,17 +100,6 @@ export const DashboardLayout: FC<LayoutProps> = ({
           <DashboardNotificationsAndModals />
         </Suspense>
       </section>
-      {/* <Suspense fallback={<SuspenseTracker name="Modals" />}>
-        <BackupWarningModal />
-        <BuyTokensModal />
-        <AccountRenameModal />
-        <AccountExportModal />
-        <AccountExportPrivateKeyModal />
-        <AccountRemoveModal />
-        <CopyAddressModal />
-        <MigratePasswordModal />
-        <OnboardingToast />
-      </Suspense> */}
     </main>
   )
 }
