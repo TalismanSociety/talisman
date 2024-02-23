@@ -4,7 +4,7 @@ import {
   accountsCatalogAtom,
   authorisedSitesAtom,
   balanceTotalsAtom,
-  settingsAtomFamily,
+  settingsAtom,
   tabAtom,
 } from "@ui/atoms"
 import { stakingBannerAtom } from "@ui/atoms/stakingBanners"
@@ -32,13 +32,14 @@ import { PortfolioWhatsNew, PortfolioWhatsNewHeader } from "./PortfolioWhatsNew"
 
 const preloadAtom = atom((get) =>
   Promise.all([
-    get(settingsAtomFamily("selectedCurrency")),
+    get(balanceTotalsAtom),
+    get(stakingBannerAtom),
+
     get(accountsByCategoryAtomFamily("all")),
     get(accountsCatalogAtom),
     get(authorisedSitesAtom),
     get(tabAtom),
-    get(stakingBannerAtom),
-    get(balanceTotalsAtom),
+    get(settingsAtom),
   ])
 )
 
