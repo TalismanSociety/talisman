@@ -14,7 +14,7 @@ export type Options = {
 }
 
 /**
- * Use this hook to resolve a string like `kheops.eth` or `talisman.azero` to an address.
+ * Use this hook to resolve a string like `0xkheops.eth` or `talisman.azero` to an address.
  */
 export const useResolveNsName = (resolveName?: string, options?: Options) => {
   const useEns = options?.ens !== false
