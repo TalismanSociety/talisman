@@ -28,6 +28,7 @@ import { PasswordStoreData } from "./store.password"
 
 export default class AppHandler extends ExtensionHandler {
   #modalOpenRequest = new Subject<ModalOpenRequest>()
+  #isLoginPromptOpen = false
 
   private async createPassword({
     pass,
@@ -216,7 +217,15 @@ export default class AppHandler extends ExtensionHandler {
   }
 
   private promptLogin(closeOnSuccess: boolean): boolean {
-    windowManager.popupOpen(`?closeOnSuccess=${closeOnSuccess}`)
+    // prevent login popup from opening multiple times
+    if (this.#isLoginPromptOpen) return false
+
+    this.#isLoginPromptOpen = true
+
+    windowManager.popupOpen(`?closeOnSuccess=${closeOnSuccess}`, () => {
+      this.#isLoginPromptOpen = false
+    })
+
     return true
   }
 
