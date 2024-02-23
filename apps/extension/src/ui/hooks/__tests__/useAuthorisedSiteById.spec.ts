@@ -32,7 +32,7 @@ test("Can get Authorised Site by id", async () => {
   waitFor(() => expect(result.current.addresses?.length).toBe(3))
 
   rerender({ siteId: "app.stellaswap.com", providerType: "ethereum" })
-  expect(result.current.addresses).toBeUndefined()
+  await waitFor(() => expect(result.current.addresses).toBeUndefined())
   expect(result.current.ethAddresses?.length).toBe(1)
   expect(result.current.connectAllSubstrate).toBeUndefined()
 
