@@ -13,10 +13,10 @@ export const useKnownEvmNetwork = (evmNetworkId: string | null | undefined) => {
   const activeEvmNetworks = useActiveEvmNetworksState()
 
   const isActive = useMemo(
-    () => evmNetwork && isEvmNetworkActive(evmNetwork, activeEvmNetworks),
+    () => !!evmNetwork && isEvmNetworkActive(evmNetwork, activeEvmNetworks),
     [activeEvmNetworks, evmNetwork]
   )
-  const isKnown = useMemo(() => evmNetwork && !isCustomEvmNetwork(evmNetwork), [evmNetwork])
+  const isKnown = useMemo(() => !!evmNetwork && !isCustomEvmNetwork(evmNetwork), [evmNetwork])
 
   const setActive = useCallback(
     (enable: boolean) => {

@@ -1,5 +1,5 @@
-import { accountByAddressQuery } from "@ui/atoms"
-import { useRecoilValue } from "recoil"
+import { accountsByAddressAtomFamily } from "@ui/atoms"
+import { useAtomValue } from "jotai"
 
 export const useAccountByAddress = (address?: string | null) =>
-  useRecoilValue(accountByAddressQuery(address))
+  useAtomValue(accountsByAddressAtomFamily(address))

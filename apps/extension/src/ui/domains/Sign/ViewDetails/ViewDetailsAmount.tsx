@@ -10,7 +10,7 @@ import { ViewDetailsField, ViewDetailsFieldProps } from "./ViewDetailsField"
 
 type ViewDetailsAmountProps = ViewDetailsFieldProps & {
   amount: BalanceFormatter | undefined
-  token: Token | undefined
+  token: Token | null
 }
 
 export const ViewDetailsAmount: FC<ViewDetailsAmountProps> = ({ amount, token, ...fieldProps }) => {

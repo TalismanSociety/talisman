@@ -3,10 +3,10 @@ import { AppPill } from "@talisman/components/AppPill"
 import { notify } from "@talisman/components/Notifications"
 import { GlobeIcon } from "@talismn/icons"
 import { api } from "@ui/api"
-import { balancesHydrateState } from "@ui/atoms"
+import { balancesHydrateAtom } from "@ui/atoms"
 import { NetworksDetailsButton } from "@ui/domains/Ethereum/NetworkDetailsButton"
-import { useRecoilPreload } from "@ui/hooks/useRecoilPreload"
 import { useRequest } from "@ui/hooks/useRequest"
+import { useAtomValue } from "jotai"
 import { useCallback } from "react"
 import { Trans, useTranslation } from "react-i18next"
 import { useParams } from "react-router-dom"
@@ -16,9 +16,9 @@ import { PopupContent, PopupFooter, PopupHeader, PopupLayout } from "../Layout/P
 
 export const AddEthereumNetwork = () => {
   const { t } = useTranslation("request")
+  useAtomValue(balancesHydrateAtom)
   const { id } = useParams<"id">() as KnownRequestIdOnly<"eth-network-add">
   const request = useRequest(id)
-  useRecoilPreload(balancesHydrateState)
 
   const approve = useCallback(async () => {
     if (!request) return

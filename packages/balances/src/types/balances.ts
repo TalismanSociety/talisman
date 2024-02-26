@@ -454,7 +454,7 @@ export class BalanceFormatter {
   constructor(
     planck: string | bigint | undefined,
     decimals?: number | undefined,
-    fiatRatios?: TokenRates
+    fiatRatios?: TokenRates | null
   ) {
     this.#planck = isBigInt(planck) ? planck.toString() : planck ?? "0"
     this.#decimals = decimals || 0

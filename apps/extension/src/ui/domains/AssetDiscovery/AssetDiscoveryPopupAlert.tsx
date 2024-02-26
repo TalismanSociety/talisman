@@ -1,12 +1,12 @@
 import { DiamondIcon, XIcon } from "@talismn/icons"
 import { api } from "@ui/api"
-import { Suspense, useCallback } from "react"
+import { useCallback } from "react"
 import { useTranslation } from "react-i18next"
 import { IconButton } from "talisman-ui"
 
 import { useAssetDiscoveryAlert } from "./useAssetDiscoveryAlert"
 
-const AssetDiscoveryPopupAlertInner = () => {
+export const AssetDiscoveryPopupAlert = () => {
   const { showAlert, dismissAlert, isInProgress, percent, hasDetectedNewTokens } =
     useAssetDiscoveryAlert()
   const { t } = useTranslation()
@@ -41,9 +41,3 @@ const AssetDiscoveryPopupAlertInner = () => {
     </div>
   )
 }
-
-export const AssetDiscoveryPopupAlert = () => (
-  <Suspense>
-    <AssetDiscoveryPopupAlertInner />
-  </Suspense>
-)

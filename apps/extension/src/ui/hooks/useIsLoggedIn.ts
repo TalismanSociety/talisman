@@ -1,4 +1,4 @@
-import { isLoggedInState } from "@ui/atoms"
-import { useRecoilValue } from "recoil"
+import { isLoggedInAtom } from "@ui/atoms"
+import { useAtomValue } from "jotai"
 
-export const useIsLoggedIn = () => useRecoilValue(isLoggedInState)
+export const useIsLoggedIn = () => useAtomValue(isLoggedInAtom)

@@ -4,17 +4,17 @@ import { isNomPoolChain, isStakingSupportedChain } from "@core/domains/staking/h
 import { StakingSupportedChain } from "@core/domains/staking/types"
 import { Address } from "@core/types/base"
 import { Token } from "@talismn/chaindata-provider"
-import { stakingBannerState } from "@ui/atoms/stakingBanners"
+import { stakingBannerAtom } from "@ui/atoms/stakingBanners"
 import useAccounts from "@ui/hooks/useAccounts"
 import { useAppState } from "@ui/hooks/useAppState"
+import { useAtomValue } from "jotai"
 import { useCallback, useMemo } from "react"
 import { useTranslation } from "react-i18next"
-import { useRecoilValue } from "recoil"
 
 import { colours } from "./helpers"
 
 const useNomPoolStakingEligibility = () => {
-  const chainAddressEligibility = useRecoilValue(stakingBannerState).nomPool
+  const chainAddressEligibility = useAtomValue(stakingBannerAtom).nomPool
 
   const accounts = useAccounts("owned")
   // only balances on substrate accounts are eligible for nom pool staking
@@ -69,7 +69,7 @@ const useNomPoolStakingEligibility = () => {
 }
 
 const useEvmLsdStakingEligibility = () => {
-  const chainAddressEligibility = useRecoilValue(stakingBannerState).evmLsd
+  const chainAddressEligibility = useAtomValue(stakingBannerAtom).evmLsd
   const accounts = useAccounts("owned")
   const ownedAddresses = useMemo(
     () => accounts.filter(({ type }) => type === "ethereum").map(({ address }) => address),

@@ -17,12 +17,7 @@ module.exports = {
     "react/jsx-no-target-blank": "off",
     "react/prop-types": "off",
     "react-hooks/rules-of-hooks": "error",
-    "react-hooks/exhaustive-deps": [
-      "warn",
-      {
-        additionalHooks: "(useRecoilCallback|useRecoilTransaction_UNSTABLE)",
-      },
-    ],
+    "react-hooks/exhaustive-deps": ["warn"],
 
     "jsx-a11y/media-has-caption": "off",
 
