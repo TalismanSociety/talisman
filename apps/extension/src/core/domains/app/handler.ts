@@ -215,7 +215,7 @@ export default class AppHandler extends ExtensionHandler {
     return true
   }
 
-  private async promptLogin(): Promise<boolean> {
+  private promptLogin(): Promise<boolean> {
     return windowManager.promptLogin()
   }
 
