@@ -6,6 +6,7 @@ import { useSelectedAccount } from "@ui/domains/Portfolio/useSelectedAccount"
 import { useAnalytics } from "@ui/hooks/useAnalytics"
 import { useChainByGenesisHash } from "@ui/hooks/useChainByGenesisHash"
 import { useSendFundsPopup } from "@ui/hooks/useSendFundsPopup"
+import { t } from "i18next"
 import { ButtonHTMLAttributes, FC, Suspense, useCallback } from "react"
 import { useTranslation } from "react-i18next"
 import {
@@ -41,14 +42,19 @@ export const MainHeader = () => {
         <SendPillButton className="!px-4" icon={SendIcon}>
           {t("Send")}
         </SendPillButton>
-        <PillButton
-          className="!px-4"
-          icon={CopyIcon}
-          onClick={handleCopyClick}
-          disabled={accounts.length === 0}
-        >
-          {t("Copy")}
-        </PillButton>
+        <Tooltip placement="bottom-start">
+          <TooltipTrigger asChild>
+            <PillButton
+              className="!px-4"
+              icon={CopyIcon}
+              onClick={handleCopyClick}
+              disabled={!accounts.length}
+            >
+              {t("Copy")}
+            </PillButton>
+          </TooltipTrigger>
+          {!!accounts.length && <TooltipContent>{t("Copy address")}</TooltipContent>}
+        </Tooltip>
         <div className="hidden flex-grow lg:block" />
         {accounts.length > 0 && (
           <AccountContextMenu
@@ -96,13 +102,18 @@ const SendPillButtonInner: FC<PillButtonProps> = (props) => {
   const { canSendFunds, cannotSendFundsReason, openSendFundsPopup } = useSendFundsPopup(account)
 
   return canSendFunds ? (
-    <PillButton onClick={openSendFundsPopup} {...props} />
+    <Tooltip>
+      <TooltipTrigger asChild>
+        <PillButton onClick={openSendFundsPopup} {...props} />
+      </TooltipTrigger>
+      <TooltipContent>{t("Send tokens")}</TooltipContent>
+    </Tooltip>
   ) : (
-    <Tooltip placement="bottom-start">
+    <Tooltip>
       <TooltipTrigger asChild>
         <PillButton disabled {...props} />
       </TooltipTrigger>
-      <TooltipContent>{cannotSendFundsReason}</TooltipContent>
+      {cannotSendFundsReason && <TooltipContent>{cannotSendFundsReason}</TooltipContent>}
     </Tooltip>
   )
 }
@@ -122,9 +133,14 @@ const SendIconButtonInner: FC<SendIconButtonProps> = (props) => {
   const { canSendFunds, cannotSendFundsReason, openSendFundsPopup } = useSendFundsPopup(account)
 
   return canSendFunds ? (
-    <IconButton onClick={openSendFundsPopup} {...props} />
+    <Tooltip>
+      <TooltipTrigger asChild>
+        <IconButton onClick={openSendFundsPopup} {...props} />
+      </TooltipTrigger>
+      <TooltipContent>{t("Send tokens")}</TooltipContent>
+    </Tooltip>
   ) : (
-    <Tooltip placement="bottom-start">
+    <Tooltip>
       <TooltipTrigger asChild>
         <IconButton disabled {...props} />
       </TooltipTrigger>

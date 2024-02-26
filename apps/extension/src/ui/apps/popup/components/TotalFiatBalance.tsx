@@ -11,7 +11,7 @@ import { useSelectedCurrency, useToggleCurrency } from "@ui/hooks/useCurrency"
 import { useIsFeatureEnabled } from "@ui/hooks/useIsFeatureEnabled"
 import { usePortfolioAccounts } from "@ui/hooks/usePortfolioAccounts"
 import { useSetting } from "@ui/hooks/useSettings"
-import { ComponentProps, MouseEventHandler, useCallback, useMemo } from "react"
+import { ComponentProps, FC, MouseEventHandler, useCallback, useMemo } from "react"
 import { useTranslation } from "react-i18next"
 import { PillButton, Tooltip, TooltipContent, TooltipTrigger } from "talisman-ui"
 
@@ -76,6 +76,59 @@ export const TotalFiatBalance = ({ className, mouseOver, disabled }: Props) => {
   )
 }
 
+type ActionProps = {
+  analyticsName: AnalyticsEventName
+  analyticsAction?: string
+  label: string
+  tooltip?: string
+  icon: ComponentProps<typeof PillButton>["icon"]
+  onClick: () => void
+  disabled: boolean
+  disabledReason?: string
+}
+
+const Action: FC<ActionProps> = ({
+  analyticsName,
+  analyticsAction,
+  label,
+  tooltip,
+  icon,
+  onClick,
+  disabled,
+  disabledReason,
+}) => {
+  const handleClick: MouseEventHandler<HTMLButtonElement> = useCallback(
+    (event) => {
+      event.stopPropagation()
+      sendAnalyticsEvent({
+        ...ANALYTICS_PAGE,
+        name: analyticsName,
+        action: analyticsAction,
+      })
+      onClick()
+    },
+    [onClick, analyticsAction, analyticsName]
+  )
+
+  return (
+    <Tooltip placement="bottom-start">
+      <TooltipTrigger asChild>
+        <PillButton
+          className="pointer-events-auto opacity-90"
+          onClick={handleClick}
+          icon={icon}
+          disabled={disabled}
+        >
+          {label}
+        </PillButton>
+      </TooltipTrigger>
+      {(!!disabledReason || !!tooltip) && (
+        <TooltipContent>{disabledReason || tooltip}</TooltipContent>
+      )}
+    </Tooltip>
+  )
+}
+
 const ANALYTICS_PAGE: AnalyticsPage = {
   container: "Popup",
   feature: "Portfolio",
@@ -90,27 +143,20 @@ const TopActions = ({ disabled }: { disabled?: boolean }) => {
   const canBuy = useIsFeatureEnabled("BUY_CRYPTO")
 
   const { disableActions, disabledReason } = useMemo(() => {
-    const disableActions = !ownedAccounts.length
+    const disableActions = disabled || !ownedAccounts.length
     const disabledReason = disableActions ? t("Add an account to send or receive funds") : undefined
     return { disableActions, disabledReason }
-  }, [ownedAccounts.length, t])
+  }, [disabled, ownedAccounts.length, t])
 
   const topActions = useMemo(() => {
-    const topActions: Array<{
-      analyticsName: AnalyticsEventName
-      analyticsAction?: string
-      label: string
-      icon: ComponentProps<typeof PillButton>["icon"]
-      action: () => void
-      disabled: boolean
-      disabledReason?: string
-    }> = [
+    const topActions: Array<ActionProps> = [
       {
         analyticsName: "Goto",
         analyticsAction: "open receive",
         label: t("Copy"),
+        tooltip: t("Copy address"),
         icon: CopyIcon,
-        action: () => openCopyAddressModal(null),
+        onClick: () => openCopyAddressModal(null),
         disabled: disableActions,
         disabledReason,
       },
@@ -118,8 +164,9 @@ const TopActions = ({ disabled }: { disabled?: boolean }) => {
         analyticsName: "Goto",
         analyticsAction: "Send Funds button",
         label: t("Send"),
+        tooltip: t("Send tokens"),
         icon: SendIcon,
-        action: () => api.sendFundsOpen().then(() => window.close()),
+        onClick: () => api.sendFundsOpen().then(() => window.close()),
         disabled: disableActions,
         disabledReason,
       },
@@ -129,47 +176,19 @@ const TopActions = ({ disabled }: { disabled?: boolean }) => {
         analyticsName: "Goto",
         analyticsAction: "Buy Crypto button",
         label: t("Buy"),
+        tooltip: t("Buy tokens"),
         icon: CreditCardIcon,
-        action: () => api.modalOpen({ modalType: "buy" }).then(() => window.close()),
+        onClick: () => api.modalOpen({ modalType: "buy" }).then(() => window.close()),
         disabled: disableActions,
         disabledReason,
       })
     return topActions
   }, [canBuy, disableActions, disabledReason, openCopyAddressModal, t])
 
-  const handleClicks = useMemo(
-    () =>
-      topActions.map(
-        (topAction): MouseEventHandler<HTMLButtonElement> =>
-          (event) => {
-            event.stopPropagation()
-            sendAnalyticsEvent({
-              ...ANALYTICS_PAGE,
-              name: topAction.analyticsName,
-              action: topAction.analyticsAction,
-            })
-            topAction.action()
-          }
-      ),
-    [topActions]
-  )
-
   return (
     <div className="flex justify-center gap-4">
       {topActions.map((action, index) => (
-        <Tooltip key={index}>
-          <TooltipTrigger asChild>
-            <PillButton
-              className="pointer-events-auto opacity-90"
-              onClick={handleClicks[index]}
-              icon={action.icon}
-              disabled={disabled || action.disabled}
-            >
-              {action.label}
-            </PillButton>
-          </TooltipTrigger>
-          {!!action.disabledReason && <TooltipContent>{action.disabledReason}</TooltipContent>}
-        </Tooltip>
+        <Action key={index} {...action} />
       ))}
     </div>
   )
