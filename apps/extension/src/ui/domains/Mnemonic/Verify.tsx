@@ -31,10 +31,21 @@ const WordSlot = ({
   </span>
 )
 
-const WordOption = ({ word, onClick }: { word: string; onClick: (word: string) => void }) => (
+const WordOption = ({
+  selected = false,
+  word,
+  onClick,
+}: {
+  selected?: boolean
+  word: string
+  onClick: () => void
+}) => (
   <button
-    onClick={() => onClick(word)}
-    className={classNames("bg-black-tertiary text-body hover:bg-grey-700 rounded-xl px-8 py-3")}
+    onClick={onClick}
+    disabled={selected}
+    className={classNames(
+      "bg-black-tertiary text-body enabled:hover:bg-grey-700 rounded-xl px-8 py-3 disabled:text-opacity-20"
+    )}
   >
     <span className="notranslate">{word}</span>
   </button>
@@ -48,10 +59,10 @@ type VerifyProps = {
 
 export const Verify: FC<VerifyProps> = ({ handleComplete, handleBack, mnemonic }) => {
   const { t } = useTranslation("admin")
-  const [matchedWords, setMatchedWords] = useState<string[]>([])
-  const [selectedWord, setSelectedWord] = useState<string>()
+  const [matchedDisplayIdx, setMatchedDisplayIdx] = useState<number[]>([])
+  const [selectedIndex, setSelectedIndex] = useState<number>()
   const mnemonicWords = useMemo(() => mnemonic?.split(" "), [mnemonic])
-  const activeIndex = matchedWords.length
+  const matchedLength = matchedDisplayIdx.length
   const [errorIndex, setErrorIndex] = useState<number>()
 
   const decoyWords = useMemo(() => {
@@ -69,18 +80,27 @@ export const Verify: FC<VerifyProps> = ({ handleComplete, handleBack, mnemonic }
     return [...mnemonicWords, ...decoyWords].sort()
   }, [mnemonicWords, decoyWords])
 
+  const isMatchedWord = useCallback(
+    (i: number) => {
+      return matchedDisplayIdx.includes(i)
+    },
+    [matchedDisplayIdx]
+  )
+
   const handleSelectWord = useCallback(
-    (word: string) => {
+    (displayIdx: number) => {
       if (!mnemonicWords) return
       setErrorIndex(undefined)
-      setSelectedWord(word)
-      if (mnemonicWords[activeIndex] === word) {
-        setMatchedWords((prev) => [...prev, word])
+      setSelectedIndex(displayIdx)
+      const word = displayWords[displayIdx]
+      const nextWordToMatch = mnemonicWords[matchedLength]
+      if (!isMatchedWord(displayIdx) && nextWordToMatch === word) {
+        setMatchedDisplayIdx((prev) => [...prev, displayIdx])
       } else {
-        setErrorIndex(activeIndex)
+        setErrorIndex(matchedLength)
       }
     },
-    [activeIndex, mnemonicWords]
+    [displayWords, matchedLength, mnemonicWords, isMatchedWord]
   )
 
   if (!mnemonic) return <>No Mnemonic Available</>
@@ -102,8 +122,14 @@ export const Verify: FC<VerifyProps> = ({ handleComplete, handleBack, mnemonic }
                 mnemonicWords.map((_, i) => (
                   <WordSlot
                     number={i + 1}
-                    word={errorIndex === i ? selectedWord : matchedWords[i]}
-                    active={activeIndex === i}
+                    word={
+                      i < matchedLength
+                        ? mnemonicWords[i]
+                        : i === errorIndex && selectedIndex !== undefined
+                        ? displayWords[selectedIndex]
+                        : ""
+                    }
+                    active={matchedLength === i}
                     error={errorIndex === i}
                     key={`mnemonic-${i}`}
                   />
@@ -113,7 +139,12 @@ export const Verify: FC<VerifyProps> = ({ handleComplete, handleBack, mnemonic }
           <div className="flex flex-wrap justify-center gap-4 p-2">
             {!!displayWords &&
               displayWords.map((word, i) => (
-                <WordOption key={`decoyWords-${i}`} onClick={handleSelectWord} word={word} />
+                <WordOption
+                  key={`decoyWords-${i}`}
+                  onClick={() => handleSelectWord(i)}
+                  word={word}
+                  selected={isMatchedWord(i) || selectedIndex === i}
+                />
               ))}
           </div>
         </div>
@@ -121,7 +152,7 @@ export const Verify: FC<VerifyProps> = ({ handleComplete, handleBack, mnemonic }
           <Button
             primary
             onClick={handleComplete}
-            disabled={mnemonicWords && matchedWords.length < mnemonicWords.length}
+            disabled={mnemonicWords && matchedDisplayIdx.length < mnemonicWords.length}
             tabIndex={0}
           >
             {t("Complete Verification")}
