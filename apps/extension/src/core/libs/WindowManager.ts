@@ -16,6 +16,8 @@ class WindowManager {
   #windows: number[] = []
   // Prevents opening two onboarding tabs at once
   #onboardingTabOpening = false
+  // Prevents opening two login popups at once
+  #isLoginPromptOpen = false
 
   private waitTabLoaded = (tabId: number): Promise<void> => {
     // wait either page to be loaded or a 3 seconds timeout, first to occur wins
@@ -162,6 +164,18 @@ class WindowManager {
 
     // popup is undefined when running tests
     return popup?.id
+  }
+
+  public async promptLogin() {
+    if (this.#isLoginPromptOpen) return false
+
+    this.#isLoginPromptOpen = true
+
+    await windowManager.popupOpen(`?closeOnSuccess=true`, () => {
+      this.#isLoginPromptOpen = false
+    })
+
+    return true
   }
 }
 
