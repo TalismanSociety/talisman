@@ -1,22 +1,19 @@
 import { AddressBookContact, addressBookStore } from "@core/domains/app/store.addressBook"
+import { atomWithSubscription } from "@ui/atoms/utils/atomWithSubscription"
+import { useAtomValue } from "jotai"
 import { useCallback } from "react"
 import { useTranslation } from "react-i18next"
-import { atom, useRecoilValue } from "recoil"
 
-export const addressBookState = atom<AddressBookContact[]>({
-  key: "addressBookState",
-  default: [],
-  effects: [
-    ({ setSelf }) => {
-      const sub = addressBookStore.observable.subscribe((data) => setSelf(Object.values(data)))
-      return () => sub.unsubscribe()
-    },
-  ],
-})
+export const addressBookAtom = atomWithSubscription<AddressBookContact[]>((callback) => {
+  const { unsubscribe } = addressBookStore.observable.subscribe((data) =>
+    callback(Object.values(data))
+  )
+  return unsubscribe
+}, "addressBookAtom")
 
 export const useAddressBook = () => {
   const { t } = useTranslation()
-  const contacts = useRecoilValue(addressBookState)
+  const contacts = useAtomValue(addressBookAtom)
 
   const add = useCallback(async ({ address, ...rest }: AddressBookContact) => {
     return await addressBookStore.set({ [address]: { address, ...rest } })

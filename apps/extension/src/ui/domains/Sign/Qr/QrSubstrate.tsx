@@ -250,7 +250,7 @@ const SendPage = ({
   scanState: SendScanState
   qrCodeSource: QrCodeSource | undefined
   qrCodeSourceSelectorState: QrCodeSourceSelectorProps
-  chain: Chain | undefined
+  chain: Chain | null
   containerId: string
 }) => {
   const { t } = useTranslation("request")

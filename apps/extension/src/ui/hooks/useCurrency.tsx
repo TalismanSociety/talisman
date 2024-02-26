@@ -1,25 +1,25 @@
-import { selectableCurrenciesState, selectedCurrencyState } from "@ui/atoms"
-import { useRecoilCallback, useRecoilValue } from "recoil"
+import { selectableCurrenciesAtom, selectedCurrencyAtom } from "@ui/atoms"
+import { useAtomValue } from "jotai"
+import { useAtomCallback } from "jotai/utils"
+import { useCallback } from "react"
 
-export const useSelectedCurrency = () => useRecoilValue(selectedCurrencyState)
+export const useSelectedCurrency = () => useAtomValue(selectedCurrencyAtom)
 
 export const useToggleCurrency = () =>
-  useRecoilCallback(
-    ({ snapshot, set }) =>
-      async () => {
-        const [selectableCurrencies, selectedCurrency] = await Promise.all([
-          snapshot.getPromise(selectableCurrenciesState),
-          snapshot.getPromise(selectedCurrencyState),
-        ])
+  useAtomCallback(
+    useCallback(async (get, set) => {
+      const [selectableCurrencies, selectedCurrency] = await Promise.all([
+        get(selectableCurrenciesAtom),
+        get(selectedCurrencyAtom),
+      ])
 
-        set(
-          selectedCurrencyState,
-          selectableCurrencies.at(
-            selectableCurrencies.findIndex((x) => x === selectedCurrency) + 1
-          ) ??
-            selectableCurrencies[0] ??
-            selectedCurrency
-        )
-      },
-    []
+      set(
+        selectedCurrencyAtom,
+        selectableCurrencies.at(
+          selectableCurrencies.findIndex((x) => x === selectedCurrency) + 1
+        ) ??
+          selectableCurrencies[0] ??
+          selectedCurrency
+      )
+    }, [])
   )

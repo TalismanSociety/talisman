@@ -1,16 +1,16 @@
 import { HeaderBlock } from "@talisman/components/HeaderBlock"
 import { Spacer } from "@talisman/components/Spacer"
 import { StarIcon } from "@talismn/icons"
-import { selectableCurrenciesState } from "@ui/atoms"
+import { TokenRates } from "@talismn/token-rates"
+import { selectableCurrenciesAtom } from "@ui/atoms"
 import currencyConfig, { currencyOrder } from "@ui/domains/Asset/currencyConfig"
+import { useAtom } from "jotai"
 import { useTranslation } from "react-i18next"
-import { useRecoilState } from "recoil"
 
 import { DashboardLayout } from "../../layout/DashboardLayout"
 
 const CurrencySettingsPage = () => {
-  const [selectableCurrencies, setSelectableCurrencies] = useRecoilState(selectableCurrenciesState)
-
+  const [selectableCurrencies, setSelectableCurrencies] = useAtom(selectableCurrenciesAtom)
   const { t } = useTranslation()
 
   return (
@@ -29,7 +29,7 @@ const CurrencySettingsPage = () => {
             key={currency}
             className="bg-grey-850 enabled:hover:bg-grey-800 text-body-disabled enabled:hover:text-body-secondary flex h-28 w-full cursor-pointer items-center gap-8 rounded-sm px-8 disabled:cursor-not-allowed disabled:opacity-50"
             onClick={() =>
-              setSelectableCurrencies((selected) =>
+              setSelectableCurrencies((selected: (keyof TokenRates)[]) =>
                 selected.includes(currency)
                   ? selected.filter((x) => x !== currency)
                   : [...selected, currency].sort(

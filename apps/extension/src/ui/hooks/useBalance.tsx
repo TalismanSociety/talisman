@@ -1,9 +1,9 @@
 import { TokenId } from "@core/domains/tokens/types"
-import { balancesQuery } from "@ui/atoms"
+import { balancesAtomFamily } from "@ui/atoms"
+import { useAtomValue } from "jotai"
 import { useMemo } from "react"
-import { useRecoilValue } from "recoil"
 
 export const useBalance = (address: string, tokenId: TokenId) => {
-  const balances = useRecoilValue(balancesQuery({ address, tokenId }))
+  const balances = useAtomValue(balancesAtomFamily({ address, tokenId }))
   return useMemo(() => [...balances][0], [balances])
 }

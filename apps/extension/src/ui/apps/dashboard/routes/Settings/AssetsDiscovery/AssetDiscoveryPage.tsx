@@ -24,12 +24,11 @@ import { classNames } from "@talismn/util"
 import { api } from "@ui/api"
 import { AnalyticsPage } from "@ui/api/analytics"
 import {
-  appStateQuery,
-  assetDiscoveryScanProgress,
-  assetDiscoveryScanState,
-  evmNetworksMapQuery,
-  settingQuery,
-  tokensMapQuery,
+  assetDiscoveryScanAtom,
+  assetDiscoveryScanProgressAtom,
+  evmNetworksMapAtomFamily,
+  settingsAtomFamily,
+  tokensMapAtomFamily,
 } from "@ui/atoms"
 import { AccountIcon } from "@ui/domains/Account/AccountIcon"
 import { Fiat } from "@ui/domains/Asset/Fiat"
@@ -43,16 +42,15 @@ import { useAnalyticsPageView } from "@ui/hooks/useAnalyticsPageView"
 import { useAppState } from "@ui/hooks/useAppState"
 import { useEvmNetwork } from "@ui/hooks/useEvmNetwork"
 import { useEvmNetworks } from "@ui/hooks/useEvmNetworks"
-import { useRecoilPreload } from "@ui/hooks/useRecoilPreload"
 import { useSetting } from "@ui/hooks/useSettings"
 import useToken from "@ui/hooks/useToken"
 import useTokens from "@ui/hooks/useTokens"
 import { isErc20Token } from "@ui/util/isErc20Token"
+import { atom, useAtomValue } from "jotai"
 import { ChangeEventHandler, FC, ReactNode, useCallback, useEffect, useMemo, useRef } from "react"
 import { Trans, useTranslation } from "react-i18next"
 import { useNavigate } from "react-router-dom"
 import { useIntersection } from "react-use"
-import { useRecoilValue } from "recoil"
 import {
   Button,
   ContextMenu,
@@ -108,7 +106,7 @@ const AccountsTooltip: FC<{ addresses: Address[] }> = ({ addresses }) => {
   )
 }
 
-const useBlockExplorerUrl = (token: Token | undefined) => {
+const useBlockExplorerUrl = (token: Token | null) => {
   const evmNetwork = useEvmNetwork(token?.evmNetwork?.id)
 
   return useMemo(() => {
@@ -119,7 +117,7 @@ const useBlockExplorerUrl = (token: Token | undefined) => {
   }, [token, evmNetwork?.explorerUrl])
 }
 
-const useCoingeckoUrl = (token: Token | undefined) => {
+const useCoingeckoUrl = (token: Token | null) => {
   return useMemo(
     () =>
       token?.coingeckoId ? urlJoin("https://coingecko.com/en/coins/", token.coingeckoId) : null,
@@ -155,8 +153,8 @@ const AssetRowContent: FC<{ tokenId: TokenId; assets: DiscoveredBalance[] }> = (
 
   const isActive = useMemo(
     () =>
-      evmNetwork &&
-      token &&
+      !!evmNetwork &&
+      !!token &&
       isEvmNetworkActive(evmNetwork, activeEvmNetworks) &&
       isTokenActive(token, activeTokens),
     [activeEvmNetworks, activeTokens, evmNetwork, token]
@@ -287,7 +285,7 @@ const AssetRow: FC<{ tokenId: TokenId; assets: DiscoveredBalance[] }> = ({ token
 
 const AssetTable: FC = () => {
   const { t } = useTranslation("admin")
-  const { balances, balancesByTokenId, tokenIds } = useRecoilValue(assetDiscoveryScanProgress)
+  const { balances, balancesByTokenId, tokenIds } = useAtomValue(assetDiscoveryScanProgressAtom)
   // this hook is in charge of fetching the token rates for the tokens that were discovered
   useAssetDiscoveryFetchTokenRates()
 
@@ -311,8 +309,8 @@ const AssetTable: FC = () => {
 
 const Header: FC = () => {
   const { t } = useTranslation("admin")
-  const { balances, accountsCount, tokensCount, percent, isInProgress } = useRecoilValue(
-    assetDiscoveryScanProgress
+  const { balances, accountsCount, tokensCount, percent, isInProgress } = useAtomValue(
+    assetDiscoveryScanProgressAtom
   )
   const [includeTestnets] = useSetting("useTestnets")
   const { evmNetworks: activeNetworks } = useEvmNetworks({ activeOnly: true, includeTestnets })
@@ -425,8 +423,8 @@ const AccountsWrapper: FC<{
 const ScanInfo: FC = () => {
   const { t } = useTranslation("admin")
 
-  const { balancesByTokenId, balances, isInProgress } = useRecoilValue(assetDiscoveryScanProgress)
-  const { lastScanAccounts, lastScanTimestamp } = useRecoilValue(assetDiscoveryScanState)
+  const { balancesByTokenId, balances, isInProgress } = useAtomValue(assetDiscoveryScanProgressAtom)
+  const { lastScanAccounts, lastScanTimestamp } = useAtomValue(assetDiscoveryScanAtom)
 
   const activeEvmNetworks = useActiveEvmNetworksState()
   const activeTokens = useActiveTokensState()
@@ -540,14 +538,17 @@ const Notice: FC = () => {
   )
 }
 
+const preloadAtom = atom((get) =>
+  Promise.all([
+    get(settingsAtomFamily("useTestnets")),
+    get(evmNetworksMapAtomFamily({ activeOnly: true, includeTestnets: false })),
+    get(tokensMapAtomFamily({ activeOnly: true, includeTestnets: false })),
+  ])
+)
+
 export const AssetDiscoveryPage = () => {
   const { t } = useTranslation("admin")
-  useRecoilPreload(
-    settingQuery("useTestnets"),
-    appStateQuery("showAssetDiscoveryAlert"),
-    evmNetworksMapQuery({ activeOnly: true, includeTestnets: false }),
-    tokensMapQuery({ activeOnly: true, includeTestnets: false })
-  )
+  useAtomValue(preloadAtom)
 
   useAnalyticsPageView(ANALYTICS_PAGE)
   const [showAssetDiscoveryAlert, setShowAssetDiscoveryAlert] =

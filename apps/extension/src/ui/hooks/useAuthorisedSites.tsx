@@ -1,4 +1,4 @@
-import { authorisedSitesState } from "@ui/atoms"
-import { useRecoilValue } from "recoil"
+import { authorisedSitesAtom } from "@ui/atoms"
+import { useAtomValue } from "jotai"
 
-export const useAuthorisedSites = () => useRecoilValue(authorisedSitesState)
+export const useAuthorisedSites = () => useAtomValue(authorisedSitesAtom)

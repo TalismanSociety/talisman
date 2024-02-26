@@ -6,7 +6,7 @@ import { classNames } from "@talismn/util"
 import { useQuery } from "@tanstack/react-query"
 import useToken from "@ui/hooks/useToken"
 import { isCustomErc20Token } from "@ui/util/isCustomErc20Token"
-import { FC, useCallback, useEffect, useMemo, useState } from "react"
+import { FC, Suspense, useCallback, useEffect, useMemo, useState } from "react"
 
 const isTalismanLogo = (url?: string | null) => {
   if (!url) return false
@@ -70,7 +70,7 @@ type AssetLogoProps = {
   erc20?: CoingeckoLogoRequest
 }
 
-export const AssetLogo: FC<AssetLogoProps> = ({ className, id, erc20 }) => {
+const AssetLogoInner: FC<AssetLogoProps> = ({ className, id, erc20 }) => {
   const token = useToken(id)
 
   const { data: erc20TokenLogo } = useErc20TokenImage(erc20)
@@ -92,6 +92,21 @@ export const AssetLogo: FC<AssetLogoProps> = ({ className, id, erc20 }) => {
 
   return <AssetLogoBase className={className} url={logo} rounded={rounded} />
 }
+
+const AssetLogoFallback: FC<{ className?: string }> = ({ className }) => (
+  <div
+    className={classNames(
+      "!bg-body-disabled !block h-[1em] w-[1em] shrink-0 overflow-hidden rounded-full",
+      className
+    )}
+  ></div>
+)
+
+export const AssetLogo: FC<AssetLogoProps> = (props) => (
+  <Suspense fallback={<AssetLogoFallback className={props.className} />}>
+    <AssetLogoInner {...props} />
+  </Suspense>
+)
 
 //
 // coingecko logo url helpers

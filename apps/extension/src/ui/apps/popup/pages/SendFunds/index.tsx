@@ -1,6 +1,6 @@
-import { balancesFilterQuery, balancesHydrateState } from "@ui/atoms"
+import { balancesByAccountCategoryAtomFamily, balancesHydrateAtom } from "@ui/atoms"
 import { SendFundsProvider } from "@ui/domains/SendFunds/useSendFunds"
-import { useRecoilPreload } from "@ui/hooks/useRecoilPreload"
+import { atom, useAtomValue } from "jotai"
 import { Route, Routes } from "react-router-dom"
 
 import { SendFundsWizardProvider } from "./context"
@@ -12,8 +12,12 @@ import { SendFundsSubmitted } from "./SendFundsSubmitted"
 import { SendFundsTo } from "./SendFundsTo"
 import { SendFundsToken } from "./SendFundsToken"
 
+const preloadAtom = atom((get) =>
+  Promise.all([get(balancesHydrateAtom), get(balancesByAccountCategoryAtomFamily("all"))])
+)
+
 export const SendFundsPage = () => {
-  useRecoilPreload(balancesHydrateState, balancesFilterQuery("all"))
+  useAtomValue(preloadAtom)
 
   return (
     <SendFundsWizardProvider>

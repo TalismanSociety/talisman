@@ -42,7 +42,7 @@ import { useSendFundsInputSize } from "./useSendFundsInputSize"
 
 type SignMethod = "normal" | "hardwareSubstrate" | "hardwareEthereum" | "qrSubstrate" | "unknown"
 
-const useRecipientBalance = (token?: Token, address?: Address | null) => {
+const useRecipientBalance = (token?: Token | null, address?: Address | null) => {
   const { t } = useTranslation("send-funds")
   const hydrate = useBalancesHydrate()
 
@@ -61,7 +61,7 @@ const useRecipientBalance = (token?: Token, address?: Address | null) => {
 
 const useIsSendingEnough = (
   recipientBalance?: Balance | null,
-  token?: Token,
+  token?: Token | null,
   transfer?: BalanceFormatter | null
 ) => {
   return useMemo(() => {
@@ -429,7 +429,8 @@ const useSendFundsProvider = () => {
         isSubToken(feeToken) &&
         feeToken.existentialDeposit &&
         feeTokenBalance.transferable.planck - estimatedFee.planck <
-          BigInt(feeToken.existentialDeposit)
+          BigInt(feeToken.existentialDeposit) &&
+        !sendMax
       )
         return {
           isValid: false,

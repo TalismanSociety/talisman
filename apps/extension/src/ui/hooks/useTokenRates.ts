@@ -1,5 +1,6 @@
 import { TokenId } from "@talismn/chaindata-provider"
-import { tokenRatesQuery } from "@ui/atoms"
-import { useRecoilValue } from "recoil"
+import { tokenRatesByIdFamily } from "@ui/atoms"
+import { useAtomValue } from "jotai"
 
-export const useTokenRates = (tokenId?: TokenId | null) => useRecoilValue(tokenRatesQuery(tokenId))
+export const useTokenRates = (tokenId?: TokenId | null) =>
+  useAtomValue(tokenRatesByIdFamily(tokenId))
