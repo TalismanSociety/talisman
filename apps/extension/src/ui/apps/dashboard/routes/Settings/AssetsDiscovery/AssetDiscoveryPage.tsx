@@ -437,8 +437,9 @@ const ScanInfo: FC = () => {
       const token = tokensMap[tokenId]
       const evmNetwork = evmNetworksMap[token?.evmNetwork?.id ?? ""]
       return (
-        (token && evmNetwork && !isEvmNetworkActive(evmNetwork, activeEvmNetworks)) ||
-        !isTokenActive(token, activeTokens)
+        token &&
+        evmNetwork &&
+        (!isEvmNetworkActive(evmNetwork, activeEvmNetworks) || !isTokenActive(token, activeTokens))
       )
     })
   }, [balancesByTokenId, activeEvmNetworks, activeTokens, evmNetworksMap, tokensMap])
