@@ -31,21 +31,10 @@ const WordSlot = ({
   </span>
 )
 
-const WordOption = ({
-  selected = false,
-  word,
-  onClick,
-}: {
-  selected?: boolean
-  word: string
-  onClick: (word: string) => void
-}) => (
+const WordOption = ({ word, onClick }: { word: string; onClick: (word: string) => void }) => (
   <button
     onClick={() => onClick(word)}
-    disabled={selected}
-    className={classNames(
-      "bg-black-tertiary text-body enabled:hover:bg-grey-700 rounded-xl px-8 py-3 disabled:text-opacity-20"
-    )}
+    className={classNames("bg-black-tertiary text-body hover:bg-grey-700 rounded-xl px-8 py-3")}
   >
     <span className="notranslate">{word}</span>
   </button>
@@ -124,12 +113,7 @@ export const Verify: FC<VerifyProps> = ({ handleComplete, handleBack, mnemonic }
           <div className="flex flex-wrap justify-center gap-4 p-2">
             {!!displayWords &&
               displayWords.map((word, i) => (
-                <WordOption
-                  key={`decoyWords-${i}`}
-                  onClick={handleSelectWord}
-                  word={word}
-                  selected={matchedWords.includes(word)}
-                />
+                <WordOption key={`decoyWords-${i}`} onClick={handleSelectWord} word={word} />
               ))}
           </div>
         </div>
