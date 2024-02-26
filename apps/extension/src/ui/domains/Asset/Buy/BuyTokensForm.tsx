@@ -6,16 +6,16 @@ import { yupResolver } from "@hookform/resolvers/yup"
 import { isEthereumAddress } from "@polkadot/util-crypto"
 import { encodeAnyAddress } from "@talismn/util"
 import { AnalyticsPage, sendAnalyticsEvent } from "@ui/api/analytics"
-import { remoteConfigState } from "@ui/atoms/remoteConfig"
+import { remoteConfigAtom } from "@ui/atoms/remoteConfig"
 import { FormattedAddress } from "@ui/domains/Account/FormattedAddress"
 import useAccounts from "@ui/hooks/useAccounts"
 import { useAnalyticsPageView } from "@ui/hooks/useAnalyticsPageView"
 import useChains from "@ui/hooks/useChains"
 import useTokens from "@ui/hooks/useTokens"
+import { useAtomValue } from "jotai"
 import { useCallback, useEffect, useMemo, useRef } from "react"
 import { useForm } from "react-hook-form"
 import { useTranslation } from "react-i18next"
-import { useRecoilValue } from "recoil"
 import { Button, Dropdown, DropdownOptionRender } from "talisman-ui"
 import * as yup from "yup"
 
@@ -42,7 +42,7 @@ const ANALYTICS_PAGE: AnalyticsPage = {
 }
 
 const useSupportedTokenIds = (chains?: Chain[], tokens?: Token[], address?: string) => {
-  const config = useRecoilValue(remoteConfigState)
+  const config = useAtomValue(remoteConfigAtom)
 
   const supportedTokens = useMemo(
     () => tokens?.filter((t) => config.buyTokens.tokenIds?.includes(t.id)) ?? [],

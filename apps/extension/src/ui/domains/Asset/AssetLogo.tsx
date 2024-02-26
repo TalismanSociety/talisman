@@ -2,7 +2,7 @@ import { IS_FIREFOX, UNKNOWN_TOKEN_URL } from "@core/constants"
 import { TokenId } from "@talismn/chaindata-provider"
 import { classNames } from "@talismn/util"
 import useToken from "@ui/hooks/useToken"
-import { FC, useCallback, useEffect, useMemo, useState } from "react"
+import { FC, Suspense, useCallback, useEffect, useMemo, useState } from "react"
 
 const isTalismanLogo = (url?: string | null) => {
   if (!url) return false
@@ -62,7 +62,7 @@ type AssetLogoProps = {
   id?: TokenId
 }
 
-export const AssetLogo: FC<AssetLogoProps> = ({ className, id }) => {
+const AssetLogoInner: FC<AssetLogoProps> = ({ className, id }) => {
   const token = useToken(id)
 
   // round logos except if they are hosted in Talisman's chaindata repo
@@ -70,3 +70,18 @@ export const AssetLogo: FC<AssetLogoProps> = ({ className, id }) => {
 
   return <AssetLogoBase className={className} url={token?.logo} rounded={rounded} />
 }
+
+const AssetLogoFallback: FC<{ className?: string }> = ({ className }) => (
+  <div
+    className={classNames(
+      "!bg-body-disabled !block h-[1em] w-[1em] shrink-0 overflow-hidden rounded-full",
+      className
+    )}
+  ></div>
+)
+
+export const AssetLogo: FC<AssetLogoProps> = (props) => (
+  <Suspense fallback={<AssetLogoFallback className={props.className} />}>
+    <AssetLogoInner {...props} />
+  </Suspense>
+)

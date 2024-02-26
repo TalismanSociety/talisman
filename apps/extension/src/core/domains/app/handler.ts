@@ -215,9 +215,8 @@ export default class AppHandler extends ExtensionHandler {
     return true
   }
 
-  private promptLogin(closeOnSuccess: boolean): boolean {
-    windowManager.popupOpen(`?closeOnSuccess=${closeOnSuccess}`)
-    return true
+  private promptLogin(): Promise<boolean> {
+    return windowManager.promptLogin()
   }
 
   public async handle<TMessageType extends MessageTypes>(
@@ -265,7 +264,7 @@ export default class AppHandler extends ExtensionHandler {
         return this.popupOpen(request as string | undefined)
 
       case "pri(app.promptLogin)":
-        return this.promptLogin(request as boolean)
+        return this.promptLogin()
 
       case "pri(app.modalOpen.request)":
         return this.openModal(request as ModalOpenRequest)

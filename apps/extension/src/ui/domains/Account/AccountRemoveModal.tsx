@@ -2,19 +2,16 @@ import { AccountJsonAny, AccountType } from "@core/domains/accounts/types"
 import { useGlobalOpenClose } from "@talisman/hooks/useGlobalOpenClose"
 import { api } from "@ui/api"
 import { useSelectedAccount } from "@ui/domains/Portfolio/useSelectedAccount"
+import { atom, useAtom } from "jotai"
 import { useCallback, useEffect, useState } from "react"
 import { Trans, useTranslation } from "react-i18next"
 import { useNavigate } from "react-router-dom"
-import { atom, useRecoilState } from "recoil"
 import { Button, Modal, ModalDialog } from "talisman-ui"
 
-const accountRemoveAccountState = atom<AccountJsonAny | null>({
-  key: "accountRemoveAccountState",
-  default: null,
-})
+const accountRemoveAccountState = atom<AccountJsonAny | null>(null)
 
 export const useAccountRemoveModal = () => {
-  const [_account, setAccount] = useRecoilState(accountRemoveAccountState)
+  const [_account, setAccount] = useAtom(accountRemoveAccountState)
 
   const { account: selectedAccount } = useSelectedAccount()
   const { isOpen, open: innerOpen, close } = useGlobalOpenClose("accountRemoveModal")

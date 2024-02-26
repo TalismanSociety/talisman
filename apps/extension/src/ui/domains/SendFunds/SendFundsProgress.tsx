@@ -19,8 +19,8 @@ import urlJoin from "url-join"
 import { TxReplaceDrawer, TxReplaceType } from "../Transactions"
 
 const getBlockExplorerUrl = (
-  network: EvmNetwork | undefined,
-  chain: Chain | undefined,
+  network: EvmNetwork | undefined | null,
+  chain: Chain | undefined | null,
   hash: string
 ) => {
   if (network?.explorerUrl) return urlJoin(network.explorerUrl, "tx", hash)

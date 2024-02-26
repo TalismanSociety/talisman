@@ -1,5 +1,6 @@
-import { chainByGenesisHashQuery } from "@ui/atoms"
-import { useRecoilValue } from "recoil"
+import { HexString } from "@polkadot/util/types"
+import { chainByGenesisHashAtomFamily } from "@ui/atoms"
+import { useAtomValue } from "jotai"
 
 export const useChainByGenesisHash = (genesisHash: string | null | undefined) =>
-  useRecoilValue(chainByGenesisHashQuery(genesisHash))
+  useAtomValue(chainByGenesisHashAtomFamily(genesisHash as HexString))
