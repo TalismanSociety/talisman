@@ -66,7 +66,7 @@ const Login = ({ setShowResetWallet }: { setShowResetWallet: () => void }) => {
         const result = await api.authenticate(password)
         if (result) {
           const qs = new URLSearchParams(window.location.search)
-          if (qs.get("closeOnSuccess") === "true") window.close()
+          if (qs.get("closeAfterLogin") === "true") window.close()
         } else throw new Error(t("Paraverse access denied"))
       } catch (err) {
         setError("password", { message: (err as Error)?.message ?? t("Unknown error") })

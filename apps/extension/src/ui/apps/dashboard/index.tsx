@@ -158,7 +158,7 @@ const LoginChecker: FC<PropsWithChildren> = ({ children }) => {
       // if user was logged in and locked the extension from the popup, close the tab
       if (wasLoggedIn.current) window.close()
       // else (open from a bookmark ?), prompt login
-      else api.promptLogin(true)
+      else api.promptLogin()
     }
   }, [isLoggedIn, isOnboarded])
 

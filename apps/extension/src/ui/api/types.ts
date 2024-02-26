@@ -79,7 +79,7 @@ export default interface MessageTypes {
   dashboardOpen: (route: string) => Promise<boolean>
   onboardOpen: () => Promise<boolean>
   popupOpen: (argument?: string) => Promise<boolean>
-  promptLogin: (closeOnSuccess?: boolean) => Promise<boolean>
+  promptLogin: () => Promise<boolean>
   approveMetaRequest: (id: RequestMetadataId) => Promise<boolean>
   rejectMetaRequest: (id: RequestMetadataId) => Promise<boolean>
   allowPhishingSite: (url: string) => Promise<boolean>
