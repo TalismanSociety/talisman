@@ -171,7 +171,7 @@ class WindowManager {
 
     this.#isLoginPromptOpen = true
 
-    await windowManager.popupOpen(`?closeOnSuccess=true`, () => {
+    await windowManager.popupOpen(`?closeAfterLogin=true`, () => {
       this.#isLoginPromptOpen = false
     })
 
