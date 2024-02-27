@@ -24,7 +24,7 @@ const newGoToFn = (analyticsAction: string, dashboardPath: string) => () => {
   return api.dashboardOpen(dashboardPath)
 }
 const goToSettingsAccounts = newGoToFn("Manage accounts", "/settings/accounts")
-const goToSettingsCurrency = newGoToFn("Change currencies", "/settings/currency")
+const goToSettingsCurrency = newGoToFn("Change currencies", "/settings/general/currency")
 const goToAddHardwareAccounts = newGoToFn(
   "Add hardware accounts",
   "/accounts/add?methodType=connect"

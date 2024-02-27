@@ -12,7 +12,7 @@ export const AssetDiscoveryPopupAlert = () => {
   const { t } = useTranslation()
 
   const handleGoToClick = useCallback(async () => {
-    await api.dashboardOpen("/settings/asset-discovery")
+    await api.dashboardOpen("/settings/networks-tokens/asset-discovery")
     window.close()
   }, [])
 
