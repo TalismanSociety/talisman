@@ -6,6 +6,7 @@ import {
 import { remoteConfigAtom } from "@ui/atoms/remoteConfig"
 import { stakingBannerAtom } from "@ui/atoms/stakingBanners"
 import { useBuyTokensModal } from "@ui/domains/Asset/Buy/useBuyTokensModal"
+import { usePortfolioUpdateGlobalData } from "@ui/domains/Portfolio/usePortfolio"
 import { atom, useAtomValue } from "jotai"
 import { useEffect } from "react"
 import { Route, Routes, useSearchParams } from "react-router-dom"
@@ -26,6 +27,12 @@ const preloadAtom = atom((get) =>
 
 const ContentRoutes = () => {
   useAtomValue(preloadAtom)
+
+  // keeps portfolio sync atoms up to date with subscription async atoms
+  const isProvisioned = usePortfolioUpdateGlobalData()
+
+  // don't render if not ready, it would display the no account UI
+  if (!isProvisioned) return null
 
   return (
     <Routes>

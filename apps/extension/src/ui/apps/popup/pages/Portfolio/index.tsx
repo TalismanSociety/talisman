@@ -11,6 +11,7 @@ import { stakingBannerAtom } from "@ui/atoms/stakingBanners"
 import { CurrentAccountAvatar } from "@ui/domains/Account/CurrentAccountAvatar"
 import { AssetDiscoveryPopupAlert } from "@ui/domains/AssetDiscovery/AssetDiscoveryPopupAlert"
 import { EvmNetworkSelectPill } from "@ui/domains/Ethereum/EvmNetworkSelectPill"
+import { usePortfolioUpdateGlobalData } from "@ui/domains/Portfolio/usePortfolio"
 import BraveWarningPopupBanner from "@ui/domains/Settings/BraveWarning/BraveWarningPopupBanner"
 import MigratePasswordAlert from "@ui/domains/Settings/MigratePasswordAlert"
 import { ConnectedAccountsPill } from "@ui/domains/Site/ConnectedAccountsPill"
@@ -47,6 +48,13 @@ export const Portfolio = () => {
   useAtomValue(preloadAtom)
 
   const hasAccounts = useHasAccounts()
+
+  // keeps portfolio sync atoms up to date with subscription async atoms
+  const isProvisioned = usePortfolioUpdateGlobalData()
+
+  // don't render if not ready, it would display the no account UI
+  if (!isProvisioned) return null
+
   return (
     <PopupLayout withBottomNav>
       <PortfolioHeader />
