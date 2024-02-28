@@ -29,6 +29,16 @@ export type NetworkOption = {
   sortIndex: number | null
 }
 
+type PortfolioGlobalData = {
+  chains: Chain[]
+  tokens: Token[]
+  evmNetworks: EvmNetwork[]
+  hydrate: HydrateDb
+  allBalances: Balances
+  portfolioBalances: Balances
+  isProvisioned: boolean
+}
+
 const getNetworkTokenSymbols = ({
   tokens,
   chainId,
@@ -138,6 +148,11 @@ const getNetworkBalances = ({
   return new Balances(filtered, hydrate)
 }
 
+const portfolioAccountAtom = atom<AccountJsonAny | undefined>(undefined)
+
+const networkFilterAtom = atom<NetworkOption | undefined>(undefined)
+
+// the async atom, whose value must be copied in the sync atom
 const portfolioGlobalDataAsyncAtom = atom<Promise<PortfolioGlobalData>>(async (get) => {
   const includeTestnets = (await get(settingsAtomFamily("useTestnets"))) as boolean
   const [chains, tokens, evmNetworks, hydrate, allBalances, portfolioBalances] = await Promise.all([
@@ -160,16 +175,7 @@ const portfolioGlobalDataAsyncAtom = atom<Promise<PortfolioGlobalData>>(async (g
   }
 })
 
-type PortfolioGlobalData = {
-  chains: Chain[]
-  tokens: Token[]
-  evmNetworks: EvmNetwork[]
-  hydrate: HydrateDb
-  allBalances: Balances
-  portfolioBalances: Balances
-  isProvisioned: boolean
-}
-
+// the sync atom from which portfolio atoms will derive
 const portfolioGlobalDataAtom = atom<PortfolioGlobalData>({
   chains: [],
   tokens: [],
@@ -179,53 +185,6 @@ const portfolioGlobalDataAtom = atom<PortfolioGlobalData>({
   portfolioBalances: new Balances([]),
   isProvisioned: false,
 })
-
-const portfolioAccountAtom = atom<AccountJsonAny | undefined>(undefined)
-
-const networkFilterAtom = atom<NetworkOption | undefined>(undefined)
-
-let isUpdaterMounted = false
-
-// call this only in the root component, this sadly can't be done from an atom
-export const usePortfolioUpdateGlobalData = () => {
-  const globalData = useAtomValue(portfolioGlobalDataAsyncAtom)
-  const { account } = useSelectedAccount()
-
-  // sync atom to maintain
-  const [{ isProvisioned }, setGlobalData] = useAtom(portfolioGlobalDataAtom)
-
-  const setNetworkFilter = useSetAtom(networkFilterAtom)
-  const setAccount = useSetAtom(portfolioAccountAtom)
-
-  useEffect(() => {
-    // update sync atom
-    setGlobalData(globalData)
-  }, [globalData, setGlobalData])
-
-  useEffect(() => {
-    // update sync atom
-    setAccount(account)
-  }, [account, setAccount])
-
-  useEffect(() => {
-    if (isUpdaterMounted) {
-      log.warn("Do not call usePortfolioUpdateGlobalData more than once per page")
-    }
-    isUpdaterMounted = true
-    return () => {
-      isUpdaterMounted = false
-    }
-  }, [])
-
-  useEffect(() => {
-    // clear filter after unmount
-    return () => {
-      setNetworkFilter(undefined)
-    }
-  }, [setNetworkFilter])
-
-  return isProvisioned
-}
 
 const portfolioAtom = atom((get) => {
   const {
@@ -269,17 +228,57 @@ const portfolioAtom = atom((get) => {
   }
 })
 
-// allows sharing the network filter between pages
+let isProvisioningHookMounted = false
+
+// call this only in the root component, this sadly can't be done from an atom
+export const usePortfolioProvisioning = () => {
+  const globalData = useAtomValue(portfolioGlobalDataAsyncAtom)
+  const { account } = useSelectedAccount()
+
+  // sync atom to maintain
+  const [{ isProvisioned }, setGlobalData] = useAtom(portfolioGlobalDataAtom)
+
+  const setNetworkFilter = useSetAtom(networkFilterAtom)
+  const setAccount = useSetAtom(portfolioAccountAtom)
+
+  useEffect(() => {
+    // update sync atom
+    setGlobalData(globalData)
+  }, [globalData, setGlobalData])
+
+  useEffect(() => {
+    // update sync atom
+    setAccount(account)
+  }, [account, setAccount])
+
+  useEffect(() => {
+    if (isProvisioningHookMounted) {
+      log.warn("Do not mount usePortfolioProvisioning more than once per page")
+    }
+    isProvisioningHookMounted = true
+    return () => {
+      isProvisioningHookMounted = false
+    }
+  }, [])
+
+  useEffect(() => {
+    // clear filter after unmount
+    return () => {
+      setNetworkFilter(undefined)
+    }
+  }, [setNetworkFilter])
+
+  return isProvisioned && isProvisioningHookMounted
+}
+
 export const usePortfolio = () => {
   const setNetworkFilter = useSetAtom(networkFilterAtom)
 
   const portfolio = useAtomValue(portfolioAtom)
 
   useEffect(() => {
-    if (!isUpdaterMounted)
-      log.error(
-        "usePortfolioUpdateGlobalData must be called in the root component before calling usePortfolio"
-      )
+    if (!isProvisioningHookMounted)
+      log.error("usePortfolioProvisioning must be mounted before calling usePortfolio")
   }, [])
 
   return { ...portfolio, setNetworkFilter }
