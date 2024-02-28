@@ -285,7 +285,7 @@ export default interface MessageTypes {
   ethRequest: (request: AnyEthRequestChainId) => Promise<unknown>
   ethGetTransactionsCount: (address: EvmAddress, evmNetworkId: EvmNetworkId) => Promise<number>
   ethNetworkAddGetRequests: () => Promise<AddEthereumChainRequest[]>
-  ethNetworkAddApprove: (id: AddEthereumChainRequestId) => Promise<boolean>
+  ethNetworkAddApprove: (id: AddEthereumChainRequestId, enableDefault: boolean) => Promise<boolean>
   ethNetworkAddCancel: (is: AddEthereumChainRequestId) => Promise<boolean>
 
   // ethereum networks message types
