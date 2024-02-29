@@ -1,4 +1,4 @@
-import { AccountJsonAny, AccountType } from "@core/domains/accounts/types"
+import { AccountJsonAny } from "@core/domains/accounts/types"
 import { Accordion, AccordionIcon } from "@talisman/components/Accordion"
 import { HeaderBlock } from "@talisman/components/HeaderBlock"
 import { Spacer } from "@talisman/components/Spacer"
@@ -16,6 +16,7 @@ import { DashboardLayout } from "@ui/apps/dashboard/layout/DashboardLayout"
 import { AccountIcon } from "@ui/domains/Account/AccountIcon"
 import { Address } from "@ui/domains/Account/Address"
 import useAccounts from "@ui/hooks/useAccounts"
+import { useAppState } from "@ui/hooks/useAppState"
 import { Mnemonic, useMnemonics } from "@ui/hooks/useMnemonics"
 import { FC, useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react"
 import { Trans, useTranslation } from "react-i18next"
@@ -107,7 +108,7 @@ const MnemonicRow: FC<{ mnemonic: Mnemonic }> = ({ mnemonic }) => {
   const refActions = useRef<HTMLDivElement>(null)
   const refBackup = useRef<HTMLButtonElement>(null)
 
-  const hasQrAccount = useAccounts("owned").some(({ origin }) => origin === AccountType.Qr)
+  const hasVerifierCertificateMnemonic = Boolean(useAppState("vaultVerifierCertificateMnemonicId"))
 
   const [actionsWidth, setActionsWidth] = useState<number>()
   const actionsStyle = useMemo(() => ({ width: actionsWidth }), [actionsWidth])
@@ -193,7 +194,7 @@ const MnemonicRow: FC<{ mnemonic: Mnemonic }> = ({ mnemonic }) => {
                   )}
                 </div>
               </ContextMenuItem>
-              {hasQrAccount && (
+              {hasVerifierCertificateMnemonic && (
                 <ContextMenuItem
                   onClick={handleSetVerifierClick}
                   disabled={isVerifier(mnemonic.id)}
