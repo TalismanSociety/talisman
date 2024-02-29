@@ -56,7 +56,7 @@ export const AssetDiscoveryDashboardAlert = () => {
   const navigate = useNavigate()
 
   useEffect(() => {
-    if (!showAlert || location.pathname === "/settings/asset-discovery") {
+    if (!showAlert || location.pathname === "/settings/networks-tokens/asset-discovery") {
       toast.dismiss(ASSET_DISCOVERY_TOAST_ID)
       return
     }
@@ -72,7 +72,7 @@ export const AssetDiscoveryDashboardAlert = () => {
           autoClose: false,
           toastId: ASSET_DISCOVERY_TOAST_ID,
           onClick: () => {
-            navigate("/settings/asset-discovery")
+            navigate("/settings/networks-tokens/asset-discovery")
           },
           closeButton: () => (
             <Suspense>

@@ -32,7 +32,7 @@ export const NetworksTokensPage = () => {
           iconRight={ChevronRightIcon}
           title={t("Asset discovery")}
           subtitle={t("Scan for well-known tokens in your accounts and add them to Talisman")}
-          to={`/settings/asset-discovery`}
+          to={`/settings/networks-tokens/asset-discovery`}
         />
         <div className="via-primary/10 my-4 h-0.5 bg-gradient-to-r from-transparent to-transparent"></div>
         <Setting
@@ -60,21 +60,21 @@ export const NetworksTokensPage = () => {
           iconRight={ChevronRightIcon}
           title={t("Manage networks")}
           subtitle={t("Add, enable and disable networks")}
-          to={`/networks/ethereum`}
+          to={`/settings/networks-tokens/networks/ethereum`}
         />
         <CtaButton
           iconLeft={ListIcon}
           iconRight={ChevronRightIcon}
           title={t("Manage Ethereum tokens")}
           subtitle={t("Add or delete custom ERC20 tokens")}
-          to={`/tokens`}
+          to={`/settings/networks-tokens/tokens`}
         />
         <CtaButton
           iconLeft={PolkadotVaultIcon}
           iconRight={ChevronRightIcon}
           title={t("Polkadot Vault metadata")}
           subtitle={t("Register networks on your Polkadot Vault device, or update their metadata")}
-          to={`/settings/qr-metadata`}
+          to={`/settings/networks-tokens/qr-metadata`}
         />
       </div>
     </DashboardLayout>

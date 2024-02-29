@@ -422,7 +422,7 @@ const ExistingNetworkModal: FC<{ evmNetworkId?: EvmNetworkId }> = ({ evmNetworkI
 
   const handleGoToClick = useCallback(() => {
     close()
-    navigate(`/networks/ethereum/${evmNetworkId}`, { replace: true })
+    navigate(`/settings/networks-tokens/networks/ethereum/${evmNetworkId}`, { replace: true })
   }, [close, evmNetworkId, navigate])
 
   return (

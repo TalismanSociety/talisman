@@ -14,6 +14,7 @@ import { usePortfolio } from "@ui/domains/Portfolio/usePortfolio"
 import { useSelectedAccount } from "@ui/domains/Portfolio/useSelectedAccount"
 import { useAnalytics } from "@ui/hooks/useAnalytics"
 import useBalances from "@ui/hooks/useBalances"
+import { useChainByGenesisHash } from "@ui/hooks/useChainByGenesisHash"
 import { useSelectedCurrency } from "@ui/hooks/useCurrency"
 import { useFormattedAddress } from "@ui/hooks/useFormattedAddress"
 import { useSearchParamsSelectedFolder } from "@ui/hooks/useSearchParamsSelectedFolder"
@@ -33,9 +34,9 @@ import {
 const EnableNetworkMessage: FC<{ type?: "substrate" | "evm" }> = ({ type }) => {
   const { t } = useTranslation()
   const handleClick = useCallback(() => {
-    if (type === "substrate") api.dashboardOpen("/networks/polkadot")
-    else if (type === "evm") api.dashboardOpen("/networks/ethereum")
-    else api.dashboardOpen("/networks")
+    if (type === "substrate") api.dashboardOpen("/settings/networks-tokens/networks/polkadot")
+    else if (type === "evm") api.dashboardOpen("/settings/networks-tokens/networks/ethereum")
+    else api.dashboardOpen("/settings/networks-tokens/networks")
     window.close()
   }, [type])
 
@@ -115,13 +116,14 @@ const PageContent = () => {
     genericEvent("open send funds", { from: "popup portfolio" })
   }, [openSendFundsPopup, genericEvent])
 
+  const chain = useChainByGenesisHash(account?.genesisHash)
   const copyAddress = useCallback(() => {
     openCopyAddressModal({
-      mode: "copy",
       address: account?.address,
+      chainId: chain?.id,
     })
     genericEvent("open copy address", { from: "popup portfolio" })
-  }, [account, genericEvent, openCopyAddressModal])
+  }, [account?.address, chain?.id, genericEvent, openCopyAddressModal])
 
   const navigate = useNavigate()
   const handleBackBtnClick = useCallback(() => {

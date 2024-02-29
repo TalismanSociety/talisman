@@ -8,6 +8,7 @@ import { useSelectedAccount } from "@ui/domains/Portfolio/useSelectedAccount"
 import { useAccountByAddress } from "@ui/hooks/useAccountByAddress"
 import { useAccountToggleIsPortfolio } from "@ui/hooks/useAccountToggleIsPortfolio"
 import { useAnalytics } from "@ui/hooks/useAnalytics"
+import { useChainByGenesisHash } from "@ui/hooks/useChainByGenesisHash"
 import React, { forwardRef, useCallback, useMemo } from "react"
 import { useTranslation } from "react-i18next"
 import { useNavigate } from "react-router-dom"
@@ -38,6 +39,7 @@ export const AccountContextMenu = forwardRef<HTMLElement, Props>(function Accoun
 ) {
   const { t } = useTranslation()
   const propsAccount = useAccountByAddress(address)
+
   const { account: selectedAccount } = useSelectedAccount()
   const account =
     (address === null
@@ -57,6 +59,8 @@ export const AccountContextMenu = forwardRef<HTMLElement, Props>(function Accoun
   const { canToggleIsPortfolio, toggleIsPortfolio, toggleLabel } =
     useAccountToggleIsPortfolio(account)
 
+  const chain = useChainByGenesisHash(account?.genesisHash)
+
   // TODO: These modal providers used to be used in multiple places,
   // hence the hectic API we've got going on here.
   // We should clean them up to just support this one component's use-case.
@@ -65,8 +69,8 @@ export const AccountContextMenu = forwardRef<HTMLElement, Props>(function Accoun
   const copyAddress = useCallback(() => {
     if (!account) return
     genericEvent("open copy address", { from: analyticsFrom })
-    openCopyAddressModal({ mode: "copy", address: account.address })
-  }, [account, analyticsFrom, genericEvent, openCopyAddressModal])
+    openCopyAddressModal({ address: account.address, chainId: chain?.id })
+  }, [account, analyticsFrom, chain?.id, genericEvent, openCopyAddressModal])
 
   const { open: _openAccountRenameModal } = useAccountRenameModal()
   const canRename = !!account

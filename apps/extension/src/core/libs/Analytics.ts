@@ -2,9 +2,11 @@ import { initPosthog } from "@core/config/posthog"
 import { DEBUG } from "@core/constants"
 import { db } from "@core/db"
 import { AccountType } from "@core/domains/accounts/types"
+import { appStore } from "@core/domains/app/store.app"
 import { settingsStore } from "@core/domains/app/store.settings"
 import { Balance, Balances } from "@core/domains/balances/types"
 import { chaindataProvider } from "@core/rpcs/chaindata"
+import { hasGhostsOfThePast } from "@core/util/hasGhostsOfThePast"
 import { roundToFirstInteger } from "@core/util/roundToFirstInteger"
 import keyring from "@polkadot/ui-keyring"
 import { db as balancesDb } from "@talismn/balances"
@@ -30,7 +32,7 @@ const ensurePosthogPreferences = (useAnalyticsTracking: boolean | undefined) => 
 }
 
 class TalismanAnalytics {
-  lastGeneralReport = Date.now()
+  lastGeneralReport: undefined | number
   enabled = Boolean(process.env.POSTHOG_AUTH_TOKEN)
 
   constructor() {
@@ -39,6 +41,10 @@ class TalismanAnalytics {
     this.init().then(() => {
       settingsStore.observable.subscribe(({ useAnalyticsTracking }) => {
         ensurePosthogPreferences(useAnalyticsTracking)
+      })
+
+      appStore.observable.subscribe(({ analyticsReportSent }) => {
+        this.lastGeneralReport = analyticsReportSent || Date.now()
       })
     })
   }
@@ -61,11 +67,13 @@ class TalismanAnalytics {
     if (allowTracking === false) return
 
     try {
-      posthog.capture(eventName, properties)
-      if (Date.now() > this.lastGeneralReport) {
-        this.sendGeneralReport()
-        this.lastGeneralReport = Date.now() + REPORTING_PERIOD
+      let sendProperties = properties
+      if (this.lastGeneralReport && Date.now() > this.lastGeneralReport + REPORTING_PERIOD) {
+        const generalData = await this.getGeneralReport()
+        sendProperties = { ...properties, $set: { ...(properties?.$set || {}), ...generalData } }
+        appStore.set({ analyticsReportSent: Date.now() })
       }
+      posthog.capture(eventName, sendProperties)
     } catch (e) {
       // eslint-disable-next-line no-console
       DEBUG && console.log("error ", { e })
@@ -78,36 +86,23 @@ class TalismanAnalytics {
     }, delaySeconds * 1000 * Math.random())
   }
 
-  async sendGeneralReport() {
+  async getGeneralReport() {
     /*
     // This should get sent at most once per 24 hours, whenever any other events get sent
     */
     const allowTracking = await settingsStore.get("useAnalyticsTracking")
-    if (!allowTracking) return
+    const onboarded = await appStore.getIsOnboarded()
+    if (!allowTracking || !onboarded) return
 
     // accounts
     const accounts = keyring.getAccounts()
-    if (accounts.length > 0) {
-      // account type breakdown
-      const accountBreakdown = accounts.reduce(
-        (result, account) => {
-          const accountType = (
-            account.meta.origin as AccountType
-          ).toLowerCase() as Lowercase<AccountType>
-          result[accountType] += 1
-          return result
-        },
-        {
-          talisman: 0,
-          json: 0,
-          ledger: 0,
-          qr: 0,
-          dcent: 0,
-          watched: 0,
-          signet: 0,
-        } as Record<Lowercase<AccountType>, number>
-      )
-      posthog.capture("accounts breakdown", { accountBreakdown })
+    let accountBreakdown: Record<Lowercase<AccountType>, number> = {
+      talisman: 0,
+      ledger: 0,
+      qr: 0,
+      dcent: 0,
+      watched: 0,
+      signet: 0,
     }
 
     // cache chains, evmNetworks, tokens, tokenRates and balances here to prevent lots of fetch calls
@@ -119,6 +114,15 @@ class TalismanAnalytics {
       var tokenRates = Object.fromEntries(
         ((await db.tokenRates.toArray()) || []).map(({ tokenId, rates }) => [tokenId, rates])
       )
+
+      // account type breakdown
+      accountBreakdown = accounts.reduce((result, account) => {
+        const accountType = (
+          account.meta.origin as AccountType
+        ).toLowerCase() as Lowercase<AccountType>
+        result[accountType] += 1
+        return result
+      }, accountBreakdown)
 
       // consider only accounts that are not watched accounts
       const ownedAddresses = accounts
@@ -174,22 +178,25 @@ class TalismanAnalytics {
       .slice(0, 5)
 
     const topToken = topChainTokens[0]
-    posthog.capture("balances top tokens", topChainTokens)
-    posthog.capture("balances report", {
-      $set: {
-        accountsCount: keyring
-          .getAccounts()
-          .filter(({ meta }) => meta.origin !== AccountType.Watched).length,
-        totalFiatValue: roundToFirstInteger(balances.sum.fiat("usd").total),
-        topToken: topToken ? `${topToken.chainId}: ${topToken.tokenId}` : undefined,
-        tokens: sortedFiatSumPerChainToken
-          .filter((token, index) => token.balance > 1 || index < 10)
-          .map((token) => ({
-            ...token,
-            balance: roundToFirstInteger(token.balance),
-          })),
-      },
-    })
+
+    const hasGhosts = await hasGhostsOfThePast()
+    const hasGhostsNft = Object.values(hasGhosts).some((g) => g)
+
+    return {
+      accountBreakdown,
+      accountsCount: keyring.getAccounts().filter(({ meta }) => meta.origin !== AccountType.Watched)
+        .length,
+      totalFiatValue: roundToFirstInteger(balances.sum.fiat("usd").total),
+      topToken: topToken ? `${topToken.chainId}: ${topToken.tokenId}` : undefined,
+      tokens: sortedFiatSumPerChainToken
+        .filter((token, index) => token.balance > 1 || index < 10)
+        .map((token) => ({
+          ...token,
+          balance: roundToFirstInteger(token.balance),
+        })),
+      hasGhostsOfThePast: hasGhostsNft,
+      topChainTokens,
+    }
   }
 }
 

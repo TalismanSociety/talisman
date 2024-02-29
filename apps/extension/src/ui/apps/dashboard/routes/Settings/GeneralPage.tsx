@@ -113,14 +113,14 @@ export const GeneralPage = () => {
           iconRight={ChevronRightIcon}
           title={t("Language")}
           subtitle={t("Change the wallet display language")}
-          to={`/settings/language`}
+          to={`/settings/general/language`}
         />
         <CtaButton
           iconLeft={DollarSignIcon}
           iconRight={ChevronRightIcon}
           title={t("Currency")}
           subtitle={t("Set currencies for viewing your portolio value")}
-          to={`/settings/currency`}
+          to={`/settings/general/currency`}
         />
         <Setting
           iconLeft={UserIcon}
