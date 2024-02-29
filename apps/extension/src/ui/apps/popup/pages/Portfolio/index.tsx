@@ -28,11 +28,9 @@ const AccountAvatar = () => {
   if (location.pathname === "/portfolio") return null
 
   return (
-    <Suspense>
-      <div className="text-xl">
-        <CurrentAccountAvatar withTooltip />
-      </div>
-    </Suspense>
+    <div className="text-xl">
+      <CurrentAccountAvatar withTooltip />
+    </div>
   )
 }
 
@@ -93,7 +91,6 @@ const NoAccountsPortfolioContent = () => (
 
 const PortfolioContent = () => {
   const hasAccounts = useHasAccounts()
-
   return hasAccounts ? <HasAccountsPortfolioContent /> : <NoAccountsPortfolioContent />
 }
 

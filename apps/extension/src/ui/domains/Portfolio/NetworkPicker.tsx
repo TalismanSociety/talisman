@@ -21,6 +21,16 @@ const filterItems = (inputValue?: string) => (bc: NetworkOption | undefined) => 
   }
 }
 
+const ClearSearch: FC<{ open: boolean; setSearch: (val?: string) => void }> = ({
+  open,
+  setSearch,
+}) => {
+  useEffect(() => {
+    if (!open) setSearch(undefined)
+  }, [open, setSearch])
+  return null
+}
+
 export const NetworkPicker = () => {
   const { t } = useTranslation()
   const { networks, networkFilter, setNetworkFilter } = usePortfolio()
@@ -44,20 +54,13 @@ export const NetworkPicker = () => {
 
   const displayNetworks = useMemo(() => networks.filter(filterItems(search)), [networks, search])
 
-  const ClearSearch: FC<{ open: boolean }> = ({ open }) => {
-    useEffect(() => {
-      if (!open) setSearch(undefined)
-    }, [open])
-    return null
-  }
-
   return (
     <div className="text-body-secondary group inline-block">
       <Combobox nullable value={networkFilter} onChange={handleOnChange}>
         {({ open }) => {
           return (
             <div className="relative h-24 overflow-visible">
-              <ClearSearch open={open} />
+              <ClearSearch open={open} setSearch={setSearch} />
               <div
                 className={classNames(
                   "bg-field  focus-within:border-grey-700 relative flex h-24 w-full items-center gap-4 border  border-transparent px-6 text-base",

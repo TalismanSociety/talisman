@@ -1,6 +1,5 @@
 import { AccountJsonAny } from "@core/domains/accounts/types"
 import { Balance, Balances } from "@core/domains/balances/types"
-import { SuspenseTracker } from "@talisman/components/SuspenseTracker"
 import { ChevronLeftIcon, CopyIcon, MoreHorizontalIcon, SendIcon } from "@talismn/icons"
 import { classNames } from "@talismn/util"
 import { api } from "@ui/api"
@@ -205,13 +204,9 @@ const PageContent = () => {
           </div>
         </div>
         <div className="flex grow items-center justify-end">
-          <Suspense fallback={<SuspenseTracker name="account action buttons" />}>
-            <Suspense fallback={<div className="h-16 w-16"></div>}>
-              <CopyAddressButton account={account} />
-            </Suspense>
-            <Suspense fallback={<div className="h-16 w-16"></div>}>
-              <SendFundsButton account={account} />
-            </Suspense>
+          <Suspense>
+            <CopyAddressButton account={account} />
+            <SendFundsButton account={account} />
             {account && (
               <Tooltip>
                 <TooltipTrigger asChild>
