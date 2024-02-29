@@ -28,9 +28,11 @@ const AccountAvatar = () => {
   if (location.pathname === "/portfolio") return null
 
   return (
-    <div className="text-xl">
-      <CurrentAccountAvatar withTooltip />
-    </div>
+    <Suspense>
+      <div className="text-xl">
+        <CurrentAccountAvatar withTooltip />
+      </div>
+    </Suspense>
   )
 }
 
