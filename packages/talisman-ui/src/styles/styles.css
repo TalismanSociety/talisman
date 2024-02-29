@@ -95,10 +95,12 @@
 @layer utilities {
   .no-scrollbar::-webkit-scrollbar {
     background-color: transparent;
-    width: 0;
+    display: none; /* chrome, safari, opera */
   }
   .no-scrollbar {
     scrollbar-color: transparent transparent;
+    -ms-overflow-style: none; /* Edge */
+    scrollbar-width: none; /* Firefox */
   }
 
   .scrollable::-webkit-scrollbar {

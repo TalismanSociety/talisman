@@ -1,10 +1,12 @@
-import { ArrowDownIcon, MoreHorizontalIcon, SendIcon } from "@talismn/icons"
+import { CopyIcon, MoreHorizontalIcon, SendIcon } from "@talismn/icons"
 import { AccountContextMenu } from "@ui/apps/dashboard/routes/Portfolio/AccountContextMenu"
 import { useCopyAddressModal } from "@ui/domains/CopyAddress"
 import { AccountSelect } from "@ui/domains/Portfolio/AccountSelect"
 import { useSelectedAccount } from "@ui/domains/Portfolio/useSelectedAccount"
 import { useAnalytics } from "@ui/hooks/useAnalytics"
+import { useChainByGenesisHash } from "@ui/hooks/useChainByGenesisHash"
 import { useSendFundsPopup } from "@ui/hooks/useSendFundsPopup"
+import { t } from "i18next"
 import { ButtonHTMLAttributes, FC, Suspense, useCallback } from "react"
 import { useTranslation } from "react-i18next"
 import {
@@ -21,15 +23,16 @@ export const MainHeader = () => {
   const { genericEvent } = useAnalytics()
 
   const { account, accounts } = useSelectedAccount()
+  const chain = useChainByGenesisHash(account?.genesisHash)
 
   const { open: openCopyAddressModal } = useCopyAddressModal()
   const handleCopyClick = useCallback(() => {
     openCopyAddressModal({
-      mode: "receive",
       address: account?.address,
+      chainId: chain?.id,
     })
     genericEvent("open receive", { from: "sidebar" })
-  }, [account, genericEvent, openCopyAddressModal])
+  }, [account?.address, chain?.id, genericEvent, openCopyAddressModal])
 
   return (
     <header className="p-4 md:px-12 md:pb-6 md:pt-12">
@@ -39,14 +42,19 @@ export const MainHeader = () => {
         <SendPillButton className="!px-4" icon={SendIcon}>
           {t("Send")}
         </SendPillButton>
-        <PillButton
-          className="!px-4"
-          icon={ArrowDownIcon}
-          onClick={handleCopyClick}
-          disabled={accounts.length === 0}
-        >
-          {t("Receive")}
-        </PillButton>
+        <Tooltip placement="bottom-start">
+          <TooltipTrigger asChild>
+            <PillButton
+              className="!px-4"
+              icon={CopyIcon}
+              onClick={handleCopyClick}
+              disabled={!accounts.length}
+            >
+              {t("Copy")}
+            </PillButton>
+          </TooltipTrigger>
+          {!!accounts.length && <TooltipContent>{t("Copy address")}</TooltipContent>}
+        </Tooltip>
         <div className="hidden flex-grow lg:block" />
         {accounts.length > 0 && (
           <AccountContextMenu
@@ -70,7 +78,7 @@ export const MainHeader = () => {
           onClick={handleCopyClick}
           disabled={accounts.length === 0}
         >
-          <ArrowDownIcon />
+          <CopyIcon />
         </IconButton>
         {accounts.length > 0 && (
           <AccountContextMenu
@@ -94,13 +102,18 @@ const SendPillButtonInner: FC<PillButtonProps> = (props) => {
   const { canSendFunds, cannotSendFundsReason, openSendFundsPopup } = useSendFundsPopup(account)
 
   return canSendFunds ? (
-    <PillButton onClick={openSendFundsPopup} {...props} />
+    <Tooltip>
+      <TooltipTrigger asChild>
+        <PillButton onClick={openSendFundsPopup} {...props} />
+      </TooltipTrigger>
+      <TooltipContent>{t("Send tokens")}</TooltipContent>
+    </Tooltip>
   ) : (
-    <Tooltip placement="bottom-start">
+    <Tooltip>
       <TooltipTrigger asChild>
         <PillButton disabled {...props} />
       </TooltipTrigger>
-      <TooltipContent>{cannotSendFundsReason}</TooltipContent>
+      {cannotSendFundsReason && <TooltipContent>{cannotSendFundsReason}</TooltipContent>}
     </Tooltip>
   )
 }
@@ -120,9 +133,14 @@ const SendIconButtonInner: FC<SendIconButtonProps> = (props) => {
   const { canSendFunds, cannotSendFundsReason, openSendFundsPopup } = useSendFundsPopup(account)
 
   return canSendFunds ? (
-    <IconButton onClick={openSendFundsPopup} {...props} />
+    <Tooltip>
+      <TooltipTrigger asChild>
+        <IconButton onClick={openSendFundsPopup} {...props} />
+      </TooltipTrigger>
+      <TooltipContent>{t("Send tokens")}</TooltipContent>
+    </Tooltip>
   ) : (
-    <Tooltip placement="bottom-start">
+    <Tooltip>
       <TooltipTrigger asChild>
         <IconButton disabled {...props} />
       </TooltipTrigger>
