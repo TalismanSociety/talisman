@@ -1,3 +1,5 @@
+import { fetchFromCoingecko } from "./fetchFromCoingecko"
+
 export type CoinGeckoTokenInfo = {
   id: string
   symbol: string
@@ -5,9 +7,9 @@ export type CoinGeckoTokenInfo = {
   platforms?: Record<string, string> // platform_name / contract_address
 }
 
-export const getCoinGeckoTokensList = async (includePlatform?: boolean) => {
-  const fetchErc20Coin = await fetch(
-    `https://api.coingecko.com/api/v3/coins/list?include_platform=${!!includePlatform}`
+export const getCoingeckoTokensList = async (includePlatform?: boolean) => {
+  const fetchErc20Coin = await fetchFromCoingecko(
+    `/api/v3/coins/list?include_platform=${!!includePlatform}`
   )
   return fetchErc20Coin.json() as Promise<CoinGeckoTokenInfo[]>
 }

@@ -11,7 +11,7 @@ import {
   MnemonicCreateModalProvider,
   useMnemonicCreateModal,
 } from "@ui/apps/dashboard/routes/Settings/Mnemonics/MnemonicCreateModal"
-import { chainsMapQuery, evmNetworksMapQuery } from "@ui/atoms"
+import { chainsMapAtomFamily, evmNetworksMapAtomFamily } from "@ui/atoms"
 import { AccountAddMnemonicDropdown } from "@ui/domains/Account/AccountAdd/AccountAddDerived/AccountAddMnemonicDropdown"
 import { ChainLogo } from "@ui/domains/Asset/ChainLogo"
 import { MetadataQrCode } from "@ui/domains/Sign/Qr/MetadataQrCode"
@@ -19,7 +19,7 @@ import { NetworkSpecsQrCode } from "@ui/domains/Sign/Qr/NetworkSpecsQrCode"
 import { useAppState } from "@ui/hooks/useAppState"
 import useChains from "@ui/hooks/useChains"
 import { useMnemonic } from "@ui/hooks/useMnemonics"
-import { useRecoilPreload } from "@ui/hooks/useRecoilPreload"
+import { atom, useAtomValue } from "jotai"
 import { FC, useCallback, useEffect, useMemo, useState } from "react"
 import { Trans, useTranslation } from "react-i18next"
 import { useNavigate } from "react-router-dom"
@@ -232,12 +232,17 @@ const MetadataPortalContent = () => {
   )
 }
 
+const preloadAtom = atom(async (get) => {
+  await Promise.all([
+    get(chainsMapAtomFamily({ activeOnly: true, includeTestnets: false })),
+    get(evmNetworksMapAtomFamily({ activeOnly: true, includeTestnets: false })),
+  ])
+})
+
 export const QrMetadataPage = () => {
   const { t } = useTranslation("admin")
-  useRecoilPreload(
-    chainsMapQuery({ activeOnly: true, includeTestnets: false }),
-    evmNetworksMapQuery({ activeOnly: true, includeTestnets: false })
-  )
+  useAtomValue(preloadAtom)
+
   const [certifierMnemonicId] = useAppState("vaultVerifierCertificateMnemonicId")
   const mnemonic = useMnemonic(certifierMnemonicId)
 

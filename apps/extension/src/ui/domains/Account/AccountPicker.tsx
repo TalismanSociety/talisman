@@ -29,12 +29,12 @@ type AccountRowProps = {
   account: AccountPickerAccount
   selected: boolean
   showBalances?: boolean
-  token?: Token
+  token?: Token | null
   onClick?: () => void
   disabled?: boolean
 }
 
-const AccountTokenBalance = ({ token, balance }: { token?: Token; balance?: Balance }) => {
+const AccountTokenBalance = ({ token, balance }: { token?: Token | null; balance?: Balance }) => {
   if (!balance || !token) return null
 
   return (

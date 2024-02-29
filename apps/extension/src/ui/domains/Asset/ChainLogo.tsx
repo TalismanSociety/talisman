@@ -3,7 +3,7 @@ import { ChainId, EvmNetworkId } from "@talismn/chaindata-provider"
 import { classNames } from "@talismn/util"
 import useChain from "@ui/hooks/useChain"
 import { useEvmNetwork } from "@ui/hooks/useEvmNetwork"
-import { FC, useCallback, useEffect, useMemo, useState } from "react"
+import { FC, Suspense, useCallback, useEffect, useMemo, useState } from "react"
 
 type ChainLogoBaseProps = {
   id?: ChainId | EvmNetworkId
@@ -48,7 +48,7 @@ type ChainLogoProps = {
   id?: ChainId | EvmNetworkId
 }
 
-export const ChainLogo: FC<ChainLogoProps> = ({ id, className }) => {
+const ChainLogoInner: FC<ChainLogoProps> = ({ id, className }) => {
   const chain = useChain(id)
   const evmNetwork = useEvmNetwork(id)
   const evmNetworkSubstrateChain = useChain(evmNetwork?.substrateChain?.id)
@@ -60,3 +60,18 @@ export const ChainLogo: FC<ChainLogoProps> = ({ id, className }) => {
 
   return <ChainLogoBase {...props} className={className} />
 }
+
+const ChainLogoFallback: FC<{ className?: string }> = ({ className }) => (
+  <div
+    className={classNames(
+      "!bg-body-disabled !block h-[1em] w-[1em] shrink-0 overflow-hidden rounded-full",
+      className
+    )}
+  ></div>
+)
+
+export const ChainLogo: FC<ChainLogoProps> = (props) => (
+  <Suspense fallback={<ChainLogoFallback className={props.className} />}>
+    <ChainLogoInner {...props} />
+  </Suspense>
+)

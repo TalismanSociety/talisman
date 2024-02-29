@@ -1,4 +1,4 @@
-import { tokenRatesMapState } from "@ui/atoms"
-import { useRecoilValue } from "recoil"
+import { tokenRatesMapAtom } from "@ui/atoms"
+import { useAtomValue } from "jotai"
 
-export const useTokenRatesMap = () => useRecoilValue(tokenRatesMapState)
+export const useTokenRatesMap = () => useAtomValue(tokenRatesMapAtom)

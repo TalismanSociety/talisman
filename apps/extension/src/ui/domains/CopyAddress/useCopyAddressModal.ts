@@ -1,17 +1,14 @@
 import { useGlobalOpenClose } from "@talisman/hooks/useGlobalOpenClose"
+import { atom, useAtom } from "jotai"
 import { useCallback } from "react"
-import { atom, useRecoilState } from "recoil"
 
 import { CopyAddressWizardInputs } from "./types"
 
-const copyAddressInputsState = atom<CopyAddressWizardInputs | null>({
-  key: "copyAddressInputsState",
-  default: null,
-})
+const copyAddressInputsState = atom<CopyAddressWizardInputs | null>(null)
 
 export const useCopyAddressModal = () => {
   const { open: innerOpen, close, isOpen } = useGlobalOpenClose("copyAddressModal")
-  const [inputs, setInputs] = useRecoilState(copyAddressInputsState)
+  const [inputs, setInputs] = useAtom(copyAddressInputsState)
 
   const open = useCallback(
     (opts: CopyAddressWizardInputs | undefined) => {

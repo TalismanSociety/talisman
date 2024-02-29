@@ -1,13 +1,13 @@
 import { SuspenseTracker } from "@talisman/components/SuspenseTracker"
 import {
-  accountsCatalogState,
-  accountsQuery,
-  authorisedSitesState,
-  balanceTotalsState,
-  settingQuery,
-  tabState,
+  accountsByCategoryAtomFamily,
+  accountsCatalogAtom,
+  authorisedSitesAtom,
+  balanceTotalsAtom,
+  settingsAtom,
+  tabAtom,
 } from "@ui/atoms"
-import { stakingBannerState } from "@ui/atoms/stakingBanners"
+import { stakingBannerAtom } from "@ui/atoms/stakingBanners"
 import { CurrentAccountAvatar } from "@ui/domains/Account/CurrentAccountAvatar"
 import { AssetDiscoveryPopupAlert } from "@ui/domains/AssetDiscovery/AssetDiscoveryPopupAlert"
 import { EvmNetworkSelectPill } from "@ui/domains/Ethereum/EvmNetworkSelectPill"
@@ -17,7 +17,7 @@ import { ConnectedAccountsPill } from "@ui/domains/Site/ConnectedAccountsPill"
 import { useAuthorisedSites } from "@ui/hooks/useAuthorisedSites"
 import { useCurrentSite } from "@ui/hooks/useCurrentSite"
 import { useHasAccounts } from "@ui/hooks/useHasAccounts"
-import { useRecoilPreload } from "@ui/hooks/useRecoilPreload"
+import { atom, useAtomValue } from "jotai"
 import { Suspense, useMemo } from "react"
 import { Route, Routes, useLocation } from "react-router-dom"
 
@@ -30,16 +30,21 @@ import { PortfolioLearnMore, PortfolioLearnMoreHeader } from "./PortfolioLearnMo
 import { PortfolioTryTalisman, PortfolioTryTalismanHeader } from "./PortfolioTryTalisman"
 import { PortfolioWhatsNew, PortfolioWhatsNewHeader } from "./PortfolioWhatsNew"
 
+const preloadAtom = atom((get) =>
+  Promise.all([
+    get(balanceTotalsAtom),
+    get(stakingBannerAtom),
+
+    get(accountsByCategoryAtomFamily("all")),
+    get(accountsCatalogAtom),
+    get(authorisedSitesAtom),
+    get(tabAtom),
+    get(settingsAtom),
+  ])
+)
+
 export const Portfolio = () => {
-  useRecoilPreload(
-    authorisedSitesState,
-    tabState,
-    balanceTotalsState,
-    stakingBannerState,
-    accountsCatalogState,
-    accountsQuery("all"),
-    settingQuery("selectedCurrency")
-  )
+  useAtomValue(preloadAtom)
 
   const hasAccounts = useHasAccounts()
   return (

@@ -21,6 +21,7 @@ export type AppStoreData = {
   hideBraveWarning: boolean
   hasBraveWarningBeenShown: boolean
   analyticsRequestShown: boolean
+  analyticsReportSent?: number
   hideBackupWarningUntil?: number
   hasSpiritKey: boolean
   hideStakingBanner: StakingSupportedChain[]

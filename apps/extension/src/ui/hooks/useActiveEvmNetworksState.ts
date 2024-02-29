@@ -1,6 +1,4 @@
-import { evmNetworksActiveState } from "@ui/atoms"
-import { useRecoilValue } from "recoil"
+import { evmNetworksActiveAtom } from "@ui/atoms"
+import { useAtomValue } from "jotai"
 
-export const useActiveEvmNetworksState = () => {
-  return useRecoilValue(evmNetworksActiveState)
-}
+export const useActiveEvmNetworksState = () => useAtomValue(evmNetworksActiveAtom)

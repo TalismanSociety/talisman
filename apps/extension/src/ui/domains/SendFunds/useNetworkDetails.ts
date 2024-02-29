@@ -18,7 +18,7 @@ export const useFormatNetworkName = () => {
   const [t] = useTranslation()
 
   return useCallback(
-    (chain?: Chain | CustomChain, evmNetwork?: EvmNetwork | CustomEvmNetwork) =>
+    (chain?: Chain | CustomChain | null, evmNetwork?: EvmNetwork | CustomEvmNetwork | null) =>
       chain?.name
         ? `${chain.name}${chain.evmNetworks?.length > 0 ? ` (${t("Substrate")})` : ""}`
         : evmNetwork

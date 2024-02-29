@@ -10,8 +10,13 @@ export const SuspenseTracker: FC<{ name: string }> = ({ name }) => {
     const key = `[SuspenseTracker] ${name} - ${crypto.randomUUID()}}`
     console.time(key)
 
+    const timeout = setTimeout(() => {
+      console.warn(`[SuspenseTracker] ${name} is taking too long to render`)
+    }, 5_000)
+
     return () => {
       console.timeEnd(key)
+      clearTimeout(timeout)
     }
   }, [name])
 

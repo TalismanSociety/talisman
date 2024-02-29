@@ -4,10 +4,10 @@ import { PasswordStrength } from "@talisman/components/PasswordStrength"
 import { useGlobalOpenClose } from "@talisman/hooks/useGlobalOpenClose"
 import downloadJson from "@talisman/util/downloadJson"
 import { api } from "@ui/api"
+import { atom, useAtom } from "jotai"
 import { useCallback, useEffect, useMemo } from "react"
 import { useForm } from "react-hook-form"
 import { Trans, useTranslation } from "react-i18next"
-import { atom, useRecoilState } from "recoil"
 import { ModalDialog } from "talisman-ui"
 import { Modal } from "talisman-ui"
 import { Button, FormFieldContainer, FormFieldInputText } from "talisman-ui"
@@ -16,13 +16,10 @@ import * as yup from "yup"
 import { useSelectedAccount } from "../Portfolio/useSelectedAccount"
 import { PasswordUnlock, usePasswordUnlock } from "./PasswordUnlock"
 
-const accountExportAccountState = atom<AccountJsonAny | null>({
-  key: "accountExportAccountState",
-  default: null,
-})
+const accountExportAccountState = atom<AccountJsonAny | null>(null)
 
 export const useAccountExportModal = () => {
-  const [_account, setAccount] = useRecoilState(accountExportAccountState)
+  const [_account, setAccount] = useAtom(accountExportAccountState)
 
   const { account: selectedAccount } = useSelectedAccount()
   const { isOpen, open: innerOpen, close } = useGlobalOpenClose("accountExportModal")

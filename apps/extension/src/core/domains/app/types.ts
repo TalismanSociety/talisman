@@ -89,7 +89,7 @@ export interface AppMessages {
   "pri(app.modalOpen.request)": [ModalOpenRequest, boolean]
   "pri(app.sendFunds.open)": [SendFundsOpenRequest, boolean]
   "pri(app.modalOpen.subscribe)": [null, boolean, ModalOpenRequest]
-  "pri(app.promptLogin)": [boolean, boolean]
+  "pri(app.promptLogin)": [null, boolean]
   "pri(app.analyticsCapture)": [AnalyticsCaptureRequest, boolean]
   "pri(app.phishing.addException)": [RequestAllowPhishingSite, boolean]
   "pri(app.resetWallet)": [null, boolean]

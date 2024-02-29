@@ -1,5 +1,5 @@
-import { getCoinGeckoToken } from "@core/util/coingecko/getCoinGeckoToken"
-import { getCoinGeckoTokensList } from "@core/util/coingecko/getCoinGeckoTokensList"
+import { getCoingeckoToken } from "@core/util/coingecko/getCoinGeckoToken"
+import { getCoingeckoTokensList } from "@core/util/coingecko/getCoinGeckoTokensList"
 import { useQuery } from "@tanstack/react-query"
 import { useMemo } from "react"
 
@@ -11,7 +11,7 @@ export const useCoinGeckoTokenImageUrl = (coingeckoTokenId: string | null) => {
     refetchInterval: false,
     refetchOnWindowFocus: false,
     refetchOnMount: false,
-    queryFn: () => getCoinGeckoTokensList(),
+    queryFn: () => getCoingeckoTokensList(),
   })
 
   const qToken = useQuery({
@@ -24,7 +24,7 @@ export const useCoinGeckoTokenImageUrl = (coingeckoTokenId: string | null) => {
       qTokens.data &&
       Array.isArray(qTokens.data) &&
       !!qTokens.data.find((t) => t.id === coingeckoTokenId)
-        ? getCoinGeckoToken(coingeckoTokenId)
+        ? getCoingeckoToken(coingeckoTokenId)
         : null,
   })
 

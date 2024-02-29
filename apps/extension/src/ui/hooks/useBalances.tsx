@@ -1,7 +1,7 @@
-import { AccountsFilter, balancesFilterQuery } from "@ui/atoms"
-import { useRecoilValue } from "recoil"
+import { AccountCategory, balancesByAccountCategoryAtomFamily } from "@ui/atoms"
+import { useAtomValue } from "jotai"
 
-export const useBalances = (accountsFilter: AccountsFilter = "all") =>
-  useRecoilValue(balancesFilterQuery(accountsFilter))
+export const useBalances = (category: AccountCategory = "all") =>
+  useAtomValue(balancesByAccountCategoryAtomFamily(category))
 
 export default useBalances
