@@ -29,11 +29,11 @@
     "generate-init-data": "yarn workspace @talismn/chaindata-provider run generate-init-data"
   },
   "devDependencies": {
-    "@alectalisman/preconstruct-cli": "2.3.0-e",
     "@changesets/cli": "^2.27.1",
     "@commitlint/cli": "^17.8.1",
     "@commitlint/config-conventional": "^17.8.1",
     "@talismn/eslint-config": "workspace:*",
+    "@talismn/preconstruct-cli": "2.8.3",
     "@testing-library/react": "^14.0.0",
     "@typescript-eslint/eslint-plugin": "^6.9.0",
     "@typescript-eslint/parser": "^6.9.0",

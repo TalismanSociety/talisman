@@ -4,7 +4,6 @@
   "private": true,
   "license": "GPL-3.0-or-later",
   "dependencies": {
-    "@alectalisman/webpack-ext-reloader": "^1.1.9-a",
     "@babel/core": "^7.23.7",
     "@babel/eslint-parser": "^7.23.3",
     "@dnd-kit/core": "6.1.0",
@@ -45,7 +44,7 @@
     "@spruceid/siwe-parser": "^2.0.2",
     "@substrate/txwrapper-core": "*",
     "@supercharge/promise-pool": "^3.1.0",
-    "@svgr/webpack": "^6.5.1",
+    "@svgr/webpack": "^8.1.0",
     "@talismn/balances": "workspace:*",
     "@talismn/chaindata-js": "^0.0.7",
     "@talismn/chaindata-provider": "workspace:*",
@@ -155,6 +154,7 @@
     "yup": "0.32.11"
   },
   "devDependencies": {
+    "@alectalisman/webpack-ext-reloader": "^1.1.9-a",
     "@babel/plugin-syntax-flow": "^7.23.3",
     "@babel/plugin-transform-react-jsx": "^7.23.4",
     "@babel/preset-env": "^7.23.7",
