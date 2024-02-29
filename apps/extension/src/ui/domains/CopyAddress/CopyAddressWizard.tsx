@@ -3,7 +3,6 @@ import { FC } from "react"
 import { CopyAddressAccountForm } from "./CopyAddressAccountForm"
 import { CopyAddressChainForm } from "./CopyAddressChainForm"
 import { CopyAddressCopyForm } from "./CopyAddressCopyForm"
-import { CopyAddressTokenForm } from "./CopyAddressTokenForm"
 import { CopyAddressWizardInputs } from "./types"
 import { CopyAddressWizardProvider, useCopyAddressWizard } from "./useCopyAddressWizard"
 
@@ -12,8 +11,6 @@ const Routes = () => {
   const { route } = useCopyAddressWizard()
 
   switch (route) {
-    case "token":
-      return <CopyAddressTokenForm />
     case "chain":
       return <CopyAddressChainForm />
     case "account":

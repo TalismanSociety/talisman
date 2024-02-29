@@ -87,7 +87,6 @@ const AddressBookContactItem = ({ contact, handleDelete, handleEdit }: ContactIt
 
   const handleCopyClick = useCallback(() => {
     openCopyAddressModal({
-      mode: "copy",
       address: contact.address,
     })
     genericEvent("open copy address", { from: "address book" })

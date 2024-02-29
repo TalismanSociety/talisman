@@ -7,6 +7,7 @@ export type NotificationProps = {
   type: NotificationType
   title: ReactNode
   subtitle?: ReactNode
+  right?: ReactNode
 }
 
 const NotificationIcon = ({ type }: { type: NotificationType }) => {
@@ -18,7 +19,7 @@ const NotificationIcon = ({ type }: { type: NotificationType }) => {
   return null
 }
 
-export const Notification = ({ title, subtitle, type }: NotificationProps) => {
+export const Notification = ({ title, subtitle, type, right }: NotificationProps) => {
   return (
     <div className="flex items-center gap-8">
       <div>
@@ -28,6 +29,7 @@ export const Notification = ({ title, subtitle, type }: NotificationProps) => {
         <div className="text-body">{title}</div>
         {subtitle && <div className="text-body-secondary mt-2 text-sm">{subtitle}</div>}
       </div>
+      {right}
     </div>
   )
 }
