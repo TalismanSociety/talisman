@@ -156,7 +156,7 @@ const TopActions = ({ disabled }: { disabled?: boolean }) => {
         label: t("Copy"),
         tooltip: t("Copy address"),
         icon: CopyIcon,
-        onClick: () => openCopyAddressModal(null),
+        onClick: () => openCopyAddressModal(),
         disabled: disableActions,
         disabledReason,
       },
