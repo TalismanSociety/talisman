@@ -32,7 +32,7 @@ const ensurePosthogPreferences = (useAnalyticsTracking: boolean | undefined) => 
 }
 
 class TalismanAnalytics {
-  lastGeneralReport = Date.now()
+  lastGeneralReport: undefined | number
   enabled = Boolean(process.env.POSTHOG_AUTH_TOKEN)
 
   constructor() {
@@ -41,6 +41,10 @@ class TalismanAnalytics {
     this.init().then(() => {
       settingsStore.observable.subscribe(({ useAnalyticsTracking }) => {
         ensurePosthogPreferences(useAnalyticsTracking)
+      })
+
+      appStore.observable.subscribe(({ analyticsReportSent }) => {
+        this.lastGeneralReport = analyticsReportSent || Date.now()
       })
     })
   }
@@ -64,10 +68,10 @@ class TalismanAnalytics {
 
     try {
       let sendProperties = properties
-      if (Date.now() > this.lastGeneralReport) {
+      if (this.lastGeneralReport && Date.now() > this.lastGeneralReport + REPORTING_PERIOD) {
         const generalData = await this.getGeneralReport()
         sendProperties = { ...properties, $set: { ...(properties?.$set || {}), ...generalData } }
-        this.lastGeneralReport = Date.now() + REPORTING_PERIOD
+        appStore.set({ analyticsReportSent: Date.now() })
       }
       posthog.capture(eventName, sendProperties)
     } catch (e) {
