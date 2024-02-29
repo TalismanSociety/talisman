@@ -2,26 +2,23 @@ import { useGlobalOpenClose } from "@talisman/hooks/useGlobalOpenClose"
 import { convertAddress } from "@talisman/util/convertAddress"
 import { isValidSubstrateAddress } from "@talisman/util/isValidSubstrateAddress"
 import { isEthereumAddress } from "@talismn/util"
-import useChains from "@ui/hooks/useChains"
+import { useAllChainsMap } from "@ui/hooks/useChains"
 import { copyAddress } from "@ui/util/copyAddress"
+import { atom, useAtom } from "jotai"
 import { useCallback } from "react"
-import { atom, useRecoilState } from "recoil"
 import { getAddress } from "viem"
 
 import { CopyAddressWizardInputs } from "./types"
 
-const copyAddressInputsState = atom<CopyAddressWizardInputs>({
-  key: "copyAddressInputsState",
-  default: {},
-})
+const copyAddressInputsState = atom<CopyAddressWizardInputs>({})
 
 export const useCopyAddressModal = () => {
   const { open: innerOpen, close, isOpen } = useGlobalOpenClose("copyAddressModal")
-  const { chainsMap } = useChains({ activeOnly: false, includeTestnets: true })
-  const [inputs, setInputs] = useRecoilState(copyAddressInputsState)
+  const chainsMap = useAllChainsMap()
+  const [inputs, setInputs] = useAtom(copyAddressInputsState)
 
   const open = useCallback(
-    (opts: CopyAddressWizardInputs | null) => {
+    (opts: CopyAddressWizardInputs = {}) => {
       // skip wizard if we have all information we need, unless qr is explicitely requested
       if (opts?.address && !opts.qr) {
         const onQrClick = opts && opts.qr !== false ? () => open({ ...opts, qr: true }) : undefined
@@ -43,7 +40,7 @@ export const useCopyAddressModal = () => {
       }
 
       // display the wizard
-      setInputs(opts || {})
+      setInputs(opts)
       innerOpen()
     },
     [chainsMap, innerOpen, setInputs]

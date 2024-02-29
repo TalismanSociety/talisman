@@ -43,14 +43,15 @@ type AccountSelectItem =
 type AccountSelectFolderItem = AccountSelectItem & { type: "folder" }
 
 export const AccountSelect = () => {
+  const { t } = useTranslation()
+  const { account: selectedAccount, select } = useSelectedAccount()
+  const { accounts, catalog, balanceTotalPerAccount, portfolioTotal } = usePortfolioAccounts()
+  const [collapsedFolders = [], setCollapsedFolders] = useSetting("collapsedFolders")
+
   const { refs, floatingStyles } = useFloating({
     placement: "bottom-start",
     whileElementsMounted: autoUpdate,
   })
-
-  const { t } = useTranslation()
-  const { account: selectedAccount, select } = useSelectedAccount()
-  const { accounts, catalog, balanceTotalPerAccount, portfolioTotal } = usePortfolioAccounts()
 
   const [portfolioItems, watchedItems] = useMemo((): [AccountSelectItem[], AccountSelectItem[]] => {
     const treeItemToOptions =
@@ -113,7 +114,6 @@ export const AccountSelect = () => {
     [select]
   )
 
-  const [collapsedFolders = [], setCollapsedFolders] = useSetting("collapsedFolders")
   const onFolderClick = useCallback(
     (item: AccountSelectFolderItem) =>
       setCollapsedFolders((collapsedFolders = []) =>
@@ -152,7 +152,6 @@ export const AccountSelect = () => {
               />
             </Listbox.Button>
           )}
-
           <FloatingPortal>
             <div
               ref={refs.setFloating}
@@ -347,12 +346,16 @@ const FolderItem = forwardRef<HTMLDivElement, FolderItemProps>(function FolderIt
   )
 })
 
-const NoAccountsItem = () => (
-  <div className="text-body-secondary flex w-full cursor-pointer flex-col items-center gap-4 rounded-sm p-5 lg:flex-row">
-    <div className="bg-body-disabled h-20 w-20 rounded-[2rem]">&nbsp;</div>
-    <div className="hidden max-w-full flex-grow flex-col items-center justify-center gap-2 overflow-hidden md:flex lg:items-start">
-      No Accounts
-      <Fiat amount={0.0} />
+const NoAccountsItem = () => {
+  const { t } = useTranslation()
+
+  return (
+    <div className="text-body-secondary flex w-full cursor-pointer flex-col items-center gap-4 rounded-sm p-5 lg:flex-row">
+      <div className="bg-body-disabled h-20 w-20 rounded-[2rem]">&nbsp;</div>
+      <div className="hidden max-w-full flex-grow flex-col items-center justify-center gap-2 overflow-hidden md:flex lg:items-start">
+        {t("No Accounts")}
+        <Fiat amount={0.0} />
+      </div>
     </div>
-  </div>
-)
+  )
+}

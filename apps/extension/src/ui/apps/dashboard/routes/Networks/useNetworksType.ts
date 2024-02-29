@@ -10,7 +10,7 @@ export const useNetworksType = () => {
 
   const navigate = useNavigate()
   const setNetworksType = useCallback(
-    (networksType: ProviderType) => navigate(`/networks/${networksType}`),
+    (networksType: ProviderType) => navigate(`/settings/networks-tokens/networks/${networksType}`),
     [navigate]
   )
 

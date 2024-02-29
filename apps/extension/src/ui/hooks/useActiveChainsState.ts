@@ -1,6 +1,4 @@
-import { chainsActiveState } from "@ui/atoms"
-import { useRecoilValue } from "recoil"
+import { chainsActiveAtom } from "@ui/atoms"
+import { useAtomValue } from "jotai"
 
-export const useActiveChainsState = () => {
-  return useRecoilValue(chainsActiveState)
-}
+export const useActiveChainsState = () => useAtomValue(chainsActiveAtom)

@@ -1,4 +1,4 @@
-import { accountsCatalogState } from "@ui/atoms"
-import { useRecoilValue } from "recoil"
+import { accountsCatalogAtom } from "@ui/atoms"
+import { useAtomValue } from "jotai"
 
-export const useAccountsCatalog = () => useRecoilValue(accountsCatalogState)
+export const useAccountsCatalog = () => useAtomValue(accountsCatalogAtom)

@@ -1,10 +1,9 @@
 import { TOKEN_APPROVALS_URL } from "@core/constants"
 import { BalanceFormatter } from "@core/domains/balances"
-import { CustomErc20Token } from "@core/domains/tokens/types"
 import { assert } from "@polkadot/util"
+import { useErc20Token } from "@ui/hooks/useErc20Token"
 import useToken from "@ui/hooks/useToken"
 import { useTokenRates } from "@ui/hooks/useTokenRates"
-import useTokens from "@ui/hooks/useTokens"
 import { FC, useMemo } from "react"
 import { Trans, useTranslation } from "react-i18next"
 import { toHex } from "viem"
@@ -27,17 +26,7 @@ export const EthSignBodyErc20Approve: FC = () => {
   const { t } = useTranslation("request")
   const { account, network, decodedTx } = useEthSignKnownTransactionRequest()
 
-  const { tokens } = useTokens({ activeOnly: false, includeTestnets: true })
-  const token = useMemo(() => {
-    return network
-      ? (tokens?.find(
-          (t) =>
-            t.type === "evm-erc20" &&
-            t.evmNetwork?.id === network.id &&
-            t.contractAddress === decodedTx.targetAddress
-        ) as CustomErc20Token)
-      : undefined
-  }, [network, tokens, decodedTx.targetAddress])
+  const token = useErc20Token(network?.id, decodedTx.targetAddress)
 
   const tokenRates = useTokenRates(token?.id)
 
@@ -119,7 +108,6 @@ export const EthSignBodyErc20Approve: FC = () => {
             address={decodedTx.targetAddress}
             network={network}
             tokenId={token?.id}
-            erc20={{ evmNetworkId: network.id, contractAddress: decodedTx.targetAddress }}
             tokens={allowance.tokens}
             decimals={decodedTx.asset.decimals}
             symbol={symbol}

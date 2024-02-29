@@ -25,8 +25,7 @@ export const api: MessageTypes = {
   dashboardOpen: (route) => messageService.sendMessage("pri(app.dashboardOpen)", { route }),
   onboardOpen: () => messageService.sendMessage("pri(app.onboardOpen)"),
   popupOpen: (argument?: string) => messageService.sendMessage("pri(app.popupOpen)", argument),
-  promptLogin: (closeOnSuccess = false) =>
-    messageService.sendMessage("pri(app.promptLogin)", closeOnSuccess),
+  promptLogin: () => messageService.sendMessage("pri(app.promptLogin)"),
   approveMetaRequest: (id) => messageService.sendMessage("pri(metadata.approve)", { id }),
   rejectMetaRequest: (id) => messageService.sendMessage("pri(metadata.reject)", { id }),
   allowPhishingSite: (url) => messageService.sendMessage("pri(app.phishing.addException)", { url }),

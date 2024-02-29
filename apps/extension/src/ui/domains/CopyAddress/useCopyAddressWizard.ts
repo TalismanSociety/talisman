@@ -55,7 +55,7 @@ const getNextRoute = (inputs: CopyAddressWizardInputs): CopyAddressWizardPage =>
   return "copy"
 }
 
-const getFormattedAddress = (address?: Address, chain?: Chain) => {
+const getFormattedAddress = (address?: Address, chain?: Chain | null) => {
   if (address) {
     try {
       if (isEthereumAddress(address)) return getAddress(address) // enforces format for checksum
@@ -72,8 +72,8 @@ const getFormattedAddress = (address?: Address, chain?: Chain) => {
 const getQrLogo = async (
   address: string | null,
   isGeneric: boolean,
-  ethereum?: Token,
-  chain?: Chain
+  ethereum?: Token | null,
+  chain?: Chain | null
 ) => {
   if (!address) {
     return undefined

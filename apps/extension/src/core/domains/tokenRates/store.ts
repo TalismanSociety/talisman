@@ -12,8 +12,11 @@ import { BehaviorSubject, combineLatest } from "rxjs"
 
 import { remoteConfigStore } from "../app/store.remoteConfig"
 
-const MIN_REFRESH_INTERVAL = 60_000 // 60_000ms = 60s = 1 minute
-const REFRESH_INTERVAL = 300_000 // 5 minutes
+// refresh token rates on subscription start if older than 5 minutes
+const MIN_REFRESH_INTERVAL = 5 * 60_000
+
+// refresh token rates while sub is active every 10 minutes
+const REFRESH_INTERVAL = 10 * 60_000
 
 export class TokenRatesStore {
   #lastUpdateTokenIds = ""
@@ -96,7 +99,9 @@ export class TokenRatesStore {
    */
   private async updateTokenRates(tokens: TokenList): Promise<void> {
     const now = Date.now()
-    const strTokenIds = Object.keys(tokens ?? {}).join(",")
+    const strTokenIds = Object.keys(tokens ?? {})
+      .sort()
+      .join(",")
     if (now - this.#lastUpdateAt < MIN_REFRESH_INTERVAL && this.#lastUpdateTokenIds === strTokenIds)
       return
 

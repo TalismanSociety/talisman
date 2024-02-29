@@ -6,6 +6,7 @@ import { ChainLogo } from "@ui/domains/Asset/ChainLogo"
 import { TokenLogo } from "@ui/domains/Asset/TokenLogo"
 import { AssetBalanceCellValue } from "@ui/domains/Portfolio/AssetBalanceCellValue"
 import { NoTokensMessage } from "@ui/domains/Portfolio/NoTokensMessage"
+import { Suspense } from "react"
 import { useTranslation } from "react-i18next"
 
 import { CopyAddressButton } from "./CopyAddressIconButton"
@@ -82,7 +83,9 @@ const ChainTokenBalances = ({ chainId, balances }: AssetRowProps) => {
               <ChainLogo className="mr-2" id={chainOrNetwork.id} />
               <span className="mr-2">{chainOrNetwork.name}</span>
               <CopyAddressButton symbol={symbol} networkId={chainOrNetwork.id} />
-              <SendFundsButton symbol={symbol} networkId={chainOrNetwork.id} />
+              <Suspense>
+                <SendFundsButton symbol={symbol} networkId={chainOrNetwork.id} />
+              </Suspense>
             </div>
             <div>{networkType}</div>
           </div>

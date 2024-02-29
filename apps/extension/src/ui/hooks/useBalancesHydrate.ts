@@ -1,5 +1,5 @@
 import { HydrateDb } from "@talismn/balances"
-import { balancesHydrateState } from "@ui/atoms"
-import { useRecoilValue } from "recoil"
+import { balancesHydrateAtom } from "@ui/atoms"
+import { useAtomValue } from "jotai"
 
-export const useBalancesHydrate = (): HydrateDb => useRecoilValue(balancesHydrateState)
+export const useBalancesHydrate = (): HydrateDb => useAtomValue(balancesHydrateAtom)

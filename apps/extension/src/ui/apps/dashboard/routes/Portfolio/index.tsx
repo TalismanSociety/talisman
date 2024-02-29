@@ -1,7 +1,12 @@
-import { balancesFilterQuery } from "@ui/atoms"
-import { stakingBannerState } from "@ui/atoms/stakingBanners"
+import {
+  accountsByCategoryAtomFamily,
+  balancesByAccountCategoryAtomFamily,
+  balancesHydrateAtom,
+} from "@ui/atoms"
+import { remoteConfigAtom } from "@ui/atoms/remoteConfig"
+import { stakingBannerAtom } from "@ui/atoms/stakingBanners"
 import { useBuyTokensModal } from "@ui/domains/Asset/Buy/useBuyTokensModal"
-import { useRecoilPreload } from "@ui/hooks/useRecoilPreload"
+import { atom, useAtomValue } from "jotai"
 import { useEffect } from "react"
 import { Route, Routes, useSearchParams } from "react-router-dom"
 
@@ -9,8 +14,18 @@ import { DashboardLayout } from "../../layout/DashboardLayout"
 import { PortfolioAsset } from "./PortfolioAsset"
 import { PortfolioAssets } from "./PortfolioAssets"
 
-export const PortfolioRoutesInner = () => {
-  useRecoilPreload(balancesFilterQuery("all"), stakingBannerState)
+const preloadAtom = atom((get) =>
+  Promise.all([
+    get(balancesByAccountCategoryAtomFamily("all")),
+    get(accountsByCategoryAtomFamily("all")),
+    get(remoteConfigAtom),
+    get(balancesHydrateAtom),
+    get(stakingBannerAtom),
+  ])
+)
+
+const ContentRoutes = () => {
+  useAtomValue(preloadAtom)
 
   return (
     <Routes>
@@ -38,7 +53,7 @@ export const PortfolioRoutes = () => {
   return (
     // share layout to prevent sidebar flickering when navigating between the 2 pages
     <DashboardLayout centered large>
-      <PortfolioRoutesInner />
+      <ContentRoutes />
     </DashboardLayout>
   )
 }

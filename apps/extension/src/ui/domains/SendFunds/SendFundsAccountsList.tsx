@@ -29,13 +29,13 @@ type AccountRowProps = {
   genesisHash?: string | null
   selected: boolean
   showBalances?: boolean
-  token?: Token
+  token?: Token | null
   onClick?: () => void
   disabled?: boolean
   noFormat?: boolean
 }
 
-const AccountTokenBalance = ({ token, balance }: { token?: Token; balance?: Balance }) => {
+const AccountTokenBalance = ({ token, balance }: { token?: Token | null; balance?: Balance }) => {
   const currency = useSelectedCurrency()
 
   if (!balance || !token) return null

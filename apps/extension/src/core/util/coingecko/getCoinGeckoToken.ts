@@ -14,7 +14,7 @@ export type CoinGeckoToken = {
   platforms: Record<string, string>
 }
 
-export const getCoinGeckoToken = async (id: string) => {
+export const getCoingeckoToken = async (id: string) => {
   try {
     const fetchErc20Coin = await fetchFromCoingecko(`/api/v3/coins/${id}`)
     return fetchErc20Coin.json() as Promise<CoinGeckoToken>

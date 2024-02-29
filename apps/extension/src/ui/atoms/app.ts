@@ -1,28 +1,24 @@
 import { AppStoreData, appStore } from "@core/domains/app/store.app"
-import { log } from "@core/log"
-import { atom, selectorFamily } from "recoil"
+import { SetStateAction, atom } from "jotai"
+import { atomFamily } from "jotai/utils"
 
-const appState = atom<AppStoreData>({
-  key: "appState",
-  effects: [
-    ({ setSelf }) => {
-      log.debug("appState.init")
-      const sub = appStore.observable.subscribe(setSelf)
-      return () => sub.unsubscribe()
-    },
-  ],
-})
+import { atomWithSubscription } from "./utils/atomWithSubscription"
+import { KeyValueAtomFamily } from "./utils/types"
 
-export const appStateQuery = selectorFamily({
-  key: "appStateQuery",
-  get:
-    <K extends keyof AppStoreData, V extends AppStoreData[K]>(key: K) =>
-    ({ get }): V => {
-      const app = get(appState)
-      return app[key] as V
+export const appStateAtom = atomWithSubscription<AppStoreData>((callback) => {
+  const { unsubscribe } = appStore.observable.subscribe(callback)
+  return unsubscribe
+}, "appStateAtom")
+
+export const appStateAtomFamily: KeyValueAtomFamily<AppStoreData> = atomFamily((key) =>
+  atom(
+    async (get) => {
+      const state = await get(appStateAtom)
+      return state[key]
     },
-  set: (key) => (_, value) => {
-    // update the rxjs observable so the derived recoil atom is updated
-    appStore.set({ [key]: value })
-  },
-})
+    async (get, set, value: SetStateAction<unknown>) => {
+      if (typeof value === "function") value = value((await get(appStateAtom))[key])
+      await appStore.set({ [key]: value })
+    }
+  )
+)

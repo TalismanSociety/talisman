@@ -131,7 +131,7 @@ export const PortfolioWhatsNewHeader = () => {
  *
  * You can add this to your markdown to get a button which links to any dashboard url:
  *
- *     <div class="button" data-app="dashboard" data-href="/networks/ethereum">Check it out</div>
+ *     <div class="button" data-app="dashboard" data-href="/settings/networks-tokens/networks/ethereum">Check it out</div>
  */
 const useWhatsNewNodes = (whatsNewHtml: string) => {
   /** A ref to the `dangerouslySetInnerHTML={{ __html: whatsNewHtml ?? "" }}` div element */

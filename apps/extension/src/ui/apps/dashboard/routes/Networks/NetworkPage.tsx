@@ -36,7 +36,7 @@ export const NetworkPage = () => {
   const isEvmNetwork = networksType === "ethereum"
 
   const handleSubmitted = useCallback(
-    () => navigate(`/networks/${networksType}`),
+    () => navigate(`/settings/networks-tokens/networks/${networksType}`),
     [navigate, networksType]
   )
 
