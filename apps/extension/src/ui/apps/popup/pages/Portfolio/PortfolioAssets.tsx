@@ -33,9 +33,9 @@ import {
 const EnableNetworkMessage: FC<{ type?: "substrate" | "evm" }> = ({ type }) => {
   const { t } = useTranslation()
   const handleClick = useCallback(() => {
-    if (type === "substrate") api.dashboardOpen("/networks/polkadot")
-    else if (type === "evm") api.dashboardOpen("/networks/ethereum")
-    else api.dashboardOpen("/networks")
+    if (type === "substrate") api.dashboardOpen("/settings/networks-tokens/networks/polkadot")
+    else if (type === "evm") api.dashboardOpen("/settings/networks-tokens/networks/ethereum")
+    else api.dashboardOpen("/settings/networks-tokens/networks")
     window.close()
   }, [type])
 

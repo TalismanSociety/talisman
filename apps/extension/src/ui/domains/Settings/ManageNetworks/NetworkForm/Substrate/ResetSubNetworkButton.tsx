@@ -19,7 +19,7 @@ export const ResetSubNetworkButton: FC<{ chain: Chain | CustomChain }> = ({ chai
     try {
       await api.chainReset(chain.id)
       await sleep(350) // wait for atom to reflect changes
-      navigate("/networks/polkadot")
+      navigate("/settings/networks-tokens/networks/polkadot")
     } catch (err) {
       notify({
         title: t("Failed to reset"),

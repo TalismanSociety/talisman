@@ -19,7 +19,7 @@ export const RemoveEvmNetworkButton: FC<{ network: EvmNetwork | CustomEvmNetwork
     if (!network) return
     try {
       await api.ethNetworkRemove(network.id.toString())
-      navigate("/networks/ethereum")
+      navigate("/settings/networks-tokens/networks/ethereum")
     } catch (err) {
       notify({
         title: t("Failed to remove"),
