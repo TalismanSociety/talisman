@@ -1,5 +1,6 @@
 import { IS_FIREFOX } from "@core/constants"
 import { getIsLedgerCapable } from "@core/util/getIsLedgerCapable"
+import { SelectedIndicator } from "@talisman/components/SelectedIndicator"
 import { EthereumCircleBorderedLogo, PolkadotCircleBorderedLogo } from "@talisman/theme/logos"
 import { ChainIcon, EyePlusIcon, FilePlusIcon, PlusIcon } from "@talismn/icons"
 import { classNames } from "@talismn/util"
@@ -12,20 +13,6 @@ import { MethodTypes, useAccountCreateContext } from "./context"
 type Props = {
   className?: string
 }
-
-const SelectedIndicator = () => (
-  <svg
-    width="18"
-    height="16"
-    viewBox="0 0 18 16"
-    fill="none"
-    xmlns="http://www.w3.org/2000/svg"
-    className="relative right-8 top-12 float-right"
-  >
-    <ellipse cx="9.26364" cy="8" rx="8.45841" ry="8" fill="#5A5A5A" />
-    <ellipse cx="9.26363" cy="8" rx="4.2292" ry="4" fill="#D5FF5C" />
-  </svg>
-)
 
 const AccountCreateMethodTypeButton = ({
   title,
@@ -55,7 +42,7 @@ const AccountCreateMethodTypeButton = ({
         if (e.key === "Enter") setMethodType(methodType)
       }}
     >
-      {isSelected && <SelectedIndicator />}
+      {isSelected && <SelectedIndicator className="relative right-8 top-12 float-right" />}
       <div className="flex flex-col items-start gap-8 px-8 py-12">
         <span className={`text-primary-500 text-xl ${!isSelected && "opacity-50"}`}>{icon}</span>
         <div className="flex flex-col gap-2">
