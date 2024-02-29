@@ -82,7 +82,7 @@ const ChainTokenBalances = ({ chainId, balances }: AssetRowProps) => {
             <div className="base text-body flex items-center font-bold">
               <ChainLogo className="mr-2" id={chainOrNetwork.id} />
               <span className="mr-2">{chainOrNetwork.name}</span>
-              <CopyAddressButton symbol={symbol} networkId={chainOrNetwork.id} />
+              <CopyAddressButton networkId={chainOrNetwork.id} />
               <Suspense>
                 <SendFundsButton symbol={symbol} networkId={chainOrNetwork.id} />
               </Suspense>
