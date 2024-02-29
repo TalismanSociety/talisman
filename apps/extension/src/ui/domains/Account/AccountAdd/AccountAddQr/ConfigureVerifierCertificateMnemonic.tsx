@@ -4,7 +4,7 @@ import {
   MnemonicCreateModal,
   MnemonicCreateModalProvider,
   useMnemonicCreateModal,
-} from "@ui/domains/Mnemonic/MnemonicCreateModal"
+} from "@ui/apps/dashboard/routes/Settings/Mnemonics/MnemonicCreateModal"
 import { useMnemonics } from "@ui/hooks/useMnemonics"
 import { ReactNode, useMemo } from "react"
 import { Trans, useTranslation } from "react-i18next"

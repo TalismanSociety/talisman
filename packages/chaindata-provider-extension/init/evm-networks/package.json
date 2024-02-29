@@ -1,4 +1,0 @@
-{
-  "main": "dist/talismn-chaindata-provider-extension-init-evm-networks.cjs.js",
-  "module": "dist/talismn-chaindata-provider-extension-init-evm-networks.esm.js"
-}

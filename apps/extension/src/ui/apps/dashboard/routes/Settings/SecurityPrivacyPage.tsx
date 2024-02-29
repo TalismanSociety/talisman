@@ -41,7 +41,7 @@ export const SecurityPrivacyPage = () => {
               ? t("Change your Talisman password")
               : t("Please back up your recovery phrase before you change your password.")
           }
-          to={`/settings/change-password`}
+          to={`/settings/security-privacy-settings/change-password`}
           disabled={!allBackedUp}
         />
         <CtaButton
@@ -49,7 +49,7 @@ export const SecurityPrivacyPage = () => {
           iconRight={ChevronRightIcon}
           title={t("Auto-lock timer")}
           subtitle={t("Set a timer to automatically lock your Talisman wallet")}
-          to={`/settings/autolock`}
+          to={`/settings/security-privacy-settings/autolock`}
         />
         {useErrorTracking !== undefined && (
           <Setting

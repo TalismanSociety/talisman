@@ -30,12 +30,11 @@ export const CopyAddressButton = ({
 
   const handleClick = useCallback(() => {
     open({
-      mode: "receive",
       address: account?.address,
-      tokenId: token?.id,
+      chainId: token?.chain?.id,
     })
     genericEvent("open receive", { from: "asset details" })
-  }, [account?.address, genericEvent, open, token?.id])
+  }, [account?.address, genericEvent, open, token?.chain?.id])
 
   if (!token) return null
 

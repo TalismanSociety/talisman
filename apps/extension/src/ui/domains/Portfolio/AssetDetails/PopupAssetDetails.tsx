@@ -10,8 +10,8 @@ import { TokenLogo } from "@ui/domains/Asset/TokenLogo"
 import Tokens from "@ui/domains/Asset/Tokens"
 import { useCopyAddressModal } from "@ui/domains/CopyAddress"
 import { useAnalytics } from "@ui/hooks/useAnalytics"
-import { useIsFeatureEnabled } from "@ui/hooks/useFeatures"
-import { useCallback, useMemo } from "react"
+import { useIsFeatureEnabled } from "@ui/hooks/useIsFeatureEnabled"
+import { Suspense, useCallback, useMemo } from "react"
 import { useTranslation } from "react-i18next"
 import { PillButton } from "talisman-ui"
 
@@ -52,7 +52,9 @@ const ChainTokenBalances = ({ chainId, balances }: AssetRowProps) => {
               <ChainLogo className="mr-2" id={chainOrNetwork.id} />
               <span className="mr-2">{chainOrNetwork.name}</span>
               <CopyAddressButton symbol={symbol} networkId={chainOrNetwork.id} />
-              <SendFundsButton symbol={symbol} networkId={chainOrNetwork.id} shouldClose />
+              <Suspense>
+                <SendFundsButton symbol={symbol} networkId={chainOrNetwork.id} shouldClose />
+              </Suspense>
             </div>
           </div>
           <div className="text-body-secondary flex justify-between text-xs">
@@ -135,8 +137,8 @@ const NoTokens = ({ symbol }: { symbol: string }) => {
 
   const handleCopy = useCallback(() => {
     open({
-      mode: "receive",
       address: account?.address,
+      qr: true,
     })
     genericEvent("open receive", { from: "asset details" })
   }, [account?.address, genericEvent, open])
@@ -157,7 +159,7 @@ const NoTokens = ({ symbol }: { symbol: string }) => {
         </div>
         <div className="mt-6 flex justify-center gap-4">
           <PillButton icon={ArrowDownIcon} onClick={handleCopy}>
-            {t("Receive")}
+            {t("Copy address")}
           </PillButton>
           {showBuyCrypto && (
             <PillButton icon={CreditCardIcon} onClick={handleBuyCryptoClick}>

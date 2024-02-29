@@ -4,9 +4,9 @@ import { useGlobalOpenClose } from "@talisman/hooks/useGlobalOpenClose"
 import { CopyIcon, LoaderIcon } from "@talismn/icons"
 import { api } from "@ui/api"
 import { useSensitiveState } from "@ui/hooks/useSensitiveState"
+import { atom, useAtom } from "jotai"
 import { useCallback, useEffect, useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
-import { atom, useRecoilState } from "recoil"
 import { ModalDialog } from "talisman-ui"
 import { Modal } from "talisman-ui"
 import { Button } from "talisman-ui"
@@ -15,13 +15,10 @@ import { useSelectedAccount } from "../Portfolio/useSelectedAccount"
 import { AccountIcon } from "./AccountIcon"
 import { PasswordUnlock, usePasswordUnlock } from "./PasswordUnlock"
 
-const accountExportPkAccountState = atom<AccountJsonAny | null>({
-  key: "accountExportPkAccountState",
-  default: null,
-})
+const accountExportPkAccountState = atom<AccountJsonAny | null>(null)
 
 export const useAccountExportPrivateKeyModal = () => {
-  const [_account, setAccount] = useRecoilState(accountExportPkAccountState)
+  const [_account, setAccount] = useAtom(accountExportPkAccountState)
 
   const { account: selectedAccount } = useSelectedAccount()
   const { isOpen, open: innerOpen, close } = useGlobalOpenClose("accountExportPkModal")
@@ -33,10 +30,6 @@ export const useAccountExportPrivateKeyModal = () => {
     },
     [innerOpen, setAccount]
   )
-
-  useEffect(() => {
-    close()
-  }, [selectedAccount, close])
 
   const account = _account ?? selectedAccount
 

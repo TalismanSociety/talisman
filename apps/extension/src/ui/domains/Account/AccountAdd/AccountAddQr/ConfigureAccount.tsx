@@ -5,7 +5,7 @@ import { Address } from "@ui/domains/Account/Address"
 import { ChainLogo } from "@ui/domains/Asset/ChainLogo"
 import { Fiat } from "@ui/domains/Asset/Fiat"
 import { useBalanceDetails } from "@ui/hooks/useBalanceDetails"
-import useBalancesByParams from "@ui/hooks/useBalancesByParams"
+import { useBalancesByParams } from "@ui/hooks/useBalancesByParams"
 import { useChainByGenesisHash } from "@ui/hooks/useChainByGenesisHash"
 import useChains from "@ui/hooks/useChains"
 import { useSetting } from "@ui/hooks/useSettings"
@@ -101,7 +101,7 @@ export const ConfigureAccount = () => {
             <Tooltip>
               <TooltipTrigger asChild>
                 <div>
-                  <Fiat amount={totalUsd} />
+                  <Fiat amount={totalUsd} isBalance />
                 </div>
               </TooltipTrigger>
               {balanceDetails && (

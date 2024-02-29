@@ -9,8 +9,11 @@ export const useKnownChain = (chainId: string | null | undefined) => {
   const chain = useChain(chainId ?? undefined)
   const activeChains = useActiveChainsState()
 
-  const isActive = useMemo(() => chain && isChainActive(chain, activeChains), [activeChains, chain])
-  const isKnown = useMemo(() => chain && !isCustomChain(chain), [chain])
+  const isActive = useMemo(
+    () => !!chain && isChainActive(chain, activeChains),
+    [activeChains, chain]
+  )
+  const isKnown = useMemo(() => !!chain && !isCustomChain(chain), [chain])
 
   const setActive = useCallback(
     (enable: boolean) => {

@@ -21,13 +21,15 @@ import {
   activeTokensStore,
   isTokenActive,
 } from "@core/domains/tokens/store.activeTokens"
-import { createSubscription, unsubscribe } from "@core/handlers/subscriptions"
+import { createSubscription, portDisconnected, unsubscribe } from "@core/handlers/subscriptions"
 import { ExtensionHandler } from "@core/libs/Handler"
 import { balanceModules } from "@core/rpcs/balance-modules"
 import { chaindataProvider } from "@core/rpcs/chaindata"
+import { updateAndWaitForUpdatedChaindata } from "@core/rpcs/mini-metadata-updater"
 import { AddressesByChain, Port } from "@core/types/base"
 import {
   AddressesByToken,
+  Balance,
   BalanceJson,
   MiniMetadata,
   UnsubscribeFn,
@@ -37,7 +39,7 @@ import { ChainId, ChainList, EvmNetworkList, Token, TokenList } from "@talismn/c
 import { MessageTypes, RequestTypes, ResponseType } from "core/types"
 import { liveQuery } from "dexie"
 import isEqual from "lodash/isEqual"
-import { BehaviorSubject, combineLatest } from "rxjs"
+import { combineLatest } from "rxjs"
 
 export class BalancesHandler extends ExtensionHandler {
   public async handle<TMessageType extends MessageTypes>(
@@ -53,8 +55,14 @@ export class BalancesHandler extends ExtensionHandler {
       case "pri(balances.get)":
         return this.stores.balances.getBalance(request as RequestBalance)
 
-      case "pri(balances.subscribe)":
-        return this.stores.balances.subscribe(id, port)
+      case "pri(balances.subscribe)": {
+        const onDisconnected = portDisconnected(port)
+
+        // TODO: Run this on a timer or something instead of when subscribing to balances
+        await updateAndWaitForUpdatedChaindata()
+
+        return this.stores.balances.subscribe(id, onDisconnected)
+      }
 
       // TODO: Replace this call with something internal to the balances store
       // i.e. refactor the balances store to allow us to subscribe to arbitrary balances here,
@@ -76,98 +84,113 @@ type BalanceSubscriptionParams = {
 const subscribeBalancesByParams = async (
   id: string,
   port: Port,
-  request: RequestBalancesByParamsSubscribe
+  {
+    addressesByChain,
+    addressesAndEvmNetworks,
+    addressesAndTokens,
+  }: RequestBalancesByParamsSubscribe
 ): Promise<boolean> => {
-  const { addressesByChain, addressesAndEvmNetworks, addressesAndTokens } =
-    request as RequestBalancesByParamsSubscribe
+  // create safe onDisconnect handler
+  const onDisconnected = portDisconnected(port)
 
   // create subscription callback
   const callback = createSubscription<"pri(balances.byparams.subscribe)">(id, port)
 
-  const obsSubscriptionParams = new BehaviorSubject<BalanceSubscriptionParams>({
+  // wait for chaindata to hydrate
+  await updateAndWaitForUpdatedChaindata()
+
+  // set up variables to track inner balances subscriptions
+  let subscriptionParams: BalanceSubscriptionParams = {
     addressesByTokenByModule: {},
     miniMetadataIds: [],
-  })
+  }
+  let balancesSubscriptionsGeneration = 0
+  let balancesUnsubCallbacks: Promise<UnsubscribeFn>[] = []
 
-  let closeSubscriptionCallbacks: Promise<UnsubscribeFn>[] = []
-
-  // watch for changes to all stores, mainly important for onboarding as they start empty
-  combineLatest([
+  // create a subscription to the balances params
+  // allows us to restart the inner balances subscriptions whenever the data
+  // which they depend on changes
+  const byParamsSubscription = combineLatest([
     // chains
-    liveQuery(async () => await chaindataProvider.chains()),
+    chaindataProvider.chainsByIdObservable,
     // evmNetworks
-    liveQuery(async () => await chaindataProvider.evmNetworks()),
+    chaindataProvider.evmNetworksByIdObservable,
     // tokens
-    liveQuery(async () => await chaindataProvider.tokens()),
-    // miniMetadatas - not used here but we must retrigger the subscription when this changes
+    chaindataProvider.tokensByIdObservable,
+    // miniMetadatas - not used here but we must retrigger the subscriptions when this changes
     liveQuery(async () => await balancesDb.miniMetadatas.toArray()),
-    // active state of evm networks
-    activeEvmNetworksStore.observable,
+
     // active state of substrate chains
     activeChainsStore.observable,
+    // active state of evm networks
+    activeEvmNetworksStore.observable,
     // enable state of tokens
     activeTokensStore.observable,
   ]).subscribe({
-    next: async ([
-      chains,
-      evmNetworks,
-      tokens,
-      miniMetadatas,
-      activeEvmNetworks,
-      activeChains,
-      activeTokens,
-    ]) => {
+    next: (args) => {
       const newSubscriptionParams = getSubscriptionParams(
         addressesByChain,
         addressesAndEvmNetworks,
         addressesAndTokens,
-        chains,
-        evmNetworks,
-        tokens,
-        activeChains,
-        activeEvmNetworks,
-        activeTokens,
-        miniMetadatas
+        ...args
       )
 
       // restart subscription only if params change
-      if (!isEqual(obsSubscriptionParams.value, newSubscriptionParams))
-        obsSubscriptionParams.next(newSubscriptionParams)
+      if (isEqual(subscriptionParams, newSubscriptionParams)) return
+      subscriptionParams = newSubscriptionParams
+
+      // close previous subscriptions
+      balancesSubscriptionsGeneration =
+        (balancesSubscriptionsGeneration + 1) % Number.MAX_SAFE_INTEGER
+      balancesUnsubCallbacks.forEach((cb) => cb.then((close) => close()))
+
+      const thisGeneration = balancesSubscriptionsGeneration
+      const { addressesByTokenByModule } = newSubscriptionParams
+
+      // create placeholder rows for all missing balances, so FE knows they are initializing
+      const initBalances: BalanceJson[] = balanceModules.flatMap((balanceModule) => {
+        const addressesByToken = addressesByTokenByModule[balanceModule.type] ?? {}
+        return Object.entries(addressesByToken).flatMap(([tokenId, addresses]) =>
+          addresses.map((address) => balanceModule.getPlaceholderBalance(tokenId, address))
+        )
+      })
+      const getBalanceKey = (b: BalanceJson | Balance) => `${b.tokenId}:${b.address}`
+      const initBalanceMap = Object.fromEntries(initBalances.map((b) => [getBalanceKey(b), b]))
+      callback({ type: "upsert", balances: new Balances(initBalances).toJSON() })
+
+      // after 30 seconds, change the status of all balances still initializing to stale
+      setTimeout(() => {
+        if (thisGeneration !== balancesSubscriptionsGeneration) return
+
+        const staleBalances = Object.values(initBalanceMap)
+          .filter((b) => b.status === "initializing")
+          .map((b) => ({ ...b, status: "stale" } as BalanceJson))
+        callback({ type: "upsert", balances: new Balances(staleBalances).toJSON() })
+      }, 30_000)
+
+      // subscribe to balances by params
+      balancesUnsubCallbacks = balanceModules.map((balanceModule) =>
+        balanceModule.subscribeBalances(
+          addressesByTokenByModule[balanceModule.type] ?? {},
+          (error, result) => {
+            if (thisGeneration !== balancesSubscriptionsGeneration) return
+
+            // eslint-disable-next-line no-console
+            if (error) return DEBUG && console.error(error)
+
+            for (const balance of result?.each ?? []) delete initBalanceMap[getBalanceKey(balance)]
+            callback({ type: "upsert", balances: (result ?? new Balances([])).toJSON() })
+          }
+        )
+      )
     },
   })
 
-  // restart subscriptions each type params update
-  obsSubscriptionParams.subscribe(async ({ addressesByTokenByModule }) => {
-    // close previous subscriptions
-    await Promise.all(closeSubscriptionCallbacks)
-
-    // create placeholder rows for all missing balances, so FE knows they are initializing
-    const initBalances: BalanceJson[] = []
-    for (const balanceModule of balanceModules) {
-      const addressesByToken = addressesByTokenByModule[balanceModule.type] ?? {}
-      for (const [tokenId, addresses] of Object.entries(addressesByToken))
-        for (const address of addresses)
-          initBalances.push(balanceModule.getPlaceholderBalance(tokenId, address))
-    }
-    callback({ type: "upsert", balances: new Balances(initBalances).toJSON() })
-
-    // subscribe to balances by params
-    closeSubscriptionCallbacks = balanceModules.map((balanceModule) =>
-      balanceModule.subscribeBalances(
-        addressesByTokenByModule[balanceModule.type] ?? {},
-        (error, result) => {
-          // eslint-disable-next-line no-console
-          if (error) DEBUG && console.error(error)
-          else callback({ type: "upsert", balances: (result ?? new Balances([])).toJSON() })
-        }
-      )
-    )
-  })
-
   // unsub on port disconnect
-  port.onDisconnect.addListener((): void => {
+  onDisconnected.then((): void => {
     unsubscribe(id)
-    closeSubscriptionCallbacks.forEach((cb) => cb.then((close) => close()))
+    byParamsSubscription.unsubscribe()
+    balancesUnsubCallbacks.forEach((cb) => cb.then((close) => close()))
   })
 
   // subscription created
@@ -181,10 +204,10 @@ const getSubscriptionParams = (
   chains: ChainList,
   evmNetworks: EvmNetworkList,
   tokens: TokenList,
+  miniMetadatas: MiniMetadata[],
   activeChains: ActiveChains,
   activeEvmNetworks: ActiveEvmNetworks,
-  activeTokens: ActiveTokens,
-  miniMetadatas: MiniMetadata[]
+  activeTokens: ActiveTokens
 ): BalanceSubscriptionParams => {
   //
   // Convert the inputs of `addressesByChain` and `addressesAndEvmNetworks` into what we need

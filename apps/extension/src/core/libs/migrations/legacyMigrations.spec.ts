@@ -9,6 +9,7 @@ import { createLegacySeedPhraseStore } from "@core/domains/mnemonics/legacy/stor
 import { AccountsStore } from "@polkadot/extension-base/stores"
 import keyring from "@polkadot/ui-keyring"
 import { cryptoWaitReady } from "@polkadot/util-crypto"
+import { watCryptoWaitReady } from "@talismn/scale"
 
 import { migratePasswordV1ToV2 } from "./legacyMigrations"
 
@@ -42,7 +43,12 @@ const createPair = (
 
 describe("App migrations", () => {
   beforeAll(async () => {
-    await cryptoWaitReady()
+    await Promise.all([
+      // wait for `@polkadot/util-crypto` to be ready (it needs to load some wasm)
+      cryptoWaitReady(),
+      // wait for `@talismn/scale` to be ready (it needs to load some wasm)
+      watCryptoWaitReady(),
+    ])
 
     keyring.loadAll({ store: new AccountsStore() })
   })

@@ -1,10 +1,8 @@
-import { DEBUG } from "@core/constants"
 import { db } from "@core/db"
 import { AccountsHandler } from "@core/domains/accounts"
 import { AccountType } from "@core/domains/accounts/types"
 import AppHandler from "@core/domains/app/handler"
 import { trackPopupSummaryData } from "@core/domains/app/popupSummaries"
-import { featuresStore } from "@core/domains/app/store.features"
 import { AssetDiscoveryHandler } from "@core/domains/assetDiscovery/handler"
 import { BalancesHandler } from "@core/domains/balances"
 import { ChainsHandler } from "@core/domains/chains"
@@ -27,19 +25,13 @@ import { log } from "@core/log"
 import { MessageTypes, RequestType, ResponseType } from "@core/types"
 import { Port, RequestIdOnly } from "@core/types/base"
 import { awaitKeyringLoaded } from "@core/util/awaitKeyringLoaded"
-import { CONFIG_RATE_LIMIT_ERROR, getConfig } from "@core/util/getConfig"
-import { hasGhostsOfThePast } from "@core/util/hasGhostsOfThePast"
 import { fetchHasSpiritKey } from "@core/util/hasSpiritKey"
 import { isTalismanHostname } from "@core/util/isTalismanHostname"
 import keyring from "@polkadot/ui-keyring"
-import * as Sentry from "@sentry/browser"
 import Browser from "webextension-polyfill"
 
-let CONFIG_UPDATE_INTERVAL = 1000 * 60 * 5 // 5 minutes
-const MAX_CONFIG_UPDATE_INTERVAL = 1000 * 60 * 60 // 1 hour
 export default class Extension extends ExtensionHandler {
   readonly #routes: Record<string, ExtensionHandler> = {}
-  #configUpdater?: NodeJS.Timeout
   #autoLockTimeout = 0
 
   constructor(stores: ExtensionStore) {
@@ -111,55 +103,21 @@ export default class Extension extends ExtensionHandler {
           })
       })
 
-      this.checkSpiritKeyOwnership()
-      this.checkGhostsOfThePastOwnership()
+      this.stores.app.observable.subscribe(({ onboarded }) => {
+        if (onboarded === "TRUE") {
+          this.checkSpiritKeyOwnership()
+        }
+      })
     })
-
-    // setup polling for config from github
-    setTimeout(async () => {
-      this.fetchRemoteConfig()
-      this.setConfigUpdateTimeout()
-    }, 1000) // initial call immediately after extension start
 
     this.initDb()
     this.cleanup()
 
+    // fetch config from github periodically
+    this.stores.remoteConfig.init()
+
     // keeps summary data tables for the popup home screen up to date
     trackPopupSummaryData()
-  }
-
-  private setConfigUpdateTimeout() {
-    if (this.#configUpdater) clearInterval(this.#configUpdater)
-    this.#configUpdater = setInterval(async () => {
-      try {
-        await this.fetchRemoteConfig()
-      } catch (e) {
-        // exponential backoff for rate limits
-        if (
-          (e as Error).message === CONFIG_RATE_LIMIT_ERROR &&
-          CONFIG_UPDATE_INTERVAL < MAX_CONFIG_UPDATE_INTERVAL
-        )
-          CONFIG_UPDATE_INTERVAL = CONFIG_UPDATE_INTERVAL * 2
-        else Sentry.captureException(e)
-      }
-      this.setConfigUpdateTimeout()
-    }, CONFIG_UPDATE_INTERVAL)
-  }
-
-  private async fetchRemoteConfig() {
-    // in dev mode, ignore github config
-    if (DEBUG) return
-    try {
-      const config = await getConfig()
-      if (config) return featuresStore.update(config.featureFlags)
-    } catch (e) {
-      // bubble up rate limit errors
-      if ((e as Error).message === CONFIG_RATE_LIMIT_ERROR) throw e
-      // ignore other errors
-      log.error("Failed to fetch remote config", { err: e })
-    }
-
-    return
   }
 
   private cleanup() {
@@ -192,7 +150,7 @@ export default class Extension extends ExtensionHandler {
       //   // delete old idb-managed metadata+metadataRpc db
       //   indexedDB.deleteDatabase("talisman")
       //
-      //   // TODO: Add this back again, but as an internal part of the @talismn/chaindata-provider-extension lib
+      //   // TODO: Add this back again, but as an internal part of the @talismn/chaindata-provider lib
       //   // // initial data provisioning (workaround to wallet beeing installed when subsquid is down)
       // }
     })
@@ -233,18 +191,6 @@ export default class Extension extends ExtensionHandler {
       return
     }
     await this.stores.app.set({ needsSpiritKeyUpdate: false })
-  }
-
-  private async checkGhostsOfThePastOwnership() {
-    try {
-      const hasGhosts = await hasGhostsOfThePast()
-      const hasGhostsNft = Object.values(hasGhosts).some((g) => g)
-      await talismanAnalytics.capture("Ghosts of the past ownership", {
-        $set: { hasGhostsOfThePast: hasGhostsNft },
-      })
-    } catch (err) {
-      log.error("Failed to check Ghosts of the Past ownership", { err })
-    }
   }
 
   public async handle<TMessageType extends MessageTypes>(

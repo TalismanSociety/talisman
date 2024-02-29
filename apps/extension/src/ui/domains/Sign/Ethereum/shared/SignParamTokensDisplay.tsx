@@ -1,13 +1,12 @@
 import { BalanceFormatter } from "@talismn/balances"
 import { classNames } from "@talismn/util"
-import { AssetLogo, CoingeckoLogoRequest } from "@ui/domains/Asset/AssetLogo"
+import { AssetLogo } from "@ui/domains/Asset/AssetLogo"
 import { Fiat } from "@ui/domains/Asset/Fiat"
 import Tokens from "@ui/domains/Asset/Tokens"
 import { FC } from "react"
 
 type SignParamTokensDisplayProps = {
   tokenId: string | undefined
-  erc20?: CoingeckoLogoRequest
   tokens: string | number | null
   decimals: number
   symbol: string
@@ -18,7 +17,6 @@ type SignParamTokensDisplayProps = {
 
 export const SignParamTokensDisplay: FC<SignParamTokensDisplayProps> = ({
   tokenId,
-  erc20,
   tokens,
   decimals,
   symbol,
@@ -35,7 +33,7 @@ export const SignParamTokensDisplay: FC<SignParamTokensDisplayProps> = ({
     >
       {withIcon && (
         <span>
-          <AssetLogo id={tokenId} erc20={erc20} />
+          <AssetLogo id={tokenId} />
         </span>
       )}
       <span className="text-white">

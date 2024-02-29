@@ -48,27 +48,31 @@ const shouldShowSubstrateNomPoolBanners = async ({
     const addressBalances = addresses.reduce((acc, address) => {
       const addressBalances = balancesForChain.find({ address })
       if (!addressBalances) return acc
-      addressBalances.each.forEach((balance) => {
-        // if the balance is less than the ED - minimum stake, it is not eligible
-        // however because we aggregate balances across accounts here, we don't want to store available values of less than 0
-        const realAvailable =
-          balance.free.planck -
-          safelyGetExistentialDeposit(balance.token) -
-          BigInt(NOM_POOL_MIN_DEPOSIT[chainId] || 0)
+      const balancesForAddress = addressBalances.each.reduce(
+        (result, balance) => {
+          // if the balance is less than the ED - minimum stake, it is not eligible
+          // however because we aggregate balances across accounts here, we don't want to store available values of less than 0
+          const realAvailable =
+            balance.free.planck -
+            safelyGetExistentialDeposit(balance.token) -
+            BigInt(NOM_POOL_MIN_DEPOSIT[chainId] || 0)
 
-        const available = realAvailable > 0n ? realAvailable : 0n
+          const available = realAvailable > 0n ? realAvailable : 0n
 
-        const staked = balance.reserves
-          .filter(
-            (reserve) =>
-              reserve.label === "nompools-staking" || reserve.label === "nompools-unbonding"
-          )
-          .reduce((balanceSum, { amount }) => {
-            return balanceSum + amount.planck
-          }, 0n)
+          const staked = balance.reserves
+            .filter(
+              (reserve) =>
+                reserve.label === "nompools-staking" || reserve.label === "nompools-unbonding"
+            )
+            .reduce((balanceSum, { amount }) => {
+              return balanceSum + amount.planck
+            }, 0n)
 
-        acc[address] = acc[address] || (available > 0n && staked === 0n)
-      })
+          return { staked: staked + result.staked, available: available + result.available }
+        },
+        { available: 0n, staked: 0n } as { available: bigint; staked: bigint }
+      )
+      acc[address] = balancesForAddress.available > 0n && balancesForAddress.staked === 0n
       return acc
     }, {} as AddressStatuses)
 

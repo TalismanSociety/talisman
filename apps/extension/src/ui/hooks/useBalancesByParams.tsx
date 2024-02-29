@@ -68,7 +68,7 @@ export const useBalancesByParams = ({
     [addressesByChain, addressesAndEvmNetworks, addressesAndTokens]
   )
 
-  // subscrition must be reinitialized (using the key) if parameters change
+  // subscription must be reinitialized (using the key) if parameters change
   const subscriptionKey = useMemo(
     () =>
       `useBalancesByParams-${md5(JSON.stringify(addressesByChain))}-${md5(
@@ -85,4 +85,3 @@ export const useBalancesByParams = ({
 
   return useMemo(() => new Balances(debouncedBalances, hydrate), [debouncedBalances, hydrate])
 }
-export default useBalancesByParams

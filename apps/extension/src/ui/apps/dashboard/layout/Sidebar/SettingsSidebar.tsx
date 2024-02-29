@@ -17,9 +17,9 @@ import { useTranslation } from "react-i18next"
 import { SidebarNavItem } from "./SidebarNavItem"
 
 const MnemonicNotification = () => {
-  const { showBackupNotification } = useMnemonicBackup()
+  const { allBackedUp } = useMnemonicBackup()
 
-  return showBackupNotification ? <AlertCircleIcon className="text-alert-warn" /> : null
+  return !allBackedUp ? <AlertCircleIcon className="text-alert-warn" /> : null
 }
 
 export const SettingsSidebar = () => {

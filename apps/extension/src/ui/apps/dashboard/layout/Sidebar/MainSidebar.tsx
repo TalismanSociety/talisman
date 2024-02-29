@@ -18,7 +18,7 @@ import {
 } from "@talismn/icons"
 import { useBuyTokensModal } from "@ui/domains/Asset/Buy/useBuyTokensModal"
 import { useAnalytics } from "@ui/hooks/useAnalytics"
-import { useIsFeatureEnabled } from "@ui/hooks/useFeatures"
+import { useIsFeatureEnabled } from "@ui/hooks/useIsFeatureEnabled"
 import useMnemonicBackup from "@ui/hooks/useMnemonicBackup"
 import { useCallback } from "react"
 import { useTranslation } from "react-i18next"
@@ -34,7 +34,7 @@ export const MainSidebar = () => {
   const showBuyCryptoButton = useIsFeatureEnabled("BUY_CRYPTO")
   const showStaking = useIsFeatureEnabled("LINK_STAKING")
 
-  const { isSnoozed } = useMnemonicBackup()
+  const { showBackupWarning } = useMnemonicBackup()
 
   const handlePortfolioClick = useCallback(() => {
     genericEvent("goto portfolio", { from: "sidebar" })
@@ -138,7 +138,7 @@ export const MainSidebar = () => {
         onClick={handleSettingsClick}
         icon={<SettingsIcon />}
       />
-      {isSnoozed && (
+      {showBackupWarning && (
         <SidebarNavItem
           title={t("Backup Wallet")}
           // show only on large screens

@@ -1,4 +1,5 @@
 import { ExtensionHandler } from "@core/libs/Handler"
+import { updateAndWaitForUpdatedChaindata } from "@core/rpcs/mini-metadata-updater"
 import { MessageTypes, RequestTypes, ResponseType } from "core/types"
 
 import { assetDiscoveryScanner } from "./scanner"
@@ -12,6 +13,7 @@ export class AssetDiscoveryHandler extends ExtensionHandler {
   ): Promise<ResponseType<TMessageType>> {
     switch (type) {
       case "pri(assetDiscovery.scan.start)":
+        await updateAndWaitForUpdatedChaindata()
         return assetDiscoveryScanner.startScan(request as RequestAssetDiscoveryStartScan)
 
       case "pri(assetDiscovery.scan.stop)":

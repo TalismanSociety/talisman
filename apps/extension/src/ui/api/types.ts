@@ -80,7 +80,7 @@ export default interface MessageTypes {
   dashboardOpen: (route: string) => Promise<boolean>
   onboardOpen: () => Promise<boolean>
   popupOpen: (argument?: string) => Promise<boolean>
-  promptLogin: (closeOnSuccess?: boolean) => Promise<boolean>
+  promptLogin: () => Promise<boolean>
   approveMetaRequest: (id: RequestMetadataId) => Promise<boolean>
   rejectMetaRequest: (id: RequestMetadataId) => Promise<boolean>
   allowPhishingSite: (url: string) => Promise<boolean>
@@ -93,6 +93,7 @@ export default interface MessageTypes {
     signature: HexString
   ) => Promise<boolean>
   approveSignQr: (id: SigningRequestID<"substrate-sign">, signature: HexString) => Promise<boolean>
+  approveSignSignet: (id: SigningRequestID<"substrate-sign">) => Promise<boolean>
 
   // encrypt messages -------------------------------------------------------
   approveEncrypt: (id: EncryptRequestId) => Promise<boolean>
@@ -134,6 +135,12 @@ export default interface MessageTypes {
   ) => Promise<string>
   accountCreateQr: (name: string, address: string, genesisHash: HexString | null) => Promise<string>
   accountCreateWatched: (name: string, address: string, isPortfolio: boolean) => Promise<string>
+  accountCreateSignet: (
+    name: string,
+    address: string,
+    genesisHash: `0x${string}`,
+    signetUrl: string
+  ) => Promise<string>
   accountExternalSetIsPortfolio: (address: string, isPortfolio: boolean) => Promise<boolean>
   accountsSubscribe: (cb: (accounts: AccountJson[]) => void) => UnsubscribeFn
   accountsCatalogSubscribe: (cb: (trees: Trees) => void) => UnsubscribeFn

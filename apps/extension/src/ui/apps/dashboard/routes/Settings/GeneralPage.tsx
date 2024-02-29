@@ -1,3 +1,4 @@
+import { SPIRIT_KEYS_DOCS_URL } from "@core/constants"
 import { HeaderBlock } from "@talisman/components/HeaderBlock"
 import { Setting } from "@talisman/components/Setting"
 import {
@@ -60,7 +61,7 @@ export const GeneralPage = () => {
             <Trans t={t}>
               <a
                 className="text-grey-200 hover:text-body"
-                href="https://docs.talisman.xyz/talisman/explore-the-paraverse/talisman-portal/spirit-keys-and-commendations#sprit-keys"
+                href={SPIRIT_KEYS_DOCS_URL}
                 target="_blank"
                 rel="noreferrer noopener"
               >
@@ -112,14 +113,14 @@ export const GeneralPage = () => {
           iconRight={ChevronRightIcon}
           title={t("Language")}
           subtitle={t("Change the wallet display language")}
-          to={`/settings/language`}
+          to={`/settings/general/language`}
         />
         <CtaButton
           iconLeft={DollarSignIcon}
           iconRight={ChevronRightIcon}
           title={t("Currency")}
           subtitle={t("Set currencies for viewing your portolio value")}
-          to={`/settings/currency`}
+          to={`/settings/general/currency`}
         />
         <Setting
           iconLeft={UserIcon}

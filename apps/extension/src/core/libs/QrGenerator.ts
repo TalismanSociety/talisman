@@ -8,7 +8,6 @@ import { chaindataProvider } from "@core/rpcs/chaindata"
 import { getMetadataDef, getMetadataRpcFromDef } from "@core/util/getMetadataDef"
 import { Keyring } from "@polkadot/keyring"
 import { assert, hexToU8a, u8aConcat, u8aToU8a } from "@polkadot/util"
-import { HexString } from "@polkadot/util/types"
 import { Chain } from "@talismn/chaindata-provider"
 import * as $ from "scale-codec"
 
@@ -74,7 +73,7 @@ const $networkSpecs = $.object(
 const $addNetworkSpecsPayload = $.object($.field("specs", $.uint8Array))
 
 export const generateQrAddNetworkSpecs = async (genesisHash: SignerPayloadGenesisHash) => {
-  const chain = await chaindataProvider.getChain({ genesisHash } as { genesisHash: HexString })
+  const chain = await chaindataProvider.chainByGenesisHash(genesisHash)
   assert(chain, "Chain not found")
 
   const systemProperties = await chainConnector.send(chain.id, "system_properties", [])

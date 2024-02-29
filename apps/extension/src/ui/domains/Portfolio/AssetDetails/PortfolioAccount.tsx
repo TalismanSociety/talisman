@@ -20,7 +20,11 @@ export const PortfolioAccount = ({
       <div className="max-w-lg overflow-hidden text-ellipsis whitespace-nowrap">
         {account.name ?? t("Unknown")}
       </div>
-      <AccountTypeIcon className="text-primary" origin={account?.origin} />
+      <AccountTypeIcon
+        className="text-primary"
+        origin={account?.origin}
+        signetUrl={account.signetUrl as string}
+      />
     </div>
   )
 }

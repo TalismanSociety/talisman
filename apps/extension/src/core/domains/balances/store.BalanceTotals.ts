@@ -7,7 +7,7 @@ import keyring from "@polkadot/ui-keyring"
 import { Address, BalanceJson, Balances, db as balancesDb } from "@talismn/balances"
 import { TokenRateCurrency, TokenRatesList } from "@talismn/token-rates"
 import { liveQuery } from "dexie"
-import { combineLatest, debounceTime } from "rxjs"
+import { combineLatest, throttleTime } from "rxjs"
 
 import { settingsStore } from "../app/store.settings"
 import { BalanceTotal } from "./types"
@@ -16,7 +16,7 @@ export const balanceTotalsStore = new StorageProvider<
   Record<`${Address}:${TokenRateCurrency}`, BalanceTotal>
 >("balanceTotals")
 
-const MAX_UPDATE_INTERVAL = 2_000 // update every 2 seconds maximum
+const MAX_UPDATE_INTERVAL = 1_000 // update every 1 second maximum
 
 export const trackBalanceTotals = async () => {
   await awaitKeyringLoaded()
@@ -24,11 +24,11 @@ export const trackBalanceTotals = async () => {
   combineLatest([
     settingsStore.observable,
     keyring.accounts.subject,
-    liveQuery(() => chaindataProvider.tokens()),
+    chaindataProvider.tokensByIdObservable,
     liveQuery(() => balancesDb.balances.toArray()),
     liveQuery(() => extensionDb.tokenRates.toArray()),
   ])
-    .pipe(debounceTime(MAX_UPDATE_INTERVAL))
+    .pipe(throttleTime(MAX_UPDATE_INTERVAL, undefined, { trailing: true }))
     .subscribe(async ([settings, accounts, tokens, balances, allTokenRates]) => {
       try {
         const tokenRates: TokenRatesList = Object.fromEntries(

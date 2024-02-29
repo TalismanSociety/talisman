@@ -137,13 +137,13 @@ export const BottomNav = () => {
     open()
   }, [open])
 
-  const { isSnoozed, allBackedUp } = useMnemonicBackup()
+  const { showBackupWarningBanner, allBackedUp } = useMnemonicBackup()
 
   const { t } = useTranslation()
 
   return (
     <>
-      {isSnoozed && (
+      {showBackupWarningBanner && (
         <div className="bg-black-tertiary w-100 flex h-20 min-h-[4rem] items-center justify-center gap-4 px-4">
           <AlertCircleIcon className="text-primary-500 h-12 w-12" />
           <div className="text-body-secondary text-center text-xs">

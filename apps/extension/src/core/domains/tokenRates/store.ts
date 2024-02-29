@@ -6,12 +6,17 @@ import { chaindataProvider } from "@core/rpcs/chaindata"
 import { Port } from "@core/types/base"
 import { TokenList } from "@talismn/chaindata-provider"
 import { fetchTokenRates } from "@talismn/token-rates"
-import { Subscription, liveQuery } from "dexie"
+import { Subscription } from "dexie"
 import debounce from "lodash/debounce"
 import { BehaviorSubject, combineLatest } from "rxjs"
 
-const MIN_REFRESH_INTERVAL = 60_000 // 60_000ms = 60s = 1 minute
-const REFRESH_INTERVAL = 300_000 // 5 minutes
+import { remoteConfigStore } from "../app/store.remoteConfig"
+
+// refresh token rates on subscription start if older than 5 minutes
+const MIN_REFRESH_INTERVAL = 5 * 60_000
+
+// refresh token rates while sub is active every 10 minutes
+const REFRESH_INTERVAL = 10 * 60_000
 
 export class TokenRatesStore {
   #lastUpdateTokenIds = ""
@@ -42,7 +47,7 @@ export class TokenRatesStore {
         }, REFRESH_INTERVAL)
 
         // refresh when token list changes : crucial for first popup load after install or db migration
-        const obsTokens = liveQuery(() => chaindataProvider.tokens())
+        const obsTokens = chaindataProvider.tokensByIdObservable
         const obsActiveTokens = activeTokensStore.observable
 
         subTokenList = combineLatest([obsTokens, obsActiveTokens]).subscribe(
@@ -74,7 +79,7 @@ export class TokenRatesStore {
   async hydrateStore(): Promise<boolean> {
     try {
       const [tokens, activeTokens] = await Promise.all([
-        chaindataProvider.tokens(),
+        chaindataProvider.tokensById(),
         activeTokensStore.get(),
       ])
 
@@ -94,7 +99,9 @@ export class TokenRatesStore {
    */
   private async updateTokenRates(tokens: TokenList): Promise<void> {
     const now = Date.now()
-    const strTokenIds = Object.keys(tokens ?? {}).join(",")
+    const strTokenIds = Object.keys(tokens ?? {})
+      .sort()
+      .join(",")
     if (now - this.#lastUpdateAt < MIN_REFRESH_INTERVAL && this.#lastUpdateTokenIds === strTokenIds)
       return
 
@@ -103,7 +110,8 @@ export class TokenRatesStore {
     this.#lastUpdateTokenIds = strTokenIds
 
     try {
-      const tokenRates = await fetchTokenRates(tokens)
+      const coingecko = await remoteConfigStore.get("coingecko")
+      const tokenRates = await fetchTokenRates(tokens, coingecko)
       const putTokenRates = Object.entries(tokenRates).map(([tokenId, rates]) => ({
         tokenId,
         rates,

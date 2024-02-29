@@ -1,11 +1,9 @@
-import { accountsQuery } from "@ui/atoms"
-import { useRecoilValue } from "recoil"
-
 import { useAccountColors } from "./useAccountColors"
+import useAccounts from "./useAccounts"
 
 export const useFirstAccountColors = () => {
   // pick first account and apply it's colors to background
-  const [account] = useRecoilValue(accountsQuery("all"))
+  const [account] = useAccounts()
 
   return useAccountColors(account?.address)
 }

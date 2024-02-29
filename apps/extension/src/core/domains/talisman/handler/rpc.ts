@@ -21,7 +21,7 @@ export default class TalismanRpcHandler extends TabsHandler {
   ): Promise<UnknownJsonRpcResponse> {
     const { genesisHash, method, params } = request
 
-    const chain = await chaindataProvider.getChain({ genesisHash })
+    const chain = await chaindataProvider.chainByGenesisHash(genesisHash)
     assert(chain, `Chain with genesisHash '${genesisHash}' not found`)
 
     return await chainConnector.send(chain.id, method, params)
@@ -36,7 +36,7 @@ export default class TalismanRpcHandler extends TabsHandler {
 
     const { genesisHash, subscribeMethod, responseMethod, params, timeout } = request
 
-    const chain = await chaindataProvider.getChain({ genesisHash })
+    const chain = await chaindataProvider.chainByGenesisHash(genesisHash)
     assert(chain, `Chain with genesisHash '${genesisHash}' not found`)
 
     const unsubscribe = await chainConnector.subscribe(

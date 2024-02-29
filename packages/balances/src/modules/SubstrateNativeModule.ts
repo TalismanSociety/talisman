@@ -92,8 +92,8 @@ const AccountInfoOverrides: { [key: ChainId]: string } = {
   "nftmart": RegularAccountInfoFallback,
 }
 
-export const subNativeTokenId = (chainId: ChainId, tokenSymbol: string) =>
-  `${chainId}-substrate-native-${tokenSymbol}`.toLowerCase().replace(/ /g, "-")
+export const subNativeTokenId = (chainId: ChainId) =>
+  `${chainId}-substrate-native`.toLowerCase().replace(/ /g, "-")
 
 const getChainIdFromTokenId = (tokenId: string) => {
   const match = /^([\d\w-]+)-substrate-native/.exec(tokenId)
@@ -185,7 +185,7 @@ export const SubNativeModule: NewBalanceModule<
     ...DefaultBalanceModule("substrate-native"),
 
     async fetchSubstrateChainMeta(chainId, moduleConfig, metadataRpc) {
-      const isTestnet = (await chaindataProvider.getChain(chainId))?.isTestnet || false
+      const isTestnet = (await chaindataProvider.chainById(chainId))?.isTestnet || false
 
       if (moduleConfig?.disable === true || metadataRpc === undefined)
         return {
@@ -289,7 +289,7 @@ export const SubNativeModule: NewBalanceModule<
 
       const { isTestnet, symbol, decimals, existentialDeposit } = chainMeta
 
-      const id = subNativeTokenId(chainId, symbol)
+      const id = subNativeTokenId(chainId)
 
       const nativeToken: SubNativeToken = {
         id,
@@ -408,14 +408,14 @@ export const SubNativeModule: NewBalanceModule<
       tip,
       transferMethod,
     }) {
-      const token = await chaindataProvider.getToken(tokenId)
+      const token = await chaindataProvider.tokenById(tokenId)
       assert(token, `Token ${tokenId} not found in store`)
 
       if (token.type !== "substrate-native")
         throw new Error(`This module doesn't handle tokens of type ${token.type}`)
 
       const chainId = token.chain.id
-      const chain = await chaindataProvider.getChain(chainId)
+      const chain = await chaindataProvider.chainById(chainId)
       assert(chain?.genesisHash, `Chain ${chainId} not found in store`)
 
       const { genesisHash } = chain
@@ -470,8 +470,8 @@ async function buildQueries(
   getOrCreateTypeRegistry: GetOrCreateTypeRegistry,
   addressesByToken: AddressesByToken<SubNativeToken | CustomSubNativeToken>
 ): Promise<Array<RpcStateQuery<Balance>>> {
-  const chains = await chaindataProvider.chains()
-  const tokens = await chaindataProvider.tokens()
+  const chains = await chaindataProvider.chainsById()
+  const tokens = await chaindataProvider.tokensById()
   const miniMetadatas = new Map(
     (await balancesDb.miniMetadatas.toArray()).map((miniMetadata) => [
       miniMetadata.id,
@@ -699,8 +699,8 @@ export async function subscribeNompoolStaking(
   callback: SubscriptionCallback<Balances>,
   callerUnsubscribed: Promise<unknown>
 ) {
-  const chains = await chaindataProvider.chains()
-  const tokens = await chaindataProvider.tokens()
+  const chains = await chaindataProvider.chainsById()
+  const tokens = await chaindataProvider.tokensById()
   const miniMetadatas = new Map(
     (await balancesDb.miniMetadatas.toArray()).map((miniMetadata) => [
       miniMetadata.id,
@@ -1076,8 +1076,8 @@ async function subscribeCrowdloans(
   callback: SubscriptionCallback<Balances>,
   callerUnsubscribed: Promise<unknown>
 ) {
-  const chains = await chaindataProvider.chains()
-  const tokens = await chaindataProvider.tokens()
+  const chains = await chaindataProvider.chainsById()
+  const tokens = await chaindataProvider.tokensById()
   const miniMetadatas = new Map(
     (await balancesDb.miniMetadatas.toArray()).map((miniMetadata) => [
       miniMetadata.id,

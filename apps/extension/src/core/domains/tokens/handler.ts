@@ -3,7 +3,7 @@ import { CustomErc20Token, CustomErc20TokenCreate } from "@core/domains/tokens/t
 import { talismanAnalytics } from "@core/libs/Analytics"
 import { ExtensionHandler } from "@core/libs/Handler"
 import { chaindataProvider } from "@core/rpcs/chaindata"
-import { miniMetadataUpdater } from "@core/rpcs/mini-metadata-updater"
+import { updateAndWaitForUpdatedChaindata } from "@core/rpcs/mini-metadata-updater"
 import { Port, RequestIdOnly } from "@core/types/base"
 import { assert } from "@polkadot/util"
 import { githubUnknownTokenLogoUrl } from "@talismn/chaindata-provider"
@@ -25,28 +25,14 @@ export default class TokensHandler extends ExtensionHandler {
       // token handlers -----------------------------------------------------
       // --------------------------------------------------------------------
       case "pri(tokens.subscribe)": {
-        await miniMetadataUpdater.hydrateFromChaindata()
-
-        const chains = await chaindataProvider.chainsArray()
-        const { statusesByChain } = await miniMetadataUpdater.statuses(chains)
-        const goodChains = [...statusesByChain.entries()].flatMap(([chainId, status]) =>
-          status === "good" ? chainId : []
-        )
-        await chaindataProvider.hydrateTokens(goodChains)
-
-        const [chainIds, evmNetworkIds] = await Promise.all([
-          chaindataProvider.chainIds(),
-          chaindataProvider.evmNetworkIds(),
-        ])
-
         // TODO: Run this on a timer or something instead of when subscribing to tokens
-        await miniMetadataUpdater.update(chainIds, evmNetworkIds)
+        await updateAndWaitForUpdatedChaindata()
 
         // triggers a pending scan if any
         // doing this here as this is the only place where we hydrate tokens from github
         assetDiscoveryScanner.startPendingScan()
 
-        return
+        return true
       }
 
       // --------------------------------------------------------------------
@@ -57,16 +43,16 @@ export default class TokensHandler extends ExtensionHandler {
         const token = request as CustomErc20TokenCreate
         const networkId = token.chainId || token.evmNetworkId
         assert(networkId, "A chainId or an evmNetworkId is required")
-        const chain = token.chainId ? await chaindataProvider.getChain(token.chainId) : undefined
+        const chain = token.chainId ? await chaindataProvider.chainById(token.chainId) : undefined
         const evmNetwork = token.evmNetworkId
-          ? await chaindataProvider.getEvmNetwork(token.evmNetworkId)
+          ? await chaindataProvider.evmNetworkById(token.evmNetworkId)
           : undefined
         assert(typeof token.contractAddress === "string", "A contract address is required")
         assert(typeof token.symbol === "string", "A token symbol is required")
         assert(typeof token.decimals === "number", "A number of token decimals is required")
 
         const tokenId = getErc20TokenId(networkId, token.contractAddress)
-        const existing = await chaindataProvider.getToken(tokenId)
+        const existing = await chaindataProvider.tokenById(tokenId)
         assert(!existing, "This token already exists")
 
         const { symbol, decimals, coingeckoId, contractAddress, image } = token

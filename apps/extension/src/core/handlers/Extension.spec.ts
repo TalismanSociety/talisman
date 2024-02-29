@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-non-null-assertion */
 import { TALISMAN_WEB_APP_DOMAIN } from "@core/constants"
 import { db } from "@core/db"
 import { passwordStore } from "@core/domains/app/store.password"
@@ -12,6 +11,7 @@ import type { ExtDef } from "@polkadot/types/extrinsic/signedExtensions/types"
 import type { SignerPayloadJSON } from "@polkadot/types/types"
 import keyring from "@polkadot/ui-keyring"
 import { cryptoWaitReady, signatureVerify } from "@polkadot/util-crypto"
+import { watCryptoWaitReady } from "@talismn/scale"
 import { waitFor } from "@testing-library/dom"
 import Browser from "webextension-polyfill"
 
@@ -21,8 +21,7 @@ import { requestStore } from "../libs/requests/store"
 import Extension from "./Extension"
 import { extensionStores } from "./stores"
 
-jest.mock("@talismn/chaindata-provider-extension/src/net")
-jest.setTimeout(10000)
+jest.setTimeout(10_000)
 
 // Mock the hasSpiritKey module to return false
 jest.mock("@core/util/hasSpiritKey", () => {
@@ -41,7 +40,12 @@ describe("Extension", () => {
   let mnemonicId: string
 
   async function createExtension(): Promise<Extension> {
-    await cryptoWaitReady()
+    await Promise.all([
+      // wait for `@polkadot/util-crypto` to be ready (it needs to load some wasm)
+      cryptoWaitReady(),
+      // wait for `@talismn/scale` to be ready (it needs to load some wasm)
+      watCryptoWaitReady(),
+    ])
 
     keyring.loadAll({ store: new AccountsStore() })
 
@@ -455,7 +459,7 @@ describe("Extension", () => {
     const existingAddress = await getAccount()
     const talismanSite = await extensionStores.sites.get(TALISMAN_WEB_APP_DOMAIN)
     expect(talismanSite && talismanSite.addresses)
-    expect(talismanSite.addresses!.includes(existingAddress))
+    expect(talismanSite.addresses?.includes(existingAddress))
 
     const newAddress = await messageSender("pri(accounts.create)", {
       name: "AutoAdd",
@@ -465,10 +469,10 @@ describe("Extension", () => {
 
     const sites = await extensionStores.sites.get()
     const talismanSiteAgain = sites[TALISMAN_WEB_APP_DOMAIN]
-    expect(talismanSiteAgain.addresses!.includes(newAddress))
+    expect(talismanSiteAgain.addresses?.includes(newAddress))
 
     const otherSite = Object.values(sites).find((site) => !site.connectAllSubstrate)
     expect(otherSite)
-    expect(otherSite!.addresses?.includes(newAddress)).toBeFalsy()
+    expect(otherSite?.addresses?.includes(newAddress)).toBeFalsy()
   })
 })

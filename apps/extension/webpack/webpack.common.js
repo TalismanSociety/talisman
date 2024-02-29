@@ -28,7 +28,7 @@ const config = (env) => ({
     // Also, `dependOn` seems to break the build (background script doesn't start) when there's more than one entry in it.
     // So, I've daisy-chained each entry to `dependOn` the next.
     "vendor-background": {
-      import: ["@metamask/eth-sig-util", "@substrate/txwrapper-core"],
+      import: ["@metamask/eth-sig-util", "@substrate/txwrapper-core", "dexie"],
     },
 
     // Wallet injected scripts
@@ -115,7 +115,12 @@ const config = (env) => ({
   plugins: [
     new webpack.DefinePlugin({
       // passthroughs from the environment
-      "process.env.EXTENSION_PREFIX": JSON.stringify(""), // this env var MUST be set, however if it has a value the keyring will break
+
+      // NOTE: This EXTENSION_PREFIX must be an empty `""`.
+      // The `BaseStore` which the `AccountsStore` in `@polkadot/keyring` extends uses this as a prefix for localstorage keys.
+      // If it's set to something like `talisman`, then the keys which should be at `account:0x...` will instead be located
+      // at `talismanaccounts:accounts:0x...`.
+      "process.env.EXTENSION_PREFIX": JSON.stringify(""),
       "process.env.PORT_PREFIX": JSON.stringify(process.env.PORT_PREFIX || "talisman"),
       "process.env.NODE_DEBUG": JSON.stringify(process.env.NODE_DEBUG || ""),
       "process.env.POSTHOG_AUTH_TOKEN": JSON.stringify(process.env.POSTHOG_AUTH_TOKEN || ""),
@@ -137,6 +142,15 @@ const config = (env) => ({
       ),
       "process.env.EVM_LOGPROXY": JSON.stringify(
         env.build === undefined ? process.env.EVM_LOGPROXY || "" : ""
+      ),
+      "process.env.COINGECKO_API_URL": JSON.stringify(
+        env.build === undefined ? process.env.COINGECKO_API_URL || "" : ""
+      ),
+      "process.env.COINGECKO_API_KEY_NAME": JSON.stringify(
+        env.build === undefined ? process.env.COINGECKO_API_KEY_NAME || "" : ""
+      ),
+      "process.env.COINGECKO_API_KEY_VALUE": JSON.stringify(
+        env.build === undefined ? process.env.COINGECKO_API_KEY_VALUE || "" : ""
       ),
 
       // computed values

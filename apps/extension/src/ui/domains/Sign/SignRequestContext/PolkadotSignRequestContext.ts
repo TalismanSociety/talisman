@@ -7,12 +7,12 @@ import { HexString } from "@polkadot/util/types"
 import { provideContext } from "@talisman/util/provideContext"
 import { useQuery } from "@tanstack/react-query"
 import { api } from "@ui/api"
-import { balancesHydrateState } from "@ui/atoms"
+import { balancesHydrateAtom } from "@ui/atoms"
 import { useChainByGenesisHash } from "@ui/hooks/useChainByGenesisHash"
 import useChains from "@ui/hooks/useChains"
 import { useExtrinsic } from "@ui/hooks/useExtrinsic"
-import { useRecoilPreload } from "@ui/hooks/useRecoilPreload"
 import { getExtrinsicDispatchInfo } from "@ui/util/getExtrinsicDispatchInfo"
+import { useAtomValue } from "jotai"
 import { useCallback, useMemo } from "react"
 
 import { useAnySigningRequest } from "./AnySignRequestContext"
@@ -61,7 +61,7 @@ const usePolkadotSigningRequestProvider = ({
 }: {
   signingRequest: SubstrateSigningRequest
 }) => {
-  useRecoilPreload(balancesHydrateState)
+  useAtomValue(balancesHydrateAtom)
   const payload = signingRequest?.request?.payload
 
   const baseRequest = useAnySigningRequest({
@@ -114,11 +114,24 @@ const usePolkadotSigningRequestProvider = ({
     [baseRequest]
   )
 
+  const approveSignet = useCallback(async () => {
+    baseRequest.setStatus.processing("Approving request")
+    if (!baseRequest || !baseRequest.id) return
+    try {
+      await api.approveSignSignet(baseRequest.id)
+      baseRequest.setStatus.success("Approved")
+    } catch (err) {
+      log.error("failed to approve signet", { err })
+      baseRequest.setStatus.error("Failed to approve sign request")
+    }
+  }, [baseRequest])
+
   return {
     payload,
     signingRequest,
     ...baseRequest,
     chain,
+    approveSignet,
     approveHardware,
     approveQr,
     extrinsic,

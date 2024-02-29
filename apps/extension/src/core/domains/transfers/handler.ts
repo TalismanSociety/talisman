@@ -44,7 +44,7 @@ export default class AssetTransferHandler extends ExtensionHandler {
     method = "transferKeepAlive",
   }: RequestAssetTransfer) {
     const result = await getPairForAddressSafely(fromAddress, async (pair) => {
-      const token = await chaindataProvider.getToken(tokenId)
+      const token = await chaindataProvider.tokenById(tokenId)
       if (!token) throw new Error(`Invalid tokenId ${tokenId}`)
 
       transferAnalytics({ network: { chainId }, amount, tokenId, toAddress })
@@ -107,7 +107,7 @@ export default class AssetTransferHandler extends ExtensionHandler {
     tip = "0",
     method = "transferKeepAlive",
   }: RequestAssetTransfer) {
-    const token = await chaindataProvider.getToken(tokenId)
+    const token = await chaindataProvider.tokenById(tokenId)
     if (!token) throw new Error(`Invalid tokenId ${tokenId}`)
 
     const tokenType = token.type
@@ -156,7 +156,7 @@ export default class AssetTransferHandler extends ExtensionHandler {
       const client = await chainConnectorEvm.getPublicClientForEvmNetwork(evmNetworkId)
       if (!client) throw new Error(`Could not find provider for network ${evmNetworkId}`)
 
-      const token = await chaindataProvider.getToken(tokenId)
+      const token = await chaindataProvider.tokenById(tokenId)
       if (!token) throw new Error(`Invalid tokenId ${tokenId}`)
 
       const { from, to } = unsigned
@@ -199,7 +199,7 @@ export default class AssetTransferHandler extends ExtensionHandler {
     amount,
     gasSettings,
   }: RequestAssetTransferEth): Promise<ResponseAssetTransfer> {
-    const token = await chaindataProvider.getToken(tokenId)
+    const token = await chaindataProvider.tokenById(tokenId)
     if (!token) throw new Error(`Invalid tokenId ${tokenId}`)
 
     assert(isEthereumAddress(fromAddress), "Invalid from address")
@@ -268,7 +268,7 @@ export default class AssetTransferHandler extends ExtensionHandler {
     transferInfo,
   }: RequestAssetTransferApproveSign): Promise<ResponseAssetTransfer> {
     const genesisHash = validateHexString(unsigned.genesisHash)
-    const chain = await chaindataProvider.getChain({ genesisHash })
+    const chain = await chaindataProvider.chainByGenesisHash(genesisHash)
     if (!chain) throw new Error(`Could not find chain for genesisHash ${genesisHash}`)
 
     const hash = await AssetTransfersRpc.transferSigned(unsigned, signature, transferInfo)

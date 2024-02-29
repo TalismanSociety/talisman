@@ -14,6 +14,7 @@ import type {
   RequestAccountCreateFromSuri,
   RequestAccountCreateLedgerEthereum,
   RequestAccountCreateLedgerSubstrate,
+  RequestAccountCreateSignet,
   RequestAccountCreateWatched,
   RequestAccountExport,
   RequestAccountExportPrivateKey,
@@ -274,8 +275,8 @@ export default class AccountsHandler extends ExtensionHandler {
 
     // hopefully in the future D'CENT will be able to sign on any chain, and code below can be simply removed.
     // keep this basic check for now to avoid polluting the messaging interface, as polkadot is the only token supported by D'CENT.
-    if (tokenIds.length === 1 && tokenIds[0] === "polkadot-substrate-native-dot") {
-      const chain = await chaindataProvider.getChain("polkadot")
+    if (tokenIds.length === 1 && tokenIds[0] === "polkadot-substrate-native") {
+      const chain = await chaindataProvider.chainById("polkadot")
       meta.genesisHash = chain?.genesisHash?.startsWith?.("0x")
         ? (chain.genesisHash as HexString)
         : null
@@ -388,6 +389,39 @@ export default class AccountsHandler extends ExtensionHandler {
       isEthereumAddress(safeAddress) ? "ethereum" : "substrate",
       "watched"
     )
+
+    return pair.address
+  }
+
+  private accountsCreateSignet({
+    address,
+    genesisHash,
+    name,
+    signetUrl,
+  }: RequestAccountCreateSignet) {
+    const pair = createPair(
+      {
+        type: "sr25519",
+        toSS58: encodeAddress,
+      },
+      {
+        publicKey: decodeAnyAddress(address),
+        secretKey: new Uint8Array(),
+      },
+      {
+        name,
+        genesisHash,
+        signetUrl,
+        origin: AccountType.Signet,
+        isPortfolio: false,
+      },
+      null
+    )
+
+    keyring.keyring.addPair(pair)
+    keyring.saveAccount(pair)
+
+    this.captureAccountCreateEvent("substrate", "signet")
 
     return pair.address
   }
@@ -576,6 +610,8 @@ export default class AccountsHandler extends ExtensionHandler {
         return this.accountsCreateQr(request as RequestAccountCreateExternal)
       case "pri(accounts.create.watched)":
         return this.accountCreateWatched(request as RequestAccountCreateWatched)
+      case "pri(accounts.create.signet)":
+        return this.accountsCreateSignet(request as RequestAccountCreateSignet)
       case "pri(accounts.external.setIsPortfolio)":
         return this.accountExternalSetIsPortfolio(request as RequestAccountExternalSetIsPortfolio)
       case "pri(accounts.forget)":

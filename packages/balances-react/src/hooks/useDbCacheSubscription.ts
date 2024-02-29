@@ -7,8 +7,7 @@ import {
   createSubscriptionId,
   deleteSubscriptionId,
 } from "@talismn/balances"
-import { ChaindataProvider, TokenList } from "@talismn/chaindata-provider"
-import { ChaindataProviderExtension } from "@talismn/chaindata-provider-extension"
+import { ChaindataProvider, IChaindataProvider, TokenList } from "@talismn/chaindata-provider"
 import { fetchTokenRates, db as tokenRatesDb } from "@talismn/token-rates"
 import md5 from "blueimp-md5"
 import { useCallback, useMemo } from "react"
@@ -35,11 +34,11 @@ export const useDbCacheSubscription = (subscribeTo: DbEntityType) => {
   const subscribe = useCallback(() => {
     switch (subscribeTo) {
       case "chains":
-        return subscribeChainDataHydrate(provider, "chains")
+        return subscribeChaindataHydrate(provider, "chains")
       case "evmNetworks":
-        return subscribeChainDataHydrate(provider, "evmNetworks")
+        return subscribeChaindataHydrate(provider, "evmNetworks")
       case "tokens":
-        return subscribeChainDataHydrate(provider, "tokens")
+        return subscribeChaindataHydrate(provider, "tokens")
     }
   }, [provider, subscribeTo])
 
@@ -144,11 +143,11 @@ const useTokens = (withTestnets?: boolean) => {
   return withTestnets ? tokensWithTestnetsMap : tokensWithoutTestnetsMap
 }
 
-const subscribeChainDataHydrate = (
-  provider: ChaindataProvider,
+const subscribeChaindataHydrate = (
+  provider: IChaindataProvider,
   type: "chains" | "evmNetworks" | "tokens"
 ) => {
-  const chaindata = provider as ChaindataProviderExtension
+  const chaindata = provider as ChaindataProvider
   const delay = 300_000 // 300_000ms = 300s = 5 minutes
 
   let timeout: NodeJS.Timeout | null = null

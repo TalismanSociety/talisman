@@ -2,17 +2,17 @@ import { BANXA_URL } from "@core/constants"
 import { AccountJsonAny } from "@core/domains/accounts/types"
 import { Chain } from "@core/domains/chains/types"
 import { Token } from "@core/domains/tokens/types"
-import { getConfig } from "@core/util/getConfig"
 import { yupResolver } from "@hookform/resolvers/yup"
 import { isEthereumAddress } from "@polkadot/util-crypto"
 import { encodeAnyAddress } from "@talismn/util"
-import { useQuery } from "@tanstack/react-query"
 import { AnalyticsPage, sendAnalyticsEvent } from "@ui/api/analytics"
+import { remoteConfigAtom } from "@ui/atoms/remoteConfig"
 import { FormattedAddress } from "@ui/domains/Account/FormattedAddress"
 import useAccounts from "@ui/hooks/useAccounts"
 import { useAnalyticsPageView } from "@ui/hooks/useAnalyticsPageView"
 import useChains from "@ui/hooks/useChains"
 import useTokens from "@ui/hooks/useTokens"
+import { useAtomValue } from "jotai"
 import { useCallback, useEffect, useMemo, useRef } from "react"
 import { useForm } from "react-hook-form"
 import { useTranslation } from "react-i18next"
@@ -42,21 +42,11 @@ const ANALYTICS_PAGE: AnalyticsPage = {
 }
 
 const useSupportedTokenIds = (chains?: Chain[], tokens?: Token[], address?: string) => {
-  const { data: supportedTokenIds } = useQuery({
-    queryKey: ["buyableTokens"],
-    queryFn: async () => {
-      const config = await getConfig()
-      if (!config) throw new Error("Failed to load config")
-      return config.buyTokens.tokenIds
-    },
-    refetchInterval: false,
-    refetchOnMount: false,
-    refetchOnWindowFocus: false,
-  })
+  const config = useAtomValue(remoteConfigAtom)
 
   const supportedTokens = useMemo(
-    () => tokens?.filter((t) => supportedTokenIds?.includes(t.id)) ?? [],
-    [supportedTokenIds, tokens]
+    () => tokens?.filter((t) => config.buyTokens.tokenIds?.includes(t.id)) ?? [],
+    [config.buyTokens.tokenIds, tokens]
   )
 
   const { substrateTokenIds, ethereumTokenIds } = useMemo(() => {
@@ -82,12 +72,11 @@ const useSupportedTokenIds = (chains?: Chain[], tokens?: Token[], address?: stri
 
   const filterTokens = useCallback(
     (token: Token) => {
-      if (!supportedTokenIds) return false
-      if (!address) return supportedTokenIds.includes(token.id)
+      if (!address) return config.buyTokens.tokenIds.includes(token.id)
       const allowedTokens = isEthereumAddress(address) ? ethereumTokenIds : substrateTokenIds
       return allowedTokens.includes(token.id)
     },
-    [address, ethereumTokenIds, substrateTokenIds, supportedTokenIds]
+    [address, config.buyTokens.tokenIds, ethereumTokenIds, substrateTokenIds]
   )
 
   return { substrateTokenIds, ethereumTokenIds, filterTokens }

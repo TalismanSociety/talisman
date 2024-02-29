@@ -137,7 +137,11 @@ export const AddressDisplay: FC<AddressDisplayProps> = ({
           genesisHash={account?.genesisHash}
         />
         <div className="leading-base grow truncate">{text}</div>
-        <AccountTypeIcon origin={account?.origin} className="text-primary" />
+        <AccountTypeIcon
+          origin={account?.origin}
+          className="text-primary"
+          signetUrl={account?.signetUrl as string}
+        />
         {blockExplorerUrl ? (
           <a href={blockExplorerUrl} target="_blank" className="text-grey-300 hover:text-white">
             <ExternalLinkIcon />

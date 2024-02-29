@@ -1,5 +1,8 @@
-import { ChaindataTokenProvider, EvmNetworkId } from "@talismn/chaindata-provider"
-import { ChaindataEvmNetworkProvider } from "@talismn/chaindata-provider"
+import {
+  EvmNetworkId,
+  IChaindataEvmNetworkProvider,
+  IChaindataTokenProvider,
+} from "@talismn/chaindata-provider"
 import { Account, PublicClient, WalletClient } from "viem"
 
 import { clearPublicClientCache, getEvmNetworkPublicClient } from "./getEvmNetworkPublicClient"
@@ -10,11 +13,11 @@ export type ChainConnectorEvmOptions = {
 }
 
 export class ChainConnectorEvm {
-  #chaindataProvider: ChaindataEvmNetworkProvider & ChaindataTokenProvider
+  #chaindataProvider: IChaindataEvmNetworkProvider & IChaindataTokenProvider
   #onfinalityApiKey?: string
 
   constructor(
-    chaindataProvider: ChaindataEvmNetworkProvider & ChaindataTokenProvider,
+    chaindataProvider: IChaindataEvmNetworkProvider & IChaindataTokenProvider,
     options?: ChainConnectorEvmOptions
   ) {
     this.#chaindataProvider = chaindataProvider
@@ -27,10 +30,10 @@ export class ChainConnectorEvm {
   }
 
   async getPublicClientForEvmNetwork(evmNetworkId: EvmNetworkId): Promise<PublicClient | null> {
-    const network = await this.#chaindataProvider.getEvmNetwork(evmNetworkId)
+    const network = await this.#chaindataProvider.evmNetworkById(evmNetworkId)
     if (!network?.nativeToken?.id) return null
 
-    const nativeToken = await this.#chaindataProvider.getToken(network.nativeToken.id)
+    const nativeToken = await this.#chaindataProvider.tokenById(network.nativeToken.id)
     if (!nativeToken) return null
 
     return getEvmNetworkPublicClient(network, nativeToken, {
@@ -42,10 +45,10 @@ export class ChainConnectorEvm {
     evmNetworkId: EvmNetworkId,
     account?: `0x${string}` | Account
   ): Promise<WalletClient | null> {
-    const network = await this.#chaindataProvider.getEvmNetwork(evmNetworkId)
+    const network = await this.#chaindataProvider.evmNetworkById(evmNetworkId)
     if (!network?.nativeToken?.id) return null
 
-    const nativeToken = await this.#chaindataProvider.getToken(network.nativeToken.id)
+    const nativeToken = await this.#chaindataProvider.tokenById(network.nativeToken.id)
     if (!nativeToken) return null
 
     return getEvmNetworkWalletClient(network, nativeToken, {

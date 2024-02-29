@@ -1,6 +1,7 @@
 import { yupResolver } from "@hookform/resolvers/yup"
 import { provideContext } from "@talisman/util/provideContext"
 import { KeyIcon } from "@talismn/icons"
+import { classNames } from "@talismn/util"
 import { api } from "@ui/api"
 import { useSensitiveState } from "@ui/hooks/useSensitiveState"
 import { FC, ReactNode, useCallback, useEffect } from "react"
@@ -22,6 +23,7 @@ const schema = yup
 type MnemonicUnlockContext = {
   unlock: (password: string) => Promise<void>
   mnemonic?: string
+  mnemonicId: string
 }
 
 function useMnemonicUnlockContext({ mnemonicId }: { mnemonicId: string }): MnemonicUnlockContext {
@@ -38,6 +40,7 @@ function useMnemonicUnlockContext({ mnemonicId }: { mnemonicId: string }): Mnemo
   return {
     unlock,
     mnemonic,
+    mnemonicId,
   }
 }
 
@@ -52,18 +55,15 @@ type MnemonicUnlockProps = {
   title?: ReactNode
 }
 
-const BaseMnemonicUnlock: FC<MnemonicUnlockProps> = ({
-  className,
-  children,
-  buttonText,
-  title,
-}) => {
+const DEFAULT_WIDTH = "w-[54rem]"
+const LARGE_WIDTH = "lg:w-[74rem]"
+
+const BaseMnemonicUnlock: FC<MnemonicUnlockProps> = ({ children, buttonText, title }) => {
   const { t } = useTranslation()
   const {
     register,
     handleSubmit,
     setError,
-    setValue,
     setFocus,
     formState: { errors, isValid, isSubmitting },
   } = useForm<FormData>({
@@ -90,16 +90,15 @@ const BaseMnemonicUnlock: FC<MnemonicUnlockProps> = ({
     if (!mnemonic) setFocus("password")
   }, [mnemonic, setFocus])
 
-  useEffect(() => {
-    return () => {
-      setValue("password", "")
-    }
-  }, [setValue])
-
   return mnemonic ? (
-    <>{children}</>
+    <div className={classNames(mnemonic.split(" ").length > 12 ? LARGE_WIDTH : DEFAULT_WIDTH)}>
+      {children}
+    </div>
   ) : (
-    <form onSubmit={handleSubmit(submit)} className={className}>
+    <form
+      onSubmit={handleSubmit(submit)}
+      className={`flex flex-col justify-between gap-8 ${DEFAULT_WIDTH}`}
+    >
       <FormFieldContainer label={title} error={errors.password?.message}>
         <FormFieldInputText
           before={<KeyIcon className="h-10 w-10 opacity-50" />}

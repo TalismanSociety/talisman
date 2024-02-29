@@ -1,7 +1,25 @@
 import { api } from "./api"
 
-jest.mock("@talismn/chaindata-provider-extension/src/net")
-jest.setTimeout(20000)
+jest.setTimeout(20_000)
+
+// mock the `yarn preconstruct dev` version of the package
+jest.mock("@talismn/chaindata-provider/src/net")
+
+// mock the `yarn build:packages` version of the package
+//
+// it only exists after calling yarn build:packages,
+// so there's a `try {} catch {}` to ignore when it doesn't exist
+try {
+  jest.mock(
+    "@talismn/chaindata-provider/net/dist/talismn-chaindata-provider-net.cjs.dev.js",
+    () => ({
+      ...jest.requireActual(
+        "@talismn/chaindata-provider/net/dist/talismn-chaindata-provider-net.cjs.dev.js"
+      ),
+      ...jest.requireActual("@talismn/chaindata-provider/src/__mocks__/net.ts"),
+    })
+  )
+} catch {} // eslint-disable-line no-empty
 
 jest.mock("@talismn/util", () => {
   return {
@@ -43,8 +61,8 @@ jest.mock("react-i18next", () => ({
   },
 }))
 
-jest.mock("@core/util/getConfig", () => ({
-  getConfig: jest.fn(() =>
+jest.mock("@core/util/fetchRemoteConfig", () => ({
+  fetchRemoteConfig: jest.fn(() =>
     Promise.resolve({
       featureFlags: {
         BUY_CRYPTO: true, // nav buttons + button in fund wallet component

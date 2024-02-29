@@ -3,7 +3,7 @@ import { AccountJson } from "@polkadot/extension-base/background/types"
 import { CheckCircleIcon } from "@talismn/icons"
 import { classNames } from "@talismn/util"
 import { useBalanceDetails } from "@ui/hooks/useBalanceDetails"
-import { FC, ReactNode, useCallback } from "react"
+import { FC, ReactNode, useCallback, useMemo } from "react"
 import { Checkbox, Tooltip, TooltipContent, TooltipTrigger } from "talisman-ui"
 
 import { Fiat } from "../Asset/Fiat"
@@ -76,7 +76,7 @@ const AccountButton: FC<AccountButtonProps> = ({
           <Tooltip>
             <TooltipTrigger asChild>
               <span className={classNames(isBalanceLoading && "animate-pulse")}>
-                <Fiat className="leading-none" amount={totalUsd} />
+                <Fiat className="leading-none" amount={totalUsd} isBalance />
               </span>
             </TooltipTrigger>
             {balanceDetails && (
@@ -142,13 +142,23 @@ export const DerivedAccountPickerBase: FC<DerivedAccountPickerBaseProps> = ({
     [onAccountClick]
   )
 
+  // keep pulsing animations in sync
+  const keyPrefix = useMemo(
+    () =>
+      accounts
+        .filter((a) => a?.isBalanceLoading)
+        .map((a) => a?.address)
+        .join("-"),
+    [accounts]
+  )
+
   return (
     <div className="flex flex-col gap-4">
       <div className="flex w-full flex-col gap-4">
         {accounts.map((account, i) =>
           account ? (
             <AccountButton
-              key={account.address}
+              key={`${keyPrefix}::${account.address}`}
               withBalances={withBalances}
               {...account}
               onClick={handleToggleAccount(account)}

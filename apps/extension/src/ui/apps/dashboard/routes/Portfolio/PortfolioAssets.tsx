@@ -60,9 +60,9 @@ const EnableNetworkMessage: FC<{ type?: "substrate" | "evm" }> = ({ type }) => {
   const { t } = useTranslation()
   const navigate = useNavigate()
   const handleClick = useCallback(() => {
-    if (type === "substrate") navigate("/networks/polkadot")
-    else if (type === "evm") navigate("/networks/ethereum")
-    else navigate("/networks")
+    if (type === "substrate") navigate("/settings/networks-tokens/networks/polkadot")
+    else if (type === "evm") navigate("/settings/networks-tokens/networks/ethereum")
+    else navigate("/settings/networks-tokens/networks")
   }, [navigate, type])
 
   return (

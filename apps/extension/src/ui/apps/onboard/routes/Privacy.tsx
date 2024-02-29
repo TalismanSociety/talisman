@@ -1,3 +1,4 @@
+import { PRIVACY_POLICY_URL } from "@core/constants"
 import imgAnalyticsFlower from "@talisman/theme/images/onboard_analytics_flower.png"
 import imgAnalyticsSwitch from "@talisman/theme/images/onboard_analytics_switch.png"
 import { AnalyticsPage, sendAnalyticsEvent } from "@ui/api/analytics"
@@ -70,7 +71,7 @@ export const PrivacyPage = () => {
               <a
                 onClick={handleLearnMoreClick}
                 className="text-body"
-                href="https://docs.talisman.xyz/talisman/legal-and-security/privacy-policy"
+                href={PRIVACY_POLICY_URL}
                 target="_blank"
               >
                 Learn more

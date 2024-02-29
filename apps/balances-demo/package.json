@@ -16,7 +16,7 @@
     "@polkadot/extension-dapp": "*",
     "@talismn/balances": "workspace:*",
     "@talismn/balances-react": "workspace:*",
-    "@talismn/chaindata-provider-extension": "workspace:*",
+    "@talismn/chaindata-provider": "workspace:*",
     "anylogger": "^1.0.11",
     "anylogger-loglevel": "^1.0.0",
     "loglevel": "^1.8.1",

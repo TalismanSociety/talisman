@@ -3,6 +3,7 @@ import { ScrollContainer } from "@talisman/components/ScrollContainer"
 import { SearchInput } from "@talisman/components/SearchInput"
 import { convertAddress } from "@talisman/util/convertAddress"
 import { isValidAddress } from "@talisman/util/isValidAddress"
+import { isValidSubstrateAddress } from "@talisman/util/isValidSubstrateAddress"
 import { EyeIcon, LoaderIcon, TalismanHandIcon, UserIcon } from "@talismn/icons"
 import { encodeAnyAddress } from "@talismn/util"
 import { ToWarning, useSendFundsWizard } from "@ui/apps/popup/pages/SendFunds/context"
@@ -30,7 +31,7 @@ export const SendFundsRecipientPicker = () => {
 
   const isValidAddressInput = useMemo(() => {
     if (!from) return isValidAddress(search)
-    return isFromEthereum ? isEthereumAddress(search) : isValidAddress(search)
+    return isFromEthereum ? isEthereumAddress(search) : isValidSubstrateAddress(search)
   }, [from, isFromEthereum, search])
 
   const [nsLookup, { isNsLookup, isNsFetching }] = useResolveNsName(search)

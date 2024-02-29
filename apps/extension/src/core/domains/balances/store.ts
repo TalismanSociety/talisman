@@ -1,18 +1,33 @@
-import { settingsStore } from "@core/domains/app/store.settings"
+import { SettingsStoreData, settingsStore } from "@core/domains/app/store.settings"
 import { Balance, BalanceJson, Balances, RequestBalance } from "@core/domains/balances/types"
+import {
+  ActiveChains,
+  activeChainsStore,
+  isChainActive,
+} from "@core/domains/chains/store.activeChains"
 import { Chain } from "@core/domains/chains/types"
-import { EvmNetwork, EvmNetworkId } from "@core/domains/ethereum/types"
-import { Erc20Token } from "@core/domains/tokens/types"
+import {
+  ActiveEvmNetworks,
+  activeEvmNetworksStore,
+  isEvmNetworkActive,
+} from "@core/domains/ethereum/store.activeEvmNetworks"
+import { EvmNetwork } from "@core/domains/ethereum/types"
+import {
+  ActiveTokens,
+  activeTokensStore,
+  isTokenActive,
+} from "@core/domains/tokens/store.activeTokens"
 import { unsubscribe } from "@core/handlers/subscriptions"
 import { log } from "@core/log"
 import { balanceModules } from "@core/rpcs/balance-modules"
 import { chaindataProvider } from "@core/rpcs/chaindata"
-import { Addresses, Port } from "@core/types/base"
-import { validateHexString } from "@core/util/validateHexString"
+import { Addresses } from "@core/types/base"
+import { awaitKeyringLoaded } from "@core/util/awaitKeyringLoaded"
+import { firstThenDebounce } from "@core/util/firstThenDebounce"
 import keyring from "@polkadot/ui-keyring"
 import { SingleAddress } from "@polkadot/ui-keyring/observable/types"
 import { assert } from "@polkadot/util"
-import { isEthereumAddress } from "@polkadot/util-crypto"
+import { HexString } from "@polkadot/util/types"
 import * as Sentry from "@sentry/browser"
 import {
   AddressesByToken,
@@ -22,25 +37,21 @@ import {
   createSubscriptionId,
   deleteSubscriptionId,
 } from "@talismn/balances"
-import { Token, TokenList } from "@talismn/chaindata-provider"
-import { encodeAnyAddress } from "@talismn/util"
+import { Token } from "@talismn/chaindata-provider"
+import { encodeAnyAddress, isEthereumAddress } from "@talismn/util"
 import { Dexie, liveQuery } from "dexie"
 import isEqual from "lodash/isEqual"
 import pick from "lodash/pick"
-import { ReplaySubject, Subject, combineLatest, firstValueFrom } from "rxjs"
-
-import { activeChainsStore, isChainActive } from "../chains/store.activeChains"
-import { activeEvmNetworksStore, isEvmNetworkActive } from "../ethereum/store.activeEvmNetworks"
-import { activeTokensStore, isTokenActive } from "../tokens/store.activeTokens"
+import { ReplaySubject, Subject, Subscription, combineLatest, firstValueFrom } from "rxjs"
 
 type ChainIdAndRpcs = Pick<Chain, "id" | "genesisHash" | "account" | "rpcs">
-type EvmNetworkIdAndRpcs = Pick<EvmNetwork, "id" | "nativeToken" | "substrateChain" | "rpcs"> & {
-  erc20Tokens: Array<Pick<Erc20Token, "id" | "contractAddress">>
-  substrateChainAccountFormat: string | null
-}
+type EvmNetworkIdAndRpcs = Pick<EvmNetwork, "id" | "nativeToken" | "substrateChain" | "rpcs">
 type TokenIdAndType = Pick<Token, "id" | "type" | "chain" | "evmNetwork">
 
 type SubscriptionsState = "Closed" | "Closing" | "Open"
+
+// debounce time before restarting subscriptions if one of the inputs change
+const DEBOUNCE_TIMEOUT = 3_000
 
 // TODO: Fix this class up
 //       1. It shouldn't need a whole extra copy of addresses+chains+networks separate to the db
@@ -54,120 +65,81 @@ export class BalanceStore {
   #subscriptionsGeneration = 0
   #closeSubscriptionCallbacks: Array<Promise<() => void>> = []
 
+  #subscribers: Subject<void> = new Subject()
+
+  /**
+   * A map of accounts to query balances for, in the format:
+   *
+   * ```
+   * {
+   *   // if account is allowed on all chains, value will be `null`
+   *   [`account address`]: [`allowed chain genesis hash`, ...] | null
+   * }
+   * ```
+   */
+  #addresses: ReplaySubject<Addresses> = new ReplaySubject(1)
   #chains: ChainIdAndRpcs[] = []
   #evmNetworks: EvmNetworkIdAndRpcs[] = []
   #tokens: TokenIdAndType[] = []
   #miniMetadataIds = new Set<string>()
 
-  /**
-   * A map of accounts to query balances for, in the format:
-   *
-   *     {
-   *       [`account address`]: [`allowed chain genesis hash`, ...] | null // null if account is allowed on all chains
-   *     }
-   */
-  #addresses: ReplaySubject<Addresses> = new ReplaySubject(1)
-  #addressesCleanupTimeout: ReturnType<typeof setTimeout> | null = null
-
-  #subscribers: Subject<void> = new Subject()
+  #cleanupSubs: Array<Promise<Subscription>>
 
   /**
    * Initialize the store with a set of addresses and chains.
    */
   constructor() {
-    // subscribe to the account addresseses from the keyring, and add them to list of addresses to query balances for
-    keyring.accounts.subject.subscribe(this.setAccounts.bind(this))
-
-    // subscribe to the chainstore and add chains to the list here
-    combineLatest(
-      // settings
-      settingsStore.observable,
-      // chains
-      liveQuery(async () => await chaindataProvider.chains()),
-      // evmNetworks
-      liveQuery(async () => await chaindataProvider.evmNetworks()),
-      // tokens
-      liveQuery(async () => await chaindataProvider.tokens()),
-      // miniMetadatas
-      liveQuery(async () => await balancesDb.miniMetadatas.toArray()),
-      // active state of evm networks
-      activeEvmNetworksStore.observable,
-      // active state of substrate chains
-      activeChainsStore.observable,
-      // enable state of tokens
-      activeTokensStore.observable
-    ).subscribe({
-      next: ([
-        settings,
-        chains,
-        evmNetworks,
-        tokens,
-        miniMetadatas,
-        activeEvmNetworks,
-        activeChains,
-        activeTokens,
-      ]) => {
-        const activeChainsList = Object.fromEntries(
-          Object.entries(chains ?? {}).filter(
-            ([, chain]) =>
-              isChainActive(chain, activeChains) && (settings.useTestnets ? true : !chain.isTestnet)
-          )
-        )
-        const activeEvmNetworksList = Object.fromEntries(
-          Object.entries(evmNetworks ?? {}).filter(
-            ([, evmNetwork]) =>
-              isEvmNetworkActive(evmNetwork, activeEvmNetworks) &&
-              (settings.useTestnets ? true : !evmNetwork.isTestnet)
-          )
-        )
-        const activeTokensList = Object.fromEntries(
-          Object.entries(tokens ?? {}).filter(
-            ([, token]) =>
-              (activeEvmNetworksList[token.evmNetwork?.id ?? ""] ||
-                activeChainsList[token.chain?.id || ""]) &&
-              isTokenActive(token, activeTokens) &&
-              (settings.useTestnets ? true : !token.isTestnet)
-          )
-        )
-
-        const arErc20Tokens = Object.values(activeTokensList).filter((t) => t.type === "evm-erc20")
-
-        const erc20TokensByEvmNetwork = Object.keys(activeEvmNetworks).reduce(
-          (groupByNetwork, evmNetworkId) => {
-            const tokens = arErc20Tokens.filter((t) => t.evmNetwork?.id === evmNetworkId)
-            if (tokens.length)
-              groupByNetwork[evmNetworkId] = tokens.map((t) =>
-                pick(t as Erc20Token, ["id", "contractAddress"])
-              )
-            return groupByNetwork
-          },
-          {} as { [key: EvmNetworkId]: EvmNetworkIdAndRpcs["erc20Tokens"] }
-        )
-
-        const chainsToFetch = Object.values(activeChainsList).map((chain) =>
-          pick(chain, ["id", "genesisHash", "account", "rpcs"])
-        )
-        const evmNetworksToFetch = Object.values(activeEvmNetworksList).map((evmNetwork) => ({
-          ...pick(evmNetwork, ["id", "nativeToken", "substrateChain", "rpcs"]),
-          erc20Tokens: erc20TokensByEvmNetwork[evmNetwork.id],
-          substrateChainAccountFormat:
-            (evmNetwork.substrateChain && chains[evmNetwork.substrateChain.id]?.account) || null,
-        }))
-
-        this.setChains(chainsToFetch, evmNetworksToFetch, activeTokensList, miniMetadatas)
-      },
-      error: (error) => {
-        if (error.cause?.name === Dexie.errnames.DatabaseClosed) return
-        else Sentry.captureException(error)
-      },
-    })
+    // subscribe this store to all of the inputs it depends on
+    this.#cleanupSubs = [
+      this.initializeKeyringSubscription(),
+      this.initializeChaindataSubscription(),
+    ]
 
     // if we already have subscriptions - start polling
     if (this.#subscribers.observed) this.openSubscriptions()
   }
 
   /**
-   * Gets the balance for an address on a chain, either from the store if the address is in the wallet, or externally from the RPC.
+   * Unsubscribes the store from the observables it depends on.
+   */
+  destroy() {
+    return Promise.all(
+      this.#cleanupSubs.map((p) => p.then((subscription) => subscription.unsubscribe()))
+    )
+  }
+
+  /**
+   * Create a new subscription to the balances store.
+   *
+   * @param id - The message id
+   * @param port - The message port
+   * @returns The subscription `Unsubscribe` function
+   */
+  async subscribe(id: string, onDisconnected: Promise<void>) {
+    // create subscription
+    const subscription = this.#subscribers.subscribe(() => {})
+
+    // open rpcs (if not already open)
+    this.openSubscriptions()
+
+    // close rpcs when the last subscriber disconnects
+    onDisconnected.then(() => {
+      unsubscribe(id)
+      subscription.unsubscribe()
+
+      setTimeout(() => {
+        // wait 5 seconds to prevent subscription restart for these use cases :
+        // - popup loses focus and user reopens it right away
+        // - user opens popup and opens dashboard from it, which closes the popup
+        if (!this.#subscribers.observed) this.closeSubscriptions()
+      }, 5_000)
+    })
+
+    return true
+  }
+
+  /**
+   * Gets the balance for an address on a chain, either from the store if the address is in the wallet, or externally from the RPC if not.
    *
    * @param chainId - The id of the chain for which to query the balance
    * @param evmNetworkId - The id of the evmNetwork for which to query the balance
@@ -191,7 +163,7 @@ export class BalanceStore {
     if (existing.count > 0) return existing.sorted[0]?.toJSON()
 
     // no existing balance found, fetch it directly via rpc
-    const token = await chaindataProvider.getToken(tokenId)
+    const token = await chaindataProvider.tokenById(tokenId)
     if (!token) {
       const error = new Error(`Failed to fetch balance: no token with id ${tokenId}`)
       Sentry.captureException(error)
@@ -215,6 +187,57 @@ export class BalanceStore {
   }
 
   /**
+   * Creates a subscription to automatically call `this.setAccounts` when `keyring.accounts.subject` updates.
+   */
+  private async initializeKeyringSubscription() {
+    // When initializing, our keyring object doesn't immediately contain all of our accounts.
+    // To avoid deleting the balances for accounts which are in the wallet, but have not yet
+    // been loaded into the keyring, we wait for the full keyring to be loaded.
+    await awaitKeyringLoaded()
+
+    // accounts can be added to the keyring by batch (ex: multiple accounts imported from a seed phrase)
+    // debounce to ensure the subscriptions aren't restarted multiple times unnecessarily
+    return keyring.accounts.subject.pipe(firstThenDebounce(DEBOUNCE_TIMEOUT)).subscribe({
+      next: (accounts) => this.setAccounts(accounts),
+      error: (error) => Sentry.captureException(error),
+    })
+  }
+
+  /**
+   * Creates a subscription to automatically call `this.setChains` when any of the chains/tokens dependencies update.
+   */
+  private async initializeChaindataSubscription() {
+    // subscribe to all the inputs that make up the list of tokens to watch balances for
+    // debounce to avoid restarting subscriptions multiple times when settings change rapidly (ex: multiple networks/tokens activated/deactivated rapidly)
+    return combineLatest([
+      // chains
+      chaindataProvider.chainsObservable,
+      // evmNetworks
+      chaindataProvider.evmNetworksObservable,
+      // tokens
+      chaindataProvider.tokensObservable,
+      // miniMetadatas
+      liveQuery(() => balancesDb.miniMetadatas.toArray()),
+
+      // active state of substrate chains
+      activeChainsStore.observable,
+      // active state of evm networks
+      activeEvmNetworksStore.observable,
+      // enable state of tokens
+      activeTokensStore.observable,
+
+      // settings
+      settingsStore.observable,
+    ])
+      .pipe(firstThenDebounce(DEBOUNCE_TIMEOUT))
+      .subscribe({
+        next: (args) => this.setChains(...args),
+        error: (error) =>
+          error?.error?.name !== Dexie.errnames.DatabaseClosed && Sentry.captureException(error),
+      })
+  }
+
+  /**
    * Sets the list of chainIds to query.
    * Existing subscriptions are automatically updated.
    *
@@ -223,13 +246,34 @@ export class BalanceStore {
    *                 Chains present in the store but not in this list will be removed.
    *                 Chains with a different health status to what is in the store will be updated.
    */
-  async setChains(
-    newChains: ChainIdAndRpcs[],
-    newEvmNetworks: EvmNetworkIdAndRpcs[],
-    tokens: TokenList,
-    miniMetadatas: MiniMetadata[]
+  private async setChains(
+    allChains: Chain[],
+    allEvmNetworks: EvmNetwork[],
+    allTokens: Token[],
+    miniMetadatas: MiniMetadata[],
+
+    activeChainsMap: ActiveChains,
+    activeNetworksMap: ActiveEvmNetworks,
+    activeTokensMap: ActiveTokens,
+
+    settings: SettingsStoreData
   ) {
-    // Check for updates
+    // filter by active chains/networks/tokens
+    const filterByActive = <T extends { isTestnet?: boolean }>(
+      allItems: T[],
+      activeMap: Record<string, boolean>,
+      isActiveFn: (item: T, activeMap: Record<string, boolean>) => boolean
+    ): T[] =>
+      allItems
+        .filter((item) => isActiveFn(item, activeMap))
+        .filter(settings.useTestnets ? () => true : (item) => !item.isTestnet)
+
+    const chains = filterByActive(allChains, activeChainsMap, isChainActive)
+    const evmNetworks = filterByActive(allEvmNetworks, activeNetworksMap, isEvmNetworkActive)
+    const tokens = filterByActive(allTokens, activeTokensMap, isTokenActive)
+
+    // Check for changes since the last call to this.setChains
+    const newChains = chains.map((chain) => pick(chain, ["id", "genesisHash", "account", "rpcs"]))
     const existingChainsMap = Object.fromEntries(this.#chains.map((chain) => [chain.id, chain]))
     const noChainChanges =
       newChains.length === this.#chains.length &&
@@ -237,17 +281,22 @@ export class BalanceStore {
     const existingEvmNetworksMap = Object.fromEntries(
       this.#evmNetworks.map((evmNetwork) => [evmNetwork.id, evmNetwork])
     )
+
+    const newEvmNetworks = evmNetworks.map((evmNetwork) =>
+      pick(evmNetwork, ["id", "nativeToken", "substrateChain", "rpcs"])
+    )
     const noEvmNetworkChanges =
       newEvmNetworks.length === this.#evmNetworks.length &&
       newEvmNetworks.every((newEvmNetwork) =>
         isEqual(newEvmNetwork, existingEvmNetworksMap[newEvmNetwork.id])
       )
+
     const existingMiniMetadataIds = this.#miniMetadataIds
     const noMiniMetadataChanges =
       existingMiniMetadataIds.size === miniMetadatas.length &&
       miniMetadatas.every((m) => existingMiniMetadataIds.has(m.id))
 
-    const newTokens = Object.values(tokens).map(({ id, type, chain, evmNetwork }) => ({
+    const newTokens = tokens.map(({ id, type, chain, evmNetwork }) => ({
       id,
       type,
       chain,
@@ -256,30 +305,28 @@ export class BalanceStore {
     const existingTokens = this.#tokens
     const noTokenChanges = isEqual(newTokens, existingTokens)
 
+    // Ignore this call if nothing has changed since the last call to this.setChains
     if (noChainChanges && noEvmNetworkChanges && noMiniMetadataChanges && noTokenChanges) return
 
-    // Update chains and networks
+    // Update stored chains, evmNetworks, tokens and miniMetadataIds
     this.#chains = newChains
     this.#evmNetworks = newEvmNetworks
     this.#tokens = newTokens
-
-    const chainsMap = Object.fromEntries(this.#chains.map((chain) => [chain.id, chain]))
-    const evmNetworksMap = Object.fromEntries(
-      this.#evmNetworks.map((evmNetwork) => [evmNetwork.id, evmNetwork])
-    )
-
     this.#miniMetadataIds = new Set(miniMetadatas.map((m) => m.id))
 
-    // Delete stored balances for chains and networks which no longer exist
+    // Delete stored balances for chains and evmNetworks which are inactive / no longer exist
+    const chainIds = new Set(this.#chains.map((chain) => chain.id))
+    const evmNetworkIds = new Set(this.#evmNetworks.map((evmNetwork) => evmNetwork.id))
+    const tokenIds = new Set(tokens.map((token) => token.id))
     await this.deleteBalances((balance) => {
       // remove balance if chain/evm network doesn't exist
       if (balance.chainId === undefined && balance.evmNetworkId === undefined) return true
-      if (balance.chainId !== undefined && chainsMap[balance.chainId] === undefined) return true
-      if (balance.evmNetworkId !== undefined && evmNetworksMap[balance.evmNetworkId] === undefined)
+      if (balance.chainId !== undefined && !chainIds.has(balance.chainId)) return true
+      if (balance.evmNetworkId !== undefined && !evmNetworkIds.has(balance.evmNetworkId))
         return true
 
       // remove balance if token doesn't exist
-      if (tokens[balance.tokenId] === undefined) return true
+      if (!tokenIds.has(balance.tokenId)) return true
 
       // remove balance if module doesn't exist
       if (!balanceModules.find((module) => module.type === balance.source)) return true
@@ -288,23 +335,57 @@ export class BalanceStore {
       return false
     })
 
+    // Delete stored balances for accounts on incompatible chains
+    // 1. Hardware accounts which are locked to a chain shouldn't have balances on other chains
+    // 2. Substrate accounts shouldn't have evm balances,
+    //    Evm accounts shouldn't have substrate balances (unless the chain uses secp256k1 accounts)
+    await firstValueFrom(this.#addresses).then((addresses) =>
+      this.deleteBalances((balance) => {
+        //
+        // delete balances for hardware accounts on chains other than the chain the accounts are locked to
+        // these balances aren't fetched anymore, but were fetched prior to v1.14.0, so we need ensure they are cleaned up
+        //
+        const chain =
+          (balance.chainId && this.#chains.find(({ id }) => id === balance.chainId)) || null
+        /** hash of balance chain */
+        const genesisHash =
+          (chain?.genesisHash?.startsWith?.("0x") && (chain.genesisHash as HexString)) || null
+        /** chains which balance account is locked to (is null for non-hardware accounts) */
+        const hardwareChains = addresses[balance.address]
+        if (genesisHash && hardwareChains && !hardwareChains.includes(genesisHash)) return true
+
+        //
+        // delete balances for accounts on incompatible chains
+        //
+        const hasChain = balance.chainId && chainIds.has(balance.chainId)
+        const hasEvmNetwork = balance.evmNetworkId && evmNetworkIds.has(balance.evmNetworkId)
+        const chainUsesSecp256k1Accounts = chain?.account === "secp256k1"
+        if (!isEthereumAddress(balance.address) && !hasChain) {
+          return true
+        }
+        if (isEthereumAddress(balance.address) && !(hasEvmNetwork || chainUsesSecp256k1Accounts)) {
+          return true
+        }
+
+        // keep balance
+        return false
+      })
+    )
+
     // Update chains on existing subscriptions
-    if (this.#subscribers.observed) {
-      await this.closeSubscriptions()
-      await this.openSubscriptions()
-    }
+    await this.restartSubscriptions()
   }
 
   /**
    * Sets the list of addresses to query.
    * Existing subscriptions are automatically updated.
    *
+   * NOTE: Cached balances will be deleted for any addresses which are not provided
+   * when calling this method.
+   *
    * @param accounts - The accounts to watch for balances.
    */
   private async setAccounts(accounts: Record<string, SingleAddress>) {
-    // ignore empty keyring while the wallet is still initialising
-    if (Object.keys(accounts).length < 1) return
-
     // update the list of watched addresses
     const addresses = Object.fromEntries(
       Object.entries(accounts).map(([address, details]) => {
@@ -317,46 +398,21 @@ export class BalanceStore {
     )
     this.#addresses.next(addresses)
 
-    // delete stored balances for addresses which no longer exist
-    //
-    // When initializing, our keyring object doesn't immediately contain all of our accounts.
-    // There will be a few updates where `accounts` is incomplete.
-    // To avoid deleting the balances for accounts which are still in the wallet, but have not yet
-    // been loaded into the keyring, we wait about 10 seconds before running this cleanup job.
-    //
-    // If this job is triggered while a pending cleanup has not run yet, we cancel the pending one
-    // and replace it with the latest one (which will have more accounts loaded).
-    if (this.#addressesCleanupTimeout !== null) clearTimeout(this.#addressesCleanupTimeout)
-    this.#addressesCleanupTimeout = setTimeout(() => {
-      this.#addressesCleanupTimeout = null
-      this.deleteBalances((balance) => {
-        // remove balance if account doesn't exist
-        if (!balance.address || addresses[balance.address] === undefined) return true
+    // delete cached balances for accounts which don't exist anymore
+    await this.deleteBalances((balance) => {
+      //
+      // remove balance if account doesn't exist
+      //
+      if (!balance.address || addresses[balance.address] === undefined) return true
 
-        // delete balances for hardware accounts on chains other than the one they were created on
-        // these aren't fetched anymore but were fetched prior to v1.14.0, so we need to clean them up
-        const chainId = balance.chainId
-        const chain = (chainId && this.#chains.find((chain) => chain.id === chainId)) || undefined
-        const genesisHash = chain?.genesisHash ? validateHexString(chain.genesisHash) : undefined
-        if (
-          genesisHash &&
-          addresses[balance.address] && // first check if account has any genesisHashes
-          !addresses[balance.address]?.includes(genesisHash) // then check if match
-        )
-          return true
-
-        // keep balance
-        return false
-      }).catch((error) => {
-        log.error("Failed to clean up balances", { error })
-      })
-    }, 10_000 /* 10_000ms = 10 seconds */)
+      // keep balance
+      return false
+    }).catch((error) => {
+      log.error("Failed to clean up balances", { error })
+    })
 
     // update addresses on existing subscriptions
-    if (this.#subscribers.observed) {
-      await this.closeSubscriptions()
-      await this.openSubscriptions()
-    }
+    await this.restartSubscriptions()
   }
 
   /**
@@ -370,36 +426,6 @@ export class BalanceStore {
 
       await balancesDb.balances.bulkDelete(deleteBalances)
     })
-  }
-
-  /**
-   * Create a new subscription to the balances store.
-   *
-   * @param id - The message id
-   * @param port - The message port
-   * @returns The subscription `Unsubscribe` function
-   */
-  async subscribe(id: string, port: Port) {
-    // create subscription
-    const subscription = this.#subscribers.subscribe(() => {})
-
-    // open rpcs (if not already open)
-    this.openSubscriptions()
-
-    // close rpcs when the last subscriber disconnects
-    port.onDisconnect.addListener((): void => {
-      unsubscribe(id)
-      subscription.unsubscribe()
-
-      setTimeout(() => {
-        // wait 5 seconds to prevent subscription restart for these use cases :
-        // - popup loses focus and user reopens it right away
-        // - user opens popup and opens dashboard from it, which closes the popup
-        if (!this.#subscribers.observed) this.closeSubscriptions()
-      }, 5_000)
-    })
-
-    return true
   }
 
   /**
@@ -533,7 +559,7 @@ export class BalanceStore {
     }))
 
     // update stored balances
-    await balancesDb.balances.bulkPut(updates)
+    if (updates.length) await balancesDb.balances.bulkPut(updates)
   }
 
   /**
@@ -545,6 +571,7 @@ export class BalanceStore {
 
     if (this.#subscriptionsState !== "Open") return
     this.setSubscriptionsState("Closing")
+    log.log("Closing balance subscriptions")
 
     // ignore old subscriptions if they're still closing when we next call `openSubscriptions()`
     this.#subscriptionsGeneration = (this.#subscriptionsGeneration + 1) % Number.MAX_SAFE_INTEGER
@@ -562,6 +589,17 @@ export class BalanceStore {
     }
 
     this.setSubscriptionsState("Closed")
+    log.log("Closed balance subscriptions")
+  }
+
+  /**
+   * Restarts all balances subscriptions (if they're open)
+   */
+  private async restartSubscriptions() {
+    if (this.#subscribers.observed) {
+      await this.closeSubscriptions()
+      await this.openSubscriptions()
+    }
   }
 
   private setSubscriptionsState(newState: SubscriptionsState) {

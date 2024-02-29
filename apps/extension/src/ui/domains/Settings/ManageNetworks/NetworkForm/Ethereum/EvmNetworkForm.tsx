@@ -422,22 +422,28 @@ const ExistingNetworkModal: FC<{ evmNetworkId?: EvmNetworkId }> = ({ evmNetworkI
 
   const handleGoToClick = useCallback(() => {
     close()
-    navigate(`/networks/ethereum/${evmNetworkId}`)
+    navigate(`/settings/networks-tokens/networks/ethereum/${evmNetworkId}`, { replace: true })
   }, [close, evmNetworkId, navigate])
 
   return (
     <Modal containerId="main" isOpen={isOpen} onDismiss={close}>
       <ModalDialog title={t("Known network")} onClose={close}>
         <p className="text-body-secondary">
-          {isActive
-            ? t(
-                "Network {{name}} ({{id}}) already exists. Would you like to review its settings?",
-                networkInfo
-              )
-            : t(
-                "Network {{name}} ({{id}}) already exists but has not been activated. Would you like to review its settings?",
-                networkInfo
-              )}
+          {isActive ? (
+            <Trans
+              t={t}
+              defaults="Network <Highlight>{{name}} ({{id}})</Highlight> already exists. Would you like to review its settings?"
+              components={{ Highlight: <span className="text-body" /> }}
+              values={networkInfo}
+            />
+          ) : (
+            <Trans
+              t={t}
+              defaults="Network <Highlight>{{name}} ({{id}})</Highlight> already exists but has not been activated. Would you like to review its settings?"
+              components={{ Highlight: <span className="text-body" /> }}
+              values={networkInfo}
+            />
+          )}
         </p>
         <div className="mt-12 grid grid-cols-2 gap-8">
           <Button onClick={close}>{t("Close")}</Button>
