@@ -18,7 +18,7 @@ const config = (env) =>
     devtool: "inline-cheap-module-source-map",
     mode: "development",
     watchOptions: {
-      ignored: ["**/node_modules", "**/dist"],
+      ignored: ["**/node_modules", "**/dist", "apps/extension/public/locales"],
     },
     plugins: [
       new SimpleLocalizeDownloadPlugin({ devMode: true }),
