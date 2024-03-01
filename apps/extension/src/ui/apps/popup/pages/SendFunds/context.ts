@@ -8,29 +8,25 @@ import { useNavigate, useSearchParams } from "react-router-dom"
 type SendFundsWizardParams = {
   from: Address
   to: Address
-  toWarning: ToWarning
   tokenId: TokenId
   amount: string // planck
   allowReap: boolean
   sendMax: boolean
 }
 
-export type ToWarning = "DIFFERENT_ACCOUNT_FORMAT" | "AZERO_ID" | ""
-
-const STRING_PROPS = ["from", "to", "toWarning", "tokenId", "amount"]
+const STRING_PROPS = ["from", "to", "tokenId", "amount"]
 const BOOL_PROPS = ["allowReap", "sendMax"]
 
-export type SendFundsWizardPage = "from" | "to" | "toWarning" | "token" | "amount" | "confirm"
+export type SendFundsWizardPage = "from" | "to" | "token" | "amount" | "confirm"
 
 const useSendFundsWizardProvider = () => {
   const [searchParams, setSearchParams] = useSearchParams()
   const navigate = useNavigate()
 
-  const { from, to, toWarning, tokenId, amount, allowReap, sendMax, tokenSymbol } = useMemo(
+  const { from, to, tokenId, amount, allowReap, sendMax, tokenSymbol } = useMemo(
     () => ({
       from: searchParams.get("from") ?? undefined,
       to: searchParams.get("to") ?? undefined,
-      toWarning: searchParams.get("toWarning") ?? "",
       tokenId: searchParams.get("tokenId") ?? undefined,
       tokenSymbol: searchParams.get("tokenSymbol") ?? undefined,
       amount: searchParams.get("amount") ?? undefined,
@@ -56,7 +52,6 @@ const useSendFundsWizardProvider = () => {
         if (prevTokenId && prevTokenId.split("-")[0] !== (value as string).split("-")[0]) {
           searchParams.delete("from")
           searchParams.delete("to")
-          searchParams.delete("toWarning")
         }
       }
 
@@ -128,7 +123,6 @@ const useSendFundsWizardProvider = () => {
   return {
     from,
     to,
-    toWarning,
     tokenId,
     tokenSymbol,
     amount,

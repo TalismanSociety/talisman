@@ -2,41 +2,28 @@ import { ChainId, EvmNetworkId } from "@talismn/chaindata-provider"
 import { CopyIcon } from "@talismn/icons"
 import { useCopyAddressModal } from "@ui/domains/CopyAddress"
 import { useAnalytics } from "@ui/hooks/useAnalytics"
-import { useSetting } from "@ui/hooks/useSettings"
-import useTokens from "@ui/hooks/useTokens"
-import { useCallback } from "react"
+import useChain from "@ui/hooks/useChain"
+import { FC, Suspense, useCallback } from "react"
 
 import { useSelectedAccount } from "../useSelectedAccount"
 
-export const CopyAddressButton = ({
-  symbol,
-  networkId,
-}: {
-  symbol: string
+type CopyAddressButtonProps = {
   networkId: ChainId | EvmNetworkId | null | undefined
-}) => {
+}
+
+const CopyAddressButtonInner: FC<CopyAddressButtonProps> = ({ networkId }) => {
   const { account } = useSelectedAccount()
-  const [includeTestnets] = useSetting("useTestnets")
-  const { tokens } = useTokens({ activeOnly: true, includeTestnets })
-
-  const token = tokens?.find(
-    (t) =>
-      t.symbol === symbol &&
-      (("evmNetwork" in t && t.evmNetwork?.id === networkId) || t.chain?.id === networkId)
-  )
-
+  const chain = useChain(networkId)
   const { genericEvent } = useAnalytics()
   const { open } = useCopyAddressModal()
 
   const handleClick = useCallback(() => {
     open({
       address: account?.address,
-      chainId: token?.chain?.id,
+      chainId: chain?.id,
     })
     genericEvent("open receive", { from: "asset details" })
-  }, [account?.address, genericEvent, open, token?.chain?.id])
-
-  if (!token) return null
+  }, [account?.address, genericEvent, open, chain?.id])
 
   return (
     <button
@@ -48,3 +35,9 @@ export const CopyAddressButton = ({
     </button>
   )
 }
+
+export const CopyAddressButton: FC<CopyAddressButtonProps> = ({ networkId }) => (
+  <Suspense fallback={<div className="inline-block h-9 w-9"></div>}>
+    <CopyAddressButtonInner networkId={networkId} />
+  </Suspense>
+)

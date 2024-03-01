@@ -6,7 +6,7 @@ import { isValidAddress } from "@talisman/util/isValidAddress"
 import { isValidSubstrateAddress } from "@talisman/util/isValidSubstrateAddress"
 import { EyeIcon, LoaderIcon, TalismanHandIcon, UserIcon } from "@talismn/icons"
 import { encodeAnyAddress } from "@talismn/util"
-import { ToWarning, useSendFundsWizard } from "@ui/apps/popup/pages/SendFunds/context"
+import { useSendFundsWizard } from "@ui/apps/popup/pages/SendFunds/context"
 import useAccounts from "@ui/hooks/useAccounts"
 import { useAddressBook } from "@ui/hooks/useAddressBook"
 import useChain from "@ui/hooks/useChain"
@@ -16,10 +16,12 @@ import { useCallback, useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
 
 import { SendFundsAccount, SendFundsAccountsList } from "./SendFundsAccountsList"
+import { ToWarning, useSendFunds } from "./useSendFunds"
 
 export const SendFundsRecipientPicker = () => {
   const { t } = useTranslation("send-funds")
   const { from, to, set, tokenId } = useSendFundsWizard()
+  const { setRecipientWarning } = useSendFunds()
   const [search, setSearch] = useState("")
   const token = useToken(tokenId)
   const chain = useChain(token?.chain?.id)
@@ -173,12 +175,12 @@ export const SendFundsRecipientPicker = () => {
         ? "AZERO_ID"
         : accountFormatDiffersFromChain
         ? "DIFFERENT_ACCOUNT_FORMAT"
-        : ""
+        : undefined
 
       set("to", address, true)
-      set("toWarning", toWarning, true)
+      setRecipientWarning(toWarning)
     },
-    [chain?.id, chain?.prefix, isValidAddressInput, nsLookup, search, set]
+    [chain?.id, chain?.prefix, isValidAddressInput, nsLookup, search, set, setRecipientWarning]
   )
 
   const handleValidate = useCallback(() => {

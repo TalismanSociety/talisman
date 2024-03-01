@@ -1,23 +1,14 @@
 import { SuspenseTracker } from "@talisman/components/SuspenseTracker"
-import {
-  accountsByCategoryAtomFamily,
-  accountsCatalogAtom,
-  authorisedSitesAtom,
-  balanceTotalsAtom,
-  settingsAtom,
-  tabAtom,
-} from "@ui/atoms"
-import { stakingBannerAtom } from "@ui/atoms/stakingBanners"
 import { CurrentAccountAvatar } from "@ui/domains/Account/CurrentAccountAvatar"
 import { AssetDiscoveryPopupAlert } from "@ui/domains/AssetDiscovery/AssetDiscoveryPopupAlert"
 import { EvmNetworkSelectPill } from "@ui/domains/Ethereum/EvmNetworkSelectPill"
+import { PortfolioContainer } from "@ui/domains/Portfolio/PortfolioContainer"
 import BraveWarningPopupBanner from "@ui/domains/Settings/BraveWarning/BraveWarningPopupBanner"
 import MigratePasswordAlert from "@ui/domains/Settings/MigratePasswordAlert"
 import { ConnectedAccountsPill } from "@ui/domains/Site/ConnectedAccountsPill"
 import { useAuthorisedSites } from "@ui/hooks/useAuthorisedSites"
 import { useCurrentSite } from "@ui/hooks/useCurrentSite"
 import { useHasAccounts } from "@ui/hooks/useHasAccounts"
-import { atom, useAtomValue } from "jotai"
 import { Suspense, useMemo } from "react"
 import { Route, Routes, useLocation } from "react-router-dom"
 
@@ -29,37 +20,6 @@ import { PortfolioAssets } from "./PortfolioAssets"
 import { PortfolioLearnMore, PortfolioLearnMoreHeader } from "./PortfolioLearnMore"
 import { PortfolioTryTalisman, PortfolioTryTalismanHeader } from "./PortfolioTryTalisman"
 import { PortfolioWhatsNew, PortfolioWhatsNewHeader } from "./PortfolioWhatsNew"
-
-const preloadAtom = atom((get) =>
-  Promise.all([
-    get(balanceTotalsAtom),
-    get(stakingBannerAtom),
-
-    get(accountsByCategoryAtomFamily("all")),
-    get(accountsCatalogAtom),
-    get(authorisedSitesAtom),
-    get(tabAtom),
-    get(settingsAtom),
-  ])
-)
-
-export const Portfolio = () => {
-  useAtomValue(preloadAtom)
-
-  const hasAccounts = useHasAccounts()
-  return (
-    <PopupLayout withBottomNav>
-      <PortfolioHeader />
-      <PopupContent>
-        {hasAccounts && <HasAccountsPortfolioContent />}
-        {!hasAccounts && <NoAccountsPortfolioContent />}
-      </PopupContent>
-      <Suspense fallback={<SuspenseTracker name="AssetDiscoveryPopupAlert" />}>
-        <AssetDiscoveryPopupAlert />
-      </Suspense>
-    </PopupLayout>
-  )
-}
 
 const AccountAvatar = () => {
   const location = useLocation()
@@ -127,4 +87,23 @@ const NoAccountsPortfolioContent = () => (
     <Route path="try-talisman" element={<PortfolioTryTalisman />} />
     <Route path="" element={<NoAccounts />} />
   </Routes>
+)
+
+const PortfolioContent = () => {
+  const hasAccounts = useHasAccounts()
+  return hasAccounts ? <HasAccountsPortfolioContent /> : <NoAccountsPortfolioContent />
+}
+
+export const Portfolio = () => (
+  <PortfolioContainer renderWhileLoading>
+    <PopupLayout withBottomNav>
+      <PortfolioHeader />
+      <PopupContent>
+        <PortfolioContent />
+      </PopupContent>
+      <Suspense fallback={<SuspenseTracker name="AssetDiscoveryPopupAlert" />}>
+        <AssetDiscoveryPopupAlert />
+      </Suspense>
+    </PopupLayout>
+  </PortfolioContainer>
 )

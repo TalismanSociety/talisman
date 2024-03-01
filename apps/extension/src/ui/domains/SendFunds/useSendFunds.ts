@@ -175,10 +175,13 @@ const useSubTransaction = (
   }, [qSubstrateEstimateFee, token])
 }
 
+export type ToWarning = "DIFFERENT_ACCOUNT_FORMAT" | "AZERO_ID" | undefined
+
 const useSendFundsProvider = () => {
   const { t } = useTranslation("send-funds")
   const { from, to, tokenId, amount, allowReap, sendMax, set, gotoProgress } = useSendFundsWizard()
   const [isLocked, setIsLocked] = useState(false)
+  const [recipientWarning, setRecipientWarning] = useState<ToWarning>()
 
   const fromAccount = useAccountByAddress(from)
   const { tokensMap } = useTokens({ activeOnly: false, includeTestnets: true })
@@ -478,6 +481,7 @@ const useSendFundsProvider = () => {
     maxAmount,
     sendMax,
     subTransaction?.error,
+
     to,
     token,
     tokenId,
@@ -660,6 +664,8 @@ const useSendFundsProvider = () => {
     feeToken,
     feeTokenBalance,
     feeTokenRates,
+    recipientWarning,
+    setRecipientWarning,
     tip,
     tipToken,
     tipTokenBalance,
