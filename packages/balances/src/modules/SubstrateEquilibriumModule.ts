@@ -459,21 +459,23 @@ async function buildQueries(
             .map(({ id, free }: { id?: string; free?: string }) => [id, free])
         )
 
-        return Array.from(tokensByAddress.get(address) ?? []).map((token) => {
-          const free = tokenBalances[token.assetId] ?? "0"
-          return new Balance({
-            source: "substrate-equilibrium",
+        return Array.from(tokensByAddress.get(address) ?? [])
+          .filter((t) => t.chain.id === chainId)
+          .map((token) => {
+            const free = tokenBalances[token.assetId] ?? "0"
+            return new Balance({
+              source: "substrate-equilibrium",
 
-            status: "live",
+              status: "live",
 
-            address,
-            multiChainId: { subChainId: chainId },
-            chainId,
-            tokenId: token.id,
+              address,
+              multiChainId: { subChainId: chainId },
+              chainId,
+              tokenId: token.id,
 
-            free,
+              free,
+            })
           })
-        })
       }
 
       return { chainId, stateKey, decodeResult }
