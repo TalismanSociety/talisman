@@ -24,8 +24,6 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from "talisman-ui"
-import { isHex } from "viem"
-import { privateKeyToAccount } from "viem/accounts"
 import * as yup from "yup"
 
 import { AccountAddDerivationMode, useAccountAddSecret } from "./context"
@@ -39,24 +37,8 @@ const cleanupMnemonic = (input = "") =>
     .filter(Boolean) //remove empty strings
     .join(" ")
 
-const isValidEthPrivateKey = (privateKey?: string) => {
-  if (!privateKey) return false
-  try {
-    const hexPrivateKey = privateKey?.startsWith("0x") ? privateKey : `0x${privateKey}`
-    if (!isHex(hexPrivateKey)) return false
-    return !!privateKeyToAccount(hexPrivateKey)
-  } catch (err) {
-    return false
-  }
-}
-
 const getSuri = (secret: string, type: AccountAddressType, derivationPath?: string) => {
   if (!secret || !type) return null
-
-  // metamask exports private key without the 0x in front of it
-  // pjs keyring & crypto api will throw if it's missing
-  if (type === "ethereum" && isValidEthPrivateKey(secret))
-    return secret.startsWith("0x") ? secret : `0x${secret}`
 
   if (!mnemonicValidate(secret)) return null
 
@@ -73,7 +55,7 @@ type FormData = {
   derivationPath: string
 }
 
-export const AccountAddSecretMnemonicForm = () => {
+export const AccountAddMnemonicForm = () => {
   const { t } = useTranslation("admin")
 
   const { data, updateData, onSuccess } = useAccountAddSecret()
@@ -95,21 +77,9 @@ export const AccountAddSecretMnemonicForm = () => {
             .trim()
             .required("")
             .transform(cleanupMnemonic)
-            .when("type", {
-              is: "ethereum",
-              then: yup
-                .string()
-                .test(
-                  "is-valid-mnemonic-ethereum",
-                  t("Invalid secret"),
-                  async (val) => isValidEthPrivateKey(val) || api.validateMnemonic(val ?? "")
-                ),
-              otherwise: yup
-                .string()
-                .test("is-valid-mnemonic-sr25519", t("Invalid secret"), (val) =>
-                  api.validateMnemonic(val ?? "")
-                ),
-            }),
+            .test("is-valid-mnemonic", t("Invalid recovery phrase"), async (val) =>
+              api.validateMnemonic(val as string)
+            ),
         })
         .required()
         .test("account-exists", t("Account exists"), async (val, ctx) => {
@@ -145,7 +115,6 @@ export const AccountAddSecretMnemonicForm = () => {
     handleSubmit,
     setValue,
     watch,
-    trigger,
     formState: { errors, isValid, isSubmitting },
   } = useForm<FormData>({
     defaultValues: data,
@@ -154,14 +123,6 @@ export const AccountAddSecretMnemonicForm = () => {
   })
 
   const { type, mnemonic, mode, derivationPath } = watch()
-
-  const isPrivateKey = useMemo(
-    () => type === "ethereum" && isValidEthPrivateKey(mnemonic),
-    [mnemonic, type]
-  )
-  useEffect(() => {
-    if (isPrivateKey) setValue("mode", "first", { shouldValidate: true })
-  }, [isPrivateKey, setValue])
 
   const words = useMemo(
     () => cleanupMnemonic(mnemonic).split(" ").filter(Boolean).length ?? 0,
@@ -226,14 +187,11 @@ export const AccountAddSecretMnemonicForm = () => {
   const handleTypeChange = useCallback(
     (type: AccountAddressType) => {
       setValue("type", type, { shouldValidate: true })
-      if (mode === "first")
-        setValue("derivationPath", type === "ethereum" ? getEthDerivationPath() : "", {
-          shouldValidate: true,
-        })
-      // revalidate to get rid of "invalid mnemonic" with a private key, when switching to ethereum
-      trigger()
+      setValue("derivationPath", type === "ethereum" ? getEthDerivationPath() : "", {
+        shouldValidate: true,
+      })
     },
-    [mode, setValue, trigger]
+    [setValue]
   )
 
   const handleModeChange = useCallback(
@@ -246,12 +204,6 @@ export const AccountAddSecretMnemonicForm = () => {
     },
     [setValue, type]
   )
-
-  useEffect(() => {
-    setValue("derivationPath", type === "ethereum" ? getEthDerivationPath() : "", {
-      shouldValidate: true,
-    })
-  }, [setValue, type])
 
   useEffect(() => {
     return () => {
@@ -292,11 +244,7 @@ export const AccountAddSecretMnemonicForm = () => {
         </FormFieldContainer>
         <FormFieldTextarea
           {...register("mnemonic")}
-          placeholder={
-            type === "ethereum"
-              ? t("Enter your 12 or 24 word recovery phrase or private key")
-              : t("Enter your 12 or 24 word recovery phrase")
-          }
+          placeholder={t("Enter your 12 or 24 word recovery phrase")}
           rows={5}
           data-lpignore
           spellCheck={false}
@@ -306,12 +254,7 @@ export const AccountAddSecretMnemonicForm = () => {
           <div className="text-alert-warn grow truncate text-right">{errors.mnemonic?.message}</div>
         </div>
         <Spacer small />
-        <DerivationModeDropdown
-          className={classNames(isPrivateKey && "invisible")}
-          value={mode}
-          onChange={handleModeChange}
-          disabled={isPrivateKey}
-        />
+        <DerivationModeDropdown value={mode} onChange={handleModeChange} />
         <FormFieldContainer
           className={classNames("mt-2", mode !== "custom" && "invisible")}
           error={errors.derivationPath?.message}

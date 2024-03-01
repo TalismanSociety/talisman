@@ -51,7 +51,7 @@ const ChainTokenBalances = ({ chainId, balances }: AssetRowProps) => {
             <div className="flex items-center">
               <ChainLogo className="mr-2" id={chainOrNetwork.id} />
               <span className="mr-2">{chainOrNetwork.name}</span>
-              <CopyAddressButton symbol={symbol} networkId={chainOrNetwork.id} />
+              <CopyAddressButton networkId={chainOrNetwork.id} />
               <Suspense>
                 <SendFundsButton symbol={symbol} networkId={chainOrNetwork.id} shouldClose />
               </Suspense>
@@ -137,8 +137,8 @@ const NoTokens = ({ symbol }: { symbol: string }) => {
 
   const handleCopy = useCallback(() => {
     open({
-      mode: "receive",
       address: account?.address,
+      qr: true,
     })
     genericEvent("open receive", { from: "asset details" })
   }, [account?.address, genericEvent, open])
@@ -159,7 +159,7 @@ const NoTokens = ({ symbol }: { symbol: string }) => {
         </div>
         <div className="mt-6 flex justify-center gap-4">
           <PillButton icon={ArrowDownIcon} onClick={handleCopy}>
-            {t("Receive")}
+            {t("Copy address")}
           </PillButton>
           {showBuyCrypto && (
             <PillButton icon={CreditCardIcon} onClick={handleBuyCryptoClick}>

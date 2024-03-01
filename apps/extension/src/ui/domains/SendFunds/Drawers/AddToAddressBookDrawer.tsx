@@ -10,7 +10,7 @@ import { useTranslation } from "react-i18next"
 import { Button, Drawer, FormFieldContainer, FormFieldInputText } from "talisman-ui"
 import * as yup from "yup"
 
-import { AccountIcon } from "../Account/AccountIcon"
+import { AccountIcon } from "../../Account/AccountIcon"
 
 const ANALYTICS_PAGE: AnalyticsPage = {
   container: "Fullscreen",
@@ -131,8 +131,10 @@ export const AddToAddressBookDrawer: FC<{
   addressType: AddressBookContact["addressType"]
   containerId?: string
   asChild?: boolean
-}> = ({ isOpen, close, address, addressType, containerId }) => (
-  <Drawer isOpen={isOpen} anchor="bottom" onDismiss={close} containerId={containerId}>
-    <AddToAddressBookDrawerForm address={address} addressType={addressType} onClose={close} />
-  </Drawer>
-)
+}> = ({ address, addressType, containerId, isOpen, close }) => {
+  return (
+    <Drawer isOpen={isOpen} anchor="bottom" onDismiss={close} containerId={containerId}>
+      <AddToAddressBookDrawerForm address={address} addressType={addressType} onClose={close} />
+    </Drawer>
+  )
+}

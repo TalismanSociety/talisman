@@ -16,7 +16,7 @@ const IS_EXTERNAL: Partial<Record<AccountType, true>> = {
 
 const accountsAtom = atomWithSubscription<AccountJsonAny[]>(api.accountsSubscribe, "accountsAtom")
 
-const accountsMapAtom = atom(async (get) => {
+export const accountsMapAtom = atom(async (get) => {
   const accounts = await get(accountsAtom)
   return Object.fromEntries(accounts.map((account) => [account.address, account])) as Record<
     Address,

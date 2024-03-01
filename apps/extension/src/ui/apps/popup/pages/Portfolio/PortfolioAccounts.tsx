@@ -19,6 +19,7 @@ import { Fiat } from "@ui/domains/Asset/Fiat"
 import { useCopyAddressModal } from "@ui/domains/CopyAddress"
 import { useAnalytics } from "@ui/hooks/useAnalytics"
 import { useBalances } from "@ui/hooks/useBalances"
+import { useChainByGenesisHash } from "@ui/hooks/useChainByGenesisHash"
 import { useFormattedAddress } from "@ui/hooks/useFormattedAddress"
 import { usePortfolioAccounts } from "@ui/hooks/usePortfolioAccounts"
 import { useSearchParamsSelectedFolder } from "@ui/hooks/useSearchParamsSelectedFolder"
@@ -66,8 +67,39 @@ const FormattedAddress: FC<{
   return <Address className={className} address={formattedAddress} />
 }
 
-const AccountButton = ({ option }: { option: AccountOption }) => {
+const CopyAddressButton: FC<{ option: AccountOption }> = ({ option }) => {
   const { open } = useCopyAddressModal()
+
+  const chain = useChainByGenesisHash(option.type === "account" ? option.genesisHash : null)
+
+  const handleCopyClick: MouseEventHandler<HTMLOrSVGElement> = useCallback(
+    (event) => {
+      event.stopPropagation()
+      if (option.type === "account") {
+        sendAnalyticsEvent({
+          ...ANALYTICS_PAGE,
+          name: "Goto",
+          action: "open copy address",
+        })
+        open({
+          address: option.address,
+          chainId: chain?.id,
+        })
+      }
+    },
+    [open, option, chain?.id]
+  )
+
+  return (
+    <CopyIcon
+      role="button"
+      className="text-body-secondary hover:text-body !text-sm "
+      onClick={handleCopyClick}
+    />
+  )
+}
+
+const AccountButton = ({ option }: { option: AccountOption }) => {
   const navigate = useNavigate()
   const { genericEvent } = useAnalytics()
 
@@ -90,24 +122,6 @@ const AccountButton = ({ option }: { option: AccountOption }) => {
         `/portfolio?${option.treeName === "portfolio" ? "folder" : "watchedFolder"}=${option.id}`
       )
   }, [genericEvent, navigate, option])
-
-  const handleCopyClick: MouseEventHandler<HTMLOrSVGElement> = useCallback(
-    (event) => {
-      event.stopPropagation()
-      if (option.type === "account") {
-        sendAnalyticsEvent({
-          ...ANALYTICS_PAGE,
-          name: "Goto",
-          action: "open copy address",
-        })
-        open({
-          mode: "copy",
-          address: option.address,
-        })
-      }
-    },
-    [open, option]
-  )
 
   const isAccount = option.type === "account"
 
@@ -140,11 +154,9 @@ const AccountButton = ({ option }: { option: AccountOption }) => {
           )}
           {isAccount && (
             <div className="show-on-hover flex flex-col justify-end">
-              <CopyIcon
-                role="button"
-                className="text-body-secondary hover:text-body !text-sm "
-                onClick={handleCopyClick}
-              />
+              <Suspense>
+                <CopyAddressButton option={option} />
+              </Suspense>
             </div>
           )}
         </div>

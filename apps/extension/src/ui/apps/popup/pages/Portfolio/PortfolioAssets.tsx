@@ -1,3 +1,4 @@
+import { AccountJsonAny } from "@core/domains/accounts/types"
 import { Balance, Balances } from "@core/domains/balances/types"
 import { ChevronLeftIcon, CopyIcon, MoreHorizontalIcon, SendIcon } from "@talismn/icons"
 import { classNames } from "@talismn/util"
@@ -14,11 +15,12 @@ import { usePortfolio } from "@ui/domains/Portfolio/usePortfolio"
 import { useSelectedAccount } from "@ui/domains/Portfolio/useSelectedAccount"
 import { useAnalytics } from "@ui/hooks/useAnalytics"
 import useBalances from "@ui/hooks/useBalances"
+import { useChainByGenesisHash } from "@ui/hooks/useChainByGenesisHash"
 import { useSelectedCurrency } from "@ui/hooks/useCurrency"
 import { useFormattedAddress } from "@ui/hooks/useFormattedAddress"
 import { useSearchParamsSelectedFolder } from "@ui/hooks/useSearchParamsSelectedFolder"
 import { useSendFundsPopup } from "@ui/hooks/useSendFundsPopup"
-import { FC, useCallback, useEffect, useMemo } from "react"
+import { FC, Suspense, useCallback, useEffect, useMemo } from "react"
 import { useTranslation } from "react-i18next"
 import { useNavigate } from "react-router-dom"
 import {
@@ -33,9 +35,9 @@ import {
 const EnableNetworkMessage: FC<{ type?: "substrate" | "evm" }> = ({ type }) => {
   const { t } = useTranslation()
   const handleClick = useCallback(() => {
-    if (type === "substrate") api.dashboardOpen("/networks/polkadot")
-    else if (type === "evm") api.dashboardOpen("/networks/ethereum")
-    else api.dashboardOpen("/networks")
+    if (type === "substrate") api.dashboardOpen("/settings/networks-tokens/networks/polkadot")
+    else if (type === "evm") api.dashboardOpen("/settings/networks-tokens/networks/ethereum")
+    else api.dashboardOpen("/settings/networks-tokens/networks")
     window.close()
   }, [type])
 
@@ -68,10 +70,68 @@ const MainContent: FC<{ balances: Balances }> = ({ balances }) => {
   return <PopupAssetsTable balances={balances} isInitializing={isInitializing} />
 }
 
+const SendFundsButton: FC<{ account?: AccountJsonAny }> = ({ account }) => {
+  const { t } = useTranslation()
+  const { canSendFunds, cannotSendFundsReason, openSendFundsPopup } = useSendFundsPopup(account)
+
+  const { genericEvent } = useAnalytics()
+
+  const sendFunds = useCallback(() => {
+    openSendFundsPopup()
+    genericEvent("open send funds", { from: "popup portfolio" })
+  }, [openSendFundsPopup, genericEvent])
+
+  return (
+    <Tooltip placement="bottom">
+      <TooltipTrigger
+        onClick={canSendFunds ? sendFunds : undefined}
+        className={classNames(
+          " text-body-secondary text-md flex h-16 w-16 flex-col items-center justify-center rounded-full",
+          canSendFunds ? "hover:bg-grey-800 hover:text-body" : "cursor-default opacity-50"
+        )}
+      >
+        <SendIcon />
+      </TooltipTrigger>
+      <TooltipContent>{canSendFunds ? t("Send") : cannotSendFundsReason}</TooltipContent>
+    </Tooltip>
+  )
+}
+
+const CopyAddressButton: FC<{ account?: AccountJsonAny }> = ({ account }) => {
+  const { t } = useTranslation()
+  const { open: openCopyAddressModal } = useCopyAddressModal()
+
+  const { genericEvent } = useAnalytics()
+
+  const chain = useChainByGenesisHash(account?.genesisHash)
+  const copyAddress = useCallback(() => {
+    openCopyAddressModal({
+      address: account?.address,
+      chainId: chain?.id,
+    })
+    genericEvent("open copy address", { from: "popup portfolio" })
+  }, [account?.address, chain?.id, genericEvent, openCopyAddressModal])
+
+  return (
+    <Tooltip placement="bottom">
+      <TooltipTrigger
+        onClick={copyAddress}
+        className="hover:bg-grey-800 text-body-secondary hover:text-body text-md flex h-16 w-16 flex-col items-center justify-center rounded-full"
+      >
+        <CopyIcon />
+      </TooltipTrigger>
+      <TooltipContent>{t("Copy address")}</TooltipContent>
+    </Tooltip>
+  )
+}
+
 const PageContent = () => {
+  const { t } = useTranslation()
+
   const allBalances = useBalances()
   const { networkBalances } = usePortfolio()
   const { account } = useSelectedAccount()
+  const currency = useSelectedCurrency()
   const { folder } = useSearchParamsSelectedFolder()
 
   const formattedAddress = useFormattedAddress(account?.address, account?.genesisHash)
@@ -102,33 +162,12 @@ const PageContent = () => {
           networkBalances,
     [account, balancesByAddress, folder, networkBalances]
   )
-
   const balancesToDisplay = useDisplayBalances(balances)
-  const currency = useSelectedCurrency()
-  const { open: openCopyAddressModal } = useCopyAddressModal()
-  const { canSendFunds, cannotSendFundsReason, openSendFundsPopup } = useSendFundsPopup(account)
-
-  const { genericEvent } = useAnalytics()
-
-  const sendFunds = useCallback(() => {
-    openSendFundsPopup()
-    genericEvent("open send funds", { from: "popup portfolio" })
-  }, [openSendFundsPopup, genericEvent])
-
-  const copyAddress = useCallback(() => {
-    openCopyAddressModal({
-      mode: "copy",
-      address: account?.address,
-    })
-    genericEvent("open copy address", { from: "popup portfolio" })
-  }, [account, genericEvent, openCopyAddressModal])
 
   const navigate = useNavigate()
   const handleBackBtnClick = useCallback(() => {
     navigate(-1)
   }, [navigate])
-
-  const { t } = useTranslation()
 
   return (
     <>
@@ -165,44 +204,27 @@ const PageContent = () => {
           </div>
         </div>
         <div className="flex grow items-center justify-end">
-          <Tooltip placement="bottom">
-            <TooltipTrigger
-              onClick={copyAddress}
-              className="hover:bg-grey-800 text-body-secondary hover:text-body text-md flex h-16 w-16 flex-col items-center justify-center rounded-full"
-            >
-              <CopyIcon />
-            </TooltipTrigger>
-            <TooltipContent>{t("Copy address")}</TooltipContent>
-          </Tooltip>
-          <Tooltip placement="bottom">
-            <TooltipTrigger
-              onClick={canSendFunds ? sendFunds : undefined}
-              className={classNames(
-                " text-body-secondary text-md flex h-16 w-16 flex-col items-center justify-center rounded-full",
-                canSendFunds ? "hover:bg-grey-800 hover:text-body" : "cursor-default opacity-50"
-              )}
-            >
-              <SendIcon />
-            </TooltipTrigger>
-            <TooltipContent>{canSendFunds ? t("Send") : cannotSendFundsReason}</TooltipContent>
-          </Tooltip>
-          {account && (
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <AccountContextMenu
-                  analyticsFrom="popup portfolio"
-                  address={account?.address}
-                  hideManageAccounts
-                  trigger={
-                    <ContextMenuTrigger className="hover:bg-grey-800 text-body-secondary hover:text-body text-md flex h-16 w-16 flex-col items-center justify-center rounded-full">
-                      <MoreHorizontalIcon />
-                    </ContextMenuTrigger>
-                  }
-                />
-              </TooltipTrigger>
-              <TooltipContent>{t("More options")}</TooltipContent>
-            </Tooltip>
-          )}
+          <Suspense>
+            <CopyAddressButton account={account} />
+            <SendFundsButton account={account} />
+            {account && (
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <AccountContextMenu
+                    analyticsFrom="popup portfolio"
+                    address={account?.address}
+                    hideManageAccounts
+                    trigger={
+                      <ContextMenuTrigger className="hover:bg-grey-800 text-body-secondary hover:text-body text-md flex h-16 w-16 flex-col items-center justify-center rounded-full">
+                        <MoreHorizontalIcon />
+                      </ContextMenuTrigger>
+                    }
+                  />
+                </TooltipTrigger>
+                <TooltipContent>{t("More options")}</TooltipContent>
+              </Tooltip>
+            )}
+          </Suspense>
         </div>
       </div>
       <div className="py-12">

@@ -22,7 +22,7 @@ export const ResetEvmNetworkButton: FC<{ network: EvmNetwork | CustomEvmNetwork 
       await api.ethNetworkReset(network.id.toString())
       close()
       await sleep(350) // wait for atom to reflect changes
-      navigate("/networks/ethereum")
+      navigate("/settings/networks-tokens/networks/ethereum")
     } catch (err) {
       notify({
         title: t("Failed to reset"),

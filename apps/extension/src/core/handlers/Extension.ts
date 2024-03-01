@@ -25,7 +25,6 @@ import { log } from "@core/log"
 import { MessageTypes, RequestType, ResponseType } from "@core/types"
 import { Port, RequestIdOnly } from "@core/types/base"
 import { awaitKeyringLoaded } from "@core/util/awaitKeyringLoaded"
-import { hasGhostsOfThePast } from "@core/util/hasGhostsOfThePast"
 import { fetchHasSpiritKey } from "@core/util/hasSpiritKey"
 import { isTalismanHostname } from "@core/util/isTalismanHostname"
 import keyring from "@polkadot/ui-keyring"
@@ -107,7 +106,6 @@ export default class Extension extends ExtensionHandler {
       this.stores.app.observable.subscribe(({ onboarded }) => {
         if (onboarded === "TRUE") {
           this.checkSpiritKeyOwnership()
-          this.checkGhostsOfThePastOwnership()
         }
       })
     })
@@ -193,18 +191,6 @@ export default class Extension extends ExtensionHandler {
       return
     }
     await this.stores.app.set({ needsSpiritKeyUpdate: false })
-  }
-
-  private async checkGhostsOfThePastOwnership() {
-    try {
-      const hasGhosts = await hasGhostsOfThePast()
-      const hasGhostsNft = Object.values(hasGhosts).some((g) => g)
-      await talismanAnalytics.capture("Ghosts of the past ownership", {
-        $set: { hasGhostsOfThePast: hasGhostsNft },
-      })
-    } catch (err) {
-      log.error("Failed to check Ghosts of the Past ownership", { err })
-    }
   }
 
   public async handle<TMessageType extends MessageTypes>(
