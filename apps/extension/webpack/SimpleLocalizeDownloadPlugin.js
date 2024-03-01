@@ -6,6 +6,9 @@ const { DefinePlugin } = require("webpack")
 const apiKey = process.env.SIMPLE_LOCALIZE_API_KEY
 const projectToken = process.env.SIMPLE_LOCALIZE_PROJECT_TOKEN
 const endpoint = `https://api.simplelocalize.io/api/v4/export?downloadFormat=single-language-json&downloadOptions=SPLIT_BY_NAMESPACES`
+// @dev for troubleshoting another language with dev mode
+// change the value below to { en: "English", kr: "한국인", ru: "Pусский", zh: "中文" }
+// then after launching dev mode, override the locales folder with the one from a prod build
 const fallbackLanguages = { en: "English" }
 
 module.exports = class SimpleLocalizeDownloadPlugin {
