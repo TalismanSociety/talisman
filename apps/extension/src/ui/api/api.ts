@@ -307,7 +307,8 @@ export const api: MessageTypes = {
     messageService.sendMessage("pri(eth.transactions.count)", { address, evmNetworkId }),
   ethNetworkAddGetRequests: () =>
     messageService.sendMessage("pri(eth.networks.add.requests)", null),
-  ethNetworkAddApprove: (id) => messageService.sendMessage("pri(eth.networks.add.approve)", { id }),
+  ethNetworkAddApprove: (id, enableDefault) =>
+    messageService.sendMessage("pri(eth.networks.add.approve)", { id, enableDefault }),
   ethNetworkAddCancel: (id) => messageService.sendMessage("pri(eth.networks.add.cancel)", { id }),
 
   // ethereum network message types
