@@ -4,33 +4,6 @@ import { HexString } from "@polkadot/util/types"
 import { provideContext } from "@talisman/util/provideContext"
 import { useCallback, useMemo } from "react"
 import { useNavigate, useSearchParams } from "react-router-dom"
-import { useOpenClose } from "talisman-ui"
-
-const useSendFundsDrawers = () => {
-  const {
-    open: openForfeitWarningDrawer,
-    isOpen: isOpenForfeitWarningDrawer,
-    close: closeForfeitWarningDrawer,
-  } = useOpenClose()
-  const {
-    open: openAddressBookContactDrawer,
-    isOpen: isOpenAddressBookContactDrawer,
-    close: closeAddressBookContactDrawer,
-  } = useOpenClose()
-
-  return {
-    forfeitWarning: {
-      open: openForfeitWarningDrawer,
-      isOpen: isOpenForfeitWarningDrawer,
-      close: closeForfeitWarningDrawer,
-    },
-    addressBookContact: {
-      open: openAddressBookContactDrawer,
-      isOpen: isOpenAddressBookContactDrawer,
-      close: closeAddressBookContactDrawer,
-    },
-  }
-}
 
 type SendFundsWizardParams = {
   from: Address
@@ -49,7 +22,6 @@ export type SendFundsWizardPage = "from" | "to" | "token" | "amount" | "confirm"
 const useSendFundsWizardProvider = () => {
   const [searchParams, setSearchParams] = useSearchParams()
   const navigate = useNavigate()
-  const drawers = useSendFundsDrawers()
 
   const { from, to, tokenId, amount, allowReap, sendMax, tokenSymbol } = useMemo(
     () => ({
@@ -149,7 +121,6 @@ const useSendFundsWizardProvider = () => {
   )
 
   return {
-    drawers,
     from,
     to,
     tokenId,

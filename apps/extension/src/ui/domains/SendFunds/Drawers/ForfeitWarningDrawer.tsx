@@ -41,12 +41,9 @@ const ForfeitDetails: FC<ForfeitDetailsProps> = ({ tokenId, planck }) => {
   )
 }
 
-export const ForfeitWarningDrawer = () => {
+export const ForfeitWarningDrawer = ({ isOpen, close }: { isOpen: boolean; close: () => void }) => {
   const { t } = useTranslation("send-funds")
-  const {
-    gotoReview,
-    drawers: { forfeitWarning },
-  } = useSendFundsWizard()
+  const { gotoReview } = useSendFundsWizard()
   const { tokensToBeReaped } = useSendFunds()
 
   const handleConfirmReap = useCallback(() => {
@@ -54,12 +51,7 @@ export const ForfeitWarningDrawer = () => {
   }, [gotoReview])
 
   return (
-    <Drawer
-      anchor="bottom"
-      isOpen={forfeitWarning.isOpen}
-      onDismiss={forfeitWarning.close}
-      containerId="main"
-    >
+    <Drawer anchor="bottom" isOpen={isOpen} onDismiss={close} containerId="main">
       <div className="bg-black-tertiary rounded-t-xl p-12 text-center">
         <div>
           <InfoIcon className="text-primary-500 inline-block text-3xl" />

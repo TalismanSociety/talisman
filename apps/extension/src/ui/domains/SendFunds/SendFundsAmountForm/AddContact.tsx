@@ -2,12 +2,11 @@ import { isEthereumAddress } from "@polkadot/util-crypto"
 import { convertAddress } from "@talisman/util/convertAddress"
 import { AccountAddressType } from "@talisman/util/getAddressType"
 import { UserPlusIcon } from "@talismn/icons"
-import { useSendFundsWizard } from "@ui/apps/popup/pages/SendFunds/context"
 import { useAccountByAddress } from "@ui/hooks/useAccountByAddress"
 import { useAddressBook } from "@ui/hooks/useAddressBook"
 import { useMemo } from "react"
 import { useTranslation } from "react-i18next"
-import { PillButton } from "talisman-ui"
+import { PillButton, useOpenClose } from "talisman-ui"
 
 import { AddToAddressBookDrawer } from "../Drawers/AddToAddressBookDrawer"
 import { useSendFunds } from "../useSendFunds"
@@ -15,11 +14,9 @@ import { useSendFunds } from "../useSendFunds"
 export const AddContact = () => {
   const { t } = useTranslation("send-funds")
   const { to } = useSendFunds()
-  const {
-    drawers: { addressBookContact },
-  } = useSendFundsWizard()
   const account = useAccountByAddress(to)
   const { contacts } = useAddressBook()
+  const addressBookContactDrawer = useOpenClose()
 
   const canAdd = useMemo(() => {
     if (account || !to) return false
@@ -37,7 +34,7 @@ export const AddContact = () => {
   return (
     <>
       <PillButton
-        onClick={addressBookContact.open}
+        onClick={addressBookContactDrawer.open}
         size={"base"}
         className="h-16 !rounded !px-4"
         icon={UserPlusIcon}
@@ -45,6 +42,8 @@ export const AddContact = () => {
         {t("Add")}
       </PillButton>
       <AddToAddressBookDrawer
+        isOpen={addressBookContactDrawer.isOpen}
+        close={addressBookContactDrawer.close}
         address={to}
         addressType={addressType}
         asChild={false}

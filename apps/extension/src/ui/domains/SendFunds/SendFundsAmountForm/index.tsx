@@ -1,3 +1,4 @@
+import { useGlobalOpenClose } from "@talisman/hooks/useGlobalOpenClose"
 import { SendFundsWizardPage, useSendFundsWizard } from "@ui/apps/popup/pages/SendFunds/context"
 import { FormEvent, useCallback } from "react"
 import { useTranslation } from "react-i18next"
@@ -15,16 +16,14 @@ import { TokenRow } from "./TokenRow"
 
 const ReviewButton = () => {
   const { t } = useTranslation("send-funds")
-  const {
-    gotoReview,
-    drawers: { forfeitWarning },
-  } = useSendFundsWizard()
+  const { gotoReview } = useSendFundsWizard()
   const { isValid, tokensToBeReaped } = useSendFunds()
+  const forfeitDrawer = useGlobalOpenClose("sendFundsForfeitDrawer")
 
   const handleClick = useCallback(() => {
-    if (tokensToBeReaped?.length) forfeitWarning.open()
+    if (tokensToBeReaped?.length) forfeitDrawer.open()
     else gotoReview(false)
-  }, [tokensToBeReaped?.length, forfeitWarning, gotoReview])
+  }, [tokensToBeReaped?.length, forfeitDrawer, gotoReview])
 
   return (
     <>
@@ -37,7 +36,7 @@ const ReviewButton = () => {
       >
         {t("Review")}
       </Button>
-      <ForfeitWarningDrawer />
+      <ForfeitWarningDrawer isOpen={forfeitDrawer.isOpen} close={forfeitDrawer.close} />
     </>
   )
 }

@@ -1,7 +1,6 @@
 import { AddressBookContact } from "@core/domains/app/store.addressBook"
 import { yupResolver } from "@hookform/resolvers/yup"
 import { AnalyticsPage, sendAnalyticsEvent } from "@ui/api/analytics"
-import { useSendFundsWizard } from "@ui/apps/popup/pages/SendFunds/context"
 import { Address } from "@ui/domains/Account/Address"
 import { useAddressBook } from "@ui/hooks/useAddressBook"
 import { useAnalyticsPageView } from "@ui/hooks/useAnalyticsPageView"
@@ -126,26 +125,16 @@ const AddToAddressBookDrawerForm: FC<{
 }
 
 export const AddToAddressBookDrawer: FC<{
+  isOpen: boolean
+  close: () => void
   address: string
   addressType: AddressBookContact["addressType"]
   containerId?: string
   asChild?: boolean
-}> = ({ address, addressType, containerId }) => {
-  const {
-    drawers: { addressBookContact },
-  } = useSendFundsWizard()
+}> = ({ address, addressType, containerId, isOpen, close }) => {
   return (
-    <Drawer
-      isOpen={addressBookContact.isOpen}
-      anchor="bottom"
-      onDismiss={addressBookContact.close}
-      containerId={containerId}
-    >
-      <AddToAddressBookDrawerForm
-        address={address}
-        addressType={addressType}
-        onClose={addressBookContact.close}
-      />
+    <Drawer isOpen={isOpen} anchor="bottom" onDismiss={close} containerId={containerId}>
+      <AddToAddressBookDrawerForm address={address} addressType={addressType} onClose={close} />
     </Drawer>
   )
 }
