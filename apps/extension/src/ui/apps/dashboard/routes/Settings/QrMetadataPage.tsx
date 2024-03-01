@@ -77,6 +77,16 @@ const SetVerifierCertificateContentInner = () => {
         value={mnemonicId}
         onChange={setMnemonicId}
       />
+      {mnemonicId && (
+        <p>
+          <Trans t={t}>
+            <span className="text-body">Caution:</span> Once you register networks in Polkadot Vault
+            using metadata signed by this Verifier Certificate, changing it or removing it in
+            Talisman will cause accounts for those networks held in Polkadot Vault to become
+            unusable.
+          </Trans>
+        </p>
+      )}
       <div className="mt-8 flex justify-end gap-8">
         <Button className="w-72" onClick={handleCancelClick}>
           {t("Back")}
@@ -182,7 +192,7 @@ const MetadataPortalContent = () => {
                   ></a>
                 ),
               }}
-              defaults="Talisman's QR codes are generated from live network data and signed with the recovery phrase that you've chosen as Polkadot Vault Verifier Certificate. <Link>Learn more</Link"
+              defaults="Talisman's QR codes are generated from live network data and signed with the recovery phrase that you've chosen as Polkadot Vault Verifier Certificate. <Link>Learn more</Link>"
             />
           </p>
           <p className="flex items-center gap-3">
@@ -190,6 +200,13 @@ const MetadataPortalContent = () => {
               {t("Your Verifier Certificate recovery phrase is")}
             </span>
             <MnemonicButton label={mnemonic?.name ?? "Unknown"} />
+          </p>
+          <p>
+            <Trans t={t}>
+              <span className="text-body">Caution:</span> If you change or remove your Verifier
+              Certificate recovery phrase, existing accounts held in Polkadot Vault may become
+              unusable.
+            </Trans>
           </p>
           <FadeIn key={chain.genesisHash} className="flex flex-col items-center gap-16">
             <div className="mt-12 flex gap-12">

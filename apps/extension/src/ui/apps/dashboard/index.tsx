@@ -17,8 +17,9 @@ import { AccountAddDcentDashboardWizard } from "./routes/AccountAdd/AccountAddDc
 import { AccountAddDerivedPage } from "./routes/AccountAdd/AccountAddDerivedPage"
 import { AccountAddJsonPage } from "./routes/AccountAdd/AccountAddJsonPage"
 import { AccountAddLedgerDashboardWizard } from "./routes/AccountAdd/AccountAddLedgerWizard"
+import { AccountAddMnemonicDashboardWizard } from "./routes/AccountAdd/AccountAddMnemonicWizard"
+import { AccountAddPrivateKeyDashboardPage } from "./routes/AccountAdd/AccountAddPrivateKeyPage"
 import { AccountAddQrDashboardWizard } from "./routes/AccountAdd/AccountAddQrWizard"
-import { AccountAddSecretDashboardWizard } from "./routes/AccountAdd/AccountAddSecretWizard"
 import { AccountAddSignetDashboardWizard } from "./routes/AccountAdd/AccountAddSignetWizard"
 import { AccountAddWatchedPage } from "./routes/AccountAdd/AccountAddWatchedPage"
 import { NetworkPage } from "./routes/Networks/NetworkPage"
@@ -64,7 +65,8 @@ const DashboardInner = () => {
             <Route index element={<AccountAddMenu />} />
             <Route path="derived" element={<AccountAddDerivedPage />} />
             <Route path="json" element={<AccountAddJsonPage />} />
-            <Route path="secret/*" element={<AccountAddSecretDashboardWizard />} />
+            <Route path="mnemonic/*" element={<AccountAddMnemonicDashboardWizard />} />
+            <Route path="pk/*" element={<AccountAddPrivateKeyDashboardPage />} />
             <Route path="ledger/*" element={<AccountAddLedgerDashboardWizard />} />
             <Route path="qr/*" element={<AccountAddQrDashboardWizard />} />
             <Route path="watched" element={<AccountAddWatchedPage />} />

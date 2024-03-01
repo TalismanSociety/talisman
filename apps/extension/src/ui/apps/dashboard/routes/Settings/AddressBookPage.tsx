@@ -1,5 +1,6 @@
 import { ProviderType } from "@core/domains/sitesAuthorised/types"
 import { HeaderBlock } from "@talisman/components/HeaderBlock"
+import { OptionSwitch } from "@talisman/components/OptionSwitch"
 import { Spacer } from "@talisman/components/Spacer"
 import { useOpenClose } from "@talisman/hooks/useOpenClose"
 import { AccountAddressType } from "@talisman/util/getAddressType"
@@ -15,7 +16,6 @@ import { ContactCreateModal } from "@ui/domains/Settings/AddressBook/ContactCrea
 import { ContactDeleteModal } from "@ui/domains/Settings/AddressBook/ContactDeleteModal"
 import { ContactEditModal } from "@ui/domains/Settings/AddressBook/ContactEditModal"
 import { ExistingContactComponentProps } from "@ui/domains/Settings/AddressBook/types"
-import { ProviderTypeSwitch } from "@ui/domains/Site/ProviderTypeSwitch"
 import { useAddressBook } from "@ui/hooks/useAddressBook"
 import { useAnalytics } from "@ui/hooks/useAnalytics"
 import { useAnalyticsPageView } from "@ui/hooks/useAnalyticsPageView"
@@ -168,10 +168,13 @@ export const AddressBookPage = () => {
   const [toDelete, setToDelete] = useState<string>()
   const [toEdit, setToEdit] = useState<string>()
   const { open, isOpen, close } = useOpenClose()
-  const [addressType, setAddressType] = useState<"polkadot" | "ethereum">("polkadot")
+  const [addressType, setAddressType] = useState<"all" | "polkadot" | "ethereum">("all")
   const contactsToDisplay = useMemo(
     () =>
-      contacts.filter((contact) => contact.addressType === contactTypeAddressTypeMap[addressType]),
+      contacts.filter(
+        (contact) =>
+          addressType === "all" || contact.addressType === contactTypeAddressTypeMap[addressType]
+      ),
     [contacts, addressType]
   )
 
@@ -183,9 +186,14 @@ export const AddressBookPage = () => {
         <HeaderBlock title={t("Address Book")} text={t("Manage your saved contacts")} />
         <Spacer large />
         <div className="flex justify-between align-middle">
-          <ProviderTypeSwitch
+          <OptionSwitch
+            options={[
+              ["all", t("All")],
+              ["ethereum", t("Ethereum")],
+              ["polkadot", t("Polkadot")],
+            ]}
             className="text-xs [&>div]:h-full"
-            defaultProvider="polkadot"
+            defaultOption="all"
             onChange={setAddressType}
           />
           {contactsToDisplay.length > 0 && (

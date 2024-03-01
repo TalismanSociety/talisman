@@ -91,7 +91,7 @@ export const reducer = (state: AddQrState, action: Action): AddQrState => {
 
       return {
         type: "CONFIGURE",
-        accountConfig: { name: "", address, genesisHash, lockToNetwork: false },
+        accountConfig: { name: "", address, genesisHash, lockToNetwork: Boolean(genesisHash) },
       }
     }
   }

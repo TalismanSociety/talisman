@@ -6,8 +6,9 @@ import { AccountAddDcentOnboardingWizard } from "./AddAccount/AccountAddDcentWiz
 import { AccountAddDerivedPage } from "./AddAccount/AccountAddDerivedPage"
 import { AccountAddJsonOnboardPage } from "./AddAccount/AccountAddJsonPage"
 import { AccountAddLedgerOnboardWizard } from "./AddAccount/AccountAddLedgerWizard"
+import { AccountAddMnemonicOnboardWizard } from "./AddAccount/AccountAddMnemonicWizard"
+import { AccountAddPrivateKeyOnboardWizard } from "./AddAccount/AccountAddPrivateKeyPage"
 import { AccountAddQrOnboardWizard } from "./AddAccount/AccountAddQrWizard"
-import { AccountAddSecretOnboardWizard } from "./AddAccount/AccountAddSecretWizard"
 import { AccountAddSignetOnboardingWizard } from "./AddAccount/AccountAddSignetWizard"
 import { AccountAddWatchedPage } from "./AddAccount/AccountAddWatchedPage"
 import { PasswordPage } from "./Password"
@@ -31,7 +32,8 @@ const OnboardingRoutes = () => {
             <Route index element={<AddAccountPage />} />
             <Route path="derived" element={<AccountAddDerivedPage />} />
             <Route path="json" element={<AccountAddJsonOnboardPage />} />
-            <Route path="secret/*" element={<AccountAddSecretOnboardWizard />} />
+            <Route path="mnemonic/*" element={<AccountAddMnemonicOnboardWizard />} />
+            <Route path="pk/*" element={<AccountAddPrivateKeyOnboardWizard />} />
             <Route path="ledger/*" element={<AccountAddLedgerOnboardWizard />} />
             <Route path="qr/*" element={<AccountAddQrOnboardWizard />} />
             <Route path="watched" element={<AccountAddWatchedPage />} />
