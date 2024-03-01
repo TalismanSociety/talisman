@@ -1,6 +1,7 @@
 import { AddressBookContact } from "@core/domains/app/store.addressBook"
 import { yupResolver } from "@hookform/resolvers/yup"
 import { AnalyticsPage, sendAnalyticsEvent } from "@ui/api/analytics"
+import { useSendFundsWizard } from "@ui/apps/popup/pages/SendFunds/context"
 import { Address } from "@ui/domains/Account/Address"
 import { useAddressBook } from "@ui/hooks/useAddressBook"
 import { useAnalyticsPageView } from "@ui/hooks/useAnalyticsPageView"
@@ -10,7 +11,7 @@ import { useTranslation } from "react-i18next"
 import { Button, Drawer, FormFieldContainer, FormFieldInputText } from "talisman-ui"
 import * as yup from "yup"
 
-import { AccountIcon } from "../Account/AccountIcon"
+import { AccountIcon } from "../../Account/AccountIcon"
 
 const ANALYTICS_PAGE: AnalyticsPage = {
   container: "Fullscreen",
@@ -125,14 +126,26 @@ const AddToAddressBookDrawerForm: FC<{
 }
 
 export const AddToAddressBookDrawer: FC<{
-  isOpen: boolean
-  close: () => void
   address: string
   addressType: AddressBookContact["addressType"]
   containerId?: string
   asChild?: boolean
-}> = ({ isOpen, close, address, addressType, containerId }) => (
-  <Drawer isOpen={isOpen} anchor="bottom" onDismiss={close} containerId={containerId}>
-    <AddToAddressBookDrawerForm address={address} addressType={addressType} onClose={close} />
-  </Drawer>
-)
+}> = ({ address, addressType, containerId }) => {
+  const {
+    drawers: { addressBookContact },
+  } = useSendFundsWizard()
+  return (
+    <Drawer
+      isOpen={addressBookContact.isOpen}
+      anchor="bottom"
+      onDismiss={addressBookContact.close}
+      containerId={containerId}
+    >
+      <AddToAddressBookDrawerForm
+        address={address}
+        addressType={addressType}
+        onClose={addressBookContact.close}
+      />
+    </Drawer>
+  )
+}

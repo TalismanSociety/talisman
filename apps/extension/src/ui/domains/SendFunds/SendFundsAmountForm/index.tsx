@@ -1,11 +1,10 @@
 import { log } from "@core/log"
 import { isEthereumAddress } from "@polkadot/util-crypto"
 import { WithTooltip } from "@talisman/components/Tooltip"
-import { useOpenClose } from "@talisman/hooks/useOpenClose"
 import { convertAddress } from "@talisman/util/convertAddress"
 import { AccountAddressType } from "@talisman/util/getAddressType"
-import { AlertCircleIcon, InfoIcon, SwapIcon, UserPlusIcon } from "@talismn/icons"
-import { classNames, planckToTokens, tokensToPlanck } from "@talismn/util"
+import { AlertCircleIcon, SwapIcon, UserPlusIcon } from "@talismn/icons"
+import { classNames, tokensToPlanck } from "@talismn/util"
 import { SendFundsWizardPage, useSendFundsWizard } from "@ui/apps/popup/pages/SendFunds/context"
 import { useAccountByAddress } from "@ui/hooks/useAccountByAddress"
 import { useAddressBook } from "@ui/hooks/useAddressBook"
@@ -13,7 +12,6 @@ import { useSelectedCurrency } from "@ui/hooks/useCurrency"
 import { useFormattedAddress } from "@ui/hooks/useFormattedAddress"
 import useToken from "@ui/hooks/useToken"
 import { isEvmToken } from "@ui/util/isEvmToken"
-import { isSubToken } from "@ui/util/isSubToken"
 import debounce from "lodash/debounce"
 import {
   ChangeEventHandler,
@@ -28,24 +26,25 @@ import {
   useState,
 } from "react"
 import { Container } from "react-dom"
-import { Trans, useTranslation } from "react-i18next"
-import { Button, Drawer, PillButton } from "talisman-ui"
+import { useTranslation } from "react-i18next"
+import { Button, PillButton } from "talisman-ui"
 
-import { AccountIcon } from "../Account/AccountIcon"
-import { AccountTypeIcon } from "../Account/AccountTypeIcon"
-import { Address } from "../Account/Address"
-import { ChainLogo } from "../Asset/ChainLogo"
-import currencyConfig from "../Asset/currencyConfig"
-import { Fiat } from "../Asset/Fiat"
-import { TokenLogo } from "../Asset/TokenLogo"
-import Tokens from "../Asset/Tokens"
-import { TokensAndFiat } from "../Asset/TokensAndFiat"
-import { EthFeeSelect } from "../Ethereum/GasSettings/EthFeeSelect"
-import { AddToAddressBookDrawer } from "./AddToAddressBookDrawer"
-import { SendFundsFeeTooltip } from "./SendFundsFeeTooltip"
-import { useGenesisHashFromTokenId } from "./useGenesisHashFromTokenId"
-import { useNetworkDetails } from "./useNetworkDetails"
-import { useSendFunds } from "./useSendFunds"
+import { AccountIcon } from "../../Account/AccountIcon"
+import { AccountTypeIcon } from "../../Account/AccountTypeIcon"
+import { Address } from "../../Account/Address"
+import { ChainLogo } from "../../Asset/ChainLogo"
+import currencyConfig from "../../Asset/currencyConfig"
+import { Fiat } from "../../Asset/Fiat"
+import { TokenLogo } from "../../Asset/TokenLogo"
+import Tokens from "../../Asset/Tokens"
+import { TokensAndFiat } from "../../Asset/TokensAndFiat"
+import { EthFeeSelect } from "../../Ethereum/GasSettings/EthFeeSelect"
+import { AddToAddressBookDrawer } from "../Drawers/AddToAddressBookDrawer"
+import { ForfeitWarningDrawer } from "../Drawers/ForfeitWarningDrawer"
+import { SendFundsFeeTooltip } from "../SendFundsFeeTooltip"
+import { useGenesisHashFromTokenId } from "../useGenesisHashFromTokenId"
+import { useNetworkDetails } from "../useNetworkDetails"
+import { useSendFunds } from "../useSendFunds"
 
 const normalizeStringNumber = (value?: string | number | null, decimals = 18) => {
   try {
@@ -521,51 +520,18 @@ const FeesSummary = () => {
   )
 }
 
-type ForfeitDetailsProps = {
-  tokenId: string
-  planck: string
-}
-const ForfeitDetails: FC<ForfeitDetailsProps> = ({ tokenId, planck }) => {
-  const { t } = useTranslation("send-funds")
-  const token = useToken(tokenId)
-
-  if (!isSubToken(token)) return null
-
-  return (
-    <Trans t={t}>
-      This transaction will cause{" "}
-      <Tokens
-        amount={planckToTokens(planck, token.decimals)}
-        decimals={token.decimals}
-        symbol={token.symbol}
-        noCountUp
-      />{" "}
-      to be lost. If your balance falls below the minimum of{" "}
-      <Tokens
-        amount={planckToTokens(token.existentialDeposit, token.decimals)}
-        decimals={token.decimals}
-        symbol={token.symbol}
-        noCountUp
-      />
-      , any remaining tokens will be forfeited.
-    </Trans>
-  )
-}
-
 const ReviewButton = () => {
   const { t } = useTranslation("send-funds")
-  const { gotoReview } = useSendFundsWizard()
+  const {
+    gotoReview,
+    drawers: { forfeitWarning },
+  } = useSendFundsWizard()
   const { isValid, tokensToBeReaped } = useSendFunds()
-  const { open, close, isOpen } = useOpenClose()
 
   const handleClick = useCallback(() => {
-    if (tokensToBeReaped?.length) open()
+    if (tokensToBeReaped?.length) forfeitWarning.open()
     else gotoReview(false)
-  }, [gotoReview, open, tokensToBeReaped])
-
-  const handleConfirmReap = useCallback(() => {
-    gotoReview(true)
-  }, [gotoReview])
+  }, [tokensToBeReaped?.length, forfeitWarning, gotoReview])
 
   return (
     <>
@@ -578,34 +544,7 @@ const ReviewButton = () => {
       >
         {t("Review")}
       </Button>
-      <Drawer anchor="bottom" isOpen={isOpen} onDismiss={close} containerId="main">
-        <div className="bg-black-tertiary rounded-t-xl p-12 text-center">
-          <div>
-            <InfoIcon className="text-primary-500 inline-block text-3xl" />
-          </div>
-          <div className="mt-10 font-bold">{t("Confirm forfeit")}</div>
-          <div className="text-body-secondary mt-5 text-sm">
-            {tokensToBeReaped?.map(({ token, amount }) => (
-              <ForfeitDetails key={token.id} tokenId={token.id} planck={amount.planck.toString()} />
-            ))}
-            <div className="mt-5">
-              <a
-                className="text-white underline"
-                target="_blank"
-                href="https://support.polkadot.network/support/solutions/articles/65000168651-what-is-the-existential-deposit-"
-              >
-                {t("Learn more")}
-              </a>
-            </div>
-          </div>
-          <div className="mt-10 grid grid-cols-2 gap-4">
-            <Button onClick={close}>{t("Cancel")}</Button>
-            <Button primary onClick={handleConfirmReap}>
-              {t("Proceed")}
-            </Button>
-          </div>
-        </div>
-      </Drawer>
+      <ForfeitWarningDrawer />
     </>
   )
 }
@@ -613,9 +552,11 @@ const ReviewButton = () => {
 const AddContact = () => {
   const { t } = useTranslation("send-funds")
   const { to } = useSendFunds()
+  const {
+    drawers: { addressBookContact },
+  } = useSendFundsWizard()
   const account = useAccountByAddress(to)
   const { contacts } = useAddressBook()
-  const { open, close, isOpen } = useOpenClose()
 
   const canAdd = useMemo(() => {
     if (account || !to) return false
@@ -632,12 +573,15 @@ const AddContact = () => {
 
   return (
     <>
-      <PillButton onClick={open} size={"base"} className="h-16 !rounded !px-4" icon={UserPlusIcon}>
+      <PillButton
+        onClick={addressBookContact.open}
+        size={"base"}
+        className="h-16 !rounded !px-4"
+        icon={UserPlusIcon}
+      >
         {t("Add")}
       </PillButton>
       <AddToAddressBookDrawer
-        isOpen={isOpen}
-        close={close}
         address={to}
         addressType={addressType}
         asChild={false}
