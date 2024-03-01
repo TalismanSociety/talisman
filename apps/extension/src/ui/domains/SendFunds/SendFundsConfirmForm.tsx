@@ -296,11 +296,11 @@ export const SendFundsConfirmForm = () => {
         <div className="w-full grow">
           <div className="bg-grey-900 text-body-secondary flex flex-col rounded px-12 py-8 leading-[140%]">
             <div className="text-body flex h-16 items-center justify-between gap-8">
-              <div className="text-body-secondary">{t("Amount")}</div>
+              <div className="text-body-secondary whitespace-nowrap">{t("Amount")}</div>
               <AmountDisplay />
             </div>
             <div className="flex h-16 items-center justify-between gap-8">
-              <div className="text-body-secondary">{t("From")}</div>
+              <div className="text-body-secondary whitespace-nowrap">{t("From")}</div>
               <AddressDisplay
                 className="h-16"
                 address={from}
@@ -309,7 +309,7 @@ export const SendFundsConfirmForm = () => {
               />
             </div>
             <div className="flex h-16 items-center justify-between gap-8">
-              <div className="text-body-secondary">{t("To")}</div>
+              <div className="text-body-secondary whitespace-nowrap">{t("To")}</div>
               <AddressDisplay
                 className="h-16"
                 address={to}
@@ -318,7 +318,7 @@ export const SendFundsConfirmForm = () => {
               />
             </div>
             <div className="text-body flex h-16 items-center justify-between gap-8">
-              <div className="text-body-secondary">{t("Network")}</div>
+              <div className="text-body-secondary whitespace-nowrap">{t("Network")}</div>
               <NetworkDisplay />
             </div>
             <div className="py-8">
