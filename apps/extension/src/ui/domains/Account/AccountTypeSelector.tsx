@@ -52,6 +52,16 @@ export const AccountTypeSelector = ({
   return (
     <div className={classNames("grid w-full grid-cols-1 gap-10 md:grid-cols-2", className)}>
       <AccountTypeButton
+        title={t("Ethereum")}
+        className={classNames(
+          type === "ethereum" ? "border-body" : "border-body-secondary border-opacity-20",
+          "border"
+        )}
+        icon={<EthereumCircleLogo />}
+        subtitle={t("Ethereum, Arbitrum, Moonbeam etc.")}
+        onClick={handleClick("ethereum")}
+      />
+      <AccountTypeButton
         title={t("Polkadot")}
         className={classNames(
           type === "sr25519" ? "border-body " : "border-body-secondary  border-opacity-20",
@@ -60,16 +70,6 @@ export const AccountTypeSelector = ({
         icon={<PolkadotCircleLogo />}
         subtitle={t(`Polkadot, Kusama & Parachains`)}
         onClick={handleClick("sr25519")}
-      />
-      <AccountTypeButton
-        title={t("Ethereum")}
-        className={classNames(
-          type === "ethereum" ? "border-body" : "border-body-secondary border-opacity-20",
-          "border"
-        )}
-        icon={<EthereumCircleLogo />}
-        subtitle={t("Ethereum, Moonbeam, Astar etc.")}
-        onClick={handleClick("ethereum")}
       />
     </div>
   )

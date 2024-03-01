@@ -45,6 +45,7 @@ export const [MnemonicSetPvVerifierModalProvider, useMnemonicSetPvVerifierModal]
 export const MnemonicSetPvVerifierModal = () => {
   const { t } = useTranslation("admin")
   const { mnemonic, close, isOpen } = useMnemonicSetPvVerifierModal()
+  const [certifierMnemonicId] = useAppState("vaultVerifierCertificateMnemonicId")
 
   const handleConfirmClick = useCallback(async () => {
     try {
@@ -63,14 +64,25 @@ export const MnemonicSetPvVerifierModal = () => {
   return (
     <Modal containerId="main" isOpen={isOpen} onDismiss={close}>
       <ModalDialog title={t("Set as Polkadot Vault Verifier")} onClose={close}>
-        <p className="text-body-secondary">
-          <Trans
-            t={t}
-            components={{ Highlight: <span className="text-body"></span> }}
-            defaults="You are about to set <Highlight>{{name}}</Highlight> as the Polkadot Vault Certifier Certficate. It will then be used to generate QR codes for network updates."
-            values={{ name: mnemonic?.name }}
-          />
-        </p>
+        <div className="flex flex-col gap-4">
+          <p className="text-body-secondary">
+            <Trans
+              t={t}
+              components={{ Highlight: <span className="text-body"></span> }}
+              defaults="You are about to set <Highlight>{{name}}</Highlight> as the Polkadot Vault Certifier Certficate. It will then be used to generate QR codes for network updates."
+              values={{ name: mnemonic?.name }}
+            />
+          </p>
+          {certifierMnemonicId && (
+            <p className="text-body-secondary">
+              <Trans
+                t={t}
+                components={{ Highlight: <span className="text-body"></span> }}
+                defaults=" <Highlight>Caution: </Highlight>This will make accounts for networks registered with metadata signed by the current Verifier Certificate in Polkadot Vault unusable."
+              />
+            </p>
+          )}
+        </div>
         <div className="mt-12 grid grid-cols-2 gap-8">
           <Button onClick={close}>{t("Cancel")}</Button>
           <Button primary onClick={handleConfirmClick}>

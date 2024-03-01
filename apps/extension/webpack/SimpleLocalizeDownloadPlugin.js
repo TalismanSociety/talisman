@@ -31,7 +31,7 @@ module.exports = class SimpleLocalizeDownloadPlugin {
     } = compiler
 
     const { devMode } = this.options
-    const hasKeys = apiKey && projectToken
+    const hasKeys = Boolean(apiKey && projectToken)
 
     if (!devMode && !hasKeys)
       console.warn(
@@ -51,29 +51,11 @@ module.exports = class SimpleLocalizeDownloadPlugin {
       return
     }
 
-    compiler.hooks.beforeRun.tapAsync(
-      "SimpleLocalizeDownloadPlugin",
-      async ({ options }, callback) => {
-        const languages = await simpleLocalizeFetch(
-          "https://api.simplelocalize.io/api/v1/languages"
-        )
-          .catch((error) => {
-            console.error("Failed to fetch languages list:", error)
-            return []
-          })
-          .then((result) => {
-            if (result.status !== 200) throw new Error("Bad response from SimpleLocalize")
-            return Object.fromEntries(result.data.map((lang) => [lang.key, lang.name]))
-          })
-
-        setSupportedLanguages(
-          options,
-          Object.keys(languages).length > 0 ? languages : fallbackLanguages
-        )
-
-        callback()
-      }
-    )
+    // need different hooks for 'watch' and 'build' modes - https://github.com/webpack/webpack/issues/10061
+    // only runs in 'watch' mode (like for dev)
+    compiler.hooks.watchRun.tapAsync("SimpleLocalizeDownloadPlugin", getAndSetSupportedLanguages)
+    // only runs in 'build' mode (like for prod)
+    compiler.hooks.beforeRun.tapAsync("SimpleLocalizeDownloadPlugin", getAndSetSupportedLanguages)
 
     compiler.hooks.make.tapAsync("SimpleLocalizeDownloadPlugin", async (compilation, callback) => {
       console.log(`Getting translations from ${endpoint}`)
@@ -100,10 +82,27 @@ module.exports = class SimpleLocalizeDownloadPlugin {
         .map(({ language }) => language)
         .sort()
         .filter((language, index, all) => all.indexOf(language) === index)
-      console.log(`Translations fetched for ${languages.join(", ")}`)
+      console.log(`Translations fetched for ${languages.join(", ")}`) //
       callback()
     })
   }
+}
+
+const getAndSetSupportedLanguages = async ({ options }, callback) => {
+  console.log("Fetching languages from SimpleLocalize")
+  const languages = await simpleLocalizeFetch("https://api.simplelocalize.io/api/v1/languages")
+    .catch((error) => {
+      console.error("Failed to fetch languages list:", error)
+      return []
+    })
+    .then((result) => {
+      if (result.status !== 200) throw new Error("Bad response from SimpleLocalize")
+      return Object.fromEntries(result.data.map((lang) => [lang.key, lang.name]))
+    })
+
+  setSupportedLanguages(options, Object.keys(languages).length > 0 ? languages : fallbackLanguages)
+
+  callback()
 }
 
 const setSupportedLanguages = (options, supportedLanguages = fallbackLanguages) => {

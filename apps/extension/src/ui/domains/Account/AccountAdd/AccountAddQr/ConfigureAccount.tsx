@@ -1,4 +1,5 @@
 import { HeaderBlock } from "@talisman/components/HeaderBlock"
+import { SelectedIndicator } from "@talisman/components/SelectedIndicator"
 import { ArrowRightIcon, LoaderIcon, PolkadotVaultIcon } from "@talismn/icons"
 import { AccountIcon } from "@ui/domains/Account/AccountIcon"
 import { Address } from "@ui/domains/Account/Address"
@@ -9,18 +10,40 @@ import { useBalancesByParams } from "@ui/hooks/useBalancesByParams"
 import { useChainByGenesisHash } from "@ui/hooks/useChainByGenesisHash"
 import useChains from "@ui/hooks/useChains"
 import { useSetting } from "@ui/hooks/useSettings"
-import { useMemo } from "react"
+import { ReactNode, useMemo } from "react"
 import { Trans, useTranslation } from "react-i18next"
-import {
-  Button,
-  Checkbox,
-  FormFieldInputText,
-  Tooltip,
-  TooltipContent,
-  TooltipTrigger,
-} from "talisman-ui"
+import { Button, FormFieldInputText, Tooltip, TooltipContent, TooltipTrigger } from "talisman-ui"
 
 import { useAccountAddQr } from "./context"
+
+const AccountDerivedPicker = ({
+  lockToNetwork = false,
+  label,
+}: {
+  lockToNetwork?: boolean
+  label: ReactNode
+}) => {
+  const { state, dispatch } = useAccountAddQr()
+
+  if (state.type !== "CONFIGURE") return null
+
+  return (
+    <button
+      onClick={(e) => {
+        e.preventDefault()
+        dispatch({ method: "setLockToNetwork", lockToNetwork })
+      }}
+      className="text-body-secondary flex h-10 items-center gap-2 py-1 align-middle"
+    >
+      {state.accountConfig.lockToNetwork === lockToNetwork ? (
+        <SelectedIndicator />
+      ) : (
+        <span className="bg-grey-800 h-8 w-8 rounded-full" />
+      )}
+      <span>{label}</span>
+    </button>
+  )
+}
 
 export const ConfigureAccount = () => {
   const { t } = useTranslation("admin")
@@ -116,21 +139,31 @@ export const ConfigureAccount = () => {
         </div>
 
         {!!chain && (
-          <Checkbox
-            checked={accountConfig.lockToNetwork}
-            onChange={(event) =>
-              dispatch({ method: "setLockToNetwork", lockToNetwork: event.target.checked })
-            }
-          >
-            <span className="text-body-secondary inline-flex items-center gap-2">
-              <Trans t={t}>
-                <span>Restrict account to </span>
-                <ChainLogo id={chain.id} className="inline" />
-                <span className="text-body">{chain.name}</span>
-                <span>network</span>
-              </Trans>
-            </span>
-          </Checkbox>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <div className="flex flex-col gap-2">
+                <AccountDerivedPicker
+                  lockToNetwork
+                  label={
+                    <Trans t={t}>
+                      <span>This is a derived account (restrict account to </span>
+                      <ChainLogo id={chain.id} className="inline" />
+                      <span className="text-body">{chain.name}</span>
+                      <span> network)</span>
+                    </Trans>
+                  }
+                />
+                <AccountDerivedPicker
+                  label={t("This is a root acount (allow use on all networks)")}
+                />
+              </div>
+            </TooltipTrigger>
+            <TooltipContent className="leading-paragraph rounded-xs text-body-secondary border-grey-700 z-20 w-[50rem] border-[0.5px] bg-black p-3 text-xs shadow">
+              By default, derived accounts in Polkadot Vault are restricted to one network, based on
+              derivation path. Root accounts can be used on any network. Select 'Derived Account' if
+              you are not sure.
+            </TooltipContent>
+          </Tooltip>
         )}
 
         <div className="flex justify-end py-8">

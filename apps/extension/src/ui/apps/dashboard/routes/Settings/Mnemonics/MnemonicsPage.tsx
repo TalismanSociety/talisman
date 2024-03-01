@@ -16,6 +16,7 @@ import { DashboardLayout } from "@ui/apps/dashboard/layout/DashboardLayout"
 import { AccountIcon } from "@ui/domains/Account/AccountIcon"
 import { Address } from "@ui/domains/Account/Address"
 import useAccounts from "@ui/hooks/useAccounts"
+import { useAppState } from "@ui/hooks/useAppState"
 import { Mnemonic, useMnemonics } from "@ui/hooks/useMnemonics"
 import { FC, useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react"
 import { Trans, useTranslation } from "react-i18next"
@@ -107,6 +108,8 @@ const MnemonicRow: FC<{ mnemonic: Mnemonic }> = ({ mnemonic }) => {
   const refActions = useRef<HTMLDivElement>(null)
   const refBackup = useRef<HTMLButtonElement>(null)
 
+  const hasVerifierCertificateMnemonic = Boolean(useAppState("vaultVerifierCertificateMnemonicId"))
+
   const [actionsWidth, setActionsWidth] = useState<number>()
   const actionsStyle = useMemo(() => ({ width: actionsWidth }), [actionsWidth])
 
@@ -191,9 +194,14 @@ const MnemonicRow: FC<{ mnemonic: Mnemonic }> = ({ mnemonic }) => {
                   )}
                 </div>
               </ContextMenuItem>
-              <ContextMenuItem onClick={handleSetVerifierClick} disabled={isVerifier(mnemonic.id)}>
-                {t("Set as Polkadot Vault Verifier Certificate")}
-              </ContextMenuItem>
+              {hasVerifierCertificateMnemonic && (
+                <ContextMenuItem
+                  onClick={handleSetVerifierClick}
+                  disabled={isVerifier(mnemonic.id)}
+                >
+                  {t("Set as Polkadot Vault Verifier Certificate")}
+                </ContextMenuItem>
+              )}
               <ContextMenuItem onClick={handleDeleteClick} disabled={!canDelete(mnemonic.id)}>
                 {t("Delete")}
               </ContextMenuItem>
