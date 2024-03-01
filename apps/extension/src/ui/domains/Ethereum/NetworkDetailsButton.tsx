@@ -1,6 +1,6 @@
 import { useOpenClose } from "@talisman/hooks/useOpenClose"
 import { classNames } from "@talismn/util"
-import { FC, useCallback, useMemo } from "react"
+import { FC, ReactNode, useCallback, useMemo } from "react"
 import { useTranslation } from "react-i18next"
 import { Button, Drawer, PillButton } from "talisman-ui"
 import { AddEthereumChainParameter } from "viem"
@@ -11,7 +11,8 @@ const NetworkDetailsDrawer: FC<{
   network: AddEthereumChainParameter
   isOpen: boolean
   onClose: () => void
-}> = ({ network, isOpen, onClose }) => {
+  title?: ReactNode
+}> = ({ network, isOpen, title, onClose }) => {
   const { t } = useTranslation("request")
 
   const tryParseIntFromHex = useCallback(
@@ -38,7 +39,7 @@ const NetworkDetailsDrawer: FC<{
   return (
     <Drawer containerId="main" isOpen={isOpen} onDismiss={onClose} anchor="bottom">
       <div className="bg-grey-800 text-body-secondary flex max-h-full flex-col rounded-t-xl p-12 text-sm">
-        <h3 className="text-sm">{t("Network Details")}</h3>
+        <h3 className="text-sm">{title ?? t("Network Details")}</h3>
         <div className="scrollable scrollable-700 text-body leading-paragraph overflow-y-auto">
           <ViewDetailsField label={t("Network Name")}>{name}</ViewDetailsField>
           <ViewDetailsField label={t("RPC URL")}>{rpcs}</ViewDetailsField>
@@ -76,7 +77,8 @@ export const NetworkDetailsLink: FC<{
   network: AddEthereumChainParameter
   label?: string
   className?: string
-}> = ({ network, label, className }) => {
+  title?: ReactNode
+}> = ({ network, label, className, title }) => {
   const { t } = useTranslation("request")
   const { isOpen, open, close } = useOpenClose()
 
@@ -92,7 +94,7 @@ export const NetworkDetailsLink: FC<{
       >
         {label ?? t("View Details")}
       </button>
-      <NetworkDetailsDrawer network={network} isOpen={isOpen} onClose={close} />
+      <NetworkDetailsDrawer network={network} isOpen={isOpen} title={title} onClose={close} />
     </>
   )
 }

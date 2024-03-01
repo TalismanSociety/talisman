@@ -3,7 +3,7 @@ import { log } from "@core/log"
 import { AppPill } from "@talisman/components/AppPill"
 import { notify } from "@talisman/components/Notifications"
 import { EvmNetwork } from "@talismn/chaindata-provider"
-import { GlobeIcon } from "@talismn/icons"
+import { GlobeIcon, InfoIcon } from "@talismn/icons"
 import { classNames } from "@talismn/util"
 import { api } from "@ui/api"
 import { balancesHydrateAtom } from "@ui/atoms"
@@ -17,7 +17,7 @@ import { atom, useAtomValue } from "jotai"
 import { ChangeEventHandler, FC, ReactNode, useCallback, useMemo, useState } from "react"
 import { Trans, useTranslation } from "react-i18next"
 import { useParams } from "react-router-dom"
-import { Button } from "talisman-ui"
+import { Button, Tooltip, TooltipContent, TooltipTrigger } from "talisman-ui"
 import { AddEthereumChainParameter, isHex, toHex } from "viem"
 
 import { PopupContent, PopupFooter, PopupHeader, PopupLayout } from "../Layout/PopupLayout"
@@ -94,16 +94,32 @@ const SettingsSourceSelector: FC<{
   return (
     <div className="text-body-secondary bg-grey-800 w-full rounded-sm p-4 text-left text-sm">
       <fieldset>
-        <legend className="mb-2">{t("Choose network settings source")}</legend>
+        <legend className="mb-2 flex items-center gap-2">
+          <span>{t("Choose network settings source")}</span>
+          <Tooltip>
+            <TooltipTrigger>
+              <InfoIcon />
+            </TooltipTrigger>
+            <TooltipContent>
+              {t(
+                "You can activate this network using Talisman recommended settings, or register it as a custom network using the settings provided by the site. You will be able to adjust this afterwards from Talisman settings menu"
+              )}
+            </TooltipContent>
+          </Tooltip>
+        </legend>
         <div className="flex justify-between">
           <Radio
             name="settings-source"
             value="talisman"
-            label={t("Talisman settings (recommended)")}
+            label={t("Talisman settings")}
             checked={source === "talisman"}
             onChange={handleOptionChange}
           />
-          <NetworkDetailsLink network={knownNetworkDetails} label={t("Review")} />
+          <NetworkDetailsLink
+            network={knownNetworkDetails}
+            label={t("Review")}
+            title={"Talisman settings"}
+          />
         </div>
         <div className="flex justify-between">
           <Radio
@@ -113,7 +129,11 @@ const SettingsSourceSelector: FC<{
             checked={source === "dapp"}
             onChange={handleOptionChange}
           />
-          <NetworkDetailsLink network={network} label={t("Review")} />
+          <NetworkDetailsLink
+            network={network}
+            label={t("Review")}
+            title={"App provided settings"}
+          />
         </div>
       </fieldset>
     </div>
