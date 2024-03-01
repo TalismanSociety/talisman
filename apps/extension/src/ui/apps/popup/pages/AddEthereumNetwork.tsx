@@ -22,19 +22,22 @@ import { AddEthereumChainParameter, isHex, toHex } from "viem"
 
 import { PopupContent, PopupFooter, PopupHeader, PopupLayout } from "../Layout/PopupLayout"
 
+// TODO once finalized with Diogo, convert as style.css classes, then move to talisman-ui along with a test page in playground
 const Radio: FC<{
   name: string
   value: string
   label?: ReactNode
   checked?: boolean
   onChange?: ChangeEventHandler<HTMLInputElement>
-}> = ({ name, value, label, checked, onChange }) => {
+  className?: string
+}> = ({ name, value, label, checked, className, onChange }) => {
   return (
     <label
       className={classNames(
         "cursor-pointer p-0.5",
         "hover:text-grey-300",
-        "has-[:checked]:text-body has-[:checked]:cursor-default"
+        "has-[:checked]:text-body has-[:checked]:cursor-default",
+        className
       )}
     >
       <input
