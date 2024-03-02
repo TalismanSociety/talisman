@@ -9,9 +9,9 @@ import { sleep } from "@talismn/util"
 import { api } from "@ui/api"
 import { AccountAddPageProps } from "@ui/domains/Account/AccountAdd/types"
 import { AccountTypeSelector } from "@ui/domains/Account/AccountTypeSelector"
-import { AddressFieldEnsBadge } from "@ui/domains/Account/AddressFieldEnsBadge"
+import { AddressFieldNsBadge } from "@ui/domains/Account/AddressFieldNsBadge"
 import useAccounts from "@ui/hooks/useAccounts"
-import { useResolveEnsName } from "@ui/hooks/useResolveEnsName"
+import { useResolveNsName } from "@ui/hooks/useResolveNsName"
 import { useCallback, useEffect, useMemo, useRef } from "react"
 import { useForm } from "react-hook-form"
 import { useTranslation } from "react-i18next"
@@ -79,19 +79,17 @@ export const AccountAddWatchedForm = ({ onSuccess }: AccountAddPageProps) => {
   })
 
   const { type, searchAddress } = watch()
-  const [ensLookup, { isLookup: isEnsLookup, isFetching: isEnsFetching }] = useResolveEnsName(
-    type === "ethereum" ? searchAddress : undefined
-  )
+  const [nsLookup, { nsLookupType, isNsLookup, isNsFetching }] = useResolveNsName(searchAddress)
   useEffect(() => {
-    if (!isEnsLookup) {
+    if (!isNsLookup) {
       setValue("address", searchAddress, { shouldValidate: true })
       return
     }
 
-    setValue("address", ensLookup ?? (ensLookup === null ? "invalid" : ""), {
+    setValue("address", nsLookup ?? (nsLookup === null ? "invalid" : ""), {
       shouldValidate: true,
     })
-  }, [ensLookup, isEnsLookup, searchAddress, setValue])
+  }, [nsLookup, isNsLookup, searchAddress, setValue])
 
   const submit = useCallback(
     async ({ name, address, isPortfolio }: FormData) => {
@@ -177,10 +175,11 @@ export const AccountAddWatchedForm = ({ onSuccess }: AccountAddPageProps) => {
                 autoComplete="off"
                 data-lpignore
                 after={
-                  <AddressFieldEnsBadge
-                    isEnsLookup={isEnsLookup}
-                    isEnsFetching={isEnsFetching}
-                    ensLookup={ensLookup}
+                  <AddressFieldNsBadge
+                    nsLookup={nsLookup}
+                    nsLookupType={nsLookupType}
+                    isNsLookup={isNsLookup}
+                    isNsFetching={isNsFetching}
                   />
                 }
               />

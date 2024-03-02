@@ -64,6 +64,7 @@ import type { KeyringPair$Json } from "@polkadot/keyring/types"
 import { KeypairType } from "@polkadot/util-crypto/types"
 import type { HexString } from "@polkadot/util/types"
 import { Address } from "@talismn/balances"
+import { NsLookupType } from "@talismn/on-chain-id"
 import { TransactionRequest } from "viem"
 
 export default interface MessageTypes {
@@ -144,7 +145,9 @@ export default interface MessageTypes {
   accountsSubscribe: (cb: (accounts: AccountJson[]) => void) => UnsubscribeFn
   accountsCatalogSubscribe: (cb: (trees: Trees) => void) => UnsubscribeFn
   accountsCatalogRunActions: (actions: RequestAccountsCatalogAction[]) => Promise<boolean>
-  accountsOnChainIdsResolveNames: (names: string[]) => Promise<Record<string, string | null>>
+  accountsOnChainIdsResolveNames: (
+    names: string[]
+  ) => Promise<Record<string, [string, NsLookupType] | null>>
   accountsOnChainIdsLookupAddresses: (addresses: string[]) => Promise<Record<string, string | null>>
   accountForget: (address: string) => Promise<boolean>
   accountExport: (

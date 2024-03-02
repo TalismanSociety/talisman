@@ -26,11 +26,14 @@
     "clean": "rm -rf dist && rm -rf .turbo rm -rf node_modules"
   },
   "dependencies": {
+    "@azns/resolver-core": "https://gitpkg.now.sh/api/pkg.tgz?url=TalismanSociety%2Fazero-id-resolver%2Fpackages%2Fresolver-core&commit=main",
     "@talismn/balances": "workspace:*",
     "@talismn/util": "workspace:*",
     "anylogger": "^1.0.11"
   },
   "devDependencies": {
+    "@polkadot/api": "^10.9.1",
+    "@polkadot/api-contract": "^10.9.1",
     "@polkadot/types": "^10.9.1",
     "@talismn/eslint-config": "workspace:*",
     "@talismn/tsconfig": "workspace:*",
@@ -41,6 +44,8 @@
     "typescript": "^5.2.2"
   },
   "peerDependencies": {
+    "@polkadot/api": "10.x",
+    "@polkadot/api-contract": "10.x",
     "@polkadot/types": "10.x"
   },
   "eslintConfig": {

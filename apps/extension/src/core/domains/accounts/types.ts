@@ -10,6 +10,7 @@ import type {
 import { KeyringPair$Json } from "@polkadot/keyring/types"
 import { KeypairType } from "@polkadot/util-crypto/types"
 import { TokenId } from "@talismn/chaindata-provider"
+import { NsLookupType } from "@talismn/on-chain-id"
 
 export type { ResponseAccountExport, AccountJson, RequestAccountCreateExternal }
 export type { RequestAccountsCatalogAction } from "@core/domains/accounts/helpers.catalog"
@@ -243,6 +244,6 @@ export interface AccountsMessages {
   "pri(accounts.validateDerivationPath)": [RequestValidateDerivationPath, boolean]
   "pri(accounts.address.lookup)": [RequestAddressLookup, string]
   "pri(accounts.derivationPath.next)": [RequestNextDerivationPath, string]
-  "pri(accounts.onChainIds.resolveNames)": [string[], Record<string, string | null>]
+  "pri(accounts.onChainIds.resolveNames)": [string[], Record<string, [string, NsLookupType] | null>]
   "pri(accounts.onChainIds.lookupAddresses)": [string[], Record<string, string | null>]
 }

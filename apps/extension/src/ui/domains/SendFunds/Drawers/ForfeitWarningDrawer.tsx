@@ -1,9 +1,8 @@
 import { InfoIcon } from "@talismn/icons"
 import { planckToTokens } from "@talismn/util"
-import { useSendFundsWizard } from "@ui/apps/popup/pages/SendFunds/context"
 import useToken from "@ui/hooks/useToken"
 import { isSubToken } from "@ui/util/isSubToken"
-import { FC, useCallback } from "react"
+import { FC } from "react"
 import { Trans, useTranslation } from "react-i18next"
 import { Button, Drawer } from "talisman-ui"
 
@@ -41,14 +40,17 @@ const ForfeitDetails: FC<ForfeitDetailsProps> = ({ tokenId, planck }) => {
   )
 }
 
-export const ForfeitWarningDrawer = ({ isOpen, close }: { isOpen: boolean; close: () => void }) => {
+export const ForfeitWarningDrawer = ({
+  isOpen,
+  close,
+  handleAccept,
+}: {
+  isOpen: boolean
+  close: () => void
+  handleAccept: () => void
+}) => {
   const { t } = useTranslation("send-funds")
-  const { gotoReview } = useSendFundsWizard()
   const { tokensToBeReaped } = useSendFunds()
-
-  const handleConfirmReap = useCallback(() => {
-    gotoReview(true)
-  }, [gotoReview])
 
   return (
     <Drawer anchor="bottom" isOpen={isOpen} onDismiss={close} containerId="main">
@@ -73,7 +75,7 @@ export const ForfeitWarningDrawer = ({ isOpen, close }: { isOpen: boolean; close
         </div>
         <div className="mt-10 grid grid-cols-2 gap-4">
           <Button onClick={close}>{t("Cancel")}</Button>
-          <Button primary onClick={handleConfirmReap}>
+          <Button primary onClick={handleAccept}>
             {t("Proceed")}
           </Button>
         </div>

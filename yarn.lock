@@ -138,6 +138,23 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@azns/resolver-core@https://gitpkg.now.sh/api/pkg.tgz?url=TalismanSociety%2Fazero-id-resolver%2Fpackages%2Fresolver-core&commit=main":
+  version: 1.6.0
+  resolution: "@azns/resolver-core@https://gitpkg.now.sh/api/pkg.tgz?url=TalismanSociety%2Fazero-id-resolver%2Fpackages%2Fresolver-core&commit=main"
+  dependencies:
+    bufferutil: ^4.0.7
+    loglevel: ^1.8.1
+    utf-8-validate: ^6.0.3
+  peerDependencies:
+    "@polkadot/api": ">=10"
+    "@polkadot/api-contract": ">=10"
+    "@polkadot/types": ">=10"
+    "@polkadot/util": ">=11.1.3"
+    "@polkadot/util-crypto": ">=11.1.3"
+  checksum: d7d574be9ade4e50bc2db8295281d6e087ed1eb42d6426024ca1ccb35d3a94f726b406d91e7ef1d479af7705e5826f455660044e205623624cc672d2968ba600
+  languageName: node
+  linkType: hard
+
 "@babel/code-frame@npm:7.12.11":
   version: 7.12.11
   resolution: "@babel/code-frame@npm:7.12.11"
@@ -8073,6 +8090,9 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@talismn/on-chain-id@workspace:packages/on-chain-id"
   dependencies:
+    "@azns/resolver-core": "https://gitpkg.now.sh/api/pkg.tgz?url=TalismanSociety%2Fazero-id-resolver%2Fpackages%2Fresolver-core&commit=main"
+    "@polkadot/api": ^10.9.1
+    "@polkadot/api-contract": ^10.9.1
     "@polkadot/types": ^10.9.1
     "@talismn/balances": "workspace:*"
     "@talismn/eslint-config": "workspace:*"
@@ -8085,6 +8105,8 @@ __metadata:
     ts-jest: ^29.1.1
     typescript: ^5.2.2
   peerDependencies:
+    "@polkadot/api": 10.x
+    "@polkadot/api-contract": 10.x
     "@polkadot/types": 10.x
   languageName: unknown
   linkType: soft
@@ -11121,8 +11143,8 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "balances-demo@workspace:apps/balances-demo"
   dependencies:
-    "@polkadot/api": ^10.1.4
-    "@polkadot/extension-dapp": ^0.45.3
+    "@polkadot/api": "*"
+    "@polkadot/extension-dapp": "*"
     "@tailwindcss/forms": ^0.5.3
     "@talismn/balances": "workspace:*"
     "@talismn/balances-react": "workspace:*"
@@ -11673,6 +11695,16 @@ __metadata:
     node-gyp: latest
     node-gyp-build: ^4.3.0
   checksum: dd107560947445280af7820c3d0534127b911577d85d537e1d7e0aa30fd634853cef8a994d6e8aed3d81388ab1a20257de776164afe6a6af8e78f5f17968ebd6
+  languageName: node
+  linkType: hard
+
+"bufferutil@npm:^4.0.7":
+  version: 4.0.8
+  resolution: "bufferutil@npm:4.0.8"
+  dependencies:
+    node-gyp: latest
+    node-gyp-build: ^4.3.0
+  checksum: 7e9a46f1867dca72fda350966eb468eca77f4d623407b0650913fadf73d5750d883147d6e5e21c56f9d3b0bdc35d5474e80a600b9f31ec781315b4d2469ef087
   languageName: node
   linkType: hard
 
@@ -14968,6 +15000,7 @@ __metadata:
     "@metamask/eth-sig-util": 7.0.1
     "@peculiar/webcrypto": ^1.4.3
     "@polkadot/api": "*"
+    "@polkadot/api-contract": "*"
     "@polkadot/apps-config": "*"
     "@polkadot/extension-base": "*"
     "@polkadot/extension-inject": "*"
@@ -25602,6 +25635,16 @@ __metadata:
     node-gyp: latest
     node-gyp-build: ^4.3.0
   checksum: 90117f1b65e0a1256c83dfad529983617263b622f2379745311d0438c7ea31db0d134ebd0dca84c3f5847a3560a3d249644e478a9109c616f63c7ea19cac53dc
+  languageName: node
+  linkType: hard
+
+"utf-8-validate@npm:^6.0.3":
+  version: 6.0.3
+  resolution: "utf-8-validate@npm:6.0.3"
+  dependencies:
+    node-gyp: latest
+    node-gyp-build: ^4.3.0
+  checksum: 5e21383c81ff7469c1912119ca69d07202d944c73ddd8a54b84dddcc546b939054e5101c78c294e494d206fe93bd43428adc635a0660816b3ec9c8ec89286ac4
   languageName: node
   linkType: hard
 

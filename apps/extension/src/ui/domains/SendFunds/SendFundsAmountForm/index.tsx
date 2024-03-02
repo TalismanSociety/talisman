@@ -1,10 +1,11 @@
 import { useGlobalOpenClose } from "@talisman/hooks/useGlobalOpenClose"
 import { SendFundsWizardPage, useSendFundsWizard } from "@ui/apps/popup/pages/SendFunds/context"
-import { FormEvent, useCallback } from "react"
+import { FormEvent, useCallback, useEffect, useState } from "react"
 import { useTranslation } from "react-i18next"
 import { Button } from "talisman-ui"
 
 import { ForfeitWarningDrawer } from "../Drawers/ForfeitWarningDrawer"
+import { RecipientWarningDrawer } from "../Drawers/RecipientWarningDrawer"
 import { useGenesisHashFromTokenId } from "../useGenesisHashFromTokenId"
 import { useSendFunds } from "../useSendFunds"
 import { AddContact } from "./AddContact"
@@ -17,13 +18,36 @@ import { TokenRow } from "./TokenRow"
 const ReviewButton = () => {
   const { t } = useTranslation("send-funds")
   const { gotoReview } = useSendFundsWizard()
-  const { isValid, tokensToBeReaped } = useSendFunds()
+  const { isValid, tokensToBeReaped, recipientWarning } = useSendFunds()
   const forfeitDrawer = useGlobalOpenClose("sendFundsForfeitDrawer")
+  const recipientWarningDrawer = useGlobalOpenClose("sendFundsRecipientWarningDrawer")
+  const [warnings, setWarnings] = useState<string[]>([])
+  const [acceptedWarnings, setAcceptedWarnings] = useState<string[]>([])
+  const [confirmed, setConfirmed] = useState(false)
 
-  const handleClick = useCallback(() => {
-    if (tokensToBeReaped?.length) forfeitDrawer.open()
+  useEffect(() => {
+    if (recipientWarning) setWarnings((prev) => Array.from(new Set([...prev, "recipientWarning"])))
+    if (tokensToBeReaped?.length)
+      setWarnings((prev) => Array.from(new Set([...prev, "forfeitWarning"])))
+  }, [recipientWarning, tokensToBeReaped])
+
+  useEffect(() => {
+    // once the confirmed state has been set, component will cycle through all warnings until all are accepted
+    if (!confirmed) return
+
+    if (warnings.includes("forfeitWarning") && !acceptedWarnings.includes("forfeitWarning"))
+      forfeitDrawer.open()
+    else if (
+      warnings.includes("recipientWarning") &&
+      !acceptedWarnings.includes("recipientWarning")
+    )
+      recipientWarningDrawer.open()
     else gotoReview(false)
-  }, [tokensToBeReaped?.length, forfeitDrawer, gotoReview])
+  }, [confirmed, warnings, acceptedWarnings, forfeitDrawer, recipientWarningDrawer, gotoReview])
+
+  const handleAcceptWarning = useCallback((warning: string) => {
+    setAcceptedWarnings((prev) => [...prev, warning])
+  }, [])
 
   return (
     <>
@@ -32,11 +56,26 @@ const ReviewButton = () => {
         primary
         className="mt-8 w-full"
         disabled={!isValid}
-        onClick={handleClick}
+        onClick={() => setConfirmed(true)}
       >
         {t("Review")}
       </Button>
-      <ForfeitWarningDrawer isOpen={forfeitDrawer.isOpen} close={forfeitDrawer.close} />
+      <ForfeitWarningDrawer
+        isOpen={forfeitDrawer.isOpen}
+        close={forfeitDrawer.close}
+        handleAccept={() => {
+          forfeitDrawer.close()
+          handleAcceptWarning("forfeitWarning")
+        }}
+      />
+      <RecipientWarningDrawer
+        handleAccept={() => {
+          recipientWarningDrawer.close()
+          handleAcceptWarning("recipientWarning")
+        }}
+        isOpen={recipientWarningDrawer.isOpen}
+        close={recipientWarningDrawer.close}
+      />
     </>
   )
 }
