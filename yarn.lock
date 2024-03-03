@@ -14975,6 +14975,18 @@ __metadata:
   languageName: node
   linkType: hard
 
+"extension-backend@workspace:*, extension-backend@workspace:packages/extension-backend":
+  version: 0.0.0-use.local
+  resolution: "extension-backend@workspace:packages/extension-backend"
+  dependencies:
+    "@talismn/eslint-config": "workspace:*"
+    "@talismn/tsconfig": "workspace:*"
+    "@talismn/util": "workspace:*"
+    eslint: ^8.52.0
+    typescript: ^5.2.2
+  languageName: unknown
+  linkType: soft
+
 "extension@workspace:apps/extension":
   version: 0.0.0-use.local
   resolution: "extension@workspace:apps/extension"
@@ -15098,6 +15110,7 @@ __metadata:
     eslint: ^8.52.0
     eslint-webpack-plugin: ^4.0.1
     eth-phishing-detect: latest
+    extension-backend: "workspace:*"
     fake-indexeddb: 4.0.2
     fork-ts-checker-notifier-webpack-plugin: ^6.0.0
     fork-ts-checker-webpack-plugin: ^7.3.0
