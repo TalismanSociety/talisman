@@ -1,6 +1,6 @@
 <!-- version: v1.23.0 -->
 
-**🪪 Azero ID:** Talisman now supports resolving Azero.id names and addresses
+**🪪 AZERO.ID:** Talisman now supports resolving AZERO.ID names and addresses
 
 **✍ 1-Click Copy Address:** Fast and convenient address copying
 
