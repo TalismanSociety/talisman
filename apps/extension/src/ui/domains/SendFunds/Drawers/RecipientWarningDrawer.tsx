@@ -29,7 +29,7 @@ export const RecipientWarningDrawer = ({
         <div>
           <InfoIcon className="text-primary-500 inline-block text-3xl" />
         </div>
-        <div className="mt-10 font-bold">{t("Recipient Address Chain")}</div>
+        <div className="mt-10 font-bold">{t("Recipient Address Converted")}</div>
         <div className="text-body-secondary mt-5 text-sm">
           {recipientWarning === "AZERO_ID" && (
             <Trans
