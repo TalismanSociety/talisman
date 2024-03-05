@@ -62,7 +62,10 @@ const ReviewButton = () => {
       </Button>
       <ForfeitWarningDrawer
         isOpen={forfeitDrawer.isOpen}
-        close={forfeitDrawer.close}
+        close={() => {
+          setConfirmed(false)
+          forfeitDrawer.close()
+        }}
         handleAccept={() => {
           forfeitDrawer.close()
           handleAcceptWarning("forfeitWarning")
@@ -74,7 +77,10 @@ const ReviewButton = () => {
           handleAcceptWarning("recipientWarning")
         }}
         isOpen={recipientWarningDrawer.isOpen}
-        close={recipientWarningDrawer.close}
+        close={() => {
+          setConfirmed(false)
+          recipientWarningDrawer.close()
+        }}
       />
     </>
   )
