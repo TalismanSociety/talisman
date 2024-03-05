@@ -1,4 +1,3 @@
-import { HandMonoLogo } from "@talisman/theme/logos"
 import * as Icons from "@talismn/icons"
 import { ChevronLeftIcon } from "@talismn/icons"
 import { api } from "@ui/api"
@@ -10,9 +9,9 @@ import { useCallback, useLayoutEffect, useMemo, useRef } from "react"
 import { createRoot } from "react-dom/client"
 import { Trans, useTranslation } from "react-i18next"
 import { useNavigate } from "react-router-dom"
+import { rcompare } from "semver"
 
-import HeroUrl from "./assets/Whats New - Hero.png"
-import whatsNewContent from "./assets/Whats New.md"
+import { latestUpdates } from "./assets/whats-new"
 
 const ANALYTICS_PAGE: AnalyticsPage = {
   container: "Popup",
@@ -26,19 +25,22 @@ const newGoToFn = (dashboardPath: string) => () => {
   return api.dashboardOpen(dashboardPath)
 }
 
-/**
- * This string should be changed when we want to show the `What's New` banner
- * to users who have dismissed it in the past.
- *
- * E.g. when we have new features to tell them about.
- */
-export const WhatsNewVersion =
-  /version: (?<version>v[0-9.]+)/im.exec(whatsNewContent)?.groups?.version ?? "0"
+export const getWhatsNewVersions = () => {
+  return Object.keys(latestUpdates).sort(rcompare)
+}
 
-export const PortfolioWhatsNew = () => {
+export const PortfolioWhatsNewSection = ({
+  content,
+  heroUrl,
+  version,
+}: {
+  content: string
+  heroUrl: string
+  version: string
+}) => {
   const { t } = useTranslation()
 
-  const whatsNewLocalizedContent = t(whatsNewContent)
+  const whatsNewLocalizedContent = t(content)
   const whatsNewHtml = useMemo(
     () =>
       DOMPurify.sanitize(marked(whatsNewLocalizedContent, { gfm: true, async: false }) as string),
@@ -48,28 +50,46 @@ export const PortfolioWhatsNew = () => {
   const whatsNewHtmlRef = useWhatsNewNodes(whatsNewHtml)
 
   return (
-    <div className="text-body-secondary flex flex-col gap-12 pb-12 text-sm">
-      <div className="relative">
-        <img
-          className="pointer-events-none relative aspect-[1456/752] w-full rounded-sm"
-          src={HeroUrl}
-          alt="a hero banner"
-        />
-        <div className="pointer-events-none absolute left-0 top-0 flex h-full w-full flex-col gap-4 p-8">
-          <div className="font-whyteInkTrap flex items-center gap-1 text-sm tracking-tight text-white">
-            <HandMonoLogo className="text-base" />
-            Talisman
+    <div>
+      <div className="text-body-secondary flex flex-col gap-12 pb-12 text-sm">
+        <div className="relative h-[119px]">
+          <img
+            className="pointer-events-none relative w-full rounded-sm"
+            src={heroUrl}
+            alt="a hero banner"
+          />
+          <div className="pointer-events-none absolute left-5 top-5">
+            <div className="text-primary">v{version}</div>
           </div>
-          <div className="text-primary text-2xl font-extrabold capitalize">{WhatsNewVersion}</div>
+        </div>
+        <div>
+          <div
+            ref={whatsNewHtmlRef}
+            className="[&_a]:text-bold [&_a]:text-grey-200 flex flex-col gap-8 [&_a:hover]:text-white [&_strong]:font-normal [&_strong]:text-white"
+            dangerouslySetInnerHTML={{ __html: whatsNewHtml ?? "" }}
+          />
         </div>
       </div>
-      <div>
-        <div
-          ref={whatsNewHtmlRef}
-          className="[&_a]:text-bold [&_a]:text-grey-200 flex flex-col gap-12 [&_a:hover]:text-white [&_strong]:font-normal [&_strong]:text-white"
-          dangerouslySetInnerHTML={{ __html: whatsNewHtml ?? "" }}
-        />
-      </div>
+      <div className="border-black-secondary mt-8 border border-b-[1px]" />
+    </div>
+  )
+}
+
+export const PortfolioWhatsNew = () => {
+  const versions = getWhatsNewVersions()
+  return (
+    <div className="flex flex-col gap-16">
+      {versions.slice(0, 2).map((version) => {
+        const { content, HeroUrl } = latestUpdates[version as keyof typeof latestUpdates]
+        return (
+          <PortfolioWhatsNewSection
+            key={version}
+            content={content}
+            heroUrl={HeroUrl}
+            version={version}
+          />
+        )
+      })}
     </div>
   )
 }
@@ -78,6 +98,7 @@ export const PortfolioWhatsNewHeader = () => {
   const { t } = useTranslation()
   const navigate = useNavigate()
   const [dismissedVersion, setDismissedVersion] = useSetting("newFeaturesDismissed")
+  const versions = getWhatsNewVersions()
 
   const goToPortfolio = useCallback(() => {
     sendAnalyticsEvent({ ...ANALYTICS_PAGE, name: "Goto", action: "Portfolio" })
@@ -86,10 +107,10 @@ export const PortfolioWhatsNewHeader = () => {
 
   const dismiss = useCallback(() => {
     sendAnalyticsEvent({ ...ANALYTICS_PAGE, name: "Interact", action: "Dismiss What's New" })
-    setDismissedVersion(WhatsNewVersion)
+    setDismissedVersion(versions[0])
 
     goToPortfolio()
-  }, [goToPortfolio, setDismissedVersion])
+  }, [goToPortfolio, setDismissedVersion, versions])
 
   return (
     <header className="my-8 flex h-[3.6rem] w-full shrink-0 items-center justify-between gap-4 px-12">
@@ -104,7 +125,7 @@ export const PortfolioWhatsNewHeader = () => {
         </Trans>
       </div>
       <div className="flex-1 text-right">
-        {dismissedVersion === WhatsNewVersion ? (
+        {dismissedVersion === versions[0] ? (
           <span />
         ) : (
           <button
@@ -176,9 +197,8 @@ const useWhatsNewNodes = (whatsNewHtml: string) => {
 
       return {
         component: (
-          <button className="text-bold text-grey-200 hover:text-white" onClick={goTo}>
-            {innerText}{" "}
-            <Icons.ExternalLinkIcon className="inline h-[1.25em] w-[1.25em] align-text-bottom" />
+          <button className="text-grey-200 text-xs hover:text-white" onClick={goTo}>
+            {innerText} <Icons.ExternalLinkIcon className="inline align-middle" />
           </button>
         ),
         ref: buttonRef,

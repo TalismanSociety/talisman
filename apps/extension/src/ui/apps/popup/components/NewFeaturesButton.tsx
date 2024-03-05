@@ -1,7 +1,7 @@
 import { ChevronRightIcon } from "@talismn/icons"
 import { classNames } from "@talismn/util"
 import { AnalyticsPage, sendAnalyticsEvent } from "@ui/api/analytics"
-import { WhatsNewVersion } from "@ui/apps/popup/pages/Portfolio/PortfolioWhatsNew"
+import { getWhatsNewVersions } from "@ui/apps/popup/pages/Portfolio/PortfolioWhatsNew"
 import { useSetting } from "@ui/hooks/useSettings"
 import { MouseEventHandler, useCallback } from "react"
 import { Trans, useTranslation } from "react-i18next"
@@ -22,6 +22,7 @@ export const NewFeaturesButton = ({ className }: Props) => {
   const { t } = useTranslation()
   const navigate = useNavigate()
   const [dismissedVersion, setDismissedVersion] = useSetting("newFeaturesDismissed")
+  const versions = getWhatsNewVersions()
 
   const handleClick = useCallback(() => {
     sendAnalyticsEvent({ ...ANALYTICS_PAGE, name: "Goto", action: "What's New" })
@@ -34,12 +35,12 @@ export const NewFeaturesButton = ({ className }: Props) => {
       event.stopPropagation()
 
       sendAnalyticsEvent({ ...ANALYTICS_PAGE, name: "Interact", action: "Dismiss What's New" })
-      setDismissedVersion(WhatsNewVersion)
+      setDismissedVersion(versions[0])
     },
-    [setDismissedVersion]
+    [setDismissedVersion, versions]
   )
 
-  if (dismissedVersion === WhatsNewVersion) return null
+  if (dismissedVersion === versions[0]) return null
 
   return (
     <div
@@ -80,7 +81,7 @@ export const NewFeaturesButton = ({ className }: Props) => {
           </Trans>
         </div>
         <div className="text-tiny text-grey-200 flex gap-3">
-          <span>{t("See what's new on {{version}}", { version: WhatsNewVersion })}</span>
+          <span>{t("See what's new in Talisman")}</span>
           <button className="underline" onClick={handleDismissClick} type="button">
             {t("Dismiss")}
           </button>
