@@ -16,7 +16,6 @@ import { ActiveTokens, activeTokensStore, isTokenActive } from "extension-core"
 import { atom } from "jotai"
 import { atomFamily, atomWithObservable } from "jotai/utils"
 import isEqual from "lodash/isEqual"
-import { Observable } from "rxjs"
 
 import { atomWithSubscription } from "./utils/atomWithSubscription"
 import { logObservableUpdate } from "./utils/logObservableUpdate"
@@ -244,11 +243,8 @@ const allTokensMapSubscriptionAtom = atomWithSubscription<void>(
   () => api.tokens(NO_OP),
   "allTokensMapSubscriptionAtom"
 )
-const allTokensMapObservableAtom = atomWithObservable<TokenList>(
-  () =>
-    chaindataProvider.tokensByIdObservable.pipe(
-      logObservableUpdate("allTokensMapObservableAtom")
-    ) as Observable<TokenList> // TODO understand why invalid type on prod build
+const allTokensMapObservableAtom = atomWithObservable<TokenList>(() =>
+  chaindataProvider.tokensByIdObservable.pipe(logObservableUpdate("allTokensMapObservableAtom"))
 )
 
 export const allTokensMapAtom = atom((get) => {

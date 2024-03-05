@@ -14981,14 +14981,21 @@ __metadata:
   resolution: "extension-core@workspace:packages/extension-core"
   dependencies:
     "@metamask/browser-passworder": 4.3.0
+    "@polkadot/apps-config": 0.132.1
     "@polkadot/extension-base": 0.46.6
     "@polkadot/keyring": 12.6.2
+    "@polkadot/types": 10.11.2
+    "@polkadot/types-known": 10.11.2
     "@polkadot/ui-keyring": 3.6.4
     "@polkadot/util": 12.6.2
     "@polkadot/util-crypto": 12.6.2
     "@sentry/browser": 7.92.0
     "@talismn/balances": "workspace:*"
+    "@talismn/chain-connector": "workspace:*"
+    "@talismn/chaindata-provider": "workspace:*"
+    "@talismn/connection-meta": "workspace:*"
     "@talismn/eslint-config": "workspace:*"
+    "@talismn/scale": "workspace:*"
     "@talismn/tsconfig": "workspace:*"
     "@talismn/util": "workspace:*"
     "@types/node": ^17.0.22
@@ -14998,10 +15005,14 @@ __metadata:
     eslint: ^8.52.0
     extension-shared: "workspace:*"
     i18next: ^22.5.0
+    lodash: 4.17.21
     rxjs: ^7.8.1
     semver: ^7.5.4
+    toml: ^3.0.0
     ts-results: 3.3.0
     typescript: ^5.2.2
+    url-join: ^5.0.0
+    uuid: ^8.3.2
     viem: ^1.21.4
     webextension-polyfill: 0.8.0
     yup: 0.32.11
@@ -15053,7 +15064,6 @@ __metadata:
     "@peculiar/webcrypto": ^1.4.3
     "@polkadot/api": "*"
     "@polkadot/api-contract": "*"
-    "@polkadot/apps-config": "*"
     "@polkadot/extension-base": "*"
     "@polkadot/extension-inject": "*"
     "@polkadot/hw-ledger": "*"

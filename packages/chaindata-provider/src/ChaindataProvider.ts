@@ -13,7 +13,7 @@ import {
   fetchTokens,
 } from "./net"
 import { TalismanChaindataDatabase } from "./TalismanChaindataDatabase"
-import { IChaindataProvider } from "./types"
+import { IChaindataProvider, TokenList } from "./types"
 import {
   Chain,
   ChainId,
@@ -173,7 +173,7 @@ export class ChaindataProvider implements IChaindataProvider {
   }
 
   get tokensByIdObservable() {
-    return this.tokensObservable.pipe(map(util.itemsToMapById))
+    return this.tokensObservable.pipe<TokenList>(map(util.itemsToMapById))
   }
   async tokensById() {
     return await util.wrapObservableWithGetter(

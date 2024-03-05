@@ -21,7 +21,6 @@
     "@metamask/eth-sig-util": "7.0.1",
     "@polkadot/api": "*",
     "@polkadot/api-contract": "*",
-    "@polkadot/apps-config": "*",
     "@polkadot/extension-base": "*",
     "@polkadot/extension-inject": "*",
     "@polkadot/hw-ledger": "*",

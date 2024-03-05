@@ -17,8 +17,6 @@ import { migrateConnectAllSubstrate } from "./libs/migrations/legacyMigrations"
 import { initSentry } from "./sentry"
 import { consoleOverride } from "./util/logging"
 
-// console.log("background.ts")
-
 initSentry(Sentry)
 consoleOverride(DEBUG)
 

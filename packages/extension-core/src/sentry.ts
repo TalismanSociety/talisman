@@ -1,9 +1,9 @@
 import * as SentryBrowser from "@sentry/browser"
 import * as SentryReact from "@sentry/react"
 import { Event } from "@sentry/types"
+import { DEBUG } from "extension-shared"
 import { ReplaySubject, firstValueFrom } from "rxjs"
 
-import { DEBUG } from "../../extension-shared/src/constants"
 import {
   trackIndexedDbErrorExtras,
   triggerIndexedDbUnavailablePopup,
