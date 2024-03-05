@@ -27,8 +27,11 @@ const ReviewButton = () => {
 
   useEffect(() => {
     if (recipientWarning) setWarnings((prev) => Array.from(new Set([...prev, "recipientWarning"])))
+    if (!recipientWarning) setWarnings((prev) => prev.filter((w) => w !== "recipientWarning"))
+
     if (tokensToBeReaped?.length)
       setWarnings((prev) => Array.from(new Set([...prev, "forfeitWarning"])))
+    if (!tokensToBeReaped?.length) setWarnings((prev) => prev.filter((w) => w !== "forfeitWarning"))
   }, [recipientWarning, tokensToBeReaped])
 
   useEffect(() => {
