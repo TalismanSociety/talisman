@@ -1,13 +1,9 @@
-import { EthGasSettings } from "@core/domains/ethereum/types"
-import {
-  EthPriorityOptionName,
-  EthTransactionDetails,
-  GasSettingsByPriority,
-} from "@core/domains/signing/types"
-import { TokenId } from "@core/domains/tokens/types"
 import { useOpenClose } from "@talisman/hooks/useOpenClose"
 import { classNames } from "@talismn/util"
 import { useAnalytics } from "@ui/hooks/useAnalytics"
+import { EthGasSettings } from "extension-core"
+import { EthPriorityOptionName, EthTransactionDetails, GasSettingsByPriority } from "extension-core"
+import { TokenId } from "extension-core"
 import { FC, useCallback, useEffect, useState } from "react"
 import { Drawer, PillButton } from "talisman-ui"
 import { TransactionRequest } from "viem"

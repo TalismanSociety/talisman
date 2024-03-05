@@ -1,6 +1,5 @@
-import { Chain, ChainId } from "@core/domains/chains/types"
-import { EvmNetwork, EvmNetworkId } from "@core/domains/ethereum/types"
 import { getNetworkInfo } from "@ui/hooks/useNetworkInfo"
+import { Chain, ChainId, EvmNetwork, EvmNetworkId } from "extension-core"
 import { TFunction } from "i18next"
 import sortBy from "lodash/sortBy"
 import { useMemo } from "react"

@@ -1,5 +1,5 @@
-import { DEBUG } from "@core/constants"
-import { log } from "@core/log"
+import { log } from "extension-shared"
+import { DEBUG } from "extension-shared"
 import isEqual from "lodash/isEqual"
 import { useEffect, useRef } from "react"
 

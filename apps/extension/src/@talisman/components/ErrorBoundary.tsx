@@ -1,6 +1,6 @@
-import { DEBUG } from "@core/constants"
 import { ErrorBoundary as SentryErrorBoundary } from "@sentry/react"
 import STATIC from "@talisman/theme/images/hand_open_static_dark.gif"
+import { DEBUG } from "extension-shared"
 import { FC, ReactNode, useCallback } from "react"
 import { Button } from "talisman-ui"
 

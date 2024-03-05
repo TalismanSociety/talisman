@@ -1,6 +1,6 @@
-import { EvmAddress } from "@core/domains/ethereum/types"
 import { isEthereumAddress } from "@talismn/util"
 import { useQuery } from "@tanstack/react-query"
+import { EvmAddress } from "extension-core"
 import { PublicClient } from "viem"
 
 export const useEthBalance = (

@@ -1,0 +1,8 @@
+{
+  "extends": "@talismn/tsconfig/es6-node.json",
+  "include": ["src", "i18next-parser.config.cjs"],
+  "compilerOptions": {
+    "outDir": "dist"
+  },
+  "exclude": ["node_modules", ".next", ".turbo", ".dist", "**/*.spec.ts", "**/*.test.ts"]
+}

@@ -1,4 +1,16 @@
-import { getHumanReadableErrorMessage } from "@core/domains/ethereum/errors"
+import { ETH_ERROR_EIP1474_METHOD_NOT_FOUND } from "@core/injectEth/EthProviderRpcError"
+import { isBigInt } from "@talismn/util"
+import { useQuery } from "@tanstack/react-query"
+import { api } from "@ui/api"
+import { usePublicClient } from "@ui/domains/Ethereum/usePublicClient"
+import {
+  EthPriorityOptionName,
+  EthPriorityOptionNameEip1559,
+  EthPriorityOptionNameLegacy,
+  EthTransactionDetails,
+  GasSettingsByPriority,
+} from "extension-core"
+import { getHumanReadableErrorMessage } from "extension-core"
 import {
   getGasLimit,
   getGasSettingsEip1559,
@@ -6,33 +18,21 @@ import {
   isAcalaEvmPlus,
   prepareTransaction,
   serializeTransactionRequest,
-} from "@core/domains/ethereum/helpers"
+} from "extension-core"
 import {
   EthGasSettings,
   EthGasSettingsEip1559,
   EthGasSettingsLegacy,
   EvmNetworkId,
-} from "@core/domains/ethereum/types"
-import {
-  EthPriorityOptionName,
-  EthPriorityOptionNameEip1559,
-  EthPriorityOptionNameLegacy,
-  EthTransactionDetails,
-  GasSettingsByPriority,
-} from "@core/domains/signing/types"
-import { ETH_ERROR_EIP1474_METHOD_NOT_FOUND } from "@core/injectEth/EthProviderRpcError"
-import { decodeEvmTransaction } from "@core/util/decodeEvmTransaction"
-import { FeeHistoryAnalysis, getFeeHistoryAnalysis } from "@core/util/getFeeHistoryAnalysis"
-import { isBigInt } from "@talismn/util"
-import { useQuery } from "@tanstack/react-query"
-import { api } from "@ui/api"
-import { usePublicClient } from "@ui/domains/Ethereum/usePublicClient"
+} from "extension-core"
 import { useEffect, useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
 import { PublicClient, TransactionRequest } from "viem"
 
 import { useEthEstimateL1DataFee } from "./useEthEstimateL1DataFee"
 import { useIsValidEthTransaction } from "./useIsValidEthTransaction"
+import { decodeEvmTransaction } from "./util/decodeEvmTransaction"
+import { FeeHistoryAnalysis, getFeeHistoryAnalysis } from "./util/getFeeHistoryAnalysis"
 
 // gasPrice isn't reliable on polygon & mumbai, see https://github.com/ethers-io/ethers.js/issues/2828#issuecomment-1283014250
 const UNRELIABLE_GASPRICE_NETWORK_IDS = [137, 80001]

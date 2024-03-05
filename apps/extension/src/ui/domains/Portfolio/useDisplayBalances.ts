@@ -1,10 +1,9 @@
+import { useSelectedAccount } from "@ui/domains/Portfolio/useSelectedAccount"
+import { AccountJsonAny, Balance, Balances } from "extension-core"
 import {
   DEFAULT_PORTFOLIO_TOKENS_ETHEREUM,
   DEFAULT_PORTFOLIO_TOKENS_SUBSTRATE,
-} from "@core/constants"
-import { AccountJsonAny } from "@core/domains/accounts/types"
-import { Balance, Balances } from "@core/domains/balances/types"
-import { useSelectedAccount } from "@ui/domains/Portfolio/useSelectedAccount"
+} from "extension-shared"
 import { useMemo } from "react"
 
 // TODO: default tokens should be controlled from chaindata

@@ -1,20 +1,3 @@
-import {
-  ActiveChains,
-  activeChainsStore,
-  isChainActive,
-} from "@core/domains/chains/store.activeChains"
-import {
-  ActiveEvmNetworks,
-  activeEvmNetworksStore,
-  isEvmNetworkActive,
-} from "@core/domains/ethereum/store.activeEvmNetworks"
-import {
-  ActiveTokens,
-  activeTokensStore,
-  isTokenActive,
-} from "@core/domains/tokens/store.activeTokens"
-import { chaindataProvider } from "@core/rpcs/chaindata"
-import { logObservableUpdate } from "@core/util/logObservableUpdate"
 import { HexString } from "@polkadot/util/types"
 import {
   Chain,
@@ -27,12 +10,16 @@ import {
   TokenList,
 } from "@talismn/chaindata-provider"
 import { api } from "@ui/api"
+import { ActiveChains, activeChainsStore, chaindataProvider, isChainActive } from "extension-core"
+import { ActiveEvmNetworks, activeEvmNetworksStore, isEvmNetworkActive } from "extension-core"
+import { ActiveTokens, activeTokensStore, isTokenActive } from "extension-core"
 import { atom } from "jotai"
 import { atomFamily, atomWithObservable } from "jotai/utils"
 import isEqual from "lodash/isEqual"
 import { Observable } from "rxjs"
 
 import { atomWithSubscription } from "./utils/atomWithSubscription"
+import { logObservableUpdate } from "./utils/logObservableUpdate"
 
 const NO_OP = () => {}
 

@@ -1,6 +1,6 @@
-import { log } from "@core/log"
-import { logProxy } from "@core/log/logProxy"
-import { SendRequest } from "@core/types"
+import { SendRequest } from "extension-core"
+import { logProxy } from "extension-shared"
+import { log } from "extension-shared"
 
 import { announceProvider } from "./eip6963"
 import { getInjectableEvmProvider } from "./getInjectableEvmProvider"

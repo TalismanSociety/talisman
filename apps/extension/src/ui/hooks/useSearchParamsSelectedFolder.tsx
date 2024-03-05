@@ -1,4 +1,4 @@
-import { AccountsCatalogTree, TreeFolder, TreeItem } from "@core/domains/accounts/helpers.catalog"
+import { AccountsCatalogTree, TreeFolder, TreeItem } from "extension-core"
 import { useMemo } from "react"
 import { useSearchParams } from "react-router-dom"
 

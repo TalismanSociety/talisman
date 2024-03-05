@@ -8218,6 +8218,7 @@ __metadata:
     "@polkadot/keyring": 12.x
     "@polkadot/util": 12.x
     "@polkadot/util-crypto": 12.x
+    rxjs: ">= 7.8.1"
   languageName: unknown
   linkType: soft
 
@@ -14975,14 +14976,53 @@ __metadata:
   languageName: node
   linkType: hard
 
-"extension-backend@workspace:*, extension-backend@workspace:packages/extension-backend":
+"extension-core@workspace:*, extension-core@workspace:packages/extension-core":
   version: 0.0.0-use.local
-  resolution: "extension-backend@workspace:packages/extension-backend"
+  resolution: "extension-core@workspace:packages/extension-core"
   dependencies:
+    "@metamask/browser-passworder": 4.3.0
+    "@polkadot/extension-base": 0.46.6
+    "@polkadot/keyring": 12.6.2
+    "@polkadot/ui-keyring": 3.6.4
+    "@polkadot/util": 12.6.2
+    "@polkadot/util-crypto": 12.6.2
+    "@sentry/browser": 7.92.0
+    "@talismn/balances": "workspace:*"
     "@talismn/eslint-config": "workspace:*"
     "@talismn/tsconfig": "workspace:*"
     "@talismn/util": "workspace:*"
+    "@types/node": ^17.0.22
+    bcryptjs: ^2.4.3
+    blueimp-md5: 2.19.0
+    dexie: ^3.2.4
     eslint: ^8.52.0
+    extension-shared: "workspace:*"
+    i18next: ^22.5.0
+    rxjs: ^7.8.1
+    semver: ^7.5.4
+    ts-results: 3.3.0
+    typescript: ^5.2.2
+    viem: ^1.21.4
+    webextension-polyfill: 0.8.0
+    yup: 0.32.11
+  languageName: unknown
+  linkType: soft
+
+"extension-shared@workspace:*, extension-shared@workspace:packages/extension-shared":
+  version: 0.0.0-use.local
+  resolution: "extension-shared@workspace:packages/extension-shared"
+  dependencies:
+    "@sentry/browser": 7.92.0
+    "@sentry/integrations": 7.92.0
+    "@sentry/react": 7.92.0
+    "@sentry/tracing": 7.92.0
+    "@talismn/eslint-config": "workspace:*"
+    "@talismn/tsconfig": "workspace:*"
+    "@talismn/util": "workspace:*"
+    anylogger-loglevel: ^1.0.0
+    eslint: ^8.52.0
+    posthog-js: ^1.96.1
+    rxjs: ^7.8.1
     typescript: ^5.2.2
   languageName: unknown
   linkType: soft
@@ -15110,7 +15150,8 @@ __metadata:
     eslint: ^8.52.0
     eslint-webpack-plugin: ^4.0.1
     eth-phishing-detect: latest
-    extension-backend: "workspace:*"
+    extension-core: "workspace:*"
+    extension-shared: "workspace:*"
     fake-indexeddb: 4.0.2
     fork-ts-checker-notifier-webpack-plugin: ^6.0.0
     fork-ts-checker-webpack-plugin: ^7.3.0

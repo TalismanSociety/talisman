@@ -1,5 +1,5 @@
-import { Chain } from "@core/domains/chains/types"
 import { activeTokensWithTestnetsMapAtom } from "@ui/atoms"
+import { Chain } from "extension-core"
 import { useAtomValue } from "jotai"
 import { useMemo } from "react"
 

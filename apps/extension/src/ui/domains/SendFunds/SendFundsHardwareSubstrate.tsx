@@ -1,11 +1,11 @@
-import { log } from "@core/log"
-import { roundToFirstInteger } from "@core/util/roundToFirstInteger"
 import { HexString } from "@polkadot/util/types"
 import { planckToTokens } from "@talismn/util"
 import { api } from "@ui/api"
 import { useSendFundsWizard } from "@ui/apps/popup/pages/SendFunds/context"
 import { useIsKnownAddress } from "@ui/hooks/useIsKnownAddress"
 import useToken from "@ui/hooks/useToken"
+import { roundToFirstInteger } from "extension-core"
+import { log } from "extension-shared"
 import { useCallback, useState } from "react"
 
 import { SignHardwareSubstrate } from "../Sign/SignHardwareSubstrate"

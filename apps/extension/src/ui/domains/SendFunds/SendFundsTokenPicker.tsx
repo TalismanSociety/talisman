@@ -1,5 +1,5 @@
-import { TokenId } from "@core/domains/tokens/types"
 import { useSendFundsWizard } from "@ui/apps/popup/pages/SendFunds/context"
+import { TokenId } from "extension-core"
 import { useCallback } from "react"
 
 import { TokenPicker } from "../Asset/TokenPicker"

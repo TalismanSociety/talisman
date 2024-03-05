@@ -1,10 +1,10 @@
-import { KnownSigningRequestIdOnly } from "@core/domains/signing/types"
-import { log } from "@core/log"
 import { HexString } from "@polkadot/util/types"
 import { provideContext } from "@talisman/util/provideContext"
 import { api } from "@ui/api"
 import { useEvmNetwork } from "@ui/hooks/useEvmNetwork"
 import { useRequest } from "@ui/hooks/useRequest"
+import { KnownSigningRequestIdOnly } from "extension-core"
+import { log } from "extension-shared"
 import { useCallback, useMemo } from "react"
 
 import { useAnySigningRequest } from "./AnySignRequestContext"

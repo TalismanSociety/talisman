@@ -1,6 +1,6 @@
-import { log } from "@core/log"
 import { Token } from "@talismn/chaindata-provider"
 import DcentWebConnector from "dcent-web-connector"
+import { log } from "extension-shared"
 
 export type DcentAccountInfo = {
   name: string

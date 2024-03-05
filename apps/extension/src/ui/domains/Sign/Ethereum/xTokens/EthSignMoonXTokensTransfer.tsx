@@ -1,4 +1,3 @@
-import { EvmAddress } from "@core/domains/ethereum/types"
 import { hexToU8a } from "@polkadot/util"
 import { Address } from "@talismn/balances"
 import { encodeAnyAddress } from "@talismn/util"
@@ -8,6 +7,7 @@ import { useCoinGeckoTokenRates } from "@ui/hooks/useCoingeckoTokenRates"
 import { useErc20TokenInfo } from "@ui/hooks/useErc20TokenInfo"
 import useToken from "@ui/hooks/useToken"
 import useTokens from "@ui/hooks/useTokens"
+import { EvmAddress } from "extension-core"
 import { FC, useMemo } from "react"
 import { useTranslation } from "react-i18next"
 

@@ -1,5 +1,3 @@
-import { AccountsCatalogTree, TreeItem } from "@core/domains/accounts/helpers.catalog"
-import { AccountType } from "@core/domains/accounts/types"
 import { FloatingPortal, autoUpdate, useFloating } from "@floating-ui/react"
 import { Listbox } from "@headlessui/react"
 import { isEthereumAddress } from "@polkadot/util-crypto"
@@ -13,6 +11,7 @@ import { Fiat } from "@ui/domains/Asset/Fiat"
 import { useAnalytics } from "@ui/hooks/useAnalytics"
 import { usePortfolioAccounts } from "@ui/hooks/usePortfolioAccounts"
 import { useSetting } from "@ui/hooks/useSettings"
+import { AccountType, AccountsCatalogTree, TreeItem } from "extension-core"
 import { forwardRef, useCallback, useMemo } from "react"
 import { useTranslation } from "react-i18next"
 

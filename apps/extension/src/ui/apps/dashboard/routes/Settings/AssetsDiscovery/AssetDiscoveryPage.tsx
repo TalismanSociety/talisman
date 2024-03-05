@@ -1,11 +1,3 @@
-import { AccountJsonAny } from "@core/domains/accounts/types"
-import { AssetDiscoveryMode, DiscoveredBalance } from "@core/domains/assetDiscovery/types"
-import {
-  activeEvmNetworksStore,
-  isEvmNetworkActive,
-} from "@core/domains/ethereum/store.activeEvmNetworks"
-import { activeTokensStore, isTokenActive } from "@core/domains/tokens/store.activeTokens"
-import { TokenId } from "@core/domains/tokens/types"
 import { HeaderBlock } from "@talisman/components/HeaderBlock"
 import { Spacer } from "@talisman/components/Spacer"
 import { shortenAddress } from "@talisman/util/shortenAddress"
@@ -46,6 +38,11 @@ import { useSetting } from "@ui/hooks/useSettings"
 import useToken from "@ui/hooks/useToken"
 import useTokens from "@ui/hooks/useTokens"
 import { isErc20Token } from "@ui/util/isErc20Token"
+import { activeEvmNetworksStore, isEvmNetworkActive } from "extension-core"
+import { activeTokensStore, isTokenActive } from "extension-core"
+import { TokenId } from "extension-core"
+import { AssetDiscoveryMode, DiscoveredBalance } from "extension-core"
+import { AccountJsonAny } from "extension-core"
 import { atom, useAtomValue } from "jotai"
 import { ChangeEventHandler, FC, ReactNode, useCallback, useEffect, useMemo, useRef } from "react"
 import { Trans, useTranslation } from "react-i18next"

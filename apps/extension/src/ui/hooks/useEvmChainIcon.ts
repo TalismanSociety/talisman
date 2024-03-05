@@ -1,5 +1,5 @@
-import { getSafeImageUrl } from "@core/util/getSafeImageUrl"
 import { useQuery } from "@tanstack/react-query"
+import { getSafeImageUrl } from "@ui/util/getSafeImageUrl"
 import { useMemo } from "react"
 
 type EvmChainIconInfo = {

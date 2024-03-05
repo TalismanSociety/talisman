@@ -1,11 +1,10 @@
-import { Balances } from "@core/domains/balances/types"
-import { Address } from "@core/types/base"
 import { ChainId, EvmNetworkId } from "@talismn/chaindata-provider"
 import { classNames } from "@talismn/util"
 import { ChainLogo } from "@ui/domains/Asset/ChainLogo"
 import { TokenLogo } from "@ui/domains/Asset/TokenLogo"
 import { AssetBalanceCellValue } from "@ui/domains/Portfolio/AssetBalanceCellValue"
 import { NoTokensMessage } from "@ui/domains/Portfolio/NoTokensMessage"
+import { Address, Balances } from "extension-core"
 import { Suspense } from "react"
 import { useTranslation } from "react-i18next"
 

@@ -1,9 +1,3 @@
-import {
-  parseRpcTransactionRequestBase,
-  serializeTransactionRequest,
-} from "@core/domains/ethereum/helpers"
-import { KnownSigningRequestIdOnly } from "@core/domains/signing/types"
-import { log } from "@core/log"
 import { HexString } from "@polkadot/util/types"
 import { provideContext } from "@talisman/util/provideContext"
 import { api } from "@ui/api"
@@ -11,6 +5,9 @@ import { balancesHydrateAtom } from "@ui/atoms"
 import { useEthTransaction } from "@ui/domains/Ethereum/useEthTransaction"
 import { useEvmNetwork } from "@ui/hooks/useEvmNetwork"
 import { useRequest } from "@ui/hooks/useRequest"
+import { parseRpcTransactionRequestBase, serializeTransactionRequest } from "extension-core"
+import { KnownSigningRequestIdOnly } from "extension-core"
+import { log } from "extension-shared"
 import { useAtomValue } from "jotai"
 import { useCallback, useMemo, useState } from "react"
 

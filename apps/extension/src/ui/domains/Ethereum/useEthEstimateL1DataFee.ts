@@ -1,6 +1,6 @@
-import { log } from "@core/log"
 import { gasPriceOracleABI, gasPriceOracleAddress } from "@eth-optimism/contracts-ts"
 import { useQuery } from "@tanstack/react-query"
+import { log } from "extension-shared"
 import { useMemo } from "react"
 import { Hex, PublicClient, TransactionRequest, getContract, serializeTransaction } from "viem"
 

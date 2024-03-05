@@ -1,8 +1,7 @@
-import { BalanceFormatter } from "@core/domains/balances/types"
-import { Token } from "@core/domains/tokens/types"
 import { formatDecimals } from "@talismn/util"
 import { Fiat } from "@ui/domains/Asset/Fiat"
 import { useSelectedCurrency } from "@ui/hooks/useCurrency"
+import { BalanceFormatter, Token } from "extension-core"
 import { FC } from "react"
 import { useTranslation } from "react-i18next"
 

@@ -1,6 +1,6 @@
-import { AccountsCatalogTree } from "@core/domains/accounts/helpers.catalog"
 import { yupResolver } from "@hookform/resolvers/yup"
 import { api } from "@ui/api"
+import { AccountsCatalogTree } from "extension-core"
 import { atom, useAtom } from "jotai"
 import { RefCallback, useCallback, useEffect, useMemo, useRef } from "react"
 import { useForm } from "react-hook-form"

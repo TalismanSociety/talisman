@@ -1,9 +1,8 @@
-import { EvmNetwork, EvmNetworkId } from "@core/domains/ethereum/types"
-import { log } from "@core/log"
-import { EvmNativeToken } from "@talismn/balances"
 import { api } from "@ui/api"
 import { useEvmNetwork } from "@ui/hooks/useEvmNetwork"
 import useToken from "@ui/hooks/useToken"
+import { EvmNativeToken, EvmNetwork, EvmNetworkId } from "extension-core"
+import { log } from "extension-shared"
 import { useMemo } from "react"
 import { PublicClient, createPublicClient, custom } from "viem"
 

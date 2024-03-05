@@ -1,5 +1,3 @@
-import { Balances } from "@core/domains/balances/types"
-import { Address } from "@core/types/base"
 import { sortBigBy } from "@talisman/util/bigHelper"
 import { BalanceLockType, filterBaseLocks, getLockTitle } from "@talismn/balances"
 import { ChainId, EvmNetworkId } from "@talismn/chaindata-provider"
@@ -8,6 +6,7 @@ import useChain from "@ui/hooks/useChain"
 import { useSelectedCurrency } from "@ui/hooks/useCurrency"
 import { useNetworkCategory } from "@ui/hooks/useNetworkCategory"
 import BigNumber from "bignumber.js"
+import { Address, Balances } from "extension-core"
 import { useMemo } from "react"
 import { useTranslation } from "react-i18next"
 

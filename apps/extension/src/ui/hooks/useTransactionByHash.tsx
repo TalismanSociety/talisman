@@ -1,6 +1,6 @@
-import { db } from "@core/db"
 import { HexString } from "@polkadot/util/types"
 import { useLiveQuery } from "dexie-react-hooks"
+import { db } from "extension-core"
 
 const useTransactionByHash = (hash?: HexString) =>
   useLiveQuery(async () => {

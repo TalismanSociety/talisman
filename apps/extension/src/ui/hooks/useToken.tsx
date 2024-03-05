@@ -1,4 +1,4 @@
-import type { TokenId } from "@core/domains/tokens/types"
+import { TokenId } from "extension-core"
 import { useMemo } from "react"
 
 import { useAllTokensMap } from "./useTokens"

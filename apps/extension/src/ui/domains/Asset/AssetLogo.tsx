@@ -1,7 +1,7 @@
-import { IS_FIREFOX, UNKNOWN_TOKEN_URL } from "@core/constants"
 import { TokenId } from "@talismn/chaindata-provider"
 import { classNames } from "@talismn/util"
 import useToken from "@ui/hooks/useToken"
+import { IS_FIREFOX, UNKNOWN_TOKEN_URL } from "extension-shared"
 import { FC, Suspense, useCallback, useEffect, useMemo, useState } from "react"
 
 const isTalismanLogo = (url?: string | null) => {

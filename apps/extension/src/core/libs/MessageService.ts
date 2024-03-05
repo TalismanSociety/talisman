@@ -3,25 +3,26 @@
 
 // Adapted from https://github.com/polkadot-js/extension/
 
-import {
-  ETH_ERROR_EIP1474_INTERNAL_ERROR,
-  WrappedEthProviderRpcError,
-} from "@core/injectEth/EthProviderRpcError"
-import { log } from "@core/log"
 import type {
   MessageTypes,
   MessageTypesWithNoSubscriptions,
   MessageTypesWithNullRequest,
   MessageTypesWithSubscriptions,
   OriginTypes,
+  Port,
   RequestTypes,
   ResponseTypes,
   SubscriptionMessageTypes,
   TransportRequestMessage,
   TransportResponseMessage,
   UnsubscribeFn,
-} from "@core/types"
-import type { Port } from "@core/types/base"
+} from "extension-core"
+import { log } from "extension-shared"
+
+import {
+  ETH_ERROR_EIP1474_INTERNAL_ERROR,
+  WrappedEthProviderRpcError,
+} from "../injectEth/EthProviderRpcError"
 
 export interface Handler {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any

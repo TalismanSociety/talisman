@@ -1,7 +1,7 @@
-import { DEBUG } from "@core/constants"
 import { HeaderBlock } from "@talisman/components/HeaderBlock"
 import { Spacer } from "@talisman/components/Spacer"
 import { dcent } from "@ui/util/dcent"
+import { DEBUG } from "extension-shared"
 import { useEffect } from "react"
 import { useTranslation } from "react-i18next"
 

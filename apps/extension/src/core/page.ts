@@ -3,15 +3,15 @@
 
 // Adapted from https://github.com/polkadot-js/extension/packages/extension-base/src/page.ts
 import type { Message } from "@polkadot/extension-base/types"
+import { isTalismanHostname } from "extension-core"
+import { DEBUG } from "extension-shared"
 
-import { DEBUG } from "./constants"
 import TalismanInjected from "./inject/Injected"
 import { injectExtension } from "./inject/injectExtension"
 import { injectSubstrate } from "./inject/injectSubstrate"
 import type { Injected } from "./inject/types"
 import { injectEthereum } from "./injectEth/injectEthereum"
 import MessageService from "./libs/MessageService"
-import { isTalismanHostname } from "./util/isTalismanHostname"
 
 const messageService = new MessageService({
   origin: "talisman-page",

@@ -1,8 +1,8 @@
-import { AccountAddressType, RequestAccountCreateFromSuri } from "@core/domains/accounts/types"
-import { AssetDiscoveryMode } from "@core/domains/assetDiscovery/types"
-import { getEthDerivationPath } from "@core/domains/ethereum/helpers"
 import { provideContext } from "@talisman/util/provideContext"
 import { api } from "@ui/api"
+import { AccountAddressType, RequestAccountCreateFromSuri } from "extension-core"
+import { AssetDiscoveryMode } from "extension-core"
+import { getEthDerivationPath } from "extension-core"
 import { useCallback, useState } from "react"
 import { useSearchParams } from "react-router-dom"
 

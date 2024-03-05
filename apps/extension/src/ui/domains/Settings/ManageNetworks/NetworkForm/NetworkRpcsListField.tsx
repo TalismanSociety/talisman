@@ -1,4 +1,3 @@
-import { RequestUpsertCustomEvmNetwork } from "@core/domains/ethereum/types"
 import {
   DndContext,
   DragEndEvent,
@@ -11,6 +10,7 @@ import {
 import { SortableContext, sortableKeyboardCoordinates, useSortable } from "@dnd-kit/sortable"
 import { CSS } from "@dnd-kit/utilities"
 import { DragIcon, LoaderIcon, PlusIcon, TrashIcon } from "@talismn/icons"
+import { RequestUpsertCustomEvmNetwork } from "extension-core"
 import { FC, useCallback, useMemo } from "react"
 import { FieldArrayWithId, useFieldArray, useFormContext } from "react-hook-form"
 import { useTranslation } from "react-i18next"

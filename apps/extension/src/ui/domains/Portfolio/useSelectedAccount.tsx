@@ -1,8 +1,8 @@
-import { AccountJsonAny } from "@core/domains/accounts/types"
 import { useAccountByAddress } from "@ui/hooks/useAccountByAddress"
 import useAccounts from "@ui/hooks/useAccounts"
 import { useSearchParamsSelectedAccount } from "@ui/hooks/useSearchParamsSelectedAccount"
 import { useSetting } from "@ui/hooks/useSettings"
+import { AccountJsonAny } from "extension-core"
 import { useCallback } from "react"
 
 const isPopup = window.location.pathname === "/popup.html"

@@ -1,5 +1,5 @@
-import { DecodedEvmTransaction } from "@core/util/decodeEvmTransaction"
 import { ErrorBoundary, FallbackRender } from "@sentry/react"
+import { DecodedEvmTransaction } from "@ui/domains/Ethereum/util/decodeEvmTransaction"
 import { FC } from "react"
 
 import { SignViewBodyShimmer } from "../Views/SignViewBodyShimmer"

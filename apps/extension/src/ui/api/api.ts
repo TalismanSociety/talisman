@@ -1,5 +1,5 @@
-import { PORT_EXTENSION } from "@core/constants"
 import MessageService from "@core/libs/MessageService"
+import { PORT_EXTENSION } from "extension-shared"
 
 import MessageTypes from "./types"
 

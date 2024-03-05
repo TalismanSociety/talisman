@@ -1,5 +1,5 @@
-import { AccountJsonAny } from "@core/domains/accounts/types"
 import { classNames } from "@talismn/util"
+import { AccountJsonAny } from "extension-core"
 import { FC } from "react"
 import { Tooltip, TooltipContent, TooltipTrigger } from "talisman-ui"
 

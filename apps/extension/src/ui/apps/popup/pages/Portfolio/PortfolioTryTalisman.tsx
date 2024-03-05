@@ -1,4 +1,3 @@
-import { AssetDiscoveryMode } from "@core/domains/assetDiscovery/types"
 import { shortenAddress } from "@talisman/util/shortenAddress"
 import { ArrowUpLeftIcon, CheckCircleIcon, ChevronLeftIcon, LoaderIcon } from "@talismn/icons"
 import { classNames, encodeAnyAddress } from "@talismn/util"
@@ -9,6 +8,7 @@ import { Address } from "@ui/domains/Account/Address"
 import { AddressFieldNsBadge } from "@ui/domains/Account/AddressFieldNsBadge"
 import useAccounts from "@ui/hooks/useAccounts"
 import { useResolveNsName } from "@ui/hooks/useResolveNsName"
+import { AssetDiscoveryMode } from "extension-core"
 import {
   ChangeEventHandler,
   FormEventHandler,

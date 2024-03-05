@@ -1,7 +1,3 @@
-import { log } from "@core/log"
-import { chaindataProvider } from "@core/rpcs/chaindata"
-import { getMetadataFromDef, getMetadataRpcFromDef } from "@core/util/getMetadataDef"
-import { isJsonPayload } from "@core/util/isJsonPayload"
 import { typesBundle } from "@polkadot/apps-config/api"
 import { Metadata, TypeRegistry } from "@polkadot/types"
 import { getSpecAlias, getSpecTypes } from "@polkadot/types-known/util"
@@ -10,6 +6,10 @@ import { hexToNumber, isHex } from "@polkadot/util"
 import { HexString } from "@polkadot/util/types"
 import { useQuery } from "@tanstack/react-query"
 import { api } from "@ui/api"
+import { isJsonPayload } from "extension-core"
+import { getMetadataFromDef, getMetadataRpcFromDef } from "extension-core"
+import { chaindataProvider } from "extension-core"
+import { log } from "extension-shared"
 
 // do not reuse getTypeRegistry because we're on front-end, we need to leverage backend's metadata cache
 const getFrontEndTypeRegistry = async (

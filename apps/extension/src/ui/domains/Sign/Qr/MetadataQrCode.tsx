@@ -1,10 +1,10 @@
-import { IS_FIREFOX } from "@core/constants"
-import { SignerPayloadGenesisHash } from "@core/domains/signing/types"
 import { hexToU8a } from "@polkadot/util"
 import { useQuery } from "@tanstack/react-query"
 import { api } from "@ui/api"
 import { useChainByGenesisHash } from "@ui/hooks/useChainByGenesisHash"
 import { useImageLoaded } from "@ui/hooks/useImageLoaded"
+import { SignerPayloadGenesisHash } from "extension-core"
+import { IS_FIREFOX } from "extension-shared"
 
 import { QrCode, QrCodeError } from "./QrCode"
 import { QrCodeSource, qrCodeLogoForSource } from "./QrCodeSourceSelector"

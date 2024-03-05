@@ -1,16 +1,16 @@
-import { db } from "@core/db"
-import { settingsStore } from "@core/domains/app/store.settings"
-import { logObservableUpdate } from "@core/util/logObservableUpdate"
 import { TokenId } from "@talismn/chaindata-provider"
 import { TokenRateCurrency } from "@talismn/token-rates"
 import { api } from "@ui/api"
 import { liveQuery } from "dexie"
+import { settingsStore } from "extension-core"
+import { db } from "extension-core"
 import { SetStateAction, atom } from "jotai"
 import { atomFamily, atomWithObservable } from "jotai/utils"
 import { from } from "rxjs"
 
 import { settingsAtomFamily } from "./settings"
 import { atomWithSubscription } from "./utils/atomWithSubscription"
+import { logObservableUpdate } from "./utils/logObservableUpdate"
 
 const NO_OP = () => {}
 

@@ -14,6 +14,15 @@
       "@tests/*": ["./tests/*"]
     }
   },
-  "include": ["src", "**/*.ts", "**/*.tsx"],
+  "include": [
+    "src",
+    "**/*.ts",
+    "**/*.tsx",
+    "../../packages/extension-core/src/util/isValidDerivationPath.ts",
+    "../../packages/extension-core/src/util/addressFromSuri.ts",
+    "../../packages/extension-core/src/util/coingecko/fetchFromCoingecko.ts",
+    "../../packages/extension-core/src/util/coingecko/getCoinGeckoToken.ts",
+    "../../packages/extension-core/src/util/coingecko/getCoinGeckoTokensList.ts"
+  ],
   "exclude": ["node_modules", ".next", ".turbo", ".dist"]
 }

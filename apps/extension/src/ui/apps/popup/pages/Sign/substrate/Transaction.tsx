@@ -1,6 +1,5 @@
-import { isJsonPayload } from "@core/util/isJsonPayload"
-import { validateHexString } from "@core/util/validateHexString"
 import { AppPill } from "@talisman/components/AppPill"
+import { validateHexString } from "@talismn/util"
 import { classNames } from "@talismn/util"
 import {
   PopupContent,
@@ -13,6 +12,7 @@ import { SignAlertMessage } from "@ui/domains/Sign/SignAlertMessage"
 import { usePolkadotSigningRequest } from "@ui/domains/Sign/SignRequestContext"
 import { SubSignBody } from "@ui/domains/Sign/Substrate/SubSignBody"
 import { SignViewBodyShimmer } from "@ui/domains/Sign/Views/SignViewBodyShimmer"
+import { isJsonPayload } from "extension-core"
 import { FC, useEffect, useMemo } from "react"
 
 import { SignAccountAvatar } from "../SignAccountAvatar"

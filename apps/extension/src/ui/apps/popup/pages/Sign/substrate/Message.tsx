@@ -1,4 +1,3 @@
-import { SignerPayloadRaw } from "@core/domains/signing/types"
 import { encodeAddress } from "@polkadot/keyring"
 import { AppPill } from "@talisman/components/AppPill"
 import { SiwsMessage, parseMessage as siwsParseMessage } from "@talismn/siws"
@@ -11,6 +10,7 @@ import {
 import { AccountPill } from "@ui/domains/Account/AccountPill"
 import { Message } from "@ui/domains/Sign/Message"
 import { usePolkadotSigningRequest } from "@ui/domains/Sign/SignRequestContext"
+import { SignerPayloadRaw } from "extension-core"
 import { useEffect, useMemo } from "react"
 import { useTranslation } from "react-i18next"
 

@@ -1,4 +1,4 @@
-import type { KnownRequest, KnownRequestId, KnownRequestTypes } from "@core/libs/requests/types"
+import type { KnownRequest, KnownRequestId, KnownRequestTypes } from "extension-core"
 
 import { useRequests } from "./useRequests"
 

@@ -1,12 +1,12 @@
+import { api } from "@ui/api"
+import { useMessageSubscription } from "@ui/hooks/useMessageSubscription"
+import md5 from "blueimp-md5"
+import { AddressesByChain } from "extension-core"
 import {
   AddressesAndTokens,
   Balances,
   AddressesAndEvmNetwork as EvmNetworksAndAddresses,
-} from "@core/domains/balances/types"
-import { AddressesByChain } from "@core/types/base"
-import { api } from "@ui/api"
-import { useMessageSubscription } from "@ui/hooks/useMessageSubscription"
-import md5 from "blueimp-md5"
+} from "extension-core"
 import { useCallback, useMemo, useState } from "react"
 import { useDebounce } from "react-use"
 import { BehaviorSubject } from "rxjs"

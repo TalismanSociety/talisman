@@ -1,10 +1,10 @@
-import { TALISMAN_WEB_APP_STAKING_URL } from "@core/constants"
-import { Balances } from "@core/domains/balances/types"
-import { isStakingSupportedChain } from "@core/domains/staking/helpers"
 import { useAnalytics } from "@ui/hooks/useAnalytics"
+import { Balances } from "extension-core"
+import { TALISMAN_WEB_APP_STAKING_URL } from "extension-shared"
 import { useCallback } from "react"
 
 import { useTokenBalancesSummary } from "../Portfolio/useTokenBalancesSummary"
+import { isStakingSupportedChain } from "./helpers"
 import { useStakingBanner } from "./useStakingBanner"
 
 export const useShowStakingBanner = (balances: Balances) => {

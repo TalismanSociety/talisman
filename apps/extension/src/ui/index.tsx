@@ -1,12 +1,12 @@
 import "@talisman/theme/styles.css"
 
-import { initSentry } from "@core/config/sentry"
 import * as Sentry from "@sentry/react"
 import { ErrorBoundary } from "@talisman/components/ErrorBoundary"
 import { ErrorBoundaryDatabaseMigration } from "@talisman/components/ErrorBoundaryDatabaseMigration"
 import { NotificationsContainer } from "@talisman/components/Notifications/NotificationsContainer"
 import { SuspenseTracker } from "@talisman/components/SuspenseTracker"
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query"
+import { initSentry } from "extension-core"
 import React, { ReactNode, Suspense } from "react"
 import { createRoot } from "react-dom/client"
 import { HashRouter } from "react-router-dom"

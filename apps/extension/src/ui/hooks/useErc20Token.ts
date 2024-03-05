@@ -1,6 +1,6 @@
-import { EvmAddress } from "@core/domains/ethereum/types"
 import { EvmNetworkId } from "@talismn/chaindata-provider"
 import { isErc20Token } from "@ui/util/isErc20Token"
+import { EvmAddress } from "extension-core"
 import { useMemo } from "react"
 
 import useTokens from "./useTokens"

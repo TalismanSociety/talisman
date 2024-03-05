@@ -1,8 +1,8 @@
-import { AccountJsonDcent } from "@core/domains/accounts/types"
-import { AssetDiscoveryMode } from "@core/domains/assetDiscovery/types"
 import { isEthereumAddress } from "@talismn/util"
 import { api } from "@ui/api"
 import { useAccountByAddress } from "@ui/hooks/useAccountByAddress"
+import { AccountJsonDcent } from "extension-core"
+import { AssetDiscoveryMode } from "extension-core"
 import { useCallback, useMemo } from "react"
 
 import { DcentAccountInfo } from "./util"

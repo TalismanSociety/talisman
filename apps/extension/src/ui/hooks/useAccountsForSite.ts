@@ -1,5 +1,5 @@
-import { AuthorizedSite } from "@core/domains/sitesAuthorised/types"
-import { isTalismanUrl } from "@core/util/isTalismanUrl"
+import { AuthorizedSite } from "extension-core"
+import { isTalismanUrl } from "extension-core"
 
 import useAccounts from "./useAccounts"
 

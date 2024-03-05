@@ -1,5 +1,5 @@
-import { SIGNET_APP_URL } from "@core/constants"
 import { provideContext } from "@talisman/util/provideContext"
+import { SIGNET_APP_URL } from "extension-shared"
 import { useMemo, useState } from "react"
 
 import { AccountAddPageProps } from "../types"

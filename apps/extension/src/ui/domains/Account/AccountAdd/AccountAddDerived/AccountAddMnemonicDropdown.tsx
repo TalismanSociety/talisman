@@ -1,7 +1,7 @@
-import { AccountJsonAny } from "@core/domains/accounts/types"
 import { PlusIcon, SecretIcon } from "@talismn/icons"
 import useAccounts from "@ui/hooks/useAccounts"
 import { useMnemonics } from "@ui/hooks/useMnemonics"
+import { AccountJsonAny } from "extension-core"
 import { FC, useCallback, useMemo } from "react"
 import { useTranslation } from "react-i18next"
 import { Dropdown } from "talisman-ui"

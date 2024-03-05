@@ -1,7 +1,7 @@
-import { log } from "@core/log"
 import { yupResolver } from "@hookform/resolvers/yup"
 import { FadeIn } from "@talisman/components/FadeIn"
 import { KeyIcon } from "@talismn/icons"
+import { log } from "extension-shared"
 import { FC, useCallback, useEffect } from "react"
 import { useForm } from "react-hook-form"
 import { useTranslation } from "react-i18next"

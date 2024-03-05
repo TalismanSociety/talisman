@@ -1,7 +1,10 @@
-import { getMaxTransactionCost, serializeTransactionRequest } from "@core/domains/ethereum/helpers"
-import { EthPriorityOptionName } from "@core/domains/signing/types"
 import { useQuery } from "@tanstack/react-query"
 import { useAccountByAddress } from "@ui/hooks/useAccountByAddress"
+import {
+  EthPriorityOptionName,
+  getMaxTransactionCost,
+  serializeTransactionRequest,
+} from "extension-core"
 import { useTranslation } from "react-i18next"
 import { PublicClient, TransactionRequest } from "viem"
 

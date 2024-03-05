@@ -1,6 +1,6 @@
-import { CustomEvmNetwork, EvmNetwork } from "@core/domains/ethereum/types"
-import { CustomErc20Token } from "@core/domains/tokens/types"
 import { useOpenClose } from "@talisman/hooks/useOpenClose"
+import { CustomEvmNetwork, EvmNetwork } from "extension-core"
+import { CustomErc20Token } from "extension-core"
 import { useTranslation } from "react-i18next"
 import { Button, Drawer, PillButton } from "talisman-ui"
 

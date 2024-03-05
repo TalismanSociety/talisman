@@ -1,9 +1,3 @@
-import { isAcalaEvmPlus } from "@core/domains/ethereum/helpers"
-import {
-  EvmWalletTransaction,
-  SubWalletTransaction,
-  WalletTransaction,
-} from "@core/domains/transactions"
 import { HexString } from "@polkadot/util/types"
 import { Chain, EvmNetwork } from "@talismn/chaindata-provider"
 import { ExternalLinkIcon, RocketIcon, XCircleIcon } from "@talismn/icons"
@@ -11,6 +5,8 @@ import { useSendFundsWizard } from "@ui/apps/popup/pages/SendFunds/context"
 import { useChainByGenesisHash } from "@ui/hooks/useChainByGenesisHash"
 import { useEvmNetwork } from "@ui/hooks/useEvmNetwork"
 import useTransactionByHash from "@ui/hooks/useTransactionByHash"
+import { isAcalaEvmPlus } from "extension-core"
+import { EvmWalletTransaction, SubWalletTransaction, WalletTransaction } from "extension-core"
 import { FC, useCallback, useMemo, useState } from "react"
 import { Trans, useTranslation } from "react-i18next"
 import { Button, PillButton, ProcessAnimation, ProcessAnimationStatus } from "talisman-ui"

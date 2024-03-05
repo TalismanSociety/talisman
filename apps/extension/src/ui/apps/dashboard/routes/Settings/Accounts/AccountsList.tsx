@@ -1,10 +1,4 @@
 import {
-  AccountsCatalogTree,
-  RequestAccountsCatalogAction,
-  runActionOnTrees,
-} from "@core/domains/accounts/helpers.catalog"
-import { AccountJsonAny } from "@core/domains/accounts/types"
-import {
   DndContext,
   DragEndEvent,
   DragMoveEvent,
@@ -24,6 +18,8 @@ import {
 import { SortableContext, verticalListSortingStrategy } from "@dnd-kit/sortable"
 import { CSS } from "@dnd-kit/utilities"
 import { api } from "@ui/api"
+import { AccountsCatalogTree, RequestAccountsCatalogAction, runActionOnTrees } from "extension-core"
+import { AccountJsonAny } from "extension-core"
 import { useCallback, useEffect, useMemo, useRef, useState } from "react"
 import { createPortal } from "react-dom"
 

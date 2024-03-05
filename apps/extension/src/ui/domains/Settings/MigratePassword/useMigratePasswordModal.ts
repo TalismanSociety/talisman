@@ -1,6 +1,6 @@
-import { passwordStore } from "@core/domains/app/store.password"
 import { useOpenClose } from "@talisman/hooks/useOpenClose"
 import { atomWithSubscription } from "@ui/atoms/utils/atomWithSubscription"
+import { passwordStore } from "extension-core"
 import { atom, useAtomValue, useSetAtom } from "jotai"
 import { useCallback, useEffect } from "react"
 import { useLocation } from "react-router-dom"

@@ -1,7 +1,7 @@
-import { AccountJsonAny, AccountType } from "@core/domains/accounts/types"
-import { EthSignMessageMethod } from "@core/domains/signing/types"
 import { HexString } from "@polkadot/util/types"
 import { EvmNetworkId } from "@talismn/chaindata-provider"
+import { AccountJsonAny, AccountType } from "extension-core"
+import { EthSignMessageMethod } from "extension-core"
 import { FC, Suspense, lazy } from "react"
 
 import SignDcentEthereum from "./SignDcentEthereum"

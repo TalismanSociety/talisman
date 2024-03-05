@@ -1,7 +1,3 @@
-import { AccountAddressType, AccountJsonAny } from "@core/domains/accounts/types"
-import { Balances } from "@core/domains/balances/types"
-import { Token } from "@core/domains/tokens/types"
-import { log } from "@core/log"
 import { HydrateDb } from "@talismn/balances"
 import { Chain, ChainId, EvmNetwork, EvmNetworkId } from "@talismn/chaindata-provider"
 import {
@@ -14,6 +10,8 @@ import {
 } from "@ui/atoms"
 import { isEvmToken } from "@ui/util/isEvmToken"
 import { isSubToken } from "@ui/util/isSubToken"
+import { AccountAddressType, AccountJsonAny, Balances, Token } from "extension-core"
+import { log } from "extension-shared"
 import { t } from "i18next"
 import { atom, useAtom, useAtomValue, useSetAtom } from "jotai"
 import { useEffect } from "react"

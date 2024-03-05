@@ -1,8 +1,8 @@
-import { TALISMAN_WEB_APP_STAKING_URL } from "@core/constants"
 import { SuspenseTracker } from "@talisman/components/SuspenseTracker"
 import { ExternalLinkIcon, XIcon, ZapIcon } from "@talismn/icons"
 import { useStakingBanner } from "@ui/domains/Staking/useStakingBanner"
 import { useAnalytics } from "@ui/hooks/useAnalytics"
+import { TALISMAN_WEB_APP_STAKING_URL } from "extension-shared"
 import { MouseEventHandler, Suspense, useCallback, useMemo } from "react"
 import { Trans, useTranslation } from "react-i18next"
 

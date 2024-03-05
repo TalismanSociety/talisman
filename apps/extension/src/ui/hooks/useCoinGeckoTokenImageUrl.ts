@@ -1,6 +1,6 @@
-import { getCoingeckoToken } from "@core/util/coingecko/getCoinGeckoToken"
-import { getCoingeckoTokensList } from "@core/util/coingecko/getCoinGeckoTokensList"
 import { useQuery } from "@tanstack/react-query"
+import { getCoingeckoToken } from "extension-core"
+import { getCoingeckoTokensList } from "extension-core"
 import { useMemo } from "react"
 
 export const useCoinGeckoTokenImageUrl = (coingeckoTokenId: string | null) => {

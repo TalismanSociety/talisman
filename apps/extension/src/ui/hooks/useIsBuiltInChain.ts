@@ -1,6 +1,6 @@
-import { chaindataProvider } from "@core/rpcs/chaindata"
 import { ChainId } from "@talismn/chaindata-provider"
 import { useQuery } from "@tanstack/react-query"
+import { chaindataProvider } from "extension-core"
 
 export const useIsBuiltInChain = (chainId?: ChainId) => {
   return useQuery({

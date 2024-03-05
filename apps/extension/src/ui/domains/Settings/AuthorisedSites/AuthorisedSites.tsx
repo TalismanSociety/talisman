@@ -1,9 +1,9 @@
-import { TALISMAN_WEB_APP_URL } from "@core/constants"
-import { ProviderType } from "@core/domains/sitesAuthorised/types"
 import { HeaderBlock } from "@talisman/components/HeaderBlock"
 import { OptionSwitch } from "@talisman/components/OptionSwitch"
 import { Spacer } from "@talisman/components/Spacer"
 import { useAuthorisedSites } from "@ui/hooks/useAuthorisedSites"
+import { ProviderType } from "extension-core"
+import { TALISMAN_WEB_APP_URL } from "extension-shared"
 import { useEffect, useMemo, useState } from "react"
 import { Trans, useTranslation } from "react-i18next"
 

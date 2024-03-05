@@ -44,7 +44,8 @@
   "peerDependencies": {
     "@polkadot/keyring": "12.x",
     "@polkadot/util": "12.x",
-    "@polkadot/util-crypto": "12.x"
+    "@polkadot/util-crypto": "12.x",
+    "rxjs": ">= 7.8.1"
   },
   "eslintConfig": {
     "root": true,

@@ -1,5 +1,5 @@
-import { TALISMAN_WEB_APP_DOMAIN } from "@core/constants"
 import { renderHook, waitFor } from "@testing-library/react"
+import { TALISMAN_WEB_APP_DOMAIN } from "extension-shared"
 
 import { ADDRESSES } from "../../../../tests/constants"
 import { TestWrapper } from "../../../../tests/TestWrapper"

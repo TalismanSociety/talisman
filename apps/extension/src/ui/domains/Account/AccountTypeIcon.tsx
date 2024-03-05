@@ -1,4 +1,3 @@
-import { AccountType } from "@core/domains/accounts/types"
 import {
   DcentIcon,
   EyeIcon,
@@ -8,6 +7,7 @@ import {
   UsbIcon,
 } from "@talismn/icons"
 import { classNames } from "@talismn/util"
+import { AccountType } from "extension-core"
 import { FC, useMemo } from "react"
 import { useTranslation } from "react-i18next"
 import { Tooltip, TooltipContent, TooltipTrigger } from "talisman-ui"

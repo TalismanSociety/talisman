@@ -1,8 +1,3 @@
-import {
-  activeEvmNetworksStore,
-  isEvmNetworkActive,
-} from "@core/domains/ethereum/store.activeEvmNetworks"
-import { EvmNetwork } from "@core/domains/ethereum/types"
 import { isCustomEvmNetwork } from "@talismn/chaindata-provider"
 import { ChevronRightIcon } from "@talismn/icons"
 import { classNames } from "@talismn/util"
@@ -11,6 +6,8 @@ import { ChainLogo } from "@ui/domains/Asset/ChainLogo"
 import { useActiveEvmNetworksState } from "@ui/hooks/useActiveEvmNetworksState"
 import { useEvmNetworks } from "@ui/hooks/useEvmNetworks"
 import { useSetting } from "@ui/hooks/useSettings"
+import { EvmNetwork } from "extension-core"
+import { activeEvmNetworksStore, isEvmNetworkActive } from "extension-core"
 import sortBy from "lodash/sortBy"
 import { ChangeEventHandler, useCallback, useMemo, useRef } from "react"
 import { useTranslation } from "react-i18next"
