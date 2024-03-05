@@ -52,7 +52,7 @@ export const PortfolioWhatsNewSection = ({
   return (
     <div>
       <div className="text-body-secondary flex flex-col gap-12 pb-12 text-sm">
-        <div className="relative">
+        <div className="relative h-[119px]">
           <img
             className="pointer-events-none relative w-full rounded-sm"
             src={heroUrl}
