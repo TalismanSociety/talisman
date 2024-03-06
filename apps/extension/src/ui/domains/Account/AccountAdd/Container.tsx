@@ -4,6 +4,7 @@ import { SelectedIndicator } from "@talisman/components/SelectedIndicator"
 import { EthereumCircleBorderedLogo, PolkadotCircleBorderedLogo } from "@talisman/theme/logos"
 import { ChainIcon, EyePlusIcon, FilePlusIcon, PlusIcon } from "@talismn/icons"
 import { classNames } from "@talismn/util"
+import { useAppState } from "@ui/hooks/useAppState"
 import { ReactNode, useCallback, useMemo } from "react"
 import { useTranslation } from "react-i18next"
 import { useNavigate } from "react-router-dom"
@@ -149,6 +150,7 @@ const ImportAccountMethodButtons = () => {
 
 const ConnectAccountMethodButtons = () => {
   const isLedgerCapable = getIsLedgerCapable()
+  const [onboardedState] = useAppState("onboarded")
   const { t } = useTranslation("admin")
   return (
     <>
@@ -178,12 +180,16 @@ const ConnectAccountMethodButtons = () => {
         networks={["ethereum", "polkadot"]}
         to={`/accounts/add/dcent`}
       />
-      <AccountCreateMethodButton
-        title={t("Connect Signet")}
-        subtitle={t("Connect your Signet Vault")}
-        networks={["polkadot"]}
-        to={`/accounts/add/signet`}
-      />
+      {onboardedState === "TRUE" && (
+        // don't allow signet connection if user hasn't onboarded
+        // because connecting to signet requires an account to already exist
+        <AccountCreateMethodButton
+          title={t("Connect Signet")}
+          subtitle={t("Connect your Signet Vault")}
+          networks={["polkadot"]}
+          to={`/accounts/add/signet`}
+        />
+      )}
     </>
   )
 }
