@@ -61,7 +61,7 @@ jest.mock("react-i18next", () => ({
   },
 }))
 
-jest.mock("@core/util/fetchRemoteConfig", () => ({
+jest.mock("extension-core/src/util/fetchRemoteConfig", () => ({
   fetchRemoteConfig: jest.fn(() =>
     Promise.resolve({
       featureFlags: {

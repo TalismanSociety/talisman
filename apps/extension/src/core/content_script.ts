@@ -7,11 +7,6 @@ import type { Message } from "@polkadot/extension-base/types"
 import { PORT_CONTENT } from "extension-shared"
 import Browser from "webextension-polyfill"
 
-// // copied from extension-shared - removes the need to embed the entire package
-// const PORT_CONTENT = `talisman-content${
-//   process.env.NODE_ENV !== "production" && `-${process.env.NODE_ENV}-${process.env.RELEASE}`
-// }`
-
 // connect to the extension
 const port = Browser.runtime.connect({ name: PORT_CONTENT })
 // send any messages from the extension back to the page

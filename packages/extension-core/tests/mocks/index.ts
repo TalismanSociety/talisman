@@ -1,5 +1,3 @@
-import { api } from "./api"
-
 jest.setTimeout(20_000)
 
 // mock the `yarn preconstruct dev` version of the package
@@ -39,29 +37,7 @@ jest.mock("bcryptjs", () => {
   }
 })
 
-jest.mock("@ui/api", () => api)
-
-jest.mock("react-i18next", () => ({
-  // this mock makes sure any components using the translate hook can use it without a warning being shown
-  useTranslation: () => {
-    return {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      t: (str: string, options: any) =>
-        str.replace(/\{\{(.*?)\}\}/g, (substring, ...args) => {
-          return args?.[0] && options?.[args[0]] ? options[args[0]] : substring
-        }),
-      i18n: {
-        changeLanguage: () => new Promise(() => {}),
-      },
-    }
-  },
-  initReactI18next: {
-    type: "3rdParty",
-    init: () => {},
-  },
-}))
-
-jest.mock("@core/util/fetchRemoteConfig", () => ({
+jest.mock("../../src/util/fetchRemoteConfig", () => ({
   fetchRemoteConfig: jest.fn(() =>
     Promise.resolve({
       featureFlags: {

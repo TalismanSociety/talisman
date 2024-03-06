@@ -8,7 +8,7 @@ import { watCryptoWaitReady } from "@talismn/scale"
 import { TALISMAN_WEB_APP_DOMAIN } from "extension-shared"
 import Browser from "webextension-polyfill"
 
-import { getMessageSenderFn } from "../../../../../tests/util"
+import { getMessageSenderFn } from "../../../../tests/util"
 import Extension from "../../../handlers/Extension"
 import { extensionStores } from "../../../handlers/stores"
 import { AuthorizedSites } from "../types"
