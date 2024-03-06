@@ -1,5 +1,6 @@
 import { addTrailingSlash } from "@core/util/addTrailingSlash"
 import { SignetVault } from "@ui/domains/Account/AccountAdd/AccountAddSignet/types"
+import Browser from "webextension-polyfill"
 
 export const signet = {
   /**
@@ -9,20 +10,19 @@ export const signet = {
    * @returns
    */
   getVaults: async (signetUrl: string) => {
-    const newTab = window.open(`${addTrailingSlash(signetUrl)}connect`)
+    const newTab = await Browser.tabs.create({ url: `${addTrailingSlash(signetUrl)}connect` })
 
     return new Promise<SignetVault[]>((resolve, reject) => {
       if (!newTab) return reject("Failed to open new tab")
 
-      const intervalId = setInterval(() => {
-        if (newTab.closed) reject("Canceled")
-      }, 500)
+      Browser.tabs.onRemoved.addListener((tabId) => {
+        if (newTab && tabId === newTab.id) reject("Canceled")
+      })
 
       const url = new URL(signetUrl)
       const handleNewMessage = (event: MessageEvent) => {
         const close = () => {
-          clearInterval(intervalId)
-          newTab.close()
+          if (newTab?.id) Browser.tabs.remove(newTab.id)
           window.removeEventListener("message", handleNewMessage)
         }
 
