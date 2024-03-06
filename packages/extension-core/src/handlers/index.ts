@@ -1,11 +1,11 @@
 import { assert } from "@polkadot/util"
-import type { MessageTypes, TransportRequestMessage } from "core/types"
 import { PORT_EXTENSION } from "extension-shared"
 import { log } from "extension-shared"
 import { Runtime } from "webextension-polyfill"
 
 import { cleanupEvmErrorMessage, getEvmErrorCause } from "../domains/ethereum/errors"
 import { AnyEthRequest } from "../injectEth/types"
+import { MessageTypes, TransportRequestMessage } from "../types"
 import Extension from "./Extension"
 import { extensionStores, tabStores } from "./stores"
 import Tabs from "./Tabs"

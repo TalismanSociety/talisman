@@ -1,6 +1,5 @@
-import { MessageTypes, RequestTypes, ResponseType } from "core/types"
-
 import { ExtensionHandler } from "../../libs/Handler"
+import { MessageTypes, RequestTypes, ResponseType } from "../../types"
 import { Port } from "../../types/base"
 
 export default class TokenRatesHandler extends ExtensionHandler {

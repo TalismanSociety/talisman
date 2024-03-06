@@ -14981,32 +14981,46 @@ __metadata:
   resolution: "extension-core@workspace:packages/extension-core"
   dependencies:
     "@metamask/browser-passworder": 4.3.0
+    "@metamask/eth-sig-util": 7.0.1
     "@polkadot/apps-config": 0.132.1
     "@polkadot/extension-base": 0.46.6
     "@polkadot/keyring": 12.6.2
+    "@polkadot/phishing": latest
     "@polkadot/types": 10.11.2
     "@polkadot/types-known": 10.11.2
     "@polkadot/ui-keyring": 3.6.4
     "@polkadot/util": 12.6.2
     "@polkadot/util-crypto": 12.6.2
     "@sentry/browser": 7.92.0
+    "@supercharge/promise-pool": ^3.1.0
     "@talismn/balances": "workspace:*"
     "@talismn/chain-connector": "workspace:*"
+    "@talismn/chain-connector-evm": "workspace:*"
     "@talismn/chaindata-provider": "workspace:*"
     "@talismn/connection-meta": "workspace:*"
     "@talismn/eslint-config": "workspace:*"
+    "@talismn/on-chain-id": "workspace:*"
     "@talismn/scale": "workspace:*"
+    "@talismn/token-rates": "workspace:*"
     "@talismn/tsconfig": "workspace:*"
     "@talismn/util": "workspace:*"
     "@types/node": ^17.0.22
     bcryptjs: ^2.4.3
+    bignumber.js: ^9.1.2
     blueimp-md5: 2.19.0
     dexie: ^3.2.4
     eslint: ^8.52.0
+    eth-phishing-detect: latest
     extension-shared: "workspace:*"
+    graphql: ^16.7.1
+    graphql-tag: ^2.12.6
     i18next: ^22.5.0
     lodash: 4.17.21
+    lz-string: ^1.5.0
+    nanoid: 3.3.7
+    posthog-js: ^1.96.1
     rxjs: ^7.8.1
+    scale-codec: ^0.11.2
     semver: ^7.5.4
     toml: ^3.0.0
     ts-results: 3.3.0

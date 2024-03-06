@@ -5,6 +5,7 @@
   "license": "GPL-3.0-or-later",
   "main": "dist/extension-shared.cjs.js",
   "module": "dist/extension-shared.esm.js",
+  "sideEffects": false,
   "exports": {
     ".": "./src/index.ts",
     "./package.json": "./package.json",

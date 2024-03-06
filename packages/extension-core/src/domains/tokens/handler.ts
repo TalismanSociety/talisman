@@ -1,11 +1,11 @@
 import { assert } from "@polkadot/util"
 import { githubUnknownTokenLogoUrl } from "@talismn/chaindata-provider"
-import { MessageTypes, RequestTypes, ResponseType } from "core/types"
 
 import { talismanAnalytics } from "../../libs/Analytics"
 import { ExtensionHandler } from "../../libs/Handler"
 import { chaindataProvider } from "../../rpcs/chaindata"
 import { updateAndWaitForUpdatedChaindata } from "../../rpcs/mini-metadata-updater"
+import { MessageTypes, RequestTypes, ResponseType } from "../../types"
 import { Port, RequestIdOnly } from "../../types/base"
 import { assetDiscoveryScanner } from "../assetDiscovery/scanner"
 import { getErc20TokenId } from "../ethereum/helpers"

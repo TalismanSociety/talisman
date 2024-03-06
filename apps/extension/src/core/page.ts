@@ -3,8 +3,7 @@
 
 // Adapted from https://github.com/polkadot-js/extension/packages/extension-base/src/page.ts
 import type { Message } from "@polkadot/extension-base/types"
-import { isTalismanHostname } from "extension-core"
-import { DEBUG } from "extension-shared"
+import { DEBUG, TALISMAN_WEB_APP_DOMAIN } from "extension-shared"
 
 import TalismanInjected from "./inject/Injected"
 import { injectExtension } from "./inject/injectExtension"
@@ -12,6 +11,19 @@ import { injectSubstrate } from "./inject/injectSubstrate"
 import type { Injected } from "./inject/types"
 import { injectEthereum } from "./injectEth/injectEthereum"
 import MessageService from "./libs/MessageService"
+
+// copied from extension-shared - removes the need to embed the entire package
+// const DEBUG = !["production", "test", "canary"].includes(process.env.NODE_ENV ?? "")
+// const TALISMAN_WEB_APP_DOMAIN = "app.talisman.xyz"
+
+// copied from extension-core - removes the need to embed the entire package
+const isTalismanHostname = (hostname: string | undefined) => {
+  return (
+    hostname === TALISMAN_WEB_APP_DOMAIN ||
+    (DEBUG && hostname?.endsWith(".talisman.pages.dev")) ||
+    (DEBUG && ["localhost", "127.0.0.1"].includes(hostname ?? ""))
+  )
+}
 
 const messageService = new MessageService({
   origin: "talisman-page",
