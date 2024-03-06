@@ -6,11 +6,6 @@
   "main": "dist/extension-shared.cjs.js",
   "module": "dist/extension-shared.esm.js",
   "sideEffects": false,
-  "exports": {
-    ".": "./src/index.ts",
-    "./package.json": "./package.json",
-    "./enableLogsInDevelopment": "./src/log/enableLogsInDevelopment.ts"
-  },
   "scripts": {
     "lint": "eslint src --max-warnings 0",
     "clean": "rm -rf dist && rm -rf .turbo rm -rf node_modules"
@@ -32,11 +27,8 @@
     "typescript": "^5.2.2"
   },
   "preconstruct": {
-    "exports": {
-      "extra": {
-        ".": "./src/index.ts",
-        "./enableLogsInDevelopment": "./src/log/enableLogsInDevelopment.ts"
-      }
-    }
+    "entrypoints": [
+      "index.ts"
+    ]
   }
 }

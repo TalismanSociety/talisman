@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 /* eslint-disable no-console */
-import { DEBUG } from "../constants"
+import { DEBUG } from "./constants"
 
 /**
  * Provides a convenience wrapper around the console methods to only log when DEBUG mode enabled

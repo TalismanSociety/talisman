@@ -1,4 +1,5 @@
-export { initSentry } from "./sentry"
+export { initSentry } from "./config/sentry"
+export { initPosthog } from "./config/posthog"
 
 export { chaindataProvider } from "./rpcs/chaindata"
 

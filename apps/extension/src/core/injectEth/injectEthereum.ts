@@ -1,9 +1,9 @@
 import { SendRequest } from "extension-core"
-import { logProxy } from "extension-shared"
 import { log } from "extension-shared"
 
 import { announceProvider } from "./eip6963"
 import { getInjectableEvmProvider } from "./getInjectableEvmProvider"
+import { logProxy } from "./logProxy"
 
 type TalismanWindow = Window &
   typeof globalThis & {

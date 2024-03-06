@@ -7,8 +7,8 @@ import { ReplaySubject, firstValueFrom } from "rxjs"
 import {
   trackIndexedDbErrorExtras,
   triggerIndexedDbUnavailablePopup,
-} from "./domains/app/store.errors"
-import { settingsStore } from "./domains/app/store.settings"
+} from "../domains/app/store.errors"
+import { settingsStore } from "../domains/app/store.settings"
 
 const normalizeUrl = (url: string) => {
   return url.replace(/(webpack_require__@)?(moz|chrome)-extension:\/\/[^/]+\//, "~/")

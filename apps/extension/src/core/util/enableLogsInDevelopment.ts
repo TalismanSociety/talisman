@@ -1,7 +1,6 @@
 import "anylogger-loglevel"
 
+import { DEBUG } from "extension-shared"
 import loglevel from "loglevel"
-
-import { DEBUG } from "../constants"
 
 if (DEBUG) loglevel.setLevel("info")

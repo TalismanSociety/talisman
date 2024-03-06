@@ -1,4 +1,4 @@
-import { WsProvider } from "@polkadot/api"
+import { WsProvider } from "@polkadot/rpc-provider"
 import { sleep } from "@talismn/util"
 import { SignerPayloadGenesisHash } from "extension-core"
 

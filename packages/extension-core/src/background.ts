@@ -1,5 +1,3 @@
-import "extension-shared/enableLogsInDevelopment"
-
 import { AccountsStore } from "@polkadot/extension-base/stores"
 import keyring from "@polkadot/ui-keyring"
 import { assert } from "@polkadot/util"
@@ -9,12 +7,12 @@ import { watCryptoWaitReady } from "@talismn/scale"
 import { DEBUG, PORT_CONTENT, PORT_EXTENSION } from "extension-shared"
 import Browser, { Runtime } from "webextension-polyfill"
 
+import { initSentry } from "./config/sentry"
 import { passwordStore } from "./domains/app/store.password"
 import talismanHandler from "./handlers"
 import { IconManager } from "./libs/IconManager"
 import { MigrationRunner, migrations } from "./libs/migrations"
 import { migrateConnectAllSubstrate } from "./libs/migrations/legacyMigrations"
-import { initSentry } from "./sentry"
 import { consoleOverride } from "./util/logging"
 
 initSentry(Sentry)
