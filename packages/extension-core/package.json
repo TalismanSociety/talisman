@@ -5,7 +5,9 @@
   "license": "GPL-3.0-or-later",
   "main": "dist/extension-core.cjs.js",
   "module": "dist/extension-core.esm.js",
-  "sideEffects": false,
+  "sideEffects": [
+    "./src/background.ts"
+  ],
   "files": [
     "/dist",
     "/background"
