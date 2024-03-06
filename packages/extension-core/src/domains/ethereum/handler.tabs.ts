@@ -19,18 +19,6 @@ import {
 } from "viem"
 import { hexToNumber, isHex } from "viem/utils"
 
-import {
-  ETH_ERROR_EIP1474_INTERNAL_ERROR,
-  ETH_ERROR_EIP1474_INVALID_INPUT,
-  ETH_ERROR_EIP1474_INVALID_PARAMS,
-  ETH_ERROR_EIP1474_RESOURCE_UNAVAILABLE,
-  ETH_ERROR_EIP1993_CHAIN_DISCONNECTED,
-  ETH_ERROR_EIP1993_DISCONNECTED,
-  ETH_ERROR_EIP1993_UNAUTHORIZED,
-  ETH_ERROR_EIP1993_USER_REJECTED,
-  ETH_ERROR_UNKNOWN_CHAIN_NOT_CONFIGURED,
-  EthProviderRpcError,
-} from "../../injectEth/EthProviderRpcError"
 import { AnyEthRequest } from "../../injectEth/types"
 import { TabsHandler } from "../../libs/Handler"
 import { chainConnectorEvm } from "../../rpcs/chain-connector-evm"
@@ -54,6 +42,18 @@ import {
 import { activeTokensStore, isTokenActive } from "../tokens/store.activeTokens"
 import { CustomErc20Token } from "../tokens/types"
 import { getEvmErrorCause } from "./errors"
+import {
+  ETH_ERROR_EIP1474_INTERNAL_ERROR,
+  ETH_ERROR_EIP1474_INVALID_INPUT,
+  ETH_ERROR_EIP1474_INVALID_PARAMS,
+  ETH_ERROR_EIP1474_RESOURCE_UNAVAILABLE,
+  ETH_ERROR_EIP1993_CHAIN_DISCONNECTED,
+  ETH_ERROR_EIP1993_DISCONNECTED,
+  ETH_ERROR_EIP1993_UNAUTHORIZED,
+  ETH_ERROR_EIP1993_USER_REJECTED,
+  ETH_ERROR_UNKNOWN_CHAIN_NOT_CONFIGURED,
+  EthProviderRpcError,
+} from "./EthProviderRpcError"
 import {
   getErc20TokenId,
   isValidAddEthereumRequestParam,

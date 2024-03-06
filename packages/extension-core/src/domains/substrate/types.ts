@@ -1,7 +1,10 @@
+import type { MetadataDef as PjsMetadataDef } from "@polkadot/extension-inject/types"
 import { HexString } from "@polkadot/util/types"
 import { ChainId } from "@talismn/chaindata-provider"
 
-import { MetadataDef } from "../../inject/types"
+export interface TalismanMetadataDef extends PjsMetadataDef {
+  metadataRpc?: string
+}
 
 type SubstrateRequestSend = {
   chainId: ChainId
@@ -18,5 +21,5 @@ type SubstrateRequestChainMetadata = {
 
 export type SubstrateMessages = {
   "pri(substrate.rpc.send)": [SubstrateRequestSend, unknown]
-  "pri(substrate.metadata.get)": [SubstrateRequestChainMetadata, MetadataDef | undefined]
+  "pri(substrate.metadata.get)": [SubstrateRequestChainMetadata, TalismanMetadataDef | undefined]
 }

@@ -11,10 +11,6 @@ import { log } from "extension-shared"
 import { privateKeyToAccount } from "viem/accounts"
 
 import { getPairForAddressSafely } from "../../handlers/helpers"
-import {
-  ETH_ERROR_EIP1993_USER_REJECTED,
-  EthProviderRpcError,
-} from "../../injectEth/EthProviderRpcError"
 import { talismanAnalytics } from "../../libs/Analytics"
 import { ExtensionHandler } from "../../libs/Handler"
 import { requestStore } from "../../libs/requests/store"
@@ -29,6 +25,7 @@ import { activeTokensStore } from "../tokens/store.activeTokens"
 import { CustomEvmNativeToken } from "../tokens/types"
 import { watchEthereumTransaction } from "../transactions"
 import { getHumanReadableErrorMessage } from "./errors"
+import { ETH_ERROR_EIP1993_USER_REJECTED, EthProviderRpcError } from "./EthProviderRpcError"
 import { parseTransactionRequest } from "./helpers"
 import { activeEvmNetworksStore, isEvmNetworkActive } from "./store.activeEvmNetworks"
 import { getTransactionCount, incrementTransactionCount } from "./transactionCountManager"

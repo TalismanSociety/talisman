@@ -9,13 +9,17 @@ import type {
 } from "viem"
 import { PublicRpcSchema, RpcSchema, WalletRpcSchema } from "viem"
 
-import { AnyEthRequest } from "../../injectEth/types"
 import { BaseRequest, BaseRequestId, RequestIdOnly } from "../../types/base"
 import type { ETH_SEND, ETH_SIGN, KnownSigningRequestIdOnly } from "../signing/types"
 import type { CustomErc20Token } from "../tokens/types"
 import { WalletTransactionTransferInfo } from "../transactions"
 
 export type { EvmAddress, EvmChain }
+
+export interface AnyEthRequest {
+  readonly method: string
+  readonly params?: readonly unknown[] | object
+}
 
 export type AnyEvmError = {
   message?: string

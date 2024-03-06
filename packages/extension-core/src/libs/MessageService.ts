@@ -8,7 +8,7 @@ import { log } from "extension-shared"
 import {
   ETH_ERROR_EIP1474_INTERNAL_ERROR,
   WrappedEthProviderRpcError,
-} from "../injectEth/EthProviderRpcError"
+} from "../domains/ethereum/EthProviderRpcError"
 import type {
   MessageTypes,
   MessageTypesWithNoSubscriptions,

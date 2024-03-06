@@ -7,12 +7,12 @@ import { log } from "extension-shared"
 
 import { db } from "../db"
 import { metadataUpdatesStore } from "../domains/metadata/metadataUpdates"
-import { MetadataDef } from "../inject/types"
+import { TalismanMetadataDef } from "../domains/substrate/types"
 import { chainConnector } from "../rpcs/chain-connector"
 import { chaindataProvider } from "../rpcs/chaindata"
 import { getRuntimeVersion } from "./getRuntimeVersion"
 
-const cache: Record<string, MetadataDef> = {}
+const cache: Record<string, TalismanMetadataDef> = {}
 
 const getCacheKey = (genesisHash: HexString, specVersion?: number) =>
   !specVersion || !genesisHash ? null : `${genesisHash}-${specVersion}`
@@ -27,7 +27,7 @@ const decodeMetaCalls = (encoded: string) => base64Decode(encoded)
  * @param metadata
  * @returns a value that can be used to initialize a TypeRegistry
  */
-export const getMetadataFromDef = (metadata: MetadataDef) => {
+export const getMetadataFromDef = (metadata: TalismanMetadataDef) => {
   try {
     if (metadata.metadataRpc) return decodeMetadataRpc(metadata.metadataRpc)
     if (metadata.metaCalls) return decodeMetaCalls(metadata.metaCalls)
@@ -43,7 +43,7 @@ export const getMetadataFromDef = (metadata: MetadataDef) => {
  * @param metadataDef
  * @returns Decoded metadataRpc which can be used to build transaction payloads
  */
-export const getMetadataRpcFromDef = (metadataDef?: MetadataDef) => {
+export const getMetadataRpcFromDef = (metadataDef?: TalismanMetadataDef) => {
   if (metadataDef?.metadataRpc) return decodeMetadataRpc(metadataDef.metadataRpc)
   return undefined
 }
@@ -59,7 +59,7 @@ export const getMetadataDef = async (
   chainIdOrHash: string,
   specVersion?: number,
   blockHash?: string
-): Promise<MetadataDef | undefined> => {
+): Promise<TalismanMetadataDef | undefined> => {
   let genesisHash = isHex(chainIdOrHash) ? chainIdOrHash : null
   const chain = await (genesisHash
     ? chaindataProvider.chainByGenesisHash(genesisHash)
@@ -142,7 +142,7 @@ export const getMetadataDef = async (
         : chainProperties.tokenDecimals,
       metaCalls: undefined, // won't be used anymore, yeet
       metadataRpc: encodeMetadataRpc(metadataRpc),
-    } as MetadataDef
+    } as TalismanMetadataDef
 
     // save in cache
     cache[cacheKey] = newData
@@ -162,7 +162,7 @@ export const getMetadataDef = async (
     }
 
     // save full object in cache
-    cache[cacheKey] = (await db.metadata.get(genesisHash)) as MetadataDef
+    cache[cacheKey] = (await db.metadata.get(genesisHash)) as TalismanMetadataDef
     return cache[cacheKey]
   } catch (cause) {
     if ((cause as Error).message !== "RPC connect timeout reached") {

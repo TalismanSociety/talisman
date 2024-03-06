@@ -1,9 +1,7 @@
-// TODO extract all this and target files into their own package ?
 export * from "../domains/accounts/types"
 export * from "../domains/app/types"
 export * from "../domains/assetDiscovery/types"
 export * from "../domains/balances/types"
-//export * from "../domains/blocks/types"
 export * from "../domains/chains/types"
 export * from "../domains/encrypt/types"
 export * from "../domains/ethereum/types"
