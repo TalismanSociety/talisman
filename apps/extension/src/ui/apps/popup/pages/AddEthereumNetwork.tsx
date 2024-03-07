@@ -104,7 +104,7 @@ const SettingsSourceSelector: FC<{
               <InfoIcon />
             </TooltipTrigger>
             <TooltipContent>
-              {t("This network settings can be modified afterwards from Talisman settings menu")}
+              {t("This network's settings can be modified afterwards from Talisman settings menu")}
             </TooltipContent>
           </Tooltip>
         </legend>
