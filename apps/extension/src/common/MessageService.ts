@@ -22,7 +22,7 @@ import { log } from "extension-shared"
 import {
   ETH_ERROR_EIP1474_INTERNAL_ERROR,
   WrappedEthProviderRpcError,
-} from "../injectEth/EthProviderRpcError"
+} from "../inject/ethereum/EthProviderRpcError"
 
 export interface Handler {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any

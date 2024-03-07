@@ -1,4 +1,4 @@
-import MessageService from "@core/libs/MessageService"
+import MessageService from "@common/MessageService"
 import { PORT_EXTENSION } from "extension-shared"
 
 import MessageTypes from "./types"

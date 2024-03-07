@@ -1,4 +1,4 @@
-import i18next from "@core/i18nConfig"
+import i18next from "@common/i18nConfig"
 import { bufferToHex, stripHexPrefix } from "@ethereumjs/util"
 import LedgerEthereumApp from "@ledgerhq/hw-app-eth"
 import { SignTypedDataVersion, TypedDataUtils } from "@metamask/eth-sig-util"

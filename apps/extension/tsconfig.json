@@ -4,25 +4,16 @@
     "noEmit": true,
     "baseUrl": "src",
     "paths": {
+      "@common": ["./common"],
+      "@common/*": ["./common/*"],
       "@talisman": ["./@talisman"],
       "@talisman/*": ["./@talisman/*"],
-      "@core": ["./core"],
-      "@core/*": ["./core/*"],
       "@ui": ["./ui"],
       "@ui/*": ["./ui/*"],
       "@tests": ["./tests"],
       "@tests/*": ["./tests/*"]
     }
   },
-  "include": [
-    "src",
-    "**/*.ts",
-    "**/*.tsx",
-    "../../packages/extension-core/src/util/isValidDerivationPath.ts",
-    "../../packages/extension-core/src/util/addressFromSuri.ts",
-    "../../packages/extension-core/src/util/coingecko/fetchFromCoingecko.ts",
-    "../../packages/extension-core/src/util/coingecko/getCoinGeckoToken.ts",
-    "../../packages/extension-core/src/util/coingecko/getCoinGeckoTokensList.ts"
-  ],
+  "include": ["src", "**/*.ts", "**/*.tsx"],
   "exclude": ["node_modules", ".next", ".turbo", ".dist"]
 }

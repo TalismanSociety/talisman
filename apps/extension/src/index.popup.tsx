@@ -1,5 +1,5 @@
-import "@core/util/enableLogsInDevelopment"
-import "@core/i18nConfig"
+import "@common/enableLogsInDevelopment"
+import "@common/i18nConfig"
 
 import { renderTalisman } from "@ui"
 import Popup from "@ui/apps/popup"

@@ -1,4 +1,4 @@
-import i18next from "@core/i18nConfig"
+import i18next from "@common/i18nConfig"
 import { isHexString } from "@ethereumjs/util"
 import { hexToString } from "@polkadot/util"
 import { HexString } from "@polkadot/util/types"

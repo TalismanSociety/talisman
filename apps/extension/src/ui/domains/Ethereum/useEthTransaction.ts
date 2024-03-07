@@ -1,4 +1,3 @@
-import { ETH_ERROR_EIP1474_METHOD_NOT_FOUND } from "@core/injectEth/EthProviderRpcError"
 import { isBigInt } from "@talismn/util"
 import { useQuery } from "@tanstack/react-query"
 import { api } from "@ui/api"
@@ -29,6 +28,7 @@ import { useEffect, useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
 import { PublicClient, TransactionRequest } from "viem"
 
+import { ETH_ERROR_EIP1474_METHOD_NOT_FOUND } from "../../../inject/ethereum/EthProviderRpcError"
 import { useEthEstimateL1DataFee } from "./useEthEstimateL1DataFee"
 import { useIsValidEthTransaction } from "./useIsValidEthTransaction"
 import { decodeEvmTransaction } from "./util/decodeEvmTransaction"

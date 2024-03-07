@@ -1,4 +1,4 @@
-import { languages } from "@core/i18nConfig"
+import { languages } from "@common/i18nConfig"
 import { HeaderBlock } from "@talisman/components/HeaderBlock"
 import { Spacer } from "@talisman/components/Spacer"
 import { CheckIcon } from "@talismn/icons"

@@ -1,4 +1,3 @@
-import { MetadataDef } from "@core/inject/types"
 import type { KeyringPair$Json } from "@polkadot/keyring/types"
 import { KeypairType } from "@polkadot/util-crypto/types"
 import type { HexString } from "@polkadot/util/types"
@@ -57,6 +56,7 @@ import {
   RequestAccountsCatalogAction,
   Trees,
 } from "extension-core/src/domains/accounts/helpers.catalog"
+import { MetadataDef } from "inject/substrate/types"
 import { TransactionRequest } from "viem"
 
 export default interface MessageTypes {

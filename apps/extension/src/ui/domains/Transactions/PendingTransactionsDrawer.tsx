@@ -1,4 +1,4 @@
-import i18next from "@core/i18nConfig"
+import i18next from "@common/i18nConfig"
 import { convertAddress } from "@talisman/util/convertAddress"
 import { BalanceFormatter } from "@talismn/balances"
 import { ChainId, EvmNetworkId } from "@talismn/chaindata-provider"

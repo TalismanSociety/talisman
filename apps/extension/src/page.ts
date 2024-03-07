@@ -5,12 +5,12 @@
 import type { Message } from "@polkadot/extension-base/types"
 import { DEBUG, isTalismanHostname } from "extension-shared"
 
-import TalismanInjected from "./inject/Injected"
-import { injectExtension } from "./inject/injectExtension"
-import { injectSubstrate } from "./inject/injectSubstrate"
-import type { Injected } from "./inject/types"
-import { injectEthereum } from "./injectEth/injectEthereum"
-import MessageService from "./libs/MessageService"
+import MessageService from "./common/MessageService"
+import { injectEthereum } from "./inject/ethereum/injectEthereum"
+import TalismanInjected from "./inject/substrate/Injected"
+import { injectExtension } from "./inject/substrate/injectExtension"
+import { injectSubstrate } from "./inject/substrate/injectSubstrate"
+import type { Injected } from "./inject/substrate/types"
 
 const messageService = new MessageService({
   origin: "talisman-page",
