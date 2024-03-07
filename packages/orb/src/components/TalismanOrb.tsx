@@ -3,7 +3,7 @@ import Color from "color"
 import { nanoid } from "nanoid"
 import { FC, useMemo } from "react"
 
-import { encodeAnyAddress } from "../lib/encodeAnyAddress"
+import { normalizeAddress } from "../util/normalizeAddress"
 
 const djb2 = (str: string) => {
   let hash = 5381
@@ -31,7 +31,7 @@ export const useTalismanOrb = (seed: string) => {
     try {
       // seed may be specific to a ss58 prefix, get the base address
       // eslint-disable-next-line no-var
-      var address = encodeAnyAddress(seed)
+      var address = normalizeAddress(seed)
     } catch (err) {
       address = seed
     }
