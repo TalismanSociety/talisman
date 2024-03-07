@@ -8127,7 +8127,7 @@ __metadata:
     react: 18.2.0
     react-dom: 18.2.0
     typescript: ^5.2.2
-    wat-the-crypto: ^0.0.3
+    wat-the-crypto: 0.0.3
   peerDependencies:
     react: "*"
     react-dom: "*"
@@ -26041,7 +26041,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"wat-the-crypto@npm:^0.0.3":
+"wat-the-crypto@npm:0.0.3, wat-the-crypto@npm:^0.0.3":
   version: 0.0.3
   resolution: "wat-the-crypto@npm:0.0.3"
   checksum: cebd2e2999ea0cc45fb3433a34ce8e21b7bb1d1a11394954143735062df39560162c2e8f82685e9d67f1289ff3a6b1006c4aa1ea983e15e62f1de4ee5e910871
