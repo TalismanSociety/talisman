@@ -19,7 +19,6 @@ import {
 } from "viem"
 import { hexToNumber, isHex } from "viem/utils"
 
-import { AnyEthRequest } from "../../injectEth/types"
 import { TabsHandler } from "../../libs/Handler"
 import { chainConnectorEvm } from "../../rpcs/chain-connector-evm"
 import { chaindataProvider } from "../../rpcs/chaindata"
@@ -64,6 +63,7 @@ import {
 import { requestAddNetwork, requestWatchAsset } from "./requests"
 import { activeEvmNetworksStore, isEvmNetworkActive } from "./store.activeEvmNetworks"
 import {
+  AnyEthRequest,
   AnyEvmError,
   EthProviderMessage,
   EthRequestArgs,
