@@ -1,0 +1,4 @@
+{
+  "main": "dist/extension-core-background.cjs.js",
+  "module": "dist/extension-core-background.esm.js"
+}
