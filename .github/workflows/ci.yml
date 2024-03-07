@@ -37,10 +37,8 @@ jobs:
           cache: yarn
       - name: Install dependencies
         run: yarn --immutable
-      - name: Build packages
-        run: yarn build:packages
       - name: Test
-        run: yarn run test
+        run: yarn preconstruct:dev && yarn run test
       - name: Extract short SHA + package version
         id: vars
         run: |
