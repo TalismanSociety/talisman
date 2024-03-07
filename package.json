@@ -26,7 +26,7 @@
     "build:extension:canary": "turbo run build:extension:canary",
     "lint": "turbo run lint",
     "clean": "turbo run clean --parallel && rm -rf dist && rm -rf node_modules",
-    "test": "preconstruct dev && turbo run test",
+    "test": "turbo run test",
     "generate-init-data": "yarn workspace @talismn/chaindata-provider run generate-init-data"
   },
   "devDependencies": {
