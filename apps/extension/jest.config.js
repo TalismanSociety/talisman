@@ -6,7 +6,7 @@ const { compilerOptions } = require("./tsconfig.json")
 
 module.exports = {
   transformIgnorePatterns: [
-    "/node_modules/(?!@polkadot|@substrate|@azns|@babel/runtime/helpers/esm/|@metamask|url-join|isows|nanoid|@talismn)",
+    "/node_modules/(?!@polkadot|@substrate|@azns|@babel/runtime/helpers/esm/|@metamask|url-join|isows|nanoid)",
   ],
   transform: {
     "^.+\\.(t|j)sx?$": ["@swc/jest"],
@@ -15,6 +15,7 @@ module.exports = {
     "^rxjs/internal/(.*)$": "rxjs/dist/cjs/internal/$1",
     "uuid": require.resolve("uuid"),
     "dexie": require.resolve("dexie"),
+    "@talismn/util": require.resolve("@talismn/util"),
     ...pathsToModuleNameMapper(compilerOptions.paths, {
       prefix: "<rootDir>/src",
     }),
