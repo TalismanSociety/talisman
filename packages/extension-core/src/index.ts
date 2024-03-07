@@ -18,7 +18,7 @@ export {
 
 export { balanceTotalsStore } from "./domains/balances/store.BalanceTotals"
 
-export type * from "./domains/accounts/helpers.catalog"
+export * from "./domains/accounts/helpers.catalog"
 export { formatSuri } from "./domains/accounts/helpers"
 export { runActionOnTrees } from "./domains/accounts/helpers.catalog"
 
