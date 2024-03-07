@@ -1,8 +1,6 @@
 /* eslint-env es2022 */
 /** @type {import('ts-jest').JestConfigWithTsJest} */
 const { defaults } = require("jest-config")
-// const { pathsToModuleNameMapper } = require("ts-jest")
-// const { compilerOptions } = require("./tsconfig.json")
 
 module.exports = {
   transformIgnorePatterns: [
@@ -15,10 +13,6 @@ module.exports = {
     "^rxjs/internal/(.*)$": "rxjs/dist/cjs/internal/$1",
     "uuid": require.resolve("uuid"),
     "dexie": require.resolve("dexie"),
-    "@talismn/util": require.resolve("@talismn/util"),
-    // ...pathsToModuleNameMapper(compilerOptions.paths, {
-    //   prefix: "<rootDir>/src",
-    // }),
   },
   sandboxInjectedGlobals: ["Math"],
   moduleFileExtensions: [...defaults.moduleFileExtensions, "ts", "mjs"],

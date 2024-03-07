@@ -15,7 +15,6 @@ module.exports = {
     "^rxjs/internal/(.*)$": "rxjs/dist/cjs/internal/$1",
     "uuid": require.resolve("uuid"),
     "dexie": require.resolve("dexie"),
-    "@talismn/util": require.resolve("@talismn/util"),
     ...pathsToModuleNameMapper(compilerOptions.paths, {
       prefix: "<rootDir>/src",
     }),
