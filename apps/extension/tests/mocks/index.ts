@@ -21,12 +21,12 @@ try {
   )
 } catch {} // eslint-disable-line no-empty
 
-jest.mock("@talismn/util", () => {
-  return {
-    ...jest.requireActual("@talismn/util"),
-    sleep: jest.fn(),
-  }
-})
+// jest.mock("@talismn/util", () => {
+//   return {
+//     ...jest.requireActual("@talismn/util"),
+//     sleep: jest.fn(),
+//   }
+// })
 
 jest.mock("bcryptjs", () => {
   return {
