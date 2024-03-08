@@ -1,4 +1,4 @@
-import { SettingsStoreData, settingsStore } from "extension-core"
+import { SettingsStoreData, settingsStore } from "@extension/core"
 import { SetStateAction, atom } from "jotai"
 import { atomFamily } from "jotai/utils"
 

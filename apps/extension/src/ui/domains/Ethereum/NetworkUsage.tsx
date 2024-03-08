@@ -1,3 +1,4 @@
+import { EthBaseFeeTrend } from "@extension/core"
 import {
   NetworkUsageDecreasingIcon,
   NetworkUsageHighIcon,
@@ -5,7 +6,6 @@ import {
   NetworkUsageIncreasingIcon,
 } from "@talismn/icons"
 import { classNames } from "@talismn/util"
-import { EthBaseFeeTrend } from "extension-core"
 import { FC, SVGProps } from "react"
 import { useTranslation } from "react-i18next"
 

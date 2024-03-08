@@ -1,5 +1,5 @@
-import { EvmLsdSupportedChain, NomPoolSupportedChain, StakingSupportedChain } from "extension-core"
-import { EVM_LSD_SUPPORTED_CHAINS, NOM_POOL_SUPPORTED_CHAINS } from "extension-core"
+import { EvmLsdSupportedChain, NomPoolSupportedChain, StakingSupportedChain } from "@extension/core"
+import { EVM_LSD_SUPPORTED_CHAINS, NOM_POOL_SUPPORTED_CHAINS } from "@extension/core"
 
 type Colours = {
   text: string

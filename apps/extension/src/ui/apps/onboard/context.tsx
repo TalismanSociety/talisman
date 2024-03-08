@@ -1,10 +1,10 @@
+import { passwordStore } from "@extension/core"
+import { settingsStore } from "@extension/core"
+import { AccountAddressType } from "@extension/core"
 import { provideContext } from "@talisman/util/provideContext"
 import { api } from "@ui/api"
 import { useAppState } from "@ui/hooks/useAppState"
 import { useIsOnboarded } from "@ui/hooks/useIsOnboarded"
-import { passwordStore } from "extension-core"
-import { settingsStore } from "extension-core"
-import { AccountAddressType } from "extension-core"
 import { ReactNode, useCallback, useEffect, useState } from "react"
 import { useNavigate } from "react-router-dom"
 

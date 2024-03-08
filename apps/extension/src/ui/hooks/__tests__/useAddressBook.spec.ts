@@ -1,5 +1,5 @@
+import { AddressBookContact, addressBookStore } from "@extension/core"
 import { act, renderHook, waitFor } from "@testing-library/react"
-import { AddressBookContact, addressBookStore } from "extension-core"
 
 import { ADDRESSES } from "../../../../tests/constants"
 import { TestWrapper } from "../../../../tests/TestWrapper"

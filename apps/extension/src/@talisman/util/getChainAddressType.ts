@@ -1,6 +1,6 @@
 // address types from https://wiki.polkadot.network/docs/learn-accounts
 
-import { Chain } from "extension-core"
+import { Chain } from "@extension/core"
 
 import { AccountAddressType } from "./getAddressType"
 

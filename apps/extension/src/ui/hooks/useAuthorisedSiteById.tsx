@@ -1,11 +1,11 @@
-import { api } from "@ui/api"
-import { isTalismanUrl } from "extension-core"
+import { isTalismanUrl } from "@extension/core"
 import {
   AuthorizedSite,
   AuthorizedSiteAddresses,
   AuthorizedSiteId,
   ProviderType,
-} from "extension-core"
+} from "@extension/core"
+import { api } from "@ui/api"
 import { DEFAULT_ETH_CHAIN_ID } from "extension-shared"
 import { useCallback, useEffect, useMemo, useState } from "react"
 

@@ -1,7 +1,7 @@
+import { AccountJsonAny, AccountType } from "@extension/core"
 import { SignerPayloadJSON, SignerPayloadRaw } from "@polkadot/types/types"
 import { HexString } from "@polkadot/util/types"
 import { useAccountByAddress } from "@ui/hooks/useAccountByAddress"
-import { AccountJsonAny, AccountType } from "extension-core"
 import { FC, Suspense, lazy } from "react"
 
 import { SignDcentSubstrate } from "./SignDcentSubstrate"

@@ -1,3 +1,4 @@
+import { isChainActive } from "@extension/core"
 import { convertAddress } from "@talisman/util/convertAddress"
 import { LedgerAccountDefSubstrate } from "@ui/domains/Account/AccountAdd/AccountAddLedger/context" // Todo
 import { useLedgerSubstrate } from "@ui/hooks/ledger/useLedgerSubstrate"
@@ -6,7 +7,6 @@ import { AccountImportDef, useAccountImportBalances } from "@ui/hooks/useAccount
 import useAccounts from "@ui/hooks/useAccounts"
 import { useActiveChainsState } from "@ui/hooks/useActiveChainsState"
 import useChain from "@ui/hooks/useChain"
-import { isChainActive } from "extension-core"
 import { log } from "extension-shared"
 import { FC, useCallback, useEffect, useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"

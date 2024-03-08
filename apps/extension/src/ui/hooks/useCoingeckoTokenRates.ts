@@ -1,7 +1,7 @@
+import { fetchFromCoingecko } from "@extension/core"
 import { TokenId } from "@talismn/chaindata-provider"
 import { NewTokenRates, TokenRates } from "@talismn/token-rates"
 import { useQuery } from "@tanstack/react-query"
-import { fetchFromCoingecko } from "extension-core"
 
 const CURRENCIES = Object.keys(NewTokenRates()).join(",")
 

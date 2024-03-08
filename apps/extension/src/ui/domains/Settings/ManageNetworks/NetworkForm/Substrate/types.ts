@@ -1,5 +1,5 @@
-import { RequestUpsertCustomChain } from "extension-core"
-import { SignerPayloadGenesisHash } from "extension-core"
+import { RequestUpsertCustomChain } from "@extension/core"
+import { SignerPayloadGenesisHash } from "@extension/core"
 
 export type SubNetworkFormBaseProps = {
   onSubmitted?: () => void

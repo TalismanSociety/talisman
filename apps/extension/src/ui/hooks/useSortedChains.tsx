@@ -1,5 +1,5 @@
+import { Chain } from "@extension/core"
 import useChains from "@ui/hooks/useChains"
-import { Chain } from "extension-core"
 import { useMemo } from "react"
 
 const sortChains = (a: Chain, b: Chain) =>

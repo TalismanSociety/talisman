@@ -1,10 +1,10 @@
+import { AccountJsonAny } from "@extension/core"
 import { api } from "@ui/api"
 import { AnalyticsPage, sendAnalyticsEvent } from "@ui/api/analytics"
 import { AllAccountsHeader } from "@ui/apps/popup/components/AllAccountsHeader"
 import { NoAccounts as NoAccountsComponent } from "@ui/domains/Portfolio/EmptyStates/NoAccounts"
 import { useAnalyticsPageView } from "@ui/hooks/useAnalyticsPageView"
 import { usePortfolioAccounts } from "@ui/hooks/usePortfolioAccounts"
-import { AccountJsonAny } from "extension-core"
 import { useCallback } from "react"
 import { useNavigate } from "react-router-dom"
 

@@ -1,8 +1,8 @@
+import { getErc20TokenInfo } from "@extension/core"
+import { CustomErc20TokenCreate } from "@extension/core"
+import { EvmAddress } from "@extension/core"
 import { EvmNetworkId } from "@talismn/chaindata-provider"
 import { usePublicClient } from "@ui/domains/Ethereum/usePublicClient"
-import { getErc20TokenInfo } from "extension-core"
-import { CustomErc20TokenCreate } from "extension-core"
-import { EvmAddress } from "extension-core"
 import { useEffect, useState } from "react"
 
 export const useErc20TokenInfo = (evmNetworkId?: EvmNetworkId, contractAddress?: EvmAddress) => {

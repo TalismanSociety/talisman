@@ -1,4 +1,4 @@
-import { ChainId } from "extension-core"
+import { ChainId } from "@extension/core"
 import { useCallback, useEffect, useMemo, useState } from "react"
 
 export type TipOptionName = "low" | "medium" | "high"

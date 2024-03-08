@@ -1,8 +1,8 @@
+import { db } from "@extension/core"
 import { isTestChain } from "@polkadot/util"
 import { HexString } from "@polkadot/util/types"
 import { api } from "@ui/api"
 import { useLiveQuery } from "dexie-react-hooks"
-import { db } from "extension-core"
 import { useEffect, useMemo, useState } from "react"
 import { useDebounce } from "react-use"
 

@@ -1,5 +1,5 @@
-import { FeatureFlag, RemoteConfigStoreData } from "extension-core"
-import { remoteConfigStore } from "extension-core"
+import { FeatureFlag, RemoteConfigStoreData } from "@extension/core"
+import { remoteConfigStore } from "@extension/core"
 import { atom } from "jotai"
 import { atomFamily } from "jotai/utils"
 

@@ -1,3 +1,4 @@
+import { AccountJsonDcent } from "@extension/core"
 import { AppPill } from "@talisman/components/AppPill"
 import {
   PopupContent,
@@ -8,7 +9,6 @@ import {
 import { EthSignBodyMessage } from "@ui/domains/Sign/Ethereum/EthSignBodyMessage"
 import { SignHardwareEthereum } from "@ui/domains/Sign/SignHardwareEthereum"
 import { useEthSignMessageRequest } from "@ui/domains/Sign/SignRequestContext"
-import { AccountJsonDcent } from "extension-core"
 import { Suspense, useEffect, useMemo } from "react"
 import { useTranslation } from "react-i18next"
 import { Button } from "talisman-ui"

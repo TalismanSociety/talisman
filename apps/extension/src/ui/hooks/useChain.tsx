@@ -1,4 +1,4 @@
-import type { ChainId } from "extension-core"
+import type { ChainId } from "@extension/core"
 import { useMemo } from "react"
 
 import { useAllChainsMap } from "./useChains"

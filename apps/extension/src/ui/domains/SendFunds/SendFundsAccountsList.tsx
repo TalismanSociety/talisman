@@ -1,3 +1,4 @@
+import { AccountType } from "@extension/core"
 import { Balance } from "@talismn/balances"
 import { Token } from "@talismn/chaindata-provider"
 import { CheckCircleIcon } from "@talismn/icons"
@@ -6,7 +7,6 @@ import useBalances from "@ui/hooks/useBalances"
 import { useSelectedCurrency } from "@ui/hooks/useCurrency"
 import { useFormattedAddress } from "@ui/hooks/useFormattedAddress"
 import useToken from "@ui/hooks/useToken"
-import { AccountType } from "extension-core"
 import { FC, ReactNode, useCallback, useMemo } from "react"
 import { useTranslation } from "react-i18next"
 

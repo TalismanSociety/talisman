@@ -1,5 +1,5 @@
-import { BalanceTotal } from "extension-core"
-import { balanceTotalsStore } from "extension-core"
+import { BalanceTotal } from "@extension/core"
+import { balanceTotalsStore } from "@extension/core"
 
 import { atomWithSubscription } from "./utils/atomWithSubscription"
 

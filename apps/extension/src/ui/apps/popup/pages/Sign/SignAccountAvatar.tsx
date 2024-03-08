@@ -1,6 +1,6 @@
+import { AccountJsonAny } from "@extension/core"
 import { encodeAnyAddress } from "@talismn/util"
 import { AccountIcon } from "@ui/domains/Account/AccountIcon"
-import { AccountJsonAny } from "extension-core"
 import { FC } from "react"
 import { Tooltip, TooltipContent, TooltipTrigger } from "talisman-ui"
 

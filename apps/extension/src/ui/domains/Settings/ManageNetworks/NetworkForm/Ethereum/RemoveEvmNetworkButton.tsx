@@ -1,7 +1,7 @@
+import { CustomEvmNetwork, EvmNetwork } from "@extension/core"
 import { notify } from "@talisman/components/Notifications"
 import { useOpenClose } from "@talisman/hooks/useOpenClose"
 import { api } from "@ui/api"
-import { CustomEvmNetwork, EvmNetwork } from "extension-core"
 import { FC, useCallback } from "react"
 import { Trans, useTranslation } from "react-i18next"
 import { useNavigate } from "react-router-dom"

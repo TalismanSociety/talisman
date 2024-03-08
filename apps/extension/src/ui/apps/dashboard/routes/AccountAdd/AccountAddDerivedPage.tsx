@@ -1,8 +1,8 @@
+import { AccountAddressType } from "@extension/core"
 import { HeaderBlock } from "@talisman/components/HeaderBlock"
 import { Spacer } from "@talisman/components/Spacer"
 import { AccountAddDerivedForm } from "@ui/domains/Account/AccountAdd/AccountAddDerived/AccountAddDerivedForm"
 import { useSelectAccountAndNavigate } from "@ui/hooks/useSelectAccountAndNavigate"
-import { AccountAddressType } from "extension-core"
 import { useTranslation } from "react-i18next"
 import { useSearchParams } from "react-router-dom"
 

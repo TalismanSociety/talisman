@@ -1,5 +1,5 @@
+import { AccountJsonAny, Balance, Balances } from "@extension/core"
 import { useSelectedAccount } from "@ui/domains/Portfolio/useSelectedAccount"
-import { AccountJsonAny, Balance, Balances } from "extension-core"
 import {
   DEFAULT_PORTFOLIO_TOKENS_ETHEREUM,
   DEFAULT_PORTFOLIO_TOKENS_SUBSTRATE,

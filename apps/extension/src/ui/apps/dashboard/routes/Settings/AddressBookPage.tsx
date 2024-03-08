@@ -1,3 +1,4 @@
+import { ProviderType } from "@extension/core"
 import { HeaderBlock } from "@talisman/components/HeaderBlock"
 import { OptionSwitch } from "@talisman/components/OptionSwitch"
 import { Spacer } from "@talisman/components/Spacer"
@@ -19,7 +20,6 @@ import { useAddressBook } from "@ui/hooks/useAddressBook"
 import { useAnalytics } from "@ui/hooks/useAnalytics"
 import { useAnalyticsPageView } from "@ui/hooks/useAnalyticsPageView"
 import { useSendFundsPopup } from "@ui/hooks/useSendFundsPopup"
-import { ProviderType } from "extension-core"
 import { useAtomValue } from "jotai"
 import startCase from "lodash/startCase"
 import {

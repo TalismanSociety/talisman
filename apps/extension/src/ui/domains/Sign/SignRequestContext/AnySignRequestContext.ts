@@ -1,7 +1,7 @@
+import { isEthereumRequest } from "@extension/core"
+import { AnySigningRequest, SigningRequests } from "@extension/core"
+import { KnownRespondableRequest } from "@extension/core/libs/requests/types"
 import useStatus, { SetStatusFn, StatusOptions } from "@talisman/hooks/useStatus"
-import { isEthereumRequest } from "extension-core"
-import { AnySigningRequest, SigningRequests } from "extension-core"
-import { KnownRespondableRequest } from "extension-core/src/libs/requests/types"
 import { log } from "extension-shared"
 import { useCallback } from "react"
 

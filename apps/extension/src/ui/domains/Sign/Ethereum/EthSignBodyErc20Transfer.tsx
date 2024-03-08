@@ -1,10 +1,10 @@
+import { EvmAddress } from "@extension/core"
+import { BalanceFormatter } from "@extension/core"
 import { TokenLogo } from "@ui/domains/Asset/TokenLogo"
 import { useSelectedCurrency } from "@ui/hooks/useCurrency"
 import { useErc20Token } from "@ui/hooks/useErc20Token"
 import useToken from "@ui/hooks/useToken"
 import { useTokenRates } from "@ui/hooks/useTokenRates"
-import { EvmAddress } from "extension-core"
-import { BalanceFormatter } from "extension-core"
 import { FC, useMemo } from "react"
 import { useTranslation } from "react-i18next"
 

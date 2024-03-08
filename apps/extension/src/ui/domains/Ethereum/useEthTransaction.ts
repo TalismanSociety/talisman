@@ -1,15 +1,11 @@
-import { isBigInt } from "@talismn/util"
-import { useQuery } from "@tanstack/react-query"
-import { api } from "@ui/api"
-import { usePublicClient } from "@ui/domains/Ethereum/usePublicClient"
 import {
   EthPriorityOptionName,
   EthPriorityOptionNameEip1559,
   EthPriorityOptionNameLegacy,
   EthTransactionDetails,
   GasSettingsByPriority,
-} from "extension-core"
-import { getHumanReadableErrorMessage } from "extension-core"
+} from "@extension/core"
+import { getHumanReadableErrorMessage } from "@extension/core"
 import {
   getGasLimit,
   getGasSettingsEip1559,
@@ -17,13 +13,17 @@ import {
   isAcalaEvmPlus,
   prepareTransaction,
   serializeTransactionRequest,
-} from "extension-core"
+} from "@extension/core"
 import {
   EthGasSettings,
   EthGasSettingsEip1559,
   EthGasSettingsLegacy,
   EvmNetworkId,
-} from "extension-core"
+} from "@extension/core"
+import { isBigInt } from "@talismn/util"
+import { useQuery } from "@tanstack/react-query"
+import { api } from "@ui/api"
+import { usePublicClient } from "@ui/domains/Ethereum/usePublicClient"
 import { useEffect, useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
 import { PublicClient, TransactionRequest } from "viem"

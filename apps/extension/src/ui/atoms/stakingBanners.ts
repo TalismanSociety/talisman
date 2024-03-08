@@ -1,4 +1,4 @@
-import { StakingBannerStatus, stakingBannerStore } from "extension-core"
+import { StakingBannerStatus, stakingBannerStore } from "@extension/core"
 
 import { atomWithSubscription } from "./utils/atomWithSubscription"
 

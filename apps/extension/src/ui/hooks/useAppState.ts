@@ -1,5 +1,5 @@
+import { AppStoreData, appStore } from "@extension/core"
 import { appStateAtom } from "@ui/atoms"
-import { AppStoreData, appStore } from "extension-core"
 import { SetStateAction, useAtomValue } from "jotai"
 import { useCallback, useMemo } from "react"
 

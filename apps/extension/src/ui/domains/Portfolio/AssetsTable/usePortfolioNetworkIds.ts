@@ -1,4 +1,4 @@
-import { Balances, ChainId, EvmNetworkId } from "extension-core"
+import { Balances, ChainId, EvmNetworkId } from "@extension/core"
 import { useMemo } from "react"
 
 export const usePortfolioNetworkIds = (balances: Balances) => {

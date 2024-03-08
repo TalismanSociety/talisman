@@ -1,5 +1,5 @@
+import { Balances } from "@extension/core"
 import { classNames } from "@talismn/util"
-import { Balances } from "extension-core"
 import { FC } from "react"
 import { useTranslation } from "react-i18next"
 

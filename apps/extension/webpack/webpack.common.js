@@ -95,6 +95,8 @@ const config = (env) => ({
       "@common": path.resolve(srcDir, "common/"),
       "@talisman": path.resolve(srcDir, "@talisman/"),
       "@ui": path.resolve(srcDir, "ui/"),
+      "@extension/core": path.resolve(srcDir, "../../../packages/extension-core/src/"),
+      "@extension/shared": path.resolve(srcDir, "../../../packages/extension-shared/src/"),
       // https://github.com/facebook/react/issues/20235
       // fix for @polkadot/react-identicons which uses react 16
       "react/jsx-runtime": path.resolve("../../node_modules/react/jsx-runtime.js"),

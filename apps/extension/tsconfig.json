@@ -11,7 +11,9 @@
       "@ui": ["./ui"],
       "@ui/*": ["./ui/*"],
       "@tests": ["./tests"],
-      "@tests/*": ["./tests/*"]
+      "@tests/*": ["./tests/*"],
+      "@extension/core": ["../../../packages/extension-core/src"],
+      "@extension/core/*": ["../../../packages/extension-core/src/*"]
     }
   },
   "include": ["src", "**/*.ts", "**/*.tsx"],

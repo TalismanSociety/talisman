@@ -1,10 +1,10 @@
-import { useQuery } from "@tanstack/react-query"
-import { useAccountByAddress } from "@ui/hooks/useAccountByAddress"
 import {
   EthPriorityOptionName,
   getMaxTransactionCost,
   serializeTransactionRequest,
-} from "extension-core"
+} from "@extension/core"
+import { useQuery } from "@tanstack/react-query"
+import { useAccountByAddress } from "@ui/hooks/useAccountByAddress"
 import { useTranslation } from "react-i18next"
 import { PublicClient, TransactionRequest } from "viem"
 

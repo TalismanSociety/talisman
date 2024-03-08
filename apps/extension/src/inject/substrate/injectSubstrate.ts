@@ -1,7 +1,7 @@
+import type { ResponseType, SendRequest } from "@extension/core"
 import type { ProviderInterfaceCallback } from "@polkadot/rpc-provider/types"
 import type { HexString } from "@polkadot/util/types"
 import type { CustomChain, CustomEvmNetwork, Token } from "@talismn/chaindata-provider"
-import type { ResponseType, SendRequest } from "extension-core"
 import { log } from "extension-shared"
 
 type TalismanWindow = typeof globalThis & {

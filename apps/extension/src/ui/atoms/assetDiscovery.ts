@@ -1,6 +1,6 @@
+import { assetDiscoveryStore, db } from "@extension/core"
 import { firstThenDebounce } from "@talismn/util"
 import { liveQuery } from "dexie"
-import { assetDiscoveryStore, db } from "extension-core"
 import { atom } from "jotai"
 import { atomWithObservable } from "jotai/utils"
 import groupBy from "lodash/groupBy"

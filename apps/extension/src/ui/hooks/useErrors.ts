@@ -1,5 +1,5 @@
+import { ERRORS_STORE_INITIAL_DATA, ErrorsStoreData, errorsStore } from "@extension/core"
 import { KeyValueAtomFamily } from "@ui/atoms/utils/types"
-import { ERRORS_STORE_INITIAL_DATA, ErrorsStoreData, errorsStore } from "extension-core"
 import { Atom, SetStateAction, atom, useAtom } from "jotai"
 import { atomEffect } from "jotai-effect"
 import { atomFamily } from "jotai/utils"

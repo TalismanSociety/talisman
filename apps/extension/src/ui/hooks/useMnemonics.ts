@@ -1,5 +1,5 @@
+import { MnemonicSource, mnemonicsStore } from "@extension/core"
 import { atomWithSubscription } from "@ui/atoms/utils/atomWithSubscription"
-import { MnemonicSource, mnemonicsStore } from "extension-core"
 import { atom, useAtomValue } from "jotai"
 import { atomFamily } from "jotai/utils"
 

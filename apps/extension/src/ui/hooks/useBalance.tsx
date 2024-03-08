@@ -1,5 +1,5 @@
+import { TokenId } from "@extension/core"
 import { balancesAtomFamily } from "@ui/atoms"
-import { TokenId } from "extension-core"
 import { useAtomValue } from "jotai"
 import { useMemo } from "react"
 

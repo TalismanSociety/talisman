@@ -1,8 +1,3 @@
-import type { KeyringPair$Json } from "@polkadot/keyring/types"
-import { KeypairType } from "@polkadot/util-crypto/types"
-import type { HexString } from "@polkadot/util/types"
-import { Address, BalanceJson } from "@talismn/balances"
-import { NsLookupType } from "@talismn/on-chain-id"
 import {
   AccountAddressType,
   AccountJson,
@@ -49,13 +44,18 @@ import {
   TokenId,
   WalletTransactionTransferInfo,
   WatchAssetRequestId,
-} from "extension-core"
-import { ValidRequests } from "extension-core"
-import { UnsubscribeFn } from "extension-core"
+} from "@extension/core"
+import { ValidRequests } from "@extension/core"
+import { UnsubscribeFn } from "@extension/core"
 import {
   RequestAccountsCatalogAction,
   Trees,
-} from "extension-core/src/domains/accounts/helpers.catalog"
+} from "@extension/core/domains/accounts/helpers.catalog"
+import type { KeyringPair$Json } from "@polkadot/keyring/types"
+import { KeypairType } from "@polkadot/util-crypto/types"
+import type { HexString } from "@polkadot/util/types"
+import { Address, BalanceJson } from "@talismn/balances"
+import { NsLookupType } from "@talismn/on-chain-id"
 import { MetadataDef } from "inject/substrate/types"
 import { TransactionRequest } from "viem"
 

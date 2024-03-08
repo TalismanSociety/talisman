@@ -1,9 +1,9 @@
+import { CustomEvmNetwork, EvmAddress, EvmNetwork } from "@extension/core"
 import { isEthereumAddress } from "@talismn/util"
 import { Address } from "@ui/domains/Account/Address"
 import { AssetLogo } from "@ui/domains/Asset/AssetLogo"
 import { useErc20Token } from "@ui/hooks/useErc20Token"
 import useToken from "@ui/hooks/useToken"
-import { CustomEvmNetwork, EvmAddress, EvmNetwork } from "extension-core"
 import { FC, useMemo } from "react"
 import { Tooltip, TooltipContent, TooltipTrigger } from "talisman-ui"
 

@@ -1,8 +1,8 @@
+import { Balance, Balances } from "@extension/core"
 import { FiatSumBalancesFormatter } from "@talismn/balances"
 import { TokenRateCurrency } from "@talismn/token-rates"
 import { useSelectedCurrency } from "@ui/hooks/useCurrency"
 import { useSetting } from "@ui/hooks/useSettings"
-import { Balance, Balances } from "extension-core"
 import { useMemo } from "react"
 
 type SymbolBalances = [string, Balances]

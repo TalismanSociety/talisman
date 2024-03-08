@@ -1,6 +1,6 @@
+import { AccountsCatalogTree } from "@extension/core"
 import { useGlobalOpenClose } from "@talisman/hooks/useGlobalOpenClose"
 import { api } from "@ui/api"
-import { AccountsCatalogTree } from "extension-core"
 import { atom, useAtom } from "jotai"
 import { useCallback } from "react"
 import { Trans, useTranslation } from "react-i18next"

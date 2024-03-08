@@ -1,8 +1,8 @@
+import { Token } from "@extension/core"
 import { LockIcon } from "@talismn/icons"
 import { classNames } from "@talismn/util"
 import { useSelectedCurrency, useToggleCurrency } from "@ui/hooks/useCurrency"
 import BigNumber from "bignumber.js"
-import { Token } from "extension-core"
 import { ReactNode } from "react"
 
 import currencyConfig from "../Asset/currencyConfig"

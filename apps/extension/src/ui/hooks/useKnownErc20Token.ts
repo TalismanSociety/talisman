@@ -1,5 +1,5 @@
+import { activeTokensStore, isTokenActive } from "@extension/core"
 import { isErc20Token } from "@ui/util/isErc20Token"
-import { activeTokensStore, isTokenActive } from "extension-core"
 import { useCallback, useMemo } from "react"
 
 import { useActiveTokensState } from "./useActiveTokensState"

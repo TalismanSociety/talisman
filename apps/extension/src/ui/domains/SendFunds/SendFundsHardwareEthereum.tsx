@@ -1,6 +1,6 @@
+import { AccountJsonDcent } from "@extension/core"
 import { HexString } from "@polkadot/util/types"
 import { useAccountByAddress } from "@ui/hooks/useAccountByAddress"
-import { AccountJsonDcent } from "extension-core"
 import { log } from "extension-shared"
 import { useCallback, useState } from "react"
 

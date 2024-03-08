@@ -1,6 +1,6 @@
+import { AccountJsonAny } from "@extension/core"
 import { encodeAnyAddress } from "@talismn/util"
 import { accountsMapAtom } from "@ui/atoms"
-import { AccountJsonAny } from "extension-core"
 import { useAtomValue } from "jotai"
 import { useMemo } from "react"
 

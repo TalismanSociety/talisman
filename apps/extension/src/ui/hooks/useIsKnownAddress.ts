@@ -1,6 +1,6 @@
+import { AddressBookContact } from "@extension/core"
 import { AccountJson } from "@polkadot/extension-base/background/types"
 import { convertAddress } from "@talisman/util/convertAddress"
-import { AddressBookContact } from "extension-core"
 import { useMemo } from "react"
 
 import { useAccountByAddress } from "./useAccountByAddress"

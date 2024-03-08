@@ -1,13 +1,13 @@
-import { convertAddress } from "@talisman/util/convertAddress"
-import { api } from "@ui/api"
-import { AccountImportDef, useAccountImportBalances } from "@ui/hooks/useAccountImportBalances"
-import useAccounts from "@ui/hooks/useAccounts"
-import { formatSuri } from "extension-core"
+import { formatSuri } from "@extension/core"
 import {
   AccountAddressType,
   RequestAccountCreateFromSuri,
   getEthDerivationPath,
-} from "extension-core"
+} from "@extension/core"
+import { convertAddress } from "@talisman/util/convertAddress"
+import { api } from "@ui/api"
+import { AccountImportDef, useAccountImportBalances } from "@ui/hooks/useAccountImportBalances"
+import useAccounts from "@ui/hooks/useAccounts"
 import { FC, useCallback, useEffect, useMemo, useState } from "react"
 
 import { DerivedAccountBase, DerivedAccountPickerBase } from "./DerivedAccountPickerBase"

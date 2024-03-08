@@ -1,7 +1,7 @@
+import { Address } from "@extension/core"
+import { TokenId } from "@extension/core"
 import { HexString } from "@polkadot/util/types"
 import { provideContext } from "@talisman/util/provideContext"
-import { Address } from "extension-core"
-import { TokenId } from "extension-core"
 import { useCallback, useMemo } from "react"
 import { useNavigate, useSearchParams } from "react-router-dom"
 

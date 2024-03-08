@@ -1,8 +1,8 @@
-import type { AuthorizedSite, AuthorizedSites, ProviderType } from "extension-core"
-import { SitesAuthorizedStore } from "extension-core"
-import { AnalyticsCaptureRequest } from "extension-core"
-import { Trees } from "extension-core"
-import { AccountJsonAny, AccountType } from "extension-core"
+import type { AuthorizedSite, AuthorizedSites, ProviderType } from "@extension/core"
+import { SitesAuthorizedStore } from "@extension/core"
+import { AnalyticsCaptureRequest } from "@extension/core"
+import { Trees } from "@extension/core"
+import { AccountJsonAny, AccountType } from "@extension/core"
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import { TALISMAN_WEB_APP_DOMAIN } from "extension-shared"
 

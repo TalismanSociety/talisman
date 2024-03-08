@@ -1,7 +1,7 @@
+import { AccountJsonAny, AccountType } from "@extension/core"
 import { Address } from "@talismn/balances"
 import { encodeAnyAddress } from "@talismn/util"
 import { api } from "@ui/api"
-import { AccountJsonAny, AccountType } from "extension-core"
 import { atom } from "jotai"
 import { atomFamily } from "jotai/utils"
 

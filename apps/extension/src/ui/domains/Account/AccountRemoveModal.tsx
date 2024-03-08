@@ -1,7 +1,7 @@
+import { AccountJsonAny, AccountType } from "@extension/core"
 import { useGlobalOpenClose } from "@talisman/hooks/useGlobalOpenClose"
 import { api } from "@ui/api"
 import { useSelectedAccount } from "@ui/domains/Portfolio/useSelectedAccount"
-import { AccountJsonAny, AccountType } from "extension-core"
 import { atom, useAtom } from "jotai"
 import { useCallback, useEffect, useState } from "react"
 import { Trans, useTranslation } from "react-i18next"

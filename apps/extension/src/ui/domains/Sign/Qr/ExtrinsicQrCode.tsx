@@ -1,11 +1,11 @@
+import { isRawPayload } from "@extension/core"
+import { AccountJsonQr } from "@extension/core"
+import { SignerPayloadJSON, SignerPayloadRaw } from "@extension/core"
 import { wrapBytes } from "@polkadot/extension-dapp/wrapBytes"
 import { createSignPayload } from "@polkadot/react-qr/util"
 import { TypeRegistry } from "@polkadot/types"
 import { useQuery } from "@tanstack/react-query"
 import useChain from "@ui/hooks/useChain"
-import { isRawPayload } from "extension-core"
-import { AccountJsonQr } from "extension-core"
-import { SignerPayloadJSON, SignerPayloadRaw } from "extension-core"
 
 import { QrCode, QrCodeError } from "./QrCode"
 

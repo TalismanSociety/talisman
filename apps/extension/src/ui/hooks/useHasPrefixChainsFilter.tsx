@@ -1,4 +1,4 @@
-import { Chain } from "extension-core"
+import { Chain } from "@extension/core"
 import { useMemo } from "react"
 
 const filter = (chain: Chain): chain is Chain & { prefix: NonNullable<Chain["prefix"]> } =>

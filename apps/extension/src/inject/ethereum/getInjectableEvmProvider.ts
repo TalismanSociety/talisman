@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import EventEmitter from "events"
 
-import type { SendRequest } from "extension-core"
+import type { SendRequest } from "@extension/core"
 import { log } from "extension-shared"
 
 import {

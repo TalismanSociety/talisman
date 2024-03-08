@@ -1,4 +1,4 @@
-import { OnboardedType } from "extension-core"
+import { OnboardedType } from "@extension/core"
 import { atom } from "jotai"
 
 import { appStateAtomFamily } from "./app"

@@ -1,13 +1,13 @@
-import { assert } from "@polkadot/util"
-import { provideContext } from "@talisman/util/provideContext"
-import { api } from "@ui/api"
-import useChain from "@ui/hooks/useChain"
 import {
   AccountAddressType,
   RequestAccountCreateLedgerEthereum,
   RequestAccountCreateLedgerSubstrate,
-} from "extension-core"
-import { AssetDiscoveryMode } from "extension-core"
+} from "@extension/core"
+import { AssetDiscoveryMode } from "@extension/core"
+import { assert } from "@polkadot/util"
+import { provideContext } from "@talisman/util/provideContext"
+import { api } from "@ui/api"
+import useChain from "@ui/hooks/useChain"
 import { useCallback, useState } from "react"
 import { useSearchParams } from "react-router-dom"
 

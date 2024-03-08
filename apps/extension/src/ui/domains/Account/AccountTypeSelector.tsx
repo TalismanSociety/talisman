@@ -1,6 +1,6 @@
+import { AccountAddressType } from "@extension/core"
 import { EthereumCircleLogo, PolkadotCircleLogo } from "@talisman/theme/logos"
 import { classNames } from "@talismn/util"
-import { AccountAddressType } from "extension-core"
 import { FC, ReactNode, useEffect, useState } from "react"
 import { useTranslation } from "react-i18next"
 

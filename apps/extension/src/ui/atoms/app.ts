@@ -1,4 +1,4 @@
-import { AppStoreData, appStore } from "extension-core"
+import { AppStoreData, appStore } from "@extension/core"
 import { SetStateAction, atom } from "jotai"
 import { atomFamily } from "jotai/utils"
 

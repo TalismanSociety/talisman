@@ -1,5 +1,5 @@
+import { FeatureFlag } from "@extension/core"
 import { remoteConfigAtom } from "@ui/atoms/remoteConfig"
-import { FeatureFlag } from "extension-core"
 import { useAtomValue } from "jotai"
 import { useMemo } from "react"
 

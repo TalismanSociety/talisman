@@ -1,8 +1,8 @@
+import { AccountAddressType, RequestAccountCreateFromSuri } from "@extension/core"
+import { AssetDiscoveryMode } from "@extension/core"
+import { getEthDerivationPath } from "@extension/core"
 import { provideContext } from "@talisman/util/provideContext"
 import { api } from "@ui/api"
-import { AccountAddressType, RequestAccountCreateFromSuri } from "extension-core"
-import { AssetDiscoveryMode } from "extension-core"
-import { getEthDerivationPath } from "extension-core"
 import { useCallback, useState } from "react"
 import { useSearchParams } from "react-router-dom"
 

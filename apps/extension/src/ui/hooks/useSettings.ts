@@ -1,5 +1,5 @@
+import { SettingsStoreData, settingsStore } from "@extension/core"
 import { settingsAtom } from "@ui/atoms"
-import { SettingsStoreData, settingsStore } from "extension-core"
 import { SetStateAction, useAtomValue } from "jotai"
 import { useCallback, useMemo } from "react"
 

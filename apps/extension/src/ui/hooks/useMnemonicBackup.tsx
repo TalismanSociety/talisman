@@ -1,6 +1,6 @@
+import { appStore } from "@extension/core"
 import { api } from "@ui/api"
 import { balanceTotalsAtom } from "@ui/atoms"
-import { appStore } from "extension-core"
 import { useAtomValue } from "jotai"
 import { useCallback, useMemo } from "react"
 import { useLocation } from "react-router-dom"

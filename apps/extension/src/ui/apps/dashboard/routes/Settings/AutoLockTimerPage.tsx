@@ -1,7 +1,7 @@
+import { SettingsStoreData } from "@extension/core"
 import { HeaderBlock } from "@talisman/components/HeaderBlock"
 import { Spacer } from "@talisman/components/Spacer"
 import { useSetting } from "@ui/hooks/useSettings"
-import { SettingsStoreData } from "extension-core"
 import { useCallback, useMemo } from "react"
 import { useTranslation } from "react-i18next"
 import { Dropdown } from "talisman-ui"

@@ -17,9 +17,13 @@ import {
 } from "@dnd-kit/core"
 import { SortableContext, verticalListSortingStrategy } from "@dnd-kit/sortable"
 import { CSS } from "@dnd-kit/utilities"
+import {
+  AccountsCatalogTree,
+  RequestAccountsCatalogAction,
+  runActionOnTrees,
+} from "@extension/core"
+import { AccountJsonAny } from "@extension/core"
 import { api } from "@ui/api"
-import { AccountsCatalogTree, RequestAccountsCatalogAction, runActionOnTrees } from "extension-core"
-import { AccountJsonAny } from "extension-core"
 import { useCallback, useEffect, useMemo, useRef, useState } from "react"
 import { createPortal } from "react-dom"
 

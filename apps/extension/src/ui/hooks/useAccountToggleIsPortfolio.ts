@@ -1,6 +1,6 @@
+import { AccountJsonAny } from "@extension/core"
 import { notify, notifyUpdate } from "@talisman/components/Notifications"
 import { api } from "@ui/api"
-import { AccountJsonAny } from "extension-core"
 import { useCallback, useMemo } from "react"
 import { useTranslation } from "react-i18next"
 
