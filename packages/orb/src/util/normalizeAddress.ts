@@ -1,5 +1,5 @@
-import { getEthAddress, getSubAddress, isEthAddress } from "./lib"
+import { isEthAddress, normalizeEthAddress, normalizeSubAddress } from "./lib"
 
 export const normalizeAddress = (address: string) => {
-  return isEthAddress(address) ? getEthAddress(address) : getSubAddress(address)
+  return isEthAddress(address) ? normalizeEthAddress(address) : normalizeSubAddress(address)
 }

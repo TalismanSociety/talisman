@@ -5,7 +5,7 @@ const TEXT_ENCODER = new TextEncoder()
 export const isEthAddress = (address: string): address is `0x${string}` =>
   /^0x[a-fA-F0-9]{40}$/.test(address)
 
-export const getEthAddress = (address: `0x${string}`): `0x${string}` => {
+export const normalizeEthAddress = (address: `0x${string}`): `0x${string}` => {
   if (!isEthAddress(address)) throw new Error(`Invalid Ethereum address ${address}`)
 
   const rawAddress = address.toLowerCase().substring(2)

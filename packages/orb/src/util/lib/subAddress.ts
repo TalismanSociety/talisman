@@ -30,6 +30,8 @@ const decode = (address: string) => {
   return publicKey.slice()
 }
 
-export const getSubAddress = (address: string) => {
+export const normalizeSubAddress = (address: string) => {
+  // source address might be encoded with a different prefix than 42
+  // decode then reencode with prefix 42
   return encode(decode(address))
 }
