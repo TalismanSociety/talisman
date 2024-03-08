@@ -13,7 +13,9 @@
       "@tests": ["./tests"],
       "@tests/*": ["./tests/*"],
       "@extension/core": ["../../../packages/extension-core/src"],
-      "@extension/core/*": ["../../../packages/extension-core/src/*"]
+      "@extension/core/*": ["../../../packages/extension-core/src/*"],
+      "@extension/shared": ["../../../packages/extension-shared/src"],
+      "@extension/shared/*": ["../../../packages/extension-shared/src/*"]
     }
   },
   "include": ["src", "**/*.ts", "**/*.tsx"],

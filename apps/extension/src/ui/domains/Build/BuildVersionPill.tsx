@@ -1,6 +1,6 @@
+import { RELEASE_NOTES_URL } from "@extension/shared"
 import { KeyIcon } from "@talismn/icons"
 import { useAppState } from "@ui/hooks/useAppState"
-import { RELEASE_NOTES_URL } from "extension-shared"
 import { FC, useCallback } from "react"
 import { PillButton } from "talisman-ui"
 

@@ -17,7 +17,7 @@ import type {
   TransportResponseMessage,
   UnsubscribeFn,
 } from "@extension/core"
-import { log } from "extension-shared"
+import { log } from "@extension/shared"
 
 import {
   ETH_ERROR_EIP1474_INTERNAL_ERROR,

@@ -1,9 +1,9 @@
+import { log } from "@extension/shared"
 import { WithTooltip } from "@talisman/components/Tooltip"
 import { AlertCircleIcon, SwapIcon } from "@talismn/icons"
 import { classNames, tokensToPlanck } from "@talismn/util"
 import { useSendFundsWizard } from "@ui/apps/popup/pages/SendFunds/context"
 import { useSelectedCurrency } from "@ui/hooks/useCurrency"
-import { log } from "extension-shared"
 import debounce from "lodash/debounce"
 import {
   ChangeEventHandler,

@@ -6,6 +6,7 @@ import {
   serializeGasSettings,
   serializeTransactionRequest,
 } from "@extension/core"
+import { log } from "@extension/shared"
 import { HexString } from "@polkadot/util/types"
 import { provideContext } from "@talisman/util/provideContext"
 import { Address, Balance, BalanceFormatter } from "@talismn/balances"
@@ -29,7 +30,6 @@ import useTokens from "@ui/hooks/useTokens"
 import { isEvmToken } from "@ui/util/isEvmToken"
 import { isSubToken } from "@ui/util/isSubToken"
 import { isTransferableToken } from "@ui/util/isTransferableToken"
-import { log } from "extension-shared"
 import { useCallback, useEffect, useMemo, useRef, useState } from "react"
 import { useTranslation } from "react-i18next"
 import { useLocation } from "react-router-dom"

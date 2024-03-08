@@ -4,7 +4,7 @@ import { AnalyticsCaptureRequest } from "@extension/core"
 import { Trees } from "@extension/core"
 import { AccountJsonAny, AccountType } from "@extension/core"
 /* eslint-disable @typescript-eslint/no-unused-vars */
-import { TALISMAN_WEB_APP_DOMAIN } from "extension-shared"
+import { TALISMAN_WEB_APP_DOMAIN } from "@extension/shared"
 
 import { ADDRESSES } from "../constants"
 

@@ -1,7 +1,7 @@
+import { log } from "@extension/shared"
 import { decodeString } from "@polkadot/react-qr/util"
 import QrCodeStyling from "@solana/qr-code-styling"
 import { SuspenseTracker } from "@talisman/components/SuspenseTracker"
-import { log } from "extension-shared"
 import { FC, Suspense, useEffect, useRef, useState } from "react"
 import { useTranslation } from "react-i18next"
 

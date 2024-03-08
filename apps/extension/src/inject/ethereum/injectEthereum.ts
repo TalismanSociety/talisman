@@ -1,5 +1,5 @@
 import { SendRequest } from "@extension/core"
-import { log } from "extension-shared"
+import { log } from "@extension/shared"
 
 import { announceProvider } from "./eip6963"
 import { getInjectableEvmProvider } from "./getInjectableEvmProvider"

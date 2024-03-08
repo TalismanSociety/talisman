@@ -1,8 +1,8 @@
+import { log } from "@extension/shared"
 import { AlertCircleIcon, InfoIcon, LoaderIcon } from "@talismn/icons"
 import useTokens from "@ui/hooks/useTokens"
 import { useDcentAccountInfo } from "@ui/util/dcent"
 import { isSubToken } from "@ui/util/isSubToken"
-import { log } from "extension-shared"
 import { useMemo } from "react"
 import { useTranslation } from "react-i18next"
 

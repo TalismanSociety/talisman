@@ -1,7 +1,7 @@
 import { AccountJsonDcent } from "@extension/core"
+import { log } from "@extension/shared"
 import { HexString } from "@polkadot/util/types"
 import { useAccountByAddress } from "@ui/hooks/useAccountByAddress"
-import { log } from "extension-shared"
 import { useCallback, useState } from "react"
 
 import { SignHardwareEthereum } from "../Sign/SignHardwareEthereum"

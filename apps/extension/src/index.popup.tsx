@@ -2,10 +2,10 @@ import "@common/enableLogsInDevelopment"
 import "@common/i18nConfig"
 
 import { appStore } from "@extension/core"
+import { log } from "@extension/shared"
+import { IS_FIREFOX } from "@extension/shared"
 import { renderTalisman } from "@ui"
 import Popup from "@ui/apps/popup"
-import { log } from "extension-shared"
-import { IS_FIREFOX } from "extension-shared"
 import Browser from "webextension-polyfill"
 
 const adjustPopupSize = async () => {

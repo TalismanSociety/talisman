@@ -1,8 +1,8 @@
+import { log } from "@extension/shared"
 import { GenericExtrinsic } from "@polkadot/types"
 import { ErrorBoundary, FallbackRender } from "@sentry/react"
 import { SignViewBodyShimmer } from "@ui/domains/Sign/Views/SignViewBodyShimmer"
 import { useExtrinsic } from "@ui/hooks/useExtrinsic"
-import { log } from "extension-shared"
 import { FC } from "react"
 
 import { usePolkadotSigningRequest } from "../SignRequestContext"

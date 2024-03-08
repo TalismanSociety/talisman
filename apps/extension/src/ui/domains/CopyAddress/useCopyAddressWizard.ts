@@ -1,4 +1,5 @@
 import { AccountJsonAny, Address } from "@extension/core"
+import { log } from "@extension/shared"
 import { isEthereumAddress } from "@polkadot/util-crypto"
 import { convertAddress } from "@talisman/util/convertAddress"
 import { provideContext } from "@talisman/util/provideContext"
@@ -12,7 +13,6 @@ import useToken from "@ui/hooks/useToken"
 import { copyAddress } from "@ui/util/copyAddress"
 import { getAccountAvatarDataUri } from "@ui/util/getAccountAvatarDataUri"
 import { getBase64ImageFromUrl } from "@ui/util/getBase64ImageFromUrl"
-import { log } from "extension-shared"
 import { useCallback, useEffect, useMemo, useState } from "react"
 import { getAddress } from "viem"
 

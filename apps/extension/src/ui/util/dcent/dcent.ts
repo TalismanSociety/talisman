@@ -1,5 +1,5 @@
+import { log } from "@extension/shared"
 import DcentWebConnector from "dcent-web-connector"
-import { log } from "extension-shared"
 
 import {
   DcentAccountAddress,

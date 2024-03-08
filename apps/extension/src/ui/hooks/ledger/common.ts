@@ -1,4 +1,4 @@
-import { DEBUG } from "extension-shared"
+import { DEBUG } from "@extension/shared"
 import { t } from "i18next"
 
 export class LedgerError extends Error {

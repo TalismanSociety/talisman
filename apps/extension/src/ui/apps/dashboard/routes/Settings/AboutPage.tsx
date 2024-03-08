@@ -1,3 +1,9 @@
+import {
+  PRIVACY_POLICY_URL,
+  RELEASE_NOTES_URL,
+  TALISMAN_DOCS_URL_PREFIX,
+  TERMS_OF_USE_URL,
+} from "@extension/shared"
 import { HeaderBlock } from "@talisman/components/HeaderBlock"
 import {
   CodeIcon,
@@ -7,12 +13,6 @@ import {
   MapIcon,
   TalismanHandIcon,
 } from "@talismn/icons"
-import {
-  PRIVACY_POLICY_URL,
-  RELEASE_NOTES_URL,
-  TALISMAN_DOCS_URL_PREFIX,
-  TERMS_OF_USE_URL,
-} from "extension-shared"
 import { Trans, useTranslation } from "react-i18next"
 import { CtaButton } from "talisman-ui"
 

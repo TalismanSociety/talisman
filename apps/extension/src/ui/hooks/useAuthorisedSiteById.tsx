@@ -5,8 +5,8 @@ import {
   AuthorizedSiteId,
   ProviderType,
 } from "@extension/core"
+import { DEFAULT_ETH_CHAIN_ID } from "@extension/shared"
 import { api } from "@ui/api"
-import { DEFAULT_ETH_CHAIN_ID } from "extension-shared"
 import { useCallback, useEffect, useMemo, useState } from "react"
 
 import { useAccountAddresses } from "./useAccountAddresses"

@@ -1,5 +1,5 @@
 import { fetchFromCoingecko } from "@extension/core/util/coingecko/fetchFromCoingecko"
-import { log } from "extension-shared"
+import { log } from "@extension/shared"
 
 type CoinGeckoAssetPlatform = {
   id: string

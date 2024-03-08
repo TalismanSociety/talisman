@@ -1,11 +1,11 @@
 import { getEthLedgerDerivationPath } from "@extension/core"
 import { LedgerEthDerivationPathType } from "@extension/core"
+import { DEBUG } from "@extension/shared"
 import { convertAddress } from "@talisman/util/convertAddress"
 import { LedgerAccountDefEthereum } from "@ui/domains/Account/AccountAdd/AccountAddLedger/context"
 import { useLedgerEthereum } from "@ui/hooks/ledger/useLedgerEthereum"
 import { AccountImportDef, useAccountImportBalances } from "@ui/hooks/useAccountImportBalances"
 import useAccounts from "@ui/hooks/useAccounts"
-import { DEBUG } from "extension-shared"
 import { FC, useCallback, useEffect, useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
 

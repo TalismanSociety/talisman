@@ -1,6 +1,6 @@
 import { Balances } from "@extension/core"
+import { TALISMAN_WEB_APP_STAKING_URL } from "@extension/shared"
 import { useAnalytics } from "@ui/hooks/useAnalytics"
-import { TALISMAN_WEB_APP_STAKING_URL } from "extension-shared"
 import { useCallback } from "react"
 
 import { useTokenBalancesSummary } from "../Portfolio/useTokenBalancesSummary"

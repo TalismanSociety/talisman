@@ -1,5 +1,5 @@
 import { UnsubscribeFn } from "@extension/core"
-import { log } from "extension-shared"
+import { log } from "@extension/shared"
 import { Atom, atom } from "jotai"
 import { atomEffect as atomWithEffect } from "jotai-effect"
 import { atomWithObservable } from "jotai/utils"

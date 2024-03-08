@@ -1,3 +1,9 @@
+import {
+  TALISMAN_WEB_APP_CROWDLOANS_URL,
+  TALISMAN_WEB_APP_NFTS_URL,
+  TALISMAN_WEB_APP_STAKING_URL,
+  TALISMAN_WEB_APP_TRANSPORT_URL,
+} from "@extension/shared"
 import { Nav } from "@talisman/components/Nav"
 import {
   CreditCardIcon,
@@ -14,12 +20,6 @@ import { useBuyTokensModal } from "@ui/domains/Asset/Buy/useBuyTokensModal"
 import { useAnalytics } from "@ui/hooks/useAnalytics"
 import { useIsFeatureEnabled } from "@ui/hooks/useIsFeatureEnabled"
 import useMnemonicBackup from "@ui/hooks/useMnemonicBackup"
-import {
-  TALISMAN_WEB_APP_CROWDLOANS_URL,
-  TALISMAN_WEB_APP_NFTS_URL,
-  TALISMAN_WEB_APP_STAKING_URL,
-  TALISMAN_WEB_APP_TRANSPORT_URL,
-} from "extension-shared"
 import { useCallback } from "react"
 import { useTranslation } from "react-i18next"
 import { useNavigate } from "react-router-dom"

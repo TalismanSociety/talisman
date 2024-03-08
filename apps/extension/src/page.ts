@@ -1,9 +1,9 @@
 // Copyright 2019-2021 @polkadot/extension authors & contributors
 // SPDX-License-Identifier: Apache-2.0
 
+import { DEBUG, isTalismanHostname } from "@extension/shared"
 // Adapted from https://github.com/polkadot-js/extension/packages/extension-base/src/page.ts
 import type { Message } from "@polkadot/extension-base/types"
-import { DEBUG, isTalismanHostname } from "extension-shared"
 
 import MessageService from "./common/MessageService"
 import { injectEthereum } from "./inject/ethereum/injectEthereum"

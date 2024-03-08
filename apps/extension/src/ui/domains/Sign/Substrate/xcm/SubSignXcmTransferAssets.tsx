@@ -1,4 +1,5 @@
 import { AccountJsonAny } from "@extension/core"
+import { log } from "@extension/shared"
 import { Address } from "@talismn/balances"
 import { Chain, TokenId, TokenList } from "@talismn/chaindata-provider"
 import { encodeAnyAddress } from "@talismn/util"
@@ -6,7 +7,6 @@ import useChains from "@ui/hooks/useChains"
 import { useExtrinsic } from "@ui/hooks/useExtrinsic"
 import { useTokenRatesMap } from "@ui/hooks/useTokenRatesMap"
 import useTokens from "@ui/hooks/useTokens"
-import { log } from "extension-shared"
 import { useMemo } from "react"
 import { useTranslation } from "react-i18next"
 

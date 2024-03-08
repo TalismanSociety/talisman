@@ -1,5 +1,6 @@
 import { AccountType } from "@extension/core"
 import { AssetDiscoveryMode } from "@extension/core"
+import { log } from "@extension/shared"
 import { createPair } from "@polkadot/keyring"
 import { KeyringPair, KeyringPair$Json } from "@polkadot/keyring/types"
 import { KeyringPairs$Json } from "@polkadot/ui-keyring/types"
@@ -13,7 +14,6 @@ import { api } from "@ui/api"
 import { AccountImportDef, useAccountImportBalances } from "@ui/hooks/useAccountImportBalances"
 import useAccounts from "@ui/hooks/useAccounts"
 import useChains from "@ui/hooks/useChains"
-import { log } from "extension-shared"
 import { useCallback, useEffect, useMemo, useState } from "react"
 
 export type JsonImportAccount = {
