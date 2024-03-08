@@ -1,3 +1,5 @@
+// inspired from https://github.com/polkadot-api/polkadot-api/blob/main/packages/substrate-bindings/src/codecs/scale/AccountId.ts
+
 import { blake2b } from "@noble/hashes/blake2b"
 import { base58 } from "@scure/base"
 
