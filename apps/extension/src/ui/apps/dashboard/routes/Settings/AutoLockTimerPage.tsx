@@ -18,9 +18,10 @@ export const AutoLockTimerPage = () => {
   const options: Option[] = useMemo(
     () => [
       { value: 0, label: t("Disabled") },
-      { value: 300, label: t("5 minutes") },
-      { value: 1800, label: t("30 minutes") },
-      { value: 3600, label: t("60 minutes") },
+      { value: 300, label: t("{{count}} minutes", { count: 5 }) },
+      { value: 900, label: t("{{count}} minutes", { count: 15 }) },
+      { value: 1800, label: t("{{count}} minutes", { count: 30 }) },
+      { value: 3600, label: t("{{count}} minutes", { count: 60 }) },
     ],
     [t]
   )
