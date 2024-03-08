@@ -11,7 +11,7 @@ const ForkTsCheckerNotifierWebpackPlugin = require("fork-ts-checker-notifier-web
 const EslintWebpackPlugin = require("eslint-webpack-plugin")
 const AssetReplacePlugin = require("./AssetReplacePlugin")
 
-const { srcDir, coreDir, distDir, getRelease, getGitShortHash } = require("./utils")
+const { srcDir, distDir, getRelease, getGitShortHash } = require("./utils")
 
 const config = (env) => ({
   entry: {
@@ -21,7 +21,7 @@ const config = (env) => ({
     "dashboard": { import: path.join(srcDir, "index.dashboard.tsx") },
 
     // Wallet service workers
-    "background": { import: path.join(coreDir, "background.ts"), dependOn: "vendor-background" },
+    "background": { import: path.join(srcDir, "background.ts"), dependOn: "vendor-background" },
 
     // Background.js manually-specified code-splits (to keep background.js under 4MB).
     // We can't automatically chunk these because we need to manually specify the imports in our extension manifest.
@@ -32,8 +32,8 @@ const config = (env) => ({
     },
 
     // Wallet injected scripts
-    "content_script": path.join(coreDir, "content_script.ts"),
-    "page": path.join(coreDir, "page.ts"),
+    "content_script": path.join(srcDir, "content_script.ts"),
+    "page": path.join(srcDir, "page.ts"),
   },
   output: {
     path: distDir,
@@ -92,9 +92,11 @@ const config = (env) => ({
   },
   resolve: {
     alias: {
+      "@common": path.resolve(srcDir, "common/"),
       "@talisman": path.resolve(srcDir, "@talisman/"),
-      "@core": path.resolve(srcDir, "core/"),
       "@ui": path.resolve(srcDir, "ui/"),
+      "@extension/core": path.resolve(srcDir, "../../../packages/extension-core/src/"),
+      "@extension/shared": path.resolve(srcDir, "../../../packages/extension-shared/src/"),
       // https://github.com/facebook/react/issues/20235
       // fix for @polkadot/react-identicons which uses react 16
       "react/jsx-runtime": path.resolve("../../node_modules/react/jsx-runtime.js"),

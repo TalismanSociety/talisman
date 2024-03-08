@@ -1,4 +1,4 @@
-import { AccountAddressType } from "@core/domains/accounts/types"
+import { AccountAddressType } from "@extension/core"
 import { EthereumCircleLogo, PolkadotCircleLogo } from "@talisman/theme/logos"
 import { classNames } from "@talismn/util"
 import { FC, ReactNode, useEffect, useState } from "react"

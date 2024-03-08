@@ -1,4 +1,4 @@
-import { log } from "@core/log"
+import { log } from "@extension/shared"
 import { WithTooltip } from "@talisman/components/Tooltip"
 import { AlertCircleIcon, SwapIcon } from "@talismn/icons"
 import { classNames, tokensToPlanck } from "@talismn/util"

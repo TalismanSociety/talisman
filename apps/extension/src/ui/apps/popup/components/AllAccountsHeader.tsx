@@ -1,4 +1,4 @@
-import { AccountJsonAny } from "@core/domains/accounts/types"
+import { AccountJsonAny } from "@extension/core"
 import { ChevronRightIcon } from "@talismn/icons"
 import { classNames } from "@talismn/util"
 import { TotalFiatBalance } from "@ui/apps/popup/components/TotalFiatBalance"

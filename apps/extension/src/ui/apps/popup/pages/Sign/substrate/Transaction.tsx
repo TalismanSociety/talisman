@@ -1,6 +1,6 @@
-import { isJsonPayload } from "@core/util/isJsonPayload"
-import { validateHexString } from "@core/util/validateHexString"
+import { isJsonPayload } from "@extension/core"
 import { AppPill } from "@talisman/components/AppPill"
+import { validateHexString } from "@talismn/util"
 import { classNames } from "@talismn/util"
 import {
   PopupContent,

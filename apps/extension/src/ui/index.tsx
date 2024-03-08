@@ -1,6 +1,6 @@
 import "@talisman/theme/styles.css"
 
-import { initSentry } from "@core/config/sentry"
+import { initSentry } from "@extension/core"
 import * as Sentry from "@sentry/react"
 import { ErrorBoundary } from "@talisman/components/ErrorBoundary"
 import { ErrorBoundaryDatabaseMigration } from "@talisman/components/ErrorBoundaryDatabaseMigration"

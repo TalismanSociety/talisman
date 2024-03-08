@@ -1,5 +1,5 @@
-import { POLKADOT_VAULT_DOCS_URL } from "@core/constants"
-import { log } from "@core/log"
+import { log } from "@extension/shared"
+import { POLKADOT_VAULT_DOCS_URL } from "@extension/shared"
 import { FadeIn } from "@talisman/components/FadeIn"
 import { HeaderBlock } from "@talisman/components/HeaderBlock"
 import { notify } from "@talisman/components/Notifications"

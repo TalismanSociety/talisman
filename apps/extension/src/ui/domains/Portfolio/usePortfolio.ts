@@ -1,7 +1,5 @@
-import { AccountAddressType, AccountJsonAny } from "@core/domains/accounts/types"
-import { Balances } from "@core/domains/balances/types"
-import { Token } from "@core/domains/tokens/types"
-import { log } from "@core/log"
+import { AccountAddressType, AccountJsonAny, Balances, Token } from "@extension/core"
+import { log } from "@extension/shared"
 import { HydrateDb } from "@talismn/balances"
 import { Chain, ChainId, EvmNetwork, EvmNetworkId } from "@talismn/chaindata-provider"
 import {

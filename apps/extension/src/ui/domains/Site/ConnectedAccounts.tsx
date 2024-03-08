@@ -1,5 +1,4 @@
-import { AccountJsonAny } from "@core/domains/accounts/types"
-import { AuthorizedSite } from "@core/domains/sitesAuthorised/types"
+import { AccountJsonAny, AuthorizedSite } from "@extension/core"
 import { api } from "@ui/api"
 import { useAccountsForSite } from "@ui/hooks/useAccountsForSite"
 import { useAuthorisedSites } from "@ui/hooks/useAuthorisedSites"

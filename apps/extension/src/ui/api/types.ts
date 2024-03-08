@@ -1,70 +1,62 @@
-import { Trees } from "@core/domains/accounts/helpers.catalog"
 import {
   AccountAddressType,
-  RequestAccountCreateLedgerSubstrate,
-} from "@core/domains/accounts/types"
-import type {
   AccountJson,
-  RequestAccountCreateOptions,
-  RequestAccountsCatalogAction,
-  RequestAddressLookup,
-} from "@core/domains/accounts/types"
-import {
-  AnalyticsCaptureRequest,
-  LoggedinType,
-  ModalOpenRequest,
-  SendFundsOpenRequest,
-} from "@core/domains/app/types"
-import { AssetDiscoveryMode } from "@core/domains/assetDiscovery/types"
-import {
+  AddEthereumChainRequest,
+  AddEthereumChainRequestId,
   AddressesAndEvmNetwork,
   AddressesAndTokens,
-  BalanceJson,
-  BalancesUpdate,
-  RequestBalance,
-} from "@core/domains/balances/types"
-import { ChainId, RequestUpsertCustomChain } from "@core/domains/chains/types"
-import type { DecryptRequestId, EncryptRequestId } from "@core/domains/encrypt/types"
-import { AddEthereumChainRequestId, EvmAddress } from "@core/domains/ethereum/types"
-import {
-  AddEthereumChainRequest,
+  AddressesByChain,
+  AnalyticsCaptureRequest,
   AnyEthRequestChainId,
-  EthGasSettings,
-  EvmNetworkId,
-  RequestUpsertCustomEvmNetwork,
-  WatchAssetRequestId,
-} from "@core/domains/ethereum/types"
-import { MetadataUpdateStatus, RequestMetadataId } from "@core/domains/metadata/types"
-import { RequestSetVerifierCertParams } from "@core/domains/mnemonics/types"
-import {
-  SignerPayloadGenesisHash,
-  SignerPayloadJSON,
-  SigningRequestID,
-} from "@core/domains/signing/types"
-import {
+  AssetDiscoveryMode,
+  AssetTransferMethod,
   AuthRequestAddresses,
   AuthRequestId,
   AuthorisedSiteUpdate,
   AuthorizedSite,
   AuthorizedSites,
+  BalancesUpdate,
+  ChainId,
+  CustomErc20TokenCreate,
+  DecryptRequestId,
+  EncryptRequestId,
+  EthGasSettings,
+  EvmAddress,
+  EvmNetworkId,
+  LoggedinType,
+  MetadataUpdateStatus,
+  ModalOpenRequest,
   ProviderType,
-} from "@core/domains/sitesAuthorised/types"
-import { CustomErc20TokenCreate, TokenId } from "@core/domains/tokens/types"
-import { WalletTransactionTransferInfo } from "@core/domains/transactions"
-import {
-  AssetTransferMethod,
+  RequestAccountCreateLedgerSubstrate,
+  RequestAccountCreateOptions,
+  RequestAddressLookup,
+  RequestBalance,
+  RequestMetadataId,
+  RequestSetVerifierCertParams,
+  RequestUpsertCustomChain,
+  RequestUpsertCustomEvmNetwork,
   ResponseAssetTransfer,
   ResponseAssetTransferFeeQuery,
-} from "@core/domains/transfers/types"
-import { MetadataDef } from "@core/inject/types"
-import { ValidRequests } from "@core/libs/requests/types"
-import { UnsubscribeFn } from "@core/types"
-import { AddressesByChain } from "@core/types/base"
+  SendFundsOpenRequest,
+  SignerPayloadGenesisHash,
+  SignerPayloadJSON,
+  SigningRequestID,
+  TokenId,
+  WalletTransactionTransferInfo,
+  WatchAssetRequestId,
+} from "@extension/core"
+import { ValidRequests } from "@extension/core"
+import { UnsubscribeFn } from "@extension/core"
+import {
+  RequestAccountsCatalogAction,
+  Trees,
+} from "@extension/core/domains/accounts/helpers.catalog"
 import type { KeyringPair$Json } from "@polkadot/keyring/types"
 import { KeypairType } from "@polkadot/util-crypto/types"
 import type { HexString } from "@polkadot/util/types"
-import { Address } from "@talismn/balances"
+import { Address, BalanceJson } from "@talismn/balances"
 import { NsLookupType } from "@talismn/on-chain-id"
+import { MetadataDef } from "inject/substrate/types"
 import { TransactionRequest } from "viem"
 
 export default interface MessageTypes {

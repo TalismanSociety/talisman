@@ -1,4 +1,4 @@
-import { passwordStore } from "@core/domains/app/store.password"
+import { passwordStore } from "@extension/core"
 import { useOpenClose } from "@talisman/hooks/useOpenClose"
 import { atomWithSubscription } from "@ui/atoms/utils/atomWithSubscription"
 import { atom, useAtomValue, useSetAtom } from "jotai"

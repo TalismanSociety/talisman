@@ -1,4 +1,4 @@
-import { AccountJsonAny } from "@core/domains/accounts/types"
+import { AccountJsonAny } from "@extension/core"
 import { classNames } from "@talismn/util"
 import { AccountIcon } from "@ui/domains/Account/AccountIcon"
 import { FC } from "react"

@@ -1,4 +1,4 @@
-import { AccountJsonAny, AccountType } from "@core/domains/accounts/types"
+import { AccountJsonAny, AccountType } from "@extension/core"
 import { Address } from "@talismn/balances"
 import { encodeAnyAddress } from "@talismn/util"
 import { api } from "@ui/api"

@@ -1,5 +1,5 @@
 /* eslint-disable no-console */
-import { DEBUG } from "@core/constants"
+import { DEBUG } from "@extension/shared"
 import { FC, useEffect } from "react"
 
 // Dev tool to track Suspense render times

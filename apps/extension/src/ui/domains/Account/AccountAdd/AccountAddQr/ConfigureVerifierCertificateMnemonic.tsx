@@ -1,4 +1,4 @@
-import { POLKADOT_VAULT_DOCS_URL } from "@core/constants"
+import { POLKADOT_VAULT_DOCS_URL } from "@extension/shared"
 import { HeaderBlock } from "@talisman/components/HeaderBlock"
 import {
   MnemonicCreateModal,

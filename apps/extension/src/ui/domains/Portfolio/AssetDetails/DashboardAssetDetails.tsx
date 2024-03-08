@@ -1,5 +1,4 @@
-import { Balances } from "@core/domains/balances/types"
-import { Address } from "@core/types/base"
+import { Address, Balances } from "@extension/core"
 import { ChainId, EvmNetworkId } from "@talismn/chaindata-provider"
 import { classNames } from "@talismn/util"
 import { ChainLogo } from "@ui/domains/Asset/ChainLogo"

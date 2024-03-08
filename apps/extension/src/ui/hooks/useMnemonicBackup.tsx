@@ -1,4 +1,4 @@
-import { appStore } from "@core/domains/app/store.app"
+import { appStore } from "@extension/core"
 import { api } from "@ui/api"
 import { balanceTotalsAtom } from "@ui/atoms"
 import { useAtomValue } from "jotai"

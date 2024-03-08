@@ -1,4 +1,4 @@
-import { db } from "@core/db"
+import { db } from "@extension/core"
 import { HexString } from "@polkadot/util/types"
 import { useLiveQuery } from "dexie-react-hooks"
 

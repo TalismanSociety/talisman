@@ -4,14 +4,18 @@
     "noEmit": true,
     "baseUrl": "src",
     "paths": {
+      "@common": ["./common"],
+      "@common/*": ["./common/*"],
       "@talisman": ["./@talisman"],
       "@talisman/*": ["./@talisman/*"],
-      "@core": ["./core"],
-      "@core/*": ["./core/*"],
       "@ui": ["./ui"],
       "@ui/*": ["./ui/*"],
       "@tests": ["./tests"],
-      "@tests/*": ["./tests/*"]
+      "@tests/*": ["./tests/*"],
+      "@extension/core": ["../../../packages/extension-core/src"],
+      "@extension/core/*": ["../../../packages/extension-core/src/*"],
+      "@extension/shared": ["../../../packages/extension-shared/src"],
+      "@extension/shared/*": ["../../../packages/extension-shared/src/*"]
     }
   },
   "include": ["src", "**/*.ts", "**/*.tsx"],

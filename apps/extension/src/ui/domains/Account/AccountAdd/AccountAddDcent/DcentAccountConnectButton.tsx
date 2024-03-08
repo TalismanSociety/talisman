@@ -1,4 +1,4 @@
-import { log } from "@core/log"
+import { log } from "@extension/shared"
 import { notify } from "@talisman/components/Notifications"
 import { AlertCircleIcon, CheckCircleIcon } from "@talismn/icons"
 import { classNames } from "@talismn/util"

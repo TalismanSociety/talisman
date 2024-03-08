@@ -1,4 +1,4 @@
-import { TokenId } from "@core/domains/tokens/types"
+import { TokenId } from "@extension/core"
 import { useSendFundsWizard } from "@ui/apps/popup/pages/SendFunds/context"
 import { useCallback } from "react"
 

@@ -1,11 +1,8 @@
-import { AccountJsonAny } from "@core/domains/accounts/types"
-import { AssetDiscoveryMode, DiscoveredBalance } from "@core/domains/assetDiscovery/types"
-import {
-  activeEvmNetworksStore,
-  isEvmNetworkActive,
-} from "@core/domains/ethereum/store.activeEvmNetworks"
-import { activeTokensStore, isTokenActive } from "@core/domains/tokens/store.activeTokens"
-import { TokenId } from "@core/domains/tokens/types"
+import { activeEvmNetworksStore, isEvmNetworkActive } from "@extension/core"
+import { activeTokensStore, isTokenActive } from "@extension/core"
+import { TokenId } from "@extension/core"
+import { AssetDiscoveryMode, DiscoveredBalance } from "@extension/core"
+import { AccountJsonAny } from "@extension/core"
 import { HeaderBlock } from "@talisman/components/HeaderBlock"
 import { Spacer } from "@talisman/components/Spacer"
 import { shortenAddress } from "@talisman/util/shortenAddress"

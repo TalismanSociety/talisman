@@ -1,4 +1,4 @@
-import { CustomEvmNetwork, EvmNetwork, EvmNetworkId } from "@core/domains/ethereum/types"
+import { CustomEvmNetwork, EvmNetwork, EvmNetworkId } from "@extension/core"
 import { useSortedEvmNetworks } from "@ui/hooks/useSortedEvmNetworks"
 import { useCallback, useEffect, useState } from "react"
 import { Dropdown } from "talisman-ui"

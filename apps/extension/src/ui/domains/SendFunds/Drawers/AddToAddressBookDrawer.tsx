@@ -1,4 +1,4 @@
-import { AddressBookContact } from "@core/domains/app/store.addressBook"
+import { AddressBookContact } from "@extension/core"
 import { yupResolver } from "@hookform/resolvers/yup"
 import { AnalyticsPage, sendAnalyticsEvent } from "@ui/api/analytics"
 import { Address } from "@ui/domains/Account/Address"

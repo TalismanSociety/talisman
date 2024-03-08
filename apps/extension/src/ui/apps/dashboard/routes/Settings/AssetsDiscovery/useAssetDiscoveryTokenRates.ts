@@ -1,5 +1,5 @@
-import { remoteConfigStore } from "@core/domains/app/store.remoteConfig"
-import { log } from "@core/log"
+import { remoteConfigStore } from "@extension/core"
+import { log } from "@extension/shared"
 import { TokenId, TokenList } from "@talismn/chaindata-provider"
 import { TokenRatesList, fetchTokenRates } from "@talismn/token-rates"
 import { assetDiscoveryScanProgressAtom, tokensArrayAtomFamily } from "@ui/atoms"

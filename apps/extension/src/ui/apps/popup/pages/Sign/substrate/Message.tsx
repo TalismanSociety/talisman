@@ -1,4 +1,4 @@
-import { SignerPayloadRaw } from "@core/domains/signing/types"
+import { SignerPayloadRaw } from "@extension/core"
 import { encodeAddress } from "@polkadot/keyring"
 import { isAscii, u8aToString, u8aUnwrapBytes } from "@polkadot/util"
 import { AppPill } from "@talisman/components/AppPill"

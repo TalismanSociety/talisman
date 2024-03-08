@@ -1,4 +1,3 @@
-import { Token } from "@core/domains/tokens/types"
 import {
   SubAssetsToken,
   SubEquilibriumToken,
@@ -6,6 +5,7 @@ import {
   SubPsp22Token,
   SubTokensToken,
 } from "@talismn/balances"
+import { Token } from "@talismn/chaindata-provider"
 
 export const isSubToken = <T extends Token>(
   token?:

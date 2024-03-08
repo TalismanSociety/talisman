@@ -38,7 +38,7 @@ jobs:
       - name: Install dependencies
         run: yarn --immutable
       - name: Test
-        run: yarn run test
+        run: yarn preconstruct:dev && yarn run test
       - name: Extract short SHA + package version
         id: vars
         run: |

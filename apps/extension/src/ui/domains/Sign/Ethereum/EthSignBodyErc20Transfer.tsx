@@ -1,5 +1,5 @@
-import { BalanceFormatter } from "@core/domains/balances"
-import { EvmAddress } from "@core/domains/ethereum/types"
+import { EvmAddress } from "@extension/core"
+import { BalanceFormatter } from "@extension/core"
 import { TokenLogo } from "@ui/domains/Asset/TokenLogo"
 import { useSelectedCurrency } from "@ui/hooks/useCurrency"
 import { useErc20Token } from "@ui/hooks/useErc20Token"

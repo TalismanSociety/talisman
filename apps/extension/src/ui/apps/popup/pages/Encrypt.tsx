@@ -1,5 +1,5 @@
-import { AccountJson } from "@core/domains/accounts/types"
-import { DecryptRequestIdOnly, EncryptRequestIdOnly } from "@core/domains/encrypt/types"
+import { DecryptRequestIdOnly, EncryptRequestIdOnly } from "@extension/core"
+import { AccountJson } from "@extension/core"
 import { AppPill } from "@talisman/components/AppPill"
 import { AccountPill } from "@ui/domains/Account/AccountPill"
 import { useEncryptRequest } from "@ui/domains/Encrypt/EncryptRequestContext"

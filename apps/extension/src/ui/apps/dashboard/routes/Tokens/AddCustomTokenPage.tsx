@@ -1,4 +1,4 @@
-import { CustomErc20TokenCreate } from "@core/domains/tokens/types"
+import { CustomErc20TokenCreate } from "@extension/core"
 import { yupResolver } from "@hookform/resolvers/yup"
 import { assert } from "@polkadot/util"
 import { HeaderBlock } from "@talisman/components/HeaderBlock"

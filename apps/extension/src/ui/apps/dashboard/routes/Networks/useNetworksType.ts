@@ -1,4 +1,4 @@
-import { ProviderType } from "@core/domains/sitesAuthorised/types"
+import { ProviderType } from "@extension/core"
 import { useCallback } from "react"
 import { useNavigate, useParams } from "react-router-dom"
 

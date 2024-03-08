@@ -1,5 +1,5 @@
-import { KnownRequestIdOnly } from "@core/libs/requests/types"
-import { log } from "@core/log"
+import { KnownRequestIdOnly } from "@extension/core"
+import { log } from "@extension/shared"
 import { AppPill } from "@talisman/components/AppPill"
 import { notify } from "@talisman/components/Notifications"
 import { EvmNetwork } from "@talismn/chaindata-provider"

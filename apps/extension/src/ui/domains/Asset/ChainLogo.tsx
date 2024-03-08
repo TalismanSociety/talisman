@@ -1,4 +1,4 @@
-import { IS_FIREFOX, UNKNOWN_NETWORK_URL } from "@core/constants"
+import { IS_FIREFOX, UNKNOWN_NETWORK_URL } from "@extension/shared"
 import { ChainId, EvmNetworkId } from "@talismn/chaindata-provider"
 import { classNames } from "@talismn/util"
 import useChain from "@ui/hooks/useChain"

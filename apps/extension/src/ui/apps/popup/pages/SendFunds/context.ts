@@ -1,5 +1,5 @@
-import { TokenId } from "@core/domains/tokens/types"
-import { Address } from "@core/types/base"
+import { Address } from "@extension/core"
+import { TokenId } from "@extension/core"
 import { HexString } from "@polkadot/util/types"
 import { provideContext } from "@talisman/util/provideContext"
 import { useCallback, useMemo } from "react"

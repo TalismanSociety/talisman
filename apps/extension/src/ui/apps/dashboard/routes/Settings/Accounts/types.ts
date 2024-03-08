@@ -1,5 +1,5 @@
-import type { TreeAccount, TreeFolder } from "@core/domains/accounts/helpers.catalog"
 import type { UniqueIdentifier } from "@dnd-kit/core"
+import type { TreeAccount, TreeFolder } from "@extension/core"
 import type { MutableRefObject } from "react"
 
 export type UiTree = UiTreeItem[]

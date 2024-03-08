@@ -1,5 +1,4 @@
-import { Balances } from "@core/domains/balances/types"
-import { ChainId, EvmNetworkId } from "@talismn/chaindata-provider"
+import { Balances, ChainId, EvmNetworkId } from "@extension/core"
 import { useMemo } from "react"
 
 export const usePortfolioNetworkIds = (balances: Balances) => {

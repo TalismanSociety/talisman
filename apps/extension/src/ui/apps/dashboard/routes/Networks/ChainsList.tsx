@@ -1,4 +1,4 @@
-import { activeChainsStore, isChainActive } from "@core/domains/chains/store.activeChains"
+import { activeChainsStore, isChainActive } from "@extension/core"
 import { Chain, isCustomChain } from "@talismn/chaindata-provider"
 import { ChevronRightIcon } from "@talismn/icons"
 import { classNames } from "@talismn/util"

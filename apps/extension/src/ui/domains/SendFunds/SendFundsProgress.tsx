@@ -1,9 +1,5 @@
-import { isAcalaEvmPlus } from "@core/domains/ethereum/helpers"
-import {
-  EvmWalletTransaction,
-  SubWalletTransaction,
-  WalletTransaction,
-} from "@core/domains/transactions"
+import { isAcalaEvmPlus } from "@extension/core"
+import { EvmWalletTransaction, SubWalletTransaction, WalletTransaction } from "@extension/core"
 import { HexString } from "@polkadot/util/types"
 import { Chain, EvmNetwork } from "@talismn/chaindata-provider"
 import { ExternalLinkIcon, RocketIcon, XCircleIcon } from "@talismn/icons"

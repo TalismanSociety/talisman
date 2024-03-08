@@ -1,5 +1,4 @@
-import { AccountJsonQr } from "@core/domains/accounts/types"
-import { roundToFirstInteger } from "@core/util/roundToFirstInteger"
+import { AccountJsonQr, roundToFirstInteger } from "@extension/core"
 import { HexString } from "@polkadot/util/types"
 import { planckToTokens } from "@talismn/util"
 import { api } from "@ui/api"

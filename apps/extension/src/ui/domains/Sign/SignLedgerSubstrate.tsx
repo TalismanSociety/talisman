@@ -1,5 +1,5 @@
-import { SignerPayloadJSON, SignerPayloadRaw } from "@core/domains/signing/types"
-import { log } from "@core/log"
+import { SignerPayloadJSON, SignerPayloadRaw } from "@extension/core"
+import { log } from "@extension/shared"
 import { TypeRegistry } from "@polkadot/types"
 import { hexToU8a } from "@polkadot/util"
 import { classNames } from "@talismn/util"

@@ -1,4 +1,4 @@
-import { RELEASE_NOTES_URL } from "@core/constants"
+import { RELEASE_NOTES_URL } from "@extension/shared"
 import { KeyIcon } from "@talismn/icons"
 import { useAppState } from "@ui/hooks/useAppState"
 import { FC, useCallback } from "react"

@@ -1,4 +1,4 @@
-import { Erc20Token } from "@core/domains/tokens/types"
+import { Erc20Token } from "@extension/core"
 import * as Sentry from "@sentry/browser"
 import { HeaderBlock } from "@talisman/components/HeaderBlock"
 import { notify } from "@talisman/components/Notifications"
