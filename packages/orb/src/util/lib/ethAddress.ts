@@ -1,3 +1,5 @@
+// inspired from https://github.com/wevm/viem/blob/main/src/utils/address/getAddress.ts
+
 import { keccak_256 } from "@noble/hashes/sha3"
 
 const TEXT_ENCODER = new TextEncoder()
