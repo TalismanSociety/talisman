@@ -9,6 +9,7 @@ export const AccountAddDerivedPage = () => {
   return (
     <AccountAddWrapper
       title={t("Create a new account")}
+      className="min-h-[72rem] min-w-[68rem]"
       render={(onSuccess) => <AccountAddDerivedForm onSuccess={onSuccess} />}
     />
   )

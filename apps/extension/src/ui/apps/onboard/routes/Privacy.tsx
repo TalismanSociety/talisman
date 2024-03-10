@@ -51,11 +51,9 @@ export const PrivacyPage = () => {
   }, [])
 
   return (
-    <OnboardLayout withBack analytics={ANALYTICS_PAGE}>
-      {/* eslint-disable-next-line jsx-a11y/alt-text */}
-      <img src={imgAnalyticsSwitch} className="absolute left-80 top-80" />
-      {/* eslint-disable-next-line jsx-a11y/alt-text */}
-      <img src={imgAnalyticsFlower} className="absolute bottom-32 right-10 " />
+    <OnboardLayout withBack analytics={ANALYTICS_PAGE} className="min-h-[55rem] min-w-[60rem]">
+      <img src={imgAnalyticsSwitch} className="fixed left-80 top-80" alt="" />
+      <img src={imgAnalyticsFlower} className="fixed bottom-32 right-10" alt="" />
       <OnboardDialog title={t("Manage your privacy")}>
         <Trans t={t}>
           <div className="flex flex-col gap-8">

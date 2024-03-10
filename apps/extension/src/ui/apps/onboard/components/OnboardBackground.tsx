@@ -11,7 +11,7 @@ const BG_CONFIG: MysticalPhysicsV3 = {
 
 // Memoize so animations don't reset on every render
 const Background = memo(() => (
-  <MysticalBackground className="fixed left-0 top-0 z-0 h-[100vh] w-[100vw]" config={BG_CONFIG} />
+  <MysticalBackground className="fixed left-0 top-0 z-0 h-lvh w-lvw" config={BG_CONFIG} />
 ))
 Background.displayName = "Background"
 

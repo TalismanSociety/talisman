@@ -35,7 +35,7 @@ export const AddAccountPage = () => {
   }, [isLoggedIn, setOnboarded])
 
   return (
-    <OnboardLayout withBack analytics={ANALYTICS_PAGE}>
+    <OnboardLayout withBack analytics={ANALYTICS_PAGE} className="min-h-[70rem] min-w-[68rem]">
       <OnboardDialog
         className="flex w-[68rem] flex-col"
         title={t("Add your first account")}
