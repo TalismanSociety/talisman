@@ -1,5 +1,5 @@
 import { useSetBalancesAddresses } from "@talismn/balances-react"
-import { Suspense, useMemo, useState } from "react"
+import { Dispatch, SetStateAction, Suspense, useMemo, useState } from "react"
 
 import { Balances, BalancesFallback } from "./components/Balances"
 import { BalancesTotal, BalancesTotalFallback } from "./components/BalancesTotal"
@@ -7,7 +7,12 @@ import { Button } from "./components/Button"
 import { useExtensionAccounts } from "./hooks/useExtensionAccounts"
 import { useExtensionSyncCustomChaindata } from "./hooks/useExtensionSyncCustomChaindata"
 
-export function App(): JSX.Element {
+type Props = {
+  withTestnets: boolean
+  setWithTestnets: Dispatch<SetStateAction<boolean>>
+}
+
+export function App({ withTestnets, setWithTestnets }: Props): JSX.Element {
   useExtensionSyncCustomChaindata()
 
   const accounts = useExtensionAccounts()
@@ -22,8 +27,18 @@ export function App(): JSX.Element {
     <div className="m-5 flex flex-col items-center gap-5">
       <h1 className="text-lg">Balances Demo</h1>
       <div className="flex justify-center gap-5">
-        <Button onClick={() => setHeaderActive((a) => !a)}>Toggle Header</Button>
-        <Button onClick={() => setTableActive((a) => !a)}>Toggle Table</Button>
+        <Button
+          className={headerActive ? undefined : "text-brand-orange"}
+          onClick={() => setHeaderActive((a) => !a)}
+        >
+          Toggle Header
+        </Button>
+        <Button
+          className={tableActive ? undefined : "text-brand-orange"}
+          onClick={() => setTableActive((a) => !a)}
+        >
+          Toggle Table
+        </Button>
         <Button
           onClick={() => {
             setHeaderActive((a) => !a)
@@ -34,11 +49,15 @@ export function App(): JSX.Element {
         </Button>
         <Button
           className={forceSkeletons ? "text-primary" : undefined}
-          onClick={() => {
-            setForceSkeletons((a) => !a)
-          }}
+          onClick={() => setForceSkeletons((a) => !a)}
         >
           Force Skeletons
+        </Button>
+        <Button
+          className={withTestnets ? "text-primary" : undefined}
+          onClick={() => setWithTestnets((t) => !t)}
+        >
+          Toggle Testnets
         </Button>
       </div>
       {headerActive && forceSkeletons && <BalancesTotalFallback />}

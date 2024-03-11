@@ -28,7 +28,7 @@ export const chaindataAtom = atom(async (get) => {
   const evmNetworksById = filterMapTestnets(chaindata.evmNetworksById)
   const tokens = filterTestnets(chaindata.tokens)
   const tokensById = filterMapTestnets(chaindata.tokensById)
-  const miniMetadatas = chaindata.miniMetadatas
+  const miniMetadatas = chaindata.miniMetadatas.filter((m) => chainsById[m.chainId])
 
   const enabledTokens = tokens.filter(
     (token) => token.isDefault || ("isCustom" in token && token.isCustom)

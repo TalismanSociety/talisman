@@ -8,7 +8,7 @@ import { allBalancesAtom } from "../atoms/balances"
 export const useSetBalancesAddresses = (addresses: string[]) => {
   const setAllAddresses = useSetAtom(allAddressesAtom)
   useEffect(() => {
-    setAllAddresses(addresses)
+    setAllAddresses((a) => (JSON.stringify(a) === JSON.stringify(addresses) ? a : addresses))
   }, [addresses, setAllAddresses])
 }
 
