@@ -67,6 +67,23 @@ export type ChangePasswordRequest = {
   newPw: string
   newPwConfirm: string
 }
+export const ChangePasswordStatusUpdateStatus = {
+  VALIDATING: "VALIDATING",
+  PREPARING: "PREPARING",
+  MNEMONICS: "MNEMONICS",
+  KEYPAIRS: "KEYPAIRS",
+  AUTH: "AUTH",
+  DONE: "DONE",
+  ERROR: "ERROR",
+} as const
+
+export type ChangePasswordStatusUpdateType =
+  (typeof ChangePasswordStatusUpdateStatus)[keyof typeof ChangePasswordStatusUpdateStatus]
+
+export type ChangePasswordStatusUpdate = {
+  status: ChangePasswordStatusUpdateType
+  message?: string
+}
 
 export interface CheckPasswordRequest {
   password: string
@@ -83,6 +100,7 @@ export interface AppMessages {
   "pri(app.authStatus.subscribe)": [null, boolean, LoggedinType]
   "pri(app.lock)": [null, boolean]
   "pri(app.changePassword)": [ChangePasswordRequest, boolean]
+  "pri(app.changePassword.subscribe)": [ChangePasswordRequest, boolean, ChangePasswordStatusUpdate]
   "pri(app.checkPassword)": [CheckPasswordRequest, boolean]
   "pri(app.dashboardOpen)": [RequestRoute, boolean]
   "pri(app.onboardOpen)": [null, boolean]

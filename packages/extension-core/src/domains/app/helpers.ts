@@ -13,7 +13,11 @@ import {
   encryptMnemonic,
   mnemonicsStore,
 } from "../mnemonics/store"
-import { ChangePasswordRequest } from "./types"
+import {
+  ChangePasswordRequest,
+  ChangePasswordStatusUpdate,
+  ChangePasswordStatusUpdateStatus,
+} from "./types"
 
 export const TALISMAN_BACKUP_KEYRING_KEY = "talismanKeyringBackup"
 
@@ -87,13 +91,12 @@ const migrateMnemonic = async (
   }
 }
 
-export const changePassword = async ({
-  currentPw,
-  newPw,
-}: Pick<ChangePasswordRequest, "currentPw" | "newPw">): Promise<
-  Result<boolean, "Error changing password">
-> => {
+export const changePassword = async (
+  { currentPw, newPw }: Pick<ChangePasswordRequest, "currentPw" | "newPw">,
+  progressCb?: (val: ChangePasswordStatusUpdate) => void
+): Promise<Result<boolean, "Error changing password">> => {
   try {
+    progressCb && progressCb({ status: ChangePasswordStatusUpdateStatus.KEYPAIRS })
     const backupJson = await keyring.backupAccounts(
       keyring.getPairs().map(({ address }) => address),
       currentPw
@@ -108,6 +111,7 @@ export const changePassword = async ({
     if (keypairMigrationResult.val.length !== backupJson.accounts.filter(eligiblePairFilter).length)
       throw new Error("Unable to re-encrypt all keypairs when changing password")
 
+    progressCb && progressCb({ status: ChangePasswordStatusUpdateStatus.MNEMONICS })
     // now migrate recovery phrase store passwords
     const mnemonicStoreData = await mnemonicsStore.get()
     const newMnemonicStoreData: Partial<MnemonicsStoreData> = {}

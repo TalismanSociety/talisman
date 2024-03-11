@@ -1,17 +1,22 @@
+import {
+  ChangePasswordStatusUpdateStatus,
+  ChangePasswordStatusUpdateType,
+} from "@core/domains/app/types"
 import { yupResolver } from "@hookform/resolvers/yup"
 import { HeaderBlock } from "@talisman/components/HeaderBlock"
 import { notify } from "@talisman/components/Notifications"
 import { InfoIcon } from "@talismn/icons"
 import { api } from "@ui/api"
+import { DashboardLayout } from "@ui/apps/dashboard/layout/DashboardLayout"
 import useMnemonicBackup from "@ui/hooks/useMnemonicBackup"
-import { useCallback, useEffect, useMemo } from "react"
+import { useCallback, useEffect, useMemo, useState } from "react"
 import { useForm } from "react-hook-form"
 import { useTranslation } from "react-i18next"
 import { useNavigate } from "react-router-dom"
 import { Button, FormFieldContainer, FormFieldInputText } from "talisman-ui"
 import * as yup from "yup"
 
-import { DashboardLayout } from "../../layout/DashboardLayout"
+import { ChangePasswordModal, ChangePasswordStatuses } from "./ChangePasswordModal"
 
 type FormData = {
   currentPw: string
@@ -23,6 +28,7 @@ export const ChangePasswordPage = () => {
   const { t } = useTranslation("admin")
   const navigate = useNavigate()
   const { allBackedUp } = useMnemonicBackup()
+  const [progress, setProgress] = useState<ChangePasswordStatusUpdateType>()
 
   const schema = useMemo(
     () =>
@@ -50,30 +56,47 @@ export const ChangePasswordPage = () => {
     resolver: yupResolver(schema),
   })
 
-  const submit = useCallback(
+  useEffect(() => {
+    if (progress === ChangePasswordStatusUpdateStatus.DONE) {
+      notify({
+        type: "success",
+        title: t("Password changed"),
+      })
+      navigate("/portfolio")
+    }
+  }, [progress, navigate, t])
+
+  const subscribeChangePassword = useCallback(
     async ({ currentPw, newPw, newPwConfirm }: FormData) => {
-      try {
-        await api.changePassword(currentPw, newPw, newPwConfirm)
-        notify({
-          type: "success",
-          title: t("Password changed"),
+      // sets up a custom promise, resolving when the password change is done or there is an error
+      return await new Promise<void>((resolve, reject) =>
+        api.changePasswordSubscribe(currentPw, newPw, newPwConfirm, ({ status, message }) => {
+          setProgress(status)
+          if (status === ChangePasswordStatusUpdateStatus.ERROR) {
+            reject(new Error(message))
+          }
+          if (status === ChangePasswordStatusUpdateStatus.DONE) {
+            resolve()
+          }
         })
-        navigate("/portfolio")
-      } catch (err) {
-        if ((err as Error).message === "Incorrect password")
-          setError("currentPw", { message: (err as Error).message })
-        if ((err as Error).message === "New password and new password confirmation must match")
-          setError("newPwConfirm", { message: (err as Error).message })
-        else {
-          notify({
-            type: "error",
-            title: t("Error changing password"),
-            subtitle: (err as Error)?.message ?? "",
-          })
+      ).catch((err) => {
+        switch (err.message) {
+          case "Incorrect password":
+            setError("currentPw", { message: err.message })
+            break
+          case "New password and new password confirmation must match":
+            setError("newPwConfirm", { message: err.message })
+            break
+          default:
+            notify({
+              type: "error",
+              title: t("Error changing password"),
+              subtitle: err.message,
+            })
         }
-      }
+      })
     },
-    [navigate, setError, t]
+    [setError, t]
   )
 
   const handleBackupClick = useCallback(() => {
@@ -111,7 +134,7 @@ export const ChangePasswordPage = () => {
           </div>
         )}
 
-        <form className="mt-8" onSubmit={handleSubmit(submit)}>
+        <form className="mt-8" onSubmit={handleSubmit(subscribeChangePassword)}>
           <FormFieldContainer error={errors.currentPw?.message} label={t("Old Password")}>
             <FormFieldInputText
               {...register("currentPw")}
@@ -162,6 +185,11 @@ export const ChangePasswordPage = () => {
             </Button>
           </div>
         </form>
+        <ChangePasswordModal
+          isOpen={isSubmitting}
+          status={ChangePasswordStatuses.IN_PROGRESS}
+          progressStage={progress}
+        />
       </DashboardLayout>
     </>
   )
