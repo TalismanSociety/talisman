@@ -20,8 +20,7 @@
   },
   "dependencies": {
     "blueimp-md5": "2.19.0",
-    "color": "4.2.3",
-    "nanoid": "3.3.7"
+    "color": "4.2.3"
   },
   "devDependencies": {
     "@polkadot/util-crypto": "^12.3.2",
