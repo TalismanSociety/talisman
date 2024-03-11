@@ -28,7 +28,6 @@ export const ModalDialog: FC<ModalDialogProps> = ({
       tabIndex={-1} // reset to prevent tab key from giving focus to elements below the modal
     >
       <header className="flex w-full items-center justify-between gap-8 overflow-hidden p-10">
-        {centerTitle && <div className="w-12 shrink-0"></div>}
         <h1
           className={classNames(
             "flex-grow overflow-hidden text-ellipsis whitespace-nowrap text-base",
