@@ -1,7 +1,4 @@
-import {
-  ChangePasswordStatusUpdateStatus,
-  ChangePasswordStatusUpdateType,
-} from "@core/domains/app/types"
+import { ChangePasswordStatusUpdateStatus, ChangePasswordStatusUpdateType } from "@extension/core"
 import { yupResolver } from "@hookform/resolvers/yup"
 import { HeaderBlock } from "@talisman/components/HeaderBlock"
 import { notify } from "@talisman/components/Notifications"

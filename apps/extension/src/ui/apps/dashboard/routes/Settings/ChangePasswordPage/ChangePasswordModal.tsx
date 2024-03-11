@@ -1,7 +1,4 @@
-import {
-  ChangePasswordStatusUpdateStatus,
-  ChangePasswordStatusUpdateType,
-} from "@core/domains/app/types"
+import { ChangePasswordStatusUpdateStatus, ChangePasswordStatusUpdateType } from "@extension/core"
 import { StatusIcon } from "@talisman/components/StatusIcon"
 import { useMemo } from "react"
 import { useTranslation } from "react-i18next"
