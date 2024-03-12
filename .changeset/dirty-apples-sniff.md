@@ -2,4 +2,4 @@
 "@talismn/util": minor
 ---
 
-feat: isNotNull helper
+feat: isBooleanTrue helper

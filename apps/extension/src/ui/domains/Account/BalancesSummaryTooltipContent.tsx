@@ -1,5 +1,5 @@
 import { Balances } from "@talismn/balances"
-import { isNotNull } from "@talismn/util"
+import { isBooleanTrue } from "@talismn/util"
 import { useAllChainsMap } from "@ui/hooks/useChains"
 import { useAllEvmNetworksMap } from "@ui/hooks/useEvmNetworks"
 import { useAllTokensMap } from "@ui/hooks/useTokens"
@@ -42,7 +42,7 @@ export const BalancesSummaryTooltipContent: FC<{ balances: Balances }> = ({ bala
           fiat: tokenBalances.sum.fiat("usd").total,
         }
       })
-      .filter(isNotNull)
+      .filter(isBooleanTrue)
       .sort((b1, b2) => {
         if (b1.fiat > b2.fiat) return -1
         if (b1.fiat < b2.fiat) return 1
