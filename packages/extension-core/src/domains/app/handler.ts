@@ -19,6 +19,7 @@ import { PasswordStoreData } from "./store.password"
 import type {
   AnalyticsCaptureRequest,
   ChangePasswordStatusUpdate,
+  ChangePasswordStatusUpdateType,
   LoggedinType,
   ModalOpenRequest,
   RequestLogin,
@@ -114,6 +115,9 @@ export default class AppHandler extends ExtensionHandler {
       status: ChangePasswordStatusUpdateStatus.VALIDATING,
     })
 
+    const updateProgress = (val: ChangePasswordStatusUpdateType, message?: string) =>
+      progressObservable.next({ status: val, message })
+
     genericSubscription<"pri(app.changePassword.subscribe)">(id, port, progressObservable)
     try {
       // only allow users who have confirmed backing up their recovery phrase to change PW
@@ -129,7 +133,7 @@ export default class AppHandler extends ExtensionHandler {
       // test if the two inputs of the new password are the same
       assert(newPw === newPwConfirm, "New password and new password confirmation must match")
 
-      progressObservable.next({ status: ChangePasswordStatusUpdateStatus.PREPARING })
+      updateProgress(ChangePasswordStatusUpdateStatus.PREPARING)
       const isHashedAlready = await this.stores.password.get("isHashed")
 
       let hashedNewPw, newSalt
@@ -142,12 +146,13 @@ export default class AppHandler extends ExtensionHandler {
       }
 
       const transformedPw = await this.stores.password.transformPassword(currentPw)
-      const result = await changePassword({ currentPw: transformedPw, newPw: hashedNewPw }, (val) =>
-        progressObservable.next(val)
+      const result = await changePassword(
+        { currentPw: transformedPw, newPw: hashedNewPw },
+        updateProgress
       )
       if (!result.ok) throw new Error(result.val)
 
-      progressObservable.next({ status: ChangePasswordStatusUpdateStatus.AUTH })
+      updateProgress(ChangePasswordStatusUpdateStatus.AUTH)
 
       // update password secret
       const secretResult = await this.stores.password.createAuthSecret(hashedNewPw)
@@ -161,14 +166,11 @@ export default class AppHandler extends ExtensionHandler {
       }
       await this.stores.password.set(pwStoreData)
       await this.stores.password.setPlaintextPassword(newPw)
-      progressObservable.next({ status: ChangePasswordStatusUpdateStatus.DONE })
+      updateProgress(ChangePasswordStatusUpdateStatus.DONE)
 
       return result.val
     } catch (error) {
-      progressObservable.next({
-        status: ChangePasswordStatusUpdateStatus.ERROR,
-        message: (error as Error).message,
-      })
+      updateProgress(ChangePasswordStatusUpdateStatus.ERROR, (error as Error).message)
       return false
     }
   }
