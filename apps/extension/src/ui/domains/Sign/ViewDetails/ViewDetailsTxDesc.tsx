@@ -1,4 +1,4 @@
-import { TransactionMethod } from "@core/domains/signing/types"
+import { TransactionMethod } from "@extension/core"
 import { FC, useMemo } from "react"
 import { useTranslation } from "react-i18next"
 

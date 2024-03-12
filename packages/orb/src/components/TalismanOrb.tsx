@@ -1,9 +1,8 @@
 import md5 from "blueimp-md5"
 import Color from "color"
-import { nanoid } from "nanoid"
-import { FC, useMemo } from "react"
+import { FC, useId, useMemo } from "react"
 
-import { encodeAnyAddress } from "../lib/encodeAnyAddress"
+import { normalizeAddress } from "../util/normalizeAddress"
 
 const djb2 = (str: string) => {
   let hash = 5381
@@ -26,12 +25,14 @@ type TalismanOrbProps = { seed: string; width?: number; height?: number; classNa
 type LogoIconType = "ethereum" | "substrate"
 
 export const useTalismanOrb = (seed: string) => {
+  const id = useId()
+
   return useMemo(() => {
     const iconType: LogoIconType = seed?.startsWith("0x") ? "ethereum" : "substrate"
     try {
       // seed may be specific to a ss58 prefix, get the base address
       // eslint-disable-next-line no-var
-      var address = encodeAnyAddress(seed)
+      var address = normalizeAddress(seed)
     } catch (err) {
       address = seed
     }
@@ -55,7 +56,7 @@ export const useTalismanOrb = (seed: string) => {
     const rotation = valueFromHash(hash1, 360)
 
     return {
-      id: nanoid(), //multiple avatars should cohabit on the same pageaa
+      id, //multiple avatars should cohabit on the same page
       bgColor1: colors[0].hex(),
       bgColor2: colors[1].hex(),
       glowColor: colors[2].hex(),
@@ -64,10 +65,10 @@ export const useTalismanOrb = (seed: string) => {
       cy: dotY,
       iconType,
     }
-  }, [seed])
+  }, [id, seed])
 }
 
-const TalismanOrbLogo = ({ iconType }: { iconType?: LogoIconType }) => {
+const TalismanOrbLogo = ({ id, iconType }: { id: string; iconType?: LogoIconType }) => {
   switch (iconType) {
     case "ethereum":
       return (
@@ -86,7 +87,7 @@ const TalismanOrbLogo = ({ iconType }: { iconType?: LogoIconType }) => {
       return (
         <>
           <g
-            clipPath="url(#clip0_1751_2030)"
+            clipPath={`url(#${id}_1751_2030)`}
             opacity="0.75"
             transform="scale(2.2) translate(4.5 3.9)"
           >
@@ -116,7 +117,7 @@ const TalismanOrbLogo = ({ iconType }: { iconType?: LogoIconType }) => {
             />
           </g>
           <defs>
-            <clipPath id="clip0_1751_2030">
+            <clipPath id={`${id}_1751_2030`}>
               <rect width="20" height="21.2699" fill="white" />
             </clipPath>
           </defs>
@@ -162,7 +163,7 @@ export const TalismanOrb: FC<TalismanOrbProps> = ({
           <rect fill={`url(#${id}-bg)`} x={0} y={0} width={64} height={64} />
           <circle fill={`url(#${id}-circle)`} cx={cx} cy={cy} r={45} opacity={0.7} />
         </g>
-        <TalismanOrbLogo iconType={iconType} />
+        <TalismanOrbLogo id={id} iconType={iconType} />
       </g>
     </svg>
   )

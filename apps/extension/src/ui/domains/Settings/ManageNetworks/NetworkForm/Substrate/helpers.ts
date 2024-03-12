@@ -1,5 +1,5 @@
-import { SignerPayloadGenesisHash } from "@core/domains/signing/types"
-import { WsProvider } from "@polkadot/api"
+import { SignerPayloadGenesisHash } from "@extension/core"
+import { WsProvider } from "@polkadot/rpc-provider"
 import { sleep } from "@talismn/util"
 
 // because of validation the same query is done 3 times minimum per url, make all await same promise

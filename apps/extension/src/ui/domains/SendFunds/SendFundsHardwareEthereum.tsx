@@ -1,5 +1,5 @@
-import { AccountJsonDcent } from "@core/domains/accounts/types"
-import { log } from "@core/log"
+import { AccountJsonDcent } from "@extension/core"
+import { log } from "@extension/shared"
 import { HexString } from "@polkadot/util/types"
 import { useAccountByAddress } from "@ui/hooks/useAccountByAddress"
 import { useCallback, useState } from "react"

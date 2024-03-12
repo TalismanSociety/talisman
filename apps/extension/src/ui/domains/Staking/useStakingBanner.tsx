@@ -1,8 +1,7 @@
-import { appStore } from "@core/domains/app/store.app"
-import { EVM_LSD_PAIRS, STAKING_BANNER_CHAINS } from "@core/domains/staking/constants"
-import { isNomPoolChain, isStakingSupportedChain } from "@core/domains/staking/helpers"
-import { StakingSupportedChain } from "@core/domains/staking/types"
-import { Address } from "@core/types/base"
+import { StakingSupportedChain } from "@extension/core"
+import { Address } from "@extension/core"
+import { EVM_LSD_PAIRS, STAKING_BANNER_CHAINS } from "@extension/core"
+import { appStore } from "@extension/core"
 import { Token } from "@talismn/chaindata-provider"
 import { stakingBannerAtom } from "@ui/atoms/stakingBanners"
 import useAccounts from "@ui/hooks/useAccounts"
@@ -11,7 +10,7 @@ import { useAtomValue } from "jotai"
 import { useCallback, useMemo } from "react"
 import { useTranslation } from "react-i18next"
 
-import { colours } from "./helpers"
+import { colours, isNomPoolChain, isStakingSupportedChain } from "./helpers"
 
 const useNomPoolStakingEligibility = () => {
   const chainAddressEligibility = useAtomValue(stakingBannerAtom).nomPool

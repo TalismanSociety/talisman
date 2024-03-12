@@ -1,4 +1,4 @@
-import { SPIRIT_KEYS_DOCS_URL } from "@core/constants"
+import { SPIRIT_KEYS_DOCS_URL } from "@extension/shared"
 import { HeaderBlock } from "@talisman/components/HeaderBlock"
 import { Setting } from "@talisman/components/Setting"
 import {

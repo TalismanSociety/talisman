@@ -1,5 +1,5 @@
-import { AccountsCatalogTree, TreeFolder, TreeItem } from "@core/domains/accounts/helpers.catalog"
-import { AccountJsonAny, AccountType } from "@core/domains/accounts/types"
+import { AccountJsonAny, AccountType } from "@extension/core"
+import { AccountsCatalogTree, TreeFolder, TreeItem } from "@extension/core"
 import { isEthereumAddress } from "@polkadot/util-crypto"
 import { SuspenseTracker } from "@talisman/components/SuspenseTracker"
 import { ChevronLeftIcon, ChevronRightIcon, CopyIcon, EyeIcon } from "@talismn/icons"

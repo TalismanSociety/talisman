@@ -1,5 +1,5 @@
-import { AccountJsonAny } from "@core/domains/accounts/types"
-import { Chain } from "@core/domains/chains/types"
+import { Chain } from "@extension/core"
+import { AccountJsonAny } from "@extension/core"
 import { UserRightIcon } from "@talismn/icons"
 import { SiwsMessage } from "@talismn/siws"
 import { AccountPill } from "@ui/domains/Account/AccountPill"

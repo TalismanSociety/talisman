@@ -1,5 +1,5 @@
-import { AssetDiscoveryMode } from "@core/domains/assetDiscovery/types"
-import { VerifierCertificateType } from "@core/domains/mnemonics/types"
+import { AssetDiscoveryMode } from "@extension/core"
+import { VerifierCertificateType } from "@extension/core"
 import { HexString } from "@polkadot/util/types"
 import { notify, notifyUpdate } from "@talisman/components/Notifications"
 import { provideContext } from "@talisman/util/provideContext"

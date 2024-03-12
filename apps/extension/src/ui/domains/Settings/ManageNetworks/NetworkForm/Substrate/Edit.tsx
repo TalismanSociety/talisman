@@ -1,4 +1,4 @@
-import { CustomNativeToken } from "@core/domains/tokens/types"
+import { CustomNativeToken } from "@extension/core"
 import { yupResolver } from "@hookform/resolvers/yup"
 import { SubNativeToken } from "@talismn/balances"
 import { Chain, ChainId, CustomChain, isCustomChain } from "@talismn/chaindata-provider"

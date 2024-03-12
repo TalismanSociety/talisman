@@ -1,4 +1,4 @@
-import { AccountType } from "@core/domains/accounts/types"
+import { AccountType } from "@extension/core"
 import { FadeIn } from "@talisman/components/FadeIn"
 import { notify, notifyUpdate } from "@talisman/components/Notifications"
 import { shortenAddress } from "@talisman/util/shortenAddress"

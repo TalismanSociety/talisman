@@ -1,4 +1,4 @@
-import { AccountsCatalogTree } from "@core/domains/accounts/helpers.catalog"
+import { AccountsCatalogTree } from "@extension/core"
 import { yupResolver } from "@hookform/resolvers/yup"
 import { api } from "@ui/api"
 import { atom, useAtom } from "jotai"

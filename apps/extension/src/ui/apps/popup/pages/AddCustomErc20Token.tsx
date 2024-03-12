@@ -1,5 +1,5 @@
-import { IS_FIREFOX, UNKNOWN_TOKEN_URL } from "@core/constants"
-import { WatchAssetRequestIdOnly } from "@core/domains/ethereum/types"
+import { WatchAssetRequestIdOnly } from "@extension/core"
+import { IS_FIREFOX, UNKNOWN_TOKEN_URL } from "@extension/shared"
 import { AppPill } from "@talisman/components/AppPill"
 import { api } from "@ui/api"
 import { balancesHydrateAtom } from "@ui/atoms"

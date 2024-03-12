@@ -1,4 +1,4 @@
-import { Address } from "@core/types/base"
+import { Address } from "@extension/core"
 import { balancesAtomFamily } from "@ui/atoms"
 import { useAtomValue } from "jotai"
 

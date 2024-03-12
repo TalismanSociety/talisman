@@ -1,5 +1,5 @@
-import { PORT_EXTENSION } from "@core/constants"
-import MessageService from "@core/libs/MessageService"
+import MessageService from "@common/MessageService"
+import { PORT_EXTENSION } from "@extension/shared"
 
 import MessageTypes from "./types"
 
@@ -19,6 +19,12 @@ export const api: MessageTypes = {
   lock: () => messageService.sendMessage("pri(app.lock)"),
   changePassword: (currentPw, newPw, newPwConfirm) =>
     messageService.sendMessage("pri(app.changePassword)", { currentPw, newPw, newPwConfirm }),
+  changePasswordSubscribe: (currentPw, newPw, newPwConfirm, cb) =>
+    messageService.sendMessage(
+      "pri(app.changePassword.subscribe)",
+      { currentPw, newPw, newPwConfirm },
+      cb
+    ),
   checkPassword: (password) => messageService.sendMessage("pri(app.checkPassword)", { password }),
   authStatus: () => messageService.sendMessage("pri(app.authStatus)"),
   authStatusSubscribe: (cb) => messageService.subscribe("pri(app.authStatus.subscribe)", null, cb),

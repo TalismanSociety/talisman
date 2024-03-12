@@ -1,5 +1,5 @@
-import { AccountJsonAny } from "@core/domains/accounts/types"
-import { Balance, Balances } from "@core/domains/balances/types"
+import { Balance, Balances } from "@extension/core"
+import { AccountJsonAny } from "@extension/core"
 import { ChevronLeftIcon, CopyIcon, MoreHorizontalIcon, SendIcon } from "@talismn/icons"
 import { classNames } from "@talismn/util"
 import { api } from "@ui/api"

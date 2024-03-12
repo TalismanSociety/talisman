@@ -1,7 +1,8 @@
-import { Erc20Token, Token } from "@core/domains/tokens/types"
+import { EvmErc20Token } from "@talismn/balances"
+import { Token } from "@talismn/chaindata-provider"
 
 export const isErc20Token = <T extends Token>(
-  token?: T | null | Erc20Token
-): token is Erc20Token => {
+  token?: T | null | EvmErc20Token
+): token is EvmErc20Token => {
   return token?.type === "evm-erc20"
 }

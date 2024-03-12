@@ -1,4 +1,4 @@
-import { PRIVACY_POLICY_URL, TERMS_OF_USE_URL } from "@core/constants"
+import { PRIVACY_POLICY_URL, TERMS_OF_USE_URL } from "@extension/shared"
 import { TalismanWhiteLogo } from "@talisman/theme/logos"
 import { ArrowRightIcon } from "@talismn/icons"
 import { AnalyticsPage, sendAnalyticsEvent } from "@ui/api/analytics"

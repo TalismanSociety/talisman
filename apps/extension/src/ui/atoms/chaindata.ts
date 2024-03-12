@@ -1,20 +1,6 @@
-import {
-  ActiveChains,
-  activeChainsStore,
-  isChainActive,
-} from "@core/domains/chains/store.activeChains"
-import {
-  ActiveEvmNetworks,
-  activeEvmNetworksStore,
-  isEvmNetworkActive,
-} from "@core/domains/ethereum/store.activeEvmNetworks"
-import {
-  ActiveTokens,
-  activeTokensStore,
-  isTokenActive,
-} from "@core/domains/tokens/store.activeTokens"
-import { chaindataProvider } from "@core/rpcs/chaindata"
-import { logObservableUpdate } from "@core/util/logObservableUpdate"
+import { ActiveChains, activeChainsStore, chaindataProvider, isChainActive } from "@extension/core"
+import { ActiveEvmNetworks, activeEvmNetworksStore, isEvmNetworkActive } from "@extension/core"
+import { ActiveTokens, activeTokensStore, isTokenActive } from "@extension/core"
 import { HexString } from "@polkadot/util/types"
 import {
   Chain,
@@ -33,6 +19,7 @@ import isEqual from "lodash/isEqual"
 import { Observable } from "rxjs"
 
 import { atomWithSubscription } from "./utils/atomWithSubscription"
+import { logObservableUpdate } from "./utils/logObservableUpdate"
 
 const NO_OP = () => {}
 
@@ -257,11 +244,10 @@ const allTokensMapSubscriptionAtom = atomWithSubscription<void>(
   () => api.tokens(NO_OP),
   "allTokensMapSubscriptionAtom"
 )
-const allTokensMapObservableAtom = atomWithObservable<TokenList>(
-  () =>
-    chaindataProvider.tokensByIdObservable.pipe(
-      logObservableUpdate("allTokensMapObservableAtom")
-    ) as Observable<TokenList> // TODO understand why invalid type on prod build
+const allTokensMapObservableAtom = atomWithObservable<TokenList>(() =>
+  (chaindataProvider.tokensByIdObservable as Observable<TokenList>).pipe(
+    logObservableUpdate("allTokensMapObservableAtom")
+  )
 )
 
 export const allTokensMapAtom = atom((get) => {

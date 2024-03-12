@@ -1,4 +1,4 @@
-import { Balances } from "@core/domains/balances/types"
+import { Balances } from "@extension/core"
 import { DashboardAssetsTable } from "@ui/domains/Portfolio/AssetsTable"
 import { NetworkPicker } from "@ui/domains/Portfolio/NetworkPicker"
 import { Statistics } from "@ui/domains/Portfolio/Statistics"

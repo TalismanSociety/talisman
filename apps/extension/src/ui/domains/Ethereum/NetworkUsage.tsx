@@ -1,4 +1,4 @@
-import { EthBaseFeeTrend } from "@core/domains/signing/types"
+import { EthBaseFeeTrend } from "@extension/core"
 import {
   NetworkUsageDecreasingIcon,
   NetworkUsageHighIcon,

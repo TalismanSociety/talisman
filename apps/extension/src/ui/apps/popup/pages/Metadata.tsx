@@ -1,4 +1,4 @@
-import { KnownRequestIdOnly } from "@core/libs/requests/types"
+import { KnownRequestIdOnly } from "@extension/core"
 import { notify } from "@talisman/components/Notifications"
 import { api } from "@ui/api"
 import { useAnalytics } from "@ui/hooks/useAnalytics"

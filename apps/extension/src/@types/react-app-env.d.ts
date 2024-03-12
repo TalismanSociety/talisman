@@ -104,6 +104,8 @@ declare module "*.md" {
   export default value
 }
 
+// below are the types for the eth-phishing-detect package
+// they are necessary for dev mode to function properly
 declare module "eth-phishing-detect" {
   const isEthPhishingDomain: (url: string) => boolean
   export default isEthPhishingDomain

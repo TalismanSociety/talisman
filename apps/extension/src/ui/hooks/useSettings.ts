@@ -1,4 +1,4 @@
-import { SettingsStoreData, settingsStore } from "@core/domains/app/store.settings"
+import { SettingsStoreData, settingsStore } from "@extension/core"
 import { settingsAtom } from "@ui/atoms"
 import { SetStateAction, useAtomValue } from "jotai"
 import { useCallback, useMemo } from "react"

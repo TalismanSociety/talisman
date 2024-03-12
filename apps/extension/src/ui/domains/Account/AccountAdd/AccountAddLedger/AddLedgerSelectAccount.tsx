@@ -1,4 +1,4 @@
-import { LedgerEthDerivationPathType } from "@core/domains/ethereum/types"
+import { LedgerEthDerivationPathType } from "@extension/core"
 import { yupResolver } from "@hookform/resolvers/yup"
 import { notify, notifyUpdate } from "@talisman/components/Notifications"
 import { sleep } from "@talismn/util"

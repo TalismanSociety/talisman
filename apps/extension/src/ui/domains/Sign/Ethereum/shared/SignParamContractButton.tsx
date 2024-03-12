@@ -1,4 +1,4 @@
-import { CustomEvmNetwork, EvmAddress, EvmNetwork } from "@core/domains/ethereum/types"
+import { CustomEvmNetwork, EvmAddress, EvmNetwork } from "@extension/core"
 import { isEthereumAddress } from "@talismn/util"
 import { Address } from "@ui/domains/Account/Address"
 import { AssetLogo } from "@ui/domains/Asset/AssetLogo"

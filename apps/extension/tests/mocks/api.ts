@@ -1,14 +1,10 @@
+import type { AuthorizedSite, AuthorizedSites, ProviderType } from "@extension/core"
+import { SitesAuthorizedStore } from "@extension/core"
+import { AnalyticsCaptureRequest } from "@extension/core"
+import { Trees } from "@extension/core"
+import { AccountJsonAny, AccountType } from "@extension/core"
 /* eslint-disable @typescript-eslint/no-unused-vars */
-import { TALISMAN_WEB_APP_DOMAIN } from "@core/constants"
-import { Trees } from "@core/domains/accounts/helpers.catalog"
-import { AccountJsonAny, AccountType } from "@core/domains/accounts/types"
-import { AnalyticsCaptureRequest } from "@core/domains/app/types"
-import { SitesAuthorizedStore } from "@core/domains/sitesAuthorised/store"
-import type {
-  AuthorizedSite,
-  AuthorizedSites,
-  ProviderType,
-} from "@core/domains/sitesAuthorised/types"
+import { TALISMAN_WEB_APP_DOMAIN } from "@extension/shared"
 
 import { ADDRESSES } from "../constants"
 

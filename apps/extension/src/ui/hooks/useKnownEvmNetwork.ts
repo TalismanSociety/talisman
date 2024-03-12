@@ -1,7 +1,4 @@
-import {
-  activeEvmNetworksStore,
-  isEvmNetworkActive,
-} from "@core/domains/ethereum/store.activeEvmNetworks"
+import { activeEvmNetworksStore, isEvmNetworkActive } from "@extension/core"
 import { isCustomEvmNetwork } from "@talismn/chaindata-provider"
 import { useCallback, useMemo } from "react"
 

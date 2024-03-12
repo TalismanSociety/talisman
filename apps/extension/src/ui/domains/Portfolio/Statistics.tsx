@@ -1,4 +1,4 @@
-import { Token } from "@core/domains/tokens/types"
+import { Token } from "@extension/core"
 import { LockIcon } from "@talismn/icons"
 import { classNames } from "@talismn/util"
 import { useSelectedCurrency, useToggleCurrency } from "@ui/hooks/useCurrency"

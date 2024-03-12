@@ -1,4 +1,4 @@
-import { TokenId } from "@core/domains/tokens/types"
+import { TokenId } from "@extension/core"
 import { balancesAtomFamily } from "@ui/atoms"
 import { useAtomValue } from "jotai"
 import { useMemo } from "react"

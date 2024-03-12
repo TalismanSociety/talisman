@@ -1,4 +1,4 @@
-import { AccountJsonAny } from "@core/domains/accounts/types"
+import { AccountJsonAny } from "@extension/core"
 import { useGlobalOpenClose } from "@talisman/hooks/useGlobalOpenClose"
 import { useSelectedAccount } from "@ui/domains/Portfolio/useSelectedAccount"
 import { atom, useAtom } from "jotai"

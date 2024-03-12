@@ -1,4 +1,4 @@
-import { AssetDiscoveryMode } from "@core/domains/assetDiscovery/types"
+import { AssetDiscoveryMode } from "@extension/core"
 import { shortenAddress } from "@talisman/util/shortenAddress"
 import { ArrowUpLeftIcon, CheckCircleIcon, ChevronLeftIcon, LoaderIcon } from "@talismn/icons"
 import { classNames, encodeAnyAddress } from "@talismn/util"

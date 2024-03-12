@@ -1,4 +1,4 @@
-import { ProviderType } from "@core/domains/sitesAuthorised/types"
+import { ProviderType } from "@extension/core"
 import { notify } from "@talisman/components/Notifications"
 import { api } from "@ui/api"
 import { FC, ReactNode, useCallback } from "react"

@@ -1,4 +1,4 @@
-import { RequestAccountCreateFromSuri } from "@core/domains/accounts/types"
+import { RequestAccountCreateFromSuri } from "@extension/core"
 import { yupResolver } from "@hookform/resolvers/yup"
 import { HeaderBlock } from "@talisman/components/HeaderBlock"
 import { notify, notifyUpdate } from "@talisman/components/Notifications"
