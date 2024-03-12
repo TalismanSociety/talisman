@@ -47,10 +47,12 @@ describe("App handler when password is not trimmed", () => {
 
   beforeAll(async () => {
     await Browser.storage.local.clear()
+
     keyring.getPairs().forEach((pair) => keyring.forgetAccount(pair.address))
 
     extension = await createExtension()
-    messageSender = getMessageSenderFn(extension)
+    const port = Browser.runtime.connect("talismanTest")
+    messageSender = getMessageSenderFn(extension, port)
 
     await messageSender("pri(app.onboardCreatePassword)", {
       pass: password,
@@ -114,7 +116,7 @@ describe("App handler when password is not trimmed", () => {
     await extensionStores.mnemonics.setConfirmed(mnemonicId, true)
 
     const newPw = "noSpaces"
-    const changePassword = await messageSender("pri(app.changePassword)", {
+    const changePassword = await messageSender("pri(app.changePassword.subscribe)", {
       currentPw: password,
       newPw,
       newPwConfirm: newPw,
@@ -145,7 +147,7 @@ describe("App handler when password is not trimmed", () => {
     await extensionStores.mnemonics.setConfirmed(mnemonicId, true)
 
     const newPw = " Spaces "
-    const changePassword = await messageSender("pri(app.changePassword)", {
+    const changePassword = await messageSender("pri(app.changePassword.subscribe)", {
       currentPw: password,
       newPw,
       newPwConfirm: newPw,
@@ -201,7 +203,8 @@ describe("App handler when password is trimmed", () => {
     keyring.getPairs().forEach((pair) => keyring.forgetAccount(pair.address))
 
     extension = await createExtension()
-    messageSender = getMessageSenderFn(extension)
+    const port = Browser.runtime.connect("talismanTest")
+    messageSender = getMessageSenderFn(extension, port)
 
     await messageSender("pri(app.onboardCreatePassword)", {
       pass: password.trim(),
@@ -276,7 +279,7 @@ describe("App handler when password is trimmed", () => {
     await extensionStores.mnemonics.setConfirmed(mnemonicId, true)
 
     const newPw = "noSpaces"
-    const changePassword = await messageSender("pri(app.changePassword)", {
+    const changePassword = await messageSender("pri(app.changePassword.subscribe)", {
       currentPw: password,
       newPw,
       newPwConfirm: newPw,
@@ -308,7 +311,7 @@ describe("App handler when password is trimmed", () => {
     expect(extensionStores.password.isLoggedIn.value).toBe("TRUE")
 
     const newPw = " Spaces "
-    const changePassword = await messageSender("pri(app.changePassword)", {
+    const changePassword = await messageSender("pri(app.changePassword.subscribe)", {
       currentPw: password,
       newPw,
       newPwConfirm: newPw,

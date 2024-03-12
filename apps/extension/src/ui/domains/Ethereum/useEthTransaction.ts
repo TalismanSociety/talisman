@@ -61,7 +61,6 @@ const useHasEip1559Support = (publicClient: PublicClient | undefined) => {
       if (!publicClient) return null
 
       try {
-        publicClient.chain?.fees?.defaultPriorityFee
         const {
           baseFeePerGas: [baseFee],
         } = await publicClient.getFeeHistory({ blockCount: 1, rewardPercentiles: [] })
@@ -70,6 +69,10 @@ const useHasEip1559Support = (publicClient: PublicClient | undefined) => {
         // TODO check that feeHistory returns -32601 when method doesn't exist
         const error = err as Error & { code?: number }
         if (error.code === ETH_ERROR_EIP1474_METHOD_NOT_FOUND) return false
+
+        // edge case identified on Scroll network: viem's getFeeHistory method crashes as the rpc response doesn't match expected data type
+        // error message: "Cannot convert null to a BigInt"
+        if (error.name === "TypeError") return false
 
         throw err
       }

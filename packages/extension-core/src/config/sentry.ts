@@ -85,8 +85,4 @@ export const initSentry = (sentry: typeof SentryBrowser | typeof SentryReact) =>
   window.addEventListener("error", (event) => {
     triggerIndexedDbUnavailablePopup(event.error)
   })
-  window.addEventListener("unhandledrejection", (event) => {
-    triggerIndexedDbUnavailablePopup(event.reason)
-    sentry.captureEvent(event.reason)
-  })
 }
