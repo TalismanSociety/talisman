@@ -13,7 +13,7 @@ import { useNavigate } from "react-router-dom"
 import { Button, FormFieldContainer, FormFieldInputText } from "talisman-ui"
 import * as yup from "yup"
 
-import { ChangePasswordModal, ChangePasswordStatuses } from "./ChangePasswordModal"
+import { ChangePasswordModal } from "./ChangePasswordModal"
 
 type FormData = {
   currentPw: string
@@ -182,11 +182,7 @@ export const ChangePasswordPage = () => {
             </Button>
           </div>
         </form>
-        <ChangePasswordModal
-          isOpen={isSubmitting}
-          status={ChangePasswordStatuses.IN_PROGRESS}
-          progressStage={progress}
-        />
+        <ChangePasswordModal isOpen={isSubmitting} progressStage={progress} />
       </DashboardLayout>
     </>
   )

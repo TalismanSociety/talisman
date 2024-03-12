@@ -4,19 +4,11 @@ import { useMemo } from "react"
 import { useTranslation } from "react-i18next"
 import { Modal, ModalDialog } from "talisman-ui"
 
-export enum ChangePasswordStatuses {
-  IN_PROGRESS = "SPINNING",
-  SUCCESS = "SUCCESS",
-  ERROR = "ERROR",
-}
-
 export const ChangePasswordModal = ({
   isOpen,
-  status,
   progressStage,
 }: {
   isOpen: boolean
-  status: ChangePasswordStatuses
   progressStage?: ChangePasswordStatusUpdateType
 }) => {
   const { t } = useTranslation("admin")
@@ -40,7 +32,7 @@ export const ChangePasswordModal = ({
   return (
     <Modal isOpen={isOpen}>
       <ModalDialog title={t("Changing password")} centerTitle>
-        <StatusIcon className="text-3xl" status={status} />
+        <StatusIcon className="text-3xl" status={"SPINNING"} />
         <div className="mt-4 flex flex-col gap-5 text-center">
           <p className="animate-pulse">{progressDisplay}</p>
           <p className="text-alert-warn border-alert-warn rounded border p-2 text-sm">
