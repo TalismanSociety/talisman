@@ -1,4 +1,4 @@
-import { AccountJsonQr, AccountJsonSignet, AccountType } from "@core/domains/accounts/types"
+import { AccountJsonQr, AccountJsonSignet, AccountType } from "@extension/core"
 import { InfoIcon, LoaderIcon } from "@talismn/icons"
 import { TokensAndFiat } from "@ui/domains/Asset/TokensAndFiat"
 import { useFeeToken } from "@ui/domains/SendFunds/useFeeToken"

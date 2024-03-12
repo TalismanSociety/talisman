@@ -1,9 +1,8 @@
+import { AccountJsonAny, Balance, Balances } from "@extension/core"
 import {
   DEFAULT_PORTFOLIO_TOKENS_ETHEREUM,
   DEFAULT_PORTFOLIO_TOKENS_SUBSTRATE,
-} from "@core/constants"
-import { AccountJsonAny } from "@core/domains/accounts/types"
-import { Balance, Balances } from "@core/domains/balances/types"
+} from "@extension/shared"
 import { useSelectedAccount } from "@ui/domains/Portfolio/useSelectedAccount"
 import { useMemo } from "react"
 

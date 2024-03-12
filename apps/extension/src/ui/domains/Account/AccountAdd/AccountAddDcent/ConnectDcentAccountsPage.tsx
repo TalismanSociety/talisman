@@ -1,4 +1,4 @@
-import { DEBUG } from "@core/constants"
+import { DEBUG } from "@extension/shared"
 import { HeaderBlock } from "@talisman/components/HeaderBlock"
 import { Spacer } from "@talisman/components/Spacer"
 import { dcent } from "@ui/util/dcent"

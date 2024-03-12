@@ -1,5 +1,5 @@
-import { getCoingeckoToken } from "@core/util/coingecko/getCoinGeckoToken"
-import { getCoingeckoTokensList } from "@core/util/coingecko/getCoinGeckoTokensList"
+import { getCoingeckoToken } from "@extension/core"
+import { getCoingeckoTokensList } from "@extension/core"
 import { useQuery } from "@tanstack/react-query"
 import { useMemo } from "react"
 

@@ -1,4 +1,4 @@
-import { SettingsStoreData } from "@core/domains/app/store.settings"
+import { SettingsStoreData } from "@extension/core"
 import { HeaderBlock } from "@talisman/components/HeaderBlock"
 import { Spacer } from "@talisman/components/Spacer"
 import { useSetting } from "@ui/hooks/useSettings"

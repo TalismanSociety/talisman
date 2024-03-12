@@ -1,5 +1,4 @@
-import { AccountsCatalogTree, TreeItem } from "@core/domains/accounts/helpers.catalog"
-import { AccountType } from "@core/domains/accounts/types"
+import { AccountType, AccountsCatalogTree, TreeItem } from "@extension/core"
 import { FloatingPortal, autoUpdate, useFloating } from "@floating-ui/react"
 import { Listbox } from "@headlessui/react"
 import { isEthereumAddress } from "@polkadot/util-crypto"

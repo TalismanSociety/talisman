@@ -1,10 +1,11 @@
-import { log } from "@core/log"
-import { UnsubscribeFn } from "@core/types"
-import { logObservableUpdate } from "@core/util/logObservableUpdate"
+import { UnsubscribeFn } from "@extension/core"
+import { log } from "@extension/shared"
 import { Atom, atom } from "jotai"
 import { atomEffect as atomWithEffect } from "jotai-effect"
 import { atomWithObservable } from "jotai/utils"
 import { ReplaySubject } from "rxjs"
+
+import { logObservableUpdate } from "./logObservableUpdate"
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 type SubscribeFn<T = unknown> = (callback: (value: T) => void) => UnsubscribeFn

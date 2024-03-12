@@ -1,4 +1,4 @@
-import { appStore } from "@core/domains/app/store.app"
+import { appStore } from "@extension/core"
 import { useIsBrave } from "@talisman/hooks/useIsBrave"
 import { useOpenClose } from "@talisman/hooks/useOpenClose"
 import { useCallback, useEffect, useMemo, useState } from "react"

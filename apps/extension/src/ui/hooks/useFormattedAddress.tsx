@@ -1,4 +1,4 @@
-import { AccountJsonAny } from "@core/domains/accounts/types"
+import { AccountJsonAny } from "@extension/core"
 import { encodeAnyAddress } from "@talismn/util"
 import { useChainByGenesisHash } from "@ui/hooks/useChainByGenesisHash"
 import { useMemo } from "react"

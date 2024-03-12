@@ -1,4 +1,4 @@
-import { AddressBookContact, addressBookStore } from "@core/domains/app/store.addressBook"
+import { AddressBookContact, addressBookStore } from "@extension/core"
 import { atomWithSubscription } from "@ui/atoms/utils/atomWithSubscription"
 import { useAtomValue } from "jotai"
 import { useCallback } from "react"

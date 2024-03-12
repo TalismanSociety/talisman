@@ -1,4 +1,4 @@
-import { AssetDiscoveryMode } from "@core/domains/assetDiscovery/types"
+import { AssetDiscoveryMode } from "@extension/core"
 import { yupResolver } from "@hookform/resolvers/yup"
 import { secp256k1 } from "@noble/curves/secp256k1"
 import { HeaderBlock } from "@talisman/components/HeaderBlock"

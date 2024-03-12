@@ -1,4 +1,4 @@
-import { activeChainsStore, isChainActive } from "@core/domains/chains/store.activeChains"
+import { activeChainsStore, isChainActive } from "@extension/core"
 import { isCustomChain } from "@talismn/chaindata-provider"
 import { useCallback, useMemo } from "react"
 

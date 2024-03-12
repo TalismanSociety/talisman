@@ -1,6 +1,5 @@
-import { Balances } from "@core/domains/balances/types"
+import { Balances, ChainId, EvmNetworkId } from "@extension/core"
 import { FadeIn } from "@talisman/components/FadeIn"
-import { ChainId, EvmNetworkId } from "@talismn/chaindata-provider"
 import { ArrowDownIcon, CreditCardIcon, LockIcon } from "@talismn/icons"
 import { classNames } from "@talismn/util"
 import { api } from "@ui/api"

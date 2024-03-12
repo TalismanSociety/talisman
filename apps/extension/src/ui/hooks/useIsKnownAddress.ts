@@ -1,4 +1,4 @@
-import { AddressBookContact } from "@core/domains/app/store.addressBook"
+import { AddressBookContact } from "@extension/core"
 import { AccountJson } from "@polkadot/extension-base/background/types"
 import { convertAddress } from "@talisman/util/convertAddress"
 import { useMemo } from "react"

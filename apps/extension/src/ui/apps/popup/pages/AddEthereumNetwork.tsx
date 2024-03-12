@@ -1,5 +1,5 @@
-import { KnownRequestIdOnly } from "@core/libs/requests/types"
-import { log } from "@core/log"
+import { KnownRequestIdOnly } from "@extension/core"
+import { log } from "@extension/shared"
 import { AppPill } from "@talisman/components/AppPill"
 import { notify } from "@talisman/components/Notifications"
 import { EvmNetwork } from "@talismn/chaindata-provider"
@@ -104,9 +104,7 @@ const SettingsSourceSelector: FC<{
               <InfoIcon />
             </TooltipTrigger>
             <TooltipContent>
-              {t(
-                "You can activate this network using Talisman recommended settings, or register it as a custom network using the settings provided by the site. You will be able to adjust this afterwards from Talisman settings menu"
-              )}
+              {t("This network's settings can be modified afterwards from Talisman settings menu")}
             </TooltipContent>
           </Tooltip>
         </legend>

@@ -1,5 +1,3 @@
-import { firstThenDebounce } from "@core/util/firstThenDebounce"
-import { logObservableUpdate } from "@core/util/logObservableUpdate"
 import {
   Address,
   Balances,
@@ -9,6 +7,7 @@ import {
   getValidSubscriptionIds,
 } from "@talismn/balances"
 import { TokenId } from "@talismn/chaindata-provider"
+import { firstThenDebounce } from "@talismn/util"
 import { api } from "@ui/api"
 import { liveQuery } from "dexie"
 import { atom } from "jotai"
@@ -24,6 +23,7 @@ import {
 } from "./chaindata"
 import { tokenRatesMapAtom } from "./tokenRates"
 import { atomWithSubscription } from "./utils/atomWithSubscription"
+import { logObservableUpdate } from "./utils/logObservableUpdate"
 
 const NO_OP = () => {}
 

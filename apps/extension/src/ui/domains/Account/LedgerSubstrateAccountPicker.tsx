@@ -1,5 +1,5 @@
-import { isChainActive } from "@core/domains/chains/store.activeChains"
-import { log } from "@core/log"
+import { isChainActive } from "@extension/core"
+import { log } from "@extension/shared"
 import { convertAddress } from "@talisman/util/convertAddress"
 import { LedgerAccountDefSubstrate } from "@ui/domains/Account/AccountAdd/AccountAddLedger/context" // Todo
 import { useLedgerSubstrate } from "@ui/hooks/ledger/useLedgerSubstrate"

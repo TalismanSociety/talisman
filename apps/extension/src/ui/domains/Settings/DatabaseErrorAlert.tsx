@@ -1,4 +1,4 @@
-import { errorsStore } from "@core/domains/app/store.errors"
+import { errorsStore } from "@extension/core"
 import { Card } from "@talisman/components/Card"
 import { AlertCircleIcon, DatabaseIcon } from "@talismn/icons"
 import { AnalyticsPage } from "@ui/api/analytics"

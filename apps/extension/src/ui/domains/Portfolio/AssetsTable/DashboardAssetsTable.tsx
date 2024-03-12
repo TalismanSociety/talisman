@@ -1,4 +1,4 @@
-import { Balances } from "@core/domains/balances/types"
+import { Balances } from "@extension/core"
 import { classNames } from "@talismn/util"
 import { FC } from "react"
 import { useTranslation } from "react-i18next"

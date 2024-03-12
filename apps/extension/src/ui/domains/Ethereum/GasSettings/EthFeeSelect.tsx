@@ -1,10 +1,10 @@
-import { EthGasSettings } from "@core/domains/ethereum/types"
+import { EthGasSettings } from "@extension/core"
 import {
   EthPriorityOptionName,
   EthTransactionDetails,
   GasSettingsByPriority,
-} from "@core/domains/signing/types"
-import { TokenId } from "@core/domains/tokens/types"
+} from "@extension/core"
+import { TokenId } from "@extension/core"
 import { useOpenClose } from "@talisman/hooks/useOpenClose"
 import { classNames } from "@talismn/util"
 import { useAnalytics } from "@ui/hooks/useAnalytics"

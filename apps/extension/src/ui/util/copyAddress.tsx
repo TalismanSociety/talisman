@@ -1,8 +1,9 @@
-import i18next from "@core/i18nConfig"
 import { notify } from "@talisman/components/Notifications"
 import { shortenAddress } from "@talisman/util/shortenAddress"
 import { QrIcon } from "@talismn/icons"
 import { IconButton } from "talisman-ui"
+
+import i18next from "../../common/i18nConfig"
 
 export const copyAddress = async (address: string, onQrClick?: () => void) => {
   if (!address || address.toLowerCase().startsWith("javascript:")) return

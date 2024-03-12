@@ -1,7 +1,5 @@
-import { db } from "@core/db"
-import { assetDiscoveryStore } from "@core/domains/assetDiscovery/store"
-import { firstThenDebounce } from "@core/util/firstThenDebounce"
-import { logObservableUpdate } from "@core/util/logObservableUpdate"
+import { assetDiscoveryStore, db } from "@extension/core"
+import { firstThenDebounce } from "@talismn/util"
 import { liveQuery } from "dexie"
 import { atom } from "jotai"
 import { atomWithObservable } from "jotai/utils"
@@ -10,6 +8,7 @@ import sortBy from "lodash/sortBy"
 import { from } from "rxjs"
 
 import { tokensMapAtomFamily } from "./chaindata"
+import { logObservableUpdate } from "./utils/logObservableUpdate"
 
 const assetDiscoveryBalancesAtom = atomWithObservable(() =>
   // backend will do a lot of updates

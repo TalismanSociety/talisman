@@ -1,4 +1,4 @@
-import { Balances } from "@core/domains/balances/types"
+import { Balances } from "@extension/core"
 import { Accordion, AccordionIcon } from "@talisman/components/Accordion"
 import { FadeIn } from "@talisman/components/FadeIn"
 import { useOpenClose } from "@talisman/hooks/useOpenClose"

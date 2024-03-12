@@ -1,5 +1,5 @@
-import { TOKEN_APPROVALS_URL } from "@core/constants"
-import { BalanceFormatter } from "@core/domains/balances"
+import { BalanceFormatter } from "@extension/core"
+import { TOKEN_APPROVALS_URL } from "@extension/shared"
 import { assert } from "@polkadot/util"
 import { useErc20Token } from "@ui/hooks/useErc20Token"
 import useToken from "@ui/hooks/useToken"

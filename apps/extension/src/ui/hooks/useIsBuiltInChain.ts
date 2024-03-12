@@ -1,4 +1,4 @@
-import { chaindataProvider } from "@core/rpcs/chaindata"
+import { chaindataProvider } from "@extension/core"
 import { ChainId } from "@talismn/chaindata-provider"
 import { useQuery } from "@tanstack/react-query"
 

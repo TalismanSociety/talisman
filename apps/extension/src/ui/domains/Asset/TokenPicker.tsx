@@ -1,6 +1,4 @@
-import { Balances } from "@core/domains/balances/types"
-import { Token, TokenId } from "@core/domains/tokens/types"
-import { Address } from "@core/types/base"
+import { Address, Balances, Token, TokenId } from "@extension/core"
 import { isEthereumAddress } from "@polkadot/util-crypto"
 import { ScrollContainer } from "@talisman/components/ScrollContainer"
 import { SearchInput } from "@talisman/components/SearchInput"

@@ -1,4 +1,4 @@
-import { activeTokensStore, isTokenActive } from "@core/domains/tokens/store.activeTokens"
+import { activeTokensStore, isTokenActive } from "@extension/core"
 import { HeaderBlock } from "@talisman/components/HeaderBlock"
 import { SearchInput } from "@talisman/components/SearchInput"
 import { Spacer } from "@talisman/components/Spacer"

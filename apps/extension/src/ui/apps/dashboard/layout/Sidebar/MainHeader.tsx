@@ -1,4 +1,4 @@
-import { CopyIcon, MoreHorizontalIcon, SendIcon } from "@talismn/icons"
+import { ArrowDownIcon, CopyIcon, MoreHorizontalIcon, SendIcon } from "@talismn/icons"
 import { AccountContextMenu } from "@ui/apps/dashboard/routes/Portfolio/AccountContextMenu"
 import { useCopyAddressModal } from "@ui/domains/CopyAddress"
 import { AccountSelect } from "@ui/domains/Portfolio/AccountSelect"
@@ -46,11 +46,11 @@ export const MainHeader = () => {
           <TooltipTrigger asChild>
             <PillButton
               className="!px-4"
-              icon={CopyIcon}
+              icon={account ? CopyIcon : ArrowDownIcon}
               onClick={handleCopyClick}
               disabled={!accounts.length}
             >
-              {t("Copy")}
+              {account ? t("Copy") : t("Receive")}
             </PillButton>
           </TooltipTrigger>
           {!!accounts.length && <TooltipContent>{t("Copy address")}</TooltipContent>}
@@ -78,7 +78,7 @@ export const MainHeader = () => {
           onClick={handleCopyClick}
           disabled={accounts.length === 0}
         >
-          <CopyIcon />
+          {account ? <ArrowDownIcon /> : <CopyIcon />}
         </IconButton>
         {accounts.length > 0 && (
           <AccountContextMenu

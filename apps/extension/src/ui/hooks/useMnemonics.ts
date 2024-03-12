@@ -1,4 +1,4 @@
-import { SOURCES, mnemonicsStore } from "@core/domains/mnemonics/store"
+import { MnemonicSource, mnemonicsStore } from "@extension/core"
 import { atomWithSubscription } from "@ui/atoms/utils/atomWithSubscription"
 import { atom, useAtomValue } from "jotai"
 import { atomFamily } from "jotai/utils"
@@ -7,7 +7,7 @@ export type Mnemonic = {
   id: string
   name: string
   confirmed: boolean
-  source: SOURCES
+  source: MnemonicSource
 }
 
 const mnemonicsAtom = atomWithSubscription<Mnemonic[]>((callback) => {

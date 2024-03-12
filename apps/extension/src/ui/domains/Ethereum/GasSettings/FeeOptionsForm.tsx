@@ -1,11 +1,11 @@
-import { getTotalFeesFromGasSettings, isAcalaEvmPlus } from "@core/domains/ethereum/helpers"
+import { getTotalFeesFromGasSettings, isAcalaEvmPlus } from "@extension/core"
 import {
   EthPriorityOptionName,
   EthPriorityOptionNameEip1559,
   EthPriorityOptionNameLegacy,
   EthTransactionDetails,
   GasSettingsByPriority,
-} from "@core/domains/signing/types"
+} from "@extension/core"
 import { BalanceFormatter } from "@talismn/balances"
 import { TokenId } from "@talismn/chaindata-provider"
 import { ChevronRightIcon } from "@talismn/icons"

@@ -1,5 +1,5 @@
-import { IdenticonType } from "@core/domains/accounts/types"
-import { Address } from "@core/types/base"
+import { Address } from "@extension/core"
+import { IdenticonType } from "@extension/core"
 import { TalismanOrb } from "@talismn/orb"
 import { classNames, isEthereumAddress } from "@talismn/util"
 import { useChainByGenesisHash } from "@ui/hooks/useChainByGenesisHash"

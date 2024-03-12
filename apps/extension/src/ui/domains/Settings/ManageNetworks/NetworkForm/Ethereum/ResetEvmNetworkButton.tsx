@@ -1,4 +1,4 @@
-import { CustomEvmNetwork, EvmNetwork } from "@core/domains/ethereum/types"
+import { CustomEvmNetwork, EvmNetwork } from "@extension/core"
 import { notify } from "@talisman/components/Notifications"
 import { useOpenClose } from "@talisman/hooks/useOpenClose"
 import { sleep } from "@talismn/util"

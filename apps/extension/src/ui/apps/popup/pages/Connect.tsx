@@ -1,5 +1,5 @@
-import { ProviderType } from "@core/domains/sitesAuthorised/types"
-import { KnownRequestIdOnly } from "@core/libs/requests/types"
+import { ProviderType } from "@extension/core"
+import { KnownRequestIdOnly } from "@extension/core"
 import { AppPill } from "@talisman/components/AppPill"
 import { notify } from "@talisman/components/Notifications"
 import useSet from "@talisman/hooks/useSet"

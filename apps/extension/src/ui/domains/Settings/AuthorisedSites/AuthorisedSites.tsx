@@ -1,5 +1,5 @@
-import { TALISMAN_WEB_APP_URL } from "@core/constants"
-import { ProviderType } from "@core/domains/sitesAuthorised/types"
+import { ProviderType } from "@extension/core"
+import { TALISMAN_WEB_APP_URL } from "@extension/shared"
 import { HeaderBlock } from "@talisman/components/HeaderBlock"
 import { OptionSwitch } from "@talisman/components/OptionSwitch"
 import { Spacer } from "@talisman/components/Spacer"

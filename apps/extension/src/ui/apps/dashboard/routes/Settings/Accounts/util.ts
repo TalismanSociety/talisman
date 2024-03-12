@@ -1,7 +1,7 @@
-import { TreeAccount, TreeFolder, TreeItem } from "@core/domains/accounts/helpers.catalog"
-import { AccountJsonAny } from "@core/domains/accounts/types"
 import type { UniqueIdentifier } from "@dnd-kit/core"
 import { arrayMove } from "@dnd-kit/sortable"
+import { AccountJsonAny } from "@extension/core"
+import { TreeAccount, TreeFolder, TreeItem } from "@extension/core"
 
 import type { FlattenedItem, UiTree, UiTreeAccount, UiTreeFolder, UiTreeItem } from "./types"
 

@@ -1,4 +1,4 @@
-import { IS_FIREFOX, UNKNOWN_TOKEN_URL } from "@core/constants"
+import { IS_FIREFOX, UNKNOWN_TOKEN_URL } from "@extension/shared"
 import { TokenId } from "@talismn/chaindata-provider"
 import { classNames } from "@talismn/util"
 import useToken from "@ui/hooks/useToken"

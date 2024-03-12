@@ -41,7 +41,8 @@ module.exports = {
 
   input: [
     // wallet core
-    "src/core/**/*.{ts,tsx}",
+    // "src/core/**/*.{ts,tsx}",
+    "../../packages/extension-core/src/**/*.{ts,tsx}",
     // wallet ui
     "src/ui/**/*.{ts,tsx,md}",
     // wallet @talisman components

@@ -1,4 +1,4 @@
-import { AccountJsonAny } from "@core/domains/accounts/types"
+import { AccountJsonAny } from "@extension/core"
 import { notify } from "@talisman/components/Notifications"
 import { useGlobalOpenClose } from "@talisman/hooks/useGlobalOpenClose"
 import { CopyIcon, LoaderIcon } from "@talismn/icons"

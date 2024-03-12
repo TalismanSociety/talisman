@@ -1,5 +1,5 @@
-import { AccountJsonAny, AccountType } from "@core/domains/accounts/types"
-import { EthSignMessageMethod } from "@core/domains/signing/types"
+import { AccountJsonAny, AccountType } from "@extension/core"
+import { EthSignMessageMethod } from "@extension/core"
 import { HexString } from "@polkadot/util/types"
 import { EvmNetworkId } from "@talismn/chaindata-provider"
 import { FC, Suspense, lazy } from "react"

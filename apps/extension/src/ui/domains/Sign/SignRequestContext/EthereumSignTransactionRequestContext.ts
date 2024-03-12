@@ -1,9 +1,6 @@
-import {
-  parseRpcTransactionRequestBase,
-  serializeTransactionRequest,
-} from "@core/domains/ethereum/helpers"
-import { KnownSigningRequestIdOnly } from "@core/domains/signing/types"
-import { log } from "@core/log"
+import { parseRpcTransactionRequestBase, serializeTransactionRequest } from "@extension/core"
+import { KnownSigningRequestIdOnly } from "@extension/core"
+import { log } from "@extension/shared"
 import { HexString } from "@polkadot/util/types"
 import { provideContext } from "@talisman/util/provideContext"
 import { api } from "@ui/api"
