@@ -17,6 +17,7 @@ import {
   AuthorizedSites,
   BalancesUpdate,
   ChainId,
+  ChangePasswordStatusUpdate,
   CustomErc20TokenCreate,
   DecryptRequestId,
   EncryptRequestId,
@@ -66,6 +67,12 @@ export default interface MessageTypes {
   authenticate: (pass: string) => Promise<boolean>
   lock: () => Promise<boolean>
   changePassword: (currentPw: string, newPw: string, newPwConfirm: string) => Promise<boolean>
+  changePasswordSubscribe: (
+    currentPw: string,
+    newPw: string,
+    newPwConfirm: string,
+    cb: (val: ChangePasswordStatusUpdate) => void
+  ) => Promise<boolean>
   checkPassword: (password: string) => Promise<boolean>
   authStatus: () => Promise<LoggedinType>
   authStatusSubscribe: (cb: (val: LoggedinType) => void) => UnsubscribeFn
