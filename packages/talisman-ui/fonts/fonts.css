@@ -21,3 +21,10 @@
   font-weight: normal;
   src: url("./fonts/Whyte-Inktrap-Medium.woff2") format("woff2");
 }
+
+@font-face {
+  font-family: "alien-runes";
+  font-style: normal;
+  font-weight: normal;
+  src: url("./fonts/Draconiano-Regular.woff2") format("woff2");
+}
