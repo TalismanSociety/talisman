@@ -115,7 +115,11 @@ const ModernTokens: FC<{
             />
           </span>
         ) : (
-          <AlienRunes length={7} className={classNames("tokens", className)} />
+          <AlienRunes
+            length={7}
+            className={classNames("tokens", className)}
+            scramble={!effectiveNoCountUp}
+          />
         )}
       </TooltipTrigger>
       {tooltip && <TooltipContent>{tooltip}</TooltipContent>}

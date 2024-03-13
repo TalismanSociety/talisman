@@ -15208,6 +15208,7 @@ __metadata:
     typescript: ^5.2.2
     url: ^0.11.3
     url-join: ^5.0.0
+    use-scramble: 2.2.15
     viem: ^1.21.4
     webextension-polyfill: 0.8.0
     webpack: ^5.89.0
@@ -25646,6 +25647,16 @@ __metadata:
     node-gyp: latest
     node-gyp-build: ^4.5.0
   checksum: 59474e106bb0e261c0c107994c948e4493b0d390671a738f386054263f6fdeea8f990ae22256dcf28812717844ec757b58501a9950ad9ca18ccb4791505870b0
+  languageName: node
+  linkType: hard
+
+"use-scramble@npm:2.2.15":
+  version: 2.2.15
+  resolution: "use-scramble@npm:2.2.15"
+  peerDependencies:
+    react: ">=16"
+    react-dom: ">=16"
+  checksum: 1338ed4b2544ec28aade89bf391fe3b61ce30413b03b2312c81015c7bbe8cc558718815093489777b0b4c82fdf8e257d3ef98a8e46685baf6c1039957489b272
   languageName: node
   linkType: hard
 

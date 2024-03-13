@@ -1,8 +1,10 @@
 import { classNames } from "@talismn/util"
 import { forwardRef, useMemo } from "react"
+import { UseScrambleProps, useScramble } from "use-scramble"
 
 // each font supports a different set of characters
 const CHARACTER_SET = "ABDEFGHIJKLMNOPQRSTUVWXYZ".split("")
+const RANGE = CHARACTER_SET.map((s) => s.charCodeAt(0)) as UseScrambleProps["range"]
 
 const getRandomInt = (max: number) => {
   return Math.floor(Math.random() * max)
@@ -25,15 +27,24 @@ const getRunesLength = (baseLength: number) => {
   return baseLength
 }
 
-export const AlienRunes = forwardRef<HTMLSpanElement, { length: number; className?: string }>(
-  ({ length, className }, ref) => {
-    const text = useMemo(() => getRandomText(getRunesLength(length)), [length])
+export const AlienRunes = forwardRef<
+  HTMLSpanElement,
+  { length: number; className?: string; scramble?: boolean }
+>(({ length, scramble, className }, ref) => {
+  const text = useMemo(() => getRandomText(getRunesLength(length)), [length])
 
-    return (
-      <span ref={ref} className={classNames(className, "font-alienRunes animate-alienRunes")}>
-        {text}
-      </span>
-    )
-  }
-)
+  const { ref: refScramble } = useScramble({
+    text,
+    playOnMount: !!scramble,
+    range: RANGE,
+    overflow: true,
+    speed: 0.5,
+  })
+
+  return (
+    <span ref={ref} className={classNames(className, "font-alienRunes animate-alienRunes")}>
+      <span ref={refScramble} />
+    </span>
+  )
+})
 AlienRunes.displayName = "AlienRunes"

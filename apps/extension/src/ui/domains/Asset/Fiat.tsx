@@ -69,7 +69,8 @@ const HiddenFiat: FC<{
   className?: string
   currencyDisplay?: string
   runesLength?: number
-}> = ({ amount, className, currencyDisplay, runesLength = 5 }) => {
+  noCountUp?: boolean
+}> = ({ amount, className, currencyDisplay, noCountUp, runesLength = 5 }) => {
   const currency = useSelectedCurrency()
   const formatted = useMemo(() => {
     const num = typeof amount === "number" ? amount : (!!amount && amount.fiat(currency)) || 0
@@ -83,7 +84,11 @@ const HiddenFiat: FC<{
   return (
     <Tooltip placement="bottom-end">
       <TooltipTrigger asChild>
-        <AlienRunes length={runesLength} className={classNames("fiat", className)} />
+        <AlienRunes
+          length={runesLength}
+          className={classNames("fiat", className)}
+          scramble={!noCountUp}
+        />
       </TooltipTrigger>
       {formatted && <TooltipContent>{formatted}</TooltipContent>}
     </Tooltip>
@@ -111,6 +116,7 @@ const ModernFiat: FC<FiatProps> = ({
         runesLength={runesLength}
         className={className}
         currencyDisplay={currencyDisplay}
+        noCountUp={effectiveNoCountUp}
       />
     )
   }
