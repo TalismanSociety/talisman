@@ -3,6 +3,7 @@ import { fiatDecimalSeparator, fiatGroupSeparator, formatFiat } from "@talisman/
 import { BalanceFormatter } from "@talismn/balances"
 import { classNames } from "@talismn/util"
 import { useSelectedCurrency } from "@ui/hooks/useCurrency"
+import { useIsFeatureEnabled } from "@ui/hooks/useIsFeatureEnabled"
 import { useRevealableBalance } from "@ui/hooks/useRevealableBalance"
 import React, { FC, useCallback, useMemo } from "react"
 import CountUp from "react-countup"
@@ -25,6 +26,7 @@ type DisplayValueProps = {
   noCountUp?: boolean
 }
 
+// TODO delete at some point
 const LegacyFiat: FC<FiatProps> = ({
   amount,
   className,
@@ -126,10 +128,10 @@ const ModernFiat: FC<FiatProps> = ({
   )
 }
 
-const WITH_ALIEN_RUNES = true
-
 export const Fiat: FC<FiatProps> = (props) => {
-  const Component = WITH_ALIEN_RUNES ? ModernFiat : LegacyFiat
+  const withAlienRunes = useIsFeatureEnabled("ALIEN_RUNES")
+
+  const Component = withAlienRunes ? ModernFiat : LegacyFiat
   return <Component {...props} />
 }
 

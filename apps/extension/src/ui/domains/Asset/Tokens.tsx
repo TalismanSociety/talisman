@@ -1,6 +1,7 @@
 import { AlienRunes } from "@talisman/components/AlienRunes"
 import { classNames } from "@talismn/util"
 import { MAX_DECIMALS_FORMAT, formatDecimals } from "@talismn/util"
+import { useIsFeatureEnabled } from "@ui/hooks/useIsFeatureEnabled"
 import { useRevealableBalance } from "@ui/hooks/useRevealableBalance"
 import BigNumber from "bignumber.js"
 import React, { FC, useMemo } from "react"
@@ -47,6 +48,7 @@ const DisplayValue: FC<DisplayValueProps> = React.memo(({ num, formatted, symbol
 })
 DisplayValue.displayName = "DisplayValue"
 
+// TODO delete at some point
 const LegacyTokens: FC<{
   value: number
   tooltip: string | null
@@ -121,8 +123,6 @@ const ModernTokens: FC<{
   )
 }
 
-const WITH_ALIEN_RUNES = true
-
 export const Tokens: FC<TokensProps> = ({
   amount,
   symbol,
@@ -133,6 +133,8 @@ export const Tokens: FC<TokensProps> = ({
   isBalance = false,
   runesLength = 7,
 }) => {
+  const withAlienRunes = useIsFeatureEnabled("ALIEN_RUNES")
+
   const { num, formatted } = useMemo(() => {
     const num = BigNumber.isBigNumber(amount) ? amount.toNumber() : Number(amount)
     return isNaN(num) ? { num: null, formated: null } : { num, formatted: formatDecimals(num) }
@@ -151,7 +153,7 @@ export const Tokens: FC<TokensProps> = ({
   if (!formatted) return null
 
   // TODO FEATURE FLAG
-  const Component = WITH_ALIEN_RUNES ? ModernTokens : LegacyTokens
+  const Component = withAlienRunes ? ModernTokens : LegacyTokens
 
   return (
     <Component
