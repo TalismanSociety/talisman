@@ -1,4 +1,4 @@
-import { AccountJsonAny, AccountType } from "@core/domains/accounts/types"
+import { AccountJsonAny, AccountType } from "@extension/core"
 import { SignerPayloadJSON, SignerPayloadRaw } from "@polkadot/types/types"
 import { HexString } from "@polkadot/util/types"
 import { useAccountByAddress } from "@ui/hooks/useAccountByAddress"

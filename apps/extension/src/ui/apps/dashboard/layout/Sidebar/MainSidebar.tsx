@@ -3,7 +3,7 @@ import {
   TALISMAN_WEB_APP_NFTS_URL,
   TALISMAN_WEB_APP_STAKING_URL,
   TALISMAN_WEB_APP_TRANSPORT_URL,
-} from "@core/constants"
+} from "@extension/shared"
 import { Nav } from "@talisman/components/Nav"
 import {
   CreditCardIcon,

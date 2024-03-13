@@ -1,4 +1,4 @@
-import { Balances } from "@core/domains/balances/types"
+import { Balances } from "@extension/core"
 import { ExternalLinkIcon, XIcon, ZapIcon } from "@talismn/icons"
 import { classNames } from "@talismn/util"
 import { Fiat } from "@ui/domains/Asset/Fiat"

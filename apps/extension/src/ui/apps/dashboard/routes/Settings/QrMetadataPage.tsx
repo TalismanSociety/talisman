@@ -1,5 +1,5 @@
-import { POLKADOT_VAULT_DOCS_URL } from "@core/constants"
-import { log } from "@core/log"
+import { log } from "@extension/shared"
+import { POLKADOT_VAULT_DOCS_URL } from "@extension/shared"
 import { FadeIn } from "@talisman/components/FadeIn"
 import { HeaderBlock } from "@talisman/components/HeaderBlock"
 import { notify } from "@talisman/components/Notifications"
@@ -11,7 +11,7 @@ import {
   MnemonicCreateModalProvider,
   useMnemonicCreateModal,
 } from "@ui/apps/dashboard/routes/Settings/Mnemonics/MnemonicCreateModal"
-import { chainsMapQuery, evmNetworksMapQuery } from "@ui/atoms"
+import { chainsMapAtomFamily, evmNetworksMapAtomFamily } from "@ui/atoms"
 import { AccountAddMnemonicDropdown } from "@ui/domains/Account/AccountAdd/AccountAddDerived/AccountAddMnemonicDropdown"
 import { ChainLogo } from "@ui/domains/Asset/ChainLogo"
 import { MetadataQrCode } from "@ui/domains/Sign/Qr/MetadataQrCode"
@@ -19,7 +19,7 @@ import { NetworkSpecsQrCode } from "@ui/domains/Sign/Qr/NetworkSpecsQrCode"
 import { useAppState } from "@ui/hooks/useAppState"
 import useChains from "@ui/hooks/useChains"
 import { useMnemonic } from "@ui/hooks/useMnemonics"
-import { useRecoilPreload } from "@ui/hooks/useRecoilPreload"
+import { atom, useAtomValue } from "jotai"
 import { FC, useCallback, useEffect, useMemo, useState } from "react"
 import { Trans, useTranslation } from "react-i18next"
 import { useNavigate } from "react-router-dom"
@@ -77,6 +77,16 @@ const SetVerifierCertificateContentInner = () => {
         value={mnemonicId}
         onChange={setMnemonicId}
       />
+      {mnemonicId && (
+        <p>
+          <Trans t={t}>
+            <span className="text-body">Caution:</span> Once you register networks in Polkadot Vault
+            using metadata signed by this Verifier Certificate, changing it or removing it in
+            Talisman will cause accounts for those networks held in Polkadot Vault to become
+            unusable.
+          </Trans>
+        </p>
+      )}
       <div className="mt-8 flex justify-end gap-8">
         <Button className="w-72" onClick={handleCancelClick}>
           {t("Back")}
@@ -182,7 +192,7 @@ const MetadataPortalContent = () => {
                   ></a>
                 ),
               }}
-              defaults="Talisman's QR codes are generated from live network data and signed with the recovery phrase that you've chosen as Polkadot Vault Verifier Certificate. <Link>Learn more</Link"
+              defaults="Talisman's QR codes are generated from live network data and signed with the recovery phrase that you've chosen as Polkadot Vault Verifier Certificate. <Link>Learn more</Link>"
             />
           </p>
           <p className="flex items-center gap-3">
@@ -190,6 +200,13 @@ const MetadataPortalContent = () => {
               {t("Your Verifier Certificate recovery phrase is")}
             </span>
             <MnemonicButton label={mnemonic?.name ?? "Unknown"} />
+          </p>
+          <p>
+            <Trans t={t}>
+              <span className="text-body">Caution:</span> If you change or remove your Verifier
+              Certificate recovery phrase, existing accounts held in Polkadot Vault may become
+              unusable.
+            </Trans>
           </p>
           <FadeIn key={chain.genesisHash} className="flex flex-col items-center gap-16">
             <div className="mt-12 flex gap-12">
@@ -215,12 +232,17 @@ const MetadataPortalContent = () => {
   )
 }
 
+const preloadAtom = atom(async (get) => {
+  await Promise.all([
+    get(chainsMapAtomFamily({ activeOnly: true, includeTestnets: false })),
+    get(evmNetworksMapAtomFamily({ activeOnly: true, includeTestnets: false })),
+  ])
+})
+
 export const QrMetadataPage = () => {
   const { t } = useTranslation("admin")
-  useRecoilPreload(
-    chainsMapQuery({ activeOnly: true, includeTestnets: false }),
-    evmNetworksMapQuery({ activeOnly: true, includeTestnets: false })
-  )
+  useAtomValue(preloadAtom)
+
   const [certifierMnemonicId] = useAppState("vaultVerifierCertificateMnemonicId")
   const mnemonic = useMnemonic(certifierMnemonicId)
 

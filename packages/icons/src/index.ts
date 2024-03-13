@@ -21,6 +21,7 @@ export { ReactComponent as NetworkUsageIncreasingIcon } from "./icons/network-us
 export { ReactComponent as PinIcon } from "./icons/pin.svg"
 export { ReactComponent as PolkadotVaultIcon } from "./icons/polkadot-vault.svg"
 export { ReactComponent as PopupIcon } from "./icons/popup.svg"
+export { ReactComponent as QrIcon } from "./icons/qr.svg"
 export { ReactComponent as RocketIcon } from "./icons/rocket.svg"
 export { ReactComponent as SecretIcon } from "./icons/secret.svg"
 export { ReactComponent as SignetIcon } from "./icons/signet.svg"

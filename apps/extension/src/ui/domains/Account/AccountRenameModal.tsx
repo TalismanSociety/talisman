@@ -1,21 +1,18 @@
-import { AccountJsonAny } from "@core/domains/accounts/types"
+import { AccountJsonAny } from "@extension/core"
 import { useGlobalOpenClose } from "@talisman/hooks/useGlobalOpenClose"
 import { useSelectedAccount } from "@ui/domains/Portfolio/useSelectedAccount"
+import { atom, useAtom } from "jotai"
 import { useCallback, useEffect } from "react"
 import { useTranslation } from "react-i18next"
-import { atom, useRecoilState } from "recoil"
 import { ModalDialog } from "talisman-ui"
 import { Modal } from "talisman-ui"
 
 import { AccountRename } from "./AccountRename"
 
-const accountRenameAccountState = atom<AccountJsonAny | null>({
-  key: "accountRenameAccountState",
-  default: null,
-})
+const accountRenameAccountState = atom<AccountJsonAny | null>(null)
 
 export const useAccountRenameModal = () => {
-  const [_account, setAccount] = useRecoilState(accountRenameAccountState)
+  const [_account, setAccount] = useAtom(accountRenameAccountState)
 
   const { account: selectedAccount } = useSelectedAccount()
   const { isOpen, open: innerOpen, close } = useGlobalOpenClose("accountRenameModal")

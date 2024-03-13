@@ -1,9 +1,8 @@
 import md5 from "blueimp-md5"
 import Color from "color"
-import { nanoid } from "nanoid"
-import { FC, useMemo } from "react"
+import { FC, useId, useMemo } from "react"
 
-import { encodeAnyAddress } from "../lib/encodeAnyAddress"
+import { normalizeAddress } from "../util/normalizeAddress"
 
 const djb2 = (str: string) => {
   let hash = 5381
@@ -23,14 +22,17 @@ const colorFromHash = (hash: string) => {
 const rotateText = (text: string, nbChars = 0) => text.slice(nbChars) + text.slice(0, nbChars)
 
 type TalismanOrbProps = { seed: string; width?: number; height?: number; className?: string }
+type LogoIconType = "ethereum" | "substrate"
 
 export const useTalismanOrb = (seed: string) => {
+  const id = useId()
+
   return useMemo(() => {
-    const isEthereum = seed?.startsWith("0x")
+    const iconType: LogoIconType = seed?.startsWith("0x") ? "ethereum" : "substrate"
     try {
       // seed may be specific to a ss58 prefix, get the base address
       // eslint-disable-next-line no-var
-      var address = encodeAnyAddress(seed)
+      var address = normalizeAddress(seed)
     } catch (err) {
       address = seed
     }
@@ -54,16 +56,76 @@ export const useTalismanOrb = (seed: string) => {
     const rotation = valueFromHash(hash1, 360)
 
     return {
-      id: nanoid(), //multiple avatars should cohabit on the same pageaa
+      id, //multiple avatars should cohabit on the same page
       bgColor1: colors[0].hex(),
       bgColor2: colors[1].hex(),
       glowColor: colors[2].hex(),
       transform: `rotate(${rotation} 32 32)`,
       cx: dotX,
       cy: dotY,
-      isEthereum,
+      iconType,
     }
-  }, [seed])
+  }, [id, seed])
+}
+
+const TalismanOrbLogo = ({ id, iconType }: { id: string; iconType?: LogoIconType }) => {
+  switch (iconType) {
+    case "ethereum":
+      return (
+        <g opacity="0.75" transform="scale(0.7) translate(14 14)">
+          <path
+            d="M12.8101 32.76L32.0001 44.62L51.1901 32.76L32.0001 -0.0699997L12.8101 32.76Z"
+            fill="white"
+          />
+          <path
+            d="M12.8101 36.48L32.0001 48.43L51.1901 36.48L32.0001 63.93L12.8101 36.48Z"
+            fill="white"
+          />
+        </g>
+      )
+    case "substrate":
+      return (
+        <>
+          <g
+            clipPath={`url(#${id}_1751_2030)`}
+            opacity="0.75"
+            transform="scale(2.2) translate(4.5 3.9)"
+          >
+            <path
+              d="M9.99937 4.4612C12.1176 4.4612 13.8347 3.46253 13.8347 2.2306C13.8347 0.998674 12.1176 0 9.99937 0C7.88119 0 6.16406 0.998674 6.16406 2.2306C6.16406 3.46253 7.88119 4.4612 9.99937 4.4612Z"
+              fill="white"
+            />
+            <path
+              d="M9.99937 21.2683C12.1176 21.2683 13.8347 20.2697 13.8347 19.0377C13.8347 17.8058 12.1176 16.8071 9.99937 16.8071C7.88119 16.8071 6.16406 17.8058 6.16406 19.0377C6.16406 20.2697 7.88119 21.2683 9.99937 21.2683Z"
+              fill="white"
+            />
+            <path
+              d="M4.65427 7.54892C5.71336 5.71457 5.70649 3.72787 4.63892 3.11149C3.57135 2.49511 1.84735 3.48246 0.788259 5.31681C-0.270832 7.15115 -0.263958 9.13786 0.803612 9.75424C1.87118 10.3706 3.59518 9.38326 4.65427 7.54892Z"
+              fill="white"
+            />
+            <path
+              d="M19.2083 15.9515C20.2674 14.1171 20.2611 12.1307 19.1943 11.5148C18.1274 10.8988 16.404 11.8865 15.3449 13.7209C14.2858 15.5552 14.2921 17.5416 15.3589 18.1575C16.4258 18.7735 18.1492 17.7858 19.2083 15.9515Z"
+              fill="white"
+            />
+            <path
+              d="M4.6399 18.1571C5.70747 17.5407 5.71434 15.554 4.65525 13.7196C3.59616 11.8853 1.87216 10.8979 0.804589 11.5143C-0.262981 12.1307 -0.269855 14.1174 0.789235 15.9517C1.84833 17.7861 3.57233 18.7734 4.6399 18.1571Z"
+              fill="white"
+            />
+            <path
+              d="M19.1952 9.75475C20.2621 9.13878 20.2684 7.15241 19.2093 5.31807C18.1502 3.48372 16.4268 2.49603 15.3599 3.11199C14.2931 3.72796 14.2868 5.71433 15.3459 7.54867C16.405 9.38302 18.1284 10.3707 19.1952 9.75475Z"
+              fill="white"
+            />
+          </g>
+          <defs>
+            <clipPath id={`${id}_1751_2030`}>
+              <rect width="20" height="21.2699" fill="white" />
+            </clipPath>
+          </defs>
+        </>
+      )
+    default:
+      return null
+  }
 }
 
 export const TalismanOrb: FC<TalismanOrbProps> = ({
@@ -72,7 +134,7 @@ export const TalismanOrb: FC<TalismanOrbProps> = ({
   height = "1em",
   className,
 }) => {
-  const { id, bgColor1, bgColor2, transform, glowColor, cx, cy, isEthereum } = useTalismanOrb(seed)
+  const { id, bgColor1, bgColor2, transform, glowColor, cx, cy, iconType } = useTalismanOrb(seed)
 
   return (
     <svg
@@ -101,18 +163,7 @@ export const TalismanOrb: FC<TalismanOrbProps> = ({
           <rect fill={`url(#${id}-bg)`} x={0} y={0} width={64} height={64} />
           <circle fill={`url(#${id}-circle)`} cx={cx} cy={cy} r={45} opacity={0.7} />
         </g>
-        {isEthereum && (
-          <g opacity="0.75" transform="scale(0.7) translate(14 14)">
-            <path
-              d="M12.8101 32.76L32.0001 44.62L51.1901 32.76L32.0001 -0.0699997L12.8101 32.76Z"
-              fill="white"
-            />
-            <path
-              d="M12.8101 36.48L32.0001 48.43L51.1901 36.48L32.0001 63.93L12.8101 36.48Z"
-              fill="white"
-            />
-          </g>
-        )}
+        <TalismanOrbLogo id={id} iconType={iconType} />
       </g>
     </svg>
   )

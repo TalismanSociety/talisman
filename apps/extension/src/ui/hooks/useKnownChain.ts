@@ -1,4 +1,4 @@
-import { activeChainsStore, isChainActive } from "@core/domains/chains/store.activeChains"
+import { activeChainsStore, isChainActive } from "@extension/core"
 import { isCustomChain } from "@talismn/chaindata-provider"
 import { useCallback, useMemo } from "react"
 
@@ -9,8 +9,11 @@ export const useKnownChain = (chainId: string | null | undefined) => {
   const chain = useChain(chainId ?? undefined)
   const activeChains = useActiveChainsState()
 
-  const isActive = useMemo(() => chain && isChainActive(chain, activeChains), [activeChains, chain])
-  const isKnown = useMemo(() => chain && !isCustomChain(chain), [chain])
+  const isActive = useMemo(
+    () => !!chain && isChainActive(chain, activeChains),
+    [activeChains, chain]
+  )
+  const isKnown = useMemo(() => !!chain && !isCustomChain(chain), [chain])
 
   const setActive = useCallback(
     (enable: boolean) => {

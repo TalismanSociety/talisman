@@ -1,50 +1,33 @@
-import { remoteConfigStore } from "@core/domains/app/store.remoteConfig"
-import { log } from "@core/log"
+import { remoteConfigStore } from "@extension/core"
+import { log } from "@extension/shared"
 import { TokenId, TokenList } from "@talismn/chaindata-provider"
-import { TokenRates, TokenRatesList, fetchTokenRates } from "@talismn/token-rates"
-import { assetDiscoveryScanProgress, tokensArrayQuery } from "@ui/atoms"
+import { TokenRatesList, fetchTokenRates } from "@talismn/token-rates"
+import { assetDiscoveryScanProgressAtom, tokensArrayAtomFamily } from "@ui/atoms"
 import axios from "axios"
+import { atom, useAtomValue, useSetAtom } from "jotai"
+import { atomFamily } from "jotai/utils"
 import { useEffect, useState } from "react"
-import {
-  atom,
-  selector,
-  selectorFamily,
-  useRecoilValue,
-  useSetRecoilState,
-  waitForAll,
-} from "recoil"
 
-const assetDiscoveryTokenRatesState = atom<TokenRatesList>({
-  key: "assetDiscoveryTokenRatesState",
-  default: {},
-})
+const assetDiscoveryTokenRatesAtom = atom<TokenRatesList>({})
 
-const assetDiscoveryTokenRatesQuery = selectorFamily<TokenRates | null, TokenId | undefined>({
-  key: "assetDiscoveryTokenRatesQuery",
-  get:
-    (tokenId: TokenId = "") =>
-    // eslint-disable-next-line react/display-name
-    ({ get }): TokenRates | null => {
-      const tokenRates = get(assetDiscoveryTokenRatesState)
-      return tokenRates[tokenId] ?? null
-    },
-})
+const assetDiscoveryTokenRatesAtomFamily = atomFamily((tokenId: TokenId = "") =>
+  atom((get) => {
+    if (!tokenId) return null
+    const tokenRates = get(assetDiscoveryTokenRatesAtom)
+    return tokenRates[tokenId] ?? null
+  })
+)
 
 export const useAssetDiscoveryTokenRate = (tokenId: TokenId | undefined) =>
-  useRecoilValue(assetDiscoveryTokenRatesQuery(tokenId))
+  useAtomValue(assetDiscoveryTokenRatesAtomFamily(tokenId))
 
-const missingTokenRatesState = selector({
-  key: "missingTokenRatesState",
-  get: ({ get }) => {
-    const [{ tokenIds }, tokens, tokenRates] = get(
-      waitForAll([
-        assetDiscoveryScanProgress,
-        tokensArrayQuery({ activeOnly: false, includeTestnets: false }),
-        assetDiscoveryTokenRatesState,
-      ])
-    )
-    return tokens.filter((t) => !!t.coingeckoId && !tokenRates[t.id] && tokenIds.includes(t.id))
-  },
+const missingTokenRatesAtom = atom(async (get) => {
+  const [{ tokenIds }, tokens, tokenRates] = await Promise.all([
+    get(assetDiscoveryScanProgressAtom),
+    get(tokensArrayAtomFamily({ activeOnly: false, includeTestnets: false })),
+    get(assetDiscoveryTokenRatesAtom),
+  ])
+  return tokens.filter((t) => !!t.coingeckoId && !tokenRates[t.id] && tokenIds.includes(t.id))
 })
 
 const FETCH_TOKEN_RATES_CACHE: Record<string, Promise<TokenRatesList>> = {}
@@ -65,8 +48,8 @@ const safeFetchTokenRates = async (tokenList: TokenList) => {
 
 // this should be called only once on the page
 export const useAssetDiscoveryFetchTokenRates = () => {
-  const missingTokenRatesList = useRecoilValue(missingTokenRatesState)
-  const setTokenRates = useSetRecoilState(assetDiscoveryTokenRatesState)
+  const missingTokenRatesList = useAtomValue(missingTokenRatesAtom)
+  const setTokenRates = useSetAtom(assetDiscoveryTokenRatesAtom)
   const [canFetch, setCanFetch] = useState(true)
 
   useEffect(() => {

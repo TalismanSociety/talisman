@@ -58,9 +58,9 @@ export async function fetchTokenRates(
   // skip network request if there is nothing for us to fetch
   if (coingeckoIds.length < 1) return {}
 
-  // construct a coingecko request
-  const idsSerialized = coingeckoIds.join(",")
-  const currenciesSerialized = coingeckoCurrencies.join(",")
+  // construct a coingecko request, sort args to help proxies with caching
+  const idsSerialized = coingeckoIds.sort().join(",")
+  const currenciesSerialized = coingeckoCurrencies.sort().join(",")
   // note: coingecko api key cannot be passed as header here as it would be camel cased by axios and ignored by the server
   // need to pass it as a query parameter, and replace all '-' with '_'
   // TODO => migrate to fetch api

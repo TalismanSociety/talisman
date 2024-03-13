@@ -1,4 +1,4 @@
-import { isOnboardedState } from "@ui/atoms"
-import { useRecoilValue } from "recoil"
+import { isOnboardedAtom } from "@ui/atoms"
+import { useAtomValue } from "jotai"
 
-export const useIsOnboarded = () => useRecoilValue(isOnboardedState)
+export const useIsOnboarded = () => useAtomValue(isOnboardedAtom)

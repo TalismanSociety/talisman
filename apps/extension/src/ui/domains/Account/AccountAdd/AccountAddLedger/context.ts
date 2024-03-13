@@ -2,8 +2,8 @@ import {
   AccountAddressType,
   RequestAccountCreateLedgerEthereum,
   RequestAccountCreateLedgerSubstrate,
-} from "@core/domains/accounts/types"
-import { AssetDiscoveryMode } from "@core/domains/assetDiscovery/types"
+} from "@extension/core"
+import { AssetDiscoveryMode } from "@extension/core"
 import { assert } from "@polkadot/util"
 import { provideContext } from "@talisman/util/provideContext"
 import { api } from "@ui/api"

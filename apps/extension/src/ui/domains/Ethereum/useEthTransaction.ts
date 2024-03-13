@@ -1,4 +1,11 @@
-import { getHumanReadableErrorMessage } from "@core/domains/ethereum/errors"
+import {
+  EthPriorityOptionName,
+  EthPriorityOptionNameEip1559,
+  EthPriorityOptionNameLegacy,
+  EthTransactionDetails,
+  GasSettingsByPriority,
+} from "@extension/core"
+import { getHumanReadableErrorMessage } from "@extension/core"
 import {
   getGasLimit,
   getGasSettingsEip1559,
@@ -6,23 +13,13 @@ import {
   isAcalaEvmPlus,
   prepareTransaction,
   serializeTransactionRequest,
-} from "@core/domains/ethereum/helpers"
+} from "@extension/core"
 import {
   EthGasSettings,
   EthGasSettingsEip1559,
   EthGasSettingsLegacy,
   EvmNetworkId,
-} from "@core/domains/ethereum/types"
-import {
-  EthPriorityOptionName,
-  EthPriorityOptionNameEip1559,
-  EthPriorityOptionNameLegacy,
-  EthTransactionDetails,
-  GasSettingsByPriority,
-} from "@core/domains/signing/types"
-import { ETH_ERROR_EIP1474_METHOD_NOT_FOUND } from "@core/injectEth/EthProviderRpcError"
-import { decodeEvmTransaction } from "@core/util/decodeEvmTransaction"
-import { FeeHistoryAnalysis, getFeeHistoryAnalysis } from "@core/util/getFeeHistoryAnalysis"
+} from "@extension/core"
 import { isBigInt } from "@talismn/util"
 import { useQuery } from "@tanstack/react-query"
 import { api } from "@ui/api"
@@ -31,8 +28,11 @@ import { useEffect, useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
 import { PublicClient, TransactionRequest } from "viem"
 
+import { ETH_ERROR_EIP1474_METHOD_NOT_FOUND } from "../../../inject/ethereum/EthProviderRpcError"
 import { useEthEstimateL1DataFee } from "./useEthEstimateL1DataFee"
 import { useIsValidEthTransaction } from "./useIsValidEthTransaction"
+import { decodeEvmTransaction } from "./util/decodeEvmTransaction"
+import { FeeHistoryAnalysis, getFeeHistoryAnalysis } from "./util/getFeeHistoryAnalysis"
 
 // gasPrice isn't reliable on polygon & mumbai, see https://github.com/ethers-io/ethers.js/issues/2828#issuecomment-1283014250
 const UNRELIABLE_GASPRICE_NETWORK_IDS = [137, 80001]
@@ -61,7 +61,6 @@ const useHasEip1559Support = (publicClient: PublicClient | undefined) => {
       if (!publicClient) return null
 
       try {
-        publicClient.chain?.fees?.defaultPriorityFee
         const {
           baseFeePerGas: [baseFee],
         } = await publicClient.getFeeHistory({ blockCount: 1, rewardPercentiles: [] })
@@ -70,6 +69,10 @@ const useHasEip1559Support = (publicClient: PublicClient | undefined) => {
         // TODO check that feeHistory returns -32601 when method doesn't exist
         const error = err as Error & { code?: number }
         if (error.code === ETH_ERROR_EIP1474_METHOD_NOT_FOUND) return false
+
+        // edge case identified on Scroll network: viem's getFeeHistory method crashes as the rpc response doesn't match expected data type
+        // error message: "Cannot convert null to a BigInt"
+        if (error.name === "TypeError") return false
 
         throw err
       }

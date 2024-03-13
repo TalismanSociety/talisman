@@ -11,10 +11,12 @@
   "scripts": {
     "format": "prettier --write \"**/*.{ts,tsx,js,jsx,css,scss,html,md,json}\"",
     "postinstall": "preconstruct dev && yarn update:translations",
+    "preconstruct:dev": "preconstruct dev",
+    "preconstruct:fix": "preconstruct fix",
     "prepare": "husky install",
     "dev": "concurrently --prefix \"{name}\" --prefix-colors auto \"npm:dev:*\"",
     "dev:balances-demo": "yarn workspace balances-demo dev",
-    "dev:extension": "yarn workspace extension dev",
+    "dev:extension": "preconstruct dev && yarn workspace extension dev",
     "dev:playground": "yarn workspace playground dev",
     "update:translations": "turbo run update:translations",
     "build": "turbo run build",

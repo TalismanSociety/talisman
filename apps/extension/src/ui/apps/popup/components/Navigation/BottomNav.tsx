@@ -1,5 +1,5 @@
-import { TALISMAN_WEB_APP_STAKING_URL } from "@core/constants"
-import { db } from "@core/db"
+import { db } from "@extension/core"
+import { TALISMAN_WEB_APP_STAKING_URL } from "@extension/shared"
 import { AlertCircleIcon, HistoryIcon, PieChartIcon, ZapIcon } from "@talismn/icons"
 import { classNames } from "@talismn/util"
 import { api } from "@ui/api"

@@ -1,4 +1,4 @@
-import { log } from "@core/log"
+import { log } from "@extension/shared"
 import DcentWebConnector from "dcent-web-connector"
 
 import {

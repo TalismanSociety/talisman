@@ -1,4 +1,4 @@
-import { AccountsFilter } from "@ui/atoms"
+import { AccountCategory } from "@ui/atoms"
 
 import { useAccounts } from "./useAccounts"
 
@@ -9,7 +9,7 @@ import { useAccounts } from "./useAccounts"
  */
 export const useAccountAddresses = (
   ethereumOnly?: boolean,
-  accountFilter?: AccountsFilter
+  accountFilter?: AccountCategory
 ): string[] => {
   const accounts = useAccounts(accountFilter)
   return accounts

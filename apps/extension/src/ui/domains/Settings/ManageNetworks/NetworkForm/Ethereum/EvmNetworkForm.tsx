@@ -1,6 +1,6 @@
-import { CustomEvmNetwork, EvmNetwork, EvmNetworkId } from "@core/domains/ethereum/types"
-import { RequestUpsertCustomEvmNetwork } from "@core/domains/ethereum/types"
-import { CustomNativeToken } from "@core/domains/tokens/types"
+import { CustomNativeToken } from "@extension/core"
+import { CustomEvmNetwork, EvmNetwork, EvmNetworkId } from "@extension/core"
+import { RequestUpsertCustomEvmNetwork } from "@extension/core"
 import { yupResolver } from "@hookform/resolvers/yup"
 import { HeaderBlock } from "@talisman/components/HeaderBlock"
 import { isCustomEvmNetwork } from "@talismn/chaindata-provider"
@@ -422,7 +422,7 @@ const ExistingNetworkModal: FC<{ evmNetworkId?: EvmNetworkId }> = ({ evmNetworkI
 
   const handleGoToClick = useCallback(() => {
     close()
-    navigate(`/networks/ethereum/${evmNetworkId}`, { replace: true })
+    navigate(`/settings/networks-tokens/networks/ethereum/${evmNetworkId}`, { replace: true })
   }, [close, evmNetworkId, navigate])
 
   return (

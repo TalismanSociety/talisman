@@ -1,4 +1,4 @@
-import { AccountJsonDcent } from "@core/domains/accounts/types"
+import { AccountJsonDcent } from "@extension/core"
 import { AppPill } from "@talisman/components/AppPill"
 import {
   PopupContent,

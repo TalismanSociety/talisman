@@ -1,6 +1,6 @@
 import "@talisman/theme/styles.css"
 
-import { initSentry } from "@core/config/sentry"
+import { initSentry } from "@extension/core"
 import * as Sentry from "@sentry/react"
 import { ErrorBoundary } from "@talisman/components/ErrorBoundary"
 import { ErrorBoundaryDatabaseMigration } from "@talisman/components/ErrorBoundaryDatabaseMigration"
@@ -10,7 +10,6 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query"
 import React, { ReactNode, Suspense } from "react"
 import { createRoot } from "react-dom/client"
 import { HashRouter } from "react-router-dom"
-import { RecoilRoot } from "recoil"
 
 const queryClient = new QueryClient()
 
@@ -26,14 +25,12 @@ export const renderTalisman = (app: ReactNode) => {
     <React.StrictMode>
       <ErrorBoundary>
         <ErrorBoundaryDatabaseMigration>
-          <RecoilRoot>
-            <Suspense fallback={<SuspenseTracker name="RecoilRoot" />}>
-              <QueryClientProvider client={queryClient}>
-                <HashRouter>{app}</HashRouter>
-                <NotificationsContainer />
-              </QueryClientProvider>
-            </Suspense>
-          </RecoilRoot>
+          <Suspense fallback={<SuspenseTracker name="Root" />}>
+            <QueryClientProvider client={queryClient}>
+              <HashRouter>{app}</HashRouter>
+              <NotificationsContainer />
+            </QueryClientProvider>
+          </Suspense>
         </ErrorBoundaryDatabaseMigration>
       </ErrorBoundary>
     </React.StrictMode>

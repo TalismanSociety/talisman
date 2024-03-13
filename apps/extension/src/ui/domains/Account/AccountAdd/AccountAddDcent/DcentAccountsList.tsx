@@ -1,4 +1,4 @@
-import { log } from "@core/log"
+import { log } from "@extension/shared"
 import { AlertCircleIcon, InfoIcon, LoaderIcon } from "@talismn/icons"
 import useTokens from "@ui/hooks/useTokens"
 import { useDcentAccountInfo } from "@ui/util/dcent"

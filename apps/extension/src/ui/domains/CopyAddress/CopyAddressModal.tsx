@@ -5,11 +5,11 @@ import { CopyAddressWizard } from "./CopyAddressWizard"
 import { useCopyAddressModal } from "./useCopyAddressModal"
 
 export const CopyAddressModal = () => {
-  const { isOpen, close, inputs } = useCopyAddressModal()
+  const { isOpen, close, inputs = {} } = useCopyAddressModal()
 
   return (
     <Modal
-      isOpen={isOpen && !!inputs}
+      isOpen={isOpen}
       onDismiss={close}
       className={classNames(
         "border-grey-800 h-[60rem] w-[40rem] overflow-hidden bg-black shadow",
@@ -17,7 +17,7 @@ export const CopyAddressModal = () => {
       )}
       containerId={window.location.pathname === "/popup.html" ? "main" : undefined}
     >
-      {inputs && <CopyAddressWizard inputs={inputs} />}
+      <CopyAddressWizard inputs={inputs} />
     </Modal>
   )
 }

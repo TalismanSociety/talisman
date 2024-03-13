@@ -1,4 +1,4 @@
-import { AccountType } from "@core/domains/accounts/types"
+import { AccountType } from "@extension/core"
 import { Balance } from "@talismn/balances"
 import { Token } from "@talismn/chaindata-provider"
 import { CheckCircleIcon } from "@talismn/icons"
@@ -29,13 +29,13 @@ type AccountRowProps = {
   genesisHash?: string | null
   selected: boolean
   showBalances?: boolean
-  token?: Token
+  token?: Token | null
   onClick?: () => void
   disabled?: boolean
   noFormat?: boolean
 }
 
-const AccountTokenBalance = ({ token, balance }: { token?: Token; balance?: Balance }) => {
+const AccountTokenBalance = ({ token, balance }: { token?: Token | null; balance?: Balance }) => {
   const currency = useSelectedCurrency()
 
   if (!balance || !token) return null

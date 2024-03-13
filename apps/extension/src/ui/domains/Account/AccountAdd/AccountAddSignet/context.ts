@@ -1,4 +1,4 @@
-import { SIGNET_APP_URL } from "@core/constants"
+import { SIGNET_APP_URL } from "@extension/shared"
 import { provideContext } from "@talisman/util/provideContext"
 import { useMemo, useState } from "react"
 

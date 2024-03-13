@@ -1,4 +1,4 @@
-import { Balances } from "@core/domains/balances/types"
+import { Balances } from "@extension/core"
 import { Accordion, AccordionIcon } from "@talisman/components/Accordion"
 import { FadeIn } from "@talisman/components/FadeIn"
 import { useOpenClose } from "@talisman/hooks/useOpenClose"
@@ -246,28 +246,23 @@ export const PopupAssetsTable = ({ balances, isInitializing }: GroupedAssetsTabl
           )}
           <div className="h-8" />
         </BalancesGroup>
-        <BalancesGroup
-          label={
-            <div className="flex items-center gap-2">
-              <div>{t("Locked")}</div>
-              <div>
-                <LockIcon className="text-sm" />
+        {lockedSymbolBalances.length > 0 && (
+          <BalancesGroup
+            label={
+              <div className="flex items-center gap-2">
+                <div>{t("Locked")}</div>
+                <div>
+                  <LockIcon className="text-sm" />
+                </div>
               </div>
-            </div>
-          }
-          fiatAmount={totalLocked}
-        >
-          {lockedSymbolBalances.map(([symbol, b]) => (
-            <AssetRow key={symbol} balances={b} locked />
-          ))}
-          {!lockedSymbolBalances.length && (
-            <div className="text-body-secondary bg-black-secondary rounded-sm py-10 text-center text-xs">
-              {account
-                ? t("There are no locked balances.")
-                : t("There are no locked balances for this account.")}
-            </div>
-          )}
-        </BalancesGroup>
+            }
+            fiatAmount={totalLocked}
+          >
+            {lockedSymbolBalances.map(([symbol, b]) => (
+              <AssetRow key={symbol} balances={b} locked />
+            ))}
+          </BalancesGroup>
+        )}
       </div>
     </FadeIn>
   )

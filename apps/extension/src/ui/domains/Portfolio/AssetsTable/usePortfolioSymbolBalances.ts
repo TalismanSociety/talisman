@@ -1,4 +1,4 @@
-import { Balance, Balances } from "@core/domains/balances/types"
+import { Balance, Balances } from "@extension/core"
 import { FiatSumBalancesFormatter } from "@talismn/balances"
 import { TokenRateCurrency } from "@talismn/token-rates"
 import { useSelectedCurrency } from "@ui/hooks/useCurrency"

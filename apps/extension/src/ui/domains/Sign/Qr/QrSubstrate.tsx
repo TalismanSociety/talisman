@@ -1,7 +1,7 @@
-import { POLKADOT_VAULT_DOCS_URL } from "@core/constants"
-import { AccountJsonQr } from "@core/domains/accounts/types"
-import { SignerPayloadJSON, SignerPayloadRaw } from "@core/domains/signing/types"
-import { isJsonPayload } from "@core/util/isJsonPayload"
+import { isJsonPayload } from "@extension/core"
+import { SignerPayloadJSON, SignerPayloadRaw } from "@extension/core"
+import { AccountJsonQr } from "@extension/core"
+import { POLKADOT_VAULT_DOCS_URL } from "@extension/shared"
 import { HexString } from "@polkadot/util/types"
 import { Chain } from "@talismn/chaindata-provider"
 import { ChevronLeftIcon, InfoIcon, LoaderIcon, PolkadotVaultIcon } from "@talismn/icons"
@@ -250,7 +250,7 @@ const SendPage = ({
   scanState: SendScanState
   qrCodeSource: QrCodeSource | undefined
   qrCodeSourceSelectorState: QrCodeSourceSelectorProps
-  chain: Chain | undefined
+  chain: Chain | null
   containerId: string
 }) => {
   const { t } = useTranslation("request")

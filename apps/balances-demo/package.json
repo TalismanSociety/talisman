@@ -12,8 +12,8 @@
     "lint:fix": "eslint . --ext ts,tsx --fix"
   },
   "dependencies": {
-    "@polkadot/api": "^10.1.4",
-    "@polkadot/extension-dapp": "^0.45.3",
+    "@polkadot/api": "*",
+    "@polkadot/extension-dapp": "*",
     "@talismn/balances": "workspace:*",
     "@talismn/balances-react": "workspace:*",
     "@talismn/chaindata-provider": "workspace:*",

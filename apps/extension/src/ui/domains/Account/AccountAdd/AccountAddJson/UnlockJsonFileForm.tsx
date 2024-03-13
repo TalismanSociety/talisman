@@ -1,4 +1,4 @@
-import { log } from "@core/log"
+import { log } from "@extension/shared"
 import { yupResolver } from "@hookform/resolvers/yup"
 import { FadeIn } from "@talisman/components/FadeIn"
 import { KeyIcon } from "@talismn/icons"

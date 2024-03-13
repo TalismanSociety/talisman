@@ -1,6 +1,5 @@
-import { Balances } from "@core/domains/balances/types"
+import { Balances, ChainId, EvmNetworkId } from "@extension/core"
 import { FadeIn } from "@talisman/components/FadeIn"
-import { ChainId, EvmNetworkId } from "@talismn/chaindata-provider"
 import { ArrowDownIcon, CreditCardIcon, LockIcon } from "@talismn/icons"
 import { classNames } from "@talismn/util"
 import { api } from "@ui/api"
@@ -11,7 +10,7 @@ import Tokens from "@ui/domains/Asset/Tokens"
 import { useCopyAddressModal } from "@ui/domains/CopyAddress"
 import { useAnalytics } from "@ui/hooks/useAnalytics"
 import { useIsFeatureEnabled } from "@ui/hooks/useIsFeatureEnabled"
-import { useCallback, useMemo } from "react"
+import { Suspense, useCallback, useMemo } from "react"
 import { useTranslation } from "react-i18next"
 import { PillButton } from "talisman-ui"
 
@@ -51,8 +50,10 @@ const ChainTokenBalances = ({ chainId, balances }: AssetRowProps) => {
             <div className="flex items-center">
               <ChainLogo className="mr-2" id={chainOrNetwork.id} />
               <span className="mr-2">{chainOrNetwork.name}</span>
-              <CopyAddressButton symbol={symbol} networkId={chainOrNetwork.id} />
-              <SendFundsButton symbol={symbol} networkId={chainOrNetwork.id} shouldClose />
+              <CopyAddressButton networkId={chainOrNetwork.id} />
+              <Suspense>
+                <SendFundsButton symbol={symbol} networkId={chainOrNetwork.id} shouldClose />
+              </Suspense>
             </div>
           </div>
           <div className="text-body-secondary flex justify-between text-xs">
@@ -135,8 +136,8 @@ const NoTokens = ({ symbol }: { symbol: string }) => {
 
   const handleCopy = useCallback(() => {
     open({
-      mode: "receive",
       address: account?.address,
+      qr: true,
     })
     genericEvent("open receive", { from: "asset details" })
   }, [account?.address, genericEvent, open])
@@ -157,7 +158,7 @@ const NoTokens = ({ symbol }: { symbol: string }) => {
         </div>
         <div className="mt-6 flex justify-center gap-4">
           <PillButton icon={ArrowDownIcon} onClick={handleCopy}>
-            {t("Receive")}
+            {t("Copy address")}
           </PillButton>
           {showBuyCrypto && (
             <PillButton icon={CreditCardIcon} onClick={handleBuyCryptoClick}>

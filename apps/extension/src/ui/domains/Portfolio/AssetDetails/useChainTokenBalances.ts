@@ -1,5 +1,4 @@
-import { Balances } from "@core/domains/balances/types"
-import { Address } from "@core/types/base"
+import { Address, Balances } from "@extension/core"
 import { sortBigBy } from "@talisman/util/bigHelper"
 import { BalanceLockType, filterBaseLocks, getLockTitle } from "@talismn/balances"
 import { ChainId, EvmNetworkId } from "@talismn/chaindata-provider"

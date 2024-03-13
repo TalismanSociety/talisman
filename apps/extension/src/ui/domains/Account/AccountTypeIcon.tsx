@@ -1,4 +1,4 @@
-import { AccountType } from "@core/domains/accounts/types"
+import { AccountType } from "@extension/core"
 import {
   DcentIcon,
   EyeIcon,

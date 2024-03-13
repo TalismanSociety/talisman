@@ -1,5 +1,4 @@
-import { Chain } from "@core/domains/chains/types"
-import { EvmNetwork } from "@core/domains/ethereum/types"
+import { Chain, EvmNetwork } from "@extension/core"
 import { TFunction } from "i18next"
 import { useMemo } from "react"
 import { useTranslation } from "react-i18next"
@@ -7,7 +6,7 @@ import { useTranslation } from "react-i18next"
 export type NetworkInfoProps = {
   chain?: Chain | null
   evmNetwork?: EvmNetwork | null
-  relay?: Chain
+  relay?: Chain | null
 }
 
 export const getNetworkInfo = (t: TFunction, { chain, evmNetwork, relay }: NetworkInfoProps) => {

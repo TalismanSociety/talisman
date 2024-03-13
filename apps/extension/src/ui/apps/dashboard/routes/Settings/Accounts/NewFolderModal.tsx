@@ -1,4 +1,4 @@
-import { AccountsCatalogTree } from "@core/domains/accounts/helpers.catalog"
+import { AccountsCatalogTree } from "@extension/core"
 import { yupResolver } from "@hookform/resolvers/yup"
 import { useGlobalOpenClose } from "@talisman/hooks/useGlobalOpenClose"
 import { api } from "@ui/api"

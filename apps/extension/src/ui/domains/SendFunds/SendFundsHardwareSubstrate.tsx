@@ -1,5 +1,5 @@
-import { log } from "@core/log"
-import { roundToFirstInteger } from "@core/util/roundToFirstInteger"
+import { roundToFirstInteger } from "@extension/core"
+import { log } from "@extension/shared"
 import { HexString } from "@polkadot/util/types"
 import { planckToTokens } from "@talismn/util"
 import { api } from "@ui/api"

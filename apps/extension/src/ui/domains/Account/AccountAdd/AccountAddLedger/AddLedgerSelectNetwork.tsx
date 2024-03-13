@@ -1,5 +1,4 @@
-import { AccountAddressType } from "@core/domains/accounts/types"
-import { Chain } from "@core/domains/chains/types"
+import { AccountAddressType, Chain } from "@extension/core"
 import { yupResolver } from "@hookform/resolvers/yup"
 import { HeaderBlock } from "@talisman/components/HeaderBlock"
 import { Spacer } from "@talisman/components/Spacer"

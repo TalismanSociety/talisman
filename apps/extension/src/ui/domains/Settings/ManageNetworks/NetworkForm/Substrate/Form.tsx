@@ -1,4 +1,4 @@
-import { RequestUpsertCustomChain } from "@core/domains/chains/types"
+import { RequestUpsertCustomChain } from "@extension/core"
 import { HeaderBlock } from "@talisman/components/HeaderBlock"
 import { ArrowRightIcon } from "@talismn/icons"
 import { classNames } from "@talismn/util"

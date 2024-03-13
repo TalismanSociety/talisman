@@ -1,9 +1,9 @@
-import { tabState } from "@ui/atoms"
+import { tabAtom } from "@ui/atoms"
+import { useAtomValue } from "jotai"
 import { useMemo } from "react"
-import { useRecoilValue } from "recoil"
 
 export const useCurrentSite = () => {
-  const tab = useRecoilValue(tabState)
+  const tab = useAtomValue(tabAtom)
 
   const { favIconUrl, title, id, isLoading, url } = useMemo(() => {
     const { favIconUrl, title, url } = tab || {}

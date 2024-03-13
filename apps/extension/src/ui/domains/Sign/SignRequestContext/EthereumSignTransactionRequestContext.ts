@@ -1,23 +1,20 @@
-import {
-  parseRpcTransactionRequestBase,
-  serializeTransactionRequest,
-} from "@core/domains/ethereum/helpers"
-import { KnownSigningRequestIdOnly } from "@core/domains/signing/types"
-import { log } from "@core/log"
+import { parseRpcTransactionRequestBase, serializeTransactionRequest } from "@extension/core"
+import { KnownSigningRequestIdOnly } from "@extension/core"
+import { log } from "@extension/shared"
 import { HexString } from "@polkadot/util/types"
 import { provideContext } from "@talisman/util/provideContext"
 import { api } from "@ui/api"
-import { balancesHydrateState } from "@ui/atoms"
+import { balancesHydrateAtom } from "@ui/atoms"
 import { useEthTransaction } from "@ui/domains/Ethereum/useEthTransaction"
 import { useEvmNetwork } from "@ui/hooks/useEvmNetwork"
-import { useRecoilPreload } from "@ui/hooks/useRecoilPreload"
 import { useRequest } from "@ui/hooks/useRequest"
+import { useAtomValue } from "jotai"
 import { useCallback, useMemo, useState } from "react"
 
 import { useAnySigningRequest } from "./AnySignRequestContext"
 
 const useEthSignTransactionRequestProvider = ({ id }: KnownSigningRequestIdOnly<"eth-send">) => {
-  useRecoilPreload(balancesHydrateState)
+  useAtomValue(balancesHydrateAtom)
   const signingRequest = useRequest(id)
   const network = useEvmNetwork(signingRequest?.ethChainId)
 

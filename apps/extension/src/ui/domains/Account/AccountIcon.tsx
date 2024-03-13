@@ -1,5 +1,5 @@
-import { IdenticonType } from "@core/domains/accounts/types"
-import { Address } from "@core/types/base"
+import { Address } from "@extension/core"
+import { IdenticonType } from "@extension/core"
 import { TalismanOrb } from "@talismn/orb"
 import { classNames, isEthereumAddress } from "@talismn/util"
 import { useChainByGenesisHash } from "@ui/hooks/useChainByGenesisHash"
@@ -33,18 +33,16 @@ const ChainBadge = ({ genesisHash }: { genesisHash: string }) => {
 const PolkadotAvatar = ({ seed }: { seed: string }) => {
   const theme = useMemo(() => (isEthereumAddress(seed) ? "ethereum" : "polkadot"), [seed])
   return (
-    <Suspense>
-      <IdentIcon
-        value={seed}
-        theme={theme}
-        className="!block overflow-hidden rounded-full [&>img]:h-[1em] [&>img]:w-[1em]"
-        style={IDENTICON_STYLE}
-      />
-    </Suspense>
+    <IdentIcon
+      value={seed}
+      theme={theme}
+      className="!block overflow-hidden rounded-full [&>img]:h-[1em] [&>img]:w-[1em]"
+      style={IDENTICON_STYLE}
+    />
   )
 }
 
-export const AccountIcon: FC<AccountIconProps> = ({ address, className, genesisHash, type }) => {
+const AccountIconInner: FC<AccountIconProps> = ({ address, className, genesisHash, type }) => {
   const [identiconType] = useSetting("identiconType")
 
   // apply look & feel from props if provided (should only be the case in AvatarTypeSelector)
@@ -66,3 +64,20 @@ export const AccountIcon: FC<AccountIconProps> = ({ address, className, genesisH
     </div>
   )
 }
+
+const AccountIconFallback: FC<{ className?: string }> = ({ className }) => (
+  <div
+    className={classNames(
+      "!bg-body-disabled !block h-[1em] w-[1em] shrink-0 overflow-hidden rounded-full",
+      className
+    )}
+  ></div>
+)
+
+// suspense to prevent flickering in case settings aren't loaded yet
+// ex: first account select opening in dashboard
+export const AccountIcon: FC<AccountIconProps> = (props) => (
+  <Suspense fallback={<AccountIconFallback className={props.className} />}>
+    <AccountIconInner {...props} />
+  </Suspense>
+)

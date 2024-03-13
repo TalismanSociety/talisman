@@ -1,4 +1,4 @@
-import { Chain } from "@core/domains/chains/types"
+import { Chain } from "@extension/core"
 import useChains from "@ui/hooks/useChains"
 import { useMemo } from "react"
 

@@ -1,4 +1,4 @@
-import { BalanceFormatter } from "@core/domains/balances"
+import { BalanceFormatter } from "@extension/core"
 import { notify } from "@talisman/components/Notifications"
 import { useOpenClose } from "@talisman/hooks/useOpenClose"
 import { CopyIcon } from "@talismn/icons"

@@ -1,22 +1,20 @@
-import { AccountAddressType, AccountJsonAny } from "@core/domains/accounts/types"
-import { Balances } from "@core/domains/balances/types"
-import { Token } from "@core/domains/tokens/types"
-import { Address, HydrateDb } from "@talismn/balances"
+import { AccountAddressType, AccountJsonAny, Balances, Token } from "@extension/core"
+import { log } from "@extension/shared"
+import { HydrateDb } from "@talismn/balances"
 import { Chain, ChainId, EvmNetwork, EvmNetworkId } from "@talismn/chaindata-provider"
 import {
-  accountByAddressQuery,
-  balancesFilterQuery,
-  balancesHydrateState,
-  chainsArrayQuery,
-  evmNetworksArrayQuery,
-  settingQuery,
-  tokensArrayQuery,
+  balancesByAccountCategoryAtomFamily,
+  balancesHydrateAtom,
+  chainsArrayAtomFamily,
+  evmNetworksArrayAtomFamily,
+  settingsAtomFamily,
+  tokensArrayAtomFamily,
 } from "@ui/atoms"
 import { isEvmToken } from "@ui/util/isEvmToken"
 import { isSubToken } from "@ui/util/isSubToken"
 import { t } from "i18next"
+import { atom, useAtom, useAtomValue, useSetAtom } from "jotai"
 import { useEffect } from "react"
-import { atom, selectorFamily, useRecoilState, useRecoilValue, waitForAll } from "recoil"
 
 import { useSelectedAccount } from "./useSelectedAccount"
 
@@ -27,6 +25,16 @@ export type NetworkOption = {
   evmNetworkId?: EvmNetworkId
   symbols?: string[] // use when searching network by token symbol
   sortIndex: number | null
+}
+
+type PortfolioGlobalData = {
+  chains: Chain[]
+  tokens: Token[]
+  evmNetworks: EvmNetwork[]
+  hydrate: HydrateDb
+  allBalances: Balances
+  portfolioBalances: Balances
+  isProvisioned: boolean
 }
 
 const getNetworkTokenSymbols = ({
@@ -138,91 +146,138 @@ const getNetworkBalances = ({
   return new Balances(filtered, hydrate)
 }
 
-const portfolioNetworkFilterState = atom<NetworkOption | undefined>({
-  key: "portfolioNetworkFilterState",
-  default: undefined,
-})
+const portfolioAccountAtom = atom<AccountJsonAny | undefined>(undefined)
 
-const portfolioGlobalState = selectorFamily({
-  key: "portfolioGlobalState",
-  get:
-    (accountAddress: Address | null | undefined) =>
-    ({ get }) => {
-      const includeTestnets = get(settingQuery("useTestnets"))
-      const [account, chains, tokens, evmNetworks, hydrate, balances, myBalances] = get(
-        waitForAll([
-          accountByAddressQuery(accountAddress),
-          chainsArrayQuery({ activeOnly: true, includeTestnets }),
-          tokensArrayQuery({ activeOnly: true, includeTestnets }),
-          evmNetworksArrayQuery({ activeOnly: true, includeTestnets }),
-          balancesHydrateState,
-          balancesFilterQuery("all"),
-          balancesFilterQuery("portfolio"),
-        ])
-      )
+const networkFilterAtom = atom<NetworkOption | undefined>(undefined)
 
-      const allBalances = account ? balances.find({ address: account.address }) : myBalances
-      const accountType = getAccountType(account)
-      const networks = getNetworkOptions({
-        tokens,
-        chains,
-        evmNetworks,
-        balances: allBalances,
-        type: accountType,
-      })
-      const networkFilter = get(portfolioNetworkFilterState)
-      const networkBalances = getNetworkBalances({ networkFilter, allBalances, hydrate })
-
-      const isInitializing =
-        !allBalances.count || allBalances.each.some((b) => b.status === "initializing")
-
-      return {
-        networks,
-        networkBalances,
-        chains,
-        tokens,
-        evmNetworks,
-        hydrate,
-        allBalances,
-        accountType,
-        isInitializing,
-      }
-    },
-})
-
-// allows sharing the network filter between pages
-export const usePortfolio = () => {
-  const [networkFilter, setNetworkFilter] = useRecoilState(portfolioNetworkFilterState)
-  const { account } = useSelectedAccount()
-
-  const {
-    accountType,
-    allBalances,
-    chains,
-    evmNetworks,
-    hydrate,
-    networkBalances,
-    networks,
-    tokens,
-    isInitializing,
-  } = useRecoilValue(portfolioGlobalState(account?.address))
-
-  useEffect(() => {
-    if (networkFilter && !networks.some((n) => n.id === networkFilter.id))
-      setNetworkFilter(undefined)
-  }, [networkFilter, networks, setNetworkFilter])
+// the async atom, whose value must be copied in the sync atom
+const portfolioGlobalDataAsyncAtom = atom<Promise<PortfolioGlobalData>>(async (get) => {
+  const includeTestnets = (await get(settingsAtomFamily("useTestnets"))) as boolean
+  const [chains, tokens, evmNetworks, hydrate, allBalances, portfolioBalances] = await Promise.all([
+    get(chainsArrayAtomFamily({ activeOnly: true, includeTestnets })),
+    get(tokensArrayAtomFamily({ activeOnly: true, includeTestnets })),
+    get(evmNetworksArrayAtomFamily({ activeOnly: true, includeTestnets })),
+    get(balancesHydrateAtom),
+    get(balancesByAccountCategoryAtomFamily("all")),
+    get(balancesByAccountCategoryAtomFamily("portfolio")),
+  ])
 
   return {
-    networks,
-    networkFilter,
-    setNetworkFilter,
-    networkBalances,
     chains,
     tokens,
     evmNetworks,
     hydrate,
     allBalances,
+    portfolioBalances,
+    isProvisioned: true,
+  }
+})
+
+// the sync atom from which portfolio atoms will derive
+const portfolioGlobalDataAtom = atom<PortfolioGlobalData>({
+  chains: [],
+  tokens: [],
+  evmNetworks: [],
+  hydrate: {},
+  allBalances: new Balances([]),
+  portfolioBalances: new Balances([]),
+  isProvisioned: false,
+})
+
+const portfolioAtom = atom((get) => {
+  const {
+    hydrate,
+    tokens,
+    chains,
+    evmNetworks,
+    allBalances: allAccountsBalances,
+    portfolioBalances,
+  } = get(portfolioGlobalDataAtom)
+  const networkFilter = get(networkFilterAtom)
+  const account = get(portfolioAccountAtom)
+
+  const allBalances = account
+    ? allAccountsBalances.find({ address: account.address })
+    : portfolioBalances
+
+  const networkBalances = getNetworkBalances({ networkFilter, allBalances, hydrate })
+  const accountType = getAccountType(account)
+  const networks = getNetworkOptions({
+    tokens,
+    chains,
+    evmNetworks,
+    balances: allBalances,
+    type: accountType,
+  })
+  const isInitializing =
+    !allBalances.count || allBalances.each.some((b) => b.status === "initializing")
+
+  return {
+    allBalances,
+    chains,
+    tokens,
+    evmNetworks,
+    hydrate,
+    networkFilter,
+    networkBalances,
     accountType,
+    networks,
     isInitializing,
   }
+})
+
+let isProvisioningHookMounted = false
+
+// call this only in the root component, this sadly can't be done from an atom
+export const usePortfolioProvisioning = () => {
+  const globalData = useAtomValue(portfolioGlobalDataAsyncAtom)
+  const { account } = useSelectedAccount()
+
+  // sync atom to maintain
+  const [{ isProvisioned }, setGlobalData] = useAtom(portfolioGlobalDataAtom)
+
+  const setNetworkFilter = useSetAtom(networkFilterAtom)
+  const setAccount = useSetAtom(portfolioAccountAtom)
+
+  useEffect(() => {
+    // update sync atom
+    setGlobalData(globalData)
+  }, [globalData, setGlobalData])
+
+  useEffect(() => {
+    // update sync atom
+    setAccount(account)
+  }, [account, setAccount])
+
+  useEffect(() => {
+    if (isProvisioningHookMounted) {
+      log.warn("Do not mount usePortfolioProvisioning more than once per page")
+    }
+    isProvisioningHookMounted = true
+    return () => {
+      isProvisioningHookMounted = false
+    }
+  }, [])
+
+  useEffect(() => {
+    // clear filter after unmount
+    return () => {
+      setNetworkFilter(undefined)
+    }
+  }, [setNetworkFilter])
+
+  return isProvisioned && isProvisioningHookMounted
+}
+
+export const usePortfolio = () => {
+  const setNetworkFilter = useSetAtom(networkFilterAtom)
+
+  const portfolio = useAtomValue(portfolioAtom)
+
+  useEffect(() => {
+    if (!isProvisioningHookMounted)
+      log.error("usePortfolioProvisioning must be mounted before calling usePortfolio")
+  }, [])
+
+  return { ...portfolio, setNetworkFilter }
 }
