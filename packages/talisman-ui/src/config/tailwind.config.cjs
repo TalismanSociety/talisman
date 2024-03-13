@@ -177,7 +177,7 @@ module.exports = {
         "fade-in": "fade-in 0.2s ease-out",
         "fade-in-slow": "fade-in 0.5s ease-out",
         "spin-slow": "spin 2s linear infinite",
-        "alien-runes": "glow-blue 4s ease-in-out infinite",
+        "alienRunes": "alien-runes 4s ease-in-out infinite",
       },
       gridTemplateColumns: {
         // 2 columns, 2nd grows

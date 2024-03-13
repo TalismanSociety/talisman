@@ -30,7 +30,7 @@ export const AlienRunes = forwardRef<HTMLSpanElement, { length: number; classNam
     const text = useMemo(() => getRandomText(getRunesLength(length)), [length])
 
     return (
-      <span ref={ref} className={classNames(className, "font-alienRunes animate-glow-blue")}>
+      <span ref={ref} className={classNames(className, "font-alienRunes animate-alienRunes")}>
         {text}
       </span>
     )
