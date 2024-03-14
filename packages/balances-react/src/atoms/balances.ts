@@ -12,7 +12,6 @@ import {
   getValidSubscriptionIds,
 } from "@talismn/balances"
 import { firstThenDebounce } from "@talismn/util"
-import { addedDiff, deletedDiff, detailedDiff, diff, updatedDiff } from "deep-object-diff"
 import { liveQuery } from "dexie"
 import { atom } from "jotai"
 import { atomEffect } from "jotai-effect"
@@ -22,7 +21,6 @@ import { from } from "rxjs"
 import log from "../log"
 import { allAddressesAtom } from "./allAddresses"
 import { balanceModulesAtom } from "./balanceModules"
-import { chainConnectorsAtom } from "./chainConnectors"
 import {
   chaindataAtom,
   chainsAtom,
@@ -30,7 +28,7 @@ import {
   miniMetadatasAtom,
   tokensAtom,
 } from "./chaindata"
-import { chaindataProviderAtom } from "./chaindataProvider"
+import { miniMetadataHydratedAtom } from "./chaindataProvider"
 import { enabledChainsAtom } from "./config"
 import { cryptoWaitReadyAtom } from "./cryptoWaitReady"
 import { tokenRatesAtom } from "./tokenRates"
@@ -74,16 +72,7 @@ const balancesHydrateDataAtom = atom(async (get): Promise<HydrateDb> => {
   return { chains: chainsById, evmNetworks: evmNetworksById, tokens: tokensById, tokenRates }
 })
 
-let gId = 1
-
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-let prevDependencies: any = {}
-
-// TODO: Stop subscriptions opening and closing 5-7 times on first boot
 const balancesSubscriptionAtomEffect = atomEffect((get) => {
-  const id = ++gId
-  console.log("id", id)
-
   // lets us tear down the existing subscriptions when the atomEffect is restarted
   const abort = new AbortController()
 
@@ -93,8 +82,7 @@ const balancesSubscriptionAtomEffect = atomEffect((get) => {
     get(cryptoWaitReadyAtom),
 
     get(balanceModulesAtom),
-    get(chaindataProviderAtom),
-    get(chainConnectorsAtom),
+    get(miniMetadataHydratedAtom),
 
     get(allAddressesAtom),
     get(chainsAtom),
@@ -110,37 +98,18 @@ const balancesSubscriptionAtomEffect = atomEffect((get) => {
       _cryptoReady,
 
       balanceModules,
-      chaindataProvider,
-      chainConnectors,
+      miniMetadataHydrated,
 
       allAddresses,
       chains,
-      evmNetworks,
+      _evmNetworks,
       tokens,
-      miniMetadatas,
+      _miniMetadatas,
 
       enabledChains,
     ] = await atomDependencies
 
-    const currentDeps = {
-      _cryptoReady,
-
-      balanceModules,
-      chaindataProvider,
-      chainConnectors,
-
-      allAddresses,
-      chains,
-      evmNetworks,
-      tokens,
-      miniMetadatas,
-
-      enabledChains,
-    }
-
-    console.log("diff", id, detailedDiff(prevDependencies, currentDeps))
-    prevDependencies = currentDeps
-
+    if (!miniMetadataHydrated) return
     if (abort.signal.aborted) return
 
     const updateBalances = async (balancesUpdates: Balances) => {
@@ -168,22 +137,6 @@ const balancesSubscriptionAtomEffect = atomEffect((get) => {
       })
     }
 
-    console.log(
-      id,
-      "_cryptoReady",
-      _cryptoReady,
-      "balanceModules",
-      balanceModules,
-      "chaindataProvider",
-      chaindataProvider,
-      "chainConnectors",
-      chainConnectors,
-      "allAddresses",
-      allAddresses,
-      "enabledChains",
-      enabledChains
-    )
-
     const enabledChainIds = enabledChains?.map(
       (genesisHash) => chains.find((chain) => chain.genesisHash === genesisHash)?.id
     )
@@ -193,15 +146,15 @@ const balancesSubscriptionAtomEffect = atomEffect((get) => {
       : tokens
 
     const enabledTokenIds = enabledTokens.map(({ id }) => id)
+
+    if (enabledTokenIds.length < 1 || allAddresses.length < 1) return
+
     const addressesByToken = Object.fromEntries(
       enabledTokenIds.map((tokenId) => [tokenId, allAddresses])
     )
 
-    // TODO: Delete existing balances
-
+    // TODO: Delete invalid existing balances
     // TODO: Set up `initializing` balances
-
-    console.log(id, "addressesByToken", addressesByToken)
 
     const subscriptionId = createSubscriptionId()
     // TODO: Create subscriptions in a service worker, where we can detect page closes
@@ -217,45 +170,44 @@ const balancesSubscriptionAtomEffect = atomEffect((get) => {
       deleteSubscriptionId()
     }
 
-    return [() => {}, () => {}]
-    // return balanceModules.map((balanceModule) => {
-    //   // filter out tokens to only include those which this module knows how to fetch balances for
-    //   const moduleTokenIds = Object.values(enabledTokens ?? {})
-    //     .filter(({ type }) => type === balanceModule.type)
-    //     .map(({ id }) => id)
-    //   const addressesByModuleToken = Object.fromEntries(
-    //     Object.entries(addressesByToken).filter(([tokenId]) => moduleTokenIds.includes(tokenId))
-    //   )
+    return balanceModules.map((balanceModule) => {
+      // filter out tokens to only include those which this module knows how to fetch balances for
+      const moduleTokenIds = Object.values(enabledTokens ?? {})
+        .filter(({ type }) => type === balanceModule.type)
+        .map(({ id }) => id)
+      const addressesByModuleToken = Object.fromEntries(
+        Object.entries(addressesByToken).filter(([tokenId]) => moduleTokenIds.includes(tokenId))
+      )
 
-    //   const unsub = balancesFn(balanceModule, addressesByModuleToken, (error, balances) => {
-    //     // log errors
-    //     if (error) {
-    //       if (
-    //         error?.type === "STALE_RPC_ERROR" ||
-    //         error?.type === "WEBSOCKET_ALLOCATION_EXHAUSTED_ERROR"
-    //       )
-    //         return balancesDb.balances
-    //           .where({ source: balanceModule.type, chainId: error.chainId })
-    //           .filter((balance) => {
-    //             if (!Object.keys(addressesByModuleToken).includes(balance.tokenId)) return false
-    //             if (!addressesByModuleToken[balance.tokenId].includes(balance.address)) return false
-    //             return true
-    //           })
-    //           .modify({ status: "stale" })
+      const unsub = balancesFn(balanceModule, addressesByModuleToken, (error, balances) => {
+        // log errors
+        if (error) {
+          if (
+            error?.type === "STALE_RPC_ERROR" ||
+            error?.type === "WEBSOCKET_ALLOCATION_EXHAUSTED_ERROR"
+          )
+            return balancesDb.balances
+              .where({ source: balanceModule.type, chainId: error.chainId })
+              .filter((balance) => {
+                if (!Object.keys(addressesByModuleToken).includes(balance.tokenId)) return false
+                if (!addressesByModuleToken[balance.tokenId].includes(balance.address)) return false
+                return true
+              })
+              .modify({ status: "stale" })
 
-    //       return log.error(`Failed to fetch ${balanceModule.type} balances`, error)
-    //     }
+          return log.error(`Failed to fetch ${balanceModule.type} balances`, error)
+        }
 
-    //     // ignore empty balance responses
-    //     if (!balances) return
-    //     // ignore balances from old subscriptions which are still in the process of unsubscribing
-    //     if (abort.signal.aborted) return
+        // ignore empty balance responses
+        if (!balances) return
+        // ignore balances from old subscriptions which are still in the process of unsubscribing
+        if (abort.signal.aborted) return
 
-    //     updateBalances(balances)
-    //   })
+        updateBalances(balances)
+      })
 
-    //   return () => unsub.then((unsubscribe) => unsubscribe())
-    // })
+      return () => unsub.then((unsubscribe) => unsubscribe())
+    })
   })()
 
   // close the existing subscriptions when our effect unmounts

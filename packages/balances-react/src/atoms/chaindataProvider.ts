@@ -22,8 +22,10 @@ export const chaindataProviderAtom = atom<ChaindataProvider>((get) => {
   return new ChaindataProvider({ onfinalityApiKey: get(onfinalityApiKeyAtom) })
 })
 
+export const miniMetadataHydratedAtom = atom(false)
+
 /** This atomEffect keeps chaindata hydrated (i.e. up to date with the GitHub repo) */
-const chaindataHydrateAtomEffect = atomEffect((get) => {
+const chaindataHydrateAtomEffect = atomEffect((get, set) => {
   const chaindataProvider = get(chaindataProviderAtom)
   const miniMetadataUpdater = get(miniMetadataUpdaterAtom)
   const evmTokenFetcher = get(evmTokenFetcherAtom)
@@ -40,6 +42,8 @@ const chaindataHydrateAtomEffect = atomEffect((get) => {
       await hydrateChaindataAndMiniMetadata(chaindataProvider, miniMetadataUpdater)
       await updateCustomMiniMetadata(chaindataProvider, miniMetadataUpdater)
       await updateEvmTokens(chaindataProvider, evmTokenFetcher)
+
+      set(miniMetadataHydratedAtom, true)
 
       timeout = setTimeout(hydrate, loopMs)
     } catch (error) {
