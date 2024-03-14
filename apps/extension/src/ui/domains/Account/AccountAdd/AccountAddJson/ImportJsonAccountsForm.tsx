@@ -2,7 +2,6 @@ import { AccountType } from "@extension/core"
 import { FadeIn } from "@talisman/components/FadeIn"
 import { notify, notifyUpdate } from "@talisman/components/Notifications"
 import { shortenAddress } from "@talisman/util/shortenAddress"
-import { Balances } from "@talismn/balances"
 import {
   AlertCircleIcon,
   ArrowRightIcon,
@@ -14,12 +13,12 @@ import { classNames, sleep } from "@talismn/util"
 import { AccountIcon } from "@ui/domains/Account/AccountIcon"
 import { AccountTypeIcon } from "@ui/domains/Account/AccountTypeIcon"
 import { Fiat } from "@ui/domains/Asset/Fiat"
-import { TokensAndFiat } from "@ui/domains/Asset/TokensAndFiat"
 import { useSelectedCurrency } from "@ui/hooks/useCurrency"
 import { FC, useCallback, useMemo, useState } from "react"
 import { Trans, useTranslation } from "react-i18next"
 import { Button, Checkbox, Tooltip, TooltipContent, TooltipTrigger } from "talisman-ui"
 
+import { BalancesSummaryTooltipContent } from "../../BalancesSummaryTooltipContent"
 import { JsonImportAccount, useJsonAccountImport } from "./context"
 import { UnlockJsonAccountsButton } from "./UnlockJsonAccountsButton"
 
@@ -31,16 +30,6 @@ const JsonAccount: FC<{ account: JsonImportAccount; onSelect: (select: boolean) 
   const handleClick = useCallback(() => {
     onSelect(!account.selected)
   }, [onSelect, account])
-
-  const tokenBalances = useMemo(() => {
-    const positiveBalances = account.balances.each.filter((b) => b.total.planck > 0)
-    // need to dedupe by asset, in case there are entries for staking
-    const tokenIds = [...new Set(positiveBalances.map((b) => b.tokenId))]
-    return tokenIds.map((tokenId) => {
-      const balances = positiveBalances.filter((b) => b.tokenId === tokenId)
-      return { tokenId, symbol: balances[0].token?.symbol, balances: new Balances(balances) }
-    })
-  }, [account])
 
   const currency = useSelectedCurrency()
 
@@ -73,22 +62,7 @@ const JsonAccount: FC<{ account: JsonImportAccount; onSelect: (select: boolean) 
                     <Fiat amount={account.balances.sum.fiat(currency).total} isBalance />
                   </div>
                 </TooltipTrigger>
-                {!!tokenBalances.length && (
-                  <TooltipContent>
-                    <div className="flex flex-col items-end gap-3 p-2">
-                      {tokenBalances.map((tokenBalance, i) => (
-                        <div key={`${tokenBalance.tokenId}-${i}`}>
-                          <TokensAndFiat
-                            tokenId={tokenBalance.tokenId}
-                            planck={tokenBalance.balances.sum.planck.total}
-                            noTooltip
-                            noCountUp
-                          />
-                        </div>
-                      ))}
-                    </div>
-                  </TooltipContent>
-                )}
+                <BalancesSummaryTooltipContent balances={account.balances} />
               </Tooltip>
             </div>
             {account.isExisting || !account.isPrivateKeyAvailable ? (
