@@ -10,7 +10,7 @@ const windowInject = globalThis as typeof globalThis & {
   }
 }
 
-export const TalismanExtensionSynchronizer = () => {
+export const useExtensionSyncCustomChaindata = () => {
   const chaindataProvider = useChaindataProvider()
 
   useEffect(() => {
