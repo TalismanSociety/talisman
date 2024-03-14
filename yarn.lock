@@ -7911,7 +7911,6 @@ __metadata:
     "@types/react": ^18.0.17
     anylogger: ^1.0.11
     blueimp-md5: 2.19.0
-    deep-object-diff: ^1.1.9
     dexie: ^3.2.4
     dexie-react-hooks: ^1.1.7
     eslint: ^8.4.0
@@ -13278,13 +13277,6 @@ __metadata:
   version: 0.1.4
   resolution: "deep-is@npm:0.1.4"
   checksum: edb65dd0d7d1b9c40b2f50219aef30e116cedd6fc79290e740972c132c09106d2e80aa0bc8826673dd5a00222d4179c84b36a790eef63a4c4bca75a37ef90804
-  languageName: node
-  linkType: hard
-
-"deep-object-diff@npm:^1.1.9":
-  version: 1.1.9
-  resolution: "deep-object-diff@npm:1.1.9"
-  checksum: ecd42455e4773f653595d28070295e7aaa8402db5f8ab21d0bec115a7cb4de5e207a5665514767da5f025c96597f1d3a0a4888aeb4dd49e03c996871a3aa05ef
   languageName: node
   linkType: hard
 

@@ -1,31 +1,26 @@
 import { ChainId, EvmNetworkId, TokenId } from "@talismn/chaindata-provider"
 import { useAtomValue } from "jotai"
 
-import { chaindataAtom } from "../atoms/chaindata"
+import {
+  chaindataAtom,
+  chainsByGenesisHashAtom,
+  chainsByIdAtom,
+  evmNetworksByIdAtom,
+  miniMetadatasAtom,
+  tokensByIdAtom,
+} from "../atoms/chaindata"
 import { chaindataProviderAtom } from "../atoms/chaindataProvider"
 
-export const useChaindataProvider = () => {
-  return useAtomValue(chaindataProviderAtom)
-}
+export const useChaindataProvider = () => useAtomValue(chaindataProviderAtom)
+export const useChaindata = () => useAtomValue(chaindataAtom)
 
-export const useChaindata = () => {
-  return useAtomValue(chaindataAtom)
-}
+export const useChains = () => useAtomValue(chainsByIdAtom)
+export const useChainsByGenesisHash = () => useAtomValue(chainsByGenesisHashAtom)
+export const useEvmNetworks = () => useAtomValue(evmNetworksByIdAtom)
+export const useTokens = () => useAtomValue(tokensByIdAtom)
+export const useMiniMetadatas = () => useAtomValue(miniMetadatasAtom)
 
-export const useChains = () => useChaindata().chainsById
-export const useChain = (chainId?: ChainId) => {
-  const chainsById = useChains()
-  return chainId ? chainsById[chainId] : undefined
-}
-
-export const useEvmNetworks = () => useChaindata().evmNetworksById
-export const useEvmNetwork = (evmNetworkId?: EvmNetworkId) => {
-  const evmNetworksById = useEvmNetworks()
-  return evmNetworkId ? evmNetworksById[evmNetworkId] : undefined
-}
-
-export const useTokens = () => useChaindata().tokensById
-export const useToken = (tokenId?: TokenId) => {
-  const tokensById = useTokens()
-  return tokenId ? tokensById[tokenId] : undefined
-}
+export const useChain = (chainId?: ChainId) => useChains()[chainId ?? ""] ?? undefined
+export const useEvmNetwork = (evmNetworkId?: EvmNetworkId) =>
+  useEvmNetworks()[evmNetworkId ?? ""] ?? undefined
+export const useToken = (tokenId?: TokenId) => useTokens()[tokenId ?? ""] ?? undefined

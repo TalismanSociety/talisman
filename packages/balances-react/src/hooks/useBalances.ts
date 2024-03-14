@@ -12,9 +12,7 @@ export const useSetBalancesAddresses = (addresses: string[]) => {
   }, [addresses, setAllAddresses])
 }
 
-export const useBalances = () => {
-  return useAtomValue(allBalancesAtom)
-}
+export const useBalances = () => useAtomValue(allBalancesAtom)
 
 // TODO: Extract to shared definition between extension and @talismn/balances-react
 export type BalancesStatus =

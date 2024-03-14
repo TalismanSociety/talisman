@@ -1,5 +1,5 @@
 import { useChaindataProvider } from "@talismn/balances-react"
-import { CustomChain, CustomEvmNetwork, Token } from "@talismn/chaindata-provider"
+import type { CustomChain, CustomEvmNetwork, Token } from "@talismn/chaindata-provider"
 import { useEffect } from "react"
 
 const windowInject = globalThis as typeof globalThis & {
@@ -10,13 +10,20 @@ const windowInject = globalThis as typeof globalThis & {
   }
 }
 
-export function useExtensionSyncCustomChaindata() {
+export const TalismanExtensionSynchronizer = () => {
   const chaindataProvider = useChaindataProvider()
 
   useEffect(() => {
     const sub = windowInject.talismanSub
-    sub?.subscribeCustomSubstrateChains?.((custom) => chaindataProvider.setCustomChains(custom))
-    sub?.subscribeCustomEvmNetworks?.((custom) => chaindataProvider.setCustomEvmNetworks(custom))
-    sub?.subscribeCustomTokens?.((custom) => chaindataProvider.setCustomTokens(custom))
+
+    const unsubs = [
+      sub?.subscribeCustomSubstrateChains?.((custom) => chaindataProvider.setCustomChains(custom)),
+      sub?.subscribeCustomEvmNetworks?.((custom) => chaindataProvider.setCustomEvmNetworks(custom)),
+      sub?.subscribeCustomTokens?.((custom) => chaindataProvider.setCustomTokens(custom)),
+    ]
+
+    return () => unsubs.forEach((unsub) => unsub?.())
   }, [chaindataProvider])
+
+  return null
 }
