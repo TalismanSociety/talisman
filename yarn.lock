@@ -7908,6 +7908,7 @@ __metadata:
     "@talismn/tsconfig": "workspace:*"
     "@talismn/util": "workspace:*"
     "@types/jest": ^27.5.1
+    "@types/lodash": ^4.14.180
     "@types/react": ^18.0.17
     anylogger: ^1.0.11
     blueimp-md5: 2.19.0
@@ -7917,6 +7918,7 @@ __metadata:
     jest: ^29.7.0
     jotai: ^2.6.4
     jotai-effect: ^0.5.0
+    lodash: 4.17.21
     react: ^18.2.0
     react-use: ^17.4.0
     rxjs: ^7.8.1
