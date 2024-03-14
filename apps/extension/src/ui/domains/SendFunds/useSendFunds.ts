@@ -1,12 +1,12 @@
-import { AccountType } from "@core/domains/accounts/types"
+import { AssetTransferMethod } from "@extension/core"
+import { roundToFirstInteger } from "@extension/core"
+import { AccountType } from "@extension/core"
 import {
   getEthTransferTransactionBase,
   serializeGasSettings,
   serializeTransactionRequest,
-} from "@core/domains/ethereum/helpers"
-import { AssetTransferMethod } from "@core/domains/transfers/types"
-import { log } from "@core/log"
-import { roundToFirstInteger } from "@core/util/roundToFirstInteger"
+} from "@extension/core"
+import { log } from "@extension/shared"
 import { HexString } from "@polkadot/util/types"
 import { provideContext } from "@talisman/util/provideContext"
 import { Address, Balance, BalanceFormatter } from "@talismn/balances"
@@ -42,7 +42,7 @@ import { useSendFundsInputSize } from "./useSendFundsInputSize"
 
 type SignMethod = "normal" | "hardwareSubstrate" | "hardwareEthereum" | "qrSubstrate" | "unknown"
 
-const useRecipientBalance = (token?: Token, address?: Address | null) => {
+const useRecipientBalance = (token?: Token | null, address?: Address | null) => {
   const { t } = useTranslation("send-funds")
   const hydrate = useBalancesHydrate()
 
@@ -61,7 +61,7 @@ const useRecipientBalance = (token?: Token, address?: Address | null) => {
 
 const useIsSendingEnough = (
   recipientBalance?: Balance | null,
-  token?: Token,
+  token?: Token | null,
   transfer?: BalanceFormatter | null
 ) => {
   return useMemo(() => {
@@ -175,10 +175,13 @@ const useSubTransaction = (
   }, [qSubstrateEstimateFee, token])
 }
 
+export type ToWarning = "DIFFERENT_ACCOUNT_FORMAT" | "AZERO_ID" | undefined
+
 const useSendFundsProvider = () => {
   const { t } = useTranslation("send-funds")
   const { from, to, tokenId, amount, allowReap, sendMax, set, gotoProgress } = useSendFundsWizard()
   const [isLocked, setIsLocked] = useState(false)
+  const [recipientWarning, setRecipientWarning] = useState<ToWarning>()
 
   const fromAccount = useAccountByAddress(from)
   const { tokensMap } = useTokens({ activeOnly: false, includeTestnets: true })
@@ -429,7 +432,8 @@ const useSendFundsProvider = () => {
         isSubToken(feeToken) &&
         feeToken.existentialDeposit &&
         feeTokenBalance.transferable.planck - estimatedFee.planck <
-          BigInt(feeToken.existentialDeposit)
+          BigInt(feeToken.existentialDeposit) &&
+        !sendMax
       )
         return {
           isValid: false,
@@ -477,6 +481,7 @@ const useSendFundsProvider = () => {
     maxAmount,
     sendMax,
     subTransaction?.error,
+
     to,
     token,
     tokenId,
@@ -659,6 +664,8 @@ const useSendFundsProvider = () => {
     feeToken,
     feeTokenBalance,
     feeTokenRates,
+    recipientWarning,
+    setRecipientWarning,
     tip,
     tipToken,
     tipTokenBalance,

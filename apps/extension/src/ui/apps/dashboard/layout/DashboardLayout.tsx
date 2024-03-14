@@ -9,7 +9,7 @@ import { AccountRenameModal } from "@ui/domains/Account/AccountRenameModal"
 import { BuyTokensModal } from "@ui/domains/Asset/Buy/BuyTokensModal"
 import { CopyAddressModal } from "@ui/domains/CopyAddress"
 import { MigratePasswordModal } from "@ui/domains/Settings/MigratePassword/MigratePasswordModal"
-import { FC, Suspense, useEffect, useRef } from "react"
+import { FC, Suspense, useEffect, useRef, useState } from "react"
 import { useLocation } from "react-router-dom"
 
 import DashboardNotifications from "./DashboardNotifications"
@@ -25,6 +25,39 @@ type LayoutProps = {
   backTo?: string
   className?: string
   analytics?: AnalyticsPage
+}
+
+const DashboardNotificationsAndModals = () => {
+  const [shouldRender, setShouldRender] = useState(false)
+  useEffect(() => {
+    // delay the display of modals to prevent slowing down the initial render
+    const timeout = setTimeout(() => {
+      setShouldRender(true)
+    }, 100)
+
+    return () => {
+      clearTimeout(timeout)
+    }
+  }, [])
+
+  if (!shouldRender) return null
+
+  return (
+    <Suspense fallback={<SuspenseTracker name="Modals" />}>
+      {/* this actually needs renders in place at the bottom of the page */}
+      <DashboardNotifications />
+      {/* below components can be rendered from anywhere */}
+      <BackupWarningModal />
+      <BuyTokensModal />
+      <AccountRenameModal />
+      <AccountExportModal />
+      <AccountExportPrivateKeyModal />
+      <AccountRemoveModal />
+      <CopyAddressModal />
+      <MigratePasswordModal />
+      <OnboardingToast />
+    </Suspense>
+  )
 }
 
 export const DashboardLayout: FC<LayoutProps> = ({
@@ -64,20 +97,9 @@ export const DashboardLayout: FC<LayoutProps> = ({
             {!!withBack && <BackButton analytics={analytics} className="mb-[3rem]" to={backTo} />}
             {children}
           </div>
-          <DashboardNotifications />
+          <DashboardNotificationsAndModals />
         </Suspense>
       </section>
-      <Suspense fallback={<SuspenseTracker name="Modals" />}>
-        <BackupWarningModal />
-        <BuyTokensModal />
-        <AccountRenameModal />
-        <AccountExportModal />
-        <AccountExportPrivateKeyModal />
-        <AccountRemoveModal />
-        <CopyAddressModal />
-        <MigratePasswordModal />
-        <OnboardingToast />
-      </Suspense>
     </main>
   )
 }

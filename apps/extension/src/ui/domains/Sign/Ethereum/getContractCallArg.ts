@@ -1,4 +1,4 @@
-import { DecodedEvmTransaction } from "@core/util/decodeEvmTransaction"
+import { DecodedEvmTransaction } from "@ui/domains/Ethereum/util/decodeEvmTransaction"
 import { getAbiItem } from "viem"
 
 export const getContractCallArg = <TResult>(

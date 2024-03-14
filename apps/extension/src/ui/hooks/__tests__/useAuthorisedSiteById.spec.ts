@@ -1,5 +1,5 @@
-import { TALISMAN_WEB_APP_DOMAIN } from "@core/constants"
-import { AuthorizedSiteId, ProviderType } from "@core/domains/sitesAuthorised/types"
+import { AuthorizedSiteId, ProviderType } from "@extension/core"
+import { TALISMAN_WEB_APP_DOMAIN } from "@extension/shared"
 import { act, renderHook, waitFor } from "@testing-library/react"
 
 import { ADDRESSES } from "../../../../tests/constants"
@@ -32,7 +32,7 @@ test("Can get Authorised Site by id", async () => {
   waitFor(() => expect(result.current.addresses?.length).toBe(3))
 
   rerender({ siteId: "app.stellaswap.com", providerType: "ethereum" })
-  expect(result.current.addresses).toBeUndefined()
+  await waitFor(() => expect(result.current.addresses).toBeUndefined())
   expect(result.current.ethAddresses?.length).toBe(1)
   expect(result.current.connectAllSubstrate).toBeUndefined()
 

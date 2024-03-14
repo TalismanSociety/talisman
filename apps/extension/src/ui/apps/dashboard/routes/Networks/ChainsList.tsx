@@ -1,4 +1,4 @@
-import { activeChainsStore, isChainActive } from "@core/domains/chains/store.activeChains"
+import { activeChainsStore, isChainActive } from "@extension/core"
 import { Chain, isCustomChain } from "@talismn/chaindata-provider"
 import { ChevronRightIcon } from "@talismn/icons"
 import { classNames } from "@talismn/util"
@@ -21,11 +21,11 @@ export const ChainsList = ({ search }: { search?: string }) => {
   const { t } = useTranslation("admin")
   const [useTestnets] = useSetting("useTestnets")
   const { chains: allChains } = useChains({ activeOnly: false, includeTestnets: true })
+  const networksActiveState = useActiveChainsState()
   const chains = useMemo(
     () => (useTestnets ? allChains : allChains.filter((n) => !n.isTestnet)),
     [allChains, useTestnets]
   )
-  const networksActiveState = useActiveChainsState()
 
   const [filteredChains, exactMatches] = useMemo(() => {
     if (search === undefined || search.length < 1) return [chains, [] as string[]] as const

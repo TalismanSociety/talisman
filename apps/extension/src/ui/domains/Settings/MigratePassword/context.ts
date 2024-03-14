@@ -1,4 +1,4 @@
-import { passwordStore } from "@core/domains/app/store.password"
+import { passwordStore } from "@extension/core"
 import * as Sentry from "@sentry/react"
 import useStatus, { statusOptions } from "@talisman/hooks/useStatus"
 import { provideContext } from "@talisman/util/provideContext"

@@ -1,5 +1,5 @@
-import { AccountJsonAny } from "@core/domains/accounts/types"
-import { log } from "@core/log"
+import { AccountJsonAny } from "@extension/core"
+import { log } from "@extension/shared"
 import { Address } from "@talismn/balances"
 import { Chain, TokenId, TokenList } from "@talismn/chaindata-provider"
 import { encodeAnyAddress } from "@talismn/util"

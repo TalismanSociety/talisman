@@ -1,18 +1,18 @@
-import { SubstrateSigningRequest } from "@core/domains/signing/types"
-import { log } from "@core/log"
-import { isJsonPayload } from "@core/util/isJsonPayload"
+import { isJsonPayload } from "@extension/core"
+import { SubstrateSigningRequest } from "@extension/core"
+import { log } from "@extension/shared"
 import { GenericExtrinsic } from "@polkadot/types"
 import { IRuntimeVersionBase, SignerPayloadJSON, SignerPayloadRaw } from "@polkadot/types/types"
 import { HexString } from "@polkadot/util/types"
 import { provideContext } from "@talisman/util/provideContext"
 import { useQuery } from "@tanstack/react-query"
 import { api } from "@ui/api"
-import { balancesHydrateState } from "@ui/atoms"
+import { balancesHydrateAtom } from "@ui/atoms"
 import { useChainByGenesisHash } from "@ui/hooks/useChainByGenesisHash"
 import useChains from "@ui/hooks/useChains"
 import { useExtrinsic } from "@ui/hooks/useExtrinsic"
-import { useRecoilPreload } from "@ui/hooks/useRecoilPreload"
 import { getExtrinsicDispatchInfo } from "@ui/util/getExtrinsicDispatchInfo"
+import { useAtomValue } from "jotai"
 import { useCallback, useMemo } from "react"
 
 import { useAnySigningRequest } from "./AnySignRequestContext"
@@ -61,7 +61,7 @@ const usePolkadotSigningRequestProvider = ({
 }: {
   signingRequest: SubstrateSigningRequest
 }) => {
-  useRecoilPreload(balancesHydrateState)
+  useAtomValue(balancesHydrateAtom)
   const payload = signingRequest?.request?.payload
 
   const baseRequest = useAnySigningRequest({

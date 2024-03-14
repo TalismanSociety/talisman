@@ -19,7 +19,7 @@
     "@talismn/icons": "workspace:*"
   },
   "devDependencies": {
-    "@floating-ui/react": "0.26.4",
+    "@floating-ui/react": "0.26.9",
     "@headlessui/react": "1.7.17",
     "@tailwindcss/forms": "^0.5.3",
     "@talismn/eslint-config": "workspace:*",

@@ -1,4 +1,4 @@
-import { parseTransactionRequest } from "@core/domains/ethereum/helpers"
+import { parseTransactionRequest } from "@extension/core"
 import { EvmNetworkId } from "@talismn/chaindata-provider"
 import { useMemo } from "react"
 import { TransactionRequest } from "viem"

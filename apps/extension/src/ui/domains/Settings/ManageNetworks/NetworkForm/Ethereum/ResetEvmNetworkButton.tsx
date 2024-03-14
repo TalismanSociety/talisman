@@ -1,4 +1,4 @@
-import { CustomEvmNetwork, EvmNetwork } from "@core/domains/ethereum/types"
+import { CustomEvmNetwork, EvmNetwork } from "@extension/core"
 import { notify } from "@talisman/components/Notifications"
 import { useOpenClose } from "@talisman/hooks/useOpenClose"
 import { sleep } from "@talismn/util"
@@ -22,7 +22,7 @@ export const ResetEvmNetworkButton: FC<{ network: EvmNetwork | CustomEvmNetwork 
       await api.ethNetworkReset(network.id.toString())
       close()
       await sleep(350) // wait for atom to reflect changes
-      navigate("/networks/ethereum")
+      navigate("/settings/networks-tokens/networks/ethereum")
     } catch (err) {
       notify({
         title: t("Failed to reset"),

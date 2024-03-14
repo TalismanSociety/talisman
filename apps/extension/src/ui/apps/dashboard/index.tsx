@@ -17,8 +17,9 @@ import { AccountAddDcentDashboardWizard } from "./routes/AccountAdd/AccountAddDc
 import { AccountAddDerivedPage } from "./routes/AccountAdd/AccountAddDerivedPage"
 import { AccountAddJsonPage } from "./routes/AccountAdd/AccountAddJsonPage"
 import { AccountAddLedgerDashboardWizard } from "./routes/AccountAdd/AccountAddLedgerWizard"
+import { AccountAddMnemonicDashboardWizard } from "./routes/AccountAdd/AccountAddMnemonicWizard"
+import { AccountAddPrivateKeyDashboardPage } from "./routes/AccountAdd/AccountAddPrivateKeyPage"
 import { AccountAddQrDashboardWizard } from "./routes/AccountAdd/AccountAddQrWizard"
-import { AccountAddSecretDashboardWizard } from "./routes/AccountAdd/AccountAddSecretWizard"
 import { AccountAddSignetDashboardWizard } from "./routes/AccountAdd/AccountAddSignetWizard"
 import { AccountAddWatchedPage } from "./routes/AccountAdd/AccountAddWatchedPage"
 import { NetworkPage } from "./routes/Networks/NetworkPage"
@@ -64,7 +65,8 @@ const DashboardInner = () => {
             <Route index element={<AccountAddMenu />} />
             <Route path="derived" element={<AccountAddDerivedPage />} />
             <Route path="json" element={<AccountAddJsonPage />} />
-            <Route path="secret/*" element={<AccountAddSecretDashboardWizard />} />
+            <Route path="mnemonic/*" element={<AccountAddMnemonicDashboardWizard />} />
+            <Route path="pk/*" element={<AccountAddPrivateKeyDashboardPage />} />
             <Route path="ledger/*" element={<AccountAddLedgerDashboardWizard />} />
             <Route path="qr/*" element={<AccountAddQrDashboardWizard />} />
             <Route path="watched" element={<AccountAddWatchedPage />} />
@@ -76,35 +78,68 @@ const DashboardInner = () => {
         </Route>
         <Route path="settings">
           <Route path="" element={<Navigate to="/settings/general" replace />} />
-          <Route path="general" element={<GeneralPage />} />
-          <Route path="language" element={<LanguagePage />} />
-          <Route path="currency" element={<CurrencySettingsPage />} />
+          <Route path="general">
+            <Route path="" element={<GeneralPage />} />
+            <Route path="language" element={<LanguagePage />} />
+            <Route path="currency" element={<CurrencySettingsPage />} />
+            <Route path="*" element={<Navigate to="" replace />} />
+          </Route>
           <Route path="address-book" element={<AddressBookPage />} />
           <Route path="connected-sites" element={<ConnectedSitesPage />} />
           <Route path="mnemonics" element={<MnemonicsPage />} />
           <Route path="accounts" element={<AccountsPage />} />
-          <Route path="security-privacy-settings" element={<SecurityPrivacyPage />} />
-          <Route path="change-password" element={<ChangePasswordPage />} />
-          <Route path="autolock" element={<AutoLockTimerPage />} />
-          <Route path="networks-tokens" element={<NetworksTokensPage />} />
-          <Route path="qr-metadata" element={<QrMetadataPage />} />
+          <Route path="security-privacy-settings">
+            <Route path="" element={<SecurityPrivacyPage />} />
+            <Route path="change-password" element={<ChangePasswordPage />} />
+            <Route path="autolock" element={<AutoLockTimerPage />} />
+            <Route path="*" element={<Navigate to="" replace />} />
+          </Route>
+          <Route path="networks-tokens">
+            <Route path="" element={<NetworksTokensPage />} />
+            <Route path="asset-discovery" element={<AssetDiscoveryPage />} />
+            <Route path="tokens">
+              <Route path="" element={<TokensPage />} />
+              <Route path="add" element={<AddCustomTokenPage />} />
+              <Route path=":id" element={<TokenPage />} />
+              <Route path="*" element={<Navigate to="" replace />} />
+            </Route>
+            <Route path="networks">
+              <Route path="" element={<Navigate to="ethereum" replace />} />
+              <Route path=":networksType" element={<NetworksPage />} />
+              <Route path=":networksType/add" element={<NetworkPage />} />
+              <Route path=":networksType/:id" element={<NetworkPage />} />
+              <Route path="*" element={<Navigate to="" replace />} />
+            </Route>
+            <Route path="qr-metadata" element={<QrMetadataPage />} />
+            <Route path="*" element={<Navigate to="" replace />} />
+          </Route>
           <Route path="about" element={<AboutPage />} />
           <Route path="analytics" element={<AnalyticsOptInPage />} />
-          <Route path="asset-discovery" element={<AssetDiscoveryPage />} />
+          {/* Old routes redirects */}
+          <Route
+            path="qr-metadata"
+            element={<Navigate to="networks-tokens/qr-metadata" replace />}
+          />
+          <Route
+            path="change-password"
+            element={<Navigate to="/settings/security-privacy-settings/change-password" replace />}
+          />
+          <Route
+            path="autolock"
+            element={<Navigate to="/settings/security-privacy-settings/autolock" replace />}
+          />
           <Route path="*" element={<Navigate to="" replace />} />
         </Route>
-        <Route path="tokens">
-          <Route path="" element={<TokensPage />} />
-          <Route path="add" element={<AddCustomTokenPage />} />
-          <Route path=":id" element={<TokenPage />} />
-        </Route>
-        <Route path="networks">
-          <Route path="" element={<Navigate to="/networks/ethereum" replace />} />
-          <Route path=":networksType" element={<NetworksPage />} />
-          <Route path=":networksType/add" element={<NetworkPage />} />
-          <Route path=":networksType/:id" element={<NetworkPage />} />
-          <Route path="*" element={<Navigate to="" replace />} />
-        </Route>
+        {/* Old routes redirects */}
+        <Route
+          path="networks"
+          element={<Navigate to="/settings/networks-tokens/networks" replace />}
+        />
+        <Route path="tokens" element={<Navigate to="/settings/networks-tokens/tokens" replace />} />
+        <Route
+          path="qr-metadata"
+          element={<Navigate to="/settings/networks-tokens/qr-metadata" replace />}
+        />
         <Route path="*" element={<Navigate to="/portfolio" replace />} />
       </Routes>
     </Suspense>
@@ -158,7 +193,7 @@ const LoginChecker: FC<PropsWithChildren> = ({ children }) => {
       // if user was logged in and locked the extension from the popup, close the tab
       if (wasLoggedIn.current) window.close()
       // else (open from a bookmark ?), prompt login
-      else api.promptLogin(true)
+      else api.promptLogin()
     }
   }, [isLoggedIn, isOnboarded])
 

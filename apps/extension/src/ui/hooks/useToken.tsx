@@ -1,7 +1,14 @@
-import type { TokenId } from "@core/domains/tokens/types"
-import { tokenQuery } from "@ui/atoms"
-import { useRecoilValue } from "recoil"
+import { TokenId } from "@extension/core"
+import { useMemo } from "react"
 
-const useToken = (id: TokenId | null | undefined) => useRecoilValue(tokenQuery(id))
+import { useAllTokensMap } from "./useTokens"
+
+const useToken = (id: TokenId | null | undefined) => {
+  // DON'T DO THIS (suspenses once for each key)
+  // return useAtomValue(tokenByIdAtomFamily(id))
+
+  const tokensMap = useAllTokensMap()
+  return useMemo(() => (id && tokensMap[id]) || null, [tokensMap, id])
+}
 
 export default useToken

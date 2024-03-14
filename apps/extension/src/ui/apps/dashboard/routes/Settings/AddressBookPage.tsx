@@ -1,12 +1,13 @@
-import { ProviderType } from "@core/domains/sitesAuthorised/types"
+import { ProviderType } from "@extension/core"
 import { HeaderBlock } from "@talisman/components/HeaderBlock"
+import { OptionSwitch } from "@talisman/components/OptionSwitch"
 import { Spacer } from "@talisman/components/Spacer"
 import { useOpenClose } from "@talisman/hooks/useOpenClose"
 import { AccountAddressType } from "@talisman/util/getAddressType"
 import { CopyIcon, MoreHorizontalIcon, PlusIcon, SendIcon, UserPlusIcon } from "@talismn/icons"
 import { classNames } from "@talismn/util"
 import { AnalyticsPage } from "@ui/api/analytics"
-import { balancesFilterQuery } from "@ui/atoms"
+import { balancesByAccountCategoryAtomFamily } from "@ui/atoms"
 import { AccountIcon } from "@ui/domains/Account/AccountIcon"
 import { Address } from "@ui/domains/Account/Address"
 import { useCopyAddressModal } from "@ui/domains/CopyAddress"
@@ -15,12 +16,11 @@ import { ContactCreateModal } from "@ui/domains/Settings/AddressBook/ContactCrea
 import { ContactDeleteModal } from "@ui/domains/Settings/AddressBook/ContactDeleteModal"
 import { ContactEditModal } from "@ui/domains/Settings/AddressBook/ContactEditModal"
 import { ExistingContactComponentProps } from "@ui/domains/Settings/AddressBook/types"
-import { ProviderTypeSwitch } from "@ui/domains/Site/ProviderTypeSwitch"
 import { useAddressBook } from "@ui/hooks/useAddressBook"
 import { useAnalytics } from "@ui/hooks/useAnalytics"
 import { useAnalyticsPageView } from "@ui/hooks/useAnalyticsPageView"
-import { useRecoilPreload } from "@ui/hooks/useRecoilPreload"
 import { useSendFundsPopup } from "@ui/hooks/useSendFundsPopup"
+import { useAtomValue } from "jotai"
 import startCase from "lodash/startCase"
 import {
   ButtonHTMLAttributes,
@@ -87,7 +87,6 @@ const AddressBookContactItem = ({ contact, handleDelete, handleEdit }: ContactIt
 
   const handleCopyClick = useCallback(() => {
     openCopyAddressModal({
-      mode: "copy",
       address: contact.address,
     })
     genericEvent("open copy address", { from: "address book" })
@@ -159,8 +158,8 @@ const contactTypeAddressTypeMap: Record<ProviderType, AccountAddressType> = {
 
 export const AddressBookPage = () => {
   const { t } = useTranslation("admin")
-  // because balances of the send button
-  useRecoilPreload(balancesFilterQuery("owned"))
+  // preload balances because of the send button
+  useAtomValue(balancesByAccountCategoryAtomFamily("owned"))
   const { contacts } = useAddressBook()
   const contactsMap = useMemo(
     () => Object.fromEntries(contacts.map((c) => [c.address, c])),
@@ -169,10 +168,13 @@ export const AddressBookPage = () => {
   const [toDelete, setToDelete] = useState<string>()
   const [toEdit, setToEdit] = useState<string>()
   const { open, isOpen, close } = useOpenClose()
-  const [addressType, setAddressType] = useState<"polkadot" | "ethereum">("polkadot")
+  const [addressType, setAddressType] = useState<"all" | "polkadot" | "ethereum">("all")
   const contactsToDisplay = useMemo(
     () =>
-      contacts.filter((contact) => contact.addressType === contactTypeAddressTypeMap[addressType]),
+      contacts.filter(
+        (contact) =>
+          addressType === "all" || contact.addressType === contactTypeAddressTypeMap[addressType]
+      ),
     [contacts, addressType]
   )
 
@@ -184,9 +186,14 @@ export const AddressBookPage = () => {
         <HeaderBlock title={t("Address Book")} text={t("Manage your saved contacts")} />
         <Spacer large />
         <div className="flex justify-between align-middle">
-          <ProviderTypeSwitch
+          <OptionSwitch
+            options={[
+              ["all", t("All")],
+              ["ethereum", t("Ethereum")],
+              ["polkadot", t("Polkadot")],
+            ]}
             className="text-xs [&>div]:h-full"
-            defaultProvider="polkadot"
+            defaultOption="all"
             onChange={setAddressType}
           />
           {contactsToDisplay.length > 0 && (

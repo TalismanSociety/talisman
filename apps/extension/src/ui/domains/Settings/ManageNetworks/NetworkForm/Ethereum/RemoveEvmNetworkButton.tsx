@@ -1,4 +1,4 @@
-import { CustomEvmNetwork, EvmNetwork } from "@core/domains/ethereum/types"
+import { CustomEvmNetwork, EvmNetwork } from "@extension/core"
 import { notify } from "@talisman/components/Notifications"
 import { useOpenClose } from "@talisman/hooks/useOpenClose"
 import { api } from "@ui/api"
@@ -19,7 +19,7 @@ export const RemoveEvmNetworkButton: FC<{ network: EvmNetwork | CustomEvmNetwork
     if (!network) return
     try {
       await api.ethNetworkRemove(network.id.toString())
-      navigate("/networks/ethereum")
+      navigate("/settings/networks-tokens/networks/ethereum")
     } catch (err) {
       notify({
         title: t("Failed to remove"),

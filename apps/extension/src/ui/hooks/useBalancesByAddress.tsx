@@ -1,7 +1,7 @@
-import { Address } from "@core/types/base"
-import { balancesQuery } from "@ui/atoms"
-import { useRecoilValue } from "recoil"
+import { Address } from "@extension/core"
+import { balancesAtomFamily } from "@ui/atoms"
+import { useAtomValue } from "jotai"
 
-const useBalancesByAddress = (address: Address) => useRecoilValue(balancesQuery({ address }))
+const useBalancesByAddress = (address: Address) => useAtomValue(balancesAtomFamily({ address }))
 
 export default useBalancesByAddress

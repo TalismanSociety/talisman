@@ -1,4 +1,4 @@
-import { ProviderType } from "@core/domains/sitesAuthorised/types"
+import { ProviderType } from "@extension/core"
 import { Accordion, AccordionIcon } from "@talisman/components/Accordion"
 import { Favicon } from "@talisman/components/Favicon"
 import useAuthorisedSiteById from "@ui/hooks/useAuthorisedSiteById"

@@ -1,9 +1,9 @@
-import { AddressBookContact } from "@core/domains/app/store.addressBook"
+import { AddressBookContact, addressBookStore } from "@extension/core"
 import { act, renderHook, waitFor } from "@testing-library/react"
 
 import { ADDRESSES } from "../../../../tests/constants"
 import { TestWrapper } from "../../../../tests/TestWrapper"
-import { addressBookState, useAddressBook } from "../useAddressBook"
+import { useAddressBook } from "../useAddressBook"
 
 const VITALIK: AddressBookContact = {
   address: "0xab5801a7d398351b8be11c439e05c5b3259aec9b",
@@ -28,9 +28,9 @@ test("Can add an address book contact", async () => {
 })
 
 test("Can edit an address book contact", async () => {
+  await addressBookStore.set({ [VITALIK.address]: VITALIK })
   const { result } = renderHook(() => useAddressBook(), {
-    wrapper: ({ children }) =>
-      TestWrapper({ children, initializeState: ({ set }) => set(addressBookState, [VITALIK]) }),
+    wrapper: ({ children }) => TestWrapper({ children }),
   })
   waitFor(() => {
     expect(result.current.contacts.length).toBe(1)
@@ -46,9 +46,9 @@ test("Can edit an address book contact", async () => {
 })
 
 test("Editing an address book contact which doesn't exist throws an error", async () => {
+  await addressBookStore.set({ [VITALIK.address]: VITALIK })
   const { result } = renderHook(() => useAddressBook(), {
-    wrapper: ({ children }) =>
-      TestWrapper({ children, initializeState: ({ set }) => set(addressBookState, [VITALIK]) }),
+    wrapper: ({ children }) => TestWrapper({ children }),
   })
   waitFor(() => {
     expect(result.current.contacts.length).toBe(1)
@@ -65,9 +65,9 @@ test("Editing an address book contact which doesn't exist throws an error", asyn
 })
 
 test("Can delete an address book contact", async () => {
+  await addressBookStore.set({ [VITALIK.address]: VITALIK })
   const { result } = renderHook(() => useAddressBook(), {
-    wrapper: ({ children }) =>
-      TestWrapper({ children, initializeState: ({ set }) => set(addressBookState, [VITALIK]) }),
+    wrapper: ({ children }) => TestWrapper({ children }),
   })
   waitFor(() => {
     expect(result.current.contacts.length).toBe(1)

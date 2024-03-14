@@ -1,0 +1,34 @@
+{
+  "name": "extension-shared",
+  "version": "1.0.0",
+  "private": true,
+  "license": "GPL-3.0-or-later",
+  "main": "dist/extension-shared.cjs.js",
+  "module": "dist/extension-shared.esm.js",
+  "sideEffects": false,
+  "scripts": {
+    "lint": "eslint src --max-warnings 0",
+    "clean": "rm -rf dist && rm -rf .turbo rm -rf node_modules"
+  },
+  "dependencies": {
+    "@sentry/browser": "7.92.0",
+    "@sentry/integrations": "7.92.0",
+    "@sentry/react": "7.92.0",
+    "@sentry/tracing": "7.92.0",
+    "@talismn/util": "workspace:*",
+    "anylogger-loglevel": "^1.0.0",
+    "posthog-js": "^1.96.1",
+    "rxjs": "^7.8.1"
+  },
+  "devDependencies": {
+    "@talismn/eslint-config": "workspace:*",
+    "@talismn/tsconfig": "workspace:*",
+    "eslint": "^8.52.0",
+    "typescript": "^5.2.2"
+  },
+  "preconstruct": {
+    "entrypoints": [
+      "index.ts"
+    ]
+  }
+}

@@ -1,4 +1,4 @@
-import { TALISMAN_WEB_APP_STAKING_URL } from "@core/constants"
+import { TALISMAN_WEB_APP_STAKING_URL } from "@extension/shared"
 import { SuspenseTracker } from "@talisman/components/SuspenseTracker"
 import { ExternalLinkIcon, XIcon, ZapIcon } from "@talismn/icons"
 import { useStakingBanner } from "@ui/domains/Staking/useStakingBanner"

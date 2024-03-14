@@ -1,4 +1,4 @@
-import { Token } from "@core/domains/tokens/types"
+import { Token } from "@extension/core"
 import { useOpenClose } from "@talisman/hooks/useOpenClose"
 import { ChevronRightIcon, XIcon } from "@talismn/icons"
 import { classNames } from "@talismn/util"

@@ -1,4 +1,4 @@
-import { AccountJsonAny } from "@core/domains/accounts/types"
+import { AccountJsonAny } from "@extension/core"
 import { Accordion, AccordionIcon } from "@talisman/components/Accordion"
 import { InfoIcon } from "@talismn/icons"
 import { classNames } from "@talismn/util"

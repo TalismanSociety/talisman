@@ -1,4 +1,4 @@
-import { MNEMONIC_BACKUP_DOCS_URL } from "@core/constants"
+import { MNEMONIC_BACKUP_DOCS_URL } from "@extension/shared"
 import { LockIcon, ShieldIcon, XIcon } from "@talismn/icons"
 import { useTranslation } from "react-i18next"
 import { Button } from "talisman-ui"

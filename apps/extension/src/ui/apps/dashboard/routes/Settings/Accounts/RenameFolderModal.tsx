@@ -1,30 +1,24 @@
-import { AccountsCatalogTree } from "@core/domains/accounts/helpers.catalog"
+import { AccountsCatalogTree } from "@extension/core"
 import { yupResolver } from "@hookform/resolvers/yup"
 import { api } from "@ui/api"
+import { atom, useAtom } from "jotai"
 import { RefCallback, useCallback, useEffect, useMemo, useRef } from "react"
 import { useForm } from "react-hook-form"
 import { useTranslation } from "react-i18next"
-import { atom, useRecoilState } from "recoil"
 import { Button, Modal, ModalDialog } from "talisman-ui"
 import { FormFieldContainer, FormFieldInputText } from "talisman-ui"
 import * as yup from "yup"
 
-const renameFolderModalOpenState = atom<boolean>({
-  key: "renameFolderModalOpenState",
-  default: false,
-})
+const renameFolderModalOpenState = atom(false)
 const renameFolderItemState = atom<{
   id: string | null
   name: string | null
   treeName: AccountsCatalogTree | null
-}>({
-  key: "renameFolderItemState",
-  default: { id: null, name: null, treeName: null },
-})
+}>({ id: null, name: null, treeName: null })
 
 export const useRenameFolderModal = () => {
-  const [{ id, name, treeName }, setFolderItem] = useRecoilState(renameFolderItemState)
-  const [isOpen, setIsOpen] = useRecoilState(renameFolderModalOpenState)
+  const [{ id, name, treeName }, setFolderItem] = useAtom(renameFolderItemState)
+  const [isOpen, setIsOpen] = useAtom(renameFolderModalOpenState)
 
   const open = useCallback(
     (id: string, name: string, treeName: AccountsCatalogTree) => {

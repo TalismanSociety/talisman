@@ -11,10 +11,12 @@
   "scripts": {
     "format": "prettier --write \"**/*.{ts,tsx,js,jsx,css,scss,html,md,json}\"",
     "postinstall": "preconstruct dev && yarn update:translations",
+    "preconstruct:dev": "preconstruct dev",
+    "preconstruct:fix": "preconstruct fix",
     "prepare": "husky install",
     "dev": "concurrently --prefix \"{name}\" --prefix-colors auto \"npm:dev:*\"",
     "dev:balances-demo": "yarn workspace balances-demo dev",
-    "dev:extension": "yarn workspace extension dev",
+    "dev:extension": "preconstruct dev && yarn workspace extension dev",
     "dev:playground": "yarn workspace playground dev",
     "update:translations": "turbo run update:translations",
     "build": "turbo run build",
@@ -26,7 +28,7 @@
     "lint": "turbo run lint",
     "clean": "turbo run clean --parallel && rm -rf dist && rm -rf node_modules",
     "test": "turbo run test",
-    "generate-init-data": "yarn workspace @talismn/chaindata-provider-extension run generate-init-data"
+    "generate-init-data": "yarn workspace @talismn/chaindata-provider run generate-init-data"
   },
   "devDependencies": {
     "@alectalisman/preconstruct-cli": "2.3.0-e",

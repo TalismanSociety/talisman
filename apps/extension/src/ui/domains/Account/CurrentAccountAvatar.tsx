@@ -1,5 +1,5 @@
-import { TreeFolder } from "@core/domains/accounts/helpers.catalog"
-import { AccountJsonAny } from "@core/domains/accounts/types"
+import { TreeFolder } from "@extension/core"
+import { AccountJsonAny } from "@extension/core"
 import { WithTooltip } from "@talisman/components/Tooltip"
 import { classNames } from "@talismn/util"
 import { AllAccountsIcon } from "@ui/domains/Account/AllAccountsIcon"

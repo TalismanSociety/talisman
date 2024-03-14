@@ -1,3 +1,4 @@
+import { PRIVACY_POLICY_URL, TERMS_OF_USE_URL } from "@extension/shared"
 import { TalismanWhiteLogo } from "@talisman/theme/logos"
 import { ArrowRightIcon } from "@talismn/icons"
 import { AnalyticsPage, sendAnalyticsEvent } from "@ui/api/analytics"
@@ -78,7 +79,7 @@ export const WelcomePage = () => {
             <Trans t={t}>
               By continuing, you agree to the{" "}
               <a
-                href="https://docs.talisman.xyz/legal-and-security/terms-of-use"
+                href={TERMS_OF_USE_URL}
                 target="_blank"
                 rel="noreferrer noopener"
                 className="text-body"
@@ -88,7 +89,7 @@ export const WelcomePage = () => {
               </a>{" "}
               and{" "}
               <a
-                href="https://docs.talisman.xyz/talisman/legal-and-security/privacy-policy"
+                href={PRIVACY_POLICY_URL}
                 target="_blank"
                 rel="noreferrer noopener"
                 className="text-body"

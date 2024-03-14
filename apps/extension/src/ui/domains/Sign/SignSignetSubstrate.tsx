@@ -1,5 +1,4 @@
-import { AccountJsonSignet } from "@core/domains/accounts/types"
-import { SignerPayloadRaw } from "@core/domains/signing/types"
+import { AccountJsonSignet, SignerPayloadRaw } from "@extension/core"
 import { SignerPayloadJSON } from "@substrate/txwrapper-core"
 import { XCircleIcon } from "@talismn/icons"
 import { useMemo } from "react"

@@ -1,17 +1,21 @@
-import { appStore } from "@core/domains/app/store.app"
+import { appStore } from "@extension/core"
 import { api } from "@ui/api"
+import { balanceTotalsAtom } from "@ui/atoms"
+import { useAtomValue } from "jotai"
 import { useCallback, useMemo } from "react"
 import { useLocation } from "react-router-dom"
 
 import useAccounts from "./useAccounts"
 import { useAppState } from "./useAppState"
-import useBalances from "./useBalances"
 import { useMnemonics } from "./useMnemonics"
 
 const useMnemonicBackup = () => {
   const [hideBackupWarningUntil] = useAppState("hideBackupWarningUntil")
-  const snoozeBackupReminder = useCallback(() => appStore.snoozeBackupReminder(), [])
   const mnemonics = useMnemonics()
+  const balanceTotals = useAtomValue(balanceTotalsAtom)
+  const accounts = useAccounts("owned")
+
+  const snoozeBackupReminder = useCallback(() => appStore.snoozeBackupReminder(), [])
   const location = useLocation()
 
   const hasMnemonics = useMemo(() => mnemonics.length > 0, [mnemonics])
@@ -26,8 +30,6 @@ const useMnemonicBackup = () => {
     [mnemonics]
   )
 
-  const accounts = useAccounts("owned")
-
   const notBackedUpAddresses = useMemo(
     () =>
       accounts
@@ -40,10 +42,10 @@ const useMnemonicBackup = () => {
     [accounts, notBackedUp]
   )
 
-  const hasFundsInNotBackedUpAddresses =
-    useBalances("owned")
-      .find(notBackedUpAddresses.map((address) => ({ address })))
-      .filterNonZero("total").sum.planck.total > 0n
+  const hasFundsInNotBackedUpAddresses = useMemo(
+    () => balanceTotals.some((bt) => notBackedUpAddresses.includes(bt.address) && !!bt.total),
+    [balanceTotals, notBackedUpAddresses]
+  )
 
   const isSnoozed = useMemo(() => {
     return Boolean(hideBackupWarningUntil && hideBackupWarningUntil > Date.now())

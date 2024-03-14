@@ -1,8 +1,9 @@
-import { IS_FIREFOX } from "@core/constants"
-import { getIsLedgerCapable } from "@core/util/getIsLedgerCapable"
-import { EthereumCircleLogo, PolkadotCircleLogo } from "@talisman/theme/logos"
+import { IS_FIREFOX } from "@extension/shared"
+import { SelectedIndicator } from "@talisman/components/SelectedIndicator"
+import { EthereumCircleBorderedLogo, PolkadotCircleBorderedLogo } from "@talisman/theme/logos"
 import { ChainIcon, EyePlusIcon, FilePlusIcon, PlusIcon } from "@talismn/icons"
 import { classNames } from "@talismn/util"
+import { getIsLedgerCapable } from "@ui/util/getIsLedgerCapable"
 import { ReactNode, useCallback, useMemo } from "react"
 import { useTranslation } from "react-i18next"
 import { useNavigate } from "react-router-dom"
@@ -12,20 +13,6 @@ import { MethodTypes, useAccountCreateContext } from "./context"
 type Props = {
   className?: string
 }
-
-const SelectedIndicator = () => (
-  <svg
-    width="18"
-    height="16"
-    viewBox="0 0 18 16"
-    fill="none"
-    xmlns="http://www.w3.org/2000/svg"
-    className="relative right-8 top-12 float-right"
-  >
-    <ellipse cx="9.26364" cy="8" rx="8.45841" ry="8" fill="#5A5A5A" />
-    <ellipse cx="9.26363" cy="8" rx="4.2292" ry="4" fill="#D5FF5C" />
-  </svg>
-)
 
 const AccountCreateMethodTypeButton = ({
   title,
@@ -55,7 +42,7 @@ const AccountCreateMethodTypeButton = ({
         if (e.key === "Enter") setMethodType(methodType)
       }}
     >
-      {isSelected && <SelectedIndicator />}
+      {isSelected && <SelectedIndicator className="relative right-8 top-12 float-right" />}
       <div className="flex flex-col items-start gap-8 px-8 py-12">
         <span className={`text-primary-500 text-xl ${!isSelected && "opacity-50"}`}>{icon}</span>
         <div className="flex flex-col gap-2">
@@ -68,8 +55,8 @@ const AccountCreateMethodTypeButton = ({
 }
 
 const networkChoices = {
-  polkadot: <PolkadotCircleLogo />,
-  ethereum: <EthereumCircleLogo />,
+  polkadot: <PolkadotCircleBorderedLogo />,
+  ethereum: <EthereumCircleBorderedLogo />,
 }
 
 const AccountCreateMethodButton = ({
@@ -119,16 +106,16 @@ const NewAccountMethodButtons = () => {
   return (
     <>
       <AccountCreateMethodButton
-        title={t("New Polkadot Account")}
-        subtitle={t("Create new Polkadot account")}
-        networks={["polkadot"]}
-        to={`/accounts/add/derived?type=sr25519`}
-      />
-      <AccountCreateMethodButton
         title={t("New Ethereum Account")}
         subtitle={t("Create new Ethereum account")}
         networks={["ethereum"]}
         to={`/accounts/add/derived?type=ethereum`}
+      />
+      <AccountCreateMethodButton
+        title={t("New Polkadot Account")}
+        subtitle={t("Create new Polkadot account")}
+        networks={["polkadot"]}
+        to={`/accounts/add/derived?type=sr25519`}
       />
     </>
   )
@@ -139,16 +126,22 @@ const ImportAccountMethodButtons = () => {
   return (
     <>
       <AccountCreateMethodButton
+        title={t("Import via Recovery Phrase")}
+        subtitle={t("Polkadot or Ethereum account")}
+        networks={["polkadot", "ethereum"]}
+        to={`/accounts/add/mnemonic`}
+      />
+      <AccountCreateMethodButton
+        title={t("Import via Private Key")}
+        subtitle={t("Ethereum account")}
+        networks={["ethereum"]}
+        to={`/accounts/add/pk`}
+      />
+      <AccountCreateMethodButton
         title={t("Import via JSON")}
         subtitle={t("Import your Polkadot.{js} file")}
         networks={["polkadot"]}
         to={`/accounts/add/json`}
-      />
-      <AccountCreateMethodButton
-        title={t("Import via Recovery Phrase")}
-        subtitle={t("Polkadot or Ethereum account")}
-        networks={["polkadot", "ethereum"]}
-        to={`/accounts/add/secret`}
       />
     </>
   )
@@ -182,7 +175,7 @@ const ConnectAccountMethodButtons = () => {
             : t("Not supported on this browser")
         }
         disabled={IS_FIREFOX}
-        networks={["polkadot", "ethereum"]}
+        networks={["ethereum", "polkadot"]}
         to={`/accounts/add/dcent`}
       />
       <AccountCreateMethodButton
@@ -218,8 +211,8 @@ const AddWatchedAccountButton = () => {
       </div>
       <div className="flex items-center justify-end text-lg">
         {/* flex gap doesn't allow negatives */}
-        <PolkadotCircleLogo className="-mr-[0.6rem]" />
-        <EthereumCircleLogo />
+        <PolkadotCircleBorderedLogo className="-mr-[0.6rem]" />
+        <EthereumCircleBorderedLogo />
       </div>
     </div>
   )

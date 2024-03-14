@@ -1,5 +1,4 @@
 ---
-"@talismn/chaindata-provider-extension": patch
 "@talismn/balances": patch
 "@talismn/chaindata-provider": patch
 "@talismn/scale": patch

@@ -1,4 +1,4 @@
-import { DEFAULT_APP_STATE } from "@core/domains/app/store.app"
+import { DEFAULT_APP_STATE } from "@extension/core"
 import { renderHook, waitFor } from "@testing-library/react"
 
 import { TestWrapper } from "../../../../tests/TestWrapper"

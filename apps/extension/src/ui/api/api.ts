@@ -1,5 +1,5 @@
-import { PORT_EXTENSION } from "@core/constants"
-import MessageService from "@core/libs/MessageService"
+import MessageService from "@common/MessageService"
+import { PORT_EXTENSION } from "@extension/shared"
 
 import MessageTypes from "./types"
 
@@ -19,14 +19,19 @@ export const api: MessageTypes = {
   lock: () => messageService.sendMessage("pri(app.lock)"),
   changePassword: (currentPw, newPw, newPwConfirm) =>
     messageService.sendMessage("pri(app.changePassword)", { currentPw, newPw, newPwConfirm }),
+  changePasswordSubscribe: (currentPw, newPw, newPwConfirm, cb) =>
+    messageService.sendMessage(
+      "pri(app.changePassword.subscribe)",
+      { currentPw, newPw, newPwConfirm },
+      cb
+    ),
   checkPassword: (password) => messageService.sendMessage("pri(app.checkPassword)", { password }),
   authStatus: () => messageService.sendMessage("pri(app.authStatus)"),
   authStatusSubscribe: (cb) => messageService.subscribe("pri(app.authStatus.subscribe)", null, cb),
   dashboardOpen: (route) => messageService.sendMessage("pri(app.dashboardOpen)", { route }),
   onboardOpen: () => messageService.sendMessage("pri(app.onboardOpen)"),
   popupOpen: (argument?: string) => messageService.sendMessage("pri(app.popupOpen)", argument),
-  promptLogin: (closeOnSuccess = false) =>
-    messageService.sendMessage("pri(app.promptLogin)", closeOnSuccess),
+  promptLogin: () => messageService.sendMessage("pri(app.promptLogin)"),
   approveMetaRequest: (id) => messageService.sendMessage("pri(metadata.approve)", { id }),
   rejectMetaRequest: (id) => messageService.sendMessage("pri(metadata.reject)", { id }),
   allowPhishingSite: (url) => messageService.sendMessage("pri(app.phishing.addException)", { url }),
@@ -308,7 +313,8 @@ export const api: MessageTypes = {
     messageService.sendMessage("pri(eth.transactions.count)", { address, evmNetworkId }),
   ethNetworkAddGetRequests: () =>
     messageService.sendMessage("pri(eth.networks.add.requests)", null),
-  ethNetworkAddApprove: (id) => messageService.sendMessage("pri(eth.networks.add.approve)", { id }),
+  ethNetworkAddApprove: (id, enableDefault) =>
+    messageService.sendMessage("pri(eth.networks.add.approve)", { id, enableDefault }),
   ethNetworkAddCancel: (id) => messageService.sendMessage("pri(eth.networks.add.cancel)", { id }),
 
   // ethereum network message types

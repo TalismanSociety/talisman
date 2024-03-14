@@ -1,8 +1,5 @@
-import {
-  activeEvmNetworksStore,
-  isEvmNetworkActive,
-} from "@core/domains/ethereum/store.activeEvmNetworks"
-import { EvmNetwork } from "@core/domains/ethereum/types"
+import { EvmNetwork } from "@extension/core"
+import { activeEvmNetworksStore, isEvmNetworkActive } from "@extension/core"
 import { isCustomEvmNetwork } from "@talismn/chaindata-provider"
 import { ChevronRightIcon } from "@talismn/icons"
 import { classNames } from "@talismn/util"

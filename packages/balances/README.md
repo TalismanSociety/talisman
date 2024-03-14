@@ -92,10 +92,7 @@ A quick rundown on each package is given below.
 
 ### The chaindata provider:
 
-Currently split into two packages because we initially intended to write several implementations of the chaindata interface.  
-Will be merged into one package soon™.
-
-**@talismn/chaindata-provider** and **@talismn/chaindata-provider-extension**
+**@talismn/chaindata-provider**
 
 - A database (powered by dexie) to store chains, evm chains and tokens in
 - An interface to interact with the database

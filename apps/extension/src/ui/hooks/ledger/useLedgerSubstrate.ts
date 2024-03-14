@@ -1,8 +1,8 @@
-import { log } from "@core/log"
-import { getIsLedgerCapable } from "@core/util/getIsLedgerCapable"
+import { log } from "@extension/shared"
 import { Ledger } from "@polkadot/hw-ledger"
 import { assert } from "@polkadot/util"
 import { throwAfter } from "@talismn/util"
+import { getIsLedgerCapable } from "@ui/util/getIsLedgerCapable"
 import { useCallback, useEffect, useMemo, useRef, useState } from "react"
 import { useTranslation } from "react-i18next"
 

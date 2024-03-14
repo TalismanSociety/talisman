@@ -1,13 +1,13 @@
-import { IS_FIREFOX } from "@core/constants"
-import { db } from "@core/db"
-import { isAcalaEvmPlus } from "@core/domains/ethereum/helpers"
+import i18next from "@common/i18nConfig"
 import {
   EvmWalletTransaction,
   SubWalletTransaction,
   TransactionStatus,
   WalletTransaction,
-} from "@core/domains/transactions/types"
-import i18next from "@core/i18nConfig"
+} from "@extension/core"
+import { isAcalaEvmPlus } from "@extension/core"
+import { db } from "@extension/core"
+import { IS_FIREFOX } from "@extension/shared"
 import { convertAddress } from "@talisman/util/convertAddress"
 import { BalanceFormatter } from "@talismn/balances"
 import { ChainId, EvmNetworkId } from "@talismn/chaindata-provider"

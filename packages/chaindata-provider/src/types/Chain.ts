@@ -1,7 +1,7 @@
 import { EvmNetworkId } from "./EvmNetwork"
 import { TokenId } from "./Token"
 
-export type ChainList = Record<ChainId, Chain | CustomChain>
+export type ChainList = Record<ChainId, Chain>
 
 export type ChainId = string
 export type Chain = {

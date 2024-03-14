@@ -1,12 +1,9 @@
-import { selector } from "recoil"
+import { OnboardedType } from "@extension/core"
+import { atom } from "jotai"
 
-import { appStateQuery } from "./app"
+import { appStateAtomFamily } from "./app"
 
-// fetch both at once as they are always used together
-export const isOnboardedState = selector<boolean>({
-  key: "isOnboardedState",
-  get: ({ get }) => {
-    const onboarded = get(appStateQuery("onboarded"))
-    return onboarded === "TRUE"
-  },
+export const isOnboardedAtom = atom(async (get) => {
+  const onboarded = (await get(appStateAtomFamily("onboarded"))) as OnboardedType
+  return onboarded === "TRUE"
 })

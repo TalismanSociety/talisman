@@ -1,5 +1,6 @@
-import { SignerPayloadRaw } from "@core/domains/signing/types"
+import { SignerPayloadRaw } from "@extension/core"
 import { encodeAddress } from "@polkadot/keyring"
+import { isAscii, u8aToString, u8aUnwrapBytes } from "@polkadot/util"
 import { AppPill } from "@talisman/components/AppPill"
 import { SiwsMessage, parseMessage as siwsParseMessage } from "@talismn/siws"
 import {
@@ -20,9 +21,25 @@ import { MessageSiws } from "./MessageSiws"
 
 export const PolkadotSignMessageRequest = () => {
   const { t } = useTranslation("request")
-  const { url, request, status, message, account, chain } = usePolkadotSigningRequest()
+  const {
+    url,
+    request,
+    status,
+    message: statusMessage,
+    account,
+    chain,
+  } = usePolkadotSigningRequest()
 
-  const errorMessage = useMemo(() => (status === "ERROR" ? message : ""), [status, message])
+  const errorMessage = useMemo(
+    () => (status === "ERROR" ? statusMessage : ""),
+    [status, statusMessage]
+  )
+
+  const bytes = (request?.payload as SignerPayloadRaw).data
+  const messageText = useMemo(
+    () => (isAscii(bytes) ? u8aToString(u8aUnwrapBytes(bytes)) : bytes),
+    [bytes]
+  )
 
   useEffect(() => {
     // force close upon success, usefull in case this is the browser embedded popup (which doesn't close by itself)
@@ -54,10 +71,7 @@ export const PolkadotSignMessageRequest = () => {
                 <AccountPill account={account} prefix={chain?.prefix ?? undefined} />
                 {chain ? ` ${t("on {{chainName}}", { chainName: chain.name })}` : null}
               </h2>
-              <Message
-                className="w-full flex-grow"
-                text={(request.payload as SignerPayloadRaw).data}
-              />
+              <Message className="w-full flex-grow" text={messageText} />
             </div>
             {errorMessage && <div className="error">{errorMessage}</div>}
           </>

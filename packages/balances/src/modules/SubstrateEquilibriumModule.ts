@@ -120,7 +120,7 @@ export const SubEquilibriumModule: NewBalanceModule<
     ...DefaultBalanceModule("substrate-equilibrium"),
 
     async fetchSubstrateChainMeta(chainId, moduleConfig, metadataRpc) {
-      const isTestnet = (await chaindataProvider.getChain(chainId))?.isTestnet || false
+      const isTestnet = (await chaindataProvider.chainById(chainId))?.isTestnet || false
       if (metadataRpc === undefined) return { isTestnet, miniMetadata: null, metadataVersion: 0 }
 
       const metadataVersion = getMetadataVersion(metadataRpc)
@@ -277,14 +277,14 @@ export const SubEquilibriumModule: NewBalanceModule<
       tip,
       transferMethod,
     }) {
-      const token = await chaindataProvider.getToken(tokenId)
+      const token = await chaindataProvider.tokenById(tokenId)
       assert(token, `Token ${tokenId} not found in store`)
 
       if (token.type !== "substrate-equilibrium")
         throw new Error(`This module doesn't handle tokens of type ${token.type}`)
 
       const chainId = token.chain.id
-      const chain = await chaindataProvider.getChain(chainId)
+      const chain = await chaindataProvider.chainById(chainId)
       assert(chain?.genesisHash, `Chain ${chainId} not found in store`)
 
       const { genesisHash } = chain
@@ -333,8 +333,8 @@ async function buildQueries(
   getOrCreateTypeRegistry: GetOrCreateTypeRegistry,
   addressesByToken: AddressesByToken<SubEquilibriumToken>
 ): Promise<Array<RpcStateQuery<Balance[]>>> {
-  const chains = await chaindataProvider.chains()
-  const tokens = await chaindataProvider.tokens()
+  const chains = await chaindataProvider.chainsById()
+  const tokens = await chaindataProvider.tokensById()
   const miniMetadatas = new Map(
     (await balancesDb.miniMetadatas.toArray()).map((miniMetadata) => [
       miniMetadata.id,

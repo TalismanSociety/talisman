@@ -1,4 +1,4 @@
-import { LedgerEthDerivationPathType } from "@core/domains/ethereum/types"
+import { LedgerEthDerivationPathType } from "@extension/core"
 import { yupResolver } from "@hookform/resolvers/yup"
 import { notify, notifyUpdate } from "@talisman/components/Notifications"
 import { sleep } from "@talismn/util"
@@ -158,7 +158,9 @@ export const AddLedgerSelectAccount = () => {
           {data.type === "ethereum" && (
             <>
               <br />
-              {t("Amounts displayed for each account are the sum of GLMR, MOVR, ASTR and ETH.")}
+              {t(
+                "Amounts displayed for each account only include the most popular tokens on major networks."
+              )}
             </>
           )}
         </p>

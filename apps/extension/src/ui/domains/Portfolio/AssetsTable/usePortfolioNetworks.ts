@@ -1,5 +1,4 @@
-import { Chain, ChainId } from "@core/domains/chains/types"
-import { EvmNetwork, EvmNetworkId } from "@core/domains/ethereum/types"
+import { Chain, ChainId, EvmNetwork, EvmNetworkId } from "@extension/core"
 import { getNetworkInfo } from "@ui/hooks/useNetworkInfo"
 import { TFunction } from "i18next"
 import sortBy from "lodash/sortBy"

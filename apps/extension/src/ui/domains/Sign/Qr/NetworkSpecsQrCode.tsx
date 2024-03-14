@@ -1,5 +1,5 @@
-import { IS_FIREFOX } from "@core/constants"
-import { SignerPayloadGenesisHash } from "@core/domains/signing/types"
+import { SignerPayloadGenesisHash } from "@extension/core"
+import { IS_FIREFOX } from "@extension/shared"
 import { hexToU8a } from "@polkadot/util"
 import { useQuery } from "@tanstack/react-query"
 import { api } from "@ui/api"

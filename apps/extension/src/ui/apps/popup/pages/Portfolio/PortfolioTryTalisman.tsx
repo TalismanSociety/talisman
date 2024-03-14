@@ -1,4 +1,4 @@
-import { AssetDiscoveryMode } from "@core/domains/assetDiscovery/types"
+import { AssetDiscoveryMode } from "@extension/core"
 import { shortenAddress } from "@talisman/util/shortenAddress"
 import { ArrowUpLeftIcon, CheckCircleIcon, ChevronLeftIcon, LoaderIcon } from "@talismn/icons"
 import { classNames, encodeAnyAddress } from "@talismn/util"
@@ -6,9 +6,9 @@ import { api } from "@ui/api"
 import { AnalyticsPage, sendAnalyticsEvent } from "@ui/api/analytics"
 import { AccountIcon } from "@ui/domains/Account/AccountIcon"
 import { Address } from "@ui/domains/Account/Address"
-import { AddressFieldEnsBadge } from "@ui/domains/Account/AddressFieldEnsBadge"
+import { AddressFieldNsBadge } from "@ui/domains/Account/AddressFieldNsBadge"
 import useAccounts from "@ui/hooks/useAccounts"
-import { useResolveEnsName } from "@ui/hooks/useResolveEnsName"
+import { useResolveNsName } from "@ui/hooks/useResolveNsName"
 import {
   ChangeEventHandler,
   FormEventHandler,
@@ -45,8 +45,7 @@ export const PortfolioTryTalisman = () => {
 
   const [searchAddress, setSearchAddress] = useState("")
   const [address, setAddress] = useState("")
-  const [ensLookup, { isLookup: isEnsLookup, isFetching: isEnsFetching }] =
-    useResolveEnsName(searchAddress)
+  const [nsLookup, { nsLookupType, isNsLookup, isNsFetching }] = useResolveNsName(searchAddress)
 
   useEffect(() => {
     const isValidAddress = (() => {
@@ -57,18 +56,18 @@ export const PortfolioTryTalisman = () => {
         return false
       }
     })()
-    const isValid = isEnsLookup || isValidAddress
+    const isValid = isNsLookup || isValidAddress
 
     // remove error before submission if address is valid
     if (isValid) setError(null)
 
-    if (isEnsLookup) {
-      if (isEnsFetching) return setAddress("")
-      return setAddress(ensLookup ?? (ensLookup === null ? "invalid" : ""))
+    if (isNsLookup) {
+      if (isNsFetching) return setAddress("")
+      return setAddress(nsLookup ?? (nsLookup === null ? "invalid" : ""))
     }
 
     setAddress(searchAddress)
-  }, [ensLookup, isEnsFetching, isEnsLookup, searchAddress])
+  }, [nsLookup, isNsFetching, isNsLookup, searchAddress])
 
   const onSubmit = useCallback<FormEventHandler>(
     async (event) => {
@@ -89,7 +88,7 @@ export const PortfolioTryTalisman = () => {
         encodeAnyAddress(address)
 
         const resultAddress = await api.accountCreateWatched(
-          isEnsLookup ? searchAddress : shortenAddress(address),
+          isNsLookup ? searchAddress : shortenAddress(address),
           address,
           isPortfolio
         )
@@ -104,7 +103,7 @@ export const PortfolioTryTalisman = () => {
         setError(t("Please enter a valid Polkadot or Ethereum address"))
       }
     },
-    [address, isEnsLookup, searchAddress, navigate, t]
+    [address, isNsLookup, searchAddress, navigate, t]
   )
   const onInputChange = useCallback<ChangeEventHandler<HTMLInputElement>>((event) => {
     setSearchAddress(event.target.value)
@@ -129,18 +128,19 @@ export const PortfolioTryTalisman = () => {
                 type="text"
                 className={classNames(
                   "bg-black-secondary text-body placeholder:text-body-disabled w-full rounded px-8 py-6",
-                  isEnsLookup && "pr-16"
+                  isNsLookup && "pr-16"
                 )}
                 placeholder={t("Enter any wallet address")}
                 value={searchAddress}
                 onChange={onInputChange}
               />
               <div className="absolute right-4 top-0 flex h-full items-center">
-                <AddressFieldEnsBadge
+                <AddressFieldNsBadge
                   small
-                  isEnsLookup={isEnsLookup}
-                  isEnsFetching={isEnsFetching}
-                  ensLookup={ensLookup}
+                  nsLookup={nsLookup}
+                  nsLookupType={nsLookupType}
+                  isNsLookup={isNsLookup}
+                  isNsFetching={isNsFetching}
                 />
               </div>
             </div>

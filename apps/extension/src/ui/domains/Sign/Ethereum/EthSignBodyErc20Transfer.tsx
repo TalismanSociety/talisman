@@ -1,11 +1,10 @@
-import { BalanceFormatter } from "@core/domains/balances"
-import { EvmAddress } from "@core/domains/ethereum/types"
-import { CustomErc20Token } from "@core/domains/tokens/types"
+import { EvmAddress } from "@extension/core"
+import { BalanceFormatter } from "@extension/core"
 import { TokenLogo } from "@ui/domains/Asset/TokenLogo"
 import { useSelectedCurrency } from "@ui/hooks/useCurrency"
+import { useErc20Token } from "@ui/hooks/useErc20Token"
 import useToken from "@ui/hooks/useToken"
 import { useTokenRates } from "@ui/hooks/useTokenRates"
-import useTokens from "@ui/hooks/useTokens"
 import { FC, useMemo } from "react"
 import { useTranslation } from "react-i18next"
 
@@ -36,18 +35,7 @@ export const EthSignBodyErc20Transfer: FC = () => {
     [account, from]
   )
 
-  const { tokens } = useTokens({ activeOnly: false, includeTestnets: true })
-  const token = useMemo(() => {
-    return network
-      ? (tokens?.find(
-          (t) =>
-            t.type === "evm-erc20" &&
-            t.evmNetwork?.id === network.id &&
-            t.contractAddress === decodedTx.targetAddress
-        ) as CustomErc20Token)
-      : undefined
-  }, [network, tokens, decodedTx.targetAddress])
-
+  const token = useErc20Token(network?.id, decodedTx.targetAddress)
   const tokenRates = useTokenRates(token?.id)
 
   const { amount, symbol } = useMemo(() => {
@@ -78,7 +66,6 @@ export const EthSignBodyErc20Transfer: FC = () => {
           address={decodedTx.targetAddress}
           network={network}
           tokenId={token?.id}
-          erc20={{ evmNetworkId: network.id, contractAddress: decodedTx.targetAddress }}
           tokens={amount.tokens}
           decimals={decodedTx.asset.decimals}
           symbol={symbol}

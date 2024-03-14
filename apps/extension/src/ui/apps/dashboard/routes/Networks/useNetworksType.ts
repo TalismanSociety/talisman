@@ -1,4 +1,4 @@
-import { ProviderType } from "@core/domains/sitesAuthorised/types"
+import { ProviderType } from "@extension/core"
 import { useCallback } from "react"
 import { useNavigate, useParams } from "react-router-dom"
 
@@ -10,7 +10,7 @@ export const useNetworksType = () => {
 
   const navigate = useNavigate()
   const setNetworksType = useCallback(
-    (networksType: ProviderType) => navigate(`/networks/${networksType}`),
+    (networksType: ProviderType) => navigate(`/settings/networks-tokens/networks/${networksType}`),
     [navigate]
   )
 

@@ -1,4 +1,4 @@
-import { log } from "@core/log"
+import { log } from "@extension/shared"
 import { Codec } from "@polkadot/types-codec/types"
 import { assert } from "@polkadot/util"
 import { Address } from "@talismn/balances"

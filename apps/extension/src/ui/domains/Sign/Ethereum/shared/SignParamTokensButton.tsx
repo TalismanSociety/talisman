@@ -1,7 +1,6 @@
-import { CustomEvmNetwork, EvmNetwork } from "@core/domains/ethereum/types"
+import { CustomEvmNetwork, EvmNetwork } from "@extension/core"
 import { BalanceFormatter } from "@talismn/balances"
 import { classNames } from "@talismn/util"
-import { CoingeckoLogoRequest } from "@ui/domains/Asset/AssetLogo"
 import { FC } from "react"
 
 import { SignParamButton } from "./SignParamButton"
@@ -12,7 +11,6 @@ type SignParamTokensButtonProps = {
   address: string
   withIcon?: boolean
   tokenId: string | undefined
-  erc20?: CoingeckoLogoRequest
   tokens: string | number | null
   decimals: number
   symbol: string
@@ -24,7 +22,6 @@ export const SignParamTokensButton: FC<SignParamTokensButtonProps> = ({
   address,
   network,
   tokenId,
-  erc20,
   tokens,
   decimals,
   symbol,
@@ -42,7 +39,6 @@ export const SignParamTokensButton: FC<SignParamTokensButtonProps> = ({
     >
       <SignParamTokensDisplay
         tokenId={tokenId}
-        erc20={erc20}
         tokens={tokens}
         decimals={decimals}
         symbol={symbol}

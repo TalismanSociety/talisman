@@ -1,13 +1,6 @@
 import { Abi } from "@polkadot/api-contract"
 import { TypeRegistry } from "@polkadot/types"
-import {
-  assert,
-  hexToNumber,
-  hexToU8a,
-  u8aConcatStrict,
-  u8aToHex,
-  u8aToString,
-} from "@polkadot/util"
+import { assert, hexToNumber, hexToU8a, u8aToString } from "@polkadot/util"
 import { defineMethod } from "@substrate/txwrapper-core"
 import { ChainConnector } from "@talismn/chain-connector"
 import {
@@ -24,6 +17,7 @@ import { DefaultBalanceModule, NewBalanceModule, NewTransferParamsType } from ".
 import log from "../log"
 import { AddressesByToken, Amount, Balance, BalanceJson, Balances, NewBalanceType } from "../types"
 import psp22Abi from "./abis/psp22.json"
+import { makeContractCaller } from "./util/makeContractCaller"
 
 type ModuleType = "substrate-psp22"
 
@@ -108,7 +102,7 @@ export const SubPsp22Module: NewBalanceModule<
     ...DefaultBalanceModule("substrate-psp22"),
 
     async fetchSubstrateChainMeta(chainId) {
-      const isTestnet = (await chaindataProvider.getChain(chainId))?.isTestnet || false
+      const isTestnet = (await chaindataProvider.chainById(chainId))?.isTestnet || false
 
       return { isTestnet }
     },
@@ -119,6 +113,7 @@ export const SubPsp22Module: NewBalanceModule<
       const registry = new TypeRegistry()
       const Psp22Abi = new Abi(psp22Abi)
 
+      // TODO: Use `decodeOutput` from `./util/decodeOutput`
       const contractCall = makeContractCaller({ chainConnector, chainId, registry })
 
       const tokens: Record<string, SubPsp22Token> = {}
@@ -225,7 +220,7 @@ export const SubPsp22Module: NewBalanceModule<
       const initDelay = 3_000 // 3000ms == 3 seconds
       const cache = new Map<string, BalanceJson>()
 
-      const tokens = await chaindataProvider.tokens()
+      const tokens = await chaindataProvider.tokensById()
 
       const poll = async () => {
         if (!subscriptionActive) return
@@ -263,7 +258,7 @@ export const SubPsp22Module: NewBalanceModule<
     async fetchBalances(addressesByToken) {
       assert(chainConnectors.substrate, "This module requires a substrate chain connector")
 
-      const tokens = await chaindataProvider.tokens()
+      const tokens = await chaindataProvider.tokensById()
 
       return fetchBalances(chainConnectors.substrate, tokens, addressesByToken)
     },
@@ -283,20 +278,21 @@ export const SubPsp22Module: NewBalanceModule<
       transactionVersion,
       tip,
     }) {
-      const token = await chaindataProvider.getToken(tokenId)
+      const token = await chaindataProvider.tokenById(tokenId)
       assert(token, `Token ${tokenId} not found in store`)
 
       if (token.type !== "substrate-psp22")
         throw new Error(`This module doesn't handle tokens of type ${token.type}`)
 
       const chainId = token.chain.id
-      const chain = await chaindataProvider.getChain(chainId)
+      const chain = await chaindataProvider.chainById(chainId)
       assert(chain?.genesisHash, `Chain ${chainId} not found in store`)
 
       const { genesisHash } = chain
 
       const Psp22Abi = new Abi(psp22Abi)
 
+      // TODO: Use `decodeOutput` from `./util/decodeOutput`
       const contractCall = makeContractCaller({ chainConnector, chainId, registry })
 
       const data = registry.createType(
@@ -351,44 +347,6 @@ export const SubPsp22Module: NewBalanceModule<
   }
 }
 
-const makeContractCaller =
-  ({
-    chainConnector,
-    chainId,
-    registry,
-  }: {
-    chainConnector: ChainConnector
-    chainId: string
-    registry: TypeRegistry
-  }) =>
-  async <T extends { toU8a: () => Uint8Array }>(
-    callFrom: string,
-    contractAddress: string,
-    inputData: T
-  ) =>
-    registry.createType(
-      "ContractExecResult",
-      await chainConnector.send(chainId, "state_call", [
-        "ContractsApi_call",
-        u8aToHex(
-          u8aConcatStrict([
-            // origin
-            registry.createType("AccountId", callFrom).toU8a(),
-            // dest
-            registry.createType("AccountId", contractAddress).toU8a(),
-            // value
-            registry.createType("Balance", 0).toU8a(),
-            // gasLimit
-            registry.createType("Option<WeightV2>").toU8a(),
-            // storageDepositLimit
-            registry.createType("Option<Balance>").toU8a(),
-            // inputData
-            inputData.toU8a(),
-          ])
-        ),
-      ])
-    )
-
 const fetchBalances = async (
   chainConnector: ChainConnector,
   tokens: TokenList,
@@ -411,6 +369,7 @@ const fetchBalances = async (
         return []
       }
 
+      // TODO: Use `decodeOutput` from `./util/decodeOutput`
       const contractCall = makeContractCaller({
         chainConnector,
         chainId: token.chain.id,

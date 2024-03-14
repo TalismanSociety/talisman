@@ -1,4 +1,4 @@
-import { BalanceFormatter } from "@core/domains/balances"
+import { BalanceFormatter } from "@extension/core"
 import { useEthSignTransactionRequest } from "@ui/domains/Sign/SignRequestContext"
 import useToken from "@ui/hooks/useToken"
 import { useTokenRates } from "@ui/hooks/useTokenRates"

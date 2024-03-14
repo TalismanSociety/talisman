@@ -1,9 +1,5 @@
-import { isAcalaEvmPlus } from "@core/domains/ethereum/helpers"
-import {
-  EvmWalletTransaction,
-  SubWalletTransaction,
-  WalletTransaction,
-} from "@core/domains/transactions"
+import { isAcalaEvmPlus } from "@extension/core"
+import { EvmWalletTransaction, SubWalletTransaction, WalletTransaction } from "@extension/core"
 import { HexString } from "@polkadot/util/types"
 import { Chain, EvmNetwork } from "@talismn/chaindata-provider"
 import { ExternalLinkIcon, RocketIcon, XCircleIcon } from "@talismn/icons"
@@ -19,8 +15,8 @@ import urlJoin from "url-join"
 import { TxReplaceDrawer, TxReplaceType } from "../Transactions"
 
 const getBlockExplorerUrl = (
-  network: EvmNetwork | undefined,
-  chain: Chain | undefined,
+  network: EvmNetwork | undefined | null,
+  chain: Chain | undefined | null,
   hash: string
 ) => {
   if (network?.explorerUrl) return urlJoin(network.explorerUrl, "tx", hash)
