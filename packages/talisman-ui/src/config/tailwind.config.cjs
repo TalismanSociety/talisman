@@ -148,7 +148,7 @@ module.exports = {
           'SurtExpanded, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji", sans-serif',
         whyteInkTrap:
           'WhyteInktrapMedium, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji", sans-serif',
-        alienRunes: 'alien-runes, Surt, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji", sans-serif',
+        alienRunes: 'alien-runes',
       },
       keyframes: {
         "fade-in": {
@@ -161,16 +161,16 @@ module.exports = {
         },
         "alien-runes": {
           "0%": {
-            "text-shadow": "0 0 0.1em #00fff2",
+            "text-shadow": "0 0 0.1em currentColor",
           },
           "50%": {
-            "text-shadow": "0 0 0.3em #00fff2",
+            "text-shadow": "0 0 0.3em currentColor",
           },
           "100%": {
-            "text-shadow": "0 0 0.1em #00fff2",
+            "text-shadow": "0 0 0.1em currentColor",
           },
         },
-       
+        
       },
       animation: {
         "fade-in-fase": "fade-in 0.1s ease-out",
