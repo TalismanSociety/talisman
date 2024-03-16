@@ -13,10 +13,10 @@ export const useRevealableBalance = (isBalance?: boolean, noCountUp?: boolean) =
   const isRevealable = useMemo(() => Boolean(isBalance && hideBalances), [hideBalances, isBalance])
   const isHidden = useMemo(() => isRevealable && !isRevealed, [isRevealable, isRevealed])
 
-  // locks noCountUp once it set
+  // locks noCountUp after first display
   useEffect(() => {
-    setEffectiveNoCountUp((prev) => (prev === true ? prev : isRevealable || !!noCountUp))
-  }, [isRevealable, noCountUp])
+    setEffectiveNoCountUp((prev) => (prev === true ? prev : isRevealed || !!noCountUp))
+  }, [isRevealed, noCountUp])
 
   // handle revealing hidden balance
   useEffect(() => {

@@ -98,8 +98,8 @@ const ModernTokens: FC<{
   isBalance?: boolean
   noCountUp?: boolean
   className?: string
-  runesLength?: number
-}> = ({ formatted, symbol, value, tooltip, isBalance, noCountUp, className }) => {
+  runesLength: number
+}> = ({ formatted, symbol, value, tooltip, isBalance, noCountUp, className, runesLength }) => {
   const { isRevealed, effectiveNoCountUp } = useRevealableBalance(isBalance, noCountUp)
 
   return (
@@ -116,7 +116,7 @@ const ModernTokens: FC<{
           </span>
         ) : (
           <AlienRunes
-            length={7}
+            length={runesLength}
             className={classNames("tokens", className)}
             scramble={!effectiveNoCountUp}
           />
@@ -135,7 +135,7 @@ export const Tokens: FC<TokensProps> = ({
   noTooltip,
   noCountUp,
   isBalance = false,
-  runesLength = 7,
+  runesLength = 6,
 }) => {
   const withAlienRunes = useIsFeatureEnabled("ALIEN_RUNES")
 

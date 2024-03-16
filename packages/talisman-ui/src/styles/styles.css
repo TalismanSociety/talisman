@@ -94,6 +94,21 @@
   input[type="checkbox"].form-checkbox:focus:not(:focus-visible) {
     box-shadow: none;
   }
+
+  .alienRunes {
+    @apply inline-block h-[1em];
+  }
+  .alienRunes > span > span {
+    @apply relative inline-block h-[1ex] w-[1em];
+  }
+  .alienRunes > span > span > span {
+    @apply absolute left-0 top-0 flex h-[1ex] w-[1em] items-center justify-center;
+  }
+  /* .alienRunes > span {
+    span::first-child {
+      @apply opacity-0;
+    }
+  } */
 }
 
 /* The utilities layer is for small, single-purpose classes that should always take precedence over any other styles. */

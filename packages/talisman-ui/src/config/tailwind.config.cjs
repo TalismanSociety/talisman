@@ -170,14 +170,26 @@ module.exports = {
             "text-shadow": "0 0 0.1em currentColor",
           },
         },
+        "fade-out": {
+          "0%": {
+            opacity: "1",
+          },
+          "100%": {
+            opacity: "0",
+          },
+        },
         
       },
       animation: {
         "fade-in-fase": "fade-in 0.1s ease-out",
         "fade-in": "fade-in 0.2s ease-out",
         "fade-in-slow": "fade-in 0.5s ease-out",
+        "fade-out": "fade-out 0.2s ease-in",
+        "fade-out-slow": "fade-out 0.5s ease-in",
         "spin-slow": "spin 2s linear infinite",
         "alienRunes": "alien-runes 4s ease-in-out infinite",
+        "alienRunes-in": "fade-in 1s ease-in-out",
+        "alienRunes-out": "fade-out 1s ease-in-out",
       },
       gridTemplateColumns: {
         // 2 columns, 2nd grows

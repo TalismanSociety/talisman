@@ -101,7 +101,7 @@ const ModernFiat: FC<FiatProps> = ({
   currencyDisplay,
   isBalance = false,
   noCountUp = false,
-  runesLength = 5,
+  runesLength = 4,
 }) => {
   const { isRevealed, effectiveNoCountUp } = useRevealableBalance(isBalance, noCountUp)
 
