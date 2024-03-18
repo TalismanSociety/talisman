@@ -2,13 +2,14 @@ import { Balances } from "@extension/core"
 import { AccountJson } from "@polkadot/extension-base/background/types"
 import { CheckCircleIcon } from "@talismn/icons"
 import { classNames } from "@talismn/util"
-import { useBalanceDetails } from "@ui/hooks/useBalanceDetails"
+import { useBalancesFiatTotal } from "@ui/hooks/useBalancesFiatTotal"
 import { FC, ReactNode, useCallback, useMemo } from "react"
-import { Checkbox, Tooltip, TooltipContent, TooltipTrigger } from "talisman-ui"
+import { Checkbox, Tooltip, TooltipTrigger } from "talisman-ui"
 
 import { Fiat } from "../Asset/Fiat"
 import { AccountIcon } from "./AccountIcon"
 import { Address } from "./Address"
+import { BalancesSummaryTooltipContent } from "./BalancesSummaryTooltipContent"
 
 const PagerButton: FC<{ disabled?: boolean; children: ReactNode; onClick?: () => void }> = ({
   children,
@@ -53,7 +54,7 @@ const AccountButton: FC<AccountButtonProps> = ({
   isBalanceLoading,
   withBalances,
 }) => {
-  const { balanceDetails, totalUsd } = useBalanceDetails(balances)
+  const totalFiat = useBalancesFiatTotal(balances)
 
   return (
     <button
@@ -73,17 +74,13 @@ const AccountButton: FC<AccountButtonProps> = ({
       </div>
       <div className="flex items-center justify-end gap-2">
         {withBalances && (
-          <Tooltip>
+          <Tooltip placement="bottom-end">
             <TooltipTrigger asChild>
               <span className={classNames(isBalanceLoading && "animate-pulse")}>
-                <Fiat className="leading-none" amount={totalUsd} isBalance />
+                <Fiat className="leading-none" amount={totalFiat} isBalance />
               </span>
             </TooltipTrigger>
-            {balanceDetails && (
-              <TooltipContent>
-                <div className="whitespace-pre-wrap text-right">{balanceDetails}</div>
-              </TooltipContent>
-            )}
+            <BalancesSummaryTooltipContent balances={balances} />
           </Tooltip>
         )}
       </div>

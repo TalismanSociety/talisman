@@ -526,7 +526,7 @@ export class EthTabsHandler extends TabsHandler {
             token.type === "evm-erc20" &&
             token.evmNetwork?.id === ethChainId.toString() &&
             token.symbol === symbol &&
-            token.contractAddress.toLowerCase() !== address
+            token.contractAddress.toLowerCase() !== address.toLowerCase()
         )
 
         const warnings: string[] = []

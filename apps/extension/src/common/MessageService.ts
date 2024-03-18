@@ -138,7 +138,6 @@ export default class MessageService {
     }
   ): void {
     const handler = this.handlers[data.id]
-
     if (!handler) {
       const { id, error } = data // don't print all properties, this could log sensitive data
       log.error("No handler for message: ", { id, error })

@@ -2,7 +2,7 @@ import keyring from "@polkadot/ui-keyring"
 import { assert } from "@polkadot/util"
 import { sleep } from "@talismn/util"
 import { DEBUG, TALISMAN_WEB_APP_DOMAIN, TEST } from "extension-shared"
-import { Subject } from "rxjs"
+import { BehaviorSubject, Subject } from "rxjs"
 import Browser from "webextension-polyfill"
 
 import { genericSubscription } from "../../handlers/subscriptions"
@@ -18,6 +18,8 @@ import { protector } from "./protector"
 import { PasswordStoreData } from "./store.password"
 import type {
   AnalyticsCaptureRequest,
+  ChangePasswordStatusUpdate,
+  ChangePasswordStatusUpdateType,
   LoggedinType,
   ModalOpenRequest,
   RequestLogin,
@@ -25,6 +27,7 @@ import type {
   RequestRoute,
   SendFundsOpenRequest,
 } from "./types"
+import { ChangePasswordStatusUpdateStatus } from "./types"
 
 export default class AppHandler extends ExtensionHandler {
   #modalOpenRequest = new Subject<ModalOpenRequest>()
@@ -103,52 +106,73 @@ export default class AppHandler extends ExtensionHandler {
     return this.authStatus()
   }
 
-  private async changePassword({
-    currentPw,
-    newPw,
-    newPwConfirm,
-  }: RequestTypes["pri(app.changePassword)"]) {
-    // only allow users who have confirmed backing up their recovery phrase to change PW
-    const mnemonicsUnconfirmed = await this.stores.mnemonics.hasUnconfirmed()
-    assert(
-      !mnemonicsUnconfirmed,
-      "Please backup your recovery phrase before attempting to change your password."
-    )
+  private async changePassword(
+    id: string,
+    port: Port,
+    { currentPw, newPw, newPwConfirm }: RequestTypes["pri(app.changePassword)"]
+  ) {
+    const progressObservable = new BehaviorSubject<ChangePasswordStatusUpdate>({
+      status: ChangePasswordStatusUpdateStatus.VALIDATING,
+    })
 
-    // check given PW
-    await this.stores.password.checkPassword(currentPw)
+    const updateProgress = (val: ChangePasswordStatusUpdateType, message?: string) =>
+      progressObservable.next({ status: val, message })
 
-    // test if the two inputs of the new password are the same
-    assert(newPw === newPwConfirm, "New password and new password confirmation must match")
+    genericSubscription<"pri(app.changePassword.subscribe)">(id, port, progressObservable)
+    try {
+      // only allow users who have confirmed backing up their recovery phrase to change PW
+      const mnemonicsUnconfirmed = await this.stores.mnemonics.hasUnconfirmed()
+      assert(
+        !mnemonicsUnconfirmed,
+        "Please backup all recovery phrases before attempting to change your password."
+      )
 
-    const isHashedAlready = await this.stores.password.get("isHashed")
+      // check given PW
+      await this.stores.password.checkPassword(currentPw)
 
-    let hashedNewPw, newSalt
-    if (isHashedAlready) hashedNewPw = await this.stores.password.getHashedPassword(newPw)
-    else {
-      // need to create a new password and salt
-      const { salt, password } = await this.stores.password.createPassword(newPw)
-      hashedNewPw = password
-      newSalt = salt
+      // test if the two inputs of the new password are the same
+      assert(newPw === newPwConfirm, "New password and new password confirmation must match")
+
+      updateProgress(ChangePasswordStatusUpdateStatus.PREPARING)
+      const isHashedAlready = await this.stores.password.get("isHashed")
+
+      let hashedNewPw, newSalt
+      if (isHashedAlready) hashedNewPw = await this.stores.password.getHashedPassword(newPw)
+      else {
+        // need to create a new password and salt
+        const { salt, password } = await this.stores.password.createPassword(newPw)
+        hashedNewPw = password
+        newSalt = salt
+      }
+
+      const transformedPw = await this.stores.password.transformPassword(currentPw)
+      const result = await changePassword(
+        { currentPw: transformedPw, newPw: hashedNewPw },
+        updateProgress
+      )
+      if (!result.ok) throw new Error(result.val)
+
+      updateProgress(ChangePasswordStatusUpdateStatus.AUTH)
+
+      // update password secret
+      const secretResult = await this.stores.password.createAuthSecret(hashedNewPw)
+      const pwStoreData: Partial<PasswordStoreData> = {
+        ...secretResult,
+        isTrimmed: false,
+        isHashed: true,
+      }
+      if (newSalt) {
+        pwStoreData.salt = newSalt
+      }
+      await this.stores.password.set(pwStoreData)
+      await this.stores.password.setPlaintextPassword(newPw)
+      updateProgress(ChangePasswordStatusUpdateStatus.DONE)
+
+      return result.val
+    } catch (error) {
+      updateProgress(ChangePasswordStatusUpdateStatus.ERROR, (error as Error).message)
+      return false
     }
-
-    const transformedPw = await this.stores.password.transformPassword(currentPw)
-    const result = await changePassword({ currentPw: transformedPw, newPw: hashedNewPw })
-    if (!result.ok) throw Error(result.val)
-
-    // update password secret
-    const secretResult = await this.stores.password.createAuthSecret(hashedNewPw)
-    const pwStoreData: Partial<PasswordStoreData> = {
-      ...secretResult,
-      isTrimmed: false,
-      isHashed: true,
-    }
-    if (newSalt) {
-      pwStoreData.salt = newSalt
-    }
-    await this.stores.password.set(pwStoreData)
-    await this.stores.password.setPlaintextPassword(newPw)
-    return result.val
   }
 
   private async checkPassword({ password }: RequestTypes["pri(app.checkPassword)"]) {
@@ -249,7 +273,12 @@ export default class AppHandler extends ExtensionHandler {
         return this.lock()
 
       case "pri(app.changePassword)":
-        return await this.changePassword(request as RequestTypes["pri(app.changePassword)"])
+      case "pri(app.changePassword.subscribe)":
+        return await this.changePassword(
+          id,
+          port,
+          request as RequestTypes["pri(app.changePassword)"]
+        )
 
       case "pri(app.checkPassword)":
         return await this.checkPassword(request as RequestTypes["pri(app.checkPassword)"])

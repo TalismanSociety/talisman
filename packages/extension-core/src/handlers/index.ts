@@ -18,6 +18,7 @@ const OBFUSCATE_LOG_MESSAGES: MessageTypes[] = [
   "pri(app.authenticate)",
   "pri(app.checkPassword)",
   "pri(app.changePassword)",
+  "pri(app.changePassword.subscribe)",
   "pri(accounts.export)",
   "pri(accounts.export.pk)",
   "pri(accounts.create)",
@@ -50,7 +51,7 @@ const talismanHandler = <TMessageType extends MessageTypes>(
   const { id, message, request } = data
   const isExtension = port.name === extensionPortName
   const sender = port.sender as chrome.runtime.MessageSender
-  const from = isExtension ? "extension" : sender?.tab?.url || "<unknown>"
+  const from = isExtension ? "extension" : sender?.url || "<unknown>"
   const source = `${formatFrom(from)}: ${id}: ${
     message === "pub(eth.request)" ? `${message} ${(request as AnyEthRequest).method}` : message
   }`

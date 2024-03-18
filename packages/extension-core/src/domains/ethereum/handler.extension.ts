@@ -553,21 +553,24 @@ export class EthHandler extends ExtensionHandler {
       assert(queued, "Unable to find request")
       const { resolve, token } = queued
 
-      // some dapps set decimals as a string, which breaks balances
-      const safeToken = {
-        ...token,
-        decimals: Number(token.decimals),
+      const knownToken = await chaindataProvider.tokenById(token.id)
+      if (knownToken) {
+        await activeTokensStore.setActive(knownToken.id, true)
+      } else {
+        // some dapps set decimals as a string, which breaks balances
+        const safeToken = {
+          ...token,
+          decimals: Number(token.decimals),
+        }
+        const newTokenId = await chaindataProvider.addCustomToken(safeToken)
+        if (newTokenId) await activeTokensStore.setActive(newTokenId, true)
       }
-
-      const newTokenId = await chaindataProvider.addCustomToken(safeToken)
-
-      if (newTokenId) await activeTokensStore.setActive(newTokenId, true)
 
       talismanAnalytics.captureDelayed("add asset evm", {
         contractAddress: token.contractAddress,
         symbol: token.symbol,
         network: token.evmNetwork,
-        isCustom: true,
+        isCustom: !knownToken,
       })
 
       resolve(true)

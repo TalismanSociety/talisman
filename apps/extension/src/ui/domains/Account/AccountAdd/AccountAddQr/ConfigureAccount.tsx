@@ -5,8 +5,8 @@ import { AccountIcon } from "@ui/domains/Account/AccountIcon"
 import { Address } from "@ui/domains/Account/Address"
 import { ChainLogo } from "@ui/domains/Asset/ChainLogo"
 import { Fiat } from "@ui/domains/Asset/Fiat"
-import { useBalanceDetails } from "@ui/hooks/useBalanceDetails"
 import { useBalancesByParams } from "@ui/hooks/useBalancesByParams"
+import { useBalancesFiatTotal } from "@ui/hooks/useBalancesFiatTotal"
 import { useChainByGenesisHash } from "@ui/hooks/useChainByGenesisHash"
 import useChains from "@ui/hooks/useChains"
 import { useSetting } from "@ui/hooks/useSettings"
@@ -14,6 +14,7 @@ import { ReactNode, useMemo } from "react"
 import { Trans, useTranslation } from "react-i18next"
 import { Button, FormFieldInputText, Tooltip, TooltipContent, TooltipTrigger } from "talisman-ui"
 
+import { BalancesSummaryTooltipContent } from "../../BalancesSummaryTooltipContent"
 import { useAccountAddQr } from "./context"
 
 const AccountDerivedPicker = ({
@@ -65,12 +66,10 @@ export const ConfigureAccount = () => {
   const chain = useChainByGenesisHash(
     (state.type === "CONFIGURE" && state.accountConfig.genesisHash) || undefined
   )
+  const totalFiat = useBalancesFiatTotal(balances)
 
   const isBalanceLoading =
-    !addressesByChain ||
-    balances.sorted.length < 1 ||
-    balances.sorted.some((b) => b.status !== "live")
-  const { balanceDetails, totalUsd } = useBalanceDetails(balances)
+    !addressesByChain || balances.each.length < 1 || balances.each.some((b) => b.status !== "live")
 
   if (state.type !== "CONFIGURE") return null
 
@@ -121,19 +120,13 @@ export const ConfigureAccount = () => {
             <div className="flex flex-col justify-center pb-1 leading-none">
               {isBalanceLoading && <LoaderIcon className="animate-spin-slow inline text-white" />}
             </div>
-            <Tooltip>
+            <Tooltip placement="bottom-end">
               <TooltipTrigger asChild>
                 <div>
-                  <Fiat amount={totalUsd} isBalance />
+                  <Fiat amount={totalFiat} isBalance />
                 </div>
               </TooltipTrigger>
-              {balanceDetails && (
-                <TooltipContent>
-                  <div className="leading-paragraph whitespace-pre text-right">
-                    {balanceDetails}
-                  </div>
-                </TooltipContent>
-              )}
+              <BalancesSummaryTooltipContent balances={balances} />
             </Tooltip>
           </div>
         </div>
