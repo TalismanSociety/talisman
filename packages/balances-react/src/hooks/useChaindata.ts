@@ -1,17 +1,26 @@
-import { ChaindataProvider, ChaindataProviderOptions } from "@talismn/chaindata-provider"
-import { useEffect, useMemo, useState } from "react"
+import { ChainId, EvmNetworkId, TokenId } from "@talismn/chaindata-provider"
+import { useAtomValue } from "jotai"
 
-import { provideContext } from "../util/provideContext"
+import {
+  chaindataAtom,
+  chainsByGenesisHashAtom,
+  chainsByIdAtom,
+  evmNetworksByIdAtom,
+  miniMetadatasAtom,
+  tokensByIdAtom,
+} from "../atoms/chaindata"
+import { chaindataProviderAtom } from "../atoms/chaindataProvider"
 
-function useChaindataProvider(options: ChaindataProviderOptions = {}) {
-  const [onfinalityApiKey, setOnfinalityApiKey] = useState(options.onfinalityApiKey)
+export const useChaindataProvider = () => useAtomValue(chaindataProviderAtom)
+export const useChaindata = () => useAtomValue(chaindataAtom)
 
-  // make sure we recreate provider only when the onfinalityApiKey changes
-  useEffect(() => {
-    if (options.onfinalityApiKey !== onfinalityApiKey) setOnfinalityApiKey(options.onfinalityApiKey)
-  }, [options.onfinalityApiKey, onfinalityApiKey])
+export const useChains = () => useAtomValue(chainsByIdAtom)
+export const useChainsByGenesisHash = () => useAtomValue(chainsByGenesisHashAtom)
+export const useEvmNetworks = () => useAtomValue(evmNetworksByIdAtom)
+export const useTokens = () => useAtomValue(tokensByIdAtom)
+export const useMiniMetadatas = () => useAtomValue(miniMetadatasAtom)
 
-  return useMemo(() => new ChaindataProvider({ onfinalityApiKey }), [onfinalityApiKey])
-}
-
-export const [ChaindataReactProvider, useChaindata] = provideContext(useChaindataProvider)
+export const useChain = (chainId?: ChainId) => useChains()[chainId ?? ""] ?? undefined
+export const useEvmNetwork = (evmNetworkId?: EvmNetworkId) =>
+  useEvmNetworks()[evmNetworkId ?? ""] ?? undefined
+export const useToken = (tokenId?: TokenId) => useTokens()[tokenId ?? ""] ?? undefined

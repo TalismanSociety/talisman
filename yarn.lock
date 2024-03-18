@@ -7903,9 +7903,12 @@ __metadata:
     "@talismn/chaindata-provider": "workspace:*"
     "@talismn/connection-meta": "workspace:*"
     "@talismn/eslint-config": "workspace:*"
+    "@talismn/scale": "workspace:*"
     "@talismn/token-rates": "workspace:*"
     "@talismn/tsconfig": "workspace:*"
+    "@talismn/util": "workspace:*"
     "@types/jest": ^27.5.1
+    "@types/lodash": ^4.14.180
     "@types/react": ^18.0.17
     anylogger: ^1.0.11
     blueimp-md5: 2.19.0
@@ -7913,12 +7916,16 @@ __metadata:
     dexie-react-hooks: ^1.1.7
     eslint: ^8.4.0
     jest: ^29.7.0
+    jotai: ^2.6.4
+    jotai-effect: ^0.5.0
+    lodash: 4.17.21
     react: ^18.2.0
     react-use: ^17.4.0
     rxjs: ^7.8.1
     ts-jest: ^29.1.1
-    typescript: ^4.6.4
+    typescript: ^5.2.2
   peerDependencies:
+    "@polkadot/util-crypto": 12.x
     react: "*"
     react-dom: "*"
   languageName: unknown
@@ -8203,6 +8210,7 @@ __metadata:
     bignumber.js: ^9.1.2
     eslint: ^8.52.0
     jest: ^29.7.0
+    rxjs: ^7.8.1
     tailwind-merge: ^1.14.0
     ts-jest: ^29.1.1
     typescript: ^5.2.2
@@ -11143,6 +11151,7 @@ __metadata:
     "@talismn/balances-react": "workspace:*"
     "@talismn/chaindata-provider": "workspace:*"
     "@talismn/eslint-config": "workspace:*"
+    "@talismn/icons": "workspace:*"
     "@types/react": ^18.0.26
     "@types/react-dom": ^18.2.18
     "@vitejs/plugin-react": ^3.0.0
@@ -11150,12 +11159,15 @@ __metadata:
     anylogger-loglevel: ^1.0.0
     autoprefixer: ^10.4.12
     eslint: ^7.5.0
+    jotai: ^2.6.4
+    jotai-effect: ^0.5.0
     loglevel: ^1.8.1
     postcss: ^8.4.33
     react: ^18.2.0
     react-dom: ^18.2.0
+    rxjs: ^7.8.1
     tailwindcss: ^3.4.1
-    typescript: ^4.9.3
+    typescript: ^5.2.2
     vite: ^4.4.3
   languageName: unknown
   linkType: soft
@@ -21274,7 +21286,7 @@ __metadata:
     react-use: ^17.4.0
     tailwindcss: ^3.4.1
     talisman-ui: "workspace:*"
-    typescript: 5.3.3
+    typescript: ^5.2.2
     viem: ^1.21.4
     vite: ^4.4.3
     vite-plugin-svgr: ^2.2.1
@@ -25184,16 +25196,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"typescript@npm:5.3.3, typescript@npm:^4.6.4 || ^5.2.2":
-  version: 5.3.3
-  resolution: "typescript@npm:5.3.3"
-  bin:
-    tsc: bin/tsc
-    tsserver: bin/tsserver
-  checksum: 2007ccb6e51bbbf6fde0a78099efe04dc1c3dfbdff04ca3b6a8bc717991862b39fd6126c0c3ebf2d2d98ac5e960bcaa873826bb2bb241f14277034148f41f6a2
-  languageName: node
-  linkType: hard
-
 "typescript@npm:^3.2.4":
   version: 3.9.10
   resolution: "typescript@npm:3.9.10"
@@ -25204,13 +25206,23 @@ __metadata:
   languageName: node
   linkType: hard
 
-"typescript@npm:^4.4.3, typescript@npm:^4.6.4, typescript@npm:^4.7.4, typescript@npm:^4.9.3":
+"typescript@npm:^4.4.3, typescript@npm:^4.7.4":
   version: 4.9.5
   resolution: "typescript@npm:4.9.5"
   bin:
     tsc: bin/tsc
     tsserver: bin/tsserver
   checksum: ee000bc26848147ad423b581bd250075662a354d84f0e06eb76d3b892328d8d4440b7487b5a83e851b12b255f55d71835b008a66cbf8f255a11e4400159237db
+  languageName: node
+  linkType: hard
+
+"typescript@npm:^4.6.4 || ^5.2.2":
+  version: 5.3.3
+  resolution: "typescript@npm:5.3.3"
+  bin:
+    tsc: bin/tsc
+    tsserver: bin/tsserver
+  checksum: 2007ccb6e51bbbf6fde0a78099efe04dc1c3dfbdff04ca3b6a8bc717991862b39fd6126c0c3ebf2d2d98ac5e960bcaa873826bb2bb241f14277034148f41f6a2
   languageName: node
   linkType: hard
 
@@ -25224,16 +25236,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"typescript@patch:typescript@5.3.3#~builtin<compat/typescript>, typescript@patch:typescript@^4.6.4 || ^5.2.2#~builtin<compat/typescript>":
-  version: 5.3.3
-  resolution: "typescript@patch:typescript@npm%3A5.3.3#~builtin<compat/typescript>::version=5.3.3&hash=7ad353"
-  bin:
-    tsc: bin/tsc
-    tsserver: bin/tsserver
-  checksum: f61375590b3162599f0f0d5b8737877ac0a7bc52761dbb585d67e7b8753a3a4c42d9a554c4cc929f591ffcf3a2b0602f65ae3ce74714fd5652623a816862b610
-  languageName: node
-  linkType: hard
-
 "typescript@patch:typescript@^3.2.4#~builtin<compat/typescript>":
   version: 3.9.10
   resolution: "typescript@patch:typescript@npm%3A3.9.10#~builtin<compat/typescript>::version=3.9.10&hash=7ad353"
@@ -25244,13 +25246,23 @@ __metadata:
   languageName: node
   linkType: hard
 
-"typescript@patch:typescript@^4.4.3#~builtin<compat/typescript>, typescript@patch:typescript@^4.6.4#~builtin<compat/typescript>, typescript@patch:typescript@^4.7.4#~builtin<compat/typescript>, typescript@patch:typescript@^4.9.3#~builtin<compat/typescript>":
+"typescript@patch:typescript@^4.4.3#~builtin<compat/typescript>, typescript@patch:typescript@^4.7.4#~builtin<compat/typescript>":
   version: 4.9.5
   resolution: "typescript@patch:typescript@npm%3A4.9.5#~builtin<compat/typescript>::version=4.9.5&hash=7ad353"
   bin:
     tsc: bin/tsc
     tsserver: bin/tsserver
   checksum: 2eee5c37cad4390385db5db5a8e81470e42e8f1401b0358d7390095d6f681b410f2c4a0c496c6ff9ebd775423c7785cdace7bcdad76c7bee283df3d9718c0f20
+  languageName: node
+  linkType: hard
+
+"typescript@patch:typescript@^4.6.4 || ^5.2.2#~builtin<compat/typescript>":
+  version: 5.3.3
+  resolution: "typescript@patch:typescript@npm%3A5.3.3#~builtin<compat/typescript>::version=5.3.3&hash=7ad353"
+  bin:
+    tsc: bin/tsc
+    tsserver: bin/tsserver
+  checksum: f61375590b3162599f0f0d5b8737877ac0a7bc52761dbb585d67e7b8753a3a4c42d9a554c4cc929f591ffcf3a2b0602f65ae3ce74714fd5652623a816862b610
   languageName: node
   linkType: hard
 

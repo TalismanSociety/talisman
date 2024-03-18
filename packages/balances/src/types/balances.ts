@@ -319,6 +319,10 @@ export class Balance {
     return this.#storage.source
   }
 
+  get subSource() {
+    return this.#storage.subSource
+  }
+
   get status() {
     return this.#storage.status
   }
