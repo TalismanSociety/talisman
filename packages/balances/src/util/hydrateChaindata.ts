@@ -24,15 +24,8 @@ export const hydrateChaindataAndMiniMetadata = async (
 /** Builds any missing miniMetadatas (e.g. for the user's custom substrate chains) */
 export const updateCustomMiniMetadata = async (
   chaindataProvider: ChaindataProvider,
-  miniMetadataUpdater: MiniMetadataUpdater,
-  isTest?: boolean
+  miniMetadataUpdater: MiniMetadataUpdater
 ) => {
-  // Don't update custom minimetadata in tests
-  //
-  // TODO: Remove this, and instead mock the websocket response for all of the called rpc methods.
-  // E.g. state_getMetadata, system_properties, etc
-  if (isTest) return
-
   const chainIds = await chaindataProvider.chainIds()
   await miniMetadataUpdater.update(chainIds)
 }

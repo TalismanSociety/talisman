@@ -39,8 +39,16 @@ export const updateAndWaitForUpdatedChaindata = (): Promise<void> => {
           hydrateChaindataAndMiniMetadata(chaindataProvider, miniMetadataUpdater),
         ])
 
-        if (userHasSubstrateAccounts)
-          await updateCustomMiniMetadata(chaindataProvider, miniMetadataUpdater, TEST)
+        if (
+          // Don't update custom miniMetadatas unless user has some substrate accounts
+          // They can take a while to update, and ethereum-only users will never need them.
+          userHasSubstrateAccounts &&
+          // Don't update custom miniMetadatas in tests.
+          // We'll be using the init data for chaindata, and we don't have a mock for the `state_getMetadata`
+          // ws rpc call which will be invoked if there are any missing miniMetadatas in the init data.
+          !TEST
+        )
+          await updateCustomMiniMetadata(chaindataProvider, miniMetadataUpdater)
         await updateEvmTokens(chaindataProvider, evmTokenFetcher)
       } catch (cause) {
         Sentry.captureException(
