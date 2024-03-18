@@ -7,7 +7,6 @@ import {
   updateCustomMiniMetadata,
   updateEvmTokens,
 } from "@talismn/balances"
-import { TEST } from "extension-shared"
 
 import { awaitKeyringLoaded } from "../util/awaitKeyringLoaded"
 import { balanceModules, chainConnectors } from "./balance-modules"
@@ -40,7 +39,7 @@ export const updateAndWaitForUpdatedChaindata = (): Promise<void> => {
         ])
 
         if (userHasSubstrateAccounts)
-          await updateCustomMiniMetadata(chaindataProvider, miniMetadataUpdater, TEST)
+          await updateCustomMiniMetadata(chaindataProvider, miniMetadataUpdater)
         await updateEvmTokens(chaindataProvider, evmTokenFetcher)
       } catch (cause) {
         Sentry.captureException(
