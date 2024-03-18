@@ -39,6 +39,7 @@ export const AlienRunes = forwardRef<
     range: RANGE,
     overflow: true,
     speed: 0.5,
+    scramble: 5,
   })
 
   return (
