@@ -22,7 +22,7 @@ export const PortfolioRoutes = () => {
 
   return (
     // share layout to prevent sidebar flickering when navigating between the 2 pages
-    <DashboardLayout centered large className="min-w-[75rem]">
+    <DashboardLayout centered large className="min-w-[auto]">
       <PortfolioContainer>
         <Routes>
           {/* To match popup structure, in case of expand */}
