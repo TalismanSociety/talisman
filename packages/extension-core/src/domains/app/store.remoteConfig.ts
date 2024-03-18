@@ -7,9 +7,7 @@ import { fetchRemoteConfig } from "../../util/fetchRemoteConfig"
 import { RemoteConfigStoreData } from "./types"
 
 export const DEFAULT_REMOTE_CONFIG: RemoteConfigStoreData = {
-  featureFlags: {
-    ALIEN_RUNES: true, // TODO remove after feature crit (this is only to share builds with the team)
-  },
+  featureFlags: {},
   buyTokens: {
     tokenIds: [],
   },
