@@ -39,7 +39,7 @@ const MnemonicFormInner = () => {
             </TooltipContent>
           </Tooltip>
         </div>
-        <Mnemonic mnemonic={mnemonic} onReveal={handleMnemonicRevealed} wideLayoutWhen24 />
+        <Mnemonic mnemonic={mnemonic} onReveal={handleMnemonicRevealed} />
       </div>
 
       <div className="flex flex-col gap-8">
