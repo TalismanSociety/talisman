@@ -39,7 +39,7 @@ const MnemonicFormInner = () => {
             </TooltipContent>
           </Tooltip>
         </div>
-        <Mnemonic mnemonic={mnemonic} onReveal={handleMnemonicRevealed} wideLayoutWhen24 />
+        <Mnemonic mnemonic={mnemonic} onReveal={handleMnemonicRevealed} />
       </div>
 
       <div className="flex flex-col gap-8">
@@ -71,7 +71,7 @@ export const MnemonicCreateForm = () => {
   const { t } = useTranslation("admin")
   return (
     <MnemonicCreateModalDialog title={t("New recovery phrase")}>
-      <div className={"flex flex-col gap-8"}>
+      <div className={"flex w-full min-w-[58rem] flex-col"}>
         <div className="text-body-secondary text-sm">
           {t(
             "Your recovery phrase gives you access to your wallet and funds. Write it down and store it in a secure location."

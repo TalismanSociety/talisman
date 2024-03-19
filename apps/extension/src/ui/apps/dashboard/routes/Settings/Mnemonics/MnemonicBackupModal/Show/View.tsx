@@ -38,12 +38,12 @@ export const ViewMnemonic: FC<ShowMnemonicProps> = ({ handleComplete }) => {
   }, [])
 
   return (
-    <div className="flex flex-col gap-4">
+    <div className="flex min-w-[58rem] flex-col gap-4">
       <span className="text-body-secondary text-sm">
         {t("Only reveal your recovery phrase when in a secure location")}
       </span>
       <div className="flex flex-col gap-16">
-        <Mnemonic onReveal={handleMnemonicReveal} mnemonic={mnemonic ?? ""} wideLayoutWhen24 />
+        <Mnemonic onReveal={handleMnemonicReveal} mnemonic={mnemonic ?? ""} />
         <div className="flex flex-col gap-8">
           <Checkbox
             disabled={!canConfirm}
