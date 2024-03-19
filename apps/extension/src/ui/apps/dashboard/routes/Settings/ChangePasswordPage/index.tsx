@@ -1,5 +1,6 @@
 import { ChangePasswordStatusUpdateStatus, ChangePasswordStatusUpdateType } from "@extension/core"
 import { yupResolver } from "@hookform/resolvers/yup"
+import { CapsLockWarningMessage } from "@talisman/components/CapsLockWarningMessage"
 import { HeaderBlock } from "@talisman/components/HeaderBlock"
 import { notify } from "@talisman/components/Notifications"
 import { InfoIcon } from "@talismn/icons"
@@ -170,7 +171,10 @@ export const ChangePasswordPage = () => {
               disabled={!allBackedUp}
             />
           </FormFieldContainer>
-          <div className="mt-8 flex justify-end">
+          <div className="mt-8 flex items-center justify-between">
+            <div>
+              <CapsLockWarningMessage />
+            </div>
             <Button
               className="w-[20rem]"
               type="submit"

@@ -1,5 +1,6 @@
 import { log } from "@extension/shared"
 import { yupResolver } from "@hookform/resolvers/yup"
+import { CapsLockWarningIcon } from "@talisman/components/CapsLockWarningIcon"
 import { KeyIcon } from "@talismn/icons"
 import { CSSProperties, FC, useCallback, useEffect, useMemo } from "react"
 import { useForm } from "react-hook-form"
@@ -151,6 +152,7 @@ export const UnlockJsonAccountsButton: FC = () => {
                 spellCheck={false}
                 data-lpignore
                 readOnly={isSubmitting}
+                after={<CapsLockWarningIcon />}
               />
             </FormFieldContainer>
             <div className="mt-8">

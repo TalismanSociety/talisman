@@ -1,4 +1,5 @@
 export { ReactComponent as BraveIcon } from "./icons/brave.svg"
+export { ReactComponent as CapsLockIcon } from "./icons/caps-lock.svg"
 export { ReactComponent as ChainIcon } from "./icons/chain.svg"
 export { ReactComponent as CoinsIcon } from "./icons/coins.svg"
 export { ReactComponent as CommentIcon } from "./icons/comment.svg"

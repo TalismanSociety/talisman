@@ -1,4 +1,5 @@
 import { yupResolver } from "@hookform/resolvers/yup"
+import { CapsLockWarningMessage } from "@talisman/components/CapsLockWarningMessage"
 import { PasswordStrength } from "@talisman/components/PasswordStrength"
 import { useCallback, useMemo } from "react"
 import { useForm } from "react-hook-form"
@@ -55,8 +56,13 @@ export const NewPasswordForm = () => {
       </p>
 
       <form onSubmit={handleSubmit(submit)}>
-        <div className="text-body-disabled mb-12 text-sm">
-          {t("Password strength:")} <PasswordStrength password={newPwWatch} />
+        <div className="mb-6 flex h-[1.2em] items-center justify-between text-sm">
+          <div className="text-body-disabled">
+            {t("Password strength:")} <PasswordStrength password={newPwWatch} />
+          </div>
+          <div>
+            <CapsLockWarningMessage />
+          </div>
         </div>
         <FormFieldContainer error={errors.newPw?.message} className="mb-12">
           <FormFieldInputText
