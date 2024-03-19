@@ -21,7 +21,7 @@ export const OnboardBackground = () => {
 
   return (
     // hide on mobile to prevent glitches
-    <div className="hidden transition-opacity duration-[2.5s] ease-in-out lg:block" style={style}>
+    <div className="hidden transition-opacity duration-[2.5s] ease-in-out sm:block" style={style}>
       <Background />
     </div>
   )
