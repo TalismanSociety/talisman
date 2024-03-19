@@ -513,7 +513,7 @@ export class BalanceStore {
             error?.type === "WEBSOCKET_ALLOCATION_EXHAUSTED_ERROR"
           ) {
             const addressesByModuleToken = addressesByTokenByModule[balanceModule.type] ?? {}
-            balancesDb.balances
+            return balancesDb.balances
               .where({ source: balanceModule.type, chainId: error.chainId })
               .filter((balance) => {
                 if (!Object.keys(addressesByModuleToken).includes(balance.tokenId)) return false
@@ -521,7 +521,6 @@ export class BalanceStore {
                 return true
               })
               .modify({ status: "stale" })
-            return
           }
 
           if (error) return log.error(error)

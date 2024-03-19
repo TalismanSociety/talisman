@@ -183,7 +183,9 @@ export const findChainMeta = <TBalanceModule extends AnyNewBalanceModule>(
 }
 
 export const getValidSubscriptionIds = () => {
-  return new Set(localStorage.getItem("TalismanBalancesSubscriptionIds")?.split(",") ?? [])
+  return new Set(
+    localStorage.getItem("TalismanBalancesSubscriptionIds")?.split?.(",")?.filter?.(Boolean) ?? []
+  )
 }
 export const createSubscriptionId = () => {
   // delete current id (if exists)

@@ -1,182 +1,77 @@
-import { web3AccountsSubscribe, web3Enable } from "@polkadot/extension-dapp"
-import type { InjectedAccountWithMeta } from "@polkadot/extension-inject/types"
-import { useAllAddresses, useBalances, useChaindata, useTokens } from "@talismn/balances-react"
-import { CustomChain, CustomEvmNetwork, Token } from "@talismn/chaindata-provider"
-import { classNames, formatDecimals } from "@talismn/util"
-import { Fragment, useEffect, useMemo, useState } from "react"
+import { useSetBalancesAddresses } from "@talismn/balances-react"
+import { Dispatch, SetStateAction, Suspense, useMemo, useState } from "react"
 
-export function App(): JSX.Element {
+import { Balances, BalancesFallback } from "./components/Balances"
+import { BalancesTotal, BalancesTotalFallback } from "./components/BalancesTotal"
+import { Button } from "./components/Button"
+import { useExtensionAccounts } from "./hooks/useExtensionAccounts"
+import { useExtensionSyncCustomChaindata } from "./hooks/useExtensionSyncCustomChaindata"
+
+type Props = {
+  withTestnets: boolean
+  setWithTestnets: Dispatch<SetStateAction<boolean>>
+}
+
+export function App({ withTestnets, setWithTestnets }: Props): JSX.Element {
+  useExtensionSyncCustomChaindata()
+
   const accounts = useExtensionAccounts()
   const addresses = useMemo(() => (accounts ?? []).map((account) => account.address), [accounts])
-  const [, setAllAddresses] = useAllAddresses()
-  useEffect(() => setAllAddresses(addresses ?? []), [addresses, setAllAddresses])
+  useSetBalancesAddresses(addresses)
 
-  const tokens = useTokens()
-  const tokenIds = useMemo(() => Object.values(tokens).map(({ id }) => id), [tokens])
-
-  const addressesByToken = useAddressesByToken(addresses, tokenIds)
-  const balances = useBalances(addressesByToken)
-
-  useExtensionChaindataSyncEffect()
+  const [forceSkeletons, setForceSkeletons] = useState(false)
+  const [tableActive, setTableActive] = useState(true)
+  const [headerActive, setHeaderActive] = useState(true)
 
   return (
-    <div className="m-5 flex flex-col gap-5">
+    <div className="m-5 flex flex-col items-center gap-5">
       <h1 className="text-lg">Balances Demo</h1>
-
-      <div className="text-lg font-bold">
-        {balances.count > 0 &&
-          ((balances.sum.fiat("usd").total ?? 0).toLocaleString(undefined, {
-            style: "currency",
-            currency: "USD",
-            currencyDisplay: "narrowSymbol",
-          }) ??
-            "-")}
+      <div className="flex justify-center gap-5">
+        <Button
+          className={headerActive ? undefined : "text-brand-orange"}
+          onClick={() => setHeaderActive((a) => !a)}
+        >
+          Toggle Header
+        </Button>
+        <Button
+          className={tableActive ? undefined : "text-brand-orange"}
+          onClick={() => setTableActive((a) => !a)}
+        >
+          Toggle Table
+        </Button>
+        <Button
+          onClick={() => {
+            setHeaderActive((a) => !a)
+            setTableActive((a) => !a)
+          }}
+        >
+          Toggle Both
+        </Button>
+        <Button
+          className={forceSkeletons ? "text-primary" : undefined}
+          onClick={() => setForceSkeletons((a) => !a)}
+        >
+          Force Skeletons
+        </Button>
+        <Button
+          className={withTestnets ? "text-primary" : undefined}
+          onClick={() => setWithTestnets((t) => !t)}
+        >
+          Toggle Testnets
+        </Button>
       </div>
-
-      {/* Display balances per balance (so, per token per account) */}
-      <div className="grid grid-cols-[repeat(6,_auto)] items-center gap-x-4 gap-y-2">
-        {balances?.filterNonZero("total").sorted.map((balance) => (
-          <Fragment key={balance.id}>
-            <img
-              className="h-12 w-12 max-w-none justify-self-center"
-              alt="token logo"
-              src={balance.token?.logo}
-            />
-
-            <span>
-              <span
-                className={classNames("rounded-sm bg-[#1a1a1a] p-2 text-center font-bold")}
-                style={{ color: balance.token?.themeColor }}
-              >
-                {balance.token?.themeColor}
-              </span>
-            </span>
-
-            <span>{balance.status}</span>
-
-            <span>
-              <span
-                className={classNames(
-                  "min-w-[6rem] overflow-hidden overflow-ellipsis whitespace-nowrap rounded-sm bg-[#1a1a1a] p-2 text-center font-bold"
-                )}
-                style={{
-                  color: balance.chain?.themeColor || balance.evmNetwork?.themeColor || undefined,
-                }}
-              >
-                {balance.chain?.name || balance.evmNetwork?.name}
-              </span>
-            </span>
-
-            <span className="flex flex-col whitespace-nowrap">
-              <span className="whitespace-nowrap">
-                {formatDecimals(balance.transferable.tokens)} {balance.token?.symbol}
-              </span>
-              <span className="text-xs opacity-60">
-                {typeof balance.transferable.fiat("usd") === "number"
-                  ? new Intl.NumberFormat(undefined, {
-                      style: "currency",
-                      currency: "usd",
-                      currencyDisplay: "narrowSymbol",
-                    }).format(balance.transferable.fiat("usd") || 0)
-                  : " -"}
-              </span>
-            </span>
-
-            <span className="max-w-md overflow-hidden overflow-ellipsis whitespace-pre">
-              {accounts?.find(({ address }) => address === balance.address)?.meta?.name ??
-                balance.address}
-            </span>
-          </Fragment>
-        ))}
-      </div>
+      {headerActive && forceSkeletons && <BalancesTotalFallback />}
+      {headerActive && !forceSkeletons && (
+        <Suspense fallback={<BalancesTotalFallback />}>
+          <BalancesTotal />
+        </Suspense>
+      )}
+      {tableActive && forceSkeletons && <BalancesFallback />}
+      {tableActive && !forceSkeletons && (
+        <Suspense fallback={<BalancesFallback />}>
+          <Balances />
+        </Suspense>
+      )}
     </div>
-  )
-}
-
-/**
- * Connects to the web3 provider (e.g. talisman) and subscribes to the list of account addresses.
- */
-function useExtensionAccounts() {
-  // some state to store the list of account addresses which we plan to fetch from the extension
-  const [accounts, setAccounts] = useState<InjectedAccountWithMeta[] | null>(null)
-
-  useEffect(() => {
-    const unsubscribePromise = (async () => {
-      // connect to the extension
-      await web3Enable("balances-demo")
-
-      // subscribe to the list of accounts from the extension
-      const unsubscribe = await web3AccountsSubscribe((accounts) =>
-        // provide the list of accounts to the caller of this hook
-        setAccounts(accounts)
-      )
-
-      // return the unsubscribe callback, which we can retrieve later with `unsubscribePromise.then`
-      return unsubscribe
-    })()
-
-    // when our hook is unmounted, we want to unsubscribe from the list of accounts from the extension
-    return () => {
-      // unsubscribePromise is just a Promise, we call `.then` to retrieve the inner unsubscribe callback
-      unsubscribePromise.then((unsubscribe) => {
-        // this is where we actually unsubscribe
-        unsubscribe()
-      })
-    }
-  }, [])
-
-  // provide the list of account addresses to the caller of this hook
-  return accounts
-}
-
-/**
- * Given an array of `addresses` and an array of `tokenIds`, will return an `addressesByToken` map like so:
- *
- *     {
- *       [tokenIdOne]: [addressOne, addressTwo, etc]
- *       [tokenIdTwo]: [addressOne, addressTwo, etc]
- *       [etc]:        [addressOne, addressTwo, etc]
- *     }
- */
-function useAddressesByToken(addresses: string[] | null, tokenIds: Token["id"][]) {
-  return useMemo(() => {
-    if (addresses === null) return {}
-    return Object.fromEntries(tokenIds.map((tokenId) => [tokenId, addresses]))
-  }, [addresses, tokenIds])
-}
-
-const windowInject = globalThis as typeof globalThis & {
-  talismanSub?: {
-    subscribeCustomSubstrateChains?: (cb: (chains: CustomChain[]) => unknown) => () => void
-    subscribeCustomEvmNetworks?: (cb: (networks: CustomEvmNetwork[]) => unknown) => () => void
-    subscribeCustomTokens?: (cb: (tokens: Token[]) => unknown) => () => void
-  }
-}
-
-function useExtensionChaindataSyncEffect() {
-  const chaindata = useChaindata()
-
-  useEffect(
-    () =>
-      windowInject.talismanSub?.subscribeCustomSubstrateChains?.((chains) =>
-        chaindata.setCustomChains(chains)
-      ),
-    [chaindata]
-  )
-
-  useEffect(
-    () =>
-      windowInject.talismanSub?.subscribeCustomEvmNetworks?.((networks) =>
-        chaindata.setCustomEvmNetworks(networks)
-      ),
-    [chaindata]
-  )
-
-  useEffect(
-    () =>
-      windowInject.talismanSub?.subscribeCustomTokens?.((tokens) =>
-        chaindata.setCustomTokens(tokens)
-      ),
-    [chaindata]
   )
 }
