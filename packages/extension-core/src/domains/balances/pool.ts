@@ -66,7 +66,7 @@ const DEBOUNCE_TIMEOUT = 3_000
 //       3. It should support one-off subscriptions for accounts which aren't in the wallet
 //       4. It needs to stop trying to connect to broken RPCs after the subscriptions are closed
 
-export class BalanceStore {
+export class BalancePool {
   #subscriptionsState: SubscriptionsState = "Closed"
   #subscriptionsStateUpdated: Subject<void> = new Subject()
   #subscriptionsGeneration = 0
@@ -685,4 +685,4 @@ export class BalanceStore {
   }
 }
 
-export const balanceStore = new BalanceStore()
+export const balancePool = new BalancePool()

@@ -10,7 +10,7 @@ import { StorageProvider } from "../../libs/Store"
 import { chaindataProvider } from "../../rpcs/chaindata"
 import { awaitKeyringLoaded } from "../../util/awaitKeyringLoaded"
 import { settingsStore } from "../app/store.settings"
-import { balanceStore } from "./store"
+import { balancePool } from "./pool"
 import { BalanceTotal } from "./types"
 
 export const balanceTotalsStore = new StorageProvider<
@@ -26,7 +26,7 @@ export const trackBalanceTotals = async () => {
     settingsStore.observable,
     keyring.accounts.subject,
     chaindataProvider.tokensByIdObservable,
-    balanceStore.observable,
+    balancePool.observable,
     liveQuery(() => extensionDb.tokenRates.toArray()),
   ])
     .pipe(throttleTime(MAX_UPDATE_INTERVAL, undefined, { trailing: true }))

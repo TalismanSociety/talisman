@@ -6,7 +6,7 @@ import { combineLatest, debounceTime } from "rxjs"
 
 import { StorageProvider } from "../../libs/Store"
 import { awaitKeyringLoaded } from "../../util/awaitKeyringLoaded"
-import { balanceStore } from "../balances/store"
+import { balancePool } from "../balances/pool"
 import { EVM_LSD_PAIRS, NOM_POOL_MIN_DEPOSIT, NOM_POOL_SUPPORTED_CHAINS } from "./constants"
 
 type ShouldShowBanner = boolean
@@ -112,7 +112,7 @@ const shouldShowEvmLsdBanners = async ({
 export const trackStakingBannerDisplay = async () => {
   await awaitKeyringLoaded()
 
-  combineLatest([keyring.accounts.subject, balanceStore.observable])
+  combineLatest([keyring.accounts.subject, balancePool.observable])
     .pipe(debounceTime(MAX_UPDATE_INTERVAL))
     .subscribe(async ([accounts, rawBalances]) => {
       try {
