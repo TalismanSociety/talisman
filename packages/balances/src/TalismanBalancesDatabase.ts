@@ -5,7 +5,7 @@ import { upgradeBalancesDataBlob, upgradeRemoveSymbolFromNativeTokenId } from ".
 
 export class TalismanBalancesDatabase extends Dexie {
   balances!: Dexie.Table<BalanceJson, string>
-  balancesBlob!: Dexie.Table<Uint8Array, "data">
+  balancesBlob!: Dexie.Table<{ data: Uint8Array; id: string }, string>
   miniMetadatas!: Dexie.Table<MiniMetadata, string>
 
   constructor() {
@@ -19,10 +19,15 @@ export class TalismanBalancesDatabase extends Dexie {
     // Never index properties containing images, movies or large (huge) strings. Store them in IndexedDB, yes! but just don’t index them!
     // https://dexie.org/docs/Version/Version.stores()#warning
 
+    this.version(5).stores({
+      balancesBlob: "id",
+      miniMetadatas: "id, source, chainId, specName, specVersion",
+    })
+
     this.version(4)
       .stores({
-        balances: null,
-        balancesBlob: null,
+        balances: "id",
+        balancesBlob: "id",
         miniMetadatas: "id, source, chainId, specName, specVersion",
       })
       .upgrade(upgradeBalancesDataBlob)

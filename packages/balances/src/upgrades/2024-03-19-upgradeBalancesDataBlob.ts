@@ -9,7 +9,7 @@ export const upgradeBalancesDataBlob = async (tx: Transaction) => {
   const balancesTable = tx.table<BalanceJson & { id: string }, string>("balances")
   const balancesData = await balancesTable.toCollection().toArray()
   const output = pako.deflate(JSON.stringify(balancesData))
-  // now write the compressed data back to the db
+  // now write the compressed data back to the db and clear the old one
+  await tx.table("balancesBlob").put({ data: output, id: Date.now().toString() })
   await tx.table("balances").clear()
-  await tx.table("balancesBlob").put({ data: output })
 }

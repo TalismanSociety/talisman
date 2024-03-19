@@ -107,7 +107,6 @@ export class BalanceStore {
     // if we already have subscriptions - start polling
     if (this.#subscribers.observed) this.openSubscriptions()
 
-    balancesDb.open()
     // Hydrate pool from indexedDB
     retrieveData().then((balances) => {
       this.setPool(balances.map((b) => ({ ...b, status: "cache" } as BalanceJson)))
