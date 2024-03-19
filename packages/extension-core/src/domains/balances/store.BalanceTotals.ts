@@ -1,5 +1,5 @@
 import keyring from "@polkadot/ui-keyring"
-import { Address, BalanceJson, Balances, db as balancesDb } from "@talismn/balances"
+import { Address, BalanceJson, Balances } from "@talismn/balances"
 import { TokenRateCurrency, TokenRatesList } from "@talismn/token-rates"
 import { liveQuery } from "dexie"
 import { log } from "extension-shared"
@@ -10,6 +10,7 @@ import { StorageProvider } from "../../libs/Store"
 import { chaindataProvider } from "../../rpcs/chaindata"
 import { awaitKeyringLoaded } from "../../util/awaitKeyringLoaded"
 import { settingsStore } from "../app/store.settings"
+import { balanceStore } from "./store"
 import { BalanceTotal } from "./types"
 
 export const balanceTotalsStore = new StorageProvider<
@@ -25,7 +26,7 @@ export const trackBalanceTotals = async () => {
     settingsStore.observable,
     keyring.accounts.subject,
     chaindataProvider.tokensByIdObservable,
-    liveQuery(() => balancesDb.balances.toArray()),
+    balanceStore.observable,
     liveQuery(() => extensionDb.tokenRates.toArray()),
   ])
     .pipe(throttleTime(MAX_UPDATE_INTERVAL, undefined, { trailing: true }))
@@ -35,7 +36,7 @@ export const trackBalanceTotals = async () => {
           allTokenRates.map(({ tokenId, rates }) => [tokenId, rates])
         )
 
-        const balancesByAddress = balances.reduce((acc, balance) => {
+        const balancesByAddress = Object.values(balances).reduce((acc, balance) => {
           const { address } = balance
           if (!acc[address]) acc[address] = []
           acc[address].push(balance)

@@ -1,5 +1,4 @@
 import keyring from "@polkadot/ui-keyring"
-import { db as balancesDb } from "@talismn/balances"
 import { DEBUG } from "extension-shared"
 import posthog, { Properties } from "posthog-js"
 
@@ -8,6 +7,7 @@ import { db } from "../db"
 import { AccountType } from "../domains/accounts/types"
 import { appStore } from "../domains/app/store.app"
 import { settingsStore } from "../domains/app/store.settings"
+import { balanceStore } from "../domains/balances/store"
 import { Balance, Balances } from "../domains/balances/types"
 import { chaindataProvider } from "../rpcs/chaindata"
 import { hasGhostsOfThePast } from "../util/hasGhostsOfThePast"
@@ -132,7 +132,9 @@ class TalismanAnalytics {
 
       // balances + balances fiat sum estimate
       var balances = new Balances(
-        await balancesDb.balances.filter((b) => ownedAddresses.includes(b.address)).toArray(),
+        Object.values(balanceStore.balances).filter((balance) =>
+          ownedAddresses.includes(balance.address)
+        ),
         {
           chains,
           evmNetworks,

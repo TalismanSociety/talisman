@@ -16,10 +16,10 @@ import { NoAccountsFullscreen } from "./NoAccountsFullscreen"
 
 const FullscreenPortfolioAssets = ({
   balances,
-  isInitializing,
+  isInitialising,
 }: {
   balances: Balances
-  isInitializing: boolean
+  isInitialising: boolean
 }) => {
   const { t } = useTranslation()
 
@@ -50,7 +50,7 @@ const FullscreenPortfolioAssets = ({
         <NetworkPicker />
       </div>
       <div className="mt-6">
-        <DashboardAssetsTable balances={balances} isInitializing={isInitializing} />
+        <DashboardAssetsTable balances={balances} isInitialising={isInitialising} />
       </div>
     </>
   )
@@ -78,7 +78,7 @@ const EnableNetworkMessage: FC<{ type?: "substrate" | "evm" }> = ({ type }) => {
 }
 
 const PageContent = () => {
-  const { networkBalances, evmNetworks, chains, accountType, isInitializing } = usePortfolio()
+  const { networkBalances, evmNetworks, chains, accountType, isInitialising } = usePortfolio()
   const balances = useDisplayBalances(networkBalances)
   const hasAccounts = useHasAccounts()
 
@@ -98,7 +98,7 @@ const PageContent = () => {
   )
     return <EnableNetworkMessage type="evm" />
 
-  return <FullscreenPortfolioAssets balances={balances} isInitializing={isInitializing} />
+  return <FullscreenPortfolioAssets balances={balances} isInitialising={isInitialising} />
 }
 
 export const PortfolioAssets = () => {

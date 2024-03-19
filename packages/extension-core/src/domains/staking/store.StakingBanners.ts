@@ -1,12 +1,12 @@
 import keyring from "@polkadot/ui-keyring"
-import { Address, Balances, db as balancesDb } from "@talismn/balances"
+import { Address, Balances } from "@talismn/balances"
 import { ChainId, IToken, TokenId } from "@talismn/chaindata-provider"
-import { liveQuery } from "dexie"
 import { log } from "extension-shared"
 import { combineLatest, debounceTime } from "rxjs"
 
 import { StorageProvider } from "../../libs/Store"
 import { awaitKeyringLoaded } from "../../util/awaitKeyringLoaded"
+import { balanceStore } from "../balances/store"
 import { EVM_LSD_PAIRS, NOM_POOL_MIN_DEPOSIT, NOM_POOL_SUPPORTED_CHAINS } from "./constants"
 
 type ShouldShowBanner = boolean
@@ -112,7 +112,7 @@ const shouldShowEvmLsdBanners = async ({
 export const trackStakingBannerDisplay = async () => {
   await awaitKeyringLoaded()
 
-  combineLatest([keyring.accounts.subject, liveQuery(() => balancesDb.balances.toArray())])
+  combineLatest([keyring.accounts.subject, balanceStore.observable])
     .pipe(debounceTime(MAX_UPDATE_INTERVAL))
     .subscribe(async ([accounts, rawBalances]) => {
       try {

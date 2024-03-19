@@ -52,9 +52,17 @@ export class BalancesHandler extends ExtensionHandler {
         const onDisconnected = portDisconnected(port)
 
         // TODO: Run this on a timer or something instead of when subscribing to balances
-        await updateAndWaitForUpdatedChaindata()
+        // todo check if not awaiting this causes any issues with custom networks
+        updateAndWaitForUpdatedChaindata()
+        const callback = createSubscription<"pri(balances.subscribe)">(id, port)
 
-        return this.stores.balances.subscribe(id, onDisconnected)
+        const subscription = this.stores.balances.subscribe(id, onDisconnected)
+        const subFn = subscription((val) => {
+          callback(val)
+        })
+        onDisconnected.then(() => subFn.unsubscribe())
+
+        return true
       }
 
       // TODO: Replace this call with something internal to the balances store

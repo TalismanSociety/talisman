@@ -15,6 +15,7 @@ import {
   AuthorisedSiteUpdate,
   AuthorizedSite,
   AuthorizedSites,
+  BalanceSubscriptionResponse,
   BalancesUpdate,
   ChainId,
   ChangePasswordStatusUpdate,
@@ -167,7 +168,7 @@ export default interface MessageTypes {
     tokenId,
     address,
   }: RequestBalance) => Promise<BalanceJson | undefined>
-  balances: (cb: () => void) => UnsubscribeFn
+  balances: (cb: (balances: BalanceSubscriptionResponse) => void) => UnsubscribeFn
   balancesByParams: (
     addressesByChain: AddressesByChain,
     addressesAndEvmNetworks: AddressesAndEvmNetwork,
