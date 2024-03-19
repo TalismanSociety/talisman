@@ -20,7 +20,8 @@ export const OnboardBackground = () => {
   const style: CSSProperties = useMemo(() => ({ opacity: 1 - stage * 0.2 }), [stage])
 
   return (
-    <div className="transition-opacity duration-[2.5s] ease-in-out" style={style}>
+    // hide on mobile to prevent glitches
+    <div className="hidden transition-opacity duration-[2.5s] ease-in-out lg:block" style={style}>
       <Background />
     </div>
   )
