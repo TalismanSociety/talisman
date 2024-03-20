@@ -48,7 +48,7 @@ const ChainFormatButton = ({ format }: { format: ChainFormat }) => {
   }, [copySpecific, format.address, format.chainId])
 
   return (
-    <div className="text-body-secondary hover:text-body hover:bg-grey-800 flex h-32 w-full items-center gap-4 px-8">
+    <div className="text-body-secondary hover:text-body hover:bg-grey-800 flex h-32 w-full items-center gap-6 px-12">
       {format.chainId ? (
         <ChainLogo className="shrink-0 text-xl" id={format.chainId} />
       ) : (
