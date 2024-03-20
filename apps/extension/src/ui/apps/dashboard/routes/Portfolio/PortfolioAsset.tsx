@@ -66,7 +66,9 @@ const PageContent = ({ balances, symbol }: { balances: Balances; symbol: string 
                   onClick={canSendFunds ? handleSendFundsClick : undefined}
                   className={classNames(
                     "text-body-secondary flex h-12 w-12 flex-col items-center justify-center rounded-full text-sm",
-                    canSendFunds ? "hover:bg-grey-800 hover:text-body" : "cursor-default opacity-50"
+                    canSendFunds
+                      ? "hover:bg-grey-800 focus-visible:bg-grey-800 hover:text-body"
+                      : "cursor-default opacity-50"
                   )}
                 >
                   <SendIcon />

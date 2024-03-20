@@ -11,7 +11,7 @@ import { useAccountByAddress } from "@ui/hooks/useAccountByAddress"
 import { useAccountToggleIsPortfolio } from "@ui/hooks/useAccountToggleIsPortfolio"
 import { useAnalytics } from "@ui/hooks/useAnalytics"
 import { useChainByGenesisHash } from "@ui/hooks/useChainByGenesisHash"
-import React, { FC, forwardRef, useCallback, useMemo } from "react"
+import React, { FC, Suspense, forwardRef, useCallback, useMemo } from "react"
 import { useTranslation } from "react-i18next"
 import { useNavigate } from "react-router-dom"
 import {
@@ -25,10 +25,16 @@ import {
 const ViewOnExplorerMenuItem: FC<{ account: AccountJsonAny }> = ({ account }) => {
   const { t } = useTranslation()
   const { open, canOpen } = useViewOnExplorer(account.address, account?.genesisHash ?? undefined)
+  const { genericEvent } = useAnalytics()
+
+  const handleClick = useCallback(() => {
+    open()
+    genericEvent("open view on explorer", { from: "account menu" })
+  }, [genericEvent, open])
 
   if (!canOpen) return null
 
-  return <ContextMenuItem onClick={open}>{t("View on explorer")}</ContextMenuItem>
+  return <ContextMenuItem onClick={handleClick}>{t("View on explorer")}</ContextMenuItem>
 }
 
 type Props = {
@@ -126,36 +132,38 @@ export const AccountContextMenu = forwardRef<HTMLElement, Props>(function Accoun
         {trigger ? trigger : <MoreHorizontalIcon className="shrink-0" />}
       </ContextMenuTrigger>
       <ContextMenuContent className="border-grey-800 z-50 flex w-min flex-col whitespace-nowrap rounded-sm border bg-black px-2 py-3 text-left text-sm shadow-lg">
-        {account && (
-          <>
-            {canToggleIsPortfolio && (
-              <ContextMenuItem onClick={toggleIsPortfolio}>{toggleLabel}</ContextMenuItem>
-            )}
-            {canCopyAddress && (
-              <ContextMenuItem onClick={copyAddress}>{t("Copy address")}</ContextMenuItem>
-            )}
-            {account && <ViewOnExplorerMenuItem account={account} />}
-            {canRename && (
-              <ContextMenuItem onClick={openAccountRenameModal}>{t("Rename")}</ContextMenuItem>
-            )}
-            {canExport && (
-              <ContextMenuItem onClick={openAccountExportModal}>
-                {t("Export as JSON")}
+        <Suspense>
+          {account && (
+            <>
+              {canToggleIsPortfolio && (
+                <ContextMenuItem onClick={toggleIsPortfolio}>{toggleLabel}</ContextMenuItem>
+              )}
+              {canCopyAddress && (
+                <ContextMenuItem onClick={copyAddress}>{t("Copy address")}</ContextMenuItem>
+              )}
+              {account && <ViewOnExplorerMenuItem account={account} />}
+              {canRename && (
+                <ContextMenuItem onClick={openAccountRenameModal}>{t("Rename")}</ContextMenuItem>
+              )}
+              {canExport && (
+                <ContextMenuItem onClick={openAccountExportModal}>
+                  {t("Export as JSON")}
+                </ContextMenuItem>
+              )}
+              {canExportPk && (
+                <ContextMenuItem onClick={openAccountExportPkModal}>
+                  {t("Export private key")}
+                </ContextMenuItem>
+              )}
+              <ContextMenuItem onClick={openAccountRemoveModal}>
+                {t("Remove account")}
               </ContextMenuItem>
-            )}
-            {canExportPk && (
-              <ContextMenuItem onClick={openAccountExportPkModal}>
-                {t("Export private key")}
-              </ContextMenuItem>
-            )}
-            <ContextMenuItem onClick={openAccountRemoveModal}>
-              {t("Remove account")}
-            </ContextMenuItem>
-          </>
-        )}
-        {!hideManageAccounts && (
-          <ContextMenuItem onClick={goToManageAccounts}>{t("Manage accounts")}</ContextMenuItem>
-        )}
+            </>
+          )}
+          {!hideManageAccounts && (
+            <ContextMenuItem onClick={goToManageAccounts}>{t("Manage accounts")}</ContextMenuItem>
+          )}
+        </Suspense>
       </ContextMenuContent>
     </ContextMenu>
   )

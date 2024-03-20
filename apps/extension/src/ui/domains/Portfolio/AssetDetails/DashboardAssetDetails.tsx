@@ -1,6 +1,7 @@
 import { Address, Balances } from "@extension/core"
 import { ChainId, EvmNetworkId } from "@talismn/chaindata-provider"
 import { classNames } from "@talismn/util"
+import { TokenContextMenu } from "@ui/apps/dashboard/routes/Portfolio/TokenContextMenu"
 import { ChainLogo } from "@ui/domains/Asset/ChainLogo"
 import { TokenLogo } from "@ui/domains/Asset/TokenLogo"
 import { AssetBalanceCellValue } from "@ui/domains/Portfolio/AssetBalanceCellValue"
@@ -84,6 +85,13 @@ const ChainTokenBalances = ({ chainId, balances }: AssetRowProps) => {
               <CopyAddressButton networkId={chainOrNetwork.id} />
               <Suspense>
                 <SendFundsButton symbol={symbol} networkId={chainOrNetwork.id} />
+                {tokenId && (
+                  <TokenContextMenu
+                    tokenId={tokenId}
+                    placement="bottom-start"
+                    className="text-body-secondary hover:text-body focus:text-body hover:bg-grey-700 focus-visible:bg-grey-700 inline-flex h-9 w-9 items-center justify-center rounded-full p-0 text-xs opacity-50"
+                  />
+                )}
               </Suspense>
             </div>
             <div>{networkType}</div>
