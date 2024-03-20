@@ -26,6 +26,7 @@ import startCase from "lodash/startCase"
 import {
   ButtonHTMLAttributes,
   DetailedHTMLProps,
+  Suspense,
   forwardRef,
   useCallback,
   useMemo,
@@ -87,6 +88,11 @@ const AddressBookContactItem = ({ contact, handleDelete, handleEdit }: ContactIt
   )
   const { open: viewOnExplorer } = useViewOnExplorer(contact.address)
 
+  const handleViewOnExplorer = useCallback(() => {
+    viewOnExplorer()
+    genericEvent("open view on explorer", { from: "address book" })
+  }, [genericEvent, viewOnExplorer])
+
   const handleCopyClick = useCallback(() => {
     openCopyAddressModal({
       address: contact.address,
@@ -125,28 +131,32 @@ const AddressBookContactItem = ({ contact, handleDelete, handleEdit }: ContactIt
             </SquareButton>
           </ContextMenuTrigger>
           <ContextMenuContent>
-            <ContextMenuItem onClick={() => handleEdit(contact.address)}>
-              {t("Edit contact")}
-            </ContextMenuItem>
-            <ContextMenuItem
-              disabled={!canSendFunds}
-              onClick={openSendFundsPopup}
-              className="disabled:!text-body-disabled disabled:!cursor-not-allowed disabled:!bg-transparent"
-            >
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  {/* wrap in a div to prevent a button inside button situation */}
-                  <div>{t("Send to this contact")}</div>
-                </TooltipTrigger>
-                {/* TODO fix tooltip which appears behind context menu */}
-                {/* {cannotSendFundsReason && <TooltipContent>{cannotSendFundsReason}</TooltipContent>} */}
-              </Tooltip>
-            </ContextMenuItem>
-            <ContextMenuItem onClick={handleCopyClick}>{t("Copy address")}</ContextMenuItem>
-            <ContextMenuItem onClick={viewOnExplorer}>{t("View on explorer")}</ContextMenuItem>
-            <ContextMenuItem onClick={() => handleDelete(contact.address)}>
-              {t("Delete contact")}
-            </ContextMenuItem>
+            <Suspense>
+              <ContextMenuItem onClick={() => handleEdit(contact.address)}>
+                {t("Edit contact")}
+              </ContextMenuItem>
+              <ContextMenuItem
+                disabled={!canSendFunds}
+                onClick={openSendFundsPopup}
+                className="disabled:!text-body-disabled disabled:!cursor-not-allowed disabled:!bg-transparent"
+              >
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    {/* wrap in a div to prevent a button inside button situation */}
+                    <div>{t("Send to this contact")}</div>
+                  </TooltipTrigger>
+                  {/* TODO fix tooltip which appears behind context menu */}
+                  {/* {cannotSendFundsReason && <TooltipContent>{cannotSendFundsReason}</TooltipContent>} */}
+                </Tooltip>
+              </ContextMenuItem>
+              <ContextMenuItem onClick={handleCopyClick}>{t("Copy address")}</ContextMenuItem>
+              <ContextMenuItem onClick={handleViewOnExplorer}>
+                {t("View on explorer")}
+              </ContextMenuItem>
+              <ContextMenuItem onClick={() => handleDelete(contact.address)}>
+                {t("Delete contact")}
+              </ContextMenuItem>
+            </Suspense>
           </ContextMenuContent>
         </ContextMenu>
       </div>
