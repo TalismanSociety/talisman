@@ -1,3 +1,4 @@
+import { AccountJsonAny } from "@extension/core"
 import { MoreHorizontalIcon } from "@talismn/icons"
 import { useAccountExportModal } from "@ui/domains/Account/AccountExportModal"
 import { useAccountExportPrivateKeyModal } from "@ui/domains/Account/AccountExportPrivateKeyModal"
@@ -5,11 +6,12 @@ import { useAccountRemoveModal } from "@ui/domains/Account/AccountRemoveModal"
 import { useAccountRenameModal } from "@ui/domains/Account/AccountRenameModal"
 import { useCopyAddressModal } from "@ui/domains/CopyAddress"
 import { useSelectedAccount } from "@ui/domains/Portfolio/useSelectedAccount"
+import { useViewOnExplorer } from "@ui/domains/ViewOnExplorer"
 import { useAccountByAddress } from "@ui/hooks/useAccountByAddress"
 import { useAccountToggleIsPortfolio } from "@ui/hooks/useAccountToggleIsPortfolio"
 import { useAnalytics } from "@ui/hooks/useAnalytics"
 import { useChainByGenesisHash } from "@ui/hooks/useChainByGenesisHash"
-import React, { forwardRef, useCallback, useMemo } from "react"
+import React, { FC, forwardRef, useCallback, useMemo } from "react"
 import { useTranslation } from "react-i18next"
 import { useNavigate } from "react-router-dom"
 import {
@@ -19,6 +21,15 @@ import {
   ContextMenuTrigger,
   PopoverOptions,
 } from "talisman-ui"
+
+const ViewOnBlockExplorerItem: FC<{ account: AccountJsonAny }> = ({ account }) => {
+  const { t } = useTranslation()
+  const { open, canOpen } = useViewOnExplorer(account.address, account?.genesisHash ?? undefined)
+
+  if (!canOpen) return null
+
+  return <ContextMenuItem onClick={open}>{t("View on explorer")}</ContextMenuItem>
+}
 
 type Props = {
   analyticsFrom: string
@@ -123,6 +134,7 @@ export const AccountContextMenu = forwardRef<HTMLElement, Props>(function Accoun
             {canCopyAddress && (
               <ContextMenuItem onClick={copyAddress}>{t("Copy address")}</ContextMenuItem>
             )}
+            {account && <ViewOnBlockExplorerItem account={account} />}
             {canRename && (
               <ContextMenuItem onClick={openAccountRenameModal}>{t("Rename")}</ContextMenuItem>
             )}
