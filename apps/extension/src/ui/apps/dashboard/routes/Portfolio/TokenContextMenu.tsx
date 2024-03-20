@@ -36,8 +36,8 @@ const ViewOnCoingeckoMenuItem: FC<{ coingeckoId: string }> = ({ coingeckoId }) =
   const { genericEvent } = useAnalytics()
 
   const handleClick = useCallback(() => {
-    genericEvent("open view on coingecko", { from: "token menu" })
     window.open(urlJoin("https://coingecko.com/en/coins/", coingeckoId), "_blank")
+    genericEvent("open view on coingecko", { from: "token menu" })
   }, [coingeckoId, genericEvent])
 
   if (!coingeckoId) return null

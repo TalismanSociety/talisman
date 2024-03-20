@@ -35,6 +35,7 @@ import { TokenTypePill } from "@ui/domains/Asset/TokenTypePill"
 import useAccounts from "@ui/hooks/useAccounts"
 import { useActiveEvmNetworksState } from "@ui/hooks/useActiveEvmNetworksState"
 import { useActiveTokensState } from "@ui/hooks/useActiveTokensState"
+import { useAnalytics } from "@ui/hooks/useAnalytics"
 import { useAnalyticsPageView } from "@ui/hooks/useAnalyticsPageView"
 import { useAppState } from "@ui/hooks/useAppState"
 import { useEvmNetwork } from "@ui/hooks/useEvmNetwork"
@@ -127,6 +128,7 @@ const AssetRowContent: FC<{ tokenId: TokenId; assets: DiscoveredBalance[] }> = (
   assets,
 }) => {
   const { t } = useTranslation("admin")
+  const { genericEvent } = useAnalytics()
   const token = useToken(tokenId)
   const evmNetwork = useEvmNetwork(token?.evmNetwork?.id)
   const tokenRates = useAssetDiscoveryTokenRate(token?.id)
@@ -179,6 +181,18 @@ const AssetRowContent: FC<{ tokenId: TokenId; assets: DiscoveredBalance[] }> = (
   const navigate = useNavigate()
   const blockExplorerUrl = useBlockExplorerUrl(token)
   const coingeckoUrl = useCoingeckoUrl(token)
+
+  const handleViewOnExplorerClick = useCallback(() => {
+    if (!blockExplorerUrl) return
+    window.open(blockExplorerUrl, "_blank")
+    genericEvent("open view on explorer", { from: "asset discovery" })
+  }, [blockExplorerUrl, genericEvent])
+
+  const handleViewOnCoingeckoClick = useCallback(() => {
+    if (!coingeckoUrl) return
+    window.open(coingeckoUrl, "_blank")
+    genericEvent("open view on coingecko", { from: "asset discovery" })
+  }, [coingeckoUrl, genericEvent])
 
   if (!token || !evmNetwork) return null
 
@@ -246,12 +260,12 @@ const AssetRowContent: FC<{ tokenId: TokenId; assets: DiscoveredBalance[] }> = (
                 </ContextMenuItem>
               )}
               {!!blockExplorerUrl && (
-                <ContextMenuItem onClick={() => window.open(blockExplorerUrl, "_blank")}>
+                <ContextMenuItem onClick={handleViewOnExplorerClick}>
                   {t("View on block explorer")}
                 </ContextMenuItem>
               )}
               {coingeckoUrl && (
-                <ContextMenuItem onClick={() => window.open(coingeckoUrl, "_blank")}>
+                <ContextMenuItem onClick={handleViewOnCoingeckoClick}>
                   {t("View on Coingecko")}
                 </ContextMenuItem>
               )}
