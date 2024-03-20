@@ -16,6 +16,7 @@ import { ContactCreateModal } from "@ui/domains/Settings/AddressBook/ContactCrea
 import { ContactDeleteModal } from "@ui/domains/Settings/AddressBook/ContactDeleteModal"
 import { ContactEditModal } from "@ui/domains/Settings/AddressBook/ContactEditModal"
 import { ExistingContactComponentProps } from "@ui/domains/Settings/AddressBook/types"
+import { useViewOnExplorer } from "@ui/domains/ViewOnExplorer"
 import { useAddressBook } from "@ui/hooks/useAddressBook"
 import { useAnalytics } from "@ui/hooks/useAnalytics"
 import { useAnalyticsPageView } from "@ui/hooks/useAnalyticsPageView"
@@ -84,6 +85,7 @@ const AddressBookContactItem = ({ contact, handleDelete, handleEdit }: ContactIt
     undefined,
     contact.address
   )
+  const { open: viewOnExplorer } = useViewOnExplorer(contact.address)
 
   const handleCopyClick = useCallback(() => {
     openCopyAddressModal({
@@ -141,6 +143,7 @@ const AddressBookContactItem = ({ contact, handleDelete, handleEdit }: ContactIt
               </Tooltip>
             </ContextMenuItem>
             <ContextMenuItem onClick={handleCopyClick}>{t("Copy address")}</ContextMenuItem>
+            <ContextMenuItem onClick={viewOnExplorer}>{t("View on explorer")}</ContextMenuItem>
             <ContextMenuItem onClick={() => handleDelete(contact.address)}>
               {t("Delete contact")}
             </ContextMenuItem>

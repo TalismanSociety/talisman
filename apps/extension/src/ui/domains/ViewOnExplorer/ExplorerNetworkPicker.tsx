@@ -1,12 +1,15 @@
 import { ScrollContainer } from "@talisman/components/ScrollContainer"
 import { SearchInput } from "@talisman/components/SearchInput"
 import { ExternalLinkIcon, XIcon } from "@talismn/icons"
+import { isEthereumAddress } from "@talismn/util"
 import { useAccountByAddress } from "@ui/hooks/useAccountByAddress"
 import useBalancesByAddress from "@ui/hooks/useBalancesByAddress"
 import { useBalancesFiatTotalPerNetwork } from "@ui/hooks/useBalancesFiatTotalPerNetwork"
 import useChains from "@ui/hooks/useChains"
 import { useEvmNetworks } from "@ui/hooks/useEvmNetworks"
+import { useSetting } from "@ui/hooks/useSettings"
 import { isAccountCompatibleWithChain } from "@ui/util/isAccountCompatibleWithChain"
+import { isAddressCompatibleWithChain } from "@ui/util/isAddressCompatibleWithChain"
 import { FC, useCallback, useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
 import { IconButton } from "talisman-ui"
@@ -23,36 +26,38 @@ type NetworkWithExplorer = {
 
 const useExplorerNetworks = (address: string, search: string): NetworkWithExplorer[] => {
   const account = useAccountByAddress(address)
-  const { chains } = useChains({ activeOnly: true, includeTestnets: true })
-  const { evmNetworks } = useEvmNetworks({ activeOnly: true, includeTestnets: true })
+  const [includeTestnets] = useSetting("useTestnets")
+  const { chains } = useChains({ activeOnly: true, includeTestnets })
+  const { evmNetworks } = useEvmNetworks({ activeOnly: true, includeTestnets })
   const balances = useBalancesByAddress(address)
   const balancesPerNetwork = useBalancesFiatTotalPerNetwork(balances)
 
   const compatibleChains = useMemo<NetworkWithExplorer[]>(
     () =>
-      account
-        ? chains
-            .filter(
-              (chain) =>
-                !!chain.subscanUrl &&
-                !!chain.name &&
-                isAccountCompatibleWithChain(chain, account.type ?? "sr25519", account.genesisHash)
-            )
-            .map(
-              (chain): NetworkWithExplorer => ({
-                id: chain.id,
-                type: "substrate",
-                name: chain.name!,
-                explorerUrl: chain.subscanUrl!,
-              })
-            )
-        : [],
-    [account, chains]
+      chains
+        .filter(
+          (chain) =>
+            !!chain.subscanUrl &&
+            !!chain.name &&
+            // account is undefined for contacts
+            (account
+              ? isAccountCompatibleWithChain(chain, account.type ?? "sr25519", account.genesisHash)
+              : isAddressCompatibleWithChain(chain, address))
+        )
+        .map(
+          (chain): NetworkWithExplorer => ({
+            id: chain.id,
+            type: "substrate",
+            name: chain.name!,
+            explorerUrl: chain.subscanUrl!,
+          })
+        ),
+    [account, address, chains]
   )
 
   const compatibleEvmNetworks = useMemo<NetworkWithExplorer[]>(
     () =>
-      account?.type === "ethereum"
+      isEthereumAddress(address)
         ? evmNetworks
             .filter((network) => !!network.name && !!network.explorerUrl)
             .map(
@@ -64,7 +69,7 @@ const useExplorerNetworks = (address: string, search: string): NetworkWithExplor
               })
             )
         : [],
-    [account?.type, evmNetworks]
+    [address, evmNetworks]
   )
 
   const sortedNetworks = useMemo(

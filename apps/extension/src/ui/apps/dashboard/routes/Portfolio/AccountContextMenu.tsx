@@ -22,7 +22,7 @@ import {
   PopoverOptions,
 } from "talisman-ui"
 
-const ViewOnBlockExplorerItem: FC<{ account: AccountJsonAny }> = ({ account }) => {
+const ViewOnExplorerMenuItem: FC<{ account: AccountJsonAny }> = ({ account }) => {
   const { t } = useTranslation()
   const { open, canOpen } = useViewOnExplorer(account.address, account?.genesisHash ?? undefined)
 
@@ -134,7 +134,7 @@ export const AccountContextMenu = forwardRef<HTMLElement, Props>(function Accoun
             {canCopyAddress && (
               <ContextMenuItem onClick={copyAddress}>{t("Copy address")}</ContextMenuItem>
             )}
-            {account && <ViewOnBlockExplorerItem account={account} />}
+            {account && <ViewOnExplorerMenuItem account={account} />}
             {canRename && (
               <ContextMenuItem onClick={openAccountRenameModal}>{t("Rename")}</ContextMenuItem>
             )}
