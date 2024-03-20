@@ -121,7 +121,7 @@ export const ExplorerNetworkPicker: FC<{ address: string; onClose: () => void }>
   const handleNetworkClick = useCallback(
     (network: NetworkWithExplorer) => () => {
       window.open(urlJoin(network.explorerUrl, "address", address), "_blank")
-      onClose
+      onClose()
     },
     [address, onClose]
   )
