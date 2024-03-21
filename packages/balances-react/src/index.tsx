@@ -22,6 +22,7 @@ import {
   coingeckoConfigAtom,
   enableTestnetsAtom,
   enabledChainsAtom,
+  enabledTokensAtom,
   onfinalityApiKeyAtom,
 } from "./atoms/config"
 
@@ -70,6 +71,28 @@ export type BalancesConfig = {
    */
   enabledChains?: string[]
 
+  /**
+   * A list of token ids to fetch balances for.
+   *
+   * If undefined, balances will be fetched for all tokens.
+   *
+   * If `enabledChains` is also defined, both filters will be applied,
+   * such that only the intersection of enabledChains and enabledTokens will be fetched.
+   *
+   * @example
+   * enabledTokens={[
+   *   // DOT (polkadot relay chain)
+   *   "polkadot-substrate-native",
+   *   // USDC (polkadot asset hub)
+   *   "polkadot-asset-hub-substrate-assets-1337-usdc",
+   *   // ETH (ethereum mainnet)
+   *   "1-evm-native",
+   *   // GM (gm chain)
+   *   "gm-substrate-tokens-gm",
+   * ]}
+   */
+  enabledTokens?: string[]
+
   children?: ReactNode
 }
 
@@ -83,6 +106,7 @@ export const BalancesProvider = ({
 
   withTestnets,
   enabledChains,
+  enabledTokens,
 
   children,
 }: BalancesConfig) => {
@@ -114,6 +138,11 @@ export const BalancesProvider = ({
   useEffect(() => {
     setEnabledChains(enabledChains)
   }, [enabledChains, setEnabledChains])
+
+  const setEnabledTokens = useSetAtom(enabledTokensAtom)
+  useEffect(() => {
+    setEnabledTokens(enabledTokens)
+  }, [enabledTokens, setEnabledTokens])
 
   return <>{children}</>
 }
