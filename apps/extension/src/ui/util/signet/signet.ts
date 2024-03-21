@@ -16,7 +16,10 @@ export const signet = {
 
       const intervalId = setInterval(() => {
         try {
-          if (newTab.closed) reject("Canceled")
+          if (newTab.closed) {
+            clearInterval(intervalId)
+            reject("Canceled")
+          }
         } catch (e) {
           // FireFox blocks access to newTab and throws an error
           clearInterval(intervalId)
