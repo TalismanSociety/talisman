@@ -22,7 +22,7 @@ export const signet = {
           clearInterval(intervalId)
           reject("Blocked by browser")
         }
-      }, 2000)
+      }, 500)
 
       const url = new URL(signetUrl)
       const handleNewMessage = (event: MessageEvent) => {
