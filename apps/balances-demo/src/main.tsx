@@ -29,9 +29,13 @@ const Root = () => {
         //   "0xe143f23803ac50e8f6f8e62695d1ce9e4e1d68aa36c1cd2cfd15340213f3423e",
         // ]}
         // enabledTokens={[
+        //   // DOT (polkadot relay chain)
         //   "polkadot-substrate-native",
+        //   // USDC (polkadot asset hub)
         //   "polkadot-asset-hub-substrate-assets-1337-usdc",
+        //   // ETH (ethereum mainnet)
         //   "1-evm-native",
+        //   // GM (gm chain)
         //   "gm-substrate-tokens-gm",
         // ]}
       >
