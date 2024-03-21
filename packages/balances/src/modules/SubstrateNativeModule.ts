@@ -242,7 +242,10 @@ export const SubNativeModule: NewBalanceModule<
       const isAccountItem = (item: StorageEntryMV14) => item.name === "Account"
 
       const isBalancesPallet = (pallet: PalletMV14) => pallet.name === "Balances"
+      const isReservesItem = (item: StorageEntryMV14) => item.name === "Reserves"
+      const isHoldsItem = (item: StorageEntryMV14) => item.name === "Holds"
       const isLocksItem = (item: StorageEntryMV14) => item.name === "Locks"
+      const isFreezesItem = (item: StorageEntryMV14) => item.name === "Freezes"
 
       const isNomPoolsPallet = (pallet: PalletMV14) => pallet.name === "NominationPools"
       const isPoolMembersItem = (item: StorageEntryMV14) => item.name === "PoolMembers"
@@ -258,10 +261,25 @@ export const SubNativeModule: NewBalanceModule<
       const isParasPallet = (pallet: PalletMV14) => pallet.name === "Paras"
       const isParachainsItem = (item: StorageEntryMV14) => item.name === "Parachains"
 
+      const tId = {
+        "polkadot": 525,
+        "polimec": 330,
+        "robonomics-kusama": 224,
+      }[chainId]
+      if (tId)
+        console.log(
+          chainId,
+          "missing type",
+          metadata.tys.find((t) => t.id === tId)
+        )
+
       // TODO: Handle metadata v15
       filterMetadataPalletsAndItems(metadata, [
         { pallet: isSystemPallet, items: [isAccountItem] },
-        { pallet: isBalancesPallet, items: [isLocksItem] },
+        {
+          pallet: isBalancesPallet,
+          items: [isReservesItem, isHoldsItem, isLocksItem, isFreezesItem],
+        },
         {
           pallet: isNomPoolsPallet,
           items: [isPoolMembersItem, isBondedPoolsItem, isMetadataItem],
@@ -271,6 +289,8 @@ export const SubNativeModule: NewBalanceModule<
         { pallet: isParasPallet, items: [isParachainsItem] },
       ])
       metadata.extrinsic.signedExtensions = []
+
+      if (tId) console.log("remaining metadata", metadata)
 
       const miniMetadata = $.encodeHexPrefixed($metadataV14.encode(metadata)) as `0x${string}`
 
@@ -488,7 +508,13 @@ async function buildQueries(
     chains,
     miniMetadatas,
     moduleType: "substrate-native",
-    decoders: { baseDecoder: ["system", "account"], locksDecoder: ["balances", "locks"] },
+    decoders: {
+      baseDecoder: ["system", "account"],
+      reservesDecoder: ["balances", "reserves"],
+      holdsDecoder: ["balances", "holds"],
+      locksDecoder: ["balances", "locks"],
+      freezesDecoder: ["balances", "freezes"],
+    },
   })
 
   return Object.entries(addressesByToken).flatMap(([tokenId, addresses]) => {
@@ -631,7 +657,12 @@ async function buildQueries(
 
           let free = (bigIntOrCodecToBigInt(decoded?.data?.free) ?? 0n).toString()
           let reserved = (bigIntOrCodecToBigInt(decoded?.data?.reserved) ?? 0n).toString()
-          let miscFrozen = (bigIntOrCodecToBigInt(decoded?.data?.miscFrozen) ?? 0n).toString()
+          let miscFrozen = (
+            (bigIntOrCodecToBigInt(decoded?.data?.miscFrozen) ?? 0n) +
+            // some chains don't split their `frozen` amount into `feeFrozen` and `miscFrozen`.
+            // for those chains, we'll use the `frozen` amount as `miscFrozen`.
+            (bigIntOrCodecToBigInt(decoded?.data?.frozen) ?? 0n)
+          ).toString()
           let feeFrozen = (bigIntOrCodecToBigInt(decoded?.data?.feeFrozen) ?? 0n).toString()
 
           // we use the evm-native module to fetch native token balances for ethereum addresses on ethereum networks
@@ -685,7 +716,41 @@ async function buildQueries(
         return { chainId, stateKey, decodeResult }
       })()
 
-      const queries: Array<RpcStateQuery<Balance>> = [baseQuery, locksQuery].filter(
+      const freezesQuery: RpcStateQuery<Balance> | undefined = (() => {
+        const storageHelper = new StorageHelper(
+          typeRegistry,
+          "balances",
+          "freezes",
+          decodeAnyAddress(address)
+        )
+        const storageDecoder = chainStorageDecoders.get(chainId)?.freezesDecoder
+        const stateKey = storageHelper.stateKey
+        if (!stateKey) return
+        const decodeResult = (change: string | null) => {
+          if (change === null) return new Balance(balanceJson)
+
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          const decoded: any =
+            storageDecoder && change !== null ? storageDecoder.decode($.decodeHex(change)) : null
+
+          console.log(chainId, "freezes decoded", decoded)
+
+          // balanceJson.locks = [
+          //   ...balanceJson.locks.slice(0, 2),
+          //   // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          //   ...(decoded?.map?.((lock: any) => ({
+          //     label: getLockedType(lock?.id?.toUtf8?.()),
+          //     amount: lock?.amount?.toString?.() ?? "0",
+          //   })) ?? []),
+          // ] as SubNativeBalance["locks"]
+
+          return new Balance(balanceJson)
+        }
+
+        return { chainId, stateKey, decodeResult }
+      })()
+
+      const queries: Array<RpcStateQuery<Balance>> = [baseQuery, locksQuery, freezesQuery].filter(
         (query): query is RpcStateQuery<Balance> => Boolean(query)
       )
 

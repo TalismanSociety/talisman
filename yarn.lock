@@ -8337,6 +8337,8 @@ __metadata:
     typescript: ^5.2.2
   peerDependencies:
     "@polkadot/util-crypto": 12.x
+    jotai: "*"
+    jotai-effect: "*"
     react: "*"
     react-dom: "*"
   languageName: unknown

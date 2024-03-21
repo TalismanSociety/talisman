@@ -426,14 +426,52 @@ export class Balance {
   }
   /** The transferable balance of this token. Is generally the free amount - the miscFrozen amount. */
   get transferable() {
-    // if no locks exist, transferable is equal to the free amount
-    if (!this.#storage.locks) return this.free
+    /**
+     * As you can see here, `locked` is subtracted from `free` in order to derive `transferable`.
+     *
+     * |--------------------------total--------------------------|
+     * |-------------------free-------------------|---reserved---|
+     * |----locked-----|-------transferable-------|
+     */
+    const oldTransferableCalculation = () => {
+      // if no locks exist, transferable is equal to the free amount
+      if (!this.#storage.locks) return this.free
 
-    // find the largest lock (but ignore any locks which are marked as `includeInTransferable`)
-    const excludeAmount = excludeFromTransferableAmount(this.#storage.locks)
+      // find the largest lock (but ignore any locks which are marked as `includeInTransferable`)
+      const excludeAmount = excludeFromTransferableAmount(this.#storage.locks)
 
-    // subtract the lock from the free amount (but don't go below 0)
-    return this.#format(BigMath.max(this.free.planck - excludeAmount, 0n))
+      // subtract the lock from the free amount (but don't go below 0)
+      return this.#format(BigMath.max(this.free.planck - excludeAmount, 0n))
+    }
+
+    /**
+     * As you can see here, `locked` is subtracted from `free + reserved` in order to derive `transferable`.
+     *
+     * Alternatively, `reserved` is subtracted from `locked` in order to derive `untouchable`,
+     * which is then subtracted from `free` in order to derive `transferable`.
+     *
+     * |--------------------------total--------------------------|
+     * |---reserved---|-------------------free-------------------|
+     *                |--untouchable--|
+     * |------------locked------------|-------transferable-------|
+     */
+    const newTransferableCalculation = () => {
+      // if no locks exist, transferable is equal to the free amount
+      if (!this.#storage.locks) return this.free
+
+      // find the largest lock (but ignore any locks which are marked as `includeInTransferable`)
+      // subtract the reserved amount, because locks now act upon the total balance - not just the free balance
+      const untouchableAmount = BigMath.max(
+        excludeFromTransferableAmount(this.#storage.locks) - this.reserved.planck,
+        0n
+      )
+
+      // subtract the untouchable amount from the free amount (but don't go below 0)
+      return this.#format(BigMath.max(this.free.planck - untouchableAmount, 0n))
+    }
+
+    if (this.#storage.useLegacyTransferableCalculation) return oldTransferableCalculation()
+    return newTransferableCalculation()
   }
   /** The feePayable balance of this token. Is generally the free amount - the feeFrozen amount. */
   get feePayable() {
