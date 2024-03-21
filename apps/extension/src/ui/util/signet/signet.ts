@@ -15,8 +15,14 @@ export const signet = {
       if (!newTab) return reject("Failed to open new tab")
 
       const intervalId = setInterval(() => {
-        if (newTab.closed) reject("Canceled")
-      }, 500)
+        try {
+          if (newTab.closed) reject("Canceled")
+        } catch (e) {
+          // FireFox blocks access to newTab and throws an error
+          clearInterval(intervalId)
+          reject("Blocked by browser")
+        }
+      }, 2000)
 
       const url = new URL(signetUrl)
       const handleNewMessage = (event: MessageEvent) => {
