@@ -1010,6 +1010,7 @@ export async function subscribeNompoolStaking(
       ]) => {
         const balances: SubNativeBalance[] = Array.from(poolIdByAddress).map(
           ([address, poolId]) => {
+            const parsedPoolId = poolId === null ? undefined : parseInt(poolId)
             const points = pointsByAddress.get(address) ?? "0"
             const poolPoints = pointsByPool.get(poolId ?? "") ?? "0"
             const poolStake = stakeByPool.get(poolId ?? "") ?? "0"
@@ -1038,12 +1039,17 @@ export async function subscribeNompoolStaking(
                 {
                   label: "nompools-staking",
                   amount,
-                  meta: { type: "nompool", description: poolMetadata },
+                  meta: { type: "nompool", poolId: parsedPoolId, description: poolMetadata },
                 },
                 {
                   label: "nompools-unbonding",
                   amount: unbondingAmount,
-                  meta: { type: "nompool", description: poolMetadata, unbonding: true },
+                  meta: {
+                    type: "nompool",
+                    poolId: parsedPoolId,
+                    description: poolMetadata,
+                    unbonding: true,
+                  },
                 },
               ],
               locks: [
