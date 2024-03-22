@@ -35,6 +35,8 @@ export class RemoteConfigStore extends StorageProvider<RemoteConfigStoreData> {
             config.coingecko.apiKeyName = process.env.COINGECKO_API_KEY_NAME
           if (process.env.COINGECKO_API_KEY_VALUE)
             config.coingecko.apiKeyValue = process.env.COINGECKO_API_KEY_VALUE
+
+          config.featureFlags.ALIEN_RUNES = true
         }
 
         // first arg is an empty object so that DEFAULT_REMOTE_CONFIG is not mutated

@@ -125,6 +125,7 @@
     "ts-results": "3.3.0",
     "typescript": "^5.2.2",
     "url-join": "^5.0.0",
+    "use-scramble": "2.2.15",
     "viem": "^1.21.4",
     "webextension-polyfill": "0.8.0",
     "webpack": "^5.89.0",

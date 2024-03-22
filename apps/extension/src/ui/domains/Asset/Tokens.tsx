@@ -1,5 +1,7 @@
+import { AlienRunes } from "@talisman/components/AlienRunes"
 import { classNames } from "@talismn/util"
 import { MAX_DECIMALS_FORMAT, formatDecimals } from "@talismn/util"
+import { useIsFeatureEnabled } from "@ui/hooks/useIsFeatureEnabled"
 import { useRevealableBalance } from "@ui/hooks/useRevealableBalance"
 import BigNumber from "bignumber.js"
 import React, { FC, useMemo } from "react"
@@ -11,36 +13,28 @@ type TokensProps = {
   symbol?: string | null
   decimals?: number | null
   className?: string
-  as?: "span" | "div"
   noTooltip?: boolean
   noCountUp?: boolean
   isBalance?: boolean
+  runesLength?: number
 }
 
 type DisplayValueProps = {
-  amount: string | number | BigNumber
+  num: number
+  formatted: string
   symbol?: string | null
   noCountUp?: boolean
 }
 
 // Memoize to smooth up the count up animation
-const DisplayValue: FC<DisplayValueProps> = React.memo(({ amount, symbol, noCountUp }) => {
-  const num = useMemo(
-    () => (BigNumber.isBigNumber(amount) ? amount.toNumber() : Number(amount)),
-    [amount]
-  )
-
-  const formated = useMemo(() => formatDecimals(num), [num])
-
-  if (isNaN(num)) return null
-
-  if (noCountUp || formated.startsWith("<")) return <>{`${formated} ${symbol ?? ""}`.trim()}</>
+const DisplayValue: FC<DisplayValueProps> = React.memo(({ num, formatted, symbol, noCountUp }) => {
+  if (noCountUp || formatted.startsWith("<")) return <>{`${formatted} ${symbol ?? ""}`.trim()}</>
 
   return (
     <>
       <CountUp
         end={num}
-        decimals={num >= 1000 ? 0 : formated.split(".")[1]?.length ?? 0} // define the decimals based on the formatted number
+        decimals={num >= 1000 ? 0 : formatted.split(".")[1]?.length ?? 0} // define the decimals based on the formatted number
         decimal="."
         separator=","
         duration={0.4}
@@ -54,33 +48,23 @@ const DisplayValue: FC<DisplayValueProps> = React.memo(({ amount, symbol, noCoun
 })
 DisplayValue.displayName = "DisplayValue"
 
-export const Tokens: FC<TokensProps> = ({
-  amount,
-  symbol,
-  decimals,
-  className,
-  as: Component = "span",
-  noTooltip,
-  noCountUp,
-  isBalance = false,
-}) => {
-  const { refReveal, isRevealable, isRevealed, isHidden, effectiveNoCountUp } =
-    useRevealableBalance(isBalance, noCountUp)
-
-  const tooltip = useMemo(
-    () =>
-      noTooltip
-        ? null
-        : `${formatDecimals(amount, decimals ?? MAX_DECIMALS_FORMAT, { notation: "standard" })} ${
-            symbol ?? ""
-          }`.trim(),
-    [amount, decimals, noTooltip, symbol]
+// TODO delete at some point
+const LegacyTokens: FC<{
+  value: number
+  tooltip: string | null
+  formatted: string
+  symbol?: string | null
+  isBalance?: boolean
+  noCountUp?: boolean
+  className?: string
+}> = ({ formatted, symbol, value, tooltip, isBalance, noCountUp, className }) => {
+  const { refReveal, isRevealable, isRevealed, effectiveNoCountUp } = useRevealableBalance(
+    isBalance,
+    noCountUp
   )
 
-  const render = amount !== null && amount !== undefined
-
   return (
-    <Component
+    <span
       ref={refReveal}
       className={classNames(
         "tokens",
@@ -89,21 +73,103 @@ export const Tokens: FC<TokensProps> = ({
         className
       )}
     >
-      {render && (
-        <Tooltip placement="bottom-end">
-          <TooltipTrigger asChild>
-            <span>
-              <DisplayValue
-                amount={isHidden ? 0 : amount}
-                symbol={symbol}
-                noCountUp={effectiveNoCountUp}
-              />
-            </span>
-          </TooltipTrigger>
-          {tooltip && <TooltipContent>{tooltip}</TooltipContent>}
-        </Tooltip>
-      )}
-    </Component>
+      <Tooltip placement="bottom-end">
+        <TooltipTrigger asChild>
+          <span>
+            <DisplayValue
+              num={value}
+              formatted={formatted}
+              symbol={symbol}
+              noCountUp={effectiveNoCountUp}
+            />
+          </span>
+        </TooltipTrigger>
+        {tooltip && <TooltipContent>{tooltip}</TooltipContent>}
+      </Tooltip>
+    </span>
+  )
+}
+
+const ModernTokens: FC<{
+  value: number
+  tooltip: string | null
+  formatted: string
+  symbol?: string | null
+  isBalance?: boolean
+  noCountUp?: boolean
+  className?: string
+  runesLength?: number
+}> = ({ formatted, symbol, value, tooltip, isBalance, noCountUp, className }) => {
+  const { isRevealed, effectiveNoCountUp } = useRevealableBalance(isBalance, noCountUp)
+
+  return (
+    <Tooltip placement="bottom-end">
+      <TooltipTrigger asChild>
+        {isRevealed ? (
+          <span className={classNames("tokens", className)}>
+            <DisplayValue
+              num={value}
+              formatted={formatted}
+              symbol={symbol}
+              noCountUp={effectiveNoCountUp}
+            />
+          </span>
+        ) : (
+          <AlienRunes
+            length={7}
+            className={classNames("tokens", className)}
+            scramble={!effectiveNoCountUp}
+          />
+        )}
+      </TooltipTrigger>
+      {tooltip && <TooltipContent>{tooltip}</TooltipContent>}
+    </Tooltip>
+  )
+}
+
+export const Tokens: FC<TokensProps> = ({
+  amount,
+  symbol,
+  decimals,
+  className,
+  noTooltip,
+  noCountUp,
+  isBalance = false,
+  runesLength = 7,
+}) => {
+  const withAlienRunes = useIsFeatureEnabled("ALIEN_RUNES")
+
+  const { num, formatted } = useMemo(() => {
+    const num = BigNumber.isBigNumber(amount) ? amount.toNumber() : Number(amount)
+    return isNaN(num) ? { num: null, formated: null } : { num, formatted: formatDecimals(num) }
+  }, [amount])
+
+  const tooltip = useMemo(
+    () =>
+      noTooltip
+        ? null
+        : `${formatDecimals(num, decimals ?? MAX_DECIMALS_FORMAT, { notation: "standard" })} ${
+            symbol ?? ""
+          }`.trim(),
+    [num, decimals, noTooltip, symbol]
+  )
+
+  if (!formatted) return null
+
+  // TODO FEATURE FLAG
+  const Component = withAlienRunes ? ModernTokens : LegacyTokens
+
+  return (
+    <Component
+      isBalance={isBalance}
+      formatted={formatted}
+      tooltip={tooltip}
+      value={num}
+      className={className}
+      noCountUp={noCountUp}
+      symbol={symbol}
+      runesLength={runesLength}
+    />
   )
 }
 
