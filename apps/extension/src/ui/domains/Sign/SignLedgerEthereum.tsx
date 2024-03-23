@@ -1,6 +1,6 @@
 import i18next from "@common/i18nConfig"
 import { bufferToHex, stripHexPrefix } from "@ethereumjs/util"
-import { AccountJsonHardwareEthereum } from "@extension/core"
+import { AccountJsonHardwareEthereum, getTransactionSerializable } from "@extension/core"
 import { EthSignMessageMethod } from "@extension/core"
 import { log } from "@extension/shared"
 import LedgerEthereumApp from "@ledgerhq/hw-app-eth"
@@ -14,7 +14,6 @@ import { Button } from "talisman-ui"
 import {
   Signature,
   TransactionRequest,
-  TransactionSerializable,
   hexToBigInt,
   isHex,
   serializeTransaction,
@@ -102,15 +101,9 @@ const signWithLedger = async (
     }
 
     case "eth_sendTransaction": {
+      // TODO EIP4844 support
       const txRequest = payload as TransactionRequest
-      const baseTx: TransactionSerializable = {
-        ...txRequest,
-        // viem's legacy serialization changes the chainId once deserialized, tx can't be submitted
-        // can be tested on BSC
-        type: txRequest.type === "legacy" ? "eip2930" : "eip1559",
-        chainId,
-      }
-
+      const baseTx = getTransactionSerializable(txRequest, chainId)
       const serialized = serializeTransaction(baseTx)
 
       const sig = await ledger.signTransaction(accountPath, stripHexPrefix(serialized), null)

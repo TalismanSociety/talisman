@@ -39,7 +39,7 @@
     "dexie": "^3.2.4",
     "lodash": "4.17.21",
     "rxjs": "^7.8.1",
-    "viem": "^1.21.4"
+    "viem": "^2.8.18"
   },
   "devDependencies": {
     "@polkadot/api-contract": "^10.9.1",

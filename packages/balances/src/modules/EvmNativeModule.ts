@@ -350,7 +350,9 @@ async function getFreeBalances(
       )
 
       // default to 0 for non evm addresses
-      return addresses.map((address) => ethBalanceResults[address] ?? 0n)
+      return addresses.map((address) =>
+        ethBalanceResults[address] ? BigInt(ethBalanceResults[address]) : 0n
+      )
     } catch (err) {
       const errorMessage = hasOwnProperty(err, "shortMessage")
         ? err.shortMessage
