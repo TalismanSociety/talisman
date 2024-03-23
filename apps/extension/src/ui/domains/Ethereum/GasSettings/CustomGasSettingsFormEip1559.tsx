@@ -30,24 +30,38 @@ const INPUT_PROPS = {
 }
 
 type FormData = {
-  maxBaseFee: number
-  maxPriorityFee: number
+  maxBaseFeeGwei: string
+  maxPriorityFeeGwei: string
   gasLimit: number
 }
 
 const gasSettingsFromFormData = (formData: FormData): EthGasSettingsEip1559 => ({
   type: "eip1559",
-  maxFeePerGas: BigInt(
-    Math.round((formData.maxBaseFee + formData.maxPriorityFee) * Math.pow(10, 9))
-  ),
-  maxPriorityFeePerGas: BigInt(Math.round(formData.maxPriorityFee * Math.pow(10, 9))),
+  maxFeePerGas: parseGwei(formData.maxBaseFeeGwei) + parseGwei(formData.maxPriorityFeeGwei),
+  maxPriorityFeePerGas: parseGwei(formData.maxPriorityFeeGwei),
   gas: BigInt(formData.gasLimit),
 })
 
+const isValidGweiInput =
+  (min: bigint = 0n) =>
+  (value?: string) => {
+    try {
+      return !!value && parseGwei(value) >= min
+    } catch (err) {
+      return false
+    }
+  }
+
 const schema = yup
   .object({
-    maxBaseFee: yup.number().required().moreThan(0),
-    maxPriorityFee: yup.number().required().min(0),
+    maxBaseFeeGwei: yup
+      .string()
+      .required()
+      .test("maxBaseFeeValid", "Invalid max base fee", isValidGweiInput(1n)),
+    maxPriorityFeeGwei: yup
+      .string()
+      .required()
+      .test("maxPriorityFeeValid", "Invalid max base fee", isValidGweiInput(0n)),
     gasLimit: yup.number().required().integer().min(21000),
   })
   .required()
@@ -55,13 +69,13 @@ const schema = yup
 const useIsValidGasSettings = (
   evmNetworkId: EvmNetworkId,
   tx: TransactionRequest,
-  maxBaseFee: number,
-  maxPriorityFee: number,
+  maxBaseFeeGwei: string,
+  maxPriorityFeeGwei: string,
   gasLimit: number
 ) => {
   const [debouncedFormData, setDebouncedFormData] = useState<FormData>({
-    maxBaseFee,
-    maxPriorityFee,
+    maxBaseFeeGwei,
+    maxPriorityFeeGwei,
     gasLimit,
   })
 
@@ -71,15 +85,19 @@ const useIsValidGasSettings = (
 
   useEffect(() => {
     setIsLoading(true)
-  }, [maxBaseFee, maxPriorityFee, gasLimit])
+  }, [maxBaseFeeGwei, maxPriorityFeeGwei, gasLimit])
 
   useDebounce(
     () => {
-      setDebouncedFormData({ maxBaseFee, maxPriorityFee, gasLimit })
+      setDebouncedFormData({
+        maxBaseFeeGwei,
+        maxPriorityFeeGwei,
+        gasLimit,
+      })
       setIsLoading(false)
     },
     250,
-    [maxBaseFee, maxPriorityFee, gasLimit]
+    [maxBaseFeeGwei, maxPriorityFeeGwei, gasLimit]
   )
 
   const publicClient = usePublicClient(evmNetworkId)
@@ -144,30 +162,20 @@ export const CustomGasSettingsFormEip1559: FC<CustomGasSettingsFormEip1559Props>
     [gasSettingsByPriority]
   )
 
-  const baseFee = useMemo(
+  const baseFeeDisplay = useMemo(
     () =>
       txDetails.baseFeePerGas
         ? formatDecimals(formatGwei(txDetails.baseFeePerGas), undefined, {
             notation: "standard",
           })
         : t("N/A"),
-    [t, txDetails.baseFeePerGas]
+    [t, txDetails]
   )
 
   const defaultValues: FormData = useMemo(
     () => ({
-      maxBaseFee: Number(
-        formatDecimals(
-          formatGwei(customSettings.maxFeePerGas - customSettings.maxPriorityFeePerGas),
-          undefined,
-          { notation: "standard" }
-        )
-      ),
-      maxPriorityFee: Number(
-        formatDecimals(formatGwei(customSettings.maxPriorityFeePerGas), undefined, {
-          notation: "standard",
-        })
-      ),
+      maxBaseFeeGwei: formatGwei(customSettings.maxFeePerGas - customSettings.maxPriorityFeePerGas),
+      maxPriorityFeeGwei: formatGwei(customSettings.maxPriorityFeePerGas),
       gasLimit: Number(customSettings.gas),
     }),
     [customSettings]
@@ -190,8 +198,11 @@ export const CustomGasSettingsFormEip1559: FC<CustomGasSettingsFormEip1559Props>
   const refInitialized = useRef(false)
   useEffect(() => {
     if (refInitialized.current || !defaultValues) return
-    setValue("maxBaseFee", defaultValues.maxBaseFee, { shouldTouch: true, shouldValidate: true })
-    setValue("maxPriorityFee", defaultValues.maxPriorityFee, {
+    setValue("maxBaseFeeGwei", defaultValues.maxBaseFeeGwei, {
+      shouldTouch: true,
+      shouldValidate: true,
+    })
+    setValue("maxPriorityFeeGwei", defaultValues.maxPriorityFeeGwei, {
       shouldTouch: true,
       shouldValidate: true,
     })
@@ -199,46 +210,51 @@ export const CustomGasSettingsFormEip1559: FC<CustomGasSettingsFormEip1559Props>
     refInitialized.current = true
   }, [defaultValues, setValue])
 
-  const { maxBaseFee, maxPriorityFee, gasLimit } = watch()
+  const { maxBaseFeeGwei, maxPriorityFeeGwei, gasLimit } = watch()
 
   const totalMaxFee = useMemo(() => {
     try {
-      return (parseGwei(String(maxBaseFee)) + parseGwei(String(maxPriorityFee))) * BigInt(gasLimit)
+      return (parseGwei(maxBaseFeeGwei) + parseGwei(maxPriorityFeeGwei)) * BigInt(gasLimit)
     } catch (err) {
       return null
     }
-  }, [gasLimit, maxBaseFee, maxPriorityFee])
+  }, [gasLimit, maxBaseFeeGwei, maxPriorityFeeGwei])
 
   const { warningFee, errorGasLimit } = useMemo(() => {
     let warningFee = ""
     let errorGasLimit = ""
 
-    if (errors.maxBaseFee) warningFee = t("Max Base Fee is invalid")
-    else if (errors.maxPriorityFee) warningFee = t("Max Priority Fee is invalid")
-    // if lower than lowest possible fee after 20 blocks
-    else if (
-      maxBaseFee &&
-      txDetails.baseFeePerGas &&
-      parseGwei(String(maxBaseFee)) < getMaxFeePerGas(txDetails.baseFeePerGas, 0n, 20, false)
-    )
-      warningFee = t("Max Base Fee seems too low for current network conditions")
-    // if higher than highest possible fee after 20 blocks
-    else if (
-      txDetails.baseFeePerGas &&
-      maxBaseFee &&
-      parseGwei(String(maxBaseFee)) > getMaxFeePerGas(txDetails.baseFeePerGas, 0n, 20)
-    )
-      warningFee = t("Max Base Fee seems higher than required")
-    else if (
-      maxPriorityFee &&
-      parseGwei(String(maxPriorityFee)) > 2n * highSettings.maxPriorityFeePerGas
-    )
-      warningFee = t("Max Priority Fee seems higher than required")
+    try {
+      if (errors.maxBaseFeeGwei) warningFee = t("Max Base Fee is invalid")
+      else if (errors.maxPriorityFeeGwei) warningFee = t("Max Priority Fee is invalid")
+      // if lower than lowest possible fee after 20 blocks
+      else if (
+        maxBaseFeeGwei &&
+        txDetails.baseFeePerGas &&
+        parseGwei(maxBaseFeeGwei) < getMaxFeePerGas(txDetails.baseFeePerGas, 0n, 20, false)
+      )
+        warningFee = t("Max Base Fee seems too low for current network conditions")
+      // if higher than highest possible fee after 20 blocks
+      else if (
+        txDetails.baseFeePerGas &&
+        maxBaseFeeGwei &&
+        parseGwei(maxBaseFeeGwei) > getMaxFeePerGas(txDetails.baseFeePerGas, 0n, 20)
+      )
+        warningFee = t("Max Base Fee seems higher than required")
+      else if (
+        maxPriorityFeeGwei &&
+        parseGwei(maxBaseFeeGwei) > 2n * highSettings.maxPriorityFeePerGas
+      )
+        warningFee = t("Max Priority Fee seems higher than required")
 
-    if (errors.gasLimit?.type === "min") errorGasLimit = t("Gas Limit minimum value is 21000")
-    else if (errors.gasLimit) errorGasLimit = t("Gas Limit is invalid")
-    else if (txDetails.estimatedGas > gasLimit)
-      errorGasLimit = t("Gas Limit too low, transaction likely to fail")
+      if (errors.gasLimit?.type === "min") errorGasLimit = t("Gas Limit minimum value is 21000")
+      else if (errors.gasLimit) errorGasLimit = t("Gas Limit is invalid")
+      else if (txDetails.estimatedGas > gasLimit)
+        errorGasLimit = t("Gas Limit too low, transaction likely to fail")
+    } catch (err) {
+      // parse error : form will be invalid, ignore
+      log.error("Failed set warningFee & errorGasLimit", { err })
+    }
 
     return {
       warningFee,
@@ -246,12 +262,12 @@ export const CustomGasSettingsFormEip1559: FC<CustomGasSettingsFormEip1559Props>
     }
   }, [
     errors.gasLimit,
-    errors.maxBaseFee,
-    errors.maxPriorityFee,
+    errors.maxBaseFeeGwei,
+    errors.maxPriorityFeeGwei,
     gasLimit,
     highSettings?.maxPriorityFeePerGas,
-    maxBaseFee,
-    maxPriorityFee,
+    maxBaseFeeGwei,
+    maxPriorityFeeGwei,
     txDetails.baseFeePerGas,
     txDetails.estimatedGas,
     t,
@@ -280,7 +296,13 @@ export const CustomGasSettingsFormEip1559: FC<CustomGasSettingsFormEip1559Props>
     isValid: isGasSettingsValid,
     isLoading: isLoadingGasSettingsValid,
     error: gasSettingsError,
-  } = useIsValidGasSettings(txDetails.evmNetworkId, tx, maxBaseFee, maxPriorityFee, gasLimit)
+  } = useIsValidGasSettings(
+    txDetails.evmNetworkId,
+    tx,
+    maxBaseFeeGwei,
+    maxPriorityFeeGwei,
+    gasLimit
+  )
 
   const showMaxFeeTotal = isFormValid && isGasSettingsValid && !isLoadingGasSettingsValid
 
@@ -312,7 +334,7 @@ export const CustomGasSettingsFormEip1559: FC<CustomGasSettingsFormEip1559Props>
       </div>
       <div className="grid grid-cols-2 gap-8 gap-y-14">
         <Indicator label="Base Fee">
-          {t("{{baseFee}} GWEI", { baseFee })}{" "}
+          {t("{{baseFee}} GWEI", { baseFee: baseFeeDisplay })}{" "}
           <WithTooltip
             className="inline-flex h-[1.5rem] flex-col justify-center align-text-top"
             tooltip={t("The base fee is set by the network and changes depending on network usage")}
@@ -334,12 +356,11 @@ export const CustomGasSettingsFormEip1559: FC<CustomGasSettingsFormEip1559Props>
             </span>
           }
         >
+          {/* TODO implement controler for number format with 9 digits maximum https://stackoverflow.com/questions/69370034/how-to-input-only-number-in-react-hook-form */}
           <FormFieldInputText
             after={<span className="text-body-disabled text-sm">{t("GWEI")}</span>}
             containerProps={INPUT_PROPS}
-            {...register("maxBaseFee", {
-              valueAsNumber: true,
-            })}
+            {...register("maxBaseFeeGwei")}
           />
         </FormFieldContainer>
         <FormFieldContainer
@@ -357,12 +378,11 @@ export const CustomGasSettingsFormEip1559: FC<CustomGasSettingsFormEip1559Props>
             </span>
           }
         >
+          {/* TODO implement controler for number format with 9 digits maximum https://stackoverflow.com/questions/69370034/how-to-input-only-number-in-react-hook-form */}
           <FormFieldInputText
             after={<span className="text-body-disabled text-sm">{t("GWEI")}</span>}
             containerProps={INPUT_PROPS}
-            {...register("maxPriorityFee", {
-              valueAsNumber: true,
-            })}
+            {...register("maxPriorityFeeGwei")}
           />
         </FormFieldContainer>
       </div>

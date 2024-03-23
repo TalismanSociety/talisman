@@ -27,19 +27,32 @@ const INPUT_PROPS = {
 }
 
 type FormData = {
-  gasPrice: number
+  gasPriceGwei: string
   gasLimit: number
 }
 
 const gasSettingsFromFormData = (formData: FormData): EthGasSettingsLegacy => ({
   type: "legacy",
-  gasPrice: BigInt(Math.round(formData.gasPrice * Math.pow(10, 9))),
+  gasPrice: parseGwei(formData.gasPriceGwei),
   gas: BigInt(formData.gasLimit),
 })
 
+const isValidGweiInput =
+  (min: bigint = 0n) =>
+  (value?: string) => {
+    try {
+      return !!value && parseGwei(value) >= min
+    } catch (err) {
+      return false
+    }
+  }
+
 const schema = yup
   .object({
-    gasPrice: yup.number().required().min(0), // 0 is sometimes necessary (ex: claiming bridged assets on polygon zkEVM)
+    gasPriceGwei: yup
+      .string()
+      .required()
+      .test("gasPriceValid", "Invalid max base fee", isValidGweiInput(0n)), // 0 is sometimes necessary (ex: claiming bridged assets on polygon zkEVM)
     gasLimit: yup.number().required().integer().min(21000),
   })
   .required()
@@ -47,11 +60,11 @@ const schema = yup
 const useIsValidGasSettings = (
   evmNetworkId: EvmNetworkId,
   tx: TransactionRequest,
-  gasPrice: number,
+  gasPriceGwei: string,
   gasLimit: number
 ) => {
   const [debouncedFormData, setDebouncedFormData] = useState<FormData>({
-    gasPrice,
+    gasPriceGwei,
     gasLimit,
   })
 
@@ -61,15 +74,15 @@ const useIsValidGasSettings = (
 
   useEffect(() => {
     setIsLoading(true)
-  }, [gasPrice, gasLimit])
+  }, [gasPriceGwei, gasLimit])
 
   useDebounce(
     () => {
-      setDebouncedFormData({ gasPrice, gasLimit })
+      setDebouncedFormData({ gasPriceGwei, gasLimit })
       setIsLoading(false)
     },
     250,
-    [gasPrice, gasLimit]
+    [gasPriceGwei, gasLimit]
   )
 
   const provider = usePublicClient(evmNetworkId)
@@ -140,11 +153,7 @@ export const CustomGasSettingsFormLegacy: FC<CustomGasSettingsFormLegacyProps> =
 
   const defaultValues: FormData = useMemo(
     () => ({
-      gasPrice: Number(
-        formatDecimals(formatGwei(customSettings.gasPrice), undefined, {
-          notation: "standard",
-        })
-      ),
+      gasPriceGwei: formatGwei(customSettings.gasPrice),
       gasLimit: Number(customSettings.gas),
     }),
     [customSettings.gas, customSettings.gasPrice]
@@ -167,35 +176,43 @@ export const CustomGasSettingsFormLegacy: FC<CustomGasSettingsFormLegacyProps> =
   const refInitialized = useRef(false)
   useEffect(() => {
     if (refInitialized.current || !defaultValues) return
-    setValue("gasPrice", defaultValues.gasPrice, { shouldTouch: true, shouldValidate: true })
+    setValue("gasPriceGwei", defaultValues.gasPriceGwei, {
+      shouldTouch: true,
+      shouldValidate: true,
+    })
     setValue("gasLimit", defaultValues.gasLimit, { shouldTouch: true, shouldValidate: true })
     refInitialized.current = true
   }, [defaultValues, setValue])
 
-  const { gasPrice, gasLimit } = watch()
+  const { gasPriceGwei, gasLimit } = watch()
 
   const totalMaxFee = useMemo(() => {
     try {
-      return parseGwei(String(gasPrice)) * BigInt(gasLimit)
+      return parseGwei(gasPriceGwei) * BigInt(gasLimit)
     } catch (err) {
       return null
     }
-  }, [gasLimit, gasPrice])
+  }, [gasLimit, gasPriceGwei])
 
   const { warningFee, errorGasLimit } = useMemo(() => {
     let warningFee = ""
     let errorGasLimit = ""
 
-    if (errors.gasPrice) warningFee = t("Gas price is invalid")
-    else if (gasPrice && parseGwei(String(gasPrice)) < txDetails.gasPrice)
-      warningFee = t("Gas price seems too low for current network conditions")
-    else if (gasPrice && parseGwei(String(gasPrice)) > txDetails.gasPrice * 2n)
-      warningFee = t("Gas price seems higher than required")
+    try {
+      if (errors.gasPriceGwei) warningFee = t("Gas price is invalid")
+      else if (gasPriceGwei && parseGwei(gasPriceGwei) < txDetails.gasPrice)
+        warningFee = t("Gas price seems too low for current network conditions")
+      else if (gasPriceGwei && parseGwei(gasPriceGwei) > txDetails.gasPrice * 2n)
+        warningFee = t("Gas price seems higher than required")
 
-    if (errors.gasLimit?.type === "min") errorGasLimit = t("Gas Limit minimum value is 21000")
-    else if (errors.gasLimit) errorGasLimit = t("Gas Limit is invalid")
-    else if (txDetails.estimatedGas > BigInt(gasLimit))
-      errorGasLimit = t("Gas Limit too low, transaction likely to fail")
+      if (errors.gasLimit?.type === "min") errorGasLimit = t("Gas Limit minimum value is 21000")
+      else if (errors.gasLimit) errorGasLimit = t("Gas Limit is invalid")
+      else if (txDetails.estimatedGas > BigInt(gasLimit))
+        errorGasLimit = t("Gas Limit too low, transaction likely to fail")
+    } catch (err) {
+      // parse error : form will be invalid, ignore
+      log.error("Failed set warningFee & errorGasLimit", { err })
+    }
 
     return {
       warningFee,
@@ -203,9 +220,9 @@ export const CustomGasSettingsFormLegacy: FC<CustomGasSettingsFormLegacyProps> =
     }
   }, [
     errors.gasLimit,
-    errors.gasPrice,
+    errors.gasPriceGwei,
     gasLimit,
-    gasPrice,
+    gasPriceGwei,
     txDetails.estimatedGas,
     txDetails.gasPrice,
     t,
@@ -234,7 +251,7 @@ export const CustomGasSettingsFormLegacy: FC<CustomGasSettingsFormLegacyProps> =
     isValid: isGasSettingsValid,
     isLoading: isLoadingGasSettingsValid,
     error: gasSettingsError,
-  } = useIsValidGasSettings(txDetails.evmNetworkId, tx, gasPrice, gasLimit)
+  } = useIsValidGasSettings(txDetails.evmNetworkId, tx, gasPriceGwei, gasLimit)
 
   const showMaxFeeTotal = isFormValid && isGasSettingsValid && !isLoadingGasSettingsValid
 
@@ -292,12 +309,11 @@ export const CustomGasSettingsFormLegacy: FC<CustomGasSettingsFormLegacyProps> =
           </span>
         }
       >
+        {/* TODO implement controler for number format with 9 digits maximum https://stackoverflow.com/questions/69370034/how-to-input-only-number-in-react-hook-form */}
         <FormFieldInputText
           after={<span className="text-body-disabled text-sm">{t("GWEI")}</span>}
           containerProps={INPUT_PROPS}
-          {...register("gasPrice", {
-            valueAsNumber: true,
-          })}
+          {...register("gasPriceGwei")}
         />
       </FormFieldContainer>
       <MessageRow type="warning" message={warningFee} />
