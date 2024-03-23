@@ -1,10 +1,10 @@
 import { useLocalStorage } from "react-use"
-import { useNetwork } from "wagmi"
+import { useAccount } from "wagmi"
 
 import { provideContext } from "../../../common/provideContext"
 
 const useErc20ContractProvider = () => {
-  const { chain } = useNetwork()
+  const { chain } = useAccount()
   const [address, setAddress] = useLocalStorage(`pg:erc20-contract-${chain?.id}`, "")
   return [address, setAddress] as const
 }

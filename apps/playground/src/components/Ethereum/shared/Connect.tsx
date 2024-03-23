@@ -1,13 +1,6 @@
 import { ChangeEventHandler, useCallback } from "react"
 import { Button } from "talisman-ui"
-import {
-  useAccount,
-  useBalance,
-  useConnect,
-  useDisconnect,
-  useNetwork,
-  useSwitchNetwork,
-} from "wagmi"
+import { useAccount, useBalance, useConnect, useDisconnect, useSwitchChain } from "wagmi"
 
 import { Section } from "../../shared/Section"
 import { talismanChains } from "./talismanChains"
@@ -19,27 +12,30 @@ export const Connect = () => (
 )
 
 const ConnectInner = () => {
-  const { address, isConnected, connector } = useAccount()
-  const { connect, connectors, error, isLoading, pendingConnector } = useConnect()
-  const { chain } = useNetwork()
+  const { address, isConnected, connector, chain } = useAccount()
+  const { connect, connectors, error } = useConnect()
   const { data: balance } = useBalance({
     chainId: chain?.id,
     address,
-    enabled: !!address && !!chain,
+    query: {
+      enabled: !!address && !!chain,
+    },
   })
   const { disconnect } = useDisconnect()
-  const { switchNetwork } = useSwitchNetwork()
+  const { switchChain } = useSwitchChain()
 
   const handleSwitchNetwork: ChangeEventHandler<HTMLSelectElement> = useCallback(
     (e) => {
       try {
-        switchNetwork?.(Number(e.target.value))
+        switchChain?.({
+          chainId: Number(e.target.value),
+        })
       } catch (err) {
         // eslint-disable-next-line no-console
         console.error("failed to switch network", err)
       }
     },
-    [switchNetwork]
+    [switchChain]
   )
 
   return isConnected ? (
@@ -73,11 +69,13 @@ const ConnectInner = () => {
           disabled={!connector}
         >
           <option value="DEFAULT">Select</option>
-          {talismanChains.map((chain) => (
-            <option key={chain.id} value={chain.id}>
-              {chain.name} ({chain.id})
-            </option>
-          ))}
+          {talismanChains
+            .toSorted((a, b) => a.name.localeCompare(b.name))
+            .map((chain) => (
+              <option key={chain.id} value={chain.id}>
+                {chain.name} ({chain.id})
+              </option>
+            ))}
         </select>
       </div>
     </div>
@@ -85,13 +83,11 @@ const ConnectInner = () => {
     <div className="flex flex-wrap gap-4 py-4">
       {connectors.map((connector) => (
         <Button
-          disabled={!connector.ready}
+          //disabled={!connector.ready}
           key={connector.id}
           onClick={() => connect({ connector })}
-          processing={isLoading && connector.id === pendingConnector?.id}
         >
           {connector.name}
-          {!connector.ready && " (unsupported)"}
         </Button>
       ))}
 

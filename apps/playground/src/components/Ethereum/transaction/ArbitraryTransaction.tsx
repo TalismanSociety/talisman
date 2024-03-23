@@ -2,13 +2,13 @@ import { useMemo } from "react"
 import { useForm } from "react-hook-form"
 import { useLocalStorage } from "react-use"
 import { Button } from "talisman-ui"
-import { parseEther } from "viem"
-import { useAccount, usePrepareSendTransaction, useSendTransaction } from "wagmi"
+import { Hex, parseEther } from "viem"
+import { useAccount, useEstimateGas, useSendTransaction } from "wagmi"
 
 import { Section } from "../../shared/Section"
 import { TransactionReceipt } from "../shared/TransactionReceipt"
 
-type FormData = { to: string; amount?: string; data?: string }
+type FormData = { to: Hex; amount?: string; data?: string }
 
 const DEFAULT_VALUE: FormData = {
   to: "0x5C9EBa3b10E45BF6db77267B40B95F3f91Fc5f67",
@@ -40,20 +40,24 @@ const SendTokensInner = () => {
     [formData.amount, formData.data, formData.to]
   )
 
-  const { config } = usePrepareSendTransaction(request)
+  const { data: gas } = useEstimateGas(request)
 
   const {
     sendTransaction,
     isLoading,
     isSuccess,
     isError,
-    data,
+    data: hash,
     error: errorSend,
-  } = useSendTransaction(config)
+  } = useSendTransaction()
 
   const onSubmit = (data: FormData) => {
+    if (!gas) return
     setDefaultValues(data)
-    sendTransaction?.()
+    sendTransaction?.({
+      ...request,
+      gas,
+    })
   }
 
   if (!isConnected) return null
@@ -105,13 +109,15 @@ const SendTokensInner = () => {
           Send Transaction
         </Button>
         {isSuccess && (
-          <pre className="text-alert-success my-8 ">
-            Transaction: {JSON.stringify(data, undefined, 2)}
-          </pre>
+          <>
+            <pre className="text-alert-success my-8 ">
+              Transaction: {JSON.stringify(hash, undefined, 2)}
+            </pre>
+            <TransactionReceipt hash={hash} />
+          </>
         )}
         {isError && <div className="text-alert-error my-8 ">Error : {errorSend?.message}</div>}
       </div>
-      <TransactionReceipt hash={data?.hash} />
     </form>
   )
 }
