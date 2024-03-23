@@ -103,6 +103,21 @@ const karura: Chain = {
   },
 }
 
+const mantaPacific: Chain = {
+  id: 169,
+  name: "Manta Pacific",
+  network: "Manta Pacific",
+  nativeCurrency: {
+    name: "ETH",
+    symbol: "ETH",
+    decimals: 18,
+  },
+  rpcUrls: {
+    default: { http: ["https://pacific-rpc.manta.network/http"] },
+    public: { http: ["https://pacific-rpc.manta.network/http"] },
+  },
+}
+
 export const talismanChains: Chain[] = [
   moonbeam,
   moonbaseAlpha,
@@ -123,6 +138,7 @@ export const talismanChains: Chain[] = [
   polygon,
   polygonMumbai,
   mandalaTestnet,
+  mantaPacific,
   karura,
   acala,
   base,
