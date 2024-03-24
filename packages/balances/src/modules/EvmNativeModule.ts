@@ -10,7 +10,7 @@ import {
 } from "@talismn/chaindata-provider"
 import { hasOwnProperty, isEthereumAddress } from "@talismn/util"
 import isEqual from "lodash/isEqual"
-import { PublicClient } from "viem"
+import { PublicClient, hexToBigInt, isHex } from "viem"
 
 import { DefaultBalanceModule, NewBalanceModule } from "../BalanceModule"
 import log from "../log"
@@ -350,9 +350,11 @@ async function getFreeBalances(
       )
 
       // default to 0 for non evm addresses
-      return addresses.map((address) =>
-        ethBalanceResults[address] ? BigInt(ethBalanceResults[address]) : 0n
-      )
+      return addresses.map((address) => {
+        const val = ethBalanceResults[address]
+        if (isHex(val)) return hexToBigInt(val)
+        return val ?? 0n
+      })
     } catch (err) {
       const errorMessage = hasOwnProperty(err, "shortMessage")
         ? err.shortMessage

@@ -82,11 +82,7 @@ const ConnectInner = () => {
   ) : (
     <div className="flex flex-wrap gap-4 py-4">
       {connectors.map((connector) => (
-        <Button
-          //disabled={!connector.ready}
-          key={connector.id}
-          onClick={() => connect({ connector })}
-        >
+        <Button key={connector.id} onClick={() => connect({ connector })}>
           {connector.name}
         </Button>
       ))}

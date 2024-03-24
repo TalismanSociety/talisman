@@ -25,7 +25,6 @@ import {
 const shibuya: Chain = {
   id: 81,
   name: "Shibuya",
-  //network: "shibuya",
   nativeCurrency: {
     name: "SBY",
     symbol: "SBY",
@@ -44,7 +43,6 @@ const shibuya: Chain = {
 const shiden: Chain = {
   id: 336,
   name: "Shiden",
-  // network: "shiden",
   nativeCurrency: {
     name: "SDN",
     symbol: "SDN",
@@ -63,7 +61,6 @@ const shiden: Chain = {
 const mandalaTestnet: Chain = {
   id: 595,
   name: "Mandala Testnet",
-  // network: "Mandala Testnet",
   nativeCurrency: {
     name: "ACA",
     symbol: "ACA",
@@ -78,7 +75,6 @@ const mandalaTestnet: Chain = {
 const acala: Chain = {
   id: 787,
   name: "Acala EVM+",
-  //network: "Acala Acala EVM+",
   nativeCurrency: {
     name: "ACA",
     symbol: "ACA",
@@ -93,7 +89,6 @@ const acala: Chain = {
 const karura: Chain = {
   id: 686,
   name: "Karura EVM+",
-  // network: "Karura EVM+",
   nativeCurrency: {
     name: "KAR",
     symbol: "KAR",
@@ -131,4 +126,4 @@ export const talismanChains = [
   baseGoerli,
   manta,
   mantaTestnet,
-] as const //.sort((a, b) => a.name.localeCompare(b.name))
+] as const

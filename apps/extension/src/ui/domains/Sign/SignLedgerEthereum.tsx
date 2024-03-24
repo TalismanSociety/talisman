@@ -101,7 +101,6 @@ const signWithLedger = async (
     }
 
     case "eth_sendTransaction": {
-      // TODO EIP4844 support
       const txRequest = payload as TransactionRequest
       const baseTx = getTransactionSerializable(txRequest, chainId)
       const serialized = serializeTransaction(baseTx)

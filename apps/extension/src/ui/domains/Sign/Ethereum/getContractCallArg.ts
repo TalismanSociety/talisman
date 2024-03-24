@@ -13,7 +13,6 @@ export const getContractCallArg = <TResult>(
     name: decodedTx.contractCall.functionName,
   })
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const argIndex = methodDef.inputs.findIndex((input: any) => input.name === argName)
+  const argIndex = methodDef.inputs.findIndex((input: { name: string }) => input.name === argName)
   return decodedTx.contractCall.args?.[argIndex] as TResult
 }
