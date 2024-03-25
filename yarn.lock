@@ -155,6 +155,23 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@azns/resolver-core@npm:^1.6.0":
+  version: 1.6.0
+  resolution: "@azns/resolver-core@npm:1.6.0"
+  dependencies:
+    bufferutil: ^4.0.7
+    loglevel: ^1.8.1
+    utf-8-validate: ^6.0.3
+  peerDependencies:
+    "@polkadot/api": ">=10"
+    "@polkadot/api-contract": ">=10"
+    "@polkadot/types": ">=10"
+    "@polkadot/util": ">=11.1.3"
+    "@polkadot/util-crypto": ">=11.1.3"
+  checksum: 51f359cc0df2376cc51251c0608ef09c37fbaf7558f0dbf2545df6808659e28efdf9679ab206fad48a277756bd96d772cd24197f8acda148374877b79cc5b667
+  languageName: node
+  linkType: hard
+
 "@babel/code-frame@npm:7.12.11":
   version: 7.12.11
   resolution: "@babel/code-frame@npm:7.12.11"
@@ -8549,15 +8566,16 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@talismn/siws@npm:^0.0.5":
-  version: 0.0.5
-  resolution: "@talismn/siws@npm:0.0.5"
+"@talismn/siws@npm:^0.0.18":
+  version: 0.0.18
+  resolution: "@talismn/siws@npm:0.0.18"
   dependencies:
+    "@azns/resolver-core": ^1.6.0
     "@types/jest": ^29.5.8
   peerDependencies:
     "@polkadot/api": ^10.10.1
     "@polkadot/extension-dapp": ^0.46.5
-  checksum: 01ab60b5086808eef3421a35c3421c9a318db83997766a9a52bce4db9a8557581cab406b5179bf2eb3125db0be7ea21d63c6ae0d37f08deee390a4a4bc994c73
+  checksum: 75b972bc5e715d1409aed213de3662464ce1d077605ddfa862c75c49d6d2b7323f85e6221b85858d432cb16865fc73c7de97413ed9730b16cfe25866e8519857
   languageName: node
   linkType: hard
 
@@ -15770,7 +15788,7 @@ __metadata:
     "@talismn/on-chain-id": "workspace:*"
     "@talismn/orb": "workspace:*"
     "@talismn/scale": "workspace:*"
-    "@talismn/siws": ^0.0.5
+    "@talismn/siws": ^0.0.18
     "@talismn/subshape-fork": ^0.0.2
     "@talismn/token-rates": "workspace:*"
     "@talismn/tsconfig": "workspace:*"

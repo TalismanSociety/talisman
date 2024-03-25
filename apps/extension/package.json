@@ -41,7 +41,7 @@
     "@talismn/on-chain-id": "workspace:*",
     "@talismn/orb": "workspace:*",
     "@talismn/scale": "workspace:*",
-    "@talismn/siws": "^0.0.5",
+    "@talismn/siws": "^0.0.18",
     "@talismn/subshape-fork": "^0.0.2",
     "@talismn/token-rates": "workspace:*",
     "@talismn/util": "workspace:*",
