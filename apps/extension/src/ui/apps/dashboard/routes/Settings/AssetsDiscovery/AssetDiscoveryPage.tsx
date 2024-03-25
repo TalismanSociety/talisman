@@ -241,7 +241,9 @@ const AssetRowContent: FC<{ tokenId: TokenId; assets: DiscoveredBalance[] }> = (
             </ContextMenuTrigger>
             <ContextMenuContent>
               {isErc20Token(token) && (
-                <ContextMenuItem onClick={() => navigate(`/tokens/${token.id}`)}>
+                <ContextMenuItem
+                  onClick={() => navigate(`/settings/networks-tokens/tokens/${token.id}`)}
+                >
                   {t("Token details")}
                 </ContextMenuItem>
               )}
