@@ -21,6 +21,11 @@
     @apply m-0 overflow-hidden p-0;
   }
 
+  /* hides the content of the page while fonts are preloading (using webfontloader) */
+  #root.wf-loading {
+    @apply hidden;
+  }
+
   h1 {
     @apply text-xl;
   }
