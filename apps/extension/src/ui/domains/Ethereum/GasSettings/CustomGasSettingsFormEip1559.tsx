@@ -243,7 +243,7 @@ export const CustomGasSettingsFormEip1559: FC<CustomGasSettingsFormEip1559Props>
         warningFee = t("Max Base Fee seems higher than required")
       else if (
         maxPriorityFeeGwei &&
-        parseGwei(maxBaseFeeGwei) > 2n * highSettings.maxPriorityFeePerGas
+        parseGwei(maxPriorityFeeGwei) > 2n * highSettings.maxPriorityFeePerGas
       )
         warningFee = t("Max Priority Fee seems higher than required")
 
