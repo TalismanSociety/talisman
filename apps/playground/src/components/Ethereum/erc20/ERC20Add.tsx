@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useState } from "react"
 import { Button } from "talisman-ui"
-import { mainnet, useAccount, useNetwork } from "wagmi"
+import { mainnet } from "viem/chains"
+import { useAccount, useWalletClient } from "wagmi"
 
 type WatchTokenPayload = {
   address: string
@@ -26,9 +27,10 @@ const LEGITIMATE_ARB: WatchTokenPayload = {
 }
 
 export const ERC20Add = () => {
-  const { isConnected, connector } = useAccount()
-  const { chain } = useNetwork()
+  const { isConnected, chain } = useAccount()
   const [output, setOutput] = useState("")
+
+  const { data: walletClient } = useWalletClient()
 
   useEffect(() => {
     setOutput("")
@@ -37,10 +39,10 @@ export const ERC20Add = () => {
   const addToken = useCallback(
     (payload: WatchTokenPayload) => async () => {
       setOutput("")
-      if (!connector) return
       try {
-        const provider = await connector.getProvider()
-        const result = await provider.request({
+        if (!walletClient) return
+
+        const result = await walletClient.request({
           method: "wallet_watchAsset",
           params: {
             type: "ERC20",
@@ -55,7 +57,7 @@ export const ERC20Add = () => {
         setOutput((err as any)?.toString?.() ?? "Error")
       }
     },
-    [connector]
+    [walletClient]
   )
 
   if (!isConnected) return null

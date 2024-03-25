@@ -2,16 +2,17 @@ import { useCallback, useEffect, useState } from "react"
 import { useForm } from "react-hook-form"
 import { useLocalStorage } from "react-use"
 import { Button } from "talisman-ui"
+import { erc721Abi } from "viem"
 import {
-  erc721ABI,
   useAccount,
-  useContractRead,
-  useContractWrite,
-  usePrepareContractWrite,
+  useReadContract,
+  useSimulateContract,
   useWalletClient,
+  useWriteContract,
 } from "wagmi"
 
 import { TransactionReceipt } from "../shared/TransactionReceipt"
+import { useInvalidateQueries } from "../shared/useInvalidateQueries"
 import { useErc721Contract } from "./context"
 
 const IPFS_GATEWAY = "https://ipfs.io/ipfs/"
@@ -79,44 +80,50 @@ export const ERC721Send = () => {
 
   const formData = watch()
 
-  const { data: tokenURI } = useContractRead({
+  const { data: tokenURI, queryKey: qk1 } = useReadContract({
     address: contractAddress as `0x${string}`,
-    abi: erc721ABI,
+    abi: erc721Abi,
     functionName: "tokenURI",
     args: [BigInt(formData.tokenId)],
-    enabled: !!contractAddress && !!formData.tokenId?.length,
-    watch: true,
+    query: { enabled: !!contractAddress && !!formData.tokenId?.length },
   })
+  useInvalidateQueries(qk1)
 
-  const { data: balanceOfSelfData } = useContractRead({
+  const { data: balanceOfSelfData, queryKey: qk2 } = useReadContract({
     address: contractAddress as `0x${string}`,
-    abi: erc721ABI,
+    abi: erc721Abi,
     functionName: "balanceOf",
     args: [address as `0x${string}`],
-    enabled: !!contractAddress && !!address,
-    watch: true,
+    query: { enabled: !!contractAddress && !!address },
   })
-
-  const { config, isSuccess: prepIsSuccess } = usePrepareContractWrite({
-    address: contractAddress as `0x${string}`,
-    abi: erc721ABI,
-    functionName: "safeTransferFrom",
-    enabled: !!contractAddress && !!balanceOfSelfData,
-    args: [address as `0x${string}`, formData.recipient as `0x${string}`, BigInt(formData.tokenId)],
-  })
+  useInvalidateQueries(qk2)
 
   const {
-    write: sendTransaction,
+    data: safeTransferFrom,
+    isSuccess: prepIsSuccess,
+    queryKey: qk3,
+  } = useSimulateContract({
+    address: contractAddress as `0x${string}`,
+    abi: erc721Abi,
+    functionName: "safeTransferFrom",
+    args: [address as `0x${string}`, formData.recipient as `0x${string}`, BigInt(formData.tokenId)],
+    query: { enabled: !!contractAddress && !!balanceOfSelfData },
+  })
+  useInvalidateQueries(qk3)
+
+  const {
+    writeContract: sendTransaction,
     isLoading: sendIsLoading,
     isSuccess: sendIsSuccess,
     isError: sendIsError,
-    data: senddata,
+    data: hash,
     error: sendError,
-  } = useContractWrite(config)
+  } = useWriteContract()
 
   const onSubmit = (data: FormData) => {
+    if (!safeTransferFrom) return
     setDefaultValues(data)
-    sendTransaction?.()
+    sendTransaction?.(safeTransferFrom!.request)
   }
 
   // allows testing an impossible contract interaction (transfer more than you have to test)
@@ -125,7 +132,7 @@ export const ERC721Send = () => {
 
     walletClient.writeContract({
       address: contractAddress as `0x${string}`,
-      abi: erc721ABI,
+      abi: erc721Abi,
       functionName: "safeTransferFrom",
       args: [
         address as `0x${string}`,
@@ -213,14 +220,16 @@ export const ERC721Send = () => {
               </Button>
             </div>
             {sendIsSuccess && (
-              <pre className="text-alert-success my-8 ">
-                Transaction: {JSON.stringify(senddata, undefined, 2)}
-              </pre>
+              <>
+                <pre className="text-alert-success my-8 ">
+                  Transaction: {JSON.stringify(hash, undefined, 2)}
+                </pre>
+                <TransactionReceipt hash={hash} />
+              </>
             )}
             {sendIsError && (
               <div className="text-alert-error my-8 ">Error : {sendError?.message}</div>
             )}
-            <TransactionReceipt hash={senddata?.hash} />
           </form>
         </>
       ) : (

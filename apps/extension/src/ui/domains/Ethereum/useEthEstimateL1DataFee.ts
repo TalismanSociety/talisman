@@ -1,4 +1,5 @@
 import { gasPriceOracleABI, gasPriceOracleAddress } from "@eth-optimism/contracts-ts"
+import { getTransactionSerializable } from "@extension/core"
 import { log } from "@extension/shared"
 import { useQuery } from "@tanstack/react-query"
 import { useMemo } from "react"
@@ -24,7 +25,7 @@ const getEthL1DataFee = async (
     const contract = getContract({
       address: contractAddress,
       abi: gasPriceOracleABI,
-      publicClient,
+      client: { public: publicClient },
     })
     return await contract.read.getL1Fee([serializedTx])
   } catch (err) {
@@ -40,7 +41,7 @@ export const useEthEstimateL1DataFee = (
   const serialized = useMemo(
     () =>
       tx && publicClient?.chain?.id
-        ? serializeTransaction({ chainId: publicClient.chain.id, ...tx })
+        ? serializeTransaction(getTransactionSerializable(tx, publicClient.chain.id))
         : null,
     [publicClient?.chain?.id, tx]
   )

@@ -8,8 +8,8 @@ import {
 import { classNames } from "@talismn/util"
 import { useCallback, useMemo, useState } from "react"
 import { Button } from "talisman-ui"
-import { getAddress } from "viem"
-import { useAccount, useNetwork } from "wagmi"
+import { Hex, getAddress } from "viem"
+import { useAccount, useWalletClient } from "wagmi"
 
 import { Section } from "../../shared/Section"
 
@@ -180,12 +180,12 @@ const TEST_PAYLOADS: Record<TestCases, TypedDataTestPayload> = {
 } as const
 
 const SignTypedDataInner = () => {
-  const { isConnected, address, connector } = useAccount()
-  const { chain } = useNetwork()
+  const { isConnected, address, connector, chain } = useAccount()
   const [processing, setProcessing] = useState<TestCases>()
   const [error, setError] = useState<Error>()
-  const [signature, setSignature] = useState<string>()
+  const [signature, setSignature] = useState<Hex>()
   const [signedBy, setSignedBy] = useState<string>()
+  const { data: walletClient } = useWalletClient()
 
   const disabled = useMemo(() => !chain || !connector || !address, [address, chain, connector])
 
@@ -195,18 +195,18 @@ const SignTypedDataInner = () => {
       setSignature(undefined)
       setSignedBy(undefined)
       try {
-        if (!connector || !chain || !address) return
+        if (!connector || !chain || !address || !walletClient) return
 
         const { version, method, getData, getParams } = TEST_PAYLOADS[testCase]
         setProcessing(version)
         const params = getParams(address, chain.id)
         const data = getData(chain.id)
 
-        const provider = await connector.getProvider()
-        const sig = await provider.request({
+        const sig: Hex = await walletClient.request({
           method,
           params,
-        })
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        } as any)
         setSignature(sig)
 
         const signer = recoverTypedSignature({
@@ -220,7 +220,7 @@ const SignTypedDataInner = () => {
       }
       setProcessing(undefined)
     },
-    [address, chain, connector]
+    [address, chain, connector, walletClient]
   )
 
   if (!isConnected) return null

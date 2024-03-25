@@ -16,18 +16,11 @@ const PersonalSignBigInner = () => {
   const { isConnected, address } = useAccount()
   const [message] = useState(() => "Thanos was right.\n".repeat(1_000_000))
 
-  const {
-    data: signature,
-    isError,
-    isLoading,
-    isSuccess,
-    signMessage,
-    error,
-  } = useSignMessage({ message })
+  const { data: signature, isError, isLoading, isSuccess, signMessage, error } = useSignMessage()
 
   const handleSignClick = useCallback(() => {
-    signMessage?.()
-  }, [signMessage])
+    signMessage?.({ message })
+  }, [message, signMessage])
 
   const [signedBy, setSignedBy] = useState<`0x${string}`>()
 

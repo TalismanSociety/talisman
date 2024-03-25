@@ -53,20 +53,11 @@ const PersonalSignInner = () => {
   })
 
   const message = watch("message")
-  const {
-    data: signature,
-    isError,
-    isLoading,
-    isSuccess,
-    signMessage,
-    error,
-  } = useSignMessage({
-    message,
-  })
+  const { data: signature, isError, isLoading, isSuccess, signMessage, error } = useSignMessage()
 
   const onSubmit = useCallback(() => {
-    signMessage?.()
-  }, [signMessage])
+    signMessage?.({ message })
+  }, [message, signMessage])
 
   const [signedBy, setSignedBy] = useState<`0x${string}`>()
 

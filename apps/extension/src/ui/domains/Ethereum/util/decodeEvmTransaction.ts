@@ -89,7 +89,7 @@ export const decodeEvmTransaction = async (
           const contract = getContract({
             address: targetAddress,
             abi,
-            publicClient,
+            client: { public: publicClient },
           })
 
           const [name, symbol, decimals] = await Promise.all([
@@ -116,14 +116,15 @@ export const decodeEvmTransaction = async (
             args: contractCall.args,
             name: contractCall.functionName,
           })
-          const tokenIdIndex = abiItem.inputs.findIndex((input) => input.name === "tokenId")
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          const tokenIdIndex = abiItem.inputs.findIndex((input: any) => input.name === "tokenId")
           const tokenId =
             tokenIdIndex > -1 ? (contractCall.args?.[tokenIdIndex] as bigint) : undefined
 
           const contract = getContract({
             address: targetAddress,
             abi,
-            publicClient,
+            client: { public: publicClient },
           })
 
           // some calls may fail as not all NFTs implement the metadata functions

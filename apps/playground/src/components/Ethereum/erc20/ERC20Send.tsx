@@ -2,17 +2,17 @@ import { useCallback } from "react"
 import { useForm } from "react-hook-form"
 import { useLocalStorage } from "react-use"
 import { Button } from "talisman-ui"
-import { parseUnits } from "viem"
+import { erc20Abi, parseUnits } from "viem"
 import {
-  erc20ABI,
   useAccount,
-  useContractRead,
-  useContractWrite,
-  usePrepareContractWrite,
+  useReadContract,
+  useSimulateContract,
   useWalletClient,
+  useWriteContract,
 } from "wagmi"
 
 import { TransactionReceipt } from "../shared/TransactionReceipt"
+import { useInvalidateQueries } from "../shared/useInvalidateQueries"
 import { useErc20Contract } from "./context"
 
 type FormData = { recipient: string; amount: string }
@@ -39,43 +39,49 @@ export const ERC20Send = () => {
 
   const formData = watch()
 
-  const { data: decimals = 18 } = useContractRead({
+  const { data: decimals = 18, queryKey: qk1 } = useReadContract({
     address: contractAddress as `0x${string}`,
-    abi: erc20ABI,
+    abi: erc20Abi,
     functionName: "decimals",
-    enabled: !!contractAddress,
+    query: { enabled: !!contractAddress },
   })
+  useInvalidateQueries(qk1)
 
-  const { data: balanceOfSelfData } = useContractRead({
+  const { data: balanceOfSelfData, queryKey: qk2 } = useReadContract({
     address: contractAddress as `0x${string}`,
-    abi: erc20ABI,
+    abi: erc20Abi,
     functionName: "balanceOf",
     args: [address as `0x${string}`],
-    enabled: !!contractAddress && !!address,
-    watch: true,
+    query: { enabled: !!contractAddress && !!address },
   })
+  useInvalidateQueries(qk2)
 
-  const { config, isSuccess: prepIsSuccess } = usePrepareContractWrite({
+  const {
+    data: transferData,
+    isSuccess: prepIsSuccess,
+    queryKey: qk3,
+  } = useSimulateContract({
     address: contractAddress as `0x${string}`,
-    abi: erc20ABI,
+    abi: erc20Abi,
     functionName: "transfer",
-    enabled: !!contractAddress && !!balanceOfSelfData,
+    query: { enabled: !!contractAddress && !!balanceOfSelfData },
     args: [formData.recipient as `0x${string}`, parseUnits(formData.amount, decimals)],
   })
+  useInvalidateQueries(qk3)
 
   const {
     isLoading: writeIsLoading,
-    write: send,
+    writeContract: send,
     error: sendError,
     isLoading: sendIsLoading,
     isSuccess: sendIsSuccess,
     isError: sendIsError,
-    data: senddata,
-  } = useContractWrite(config)
+    data: hash,
+  } = useWriteContract()
 
   const onSubmit = (data: FormData) => {
     setDefaultValues(data)
-    send?.()
+    send?.(transferData!.request)
   }
 
   // allows testing an impossible contract interaction (transfer more than you have to test)
@@ -84,7 +90,7 @@ export const ERC20Send = () => {
 
     walletClient.writeContract({
       address: contractAddress as `0x${string}`,
-      abi: erc20ABI,
+      abi: erc20Abi,
       functionName: "transfer",
       args: [formData.recipient as `0x${string}`, parseUnits(formData.amount, decimals)],
     })
@@ -144,14 +150,16 @@ export const ERC20Send = () => {
               </Button>
             </div>
             {sendIsSuccess && (
-              <pre className="text-alert-success my-8 ">
-                Transaction: {JSON.stringify(senddata, undefined, 2)}
-              </pre>
+              <>
+                <pre className="text-alert-success my-8 ">
+                  Transaction: {JSON.stringify(hash, undefined, 2)}
+                </pre>
+                <TransactionReceipt hash={hash} />
+              </>
             )}
             {sendIsError && (
               <div className="text-alert-error my-8 ">Error : {sendError?.message}</div>
             )}
-            <TransactionReceipt hash={senddata?.hash} />
           </form>
         </>
       ) : (

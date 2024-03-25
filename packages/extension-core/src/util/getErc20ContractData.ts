@@ -30,7 +30,7 @@ const getErc20Contract =
     getContract({
       address: contractAddress,
       abi,
-      publicClient: client,
+      client: { public: client },
     })
 
 export const getErc20ContractData = async (

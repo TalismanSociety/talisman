@@ -1,20 +1,20 @@
-import { useCallback } from "react"
+import { useCallback, useEffect, useState } from "react"
 import { useForm } from "react-hook-form"
 import { Button } from "talisman-ui"
+import { Hex } from "viem"
 import {
   useAccount,
-  useContractRead,
-  useContractWrite,
-  useNetwork,
-  usePrepareContractWrite,
+  useReadContract,
+  useSimulateContract,
   useWalletClient,
+  useWriteContract,
 } from "wagmi"
 
 import { TestBasics, useDeployment } from "../../../contracts"
-import { IconLoader } from "../../../icons"
 import { Section } from "../../shared/Section"
 import { ContractConnect } from "../shared/ContractConnect"
 import { TransactionReceipt } from "../shared/TransactionReceipt"
+import { useInvalidateQueries } from "../shared/useInvalidateQueries"
 
 type FormData = { newValue: number }
 
@@ -31,19 +31,24 @@ export const ContractTestBasics = () => {
 }
 
 const ContractTestBasicsInner = () => {
-  const { isConnected } = useAccount()
-  const { chain } = useNetwork()
+  const { isConnected, chain } = useAccount()
   const { address } = useDeployment("TestBasics", chain?.id)
 
   const { data: walletClient } = useWalletClient()
 
-  const { data: readData, isLoading: readIsLoading } = useContractRead({
+  const {
+    data: readData,
+    isLoading: readIsLoading,
+    queryKey,
+  } = useReadContract({
     address,
     abi: TestBasics.abi,
     functionName: "getValue",
-    enabled: !!address,
-    watch: true,
+    query: {
+      enabled: !!address,
+    },
   })
+  useInvalidateQueries(queryKey)
 
   const {
     register,
@@ -54,35 +59,41 @@ const ContractTestBasicsInner = () => {
 
   const newValue = watch("newValue")
 
-  const { config, error, isLoading } = usePrepareContractWrite({
+  const { data, error } = useSimulateContract({
     address,
     abi: TestBasics.abi,
     functionName: "setValue",
-    enabled: !!address && !!newValue,
+    query: { enabled: !!address && !!newValue },
     args: [newValue],
   })
+
+  const [hash, setHash] = useState<Hex | undefined>()
   const {
-    data: writeData,
-    isSuccess: writeIsSuccess,
+    data: dataHash,
     error: writeError,
     isError: writeIsError,
-    write,
-  } = useContractWrite(config)
+    writeContract,
+  } = useWriteContract()
+
+  useEffect(() => {
+    if (dataHash) setHash(dataHash)
+  }, [dataHash])
 
   const onSubmit = useCallback(() => {
-    write?.()
-  }, [write])
+    writeContract?.(data!.request)
+  }, [data, writeContract])
 
   // allows testing an impossible contract interaction (transfer more than you have to test)
   const handleSendUnchecked = useCallback(async () => {
     if (!walletClient || !address) return
 
-    await walletClient.writeContract({
+    const hash = await walletClient.writeContract({
       abi: TestBasics.abi,
       address,
       functionName: "setValue",
       args: [newValue],
     })
+    setHash(hash)
   }, [address, newValue, walletClient])
 
   if (!isConnected) return null
@@ -108,10 +119,9 @@ const ContractTestBasicsInner = () => {
                   className="h-12"
                   {...register("newValue", { required: true })}
                 />
-                {isLoading && <IconLoader className="animate-spin-slow ml-2" />}
               </div>
               <div>
-                {!isLoading && newValue && error && (
+                {newValue && error && (
                   <pre className="text-alert-error h-96 p-2">{error.message}</pre>
                 )}
               </div>
@@ -120,7 +130,7 @@ const ContractTestBasicsInner = () => {
                   small
                   type="submit"
                   processing={readIsLoading}
-                  disabled={!isValid || isSubmitting || !!error || isLoading}
+                  disabled={!isValid || isSubmitting || !!error}
                 >
                   Send
                 </Button>
@@ -135,12 +145,12 @@ const ContractTestBasicsInner = () => {
               </div>
             </form>
             <div className="my-8">
-              {writeIsSuccess && (
+              {hash && (
                 <>
                   <pre className="text-alert-success my-8">
-                    Transaction: {JSON.stringify(writeData, undefined, 2)}
+                    Transaction: {JSON.stringify(hash, undefined, 2)}
                   </pre>
-                  <TransactionReceipt hash={writeData?.hash} />
+                  <TransactionReceipt hash={hash} />
                 </>
               )}
               {writeIsError && (

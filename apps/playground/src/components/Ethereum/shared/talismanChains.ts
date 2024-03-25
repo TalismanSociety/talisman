@@ -1,4 +1,4 @@
-import { Chain } from "wagmi"
+import { Chain } from "viem"
 import {
   arbitrum,
   astar,
@@ -11,6 +11,8 @@ import {
   goerli,
   hardhat,
   mainnet,
+  manta,
+  mantaTestnet,
   moonbaseAlpha,
   moonbeam,
   moonriver,
@@ -23,7 +25,6 @@ import {
 const shibuya: Chain = {
   id: 81,
   name: "Shibuya",
-  network: "shibuya",
   nativeCurrency: {
     name: "SBY",
     symbol: "SBY",
@@ -42,7 +43,6 @@ const shibuya: Chain = {
 const shiden: Chain = {
   id: 336,
   name: "Shiden",
-  network: "shiden",
   nativeCurrency: {
     name: "SDN",
     symbol: "SDN",
@@ -61,7 +61,6 @@ const shiden: Chain = {
 const mandalaTestnet: Chain = {
   id: 595,
   name: "Mandala Testnet",
-  network: "Mandala Testnet",
   nativeCurrency: {
     name: "ACA",
     symbol: "ACA",
@@ -76,7 +75,6 @@ const mandalaTestnet: Chain = {
 const acala: Chain = {
   id: 787,
   name: "Acala EVM+",
-  network: "Acala Acala EVM+",
   nativeCurrency: {
     name: "ACA",
     symbol: "ACA",
@@ -91,7 +89,6 @@ const acala: Chain = {
 const karura: Chain = {
   id: 686,
   name: "Karura EVM+",
-  network: "Karura EVM+",
   nativeCurrency: {
     name: "KAR",
     symbol: "KAR",
@@ -103,7 +100,7 @@ const karura: Chain = {
   },
 }
 
-export const talismanChains: Chain[] = [
+export const talismanChains = [
   moonbeam,
   moonbaseAlpha,
   moonriver,
@@ -127,4 +124,6 @@ export const talismanChains: Chain[] = [
   acala,
   base,
   baseGoerli,
-].sort((a, b) => a.name.localeCompare(b.name))
+  manta,
+  mantaTestnet,
+] as const

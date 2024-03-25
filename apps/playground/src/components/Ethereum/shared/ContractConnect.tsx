@@ -1,12 +1,12 @@
 import { FC, useCallback, useEffect, useState } from "react"
-import { useNetwork, usePublicClient, useWalletClient } from "wagmi"
+import { useAccount, usePublicClient, useWalletClient } from "wagmi"
 
 import { PgContractType, useDeployment } from "../../../contracts/deployments"
 
 export const ContractConnect: FC<{ contract: PgContractType }> = ({ contract }) => {
   const { data: walletClient } = useWalletClient()
   const publicClient = usePublicClient()
-  const { chain } = useNetwork()
+  const { chain } = useAccount()
   const { address, setAddress, bytecode, forgetAddress } = useDeployment(contract, chain?.id ?? 0)
   const [isDeploying, setIsDeploying] = useState(false)
   const [error, setError] = useState<Error>()
@@ -21,6 +21,7 @@ export const ContractConnect: FC<{ contract: PgContractType }> = ({ contract }) 
     setError(undefined)
     try {
       if (!walletClient) throw new Error("No wallet client")
+      if (!publicClient) throw new Error("No public client")
 
       const hash = await walletClient.sendTransaction({
         data: bytecode as `0x${string}`,

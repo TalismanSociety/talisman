@@ -1,20 +1,14 @@
 import { formatUnits } from "ethers/lib/utils.js"
 import { useCallback, useRef, useState } from "react"
-import {
-  erc20ABI,
-  useAccount,
-  useContractRead,
-  useNetwork,
-  usePublicClient,
-  useWalletClient,
-} from "wagmi"
+import { erc20Abi } from "viem"
+import { useAccount, usePublicClient, useReadContract, useWalletClient } from "wagmi"
 
 import { useDeployment } from "../../../contracts"
+import { useInvalidateQueries } from "../shared/useInvalidateQueries"
 import { useErc20Contract } from "./context"
 
 export const ERC20ContractSelect = () => {
-  const { chain } = useNetwork()
-  const { isConnected, address: account } = useAccount()
+  const { isConnected, address: account, chain } = useAccount()
 
   const [address, setAddress] = useErc20Contract()
 
@@ -30,7 +24,7 @@ export const ERC20ContractSelect = () => {
     setIsDeploying(true)
     setDeployError(undefined)
     try {
-      if (!walletClient) throw new Error("No wallet client")
+      if (!walletClient || !publicClient) throw new Error("No wallet client")
 
       const hash = await walletClient.sendTransaction({
         data: bytecode as `0x${string}`,
@@ -51,27 +45,42 @@ export const ERC20ContractSelect = () => {
     setIsDeploying(false)
   }, [bytecode, publicClient, setAddress, walletClient])
 
-  const { data: symbol, error: errorSymbol } = useContractRead({
+  const {
+    data: symbol,
+    error: errorSymbol,
+    queryKey: qk1,
+  } = useReadContract({
     address: address as `0x${string}`,
-    abi: erc20ABI,
+    abi: erc20Abi,
     functionName: "symbol",
-    enabled: !!address,
+    query: { enabled: !!address },
   })
+  useInvalidateQueries(qk1)
 
-  const { data: decimals, error: errorDecimals } = useContractRead({
+  const {
+    data: decimals,
+    error: errorDecimals,
+    queryKey: qk2,
+  } = useReadContract({
     address: address as `0x${string}`,
-    abi: erc20ABI,
+    abi: erc20Abi,
     functionName: "decimals",
-    enabled: !!address,
+    query: { enabled: !!address },
   })
+  useInvalidateQueries(qk2)
 
-  const { data: balance, error: errorBalance } = useContractRead({
+  const {
+    data: balance,
+    error: errorBalance,
+    queryKey: qk3,
+  } = useReadContract({
     address: address as `0x${string}`,
-    abi: erc20ABI,
+    abi: erc20Abi,
     functionName: "balanceOf",
     args: [account as `0x${string}`],
-    enabled: isConnected && !!account,
+    query: { enabled: isConnected && !!account },
   })
+  useInvalidateQueries(qk3)
 
   if (!chain || !isConnected) return null
 
