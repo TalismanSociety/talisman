@@ -12,7 +12,7 @@ import { createRoot } from "react-dom/client"
 import { HashRouter } from "react-router-dom"
 import { FontFamily, preloadFonts } from "talisman-ui"
 
-const FONT_FAMILIES_DEFAULT: FontFamily[] = ["Surt", "SurtExpanded", "alien-runes"]
+const FONT_FAMILIES_DEFAULT: FontFamily[] = ["Surt", "SurtExpanded"]
 const FONT_FAMILIES_ONBOARDING: FontFamily[] = ["Surt", "SurtExpanded", "WhyteInktrapMedium"]
 const FONT_FAMILIES =
   window.location.pathname === "/onboarding.html" ? FONT_FAMILIES_ONBOARDING : FONT_FAMILIES_DEFAULT
