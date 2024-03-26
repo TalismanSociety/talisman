@@ -20,6 +20,8 @@ const ANALYTICS_PAGE: AnalyticsPage = {
   page: "What's New",
 }
 
+const WHATS_NEW_LENGTH = 3
+
 const newGoToFn = (dashboardPath: string) => () => {
   sendAnalyticsEvent({ ...ANALYTICS_PAGE, name: "Goto", action: dashboardPath })
   return api.dashboardOpen(dashboardPath)
@@ -79,7 +81,7 @@ export const PortfolioWhatsNew = () => {
   const versions = getWhatsNewVersions()
   return (
     <div className="flex flex-col gap-16">
-      {versions.slice(0, 2).map((version) => {
+      {versions.slice(0, WHATS_NEW_LENGTH).map((version) => {
         const { content, HeroUrl } = latestUpdates[version as keyof typeof latestUpdates]
         return (
           <PortfolioWhatsNewSection
