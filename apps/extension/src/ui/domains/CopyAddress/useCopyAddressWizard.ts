@@ -9,6 +9,7 @@ import useAccounts from "@ui/hooks/useAccounts"
 import useChain from "@ui/hooks/useChain"
 import { useChainByGenesisHash } from "@ui/hooks/useChainByGenesisHash"
 import useChains from "@ui/hooks/useChains"
+import { useEvmNetwork } from "@ui/hooks/useEvmNetwork"
 import useToken from "@ui/hooks/useToken"
 import { copyAddress } from "@ui/util/copyAddress"
 import { getAccountAvatarDataUri } from "@ui/util/getAccountAvatarDataUri"
@@ -46,10 +47,9 @@ const isAccountCompatibleWithChain = (
 }
 
 const getNextRoute = (inputs: CopyAddressWizardInputs): CopyAddressWizardPage => {
-  // if (inputs.mode === "copy") {
   if (!inputs.address) return "account"
   // chainId beeing null means we want to copy the substrate (generic) format
-  if (inputs.chainId === undefined && !isEthereumAddress(inputs.address)) return "chain"
+  if (inputs.networkId === undefined && !isEthereumAddress(inputs.address)) return "chain"
 
   return "copy"
 }
@@ -108,7 +108,8 @@ export const useCopyAddressWizardProvider = ({ inputs }: { inputs: CopyAddressWi
   }))
 
   const ethereum = useToken("1-evm-native")
-  const chain = useChain(state.chainId)
+  const chain = useChain(state.networkId)
+  const evmNetwork = useEvmNetwork(state.networkId)
 
   const formattedAddress = useMemo(
     () => getFormattedAddress(state.address, chain),
@@ -119,10 +120,10 @@ export const useCopyAddressWizardProvider = ({ inputs }: { inputs: CopyAddressWi
   const [logo, setLogo] = useState<string>()
   useEffect(() => {
     setIsLogoLoaded(false)
-    getQrLogo(formattedAddress, state.chainId === null, ethereum, chain)
+    getQrLogo(formattedAddress, state.networkId === null, ethereum, chain)
       .then(setLogo)
       .finally(() => setIsLogoLoaded(true))
-  }, [chain, ethereum, formattedAddress, state.chainId])
+  }, [chain, ethereum, formattedAddress, state.networkId])
 
   const setStateAndUpdateRoute = useCallback((updates: Partial<CopyAddressWizardInputs>) => {
     setState((prev) => {
@@ -141,18 +142,18 @@ export const useCopyAddressWizardProvider = ({ inputs }: { inputs: CopyAddressWi
         ? state.address
         : undefined
 
-      setStateAndUpdateRoute({ chainId, address })
+      setStateAndUpdateRoute({ networkId: chainId, address })
     },
     [accounts, chainsMap, setStateAndUpdateRoute, state.address]
   )
 
   const setAddress = useCallback(
     (address: Address) => {
-      if (state.chainId) {
-        const chainId = isAccountCompatibleWithChain(accounts, chainsMap, address, state.chainId)
-          ? state.chainId
+      if (state.networkId) {
+        const chainId = isAccountCompatibleWithChain(accounts, chainsMap, address, state.networkId)
+          ? state.networkId
           : undefined
-        setStateAndUpdateRoute({ address, chainId })
+        setStateAndUpdateRoute({ address, networkId: chainId })
       } else setStateAndUpdateRoute({ address })
     },
     [accounts, chainsMap, setStateAndUpdateRoute, state]
@@ -178,11 +179,11 @@ export const useCopyAddressWizardProvider = ({ inputs }: { inputs: CopyAddressWi
     if (!formattedAddress) return
 
     const onQrClick = () => {
-      open({ address: state.address, chainId: state.chainId, qr: true })
+      open({ address: state.address, networkId: state.networkId, qr: true })
     }
 
     if (await copyAddress(formattedAddress, onQrClick)) close()
-  }, [close, formattedAddress, open, state.address, state.chainId])
+  }, [close, formattedAddress, open, state.address, state.networkId])
 
   // shortcut called before the last screen of the wizard
   const copySpecific = useCallback(
@@ -190,7 +191,7 @@ export const useCopyAddressWizardProvider = ({ inputs }: { inputs: CopyAddressWi
       const chain = chainId ? chainsMap[chainId] : null
       const formattedAddress = chain ? convertAddress(address, chain.prefix) : address
       const onQrClick = () => {
-        open({ address, chainId, qr: true })
+        open({ address, networkId: chainId, qr: true })
       }
 
       if (await copyAddress(formattedAddress, onQrClick)) close()
@@ -208,6 +209,7 @@ export const useCopyAddressWizardProvider = ({ inputs }: { inputs: CopyAddressWi
     setChainId,
     setAddress,
     chain,
+    evmNetwork,
     copy,
     copySpecific,
     isLogoLoaded,

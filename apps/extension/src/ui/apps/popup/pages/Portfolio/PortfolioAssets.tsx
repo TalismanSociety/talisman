@@ -107,7 +107,7 @@ const CopyAddressButton: FC<{ account?: AccountJsonAny }> = ({ account }) => {
   const copyAddress = useCallback(() => {
     openCopyAddressModal({
       address: account?.address,
-      chainId: chain?.id,
+      networkId: chain?.id,
     })
     genericEvent("open copy address", { from: "popup portfolio" })
   }, [account?.address, chain?.id, genericEvent, openCopyAddressModal])

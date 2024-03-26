@@ -86,7 +86,7 @@ export const AccountContextMenu = forwardRef<HTMLElement, Props>(function Accoun
   const copyAddress = useCallback(() => {
     if (!account) return
     genericEvent("open copy address", { from: analyticsFrom })
-    openCopyAddressModal({ address: account.address, chainId: chain?.id })
+    openCopyAddressModal({ address: account.address, networkId: chain?.id })
   }, [account, analyticsFrom, chain?.id, genericEvent, openCopyAddressModal])
 
   const { open: _openAccountRenameModal } = useAccountRenameModal()
