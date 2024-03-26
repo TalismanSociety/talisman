@@ -1,4 +1,5 @@
 import { yupResolver } from "@hookform/resolvers/yup"
+import { CapsLockWarningIcon } from "@talisman/components/CapsLockWarningIcon"
 import { provideContext } from "@talisman/util/provideContext"
 import { KeyIcon } from "@talismn/icons"
 import { classNames } from "@talismn/util"
@@ -107,6 +108,7 @@ const BaseMnemonicUnlock: FC<MnemonicUnlockProps> = ({ children, buttonText, tit
           placeholder={t("Enter password")}
           spellCheck={false}
           data-lpignore
+          after={<CapsLockWarningIcon />}
         />
       </FormFieldContainer>
       <Button type="submit" fullWidth primary disabled={!isValid} processing={isSubmitting}>

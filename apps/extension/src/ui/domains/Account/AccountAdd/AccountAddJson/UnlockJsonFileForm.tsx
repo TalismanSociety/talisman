@@ -1,5 +1,6 @@
 import { log } from "@extension/shared"
 import { yupResolver } from "@hookform/resolvers/yup"
+import { CapsLockWarningIcon } from "@talisman/components/CapsLockWarningIcon"
 import { FadeIn } from "@talisman/components/FadeIn"
 import { KeyIcon } from "@talismn/icons"
 import { FC, useCallback, useEffect } from "react"
@@ -81,6 +82,7 @@ export const UnlockJsonFileForm: FC = () => {
             placeholder={t("Enter password")}
             spellCheck={false}
             data-lpignore
+            after={<CapsLockWarningIcon />}
           />
         </FormFieldContainer>
         <div className="mt-8 flex w-full justify-end">

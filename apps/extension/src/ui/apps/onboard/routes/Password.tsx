@@ -1,4 +1,5 @@
 import { yupResolver } from "@hookform/resolvers/yup"
+import { CapsLockWarningMessage } from "@talisman/components/CapsLockWarningMessage"
 import { PasswordStrength } from "@talisman/components/PasswordStrength"
 import imgPassword from "@talisman/theme/images/onboard_password_character.png"
 import { classNames } from "@talismn/util"
@@ -133,13 +134,15 @@ export const PasswordPage = () => {
           </p>
           <form onSubmit={handleSubmit(submit)} autoComplete="off">
             <div className="flex flex-col pb-12">
-              <div
-                className={classNames(
-                  "mb-8 mt-16 text-sm",
-                  password ? "text-body-secondary" : "text-body-disabled"
-                )}
-              >
-                {t("Password strength")}: <PasswordStrength password={password} />
+              <div className="mb-4 mt-12 flex h-[1.2em] items-center justify-between text-sm">
+                <div
+                  className={classNames(password ? "text-body-secondary" : "text-body-disabled")}
+                >
+                  {t("Password strength")}: <PasswordStrength password={password} />
+                </div>
+                <div>
+                  <CapsLockWarningMessage />
+                </div>
               </div>
               <FormFieldContainer error={errors.password?.message}>
                 <FormFieldInputText

@@ -1,4 +1,5 @@
 import { yupResolver } from "@hookform/resolvers/yup"
+import { CapsLockWarningIcon } from "@talisman/components/CapsLockWarningIcon"
 import { SuspenseTracker } from "@talisman/components/SuspenseTracker"
 import { HandMonoTransparentLogo } from "@talisman/theme/logos"
 import { EyeIcon, EyeOffIcon } from "@talismn/icons"
@@ -176,6 +177,7 @@ const Login = ({ setShowResetWallet }: { setShowResetWallet: () => void }) => {
             data-lpignore
             containerProps={INPUT_CONTAINER_PROPS}
             className="placeholder:text-grey-500"
+            after={<CapsLockWarningIcon />}
           />
           <Button
             type="submit"
