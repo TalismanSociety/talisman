@@ -12,6 +12,7 @@ import { AccountRemoveModal } from "@ui/domains/Account/AccountRemoveModal"
 import { AccountRenameModal } from "@ui/domains/Account/AccountRenameModal"
 import { CopyAddressModal } from "@ui/domains/CopyAddress"
 import { DatabaseErrorAlert } from "@ui/domains/Settings/DatabaseErrorAlert"
+import { ExplorerNetworkPickerModal } from "@ui/domains/ViewOnExplorer"
 import { useLoginCheck } from "@ui/hooks/useLoginCheck"
 import { Suspense, useEffect } from "react"
 import { Navigate, Route, Routes } from "react-router-dom"
@@ -68,6 +69,7 @@ const Popup = () => {
         <AccountExportModal />
         <AccountExportPrivateKeyModal />
         <CopyAddressModal />
+        <ExplorerNetworkPickerModal />
         <BackupWarningDrawer />
       </Suspense>
       {/* Render outside of suspense or it will never show in case of migration error */}

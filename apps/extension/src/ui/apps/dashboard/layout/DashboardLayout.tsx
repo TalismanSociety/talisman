@@ -9,6 +9,7 @@ import { AccountRenameModal } from "@ui/domains/Account/AccountRenameModal"
 import { BuyTokensModal } from "@ui/domains/Asset/Buy/BuyTokensModal"
 import { CopyAddressModal } from "@ui/domains/CopyAddress"
 import { MigratePasswordModal } from "@ui/domains/Settings/MigratePassword/MigratePasswordModal"
+import { ExplorerNetworkPickerModal } from "@ui/domains/ViewOnExplorer"
 import { FC, Suspense, useEffect, useRef, useState } from "react"
 import { useLocation } from "react-router-dom"
 
@@ -54,6 +55,7 @@ const DashboardNotificationsAndModals = () => {
       <AccountExportPrivateKeyModal />
       <AccountRemoveModal />
       <CopyAddressModal />
+      <ExplorerNetworkPickerModal />
       <MigratePasswordModal />
       <OnboardingToast />
     </Suspense>

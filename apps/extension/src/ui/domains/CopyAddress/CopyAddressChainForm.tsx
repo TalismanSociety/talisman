@@ -2,13 +2,14 @@ import { ScrollContainer } from "@talisman/components/ScrollContainer"
 import { SearchInput } from "@talisman/components/SearchInput"
 import { convertAddress } from "@talisman/util/convertAddress"
 import { shortenAddress } from "@talisman/util/shortenAddress"
-import { Chain, ChainId } from "@talismn/chaindata-provider"
+import { ChainId } from "@talismn/chaindata-provider"
 import { CopyIcon, QrIcon } from "@talismn/icons"
 import { isEthereumAddress } from "@talismn/util"
 import { useAccountByAddress } from "@ui/hooks/useAccountByAddress"
+import useBalancesByAddress from "@ui/hooks/useBalancesByAddress"
+import { useBalancesFiatTotalPerNetwork } from "@ui/hooks/useBalancesFiatTotalPerNetwork"
 import useChains from "@ui/hooks/useChains"
 import { useSetting } from "@ui/hooks/useSettings"
-import sortBy from "lodash/sortBy"
 import { useCallback, useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
 import { IconButton, Tooltip, TooltipContent, TooltipTrigger, useOpenClose } from "talisman-ui"
@@ -47,7 +48,7 @@ const ChainFormatButton = ({ format }: { format: ChainFormat }) => {
   }, [copySpecific, format.address, format.chainId])
 
   return (
-    <div className="text-body-secondary hover:text-body hover:bg-grey-800 flex h-32 w-full items-center gap-4 px-8">
+    <div className="text-body-secondary hover:text-body hover:bg-grey-800 flex h-32 w-full items-center gap-6 px-12">
       {format.chainId ? (
         <ChainLogo className="shrink-0 text-xl" id={format.chainId} />
       ) : (
@@ -107,7 +108,7 @@ export const CopyAddressChainForm = () => {
   const { address } = useCopyAddressWizard()
   const [search, setSearch] = useState("")
   const [includeTestnets] = useSetting("useTestnets")
-  const { chains, chainsMap } = useChains({ activeOnly: true, includeTestnets })
+  const { chains } = useChains({ activeOnly: true, includeTestnets })
   const { t } = useTranslation()
 
   const account = useAccountByAddress(address)
@@ -115,6 +116,9 @@ export const CopyAddressChainForm = () => {
     () => account?.genesisHash && chains.find((c) => account?.genesisHash === c.genesisHash),
     [account?.genesisHash, chains]
   )
+
+  const balances = useBalancesByAddress(address ?? "")
+  const balancesPerNetwork = useBalancesFiatTotalPerNetwork(balances)
 
   const SUBSTRATE_FORMAT: Omit<ChainFormat, "address"> = useMemo(
     () => ({
@@ -128,19 +132,13 @@ export const CopyAddressChainForm = () => {
   const formats: ChainFormat[] = useMemo(() => {
     if (!address || !chains.length) return []
 
-    const sortedChains = [
-      chainsMap["polkadot"],
-      chainsMap["kusama"],
-      ...sortBy(
-        chains.filter(
-          (c) =>
-            typeof c.prefix === "number" &&
-            c.account !== "secp256k1" &&
-            !["polkadot", "kusama"].includes(c.id)
-        ),
-        "name"
-      ),
-    ].filter(Boolean) as Chain[]
+    const sortedChains = chains
+      .filter((c) => typeof c.prefix === "number" && c.account !== "secp256k1")
+      .sort((a, b) => {
+        if (balancesPerNetwork[a.id] || balancesPerNetwork[b.id])
+          return (balancesPerNetwork[b.id] ?? 0) - (balancesPerNetwork[a.id] ?? 0)
+        return (a.name ?? "").localeCompare(b.name ?? "")
+      })
 
     return [
       { ...SUBSTRATE_FORMAT, address: convertAddress(address, null) },
@@ -152,7 +150,7 @@ export const CopyAddressChainForm = () => {
         address: convertAddress(address, chain.prefix),
       })),
     ].filter((f) => !accountChain || accountChain.id === f.chainId)
-  }, [address, chains, chainsMap, SUBSTRATE_FORMAT, accountChain])
+  }, [address, chains, SUBSTRATE_FORMAT, balancesPerNetwork, accountChain])
 
   const filteredFormats = useMemo(() => {
     if (!search) return formats
