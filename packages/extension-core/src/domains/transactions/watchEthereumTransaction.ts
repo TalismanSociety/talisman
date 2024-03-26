@@ -69,10 +69,9 @@ export const watchEthereumTransaction = async (
         )
       }
 
-      // success if associated to a block number
       if (withNotifications)
         await createNotification(
-          receipt.blockNumber && receipt.status ? "success" : "error",
+          receipt.status === "success" ? "success" : "error",
           networkName,
           txUrl
         )
