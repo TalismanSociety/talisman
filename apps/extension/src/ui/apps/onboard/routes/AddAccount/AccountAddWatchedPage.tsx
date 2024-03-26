@@ -9,6 +9,7 @@ export const AccountAddWatchedPage = () => {
     <AccountAddWrapper
       title={t("Choose account type")}
       subtitle={t("What type of account would you like to add?")}
+      className="min-h-[80rem] min-w-[68rem]"
       render={(onSuccess) => <AccountAddWatchedForm onSuccess={onSuccess} />}
     />
   )

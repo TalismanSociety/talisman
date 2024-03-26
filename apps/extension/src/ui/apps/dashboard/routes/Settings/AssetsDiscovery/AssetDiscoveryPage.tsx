@@ -566,7 +566,7 @@ export const AssetDiscoveryPage = () => {
       centered
       backTo="/settings/networks-tokens"
       large
-      className="[&>section>div.relative]:max-w-[81rem]"
+      className="max-w-[81rem]"
     >
       <HeaderBlock
         title={t("Asset Discovery")}

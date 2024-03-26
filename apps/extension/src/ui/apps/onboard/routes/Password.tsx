@@ -103,9 +103,9 @@ export const PasswordPage = () => {
   )
 
   return (
-    <OnboardLayout withBack analytics={ANALYTICS_PAGE}>
+    <OnboardLayout withBack analytics={ANALYTICS_PAGE} className="min-h-[60rem] min-w-[60rem]">
       {/* eslint-disable-next-line jsx-a11y/alt-text */}
-      <img src={imgPassword} width="960" className="absolute left-32 top-[25rem] opacity-30 " />
+      <img src={imgPassword} width="960" className="fixed left-32 top-[25rem] opacity-30 " />
       {passwordExists && (
         <OnboardDialog title={t("You've already set your password")}>
           <div className="text-body-secondary flex flex-col gap-8">

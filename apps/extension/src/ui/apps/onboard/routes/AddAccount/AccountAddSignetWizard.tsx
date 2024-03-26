@@ -3,5 +3,8 @@ import { AccountAddSignetWizard } from "@ui/domains/Account/AccountAdd/AccountAd
 import { AccountAddWrapper } from "./AccountAddWrapper"
 
 export const AccountAddSignetOnboardingWizard = () => (
-  <AccountAddWrapper render={(onSuccess) => <AccountAddSignetWizard onSuccess={onSuccess} />} />
+  <AccountAddWrapper
+    className="min-h-[90rem] min-w-[68rem]"
+    render={(onSuccess) => <AccountAddSignetWizard onSuccess={onSuccess} />}
+  />
 )

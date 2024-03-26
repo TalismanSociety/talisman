@@ -4,6 +4,9 @@ import { AccountAddWrapper } from "./AccountAddWrapper"
 
 export const AccountAddMnemonicOnboardWizard = () => {
   return (
-    <AccountAddWrapper render={(onSuccess) => <AccountAddMnemonicWizard onSuccess={onSuccess} />} />
+    <AccountAddWrapper
+      className="min-h-[88rem] min-w-[68rem]"
+      render={(onSuccess) => <AccountAddMnemonicWizard onSuccess={onSuccess} />}
+    />
   )
 }

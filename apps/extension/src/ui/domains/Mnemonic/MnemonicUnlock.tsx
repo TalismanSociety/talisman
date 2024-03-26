@@ -2,7 +2,6 @@ import { yupResolver } from "@hookform/resolvers/yup"
 import { CapsLockWarningIcon } from "@talisman/components/CapsLockWarningIcon"
 import { provideContext } from "@talisman/util/provideContext"
 import { KeyIcon } from "@talismn/icons"
-import { classNames } from "@talismn/util"
 import { api } from "@ui/api"
 import { useSensitiveState } from "@ui/hooks/useSensitiveState"
 import { FC, ReactNode, useCallback, useEffect } from "react"
@@ -56,9 +55,6 @@ type MnemonicUnlockProps = {
   title?: ReactNode
 }
 
-const DEFAULT_WIDTH = "w-[54rem]"
-const LARGE_WIDTH = "lg:w-[74rem]"
-
 const BaseMnemonicUnlock: FC<MnemonicUnlockProps> = ({ children, buttonText, title }) => {
   const { t } = useTranslation()
   const {
@@ -92,14 +88,9 @@ const BaseMnemonicUnlock: FC<MnemonicUnlockProps> = ({ children, buttonText, tit
   }, [mnemonic, setFocus])
 
   return mnemonic ? (
-    <div className={classNames(mnemonic.split(" ").length > 12 ? LARGE_WIDTH : DEFAULT_WIDTH)}>
-      {children}
-    </div>
+    <div className="w-[58rem]">{children}</div>
   ) : (
-    <form
-      onSubmit={handleSubmit(submit)}
-      className={`flex flex-col justify-between gap-8 ${DEFAULT_WIDTH}`}
-    >
+    <form onSubmit={handleSubmit(submit)} className="flex w-[58rem] flex-col justify-between gap-8">
       <FormFieldContainer label={title} error={errors.password?.message}>
         <FormFieldInputText
           before={<KeyIcon className="h-10 w-10 opacity-50" />}

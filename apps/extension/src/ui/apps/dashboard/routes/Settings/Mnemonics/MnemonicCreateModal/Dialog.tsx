@@ -13,7 +13,7 @@ export const MnemonicCreateModalDialog = ({
   const { cancel } = useMnemonicCreateModal()
 
   return (
-    <ModalDialog className="!min-w-[64rem]" title={title} onClose={cancel}>
+    <ModalDialog title={title} className="w-[64rem]" onClose={cancel}>
       {children}
     </ModalDialog>
   )

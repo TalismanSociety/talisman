@@ -19,13 +19,13 @@ export const OnboardLayout: FC<LayoutProps> = ({
 }) => (
   <div
     className={classNames(
-      "flex h-screen w-screen items-center justify-center overflow-auto",
+      "sm:pt-auto flex h-full w-full items-center justify-center pt-12",
       className
     )}
   >
     {!!withBack && (
       <BackButton
-        className="bg-body hover:bg-body absolute left-32 top-32 z-10 bg-opacity-10 transition-colors ease-in hover:bg-opacity-20"
+        className="bg-body hover:bg-body absolute left-4 top-4 z-20 bg-opacity-10 transition-colors ease-in hover:bg-opacity-20 sm:left-32 sm:top-32"
         analytics={analytics}
       />
     )}
