@@ -141,7 +141,7 @@ export const AccountContextMenu = forwardRef<HTMLElement, Props>(function Accoun
               {canCopyAddress && (
                 <ContextMenuItem onClick={copyAddress}>{t("Copy address")}</ContextMenuItem>
               )}
-              {account && <ViewOnExplorerMenuItem account={account} />}
+              <ViewOnExplorerMenuItem account={account} />
               {canRename && (
                 <ContextMenuItem onClick={openAccountRenameModal}>{t("Rename")}</ContextMenuItem>
               )}
