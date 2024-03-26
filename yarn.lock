@@ -13155,6 +13155,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"dayjs@npm:^1.11.10":
+  version: 1.11.10
+  resolution: "dayjs@npm:1.11.10"
+  checksum: a6b5a3813b8884f5cd557e2e6b7fa569f4c5d0c97aca9558e38534af4f2d60daafd3ff8c2000fed3435cfcec9e805bcebd99f90130c6d1c5ef524084ced588c4
+  languageName: node
+  linkType: hard
+
 "dcent-web-connector@npm:^0.14.1":
   version: 0.14.1
   resolution: "dcent-web-connector@npm:0.14.1"
@@ -15147,6 +15154,7 @@ __metadata:
     crypto-browserify: 3.12.0
     css-loader: ^6.7.3
     date-fns: ^2.30.0
+    dayjs: ^1.11.10
     dcent-web-connector: ^0.14.1
     dexie: ^3.2.4
     dexie-react-hooks: ^1.1.7
