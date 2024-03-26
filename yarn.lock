@@ -9449,6 +9449,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@types/webfontloader@npm:^1.6.38":
+  version: 1.6.38
+  resolution: "@types/webfontloader@npm:1.6.38"
+  checksum: 2be3d1e43837ddeea8ea0390d0952fc735abc6d713b2b87843ad0a6d4acd6628b2ce8f0280ec81d48144a23e358d1bd22c16e4717cc8d67f75c1cd1ddc2d0f27
+  languageName: node
+  linkType: hard
+
 "@types/webpack-sources@npm:^3.2.0":
   version: 3.2.0
   resolution: "@types/webpack-sources@npm:3.2.0"
@@ -25201,6 +25208,7 @@ __metadata:
     "@talismn/util": "workspace:*"
     "@types/react": 18.0.14
     "@types/react-dom": 18.2.18
+    "@types/webfontloader": ^1.6.38
     autoprefixer: ^10.4.12
     color: 4.2.3
     eslint: ^8.52.0
@@ -25213,6 +25221,7 @@ __metadata:
     react-use: 17.4.0
     tailwindcss: ^3.4.1
     typescript: ^5.2.2
+    webfontloader: ^1.6.28
   peerDependencies:
     "@floating-ui/react": ">=0.20.1"
     "@headlessui/react": ">=1.7.13"
@@ -27117,6 +27126,13 @@ __metadata:
   version: 0.7.0
   resolution: "webextension-polyfill@npm:0.7.0"
   checksum: fb738a5de07feb593875e02f25c3ab4276c8736118929556c8d4bdf965bb0f11c96ea263cd397b9b21259e8faf2dce2eaaa42ce08c922d96de7adb5896ec7d10
+  languageName: node
+  linkType: hard
+
+"webfontloader@npm:^1.6.28":
+  version: 1.6.28
+  resolution: "webfontloader@npm:1.6.28"
+  checksum: cbebbe593cb0d27dbb4d418f7f96bd9893024f1f2062e858af76209b6524e25d766964b6e2a724f3b694fadef661dd3a01065455a96df05337b3281ca09ab656
   languageName: node
   linkType: hard
 
