@@ -1,5 +1,5 @@
 import { AnyBalanceModule, Hydrate, defaultBalanceModules } from "@talismn/balances"
-import { ChainId } from "@talismn/chaindata-provider"
+import { ChainId, TokenId } from "@talismn/chaindata-provider"
 import { CoingeckoConfig, DEFAULT_COINGECKO_CONFIG } from "@talismn/token-rates"
 import { atom } from "jotai"
 
@@ -23,3 +23,4 @@ export const coingeckoConfigAtom = atom<CoingeckoConfig, [Partial<CoingeckoConfi
 export const enableTestnetsAtom = atom<boolean>(false)
 
 export const enabledChainsAtom = atom<ChainId[] | undefined>(undefined)
+export const enabledTokensAtom = atom<TokenId[] | undefined>(undefined)
