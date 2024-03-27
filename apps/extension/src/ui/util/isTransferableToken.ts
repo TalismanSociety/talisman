@@ -11,6 +11,9 @@ export const UNTRANSFERABLE_TOKENS = [
   "interlay-substrate-native",
   "kintsugi-substrate-native",
   "mangata-substrate-native",
+
+  // specific cases
+  "137-evm-erc20-0x0000000000000000000000000000000000001010",
 ]
 
 export const isTransferableToken = (t: Token) => {
