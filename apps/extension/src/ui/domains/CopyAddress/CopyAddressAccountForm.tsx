@@ -159,7 +159,7 @@ export const AccountsList: FC<AccountsListProps> = ({ selected, accounts, onSele
 }
 
 export const CopyAddressAccountForm = () => {
-  const { address, setAddress, chain } = useCopyAddressWizard()
+  const { address, setAddress, chain, evmNetwork } = useCopyAddressWizard()
   const { t } = useTranslation()
   const [search, setSearch] = useState("")
 
@@ -173,8 +173,9 @@ export const CopyAddressAccountForm = () => {
           (account) =>
             !chain ||
             (account.type && isAccountCompatibleWithChain(chain, account.type, account.genesisHash))
-        ),
-    [allAccounts, chain, search]
+        )
+        .filter((account) => !evmNetwork || account.type === "ethereum"),
+    [allAccounts, chain, evmNetwork, search]
   )
 
   return (
