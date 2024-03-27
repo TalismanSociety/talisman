@@ -18,9 +18,9 @@ import { liveQuery } from "dexie"
 import { atom } from "jotai"
 import { atomEffect } from "jotai-effect"
 import { atomWithObservable } from "jotai/utils"
-import { from } from "rxjs"
 
 import log from "../log"
+import { dexieToRxjs } from "../util/dexieToRxjs"
 import { allAddressesAtom } from "./allAddresses"
 import { balanceModulesAtom } from "./balanceModules"
 import {
@@ -59,7 +59,7 @@ export const allBalancesAtom = atom(async (get) => {
 })
 
 const balancesDbAtom = atomWithObservable<BalanceJson[] | Promise<BalanceJson[]>>(() =>
-  from(
+  dexieToRxjs(
     // sync from db
     liveQuery(() => balancesDb.balances.toArray())
   )
