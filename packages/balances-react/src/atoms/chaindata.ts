@@ -5,8 +5,9 @@ import { liveQuery } from "dexie"
 import { atom } from "jotai"
 import { atomWithObservable } from "jotai/utils"
 import isEqual from "lodash/isEqual"
-import { combineLatest, distinctUntilChanged, from, map } from "rxjs"
+import { combineLatest, distinctUntilChanged, map } from "rxjs"
 
+import { dexieToRxjs } from "../util/dexieToRxjs"
 import { chaindataProviderAtom } from "./chaindataProvider"
 import { enableTestnetsAtom } from "./config"
 
@@ -79,7 +80,7 @@ export const chaindataAtom = atomWithObservable((get) => {
     map(filterMapEnabledTokens),
     distinctUntilIsEqual
   )
-  const miniMetadatasObservable = from(liveQuery(() => balancesDb.miniMetadatas.toArray()))
+  const miniMetadatasObservable = dexieToRxjs(liveQuery(() => balancesDb.miniMetadatas.toArray()))
   const miniMetadatas = combineLatest([
     miniMetadatasObservable.pipe(distinctUntilIsEqual),
     chainsById,

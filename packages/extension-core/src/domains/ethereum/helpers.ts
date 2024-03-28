@@ -5,6 +5,10 @@ import {
   Hex,
   TransactionRequest,
   TransactionRequestBase,
+  TransactionSerializable,
+  TransactionSerializableEIP1559,
+  TransactionSerializableEIP2930,
+  TransactionSerializableLegacy,
   encodeFunctionData,
   getAddress,
   hexToBigInt,
@@ -84,6 +88,8 @@ export const getErc20TokenId = (
 export const serializeTransactionRequest = (
   tx: TransactionRequest<bigint | string>
 ): TransactionRequest<string> => {
+  if (tx.type === "eip4844") throw new Error("Unsupported transaction type")
+
   const serialized: TransactionRequest<string> = { from: tx.from }
 
   if (tx.to !== undefined) serialized.to = tx.to
@@ -155,6 +161,8 @@ export const serializeGasSettings = (
 export const parseTransactionRequest = (
   tx: TransactionRequest<string>
 ): TransactionRequest<bigint> => {
+  if (tx.type === "eip4844") throw new Error("Unsupported transaction type")
+
   const parsed: TransactionRequest<bigint> = { from: tx.from }
 
   if (tx.to !== undefined) parsed.to = tx.to
@@ -186,6 +194,59 @@ export const parseRpcTransactionRequestBase = (
   if (isHex(rtx.nonce)) txBase.nonce = hexToNumber(rtx.nonce)
 
   return txBase
+}
+
+export const getTransactionSerializable = (
+  txRequest: TransactionRequest,
+  chainId: number
+): TransactionSerializable => {
+  switch (txRequest.type) {
+    case "eip1559": {
+      const res: TransactionSerializableEIP1559 = {
+        chainId,
+        type: "eip1559",
+        data: txRequest.data,
+        gas: txRequest.gas,
+        maxFeePerGas: txRequest.maxFeePerGas,
+        maxPriorityFeePerGas: txRequest.maxPriorityFeePerGas,
+        nonce: txRequest.nonce,
+        to: txRequest.to,
+        value: txRequest.value,
+        accessList: txRequest.accessList,
+      }
+      return res
+    }
+    case "legacy": {
+      const res: TransactionSerializableLegacy = {
+        chainId,
+        type: "legacy",
+        data: txRequest.data,
+        gas: txRequest.gas,
+        gasPrice: txRequest.gasPrice,
+        nonce: txRequest.nonce,
+        to: txRequest.to,
+        value: txRequest.value,
+        accessList: txRequest.accessList,
+      }
+      return res
+    }
+    case "eip2930": {
+      const res: TransactionSerializableEIP2930 = {
+        chainId,
+        type: "eip2930",
+        data: txRequest.data,
+        gas: txRequest.gas,
+        gasPrice: txRequest.gasPrice,
+        nonce: txRequest.nonce,
+        to: txRequest.to,
+        value: txRequest.value,
+      }
+      return res
+    }
+
+    default:
+      throw new Error("Unsupported transaction type")
+  }
 }
 
 const TX_GAS_LIMIT_DEFAULT = 250000n

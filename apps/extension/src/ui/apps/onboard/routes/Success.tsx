@@ -17,7 +17,7 @@ export const SuccessPage = () => {
   useAnalyticsPageView(SUCCESS_PAGE)
   const { completeOnboarding } = useOnboard()
   return (
-    <OnboardLayout analytics={SUCCESS_PAGE}>
+    <OnboardLayout analytics={SUCCESS_PAGE} className="min-h-[48rem] min-w-[59rem]">
       <div className="inline-flex w-[59rem] flex-col items-center justify-center gap-12 rounded-sm p-12">
         <div className="text-center text-lg">Welcome, brave Seeker!</div>
         <img src={imgHandOrb} className="w-[23rem]" alt="Talisman Hand Logo" />

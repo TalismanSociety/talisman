@@ -1,11 +1,14 @@
 import { yupResolver } from "@hookform/resolvers/yup"
+import { CapsLockWarningIcon } from "@talisman/components/CapsLockWarningIcon"
 import { SuspenseTracker } from "@talisman/components/SuspenseTracker"
 import { HandMonoTransparentLogo } from "@talisman/theme/logos"
+import { EyeIcon, EyeOffIcon } from "@talismn/icons"
 import { classNames } from "@talismn/util"
 import { api } from "@ui/api"
 import { LoginBackground } from "@ui/apps/popup/components/LoginBackground"
 import { useAnalytics } from "@ui/hooks/useAnalytics"
 import { useFirstAccountColors } from "@ui/hooks/useFirstAccountColors"
+import { useSetting } from "@ui/hooks/useSettings"
 import { Suspense, useCallback, useEffect, useLayoutEffect, useRef, useState } from "react"
 import {
   SubmitHandler,
@@ -15,11 +18,69 @@ import {
   useForm,
 } from "react-hook-form"
 import { useTranslation } from "react-i18next"
-import { Button, FormFieldInputText } from "talisman-ui"
+import { Button, FormFieldInputText, Tooltip, TooltipContent, TooltipTrigger } from "talisman-ui"
 import * as yup from "yup"
 
 import { PopupContent, PopupFooter, PopupLayout } from "../Layout/PopupLayout"
 import { ResetWallet } from "./ResetWallet"
+
+const HideBalancesToggle = () => {
+  const { t } = useTranslation()
+  const [hideBalances, setHideBalances] = useSetting("hideBalances")
+
+  return (
+    <Tooltip placement="bottom-end">
+      <TooltipTrigger asChild>
+        <label
+          htmlFor="showBalances"
+          className={classNames(
+            "absolute right-10 top-10 z-20",
+            "inline-flex cursor-pointer items-center"
+          )}
+        >
+          <input
+            id="showBalances"
+            type="checkbox"
+            className="peer sr-only"
+            defaultChecked={!hideBalances}
+            onChange={(e) => setHideBalances(!e.target.checked)}
+          />
+          <div
+            className={classNames(
+              "bg-grey-600 peer h-14 w-28 shrink-0 rounded-full",
+              "peer-focus-visible:ring-body peer-focus:outline-none peer-focus-visible:ring-2"
+            )}
+          ></div>
+          <div
+            className={classNames(
+              "absolute left-1 top-1 flex h-12 w-12 ",
+              "bg-grey-800 rounded-full",
+              "peer-checked:bg-primary transition peer-checked:translate-x-14"
+            )}
+          >
+            <EyeIcon
+              className={classNames(
+                "absolute left-2 top-2 h-8 w-8",
+                "text-body-black transition-opacity",
+                hideBalances ? "opacity-0" : "opacity-100"
+              )}
+            />
+            <EyeOffIcon
+              className={classNames(
+                "absolute left-2 top-2 h-8 w-8",
+                "text-body transition-opacity",
+                !hideBalances ? "opacity-0" : "opacity-100"
+              )}
+            />
+          </div>
+        </label>
+      </TooltipTrigger>
+      <TooltipContent>
+        {hideBalances ? t("Balances: hidden") : t("Balances: visible")}
+      </TooltipContent>
+    </Tooltip>
+  )
+}
 
 type FormData = {
   password: string
@@ -92,6 +153,7 @@ const Login = ({ setShowResetWallet }: { setShowResetWallet: () => void }) => {
     <PopupLayout>
       <Suspense fallback={<SuspenseTracker name="Background" />}>
         <Background />
+        <HideBalancesToggle />
       </Suspense>
       <PopupContent
         className={classNames("z-10 pt-32 text-center", isSubmitting && "animate-pulse")}
@@ -115,6 +177,7 @@ const Login = ({ setShowResetWallet }: { setShowResetWallet: () => void }) => {
             data-lpignore
             containerProps={INPUT_CONTAINER_PROPS}
             className="placeholder:text-grey-500"
+            after={<CapsLockWarningIcon />}
           />
           <Button
             type="submit"

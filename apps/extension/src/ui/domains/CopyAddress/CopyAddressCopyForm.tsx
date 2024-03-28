@@ -123,14 +123,14 @@ const ExternalAddressWarning = () => {
 }
 
 const CopyButton = () => {
-  const { chainId, copy } = useCopyAddressWizard()
+  const { networkId, copy } = useCopyAddressWizard()
   const { isOpen, open, close } = useOpenClose()
 
   const handleCopyClick = useCallback(() => {
     // generic substrate format, show exchange warning
-    if (chainId === null) open()
+    if (networkId === null) open()
     else copy()
-  }, [chainId, copy, open])
+  }, [networkId, copy, open])
 
   const handleContinueClick = useCallback(() => {
     copy()
@@ -156,7 +156,7 @@ const CopyButton = () => {
 
 export const CopyAddressCopyForm = () => {
   const {
-    chainId,
+    networkId,
     formattedAddress,
     logo,
     chain,
@@ -184,12 +184,12 @@ export const CopyAddressCopyForm = () => {
               <AddressPillButton address={formattedAddress} onClick={goToAddressPage} />
             </div>
           </div>
-          {chainId !== undefined && (
+          {networkId !== undefined && (
             <div className="text-body-secondary flex h-16 w-full items-center justify-between">
               <div>{t("Network")}</div>
               <div>
                 <NetworkPillButton
-                  chainId={chainId}
+                  chainId={networkId}
                   onClick={goToNetworkOrTokenPage}
                   address={formattedAddress}
                 />
@@ -243,7 +243,7 @@ export const CopyAddressCopyForm = () => {
               </div>
             </div>
           )}
-          {!isEthereum && chainId === null && (
+          {!isEthereum && networkId === null && (
             <div className="text-body-secondary leading-paragraph flex flex-col items-center gap-1 text-center">
               <div>
                 <Trans

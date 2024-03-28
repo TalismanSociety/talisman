@@ -1,6 +1,6 @@
 {
   "name": "extension",
-  "version": "1.23.0",
+  "version": "1.24.0",
   "private": true,
   "license": "GPL-3.0-or-later",
   "dependencies": {
@@ -41,7 +41,7 @@
     "@talismn/on-chain-id": "workspace:*",
     "@talismn/orb": "workspace:*",
     "@talismn/scale": "workspace:*",
-    "@talismn/siws": "^0.0.5",
+    "@talismn/siws": "^0.0.18",
     "@talismn/subshape-fork": "^0.0.2",
     "@talismn/token-rates": "workspace:*",
     "@talismn/util": "workspace:*",
@@ -125,7 +125,7 @@
     "ts-results": "3.3.0",
     "typescript": "^5.2.2",
     "url-join": "^5.0.0",
-    "viem": "^1.21.4",
+    "viem": "^2.8.18",
     "webextension-polyfill": "0.8.0",
     "webpack": "^5.89.0",
     "webpack-cli": "^4.10.0",

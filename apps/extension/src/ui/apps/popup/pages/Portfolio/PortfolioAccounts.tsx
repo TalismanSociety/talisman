@@ -83,7 +83,7 @@ const CopyAddressButton: FC<{ option: AccountOption }> = ({ option }) => {
         })
         open({
           address: option.address,
-          chainId: chain?.id,
+          networkId: chain?.id,
         })
       }
     },

@@ -1,4 +1,5 @@
 import { yupResolver } from "@hookform/resolvers/yup"
+import { CapsLockWarningIcon } from "@talisman/components/CapsLockWarningIcon"
 import { provideContext } from "@talisman/util/provideContext"
 import { KeyIcon } from "@talismn/icons"
 import { api } from "@ui/api"
@@ -105,6 +106,7 @@ const BasePasswordUnlock = ({ className, children, buttonText, title }: Password
               placeholder={t("Enter password")}
               spellCheck={false}
               data-lpignore
+              after={<CapsLockWarningIcon />}
             />
           </FormFieldContainer>
         </div>

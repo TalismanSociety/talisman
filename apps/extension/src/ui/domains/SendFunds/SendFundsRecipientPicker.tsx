@@ -36,7 +36,10 @@ export const SendFundsRecipientPicker = () => {
     return isFromEthereum ? isEthereumAddress(search) : isValidSubstrateAddress(search)
   }, [from, isFromEthereum, search])
 
-  const [nsLookup, { isNsLookup, isNsFetching }] = useResolveNsName(search)
+  const [nsLookup, { isNsLookup, isNsFetching }] = useResolveNsName(search, {
+    azns: !!chain,
+    ens: isFromEthereum,
+  })
 
   const normalize = useCallback(
     (addr = "") => {

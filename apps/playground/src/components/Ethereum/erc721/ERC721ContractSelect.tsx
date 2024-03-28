@@ -1,19 +1,12 @@
 import { useCallback, useRef, useState } from "react"
-import {
-  erc721ABI,
-  useAccount,
-  useContractRead,
-  useNetwork,
-  usePublicClient,
-  useWalletClient,
-} from "wagmi"
+import { erc721Abi } from "viem"
+import { useAccount, useContractRead, usePublicClient, useWalletClient } from "wagmi"
 
 import { useDeployment } from "../../../contracts"
 import { useErc721Contract } from "./context"
 
 export const ERC721ContractSelect = () => {
-  const { chain } = useNetwork()
-  const { isConnected, address: account } = useAccount()
+  const { isConnected, address: account, chain } = useAccount()
 
   const [address, setAddress] = useErc721Contract()
 
@@ -30,6 +23,7 @@ export const ERC721ContractSelect = () => {
     setDeployError(undefined)
     try {
       if (!walletClient) throw new Error("No wallet client")
+      if (!publicClient) throw new Error("No public client")
 
       const hash = await walletClient.sendTransaction({
         data: bytecode as `0x${string}`,
@@ -52,17 +46,17 @@ export const ERC721ContractSelect = () => {
 
   const { data: symbol, error: errorSymbol } = useContractRead({
     address: address as `0x${string}`,
-    abi: erc721ABI,
+    abi: erc721Abi,
     functionName: "symbol",
-    enabled: !!address,
+    query: { enabled: !!address },
   })
 
   const { data: balance, error: errorBalance } = useContractRead({
     address: address as `0x${string}`,
-    abi: erc721ABI,
+    abi: erc721Abi,
     functionName: "balanceOf",
     args: [account as `0x${string}`],
-    enabled: isConnected && !!account,
+    query: { enabled: isConnected && !!account },
   })
 
   if (!chain || !isConnected) return null

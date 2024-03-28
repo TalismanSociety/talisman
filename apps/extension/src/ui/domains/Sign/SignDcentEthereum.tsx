@@ -1,6 +1,6 @@
 import i18next from "@common/i18nConfig"
 import { isHexString } from "@ethereumjs/util"
-import { EthSignMessageMethod } from "@extension/core"
+import { EthSignMessageMethod, getTransactionSerializable } from "@extension/core"
 import { AccountJsonDcent } from "@extension/core"
 import { log } from "@extension/shared"
 import { hexToString } from "@polkadot/util"
@@ -12,7 +12,7 @@ import DcentWebConnector from "dcent-web-connector"
 import { FC, useCallback, useEffect, useState } from "react"
 import { useTranslation } from "react-i18next"
 import { Button } from "talisman-ui"
-import { TransactionRequest, TransactionSerializable } from "viem"
+import { TransactionRequest } from "viem"
 
 import { ErrorMessageDrawer } from "./ErrorMessageDrawer"
 import { SignHardwareEthereumProps } from "./SignHardwareEthereum"
@@ -46,13 +46,7 @@ const signWithDcent = async (
 
     case "eth_sendTransaction": {
       const txRequest = payload as TransactionRequest
-      const baseTx: TransactionSerializable = {
-        ...txRequest,
-        // viem's legacy serialization changes the chainId once deserialized, tx can't be submitted
-        // can be tested on BSC
-        type: txRequest.type === "legacy" ? "eip2930" : "eip1559",
-        chainId,
-      }
+      const baseTx = getTransactionSerializable(txRequest, chainId)
 
       // Note : most fields can't be undefined
       const args = [

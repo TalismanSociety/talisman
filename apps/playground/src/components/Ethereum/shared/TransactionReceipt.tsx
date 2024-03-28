@@ -1,11 +1,11 @@
 import { formatUnits } from "ethers/lib/utils.js"
 import { useMemo } from "react"
-import { useWaitForTransaction } from "wagmi"
+import { useWaitForTransactionReceipt } from "wagmi"
 
 export const TransactionReceipt = ({ hash }: { hash?: string }) => {
-  const { data, error, isLoading, isError } = useWaitForTransaction({
-    enabled: !!hash,
+  const { data, error, isLoading, isError } = useWaitForTransactionReceipt({
     hash: hash as `0x${string}`,
+    query: { enabled: !!hash },
   })
 
   const resolvedData = useMemo(

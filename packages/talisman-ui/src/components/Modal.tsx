@@ -49,7 +49,7 @@ export const Modal: FC<ModalProps> = ({
       ></Transition.Child>
       <div
         className={classNames(
-          "left-0 top-0 z-20 h-full w-full",
+          "left-0 top-0 z-20 h-full w-full overflow-hidden",
           "pointer-events-none flex flex-col items-center",
           containerId ? "absolute" : "fixed",
           anchor === "center" && "justify-center",
@@ -58,7 +58,7 @@ export const Modal: FC<ModalProps> = ({
       >
         <Transition.Child
           className={classNames(
-            "pointer-events-auto max-h-full max-w-full overflow-hidden",
+            "pointer-events-auto max-h-[100dvh] max-w-[dvw] overflow-hidden",
             className
           )}
           enter="ease-out duration-200"

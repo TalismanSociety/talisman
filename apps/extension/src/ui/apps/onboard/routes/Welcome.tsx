@@ -52,7 +52,7 @@ export const WelcomePage = () => {
   }, [setStage])
 
   return (
-    <OnboardLayout analytics={ANALYTICS_PAGE}>
+    <OnboardLayout analytics={ANALYTICS_PAGE} className="min-h-[60rem] min-w-[54rem]">
       <div className="my-[8rem] flex flex-col items-center justify-center gap-32 ">
         <div className="welcome-text flex flex-col items-center gap-14 text-center xl:w-[76rem]">
           <div className="flex flex-col items-center gap-10 text-white xl:w-[65.2rem]">

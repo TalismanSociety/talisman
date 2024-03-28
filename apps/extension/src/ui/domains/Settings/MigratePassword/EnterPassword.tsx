@@ -1,4 +1,5 @@
 import { yupResolver } from "@hookform/resolvers/yup"
+import { CapsLockWarningIcon } from "@talisman/components/CapsLockWarningIcon"
 import { api } from "@ui/api"
 import { useCallback, useEffect } from "react"
 import { useForm } from "react-hook-form"
@@ -87,6 +88,7 @@ export const EnterPasswordForm = () => {
             data-lpignore
             // eslint-disable-next-line jsx-a11y/no-autofocus
             autoFocus
+            after={<CapsLockWarningIcon />}
           />
         </FormFieldContainer>
         <Button

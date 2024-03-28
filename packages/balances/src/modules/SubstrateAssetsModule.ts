@@ -439,7 +439,16 @@ async function buildQueries(
         const isFrozen = balance?.status === "Frozen"
         const amount = (balance?.balance ?? 0n).toString()
 
-        const free = token.isFrozen || isFrozen ? "0" : amount
+        // due to the following balance calculations, which are made in the `Balance` type:
+        //
+        // total balance        = (free balance) + (reserved balance)
+        // transferable balance = (free balance) - (frozen balance)
+        //
+        // when `isFrozen` is true we need to set **both** the `free` and `frozen` amounts
+        // of this balance to the value we received from the RPC.
+        //
+        // if we only set the `frozen` amount, then the `total` calculation will be incorrect!
+        const free = amount
         const frozen = token.isFrozen || isFrozen ? amount : "0"
 
         return new Balance({

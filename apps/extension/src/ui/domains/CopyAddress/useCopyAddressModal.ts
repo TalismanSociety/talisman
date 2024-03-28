@@ -29,10 +29,10 @@ export const useCopyAddressModal = () => {
           return
         }
 
-        const chain = opts.chainId ? chainsMap[opts.chainId] : null
+        const chain = opts.networkId ? chainsMap[opts.networkId] : null
 
         // `chainId === null` is valid and means we want to display the substrate (generic) format
-        if ((opts.chainId === null || chain) && isValidSubstrateAddress(opts.address)) {
+        if ((opts.networkId === null || chain) && isValidSubstrateAddress(opts.address)) {
           const formatted = convertAddress(opts.address, chain?.prefix ?? null)
           copyAddress(formatted, onQrClick)
           return

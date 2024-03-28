@@ -3,6 +3,7 @@ import { FadeIn } from "@talisman/components/FadeIn"
 import { ArrowDownIcon, CreditCardIcon, LockIcon } from "@talismn/icons"
 import { classNames } from "@talismn/util"
 import { api } from "@ui/api"
+import { TokenContextMenu } from "@ui/apps/dashboard/routes/Portfolio/TokenContextMenu"
 import { ChainLogo } from "@ui/domains/Asset/ChainLogo"
 import { Fiat } from "@ui/domains/Asset/Fiat"
 import { TokenLogo } from "@ui/domains/Asset/TokenLogo"
@@ -60,6 +61,12 @@ const ChainTokenBalances = ({ chainId, balances }: AssetRowProps) => {
             <div>{networkType}</div>
           </div>
         </div>
+        {tokenId && (
+          <TokenContextMenu
+            tokenId={tokenId}
+            className="hover:bg-grey-700 focus-visible:bg-grey-700 rounded-full"
+          />
+        )}
       </div>
       {detailRows
         .filter((row) => row.tokens.gt(0))

@@ -29,7 +29,7 @@ export const MainHeader = () => {
   const handleCopyClick = useCallback(() => {
     openCopyAddressModal({
       address: account?.address,
-      chainId: chain?.id,
+      networkId: chain?.id,
     })
     genericEvent("open receive", { from: "sidebar" })
   }, [account?.address, chain?.id, genericEvent, openCopyAddressModal])

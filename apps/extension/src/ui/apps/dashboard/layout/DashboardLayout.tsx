@@ -9,6 +9,7 @@ import { AccountRenameModal } from "@ui/domains/Account/AccountRenameModal"
 import { BuyTokensModal } from "@ui/domains/Asset/Buy/BuyTokensModal"
 import { CopyAddressModal } from "@ui/domains/CopyAddress"
 import { MigratePasswordModal } from "@ui/domains/Settings/MigratePassword/MigratePasswordModal"
+import { ExplorerNetworkPickerModal } from "@ui/domains/ViewOnExplorer"
 import { FC, Suspense, useEffect, useRef, useState } from "react"
 import { useLocation } from "react-router-dom"
 
@@ -54,6 +55,7 @@ const DashboardNotificationsAndModals = () => {
       <AccountExportPrivateKeyModal />
       <AccountRemoveModal />
       <CopyAddressModal />
+      <ExplorerNetworkPickerModal />
       <MigratePasswordModal />
       <OnboardingToast />
     </Suspense>
@@ -78,20 +80,21 @@ export const DashboardLayout: FC<LayoutProps> = ({
   }, [location.pathname])
 
   return (
-    <main className={classNames("flex h-screen w-screen", className)}>
+    <main className="flex h-dvh w-dvw">
       <Sidebar />
       <section
         ref={scrollableRef}
         className={classNames(
-          "scrollable scrollable-800 flex-grow overflow-hidden overflow-y-scroll p-[5.2rem]",
-          centered && "flex items-start justify-center"
+          "scrollable scrollable-800 flex-grow overflow-x-auto overflow-y-scroll p-10 sm:p-[5.2rem]"
         )}
       >
         <Suspense fallback={<SuspenseTracker name="DashboardLayout.main" />}>
           <div
             className={classNames(
-              "relative w-full",
-              centered && (large ? "max-w-[120rem]" : "max-w-[66rem]")
+              "relative w-full min-w-[66rem]",
+              centered && "mx-auto",
+              centered && (large ? "max-w-[120rem]" : "max-w-[66rem]"),
+              className
             )}
           >
             {!!withBack && <BackButton analytics={analytics} className="mb-[3rem]" to={backTo} />}

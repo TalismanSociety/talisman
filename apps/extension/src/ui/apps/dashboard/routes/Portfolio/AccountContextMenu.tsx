@@ -1,3 +1,4 @@
+import { AccountJsonAny } from "@extension/core"
 import { MoreHorizontalIcon } from "@talismn/icons"
 import { useAccountExportModal } from "@ui/domains/Account/AccountExportModal"
 import { useAccountExportPrivateKeyModal } from "@ui/domains/Account/AccountExportPrivateKeyModal"
@@ -5,11 +6,12 @@ import { useAccountRemoveModal } from "@ui/domains/Account/AccountRemoveModal"
 import { useAccountRenameModal } from "@ui/domains/Account/AccountRenameModal"
 import { useCopyAddressModal } from "@ui/domains/CopyAddress"
 import { useSelectedAccount } from "@ui/domains/Portfolio/useSelectedAccount"
+import { useViewOnExplorer } from "@ui/domains/ViewOnExplorer"
 import { useAccountByAddress } from "@ui/hooks/useAccountByAddress"
 import { useAccountToggleIsPortfolio } from "@ui/hooks/useAccountToggleIsPortfolio"
 import { useAnalytics } from "@ui/hooks/useAnalytics"
 import { useChainByGenesisHash } from "@ui/hooks/useChainByGenesisHash"
-import React, { forwardRef, useCallback, useMemo } from "react"
+import React, { FC, Suspense, forwardRef, useCallback, useMemo } from "react"
 import { useTranslation } from "react-i18next"
 import { useNavigate } from "react-router-dom"
 import {
@@ -19,6 +21,21 @@ import {
   ContextMenuTrigger,
   PopoverOptions,
 } from "talisman-ui"
+
+const ViewOnExplorerMenuItem: FC<{ account: AccountJsonAny }> = ({ account }) => {
+  const { t } = useTranslation()
+  const { open, canOpen } = useViewOnExplorer(account.address, account?.genesisHash ?? undefined)
+  const { genericEvent } = useAnalytics()
+
+  const handleClick = useCallback(() => {
+    open()
+    genericEvent("open view on explorer", { from: "account menu" })
+  }, [genericEvent, open])
+
+  if (!canOpen) return null
+
+  return <ContextMenuItem onClick={handleClick}>{t("View on explorer")}</ContextMenuItem>
+}
 
 type Props = {
   analyticsFrom: string
@@ -69,7 +86,7 @@ export const AccountContextMenu = forwardRef<HTMLElement, Props>(function Accoun
   const copyAddress = useCallback(() => {
     if (!account) return
     genericEvent("open copy address", { from: analyticsFrom })
-    openCopyAddressModal({ address: account.address, chainId: chain?.id })
+    openCopyAddressModal({ address: account.address, networkId: chain?.id })
   }, [account, analyticsFrom, chain?.id, genericEvent, openCopyAddressModal])
 
   const { open: _openAccountRenameModal } = useAccountRenameModal()
@@ -115,35 +132,38 @@ export const AccountContextMenu = forwardRef<HTMLElement, Props>(function Accoun
         {trigger ? trigger : <MoreHorizontalIcon className="shrink-0" />}
       </ContextMenuTrigger>
       <ContextMenuContent className="border-grey-800 z-50 flex w-min flex-col whitespace-nowrap rounded-sm border bg-black px-2 py-3 text-left text-sm shadow-lg">
-        {account && (
-          <>
-            {canToggleIsPortfolio && (
-              <ContextMenuItem onClick={toggleIsPortfolio}>{toggleLabel}</ContextMenuItem>
-            )}
-            {canCopyAddress && (
-              <ContextMenuItem onClick={copyAddress}>{t("Copy address")}</ContextMenuItem>
-            )}
-            {canRename && (
-              <ContextMenuItem onClick={openAccountRenameModal}>{t("Rename")}</ContextMenuItem>
-            )}
-            {canExport && (
-              <ContextMenuItem onClick={openAccountExportModal}>
-                {t("Export as JSON")}
+        <Suspense>
+          {account && (
+            <>
+              {canToggleIsPortfolio && (
+                <ContextMenuItem onClick={toggleIsPortfolio}>{toggleLabel}</ContextMenuItem>
+              )}
+              {canCopyAddress && (
+                <ContextMenuItem onClick={copyAddress}>{t("Copy address")}</ContextMenuItem>
+              )}
+              <ViewOnExplorerMenuItem account={account} />
+              {canRename && (
+                <ContextMenuItem onClick={openAccountRenameModal}>{t("Rename")}</ContextMenuItem>
+              )}
+              {canExport && (
+                <ContextMenuItem onClick={openAccountExportModal}>
+                  {t("Export as JSON")}
+                </ContextMenuItem>
+              )}
+              {canExportPk && (
+                <ContextMenuItem onClick={openAccountExportPkModal}>
+                  {t("Export private key")}
+                </ContextMenuItem>
+              )}
+              <ContextMenuItem onClick={openAccountRemoveModal}>
+                {t("Remove account")}
               </ContextMenuItem>
-            )}
-            {canExportPk && (
-              <ContextMenuItem onClick={openAccountExportPkModal}>
-                {t("Export private key")}
-              </ContextMenuItem>
-            )}
-            <ContextMenuItem onClick={openAccountRemoveModal}>
-              {t("Remove account")}
-            </ContextMenuItem>
-          </>
-        )}
-        {!hideManageAccounts && (
-          <ContextMenuItem onClick={goToManageAccounts}>{t("Manage accounts")}</ContextMenuItem>
-        )}
+            </>
+          )}
+          {!hideManageAccounts && (
+            <ContextMenuItem onClick={goToManageAccounts}>{t("Manage accounts")}</ContextMenuItem>
+          )}
+        </Suspense>
       </ContextMenuContent>
     </ContextMenu>
   )

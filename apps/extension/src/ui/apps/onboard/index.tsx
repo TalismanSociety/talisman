@@ -25,7 +25,9 @@ const Onboarding = () => {
   return (
     <Context resetWallet={resetWalletRef.current}>
       <OnboardBackground />
-      <OnboardingRoutes />
+      <div className="h-dvh w-dvw overflow-auto">
+        <OnboardingRoutes />
+      </div>
       <Suspense fallback={<SuspenseTracker name="HydrateFromChaindata" />}>
         <HydrateFromChaindata />
       </Suspense>

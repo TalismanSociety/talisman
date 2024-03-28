@@ -16,15 +16,11 @@ type MnemonicProps = {
    * The mnemonic to be displayed.
    */
   mnemonic: string
-  /**
-   * If true, the component will use a wide layout when the mnemonic is 24 words. Optional.
-   */
-  wideLayoutWhen24?: boolean
 }
 
 type EyeIconTypes = "open" | "closed" | null
 
-export const Mnemonic: FC<MnemonicProps> = ({ onReveal, mnemonic, wideLayoutWhen24 }) => {
+export const Mnemonic: FC<MnemonicProps> = ({ onReveal, mnemonic }) => {
   const { t } = useTranslation()
   const [isRevealed, setIsRevealed] = useState(false)
   const [blurOnHover, setBlurOnHover] = useState(false)
@@ -64,23 +60,14 @@ export const Mnemonic: FC<MnemonicProps> = ({ onReveal, mnemonic, wideLayoutWhen
     }
   }, [isCopied])
 
-  const displayWideLayout = mnemonic.split(" ").length === 24 && wideLayoutWhen24
-
   return (
-    <div>
+    <div className="min-w-[58rem]">
       <div className="bg-black-secondary group relative overflow-hidden rounded p-2">
-        <div
-          className={`grid min-h-[12.6rem] grid-cols-4  ${
-            displayWideLayout && "lg:grid-cols-6"
-          } gap-4 p-2`}
-        >
+        <div className={`grid min-h-[12.6rem] grid-cols-4 gap-4 p-2`}>
           {!!mnemonic &&
             mnemonic.split(" ").map((word, i) => (
               <span
-                className={classNames(
-                  "bg-black-tertiary text-body whitespace-nowrap rounded px-8 py-4",
-                  displayWideLayout && "lg:px-6 xl:px-7"
-                )}
+                className="bg-black-tertiary text-body whitespace-nowrap rounded px-8 py-4"
                 key={`mnemonic-${i}`}
               >
                 <span className="text-grey-500 select-none">{i + 1}. </span>

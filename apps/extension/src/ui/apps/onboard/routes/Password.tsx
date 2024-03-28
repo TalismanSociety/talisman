@@ -1,4 +1,5 @@
 import { yupResolver } from "@hookform/resolvers/yup"
+import { CapsLockWarningMessage } from "@talisman/components/CapsLockWarningMessage"
 import { PasswordStrength } from "@talisman/components/PasswordStrength"
 import imgPassword from "@talisman/theme/images/onboard_password_character.png"
 import { classNames } from "@talismn/util"
@@ -102,9 +103,9 @@ export const PasswordPage = () => {
   )
 
   return (
-    <OnboardLayout withBack analytics={ANALYTICS_PAGE}>
+    <OnboardLayout withBack analytics={ANALYTICS_PAGE} className="min-h-[60rem] min-w-[60rem]">
       {/* eslint-disable-next-line jsx-a11y/alt-text */}
-      <img src={imgPassword} width="960" className="absolute left-32 top-[25rem] opacity-30 " />
+      <img src={imgPassword} width="960" className="fixed left-32 top-[25rem] opacity-30 " />
       {passwordExists && (
         <OnboardDialog title={t("You've already set your password")}>
           <div className="text-body-secondary flex flex-col gap-8">
@@ -133,13 +134,15 @@ export const PasswordPage = () => {
           </p>
           <form onSubmit={handleSubmit(submit)} autoComplete="off">
             <div className="flex flex-col pb-12">
-              <div
-                className={classNames(
-                  "mb-8 mt-16 text-sm",
-                  password ? "text-body-secondary" : "text-body-disabled"
-                )}
-              >
-                {t("Password strength")}: <PasswordStrength password={password} />
+              <div className="mb-4 mt-12 flex h-[1.2em] items-center justify-between text-sm">
+                <div
+                  className={classNames(password ? "text-body-secondary" : "text-body-disabled")}
+                >
+                  {t("Password strength")}: <PasswordStrength password={password} />
+                </div>
+                <div>
+                  <CapsLockWarningMessage />
+                </div>
               </div>
               <FormFieldContainer error={errors.password?.message}>
                 <FormFieldInputText

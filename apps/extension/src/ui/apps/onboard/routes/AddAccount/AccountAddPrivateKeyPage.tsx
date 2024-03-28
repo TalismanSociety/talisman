@@ -1,9 +1,12 @@
-import { AccountAddMnemonicWizard } from "@ui/domains/Account/AccountAdd/AccountAddMnemonic/router"
+import { AccountAddPrivateKeyForm } from "@ui/domains/Account/AccountAdd/AccountAddPrivateKeyForm"
 
 import { AccountAddWrapper } from "./AccountAddWrapper"
 
 export const AccountAddPrivateKeyOnboardWizard = () => {
   return (
-    <AccountAddWrapper render={(onSuccess) => <AccountAddMnemonicWizard onSuccess={onSuccess} />} />
+    <AccountAddWrapper
+      className="min-h-[44rem] min-w-[68rem]"
+      render={(onSuccess) => <AccountAddPrivateKeyForm onSuccess={onSuccess} />}
+    />
   )
 }

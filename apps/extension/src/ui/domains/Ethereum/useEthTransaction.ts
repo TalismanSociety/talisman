@@ -306,8 +306,10 @@ const useGasSettings = ({
           ? suggestedSettings
           : {
               ...low,
-              // if network is idle, it makes sense to use baseFee as maxFee
-              maxFeePerGas: feeHistoryAnalysis.isBaseFeeIdle ? baseFeePerGas : low.maxFeePerGas,
+              // if network is idle, it makes sense to use baseFee as max base fee
+              maxFeePerGas: feeHistoryAnalysis.isBaseFeeIdle
+                ? baseFeePerGas + low.maxPriorityFeePerGas
+                : low.maxFeePerGas,
             }
 
       return {

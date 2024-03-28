@@ -50,7 +50,7 @@ export const AccountTypeSelector = ({
   }, [onChange, type])
 
   return (
-    <div className={classNames("grid w-full grid-cols-1 gap-10 md:grid-cols-2", className)}>
+    <div className={classNames("grid w-full grid-cols-2 gap-10", className)}>
       <AccountTypeButton
         title={t("Ethereum")}
         className={classNames(

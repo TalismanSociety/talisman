@@ -18,9 +18,9 @@ import { liveQuery } from "dexie"
 import { atom } from "jotai"
 import { atomEffect } from "jotai-effect"
 import { atomWithObservable } from "jotai/utils"
-import { from } from "rxjs"
 
 import log from "../log"
+import { dexieToRxjs } from "../util/dexieToRxjs"
 import { allAddressesAtom } from "./allAddresses"
 import { balanceModulesAtom } from "./balanceModules"
 import {
@@ -34,7 +34,7 @@ import {
   tokensByIdAtom,
 } from "./chaindata"
 import { miniMetadataHydratedAtom } from "./chaindataProvider"
-import { enabledChainsAtom } from "./config"
+import { enabledChainsAtom, enabledTokensAtom } from "./config"
 import { cryptoWaitReadyAtom } from "./cryptoWaitReady"
 import { tokenRatesAtom } from "./tokenRates"
 
@@ -59,7 +59,7 @@ export const allBalancesAtom = atom(async (get) => {
 })
 
 const balancesDbAtom = atomWithObservable<BalanceJson[] | Promise<BalanceJson[]>>(() =>
-  from(
+  dexieToRxjs(
     // sync from db
     liveQuery(() => balancesDb.balances.toArray())
   )
@@ -99,6 +99,7 @@ const balancesSubscriptionAtomEffect = atomEffect((get) => {
     get(miniMetadatasAtom),
 
     get(enabledChainsAtom),
+    get(enabledTokensAtom),
   ])
 
   const unsubsPromise = (async () => {
@@ -117,7 +118,8 @@ const balancesSubscriptionAtomEffect = atomEffect((get) => {
       tokensById,
       _miniMetadatas,
 
-      enabledChains,
+      enabledChainsConfig,
+      enabledTokensConfig,
     ] = await atomDependencies
 
     if (!miniMetadataHydrated) return
@@ -148,15 +150,20 @@ const balancesSubscriptionAtomEffect = atomEffect((get) => {
       })
     }
 
-    const enabledChainIds = enabledChains?.map(
+    const enabledChainIds = enabledChainsConfig?.map(
       (genesisHash) => chains.find((chain) => chain.genesisHash === genesisHash)?.id
     )
+    const enabledChainsFilter = enabledChainIds
+      ? (token: Token) => token.chain && enabledChainIds?.includes(token.chain.id)
+      : () => true
+    const enabledTokensFilter = enabledTokensConfig
+      ? (token: Token) => enabledTokensConfig.includes(token.id)
+      : () => true
 
-    const enabledTokens = enabledChains
-      ? tokens.filter((token) => token.chain && enabledChainIds?.includes(token.chain.id))
-      : tokens
-
-    const enabledTokenIds = enabledTokens.map(({ id }) => id)
+    const enabledTokenIds = tokens
+      .filter(enabledChainsFilter)
+      .filter(enabledTokensFilter)
+      .map(({ id }) => id)
 
     if (enabledTokenIds.length < 1 || allAddresses.length < 1) return
 

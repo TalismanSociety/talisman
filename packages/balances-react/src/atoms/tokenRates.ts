@@ -3,9 +3,10 @@ import { liveQuery } from "dexie"
 import { atom } from "jotai"
 import { atomEffect } from "jotai-effect"
 import { atomWithObservable } from "jotai/utils"
-import { from, map } from "rxjs"
+import { map } from "rxjs"
 
 import log from "../log"
+import { dexieToRxjs } from "../util/dexieToRxjs"
 import { tokensByIdAtom } from "./chaindata"
 import { coingeckoConfigAtom } from "./config"
 
@@ -21,7 +22,7 @@ const tokenRatesDbAtom = atomWithObservable(() => {
     Object.fromEntries(dbRates.map(({ tokenId, rates }) => [tokenId, rates]))
 
   // retrieve fetched tokenRates from the db
-  return from(liveQuery(() => tokenRatesDb.tokenRates.toArray())).pipe(map(dbRatesToMap))
+  return dexieToRxjs(liveQuery(() => tokenRatesDb.tokenRates.toArray())).pipe(map(dbRatesToMap))
 })
 
 const tokenRatesFetcherAtomEffect = atomEffect((get) => {
