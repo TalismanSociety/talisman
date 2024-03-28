@@ -41,9 +41,9 @@ export const EthSignBodyErc20Approve: FC = () => {
   const isRevoke = useMemo(() => allowance === 0n, [allowance])
 
   const handleSetLimit = useCallback(
-    (limit: bigint) => {
+    async (limit: bigint) => {
       try {
-        updateCallArg("amount", limit)
+        await updateCallArg("amount", limit)
       } catch (err) {
         log.error("Failed to override allowance", { err })
         notify({ title: "Error", subtitle: (err as Error).message, type: "error" })

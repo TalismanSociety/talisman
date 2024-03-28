@@ -64,7 +64,7 @@ const EditAllowanceForm: FC<{
   spender: Address
   allowance: bigint
   onCancel: () => void
-  onSetLimit: (limit: bigint) => void
+  onSetLimit: (limit: bigint) => void | Promise<void>
 }> = ({ token, spender, allowance, onSetLimit, onCancel }) => {
   const { t } = useTranslation()
   const { genericEvent } = useAnalytics()
@@ -89,7 +89,7 @@ const EditAllowanceForm: FC<{
     handleSubmit,
     setValue,
     watch,
-    formState: { errors, isValid, isDirty },
+    formState: { errors, isValid, isDirty, isSubmitting },
   } = useForm<FormData>({
     mode: "all",
     resolver: yupResolver(schema),
@@ -101,7 +101,7 @@ const EditAllowanceForm: FC<{
       try {
         genericEvent("set custom allowance")
         const newLimit = limit ? parseUnits(limit, token.decimals) : ALLOWANCE_UNLIMITED
-        onSetLimit(newLimit)
+        await onSetLimit(newLimit)
       } catch (err) {
         log.error("Failed to set custom gas settings", { err })
         notify({ title: "Error", subtitle: (err as Error).message, type: "error" })
@@ -167,6 +167,7 @@ const EditAllowanceForm: FC<{
           className="disabled:bg-grey-750"
           primary
           disabled={!isValid || !isDirty}
+          processing={isSubmitting}
         >
           {t("Set Limit")}
         </Button>
@@ -179,7 +180,7 @@ export const SignParamAllowanceButton: FC<{
   spender: EvmAddress
   allowance: bigint
   token: Erc20TokenInfo
-  onSetLimit: (limit: bigint) => void
+  onSetLimit: (limit: bigint) => void | Promise<void>
 }> = ({ spender, allowance, token, onSetLimit }) => {
   const { isOpen, open, close } = useOpenClose()
 

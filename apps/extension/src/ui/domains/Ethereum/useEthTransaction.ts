@@ -21,7 +21,7 @@ import {
   EvmNetworkId,
 } from "@extension/core"
 import { isBigInt } from "@talismn/util"
-import { useQuery } from "@tanstack/react-query"
+import { useQuery, useQueryClient } from "@tanstack/react-query"
 import { api } from "@ui/api"
 import { usePublicClient } from "@ui/domains/Ethereum/usePublicClient"
 import { useCallback, useEffect, useMemo, useState } from "react"
@@ -177,9 +177,12 @@ const useBlockFeeData = (
 
 const useDecodeEvmTransaction = (
   publicClient: PublicClient | undefined,
-  tx: TransactionRequest | undefined
+  request: TransactionRequest | undefined
 ) => {
-  const { data, ...rest } = useQuery({
+  const queryClient = useQueryClient()
+  const [tx, setTx] = useState(() => request)
+
+  const { data: decodedTx, ...rest } = useQuery({
     // check tx as boolean as it's not pure
     queryKey: [
       "useDecodeEvmTransaction",
@@ -195,7 +198,50 @@ const useDecodeEvmTransaction = (
     enabled: !!publicClient && !!tx,
   })
 
-  return { decodedTx: data, ...rest }
+  const updateCallArg = useCallback(
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    async (argName: string, argValue: any) => {
+      if (!tx) throw new Error("Missing tx")
+      if (!publicClient) throw new Error("Missing publicClient")
+      if (!publicClient.chain) throw new Error("Missing publicClient.chain")
+      if (!decodedTx?.abi) throw new Error("Missing ABI")
+      if (!decodedTx.contractCall) throw new Error("Missing contractCall")
+
+      const { abi, contractCall } = decodedTx
+      const { functionName } = contractCall
+
+      // identify index of the arg
+      const abiCall = abi.find((a) => a.name === functionName)
+      if (!abiCall) throw new Error(`ABI for function ${functionName} not found`)
+      const argIndex = abiCall.inputs.findIndex((input) => input.name === argName)
+      if (argIndex === -1) throw new Error(`arg ${argName} not found in decoded transaction`)
+
+      // override arg value
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const args = [...contractCall.args] as any
+      args[argIndex] = argValue
+
+      const newTx = {
+        ...tx,
+        data: encodeFunctionData({ abi, functionName, args }),
+      }
+
+      // prefetch to prevent tx UI from being replaced by shimmer
+      await queryClient.prefetchQuery({
+        queryKey: [
+          "useDecodeEvmTransaction",
+          publicClient.chain.id,
+          serializeTransactionRequest(newTx),
+        ],
+        queryFn: () => decodeEvmTransaction(publicClient, newTx),
+      })
+
+      setTx(newTx)
+    },
+    [decodedTx, publicClient, queryClient, tx]
+  )
+
+  return { tx, decodedTx, updateCallArg, ...rest }
 }
 
 const getEthGasSettingsFromTransaction = (
@@ -382,9 +428,13 @@ export const useEthTransaction = (
   lockTransaction = false,
   isReplacement = false
 ) => {
-  const [tx, setTx] = useState(() => request)
   const publicClient = usePublicClient(evmNetworkId)
-  const { decodedTx, isLoading: isDecoding } = useDecodeEvmTransaction(publicClient, tx)
+  const {
+    tx,
+    decodedTx,
+    updateCallArg,
+    isLoading: isDecoding,
+  } = useDecodeEvmTransaction(publicClient, request)
   const { hasEip1559Support, error: errorEip1559Support } = useHasEip1559Support(publicClient)
   const { nonce, error: nonceError } = useNonce(
     tx?.from as `0x${string}` | undefined,
@@ -402,35 +452,6 @@ export const useEthTransaction = (
   } = useBlockFeeData(publicClient, tx, hasEip1559Support)
 
   const [priority, setPriority] = useState<EthPriorityOptionName>()
-
-  const updateCallArg = useCallback(
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    (argName: string, argValue: any) => {
-      if (!tx) throw new Error("Missing abi")
-      if (!decodedTx?.abi) throw new Error("Missing abi")
-      if (!decodedTx.contractCall) throw new Error("Missing contractCall")
-
-      const { abi, contractCall } = decodedTx
-      const { functionName } = contractCall
-
-      // identify index of the arg
-      const abiCall = abi.find((a) => a.name === functionName)
-      if (!abiCall) throw new Error(`abi for function ${functionName} not found`)
-      const argIndex = abiCall.inputs.findIndex((input) => input.name === argName)
-      if (argIndex === -1) throw new Error(`arg ${argName} not found in decoded transaction`)
-
-      // override arg value
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const args = [...contractCall.args] as any
-      args[argIndex] = argValue
-
-      setTx({
-        ...tx,
-        data: encodeFunctionData({ abi, functionName, args }),
-      })
-    },
-    [decodedTx, tx]
-  )
 
   // reset priority in case chain changes
   // ex: from send funds when switching from BSC (legacy) to mainnet (eip1559)
