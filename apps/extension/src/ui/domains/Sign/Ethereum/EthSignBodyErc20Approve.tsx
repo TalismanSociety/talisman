@@ -6,7 +6,7 @@ import { notify } from "@talisman/components/Notifications"
 import { shortenAddress } from "@talisman/util/shortenAddress"
 import { Address } from "@talismn/balances"
 import { EditIcon } from "@talismn/icons"
-import { formatDecimals, planckToTokens, tokensToPlanck } from "@talismn/util"
+import { formatDecimals, tokensToPlanck } from "@talismn/util"
 import { Fiat } from "@ui/domains/Asset/Fiat"
 import { useAnalytics } from "@ui/hooks/useAnalytics"
 import { useSelectedCurrency } from "@ui/hooks/useCurrency"
@@ -28,7 +28,7 @@ import {
   TooltipTrigger,
   useOpenClose,
 } from "talisman-ui"
-import { hexToBigInt, toHex } from "viem"
+import { formatUnits, hexToBigInt, parseUnits } from "viem"
 import * as yup from "yup"
 
 import { SignAlertMessage } from "../SignAlertMessage"
@@ -38,6 +38,10 @@ import { getContractCallArg } from "./getContractCallArg"
 import { SignParamAccountButton, SignParamNetworkAddressButton } from "./shared"
 import { SignParamErc20TokenButton } from "./shared/SignParamErc20TokenButton"
 import { useEthSignKnownTransactionRequest } from "./shared/useEthSignKnownTransactionRequest"
+
+const ALLOWANCE_UNLIMITED = hexToBigInt(
+  "0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"
+)
 
 type Erc20TokenInfo = {
   contractAddress: string
@@ -105,10 +109,6 @@ const EditAllowanceForm: FC<{
   const { t } = useTranslation()
   const { genericEvent } = useAnalytics()
 
-  // const handleSetLimitClick = useCallback(() => {
-  //   onSetLimit("100")
-  // }, [onSetLimit])
-
   const schema = useMemo(
     () =>
       yup.object({
@@ -118,7 +118,9 @@ const EditAllowanceForm: FC<{
   )
 
   const defaultValues = useMemo(
-    () => ({ limit: planckToTokens(allowance.toString(), token.decimals) }),
+    () => ({
+      limit: allowance === ALLOWANCE_UNLIMITED ? "" : formatUnits(allowance, token.decimals),
+    }),
     [allowance, token.decimals]
   )
 
@@ -127,7 +129,7 @@ const EditAllowanceForm: FC<{
     handleSubmit,
     setValue,
     watch,
-    formState: { errors, isValid },
+    formState: { errors, isValid, isDirty },
   } = useForm<FormData>({
     mode: "all",
     resolver: yupResolver(schema),
@@ -135,11 +137,11 @@ const EditAllowanceForm: FC<{
   })
 
   const submit = useCallback(
-    async (formData: FormData) => {
+    async ({ limit }: FormData) => {
       try {
         genericEvent("set custom allowance")
-        if (formData.limit === "") return onSetLimit(hexToBigInt(ALLOWANCE_UNLIMITED))
-        onSetLimit(BigInt(tokensToPlanck(formData.limit, token.decimals)))
+        const newLimit = limit ? parseUnits(limit, token.decimals) : ALLOWANCE_UNLIMITED
+        onSetLimit(newLimit)
       } catch (err) {
         log.error("Failed to set custom gas settings", { err })
         notify({ title: "Error", subtitle: (err as Error).message, type: "error" })
@@ -204,7 +206,12 @@ const EditAllowanceForm: FC<{
       </FormFieldContainer>
       <div className="mt-4 grid grid-cols-2 gap-4">
         <Button onClick={onCancel}>{t("Cancel")}</Button>
-        <Button type="submit" className="disabled:bg-grey-750" primary disabled={!isValid}>
+        <Button
+          type="submit"
+          className="disabled:bg-grey-750"
+          primary
+          disabled={!isValid || !isDirty}
+        >
           {t("Set Limit")}
         </Button>
       </div>
@@ -233,11 +240,9 @@ const EditAllowanceDrawer: FC<{
   )
 }
 
-const ALLOWANCE_UNLIMITED = "0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"
-
 export const EthSignBodyErc20Approve: FC = () => {
   const { t } = useTranslation("request")
-  const { account, network, decodedTx } = useEthSignKnownTransactionRequest()
+  const { account, network, decodedTx, updateCallArg } = useEthSignKnownTransactionRequest()
 
   const token = useErc20Token(network?.id, decodedTx.targetAddress)
   const tokenRates = useTokenRates(token?.id)
@@ -257,16 +262,24 @@ export const EthSignBodyErc20Approve: FC = () => {
 
   const allowanceDrawer = useOpenClose()
 
-  const handleSetLimit = useCallback((limit: bigint) => {
-    log.log({ limit })
-  }, [])
+  const handleSetLimit = useCallback(
+    (limit: bigint) => {
+      try {
+        updateCallArg("amount", limit)
+      } catch (err) {
+        log.error("Failed to override allowance", { err })
+        notify({ title: "Error", subtitle: (err as Error).message, type: "error" })
+      }
+    },
+    [updateCallArg]
+  )
 
   const nativeToken = useToken(network?.nativeToken?.id)
 
-  const { spender, allowance, isInfinite, isRevoke } = useMemo(() => {
+  const { spender, allowance, isInfinite, isRevoke, rawAllowance } = useMemo(() => {
     assert(decodedTx.asset?.decimals !== undefined, "missing asset decimals")
     const rawAllowance = getContractCallArg<bigint>(decodedTx, "amount")
-    const isInfinite = toHex(rawAllowance) === ALLOWANCE_UNLIMITED
+    const isInfinite = rawAllowance === ALLOWANCE_UNLIMITED
 
     return {
       spender: getContractCallArg<string>(decodedTx, "spender"),
@@ -276,6 +289,7 @@ export const EthSignBodyErc20Approve: FC = () => {
           : undefined,
       isInfinite,
       isRevoke: rawAllowance === 0n,
+      rawAllowance,
     }
   }, [decodedTx, tokenRates])
 
@@ -337,11 +351,11 @@ export const EthSignBodyErc20Approve: FC = () => {
         <div>{t("from")}</div>
         <SignParamAccountButton address={account.address} explorerUrl={network.explorerUrl} />
       </div>
-      {!!allowance?.planck && (
+      {!!rawAllowance && (
         <EditAllowanceDrawer
           token={erc20Token}
           spender={spender}
-          allowance={allowance.planck}
+          allowance={rawAllowance}
           onSetLimit={handleSetLimit}
           isOpen={allowanceDrawer.isOpen}
           onClose={allowanceDrawer.close}

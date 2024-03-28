@@ -2,10 +2,11 @@ import { useCallback, useMemo } from "react"
 import { useForm } from "react-hook-form"
 import { useLocalStorage } from "react-use"
 import { Button } from "talisman-ui"
-import { erc20Abi, hexToBigInt, parseUnits } from "viem"
+import { Hex, erc20Abi, formatUnits, hexToBigInt, parseUnits } from "viem"
 import { useAccount, useReadContract, useSimulateContract, useWriteContract } from "wagmi"
 
 import { TransactionReceipt } from "../shared/TransactionReceipt"
+import { useInvalidateQueries } from "../shared/useInvalidateQueries"
 import { useErc20Contract } from "./context"
 
 type FormData = { recipient: string; amount: string }
@@ -20,7 +21,7 @@ const ALLOWANCE_UNLIMITED = hexToBigInt(
 )
 
 export const ERC20Approve = () => {
-  const { isConnected } = useAccount()
+  const { isConnected, address } = useAccount()
   const [contractAddress] = useErc20Contract()
   const [defaultValues, setDefaultValues] = useLocalStorage("pg:approve-erc20", DEFAULT_VALUE)
 
@@ -35,8 +36,18 @@ export const ERC20Approve = () => {
 
   const formData = watch()
 
+  const { data: allowance, queryKey } = useReadContract({
+    address: contractAddress as Hex,
+    abi: erc20Abi,
+    functionName: "allowance",
+
+    args: [address!, formData.recipient as Hex], // owner, spender
+    query: { enabled: !!address && !!contractAddress && !!formData.recipient },
+  })
+  useInvalidateQueries(queryKey)
+
   const { data: decimals = 18 } = useReadContract({
-    address: contractAddress as `0x${string}`,
+    address: contractAddress as Hex,
     abi: erc20Abi,
     functionName: "decimals",
     query: { enabled: !!contractAddress },
@@ -109,6 +120,14 @@ export const ERC20Approve = () => {
               />
             </div>
             <div>Set 0 to revoke, or empty value for infinite amount</div>
+            <div>
+              Current allowance :{" "}
+              {allowance === undefined
+                ? "N/A"
+                : allowance === ALLOWANCE_UNLIMITED
+                ? "Infinite"
+                : formatUnits(allowance, decimals)}
+            </div>
             <div className="flex gap-4 pt-4">
               <Button
                 type="submit"
