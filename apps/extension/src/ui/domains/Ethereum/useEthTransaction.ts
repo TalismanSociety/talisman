@@ -377,11 +377,12 @@ const useGasSettings = ({
 }
 
 export const useEthTransaction = (
-  tx: TransactionRequest | undefined,
+  request: TransactionRequest | undefined,
   evmNetworkId: EvmNetworkId | undefined,
   lockTransaction = false,
   isReplacement = false
 ) => {
+  const [tx] = useState(() => request)
   const publicClient = usePublicClient(evmNetworkId)
   const { decodedTx, isLoading: isDecoding } = useDecodeEvmTransaction(publicClient, tx)
   const { hasEip1559Support, error: errorEip1559Support } = useHasEip1559Support(publicClient)
@@ -401,6 +402,10 @@ export const useEthTransaction = (
   } = useBlockFeeData(publicClient, tx, hasEip1559Support)
 
   const [priority, setPriority] = useState<EthPriorityOptionName>()
+
+  // const updateCallArg = useCallback((argName:string, argValue:any) => {
+  //   const arg = tx[argName]
+  // })
 
   // reset priority in case chain changes
   // ex: from send funds when switching from BSC (legacy) to mainnet (eip1559)
