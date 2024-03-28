@@ -15,7 +15,7 @@ const faviconsSrcPath = path.join(__dirname, "..", "public", "favicon*.*")
 
 const config = (env) =>
   merge(common(env), {
-    devtool: "inline-cheap-module-source-map",
+    devtool: "eval-cheap-module-source-map",
     mode: "development",
     watchOptions: {
       ignored: ["**/node_modules", "**/dist", "apps/extension/public/locales"],
