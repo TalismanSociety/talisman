@@ -1,5 +1,73 @@
 # @talismn/balances
 
+## 0.7.0
+
+### Minor Changes
+
+- 703566b: fix: equilibrium/genshiro duplicated balances
+- 71cbd2d: chore: viem v2
+- 97c8cda: remove symbol from native token ids
+- 908baf2: Add nomination pool ID to balance metadata
+
+### Patch Changes
+
+- 771a5be: fix: incorrect cached/stale balances for evm accounts
+- 5d833e8: chore: small cleanup of ChaindataProviderExtension method names
+- d2ccdaf: fix: balance subscriptions never update registry cache with new metadata
+- 8b5f619: fix: don't delete cached balances when upgrading from a cephalopoded chaindata
+- a839969: prevent unnecessary erc20 balance change callbacks
+- 1d9c88a: fix: frozen token amounts in `SubAssetsModule`
+- a868f95: fix: clear balance db if migration error
+- 372f995: replace ethers by viem
+- c4d5967: bump typescript version
+- a916db0: docs: added @talismn/balances readme
+- a3a1bd7: feat: psp22 balances module
+- c36375f: Use Balances::transfer_allow_death as default method for substrate balance transfers
+- 620b7eb: Dependency updates
+- aec0216: typing fix
+- 5aadf99: fix: renamed renamed Unknown -> Unit for tokens with no symbol
+- aec0216: typings
+- 5aadf99: feat: native token balances on custom networks
+- f44f560: feat: azns lookups
+- afb0284: feat: upgraded @talismn/balances-react to support new chaindata
+- Updated dependencies [123647e]
+- Updated dependencies [0339e5e]
+- Updated dependencies [2ef26d2]
+- Updated dependencies [5d833e8]
+- Updated dependencies [03939d5]
+- Updated dependencies [1e77eeb]
+- Updated dependencies [d2ccdaf]
+- Updated dependencies [123647e]
+- Updated dependencies [68bf06a]
+- Updated dependencies [be0d19e]
+- Updated dependencies [71cbd2d]
+- Updated dependencies [e0eb84a]
+- Updated dependencies [97c8cda]
+- Updated dependencies [ade2908]
+- Updated dependencies [372f995]
+- Updated dependencies [c4d5967]
+- Updated dependencies [776432e]
+- Updated dependencies [d11555c]
+- Updated dependencies [23f0d3a]
+- Updated dependencies [e0eb84a]
+- Updated dependencies [620b7eb]
+- Updated dependencies [850381a]
+- Updated dependencies [5aadf99]
+- Updated dependencies [4cace80]
+- Updated dependencies [afb0284]
+- Updated dependencies [a6c1b2a]
+- Updated dependencies [6489a32]
+- Updated dependencies [d2fdbba]
+- Updated dependencies [f5eab24]
+- Updated dependencies [372f995]
+- Updated dependencies [9ebcd93]
+  - @talismn/token-rates@0.3.0
+  - @talismn/chaindata-provider@0.8.0
+  - @talismn/chain-connector-evm@0.8.0
+  - @talismn/chain-connector@0.8.0
+  - @talismn/util@0.3.0
+  - @talismn/scale@0.0.2
+
 ## 0.6.0
 
 ### Minor Changes
