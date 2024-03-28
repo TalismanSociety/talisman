@@ -24,7 +24,7 @@ import { useCallback, useEffect, useMemo } from "react"
 import { useTranslation } from "react-i18next"
 import { Button, Tooltip, TooltipContent, TooltipTrigger } from "talisman-ui"
 
-import { SignAccountAvatar } from "../SignAccountAvatar"
+import { SignNetworkLogo } from "../SignNetworkLogo"
 
 const useEvmBalance = (address: EvmAddress, evmNetworkId: EvmNetworkId | undefined) => {
   const publicClient = usePublicClient(evmNetworkId)
@@ -138,7 +138,7 @@ export const EthSignTransactionRequest = () => {
     <PopupLayout>
       <PopupHeader
         className={classNames(isLoading && "invisible")}
-        right={<SignAccountAvatar account={account} />}
+        right={<SignNetworkLogo network={network} />}
       >
         <AppPill url={url} />
       </PopupHeader>
