@@ -13,7 +13,7 @@ import { Suspense, useEffect, useMemo } from "react"
 import { useTranslation } from "react-i18next"
 import { Button } from "talisman-ui"
 
-import { SignAccountAvatar } from "../SignAccountAvatar"
+import { SignNetworkLogo } from "../SignNetworkLogo"
 
 export const EthSignMessageRequest = () => {
   const { t } = useTranslation("request")
@@ -44,7 +44,7 @@ export const EthSignMessageRequest = () => {
 
   return (
     <PopupLayout>
-      <PopupHeader right={<SignAccountAvatar account={account} />}>
+      <PopupHeader right={<SignNetworkLogo network={network} />}>
         <AppPill url={url} />
       </PopupHeader>
       <PopupContent>

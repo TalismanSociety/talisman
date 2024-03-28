@@ -24,7 +24,7 @@ import { useCallback, useEffect, useMemo } from "react"
 import { useTranslation } from "react-i18next"
 import { Button, Tooltip, TooltipContent, TooltipTrigger } from "talisman-ui"
 
-import { SignAccountAvatar } from "../SignAccountAvatar"
+import { SignNetworkLogo } from "../SignNetworkLogo"
 
 const useEvmBalance = (address: EvmAddress, evmNetworkId: EvmNetworkId | undefined) => {
   const publicClient = usePublicClient(evmNetworkId)
@@ -138,7 +138,7 @@ export const EthSignTransactionRequest = () => {
     <PopupLayout>
       <PopupHeader
         className={classNames(isLoading && "invisible")}
-        right={<SignAccountAvatar account={account} />}
+        right={<SignNetworkLogo network={network} />}
       >
         <AppPill url={url} />
       </PopupHeader>
@@ -159,53 +159,56 @@ export const EthSignTransactionRequest = () => {
                 </SignAlertMessage>
               )}
             </div>
-            {transaction && txDetails && network?.nativeToken ? (
-              <div className="text-body-secondary flex flex-col gap-2 text-sm">
-                <div className="flex items-center justify-between">
-                  <div>
-                    {t("Estimated Fee")}{" "}
-                    <Tooltip placement="top">
-                      <TooltipTrigger asChild>
-                        <span>
-                          <InfoIcon className="inline align-text-top" />
-                        </span>
-                      </TooltipTrigger>
-                      <TooltipContent>
-                        <FeeTooltip
-                          tokenId={network.nativeToken.id}
-                          estimatedFee={txDetails.estimatedFee}
-                          maxFee={txDetails.maxFee}
-                          balance={balance}
-                        />
-                      </TooltipContent>
-                    </Tooltip>
+
+            <div className="text-body-secondary flex min-h-[4.48rem] flex-col gap-2 text-sm">
+              {transaction && txDetails && !!network?.nativeToken && (
+                <>
+                  <div className="flex items-center justify-between">
+                    <div>
+                      {t("Estimated Fee")}{" "}
+                      <Tooltip placement="top">
+                        <TooltipTrigger asChild>
+                          <span>
+                            <InfoIcon className="inline align-text-top" />
+                          </span>
+                        </TooltipTrigger>
+                        <TooltipContent>
+                          <FeeTooltip
+                            tokenId={network.nativeToken.id}
+                            estimatedFee={txDetails.estimatedFee}
+                            maxFee={txDetails.maxFee}
+                            balance={balance}
+                          />
+                        </TooltipContent>
+                      </Tooltip>
+                    </div>
+                    <div>{transaction?.type === "eip1559" && t("Priority")}</div>
                   </div>
-                  <div>{transaction?.type === "eip1559" && t("Priority")}</div>
-                </div>
-                <div className="flex items-center justify-between">
-                  <div>
-                    <TokensAndFiat
-                      tokenId={network.nativeToken.id}
-                      planck={txDetails.estimatedFee.toString()}
-                    />
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <TokensAndFiat
+                        tokenId={network.nativeToken.id}
+                        planck={txDetails.estimatedFee.toString()}
+                      />
+                    </div>
+                    <div>
+                      <EthFeeSelect
+                        tx={transaction}
+                        tokenId={network.nativeToken.id}
+                        disabled={isPayloadLocked}
+                        gasSettingsByPriority={gasSettingsByPriority}
+                        setCustomSettings={setCustomSettings}
+                        txDetails={txDetails}
+                        priority={priority}
+                        onChange={handleFeeChange}
+                        networkUsage={networkUsage}
+                        drawerContainerId="main"
+                      />
+                    </div>
                   </div>
-                  <div>
-                    <EthFeeSelect
-                      tx={transaction}
-                      tokenId={network.nativeToken.id}
-                      disabled={isPayloadLocked}
-                      gasSettingsByPriority={gasSettingsByPriority}
-                      setCustomSettings={setCustomSettings}
-                      txDetails={txDetails}
-                      priority={priority}
-                      onChange={handleFeeChange}
-                      networkUsage={networkUsage}
-                      drawerContainerId="main"
-                    />
-                  </div>
-                </div>
-              </div>
-            ) : null}
+                </>
+              )}
+            </div>
             {account && request && account.isHardware ? (
               <SignHardwareEthereum
                 evmNetworkId={network?.id}

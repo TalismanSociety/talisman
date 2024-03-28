@@ -15,7 +15,7 @@ import { SubSignBody } from "@ui/domains/Sign/Substrate/SubSignBody"
 import { SignViewBodyShimmer } from "@ui/domains/Sign/Views/SignViewBodyShimmer"
 import { FC, useEffect, useMemo } from "react"
 
-import { SignAccountAvatar } from "../SignAccountAvatar"
+import { SignNetworkLogo } from "../SignNetworkLogo"
 import { FooterContent } from "./FooterContent"
 
 export const PolkadotSignTransactionRequest: FC = () => {
@@ -42,7 +42,7 @@ export const PolkadotSignTransactionRequest: FC = () => {
     <PopupLayout>
       <PopupHeader
         className={classNames(isDecodingExtrinsic && "invisible")}
-        right={<SignAccountAvatar account={account} ss58Format={chain?.prefix} />}
+        right={<SignNetworkLogo network={chain} />}
       >
         <AppPill url={url} />
       </PopupHeader>

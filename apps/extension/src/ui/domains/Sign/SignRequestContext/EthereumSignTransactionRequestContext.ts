@@ -39,6 +39,7 @@ const useEthSignTransactionRequestProvider = ({ id }: KnownSigningRequestIdOnly<
     gasSettingsByPriority,
     setCustomSettings,
     isValid,
+    updateCallArg,
   } = useEthTransaction(txBase, signingRequest?.ethChainId, isPayloadLocked)
 
   const baseRequest = useAnySigningRequest({
@@ -90,6 +91,7 @@ const useEthSignTransactionRequestProvider = ({ id }: KnownSigningRequestIdOnly<
     gasSettingsByPriority,
     setCustomSettings,
     isValid,
+    updateCallArg,
   }
 }
 
