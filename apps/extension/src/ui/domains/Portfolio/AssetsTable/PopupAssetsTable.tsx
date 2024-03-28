@@ -125,31 +125,24 @@ const AssetRow = ({ balances, locked }: AssetRowProps) => {
               status.status === "fetching" && "animate-pulse transition-opacity"
             )}
           >
-            {status.status === "initializing" ? (
-              <>
-                <div className="bg-grey-700 rounded-xs h-7 w-[10rem] animate-pulse"></div>
-                <div className="bg-grey-700 rounded-xs h-7 w-[6rem] animate-pulse"></div>
-              </>
-            ) : (
-              <>
-                <div
-                  className={classNames(
-                    "whitespace-nowrap text-sm font-bold",
-                    locked ? "text-body-secondary" : "text-white"
-                  )}
-                >
-                  <Tokens amount={tokens} symbol={token?.symbol} isBalance />
-                  {locked ? <LockIcon className="lock ml-2 inline align-baseline text-xs" /> : null}
-                  <StaleBalancesIcon
-                    className="alert ml-2 inline align-baseline text-sm"
-                    staleChains={status.status === "stale" ? status.staleChains : []}
-                  />
-                </div>
-                <div className="text-body-secondary leading-base text-xs">
-                  {fiat === null ? "-" : <Fiat amount={fiat} isBalance />}
-                </div>
-              </>
-            )}
+            <>
+              <div
+                className={classNames(
+                  "whitespace-nowrap text-sm font-bold",
+                  locked ? "text-body-secondary" : "text-white"
+                )}
+              >
+                <Tokens amount={tokens} symbol={token?.symbol} isBalance />
+                {locked ? <LockIcon className="lock ml-2 inline align-baseline text-xs" /> : null}
+                <StaleBalancesIcon
+                  className="alert ml-2 inline align-baseline text-sm"
+                  staleChains={status.status === "stale" ? status.staleChains : []}
+                />
+              </div>
+              <div className="text-body-secondary leading-base text-xs">
+                {fiat === null ? "-" : <Fiat amount={fiat} isBalance />}
+              </div>
+            </>
           </div>
         </div>
       </button>

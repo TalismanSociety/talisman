@@ -255,6 +255,17 @@ export class Balances {
   }
 }
 
+export const getBalanceId = (
+  balance: Pick<
+    BalanceJson,
+    "source" | "subSource" | "address" | "chainId" | "evmNetworkId" | "tokenId"
+  >
+) => {
+  const { source, subSource, address, chainId, evmNetworkId, tokenId } = balance
+  const locationId = chainId !== undefined ? chainId : evmNetworkId
+  return [source, address, locationId, tokenId, subSource].filter(Boolean).join("-")
+}
+
 /**
  * An individual balance.
  */
@@ -310,9 +321,7 @@ export class Balance {
   //
 
   get id(): string {
-    const { source, subSource, address, chainId, evmNetworkId, tokenId } = this.#storage
-    const locationId = chainId !== undefined ? chainId : evmNetworkId
-    return [source, address, locationId, tokenId, subSource].filter(Boolean).join("-")
+    return getBalanceId(this.#storage)
   }
 
   get source() {

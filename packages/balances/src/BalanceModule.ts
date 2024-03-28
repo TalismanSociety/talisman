@@ -147,6 +147,11 @@ interface BalanceModuleEvm<
   ): Promise<Record<TTokenType["id"], TTokenType>>
 }
 
+export type SubscriptionResultWithStatus = {
+  status: "initialising" | "live"
+  data: BalanceJson[]
+}
+
 interface BalanceModuleCommon<
   TModuleType extends string,
   TTokenType extends ExtendableTokenType,
@@ -161,7 +166,7 @@ interface BalanceModuleCommon<
    */
   subscribeBalances(
     addressesByToken: AddressesByToken<TTokenType>,
-    callback: SubscriptionCallback<Balances>
+    callback: SubscriptionCallback<Balances | SubscriptionResultWithStatus>
   ): Promise<UnsubscribeFn>
 
   /** Used to provision balances in db while they are fetching for the first time */

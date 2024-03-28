@@ -8,6 +8,7 @@ import {
   MiniMetadata,
   db as balancesDb,
   deleteSubscriptionId,
+  getBalanceId,
 } from "@talismn/balances"
 import { persistData, retrieveData } from "@talismn/balances"
 import { Token } from "@talismn/chaindata-provider"
@@ -74,7 +75,8 @@ export class BalancePool {
 
   #subscribers: Subject<void> = new Subject()
   #pool: BehaviorSubject<Record<string, BalanceJson>> = new BehaviorSubject({})
-  #poolStatus: BalanceSubscriptionResponse["status"] = "cached"
+  #poolStatus: Map<string, BalanceSubscriptionResponse["status"]> = new Map()
+  #initialising: Set<string> = new Set()
 
   /**
    * A map of accounts to query balances for, in the format:
@@ -127,19 +129,30 @@ export class BalancePool {
     )
   }
 
+  get poolStatus() {
+    const isInitialising = this.#initialising.size > 0
+    return isInitialising ? "initialising" : "live"
+  }
+
   /**
-   * Create a new subscription to the balances store.
+   * Create a new subscription to the balances pool.
    *
    * @param id - The message id
    * @param port - The message port
    * @returns The subscribe method of the balances pool
    */
-  subscribe(id: string, onDisconnected: Promise<void>) {
-    // create subscription
-    const subscriptionFn = (cb: (val: BalanceSubscriptionResponse) => void) =>
-      this.#pool.subscribe((balances) =>
-        cb({ status: this.#poolStatus, data: Object.values(balances) })
-      )
+  subscribe(
+    id: string,
+    onDisconnected: Promise<void>,
+    cb: (val: BalanceSubscriptionResponse) => void
+  ) {
+    // create subscription to pool
+    const poolSubscription = this.#pool
+      .pipe(debounceTime(500))
+      .subscribe((balances) => cb({ status: this.poolStatus, data: Object.values(balances) }))
+    // Because this.#pool can be observed directly in the backend, we can't use this.#pool.observed to
+    // decide when to close the rpc subscriptions.
+    // Instead, create a generic subscription just so that we know the front end is subscribing
     const subscription = this.#subscribers.subscribe(() => {})
 
     // open rpcs (if not already open)
@@ -149,6 +162,7 @@ export class BalancePool {
     onDisconnected.then(() => {
       unsubscribe(id)
       subscription.unsubscribe()
+      poolSubscription.unsubscribe()
 
       setTimeout(() => {
         // wait 5 seconds to prevent subscription restart for these use cases :
@@ -157,12 +171,9 @@ export class BalancePool {
         if (!this.#subscribers.observed) {
           this.closeSubscriptions()
           this.persist()
-          this.#pool.unsubscribe()
         }
       }, 5_000)
     })
-
-    return subscriptionFn
   }
 
   private persist() {
@@ -188,44 +199,45 @@ export class BalancePool {
     const updatesWithIds = new Balances(updates)
     const existing = this.balances
 
+    // update initialising set here - before filtering out zero balances
+    // while this may include stale balances, the important thing is that the balance is no longer "initialising"
+    updates.forEach((b) => this.#initialising.delete(getBalanceId(b)))
+
     const newlyZeroBalances: string[] = []
     const changedBalances = new Balances(
       updatesWithIds.each.filter((newB) => {
-        const isLiveZero = newB.total.tokens === "0" && newB.status === "live"
-        // Keep new balances, which are not known zeros
+        const isZero = newB.total.tokens === "0"
+        // Keep new balances which are not zeros
         const existingB = existing[newB.id]
-        if (!existingB && !isLiveZero) return true
+        if (!existingB && !isZero) return true
 
         const hasChanged = !isEqual(existingB, newB.toJSON())
         // Collect balances now confirmed to be zero separately, so they can be filtered out from the main set
-        if (hasChanged && isLiveZero) newlyZeroBalances.push(newB.id)
+        if (hasChanged && isZero) newlyZeroBalances.push(newB.id)
         // Keep changed balances, which are not known zeros
-        return hasChanged && !isLiveZero
+        return hasChanged && !isZero
       })
     ).toJSON()
 
     if (Object.keys(changedBalances).length === 0 && newlyZeroBalances.length === 0) return
-    else
-      this.#pool
-        .pipe(debounceTime(500))
-        .pipe(
-          map((val) => {
-            // Todo prevent balance modules from sending live 0 balances, for now filter them here
-            const nonZeroBalances =
-              newlyZeroBalances.length > 0
-                ? Object.fromEntries(
-                    Object.entries(val).filter(([id]) => !newlyZeroBalances.includes(id))
-                  )
-                : val
-            return { ...nonZeroBalances, ...changedBalances }
-          })
-        )
-        .subscribe({
-          next: (v) => {
-            this.#pool.next(v)
-          },
-          error: (e) => log.error(e),
+    else {
+      const updateObs = this.#pool.pipe(
+        map((val) => {
+          // Todo prevent balance modules from sending live 0 balances, for now filter them here
+          const nonZeroBalances =
+            newlyZeroBalances.length > 0
+              ? Object.fromEntries(
+                  Object.entries(val).filter(([id]) => !newlyZeroBalances.includes(id))
+                )
+              : val
+          return { ...nonZeroBalances, ...changedBalances }
         })
+      )
+
+      firstValueFrom(updateObs).then((v) => {
+        if (Object.values(v).length) this.#pool.next(v)
+      })
+    }
   }
 
   private setPool(balances: BalanceJson[]) {
@@ -566,29 +578,45 @@ export class BalancePool {
         })
     })
 
-    const initialisingBalances: Map<string, BalanceJson> = new Map()
-    const initialisedBalances: string[] = []
     const existingBalances = this.balances
     const existingBalancesKeys = new Set(
       Object.values(existingBalances).map((b) => `${b.tokenId}:${b.address}`)
     )
 
     for (const balanceModule of balanceModules) {
+      // erc20 balance module returns it's initialising status in the subscribeBalances callback
+      // so we don't need to check for it here
+      // Todo: upgrade all balance modules to this pattern and then remove this logic
+      if (balanceModule.type === "evm-erc20") continue
+
       const addressesByToken = addressesByTokenByModule[balanceModule.type] ?? {}
+
       for (const [tokenId, addresses] of Object.entries(addressesByToken))
         for (const address of addresses) {
           const id = `${tokenId}:${address}`
-          if (!existingBalancesKeys.has(id) && !initialisedBalances.includes(id))
-            this.#poolStatus = "initialising"
+          if (!existingBalancesKeys.has(id)) {
+            this.#initialising.add(id)
+          }
         }
     }
 
     // after 30 seconds, set the initialising balances to initialised
-    // TODO not sure if this should be here at all, balance modules should manage this
+    // TODO balance modules should manage this like evm-erc20 does
     setTimeout(() => {
       if (this.#subscriptionsGeneration !== generation) return
-      initialisedBalances.push(...Array.from(initialisingBalances.keys()))
-      this.#poolStatus = "live"
+      this.#initialising.clear()
+      // set all currently cached balances to stale
+      const staleObservable = this.#pool.pipe(
+        map((val) =>
+          Object.values(val)
+            .filter(({ status }) => status === "cache")
+            .map((balance) => ({ ...balance, status: "stale" } as BalanceJson))
+        )
+      )
+
+      firstValueFrom(staleObservable).then((v) => {
+        if (v.length) this.updatePool(v)
+      })
     }, 30_000)
 
     const closeSubscriptionCallbacks = balanceModules.map((balanceModule) =>
@@ -603,16 +631,22 @@ export class BalancePool {
             error?.type === "WEBSOCKET_ALLOCATION_EXHAUSTED_ERROR"
           ) {
             const addressesByModuleToken = addressesByTokenByModule[balanceModule.type] ?? {}
-            // set status to stale for balances which are still initializing
+            // set status to stale for balances matching the error
             const staleObservable = this.#pool.pipe(
               map((val) =>
                 Object.values(val)
-                  .filter(
-                    ({ tokenId, address, source, chainId, evmNetworkId }) =>
-                      (chainId === error.chainId || evmNetworkId === error.evmNetworkId) &&
+                  .filter(({ tokenId, address, source, chainId, evmNetworkId }) => {
+                    const chainComparison = error.chainId
+                      ? error.chainId === chainId
+                      : error.evmNetworkId
+                      ? error.evmNetworkId === evmNetworkId
+                      : true
+                    return (
+                      chainComparison &&
                       addressesByModuleToken[tokenId]?.includes(address) &&
                       source === balanceModule.type
-                  )
+                    )
+                  })
                   .map((balance) => ({ ...balance, status: "stale" } as BalanceJson))
               )
             )
@@ -620,15 +654,19 @@ export class BalancePool {
             firstValueFrom(staleObservable).then((v) => {
               if (v.length) this.updatePool(v)
             })
-
-            return true
           }
 
-          if (error) return log.error(error)
           // good balances
           if (result) {
-            // add good ones to initialisedBalances
-            this.updatePool(Object.values(result.toJSON()))
+            if ("status" in result) {
+              // For modules using the new SubscriptionResultWithStatus pattern
+              if (result.status === "initialising") this.#initialising.add(balanceModule.type)
+              else this.#initialising.delete(balanceModule.type)
+              this.updatePool(result.data)
+            } else {
+              // add good ones to initialisedBalances
+              this.updatePool(Object.values(result.toJSON()))
+            }
           }
         }
       )

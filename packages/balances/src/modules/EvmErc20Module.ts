@@ -4,25 +4,16 @@ import {
   BalancesConfigTokenParams,
   EvmChainId,
   EvmNetworkId,
-  EvmNetworkList,
   NewTokenType,
   TokenList,
   githubTokenLogoUrl,
 } from "@talismn/chaindata-provider"
 import { hasOwnProperty, isEthereumAddress } from "@talismn/util"
-import isEqual from "lodash/isEqual"
 import { PublicClient } from "viem"
 
 import { DefaultBalanceModule, NewBalanceModule } from "../BalanceModule"
 import log from "../log"
-import {
-  AddressesByToken,
-  Amount,
-  Balance,
-  BalanceJsonList,
-  Balances,
-  NewBalanceType,
-} from "../types"
+import { AddressesByToken, Amount, Balances, NewBalanceType } from "../types"
 import { erc20Abi } from "./abis/erc20"
 
 export { erc20Abi }
@@ -87,6 +78,13 @@ declare module "@talismn/balances/plugins" {
     EvmErc20Balance: EvmErc20Balance
   }
 }
+type EvmErc20NetworkParams = Record<
+  EvmNetworkId,
+  Array<{
+    token: EvmErc20Token
+    address: string
+  }>
+>
 
 export const EvmErc20Module: NewBalanceModule<
   ModuleType,
@@ -97,6 +95,35 @@ export const EvmErc20Module: NewBalanceModule<
   const { chainConnectors, chaindataProvider } = hydrate
   const chainConnector = chainConnectors.evm
   assert(chainConnector, "This module requires an evm chain connector")
+
+  const prepareFetchParameters = async (
+    addressesByToken: AddressesByToken<EvmErc20Token>
+  ): Promise<EvmErc20NetworkParams> => {
+    const tokens = await chaindataProvider.tokensById()
+
+    const addressesByTokenByEvmNetwork = groupAddressesByTokenByEvmNetwork(addressesByToken, tokens)
+    return Object.entries(addressesByTokenByEvmNetwork).reduce(
+      (result, [evmNetworkId, addressesByToken]) => {
+        const networkParams = Object.entries(addressesByToken).flatMap(([tokenId, addresses]) => {
+          const token = tokens[tokenId]
+          // TODO: Fix @talismn/balances-react: it shouldn't pass every token to every module
+          if (token.type !== "evm-erc20") {
+            log.debug(`This module doesn't handle tokens of type ${token.type}`)
+            return []
+          }
+
+          return addresses.map((address) => ({
+            token,
+            address,
+            evmNetworkId,
+          }))
+        })
+        result[evmNetworkId] = networkParams
+        return result
+      },
+      {} as EvmErc20NetworkParams
+    )
+  }
 
   return {
     ...DefaultBalanceModule("evm-erc20"),
@@ -178,17 +205,23 @@ export const EvmErc20Module: NewBalanceModule<
       let subscriptionActive = true
       const subscriptionInterval = 6_000 // 6_000ms == 6 seconds
       const initDelay = 1_500 // 1_500ms == 1.5 seconds
-      const cache = new Map<EvmNetworkId, BalanceJsonList>()
-
-      // TODO remove this log
-      log.debug("subscribeBalances", "evm-erc20", addressesByToken)
+      const initialisingBalances = new Set<string>()
+      const positiveBalanceNetworks = new Set<string>()
+      const tokens = await chaindataProvider.tokensById()
 
       // for chains with a zero balance we only call fetchBalances once every 5 subscriptionIntervals
       // if subscriptionInterval is 6 seconds, this means we only poll chains with a zero balance every 30 seconds
       let zeroBalanceSubscriptionIntervalCounter = 0
 
       const evmNetworks = await chaindataProvider.evmNetworksById()
-      const tokens = await chaindataProvider.tokensById()
+
+      const fetchesPerNetwork = await prepareFetchParameters(addressesByToken)
+
+      Object.entries(fetchesPerNetwork).forEach(([evmNetworkId, fetches]) => {
+        fetches.forEach(({ address, token }) => {
+          initialisingBalances.add(getErc20BalanceId({ address, token, evmNetworkId }))
+        })
+      })
 
       const poll = async () => {
         if (!subscriptionActive) return
@@ -196,22 +229,15 @@ export const EvmErc20Module: NewBalanceModule<
         zeroBalanceSubscriptionIntervalCounter = (zeroBalanceSubscriptionIntervalCounter + 1) % 5
 
         try {
-          // regroup tokens by network
-          const addressesByTokenByEvmNetwork = groupAddressesByTokenByEvmNetwork(
-            addressesByToken,
-            tokens
-          )
-
           // fetch balance for each network sequentially to prevent creating a big queue of http requests (browser can only handle 2 at a time)
-          for (const [evmNetworkId, addressesByToken] of Object.entries(
-            addressesByTokenByEvmNetwork
-          )) {
-            const cached = cache.get(evmNetworkId)
-            if (
-              cached &&
-              zeroBalanceSubscriptionIntervalCounter !== 0 &&
-              new Balances(cached).each.reduce((sum, b) => sum + b.total.planck, 0n) === 0n
-            ) {
+          for (const evmNetworkId of Object.keys(fetchesPerNetwork)) {
+            const initialisingNetworkBalances = Array.from(initialisingBalances).filter((id) =>
+              id.startsWith(`${evmNetworkId}-`)
+            )
+            const isZeroBalanceNetwork =
+              initialisingNetworkBalances.length === 0 && !positiveBalanceNetworks.has(evmNetworkId)
+
+            if (isZeroBalanceNetwork && zeroBalanceSubscriptionIntervalCounter !== 0) {
               // only poll empty token balances every 5 subscriptionIntervals
               continue
             }
@@ -219,22 +245,57 @@ export const EvmErc20Module: NewBalanceModule<
             try {
               if (!chainConnectors.evm)
                 throw new Error(`This module requires an evm chain connector`)
-              const balances = await fetchBalances(
-                chainConnectors.evm,
-                evmNetworks,
-                tokens,
-                addressesByToken
-              )
 
-              // Don't call callback with balances which have not changed since the last poll.
-              const json = balances.toJSON()
-              if (!isEqual(cached, json)) {
-                cache.set(evmNetworkId, json)
-                // cache contains all balances for a given network, filter out balances that didn't change
-                const changes = Object.entries(json).filter(
-                  ([id, balance]) => !isEqual(cached?.[id], balance)
-                )
-                if (changes.length) callback(null, new Balances(Object.fromEntries(changes)))
+              // validate that the network is real
+              const evmNetwork = evmNetworks[evmNetworkId]
+              if (!evmNetwork) throw new Error(`Evm network ${evmNetworkId} not found`)
+
+              const { errors, results } = await fetchBalances(
+                chainConnectors.evm,
+                fetchesPerNetwork
+              )
+              // handle errors first
+              errors.forEach((error) => {
+                if (error instanceof EvmErc20BalanceError) {
+                  log.error(
+                    `Error fetching balance for token ${error.balanceId} on chain ${evmNetworkId}`,
+                    error
+                  )
+                  initialisingBalances.delete(error.balanceId)
+                } else if (error instanceof EvmErc20NetworkError) {
+                  log.error(`Error fetching balance for chain ${error.evmNetworkId}`, error)
+                }
+              })
+
+              const positiveBalances = results
+                .map((balance) => {
+                  // update initialising balance state
+                  const token = tokens[balance.tokenId] as EvmErc20Token
+                  const balanceId = getErc20BalanceId({
+                    address: balance.address,
+                    token,
+                    evmNetworkId,
+                  })
+                  if (initialisingBalances.has(balanceId)) {
+                    initialisingBalances.delete(balanceId)
+                  }
+                  return balance
+                })
+                .filter((balance) => {
+                  // remove zero balances from the list of positive balances,
+                  // and record that this network has a positive balance so we poll more often
+                  if (BigInt(balance.free) > 0n) {
+                    positiveBalanceNetworks.add(evmNetworkId)
+                    return balance
+                  }
+                  return false
+                })
+
+              if (positiveBalances.length > 0) {
+                callback(null, {
+                  status: initialisingBalances.size > 0 ? "initialising" : "live",
+                  data: positiveBalances,
+                })
               }
             } catch (err) {
               callback(err)
@@ -257,118 +318,110 @@ export const EvmErc20Module: NewBalanceModule<
     async fetchBalances(addressesByToken) {
       if (!chainConnectors.evm) throw new Error(`This module requires an evm chain connector`)
 
-      // TODO remove this log
-      log.debug("fetchBalances", "evm-erc20", addressesByToken)
-      const evmNetworks = await chaindataProvider.evmNetworksById()
-      const tokens = await chaindataProvider.tokensById()
-
-      return fetchBalances(chainConnectors.evm, evmNetworks, tokens, addressesByToken)
+      const fetchesPerNetwork = await prepareFetchParameters(addressesByToken)
+      const balances = await fetchBalances(chainConnectors.evm, fetchesPerNetwork)
+      return new Balances(balances.results)
     },
   }
 }
 
+class EvmErc20BalanceError extends Error {
+  balanceId: string
+
+  constructor(message: string, balanceId: string, cause?: Error) {
+    super(message)
+    this.name = "EvmErc20BalanceError"
+    this.balanceId = balanceId
+    if (cause) {
+      this.cause = cause
+    }
+  }
+}
+class EvmErc20NetworkError extends Error {
+  evmNetworkId: string | undefined
+
+  constructor(message: string, evmNetworkId?: string) {
+    super(message)
+    this.name = "EvmErc20NetworkError"
+    this.evmNetworkId = evmNetworkId
+  }
+}
+
+type EvmErc20TokenBalanceResponse = {
+  results: EvmErc20Balance[]
+  errors: Array<EvmErc20BalanceError | EvmErc20NetworkError>
+}
+
 const fetchBalances = async (
   evmChainConnector: ChainConnectorEvm,
-  evmNetworks: EvmNetworkList,
-  tokens: TokenList,
-  addressesByToken: AddressesByToken<EvmErc20Token>
-) => {
-  const addressesByTokenGroupedByEvmNetwork = groupAddressesByTokenByEvmNetwork(
-    addressesByToken,
-    tokens
-  )
+  tokenAddressesByNetwork: EvmErc20NetworkParams
+): Promise<EvmErc20TokenBalanceResponse> => {
+  const result = {
+    results: [] as EvmErc20Balance[],
+    errors: [] as Array<EvmErc20BalanceError | EvmErc20NetworkError>,
+  }
+  await Promise.all(
+    Object.entries(tokenAddressesByNetwork).map(async ([evmNetworkId, networkParams]) => {
+      const publicClient = await evmChainConnector.getPublicClientForEvmNetwork(evmNetworkId)
+      if (!publicClient)
+        throw new EvmErc20NetworkError(
+          `Could not get rpc provider for evm network ${evmNetworkId}`,
+          evmNetworkId
+        )
 
-  const balances = (
-    await Promise.allSettled(
-      Object.entries(addressesByTokenGroupedByEvmNetwork).map(
-        async ([evmNetworkId, addressesByToken]) => {
-          if (!evmChainConnector) throw new Error(`This module requires an evm chain connector`)
-
-          const evmNetwork = evmNetworks[evmNetworkId]
-          if (!evmNetwork) throw new Error(`Evm network ${evmNetworkId} not found`)
-
-          const publicClient = await evmChainConnector.getPublicClientForEvmNetwork(evmNetworkId)
-          if (!publicClient)
-            throw new Error(`Could not get rpc provider for evm network ${evmNetworkId}`)
-
-          const tokensAndAddresses = Object.entries(addressesByToken).reduce(
-            (tokensAndAddresses, [tokenId, addresses]) => {
-              const token = tokens[tokenId]
-              if (!token) {
-                log.debug(`Token ${tokenId} not found`)
-                return tokensAndAddresses
-              }
-
-              // TODO: Fix @talismn/balances-react: it shouldn't pass every token to every module
-              if (token.type !== "evm-erc20") {
-                log.debug(`This module doesn't handle tokens of type ${token.type}`)
-                return tokensAndAddresses
-              }
-
-              const tokenAndAddresses: [EvmErc20Token | CustomEvmErc20Token, string[]] = [
-                token,
-                addresses,
-              ]
-
-              return [...tokensAndAddresses, tokenAndAddresses]
-            },
-            [] as Array<[EvmErc20Token | CustomEvmErc20Token, string[]]>
-          )
-
-          // fetch all balances
-          const balanceRequests = tokensAndAddresses.flatMap(([token, addresses]) => {
-            return addresses.map(
-              async (address) =>
-                new Balance({
+      // fetch all balances for this network
+      return await Promise.all(
+        networkParams.map(
+          async ({ token, address }) =>
+            await getFreeBalance(
+              publicClient,
+              token.contractAddress as `0x${string}`,
+              address as `0x${string}`
+            )
+              .then((free) =>
+                result.results.push({
                   source: "evm-erc20",
-
                   status: "live",
-
                   address: address,
-                  multiChainId: { evmChainId: evmNetwork.id },
+                  multiChainId: { evmChainId: evmNetworkId },
                   evmNetworkId,
                   tokenId: token.id,
-
-                  free: await getFreeBalance(
-                    publicClient,
-                    token.contractAddress as `0x${string}`,
-                    address as `0x${string}`
-                  ),
-                })
-            )
-          })
-
-          // wait for balance fetches to complete
-          const balanceResults = await Promise.allSettled(balanceRequests)
-
-          // filter out errors
-          const balances = balanceResults
-            .map((result) => {
-              if (result.status === "rejected") {
-                log.debug(result.reason)
-                return false
-              }
-              return result.value
-            })
-            .filter((balance): balance is Balance => balance !== false)
-
-          // return to caller
-          return new Balances(balances)
-        }
+                  free,
+                } as EvmErc20Balance)
+              )
+              .catch((error) => {
+                const balanceId = getErc20BalanceId({ token, address, evmNetworkId })
+                result.errors.push(
+                  new EvmErc20BalanceError(
+                    `Failed to get balance for token ${token.id} and address ${address} on chain ${evmNetworkId}`,
+                    balanceId,
+                    error
+                  )
+                )
+              })
+        )
       )
-    )
-  )
-    .map((result) => {
-      if (result.status === "rejected") {
-        log.debug(result.reason)
-        return false
-      }
-      return result.value
     })
-    .filter((balances): balances is Balances => balances !== false)
+  )
 
-  return balances.reduce((allBalances, balances) => allBalances.add(balances), new Balances([]))
+  return result
 }
+
+/**
+ * getErc20BalanceId
+ * @description: Special function to generate a unique id for each EvmErc20 balance, intended for internal use only to maintain 'initialised' state
+ * @param param0: { address, token, evmNetworkId }
+ * @returns
+ */
+const getErc20BalanceId = ({
+  address,
+  token,
+  evmNetworkId,
+}: {
+  token: EvmErc20Token
+  address: string
+  evmNetworkId: EvmNetworkId
+}) => `${evmNetworkId}-${address}-${token.contractAddress}`
 
 function groupAddressesByTokenByEvmNetwork(
   addressesByToken: AddressesByToken<EvmErc20Token>,

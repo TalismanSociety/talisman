@@ -56,11 +56,7 @@ export class BalancesHandler extends ExtensionHandler {
         updateAndWaitForUpdatedChaindata()
         const callback = createSubscription<"pri(balances.subscribe)">(id, port)
 
-        const subscription = this.stores.balances.subscribe(id, onDisconnected)
-        const subFn = subscription((val) => {
-          callback(val)
-        })
-        onDisconnected.then(() => subFn.unsubscribe())
+        this.stores.balances.subscribe(id, onDisconnected, callback)
 
         return true
       }
@@ -179,8 +175,13 @@ const subscribeBalancesByParams = async (
             // eslint-disable-next-line no-console
             if (error) return DEBUG && console.error(error)
 
-            for (const balance of result?.each ?? []) delete initBalanceMap[getBalanceKey(balance)]
-            callback({ type: "upsert", balances: (result ?? new Balances([])).toJSON() })
+            if (result && "status" in result && "data" in result) {
+              callback({ type: "upsert", balances: new Balances(result.data ?? []).toJSON() })
+            } else {
+              for (const balance of result?.each ?? [])
+                delete initBalanceMap[getBalanceKey(balance)]
+              callback({ type: "upsert", balances: (result ?? new Balances([])).toJSON() })
+            }
           }
         )
       )
