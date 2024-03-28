@@ -1,5 +1,44 @@
 # @talismn/chain-connector-evm
 
+## 0.8.0
+
+### Minor Changes
+
+- 71cbd2d: chore: viem v2
+- 372f995: replace ethers by viem
+
+### Patch Changes
+
+- 5d833e8: chore: small cleanup of ChaindataProviderExtension method names
+- be0d19e: fix: incorrect instantiation of `ChainConnectorEvm`
+- 372f995: replace ethers by viem
+- c4d5967: bump typescript version
+- 620b7eb: Dependency updates
+- 850381a: feat: onchain id support
+- 9ebcd93: fix: allow failing providers to recover by removing them from cache every 30 seconds
+- Updated dependencies [0339e5e]
+- Updated dependencies [2ef26d2]
+- Updated dependencies [5d833e8]
+- Updated dependencies [03939d5]
+- Updated dependencies [1e77eeb]
+- Updated dependencies [d2ccdaf]
+- Updated dependencies [68bf06a]
+- Updated dependencies [97c8cda]
+- Updated dependencies [ade2908]
+- Updated dependencies [372f995]
+- Updated dependencies [c4d5967]
+- Updated dependencies [776432e]
+- Updated dependencies [d11555c]
+- Updated dependencies [23f0d3a]
+- Updated dependencies [e0eb84a]
+- Updated dependencies [620b7eb]
+- Updated dependencies [5aadf99]
+- Updated dependencies [4cace80]
+- Updated dependencies [afb0284]
+- Updated dependencies [d2fdbba]
+  - @talismn/chaindata-provider@0.8.0
+  - @talismn/util@0.3.0
+
 ## 0.7.0
 
 ### Minor Changes

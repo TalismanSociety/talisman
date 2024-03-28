@@ -1,5 +1,20 @@
 # @talismn/util
 
+## 0.3.0
+
+### Minor Changes
+
+- 68bf06a: feat: isBooleanTrue helper
+- d11555c: refactor: core package
+
+### Patch Changes
+
+- 372f995: replace ethers by viem
+- c4d5967: bump typescript version
+- e0eb84a: Error handling improvements
+- 620b7eb: Dependency updates
+- afb0284: feat: upgraded @talismn/balances-react to support new chaindata
+
 ## 0.2.0
 
 ### Minor Changes

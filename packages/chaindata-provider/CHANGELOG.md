@@ -1,5 +1,30 @@
 # @talismn/chaindata-provider
 
+## 0.8.0
+
+### Minor Changes
+
+- 97c8cda: remove symbol from native token ids
+- d2fdbba: deprecated get entity with an object filter
+  added chainByGenesisHash method
+
+### Patch Changes
+
+- 0339e5e: Prevent Dexie errors
+- 2ef26d2: Ensure Dexie async methods all awaited
+- 5d833e8: chore: small cleanup of ChaindataProviderExtension method names
+- 03939d5: fix: added githubUnknownChainLogoUrl
+- 1e77eeb: fix: moved net into its own submodule for easier mocking
+- d2ccdaf: fix: balance subscriptions never update registry cache with new metadata
+- ade2908: feat: added chainType to `Chain` type definition
+- c4d5967: bump typescript version
+- 776432e: build: use type import for types only library
+- 23f0d3a: chore: updated init data
+- 620b7eb: Dependency updates
+- 5aadf99: feat: native token balances on custom networks
+- 4cace80: add: dcentName property on tokens
+- afb0284: feat: upgraded @talismn/balances-react to support new chaindata
+
 ## 0.7.0
 
 ### Minor Changes

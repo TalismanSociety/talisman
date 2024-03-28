@@ -1,5 +1,53 @@
 # talisman-ui
 
+## 2.0.0
+
+### Minor Changes
+
+- e724c66: feat: show/hide balance css classes
+- e724c66: Removed acolyte from mystical background v3 to improve performance'
+- 87a0474: better hide scrollbar css rule
+- d2c52c6: feat: preload fonts
+- 18178eb: feat: delay on tooltips
+- 54f6ce6: max size on modal dialog
+
+### Patch Changes
+
+- ea54598: feat: nicer toggle colors
+- bafc967: fix: hide dcent iframe
+- 60746a1: fix: use text-body for logo color in CtaButton
+- e724c66: feat: disabled item style in context menu
+- c4d5967: bump typescript version
+- 4f5c13d: fix: onboarding flicker
+- 60746a1: feat: added @talismn/icons package
+- ed95aea: popup borders
+- 620b7eb: Dependency updates
+- e724c66: fix: change container errors to normal casing
+- 55dafcd: Improve change password
+- a6cafff: feat: focus-visible style on context menu items
+- e724c66: Added icons
+- Updated dependencies [123647e]
+- Updated dependencies [b575ca5]
+- Updated dependencies [91895a1]
+- Updated dependencies [68bf06a]
+- Updated dependencies [f154121]
+- Updated dependencies [372f995]
+- Updated dependencies [c4d5967]
+- Updated dependencies [60746a1]
+- Updated dependencies [d11555c]
+- Updated dependencies [e0eb84a]
+- Updated dependencies [70bb357]
+- Updated dependencies [620b7eb]
+- Updated dependencies [0948b7a]
+- Updated dependencies [afb0284]
+- Updated dependencies [87a0474]
+- Updated dependencies [4a56632]
+- Updated dependencies [e724c66]
+- Updated dependencies [d7ddb22]
+- Updated dependencies [364496f]
+  - @talismn/icons@0.1.0
+  - @talismn/util@0.3.0
+
 ## 1.0.0
 
 ### Minor Changes

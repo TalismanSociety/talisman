@@ -1,5 +1,29 @@
 # @talismn/connection-meta
 
+## 0.1.1
+
+### Patch Changes
+
+- c4d5967: bump typescript version
+- 620b7eb: Dependency updates
+- Updated dependencies [0339e5e]
+- Updated dependencies [2ef26d2]
+- Updated dependencies [5d833e8]
+- Updated dependencies [03939d5]
+- Updated dependencies [1e77eeb]
+- Updated dependencies [d2ccdaf]
+- Updated dependencies [97c8cda]
+- Updated dependencies [ade2908]
+- Updated dependencies [c4d5967]
+- Updated dependencies [776432e]
+- Updated dependencies [23f0d3a]
+- Updated dependencies [620b7eb]
+- Updated dependencies [5aadf99]
+- Updated dependencies [4cace80]
+- Updated dependencies [afb0284]
+- Updated dependencies [d2fdbba]
+  - @talismn/chaindata-provider@0.8.0
+
 ## 0.1.0
 
 ### Minor Changes
