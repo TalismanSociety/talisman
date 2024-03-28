@@ -18,6 +18,7 @@ import {
   ExtendableTokenType,
   ExtendableTransferParams,
   NewBalanceModule,
+  SubscriptionResultWithStatus,
 } from "../../BalanceModule"
 import log from "../../log"
 import {
@@ -53,7 +54,7 @@ export async function balances<
 >(
   balanceModule: BalanceModule<TModuleType, TTokenType, TChainMeta, TModuleConfig, TTransferParams>,
   addressesByToken: AddressesByToken<TTokenType>,
-  callback: SubscriptionCallback<Balances>
+  callback: SubscriptionCallback<Balances | SubscriptionResultWithStatus>
 ): Promise<UnsubscribeFn>
 export async function balances<
   TModuleType extends string,
@@ -64,7 +65,7 @@ export async function balances<
 >(
   balanceModule: BalanceModule<TModuleType, TTokenType, TChainMeta, TModuleConfig, TTransferParams>,
   addressesByToken: AddressesByToken<TTokenType>,
-  callback?: SubscriptionCallback<Balances>
+  callback?: SubscriptionCallback<Balances | SubscriptionResultWithStatus>
 ): Promise<Balances | UnsubscribeFn> {
   // subscription request
   if (callback !== undefined)

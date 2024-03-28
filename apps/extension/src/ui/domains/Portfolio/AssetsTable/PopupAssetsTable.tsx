@@ -125,31 +125,24 @@ const AssetRow = ({ balances, locked }: AssetRowProps) => {
               status.status === "fetching" && "animate-pulse transition-opacity"
             )}
           >
-            {status.status === "initializing" ? (
-              <>
-                <div className="bg-grey-700 rounded-xs h-7 w-[10rem] animate-pulse"></div>
-                <div className="bg-grey-700 rounded-xs h-7 w-[6rem] animate-pulse"></div>
-              </>
-            ) : (
-              <>
-                <div
-                  className={classNames(
-                    "whitespace-nowrap text-sm font-bold",
-                    locked ? "text-body-secondary" : "text-white"
-                  )}
-                >
-                  <Tokens amount={tokens} symbol={token?.symbol} isBalance />
-                  {locked ? <LockIcon className="lock ml-2 inline align-baseline text-xs" /> : null}
-                  <StaleBalancesIcon
-                    className="alert ml-2 inline align-baseline text-sm"
-                    staleChains={status.status === "stale" ? status.staleChains : []}
-                  />
-                </div>
-                <div className="text-body-secondary leading-base text-xs">
-                  {fiat === null ? "-" : <Fiat amount={fiat} isBalance />}
-                </div>
-              </>
-            )}
+            <>
+              <div
+                className={classNames(
+                  "whitespace-nowrap text-sm font-bold",
+                  locked ? "text-body-secondary" : "text-white"
+                )}
+              >
+                <Tokens amount={tokens} symbol={token?.symbol} isBalance />
+                {locked ? <LockIcon className="lock ml-2 inline align-baseline text-xs" /> : null}
+                <StaleBalancesIcon
+                  className="alert ml-2 inline align-baseline text-sm"
+                  staleChains={status.status === "stale" ? status.staleChains : []}
+                />
+              </div>
+              <div className="text-body-secondary leading-base text-xs">
+                {fiat === null ? "-" : <Fiat amount={fiat} isBalance />}
+              </div>
+            </>
           </div>
         </div>
       </button>
@@ -159,7 +152,7 @@ const AssetRow = ({ balances, locked }: AssetRowProps) => {
 
 type GroupedAssetsTableProps = {
   balances: Balances
-  isInitializing: boolean
+  isInitialising: boolean
 }
 
 type GroupProps = {
@@ -194,7 +187,7 @@ const BalancesGroup = ({ label, fiatAmount, className, children }: GroupProps) =
   )
 }
 
-export const PopupAssetsTable = ({ balances, isInitializing }: GroupedAssetsTableProps) => {
+export const PopupAssetsTable = ({ balances, isInitialising }: GroupedAssetsTableProps) => {
   const { t } = useTranslation()
   const { account } = useSelectedAccount()
   // group by status by token (symbol)
@@ -209,7 +202,7 @@ export const PopupAssetsTable = ({ balances, isInitializing }: GroupedAssetsTabl
     return { total, totalAvailable: transferable, totalLocked: locked + reserved }
   }, [balances.sum, currency])
 
-  if (!available.length && !lockedSymbolBalances.length && !isInitializing)
+  if (!available.length && !lockedSymbolBalances.length && !isInitialising)
     return (
       <FadeIn>
         <div className="text-body-secondary bg-black-secondary rounded-sm py-10 text-center text-xs">
@@ -236,8 +229,8 @@ export const PopupAssetsTable = ({ balances, isInitializing }: GroupedAssetsTabl
           {available.map(([symbol, b]) => (
             <AssetRow key={symbol} balances={b} />
           ))}
-          {isInitializing && <AssetRowSkeleton />}
-          {!isInitializing && !available.length && (
+          {isInitialising && <AssetRowSkeleton />}
+          {!isInitialising && !available.length && (
             <div className="text-body-secondary bg-black-secondary rounded-sm py-10 text-center text-xs">
               {account
                 ? t("There are no available balances for this account.")

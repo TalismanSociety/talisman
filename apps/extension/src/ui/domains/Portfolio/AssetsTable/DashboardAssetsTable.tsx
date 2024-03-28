@@ -9,7 +9,7 @@ import { usePortfolioSymbolBalances } from "./usePortfolioSymbolBalances"
 
 type AssetsTableProps = {
   balances: Balances
-  isInitializing: boolean
+  isInitialising: boolean
 }
 
 const AssetRowSkeleton: FC<{ className?: string }> = ({ className }) => {
@@ -41,13 +41,13 @@ const AssetRowSkeleton: FC<{ className?: string }> = ({ className }) => {
   )
 }
 
-export const DashboardAssetsTable = ({ balances, isInitializing }: AssetsTableProps) => {
+export const DashboardAssetsTable = ({ balances, isInitialising }: AssetsTableProps) => {
   const { t } = useTranslation()
   // group by token (symbol)
   const { account } = useSelectedAccount()
   const { symbolBalances } = usePortfolioSymbolBalances(balances)
 
-  if (!symbolBalances.length && !isInitializing) {
+  if (!symbolBalances.length && !isInitialising) {
     return (
       <div className="text-body-secondary bg-grey-850 mt-12 rounded-sm p-8">
         {account ? t("No assets were found on this account.") : t("No assets were found.")}
@@ -66,7 +66,7 @@ export const DashboardAssetsTable = ({ balances, isInitializing }: AssetsTablePr
       {symbolBalances.map(([symbol, b]) => (
         <AssetRow key={symbol} balances={b} />
       ))}
-      {isInitializing && <AssetRowSkeleton />}
+      {isInitialising && <AssetRowSkeleton />}
     </div>
   )
 }

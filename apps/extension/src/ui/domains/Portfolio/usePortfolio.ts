@@ -5,6 +5,7 @@ import { Chain, ChainId, EvmNetwork, EvmNetworkId } from "@talismn/chaindata-pro
 import {
   balancesByAccountCategoryAtomFamily,
   balancesHydrateAtom,
+  balancesInitialisingAtom,
   chainsArrayAtomFamily,
   evmNetworksArrayAtomFamily,
   settingsAtomFamily,
@@ -34,6 +35,7 @@ type PortfolioGlobalData = {
   hydrate: HydrateDb
   allBalances: Balances
   portfolioBalances: Balances
+  isInitialising: boolean
   isProvisioned: boolean
 }
 
@@ -153,14 +155,16 @@ const networkFilterAtom = atom<NetworkOption | undefined>(undefined)
 // the async atom, whose value must be copied in the sync atom
 const portfolioGlobalDataAsyncAtom = atom<Promise<PortfolioGlobalData>>(async (get) => {
   const includeTestnets = (await get(settingsAtomFamily("useTestnets"))) as boolean
-  const [chains, tokens, evmNetworks, hydrate, allBalances, portfolioBalances] = await Promise.all([
-    get(chainsArrayAtomFamily({ activeOnly: true, includeTestnets })),
-    get(tokensArrayAtomFamily({ activeOnly: true, includeTestnets })),
-    get(evmNetworksArrayAtomFamily({ activeOnly: true, includeTestnets })),
-    get(balancesHydrateAtom),
-    get(balancesByAccountCategoryAtomFamily("all")),
-    get(balancesByAccountCategoryAtomFamily("portfolio")),
-  ])
+  const [chains, tokens, evmNetworks, hydrate, allBalances, portfolioBalances, isInitialising] =
+    await Promise.all([
+      get(chainsArrayAtomFamily({ activeOnly: true, includeTestnets })),
+      get(tokensArrayAtomFamily({ activeOnly: true, includeTestnets })),
+      get(evmNetworksArrayAtomFamily({ activeOnly: true, includeTestnets })),
+      get(balancesHydrateAtom),
+      get(balancesByAccountCategoryAtomFamily("all")),
+      get(balancesByAccountCategoryAtomFamily("portfolio")),
+      get(balancesInitialisingAtom),
+    ])
 
   return {
     chains,
@@ -169,6 +173,7 @@ const portfolioGlobalDataAsyncAtom = atom<Promise<PortfolioGlobalData>>(async (g
     hydrate,
     allBalances,
     portfolioBalances,
+    isInitialising,
     isProvisioned: true,
   }
 })
@@ -181,6 +186,7 @@ const portfolioGlobalDataAtom = atom<PortfolioGlobalData>({
   hydrate: {},
   allBalances: new Balances([]),
   portfolioBalances: new Balances([]),
+  isInitialising: false,
   isProvisioned: false,
 })
 
@@ -192,6 +198,7 @@ const portfolioAtom = atom((get) => {
     evmNetworks,
     allBalances: allAccountsBalances,
     portfolioBalances,
+    isInitialising,
   } = get(portfolioGlobalDataAtom)
   const networkFilter = get(networkFilterAtom)
   const account = get(portfolioAccountAtom)
@@ -209,8 +216,6 @@ const portfolioAtom = atom((get) => {
     balances: allBalances,
     type: accountType,
   })
-  const isInitializing =
-    !allBalances.count || allBalances.each.some((b) => b.status === "initializing")
 
   return {
     allBalances,
@@ -222,7 +227,7 @@ const portfolioAtom = atom((get) => {
     networkBalances,
     accountType,
     networks,
-    isInitializing,
+    isInitialising,
   }
 })
 

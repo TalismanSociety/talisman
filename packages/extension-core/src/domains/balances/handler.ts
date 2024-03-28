@@ -52,9 +52,13 @@ export class BalancesHandler extends ExtensionHandler {
         const onDisconnected = portDisconnected(port)
 
         // TODO: Run this on a timer or something instead of when subscribing to balances
-        await updateAndWaitForUpdatedChaindata()
+        // todo check if not awaiting this causes any issues with custom networks
+        updateAndWaitForUpdatedChaindata()
+        const callback = createSubscription<"pri(balances.subscribe)">(id, port)
 
-        return this.stores.balances.subscribe(id, onDisconnected)
+        this.stores.balances.subscribe(id, onDisconnected, callback)
+
+        return true
       }
 
       // TODO: Replace this call with something internal to the balances store
@@ -171,8 +175,13 @@ const subscribeBalancesByParams = async (
             // eslint-disable-next-line no-console
             if (error) return DEBUG && console.error(error)
 
-            for (const balance of result?.each ?? []) delete initBalanceMap[getBalanceKey(balance)]
-            callback({ type: "upsert", balances: (result ?? new Balances([])).toJSON() })
+            if (result && "status" in result && "data" in result) {
+              callback({ type: "upsert", balances: new Balances(result.data ?? []).toJSON() })
+            } else {
+              for (const balance of result?.each ?? [])
+                delete initBalanceMap[getBalanceKey(balance)]
+              callback({ type: "upsert", balances: (result ?? new Balances([])).toJSON() })
+            }
           }
         )
       )

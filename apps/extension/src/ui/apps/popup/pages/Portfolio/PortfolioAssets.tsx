@@ -54,7 +54,7 @@ const EnableNetworkMessage: FC<{ type?: "substrate" | "evm" }> = ({ type }) => {
 }
 
 const MainContent: FC<{ balances: Balances }> = ({ balances }) => {
-  const { evmNetworks, chains, isInitializing } = usePortfolio()
+  const { evmNetworks, chains, isInitialising } = usePortfolio()
   const { account } = useSelectedAccount()
 
   if (!account?.type && !evmNetworks.length && !chains.length) return <EnableNetworkMessage />
@@ -67,7 +67,7 @@ const MainContent: FC<{ balances: Balances }> = ({ balances }) => {
   )
     return <EnableNetworkMessage type="evm" />
 
-  return <PopupAssetsTable balances={balances} isInitializing={isInitializing} />
+  return <PopupAssetsTable balances={balances} isInitialising={isInitialising} />
 }
 
 const SendFundsButton: FC<{ account?: AccountJsonAny }> = ({ account }) => {

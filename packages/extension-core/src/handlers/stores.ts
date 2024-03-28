@@ -6,7 +6,7 @@ import { PasswordStoreData, passwordStore } from "../domains/app/store.password"
 import { remoteConfigStore } from "../domains/app/store.remoteConfig"
 import { SettingsStoreData, settingsStore } from "../domains/app/store.settings"
 import { RemoteConfigStoreData } from "../domains/app/types"
-import { balanceStore } from "../domains/balances/store"
+import { balancePool } from "../domains/balances/pool"
 import { MnemonicData, mnemonicsStore } from "../domains/mnemonics/store"
 import { sitesAuthorisationStore } from "../domains/sitesAuthorised"
 import sitesAuthorisedStore from "../domains/sitesAuthorised/store"
@@ -15,7 +15,7 @@ import { tokenRatesStore } from "../domains/tokenRates"
 
 export type TabStore = {
   app: typeof appStore
-  balances: typeof balanceStore
+  balances: typeof balancePool
   errors: typeof errorsStore
   settings: typeof settingsStore
   sites: typeof sitesAuthorisationStore
@@ -46,7 +46,7 @@ export type GettableStoreData = { [K in GettableStoreKeys]: GettableStores[K][1]
 
 export const tabStores = {
   app: appStore,
-  balances: balanceStore,
+  balances: balancePool,
   errors: errorsStore,
   settings: settingsStore,
   sites: sitesAuthorisationStore,

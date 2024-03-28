@@ -26,3 +26,4 @@ export * from "./SubstrateTokensModule"
 
 export * from "./util"
 export * from "./util/substrate-native"
+export * from "./util/dbAccess"

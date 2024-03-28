@@ -19,6 +19,11 @@ export interface RequestBalance {
   address: Address
 }
 
+export type BalanceSubscriptionResponse = {
+  data: BalanceJson[]
+  status: "cached" | "initialising" | "live"
+}
+
 export type AddressesAndEvmNetwork = {
   addresses: string[]
   evmNetworks: Array<Pick<EvmNetwork, "id" | "nativeToken">>
@@ -56,6 +61,6 @@ export type BalanceTotal = {
 export interface BalancesMessages {
   // balance message signatures
   "pri(balances.get)": [RequestBalance, BalanceJson]
-  "pri(balances.subscribe)": [null, boolean, boolean]
+  "pri(balances.subscribe)": [null, boolean, BalanceSubscriptionResponse]
   "pri(balances.byparams.subscribe)": [RequestBalancesByParamsSubscribe, boolean, BalancesUpdate]
 }
