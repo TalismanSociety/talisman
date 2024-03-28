@@ -40,7 +40,7 @@ export const EthSignBodyErc20Approve: FC = () => {
 
   const isRevoke = useMemo(() => allowance === 0n, [allowance])
 
-  const handleSetLimit = useCallback(
+  const handleAllowanceChange = useCallback(
     async (limit: bigint) => {
       try {
         await updateCallArg("amount", limit)
@@ -94,7 +94,7 @@ export const EthSignBodyErc20Approve: FC = () => {
             allowance={allowance}
             token={erc20Token}
             spender={spender}
-            onSetLimit={handleSetLimit}
+            onChange={handleAllowanceChange}
           />
         )}
         <SignParamErc20TokenButton

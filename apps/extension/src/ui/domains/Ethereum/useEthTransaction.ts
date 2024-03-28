@@ -210,13 +210,11 @@ const useDecodeEvmTransaction = (
       const { abi, contractCall } = decodedTx
       const { functionName } = contractCall
 
-      // identify index of the arg
       const abiCall = abi.find((a) => a.name === functionName)
       if (!abiCall) throw new Error(`ABI for function ${functionName} not found`)
       const argIndex = abiCall.inputs.findIndex((input) => input.name === argName)
       if (argIndex === -1) throw new Error(`arg ${argName} not found in decoded transaction`)
 
-      // override arg value
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const args = [...contractCall.args] as any
       args[argIndex] = argValue

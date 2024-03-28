@@ -64,8 +64,8 @@ const EditAllowanceForm: FC<{
   spender: Address
   allowance: bigint
   onCancel: () => void
-  onSetLimit: (limit: bigint) => void | Promise<void>
-}> = ({ token, spender, allowance, onSetLimit, onCancel }) => {
+  onSubmit: (limit: bigint) => void | Promise<void>
+}> = ({ token, spender, allowance, onSubmit, onCancel }) => {
   const { t } = useTranslation()
   const { genericEvent } = useAnalytics()
 
@@ -101,13 +101,13 @@ const EditAllowanceForm: FC<{
       try {
         genericEvent("set custom allowance")
         const newLimit = limit ? parseUnits(limit, token.decimals) : ALLOWANCE_UNLIMITED
-        await onSetLimit(newLimit)
+        await onSubmit(newLimit)
       } catch (err) {
         log.error("Failed to set custom gas settings", { err })
         notify({ title: "Error", subtitle: (err as Error).message, type: "error" })
       }
     },
-    [genericEvent, onSetLimit, token.decimals]
+    [genericEvent, onSubmit, token.decimals]
   )
 
   // don't bubble up submit event to the parent approval form
@@ -180,8 +180,8 @@ export const SignParamAllowanceButton: FC<{
   spender: EvmAddress
   allowance: bigint
   token: Erc20TokenInfo
-  onSetLimit: (limit: bigint) => void | Promise<void>
-}> = ({ spender, allowance, token, onSetLimit }) => {
+  onChange: (limit: bigint) => void | Promise<void>
+}> = ({ spender, allowance, token, onChange }) => {
   const { isOpen, open, close } = useOpenClose()
 
   const erc20 = useErc20Token(token.evmNetworkId, token.contractAddress)
@@ -199,12 +199,12 @@ export const SignParamAllowanceButton: FC<{
   const isInfinite = useMemo(() => allowance === ALLOWANCE_UNLIMITED, [allowance])
   const tokens = useMemo(() => formatUnits(allowance, token.decimals), [allowance, token])
 
-  const handleSetLimit = useCallback(
+  const handleSubmit = useCallback(
     (limit: bigint) => {
-      onSetLimit(limit)
+      onChange(limit)
       close()
     },
-    [close, onSetLimit]
+    [close, onChange]
   )
 
   return (
@@ -241,7 +241,7 @@ export const SignParamAllowanceButton: FC<{
           spender={spender}
           allowance={allowance}
           onCancel={close}
-          onSetLimit={handleSetLimit}
+          onSubmit={handleSubmit}
         />
       </Drawer>
     </>
