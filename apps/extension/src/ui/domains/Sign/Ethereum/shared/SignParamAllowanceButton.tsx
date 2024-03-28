@@ -210,7 +210,7 @@ export const SignParamAllowanceButton: FC<{
   return (
     <>
       <Tooltip>
-        <TooltipTrigger>
+        <TooltipTrigger asChild>
           <PillButton
             size="sm"
             onClick={open}
