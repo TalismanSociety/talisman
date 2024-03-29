@@ -10,12 +10,20 @@
     <link rel="manifest" href="./manifest.json" />
     <title><%= htmlWebpackPlugin.options.title || 'Talisman'%></title>
     <style>
+      html,
+      body {
+        /* prevents bg flickering on page load */
+        background: #121212;
+      }
+
+      /* prevents tiny box on page load */
       html {
         font-size: 10px;
-        background: #121212;
       }
       html,
       body {
+        margin: 0;
+        padding: 0;
         min-width: 400px;
         min-height: 600px;
       }
