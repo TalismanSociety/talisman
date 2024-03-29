@@ -11,7 +11,7 @@ const ForkTsCheckerNotifierWebpackPlugin = require("fork-ts-checker-notifier-web
 const EslintWebpackPlugin = require("eslint-webpack-plugin")
 const AssetReplacePlugin = require("./AssetReplacePlugin")
 
-const { srcDir, distDir, getRelease, getGitShortHash } = require("./utils")
+const { srcDir, distDir, getRelease, getGitShortHash, dropConsole } = require("./utils")
 
 const config = (env) => ({
   entry: {
@@ -156,6 +156,7 @@ const config = (env) => ({
       ),
 
       // computed values
+      "process.env.DEBUG": JSON.stringify(String(!dropConsole(env))),
       "process.env.BUILD": JSON.stringify(env.build),
       "process.env.COMMIT_SHA_SHORT": JSON.stringify(getGitShortHash()),
       "process.env.RELEASE": JSON.stringify(getRelease(env)),

@@ -168,8 +168,11 @@ const subscribeBalancesByParams = async (
           (error, result) => {
             if (thisGeneration !== balancesSubscriptionsGeneration) return
 
-            // eslint-disable-next-line no-console
-            if (error) return DEBUG && console.error(error)
+            if (error) {
+              // eslint-disable-next-line no-console
+              DEBUG && console.error(error)
+              return
+            }
 
             for (const balance of result?.each ?? []) delete initBalanceMap[getBalanceKey(balance)]
             callback({ type: "upsert", balances: (result ?? new Balances([])).toJSON() })

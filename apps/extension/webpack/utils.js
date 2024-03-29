@@ -81,6 +81,9 @@ const getSentryPlugin = (env) => {
   })
 }
 
+const dropConsole = (env) =>
+  ["production", "canary"].includes(env.build) && process.env.NODE_ENV !== "TEST"
+
 module.exports = {
   srcDir,
   distDir,
@@ -90,4 +93,5 @@ module.exports = {
   getManifestVersionName,
   getArchiveFileName,
   getSentryPlugin,
+  dropConsole,
 }
