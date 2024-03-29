@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en" class="popup">
+<html lang="en" class="popup scrollable scrollable-800">
   <head>
     <meta charset="utf-8" />
     <link rel="icon" href="./favicon.svg?v=<%= __webpack_hash__  %>" />
@@ -10,29 +10,21 @@
     <link rel="manifest" href="./manifest.json" />
     <title><%= htmlWebpackPlugin.options.title || 'Talisman'%></title>
     <style>
-      html,
-      body {
-        /* prevents bg flickering on page load */
-        background: #121212;
-      }
-
-      /* prevents tiny box on page load */
       html {
         font-size: 10px;
-      }
-      html,
-      body {
-        margin: 0;
-        padding: 0;
-        overflow: auto !important;
-        min-width: 400px;
-        min-height: 600px;
+        background: #121212;
       }
       #root {
         margin: 0 auto;
         width: 40rem;
         height: 60rem;
         overflow: hidden;
+      }
+      /* no scrollbars if screen is large enough, prevents them from appearing on windows with 125% scale where only half a pixel might be missing */
+      @media screen and (min-width: 399px) and (min-height: 599px) {
+        html {
+          overflow: hidden;
+        }
       }
     </style>
   </head>
