@@ -13,8 +13,10 @@ export const CapsLockWarningIcon: FC<{ className?: string }> = ({ className }) =
 
   return (
     <Tooltip>
-      <TooltipTrigger className={classNames("text-alert-warn", className)}>
-        <CapsLockIcon className="text-lg" />
+      <TooltipTrigger asChild>
+        <div className={classNames("text-alert-warn", className)}>
+          <CapsLockIcon className="text-lg" />
+        </div>
       </TooltipTrigger>
       <TooltipContent>{t("Caps Lock is enabled")}</TooltipContent>
     </Tooltip>
