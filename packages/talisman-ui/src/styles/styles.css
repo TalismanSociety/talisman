@@ -14,13 +14,6 @@
     @apply leading-base text-body bg-black-primary font-sans text-base antialiased;
   }
 
-  html,
-  body {
-    /* this ensures we can apply clean borders to the popup */
-    /* might want to move this to popup class or html file */
-    @apply m-0 overflow-hidden p-0;
-  }
-
   /* hides the content of the page while fonts are preloading (using webfontloader) */
   #root.wf-loading {
     @apply hidden;
