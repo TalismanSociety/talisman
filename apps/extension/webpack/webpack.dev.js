@@ -7,6 +7,7 @@ const distDir = path.join(__dirname, "..", "dist")
 const CopyPlugin = require("copy-webpack-plugin")
 const ExtensionReloader = require("@alectalisman/webpack-ext-reloader")
 const CircularDependencyPlugin = require("circular-dependency-plugin")
+const { EvalSourceMapDevToolPlugin } = require("webpack")
 const SimpleLocalizeDownloadPlugin = require("./SimpleLocalizeDownloadPlugin")
 const { getManifestVersionName } = require("./utils.js")
 
@@ -15,12 +16,19 @@ const faviconsSrcPath = path.join(__dirname, "..", "public", "favicon*.*")
 
 const config = (env) =>
   merge(common(env), {
-    devtool: "eval-cheap-module-source-map",
+    devtool: false,
     mode: "development",
     watchOptions: {
       ignored: ["**/node_modules", "**/dist", "apps/extension/public/locales"],
     },
     plugins: [
+      new EvalSourceMapDevToolPlugin({
+        // Here we are using a negative look-behind to exclude the `eval()` devtool from content_script.ts and page.ts.
+        //
+        // If either of these scripts have `eval` in them, the wallet will be unable to inject on dapps with a good
+        // content security policy, like https://app.uniswap.org/swap for example.
+        test: /(?<!(content_script|page))\.(ts|js|mts|mjs|css)/,
+      }),
       new SimpleLocalizeDownloadPlugin({
         devMode: true, // TODO env variable
       }),
