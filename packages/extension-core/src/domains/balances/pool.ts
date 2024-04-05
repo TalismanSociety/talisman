@@ -75,7 +75,6 @@ export class BalancePool {
 
   #subscribers: Subject<void> = new Subject()
   #pool: BehaviorSubject<Record<string, BalanceJson>> = new BehaviorSubject({})
-  #poolStatus: Map<string, BalanceSubscriptionResponse["status"]> = new Map()
   #initialising: Set<string> = new Set()
 
   /**
@@ -204,20 +203,22 @@ export class BalancePool {
     updates.forEach((b) => this.#initialising.delete(getBalanceId(b)))
 
     const newlyZeroBalances: string[] = []
-    const changedBalances = new Balances(
-      updatesWithIds.each.filter((newB) => {
-        const isZero = newB.total.tokens === "0"
-        // Keep new balances which are not zeros
-        const existingB = existing[newB.id]
-        if (!existingB && !isZero) return true
+    const changedBalances = Object.fromEntries(
+      updatesWithIds.each
+        .filter((newB) => {
+          const isZero = newB.total.tokens === "0"
+          // Keep new balances which are not zeros
+          const existingB = existing[newB.id]
+          if (!existingB && !isZero) return true
 
-        const hasChanged = !isEqual(existingB, newB.toJSON())
-        // Collect balances now confirmed to be zero separately, so they can be filtered out from the main set
-        if (hasChanged && isZero) newlyZeroBalances.push(newB.id)
-        // Keep changed balances, which are not known zeros
-        return hasChanged && !isZero
-      })
-    ).toJSON()
+          const hasChanged = !isEqual(existingB, newB.toJSON())
+          // Collect balances now confirmed to be zero separately, so they can be filtered out from the main set
+          if (hasChanged && isZero) newlyZeroBalances.push(newB.id)
+          // Keep changed balances, which are not known zeros
+          return hasChanged && !isZero
+        })
+        .map((b) => [b.id, b.toJSON()])
+    )
 
     if (Object.keys(changedBalances).length === 0 && newlyZeroBalances.length === 0) return
     else {

@@ -3,7 +3,7 @@ import pako from "pako"
 import { db } from "../../TalismanBalancesDatabase"
 import { BalanceJson } from "../../types"
 
-type StoredBalanceJson = Omit<BalanceJson, "status">
+export type StoredBalanceJson = Omit<BalanceJson, "status">
 
 export const persistData = async (balances: StoredBalanceJson[]) => {
   const output = pako.deflate(JSON.stringify(balances))
