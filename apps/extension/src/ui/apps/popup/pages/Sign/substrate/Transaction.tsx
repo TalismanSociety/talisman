@@ -59,7 +59,11 @@ export const PolkadotSignTransactionRequest: FC = () => {
             <div className="flex w-full flex-col gap-4">
               <div id="sign-alerts-inject"></div>
               <MetadataStatus genesisHash={genesisHash} specVersion={specVersion} />
-              {errorMessage && <SignAlertMessage type="error">{errorMessage}</SignAlertMessage>}
+              {errorMessage && (
+                <SignAlertMessage className="mb-6" type="error">
+                  {errorMessage}
+                </SignAlertMessage>
+              )}
             </div>
             {account && request && <FooterContent withFee />}
           </PopupFooter>
