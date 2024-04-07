@@ -456,8 +456,23 @@ export const SubNativeModule: NewBalanceModule<
           specVersion,
           tip: tip ? Number(tip) : 0,
           transactionVersion,
+          // appId: 0,
         },
-        { metadataRpc, registry }
+        {
+          metadataRpc,
+          registry,
+          // signedExtensions: registry.signedExtensions,
+          userExtensions: {
+            CheckAppId: {
+              extrinsic: {
+                // The type named AppId in metaCalls from goldberg.avail.tools,
+                // and named AvailCoreAppId in the full metadata downloaded from chain
+                appId: "AvailCoreAppId",
+              },
+              payload: {},
+            },
+          },
+        }
       )
 
       return { type: "substrate", tx: unsigned }

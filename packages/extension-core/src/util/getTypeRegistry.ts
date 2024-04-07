@@ -65,15 +65,21 @@ export const getTypeRegistry = async (
   const metadataRpc = metadataDef ? getMetadataRpcFromDef(metadataDef) : undefined
 
   if (metadataDef) {
+    // TODO check that doing this earlier doesn't break anything
+    if (metadataDef.types) {
+      registry.register(metadataDef.types)
+    }
+    if (signedExtensions || metadataDef.userExtensions) {
+      registry.setSignedExtensions(signedExtensions, metadataDef.userExtensions)
+    }
+
     const metadataValue = getMetadataFromDef(metadataDef)
     if (metadataValue) {
       const metadata: Metadata = new Metadata(registry, metadataValue)
+
+      // if full metadata, this will override previously set types & extensions
       registry.setMetadata(metadata)
     }
-
-    if (signedExtensions || metadataDef.userExtensions)
-      registry.setSignedExtensions(signedExtensions, metadataDef.userExtensions)
-    if (metadataDef.types) registry.register(metadataDef.types)
   } else {
     if (signedExtensions) registry.setSignedExtensions(signedExtensions)
   }
