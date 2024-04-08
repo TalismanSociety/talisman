@@ -12,6 +12,24 @@ export type CustomTokenConfig = {
   coingeckoId?: string
 }
 
+/**
+ * For app.talisman.xyz, we typically sync the custom tokens list with the user's wallet config.
+ *
+ * For other dapps which use `@talismn/balances-react`, we might want to specify a custom list of tokens
+ * to be fetched.
+ *
+ * This hook is an examaple of how to do just that.
+ *
+ * @example
+ * // tell `@talismn/balances-react` that we want to fetch some
+ * // more erc20 tokens than just the defaults from chaindata
+ * useSetCustomTokens([{
+ *   evmChainId: "11155111",
+ *   contractAddress: "0x56BCB4864B12aB96efFc21fDd59Ea66DB2811c55",
+ *   symbol: "TALI",
+ *   decimals: 18,
+ * }])
+ */
 export const useSetCustomTokens = (customTokensConfig: CustomTokensConfig) => {
   const chaindataProvider = useChaindataProvider()
   const customTokensConfigMemoised = useMemo(
@@ -28,7 +46,7 @@ export const useSetCustomTokens = (customTokensConfig: CustomTokensConfig) => {
         type: "evm-erc20",
         isTestnet: evmNetworks[evmChainId]?.isTestnet || false,
         symbol,
-        decimals: decimals,
+        decimals,
         logo: githubUnknownTokenLogoUrl,
         coingeckoId,
         contractAddress,
