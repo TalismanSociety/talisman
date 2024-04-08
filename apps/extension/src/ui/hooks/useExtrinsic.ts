@@ -1,6 +1,7 @@
 import { isJsonPayload } from "@extension/core"
 import { getMetadataFromDef, getMetadataRpcFromDef } from "@extension/core"
 import { chaindataProvider } from "@extension/core"
+import { getUserExtensionsByChainId } from "@extension/core/domains/metadata/userExtensions"
 import { log } from "@extension/shared"
 import { typesBundle } from "@polkadot/apps-config/api"
 import { Metadata, TypeRegistry } from "@polkadot/types"
@@ -73,12 +74,13 @@ const getFrontEndTypeRegistry = async (
       const metadata: Metadata = new Metadata(registry, metadataValue)
       registry.setMetadata(metadata)
     }
-
-    if (signedExtensions || metadataDef.userExtensions)
-      registry.setSignedExtensions(signedExtensions, metadataDef.userExtensions)
+    registry.setSignedExtensions(signedExtensions, {
+      ...metadataDef.userExtensions,
+      ...getUserExtensionsByChainId(chain.id),
+    })
     if (metadataDef.types) registry.register(metadataDef.types)
   } else {
-    if (signedExtensions) registry.setSignedExtensions(signedExtensions)
+    registry.setSignedExtensions(signedExtensions, getUserExtensionsByChainId(chain.id))
   }
 
   return { registry, metadataRpc }

@@ -1,5 +1,6 @@
 import { Abi } from "@polkadot/api-contract"
 import { TypeRegistry } from "@polkadot/types"
+import { ExtDef } from "@polkadot/types/extrinsic/signedExtensions/types"
 import { assert, hexToNumber, hexToU8a, u8aToString } from "@polkadot/util"
 import { defineMethod } from "@substrate/txwrapper-core"
 import { ChainConnector } from "@talismn/chain-connector"
@@ -85,6 +86,7 @@ export type SubPsp22TransferParams = NewTransferParamsType<{
   transactionVersion: number
   tip?: string
   transferMethod: "transfer" | "transferKeepAlive" | "transferAll"
+  userExtensions?: ExtDef
 }>
 
 export const SubPsp22Module: NewBalanceModule<
@@ -277,6 +279,7 @@ export const SubPsp22Module: NewBalanceModule<
       specVersion,
       transactionVersion,
       tip,
+      userExtensions,
     }) {
       const token = await chaindataProvider.tokenById(tokenId)
       assert(token, `Token ${tokenId} not found in store`)
@@ -339,7 +342,7 @@ export const SubPsp22Module: NewBalanceModule<
           tip: tip ? Number(tip) : 0,
           transactionVersion,
         },
-        { metadataRpc, registry }
+        { metadataRpc, registry, userExtensions }
       )
 
       return { type: "substrate", tx: unsigned }

@@ -1,5 +1,6 @@
 import { Metadata, TypeRegistry } from "@polkadot/types"
 import { AbstractInt } from "@polkadot/types-codec"
+import { ExtDef } from "@polkadot/types/extrinsic/signedExtensions/types"
 import { assert } from "@polkadot/util"
 import { defineMethod } from "@substrate/txwrapper-core"
 import {
@@ -101,6 +102,7 @@ export type SubEquilibriumTransferParams = NewTransferParamsType<{
   transactionVersion: number
   tip?: string
   transferMethod: "transfer" | "transferKeepAlive" | "transferAll"
+  userExtensions?: ExtDef
 }>
 
 export const SubEquilibriumModule: NewBalanceModule<
@@ -276,6 +278,7 @@ export const SubEquilibriumModule: NewBalanceModule<
       transactionVersion,
       tip,
       transferMethod,
+      userExtensions,
     }) {
       const token = await chaindataProvider.tokenById(tokenId)
       assert(token, `Token ${tokenId} not found in store`)
@@ -320,7 +323,7 @@ export const SubEquilibriumModule: NewBalanceModule<
           tip: tip ? Number(tip) : 0,
           transactionVersion,
         },
-        { metadataRpc, registry }
+        { metadataRpc, registry, userExtensions }
       )
 
       return { type: "substrate", tx: unsigned }

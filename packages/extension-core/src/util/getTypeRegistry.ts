@@ -4,6 +4,7 @@ import { getSpecAlias, getSpecTypes } from "@polkadot/types-known/util"
 import { hexToNumber, isHex } from "@polkadot/util"
 import { log } from "extension-shared"
 
+import { getUserExtensionsByChainId } from "../domains/metadata/userExtensions"
 import { chaindataProvider } from "../rpcs/chaindata"
 import { getMetadataDef, getMetadataFromDef, getMetadataRpcFromDef } from "./getMetadataDef"
 
@@ -71,11 +72,13 @@ export const getTypeRegistry = async (
       registry.setMetadata(metadata)
     }
 
-    if (signedExtensions || metadataDef.userExtensions)
-      registry.setSignedExtensions(signedExtensions, metadataDef.userExtensions)
+    registry.setSignedExtensions(signedExtensions, {
+      ...metadataDef.userExtensions,
+      ...getUserExtensionsByChainId(chain.id),
+    })
     if (metadataDef.types) registry.register(metadataDef.types)
   } else {
-    if (signedExtensions) registry.setSignedExtensions(signedExtensions)
+    registry.setSignedExtensions(signedExtensions, getUserExtensionsByChainId(chain.id))
   }
 
   return { registry, metadataRpc }
