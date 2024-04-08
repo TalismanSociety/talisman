@@ -36,7 +36,7 @@ export const filterMetadataPalletsAndItems = (
   // remove fields we don't care about from each pallet, and extract types for each storage item we care about
   const items = palletsAndItems.flatMap(({ pallet: palletFilter, items }) => {
     const pallet = metadata.pallets.find(palletFilter)
-    if (!pallet || !pallet.storage) {
+    if (!pallet) {
       log.debug("Failed to find pallet", palletFilter)
       return []
     }
@@ -46,6 +46,8 @@ export const filterMetadataPalletsAndItems = (
     pallet.constants = []
     pallet.error = undefined
     pallet.event = undefined
+
+    if (!pallet.storage) return []
 
     // filter and extract storage items we care about
     pallet.storage.entries = pallet.storage.entries.filter((item) =>

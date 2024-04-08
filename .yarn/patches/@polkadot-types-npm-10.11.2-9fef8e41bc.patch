@@ -1,0 +1,30 @@
+diff --git a/metadata/PortableRegistry/PortableRegistry.js b/metadata/PortableRegistry/PortableRegistry.js
+index 7a85912256ccf211b17963c0205be41fa254e63f..9acf5a833cb21da2987426af3734466ca822144b 100644
+--- a/metadata/PortableRegistry/PortableRegistry.js
++++ b/metadata/PortableRegistry/PortableRegistry.js
+@@ -510,9 +510,23 @@ export class PortableRegistry extends Struct {
+             return parseInt(lookupId.replace('Lookup', ''), 10);
+         }
+         else if (isNumber(lookupId)) {
+-            return lookupId;
++            //
++            // Upstream just returns `lookupId` here, but this id is then used
++            // to index the `this.types` array in this class.
++            //
++            // When decoding a `miniMetadata`, the index of each type in `this.types`
++            // doesn't correspond to the type id, because a lot of types have been filtered
++            // out from the array.
++            //
++            // So, here we will return the actual index of the type, by finding it based on the type's id.
++            //
++            // This way when this class (PortableRegistry) tries to find the type via
++            // `this.types[lookupId]`, it will actually find it instead of raising an error
++            // that no type exists at that index.
++            //
++            return (this.__internal__types || this.types)?.findIndex?.(t => t.id.toNumber() === lookupId) ?? lookupId;
+         }
+-        return lookupId.toNumber();
++        return (this.__internal__types || this.types)?.findIndex?.(t => t.id.toNumber() === lookupId.toNumber()) ?? lookupId.toNumber();
+     }
+     /** @internal Converts a type into a TypeDef for Codec usage */
+     __internal__extract(type, lookupIndex) {
