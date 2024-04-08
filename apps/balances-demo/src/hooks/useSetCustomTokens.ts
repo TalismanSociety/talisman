@@ -18,7 +18,7 @@ export type CustomTokenConfig = {
  * For other dapps which use `@talismn/balances-react`, we might want to specify a custom list of tokens
  * to be fetched.
  *
- * This hook is an examaple of how to do just that.
+ * This hook is an example of how to do just that.
  *
  * @example
  * // tell `@talismn/balances-react` that we want to fetch some
