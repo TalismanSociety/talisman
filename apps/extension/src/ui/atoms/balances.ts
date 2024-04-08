@@ -93,8 +93,7 @@ export const balancesByAccountCategoryAtomFamily = atomFamily((accountCategory: 
       get(allBalancesAtom),
       get(accountsByCategoryAtomFamily(accountCategory)),
     ])
-    return new Balances(
-      allBalances.each.filter((b) => accounts.some((a) => a.address === b.address))
-    )
+    const accountIds = accounts.map((a) => a.address)
+    return new Balances(allBalances.each.filter((b) => accountIds.includes(b.address)))
   })
 )
