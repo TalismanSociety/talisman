@@ -63,11 +63,8 @@ const filteredRawBalancesAtom = atom(async (get) => {
     if (!account || !account.type) return false
 
     // for chain specific accounts, exclude balances from other chains
-    if (b.chainId) {
-      const chain = chains?.[b.chainId]
-      if (!chain) return false
-      return isAccountCompatibleWithChain(chain, account.type, account.genesisHash)
-    }
+    if (b.chainId && chains?.[b.chainId])
+      return isAccountCompatibleWithChain(chains[b.chainId], account.type, account.genesisHash)
     if (b.evmNetworkId) return account.type === "ethereum"
     return false
   })
