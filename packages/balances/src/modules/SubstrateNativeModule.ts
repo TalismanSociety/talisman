@@ -232,10 +232,10 @@ export const SubNativeModule: NewBalanceModule<
         ) ?? 0n
       ).toString()
       const nominationPoolsPalletId = subshape.pallets.NominationPools?.constants.PalletId?.value
-        ? Buffer.from(subshape.pallets.NominationPools?.constants.PalletId?.value).toString("hex")
+        ? u8aToHex(subshape.pallets.NominationPools?.constants.PalletId?.value)
         : null
       const crowdloanPalletId = subshape.pallets.Crowdloan?.constants.PalletId?.value
-        ? Buffer.from(subshape.pallets.Crowdloan?.constants.PalletId?.value).toString("hex")
+        ? u8aToHex(subshape.pallets.Crowdloan?.constants.PalletId?.value)
         : null
 
       const isSystemPallet = (pallet: PalletMV14) => pallet.name === "System"
