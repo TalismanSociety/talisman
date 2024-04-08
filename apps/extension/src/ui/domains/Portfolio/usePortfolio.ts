@@ -1,18 +1,11 @@
-import {
-  AccountAddressType,
-  AccountJsonAny,
-  Balances,
-  Token,
-  isAccountCompatibleWithChain,
-} from "@extension/core"
+import { AccountAddressType, AccountJsonAny, Balances, Token } from "@extension/core"
 import { log } from "@extension/shared"
 import { HydrateDb } from "@talismn/balances"
-import { Chain, ChainId, ChainList, EvmNetwork, EvmNetworkId } from "@talismn/chaindata-provider"
+import { Chain, ChainId, EvmNetwork, EvmNetworkId } from "@talismn/chaindata-provider"
 import {
   balancesByAccountCategoryAtomFamily,
   balancesHydrateAtom,
   chainsArrayAtomFamily,
-  chainsMapAtomFamily,
   evmNetworksArrayAtomFamily,
   settingsAtomFamily,
   tokensArrayAtomFamily,
@@ -36,7 +29,6 @@ export type NetworkOption = {
 
 type PortfolioGlobalData = {
   chains: Chain[]
-  chainsMap: ChainList
   tokens: Token[]
   evmNetworks: EvmNetwork[]
   hydrate: HydrateDb
@@ -161,20 +153,17 @@ const networkFilterAtom = atom<NetworkOption | undefined>(undefined)
 // the async atom, whose value must be copied in the sync atom
 const portfolioGlobalDataAsyncAtom = atom<Promise<PortfolioGlobalData>>(async (get) => {
   const includeTestnets = (await get(settingsAtomFamily("useTestnets"))) as boolean
-  const [chains, chainsMap, tokens, evmNetworks, hydrate, allBalances, portfolioBalances] =
-    await Promise.all([
-      get(chainsArrayAtomFamily({ activeOnly: true, includeTestnets })),
-      get(chainsMapAtomFamily({ activeOnly: true, includeTestnets })),
-      get(tokensArrayAtomFamily({ activeOnly: true, includeTestnets })),
-      get(evmNetworksArrayAtomFamily({ activeOnly: true, includeTestnets })),
-      get(balancesHydrateAtom),
-      get(balancesByAccountCategoryAtomFamily("all")),
-      get(balancesByAccountCategoryAtomFamily("portfolio")),
-    ])
+  const [chains, tokens, evmNetworks, hydrate, allBalances, portfolioBalances] = await Promise.all([
+    get(chainsArrayAtomFamily({ activeOnly: true, includeTestnets })),
+    get(tokensArrayAtomFamily({ activeOnly: true, includeTestnets })),
+    get(evmNetworksArrayAtomFamily({ activeOnly: true, includeTestnets })),
+    get(balancesHydrateAtom),
+    get(balancesByAccountCategoryAtomFamily("all")),
+    get(balancesByAccountCategoryAtomFamily("portfolio")),
+  ])
 
   return {
     chains,
-    chainsMap,
     tokens,
     evmNetworks,
     hydrate,
@@ -187,7 +176,6 @@ const portfolioGlobalDataAsyncAtom = atom<Promise<PortfolioGlobalData>>(async (g
 // the sync atom from which portfolio atoms will derive
 const portfolioGlobalDataAtom = atom<PortfolioGlobalData>({
   chains: [],
-  chainsMap: {},
   tokens: [],
   evmNetworks: [],
   hydrate: {},
@@ -201,7 +189,6 @@ const portfolioAtom = atom((get) => {
     hydrate,
     tokens,
     chains,
-    chainsMap,
     evmNetworks,
     allBalances: allAccountsBalances,
     portfolioBalances,
@@ -210,16 +197,7 @@ const portfolioAtom = atom((get) => {
   const account = get(portfolioAccountAtom)
 
   const allBalances = account
-    ? new Balances(
-        allAccountsBalances.each.filter((b) => {
-          if (b.address !== account.address) return false
-          if (!account.type || account.type === "ethereum") return true
-          const chain = b.chainId && chainsMap[b.chainId]
-          if (!chain) return false
-          return isAccountCompatibleWithChain(chain, account.type, account.genesisHash)
-        }),
-        hydrate
-      )
+    ? allAccountsBalances.find({ address: account.address })
     : portfolioBalances
 
   const networkBalances = getNetworkBalances({ networkFilter, allBalances, hydrate })
