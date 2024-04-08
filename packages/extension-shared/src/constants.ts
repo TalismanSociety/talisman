@@ -4,7 +4,7 @@ export const PORT_EXTENSION = `talisman-extension${
 export const PORT_CONTENT = `talisman-content${
   process.env.NODE_ENV !== "production" && `-${process.env.NODE_ENV}-${process.env.RELEASE}`
 }`
-export const DEBUG = !["production", "test", "canary"].includes(process.env.NODE_ENV ?? "")
+export const DEBUG = process.env.DEBUG === "true"
 export const TEST = process.env.NODE_ENV === "test"
 export const DEFAULT_ETH_CHAIN_ID = 1 //Ethereum mainnet
 

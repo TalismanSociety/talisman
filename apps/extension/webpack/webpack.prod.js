@@ -8,7 +8,13 @@ const TerserPlugin = require("terser-webpack-plugin")
 const BundleAnalyzerPlugin = require("webpack-bundle-analyzer").BundleAnalyzerPlugin
 
 const common = require("./webpack.common.js")
-const { distDir, getArchiveFileName, getSentryPlugin, getManifestVersionName } = require("./utils")
+const {
+  distDir,
+  getArchiveFileName,
+  getSentryPlugin,
+  getManifestVersionName,
+  dropConsole,
+} = require("./utils")
 const { SourceMapDevToolPlugin } = require("webpack")
 const SimpleLocalizeDownloadPlugin = require("./SimpleLocalizeDownloadPlugin")
 
@@ -91,7 +97,17 @@ const config = (env) => {
     ].filter(Boolean),
     optimization: {
       minimize: true,
-      minimizer: [new TerserPlugin({ terserOptions: { compress: true } })],
+      minimizer: [
+        new TerserPlugin({
+          terserOptions: {
+            compress: {
+              defaults: true,
+              // Drop any calls to console.error/warn/log/debug from production/canary builds, and when running tests
+              drop_console: dropConsole(env) ? ["error", "warn", "log", "debug"] : false,
+            },
+          },
+        }),
+      ],
       splitChunks: {
         chunks: (chunk) =>
           !["background", "vendor-background", "content_script", "page"].includes(chunk.name),

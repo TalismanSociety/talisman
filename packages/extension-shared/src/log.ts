@@ -1,16 +1,26 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
-/* eslint-disable no-console */
+/* eslint-disable no-console, @typescript-eslint/no-explicit-any */
 import { DEBUG } from "./constants"
 
+/** A function which does nothing. */
+const noop = (..._data: any[]) => {}
+
 /**
- * Provides a convenience wrapper around the console methods to only log when DEBUG mode enabled
+ * Provides a convenience wrapper around the console methods to only log when DEBUG mode is enabled.
  **/
 export const log = {
-  error: (message: any, ...args: any[]) => DEBUG && console.error(message, ...args),
-  warn: (message: any, ...args: any[]) => DEBUG && console.warn(message, ...args),
-  log: (message: any, ...args: any[]) => DEBUG && console.log(message, ...args),
-  debug: (message: any, ...args: any[]) => DEBUG && console.debug(message, ...args),
+  error: DEBUG && typeof console.error === "function" ? console.error.bind(console) : noop,
+  warn: DEBUG && typeof console.warn === "function" ? console.warn.bind(console) : noop,
+  log: DEBUG && typeof console.log === "function" ? console.log.bind(console) : noop,
+  debug: DEBUG && typeof console.debug === "function" ? console.debug.bind(console) : noop,
 
+  /**
+   * A convenient way to create a debug timer.
+   *
+   * @example
+   * const done = log.timer("How long does it take?")
+   * await doSomething()
+   * done()
+   **/
   timer: (label: string) => {
     if (!DEBUG) return () => {}
 
