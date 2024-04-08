@@ -125,6 +125,20 @@ export const AddLedgerSelectNetwork = () => {
             <p className="text-body-secondary mt-6">
               {t("Please note: a Ledger account can only be used on a single network.")}
             </p>
+            {["polkadot", "polkadot-asset-hub"].includes(chain?.id ?? "") && (
+              <p className="text-body-secondary mt-6">
+                {t(
+                  "Additionally, a given Ledger account cannot be added in Talisman for both Polakdot and Polkadot Asset Hub as they would share the same address. Adding one would remove the other, and vice versa."
+                )}
+              </p>
+            )}
+            {["kusama", "kusama-asset-hub"].includes(chain?.id ?? "") && (
+              <p className="text-body-secondary mt-6">
+                {t(
+                  "Additionally, a given Ledger account cannot be added in Talisman for both Kusama and Kusama Asset Hub as they would share the same address. Adding one would remove the other, and vice versa."
+                )}
+              </p>
+            )}
           </>
         )}
         <div className={classNames("mt-12 h-[20rem]", showStep2 ? "visible" : "invisible")}>
