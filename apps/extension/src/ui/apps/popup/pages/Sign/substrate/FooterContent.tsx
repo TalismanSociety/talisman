@@ -115,7 +115,7 @@ export const FooterContent = ({ withFee = false }: { withFee?: boolean }) => {
                 <Button disabled={processing} onClick={reject}>
                   {t("Cancel")}
                 </Button>
-                <Button disabled={processing} processing={processing} primary onClick={approve}>
+                <Button processing={processing} primary onClick={approve}>
                   {t("Approve")}
                 </Button>
               </div>
