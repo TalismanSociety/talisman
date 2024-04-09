@@ -334,7 +334,16 @@ export const CustomGasSettingsFormEip1559: FC<CustomGasSettingsFormEip1559Props>
       </div>
       <div className="grid grid-cols-2 gap-8 gap-y-14">
         <Indicator label="Base Fee">
-          {t("{{baseFee}} GWEI", { baseFee: baseFeeDisplay })}{" "}
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <span>{t("{{baseFee}} GWEI", { baseFee: baseFeeDisplay })}</span>
+            </TooltipTrigger>
+            {baseFeeDisplay.startsWith("<") && (
+              <TooltipContent>
+                {txDetails.baseFeePerGas ? `${formatGwei(txDetails.baseFeePerGas)} GWEI` : t("N/A")}
+              </TooltipContent>
+            )}
+          </Tooltip>{" "}
           <WithTooltip
             className="inline-flex h-[1.5rem] flex-col justify-center align-text-top"
             tooltip={t("The base fee is set by the network and changes depending on network usage")}
