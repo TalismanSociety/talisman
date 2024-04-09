@@ -12,6 +12,8 @@ const USER_EXTENSIONS: Record<ChainId, ExtDef> = {
   },
 }
 
-export const getUserExtensionsByChainId = (chainId: ChainId): ExtDef | undefined => {
-  return USER_EXTENSIONS[chainId]
+export const getUserExtensionsByChainId = (
+  chainId: ChainId | null | undefined
+): ExtDef | undefined => {
+  return chainId ? USER_EXTENSIONS[chainId] : undefined
 }
