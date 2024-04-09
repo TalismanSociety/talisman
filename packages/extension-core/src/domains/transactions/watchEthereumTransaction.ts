@@ -58,7 +58,7 @@ export const watchEthereumTransaction = async (
         throwAfter(5 * 60_000, "Transaction not found"),
       ])
 
-      assert(receipt, "Transaction to watch not found")
+      assert(receipt, "Transaction not found")
       // check hash which may be incorrect for cancelled tx, in which case receipt includes the replacement tx hash
       if (receipt.transactionHash === hash) {
         // to test failing transactions, swap on busy AMM pools with a 0.05% slippage limit
@@ -77,12 +77,22 @@ export const watchEthereumTransaction = async (
         )
     } catch (err) {
       log.error("watchEthereumTransaction error: ", { err })
-      updateTransactionStatus(hash, "error")
+      const error = err as Error
+      const isNotFound = error.message === "Transaction not found"
+
+      // if not found, mark tx as unknown so user can still cancel/speed-up if necessary
+      updateTransactionStatus(hash, isNotFound ? "unknown" : "error")
 
       // observed on polygon, some submitted transactions are not found, in which case we must reset the nonce counter to avoid being stuck
       resetTransactionCount(unsigned.from, evmNetworkId)
 
-      if (withNotifications) await createNotification("error", networkName, txUrl, err as Error)
+      if (withNotifications)
+        await createNotification(
+          isNotFound ? "not_found" : "error",
+          networkName,
+          txUrl,
+          err as Error
+        )
       // eslint-disable-next-line no-console
       else console.error("Failed to watch transaction", { err })
     }
