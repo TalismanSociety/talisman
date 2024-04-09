@@ -338,9 +338,9 @@ export const CustomGasSettingsFormEip1559: FC<CustomGasSettingsFormEip1559Props>
             <TooltipTrigger asChild>
               <span>{t("{{baseFee}} GWEI", { baseFee: baseFeeDisplay })}</span>
             </TooltipTrigger>
-            {baseFeeDisplay.startsWith("<") && (
+            {baseFeeDisplay.startsWith("<") && !!txDetails.baseFeePerGas && (
               <TooltipContent>
-                {txDetails.baseFeePerGas ? `${formatGwei(txDetails.baseFeePerGas)} GWEI` : t("N/A")}
+                {t("{{baseFee}} GWEI", { baseFee: formatGwei(txDetails.baseFeePerGas) })}
               </TooltipContent>
             )}
           </Tooltip>{" "}
