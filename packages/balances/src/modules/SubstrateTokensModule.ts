@@ -1,4 +1,5 @@
 import { TypeRegistry } from "@polkadot/types"
+import { ExtDef } from "@polkadot/types/extrinsic/signedExtensions/types"
 import { assert } from "@polkadot/util"
 import { UnsignedTransaction, defineMethod } from "@substrate/txwrapper-core"
 import {
@@ -104,6 +105,7 @@ export type SubTokensTransferParams = NewTransferParamsType<{
   transactionVersion: number
   tip?: string
   transferMethod: "transfer" | "transferKeepAlive" | "transferAll"
+  userExtensions?: ExtDef
 }>
 
 export const SubTokensModule: NewBalanceModule<
@@ -253,6 +255,7 @@ export const SubTokensModule: NewBalanceModule<
       transactionVersion,
       tip,
       transferMethod,
+      userExtensions,
     }) {
       const token = await chaindataProvider.tokenById(tokenId)
       assert(token, `Token ${tokenId} not found in store`)
@@ -316,7 +319,7 @@ export const SubTokensModule: NewBalanceModule<
               },
               ...commonDefineMethodFields,
             },
-            { metadataRpc, registry }
+            { metadataRpc, registry, userExtensions }
           ),
         () =>
           defineMethod(
@@ -328,7 +331,7 @@ export const SubTokensModule: NewBalanceModule<
               },
               ...commonDefineMethodFields,
             },
-            { metadataRpc, registry }
+            { metadataRpc, registry, userExtensions }
           ),
       ]
 

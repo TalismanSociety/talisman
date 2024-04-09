@@ -1,4 +1,5 @@
 import { TypeRegistry, createType, i128 } from "@polkadot/types"
+import { ExtDef } from "@polkadot/types/extrinsic/signedExtensions/types"
 import { assert, u8aToHex, u8aToString } from "@polkadot/util"
 import { defineMethod } from "@substrate/txwrapper-core"
 import { ChainConnector } from "@talismn/chain-connector"
@@ -166,6 +167,7 @@ export type SubNativeTransferParams = NewTransferParamsType<{
   transactionVersion: number
   tip?: string
   transferMethod: BalancesAllTransferMethods
+  userExtensions?: ExtDef
 }>
 
 export const SubNativeModule: NewBalanceModule<
@@ -407,6 +409,7 @@ export const SubNativeModule: NewBalanceModule<
       transactionVersion,
       tip,
       transferMethod,
+      userExtensions,
     }) {
       const token = await chaindataProvider.tokenById(tokenId)
       assert(token, `Token ${tokenId} not found in store`)
@@ -457,7 +460,7 @@ export const SubNativeModule: NewBalanceModule<
           tip: tip ? Number(tip) : 0,
           transactionVersion,
         },
-        { metadataRpc, registry }
+        { metadataRpc, registry, userExtensions }
       )
 
       return { type: "substrate", tx: unsigned }
