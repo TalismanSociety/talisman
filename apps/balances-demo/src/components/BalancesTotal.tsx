@@ -14,7 +14,7 @@ export const BalancesTotal = () => {
 
   const frozen = balances.sum.fiat("usd").locked ?? 0
   const reserved = balances.sum.fiat("usd").reserved ?? 0
-  const locked = (frozen + reserved).toLocaleString(undefined, currencyParams)
+  const locked = Math.max(frozen, reserved).toLocaleString(undefined, currencyParams)
 
   return (
     <div className="flex gap-12">

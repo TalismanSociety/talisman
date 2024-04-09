@@ -1,6 +1,7 @@
 import { Balance, Balances } from "@extension/core"
 import { FiatSumBalancesFormatter } from "@talismn/balances"
 import { TokenRateCurrency } from "@talismn/token-rates"
+import { BigMath } from "@talismn/util"
 import { useSelectedCurrency } from "@ui/hooks/useCurrency"
 import { useSetting } from "@ui/hooks/useSettings"
 import { useMemo } from "react"
@@ -14,7 +15,7 @@ const sortSymbolBalancesBy =
         ? b.total.planck
         : type === "available"
         ? b.transferable.planck
-        : b.locked.planck + b.reserved.planck
+        : BigMath.max(b.locked.planck, b.reserved.planck)
 
     const fiatAmount = (b: FiatSumBalancesFormatter | Balance) => {
       const getAmount = (b: FiatSumBalancesFormatter | Balance, type: keyof typeof b) => {
@@ -28,8 +29,8 @@ const sortSymbolBalancesBy =
         ? getAmount(b, "transferable")
         : type === "locked"
         ? getAmount(b, "locked") !== null || getAmount(b, "reserved") !== null
-          ? // return locked + reserved if either of them are not null
-            (getAmount(b, "locked") ?? 0) + (getAmount(b, "reserved") ?? 0)
+          ? // return max(locked, reserved) if either of them are not null
+            Math.max(getAmount(b, "locked") ?? 0, getAmount(b, "reserved") ?? 0)
           : // return null if both locked and reserved are null
             null
         : null

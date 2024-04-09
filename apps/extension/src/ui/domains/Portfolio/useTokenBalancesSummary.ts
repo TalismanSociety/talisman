@@ -12,10 +12,6 @@ type BalanceSummary = {
   totalFiat: number | null
   lockedTokens: BigNumber
   lockedFiat: number | null
-  frozenTokens: BigNumber
-  frozenFiat: number | null
-  reservedTokens: BigNumber
-  reservedFiat: number | null
   availableTokens: BigNumber
   availableFiat: number | null
 }
@@ -25,10 +21,6 @@ const DEFAULT_SUMMARY: BalanceSummary = {
   totalFiat: null,
   lockedTokens: BigNumber(0),
   lockedFiat: null,
-  frozenTokens: BigNumber(0),
-  frozenFiat: null,
-  reservedTokens: BigNumber(0),
-  reservedFiat: null,
   availableTokens: BigNumber(0),
   availableFiat: null,
 }
@@ -98,18 +90,7 @@ export const useTokenBalancesSummary = (balances: Balances) => {
     // sum is only available for fiat, so we sum ourselves both tokens & fiat
     const summary = tokenBalances.each.reduce<BalanceSummary>(
       (
-        {
-          totalTokens,
-          totalFiat,
-          lockedTokens,
-          lockedFiat,
-          availableTokens,
-          availableFiat,
-          reservedTokens,
-          reservedFiat,
-          frozenTokens,
-          frozenFiat,
-        },
+        { totalTokens, totalFiat, lockedTokens, lockedFiat, availableTokens, availableFiat },
         b
       ) => ({
         totalTokens: totalTokens.plus(b.total.tokens),
@@ -117,21 +98,12 @@ export const useTokenBalancesSummary = (balances: Balances) => {
           b.token && tokenBalanceRates[b.token.id]
             ? (totalFiat ?? 0) + (b.total.fiat(currency) ?? 0)
             : totalFiat,
-        lockedTokens: lockedTokens.plus(b.frozen.tokens).plus(b.reserved.tokens),
+        lockedTokens: lockedTokens.plus(BigNumber.max(b.frozen.tokens, b.reserved.tokens)),
         lockedFiat:
           b.token && tokenBalanceRates[b.token.id]
-            ? (lockedFiat ?? 0) + (b.frozen.fiat(currency) ?? 0) + (b.reserved.fiat(currency) ?? 0)
+            ? (lockedFiat ?? 0) +
+              Math.max(b.frozen.fiat(currency) ?? 0, b.reserved.fiat(currency) ?? 0)
             : lockedFiat,
-        reservedTokens: reservedTokens.plus(b.reserved.tokens),
-        reservedFiat:
-          b.token && tokenBalanceRates[b.token.id]
-            ? (reservedFiat ?? 0) + (b.reserved.fiat(currency) ?? 0)
-            : reservedFiat,
-        frozenTokens: frozenTokens.plus(b.frozen.tokens),
-        frozenFiat:
-          b.token && tokenBalanceRates[b.token.id]
-            ? (frozenFiat ?? 0) + (b.frozen.fiat(currency) ?? 0)
-            : frozenFiat,
         availableTokens: availableTokens.plus(b.transferable.tokens),
         availableFiat:
           b.token && tokenBalanceRates[b.token.id]
@@ -143,10 +115,6 @@ export const useTokenBalancesSummary = (balances: Balances) => {
         totalFiat: fiatDefaultValue,
         lockedTokens: BigNumber(0),
         lockedFiat: fiatDefaultValue,
-        reservedTokens: BigNumber(0),
-        reservedFiat: fiatDefaultValue,
-        frozenTokens: BigNumber(0),
-        frozenFiat: fiatDefaultValue,
         availableTokens: BigNumber(0),
         availableFiat: fiatDefaultValue,
       }

@@ -30,7 +30,7 @@ const FullscreenPortfolioAssets = ({
     return {
       portfolio: total,
       available: transferable,
-      locked: frozen + reserved,
+      locked: Math.max(frozen, reserved),
     }
   }, [balances.sum, currency])
 

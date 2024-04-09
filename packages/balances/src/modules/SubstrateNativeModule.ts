@@ -122,6 +122,7 @@ declare module "@talismn/chaindata-provider/plugins" {
 
 export type SubNativeChainMeta = {
   isTestnet: boolean
+  useLegacyTransferableCalculation?: boolean
   symbol: string
   decimals: number
   existentialDeposit: string | null
@@ -261,18 +262,6 @@ export const SubNativeModule: NewBalanceModule<
       const isParasPallet = (pallet: PalletMV14) => pallet.name === "Paras"
       const isParachainsItem = (item: StorageEntryMV14) => item.name === "Parachains"
 
-      const tId = {
-        "polkadot": 525,
-        "polimec": 330,
-        "robonomics-kusama": 224,
-      }[chainId]
-      if (tId)
-        console.log(
-          chainId,
-          "missing type",
-          metadata.tys.find((t) => t.id === tId)
-        )
-
       // TODO: Handle metadata v15
       filterMetadataPalletsAndItems(metadata, [
         { pallet: isSystemPallet, items: [isAccountItem] },
@@ -290,12 +279,16 @@ export const SubNativeModule: NewBalanceModule<
       ])
       metadata.extrinsic.signedExtensions = []
 
-      if (tId) console.log("remaining metadata", metadata)
-
       const miniMetadata = $.encodeHexPrefixed($metadataV14.encode(metadata)) as `0x${string}`
+
+      const hasFreezesItem = Boolean(
+        metadata.pallets.find(isBalancesPallet)?.storage?.entries.find(isFreezesItem)
+      )
+      const useLegacyTransferableCalculation = !hasFreezesItem
 
       return {
         isTestnet,
+        useLegacyTransferableCalculation,
         symbol,
         decimals,
         existentialDeposit,
@@ -580,6 +573,11 @@ async function buildQueries(
           { label: "misc", amount: "0" },
         ],
       }
+      if (chainMeta?.useLegacyTransferableCalculation)
+        balanceJson.useLegacyTransferableCalculation = true
+
+      let locksQueryLocks: Array<LockedAmount<string>> = []
+      let freezesQueryLocks: Array<LockedAmount<string>> = []
 
       const baseQuery: RpcStateQuery<Balance> | undefined = (() => {
         const storageHelper = new StorageHelper(
@@ -701,13 +699,18 @@ async function buildQueries(
           // eslint-disable-next-line @typescript-eslint/no-explicit-any
           const decoded: any =
             storageDecoder && change !== null ? storageDecoder.decode($.decodeHex(change)) : null
-          balanceJson.locks = [
-            ...balanceJson.locks.slice(0, 2),
+
+          locksQueryLocks =
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            ...(decoded?.map?.((lock: any) => ({
+            decoded?.map?.((lock: any) => ({
               label: getLockedType(lock?.id?.toUtf8?.()),
               amount: lock?.amount?.toString?.() ?? "0",
-            })) ?? []),
+            })) ?? []
+
+          balanceJson.locks = [
+            ...balanceJson.locks.slice(0, 2),
+            ...locksQueryLocks,
+            ...freezesQueryLocks,
           ] as SubNativeBalance["locks"]
 
           return new Balance(balanceJson)
@@ -733,16 +736,18 @@ async function buildQueries(
           const decoded: any =
             storageDecoder && change !== null ? storageDecoder.decode($.decodeHex(change)) : null
 
-          console.log(chainId, "freezes decoded", decoded)
+          freezesQueryLocks =
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            decoded?.map?.((lock: any) => ({
+              label: getLockedType(lock?.id?.type),
+              amount: lock?.amount?.toString?.() ?? "0",
+            })) ?? []
 
-          // balanceJson.locks = [
-          //   ...balanceJson.locks.slice(0, 2),
-          //   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          //   ...(decoded?.map?.((lock: any) => ({
-          //     label: getLockedType(lock?.id?.toUtf8?.()),
-          //     amount: lock?.amount?.toString?.() ?? "0",
-          //   })) ?? []),
-          // ] as SubNativeBalance["locks"]
+          balanceJson.locks = [
+            ...balanceJson.locks.slice(0, 2),
+            ...locksQueryLocks,
+            ...freezesQueryLocks,
+          ] as SubNativeBalance["locks"]
 
           return new Balance(balanceJson)
         }
@@ -759,7 +764,7 @@ async function buildQueries(
   })
 }
 
-export async function subscribeNompoolStaking(
+async function subscribeNompoolStaking(
   chaindataProvider: ChaindataProvider,
   chainConnector: ChainConnector,
   getOrCreateTypeRegistry: GetOrCreateTypeRegistry,
