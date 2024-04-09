@@ -135,13 +135,6 @@ export class MiniMetadataUpdater {
         var miniMetadatas: MiniMetadata[] = await fetchInitMiniMetadatas() // eslint-disable-line no-var
       }
       await balancesDb.miniMetadatas.bulkPut(miniMetadatas)
-      await balancesDb.miniMetadatas
-        .filter(
-          (m) =>
-            ["polkadot", "polimec", "robonomics-kusama"].includes(m.chainId) &&
-            m.source === "substrate-native"
-        )
-        .delete()
       this.#lastHydratedMiniMetadatasAt = now
       return true
     } catch (error) {

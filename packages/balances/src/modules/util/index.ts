@@ -88,12 +88,10 @@ export const createTypeRegistryCache = () => {
 
     const typeRegistry = new TypeRegistry()
     if (typeof metadataRpc === "string") {
-      const decoded = $metadataV14.decode($.decodeHex(metadataRpc))
       try {
         const metadata = new Metadata(typeRegistry, metadataRpc)
         metadata.registry.setMetadata(metadata)
       } catch (cause) {
-        console.log("metadata decoded", decoded)
         log.warn(new Error(`Failed to set metadata for chain ${chainId}`, { cause }), cause)
       }
     }
