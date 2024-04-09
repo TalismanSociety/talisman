@@ -38,7 +38,7 @@ export const ViewMnemonic: FC<ShowMnemonicProps> = ({ handleComplete }) => {
   }, [])
 
   return (
-    <div className="flex min-w-[58rem] flex-col gap-4">
+    <div className="flex min-w-[58rem] flex-col gap-6">
       <span className="text-body-secondary text-sm">
         {t("Only reveal your recovery phrase when in a secure location")}
       </span>
@@ -63,11 +63,11 @@ export const ViewMnemonic: FC<ShowMnemonicProps> = ({ handleComplete }) => {
         </div>
       </div>
       <button
-        className="text-body-secondary hover:text-grey-300 flex cursor-pointer gap-5 self-end text-sm"
+        className="text-grey-300 hover:text-body flex cursor-pointer gap-5 self-center font-bold"
         onClick={close}
         type="button"
       >
-        {t("Skip verification for now")}
+        {t("Skip Verification")}
       </button>
     </div>
   )
