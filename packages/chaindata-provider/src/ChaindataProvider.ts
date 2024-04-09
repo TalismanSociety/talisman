@@ -13,7 +13,7 @@ import {
   fetchTokens,
 } from "./net"
 import { TalismanChaindataDatabase } from "./TalismanChaindataDatabase"
-import { IChaindataProvider } from "./types"
+import { IChaindataProvider, TokenTypes } from "./types"
 import {
   Chain,
   ChainId,
@@ -180,6 +180,15 @@ export class ChaindataProvider implements IChaindataProvider {
       "Failed to get tokens by id",
       this.tokensByIdObservable
     )
+  }
+
+  async tokenByIdForType<TTokenTYpe extends TokenTypes[keyof TokenTypes]["type"]>(
+    tType: TTokenTYpe
+  ) {
+    const filteredTokensObs = this.tokensObservable
+      .pipe(map((tokens) => tokens.filter((token) => token.type === tType)))
+      .pipe(map(util.itemsToMapById))
+    return await util.wrapObservableWithGetter("Failed to get tokenIds", filteredTokensObs)
   }
 
   //

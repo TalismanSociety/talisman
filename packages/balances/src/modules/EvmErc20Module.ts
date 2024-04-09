@@ -19,17 +19,12 @@ import { erc20Abi } from "./abis/erc20"
 export { erc20Abi }
 
 type ModuleType = "evm-erc20"
+const moduleType: ModuleType = "evm-erc20"
 
 export const evmErc20TokenId = (
   chainId: EvmNetworkId,
   tokenContractAddress: EvmErc20Token["contractAddress"]
 ) => `${chainId}-evm-erc20-${tokenContractAddress}`.toLowerCase()
-
-const getEvmNetworkIdFromTokenId = (tokenId: string) => {
-  const evmNetworkId = tokenId.split("-")[0] as EvmNetworkId
-  if (!evmNetworkId) throw new Error(`Can't detect chainId for token ${tokenId}`)
-  return evmNetworkId
-}
 
 export type EvmErc20Token = NewTokenType<
   ModuleType,
@@ -96,21 +91,22 @@ export const EvmErc20Module: NewBalanceModule<
   const chainConnector = chainConnectors.evm
   assert(chainConnector, "This module requires an evm chain connector")
 
+  const getTokens = async () => {
+    return chaindataProvider.tokenByIdForType(moduleType) as Promise<
+      Record<string, EvmErc20Token | CustomEvmErc20Token>
+    >
+  }
+
   const prepareFetchParameters = async (
     addressesByToken: AddressesByToken<EvmErc20Token>
   ): Promise<EvmErc20NetworkParams> => {
-    const tokens = await chaindataProvider.tokensById()
+    const tokens = await getTokens()
 
     const addressesByTokenByEvmNetwork = groupAddressesByTokenByEvmNetwork(addressesByToken, tokens)
     return Object.entries(addressesByTokenByEvmNetwork).reduce(
       (result, [evmNetworkId, addressesByToken]) => {
         const networkParams = Object.entries(addressesByToken).flatMap(([tokenId, addresses]) => {
           const token = tokens[tokenId]
-          // TODO: Fix @talismn/balances-react: it shouldn't pass every token to every module
-          if (token.type !== "evm-erc20") {
-            log.debug(`This module doesn't handle tokens of type ${token.type}`)
-            return []
-          }
 
           return addresses.map((address) => ({
             token,
@@ -126,7 +122,10 @@ export const EvmErc20Module: NewBalanceModule<
   }
 
   return {
-    ...DefaultBalanceModule("evm-erc20"),
+    ...DefaultBalanceModule(moduleType),
+    get tokens() {
+      return getTokens()
+    },
 
     /**
      * This method is currently executed on [a squid](https://github.com/TalismanSociety/chaindata-squid/blob/0ee02818bf5caa7362e3f3664e55ef05ec8df078/src/steps/updateEvmNetworksFromGithub.ts#L280-L284).
@@ -145,7 +144,7 @@ export const EvmErc20Module: NewBalanceModule<
     async fetchEvmChainTokens(chainId, chainMeta, moduleConfig) {
       const { isTestnet } = chainMeta
 
-      const tokens: Record<string, EvmErc20Token> = {}
+      const chainTokens: Record<string, EvmErc20Token> = {}
       for (const tokenConfig of moduleConfig?.tokens ?? []) {
         const { contractAddress, symbol: contractSymbol, decimals: contractDecimals } = tokenConfig
         // TODO : in chaindata's build, filter out all tokens that don't have any of these
@@ -182,23 +181,10 @@ export const EvmErc20Module: NewBalanceModule<
         if (tokenConfig?.dcentName) token.dcentName = tokenConfig?.dcentName
         if (tokenConfig?.mirrorOf) token.mirrorOf = tokenConfig?.mirrorOf
 
-        tokens[token.id] = token
+        chainTokens[token.id] = token
       }
 
-      return tokens
-    },
-
-    getPlaceholderBalance(tokenId, address): EvmErc20Balance {
-      const evmNetworkId = getEvmNetworkIdFromTokenId(tokenId)
-      return {
-        source: "evm-erc20",
-        status: "initializing",
-        address: address,
-        multiChainId: { evmChainId: evmNetworkId },
-        evmNetworkId,
-        tokenId,
-        free: "0",
-      }
+      return chainTokens
     },
 
     async subscribeBalances(addressesByToken, callback) {
@@ -207,7 +193,7 @@ export const EvmErc20Module: NewBalanceModule<
       const initDelay = 1_500 // 1_500ms == 1.5 seconds
       const initialisingBalances = new Set<string>()
       const positiveBalanceNetworks = new Set<string>()
-      const tokens = await chaindataProvider.tokensById()
+      const tokens = await this.tokens
 
       // for chains with a zero balance we only call fetchBalances once every 5 subscriptionIntervals
       // if subscriptionInterval is 6 seconds, this means we only poll chains with a zero balance every 30 seconds
