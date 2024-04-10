@@ -134,6 +134,8 @@ const config = (env) => ({
       "process.env.SIMPLE_LOCALIZE_API_KEY": JSON.stringify(
         process.env.SIMPLE_LOCALIZE_API_KEY || ""
       ),
+      "process.env.BLOWFISH_BASE_PATH": JSON.stringify(process.env.BLOWFISH_BASE_PATH || ""),
+      "process.env.BLOWFISH_API_KEY": JSON.stringify(process.env.BLOWFISH_API_KEY || ""),
 
       // dev stuff, only pass through when env.build is undefined (running a development build)
       "process.env.PASSWORD": JSON.stringify(

@@ -4,6 +4,7 @@ import {
   EthPriorityOptionNameLegacy,
   EthTransactionDetails,
   GasSettingsByPriority,
+  getBlowfishClient,
 } from "@extension/core"
 import { getHumanReadableErrorMessage } from "@extension/core"
 import {
@@ -24,6 +25,7 @@ import { isBigInt } from "@talismn/util"
 import { useQuery } from "@tanstack/react-query"
 import { api } from "@ui/api"
 import { usePublicClient } from "@ui/domains/Ethereum/usePublicClient"
+import { log } from "extension-shared"
 import { useEffect, useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
 import { PublicClient, TransactionRequest } from "viem"
@@ -376,6 +378,37 @@ const useGasSettings = ({
   }
 }
 
+const useTxValidation = (
+  evmNetworkId: EvmNetworkId | undefined,
+  tx: TransactionRequest | undefined,
+  origin: string
+) => {
+  return useQuery({
+    queryKey: ["useTxValidation", evmNetworkId, tx && serializeTransactionRequest(tx), origin],
+    queryFn: () => {
+      if (!evmNetworkId || !tx) return null
+      const client = getBlowfishClient(evmNetworkId)
+      if (!client) return null
+
+      return client.scanTransactions(
+        [
+          {
+            data: tx.data,
+            from: tx.from,
+            to: tx.to ?? undefined,
+            value: typeof tx.value === "bigint" ? tx.value.toString() : undefined,
+          },
+        ],
+        tx.from,
+        { origin }
+      )
+    },
+    enabled: !!tx,
+    refetchInterval: false,
+    retry: false,
+  })
+}
+
 export const useEthTransaction = (
   tx: TransactionRequest | undefined,
   evmNetworkId: EvmNetworkId | undefined,
@@ -401,6 +434,12 @@ export const useEthTransaction = (
   } = useBlockFeeData(publicClient, tx, hasEip1559Support)
 
   const [priority, setPriority] = useState<EthPriorityOptionName>()
+
+  const txValidationResults = useTxValidation(evmNetworkId, tx, "extension")
+  useEffect(() => {
+    // TODO remove
+    log.log("txValidationResults", txValidationResults)
+  }, [txValidationResults])
 
   // reset priority in case chain changes
   // ex: from send funds when switching from BSC (legacy) to mainnet (eip1559)

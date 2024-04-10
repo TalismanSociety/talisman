@@ -21,6 +21,8 @@ declare namespace NodeJS {
     readonly COINGECKO_API_DOMAIN?: string
     readonly COINGECKO_API_KEY_NAME?: string
     readonly COINGECKO_API_KEY_VALUE?: string
+    readonly BLOWFISH_BASE_PATH?: string
+    readonly BLOWFISH_API_KEY?: string
   }
 }
 

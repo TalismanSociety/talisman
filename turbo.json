@@ -30,7 +30,8 @@
         "$SIMPLE_LOCALIZE_PROJECT_TOKEN",
         "$SENTRY_DSN",
         "$SENTRY_AUTH_TOKEN",
-        "$POSTHOG_AUTH_TOKEN"
+        "$POSTHOG_AUTH_TOKEN",
+        "$BLOWFISH_API_KEY"
       ],
       "outputs": ["dist/**"]
     },
@@ -41,7 +42,8 @@
         "$SIMPLE_LOCALIZE_PROJECT_TOKEN",
         "$SENTRY_DSN",
         "$SENTRY_AUTH_TOKEN",
-        "$POSTHOG_AUTH_TOKEN"
+        "$POSTHOG_AUTH_TOKEN",
+        "$BLOWFISH_API_KEY"
       ],
       "outputs": ["dist/**"]
     },
@@ -52,7 +54,8 @@
         "$SIMPLE_LOCALIZE_PROJECT_TOKEN",
         "$SENTRY_DSN",
         "$SENTRY_AUTH_TOKEN",
-        "$POSTHOG_AUTH_TOKEN"
+        "$POSTHOG_AUTH_TOKEN",
+        "$BLOWFISH_API_KEY"
       ],
       "outputs": ["dist/**"]
     },

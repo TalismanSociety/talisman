@@ -2883,6 +2883,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@blowfishxyz/api-client@npm:^0.1.13":
+  version: 0.1.13
+  resolution: "@blowfishxyz/api-client@npm:0.1.13"
+  checksum: 2ecf235ac89b5b3f55d51c8e2f653e1385346c7f4daada1011fefec75c14b0b6cfa5db06c29470138efc18767e2f60ac1b1c59b9300b304ed430746b25f13dab
+  languageName: node
+  linkType: hard
+
 "@chainsafe/as-sha256@npm:^0.3.1":
   version: 0.3.1
   resolution: "@chainsafe/as-sha256@npm:0.3.1"
@@ -15654,6 +15661,7 @@ __metadata:
     "@babel/plugin-transform-react-jsx": ^7.23.4
     "@babel/preset-env": ^7.23.7
     "@babel/preset-typescript": ^7.23.3
+    "@blowfishxyz/api-client": ^0.1.13
     "@metamask/browser-passworder": 4.3.0
     "@metamask/eth-sig-util": 7.0.1
     "@polkadot/apps-config": 0.132.1

@@ -19,6 +19,7 @@
     "test:watch": "PORT_PREFIX=talisman jest --watch"
   },
   "dependencies": {
+    "@blowfishxyz/api-client": "^0.1.13",
     "@metamask/browser-passworder": "4.3.0",
     "@metamask/eth-sig-util": "7.0.1",
     "@polkadot/apps-config": "0.132.1",
