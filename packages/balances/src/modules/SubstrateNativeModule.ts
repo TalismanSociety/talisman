@@ -739,7 +739,7 @@ async function buildQueries(
           freezesQueryLocks =
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
             decoded?.map?.((lock: any) => ({
-              label: getLockedType(lock?.id?.type),
+              label: getLockedType(lock?.id?.type?.toLowerCase?.()),
               amount: lock?.amount?.toString?.() ?? "0",
             })) ?? []
 
