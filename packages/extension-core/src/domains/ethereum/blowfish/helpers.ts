@@ -26,6 +26,9 @@ export const BLOWFISH_SUPPORTED_CHAINS: Record<
   "7777777": { chainFamily: "zora", chainNetwork: "sepolia" },
 }
 
+export const isBlowfishSupportedChain = (evmNetworkId: EvmNetworkId) =>
+  !!BLOWFISH_SUPPORTED_CHAINS[evmNetworkId]
+
 export const getBlowfishClient = (evmNetworkId: EvmNetworkId) => {
   if (!BLOWFISH_SUPPORTED_CHAINS[evmNetworkId]) return null
 
