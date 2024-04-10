@@ -77,8 +77,7 @@ export const watchEthereumTransaction = async (
         )
     } catch (err) {
       log.error("watchEthereumTransaction error: ", { err })
-      const error = err as Error
-      const isNotFound = error.message === "Transaction not found"
+      const isNotFound = err instanceof Error && err.message === "Transaction not found"
 
       // if not found, mark tx as unknown so user can still cancel/speed-up if necessary
       updateTransactionStatus(hash, isNotFound ? "unknown" : "error")
