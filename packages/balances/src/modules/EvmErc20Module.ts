@@ -92,7 +92,7 @@ export const EvmErc20Module: NewBalanceModule<
   assert(chainConnector, "This module requires an evm chain connector")
 
   const getTokens = async () => {
-    return chaindataProvider.tokenByIdForType(moduleType) as Promise<
+    return chaindataProvider.tokensByIdForType(moduleType) as Promise<
       Record<string, EvmErc20Token | CustomEvmErc20Token>
     >
   }

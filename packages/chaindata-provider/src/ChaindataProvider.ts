@@ -182,7 +182,7 @@ export class ChaindataProvider implements IChaindataProvider {
     )
   }
 
-  async tokenByIdForType<TTokenTYpe extends TokenTypes[keyof TokenTypes]["type"]>(
+  async tokensByIdForType<TTokenTYpe extends TokenTypes[keyof TokenTypes]["type"]>(
     tType: TTokenTYpe
   ) {
     const filteredTokensObs = this.tokensObservable
