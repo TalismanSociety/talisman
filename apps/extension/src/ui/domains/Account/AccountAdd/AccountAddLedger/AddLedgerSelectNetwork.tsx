@@ -128,14 +128,14 @@ export const AddLedgerSelectNetwork = () => {
             {["polkadot", "polkadot-asset-hub"].includes(chain?.id ?? "") && (
               <p className="text-body-secondary mt-6">
                 {t(
-                  "Additionally, a given Ledger account cannot be added in Talisman for both Polakdot and Polkadot Asset Hub as they would share the same address. Adding one would remove the other, and vice versa."
+                  "Adding the same Ledger account to both Polkadot and Polkadot Asset Hub results in them overriding each other."
                 )}
               </p>
             )}
             {["kusama", "kusama-asset-hub"].includes(chain?.id ?? "") && (
               <p className="text-body-secondary mt-6">
                 {t(
-                  "Additionally, a given Ledger account cannot be added in Talisman for both Kusama and Kusama Asset Hub as they would share the same address. Adding one would remove the other, and vice versa."
+                  "Adding the same Ledger account to both Kusama and Kusama Asset Hub results in them overriding each other."
                 )}
               </p>
             )}
