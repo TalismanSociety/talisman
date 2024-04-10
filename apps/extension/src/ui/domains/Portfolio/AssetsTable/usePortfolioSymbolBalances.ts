@@ -1,7 +1,6 @@
 import { Balance, Balances } from "@extension/core"
 import { FiatSumBalancesFormatter } from "@talismn/balances"
 import { TokenRateCurrency } from "@talismn/token-rates"
-import { BigMath } from "@talismn/util"
 import { useSelectedCurrency } from "@ui/hooks/useCurrency"
 import { useSetting } from "@ui/hooks/useSettings"
 import { useMemo } from "react"
@@ -15,7 +14,7 @@ const sortSymbolBalancesBy =
         ? b.total.planck
         : type === "available"
         ? b.transferable.planck
-        : BigMath.max(b.locked.planck, b.reserved.planck)
+        : b.unavailable.planck
 
     const fiatAmount = (b: FiatSumBalancesFormatter | Balance) => {
       const getAmount = (b: FiatSumBalancesFormatter | Balance, type: keyof typeof b) => {
@@ -28,10 +27,10 @@ const sortSymbolBalancesBy =
         : type === "available"
         ? getAmount(b, "transferable")
         : type === "locked"
-        ? getAmount(b, "locked") !== null || getAmount(b, "reserved") !== null
-          ? // return max(locked, reserved) if either of them are not null
-            Math.max(getAmount(b, "locked") ?? 0, getAmount(b, "reserved") ?? 0)
-          : // return null if both locked and reserved are null
+        ? getAmount(b, "unavailable") !== null
+          ? // return unavailable if not null
+            getAmount(b, "unavailable") ?? 0
+          : // return null if unavailable is null
             null
         : null
     }
@@ -142,7 +141,7 @@ export const usePortfolioSymbolBalances = (balances: Balances) => {
       symbolBalances
         .map(([symbol, balances]): [string, Balances] => [
           symbol,
-          balances.find((b) => b.locked.planck > 0n || b.reserved.planck > 0n),
+          balances.find((b) => b.unavailable.planck > 0n),
         ])
         .filter(([, balances]) => balances.count > 0)
         .sort(sortSymbolBalancesBy("locked", currency)),

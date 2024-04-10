@@ -159,7 +159,15 @@ export class Balances {
    * Filters this collection to only include balances which are not zero.
    */
   filterNonZero = (
-    type: "total" | "free" | "reserved" | "locked" | "frozen" | "transferable" | "feePayable"
+    type:
+      | "total"
+      | "free"
+      | "reserved"
+      | "locked"
+      | "frozen"
+      | "transferable"
+      | "unavailable"
+      | "feePayable"
   ): Balances => {
     const filter = (balance: Balance) => balance[type].planck > 0n
     return this.find(filter)
@@ -168,7 +176,15 @@ export class Balances {
    * Filters this collection to only include balances which are not zero AND have a fiat conversion rate.
    */
   filterNonZeroFiat = (
-    type: "total" | "free" | "reserved" | "locked" | "frozen" | "transferable" | "feePayable",
+    type:
+      | "total"
+      | "free"
+      | "reserved"
+      | "locked"
+      | "frozen"
+      | "transferable"
+      | "unavailable"
+      | "feePayable",
     currency: TokenRateCurrency
   ): Balances => {
     const filter = (balance: Balance) => (balance[type].fiat(currency) ?? 0) > 0
@@ -473,6 +489,18 @@ export class Balance {
     if (this.#storage.useLegacyTransferableCalculation) return oldTransferableCalculation()
     return newTransferableCalculation()
   }
+  /**
+   * The unavailable balance of this token.
+   * Prior to the Fungible trait, this was the locked amount + the reserved amount, i.e. `locked + reserved`.
+   * Now, it is the bigger of the locked amount and the reserved amounts, i.e. `max(locked, reserved)`.
+   */
+  get unavailable() {
+    const oldCalculation = () => this.#format(this.locked.planck + this.reserved.planck)
+    const newCalculation = () => this.#format(BigMath.max(this.locked.planck, this.reserved.planck))
+
+    if (this.#storage.useLegacyTransferableCalculation) return oldCalculation()
+    return newCalculation()
+  }
   /** The feePayable balance of this token. Is generally the free amount - the feeFrozen amount. */
   get feePayable() {
     // if no locks exist, feePayable is equal to the free amount
@@ -572,6 +600,10 @@ export class PlanckSumBalancesFormatter {
   get transferable() {
     return this.#sum("transferable")
   }
+  /** The unavailable balance of these tokens. */
+  get unavailable() {
+    return this.#sum("unavailable")
+  }
   /** The feePayable balance of these tokens. Is generally the free amount - the feeFrozen amount. */
   get feePayable() {
     return this.#sum("feePayable")
@@ -628,6 +660,10 @@ export class FiatSumBalancesFormatter {
   /** The transferable balance of these tokens. Is generally the free amount - the miscFrozen amount. */
   get transferable() {
     return this.#sum("transferable")
+  }
+  /** The unavailable balance of these tokens. */
+  get unavailable() {
+    return this.#sum("unavailable")
   }
   /** The feePayable balance of these tokens. Is generally the free amount - the feeFrozen amount. */
   get feePayable() {

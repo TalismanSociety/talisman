@@ -12,9 +12,10 @@ export const BalancesTotal = () => {
     currencyParams
   )
 
-  const frozen = balances.sum.fiat("usd").locked ?? 0
-  const reserved = balances.sum.fiat("usd").reserved ?? 0
-  const locked = Math.max(frozen, reserved).toLocaleString(undefined, currencyParams)
+  const locked = (balances.sum.fiat("usd").unavailable ?? 0).toLocaleString(
+    undefined,
+    currencyParams
+  )
 
   return (
     <div className="flex gap-12">
