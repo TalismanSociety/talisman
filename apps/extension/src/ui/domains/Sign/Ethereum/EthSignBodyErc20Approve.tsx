@@ -1,5 +1,6 @@
 import { EvmAddress } from "@extension/core"
 import { TOKEN_APPROVALS_URL, log } from "@extension/shared"
+import { hexToBigInt } from "@polkadot/util"
 import { notify } from "@talisman/components/Notifications"
 import { FC, useCallback, useMemo } from "react"
 import { Trans, useTranslation } from "react-i18next"
@@ -72,9 +73,14 @@ export const EthSignBodyErc20Approve: FC = () => {
         isRevoke ? null : (
           <SignAlertMessage>
             <span className="text-body-secondary">
-              {t(
-                "This contract will have permission to spend tokens on your behalf until manually revoked."
-              )}
+              {allowance ===
+              hexToBigInt("0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff")
+                ? t(
+                    `This contract will have permission to spend all tokens on your behalf until manually revoked. We recommend you set a limit by clicking the amount button above.`
+                  )
+                : t(
+                    "This contract will have permission to spend tokens on your behalf until manually revoked."
+                  )}
             </span>{" "}
             <a className="text-white" href={TOKEN_APPROVALS_URL} target="_blank">
               {t("Learn more")}
