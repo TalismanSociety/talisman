@@ -39,6 +39,7 @@ const useEthSignTransactionRequestProvider = ({ id }: KnownSigningRequestIdOnly<
     gasSettingsByPriority,
     setCustomSettings,
     isValid,
+    validation,
   } = useEthTransaction(
     txBase,
     signingRequest?.ethChainId,
@@ -96,6 +97,7 @@ const useEthSignTransactionRequestProvider = ({ id }: KnownSigningRequestIdOnly<
     gasSettingsByPriority,
     setCustomSettings,
     isValid,
+    validation,
   }
 }
 

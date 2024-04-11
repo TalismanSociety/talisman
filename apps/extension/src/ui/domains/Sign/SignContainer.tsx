@@ -5,6 +5,8 @@ import { ViewDetailsSub } from "@ui/domains/Sign/ViewDetails/ViewDetailsSub"
 import { FC, ReactNode } from "react"
 import { createPortal } from "react-dom"
 
+import { RiskAnalysisPillButton } from "./Ethereum/risk-analysis/RIskAnalysisPillButton"
+
 type SignContainerProps = {
   title: ReactNode
   children: ReactNode
@@ -32,7 +34,16 @@ export const SignContainer: FC<SignContainerProps> = ({
         {children}
       </div>
       <div className="mb-8 mt-12 grow text-center">
-        {networkType === "ethereum" && <ViewDetailsEth />}
+        {networkType === "ethereum" && (
+          <div className="grid w-full grid-cols-2 items-center justify-center gap-4">
+            <div className="text-right">
+              <ViewDetailsEth />
+            </div>
+            <div className="text-left">
+              <RiskAnalysisPillButton />
+            </div>
+          </div>
+        )}
         {networkType === "substrate" && <ViewDetailsSub />}
       </div>
       {alert && alertContainer && createPortal(alert, alertContainer)}
