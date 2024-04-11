@@ -6,8 +6,10 @@ import { classNames } from "@talismn/util"
 import { AccountTypeSelector } from "@ui/domains/Account/AccountTypeSelector"
 import { ChainLogo } from "@ui/domains/Asset/ChainLogo"
 import { useLedgerChains } from "@ui/hooks/ledger/useLedgerChains"
+import useAccounts from "@ui/hooks/useAccounts"
 import useChain from "@ui/hooks/useChain"
-import { useCallback, useMemo, useState } from "react"
+import { useAllChainsMap } from "@ui/hooks/useChains"
+import { FC, useCallback, useMemo, useState } from "react"
 import { useForm } from "react-hook-form"
 import { useTranslation } from "react-i18next"
 import { useNavigate } from "react-router-dom"
@@ -30,6 +32,45 @@ const renderOption = (chain: Chain) => {
       <span className="overflow-hidden text-ellipsis whitespace-nowrap">{chain.name}</span>
     </div>
   )
+}
+
+const AssetHubConflictWarning: FC<{ chain: Chain | null | undefined }> = ({ chain }) => {
+  const { t } = useTranslation("admin")
+  const chains = useAllChainsMap()
+  const accounts = useAccounts()
+
+  const { relay, conflictChain } = useMemo(() => {
+    if (chain) {
+      if (["polkadot", "polkadot-asset-hub"].includes(chain.id))
+        return {
+          relay: "Polkadot",
+          conflictChain:
+            chain.id === "polkadot" ? chains["polkadot-asset-hub"] : chains["polkadot"],
+        }
+
+      if (["kusama", "kusama-asset-hub"].includes(chain.id))
+        return {
+          relay: "Kusama",
+          conflictChain: chain.id === "kusama" ? chains["kusama-asset-hub"] : chains["kusama"],
+        }
+    }
+    return { relay: null, conflictChain: null }
+  }, [chain, chains])
+
+  const warning = useMemo(() => {
+    // show warning only if user has a network specific account for the conflicting chain
+    return relay &&
+      accounts.some((a) => conflictChain && a.genesisHash === conflictChain.genesisHash)
+      ? t(
+          "Adding the same Ledger account to both {{relay}} and {{relay}} Asset Hub results in them overriding each other.",
+          { relay }
+        )
+      : null
+  }, [accounts, conflictChain, relay, t])
+
+  if (!warning) return null
+
+  return <p className="text-body-secondary mt-6">{warning}</p>
 }
 
 export const AddLedgerSelectNetwork = () => {
@@ -125,20 +166,7 @@ export const AddLedgerSelectNetwork = () => {
             <p className="text-body-secondary mt-6">
               {t("Please note: a Ledger account can only be used on a single network.")}
             </p>
-            {["polkadot", "polkadot-asset-hub"].includes(chain?.id ?? "") && (
-              <p className="text-body-secondary mt-6">
-                {t(
-                  "Adding the same Ledger account to both Polkadot and Polkadot Asset Hub results in them overriding each other."
-                )}
-              </p>
-            )}
-            {["kusama", "kusama-asset-hub"].includes(chain?.id ?? "") && (
-              <p className="text-body-secondary mt-6">
-                {t(
-                  "Adding the same Ledger account to both Kusama and Kusama Asset Hub results in them overriding each other."
-                )}
-              </p>
-            )}
+            <AssetHubConflictWarning chain={chain} />
           </>
         )}
         <div className={classNames("mt-12 h-[20rem]", showStep2 ? "visible" : "invisible")}>
