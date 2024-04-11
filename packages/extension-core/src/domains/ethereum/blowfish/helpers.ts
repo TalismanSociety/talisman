@@ -26,8 +26,12 @@ export const BLOWFISH_SUPPORTED_CHAINS: Record<
   "7777777": { chainFamily: "zora", chainNetwork: "sepolia" },
 }
 
-export const isBlowfishSupportedChain = (evmNetworkId: EvmNetworkId) =>
-  !!BLOWFISH_SUPPORTED_CHAINS[evmNetworkId]
+// export const isBlowfishSupportedChain = (evmNetworkId: EvmNetworkId) =>
+//   !!BLOWFISH_SUPPORTED_CHAINS[evmNetworkId]
+
+export const getBlowfishChainInfo = (evmNetworkId: EvmNetworkId) => {
+  return BLOWFISH_SUPPORTED_CHAINS[evmNetworkId] ?? null
+}
 
 export const getBlowfishClient = (evmNetworkId: EvmNetworkId) => {
   if (!BLOWFISH_SUPPORTED_CHAINS[evmNetworkId]) return null
@@ -36,7 +40,7 @@ export const getBlowfishClient = (evmNetworkId: EvmNetworkId) => {
   // https://docs.blowfish.xyz/docs/wallet-integration-guide#optional-proxy-server
   if (!process.env.BLOWFISH_API_KEY) return null
 
-  const config = BLOWFISH_SUPPORTED_CHAINS[evmNetworkId]
+  const config = getBlowfishChainInfo(evmNetworkId)
   if (!config) return null
 
   return createEvmClient({

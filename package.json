@@ -135,6 +135,7 @@
     ]
   },
   "dependencies": {
+    "@blowfishxyz/ui": "^0.0.1-beta.15",
     "jest-environment-jsdom": "^29.7.0"
   }
 }

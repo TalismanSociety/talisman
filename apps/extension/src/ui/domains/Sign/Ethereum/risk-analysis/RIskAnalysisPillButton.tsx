@@ -1,3 +1,4 @@
+import { BlowfishUIProvider, SimulationWarning, StateChangePreviewEvm } from "@blowfishxyz/ui"
 import {
   ShieldNotOkIcon,
   ShieldOkIcon,
@@ -17,6 +18,39 @@ import {
 } from "talisman-ui"
 
 import { useEthSignTransactionRequest } from "../../SignRequestContext"
+
+const RiskAnalysisDrawerContent = () => {
+  const { validation } = useEthSignTransactionRequest()
+
+  if (!validation?.isAvailable) return null
+
+  // TODO
+  if (validation.isValidating) return <div>Validating...</div>
+
+  if (!validation.result) return <div>Result not available</div>
+  if (!validation.chainInfo) return <div>Chain information not available</div>
+
+  return (
+    <div className="bg-grey-850 flex max-h-[60rem] w-full flex-col gap-12 p-12">
+      <div className="scrollable scrollable-700 flex-grow overflow-y-auto pr-4 text-sm leading-[2rem]">
+        <BlowfishUIProvider mode="dark">
+          <div>
+            <StateChangePreviewEvm
+              // eslint-disable-next-line @typescript-eslint/no-explicit-any
+              scanResult={validation.result}
+              {...validation.chainInfo}
+            />
+            <div>
+              {validation.result.warnings.map((warning) => (
+                <SimulationWarning key={warning.message} warning={warning} />
+              ))}
+            </div>
+          </div>
+        </BlowfishUIProvider>
+      </div>
+    </div>
+  )
+}
 
 export const RiskAnalysisPillButton = () => {
   const { t } = useTranslation()
@@ -79,7 +113,7 @@ export const RiskAnalysisPillButton = () => {
         )}
       </Tooltip>
       <Drawer anchor="bottom" containerId="main" isOpen={isOpen && !isLoading} onDismiss={close}>
-        hi
+        <RiskAnalysisDrawerContent />
       </Drawer>
     </>
   )

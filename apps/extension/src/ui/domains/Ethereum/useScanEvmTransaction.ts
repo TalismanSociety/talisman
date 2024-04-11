@@ -1,6 +1,6 @@
 import {
+  getBlowfishChainInfo,
   getBlowfishClient,
-  isBlowfishSupportedChain,
   serializeTransactionRequest,
 } from "@extension/core"
 import { EvmNetworkId } from "@talismn/chaindata-provider"
@@ -27,10 +27,12 @@ export const useScanEvmTransaction = (
     return window.location.origin // fallback to extension's origin
   }, [url])
 
-  const isAvailable = useMemo(() => {
-    if (!evmNetworkId || !tx) return false
-    return isBlowfishSupportedChain(evmNetworkId)
+  const chainInfo = useMemo(() => {
+    if (!evmNetworkId || !tx) return null
+    return getBlowfishChainInfo(evmNetworkId)
   }, [evmNetworkId, tx])
+
+  const isAvailable = useMemo(() => !!chainInfo, [chainInfo])
 
   const {
     isLoading,
@@ -76,7 +78,8 @@ export const useScanEvmTransaction = (
       result,
       error,
       validate: isAvailable && autoValidate ? undefined : () => setAutoValidate(true),
+      chainInfo,
     }),
-    [autoValidate, error, isAvailable, isLoading, result]
+    [autoValidate, chainInfo, error, isAvailable, isLoading, result]
   )
 }
