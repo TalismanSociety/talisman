@@ -66,7 +66,6 @@ export const decodeEvmTransaction = async (
     if (publicClient.chain?.id && [1284, 1285, 1287].includes(publicClient.chain.id)) {
       for (const { address, contractType, abi } of MOON_CHAIN_PRECOMPILES) {
         if (address === targetAddress) {
-          //const { contractType, abi } = precompile
           const contractCall = decodeFunctionData({ abi, data })
           return {
             contractType,

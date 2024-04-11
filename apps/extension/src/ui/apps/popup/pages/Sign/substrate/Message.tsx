@@ -15,7 +15,7 @@ import { usePolkadotSigningRequest } from "@ui/domains/Sign/SignRequestContext"
 import { useEffect, useMemo } from "react"
 import { useTranslation } from "react-i18next"
 
-import { SignAccountAvatar } from "../SignAccountAvatar"
+import { SignNetworkLogo } from "../SignNetworkLogo"
 import { FooterContent } from "./FooterContent"
 import { MessageSiws } from "./MessageSiws"
 
@@ -50,7 +50,7 @@ export const PolkadotSignMessageRequest = () => {
 
   return (
     <PopupLayout>
-      <PopupHeader right={<SignAccountAvatar account={account} ss58Format={chain?.prefix} />}>
+      <PopupHeader right={<SignNetworkLogo network={chain} />}>
         <AppPill url={url} />
       </PopupHeader>
       <PopupContent>
