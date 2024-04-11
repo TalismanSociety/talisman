@@ -286,9 +286,8 @@ export const SubNativeModule: NewBalanceModule<
       )
       const useLegacyTransferableCalculation = !hasFreezesItem
 
-      return {
+      const chainMeta: SubNativeChainMeta = {
         isTestnet,
-        useLegacyTransferableCalculation,
         symbol,
         decimals,
         existentialDeposit,
@@ -297,6 +296,9 @@ export const SubNativeModule: NewBalanceModule<
         miniMetadata,
         metadataVersion,
       }
+      if (useLegacyTransferableCalculation) chainMeta.useLegacyTransferableCalculation = true
+
+      return chainMeta
     },
 
     async fetchSubstrateChainTokens(chainId, chainMeta, moduleConfig) {
