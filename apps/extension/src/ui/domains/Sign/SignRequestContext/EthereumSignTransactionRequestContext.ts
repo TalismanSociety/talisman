@@ -40,6 +40,7 @@ const useEthSignTransactionRequestProvider = ({ id }: KnownSigningRequestIdOnly<
     setCustomSettings,
     isValid,
     validation,
+    updateCallArg,
   } = useEthTransaction(
     txBase,
     signingRequest?.ethChainId,
@@ -98,6 +99,7 @@ const useEthSignTransactionRequestProvider = ({ id }: KnownSigningRequestIdOnly<
     setCustomSettings,
     isValid,
     validation,
+    updateCallArg,
   }
 }
 

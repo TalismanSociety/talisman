@@ -21,13 +21,13 @@ import {
   EvmNetworkId,
 } from "@extension/core"
 import { isBigInt } from "@talismn/util"
-import { useQuery } from "@tanstack/react-query"
+import { useQuery, useQueryClient } from "@tanstack/react-query"
 import { api } from "@ui/api"
 import { usePublicClient } from "@ui/domains/Ethereum/usePublicClient"
 import { log } from "extension-shared"
-import { useEffect, useMemo, useState } from "react"
+import { useCallback, useEffect, useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
-import { PublicClient, TransactionRequest } from "viem"
+import { PublicClient, TransactionRequest, encodeFunctionData } from "viem"
 
 import { ETH_ERROR_EIP1474_METHOD_NOT_FOUND } from "../../../inject/ethereum/EthProviderRpcError"
 import { useEthEstimateL1DataFee } from "./useEthEstimateL1DataFee"
@@ -179,9 +179,12 @@ const useBlockFeeData = (
 
 const useDecodeEvmTransaction = (
   publicClient: PublicClient | undefined,
-  tx: TransactionRequest | undefined
+  request: TransactionRequest | undefined
 ) => {
-  const { data, ...rest } = useQuery({
+  const queryClient = useQueryClient()
+  const [tx, setTx] = useState(() => request)
+
+  const { data: decodedTx, ...rest } = useQuery({
     // check tx as boolean as it's not pure
     queryKey: [
       "useDecodeEvmTransaction",
@@ -197,7 +200,48 @@ const useDecodeEvmTransaction = (
     enabled: !!publicClient && !!tx,
   })
 
-  return { decodedTx: data, ...rest }
+  const updateCallArg = useCallback(
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    async (argName: string, argValue: any) => {
+      if (!tx) throw new Error("Missing tx")
+      if (!publicClient) throw new Error("Missing publicClient")
+      if (!publicClient.chain) throw new Error("Missing publicClient.chain")
+      if (!decodedTx?.abi) throw new Error("Missing ABI")
+      if (!decodedTx.contractCall) throw new Error("Missing contractCall")
+
+      const { abi, contractCall } = decodedTx
+      const { functionName } = contractCall
+
+      const abiCall = abi.find((a) => a.name === functionName)
+      if (!abiCall) throw new Error(`ABI for function ${functionName} not found`)
+      const argIndex = abiCall.inputs.findIndex((input) => input.name === argName)
+      if (argIndex === -1) throw new Error(`arg ${argName} not found in decoded transaction`)
+
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const args = [...contractCall.args] as any
+      args[argIndex] = argValue
+
+      const newTx = {
+        ...tx,
+        data: encodeFunctionData({ abi, functionName, args }),
+      }
+
+      // prefetch to prevent tx UI from being replaced by shimmer
+      await queryClient.prefetchQuery({
+        queryKey: [
+          "useDecodeEvmTransaction",
+          publicClient.chain.id,
+          serializeTransactionRequest(newTx),
+        ],
+        queryFn: () => decodeEvmTransaction(publicClient, newTx),
+      })
+
+      setTx(newTx)
+    },
+    [decodedTx, publicClient, queryClient, tx]
+  )
+
+  return { tx, decodedTx, updateCallArg, ...rest }
 }
 
 const getEthGasSettingsFromTransaction = (
@@ -446,14 +490,19 @@ const useGasSettings = ({
 // }
 
 export const useEthTransaction = (
-  tx: TransactionRequest | undefined,
+  request: TransactionRequest | undefined,
   evmNetworkId: EvmNetworkId | undefined,
   lockTransaction = false,
   isReplacement = false,
   origin?: string
 ) => {
   const publicClient = usePublicClient(evmNetworkId)
-  const { decodedTx, isLoading: isDecoding } = useDecodeEvmTransaction(publicClient, tx)
+  const {
+    tx,
+    decodedTx,
+    updateCallArg,
+    isLoading: isDecoding,
+  } = useDecodeEvmTransaction(publicClient, request)
   const { hasEip1559Support, error: errorEip1559Support } = useHasEip1559Support(publicClient)
   const { nonce, error: nonceError } = useNonce(
     tx?.from as `0x${string}` | undefined,
@@ -611,5 +660,6 @@ export const useEthTransaction = (
     setCustomSettings,
     gasSettingsByPriority,
     validation,
+    updateCallArg,
   }
 }
