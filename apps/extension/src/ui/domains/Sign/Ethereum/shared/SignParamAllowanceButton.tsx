@@ -29,7 +29,7 @@ import {
 import { formatUnits, hexToBigInt, parseUnits } from "viem"
 import * as yup from "yup"
 
-const ALLOWANCE_UNLIMITED = hexToBigInt(
+export const ERC20_UNLIMITED_ALLOWANCE = hexToBigInt(
   "0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"
 )
 
@@ -79,7 +79,7 @@ const EditAllowanceForm: FC<{
 
   const defaultValues = useMemo(
     () => ({
-      limit: allowance === ALLOWANCE_UNLIMITED ? "" : formatUnits(allowance, token.decimals),
+      limit: allowance === ERC20_UNLIMITED_ALLOWANCE ? "" : formatUnits(allowance, token.decimals),
     }),
     [allowance, token.decimals]
   )
@@ -100,7 +100,7 @@ const EditAllowanceForm: FC<{
     async ({ limit }: FormData) => {
       try {
         genericEvent("set custom allowance")
-        const newLimit = limit ? parseUnits(limit, token.decimals) : ALLOWANCE_UNLIMITED
+        const newLimit = limit ? parseUnits(limit, token.decimals) : ERC20_UNLIMITED_ALLOWANCE
         await onSubmit(newLimit)
       } catch (err) {
         log.error("Failed to set custom gas settings", { err })
@@ -190,13 +190,13 @@ export const SignParamAllowanceButton: FC<{
 
   const fiat = useMemo(() => {
     const balAllowance =
-      allowance !== ALLOWANCE_UNLIMITED
+      allowance !== ERC20_UNLIMITED_ALLOWANCE
         ? new BalanceFormatter(allowance.toString(), token.decimals, tokenRates)
         : undefined
     return balAllowance?.fiat(currency)
   }, [allowance, currency, token.decimals, tokenRates])
 
-  const isInfinite = useMemo(() => allowance === ALLOWANCE_UNLIMITED, [allowance])
+  const isInfinite = useMemo(() => allowance === ERC20_UNLIMITED_ALLOWANCE, [allowance])
   const tokens = useMemo(() => formatUnits(allowance, token.decimals), [allowance, token])
 
   const handleSubmit = useCallback(
