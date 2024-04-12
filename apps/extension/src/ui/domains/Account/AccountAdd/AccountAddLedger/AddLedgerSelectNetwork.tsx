@@ -26,10 +26,23 @@ type FormData = {
 }
 
 const renderOption = (chain: Chain) => {
+  const getChainLabel = (chain: Chain) => {
+    switch (chain.id) {
+      case "polkadot-asset-hub":
+        return "Polkadot Asset Hub (Statemint)"
+      case "kusama-asset-hub":
+        return "Kusama Asset Hub (Statemine)"
+      default:
+        return chain.name
+    }
+  }
+
   return (
     <div className="flex max-w-full items-center gap-5 overflow-hidden">
       <ChainLogo id={chain.id} className="text-[1.25em]" />
-      <span className="overflow-hidden text-ellipsis whitespace-nowrap">{chain.name}</span>
+      <span className="overflow-hidden text-ellipsis whitespace-nowrap">
+        {getChainLabel(chain)}
+      </span>
     </div>
   )
 }
