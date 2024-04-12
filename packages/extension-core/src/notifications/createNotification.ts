@@ -40,11 +40,8 @@ const getNotificationOptions = (
       return {
         type: "basic",
         title: "Transaction not found",
-        message:
-          error?.shortMessage ??
-          error?.reason ??
-          error?.message ??
-          `Transaction not found on ${networkName}.`,
+        message: `We aren't able to determine the status of this transaction.`,
+
         iconUrl: "/images/tx-nok.png",
       }
   }
