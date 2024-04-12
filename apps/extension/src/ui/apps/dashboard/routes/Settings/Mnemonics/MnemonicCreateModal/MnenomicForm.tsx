@@ -50,16 +50,16 @@ const MnemonicFormInner = () => {
         >
           {t("I have backed up my recovery phrase, don’t remind me anymore")}
         </Checkbox>
-        <div className="flex flex-col gap-4">
+        <div className="flex flex-col gap-6">
           <Button primary fullWidth disabled={!canConfirm} onClick={handleContinueClick}>
             {t("Verify recovery phrase")}
           </Button>
           <button
-            className="text-body-secondary hover:text-grey-300 flex cursor-pointer gap-5 self-end text-sm"
+            className="text-grey-300 hover:text-body flex h-11 cursor-pointer gap-5 self-center text-sm font-bold"
             onClick={complete}
             type="button"
           >
-            {t("Skip verification for now")}
+            {t("Skip Verification")}
           </button>
         </div>
       </div>
