@@ -5,6 +5,7 @@ import type { SingleAddress, SubjectInfo } from "@polkadot/ui-keyring/observable
 import { hexToU8a, isHex } from "@polkadot/util"
 import { KeypairType } from "@polkadot/util-crypto/types"
 import { captureException } from "@sentry/browser"
+import { Chain } from "@talismn/chaindata-provider"
 import { decodeAnyAddress, encodeAnyAddress } from "@talismn/util"
 import { log } from "extension-shared"
 import { Err, Ok, Result } from "ts-results"
@@ -163,3 +164,12 @@ export const formatSuri = (mnemonic: string, derivationPath: string) =>
   derivationPath && !derivationPath.startsWith("/")
     ? `${mnemonic}/${derivationPath}`
     : `${mnemonic}${derivationPath}`
+
+export const isAccountCompatibleWithChain = (
+  chain: Chain,
+  type: KeypairType,
+  genesisHash: `0x${string}` | null | undefined
+) => {
+  if (genesisHash && genesisHash !== chain.genesisHash) return false
+  return type === "ethereum" ? chain.account === "secp256k1" : chain.account !== "secp256k1"
+}

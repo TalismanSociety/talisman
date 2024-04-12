@@ -1,3 +1,4 @@
+import { isAccountCompatibleWithChain } from "@extension/core"
 import {
   Address,
   Balances,
@@ -15,7 +16,7 @@ import { atomFamily, atomWithObservable } from "jotai/utils"
 import isEqual from "lodash/isEqual"
 import { from } from "rxjs"
 
-import { AccountCategory, accountsByCategoryAtomFamily } from "./accounts"
+import { AccountCategory, accountsByCategoryAtomFamily, accountsMapAtom } from "./accounts"
 import {
   activeChainsWithTestnetsMapAtom,
   activeEvmNetworksWithTestnetsMapAtom,
@@ -46,12 +47,27 @@ const rawBalancesAtom = atom((get) => {
 })
 
 const filteredRawBalancesAtom = atom(async (get) => {
-  const [tokens, balances] = await Promise.all([
+  const [tokens, chains, accounts, balances] = await Promise.all([
     get(activeTokensWithTestnetsMapAtom),
+    get(activeChainsWithTestnetsMapAtom),
+    get(accountsMapAtom),
     get(rawBalancesAtom),
   ])
 
-  return balances.filter((b) => tokens[b.tokenId])
+  // exclude invalid balances
+  return balances.filter((b) => {
+    // ensure there is a matching token
+    if (!tokens[b.tokenId]) return false
+
+    const account = accounts[b.address]
+    if (!account || !account.type) return false
+
+    // for chain specific accounts, exclude balances from other chains
+    if (b.chainId && chains?.[b.chainId])
+      return isAccountCompatibleWithChain(chains[b.chainId], account.type, account.genesisHash)
+    if (b.evmNetworkId) return account.type === "ethereum"
+    return false
+  })
 })
 
 export const balancesHydrateAtom = atom(async (get) => {
@@ -93,8 +109,7 @@ export const balancesByAccountCategoryAtomFamily = atomFamily((accountCategory: 
       get(allBalancesAtom),
       get(accountsByCategoryAtomFamily(accountCategory)),
     ])
-    return new Balances(
-      allBalances.each.filter((b) => accounts.some((a) => a.address === b.address))
-    )
+    const accountIds = accounts.map((a) => a.address)
+    return new Balances(allBalances.each.filter((b) => accountIds.includes(b.address)))
   })
 )
