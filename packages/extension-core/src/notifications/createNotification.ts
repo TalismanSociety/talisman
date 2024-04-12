@@ -3,7 +3,7 @@ import Browser from "webextension-polyfill"
 
 import { ensureNotificationClickHandler } from "./ensureNotificationClickHandler"
 
-export type NotificationType = "submitted" | "success" | "error"
+export type NotificationType = "submitted" | "success" | "error" | "not_found"
 
 const getNotificationOptions = (
   type: NotificationType,
@@ -34,6 +34,14 @@ const getNotificationOptions = (
           error?.reason ??
           error?.message ??
           `Failed transaction on ${networkName}.`,
+        iconUrl: "/images/tx-nok.png",
+      }
+    case "not_found":
+      return {
+        type: "basic",
+        title: "Transaction not found",
+        message: `We aren't able to determine the status of this transaction.`,
+
         iconUrl: "/images/tx-nok.png",
       }
   }
