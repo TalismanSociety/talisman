@@ -1,4 +1,5 @@
 import { isJsonPayload } from "@extension/core"
+import { hexToNumber } from "@polkadot/util"
 import { AppPill } from "@talisman/components/AppPill"
 import { validateHexString } from "@talismn/util"
 import { classNames } from "@talismn/util"
@@ -26,7 +27,7 @@ export const PolkadotSignTransactionRequest: FC = () => {
     return payload && isJsonPayload(payload)
       ? {
           genesisHash: validateHexString(payload.genesisHash),
-          specVersion: parseInt(payload.specVersion, 16),
+          specVersion: hexToNumber(payload.specVersion),
         }
       : {}
   }, [payload])
