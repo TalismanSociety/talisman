@@ -6,8 +6,10 @@ import { classNames } from "@talismn/util"
 import { AccountTypeSelector } from "@ui/domains/Account/AccountTypeSelector"
 import { ChainLogo } from "@ui/domains/Asset/ChainLogo"
 import { useLedgerChains } from "@ui/hooks/ledger/useLedgerChains"
+import useAccounts from "@ui/hooks/useAccounts"
 import useChain from "@ui/hooks/useChain"
-import { useCallback, useMemo, useState } from "react"
+import { useAllChainsMap } from "@ui/hooks/useChains"
+import { FC, useCallback, useMemo, useState } from "react"
 import { useForm } from "react-hook-form"
 import { useTranslation } from "react-i18next"
 import { useNavigate } from "react-router-dom"
@@ -24,12 +26,64 @@ type FormData = {
 }
 
 const renderOption = (chain: Chain) => {
+  const getChainLabel = (chain: Chain) => {
+    switch (chain.id) {
+      case "polkadot-asset-hub":
+        return "Polkadot Asset Hub (Statemint)"
+      case "kusama-asset-hub":
+        return "Kusama Asset Hub (Statemine)"
+      default:
+        return chain.name
+    }
+  }
+
   return (
     <div className="flex max-w-full items-center gap-5 overflow-hidden">
       <ChainLogo id={chain.id} className="text-[1.25em]" />
-      <span className="overflow-hidden text-ellipsis whitespace-nowrap">{chain.name}</span>
+      <span className="overflow-hidden text-ellipsis whitespace-nowrap">
+        {getChainLabel(chain)}
+      </span>
     </div>
   )
+}
+
+const AssetHubConflictWarning: FC<{ chain: Chain | null | undefined }> = ({ chain }) => {
+  const { t } = useTranslation("admin")
+  const chains = useAllChainsMap()
+  const accounts = useAccounts()
+
+  const { relay, conflictChain } = useMemo(() => {
+    if (chain) {
+      if (["polkadot", "polkadot-asset-hub"].includes(chain.id))
+        return {
+          relay: "Polkadot",
+          conflictChain:
+            chain.id === "polkadot" ? chains["polkadot-asset-hub"] : chains["polkadot"],
+        }
+
+      if (["kusama", "kusama-asset-hub"].includes(chain.id))
+        return {
+          relay: "Kusama",
+          conflictChain: chain.id === "kusama" ? chains["kusama-asset-hub"] : chains["kusama"],
+        }
+    }
+    return { relay: null, conflictChain: null }
+  }, [chain, chains])
+
+  const warning = useMemo(() => {
+    // show warning only if user has a network specific account for the conflicting chain
+    return relay &&
+      accounts.some((a) => conflictChain && a.genesisHash === conflictChain.genesisHash)
+      ? t(
+          "Adding the same Ledger account to both {{relay}} and {{relay}} Asset Hub results in them overriding each other.",
+          { relay }
+        )
+      : null
+  }, [accounts, conflictChain, relay, t])
+
+  if (!warning) return null
+
+  return <p className="text-body-secondary mt-6">{warning}</p>
 }
 
 export const AddLedgerSelectNetwork = () => {
@@ -125,6 +179,7 @@ export const AddLedgerSelectNetwork = () => {
             <p className="text-body-secondary mt-6">
               {t("Please note: a Ledger account can only be used on a single network.")}
             </p>
+            <AssetHubConflictWarning chain={chain} />
           </>
         )}
         <div className={classNames("mt-12 h-[20rem]", showStep2 ? "visible" : "invisible")}>

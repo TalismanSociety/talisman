@@ -1,3 +1,4 @@
+import { isAccountCompatibleWithChain } from "@extension/core"
 import { ScrollContainer } from "@talisman/components/ScrollContainer"
 import { SearchInput } from "@talisman/components/SearchInput"
 import { ExternalLinkIcon, XIcon } from "@talismn/icons"
@@ -8,7 +9,6 @@ import { useBalancesFiatTotalPerNetwork } from "@ui/hooks/useBalancesFiatTotalPe
 import useChains from "@ui/hooks/useChains"
 import { useEvmNetworks } from "@ui/hooks/useEvmNetworks"
 import { useSetting } from "@ui/hooks/useSettings"
-import { isAccountCompatibleWithChain } from "@ui/util/isAccountCompatibleWithChain"
 import { isAddressCompatibleWithChain } from "@ui/util/isAddressCompatibleWithChain"
 import { FC, useCallback, useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
