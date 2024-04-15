@@ -1,4 +1,10 @@
-import { Metadata, StorageKey, TypeRegistry, decorateStorage } from "@polkadot/types"
+// import { Metadata as _new_Metadata } from "@alectalisman/polkadotjs-types"
+import {
+  StorageKey,
+  TypeRegistry,
+  Metadata as _orig_Metadata,
+  decorateStorage,
+} from "@polkadot/types"
 import type { Registry } from "@polkadot/types-codec/types"
 import { ChainConnector } from "@talismn/chain-connector"
 import { Chain, ChainId, ChainList, TokenList } from "@talismn/chaindata-provider"
@@ -29,6 +35,12 @@ import {
   UnsubscribeFn,
   deriveMiniMetadataId,
 } from "../../types"
+
+// const Metadata = {} as unknown as  _orig_Metadata
+
+const Metadata = _orig_Metadata
+
+// const Metadata = _new_Metadata as unknown as typeof _orig_Metadata
 
 /**
  * Wraps a BalanceModule's fetch/subscribe methods with a single `balances` method.
@@ -546,7 +558,7 @@ export const buildStorageDecoders = <
  * @returns
  */
 export const detectTransferMethod = (metadataRpc: `0x${string}`) => {
-  const pjsMetadata: Metadata = new Metadata(new TypeRegistry(), metadataRpc)
+  const pjsMetadata = new Metadata(new TypeRegistry(), metadataRpc)
   pjsMetadata.registry.setMetadata(pjsMetadata)
   const balancesPallet = pjsMetadata.asLatest.pallets.find((pallet) => pallet.name.eq("Balances"))
 

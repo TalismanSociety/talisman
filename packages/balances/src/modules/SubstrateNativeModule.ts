@@ -17,7 +17,10 @@ import {
   StorageEntryMV14,
   filterMetadataPalletsAndItems,
   getMetadataVersion,
+  metadata as metadataDecoder,
   transformMetadataV14,
+  v14,
+  v15,
 } from "@talismn/scale"
 import * as $ from "@talismn/subshape-fork"
 import { Deferred, blake2Concat, decodeAnyAddress, isEthereumAddress } from "@talismn/util"
@@ -202,17 +205,24 @@ export const SubNativeModule: NewBalanceModule<
           metadataVersion: 0,
         }
 
-      const chainProperties = await chainConnector.send(chainId, "system_properties", [])
-
-      const metadataVersion = getMetadataVersion(metadataRpc)
-
-      const { tokenSymbol, tokenDecimals } = chainProperties
+      const { tokenSymbol, tokenDecimals } =
+        (await chainConnector.send(chainId, "system_properties", [])) ?? {}
 
       const symbol: string = (Array.isArray(tokenSymbol) ? tokenSymbol[0] : tokenSymbol) ?? "Unit"
       const decimals: number =
         (Array.isArray(tokenDecimals) ? tokenDecimals[0] : tokenDecimals) ?? 0
 
-      if (metadataVersion !== 14)
+      const metadataVersion = getMetadataVersion(metadataRpc)
+      const metadata = (() => {
+        if (metadataVersion !== 14 && metadataVersion !== 15) return
+
+        console.time("decode", chainId, "metadata")
+        const m = metadataDecoder.dec(metadataRpc)
+        console.timeEnd("decode", chainId, "metadata")
+        if (m.metadata.tag === "v14") return m.metadata.value
+        if (m.metadata.tag === "v15") return m.metadata.value
+      })()
+      if (!metadata)
         return {
           isTestnet,
           symbol,
@@ -224,79 +234,84 @@ export const SubNativeModule: NewBalanceModule<
           metadataVersion,
         }
 
-      const metadata = $metadataV14.decode($.decodeHex(metadataRpc))
-      const subshape = transformMetadataV14(metadata)
+      // TODO: Figure out how to decode the existential deposit using the correct type
+      console.log(metadata)
 
-      const existentialDeposit = (
-        subshape.pallets.Balances?.constants.ExistentialDeposit?.codec.decode?.(
-          subshape.pallets.Balances.constants.ExistentialDeposit.value
-        ) ?? 0n
-      ).toString()
-      const nominationPoolsPalletId = subshape.pallets.NominationPools?.constants.PalletId?.value
-        ? u8aToHex(subshape.pallets.NominationPools?.constants.PalletId?.value)
-        : null
-      const crowdloanPalletId = subshape.pallets.Crowdloan?.constants.PalletId?.value
-        ? u8aToHex(subshape.pallets.Crowdloan?.constants.PalletId?.value)
-        : null
+      // const existentialDeposit = (
+      //   metadataEncDec.pallets.find(p => p.name === 'Balances')?.constants.find(c => c.name === 'ExistentialDeposit')?...codec.decode?.(
+      //     metadataEncDec.pallets.Balances.constants.ExistentialDeposit.value
+      //   ) ?? 0n
+      // ).toString()
+      // const nominationPoolsPalletId = metadataEncDec.pallets.NominationPools?.constants.PalletId
+      //   ?.value
+      //   ? u8aToHex(metadataEncDec.pallets.NominationPools?.constants.PalletId?.value)
+      //   : null
+      // const crowdloanPalletId = metadataEncDec.pallets.Crowdloan?.constants.PalletId?.value
+      //   ? u8aToHex(metadataEncDec.pallets.Crowdloan?.constants.PalletId?.value)
+      //   : null
 
-      const isSystemPallet = (pallet: PalletMV14) => pallet.name === "System"
-      const isAccountItem = (item: StorageEntryMV14) => item.name === "Account"
+      // const isSystemPallet = (pallet: PalletMV14) => pallet.name === "System"
+      // const isAccountItem = (item: StorageEntryMV14) => item.name === "Account"
 
-      const isBalancesPallet = (pallet: PalletMV14) => pallet.name === "Balances"
-      const isReservesItem = (item: StorageEntryMV14) => item.name === "Reserves"
-      const isHoldsItem = (item: StorageEntryMV14) => item.name === "Holds"
-      const isLocksItem = (item: StorageEntryMV14) => item.name === "Locks"
-      const isFreezesItem = (item: StorageEntryMV14) => item.name === "Freezes"
+      // const isBalancesPallet = (pallet: PalletMV14) => pallet.name === "Balances"
+      // const isReservesItem = (item: StorageEntryMV14) => item.name === "Reserves"
+      // const isHoldsItem = (item: StorageEntryMV14) => item.name === "Holds"
+      // const isLocksItem = (item: StorageEntryMV14) => item.name === "Locks"
+      // const isFreezesItem = (item: StorageEntryMV14) => item.name === "Freezes"
 
-      const isNomPoolsPallet = (pallet: PalletMV14) => pallet.name === "NominationPools"
-      const isPoolMembersItem = (item: StorageEntryMV14) => item.name === "PoolMembers"
-      const isBondedPoolsItem = (item: StorageEntryMV14) => item.name === "BondedPools"
-      const isMetadataItem = (item: StorageEntryMV14) => item.name === "Metadata"
+      // const isNomPoolsPallet = (pallet: PalletMV14) => pallet.name === "NominationPools"
+      // const isPoolMembersItem = (item: StorageEntryMV14) => item.name === "PoolMembers"
+      // const isBondedPoolsItem = (item: StorageEntryMV14) => item.name === "BondedPools"
+      // const isMetadataItem = (item: StorageEntryMV14) => item.name === "Metadata"
 
-      const isStakingPallet = (pallet: PalletMV14) => pallet.name === "Staking"
-      const isLedgerItem = (item: StorageEntryMV14) => item.name === "Ledger"
+      // const isStakingPallet = (pallet: PalletMV14) => pallet.name === "Staking"
+      // const isLedgerItem = (item: StorageEntryMV14) => item.name === "Ledger"
 
-      const isCrowdloanPallet = (pallet: PalletMV14) => pallet.name === "Crowdloan"
-      const isFundsItem = (item: StorageEntryMV14) => item.name === "Funds"
+      // const isCrowdloanPallet = (pallet: PalletMV14) => pallet.name === "Crowdloan"
+      // const isFundsItem = (item: StorageEntryMV14) => item.name === "Funds"
 
-      const isParasPallet = (pallet: PalletMV14) => pallet.name === "Paras"
-      const isParachainsItem = (item: StorageEntryMV14) => item.name === "Parachains"
+      // const isParasPallet = (pallet: PalletMV14) => pallet.name === "Paras"
+      // const isParachainsItem = (item: StorageEntryMV14) => item.name === "Parachains"
 
-      // TODO: Handle metadata v15
-      filterMetadataPalletsAndItems(metadata, [
-        { pallet: isSystemPallet, items: [isAccountItem] },
-        {
-          pallet: isBalancesPallet,
-          items: [isReservesItem, isHoldsItem, isLocksItem, isFreezesItem],
-        },
-        {
-          pallet: isNomPoolsPallet,
-          items: [isPoolMembersItem, isBondedPoolsItem, isMetadataItem],
-        },
-        { pallet: isStakingPallet, items: [isLedgerItem] },
-        { pallet: isCrowdloanPallet, items: [isFundsItem] },
-        { pallet: isParasPallet, items: [isParachainsItem] },
-      ])
-      metadata.extrinsic.signedExtensions = []
+      // // TODO: Handle metadata v15
+      // filterMetadataPalletsAndItems(metadata, [
+      //   { pallet: isSystemPallet, items: [isAccountItem] },
+      //   {
+      //     pallet: isBalancesPallet,
+      //     items: [isReservesItem, isHoldsItem, isLocksItem, isFreezesItem],
+      //   },
+      //   {
+      //     pallet: isNomPoolsPallet,
+      //     items: [isPoolMembersItem, isBondedPoolsItem, isMetadataItem],
+      //   },
+      //   { pallet: isStakingPallet, items: [isLedgerItem] },
+      //   { pallet: isCrowdloanPallet, items: [isFundsItem] },
+      //   { pallet: isParasPallet, items: [isParachainsItem] },
+      // ])
+      // metadata.extrinsic.signedExtensions = []
 
-      const miniMetadata = $.encodeHexPrefixed($metadataV14.encode(metadata)) as `0x${string}`
+      // const miniMetadata = $.encodeHexPrefixed($metadataV14.encode(metadata)) as `0x${string}`
 
-      const hasFreezesItem = Boolean(
-        metadata.pallets.find(isBalancesPallet)?.storage?.entries.find(isFreezesItem)
-      )
-      const useLegacyTransferableCalculation = !hasFreezesItem
+      // const hasFreezesItem = Boolean(
+      //   metadata.pallets.find(isBalancesPallet)?.storage?.entries.find(isFreezesItem)
+      // )
+      // const useLegacyTransferableCalculation = !hasFreezesItem
 
       const chainMeta: SubNativeChainMeta = {
         isTestnet,
         symbol,
         decimals,
-        existentialDeposit,
-        nominationPoolsPalletId,
-        crowdloanPalletId,
-        miniMetadata,
+        // existentialDeposit,
+        // nominationPoolsPalletId,
+        // crowdloanPalletId,
+        // miniMetadata,
+        existentialDeposit: null,
+        nominationPoolsPalletId: null,
+        crowdloanPalletId: null,
+        miniMetadata: null,
         metadataVersion,
       }
-      if (useLegacyTransferableCalculation) chainMeta.useLegacyTransferableCalculation = true
+      // if (useLegacyTransferableCalculation) chainMeta.useLegacyTransferableCalculation = true
 
       return chainMeta
     },
@@ -545,8 +560,16 @@ async function buildQueries(
       chainMeta?.miniMetadata !== undefined &&
       chainMeta?.miniMetadata !== null &&
       chainMeta?.metadataVersion >= 14
+
+    // const m = hasMetadataV14 ? v14.dec(chainMeta.miniMetadata!) : undefined
+    // m?.pallets
+    //   ?.find?.((p) => p.name === "System")
+    //   ?.storage?.items?.find?.((i) => i.name === "Account")?.type
+    // const SCALE = hasMetadataV14 ? v14("0x0000") : undefined
+
     const typeRegistry = hasMetadataV14
-      ? getOrCreateTypeRegistry(chainId, chainMeta.miniMetadata ?? undefined)
+      ? // TODO: Patch this bitch in a way that works for our dapps as well as the extension:
+        getOrCreateTypeRegistry(chainId, chainMeta.miniMetadata ?? undefined)
       : new TypeRegistry()
 
     return addresses.flatMap((address) => {

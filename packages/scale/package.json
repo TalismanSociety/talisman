@@ -26,9 +26,13 @@
     "clean": "rm -rf dist && rm -rf .turbo rm -rf node_modules"
   },
   "dependencies": {
+    "@polkadot-api/metadata-builders": "^0.0.1",
+    "@polkadot-api/substrate-bindings": "^0.0.1",
+    "@polkadot-api/utils": "^0.0.1",
     "@talismn/subshape-fork": "^0.0.2",
     "@talismn/util": "workspace:*",
     "anylogger": "^1.0.11",
+    "scale-ts": "^1.6.0",
     "wasm-feature-detect": "^1.6.1",
     "wat-the-crypto": "^0.0.3"
   },

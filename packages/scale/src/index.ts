@@ -2,8 +2,12 @@
 
 import { suppressPortableRegistryConsoleWarnings } from "./suppressPortableRegistryConsoleWarnings"
 
-export * from "./capi"
-export * from "./metadata"
-export * from "./storage"
+export * from "./subshape/capi"
+export * from "./subshape/metadata"
+export * from "./subshape/storage"
+
+export * from "./scale-ts/metadata"
+
+export * from "./util"
 
 suppressPortableRegistryConsoleWarnings()

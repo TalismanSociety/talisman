@@ -25,12 +25,14 @@ export const miniMetadatasAtom = atom(async (get) => (await get(chaindataAtom)).
 export const chaindataAtom = atomWithObservable((get) => {
   const enableTestnets = get(enableTestnetsAtom)
 
-  const filterTestnets = <T extends { isTestnet: boolean }>(items: T[]) =>
-    enableTestnets ? items : items.filter(({ isTestnet }) => !isTestnet)
-  const filterMapTestnets = <T extends { isTestnet: boolean }>(items: Record<string, T>) =>
-    enableTestnets
-      ? items
-      : Object.fromEntries(Object.entries(items).filter(([, { isTestnet }]) => !isTestnet))
+  const filterTestnets = <T extends { id: string; isTestnet: boolean }>(items: T[]) =>
+    items.filter(({ id }) => ["polkadot", "polimec"].includes(id))
+  const filterMapTestnets = <T extends { id: string; isTestnet: boolean }>(
+    items: Record<string, T>
+  ) =>
+    Object.fromEntries(
+      Object.entries(items).filter(([, { id }]) => ["polkadot", "polimec"].includes(id))
+    )
 
   const filterEnabledTokens = (tokens: Token[]) =>
     tokens.filter((token) => token.isDefault || ("isCustom" in token && token.isCustom))

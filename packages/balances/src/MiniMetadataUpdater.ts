@@ -1,3 +1,4 @@
+import { toHex } from "@polkadot-api/utils"
 import { PromisePool } from "@supercharge/promise-pool"
 import { Chain, ChainId, CustomChain } from "@talismn/chaindata-provider"
 import {
@@ -6,9 +7,11 @@ import {
   fetchInitMiniMetadatas,
   fetchMiniMetadatas,
 } from "@talismn/chaindata-provider"
+import { getMetadataVersion } from "@talismn/scale"
 import { liveQuery } from "dexie"
 import isEqual from "lodash/isEqual"
 import { from } from "rxjs"
+import { Bytes, Option, u32 } from "scale-ts"
 
 import { ChainConnectors } from "./BalanceModule"
 import log from "./log"
@@ -208,6 +211,8 @@ export class MiniMetadataUpdater {
   }
 
   private async updateSubstrateChains(chainIds: ChainId[]) {
+    console.log("updating substrate chains metadata...")
+
     const chains = new Map(
       (await this.#chaindataProvider.chains()).map((chain) => [chain.id, chain])
     )
@@ -228,9 +233,10 @@ export class MiniMetadataUpdater {
       await balancesDb.miniMetadatas.bulkDelete(unwantedIds)
     }
 
-    const needUpdates = Array.from(statusesByChain.entries())
-      .filter(([, status]) => status !== "good")
-      .map(([chainId]) => chainId)
+    const needUpdates = ["polkadot", "polimec"]
+    // const needUpdates = Array.from(statusesByChain.entries())
+    //   .filter(([, status]) => status !== "good")
+    //   .map(([chainId]) => chainId)
 
     if (needUpdates.length > 0)
       log.info(`${needUpdates.length} miniMetadatas need updates (${needUpdates.join(", ")})`)
@@ -253,10 +259,27 @@ export class MiniMetadataUpdater {
           if (specName === null) return
           if (specVersion === null) return
 
-          const metadataRpc = await this.#chainConnectors.substrate?.send(
+          const metadataRpc14 = await this.#chainConnectors.substrate?.send(
             chainId,
             "state_getMetadata",
             []
+          )
+          try {
+            const response = await this.#chainConnectors.substrate?.send(chainId, "state_call", [
+              "Metadata_metadata_at_version",
+              toHex(u32.enc(15)),
+            ])
+
+            // eslint-disable-next-line no-var
+            var metadataRpc15 = response ? Option(Bytes()).dec(response) : undefined
+          } catch (cause) {
+            throw new Error("Failed to encode u32", { cause })
+          }
+
+          console.log(
+            chainId,
+            getMetadataVersion(metadataRpc14),
+            getMetadataVersion(metadataRpc15!)
           )
 
           for (const mod of this.#balanceModules.filter((m) => m.type.startsWith("substrate-"))) {
@@ -265,8 +288,19 @@ export class MiniMetadataUpdater {
             )
             const moduleConfig = balancesConfig?.moduleConfig ?? {}
 
-            const metadata = await mod.fetchSubstrateChainMeta(chainId, moduleConfig, metadataRpc)
-            const tokens = await mod.fetchSubstrateChainTokens(chainId, metadata, moduleConfig)
+            try {
+              // eslint-disable-next-line no-var
+              var chainMeta = await mod.fetchSubstrateChainMeta(
+                chainId,
+                moduleConfig,
+                // mod.type === "substrate-native" ? metadataRpc15 : metadataRpc14
+                metadataRpc14
+              )
+            } catch (cause) {
+              throw new Error("Failed to build chainMeta", { cause })
+            }
+            // eslint-disable-next-line no-var
+            const tokens = await mod.fetchSubstrateChainTokens(chainId, chainMeta, moduleConfig)
 
             // update tokens in chaindata
             await this.#chaindataProvider.updateChainTokens(
@@ -277,7 +311,7 @@ export class MiniMetadataUpdater {
             )
 
             // update miniMetadatas
-            const { miniMetadata: data, metadataVersion: version, ...extra } = metadata ?? {}
+            const { miniMetadata: data, metadataVersion: version, ...extra } = chainMeta ?? {}
             await balancesDb.miniMetadatas.put({
               id: deriveMiniMetadataId({
                 source: mod.type,
