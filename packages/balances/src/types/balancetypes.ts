@@ -64,6 +64,8 @@ export type IBalance = {
    **/
   subSource?: string
 
+  useLegacyTransferableCalculation?: boolean
+
   /** Has this balance never been fetched, or is it from a cache, or is it up to date? */
   status: BalanceStatus
 

@@ -1,34 +1,10 @@
 import { ChainId, EvmNetworkId, TokenId } from "./types"
 
-// @dev : temporarily change branch here when testing changes in chaindata
+/** @dev temporarily change branch here when testing changes in chaindata */
 const CHAINDATA_BRANCH = "main"
 
 //
-// Chaindata published files (dist folder)
-//
-
-export const chaindataUrl = `https://raw.githubusercontent.com/TalismanSociety/chaindata/${CHAINDATA_BRANCH}/dist`
-
-export const chaindataChainsAllUrl = `${chaindataUrl}/chains/all.json`
-export const chaindataChainsSummaryUrl = `${chaindataUrl}/chains/summary.json`
-export const chaindataChainByIdUrl = (chainId: string) =>
-  `${chaindataUrl}/chains/byId/${chainId}.json`
-export const chaindataChainByGenesisHashUrl = (genesisHash: string) =>
-  `${chaindataUrl}/chains/byGenesisHash/${genesisHash}.json`
-
-export const chaindataEvmNetworksAllUrl = `${chaindataUrl}/evmNetworks/all.json`
-export const chaindataEvmNetworksSummaryUrl = `${chaindataUrl}/evmNetworks/summary.json`
-export const chaindataEvmNetworkByIdUrl = (evmNetworkId: string) =>
-  `${chaindataUrl}/evmNetworks/byId/${evmNetworkId}.json`
-
-export const chaindataTokensAllUrl = `${chaindataUrl}/tokens/all.json`
-export const chaindataTokenByIdUrl = (tokenId: string) =>
-  `${chaindataUrl}/tokens/byId/${tokenId}.json`
-
-export const chaindataMiniMetadatasAllUrl = `${chaindataUrl}/miniMetadatas/all.json`
-
-//
-// GitHub Repo Constants
+// GitHub repo constants
 //
 
 export const githubApi = "https://api.github.com"
@@ -36,8 +12,10 @@ export const githubApi = "https://api.github.com"
 export const githubChaindataOrg = "TalismanSociety"
 export const githubChaindataRepo = "chaindata"
 export const githubChaindataBranch = CHAINDATA_BRANCH
+export const githubChaindataDistDir = "pub/v1"
 
 export const githubChaindataBaseUrl = `https://raw.githubusercontent.com/${githubChaindataOrg}/${githubChaindataRepo}/${githubChaindataBranch}`
+export const githubChaindataDistUrl = `${githubChaindataBaseUrl}/${githubChaindataDistDir}`
 
 export const githubChainsUrl = `${githubChaindataBaseUrl}/data/chaindata.json`
 export const githubTestnetChainsUrl = `${githubChaindataBaseUrl}/data/testnets-chaindata.json`
@@ -55,3 +33,25 @@ export const githubTokenLogoUrl = (tokenId: TokenId) =>
 
 export const githubUnknownChainLogoUrl = githubChainLogoUrl("unknown")
 export const githubUnknownTokenLogoUrl = githubTokenLogoUrl("unknown")
+
+//
+// Chaindata published files (dist folder)
+//
+
+export const chaindataChainsAllUrl = `${githubChaindataDistUrl}/chains/all.json`
+export const chaindataChainsSummaryUrl = `${githubChaindataDistUrl}/chains/summary.json`
+export const chaindataChainByIdUrl = (chainId: string) =>
+  `${githubChaindataDistUrl}/chains/byId/${chainId}.json`
+export const chaindataChainByGenesisHashUrl = (genesisHash: string) =>
+  `${githubChaindataDistUrl}/chains/byGenesisHash/${genesisHash}.json`
+
+export const chaindataEvmNetworksAllUrl = `${githubChaindataDistUrl}/evmNetworks/all.json`
+export const chaindataEvmNetworksSummaryUrl = `${githubChaindataDistUrl}/evmNetworks/summary.json`
+export const chaindataEvmNetworkByIdUrl = (evmNetworkId: string) =>
+  `${githubChaindataDistUrl}/evmNetworks/byId/${evmNetworkId}.json`
+
+export const chaindataTokensAllUrl = `${githubChaindataDistUrl}/tokens/all.json`
+export const chaindataTokenByIdUrl = (tokenId: string) =>
+  `${githubChaindataDistUrl}/tokens/byId/${tokenId}.json`
+
+export const chaindataMiniMetadatasAllUrl = `${githubChaindataDistUrl}/miniMetadatas/all.json`
