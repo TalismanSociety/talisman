@@ -1,8 +1,8 @@
 import { SignerPayloadRaw } from "@extension/core"
-import { encodeAddress } from "@polkadot/keyring"
 import { isAscii, u8aToString, u8aUnwrapBytes } from "@polkadot/util"
 import { AppPill } from "@talisman/components/AppPill"
 import { SiwsMessage, parseMessage as siwsParseMessage } from "@talismn/siws"
+import { encodeAnyAddress } from "@talismn/util"
 import {
   PopupContent,
   PopupFooter,
@@ -109,9 +109,9 @@ const useSiwsRequest = ({
     // Not a valid SIWS message, fall back to regular raw message signing
     if (siwsMessage === null) return [null, null]
 
-    const encodeAddressOrNull = (...args: Parameters<typeof encodeAddress>) => {
+    const encodeAddressOrNull = (...args: Parameters<typeof encodeAnyAddress>) => {
       try {
-        return encodeAddress(...args)
+        return encodeAnyAddress(...args)
       } catch {
         return null
       }
