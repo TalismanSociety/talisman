@@ -11,33 +11,22 @@ import {
   githubTokenLogoUrl,
 } from "@talismn/chaindata-provider"
 import {
-  $metadataV14,
-  PalletMV14,
-  StorageEntryMV14,
-  filterMetadataPalletsAndItems,
-  getMetadataVersion,
+  compactMetadata,
+  decodeMetadata,
+  decodeScale,
+  encodeMetadata,
+  encodeStateKey,
 } from "@talismn/scale"
-import * as $ from "@talismn/subshape-fork"
-import { decodeAnyAddress } from "@talismn/util"
 
 import { DefaultBalanceModule, NewBalanceModule, NewTransferParamsType } from "../BalanceModule"
 import log from "../log"
 import { db as balancesDb } from "../TalismanBalancesDatabase"
 import { AddressesByToken, Amount, Balance, Balances, NewBalanceType } from "../types"
-import {
-  GetOrCreateTypeRegistry,
-  RpcStateQuery,
-  RpcStateQueryHelper,
-  StorageHelper,
-  buildStorageDecoders,
-  createTypeRegistryCache,
-  findChainMeta,
-  getUniqueChainIds,
-} from "./util"
+import { RpcStateQuery, RpcStateQueryHelper, buildStorageCoders, getUniqueChainIds } from "./util"
 
 type ModuleType = "substrate-tokens"
 
-const subTokensTokenId = (chainId: ChainId, tokenSymbol: string) =>
+export const subTokensTokenId = (chainId: ChainId, tokenSymbol: string) =>
   `${chainId}-substrate-tokens-${tokenSymbol}`.toLowerCase().replace(/ /g, "-")
 
 const getChainIdFromTokenId = (tokenId: string) => {
@@ -63,8 +52,8 @@ declare module "@talismn/chaindata-provider/plugins" {
 
 export type SubTokensChainMeta = {
   isTestnet: boolean
-  miniMetadata: `0x${string}` | null
-  metadataVersion: number
+  miniMetadata?: string
+  metadataVersion?: number
 }
 
 export type SubTokensModuleConfig = {
@@ -119,37 +108,22 @@ export const SubTokensModule: NewBalanceModule<
   const chainConnector = chainConnectors.substrate
   assert(chainConnector, "This module requires a substrate chain connector")
 
-  const { getOrCreateTypeRegistry } = createTypeRegistryCache()
-
   return {
     ...DefaultBalanceModule("substrate-tokens"),
 
     async fetchSubstrateChainMeta(chainId, moduleConfig, metadataRpc) {
       const isTestnet = (await chaindataProvider.chainById(chainId))?.isTestnet || false
-      if (metadataRpc === undefined) return { isTestnet, miniMetadata: null, metadataVersion: 0 }
+      if (metadataRpc === undefined) return { isTestnet }
+      if ((moduleConfig?.tokens ?? []).length < 1) return { isTestnet }
 
-      const metadataVersion = getMetadataVersion(metadataRpc)
-      if ((moduleConfig?.tokens ?? []).length < 1)
-        return { isTestnet, miniMetadata: null, metadataVersion }
+      const { metadataVersion, metadata, tag } = decodeMetadata(metadataRpc)
+      if (!metadata) return { isTestnet }
 
-      if (metadataVersion !== 14) return { isTestnet, miniMetadata: null, metadataVersion }
+      compactMetadata(metadata, [{ pallet: "Tokens", items: ["Accounts"] }])
 
-      const metadata = $metadataV14.decode($.decodeHex(metadataRpc))
+      const miniMetadata = encodeMetadata(tag === "v15" ? { tag, metadata } : { tag, metadata })
 
-      const isTokensPallet = (pallet: PalletMV14) => pallet.name === "Tokens"
-      const isAccountsItem = (item: StorageEntryMV14) => item.name === "Accounts"
-
-      // TODO: Handle metadata v15
-      filterMetadataPalletsAndItems(metadata, [{ pallet: isTokensPallet, items: [isAccountsItem] }])
-      metadata.extrinsic.signedExtensions = []
-
-      const miniMetadata = $.encodeHexPrefixed($metadataV14.encode(metadata)) as `0x${string}`
-
-      return {
-        isTestnet,
-        miniMetadata,
-        metadataVersion,
-      }
+      return { isTestnet, miniMetadata, metadataVersion }
     },
 
     async fetchSubstrateChainTokens(chainId, chainMeta, moduleConfig) {
@@ -215,11 +189,7 @@ export const SubTokensModule: NewBalanceModule<
 
     // TODO: Don't create empty subscriptions
     async subscribeBalances(addressesByToken, callback) {
-      const queries = await buildQueries(
-        chaindataProvider,
-        getOrCreateTypeRegistry,
-        addressesByToken
-      )
+      const queries = await buildQueries(chaindataProvider, addressesByToken)
       const unsubscribe = await new RpcStateQueryHelper(chainConnector, queries).subscribe(
         (error, result) => (error ? callback(error) : callback(null, new Balances(result ?? [])))
       )
@@ -230,11 +200,7 @@ export const SubTokensModule: NewBalanceModule<
     async fetchBalances(addressesByToken) {
       assert(chainConnectors.substrate, "This module requires a substrate chain connector")
 
-      const queries = await buildQueries(
-        chaindataProvider,
-        getOrCreateTypeRegistry,
-        addressesByToken
-      )
+      const queries = await buildQueries(chaindataProvider, addressesByToken)
       const result = await new RpcStateQueryHelper(chainConnectors.substrate, queries).fetch()
 
       return new Balances(result ?? [])
@@ -355,7 +321,6 @@ export const SubTokensModule: NewBalanceModule<
 
 async function buildQueries(
   chaindataProvider: ChaindataProvider,
-  getOrCreateTypeRegistry: GetOrCreateTypeRegistry,
   addressesByToken: AddressesByToken<SubTokensToken>
 ): Promise<Array<RpcStateQuery<Balance>>> {
   const chains = await chaindataProvider.chainsById()
@@ -368,12 +333,12 @@ async function buildQueries(
   )
 
   const uniqueChainIds = getUniqueChainIds(addressesByToken, tokens)
-  const chainStorageDecoders = buildStorageDecoders({
+  const chainStorageCoders = buildStorageCoders({
     chainIds: uniqueChainIds,
     chains,
     miniMetadatas,
     moduleType: "substrate-tokens",
-    decoders: { storageDecoder: ["tokens", "accounts"] },
+    coders: { storage: ["Tokens", "Accounts"] },
   })
 
   return Object.entries(addressesByToken).flatMap(([tokenId, addresses]) => {
@@ -382,73 +347,59 @@ async function buildQueries(
       log.warn(`Token ${tokenId} not found`)
       return []
     }
-
     if (token.type !== "substrate-tokens") {
       log.debug(`This module doesn't handle tokens of type ${token.type}`)
       return []
     }
-
     const chainId = token.chain?.id
     if (!chainId) {
       log.warn(`Token ${tokenId} has no chain`)
       return []
     }
-
     const chain = chains[chainId]
     if (!chain) {
       log.warn(`Chain ${chainId} for token ${tokenId} not found`)
       return []
     }
 
-    const [chainMeta] = findChainMeta<typeof SubTokensModule>(
-      miniMetadatas,
-      "substrate-tokens",
-      chain
-    )
-    const registry =
-      chainMeta?.miniMetadata !== undefined &&
-      chainMeta?.miniMetadata !== null &&
-      chainMeta?.metadataVersion >= 14
-        ? getOrCreateTypeRegistry(chainId, chainMeta.miniMetadata)
-        : new TypeRegistry()
-
     return addresses.flatMap((address): RpcStateQuery<Balance> | [] => {
-      const storageHelper = new StorageHelper(
-        registry,
-        "tokens",
-        "accounts",
-        decodeAnyAddress(address),
-        (() => {
-          try {
-            // `as string` doesn't matter here because we catch it if it throws
-            return JSON.parse(token.onChainId as string)
-          } catch (error) {
-            return token.onChainId
-          }
-        })()
+      const scaleCoder = chainStorageCoders.get(chainId)?.storage
+      const tokenOnChainId = (() => {
+        try {
+          // `as string` doesn't matter here because we catch it if it throws
+          return JSON.parse(token.onChainId as string)
+        } catch (error) {
+          return token.onChainId
+        }
+      })()
+
+      const stateKey = encodeStateKey(
+        scaleCoder,
+        `Invalid address / token onChainId in ${chainId} storage query ${address} / ${JSON.stringify(
+          tokenOnChainId
+        )}`,
+        address,
+        assetIdToEnum(tokenOnChainId)
       )
-      const storageDecoder = chainStorageDecoders.get(chainId)?.storageDecoder
-      const stateKey = storageHelper.stateKey
       if (!stateKey) return []
+
       const decodeResult = (change: string | null) => {
-        // e.g.
-        // {
-        //   free: 33,765,103,752,560n
-        //   reserved: 0n
-        //   frozen: 0n
-        // }
-        const balance = ((storageDecoder && change !== null
-          ? storageDecoder.decode($.decodeHex(change))
-          : // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            null) as any) ?? {
-          free: 0n,
-          reserved: 0n,
-          frozen: 0n,
+        /** NOTE: This type is only a hint for typescript, the chain can actually return whatever it wants to */
+        type DecodedType = {
+          free?: bigint
+          reserved?: bigint
+          frozen?: bigint
         }
 
-        const free = (balance?.free ?? 0n).toString()
-        const reserved = (balance?.reserved ?? 0n).toString()
-        const frozen = (balance?.frozen ?? 0n).toString()
+        const decoded = decodeScale<DecodedType>(
+          scaleCoder,
+          change,
+          `Failed to decode substrate-tokens balance on chain ${chainId}`
+        ) ?? { free: 0n, reserved: 0n, frozen: 0n }
+
+        const free = (decoded?.free ?? 0n).toString()
+        const reserved = (decoded?.reserved ?? 0n).toString()
+        const frozen = (decoded?.frozen ?? 0n).toString()
 
         return new Balance({
           source: "substrate-tokens",
@@ -469,4 +420,21 @@ async function buildQueries(
       return { chainId, stateKey, decodeResult }
     })
   })
+}
+
+// TODO: See if this can be upstreamed / is actually necessary.
+// There might be a better way to construct enums with polkadot-api.
+//
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const assetIdToEnum = (assetId: any): any => {
+  if (typeof assetId !== "object" && typeof assetId !== "string") return assetId
+
+  const keys = typeof assetId === "object" ? Object.keys(assetId) : [assetId]
+  if (keys.length !== 1) return assetId
+
+  const key = keys[0]
+  return {
+    type: key,
+    value: typeof assetId === "object" ? assetIdToEnum(assetId[key]) : undefined,
+  }
 }

@@ -181,15 +181,14 @@ const balancesSubscriptionAtomEffect = atomEffect((get) => {
         addressesByTokenByModule[token.type][token.id] = allAddresses.filter((address) => {
           // for each address, fetch balances only from compatible chains
           return isEthereumAddress(address)
-            ? !!token.evmNetwork?.id || chainsById[token.chain?.id ?? ""]?.account === "secp256k1"
-            : !!token.chain?.id
+            ? token.evmNetwork?.id || chainsById[token.chain?.id ?? ""]?.account === "secp256k1"
+            : token.chain?.id && chainsById[token.chain?.id ?? ""]?.account !== "secp256k1"
         })
       })
 
     // Delete invalid cached balances
     const chainIds = new Set(chains.map((chain) => chain.id))
     const evmNetworkIds = new Set(evmNetworks.map((evmNetwork) => evmNetwork.id))
-    const tokenIds = new Set(tokens.map((token) => token.id))
     await deleteBalances((balance) => {
       // delete cached balances for accounts which don't exist anymore
       if (!balance.address || !allAddresses.includes(balance.address)) return true
@@ -200,8 +199,8 @@ const balancesSubscriptionAtomEffect = atomEffect((get) => {
       if (balance.evmNetworkId !== undefined && !evmNetworkIds.has(balance.evmNetworkId))
         return true
 
-      // delete cached balance when token doesn't exist
-      if (!tokenIds.has(balance.tokenId)) return true
+      // delete cached balance when token doesn't exist / is disabled
+      if (!enabledTokenIds.includes(balance.tokenId)) return true
 
       // delete cached balance when module doesn't exist
       if (!balanceModules.find((module) => module.type === balance.source)) return true
@@ -213,11 +212,12 @@ const balancesSubscriptionAtomEffect = atomEffect((get) => {
       const hasChain = balance.chainId && chainIds.has(balance.chainId)
       const hasEvmNetwork = balance.evmNetworkId && evmNetworkIds.has(balance.evmNetworkId)
       const chainUsesSecp256k1Accounts = chain?.account === "secp256k1"
-      if (!isEthereumAddress(balance.address) && !hasChain) {
-        return true
+      if (!isEthereumAddress(balance.address)) {
+        if (!hasChain) return true
+        if (chainUsesSecp256k1Accounts) return true
       }
-      if (isEthereumAddress(balance.address) && !(hasEvmNetwork || chainUsesSecp256k1Accounts)) {
-        return true
+      if (isEthereumAddress(balance.address)) {
+        if (!hasEvmNetwork && !chainUsesSecp256k1Accounts) return true
       }
 
       // keep balance

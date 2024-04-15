@@ -32,8 +32,8 @@ export const availableTokenLogoFilenames = async (): Promise<string[]> =>
     await fetch(
       `${githubApi}/repos/${githubChaindataOrg}/${githubChaindataRepo}/contents/${githubChaindataTokensAssetsDir}`
     ).then((response) => response.json())
-  ).flatMap((entry: unknown) => {
+  )?.flatMap?.((entry: unknown) => {
     if (typeof entry !== "object" || entry === null) return []
     if (!("name" in entry) || typeof entry.name !== "string") return []
     return entry.name
-  })
+  }) ?? []

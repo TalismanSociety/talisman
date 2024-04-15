@@ -9,7 +9,16 @@ export const Balances = () => {
   const balances = useBalances()
 
   return (
-    <div className="grid grid-cols-[repeat(6,_auto)] items-center gap-4">
+    <div className="grid grid-cols-[repeat(7,_auto)] items-center gap-4">
+      <>
+        <div className="text-tiny justify-self-center font-bold">Logo</div>
+        <div className="text-tiny font-bold">Colour</div>
+        <div className="text-tiny justify-self-center font-bold">Status</div>
+        <div className="text-tiny font-bold">Chain</div>
+        <div className="text-tiny font-bold">Total</div>
+        <div className="text-tiny font-bold">Available</div>
+        <div className="text-tiny font-bold">Account</div>
+      </>
       {balances?.filterNonZero("total").sorted.map((balance) => (
         <Fragment key={balance.id}>
           <img
@@ -63,6 +72,21 @@ export const Balances = () => {
                 {balance.subSource}
               </span>
             ) : null}
+          </span>
+
+          <span className="flex flex-col whitespace-nowrap">
+            <span className="whitespace-nowrap">
+              {formatDecimals(balance.total.tokens)} {balance.token?.symbol}
+            </span>
+            <span className="text-xs opacity-60">
+              {typeof balance.total.fiat("usd") === "number"
+                ? new Intl.NumberFormat(undefined, {
+                    style: "currency",
+                    currency: "usd",
+                    currencyDisplay: "narrowSymbol",
+                  }).format(balance.total.fiat("usd") || 0)
+                : " -"}
+            </span>
           </span>
 
           <span className="flex flex-col whitespace-nowrap">

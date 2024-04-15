@@ -3,10 +3,13 @@ import "anylogger-loglevel"
 import "./index.css"
 
 import { BalancesProvider } from "@talismn/balances-react"
+import loglevel from "loglevel"
 import { StrictMode, useState } from "react"
 import { createRoot } from "react-dom/client"
 
 import { App } from "./App"
+
+loglevel.setLevel("info")
 
 const onfinalityApiKey = undefined
 

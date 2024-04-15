@@ -1,6 +1,6 @@
-import { TypeRegistry, createType, i128 } from "@polkadot/types"
+import { TypeRegistry } from "@polkadot/types"
 import { ExtDef } from "@polkadot/types/extrinsic/signedExtensions/types"
-import { assert, u8aToHex, u8aToString } from "@polkadot/util"
+import { assert, u8aToHex } from "@polkadot/util"
 import { defineMethod } from "@substrate/txwrapper-core"
 import { ChainConnector } from "@talismn/chain-connector"
 import {
@@ -12,17 +12,18 @@ import {
   githubTokenLogoUrl,
 } from "@talismn/chaindata-provider"
 import {
-  $metadataV14,
-  PalletMV14,
-  StorageEntryMV14,
-  filterMetadataPalletsAndItems,
-  getMetadataVersion,
-  transformMetadataV14,
+  Binary,
+  compactMetadata,
+  decodeMetadata,
+  decodeScale,
+  encodeMetadata,
+  encodeStateKey,
+  getDynamicBuilder,
 } from "@talismn/scale"
-import * as $ from "@talismn/subshape-fork"
 import { Deferred, blake2Concat, decodeAnyAddress, isEthereumAddress } from "@talismn/util"
 import isEqual from "lodash/isEqual"
 import { combineLatest, map, scan, share, switchAll } from "rxjs"
+import { Struct, u128, u32 } from "scale-ts"
 
 import { DefaultBalanceModule, NewBalanceModule, NewTransferParamsType } from "../BalanceModule"
 import log from "../log"
@@ -38,12 +39,9 @@ import {
   SubscriptionCallback,
 } from "../types"
 import {
-  GetOrCreateTypeRegistry,
   RpcStateQuery,
   RpcStateQueryHelper,
-  StorageHelper,
-  buildStorageDecoders,
-  createTypeRegistryCache,
+  buildStorageCoders,
   detectTransferMethod,
   findChainMeta,
   getUniqueChainIds,
@@ -61,22 +59,23 @@ type ModuleType = "substrate-native"
 // Theory: new chains will be at least on metadata v14, and so we won't need to hardcode their AccountInfo type.
 // But for chains we want to support which aren't on metadata v14, hardcode them here:
 // If the chain upgrades to metadata v14, this override will be ignored :)
-//
-// TODO: Move the AccountInfoFallback configs for each chain into the ChainMeta section of chaindata
-const RegularAccountInfoFallback = JSON.stringify({
-  nonce: "u32",
-  consumers: "u32",
-  providers: "u32",
-  sufficients: "u32",
-  data: { free: "u128", reserved: "u128", miscFrozen: "u128", feeFrozen: "u128" },
+const RegularAccountInfoFallback = Struct({
+  nonce: u32,
+  consumers: u32,
+  providers: u32,
+  sufficients: u32,
+  data: Struct({ free: u128, reserved: u128, miscFrozen: u128, feeFrozen: u128 }),
 })
-const NoSufficientsAccountInfoFallback = JSON.stringify({
-  nonce: "u32",
-  consumers: "u32",
-  providers: "u32",
-  data: { free: "u128", reserved: "u128", miscFrozen: "u128", feeFrozen: "u128" },
+const NoSufficientsAccountInfoFallback = Struct({
+  nonce: u32,
+  consumers: u32,
+  providers: u32,
+  data: Struct({ free: u128, reserved: u128, miscFrozen: u128, feeFrozen: u128 }),
 })
-const AccountInfoOverrides: { [key: ChainId]: string } = {
+const AccountInfoOverrides: Record<
+  string,
+  typeof RegularAccountInfoFallback | typeof NoSufficientsAccountInfoFallback | undefined
+> = {
   // automata is not yet on metadata v14
   "automata": RegularAccountInfoFallback,
 
@@ -92,6 +91,9 @@ const AccountInfoOverrides: { [key: ChainId]: string } = {
   // nftmart is not yet on metadata v14
   "nftmart": RegularAccountInfoFallback,
 }
+
+const DEFAULT_SYMBOL = "Unit"
+const DEFAULT_DECIMALS = 0
 
 export const subNativeTokenId = (chainId: ChainId) =>
   `${chainId}-substrate-native`.toLowerCase().replace(/ /g, "-")
@@ -123,13 +125,13 @@ declare module "@talismn/chaindata-provider/plugins" {
 export type SubNativeChainMeta = {
   isTestnet: boolean
   useLegacyTransferableCalculation?: boolean
-  symbol: string
-  decimals: number
-  existentialDeposit: string | null
-  nominationPoolsPalletId: string | null
-  crowdloanPalletId: string | null
-  miniMetadata: `0x${string}` | null
-  metadataVersion: number
+  symbol?: string
+  decimals?: number
+  existentialDeposit?: string
+  nominationPoolsPalletId?: string
+  crowdloanPalletId?: string
+  miniMetadata?: string
+  metadataVersion?: number
 }
 
 export type SubNativeModuleConfig = {
@@ -182,112 +184,73 @@ export const SubNativeModule: NewBalanceModule<
   const chainConnector = chainConnectors.substrate
   assert(chainConnector, "This module requires a substrate chain connector")
 
-  const { getOrCreateTypeRegistry } = createTypeRegistryCache()
-
   return {
     ...DefaultBalanceModule("substrate-native"),
 
-    async fetchSubstrateChainMeta(chainId, moduleConfig, metadataRpc) {
+    async fetchSubstrateChainMeta(chainId, moduleConfig, metadataRpc, systemProperties) {
       const isTestnet = (await chaindataProvider.chainById(chainId))?.isTestnet || false
+      if (moduleConfig?.disable === true || metadataRpc === undefined) return { isTestnet }
 
-      if (moduleConfig?.disable === true || metadataRpc === undefined)
-        return {
-          isTestnet,
-          symbol: "",
-          decimals: 0,
-          existentialDeposit: null,
-          nominationPoolsPalletId: null,
-          crowdloanPalletId: null,
-          miniMetadata: null,
-          metadataVersion: 0,
-        }
+      //
+      // extract system_properties
+      //
 
-      const chainProperties = await chainConnector.send(chainId, "system_properties", [])
-
-      const metadataVersion = getMetadataVersion(metadataRpc)
-
-      const { tokenSymbol, tokenDecimals } = chainProperties
-
-      const symbol: string = (Array.isArray(tokenSymbol) ? tokenSymbol[0] : tokenSymbol) ?? "Unit"
+      const { tokenSymbol, tokenDecimals } = systemProperties ?? {}
+      const symbol: string =
+        (Array.isArray(tokenSymbol) ? tokenSymbol[0] : tokenSymbol) ?? DEFAULT_SYMBOL
       const decimals: number =
-        (Array.isArray(tokenDecimals) ? tokenDecimals[0] : tokenDecimals) ?? 0
+        (Array.isArray(tokenDecimals) ? tokenDecimals[0] : tokenDecimals) ?? DEFAULT_DECIMALS
 
-      if (metadataVersion !== 14)
-        return {
-          isTestnet,
-          symbol,
-          decimals,
-          existentialDeposit: null,
-          nominationPoolsPalletId: null,
-          crowdloanPalletId: null,
-          miniMetadata: null,
-          metadataVersion,
-        }
+      //
+      // process metadata into SCALE encoders/decoders
+      //
 
-      const metadata = $metadataV14.decode($.decodeHex(metadataRpc))
-      const subshape = transformMetadataV14(metadata)
+      const { metadataVersion, metadata, tag } = decodeMetadata(metadataRpc)
+      if (!metadata) return { isTestnet, symbol, decimals }
 
-      const existentialDeposit = (
-        subshape.pallets.Balances?.constants.ExistentialDeposit?.codec.decode?.(
-          subshape.pallets.Balances.constants.ExistentialDeposit.value
-        ) ?? 0n
-      ).toString()
-      const nominationPoolsPalletId = subshape.pallets.NominationPools?.constants.PalletId?.value
-        ? u8aToHex(subshape.pallets.NominationPools?.constants.PalletId?.value)
-        : null
-      const crowdloanPalletId = subshape.pallets.Crowdloan?.constants.PalletId?.value
-        ? u8aToHex(subshape.pallets.Crowdloan?.constants.PalletId?.value)
-        : null
+      //
+      // get runtime constants
+      //
 
-      const isSystemPallet = (pallet: PalletMV14) => pallet.name === "System"
-      const isAccountItem = (item: StorageEntryMV14) => item.name === "Account"
+      const scaleBuilder = getDynamicBuilder(metadata)
+      const getConstantValue = (palletName: string, constantName: string) => {
+        const encodedValue = metadata.pallets
+          .find(({ name }) => name === palletName)
+          ?.constants.find(({ name }) => name === constantName)?.value
+        if (!encodedValue) return
 
-      const isBalancesPallet = (pallet: PalletMV14) => pallet.name === "Balances"
-      const isReservesItem = (item: StorageEntryMV14) => item.name === "Reserves"
-      const isHoldsItem = (item: StorageEntryMV14) => item.name === "Holds"
-      const isLocksItem = (item: StorageEntryMV14) => item.name === "Locks"
-      const isFreezesItem = (item: StorageEntryMV14) => item.name === "Freezes"
+        return scaleBuilder.buildConstant(palletName, constantName)?.dec(encodedValue)
+      }
 
-      const isNomPoolsPallet = (pallet: PalletMV14) => pallet.name === "NominationPools"
-      const isPoolMembersItem = (item: StorageEntryMV14) => item.name === "PoolMembers"
-      const isBondedPoolsItem = (item: StorageEntryMV14) => item.name === "BondedPools"
-      const isMetadataItem = (item: StorageEntryMV14) => item.name === "Metadata"
+      const existentialDeposit = getConstantValue("Balances", "ExistentialDeposit")?.toString()
+      const nominationPoolsPalletId = getConstantValue("NominationPools", "PalletId")?.asText()
+      const crowdloanPalletId = getConstantValue("Crowdloan", "PalletId")?.asText()
 
-      const isStakingPallet = (pallet: PalletMV14) => pallet.name === "Staking"
-      const isLedgerItem = (item: StorageEntryMV14) => item.name === "Ledger"
+      //
+      // compact metadata into miniMetadata
+      //
 
-      const isCrowdloanPallet = (pallet: PalletMV14) => pallet.name === "Crowdloan"
-      const isFundsItem = (item: StorageEntryMV14) => item.name === "Funds"
-
-      const isParasPallet = (pallet: PalletMV14) => pallet.name === "Paras"
-      const isParachainsItem = (item: StorageEntryMV14) => item.name === "Parachains"
-
-      // TODO: Handle metadata v15
-      filterMetadataPalletsAndItems(metadata, [
-        { pallet: isSystemPallet, items: [isAccountItem] },
-        {
-          pallet: isBalancesPallet,
-          items: [isReservesItem, isHoldsItem, isLocksItem, isFreezesItem],
-        },
-        {
-          pallet: isNomPoolsPallet,
-          items: [isPoolMembersItem, isBondedPoolsItem, isMetadataItem],
-        },
-        { pallet: isStakingPallet, items: [isLedgerItem] },
-        { pallet: isCrowdloanPallet, items: [isFundsItem] },
-        { pallet: isParasPallet, items: [isParachainsItem] },
+      compactMetadata(metadata, [
+        { pallet: "System", items: ["Account"] },
+        { pallet: "Balances", items: ["Reserves", "Holds", "Locks", "Freezes"] },
+        { pallet: "NominationPools", items: ["PoolMembers", "BondedPools", "Metadata"] },
+        { pallet: "Staking", items: ["Ledger"] },
+        { pallet: "Crowdloan", items: ["Funds"] },
+        { pallet: "Paras", items: ["Parachains"] },
       ])
-      metadata.extrinsic.signedExtensions = []
 
-      const miniMetadata = $.encodeHexPrefixed($metadataV14.encode(metadata)) as `0x${string}`
+      const miniMetadata = encodeMetadata(tag === "v15" ? { tag, metadata } : { tag, metadata })
 
       const hasFreezesItem = Boolean(
-        metadata.pallets.find(isBalancesPallet)?.storage?.entries.find(isFreezesItem)
+        metadata.pallets
+          .find(({ name }) => name === "Balances")
+          ?.storage?.items.find(({ name }) => name === "Freezes")
       )
       const useLegacyTransferableCalculation = !hasFreezesItem
 
       const chainMeta: SubNativeChainMeta = {
         isTestnet,
+        useLegacyTransferableCalculation,
         symbol,
         decimals,
         existentialDeposit,
@@ -296,7 +259,7 @@ export const SubNativeModule: NewBalanceModule<
         miniMetadata,
         metadataVersion,
       }
-      if (useLegacyTransferableCalculation) chainMeta.useLegacyTransferableCalculation = true
+      if (!useLegacyTransferableCalculation) delete chainMeta.useLegacyTransferableCalculation
 
       return chainMeta
     },
@@ -313,8 +276,8 @@ export const SubNativeModule: NewBalanceModule<
         type: "substrate-native",
         isTestnet,
         isDefault: moduleConfig?.isDefault ?? true,
-        symbol,
-        decimals,
+        symbol: symbol ?? DEFAULT_SYMBOL,
+        decimals: decimals ?? DEFAULT_DECIMALS,
         logo: moduleConfig?.logo || githubTokenLogoUrl(id),
         existentialDeposit: existentialDeposit ?? "0",
         chain: { id: chainId },
@@ -371,7 +334,6 @@ export const SubNativeModule: NewBalanceModule<
       subscribeNompoolStaking(
         chaindataProvider,
         chainConnectors.substrate,
-        getOrCreateTypeRegistry,
         addressesByToken,
         callback,
         callerUnsubscribed
@@ -379,7 +341,6 @@ export const SubNativeModule: NewBalanceModule<
       subscribeCrowdloans(
         chaindataProvider,
         chainConnectors.substrate,
-        getOrCreateTypeRegistry,
         addressesByToken,
         callback,
         callerUnsubscribed
@@ -387,7 +348,6 @@ export const SubNativeModule: NewBalanceModule<
       subscribeBase(
         chaindataProvider,
         chainConnectors.substrate,
-        getOrCreateTypeRegistry,
         addressesByToken,
         callback,
         callerUnsubscribed
@@ -399,11 +359,7 @@ export const SubNativeModule: NewBalanceModule<
     async fetchBalances(addressesByToken) {
       assert(chainConnectors.substrate, "This module requires a substrate chain connector")
 
-      const queries = await buildQueries(
-        chaindataProvider,
-        getOrCreateTypeRegistry,
-        addressesByToken
-      )
+      const queries = await buildQueries(chaindataProvider, addressesByToken)
       const result = await new RpcStateQueryHelper(chainConnectors.substrate, queries).fetch()
 
       return new Balances(result ?? [])
@@ -485,7 +441,6 @@ export const SubNativeModule: NewBalanceModule<
 
 async function buildQueries(
   chaindataProvider: ChaindataProvider,
-  getOrCreateTypeRegistry: GetOrCreateTypeRegistry,
   addressesByToken: AddressesByToken<SubNativeToken | CustomSubNativeToken>
 ): Promise<Array<RpcStateQuery<Balance>>> {
   const chains = await chaindataProvider.chainsById()
@@ -498,17 +453,17 @@ async function buildQueries(
   )
 
   const uniqueChainIds = getUniqueChainIds(addressesByToken, tokens)
-  const chainStorageDecoders = buildStorageDecoders({
+  const chainStorageCoders = buildStorageCoders({
     chainIds: uniqueChainIds,
     chains,
     miniMetadatas,
     moduleType: "substrate-native",
-    decoders: {
-      baseDecoder: ["system", "account"],
-      reservesDecoder: ["balances", "reserves"],
-      holdsDecoder: ["balances", "holds"],
-      locksDecoder: ["balances", "locks"],
-      freezesDecoder: ["balances", "freezes"],
+    coders: {
+      base: ["System", "Account"],
+      reserves: ["Balances", "Reserves"],
+      holds: ["Balances", "Holds"],
+      locks: ["Balances", "Locks"],
+      freezes: ["Balances", "Freezes"],
     },
   })
 
@@ -518,18 +473,15 @@ async function buildQueries(
       log.warn(`Token ${tokenId} not found`)
       return []
     }
-
     if (token.type !== "substrate-native") {
       log.debug(`This module doesn't handle tokens of type ${token.type}`)
       return []
     }
-
     const chainId = token.chain?.id
     if (!chainId) {
       log.warn(`Token ${tokenId} has no chain`)
       return []
     }
-
     const chain = chains[chainId]
     if (!chain) {
       log.warn(`Chain ${chainId} for token ${tokenId} not found`)
@@ -541,13 +493,7 @@ async function buildQueries(
       "substrate-native",
       chain
     )
-    const hasMetadataV14 =
-      chainMeta?.miniMetadata !== undefined &&
-      chainMeta?.miniMetadata !== null &&
-      chainMeta?.metadataVersion >= 14
-    const typeRegistry = hasMetadataV14
-      ? getOrCreateTypeRegistry(chainId, chainMeta.miniMetadata ?? undefined)
-      : new TypeRegistry()
+    const { useLegacyTransferableCalculation } = chainMeta ?? {}
 
     return addresses.flatMap((address) => {
       // We share thie balanceJson between the base and the lock query for this address
@@ -575,20 +521,13 @@ async function buildQueries(
           { label: "misc", amount: "0" },
         ],
       }
-      if (chainMeta?.useLegacyTransferableCalculation)
-        balanceJson.useLegacyTransferableCalculation = true
+      if (useLegacyTransferableCalculation) balanceJson.useLegacyTransferableCalculation = true
 
       let locksQueryLocks: Array<LockedAmount<string>> = []
       let freezesQueryLocks: Array<LockedAmount<string>> = []
 
       const baseQuery: RpcStateQuery<Balance> | undefined = (() => {
-        const storageHelper = new StorageHelper(
-          typeRegistry,
-          "system",
-          "account",
-          decodeAnyAddress(address)
-        )
-        const storageDecoder = chainStorageDecoders.get(chainId)?.baseDecoder
+        // For chains which are using metadata < v14
         const getFallbackStateKey = () => {
           const addressBytes = decodeAnyAddress(address)
           const addressHash = blake2Concat(addressBytes).replace(/^0x/, "")
@@ -598,33 +537,25 @@ async function buildQueries(
           return `0x${moduleStorageHash}${addressHash}`
         }
 
-        /**
-         * NOTE: For many MetadataV14 chains, it is not valid to encode an ethereum address into this System.Account state call.
-         * However, because we have always made that state call in the past, existing users will have the result (a balance of `0`)
-         * cached in their BalancesDB.
-         *
-         * So, until we refactor the storage of this module in a way which nukes the existing cached balances, we'll need to continue
-         * making these invalid state calls to keep those balances from showing as `cached` or `stale`.
-         *
-         * Current logic:
-         *
-         *     stateKey: string = hasMetadataV14 && storageHelper.stateKey ? storageHelper.stateKey : getFallbackStateKey()
-         *
-         * Future (ideal) logic:
-         *
-         *     stateKey: string | undefined = hasMetadataV14 ? storageHelper.stateKey : getFallbackStateKey()
-         */
-        const stateKey =
-          hasMetadataV14 && storageHelper.stateKey ? storageHelper.stateKey : getFallbackStateKey()
+        const scaleCoder = chainStorageCoders.get(chainId)?.base
+        // NOTE: Only use fallback key when `scaleCoder` is not defined
+        // i.e. when chain doesn't have metadata v14/v15
+        const stateKey = scaleCoder
+          ? encodeStateKey(
+              scaleCoder,
+              `Invalid address in ${chainId} base query ${address}`,
+              address
+            )
+          : getFallbackStateKey()
+        if (!stateKey) return
 
         const decodeResult = (change: string | null) => {
           // BEGIN: Handle chains which use metadata < v14
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          let oldChainBalance: any = undefined
-          if (!hasMetadataV14) {
-            const accountInfoTypeDef = AccountInfoOverrides[chainId]
-            if (accountInfoTypeDef === undefined) {
-              // chain metadata version is < 14 and we also don't have an override hardcoded in
+          let oldChainBalance = null
+          if (!scaleCoder) {
+            const scaleAccountInfo = AccountInfoOverrides[chainId]
+            if (scaleAccountInfo === undefined) {
+              // chain metadata version is < 15 and we also don't have an override hardcoded in
               // the best way to handle this case: log a warning and return an empty balance
               log.debug(
                 `Token ${tokenId} on chain ${chainId} has no balance type for decoding. Defaulting to a balance of 0 (zero).`
@@ -634,7 +565,7 @@ async function buildQueries(
 
             try {
               // eslint-disable-next-line no-var
-              oldChainBalance = createType(typeRegistry, accountInfoTypeDef, change)
+              oldChainBalance = change === null ? null : scaleAccountInfo.dec(change)
             } catch (error) {
               log.warn(
                 `Failed to create pre-metadataV14 balance type for token ${tokenId} on chain ${chainId}: ${error?.toString()}`
@@ -644,40 +575,42 @@ async function buildQueries(
           }
           // END: Handle chains which use metadata < v14
 
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          const decoded: any =
-            hasMetadataV14 && storageDecoder
-              ? change === null
-                ? null
-                : storageDecoder.decode($.decodeHex(change))
-              : oldChainBalance
+          /** NOTE: This type is only a hint for typescript, the chain can actually return whatever it wants to */
+          type DecodedType = {
+            data?: {
+              flags?: bigint
+              free?: bigint
+              frozen?: bigint
+              reserved?: bigint
 
-          const bigIntOrCodecToBigInt = (value: bigint | i128): bigint =>
-            typeof value === "bigint" ? value : value?.toBigInt?.()
+              // deprecated fields (they only show up on old chains)
+              feeFrozen?: bigint
+              miscFrozen?: bigint
+            }
+          }
+          const decoded =
+            decodeScale<DecodedType>(
+              scaleCoder,
+              change,
+              `Failed to decode balance on chain ${chainId}`
+            ) ?? oldChainBalance
 
-          let free = (bigIntOrCodecToBigInt(decoded?.data?.free) ?? 0n).toString()
-          let reserved = (bigIntOrCodecToBigInt(decoded?.data?.reserved) ?? 0n).toString()
-          let miscFrozen = (
-            (bigIntOrCodecToBigInt(decoded?.data?.miscFrozen) ?? 0n) +
-            // some chains don't split their `frozen` amount into `feeFrozen` and `miscFrozen`.
-            // for those chains, we'll use the `frozen` amount as `miscFrozen`.
-            (bigIntOrCodecToBigInt(decoded?.data?.frozen) ?? 0n)
-          ).toString()
-          let feeFrozen = (bigIntOrCodecToBigInt(decoded?.data?.feeFrozen) ?? 0n).toString()
+          balanceJson.free = (decoded?.data?.free ?? 0n).toString()
 
-          // we use the evm-native module to fetch native token balances for ethereum addresses on ethereum networks
-          // but on moonbeam, moonriver and other chains which use ethereum addresses instead of substrate addresses,
-          // we use both this module and the evm-native module
-          if (isEthereumAddress(address) && chain.account !== "secp256k1")
-            free = reserved = miscFrozen = feeFrozen = "0"
-
-          balanceJson.free = free
           const otherReserve = balanceJson.reserves.find(({ label }) => label === "reserved")
-          if (otherReserve) otherReserve.amount = reserved
-          const feesLock = balanceJson.locks.find(({ label }) => label === "fees")
-          if (feesLock) feesLock.amount = feeFrozen
+          if (otherReserve) otherReserve.amount = (decoded?.data?.reserved ?? 0n).toString()
+
           const miscLock = balanceJson.locks.find(({ label }) => label === "misc")
-          if (miscLock) miscLock.amount = miscFrozen
+          if (miscLock)
+            miscLock.amount = (
+              (decoded?.data?.miscFrozen ?? 0n) +
+              // new chains don't split their `frozen` amount into `feeFrozen` and `miscFrozen`.
+              // for these chains, we'll use the `frozen` amount as `miscFrozen`.
+              ((decoded?.data as DecodedType["data"])?.frozen ?? 0n)
+            ).toString()
+
+          const feesLock = balanceJson.locks.find(({ label }) => label === "fees")
+          if (feesLock) feesLock.amount = (decoded?.data?.feeFrozen ?? 0n).toString()
 
           return new Balance(balanceJson)
         }
@@ -686,27 +619,31 @@ async function buildQueries(
       })()
 
       const locksQuery: RpcStateQuery<Balance> | undefined = (() => {
-        const storageHelper = new StorageHelper(
-          typeRegistry,
-          "balances",
-          "locks",
-          decodeAnyAddress(address)
+        const scaleCoder = chainStorageCoders.get(chainId)?.locks
+        const stateKey = encodeStateKey(
+          scaleCoder,
+          `Invalid address in ${chainId} locks query ${address}`,
+          address
         )
-        const storageDecoder = chainStorageDecoders.get(chainId)?.locksDecoder
-        const stateKey = storageHelper.stateKey
         if (!stateKey) return
-        const decodeResult = (change: string | null) => {
-          if (change === null) return new Balance(balanceJson)
 
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          const decoded: any =
-            storageDecoder && change !== null ? storageDecoder.decode($.decodeHex(change)) : null
+        const decodeResult = (change: string | null) => {
+          /** NOTE: This type is only a hint for typescript, the chain can actually return whatever it wants to */
+          type DecodedType = Array<{
+            id?: Binary
+            amount?: bigint
+          }>
+
+          const decoded = decodeScale<DecodedType>(
+            scaleCoder,
+            change,
+            `Failed to decode lock on chain ${chainId}`
+          )
 
           locksQueryLocks =
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            decoded?.map?.((lock: any) => ({
-              label: getLockedType(lock?.id?.toUtf8?.()),
-              amount: lock?.amount?.toString?.() ?? "0",
+            decoded?.map?.((lock) => ({
+              label: getLockedType(lock?.id?.asText?.()),
+              amount: (lock?.amount ?? 0n).toString(),
             })) ?? []
 
           balanceJson.locks = [
@@ -722,25 +659,29 @@ async function buildQueries(
       })()
 
       const freezesQuery: RpcStateQuery<Balance> | undefined = (() => {
-        const storageHelper = new StorageHelper(
-          typeRegistry,
-          "balances",
-          "freezes",
-          decodeAnyAddress(address)
+        const scaleCoder = chainStorageCoders.get(chainId)?.freezes
+        const stateKey = encodeStateKey(
+          scaleCoder,
+          `Invalid address in ${chainId} freezes query ${address}`,
+          address
         )
-        const storageDecoder = chainStorageDecoders.get(chainId)?.freezesDecoder
-        const stateKey = storageHelper.stateKey
         if (!stateKey) return
-        const decodeResult = (change: string | null) => {
-          if (change === null) return new Balance(balanceJson)
 
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          const decoded: any =
-            storageDecoder && change !== null ? storageDecoder.decode($.decodeHex(change)) : null
+        const decodeResult = (change: string | null) => {
+          /** NOTE: This type is only a hint for typescript, the chain can actually return whatever it wants to */
+          type DecodedType = Array<{
+            id?: { type?: string }
+            amount?: bigint
+          }>
+
+          const decoded = decodeScale<DecodedType>(
+            scaleCoder,
+            change,
+            `Failed to decode freeze on chain ${chainId}`
+          )
 
           freezesQueryLocks =
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            decoded?.map?.((lock: any) => ({
+            decoded?.map?.((lock) => ({
               label: getLockedType(lock?.id?.type?.toLowerCase?.()),
               amount: lock?.amount?.toString?.() ?? "0",
             })) ?? []
@@ -769,7 +710,6 @@ async function buildQueries(
 async function subscribeNompoolStaking(
   chaindataProvider: ChaindataProvider,
   chainConnector: ChainConnector,
-  getOrCreateTypeRegistry: GetOrCreateTypeRegistry,
   addressesByToken: AddressesByToken<SubNativeToken | CustomSubNativeToken>,
   callback: SubscriptionCallback<Balances>,
   callerUnsubscribed: Promise<unknown>
@@ -809,16 +749,16 @@ async function subscribeNompoolStaking(
   )
 
   const uniqueChainIds = getUniqueChainIds(addressesByNomPoolToken, tokens)
-  const chainStorageDecoders = buildStorageDecoders({
+  const chainStorageCoders = buildStorageCoders({
     chainIds: uniqueChainIds,
     chains,
     miniMetadatas,
     moduleType: "substrate-native",
-    decoders: {
-      poolMembersDecoder: ["nominationPools", "poolMembers"],
-      bondedPoolsDecoder: ["nominationPools", "bondedPools"],
-      ledgerDecoder: ["staking", "ledger"],
-      metadataDecoder: ["nominationPools", "metadata"],
+    coders: {
+      poolMembers: ["NominationPools", "PoolMembers"],
+      bondedPools: ["NominationPools", "BondedPools"],
+      ledger: ["Staking", "Ledger"],
+      metadata: ["NominationPools", "Metadata"],
     },
   })
 
@@ -842,17 +782,13 @@ async function subscribeNompoolStaking(
       log.warn(`Chain ${chainId} for token ${tokenId} not found`)
       continue
     }
+
     const [chainMeta] = findChainMeta<typeof SubNativeModule>(
       miniMetadatas,
       "substrate-native",
       chain
     )
-    const typeRegistry =
-      chainMeta?.miniMetadata !== undefined &&
-      chainMeta?.miniMetadata !== null &&
-      chainMeta?.metadataVersion >= 14
-        ? getOrCreateTypeRegistry(chainId, chainMeta.miniMetadata)
-        : new TypeRegistry()
+    const { nominationPoolsPalletId } = chainMeta ?? {}
 
     type PoolMembers = {
       tokenId: string
@@ -865,34 +801,45 @@ async function subscribeNompoolStaking(
       addresses: string[],
       callback: SubscriptionCallback<PoolMembers[]>
     ) => {
-      const storageDecoder = chainStorageDecoders.get(chainId)?.poolMembersDecoder
+      const scaleCoder = chainStorageCoders.get(chainId)?.poolMembers
       const queries = addresses.flatMap((address): RpcStateQuery<PoolMembers> | [] => {
-        const storageHelper = new StorageHelper(
-          typeRegistry,
-          "nominationPools",
-          "poolMembers",
-          decodeAnyAddress(address)
+        const stateKey = encodeStateKey(
+          scaleCoder,
+          `Invalid address in ${chainId} poolMembers query ${address}`,
+          address
         )
-        const stateKey = storageHelper.stateKey
         if (!stateKey) return []
+
         const decodeResult = (change: string | null) => {
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          const decoded: any =
-            storageDecoder && change !== null ? storageDecoder.decode($.decodeHex(change)) : null
+          /** NOTE: This type is only a hint for typescript, the chain can actually return whatever it wants to */
+          type DecodedType = {
+            pool_id?: number
+            points?: bigint
+            last_recorded_reward_counter?: bigint
+            /** Array of `[Era, Amount]` */
+            unbonding_eras?: Array<[number | undefined, bigint | undefined] | undefined>
+          }
 
-          const poolId: string | undefined = decoded?.poolId?.toString?.()
+          const decoded = decodeScale<DecodedType>(
+            scaleCoder,
+            change,
+            `Failed to decode poolMembers on chain ${chainId}`
+          )
+
+          const poolId: string | undefined = decoded?.pool_id?.toString?.()
           const points: string | undefined = decoded?.points?.toString?.()
-          const unbondingEras: Array<{ era: string; amount: string }> =
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            Array.from(decoded?.unbondingEras ?? []).flatMap((entry: any) => {
-              const [key, value] = Array.from(entry)
+          const unbondingEras: Array<{ era: string; amount: string }> = Array.from(
+            decoded?.unbonding_eras ?? []
+          ).flatMap((entry) => {
+            if (entry === undefined) return []
+            const [key, value] = Array.from(entry)
 
-              const era = key?.toString?.()
-              const amount = value?.toString?.()
-              if (typeof era !== "string" || typeof amount !== "string") return []
+            const era = key?.toString?.()
+            const amount = value?.toString?.()
+            if (typeof era !== "string" || typeof amount !== "string") return []
 
-              return { era, amount }
-            })
+            return { era, amount }
+          })
 
           return { tokenId, address, poolId, points, unbondingEras }
         }
@@ -911,20 +858,30 @@ async function subscribeNompoolStaking(
     ) => {
       if (poolIds.length === 0) callback(null, [])
 
-      const storageDecoder = chainStorageDecoders.get(chainId)?.bondedPoolsDecoder
+      const scaleCoder = chainStorageCoders.get(chainId)?.bondedPools
       const queries = poolIds.flatMap((poolId): RpcStateQuery<PoolPoints> | [] => {
-        const storageHelper = new StorageHelper(
-          typeRegistry,
-          "nominationPools",
-          "bondedPools",
+        const stateKey = encodeStateKey(
+          scaleCoder,
+          `Invalid poolId in ${chainId} bondedPools query ${poolId}`,
           poolId
         )
-        const stateKey = storageHelper.stateKey
         if (!stateKey) return []
+
         const decodeResult = (change: string | null) => {
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          const decoded: any =
-            storageDecoder && change !== null ? storageDecoder.decode($.decodeHex(change)) : null
+          /** NOTE: This type is only a hint for typescript, the chain can actually return whatever it wants to */
+          type DecodedType = {
+            commission?: unknown
+            member_counter?: number
+            points?: bigint
+            roles?: unknown
+            state?: unknown
+          }
+
+          const decoded = decodeScale<DecodedType>(
+            scaleCoder,
+            change,
+            `Failed to decode bondedPools on chain ${chainId}`
+          )
 
           const points: string | undefined = decoded?.points?.toString?.()
 
@@ -942,21 +899,32 @@ async function subscribeNompoolStaking(
     const subscribePoolStake = (poolIds: string[], callback: SubscriptionCallback<PoolStake[]>) => {
       if (poolIds.length === 0) callback(null, [])
 
-      const storageDecoder = chainStorageDecoders.get(chainId)?.ledgerDecoder
+      const scaleCoder = chainStorageCoders.get(chainId)?.ledger
       const queries = poolIds.flatMap((poolId): RpcStateQuery<PoolStake> | [] => {
-        if (!chainMeta?.nominationPoolsPalletId) return []
-        const storageHelper = new StorageHelper(
-          typeRegistry,
-          "staking",
-          "ledger",
-          nompoolStashAccountId(typeRegistry, chainMeta?.nominationPoolsPalletId, poolId)
+        if (!nominationPoolsPalletId) return []
+        const stashAddress = nompoolStashAccountId(nominationPoolsPalletId, poolId)
+        const stateKey = encodeStateKey(
+          scaleCoder,
+          `Invalid address in ${chainId} ledger query ${stashAddress}`,
+          stashAddress
         )
-        const stateKey = storageHelper.stateKey
         if (!stateKey) return []
+
         const decodeResult = (change: string | null) => {
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          const decoded: any =
-            storageDecoder && change !== null ? storageDecoder.decode($.decodeHex(change)) : null
+          /** NOTE: This type is only a hint for typescript, the chain can actually return whatever it wants to */
+          type DecodedType = {
+            active?: bigint
+            legacy_claimed_rewards?: number[]
+            stash?: string
+            total?: bigint
+            unlocking?: Array<{ value?: bigint; era?: number }>
+          }
+
+          const decoded = decodeScale<DecodedType>(
+            scaleCoder,
+            change,
+            `Failed to decode ledger on chain ${chainId}`
+          )
 
           const activeStake: string | undefined = decoded?.active?.toString?.()
 
@@ -977,18 +945,27 @@ async function subscribeNompoolStaking(
     ) => {
       if (poolIds.length === 0) callback(null, [])
 
-      const storageDecoder = chainStorageDecoders.get(chainId)?.metadataDecoder
+      const scaleCoder = chainStorageCoders.get(chainId)?.metadata
       const queries = poolIds.flatMap((poolId): RpcStateQuery<PoolMetadata> | [] => {
-        if (!chainMeta?.nominationPoolsPalletId) return []
-        const storageHelper = new StorageHelper(typeRegistry, "nominationPools", "metadata", poolId)
-        const stateKey = storageHelper.stateKey
+        if (!nominationPoolsPalletId) return []
+        const stateKey = encodeStateKey(
+          scaleCoder,
+          `Invalid poolId in ${chainId} metadata query ${poolId}`,
+          poolId
+        )
         if (!stateKey) return []
-        const decodeResult = (change: string | null) => {
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          const decoded: any =
-            storageDecoder && change !== null ? storageDecoder.decode($.decodeHex(change)) : null
 
-          const metadata = u8aToString(decoded)
+        const decodeResult = (change: string | null) => {
+          /** NOTE: This type is only a hint for typescript, the chain can actually return whatever it wants to */
+          type DecodedType = Binary
+
+          const decoded = decodeScale<DecodedType>(
+            scaleCoder,
+            change,
+            `Failed to decode metadata on chain ${chainId}`
+          )
+
+          const metadata = decoded?.asText?.()
 
           return { poolId, metadata }
         }
@@ -1152,7 +1129,6 @@ async function subscribeNompoolStaking(
 async function subscribeCrowdloans(
   chaindataProvider: ChaindataProvider,
   chainConnector: ChainConnector,
-  getOrCreateTypeRegistry: GetOrCreateTypeRegistry,
   addressesByToken: AddressesByToken<SubNativeToken | CustomSubNativeToken>,
   callback: SubscriptionCallback<Balances>,
   callerUnsubscribed: Promise<unknown>
@@ -1192,12 +1168,15 @@ async function subscribeCrowdloans(
   )
 
   const uniqueChainIds = getUniqueChainIds(addressesByCrowdloanToken, tokens)
-  const chainStorageDecoders = buildStorageDecoders({
+  const chainStorageCoders = buildStorageCoders({
     chainIds: uniqueChainIds,
     chains,
     miniMetadatas,
     moduleType: "substrate-native",
-    decoders: { parachainsDecoder: ["paras", "parachains"], fundsDecoder: ["crowdloan", "funds"] },
+    coders: {
+      parachains: ["Paras", "Parachains"],
+      funds: ["Crowdloan", "Funds"],
+    },
   })
 
   for (const [tokenId, addresses] of Object.entries(addressesByCrowdloanToken)) {
@@ -1220,30 +1199,22 @@ async function subscribeCrowdloans(
       log.warn(`Chain ${chainId} for token ${tokenId} not found`)
       continue
     }
-    const [chainMeta] = findChainMeta<typeof SubNativeModule>(
-      miniMetadatas,
-      "substrate-native",
-      chain
-    )
-    const typeRegistry =
-      chainMeta?.miniMetadata !== undefined &&
-      chainMeta?.miniMetadata !== null &&
-      chainMeta?.metadataVersion >= 14
-        ? getOrCreateTypeRegistry(chainId, chainMeta.miniMetadata)
-        : new TypeRegistry()
 
     const subscribeParaIds = (callback: SubscriptionCallback<Array<number[]>>) => {
-      const storageDecoder = chainStorageDecoders.get(chainId)?.parachainsDecoder
+      const scaleCoder = chainStorageCoders.get(chainId)?.parachains
       const queries = [0].flatMap((): RpcStateQuery<number[]> | [] => {
-        const storageHelper = new StorageHelper(typeRegistry, "paras", "parachains")
-        const stateKey = storageHelper.stateKey
+        const stateKey = encodeStateKey(scaleCoder)
         if (!stateKey) return []
-        const decodeResult = (change: string | null): number[] => {
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          const decoded: any =
-            storageDecoder && change !== null ? storageDecoder.decode($.decodeHex(change)) : null
 
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const decodeResult = (change: string | null) => {
+          /** NOTE: This type is only a hint for typescript, the chain can actually return whatever it wants to */
+          type DecodedType = number[]
+          const decoded = decodeScale<DecodedType>(
+            scaleCoder,
+            change,
+            `Failed to decode parachains on chain ${chainId}`
+          )
+
           const paraIds = decoded ?? []
 
           return paraIds
@@ -1256,25 +1227,50 @@ async function subscribeCrowdloans(
       return () => subscription.then((unsubscribe) => unsubscribe())
     }
 
-    type ParaFundIndex = { paraId: number; fundPeriod: string; fundIndex?: number[] }
+    type ParaFundIndex = {
+      paraId: number
+      fundPeriod: string
+      fundIndex?: number
+    }
     const subscribeParaFundIndexes = (
       paraIds: number[],
       callback: SubscriptionCallback<ParaFundIndex[]>
     ) => {
-      const storageDecoder = chainStorageDecoders.get(chainId)?.fundsDecoder
+      const scaleCoder = chainStorageCoders.get(chainId)?.funds
       const queries = paraIds.flatMap((paraId): RpcStateQuery<ParaFundIndex> | [] => {
-        const storageHelper = new StorageHelper(typeRegistry, "crowdloan", "funds", paraId)
-        const stateKey = storageHelper.stateKey
+        const stateKey = encodeStateKey(
+          scaleCoder,
+          `Invalid paraId in ${chainId} funds query ${paraId}`,
+          paraId
+        )
         if (!stateKey) return []
-        const decodeResult = (change: string | null) => {
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          const decoded: any =
-            storageDecoder && change !== null ? storageDecoder.decode($.decodeHex(change)) : null
 
-          const firstPeriod = decoded?.firstPeriod?.toString?.() ?? ""
-          const lastPeriod = decoded?.lastPeriod?.toString?.() ?? ""
+        const decodeResult = (change: string | null) => {
+          /** NOTE: This type is only a hint for typescript, the chain can actually return whatever it wants to */
+          type DecodedType = {
+            cap?: bigint
+            deposit?: bigint
+            depositor?: string
+            end?: number
+            fund_index?: number
+            trie_index?: number
+            first_period?: number
+            last_period?: number
+            last_contribution?: unknown
+            raised?: bigint
+            verifier?: unknown
+          }
+
+          const decoded = decodeScale<DecodedType>(
+            scaleCoder,
+            change,
+            `Failed to decode paras on chain ${chainId}`
+          )
+
+          const firstPeriod = decoded?.first_period?.toString?.() ?? ""
+          const lastPeriod = decoded?.last_period?.toString?.() ?? ""
           const fundPeriod = `${firstPeriod}-${lastPeriod}`
-          const fundIndex = decoded?.fundIndex ?? decoded?.trieIndex
+          const fundIndex = decoded?.fund_index ?? decoded?.trie_index
 
           return { paraId, fundPeriod, fundIndex }
         }
@@ -1306,7 +1302,7 @@ async function subscribeCrowdloans(
         paraId,
         fundIndex,
         addresses,
-        childKey: crowdloanFundContributionsChildKey(typeRegistry, fundIndex),
+        childKey: crowdloanFundContributionsChildKey(fundIndex),
         storageKeys: addresses.map((address) => u8aToHex(decodeAnyAddress(address))),
       }))
 
@@ -1321,24 +1317,26 @@ async function subscribeCrowdloans(
               paraId,
               fundIndex,
               addresses,
-              result: await chainConnector.send(chainId, "childstate_getStorageEntries", [
-                childKey,
-                storageKeys,
-              ]),
+              result: await chainConnector.send<Array<string | null> | undefined>(
+                chainId,
+                "childstate_getStorageEntries",
+                [childKey, storageKeys]
+              ),
             }))
           )
 
           const contributions = results.flatMap((queryResult) => {
             const { paraId, fundIndex, addresses, result } = queryResult
-            const storageDataVec = typeRegistry.createType("Vec<Option<StorageData>>", result)
 
-            return storageDataVec.flatMap((storageData, index) => {
-              const balance = storageData?.isSome
-                ? typeRegistry.createType("Balance", storageData.unwrap())
-                : typeRegistry.createType("Balance")
-              const amount = balance?.toString?.()
+            return (Array.isArray(result) ? result : []).flatMap((encoded, index) => {
+              const amount = (() => {
+                try {
+                  return typeof encoded === "string" ? u128.dec(encoded) ?? 0n : 0n
+                } catch {
+                  return 0n
+                }
+              })().toString()
 
-              if (amount === undefined || amount === "0") return []
               return {
                 paraId,
                 fundIndex,
@@ -1467,12 +1465,11 @@ async function subscribeCrowdloans(
 async function subscribeBase(
   chaindataProvider: ChaindataProvider,
   chainConnector: ChainConnector,
-  getOrCreateTypeRegistry: GetOrCreateTypeRegistry,
   addressesByToken: AddressesByToken<SubNativeToken | CustomSubNativeToken>,
   callback: SubscriptionCallback<Balances>,
   callerUnsubscribed: Promise<unknown>
 ) {
-  const queries = await buildQueries(chaindataProvider, getOrCreateTypeRegistry, addressesByToken)
+  const queries = await buildQueries(chaindataProvider, addressesByToken)
   const unsubscribe = await new RpcStateQueryHelper(chainConnector, queries).subscribe(
     (error, result) => (error ? callback(error) : callback(null, new Balances(result ?? [])))
   )
