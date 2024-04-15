@@ -521,12 +521,12 @@ export const useEthTransaction = (
 
   const [priority, setPriority] = useState<EthPriorityOptionName>()
 
-  const validation = useScanEvmTransaction(evmNetworkId, tx, origin)
+  const scan = useScanEvmTransaction(evmNetworkId, tx, origin)
 
   useEffect(() => {
     // TODO remove
-    log.log("blowfish validation", validation)
-  }, [validation])
+    log.log("blowfish scan", scan)
+  }, [scan])
 
   // reset priority in case chain changes
   // ex: from send funds when switching from BSC (legacy) to mainnet (eip1559)
@@ -660,7 +660,7 @@ export const useEthTransaction = (
     networkUsage,
     setCustomSettings,
     gasSettingsByPriority,
-    validation,
+    scan,
     updateCallArg,
   }
 }

@@ -3,10 +3,12 @@ import { log } from "@extension/shared"
 import { HexString } from "@polkadot/util/types"
 import { provideContext } from "@talisman/util/provideContext"
 import { api } from "@ui/api"
+import { useScanEvmMessage } from "@ui/domains/Ethereum/useScanEvmMessage"
 import { useEvmNetwork } from "@ui/hooks/useEvmNetwork"
 import { useRequest } from "@ui/hooks/useRequest"
-import { useCallback, useMemo } from "react"
+import { useCallback, useEffect, useMemo } from "react"
 
+import { useRisksReview } from "../Ethereum/risk-analysis/useRisksReview"
 import { useAnySigningRequest } from "./AnySignRequestContext"
 
 const useEthSignMessageRequestProvider = ({ id }: KnownSigningRequestIdOnly<"eth-sign">) => {
@@ -20,8 +22,33 @@ const useEthSignMessageRequestProvider = ({ id }: KnownSigningRequestIdOnly<"eth
     cancelSignFn: api.ethCancelSign,
   })
 
+  const scan = useScanEvmMessage(
+    request?.ethChainId,
+    request?.method,
+    request?.request,
+    request?.account?.address,
+    request?.url
+  )
+
+  useEffect(() => {
+    // TODO remove
+    log.log("blowfish scan", scan)
+  }, [scan])
+
+  const risksReview = useRisksReview(scan?.result?.action === "BLOCK")
+
+  const approve = useCallback(() => {
+    if (risksReview.isRiskAknowledgementRequired && !risksReview.isRiskAknowledged)
+      return risksReview.drawer.open()
+
+    return baseRequest.approve()
+  }, [baseRequest, risksReview])
+
   const approveHardware = useCallback(
     async ({ signature }: { signature: HexString }) => {
+      if (risksReview.isRiskAknowledgementRequired && !risksReview.isRiskAknowledged)
+        return risksReview.drawer.open()
+
       if (!baseRequest || !baseRequest.id) return
       baseRequest.setStatus.processing("Approving request")
       try {
@@ -32,7 +59,7 @@ const useEthSignMessageRequestProvider = ({ id }: KnownSigningRequestIdOnly<"eth
         baseRequest.setStatus.error((err as Error).message)
       }
     },
-    [baseRequest]
+    [baseRequest, risksReview]
   )
 
   const isValid = useMemo(() => {
@@ -52,10 +79,13 @@ const useEthSignMessageRequestProvider = ({ id }: KnownSigningRequestIdOnly<"eth
 
   return {
     ...baseRequest,
+    approve,
     approveHardware,
     request,
     network,
     isValid,
+    scan,
+    risksReview,
   }
 }
 

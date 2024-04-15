@@ -7,12 +7,12 @@ import { useEthSignTransactionRequest } from "../../SignRequestContext"
 import { RiskAnalysisRecommendation } from "./RiskAnalysisRecommendation"
 import { RiskAnalysisStateChanges } from "./RiskAnalysisStateChanges"
 import { RiskAnalysisWarnings } from "./RiskAnalysisWarnings"
-import { EvmTransactionRiskAnalysis } from "./useRiskAnalysis"
+import { RisksReview } from "./useRisksReview"
 
 const RiskAnalysisDrawerContent: FC<{
   scan: EvmTransactionScan
-  riskAnalysis: EvmTransactionRiskAnalysis
-}> = ({ scan, riskAnalysis }) => {
+  risksReview: RisksReview
+}> = ({ scan, risksReview }) => {
   const { t } = useTranslation()
 
   if (!scan?.isAvailable) return null
@@ -97,13 +97,13 @@ const RiskAnalysisDrawerContent: FC<{
         <div>
           <Checkbox
             onChange={(e) => {
-              riskAnalysis.setIsRiskAknowledged(e.target.checked)
+              risksReview.setIsRiskAknowledged(e.target.checked)
             }}
           />
         </div>
       </div>
       <div>
-        <Button onClick={riskAnalysis.riskAnalysisDrawer.close} className="w-full">
+        <Button onClick={risksReview.drawer.close} className="w-full">
           {t("Close")}
         </Button>
       </div>
@@ -112,16 +112,16 @@ const RiskAnalysisDrawerContent: FC<{
 }
 
 export const RiskAnalysisDrawer = () => {
-  const { validation, riskAnalysis } = useEthSignTransactionRequest()
+  const { scan, risksReview } = useEthSignTransactionRequest()
 
   return (
     <Drawer
       anchor="bottom"
       containerId="main"
-      isOpen={riskAnalysis.riskAnalysisDrawer.isOpen}
-      onDismiss={riskAnalysis.riskAnalysisDrawer.close}
+      isOpen={risksReview.drawer.isOpen}
+      onDismiss={risksReview.drawer.close}
     >
-      <RiskAnalysisDrawerContent scan={validation} riskAnalysis={riskAnalysis} />
+      <RiskAnalysisDrawerContent scan={scan} risksReview={risksReview} />
     </Drawer>
   )
 }

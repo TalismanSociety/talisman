@@ -14,7 +14,7 @@ import { useEthSignTransactionRequest } from "../../SignRequestContext"
 export const RiskAnalysisPillButton = () => {
   const { t } = useTranslation()
 
-  const { validation, riskAnalysis } = useEthSignTransactionRequest()
+  const { scan: validation, risksReview: riskAnalysis } = useEthSignTransactionRequest()
 
   const { icon, label, className, disabled } = useMemo(() => {
     if (validation?.result?.action === "NONE")
@@ -60,7 +60,7 @@ export const RiskAnalysisPillButton = () => {
           disabled={disabled}
           size="sm"
           icon={icon}
-          onClick={riskAnalysis.riskAnalysisDrawer.open}
+          onClick={riskAnalysis.drawer.open}
           className={className}
         >
           {label}

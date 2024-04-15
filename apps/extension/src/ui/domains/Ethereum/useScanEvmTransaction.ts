@@ -53,7 +53,8 @@ export const useScanEvmTransaction = (
     queryKey: [
       "useScanTransaction",
       evmNetworkId,
-      tx && serializeTransactionRequest(tx) && autoValidate,
+      tx && serializeTransactionRequest(tx),
+      autoValidate,
       origin,
     ],
     queryFn: () => {

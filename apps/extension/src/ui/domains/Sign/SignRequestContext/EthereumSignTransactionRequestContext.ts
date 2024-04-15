@@ -11,7 +11,7 @@ import { useRequest } from "@ui/hooks/useRequest"
 import { useAtomValue } from "jotai"
 import { useCallback, useMemo, useState } from "react"
 
-import { useRiskAnalysis } from "../Ethereum/risk-analysis/useRiskAnalysis"
+import { useRisksReview } from "../Ethereum/risk-analysis/useRisksReview"
 import { useAnySigningRequest } from "./AnySignRequestContext"
 
 const useEthSignTransactionRequestProvider = ({ id }: KnownSigningRequestIdOnly<"eth-send">) => {
@@ -40,7 +40,7 @@ const useEthSignTransactionRequestProvider = ({ id }: KnownSigningRequestIdOnly<
     gasSettingsByPriority,
     setCustomSettings,
     isValid,
-    validation,
+    scan,
     updateCallArg,
   } = useEthTransaction(
     txBase,
@@ -56,22 +56,22 @@ const useEthSignTransactionRequestProvider = ({ id }: KnownSigningRequestIdOnly<
     cancelSignFn: api.ethCancelSign,
   })
 
-  const riskAnalysis = useRiskAnalysis(validation?.result?.action === "BLOCK")
+  const risksReview = useRisksReview(scan?.result?.action === "BLOCK")
 
   const approve = useCallback(() => {
-    if (riskAnalysis.isRiskAknowledgementRequired && !riskAnalysis.isRiskAknowledged)
-      return riskAnalysis.riskAnalysisDrawer.open()
+    if (risksReview.isRiskAknowledgementRequired && !risksReview.isRiskAknowledged)
+      return risksReview.drawer.open()
 
     if (!baseRequest) throw new Error("Missing base request")
     if (!transaction) throw new Error("Missing transaction")
     const serialized = serializeTransactionRequest(transaction)
     return baseRequest && baseRequest.approve(serialized)
-  }, [baseRequest, riskAnalysis, transaction])
+  }, [baseRequest, risksReview, transaction])
 
   const approveHardware = useCallback(
     async ({ signature }: { signature: HexString }) => {
-      if (riskAnalysis.isRiskAknowledgementRequired && !riskAnalysis.isRiskAknowledged)
-        return riskAnalysis.riskAnalysisDrawer.open()
+      if (risksReview.isRiskAknowledgementRequired && !risksReview.isRiskAknowledged)
+        return risksReview.drawer.open()
 
       if (!baseRequest || !transaction || !baseRequest.id) return
       baseRequest.setStatus.processing("Approving request")
@@ -85,7 +85,7 @@ const useEthSignTransactionRequestProvider = ({ id }: KnownSigningRequestIdOnly<
         setIsPayloadLocked(false)
       }
     },
-    [baseRequest, riskAnalysis, transaction]
+    [baseRequest, risksReview, transaction]
   )
 
   return {
@@ -107,9 +107,9 @@ const useEthSignTransactionRequestProvider = ({ id }: KnownSigningRequestIdOnly<
     gasSettingsByPriority,
     setCustomSettings,
     isValid,
-    validation,
+    scan,
     updateCallArg,
-    riskAnalysis,
+    risksReview,
   }
 }
 
