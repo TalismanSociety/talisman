@@ -2,7 +2,6 @@ import { assert } from "@polkadot/util"
 import { ChainConnectorEvm } from "@talismn/chain-connector-evm"
 import {
   BalancesConfigTokenParams,
-  EvmChainId,
   EvmNetworkId,
   NewTokenType,
   TokenList,
@@ -13,7 +12,7 @@ import { PublicClient } from "viem"
 
 import { DefaultBalanceModule, NewBalanceModule } from "../BalanceModule"
 import log from "../log"
-import { AddressesByToken, Amount, Balances, NewBalanceType } from "../types"
+import { AddressesByToken, Balances, NewBalanceType } from "../types"
 import { erc20Abi } from "./abis/erc20"
 
 export { erc20Abi }
@@ -31,17 +30,15 @@ export type EvmErc20Token = NewTokenType<
   {
     contractAddress: string
     evmNetwork: { id: EvmNetworkId } | null
+    isCustom?: true
+    image?: string
   }
 >
-export type CustomEvmErc20Token = EvmErc20Token & {
-  isCustom: true
-  image?: string
-}
+export type CustomEvmErc20Token = Omit<EvmErc20Token, "isCustom"> & { isCustom: true }
 
 declare module "@talismn/chaindata-provider/plugins" {
   export interface PluginTokenTypes {
-    EvmErc20Token: EvmErc20Token
-    CustomEvmErc20Token: CustomEvmErc20Token
+    moduleType: EvmErc20Token
   }
 }
 
@@ -59,18 +56,11 @@ export type EvmErc20ModuleConfig = {
   >
 }
 
-export type EvmErc20Balance = NewBalanceType<
-  ModuleType,
-  {
-    multiChainId: EvmChainId
-
-    free: Amount
-  }
->
+export type EvmErc20Balance = NewBalanceType<ModuleType, "simple", "ethereum">
 
 declare module "@talismn/balances/plugins" {
   export interface PluginBalanceTypes {
-    EvmErc20Balance: EvmErc20Balance
+    "evm-erc20": EvmErc20Balance
   }
 }
 type EvmErc20NetworkParams = Record<
@@ -270,7 +260,7 @@ export const EvmErc20Module: NewBalanceModule<
                 .filter((balance) => {
                   // remove zero balances from the list of positive balances,
                   // and record that this network has a positive balance so we poll more often
-                  if (BigInt(balance.free) > 0n) {
+                  if (BigInt(balance.value) > 0n) {
                     positiveBalanceNetworks.add(evmNetworkId)
                     return balance
                   }
@@ -372,7 +362,7 @@ const fetchBalances = async (
                   multiChainId: { evmChainId: evmNetworkId },
                   evmNetworkId,
                   tokenId: token.id,
-                  free,
+                  value: free,
                 } as EvmErc20Balance)
               )
               .catch((error) => {

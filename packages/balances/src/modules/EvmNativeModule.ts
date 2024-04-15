@@ -1,7 +1,6 @@
 import { ChainConnectorEvm } from "@talismn/chain-connector-evm"
 import {
   BalancesConfigTokenParams,
-  EvmChainId,
   EvmNetworkId,
   NewTokenType,
   TokenList,
@@ -12,7 +11,7 @@ import { PublicClient, hexToBigInt, isHex } from "viem"
 
 import { DefaultBalanceModule, NewBalanceModule } from "../BalanceModule"
 import log from "../log"
-import { Address, AddressesByToken, Amount, Balances, NewBalanceType } from "../types"
+import { Address, AddressesByToken, Balances, NewBalanceType } from "../types"
 import { abiMulticall } from "./abis/multicall"
 
 type ModuleType = "evm-native"
@@ -30,16 +29,13 @@ export type EvmNativeToken = NewTokenType<
   ModuleType,
   {
     evmNetwork: { id: EvmNetworkId }
+    isCustom?: true
   }
 >
-export type CustomEvmNativeToken = EvmNativeToken & {
-  isCustom: true
-}
-
+export type CustomEvmNativeToken = EvmNativeToken
 declare module "@talismn/chaindata-provider/plugins" {
   export interface PluginTokenTypes {
-    EvmNativeToken: EvmNativeToken
-    CustomEvmNativeToken: CustomEvmNativeToken
+    "evm-native": EvmNativeToken
   }
 }
 
@@ -52,18 +48,11 @@ export type EvmNativeModuleConfig = {
   decimals?: number
 } & BalancesConfigTokenParams
 
-export type EvmNativeBalance = NewBalanceType<
-  ModuleType,
-  {
-    multiChainId: EvmChainId
-
-    free: Amount
-  }
->
+export type EvmNativeBalance = NewBalanceType<ModuleType, "simple", "ethereum">
 
 declare module "@talismn/balances/plugins" {
   export interface PluginBalanceTypes {
-    EvmNativeBalance: EvmNativeBalance
+    "evm-native": EvmNativeBalance
   }
 }
 
@@ -79,7 +68,7 @@ export const EvmNativeModule: NewBalanceModule<
     ...DefaultBalanceModule("evm-native"),
 
     get tokens() {
-      return chaindataProvider.tokenByIdForType(this.type) as Promise<
+      return chaindataProvider.tokensByIdForType(this.type) as Promise<
         Record<string, EvmNativeToken | CustomEvmNativeToken>
       >
     },
@@ -175,7 +164,7 @@ export const EvmNativeModule: NewBalanceModule<
                 } else {
                   if (balance.evmNetworkId) {
                     initialisingBalances.delete(balance.evmNetworkId)
-                    if (BigInt(balance.free) > 0n) {
+                    if (BigInt(balance.value) > 0n) {
                       positiveBalanceNetworks.add(balance.evmNetworkId)
                       resultBalances.push(balance)
                     }
@@ -215,7 +204,8 @@ export const EvmNativeModule: NewBalanceModule<
       const pureBalances = balanceResults
         .flat()
         .filter(
-          (b): b is EvmNativeBalance => !(b instanceof EvmNativeBalanceError) && BigInt(b.free) > 0n
+          (b): b is EvmNativeBalance =>
+            !(b instanceof EvmNativeBalanceError) && BigInt(b.value) > 0n
         )
 
       return new Balances(pureBalances)
@@ -267,7 +257,7 @@ const fetchBalances = async (
           multiChainId: { evmChainId: evmNetworkId },
           evmNetworkId,
           tokenId,
-          free: freeBalances[i].toString(),
+          value: freeBalances[i].toString(),
         } as EvmNativeBalance
       })
 

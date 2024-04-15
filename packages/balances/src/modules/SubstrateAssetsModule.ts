@@ -6,7 +6,6 @@ import {
   ChainId,
   ChaindataProvider,
   NewTokenType,
-  SubChainId,
   githubTokenLogoUrl,
 } from "@talismn/chaindata-provider"
 import {
@@ -22,7 +21,7 @@ import { decodeAnyAddress } from "@talismn/util"
 import { DefaultBalanceModule, NewBalanceModule, NewTransferParamsType } from "../BalanceModule"
 import log from "../log"
 import { db as balancesDb } from "../TalismanBalancesDatabase"
-import { AddressesByToken, Amount, Balance, Balances, NewBalanceType } from "../types"
+import { AddressesByToken, AmountWithLabel, Balances, NewBalanceType } from "../types"
 import {
   GetOrCreateTypeRegistry,
   RpcStateQuery,
@@ -39,12 +38,6 @@ type ModuleType = "substrate-assets"
 const subAssetTokenId = (chainId: ChainId, assetId: string, tokenSymbol: string) =>
   `${chainId}-substrate-assets-${assetId}-${tokenSymbol}`.toLowerCase().replace(/ /g, "-")
 
-const getChainIdFromTokenId = (tokenId: string) => {
-  const match = /^([\d\w-]+)-substrate-assets/.exec(tokenId)
-  if (!match?.[1]) throw new Error(`Can't detect chainId for token ${tokenId}`)
-  return match?.[1]
-}
-
 export type SubAssetsToken = NewTokenType<
   ModuleType,
   {
@@ -57,7 +50,7 @@ export type SubAssetsToken = NewTokenType<
 
 declare module "@talismn/chaindata-provider/plugins" {
   export interface PluginTokenTypes {
-    SubAssetsToken: SubAssetsToken
+    "substrate-assets": SubAssetsToken
   }
 }
 
@@ -75,19 +68,11 @@ export type SubAssetsModuleConfig = {
   >
 }
 
-export type SubAssetsBalance = NewBalanceType<
-  ModuleType,
-  {
-    multiChainId: SubChainId
-
-    free: Amount
-    locks: Amount
-  }
->
+export type SubAssetsBalance = NewBalanceType<ModuleType, "complex", "substrate">
 
 declare module "@talismn/balances/plugins" {
   export interface PluginBalanceTypes {
-    SubAssetsBalance: SubAssetsBalance
+    "substrate-assets": SubAssetsBalance
   }
 }
 
@@ -248,21 +233,6 @@ export const SubAssetsModule: NewBalanceModule<
       return tokens
     },
 
-    getPlaceholderBalance(tokenId, address): SubAssetsBalance {
-      const chainId = getChainIdFromTokenId(tokenId)
-
-      return {
-        source: "substrate-assets",
-        status: "initializing",
-        address,
-        multiChainId: { subChainId: chainId },
-        chainId,
-        tokenId,
-        free: "0",
-        locks: "0",
-      }
-    },
-
     // TODO: Don't create empty subscriptions
     async subscribeBalances(addressesByToken, callback) {
       const queries = await buildQueries(
@@ -271,7 +241,15 @@ export const SubAssetsModule: NewBalanceModule<
         addressesByToken
       )
       const unsubscribe = await new RpcStateQueryHelper(chainConnector, queries).subscribe(
-        (error, result) => (error ? callback(error) : callback(null, new Balances(result ?? [])))
+        (error, result) => {
+          if (error) callback(error)
+          if (result) {
+            const balances = result.filter(
+              (balance): balance is SubAssetsBalance => balance !== null
+            )
+            if (balances.length > 0) callback(null, new Balances(balances))
+          }
+        }
       )
 
       return unsubscribe
@@ -286,8 +264,8 @@ export const SubAssetsModule: NewBalanceModule<
         addressesByToken
       )
       const result = await new RpcStateQueryHelper(chainConnectors.substrate, queries).fetch()
-
-      return new Balances(result ?? [])
+      const balances = result.filter((balance): balance is SubAssetsBalance => balance !== null)
+      return new Balances(balances)
     },
 
     async transferToken({
@@ -356,7 +334,7 @@ async function buildQueries(
   chaindataProvider: ChaindataProvider,
   getOrCreateTypeRegistry: GetOrCreateTypeRegistry,
   addressesByToken: AddressesByToken<SubAssetsToken>
-): Promise<Array<RpcStateQuery<Balance>>> {
+): Promise<Array<RpcStateQuery<SubAssetsBalance | null>>> {
   const chains = await chaindataProvider.chainsById()
   const tokens = await chaindataProvider.tokensById()
   const miniMetadatas = new Map(
@@ -411,7 +389,7 @@ async function buildQueries(
         ? getOrCreateTypeRegistry(chainId, chainMeta.miniMetadata)
         : new TypeRegistry()
 
-    return addresses.flatMap((address): RpcStateQuery<Balance> | [] => {
+    return addresses.flatMap((address): RpcStateQuery<SubAssetsBalance | null> | [] => {
       const storageHelper = new StorageHelper(
         registry,
         "assets",
@@ -451,7 +429,15 @@ async function buildQueries(
         const free = amount
         const frozen = token.isFrozen || isFrozen ? amount : "0"
 
-        return new Balance({
+        const balanceValues: Array<AmountWithLabel<string>> = []
+        if (free && free > 0n)
+          balanceValues.push({ type: "free", label: "free", amount: free.toString() })
+        if (frozen && frozen > 0n)
+          balanceValues.push({ type: "locked", label: "frozen", amount: frozen.toString() })
+
+        if (balanceValues.length === 0) return null
+
+        return {
           source: "substrate-assets",
 
           status: "live",
@@ -460,10 +446,8 @@ async function buildQueries(
           multiChainId: { subChainId: chainId },
           chainId,
           tokenId: token.id,
-
-          free,
-          locks: frozen,
-        })
+          values: balanceValues,
+        } as SubAssetsBalance
       }
 
       return { chainId, stateKey, decodeResult }

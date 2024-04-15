@@ -636,11 +636,12 @@ export class BalancePool {
             const staleObservable = this.#pool.pipe(
               map((val) =>
                 Object.values(val)
-                  .filter(({ tokenId, address, source, chainId, evmNetworkId }) => {
+                  .filter(({ tokenId, address, source, ...rest }) => {
+                    const locationId = "chainId" in rest ? rest.chainId : rest.evmNetworkId
                     const chainComparison = error.chainId
-                      ? error.chainId === chainId
+                      ? error.chainId === locationId
                       : error.evmNetworkId
-                      ? error.evmNetworkId === evmNetworkId
+                      ? error.evmNetworkId === locationId
                       : true
                     return (
                       chainComparison &&

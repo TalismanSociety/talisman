@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 import { TypeRegistry, createType, i128 } from "@polkadot/types"
 import { assert, u8aToHex, u8aToString } from "@polkadot/util"
 import { defineMethod } from "@substrate/txwrapper-core"
@@ -7,7 +8,6 @@ import {
   ChainId,
   ChaindataProvider,
   NewTokenType,
-  SubChainId,
   githubTokenLogoUrl,
 } from "@talismn/chaindata-provider"
 import {
@@ -26,16 +26,7 @@ import { combineLatest, map, scan, share, switchAll } from "rxjs"
 import { DefaultBalanceModule, NewBalanceModule, NewTransferParamsType } from "../BalanceModule"
 import log from "../log"
 import { db as balancesDb } from "../TalismanBalancesDatabase"
-import {
-  AddressesByToken,
-  Amount,
-  AmountWithLabel,
-  Balance,
-  Balances,
-  LockedAmount,
-  NewBalanceType,
-  SubscriptionCallback,
-} from "../types"
+import { AddressesByToken, Balances, NewBalanceType, SubscriptionCallback } from "../types"
 import {
   GetOrCreateTypeRegistry,
   RpcStateQuery,
@@ -95,6 +86,7 @@ const AccountInfoOverrides: { [key: ChainId]: string } = {
 export const subNativeTokenId = (chainId: ChainId) =>
   `${chainId}-substrate-native`.toLowerCase().replace(/ /g, "-")
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 const getChainIdFromTokenId = (tokenId: string) => {
   const match = /^([\d\w-]+)-substrate-native/.exec(tokenId)
   if (!match?.[1]) throw new Error(`Can't detect chainId for token ${tokenId}`)
@@ -134,20 +126,11 @@ export type SubNativeModuleConfig = {
   disable?: boolean
 } & BalancesConfigTokenParams
 
-export type SubNativeBalance = NewBalanceType<
-  ModuleType,
-  {
-    multiChainId: SubChainId
-
-    free: Amount
-    reserves: [AmountWithLabel<"reserved">, ...Array<AmountWithLabel<string>>]
-    locks: [LockedAmount<"fees">, LockedAmount<"misc">, ...Array<LockedAmount<string>>]
-  }
->
+export type SubNativeBalance = NewBalanceType<ModuleType, "complex", "substrate">
 
 declare module "@talismn/balances/plugins" {
   export interface PluginBalanceTypes {
-    SubNativeBalance: SubNativeBalance
+    "substrate-native": SubNativeBalance
   }
 }
 
@@ -175,11 +158,21 @@ export const SubNativeModule: NewBalanceModule<
   SubNativeModuleConfig,
   SubNativeTransferParams
 > = (hydrate) => {
-  const { chainConnectors, chaindataProvider } = hydrate
+  // todo wip
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const { chainConnectors, chaindataProvider, initialBalances } = hydrate
   const chainConnector = chainConnectors.substrate
   assert(chainConnector, "This module requires a substrate chain connector")
 
   const { getOrCreateTypeRegistry } = createTypeRegistryCache()
+
+  // todo wip
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const getTokens = async () => {
+    return chaindataProvider.tokensByIdForType("substrate-native") as Promise<
+      Record<string, SubNativeToken | CustomSubNativeToken>
+    >
+  }
 
   return {
     ...DefaultBalanceModule("substrate-native"),
@@ -311,27 +304,18 @@ export const SubNativeModule: NewBalanceModule<
       return { [nativeToken.id]: nativeToken }
     },
 
-    getPlaceholderBalance(tokenId, address): SubNativeBalance {
-      const chainId = getChainIdFromTokenId(tokenId)
-
-      return {
-        source: "substrate-native",
-        status: "initializing",
-        address,
-        multiChainId: { subChainId: chainId },
-        chainId,
-        tokenId,
-        free: "0",
-        reserves: [{ label: "reserved", amount: "0" }],
-        locks: [
-          { label: "fees", amount: "0", includeInTransferable: true, excludeFromFeePayable: true },
-          { label: "misc", amount: "0" },
-        ],
-      }
-    },
-
     async subscribeBalances(addressesByToken, callback) {
       assert(chainConnectors.substrate, "This module requires a substrate chain connector")
+      // todo wip
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      const initialisingBalances: Record<"base" | "nomPool" | "crowdloan", Set<string>> = {
+        base: new Set<string>(),
+        nomPool: new Set<string>(),
+        crowdloan: new Set<string>(),
+      }
+      // todo wip
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      const positiveBalanceNetworks = new Set<string>()
 
       // TODO: Create a more elegant system which can handle the following use cases
       //
@@ -351,12 +335,27 @@ export const SubNativeModule: NewBalanceModule<
       // we queue up our work to clean up our subscription when this promise rejects
       const callerUnsubscribed = unsubDeferred.promise
 
+      // wrapping the callback is to allow us to manage initialising and positive balances state for each
+      // balance type and network
+
+      // todo wip
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      const wrappedCallback =
+        (type: "nomPool" | "crowdloan" | "base"): SubscriptionCallback<SubNativeBalance[]> =>
+        (error, result) => {
+          if (result) {
+            // result.forEach((b) => b.id)
+            callback(null, new Balances(result))
+          }
+          if (error) return callback(error)
+        }
+
       subscribeNompoolStaking(
         chaindataProvider,
         chainConnectors.substrate,
         getOrCreateTypeRegistry,
         addressesByToken,
-        callback,
+        wrappedCallback("nomPool"),
         callerUnsubscribed
       )
       subscribeCrowdloans(
@@ -364,7 +363,7 @@ export const SubNativeModule: NewBalanceModule<
         chainConnectors.substrate,
         getOrCreateTypeRegistry,
         addressesByToken,
-        callback,
+        wrappedCallback("crowdloan"),
         callerUnsubscribed
       )
       subscribeBase(
@@ -372,7 +371,7 @@ export const SubNativeModule: NewBalanceModule<
         chainConnectors.substrate,
         getOrCreateTypeRegistry,
         addressesByToken,
-        callback,
+        wrappedCallback("base"),
         callerUnsubscribed
       )
 
@@ -468,8 +467,8 @@ export const SubNativeModule: NewBalanceModule<
 async function buildQueries(
   chaindataProvider: ChaindataProvider,
   getOrCreateTypeRegistry: GetOrCreateTypeRegistry,
-  addressesByToken: AddressesByToken<SubNativeToken | CustomSubNativeToken>
-): Promise<Array<RpcStateQuery<Balance>>> {
+  addressesByToken: AddressesByToken<SubNativeToken>
+): Promise<Array<RpcStateQuery<SubNativeBalance>>> {
   const chains = await chaindataProvider.chainsById()
   const tokens = await chaindataProvider.tokensById()
   const miniMetadatas = new Map(
@@ -544,15 +543,10 @@ async function buildQueries(
         multiChainId: { subChainId: chainId },
         chainId,
         tokenId,
-        free: "0",
-        reserves: [{ label: "reserved", amount: "0" }],
-        locks: [
-          { label: "fees", amount: "0", includeInTransferable: true, excludeFromFeePayable: true },
-          { label: "misc", amount: "0" },
-        ],
+        values: [],
       }
 
-      const baseQuery: RpcStateQuery<Balance> | undefined = (() => {
+      const baseQuery: RpcStateQuery<SubNativeBalance> | undefined = (() => {
         const storageHelper = new StorageHelper(
           typeRegistry,
           "system",
@@ -600,7 +594,7 @@ async function buildQueries(
               log.debug(
                 `Token ${tokenId} on chain ${chainId} has no balance type for decoding. Defaulting to a balance of 0 (zero).`
               )
-              return new Balance(balanceJson)
+              return balanceJson
             }
 
             try {
@@ -610,7 +604,7 @@ async function buildQueries(
               log.warn(
                 `Failed to create pre-metadataV14 balance type for token ${tokenId} on chain ${chainId}: ${error?.toString()}`
               )
-              return new Balance(balanceJson)
+              return balanceJson
             }
           }
           // END: Handle chains which use metadata < v14
@@ -626,32 +620,41 @@ async function buildQueries(
           const bigIntOrCodecToBigInt = (value: bigint | i128): bigint =>
             typeof value === "bigint" ? value : value?.toBigInt?.()
 
-          let free = (bigIntOrCodecToBigInt(decoded?.data?.free) ?? 0n).toString()
-          let reserved = (bigIntOrCodecToBigInt(decoded?.data?.reserved) ?? 0n).toString()
-          let miscFrozen = (bigIntOrCodecToBigInt(decoded?.data?.miscFrozen) ?? 0n).toString()
-          let feeFrozen = (bigIntOrCodecToBigInt(decoded?.data?.feeFrozen) ?? 0n).toString()
+          let free = bigIntOrCodecToBigInt(decoded?.data?.free) ?? 0n
+          let reserved = bigIntOrCodecToBigInt(decoded?.data?.reserved) ?? 0n
+          let miscFrozen = bigIntOrCodecToBigInt(decoded?.data?.miscFrozen) ?? 0n
+          let feeFrozen = bigIntOrCodecToBigInt(decoded?.data?.feeFrozen) ?? 0n
 
           // we use the evm-native module to fetch native token balances for ethereum addresses on ethereum networks
           // but on moonbeam, moonriver and other chains which use ethereum addresses instead of substrate addresses,
           // we use both this module and the evm-native module
           if (isEthereumAddress(address) && chain.account !== "secp256k1")
-            free = reserved = miscFrozen = feeFrozen = "0"
+            free = reserved = miscFrozen = feeFrozen = 0n
 
-          balanceJson.free = free
-          const otherReserve = balanceJson.reserves.find(({ label }) => label === "reserved")
-          if (otherReserve) otherReserve.amount = reserved
-          const feesLock = balanceJson.locks.find(({ label }) => label === "fees")
-          if (feesLock) feesLock.amount = feeFrozen
-          const miscLock = balanceJson.locks.find(({ label }) => label === "misc")
-          if (miscLock) miscLock.amount = miscFrozen
+          if (free > 0n)
+            balanceJson.values.push({ type: "free", label: "free", amount: free.toString() })
+          if (reserved > 0n)
+            balanceJson.values.push({
+              type: "reserved",
+              label: "reserved",
+              amount: reserved.toString(),
+            })
+          if (miscFrozen > 0n)
+            balanceJson.values.push({
+              type: "locked",
+              label: "misc",
+              amount: miscFrozen.toString(),
+            })
+          if (feeFrozen > 0n)
+            balanceJson.values.push({ type: "locked", label: "fees", amount: feeFrozen.toString() })
 
-          return new Balance(balanceJson)
+          return balanceJson
         }
 
         return { chainId, stateKey, decodeResult }
       })()
 
-      const locksQuery: RpcStateQuery<Balance> | undefined = (() => {
+      const locksQuery: RpcStateQuery<SubNativeBalance> | undefined = (() => {
         const storageHelper = new StorageHelper(
           typeRegistry,
           "balances",
@@ -662,28 +665,36 @@ async function buildQueries(
         const stateKey = storageHelper.stateKey
         if (!stateKey) return
         const decodeResult = (change: string | null) => {
-          if (change === null) return new Balance(balanceJson)
+          if (change === null) return balanceJson
 
           // eslint-disable-next-line @typescript-eslint/no-explicit-any
           const decoded: any =
             storageDecoder && change !== null ? storageDecoder.decode($.decodeHex(change)) : null
-          balanceJson.locks = [
-            ...balanceJson.locks.slice(0, 2),
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            ...(decoded?.map?.((lock: any) => ({
-              label: getLockedType(lock?.id?.toUtf8?.()),
-              amount: lock?.amount?.toString?.() ?? "0",
-            })) ?? []),
-          ] as SubNativeBalance["locks"]
+          if (decoded) {
+            const lockValues = decoded
+              // eslint-disable-next-line @typescript-eslint/no-explicit-any
+              .filter((lock: any) => lock?.amount > 0n)
+              // eslint-disable-next-line @typescript-eslint/no-explicit-any
+              .map?.((lock: any) => ({
+                type: "locked",
+                source: "substrate-native",
+                label: getLockedType(lock?.id?.toUtf8?.()),
+                amount: lock?.amount?.toString?.() ?? "0",
+              }))
 
-          return new Balance(balanceJson)
+            if (lockValues?.length > 0) {
+              balanceJson.values.push(lockValues)
+            }
+          }
+
+          return balanceJson
         }
 
         return { chainId, stateKey, decodeResult }
       })()
 
-      const queries: Array<RpcStateQuery<Balance>> = [baseQuery, locksQuery].filter(
-        (query): query is RpcStateQuery<Balance> => Boolean(query)
+      const queries: Array<RpcStateQuery<SubNativeBalance>> = [baseQuery, locksQuery].filter(
+        (query): query is RpcStateQuery<SubNativeBalance> => Boolean(query)
       )
 
       return queries
@@ -695,8 +706,8 @@ export async function subscribeNompoolStaking(
   chaindataProvider: ChaindataProvider,
   chainConnector: ChainConnector,
   getOrCreateTypeRegistry: GetOrCreateTypeRegistry,
-  addressesByToken: AddressesByToken<SubNativeToken | CustomSubNativeToken>,
-  callback: SubscriptionCallback<Balances>,
+  addressesByToken: AddressesByToken<SubNativeToken>,
+  callback: SubscriptionCallback<SubNativeBalance[]>,
   callerUnsubscribed: Promise<unknown>
 ) {
   const chains = await chaindataProvider.chainsById()
@@ -1008,8 +1019,8 @@ export async function subscribeNompoolStaking(
         stakeByPool,
         metadataByPool,
       ]) => {
-        const balances: SubNativeBalance[] = Array.from(poolIdByAddress).map(
-          ([address, poolId]) => {
+        const balances = Array.from(poolIdByAddress)
+          .map(([address, poolId]) => {
             const parsedPoolId = poolId === null ? undefined : parseInt(poolId)
             const points = pointsByAddress.get(address) ?? "0"
             const poolPoints = pointsByPool.get(poolId ?? "") ?? "0"
@@ -1018,54 +1029,48 @@ export async function subscribeNompoolStaking(
 
             const amount =
               points === "0" || poolPoints === "0" || poolStake === "0"
-                ? "0"
-                : ((BigInt(poolStake) * BigInt(points)) / BigInt(poolPoints)).toString()
+                ? 0n
+                : (BigInt(poolStake) * BigInt(points)) / BigInt(poolPoints)
 
-            const unbondingAmount = (unbondingErasByAddress.get(address) ?? [])
-              .reduce((total, { amount }) => total + BigInt(amount ?? "0"), 0n)
-              .toString()
+            const unbondingAmount = (unbondingErasByAddress.get(address) ?? []).reduce(
+              (total, { amount }) => total + BigInt(amount ?? "0"),
+              0n
+            )
+
+            if (amount === 0n && unbondingAmount === 0n) return null
 
             return {
               source: "substrate-native",
-              subSource: "nompools-staking",
               status: "live",
               address,
               multiChainId: { subChainId: chainId },
               chainId,
               tokenId,
-              free: "0",
-              reserves: [
-                { label: "reserved", amount: "0" },
+              values: [
                 {
+                  source: "nompools-staking",
+                  type: "reserved",
                   label: "nompools-staking",
-                  amount,
+                  amount: amount.toString(),
                   meta: { type: "nompool", poolId: parsedPoolId, description: poolMetadata },
                 },
                 {
+                  source: "nompools-staking",
+                  type: "reserved",
                   label: "nompools-unbonding",
-                  amount: unbondingAmount,
+                  amount: unbondingAmount.toString(),
                   meta: {
-                    type: "nompool",
                     poolId: parsedPoolId,
                     description: poolMetadata,
                     unbonding: true,
                   },
                 },
               ],
-              locks: [
-                {
-                  label: "fees",
-                  amount: "0",
-                  includeInTransferable: true,
-                  excludeFromFeePayable: true,
-                },
-                { label: "misc", amount: "0" },
-              ],
-            }
-          }
-        )
+            } as SubNativeBalance
+          })
+          .filter(Boolean) as SubNativeBalance[]
 
-        callback(null, new Balances(balances ?? []))
+        if (balances.length > 0) callback(null, balances)
       },
       error: (error) => callback(error),
     })
@@ -1079,11 +1084,12 @@ async function subscribeCrowdloans(
   chainConnector: ChainConnector,
   getOrCreateTypeRegistry: GetOrCreateTypeRegistry,
   addressesByToken: AddressesByToken<SubNativeToken | CustomSubNativeToken>,
-  callback: SubscriptionCallback<Balances>,
+  callback: SubscriptionCallback<SubNativeBalance[]>,
   callerUnsubscribed: Promise<unknown>
 ) {
   const chains = await chaindataProvider.chainsById()
   const tokens = await chaindataProvider.tokensById()
+
   const miniMetadatas = new Map(
     (await balancesDb.miniMetadatas.toArray()).map((miniMetadata) => [
       miniMetadata.id,
@@ -1349,38 +1355,28 @@ async function subscribeCrowdloans(
 
     const subscription = contributionsByAddress$.subscribe({
       next: (contributionsByAddress) => {
-        const balances: SubNativeBalance[] = Array.from(contributionsByAddress).map(
-          ([address, contributions]) => {
+        const balances: SubNativeBalance[] = Array.from(contributionsByAddress)
+          .filter(([, contributions]) => {
+            Array.from(contributions).filter(({ amount }) => BigInt(amount) > 0n)
+          })
+          .map(([address, contributions]) => {
             return {
               source: "substrate-native",
-              subSource: "crowdloan",
               status: "live",
               address,
               multiChainId: { subChainId: chainId },
               chainId,
               tokenId,
-              free: "0",
-              reserves: [
-                { label: "reserved", amount: "0" },
-                ...Array.from(contributions).map(({ amount, paraId }) => ({
-                  label: "crowdloan",
-                  amount: amount,
-                  meta: { type: "crowdloan", paraId },
-                })),
-              ],
-              locks: [
-                {
-                  label: "fees",
-                  amount: "0",
-                  includeInTransferable: true,
-                  excludeFromFeePayable: true,
-                },
-                { label: "misc", amount: "0" },
-              ],
+              values: Array.from(contributions).map(({ amount, paraId }) => ({
+                type: "reserved",
+                label: "crowdloan",
+                source: "crowdloan",
+                amount: amount,
+                meta: { paraId },
+              })),
             }
-          }
-        )
-        callback(null, new Balances(balances ?? []))
+          })
+        if (balances.length > 0) callback(null, balances)
       },
       error: (error) => callback(error),
     })
@@ -1393,13 +1389,16 @@ async function subscribeBase(
   chaindataProvider: ChaindataProvider,
   chainConnector: ChainConnector,
   getOrCreateTypeRegistry: GetOrCreateTypeRegistry,
-  addressesByToken: AddressesByToken<SubNativeToken | CustomSubNativeToken>,
-  callback: SubscriptionCallback<Balances>,
+  addressesByToken: AddressesByToken<SubNativeToken>,
+  callback: SubscriptionCallback<SubNativeBalance[]>,
   callerUnsubscribed: Promise<unknown>
 ) {
   const queries = await buildQueries(chaindataProvider, getOrCreateTypeRegistry, addressesByToken)
   const unsubscribe = await new RpcStateQueryHelper(chainConnector, queries).subscribe(
-    (error, result) => (error ? callback(error) : callback(null, new Balances(result ?? [])))
+    (error, result) => {
+      if (error) callback(error)
+      if (result && result.length > 0) callback(null, result)
+    }
   )
 
   callerUnsubscribed.catch(unsubscribe).catch((error) => log.warn(error))

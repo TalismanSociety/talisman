@@ -7,6 +7,8 @@ import {
   AmountWithLabel,
   BalanceJson,
   BalanceJsonList,
+  BalanceStatusTypes,
+  ExtraAmount,
   IBalance,
   excludeFromFeePayableLocks,
   excludeFromTransferableAmount,
@@ -133,7 +135,8 @@ export class Balances {
    */
   find = (query: BalanceSearchQuery | BalanceSearchQuery[]): Balances => {
     // construct filter
-    const orQueries = (Array.isArray(query) ? query : [query]).map((query) =>
+    const queryArray: BalanceSearchQuery[] = Array.isArray(query) ? query : [query]
+    const orQueries = queryArray.map((query) =>
       typeof query === "function" ? query : Object.entries(query)
     )
 
@@ -255,15 +258,14 @@ export class Balances {
   }
 }
 
-export const getBalanceId = (
-  balance: Pick<
-    BalanceJson,
-    "source" | "subSource" | "address" | "chainId" | "evmNetworkId" | "tokenId"
-  >
-) => {
-  const { source, subSource, address, chainId, evmNetworkId, tokenId } = balance
-  const locationId = chainId !== undefined ? chainId : evmNetworkId
-  return [source, address, locationId, tokenId, subSource].filter(Boolean).join("-")
+type BalanceJsonEvm = BalanceJson & { evmNetworkId: string }
+
+const isBalanceEvm = (balance: BalanceJson): balance is BalanceJsonEvm => "evmNetworkId" in balance
+
+export const getBalanceId = (balance: BalanceJson) => {
+  const { source, address, tokenId } = balance
+  const locationId = isBalanceEvm(balance) ? balance.evmNetworkId : balance.chainId
+  return [source, address, locationId, tokenId].filter(Boolean).join("-")
 }
 
 /**
@@ -276,6 +278,7 @@ export class Balance {
 
   /** The underlying data for this balance */
   readonly #storage: BalanceJson
+  readonly #valueGetter: BalanceValueGetter
 
   #db: HydrateDb | null = null
 
@@ -285,6 +288,7 @@ export class Balance {
 
   constructor(storage: BalanceJson, hydrate?: HydrateDb) {
     this.#storage = storage
+    this.#valueGetter = new BalanceValueGetter(this.#storage)
     if (hydrate !== undefined) this.hydrate(hydrate)
   }
 
@@ -328,10 +332,6 @@ export class Balance {
     return this.#storage.source
   }
 
-  get subSource() {
-    return this.#storage.subSource
-  }
-
   get status() {
     return this.#storage.status
   }
@@ -339,25 +339,29 @@ export class Balance {
   get address() {
     return this.#storage.address
   }
+
   get chainId() {
-    return this.#storage.chainId
+    return isBalanceEvm(this.#storage) ? undefined : this.#storage.chainId
   }
   get chain() {
     return (this.#db?.chains && this.chainId && this.#db?.chains[this.chainId]) || null
   }
+
   get evmNetworkId() {
-    return this.#storage.evmNetworkId
+    return isBalanceEvm(this.#storage) ? this.#storage.evmNetworkId : undefined
   }
   get evmNetwork() {
-    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-    return (this.#db?.evmNetworks && this.#db?.evmNetworks[this.evmNetworkId!]) || null
+    return (
+      (this.#db?.evmNetworks && this.evmNetworkId && this.#db?.evmNetworks[this.evmNetworkId]) ||
+      null
+    )
   }
+
   get tokenId() {
     return this.#storage.tokenId
   }
   get token() {
-    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-    return (this.#db?.tokens && this.#db?.tokens[this.tokenId!]) || null
+    return (this.#db?.tokens && this.#db?.tokens[this.tokenId]) || null
   }
   get decimals() {
     return this.token?.decimals || null
@@ -367,68 +371,74 @@ export class Balance {
   }
 
   /**
+   * A general method to get values matching a certain type from this balance.
+   * @param valueType - The type of value to get.
+   * @returns An array of the values matching the type.
+   */
+  private getValue(
+    valueType: BalanceStatusTypes
+  ): Array<Omit<AmountWithLabel<string>, "amount"> & { amount: BalanceFormatter }> {
+    return this.#valueGetter.get(valueType).map((value) => {
+      return { ...value, amount: this.#format(value.amount) }
+    })
+  }
+
+  /**
+   * A general method to add a value to the array of values for this balance.
+   * @param valueType - The type of value to add.
+   * @returns A function which can be used to add a value to the array of values for this balance.
+   */
+  private addValue(valueType: BalanceStatusTypes) {
+    return (value: Omit<AmountWithLabel<string>, "type">) => this.#valueGetter.add(valueType, value)
+  }
+  /**
    * The total balance of this token.
    * Includes the free and the reserved amount.
    * The balance will be reaped if this goes below the existential deposit.
    */
   get total() {
-    const extra = includeInTotalExtraAmount(this.#storage.extra)
+    const extra = this.extra ? includeInTotalExtraAmount(this.extra) : 0n
     return this.#format(this.free.planck + this.reserved.planck + extra)
   }
   /** The non-reserved balance of this token. Includes the frozen amount. Is included in the total. */
   get free() {
-    return this.#format(
-      typeof this.#storage.free === "string"
-        ? BigInt(this.#storage.free)
-        : Array.isArray(this.#storage.free)
-        ? (this.#storage.free as AmountWithLabel<string>[])
-            .map((reserve) => BigInt(reserve.amount))
-            .reduce((a, b) => a + b, 0n)
-        : BigInt((this.#storage.free as AmountWithLabel<string>)?.amount || "0")
-    )
+    // for simple balances
+    if ("value" in this.#storage) return new BalanceFormatter(this.#storage.value)
+
+    const freeValues = this.getValue("free")
+    const totalFree = freeValues.map(({ amount }) => amount.planck).reduce((a, b) => a + b, 0n)
+    return this.#format(totalFree)
   }
   /** The reserved balance of this token. Is included in the total. */
   get reserved() {
+    const reservedValues = this.getValue("reserved")
+    if (reservedValues.length === 0) return this.#format(0n)
+
     return this.#format(
-      typeof this.#storage.reserves === "string"
-        ? BigInt(this.#storage.reserves)
-        : Array.isArray(this.#storage.reserves)
-        ? this.#storage.reserves
-            .map((reserve) => BigInt(reserve.amount))
-            .reduce((a, b) => a + b, 0n)
-        : BigInt(this.#storage.reserves?.amount || "0")
+      reservedValues.map(({ amount }) => amount.planck).reduce((a, b) => a + b, 0n)
     )
   }
   get reserves() {
-    return (
-      Array.isArray(this.#storage.reserves) ? this.#storage.reserves : [this.#storage.reserves]
-    ).flatMap((reserve) => {
-      if (reserve === undefined) return []
-      if (typeof reserve === "string") return { label: "reserved", amount: this.#format(reserve) }
-      return { ...reserve, amount: this.#format(reserve.amount) }
-    })
+    return this.getValue("reserved")
   }
   /** The frozen balance of this token. Is included in the free amount. */
   get locked() {
     return this.#format(
-      typeof this.#storage.locks === "string"
-        ? BigInt(this.#storage.locks)
-        : Array.isArray(this.#storage.locks)
-        ? this.#storage.locks
-            .map((lock) => BigInt(lock.amount))
-            .reduce((a, b) => BigMath.max(a, b), 0n)
-        : BigInt(this.#storage.locks?.amount || "0")
+      this.locks.map(({ amount }) => amount.planck).reduce((a, b) => BigMath.max(a, b), 0n)
     )
   }
+
   get locks() {
-    return (
-      Array.isArray(this.#storage.locks) ? this.#storage.locks : [this.#storage.locks]
-    ).flatMap((lock) => {
-      if (lock === undefined) return []
-      if (typeof lock === "string") return { label: "other", amount: this.#format(lock) }
-      return { ...lock, amount: this.#format(lock.amount) }
-    })
+    return this.getValue("locked")
   }
+
+  /** The extra balance of this token */
+  get extra() {
+    const extra = this.getValue("extra")
+    if (extra.length > 0) return extra as unknown as ExtraAmount<string>[]
+    return undefined
+  }
+
   /** @deprecated Use balance.locked */
   get frozen() {
     return this.locked
@@ -436,10 +446,10 @@ export class Balance {
   /** The transferable balance of this token. Is generally the free amount - the miscFrozen amount. */
   get transferable() {
     // if no locks exist, transferable is equal to the free amount
-    if (!this.#storage.locks) return this.free
+    if (this.locks.length === 0) return this.free
 
     // find the largest lock (but ignore any locks which are marked as `includeInTransferable`)
-    const excludeAmount = excludeFromTransferableAmount(this.#storage.locks)
+    const excludeAmount = excludeFromTransferableAmount(this.locked.planck.toString())
 
     // subtract the lock from the free amount (but don't go below 0)
     return this.#format(BigMath.max(this.free.planck - excludeAmount, 0n))
@@ -447,15 +457,33 @@ export class Balance {
   /** The feePayable balance of this token. Is generally the free amount - the feeFrozen amount. */
   get feePayable() {
     // if no locks exist, feePayable is equal to the free amount
-    if (!this.#storage.locks) return this.free
+    if (this.locks.length === 0) return this.free
 
     // find the largest lock which can't be used to pay tx fees
-    const excludeAmount = excludeFromFeePayableLocks(this.#storage.locks)
+    const excludeAmount = excludeFromFeePayableLocks(this.locked.planck.toString())
       .map((lock) => BigInt(lock.amount))
       .reduce((max, lock) => BigMath.max(max, lock), 0n)
 
     // subtract the lock from the free amount (but don't go below 0)
     return this.#format(BigMath.max(this.free.planck - excludeAmount, 0n))
+  }
+}
+
+export class BalanceValueGetter {
+  #storage: BalanceJson
+
+  constructor(storage: BalanceJson) {
+    this.#storage = storage
+  }
+
+  get(valueType: BalanceStatusTypes) {
+    if ("values" in this.#storage)
+      return this.#storage.values.filter(({ type }) => type === valueType)
+    return []
+  }
+
+  add(valueType: BalanceStatusTypes, amount: Omit<AmountWithLabel<string>, "type">) {
+    if ("values" in this.#storage) this.#storage.values.push({ type: valueType, ...amount })
   }
 }
 

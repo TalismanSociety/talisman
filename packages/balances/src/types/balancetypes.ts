@@ -1,5 +1,5 @@
 import { PluginBalanceTypes } from "@talismn/balances/plugins"
-import { ChainId, EvmNetworkId, MultiChainId, TokenId } from "@talismn/chaindata-provider"
+import { ChainId, EvmChainId, EvmNetworkId, SubChainId, TokenId } from "@talismn/chaindata-provider"
 import { BigMath } from "@talismn/util"
 
 import { Address } from "./addresses"
@@ -37,14 +37,7 @@ export type BalanceJson = BalanceTypes[keyof BalanceTypes] extends never
 /** A collection of `BalanceJson` objects */
 export type BalanceJsonList = Record<string, BalanceJson>
 
-export type BalanceStatusLive = `live-${string}`
-export const BalanceStatusLive = (subscriptionId: string): BalanceStatusLive =>
-  `live-${subscriptionId}`
 export type BalanceStatus =
-  // balance is subscribed to the on-chain value and up to date
-  // (NOTE: format: `live-${subscriptionId}`, if subscriptionId is out of
-  // date then balance status should be considered as `cache`)
-  | BalanceStatusLive
   // balance is subscribed to the on-chain value and up to date
   | "live"
   // balance was retrieved from the chain but is no longer subscribed
@@ -54,15 +47,9 @@ export type BalanceStatus =
   // balance has never been retrieved yet
   | "initializing"
 
-/** `IBalance` is a common interface which all balance types must implement. */
-export type IBalance = {
+type IBalanceBase = {
   /** The module that this balance was retrieved by */
   source: string
-  /**
-   * For modules which fetch balances via module sources, this is the sub-source
-   * e.g. `staking` or `crowdloans`
-   **/
-  subSource?: string
 
   /** Has this balance never been fetched, or is it from a cache, or is it up to date? */
   status: BalanceStatus
@@ -71,51 +58,64 @@ export type IBalance = {
   address: Address
   /** The token this balance is for */
   tokenId: TokenId
-
-  /** WIP, use `chainId` or `evmNetworkId` for now */
-  multiChainId: MultiChainId
-  /** The substrate chain this balance is on */
-  chainId?: ChainId
-  /** The evm chain this balance is on */
-  evmNetworkId?: EvmNetworkId
-} & IBalanceAmounts
-export type IBalanceAmounts = {
-  /** The portion of a balance that is not reserved. The free balance is the only balance that matters for most operations. */
-  free?:
-    | Amount // module has only one free amount
-    | AmountWithLabel<string> // module has only one free amount, but it has a label
-    | Array<AmountWithLabel<string>> // module has multiple free amounts
-
-  /** The portion of a balance that is owned by the account but is reserved/suspended/unavailable. Reserved balance can still be slashed, but only after all the free balance has been slashed. */
-  reserves?:
-    | Amount // module has only one reserved amount
-    | AmountWithLabel<string> // module has only one reserved amount, but it has a label
-    | Array<AmountWithLabel<string>> // module has multiple reserved amounts
-
-  /** A freeze on a specified amount of an account's free balance until a specified block number. Multiple locks always operate over the same funds, so they overlay rather than stack. */
-  locks?:
-    | Amount // module has only one lock
-    | LockedAmount<string> // module has only one lock, but it has a label or should be included in the transferable amount
-    | Array<LockedAmount<string>> // module has multiple locks
-
-  /** Additional balances held by an account. By default these will not be included in the account total. Dapps may choose to add support for showing extra amounts on a case by case basis. */
-  extra?:
-    | ExtraAmount<string> // module has only one extra amount
-    | Array<ExtraAmount<string>> // module has multiple extra amounts
 }
+
+type IBalanceBaseEvm = {
+  /** WIP, use `chainId` or `evmNetworkId` for now */
+  multiChainId: EvmChainId
+  /** The evm chain this balance is on */
+  evmNetworkId: EvmNetworkId
+}
+
+type IBalanceBaseSubstrate = {
+  multiChainId: SubChainId
+  /** The substrate chain this balance is on */
+  chainId: ChainId
+}
+
+type IBalanceSimpleValues = {
+  /** For balance types with a simple value, this is the value of the balance (eg, evm native token balance) */
+  value: Amount
+}
+
+type IBalanceComplexValues = {
+  /** For balance types with multple possible states, these are the values of the balance (eg, substrate native token balance) */
+  values: Array<AmountWithLabel<string>>
+}
+
+/** `IBalance` is a common interface which all balance types must implement. */
+export type IBalance = IBalanceBase &
+  (IBalanceSimpleValues | IBalanceComplexValues) &
+  (IBalanceBaseEvm | IBalanceBaseSubstrate)
+
+export type EvmBalance = IBalanceBase &
+  IBalanceBaseEvm &
+  (IBalanceSimpleValues | IBalanceComplexValues)
+export type SubstrateBalance = IBalanceBase &
+  IBalanceBaseSubstrate &
+  (IBalanceSimpleValues | IBalanceComplexValues)
 
 /** An unlabelled amount of a balance */
 export type Amount = string
 
+export type BalanceStatusTypes = "free" | "reserved" | "locked" | "extra"
+
 /** A labelled amount of a balance */
-export type AmountWithLabel<TLabel extends string> = {
+type BaseAmountWithLabel<TLabel extends string> = {
+  type: BalanceStatusTypes
+  /**
+   * For modules which fetch balances via module sources, the source is equivalent to previous 'subSource' field
+   * on the parent balance object
+   * e.g. `staking` or `crowdloans`
+   **/
+  source?: string
   label: TLabel
   amount: Amount
   meta?: unknown
 }
 
 /** A labelled locked amount of a balance */
-export type LockedAmount<TLabel extends string> = AmountWithLabel<TLabel> & {
+export type LockedAmount<TLabel extends string> = BaseAmountWithLabel<TLabel> & {
   /**
    * By default, the largest locked amount is subtrated from the transferable amount of this balance.
    * If this property is set to true, this particular lock will be skipped when making this calculation.
@@ -131,6 +131,11 @@ export type LockedAmount<TLabel extends string> = AmountWithLabel<TLabel> & {
    */
   excludeFromFeePayable?: boolean
 }
+
+export type AmountWithLabel<TLabel extends string> =
+  | BaseAmountWithLabel<TLabel>
+  | LockedAmount<TLabel>
+  | ExtraAmount<TLabel>
 
 export function excludeFromTransferableAmount(
   locks: Amount | LockedAmount<string> | Array<LockedAmount<string>>
@@ -153,7 +158,7 @@ export function excludeFromFeePayableLocks(
 }
 
 /** A labelled extra amount of a balance */
-export type ExtraAmount<TLabel extends string> = AmountWithLabel<TLabel> & {
+export type ExtraAmount<TLabel extends string> = BaseAmountWithLabel<TLabel> & {
   /** If set to true, this extra amount will be included in the calculation of the total amount of this balance. */
   includeInTotal?: boolean
 }
@@ -171,6 +176,12 @@ export function includeInTotalExtraAmount(
 }
 
 /** Used by plugins to help define their custom `BalanceType` */
-export type NewBalanceType<TModuleType extends string, T extends IBalanceAmounts> = IBalance & {
-  source: TModuleType
-} & T
+export type NewBalanceType<
+  TModuleType extends string,
+  TBalanceValueType extends "simple" | "complex",
+  TNetworkType extends "ethereum" | "substrate"
+> = IBalanceBase &
+  (TBalanceValueType extends "simple" ? IBalanceSimpleValues : IBalanceComplexValues) &
+  (TNetworkType extends "ethereum" ? IBalanceBaseEvm : IBalanceBaseSubstrate) & {
+    source: TModuleType
+  }

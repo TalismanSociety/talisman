@@ -400,7 +400,7 @@ export class ChaindataProvider implements IChaindataProvider {
     try {
       return await this.#db.tokens
         // only affect custom tokens
-        .filter((token) => "isCustom" in token && token.isCustom)
+        .filter((token) => "isCustom" in token && Boolean(token.isCustom))
         // only affect the provided token
         .filter((token) => token.id === tokenId)
         // delete the token (if exists)
@@ -411,9 +411,10 @@ export class ChaindataProvider implements IChaindataProvider {
   }
 
   async setCustomTokens(tokens: Token[]) {
+    // TODO custom tokens have to go into localstorage
     return await this.#db.transaction("rw", this.#db.tokens, async () => {
       const keys = await this.#db.tokens
-        .filter((token) => "isCustom" in token && token.isCustom)
+        .filter((token) => "isCustom" in token && Boolean(token.isCustom))
         .primaryKeys()
 
       await this.#db.tokens.bulkDelete(keys)
