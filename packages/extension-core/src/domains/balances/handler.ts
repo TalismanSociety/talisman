@@ -213,7 +213,7 @@ const getSubscriptionParams = (
     ...Object.entries(addressesByChain)
       // convert chainIds into chains
       .map(([chainId, addresses]) => [chains[chainId], addresses] as const)
-      .filter(([chain]) => isChainActive(chain, activeChains)),
+      .filter(([chain]) => chain && isChainActive(chain, activeChains)),
 
     ...addressesAndEvmNetworks.evmNetworks
       // convert evmNetworkIds into evmNetworks
