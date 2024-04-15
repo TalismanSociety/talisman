@@ -3867,7 +3867,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@blowfishxyz/api-client@npm:^0.1.13":
+"@blowfishxyz/api-client@npm:0.1.13, @blowfishxyz/api-client@npm:^0.1.13":
   version: 0.1.13
   resolution: "@blowfishxyz/api-client@npm:0.1.13"
   checksum: 2ecf235ac89b5b3f55d51c8e2f653e1385346c7f4daada1011fefec75c14b0b6cfa5db06c29470138efc18767e2f60ac1b1c59b9300b304ed430746b25f13dab
@@ -15007,7 +15007,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"decimal.js@npm:^10.4.2, decimal.js@npm:^10.4.3":
+"decimal.js@npm:10.4.3, decimal.js@npm:^10.4.2, decimal.js@npm:^10.4.3":
   version: 10.4.3
   resolution: "decimal.js@npm:10.4.3"
   checksum: 796404dcfa9d1dbfdc48870229d57f788b48c21c603c3f6554a1c17c10195fc1024de338b0cf9e1efe0c7c167eeb18f04548979bcc5fdfabebb7cc0ae3287bae
@@ -16928,6 +16928,7 @@ __metadata:
     "@babel/plugin-transform-react-jsx": ^7.23.4
     "@babel/preset-env": ^7.23.7
     "@babel/preset-typescript": ^7.23.3
+    "@blowfishxyz/api-client": 0.1.13
     "@dnd-kit/core": 6.1.0
     "@dnd-kit/sortable": 7.0.2
     "@eth-optimism/contracts-ts": ^0.17.0
@@ -17017,6 +17018,7 @@ __metadata:
     css-loader: ^6.7.3
     date-fns: ^2.30.0
     dcent-web-connector: ^0.14.1
+    decimal.js: 10.4.3
     dexie: ^3.2.4
     dexie-react-hooks: ^1.1.7
     dompurify: ^3.0.6

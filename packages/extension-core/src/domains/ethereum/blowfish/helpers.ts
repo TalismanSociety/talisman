@@ -1,15 +1,19 @@
 import { BlowfishEvmApiClient, createEvmClient } from "@blowfishxyz/api-client/v20230605"
 import { EvmNetworkId } from "@talismn/chaindata-provider"
 
+export {
+  type ScanTransactionsEvm200Response as ScanTransactionsResult,
+  type EvmExpectedStateChange,
+  WarningInnerKindEnum,
+} from "@blowfishxyz/api-client/v20230605"
+
+export type BlowfishEvmChainInfo = {
+  chainFamily: BlowfishEvmApiClient["chainFamily"]
+  chainNetwork: BlowfishEvmApiClient["chainNetwork"]
+}
+
 // TODO pull on startup from config repo, or add these to chaindata ?
-export const BLOWFISH_SUPPORTED_CHAINS: Record<
-  EvmNetworkId,
-  | {
-      chainFamily: BlowfishEvmApiClient["chainFamily"]
-      chainNetwork: BlowfishEvmApiClient["chainNetwork"]
-    }
-  | undefined
-> = {
+const BLOWFISH_SUPPORTED_CHAINS: Record<EvmNetworkId, BlowfishEvmChainInfo | undefined> = {
   "1": { chainFamily: "ethereum", chainNetwork: "mainnet" },
   "11155111": { chainFamily: "ethereum", chainNetwork: "sepolia" },
   "137": { chainFamily: "polygon", chainNetwork: "mainnet" },

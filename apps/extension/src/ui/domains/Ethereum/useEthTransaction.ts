@@ -522,6 +522,7 @@ export const useEthTransaction = (
   const [priority, setPriority] = useState<EthPriorityOptionName>()
 
   const validation = useScanEvmTransaction(evmNetworkId, tx, origin)
+
   useEffect(() => {
     // TODO remove
     log.log("blowfish validation", validation)

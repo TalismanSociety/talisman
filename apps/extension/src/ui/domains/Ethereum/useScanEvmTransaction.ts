@@ -1,4 +1,6 @@
+import { ScanTransactionsEvm200Response } from "@blowfishxyz/api-client/v20230605"
 import {
+  BlowfishEvmChainInfo,
   getBlowfishChainInfo,
   getBlowfishClient,
   serializeTransactionRequest,
@@ -9,11 +11,20 @@ import { log } from "extension-shared"
 import { useMemo, useState } from "react"
 import { TransactionRequest } from "viem"
 
+export type EvmTransactionScan = {
+  isAvailable: boolean
+  isValidating: boolean
+  result: ScanTransactionsEvm200Response | null | undefined
+  error: unknown
+  validate: (() => void) | undefined
+  chainInfo: BlowfishEvmChainInfo | null
+}
+
 export const useScanEvmTransaction = (
   evmNetworkId: EvmNetworkId | undefined,
   tx: TransactionRequest | undefined,
   url?: string
-) => {
+): EvmTransactionScan => {
   const [autoValidate, setAutoValidate] = useState(true) // TODO settingsStore.get("autoValidateTransactions")
 
   const origin = useMemo(() => {
