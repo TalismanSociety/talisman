@@ -1,6 +1,6 @@
 {
   "name": "extension",
-  "version": "1.24.1",
+  "version": "1.25.0",
   "private": true,
   "license": "GPL-3.0-or-later",
   "dependencies": {
