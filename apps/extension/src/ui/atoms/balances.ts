@@ -1,4 +1,6 @@
-import { BalanceSubscriptionResponse } from "@extension/core"
+import {} from "@extension/core"
+
+import { BalanceSubscriptionResponse, isAccountCompatibleWithChain } from "@extension/core"
 import { Address, Balances, HydrateDb } from "@talismn/balances"
 import { TokenId } from "@talismn/chaindata-provider"
 import { api } from "@ui/api"
@@ -6,7 +8,7 @@ import { atom } from "jotai"
 import { atomFamily } from "jotai/utils"
 import isEqual from "lodash/isEqual"
 
-import { AccountCategory, accountsByCategoryAtomFamily } from "./accounts"
+import { AccountCategory, accountsByCategoryAtomFamily, accountsMapAtom } from "./accounts"
 import {
   activeChainsWithTestnetsMapAtom,
   activeEvmNetworksWithTestnetsMapAtom,
@@ -33,12 +35,27 @@ const rawBalancesAtom = atom(async (get) => {
 })
 
 const filteredRawBalancesAtom = atom(async (get) => {
-  const [tokens, balances] = await Promise.all([
+  const [tokens, chains, accounts, balances] = await Promise.all([
     get(activeTokensWithTestnetsMapAtom),
+    get(activeChainsWithTestnetsMapAtom),
+    get(accountsMapAtom),
     get(rawBalancesAtom),
   ])
 
-  return balances.filter((b) => tokens[b.tokenId])
+  // exclude invalid balances
+  return balances.filter((b) => {
+    // ensure there is a matching token
+    if (!tokens[b.tokenId]) return false
+
+    const account = accounts[b.address]
+    if (!account || !account.type) return false
+
+    // for chain specific accounts, exclude balances from other chains
+    if ("chainId" in b && b.chainId && chains?.[b.chainId])
+      return isAccountCompatibleWithChain(chains[b.chainId], account.type, account.genesisHash)
+    if ("evmNetworkId" in b && b.evmNetworkId) return account.type === "ethereum"
+    return false
+  })
 })
 
 export const balancesHydrateAtom = atom(async (get) => {
@@ -80,8 +97,7 @@ export const balancesByAccountCategoryAtomFamily = atomFamily((accountCategory: 
       get(allBalancesAtom),
       get(accountsByCategoryAtomFamily(accountCategory)),
     ])
-    return new Balances(
-      allBalances.each.filter((b) => accounts.some((a) => a.address === b.address))
-    )
+    const accountIds = accounts.map((a) => a.address)
+    return new Balances(allBalances.each.filter((b) => accountIds.includes(b.address)))
   })
 )

@@ -1,70 +1,61 @@
-import { BalanceFormatter } from "@extension/core"
-import { TOKEN_APPROVALS_URL } from "@extension/shared"
-import { assert } from "@polkadot/util"
-import { useErc20Token } from "@ui/hooks/useErc20Token"
-import useToken from "@ui/hooks/useToken"
-import { useTokenRates } from "@ui/hooks/useTokenRates"
-import { FC, useMemo } from "react"
+import { EvmAddress } from "@extension/core"
+import { TOKEN_APPROVALS_URL, log } from "@extension/shared"
+import { notify } from "@talisman/components/Notifications"
+import { FC, useCallback, useMemo } from "react"
 import { Trans, useTranslation } from "react-i18next"
-import { toHex } from "viem"
 
 import { SignAlertMessage } from "../SignAlertMessage"
 import { SignContainer } from "../SignContainer"
 import { SignViewBodyShimmer } from "../Views/SignViewBodyShimmer"
 import { getContractCallArg } from "./getContractCallArg"
+import { SignParamAccountButton, SignParamNetworkAddressButton } from "./shared"
 import {
-  SignParamAccountButton,
-  SignParamNetworkAddressButton,
-  SignParamTokensButton,
-} from "./shared"
+  ERC20_UNLIMITED_ALLOWANCE,
+  SignParamAllowanceButton,
+} from "./shared/SignParamAllowanceButton"
 import { SignParamErc20TokenButton } from "./shared/SignParamErc20TokenButton"
 import { useEthSignKnownTransactionRequest } from "./shared/useEthSignKnownTransactionRequest"
 
-const ALLOWANCE_UNLIMITED = "0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"
-
 export const EthSignBodyErc20Approve: FC = () => {
   const { t } = useTranslation("request")
-  const { account, network, decodedTx } = useEthSignKnownTransactionRequest()
+  const { account, network, decodedTx, updateCallArg } = useEthSignKnownTransactionRequest()
 
-  const token = useErc20Token(network?.id, decodedTx.targetAddress)
-
-  const tokenRates = useTokenRates(token?.id)
-
-  const { symbol } = useMemo(() => {
-    assert(decodedTx.asset?.symbol, "missing asset symbol")
-    const symbol = token?.symbol ?? (decodedTx.asset.symbol as string)
-
-    return { symbol }
-  }, [token?.symbol, decodedTx.asset?.symbol])
-
-  const nativeToken = useToken(network?.nativeToken?.id)
-
-  const { spender, allowance, isInfinite, isRevoke } = useMemo(() => {
-    assert(decodedTx.asset?.decimals !== undefined, "missing asset decimals")
-    const rawAllowance = getContractCallArg<bigint>(decodedTx, "amount")
-    const isInfinite = toHex(rawAllowance) === ALLOWANCE_UNLIMITED
-
-    return {
-      spender: getContractCallArg<string>(decodedTx, "spender"),
-      allowance:
-        rawAllowance && !isInfinite
-          ? new BalanceFormatter(rawAllowance.toString(), decodedTx.asset.decimals, tokenRates)
-          : undefined,
-      isInfinite,
-      isRevoke: rawAllowance === 0n,
-    }
-  }, [decodedTx, tokenRates])
-
-  if (
-    !nativeToken ||
-    !spender ||
-    !account ||
-    !network ||
-    !decodedTx.targetAddress ||
-    !decodedTx.asset?.symbol ||
-    decodedTx.asset?.decimals === undefined
+  const erc20Token = useMemo(
+    () =>
+      network && decodedTx.asset?.symbol && decodedTx.targetAddress
+        ? {
+            evmNetworkId: network.id,
+            contractAddress: decodedTx.targetAddress,
+            decimals: decodedTx.asset.decimals,
+            symbol: decodedTx.asset.symbol,
+          }
+        : null,
+    [decodedTx, network]
   )
-    return <SignViewBodyShimmer />
+
+  const [spender, allowance] = useMemo(
+    () => [
+      getContractCallArg<EvmAddress>(decodedTx, "spender"),
+      getContractCallArg<bigint>(decodedTx, "amount"),
+    ],
+    [decodedTx]
+  )
+
+  const isRevoke = useMemo(() => allowance === 0n, [allowance])
+
+  const handleAllowanceChange = useCallback(
+    async (limit: bigint) => {
+      try {
+        await updateCallArg("amount", limit)
+      } catch (err) {
+        log.error("Failed to override allowance", { err })
+        notify({ title: "Error", subtitle: (err as Error).message, type: "error" })
+      }
+    },
+    [updateCallArg]
+  )
+
+  if (!spender || !account || !network || !erc20Token) return <SignViewBodyShimmer />
 
   return (
     <SignContainer
@@ -84,9 +75,13 @@ export const EthSignBodyErc20Approve: FC = () => {
         isRevoke ? null : (
           <SignAlertMessage>
             <span className="text-body-secondary">
-              {t(
-                "This contract will have permission to spend tokens on your behalf until manually revoked."
-              )}
+              {allowance === ERC20_UNLIMITED_ALLOWANCE
+                ? t(
+                    `This contract will have permission to spend all tokens on your behalf until manually revoked. We recommend you set a limit by clicking the amount button above.`
+                  )
+                : t(
+                    "This contract will have permission to spend tokens on your behalf until manually revoked."
+                  )}
             </span>{" "}
             <a className="text-white" href={TOKEN_APPROVALS_URL} target="_blank">
               {t("Learn more")}
@@ -99,29 +94,22 @@ export const EthSignBodyErc20Approve: FC = () => {
         <div>{isRevoke ? t("Disallow") : t("Allow")}</div>
         <SignParamNetworkAddressButton network={network} address={spender} />
       </div>
-      <div className="flex">
-        <div>
-          {isRevoke ? t("from spending") : isInfinite ? t("to spend infinite") : t("to spend")}
-        </div>
-        {allowance ? (
-          <SignParamTokensButton
-            address={decodedTx.targetAddress}
-            network={network}
-            tokenId={token?.id}
-            tokens={allowance.tokens}
-            decimals={decodedTx.asset.decimals}
-            symbol={symbol}
-            fiat={allowance}
-            withIcon
-          />
-        ) : (
-          <SignParamErc20TokenButton
-            address={decodedTx.targetAddress}
-            asset={decodedTx.asset}
-            network={network}
-            withIcon
+      <div className="flex items-center">
+        <div>{isRevoke ? t("from spending") : t("to spend")}</div>
+        {!isRevoke && (
+          <SignParamAllowanceButton
+            allowance={allowance}
+            token={erc20Token}
+            spender={spender}
+            onChange={handleAllowanceChange}
           />
         )}
+        <SignParamErc20TokenButton
+          address={erc20Token.contractAddress}
+          asset={erc20Token}
+          network={network}
+          withIcon
+        />
       </div>
       <div className="flex">
         <div>{t("from")}</div>

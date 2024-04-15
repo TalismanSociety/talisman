@@ -172,8 +172,11 @@ const subscribeBalancesByParams = async (
           (error, result) => {
             if (thisGeneration !== balancesSubscriptionsGeneration) return
 
-            // eslint-disable-next-line no-console
-            if (error) return DEBUG && console.error(error)
+            if (error) {
+              // eslint-disable-next-line no-console
+              DEBUG && console.error(error)
+              return
+            }
 
             if (result && "status" in result && "data" in result) {
               callback({ type: "upsert", balances: new Balances(result.data ?? []).toJSON() })

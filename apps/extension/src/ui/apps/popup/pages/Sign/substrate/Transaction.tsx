@@ -1,4 +1,5 @@
 import { isJsonPayload } from "@extension/core"
+import { hexToNumber } from "@polkadot/util"
 import { AppPill } from "@talisman/components/AppPill"
 import { validateHexString } from "@talismn/util"
 import { classNames } from "@talismn/util"
@@ -15,7 +16,7 @@ import { SubSignBody } from "@ui/domains/Sign/Substrate/SubSignBody"
 import { SignViewBodyShimmer } from "@ui/domains/Sign/Views/SignViewBodyShimmer"
 import { FC, useEffect, useMemo } from "react"
 
-import { SignAccountAvatar } from "../SignAccountAvatar"
+import { SignNetworkLogo } from "../SignNetworkLogo"
 import { FooterContent } from "./FooterContent"
 
 export const PolkadotSignTransactionRequest: FC = () => {
@@ -26,7 +27,7 @@ export const PolkadotSignTransactionRequest: FC = () => {
     return payload && isJsonPayload(payload)
       ? {
           genesisHash: validateHexString(payload.genesisHash),
-          specVersion: parseInt(payload.specVersion, 16),
+          specVersion: hexToNumber(payload.specVersion),
         }
       : {}
   }, [payload])
@@ -42,7 +43,7 @@ export const PolkadotSignTransactionRequest: FC = () => {
     <PopupLayout>
       <PopupHeader
         className={classNames(isDecodingExtrinsic && "invisible")}
-        right={<SignAccountAvatar account={account} ss58Format={chain?.prefix} />}
+        right={<SignNetworkLogo network={chain} />}
       >
         <AppPill url={url} />
       </PopupHeader>
@@ -59,7 +60,11 @@ export const PolkadotSignTransactionRequest: FC = () => {
             <div className="flex w-full flex-col gap-4">
               <div id="sign-alerts-inject"></div>
               <MetadataStatus genesisHash={genesisHash} specVersion={specVersion} />
-              {errorMessage && <SignAlertMessage type="error">{errorMessage}</SignAlertMessage>}
+              {errorMessage && (
+                <SignAlertMessage className="mb-6" type="error">
+                  {errorMessage}
+                </SignAlertMessage>
+              )}
             </div>
             {account && request && <FooterContent withFee />}
           </PopupFooter>

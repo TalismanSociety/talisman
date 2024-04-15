@@ -53,11 +53,12 @@ const WordOption = ({
 
 type VerifyProps = {
   mnemonic: string
-  handleComplete: () => void
-  handleBack: () => void
+  onComplete: () => void
+  onBack: () => void
+  onSkip: () => void
 }
 
-export const Verify: FC<VerifyProps> = ({ handleComplete, handleBack, mnemonic }) => {
+export const Verify: FC<VerifyProps> = ({ onComplete, onBack, onSkip, mnemonic }) => {
   const { t } = useTranslation("admin")
   const [matchedDisplayIdx, setMatchedDisplayIdx] = useState<number[]>([])
   const [selectedIndex, setSelectedIndex] = useState<number>()
@@ -103,7 +104,7 @@ export const Verify: FC<VerifyProps> = ({ handleComplete, handleBack, mnemonic }
     [displayWords, matchedLength, mnemonicWords, isMatchedWord]
   )
 
-  if (!mnemonic) return <>No Mnemonic Available</>
+  if (!mnemonic) return <>{t("No Mnemonic Available")}</>
 
   return (
     <div>
@@ -148,22 +149,37 @@ export const Verify: FC<VerifyProps> = ({ handleComplete, handleBack, mnemonic }
               ))}
           </div>
         </div>
-        <div className="flex flex-col gap-4">
+        <div className="flex flex-col gap-6">
           <Button
             primary
-            onClick={handleComplete}
+            onClick={onComplete}
             disabled={mnemonicWords && matchedDisplayIdx.length < mnemonicWords.length}
             tabIndex={0}
           >
             {t("Complete Verification")}
           </Button>
-          <button
-            className="text-body-secondary hover:text-grey-300 flex cursor-pointer items-center gap-4 text-sm"
-            onClick={handleBack}
-            type="button"
-          >
-            <ChevronLeftIcon /> <span>{t("Back")}</span>
-          </button>
+          <div className="flex w-full items-center justify-between gap-2">
+            <div className="w-48">
+              <button
+                className="text-body-secondary hover:text-grey-300 flex cursor-pointer items-center gap-2"
+                onClick={onBack}
+                type="button"
+              >
+                <ChevronLeftIcon />
+                <span>{t("Back")}</span>
+              </button>
+            </div>
+            <div className="flex h-11 grow justify-center">
+              <button
+                className="text-grey-300 hover:text-body cursor-pointer gap-5 self-center font-bold"
+                onClick={onSkip}
+                type="button"
+              >
+                {t("Skip Verification")}
+              </button>
+            </div>
+            <div className="w-48"></div>
+          </div>
         </div>
       </div>
     </div>

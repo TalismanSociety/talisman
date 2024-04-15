@@ -1,4 +1,4 @@
-import { AccountJsonAny } from "@extension/core"
+import { AccountJsonAny, isAccountCompatibleWithChain } from "@extension/core"
 import { ScrollContainer } from "@talisman/components/ScrollContainer"
 import { SearchInput } from "@talisman/components/SearchInput"
 import { convertAddress } from "@talisman/util/convertAddress"
@@ -7,7 +7,6 @@ import { CheckCircleIcon, ChevronRightIcon, CopyIcon, QrIcon } from "@talismn/ic
 import { classNames, isEthereumAddress } from "@talismn/util"
 import useAccounts from "@ui/hooks/useAccounts"
 import { useChainByGenesisHash } from "@ui/hooks/useChainByGenesisHash"
-import { isAccountCompatibleWithChain } from "@ui/util/isAccountCompatibleWithChain"
 import { FC, PropsWithChildren, ReactNode, useCallback, useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
 import { IconButton, Tooltip, TooltipContent, TooltipTrigger } from "talisman-ui"

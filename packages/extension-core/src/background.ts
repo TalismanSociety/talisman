@@ -13,10 +13,8 @@ import talismanHandler from "./handlers"
 import { IconManager } from "./libs/IconManager"
 import { MigrationRunner, migrations } from "./libs/migrations"
 import { migrateConnectAllSubstrate } from "./libs/migrations/legacyMigrations"
-import { consoleOverride } from "./util/logging"
 
 initSentry(Sentry)
-consoleOverride(DEBUG)
 
 // eslint-disable-next-line no-void
 void Browser.browserAction.setBadgeBackgroundColor({ color: "#d90000" })

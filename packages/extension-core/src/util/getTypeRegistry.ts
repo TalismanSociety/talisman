@@ -2,8 +2,10 @@ import { typesBundle } from "@polkadot/apps-config/api"
 import { Metadata, TypeRegistry } from "@polkadot/types"
 import { getSpecAlias, getSpecTypes } from "@polkadot/types-known/util"
 import { hexToNumber, isHex } from "@polkadot/util"
+import { Chain } from "@talismn/chaindata-provider"
 import { log } from "extension-shared"
 
+import { getUserExtensionsByChainId } from "../domains/metadata/userExtensions"
 import { chaindataProvider } from "../rpcs/chaindata"
 import { getMetadataDef, getMetadataFromDef, getMetadataRpcFromDef } from "./getMetadataDef"
 
@@ -26,9 +28,10 @@ export const getTypeRegistry = async (
 ) => {
   const registry = new TypeRegistry()
 
-  const chain = await (isHex(chainIdOrHash)
+  // TODO remove type override once chaindata-provider is fixed
+  const chain = (await (isHex(chainIdOrHash)
     ? chaindataProvider.chainByGenesisHash(chainIdOrHash)
-    : chaindataProvider.chainById(chainIdOrHash))
+    : chaindataProvider.chainById(chainIdOrHash))) as Chain | null
 
   // register typesBundle in registry for legacy (pre metadata v14) chains
   if (typesBundle.spec && chain?.specName && typesBundle.spec[chain.specName]) {
@@ -71,11 +74,13 @@ export const getTypeRegistry = async (
       registry.setMetadata(metadata)
     }
 
-    if (signedExtensions || metadataDef.userExtensions)
-      registry.setSignedExtensions(signedExtensions, metadataDef.userExtensions)
+    registry.setSignedExtensions(signedExtensions, {
+      ...metadataDef.userExtensions,
+      ...getUserExtensionsByChainId(chain?.id),
+    })
     if (metadataDef.types) registry.register(metadataDef.types)
   } else {
-    if (signedExtensions) registry.setSignedExtensions(signedExtensions)
+    registry.setSignedExtensions(signedExtensions, getUserExtensionsByChainId(chain?.id))
   }
 
   return { registry, metadataRpc }

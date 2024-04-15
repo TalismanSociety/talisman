@@ -4,19 +4,20 @@ import { Verify as VerifyBase } from "@ui/domains/Mnemonic/Verify"
 import { Stages, useMnemonicBackupModal } from "../context"
 
 export const Verify = () => {
-  const { setStage } = useMnemonicBackupModal()
+  const { setStage, close } = useMnemonicBackupModal()
   const { mnemonic } = useMnemonicUnlock()
 
   if (!mnemonic) return null
   return (
     <VerifyBase
       mnemonic={mnemonic}
-      handleBack={() => {
+      onBack={() => {
         setStage(Stages.Show)
       }}
-      handleComplete={() => {
+      onComplete={() => {
         setStage(Stages.Complete)
       }}
+      onSkip={close}
     />
   )
 }

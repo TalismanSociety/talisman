@@ -1,8 +1,8 @@
 import { SignerPayloadRaw } from "@extension/core"
-import { encodeAddress } from "@polkadot/keyring"
 import { isAscii, u8aToString, u8aUnwrapBytes } from "@polkadot/util"
 import { AppPill } from "@talisman/components/AppPill"
 import { SiwsMessage, parseMessage as siwsParseMessage } from "@talismn/siws"
+import { encodeAnyAddress } from "@talismn/util"
 import {
   PopupContent,
   PopupFooter,
@@ -15,7 +15,7 @@ import { usePolkadotSigningRequest } from "@ui/domains/Sign/SignRequestContext"
 import { useEffect, useMemo } from "react"
 import { useTranslation } from "react-i18next"
 
-import { SignAccountAvatar } from "../SignAccountAvatar"
+import { SignNetworkLogo } from "../SignNetworkLogo"
 import { FooterContent } from "./FooterContent"
 import { MessageSiws } from "./MessageSiws"
 
@@ -50,7 +50,7 @@ export const PolkadotSignMessageRequest = () => {
 
   return (
     <PopupLayout>
-      <PopupHeader right={<SignAccountAvatar account={account} ss58Format={chain?.prefix} />}>
+      <PopupHeader right={<SignNetworkLogo network={chain} />}>
         <AppPill url={url} />
       </PopupHeader>
       <PopupContent>
@@ -109,9 +109,9 @@ const useSiwsRequest = ({
     // Not a valid SIWS message, fall back to regular raw message signing
     if (siwsMessage === null) return [null, null]
 
-    const encodeAddressOrNull = (...args: Parameters<typeof encodeAddress>) => {
+    const encodeAddressOrNull = (...args: Parameters<typeof encodeAnyAddress>) => {
       try {
-        return encodeAddress(...args)
+        return encodeAnyAddress(...args)
       } catch {
         return null
       }

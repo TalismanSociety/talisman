@@ -6,7 +6,7 @@ import { Stages, useMnemonicCreateModal } from "./context"
 import { MnemonicCreateModalDialog } from "./Dialog"
 
 export const Verify = () => {
-  const { setStage, mnemonic } = useMnemonicCreateModal()
+  const { setStage, mnemonic, complete } = useMnemonicCreateModal()
   const { t } = useTranslation("admin")
 
   const handleComplete = useCallback(() => {
@@ -19,7 +19,12 @@ export const Verify = () => {
 
   return (
     <MnemonicCreateModalDialog title={t("Verify your recovery phrase")}>
-      <BaseVerify handleBack={handleBack} handleComplete={handleComplete} mnemonic={mnemonic} />
+      <BaseVerify
+        onBack={handleBack}
+        onComplete={handleComplete}
+        onSkip={complete}
+        mnemonic={mnemonic}
+      />
     </MnemonicCreateModalDialog>
   )
 }

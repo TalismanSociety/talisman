@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en" class="popup">
+<html lang="en" class="popup scrollable scrollable-800">
   <head>
     <meta charset="utf-8" />
     <link rel="icon" href="./favicon.svg?v=<%= __webpack_hash__  %>" />
@@ -24,7 +24,6 @@
       body {
         margin: 0;
         padding: 0;
-        overflow: auto !important;
         min-width: 400px;
         min-height: 600px;
       }
@@ -33,6 +32,12 @@
         width: 40rem;
         height: 60rem;
         overflow: hidden;
+      }
+      /* no scrollbars if screen is large enough, prevents them from appearing on windows with 125% scale where only half a pixel might be missing */
+      @media screen and (min-width: 399px) and (min-height: 599px) {
+        html {
+          overflow: hidden;
+        }
       }
     </style>
   </head>

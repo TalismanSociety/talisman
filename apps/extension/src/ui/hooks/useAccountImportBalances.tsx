@@ -1,4 +1,4 @@
-import { AddressesByChain } from "@extension/core"
+import { AddressesByChain, isAccountCompatibleWithChain } from "@extension/core"
 import { AddressesAndEvmNetwork } from "@extension/core"
 import type { KeypairType } from "@polkadot/util-crypto/types"
 import { Address } from "@talismn/balances"
@@ -7,7 +7,6 @@ import { encodeAnyAddress, validateHexString } from "@talismn/util"
 import { useBalancesByParams } from "@ui/hooks/useBalancesByParams"
 import useChains from "@ui/hooks/useChains"
 import { useEvmNetworks } from "@ui/hooks/useEvmNetworks"
-import { isAccountCompatibleWithChain } from "@ui/util/isAccountCompatibleWithChain"
 import { useMemo } from "react"
 
 export type AccountImportDef = { address: string; type: KeypairType; genesisHash?: string | null }
