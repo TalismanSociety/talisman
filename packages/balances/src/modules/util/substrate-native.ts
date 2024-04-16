@@ -44,6 +44,7 @@ const nompoolAccountId = (registry: Registry, palletId: string, poolId: string, 
       "AccountId32",
       u8aConcat(
         MOD_PREFIX,
+        // TODO: Update this to also work with text inputs
         hexToU8a(palletId),
         new Uint8Array([index]),
         bnToU8a(new BN(poolId), U32_OPTS),

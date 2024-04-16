@@ -69,7 +69,7 @@ export const filterMetadataPalletsAndItems = (
   metadata.tys = metadata.tys.filter((type) => keepTypes.has(type.id))
 }
 
-export const addDependentTypes = (
+const addDependentTypes = (
   metadataTysMap: Map<TyMV14["id"], TyMV14>,
   keepTypes: Set<number>,
   types: number[],

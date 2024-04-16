@@ -9,6 +9,9 @@ const unsupportedFn = () => {
 
 const unsupported = createCodec(unsupportedFn, unsupportedFn) as unknown as Codec<unknown>
 
+/** Constant: https://docs.substrate.io/build/application-development/#metadata-format */
+export const magicNumber = 1635018093
+
 export const metadata = Struct({
   magicNumber: u32,
   metadata: Enum({

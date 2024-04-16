@@ -8,6 +8,7 @@ import {
 import type { Registry } from "@polkadot/types-codec/types"
 import { ChainConnector } from "@talismn/chain-connector"
 import { Chain, ChainId, ChainList, TokenList } from "@talismn/chaindata-provider"
+import { Codec, Storage, getDynamicBuilder, metadata as scaleMetadata } from "@talismn/scale"
 import { $metadataV14, getShape } from "@talismn/scale"
 import * as $ from "@talismn/subshape-fork"
 import { hasOwnProperty } from "@talismn/util"
@@ -511,6 +512,89 @@ export const getUniqueChainIds = (
       .flatMap((chainId) => (chainId ? [chainId] : []))
   ),
 ]
+export const buildStorageCoders = <
+  TBalanceModule extends AnyNewBalanceModule,
+  TCoders extends { [key: string]: [string, string] }
+>({
+  chainIds,
+  chains,
+  miniMetadatas,
+  moduleType,
+  coders,
+}: {
+  chainIds: ChainId[]
+  chains: ChainList
+  miniMetadatas: Map<string, MiniMetadata>
+  moduleType: InferModuleType<TBalanceModule>
+  coders: TCoders
+}) =>
+  new Map(
+    [...chainIds].flatMap((chainId) => {
+      const chain = chains[chainId]
+      if (!chain) return []
+
+      const [, miniMetadata] = findChainMeta<TBalanceModule>(miniMetadatas, moduleType, chain)
+      if (!miniMetadata) return []
+      if (!miniMetadata.data) return []
+      if (miniMetadata.version < 15) return []
+
+      const decoded = scaleMetadata.dec(miniMetadata.data)
+      const metadata = decoded.metadata.tag === "v15" && decoded.metadata.value
+      if (!metadata) return []
+
+      const scaleBuilder = getDynamicBuilder(metadata)
+      const builtCoders = Object.fromEntries(
+        Object.entries(coders).map(
+          ([key, [module, method]]: [keyof TCoders, [string, string]]) =>
+            [key, scaleBuilder.buildStorage(module, method)] as const
+        )
+      ) as {
+        [Property in keyof TCoders]: ReturnType<(typeof scaleBuilder)["buildStorage"]> | undefined
+      }
+
+      return [[chainId, builtCoders]]
+    })
+  )
+
+/**
+ *
+ * Detect Balances::transfer -> Balances::transfer_allow_death migration
+ * https://github.com/paritytech/substrate/pull/12951
+ *
+ * `transfer_allow_death` is the preferred method,
+ * so if something goes wrong during detection, we should assume the chain has migrated
+ * @param metadataRpc string containing the hashed RPC metadata for the chain
+ * @returns
+ */
+export const detectTransferMethod = (metadataRpc: `0x${string}`) => {
+  const pjsMetadata = new Metadata(new TypeRegistry(), metadataRpc)
+  pjsMetadata.registry.setMetadata(pjsMetadata)
+  const balancesPallet = pjsMetadata.asLatest.pallets.find((pallet) => pallet.name.eq("Balances"))
+
+  const balancesCallsTypeIndex = balancesPallet?.calls.value.type.toNumber()
+  const balancesCallsType =
+    balancesCallsTypeIndex !== undefined
+      ? pjsMetadata.asLatest.lookup.types[balancesCallsTypeIndex]
+      : undefined
+  const hasDeprecatedTransferCall =
+    balancesCallsType?.type.def.asVariant?.variants.find((variant) =>
+      variant.name.eq("transfer")
+    ) !== undefined
+
+  return hasDeprecatedTransferCall ? "transfer" : "transferAllowDeath"
+}
+
+//
+//
+//
+//
+// TODO: RM
+//
+//
+//
+//
+//
+
 export const buildStorageDecoders = <
   TBalanceModule extends AnyNewBalanceModule,
   TDecoders extends { [key: string]: [string, string] }
@@ -546,31 +630,3 @@ export const buildStorageDecoders = <
       return [[chainId, builtDecoders]]
     })
   )
-
-/**
- *
- * Detect Balances::transfer -> Balances::transfer_allow_death migration
- * https://github.com/paritytech/substrate/pull/12951
- *
- * `transfer_allow_death` is the preferred method,
- * so if something goes wrong during detection, we should assume the chain has migrated
- * @param metadataRpc string containing the hashed RPC metadata for the chain
- * @returns
- */
-export const detectTransferMethod = (metadataRpc: `0x${string}`) => {
-  const pjsMetadata = new Metadata(new TypeRegistry(), metadataRpc)
-  pjsMetadata.registry.setMetadata(pjsMetadata)
-  const balancesPallet = pjsMetadata.asLatest.pallets.find((pallet) => pallet.name.eq("Balances"))
-
-  const balancesCallsTypeIndex = balancesPallet?.calls.value.type.toNumber()
-  const balancesCallsType =
-    balancesCallsTypeIndex !== undefined
-      ? pjsMetadata.asLatest.lookup.types[balancesCallsTypeIndex]
-      : undefined
-  const hasDeprecatedTransferCall =
-    balancesCallsType?.type.def.asVariant?.variants.find((variant) =>
-      variant.name.eq("transfer")
-    ) !== undefined
-
-  return hasDeprecatedTransferCall ? "transfer" : "transferAllowDeath"
-}

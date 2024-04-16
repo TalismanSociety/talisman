@@ -12,15 +12,13 @@ import {
   githubTokenLogoUrl,
 } from "@talismn/chaindata-provider"
 import {
-  $metadataV14,
-  PalletMV14,
-  StorageEntryMV14,
-  filterMetadataPalletsAndItems,
+  V15,
+  compactMetadata,
+  getDynamicBuilder,
   getMetadataVersion,
-  metadata as metadataDecoder,
-  transformMetadataV14,
-  v14,
-  v15,
+  magicNumber,
+  metadata as scaleMetadata,
+  toHex,
 } from "@talismn/scale"
 import * as $ from "@talismn/subshape-fork"
 import { Deferred, blake2Concat, decodeAnyAddress, isEthereumAddress } from "@talismn/util"
@@ -41,12 +39,10 @@ import {
   SubscriptionCallback,
 } from "../types"
 import {
-  GetOrCreateTypeRegistry,
   RpcStateQuery,
   RpcStateQueryHelper,
   StorageHelper,
-  buildStorageDecoders,
-  createTypeRegistryCache,
+  buildStorageCoders,
   detectTransferMethod,
   findChainMeta,
   getUniqueChainIds,
@@ -96,6 +92,9 @@ const AccountInfoOverrides: { [key: ChainId]: string } = {
   "nftmart": RegularAccountInfoFallback,
 }
 
+const DEFAULT_SYMBOL = "Unit"
+const DEFAULT_DECIMALS = 0
+
 export const subNativeTokenId = (chainId: ChainId) =>
   `${chainId}-substrate-native`.toLowerCase().replace(/ /g, "-")
 
@@ -126,13 +125,13 @@ declare module "@talismn/chaindata-provider/plugins" {
 export type SubNativeChainMeta = {
   isTestnet: boolean
   useLegacyTransferableCalculation?: boolean
-  symbol: string
-  decimals: number
-  existentialDeposit: string | null
-  nominationPoolsPalletId: string | null
-  crowdloanPalletId: string | null
-  miniMetadata: `0x${string}` | null
-  metadataVersion: number
+  symbol?: string
+  decimals?: number
+  existentialDeposit?: string
+  nominationPoolsPalletId?: string
+  crowdloanPalletId?: string
+  miniMetadata?: string
+  metadataVersion?: number
 }
 
 export type SubNativeModuleConfig = {
@@ -185,133 +184,95 @@ export const SubNativeModule: NewBalanceModule<
   const chainConnector = chainConnectors.substrate
   assert(chainConnector, "This module requires a substrate chain connector")
 
-  const { getOrCreateTypeRegistry } = createTypeRegistryCache()
-
   return {
     ...DefaultBalanceModule("substrate-native"),
 
-    async fetchSubstrateChainMeta(chainId, moduleConfig, metadataRpc) {
+    async fetchSubstrateChainMeta(chainId, moduleConfig, metadataRpc, systemProperties) {
       const isTestnet = (await chaindataProvider.chainById(chainId))?.isTestnet || false
+      if (moduleConfig?.disable === true || metadataRpc === undefined) return { isTestnet }
 
-      if (moduleConfig?.disable === true || metadataRpc === undefined)
-        return {
-          isTestnet,
-          symbol: "",
-          decimals: 0,
-          existentialDeposit: null,
-          nominationPoolsPalletId: null,
-          crowdloanPalletId: null,
-          miniMetadata: null,
-          metadataVersion: 0,
-        }
+      //
+      // extract system_properties
+      //
 
-      const { tokenSymbol, tokenDecimals } =
-        (await chainConnector.send(chainId, "system_properties", [])) ?? {}
-
-      const symbol: string = (Array.isArray(tokenSymbol) ? tokenSymbol[0] : tokenSymbol) ?? "Unit"
+      const { tokenSymbol, tokenDecimals } = systemProperties ?? {}
+      const symbol: string =
+        (Array.isArray(tokenSymbol) ? tokenSymbol[0] : tokenSymbol) ?? DEFAULT_SYMBOL
       const decimals: number =
-        (Array.isArray(tokenDecimals) ? tokenDecimals[0] : tokenDecimals) ?? 0
+        (Array.isArray(tokenDecimals) ? tokenDecimals[0] : tokenDecimals) ?? DEFAULT_DECIMALS
+
+      //
+      // process metadata into SCALE encoders/decoders
+      //
 
       const metadataVersion = getMetadataVersion(metadataRpc)
-      const metadata = (() => {
-        if (metadataVersion !== 14 && metadataVersion !== 15) return
+      const metadata = ((): V15 | undefined => {
+        if (metadataVersion !== 15) return
 
-        console.time("decode", chainId, "metadata")
-        const m = metadataDecoder.dec(metadataRpc)
-        console.timeEnd("decode", chainId, "metadata")
-        if (m.metadata.tag === "v14") return m.metadata.value
-        if (m.metadata.tag === "v15") return m.metadata.value
+        const decoded = scaleMetadata.dec(metadataRpc)
+        if (decoded.metadata.tag !== "v15") return
+
+        return decoded.metadata.value
       })()
-      if (!metadata)
-        return {
-          isTestnet,
-          symbol,
-          decimals,
-          existentialDeposit: null,
-          nominationPoolsPalletId: null,
-          crowdloanPalletId: null,
-          miniMetadata: null,
-          metadataVersion,
-        }
+      if (!metadata) return { isTestnet, symbol, decimals }
+      const scaleBuilder = getDynamicBuilder(metadata)
 
-      // TODO: Figure out how to decode the existential deposit using the correct type
-      console.log(metadata)
+      //
+      // get runtime constants
+      //
 
-      // const existentialDeposit = (
-      //   metadataEncDec.pallets.find(p => p.name === 'Balances')?.constants.find(c => c.name === 'ExistentialDeposit')?...codec.decode?.(
-      //     metadataEncDec.pallets.Balances.constants.ExistentialDeposit.value
-      //   ) ?? 0n
-      // ).toString()
-      // const nominationPoolsPalletId = metadataEncDec.pallets.NominationPools?.constants.PalletId
-      //   ?.value
-      //   ? u8aToHex(metadataEncDec.pallets.NominationPools?.constants.PalletId?.value)
-      //   : null
-      // const crowdloanPalletId = metadataEncDec.pallets.Crowdloan?.constants.PalletId?.value
-      //   ? u8aToHex(metadataEncDec.pallets.Crowdloan?.constants.PalletId?.value)
-      //   : null
+      const getConstantValue = (palletName: string, constantName: string) => {
+        const encodedValue = metadata.pallets
+          .find(({ name }) => name === palletName)
+          ?.constants.find(({ name }) => name === constantName)?.value
+        if (!encodedValue) return
 
-      // const isSystemPallet = (pallet: PalletMV14) => pallet.name === "System"
-      // const isAccountItem = (item: StorageEntryMV14) => item.name === "Account"
+        return scaleBuilder.buildConstant(palletName, constantName)?.dec(encodedValue)
+      }
 
-      // const isBalancesPallet = (pallet: PalletMV14) => pallet.name === "Balances"
-      // const isReservesItem = (item: StorageEntryMV14) => item.name === "Reserves"
-      // const isHoldsItem = (item: StorageEntryMV14) => item.name === "Holds"
-      // const isLocksItem = (item: StorageEntryMV14) => item.name === "Locks"
-      // const isFreezesItem = (item: StorageEntryMV14) => item.name === "Freezes"
+      const existentialDeposit = getConstantValue("Balances", "ExistentialDeposit")?.toString()
+      const nominationPoolsPalletId = getConstantValue("NominationPools", "PalletId")?.asText()
+      const crowdloanPalletId = getConstantValue("Crowdloan", "PalletId")?.asText()
 
-      // const isNomPoolsPallet = (pallet: PalletMV14) => pallet.name === "NominationPools"
-      // const isPoolMembersItem = (item: StorageEntryMV14) => item.name === "PoolMembers"
-      // const isBondedPoolsItem = (item: StorageEntryMV14) => item.name === "BondedPools"
-      // const isMetadataItem = (item: StorageEntryMV14) => item.name === "Metadata"
+      //
+      // compact metadata into miniMetadata
+      //
 
-      // const isStakingPallet = (pallet: PalletMV14) => pallet.name === "Staking"
-      // const isLedgerItem = (item: StorageEntryMV14) => item.name === "Ledger"
+      compactMetadata(metadata, [
+        { pallet: "System", items: ["Account"] },
+        { pallet: "Balances", items: ["Reserves", "Holds", "Locks", "Freezes"] },
+        { pallet: "NominationPools", items: ["PoolMembers", "BondedPools", "Metadata"] },
+        { pallet: "Staking", items: ["Ledger"] },
+        { pallet: "Crowdloan", items: ["Funds"] },
+        { pallet: "Paras", items: ["Parachains"] },
+      ])
 
-      // const isCrowdloanPallet = (pallet: PalletMV14) => pallet.name === "Crowdloan"
-      // const isFundsItem = (item: StorageEntryMV14) => item.name === "Funds"
+      const miniMetadata = toHex(
+        scaleMetadata.enc({
+          magicNumber,
+          metadata: { tag: "v15", value: metadata },
+        })
+      )
 
-      // const isParasPallet = (pallet: PalletMV14) => pallet.name === "Paras"
-      // const isParachainsItem = (item: StorageEntryMV14) => item.name === "Parachains"
-
-      // // TODO: Handle metadata v15
-      // filterMetadataPalletsAndItems(metadata, [
-      //   { pallet: isSystemPallet, items: [isAccountItem] },
-      //   {
-      //     pallet: isBalancesPallet,
-      //     items: [isReservesItem, isHoldsItem, isLocksItem, isFreezesItem],
-      //   },
-      //   {
-      //     pallet: isNomPoolsPallet,
-      //     items: [isPoolMembersItem, isBondedPoolsItem, isMetadataItem],
-      //   },
-      //   { pallet: isStakingPallet, items: [isLedgerItem] },
-      //   { pallet: isCrowdloanPallet, items: [isFundsItem] },
-      //   { pallet: isParasPallet, items: [isParachainsItem] },
-      // ])
-      // metadata.extrinsic.signedExtensions = []
-
-      // const miniMetadata = $.encodeHexPrefixed($metadataV14.encode(metadata)) as `0x${string}`
-
-      // const hasFreezesItem = Boolean(
-      //   metadata.pallets.find(isBalancesPallet)?.storage?.entries.find(isFreezesItem)
-      // )
-      // const useLegacyTransferableCalculation = !hasFreezesItem
+      const hasFreezesItem = Boolean(
+        metadata.pallets
+          .find(({ name }) => name === "Balances")
+          ?.storage?.items.find(({ name }) => name === "Freezes")
+      )
+      const useLegacyTransferableCalculation = !hasFreezesItem
 
       const chainMeta: SubNativeChainMeta = {
         isTestnet,
+        useLegacyTransferableCalculation,
         symbol,
         decimals,
-        // existentialDeposit,
-        // nominationPoolsPalletId,
-        // crowdloanPalletId,
-        // miniMetadata,
-        existentialDeposit: null,
-        nominationPoolsPalletId: null,
-        crowdloanPalletId: null,
-        miniMetadata: null,
+        existentialDeposit,
+        nominationPoolsPalletId,
+        crowdloanPalletId,
+        miniMetadata,
         metadataVersion,
       }
-      // if (useLegacyTransferableCalculation) chainMeta.useLegacyTransferableCalculation = true
+      if (!useLegacyTransferableCalculation) delete chainMeta.useLegacyTransferableCalculation
 
       return chainMeta
     },
@@ -328,8 +289,8 @@ export const SubNativeModule: NewBalanceModule<
         type: "substrate-native",
         isTestnet,
         isDefault: moduleConfig?.isDefault ?? true,
-        symbol,
-        decimals,
+        symbol: symbol ?? DEFAULT_SYMBOL,
+        decimals: decimals ?? DEFAULT_DECIMALS,
         logo: moduleConfig?.logo || githubTokenLogoUrl(id),
         existentialDeposit: existentialDeposit ?? "0",
         chain: { id: chainId },
@@ -386,7 +347,7 @@ export const SubNativeModule: NewBalanceModule<
       subscribeNompoolStaking(
         chaindataProvider,
         chainConnectors.substrate,
-        getOrCreateTypeRegistry,
+        // getOrCreateTypeRegistry,
         addressesByToken,
         callback,
         callerUnsubscribed
@@ -394,7 +355,7 @@ export const SubNativeModule: NewBalanceModule<
       subscribeCrowdloans(
         chaindataProvider,
         chainConnectors.substrate,
-        getOrCreateTypeRegistry,
+        // getOrCreateTypeRegistry,
         addressesByToken,
         callback,
         callerUnsubscribed
@@ -402,7 +363,7 @@ export const SubNativeModule: NewBalanceModule<
       subscribeBase(
         chaindataProvider,
         chainConnectors.substrate,
-        getOrCreateTypeRegistry,
+        // getOrCreateTypeRegistry,
         addressesByToken,
         callback,
         callerUnsubscribed
@@ -416,7 +377,7 @@ export const SubNativeModule: NewBalanceModule<
 
       const queries = await buildQueries(
         chaindataProvider,
-        getOrCreateTypeRegistry,
+        // getOrCreateTypeRegistry,
         addressesByToken
       )
       const result = await new RpcStateQueryHelper(chainConnectors.substrate, queries).fetch()
@@ -500,7 +461,7 @@ export const SubNativeModule: NewBalanceModule<
 
 async function buildQueries(
   chaindataProvider: ChaindataProvider,
-  getOrCreateTypeRegistry: GetOrCreateTypeRegistry,
+  // getOrCreateTypeRegistry: GetOrCreateTypeRegistry,
   addressesByToken: AddressesByToken<SubNativeToken | CustomSubNativeToken>
 ): Promise<Array<RpcStateQuery<Balance>>> {
   const chains = await chaindataProvider.chainsById()
@@ -513,17 +474,17 @@ async function buildQueries(
   )
 
   const uniqueChainIds = getUniqueChainIds(addressesByToken, tokens)
-  const chainStorageDecoders = buildStorageDecoders({
+  const chainStorageCoders = buildStorageCoders({
     chainIds: uniqueChainIds,
     chains,
     miniMetadatas,
     moduleType: "substrate-native",
-    decoders: {
-      baseDecoder: ["system", "account"],
-      reservesDecoder: ["balances", "reserves"],
-      holdsDecoder: ["balances", "holds"],
-      locksDecoder: ["balances", "locks"],
-      freezesDecoder: ["balances", "freezes"],
+    coders: {
+      base: ["System", "Account"],
+      reservesDecoder: ["Balances", "Reserves"],
+      holdsDecoder: ["Balances", "Holds"],
+      locksDecoder: ["Balances", "Locks"],
+      freezesDecoder: ["Balances", "Freezes"],
     },
   })
 
@@ -551,26 +512,14 @@ async function buildQueries(
       return []
     }
 
+    // if chain is metadata >= v15 and has miniMetadata, this will be true
+    const hasCoders = chainStorageCoders.get(chainId) !== undefined
     const [chainMeta] = findChainMeta<typeof SubNativeModule>(
       miniMetadatas,
       "substrate-native",
       chain
     )
-    const hasMetadataV14 =
-      chainMeta?.miniMetadata !== undefined &&
-      chainMeta?.miniMetadata !== null &&
-      chainMeta?.metadataVersion >= 14
-
-    // const m = hasMetadataV14 ? v14.dec(chainMeta.miniMetadata!) : undefined
-    // m?.pallets
-    //   ?.find?.((p) => p.name === "System")
-    //   ?.storage?.items?.find?.((i) => i.name === "Account")?.type
-    // const SCALE = hasMetadataV14 ? v14("0x0000") : undefined
-
-    const typeRegistry = hasMetadataV14
-      ? // TODO: Patch this bitch in a way that works for our dapps as well as the extension:
-        getOrCreateTypeRegistry(chainId, chainMeta.miniMetadata ?? undefined)
-      : new TypeRegistry()
+    const { useLegacyTransferableCalculation } = chainMeta ?? {}
 
     return addresses.flatMap((address) => {
       // We share thie balanceJson between the base and the lock query for this address
@@ -598,8 +547,7 @@ async function buildQueries(
           { label: "misc", amount: "0" },
         ],
       }
-      if (chainMeta?.useLegacyTransferableCalculation)
-        balanceJson.useLegacyTransferableCalculation = true
+      if (useLegacyTransferableCalculation) balanceJson.useLegacyTransferableCalculation = true
 
       let locksQueryLocks: Array<LockedAmount<string>> = []
       let freezesQueryLocks: Array<LockedAmount<string>> = []
@@ -792,7 +740,7 @@ async function buildQueries(
 async function subscribeNompoolStaking(
   chaindataProvider: ChaindataProvider,
   chainConnector: ChainConnector,
-  getOrCreateTypeRegistry: GetOrCreateTypeRegistry,
+  // getOrCreateTypeRegistry: GetOrCreateTypeRegistry,
   addressesByToken: AddressesByToken<SubNativeToken | CustomSubNativeToken>,
   callback: SubscriptionCallback<Balances>,
   callerUnsubscribed: Promise<unknown>
@@ -1175,7 +1123,7 @@ async function subscribeNompoolStaking(
 async function subscribeCrowdloans(
   chaindataProvider: ChaindataProvider,
   chainConnector: ChainConnector,
-  getOrCreateTypeRegistry: GetOrCreateTypeRegistry,
+  // getOrCreateTypeRegistry: GetOrCreateTypeRegistry,
   addressesByToken: AddressesByToken<SubNativeToken | CustomSubNativeToken>,
   callback: SubscriptionCallback<Balances>,
   callerUnsubscribed: Promise<unknown>
@@ -1490,12 +1438,12 @@ async function subscribeCrowdloans(
 async function subscribeBase(
   chaindataProvider: ChaindataProvider,
   chainConnector: ChainConnector,
-  getOrCreateTypeRegistry: GetOrCreateTypeRegistry,
+  // getOrCreateTypeRegistry: GetOrCreateTypeRegistry,
   addressesByToken: AddressesByToken<SubNativeToken | CustomSubNativeToken>,
   callback: SubscriptionCallback<Balances>,
   callerUnsubscribed: Promise<unknown>
 ) {
-  const queries = await buildQueries(chaindataProvider, getOrCreateTypeRegistry, addressesByToken)
+  const queries = await buildQueries(chaindataProvider, addressesByToken)
   const unsubscribe = await new RpcStateQueryHelper(chainConnector, queries).subscribe(
     (error, result) => (error ? callback(error) : callback(null, new Balances(result ?? [])))
   )

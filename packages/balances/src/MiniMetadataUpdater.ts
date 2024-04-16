@@ -211,7 +211,7 @@ export class MiniMetadataUpdater {
   }
 
   private async updateSubstrateChains(chainIds: ChainId[]) {
-    console.log("updating substrate chains metadata...")
+    console.log("Updating metadata for all substrate chains")
 
     const chains = new Map(
       (await this.#chaindataProvider.chains()).map((chain) => [chain.id, chain])
@@ -233,10 +233,12 @@ export class MiniMetadataUpdater {
       await balancesDb.miniMetadatas.bulkDelete(unwantedIds)
     }
 
-    const needUpdates = ["polkadot", "polimec"]
+    const needUpdates = ["polkadot", "astar", "hydradx", "polimec"]
     // const needUpdates = Array.from(statusesByChain.entries())
     //   .filter(([, status]) => status !== "good")
     //   .map(([chainId]) => chainId)
+
+    console.log(`needUpdates: ${needUpdates.join(", ")}`)
 
     if (needUpdates.length > 0)
       log.info(`${needUpdates.length} miniMetadatas need updates (${needUpdates.join(", ")})`)
@@ -246,11 +248,12 @@ export class MiniMetadataUpdater {
       return []
     })
 
-    const concurrency = 4
+    const concurrency = 12
     ;(
       await PromisePool.withConcurrency(concurrency)
         .for(needUpdates)
         .process(async (chainId) => {
+          console.log(`${chainId}: Updating Metadata`)
           log.info(`Updating metadata for chain ${chainId}`)
           const chain = chains.get(chainId)
           if (!chain) return
@@ -259,25 +262,23 @@ export class MiniMetadataUpdater {
           if (specName === null) return
           if (specVersion === null) return
 
-          const metadataRpc14 = await this.#chainConnectors.substrate?.send(
-            chainId,
-            "state_getMetadata",
-            []
-          )
-          try {
-            const response = await this.#chainConnectors.substrate?.send(chainId, "state_call", [
+          console.time(`${chainId}: Query Metadata v14 & v15`)
+          const [metadataRpc14, metadataRpc15Response, systemProperties] = await Promise.all([
+            this.#chainConnectors.substrate?.send(chainId, "state_getMetadata", []),
+            this.#chainConnectors.substrate?.send(chainId, "state_call", [
               "Metadata_metadata_at_version",
               toHex(u32.enc(15)),
-            ])
+            ]),
+            this.#chainConnectors.substrate?.send(chainId, "system_properties", []),
+          ])
+          console.timeEnd(`${chainId}: Query Metadata v14 & v15`)
 
-            // eslint-disable-next-line no-var
-            var metadataRpc15 = response ? Option(Bytes()).dec(response) : undefined
-          } catch (cause) {
-            throw new Error("Failed to encode u32", { cause })
-          }
+          const metadataRpc15 = metadataRpc15Response
+            ? Option(Bytes()).dec(metadataRpc15Response)
+            : undefined
 
           console.log(
-            chainId,
+            `${chainId}: Metadata Versions`,
             getMetadataVersion(metadataRpc14),
             getMetadataVersion(metadataRpc15!)
           )
@@ -289,15 +290,21 @@ export class MiniMetadataUpdater {
             const moduleConfig = balancesConfig?.moduleConfig ?? {}
 
             try {
+              if (mod.type === "substrate-native")
+                console.time(`${chainId}::${mod.type}: GET chainMeta`)
               // eslint-disable-next-line no-var
               var chainMeta = await mod.fetchSubstrateChainMeta(
                 chainId,
                 moduleConfig,
-                // mod.type === "substrate-native" ? metadataRpc15 : metadataRpc14
-                metadataRpc14
+                mod.type === "substrate-native" ? metadataRpc15 : metadataRpc14,
+                systemProperties
+                // metadataRpc14
               )
             } catch (cause) {
               throw new Error("Failed to build chainMeta", { cause })
+            } finally {
+              if (mod.type === "substrate-native")
+                console.timeEnd(`${chainId}::${mod.type}: GET chainMeta`)
             }
             // eslint-disable-next-line no-var
             const tokens = await mod.fetchSubstrateChainTokens(chainId, chainMeta, moduleConfig)

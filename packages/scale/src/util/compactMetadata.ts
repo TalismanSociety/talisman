@@ -9,12 +9,20 @@ export type V15Type = V15["lookup"][0]
 export type V15Pallet = V15["pallets"][0]
 export type V15StorageItem = NonNullable<V15Pallet["storage"]>["items"][0]
 
-/** Converts a `Metadata` into a `MiniMetadata` */
+/**
+ * Converts a `Metadata` into a `MiniMetadata`.
+ *
+ * A `MiniMetadata` only contains the types inside of its `lookup` which are relevant for
+ * the storage queries specified in `palletsAndItems`.
+ *
+ * E.g. if `palletsAndItems` is `{ pallet: "System", items: ["Account"] }`, then only the
+ * types used in the `System.Account` storage query will remain inside of metadata.lookups.
+ */
 export const compactMetadata = (
   metadata: V15,
   palletsAndItems: Array<{
-    pallet: (pallet: V15Pallet) => boolean
-    items: Array<(item: V15StorageItem) => boolean>
+    pallet: string
+    items: string[]
   }>,
   //   metadata: V15 | V14,
   //   palletsAndItems: Array<{
@@ -26,18 +34,18 @@ export const compactMetadata = (
   // remove pallets we don't care about
   metadata.pallets = metadata.pallets.filter((pallet) =>
     // keep this pallet if it's listed in `palletsAndItems`
-    palletsAndItems.some(({ pallet: palletFilter }) => palletFilter(pallet))
+    palletsAndItems.some(({ pallet: palletName }) => pallet.name === palletName)
   )
 
   // remove fields we don't care about from each pallet, and extract types for each storage item we care about
-  const items = palletsAndItems.flatMap(({ pallet: palletFilter, items }) => {
-    const pallet = metadata.pallets.find(palletFilter)
+  const items = palletsAndItems.flatMap(({ pallet: palletName, items: itemNames }) => {
+    const pallet = metadata.pallets.find((pallet) => pallet.name === palletName)
     if (!pallet) {
-      log.debug("Failed to find pallet", palletFilter)
+      log.debug("Failed to find pallet", palletName)
       return []
     }
 
-    // remove fields we don't care about
+    // remove pallet fields we don't care about
     pallet.calls = undefined
     pallet.constants = []
     if ("docs" in pallet) pallet.docs = []
@@ -48,7 +56,7 @@ export const compactMetadata = (
 
     // filter and extract storage items we care about
     pallet.storage.items = pallet.storage.items.filter((item) =>
-      items.some((itemFilter) => itemFilter(item))
+      itemNames.some((itemName) => item.name === itemName)
     )
 
     return pallet.storage.items
@@ -79,9 +87,21 @@ export const compactMetadata = (
 
   // ditch the types we aren't keeping
   metadata.lookup = metadata.lookup.filter((type) => keepTypes.has(type.id))
+
+  // ditch the remaining data we don't need to keep in a miniMetata
+  metadata.apis = []
+  metadata.extrinsic.address = 0
+  metadata.extrinsic.call = 0
+  metadata.extrinsic.extra = 0
+  metadata.extrinsic.signature = 0
+  metadata.extrinsic.signature = 0
+  metadata.extrinsic.signedExtensions = []
+  metadata.outerEnums.call = 0
+  metadata.outerEnums.error = 0
+  metadata.outerEnums.event = 0
 }
 
-export const addDependentTypes = (
+const addDependentTypes = (
   metadataTysMap: Map<V15Type["id"], V15Type>,
   keepTypes: Set<number>,
   types: number[],
