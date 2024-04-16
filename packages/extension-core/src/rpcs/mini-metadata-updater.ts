@@ -28,19 +28,26 @@ export const updateAndWaitForUpdatedChaindata = async ({
   updateSubstrateChains: boolean
 }) => {
   try {
-    await Promise.all([
-      hydrateChaindataAndMiniMetadata(chaindataProvider, miniMetadataUpdater),
-      updateEvmTokens(chaindataProvider, evmTokenFetcher),
-    ])
+    if (!activeHydrate)
+      activeHydrate = Promise.all([
+        hydrateChaindataAndMiniMetadata(chaindataProvider, miniMetadataUpdater),
+        updateEvmTokens(chaindataProvider, evmTokenFetcher),
+      ])
+
+    try {
+      await activeHydrate
+    } finally {
+      activeHydrate = null
+    }
 
     if (updateSubstrateChains) {
-      if (!activeUpdate)
-        activeUpdate = updateCustomMiniMetadata(chaindataProvider, miniMetadataUpdater)
+      if (!activeMiniMetadataUpdate)
+        activeMiniMetadataUpdate = updateCustomMiniMetadata(chaindataProvider, miniMetadataUpdater)
 
       try {
-        await activeUpdate
+        await activeMiniMetadataUpdate
       } finally {
-        activeUpdate = null
+        activeMiniMetadataUpdate = null
       }
     }
   } catch (cause) {
@@ -49,4 +56,6 @@ export const updateAndWaitForUpdatedChaindata = async ({
     )
   }
 }
-let activeUpdate: Promise<void> | null = null
+
+let activeMiniMetadataUpdate: Promise<void> | null = null
+let activeHydrate: Promise<unknown> | null = null
