@@ -96,7 +96,7 @@ const subscribeBalancesByParams = async (
   const callback = createSubscription<"pri(balances.byparams.subscribe)">(id, port)
 
   const hasSubstrateAddresses =
-    !!Object.values(addressesByChain).flat().length ||
+    Object.values(addressesByChain).flat().some(isValidSubstrateAddress) ||
     addressesAndTokens.addresses.some(isValidSubstrateAddress)
 
   // wait for chaindata to hydrate
