@@ -6,7 +6,7 @@ export const hydrateChaindataAndMiniMetadata = async (
   chaindataProvider: ChaindataProvider,
   miniMetadataUpdater: MiniMetadataUpdater
 ) => {
-  // need chains to be provisioned first
+  // need chains to be provisioned first, or substrate balances won't fetch on first subscription
   await chaindataProvider.hydrateChains()
 
   await Promise.all([
