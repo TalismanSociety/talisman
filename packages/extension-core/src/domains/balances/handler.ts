@@ -21,6 +21,7 @@ import { chaindataProvider } from "../../rpcs/chaindata"
 import { updateAndWaitForUpdatedChaindata } from "../../rpcs/mini-metadata-updater"
 import { MessageTypes, RequestTypes, ResponseType } from "../../types"
 import { AddressesByChain, Port } from "../../types/base"
+import { awaitKeyringLoaded } from "../../util/awaitKeyringLoaded"
 import { ActiveChains, activeChainsStore, isChainActive } from "../chains/store.activeChains"
 import {
   ActiveEvmNetworks,
@@ -53,6 +54,7 @@ export class BalancesHandler extends ExtensionHandler {
       case "pri(balances.subscribe)": {
         const onDisconnected = portDisconnected(port)
 
+        await awaitKeyringLoaded()
         const hasSubstrateAccounts = keyring
           .getAccounts()
           .some((account) => account.meta.type !== "ethereum")
