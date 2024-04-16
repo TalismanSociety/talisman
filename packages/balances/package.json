@@ -27,7 +27,6 @@
     "clean": "rm -rf dist && rm -rf .turbo rm -rf node_modules"
   },
   "dependencies": {
-    "@alectalisman/polkadotjs-types": "^10.11.2",
     "@supercharge/promise-pool": "^3.1.0",
     "@talismn/chain-connector": "workspace:*",
     "@talismn/chain-connector-evm": "workspace:*",

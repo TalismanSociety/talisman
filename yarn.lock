@@ -49,22 +49,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@alectalisman/polkadotjs-types@npm:^10.11.2":
-  version: 10.11.2
-  resolution: "@alectalisman/polkadotjs-types@npm:10.11.2"
-  dependencies:
-    "@polkadot/keyring": ^12.6.2
-    "@polkadot/types-augment": 10.11.2
-    "@polkadot/types-codec": 10.11.2
-    "@polkadot/types-create": 10.11.2
-    "@polkadot/util": ^12.6.2
-    "@polkadot/util-crypto": ^12.6.2
-    rxjs: ^7.8.1
-    tslib: ^2.6.2
-  checksum: 987deb1c4a69aae81b28ec3981c7da2c1c49210bbd9fd8a0959488b274ecb3c32d073da5da017bce9859b4f33d883d51ff0f7abe2593eb16d9d55b4ce51015a2
-  languageName: node
-  linkType: hard
-
 "@alectalisman/preconstruct-cli@npm:2.3.0-e":
   version: 2.3.0-e
   resolution: "@alectalisman/preconstruct-cli@npm:2.3.0-e"
@@ -8391,7 +8375,6 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@talismn/balances@workspace:packages/balances"
   dependencies:
-    "@alectalisman/polkadotjs-types": ^10.11.2
     "@polkadot/api-contract": ^10.9.1
     "@polkadot/types": ^10.9.1
     "@polkadot/util": ^12.3.2

@@ -15,10 +15,5 @@
 
   // defaults to 1rem=16px, but we use 1rem=10px in the extension
   // this setting will provide accurate intellisense values
-  "tailwindCSS.rootFontSize": 10,
-
-  "workbench.colorCustomizations": {
-    "activityBarBadge.background": "#181C39",
-    "statusBar.background": "#181C39"
-  }
+  "tailwindCSS.rootFontSize": 10
 }

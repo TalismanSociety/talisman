@@ -20,15 +20,12 @@ export type V15StorageItem = NonNullable<V15Pallet["storage"]>["items"][0]
  */
 export const compactMetadata = (
   metadata: V15,
+  // TODO: Support V15 | V14
+  // metadata: V15 | V14,
   palletsAndItems: Array<{
     pallet: string
     items: string[]
   }>,
-  //   metadata: V15 | V14,
-  //   palletsAndItems: Array<{
-  //     pallet: (pallet: V15Pallet | V14Pallet) => boolean
-  //     items: Array<(item: V15StorageItem | V14StorageItem) => boolean>
-  //   }>,
   extraKeepTypes?: number[]
 ) => {
   // remove pallets we don't care about
