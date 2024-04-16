@@ -1,4 +1,5 @@
 import { migrateToNewAccountTypes } from "../../domains/accounts/migrations"
+import { cleanBadContacts } from "../../domains/app/migrations"
 import { migrateAssetDiscoveryRollout } from "../../domains/assetDiscovery/migrations"
 import { migrateToNewDefaultEvmNetworks } from "../../domains/ethereum/migrations"
 import { migrateSeedStoreToMultiple } from "../../domains/mnemonics/migrations"
@@ -12,4 +13,5 @@ export const migrations: Migrations = [
   migrateToNewAccountTypes,
   migrateToNewDefaultEvmNetworks,
   migrateAssetDiscoveryRollout,
+  cleanBadContacts,
 ]
