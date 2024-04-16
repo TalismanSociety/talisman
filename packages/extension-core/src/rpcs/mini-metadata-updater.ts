@@ -29,8 +29,10 @@ export const updateAndWaitForUpdatedChaindata = async ({
   updateSubstrateChains: boolean
 }) => {
   try {
-    await hydrateChaindataAndMiniMetadata(chaindataProvider, miniMetadataUpdater)
-    await updateEvmTokens(chaindataProvider, evmTokenFetcher)
+    await Promise.all([
+      hydrateChaindataAndMiniMetadata(chaindataProvider, miniMetadataUpdater),
+      updateEvmTokens(chaindataProvider, evmTokenFetcher),
+    ])
 
     if (updateSubstrateChains && !TEST) {
       if (!activeUpdate)
