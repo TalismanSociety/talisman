@@ -310,7 +310,9 @@ const Item = forwardRef<HTMLDivElement, ItemProps>(function Item(
         )}
       >
         {name}
-        <Fiat amount={item?.total !== undefined ? item.total : totalFiat} isBalance noCountUp />
+        <div>
+          <Fiat amount={item?.total !== undefined ? item.total : totalFiat} isBalance noCountUp />
+        </div>
       </div>
       {(button || (isFolder && !collapsed)) && (
         <ChevronDownIcon className={classNames("shrink-0 text-lg", button && "hidden lg:block")} />
