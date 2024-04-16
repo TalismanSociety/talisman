@@ -23,12 +23,16 @@ const evmTokenFetcher = new EvmTokenFetcher(chaindataProvider, balanceModules)
  *
  * When called many times in parallel, will only update mini metadata only once.
  */
-export const updateAndWaitForUpdatedChaindata = async (updateMiniMetadata: boolean) => {
+export const updateAndWaitForUpdatedChaindata = async ({
+  updateSubstrateChains,
+}: {
+  updateSubstrateChains: boolean
+}) => {
   try {
     await hydrateChaindataAndMiniMetadata(chaindataProvider, miniMetadataUpdater)
     await updateEvmTokens(chaindataProvider, evmTokenFetcher)
 
-    if (updateMiniMetadata && !TEST) {
+    if (updateSubstrateChains && !TEST) {
       if (!activeUpdate)
         activeUpdate = updateCustomMiniMetadata(chaindataProvider, miniMetadataUpdater)
 

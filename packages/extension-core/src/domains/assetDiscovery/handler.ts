@@ -12,7 +12,7 @@ export class AssetDiscoveryHandler extends ExtensionHandler {
   ): Promise<ResponseType<TMessageType>> {
     switch (type) {
       case "pri(assetDiscovery.scan.start)":
-        await updateAndWaitForUpdatedChaindata(false)
+        await updateAndWaitForUpdatedChaindata({ updateSubstrateChains: false })
         return assetDiscoveryScanner.startScan(request as RequestAssetDiscoveryStartScan)
 
       case "pri(assetDiscovery.scan.stop)":

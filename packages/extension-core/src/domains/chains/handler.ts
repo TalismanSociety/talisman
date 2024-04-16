@@ -97,7 +97,7 @@ export class ChainsHandler extends ExtensionHandler {
     })
 
     // ensure miniMetadatas are immediately updated, but don't wait for them to update before returning
-    updateAndWaitForUpdatedChaindata(true)
+    updateAndWaitForUpdatedChaindata({ updateSubstrateChains: true })
 
     return true
   }
@@ -130,7 +130,7 @@ export class ChainsHandler extends ExtensionHandler {
       // --------------------------------------------------------------------
       case "pri(chains.subscribe)":
         // TODO: Run this on a timer or something instead of when subscribing to chains
-        await updateAndWaitForUpdatedChaindata(true)
+        await updateAndWaitForUpdatedChaindata({ updateSubstrateChains: true })
         return true
 
       case "pri(chains.upsert)":

@@ -55,12 +55,12 @@ export class BalancesHandler extends ExtensionHandler {
         const onDisconnected = portDisconnected(port)
 
         await awaitKeyringLoaded()
-        const hasSubstrateAccounts = keyring
+        const updateSubstrateChains = keyring
           .getAccounts()
           .some((account) => account.meta.type !== "ethereum")
 
         // TODO: Run this on a timer or something instead of when subscribing to balances
-        await updateAndWaitForUpdatedChaindata(hasSubstrateAccounts)
+        await updateAndWaitForUpdatedChaindata({ updateSubstrateChains })
 
         return this.stores.balances.subscribe(id, onDisconnected)
       }
@@ -97,12 +97,12 @@ const subscribeBalancesByParams = async (
   // create subscription callback
   const callback = createSubscription<"pri(balances.byparams.subscribe)">(id, port)
 
-  const hasSubstrateAddresses =
+  const updateSubstrateChains =
     Object.values(addressesByChain).flat().some(isValidSubstrateAddress) ||
     addressesAndTokens.addresses.some(isValidSubstrateAddress)
 
   // wait for chaindata to hydrate
-  await updateAndWaitForUpdatedChaindata(hasSubstrateAddresses)
+  await updateAndWaitForUpdatedChaindata({ updateSubstrateChains })
 
   // set up variables to track inner balances subscriptions
   let subscriptionParams: BalanceSubscriptionParams = {

@@ -26,7 +26,7 @@ export default class TokensHandler extends ExtensionHandler {
       // --------------------------------------------------------------------
       case "pri(tokens.subscribe)": {
         // TODO: Run this on a timer or something instead of when subscribing to tokens
-        await updateAndWaitForUpdatedChaindata(true)
+        await updateAndWaitForUpdatedChaindata({ updateSubstrateChains: true })
 
         // triggers a pending scan if any
         // doing this here as this is the only place where we hydrate tokens from github
