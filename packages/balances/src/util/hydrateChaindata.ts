@@ -10,7 +10,6 @@ export const hydrateChaindataAndMiniMetadata = async (
     miniMetadataUpdater.hydrateFromChaindata(),
     miniMetadataUpdater.hydrateCustomChains(),
     chaindataProvider.hydrateChains(),
-    chaindataProvider.hydrateEvmNetworks(),
   ])
 
   const chains = await chaindataProvider.chains()
@@ -35,6 +34,7 @@ export const updateEvmTokens = async (
   chaindataProvider: ChaindataProvider,
   evmTokenFetcher: EvmTokenFetcher
 ) => {
+  await chaindataProvider.hydrateEvmNetworks()
   const evmNetworkIds = await chaindataProvider.evmNetworkIds()
   await evmTokenFetcher.update(evmNetworkIds)
 }
