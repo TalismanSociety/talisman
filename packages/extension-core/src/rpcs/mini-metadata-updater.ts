@@ -1,4 +1,3 @@
-import keyring from "@polkadot/ui-keyring"
 import * as Sentry from "@sentry/browser"
 import {
   EvmTokenFetcher,
@@ -8,7 +7,6 @@ import {
   updateEvmTokens,
 } from "@talismn/balances"
 
-import { awaitKeyringLoaded } from "../util/awaitKeyringLoaded"
 import { balanceModules, chainConnectors } from "./balance-modules"
 import { chaindataProvider } from "./chaindata"
 
@@ -20,38 +18,29 @@ const miniMetadataUpdater = new MiniMetadataUpdater(
 const evmTokenFetcher = new EvmTokenFetcher(chaindataProvider, balanceModules)
 
 /**
- * Hydrates miniMetadatas and chaindata, then updates miniMetadatas for any custom substrate chains.
+ * Hydrates miniMetadatas and chaindata, then updates miniMetadatas for any custom substrate chains if requested.
  *
- * When called many times in parallel, will only update once.
+ * When called many times in parallel, will only update mini metadata only once.
  */
-export const updateAndWaitForUpdatedChaindata = (): Promise<void> => {
-  if (activeUpdate) return activeUpdate
+export const updateAndWaitForUpdatedChaindata = async (updateMiniMetadata: boolean) => {
+  try {
+    await hydrateChaindataAndMiniMetadata(chaindataProvider, miniMetadataUpdater)
+    await updateEvmTokens(chaindataProvider, evmTokenFetcher)
 
-  activeUpdate = new Promise((resolve) => {
-    ;(async () => {
+    if (updateMiniMetadata) {
+      if (!activeUpdate)
+        activeUpdate = updateCustomMiniMetadata(chaindataProvider, miniMetadataUpdater)
+
       try {
-        // run these two promises in parallel, but we only care about the result of the first one
-        const [userHasSubstrateAccounts] = await Promise.all([
-          awaitKeyringLoaded()
-            .then(() => keyring.getAccounts().filter((account) => account.meta.type !== "ethereum"))
-            .then((substrateAccounts) => substrateAccounts.length > 0),
-          hydrateChaindataAndMiniMetadata(chaindataProvider, miniMetadataUpdater),
-        ])
-
-        if (userHasSubstrateAccounts)
-          await updateCustomMiniMetadata(chaindataProvider, miniMetadataUpdater)
-        await updateEvmTokens(chaindataProvider, evmTokenFetcher)
-      } catch (cause) {
-        Sentry.captureException(
-          new Error("Failed to hydrate chaindata & update miniMetadata", { cause })
-        )
+        await activeUpdate
       } finally {
         activeUpdate = null
-        resolve()
       }
-    })()
-  })
-
-  return activeUpdate
+    }
+  } catch (cause) {
+    Sentry.captureException(
+      new Error("Failed to hydrate chaindata & update miniMetadata", { cause })
+    )
+  }
 }
 let activeUpdate: Promise<void> | null = null

@@ -653,7 +653,7 @@ export class EthHandler extends ExtensionHandler {
 
       case "pri(eth.networks.subscribe)":
         // TODO: Run this on a timer or something instead of when subscribing to evmNetworks
-        await updateAndWaitForUpdatedChaindata()
+        await updateAndWaitForUpdatedChaindata(false)
         return true
 
       case "pri(eth.networks.upsert)":

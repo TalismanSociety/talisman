@@ -1,3 +1,4 @@
+import keyring from "@polkadot/ui-keyring"
 import {
   AddressesByToken,
   Balance,
@@ -7,6 +8,7 @@ import {
   db as balancesDb,
 } from "@talismn/balances"
 import { ChainId, ChainList, EvmNetworkList, Token, TokenList } from "@talismn/chaindata-provider"
+import { isValidSubstrateAddress } from "@talismn/util"
 import { liveQuery } from "dexie"
 import { DEBUG } from "extension-shared"
 import isEqual from "lodash/isEqual"
@@ -51,8 +53,12 @@ export class BalancesHandler extends ExtensionHandler {
       case "pri(balances.subscribe)": {
         const onDisconnected = portDisconnected(port)
 
+        const hasSubstrateAccounts = keyring
+          .getAccounts()
+          .some((account) => account.meta.type !== "ethereum")
+
         // TODO: Run this on a timer or something instead of when subscribing to balances
-        await updateAndWaitForUpdatedChaindata()
+        await updateAndWaitForUpdatedChaindata(hasSubstrateAccounts)
 
         return this.stores.balances.subscribe(id, onDisconnected)
       }
@@ -89,8 +95,12 @@ const subscribeBalancesByParams = async (
   // create subscription callback
   const callback = createSubscription<"pri(balances.byparams.subscribe)">(id, port)
 
+  const hasSubstrateAddresses =
+    !!Object.values(addressesByChain).flat().length ||
+    addressesAndTokens.addresses.some(isValidSubstrateAddress)
+
   // wait for chaindata to hydrate
-  await updateAndWaitForUpdatedChaindata()
+  await updateAndWaitForUpdatedChaindata(hasSubstrateAddresses)
 
   // set up variables to track inner balances subscriptions
   let subscriptionParams: BalanceSubscriptionParams = {
