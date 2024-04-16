@@ -24,8 +24,10 @@ const evmTokenFetcher = new EvmTokenFetcher(chaindataProvider, balanceModules)
  */
 export const updateAndWaitForUpdatedChaindata = async (updateMiniMetadata: boolean) => {
   try {
-    await hydrateChaindataAndMiniMetadata(chaindataProvider, miniMetadataUpdater)
-    await updateEvmTokens(chaindataProvider, evmTokenFetcher)
+    await Promise.all([
+      hydrateChaindataAndMiniMetadata(chaindataProvider, miniMetadataUpdater),
+      updateEvmTokens(chaindataProvider, evmTokenFetcher),
+    ])
 
     if (updateMiniMetadata) {
       if (!activeUpdate)
