@@ -6,6 +6,7 @@ import {
   updateCustomMiniMetadata,
   updateEvmTokens,
 } from "@talismn/balances"
+import { TEST } from "extension-shared"
 
 import { balanceModules, chainConnectors } from "./balance-modules"
 import { chaindataProvider } from "./chaindata"
@@ -29,7 +30,7 @@ export const updateAndWaitForUpdatedChaindata = async (updateMiniMetadata: boole
       updateEvmTokens(chaindataProvider, evmTokenFetcher),
     ])
 
-    if (updateMiniMetadata) {
+    if (updateMiniMetadata && !TEST) {
       if (!activeUpdate)
         activeUpdate = updateCustomMiniMetadata(chaindataProvider, miniMetadataUpdater)
 
