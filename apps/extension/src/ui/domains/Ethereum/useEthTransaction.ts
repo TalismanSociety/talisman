@@ -182,6 +182,11 @@ const useDecodeEvmTransaction = (
   const queryClient = useQueryClient()
   const [tx, setTx] = useState(() => request)
 
+  // update tx if request changes after first call (send funds)
+  useEffect(() => {
+    setTx(request)
+  }, [request])
+
   const { data: decodedTx, ...rest } = useQuery({
     // check tx as boolean as it's not pure
     queryKey: [
