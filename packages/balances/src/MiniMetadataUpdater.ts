@@ -233,7 +233,23 @@ export class MiniMetadataUpdater {
       await balancesDb.miniMetadatas.bulkDelete(unwantedIds)
     }
 
-    const needUpdates = ["polkadot", "astar", "hydradx", "polimec"]
+    const needUpdates = [
+      "polkadot",
+      "acala",
+      "astar",
+      "composable",
+      "crust",
+      "hydradx",
+      "interlay",
+      "karura",
+      "kintsugi",
+      "mangata",
+      "moonbeam",
+      "moonriver",
+      "polimec",
+      "westend-testnet",
+      "rococo-testnet",
+    ]
     // const needUpdates = Array.from(statusesByChain.entries())
     //   .filter(([, status]) => status !== "good")
     //   .map(([chainId]) => chainId)

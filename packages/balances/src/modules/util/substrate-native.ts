@@ -12,6 +12,10 @@ import {
   UnsubscribeFn,
 } from "../../types"
 
+//
+// TODO: Turn SubstrateNativeModule into a directory and move this into there
+//
+
 /**
  * Converts a subscription function into an Observable
  *
@@ -92,6 +96,7 @@ export const getLockedType = (input?: string): BalanceLockType => {
   if (input.includes("vesting")) return "vesting"
   if (input.includes("calamvst")) return "vesting" // vesting on manta network
   if (input.includes("ormlvest")) return "vesting" // vesting ORML tokens
+  if (input.includes("pyconvot")) return "democracy"
   if (input.includes("democrac")) return "democracy"
   if (input.includes("democracy")) return "democracy"
   if (input.includes("phrelect")) return "democracy" // specific to council
@@ -116,6 +121,8 @@ export const getLockedType = (input?: string): BalanceLockType => {
   // ignore technical or undocumented lock types
   if (input.includes("pdexlock")) return "other"
   if (input.includes("phala/sp")) return "other"
+  if (input.includes("aca/earn")) return "other"
+  if (input.includes("stk_stks")) return "other"
 
   // eslint-disable-next-line no-console
   console.warn(`unknown locked type: ${input}`)

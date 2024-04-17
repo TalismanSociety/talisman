@@ -19,9 +19,7 @@ export type V15StorageItem = NonNullable<V15Pallet["storage"]>["items"][0]
  * types used in the `System.Account` storage query will remain inside of metadata.lookups.
  */
 export const compactMetadata = (
-  metadata: V15,
-  // TODO: Support V15 | V14
-  // metadata: V15 | V14,
+  metadata: V15 | V14,
   palletsAndItems: Array<{
     pallet: string
     items: string[]
@@ -45,6 +43,7 @@ export const compactMetadata = (
     // remove pallet fields we don't care about
     pallet.calls = undefined
     pallet.constants = []
+    // v15 (NOT v14) has docs
     if ("docs" in pallet) pallet.docs = []
     pallet.errors = undefined
     pallet.events = undefined
@@ -70,9 +69,9 @@ export const compactMetadata = (
         // each type can be either "Plain" or "Map"
         // if it's "Plain" we only need to get the value type
         // if it's a "Map" we want to keep both the key AND the value types
+        item.type.tag === "plain" && item.type.value,
         item.type.tag === "map" && item.type.value.key,
         item.type.tag === "map" && item.type.value.value,
-        item.type.value,
       ])
       .filter((type): type is number => typeof type === "number")
   )
@@ -85,21 +84,37 @@ export const compactMetadata = (
   // ditch the types we aren't keeping
   metadata.lookup = metadata.lookup.filter((type) => keepTypes.has(type.id))
 
+  // update all type ids to be sequential (fill the gaps left by the deleted types)
+  const newTypeIds = new Map<number, number>()
+  metadata.lookup.forEach((type, index) => newTypeIds.set(type.id, index))
+  const getNewTypeId = (oldTypeId: number): number => {
+    const newTypeId = newTypeIds.get(oldTypeId)
+    if (typeof newTypeId !== "number") log.error(`Failed to find newTypeId for type ${oldTypeId}`)
+    return newTypeId ?? 0
+  }
+  remapTypeIds(metadata, getNewTypeId)
+
   // ditch the remaining data we don't need to keep in a miniMetata
-  metadata.apis = []
-  metadata.extrinsic.address = 0
-  metadata.extrinsic.call = 0
-  metadata.extrinsic.extra = 0
-  metadata.extrinsic.signature = 0
-  metadata.extrinsic.signature = 0
+  if ("apis" in metadata) {
+    // metadata is v15 (NOT v14)
+    metadata.apis = []
+    metadata.extrinsic.address = 0
+    metadata.extrinsic.call = 0
+    metadata.extrinsic.extra = 0
+    metadata.extrinsic.signature = 0
+    metadata.extrinsic.signature = 0
+  }
   metadata.extrinsic.signedExtensions = []
-  metadata.outerEnums.call = 0
-  metadata.outerEnums.error = 0
-  metadata.outerEnums.event = 0
+  if ("outerEnums" in metadata) {
+    // metadata is v15 (NOT v14)
+    metadata.outerEnums.call = 0
+    metadata.outerEnums.error = 0
+    metadata.outerEnums.event = 0
+  }
 }
 
 const addDependentTypes = (
-  metadataTysMap: Map<V15Type["id"], V15Type>,
+  metadataTysMap: Map<V15Type["id"] | V14Type["id"], V15Type | V14Type>,
   keepTypes: Set<number>,
   types: number[],
   // Prevent stack overflow when a type references itself
@@ -119,14 +134,14 @@ const addDependentTypes = (
     keepTypes.add(type.id)
     addedTypes.add(type.id)
 
+    const paramTypes = type.params
+      .map((param) => param.type)
+      .filter((type): type is number => typeof type === "number")
+    addDependentSubTypes(paramTypes)
+
     switch (type.def.tag) {
       case "array":
-        addDependentSubTypes([
-          ...type.params
-            .map((param) => param.type)
-            .filter((ty): ty is number => typeof ty === "number"),
-          type.def.value.type,
-        ])
+        addDependentSubTypes([type.def.value.type])
         break
 
       case "bitSequence":
@@ -134,66 +149,133 @@ const addDependentTypes = (
         break
 
       case "compact":
-        addDependentSubTypes([
-          ...type.params
-            .map((param) => param.type)
-            .filter((ty): ty is number => typeof ty === "number"),
-          type.def.value,
-        ])
+        addDependentSubTypes([type.def.value])
         break
 
       case "composite":
-        addDependentSubTypes([
-          ...type.params
-            .map((param) => param.type)
-            .filter((ty): ty is number => typeof ty === "number"),
-          ...type.def.value
+        addDependentSubTypes(
+          type.def.value
             .map((field) => field.type)
-            .filter((ty): ty is number => typeof ty === "number"),
-        ])
+            .filter((type): type is number => typeof type === "number")
+        )
         break
 
       case "primitive":
-        addDependentSubTypes([
-          ...type.params
-            .map((param) => param.type)
-            .filter((ty): ty is number => typeof ty === "number"),
-        ])
         break
 
       case "sequence":
-        addDependentSubTypes([
-          ...type.params
-            .map((param) => param.type)
-            .filter((ty): ty is number => typeof ty === "number"),
-          type.def.value,
-        ])
+        addDependentSubTypes([type.def.value])
         break
 
       case "tuple":
-        addDependentSubTypes([
-          ...type.params
-            .map((param) => param.type)
-            .filter((ty): ty is number => typeof ty === "number"),
-          ...type.def.value.filter((ty): ty is number => typeof ty === "number"),
-        ])
+        addDependentSubTypes(
+          type.def.value.filter((type): type is number => typeof type === "number")
+        )
         break
 
       case "variant":
-        addDependentSubTypes([
-          ...type.params
-            .map((param) => param.type)
-            .filter((ty): ty is number => typeof ty === "number"),
-          ...type.def.value
+        addDependentSubTypes(
+          type.def.value
             .flatMap((member) => member.fields.map((field) => field.type))
-            .filter((ty): ty is number => typeof ty === "number"),
-        ])
+            .filter((type): type is number => typeof type === "number")
+        )
+        break
+
+      case "historicMetaCompat":
+        log.warn(
+          `"historicMetaCompat" type found in metadata: this type might be missing from the resulting miniMetadata's lookup map`
+        )
+        // addDependentSubTypes([
+        //   // TODO: Handle `type.def.value`, which is a string,
+        //   // but `addDependentSubTypes` is only looking for an array of type ids (which are integers)
+        // ])
         break
 
       default: {
         // force compilation error if any types don't have a case
         const exhaustiveCheck: never = type.def
         log.error(`Unhandled V15Type type ${exhaustiveCheck}`)
+      }
+    }
+  }
+}
+
+const remapTypeIds = (metadata: V14 | V15, getNewTypeId: (oldTypeId: number) => number) => {
+  remapLookupTypeIds(metadata, getNewTypeId)
+  remapStorageTypeIds(metadata, getNewTypeId)
+}
+
+const remapLookupTypeIds = (metadata: V14 | V15, getNewTypeId: (oldTypeId: number) => number) => {
+  for (const type of metadata.lookup) {
+    type.id = getNewTypeId(type.id)
+
+    for (const param of type.params) {
+      if (typeof param.type !== "number") continue
+      param.type = getNewTypeId(param.type)
+    }
+
+    switch (type.def.tag) {
+      case "array":
+        type.def.value.type = getNewTypeId(type.def.value.type)
+        break
+
+      case "bitSequence":
+        type.def.value.bitOrderType = getNewTypeId(type.def.value.bitOrderType)
+        type.def.value.bitStoreType = getNewTypeId(type.def.value.bitStoreType)
+        break
+
+      case "compact":
+        type.def.value = getNewTypeId(type.def.value)
+        break
+
+      case "composite":
+        for (const field of type.def.value) {
+          if (typeof field.type !== "number") continue
+          field.type = getNewTypeId(field.type)
+        }
+        break
+
+      case "primitive":
+        break
+
+      case "sequence":
+        type.def.value = getNewTypeId(type.def.value)
+        break
+
+      case "tuple":
+        type.def.value = type.def.value.map((type) => {
+          if (typeof type !== "number") return type
+          return getNewTypeId(type)
+        })
+        break
+
+      case "variant":
+        for (const member of type.def.value) {
+          for (const field of member.fields) {
+            if (typeof field.type !== "number") continue
+            field.type = getNewTypeId(field.type)
+          }
+        }
+        break
+
+      case "historicMetaCompat":
+        break
+
+      default: {
+        // force compilation error if any types don't have a case
+        const exhaustiveCheck: never = type.def
+        log.error(`Unhandled V15Type type ${exhaustiveCheck}`)
+      }
+    }
+  }
+}
+const remapStorageTypeIds = (metadata: V14 | V15, getNewTypeId: (oldTypeId: number) => number) => {
+  for (const pallet of metadata.pallets) {
+    for (const item of pallet.storage?.items ?? []) {
+      if (item.type.tag === "plain") item.type.value = getNewTypeId(item.type.value)
+      if (item.type.tag === "map") {
+        item.type.value.key = getNewTypeId(item.type.value.key)
+        item.type.value.value = getNewTypeId(item.type.value.value)
       }
     }
   }

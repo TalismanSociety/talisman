@@ -18,7 +18,7 @@ import { DefaultBalanceModule, NewBalanceModule, NewTransferParamsType } from ".
 import log from "../log"
 import { AddressesByToken, Amount, Balance, BalanceJson, Balances, NewBalanceType } from "../types"
 import psp22Abi from "./abis/psp22.json"
-import { makeContractCaller } from "./util/makeContractCaller"
+import { makeContractCaller } from "./util"
 
 type ModuleType = "substrate-psp22"
 
