@@ -92,6 +92,7 @@ export const getLockedType = (input?: string): BalanceLockType => {
   if (input.includes("calamvst")) return "vesting" // vesting on manta network
   if (input.includes("ormlvest")) return "vesting" // vesting ORML tokens
   if (input.includes("democrac")) return "democracy"
+  if (input.includes("democracy")) return "democracy"
   if (input.includes("phrelect")) return "democracy" // specific to council
   if (input.includes("staking")) return "staking"
   if (input.includes("stkngdel")) return "staking" // staking delegator
@@ -99,6 +100,7 @@ export const getLockedType = (input?: string): BalanceLockType => {
   if (input.includes("kiltpstk")) return "staking" // Kilt specific staking
   if (input.includes("dapstake")) return "dapp-staking" // Astar specific
   if (input.includes("appstake")) return "dapp-staking" // Quartz (unique) specific
+  if (input.includes("dappstaking")) return "dapp-staking"
 
   // Joystream specifics https://github.com/Joystream/pioneer/blob/dev/packages/ui/src/accounts/model/lockTypes.ts
   if (input.includes("voting")) return "democracy"

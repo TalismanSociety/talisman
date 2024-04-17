@@ -2,7 +2,7 @@ import { yupResolver } from "@hookform/resolvers/yup"
 import { isEthereumAddress } from "@polkadot/util-crypto"
 import { notify } from "@talisman/components/Notifications"
 import { convertAddress } from "@talisman/util/convertAddress"
-import { isValidSubstrateAddress } from "@talisman/util/isValidSubstrateAddress"
+import { isValidSubstrateAddress } from "@talismn/util"
 import { AnalyticsPage, sendAnalyticsEvent } from "@ui/api/analytics"
 import { AddressFieldNsBadge } from "@ui/domains/Account/AddressFieldNsBadge"
 import useAccounts from "@ui/hooks/useAccounts"
@@ -28,8 +28,6 @@ interface ValidationContext {
   accounts: string[]
   contacts: string[]
 }
-
-const ethRegex = new RegExp("^0[xX][a-fA-F0-9]{40}$")
 
 const ANALYTICS_PAGE: AnalyticsPage = {
   container: "Fullscreen",
@@ -63,12 +61,13 @@ export const ContactCreateModal = ({ isOpen, close }: ContactModalProps) => {
           .test("is-valid", t("Address is not valid"), (value, ctx) => {
             const context = ctx.options.context as ValidationContext
             if (!value) return false
-            const isEthAddress = ethRegex.test(value) ?? isEthereumAddress(value.toLowerCase())
+            const isEthAddress = isEthereumAddress(value)
+
             const isValidAddress = isEthAddress || isValidSubstrateAddress(value)
+
             if (!isValidAddress) return ctx.createError({ message: t("Invalid Address") })
 
             const normalised = normalise(value, isEthAddress ? "ethereum" : "ss58")
-
             const { accounts, contacts } = context
             if (accounts.includes(normalised))
               return ctx.createError({ message: t("Cannot save a wallet address as a contact") })
@@ -141,10 +140,7 @@ export const ContactCreateModal = ({ isOpen, close }: ContactModalProps) => {
         await add({
           name,
           address,
-          addressType:
-            ethRegex.test(address) ?? isEthereumAddress(address.toLowerCase())
-              ? "ethereum"
-              : "ss58",
+          addressType: isEthereumAddress(address) ? "ethereum" : "ss58",
         })
         sendAnalyticsEvent({
           ...ANALYTICS_PAGE,

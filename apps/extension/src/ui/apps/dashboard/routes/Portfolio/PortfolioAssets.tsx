@@ -25,14 +25,11 @@ const FullscreenPortfolioAssets = ({
 
   const currency = useSelectedCurrency()
 
-  const { portfolio, available, locked } = useMemo(() => {
-    const { total, frozen, reserved, transferable } = balances.sum.fiat(currency)
-    return {
-      portfolio: total,
-      available: transferable,
-      locked: frozen + reserved,
-    }
-  }, [balances.sum, currency])
+  const {
+    total: portfolio,
+    transferable: available,
+    unavailable: locked,
+  } = useMemo(() => balances.sum.fiat(currency), [balances.sum, currency])
 
   return (
     <>

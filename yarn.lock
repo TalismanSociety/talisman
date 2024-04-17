@@ -7833,6 +7833,22 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@polkadot/types@patch:@polkadot/types@npm:10.11.2#.yarn/patches/@polkadot-types-npm-10.11.2-9fef8e41bc.patch::locator=talisman%40workspace%3A.":
+  version: 10.11.2
+  resolution: "@polkadot/types@patch:@polkadot/types@npm%3A10.11.2#.yarn/patches/@polkadot-types-npm-10.11.2-9fef8e41bc.patch::version=10.11.2&hash=0a65de&locator=talisman%40workspace%3A."
+  dependencies:
+    "@polkadot/keyring": ^12.6.2
+    "@polkadot/types-augment": 10.11.2
+    "@polkadot/types-codec": 10.11.2
+    "@polkadot/types-create": 10.11.2
+    "@polkadot/util": ^12.6.2
+    "@polkadot/util-crypto": ^12.6.2
+    rxjs: ^7.8.1
+    tslib: ^2.6.2
+  checksum: dc2be7978e88c7a08850b46523c7593d657338478300f5c69f60f228ff6925dffc8a874ab28169028853aeb88cd36c7df8704df63856c57ddccc7c24b67ccba1
+  languageName: node
+  linkType: hard
+
 "@polkadot/ui-keyring@npm:3.6.4":
   version: 3.6.4
   resolution: "@polkadot/ui-keyring@npm:3.6.4"
@@ -9396,8 +9412,8 @@ __metadata:
     dexie-react-hooks: ^1.1.7
     eslint: ^8.4.0
     jest: ^29.7.0
-    jotai: ^2.6.4
-    jotai-effect: ^0.5.0
+    jotai: 2.x
+    jotai-effect: 0.x
     lodash: 4.17.21
     react: ^18.2.0
     react-use: ^17.4.0
@@ -12869,8 +12885,8 @@ __metadata:
     anylogger-loglevel: ^1.0.0
     autoprefixer: ^10.4.12
     eslint: ^7.5.0
-    jotai: ^2.6.4
-    jotai-effect: ^0.5.0
+    jotai: ^2.8.0
+    jotai-effect: ^0.6.0
     loglevel: ^1.8.1
     postcss: ^8.4.33
     react: ^18.2.0
@@ -17044,8 +17060,8 @@ __metadata:
     jest: 29.7.0
     jest-fetch-mock: ^3.0.3
     jest-webextension-mock: 3.8.9
-    jotai: ^2.6.4
-    jotai-effect: ^0.5.0
+    jotai: ^2.8.0
+    jotai-effect: ^0.6.0
     js-yaml: 4.1.0
     lodash: 4.17.21
     loglevel: ^1.8.1
@@ -20376,18 +20392,18 @@ __metadata:
   languageName: node
   linkType: hard
 
-"jotai-effect@npm:^0.5.0":
-  version: 0.5.0
-  resolution: "jotai-effect@npm:0.5.0"
+"jotai-effect@npm:0.x, jotai-effect@npm:^0.6.0":
+  version: 0.6.0
+  resolution: "jotai-effect@npm:0.6.0"
   peerDependencies:
     jotai: ">=2.5.0"
-  checksum: 40f392c5c64d7fa5ee5daf6fa1ac30050833ce8e7888474568aa440ac62466afed35d458ac731e80eaf8e4935dcefc26ffd583d82b0b68fa493f1345ebea1738
+  checksum: 0a612806403b45ab70057dc567a90e43bbdfefb1525e04427c10a02f4548c593b5379613b1b3dfd585a594bb722a0efa88cd34539e131200593a97dc50dee1d8
   languageName: node
   linkType: hard
 
-"jotai@npm:^2.6.4":
-  version: 2.6.4
-  resolution: "jotai@npm:2.6.4"
+"jotai@npm:2.x, jotai@npm:^2.8.0":
+  version: 2.8.0
+  resolution: "jotai@npm:2.8.0"
   peerDependencies:
     "@types/react": ">=17.0.0"
     react: ">=17.0.0"
@@ -20396,7 +20412,7 @@ __metadata:
       optional: true
     react:
       optional: true
-  checksum: 1a27de808e13bce97978d33a5f368e00acdfb472bef1d068dffabe036dad3b43bfba1595205a1a47719c9ca7149458ce2b198751040be7f3ef255cb51388675e
+  checksum: b24e7676fb659e72fcd6ccd57b1e120b80fa9172353e5d9e9f980b29d4d176238e3fd0c1b555c51476a0a8dc0d2ea391c6b2840d3e7bfb315892e8a621fd8dfb
   languageName: node
   linkType: hard
 

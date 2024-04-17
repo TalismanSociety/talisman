@@ -37,7 +37,7 @@ export const PortfolioWhatsNewSection = ({
   version,
 }: {
   content: string
-  heroUrl: string
+  heroUrl?: string
   version: string
 }) => {
   const { t } = useTranslation()
@@ -54,12 +54,14 @@ export const PortfolioWhatsNewSection = ({
   return (
     <div>
       <div className="text-body-secondary flex flex-col gap-12 pb-12 text-sm">
-        <div className="relative h-[119px]">
-          <img
-            className="pointer-events-none relative w-full rounded-sm"
-            src={heroUrl}
-            alt="a hero banner"
-          />
+        <div className={`relative ${heroUrl ? "h-[119px]" : "h-10"}`}>
+          {heroUrl && (
+            <img
+              className="pointer-events-none relative w-full rounded-sm"
+              src={heroUrl}
+              alt="a hero banner"
+            />
+          )}
           <div className="pointer-events-none absolute left-5 top-5">
             <div className="text-primary">v{version}</div>
           </div>
