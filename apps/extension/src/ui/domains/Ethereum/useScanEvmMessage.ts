@@ -11,6 +11,7 @@ import { log } from "extension-shared"
 import { useMemo, useState } from "react"
 
 export type EvmMessageScan = {
+  type: "message"
   isAvailable: boolean
   isValidating: boolean
   result: ScanMessageEvm200Response | null | undefined
@@ -112,6 +113,7 @@ export const useScanEvmMessage = (
 
   return useMemo(
     () => ({
+      type: "message",
       isAvailable,
       isValidating: isAvailable && autoValidate && isLoading,
       result,

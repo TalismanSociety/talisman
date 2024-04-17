@@ -12,6 +12,7 @@ import { useMemo, useState } from "react"
 import { TransactionRequest } from "viem"
 
 export type EvmTransactionScan = {
+  type: "transaction"
   isAvailable: boolean
   isValidating: boolean
   result: ScanTransactionsEvm200Response | null | undefined
@@ -85,6 +86,7 @@ export const useScanEvmTransaction = (
 
   return useMemo(
     () => ({
+      type: "transaction",
       isAvailable,
       isValidating: isAvailable && autoValidate && isLoading,
       result,

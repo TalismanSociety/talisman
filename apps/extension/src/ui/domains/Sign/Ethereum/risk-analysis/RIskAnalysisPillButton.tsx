@@ -5,40 +5,54 @@ import {
   ShieldUnknownIcon,
   ShieldZapIcon,
 } from "@talismn/icons"
-import { useMemo } from "react"
+import { EvmMessageScan } from "@ui/domains/Ethereum/useScanEvmMessage"
+import { EvmTransactionScan } from "@ui/domains/Ethereum/useScanEvmTransaction"
+import { FC, useMemo } from "react"
 import { useTranslation } from "react-i18next"
 import { PillButton, Tooltip, TooltipContent, TooltipTrigger } from "talisman-ui"
 
-import { useEthSignTransactionRequest } from "../../SignRequestContext"
+import { useEthSignMessageRequest, useEthSignTransactionRequest } from "../../SignRequestContext"
+import { RisksReview } from "./useRisksReview"
 
-export const RiskAnalysisPillButton = () => {
+export const RisksAnalysisTxButton = () => {
+  const { scan, risksReview } = useEthSignTransactionRequest()
+  return <RiskAnalysisPillButton scan={scan} risksReview={risksReview} />
+}
+
+export const RisksAnalysisMsgButton = () => {
+  const { scan, risksReview } = useEthSignMessageRequest()
+  return <RiskAnalysisPillButton scan={scan} risksReview={risksReview} />
+}
+
+const RiskAnalysisPillButton: FC<{
+  scan: EvmTransactionScan | EvmMessageScan
+  risksReview: RisksReview
+}> = ({ scan, risksReview }) => {
   const { t } = useTranslation()
 
-  const { scan: validation, risksReview: riskAnalysis } = useEthSignTransactionRequest()
-
   const { icon, label, className, disabled } = useMemo(() => {
-    if (validation?.result?.action === "NONE")
+    if (scan?.result?.action === "NONE")
       return {
         label: t("Low Risk"),
         icon: ShieldOkIcon,
         className: "text-alert-success",
         disabled: false,
       }
-    if (validation?.result?.action === "WARN")
+    if (scan?.result?.action === "WARN")
       return {
         label: t("Medium Risk"),
         icon: ShieldZapIcon,
         className: "text-alert-warn",
         disabled: false,
       }
-    if (validation?.result?.action === "BLOCK")
+    if (scan?.result?.action === "BLOCK")
       return {
         label: t("Critical Risk"),
         icon: ShieldNotOkIcon,
         className: "text-brand-orange",
         disabled: false,
       }
-    if (validation.isAvailable)
+    if (scan.isAvailable)
       return {
         icon: ShieldUnknownIcon,
         label: t("Analyse Risks"),
@@ -51,7 +65,7 @@ export const RiskAnalysisPillButton = () => {
       className: undefined,
       disabled: true,
     }
-  }, [t, validation])
+  }, [t, scan])
 
   return (
     <Tooltip>
@@ -60,7 +74,7 @@ export const RiskAnalysisPillButton = () => {
           disabled={disabled}
           size="sm"
           icon={icon}
-          onClick={riskAnalysis.drawer.open}
+          onClick={risksReview.drawer.open}
           className={className}
         >
           {label}

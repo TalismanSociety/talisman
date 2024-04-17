@@ -1,16 +1,18 @@
+import { EvmMessageScan } from "@ui/domains/Ethereum/useScanEvmMessage"
 import { EvmTransactionScan } from "@ui/domains/Ethereum/useScanEvmTransaction"
 import { FC } from "react"
 import { useTranslation } from "react-i18next"
-import { Button, Checkbox, Drawer } from "talisman-ui"
+import { Button, Drawer } from "talisman-ui"
 
-import { useEthSignTransactionRequest } from "../../SignRequestContext"
+import { useEthSignMessageRequest, useEthSignTransactionRequest } from "../../SignRequestContext"
 import { RiskAnalysisRecommendation } from "./RiskAnalysisRecommendation"
 import { RiskAnalysisStateChanges } from "./RiskAnalysisStateChanges"
 import { RiskAnalysisWarnings } from "./RiskAnalysisWarnings"
+import { RisksAnalysisAknowledgement } from "./RisksAnalysisAknowledgement"
 import { RisksReview } from "./useRisksReview"
 
 const RiskAnalysisDrawerContent: FC<{
-  scan: EvmTransactionScan
+  scan: EvmTransactionScan | EvmMessageScan
   risksReview: RisksReview
 }> = ({ scan, risksReview }) => {
   const { t } = useTranslation()
@@ -28,10 +30,8 @@ const RiskAnalysisDrawerContent: FC<{
       <div className="scrollable scrollable-700  flex-grow overflow-y-auto pr-4 text-sm leading-[2rem] ">
         <div className="text-body-secondary leading-paragraph flex w-full flex-col gap-12 text-xs">
           <div className="text-body text-md text-center font-bold">{t("Risk Assessment")}</div>
-          <RiskAnalysisRecommendation {...scan} />
-          {scan.result && (
-            <RiskAnalysisStateChanges scan={scan.result} chainInfo={scan.chainInfo} />
-          )}
+          <RiskAnalysisRecommendation scan={scan} />
+          {scan.type === "transaction" && <RiskAnalysisStateChanges scan={scan} />}
           <RiskAnalysisWarnings warnings={scan.result.warnings} />
         </div>
         {/* <BlowfishUIProvider
@@ -92,16 +92,7 @@ const RiskAnalysisDrawerContent: FC<{
           </div>
         </BlowfishUIProvider> */}
       </div>
-      <div className="flex w-full items-center justify-between">
-        <div>{t("I aknowledge the risks")}</div>
-        <div>
-          <Checkbox
-            onChange={(e) => {
-              risksReview.setIsRiskAknowledged(e.target.checked)
-            }}
-          />
-        </div>
-      </div>
+      <RisksAnalysisAknowledgement risksReview={risksReview} />
       <div>
         <Button onClick={risksReview.drawer.close} className="w-full">
           {t("Close")}
@@ -111,9 +102,10 @@ const RiskAnalysisDrawerContent: FC<{
   )
 }
 
-export const RiskAnalysisDrawer = () => {
-  const { scan, risksReview } = useEthSignTransactionRequest()
-
+const RiskAnalysisDrawer: FC<{
+  scan: EvmTransactionScan | EvmMessageScan
+  risksReview: RisksReview
+}> = ({ scan, risksReview }) => {
   return (
     <Drawer
       anchor="bottom"
@@ -124,4 +116,14 @@ export const RiskAnalysisDrawer = () => {
       <RiskAnalysisDrawerContent scan={scan} risksReview={risksReview} />
     </Drawer>
   )
+}
+
+export const RisksAnalysisTxDrawer = () => {
+  const { scan, risksReview } = useEthSignTransactionRequest()
+  return <RiskAnalysisDrawer scan={scan} risksReview={risksReview} />
+}
+
+export const RisksAnalysisMsgDrawer = () => {
+  const { scan, risksReview } = useEthSignMessageRequest()
+  return <RiskAnalysisDrawer scan={scan} risksReview={risksReview} />
 }

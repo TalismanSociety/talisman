@@ -1,10 +1,8 @@
+import { EvmExpectedStateChange } from "@blowfishxyz/api-client/v20230605"
 import { ArrowDownIcon, ArrowUpIcon } from "@talismn/icons"
 import { classNames } from "@talismn/util"
-import {
-  BlowfishEvmChainInfo,
-  EvmExpectedStateChange,
-  ScanTransactionsResult,
-} from "extension-core"
+import { EvmTransactionScan } from "@ui/domains/Ethereum/useScanEvmTransaction"
+import { BlowfishEvmChainInfo } from "extension-core"
 import { FC, useMemo } from "react"
 import { useTranslation } from "react-i18next"
 
@@ -164,25 +162,24 @@ const StateChange: FC<{ change: EvmExpectedStateChange; chainInfo: BlowfishEvmCh
 }
 
 export const RiskAnalysisStateChanges: FC<{
-  scan: ScanTransactionsResult
-  chainInfo: BlowfishEvmChainInfo
-}> = ({ scan, chainInfo }) => {
+  scan: EvmTransactionScan
+}> = ({ scan }) => {
+  const { result, chainInfo } = scan
+
   const { t } = useTranslation()
   const changes = useMemo<EvmExpectedStateChange[]>(() => {
-    const { userAccount, expectedStateChanges } = scan.simulationResults.aggregated
+    if (!result) return []
+    const { userAccount, expectedStateChanges } = result.simulationResults.aggregated
     return expectedStateChanges[userAccount] ?? []
-  }, [scan.simulationResults.aggregated])
+  }, [result])
 
-  // useEffect(() => {
-  //   console.log("state changes", changes)
-  // }, [changes])
-
-  if (scan.simulationResults.aggregated.error) {
+  if (scan.result?.simulationResults.aggregated.error) {
     //TODO
-    return <div>Error : {scan.simulationResults.aggregated.error.humanReadableError}</div>
+    return <div>Error : {scan.result.simulationResults.aggregated.error.humanReadableError}</div>
   }
 
   if (!changes.length) return null
+  if (!chainInfo) return null
 
   return (
     <div className="flex w-full flex-col">

@@ -1,6 +1,6 @@
+import { WarningInnerKindEnum } from "@blowfishxyz/api-client/v20230605"
 import { ShieldNotOkIcon, ShieldUnknownIcon, ShieldZapIcon } from "@talismn/icons"
 import { classNames } from "@talismn/util"
-import { WarningInnerKindEnum } from "extension-core"
 import { FC, useMemo } from "react"
 import { useTranslation } from "react-i18next"
 

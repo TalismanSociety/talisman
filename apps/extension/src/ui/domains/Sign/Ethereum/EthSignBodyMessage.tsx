@@ -14,6 +14,7 @@ import { useTranslation } from "react-i18next"
 
 import { SignAlertMessage } from "../SignAlertMessage"
 import { EthSignBodyMessageSIWE } from "./EthSignBodyMessageSIWE"
+import { RisksAnalysisMsgButton } from "./risk-analysis/RIskAnalysisPillButton"
 import { SignParamAccountButton, SignParamNetworkAddressButton } from "./shared"
 
 const useEthSignMessage = (request: EthSignRequest) => {
@@ -101,6 +102,7 @@ export const EthSignBodyMessage: FC<EthSignBodyMessageProps> = ({ account, reque
   const { t } = useTranslation("request")
   const { siwe, isTypedData, text, verifyingAddress, ethChainId, isInvalidVerifyingContract } =
     useEthSignMessage(request)
+
   const evmNetwork = useEvmNetwork(ethChainId)
 
   if (siwe) return <EthSignBodyMessageSIWE account={account} request={request} siwe={siwe} />
@@ -129,6 +131,9 @@ export const EthSignBodyMessage: FC<EthSignBodyMessageProps> = ({ account, reque
         className={classNames("w-full grow", isTypedData && "whitespace-pre text-xs")}
         text={text}
       />
+      <div className="mt-8">
+        <RisksAnalysisMsgButton />
+      </div>
       {isInvalidVerifyingContract && (
         <SignAlertMessage type="error" className="mt-8">
           {t("Verifying contract's address is invalid.")}

@@ -7,6 +7,7 @@ import {
   PopupLayout,
 } from "@ui/apps/popup/Layout/PopupLayout"
 import { EthSignBodyMessage } from "@ui/domains/Sign/Ethereum/EthSignBodyMessage"
+import { RisksAnalysisMsgDrawer } from "@ui/domains/Sign/Ethereum/risk-analysis/RiskAnalysisDrawer"
 import { SignHardwareEthereum } from "@ui/domains/Sign/SignHardwareEthereum"
 import { useEthSignMessageRequest } from "@ui/domains/Sign/SignRequestContext"
 import { Suspense, useEffect, useMemo } from "react"
@@ -80,6 +81,7 @@ export const EthSignMessageRequest = () => {
           )}
         </Suspense>
       </PopupFooter>
+      <RisksAnalysisMsgDrawer />
     </PopupLayout>
   )
 }

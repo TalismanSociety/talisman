@@ -1,4 +1,7 @@
-import { ScanTransactionsResult } from "@extension/core"
+import {
+  ScanMessageEvm200Response,
+  ScanTransactionsEvm200Response,
+} from "@blowfishxyz/api-client/v20230605"
 import {
   ShieldNotOkIcon,
   ShieldOkIcon,
@@ -7,16 +10,23 @@ import {
   ShieldZapIcon,
 } from "@talismn/icons"
 import { classNames } from "@talismn/util"
+import { EvmMessageScan } from "@ui/domains/Ethereum/useScanEvmMessage"
+import { EvmTransactionScan } from "@ui/domains/Ethereum/useScanEvmTransaction"
 import { useMemo } from "react"
 import { useTranslation } from "react-i18next"
 
 export type RecommendationProps = {
   isAvailable: boolean
   isValidating: boolean
-  result: ScanTransactionsResult | null | undefined
+  result: ScanTransactionsEvm200Response | ScanMessageEvm200Response | null | undefined
 }
 
-const useRecommendation = ({ isAvailable, isValidating, result }: RecommendationProps) => {
+const useRecommendation = ({
+  type,
+  isAvailable,
+  isValidating,
+  result,
+}: EvmMessageScan | EvmTransactionScan) => {
   const { t } = useTranslation()
 
   return useMemo(() => {
@@ -47,7 +57,9 @@ const useRecommendation = ({ isAvailable, isValidating, result }: Recommendation
           title: result.warnings.length ? t("No Risk Found") : t("Low Risk"),
           description:
             result.warnings[0]?.message ??
-            t("No known risks were identified while analysing this transaction"),
+            (type === "transaction"
+              ? t("No risks were identified while analysing this transaction")
+              : t("No risks were identified while analysing this message")),
         }
     }
     if (!isAvailable) {
@@ -70,11 +82,13 @@ const useRecommendation = ({ isAvailable, isValidating, result }: Recommendation
         ? t("Risk assessment is in progress, please wait.")
         : t("TODO NOT VALIDATING"), // TODO
     }
-  }, [isAvailable, isValidating, result, t])
+  }, [isAvailable, isValidating, result, t, type])
 }
 
-export const RiskAnalysisRecommendation: React.FC<RecommendationProps> = (props) => {
-  const recommendation = useRecommendation(props)
+export const RiskAnalysisRecommendation: React.FC<{
+  scan: EvmMessageScan | EvmTransactionScan
+}> = ({ scan }) => {
+  const recommendation = useRecommendation(scan)
 
   if (!recommendation) return null
 

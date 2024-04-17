@@ -107,8 +107,8 @@ const useEthSignTransactionRequestProvider = ({ id }: KnownSigningRequestIdOnly<
     gasSettingsByPriority,
     setCustomSettings,
     isValid,
-    scan,
     updateCallArg,
+    scan,
     risksReview,
   }
 }
