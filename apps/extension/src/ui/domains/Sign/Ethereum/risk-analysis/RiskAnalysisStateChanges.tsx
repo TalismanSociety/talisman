@@ -1,9 +1,11 @@
 import { EvmExpectedStateChange } from "@blowfishxyz/api-client/v20230605"
 import { ArrowDownIcon, ArrowUpIcon } from "@talismn/icons"
 import { classNames } from "@talismn/util"
+import { EvmMessageScan } from "@ui/domains/Ethereum/useScanEvmMessage"
 import { EvmTransactionScan } from "@ui/domains/Ethereum/useScanEvmTransaction"
 import { BlowfishEvmChainInfo } from "extension-core"
-import { FC, useMemo } from "react"
+import { log } from "extension-shared"
+import { FC, useEffect, useMemo } from "react"
 import { useTranslation } from "react-i18next"
 
 import { RiskAnalysisImageBase, RiskAnalysisPlaceholderImage } from "./RiskAnalysisImageBase"
@@ -40,6 +42,7 @@ const AssetImage = (props: AssetImageProps) => {
             width={40}
             height={40}
             borderRadius="100%"
+            type="currency"
           />
         </>
       )
@@ -53,6 +56,7 @@ const AssetImage = (props: AssetImageProps) => {
           width={40}
           height={40}
           borderRadius={6}
+          type="nft"
         />
       )
     }
@@ -69,7 +73,7 @@ const AssetImage = (props: AssetImageProps) => {
     //   )
     // }
 
-    return <RiskAnalysisPlaceholderImage width={38} height={38} borderRadius={6} />
+    return <RiskAnalysisPlaceholderImage type="unknown" width={38} height={38} borderRadius={6} />
   }, [props])
 
   return (
@@ -102,6 +106,14 @@ const AssetImage = (props: AssetImageProps) => {
 
 const StateChangeImage: FC<{ rawInfo: EvmExpectedStateChange["rawInfo"] }> = ({ rawInfo }) => {
   const isPositive = isPositiveStateChange(rawInfo)
+
+  // console.log("StateChangeImage", {
+  //   rawInfo,
+  //   isPositive,
+  //   isCurrency: isCurrencyStateChange(rawInfo),
+  //   isNft: isNftStateChangeWithMetadata(rawInfo),
+  // })
+
   if (isCurrencyStateChange(rawInfo)) {
     return (
       <AssetImage
@@ -122,70 +134,72 @@ const StateChangeImage: FC<{ rawInfo: EvmExpectedStateChange["rawInfo"] }> = ({ 
     )
   }
 
-  if (rawInfo.kind === "ANY_NFT_FROM_COLLECTION_TRANSFER") {
-    return (
-      <AssetImage
-        type="nft"
-        imageUrl={rawInfo.data.asset.imageUrl}
-        name={rawInfo.data.asset.name}
-        isPositiveEffect={isPositive}
-      />
-    )
+  switch (rawInfo.kind) {
+    case "ANY_NFT_FROM_COLLECTION_TRANSFER":
+      return (
+        <AssetImage
+          type="nft"
+          imageUrl={rawInfo.data.asset.imageUrl}
+          name={rawInfo.data.asset.name}
+          isPositiveEffect={isPositive}
+        />
+      )
+    case "ERC721_APPROVAL_FOR_ALL":
+    case "ERC721_LOCK":
+    case "ERC721_LOCK_APPROVAL":
+    case "ERC721_LOCK_APPROVAL_FOR_ALL":
+    case "ERC721_TRANSFER":
+      return <AssetImage type="nft" imageUrl={null} name="Unknown" isPositiveEffect={isPositive} />
+    default:
+      return (
+        <AssetImage type="unknown" imageUrl={null} name="Unknown" isPositiveEffect={isPositive} />
+      )
   }
-
-  // TODO
-  return <AssetImage type="unknown" imageUrl={null} name="Unkonwn" isPositiveEffect={isPositive} />
 }
 
-const StateChange: FC<{ change: EvmExpectedStateChange; chainInfo: BlowfishEvmChainInfo }> = ({
-  change,
-  //chainInfo,
-}) => {
-  //const { rawInfo } = change
-  // const assetLink = useAssetLinkFromRawInfo(rawInfo, chainInfo)
-  // const counterpartyLink = useMemo(
-  //   () => generateCounterpartyBlockExplorerUrl(rawInfo, chainInfo),
-  //   [chainInfo, rawInfo]
-  // )
-
-  return (
-    <div className="flex w-full gap-8 p-4">
-      <div className="w-20 shrink-0 pt-4">
-        <StateChangeImage rawInfo={change.rawInfo} />
-      </div>
-      <div className="flex grow flex-col justify-center pt-4">
-        <div>{change.humanReadableDiff}</div>
-        <div></div>
-      </div>
+const StateChange: FC<{
+  change: EvmExpectedStateChange
+  chainInfo: BlowfishEvmChainInfo | null
+}> = ({ change }) => (
+  <div className="flex w-full gap-8 p-4">
+    <div className="w-20 shrink-0 pt-4">
+      <StateChangeImage rawInfo={change.rawInfo} />
     </div>
-  )
-}
+    <div className="text-body flex grow flex-col justify-center pt-4">
+      <div>{change.humanReadableDiff}</div>
+    </div>
+  </div>
+)
 
 export const RiskAnalysisStateChanges: FC<{
-  scan: EvmTransactionScan
+  scan: EvmTransactionScan | EvmMessageScan
 }> = ({ scan }) => {
-  const { result, chainInfo } = scan
-
   const { t } = useTranslation()
   const changes = useMemo<EvmExpectedStateChange[]>(() => {
-    if (!result) return []
-    const { userAccount, expectedStateChanges } = result.simulationResults.aggregated
-    return expectedStateChanges[userAccount] ?? []
-  }, [result])
+    if (!scan.result) return []
+    if (scan.type === "transaction") {
+      const { userAccount, expectedStateChanges } = scan.result.simulationResults.aggregated
+      return expectedStateChanges[userAccount] ?? []
+    }
+    if (scan.type === "message") {
+      return scan.result.simulationResults?.expectedStateChanges ?? []
+    }
+    return []
+  }, [scan])
 
-  if (scan.result?.simulationResults.aggregated.error) {
-    //TODO
-    return <div>Error : {scan.result.simulationResults.aggregated.error.humanReadableError}</div>
-  }
+  // TODO remove
+  useEffect(() => {
+    log.log("RiskAnalysisStateChanges", { changes })
+  }, [changes])
 
   if (!changes.length) return null
-  if (!chainInfo) return null
+  if (!scan.chainInfo) return null
 
   return (
     <div className="flex w-full flex-col">
-      <div className="text-body-secondary text-sm">{t("Simulation changes")}</div>
+      <div className="text-body-secondary text-sm">{t("Expected changes")}</div>
       {changes.map((change, i) => (
-        <StateChange key={i} change={change} chainInfo={chainInfo} />
+        <StateChange key={i} change={change} chainInfo={scan.chainInfo} />
       ))}
     </div>
   )

@@ -15,6 +15,8 @@ import { EvmTransactionScan } from "@ui/domains/Ethereum/useScanEvmTransaction"
 import { useMemo } from "react"
 import { useTranslation } from "react-i18next"
 
+import { RiskAnalysisWarnings } from "./RiskAnalysisWarnings"
+
 export type RecommendationProps = {
   isAvailable: boolean
   isValidating: boolean
@@ -90,7 +92,7 @@ export const RiskAnalysisRecommendation: React.FC<{
 }> = ({ scan }) => {
   const recommendation = useRecommendation(scan)
 
-  if (!recommendation) return null
+  if (scan.result?.warnings.length) return <RiskAnalysisWarnings warnings={scan.result.warnings} />
 
   const { Icon, bgClassName, textClassName, title, description } = recommendation
 
@@ -107,7 +109,7 @@ export const RiskAnalysisRecommendation: React.FC<{
           <Icon className="h-12 w-12" />
         </div>
       </div>
-      <div className="flex w-full grow flex-col gap-1">
+      <div className="flex w-full grow flex-col justify-center gap-1">
         <div className="font-bold">{title}</div>
         <div className="text-body-secondary ">{description}</div>
       </div>

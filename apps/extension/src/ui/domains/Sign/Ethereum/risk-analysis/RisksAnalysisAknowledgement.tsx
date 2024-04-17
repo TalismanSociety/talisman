@@ -17,7 +17,7 @@ export const RisksAnalysisAknowledgement: FC<{
   if (!risksReview.isRiskAknowledgementRequired) return null
 
   return (
-    <div className="flex w-full items-center justify-between">
+    <div className="flex w-full items-center justify-between text-sm">
       <div>{t("I aknowledge the risks")}</div>
       <div>
         <Checkbox onChange={handleChange} />

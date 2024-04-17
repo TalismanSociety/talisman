@@ -1,6 +1,7 @@
+import { ImageIcon, QuestionCircleIcon } from "@talismn/icons"
+import { TokenLogo } from "@ui/domains/Asset/TokenLogo"
+import { IPFS_GATEWAY } from "extension-shared"
 import React, { CSSProperties, memo, useCallback, useMemo, useState } from "react"
-
-import { RiskAnalysisIcon } from "./RiskAnalysisIcon"
 
 // TODO might want a different placeholder for currencies & nfts
 export const RiskAnalysisImageBase: React.FC<{
@@ -10,10 +11,9 @@ export const RiskAnalysisImageBase: React.FC<{
   height: number
   borderRadius?: CSSProperties["borderRadius"]
   alt: string
-}> = memo(function ImageBase({ src: originalSrc, width, height, borderRadius, alt }) {
-  const src = originalSrc?.startsWith("ipfs://")
-    ? "https://ipfs.io/ipfs/" + originalSrc.slice(7)
-    : originalSrc
+  type: "nft" | "currency" | "unknown"
+}> = memo(function ImageBase({ src: originalSrc, width, height, borderRadius, alt, type }) {
+  const src = originalSrc?.startsWith("ipfs://") ? IPFS_GATEWAY + originalSrc.slice(7) : originalSrc
   const [hasPlaceholder, setHasPlaceholder] = useState(!src)
   const handleImageError = useCallback(() => {
     setHasPlaceholder(true)
@@ -21,7 +21,12 @@ export const RiskAnalysisImageBase: React.FC<{
   const content = useMemo(() => {
     if (hasPlaceholder || !src) {
       return (
-        <RiskAnalysisPlaceholderImage width={width} height={height} borderRadius={borderRadius} />
+        <RiskAnalysisPlaceholderImage
+          type={type}
+          width={width}
+          height={height}
+          borderRadius={borderRadius}
+        />
       )
     } else {
       return (
@@ -35,22 +40,29 @@ export const RiskAnalysisImageBase: React.FC<{
         />
       )
     }
-  }, [hasPlaceholder, src, width, height, borderRadius, handleImageError, alt])
-  return <div className="flex flex-col">{content}</div> // <Column>{content}</Column>
+  }, [hasPlaceholder, src, width, height, borderRadius, handleImageError, alt, type])
+  return <div className="flex flex-col">{content}</div>
 })
 
 export const RiskAnalysisPlaceholderImage: React.FC<{
   width: number
   height: number
   borderRadius?: CSSProperties["borderRadius"]
-}> = ({ width, height, borderRadius }) => {
+  type: "nft" | "currency" | "unknown"
+}> = ({ width, height, borderRadius, type }) => {
   const style = useMemo<CSSProperties>(
     () => ({ width, height, borderRadius }),
     [borderRadius, height, width]
   )
+
   return (
-    <div style={style} className="flex flex-col">
-      <RiskAnalysisIcon variant="blowfish-logo" size={Math.floor(width / 1.5)} />
+    <div
+      style={style}
+      className="bg-grey-800 text-md text-body-disabled flex flex-col items-center justify-center"
+    >
+      {type === "nft" && <ImageIcon />}
+      {type === "currency" && <TokenLogo className="h-full w-full" />}
+      {type === "unknown" && <QuestionCircleIcon />}
     </div>
   )
 }
