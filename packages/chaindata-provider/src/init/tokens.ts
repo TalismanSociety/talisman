@@ -318,6 +318,20 @@ export const tokens = [
     coingeckoId: "pha",
   },
   {
+    id: "acala-substrate-tokens-pink",
+    type: "substrate-tokens",
+    isTestnet: false,
+    isDefault: true,
+    symbol: "PINK",
+    decimals: 10,
+    existentialDeposit: "1000000000",
+    onChainId: '{"ForeignAsset":13}',
+    chain: {
+      id: "acala",
+    },
+    logo: "https://raw.githubusercontent.com/TalismanSociety/chaindata/main/assets/tokens/unknown.svg",
+  },
+  {
     id: "acala-substrate-tokens-tap",
     type: "substrate-tokens",
     isTestnet: false,
@@ -415,19 +429,6 @@ export const tokens = [
     },
   },
   {
-    id: "ajuna-testnet-substrate-native",
-    type: "substrate-native",
-    isTestnet: true,
-    isDefault: true,
-    symbol: "AJUN",
-    decimals: 12,
-    logo: "https://raw.githubusercontent.com/TalismanSociety/chaindata/main/assets/tokens/unknown.svg",
-    existentialDeposit: "100000",
-    chain: {
-      id: "ajuna-testnet",
-    },
-  },
-  {
     id: "aleph-zero-substrate-native",
     type: "substrate-native",
     isTestnet: false,
@@ -510,6 +511,21 @@ export const tokens = [
       id: "aleph-zero",
     },
     logo: "https://raw.githubusercontent.com/TalismanSociety/chaindata/main/assets/tokens/unknown.svg",
+  },
+  {
+    id: "aleph-zero-substrate-psp22-panx",
+    type: "substrate-psp22",
+    isTestnet: false,
+    isDefault: true,
+    symbol: "PANX",
+    decimals: 12,
+    logo: "https://raw.githubusercontent.com/TalismanSociety/chaindata/main/assets/tokens/coingecko/panorama-swap-token.webp",
+    existentialDeposit: "0",
+    contractAddress: "5GSGAcvqpF5SuH2MhJ1YUdbLAbssCjeqCn2miMUCWUjnr5DQ",
+    chain: {
+      id: "aleph-zero",
+    },
+    coingeckoId: "panorama-swap-token",
   },
   {
     id: "aleph-zero-substrate-psp22-pete",
@@ -700,20 +716,6 @@ export const tokens = [
       id: "amplitude",
     },
     coingeckoId: "stellar",
-  },
-  {
-    id: "ares-odyssey-substrate-native",
-    type: "substrate-native",
-    isTestnet: false,
-    isDefault: true,
-    symbol: "ARES",
-    decimals: 12,
-    logo: "https://raw.githubusercontent.com/TalismanSociety/chaindata/main/assets/chains/ares-odyssey.svg",
-    existentialDeposit: "500",
-    chain: {
-      id: "ares-odyssey",
-    },
-    coingeckoId: "ares-protocol",
   },
   {
     id: "astar-substrate-assets-18446744073709551616-aca",
@@ -1009,20 +1011,6 @@ export const tokens = [
     chain: {
       id: "automata-contextfree-testnet",
     },
-  },
-  {
-    id: "automata-substrate-native",
-    type: "substrate-native",
-    isTestnet: false,
-    isDefault: true,
-    symbol: "ATA",
-    decimals: 18,
-    logo: "https://raw.githubusercontent.com/TalismanSociety/chaindata/main/assets/tokens/coingecko/automata.webp",
-    existentialDeposit: "0",
-    chain: {
-      id: "automata",
-    },
-    coingeckoId: "automata",
   },
   {
     id: "avail-goldberg-testnet-substrate-native",
@@ -1907,16 +1895,29 @@ export const tokens = [
     },
   },
   {
-    id: "cess-testnet-substrate-native",
+    id: "chainflip-substrate-native",
+    type: "substrate-native",
+    isTestnet: false,
+    isDefault: true,
+    symbol: "FLIP",
+    decimals: 18,
+    logo: "https://raw.githubusercontent.com/TalismanSociety/chaindata/main/assets/tokens/unknown.svg",
+    existentialDeposit: "0",
+    chain: {
+      id: "chainflip",
+    },
+  },
+  {
+    id: "chainflip-testnet-substrate-native",
     type: "substrate-native",
     isTestnet: true,
     isDefault: true,
-    symbol: "TCESS",
+    symbol: "FLIP",
     decimals: 18,
     logo: "https://raw.githubusercontent.com/TalismanSociety/chaindata/main/assets/tokens/unknown.svg",
-    existentialDeposit: "1000000000000000000",
+    existentialDeposit: "0",
     chain: {
-      id: "cess-testnet",
+      id: "chainflip-testnet",
     },
   },
   {
@@ -1932,20 +1933,6 @@ export const tokens = [
       id: "chainx",
     },
     coingeckoId: "chainx",
-  },
-  {
-    id: "clover-substrate-native",
-    type: "substrate-native",
-    isTestnet: false,
-    isDefault: true,
-    symbol: "CLV",
-    decimals: 18,
-    logo: "https://raw.githubusercontent.com/TalismanSociety/chaindata/main/assets/chains/clover.svg",
-    existentialDeposit: "0",
-    chain: {
-      id: "clover",
-    },
-    coingeckoId: "clover-finance",
   },
   {
     id: "commune-ai-substrate-native",
@@ -2352,19 +2339,6 @@ export const tokens = [
     },
   },
   {
-    id: "crown-sterling-substrate-native",
-    type: "substrate-native",
-    isTestnet: false,
-    isDefault: true,
-    symbol: "CSOV",
-    decimals: 12,
-    logo: "https://raw.githubusercontent.com/TalismanSociety/chaindata/main/assets/tokens/unknown.svg",
-    existentialDeposit: "0",
-    chain: {
-      id: "crown-sterling",
-    },
-  },
-  {
     id: "crust-parachain-substrate-native",
     type: "substrate-native",
     isTestnet: false,
@@ -2391,6 +2365,19 @@ export const tokens = [
       id: "crust",
     },
     coingeckoId: "crust-network",
+  },
+  {
+    id: "curio-substrate-native",
+    type: "substrate-native",
+    isTestnet: false,
+    isDefault: true,
+    symbol: "CGT",
+    decimals: 18,
+    logo: "https://raw.githubusercontent.com/TalismanSociety/chaindata/main/assets/tokens/unknown.svg",
+    existentialDeposit: "10000000000000000",
+    chain: {
+      id: "curio",
+    },
   },
   {
     id: "dancebox-substrate-native",
@@ -2472,6 +2459,19 @@ export const tokens = [
       id: "edgeware",
     },
     coingeckoId: "edgeware",
+  },
+  {
+    id: "edgeware-testnet-substrate-native",
+    type: "substrate-native",
+    isTestnet: true,
+    isDefault: true,
+    symbol: "tEDG",
+    decimals: 18,
+    logo: "https://raw.githubusercontent.com/TalismanSociety/chaindata/main/assets/tokens/unknown.svg",
+    existentialDeposit: "10000000000000",
+    chain: {
+      id: "edgeware-testnet",
+    },
   },
   {
     id: "encointer-substrate-native",
@@ -3402,6 +3402,19 @@ export const tokens = [
     },
   },
   {
+    id: "harmonie-testnet-substrate-native",
+    type: "substrate-native",
+    isTestnet: true,
+    isDefault: true,
+    symbol: "HMY",
+    decimals: 18,
+    logo: "https://raw.githubusercontent.com/TalismanSociety/chaindata/main/assets/tokens/unknown.svg",
+    existentialDeposit: "0",
+    chain: {
+      id: "harmonie-testnet",
+    },
+  },
+  {
     id: "hashed-substrate-native",
     type: "substrate-native",
     isTestnet: false,
@@ -3710,6 +3723,19 @@ export const tokens = [
     coingeckoId: "zeitgeist",
   },
   {
+    id: "hyperbridge-kusama-substrate-native",
+    type: "substrate-native",
+    isTestnet: false,
+    isDefault: true,
+    symbol: "NAND",
+    decimals: 12,
+    logo: "https://raw.githubusercontent.com/TalismanSociety/chaindata/main/assets/tokens/unknown.svg",
+    existentialDeposit: "1000000000",
+    chain: {
+      id: "hyperbridge-kusama",
+    },
+  },
+  {
     id: "imbue-substrate-native",
     type: "substrate-native",
     isTestnet: false,
@@ -3734,6 +3760,20 @@ export const tokens = [
     existentialDeposit: "1000000000",
     chain: {
       id: "integritee-kusama",
+    },
+    coingeckoId: "integritee",
+  },
+  {
+    id: "integritee-polkadot-substrate-native",
+    type: "substrate-native",
+    isTestnet: false,
+    isDefault: true,
+    symbol: "TEER",
+    decimals: 12,
+    logo: "https://raw.githubusercontent.com/TalismanSociety/chaindata/main/assets/chains/integritee-polkadot.svg",
+    existentialDeposit: "1000000000",
+    chain: {
+      id: "integritee-polkadot",
     },
     coingeckoId: "integritee",
   },
@@ -4009,19 +4049,6 @@ export const tokens = [
     coingeckoId: "joystream",
   },
   {
-    id: "jur-substrate-native",
-    type: "substrate-native",
-    isTestnet: false,
-    isDefault: true,
-    symbol: "JUR",
-    decimals: 18,
-    logo: "https://raw.githubusercontent.com/TalismanSociety/chaindata/main/assets/chains/jur.svg",
-    existentialDeposit: "500",
-    chain: {
-      id: "jur",
-    },
-  },
-  {
     id: "jur-testnet-substrate-native",
     type: "substrate-native",
     isTestnet: true,
@@ -4035,6 +4062,19 @@ export const tokens = [
     },
   },
   {
+    id: "k-laos-substrate-native",
+    type: "substrate-native",
+    isTestnet: false,
+    isDefault: true,
+    symbol: "KLAOS",
+    decimals: 18,
+    logo: "https://raw.githubusercontent.com/TalismanSociety/chaindata/main/assets/tokens/unknown.svg",
+    existentialDeposit: "0",
+    chain: {
+      id: "k-laos",
+    },
+  },
+  {
     id: "kabocha-substrate-native",
     type: "substrate-native",
     isTestnet: false,
@@ -4045,19 +4085,6 @@ export const tokens = [
     existentialDeposit: "1000000000",
     chain: {
       id: "kabocha",
-    },
-  },
-  {
-    id: "kapex-substrate-native",
-    type: "substrate-native",
-    isTestnet: false,
-    isDefault: true,
-    symbol: "KPX",
-    decimals: 12,
-    logo: "https://raw.githubusercontent.com/TalismanSociety/chaindata/main/assets/tokens/unknown.svg",
-    existentialDeposit: "1",
-    chain: {
-      id: "kapex",
     },
   },
   {
@@ -5267,6 +5294,19 @@ export const tokens = [
     coingeckoId: "liberland-lld",
   },
   {
+    id: "liberland-testnet-substrate-native",
+    type: "substrate-native",
+    isTestnet: true,
+    isDefault: true,
+    symbol: "LDN",
+    decimals: 12,
+    logo: "https://raw.githubusercontent.com/TalismanSociety/chaindata/main/assets/tokens/unknown.svg",
+    existentialDeposit: "1000000000000",
+    chain: {
+      id: "liberland-testnet",
+    },
+  },
+  {
     id: "litentry-substrate-native",
     type: "substrate-native",
     isTestnet: false,
@@ -5294,6 +5334,19 @@ export const tokens = [
     },
   },
   {
+    id: "logion-polkadot-substrate-native",
+    type: "substrate-native",
+    isTestnet: false,
+    isDefault: true,
+    symbol: "LGNT",
+    decimals: 18,
+    logo: "https://raw.githubusercontent.com/TalismanSociety/chaindata/main/assets/tokens/unknown.svg",
+    existentialDeposit: "1000000000000000",
+    chain: {
+      id: "logion-polkadot",
+    },
+  },
+  {
     id: "logion-standalone-substrate-native",
     type: "substrate-native",
     isTestnet: false,
@@ -5307,7 +5360,7 @@ export const tokens = [
     },
   },
   {
-    id: "logion-testnet-standalone-2-substrate-native",
+    id: "logion-testnet-substrate-native",
     type: "substrate-native",
     isTestnet: true,
     isDefault: true,
@@ -5316,7 +5369,7 @@ export const tokens = [
     logo: "https://raw.githubusercontent.com/TalismanSociety/chaindata/main/assets/tokens/unknown.svg",
     existentialDeposit: "500",
     chain: {
-      id: "logion-testnet-standalone-2",
+      id: "logion-testnet",
     },
   },
   {
@@ -5442,6 +5495,19 @@ export const tokens = [
     },
   },
   {
+    id: "neuroweb-polkadot-substrate-native",
+    type: "substrate-native",
+    isTestnet: false,
+    isDefault: true,
+    symbol: "NEURO",
+    decimals: 12,
+    logo: "https://raw.githubusercontent.com/TalismanSociety/chaindata/main/assets/tokens/unknown.svg",
+    existentialDeposit: "1000000000000",
+    chain: {
+      id: "neuroweb-polkadot",
+    },
+  },
+  {
     id: "nftmart-substrate-native",
     type: "substrate-native",
     isTestnet: false,
@@ -5493,19 +5559,6 @@ export const tokens = [
     existentialDeposit: "0",
     chain: {
       id: "opal-testnet",
-    },
-  },
-  {
-    id: "origintrail-parachain-substrate-native",
-    type: "substrate-native",
-    isTestnet: false,
-    isDefault: true,
-    symbol: "NEURO",
-    decimals: 12,
-    logo: "https://raw.githubusercontent.com/TalismanSociety/chaindata/main/assets/chains/origintrail-parachain.svg",
-    existentialDeposit: "1000000000000",
-    chain: {
-      id: "origintrail-parachain",
     },
   },
   {
@@ -5729,29 +5782,16 @@ export const tokens = [
     coingeckoId: "pha",
   },
   {
-    id: "phala-testnet-standalone-2-substrate-native",
+    id: "phala-testnet-substrate-native",
     type: "substrate-native",
     isTestnet: true,
     isDefault: true,
     symbol: "PHA",
     decimals: 12,
-    logo: "https://raw.githubusercontent.com/TalismanSociety/chaindata/main/assets/tokens/unknown.svg",
+    logo: "https://raw.githubusercontent.com/TalismanSociety/chaindata/main/assets/chains/phala-testnet.svg",
     existentialDeposit: "10000000000",
     chain: {
-      id: "phala-testnet-standalone-2",
-    },
-  },
-  {
-    id: "phyken-testnet-substrate-native",
-    type: "substrate-native",
-    isTestnet: true,
-    isDefault: true,
-    symbol: "KEN",
-    decimals: 18,
-    logo: "https://raw.githubusercontent.com/TalismanSociety/chaindata/main/assets/chains/phyken-testnet.svg",
-    existentialDeposit: "1000",
-    chain: {
-      id: "phyken-testnet",
+      id: "phala-testnet",
     },
   },
   {
@@ -6259,16 +6299,16 @@ export const tokens = [
     },
   },
   {
-    id: "polkadex-polkadot-substrate-native",
+    id: "polkadex-polkadot-2-substrate-native",
     type: "substrate-native",
     isTestnet: false,
     isDefault: true,
     symbol: "PDEX",
     decimals: 12,
-    logo: "https://raw.githubusercontent.com/TalismanSociety/chaindata/main/assets/chains/polkadex-polkadot.svg",
+    logo: "https://raw.githubusercontent.com/TalismanSociety/chaindata/main/assets/tokens/coingecko/polkadex.webp",
     existentialDeposit: "1000000000000",
     chain: {
-      id: "polkadex-polkadot",
+      id: "polkadex-polkadot-2",
     },
     coingeckoId: "polkadex",
   },
@@ -6431,19 +6471,6 @@ export const tokens = [
     },
   },
   {
-    id: "qpn-substrate-native",
-    type: "substrate-native",
-    isTestnet: false,
-    isDefault: true,
-    symbol: "qpFRM",
-    decimals: 18,
-    logo: "https://raw.githubusercontent.com/TalismanSociety/chaindata/main/assets/tokens/unknown.svg",
-    existentialDeposit: "1000000000000000000",
-    chain: {
-      id: "qpn",
-    },
-  },
-  {
     id: "quartz-substrate-native",
     type: "substrate-native",
     isTestnet: false,
@@ -6589,6 +6616,32 @@ export const tokens = [
     },
   },
   {
+    id: "rococo-coretime-testnet-substrate-native",
+    type: "substrate-native",
+    isTestnet: true,
+    isDefault: true,
+    symbol: "ROC",
+    decimals: 12,
+    logo: "https://raw.githubusercontent.com/TalismanSociety/chaindata/main/assets/tokens/unknown.svg",
+    existentialDeposit: "3333333",
+    chain: {
+      id: "rococo-coretime-testnet",
+    },
+  },
+  {
+    id: "rococo-curio-testnet-substrate-native",
+    type: "substrate-native",
+    isTestnet: true,
+    isDefault: true,
+    symbol: "CGT",
+    decimals: 18,
+    logo: "https://raw.githubusercontent.com/TalismanSociety/chaindata/main/assets/tokens/unknown.svg",
+    existentialDeposit: "10000000000000000",
+    chain: {
+      id: "rococo-curio-testnet",
+    },
+  },
+  {
     id: "rococo-ewx-testnet-substrate-native",
     type: "substrate-native",
     isTestnet: true,
@@ -6628,16 +6681,68 @@ export const tokens = [
     },
   },
   {
-    id: "rococo-integritee-testnet-substrate-native",
+    id: "rococo-hyperbridge-testnet-substrate-native",
     type: "substrate-native",
     isTestnet: true,
     isDefault: true,
-    symbol: "TEER",
+    symbol: "tNAND",
     decimals: 12,
-    logo: "https://raw.githubusercontent.com/TalismanSociety/chaindata/main/assets/chains/rococo-integritee-testnet.svg",
+    logo: "https://raw.githubusercontent.com/TalismanSociety/chaindata/main/assets/tokens/unknown.svg",
     existentialDeposit: "1000000000",
     chain: {
-      id: "rococo-integritee-testnet",
+      id: "rococo-hyperbridge-testnet",
+    },
+  },
+  {
+    id: "rococo-litentry-testnet-substrate-native",
+    type: "substrate-native",
+    isTestnet: true,
+    isDefault: true,
+    symbol: "LIT",
+    decimals: 12,
+    logo: "https://raw.githubusercontent.com/TalismanSociety/chaindata/main/assets/chains/rococo-litentry-testnet.svg",
+    existentialDeposit: "100000000000",
+    chain: {
+      id: "rococo-litentry-testnet",
+    },
+  },
+  {
+    id: "rococo-mangata-testnet-substrate-native",
+    type: "substrate-native",
+    isTestnet: true,
+    isDefault: true,
+    symbol: "MGAT",
+    decimals: 18,
+    logo: "https://raw.githubusercontent.com/TalismanSociety/chaindata/main/assets/chains/rococo-mangata-testnet.svg",
+    existentialDeposit: "0",
+    chain: {
+      id: "rococo-mangata-testnet",
+    },
+  },
+  {
+    id: "rococo-muse-testnet-substrate-native",
+    type: "substrate-native",
+    isTestnet: true,
+    isDefault: true,
+    symbol: "MUSE",
+    decimals: 18,
+    logo: "https://raw.githubusercontent.com/TalismanSociety/chaindata/main/assets/tokens/unknown.svg",
+    existentialDeposit: "1000000000000000",
+    chain: {
+      id: "rococo-muse-testnet",
+    },
+  },
+  {
+    id: "rococo-neuro-web-testnet-substrate-native",
+    type: "substrate-native",
+    isTestnet: true,
+    isDefault: true,
+    symbol: "NEURO",
+    decimals: 12,
+    logo: "https://raw.githubusercontent.com/TalismanSociety/chaindata/main/assets/tokens/unknown.svg",
+    existentialDeposit: "1000000000000",
+    chain: {
+      id: "rococo-neuro-web-testnet",
     },
   },
   {
@@ -6654,19 +6759,6 @@ export const tokens = [
     },
   },
   {
-    id: "rococo-origin-trail-parachain-testnet-substrate-native",
-    type: "substrate-native",
-    isTestnet: true,
-    isDefault: true,
-    symbol: "NEURO",
-    decimals: 12,
-    logo: "https://raw.githubusercontent.com/TalismanSociety/chaindata/main/assets/tokens/unknown.svg",
-    existentialDeposit: "1000000000000",
-    chain: {
-      id: "rococo-origin-trail-parachain-testnet",
-    },
-  },
-  {
     id: "rococo-pangolin-testnet-substrate-native",
     type: "substrate-native",
     isTestnet: true,
@@ -6677,6 +6769,19 @@ export const tokens = [
     existentialDeposit: "0",
     chain: {
       id: "rococo-pangolin-testnet",
+    },
+  },
+  {
+    id: "rococo-people-testnet-substrate-native",
+    type: "substrate-native",
+    isTestnet: true,
+    isDefault: true,
+    symbol: "ROC",
+    decimals: 12,
+    logo: "https://raw.githubusercontent.com/TalismanSociety/chaindata/main/assets/tokens/unknown.svg",
+    existentialDeposit: "3333333",
+    chain: {
+      id: "rococo-people-testnet",
     },
   },
   {
@@ -6797,6 +6902,19 @@ export const tokens = [
     },
   },
   {
+    id: "roroco-laos-testnet-substrate-native",
+    type: "substrate-native",
+    isTestnet: true,
+    isDefault: true,
+    symbol: "GIE",
+    decimals: 18,
+    logo: "https://raw.githubusercontent.com/TalismanSociety/chaindata/main/assets/tokens/unknown.svg",
+    existentialDeposit: "0",
+    chain: {
+      id: "roroco-laos-testnet",
+    },
+  },
+  {
     id: "shadow-kusama-substrate-native",
     type: "substrate-native",
     isTestnet: false,
@@ -6836,6 +6954,20 @@ export const tokens = [
       id: "shiden-kusama",
     },
     coingeckoId: "shiden",
+  },
+  {
+    id: "sora-kusama-substrate-native",
+    type: "substrate-native",
+    isTestnet: false,
+    isDefault: true,
+    symbol: "XOR",
+    decimals: 18,
+    logo: "https://raw.githubusercontent.com/TalismanSociety/chaindata/main/assets/chains/sora-kusama.svg",
+    existentialDeposit: "1000000000000000",
+    chain: {
+      id: "sora-kusama",
+    },
+    coingeckoId: "sora",
   },
   {
     id: "sora-standalone-substrate-native",
@@ -6918,6 +7050,19 @@ export const tokens = [
     },
   },
   {
+    id: "subspace-gemini-3-g-nova-testnet-substrate-native",
+    type: "substrate-native",
+    isTestnet: true,
+    isDefault: true,
+    symbol: "tSSC",
+    decimals: 18,
+    logo: "https://raw.githubusercontent.com/TalismanSociety/chaindata/main/assets/tokens/unknown.svg",
+    existentialDeposit: "500",
+    chain: {
+      id: "subspace-gemini-3-g-nova-testnet",
+    },
+  },
+  {
     id: "subspace-gemini-3-g-testnet-substrate-native",
     type: "substrate-native",
     isTestnet: true,
@@ -6941,19 +7086,6 @@ export const tokens = [
     existentialDeposit: "1",
     chain: {
       id: "t-0-rn-testnet",
-    },
-  },
-  {
-    id: "t-1-rn-substrate-native",
-    type: "substrate-native",
-    isTestnet: false,
-    isDefault: true,
-    symbol: "TIN",
-    decimals: 12,
-    logo: "https://raw.githubusercontent.com/TalismanSociety/chaindata/main/assets/tokens/unknown.svg",
-    existentialDeposit: "1000000000",
-    chain: {
-      id: "t-1-rn",
     },
   },
   {
@@ -6994,32 +7126,6 @@ export const tokens = [
     existentialDeposit: "1000000000000000000",
     chain: {
       id: "tangle-testnet",
-    },
-  },
-  {
-    id: "ternoa-alphanet-testnet-substrate-native",
-    type: "substrate-native",
-    isTestnet: true,
-    isDefault: true,
-    symbol: "CAPS",
-    decimals: 18,
-    logo: "https://raw.githubusercontent.com/TalismanSociety/chaindata/main/assets/chains/ternoa-alphanet-testnet.svg",
-    existentialDeposit: "150000000000000000",
-    chain: {
-      id: "ternoa-alphanet-testnet",
-    },
-  },
-  {
-    id: "ternoa-substrate-native",
-    type: "substrate-native",
-    isTestnet: false,
-    isDefault: true,
-    symbol: "CAPS",
-    decimals: 18,
-    logo: "https://raw.githubusercontent.com/TalismanSociety/chaindata/main/assets/chains/ternoa.svg",
-    existentialDeposit: "150000000000000000",
-    chain: {
-      id: "ternoa",
     },
   },
   {
@@ -7104,6 +7210,32 @@ export const tokens = [
     coingeckoId: "vara-network",
   },
   {
+    id: "vara-testnet-substrate-native",
+    type: "substrate-native",
+    isTestnet: true,
+    isDefault: true,
+    symbol: "TVARA",
+    decimals: 12,
+    logo: "https://raw.githubusercontent.com/TalismanSociety/chaindata/main/assets/tokens/unknown.svg",
+    existentialDeposit: "10000000000000",
+    chain: {
+      id: "vara-testnet",
+    },
+  },
+  {
+    id: "vtb-substrate-native",
+    type: "substrate-native",
+    isTestnet: false,
+    isDefault: true,
+    symbol: "VTBC",
+    decimals: 18,
+    logo: "https://raw.githubusercontent.com/TalismanSociety/chaindata/main/assets/tokens/unknown.svg",
+    existentialDeposit: "1",
+    chain: {
+      id: "vtb",
+    },
+  },
+  {
     id: "watr-substrate-native",
     type: "substrate-native",
     isTestnet: false,
@@ -7156,6 +7288,32 @@ export const tokens = [
     },
   },
   {
+    id: "westend-coretime-testnet-substrate-native",
+    type: "substrate-native",
+    isTestnet: true,
+    isDefault: true,
+    symbol: "WND",
+    decimals: 12,
+    logo: "https://raw.githubusercontent.com/TalismanSociety/chaindata/main/assets/tokens/unknown.svg",
+    existentialDeposit: "1000000000",
+    chain: {
+      id: "westend-coretime-testnet",
+    },
+  },
+  {
+    id: "westend-people-testnet-substrate-native",
+    type: "substrate-native",
+    isTestnet: true,
+    isDefault: true,
+    symbol: "WND",
+    decimals: 12,
+    logo: "https://raw.githubusercontent.com/TalismanSociety/chaindata/main/assets/tokens/unknown.svg",
+    existentialDeposit: "1000000000",
+    chain: {
+      id: "westend-people-testnet",
+    },
+  },
+  {
     id: "westend-testnet-substrate-native",
     type: "substrate-native",
     isTestnet: true,
@@ -7179,19 +7337,6 @@ export const tokens = [
     existentialDeposit: "1000000000",
     chain: {
       id: "xode",
-    },
-  },
-  {
-    id: "xsocial-testnet-substrate-native",
-    type: "substrate-native",
-    isTestnet: true,
-    isDefault: true,
-    symbol: "SUB",
-    decimals: 10,
-    logo: "https://raw.githubusercontent.com/TalismanSociety/chaindata/main/assets/tokens/unknown.svg",
-    existentialDeposit: "100000000",
-    chain: {
-      id: "xsocial-testnet",
     },
   },
   {
