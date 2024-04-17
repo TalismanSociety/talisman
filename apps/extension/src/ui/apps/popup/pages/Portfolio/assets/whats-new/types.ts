@@ -1,1 +1,1 @@
-export type WhatsNewVersionData = Record<string, { content: string; HeroUrl: string }>
+export type WhatsNewVersionData = Record<string, { content: string; HeroUrl?: string }>
