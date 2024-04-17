@@ -167,11 +167,21 @@ export const SubNativeModule: NewBalanceModule<
   SubNativeModuleConfig,
   SubNativeTransferParams
 > = (hydrate) => {
-  const { chainConnectors, chaindataProvider } = hydrate
+  // todo wip
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const { chainConnectors, chaindataProvider, initialBalances } = hydrate
   const chainConnector = chainConnectors.substrate
   assert(chainConnector, "This module requires a substrate chain connector")
 
   const { getOrCreateTypeRegistry } = createTypeRegistryCache()
+
+  // todo wip
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const getTokens = async () => {
+    return chaindataProvider.tokensByIdForType("substrate-native") as Promise<
+      Record<string, SubNativeToken | CustomSubNativeToken>
+    >
+  }
 
   return {
     ...DefaultBalanceModule("substrate-native"),

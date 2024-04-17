@@ -4,15 +4,60 @@ import { BigMath, NonFunctionProperties, isArrayOf, isBigInt, planckToTokens } f
 
 import log from "../log"
 import {
+  Amount,
   AmountWithLabel,
   BalanceJson,
   BalanceJsonList,
   BalanceStatusTypes,
+  ExtraAmount,
   IBalance,
-  excludeFromFeePayableLocks,
-  excludeFromTransferableAmount,
-  includeInTotalExtraAmount,
+  LockedAmount,
 } from "./balancetypes"
+
+type FormattedAmount<GenericAmount extends AmountWithLabel<TLabel>, TLabel extends string> = Omit<
+  GenericAmount,
+  "amount"
+> & {
+  amount: BalanceFormatter
+}
+
+export function excludeFromTransferableAmount(
+  locks:
+    | Amount
+    | FormattedAmount<LockedAmount<string>, string>
+    | Array<FormattedAmount<LockedAmount<string>, string>>
+): bigint {
+  if (typeof locks === "string") return BigInt(locks)
+  if (!Array.isArray(locks)) locks = [locks]
+
+  return locks
+    .filter((lock) => lock.includeInTransferable !== true)
+    .map((lock) => lock.amount.planck)
+    .reduce((max, lock) => BigMath.max(max, lock), 0n)
+}
+
+export function excludeFromFeePayableLocks(
+  locks: Amount | LockedAmount<string> | Array<LockedAmount<string>>
+): Array<LockedAmount<string>> {
+  if (typeof locks === "string") return []
+  if (!Array.isArray(locks)) locks = [locks]
+
+  return locks.filter((lock) => lock.excludeFromFeePayable)
+}
+
+export function includeInTotalExtraAmount(
+  extra?:
+    | FormattedAmount<ExtraAmount<string>, string>
+    | Array<FormattedAmount<ExtraAmount<string>, string>>
+): bigint {
+  if (!extra) return 0n
+  if (!Array.isArray(extra)) extra = [extra]
+
+  return extra
+    .filter((extra) => extra.includeInTotal)
+    .map((extra) => extra.amount.planck)
+    .reduce((a, b) => a + b, 0n)
+}
 
 /**
  * Have the importing library define its Token and BalanceJson enums (as a sum type of all plugins) and pass them into some
@@ -157,23 +202,6 @@ export class Balances {
    */
   filterMirrorTokens = (): Balances => new Balances([...this].filter(filterMirrorTokens))
 
-  /**
-   * Filters this collection to only include balances which are not zero.
-   */
-  filterNonZero = (
-    type:
-      | "total"
-      | "free"
-      | "reserved"
-      | "locked"
-      | "frozen"
-      | "transferable"
-      | "unavailable"
-      | "feePayable"
-  ): Balances => {
-    const filter = (balance: Balance) => balance[type].planck > 0n
-    return this.find(filter)
-  }
   /**
    * Filters this collection to only include balances which are not zero AND have a fiat conversion rate.
    */
@@ -390,8 +418,12 @@ export class Balance {
    * @param valueType - The type of value to get.
    * @returns An array of the values matching the type.
    */
-  private getValue(valueType: BalanceStatusTypes): Array<AmountWithLabel<string>> {
-    return this.#valueGetter.get(valueType)
+  private getValue(
+    valueType: BalanceStatusTypes
+  ): Array<Omit<AmountWithLabel<string>, "amount"> & { amount: BalanceFormatter }> {
+    return this.#valueGetter
+      .get(valueType)
+      .map((value) => ({ ...value, amount: this.#format(value.amount) }))
   }
 
   /**
@@ -418,7 +450,7 @@ export class Balance {
     if ("value" in this.#storage) return new BalanceFormatter(this.#storage.value)
 
     const freeValues = this.getValue("free")
-    const totalFree = freeValues.map(({ amount }) => BigInt(amount)).reduce((a, b) => a + b, 0n)
+    const totalFree = freeValues.map(({ amount }) => amount.planck).reduce((a, b) => a + b, 0n)
     return this.#format(totalFree)
   }
   /** The reserved balance of this token. Is included in the total. */
@@ -427,7 +459,7 @@ export class Balance {
     if (reservedValues.length === 0) return this.#format(0n)
 
     return this.#format(
-      reservedValues.map(({ amount }) => BigInt(amount)).reduce((a, b) => a + b, 0n)
+      reservedValues.map(({ amount }) => amount.planck).reduce((a, b) => a + b, 0n)
     )
   }
   get reserves() {
@@ -436,7 +468,7 @@ export class Balance {
   /** The frozen balance of this token. Is included in the free amount. */
   get locked() {
     return this.#format(
-      this.locks.map(({ amount }) => BigInt(amount)).reduce((a, b) => BigMath.max(a, b), 0n)
+      this.locks.map(({ amount }) => amount.planck).reduce((a, b) => BigMath.max(a, b), 0n)
     )
   }
 

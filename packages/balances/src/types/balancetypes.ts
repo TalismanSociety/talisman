@@ -1,6 +1,5 @@
 import { PluginBalanceTypes } from "@talismn/balances/plugins"
 import { ChainId, EvmChainId, EvmNetworkId, SubChainId, TokenId } from "@talismn/chaindata-provider"
-import { BigMath } from "@talismn/util"
 
 import { Address } from "./addresses"
 
@@ -139,42 +138,10 @@ export type AmountWithLabel<TLabel extends string> =
   | LockedAmount<TLabel>
   | ExtraAmount<TLabel>
 
-export function excludeFromTransferableAmount(
-  locks: Amount | LockedAmount<string> | Array<LockedAmount<string>>
-): bigint {
-  if (typeof locks === "string") return BigInt(locks)
-  if (!Array.isArray(locks)) locks = [locks]
-
-  return locks
-    .filter((lock) => lock.includeInTransferable !== true)
-    .map((lock) => BigInt(lock.amount))
-    .reduce((max, lock) => BigMath.max(max, lock), 0n)
-}
-export function excludeFromFeePayableLocks(
-  locks: Amount | LockedAmount<string> | Array<LockedAmount<string>>
-): Array<LockedAmount<string>> {
-  if (typeof locks === "string") return []
-  if (!Array.isArray(locks)) locks = [locks]
-
-  return locks.filter((lock) => lock.excludeFromFeePayable)
-}
-
 /** A labelled extra amount of a balance */
 export type ExtraAmount<TLabel extends string> = BaseAmountWithLabel<TLabel> & {
   /** If set to true, this extra amount will be included in the calculation of the total amount of this balance. */
   includeInTotal?: boolean
-}
-
-export function includeInTotalExtraAmount(
-  extra?: ExtraAmount<string> | Array<ExtraAmount<string>>
-): bigint {
-  if (!extra) return 0n
-  if (!Array.isArray(extra)) extra = [extra]
-
-  return extra
-    .filter((extra) => extra.includeInTotal)
-    .map((extra) => BigInt(extra.amount))
-    .reduce((a, b) => a + b, 0n)
 }
 
 /** Used by plugins to help define their custom `BalanceType` */

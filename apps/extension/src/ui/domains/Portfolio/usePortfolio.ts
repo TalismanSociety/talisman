@@ -115,7 +115,7 @@ const getNetworkOptions = ({
   // NetworkOptions.
   const chainIdsWithBalances = new Set()
   const evmNetworkIdsWithBalances = new Set()
-  balances?.filterNonZero("total").each.forEach((b) => {
+  balances?.each.forEach((b) => {
     b.chainId && chainIdsWithBalances.add(b.chainId)
     b.evmNetworkId && evmNetworkIdsWithBalances.add(b.evmNetworkId)
   })
