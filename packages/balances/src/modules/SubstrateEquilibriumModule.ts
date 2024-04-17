@@ -472,5 +472,5 @@ const tokenSymbolFromU64Id = (u64: number | bigint | AbstractInt) => {
     bytes.unshift(Number(num % 256n))
     num = num / 256n
   } while (num > 0)
-  return Buffer.from(bytes).toString("utf8").toUpperCase()
+  return new TextDecoder("utf-8").decode(new Uint8Array(bytes)).toUpperCase()
 }

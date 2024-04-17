@@ -197,10 +197,11 @@ export const PopupAssetsTable = ({ balances, isInitialising }: GroupedAssetsTabl
   const currency = useSelectedCurrency()
 
   // calculate totals
-  const { total, totalAvailable, totalLocked } = useMemo(() => {
-    const { total, transferable, locked, reserved } = balances.sum.fiat(currency)
-    return { total, totalAvailable: transferable, totalLocked: locked + reserved }
-  }, [balances.sum, currency])
+  const {
+    total,
+    transferable: totalAvailable,
+    unavailable: totalLocked,
+  } = useMemo(() => balances.sum.fiat(currency), [balances.sum, currency])
 
   if (!available.length && !lockedSymbolBalances.length && !isInitialising)
     return (

@@ -1,7 +1,6 @@
 import { useGlobalOpenClose } from "@talisman/hooks/useGlobalOpenClose"
 import { convertAddress } from "@talisman/util/convertAddress"
-import { isValidSubstrateAddress } from "@talisman/util/isValidSubstrateAddress"
-import { isEthereumAddress } from "@talismn/util"
+import { isEthereumAddress, isValidSubstrateAddress } from "@talismn/util"
 import { useAllChainsMap } from "@ui/hooks/useChains"
 import { copyAddress } from "@ui/util/copyAddress"
 import { atom, useAtom } from "jotai"

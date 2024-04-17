@@ -8,7 +8,6 @@ import {
   BalanceJson,
   BalanceJsonList,
   BalanceStatusTypes,
-  ExtraAmount,
   IBalance,
   excludeFromFeePayableLocks,
   excludeFromTransferableAmount,
@@ -162,7 +161,15 @@ export class Balances {
    * Filters this collection to only include balances which are not zero.
    */
   filterNonZero = (
-    type: "total" | "free" | "reserved" | "locked" | "frozen" | "transferable" | "feePayable"
+    type:
+      | "total"
+      | "free"
+      | "reserved"
+      | "locked"
+      | "frozen"
+      | "transferable"
+      | "unavailable"
+      | "feePayable"
   ): Balances => {
     const filter = (balance: Balance) => balance[type].planck > 0n
     return this.find(filter)
@@ -171,7 +178,15 @@ export class Balances {
    * Filters this collection to only include balances which are not zero AND have a fiat conversion rate.
    */
   filterNonZeroFiat = (
-    type: "total" | "free" | "reserved" | "locked" | "frozen" | "transferable" | "feePayable",
+    type:
+      | "total"
+      | "free"
+      | "reserved"
+      | "locked"
+      | "frozen"
+      | "transferable"
+      | "unavailable"
+      | "feePayable",
     currency: TokenRateCurrency
   ): Balances => {
     const filter = (balance: Balance) => (balance[type].fiat(currency) ?? 0) > 0
@@ -375,12 +390,8 @@ export class Balance {
    * @param valueType - The type of value to get.
    * @returns An array of the values matching the type.
    */
-  private getValue(
-    valueType: BalanceStatusTypes
-  ): Array<Omit<AmountWithLabel<string>, "amount"> & { amount: BalanceFormatter }> {
-    return this.#valueGetter.get(valueType).map((value) => {
-      return { ...value, amount: this.#format(value.amount) }
-    })
+  private getValue(valueType: BalanceStatusTypes): Array<AmountWithLabel<string>> {
+    return this.#valueGetter.get(valueType)
   }
 
   /**
@@ -397,8 +408,9 @@ export class Balance {
    * The balance will be reaped if this goes below the existential deposit.
    */
   get total() {
-    const extra = this.extra ? includeInTotalExtraAmount(this.extra) : 0n
-    return this.#format(this.free.planck + this.reserved.planck + extra)
+    return this.#format(
+      this.free.planck + this.reserved.planck + includeInTotalExtraAmount(this.extra)
+    )
   }
   /** The non-reserved balance of this token. Includes the frozen amount. Is included in the total. */
   get free() {
@@ -406,7 +418,7 @@ export class Balance {
     if ("value" in this.#storage) return new BalanceFormatter(this.#storage.value)
 
     const freeValues = this.getValue("free")
-    const totalFree = freeValues.map(({ amount }) => amount.planck).reduce((a, b) => a + b, 0n)
+    const totalFree = freeValues.map(({ amount }) => BigInt(amount)).reduce((a, b) => a + b, 0n)
     return this.#format(totalFree)
   }
   /** The reserved balance of this token. Is included in the total. */
@@ -415,7 +427,7 @@ export class Balance {
     if (reservedValues.length === 0) return this.#format(0n)
 
     return this.#format(
-      reservedValues.map(({ amount }) => amount.planck).reduce((a, b) => a + b, 0n)
+      reservedValues.map(({ amount }) => BigInt(amount)).reduce((a, b) => a + b, 0n)
     )
   }
   get reserves() {
@@ -424,7 +436,7 @@ export class Balance {
   /** The frozen balance of this token. Is included in the free amount. */
   get locked() {
     return this.#format(
-      this.locks.map(({ amount }) => amount.planck).reduce((a, b) => BigMath.max(a, b), 0n)
+      this.locks.map(({ amount }) => BigInt(amount)).reduce((a, b) => BigMath.max(a, b), 0n)
     )
   }
 
@@ -435,7 +447,7 @@ export class Balance {
   /** The extra balance of this token */
   get extra() {
     const extra = this.getValue("extra")
-    if (extra.length > 0) return extra as unknown as ExtraAmount<string>[]
+    if (extra.length > 0) return extra
     return undefined
   }
 
@@ -445,14 +457,64 @@ export class Balance {
   }
   /** The transferable balance of this token. Is generally the free amount - the miscFrozen amount. */
   get transferable() {
-    // if no locks exist, transferable is equal to the free amount
-    if (this.locks.length === 0) return this.free
+    /**
+     * As you can see here, `locked` is subtracted from `free` in order to derive `transferable`.
+     *
+     * |--------------------------total--------------------------|
+     * |-------------------free-------------------|---reserved---|
+     * |----locked-----|-------transferable-------|
+     */
+    const oldTransferableCalculation = () => {
+      // if no locks exist, transferable is equal to the free amount
+      if (this.locks.length === 0) return this.free
 
-    // find the largest lock (but ignore any locks which are marked as `includeInTransferable`)
-    const excludeAmount = excludeFromTransferableAmount(this.locked.planck.toString())
+      // find the largest lock (but ignore any locks which are marked as `includeInTransferable`)
+      const excludeAmount = excludeFromTransferableAmount(this.locks)
 
-    // subtract the lock from the free amount (but don't go below 0)
-    return this.#format(BigMath.max(this.free.planck - excludeAmount, 0n))
+      // subtract the lock from the free amount (but don't go below 0)
+      return this.#format(BigMath.max(this.free.planck - excludeAmount, 0n))
+    }
+
+    /**
+     * As you can see here, `locked` is subtracted from `free + reserved` in order to derive `transferable`.
+     *
+     * Alternatively, `reserved` is subtracted from `locked` in order to derive `untouchable`,
+     * which is then subtracted from `free` in order to derive `transferable`.
+     *
+     * |--------------------------total--------------------------|
+     * |---reserved---|-------------------free-------------------|
+     *                |--untouchable--|
+     * |------------locked------------|-------transferable-------|
+     */
+    const newTransferableCalculation = () => {
+      // if no locks exist, transferable is equal to the free amount
+      if (this.locks.length === 0) return this.free
+
+      // find the largest lock (but ignore any locks which are marked as `includeInTransferable`)
+      // subtract the reserved amount, because locks now act upon the total balance - not just the free balance
+      const untouchableAmount = BigMath.max(
+        excludeFromTransferableAmount(this.locks) - this.reserved.planck,
+        0n
+      )
+
+      // subtract the untouchable amount from the free amount (but don't go below 0)
+      return this.#format(BigMath.max(this.free.planck - untouchableAmount, 0n))
+    }
+
+    if (this.#storage.useLegacyTransferableCalculation) return oldTransferableCalculation()
+    return newTransferableCalculation()
+  }
+  /**
+   * The unavailable balance of this token.
+   * Prior to the Fungible trait, this was the locked amount + the reserved amount, i.e. `locked + reserved`.
+   * Now, it is the bigger of the locked amount and the reserved amounts, i.e. `max(locked, reserved)`.
+   */
+  get unavailable() {
+    const oldCalculation = () => this.#format(this.locked.planck + this.reserved.planck)
+    const newCalculation = () => this.#format(BigMath.max(this.locked.planck, this.reserved.planck))
+
+    if (this.#storage.useLegacyTransferableCalculation) return oldCalculation()
+    return newCalculation()
   }
   /** The feePayable balance of this token. Is generally the free amount - the feeFrozen amount. */
   get feePayable() {
@@ -571,6 +633,10 @@ export class PlanckSumBalancesFormatter {
   get transferable() {
     return this.#sum("transferable")
   }
+  /** The unavailable balance of these tokens. */
+  get unavailable() {
+    return this.#sum("unavailable")
+  }
   /** The feePayable balance of these tokens. Is generally the free amount - the feeFrozen amount. */
   get feePayable() {
     return this.#sum("feePayable")
@@ -627,6 +693,10 @@ export class FiatSumBalancesFormatter {
   /** The transferable balance of these tokens. Is generally the free amount - the miscFrozen amount. */
   get transferable() {
     return this.#sum("transferable")
+  }
+  /** The unavailable balance of these tokens. */
+  get unavailable() {
+    return this.#sum("unavailable")
   }
   /** The feePayable balance of these tokens. Is generally the free amount - the feeFrozen amount. */
   get feePayable() {

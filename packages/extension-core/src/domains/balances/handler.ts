@@ -1,3 +1,4 @@
+import keyring from "@polkadot/ui-keyring"
 import {
   AddressesByToken,
   Balance,
@@ -7,6 +8,7 @@ import {
   db as balancesDb,
 } from "@talismn/balances"
 import { ChainId, ChainList, EvmNetworkList, Token, TokenList } from "@talismn/chaindata-provider"
+import { isValidSubstrateAddress } from "@talismn/util"
 import { liveQuery } from "dexie"
 import { DEBUG } from "extension-shared"
 import isEqual from "lodash/isEqual"
@@ -19,6 +21,7 @@ import { chaindataProvider } from "../../rpcs/chaindata"
 import { updateAndWaitForUpdatedChaindata } from "../../rpcs/mini-metadata-updater"
 import { MessageTypes, RequestTypes, ResponseType } from "../../types"
 import { AddressesByChain, Port } from "../../types/base"
+import { awaitKeyringLoaded } from "../../util/awaitKeyringLoaded"
 import { ActiveChains, activeChainsStore, isChainActive } from "../chains/store.activeChains"
 import {
   ActiveEvmNetworks,
@@ -51,9 +54,14 @@ export class BalancesHandler extends ExtensionHandler {
       case "pri(balances.subscribe)": {
         const onDisconnected = portDisconnected(port)
 
+        await awaitKeyringLoaded()
+        const updateSubstrateChains = keyring
+          .getAccounts()
+          .some((account) => account.meta.type !== "ethereum")
+
         // TODO: Run this on a timer or something instead of when subscribing to balances
         // todo check if not awaiting this causes any issues with custom networks
-        updateAndWaitForUpdatedChaindata()
+        updateAndWaitForUpdatedChaindata({ updateSubstrateChains })
         const callback = createSubscription<"pri(balances.subscribe)">(id, port)
 
         this.stores.balances.subscribe(id, onDisconnected, callback)
@@ -93,8 +101,12 @@ const subscribeBalancesByParams = async (
   // create subscription callback
   const callback = createSubscription<"pri(balances.byparams.subscribe)">(id, port)
 
+  const updateSubstrateChains =
+    Object.values(addressesByChain).flat().some(isValidSubstrateAddress) ||
+    addressesAndTokens.addresses.some(isValidSubstrateAddress)
+
   // wait for chaindata to hydrate
-  await updateAndWaitForUpdatedChaindata()
+  await updateAndWaitForUpdatedChaindata({ updateSubstrateChains })
 
   // set up variables to track inner balances subscriptions
   let subscriptionParams: BalanceSubscriptionParams = {
@@ -222,7 +234,7 @@ const getSubscriptionParams = (
     ...Object.entries(addressesByChain)
       // convert chainIds into chains
       .map(([chainId, addresses]) => [chains[chainId], addresses] as const)
-      .filter(([chain]) => isChainActive(chain, activeChains)),
+      .filter(([chain]) => chain && isChainActive(chain, activeChains)),
 
     ...addressesAndEvmNetworks.evmNetworks
       // convert evmNetworkIds into evmNetworks
