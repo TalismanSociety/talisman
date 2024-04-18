@@ -5,7 +5,7 @@ import { ViewDetailsSub } from "@ui/domains/Sign/ViewDetails/ViewDetailsSub"
 import { FC, ReactNode } from "react"
 import { createPortal } from "react-dom"
 
-import { RisksAnalysisTxButton } from "./Ethereum/risk-analysis/RIskAnalysisPillButton"
+import { RiskAnalysisPillButton } from "./Ethereum/risk-analysis/RIskAnalysisPillButton"
 
 type SignContainerProps = {
   title: ReactNode
@@ -40,7 +40,7 @@ export const SignContainer: FC<SignContainerProps> = ({
               <ViewDetailsEth />
             </div>
             <div className="text-left">
-              <RisksAnalysisTxButton />
+              <RiskAnalysisPillButton />
             </div>
           </div>
         )}

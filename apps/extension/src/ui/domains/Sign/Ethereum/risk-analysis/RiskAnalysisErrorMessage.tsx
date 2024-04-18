@@ -1,7 +1,7 @@
 import { AlertCircleIcon } from "@talismn/icons"
 import { classNames } from "@talismn/util"
-import { EvmMessageScan } from "@ui/domains/Ethereum/useScanEvmMessage"
-import { EvmTransactionScan } from "@ui/domains/Ethereum/useScanEvmTransaction"
+import { EvmMessageRiskAnalysis } from "@ui/domains/Ethereum/useEvmMessageRiskAnalysis"
+import { EvmTransactionRiskAnalysis } from "@ui/domains/Ethereum/useEvmTransactionRiskAnalysis"
 import { FC, useMemo } from "react"
 import { useTranslation } from "react-i18next"
 
@@ -32,30 +32,35 @@ const getErrorText = (error: unknown) => {
   return error?.toString()
 }
 
-export const RiskAnalysisError: FC<{ scan: EvmMessageScan | EvmTransactionScan }> = ({ scan }) => {
+export const RiskAnalysisError: FC<{
+  riskAnalysis: EvmMessageRiskAnalysis | EvmTransactionRiskAnalysis
+}> = ({ riskAnalysis }) => {
   const { t } = useTranslation()
 
   const { title, message } = useMemo(() => {
-    if (scan.error)
+    if (riskAnalysis.error)
       return {
         title: t("Simulation failed"),
-        message: getErrorText(scan.error) ?? t("Unknown error"),
+        message: getErrorText(riskAnalysis.error) ?? t("Unknown error"),
       }
 
-    if (scan.type === "message" && scan.result?.simulationResults?.error)
+    if (riskAnalysis.type === "message" && riskAnalysis.result?.simulationResults?.error)
       return {
         title: t("Simulation failed"),
-        message: scan.result.simulationResults.error.humanReadableError,
+        message: riskAnalysis.result.simulationResults.error.humanReadableError,
       }
 
-    if (scan.type === "transaction" && scan.result?.simulationResults.aggregated.error)
+    if (
+      riskAnalysis.type === "transaction" &&
+      riskAnalysis.result?.simulationResults.aggregated.error
+    )
       return {
         title: t("Simulation failed"),
-        message: scan.result.simulationResults.aggregated.error.humanReadableError,
+        message: riskAnalysis.result.simulationResults.aggregated.error.humanReadableError,
       }
 
     return {}
-  }, [scan, t])
+  }, [riskAnalysis, t])
 
   if (!title || !message) return null
 

@@ -1,17 +1,17 @@
-import { useOpenClose } from "@talisman/hooks/useOpenClose"
-import { useState } from "react"
+// import { useOpenClose } from "@talisman/hooks/useOpenClose"
+// import { useState } from "react"
 
-export const useRisksReview = (isRiskAknowledgementRequired: boolean) => {
-  const [isRiskAknowledged, setIsRiskAknowledged] = useState(false)
+// export const useRisksReview = (isRiskAknowledgementRequired: boolean) => {
+//   const [isRiskAknowledged, setIsRiskAknowledged] = useState(false)
 
-  const risksDrawer = useOpenClose(false)
+//   const risksDrawer = useOpenClose(false)
 
-  return {
-    isRiskAknowledgementRequired,
-    isRiskAknowledged,
-    setIsRiskAknowledged,
-    drawer: risksDrawer,
-  }
-}
+//   return {
+//     isRiskAknowledgementRequired,
+//     isRiskAknowledged,
+//     setIsRiskAknowledged,
+//     drawer: risksDrawer,
+//   }
+// }
 
-export type RisksReview = ReturnType<typeof useRisksReview>
+// export type RisksReview = ReturnType<typeof useRisksReview>

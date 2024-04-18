@@ -11,7 +11,9 @@ import { log } from "extension-shared"
 import { useMemo, useState } from "react"
 import { TransactionRequest } from "viem"
 
-export type EvmTransactionScan = {
+import { RisksReview, useRisksReview } from "./useRisksReview"
+
+export type EvmTransactionRiskAnalysis = {
   type: "transaction"
   isAvailable: boolean
   isValidating: boolean
@@ -19,13 +21,14 @@ export type EvmTransactionScan = {
   error: unknown
   validate: (() => void) | undefined
   chainInfo: BlowfishEvmChainInfo | null
+  review: RisksReview
 }
 
-export const useScanEvmTransaction = (
+export const useEvmTransactionRiskAnalysis = (
   evmNetworkId: EvmNetworkId | undefined,
   tx: TransactionRequest | undefined,
   url?: string
-): EvmTransactionScan => {
+): EvmTransactionRiskAnalysis => {
   const [autoValidate, setAutoValidate] = useState(true) // TODO settingsStore.get("autoValidateTransactions")
 
   const origin = useMemo(() => {
@@ -44,6 +47,7 @@ export const useScanEvmTransaction = (
     return getBlowfishChainInfo(evmNetworkId)
   }, [evmNetworkId, tx])
 
+  // blowfish doesn't support scans on all chains
   const isAvailable = useMemo(() => !!chainInfo, [chainInfo])
 
   const {
@@ -84,6 +88,8 @@ export const useScanEvmTransaction = (
     retry: false,
   })
 
+  const review = useRisksReview(result?.action)
+
   return useMemo(
     () => ({
       type: "transaction",
@@ -93,7 +99,8 @@ export const useScanEvmTransaction = (
       error,
       validate: isAvailable && autoValidate ? undefined : () => setAutoValidate(true),
       chainInfo,
+      review,
     }),
-    [autoValidate, chainInfo, error, isAvailable, isLoading, result]
+    [autoValidate, chainInfo, error, isAvailable, isLoading, result, review]
   )
 }

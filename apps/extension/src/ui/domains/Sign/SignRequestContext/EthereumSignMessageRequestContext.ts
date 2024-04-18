@@ -3,12 +3,11 @@ import { log } from "@extension/shared"
 import { HexString } from "@polkadot/util/types"
 import { provideContext } from "@talisman/util/provideContext"
 import { api } from "@ui/api"
-import { useScanEvmMessage } from "@ui/domains/Ethereum/useScanEvmMessage"
+import { useEvmMessageRiskAnalysis } from "@ui/domains/Ethereum/useEvmMessageRiskAnalysis"
 import { useEvmNetwork } from "@ui/hooks/useEvmNetwork"
 import { useRequest } from "@ui/hooks/useRequest"
 import { useCallback, useEffect, useMemo } from "react"
 
-import { useRisksReview } from "../Ethereum/risk-analysis/useRisksReview"
 import { useAnySigningRequest } from "./AnySignRequestContext"
 
 const useEthSignMessageRequestProvider = ({ id }: KnownSigningRequestIdOnly<"eth-sign">) => {
@@ -22,7 +21,7 @@ const useEthSignMessageRequestProvider = ({ id }: KnownSigningRequestIdOnly<"eth
     cancelSignFn: api.ethCancelSign,
   })
 
-  const scan = useScanEvmMessage(
+  const riskAnalysis = useEvmMessageRiskAnalysis(
     request?.ethChainId,
     request?.method,
     request?.request,
@@ -32,22 +31,23 @@ const useEthSignMessageRequestProvider = ({ id }: KnownSigningRequestIdOnly<"eth
 
   useEffect(() => {
     // TODO remove
-    log.log("blowfish scan", scan)
-  }, [scan])
-
-  const risksReview = useRisksReview(scan?.result?.action === "BLOCK")
+    log.log("blowfish scan", riskAnalysis)
+  }, [riskAnalysis])
 
   const approve = useCallback(() => {
-    if (risksReview.isRiskAknowledgementRequired && !risksReview.isRiskAknowledged)
-      return risksReview.drawer.open()
+    if (riskAnalysis.review.isRiskAknowledgementRequired && !riskAnalysis.review.isRiskAknowledged)
+      return riskAnalysis.review.drawer.open()
 
     return baseRequest.approve()
-  }, [baseRequest, risksReview])
+  }, [baseRequest, riskAnalysis])
 
   const approveHardware = useCallback(
     async ({ signature }: { signature: HexString }) => {
-      if (risksReview.isRiskAknowledgementRequired && !risksReview.isRiskAknowledged)
-        return risksReview.drawer.open()
+      if (
+        riskAnalysis.review.isRiskAknowledgementRequired &&
+        !riskAnalysis.review.isRiskAknowledged
+      )
+        return riskAnalysis.review.drawer.open()
 
       if (!baseRequest || !baseRequest.id) return
       baseRequest.setStatus.processing("Approving request")
@@ -59,7 +59,7 @@ const useEthSignMessageRequestProvider = ({ id }: KnownSigningRequestIdOnly<"eth
         baseRequest.setStatus.error((err as Error).message)
       }
     },
-    [baseRequest, risksReview]
+    [baseRequest, riskAnalysis]
   )
 
   const isValid = useMemo(() => {
@@ -84,8 +84,7 @@ const useEthSignMessageRequestProvider = ({ id }: KnownSigningRequestIdOnly<"eth
     request,
     network,
     isValid,
-    scan,
-    risksReview,
+    riskAnalysis,
   }
 }
 

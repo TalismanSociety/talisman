@@ -16,7 +16,8 @@ import { EthFeeSelect } from "@ui/domains/Ethereum/GasSettings/EthFeeSelect"
 import { useEthBalance } from "@ui/domains/Ethereum/useEthBalance"
 import { usePublicClient } from "@ui/domains/Ethereum/usePublicClient"
 import { EthSignBody } from "@ui/domains/Sign/Ethereum/EthSignBody"
-import { RisksAnalysisTxDrawer } from "@ui/domains/Sign/Ethereum/risk-analysis/RiskAnalysisDrawer"
+import { RiskAnalysisProvider } from "@ui/domains/Sign/Ethereum/risk-analysis/context"
+import { RiskAnalysisDrawer } from "@ui/domains/Sign/Ethereum/risk-analysis/RiskAnalysisDrawer"
 import { SignAlertMessage } from "@ui/domains/Sign/SignAlertMessage"
 import { SignHardwareEthereum } from "@ui/domains/Sign/SignHardwareEthereum"
 import { useEthSignTransactionRequest } from "@ui/domains/Sign/SignRequestContext"
@@ -112,6 +113,7 @@ export const EthSignTransactionRequest = () => {
     setReady,
     isValid,
     networkUsage,
+    riskAnalysis,
   } = useEthSignTransactionRequest()
   const { balance } = useEvmBalance(account?.address as EvmAddress, network?.id)
 
@@ -136,110 +138,112 @@ export const EthSignTransactionRequest = () => {
   )
 
   return (
-    <PopupLayout>
-      <PopupHeader
-        className={classNames(isLoading && "invisible")}
-        right={<SignNetworkLogo network={network} />}
-      >
-        <AppPill url={url} />
-      </PopupHeader>
-      {isLoading ? (
-        <SignViewBodyShimmer />
-      ) : (
-        <>
-          <PopupContent>
-            <div className="scrollable scrollable-800 text-body-secondary h-full overflow-y-auto text-center">
-              <EthSignBody decodedTx={decodedTx} isReady={!isLoading} />
-            </div>
-          </PopupContent>
-          <PopupFooter className="flex flex-col gap-8">
-            <div id="sign-alerts-inject" className="flex flex-col gap-4">
-              {errorMessage && (
-                <SignAlertMessage type="error">
-                  <WithTooltip tooltip={errorDetails}>{errorMessage}</WithTooltip>
-                </SignAlertMessage>
-              )}
-            </div>
-
-            <div className="text-body-secondary flex min-h-[4.48rem] flex-col gap-2 text-sm">
-              {transaction && txDetails && !!network?.nativeToken && (
-                <>
-                  <div className="flex items-center justify-between">
-                    <div>
-                      {t("Estimated Fee")}{" "}
-                      <Tooltip placement="top">
-                        <TooltipTrigger asChild>
-                          <span>
-                            <InfoIcon className="inline align-text-top" />
-                          </span>
-                        </TooltipTrigger>
-                        <TooltipContent>
-                          <FeeTooltip
-                            tokenId={network.nativeToken.id}
-                            estimatedFee={txDetails.estimatedFee}
-                            maxFee={txDetails.maxFee}
-                            balance={balance}
-                          />
-                        </TooltipContent>
-                      </Tooltip>
-                    </div>
-                    <div>{transaction?.type === "eip1559" && t("Priority")}</div>
-                  </div>
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <TokensAndFiat
-                        tokenId={network.nativeToken.id}
-                        planck={txDetails.estimatedFee.toString()}
-                      />
-                    </div>
-                    <div>
-                      <EthFeeSelect
-                        tx={transaction}
-                        tokenId={network.nativeToken.id}
-                        disabled={isPayloadLocked}
-                        gasSettingsByPriority={gasSettingsByPriority}
-                        setCustomSettings={setCustomSettings}
-                        txDetails={txDetails}
-                        priority={priority}
-                        onChange={handleFeeChange}
-                        networkUsage={networkUsage}
-                        drawerContainerId="main"
-                      />
-                    </div>
-                  </div>
-                </>
-              )}
-            </div>
-            {account && request && account.isHardware ? (
-              <SignHardwareEthereum
-                evmNetworkId={network?.id}
-                method="eth_sendTransaction"
-                payload={transaction}
-                account={account}
-                onSigned={approveHardware}
-                onSentToDevice={setIsPayloadLocked}
-                onCancel={reject}
-                containerId="main"
-              />
-            ) : (
-              <div className="grid w-full grid-cols-2 gap-12">
-                <Button disabled={processing} onClick={reject}>
-                  {t("Cancel")}
-                </Button>
-                <Button
-                  disabled={!transaction || isLoading || !isValid}
-                  processing={processing}
-                  primary
-                  onClick={approve}
-                >
-                  {t("Approve")}
-                </Button>
+    <RiskAnalysisProvider riskAnalysis={riskAnalysis}>
+      <PopupLayout>
+        <PopupHeader
+          className={classNames(isLoading && "invisible")}
+          right={<SignNetworkLogo network={network} />}
+        >
+          <AppPill url={url} />
+        </PopupHeader>
+        {isLoading ? (
+          <SignViewBodyShimmer />
+        ) : (
+          <>
+            <PopupContent>
+              <div className="scrollable scrollable-800 text-body-secondary h-full overflow-y-auto text-center">
+                <EthSignBody decodedTx={decodedTx} isReady={!isLoading} />
               </div>
-            )}
-          </PopupFooter>
-        </>
-      )}
-      <RisksAnalysisTxDrawer />
-    </PopupLayout>
+            </PopupContent>
+            <PopupFooter className="flex flex-col gap-8">
+              <div id="sign-alerts-inject" className="flex flex-col gap-4">
+                {errorMessage && (
+                  <SignAlertMessage type="error">
+                    <WithTooltip tooltip={errorDetails}>{errorMessage}</WithTooltip>
+                  </SignAlertMessage>
+                )}
+              </div>
+
+              <div className="text-body-secondary flex min-h-[4.48rem] flex-col gap-2 text-sm">
+                {transaction && txDetails && !!network?.nativeToken && (
+                  <>
+                    <div className="flex items-center justify-between">
+                      <div>
+                        {t("Estimated Fee")}{" "}
+                        <Tooltip placement="top">
+                          <TooltipTrigger asChild>
+                            <span>
+                              <InfoIcon className="inline align-text-top" />
+                            </span>
+                          </TooltipTrigger>
+                          <TooltipContent>
+                            <FeeTooltip
+                              tokenId={network.nativeToken.id}
+                              estimatedFee={txDetails.estimatedFee}
+                              maxFee={txDetails.maxFee}
+                              balance={balance}
+                            />
+                          </TooltipContent>
+                        </Tooltip>
+                      </div>
+                      <div>{transaction?.type === "eip1559" && t("Priority")}</div>
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <TokensAndFiat
+                          tokenId={network.nativeToken.id}
+                          planck={txDetails.estimatedFee.toString()}
+                        />
+                      </div>
+                      <div>
+                        <EthFeeSelect
+                          tx={transaction}
+                          tokenId={network.nativeToken.id}
+                          disabled={isPayloadLocked}
+                          gasSettingsByPriority={gasSettingsByPriority}
+                          setCustomSettings={setCustomSettings}
+                          txDetails={txDetails}
+                          priority={priority}
+                          onChange={handleFeeChange}
+                          networkUsage={networkUsage}
+                          drawerContainerId="main"
+                        />
+                      </div>
+                    </div>
+                  </>
+                )}
+              </div>
+              {account && request && account.isHardware ? (
+                <SignHardwareEthereum
+                  evmNetworkId={network?.id}
+                  method="eth_sendTransaction"
+                  payload={transaction}
+                  account={account}
+                  onSigned={approveHardware}
+                  onSentToDevice={setIsPayloadLocked}
+                  onCancel={reject}
+                  containerId="main"
+                />
+              ) : (
+                <div className="grid w-full grid-cols-2 gap-12">
+                  <Button disabled={processing} onClick={reject}>
+                    {t("Cancel")}
+                  </Button>
+                  <Button
+                    disabled={!transaction || isLoading || !isValid}
+                    processing={processing}
+                    primary
+                    onClick={approve}
+                  >
+                    {t("Approve")}
+                  </Button>
+                </div>
+              )}
+            </PopupFooter>
+          </>
+        )}
+        <RiskAnalysisDrawer />
+      </PopupLayout>
+    </RiskAnalysisProvider>
   )
 }

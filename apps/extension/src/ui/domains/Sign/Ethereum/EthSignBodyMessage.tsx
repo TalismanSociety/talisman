@@ -14,7 +14,7 @@ import { useTranslation } from "react-i18next"
 
 import { SignAlertMessage } from "../SignAlertMessage"
 import { EthSignBodyMessageSIWE } from "./EthSignBodyMessageSIWE"
-import { RisksAnalysisMsgButton } from "./risk-analysis/RIskAnalysisPillButton"
+import { RiskAnalysisPillButton } from "./risk-analysis/RIskAnalysisPillButton"
 import { SignParamAccountButton, SignParamNetworkAddressButton } from "./shared"
 
 const useEthSignMessage = (request: EthSignRequest) => {
@@ -132,7 +132,7 @@ export const EthSignBodyMessage: FC<EthSignBodyMessageProps> = ({ account, reque
         text={text}
       />
       <div className="mt-8">
-        <RisksAnalysisMsgButton />
+        <RiskAnalysisPillButton />
       </div>
       {isInvalidVerifyingContract && (
         <SignAlertMessage type="error" className="mt-8">

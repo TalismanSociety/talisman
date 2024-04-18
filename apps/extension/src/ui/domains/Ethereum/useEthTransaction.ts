@@ -31,8 +31,8 @@ import { PublicClient, TransactionRequest, encodeFunctionData } from "viem"
 
 import { ETH_ERROR_EIP1474_METHOD_NOT_FOUND } from "../../../inject/ethereum/EthProviderRpcError"
 import { useEthEstimateL1DataFee } from "./useEthEstimateL1DataFee"
+import { useEvmTransactionRiskAnalysis } from "./useEvmTransactionRiskAnalysis"
 import { useIsValidEthTransaction } from "./useIsValidEthTransaction"
-import { useScanEvmTransaction } from "./useScanEvmTransaction"
 import { decodeEvmTransaction } from "./util/decodeEvmTransaction"
 import { FeeHistoryAnalysis, getFeeHistoryAnalysis } from "./util/getFeeHistoryAnalysis"
 
@@ -427,73 +427,6 @@ const useGasSettings = ({
   }
 }
 
-// const useScanTransaction = (
-//   evmNetworkId: EvmNetworkId | undefined,
-//   tx: TransactionRequest | undefined,
-//   url?: string
-// ) => {
-//   const [autoValidate, setAutoValidate] = useState(false) // TODO settingsStore.get("autoValidateTransactions")
-
-//   const origin = useMemo(() => {
-//     if (url) {
-//       try {
-//         return new URL(url).origin
-//       } catch (err) {
-//         // ignore
-//       }
-//     }
-//     return window.location.origin // fallback to extension's origin
-//   }, [url])
-
-//   const isAvailable = useMemo(() => {
-//     if (!evmNetworkId || !tx) return false
-//     return isBlowfishSupportedChain(evmNetworkId)
-//   }, [evmNetworkId, tx])
-
-//   const {
-//     isLoading: isValidating,
-//     data: result,
-//     error,
-//   } = useQuery({
-//     queryKey: ["useScanTransaction", evmNetworkId, tx && serializeTransactionRequest(tx), origin],
-//     queryFn: () => {
-//       if (!evmNetworkId || !tx) return null
-//       const client = getBlowfishClient(evmNetworkId)
-//       if (!client) return null
-
-//       // TODO remove
-//       log.debug("querying blowfish", { evmNetworkId, tx, origin })
-
-//       return client.scanTransactions(
-//         [
-//           {
-//             data: tx.data,
-//             from: tx.from,
-//             to: tx.to ?? undefined,
-//             value: typeof tx.value === "bigint" ? tx.value.toString() : undefined,
-//           },
-//         ],
-//         tx.from,
-//         { origin }
-//       )
-//     },
-//     enabled: !!tx && !!evmNetworkId,
-//     refetchInterval: false,
-//     retry: false,
-//   })
-
-//   return useMemo(
-//     () => ({
-//       isAvailable,
-//       isValidating,
-//       result,
-//       error,
-//       validate: isAvailable && autoValidate ? undefined : () => setAutoValidate(true),
-//     }),
-//     [autoValidate, error, isAvailable, isValidating, result]
-//   )
-// }
-
 export const useEthTransaction = (
   request: TransactionRequest | undefined,
   evmNetworkId: EvmNetworkId | undefined,
@@ -526,12 +459,12 @@ export const useEthTransaction = (
 
   const [priority, setPriority] = useState<EthPriorityOptionName>()
 
-  const scan = useScanEvmTransaction(evmNetworkId, tx, origin)
+  const riskAnalysis = useEvmTransactionRiskAnalysis(evmNetworkId, tx, origin)
 
   useEffect(() => {
     // TODO remove
-    log.log("blowfish scan", scan)
-  }, [scan])
+    log.log("blowfish scan", riskAnalysis)
+  }, [riskAnalysis])
 
   // reset priority in case chain changes
   // ex: from send funds when switching from BSC (legacy) to mainnet (eip1559)
@@ -665,7 +598,7 @@ export const useEthTransaction = (
     networkUsage,
     setCustomSettings,
     gasSettingsByPriority,
-    scan,
+    riskAnalysis,
     updateCallArg,
   }
 }

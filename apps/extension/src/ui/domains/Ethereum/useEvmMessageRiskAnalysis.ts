@@ -10,7 +10,9 @@ import { useQuery } from "@tanstack/react-query"
 import { log } from "extension-shared"
 import { useMemo, useState } from "react"
 
-export type EvmMessageScan = {
+import { RisksReview, useRisksReview } from "./useRisksReview"
+
+export type EvmMessageRiskAnalysis = {
   type: "message"
   isAvailable: boolean
   isValidating: boolean
@@ -18,6 +20,7 @@ export type EvmMessageScan = {
   error: unknown
   validate: (() => void) | undefined
   chainInfo: BlowfishEvmChainInfo | null
+  review: RisksReview
 }
 
 const getTypedDataPayload = (msg: string): EvmSignTypedDataData | null => {
@@ -48,13 +51,13 @@ const isCompatiblePayload = (
   }
 }
 
-export const useScanEvmMessage = (
+export const useEvmMessageRiskAnalysis = (
   evmNetworkId: EvmNetworkId | undefined,
   method: EthSignMessageMethod | undefined,
   message: string | undefined,
   account: string | undefined,
   url?: string
-): EvmMessageScan => {
+): EvmMessageRiskAnalysis => {
   const [autoValidate, setAutoValidate] = useState(true) // TODO settingsStore.get("autoValidateTransactions")
 
   const origin = useMemo(() => {
@@ -111,6 +114,8 @@ export const useScanEvmMessage = (
     retry: false,
   })
 
+  const review = useRisksReview(result?.action)
+
   return useMemo(
     () => ({
       type: "message",
@@ -120,7 +125,8 @@ export const useScanEvmMessage = (
       error,
       validate: isAvailable && autoValidate ? undefined : () => setAutoValidate(true),
       chainInfo,
+      review,
     }),
-    [autoValidate, chainInfo, error, isAvailable, isLoading, result]
+    [autoValidate, chainInfo, error, isAvailable, isLoading, result, review]
   )
 }

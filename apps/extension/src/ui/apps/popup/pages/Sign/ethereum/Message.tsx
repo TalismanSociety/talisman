@@ -7,7 +7,8 @@ import {
   PopupLayout,
 } from "@ui/apps/popup/Layout/PopupLayout"
 import { EthSignBodyMessage } from "@ui/domains/Sign/Ethereum/EthSignBodyMessage"
-import { RisksAnalysisMsgDrawer } from "@ui/domains/Sign/Ethereum/risk-analysis/RiskAnalysisDrawer"
+import { RiskAnalysisProvider } from "@ui/domains/Sign/Ethereum/risk-analysis/context"
+import { RiskAnalysisDrawer } from "@ui/domains/Sign/Ethereum/risk-analysis/RiskAnalysisDrawer"
 import { SignHardwareEthereum } from "@ui/domains/Sign/SignHardwareEthereum"
 import { useEthSignMessageRequest } from "@ui/domains/Sign/SignRequestContext"
 import { Suspense, useEffect, useMemo } from "react"
@@ -29,6 +30,7 @@ export const EthSignMessageRequest = () => {
     account,
     network,
     isValid,
+    riskAnalysis,
   } = useEthSignMessageRequest()
 
   const { processing, errorMessage } = useMemo(() => {
@@ -44,44 +46,46 @@ export const EthSignMessageRequest = () => {
   }, [status])
 
   return (
-    <PopupLayout>
-      <PopupHeader right={<SignNetworkLogo network={network} />}>
-        <AppPill url={url} />
-      </PopupHeader>
-      <PopupContent>
-        {account && request && network && (
-          <EthSignBodyMessage account={account} request={request} />
-        )}
-      </PopupContent>
-      <PopupFooter>
-        <Suspense fallback={null}>
-          {errorMessage && <p className="error">{errorMessage}</p>}
-          {account && request && (
-            <>
-              {account.isHardware ? (
-                <SignHardwareEthereum
-                  method={request.method}
-                  payload={request.request}
-                  account={account as AccountJsonDcent}
-                  onSigned={approveHardware}
-                  onCancel={reject}
-                  containerId="main"
-                />
-              ) : (
-                <div className="grid w-full grid-cols-2 gap-12">
-                  <Button disabled={processing} onClick={reject}>
-                    {t("Cancel")}
-                  </Button>
-                  <Button disabled={!isValid} processing={processing} primary onClick={approve}>
-                    {t("Approve")}
-                  </Button>
-                </div>
-              )}
-            </>
+    <RiskAnalysisProvider riskAnalysis={riskAnalysis}>
+      <PopupLayout>
+        <PopupHeader right={<SignNetworkLogo network={network} />}>
+          <AppPill url={url} />
+        </PopupHeader>
+        <PopupContent>
+          {account && request && network && (
+            <EthSignBodyMessage account={account} request={request} />
           )}
-        </Suspense>
-      </PopupFooter>
-      <RisksAnalysisMsgDrawer />
-    </PopupLayout>
+        </PopupContent>
+        <PopupFooter>
+          <Suspense fallback={null}>
+            {errorMessage && <p className="error">{errorMessage}</p>}
+            {account && request && (
+              <>
+                {account.isHardware ? (
+                  <SignHardwareEthereum
+                    method={request.method}
+                    payload={request.request}
+                    account={account as AccountJsonDcent}
+                    onSigned={approveHardware}
+                    onCancel={reject}
+                    containerId="main"
+                  />
+                ) : (
+                  <div className="grid w-full grid-cols-2 gap-12">
+                    <Button disabled={processing} onClick={reject}>
+                      {t("Cancel")}
+                    </Button>
+                    <Button disabled={!isValid} processing={processing} primary onClick={approve}>
+                      {t("Approve")}
+                    </Button>
+                  </div>
+                )}
+              </>
+            )}
+          </Suspense>
+        </PopupFooter>
+        <RiskAnalysisDrawer />
+      </PopupLayout>
+    </RiskAnalysisProvider>
   )
 }

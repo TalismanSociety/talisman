@@ -10,9 +10,9 @@ import {
   ShieldZapIcon,
 } from "@talismn/icons"
 import { classNames } from "@talismn/util"
-import { EvmMessageScan } from "@ui/domains/Ethereum/useScanEvmMessage"
-import { EvmTransactionScan } from "@ui/domains/Ethereum/useScanEvmTransaction"
-import { useMemo } from "react"
+import { EvmMessageRiskAnalysis } from "@ui/domains/Ethereum/useEvmMessageRiskAnalysis"
+import { EvmTransactionRiskAnalysis } from "@ui/domains/Ethereum/useEvmTransactionRiskAnalysis"
+import { FC, useMemo } from "react"
 import { useTranslation } from "react-i18next"
 
 import { RiskAnalysisWarnings } from "./RiskAnalysisWarnings"
@@ -28,7 +28,7 @@ const useRecommendation = ({
   isAvailable,
   isValidating,
   result,
-}: EvmMessageScan | EvmTransactionScan) => {
+}: EvmMessageRiskAnalysis | EvmTransactionRiskAnalysis) => {
   const { t } = useTranslation()
 
   return useMemo(() => {
@@ -87,12 +87,13 @@ const useRecommendation = ({
   }, [isAvailable, isValidating, result, t, type])
 }
 
-export const RiskAnalysisRecommendation: React.FC<{
-  scan: EvmMessageScan | EvmTransactionScan
-}> = ({ scan }) => {
-  const recommendation = useRecommendation(scan)
+export const RiskAnalysisRecommendation: FC<{
+  riskAnalysis: EvmMessageRiskAnalysis | EvmTransactionRiskAnalysis
+}> = ({ riskAnalysis }) => {
+  const recommendation = useRecommendation(riskAnalysis)
 
-  if (scan.result?.warnings.length) return <RiskAnalysisWarnings warnings={scan.result.warnings} />
+  if (riskAnalysis.result?.warnings.length)
+    return <RiskAnalysisWarnings warnings={riskAnalysis.result.warnings} />
 
   const { Icon, bgClassName, textClassName, title, description } = recommendation
 

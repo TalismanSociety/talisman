@@ -1,8 +1,8 @@
 import { EvmExpectedStateChange } from "@blowfishxyz/api-client/v20230605"
 import { ArrowDownIcon, ArrowUpIcon } from "@talismn/icons"
 import { classNames } from "@talismn/util"
-import { EvmMessageScan } from "@ui/domains/Ethereum/useScanEvmMessage"
-import { EvmTransactionScan } from "@ui/domains/Ethereum/useScanEvmTransaction"
+import { EvmMessageRiskAnalysis } from "@ui/domains/Ethereum/useEvmMessageRiskAnalysis"
+import { EvmTransactionRiskAnalysis } from "@ui/domains/Ethereum/useEvmTransactionRiskAnalysis"
 import { BlowfishEvmChainInfo } from "extension-core"
 import { log } from "extension-shared"
 import { FC, useEffect, useMemo } from "react"
@@ -172,20 +172,20 @@ const StateChange: FC<{
 )
 
 export const RiskAnalysisStateChanges: FC<{
-  scan: EvmTransactionScan | EvmMessageScan
-}> = ({ scan }) => {
+  riskAnalysis: EvmTransactionRiskAnalysis | EvmMessageRiskAnalysis
+}> = ({ riskAnalysis }) => {
   const { t } = useTranslation()
   const changes = useMemo<EvmExpectedStateChange[]>(() => {
-    if (!scan.result) return []
-    if (scan.type === "transaction") {
-      const { userAccount, expectedStateChanges } = scan.result.simulationResults.aggregated
+    if (!riskAnalysis.result) return []
+    if (riskAnalysis.type === "transaction") {
+      const { userAccount, expectedStateChanges } = riskAnalysis.result.simulationResults.aggregated
       return expectedStateChanges[userAccount] ?? []
     }
-    if (scan.type === "message") {
-      return scan.result.simulationResults?.expectedStateChanges ?? []
+    if (riskAnalysis.type === "message") {
+      return riskAnalysis.result.simulationResults?.expectedStateChanges ?? []
     }
     return []
-  }, [scan])
+  }, [riskAnalysis])
 
   // TODO remove
   useEffect(() => {
@@ -193,13 +193,13 @@ export const RiskAnalysisStateChanges: FC<{
   }, [changes])
 
   if (!changes.length) return null
-  if (!scan.chainInfo) return null
+  if (!riskAnalysis.chainInfo) return null
 
   return (
     <div className="flex w-full flex-col">
       <div className="text-body-secondary text-sm">{t("Expected changes")}</div>
       {changes.map((change, i) => (
-        <StateChange key={i} change={change} chainInfo={scan.chainInfo} />
+        <StateChange key={i} change={change} chainInfo={riskAnalysis.chainInfo} />
       ))}
     </div>
   )

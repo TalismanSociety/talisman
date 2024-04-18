@@ -13,6 +13,7 @@ import { SignAlertMessage } from "../SignAlertMessage"
 import { ViewDetailsAddress } from "../ViewDetails/ViewDetailsAddress"
 import { ViewDetailsButton } from "../ViewDetails/ViewDetailsButton"
 import { ViewDetailsField } from "../ViewDetails/ViewDetailsField"
+import { RiskAnalysisPillButton } from "./risk-analysis/RIskAnalysisPillButton"
 import { SignParamAccountButton } from "./shared"
 
 const ViewDetailsContent: FC<{
@@ -103,7 +104,14 @@ export const EthSignBodyMessageSIWE: FC<{
             <div className="text-body leading-paragraph mt-2">{siwe.statement}</div>
           </div>
         )}
-        <ViewDetailsButton onClick={open} />
+        <div className="grid w-full grid-cols-2 items-center justify-center gap-4">
+          <div className="text-right">
+            <ViewDetailsButton onClick={open} />
+          </div>
+          <div className="text-left">
+            <RiskAnalysisPillButton />
+          </div>
+        </div>
       </div>
       <div className="grow"></div>
       {!isValidUrl && (
