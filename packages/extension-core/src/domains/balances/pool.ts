@@ -28,6 +28,7 @@ import {
   firstValueFrom,
 } from "rxjs"
 import { debounceTime, map } from "rxjs/operators"
+import Browser from "webextension-polyfill"
 
 import { unsubscribe } from "../../handlers/subscriptions"
 import { balanceModules } from "../../rpcs/balance-modules"
@@ -99,6 +100,10 @@ export class BalancePool {
    * Initialize the store with a set of addresses and chains.
    */
   constructor() {
+    Browser.runtime.getBackgroundPage().then((b) => {
+      if (window.location.href !== b.location.href)
+        throw new Error("Balances pool should only be used in the background page")
+    })
     // subscribe this store to all of the inputs it depends on
     this.#cleanupSubs = [
       this.initializeKeyringSubscription(),
@@ -554,30 +559,32 @@ export class BalancePool {
     )
 
     const addressesByTokenByModule: Record<string, AddressesByToken<Token>> = {}
-    tokens.forEach((token) => {
+    tokens
       // filter out tokens on chains/evmNetworks which have no rpcs
-      const hasRpcs =
-        (token.chain?.id && (chainDetails[token.chain.id]?.rpcs?.length ?? 0) > 0) ||
-        (token.evmNetwork?.id && (evmNetworkDetails[token.evmNetwork.id]?.rpcs?.length ?? 0) > 0)
-      if (!hasRpcs) return
+      .filter(
+        (token) =>
+          (token.chain?.id && (chainDetails[token.chain.id]?.rpcs?.length ?? 0) > 0) ||
+          (token.evmNetwork?.id && (evmNetworkDetails[token.evmNetwork.id]?.rpcs?.length ?? 0) > 0)
+      )
+      .forEach((token) => {
+        if (!addressesByTokenByModule[token.type]) addressesByTokenByModule[token.type] = {}
 
-      if (!addressesByTokenByModule[token.type]) addressesByTokenByModule[token.type] = {}
-
-      addressesByTokenByModule[token.type][token.id] = Object.keys(addresses)
-        .filter(
-          // filter out substrate addresses which have a genesis hash that doesn't match the genesisHash of the token's chain
-          (address) =>
-            !token.chain ||
-            !addresses[address] ||
-            addresses[address]?.includes(chainDetails[token.chain.id]?.genesisHash ?? "")
-        )
-        .filter((address) => {
-          // for each account, fetch balances only from compatible chains
-          return isEthereumAddress(address)
-            ? !!token.evmNetwork?.id || chainDetails[token.chain?.id ?? ""]?.account === "secp256k1"
-            : !!token.chain?.id
-        })
-    })
+        addressesByTokenByModule[token.type][token.id] = Object.keys(addresses)
+          .filter(
+            // filter out substrate addresses which have a genesis hash that doesn't match the genesisHash of the token's chain
+            (address) =>
+              !token.chain ||
+              !addresses[address] ||
+              addresses[address]?.includes(chainDetails[token.chain.id]?.genesisHash ?? "")
+          )
+          .filter((address) => {
+            // for each account, fetch balances only from compatible chains
+            return isEthereumAddress(address)
+              ? !!token.evmNetwork?.id ||
+                  chainDetails[token.chain?.id ?? ""]?.account === "secp256k1"
+              : !!token.chain?.id
+          })
+      })
 
     const existingBalances = this.balances
     const existingBalancesKeys = new Set(
