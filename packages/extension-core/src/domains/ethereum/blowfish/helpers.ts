@@ -1,12 +1,6 @@
 import { BlowfishEvmApiClient, createEvmClient } from "@blowfishxyz/api-client/v20230605"
 import { EvmNetworkId } from "@talismn/chaindata-provider"
 
-// export {
-//   type ScanTransactionsEvm200Response as ScanTransactionsResult,
-//   type EvmExpectedStateChange,
-//   WarningInnerKindEnum,
-// } from "@blowfishxyz/api-client/v20230605"
-
 export type BlowfishEvmChainInfo = {
   chainFamily: BlowfishEvmApiClient["chainFamily"]
   chainNetwork: BlowfishEvmApiClient["chainNetwork"]
@@ -29,9 +23,6 @@ const BLOWFISH_SUPPORTED_CHAINS: Record<EvmNetworkId, BlowfishEvmChainInfo | und
   "43113": { chainFamily: "avalanche", chainNetwork: "fuji" },
   "7777777": { chainFamily: "zora", chainNetwork: "sepolia" },
 }
-
-// export const isBlowfishSupportedChain = (evmNetworkId: EvmNetworkId) =>
-//   !!BLOWFISH_SUPPORTED_CHAINS[evmNetworkId]
 
 export const getBlowfishChainInfo = (evmNetworkId: EvmNetworkId) => {
   return BLOWFISH_SUPPORTED_CHAINS[evmNetworkId] ?? null

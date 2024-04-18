@@ -87,13 +87,10 @@ const useRecommendation = ({
   }, [isAvailable, isValidating, result, t, type])
 }
 
-export const RiskAnalysisRecommendation: FC<{
+const RiskAnalysisRecommendationInner: FC<{
   riskAnalysis: EvmMessageRiskAnalysis | EvmTransactionRiskAnalysis
 }> = ({ riskAnalysis }) => {
   const recommendation = useRecommendation(riskAnalysis)
-
-  if (riskAnalysis.result?.warnings.length)
-    return <RiskAnalysisWarnings warnings={riskAnalysis.result.warnings} />
 
   const { Icon, bgClassName, textClassName, title, description } = recommendation
 
@@ -115,5 +112,15 @@ export const RiskAnalysisRecommendation: FC<{
         <div className="text-body-secondary ">{description}</div>
       </div>
     </div>
+  )
+}
+
+export const RiskAnalysisRecommendation: FC<{
+  riskAnalysis: EvmMessageRiskAnalysis | EvmTransactionRiskAnalysis
+}> = ({ riskAnalysis }) => {
+  return riskAnalysis.result?.warnings.length ? (
+    <RiskAnalysisWarnings warnings={riskAnalysis.result.warnings} />
+  ) : (
+    <RiskAnalysisRecommendationInner riskAnalysis={riskAnalysis} />
   )
 }
