@@ -353,11 +353,12 @@ export class BalanceStore {
         const hasChain = balance.chainId && chainIds.has(balance.chainId)
         const hasEvmNetwork = balance.evmNetworkId && evmNetworkIds.has(balance.evmNetworkId)
         const chainUsesSecp256k1Accounts = chain?.account === "secp256k1"
-        if (!isEthereumAddress(balance.address) && !hasChain) {
-          return true
+        if (!isEthereumAddress(balance.address)) {
+          if (!hasChain) return true
+          if (chainUsesSecp256k1Accounts) return true
         }
-        if (isEthereumAddress(balance.address) && !(hasEvmNetwork || chainUsesSecp256k1Accounts)) {
-          return true
+        if (isEthereumAddress(balance.address)) {
+          if (!hasEvmNetwork && !chainUsesSecp256k1Accounts) return true
         }
 
         // keep balance
@@ -463,10 +464,10 @@ export class BalanceStore {
             addresses[address]?.includes(chainDetails[token.chain.id]?.genesisHash ?? "")
         )
         .filter((address) => {
-          // for each account, fetch balances only from compatible chains
+          // for each address, fetch balances only from compatible chains
           return isEthereumAddress(address)
-            ? !!token.evmNetwork?.id || chainDetails[token.chain?.id ?? ""]?.account === "secp256k1"
-            : !!token.chain?.id
+            ? token.evmNetwork?.id || chainDetails[token.chain?.id ?? ""]?.account === "secp256k1"
+            : token.chain?.id && chainDetails[token.chain?.id ?? ""]?.account !== "secp256k1"
         })
     })
 
