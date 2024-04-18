@@ -102,7 +102,9 @@ export class BalancePool {
   constructor() {
     Browser.runtime.getBackgroundPage().then((b) => {
       if (window.location.href !== b.location.href)
-        throw new Error("Balances pool should only be used in the background page")
+        throw new Error(
+          `Balances pool should only be used in the background page - used in: ${window.location.href}`
+        )
     })
     // subscribe this store to all of the inputs it depends on
     this.#cleanupSubs = [
