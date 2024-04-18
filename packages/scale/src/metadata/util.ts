@@ -81,6 +81,16 @@ export const filterMetadataPalletsAndItems = (
 
   // ditch the types we aren't keeping
   metadata.tys = metadata.tys.filter((type) => keepTypes.has(type.id))
+
+  // update all type ids to be sequential (fill the gaps left by the deleted types)
+  const newTypeIds = new Map<number, number>()
+  metadata.tys.forEach((ty, index) => newTypeIds.set(ty.id, index))
+  const getNewTypeId = (oldTypeId: number): number => {
+    const newTypeId = newTypeIds.get(oldTypeId)
+    if (typeof newTypeId !== "number") log.error(`Failed to find newTypeId for type ${oldTypeId}`)
+    return newTypeId ?? 0
+  }
+  remapTypeIds(metadata, getNewTypeId)
 }
 
 export const addDependentTypes = (
@@ -104,81 +114,134 @@ export const addDependentTypes = (
     keepTypes.add(type.id)
     addedTypes.add(type.id)
 
+    const paramTypes = type.params
+      .map((param) => param.ty)
+      .filter((type): type is number => typeof type === "number")
+    addDependentSubTypes(paramTypes)
+
     switch (type.type) {
-      case "Struct":
-        addDependentSubTypes([
-          ...type.params
-            .map((param) => param.ty)
-            .filter((ty): ty is number => typeof ty === "number"),
-          ...type.fields
-            .map((field) => field.ty)
-            .filter((ty): ty is number => typeof ty === "number"),
-        ])
-        break
-
-      case "Union":
-        addDependentSubTypes([
-          ...type.params
-            .map((param) => param.ty)
-            .filter((ty): ty is number => typeof ty === "number"),
-          ...type.members
-            .flatMap((member) => member.fields.map((field) => field.ty))
-            .filter((ty): ty is number => typeof ty === "number"),
-        ])
-        break
-
-      case "Sequence":
-        addDependentSubTypes([
-          ...type.params
-            .map((param) => param.ty)
-            .filter((ty): ty is number => typeof ty === "number"),
-          type.typeParam,
-        ])
-        break
-
       case "SizedArray":
-        addDependentSubTypes([
-          ...type.params
-            .map((param) => param.ty)
-            .filter((ty): ty is number => typeof ty === "number"),
-          type.typeParam,
-        ])
-        break
-
-      case "Tuple":
-        addDependentSubTypes([
-          ...type.params
-            .map((param) => param.ty)
-            .filter((ty): ty is number => typeof ty === "number"),
-          ...type.fields.filter((ty): ty is number => typeof ty === "number"),
-        ])
-        break
-
-      case "Primitive":
-        addDependentSubTypes([
-          ...type.params
-            .map((param) => param.ty)
-            .filter((ty): ty is number => typeof ty === "number"),
-        ])
-        break
-
-      case "Compact":
-        addDependentSubTypes([
-          ...type.params
-            .map((param) => param.ty)
-            .filter((ty): ty is number => typeof ty === "number"),
-          type.typeParam,
-        ])
+        addDependentSubTypes([type.typeParam])
         break
 
       case "BitSequence":
         addDependentSubTypes([type.bitOrderType, type.bitStoreType])
         break
 
+      case "Compact":
+        addDependentSubTypes([type.typeParam])
+        break
+
+      case "Struct":
+        addDependentSubTypes(
+          type.fields.map((field) => field.ty).filter((ty): ty is number => typeof ty === "number")
+        )
+        break
+
+      case "Primitive":
+        break
+
+      case "Sequence":
+        addDependentSubTypes([type.typeParam])
+        break
+
+      case "Tuple":
+        addDependentSubTypes(type.fields.filter((ty): ty is number => typeof ty === "number"))
+        break
+
+      case "Union":
+        addDependentSubTypes(
+          type.members
+            .flatMap((member) => member.fields.map((field) => field.ty))
+            .filter((ty): ty is number => typeof ty === "number")
+        )
+        break
+
       default: {
         // force compilation error if any types don't have a case
         const exhaustiveCheck: never = type
         log.error(`Unhandled TyMV14 type ${exhaustiveCheck}`)
+      }
+    }
+  }
+}
+
+const remapTypeIds = (metadata: MetadataV14, getNewTypeId: (oldTypeId: number) => number) => {
+  remapLookupTypeIds(metadata, getNewTypeId)
+  remapStorageTypeIds(metadata, getNewTypeId)
+}
+
+const remapLookupTypeIds = (metadata: MetadataV14, getNewTypeId: (oldTypeId: number) => number) => {
+  for (const type of metadata.tys) {
+    type.id = getNewTypeId(type.id)
+
+    for (const param of type.params) {
+      if (typeof param.ty !== "number") continue
+      param.ty = getNewTypeId(param.ty)
+    }
+
+    switch (type.type) {
+      case "SizedArray":
+        type.typeParam = getNewTypeId(type.typeParam)
+        break
+
+      case "BitSequence":
+        type.bitOrderType = getNewTypeId(type.bitOrderType)
+        type.bitStoreType = getNewTypeId(type.bitStoreType)
+        break
+
+      case "Compact":
+        type.typeParam = getNewTypeId(type.typeParam)
+        break
+
+      case "Struct":
+        for (const field of type.fields) {
+          if (typeof field.ty !== "number") continue
+          field.ty = getNewTypeId(field.ty)
+        }
+        break
+
+      case "Primitive":
+        break
+
+      case "Sequence":
+        type.typeParam = getNewTypeId(type.typeParam)
+        break
+
+      case "Tuple":
+        type.fields = type.fields.map((ty) => {
+          if (typeof ty !== "number") return ty
+          return getNewTypeId(ty)
+        })
+        break
+
+      case "Union":
+        for (const member of type.members) {
+          for (const field of member.fields) {
+            if (typeof field.ty !== "number") continue
+            field.ty = getNewTypeId(field.ty)
+          }
+        }
+        break
+
+      default: {
+        // force compilation error if any types don't have a case
+        const exhaustiveCheck: never = type
+        log.error(`Unhandled TyMV14 type ${exhaustiveCheck}`)
+      }
+    }
+  }
+}
+const remapStorageTypeIds = (
+  metadata: MetadataV14,
+  getNewTypeId: (oldTypeId: number) => number
+) => {
+  for (const pallet of metadata.pallets) {
+    for (const item of pallet.storage?.entries ?? []) {
+      if (item.type === "Plain") item.value = getNewTypeId(item.value)
+      if (item.type === "Map") {
+        item.key = getNewTypeId(item.key)
+        item.value = getNewTypeId(item.value)
       }
     }
   }
