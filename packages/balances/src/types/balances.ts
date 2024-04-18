@@ -447,8 +447,9 @@ export class Balance {
   /** The non-reserved balance of this token. Includes the frozen amount. Is included in the total. */
   get free() {
     // for simple balances
-    if ("value" in this.#storage) return new BalanceFormatter(this.#storage.value)
+    if ("value" in this.#storage) return this.#format(this.#storage.value)
 
+    // for complex balances
     const freeValues = this.getValue("free")
     const totalFree = freeValues.map(({ amount }) => amount.planck).reduce((a, b) => a + b, 0n)
     return this.#format(totalFree)
