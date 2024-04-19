@@ -1,21 +1,22 @@
 import {
+  LoaderIcon,
   ShieldNotOkIcon,
   ShieldOkIcon,
   ShieldUnavailableIcon,
   ShieldUnknownIcon,
   ShieldZapIcon,
 } from "@talismn/icons"
-import { FC, useMemo } from "react"
+import { FC, useCallback, useMemo } from "react"
 import { useTranslation } from "react-i18next"
 import { PillButton, Tooltip, TooltipContent, TooltipTrigger } from "talisman-ui"
 
 import { useRiskAnalysis } from "./context"
 
 export const RiskAnalysisPillButton: FC = () => {
-  const { riskAnalysis, drawer } = useRiskAnalysis()
+  const riskAnalysis = useRiskAnalysis()
   const { t } = useTranslation()
 
-  const { icon, label, className, disabled } = useMemo(() => {
+  const { icon, label, className, disabled, tooltip } = useMemo(() => {
     if (riskAnalysis?.result?.action === "NONE")
       return {
         label: t("Low Risk"),
@@ -37,6 +38,15 @@ export const RiskAnalysisPillButton: FC = () => {
         className: "text-brand-orange",
         disabled: false,
       }
+    if (riskAnalysis?.isValidating) {
+      return {
+        icon: LoaderIcon,
+        label: t("Simulating"),
+        className: "[&>div>svg]:animate-spin-slow",
+        disabled: true,
+      }
+    }
+
     if (riskAnalysis?.isAvailable)
       return {
         icon: ShieldUnknownIcon,
@@ -44,13 +54,22 @@ export const RiskAnalysisPillButton: FC = () => {
         className: undefined,
         disabled: false,
       }
+
     return {
       icon: ShieldUnavailableIcon,
       label: t("Risk Analysis"),
       className: undefined,
       disabled: true,
+      tooltip: "Risk analysis is not available on this network",
     }
   }, [t, riskAnalysis])
+
+  const handleClick = useCallback(() => {
+    if (!riskAnalysis || riskAnalysis.isValidating) return
+
+    if (riskAnalysis.result) riskAnalysis.review.drawer.open()
+    else riskAnalysis.launchScan()
+  }, [riskAnalysis])
 
   return (
     <Tooltip>
@@ -59,15 +78,13 @@ export const RiskAnalysisPillButton: FC = () => {
           disabled={disabled}
           size="sm"
           icon={icon}
-          onClick={drawer.open}
+          onClick={handleClick}
           className={className}
         >
           {label}
         </PillButton>
       </TooltipTrigger>
-      {disabled && (
-        <TooltipContent>{t("Risk analysis is not available on this network")}</TooltipContent>
-      )}
+      {tooltip && <TooltipContent>{tooltip}</TooltipContent>}
     </Tooltip>
   )
 }

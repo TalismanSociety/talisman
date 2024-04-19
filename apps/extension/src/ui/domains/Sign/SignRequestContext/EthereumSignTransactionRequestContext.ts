@@ -39,7 +39,7 @@ const useEthSignTransactionRequestProvider = ({ id }: KnownSigningRequestIdOnly<
     gasSettingsByPriority,
     setCustomSettings,
     isValid,
-    riskAnalysis: riskAnalysis,
+    riskAnalysis,
     updateCallArg,
   } = useEthTransaction(
     txBase,

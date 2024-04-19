@@ -5,23 +5,22 @@ import { Checkbox } from "talisman-ui"
 import { useRiskAnalysis } from "./context"
 
 export const RisksAnalysisAknowledgement: FC = () => {
-  const { isRiskAknowledged, isRiskAknowledgementRequired, setIsRiskAknowledged } =
-    useRiskAnalysis()
+  const riskAnalysis = useRiskAnalysis()
 
   const handleChange: ChangeEventHandler<HTMLInputElement> = useCallback(
     (e) => {
-      setIsRiskAknowledged(e.target.checked)
+      riskAnalysis?.review.setIsRiskAknowledged(e.target.checked)
     },
-    [setIsRiskAknowledged]
+    [riskAnalysis?.review]
   )
 
-  if (!isRiskAknowledgementRequired) return null
+  if (!riskAnalysis?.review.isRiskAknowledgementRequired) return null
 
   return (
     <div className="flex w-full items-center justify-between text-sm">
       <div>{t("I aknowledge the risks")}</div>
       <div>
-        <Checkbox defaultChecked={isRiskAknowledged} onChange={handleChange} />
+        <Checkbox defaultChecked={riskAnalysis.review.isRiskAknowledged} onChange={handleChange} />
       </div>
     </div>
   )

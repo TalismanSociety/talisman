@@ -6,7 +6,7 @@ import { api } from "@ui/api"
 import { useEvmMessageRiskAnalysis } from "@ui/domains/Ethereum/useEvmMessageRiskAnalysis"
 import { useEvmNetwork } from "@ui/hooks/useEvmNetwork"
 import { useRequest } from "@ui/hooks/useRequest"
-import { useCallback, useEffect, useMemo } from "react"
+import { useCallback, useMemo } from "react"
 
 import { useAnySigningRequest } from "./AnySignRequestContext"
 
@@ -28,11 +28,6 @@ const useEthSignMessageRequestProvider = ({ id }: KnownSigningRequestIdOnly<"eth
     request?.account?.address,
     request?.url
   )
-
-  useEffect(() => {
-    // TODO remove
-    log.log("blowfish scan", riskAnalysis)
-  }, [riskAnalysis])
 
   const approve = useCallback(() => {
     if (riskAnalysis.review.isRiskAknowledgementRequired && !riskAnalysis.review.isRiskAknowledged)

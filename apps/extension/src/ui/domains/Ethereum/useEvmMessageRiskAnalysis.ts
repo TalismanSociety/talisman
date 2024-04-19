@@ -1,26 +1,24 @@
 import { EvmSignTypedDataData, ScanMessageEvm200Response } from "@blowfishxyz/api-client/v20230605"
-import {
-  BlowfishEvmChainInfo,
-  EthSignMessageMethod,
-  getBlowfishChainInfo,
-  getBlowfishClient,
-} from "@extension/core"
+import { BlowfishEvmChainInfo, EthSignMessageMethod, getBlowfishClient } from "@extension/core"
 import { EvmNetworkId } from "@talismn/chaindata-provider"
+import { sleep } from "@talismn/util"
 import { useQuery } from "@tanstack/react-query"
 import { log } from "extension-shared"
-import { useMemo, useState } from "react"
+import { useCallback, useEffect, useMemo, useRef } from "react"
 
+import { useEvmRiskAnalysisBase } from "./useEvmRiskAnalysisBase"
 import { RisksReview, useRisksReview } from "./useRisksReview"
 
 export type EvmMessageRiskAnalysis = {
   type: "message"
+  shouldPromptAutoRiskScan: boolean
   isAvailable: boolean
   isValidating: boolean
   result: ScanMessageEvm200Response | null | undefined
   error: unknown
-  validate: (() => void) | undefined
   chainInfo: BlowfishEvmChainInfo | null
   review: RisksReview
+  launchScan: () => void
 }
 
 const getTypedDataPayload = (msg: string): EvmSignTypedDataData | null => {
@@ -58,23 +56,14 @@ export const useEvmMessageRiskAnalysis = (
   account: string | undefined,
   url?: string
 ): EvmMessageRiskAnalysis => {
-  const [autoValidate, setAutoValidate] = useState(true) // TODO settingsStore.get("autoValidateTransactions")
-
-  const origin = useMemo(() => {
-    if (url) {
-      try {
-        return new URL(url).origin
-      } catch (err) {
-        // ignore
-      }
-    }
-    return window.location.origin // fallback to extension's origin
-  }, [url])
-
-  const chainInfo = useMemo(() => {
-    if (!evmNetworkId || !method || !message || !account) return null
-    return getBlowfishChainInfo(evmNetworkId)
-  }, [account, evmNetworkId, message, method])
+  const {
+    shouldPromptAutoRiskScan,
+    shouldValidate,
+    origin,
+    chainInfo,
+    isValidationRequested,
+    setIsValidationRequested,
+  } = useEvmRiskAnalysisBase(evmNetworkId, url)
 
   const isAvailable = useMemo(
     () => !!chainInfo && !!account && isCompatiblePayload(method, message),
@@ -86,14 +75,26 @@ export const useEvmMessageRiskAnalysis = (
     data: result,
     error,
   } = useQuery({
-    queryKey: ["useScanTransaction", evmNetworkId, method, message, account, autoValidate, origin],
-    queryFn: () => {
-      if (!evmNetworkId || !method || !message || !account || !autoValidate) return null
+    queryKey: [
+      "useScanTransaction",
+      evmNetworkId,
+      method,
+      message,
+      account,
+      shouldValidate,
+      origin,
+    ],
+    // TODO remove async
+    queryFn: async () => {
+      if (!evmNetworkId || !method || !message || !account || !shouldValidate) return null
       const client = getBlowfishClient(evmNetworkId)
       if (!client) return null
 
       // TODO remove
       log.debug("querying blowfish", { evmNetworkId, method, message, account, origin })
+
+      // TODO remove
+      await sleep(2000)
 
       switch (method) {
         case "personal_sign":
@@ -102,31 +103,43 @@ export const useEvmMessageRiskAnalysis = (
         case "eth_signTypedData_v4": {
           const payload = getTypedDataPayload(message)
           if (!payload) return null
-          //console.log("sign typed data payload", payload)
           return client.scanSignTypedData(payload, account, { origin })
         }
         default:
           return null
       }
     },
-    enabled: !!method && !!message && !!account && !!evmNetworkId && autoValidate,
+    enabled: !!method && !!message && !!account && !!evmNetworkId && shouldValidate,
     refetchInterval: false,
     retry: false,
   })
 
   const review = useRisksReview(result?.action)
 
-  return useMemo(
-    () => ({
-      type: "message",
-      isAvailable,
-      isValidating: isAvailable && autoValidate && isLoading,
-      result,
-      error,
-      validate: isAvailable && autoValidate ? undefined : () => setAutoValidate(true),
-      chainInfo,
-      review,
-    }),
-    [autoValidate, chainInfo, error, isAvailable, isLoading, result, review]
-  )
+  const launchScan = useCallback(() => {
+    if (isAvailable) {
+      setIsValidationRequested(true)
+    }
+  }, [isAvailable, setIsValidationRequested])
+
+  const refAutoOpen = useRef(false)
+  useEffect(() => {
+    if (refAutoOpen.current || !isValidationRequested) return
+    if (result || error) {
+      refAutoOpen.current = true
+      review.drawer.open()
+    }
+  }, [error, isValidationRequested, result, review.drawer])
+
+  return {
+    type: "message",
+    isAvailable,
+    isValidating: isAvailable && shouldValidate && isLoading,
+    result,
+    error,
+    launchScan,
+    chainInfo,
+    review,
+    shouldPromptAutoRiskScan,
+  }
 }

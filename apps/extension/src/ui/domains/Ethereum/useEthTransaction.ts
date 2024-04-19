@@ -24,7 +24,6 @@ import { isBigInt } from "@talismn/util"
 import { useQuery, useQueryClient } from "@tanstack/react-query"
 import { api } from "@ui/api"
 import { usePublicClient } from "@ui/domains/Ethereum/usePublicClient"
-import { log } from "extension-shared"
 import { useCallback, useEffect, useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
 import { PublicClient, TransactionRequest, encodeFunctionData } from "viem"
@@ -460,11 +459,6 @@ export const useEthTransaction = (
   const [priority, setPriority] = useState<EthPriorityOptionName>()
 
   const riskAnalysis = useEvmTransactionRiskAnalysis(evmNetworkId, tx, origin)
-
-  useEffect(() => {
-    // TODO remove
-    log.log("blowfish scan", riskAnalysis)
-  }, [riskAnalysis])
 
   // reset priority in case chain changes
   // ex: from send funds when switching from BSC (legacy) to mainnet (eip1559)
