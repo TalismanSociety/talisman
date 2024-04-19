@@ -1,16 +1,26 @@
 import { EvmExpectedStateChange } from "@blowfishxyz/api-client/v20230605"
+import { shortenAddress } from "@talisman/util/shortenAddress"
 import { ArrowDownIcon, ArrowUpIcon } from "@talismn/icons"
 import { classNames } from "@talismn/util"
 import { EvmMessageRiskAnalysis } from "@ui/domains/Ethereum/useEvmMessageRiskAnalysis"
 import { EvmTransactionRiskAnalysis } from "@ui/domains/Ethereum/useEvmTransactionRiskAnalysis"
 import { BlowfishEvmChainInfo } from "extension-core"
 import { log } from "extension-shared"
-import { FC, useEffect, useMemo } from "react"
+import { FC, ReactNode, useEffect, useMemo } from "react"
 import { useTranslation } from "react-i18next"
 
 import { RiskAnalysisImageBase, RiskAnalysisPlaceholderImage } from "./RiskAnalysisImageBase"
-//import { useAssetLinkFromRawInfo } from "./useAssetLinkFromRawInfo"
-import { isCurrencyStateChange, isNftStateChangeWithMetadata, isPositiveStateChange } from "./util"
+import { useAssetLinkFromRawInfo } from "./useAssetLinkFromRawInfo"
+import {
+  formatPrice,
+  generateCounterpartyBlockExplorerUrl,
+  getAssetPriceInUsd,
+  hasCounterparty,
+  isCurrencyStateChange,
+  isNftStateChange,
+  isNftStateChangeWithMetadata,
+  isPositiveStateChange,
+} from "./util"
 
 type AssetImageProps = {
   isPositiveEffect: boolean
@@ -61,18 +71,6 @@ const AssetImage = (props: AssetImageProps) => {
       )
     }
 
-    // if (placeholder === "solana-logo") {
-    //   return (
-    //     <RiskAnalysisImageBase
-    //       isSolanaLogo
-    //       alt="Solana logo"
-    //       width={38}
-    //       height={38}
-    //       borderRadius="100%"
-    //     />
-    //   )
-    // }
-
     return <RiskAnalysisPlaceholderImage type="unknown" width={38} height={38} borderRadius={6} />
   }, [props])
 
@@ -106,13 +104,6 @@ const AssetImage = (props: AssetImageProps) => {
 
 const StateChangeImage: FC<{ rawInfo: EvmExpectedStateChange["rawInfo"] }> = ({ rawInfo }) => {
   const isPositive = isPositiveStateChange(rawInfo)
-
-  // console.log("StateChangeImage", {
-  //   rawInfo,
-  //   isPositive,
-  //   isCurrency: isCurrencyStateChange(rawInfo),
-  //   isNft: isNftStateChangeWithMetadata(rawInfo),
-  // })
 
   if (isCurrencyStateChange(rawInfo)) {
     return (
@@ -157,16 +148,91 @@ const StateChangeImage: FC<{ rawInfo: EvmExpectedStateChange["rawInfo"] }> = ({ 
   }
 }
 
+const FooterField: FC<{ label: ReactNode; value: ReactNode; extra?: ReactNode }> = ({
+  label,
+  value,
+  extra,
+}) => (
+  <span className="text-body-secondary group flex max-w-full items-center gap-[0.5em] overflow-hidden">
+    <span className="text-body-secondary">{label}</span>
+    <span className="text-body truncate">{value}</span>
+    <span className="group-hover:text-body">{extra}</span>
+  </span>
+)
+
+const FooterFieldLink: FC<{ href?: string; label: ReactNode; value: ReactNode }> = ({
+  label,
+  value,
+  href,
+}) =>
+  href ? (
+    <a href={href} target="_blank" rel="noopener noreferrer">
+      <FooterField label={label} value={value} />
+    </a>
+  ) : (
+    <FooterField label={label} value={value} />
+  )
+
+const StateChangeFooter: FC<{
+  rawInfo: EvmExpectedStateChange["rawInfo"]
+  chainInfo: BlowfishEvmChainInfo
+}> = ({ rawInfo, chainInfo }) => {
+  const { t } = useTranslation()
+  const assetLink = useAssetLinkFromRawInfo(rawInfo, chainInfo)
+  const counterpartyLink = generateCounterpartyBlockExplorerUrl(rawInfo, chainInfo)
+  const isPositiveEffect = useMemo(() => isPositiveStateChange(rawInfo), [rawInfo])
+
+  if (isCurrencyStateChange(rawInfo)) {
+    return (
+      <div className="flex max-w-full flex-wrap items-center gap-4 overflow-hidden">
+        <FooterFieldLink href={assetLink} label={t("Asset:")} value={rawInfo.data.asset.name} />
+        {counterpartyLink && hasCounterparty(rawInfo) && rawInfo.data.counterparty?.address && (
+          <FooterFieldLink
+            href={counterpartyLink}
+            label={isPositiveEffect ? t("From:") : t("To:")}
+            value={shortenAddress(rawInfo.data.counterparty.address, 6, 4)}
+          />
+        )}
+      </div>
+    )
+  } else if (isNftStateChange(rawInfo)) {
+    const price = getAssetPriceInUsd(rawInfo)
+    let typeStr: string | undefined = undefined
+
+    if (rawInfo.kind.includes("ERC721")) {
+      typeStr = "ERC-721"
+    } else if (rawInfo.kind.includes("ERC1155")) {
+      typeStr = "ERC-1155"
+    }
+
+    return (
+      <div className="flex max-w-full flex-wrap items-center gap-4 overflow-hidden">
+        <FooterField label={"Type:"} value={typeStr} />
+        {!!price && <FooterField label={t("Floor price:")} value={formatPrice(price)} />}
+        {counterpartyLink && hasCounterparty(rawInfo) && rawInfo.data.counterparty?.address && (
+          <FooterFieldLink
+            href={counterpartyLink}
+            label={isPositiveEffect ? t("From:") : t("To:")}
+            value={shortenAddress(rawInfo.data.counterparty.address, 6, 4)}
+          />
+        )}
+      </div>
+    )
+  }
+  return null
+}
+
 const StateChange: FC<{
   change: EvmExpectedStateChange
-  chainInfo: BlowfishEvmChainInfo | null
-}> = ({ change }) => (
+  chainInfo: BlowfishEvmChainInfo
+}> = ({ change, chainInfo }) => (
   <div className="flex w-full gap-8 p-4">
     <div className="w-20 shrink-0 pt-4">
       <StateChangeImage rawInfo={change.rawInfo} />
     </div>
-    <div className="text-body flex grow flex-col justify-center pt-4">
+    <div className="text-body flex grow flex-col justify-center gap-2 overflow-hidden pt-4">
       <div>{change.humanReadableDiff}</div>
+      <StateChangeFooter rawInfo={change.rawInfo} chainInfo={chainInfo} />
     </div>
   </div>
 )
@@ -175,6 +241,7 @@ export const RiskAnalysisStateChanges: FC<{
   riskAnalysis: EvmTransactionRiskAnalysis | EvmMessageRiskAnalysis
 }> = ({ riskAnalysis }) => {
   const { t } = useTranslation()
+
   const changes = useMemo<EvmExpectedStateChange[]>(() => {
     if (!riskAnalysis.result) return []
     if (riskAnalysis.type === "transaction") {
@@ -193,13 +260,15 @@ export const RiskAnalysisStateChanges: FC<{
   }, [changes])
 
   if (!changes.length) return null
-  if (!riskAnalysis.chainInfo) return null
+
+  const { chainInfo } = riskAnalysis
+  if (!chainInfo) return null
 
   return (
     <div className="flex w-full flex-col">
       <div className="text-body-secondary text-sm">{t("Expected changes")}</div>
       {changes.map((change, i) => (
-        <StateChange key={i} change={change} chainInfo={riskAnalysis.chainInfo} />
+        <StateChange key={i} change={change} chainInfo={chainInfo} />
       ))}
     </div>
   )

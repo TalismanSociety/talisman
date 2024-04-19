@@ -148,17 +148,10 @@ const RiskAnalysisWarning: React.FC<{ warning: UIWarning }> = ({ warning }) => {
   )
 }
 
-export const RiskAnalysisWarnings: FC<{ warnings: UIWarning[] }> = ({ warnings = [] }) => {
-  // const { t } = useTranslation()
-
-  // if (warnings.length < 2) return null
-
-  return (
-    <div className="flex flex-col gap-4">
-      {/* <div className="text-body-secondary leading-paragraph text-sm">{t("Warnings")}</div> */}
-      {warnings.map((warning) => (
-        <RiskAnalysisWarning key={warning.message} warning={warning} />
-      ))}
-    </div>
-  )
-}
+export const RiskAnalysisWarnings: FC<{ warnings: UIWarning[] }> = ({ warnings = [] }) => (
+  <div className="flex flex-col gap-4">
+    {warnings.map((warning) => (
+      <RiskAnalysisWarning key={warning.message} warning={warning} />
+    ))}
+  </div>
+)

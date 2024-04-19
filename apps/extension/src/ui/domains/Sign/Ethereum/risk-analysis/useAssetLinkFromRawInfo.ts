@@ -1,5 +1,3 @@
-// from @blowfishxyz/ui
-
 import {
   EvmChainFamily,
   EvmChainNetwork,
