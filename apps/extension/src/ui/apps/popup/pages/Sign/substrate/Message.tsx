@@ -42,7 +42,7 @@ export const PolkadotSignMessageRequest = () => {
   )
 
   useEffect(() => {
-    // force close upon success, usefull in case this is the browser embedded popup (which doesn't close by itself)
+    // force close upon success, usefullyy in case this is the browser embedded popup (which doesn't close by itself)
     if (status === "SUCCESS") window.close()
   }, [status])
 
