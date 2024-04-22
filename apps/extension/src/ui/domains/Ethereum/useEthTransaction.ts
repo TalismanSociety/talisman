@@ -431,7 +431,8 @@ export const useEthTransaction = (
   evmNetworkId: EvmNetworkId | undefined,
   lockTransaction = false,
   isReplacement = false,
-  origin?: string
+  origin?: string,
+  disableAutoRiskScan?: boolean
 ) => {
   const publicClient = usePublicClient(evmNetworkId)
   const {
@@ -458,7 +459,7 @@ export const useEthTransaction = (
 
   const [priority, setPriority] = useState<EthPriorityOptionName>()
 
-  const riskAnalysis = useEvmTransactionRiskAnalysis(evmNetworkId, tx, origin)
+  const riskAnalysis = useEvmTransactionRiskAnalysis(evmNetworkId, tx, origin, disableAutoRiskScan)
 
   // reset priority in case chain changes
   // ex: from send funds when switching from BSC (legacy) to mainnet (eip1559)

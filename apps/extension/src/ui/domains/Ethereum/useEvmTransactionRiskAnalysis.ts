@@ -29,7 +29,8 @@ export type EvmTransactionRiskAnalysis = {
 export const useEvmTransactionRiskAnalysis = (
   evmNetworkId: EvmNetworkId | undefined,
   tx: TransactionRequest | undefined,
-  url?: string
+  url?: string,
+  disableAutoRiskScan?: boolean // defaults to value stored in settings
 ): EvmTransactionRiskAnalysis => {
   const {
     shouldPromptAutoRiskScan,
@@ -38,7 +39,7 @@ export const useEvmTransactionRiskAnalysis = (
     chainInfo,
     isValidationRequested,
     setIsValidationRequested,
-  } = useEvmRiskAnalysisBase(evmNetworkId, url)
+  } = useEvmRiskAnalysisBase(evmNetworkId, url, disableAutoRiskScan)
 
   // blowfish doesn't support scans on all chains
   const isAvailable = useMemo(() => !!chainInfo, [chainInfo])

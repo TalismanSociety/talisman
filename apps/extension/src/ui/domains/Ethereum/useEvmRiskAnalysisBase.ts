@@ -4,17 +4,25 @@ import { useMemo, useState } from "react"
 
 export const useEvmRiskAnalysisBase = (
   evmNetworkId: EvmNetworkId | undefined,
-  url: string | undefined
+  url: string | undefined,
+  disableAutoRiskScan?: boolean
 ) => {
   const [autoRiskScan] = useSetting("autoRiskScan")
+  const effectiveAutoRiskScan = useMemo(
+    () => !disableAutoRiskScan && !!autoRiskScan,
+    [autoRiskScan, disableAutoRiskScan]
+  )
   const [isValidationRequested, setIsValidationRequested] = useState(false)
 
   // if undefined, user has never used the feature
-  const shouldPromptAutoRiskScan = useMemo(() => autoRiskScan === undefined, [autoRiskScan])
+  const shouldPromptAutoRiskScan = useMemo(
+    () => !disableAutoRiskScan && autoRiskScan === undefined,
+    [autoRiskScan, disableAutoRiskScan]
+  )
 
   const shouldValidate = useMemo(
-    () => autoRiskScan || isValidationRequested,
-    [autoRiskScan, isValidationRequested]
+    () => effectiveAutoRiskScan || isValidationRequested,
+    [effectiveAutoRiskScan, isValidationRequested]
   )
 
   const origin = useMemo(() => {

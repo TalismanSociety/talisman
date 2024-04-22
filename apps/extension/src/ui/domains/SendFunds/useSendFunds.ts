@@ -130,7 +130,7 @@ const useEvmTransaction = (
     }
   }, [from, to, token, planck])
 
-  const result = useEthTransaction(tx, token?.evmNetwork?.id, isLocked)
+  const result = useEthTransaction(tx, token?.evmNetwork?.id, isLocked, false, undefined, true)
 
   return { evmTransaction: tx ? { tx, ...result } : undefined, evmInvalidTxError }
 }
