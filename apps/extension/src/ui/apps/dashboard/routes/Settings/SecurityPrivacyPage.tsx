@@ -58,7 +58,7 @@ export const SecurityPrivacyPage = () => {
           iconLeft={ShieldZapIcon}
           title={
             <span className="inline-flex items-center gap-[0.3em]">
-              <span>{t("Automatic risk assessment")}</span>
+              <span>{t("Auto risk scan")}</span>
               <Tooltip>
                 <TooltipTrigger className="inline-block">
                   <InfoIcon />
