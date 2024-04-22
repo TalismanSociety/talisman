@@ -21,7 +21,7 @@ const RiskAnalysisDrawerContent: FC = () => {
   // if (!riskAnalysis.chainInfo) return <div>Chain information not available</div>
 
   return (
-    <div className="bg-grey-850 flex h-[60rem] w-full flex-col gap-12 p-12">
+    <div className="bg-grey-850 flex max-h-[60rem] w-full flex-col gap-12 rounded-t-xl p-12">
       <div className="scrollable scrollable-700  flex-grow overflow-y-auto pr-4 text-xs  leading-[2rem]">
         <div className="text-body-secondary leading-paragraph flex w-full flex-col gap-12">
           <div className="text-body text-md text-center font-bold">{t("Risk Assessment")}</div>
