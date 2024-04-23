@@ -1,8 +1,4 @@
 import {
-  ScanMessageEvm200Response,
-  ScanTransactionsEvm200Response,
-} from "@blowfishxyz/api-client/v20230605"
-import {
   ShieldNotOkIcon,
   ShieldOkIcon,
   ShieldUnavailableIcon,
@@ -10,25 +6,13 @@ import {
   ShieldZapIcon,
 } from "@talismn/icons"
 import { classNames } from "@talismn/util"
-import { EvmMessageRiskAnalysis } from "@ui/domains/Ethereum/useEvmMessageRiskAnalysis"
-import { EvmTransactionRiskAnalysis } from "@ui/domains/Ethereum/useEvmTransactionRiskAnalysis"
+import { EvmRiskAnalysis } from "@ui/domains/Ethereum/riskAnalysis"
 import { FC, useMemo } from "react"
 import { useTranslation } from "react-i18next"
 
 import { RiskAnalysisWarnings } from "./RiskAnalysisWarnings"
 
-export type RecommendationProps = {
-  isAvailable: boolean
-  isValidating: boolean
-  result: ScanTransactionsEvm200Response | ScanMessageEvm200Response | null | undefined
-}
-
-const useRecommendation = ({
-  type,
-  isAvailable,
-  isValidating,
-  result,
-}: EvmMessageRiskAnalysis | EvmTransactionRiskAnalysis) => {
+const useRecommendation = ({ type, isAvailable, isValidating, result }: EvmRiskAnalysis) => {
   const { t } = useTranslation()
 
   return useMemo(() => {
@@ -88,7 +72,7 @@ const useRecommendation = ({
 }
 
 const RiskAnalysisRecommendationInner: FC<{
-  riskAnalysis: EvmMessageRiskAnalysis | EvmTransactionRiskAnalysis
+  riskAnalysis: EvmRiskAnalysis
 }> = ({ riskAnalysis }) => {
   const recommendation = useRecommendation(riskAnalysis)
 
@@ -116,7 +100,7 @@ const RiskAnalysisRecommendationInner: FC<{
 }
 
 export const RiskAnalysisRecommendation: FC<{
-  riskAnalysis: EvmMessageRiskAnalysis | EvmTransactionRiskAnalysis
+  riskAnalysis: EvmRiskAnalysis
 }> = ({ riskAnalysis }) => {
   return riskAnalysis.result?.warnings.length ? (
     <RiskAnalysisWarnings warnings={riskAnalysis.result.warnings} />

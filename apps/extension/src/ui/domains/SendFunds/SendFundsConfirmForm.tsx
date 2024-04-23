@@ -14,9 +14,11 @@ import { Fiat } from "../Asset/Fiat"
 import { TokenLogo } from "../Asset/TokenLogo"
 import { TokensAndFiat } from "../Asset/TokensAndFiat"
 import { EthFeeSelect } from "../Ethereum/GasSettings/EthFeeSelect"
-import { RiskAnalysisProvider } from "../Sign/Ethereum/risk-analysis/context"
-import { RiskAnalysisDrawer } from "../Sign/Ethereum/risk-analysis/RiskAnalysisDrawer"
-import { RiskAnalysisPillButton } from "../Sign/Ethereum/risk-analysis/RiskAnalysisPillButton"
+import {
+  RiskAnalysisDrawer,
+  RiskAnalysisPillButton,
+  RiskAnalysisProvider,
+} from "../Sign/Ethereum/riskAnalysis"
 import { AddressDisplay } from "./AddressDisplay"
 import { SendFundsFeeTooltip } from "./SendFundsFeeTooltip"
 import { SendFundsHardwareEthereum } from "./SendFundsHardwareEthereum"

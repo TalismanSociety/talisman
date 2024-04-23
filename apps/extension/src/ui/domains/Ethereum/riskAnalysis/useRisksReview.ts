@@ -16,5 +16,3 @@ export const useRisksReview = (action?: ActionEnum) => {
     drawer,
   }
 }
-
-export type RisksReview = ReturnType<typeof useRisksReview>

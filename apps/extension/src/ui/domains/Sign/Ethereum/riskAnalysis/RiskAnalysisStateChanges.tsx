@@ -2,8 +2,7 @@ import { EvmExpectedStateChange } from "@blowfishxyz/api-client/v20230605"
 import { shortenAddress } from "@talisman/util/shortenAddress"
 import { ArrowDownIcon, ArrowUpIcon } from "@talismn/icons"
 import { classNames } from "@talismn/util"
-import { EvmMessageRiskAnalysis } from "@ui/domains/Ethereum/useEvmMessageRiskAnalysis"
-import { EvmTransactionRiskAnalysis } from "@ui/domains/Ethereum/useEvmTransactionRiskAnalysis"
+import { EvmRiskAnalysis } from "@ui/domains/Ethereum/riskAnalysis"
 import { BlowfishEvmChainInfo } from "extension-core"
 import { log } from "extension-shared"
 import { FC, ReactNode, useEffect, useMemo } from "react"
@@ -238,7 +237,7 @@ const StateChange: FC<{
 )
 
 export const RiskAnalysisStateChanges: FC<{
-  riskAnalysis: EvmTransactionRiskAnalysis | EvmMessageRiskAnalysis
+  riskAnalysis: EvmRiskAnalysis
 }> = ({ riskAnalysis }) => {
   const { t } = useTranslation()
 

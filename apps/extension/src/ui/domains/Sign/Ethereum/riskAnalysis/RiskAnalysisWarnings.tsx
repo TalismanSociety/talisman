@@ -4,7 +4,7 @@ import { classNames } from "@talismn/util"
 import { FC, useMemo } from "react"
 import { useTranslation } from "react-i18next"
 
-export type UIWarning = {
+type UIWarning = {
   message: string
   kind?: WarningInnerKindEnum
   severity: "WARNING" | "CRITICAL" | "INFO"

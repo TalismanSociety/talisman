@@ -3,7 +3,7 @@ import { log } from "@extension/shared"
 import { HexString } from "@polkadot/util/types"
 import { provideContext } from "@talisman/util/provideContext"
 import { api } from "@ui/api"
-import { useEvmMessageRiskAnalysis } from "@ui/domains/Ethereum/useEvmMessageRiskAnalysis"
+import { useEvmMessageRiskAnalysis } from "@ui/domains/Ethereum/riskAnalysis"
 import { useEvmNetwork } from "@ui/hooks/useEvmNetwork"
 import { useRequest } from "@ui/hooks/useRequest"
 import { useCallback, useMemo } from "react"
@@ -21,13 +21,13 @@ const useEthSignMessageRequestProvider = ({ id }: KnownSigningRequestIdOnly<"eth
     cancelSignFn: api.ethCancelSign,
   })
 
-  const riskAnalysis = useEvmMessageRiskAnalysis(
-    request?.ethChainId,
-    request?.method,
-    request?.request,
-    request?.account?.address,
-    request?.url
-  )
+  const riskAnalysis = useEvmMessageRiskAnalysis({
+    evmNetworkId: request?.ethChainId,
+    method: request?.method,
+    message: request?.request,
+    account: request?.account?.address,
+    url: request?.url,
+  })
 
   const approve = useCallback(() => {
     if (riskAnalysis.review.isRiskAknowledgementRequired && !riskAnalysis.review.isRiskAknowledged)

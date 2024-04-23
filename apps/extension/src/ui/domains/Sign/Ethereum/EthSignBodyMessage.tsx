@@ -14,7 +14,7 @@ import { useTranslation } from "react-i18next"
 
 import { SignAlertMessage } from "../SignAlertMessage"
 import { EthSignBodyMessageSIWE } from "./EthSignBodyMessageSIWE"
-import { RiskAnalysisPillButton } from "./risk-analysis/RiskAnalysisPillButton"
+import { RiskAnalysisPillButton } from "./riskAnalysis/RiskAnalysisPillButton"
 import { SignParamAccountButton, SignParamNetworkAddressButton } from "./shared"
 
 const useEthSignMessage = (request: EthSignRequest) => {

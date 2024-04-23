@@ -1,7 +1,6 @@
 import { AlertCircleIcon } from "@talismn/icons"
 import { classNames } from "@talismn/util"
-import { EvmMessageRiskAnalysis } from "@ui/domains/Ethereum/useEvmMessageRiskAnalysis"
-import { EvmTransactionRiskAnalysis } from "@ui/domains/Ethereum/useEvmTransactionRiskAnalysis"
+import { EvmRiskAnalysis } from "@ui/domains/Ethereum/riskAnalysis"
 import { FC, useMemo } from "react"
 import { useTranslation } from "react-i18next"
 
@@ -33,7 +32,7 @@ const getErrorText = (error: unknown) => {
 }
 
 export const RiskAnalysisError: FC<{
-  riskAnalysis: EvmMessageRiskAnalysis | EvmTransactionRiskAnalysis
+  riskAnalysis: EvmRiskAnalysis
 }> = ({ riskAnalysis }) => {
   const { t } = useTranslation()
 
