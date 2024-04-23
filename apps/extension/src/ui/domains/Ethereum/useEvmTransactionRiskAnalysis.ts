@@ -8,7 +8,7 @@ import { EvmNetworkId } from "@talismn/chaindata-provider"
 import { sleep } from "@talismn/util"
 import { useQuery } from "@tanstack/react-query"
 import { log } from "extension-shared"
-import { useCallback, useEffect, useMemo, useRef } from "react"
+import { useCallback, useEffect, useRef } from "react"
 import { TransactionRequest } from "viem"
 
 import { useEvmRiskAnalysisBase } from "./useEvmRiskAnalysisBase"
@@ -37,20 +37,19 @@ export const useEvmTransactionRiskAnalysis = (
     shouldValidate,
     origin,
     chainInfo,
+    isAvailable,
     isValidationRequested,
     setIsValidationRequested,
   } = useEvmRiskAnalysisBase(evmNetworkId, url, disableAutoRiskScan)
-
-  // blowfish doesn't support scans on all chains
-  const isAvailable = useMemo(() => !!chainInfo, [chainInfo])
 
   const {
     isLoading,
     data: result,
     error,
+    refetch,
   } = useQuery({
     queryKey: [
-      "useScanTransaction",
+      "useEvmTransactionRiskAnalysis",
       evmNetworkId,
       tx && serializeTransactionRequest(tx),
       shouldValidate,
@@ -83,6 +82,10 @@ export const useEvmTransactionRiskAnalysis = (
     },
     enabled: !!tx && !!evmNetworkId && shouldValidate,
     refetchInterval: false,
+    refetchOnMount: false,
+    refetchOnReconnect: false,
+    refetchOnWindowFocus: false,
+    refetchIntervalInBackground: false,
     retry: false,
   })
 
@@ -90,18 +93,47 @@ export const useEvmTransactionRiskAnalysis = (
 
   const launchScan = useCallback(() => {
     if (isAvailable) {
-      setIsValidationRequested(true)
+      if (result) review.drawer.open()
+      else if (isValidationRequested) refetch() // manual retry
+      else setIsValidationRequested(true) // first manual attempt, enables useQuery hook
     }
-  }, [isAvailable, setIsValidationRequested])
+  }, [isAvailable, isValidationRequested, refetch, result, review.drawer, setIsValidationRequested])
 
   const refAutoOpen = useRef(false)
   useEffect(() => {
     if (refAutoOpen.current || !isValidationRequested) return
-    if (result || error) {
+    if (result) {
       refAutoOpen.current = true
       review.drawer.open()
     }
   }, [error, isValidationRequested, result, review.drawer])
+
+  useEffect(() => {
+    // TODO remove
+    log.log("useEvmTransactionRiskAnalysis", {
+      type: "message",
+      isAvailable,
+      isValidating: isAvailable && shouldValidate && isLoading,
+      result,
+      error,
+      launchScan,
+      chainInfo,
+      review,
+      shouldPromptAutoRiskScan,
+      shouldValidate,
+      isLoading,
+    })
+  }, [
+    chainInfo,
+    error,
+    isAvailable,
+    isLoading,
+    launchScan,
+    result,
+    review,
+    shouldPromptAutoRiskScan,
+    shouldValidate,
+  ])
 
   return {
     type: "transaction",

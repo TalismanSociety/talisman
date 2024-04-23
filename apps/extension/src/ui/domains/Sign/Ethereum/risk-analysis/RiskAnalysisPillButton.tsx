@@ -6,11 +6,25 @@ import {
   ShieldUnknownIcon,
   ShieldZapIcon,
 } from "@talismn/icons"
+import { log } from "extension-shared"
+import { TFunction } from "i18next"
 import { FC, useCallback, useMemo } from "react"
 import { useTranslation } from "react-i18next"
 import { PillButton, Tooltip, TooltipContent, TooltipTrigger } from "talisman-ui"
 
 import { useRiskAnalysis } from "./context"
+
+const getErrorTooltip = (t: TFunction, error: Error) => {
+  log.error("Failed to analyse risks", { error })
+  switch (error.name) {
+    case "FetchError":
+      return t("Failed to connect to risk analysis service. ")
+    case "AbortError":
+      return t("Risk analysis request was aborted")
+    default:
+      return t("Failed to analyse risks: {{message}}", { message: error.message })
+  }
+}
 
 export const RiskAnalysisPillButton: FC = () => {
   const riskAnalysis = useRiskAnalysis()
@@ -47,6 +61,16 @@ export const RiskAnalysisPillButton: FC = () => {
       }
     }
 
+    if (riskAnalysis?.error) {
+      return {
+        icon: ShieldUnavailableIcon,
+        label: t("Failed to scan"),
+        className: "text-brand-orange",
+        disabled: false,
+        tooltip: getErrorTooltip(t, riskAnalysis.error as Error),
+      }
+    }
+
     if (riskAnalysis?.isAvailable)
       return {
         icon: ShieldUnknownIcon,
@@ -60,7 +84,7 @@ export const RiskAnalysisPillButton: FC = () => {
       label: t("Risk Analysis"),
       className: undefined,
       disabled: true,
-      tooltip: "Risk analysis is not available on this network",
+      tooltip: t("Risk analysis is not available on this network"),
     }
   }, [t, riskAnalysis])
 

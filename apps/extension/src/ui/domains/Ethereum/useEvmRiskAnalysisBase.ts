@@ -45,6 +45,7 @@ export const useEvmRiskAnalysisBase = (
     shouldValidate,
     origin,
     chainInfo,
+    isAvailable: !!chainInfo,
     isValidationRequested,
     setIsValidationRequested,
   }

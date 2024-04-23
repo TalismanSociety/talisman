@@ -1,5 +1,6 @@
 import { BlowfishEvmApiClient, createEvmClient } from "@blowfishxyz/api-client/v20230605"
 import { EvmNetworkId } from "@talismn/chaindata-provider"
+import { BLOWFISH_API_KEY, BLOWFISH_BASE_PATH } from "extension-shared"
 
 export type BlowfishEvmChainInfo = {
   chainFamily: BlowfishEvmApiClient["chainFamily"]
@@ -39,8 +40,8 @@ export const getBlowfishClient = (evmNetworkId: EvmNetworkId) => {
   if (!config) return null
 
   return createEvmClient({
-    basePath: process.env.BLOWFISH_BASE_PATH || "https://api.blowfish.xyz", // TODO fallback value should be set from config repo
-    apiKey: process.env.BLOWFISH_API_KEY || undefined,
+    basePath: BLOWFISH_BASE_PATH,
+    apiKey: BLOWFISH_API_KEY,
     ...config,
   })
 }

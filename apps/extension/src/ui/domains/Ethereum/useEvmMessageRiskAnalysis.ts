@@ -4,7 +4,7 @@ import { EvmNetworkId } from "@talismn/chaindata-provider"
 import { sleep } from "@talismn/util"
 import { useQuery } from "@tanstack/react-query"
 import { log } from "extension-shared"
-import { useCallback, useEffect, useMemo, useRef } from "react"
+import { useCallback, useEffect, useRef } from "react"
 
 import { useEvmRiskAnalysisBase } from "./useEvmRiskAnalysisBase"
 import { RisksReview, useRisksReview } from "./useRisksReview"
@@ -32,23 +32,6 @@ const getTypedDataPayload = (msg: string): EvmSignTypedDataData | null => {
   }
 }
 
-const isCompatiblePayload = (
-  method: EthSignMessageMethod | undefined,
-  message: string | undefined
-) => {
-  if (!method || !message) return false
-
-  switch (method) {
-    case "personal_sign":
-      return true
-    case "eth_signTypedData":
-    case "eth_signTypedData_v4":
-      return !!getTypedDataPayload(message)
-    default:
-      return false
-  }
-}
-
 export const useEvmMessageRiskAnalysis = (
   evmNetworkId: EvmNetworkId | undefined,
   method: EthSignMessageMethod | undefined,
@@ -61,22 +44,19 @@ export const useEvmMessageRiskAnalysis = (
     shouldValidate,
     origin,
     chainInfo,
+    isAvailable,
     isValidationRequested,
     setIsValidationRequested,
   } = useEvmRiskAnalysisBase(evmNetworkId, url)
-
-  const isAvailable = useMemo(
-    () => !!chainInfo && !!account && isCompatiblePayload(method, message),
-    [account, chainInfo, message, method]
-  )
 
   const {
     isLoading,
     data: result,
     error,
+    refetch,
   } = useQuery({
     queryKey: [
-      "useScanTransaction",
+      "useEvmMessageRiskAnalysis",
       evmNetworkId,
       method,
       message,
@@ -106,11 +86,15 @@ export const useEvmMessageRiskAnalysis = (
           return client.scanSignTypedData(payload, account, { origin })
         }
         default:
-          return null
+          throw new Error("Unsupported message type. Proceed with caution")
       }
     },
     enabled: !!method && !!message && !!account && !!evmNetworkId && shouldValidate,
     refetchInterval: false,
+    refetchOnMount: false,
+    refetchOnReconnect: false,
+    refetchOnWindowFocus: false,
+    refetchIntervalInBackground: false,
     retry: false,
   })
 
@@ -118,18 +102,47 @@ export const useEvmMessageRiskAnalysis = (
 
   const launchScan = useCallback(() => {
     if (isAvailable) {
-      setIsValidationRequested(true)
+      if (result) review.drawer.open()
+      else if (error) refetch() // manual retry
+      else setIsValidationRequested(true) // first manual attempt, enables useQuery hook
     }
-  }, [isAvailable, setIsValidationRequested])
+  }, [error, isAvailable, refetch, result, review.drawer, setIsValidationRequested])
 
   const refAutoOpen = useRef(false)
   useEffect(() => {
     if (refAutoOpen.current || !isValidationRequested) return
-    if (result || error) {
+    if (result) {
       refAutoOpen.current = true
       review.drawer.open()
     }
   }, [error, isValidationRequested, result, review.drawer])
+
+  useEffect(() => {
+    // TODO remove
+    log.log("useEvmMessageRiskAnalysis", {
+      type: "message",
+      isAvailable,
+      isValidating: isAvailable && shouldValidate && isLoading,
+      result,
+      error,
+      launchScan,
+      chainInfo,
+      review,
+      shouldPromptAutoRiskScan,
+      shouldValidate,
+      isLoading,
+    })
+  }, [
+    chainInfo,
+    error,
+    isAvailable,
+    isLoading,
+    launchScan,
+    result,
+    review,
+    shouldPromptAutoRiskScan,
+    shouldValidate,
+  ])
 
   return {
     type: "message",
