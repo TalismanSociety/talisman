@@ -77,11 +77,13 @@ type IBalanceBaseSubstrate = {
 type IBalanceSimpleValues = {
   /** For balance types with a simple value, this is the value of the balance (eg, evm native token balance) */
   value: Amount
+  values?: Array<AmountWithLabel<string>>
 }
 
 type IBalanceComplexValues = {
   /** For balance types with multple possible states, these are the values of the balance (eg, substrate native token balance) */
   values: Array<AmountWithLabel<string>>
+  value?: undefined
 }
 
 /** `IBalance` is a common interface which all balance types must implement. */
@@ -114,6 +116,9 @@ type BaseAmountWithLabel<TLabel extends string> = {
   amount: Amount
   meta?: unknown
 }
+
+export const getValueId = (amount: AmountWithLabel<string>) =>
+  [amount.label, amount.type, amount.source].join("::")
 
 /** A labelled locked amount of a balance */
 export type LockedAmount<TLabel extends string> = BaseAmountWithLabel<TLabel> & {

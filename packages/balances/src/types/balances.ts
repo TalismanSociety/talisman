@@ -308,7 +308,7 @@ const isBalanceEvm = (balance: BalanceJson): balance is BalanceJsonEvm => "evmNe
 export const getBalanceId = (balance: BalanceJson) => {
   const { source, address, tokenId } = balance
   const locationId = isBalanceEvm(balance) ? balance.evmNetworkId : balance.chainId
-  return [source, address, locationId, tokenId].filter(Boolean).join("-")
+  return [source, address, locationId, tokenId].filter(Boolean).join("::")
 }
 
 /**
@@ -447,7 +447,7 @@ export class Balance {
   /** The non-reserved balance of this token. Includes the frozen amount. Is included in the total. */
   get free() {
     // for simple balances
-    if ("value" in this.#storage) return this.#format(this.#storage.value)
+    if ("value" in this.#storage && this.#storage.value) return this.#format(this.#storage.value)
 
     // for complex balances
     const freeValues = this.getValue("free")
@@ -572,13 +572,14 @@ export class BalanceValueGetter {
   }
 
   get(valueType: BalanceStatusTypes) {
-    if ("values" in this.#storage)
+    if ("values" in this.#storage && this.#storage.values)
       return this.#storage.values.filter(({ type }) => type === valueType)
     return []
   }
 
   add(valueType: BalanceStatusTypes, amount: Omit<AmountWithLabel<string>, "type">) {
-    if ("values" in this.#storage) this.#storage.values.push({ type: valueType, ...amount })
+    if ("values" in this.#storage && this.#storage.values)
+      this.#storage.values.push({ type: valueType, ...amount })
   }
 }
 

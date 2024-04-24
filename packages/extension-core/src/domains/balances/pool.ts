@@ -31,7 +31,7 @@ import { debounceTime, map } from "rxjs/operators"
 import Browser from "webextension-polyfill"
 
 import { unsubscribe } from "../../handlers/subscriptions"
-import { balanceModules } from "../../rpcs/balance-modules"
+import { balanceModules, getBalanceModules } from "../../rpcs/balance-modules"
 import { chaindataProvider } from "../../rpcs/chaindata"
 import { Addresses } from "../../types/base"
 import { awaitKeyringLoaded } from "../../util/awaitKeyringLoaded"
@@ -62,6 +62,9 @@ type SubscriptionsState = "Closed" | "Closing" | "Open"
 // debounce time before restarting subscriptions if one of the inputs change
 const DEBOUNCE_TIMEOUT = 3_000
 
+// balance modules that have been upgraed to the new SubscriptionResultWithStatus pattern
+const NEW_BALANCE_MODULES = ["substrate-native", "evm-erc20"]
+
 // TODO: Fix this class up
 //       1. It shouldn't need a whole extra copy of addresses+chains+networks separate to the db
 //       2. It shouldn't subscribe to all this data when subscriptions aren't even open
@@ -77,6 +80,10 @@ export class BalancePool {
   #subscribers: Subject<void> = new Subject()
   #pool: BehaviorSubject<Record<string, BalanceJson>> = new BehaviorSubject({})
   #initialising: Set<string> = new Set()
+
+  // we initialise this property with the default balance modules which do not know about initial balances
+  // in the constructor, we will replace it with the balance modules which are hydrated with initial balances
+  #balanceModules: ReturnType<typeof getBalanceModules> = balanceModules
 
   /**
    * A map of accounts to query balances for, in the format:
@@ -117,7 +124,9 @@ export class BalancePool {
 
     // Hydrate pool from indexedDB
     retrieveData().then((balances) => {
-      this.setPool(balances.map((b) => ({ ...b, status: "cache" } as BalanceJson)))
+      const initialBalances = balances.map((b) => ({ ...b, status: "cache" } as BalanceJson))
+      this.setPool(initialBalances)
+      this.#balanceModules = getBalanceModules(initialBalances)
     })
 
     // Persist pool to indexedDB every 1 minute
@@ -286,7 +295,7 @@ export class BalancePool {
     }
 
     const tokenType = token.type
-    const balanceModule = balanceModules.find(({ type }) => type === token.type)
+    const balanceModule = this.#balanceModules.find(({ type }) => type === token.type)
     if (!balanceModule) {
       const error = new Error(`Failed to fetch balance: no module with type ${tokenType}`)
       Sentry.captureException(error)
@@ -443,7 +452,7 @@ export class BalancePool {
       if (!tokenIds.has(balance.tokenId)) return true
 
       // remove balance if module doesn't exist
-      if (!balanceModules.find((module) => module.type === balance.source)) return true
+      if (!this.#balanceModules.find((module) => module.type === balance.source)) return true
 
       // keep balance
       return false
@@ -593,11 +602,11 @@ export class BalancePool {
       Object.values(existingBalances).map((b) => `${b.tokenId}:${b.address}`)
     )
 
-    for (const balanceModule of balanceModules) {
+    for (const balanceModule of this.#balanceModules) {
       // erc20 balance module returns it's initialising status in the subscribeBalances callback
       // so we don't need to check for it here
       // Todo: upgrade all balance modules to this pattern and then remove this logic
-      if (balanceModule.type === "evm-erc20") continue
+      if (NEW_BALANCE_MODULES.includes(balanceModule.type)) continue
 
       const addressesByToken = addressesByTokenByModule[balanceModule.type] ?? {}
 
@@ -629,7 +638,7 @@ export class BalancePool {
       })
     }, 30_000)
 
-    const closeSubscriptionCallbacks = balanceModules.map((balanceModule) =>
+    const closeSubscriptionCallbacks = this.#balanceModules.map((balanceModule) =>
       balanceModule.subscribeBalances(
         addressesByTokenByModule[balanceModule.type] ?? {},
         (error, result) => {

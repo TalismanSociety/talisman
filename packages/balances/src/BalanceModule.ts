@@ -29,7 +29,7 @@ export type ChainConnectors = { substrate?: ChainConnector; evm?: ChainConnector
 export type Hydrate = {
   chainConnectors: ChainConnectors
   chaindataProvider: ChaindataProvider
-  initialBalances?: BalanceJson
+  initialBalances?: BalanceJson[]
 }
 
 export type NewBalanceModule<

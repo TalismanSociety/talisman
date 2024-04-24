@@ -1,4 +1,4 @@
-import { defaultBalanceModules } from "@talismn/balances"
+import { BalanceJson, defaultBalanceModules } from "@talismn/balances"
 
 import { chainConnector } from "./chain-connector"
 import { chainConnectorEvm } from "./chain-connector-evm"
@@ -8,3 +8,6 @@ export const chainConnectors = { substrate: chainConnector, evm: chainConnectorE
 export const balanceModules = defaultBalanceModules.map((mod) =>
   mod({ chainConnectors, chaindataProvider })
 )
+
+export const getBalanceModules = (initialBalances?: BalanceJson[]) =>
+  defaultBalanceModules.map((mod) => mod({ chainConnectors, chaindataProvider, initialBalances }))

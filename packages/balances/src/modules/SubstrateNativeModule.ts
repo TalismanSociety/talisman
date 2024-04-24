@@ -3,6 +3,7 @@ import { TypeRegistry, createType, i128 } from "@polkadot/types"
 import { ExtDef } from "@polkadot/types/extrinsic/signedExtensions/types"
 import { assert, u8aToHex, u8aToString } from "@polkadot/util"
 import { defineMethod } from "@substrate/txwrapper-core"
+import PromisePool from "@supercharge/promise-pool"
 import { ChainConnector } from "@talismn/chain-connector"
 import {
   BalancesConfigTokenParams,
@@ -20,9 +21,31 @@ import {
   transformMetadataV14,
 } from "@talismn/scale"
 import * as $ from "@talismn/subshape-fork"
-import { Deferred, blake2Concat, decodeAnyAddress, isEthereumAddress } from "@talismn/util"
+import {
+  Deferred,
+  blake2Concat,
+  decodeAnyAddress,
+  firstThenDebounce,
+  isEthereumAddress,
+} from "@talismn/util"
 import isEqual from "lodash/isEqual"
-import { combineLatest, map, scan, share, switchAll } from "rxjs"
+import {
+  BehaviorSubject,
+  Observable,
+  bufferCount,
+  combineLatest,
+  from,
+  interval,
+  map,
+  mergeMap,
+  pairwise,
+  scan,
+  share,
+  startWith,
+  switchAll,
+  switchMap,
+  takeUntil,
+} from "rxjs"
 
 import { DefaultBalanceModule, NewBalanceModule, NewTransferParamsType } from "../BalanceModule"
 import log from "../log"
@@ -33,6 +56,8 @@ import {
   Balances,
   NewBalanceType,
   SubscriptionCallback,
+  getBalanceId,
+  getValueId,
 } from "../types"
 import {
   GetOrCreateTypeRegistry,
@@ -93,11 +118,25 @@ const AccountInfoOverrides: { [key: ChainId]: string } = {
 export const subNativeTokenId = (chainId: ChainId) =>
   `${chainId}-substrate-native`.toLowerCase().replace(/ /g, "-")
 
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-const getChainIdFromTokenId = (tokenId: string) => {
-  const match = /^([\d\w-]+)-substrate-native/.exec(tokenId)
-  if (!match?.[1]) throw new Error(`Can't detect chainId for token ${tokenId}`)
-  return match?.[1]
+/**
+ * Function to merge two 'sub sources' of the same balance together, or
+ * two instances of the same balance with different values.
+ * @param balance1 SubNativeBalance
+ * @param balance2 SubNativeBalance
+ * @returns SubNativeBalance
+ */
+const mergeValues = (balance1: SubNativeBalance, balance2: SubNativeBalance) => {
+  assert(
+    getBalanceId(balance1) === getBalanceId(balance2),
+    "Balances with different IDs should not be merged"
+  )
+  const valuesMap = Object.fromEntries(balance1.values.map((value) => [getValueId(value), value]))
+  for (const value of balance2.values) {
+    // whether it exists or not, we can update or create it like this
+    valuesMap[getValueId(value)] = value
+  }
+  const merged = { ...balance1, values: Object.values(valuesMap) }
+  return merged
 }
 
 export type SubNativeToken = NewTokenType<
@@ -160,6 +199,14 @@ export type SubNativeTransferParams = NewTransferParamsType<{
   userExtensions?: ExtDef
 }>
 
+const subNativeBalances = new BehaviorSubject<Record<string, SubNativeBalance>>({})
+const positiveBalanceTokens = subNativeBalances.pipe(
+  map((balances) => Array.from(new Set(Object.values(balances).map((b) => b.tokenId)))),
+  share()
+)
+
+const POLLING_WINDOW_SIZE = 20
+
 export const SubNativeModule: NewBalanceModule<
   ModuleType,
   SubNativeToken | CustomSubNativeToken,
@@ -167,21 +214,18 @@ export const SubNativeModule: NewBalanceModule<
   SubNativeModuleConfig,
   SubNativeTransferParams
 > = (hydrate) => {
-  // todo wip
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const { chainConnectors, chaindataProvider, initialBalances } = hydrate
   const chainConnector = chainConnectors.substrate
   assert(chainConnector, "This module requires a substrate chain connector")
+  const relevantInitialBalances = Object.fromEntries(
+    initialBalances
+      ?.filter((b): b is SubNativeBalance => b.source === "substrate-native")
+      .map((b) => [getBalanceId(b), b]) ?? []
+  )
+
+  subNativeBalances.next(relevantInitialBalances)
 
   const { getOrCreateTypeRegistry } = createTypeRegistryCache()
-
-  // todo wip
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const getTokens = async () => {
-    return chaindataProvider.tokensByIdForType("substrate-native") as Promise<
-      Record<string, SubNativeToken | CustomSubNativeToken>
-    >
-  }
 
   return {
     ...DefaultBalanceModule("substrate-native"),
@@ -329,16 +373,25 @@ export const SubNativeModule: NewBalanceModule<
 
     async subscribeBalances(addressesByToken, callback) {
       assert(chainConnectors.substrate, "This module requires a substrate chain connector")
-      // todo wip
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars
-      const initialisingBalances: Record<"base" | "nomPool" | "crowdloan", Set<string>> = {
-        base: new Set<string>(),
-        nomPool: new Set<string>(),
-        crowdloan: new Set<string>(),
-      }
-      // todo wip
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars
-      const positiveBalanceNetworks = new Set<string>()
+
+      // an initialised balance is one where we have received a response for any type of 'subsource',
+      // until then they are initialising. We only need to maintain one map of tokens to addresses for this
+      const initialisingBalances = Object.entries(addressesByToken).reduce<
+        Map<string, Set<string>>
+      >((acc, [tokenId, addresses]) => {
+        acc.set(tokenId, new Set(addresses))
+        return acc
+      }, new Map())
+
+      const _callbackSub = subNativeBalances.pipe(firstThenDebounce(1000)).subscribe({
+        next: (balances) => {
+          callback(null, {
+            status: initialisingBalances.size > 0 ? "initialising" : "live",
+            data: Object.values(balances),
+          })
+        },
+        error: (error) => callback(error),
+      })
 
       // TODO: Create a more elegant system which can handle the following use cases
       //
@@ -354,51 +407,151 @@ export const SubNativeModule: NewBalanceModule<
 
       const unsubDeferred = Deferred()
       // we return this to the caller so that they can let us know when they're no longer interested in this subscription
-      const callerUnsubscribe = () => unsubDeferred.reject(new Error(`Caller unsubscribed`))
+      const callerUnsubscribe = () => {
+        _callbackSub.unsubscribe()
+        return unsubDeferred.reject(new Error(`Caller unsubscribed`))
+      }
       // we queue up our work to clean up our subscription when this promise rejects
       const callerUnsubscribed = unsubDeferred.promise
 
-      // wrapping the callback is to allow us to manage initialising and positive balances state for each
+      // The update handler is to allow us to merge balances with the same id, and manage initialising and positive balances state for each
       // balance type and network
+      const handleUpdate: SubscriptionCallback<SubNativeBalance[]> = (error, result) => {
+        if (result) {
+          const currentBalances = subNativeBalances.getValue()
+          const mergedBalances: Record<string, SubNativeBalance> = {}
+          result.forEach((b) => {
+            const bId = getBalanceId(b)
+            const existing = currentBalances[bId]
+            // merge the values from the new balance into the existing balance, if there is one
+            mergedBalances[bId] = existing ? mergeValues(existing, b) : b
 
-      // todo wip
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars
-      const wrappedCallback =
-        (type: "nomPool" | "crowdloan" | "base"): SubscriptionCallback<SubNativeBalance[]> =>
-        (error, result) => {
-          if (result) {
-            // result.forEach((b) => b.id)
-            callback(null, new Balances(result))
-          }
-          if (error) return callback(error)
+            // update initialisingBalances to remove balances which have been updated
+            const intialisingForToken = initialisingBalances.get(b.tokenId)
+            if (intialisingForToken) intialisingForToken.delete(b.address)
+            if (intialisingForToken && intialisingForToken.size === 0)
+              initialisingBalances.delete(b.tokenId)
+          })
+
+          subNativeBalances.next({
+            ...currentBalances,
+            ...mergedBalances,
+          })
         }
+        if (error) {
+          if (error instanceof SubNativeBalanceError) {
+            initialisingBalances.delete(error.tokenId)
+          }
+          return callback(error)
+        }
+      }
 
-      subscribeNompoolStaking(
-        chaindataProvider,
-        chainConnectors.substrate,
-        getOrCreateTypeRegistry,
-        addressesByToken,
-        wrappedCallback("nomPool"),
-        callerUnsubscribed
-      )
-      subscribeCrowdloans(
-        chaindataProvider,
-        chainConnectors.substrate,
-        getOrCreateTypeRegistry,
-        addressesByToken,
-        wrappedCallback("crowdloan"),
-        callerUnsubscribed
-      )
-      subscribeBase(
-        chaindataProvider,
-        chainConnectors.substrate,
-        getOrCreateTypeRegistry,
-        addressesByToken,
-        wrappedCallback("base"),
-        callerUnsubscribed
-      )
+      // subscribe to addresses and tokens for which we have a known positive balance
+      const positiveSub = positiveBalanceTokens
+        .pipe(
+          firstThenDebounce(1000),
+          map((tokenIds) =>
+            tokenIds.reduce((acc, tokenId) => {
+              acc[tokenId] = addressesByToken[tokenId]
+              return acc
+            }, {} as AddressesByToken<SubNativeToken>)
+          ),
+          startWith({}),
+          pairwise()
+        )
+        .pipe(
+          switchMap(([previousAddressesByToken, newAddressesByToken]) => {
+            return new Observable((subscriber) => {
+              if (!chainConnectors.substrate) return
+              if (isEqual(previousAddressesByToken, newAddressesByToken)) return
 
-      return callerUnsubscribe
+              const unsubNompoolStaking = subscribeNompoolStaking(
+                chaindataProvider,
+                chainConnectors.substrate,
+                getOrCreateTypeRegistry,
+                newAddressesByToken,
+                handleUpdate
+              )
+              const unsubCrowdloans = subscribeCrowdloans(
+                chaindataProvider,
+                chainConnectors.substrate,
+                getOrCreateTypeRegistry,
+                newAddressesByToken,
+                handleUpdate
+              )
+              const unsubBase = subscribeBase(
+                chaindataProvider,
+                chainConnectors.substrate,
+                getOrCreateTypeRegistry,
+                newAddressesByToken,
+                handleUpdate
+              )
+
+              subscriber.add(async () => (await unsubNompoolStaking)())
+              subscriber.add(async () => (await unsubCrowdloans)())
+              subscriber.add(async () => (await unsubBase)())
+            })
+          })
+        )
+        .subscribe()
+
+      // for chains where we don't have a known positive balance, poll rather than subscribe
+      const poll = async (addressesByToken: AddressesByToken<SubNativeToken> = {}) => {
+        try {
+          const balances = await this.fetchBalances(addressesByToken)
+          handleUpdate(null, Object.values(balances.toJSON()) as SubNativeBalance[])
+        } catch (error) {
+          Object.keys(addressesByToken).forEach((tokenId) => {
+            const wrappedError = new SubNativeBalanceError(tokenId, (error as Error).message)
+            handleUpdate(wrappedError)
+          })
+        }
+      }
+      // do one poll to get things started
+      const currentBalances = subNativeBalances.getValue()
+      const currentTokens = Object.values(currentBalances).map((b) => b.tokenId)
+      const nonCurrentTokens = Object.keys(addressesByToken).filter(
+        (tokenId) => !currentTokens.includes(tokenId)
+      )
+      // break nonCurrentTokens into chunks of POLLING_WINDOW_SIZE
+      await PromisePool.withConcurrency(POLLING_WINDOW_SIZE)
+        .for(nonCurrentTokens)
+        .process(
+          async (nonCurrentTokenId) =>
+            await poll({ [nonCurrentTokenId]: addressesByToken[nonCurrentTokenId] })
+        )
+
+      // now poll every 30s on chains for which we do not have a known positive balance
+      // we chunk this observable into batches of positive token ids, to prevent eating all the websocket connections
+      const pollingSub = interval(30_000) // emit values every 30 seconds
+        .pipe(
+          takeUntil(callerUnsubscribed),
+          switchMap(() =>
+            positiveBalanceTokens.pipe(
+              map((positiveTokenIds) =>
+                Object.keys(addressesByToken).filter(
+                  (tokenId) => !positiveTokenIds.includes(tokenId)
+                )
+              ),
+              mergeMap((tokenIds) => from(tokenIds)), // Emit each tokenId individually
+              bufferCount(POLLING_WINDOW_SIZE) // Chunk the emitted individual tokenIds
+            )
+          ),
+          mergeMap((tokenChunk) => {
+            // tokenChunk is a chunk of tokenIds with size POLLING_WINDOW_SIZE
+            const pollingTokenAddresses = Object.fromEntries(
+              tokenChunk.map((tokenId) => [tokenId, addressesByToken[tokenId]])
+            )
+            return from(poll(pollingTokenAddresses)) // Handle the poll promise with from
+          })
+        )
+        .subscribe()
+
+      return () => {
+        callerUnsubscribe()
+        positiveSub.unsubscribe()
+        pollingSub.unsubscribe()
+      }
     },
 
     async fetchBalances(addressesByToken) {
@@ -787,8 +940,7 @@ async function subscribeNompoolStaking(
   chainConnector: ChainConnector,
   getOrCreateTypeRegistry: GetOrCreateTypeRegistry,
   addressesByToken: AddressesByToken<SubNativeToken>,
-  callback: SubscriptionCallback<SubNativeBalance[]>,
-  callerUnsubscribed: Promise<unknown>
+  callback: SubscriptionCallback<SubNativeBalance[]>
 ) {
   const chains = await chaindataProvider.chainsById()
   const tokens = await chaindataProvider.tokensById()
@@ -838,6 +990,7 @@ async function subscribeNompoolStaking(
     },
   })
 
+  const resultUnsubscribes: Array<() => void> = []
   for (const [tokenId, addresses] of Object.entries(addressesByNomPoolToken)) {
     const token = tokens[tokenId]
     if (!token) {
@@ -1155,8 +1308,9 @@ async function subscribeNompoolStaking(
       error: (error) => callback(error),
     })
 
-    callerUnsubscribed.catch(() => subscription.unsubscribe()).catch((error) => log.warn(error))
+    resultUnsubscribes.push(() => subscription.unsubscribe())
   }
+  return () => resultUnsubscribes.forEach((unsub) => unsub())
 }
 
 async function subscribeCrowdloans(
@@ -1164,8 +1318,7 @@ async function subscribeCrowdloans(
   chainConnector: ChainConnector,
   getOrCreateTypeRegistry: GetOrCreateTypeRegistry,
   addressesByToken: AddressesByToken<SubNativeToken | CustomSubNativeToken>,
-  callback: SubscriptionCallback<SubNativeBalance[]>,
-  callerUnsubscribed: Promise<unknown>
+  callback: SubscriptionCallback<SubNativeBalance[]>
 ) {
   const chains = await chaindataProvider.chainsById()
   const tokens = await chaindataProvider.tokensById()
@@ -1211,6 +1364,7 @@ async function subscribeCrowdloans(
     decoders: { parachainsDecoder: ["paras", "parachains"], fundsDecoder: ["crowdloan", "funds"] },
   })
 
+  const tokenSubscriptions: Array<() => void> = []
   for (const [tokenId, addresses] of Object.entries(addressesByCrowdloanToken)) {
     const token = tokens[tokenId]
     if (!token) {
@@ -1461,7 +1615,23 @@ async function subscribeCrowdloans(
       error: (error) => callback(error),
     })
 
-    callerUnsubscribed.catch(() => subscription.unsubscribe()).catch((error) => log.warn(error))
+    tokenSubscriptions.push(() => subscription.unsubscribe())
+  }
+
+  return () => tokenSubscriptions.forEach((unsub) => unsub())
+}
+
+class SubNativeBalanceError extends Error {
+  #tokenId: string
+
+  constructor(tokenId: string, message: string) {
+    super(message)
+    this.name = "SubNativeBalanceError"
+    this.#tokenId = tokenId
+  }
+
+  get tokenId() {
+    return this.#tokenId
   }
 }
 
@@ -1470,8 +1640,7 @@ async function subscribeBase(
   chainConnector: ChainConnector,
   getOrCreateTypeRegistry: GetOrCreateTypeRegistry,
   addressesByToken: AddressesByToken<SubNativeToken>,
-  callback: SubscriptionCallback<SubNativeBalance[]>,
-  callerUnsubscribed: Promise<unknown>
+  callback: SubscriptionCallback<SubNativeBalance[]>
 ) {
   const queries = await buildQueries(chaindataProvider, getOrCreateTypeRegistry, addressesByToken)
   const unsubscribe = await new RpcStateQueryHelper(chainConnector, queries).subscribe(
@@ -1481,5 +1650,5 @@ async function subscribeBase(
     }
   )
 
-  callerUnsubscribed.catch(unsubscribe).catch((error) => log.warn(error))
+  return unsubscribe
 }
