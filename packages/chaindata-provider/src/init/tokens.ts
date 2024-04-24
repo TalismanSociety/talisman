@@ -684,7 +684,6 @@ export const tokens = [
     chain: {
       id: "amplitude",
     },
-    coingeckoId: "usdc",
     logo: "https://raw.githubusercontent.com/TalismanSociety/chaindata/main/assets/tokens/unknown.svg",
   },
   {
@@ -716,6 +715,19 @@ export const tokens = [
       id: "amplitude",
     },
     coingeckoId: "stellar",
+  },
+  {
+    id: "analog-testnet-substrate-native",
+    type: "substrate-native",
+    isTestnet: true,
+    isDefault: true,
+    symbol: "TANLOG",
+    decimals: 12,
+    logo: "https://raw.githubusercontent.com/TalismanSociety/chaindata/main/assets/tokens/unknown.svg",
+    existentialDeposit: "500",
+    chain: {
+      id: "analog-testnet",
+    },
   },
   {
     id: "astar-substrate-assets-18446744073709551616-aca",
@@ -1023,6 +1035,19 @@ export const tokens = [
     existentialDeposit: "10000000000000",
     chain: {
       id: "avail-goldberg-testnet",
+    },
+  },
+  {
+    id: "avail-turing-testnet-substrate-native",
+    type: "substrate-native",
+    isTestnet: true,
+    isDefault: true,
+    symbol: "AVAIL",
+    decimals: 18,
+    logo: "https://raw.githubusercontent.com/TalismanSociety/chaindata/main/assets/tokens/unknown.svg",
+    existentialDeposit: "1000000000000",
+    chain: {
+      id: "avail-turing-testnet",
     },
   },
   {
@@ -5373,19 +5398,6 @@ export const tokens = [
     },
   },
   {
-    id: "mangata-substrate-native",
-    type: "substrate-native",
-    isTestnet: false,
-    isDefault: true,
-    symbol: "MGX",
-    decimals: 18,
-    logo: "https://raw.githubusercontent.com/TalismanSociety/chaindata/main/assets/chains/mangata.svg",
-    existentialDeposit: "0",
-    chain: {
-      id: "mangata",
-    },
-  },
-  {
     id: "mangata-substrate-tokens-mgx",
     type: "substrate-tokens",
     isTestnet: false,
@@ -5734,7 +5746,6 @@ export const tokens = [
     chain: {
       id: "pendulum",
     },
-    coingeckoId: "usdc",
     logo: "https://raw.githubusercontent.com/TalismanSociety/chaindata/main/assets/tokens/unknown.svg",
   },
   {
@@ -6720,19 +6731,6 @@ export const tokens = [
     },
   },
   {
-    id: "rococo-muse-testnet-substrate-native",
-    type: "substrate-native",
-    isTestnet: true,
-    isDefault: true,
-    symbol: "MUSE",
-    decimals: 18,
-    logo: "https://raw.githubusercontent.com/TalismanSociety/chaindata/main/assets/tokens/unknown.svg",
-    existentialDeposit: "1000000000000000",
-    chain: {
-      id: "rococo-muse-testnet",
-    },
-  },
-  {
     id: "rococo-neuro-web-testnet-substrate-native",
     type: "substrate-native",
     isTestnet: true,
@@ -7113,7 +7111,7 @@ export const tokens = [
     chain: {
       id: "tangle",
     },
-    coingeckoId: "tangle",
+    coingeckoId: "tangle-network",
   },
   {
     id: "tangle-testnet-substrate-native",

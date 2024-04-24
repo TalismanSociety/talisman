@@ -149,7 +149,7 @@ const useBlockFeeData = (
       return {
         estimatedGas,
         gasPrice,
-        baseFeePerGas: feeHistoryAnalysis?.nextBaseFee ?? baseFeePerGas,
+        baseFeePerGas: feeHistoryAnalysis?.nextBaseFee || baseFeePerGas, // feeHistoryAnalysis?.nextBaseFee can be 0 which is impossible (ex: opBNB chain)
         blockGasLimit,
         networkUsage,
         feeHistoryAnalysis,
