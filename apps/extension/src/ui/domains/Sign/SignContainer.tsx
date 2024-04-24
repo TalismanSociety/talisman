@@ -33,18 +33,12 @@ export const SignContainer: FC<SignContainerProps> = ({
       <div className="flex w-full flex-col items-center gap-4 py-8 [&>div]:max-w-full [&>div]:overflow-x-hidden">
         {children}
       </div>
-      <div className="mb-8 mt-12 grow text-center">
-        {networkType === "ethereum" && (
-          <div className="grid w-full grid-cols-2 items-center justify-center gap-4">
-            <div className="text-right">
-              <ViewDetailsEth />
-            </div>
-            <div className="text-left">
-              <RiskAnalysisPillButton />
-            </div>
-          </div>
-        )}
+      <div className="flex w-full justify-center">
+        {networkType === "ethereum" && <ViewDetailsEth />}
         {networkType === "substrate" && <ViewDetailsSub />}
+      </div>
+      <div className="mb-8 mt-12 grow text-center">
+        {networkType === "ethereum" && <RiskAnalysisPillButton />}
       </div>
       {alert && alertContainer && createPortal(alert, alertContainer)}
     </FadeIn>
