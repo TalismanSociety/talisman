@@ -157,8 +157,15 @@ const config = (env) => ({
       "process.env.BLOWFISH_BASE_PATH": JSON.stringify(
         env.build === undefined ? process.env.BLOWFISH_BASE_PATH || "" : ""
       ),
+      // prod build doesn't need an api key
+      // devs need one that should not change often
+      // canary/ci/qa needs one that can be rotated easily and without impacting developers
       "process.env.BLOWFISH_API_KEY": JSON.stringify(
-        env.build === undefined ? process.env.BLOWFISH_API_KEY || "" : ""
+        env.build === undefined
+          ? process.env.BLOWFISH_API_KEY || ""
+          : ["canary", "ci", "qa"].includes(env.build)
+          ? process.env.BLOWFISH_QA_API_KEY || ""
+          : ""
       ),
 
       // computed values
