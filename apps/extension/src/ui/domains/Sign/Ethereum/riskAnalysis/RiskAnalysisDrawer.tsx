@@ -15,11 +15,6 @@ const RiskAnalysisDrawerContent: FC = () => {
 
   if (!riskAnalysis) return null
 
-  // if (!riskAnalysis?.isAvailable) return null
-  // if (riskAnalysis.isValidating) return <div>Validating...</div>
-  // if (!riskAnalysis.result) return <div>Result not available</div>
-  // if (!riskAnalysis.chainInfo) return <div>Chain information not available</div>
-
   return (
     <div className="bg-grey-850 flex max-h-[60rem] w-full flex-col gap-12 rounded-t-xl p-12">
       <div className="scrollable scrollable-700  flex-grow overflow-y-auto pr-4 text-xs  leading-[2rem]">

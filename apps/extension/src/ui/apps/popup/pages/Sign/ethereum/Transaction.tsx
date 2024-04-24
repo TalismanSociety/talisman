@@ -18,6 +18,7 @@ import { usePublicClient } from "@ui/domains/Ethereum/usePublicClient"
 import { EthSignBody } from "@ui/domains/Sign/Ethereum/EthSignBody"
 import { RiskAnalysisDrawer, RiskAnalysisProvider } from "@ui/domains/Sign/Ethereum/riskAnalysis"
 import { SignAlertMessage } from "@ui/domains/Sign/SignAlertMessage"
+import { SignApproveButton } from "@ui/domains/Sign/SignApproveButton"
 import { SignHardwareEthereum } from "@ui/domains/Sign/SignHardwareEthereum"
 import { useEthSignTransactionRequest } from "@ui/domains/Sign/SignRequestContext"
 import { SignViewBodyShimmer } from "@ui/domains/Sign/Views/SignViewBodyShimmer"
@@ -228,14 +229,14 @@ export const EthSignTransactionRequest = () => {
                   <Button disabled={processing} onClick={reject}>
                     {t("Cancel")}
                   </Button>
-                  <Button
+                  <SignApproveButton
                     disabled={!transaction || isLoading || !isValid}
                     processing={processing}
                     primary
                     onClick={approve}
                   >
                     {t("Approve")}
-                  </Button>
+                  </SignApproveButton>
                 </div>
               )}
             </PopupFooter>

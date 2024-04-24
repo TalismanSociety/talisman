@@ -8,6 +8,7 @@ import {
 } from "@ui/apps/popup/Layout/PopupLayout"
 import { EthSignBodyMessage } from "@ui/domains/Sign/Ethereum/EthSignBodyMessage"
 import { RiskAnalysisDrawer, RiskAnalysisProvider } from "@ui/domains/Sign/Ethereum/riskAnalysis"
+import { SignApproveButton } from "@ui/domains/Sign/SignApproveButton"
 import { SignHardwareEthereum } from "@ui/domains/Sign/SignHardwareEthereum"
 import { useEthSignMessageRequest } from "@ui/domains/Sign/SignRequestContext"
 import { Suspense, useEffect, useMemo } from "react"
@@ -74,9 +75,14 @@ export const EthSignMessageRequest = () => {
                     <Button disabled={processing} onClick={reject}>
                       {t("Cancel")}
                     </Button>
-                    <Button disabled={!isValid} processing={processing} primary onClick={approve}>
+                    <SignApproveButton
+                      disabled={!isValid}
+                      processing={processing}
+                      primary
+                      onClick={approve}
+                    >
                       {t("Approve")}
-                    </Button>
+                    </SignApproveButton>
                   </div>
                 )}
               </>

@@ -1,6 +1,5 @@
 import { getBlowfishClient, serializeTransactionRequest } from "@extension/core"
 import { EvmNetworkId } from "@talismn/chaindata-provider"
-import { sleep } from "@talismn/util"
 import { log } from "extension-shared"
 import { TransactionRequest } from "viem"
 
@@ -41,8 +40,8 @@ export const useEvmTransactionRiskAnalysis = ({
       // TODO remove
       log.debug("querying blowfish", { evmNetworkId, tx, origin })
 
-      // TODO remove
-      await sleep(2000)
+      // // TODO remove
+      // await sleep(2000)
 
       return client.scanTransactions(
         [
