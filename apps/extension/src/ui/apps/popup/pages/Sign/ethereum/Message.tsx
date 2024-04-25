@@ -7,7 +7,7 @@ import {
   PopupLayout,
 } from "@ui/apps/popup/Layout/PopupLayout"
 import { EthSignBodyMessage } from "@ui/domains/Sign/Ethereum/EthSignBodyMessage"
-import { RiskAnalysisDrawer, RiskAnalysisProvider } from "@ui/domains/Sign/Ethereum/riskAnalysis"
+import { RiskAnalysisDrawers, RiskAnalysisProvider } from "@ui/domains/Sign/Ethereum/riskAnalysis"
 import { SignApproveButton } from "@ui/domains/Sign/SignApproveButton"
 import { SignHardwareEthereum } from "@ui/domains/Sign/SignHardwareEthereum"
 import { useEthSignMessageRequest } from "@ui/domains/Sign/SignRequestContext"
@@ -89,7 +89,7 @@ export const EthSignMessageRequest = () => {
             )}
           </Suspense>
         </PopupFooter>
-        <RiskAnalysisDrawer />
+        <RiskAnalysisDrawers />
       </PopupLayout>
     </RiskAnalysisProvider>
   )

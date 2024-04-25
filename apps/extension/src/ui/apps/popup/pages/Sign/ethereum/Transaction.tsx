@@ -16,7 +16,7 @@ import { EthFeeSelect } from "@ui/domains/Ethereum/GasSettings/EthFeeSelect"
 import { useEthBalance } from "@ui/domains/Ethereum/useEthBalance"
 import { usePublicClient } from "@ui/domains/Ethereum/usePublicClient"
 import { EthSignBody } from "@ui/domains/Sign/Ethereum/EthSignBody"
-import { RiskAnalysisDrawer, RiskAnalysisProvider } from "@ui/domains/Sign/Ethereum/riskAnalysis"
+import { RiskAnalysisDrawers, RiskAnalysisProvider } from "@ui/domains/Sign/Ethereum/riskAnalysis"
 import { SignAlertMessage } from "@ui/domains/Sign/SignAlertMessage"
 import { SignApproveButton } from "@ui/domains/Sign/SignApproveButton"
 import { SignHardwareEthereum } from "@ui/domains/Sign/SignHardwareEthereum"
@@ -242,7 +242,7 @@ export const EthSignTransactionRequest = () => {
             </PopupFooter>
           </>
         )}
-        <RiskAnalysisDrawer />
+        <RiskAnalysisDrawers />
       </PopupLayout>
     </RiskAnalysisProvider>
   )

@@ -1,7 +1,9 @@
+import { ShieldNotOkIcon } from "@talismn/icons"
+import { EvmRiskAnalysis } from "@ui/domains/Ethereum/riskAnalysis"
 import { useSetting } from "@ui/hooks/useSettings"
-import { FC, useCallback } from "react"
+import { FC, useCallback, useEffect } from "react"
 import { useTranslation } from "react-i18next"
-import { Button, Drawer } from "talisman-ui"
+import { Button, Drawer, useOpenClose } from "talisman-ui"
 
 import { useRiskAnalysis } from "./context"
 import { RiskAnalysisError } from "./RiskAnalysisErrorMessage"
@@ -75,7 +77,48 @@ export const RiskAnalysisPromptAutoRiskScan: FC = () => {
   )
 }
 
-export const RiskAnalysisDrawer: FC = () => {
+const RiskAnalysisCriticalPane: FC<{ riskAnalysis: EvmRiskAnalysis | undefined }> = ({
+  riskAnalysis,
+}) => {
+  const { t } = useTranslation()
+
+  const { isOpen, open, close } = useOpenClose()
+
+  useEffect(() => {
+    if (riskAnalysis?.result?.action === "BLOCK") {
+      open()
+    }
+  }, [open, riskAnalysis?.result?.action])
+
+  if (!isOpen) return null
+
+  return (
+    <div className="to-black-primary fixed left-0 top-0 flex h-[60rem] w-[40rem] flex-col bg-gradient-to-b from-[#411D1D] p-12">
+      <div className="flex grow flex-col items-center justify-center gap-8 text-center">
+        <div className=" text-brand-orange rounded-full bg-[#411D1D] p-6 shadow-md shadow-black/30">
+          <ShieldNotOkIcon className="size-36" />
+        </div>
+        <div className="text-brand-orange text-lg font-bold">{t("Critical Risk")}</div>
+        <p className="text-body text-md">
+          {riskAnalysis?.type === "transaction" && t("We suspect this transaction is harmful.")}
+          {riskAnalysis?.type === "message" && t("We suspect this message is harmful.")}
+          <br />
+          {t("Signing it could lead to fund loss.")}
+        </p>
+        <button
+          type="button"
+          onClick={close}
+          className="text-brand-orange/90 hover:text-brand-orange text-sm"
+        >
+          {t("Proceed at your own risk.")}
+        </button>
+      </div>
+      <Button onClick={window.close}>{t("Close")}</Button>
+    </div>
+  )
+}
+
+export const RiskAnalysisDrawers: FC = () => {
   const riskAnalysis = useRiskAnalysis()
 
   if (!riskAnalysis) return null
@@ -90,6 +133,7 @@ export const RiskAnalysisDrawer: FC = () => {
       >
         <RiskAnalysisDrawerContent />
       </Drawer>
+      <RiskAnalysisCriticalPane riskAnalysis={riskAnalysis} />
       <Drawer anchor="bottom" containerId="main" isOpen={riskAnalysis.shouldPromptAutoRiskScan}>
         <RiskAnalysisPromptAutoRiskScan />
       </Drawer>

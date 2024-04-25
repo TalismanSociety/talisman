@@ -15,7 +15,7 @@ import { TokenLogo } from "../Asset/TokenLogo"
 import { TokensAndFiat } from "../Asset/TokensAndFiat"
 import { EthFeeSelect } from "../Ethereum/GasSettings/EthFeeSelect"
 import {
-  RiskAnalysisDrawer,
+  RiskAnalysisDrawers,
   RiskAnalysisPillButton,
   RiskAnalysisProvider,
 } from "../Sign/Ethereum/riskAnalysis"
@@ -338,7 +338,7 @@ export const SendFundsConfirmForm = () => {
         {evmTransaction && (
           <>
             <RiskAnalysisPillButton />
-            <RiskAnalysisDrawer />
+            <RiskAnalysisDrawers />
           </>
         )}
         <SendButton />
