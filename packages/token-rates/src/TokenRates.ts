@@ -9,7 +9,7 @@ const coingeckoCurrencies: Array<keyof TokenRates> = [
   "usd",
   "aud",
   // 'nzd',
-  // 'cud',
+  "cad",
   // 'hkd',
   "eur",
   "gbp",

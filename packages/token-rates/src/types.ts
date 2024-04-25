@@ -14,7 +14,7 @@ export type TokenRates = {
   nzd: number | null
 
   /** canadian dollar rate */
-  cud: number | null
+  cad: number | null
 
   /** hong kong dollar rate */
   hkd: number | null
@@ -50,7 +50,7 @@ export const NewTokenRates = (): TokenRates => ({
   usd: null,
   aud: null,
   nzd: null,
-  cud: null,
+  cad: null,
   hkd: null,
   eur: null,
   gbp: null,
