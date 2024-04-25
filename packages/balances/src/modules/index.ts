@@ -9,11 +9,11 @@ import { SubTokensModule } from "./SubstrateTokensModule"
 export const defaultBalanceModules = [
   EvmErc20Module,
   EvmNativeModule,
-  SubAssetsModule,
-  SubEquilibriumModule,
+  // SubAssetsModule,
+  // SubEquilibriumModule,
   SubNativeModule,
-  SubPsp22Module,
-  SubTokensModule,
+  // SubPsp22Module,
+  // SubTokensModule,
 ]
 
 export * from "./EvmErc20Module"

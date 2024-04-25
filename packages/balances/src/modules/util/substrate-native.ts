@@ -1,8 +1,9 @@
-import type { Registry } from "@polkadot/types-codec/types"
-import { BN, bnToU8a, hexToU8a, stringToU8a, u8aConcat, u8aToHex } from "@polkadot/util"
+import { TypeRegistry } from "@polkadot/types"
+import { BN, bnToU8a, stringToU8a, u8aConcat, u8aToHex } from "@polkadot/util"
 import { blake2AsU8a } from "@polkadot/util-crypto"
 import upperFirst from "lodash/upperFirst"
 import { Observable } from "rxjs"
+import { u32 } from "scale-ts"
 
 import {
   Balance,
@@ -39,17 +40,16 @@ export const asObservable =
  * Each nominationPool in the nominationPools pallet has access to some accountIds which have no
  * associated private key. Instead, they are derived from this function.
  */
-const nompoolAccountId = (registry: Registry, palletId: string, poolId: string, index: number) => {
+const nompoolAccountId = (palletId: string, poolId: string, index: number) => {
   const EMPTY_H256 = new Uint8Array(32)
   const MOD_PREFIX = stringToU8a("modl")
   const U32_OPTS = { bitLength: 32, isLe: true }
-  return registry
+  return new TypeRegistry()
     .createType(
       "AccountId32",
       u8aConcat(
         MOD_PREFIX,
-        // TODO: Update this to also work with text inputs
-        hexToU8a(palletId),
+        stringToU8a(palletId),
         new Uint8Array([index]),
         bnToU8a(new BN(poolId), U32_OPTS),
         EMPTY_H256
@@ -58,21 +58,18 @@ const nompoolAccountId = (registry: Registry, palletId: string, poolId: string, 
     .toString()
 }
 /** The stash account for the nomination pool */
-export const nompoolStashAccountId = (registry: Registry, palletId: string, poolId: string) =>
-  nompoolAccountId(registry, palletId, poolId, 0)
+export const nompoolStashAccountId = (palletId: string, poolId: string) =>
+  nompoolAccountId(palletId, poolId, 0)
 /** The rewards account for the nomination pool */
-export const nompoolRewardAccountId = (registry: Registry, palletId: string, poolId: string) =>
-  nompoolAccountId(registry, palletId, poolId, 1)
+export const nompoolRewardAccountId = (palletId: string, poolId: string) =>
+  nompoolAccountId(palletId, poolId, 1)
 
 /**
  * Crowdloan contributions are stored in the `childstate` key returned by this function.
  */
-export const crowdloanFundContributionsChildKey = (registry: Registry, fundIndex: number) =>
+export const crowdloanFundContributionsChildKey = (fundIndex: number) =>
   u8aToHex(
-    u8aConcat(
-      ":child_storage:default:",
-      blake2AsU8a(u8aConcat("crowdloan", registry.createType("u32", fundIndex).toU8a()))
-    )
+    u8aConcat(":child_storage:default:", blake2AsU8a(u8aConcat("crowdloan", u32.enc(fundIndex))))
   )
 
 export type BalanceLockType =

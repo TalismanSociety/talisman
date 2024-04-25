@@ -6302,25 +6302,25 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@polkadot-api/metadata-builders@npm:^0.0.1":
-  version: 0.0.1
-  resolution: "@polkadot-api/metadata-builders@npm:0.0.1"
+"@polkadot-api/metadata-builders@npm:^0.2.0":
+  version: 0.2.0
+  resolution: "@polkadot-api/metadata-builders@npm:0.2.0"
   dependencies:
-    "@polkadot-api/substrate-bindings": 0.0.1
+    "@polkadot-api/substrate-bindings": 0.2.0
     "@polkadot-api/utils": 0.0.1
-  checksum: 7cf69e583e64f0ea1b90b141d9f61c4b0ba445daf87d4eba25bfcaa629c95cf4bbe6d89f5263dc495189fae0795c45810a004a2a8fbf59ece01ae71e1e049f17
+  checksum: 5395a5268d2d0044cfba4dcbd804779875e8d17d5369495680ca977e4bfc10df5e669474bbf20d8c803d67ea253cd23c9794ad0ea1264d7303ea08e837895634
   languageName: node
   linkType: hard
 
-"@polkadot-api/substrate-bindings@npm:0.0.1, @polkadot-api/substrate-bindings@npm:^0.0.1":
-  version: 0.0.1
-  resolution: "@polkadot-api/substrate-bindings@npm:0.0.1"
+"@polkadot-api/substrate-bindings@npm:0.2.0, @polkadot-api/substrate-bindings@npm:^0.2.0":
+  version: 0.2.0
+  resolution: "@polkadot-api/substrate-bindings@npm:0.2.0"
   dependencies:
     "@noble/hashes": ^1.3.1
     "@polkadot-api/utils": 0.0.1
     "@scure/base": ^1.1.1
     scale-ts: ^1.6.0
-  checksum: fc49e49ffe749fc6fab49eee1d10d47fcd1fa3a9b6ca4e7bbde4e9741b9e062cd4e9271fd86a2525095ff36bf33b95d57c51efb88635bb60b2c77fa9e83b2cd6
+  checksum: 713bf268305f2355580e65abdd22d5b61bf8200263778c766b786390d19ae62678f9972bd32af05c23ea6c785880a680049cbf19620aaba9282fbc589d555bfa
   languageName: node
   linkType: hard
 
@@ -8577,8 +8577,8 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@talismn/scale@workspace:packages/scale"
   dependencies:
-    "@polkadot-api/metadata-builders": ^0.0.1
-    "@polkadot-api/substrate-bindings": ^0.0.1
+    "@polkadot-api/metadata-builders": ^0.2.0
+    "@polkadot-api/substrate-bindings": ^0.2.0
     "@polkadot-api/utils": ^0.0.1
     "@polkadot/util-crypto": ^12.3.2
     "@talismn/eslint-config": "workspace:*"

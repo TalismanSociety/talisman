@@ -137,7 +137,7 @@ export class MiniMetadataUpdater {
         // which will be better for our users than to have nothing at all.
         var miniMetadatas: MiniMetadata[] = await fetchInitMiniMetadatas() // eslint-disable-line no-var
       }
-      await balancesDb.miniMetadatas.bulkPut(miniMetadatas)
+      // await balancesDb.miniMetadatas.bulkPut(miniMetadatas)
       this.#lastHydratedMiniMetadatasAt = now
       return true
     } catch (error) {
@@ -233,6 +233,9 @@ export class MiniMetadataUpdater {
       await balancesDb.miniMetadatas.bulkDelete(unwantedIds)
     }
 
+    // const needUpdates = Array.from(statusesByChain.entries())
+    //   // .filter(([, status]) => status !== "good")
+    //   .map(([chainId]) => chainId)
     const needUpdates = [
       "polkadot",
       "acala",
@@ -241,12 +244,17 @@ export class MiniMetadataUpdater {
       "crust",
       "hydradx",
       "interlay",
+      "invarch",
       "karura",
       "kintsugi",
       "mangata",
+      "manta",
       "moonbeam",
       "moonriver",
       "polimec",
+      "xxnetwork",
+      "zeitgeist",
+      "zero",
       "westend-testnet",
       "rococo-testnet",
     ]
@@ -278,25 +286,40 @@ export class MiniMetadataUpdater {
           if (specName === null) return
           if (specVersion === null) return
 
-          console.time(`${chainId}: Query Metadata v14 & v15`)
+          console.time(`${chainId}: Query Metadata v15`)
           const [metadataRpc14, metadataRpc15Response, systemProperties] = await Promise.all([
-            this.#chainConnectors.substrate?.send(chainId, "state_getMetadata", []),
-            this.#chainConnectors.substrate?.send(chainId, "state_call", [
-              "Metadata_metadata_at_version",
-              toHex(u32.enc(15)),
-            ]),
+            this.#chainConnectors.substrate
+              ?.send(chainId, "state_getMetadata", [])
+              .catch((error) => {
+                log.warn(`Failed to fetch metadata v14 for chain ${chainId}`, error)
+                return null
+              }),
+            this.#chainConnectors.substrate
+              ?.send(chainId, "state_call", ["Metadata_metadata_at_version", toHex(u32.enc(15))])
+              // ?.send(chainId, "state_call", [
+              //   "Metadata_metadata_at_version",
+              //   toHex(u32.enc(4_294_967_295)),
+              // ])
+              .catch((error) => {
+                log.warn(`Failed to fetch metadata v15 for chain ${chainId}`, error)
+                return null
+              }),
             this.#chainConnectors.substrate?.send(chainId, "system_properties", []),
           ])
-          console.timeEnd(`${chainId}: Query Metadata v14 & v15`)
+          console.timeEnd(`${chainId}: Query Metadata v15`)
 
-          const metadataRpc15 = metadataRpc15Response
-            ? Option(Bytes()).dec(metadataRpc15Response)
-            : undefined
+          const metadataRpc15 = (() => {
+            try {
+              return metadataRpc15Response ? Option(Bytes()).dec(metadataRpc15Response) : undefined
+            } catch {
+              return undefined
+            }
+          })()
 
           console.log(
             `${chainId}: Metadata Versions`,
-            getMetadataVersion(metadataRpc14),
-            getMetadataVersion(metadataRpc15!)
+            metadataRpc15 && getMetadataVersion(metadataRpc15),
+            metadataRpc14 && getMetadataVersion(metadataRpc14)
           )
 
           for (const mod of this.#balanceModules.filter((m) => m.type.startsWith("substrate-"))) {
@@ -312,9 +335,8 @@ export class MiniMetadataUpdater {
               var chainMeta = await mod.fetchSubstrateChainMeta(
                 chainId,
                 moduleConfig,
-                mod.type === "substrate-native" ? metadataRpc15 : metadataRpc14,
+                metadataRpc15 ?? metadataRpc14,
                 systemProperties
-                // metadataRpc14
               )
             } catch (cause) {
               throw new Error("Failed to build chainMeta", { cause })
