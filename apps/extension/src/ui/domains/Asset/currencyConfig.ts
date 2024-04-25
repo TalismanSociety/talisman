@@ -2,6 +2,7 @@ import { TokenRateCurrency } from "@talismn/token-rates"
 
 import audIcon from "./currencyIcons/aud.svg?url"
 import btcIcon from "./currencyIcons/btc.svg?url"
+import cadIcon from "./currencyIcons/cad.svg?url"
 import cnyIcon from "./currencyIcons/cny.svg?url"
 import dotIcon from "./currencyIcons/dot.svg?url"
 import ethIcon from "./currencyIcons/eth.svg?url"
@@ -17,6 +18,7 @@ export const currencyOrder: TokenRateCurrency[] = [
   "dot",
   "usd",
   "aud",
+  "cad",
   "cny",
   "eur",
   "gbp",
@@ -36,6 +38,11 @@ const currencyConfig: Partial<
     unicodeCharacter: "$",
     name: "Australian Dollar",
     icon: audIcon,
+  },
+  cad: {
+    unicodeCharacter: "$",
+    name: "Canadian Dollar",
+    icon: cadIcon,
   },
   eur: {
     unicodeCharacter: "€",
