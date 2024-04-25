@@ -10,6 +10,9 @@ export type TokenRates = {
   /** australian dollar rate */
   aud: number | null
 
+  /** canadian dollar rate */
+  cad: number | null
+
   /** new zealand dollar rate */
   nzd: number | null
 
@@ -49,6 +52,7 @@ export type TokenRates = {
 export const NewTokenRates = (): TokenRates => ({
   usd: null,
   aud: null,
+  cad: null,
   nzd: null,
   cud: null,
   hkd: null,

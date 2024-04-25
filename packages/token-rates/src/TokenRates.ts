@@ -8,6 +8,7 @@ import { NewTokenRates, TokenRates, TokenRatesList } from "./types"
 const coingeckoCurrencies: Array<keyof TokenRates> = [
   "usd",
   "aud",
+  "cad",
   // 'nzd',
   // 'cud',
   // 'hkd',
