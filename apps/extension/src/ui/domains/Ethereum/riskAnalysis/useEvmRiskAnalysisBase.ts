@@ -59,16 +59,16 @@ export const useEvmRiskAnalysisBase = <Type extends PayloadType, Key extends Que
     [autoRiskScan, disableAutoRiskScan]
   )
 
-  // if undefined, user has never used the feature
-  const shouldPromptAutoRiskScan = useMemo(
-    () => !disableAutoRiskScan && autoRiskScan === undefined,
-    [autoRiskScan, disableAutoRiskScan]
-  )
-
   const [chainInfo, isAvailable] = useMemo(() => {
     const ci = evmNetworkId ? getBlowfishChainInfo(evmNetworkId) : null
     return [ci, !!ci]
   }, [evmNetworkId])
+
+  // if undefined, user has never used the feature
+  const shouldPromptAutoRiskScan = useMemo(
+    () => isAvailable && !disableAutoRiskScan && autoRiskScan === undefined,
+    [autoRiskScan, disableAutoRiskScan, isAvailable]
+  )
 
   const shouldValidate = useMemo(
     () => isAvailable && (effectiveAutoRiskScan || isScanRequested),
