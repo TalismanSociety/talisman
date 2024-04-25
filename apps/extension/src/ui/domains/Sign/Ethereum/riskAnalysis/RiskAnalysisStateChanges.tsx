@@ -2,13 +2,13 @@ import { EvmExpectedStateChange } from "@blowfishxyz/api-client/v20230605"
 import { shortenAddress } from "@talisman/util/shortenAddress"
 import { ArrowDownIcon, ArrowUpIcon } from "@talismn/icons"
 import { classNames } from "@talismn/util"
-import { EvmRiskAnalysis } from "@ui/domains/Ethereum/riskAnalysis"
 import { BlowfishEvmChainInfo } from "extension-core"
 import { log } from "extension-shared"
 import { FC, ReactNode, useEffect, useMemo } from "react"
 import { useTranslation } from "react-i18next"
 
 import { RiskAnalysisImageBase, RiskAnalysisPlaceholderImage } from "./RiskAnalysisImageBase"
+import { EvmRiskAnalysis } from "./types"
 import { useAssetLinkFromRawInfo } from "./useAssetLinkFromRawInfo"
 import {
   formatPrice,

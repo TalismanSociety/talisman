@@ -33,6 +33,7 @@ export const useEvmTransactionRiskAnalysis = ({
     ],
     queryFn: () => {
       if (!evmNetworkId || !tx) return null
+
       const client = getBlowfishClient(evmNetworkId)
       if (!client) return null
 

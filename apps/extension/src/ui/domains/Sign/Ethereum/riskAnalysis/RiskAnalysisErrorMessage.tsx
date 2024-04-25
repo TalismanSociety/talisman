@@ -1,8 +1,9 @@
 import { AlertCircleIcon } from "@talismn/icons"
 import { classNames } from "@talismn/util"
-import { EvmRiskAnalysis } from "@ui/domains/Ethereum/riskAnalysis"
 import { FC, useMemo } from "react"
 import { useTranslation } from "react-i18next"
+
+import { EvmRiskAnalysis } from "./types"
 
 const ErrorDisplay: FC<{ title?: string; message?: string }> = ({ title, message }) => (
   <div

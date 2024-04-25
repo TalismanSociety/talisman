@@ -6,11 +6,11 @@ import {
   ShieldZapIcon,
 } from "@talismn/icons"
 import { classNames } from "@talismn/util"
-import { EvmRiskAnalysis } from "@ui/domains/Ethereum/riskAnalysis"
 import { FC, useMemo } from "react"
 import { useTranslation } from "react-i18next"
 
 import { RiskAnalysisWarnings } from "./RiskAnalysisWarnings"
+import { EvmRiskAnalysis } from "./types"
 
 const useRecommendation = ({ type, isAvailable, isValidating, result }: EvmRiskAnalysis) => {
   const { t } = useTranslation()

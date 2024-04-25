@@ -1,21 +1,17 @@
 import { ShieldNotOkIcon } from "@talismn/icons"
-import { EvmRiskAnalysis } from "@ui/domains/Ethereum/riskAnalysis"
 import { useSetting } from "@ui/hooks/useSettings"
 import { FC, useCallback, useEffect } from "react"
 import { useTranslation } from "react-i18next"
 import { Button, Drawer, useOpenClose } from "talisman-ui"
 
-import { useRiskAnalysis } from "./context"
 import { RiskAnalysisError } from "./RiskAnalysisErrorMessage"
 import { RiskAnalysisRecommendation } from "./RiskAnalysisRecommendation"
 import { RiskAnalysisStateChanges } from "./RiskAnalysisStateChanges"
 import { RisksAnalysisAknowledgement } from "./RisksAnalysisAknowledgement"
+import { EvmRiskAnalysis } from "./types"
 
-const RiskAnalysisDrawerContent: FC = () => {
-  const riskAnalysis = useRiskAnalysis()
+const RiskAnalysisDrawerContent: FC<{ riskAnalysis: EvmRiskAnalysis }> = ({ riskAnalysis }) => {
   const { t } = useTranslation()
-
-  if (!riskAnalysis) return null
 
   return (
     <div className="bg-grey-850 flex max-h-[60rem] w-full flex-col gap-12 rounded-t-xl p-12">
@@ -27,7 +23,7 @@ const RiskAnalysisDrawerContent: FC = () => {
           <RiskAnalysisStateChanges riskAnalysis={riskAnalysis} />
         </div>
       </div>
-      <RisksAnalysisAknowledgement />
+      <RisksAnalysisAknowledgement riskAnalysis={riskAnalysis} />
       <div>
         <Button onClick={riskAnalysis.review.drawer.close} className="w-full">
           {t("Close")}
@@ -49,7 +45,7 @@ export const RiskAnalysisPromptAutoRiskScan: FC = () => {
   )
 
   return (
-    <div className="bg-grey-850 flex w-full flex-col gap-12 rounded-t-xl p-12">
+    <div className="animate-fade-in bg-grey-850 flex w-full flex-col gap-12 rounded-t-xl p-12">
       <div className="scrollable scrollable-700  flex-grow overflow-y-auto pr-4 text-xs  leading-[2rem]">
         <div className="text-body-secondary leading-paragraph flex w-full flex-col gap-8">
           <div className="text-body text-md text-center font-bold">
@@ -118,9 +114,7 @@ const RiskAnalysisCriticalPane: FC<{ riskAnalysis: EvmRiskAnalysis | undefined }
   )
 }
 
-export const RiskAnalysisDrawers: FC = () => {
-  const riskAnalysis = useRiskAnalysis()
-
+export const RiskAnalysisDrawers: FC<{ riskAnalysis?: EvmRiskAnalysis }> = ({ riskAnalysis }) => {
   if (!riskAnalysis) return null
 
   return (
@@ -131,7 +125,7 @@ export const RiskAnalysisDrawers: FC = () => {
         isOpen={riskAnalysis.review.drawer.isOpen}
         onDismiss={riskAnalysis.review.drawer.close}
       >
-        <RiskAnalysisDrawerContent />
+        <RiskAnalysisDrawerContent riskAnalysis={riskAnalysis} />
       </Drawer>
       <RiskAnalysisCriticalPane riskAnalysis={riskAnalysis} />
       <Drawer anchor="bottom" containerId="main" isOpen={riskAnalysis.shouldPromptAutoRiskScan}>

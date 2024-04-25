@@ -13,7 +13,7 @@ import { SignAlertMessage } from "../SignAlertMessage"
 import { ViewDetailsAddress } from "../ViewDetails/ViewDetailsAddress"
 import { ViewDetailsButton } from "../ViewDetails/ViewDetailsButton"
 import { ViewDetailsField } from "../ViewDetails/ViewDetailsField"
-import { RiskAnalysisPillButton } from "./riskAnalysis/RiskAnalysisPillButton"
+import { RiskAnalysisPillButton } from "./riskAnalysis"
 import { SignParamAccountButton } from "./shared"
 
 const ViewDetailsContent: FC<{

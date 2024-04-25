@@ -6,6 +6,7 @@ import { provideContext } from "@talisman/util/provideContext"
 import { api } from "@ui/api"
 import { balancesHydrateAtom } from "@ui/atoms"
 import { useEthTransaction } from "@ui/domains/Ethereum/useEthTransaction"
+import { useEvmTransactionRiskAnalysis } from "@ui/domains/Sign/Ethereum/riskAnalysis"
 import { useEvmNetwork } from "@ui/hooks/useEvmNetwork"
 import { useRequest } from "@ui/hooks/useRequest"
 import { useAtomValue } from "jotai"
@@ -39,15 +40,21 @@ const useEthSignTransactionRequestProvider = ({ id }: KnownSigningRequestIdOnly<
     gasSettingsByPriority,
     setCustomSettings,
     isValid,
-    riskAnalysis,
+    // riskAnalysis,
     updateCallArg,
   } = useEthTransaction(
     txBase,
     signingRequest?.ethChainId,
-    isPayloadLocked,
-    false,
-    signingRequest?.url
+    isPayloadLocked
+    // false,
+    // signingRequest?.url
   )
+
+  const riskAnalysis = useEvmTransactionRiskAnalysis({
+    evmNetworkId: signingRequest?.ethChainId,
+    tx: transaction,
+    url: signingRequest?.url,
+  })
 
   const baseRequest = useAnySigningRequest({
     currentRequest: signingRequest,

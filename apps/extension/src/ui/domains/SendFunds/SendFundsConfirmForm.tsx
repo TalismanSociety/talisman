@@ -14,11 +14,7 @@ import { Fiat } from "../Asset/Fiat"
 import { TokenLogo } from "../Asset/TokenLogo"
 import { TokensAndFiat } from "../Asset/TokensAndFiat"
 import { EthFeeSelect } from "../Ethereum/GasSettings/EthFeeSelect"
-import {
-  RiskAnalysisDrawers,
-  RiskAnalysisPillButton,
-  RiskAnalysisProvider,
-} from "../Sign/Ethereum/riskAnalysis"
+import { RiskAnalysisPillButton, RiskAnalysisProvider } from "../Sign/Ethereum/riskAnalysis"
 import { AddressDisplay } from "./AddressDisplay"
 import { SendFundsFeeTooltip } from "./SendFundsFeeTooltip"
 import { SendFundsHardwareEthereum } from "./SendFundsHardwareEthereum"
@@ -335,12 +331,7 @@ export const SendFundsConfirmForm = () => {
             </div>
           </div>
         </ScrollContainer>
-        {evmTransaction && (
-          <>
-            <RiskAnalysisPillButton />
-            <RiskAnalysisDrawers />
-          </>
-        )}
+        {evmTransaction && <RiskAnalysisPillButton />}
         <SendButton />
       </div>
     </RiskAnalysisProvider>

@@ -5,7 +5,7 @@ import { ViewDetailsSub } from "@ui/domains/Sign/ViewDetails/ViewDetailsSub"
 import { FC, ReactNode } from "react"
 import { createPortal } from "react-dom"
 
-import { RiskAnalysisPillButton } from "./Ethereum/riskAnalysis/RiskAnalysisPillButton"
+import { RiskAnalysisPillButton } from "./Ethereum/riskAnalysis"
 
 type SignContainerProps = {
   title: ReactNode

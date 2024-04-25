@@ -1,3 +1,5 @@
 export * from "./context"
-export * from "./RiskAnalysisDrawers"
+export * from "./types"
+export * from "./useEvmMessageRiskAnalysis"
+export * from "./useEvmTransactionRiskAnalysis"
 export * from "./RiskAnalysisPillButton"

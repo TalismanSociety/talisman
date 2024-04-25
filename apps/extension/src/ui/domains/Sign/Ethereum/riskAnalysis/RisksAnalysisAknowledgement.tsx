@@ -2,19 +2,19 @@ import { t } from "i18next"
 import { ChangeEventHandler, FC, useCallback } from "react"
 import { Checkbox } from "talisman-ui"
 
-import { useRiskAnalysis } from "./context"
+import { EvmRiskAnalysis } from "./types"
 
-export const RisksAnalysisAknowledgement: FC = () => {
-  const riskAnalysis = useRiskAnalysis()
-
+export const RisksAnalysisAknowledgement: FC<{ riskAnalysis: EvmRiskAnalysis }> = ({
+  riskAnalysis,
+}) => {
   const handleChange: ChangeEventHandler<HTMLInputElement> = useCallback(
     (e) => {
-      riskAnalysis?.review.setIsRiskAknowledged(e.target.checked)
+      riskAnalysis.review.setIsRiskAknowledged(e.target.checked)
     },
-    [riskAnalysis?.review]
+    [riskAnalysis.review]
   )
 
-  if (!riskAnalysis?.review.isRiskAknowledgementRequired) return null
+  if (!riskAnalysis.review.isRiskAknowledgementRequired) return null
 
   return (
     <div className="flex w-full items-center justify-between text-sm">

@@ -36,6 +36,7 @@ import { useLocation } from "react-router-dom"
 import { TransactionRequest } from "viem"
 
 import { useEthTransaction } from "../Ethereum/useEthTransaction"
+import { useEvmTransactionRiskAnalysis } from "../Sign/Ethereum/riskAnalysis"
 import { useFeeToken } from "./useFeeToken"
 import { useSendFundsInputNumber } from "./useSendFundsInputNumber"
 import { useSendFundsInputSize } from "./useSendFundsInputSize"
@@ -130,9 +131,15 @@ const useEvmTransaction = (
     }
   }, [from, to, token, planck])
 
-  const result = useEthTransaction(tx, token?.evmNetwork?.id, isLocked, false, undefined, true)
+  const result = useEthTransaction(tx, token?.evmNetwork?.id, isLocked, false)
 
-  return { evmTransaction: tx ? { tx, ...result } : undefined, evmInvalidTxError }
+  const riskAnalysis = useEvmTransactionRiskAnalysis({
+    evmNetworkId: token?.evmNetwork?.id,
+    tx,
+    disableAutoRiskScan: true,
+  })
+
+  return { evmTransaction: tx ? { tx, ...result, riskAnalysis } : undefined, evmInvalidTxError }
 }
 
 const useSubTransaction = (

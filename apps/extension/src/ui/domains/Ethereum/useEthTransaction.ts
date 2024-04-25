@@ -29,7 +29,6 @@ import { useTranslation } from "react-i18next"
 import { PublicClient, TransactionRequest, encodeFunctionData } from "viem"
 
 import { ETH_ERROR_EIP1474_METHOD_NOT_FOUND } from "../../../inject/ethereum/EthProviderRpcError"
-import { useEvmTransactionRiskAnalysis } from "./riskAnalysis"
 import { useEthEstimateL1DataFee } from "./useEthEstimateL1DataFee"
 import { useIsValidEthTransaction } from "./useIsValidEthTransaction"
 import { decodeEvmTransaction } from "./util/decodeEvmTransaction"
@@ -430,9 +429,7 @@ export const useEthTransaction = (
   request: TransactionRequest | undefined,
   evmNetworkId: EvmNetworkId | undefined,
   lockTransaction = false,
-  isReplacement = false,
-  origin?: string,
-  disableAutoRiskScan?: boolean
+  isReplacement = false
 ) => {
   const publicClient = usePublicClient(evmNetworkId)
   const {
@@ -459,12 +456,12 @@ export const useEthTransaction = (
 
   const [priority, setPriority] = useState<EthPriorityOptionName>()
 
-  const riskAnalysis = useEvmTransactionRiskAnalysis({
-    evmNetworkId,
-    tx,
-    url: origin,
-    disableAutoRiskScan,
-  })
+  // const riskAnalysis = useEvmTransactionRiskAnalysis({
+  //   evmNetworkId,
+  //   tx,
+  //   url: origin,
+  //   disableAutoRiskScan,
+  // })
 
   // reset priority in case chain changes
   // ex: from send funds when switching from BSC (legacy) to mainnet (eip1559)
@@ -598,7 +595,7 @@ export const useEthTransaction = (
     networkUsage,
     setCustomSettings,
     gasSettingsByPriority,
-    riskAnalysis,
+    // riskAnalysis,
     updateCallArg,
   }
 }
