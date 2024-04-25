@@ -41,18 +41,13 @@ export const useEvmMessageRiskAnalysis = ({
     evmNetworkId,
     disableAutoRiskScan,
     queryKey: ["useEvmMessageRiskAnalysis", evmNetworkId, method, message, account, url],
-    // TODO remove async
-    queryFn: async () => {
+    queryFn: () => {
       if (!evmNetworkId || !method || !message || !account) return null
 
       const client = getBlowfishClient(evmNetworkId)
       if (!client) return null
 
-      // TODO remove
       log.debug("querying blowfish", { evmNetworkId, method, message, account, origin })
-
-      // // TODO remove
-      // await sleep(2000)
 
       switch (method) {
         case "personal_sign":

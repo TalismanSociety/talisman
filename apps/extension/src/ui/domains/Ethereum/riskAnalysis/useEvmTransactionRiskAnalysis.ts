@@ -31,17 +31,12 @@ export const useEvmTransactionRiskAnalysis = ({
       tx && serializeTransactionRequest(tx),
       origin,
     ],
-    // TODO remove async
-    queryFn: async () => {
+    queryFn: () => {
       if (!evmNetworkId || !tx) return null
       const client = getBlowfishClient(evmNetworkId)
       if (!client) return null
 
-      // TODO remove
       log.debug("querying blowfish", { evmNetworkId, tx, origin })
-
-      // // TODO remove
-      // await sleep(2000)
 
       return client.scanTransactions(
         [
