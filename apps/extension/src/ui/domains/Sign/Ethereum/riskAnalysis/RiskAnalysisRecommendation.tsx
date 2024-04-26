@@ -12,16 +12,31 @@ import { useTranslation } from "react-i18next"
 import { RiskAnalysisWarnings } from "./RiskAnalysisWarnings"
 import { EvmRiskAnalysis } from "./types"
 
-const useRecommendation = ({ type, isAvailable, isValidating, result }: EvmRiskAnalysis) => {
+const useRecommendation = ({
+  type,
+  isAvailable,
+  isValidating,
+  result,
+  scanError,
+}: EvmRiskAnalysis) => {
   const { t } = useTranslation()
 
   return useMemo(() => {
+    if (scanError)
+      return {
+        Icon: ShieldUnknownIcon,
+        bgClassName: "bg-grey-800",
+        iconClassName: "text-body-disabled",
+        ...scanError,
+      }
+
     switch (result?.action) {
       case "BLOCK":
         return {
           Icon: ShieldNotOkIcon,
           bgClassName: "bg-brand-orange/10",
           textClassName: "text-brand-orange",
+          iconClassName: "bg-brand-orange/10",
           title: t("Critical Risk"),
           // in this case there should always be at least 1 warning
           description: result.warnings[0]?.message ?? "",
@@ -31,6 +46,7 @@ const useRecommendation = ({ type, isAvailable, isValidating, result }: EvmRiskA
           Icon: ShieldZapIcon,
           bgClassName: "bg-alert-warn/10",
           textClassName: "text-alert-warn",
+          iconClassName: "bg-alert-warn/10",
           title: t("Medium Risk"),
           // in this case there should always be at least 1 warning
           description: result.warnings[0]?.message ?? "",
@@ -40,6 +56,7 @@ const useRecommendation = ({ type, isAvailable, isValidating, result }: EvmRiskA
           Icon: ShieldOkIcon,
           bgClassName: "bg-green/10",
           textClassName: "text-green",
+          iconClassName: "bg-green/10",
           title: result.warnings.length ? t("No Risk Found") : t("Low Risk"),
           description:
             result.warnings[0]?.message ??
@@ -53,6 +70,7 @@ const useRecommendation = ({ type, isAvailable, isValidating, result }: EvmRiskA
         Icon: ShieldUnavailableIcon,
         bgClassName: "bg-body-secondary/10",
         textClassName: "text-body-secondary",
+        iconClassName: "bg-body-secondary/10",
         title: t("Unavailable"),
         description: t(
           "Risk Assessment is not supported for this network. Proceed at your own risk."
@@ -63,12 +81,13 @@ const useRecommendation = ({ type, isAvailable, isValidating, result }: EvmRiskA
       Icon: ShieldUnknownIcon, // TODO spinner ?
       bgClassName: "bg-body-secondary/10",
       textClassName: "text-body-secondary",
+      iconClassName: "bg-body-secondary/10",
       title: isValidating ? t("In Progress") : t("TODO NOT VALIDATING"),
       description: isValidating
         ? t("Risk assessment is in progress, please wait.")
         : t("TODO NOT VALIDATING"), // TODO
     }
-  }, [isAvailable, isValidating, result, t, type])
+  }, [isAvailable, isValidating, result?.action, result?.warnings, scanError, t, type])
 }
 
 const RiskAnalysisRecommendationInner: FC<{
@@ -76,7 +95,7 @@ const RiskAnalysisRecommendationInner: FC<{
 }> = ({ riskAnalysis }) => {
   const recommendation = useRecommendation(riskAnalysis)
 
-  const { Icon, bgClassName, textClassName, title, description } = recommendation
+  const { Icon, bgClassName, iconClassName, textClassName, title, description } = recommendation
 
   return (
     <div
@@ -87,7 +106,7 @@ const RiskAnalysisRecommendationInner: FC<{
       )}
     >
       <div>
-        <div className={classNames("rounded-full p-4", bgClassName)}>
+        <div className={classNames("rounded-full p-4", bgClassName, iconClassName)}>
           <Icon className="h-12 w-12" />
         </div>
       </div>

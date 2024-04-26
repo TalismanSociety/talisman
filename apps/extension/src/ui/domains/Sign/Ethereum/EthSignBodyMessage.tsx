@@ -108,11 +108,11 @@ export const EthSignBodyMessage: FC<EthSignBodyMessageProps> = ({ account, reque
   if (siwe) return <EthSignBodyMessageSIWE account={account} request={request} siwe={siwe} />
 
   return (
-    <div className="text-body-secondary flex h-full w-full flex-col items-center pt-8">
+    <div className="text-body-secondary flex h-full w-full flex-col items-center pt-4">
       <h1 className="text-body leading-base my-0 font-sans text-lg font-bold">
         {t("Sign Request")}
       </h1>
-      <div className="leading-base my-12 flex w-full flex-col items-center">
+      <div className="leading-base my-8 flex w-full flex-col items-center">
         <div className="p-2">
           {isTypedData ? t("You are signing typed data") : t("You are signing a message")}{" "}
         </div>
@@ -127,13 +127,14 @@ export const EthSignBodyMessage: FC<EthSignBodyMessageProps> = ({ account, reque
           </div>
         )}
       </div>
+      <div className="mb-8">
+        <RiskAnalysisPillButton />
+      </div>
       <Message
         className={classNames("w-full grow", isTypedData && "whitespace-pre text-xs")}
         text={text}
       />
-      <div className="mt-8">
-        <RiskAnalysisPillButton />
-      </div>
+
       {isInvalidVerifyingContract && (
         <SignAlertMessage type="error" className="mt-8">
           {t("Verifying contract's address is invalid.")}

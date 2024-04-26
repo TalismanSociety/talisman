@@ -31,6 +31,14 @@ export const RiskAnalysisPillButton: FC = () => {
   const { t } = useTranslation()
 
   const { icon, label, className, disabled, tooltip } = useMemo(() => {
+    if (riskAnalysis?.scanError) {
+      return {
+        icon: ShieldUnavailableIcon,
+        label: t("Assessment Unavailable"),
+        className: "opacity-50",
+        disabled: false,
+      }
+    }
     if (riskAnalysis?.result?.action === "NONE")
       return {
         label: t("Low Risk"),

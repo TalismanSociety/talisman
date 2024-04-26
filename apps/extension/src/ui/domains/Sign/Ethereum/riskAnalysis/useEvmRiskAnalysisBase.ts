@@ -1,22 +1,12 @@
-import {
-  ScanMessageEvm200Response,
-  ScanTransactionsEvm200Response,
-} from "@blowfishxyz/api-client/v20230605"
 import { QueryFunction, QueryKey, useQuery } from "@tanstack/react-query"
 import { useSetting } from "@ui/hooks/useSettings"
 import { BlowfishEvmChainInfo, EvmNetworkId, getBlowfishChainInfo } from "extension-core"
 import { useCallback, useEffect, useMemo, useRef, useState } from "react"
+import { useTranslation } from "react-i18next"
 
-import { RisksReview } from "./types"
+import { getRiskAnalysisScanError } from "./getRiskAnalysisScanError"
+import { PayloadType, ResponseType, RiskAnalysisScanError, RisksReview } from "./types"
 import { useRisksReview } from "./useRisksReview"
-
-type PayloadType = "message" | "transaction"
-
-type ResponseType<Type extends PayloadType> = Type extends "message"
-  ? ScanMessageEvm200Response | null
-  : Type extends "transaction"
-  ? ScanTransactionsEvm200Response | null
-  : never
 
 type UseEvmRiskAnalysisBaseProps<
   Type extends PayloadType,
@@ -38,6 +28,7 @@ type EvmRiskAnalysisResult<Type extends PayloadType, Result = ResponseType<Type>
   isValidating: boolean
   result: Result | undefined
   error: unknown
+  scanError: RiskAnalysisScanError | null
   chainInfo: BlowfishEvmChainInfo | null
   review: RisksReview
   launchScan: () => void
@@ -94,6 +85,12 @@ export const useEvmRiskAnalysisBase = <Type extends PayloadType, Key extends Que
 
   const review = useRisksReview(result?.action)
 
+  const { t } = useTranslation()
+  const scanError = useMemo(
+    () => (result ? getRiskAnalysisScanError(type, result, t) : null),
+    [type, result, t]
+  )
+
   const launchScan = useCallback(() => {
     if (isAvailable) {
       if (result) review.drawer.open()
@@ -117,6 +114,7 @@ export const useEvmRiskAnalysisBase = <Type extends PayloadType, Key extends Que
     isValidating: isAvailable && shouldValidate && isLoading,
     result,
     error,
+    scanError,
     launchScan,
     chainInfo,
     review,

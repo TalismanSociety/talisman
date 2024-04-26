@@ -5,7 +5,6 @@ import { FC, useCallback, useLayoutEffect } from "react"
 import { useTranslation } from "react-i18next"
 import { Button, Drawer, useOpenClose } from "talisman-ui"
 
-import { RiskAnalysisError } from "./RiskAnalysisErrorMessage"
 import { RiskAnalysisRecommendation } from "./RiskAnalysisRecommendation"
 import { RiskAnalysisStateChanges } from "./RiskAnalysisStateChanges"
 import { RisksAnalysisAknowledgement } from "./RisksAnalysisAknowledgement"
@@ -20,7 +19,6 @@ const RiskAnalysisDrawerContent: FC<{ riskAnalysis: EvmRiskAnalysis }> = ({ risk
         <div className="text-body-secondary leading-paragraph flex w-full flex-col gap-12">
           <div className="text-body text-md text-center font-bold">{t("Risk Assessment")}</div>
           <RiskAnalysisRecommendation riskAnalysis={riskAnalysis} />
-          <RiskAnalysisError riskAnalysis={riskAnalysis} />
           <RiskAnalysisStateChanges riskAnalysis={riskAnalysis} />
         </div>
       </div>
@@ -112,7 +110,7 @@ const RiskAnalysisCriticalPane: FC<{ riskAnalysis: EvmRiskAnalysis | undefined }
       <button
         type="button"
         onClick={close}
-        className="text-brand-orange/80 hover:text-brand-orange flex items-center text-sm"
+        className="text-brand-orange/80 hover:text-brand-orange flex items-center text-base"
       >
         <span>{t("Proceed anyway")}</span>
         <ArrowRightIcon className="text-md inline-block" />
