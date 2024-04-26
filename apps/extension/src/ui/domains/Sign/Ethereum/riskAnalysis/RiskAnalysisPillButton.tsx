@@ -92,7 +92,7 @@ export const RiskAnalysisPillButton: FC = () => {
       label: t("Risk Analysis"),
       className: undefined,
       disabled: true,
-      tooltip: t("Risk analysis is not available on this network"),
+      tooltip: riskAnalysis?.unavailableReason,
     }
   }, [t, riskAnalysis])
 

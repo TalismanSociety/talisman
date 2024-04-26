@@ -25,6 +25,7 @@ type EvmRiskAnalysisResult<Type extends PayloadType, Result = ResponseType<Type>
   type: Type
   shouldPromptAutoRiskScan: boolean
   isAvailable: boolean
+  unavailableReason: string | undefined
   isValidating: boolean
   result: Result | undefined
   error: unknown
@@ -42,6 +43,7 @@ export const useEvmRiskAnalysisBase = <Type extends PayloadType, Key extends Que
   queryFn,
   enabled,
 }: UseEvmRiskAnalysisBaseProps<Type, Key>): EvmRiskAnalysisResult<Type> => {
+  const { t } = useTranslation()
   const [autoRiskScan] = useSetting("autoRiskScan")
   const [isScanRequested, setIsScanRequested] = useState(false)
 
@@ -50,10 +52,16 @@ export const useEvmRiskAnalysisBase = <Type extends PayloadType, Key extends Que
     [autoRiskScan, disableAutoRiskScan]
   )
 
-  const [chainInfo, isAvailable] = useMemo(() => {
-    const ci = evmNetworkId ? getBlowfishChainInfo(evmNetworkId) : null
-    return [ci, !!ci]
-  }, [evmNetworkId])
+  const chainInfo = useMemo(
+    () => (evmNetworkId ? getBlowfishChainInfo(evmNetworkId) : null),
+    [evmNetworkId]
+  )
+
+  const [isAvailable, unavailableReason] = useMemo(() => {
+    if (!chainInfo) return [false, t("Risk analysis is not available on this network")]
+    if (!enabled) return [false, t("Risk analysis unavailable")]
+    return [true, undefined]
+  }, [chainInfo, enabled, t])
 
   // if undefined, user has never used the feature
   const shouldPromptAutoRiskScan = useMemo(
@@ -85,7 +93,6 @@ export const useEvmRiskAnalysisBase = <Type extends PayloadType, Key extends Que
 
   const review = useRisksReview(result?.action)
 
-  const { t } = useTranslation()
   const scanError = useMemo(
     () => (result ? getRiskAnalysisScanError(type, result, t) : null),
     [type, result, t]
@@ -108,10 +115,16 @@ export const useEvmRiskAnalysisBase = <Type extends PayloadType, Key extends Que
     }
   }, [error, isScanRequested, result, review.drawer])
 
+  const isValidating = useMemo(
+    () => isAvailable && shouldValidate && isLoading && enabled,
+    [enabled, isAvailable, isLoading, shouldValidate]
+  )
+
   return {
     type,
     isAvailable,
-    isValidating: isAvailable && shouldValidate && isLoading,
+    unavailableReason,
+    isValidating,
     result,
     error,
     scanError,
