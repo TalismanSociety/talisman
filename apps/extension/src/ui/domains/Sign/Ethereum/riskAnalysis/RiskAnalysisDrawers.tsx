@@ -1,6 +1,7 @@
-import { ShieldNotOkIcon } from "@talismn/icons"
+import { ArrowRightIcon, ShieldNotOkIcon } from "@talismn/icons"
+import { classNames } from "@talismn/util"
 import { useSetting } from "@ui/hooks/useSettings"
-import { FC, useCallback, useEffect } from "react"
+import { FC, useCallback, useLayoutEffect } from "react"
 import { useTranslation } from "react-i18next"
 import { Button, Drawer, useOpenClose } from "talisman-ui"
 
@@ -80,16 +81,22 @@ const RiskAnalysisCriticalPane: FC<{ riskAnalysis: EvmRiskAnalysis | undefined }
 
   const { isOpen, open, close } = useOpenClose()
 
-  useEffect(() => {
+  useLayoutEffect(() => {
     if (riskAnalysis?.result?.action === "BLOCK") {
-      open()
+      setTimeout(open, 50)
     }
   }, [open, riskAnalysis?.result?.action])
 
-  if (!isOpen) return null
+  if (riskAnalysis?.result?.action !== "BLOCK") return null
 
   return (
-    <div className="to-black-primary fixed left-0 top-0 flex h-[60rem] w-[40rem] flex-col bg-gradient-to-b from-[#411D1D] p-12">
+    <div
+      className={classNames(
+        "to-black-primary absolute left-0 top-0 z-50 flex h-[60rem] w-[40rem] flex-col items-center gap-8 bg-gradient-to-b from-[#411D1D] p-12",
+        "duration-250 opacity-0 transition-opacity",
+        isOpen && "opacity-100"
+      )}
+    >
       <div className="flex grow flex-col items-center justify-center gap-8 text-center">
         <div className=" text-brand-orange rounded-full bg-[#411D1D] p-6 shadow-md shadow-black/30">
           <ShieldNotOkIcon className="size-36" />
@@ -101,15 +108,18 @@ const RiskAnalysisCriticalPane: FC<{ riskAnalysis: EvmRiskAnalysis | undefined }
           <br />
           {t("Signing it could lead to fund loss.")}
         </p>
-        <button
-          type="button"
-          onClick={close}
-          className="text-brand-orange/90 hover:text-brand-orange text-sm"
-        >
-          {t("Proceed at your own risk.")}
-        </button>
       </div>
-      <Button onClick={window.close}>{t("Close")}</Button>
+      <button
+        type="button"
+        onClick={close}
+        className="text-brand-orange/80 hover:text-brand-orange flex items-center text-sm"
+      >
+        <span>{t("Proceed anyway")}</span>
+        <ArrowRightIcon className="text-md inline-block" />
+      </button>
+      <Button fullWidth onClick={window.close}>
+        {t("Cancel")}
+      </Button>
     </div>
   )
 }
