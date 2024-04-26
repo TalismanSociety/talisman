@@ -1,6 +1,6 @@
 {
   "extends": "@talismn/tsconfig/es6-node.json",
-  "include": ["src", "../../apps/extension/src/ui/domains/Sign/Ethereum/riskAnalysis/blowfish.ts"],
+  "include": ["src"],
   "compilerOptions": {
     "outDir": "dist"
   },
