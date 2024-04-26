@@ -1,6 +1,8 @@
-import { getBlowfishClient, serializeTransactionRequest } from "@extension/core"
+import { EvmTxData } from "@blowfishxyz/api-client/v20230605"
+import { getBlowfishClient } from "@extension/core"
 import { EvmNetworkId } from "@talismn/chaindata-provider"
 import { log } from "extension-shared"
+import { useMemo } from "react"
 import { TransactionRequest } from "viem"
 
 import { useEvmRiskAnalysisBase } from "./useEvmRiskAnalysisBase"
@@ -21,37 +23,33 @@ export const useEvmTransactionRiskAnalysis = ({
 }: UseEvmTransactionRiskAnalysisProps) => {
   const origin = useEvmRiskAnalysisOrigin(url)
 
+  const txData = useMemo<EvmTxData | null>(() => {
+    if (!tx?.from) return null
+
+    return {
+      data: tx.data,
+      from: tx.from,
+      to: tx.to ?? undefined,
+      value: typeof tx.value === "bigint" ? tx.value.toString() : undefined,
+    }
+    // don't pass the whole tx as a memo dependency, as it changes a lot  (ex: gas) it would trigger many api calls
+  }, [tx?.from, tx?.to, tx?.data, tx?.value])
+
   return useEvmRiskAnalysisBase({
     type: "transaction",
     evmNetworkId,
     disableAutoRiskScan,
-    queryKey: [
-      "useEvmTransactionRiskAnalysis",
-      evmNetworkId,
-      tx && serializeTransactionRequest(tx),
-      origin,
-    ],
+    queryKey: ["useEvmTransactionRiskAnalysis", evmNetworkId, txData, origin],
     queryFn: () => {
-      if (!evmNetworkId || !tx) return null
+      if (!evmNetworkId || !txData?.from) return null
 
       const client = getBlowfishClient(evmNetworkId)
       if (!client) return null
 
       log.debug("querying blowfish", { evmNetworkId, tx, origin })
 
-      return client.scanTransactions(
-        [
-          {
-            data: tx.data,
-            from: tx.from,
-            to: tx.to ?? undefined,
-            value: typeof tx.value === "bigint" ? tx.value.toString() : undefined,
-          },
-        ],
-        tx.from,
-        { origin }
-      )
+      return client.scanTransactions([txData], txData.from, { origin })
     },
-    enabled: !!tx && !!evmNetworkId,
+    enabled: !!txData && !!evmNetworkId,
   })
 }
