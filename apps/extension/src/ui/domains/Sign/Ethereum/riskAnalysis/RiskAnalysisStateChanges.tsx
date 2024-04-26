@@ -2,13 +2,11 @@ import { EvmExpectedStateChange } from "@blowfishxyz/api-client/v20230605"
 import { shortenAddress } from "@talisman/util/shortenAddress"
 import { ArrowDownIcon, ArrowUpIcon } from "@talismn/icons"
 import { classNames } from "@talismn/util"
-import { BlowfishEvmChainInfo } from "extension-core"
-import { log } from "extension-shared"
-import { FC, ReactNode, useEffect, useMemo } from "react"
+import { FC, ReactNode, useMemo } from "react"
 import { useTranslation } from "react-i18next"
 
 import { RiskAnalysisImageBase, RiskAnalysisPlaceholderImage } from "./RiskAnalysisImageBase"
-import { EvmRiskAnalysis } from "./types"
+import { BlowfishEvmChainInfo, EvmRiskAnalysis } from "./types"
 import { useAssetLinkFromRawInfo } from "./useAssetLinkFromRawInfo"
 import {
   formatPrice,
@@ -25,7 +23,6 @@ type AssetImageProps = {
   isPositiveEffect: boolean
   imageUrl: string | null | undefined
   name: string
-  placeholder?: "solana-logo" | "missing-image"
 } & (
   | {
       type: "currency"
@@ -40,7 +37,6 @@ type AssetImageProps = {
 )
 
 const AssetImage = (props: AssetImageProps) => {
-  //const placeholder = props.placeholder || "missing-image"
   const content = useMemo(() => {
     if (props.type === "currency") {
       return (
@@ -89,13 +85,7 @@ const AssetImage = (props: AssetImageProps) => {
           <ArrowUpIcon className="h-8 w-8 text-[#6A7AEB]" />
         )}
 
-        {/* TODO */}
-        {props.type === "currency" && props.verified && <></>}
-        {/* {props.verified && (
-            <VerifiedBadgeWrapper>
-              <Icon variant="verified" size={14} />
-            </VerifiedBadgeWrapper>
-          )} */}
+        {/* TODO nice blue chip badge if props.verified === true */}
       </div>
     </div>
   )
@@ -252,11 +242,6 @@ export const RiskAnalysisStateChanges: FC<{
     }
     return []
   }, [riskAnalysis])
-
-  // TODO remove
-  useEffect(() => {
-    log.log("RiskAnalysisStateChanges", { changes })
-  }, [changes])
 
   if (!changes.length) return null
 

@@ -12,13 +12,7 @@ import { useTranslation } from "react-i18next"
 import { RiskAnalysisWarnings } from "./RiskAnalysisWarnings"
 import { EvmRiskAnalysis } from "./types"
 
-const useRecommendation = ({
-  type,
-  isAvailable,
-  isValidating,
-  result,
-  scanError,
-}: EvmRiskAnalysis) => {
+const useRecommendation = ({ type, isAvailable, result, scanError }: EvmRiskAnalysis) => {
   const { t } = useTranslation()
 
   return useMemo(() => {
@@ -77,25 +71,19 @@ const useRecommendation = ({
         ),
       }
     }
-    return {
-      Icon: ShieldUnknownIcon, // TODO spinner ?
-      bgClassName: "bg-body-secondary/10",
-      textClassName: "text-body-secondary",
-      iconClassName: "bg-body-secondary/10",
-      title: isValidating ? t("In Progress") : t("TODO NOT VALIDATING"),
-      description: isValidating
-        ? t("Risk assessment is in progress, please wait.")
-        : t("TODO NOT VALIDATING"), // TODO
-    }
-  }, [isAvailable, isValidating, result?.action, result?.warnings, scanError, t, type])
+
+    return null
+  }, [isAvailable, result?.action, result?.warnings, scanError, t, type])
 }
 
 const RiskAnalysisRecommendationInner: FC<{
   riskAnalysis: EvmRiskAnalysis
 }> = ({ riskAnalysis }) => {
-  const recommendation = useRecommendation(riskAnalysis)
+  const reco = useRecommendation(riskAnalysis)
 
-  const { Icon, bgClassName, iconClassName, textClassName, title, description } = recommendation
+  if (!reco) return null
+
+  const { Icon, bgClassName, iconClassName, textClassName, title, description } = reco
 
   return (
     <div
@@ -106,7 +94,7 @@ const RiskAnalysisRecommendationInner: FC<{
       )}
     >
       <div>
-        <div className={classNames("rounded-full p-4", bgClassName, iconClassName)}>
+        <div className={classNames("rounded-full p-4", iconClassName)}>
           <Icon className="h-12 w-12" />
         </div>
       </div>

@@ -1,11 +1,18 @@
 import { QueryFunction, QueryKey, useQuery } from "@tanstack/react-query"
 import { useSetting } from "@ui/hooks/useSettings"
-import { BlowfishEvmChainInfo, EvmNetworkId, getBlowfishChainInfo } from "extension-core"
+import { EvmNetworkId } from "extension-core"
 import { useCallback, useEffect, useMemo, useRef, useState } from "react"
 import { useTranslation } from "react-i18next"
 
+import { getBlowfishChainInfo } from "./blowfish"
 import { getRiskAnalysisScanError } from "./getRiskAnalysisScanError"
-import { PayloadType, ResponseType, RiskAnalysisScanError, RisksReview } from "./types"
+import {
+  BlowfishEvmChainInfo,
+  PayloadType,
+  ResponseType,
+  RiskAnalysisScanError,
+  RisksReview,
+} from "./types"
 import { useRisksReview } from "./useRisksReview"
 
 type UseEvmRiskAnalysisBaseProps<

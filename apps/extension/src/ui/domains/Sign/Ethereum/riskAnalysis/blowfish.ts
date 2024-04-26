@@ -1,11 +1,8 @@
-import { BlowfishEvmApiClient, createEvmClient } from "@blowfishxyz/api-client/v20230605"
+import { createEvmClient } from "@blowfishxyz/api-client/v20230605"
 import { EvmNetworkId } from "@talismn/chaindata-provider"
 import { BLOWFISH_API_KEY, BLOWFISH_BASE_PATH } from "extension-shared"
 
-export type BlowfishEvmChainInfo = {
-  chainFamily: BlowfishEvmApiClient["chainFamily"]
-  chainNetwork: BlowfishEvmApiClient["chainNetwork"]
-}
+import { BlowfishEvmChainInfo } from "./types"
 
 // TODO pull on startup from config repo, or add these to chaindata ?
 const BLOWFISH_SUPPORTED_CHAINS: Record<EvmNetworkId, BlowfishEvmChainInfo | undefined> = {

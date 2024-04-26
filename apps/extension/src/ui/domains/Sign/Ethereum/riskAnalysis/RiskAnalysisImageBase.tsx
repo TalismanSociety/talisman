@@ -3,7 +3,6 @@ import { TokenLogo } from "@ui/domains/Asset/TokenLogo"
 import { IPFS_GATEWAY } from "extension-shared"
 import React, { CSSProperties, memo, useCallback, useMemo, useState } from "react"
 
-// TODO might want a different placeholder for currencies & nfts
 export const RiskAnalysisImageBase: React.FC<{
   src?: string | null | undefined
   isSolanaLogo?: boolean

@@ -21,6 +21,8 @@ const getErrorTooltip = (t: TFunction, error: Error) => {
       return t("Failed to connect to risk analysis service. ")
     case "AbortError":
       return t("Risk analysis request was aborted")
+    case "BlowfishBadRequestError":
+      return t("Invalid request")
     default:
       return t("Failed to analyse risks: {{message}}", { message: error.message })
   }
@@ -72,8 +74,8 @@ export const RiskAnalysisPillButton: FC = () => {
     if (riskAnalysis?.error) {
       return {
         icon: ShieldUnavailableIcon,
-        label: t("Failed to scan"),
-        className: "text-brand-orange",
+        label: t("Scan failed"),
+        className: "opacity-50",
         disabled: false,
         tooltip: getErrorTooltip(t, riskAnalysis.error as Error),
       }

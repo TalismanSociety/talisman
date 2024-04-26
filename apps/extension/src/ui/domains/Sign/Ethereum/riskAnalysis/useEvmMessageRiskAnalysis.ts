@@ -1,8 +1,8 @@
 import { EvmSignTypedDataData } from "@blowfishxyz/api-client/v20230605"
-import { EthSignMessageMethod, getBlowfishClient } from "@extension/core"
+import { EthSignMessageMethod } from "@extension/core"
 import { EvmNetworkId } from "@talismn/chaindata-provider"
-import { log } from "extension-shared"
 
+import { getBlowfishClient } from "./blowfish"
 import { useEvmRiskAnalysisBase } from "./useEvmRiskAnalysisBase"
 import { useEvmRiskAnalysisOrigin } from "./useEvmRiskAnalysisOrigin"
 
@@ -46,8 +46,6 @@ export const useEvmMessageRiskAnalysis = ({
 
       const client = getBlowfishClient(evmNetworkId)
       if (!client) return null
-
-      log.debug("querying blowfish", { evmNetworkId, method, message, account, origin })
 
       switch (method) {
         case "personal_sign":

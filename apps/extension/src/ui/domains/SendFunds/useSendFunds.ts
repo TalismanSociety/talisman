@@ -139,7 +139,7 @@ const useEvmTransaction = (
     disableAutoRiskScan: true,
   })
 
-  return { evmTransaction: tx ? { tx, ...result, riskAnalysis } : undefined, evmInvalidTxError }
+  return { evmTransaction: tx ? { tx, riskAnalysis, ...result } : undefined, evmInvalidTxError }
 }
 
 const useSubTransaction = (

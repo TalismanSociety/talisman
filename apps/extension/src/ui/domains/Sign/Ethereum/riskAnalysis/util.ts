@@ -20,6 +20,9 @@ import {
 } from "@blowfishxyz/api-client"
 import Decimal from "decimal.js"
 
+// Note: most of this file has been copied from blowfish integration sample project
+// TODO get rid of decimal.js dependency
+
 export const U256_MAX_VALUE = new Decimal(2).pow(256).sub(1)
 
 export const isENS = (address = "") => address.endsWith(".eth") || address.endsWith(".xyz")

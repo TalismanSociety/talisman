@@ -1,4 +1,5 @@
 import {
+  BlowfishEvmApiClient,
   ScanMessageEvm200Response,
   ScanTransactionsEvm200Response,
 } from "@blowfishxyz/api-client/v20230605"
@@ -6,6 +7,11 @@ import {
 import { useEvmMessageRiskAnalysis } from "./useEvmMessageRiskAnalysis"
 import { useEvmTransactionRiskAnalysis } from "./useEvmTransactionRiskAnalysis"
 import { useRisksReview } from "./useRisksReview"
+
+export type BlowfishEvmChainInfo = {
+  chainFamily: BlowfishEvmApiClient["chainFamily"]
+  chainNetwork: BlowfishEvmApiClient["chainNetwork"]
+}
 
 export type EvmRiskAnalysis =
   | ReturnType<typeof useEvmMessageRiskAnalysis>

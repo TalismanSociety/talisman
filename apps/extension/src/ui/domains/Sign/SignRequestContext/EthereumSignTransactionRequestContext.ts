@@ -40,15 +40,8 @@ const useEthSignTransactionRequestProvider = ({ id }: KnownSigningRequestIdOnly<
     gasSettingsByPriority,
     setCustomSettings,
     isValid,
-    // riskAnalysis,
     updateCallArg,
-  } = useEthTransaction(
-    txBase,
-    signingRequest?.ethChainId,
-    isPayloadLocked
-    // false,
-    // signingRequest?.url
-  )
+  } = useEthTransaction(txBase, signingRequest?.ethChainId, isPayloadLocked)
 
   const riskAnalysis = useEvmTransactionRiskAnalysis({
     evmNetworkId: signingRequest?.ethChainId,

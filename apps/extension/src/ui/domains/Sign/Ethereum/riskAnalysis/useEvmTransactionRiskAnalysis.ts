@@ -1,10 +1,9 @@
 import { EvmTxData } from "@blowfishxyz/api-client/v20230605"
-import { getBlowfishClient } from "@extension/core"
 import { EvmNetworkId } from "@talismn/chaindata-provider"
-import { log } from "extension-shared"
 import { useMemo } from "react"
 import { TransactionRequest } from "viem"
 
+import { getBlowfishClient } from "./blowfish"
 import { useEvmRiskAnalysisBase } from "./useEvmRiskAnalysisBase"
 import { useEvmRiskAnalysisOrigin } from "./useEvmRiskAnalysisOrigin"
 
@@ -45,8 +44,6 @@ export const useEvmTransactionRiskAnalysis = ({
 
       const client = getBlowfishClient(evmNetworkId)
       if (!client) return null
-
-      log.debug("querying blowfish", { evmNetworkId, tx, origin })
 
       return client.scanTransactions([txData], txData.from, { origin })
     },
