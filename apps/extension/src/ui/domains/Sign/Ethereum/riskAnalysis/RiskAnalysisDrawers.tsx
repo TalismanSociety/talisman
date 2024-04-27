@@ -2,7 +2,7 @@ import { Transition } from "@headlessui/react"
 import { ArrowRightIcon, ShieldNotOkIcon } from "@talismn/icons"
 import { classNames } from "@talismn/util"
 import { useSetting } from "@ui/hooks/useSettings"
-import { FC, useCallback, useLayoutEffect } from "react"
+import { FC, useCallback, useEffect } from "react"
 import { useTranslation } from "react-i18next"
 import { Button, Drawer, useOpenClose } from "talisman-ui"
 
@@ -80,7 +80,7 @@ const RiskAnalysisCriticalPane: FC<{ riskAnalysis: EvmRiskAnalysis | undefined }
 
   const { isOpen, open, close } = useOpenClose()
 
-  useLayoutEffect(() => {
+  useEffect(() => {
     if (riskAnalysis?.result?.action === "BLOCK") open()
   }, [open, riskAnalysis?.result?.action])
 
