@@ -1,3 +1,4 @@
+import { Transition } from "@headlessui/react"
 import { ArrowRightIcon, ShieldNotOkIcon } from "@talismn/icons"
 import { classNames } from "@talismn/util"
 import { useSetting } from "@ui/hooks/useSettings"
@@ -80,45 +81,53 @@ const RiskAnalysisCriticalPane: FC<{ riskAnalysis: EvmRiskAnalysis | undefined }
   const { isOpen, open, close } = useOpenClose()
 
   useLayoutEffect(() => {
-    if (riskAnalysis?.result?.action === "BLOCK") {
-      setTimeout(open, 50)
-    }
+    if (riskAnalysis?.result?.action === "BLOCK") open()
   }, [open, riskAnalysis?.result?.action])
 
-  if (riskAnalysis?.result?.action !== "BLOCK") return null
-
   return (
-    <div
-      className={classNames(
-        "to-black-primary absolute left-0 top-0 z-50 flex h-[60rem] w-[40rem] flex-col items-center gap-8 bg-gradient-to-b from-[#411D1D] p-12",
-        "duration-250 opacity-0 transition-opacity",
-        isOpen && "opacity-100"
-      )}
-    >
-      <div className="flex grow flex-col items-center justify-center gap-8 text-center">
-        <div className=" text-brand-orange rounded-full bg-[#411D1D] p-6 shadow-md shadow-black/30">
-          <ShieldNotOkIcon className="size-36" />
-        </div>
-        <div className="text-brand-orange text-lg font-bold">{t("Critical Risk")}</div>
-        <p className="text-body text-md">
-          {riskAnalysis?.type === "transaction" && t("We suspect this transaction is harmful.")}
-          {riskAnalysis?.type === "message" && t("We suspect this message is harmful.")}
-          <br />
-          {t("Signing it could lead to fund loss.")}
-        </p>
-      </div>
-      <button
-        type="button"
-        onClick={close}
-        className="text-brand-orange/80 hover:text-brand-orange flex items-center text-base"
+    <Transition show={isOpen}>
+      <Transition.Child
+        className={classNames(
+          "bg-grey-900 fixed left-0 top-0 z-10 h-[60rem] w-[40rem] bg-opacity-50"
+        )}
+        enter="transition-opacity ease-linear duration-300"
+        enterFrom="opacity-0"
+        enterTo="opacity-100"
+        leave="transition-opacity ease-linear duration-300"
+        leaveFrom="opacity-100"
+        leaveTo="opacity-0"
       >
-        <span>{t("Proceed anyway")}</span>
-        <ArrowRightIcon className="text-md inline-block" />
-      </button>
-      <Button fullWidth onClick={window.close}>
-        {t("Cancel")}
-      </Button>
-    </div>
+        <div
+          className={classNames(
+            "to-black-primary absolute left-0 top-0 z-50 flex h-[60rem] w-[40rem] flex-col items-center gap-8 bg-gradient-to-b from-[#411D1D] p-12"
+          )}
+        >
+          <div className="flex grow flex-col items-center justify-center gap-8 text-center">
+            <div className=" text-brand-orange rounded-full bg-[#411D1D] p-6 shadow-md shadow-black/30">
+              <ShieldNotOkIcon className="size-36" />
+            </div>
+            <div className="text-brand-orange text-lg font-bold">{t("Critical Risk")}</div>
+            <p className="text-body text-md">
+              {riskAnalysis?.type === "transaction" && t("We suspect this transaction is harmful.")}
+              {riskAnalysis?.type === "message" && t("We suspect this message is harmful.")}
+              <br />
+              {t("Signing it could lead to fund loss.")}
+            </p>
+          </div>
+          <button
+            type="button"
+            onClick={close}
+            className="text-brand-orange/80 hover:text-brand-orange flex items-center text-base"
+          >
+            <span>{t("Proceed anyway")}</span>
+            <ArrowRightIcon className="text-md inline-block" />
+          </button>
+          <Button fullWidth onClick={window.close}>
+            {t("Cancel")}
+          </Button>
+        </div>
+      </Transition.Child>
+    </Transition>
   )
 }
 
