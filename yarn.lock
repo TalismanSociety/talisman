@@ -8397,6 +8397,7 @@ __metadata:
     jest: ^29.7.0
     lodash: 4.17.21
     rxjs: ^7.8.1
+    scale-ts: ^1.6.0
     ts-jest: ^29.1.1
     typescript: ^5.2.2
     viem: ^2.8.18

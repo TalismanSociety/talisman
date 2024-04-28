@@ -1,4 +1,3 @@
-import { toHex } from "@polkadot-api/utils"
 import { PromisePool } from "@supercharge/promise-pool"
 import {
   Chain,
@@ -9,6 +8,7 @@ import {
   fetchInitMiniMetadatas,
   fetchMiniMetadatas,
 } from "@talismn/chaindata-provider"
+import { toHex } from "@talismn/scale"
 import { liveQuery } from "dexie"
 import isEqual from "lodash/isEqual"
 import { from } from "rxjs"
