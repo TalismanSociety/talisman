@@ -22,7 +22,7 @@ import { makeContractCaller } from "./util"
 
 type ModuleType = "substrate-psp22"
 
-const subPsp22TokenId = (chainId: ChainId, tokenSymbol: string) =>
+export const subPsp22TokenId = (chainId: ChainId, tokenSymbol: string) =>
   `${chainId}-substrate-psp22-${tokenSymbol}`.toLowerCase().replace(/ /g, "-")
 
 const getChainIdFromTokenId = (tokenId: string) => {
@@ -105,7 +105,6 @@ export const SubPsp22Module: NewBalanceModule<
 
     async fetchSubstrateChainMeta(chainId) {
       const isTestnet = (await chaindataProvider.chainById(chainId))?.isTestnet || false
-
       return { isTestnet }
     },
 

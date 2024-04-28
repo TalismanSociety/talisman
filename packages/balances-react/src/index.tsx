@@ -1,3 +1,13 @@
+export {
+  evmErc20TokenId,
+  evmNativeTokenId,
+  subNativeTokenId,
+  subEquilibriumTokenId,
+  subAssetTokenId,
+  subPsp22TokenId,
+  subTokensTokenId,
+} from "@talismn/balances"
+
 export * from "./hooks/useBalances"
 export * from "./hooks/useChainConnectors"
 export * from "./hooks/useChaindata"

@@ -1,5 +1,5 @@
 import log from "../log"
-import { V14, V15 } from "../scale-ts/metadata"
+import { V14, V15 } from "../papito"
 
 export type V14Type = V14["lookup"][0]
 export type V14Pallet = V14["pallets"][0]
@@ -98,10 +98,12 @@ export const compactMetadata = (
   if ("apis" in metadata) {
     // metadata is v15 (NOT v14)
     metadata.apis = []
+  }
+  if ("address" in metadata.extrinsic) {
+    // metadata is v15 (NOT v14)
     metadata.extrinsic.address = 0
     metadata.extrinsic.call = 0
     metadata.extrinsic.extra = 0
-    metadata.extrinsic.signature = 0
     metadata.extrinsic.signature = 0
   }
   metadata.extrinsic.signedExtensions = []
@@ -181,16 +183,6 @@ const addDependentTypes = (
         )
         break
 
-      case "historicMetaCompat":
-        log.warn(
-          `"historicMetaCompat" type found in metadata: this type might be missing from the resulting miniMetadata's lookup map`
-        )
-        // addDependentSubTypes([
-        //   // TODO: Handle `type.def.value`, which is a string,
-        //   // but `addDependentSubTypes` is only looking for an array of type ids (which are integers)
-        // ])
-        break
-
       default: {
         // force compilation error if any types don't have a case
         const exhaustiveCheck: never = type.def
@@ -256,9 +248,6 @@ const remapLookupTypeIds = (metadata: V14 | V15, getNewTypeId: (oldTypeId: numbe
             field.type = getNewTypeId(field.type)
           }
         }
-        break
-
-      case "historicMetaCompat":
         break
 
       default: {

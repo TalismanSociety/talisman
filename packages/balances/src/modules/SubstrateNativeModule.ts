@@ -13,16 +13,12 @@ import {
 } from "@talismn/chaindata-provider"
 import {
   Binary,
-  V14,
-  V15,
   compactMetadata,
+  decodeMetadata,
   decodeScale,
+  encodeMetadata,
   encodeStateKey,
   getDynamicBuilder,
-  getMetadataVersion,
-  magicNumber,
-  metadata as scaleMetadata,
-  toHex,
 } from "@talismn/scale"
 import { Deferred, blake2Concat, decodeAnyAddress, isEthereumAddress } from "@talismn/util"
 import isEqual from "lodash/isEqual"
@@ -209,22 +205,14 @@ export const SubNativeModule: NewBalanceModule<
       // process metadata into SCALE encoders/decoders
       //
 
-      const metadataVersion = getMetadataVersion(metadataRpc)
-      const [metadata, tag] = ((): [V15, "v15"] | [V14, "v14"] | [] => {
-        if (metadataVersion !== 15 && metadataVersion !== 14) return []
-
-        const decoded = scaleMetadata.dec(metadataRpc)
-        if (decoded.metadata.tag === "v15") return [decoded.metadata.value, decoded.metadata.tag]
-        if (decoded.metadata.tag === "v14") return [decoded.metadata.value, decoded.metadata.tag]
-        return []
-      })()
-      if (!metadata || !tag) return { isTestnet, symbol, decimals }
-      const scaleBuilder = getDynamicBuilder(metadata)
+      const { metadataVersion, metadata, tag } = decodeMetadata(metadataRpc)
+      if (!metadata) return { isTestnet, symbol, decimals }
 
       //
       // get runtime constants
       //
 
+      const scaleBuilder = getDynamicBuilder(metadata)
       const getConstantValue = (palletName: string, constantName: string) => {
         const encodedValue = metadata.pallets
           .find(({ name }) => name === palletName)
@@ -251,12 +239,7 @@ export const SubNativeModule: NewBalanceModule<
         { pallet: "Paras", items: ["Parachains"] },
       ])
 
-      const miniMetadata = toHex(
-        scaleMetadata.enc({
-          magicNumber,
-          metadata: tag === "v15" ? { tag, value: metadata } : { tag, value: metadata },
-        })
-      )
+      const miniMetadata = encodeMetadata(tag === "v15" ? { tag, metadata } : { tag, metadata })
 
       const hasFreezesItem = Boolean(
         metadata.pallets

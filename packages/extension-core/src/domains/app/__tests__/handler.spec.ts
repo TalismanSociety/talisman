@@ -4,7 +4,6 @@ import keyring from "@polkadot/ui-keyring"
 import { KeyringPairs$Json } from "@polkadot/ui-keyring/types"
 import { assert } from "@polkadot/util"
 import { cryptoWaitReady } from "@polkadot/util-crypto"
-import { watCryptoWaitReady } from "@talismn/scale"
 import Browser from "webextension-polyfill"
 
 import { getMessageSenderFn } from "../../../../tests/util"
@@ -31,12 +30,8 @@ describe("App handler when password is not trimmed", () => {
   let mnemonicId: string
 
   async function createExtension(): Promise<Extension> {
-    await Promise.all([
-      // wait for `@polkadot/util-crypto` to be ready (it needs to load some wasm)
-      cryptoWaitReady(),
-      // wait for `@talismn/scale` to be ready (it needs to load some wasm)
-      watCryptoWaitReady(),
-    ])
+    // wait for `@polkadot/util-crypto` to be ready (it needs to load some wasm)
+    await cryptoWaitReady()
 
     return new Extension(extensionStores)
   }
@@ -184,12 +179,8 @@ describe("App handler when password is trimmed", () => {
   let mnemonicId: string
 
   async function createExtension(): Promise<Extension> {
-    await Promise.all([
-      // wait for `@polkadot/util-crypto` to be ready (it needs to load some wasm)
-      cryptoWaitReady(),
-      // wait for `@talismn/scale` to be ready (it needs to load some wasm)
-      watCryptoWaitReady(),
-    ])
+    // wait for `@polkadot/util-crypto` to be ready (it needs to load some wasm)
+    await cryptoWaitReady()
 
     return new Extension(extensionStores)
   }
