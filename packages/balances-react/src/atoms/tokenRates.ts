@@ -78,7 +78,7 @@ const tokenRatesFetcherAtomEffect = atomEffect((get) => {
     }
 
     // launch the loop
-    // hydrate()
+    hydrate()
   })()
 
   return () => abort.abort("Unsubscribed")

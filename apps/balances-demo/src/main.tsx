@@ -31,28 +31,16 @@ const Root = () => {
         //   // westend
         //   "0xe143f23803ac50e8f6f8e62695d1ce9e4e1d68aa36c1cd2cfd15340213f3423e",
         // ]}
-        enabledTokens={[
-          "polkadot-substrate-native",
-          "acala-substrate-native",
-          "astar-substrate-native",
-          "composable-substrate-native",
-          "crust-substrate-native",
-          "hydradx-substrate-native",
-          "interlay-substrate-native",
-          "invarch-substrate-native",
-          "karura-substrate-native",
-          "kintsugi-substrate-native",
-          "mangata-substrate-native",
-          "manta-substrate-native",
-          "moonbeam-substrate-native",
-          "moonriver-substrate-native",
-          "polimec-substrate-native",
-          "xxnetwork-substrate-native",
-          "zeitgeist-substrate-native",
-          "zero-substrate-native",
-          "westend-testnet-substrate-native",
-          "rococo-testnet-substrate-native",
-        ]}
+        // enabledTokens={[
+        //   // DOT (polkadot relay chain)
+        //   "polkadot-substrate-native",
+        //   // USDC (polkadot asset hub)
+        //   "polkadot-asset-hub-substrate-assets-1337-usdc",
+        //   // ETH (ethereum mainnet)
+        //   "1-evm-native",
+        //   // GM (gm chain)
+        //   "gm-substrate-tokens-gm",
+        // ]}
       >
         <App withTestnets={withTestnets} setWithTestnets={setWithTestnets} />
       </BalancesProvider>

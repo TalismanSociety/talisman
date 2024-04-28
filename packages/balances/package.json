@@ -32,7 +32,6 @@
     "@talismn/chain-connector-evm": "workspace:*",
     "@talismn/chaindata-provider": "workspace:*",
     "@talismn/scale": "workspace:*",
-    "@talismn/subshape-fork": "^0.0.2",
     "@talismn/token-rates": "workspace:*",
     "@talismn/util": "workspace:*",
     "anylogger": "^1.0.11",

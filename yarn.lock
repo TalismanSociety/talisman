@@ -8386,7 +8386,6 @@ __metadata:
     "@talismn/chaindata-provider": "workspace:*"
     "@talismn/eslint-config": "workspace:*"
     "@talismn/scale": "workspace:*"
-    "@talismn/subshape-fork": ^0.0.2
     "@talismn/token-rates": "workspace:*"
     "@talismn/tsconfig": "workspace:*"
     "@talismn/util": "workspace:*"
@@ -8580,11 +8579,8 @@ __metadata:
     "@polkadot-api/metadata-builders": ^0.2.0
     "@polkadot-api/substrate-bindings": ^0.2.0
     "@polkadot-api/utils": ^0.0.1
-    "@polkadot/util-crypto": ^12.3.2
     "@talismn/eslint-config": "workspace:*"
-    "@talismn/subshape-fork": ^0.0.2
     "@talismn/tsconfig": "workspace:*"
-    "@talismn/util": "workspace:*"
     "@types/jest": ^27.5.1
     anylogger: ^1.0.11
     eslint: ^8.52.0
@@ -8592,10 +8588,6 @@ __metadata:
     scale-ts: ^1.6.0
     ts-jest: ^29.1.1
     typescript: ^5.2.2
-    wasm-feature-detect: ^1.6.1
-    wat-the-crypto: ^0.0.3
-  peerDependencies:
-    "@polkadot/util-crypto": 12.x
   languageName: unknown
   linkType: soft
 
@@ -27101,20 +27093,6 @@ __metadata:
   dependencies:
     makeerror: 1.0.12
   checksum: ad7a257ea1e662e57ef2e018f97b3c02a7240ad5093c392186ce0bcf1f1a60bbadd520d073b9beb921ed99f64f065efb63dfc8eec689a80e569f93c1c5d5e16c
-  languageName: node
-  linkType: hard
-
-"wasm-feature-detect@npm:^1.6.1":
-  version: 1.6.1
-  resolution: "wasm-feature-detect@npm:1.6.1"
-  checksum: 63bb5522f2cc2e1a35b1c287212e7eadc1311d853c9ff34497b887aa39389b07e63ca4ee2d6899678392303f08c6d178e5ee4f718d1989beb574f3fa69ab8b97
-  languageName: node
-  linkType: hard
-
-"wat-the-crypto@npm:^0.0.3":
-  version: 0.0.3
-  resolution: "wat-the-crypto@npm:0.0.3"
-  checksum: cebd2e2999ea0cc45fb3433a34ce8e21b7bb1d1a11394954143735062df39560162c2e8f82685e9d67f1289ff3a6b1006c4aa1ea983e15e62f1de4ee5e910871
   languageName: node
   linkType: hard
 

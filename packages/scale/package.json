@@ -29,15 +29,10 @@
     "@polkadot-api/metadata-builders": "^0.2.0",
     "@polkadot-api/substrate-bindings": "^0.2.0",
     "@polkadot-api/utils": "^0.0.1",
-    "@talismn/subshape-fork": "^0.0.2",
-    "@talismn/util": "workspace:*",
     "anylogger": "^1.0.11",
-    "scale-ts": "^1.6.0",
-    "wasm-feature-detect": "^1.6.1",
-    "wat-the-crypto": "^0.0.3"
+    "scale-ts": "^1.6.0"
   },
   "devDependencies": {
-    "@polkadot/util-crypto": "^12.3.2",
     "@talismn/eslint-config": "workspace:*",
     "@talismn/tsconfig": "workspace:*",
     "@types/jest": "^27.5.1",
@@ -45,9 +40,6 @@
     "jest": "^29.7",
     "ts-jest": "^29.1.1",
     "typescript": "^5.2.2"
-  },
-  "peerDependencies": {
-    "@polkadot/util-crypto": "12.x"
   },
   "eslintConfig": {
     "root": true,
