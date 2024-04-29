@@ -1,6 +1,7 @@
-import { createEvmClient } from "@blowfishxyz/api-client/v20230605"
+import { Languages, createEvmClient } from "@blowfishxyz/api-client/v20230605"
 import { EvmNetworkId } from "@talismn/chaindata-provider"
 import { BLOWFISH_API_KEY, BLOWFISH_BASE_PATH } from "extension-shared"
+import i18next from "i18next"
 
 import { BlowfishEvmChainInfo } from "./types"
 
@@ -22,6 +23,19 @@ const BLOWFISH_SUPPORTED_CHAINS: Record<EvmNetworkId, BlowfishEvmChainInfo | und
   "7777777": { chainFamily: "zora", chainNetwork: "sepolia" },
 }
 
+const getLanguage = (): Languages => {
+  switch (i18next.language) {
+    case "kr":
+      return Languages.Ko
+    case "ru":
+      return Languages.Ru
+    case "zh":
+      return Languages.ZhCn
+    default:
+      return Languages.EnUs
+  }
+}
+
 export const getBlowfishChainInfo = (evmNetworkId: EvmNetworkId) => {
   return BLOWFISH_SUPPORTED_CHAINS[evmNetworkId] ?? null
 }
@@ -40,5 +54,6 @@ export const getBlowfishClient = (evmNetworkId: EvmNetworkId) => {
     basePath: BLOWFISH_BASE_PATH,
     apiKey: BLOWFISH_API_KEY,
     ...config,
+    language: getLanguage(),
   })
 }
