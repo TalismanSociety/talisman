@@ -212,3 +212,7 @@ export const getLedgerErrorProps = (err: LedgerError, appName: string): LedgerEr
     requiresManualRetry: true,
   }
 }
+
+// 0x162, in hex, 354 in decimal: is the official derivation path for Polkadot, chains not on it presently will need to migrate.
+export const getPolkadotLedgerDerivationPath = (accountIndex = 0, addressIndex = 0) =>
+  `m/44'/354'/${accountIndex}'/0'/${addressIndex}'`

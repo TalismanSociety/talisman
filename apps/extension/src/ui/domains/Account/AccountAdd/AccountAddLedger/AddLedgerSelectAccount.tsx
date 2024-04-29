@@ -3,6 +3,7 @@ import { yupResolver } from "@hookform/resolvers/yup"
 import { notify, notifyUpdate } from "@talisman/components/Notifications"
 import { sleep } from "@talismn/util"
 import { LedgerEthereumAccountPicker } from "@ui/domains/Account/LedgerEthereumAccountPicker"
+import { LedgerPolkadotAccountPicker } from "@ui/domains/Account/LedgerPolkadotAccountPicker"
 import { LedgerSubstrateAccountPicker } from "@ui/domains/Account/LedgerSubstrateAccountPicker"
 import { FC, useCallback, useMemo, useState } from "react"
 import { useForm } from "react-hook-form"
@@ -129,9 +130,15 @@ export const AddLedgerSelectAccount = () => {
 
   const [derivationPath, setDerivationPath] = useState<LedgerEthDerivationPathType>("LedgerLive")
 
-  if (!data.type) return <Navigate to="/accounts/add/ledger" replace />
-  if (data.type === "sr25519" && !data.chainId)
-    return <Navigate to="/accounts/add/ledger" replace />
+  const isInvalidInputs = useMemo(() => {
+    if (!data.type) return true
+    if (data.type === "sr25519" && !data.substrateAppType) return true
+    if (data.type === "sr25519" && data.substrateAppType === "substrate-legacy" && !data.chainId)
+      return true
+    return false
+  }, [data.chainId, data.substrateAppType, data.type])
+
+  if (isInvalidInputs) return <Navigate to="/accounts/add/ledger" replace />
 
   return (
     <form className="flex max-h-screen flex-col gap-12" onSubmit={handleSubmit(submit)}>
@@ -165,10 +172,17 @@ export const AddLedgerSelectAccount = () => {
           )}
         </p>
         {data.type === "sr25519" && (
-          <LedgerSubstrateAccountPicker
-            chainId={data.chainId as string}
-            onChange={handleAccountsChange}
-          />
+          <>
+            {data.substrateAppType === "substrate-legacy" && (
+              <LedgerSubstrateAccountPicker
+                chainId={data.chainId as string}
+                onChange={handleAccountsChange}
+              />
+            )}
+            {data.substrateAppType === "polkadot" && (
+              <LedgerPolkadotAccountPicker onChange={handleAccountsChange} />
+            )}
+          </>
         )}
         {data.type === "ethereum" && (
           <LedgerEthereumAccountPicker

@@ -45,6 +45,12 @@ type AccountJsonHardwareEthereumOwnProperties = {
 
 export type AccountJsonHardwareEthereum = AccountJson & AccountJsonHardwareEthereumOwnProperties
 
+type AccountJsonHardwarePolkadotOwnProperties = {
+  isHardware: true
+  path: string
+}
+export type AccountJsonHardwarePolkadot = AccountJson & AccountJsonHardwarePolkadotOwnProperties
+
 type AccountJsonQrOwnProperties = {
   isQr: true
 }
@@ -118,6 +124,8 @@ export type AccountsList = Account[]
 
 export type AccountAddressType = KeypairType // keep custom type, might want to add more later on
 
+export type SubstrateLedgerAppType = "substrate-legacy" | "polkadot" // | "polkadot-recovery"
+
 export interface RequestAccountCreateFromSuri {
   name: string
   suri: string
@@ -128,13 +136,23 @@ export interface RequestAccountCreateFromJson {
   unlockedPairs: KeyringPair$Json[]
 }
 
-export type RequestAccountCreateLedgerSubstrate = Omit<RequestAccountCreateHardware, "hardwareType">
+export type RequestAccountCreateLedgerSubstrateLegacy = Omit<
+  RequestAccountCreateHardware,
+  "hardwareType"
+>
 
 export interface RequestAccountCreateLedgerEthereum {
   name: string
   address: string
   path: string
 }
+
+export interface RequestAccountCreateLedgerPolkadot {
+  name: string
+  address: string
+  path: string
+}
+
 export interface RequestAccountCreateDcent {
   name: string
   address: string
@@ -228,7 +246,8 @@ export interface AccountsMessages {
   "pri(accounts.create)": [RequestAccountCreate, string]
   "pri(accounts.create.suri)": [RequestAccountCreateFromSuri, string]
   "pri(accounts.create.json)": [RequestAccountCreateFromJson, string[]]
-  "pri(accounts.create.ledger.substrate)": [RequestAccountCreateLedgerSubstrate, string]
+  "pri(accounts.create.ledger.substrate)": [RequestAccountCreateLedgerSubstrateLegacy, string]
+  "pri(accounts.create.ledger.polkadot)": [RequestAccountCreateLedgerPolkadot, string]
   "pri(accounts.create.ledger.ethereum)": [RequestAccountCreateLedgerEthereum, string]
   "pri(accounts.create.dcent)": [RequestAccountCreateDcent, string]
   "pri(accounts.create.qr.substrate)": [RequestAccountCreateExternal, string]
