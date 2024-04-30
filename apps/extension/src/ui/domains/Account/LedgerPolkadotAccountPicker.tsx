@@ -40,7 +40,7 @@ const useLedgerPolkadotAccounts = (
       for (let i = 0; i < itemsPerPage; i++) {
         const accountIndex = skip + i
         const path = getPolkadotLedgerDerivationPath(accountIndex, 0)
-        const { address } = await ledger.getAddress(i, 0, 0, 42, false)
+        const { address } = await ledger.getAddress(path, 42, false)
 
         newAccounts[i] = {
           accountIndex,

@@ -1,10 +1,18 @@
-import { AccountJsonHardwarePolkadot, SignerPayloadJSON, SignerPayloadRaw } from "@extension/core"
 import { wrapBytes } from "@polkadot/extension-dapp/wrapBytes"
 import { TypeRegistry } from "@polkadot/types"
-import { assert } from "@polkadot/util"
+import { assert, hexToU8a } from "@polkadot/util"
 import { classNames } from "@talismn/util"
+import { useQuery } from "@tanstack/react-query"
 import { useLedgerPolkadot } from "@ui/hooks/ledger/useLedgerPolkadot"
 import { useAccountByAddress } from "@ui/hooks/useAccountByAddress"
+import { useChainByGenesisHash } from "@ui/hooks/useChainByGenesisHash"
+import useToken from "@ui/hooks/useToken"
+import {
+  AccountJsonHardwarePolkadot,
+  SignerPayloadJSON,
+  SignerPayloadRaw,
+  isJsonPayload,
+} from "extension-core"
 import { log } from "extension-shared"
 // import initMetadataShortener, { cut_metadata_wrapper } from "metadata-shortener-wasm"
 import { FC, useCallback, useEffect, useMemo, useState } from "react"
@@ -170,6 +178,28 @@ function isRawPayload(payload: SignerPayloadJSON | SignerPayloadRaw): payload is
 //   // }
 // }
 
+const useLedgerPolkadotInputs = (payload: SignerPayloadJSON | SignerPayloadRaw | undefined) => {
+  const jsonPayload = payload && isJsonPayload(payload) ? payload : undefined
+  const chain = useChainByGenesisHash(jsonPayload ? jsonPayload.genesisHash : undefined)
+  const nativeToken = useToken(chain?.nativeToken?.id)
+
+  return useQuery({
+    queryKey: ["fetch-shortened-metadata", chain, nativeToken, jsonPayload],
+    queryFn: async () => {
+      if (!chain || !nativeToken || !jsonPayload) return null
+
+      // const bytes = await getMetadataV15(chain.id, jsonPayload.blockHash)
+
+      return { shortMetadata: "METADATA", ticker: "dot" }
+    },
+    refetchInterval: false,
+    refetchIntervalInBackground: false,
+    refetchOnWindowFocus: false,
+    refetchOnMount: false,
+    refetchOnReconnect: false,
+  })
+}
+
 const SignLedgerPolkadot: FC<SignHardwareSubstrateProps> = ({
   className = "",
   onSigned,
@@ -179,7 +209,7 @@ const SignLedgerPolkadot: FC<SignHardwareSubstrateProps> = ({
   containerId,
 }) => {
   const account = useAccountByAddress(payload?.address)
-  // useLedgerPolkadotInputs(payload)
+  useLedgerPolkadotInputs(payload)
 
   const { t } = useTranslation("request")
   const [isSigning, setIsSigning] = useState(false)
@@ -227,15 +257,15 @@ const SignLedgerPolkadot: FC<SignHardwareSubstrateProps> = ({
   //   setError(null)
   // }, [refresh, setError])
 
-  // const { data: shortMetadata, error: errorMetadata } = useLedgerPolkadotInputs(payload)
+  const { data: inputs, error: errorInputs } = useLedgerPolkadotInputs(payload)
 
-  // const inputsReady = useMemo(
-  //   () => !!payload && (!isJsonPayload(payload) || shortMetadata),
-  //   [payload, shortMetadata]
-  // )
+  const inputsReady = useMemo(
+    () => !!payload && (!isJsonPayload(payload) || inputs),
+    [payload, inputs]
+  )
 
   const signLedger = useCallback(async () => {
-    if (!ledger || !onSigned || !account || !payload) return
+    if (!ledger || !onSigned || !account || !inputsReady || !payload) return
 
     try {
       const derivationPath = (account as AccountJsonHardwarePolkadot).path
@@ -244,18 +274,26 @@ const SignLedgerPolkadot: FC<SignHardwareSubstrateProps> = ({
 
       if (isRawPayload(payload)) {
         setError(null)
-        // TODO fix account typing
         const signResult = await ledger.signRaw(
-          (account as AccountJsonHardwarePolkadot).accountIndex!,
-          0,
-          0,
+          derivationPath,
           Buffer.from(wrapBytes(payload.data))
         )
 
-        if (signResult.error_message !== LEDGER_NO_ERRORS) throw new Error(signResult.error_message)
+        if (signResult.errorMessage !== LEDGER_NO_ERRORS) throw new Error(signResult.errorMessage)
         const signature = ("0x" + signResult.signature.toString("hex")) as `0x${string}`
         await onSigned({ signature })
       } else {
+        if (errorInputs && (errorInputs as Error)?.message) {
+          setError((errorInputs as Error).message)
+          return
+        }
+        if (!inputs) {
+          setError("Metadata not found")
+          return
+        }
+
+        const { shortMetadata } = inputs
+
         setError(null)
         if (payload.signedExtensions) registry.setSignedExtensions(payload.signedExtensions)
         const extrinsicPayload = registry.createType("ExtrinsicPayload", payload, {
@@ -263,13 +301,12 @@ const SignLedgerPolkadot: FC<SignHardwareSubstrateProps> = ({
         })
 
         const signResult = await ledger.sign(
-          (account as AccountJsonHardwarePolkadot).accountIndex!,
-          0,
-          0,
-          Buffer.from(extrinsicPayload.toU8a(true))
+          derivationPath,
+          Buffer.from(extrinsicPayload.toU8a(true)),
+          Buffer.from(hexToU8a(shortMetadata))
         )
 
-        if (signResult.error_message !== LEDGER_NO_ERRORS) throw new Error(signResult.error_message)
+        if (signResult.errorMessage !== LEDGER_NO_ERRORS) throw new Error(signResult.errorMessage)
         const signature = ("0x" + signResult.signature.toString("hex")) as `0x${string}`
         await onSigned({ signature })
         throw new Error("not implemented")
@@ -302,7 +339,7 @@ const SignLedgerPolkadot: FC<SignHardwareSubstrateProps> = ({
           setError(message)
       }
     }
-  }, [ledger, onSigned, account, payload])
+  }, [ledger, onSigned, account, inputsReady, payload, errorInputs, inputs])
 
   const _onRefresh = useCallback(() => {
     refresh()
@@ -326,7 +363,7 @@ const SignLedgerPolkadot: FC<SignHardwareSubstrateProps> = ({
           {isReady ? (
             <Button
               className="w-full"
-              // disabled={!inputsReady}
+              disabled={!inputsReady}
               primary
               processing={isSigning}
               onClick={handleSendClick}

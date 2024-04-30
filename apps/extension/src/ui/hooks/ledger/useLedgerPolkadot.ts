@@ -1,20 +1,20 @@
 import Transport from "@ledgerhq/hw-transport"
-import TransportWebHID from "@ledgerhq/hw-transport-webhid"
-// import TransportWebUSB from "@ledgerhq/hw-transport-webusb"
+import TransportWebUSB from "@ledgerhq/hw-transport-webusb"
 import { throwAfter } from "@talismn/util"
-import { GenericApp, newGenericApp } from "@zondax/ledger-substrate"
+import { PolkadotApp } from "@zondax/ledger-polkadot"
 import { log } from "extension-shared"
 import { useCallback, useEffect, useMemo, useRef, useState } from "react"
 import { useTranslation } from "react-i18next"
 
 import { useSetInterval } from "../useSetInterval"
-import { LedgerError, LedgerStatus, getLedgerErrorProps } from "./common"
+import {
+  LedgerError,
+  LedgerStatus,
+  getLedgerErrorProps,
+  getPolkadotLedgerDerivationPath,
+} from "./common"
 
 const NO_ERRORS = "No errors"
-
-export const LEDGER_DEFAULT_ACCOUNT = 0x80000000
-export const LEDGER_DEFAULT_CHANGE = 0x80000000
-export const LEDGER_DEFAULT_INDEX = 0x80000000
 
 export const useLedgerPolkadot = (persist = false) => {
   const { t } = useTranslation()
@@ -22,7 +22,7 @@ export const useLedgerPolkadot = (persist = false) => {
   const [refreshCounter, setRefreshCounter] = useState(0)
   const [ledgerError, setLedgerError] = useState<LedgerError>()
   const [isReady, setIsReady] = useState(false)
-  const [ledger, setLedger] = useState<GenericApp | null>(null)
+  const [ledger, setLedger] = useState<PolkadotApp | null>(null)
   const refConnecting = useRef(false)
   const refTransport = useRef<Transport | null>(null)
 
@@ -49,41 +49,27 @@ export const useLedgerPolkadot = (persist = false) => {
 
     try {
       await refTransport.current?.close()
+      refTransport.current = await TransportWebUSB.create()
 
-      refTransport.current = await TransportWebHID.create() // also tried TransportWebUSB.create()
-
-      // TODO native token symbol
-      const ledger = newGenericApp(refTransport.current, "DOT", "https://api.zondax.ch/polkadot")
+      const ledger = new PolkadotApp(refTransport.current)
 
       const version = await Promise.race([
         ledger.getVersion(),
         throwAfter(5_000, "Timeout on Ledger Polkadot connection"),
       ])
-      // console.log("version", { version })
+      if (version.errorMessage !== NO_ERRORS)
+        throw new LedgerError(version.errorMessage, version.errorMessage, version.returnCode)
 
-      if (version.error_message !== NO_ERRORS)
-        throw new LedgerError(version.error_message, version.error_message, version.return_code)
+      // note: this seem to always return false
+      if (version.locked) throw new LedgerError("Ledger is locked", "Locked", version.returnCode)
 
-      if (version.device_locked)
-        throw new LedgerError("Ledger is locked", "Locked", version.return_code)
-
-      // const appInfo = await ledger.appInfo()
-      // console.log("appInfo", { appInfo })
-
-      const ss58prefix = 0 // this is for polkadot
+      // this may hang at this point just after plugging the ledger
       const address = await Promise.race([
-        ledger.getAddress(
-          LEDGER_DEFAULT_ACCOUNT, // 0x80000000 (also tried with 0)
-          LEDGER_DEFAULT_CHANGE, // 0x80000000 (also tried with 0)
-          LEDGER_DEFAULT_INDEX, // 0x80000000 (also tried with 0)
-          ss58prefix
-        ),
+        ledger.getAddress(getPolkadotLedgerDerivationPath(), 42, false),
         throwAfter(5_000, "Timeout on Ledger Polkadot connection"),
       ])
-      // console.log("address", { address })
-
-      if (address.error_message !== "No errors")
-        throw new LedgerError(address.error_message, address.error_message, address.return_code)
+      if (address.errorMessage !== "No errors")
+        throw new LedgerError(address.errorMessage, address.errorMessage, address.returnCode)
 
       setLedgerError(undefined)
       setLedger(ledger)
