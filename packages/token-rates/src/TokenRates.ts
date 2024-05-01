@@ -1,26 +1,11 @@
 import { IToken, TokenId } from "@talismn/chaindata-provider"
 import axios from "axios"
 
-import { NewTokenRates, TokenRates, TokenRatesList } from "./types"
+import { NewTokenRates, SUPPORTED_CURRENCIES, TokenRateCurrency, TokenRatesList } from "./types"
 
 // every currency in this list will be fetched from coingecko
 // comment out unused currencies to save some bandwidth!
-const coingeckoCurrencies: Array<keyof TokenRates> = [
-  "usd",
-  "aud",
-  // 'nzd',
-  "cad",
-  // 'hkd',
-  "eur",
-  "gbp",
-  "jpy",
-  // 'krw',
-  "cny",
-  "rub",
-  "btc",
-  "eth",
-  "dot",
-]
+const coingeckoCurrencies = Object.keys(SUPPORTED_CURRENCIES) as TokenRateCurrency[]
 
 export type CoingeckoConfig = {
   apiUrl: string
