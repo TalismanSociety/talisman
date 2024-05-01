@@ -56,7 +56,7 @@ const useRecommendation = ({ type, isAvailable, result, scanError }: EvmRiskAnal
             result.warnings[0]?.message ??
             (type === "transaction"
               ? t("No risks were identified in this transaction")
-              : t("No risks were identified while analysing this message")),
+              : t("No risks were identified in this message")),
         }
     }
     if (!isAvailable) {
