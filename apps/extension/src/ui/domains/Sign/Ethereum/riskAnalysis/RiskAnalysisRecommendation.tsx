@@ -94,7 +94,7 @@ const RiskAnalysisRecommendationInner: FC<{
         textClassName
       )}
     >
-      <div>
+      <div className="flex flex-col justify-center">
         <div className={classNames("rounded-full p-4", iconClassName)}>
           <Icon className="h-12 w-12" />
         </div>

@@ -135,7 +135,7 @@ const RiskAnalysisWarning: React.FC<{ warning: UIWarning }> = ({ warning }) => {
         textClassName
       )}
     >
-      <div>
+      <div className="flex flex-col justify-center">
         <div className={classNames("rounded-full p-4", bgClassName)}>
           <Icon className="h-12 w-12" />
         </div>
