@@ -5,7 +5,6 @@ import i18next from "i18next"
 
 import { BlowfishEvmChainInfo } from "./types"
 
-// TODO pull on startup from config repo, or add these to chaindata ?
 const BLOWFISH_SUPPORTED_CHAINS: Record<EvmNetworkId, BlowfishEvmChainInfo | undefined> = {
   "1": { chainFamily: "ethereum", chainNetwork: "mainnet" },
   "11155111": { chainFamily: "ethereum", chainNetwork: "sepolia" },
