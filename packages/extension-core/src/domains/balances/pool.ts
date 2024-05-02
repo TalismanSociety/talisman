@@ -92,8 +92,8 @@ export class BalancePool {
    * ```
    */
   #addresses: ReplaySubject<Addresses> = new ReplaySubject(1)
-  #chains: ChainIdAndRpcs[] = []
-  #evmNetworks: EvmNetworkIdAndRpcs[] = []
+  #chains: Record<string, ChainIdAndRpcs> = {}
+  #evmNetworks: Record<string, EvmNetworkIdAndRpcs> = {}
   #tokens: TokenIdAndType[] = []
   #miniMetadataIds = new Set<string>()
 
@@ -393,24 +393,24 @@ export class BalancePool {
   ) {
     // Check for changes since the last call to this.setChains
     // compare chains
-    const newChains = chains.map((chain) => pick(chain, ["id", "genesisHash", "account", "rpcs"]))
-    const existingChainsMap = Object.fromEntries(this.#chains.map((chain) => [chain.id, chain]))
+    const newChains = Object.fromEntries(
+      chains.map((chain) => [chain.id, pick(chain, ["id", "genesisHash", "account", "rpcs"])])
+    )
     const noChainChanges =
-      newChains.length === this.#chains.length &&
-      newChains.every((newChain) => isEqual(newChain, existingChainsMap[newChain.id]))
+      Object.keys(newChains).length === Object.keys(this.#chains).length &&
+      isEqual(newChains, this.#chains)
 
     // compare evm networks
-    const existingEvmNetworksMap = Object.fromEntries(
-      this.#evmNetworks.map((evmNetwork) => [evmNetwork.id, evmNetwork])
+    const newEvmNetworks = Object.fromEntries(
+      evmNetworks.map((evmNetwork) => [
+        evmNetwork.id,
+        pick(evmNetwork, ["id", "nativeToken", "substrateChain", "rpcs"]),
+      ])
     )
-    const newEvmNetworks = evmNetworks.map((evmNetwork) =>
-      pick(evmNetwork, ["id", "nativeToken", "substrateChain", "rpcs"])
-    )
+
     const noEvmNetworkChanges =
-      newEvmNetworks.length === this.#evmNetworks.length &&
-      newEvmNetworks.every((newEvmNetwork) =>
-        isEqual(newEvmNetwork, existingEvmNetworksMap[newEvmNetwork.id])
-      )
+      Object.keys(newEvmNetworks).length === Object.keys(this.#evmNetworks).length &&
+      isEqual(newEvmNetworks, this.#evmNetworks)
 
     // compare minimetadatas
     const existingMiniMetadataIds = this.#miniMetadataIds
@@ -438,14 +438,12 @@ export class BalancePool {
     this.#miniMetadataIds = new Set(miniMetadatas.map((m) => m.id))
 
     // Delete stored balances for chains and evmNetworks which are inactive / no longer exist
-    const chainIds = new Set(this.#chains.map((chain) => chain.id))
-    const evmNetworkIds = new Set(this.#evmNetworks.map((evmNetwork) => evmNetwork.id))
     const tokenIds = new Set(tokens.map((token) => token.id))
     await this.deleteBalances((balance) => {
       // remove balance if chain/evm network doesn't exist
       if (balance.chainId === undefined && balance.evmNetworkId === undefined) return true
-      if (balance.chainId !== undefined && !chainIds.has(balance.chainId)) return true
-      if (balance.evmNetworkId !== undefined && !evmNetworkIds.has(balance.evmNetworkId))
+      if (balance.chainId !== undefined && !this.#chains[balance.chainId]) return true
+      if (balance.evmNetworkId !== undefined && !this.#evmNetworks[balance.evmNetworkId])
         return true
 
       // remove balance if token doesn't exist
@@ -524,24 +522,18 @@ export class BalancePool {
 
     const generation = this.#subscriptionsGeneration
     const addresses = await firstValueFrom(this.#addresses)
-    const tokens = this.#tokens
-    const chainDetails = Object.fromEntries(
-      this.#chains.map(({ id, genesisHash, rpcs, account }) => [id, { genesisHash, rpcs, account }])
-    )
-    const evmNetworkDetails = Object.fromEntries(
-      this.#evmNetworks.map(({ id, rpcs }) => [id, { rpcs }])
-    )
 
     const addressesByTokenByModule: Record<string, AddressesByToken<Token>> = {}
-    tokens
+    this.#tokens
       // filter out tokens on chains/evmNetworks which have no rpcs
       .filter(
         (token) =>
-          (token.chain?.id && (chainDetails[token.chain.id]?.rpcs?.length ?? 0) > 0) ||
-          (token.evmNetwork?.id && (evmNetworkDetails[token.evmNetwork.id]?.rpcs?.length ?? 0) > 0)
+          (token.chain?.id && (this.#chains[token.chain.id]?.rpcs?.length ?? 0) > 0) ||
+          (token.evmNetwork?.id && (this.#evmNetworks[token.evmNetwork.id]?.rpcs?.length ?? 0) > 0)
       )
       .forEach((token) => {
         if (!addressesByTokenByModule[token.type]) addressesByTokenByModule[token.type] = {}
+        const chain = token.chain?.id ? this.#chains[token.chain?.id] : undefined
 
         addressesByTokenByModule[token.type][token.id] = Object.keys(addresses)
           .filter(
@@ -549,13 +541,13 @@ export class BalancePool {
             (address) =>
               !token.chain ||
               !addresses[address] ||
-              addresses[address]?.includes(chainDetails[token.chain.id]?.genesisHash ?? "")
+              addresses[address]?.includes(chain?.genesisHash ?? "")
           )
           .filter((address) => {
             // for each address, fetch balances only from compatible chains
             return isEthereumAddress(address)
-              ? token.evmNetwork?.id || chainDetails[token.chain?.id ?? ""]?.account === "secp256k1"
-              : token.chain?.id && chainDetails[token.chain?.id ?? ""]?.account !== "secp256k1"
+              ? token.evmNetwork?.id || chain?.account === "secp256k1"
+              : token.chain?.id && chain?.account !== "secp256k1"
           })
       })
 
@@ -565,7 +557,7 @@ export class BalancePool {
     )
 
     for (const balanceModule of this.#balanceModules) {
-      // erc20 balance module returns it's initialising status in the subscribeBalances callback
+      // some modules returns their initialising status in the subscribeBalances callback
       // so we don't need to check for it here
       // Todo: upgrade all balance modules to this pattern and then remove this logic
       if (NEW_BALANCE_MODULES.includes(balanceModule.type)) continue
