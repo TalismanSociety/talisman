@@ -43,8 +43,6 @@ export const getBlowfishChainInfo = (evmNetworkId: EvmNetworkId) => {
 export const getBlowfishClient = (evmNetworkId: EvmNetworkId) => {
   if (!BLOWFISH_SUPPORTED_CHAINS[evmNetworkId]) return null
 
-  // TODO remove this check once we have a proxy
-  // https://docs.blowfish.xyz/docs/wallet-integration-guide#optional-proxy-server
   if (!process.env.BLOWFISH_API_KEY) return null
 
   const config = getBlowfishChainInfo(evmNetworkId)
