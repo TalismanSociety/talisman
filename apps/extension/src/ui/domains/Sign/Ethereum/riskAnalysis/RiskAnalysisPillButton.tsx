@@ -73,11 +73,17 @@ export const RiskAnalysisPillButton: FC = () => {
     }
 
     if (riskAnalysis?.error) {
+      const error = riskAnalysis?.error as Error
+
+      // Consider it's worth retrying in case of api error (429, 500..) unless it's because of an invalid request
+      // Add conditions here as we discover them
+      const isInvalidRequest = error?.message === "Unsupported message type. Proceed with caution"
+
       return {
         icon: ShieldUnavailableIcon,
-        label: t("Scan failed"),
+        label: isInvalidRequest ? t("Assessment unavailable") : t("Scan failed"),
         className: "opacity-50",
-        disabled: false,
+        disabled: isInvalidRequest, // let user retry if he wants, unless it's an invalid request
         tooltip: getErrorTooltip(t, riskAnalysis.error as Error),
       }
     }
