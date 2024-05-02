@@ -588,7 +588,6 @@ export const useEthTransaction = (
     networkUsage,
     setCustomSettings,
     gasSettingsByPriority,
-    // riskAnalysis,
     updateCallArg,
   }
 }
