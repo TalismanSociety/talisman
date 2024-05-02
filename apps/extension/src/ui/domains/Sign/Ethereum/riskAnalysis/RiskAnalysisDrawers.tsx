@@ -52,13 +52,13 @@ export const RiskAnalysisPromptAutoRiskScan: FC = () => {
           <div className="text-body text-md text-center font-bold">
             {t("Automatic risk assessments")}
           </div>
-          <div className="text-body-secondary text-justify text-sm">
+          <div className="text-body-secondary text-center text-sm">
             <p>
               {t(
                 "Ethereum transactions and messages can be simulated on a secure server to assess their risk. Would you like to enable this feature?"
               )}
             </p>
-            <p className="mt-4 text-justify">
+            <p className="mt-4 text-center">
               {t("You may change this later from Talisman settings.")}
             </p>
           </div>
