@@ -6764,22 +6764,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@polkadot/types@patch:@polkadot/types@npm:10.11.2#.yarn/patches/@polkadot-types-npm-10.11.2-9fef8e41bc.patch::locator=talisman%40workspace%3A.":
-  version: 10.11.2
-  resolution: "@polkadot/types@patch:@polkadot/types@npm%3A10.11.2#.yarn/patches/@polkadot-types-npm-10.11.2-9fef8e41bc.patch::version=10.11.2&hash=0a65de&locator=talisman%40workspace%3A."
-  dependencies:
-    "@polkadot/keyring": ^12.6.2
-    "@polkadot/types-augment": 10.11.2
-    "@polkadot/types-codec": 10.11.2
-    "@polkadot/types-create": 10.11.2
-    "@polkadot/util": ^12.6.2
-    "@polkadot/util-crypto": ^12.6.2
-    rxjs: ^7.8.1
-    tslib: ^2.6.2
-  checksum: dc2be7978e88c7a08850b46523c7593d657338478300f5c69f60f228ff6925dffc8a874ab28169028853aeb88cd36c7df8704df63856c57ddccc7c24b67ccba1
-  languageName: node
-  linkType: hard
-
 "@polkadot/ui-keyring@npm:3.6.4":
   version: 3.6.4
   resolution: "@polkadot/ui-keyring@npm:3.6.4"

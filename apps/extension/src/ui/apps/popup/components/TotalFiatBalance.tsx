@@ -2,7 +2,7 @@ import { ArrowDownIcon, CreditCardIcon, EyeIcon, EyeOffIcon, SendIcon } from "@t
 import { classNames } from "@talismn/util"
 import { api } from "@ui/api"
 import { AnalyticsEventName, AnalyticsPage, sendAnalyticsEvent } from "@ui/api/analytics"
-import currencyConfig from "@ui/domains/Asset/currencyConfig"
+import { currencyConfig } from "@ui/domains/Asset/currencyConfig"
 import { Fiat } from "@ui/domains/Asset/Fiat"
 import { useCopyAddressModal } from "@ui/domains/CopyAddress"
 import useAccounts from "@ui/hooks/useAccounts"

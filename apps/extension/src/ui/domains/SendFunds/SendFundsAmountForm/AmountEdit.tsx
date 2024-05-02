@@ -18,7 +18,7 @@ import {
 import { useTranslation } from "react-i18next"
 import { PillButton } from "talisman-ui"
 
-import currencyConfig from "../../Asset/currencyConfig"
+import { currencyConfig } from "../../Asset/currencyConfig"
 import { Fiat } from "../../Asset/Fiat"
 import Tokens from "../../Asset/Tokens"
 import { useSendFunds } from "../useSendFunds"
