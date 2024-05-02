@@ -7,7 +7,7 @@ export const useRisksReview = (action?: ActionEnum) => {
 
   const drawer = useOpenClose(false)
 
-  const isRiskAknowledgementRequired = useMemo(() => action === "BLOCK", [action])
+  const isRiskAknowledgementRequired = useMemo(() => action === ActionEnum.Block, [action])
 
   return {
     isRiskAknowledgementRequired,

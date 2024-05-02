@@ -1,3 +1,4 @@
+import { ActionEnum } from "@blowfishxyz/api-client/v20230605"
 import { Transition } from "@headlessui/react"
 import { ArrowRightIcon, ShieldNotOkIcon } from "@talismn/icons"
 import { classNames } from "@talismn/util"
@@ -81,7 +82,7 @@ const RiskAnalysisCriticalPane: FC<{ riskAnalysis: EvmRiskAnalysis | undefined }
   const { isOpen, open, close } = useOpenClose()
 
   useEffect(() => {
-    if (riskAnalysis?.result?.action === "BLOCK") open()
+    if (riskAnalysis?.result?.action === ActionEnum.Block) open()
   }, [open, riskAnalysis?.result?.action])
 
   return (

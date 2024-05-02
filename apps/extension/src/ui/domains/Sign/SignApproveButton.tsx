@@ -1,3 +1,4 @@
+import { ActionEnum } from "@blowfishxyz/api-client/v20230605"
 import { FC, useMemo } from "react"
 import { Button, ButtonProps } from "talisman-ui"
 
@@ -8,9 +9,9 @@ export const SignApproveButton: FC<ButtonProps> = (props) => {
 
   const color = useMemo(() => {
     switch (riskAnalysis?.result?.action) {
-      case "BLOCK":
+      case ActionEnum.Block:
         return "red"
-      case "WARN":
+      case ActionEnum.Warn:
         return "orange"
       default:
         return "primary"

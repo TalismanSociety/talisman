@@ -1,3 +1,4 @@
+import { ActionEnum } from "@blowfishxyz/api-client/v20230605"
 import {
   ShieldNotOkIcon,
   ShieldOkIcon,
@@ -25,7 +26,7 @@ const useRecommendation = ({ type, isAvailable, result, scanError }: EvmRiskAnal
       }
 
     switch (result?.action) {
-      case "BLOCK":
+      case ActionEnum.Block:
         return {
           Icon: ShieldNotOkIcon,
           bgClassName: "bg-brand-orange/10",
@@ -35,7 +36,7 @@ const useRecommendation = ({ type, isAvailable, result, scanError }: EvmRiskAnal
           // in this case there should always be at least 1 warning
           description: result.warnings[0]?.message ?? "",
         }
-      case "WARN":
+      case ActionEnum.Warn:
         return {
           Icon: ShieldZapIcon,
           bgClassName: "bg-alert-warn/10",
@@ -45,7 +46,7 @@ const useRecommendation = ({ type, isAvailable, result, scanError }: EvmRiskAnal
           // in this case there should always be at least 1 warning
           description: result.warnings[0]?.message ?? "",
         }
-      case "NONE":
+      case ActionEnum.None:
         return {
           Icon: ShieldOkIcon,
           bgClassName: "bg-green/10",
