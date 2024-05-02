@@ -1,7 +1,6 @@
 import keyring from "@polkadot/ui-keyring"
 import { SingleAddress } from "@polkadot/ui-keyring/observable/types"
 import { assert } from "@polkadot/util"
-import { HexString } from "@polkadot/util/types"
 import * as Sentry from "@sentry/browser"
 import {
   AddressesByToken,
@@ -21,6 +20,7 @@ import omit from "lodash/omit"
 import pick from "lodash/pick"
 import {
   BehaviorSubject,
+  Observable,
   ReplaySubject,
   Subject,
   Subscription,
@@ -35,16 +35,12 @@ import { balanceModules, getBalanceModules } from "../../rpcs/balance-modules"
 import { chaindataProvider } from "../../rpcs/chaindata"
 import { Addresses } from "../../types/base"
 import { awaitKeyringLoaded } from "../../util/awaitKeyringLoaded"
-import { SettingsStoreData, settingsStore } from "../app/store.settings"
-import { ActiveChains, activeChainsStore, isChainActive } from "../chains/store.activeChains"
+import { settingsStore } from "../app/store.settings"
+import { activeChainsStore, isChainActive } from "../chains/store.activeChains"
 import { Chain } from "../chains/types"
-import {
-  ActiveEvmNetworks,
-  activeEvmNetworksStore,
-  isEvmNetworkActive,
-} from "../ethereum/store.activeEvmNetworks"
+import { activeEvmNetworksStore, isEvmNetworkActive } from "../ethereum/store.activeEvmNetworks"
 import { EvmNetwork } from "../ethereum/types"
-import { ActiveTokens, activeTokensStore, isTokenActive } from "../tokens/store.activeTokens"
+import { activeTokensStore, isTokenActive } from "../tokens/store.activeTokens"
 import {
   Balance,
   BalanceJson,
@@ -330,31 +326,51 @@ export class BalancePool {
    * Creates a subscription to automatically call `this.setChains` when any of the chains/tokens dependencies update.
    */
   private async initializeChaindataSubscription() {
+    // create and subscribe to observables for active chains/evmNetworks/tokens here
+    const getActiveStuff = <T extends { isTestnet?: boolean }, A extends Record<string, boolean>>(
+      dataObservable: Observable<Array<T>>,
+      activeStoreObservable: Observable<A>,
+      isActiveFn: (item: T, activeMap: A) => boolean
+    ) => {
+      return combineLatest([dataObservable, activeStoreObservable, settingsStore.observable]).pipe(
+        map(([data, active, { useTestnets }]) => {
+          return data
+            .filter((item) => isActiveFn(item, active))
+            .filter((item) => (useTestnets ? true : !item.isTestnet))
+        })
+      )
+    }
+    const activeChains = getActiveStuff(
+      chaindataProvider.chainsObservable,
+      activeChainsStore.observable,
+      isChainActive
+    )
+
+    const activeEvmNetworks = getActiveStuff(
+      chaindataProvider.evmNetworksObservable,
+      activeEvmNetworksStore.observable,
+      isEvmNetworkActive
+    )
+
+    const activeTokens = getActiveStuff(
+      chaindataProvider.tokensObservable,
+      activeTokensStore.observable,
+      isTokenActive
+    )
+
     // subscribe to all the inputs that make up the list of tokens to watch balances for
     // debounce to avoid restarting subscriptions multiple times when settings change rapidly (ex: multiple networks/tokens activated/deactivated rapidly)
     return combineLatest([
-      // chains
-      chaindataProvider.chainsObservable,
-      // evmNetworks
-      chaindataProvider.evmNetworksObservable,
-      // tokens
-      chaindataProvider.tokensObservable,
-      // miniMetadatas
+      activeChains,
+      activeEvmNetworks,
+      activeTokens,
       liveQuery(() => balancesDb.miniMetadatas.toArray()),
-
-      // active state of substrate chains
-      activeChainsStore.observable,
-      // active state of evm networks
-      activeEvmNetworksStore.observable,
-      // enable state of tokens
-      activeTokensStore.observable,
-
-      // settings
-      settingsStore.observable,
     ])
       .pipe(firstThenDebounce(DEBOUNCE_TIMEOUT))
       .subscribe({
-        next: (args) => this.setChains(...args),
+        next: (args) => {
+          this.setChains(...args)
+        },
         error: (error) =>
           error?.error?.name !== Dexie.errnames.DatabaseClosed && Sentry.captureException(error),
       })
@@ -370,41 +386,23 @@ export class BalancePool {
    *                 Chains with a different health status to what is in the store will be updated.
    */
   private async setChains(
-    allChains: Chain[],
-    allEvmNetworks: EvmNetwork[],
-    allTokens: Token[],
-    miniMetadatas: MiniMetadata[],
-
-    activeChainsMap: ActiveChains,
-    activeNetworksMap: ActiveEvmNetworks,
-    activeTokensMap: ActiveTokens,
-
-    settings: SettingsStoreData
+    chains: Chain[],
+    evmNetworks: EvmNetwork[],
+    tokens: Token[],
+    miniMetadatas: MiniMetadata[]
   ) {
-    // filter by active chains/networks/tokens
-    const filterByActive = <T extends { isTestnet?: boolean }>(
-      allItems: T[],
-      activeMap: Record<string, boolean>,
-      isActiveFn: (item: T, activeMap: Record<string, boolean>) => boolean
-    ): T[] =>
-      allItems
-        .filter((item) => isActiveFn(item, activeMap))
-        .filter(settings.useTestnets ? () => true : (item) => !item.isTestnet)
-
-    const chains = filterByActive(allChains, activeChainsMap, isChainActive)
-    const evmNetworks = filterByActive(allEvmNetworks, activeNetworksMap, isEvmNetworkActive)
-    const tokens = filterByActive(allTokens, activeTokensMap, isTokenActive)
-
     // Check for changes since the last call to this.setChains
+    // compare chains
     const newChains = chains.map((chain) => pick(chain, ["id", "genesisHash", "account", "rpcs"]))
     const existingChainsMap = Object.fromEntries(this.#chains.map((chain) => [chain.id, chain]))
     const noChainChanges =
       newChains.length === this.#chains.length &&
       newChains.every((newChain) => isEqual(newChain, existingChainsMap[newChain.id]))
+
+    // compare evm networks
     const existingEvmNetworksMap = Object.fromEntries(
       this.#evmNetworks.map((evmNetwork) => [evmNetwork.id, evmNetwork])
     )
-
     const newEvmNetworks = evmNetworks.map((evmNetwork) =>
       pick(evmNetwork, ["id", "nativeToken", "substrateChain", "rpcs"])
     )
@@ -414,11 +412,13 @@ export class BalancePool {
         isEqual(newEvmNetwork, existingEvmNetworksMap[newEvmNetwork.id])
       )
 
+    // compare minimetadatas
     const existingMiniMetadataIds = this.#miniMetadataIds
     const noMiniMetadataChanges =
       existingMiniMetadataIds.size === miniMetadatas.length &&
       miniMetadatas.every((m) => existingMiniMetadataIds.has(m.id))
 
+    // compare tokens
     const newTokens = tokens.map(({ id, type, chain, evmNetwork }) => ({
       id,
       type,
@@ -457,44 +457,6 @@ export class BalancePool {
       // keep balance
       return false
     })
-
-    // Delete stored balances for accounts on incompatible chains
-    // 1. Hardware accounts which are locked to a chain shouldn't have balances on other chains
-    // 2. Substrate accounts shouldn't have evm balances,
-    //    Evm accounts shouldn't have substrate balances (unless the chain uses secp256k1 accounts)
-    await firstValueFrom(this.#addresses).then((addresses) =>
-      this.deleteBalances((balance) => {
-        //
-        // delete balances for hardware accounts on chains other than the chain the accounts are locked to
-        // these balances aren't fetched anymore, but were fetched prior to v1.14.0, so we need ensure they are cleaned up
-        //
-        const chain =
-          (balance.chainId && this.#chains.find(({ id }) => id === balance.chainId)) || null
-        /** hash of balance chain */
-        const genesisHash =
-          (chain?.genesisHash?.startsWith?.("0x") && (chain.genesisHash as HexString)) || null
-        /** chains which balance account is locked to (is null for non-hardware accounts) */
-        const hardwareChains = addresses[balance.address]
-        if (genesisHash && hardwareChains && !hardwareChains.includes(genesisHash)) return true
-
-        //
-        // delete balances for accounts on incompatible chains
-        //
-        const hasChain = balance.chainId && chainIds.has(balance.chainId)
-        const hasEvmNetwork = balance.evmNetworkId && evmNetworkIds.has(balance.evmNetworkId)
-        const chainUsesSecp256k1Accounts = chain?.account === "secp256k1"
-        if (!isEthereumAddress(balance.address)) {
-          if (!hasChain) return true
-          if (chainUsesSecp256k1Accounts) return true
-        }
-        if (isEthereumAddress(balance.address)) {
-          if (!hasEvmNetwork && !chainUsesSecp256k1Accounts) return true
-        }
-
-        // keep balance
-        return false
-      })
-    )
 
     // Update chains on existing subscriptions
     await this.restartSubscriptions()
