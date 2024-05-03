@@ -23,7 +23,7 @@ function isRawPayload(payload: SignerPayloadJSON | SignerPayloadRaw): payload is
   return !!(payload as SignerPayloadRaw).data
 }
 
-const SignLedgerSubstrate: FC<SignHardwareSubstrateProps> = ({
+const SignLedgerSubstrateLegacy: FC<SignHardwareSubstrateProps> = ({
   className = "",
   onSigned,
   onSentToDevice,
@@ -152,4 +152,4 @@ const SignLedgerSubstrate: FC<SignHardwareSubstrateProps> = ({
 }
 
 // default export to allow for lazy loading
-export default SignLedgerSubstrate
+export default SignLedgerSubstrateLegacy

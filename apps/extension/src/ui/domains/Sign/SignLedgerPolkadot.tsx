@@ -1,6 +1,7 @@
 import { wrapBytes } from "@polkadot/extension-dapp/wrapBytes"
 import { TypeRegistry } from "@polkadot/types"
-import { assert, hexToU8a } from "@polkadot/util"
+import { assert, hexToU8a, u8aToHex } from "@polkadot/util"
+import { HexString } from "@polkadot/util/types"
 import { classNames } from "@talismn/util"
 import { useQuery } from "@tanstack/react-query"
 import { useLedgerPolkadot } from "@ui/hooks/ledger/useLedgerPolkadot"
@@ -188,15 +189,49 @@ const useLedgerPolkadotInputs = (payload: SignerPayloadJSON | SignerPayloadRaw |
     queryFn: async () => {
       if (!chain || !nativeToken || !jsonPayload) return null
 
+      // console.log("payload", payload)
+
+      // console.log(JSON.stringify(payload, undefined, 2))
+      // jsonPayload.signedExtensions.push("CheckMetadataHash")
+
+      const registry = new TypeRegistry()
+      registry.setSignedExtensions(jsonPayload.signedExtensions)
+      const extPayload = registry.createType("ExtrinsicPayload", jsonPayload, {
+        version: jsonPayload.version,
+      })
+
+      const req = await fetch("https://api.zondax.ch/polkadot/transaction/metadata", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "accept": "application/json",
+        },
+        body: JSON.stringify({
+          chain: { id: "dot-hub" }, //TODO id mapping list :jean:
+          txBlob: u8aToHex(extPayload.toU8a(true)),
+        }),
+      })
+
+      if (!req.ok) {
+        log.error("Failed to fetch shortened metadata", {
+          status: req.status,
+          statusText: req.statusText,
+        })
+        throw new Error("Failed to fetch shortened metadata")
+      }
+
+      const { txMetadata } = (await req.json()) as { txMetadata: HexString }
+      //  console.log("res", txMetadata)
       // const bytes = await getMetadataV15(chain.id, jsonPayload.blockHash)
 
-      return { shortMetadata: "METADATA", ticker: "dot" }
+      return { shortMetadata: txMetadata, ticker: "dot", extPayload }
     },
     refetchInterval: false,
     refetchIntervalInBackground: false,
     refetchOnWindowFocus: false,
     refetchOnMount: false,
     refetchOnReconnect: false,
+    retry: false,
   })
 }
 
@@ -292,17 +327,14 @@ const SignLedgerPolkadot: FC<SignHardwareSubstrateProps> = ({
           return
         }
 
-        const { shortMetadata } = inputs
+        const { shortMetadata, extPayload } = inputs
 
         setError(null)
         if (payload.signedExtensions) registry.setSignedExtensions(payload.signedExtensions)
-        const extrinsicPayload = registry.createType("ExtrinsicPayload", payload, {
-          version: payload.version,
-        })
 
         const signResult = await ledger.sign(
           derivationPath,
-          Buffer.from(extrinsicPayload.toU8a(true)),
+          Buffer.from(extPayload.toU8a(true)),
           Buffer.from(hexToU8a(shortMetadata))
         )
 
