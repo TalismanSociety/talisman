@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import { TypeRegistry, createType, i128 } from "@polkadot/types"
 import { ExtDef } from "@polkadot/types/extrinsic/signedExtensions/types"
-import { assert, u8aToHex, u8aToString } from "@polkadot/util"
+import { arrayChunk, assert, u8aToHex, u8aToString } from "@polkadot/util"
 import { defineMethod } from "@substrate/txwrapper-core"
 import PromisePool from "@supercharge/promise-pool"
 import { ChainConnector } from "@talismn/chain-connector"
@@ -21,30 +21,25 @@ import {
   transformMetadataV14,
 } from "@talismn/scale"
 import * as $ from "@talismn/subshape-fork"
-import {
-  Deferred,
-  blake2Concat,
-  decodeAnyAddress,
-  firstThenDebounce,
-  isEthereumAddress,
-} from "@talismn/util"
+import { Deferred, blake2Concat, decodeAnyAddress, isEthereumAddress } from "@talismn/util"
 import isEqual from "lodash/isEqual"
 import {
   BehaviorSubject,
   Observable,
-  bufferCount,
+  ReplaySubject,
   combineLatest,
+  debounceTime,
+  distinctUntilChanged,
   from,
   interval,
   map,
   mergeMap,
-  pairwise,
   scan,
   share,
-  startWith,
   switchAll,
   switchMap,
   takeUntil,
+  withLatestFrom,
 } from "rxjs"
 
 import { DefaultBalanceModule, NewBalanceModule, NewTransferParamsType } from "../BalanceModule"
@@ -125,7 +120,8 @@ export const subNativeTokenId = (chainId: ChainId) =>
  * @param balance2 SubNativeBalance
  * @returns SubNativeBalance
  */
-const mergeValues = (balance1: SubNativeBalance, balance2: SubNativeBalance) => {
+const mergeBalances = (balance1: SubNativeBalance | undefined, balance2: SubNativeBalance) => {
+  if (balance1 === undefined) return balance2
   assert(
     getBalanceId(balance1) === getBalanceId(balance2),
     "Balances with different IDs should not be merged"
@@ -135,7 +131,7 @@ const mergeValues = (balance1: SubNativeBalance, balance2: SubNativeBalance) => 
     // whether it exists or not, we can update or create it like this
     valuesMap[getValueId(value)] = value
   }
-  const merged = { ...balance1, values: Object.values(valuesMap) }
+  const merged = { ...balance1, status: balance2.status, values: Object.values(valuesMap) }
   return merged
 }
 
@@ -206,6 +202,30 @@ const positiveBalanceTokens = subNativeBalances.pipe(
 )
 
 const POLLING_WINDOW_SIZE = 20
+const MAX_SUBSCRIPTION_SIZE = 40
+
+const RELAY_TOKENS = ["polkadot-substrate-native", "kusama-substrate-native"]
+const PUBLIC_GOODS_TOKENS = [
+  "polkadot-asset-hub-substrate-native",
+  "kusama-asset-hub-substrate-native",
+]
+const sortChains = (a: string, b: string) => {
+  // polkadot and kusama should be checked first
+  if (RELAY_TOKENS.includes(a)) return -1
+  if (RELAY_TOKENS.includes(b)) return 1
+  if (PUBLIC_GOODS_TOKENS.includes(a)) return -1
+  if (PUBLIC_GOODS_TOKENS.includes(b)) return 1
+  return 0
+}
+
+const subscriptionTokens = new ReplaySubject<string[]>(1)
+
+positiveBalanceTokens
+  .pipe(
+    map((tokens) => tokens.sort(sortChains).slice(0, MAX_SUBSCRIPTION_SIZE)),
+    share()
+  )
+  .subscribe((tokens) => subscriptionTokens.next(tokens))
 
 export const SubNativeModule: NewBalanceModule<
   ModuleType,
@@ -383,7 +403,7 @@ export const SubNativeModule: NewBalanceModule<
         return acc
       }, new Map())
 
-      const _callbackSub = subNativeBalances.pipe(firstThenDebounce(1000)).subscribe({
+      const _callbackSub = subNativeBalances.subscribe({
         next: (balances) => {
           callback(null, {
             status: initialisingBalances.size > 0 ? "initialising" : "live",
@@ -392,18 +412,6 @@ export const SubNativeModule: NewBalanceModule<
         },
         error: (error) => callback(error),
       })
-
-      // TODO: Create a more elegant system which can handle the following use cases
-      //
-      // For now, we're just going to manually create three separate subscription handlers
-      //
-      // We can't just pass a bunch of queries into a single handler because for crowdloans
-      // and staking we must first make some queries for some data and then create new queries
-      // based on the result of those first queries
-      // This is a usecase which is not yet managed by the RpcStateQueryHelper
-      //
-      // Eventually we should be able to delete the Deferred and just create the one
-      // `subscribeBase` handler which handles everything
 
       const unsubDeferred = Deferred()
       // we return this to the caller so that they can let us know when they're no longer interested in this subscription
@@ -419,12 +427,18 @@ export const SubNativeModule: NewBalanceModule<
       const handleUpdate: SubscriptionCallback<SubNativeBalance[]> = (error, result) => {
         if (result) {
           const currentBalances = subNativeBalances.getValue()
-          const mergedBalances: Record<string, SubNativeBalance> = {}
-          result.forEach((b) => {
+          // first merge any balances with the same id within the result
+          const accumulatedBalances = result.reduce<Record<string, SubNativeBalance>>((acc, b) => {
             const bId = getBalanceId(b)
-            const existing = currentBalances[bId]
+            acc[bId] = mergeBalances(acc[bId], b)
+            return acc
+          }, {})
+
+          // then merge these with the current balances
+          const mergedBalances: Record<string, SubNativeBalance> = {}
+          Object.entries(accumulatedBalances).forEach(([bId, b]) => {
             // merge the values from the new balance into the existing balance, if there is one
-            mergedBalances[bId] = existing ? mergeValues(existing, b) : b
+            mergedBalances[bId] = mergeBalances(currentBalances[bId], b)
 
             // update initialisingBalances to remove balances which have been updated
             const intialisingForToken = initialisingBalances.get(b.tokenId)
@@ -447,23 +461,22 @@ export const SubNativeModule: NewBalanceModule<
       }
 
       // subscribe to addresses and tokens for which we have a known positive balance
-      const positiveSub = positiveBalanceTokens
+      const positiveSub = subscriptionTokens
         .pipe(
-          firstThenDebounce(1000),
+          debounceTime(1000),
+          takeUntil(callerUnsubscribed),
           map((tokenIds) =>
             tokenIds.reduce((acc, tokenId) => {
               acc[tokenId] = addressesByToken[tokenId]
               return acc
             }, {} as AddressesByToken<SubNativeToken>)
           ),
-          startWith({}),
-          pairwise()
+          distinctUntilChanged(isEqual)
         )
         .pipe(
-          switchMap(([previousAddressesByToken, newAddressesByToken]) => {
+          switchMap((newAddressesByToken) => {
             return new Observable((subscriber) => {
               if (!chainConnectors.substrate) return
-              if (isEqual(previousAddressesByToken, newAddressesByToken)) return
 
               const unsubNompoolStaking = subscribeNompoolStaking(
                 chaindataProvider,
@@ -479,17 +492,16 @@ export const SubNativeModule: NewBalanceModule<
                 newAddressesByToken,
                 handleUpdate
               )
-              const unsubBase = subscribeBase(
+              const subBase = subscribeBase(
                 chaindataProvider,
                 chainConnectors.substrate,
                 getOrCreateTypeRegistry,
                 newAddressesByToken,
                 handleUpdate
               )
-
               subscriber.add(async () => (await unsubNompoolStaking)())
               subscriber.add(async () => (await unsubCrowdloans)())
-              subscriber.add(async () => (await unsubBase)())
+              subscriber.add(async () => (await subBase)())
             })
           })
         )
@@ -509,10 +521,12 @@ export const SubNativeModule: NewBalanceModule<
       }
       // do one poll to get things started
       const currentBalances = subNativeBalances.getValue()
-      const currentTokens = Object.values(currentBalances).map((b) => b.tokenId)
-      const nonCurrentTokens = Object.keys(addressesByToken).filter(
-        (tokenId) => !currentTokens.includes(tokenId)
-      )
+      const currentTokens = new Set(Object.values(currentBalances).map((b) => b.tokenId))
+
+      const nonCurrentTokens = Object.keys(addressesByToken)
+        .filter((tokenId) => !currentTokens.has(tokenId))
+        .sort(sortChains)
+
       // break nonCurrentTokens into chunks of POLLING_WINDOW_SIZE
       await PromisePool.withConcurrency(POLLING_WINDOW_SIZE)
         .for(nonCurrentTokens)
@@ -521,22 +535,17 @@ export const SubNativeModule: NewBalanceModule<
             await poll({ [nonCurrentTokenId]: addressesByToken[nonCurrentTokenId] })
         )
 
-      // now poll every 30s on chains for which we do not have a known positive balance
+      // now poll every 30s on chains which are not subscriptionTokens
       // we chunk this observable into batches of positive token ids, to prevent eating all the websocket connections
       const pollingSub = interval(30_000) // emit values every 30 seconds
         .pipe(
           takeUntil(callerUnsubscribed),
-          switchMap(() =>
-            positiveBalanceTokens.pipe(
-              map((positiveTokenIds) =>
-                Object.keys(addressesByToken).filter(
-                  (tokenId) => !positiveTokenIds.includes(tokenId)
-                )
-              ),
-              mergeMap((tokenIds) => from(tokenIds)), // Emit each tokenId individually
-              bufferCount(POLLING_WINDOW_SIZE) // Chunk the emitted individual tokenIds
-            )
+          withLatestFrom(subscriptionTokens), // Combine latest value from subscriptionTokens with each interval tick
+          map(([_, subscribedTokenIds]) =>
+            // Filter out tokens that are not subscribed
+            Object.keys(addressesByToken).filter((tokenId) => !subscribedTokenIds.includes(tokenId))
           ),
+          mergeMap((tokenIds) => from(arrayChunk(tokenIds, POLLING_WINDOW_SIZE))),
           mergeMap((tokenChunk) => {
             // tokenChunk is a chunk of tokenIds with size POLLING_WINDOW_SIZE
             const pollingTokenAddresses = Object.fromEntries(
