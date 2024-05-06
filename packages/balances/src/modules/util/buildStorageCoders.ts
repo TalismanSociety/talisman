@@ -1,5 +1,5 @@
 import { ChainId, ChainList } from "@talismn/chaindata-provider"
-import { V14, V15, getDynamicBuilder, metadata as scaleMetadata } from "@talismn/scale"
+import { decodeMetadata, getDynamicBuilder } from "@talismn/scale"
 
 import log from "../../log"
 import { MiniMetadata } from "../../types"
@@ -30,14 +30,8 @@ export const buildStorageCoders = <
       const [, miniMetadata] = findChainMeta<TBalanceModule>(miniMetadatas, moduleType, chain)
       if (!miniMetadata) return []
       if (!miniMetadata.data) return []
-      if (miniMetadata.version !== 15 && miniMetadata.version !== 14) return []
 
-      const [metadata, tag] = ((): [V15, "v15"] | [V14, "v14"] | [] => {
-        const decoded = scaleMetadata.dec(miniMetadata.data)
-        if (decoded.metadata.tag === "v15") return [decoded.metadata.value, decoded.metadata.tag]
-        if (decoded.metadata.tag === "v14") return [decoded.metadata.value, decoded.metadata.tag]
-        return []
-      })()
+      const { metadata, tag } = decodeMetadata(miniMetadata.data)
       if (!metadata || !tag) return []
 
       try {
