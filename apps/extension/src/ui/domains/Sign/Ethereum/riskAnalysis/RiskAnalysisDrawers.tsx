@@ -93,9 +93,7 @@ const RiskAnalysisCriticalPane: FC<{ riskAnalysis: EvmRiskAnalysis | undefined }
           "flex flex-col items-center gap-8 p-12",
           "to-black-primary bg-gradient-to-b from-[#411D1D]"
         )}
-        enter="transition-opacity ease-linear duration-200"
-        enterFrom="opacity-0"
-        enterTo="opacity-100"
+        enter="opacity-100" // no fade in (other drawer is opening to under it)
         leave="transition-opacity ease-linear duration-200"
         leaveFrom="opacity-100"
         leaveTo="opacity-0"
