@@ -1,6 +1,6 @@
 import { useMemo } from "react"
 
-export const useEvmRiskAnalysisOrigin = (url: string | undefined): string => {
+export const useOriginFromUrl = (url: string | undefined): string => {
   return useMemo(() => {
     if (url) {
       try {

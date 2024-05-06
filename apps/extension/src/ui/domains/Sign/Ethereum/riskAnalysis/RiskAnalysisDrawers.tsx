@@ -74,9 +74,10 @@ export const RiskAnalysisPromptAutoRiskScan: FC = () => {
   )
 }
 
-const RiskAnalysisCriticalPane: FC<{ riskAnalysis: EvmRiskAnalysis | undefined }> = ({
-  riskAnalysis,
-}) => {
+const RiskAnalysisCriticalPane: FC<{
+  riskAnalysis: EvmRiskAnalysis | undefined
+  onReject?: () => void
+}> = ({ riskAnalysis, onReject = () => window.close() }) => {
   const { t } = useTranslation()
 
   const { isOpen, open, close } = useOpenClose()
@@ -118,7 +119,7 @@ const RiskAnalysisCriticalPane: FC<{ riskAnalysis: EvmRiskAnalysis | undefined }
           <span>{t("Proceed anyway")}</span>
           <ArrowRightIcon className="text-md inline-block" />
         </button>
-        <Button fullWidth onClick={window.close}>
+        <Button fullWidth onClick={onReject}>
           {t("Cancel")}
         </Button>
       </Transition.Child>
@@ -126,7 +127,10 @@ const RiskAnalysisCriticalPane: FC<{ riskAnalysis: EvmRiskAnalysis | undefined }
   )
 }
 
-export const RiskAnalysisDrawers: FC<{ riskAnalysis?: EvmRiskAnalysis }> = ({ riskAnalysis }) => {
+export const RiskAnalysisDrawers: FC<{ riskAnalysis?: EvmRiskAnalysis; onReject?: () => void }> = ({
+  riskAnalysis,
+  onReject,
+}) => {
   if (!riskAnalysis) return null
 
   return (
@@ -139,7 +143,7 @@ export const RiskAnalysisDrawers: FC<{ riskAnalysis?: EvmRiskAnalysis }> = ({ ri
       >
         <RiskAnalysisDrawerContent riskAnalysis={riskAnalysis} />
       </Drawer>
-      <RiskAnalysisCriticalPane riskAnalysis={riskAnalysis} />
+      <RiskAnalysisCriticalPane riskAnalysis={riskAnalysis} onReject={onReject} />
       <Drawer anchor="bottom" containerId="main" isOpen={riskAnalysis.shouldPromptAutoRiskScan}>
         <RiskAnalysisPromptAutoRiskScan />
       </Drawer>

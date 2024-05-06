@@ -46,7 +46,7 @@ export const EthSignMessageRequest = () => {
   }, [status])
 
   return (
-    <RiskAnalysisProvider riskAnalysis={riskAnalysis}>
+    <RiskAnalysisProvider riskAnalysis={riskAnalysis} onReject={reject}>
       <PopupLayout>
         <PopupHeader right={<SignNetworkLogo network={network} />}>
           <AppPill url={url} />

@@ -4,7 +4,6 @@ import { EvmNetworkId } from "@talismn/chaindata-provider"
 
 import { getBlowfishClient } from "./blowfish"
 import { useEvmRiskAnalysisBase } from "./useEvmRiskAnalysisBase"
-import { useEvmRiskAnalysisOrigin } from "./useEvmRiskAnalysisOrigin"
 
 const getTypedDataPayload = (msg: string): EvmSignTypedDataData | null => {
   try {
@@ -22,7 +21,7 @@ type UseEvmMessageRiskAnalysisProps = {
   method: EthSignMessageMethod | undefined
   message: string | undefined
   account: string | undefined
-  url?: string
+  origin: string
   disableAutoRiskScan?: boolean
 }
 
@@ -31,16 +30,14 @@ export const useEvmMessageRiskAnalysis = ({
   method,
   message,
   account,
-  url,
+  origin,
   disableAutoRiskScan,
 }: UseEvmMessageRiskAnalysisProps) => {
-  const origin = useEvmRiskAnalysisOrigin(url)
-
   return useEvmRiskAnalysisBase({
     type: "message",
     evmNetworkId,
     disableAutoRiskScan,
-    queryKey: ["useEvmMessageRiskAnalysis", evmNetworkId, method, message, account, url],
+    queryKey: ["useEvmMessageRiskAnalysis", evmNetworkId, method, message, account, origin],
     queryFn: () => {
       if (!evmNetworkId || !method || !message || !account) return null
 

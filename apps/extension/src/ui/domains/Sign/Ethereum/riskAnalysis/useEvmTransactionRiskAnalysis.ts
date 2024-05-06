@@ -5,23 +5,19 @@ import { TransactionRequest } from "viem"
 
 import { getBlowfishClient } from "./blowfish"
 import { useEvmRiskAnalysisBase } from "./useEvmRiskAnalysisBase"
-import { useEvmRiskAnalysisOrigin } from "./useEvmRiskAnalysisOrigin"
 
 type UseEvmTransactionRiskAnalysisProps = {
   evmNetworkId: EvmNetworkId | undefined
   tx: TransactionRequest | undefined
-  url?: string
+  origin?: string
   disableAutoRiskScan?: boolean
 }
 
 export const useEvmTransactionRiskAnalysis = ({
   evmNetworkId,
   tx,
-  url,
   disableAutoRiskScan,
 }: UseEvmTransactionRiskAnalysisProps) => {
-  const origin = useEvmRiskAnalysisOrigin(url)
-
   const txData = useMemo<EvmTxData | null>(() => {
     if (!tx?.from) return null
 

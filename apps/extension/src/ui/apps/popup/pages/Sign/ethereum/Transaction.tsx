@@ -148,7 +148,7 @@ export const EthSignTransactionRequest = () => {
       {isLoading ? (
         <SignViewBodyShimmer />
       ) : (
-        <RiskAnalysisProvider riskAnalysis={riskAnalysis}>
+        <RiskAnalysisProvider riskAnalysis={riskAnalysis} onReject={reject}>
           <PopupContent>
             <div className="scrollable scrollable-800 text-body-secondary h-full overflow-y-auto text-center">
               <EthSignBody decodedTx={decodedTx} isReady={!isLoading} />
