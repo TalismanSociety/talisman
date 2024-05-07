@@ -141,6 +141,11 @@ export type RequestAccountCreateLedgerSubstrateLegacy = Omit<
   "hardwareType"
 >
 
+export type RequestAccountCreateLedgerSubstrateGeneric = Omit<
+  RequestAccountCreateHardware,
+  "hardwareType" | "genesisHash"
+>
+
 export interface RequestAccountCreateLedgerEthereum {
   name: string
   address: string

@@ -2,6 +2,7 @@ import {
   AccountAddressType,
   RequestAccountCreateLedgerEthereum,
   RequestAccountCreateLedgerPolkadot,
+  RequestAccountCreateLedgerSubstrateGeneric,
   RequestAccountCreateLedgerSubstrateLegacy,
   SubstrateLedgerAppType,
 } from "@extension/core"
@@ -14,12 +15,14 @@ import { useCallback, useState } from "react"
 import { useSearchParams } from "react-router-dom"
 
 export type LedgerAccountDefSubstrateLegacy = RequestAccountCreateLedgerSubstrateLegacy
+export type LedgerAccountDefSubstrateGeneric = RequestAccountCreateLedgerSubstrateGeneric
 export type LedgerAccountDefPolkadot = RequestAccountCreateLedgerPolkadot
 export type LedgerAccountDefEthereum = RequestAccountCreateLedgerEthereum
 export type LedgerAccountDef =
   | LedgerAccountDefSubstrateLegacy
   | LedgerAccountDefPolkadot
   | LedgerAccountDefEthereum
+  | LedgerAccountDefSubstrateGeneric
 
 type LedgerCreationInputs = {
   type: AccountAddressType
@@ -68,7 +71,10 @@ const useAddLedgerAccountProvider = ({ onSuccess }: { onSuccess: (address: strin
     async (accounts: LedgerAccountDef[]) => {
       if (data.type === "sr25519" && data.substrateAppType === "substrate-legacy")
         assert(
-          accounts.every((acc) => "path" in acc || acc.genesisHash === chain?.genesisHash),
+          accounts.every(
+            (acc) =>
+              "path" in acc || ("genesisHash" in acc && acc.genesisHash === chain?.genesisHash)
+          ),
           "Chain mismatch"
         )
 

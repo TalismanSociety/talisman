@@ -10708,6 +10708,15 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@zondax/ledger-substrate@npm:0.42.2":
+  version: 0.42.2
+  resolution: "@zondax/ledger-substrate@npm:0.42.2"
+  dependencies:
+    axios: ^1.6.8
+  checksum: a536be6aaf832f9ea9253ea0abdd268a2c60a4f435a2bce618dbd60a17f54e70cc39c7878730d8c641147dbfc096888ddb7f0219f4b823056d808cf9da8ff079
+  languageName: node
+  linkType: hard
+
 "@zondax/ledger-substrate@npm:^0.41.3":
   version: 0.41.3
   resolution: "@zondax/ledger-substrate@npm:0.41.3"
@@ -11511,6 +11520,17 @@ __metadata:
     form-data: ^4.0.0
     proxy-from-env: ^1.1.0
   checksum: 4a7429e2b784be0f2902ca2680964391eae7236faa3967715f30ea45464b98ae3f1c6f631303b13dfe721b17126b01f486c7644b9ef276bfc63112db9fd379f8
+  languageName: node
+  linkType: hard
+
+"axios@npm:^1.6.8":
+  version: 1.6.8
+  resolution: "axios@npm:1.6.8"
+  dependencies:
+    follow-redirects: ^1.15.6
+    form-data: ^4.0.0
+    proxy-from-env: ^1.1.0
+  checksum: bf007fa4b207d102459300698620b3b0873503c6d47bf5a8f6e43c0c64c90035a4f698b55027ca1958f61ab43723df2781c38a99711848d232cad7accbcdfcdd
   languageName: node
   linkType: hard
 
@@ -15847,6 +15867,7 @@ __metadata:
     "@typescript-eslint/eslint-plugin": ^6.9.0
     "@typescript-eslint/parser": ^6.9.0
     "@zondax/ledger-polkadot": ^0.16.0
+    "@zondax/ledger-substrate": 0.42.2
     anylogger: ^1.0.11
     anylogger-loglevel: ^1.0.0
     archiver: 5.3.1
@@ -16278,6 +16299,16 @@ __metadata:
     debug:
       optional: true
   checksum: 584da22ec5420c837bd096559ebfb8fe69d82512d5585004e36a3b4a6ef6d5905780e0c74508c7b72f907d1fa2b7bd339e613859e9c304d0dc96af2027fd0231
+  languageName: node
+  linkType: hard
+
+"follow-redirects@npm:^1.15.6":
+  version: 1.15.6
+  resolution: "follow-redirects@npm:1.15.6"
+  peerDependenciesMeta:
+    debug:
+      optional: true
+  checksum: a62c378dfc8c00f60b9c80cab158ba54e99ba0239a5dd7c81245e5a5b39d10f0c35e249c3379eae719ff0285fff88c365dd446fab19dee771f1d76252df1bbf5
   languageName: node
   linkType: hard
 

@@ -16,7 +16,7 @@ import * as yup from "yup"
 
 import { useAddLedgerAccount } from "./context"
 import { ConnectLedgerEthereum } from "./Shared/ConnectLedgerEthereum"
-import { ConnectLedgerPolkadot } from "./Shared/ConnectLedgerPolkadot"
+import { ConnectLedgerSubstrateGeneric } from "./Shared/ConnectLedgerSubstrateGeneric"
 import { ConnectLedgerSubstrateLegacy } from "./Shared/ConnectLedgerSubstrateLegacy"
 
 type FormData = {
@@ -241,11 +241,17 @@ export const AddLedgerSelectNetwork = () => {
                 />
               )}
               {substrateAppType === "polkadot" && (
-                <ConnectLedgerPolkadot
+                <ConnectLedgerSubstrateGeneric
                   className="min-h-[11rem]"
                   onReadyChanged={setIsLedgerReady}
                 />
               )}
+              {/* {substrateAppType === "polkadot" && (
+                <ConnectLedgerPolkadot
+                  className="min-h-[11rem]"
+                  onReadyChanged={setIsLedgerReady}
+                />
+              )} */}
             </>
           )}
           {accountType === "ethereum" && (

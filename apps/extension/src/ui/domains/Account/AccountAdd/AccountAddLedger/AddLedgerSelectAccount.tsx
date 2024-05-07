@@ -3,7 +3,6 @@ import { yupResolver } from "@hookform/resolvers/yup"
 import { notify, notifyUpdate } from "@talisman/components/Notifications"
 import { sleep } from "@talismn/util"
 import { LedgerEthereumAccountPicker } from "@ui/domains/Account/LedgerEthereumAccountPicker"
-import { LedgerPolkadotAccountPicker } from "@ui/domains/Account/LedgerPolkadotAccountPicker"
 import { LedgerSubstrateAccountPicker } from "@ui/domains/Account/LedgerSubstrateAccountPicker"
 import { FC, useCallback, useMemo, useState } from "react"
 import { useForm } from "react-hook-form"
@@ -12,6 +11,7 @@ import { Navigate } from "react-router-dom"
 import { Button, Dropdown } from "talisman-ui"
 import * as yup from "yup"
 
+import { LedgerSubstrateGenericAccountPicker } from "../../LedgerSubstrateGenericAccountPicker"
 import { LedgerAccountDef, useAddLedgerAccount } from "./context"
 
 const options: Record<LedgerEthDerivationPathType, string> = {
@@ -179,8 +179,11 @@ export const AddLedgerSelectAccount = () => {
                 onChange={handleAccountsChange}
               />
             )}
-            {data.substrateAppType === "polkadot" && (
+            {/* {data.substrateAppType === "polkadot" && (
               <LedgerPolkadotAccountPicker onChange={handleAccountsChange} />
+            )} */}
+            {data.substrateAppType === "polkadot" && (
+              <LedgerSubstrateGenericAccountPicker onChange={handleAccountsChange} />
             )}
           </>
         )}
