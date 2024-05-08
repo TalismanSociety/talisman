@@ -1,4 +1,4 @@
-import { AccountJsonAny, AccountType } from "@extension/core"
+import { AccountJsonAny, AccountType, SubstrateLedgerAppType } from "@extension/core"
 import { SignerPayloadJSON, SignerPayloadRaw } from "@polkadot/types/types"
 import { HexString } from "@polkadot/util/types"
 import { useAccountByAddress } from "@ui/hooks/useAccountByAddress"
@@ -6,6 +6,7 @@ import { FC, Suspense, lazy } from "react"
 
 import { SignDcentSubstrate } from "./SignDcentSubstrate"
 
+const SignLedgerSubstrateGeneric = lazy(() => import("./SignLedgerSubstrateGeneric"))
 const SignLedgerSubstrateLegacy = lazy(() => import("./SignLedgerSubstrateLegacy"))
 const SignLedgerPolkadot = lazy(() => import("./SignLedgerPolkadot"))
 
@@ -25,12 +26,21 @@ const getSignHardwareComponent = (account: AccountJsonAny | null) => {
   switch (account?.origin) {
     case AccountType.Dcent:
       return SignDcentSubstrate
-    case AccountType.Ledger:
-    case // @ts-expect-error incomplete migration, remove once migration is completed
-    "HARDWARE":
-      return account.genesisHash ? SignLedgerSubstrateLegacy : SignLedgerPolkadot
+    case AccountType.Ledger: {
+      switch (account?.ledgerApp) {
+        case SubstrateLedgerAppType.Legacy:
+          return SignLedgerSubstrateLegacy
+        case SubstrateLedgerAppType.Polkadot:
+          return SignLedgerPolkadot
+        case SubstrateLedgerAppType.Generic:
+          return SignLedgerSubstrateGeneric
+        case SubstrateLedgerAppType.Migration:
+        default:
+          throw new Error("Not implemented")
+      }
+    }
     default:
-      throw new Error(`Unknown sign hardware component for account origin ${account?.origin}`)
+      throw new Error(`Unknown sign hardware account type for account origin ${account?.origin}`)
   }
 }
 

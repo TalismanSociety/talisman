@@ -11,8 +11,6 @@ import { LedgerError, LedgerStatus, getLedgerErrorProps } from "./common"
 
 export const useLedgerSubstrateGeneric = (persist = false) => {
   const { t } = useTranslation()
-  // const chain = useChainByGenesisHash(genesis)
-  // const app = useLedgerSubstrateLegacyApp(genesis)
   const [isLoading, setIsLoading] = useState(false)
   const [refreshCounter, setRefreshCounter] = useState(0)
   const [error, setError] = useState<Error>()
