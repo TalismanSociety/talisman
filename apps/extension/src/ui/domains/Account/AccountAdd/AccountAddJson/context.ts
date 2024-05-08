@@ -69,9 +69,11 @@ const useAccountsBalances = (pairs: KeyringPair[] = []) => {
 
   return useMemo(() => {
     return accounts.reduce((acc, { address }) => {
-      const individualBalances = allBalances.find({ address })
+      const individualBalances = allBalances.balances.find({ address })
       const isLoading =
-        !allBalances.count || individualBalances.each.some((b) => b.status === "initializing")
+        !individualBalances.count ||
+        individualBalances.each.some((b) => b.status === "initializing") ||
+        allBalances.status === "initialising"
       const balances = new Balances(individualBalances)
 
       return {

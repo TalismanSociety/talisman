@@ -66,10 +66,13 @@ export const ConfigureAccount = () => {
   const chain = useChainByGenesisHash(
     (state.type === "CONFIGURE" && state.accountConfig.genesisHash) || undefined
   )
-  const totalFiat = useBalancesFiatTotal(balances)
+  const totalFiat = useBalancesFiatTotal(balances.balances)
 
   const isBalanceLoading =
-    !addressesByChain || balances.each.length < 1 || balances.each.some((b) => b.status !== "live")
+    !addressesByChain ||
+    balances.balances.each.length < 1 ||
+    balances.balances.each.some((b) => b.status !== "live") ||
+    balances.status === "initialising"
 
   if (state.type !== "CONFIGURE") return null
 
@@ -126,7 +129,7 @@ export const ConfigureAccount = () => {
                   <Fiat amount={totalFiat} isBalance />
                 </div>
               </TooltipTrigger>
-              <BalancesSummaryTooltipContent balances={balances} />
+              <BalancesSummaryTooltipContent balances={balances.balances} />
             </Tooltip>
           </div>
         </div>

@@ -5,13 +5,14 @@ import * as Sentry from "@sentry/browser"
 import {
   AddressesByToken,
   MiniMetadata,
+  StoredBalanceJson,
   db as balancesDb,
   deleteSubscriptionId,
   getBalanceId,
 } from "@talismn/balances"
 import { persistData, retrieveData } from "@talismn/balances"
 import { Token } from "@talismn/chaindata-provider"
-import { encodeAnyAddress, isEthereumAddress } from "@talismn/util"
+import { Deferred, encodeAnyAddress, isEthereumAddress } from "@talismn/util"
 import { firstThenDebounce } from "@talismn/util/src/firstThenDebounce"
 import { Dexie, liveQuery } from "dexie"
 import { log } from "extension-shared"
@@ -33,7 +34,7 @@ import Browser from "webextension-polyfill"
 import { unsubscribe } from "../../handlers/subscriptions"
 import { balanceModules, getBalanceModules } from "../../rpcs/balance-modules"
 import { chaindataProvider } from "../../rpcs/chaindata"
-import { Addresses } from "../../types/base"
+import { Addresses, AddressesByChain } from "../../types/base"
 import { awaitKeyringLoaded } from "../../util/awaitKeyringLoaded"
 import { settingsStore } from "../app/store.settings"
 import { activeChainsStore, isChainActive } from "../chains/store.activeChains"
@@ -42,11 +43,14 @@ import { activeEvmNetworksStore, isEvmNetworkActive } from "../ethereum/store.ac
 import { EvmNetwork } from "../ethereum/types"
 import { activeTokensStore, isTokenActive } from "../tokens/store.activeTokens"
 import {
+  AddressesAndEvmNetwork,
+  AddressesAndTokens,
   Balance,
   BalanceJson,
   BalanceSubscriptionResponse,
   Balances,
   RequestBalance,
+  RequestBalancesByParamsSubscribe,
 } from "./types"
 
 type ChainIdAndRpcs = Pick<Chain, "id" | "genesisHash" | "account" | "rpcs">
@@ -61,13 +65,51 @@ const DEBOUNCE_TIMEOUT = 3_000
 // balance modules that have been upgraed to the new SubscriptionResultWithStatus pattern
 const NEW_BALANCE_MODULES = ["substrate-native", "evm-erc20"]
 
+/**
+ * Observables providing info necessary to fetch balances
+ */
+
+// create and subscribe to observables for active chains/evmNetworks/tokens here
+const getActiveStuff = <T extends { isTestnet?: boolean }, A extends Record<string, boolean>>(
+  dataObservable: Observable<Array<T>>,
+  activeStoreObservable: Observable<A>,
+  isActiveFn: (item: T, activeMap: A) => boolean
+) => {
+  return combineLatest([dataObservable, activeStoreObservable, settingsStore.observable]).pipe(
+    map(([data, active, { useTestnets }]) => {
+      return data
+        .filter((item) => isActiveFn(item, active))
+        .filter((item) => (useTestnets ? true : !item.isTestnet))
+    })
+  )
+}
+export const activeChainsObservable = getActiveStuff(
+  chaindataProvider.chainsObservable,
+  activeChainsStore.observable,
+  isChainActive
+)
+
+export const activeEvmNetworksObservable = getActiveStuff(
+  chaindataProvider.evmNetworksObservable,
+  activeEvmNetworksStore.observable,
+  isEvmNetworkActive
+)
+
+export const activeTokensObservable = getActiveStuff(
+  chaindataProvider.tokensObservable,
+  activeTokensStore.observable,
+  isTokenActive
+)
+
 // TODO: Fix this class up
 //       1. It shouldn't need a whole extra copy of addresses+chains+networks separate to the db
 //       2. It shouldn't subscribe to all this data when subscriptions aren't even open
 //       3. It should support one-off subscriptions for accounts which aren't in the wallet
 //       4. It needs to stop trying to connect to broken RPCs after the subscriptions are closed
 
-export class BalancePool {
+abstract class BalancePool {
+  #persist = false
+  #hasInitialised = Deferred() // has the pool been initialised with sufficient state to begin querying balances
   #subscriptionsState: SubscriptionsState = "Closed"
   #subscriptionsStateUpdated: Subject<void> = new Subject()
   #subscriptionsGeneration = 0
@@ -91,10 +133,10 @@ export class BalancePool {
    * }
    * ```
    */
-  #addresses: ReplaySubject<Addresses> = new ReplaySubject(1)
-  #chains: Record<string, ChainIdAndRpcs> = {}
-  #evmNetworks: Record<string, EvmNetworkIdAndRpcs> = {}
-  #tokens: TokenIdAndType[] = []
+  addresses: ReplaySubject<Addresses> = new ReplaySubject(1)
+  chains: Record<string, ChainIdAndRpcs> = {}
+  evmNetworks: Record<string, EvmNetworkIdAndRpcs> = {}
+  tokens: TokenIdAndType[] = []
   #miniMetadataIds = new Set<string>()
 
   #cleanupSubs: Array<Promise<Subscription>>
@@ -102,7 +144,8 @@ export class BalancePool {
   /**
    * Initialize the store with a set of addresses and chains.
    */
-  constructor() {
+  constructor({ persist }: { persist?: boolean }) {
+    this.#persist = Boolean(persist)
     Browser.runtime.getBackgroundPage().then((b) => {
       if (window.location.href !== b.location.href)
         throw new Error(
@@ -110,16 +153,17 @@ export class BalancePool {
         )
     })
     // subscribe this store to all of the inputs it depends on
-    this.#cleanupSubs = [
-      this.initializeKeyringSubscription(),
-      this.initializeChaindataSubscription(),
-    ]
+    this.#cleanupSubs = [this.initializeChaindataSubscription()]
 
     // if we already have subscriptions - start polling
     if (this.#subscribers.observed) this.openSubscriptions()
 
-    // Hydrate pool from indexedDB
-    retrieveData().then((balances) => {
+    // Hydrate pool from indexedDB if retrieve = true
+    const retrieveFn = persist
+      ? retrieveData
+      : () => new Promise<StoredBalanceJson[]>((resolve) => resolve([]))
+
+    retrieveFn().then((balances) => {
       const initialBalances = balances.map((b) => ({ ...b, status: "cache" } as BalanceJson))
       this.setPool(initialBalances)
       this.#balanceModules = getBalanceModules(initialBalances)
@@ -140,6 +184,14 @@ export class BalancePool {
     )
   }
 
+  get hasInitialised() {
+    return this.#hasInitialised.promise
+  }
+
+  protected setOnCleanup(onCleanup: () => Promise<Subscription>) {
+    this.#cleanupSubs.push(onCleanup())
+  }
+
   get poolStatus() {
     const isInitialising = this.#initialising.size > 0
     return isInitialising ? "initialising" : "live"
@@ -157,37 +209,40 @@ export class BalancePool {
     onDisconnected: Promise<void>,
     cb: (val: BalanceSubscriptionResponse) => void
   ) {
-    // create subscription to pool
-    const poolSubscription = this.#pool
-      .pipe(debounceTime(500))
-      .subscribe((balances) => cb({ status: this.poolStatus, data: Object.values(balances) }))
-    // Because this.#pool can be observed directly in the backend, we can't use this.#pool.observed to
-    // decide when to close the rpc subscriptions.
-    // Instead, create a generic subscription just so that we know the front end is subscribing
-    const subscription = this.#subscribers.subscribe(() => {})
+    this.hasInitialised.then(() => {
+      // create subscription to pool
+      const poolSubscription = this.#pool
+        .pipe(debounceTime(500))
+        .subscribe((balances) => cb({ status: this.poolStatus, data: Object.values(balances) }))
+      // Because this.#pool can be observed directly in the backend, we can't use this.#pool.observed to
+      // decide when to close the rpc subscriptions.
+      // Instead, create a generic subscription just so that we know the front end is subscribing
+      const subscription = this.#subscribers.subscribe(() => {})
 
-    // open rpcs (if not already open)
-    this.openSubscriptions()
+      // open rpcs (if not already open)
+      this.openSubscriptions()
 
-    // close rpcs when the last subscriber disconnects
-    onDisconnected.then(() => {
-      unsubscribe(id)
-      subscription.unsubscribe()
-      poolSubscription.unsubscribe()
+      // close rpcs when the last subscriber disconnects
+      onDisconnected.then(() => {
+        unsubscribe(id)
+        subscription.unsubscribe()
+        poolSubscription.unsubscribe()
 
-      setTimeout(() => {
-        // wait 5 seconds to prevent subscription restart for these use cases :
-        // - popup loses focus and user reopens it right away
-        // - user opens popup and opens dashboard from it, which closes the popup
-        if (!this.#subscribers.observed) {
-          this.closeSubscriptions()
-          this.persist()
-        }
-      }, 5_000)
+        setTimeout(() => {
+          // wait 5 seconds to prevent subscription restart for these use cases :
+          // - popup loses focus and user reopens it right away
+          // - user opens popup and opens dashboard from it, which closes the popup
+          if (!this.#subscribers.observed) {
+            this.closeSubscriptions()
+            this.persist()
+          }
+        }, 5_000)
+      })
     })
   }
 
   private persist() {
+    if (!this.#persist) return
     const balancesToPersist = Object.entries(new Balances(this.balances).toJSON()).map(
       ([id, b]) => ({
         id,
@@ -306,70 +361,22 @@ export class BalancePool {
   }
 
   /**
-   * Creates a subscription to automatically call `this.setAccounts` when `keyring.accounts.subject` updates.
-   */
-  private async initializeKeyringSubscription() {
-    // When initializing, our keyring object doesn't immediately contain all of our accounts.
-    // To avoid deleting the balances for accounts which are in the wallet, but have not yet
-    // been loaded into the keyring, we wait for the full keyring to be loaded.
-    await awaitKeyringLoaded()
-
-    // accounts can be added to the keyring by batch (ex: multiple accounts imported from a seed phrase)
-    // debounce to ensure the subscriptions aren't restarted multiple times unnecessarily
-    return keyring.accounts.subject.pipe(firstThenDebounce(DEBOUNCE_TIMEOUT)).subscribe({
-      next: (accounts) => this.setAccounts(accounts),
-      error: (error) => Sentry.captureException(error),
-    })
-  }
-
-  /**
    * Creates a subscription to automatically call `this.setChains` when any of the chains/tokens dependencies update.
    */
   private async initializeChaindataSubscription() {
-    // create and subscribe to observables for active chains/evmNetworks/tokens here
-    const getActiveStuff = <T extends { isTestnet?: boolean }, A extends Record<string, boolean>>(
-      dataObservable: Observable<Array<T>>,
-      activeStoreObservable: Observable<A>,
-      isActiveFn: (item: T, activeMap: A) => boolean
-    ) => {
-      return combineLatest([dataObservable, activeStoreObservable, settingsStore.observable]).pipe(
-        map(([data, active, { useTestnets }]) => {
-          return data
-            .filter((item) => isActiveFn(item, active))
-            .filter((item) => (useTestnets ? true : !item.isTestnet))
-        })
-      )
-    }
-    const activeChains = getActiveStuff(
-      chaindataProvider.chainsObservable,
-      activeChainsStore.observable,
-      isChainActive
-    )
-
-    const activeEvmNetworks = getActiveStuff(
-      chaindataProvider.evmNetworksObservable,
-      activeEvmNetworksStore.observable,
-      isEvmNetworkActive
-    )
-
-    const activeTokens = getActiveStuff(
-      chaindataProvider.tokensObservable,
-      activeTokensStore.observable,
-      isTokenActive
-    )
-
     // subscribe to all the inputs that make up the list of tokens to watch balances for
     // debounce to avoid restarting subscriptions multiple times when settings change rapidly (ex: multiple networks/tokens activated/deactivated rapidly)
     return combineLatest([
-      activeChains,
-      activeEvmNetworks,
-      activeTokens,
+      activeChainsObservable,
+      activeEvmNetworksObservable,
+      activeTokensObservable,
       liveQuery(() => balancesDb.miniMetadatas.toArray()),
     ])
       .pipe(firstThenDebounce(DEBOUNCE_TIMEOUT))
       .subscribe({
         next: (args) => {
           this.setChains(...args)
+          this.#hasInitialised.resolve(true)
         },
         error: (error) =>
           error?.error?.name !== Dexie.errnames.DatabaseClosed && Sentry.captureException(error),
@@ -397,8 +404,8 @@ export class BalancePool {
       chains.map((chain) => [chain.id, pick(chain, ["id", "genesisHash", "account", "rpcs"])])
     )
     const noChainChanges =
-      Object.keys(newChains).length === Object.keys(this.#chains).length &&
-      isEqual(newChains, this.#chains)
+      Object.keys(newChains).length === Object.keys(this.chains).length &&
+      isEqual(newChains, this.chains)
 
     // compare evm networks
     const newEvmNetworks = Object.fromEntries(
@@ -409,8 +416,8 @@ export class BalancePool {
     )
 
     const noEvmNetworkChanges =
-      Object.keys(newEvmNetworks).length === Object.keys(this.#evmNetworks).length &&
-      isEqual(newEvmNetworks, this.#evmNetworks)
+      Object.keys(newEvmNetworks).length === Object.keys(this.evmNetworks).length &&
+      isEqual(newEvmNetworks, this.evmNetworks)
 
     // compare minimetadatas
     const existingMiniMetadataIds = this.#miniMetadataIds
@@ -425,16 +432,16 @@ export class BalancePool {
       chain,
       evmNetwork,
     }))
-    const existingTokens = this.#tokens
+    const existingTokens = this.tokens
     const noTokenChanges = isEqual(newTokens, existingTokens)
 
     // Ignore this call if nothing has changed since the last call to this.setChains
     if (noChainChanges && noEvmNetworkChanges && noMiniMetadataChanges && noTokenChanges) return
 
     // Update stored chains, evmNetworks, tokens and miniMetadataIds
-    this.#chains = newChains
-    this.#evmNetworks = newEvmNetworks
-    this.#tokens = newTokens
+    this.chains = newChains
+    this.evmNetworks = newEvmNetworks
+    this.tokens = newTokens
     this.#miniMetadataIds = new Set(miniMetadatas.map((m) => m.id))
 
     // Delete stored balances for chains and evmNetworks which are inactive / no longer exist
@@ -442,9 +449,8 @@ export class BalancePool {
     await this.deleteBalances((balance) => {
       // remove balance if chain/evm network doesn't exist
       if (balance.chainId === undefined && balance.evmNetworkId === undefined) return true
-      if (balance.chainId !== undefined && !this.#chains[balance.chainId]) return true
-      if (balance.evmNetworkId !== undefined && !this.#evmNetworks[balance.evmNetworkId])
-        return true
+      if (balance.chainId !== undefined && !this.chains[balance.chainId]) return true
+      if (balance.evmNetworkId !== undefined && !this.evmNetworks[balance.evmNetworkId]) return true
 
       // remove balance if token doesn't exist
       if (!tokenIds.has(balance.tokenId)) return true
@@ -469,7 +475,7 @@ export class BalancePool {
    *
    * @param accounts - The accounts to watch for balances.
    */
-  private async setAccounts(accounts: Record<string, SingleAddress>) {
+  protected async setAccounts(accounts: Record<string, SingleAddress>) {
     // update the list of watched addresses
     const addresses = Object.fromEntries(
       Object.entries(accounts).map(([address, details]) => {
@@ -480,7 +486,7 @@ export class BalancePool {
         return [address, [genesisHash]]
       })
     )
-    this.#addresses.next(addresses)
+    this.addresses.next(addresses)
 
     // delete cached balances for accounts which don't exist anymore
     await this.deleteBalances((balance) => {
@@ -509,6 +515,10 @@ export class BalancePool {
     this.setPool(balancesToKeep)
   }
 
+  protected async getSubscriptionParameters(): Promise<Record<string, AddressesByToken<Token>>> {
+    log.error("getSubscriptionParameters must be implemented")
+    return {}
+  }
   /**
    * Opens balance subscriptions to all watched chains and addresses.
    */
@@ -521,35 +531,7 @@ export class BalancePool {
     log.log("Opening balance subscriptions")
 
     const generation = this.#subscriptionsGeneration
-    const addresses = await firstValueFrom(this.#addresses)
-
-    const addressesByTokenByModule: Record<string, AddressesByToken<Token>> = {}
-    this.#tokens
-      // filter out tokens on chains/evmNetworks which have no rpcs
-      .filter(
-        (token) =>
-          (token.chain?.id && (this.#chains[token.chain.id]?.rpcs?.length ?? 0) > 0) ||
-          (token.evmNetwork?.id && (this.#evmNetworks[token.evmNetwork.id]?.rpcs?.length ?? 0) > 0)
-      )
-      .forEach((token) => {
-        if (!addressesByTokenByModule[token.type]) addressesByTokenByModule[token.type] = {}
-        const chain = token.chain?.id ? this.#chains[token.chain?.id] : undefined
-
-        addressesByTokenByModule[token.type][token.id] = Object.keys(addresses)
-          .filter(
-            // filter out substrate addresses which have a genesis hash that doesn't match the genesisHash of the token's chain
-            (address) =>
-              !token.chain ||
-              !addresses[address] ||
-              addresses[address]?.includes(chain?.genesisHash ?? "")
-          )
-          .filter((address) => {
-            // for each address, fetch balances only from compatible chains
-            return isEthereumAddress(address)
-              ? token.evmNetwork?.id || chain?.account === "secp256k1"
-              : token.chain?.id && chain?.account !== "secp256k1"
-          })
-      })
+    const subscriptionParameters = await this.getSubscriptionParameters()
 
     const existingBalances = this.balances
     const existingBalancesKeys = new Set(
@@ -562,7 +544,7 @@ export class BalancePool {
       // Todo: upgrade all balance modules to this pattern and then remove this logic
       if (NEW_BALANCE_MODULES.includes(balanceModule.type)) continue
 
-      const addressesByToken = addressesByTokenByModule[balanceModule.type] ?? {}
+      const addressesByToken = subscriptionParameters[balanceModule.type] ?? {}
 
       for (const [tokenId, addresses] of Object.entries(addressesByToken))
         for (const address of addresses) {
@@ -594,7 +576,7 @@ export class BalancePool {
 
     const closeSubscriptionCallbacks = this.#balanceModules.map((balanceModule) =>
       balanceModule.subscribeBalances(
-        addressesByTokenByModule[balanceModule.type] ?? {},
+        subscriptionParameters[balanceModule.type] ?? {},
         (error, result) => {
           // ignore old subscriptions which have been told to close but aren't closed yet
           if (this.#subscriptionsGeneration !== generation) return
@@ -603,7 +585,7 @@ export class BalancePool {
             error?.type === "STALE_RPC_ERROR" ||
             error?.type === "WEBSOCKET_ALLOCATION_EXHAUSTED_ERROR"
           ) {
-            const addressesByModuleToken = addressesByTokenByModule[balanceModule.type] ?? {}
+            const addressesByModuleToken = subscriptionParameters[balanceModule.type] ?? {}
             // set status to stale for balances matching the error
             const staleObservable = this.#pool.pipe(
               map((val) =>
@@ -697,4 +679,184 @@ export class BalancePool {
   }
 }
 
-export const balancePool = new BalancePool()
+/**
+ * A balance pool which uses the keyring to watch for balances on internal accounts.
+ * Used as the default balance pool.
+ */
+class KeyringBalancePool extends BalancePool {
+  constructor({ persist }: { persist?: boolean }) {
+    super({ persist })
+    this.initializeKeyringSubscription = this.initializeKeyringSubscription.bind(this)
+    this.getSubscriptionParameters = this.getSubscriptionParameters.bind(this)
+    this.setOnCleanup(this.initializeKeyringSubscription)
+  }
+  /**
+   * Creates a subscription to automatically call `this.setAccounts` when `keyring.accounts.subject` updates.
+   */
+  private async initializeKeyringSubscription() {
+    // When initializing, our keyring object doesn't immediately contain all of our accounts.
+    // To avoid deleting the balances for accounts which are in the wallet, but have not yet
+    // been loaded into the keyring, we wait for the full keyring to be loaded.
+    await awaitKeyringLoaded()
+
+    // accounts can be added to the keyring by batch (ex: multiple accounts imported from a seed phrase)
+    // debounce to ensure the subscriptions aren't restarted multiple times unnecessarily
+    return keyring.accounts.subject.pipe(firstThenDebounce(DEBOUNCE_TIMEOUT)).subscribe({
+      next: (accounts) => this.setAccounts(accounts),
+      error: (error) => Sentry.captureException(error),
+    })
+  }
+
+  async getSubscriptionParameters() {
+    const addresses = await firstValueFrom(this.addresses)
+
+    const addressesByTokenByModule: Record<string, AddressesByToken<Token>> = {}
+    this.tokens
+      // filter out tokens on chains/evmNetworks which have no rpcs
+      .filter(
+        (token) =>
+          (token.chain?.id && (this.chains[token.chain.id]?.rpcs?.length ?? 0) > 0) ||
+          (token.evmNetwork?.id && (this.evmNetworks[token.evmNetwork.id]?.rpcs?.length ?? 0) > 0)
+      )
+      .forEach((token) => {
+        if (!addressesByTokenByModule[token.type]) addressesByTokenByModule[token.type] = {}
+        const chain = token.chain?.id ? this.chains[token.chain?.id] : undefined
+
+        addressesByTokenByModule[token.type][token.id] = Object.keys(addresses)
+          .filter(
+            // filter out substrate addresses which have a genesis hash that doesn't match the genesisHash of the token's chain
+            (address) =>
+              !token.chain ||
+              !addresses[address] ||
+              addresses[address]?.includes(chain?.genesisHash ?? "")
+          )
+          .filter((address) => {
+            // for each address, fetch balances only from compatible chains
+            return isEthereumAddress(address)
+              ? token.evmNetwork?.id || chain?.account === "secp256k1"
+              : token.chain?.id && chain?.account !== "secp256k1"
+          })
+      })
+    return addressesByTokenByModule
+  }
+}
+
+export const balancePool = new KeyringBalancePool({ persist: true })
+
+export class ExternalBalancePool extends BalancePool {
+  #subscriptionParameters: Record<string, AddressesByToken<Token>> = {}
+
+  constructor() {
+    super({ persist: false })
+  }
+
+  async setSubcriptionParameters({
+    addressesByChain,
+    addressesAndEvmNetworks,
+    addressesAndTokens,
+  }: RequestBalancesByParamsSubscribe) {
+    // must wait until initialised because some of the parameters to getSubscriptionParams
+    // will be set during initialisation
+    await this.hasInitialised
+
+    const subscriptionParameters = getSubscriptionParams(
+      addressesByChain,
+      addressesAndEvmNetworks,
+      addressesAndTokens,
+      this.chains,
+      this.evmNetworks,
+      this.tokens
+    )
+
+    this.#subscriptionParameters = subscriptionParameters
+  }
+
+  protected getSubscriptionParameters(): Promise<Record<string, AddressesByToken<Token>>> {
+    return Promise.resolve(this.#subscriptionParameters)
+  }
+}
+
+const getSubscriptionParams = (
+  addressesByChain: AddressesByChain,
+  addressesAndEvmNetworks: AddressesAndEvmNetwork,
+  addressesAndTokens: AddressesAndTokens,
+  activeChains: Record<string, ChainIdAndRpcs>,
+  activeEvmNetworks: Record<string, EvmNetworkIdAndRpcs>,
+  activeTokens: TokenIdAndType[]
+) => {
+  //
+  // Convert the inputs of `addressesByChain` and `addressesAndEvmNetworks` into what we need
+  // for each balance module: `addressesByToken`.
+  //
+
+  // const chainsMap = new Map(activeChains.map((c) => [c.id, c]))
+  // const evmNetworksMap = new Map(activeEvmNetworks.map((e) => [e.id, e]))
+  const tokensMap = Object.fromEntries(activeTokens.map((t) => [t.id, t]))
+
+  // typeguard
+  const isNetworkFilter = <T extends ChainIdAndRpcs | EvmNetworkIdAndRpcs>(
+    chainOrNetwork: T | undefined
+  ): chainOrNetwork is T => chainOrNetwork !== undefined
+
+  const chains = Object.keys(addressesByChain)
+    .map((chainId) => activeChains[chainId])
+    .filter(isNetworkFilter)
+  const evmNetworks = addressesAndEvmNetworks.evmNetworks
+    .map(({ id }) => activeEvmNetworks[id])
+    .filter(isNetworkFilter)
+
+  const chainsAndAddresses = [
+    // includes chains and evmNetworks
+    ...chains.map((chain) => [chain, addressesByChain[chain.id]] as const),
+    ...evmNetworks.map((evmNetwork) => [evmNetwork, addressesAndEvmNetworks.addresses] as const),
+  ]
+
+  const addressesByToken: AddressesByToken<Token> = chainsAndAddresses
+    // filter out requested chains/evmNetworks which have no rpcs
+    .filter(([{ rpcs }]) => (rpcs?.length ?? 0) > 0)
+
+    // convert chains and evmNetworks into a list of tokenIds
+    .flatMap(([chainOrNetwork, addresses]) =>
+      activeTokens
+        .filter((t) => t.chain?.id === chainOrNetwork.id || t.evmNetwork?.id === chainOrNetwork.id)
+        .map((t) => [t.id, addresses] as const)
+    )
+
+    // collect all of the addresses for each tokenId into a map of { [tokenId]: addresses }
+    .reduce<AddressesByToken<Token>>((addressesByToken, [tokenId, addresses]) => {
+      if (!addressesByToken[tokenId]) addressesByToken[tokenId] = []
+      addressesByToken[tokenId].push(...addresses)
+      return addressesByToken
+    }, {})
+
+  for (const tokenId of addressesAndTokens.tokenIds) {
+    if (!addressesByToken[tokenId]) addressesByToken[tokenId] = []
+    addressesByToken[tokenId].push(
+      ...addressesAndTokens.addresses.filter((a) => !addressesByToken[tokenId].includes(a))
+    )
+  }
+
+  //
+  // Separate out the tokens in `addressesByToken` into groups based on `token.type`
+  // Input:  {                 [token.id]: addresses,                    [token2.id]: addresses   }
+  // Output: { [token.type]: { [token.id]: addresses }, [token2.type]: { [token2.id]: addresses } }
+  //
+  // This lets us only send each token to the balance module responsible for querying its balance.
+  //
+  const addressesByTokenByModule: Record<string, AddressesByToken<Token>> = [
+    ...Object.entries(addressesByToken)
+      // convert tokenIds into tokens
+      .map(([tokenId, addresses]) => [tokensMap[tokenId], addresses] as const),
+  ]
+    // filter out tokens which don't exist
+    .filter(([token]) => Boolean(token))
+
+    // group each `{ [token.id]: addresses }` by token.type
+    .reduce((byModule, [token, addresses]) => {
+      if (!byModule[token.type]) byModule[token.type] = {}
+      byModule[token.type][token.id] = addresses
+      return byModule
+    }, {} as Record<string, AddressesByToken<Token>>)
+
+  return addressesByTokenByModule
+}

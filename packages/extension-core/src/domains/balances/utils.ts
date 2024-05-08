@@ -1,9 +1,9 @@
 import keyring from "@polkadot/ui-keyring"
-import { BalanceJson, Balances } from "@talismn/balances"
 import { TokenRatesList } from "@talismn/token-rates"
 import { liveQuery } from "dexie"
 import { log } from "extension-shared"
-import { combineLatest, throttleTime } from "rxjs"
+import { combineLatest } from "rxjs"
+import { throttleTime } from "rxjs"
 
 import { db as extensionDb } from "../../db"
 import { chaindataProvider } from "../../rpcs/chaindata"
@@ -12,6 +12,7 @@ import { isAccountCompatibleWithChain } from "../accounts/helpers"
 import { settingsStore } from "../app/store.settings"
 import { balancePool } from "./pool"
 import { balanceTotalsStore } from "./store.BalanceTotals"
+import { BalanceJson, Balances } from "./types"
 
 const MAX_UPDATE_INTERVAL = 1_000 // update every 1 second maximum
 

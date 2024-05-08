@@ -16,7 +16,6 @@ import {
   AuthorizedSite,
   AuthorizedSites,
   BalanceSubscriptionResponse,
-  BalancesUpdate,
   ChainId,
   ChangePasswordStatusUpdate,
   CustomErc20TokenCreate,
@@ -173,7 +172,7 @@ export default interface MessageTypes {
     addressesByChain: AddressesByChain,
     addressesAndEvmNetworks: AddressesAndEvmNetwork,
     addressesAndTokens: AddressesAndTokens,
-    cb: (balances: BalancesUpdate) => void
+    cb: (balances: BalanceSubscriptionResponse) => void
   ) => UnsubscribeFn
 
   // authorized sites message types ------------------------------------------
