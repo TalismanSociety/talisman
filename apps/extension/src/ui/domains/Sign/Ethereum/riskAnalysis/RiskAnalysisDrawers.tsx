@@ -108,7 +108,7 @@ const RiskAnalysisCriticalPane: FC<{
             {riskAnalysis?.type === "transaction" && t("We suspect this transaction is harmful.")}
             {riskAnalysis?.type === "message" && t("We suspect this message is harmful.")}
             <br />
-            {t("Signing it could lead to fund loss.")}
+            {t("Signing it could lead to funds loss.")}
           </p>
         </div>
         <button
