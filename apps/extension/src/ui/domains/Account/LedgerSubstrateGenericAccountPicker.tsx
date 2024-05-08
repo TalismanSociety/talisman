@@ -3,6 +3,7 @@ import { LedgerAccountDefSubstrateGeneric } from "@ui/domains/Account/AccountAdd
 import { useLedgerSubstrateGeneric } from "@ui/hooks/ledger/useLedgerSubstrateGeneric"
 import { AccountImportDef, useAccountImportBalances } from "@ui/hooks/useAccountImportBalances"
 import useAccounts from "@ui/hooks/useAccounts"
+import { SubstrateLedgerAppType } from "extension-core"
 import { log } from "extension-shared"
 import { FC, useCallback, useEffect, useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
@@ -40,11 +41,11 @@ const useLedgerSubstrateGenericAccounts = (
         const accountIndex = skip + i
         const addressOffset = 0
 
-        const account = 0x80000000 + accountIndex
-        const change = 0x80000000
-        const addressIndex = 0x80000005 + addressOffset
+        const HARDENED = 0x80000000
+        const account = HARDENED + accountIndex
+        const change = HARDENED
+        const addressIndex = HARDENED + addressOffset
 
-        //const path = getPolkadotLedgerDerivationPath(accountIndex, 0)
         const { address } = await ledger.getAddress(account, change, addressIndex, 42)
 
         newAccounts[i] = {
@@ -139,7 +140,13 @@ export const LedgerSubstrateGenericAccountPicker: FC<LedgerSubstrateGenericAccou
     setSelectedAccounts((prev) =>
       prev.some((pa) => pa.address === address)
         ? prev.filter((pa) => pa.address !== address)
-        : prev.concat({ address, name, accountIndex, addressOffset })
+        : prev.concat({
+            ledgerApp: SubstrateLedgerAppType.Generic,
+            address,
+            name,
+            accountIndex,
+            addressOffset,
+          })
     )
   }, [])
 

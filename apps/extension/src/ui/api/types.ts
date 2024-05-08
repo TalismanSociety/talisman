@@ -28,7 +28,7 @@ import {
   MetadataUpdateStatus,
   ModalOpenRequest,
   ProviderType,
-  RequestAccountCreateLedgerSubstrateLegacy,
+  RequestAccountCreateLedgerSubstrate,
   RequestAccountCreateOptions,
   RequestAddressLookup,
   RequestBalance,
@@ -123,9 +123,7 @@ export default interface MessageTypes {
   ) => Promise<string>
   accountCreateFromSuri: (name: string, suri: string, type?: AccountAddressType) => Promise<string>
   accountCreateFromJson: (unlockedPairs: KeyringPair$Json[]) => Promise<string[]>
-  accountCreateLedgerSubstrateLegacy: (
-    request: RequestAccountCreateLedgerSubstrateLegacy
-  ) => Promise<string>
+  accountCreateLedgerSubstrate: (request: RequestAccountCreateLedgerSubstrate) => Promise<string>
   accountCreateLedgerPolkadot: (name: string, address: string, path: string) => Promise<string>
   accountCreateLedgerEthereum: (name: string, address: string, path: string) => Promise<string>
   accountCreateDcent: (

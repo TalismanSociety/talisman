@@ -16,6 +16,7 @@ import * as yup from "yup"
 
 import { useAddLedgerAccount } from "./context"
 import { ConnectLedgerEthereum } from "./Shared/ConnectLedgerEthereum"
+import { ConnectLedgerPolkadot } from "./Shared/ConnectLedgerPolkadot"
 import { ConnectLedgerSubstrateGeneric } from "./Shared/ConnectLedgerSubstrateGeneric"
 import { ConnectLedgerSubstrateLegacy } from "./Shared/ConnectLedgerSubstrateLegacy"
 
@@ -174,7 +175,8 @@ export const AddLedgerSelectNetwork = () => {
 
   const showStep2 =
     accountType === "ethereum" ||
-    (accountType === "sr25519" && (chainId || substrateAppType === "polkadot"))
+    (accountType === "sr25519" &&
+      (chainId || ["polkadot", "substrate-generic"].includes(substrateAppType)))
   //     <AssetHubConflictWarning chain={chain} />
   return (
     <form className="flex h-full max-h-screen flex-col" onSubmit={handleSubmit(submit)}>
@@ -199,16 +201,33 @@ export const AddLedgerSelectNetwork = () => {
                     {t("Recommended")}
                   </span>
                 }
-                selected={substrateAppType === "polkadot"}
-                onClick={handleSubstrateAppTypeClick("polkadot")}
+                selected={substrateAppType === SubstrateLedgerAppType.Generic}
+                onClick={handleSubstrateAppTypeClick(SubstrateLedgerAppType.Generic)}
               />
               <AppVersionButton
                 title={t("Legacy Apps")}
                 description={t("Network-specific substrate apps")}
-                selected={substrateAppType === "substrate-legacy"}
-                onClick={handleSubstrateAppTypeClick("substrate-legacy")}
+                selected={substrateAppType === SubstrateLedgerAppType.Legacy}
+                onClick={handleSubstrateAppTypeClick(SubstrateLedgerAppType.Legacy)}
               />
-              <AppVersionButton title={t("Recovery App")} description={t("Coming soon")} disabled />
+              <AppVersionButton
+                title={t("Recovery App")}
+                description={t("Coming soon")}
+                selected={substrateAppType === SubstrateLedgerAppType.Migration}
+                onClick={handleSubstrateAppTypeClick(SubstrateLedgerAppType.Migration)}
+                // disabled // TODO: enable if there is at least 1 available migration app
+              />
+            </div>
+            <div className="mt-8">
+              <button
+                type="button"
+                className={classNames(
+                  substrateAppType === SubstrateLedgerAppType.Polkadot && "text-alert-success"
+                )}
+                onClick={handleSubstrateAppTypeClick(SubstrateLedgerAppType.Polkadot)}
+              >
+                {"@zondax/ledger-polkadot"}
+              </button>
             </div>
             {substrateAppType === "substrate-legacy" && (
               <>
@@ -240,20 +259,21 @@ export const AddLedgerSelectNetwork = () => {
                   chainId={chainId}
                 />
               )}
-              {substrateAppType === "polkadot" && (
+              {substrateAppType === "substrate-generic" && (
                 <ConnectLedgerSubstrateGeneric
                   className="min-h-[11rem]"
                   onReadyChanged={setIsLedgerReady}
                 />
               )}
-              {/* {substrateAppType === "polkadot" && (
+              {substrateAppType === "polkadot" && (
                 <ConnectLedgerPolkadot
                   className="min-h-[11rem]"
                   onReadyChanged={setIsLedgerReady}
                 />
-              )} */}
+              )}
             </>
           )}
+
           {accountType === "ethereum" && (
             <ConnectLedgerEthereum className="mt-14" onReadyChanged={setIsLedgerReady} />
           )}

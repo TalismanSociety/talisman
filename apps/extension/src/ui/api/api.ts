@@ -97,20 +97,8 @@ export const api: MessageTypes = {
     messageService.sendMessage("pri(accounts.create.suri)", { name, suri, type }),
   accountCreateFromJson: (unlockedPairs) =>
     messageService.sendMessage("pri(accounts.create.json)", { unlockedPairs }),
-  accountCreateLedgerSubstrateLegacy: ({
-    accountIndex,
-    address,
-    addressOffset,
-    genesisHash,
-    name,
-  }) =>
-    messageService.sendMessage("pri(accounts.create.ledger.substrate)", {
-      accountIndex,
-      address,
-      addressOffset,
-      genesisHash,
-      name,
-    }),
+  accountCreateLedgerSubstrate: (account) =>
+    messageService.sendMessage("pri(accounts.create.ledger.substrate)", account),
   accountCreateLedgerPolkadot: (name, address, path) =>
     messageService.sendMessage("pri(accounts.create.ledger.polkadot)", {
       name,

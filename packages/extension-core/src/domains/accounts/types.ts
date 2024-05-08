@@ -34,6 +34,7 @@ type AccountJsonHardwareSubstrateOwnProperties = {
   isHardware: true
   accountIndex: number
   addressOffset: number
+  ledgerApp?: SubstrateLedgerAppType
 }
 
 export type AccountJsonHardwareSubstrate = AccountJson & AccountJsonHardwareSubstrateOwnProperties
@@ -124,7 +125,12 @@ export type AccountsList = Account[]
 
 export type AccountAddressType = KeypairType // keep custom type, might want to add more later on
 
-export type SubstrateLedgerAppType = "substrate-legacy" | "polkadot" // | "polkadot-recovery"
+export enum SubstrateLedgerAppType {
+  Legacy = "substrate-legacy",
+  Generic = "substrate-generic",
+  Migration = "substrate-migration",
+  Polkadot = "polkadot",
+}
 
 export interface RequestAccountCreateFromSuri {
   name: string
@@ -139,12 +145,28 @@ export interface RequestAccountCreateFromJson {
 export type RequestAccountCreateLedgerSubstrateLegacy = Omit<
   RequestAccountCreateHardware,
   "hardwareType"
->
+> & {
+  ledgerApp: SubstrateLedgerAppType.Legacy
+}
+
+export type RequestAccountCreateLedgerSubstrateMigration = Omit<
+  RequestAccountCreateHardware,
+  "hardwareType"
+> & {
+  ledgerApp: SubstrateLedgerAppType.Migration
+}
 
 export type RequestAccountCreateLedgerSubstrateGeneric = Omit<
   RequestAccountCreateHardware,
   "hardwareType" | "genesisHash"
->
+> & {
+  ledgerApp: SubstrateLedgerAppType.Generic
+}
+
+export type RequestAccountCreateLedgerSubstrate =
+  | RequestAccountCreateLedgerSubstrateLegacy
+  | RequestAccountCreateLedgerSubstrateGeneric
+  | RequestAccountCreateLedgerSubstrateMigration
 
 export interface RequestAccountCreateLedgerEthereum {
   name: string
@@ -251,7 +273,7 @@ export interface AccountsMessages {
   "pri(accounts.create)": [RequestAccountCreate, string]
   "pri(accounts.create.suri)": [RequestAccountCreateFromSuri, string]
   "pri(accounts.create.json)": [RequestAccountCreateFromJson, string[]]
-  "pri(accounts.create.ledger.substrate)": [RequestAccountCreateLedgerSubstrateLegacy, string]
+  "pri(accounts.create.ledger.substrate)": [RequestAccountCreateLedgerSubstrate, string]
   "pri(accounts.create.ledger.polkadot)": [RequestAccountCreateLedgerPolkadot, string]
   "pri(accounts.create.ledger.ethereum)": [RequestAccountCreateLedgerEthereum, string]
   "pri(accounts.create.dcent)": [RequestAccountCreateDcent, string]

@@ -1,6 +1,7 @@
-import { isChainActive } from "@extension/core"
+import { SubstrateLedgerAppType, isChainActive } from "@extension/core"
 import { log } from "@extension/shared"
 import { convertAddress } from "@talisman/util/convertAddress"
+import { validateHexString } from "@talismn/util"
 import { useLedgerSubstrateLegacy } from "@ui/hooks/ledger/useLedgerSubstrateLegacy"
 import { useLedgerSubstrateLegacyApp } from "@ui/hooks/ledger/useLedgerSubstrateLegacyApp"
 import { AccountImportDef, useAccountImportBalances } from "@ui/hooks/useAccountImportBalances"
@@ -10,12 +11,15 @@ import useChain from "@ui/hooks/useChain"
 import { FC, useCallback, useEffect, useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
 
-import { LedgerAccountDefSubstrateLegacy } from "./AccountAdd/AccountAddLedger/context"
+import {
+  LedgerAccountDefSubstrate,
+  LedgerAccountDefSubstrateLegacy,
+} from "./AccountAdd/AccountAddLedger/context"
 import { DerivedAccountBase, DerivedAccountPickerBase } from "./DerivedAccountPickerBase"
 
 const useLedgerChainAccounts = (
   chainId: string,
-  selectedAccounts: LedgerAccountDefSubstrateLegacy[],
+  selectedAccounts: LedgerAccountDefSubstrate[],
   pageIndex: number,
   itemsPerPage: number
 ) => {
@@ -133,10 +137,10 @@ const useLedgerChainAccounts = (
 
 type LedgerSubstrateAccountPickerProps = {
   chainId: string
-  onChange?: (accounts: LedgerAccountDefSubstrateLegacy[]) => void
+  onChange?: (accounts: LedgerAccountDefSubstrate[]) => void
 }
 
-type LedgerSubstrateAccount = DerivedAccountBase & LedgerAccountDefSubstrateLegacy
+type LedgerSubstrateAccount = DerivedAccountBase & LedgerAccountDefSubstrate
 
 export const LedgerSubstrateAccountPicker: FC<LedgerSubstrateAccountPickerProps> = ({
   chainId,
@@ -159,7 +163,14 @@ export const LedgerSubstrateAccountPicker: FC<LedgerSubstrateAccountPickerProps>
     setSelectedAccounts((prev) =>
       prev.some((pa) => pa.address === address)
         ? prev.filter((pa) => pa.address !== address)
-        : prev.concat({ accountIndex, address, addressOffset, genesisHash, name })
+        : prev.concat({
+            ledgerApp: SubstrateLedgerAppType.Legacy,
+            accountIndex,
+            address,
+            addressOffset,
+            genesisHash: validateHexString(genesisHash as string),
+            name,
+          })
     )
   }, [])
 

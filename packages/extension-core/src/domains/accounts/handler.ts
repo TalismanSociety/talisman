@@ -34,7 +34,7 @@ import type {
   RequestAccountCreateFromSuri,
   RequestAccountCreateLedgerEthereum,
   RequestAccountCreateLedgerPolkadot,
-  RequestAccountCreateLedgerSubstrateLegacy,
+  RequestAccountCreateLedgerSubstrate,
   RequestAccountCreateSignet,
   RequestAccountCreateWatched,
   RequestAccountExport,
@@ -48,7 +48,7 @@ import type {
   RequestValidateDerivationPath,
   ResponseAccountExport,
 } from "./types"
-import { AccountImportSources, AccountType } from "./types"
+import { AccountImportSources, AccountType, SubstrateLedgerAppType } from "./types"
 
 export default class AccountsHandler extends ExtensionHandler {
   private async captureAccountCreateEvent(type: string | undefined, method: string) {
@@ -230,7 +230,7 @@ export default class AccountsHandler extends ExtensionHandler {
     // => create the pair without helper
     const pair = createPair(
       {
-        type: "sr25519",
+        type: "ed25519",
         toSS58: encodeAddress,
       },
       {
@@ -344,20 +344,25 @@ export default class AccountsHandler extends ExtensionHandler {
     return pair.address
   }
 
-  private accountsCreateLedgerSubstrateLegacy({
-    accountIndex,
-    address,
-    addressOffset,
-    genesisHash,
-    name,
-  }: RequestAccountCreateLedgerSubstrateLegacy): string {
-    const { pair } = keyring.addHardware(address, "ledger", {
+  private accountsCreateLedgerSubstrate(account: RequestAccountCreateLedgerSubstrate): string {
+    const { address, accountIndex, addressOffset, ledgerApp, name } = account
+
+    const meta: KeyringPair$Meta = {
       accountIndex,
       addressOffset,
-      genesisHash,
       name,
       origin: AccountType.Ledger,
-    })
+      ledgerApp,
+      type: "ed25519",
+    }
+
+    if (
+      account.ledgerApp === SubstrateLedgerAppType.Legacy ||
+      account.ledgerApp === SubstrateLedgerAppType.Migration
+    )
+      meta.genesisHash = account.genesisHash
+
+    const { pair } = keyring.addHardware(address, "ledger", meta)
 
     this.captureAccountCreateEvent("substrate", "hardware")
 
@@ -641,9 +646,7 @@ export default class AccountsHandler extends ExtensionHandler {
       case "pri(accounts.create.dcent)":
         return this.accountCreateDcent(request as RequestAccountCreateDcent)
       case "pri(accounts.create.ledger.substrate)":
-        return this.accountsCreateLedgerSubstrateLegacy(
-          request as RequestAccountCreateLedgerSubstrateLegacy
-        )
+        return this.accountsCreateLedgerSubstrate(request as RequestAccountCreateLedgerSubstrate)
       case "pri(accounts.create.ledger.polkadot)":
         return this.accountsCreateLedgerPolkadot(request as RequestAccountCreateLedgerPolkadot)
       case "pri(accounts.create.ledger.ethereum)":

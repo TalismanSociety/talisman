@@ -4942,18 +4942,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@ledgerhq/devices@npm:^8.0.4":
-  version: 8.0.4
-  resolution: "@ledgerhq/devices@npm:8.0.4"
-  dependencies:
-    "@ledgerhq/errors": ^6.12.7
-    "@ledgerhq/logs": ^6.10.1
-    rxjs: 6
-    semver: ^7.3.5
-  checksum: cd228b09c3510e4ec51206670343d7b4e5ee0fad8a75a8f1ba05945489cb3635b24521dbd0b08622f4b1fadcd58202c4e91f7dd694949cdc4633b7cb10d0b974
-  languageName: node
-  linkType: hard
-
 "@ledgerhq/devices@npm:^8.2.0":
   version: 8.2.0
   resolution: "@ledgerhq/devices@npm:8.2.0"
@@ -4978,13 +4966,6 @@ __metadata:
     react: ^18.2.0
     react-dom: ^18.2.0
   checksum: b6b121114bdc3537b0a253c0069a9226c4df86e0bf1c9cc42239b2f6e3e6dd39aa009f63862bf88cb12f7d6ca8511210e6c0cb921007d57143958ac7e07f5308
-  languageName: node
-  linkType: hard
-
-"@ledgerhq/errors@npm:^6.12.7":
-  version: 6.12.7
-  resolution: "@ledgerhq/errors@npm:6.12.7"
-  checksum: 8b0f0b0c57842479609e4d8d91f68d7f29197fcfdf233a0e61060492db495125b497f359ab33bcbcab7983dc10ead9434e638422d4f1036d159f003470cd8f6b
   languageName: node
   linkType: hard
 
@@ -5103,17 +5084,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@ledgerhq/hw-transport@npm:^6.27.1":
-  version: 6.28.5
-  resolution: "@ledgerhq/hw-transport@npm:6.28.5"
-  dependencies:
-    "@ledgerhq/devices": ^8.0.4
-    "@ledgerhq/errors": ^6.12.7
-    events: ^3.3.0
-  checksum: 7b9a3beec21c5ac73d69187de87f3de90071d5e7efe1e97ae3c6def0e8c9d68758bb8ecc863925da9baad2b7147e637769fd6fff4301f0b57dc0cf86de070bbe
-  languageName: node
-  linkType: hard
-
 "@ledgerhq/live-env@npm:^0.8.0":
   version: 0.8.0
   resolution: "@ledgerhq/live-env@npm:0.8.0"
@@ -5145,13 +5115,6 @@ __metadata:
   dependencies:
     "@ledgerhq/logs": ^6.12.0
   checksum: 2c3a1d20bc7cb4e7b02dee2927c6f8278ba97c2df35cb3ea5026e5ccfb6d3c48694ec1b300bfdb351a03c09c667d5528635cd321da15358602906a9d9cf5f7b6
-  languageName: node
-  linkType: hard
-
-"@ledgerhq/logs@npm:^6.10.1":
-  version: 6.10.1
-  resolution: "@ledgerhq/logs@npm:6.10.1"
-  checksum: 4dde46557d9daa6028f7040d26585aaa7260445212ad8348ae4a01463b7d76a1592dfc36921e47f5fc477c50b5d73e840070ac167e3cbe5b45123f36a4f96b08
   languageName: node
   linkType: hard
 
@@ -5709,7 +5672,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@noble/hashes@npm:1.3.1, @noble/hashes@npm:^1.1.2, @noble/hashes@npm:^1.2.0, @noble/hashes@npm:~1.3.0":
+"@noble/hashes@npm:1.3.1, @noble/hashes@npm:^1.1.2, @noble/hashes@npm:~1.3.0":
   version: 1.3.1
   resolution: "@noble/hashes@npm:1.3.1"
   checksum: 7fdefc0f7a0c1ec27acc6ff88841793e3f93ec4ce6b8a6a12bfc0dd70ae6b7c4c82fe305fdfeda1735d5ad4a9eebe761e6693b3d355689c559e91242f4bc95b1
@@ -7181,7 +7144,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@scure/base@npm:^1.1.1, @scure/base@npm:~1.1.0":
+"@scure/base@npm:~1.1.0":
   version: 1.1.1
   resolution: "@scure/base@npm:1.1.1"
   checksum: b4fc810b492693e7e8d0107313ac74c3646970c198bbe26d7332820886fa4f09441991023ec9aa3a2a51246b74409ab5ebae2e8ef148bbc253da79ac49130309
@@ -10717,23 +10680,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@zondax/ledger-substrate@npm:^0.41.3":
-  version: 0.41.3
-  resolution: "@zondax/ledger-substrate@npm:0.41.3"
-  dependencies:
-    "@ledgerhq/hw-transport": ^6.27.1
-    bip32: ^4.0.0
-    bip32-ed25519: "git+https://github.com/Zondax/bip32-ed25519.git"
-    bip39: ^3.0.4
-    blakejs: ^1.2.1
-    bs58: ^5.0.0
-    hash.js: ^1.1.7
-  bin:
-    ledger-substrate: dist/cmd/cli.js
-  checksum: 2c25cb9b28956a47d7152ef0494c8c5bf4c23a9b3afe1321c6fd0e1c1e531ea5d3325acc7666453b53da22aa7fd269d543d6a382848f9ad91cc554074c3d8eea
-  languageName: node
-  linkType: hard
-
 "JSONStream@npm:^1.3.5":
   version: 1.3.5
   resolution: "JSONStream@npm:1.3.5"
@@ -11813,13 +11759,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"base-x@npm:^4.0.0":
-  version: 4.0.0
-  resolution: "base-x@npm:4.0.0"
-  checksum: b25db9e07eb1998472a20557c7f00c797dc0595f79df95155ab74274e7fa98b9f2659b3ee547ac8773666b7f69540656793aeb97ad2b1ceccdb6fa5faaf69ac0
-  languageName: node
-  linkType: hard
-
 "base64-arraybuffer-es6@npm:^0.7.0":
   version: 0.7.0
   resolution: "base64-arraybuffer-es6@npm:0.7.0"
@@ -11927,38 +11866,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"bip32-ed25519@git+https://github.com/Zondax/bip32-ed25519.git":
-  version: 0.0.4
-  resolution: "bip32-ed25519@https://github.com/Zondax/bip32-ed25519.git#commit=0949df01b5c93885339bc28116690292088f6134"
-  dependencies:
-    bn.js: ^5.1.1
-    elliptic: ^6.4.1
-    hash.js: ^1.1.7
-  checksum: c0631f4c177b6a459968fb5653956749da1e692634b359155f1c41275eae7f42175629970aa23c1ba39f885b826c76319d03cc2135ae28735777e40e6fde2d7a
-  languageName: node
-  linkType: hard
-
-"bip32@npm:^4.0.0":
-  version: 4.0.0
-  resolution: "bip32@npm:4.0.0"
-  dependencies:
-    "@noble/hashes": ^1.2.0
-    "@scure/base": ^1.1.1
-    typeforce: ^1.11.5
-    wif: ^2.0.6
-  checksum: a36253ac164db50a25e88effce84aec1eaba2ec2fbd7a19bc1f836f9b1c934fa148c3a01ddece7f136596330074d98c6b2a441e51914c302d130f56f0f893d0d
-  languageName: node
-  linkType: hard
-
-"bip39@npm:^3.0.4":
-  version: 3.1.0
-  resolution: "bip39@npm:3.1.0"
-  dependencies:
-    "@noble/hashes": ^1.2.0
-  checksum: 1224e763ffc6b097052ed8abd57f0e521ad6d31f1645be0d0a15f4417c13f8461f00e47e9cf7c8c784bd533f4fb1ee3ab020f258c7df45ee5dc722b4b0336cfc
-  languageName: node
-  linkType: hard
-
 "bl@npm:^4.0.3":
   version: 4.1.0
   resolution: "bl@npm:4.1.0"
@@ -11970,7 +11877,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"blakejs@npm:^1.1.0, blakejs@npm:^1.2.1":
+"blakejs@npm:^1.1.0":
   version: 1.2.1
   resolution: "blakejs@npm:1.2.1"
   checksum: d699ba116cfa21d0b01d12014a03e484dd76d483133e6dc9eb415aa70a119f08beb3bcefb8c71840106a00b542cba77383f8be60cd1f0d4589cb8afb922eefbe
@@ -12245,16 +12152,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"bs58@npm:^5.0.0":
-  version: 5.0.0
-  resolution: "bs58@npm:5.0.0"
-  dependencies:
-    base-x: ^4.0.0
-  checksum: 2475cb0684e07077521aac718e604a13e0f891d58cff923d437a2f7e9e28703ab39fce9f84c7c703ab369815a675f11e3bd394d38643bfe8969fbe42e6833d45
-  languageName: node
-  linkType: hard
-
-"bs58check@npm:<3.0.0, bs58check@npm:^2.1.2":
+"bs58check@npm:^2.1.2":
   version: 2.1.2
   resolution: "bs58check@npm:2.1.2"
   dependencies:
@@ -14472,7 +14370,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"elliptic@npm:6.5.4, elliptic@npm:^6.4.1, elliptic@npm:^6.5.2, elliptic@npm:^6.5.3, elliptic@npm:^6.5.4":
+"elliptic@npm:6.5.4, elliptic@npm:^6.5.2, elliptic@npm:^6.5.3, elliptic@npm:^6.5.4":
   version: 6.5.4
   resolution: "elliptic@npm:6.5.4"
   dependencies:
@@ -23959,7 +23857,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"rxjs@npm:6, rxjs@npm:^6.6.3":
+"rxjs@npm:^6.6.3":
   version: 6.6.7
   resolution: "rxjs@npm:6.6.7"
   dependencies:
@@ -26194,13 +26092,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"typeforce@npm:^1.11.5":
-  version: 1.18.0
-  resolution: "typeforce@npm:1.18.0"
-  checksum: e3b21e27e76cb05f32285bef7c30a29760e79c622cfe4aa3c179ce49d1c7895b7154c8deedb9fe4599b1fd0428d35860d43e0776da1c04861168f3ad7ed99c70
-  languageName: node
-  linkType: hard
-
 "typescript@npm:^3.2.4":
   version: 3.9.10
   resolution: "typescript@npm:3.9.10"
@@ -27560,15 +27451,6 @@ __metadata:
   dependencies:
     string-width: ^1.0.2 || 2 || 3 || 4
   checksum: d5fc37cd561f9daee3c80e03b92ed3e84d80dde3365a8767263d03dacfc8fa06b065ffe1df00d8c2a09f731482fcacae745abfbb478d4af36d0a891fad4834d3
-  languageName: node
-  linkType: hard
-
-"wif@npm:^2.0.6":
-  version: 2.0.6
-  resolution: "wif@npm:2.0.6"
-  dependencies:
-    bs58check: <3.0.0
-  checksum: 8c3147ef98d56f394d66f0477f699fba7fc18dd0d1c2c5d0f8408be41acffed589fa82447d80eae5afc9a3cbd943bc3eebb337b9f114955adeaad02a244f4f9a
   languageName: node
   linkType: hard
 

@@ -2,8 +2,10 @@ import {
   AccountAddressType,
   RequestAccountCreateLedgerEthereum,
   RequestAccountCreateLedgerPolkadot,
+  RequestAccountCreateLedgerSubstrate,
   RequestAccountCreateLedgerSubstrateGeneric,
   RequestAccountCreateLedgerSubstrateLegacy,
+  RequestAccountCreateLedgerSubstrateMigration,
   SubstrateLedgerAppType,
 } from "@extension/core"
 import { AssetDiscoveryMode } from "@extension/core"
@@ -14,15 +16,17 @@ import useChain from "@ui/hooks/useChain"
 import { useCallback, useState } from "react"
 import { useSearchParams } from "react-router-dom"
 
-export type LedgerAccountDefSubstrateLegacy = RequestAccountCreateLedgerSubstrateLegacy
 export type LedgerAccountDefSubstrateGeneric = RequestAccountCreateLedgerSubstrateGeneric
+export type LedgerAccountDefSubstrateLegacy = RequestAccountCreateLedgerSubstrateLegacy
+export type LedgerAccountDefSubstrateMigration = RequestAccountCreateLedgerSubstrateMigration
+
+export type LedgerAccountDefSubstrate = RequestAccountCreateLedgerSubstrate
 export type LedgerAccountDefPolkadot = RequestAccountCreateLedgerPolkadot
 export type LedgerAccountDefEthereum = RequestAccountCreateLedgerEthereum
 export type LedgerAccountDef =
-  | LedgerAccountDefSubstrateLegacy
+  | LedgerAccountDefSubstrate
   | LedgerAccountDefPolkadot
   | LedgerAccountDefEthereum
-  | LedgerAccountDefSubstrateGeneric
 
 type LedgerCreationInputs = {
   type: AccountAddressType
@@ -31,25 +35,17 @@ type LedgerCreationInputs = {
   accounts: LedgerAccountDef[]
 }
 
-const createAccount = (
-  account: LedgerAccountDef,
-  type?: AccountAddressType,
-  substrateAppType?: SubstrateLedgerAppType
-) => {
-  if (type === "sr25519") {
-    if (substrateAppType === "polkadot") {
+const createAccount = (account: LedgerAccountDef, substrateAppType?: SubstrateLedgerAppType) => {
+  if (substrateAppType) {
+    if (substrateAppType === SubstrateLedgerAppType.Polkadot) {
+      // TODO remove
       const { name, address, path } = account as LedgerAccountDefPolkadot
       return api.accountCreateLedgerPolkadot(name, address, path)
-    } else if (substrateAppType === "substrate-legacy") {
-      return api.accountCreateLedgerSubstrateLegacy(account as LedgerAccountDefSubstrateLegacy)
-    } else {
-      throw new Error("Invalid or missing app type")
-    }
-  } else if (type === "ethereum") {
+    } else return api.accountCreateLedgerSubstrate(account as LedgerAccountDefSubstrate)
+  } else {
+    // assume ethereum
     const { name, address, path } = account as LedgerAccountDefEthereum
     return api.accountCreateLedgerEthereum(name, address, path)
-  } else {
-    throw new Error("Invalid or missing account type")
   }
 }
 
@@ -69,12 +65,9 @@ const useAddLedgerAccountProvider = ({ onSuccess }: { onSuccess: (address: strin
 
   const importAccounts = useCallback(
     async (accounts: LedgerAccountDef[]) => {
-      if (data.type === "sr25519" && data.substrateAppType === "substrate-legacy")
+      if (data.substrateAppType === "substrate-legacy")
         assert(
-          accounts.every(
-            (acc) =>
-              "path" in acc || ("genesisHash" in acc && acc.genesisHash === chain?.genesisHash)
-          ),
+          accounts.every((acc) => "genesisHash" in acc && acc.genesisHash === chain?.genesisHash),
           "Chain mismatch"
         )
 
@@ -82,13 +75,13 @@ const useAddLedgerAccountProvider = ({ onSuccess }: { onSuccess: (address: strin
 
       const addresses: string[] = []
       for (const account of accounts)
-        addresses.push(await createAccount(account, data.type, data.substrateAppType))
+        addresses.push(await createAccount(account, data.substrateAppType))
 
       api.assetDiscoveryStartScan(AssetDiscoveryMode.ACTIVE_NETWORKS, addresses)
 
       return addresses
     },
-    [chain?.genesisHash, data.substrateAppType, data.type]
+    [chain?.genesisHash, data.substrateAppType]
   )
 
   return { data, updateData, importAccounts, onSuccess }
