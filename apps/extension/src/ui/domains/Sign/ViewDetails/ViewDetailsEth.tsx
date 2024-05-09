@@ -1,7 +1,7 @@
 import { BalanceFormatter } from "@extension/core"
 import { notify } from "@talisman/components/Notifications"
 import { useOpenClose } from "@talisman/hooks/useOpenClose"
-import { CopyIcon } from "@talismn/icons"
+import { CopyIcon, FileSearchIcon } from "@talismn/icons"
 import { formatDecimals } from "@talismn/util"
 import { Fiat } from "@ui/domains/Asset/Fiat"
 import Tokens from "@ui/domains/Asset/Tokens"
@@ -12,7 +12,7 @@ import useToken from "@ui/hooks/useToken"
 import { useTokenRates } from "@ui/hooks/useTokenRates"
 import { FC, PropsWithChildren, ReactNode, useCallback, useEffect, useMemo } from "react"
 import { useTranslation } from "react-i18next"
-import { Button, Drawer, PillButton } from "talisman-ui"
+import { Button, Drawer } from "talisman-ui"
 import { formatEther, formatGwei } from "viem"
 
 import { Message } from "../Message"
@@ -350,9 +350,14 @@ export const ViewDetailsEth = () => {
 
   return (
     <>
-      <PillButton size="sm" onClick={open}>
-        {t("View Details")}
-      </PillButton>
+      <button
+        type="button"
+        onClick={open}
+        className="text-body-disabled hover:text-body-secondary flex items-center gap-2"
+      >
+        <FileSearchIcon className="text-base" />
+        <span className="text-xs">{t("View Details")}</span>
+      </button>
       <Drawer anchor="bottom" containerId="main" isOpen={isOpen && !isLoading} onDismiss={close}>
         <ViewDetailsContent onClose={close} />
       </Drawer>

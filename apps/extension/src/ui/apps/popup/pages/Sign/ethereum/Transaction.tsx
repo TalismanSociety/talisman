@@ -16,7 +16,9 @@ import { EthFeeSelect } from "@ui/domains/Ethereum/GasSettings/EthFeeSelect"
 import { useEthBalance } from "@ui/domains/Ethereum/useEthBalance"
 import { usePublicClient } from "@ui/domains/Ethereum/usePublicClient"
 import { EthSignBody } from "@ui/domains/Sign/Ethereum/EthSignBody"
+import { RiskAnalysisProvider } from "@ui/domains/Sign/Ethereum/riskAnalysis"
 import { SignAlertMessage } from "@ui/domains/Sign/SignAlertMessage"
+import { SignApproveButton } from "@ui/domains/Sign/SignApproveButton"
 import { SignHardwareEthereum } from "@ui/domains/Sign/SignHardwareEthereum"
 import { useEthSignTransactionRequest } from "@ui/domains/Sign/SignRequestContext"
 import { SignViewBodyShimmer } from "@ui/domains/Sign/Views/SignViewBodyShimmer"
@@ -111,6 +113,7 @@ export const EthSignTransactionRequest = () => {
     setReady,
     isValid,
     networkUsage,
+    riskAnalysis,
   } = useEthSignTransactionRequest()
   const { balance } = useEvmBalance(account?.address as EvmAddress, network?.id)
 
@@ -145,7 +148,7 @@ export const EthSignTransactionRequest = () => {
       {isLoading ? (
         <SignViewBodyShimmer />
       ) : (
-        <>
+        <RiskAnalysisProvider riskAnalysis={riskAnalysis} onReject={reject}>
           <PopupContent>
             <div className="scrollable scrollable-800 text-body-secondary h-full overflow-y-auto text-center">
               <EthSignBody decodedTx={decodedTx} isReady={!isLoading} />
@@ -225,18 +228,18 @@ export const EthSignTransactionRequest = () => {
                 <Button disabled={processing} onClick={reject}>
                   {t("Cancel")}
                 </Button>
-                <Button
+                <SignApproveButton
                   disabled={!transaction || isLoading || !isValid}
                   processing={processing}
                   primary
                   onClick={approve}
                 >
                   {t("Approve")}
-                </Button>
+                </SignApproveButton>
               </div>
             )}
           </PopupFooter>
-        </>
+        </RiskAnalysisProvider>
       )}
     </PopupLayout>
   )

@@ -15,6 +15,7 @@ import { Button } from "talisman-ui"
 import { TransactionRequest } from "viem"
 
 import { ErrorMessageDrawer } from "./ErrorMessageDrawer"
+import { SignApproveButton } from "./SignApproveButton"
 import { SignHardwareEthereumProps } from "./SignHardwareEthereum"
 
 const signWithDcent = async (
@@ -148,7 +149,7 @@ const SignDcentEthereum: FC<SignHardwareEthereumProps> = ({
 
   return (
     <div className={classNames("flex w-full flex-col gap-6", className)}>
-      <Button
+      <SignApproveButton
         className="w-full"
         disabled={!payload}
         primary
@@ -156,7 +157,7 @@ const SignDcentEthereum: FC<SignHardwareEthereumProps> = ({
         processing={isSigning || isSigned}
       >
         {t("Approve on D'CENT")}
-      </Button>
+      </SignApproveButton>
       {onCancel && (
         <Button className="w-full" onClick={onCancel}>
           {t("Cancel")}

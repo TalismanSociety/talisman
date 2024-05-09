@@ -2883,6 +2883,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@blowfishxyz/api-client@npm:0.1.13":
+  version: 0.1.13
+  resolution: "@blowfishxyz/api-client@npm:0.1.13"
+  checksum: 2ecf235ac89b5b3f55d51c8e2f653e1385346c7f4daada1011fefec75c14b0b6cfa5db06c29470138efc18767e2f60ac1b1c59b9300b304ed430746b25f13dab
+  languageName: node
+  linkType: hard
+
 "@chainsafe/as-sha256@npm:^0.3.1":
   version: 0.3.1
   resolution: "@chainsafe/as-sha256@npm:0.3.1"
@@ -10822,9 +10829,9 @@ __metadata:
   linkType: hard
 
 "acorn-walk@npm:^8.0.2":
-  version: 8.3.1
-  resolution: "acorn-walk@npm:8.3.1"
-  checksum: 5c8926ddb5400bc825b6baca782931f9df4ace603ba1a517f5243290fd9cdb089d52877840687b5d5c939591ebc314e2e63721514feaa37c6829c828f2b940ce
+  version: 8.3.2
+  resolution: "acorn-walk@npm:8.3.2"
+  checksum: 3626b9d26a37b1b427796feaa5261faf712307a8920392c8dce9a5739fb31077667f4ad2ec71c7ac6aaf9f61f04a9d3d67ff56f459587206fc04aa31c27ef392
   languageName: node
   linkType: hard
 
@@ -13849,7 +13856,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"decimal.js@npm:^10.4.2":
+"decimal.js@npm:10.4.3, decimal.js@npm:^10.4.2":
   version: 10.4.3
   resolution: "decimal.js@npm:10.4.3"
   checksum: 796404dcfa9d1dbfdc48870229d57f788b48c21c603c3f6554a1c17c10195fc1024de338b0cf9e1efe0c7c167eeb18f04548979bcc5fdfabebb7cc0ae3287bae
@@ -15694,6 +15701,7 @@ __metadata:
     graphql-tag: ^2.12.6
     i18next: ^22.5.0
     jest: 29.7.0
+    jest-environment-jsdom: ^29.7.0
     jest-fetch-mock: ^3.0.3
     jest-webextension-mock: 3.8.9
     lodash: 4.17.21
@@ -15755,6 +15763,7 @@ __metadata:
     "@babel/plugin-transform-react-jsx": ^7.23.4
     "@babel/preset-env": ^7.23.7
     "@babel/preset-typescript": ^7.23.3
+    "@blowfishxyz/api-client": 0.1.13
     "@dnd-kit/core": 6.1.0
     "@dnd-kit/sortable": 7.0.2
     "@eth-optimism/contracts-ts": ^0.17.0
@@ -15844,6 +15853,7 @@ __metadata:
     css-loader: ^6.7.3
     date-fns: ^2.30.0
     dcent-web-connector: ^0.14.1
+    decimal.js: 10.4.3
     dexie: ^3.2.4
     dexie-react-hooks: ^1.1.7
     dompurify: ^3.0.6
@@ -21367,9 +21377,9 @@ __metadata:
   linkType: hard
 
 "nwsapi@npm:^2.2.2":
-  version: 2.2.7
-  resolution: "nwsapi@npm:2.2.7"
-  checksum: cab25f7983acec7e23490fec3ef7be608041b460504229770e3bfcf9977c41d6fe58f518994d3bd9aa3a101f501089a3d4a63536f4ff8ae4b8c4ca23bdbfda4e
+  version: 2.2.9
+  resolution: "nwsapi@npm:2.2.9"
+  checksum: 3ab2bc47d5507a76e2fdee5aae7ea2875c6def912d0401126cad3e39825a7decb7a02622810c855a7902bd31e917e606b37882dca12b0ae54b4d3b70275de927
   languageName: node
   linkType: hard
 
@@ -25273,7 +25283,6 @@ __metadata:
     concurrently: ^7.6.0
     husky: ^8.0.3
     import-sort-style-module: ^6.0.0
-    jest-environment-jsdom: ^29.7.0
     lint-staged: ^12.5.0
     prettier: ^2.8.8
     prettier-plugin-import-sort: ^0.0.7

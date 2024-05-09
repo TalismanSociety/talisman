@@ -29,7 +29,7 @@ export const SubSignBodyDefault = () => {
         <AccountPill account={account} prefix={chain?.prefix ?? undefined} />
         {chain ? ` on ${chain.name}` : null}
       </h2>
-      <div className="mt-16">
+      <div className="mt-16 flex justify-center">
         <ViewDetailsSub />
       </div>
     </div>

@@ -25,6 +25,7 @@ import {
   LedgerConnectionStatusProps,
 } from "../Account/LedgerConnectionStatus"
 import { LedgerSigningStatus } from "./LedgerSigningStatus"
+import { SignApproveButton } from "./SignApproveButton"
 import { SignHardwareEthereumProps } from "./SignHardwareEthereum"
 
 const toSignature = ({ v, r, s }: { v: string | number; r: string; s: string }): Signature => {
@@ -230,7 +231,7 @@ const SignLedgerEthereum: FC<SignHardwareEthereumProps> = ({
       {!error && (
         <>
           {isReady ? (
-            <Button
+            <SignApproveButton
               className="w-full"
               disabled={!inputsReady}
               primary
@@ -238,7 +239,7 @@ const SignLedgerEthereum: FC<SignHardwareEthereumProps> = ({
               onClick={handleSendClick}
             >
               {t("Approve on Ledger")}
-            </Button>
+            </SignApproveButton>
           ) : (
             !isSigned && (
               <LedgerConnectionStatus {...{ ...connectionStatus }} refresh={_onRefresh} />
