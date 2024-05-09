@@ -80,6 +80,7 @@
     "eslint": "^8.52.0",
     "fake-indexeddb": "4.0.2",
     "jest": "29.7.0",
+    "jest-environment-jsdom": "^29.7.0",
     "jest-fetch-mock": "^3.0.3",
     "jest-webextension-mock": "3.8.9",
     "sinon-chrome": "^3.0.1",

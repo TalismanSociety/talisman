@@ -1,9 +1,8 @@
 import { HeaderBlock } from "@talisman/components/HeaderBlock"
 import { Spacer } from "@talisman/components/Spacer"
 import { StarIcon } from "@talismn/icons"
-import { TokenRates } from "@talismn/token-rates"
 import { selectableCurrenciesAtom } from "@ui/atoms"
-import currencyConfig, { currencyOrder } from "@ui/domains/Asset/currencyConfig"
+import { currencyConfig, currencyOrder } from "@ui/domains/Asset/currencyConfig"
 import { useAtom } from "jotai"
 import { useTranslation } from "react-i18next"
 
@@ -29,7 +28,7 @@ const CurrencySettingsPage = () => {
             key={currency}
             className="bg-grey-850 enabled:hover:bg-grey-800 text-body-disabled enabled:hover:text-body-secondary flex h-28 w-full cursor-pointer items-center gap-8 rounded-sm px-8 disabled:cursor-not-allowed disabled:opacity-50"
             onClick={() =>
-              setSelectableCurrencies((selected: (keyof TokenRates)[]) =>
+              setSelectableCurrencies((selected) =>
                 selected.includes(currency)
                   ? selected.filter((x) => x !== currency)
                   : [...selected, currency].sort(
@@ -38,7 +37,7 @@ const CurrencySettingsPage = () => {
               )
             }
           >
-            <img alt={currency} src={currencyConfig[currency]?.icon} />
+            <img className="w-16 max-w-full" alt={currency} src={currencyConfig[currency]?.icon} />
             <div className="flex grow flex-col items-start gap-1">
               <div className="text-body uppercase">{currency}</div>
               <div className="text-body-secondary text-xs">

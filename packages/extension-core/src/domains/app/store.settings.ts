@@ -18,6 +18,7 @@ export interface SettingsStoreData {
   selectableCurrencies: TokenRateCurrency[]
   selectedCurrency: TokenRateCurrency
   newFeaturesDismissed: string
+  autoRiskScan?: boolean // undefined = user has never been prompted to use the feature
 }
 
 export class SettingsStore extends StorageProvider<SettingsStoreData> {}

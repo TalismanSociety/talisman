@@ -66,7 +66,7 @@
     "@polkadot/types-create": "10.11.2",
     "@polkadot/types-known": "10.11.2",
     "@polkadot/types-support": "10.11.2",
-    "@polkadot/types": "patch:@polkadot/types@npm:10.11.2#.yarn/patches/@polkadot-types-npm-10.11.2-9fef8e41bc.patch",
+    "@polkadot/types": "10.11.2",
     "@polkadot/hw-ledger-transports": "12.6.2",
     "@polkadot/hw-ledger": "12.6.2",
     "@polkadot/keyring": "12.6.2",
@@ -134,8 +134,5 @@
     "packages": [
       "packages/*"
     ]
-  },
-  "dependencies": {
-    "jest-environment-jsdom": "^29.7.0"
   }
 }

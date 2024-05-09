@@ -32,6 +32,7 @@ module.exports = class SimpleLocalizeDownloadPlugin {
 
     const { devMode } = this.options
     const hasKeys = Boolean(apiKey && projectToken)
+    let hasDownloaded = false
 
     if (!devMode && !hasKeys)
       console.warn(
@@ -43,12 +44,35 @@ module.exports = class SimpleLocalizeDownloadPlugin {
     const fetchTranslations = !devMode && hasKeys
     if (!fetchTranslations) {
       compiler.hooks.afterPlugins.tap("SimpleLocalizeDownloadPlugin", ({ options }) => {
-        setSupportedLanguages(options, fallbackLanguages)
+        setSupportedLanguages(options, fallbackLanguages, devMode)
       })
 
       // if we're not fetching translations, stop here
       // (don't tap into compiler.hooks.beforeRun or compiler.hooks.make)
       return
+    }
+
+    const getAndSetSupportedLanguages = async ({ options }, callback) => {
+      if (!hasDownloaded) {
+        console.log("Fetching languages from SimpleLocalize")
+        const languages = await simpleLocalizeFetch(
+          "https://api.simplelocalize.io/api/v1/languages"
+        )
+          .catch((error) => {
+            console.error("Failed to fetch languages list:", error)
+            return []
+          })
+          .then((result) => {
+            if (result.status !== 200) throw new Error("Bad response from SimpleLocalize")
+            return Object.fromEntries(result.data.map((lang) => [lang.key, lang.name]))
+          })
+
+        setSupportedLanguages(
+          options,
+          Object.keys(languages).length > 0 ? languages : fallbackLanguages
+        )
+      }
+      callback()
     }
 
     // need different hooks for 'watch' and 'build' modes - https://github.com/webpack/webpack/issues/10061
@@ -58,61 +82,75 @@ module.exports = class SimpleLocalizeDownloadPlugin {
     compiler.hooks.beforeRun.tapAsync("SimpleLocalizeDownloadPlugin", getAndSetSupportedLanguages)
 
     compiler.hooks.make.tapAsync("SimpleLocalizeDownloadPlugin", async (compilation, callback) => {
-      console.log(`Getting translations from ${endpoint}`)
-      const namespaces = await getNamespaceUrls()
-      const namespaceJson = await Promise.all(
-        namespaces.flatMap(({ url, namespace, language }) =>
-          simpleLocalizeFetch(url)
-            .then((json) => ({ namespace, language, json }))
-            .catch((error) => {
-              console.error(`Unable to get ${language} file for namespace ${namespace}:`, error)
-              return []
-            })
+      if (!hasDownloaded) {
+        console.log(`Getting translations from ${endpoint}`)
+        const namespaces = await getNamespaceUrls()
+        const namespaceJson = await Promise.all(
+          namespaces.flatMap(({ url, namespace, language }) =>
+            simpleLocalizeFetch(url)
+              .then((json) => ({ namespace, language, json }))
+              .catch((error) => {
+                console.error(`Unable to get ${language} file for namespace ${namespace}:`, error)
+                return []
+              })
+          )
         )
-      )
 
-      namespaceJson.forEach(({ namespace, language, json }) =>
-        compilation.emitAsset(
-          `locales/${language}/${namespace}.json`,
-          new RawSource(JSON.stringify(json))
+        namespaceJson.forEach(({ namespace, language, json }) =>
+          compilation.emitAsset(
+            `locales/${language}/${namespace}.json`,
+            new RawSource(JSON.stringify(json))
+          )
         )
-      )
 
-      const languages = namespaceJson
-        .map(({ language }) => language)
-        .sort()
-        .filter((language, index, all) => all.indexOf(language) === index)
-      console.log(`Translations fetched for ${languages.join(", ")}`) //
+        const languages = namespaceJson
+          .map(({ language }) => language)
+          .sort()
+          .filter((language, index, all) => all.indexOf(language) === index)
+        console.log(`Translations fetched for ${languages.join(", ")}`)
+        hasDownloaded = true
+      }
+
       callback()
     })
   }
 }
 
-const getAndSetSupportedLanguages = async ({ options }, callback) => {
-  console.log("Fetching languages from SimpleLocalize")
-  const languages = await simpleLocalizeFetch("https://api.simplelocalize.io/api/v1/languages")
-    .catch((error) => {
-      console.error("Failed to fetch languages list:", error)
-      return []
-    })
-    .then((result) => {
-      if (result.status !== 200) throw new Error("Bad response from SimpleLocalize")
-      return Object.fromEntries(result.data.map((lang) => [lang.key, lang.name]))
-    })
+// const getAndSetSupportedLanguages = async ({ options }, callback) => {
+//   if (!options.skip) {
+//     console.log("Fetching languages from SimpleLocalize")
+//     const languages = await simpleLocalizeFetch("https://api.simplelocalize.io/api/v1/languages")
+//       .catch((error) => {
+//         console.error("Failed to fetch languages list:", error)
+//         return []
+//       })
+//       .then((result) => {
+//         if (result.status !== 200) throw new Error("Bad response from SimpleLocalize")
+//         return Object.fromEntries(result.data.map((lang) => [lang.key, lang.name]))
+//       })
 
-  setSupportedLanguages(options, Object.keys(languages).length > 0 ? languages : fallbackLanguages)
+//     setSupportedLanguages(
+//       options,
+//       Object.keys(languages).length > 0 ? languages : fallbackLanguages
+//     )
+//   }
+//   callback()
+// }
 
-  callback()
-}
-
-const setSupportedLanguages = (options, supportedLanguages = fallbackLanguages) => {
+const setSupportedLanguages = (
+  options,
+  supportedLanguages = fallbackLanguages,
+  devMode = false
+) => {
   const definePlugin = options.plugins.find((plugin) => plugin instanceof DefinePlugin)
   if (!definePlugin)
     return console.warn(
       `No DefinePlugin found - process.env.SUPPORTED_LANGUAGES will not be substituted`
     )
 
-  console.log("Setting supported languages", supportedLanguages)
+  // we only need to know `supportedLanguages` is correct when we're building a production release
+  if (!devMode) console.log("Setting supported languages", supportedLanguages)
+
   // Explanation for the double JSON.stringify:
   //
   // - first stringify turns JSON into a string e.g. `{ en: "English" }` -> `'{"en":"English"}'`

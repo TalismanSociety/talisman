@@ -1,0 +1,14 @@
+<svg viewBox="0 0 600 600" xmlns="http://www.w3.org/2000/svg">
+    <path fill="#fff" fill-rule="evenodd" d="M600 300C600 134.315 465.685 0 300 0S0 134.315 0 300s134.315 300 300 300 300-134.315 300-300z"/>
+    <mask id="a" maskUnits="userSpaceOnUse" maskContentUnits="userSpaceOnUse">
+        <path fill="#fff" fill-rule="evenodd" d="M600 300C600 134.315 465.685 0 300 0S0 134.315 0 300s134.315 300 300 300 300-134.315 300-300z"/>
+    </mask>
+    <g mask="url(#a)">
+        <g fill-rule="evenodd">
+            <path fill="#fe0000" d="M-38 0h900v600H-38z"/>
+            <path fill="#000095" d="M-38 0h450v300H-38z"/>
+        </g>
+        <path fill="#fff" d="M187 37.5l-56.25 209.928L284.428 93.75 74.5 150l209.928 56.25L130.75 52.572 187 262.5l56.25-209.928L89.572 206.25 299.5 150 89.572 93.75 243.25 247.428 187 37.5"/>
+        <path fill="#fff" stroke="#000095" stroke-width="7.5" d="M247 150c0 33.137-26.863 60-60 60s-60-26.863-60-60 26.863-60 60-60 60 26.863 60 60z"/>
+    </g>
+</svg>
