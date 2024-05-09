@@ -44,7 +44,7 @@ module.exports = class SimpleLocalizeDownloadPlugin {
     const fetchTranslations = !devMode && hasKeys
     if (!fetchTranslations) {
       compiler.hooks.afterPlugins.tap("SimpleLocalizeDownloadPlugin", ({ options }) => {
-        setSupportedLanguages(options, fallbackLanguages)
+        setSupportedLanguages(options, fallbackLanguages, devMode)
       })
 
       // if we're not fetching translations, stop here
@@ -137,14 +137,20 @@ module.exports = class SimpleLocalizeDownloadPlugin {
 //   callback()
 // }
 
-const setSupportedLanguages = (options, supportedLanguages = fallbackLanguages) => {
+const setSupportedLanguages = (
+  options,
+  supportedLanguages = fallbackLanguages,
+  devMode = false
+) => {
   const definePlugin = options.plugins.find((plugin) => plugin instanceof DefinePlugin)
   if (!definePlugin)
     return console.warn(
       `No DefinePlugin found - process.env.SUPPORTED_LANGUAGES will not be substituted`
     )
 
-  console.log("Setting supported languages", supportedLanguages)
+  // we only need to know `supportedLanguages` is correct when we're building a production release
+  if (!devMode) console.log("Setting supported languages", supportedLanguages)
+
   // Explanation for the double JSON.stringify:
   //
   // - first stringify turns JSON into a string e.g. `{ en: "English" }` -> `'{"en":"English"}'`
