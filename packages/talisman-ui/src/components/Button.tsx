@@ -2,6 +2,8 @@ import { LoaderIcon } from "@talismn/icons"
 import { classNames } from "@talismn/util"
 import { FC, SVGProps, useMemo } from "react"
 
+type ButtonColor = "default" | "primary" | "red" | "orange"
+
 export type ButtonProps = React.DetailedHTMLProps<
   React.ButtonHTMLAttributes<HTMLButtonElement>,
   HTMLButtonElement
@@ -12,6 +14,7 @@ export type ButtonProps = React.DetailedHTMLProps<
   small?: boolean
   icon?: FC<SVGProps<SVGSVGElement>>
   iconLeft?: FC<SVGProps<SVGSVGElement>>
+  color?: ButtonColor // this overrides the `primary` flag if set
 }
 
 export const Button: FC<ButtonProps> = ({
@@ -23,38 +26,40 @@ export const Button: FC<ButtonProps> = ({
   small,
   processing,
   className,
+  color,
   ...props
 }) => {
   const colors = useMemo(() => {
-    // declare as "className" to get intellisense
-    let className = ""
-    const enabled = !processing && !disabled
+    // color prop takes precedence over primary flag
+    const effectiveColor: ButtonColor = color ?? (primary ? "primary" : "default")
 
-    if (primary) {
-      if (disabled) return "bg-black-tertiary text-body-disabled"
+    if (disabled)
+      return classNames(
+        "bg-black-tertiary text-body-disabled",
+        effectiveColor === "default" ? " border" : ""
+      )
 
-      className = "bg-primary-500 text-black border border-transparent"
-      if (enabled)
-        className +=
-          " hover:bg-primary-700 focus:bg-primary-500 active:bg-primary-500 focus:ring focus:border-white focus:border focus:ring-white focus:ring-2 active:border-transparent"
-    } else {
-      if (disabled) return "bg-black-tertiary text-body-disabled border"
+    switch (effectiveColor) {
+      case "default":
+        return "bg-transparent text-white border border-white enabled:hover:bg-white enabled:hover:text-black focus:outline-none focus:ring-white focus:ring-2 enabled:hover:active:bg-black enabled:hover:active:text-white"
 
-      className = "bg-transparent text-white border "
-      if (enabled)
-        className +=
-          " hover:border-white hover:bg-white focus:bg-transparent focus:text-white hover:text-black focus:outline-none focus:ring-2 focus:ring-white"
+      case "primary":
+        return "bg-primary-500 text-black border border-transparent focus:outline-none enabled:hover:bg-primary-700 focus:ring-white focus:ring-2 enabled:hover:active:bg-primary"
+
+      case "orange":
+        return "bg-orange-500 text-black border border-transparent focus:outline-none enabled:hover:bg-orange/90 focus:ring-white focus:ring-2 enabled:hover:active:bg-orange"
+
+      case "red":
+        return "bg-brand-orange text-black border border-transparent focus:outline-none enabled:hover:bg-brand-orange/90 focus:ring-white focus:ring-2 enabled:hover:active:bg-brand-orange"
     }
-
-    return className + " active:ring-0"
-  }, [disabled, primary, processing])
+  }, [color, disabled, primary])
 
   return (
     <button
       type="button"
       disabled={disabled || processing}
       className={classNames(
-        "bg relative inline-flex  items-center justify-center rounded outline-none",
+        "bg relative inline-flex items-center justify-center rounded",
         small ? "h-20 px-8 text-sm" : "text-md h-28 px-12",
         fullWidth ? "w-full" : "",
         colors,

@@ -14,6 +14,7 @@ import { Fiat } from "../Asset/Fiat"
 import { TokenLogo } from "../Asset/TokenLogo"
 import { TokensAndFiat } from "../Asset/TokensAndFiat"
 import { EthFeeSelect } from "../Ethereum/GasSettings/EthFeeSelect"
+import { RiskAnalysisPillButton, RiskAnalysisProvider } from "../Sign/Ethereum/riskAnalysis"
 import { AddressDisplay } from "./AddressDisplay"
 import { SendFundsFeeTooltip } from "./SendFundsFeeTooltip"
 import { SendFundsHardwareEthereum } from "./SendFundsHardwareEthereum"
@@ -284,52 +285,55 @@ const FeeSummary = () => {
 
 export const SendFundsConfirmForm = () => {
   const { t } = useTranslation("send-funds")
-  const { from, to, chain, evmNetwork } = useSendFunds()
+  const { from, to, chain, evmNetwork, evmTransaction } = useSendFunds()
 
   return (
-    <div className="flex h-full w-full flex-col items-center gap-6 px-12 pb-8">
-      <ScrollContainer
-        className="w-full grow"
-        innerClassName="flex flex-col w-full items-center space-between min-h-full"
-      >
-        <div className="h-32 text-lg font-bold">{t("You are sending")}</div>
-        <div className="w-full grow">
-          <div className="bg-grey-900 text-body-secondary flex flex-col rounded px-12 py-8 leading-[140%]">
-            <div className="text-body flex h-16 items-center justify-between gap-8">
-              <div className="text-body-secondary whitespace-nowrap">{t("Amount")}</div>
-              <AmountDisplay />
+    <RiskAnalysisProvider riskAnalysis={evmTransaction?.riskAnalysis}>
+      <div className="flex h-full w-full flex-col items-center gap-6 px-12 pb-8">
+        <ScrollContainer
+          className="w-full grow"
+          innerClassName="flex flex-col w-full items-center space-between min-h-full"
+        >
+          <div className="h-32 text-lg font-bold">{t("You are sending")}</div>
+          <div className="w-full grow">
+            <div className="bg-grey-900 text-body-secondary flex flex-col rounded px-12 py-8 leading-[140%]">
+              <div className="text-body flex h-16 items-center justify-between gap-8">
+                <div className="text-body-secondary whitespace-nowrap">{t("Amount")}</div>
+                <AmountDisplay />
+              </div>
+              <div className="flex h-16 items-center justify-between gap-8">
+                <div className="text-body-secondary whitespace-nowrap">{t("From")}</div>
+                <AddressDisplay
+                  className="h-16"
+                  address={from}
+                  chainId={chain?.id}
+                  evmNetworkId={evmNetwork?.id}
+                />
+              </div>
+              <div className="flex h-16 items-center justify-between gap-8">
+                <div className="text-body-secondary whitespace-nowrap">{t("To")}</div>
+                <AddressDisplay
+                  className="h-16"
+                  address={to}
+                  chainId={chain?.id}
+                  evmNetworkId={evmNetwork?.id}
+                />
+              </div>
+              <div className="text-body flex h-16 items-center justify-between gap-8">
+                <div className="text-body-secondary whitespace-nowrap">{t("Network")}</div>
+                <NetworkDisplay />
+              </div>
+              <div className="py-8">
+                <hr className="text-grey-800" />
+              </div>
+              <FeeSummary />
+              <TotalValueRow />
             </div>
-            <div className="flex h-16 items-center justify-between gap-8">
-              <div className="text-body-secondary whitespace-nowrap">{t("From")}</div>
-              <AddressDisplay
-                className="h-16"
-                address={from}
-                chainId={chain?.id}
-                evmNetworkId={evmNetwork?.id}
-              />
-            </div>
-            <div className="flex h-16 items-center justify-between gap-8">
-              <div className="text-body-secondary whitespace-nowrap">{t("To")}</div>
-              <AddressDisplay
-                className="h-16"
-                address={to}
-                chainId={chain?.id}
-                evmNetworkId={evmNetwork?.id}
-              />
-            </div>
-            <div className="text-body flex h-16 items-center justify-between gap-8">
-              <div className="text-body-secondary whitespace-nowrap">{t("Network")}</div>
-              <NetworkDisplay />
-            </div>
-            <div className="py-8">
-              <hr className="text-grey-800" />
-            </div>
-            <FeeSummary />
-            <TotalValueRow />
           </div>
-        </div>
-      </ScrollContainer>
-      <SendButton />
-    </div>
+        </ScrollContainer>
+        {evmTransaction && <RiskAnalysisPillButton />}
+        <SendButton />
+      </div>
+    </RiskAnalysisProvider>
   )
 }

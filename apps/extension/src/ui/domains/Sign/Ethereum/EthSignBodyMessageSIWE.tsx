@@ -13,6 +13,7 @@ import { SignAlertMessage } from "../SignAlertMessage"
 import { ViewDetailsAddress } from "../ViewDetails/ViewDetailsAddress"
 import { ViewDetailsButton } from "../ViewDetails/ViewDetailsButton"
 import { ViewDetailsField } from "../ViewDetails/ViewDetailsField"
+import { RiskAnalysisPillButton } from "./riskAnalysis"
 import { SignParamAccountButton } from "./shared"
 
 const ViewDetailsContent: FC<{
@@ -84,26 +85,27 @@ export const EthSignBodyMessageSIWE: FC<{
 
   return (
     <div className="scrollable scrollable-800 flex h-full max-h-full w-full flex-col items-center overflow-auto">
-      <div className="my-12 flex w-full flex-col items-center">
+      <div className="flex w-full flex-col items-center pt-4">
         <div className="bg-grey-800 rounded-full p-5">
           <UserRightIcon className="text-primary text-[2.8rem]" />
         </div>
         <div className="mt-8 text-lg font-bold">{t("Sign In")}</div>
-        <div className="text-body-secondary my-16 flex w-full flex-col items-center gap-3 overflow-hidden">
+        <div className="text-body-secondary mt-16 flex w-full flex-col items-center gap-3 overflow-hidden">
           <div className="text-body max-w-full truncate font-bold">{siwe.domain}</div>
           <div className="text-body-secondary">{t("wants you to sign in with Ethereum")}</div>
           <div className="[&>button>div>span]:text-body flex max-w-full items-center justify-center truncate [&>button>div>span]:font-bold">
             <span>{t("with")}</span>
             <SignParamAccountButton address={account.address} withIcon />
           </div>
+          <ViewDetailsButton onClick={open} className="my-4" />
+          <RiskAnalysisPillButton />
         </div>
         {!!siwe.statement && (
-          <div className="bg-grey-850  mb-16 w-full rounded-sm p-4 text-sm">
+          <div className="bg-grey-850 mt-8 w-full rounded-sm p-4 text-sm">
             <div className="text-body-disabled text-xs">{t("Statement")}</div>
             <div className="text-body leading-paragraph mt-2">{siwe.statement}</div>
           </div>
         )}
-        <ViewDetailsButton onClick={open} />
       </div>
       <div className="grow"></div>
       {!isValidUrl && (
