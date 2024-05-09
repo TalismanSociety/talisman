@@ -52,10 +52,6 @@ export const getInjectableEvmProvider = (sendRequest: SendRequest) => {
     chainId: null,
     selectedAddress: null,
 
-    // MM's experimental methods
-    // if this object is missing, some dapps won't prompt for login
-    _metamask: {},
-
     // MM's internal state object.
     // We need to mimic it because web3onboard uses it (ex: https://de.fi => "Enter App" button)
     _state: {
