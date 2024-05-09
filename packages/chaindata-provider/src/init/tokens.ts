@@ -1012,19 +1012,6 @@ export const tokens = [
     coingeckoId: "astar",
   },
   {
-    id: "automata-contextfree-testnet-substrate-native",
-    type: "substrate-native",
-    isTestnet: true,
-    isDefault: true,
-    symbol: "CTX",
-    decimals: 18,
-    logo: "https://raw.githubusercontent.com/TalismanSociety/chaindata/main/assets/tokens/unknown.svg",
-    existentialDeposit: "0",
-    chain: {
-      id: "automata-contextfree-testnet",
-    },
-  },
-  {
     id: "avail-goldberg-testnet-substrate-native",
     type: "substrate-native",
     isTestnet: true,
