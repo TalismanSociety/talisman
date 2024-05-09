@@ -29,6 +29,7 @@ import { useTranslation } from "react-i18next"
 import { PublicClient, TransactionRequest, encodeFunctionData } from "viem"
 
 import { ETH_ERROR_EIP1474_METHOD_NOT_FOUND } from "../../../inject/ethereum/EthProviderRpcError"
+import { isOpStackEvmNetwork } from "./opStack"
 import { useEthEstimateL1DataFee } from "./useEthEstimateL1DataFee"
 import { useIsValidEthTransaction } from "./useIsValidEthTransaction"
 import { decodeEvmTransaction } from "./util/decodeEvmTransaction"
@@ -331,7 +332,7 @@ const useGasSettings = ({
     if (hasEip1559Support) {
       if (!feeHistoryAnalysis || !isBigInt(baseFeePerGas)) return undefined
 
-      const mapMaxPriority = feeHistoryAnalysis.maxPriorityPerGasOptions
+      const mapMaxPriority = { ...feeHistoryAnalysis.maxPriorityPerGasOptions }
 
       if (isReplacement && tx.maxPriorityFeePerGas !== undefined) {
         // for replacement transactions, ensure that maxPriorityFeePerGas is at least 10% higher than original tx
@@ -342,6 +343,13 @@ const useGasSettings = ({
           mapMaxPriority.medium = minimumMaxPriorityFeePerGas
         if (mapMaxPriority.high < minimumMaxPriorityFeePerGas)
           mapMaxPriority.high = minimumMaxPriorityFeePerGas
+      }
+
+      if (evmNetworkId && isOpStackEvmNetwork(evmNetworkId)) {
+        // On op stack, transaction requires a priority fee, as low as 1 wei
+        if (mapMaxPriority.low === 0n) mapMaxPriority.low = 1n
+        if (mapMaxPriority.medium === 0n) mapMaxPriority.medium = 1n
+        if (mapMaxPriority.high === 0n) mapMaxPriority.high = 1n
       }
 
       const low = getGasSettingsEip1559(baseFeePerGas, mapMaxPriority.low, gas)
