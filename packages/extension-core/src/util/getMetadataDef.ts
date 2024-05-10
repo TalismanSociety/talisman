@@ -1,7 +1,10 @@
-import { assert, hexToU8a, isHex, u8aToHex } from "@polkadot/util"
+import { TypeRegistry } from "@polkadot/types"
+import { OpaqueMetadata } from "@polkadot/types/interfaces"
+import { assert, hexToU8a, isHex, u8aToHex, u8aToNumber } from "@polkadot/util"
 import { base64Decode, base64Encode } from "@polkadot/util-crypto"
 import { HexString } from "@polkadot/util/types"
 import * as Sentry from "@sentry/browser"
+import { ChainId } from "@talismn/chaindata-provider"
 import { DEBUG } from "extension-shared"
 import { log } from "extension-shared"
 
@@ -11,6 +14,7 @@ import { TalismanMetadataDef } from "../domains/substrate/types"
 import { chainConnector } from "../rpcs/chain-connector"
 import { chaindataProvider } from "../rpcs/chaindata"
 import { getRuntimeVersion } from "./getRuntimeVersion"
+import { stateCall } from "./stateCall"
 
 const cache: Record<string, TalismanMetadataDef> = {}
 
@@ -112,7 +116,7 @@ export const getMetadataDef = async (
 
     // fetch the metadata from the chain
     const [metadataRpc, chainProperties] = await Promise.all([
-      chainConnector.send<HexString>(chain.id, "state_getMetadata", [blockHash], !!blockHash),
+      getLatestMetadataRpc(chain.id, blockHash),
       chainConnector.send(chain.id, "system_properties", [], true),
     ]).catch((rpcError) => {
       // not a useful error, do not log to sentry
@@ -186,5 +190,59 @@ if (DEBUG) {
       delete cache[key]
     })
     db.metadata.clear()
+  }
+}
+
+const getLatestMetadataRpc = async (chainId: ChainId, blockHash?: string) => {
+  const stop = log.timer(`getLatestMetadataRpc(${chainId})`)
+  try {
+    const versions = await stateCall(
+      chainId,
+      "Metadata_metadata_versions",
+      "Vec<u32>",
+      [],
+      blockHash as HexString,
+      true
+    )
+    if (versions.err) versions.unwrap()
+
+    const numVersions = versions.unwrap().toJSON() as number[]
+    const latest = Math.max(...numVersions.filter((v) => v <= 15)) // 15 is the max Talisman supports for now
+    const version = new TypeRegistry().createType("u32", latest)
+
+    const maybeOpaqueMetadata = await stateCall(
+      chainId,
+      "Metadata_metadata_at_version",
+      "OpaqueMetadata",
+      [version],
+      blockHash as HexString,
+      true
+    )
+
+    if (maybeOpaqueMetadata.err) maybeOpaqueMetadata.unwrap()
+
+    const opaqueMetadata = maybeOpaqueMetadata.unwrap()
+
+    return metadataFromOpaque(opaqueMetadata)
+  } finally {
+    stop()
+  }
+}
+
+const metadataFromOpaque = (opaque: OpaqueMetadata) => {
+  try {
+    // pjs codec for OpaqueMetadata doesn't allow us to decode the actual Metadata, find it ourselves
+    const u8aBytes = opaque.toU8a()
+    for (let i = 0; i < 20; i++) {
+      // skip until we find the magic number that is used as prefix of metadata objects (usually in the first 10 bytes)
+      if (u8aToNumber(u8aBytes.slice(i, i + 4)) !== 0x6174656d) continue
+
+      const metadata = new TypeRegistry().createType("Metadata", u8aBytes.slice(i))
+
+      return metadata.toHex()
+    }
+    throw new Error("Magic number not found")
+  } catch (cause) {
+    throw new Error("Failed to decode metadata from OpaqueMetadata", { cause })
   }
 }
