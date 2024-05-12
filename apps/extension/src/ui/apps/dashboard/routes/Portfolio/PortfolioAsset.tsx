@@ -40,6 +40,8 @@ const PageContent = ({ balances, symbol }: { balances: Balances; symbol: string 
   const handleBackBtnClick = useCallback(() => navigate("/portfolio"), [navigate])
   const { t } = useTranslation()
 
+  const isUniswapV2LpToken = token?.type === "evm-uniswapv2"
+
   return (
     <div>
       <div className="flex h-48 w-full gap-8">
@@ -57,8 +59,16 @@ const PageContent = ({ balances, symbol }: { balances: Balances; symbol: string 
               <TokenLogo tokenId={token?.id} className="text-3xl" />
             </div>
             <div>
-              <div className="text-md">{token?.symbol}</div>
-              {rate && <Fiat amount={rate} className="text-body-secondary" />}
+              {isUniswapV2LpToken ? (
+                <div className="text-md">Uniswap V2</div>
+              ) : (
+                <div className="text-md">{token?.symbol}</div>
+              )}
+              {isUniswapV2LpToken ? (
+                <div className="text-body-secondary">{t("Liquidity Pool")}</div>
+              ) : (
+                <div className="text-body-secondary">{rate && <Fiat amount={rate} />}</div>
+              )}
             </div>
             <div className="flex flex-wrap">
               <Tooltip>

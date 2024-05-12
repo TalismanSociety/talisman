@@ -13,6 +13,7 @@ export const getDcentCoinTypeFromToken = (token: Token) => {
   if (!token) return undefined
 
   switch (token.type) {
+    case "evm-uniswapv2":
     case "evm-erc20":
     case "evm-native":
       return DcentWebConnector.coinType.ETHEREUM

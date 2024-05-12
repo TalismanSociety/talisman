@@ -1,19 +1,25 @@
-import { Address, Balances } from "@extension/core"
+import { Address, Balance, Balances } from "@extension/core"
+import { evmErc20TokenId } from "@talismn/balances"
 import { ChainId, EvmNetworkId } from "@talismn/chaindata-provider"
 import { classNames } from "@talismn/util"
 import { TokenContextMenu } from "@ui/apps/dashboard/routes/Portfolio/TokenContextMenu"
 import { ChainLogo } from "@ui/domains/Asset/ChainLogo"
 import { TokenLogo } from "@ui/domains/Asset/TokenLogo"
+import Tokens from "@ui/domains/Asset/Tokens"
 import { AssetBalanceCellValue } from "@ui/domains/Portfolio/AssetBalanceCellValue"
 import { NoTokensMessage } from "@ui/domains/Portfolio/NoTokensMessage"
+import { BalancesStatus } from "@ui/hooks/useBalancesStatus"
+import BigNumber from "bignumber.js"
 import { Suspense } from "react"
 import { useTranslation } from "react-i18next"
 
+import { StaleBalancesIcon } from "../StaleBalancesIcon"
+import { useSelectedAccount } from "../useSelectedAccount"
 import { CopyAddressButton } from "./CopyAddressIconButton"
 import { PortfolioAccount } from "./PortfolioAccount"
 import { SendFundsButton } from "./SendFundsIconButton"
 import { useAssetDetails } from "./useAssetDetails"
-import { useChainTokenBalances } from "./useChainTokenBalances"
+import { DetailRow, useChainTokenBalances } from "./useChainTokenBalances"
 
 const AssetState = ({
   title,
@@ -66,6 +72,8 @@ const ChainTokenBalances = ({ chainId, balances }: AssetRowProps) => {
   // wait for data to load
   if (!chainOrNetwork || !summary || !symbol || balances.count === 0) return null
 
+  const isUniswapV2LpToken = balances.sorted[0]?.source === "evm-uniswapv2"
+
   return (
     <div className="mb-8">
       <div
@@ -80,8 +88,14 @@ const ChainTokenBalances = ({ chainId, balances }: AssetRowProps) => {
           </div>
           <div className="flex grow flex-col justify-center gap-2 whitespace-nowrap">
             <div className="base text-body flex items-center font-bold">
-              <ChainLogo className="mr-2" id={chainOrNetwork.id} />
-              <span className="mr-2">{chainOrNetwork.name}</span>
+              {isUniswapV2LpToken ? (
+                <div>{symbol}</div>
+              ) : (
+                <>
+                  <ChainLogo className="mr-2" id={chainOrNetwork.id} />
+                  <span className="mr-2">{chainOrNetwork.name}</span>
+                </>
+              )}
               <CopyAddressButton networkId={chainOrNetwork.id} />
               <Suspense>
                 <SendFundsButton symbol={symbol} networkId={chainOrNetwork.id} />
@@ -94,7 +108,14 @@ const ChainTokenBalances = ({ chainId, balances }: AssetRowProps) => {
                 )}
               </Suspense>
             </div>
-            <div>{networkType}</div>
+            {isUniswapV2LpToken ? (
+              <div className="flex items-center gap-2">
+                <ChainLogo id={chainOrNetwork.id} />
+                <span>{chainOrNetwork.name}</span>
+              </div>
+            ) : (
+              <div>{networkType}</div>
+            )}
           </div>
         </div>
         <div>
@@ -125,62 +146,177 @@ const ChainTokenBalances = ({ chainId, balances }: AssetRowProps) => {
           />
         </div>
       </div>
-      {detailRows
-        .filter((row) => row.tokens.gt(0))
-        .map((row, i, rows) => (
+      {isUniswapV2LpToken &&
+        balances.sorted
+          .filter((balance) => balance.total.planck > 0n)
+          .map((balance, i, balances) => (
+            <ChainTokenBalancesUniswapV2Row
+              key={balance.id}
+              balance={balance}
+              isLastBalance={balances.length === i + 1}
+              status={status}
+            />
+          ))}
+      {!isUniswapV2LpToken &&
+        detailRows
+          .filter((row) => row.tokens.gt(0))
+          .map((row, i, rows) => (
+            <ChainTokenBalancesDetailRow
+              key={row.key}
+              row={row}
+              isLastRow={rows.length === i + 1}
+              symbol={symbol}
+              status={status}
+            />
+          ))}
+    </div>
+  )
+}
+
+const ChainTokenBalancesUniswapV2Row = ({
+  balance,
+  isLastBalance,
+  status,
+}: {
+  balance: Balance
+  isLastBalance?: boolean
+  status: BalancesStatus
+}) => {
+  const { t } = useTranslation()
+  const { account } = useSelectedAccount()
+
+  const token = balance.token
+  if (token?.type !== "evm-uniswapv2") return null
+  if (!balance.evmNetworkId) return null
+
+  // NOTE: We want to use the symbols & decimals from the contract,
+  // But the contract doesn't provide logos, so we'll try to get the logos from the local db
+  const tokenId0 = evmErc20TokenId(balance.evmNetworkId, token.token0Address)
+  const tokenId1 = evmErc20TokenId(balance.evmNetworkId, token.token1Address)
+
+  const symbol0 = token.symbol0
+  const symbol1 = token.symbol1
+  const decimals0 = token.decimals0
+  const decimals1 = token.decimals1
+
+  const extra = balance.toJSON().extra
+  const extras = Array.isArray(extra) ? extra : extra !== undefined ? [extra] : []
+  const holding0 = extras.find((extra) => extra.label === "holding0")?.amount ?? "0"
+  const holding1 = extras.find((extra) => extra.label === "holding1")?.amount ?? "0"
+
+  return (
+    <div
+      className={classNames(
+        "bg-black-secondary flex w-full flex-col justify-center gap-8 px-7 py-6",
+        isLastBalance && "rounded-b-sm"
+      )}
+    >
+      <div className="text-xs">{t("Assets")}</div>
+      {[
+        { tokenId: tokenId0, symbol: symbol0, decimals: decimals0, holding: holding0 },
+        { tokenId: tokenId1, symbol: symbol1, decimals: decimals1, holding: holding1 },
+      ].map(({ tokenId, symbol, decimals, holding }) => (
+        <div key={tokenId} className="flex w-full items-center gap-6">
+          <div className="text-xl">
+            <TokenLogo tokenId={tokenId} />
+          </div>
+          <div className="flex grow flex-col justify-center gap-2">
+            <div className="font-bold text-white">{symbol}</div>
+            <div className="text-xs">
+              {/* only show address when we're viewing balances for all accounts */}
+              {!account && <PortfolioAccount address={balance.address} />}
+            </div>
+          </div>
           <div
-            key={row.key}
             className={classNames(
-              "bg-grey-850 grid grid-cols-[40%_30%_30%]",
-              rows.length === i + 1 && "rounded-b"
+              "flex flex-col flex-nowrap justify-center gap-2 whitespace-nowrap text-right",
+              status.status === "fetching" && "animate-pulse transition-opacity"
             )}
           >
-            <div>
-              <AssetState
-                title={row.title}
-                description={row.description}
-                render
-                address={row.address}
-              />
-            </div>
-            {!row.locked && <div></div>}
-            <div>
-              <AssetBalanceCellValue
-                render={row.tokens.gt(0)}
-                tokens={row.tokens}
-                fiat={row.fiat}
+            <div className={"font-bold text-white"}>
+              <Tokens
+                amount={BigNumber(holding)
+                  .times(Math.pow(10, -1 * decimals))
+                  .toString(10)}
                 symbol={symbol}
-                locked={row.locked}
-                balancesStatus={status}
+                isBalance
+              />
+              {status.status === "stale" ? (
+                <>
+                  {" "}
+                  <StaleBalancesIcon
+                    className="inline align-baseline"
+                    staleChains={status.staleChains}
+                  />
+                </>
+              ) : null}
+            </div>
+            {/* TODO: Add fiat rates for UniV2 tokens */}
+            <div className="text-xs">
+              -{/* {fiatAmount === null ? "-" : <Fiat amount={fiatAmount} isBalance />} */}
+            </div>
+          </div>
+        </div>
+      ))}
+    </div>
+  )
+}
+
+const ChainTokenBalancesDetailRow = ({
+  row,
+  isLastRow,
+  status,
+  symbol,
+}: {
+  row: DetailRow
+  isLastRow?: boolean
+  status: BalancesStatus
+  symbol: string
+}) => {
+  const { t } = useTranslation()
+
+  return (
+    <div
+      key={row.key}
+      className={classNames("bg-grey-850 grid grid-cols-[40%_30%_30%]", isLastRow && "rounded-b")}
+    >
+      <div>
+        <AssetState title={row.title} description={row.description} render address={row.address} />
+      </div>
+      {!row.locked && <div></div>}
+      <div>
+        <AssetBalanceCellValue
+          render={row.tokens.gt(0)}
+          tokens={row.tokens}
+          fiat={row.fiat}
+          symbol={symbol}
+          locked={row.locked}
+          balancesStatus={status}
+          className={classNames(status.status === "fetching" && "animate-pulse transition-opacity")}
+        />
+      </div>
+      {!!row.locked && (
+        <div>
+          {
+            // Show `Unbonding` next to nompool staked balances which are unbonding
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            (row.meta as any)?.type === "nompool" && !!(row.meta as any)?.unbonding && (
+              <div
                 className={classNames(
+                  "flex h-[6.6rem] flex-col justify-center gap-2 whitespace-nowrap p-8 text-right",
                   status.status === "fetching" && "animate-pulse transition-opacity"
                 )}
-              />
-            </div>
-            {!!row.locked && (
-              <div>
-                {
-                  // Show `Unbonding` next to nompool staked balances which are unbonding
-                  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                  (row.meta as any)?.type === "nompool" && !!(row.meta as any)?.unbonding && (
-                    <div
-                      className={classNames(
-                        "flex h-[6.6rem] flex-col justify-center gap-2 whitespace-nowrap p-8 text-right",
-                        status.status === "fetching" && "animate-pulse transition-opacity"
-                      )}
-                    >
-                      <div className="text-body flex items-center justify-end gap-2">
-                        <div>{t("Unbonding")}</div>
-                      </div>
-                      {/* TODO: Show time until funds are unbonded */}
-                      {/* <div>4d 14hr 11min</div> */}
-                    </div>
-                  )
-                }
+              >
+                <div className="text-body flex items-center justify-end gap-2">
+                  <div>{t("Unbonding")}</div>
+                </div>
+                {/* TODO: Show time until funds are unbonded */}
+                {/* <div>4d 14hr 11min</div> */}
               </div>
-            )}
-          </div>
-        ))}
+            )
+          }
+        </div>
+      )}
     </div>
   )
 }

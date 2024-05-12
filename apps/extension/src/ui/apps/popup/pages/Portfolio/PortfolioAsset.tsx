@@ -29,6 +29,7 @@ const PageContent = ({ balances, symbol }: { balances: Balances; symbol: string 
   )
 
   const { t } = useTranslation()
+  const isUniswapV2LpToken = balances.sorted[0]?.source === "evm-uniswapv2"
 
   return (
     <>
@@ -41,11 +42,15 @@ const PageContent = ({ balances, symbol }: { balances: Balances; symbol: string 
         </div>
         <div className="flex grow flex-col gap-1 pl-2 text-sm">
           <div className="text-body-secondary flex justify-between">
-            <div>{symbol}</div>
+            {isUniswapV2LpToken ? <div>{t("Liquidity Pool")}</div> : <div>{symbol}</div>}
             <div>{t("Total")}</div>
           </div>
           <div className="text-md flex justify-between font-bold">
-            {rate && <Fiat amount={rate} />}
+            {isUniswapV2LpToken ? (
+              <div>Uniswap V2</div>
+            ) : (
+              <div>{rate && <Fiat amount={rate} />}</div>
+            )}
             <div>
               <Fiat amount={total} isBalance />
             </div>

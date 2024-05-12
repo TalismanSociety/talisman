@@ -60,7 +60,8 @@ const useSupportedTokenIds = (chains?: Chain[], tokens?: Token[], address?: stri
       ethereumTokenIds:
         supportedTokens
           ?.filter((t) => {
-            if (!["substrate-native", "evm-native", "evm-erc20"].includes(t.type)) return false
+            if (!["substrate-native", "evm-native", "evm-erc20", "evm-uniswapv2"].includes(t.type))
+              return false
             const chain = chains?.find((c) => c.id === t.chain?.id)
             return !chain || (chain.account === "secp256k1" && chain.evmNetworks.length > 0)
           })
