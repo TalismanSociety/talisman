@@ -201,9 +201,7 @@ const AssetRowContent: FC<{ tokenId: TokenId; assets: DiscoveredBalance[] }> = (
   return (
     <div className="bg-grey-900 grid h-32 grid-cols-[1fr_1fr_1fr_10rem] items-center gap-x-8 rounded-sm px-8">
       <div className="flex items-center gap-6">
-        <div>
-          <TokenLogo tokenId={tokenId} className="shrink-0 text-xl" />
-        </div>
+        <TokenLogo tokenId={tokenId} className="shrink-0 text-xl" />
         <div className="flex flex-col gap-1">
           <div className="flex items-center gap-2">
             <span>{token.symbol}</span>
