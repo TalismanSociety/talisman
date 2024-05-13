@@ -110,6 +110,8 @@ const useBlockExplorerUrl = (token: Token | null) => {
   return useMemo(() => {
     if (isErc20Token(token) && evmNetwork?.explorerUrl)
       return urlJoin(evmNetwork.explorerUrl, "token", token.contractAddress)
+    if (token?.type === "evm-uniswapv2" && evmNetwork?.explorerUrl)
+      return urlJoin(evmNetwork.explorerUrl, "token", token.poolAddress)
 
     return null
   }, [token, evmNetwork?.explorerUrl])
@@ -248,7 +250,7 @@ const AssetRowContent: FC<{ tokenId: TokenId; assets: DiscoveredBalance[] }> = (
       </div>
       <div className="flex justify-end gap-8 pl-4 text-right">
         <Toggle checked={isActive} onChange={handleToggleChange} />
-        {isErc20Token(token) || coingeckoUrl ? (
+        {isErc20Token(token) || token?.type === "evm-uniswapv2" || coingeckoUrl ? (
           <ContextMenu placement="bottom-end">
             <ContextMenuTrigger className="hover:text-body bg-grey-800 text-body-secondary hover:bg-grey-700 shrink-0 rounded-sm p-4">
               <MoreHorizontalIcon />
