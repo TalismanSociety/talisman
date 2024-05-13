@@ -25,7 +25,6 @@ import {
   ExtraAmount,
   NewBalanceType,
 } from "../types"
-import { erc20Abi } from "./abis/erc20"
 import { uniswapV2PairAbi } from "./abis/uniswapV2Pair"
 
 export { uniswapV2PairAbi }
@@ -48,11 +47,13 @@ export type EvmUniswapV2Token = NewTokenType<
   {
     poolAddress: string
     symbol0: string
-    decimals0: number
     symbol1: string
+    decimals0: number
     decimals1: number
-    token0Address: string
-    token1Address: string
+    tokenAddress0: string
+    tokenAddress1: string
+    coingeckoId0?: string
+    coingeckoId1?: string
     evmNetwork: { id: EvmNetworkId } | null
   }
 >
@@ -75,12 +76,16 @@ export type EvmUniswapV2ChainMeta = {
 export type EvmUniswapV2ModuleConfig = {
   pools?: Array<
     {
-      //   /** TODO: Fetch from token0Address */
-      //   symbol0?: string
-      //   /** TODO: Fetch from token1Address */
-      //   symbol1?: string
-
       poolAddress?: string
+      decimals?: number
+      symbol0?: string
+      symbol1?: string
+      decimals0?: number
+      decimals1?: number
+      tokenAddress0?: string
+      tokenAddress1?: string
+      coingeckoId0?: string
+      coingeckoId1?: string
     } & BalancesConfigTokenParams
   >
 }
@@ -125,61 +130,39 @@ export const EvmUniswapV2Module: NewBalanceModule<
 
       const tokens: Record<string, EvmUniswapV2Token> = {}
       for (const tokenConfig of moduleConfig?.pools ?? []) {
-        const { poolAddress } = tokenConfig
-        if (!poolAddress) {
+        const {
+          poolAddress,
+          decimals,
+          symbol0,
+          symbol1,
+          decimals0,
+          decimals1,
+          tokenAddress0,
+          tokenAddress1,
+          coingeckoId0,
+          coingeckoId1,
+        } = tokenConfig
+
+        if (
+          !poolAddress ||
+          decimals === undefined ||
+          symbol0 === undefined ||
+          decimals0 === undefined ||
+          symbol1 === undefined ||
+          decimals1 === undefined ||
+          tokenAddress0 === undefined ||
+          tokenAddress1 === undefined
+        ) {
           log.warn("ignoring token on chain %s", chainId, tokenConfig)
           continue
         }
-
-        const publicClient = await chainConnectors.evm?.getPublicClientForEvmNetwork(chainId)
-        if (!publicClient) {
-          log.warn(`could not get rpc provider for evm network ${chainId}`)
-          continue
-        }
-
-        const poolContract = { abi: uniswapV2PairAbi, address: poolAddress as `0x${string}` }
-        const [
-          // Always `UNI-V2` for uniswap v2 contracts
-          // { result: symbol },
-          { result: decimals },
-          { result: token0Address },
-          { result: token1Address },
-        ] = await publicClient.multicall({
-          contracts: [
-            // { ...poolContract, functionName: "symbol" },
-            { ...poolContract, functionName: "decimals" },
-            { ...poolContract, functionName: "token0" },
-            { ...poolContract, functionName: "token1" },
-          ],
-        })
-        const [
-          { result: symbol0 },
-          { result: decimals0 },
-          { result: symbol1 },
-          { result: decimals1 },
-        ] = await publicClient.multicall({
-          contracts: [
-            { abi: erc20Abi, address: token0Address as `0x${string}`, functionName: "symbol" },
-            { abi: erc20Abi, address: token0Address as `0x${string}`, functionName: "decimals" },
-            { abi: erc20Abi, address: token1Address as `0x${string}`, functionName: "symbol" },
-            { abi: erc20Abi, address: token1Address as `0x${string}`, functionName: "decimals" },
-          ],
-        })
-
-        if (decimals === undefined) continue
-        if (symbol0 === undefined) continue
-        if (decimals0 === undefined) continue
-        if (symbol1 === undefined) continue
-        if (decimals1 === undefined) continue
-        if (token0Address === undefined) continue
-        if (token1Address === undefined) continue
 
         const id = evmUniswapV2TokenId(chainId, poolAddress)
         const token: EvmUniswapV2Token = {
           id,
           type: "evm-uniswapv2",
           isTestnet,
-          isDefault: tokenConfig.isDefault ?? true,
+          isDefault: tokenConfig.isDefault ?? false,
           symbol: `${symbol0 ?? "UNKNOWN"}/${symbol1 ?? "UNKNOWN"}`,
           decimals,
           logo: tokenConfig?.logo || githubTokenLogoUrl("uniswap"),
@@ -188,10 +171,17 @@ export const EvmUniswapV2Module: NewBalanceModule<
           symbol1,
           decimals1,
           poolAddress,
-          token0Address,
-          token1Address,
+          tokenAddress0,
+          tokenAddress1,
+          coingeckoId0,
+          coingeckoId1,
           evmNetwork: { id: chainId },
         }
+
+        if (tokenConfig?.symbol) token.symbol = tokenConfig?.symbol
+        if (tokenConfig?.coingeckoId) token.coingeckoId = tokenConfig?.coingeckoId
+        if (tokenConfig?.dcentName) token.dcentName = tokenConfig?.dcentName
+        if (tokenConfig?.mirrorOf) token.mirrorOf = tokenConfig?.mirrorOf
 
         tokens[token.id] = token
       }
