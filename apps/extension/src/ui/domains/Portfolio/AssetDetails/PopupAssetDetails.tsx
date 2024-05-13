@@ -131,8 +131,8 @@ const ChainTokenBalancesUniswapV2Row = ({
 
   // NOTE: We want to use the symbols & decimals from the contract,
   // But the contract doesn't provide logos, so we'll try to get the logos from the local db
-  const tokenId0 = evmErc20TokenId(balance.evmNetworkId, token.token0Address)
-  const tokenId1 = evmErc20TokenId(balance.evmNetworkId, token.token1Address)
+  const tokenId0 = evmErc20TokenId(balance.evmNetworkId, token.tokenAddress0)
+  const tokenId1 = evmErc20TokenId(balance.evmNetworkId, token.tokenAddress1)
 
   const symbol0 = token.symbol0
   const symbol1 = token.symbol1
