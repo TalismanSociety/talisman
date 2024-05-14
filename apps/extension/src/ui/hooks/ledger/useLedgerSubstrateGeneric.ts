@@ -1,7 +1,7 @@
 import Transport from "@ledgerhq/hw-transport"
 import TransportWebUSB from "@ledgerhq/hw-transport-webusb"
 import { throwAfter } from "@talismn/util"
-import { GenericApp, newGenericApp } from "@zondax/ledger-substrate"
+import { PolkadotGenericApp, newPolkadotGenericApp } from "@zondax/ledger-substrate"
 import { log } from "extension-shared"
 import { useCallback, useEffect, useMemo, useRef, useState } from "react"
 import { useTranslation } from "react-i18next"
@@ -15,7 +15,7 @@ export const useLedgerSubstrateGeneric = (persist = false) => {
   const [refreshCounter, setRefreshCounter] = useState(0)
   const [error, setError] = useState<Error>()
   const [isReady, setIsReady] = useState(false)
-  const [ledger, setLedger] = useState<GenericApp | null>(null)
+  const [ledger, setLedger] = useState<PolkadotGenericApp | null>(null)
 
   const refConnecting = useRef(false)
   const refTransport = useRef<Transport | null>(null)
@@ -45,7 +45,7 @@ export const useLedgerSubstrateGeneric = (persist = false) => {
       await refTransport.current?.close()
       refTransport.current = await TransportWebUSB.create()
 
-      const ledger = newGenericApp(refTransport.current, "", "")
+      const ledger = newPolkadotGenericApp(refTransport.current, "hello", "web3")
 
       // verify that Ledger connection is ready by querying first address
       const response = await Promise.race([

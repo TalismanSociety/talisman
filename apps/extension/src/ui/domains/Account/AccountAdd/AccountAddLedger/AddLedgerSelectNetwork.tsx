@@ -7,6 +7,8 @@ import { AccountTypeSelector } from "@ui/domains/Account/AccountTypeSelector"
 import { ChainLogo } from "@ui/domains/Asset/ChainLogo"
 import { useLedgerChains } from "@ui/hooks/ledger/useLedgerChains"
 import useChain from "@ui/hooks/useChain"
+import { useAllChains } from "@ui/hooks/useChains"
+import { DEBUG } from "extension-shared"
 import { FC, ReactNode, useCallback, useMemo, useState } from "react"
 import { useForm } from "react-hook-form"
 import { useTranslation } from "react-i18next"
@@ -86,6 +88,9 @@ const AppVersionButton: FC<{
 export const AddLedgerSelectNetwork = () => {
   const { t } = useTranslation("admin")
   const { data: defaultValues, updateData } = useAddLedgerAccount()
+
+  const allChains = useAllChains()
+  const enableMigrationApp = DEBUG || allChains.some((chain) => chain.hasCheckMetadataHash)
 
   const navigate = useNavigate()
   const ledgerChains = useLedgerChains()
@@ -215,7 +220,7 @@ export const AddLedgerSelectNetwork = () => {
                 description={t("Coming soon")}
                 selected={substrateAppType === SubstrateLedgerAppType.Migration}
                 onClick={handleSubstrateAppTypeClick(SubstrateLedgerAppType.Migration)}
-                // disabled // TODO: enable if there is at least 1 available migration app
+                disabled={enableMigrationApp}
               />
             </div>
             <div className="mt-8">

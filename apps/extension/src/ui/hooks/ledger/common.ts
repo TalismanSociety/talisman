@@ -1,4 +1,5 @@
 import { DEBUG } from "@extension/shared"
+import { AccountJsonHardwareSubstrate } from "extension-core"
 import { t } from "i18next"
 
 export class LedgerError extends Error {
@@ -216,3 +217,19 @@ export const getLedgerErrorProps = (err: LedgerError, appName: string): LedgerEr
 // 0x162, in hex, 354 in decimal: is the official derivation path for Polkadot, chains not on it presently will need to migrate.
 export const getPolkadotLedgerDerivationPath = (accountIndex = 0, addressIndex = 0) =>
   `m/44'/354'/${accountIndex}'/0'/${addressIndex}'`
+
+export const getLedgerSubstrateAccountIds = (account: AccountJsonHardwareSubstrate) => {
+  if (typeof account.accountIndex !== "number" || typeof account.addressOffset !== "number")
+    throw new Error("Invalid polkadot ledger account")
+
+  const HARDENED = 0x80000000
+  const accountIndex = HARDENED + account.accountIndex
+  const change = HARDENED
+  const addressIndex = HARDENED + account.addressOffset
+
+  return {
+    accountIndex,
+    change,
+    addressIndex,
+  }
+}

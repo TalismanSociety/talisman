@@ -8467,6 +8467,13 @@ __metadata:
   languageName: unknown
   linkType: soft
 
+"@talismn/metadata-shortener-wasm@file:///home/kheops/Repositories/talisman/metadata-shortener-wasm/pkg::locator=extension%40workspace%3Aapps%2Fextension":
+  version: 0.1.0
+  resolution: "@talismn/metadata-shortener-wasm@file:///home/kheops/Repositories/talisman/metadata-shortener-wasm/pkg#///home/kheops/Repositories/talisman/metadata-shortener-wasm/pkg::hash=360a9b&locator=extension%40workspace%3Aapps%2Fextension"
+  checksum: a52c3a3c0741c1515951e803b1dedb2b219f0a761e5cec65f5cfceca91c8dfc16032d4111266cb425bc9e1a0afdda78d18dd03c74f858e3852e4410ae25f3b31
+  languageName: node
+  linkType: hard
+
 "@talismn/on-chain-id@workspace:*, @talismn/on-chain-id@workspace:packages/on-chain-id":
   version: 0.0.0-use.local
   resolution: "@talismn/on-chain-id@workspace:packages/on-chain-id"
@@ -10662,12 +10669,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@zondax/ledger-substrate@npm:0.42.2":
-  version: 0.42.2
-  resolution: "@zondax/ledger-substrate@npm:0.42.2"
+"@zondax/ledger-substrate@npm:0.43.0":
+  version: 0.43.0
+  resolution: "@zondax/ledger-substrate@npm:0.43.0"
   dependencies:
     axios: ^1.6.8
-  checksum: a536be6aaf832f9ea9253ea0abdd268a2c60a4f435a2bce618dbd60a17f54e70cc39c7878730d8c641147dbfc096888ddb7f0219f4b823056d808cf9da8ff079
+  checksum: edcdfdbd7237d6b8f54c3ffaa10e1d7c0aa5eecfcb1bb1b9cdd31c1bc71180bf23c24e618ba8eb0cd4961d88135552cb8b2aa0afde40a7581cd86727bad62b7f
   languageName: node
   linkType: hard
 
@@ -15726,6 +15733,7 @@ __metadata:
     "@talismn/chaindata-provider": "workspace:*"
     "@talismn/eslint-config": "workspace:*"
     "@talismn/icons": "workspace:*"
+    "@talismn/metadata-shortener-wasm": "file:///home/kheops/Repositories/talisman/metadata-shortener-wasm/pkg"
     "@talismn/on-chain-id": "workspace:*"
     "@talismn/orb": "workspace:*"
     "@talismn/scale": "workspace:*"
@@ -15758,7 +15766,7 @@ __metadata:
     "@typescript-eslint/eslint-plugin": ^6.9.0
     "@typescript-eslint/parser": ^6.9.0
     "@zondax/ledger-polkadot": ^0.16.0
-    "@zondax/ledger-substrate": 0.42.2
+    "@zondax/ledger-substrate": 0.43.0
     anylogger: ^1.0.11
     anylogger-loglevel: ^1.0.0
     archiver: 5.3.1
