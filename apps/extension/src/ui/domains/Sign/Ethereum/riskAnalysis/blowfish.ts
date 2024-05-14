@@ -42,8 +42,6 @@ export const getBlowfishChainInfo = (evmNetworkId: EvmNetworkId) => {
 export const getBlowfishClient = (evmNetworkId: EvmNetworkId) => {
   if (!BLOWFISH_SUPPORTED_CHAINS[evmNetworkId]) return null
 
-  if (!process.env.BLOWFISH_API_KEY) return null
-
   const config = getBlowfishChainInfo(evmNetworkId)
   if (!config) return null
 
