@@ -19,7 +19,13 @@ const BLOWFISH_SUPPORTED_CHAINS: Record<EvmNetworkId, BlowfishEvmChainInfo | und
   "84532": { chainFamily: "base", chainNetwork: "sepolia" },
   "43114": { chainFamily: "avalanche", chainNetwork: "mainnet" },
   "43113": { chainFamily: "avalanche", chainNetwork: "fuji" },
-  "7777777": { chainFamily: "zora", chainNetwork: "sepolia" },
+  "7777777": { chainFamily: "zora", chainNetwork: "mainnet" },
+  "999999999": { chainFamily: "zora", chainNetwork: "sepolia" },
+  "238": { chainFamily: "blast", chainNetwork: "mainnet" },
+  "168587773": { chainFamily: "blast", chainNetwork: "sepolia" },
+  "100": { chainFamily: "gnosis", chainNetwork: "mainnet" },
+  "59144": { chainFamily: "linea", chainNetwork: "mainnet" },
+  "666666666": { chainFamily: "degen", chainNetwork: "mainnet" },
 }
 
 const getLanguage = (): Languages => {
