@@ -18,6 +18,14 @@ const USER_EXTENSIONS: Record<ChainId, ExtDef> = {
       payload: {},
     },
   },
+  "avail": {
+    CheckAppId: {
+      extrinsic: {
+        appId: "AvailCoreAppId",
+      },
+      payload: {},
+    },
+  },
 }
 
 export const getUserExtensionsByChainId = (
