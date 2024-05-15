@@ -6,6 +6,10 @@ import { classNames } from "@talismn/util"
 import { AccountTypeSelector } from "@ui/domains/Account/AccountTypeSelector"
 import { ChainLogo } from "@ui/domains/Asset/ChainLogo"
 import { useLedgerChains } from "@ui/hooks/ledger/useLedgerChains"
+import {
+  SubstrateMigrationApp,
+  useLedgerSubstrateMigrationApps,
+} from "@ui/hooks/ledger/useLedgerSubstrateMigrationApps"
 import useChain from "@ui/hooks/useChain"
 import { useAllChains } from "@ui/hooks/useChains"
 import { DEBUG } from "extension-shared"
@@ -28,7 +32,7 @@ type FormData = {
   substrateAppType: SubstrateLedgerAppType
 }
 
-const renderOption = (chain: Chain) => {
+const renderSubstrateLegacyOption = (chain: Chain) => {
   const getChainLabel = (chain: Chain) => {
     switch (chain.id) {
       case "polkadot-asset-hub":
@@ -47,6 +51,69 @@ const renderOption = (chain: Chain) => {
         {getChainLabel(chain)}
       </span>
     </div>
+  )
+}
+
+const renderSubstrateMigrationOption = (app: SubstrateMigrationApp) => (
+  <div className="flex max-w-full items-center gap-5 overflow-hidden">
+    <ChainLogo id={app.chain?.id} className="text-[1.25em]" />
+    <span className="overflow-hidden text-ellipsis whitespace-nowrap">{app.name}</span>
+  </div>
+)
+
+const SubstrateLegacyNetworkSelect: FC<{
+  chain: Chain | null
+  onChange: (chain: Chain | null) => void
+}> = ({ chain, onChange }) => {
+  const { t } = useTranslation("admin")
+  const ledgerChains = useLedgerChains()
+
+  return (
+    <>
+      <h2 className="text-body-disabled leading-paragraph mb-6 mt-12 text-base">
+        {t("2. Choose Network")}
+      </h2>
+      <Dropdown
+        propertyKey="id"
+        items={ledgerChains}
+        value={chain}
+        placeholder={t("Select a network")}
+        renderItem={renderSubstrateLegacyOption}
+        onChange={onChange}
+      />
+      <p className="text-body-disabled mt-6 text-sm">
+        {t("Please note: a legacy Ledger account can only be used on a single network.")}
+      </p>
+    </>
+  )
+}
+
+const SubstrateMigrationNetworkSelect: FC<{
+  chain: SubstrateMigrationApp | null
+  onChange: (chain: SubstrateMigrationApp | null) => void
+}> = ({ chain, onChange }) => {
+  const { t } = useTranslation("admin")
+  const apps = useLedgerSubstrateMigrationApps()
+
+  return (
+    <>
+      <h2 className="text-body-disabled leading-paragraph mb-6 mt-12 text-base">
+        {t("2. Choose Network")}
+      </h2>
+      <Dropdown
+        propertyKey="name"
+        items={apps}
+        value={chain}
+        placeholder={t("Select a network")}
+        renderItem={renderSubstrateMigrationOption}
+        onChange={onChange}
+      />
+      <p className="text-body-disabled mt-6 text-sm">
+        {t(
+          "Please note: you should not be sending any funds to a Ledger Migration app account. It's only meant to help you transfer your assets to Ledger Generic App accounts"
+        )}
+      </p>
+    </>
   )
 }
 
@@ -220,10 +287,10 @@ export const AddLedgerSelectNetwork = () => {
                 description={t("Coming soon")}
                 selected={substrateAppType === SubstrateLedgerAppType.Migration}
                 onClick={handleSubstrateAppTypeClick(SubstrateLedgerAppType.Migration)}
-                disabled={enableMigrationApp}
+                disabled={!enableMigrationApp}
               />
             </div>
-            <div className="mt-8">
+            {/* <div className="mt-8">
               <button
                 type="button"
                 className={classNames(
@@ -233,24 +300,28 @@ export const AddLedgerSelectNetwork = () => {
               >
                 {"@zondax/ledger-polkadot"}
               </button>
-            </div>
+            </div> */}
             {substrateAppType === "substrate-legacy" && (
-              <>
-                <h2 className="text-body-disabled leading-paragraph mb-6 mt-12 text-base">
-                  {t("2. Choose Network")}
-                </h2>
-                <Dropdown
-                  propertyKey="id"
-                  items={ledgerChains}
-                  value={chain}
-                  placeholder={t("Select a network")}
-                  renderItem={renderOption}
-                  onChange={handleNetworkChange}
-                />
-                <p className="text-body-disabled mt-6 text-sm">
-                  {t("Please note: a legacy Ledger account can only be used on a single network.")}
-                </p>
-              </>
+              <SubstrateLegacyNetworkSelect chain={chain} onChange={handleNetworkChange} />
+              // <>
+              //   <h2 className="text-body-disabled leading-paragraph mb-6 mt-12 text-base">
+              //     {t("2. Choose Network")}
+              //   </h2>
+              //   <Dropdown
+              //     propertyKey="id"
+              //     items={ledgerChains}
+              //     value={chain}
+              //     placeholder={t("Select a network")}
+              //     renderItem={renderOption}
+              //     onChange={handleNetworkChange}
+              //   />
+              //   <p className="text-body-disabled mt-6 text-sm">
+              //     {t("Please note: a legacy Ledger account can only be used on a single network.")}
+              //   </p>
+              // </>
+            )}
+            {substrateAppType === "substrate-migration" && (
+              <SubstrateMigrationNetworkSelect chain={null} onChange={() => {}} />
             )}
           </div>
         )}
