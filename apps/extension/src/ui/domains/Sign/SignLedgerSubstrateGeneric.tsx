@@ -7,11 +7,13 @@ import {
 import { log } from "@extension/shared"
 import { wrapBytes } from "@polkadot/extension-dapp/wrapBytes"
 import { TypeRegistry } from "@polkadot/types"
+import { hexToU8a } from "@polkadot/util"
 import { HexString } from "@polkadot/util/types"
 import { classNames } from "@talismn/util"
 import { LedgerError, getLedgerSubstrateAccountIds } from "@ui/hooks/ledger/common"
 import { useLedgerSubstrateGeneric } from "@ui/hooks/ledger/useLedgerSubstrateGeneric"
 import { useAccountByAddress } from "@ui/hooks/useAccountByAddress"
+import { PolkadotGenericApp } from "@zondax/ledger-substrate"
 import { FC, useCallback, useEffect, useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
 import { Drawer } from "talisman-ui"
@@ -25,16 +27,63 @@ import { LedgerSigningStatus } from "./LedgerSigningStatus"
 import { SignHardwareSubstrateProps } from "./SignHardwareSubstrate"
 import { useShortenedMetadata } from "./useShortenedMetadata"
 
-const registry = new TypeRegistry()
+// const addCheckMetadata = (payload: SignerPayloadJSON): SignerPayloadJSON => ({
+//   ...payload,
+//   signedExtensions: payload.signedExtensions.concat(["CheckMetadata"]),
+// })
 
-function isRawPayload(payload: SignerPayloadJSON | SignerPayloadRaw): payload is SignerPayloadRaw {
-  return !!(payload as SignerPayloadRaw).data
+const sign = (
+  ledger: PolkadotGenericApp,
+  payload: SignerPayloadJSON | SignerPayloadRaw,
+  account: AccountJsonHardwareSubstrate,
+  metadata?: string | null
+) => {
+  const { accountIndex, change, addressIndex } = getLedgerSubstrateAccountIds(
+    account as AccountJsonHardwareSubstrate
+  )
+
+  if (isJsonPayload(payload)) {
+    if (!metadata) throw new Error("Missing metadata")
+
+    // if (!payload.signedExtensions.includes("CheckMetadataHash"))
+    //   payload.signedExtensions.push("CheckMetadataHash")
+    //throw new Error("Missing signed extension: CheckMetadataHash")
+
+    const registry = new TypeRegistry()
+    registry.setSignedExtensions(payload.signedExtensions)
+    const unsigned = registry.createType("ExtrinsicPayload", payload, {
+      version: payload.version,
+    })
+
+    return ledger.signImpl(
+      accountIndex,
+      change,
+      addressIndex,
+      2,
+      Buffer.from(unsigned.toU8a(true)),
+      Buffer.from(hexToU8a(metadata))
+    )
+  }
+
+  // raw payload
+  const unsigned = wrapBytes(payload.data)
+  return ledger.signRaw(accountIndex, change, addressIndex, Buffer.from(unsigned))
+
+  //   const registry = new TypeRegistry()
+  //   const unsigned = isJsonPayload(payload) ? registry.createType("ExtrinsicPayload", payload, {
+  //   version: payload.version,
+  // }) : wrapBytes(payload.data)
+
+  //   const response = await (isRaw
+  //     ? ledger.signRaw(accountIndex, change, addressIndex, Buffer.from(unsigned))
+  //     : ledger.signImpl(
+  //         accountIndex,
+  //         change,
+  //         addressIndex,
+  //         2,
+  //         Buffer.from(unsigned),
+  //         Buffer.from(metadata!))
 }
-
-const addCheckMetadata = (payload: SignerPayloadJSON): SignerPayloadJSON => ({
-  ...payload,
-  signedExtensions: payload.signedExtensions.concat(["CheckMetadata"]),
-})
 
 const SignLedgerSubstrateGeneric: FC<SignHardwareSubstrateProps> = ({
   className = "",
@@ -45,16 +94,22 @@ const SignLedgerSubstrateGeneric: FC<SignHardwareSubstrateProps> = ({
   containerId,
 }) => {
   // TODO remove, this is just for testing
-  if (payload && isJsonPayload(payload)) payload = addCheckMetadata(payload)
+  //if (payload && isJsonPayload(payload)) payload = addCheckMetadata(payload)
 
   const account = useAccountByAddress(payload?.address)
   const { t } = useTranslation("request")
   const [isSigning, setIsSigning] = useState(false)
+  const [isSigned, setIsSigned] = useState(false)
   const [error, setError] = useState<string | null>(null)
-  const [unsigned, setUnsigned] = useState<Uint8Array>()
-  const [isRaw, setIsRaw] = useState<boolean>()
+  // const [unsigned, setUnsigned] = useState<Uint8Array>()
+  // const [isRaw, setIsRaw] = useState<boolean>()
   const { ledger, refresh, status, message, isReady, requiresManualRetry } =
     useLedgerSubstrateGeneric()
+
+  // reset
+  useEffect(() => {
+    setIsSigned(false)
+  }, [payload])
 
   const connectionStatus: LedgerConnectionStatusProps = useMemo(
     () => ({
@@ -66,87 +121,67 @@ const SignLedgerSubstrateGeneric: FC<SignHardwareSubstrateProps> = ({
     [refresh, status, message, requiresManualRetry, t]
   )
 
-  useEffect(() => {
-    if (!payload) return
+  // useEffect(() => {
+  //   if (!payload) return
 
-    if (isRawPayload(payload)) {
-      setUnsigned(wrapBytes(payload.data))
-      setIsRaw(true)
-      return
-    }
+  //   console.log("useEffect payload")
 
-    if (payload.signedExtensions) registry.setSignedExtensions(payload.signedExtensions)
-    const extrinsicPayload = registry.createType("ExtrinsicPayload", payload, {
-      version: payload.version,
-    })
-    setUnsigned(extrinsicPayload.toU8a(true))
-    setIsRaw(false)
-  }, [payload, t])
+  //   if (isRawPayload(payload)) {
+  //     setUnsigned(wrapBytes(payload.data))
+  //     setIsRaw(true)
+  //     return
+  //   }
 
-  const onRefresh = useCallback(() => {
-    refresh()
-    setError(null)
-  }, [refresh, setError])
-
-  // const genesisHash = useMemo(
-  //   () => (payload && isJsonPayload(payload) && payload.genesisHash) || undefined,
-  //   [payload]
-  // )
+  //   if (payload.signedExtensions) registry.setSignedExtensions(payload.signedExtensions)
+  //   const extrinsicPayload = registry.createType("ExtrinsicPayload", payload, {
+  //     version: payload.version,
+  //   })
+  //   setUnsigned(extrinsicPayload.toU8a(true))
+  //   setIsRaw(false)
+  // }, [payload, t])
 
   const {
     data: metadata,
     error: errorMetadata,
-    //isLoading: isLoadingMetadata,
+    isLoading: isLoadingMetadata,
   } = useShortenedMetadata(payload && isJsonPayload(payload) ? payload : null)
 
+  useEffect(() => {
+    if (errorMetadata)
+      setError(errorMetadata instanceof Error ? errorMetadata.message : errorMetadata.toString())
+  }, [errorMetadata])
+
+  const inputsReady = useMemo(() => {
+    return !!account && !!payload && (!isJsonPayload(payload) || !!metadata)
+  }, [account, metadata, payload])
+
   const signLedger = useCallback(async () => {
-    if (!ledger || !unsigned || !onSigned || !account) return
+    if (!ledger || !payload || !onSigned || !account || !inputsReady) return
+
+    if (isJsonPayload(payload) && !metadata) {
+      if (errorMetadata) return setError((errorMetadata as Error).message)
+      if (!isLoadingMetadata) return setError("Metadata unavailable") // shouldn't happen, useShortenedMetadata throws if no metadata
+      return setError(null) // wait for metadata
+    }
 
     setError(null)
 
-    // if JSON payload, metadata is required to continue
-    if (!isRaw && !metadata) {
-      if (errorMetadata) setError((errorMetadata as Error).message)
-      return
-    }
-
     try {
-      const { accountIndex, change, addressIndex } = getLedgerSubstrateAccountIds(
-        account as AccountJsonHardwareSubstrate
+      const response = await sign(
+        ledger,
+        payload,
+        account as AccountJsonHardwareSubstrate,
+        metadata
       )
-      // if (typeof account.accountIndex !== "number" || typeof account.addressOffset !== "number")
-      //   throw new Error("Invalid account")
-
-      // const HARDENED = 0x80000000
-      // const accountIdx = HARDENED + account.accountIndex
-      // const change = HARDENED
-      // const addressIndex = HARDENED + account.addressOffset
-
-      // console.log(" sending to ledger", {
-      //   unsigned,
-      //   metadata,
-      //   isRaw,
-      //   accountIndex,
-      //   change,
-      //   addressIndex,
-      //   account,
-      // })
-      const response = await (isRaw
-        ? ledger.signRaw(accountIndex, change, addressIndex, Buffer.from(unsigned))
-        : ledger.signImpl(
-            accountIndex,
-            change,
-            addressIndex,
-            2,
-            Buffer.from(unsigned),
-            Buffer.from(metadata!)
-          ))
 
       if (response.error_message !== "No errors")
         throw new LedgerError(response.error_message, "LedgerError", response.return_code)
 
       // await to keep loader spinning until popup closes
-      await onSigned({ signature: response.signature.toString("hex") as HexString })
+      await onSigned({
+        // skip first byte, it's the signature type (00 for ed25519)
+        signature: ("0x" + response.signature.slice(1).toString("hex")) as HexString,
+      })
     } catch (error) {
       log.error("signLedger", { error })
       const message = (error as Error)?.message
@@ -166,29 +201,51 @@ const SignLedgerSubstrateGeneric: FC<SignHardwareSubstrateProps> = ({
           setError(message)
       }
     }
-  }, [ledger, unsigned, onSigned, account, isRaw, metadata, errorMetadata, t])
+  }, [
+    ledger,
+    payload,
+    onSigned,
+    account,
+    inputsReady,
+    metadata,
+    errorMetadata,
+    isLoadingMetadata,
+    t,
+  ])
 
-  useEffect(() => {
-    if (isReady && !error && unsigned && !isSigning) {
-      setIsSigning(true)
-      onSentToDevice?.(true)
-      signLedger().finally(() => {
-        setIsSigning(false)
-        onSentToDevice?.(false)
-      })
-    }
-  }, [signLedger, isSigning, error, isReady, onSentToDevice, unsigned])
+  const onRefresh = useCallback(() => {
+    refresh()
+    setError(null)
+  }, [refresh, setError])
+
+  const handleSendClick = useCallback(() => {
+    setIsSigning(true)
+    onSentToDevice?.(true)
+    signLedger()
+      .catch(() => onSentToDevice?.(false))
+      .finally(() => setIsSigning(false))
+  }, [onSentToDevice, signLedger])
 
   const handleCloseDrawer = useCallback(() => setError(null), [setError])
 
   return (
     <div className={classNames("flex w-full flex-col gap-6", className)}>
       {!error && (
-        <LedgerConnectionStatus
-          {...{ ...connectionStatus }}
-          refresh={onRefresh}
-          hideOnSuccess={true}
-        />
+        <>
+          {isReady ? (
+            <Button
+              className="w-full"
+              disabled={!inputsReady}
+              primary
+              processing={isSigning}
+              onClick={handleSendClick}
+            >
+              {t("Approve on Ledger")}
+            </Button>
+          ) : (
+            !isSigned && <LedgerConnectionStatus {...{ ...connectionStatus }} refresh={onRefresh} />
+          )}
+        </>
       )}
       {onCancel && (
         <Button className="w-full" onClick={onCancel}>

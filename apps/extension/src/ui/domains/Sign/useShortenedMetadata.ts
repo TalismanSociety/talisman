@@ -1,5 +1,5 @@
 import { Metadata, TypeRegistry } from "@polkadot/types"
-import { hexToNumber, u8aToHex } from "@polkadot/util"
+import { hexToNumber, isHex, u8aToHex } from "@polkadot/util"
 import { base64Decode } from "@polkadot/util-crypto"
 import { get_short_metadata_from_tx_blob } from "@talismn/metadata-shortener-wasm"
 import { useQuery } from "@tanstack/react-query"
@@ -40,20 +40,13 @@ export const useShortenedMetadata = (payload: SignerPayloadJSON | null) => {
         if (metadata.version !== 15) throw new Error("Invalid metadata version")
         const hexMetadataRpc = u8aToHex(metadataRpc)
 
+        registry.setSignedExtensions(payload.signedExtensions)
         const extPayload = registry.createType("ExtrinsicPayload", payload, {
           version: payload.version,
         })
         const hexPayload = u8aToHex(extPayload.toU8a(true))
 
-        // console.log({
-        //   hexMetadataRpc,
-        //   hexPayload,
-        //   token,
-        //   specName,
-        //   specVersion,
-        // })
-
-        return get_short_metadata_from_tx_blob(
+        const shortened = get_short_metadata_from_tx_blob(
           trimPrefix(hexMetadataRpc),
           trimPrefix(hexPayload),
           token.symbol,
@@ -62,16 +55,18 @@ export const useShortenedMetadata = (payload: SignerPayloadJSON | null) => {
           specName,
           specVersion
         )
+
+        if (!isHex("0x" + shortened)) throw new Error(shortened)
+
+        return shortened
       } catch (error) {
-        log.error("Failed to fetch metadata", { error })
+        log.error("Failed to get shortened metadata", { error })
         throw error
       }
     },
     retry: false,
-    // refetchInterval: false,
-    // refetchOnMount: false,
-    // refetchOnReconnect: false,
-    // refetchIntervalInBackground: false,
-    // refetchOnWindowFocus: false,
+    refetchInterval: false,
+    refetchOnWindowFocus: false,
+    refetchOnReconnect: false,
   })
 }
