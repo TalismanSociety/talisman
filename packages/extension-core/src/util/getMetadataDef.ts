@@ -224,6 +224,16 @@ const getLatestMetadataRpc = async (chainId: ChainId, blockHash?: string) => {
     const opaqueMetadata = maybeOpaqueMetadata.unwrap()
 
     return metadataFromOpaque(opaqueMetadata)
+  } catch (err) {
+    // maybe the chain doesn't have metadata_versions or metadata_at_version runtime calls - ex: crust standalone
+    // fetch metadata the old way
+    if ((err as { message?: string })?.message?.includes("is not found"))
+      return chainConnector.send<HexString>(chainId, "state_getMetadata", [blockHash], !!blockHash)
+
+    // eslint-disable-next-line no-console
+    console.error("getLatestMetadataRpc", { err })
+
+    throw err
   } finally {
     stop()
   }
