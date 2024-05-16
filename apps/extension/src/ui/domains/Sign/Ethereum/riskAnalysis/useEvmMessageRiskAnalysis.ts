@@ -83,7 +83,7 @@ export const useEvmMessageRiskAnalysis = ({
     evmNetworkId,
     disableAutoRiskScan,
     queryKey: ["useEvmMessageRiskAnalysis", evmNetworkId, method, message, account, origin],
-    queryFn: async () => {
+    queryFn: () => {
       if (!evmNetworkId || !method || !message || !account) return null
 
       const client = getBlowfishClient(evmNetworkId)
