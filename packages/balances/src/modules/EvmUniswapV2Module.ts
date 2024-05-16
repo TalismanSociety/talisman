@@ -427,8 +427,8 @@ async function getPoolBalance(
 
   try {
     const [
-      { result: balanceOf },
-      { result: totalSupply },
+      { result: _balanceOf },
+      { result: _totalSupply },
       { result: reserves },
       // { result: kLast },
       // { result: price0CumulativeLast },
@@ -449,19 +449,23 @@ async function getPoolBalance(
       ],
     })
 
-    const [reserve0, reserve1] = reserves ?? []
+    const [_reserve0, _reserve1] = reserves ?? []
 
-    const ratio = BigNumber(String(balanceOf ?? 0n)).div(String(totalSupply ?? 1n))
-    const holding0: ExtraAmount<string> = {
-      label: "holding0",
-      amount: ratio.times(String(reserve0)).toString(10),
-    }
-    const holding1: ExtraAmount<string> = {
-      label: "holding1",
-      amount: ratio.times(String(reserve1)).toString(10),
-    }
+    const extraWithLabel = (label: string, amount: string): ExtraAmount<string> => ({
+      label,
+      amount,
+    })
 
-    return { free: (balanceOf ?? 0n).toString(), extra: [holding0, holding1] }
+    const balanceOf = String(_balanceOf ?? 0n)
+    const totalSupply = extraWithLabel("totalSupply", String(_totalSupply ?? 0n))
+    const reserve0 = extraWithLabel("reserve0", String(_reserve0 ?? 0n))
+    const reserve1 = extraWithLabel("reserve1", String(_reserve1 ?? 0n))
+
+    const ratio = BigNumber(balanceOf).div(totalSupply.amount === "0" ? "1" : totalSupply.amount)
+    const holding0 = extraWithLabel("holding0", ratio.times(reserve0.amount).toString(10))
+    const holding1 = extraWithLabel("holding1", ratio.times(reserve1.amount).toString(10))
+
+    return { free: balanceOf, extra: [totalSupply, reserve0, reserve1, holding0, holding1] }
   } catch (error) {
     const errorMessage = hasOwnProperty(error, "shortMessage")
       ? error.shortMessage

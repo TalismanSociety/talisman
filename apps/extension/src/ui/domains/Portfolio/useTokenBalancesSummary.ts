@@ -1,6 +1,4 @@
-import { Balances } from "@extension/core"
-import { Chain } from "@extension/core"
-import { Token } from "@extension/core"
+import { Balances, Chain, Token } from "@extension/core"
 import { TokenRatesList } from "@talismn/token-rates"
 import { usePortfolio } from "@ui/domains/Portfolio/usePortfolio"
 import { useSelectedCurrency } from "@ui/hooks/useCurrency"

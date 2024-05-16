@@ -1,6 +1,6 @@
 import { Balance, Balances, ChainId, EvmNetworkId } from "@extension/core"
 import { FadeIn } from "@talisman/components/FadeIn"
-import { evmErc20TokenId } from "@talismn/balances"
+import { BalanceFormatter, evmErc20TokenId } from "@talismn/balances"
 import { ArrowDownIcon, CreditCardIcon, LockIcon } from "@talismn/icons"
 import { classNames } from "@talismn/util"
 import { api } from "@ui/api"
@@ -12,8 +12,9 @@ import Tokens from "@ui/domains/Asset/Tokens"
 import { useCopyAddressModal } from "@ui/domains/CopyAddress"
 import { useAnalytics } from "@ui/hooks/useAnalytics"
 import { BalancesStatus } from "@ui/hooks/useBalancesStatus"
+import { useSelectedCurrency } from "@ui/hooks/useCurrency"
 import { useIsFeatureEnabled } from "@ui/hooks/useIsFeatureEnabled"
-import BigNumber from "bignumber.js"
+import { useTokenRatesMap } from "@ui/hooks/useTokenRatesMap"
 import { Suspense, useCallback, useMemo } from "react"
 import { useTranslation } from "react-i18next"
 import { PillButton } from "talisman-ui"
@@ -124,6 +125,8 @@ const ChainTokenBalancesUniswapV2Row = ({
 }) => {
   const { t } = useTranslation()
   const { account } = useSelectedAccount()
+  const selectedCurrency = useSelectedCurrency()
+  const tokenRates = useTokenRatesMap()
 
   const token = balance.token
   if (token?.type !== "evm-uniswapv2") return null
@@ -134,15 +137,13 @@ const ChainTokenBalancesUniswapV2Row = ({
   const tokenId0 = evmErc20TokenId(balance.evmNetworkId, token.tokenAddress0)
   const tokenId1 = evmErc20TokenId(balance.evmNetworkId, token.tokenAddress1)
 
-  const symbol0 = token.symbol0
-  const symbol1 = token.symbol1
-  const decimals0 = token.decimals0
-  const decimals1 = token.decimals1
-
   const extra = balance.toJSON().extra
   const extras = Array.isArray(extra) ? extra : extra !== undefined ? [extra] : []
   const holding0 = extras.find((extra) => extra.label === "holding0")?.amount ?? "0"
   const holding1 = extras.find((extra) => extra.label === "holding1")?.amount ?? "0"
+
+  const holdingBalance0 = new BalanceFormatter(holding0, token.decimals0, tokenRates[tokenId0])
+  const holdingBalance1 = new BalanceFormatter(holding1, token.decimals1, tokenRates[tokenId1])
 
   return (
     <div
@@ -153,9 +154,9 @@ const ChainTokenBalancesUniswapV2Row = ({
     >
       <div className="text-xs">{t("Assets")}</div>
       {[
-        { tokenId: tokenId0, symbol: symbol0, decimals: decimals0, holding: holding0 },
-        { tokenId: tokenId1, symbol: symbol1, decimals: decimals1, holding: holding1 },
-      ].map(({ tokenId, symbol, decimals, holding }) => (
+        { tokenId: tokenId0, symbol: token.symbol0, holdingBalance: holdingBalance0 },
+        { tokenId: tokenId1, symbol: token.symbol1, holdingBalance: holdingBalance1 },
+      ].map(({ tokenId, symbol, holdingBalance }) => (
         <div key={tokenId} className="flex w-full items-center gap-6">
           <div className="text-xl">
             <TokenLogo tokenId={tokenId} />
@@ -174,13 +175,7 @@ const ChainTokenBalancesUniswapV2Row = ({
             )}
           >
             <div className={"font-bold text-white"}>
-              <Tokens
-                amount={BigNumber(holding)
-                  .times(Math.pow(10, -1 * decimals))
-                  .toString(10)}
-                symbol={symbol}
-                isBalance
-              />
+              <Tokens amount={holdingBalance.tokens} symbol={symbol} isBalance />
               {status.status === "stale" ? (
                 <>
                   {" "}
@@ -191,9 +186,12 @@ const ChainTokenBalancesUniswapV2Row = ({
                 </>
               ) : null}
             </div>
-            {/* TODO: Add fiat rates for UniV2 tokens */}
             <div className="text-xs">
-              -{/* {fiatAmount === null ? "-" : <Fiat amount={fiatAmount} isBalance />} */}
+              {holdingBalance.fiat(selectedCurrency) === null ? (
+                "-"
+              ) : (
+                <Fiat amount={holdingBalance.fiat(selectedCurrency)} isBalance />
+              )}
             </div>
           </div>
         </div>
