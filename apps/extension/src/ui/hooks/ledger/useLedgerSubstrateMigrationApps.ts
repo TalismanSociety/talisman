@@ -79,3 +79,9 @@ export const useLedgerSubstrateMigrationApps = () => {
     )
   }, [chainsMap])
 }
+
+export const useLedgerSubstrateMigrationApp = (name: string | null | undefined) => {
+  const apps = useLedgerSubstrateMigrationApps()
+
+  return useMemo(() => (name && apps.find((app) => app.name === name)) || null, [apps, name])
+}

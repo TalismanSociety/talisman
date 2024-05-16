@@ -8,6 +8,7 @@ import { ChainLogo } from "@ui/domains/Asset/ChainLogo"
 import { useLedgerChains } from "@ui/hooks/ledger/useLedgerChains"
 import {
   SubstrateMigrationApp,
+  useLedgerSubstrateMigrationApp,
   useLedgerSubstrateMigrationApps,
 } from "@ui/hooks/ledger/useLedgerSubstrateMigrationApps"
 import useChain from "@ui/hooks/useChain"
@@ -25,10 +26,12 @@ import { ConnectLedgerEthereum } from "./Shared/ConnectLedgerEthereum"
 import { ConnectLedgerPolkadot } from "./Shared/ConnectLedgerPolkadot"
 import { ConnectLedgerSubstrateGeneric } from "./Shared/ConnectLedgerSubstrateGeneric"
 import { ConnectLedgerSubstrateLegacy } from "./Shared/ConnectLedgerSubstrateLegacy"
+import { ConnectLedgerSubstrateMigration } from "./Shared/ConnectLedgerSubstrateMigration"
 
 type FormData = {
   chainId: string
   type: AccountAddressType
+  migrationAppName?: string
   substrateAppType: SubstrateLedgerAppType
 }
 
@@ -89,9 +92,9 @@ const SubstrateLegacyNetworkSelect: FC<{
 }
 
 const SubstrateMigrationNetworkSelect: FC<{
-  chain: SubstrateMigrationApp | null
-  onChange: (chain: SubstrateMigrationApp | null) => void
-}> = ({ chain, onChange }) => {
+  app: SubstrateMigrationApp | null
+  onChange: (app: SubstrateMigrationApp | null) => void
+}> = ({ app, onChange }) => {
   const { t } = useTranslation("admin")
   const apps = useLedgerSubstrateMigrationApps()
 
@@ -103,7 +106,7 @@ const SubstrateMigrationNetworkSelect: FC<{
       <Dropdown
         propertyKey="name"
         items={apps}
-        value={chain}
+        value={app}
         placeholder={t("Select a network")}
         renderItem={renderSubstrateMigrationOption}
         onChange={onChange}
@@ -161,6 +164,7 @@ export const AddLedgerSelectNetwork = () => {
 
   const navigate = useNavigate()
   const ledgerChains = useLedgerChains()
+  const migrationApps = useLedgerSubstrateMigrationApps()
 
   const schema = useMemo(
     () =>
@@ -170,7 +174,7 @@ export const AddLedgerSelectNetwork = () => {
         })
         .required()
         .test("validateFormData", t("Invalid parameters"), async (val, ctx) => {
-          const { type, chainId, substrateAppType } = val as FormData
+          const { type, chainId, migrationAppName, substrateAppType } = val as FormData
           if (type === "sr25519") {
             if (!substrateAppType)
               return ctx.createError({
@@ -178,7 +182,7 @@ export const AddLedgerSelectNetwork = () => {
                 message: t("App type not set"),
                 type: "required",
               })
-            if (substrateAppType === "substrate-legacy") {
+            if (substrateAppType === SubstrateLedgerAppType.Legacy) {
               if (!chainId)
                 return ctx.createError({
                   path: "chainId",
@@ -190,10 +194,22 @@ export const AddLedgerSelectNetwork = () => {
                   message: t("Network not supported"),
                 })
             }
+            if (substrateAppType === SubstrateLedgerAppType.Migration) {
+              if (!migrationAppName)
+                return ctx.createError({
+                  path: "migrationAppName",
+                  message: t("Migration app not set"),
+                })
+              if (!migrationApps.find((app) => app.name === migrationAppName))
+                return ctx.createError({
+                  path: "migrationAppName",
+                  message: t("Migration app not supported"),
+                })
+            }
           }
           return true
         }),
-    [ledgerChains, t]
+    [ledgerChains, migrationApps, t]
   )
 
   const {
@@ -207,7 +223,12 @@ export const AddLedgerSelectNetwork = () => {
     resolver: yupResolver(schema),
   })
 
-  const [accountType, chainId, substrateAppType] = watch(["type", "chainId", "substrateAppType"])
+  const [accountType, chainId, migrationAppName, substrateAppType] = watch([
+    "type",
+    "chainId",
+    "migrationAppName",
+    "substrateAppType",
+  ])
 
   const submit = useCallback(
     async ({ type, chainId, substrateAppType }: FormData) => {
@@ -220,6 +241,13 @@ export const AddLedgerSelectNetwork = () => {
   const handleNetworkChange = useCallback(
     (chain: Chain | null) => {
       setValue("chainId", chain?.id as string, { shouldValidate: true })
+    },
+    [setValue]
+  )
+
+  const handleMigrationAppChange = useCallback(
+    (app: SubstrateMigrationApp | null) => {
+      setValue("migrationAppName", app?.name, { shouldValidate: true })
     },
     [setValue]
   )
@@ -243,13 +271,17 @@ export const AddLedgerSelectNetwork = () => {
 
   const chain = useChain(chainId ?? (defaultValues.chainId as string))
 
+  const migrationApp = useLedgerSubstrateMigrationApp(migrationAppName)
+
   const [isLedgerReady, setIsLedgerReady] = useState(false)
 
-  const showStep2 =
+  const showConnect =
     accountType === "ethereum" ||
     (accountType === "sr25519" &&
-      (chainId || ["polkadot", "substrate-generic"].includes(substrateAppType)))
-  //     <AssetHubConflictWarning chain={chain} />
+      (["polkadot", "substrate-generic"].includes(substrateAppType) ||
+        (substrateAppType === SubstrateLedgerAppType.Legacy && !!chainId) ||
+        (substrateAppType === SubstrateLedgerAppType.Migration && !!migrationAppName)))
+
   return (
     <form className="flex h-full max-h-screen flex-col" onSubmit={handleSubmit(submit)}>
       <div className="flex-grow">
@@ -321,27 +353,37 @@ export const AddLedgerSelectNetwork = () => {
               // </>
             )}
             {substrateAppType === "substrate-migration" && (
-              <SubstrateMigrationNetworkSelect chain={null} onChange={() => {}} />
+              <SubstrateMigrationNetworkSelect
+                app={migrationApp}
+                onChange={handleMigrationAppChange}
+              />
             )}
           </div>
         )}
-        <div className={classNames("mt-16 h-[20rem]", showStep2 ? "visible" : "invisible")}>
-          {showStep2 && accountType === "sr25519" && (
+        <div className={classNames("mt-16 h-[20rem]", showConnect ? "visible" : "invisible")}>
+          {showConnect && accountType === "sr25519" && (
             <>
-              {substrateAppType === "substrate-legacy" && (
+              {substrateAppType === SubstrateLedgerAppType.Legacy && (
                 <ConnectLedgerSubstrateLegacy
                   className="min-h-[11rem]"
                   onReadyChanged={setIsLedgerReady}
                   chainId={chainId}
                 />
               )}
-              {substrateAppType === "substrate-generic" && (
+              {substrateAppType === SubstrateLedgerAppType.Migration && (
+                <ConnectLedgerSubstrateMigration
+                  className="min-h-[11rem]"
+                  onReadyChanged={setIsLedgerReady}
+                  migrationAppName={migrationAppName}
+                />
+              )}
+              {substrateAppType === SubstrateLedgerAppType.Generic && (
                 <ConnectLedgerSubstrateGeneric
                   className="min-h-[11rem]"
                   onReadyChanged={setIsLedgerReady}
                 />
               )}
-              {substrateAppType === "polkadot" && (
+              {substrateAppType === SubstrateLedgerAppType.Polkadot && (
                 <ConnectLedgerPolkadot
                   className="min-h-[11rem]"
                   onReadyChanged={setIsLedgerReady}
