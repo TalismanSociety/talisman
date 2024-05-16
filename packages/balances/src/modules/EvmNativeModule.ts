@@ -159,7 +159,7 @@ export const EvmNativeModule: NewBalanceModule<
               const resultBalances: EvmNativeBalance[] = []
               balances.flat().forEach((balance) => {
                 if (balance instanceof EvmNativeBalanceError) {
-                  log.error(balance.message)
+                  log.error(balance.message, balance.networkId)
                   initialisingBalances.delete(balance.networkId)
                 } else {
                   if (balance.evmNetworkId) {
@@ -248,7 +248,7 @@ const fetchBalances = async (
 
       const balanceResults = addresses.map((address, i) => {
         if (freeBalances[i] === "error")
-          return new EvmNativeBalanceError("Could not fetch balance", evmNetworkId)
+          return new EvmNativeBalanceError("Could not fetch balance ", evmNetworkId)
 
         return {
           source: "evm-native",

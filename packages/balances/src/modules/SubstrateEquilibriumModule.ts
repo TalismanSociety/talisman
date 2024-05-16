@@ -308,7 +308,7 @@ async function buildQueries(
   getOrCreateTypeRegistry: GetOrCreateTypeRegistry,
   addressesByToken: AddressesByToken<SubEquilibriumToken>
 ): Promise<Array<RpcStateQuery<SubEquilibriumBalance[]>>> {
-  const chains = await chaindataProvider.chainsById()
+  const allChains = await chaindataProvider.chainsById()
   const tokens = await chaindataProvider.tokensById()
   const miniMetadatas = new Map(
     (await balancesDb.miniMetadatas.toArray()).map((miniMetadata) => [
@@ -318,8 +318,8 @@ async function buildQueries(
   )
 
   const uniqueChainIds = getUniqueChainIds(addressesByToken, tokens)
+  const chains = Object.fromEntries(uniqueChainIds.map((chainId) => [chainId, allChains[chainId]]))
   const chainStorageDecoders = buildStorageDecoders({
-    chainIds: uniqueChainIds,
     chains,
     miniMetadatas,
     moduleType: "substrate-equilibrium",

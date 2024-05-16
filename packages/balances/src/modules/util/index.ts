@@ -384,7 +384,6 @@ export class RpcStateQueryHelper<T> {
     unsubscribeMethod = "state_unsubscribeStorage"
   ): Promise<UnsubscribeFn> {
     const queriesByChain = groupBy(this.#queries, "chainId")
-
     const subscriptions = Object.entries(queriesByChain).map(([chainId, queries]) => {
       const params = [queries.map(({ stateKey }) => stateKey)]
 
@@ -493,27 +492,30 @@ export const getUniqueChainIds = (
       .flatMap((chainId) => (chainId ? [chainId] : []))
   ),
 ]
-export const buildStorageDecoders = <
+
+type StorageDecoderParams<
   TBalanceModule extends AnyNewBalanceModule,
   TDecoders extends { [key: string]: [string, string] }
->({
-  chainIds,
-  chains,
-  miniMetadatas,
-  moduleType,
-  decoders,
-}: {
-  chainIds: ChainId[]
+> = {
   chains: ChainList
   miniMetadatas: Map<string, MiniMetadata>
   moduleType: InferModuleType<TBalanceModule>
   decoders: TDecoders
-}) =>
-  new Map(
-    [...chainIds].flatMap((chainId) => {
-      const chain = chains[chainId]
-      if (!chain) return []
+}
 
+export type StorageDecoders = Map<ChainId, Record<string, $.AnyShape | undefined>>
+
+export const buildStorageDecoders = <
+  TBalanceModule extends AnyNewBalanceModule,
+  TDecoders extends { [key: string]: [string, string] }
+>({
+  chains,
+  miniMetadatas,
+  moduleType,
+  decoders,
+}: StorageDecoderParams<TBalanceModule, TDecoders>): StorageDecoders =>
+  new Map(
+    Object.entries(chains).flatMap(([chainId, chain]) => {
       const [, miniMetadata] = findChainMeta<TBalanceModule>(miniMetadatas, moduleType, chain)
       if (!miniMetadata) return []
       if (miniMetadata.version < 14) return []
