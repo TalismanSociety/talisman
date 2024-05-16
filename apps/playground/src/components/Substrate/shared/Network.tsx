@@ -14,6 +14,7 @@ const availableNetworks = {
   "Local 9944": "ws://localhost:9944",
   "Local 42069": "ws://localhost:42069",
   "Local 42070": "ws://localhost:42070",
+  "Local 33867": "ws://localhost:33867",
 }
 
 const BlockNumber = () => {
