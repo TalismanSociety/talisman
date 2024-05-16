@@ -4,7 +4,6 @@ import {
   BalanceJson,
   Balances,
   HydrateDb,
-  db as balancesDb,
   balances as balancesFn,
   deleteSubscriptionId,
   deriveStatuses,
@@ -20,7 +19,7 @@ import { isEqual } from "lodash"
 import { BehaviorSubject, debounceTime, firstValueFrom, map } from "rxjs"
 
 import log from "../log"
-import { BalancesPersistBackend, indexedDbBalancesPersistBackend } from "../util/balancesPersist"
+import { BalancesPersistBackend, localStorageBalancesPersistBackend } from "../util/balancesPersist"
 import { allAddressesAtom } from "./allAddresses"
 import { balanceModulesAtom } from "./balanceModules"
 import {
@@ -64,7 +63,7 @@ const balancesObservableAtom = atomWithObservable<Record<string, BalanceJson>>(
 )
 
 export const balancesPersistBackendAtom = atom<BalancesPersistBackend>(
-  indexedDbBalancesPersistBackend
+  localStorageBalancesPersistBackend
 )
 
 const hydrateBalancesObservableAtom = atom(async (get) => {
@@ -280,26 +279,26 @@ const balancesSubscriptionAtomEffect = atomEffect((get) => {
     if (abort.signal.aborted) return
 
     // create placeholder rows for all missing balances, so FE knows they are initializing
-    const missingBalances: BalanceJson[] = []
-    const existingBalances = await balancesDb.balances.toArray()
-    const existingBalancesKeys = new Set(existingBalances.map((b) => `${b.tokenId}:${b.address}`))
+    // const missingBalances: BalanceJson[] = []
+    // const existingBalances = await balancesDb.balances.toArray()
+    // const existingBalancesKeys = new Set(existingBalances.map((b) => `${b.tokenId}:${b.address}`))
 
-    for (const balanceModule of balanceModules) {
-      const addressesByToken = addressesByTokenByModule[balanceModule.type] ?? {}
-      for (const [tokenId, addresses] of Object.entries(addressesByToken))
-        for (const address of addresses) {
-          if (!existingBalancesKeys.has(`${tokenId}:${address}`))
-            missingBalances.push(balanceModule.getPlaceholderBalance(tokenId, address))
-        }
-    }
+    // for (const balanceModule of balanceModules) {
+    //   const addressesByToken = addressesByTokenByModule[balanceModule.type] ?? {}
+    //   for (const [tokenId, addresses] of Object.entries(addressesByToken))
+    //     for (const address of addresses) {
+    //       if (!existingBalancesKeys.has(`${tokenId}:${address}`))
+    //         missingBalances.push(balanceModule.getPlaceholderBalance(tokenId, address))
+    //     }
+    // }
 
-    if (missingBalances.length) {
-      const updates = Object.entries(new Balances(missingBalances).toJSON()).map(
-        ([id, balance]) => ({ id, ...balance })
-      )
-      await balancesDb.balances.bulkPut(updates)
-    }
-    if (abort.signal.aborted) return
+    // if (missingBalances.length) {
+    //   const updates = Object.entries(new Balances(missingBalances).toJSON()).map(
+    //     ([id, balance]) => ({ id, ...balance })
+    //   )
+    //   await balancesDb.balances.bulkPut(updates)
+    // }
+    // if (abort.signal.aborted) return
 
     // after 30 seconds, change the status of all balances still initializing to stale
     setTimeout(() => {
