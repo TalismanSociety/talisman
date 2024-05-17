@@ -1,15 +1,16 @@
 import { SearchIcon, XIcon } from "@talismn/icons"
 import { classNames } from "@talismn/util"
-import { useDebouncedState } from "@ui/hooks/useDebouncedState"
 import {
   ChangeEventHandler,
   FC,
   KeyboardEventHandler,
   ReactNode,
   useCallback,
+  useDeferredValue,
   useEffect,
   useMemo,
   useRef,
+  useState,
 } from "react"
 import { FormFieldInputContainerProps, FormFieldInputText, IconButton } from "talisman-ui"
 
@@ -42,7 +43,8 @@ export const SearchInput: FC<SearchInputProps> = ({
   onValidate,
 }) => {
   const ref = useRef<HTMLInputElement>(null)
-  const [search, setSearch] = useDebouncedState(initialValue ?? "", 200)
+  const [syncSearch, setSearch] = useState(initialValue ?? "")
+  const search = useDeferredValue(syncSearch)
 
   const handleSearchChange: ChangeEventHandler<HTMLInputElement> = useCallback(
     (e) => {
@@ -91,12 +93,14 @@ export const SearchInput: FC<SearchInputProps> = ({
       containerProps={containerProps}
       before={<SearchIcon className="text-body-disabled shrink-0" />}
       after={
-        after ??
-        (!!search && (
-          <IconButton onClick={handleClear}>
+        after ?? (
+          <IconButton
+            onClick={handleClear}
+            className={classNames(search ? "visible" : "invisible")}
+          >
             <XIcon />
           </IconButton>
-        ))
+        )
       }
       defaultValue={initialValue}
       placeholder={placeholder}

@@ -1,7 +1,7 @@
 import { useBuyTokensModal } from "@ui/domains/Asset/Buy/useBuyTokensModal"
 import { PortfolioContainer } from "@ui/domains/Portfolio/PortfolioContainer"
 import { useEffect } from "react"
-import { Route, Routes, useSearchParams } from "react-router-dom"
+import { Navigate, Route, Routes, useSearchParams } from "react-router-dom"
 
 import { DashboardLayout } from "../../layout/DashboardLayout"
 import { PortfolioAsset } from "./PortfolioAsset"
@@ -26,9 +26,9 @@ export const PortfolioRoutes = () => {
       <PortfolioContainer>
         <Routes>
           {/* To match popup structure, in case of expand */}
-          <Route path="/assets" element={<PortfolioAssets />} />
-          <Route path=":symbol" element={<PortfolioAsset />} />
-          <Route path="" element={<PortfolioAssets />} />
+          <Route path="tokens/:symbol" element={<PortfolioAsset />} />
+          <Route path="/" element={<Navigate to="tokens" />} />
+          <Route path="*" element={<PortfolioAssets />} />
         </Routes>
       </PortfolioContainer>
     </DashboardLayout>

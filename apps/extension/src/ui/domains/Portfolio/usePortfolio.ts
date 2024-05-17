@@ -129,26 +129,43 @@ const getNetworkOptions = ({
     )
 }
 
-const getNetworkBalances = ({
+const getFilteredBalances = ({
   networkFilter,
   allBalances,
   hydrate,
+  search,
 }: {
   networkFilter?: NetworkOption
   allBalances: Balances
   hydrate: HydrateDb
+  search: string
 }) => {
-  if (!networkFilter) return allBalances
-  const { chainId, evmNetworkId } = networkFilter
-  const filtered = allBalances.sorted.filter(
-    (b) => (chainId && b.chainId === chainId) || (evmNetworkId && b.evmNetworkId === evmNetworkId)
-  )
+  if (!networkFilter && !search) return allBalances
+  const { chainId, evmNetworkId } = networkFilter ?? {}
+  const lowerSearch = search.toLowerCase()
+  const filtered = allBalances.sorted
+    .filter(
+      (b) =>
+        !networkFilter ||
+        (chainId && b.chainId === chainId) ||
+        (evmNetworkId && b.evmNetworkId === evmNetworkId)
+    )
+    .filter((b) => {
+      if (!lowerSearch) return true
+      return (
+        b.token?.symbol.toLowerCase().includes(lowerSearch) ||
+        b.chain?.name?.toLowerCase().includes(lowerSearch) ||
+        b.evmNetwork?.name?.toLowerCase().includes(lowerSearch)
+      )
+    })
   return new Balances(filtered, hydrate)
 }
 
 const portfolioAccountAtom = atom<AccountJsonAny | undefined>(undefined)
 
 const networkFilterAtom = atom<NetworkOption | undefined>(undefined)
+
+const portfolioSearchAtom = atom<string>("")
 
 // the async atom, whose value must be copied in the sync atom
 const portfolioGlobalDataAsyncAtom = atom<Promise<PortfolioGlobalData>>(async (get) => {
@@ -194,13 +211,14 @@ const portfolioAtom = atom((get) => {
     portfolioBalances,
   } = get(portfolioGlobalDataAtom)
   const networkFilter = get(networkFilterAtom)
+  const search = get(portfolioSearchAtom)
   const account = get(portfolioAccountAtom)
 
   const allBalances = account
     ? allAccountsBalances.find({ address: account.address })
     : portfolioBalances
 
-  const networkBalances = getNetworkBalances({ networkFilter, allBalances, hydrate })
+  const networkBalances = getFilteredBalances({ networkFilter, search, allBalances, hydrate })
   const accountType = getAccountType(account)
   const networks = getNetworkOptions({
     tokens,
@@ -271,6 +289,7 @@ export const usePortfolioProvisioning = () => {
 
 export const usePortfolio = () => {
   const setNetworkFilter = useSetAtom(networkFilterAtom)
+  const setSearch = useSetAtom(portfolioSearchAtom)
 
   const portfolio = useAtomValue(portfolioAtom)
 
@@ -279,5 +298,5 @@ export const usePortfolio = () => {
       log.error("usePortfolioProvisioning must be mounted before calling usePortfolio")
   }, [])
 
-  return { ...portfolio, setNetworkFilter }
+  return { ...portfolio, setNetworkFilter, setSearch }
 }

@@ -82,7 +82,9 @@ export const AssetRow = ({ balances }: AssetRowProps) => {
   const handleClick = useCallback(() => {
     if (!token) return
     navigate(
-      `/portfolio/${encodeURIComponent(token.symbol)}${token.isTestnet ? "?testnet=true" : ""}`
+      `/portfolio/tokens/${encodeURIComponent(token.symbol)}${
+        token.isTestnet ? "?testnet=true" : ""
+      }`
     )
     genericEvent("goto portfolio asset", { from: "dashboard", symbol: token.symbol })
   }, [genericEvent, navigate, token])

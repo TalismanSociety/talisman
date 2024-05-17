@@ -31,7 +31,7 @@ const ClearSearch: FC<{ open: boolean; setSearch: (val?: string) => void }> = ({
   return null
 }
 
-export const NetworkPicker = () => {
+export const NetworkPicker: FC<{ className?: string }> = ({ className }) => {
   const { t } = useTranslation()
   const { networks, networkFilter, setNetworkFilter } = usePortfolio()
   const [search, setSearch] = useState<string>()
@@ -55,7 +55,7 @@ export const NetworkPicker = () => {
   const displayNetworks = useMemo(() => networks.filter(filterItems(search)), [networks, search])
 
   return (
-    <div className="text-body-secondary group inline-block">
+    <div className={classNames("text-body-secondary group inline-block", className)}>
       <Combobox nullable value={networkFilter} onChange={handleOnChange}>
         {({ open }) => {
           return (

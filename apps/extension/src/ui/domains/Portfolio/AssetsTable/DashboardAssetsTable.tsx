@@ -3,6 +3,7 @@ import { classNames } from "@talismn/util"
 import { FC } from "react"
 import { useTranslation } from "react-i18next"
 
+import { NetworkPicker } from "../NetworkPicker"
 import { useSelectedAccount } from "../useSelectedAccount"
 import { AssetRow } from "./DashboardAssetRow"
 import { usePortfolioSymbolBalances } from "./usePortfolioSymbolBalances"
@@ -57,10 +58,12 @@ export const DashboardAssetsTable = ({ balances, isInitializing }: AssetsTablePr
 
   return (
     <div className="text-body-secondary min-w-[45rem] text-left text-base">
-      <div className="mb-5 grid grid-cols-[40%_30%_30%] text-sm font-normal">
-        <div>{t("Asset")}</div>
-        <div className="text-right">{t("Locked")}</div>
-        <div className="text-right">{t("Available")}</div>
+      <NetworkPicker />
+
+      <div className="text-body-disabled my-5 mt-7 grid grid-cols-[40%_30%_30%] text-sm font-normal">
+        <div className="pl-8">{t("Asset")}</div>
+        <div className="pr-8 text-right">{t("Locked")}</div>
+        <div className="pr-8 text-right">{t("Available")}</div>
       </div>
 
       {symbolBalances.map(([symbol, b]) => (

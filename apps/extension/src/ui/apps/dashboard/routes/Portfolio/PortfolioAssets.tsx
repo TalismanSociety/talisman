@@ -1,6 +1,7 @@
 import { Balances } from "@extension/core"
 import { DashboardAssetsTable } from "@ui/domains/Portfolio/AssetsTable"
-import { NetworkPicker } from "@ui/domains/Portfolio/NetworkPicker"
+import { DashboardNfts } from "@ui/domains/Portfolio/AssetsTable/DashboardNfts"
+import { PortfolioTabs } from "@ui/domains/Portfolio/PortfolioTabs"
 import { Statistics } from "@ui/domains/Portfolio/Statistics"
 import { useDisplayBalances } from "@ui/domains/Portfolio/useDisplayBalances"
 import { usePortfolio } from "@ui/domains/Portfolio/usePortfolio"
@@ -9,7 +10,7 @@ import { useSelectedCurrency } from "@ui/hooks/useCurrency"
 import { useHasAccounts } from "@ui/hooks/useHasAccounts"
 import { FC, useCallback, useEffect, useMemo } from "react"
 import { useTranslation } from "react-i18next"
-import { useNavigate } from "react-router-dom"
+import { Route, Routes, useNavigate } from "react-router-dom"
 import { Button } from "talisman-ui"
 
 import { NoAccountsFullscreen } from "./NoAccountsFullscreen"
@@ -43,11 +44,19 @@ const FullscreenPortfolioAssets = ({
         <Statistics className="max-w-[40%]" title={t("Locked")} fiat={locked} locked />
         <Statistics className="max-w-[40%]" title={t("Available")} fiat={available} />
       </div>
-      <div className="mt-[3.8rem]">
-        <NetworkPicker />
-      </div>
-      <div className="mt-6">
-        <DashboardAssetsTable balances={balances} isInitializing={isInitializing} />
+      <PortfolioTabs className="mb-6 mt-[3.8rem]" />
+      <div>
+        <Routes>
+          <Route path="nfts" element={<DashboardNfts />} />
+          <Route
+            path="tokens"
+            element={<DashboardAssetsTable balances={balances} isInitializing={isInitializing} />}
+          />
+          <Route
+            path=""
+            element={<DashboardAssetsTable balances={balances} isInitializing={isInitializing} />}
+          />
+        </Routes>
       </div>
     </>
   )
