@@ -1,4 +1,4 @@
-import { StoredBalanceJson, persistData, retrieveData } from "@talismn/balances"
+import { StoredBalanceJson, configureStore } from "@talismn/balances"
 import Pako from "pako"
 
 type PersistFn = (balances: StoredBalanceJson[]) => Promise<void>
@@ -12,7 +12,9 @@ export type BalancesPersistBackend = {
 /** 
 // Persistence backend for indexedDB, used by default
 // Add a new backend by implementing the BalancesPersistBackend interface
+// configureStore can be called with a different indexedDB table
 */
+const { persistData, retrieveData } = configureStore()
 export const indexedDbBalancesPersistBackend: BalancesPersistBackend = {
   persist: persistData,
   retrieve: retrieveData,
@@ -40,7 +42,6 @@ const localStorageRetrieve: RetrieveFn = async () => {
 
 /** 
 // Persistence backend for localStorage
-// Add a new backend by implementing the BalancesPersistBackend interface
 */
 export const localStorageBalancesPersistBackend: BalancesPersistBackend = {
   persist: localStoragePersist,

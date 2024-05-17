@@ -10,7 +10,7 @@ import {
   deleteSubscriptionId,
   getBalanceId,
 } from "@talismn/balances"
-import { persistData, retrieveData } from "@talismn/balances"
+import { configureStore } from "@talismn/balances"
 import { Token } from "@talismn/chaindata-provider"
 import { Deferred, encodeAnyAddress, isEthereumAddress } from "@talismn/util"
 import { firstThenDebounce } from "@talismn/util/src/firstThenDebounce"
@@ -100,6 +100,9 @@ export const activeTokensObservable = getActiveStuff(
   activeTokensStore.observable,
   isTokenActive
 )
+
+// todo: This can be configured with a different indexedDB table
+const { persistData, retrieveData } = configureStore()
 
 // TODO: Fix this class up
 //       1. It shouldn't need a whole extra copy of addresses+chains+networks separate to the db
