@@ -15,6 +15,7 @@ import {
   moonbeam,
   moonriver,
   optimism,
+  optimismSepolia,
   polygon,
   sepolia,
 } from "wagmi/chains"
@@ -97,6 +98,20 @@ const karura: Chain = {
   },
 }
 
+const bob: Chain = {
+  id: 60808,
+  name: "BOB",
+  nativeCurrency: {
+    name: "ETH",
+    symbol: "ETH",
+    decimals: 18,
+  },
+  rpcUrls: {
+    default: { http: ["https://rpc.gobob.xyz/"] },
+    public: { http: ["https://rpc.gobob.xyz/"] },
+  },
+}
+
 export const talismanChains = [
   moonbeam,
   moonbaseAlpha,
@@ -120,4 +135,6 @@ export const talismanChains = [
   base,
   manta,
   mantaTestnet,
+  bob,
+  optimismSepolia,
 ] as const

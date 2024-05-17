@@ -2,6 +2,7 @@ import { Languages, createEvmClient } from "@blowfishxyz/api-client/v20230605"
 import { EvmNetworkId } from "@talismn/chaindata-provider"
 import { BLOWFISH_API_KEY, BLOWFISH_BASE_PATH } from "extension-shared"
 import i18next from "i18next"
+import urlJoin from "url-join"
 
 import { BlowfishEvmChainInfo } from "./types"
 
@@ -19,10 +20,17 @@ const BLOWFISH_SUPPORTED_CHAINS: Record<EvmNetworkId, BlowfishEvmChainInfo | und
   "84532": { chainFamily: "base", chainNetwork: "sepolia" },
   "43114": { chainFamily: "avalanche", chainNetwork: "mainnet" },
   "43113": { chainFamily: "avalanche", chainNetwork: "fuji" },
-  "7777777": { chainFamily: "zora", chainNetwork: "sepolia" },
+  "7777777": { chainFamily: "zora", chainNetwork: "mainnet" },
+  "999999999": { chainFamily: "zora", chainNetwork: "sepolia" },
+  "238": { chainFamily: "blast", chainNetwork: "mainnet" },
+  "168587773": { chainFamily: "blast", chainNetwork: "sepolia" },
+  "100": { chainFamily: "gnosis", chainNetwork: "mainnet" },
+  "59144": { chainFamily: "linea", chainNetwork: "mainnet" },
+  "666666666": { chainFamily: "degen", chainNetwork: "mainnet" },
 }
 
-const getLanguage = (): Languages => {
+// TODO remove export after personal_sign client fix
+export const getBlowfishLanguage = (): Languages => {
   switch (i18next.language) {
     case "kr":
       return Languages.Ko
@@ -39,10 +47,18 @@ export const getBlowfishChainInfo = (evmNetworkId: EvmNetworkId) => {
   return BLOWFISH_SUPPORTED_CHAINS[evmNetworkId] ?? null
 }
 
-export const getBlowfishClient = (evmNetworkId: EvmNetworkId) => {
+// TODO delete after personal_sign client fix
+export const getBlowfishApiUrl = (evmNetworkId: EvmNetworkId) => {
   if (!BLOWFISH_SUPPORTED_CHAINS[evmNetworkId]) return null
 
-  if (!process.env.BLOWFISH_API_KEY) return null
+  const config = getBlowfishChainInfo(evmNetworkId)
+  if (!config) return null
+
+  return urlJoin(BLOWFISH_BASE_PATH, config.chainFamily, "v0", config.chainNetwork)
+}
+
+export const getBlowfishClient = (evmNetworkId: EvmNetworkId) => {
+  if (!BLOWFISH_SUPPORTED_CHAINS[evmNetworkId]) return null
 
   const config = getBlowfishChainInfo(evmNetworkId)
   if (!config) return null
@@ -51,6 +67,6 @@ export const getBlowfishClient = (evmNetworkId: EvmNetworkId) => {
     basePath: BLOWFISH_BASE_PATH,
     apiKey: BLOWFISH_API_KEY,
     ...config,
-    language: getLanguage(),
+    language: getBlowfishLanguage(),
   })
 }

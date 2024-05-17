@@ -89,9 +89,6 @@ const NoSufficientsAccountInfoFallback = JSON.stringify({
 })
 
 const AccountInfoOverrides: { [key: ChainId]: string } = {
-  // automata is not yet on metadata v14
-  "automata": RegularAccountInfoFallback,
-
   // crown-sterlin is not yet on metadata v14
   "crown-sterling": NoSufficientsAccountInfoFallback,
 
