@@ -142,8 +142,9 @@ export const EvmNativeModule: NewBalanceModule<
           for (const [tokenId, addresses] of Object.entries(addressesByToken)) {
             const evmNetworkId = getEvmNetworkIdFromTokenId(tokenId)
 
+            // a zero balance network is one that has initialised and does not have a positive balance
             const isZeroBalanceNetwork =
-              initialisingBalances.has(evmNetworkId) && !positiveBalanceNetworks.has(evmNetworkId)
+              !initialisingBalances.has(evmNetworkId) && !positiveBalanceNetworks.has(evmNetworkId)
 
             if (isZeroBalanceNetwork && zeroBalanceSubscriptionIntervalCounter !== 0) {
               // only poll empty token balances every 5 subscriptionIntervals

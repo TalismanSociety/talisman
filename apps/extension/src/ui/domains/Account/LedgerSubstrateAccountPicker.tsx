@@ -103,7 +103,6 @@ const useLedgerChainAccounts = (
         )
 
         const isBalanceLoading =
-          !accountBalances.count ||
           accountBalances.each.some((b) => b.status === "initializing") ||
           balances.status === "initialising"
         return {

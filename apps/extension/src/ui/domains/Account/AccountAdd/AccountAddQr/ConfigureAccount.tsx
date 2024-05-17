@@ -70,7 +70,6 @@ export const ConfigureAccount = () => {
 
   const isBalanceLoading =
     !addressesByChain ||
-    balances.balances.each.length < 1 ||
     balances.balances.each.some((b) => b.status !== "live") ||
     balances.status === "initialising"
 

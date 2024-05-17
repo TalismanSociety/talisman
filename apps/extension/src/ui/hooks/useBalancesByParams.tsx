@@ -35,28 +35,19 @@ export const useBalancesByParams = ({
   addressesAndTokens = DEFAULT_TOKENS_AND_ADDRESSES,
 }: BalanceByParamsProps) => {
   const hydrate = useBalancesHydrate()
-  const hasData = useMemo(
-    () =>
-      Object.keys(addressesByChain).length > 0 ||
-      Object.keys(addressesAndEvmNetworks.addresses).length > 0 ||
-      Object.keys(addressesAndTokens.addresses).length > 0,
-    [addressesByChain, addressesAndEvmNetworks, addressesAndTokens]
-  )
 
   const subscribe = useCallback(
     (subject: BehaviorSubject<BalanceSubscriptionResponse>) => {
-      if (hasData)
-        return api.balancesByParams(
-          addressesByChain,
-          addressesAndEvmNetworks,
-          addressesAndTokens,
-          async (update) => {
-            return subject.next(update)
-          }
-        )
-      return () => {}
+      return api.balancesByParams(
+        addressesByChain,
+        addressesAndEvmNetworks,
+        addressesAndTokens,
+        async (update) => {
+          return subject.next(update)
+        }
+      )
     },
-    [addressesByChain, addressesAndEvmNetworks, addressesAndTokens, hasData]
+    [addressesByChain, addressesAndEvmNetworks, addressesAndTokens]
   )
 
   // subscription must be reinitialized (using the key) if parameters change
