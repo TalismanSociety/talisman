@@ -62,7 +62,9 @@ export const EvmNativeModule: NewBalanceModule<
   EvmNativeChainMeta,
   EvmNativeModuleConfig
 > = (hydrate) => {
-  const { chainConnectors, chaindataProvider } = hydrate
+  const { chainConnectors, chaindataProvider, initialBalances } = hydrate
+  const relevantInitialBalances: EvmNativeBalance[] =
+    initialBalances?.filter((b): b is EvmNativeBalance => b.source === "evm-native") ?? []
 
   return {
     ...DefaultBalanceModule("evm-native"),
@@ -125,7 +127,9 @@ export const EvmNativeModule: NewBalanceModule<
       // setup initialising balances for all active evm networks
       const activeEvmNetworkIds = Object.keys(addressesByToken).map(getEvmNetworkIdFromTokenId)
       const initialisingBalances = new Set<string>(activeEvmNetworkIds)
-      const positiveBalanceNetworks = new Set<string>()
+      const positiveBalanceNetworks = new Set<string>(
+        relevantInitialBalances.map((b) => b.evmNetworkId)
+      )
       const tokens = await this.tokens
 
       const poll = async () => {
@@ -151,6 +155,7 @@ export const EvmNativeModule: NewBalanceModule<
             try {
               if (!chainConnectors.evm)
                 throw new Error(`This module requires an evm chain connector`)
+
               const balances = await fetchBalances(
                 chainConnectors.evm,
                 { [tokenId]: addresses },
