@@ -348,4 +348,7 @@ export const api: MessageTypes = {
   assetDiscoveryStartScan: (mode, addresses) =>
     messageService.sendMessage("pri(assetDiscovery.scan.start)", { mode, addresses }),
   assetDiscoveryStopScan: () => messageService.sendMessage("pri(assetDiscovery.scan.stop)", null),
+
+  // nfts
+  nftsSubscribe: (cb) => messageService.subscribe("pri(nfts.subscribe)", null, cb),
 }

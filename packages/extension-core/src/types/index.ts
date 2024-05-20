@@ -9,6 +9,7 @@ import { EncryptMessages } from "../domains/encrypt/types"
 import { EthMessages } from "../domains/ethereum/types"
 import { MetadataMessages } from "../domains/metadata/types"
 import { MnemonicMessages } from "../domains/mnemonics/types"
+import { NftsMessages } from "../domains/nfts"
 import { SigningMessages } from "../domains/signing/types"
 import { AuthorisedSiteMessages } from "../domains/sitesAuthorised/types"
 import { SubstrateMessages } from "../domains/substrate/types"
@@ -16,7 +17,7 @@ import { TalismanMessages } from "../domains/talisman/types"
 import { TokenRatesMessages } from "../domains/tokenRates/types"
 import { TokenMessages } from "../domains/tokens/types"
 import { AssetTransferMessages } from "../domains/transfers/types"
-import type { IdOnlyValues, NoUndefinedValues, NullKeys, RequestIdOnly } from "./base"
+import type { IdOnlyValues, NoUndefinedValues, NullKeys, Port, RequestIdOnly } from "./base"
 
 export declare type RequestTypes = {
   [MessageType in MessageTypes]: RequestSignatures[MessageType][0]
@@ -83,7 +84,8 @@ type RequestSignaturesBase = Omit<PolkadotRequestSignatures, RemovedMessages> &
   TokenMessages &
   TokenRatesMessages &
   SubstrateMessages &
-  AssetDiscoveryMessages
+  AssetDiscoveryMessages &
+  NftsMessages
 
 export interface RequestSignatures extends RequestSignaturesBase {
   // Values for RequestSignatures are arrays where the items are [RequestType, ResponseType, SubscriptionMesssageType?]
@@ -119,12 +121,11 @@ export type MessageHandler<
   Res = ResponseType<TMessageType>
 > = (req: Req) => Res | Promise<Res>
 
-// TODO cooldown
-// export type SubscriptionHandler<
-//   TMessageType extends MessageTypesWithSubscriptions,
-//   Req = RequestType<TMessageType>,
-//   Res = ResponseType<TMessageType>
-// > = (req: Req) => Res | Promise<Res>
+export type SubscriptionHandler<
+  TMessageType extends MessageTypesWithSubscriptions,
+  Req = RequestType<TMessageType>,
+  Res = ResponseType<TMessageType>
+> = (id: string, port: Port, req: Req) => Res | Promise<Res>
 
 // TODO cooldown
 // export type SubscriptionByIdHandler<

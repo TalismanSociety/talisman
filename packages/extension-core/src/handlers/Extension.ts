@@ -14,6 +14,7 @@ import { EncryptHandler } from "../domains/encrypt"
 import { EthHandler } from "../domains/ethereum"
 import { MetadataHandler } from "../domains/metadata"
 import MnemonicHandler from "../domains/mnemonics/handler"
+import { NftsHandler } from "../domains/nfts"
 import { SigningHandler } from "../domains/signing"
 import { SitesAuthorisationHandler } from "../domains/sitesAuthorised"
 import { SubHandler } from "../domains/substrate/handler.extension"
@@ -55,6 +56,7 @@ export default class Extension extends ExtensionHandler {
       tokens: new TokensHandler(stores),
       substrate: new SubHandler(stores),
       assetDiscovery: new AssetDiscoveryHandler(stores),
+      nfts: new NftsHandler(stores),
     }
 
     // connect auto lock timeout setting to the password store
