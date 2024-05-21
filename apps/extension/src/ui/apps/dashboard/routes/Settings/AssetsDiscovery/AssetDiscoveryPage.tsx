@@ -44,6 +44,7 @@ import { useSetting } from "@ui/hooks/useSettings"
 import useToken from "@ui/hooks/useToken"
 import useTokens from "@ui/hooks/useTokens"
 import { isErc20Token } from "@ui/util/isErc20Token"
+import { isUniswapV2Token } from "@ui/util/isUniswapV2Token"
 import { atom, useAtomValue } from "jotai"
 import { ChangeEventHandler, FC, ReactNode, useCallback, useEffect, useMemo, useRef } from "react"
 import { Trans, useTranslation } from "react-i18next"
@@ -110,7 +111,7 @@ const useBlockExplorerUrl = (token: Token | null) => {
   return useMemo(() => {
     if (isErc20Token(token) && evmNetwork?.explorerUrl)
       return urlJoin(evmNetwork.explorerUrl, "token", token.contractAddress)
-    if (token?.type === "evm-uniswapv2" && evmNetwork?.explorerUrl)
+    if (isUniswapV2Token(token) && evmNetwork?.explorerUrl)
       return urlJoin(evmNetwork.explorerUrl, "token", token.poolAddress)
 
     return null
@@ -248,13 +249,13 @@ const AssetRowContent: FC<{ tokenId: TokenId; assets: DiscoveredBalance[] }> = (
       </div>
       <div className="flex justify-end gap-8 pl-4 text-right">
         <Toggle checked={isActive} onChange={handleToggleChange} />
-        {isErc20Token(token) || token?.type === "evm-uniswapv2" || coingeckoUrl ? (
+        {isErc20Token(token) || isUniswapV2Token(token) || coingeckoUrl ? (
           <ContextMenu placement="bottom-end">
             <ContextMenuTrigger className="hover:text-body bg-grey-800 text-body-secondary hover:bg-grey-700 shrink-0 rounded-sm p-4">
               <MoreHorizontalIcon />
             </ContextMenuTrigger>
             <ContextMenuContent>
-              {isErc20Token(token) && (
+              {(isErc20Token(token) || isUniswapV2Token(token)) && (
                 <ContextMenuItem
                   onClick={() => navigate(`/settings/networks-tokens/tokens/${token.id}`)}
                 >

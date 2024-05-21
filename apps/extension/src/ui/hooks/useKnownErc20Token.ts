@@ -1,26 +1,38 @@
 import { activeTokensStore, isTokenActive } from "@extension/core"
+import { Token } from "@talismn/chaindata-provider"
 import { isErc20Token } from "@ui/util/isErc20Token"
+import { isUniswapV2Token } from "@ui/util/isUniswapV2Token"
 import { useCallback, useMemo } from "react"
 
 import { useActiveTokensState } from "./useActiveTokensState"
 import useTokens from "./useTokens"
 
+/**
+ * NOTE: Works for both `evm-erc20` as well as `evm-uniswapv2` tokens.
+ */
 export const useKnownErc20Token = (
   evmNetworkId: string | undefined | null,
   contractAddress: string | undefined | null
 ) => {
   const { tokens: allTokens } = useTokens({ activeOnly: false, includeTestnets: true })
-  const allErc20Tokens = useMemo(() => allTokens.filter(isErc20Token), [allTokens])
+  const allErc20Tokens = useMemo(
+    () => allTokens.filter((t) => isErc20Token(t) || isUniswapV2Token(t)),
+    [allTokens]
+  )
 
   const activeTokens = useActiveTokensState()
 
   const token = useMemo(() => {
     const lowerContractAddress = contractAddress?.toLowerCase()
-    return allErc20Tokens.find(
-      (t) =>
-        t.evmNetwork?.id === evmNetworkId &&
-        t.contractAddress.toLowerCase() === lowerContractAddress
-    )
+
+    const isErc20ByAddress = (t: Token) =>
+      isErc20Token(t) && t.contractAddress.toLowerCase() === lowerContractAddress
+    const isUniswapV2ByAddress = (t: Token) =>
+      isUniswapV2Token(t) && t.poolAddress.toLowerCase() === lowerContractAddress
+
+    const isToken = (t: Token) => isErc20ByAddress(t) || isUniswapV2ByAddress(t)
+
+    return allErc20Tokens.find((t) => t.evmNetwork?.id === evmNetworkId && isToken(t))
   }, [allErc20Tokens, contractAddress, evmNetworkId])
 
   const isActive = useMemo(() => token && isTokenActive(token, activeTokens), [activeTokens, token])
