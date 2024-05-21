@@ -15714,6 +15714,7 @@ __metadata:
     lodash: 4.17.21
     lz-string: ^1.5.0
     nanoid: 3.3.7
+    pako: ^2.1.0
     posthog-js: ^1.96.1
     rxjs: ^7.8.1
     scale-codec: ^0.11.2
@@ -15895,7 +15896,6 @@ __metadata:
     lottie-react: 2.4.0
     marked: ^11.1.0
     node-fetch: ^3.3.1
-    pako: ^2.1.0
     postcss: ^8.4.33
     postcss-import: ^15.1.0
     postcss-loader: ^7.0.2

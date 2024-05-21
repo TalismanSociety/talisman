@@ -36,6 +36,7 @@ export { ReactComponent as ShieldUnavailableIcon } from "./icons/shield-unavaila
 export { ReactComponent as ToolbarFilterIcon } from "./icons/toolbar-filter.svg"
 export { ReactComponent as ToolbarListIcon } from "./icons/toolbar-list.svg"
 export { ReactComponent as ToolbarSortIcon } from "./icons/toolbar-sort.svg"
+export { ReactComponent as ToolbarTilesIcon } from "./icons/toolbar-tiles.svg"
 export { ReactComponent as StarsIcon } from "./icons/stars.svg"
 export { ReactComponent as SwapIcon } from "./icons/swap.svg"
 export { ReactComponent as TableIcon } from "./icons/table.svg"

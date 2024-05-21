@@ -8,7 +8,7 @@ import { Fiat } from "@ui/domains/Asset/Fiat"
 import { useSetting } from "@ui/hooks/useSettings"
 import { NftCollection, NftData } from "extension-core"
 import { FC, SVGProps, Suspense, useCallback, useMemo, useRef } from "react"
-import { useNavigate } from "react-router-dom"
+import { useParams } from "react-router-dom"
 import { useIntersection } from "react-use"
 
 import { NetworkPicker } from "../NetworkPicker"
@@ -28,7 +28,8 @@ const ToolbarButton: FC<{ icon: FC<SVGProps<SVGSVGElement>>; onClick?: () => voi
   </button>
 )
 
-export const DashboardNfts = () => {
+export const DashboardNftCollection = () => {
+  const { collectionId } = useParams()
   const [viewMode, setViewMode] = useSetting("nftsViewMode")
 
   const handleViewModeClick = useCallback(
@@ -38,6 +39,7 @@ export const DashboardNfts = () => {
 
   return (
     <div>
+      <div>{collectionId}</div>
       <div className="flex w-full justify-between">
         <NetworkPicker />
         <div className="flex gap-4">
@@ -83,15 +85,9 @@ const NftCollectionRowInner: FC<{ collection: NftCollection; data: NftData }> = 
     return floorUsdValues.length ? Math.min(...floorUsdValues) : null
   }, [collection.marketplaces])
 
-  const navigate = useNavigate()
-  const handleClick = useCallback(() => {
-    navigate(`/portfolio/nfts/${collection.id}`)
-  }, [collection.id, navigate])
-
   return (
     <button
       type="button"
-      onClick={handleClick}
       className="bg-grey-900 hover:bg-grey-800 grid h-32 w-full grid-cols-3 items-center gap-4 rounded-sm px-8 text-left"
     >
       <div className="flex items-center gap-6 overflow-hidden">
@@ -162,15 +158,9 @@ const NftCollectionTileInner: FC<{ collection: NftCollection; data: NftData }> =
 
   const networkIds = useMemo(() => [...new Set(nfts.map((nft) => nft.evmNetworkId))], [nfts])
 
-  const navigate = useNavigate()
-  const handleClick = useCallback(() => {
-    navigate(`/portfolio/nfts/${collection.id}`)
-  }, [collection.id, navigate])
-
   return (
     <button
       type="button"
-      onClick={handleClick}
       className="text-body-secondary hover:text-body flex size-[22.2rem] flex-col items-center gap-4 overflow-hidden text-left"
     >
       <div className="w-full grow overflow-hidden">

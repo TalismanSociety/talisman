@@ -6,6 +6,7 @@ import { NftStoreData } from "./store"
 export type NftCollectionMarketplace = {
   name: string
   url: string
+  floorUsd: number | null
 }
 
 export type NftProperty = {
@@ -15,22 +16,33 @@ export type NftProperty = {
 
 export type NftCollection = {
   id: string
-  evmNetworkId: string
-  name: string
-  description: string
-  imageUrl: string
+  name: string | null
+  description: string | null
+  imageUrl: string | null
+  bannerUrl: string | null
   marketplaces: NftCollectionMarketplace[]
+  distinctOwners: number
+  distinctNfts: number
+  totalQuantity: number
 }
 
 export type Nft = {
   id: string
   collectionId: string
-  name: string
-  description: string
-  imageUrl: string
-  owner: string
-  marketplaces: NftCollectionMarketplace[]
+  evmNetworkId: string
+  contractAddress: string
+  name: string | null
+  description: string | null
+  imageUrl: string | null
+  owner: string | null
   properties: NftProperty[]
+  previews: {
+    small: string | null
+    medium: string | null
+    large: string | null
+    color: string | null
+  }
+  acquiredAt: string | null
 }
 
 export type FetchNftsRequestBody = {

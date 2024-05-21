@@ -33,6 +33,7 @@ const updateData = async () => {
 
   nftsStore.next({
     ...nftsStore.value,
+    accountsKey: addresses.join(","),
     nfts,
     collections,
     timestamp: Date.now(),
@@ -47,13 +48,14 @@ const watchData = async () => {
 
   await awaitKeyringLoaded()
 
-  const interval = setInterval(async () => {
+  const checkOrUpdate = async () => {
     if (stop) return
     if (promise) return
 
     // ignore if an account has been removed, but refresh if one has been added
     const prevAccounts = nftsStore.value.accountsKey.split(",")
     const accounts = getNftsAccountsList()
+
     const requiresUpdateAccount = accounts.some((account) => !prevAccounts.includes(account))
 
     const requiresUpdateTimestamp =
@@ -64,13 +66,19 @@ const watchData = async () => {
     status.next("loading")
     promise = updateData()
       .then(() => {
-        promise = null
         status.next("loaded")
       })
       .catch(() => {
         status.next("stale")
       })
-  }, UPDATE_CHECK_INTERVAL)
+      .finally(() => {
+        promise = null
+      })
+  }
+
+  const interval = setInterval(checkOrUpdate, UPDATE_CHECK_INTERVAL)
+
+  checkOrUpdate()
 
   const unsubscribe = () => {
     watcher = null
@@ -111,12 +119,13 @@ const obsNfts = combineLatest([nftsStore, status]).pipe(
 )
 
 export const subscribeNfts = (callback: (data: NftData) => void) => {
+  const subscription = obsNfts.subscribe((next) => {
+    callback(next)
+  })
+
   const id = addSubscription()
-  //console.log("subscribeNfts - subscribing")
 
-  const subscription = obsNfts.subscribe(callback)
-
-  subscriptions.next([...subscriptions.value, id])
+  //subscriptions.next([...subscriptions.value, id])
 
   return () => {
     // console.log("subscribeNfts - unsubscribing")

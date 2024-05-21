@@ -6,6 +6,7 @@ import { Navigate, Route, Routes, useSearchParams } from "react-router-dom"
 import { DashboardLayout } from "../../layout/DashboardLayout"
 import { PortfolioAsset } from "./PortfolioAsset"
 import { PortfolioAssets } from "./PortfolioAssets"
+import { PortfolioNftCollections } from "./PortfolioNftCollections"
 
 export const PortfolioRoutes = () => {
   const [searchParams, updateSearchParams] = useSearchParams()
@@ -27,8 +28,11 @@ export const PortfolioRoutes = () => {
         <Routes>
           {/* To match popup structure, in case of expand */}
           <Route path="tokens/:symbol" element={<PortfolioAsset />} />
+          <Route path="tokens" element={<PortfolioAssets />} />
+          <Route path="nfts/:symbol" element={<PortfolioNftCollections />} />
+          <Route path="nfts" element={<PortfolioNftCollections />} />
+          <Route path="*" element={<Navigate to="tokens" />} />
           <Route path="/" element={<Navigate to="tokens" />} />
-          <Route path="*" element={<PortfolioAssets />} />
         </Routes>
       </PortfolioContainer>
     </DashboardLayout>

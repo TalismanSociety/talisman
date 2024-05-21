@@ -6,8 +6,10 @@ import { isEthereumAddress } from "@talismn/util"
  *
  * @returns list of evm addresses from keyring
  */
-export const getNftsAccountsList = () =>
-  keyring
-    .getAddresses()
+export const getNftsAccountsList = () => {
+  return keyring
+    .getAccounts()
     .map(({ address }) => address)
     .filter(isEthereumAddress)
+    .sort()
+}

@@ -6,6 +6,8 @@ import {
 import { useSelectedAccount } from "@ui/domains/Portfolio/useSelectedAccount"
 import { useMemo } from "react"
 
+import { usePortfolio } from "./usePortfolio"
+
 // TODO: default tokens should be controlled from chaindata
 const shouldDisplayBalance = (account: AccountJsonAny | undefined, balances: Balances) => {
   const accountHasSomeBalance = balances.find({ address: account?.address }).sum.planck.total > 0n
@@ -35,8 +37,15 @@ const shouldDisplayBalance = (account: AccountJsonAny | undefined, balances: Bal
   }
 }
 
+// TODO atom to prevent recompute when switching route
 export const useDisplayBalances = (balances: Balances) => {
   const { account } = useSelectedAccount()
 
   return useMemo(() => balances.find(shouldDisplayBalance(account, balances)), [account, balances])
+}
+
+// TODO atom
+export const usePortfolioDisplayBalances = () => {
+  const { networkBalances } = usePortfolio()
+  return useDisplayBalances(networkBalances)
 }
