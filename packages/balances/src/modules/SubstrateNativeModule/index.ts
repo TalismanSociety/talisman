@@ -26,7 +26,6 @@ import isEqual from "lodash/isEqual"
 import {
   BehaviorSubject,
   Observable,
-  ReplaySubject,
   combineLatest,
   concatMap,
   debounceTime,
@@ -158,12 +157,6 @@ export type SubNativeTransferParams = NewTransferParamsType<{
   userExtensions?: ExtDef
 }>
 
-const subNativeBalances = new BehaviorSubject<Record<string, SubNativeBalance>>({})
-const positiveBalanceTokens = subNativeBalances.pipe(
-  map((balances) => Array.from(new Set(Object.values(balances).map((b) => b.tokenId)))),
-  share()
-)
-
 const POLLING_WINDOW_SIZE = 20
 const MAX_SUBSCRIPTION_SIZE = 40
 
@@ -181,15 +174,6 @@ const sortChains = (a: string, b: string) => {
   return 0
 }
 
-const subscriptionTokens = new ReplaySubject<string[]>(1)
-
-positiveBalanceTokens
-  .pipe(
-    map((tokens) => tokens.sort(sortChains).slice(0, MAX_SUBSCRIPTION_SIZE)),
-    share()
-  )
-  .subscribe((tokens) => subscriptionTokens.next(tokens))
-
 export const SubNativeModule: NewBalanceModule<
   ModuleType,
   SubNativeToken | CustomSubNativeToken,
@@ -205,8 +189,6 @@ export const SubNativeModule: NewBalanceModule<
       ?.filter((b): b is SubNativeBalance => b.source === "substrate-native")
       .map((b) => [getBalanceId(b), b]) ?? []
   )
-  // initialise the balances observable with known relevant initial balances
-  subNativeBalances.next(relevantInitialBalances)
 
   const { getOrCreateTypeRegistry } = createTypeRegistryCache()
 
@@ -359,15 +341,39 @@ export const SubNativeModule: NewBalanceModule<
     async subscribeBalances(addressesByToken, callback) {
       assert(chainConnectors.substrate, "This module requires a substrate chain connector")
 
+      // full record of balances for this module
+      const subNativeBalances = new BehaviorSubject<Record<string, SubNativeBalance>>(
+        relevantInitialBalances
+      )
+      // tokens which have a known positive balance
+      const positiveBalanceTokens = subNativeBalances.pipe(
+        map((balances) => Array.from(new Set(Object.values(balances).map((b) => b.tokenId)))),
+        share()
+      )
+
+      // tokens that will be subscribed to
+      const subscriptionTokens = positiveBalanceTokens.pipe(
+        map((tokens) => tokens.sort(sortChains).slice(0, MAX_SUBSCRIPTION_SIZE))
+      )
+
       // an initialised balance is one where we have received a response for any type of 'subsource',
       // until then they are initialising. We only need to maintain one map of tokens to addresses for this
-
       const initialisingBalances = Object.entries(addressesByToken).reduce<
         Map<TokenId, Set<string>>
       >((acc, [tokenId, addresses]) => {
         acc.set(tokenId, new Set(addresses))
         return acc
       }, new Map())
+
+      // after thirty seconds, we need to kill the initialising balances
+      const initBalancesTimeout = setTimeout(() => {
+        initialisingBalances.clear()
+        // manually call the callback to ensure the caller gets the correct status
+        callback(null, {
+          status: "live",
+          data: Object.values(subNativeBalances.getValue()),
+        })
+      }, 30_000)
 
       const _callbackSub = subNativeBalances.subscribe({
         next: (balances) => {
@@ -377,11 +383,16 @@ export const SubNativeModule: NewBalanceModule<
           })
         },
         error: (error) => callback(error),
+        complete: () => {
+          initialisingBalances.clear()
+          clearTimeout(initBalancesTimeout)
+        },
       })
 
       const unsubDeferred = Deferred()
       // we return this to the caller so that they can let us know when they're no longer interested in this subscription
       const callerUnsubscribe = () => {
+        subNativeBalances.complete()
         _callbackSub.unsubscribe()
         return unsubDeferred.reject(new Error(`Caller unsubscribed`))
       }
@@ -410,10 +421,9 @@ export const SubNativeModule: NewBalanceModule<
             const intialisingForToken = initialisingBalances.get(b.tokenId)
             if (intialisingForToken) {
               intialisingForToken.delete(b.address)
-              initialisingBalances.set(b.tokenId, new Set(intialisingForToken))
+              if (intialisingForToken.size === 0) initialisingBalances.delete(b.tokenId)
+              else initialisingBalances.set(b.tokenId, intialisingForToken)
             }
-            if (intialisingForToken && intialisingForToken.size === 0)
-              initialisingBalances.delete(b.tokenId)
           })
 
           subNativeBalances.next({
@@ -425,19 +435,6 @@ export const SubNativeModule: NewBalanceModule<
           if (error instanceof SubNativeBalanceError) {
             // this type of error doesn't need to be handled by the caller
             initialisingBalances.delete(error.tokenId)
-            const currentBalances = subNativeBalances.getValue()
-            const tokenBalances = Object.values(currentBalances).filter(
-              ({ tokenId }) => tokenId === error.tokenId
-            )
-            // set those token balances as stale
-            tokenBalances.forEach((tokenBalance) => (tokenBalance.status = "stale"))
-            const newBalances = {
-              ...currentBalances,
-              ...Object.fromEntries(
-                tokenBalances.map((tokenBalance) => [getBalanceId(tokenBalance), tokenBalance])
-              ),
-            }
-            subNativeBalances.next(newBalances)
           } else return callback(error)
         }
       }

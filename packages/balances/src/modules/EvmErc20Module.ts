@@ -8,6 +8,7 @@ import {
   githubTokenLogoUrl,
 } from "@talismn/chaindata-provider"
 import { hasOwnProperty, isEthereumAddress } from "@talismn/util"
+import { firstValueFrom, map } from "rxjs"
 import { PublicClient } from "viem"
 
 import { DefaultBalanceModule, NewBalanceModule } from "../BalanceModule"
@@ -80,17 +81,20 @@ export const EvmErc20Module: NewBalanceModule<
   const { chainConnectors, chaindataProvider } = hydrate
   const chainConnector = chainConnectors.evm
   assert(chainConnector, "This module requires an evm chain connector")
-
-  const getTokens = async () => {
-    return chaindataProvider.tokensByIdForType(moduleType) as Promise<
-      Record<string, EvmErc20Token | CustomEvmErc20Token>
-    >
-  }
+  const moduleTokens = chaindataProvider.tokensObservable.pipe(
+    map((tokens) =>
+      Object.fromEntries(
+        tokens
+          .filter((token): token is EvmErc20Token => token.type === moduleType)
+          .map((t) => [t.id, t])
+      )
+    )
+  )
 
   const prepareFetchParameters = async (
     addressesByToken: AddressesByToken<EvmErc20Token>
   ): Promise<EvmErc20NetworkParams> => {
-    const tokens = await getTokens()
+    const tokens = await firstValueFrom(moduleTokens)
 
     const addressesByTokenByEvmNetwork = groupAddressesByTokenByEvmNetwork(addressesByToken, tokens)
     return Object.entries(addressesByTokenByEvmNetwork).reduce(
@@ -114,7 +118,7 @@ export const EvmErc20Module: NewBalanceModule<
   return {
     ...DefaultBalanceModule(moduleType),
     get tokens() {
-      return getTokens()
+      return firstValueFrom(moduleTokens)
     },
 
     /**
