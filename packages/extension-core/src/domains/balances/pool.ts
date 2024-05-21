@@ -8,7 +8,6 @@ import {
   StoredBalanceJson,
   db as balancesDb,
   deleteSubscriptionId,
-  getBalanceId,
 } from "@talismn/balances"
 import { configureStore } from "@talismn/balances"
 import { Token } from "@talismn/chaindata-provider"
@@ -63,7 +62,7 @@ type SubscriptionsState = "Closed" | "Closing" | "Open"
 const DEBOUNCE_TIMEOUT = 3_000
 
 // balance modules that have been upgraed to the new SubscriptionResultWithStatus pattern
-const NEW_BALANCE_MODULES = ["substrate-native", "evm-erc20"]
+const NEW_BALANCE_MODULES = ["substrate-native", "evm-native", "evm-erc20"]
 
 /**
  * Observables providing info necessary to fetch balances
@@ -214,9 +213,9 @@ abstract class BalancePool {
   ) {
     this.hasInitialised.then(() => {
       // create subscription to pool
-      const poolSubscription = this.#pool
-        .pipe(debounceTime(500))
-        .subscribe((balances) => cb({ status: this.poolStatus, data: Object.values(balances) }))
+      const poolSubscription = this.#pool.pipe(debounceTime(500)).subscribe((balances) => {
+        return cb({ status: this.poolStatus, data: Object.values(balances) })
+      })
       // Because this.#pool can be observed directly in the backend, we can't use this.#pool.observed to
       // decide when to close the rpc subscriptions.
       // Instead, create a generic subscription just so that we know the front end is subscribing
@@ -267,10 +266,9 @@ abstract class BalancePool {
   private updatePool(updates: BalanceJson[]) {
     const updatesWithIds = new Balances(updates)
     const existing = this.balances
-
     // update initialising set here - before filtering out zero balances
     // while this may include stale balances, the important thing is that the balance is no longer "initialising"
-    updates.forEach((b) => this.#initialising.delete(getBalanceId(b)))
+    updates.forEach((b) => this.#initialising.delete(`${b.tokenId}:${b.address}`))
 
     const newlyZeroBalances: string[] = []
     const changedBalances = Object.fromEntries(
@@ -586,7 +584,8 @@ abstract class BalancePool {
 
           if (
             error?.type === "STALE_RPC_ERROR" ||
-            error?.type === "WEBSOCKET_ALLOCATION_EXHAUSTED_ERROR"
+            error?.type === "WEBSOCKET_ALLOCATION_EXHAUSTED_ERROR" ||
+            error?.type === "CHAIN_CONNECTION_ERROR"
           ) {
             const addressesByModuleToken = subscriptionParameters[balanceModule.type] ?? {}
             // set status to stale for balances matching the error
@@ -613,6 +612,8 @@ abstract class BalancePool {
             firstValueFrom(staleObservable).then((v) => {
               if (v.length) this.updatePool(v)
             })
+          } else if (error) {
+            log.error("Balances Pool unknown error", error)
           }
 
           // good balances
@@ -761,7 +762,6 @@ export class ExternalBalancePool extends BalancePool {
     // must wait until initialised because some of the parameters to getSubscriptionParams
     // will be set during initialisation
     await this.hasInitialised
-
     const subscriptionParameters = getSubscriptionParams(
       addressesByChain,
       addressesAndEvmNetworks,

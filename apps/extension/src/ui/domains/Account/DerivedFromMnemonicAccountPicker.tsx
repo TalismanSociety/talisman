@@ -78,7 +78,6 @@ const useDerivedAccounts = (
         : [],
     [itemsPerPage, derivedAccounts]
   )
-
   const balances = useAccountImportBalances(accountImportDefs)
 
   const accounts: (DerivedFromMnemonicAccount | null)[] = useMemo(

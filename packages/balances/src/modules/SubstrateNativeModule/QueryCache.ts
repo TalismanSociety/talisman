@@ -200,7 +200,6 @@ export class QueryCache {
     Object.entries(queries).forEach(([key, query]) => {
       this.balanceQueryCache.set(key, query)
     })
-
     return queryResults.existing.concat(Object.values(queries).flat())
   }
 

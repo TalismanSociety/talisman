@@ -207,11 +207,16 @@ export const EvmErc20Module: NewBalanceModule<
         try {
           // fetch balance for each network sequentially to prevent creating a big queue of http requests (browser can only handle 2 at a time)
           for (const evmNetworkId of Object.keys(fetchesPerNetwork)) {
-            const initialisingNetworkBalances = Array.from(initialisingBalances).filter((id) =>
-              id.startsWith(`${evmNetworkId}-`)
+            const initialisingNetworkBalances = new Set(
+              Array.from(initialisingBalances)
+                .filter((id) => id.startsWith(`${evmNetworkId}-`))
+                .map((id) => id.split("-")[0])
             )
+
+            // a zero balance network is one that has initialised and does not have a positive balance
             const isZeroBalanceNetwork =
-              initialisingNetworkBalances.length === 0 && !positiveBalanceNetworks.has(evmNetworkId)
+              !initialisingNetworkBalances.has(evmNetworkId) &&
+              !positiveBalanceNetworks.has(evmNetworkId)
 
             if (isZeroBalanceNetwork && zeroBalanceSubscriptionIntervalCounter !== 0) {
               // only poll empty token balances every 5 subscriptionIntervals

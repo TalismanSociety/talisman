@@ -3,12 +3,13 @@ import { ExtDef } from "@polkadot/types/extrinsic/signedExtensions/types"
 import { arrayChunk, assert, u8aToHex, u8aToString } from "@polkadot/util"
 import { defineMethod } from "@substrate/txwrapper-core"
 import PromisePool from "@supercharge/promise-pool"
-import { ChainConnector } from "@talismn/chain-connector"
+import { ChainConnectionError, ChainConnector } from "@talismn/chain-connector"
 import {
   BalancesConfigTokenParams,
   ChainId,
   ChaindataProvider,
   NewTokenType,
+  TokenId,
   githubTokenLogoUrl,
 } from "@talismn/chaindata-provider"
 import {
@@ -211,14 +212,6 @@ export const SubNativeModule: NewBalanceModule<
 
   const queryCache = new QueryCache(chaindataProvider, getOrCreateTypeRegistry)
 
-  const getBalancesForQueries = async (queries: RpcStateQuery<SubNativeBalance>[]) => {
-    assert(chainConnectors.substrate, "This module requires a substrate chain connector")
-
-    const result = await new RpcStateQueryHelper(chainConnectors.substrate, queries).fetch()
-
-    return new Balances(result ?? [])
-  }
-
   return {
     ...DefaultBalanceModule("substrate-native"),
 
@@ -368,8 +361,9 @@ export const SubNativeModule: NewBalanceModule<
 
       // an initialised balance is one where we have received a response for any type of 'subsource',
       // until then they are initialising. We only need to maintain one map of tokens to addresses for this
+
       const initialisingBalances = Object.entries(addressesByToken).reduce<
-        Map<string, Set<string>>
+        Map<TokenId, Set<string>>
       >((acc, [tokenId, addresses]) => {
         acc.set(tokenId, new Set(addresses))
         return acc
@@ -414,7 +408,10 @@ export const SubNativeModule: NewBalanceModule<
 
             // update initialisingBalances to remove balances which have been updated
             const intialisingForToken = initialisingBalances.get(b.tokenId)
-            if (intialisingForToken) intialisingForToken.delete(b.address)
+            if (intialisingForToken) {
+              intialisingForToken.delete(b.address)
+              initialisingBalances.set(b.tokenId, new Set(intialisingForToken))
+            }
             if (intialisingForToken && intialisingForToken.size === 0)
               initialisingBalances.delete(b.tokenId)
           })
@@ -426,9 +423,22 @@ export const SubNativeModule: NewBalanceModule<
         }
         if (error) {
           if (error instanceof SubNativeBalanceError) {
+            // this type of error doesn't need to be handled by the caller
             initialisingBalances.delete(error.tokenId)
-          }
-          return callback(error)
+            const currentBalances = subNativeBalances.getValue()
+            const tokenBalances = Object.values(currentBalances).filter(
+              ({ tokenId }) => tokenId === error.tokenId
+            )
+            // set those token balances as stale
+            tokenBalances.forEach((tokenBalance) => (tokenBalance.status = "stale"))
+            const newBalances = {
+              ...currentBalances,
+              ...Object.fromEntries(
+                tokenBalances.map((tokenBalance) => [getBalanceId(tokenBalance), tokenBalance])
+              ),
+            }
+            subNativeBalances.next(newBalances)
+          } else return callback(error)
         }
       }
 
@@ -444,34 +454,39 @@ export const SubNativeModule: NewBalanceModule<
             }, {})
           ),
           distinctUntilChanged(isEqual),
-          switchMap(async (addressesByToken) => {
-            const baseQueries = await queryCache.getQueries(addressesByToken)
+          switchMap((newAddressesByToken) => {
+            return from(queryCache.getQueries(newAddressesByToken)).pipe(
+              switchMap((baseQueries) => {
+                return new Observable((subscriber) => {
+                  if (!chainConnectors.substrate) return
 
-            return new Observable((subscriber) => {
-              if (!chainConnectors.substrate) return
-
-              const unsubNompoolStaking = subscribeNompoolStaking(
-                chaindataProvider,
-                chainConnectors.substrate,
-                getOrCreateTypeRegistry,
-                addressesByToken,
-                handleUpdate
-              )
-              const unsubCrowdloans = subscribeCrowdloans(
-                chaindataProvider,
-                chainConnectors.substrate,
-                getOrCreateTypeRegistry,
-                addressesByToken,
-                handleUpdate
-              )
-              const subBase = subscribeBase(baseQueries, chainConnectors.substrate, handleUpdate)
-              subscriber.add(async () => (await unsubNompoolStaking)())
-              subscriber.add(async () => (await unsubCrowdloans)())
-              subscriber.add(async () => (await subBase)())
-            })
+                  const unsubNompoolStaking = subscribeNompoolStaking(
+                    chaindataProvider,
+                    chainConnectors.substrate,
+                    getOrCreateTypeRegistry,
+                    newAddressesByToken,
+                    handleUpdate
+                  )
+                  const unsubCrowdloans = subscribeCrowdloans(
+                    chaindataProvider,
+                    chainConnectors.substrate,
+                    getOrCreateTypeRegistry,
+                    newAddressesByToken,
+                    handleUpdate
+                  )
+                  const subBase = subscribeBase(
+                    baseQueries,
+                    chainConnectors.substrate,
+                    handleUpdate
+                  )
+                  subscriber.add(async () => (await unsubNompoolStaking)())
+                  subscriber.add(async () => (await unsubCrowdloans)())
+                  subscriber.add(async () => (await subBase)())
+                })
+              })
+            )
           })
         )
-
         .subscribe()
 
       // for chains where we don't have a known positive balance, poll rather than subscribe
@@ -480,10 +495,22 @@ export const SubNativeModule: NewBalanceModule<
           const balances = await this.fetchBalances(addressesByToken)
           handleUpdate(null, Object.values(balances.toJSON()) as SubNativeBalance[])
         } catch (error) {
-          Object.keys(addressesByToken).forEach((tokenId) => {
-            const wrappedError = new SubNativeBalanceError(tokenId, (error as Error).message)
-            handleUpdate(wrappedError)
-          })
+          if (error instanceof ChainConnectionError) {
+            // coerce ChainConnection errors into SubNativeBalance errors
+            const errorChainId = (error as ChainConnectionError).chainId
+            Object.entries(await this.tokens)
+              .filter(([, token]) => token.chain?.id === errorChainId)
+              .forEach(([tokenId]) => {
+                const wrappedError = new SubNativeBalanceError(
+                  tokenId,
+                  (error as ChainConnectionError).message
+                )
+                handleUpdate(wrappedError)
+              })
+          } else {
+            log.error("unknown substrate native balance error", error)
+            handleUpdate(error)
+          }
         }
       }
       // do one poll to get things started
@@ -534,7 +561,12 @@ export const SubNativeModule: NewBalanceModule<
     async fetchBalances(addressesByToken) {
       assert(chainConnectors.substrate, "This module requires a substrate chain connector")
       const queries = await queryCache.getQueries(addressesByToken)
-      return await getBalancesForQueries(queries)
+
+      assert(chainConnectors.substrate, "This module requires a substrate chain connector")
+
+      const result = await new RpcStateQueryHelper(chainConnectors.substrate, queries).fetch()
+
+      return new Balances(result ?? [])
     },
 
     async transferToken({
@@ -1305,7 +1337,7 @@ class SubNativeBalanceError extends Error {
   #tokenId: string
 
   constructor(tokenId: string, message: string) {
-    super(message)
+    super(`${tokenId}: ${message}`)
     this.name = "SubNativeBalanceError"
     this.#tokenId = tokenId
   }
