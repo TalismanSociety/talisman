@@ -9,6 +9,7 @@ import Tokens from "@ui/domains/Asset/Tokens"
 import { useAnalytics } from "@ui/hooks/useAnalytics"
 import { useBalancesStatus } from "@ui/hooks/useBalancesStatus"
 import { useSelectedCurrency } from "@ui/hooks/useCurrency"
+import { useUniswapV2LpTokenTotalValueLocked } from "@ui/hooks/useUniswapV2LpTokenTotalValueLocked"
 import { ReactNode, useCallback, useMemo } from "react"
 import { useTranslation } from "react-i18next"
 import { useNavigate } from "react-router-dom"
@@ -85,6 +86,9 @@ const AssetRow = ({ balances, locked }: AssetRowProps) => {
 
   const { t } = useTranslation()
 
+  const isUniswapV2LpToken = token?.type === "evm-uniswapv2"
+  const tvl = useUniswapV2LpTokenTotalValueLocked(token, rate, balances)
+
   if (!token || !summary) return null
 
   return (
@@ -116,7 +120,15 @@ const AssetRow = ({ balances, locked }: AssetRowProps) => {
                   </div>
                 )}
               </div>
-              {rate !== undefined && <Fiat amount={rate} className="text-body-secondary text-xs" />}
+
+              {isUniswapV2LpToken && typeof tvl === "number" && (
+                <div className="text-body-secondary whitespace-nowrap text-xs">
+                  <Fiat amount={tvl} /> <span className="text-[0.8rem]">TVL</span>
+                </div>
+              )}
+              {!isUniswapV2LpToken && typeof rate === "number" && (
+                <Fiat amount={rate} className="text-body-secondary text-xs" />
+              )}
             </div>
           </div>
           <div
@@ -138,7 +150,11 @@ const AssetRow = ({ balances, locked }: AssetRowProps) => {
                     locked ? "text-body-secondary" : "text-white"
                   )}
                 >
-                  <Tokens amount={tokens} symbol={token?.symbol} isBalance />
+                  <Tokens
+                    amount={tokens}
+                    symbol={isUniswapV2LpToken ? "" : token?.symbol}
+                    isBalance
+                  />
                   {locked ? <LockIcon className="lock ml-2 inline align-baseline text-xs" /> : null}
                   <StaleBalancesIcon
                     className="alert ml-2 inline align-baseline text-sm"

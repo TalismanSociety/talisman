@@ -55,14 +55,8 @@ const ChainTokenBalances = ({ chainId, balances }: AssetRowProps) => {
         <div className="flex grow flex-col justify-center gap-2 pr-8">
           <div className="flex justify-between font-bold text-white">
             <div className="flex items-center">
-              {isUniswapV2LpToken ? (
-                <div>{symbol}</div>
-              ) : (
-                <>
-                  <ChainLogo className="mr-2" id={chainOrNetwork.id} />
-                  <span className="mr-2">{chainOrNetwork.name}</span>
-                </>
-              )}
+              <ChainLogo className="mr-2" id={chainOrNetwork.id} />
+              <span className="mr-2">{chainOrNetwork.name}</span>
               <CopyAddressButton networkId={chainOrNetwork.id} />
               <Suspense>
                 <SendFundsButton symbol={symbol} networkId={chainOrNetwork.id} shouldClose />
@@ -70,14 +64,7 @@ const ChainTokenBalances = ({ chainId, balances }: AssetRowProps) => {
             </div>
           </div>
           <div className="text-body-secondary flex justify-between text-xs">
-            {isUniswapV2LpToken ? (
-              <div className="flex items-center gap-2">
-                <ChainLogo id={chainOrNetwork.id} />
-                <span>{chainOrNetwork.name}</span>
-              </div>
-            ) : (
-              <div>{networkType}</div>
-            )}
+            <div>{networkType}</div>
           </div>
         </div>
         {tokenId && (
@@ -123,7 +110,6 @@ const ChainTokenBalancesUniswapV2Row = ({
   isLastBalance?: boolean
   status: BalancesStatus
 }) => {
-  const { t } = useTranslation()
   const { account } = useSelectedAccount()
   const selectedCurrency = useSelectedCurrency()
   const tokenRates = useTokenRatesMap()
@@ -152,7 +138,12 @@ const ChainTokenBalancesUniswapV2Row = ({
         isLastBalance && "rounded-b-sm"
       )}
     >
-      <div className="text-xs">{t("Assets")}</div>
+      {/* only show address when we're viewing balances for all accounts */}
+      {!account && (
+        <div className="flex items-end justify-between gap-4 text-xs">
+          <PortfolioAccount address={balance.address} />
+        </div>
+      )}
       {[
         { tokenId: tokenId0, symbol: token.symbol0, holdingBalance: holdingBalance0 },
         { tokenId: tokenId1, symbol: token.symbol1, holdingBalance: holdingBalance1 },
@@ -161,13 +152,7 @@ const ChainTokenBalancesUniswapV2Row = ({
           <div className="text-xl">
             <TokenLogo tokenId={tokenId} />
           </div>
-          <div className="flex grow flex-col justify-center gap-2">
-            <div className="font-bold text-white">{symbol}</div>
-            <div className="text-xs">
-              {/* only show address when we're viewing balances for all accounts */}
-              {!account && <PortfolioAccount address={balance.address} />}
-            </div>
-          </div>
+          <div className="grow font-bold text-white">{symbol}</div>
           <div
             className={classNames(
               "flex flex-col flex-nowrap justify-center gap-2 whitespace-nowrap text-right",

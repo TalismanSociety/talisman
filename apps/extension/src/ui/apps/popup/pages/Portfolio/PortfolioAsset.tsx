@@ -10,6 +10,7 @@ import { useTokenBalancesSummary } from "@ui/domains/Portfolio/useTokenBalancesS
 import { useAnalytics } from "@ui/hooks/useAnalytics"
 import useBalances from "@ui/hooks/useBalances"
 import { useSelectedCurrency } from "@ui/hooks/useCurrency"
+import { useUniswapV2LpTokenTotalValueLocked } from "@ui/hooks/useUniswapV2LpTokenTotalValueLocked"
 import { useCallback, useEffect, useMemo } from "react"
 import { useTranslation } from "react-i18next"
 import { Navigate, useNavigate, useParams, useSearchParams } from "react-router-dom"
@@ -29,7 +30,9 @@ const PageContent = ({ balances, symbol }: { balances: Balances; symbol: string 
   )
 
   const { t } = useTranslation()
-  const isUniswapV2LpToken = balances.sorted[0]?.source === "evm-uniswapv2"
+
+  const isUniswapV2LpToken = token?.type === "evm-uniswapv2"
+  const tvl = useUniswapV2LpTokenTotalValueLocked(token, rate, balances)
 
   return (
     <>
@@ -37,19 +40,20 @@ const PageContent = ({ balances, symbol }: { balances: Balances; symbol: string 
         <IconButton onClick={handleBackBtnClick}>
           <ChevronLeftIcon />
         </IconButton>
-        <div className="text-2xl">
+        <div className="shrink-0 text-2xl">
           <TokenLogo tokenId={token?.id} />
         </div>
-        <div className="flex grow flex-col gap-1 pl-2 text-sm">
+        <div className="flex grow flex-col gap-1 overflow-hidden pl-2 text-sm">
           <div className="text-body-secondary flex justify-between">
-            {isUniswapV2LpToken ? <div>{t("Liquidity Pool")}</div> : <div>{symbol}</div>}
+            <div>{symbol}</div>
             <div>{t("Total")}</div>
           </div>
           <div className="text-md flex justify-between font-bold">
-            {isUniswapV2LpToken ? (
-              <div>Uniswap V2</div>
-            ) : (
-              <div>{rate && <Fiat amount={rate} />}</div>
+            {isUniswapV2LpToken && typeof tvl === "number" && (
+              <Fiat className="overflow-hidden text-ellipsis whitespace-nowrap" amount={tvl} />
+            )}
+            {!isUniswapV2LpToken && typeof rate === "number" && (
+              <Fiat className="overflow-hidden text-ellipsis whitespace-nowrap" amount={rate} />
             )}
             <div>
               <Fiat amount={total} isBalance />

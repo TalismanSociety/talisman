@@ -1,8 +1,9 @@
 import { IS_FIREFOX, UNKNOWN_TOKEN_URL } from "@extension/shared"
+import { evmErc20TokenId } from "@talismn/balances"
 import { TokenId } from "@talismn/chaindata-provider"
 import { classNames } from "@talismn/util"
 import useToken from "@ui/hooks/useToken"
-import { FC, Suspense, useCallback, useEffect, useMemo, useState } from "react"
+import { CSSProperties, FC, Suspense, useCallback, useEffect, useMemo, useState } from "react"
 
 const isTalismanLogo = (url?: string | null) => {
   if (!url) return false
@@ -15,11 +16,12 @@ const isTalismanLogo = (url?: string | null) => {
 type AssetLogoBaseProps = {
   id?: string
   className?: string
+  style?: CSSProperties
   url?: string | null
   rounded?: boolean
 }
 
-export const AssetLogoBase = ({ id, className, url, rounded }: AssetLogoBaseProps) => {
+export const AssetLogoBase = ({ id, className, style, url, rounded }: AssetLogoBaseProps) => {
   const [src, setSrc] = useState(() => url ?? UNKNOWN_TOKEN_URL)
 
   // reset
@@ -46,11 +48,41 @@ export const AssetLogoBase = ({ id, className, url, rounded }: AssetLogoBaseProp
       data-id={id}
       src={src}
       className={imgClassName}
+      style={style}
       alt=""
       crossOrigin={IS_FIREFOX ? undefined : "anonymous"}
       loading="lazy" // defers download, helps performance especially in token pickers
       onError={handleError}
     />
+  )
+}
+
+const LpAssetLogo = ({ className, id }: { className?: string; id?: TokenId }) => {
+  const lpToken = useToken(id)
+  const tokenId0 =
+    lpToken?.type === "evm-uniswapv2"
+      ? evmErc20TokenId(lpToken?.evmNetwork?.id ?? "", lpToken?.tokenAddress0)
+      : null
+  const tokenId1 =
+    lpToken?.type === "evm-uniswapv2"
+      ? evmErc20TokenId(lpToken?.evmNetwork?.id ?? "", lpToken?.tokenAddress1)
+      : null
+  const token0 = useToken(tokenId0)
+  const token1 = useToken(tokenId1)
+
+  return (
+    <div className={classNames("relative aspect-square w-[1em] shrink-0", className)}>
+      <AssetLogoBase
+        className="absolute h-full w-full"
+        url={token0?.logo}
+        style={{ clipPath: "polygon(0% 0%, 48% 0%, 48% 100%, 0% 100%)" }}
+      />
+      <AssetLogoBase
+        className="absolute h-full w-full"
+        url={token1?.logo}
+        style={{ clipPath: "polygon(100% 0%, 52% 0%, 52% 100%, 100% 100%)" }}
+      />
+    </div>
   )
 }
 
@@ -67,6 +99,9 @@ const AssetLogoInner: FC<AssetLogoProps> = ({ className, id }) => {
 
   // round logos except if they are hosted in Talisman's chaindata repo
   const rounded = useMemo(() => !isTalismanLogo(token?.logo), [token?.logo])
+
+  // special logos for LP tokens
+  if (token?.type === "evm-uniswapv2") return <LpAssetLogo className={className} id={id} />
 
   return <AssetLogoBase className={className} url={token?.logo} rounded={rounded} />
 }

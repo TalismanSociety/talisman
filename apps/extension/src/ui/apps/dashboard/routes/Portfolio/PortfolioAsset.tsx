@@ -11,6 +11,7 @@ import { useSelectedAccount } from "@ui/domains/Portfolio/useSelectedAccount"
 import { useTokenBalancesSummary } from "@ui/domains/Portfolio/useTokenBalancesSummary"
 import { useAnalytics } from "@ui/hooks/useAnalytics"
 import { useSendFundsPopup } from "@ui/hooks/useSendFundsPopup"
+import { useUniswapV2LpTokenTotalValueLocked } from "@ui/hooks/useUniswapV2LpTokenTotalValueLocked"
 import { useCallback, useEffect, useMemo } from "react"
 import { useTranslation } from "react-i18next"
 import { Navigate, useNavigate, useParams, useSearchParams } from "react-router-dom"
@@ -41,6 +42,7 @@ const PageContent = ({ balances, symbol }: { balances: Balances; symbol: string 
   const { t } = useTranslation()
 
   const isUniswapV2LpToken = token?.type === "evm-uniswapv2"
+  const tvl = useUniswapV2LpTokenTotalValueLocked(token, rate, balances)
 
   return (
     <div>
@@ -59,15 +61,14 @@ const PageContent = ({ balances, symbol }: { balances: Balances; symbol: string 
               <TokenLogo tokenId={token?.id} className="text-3xl" />
             </div>
             <div>
-              {isUniswapV2LpToken ? (
-                <div className="text-md">Uniswap V2</div>
-              ) : (
-                <div className="text-md">{token?.symbol}</div>
+              <div className="text-md">{token?.symbol}</div>
+              {isUniswapV2LpToken && typeof tvl === "number" && (
+                <div className="text-body-secondary whitespace-nowrap">
+                  <Fiat amount={tvl} /> <span className="text-tiny">TVL</span>
+                </div>
               )}
-              {isUniswapV2LpToken ? (
-                <div className="text-body-secondary">{t("Liquidity Pool")}</div>
-              ) : (
-                <div className="text-body-secondary">{rate && <Fiat amount={rate} />}</div>
+              {!isUniswapV2LpToken && typeof rate === "number" && (
+                <Fiat amount={rate} className="text-body-secondary" />
               )}
             </div>
             <div className="flex flex-wrap">
