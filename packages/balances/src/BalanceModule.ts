@@ -1,7 +1,7 @@
 import { UnsignedTransaction } from "@substrate/txwrapper-core"
 import { ChainConnector } from "@talismn/chain-connector"
 import { ChainConnectorEvm } from "@talismn/chain-connector-evm"
-import { ChainId, ChaindataProvider, IToken, Token } from "@talismn/chaindata-provider"
+import { ChainId, ChaindataProvider, IToken } from "@talismn/chaindata-provider"
 
 import {
   AddressesByToken,
@@ -160,7 +160,7 @@ interface BalanceModuleCommon<
   get type(): TModuleType
 
   /** Returns tokens of the correct type for each balance module */
-  get tokens(): Promise<Record<string, Token>>
+  get tokens(): Promise<Record<string, TTokenType>>
   /**
    * Subscribe to balances for this module with optional filtering.
    *

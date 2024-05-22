@@ -93,9 +93,12 @@ export const EvmErc20Module: NewBalanceModule<
 
   const prepareFetchParameters = async (
     addressesByToken: AddressesByToken<EvmErc20Token>,
-    allTokens: TokenList
+    allTokens: Record<string, EvmErc20Token>
   ): Promise<EvmErc20NetworkParams> => {
-    const addressesByTokenByEvmNetwork = groupAddressesByTokenByEvmNetwork(addressesByToken, tokens)
+    const addressesByTokenByEvmNetwork = groupAddressesByTokenByEvmNetwork(
+      addressesByToken,
+      allTokens
+    )
     return Object.entries(addressesByTokenByEvmNetwork).reduce(
       (result, [evmNetworkId, addressesByToken]) => {
         const networkParams = Object.entries(addressesByToken).flatMap(([tokenId, addresses]) => {
@@ -301,8 +304,8 @@ export const EvmErc20Module: NewBalanceModule<
 
     async fetchBalances(addressesByToken) {
       if (!chainConnectors.evm) throw new Error(`This module requires an evm chain connector`)
-
-      const fetchesPerNetwork = await prepareFetchParameters(addressesByToken)
+      const tokens = await this.tokens
+      const fetchesPerNetwork = await prepareFetchParameters(addressesByToken, tokens)
       const balances = await fetchBalances(chainConnectors.evm, fetchesPerNetwork)
       return new Balances(balances.results)
     },
