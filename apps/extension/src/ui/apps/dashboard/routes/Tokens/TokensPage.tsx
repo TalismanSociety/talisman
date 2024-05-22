@@ -256,14 +256,11 @@ export const TokensPage = () => {
   const activeTokens = useActiveTokensState()
   const [isActiveOnly, setIsActiveOnly] = useState(false)
   const [isCustomOnly, setIsCustomOnly] = useState(false)
+  const [isHidePools, setIsHidePools] = useState(false)
 
-  const toggleIsActiveOnly = useCallback(() => {
-    setIsActiveOnly((prev) => !prev)
-  }, [])
-
-  const toggleIsCustomOnly = useCallback(() => {
-    setIsCustomOnly((prev) => !prev)
-  }, [])
+  const toggleIsActiveOnly = useCallback(() => setIsActiveOnly((prev) => !prev), [])
+  const toggleIsCustomOnly = useCallback(() => setIsCustomOnly((prev) => !prev), [])
+  const toggleIsHidePools = useCallback(() => setIsHidePools((prev) => !prev), [])
 
   const networkOptions = useMemo(() => {
     return [{ id: "ALL", name: "All networks" } as EvmNetwork, ...sortBy(evmNetworks, "name")]
@@ -283,6 +280,7 @@ export const TokensPage = () => {
       .filter((t) => !!t.evmNetwork?.id && evmNetworksMap[t.evmNetwork.id])
       .filter((t) => !isActiveOnly || isTokenActive(t, activeTokens))
       .filter((t) => !isCustomOnly || isCustomErc20Token(t) || isCustomUniswapV2Token(t))
+      .filter((t) => !isHidePools || !isUniswapV2Token(t))
       .filter((t) => evmNetworkId === "ALL" || t.evmNetwork?.id === evmNetworkId)
 
     return sortBy(
@@ -290,7 +288,7 @@ export const TokensPage = () => {
       (t) => evmNetworksMap[t.evmNetwork!.id].name,
       (t) => t.symbol
     )
-  }, [activeTokens, evmNetworkId, evmNetworksMap, isActiveOnly, isCustomOnly, tokens])
+  }, [activeTokens, evmNetworkId, evmNetworksMap, isActiveOnly, isCustomOnly, isHidePools, tokens])
 
   const displayTokens = useMemo(() => {
     const lowerSearch = search.trim().toLowerCase()
@@ -369,6 +367,7 @@ export const TokensPage = () => {
       <div className="flex justify-end gap-4">
         <TogglePill label={t("Active only")} checked={isActiveOnly} onChange={toggleIsActiveOnly} />
         <TogglePill label={t("Custom only")} checked={isCustomOnly} onChange={toggleIsCustomOnly} />
+        <TogglePill label={t("Enable pools")} checked={!isHidePools} onChange={toggleIsHidePools} />
         <EnableTestnetPillButton className="h-16" />
       </div>
       <Spacer />
