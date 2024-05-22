@@ -92,15 +92,14 @@ export const EvmErc20Module: NewBalanceModule<
   )
 
   const prepareFetchParameters = async (
-    addressesByToken: AddressesByToken<EvmErc20Token>
+    addressesByToken: AddressesByToken<EvmErc20Token>,
+    allTokens: TokenList
   ): Promise<EvmErc20NetworkParams> => {
-    const tokens = await firstValueFrom(moduleTokens)
-
     const addressesByTokenByEvmNetwork = groupAddressesByTokenByEvmNetwork(addressesByToken, tokens)
     return Object.entries(addressesByTokenByEvmNetwork).reduce(
       (result, [evmNetworkId, addressesByToken]) => {
         const networkParams = Object.entries(addressesByToken).flatMap(([tokenId, addresses]) => {
-          const token = tokens[tokenId]
+          const token = allTokens[tokenId]
 
           return addresses.map((address) => ({
             token,
@@ -195,7 +194,7 @@ export const EvmErc20Module: NewBalanceModule<
 
       const evmNetworks = await chaindataProvider.evmNetworksById()
 
-      const fetchesPerNetwork = await prepareFetchParameters(addressesByToken)
+      const fetchesPerNetwork = await prepareFetchParameters(addressesByToken, tokens)
 
       Object.entries(fetchesPerNetwork).forEach(([evmNetworkId, fetches]) => {
         fetches.forEach(({ address, token }) => {
