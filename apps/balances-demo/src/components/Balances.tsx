@@ -86,10 +86,25 @@ export const Balances = () => {
             </span>
           </span>
 
-          <span className="max-w-md overflow-hidden overflow-ellipsis whitespace-pre">
+          <button
+            type="button"
+            className={classNames([
+              // button
+              "max-w-md overflow-hidden overflow-ellipsis whitespace-pre",
+              // overlay style
+              "after:bg-body-black after:text-tiny relative after:absolute after:left-1/2 after:top-1/2 after:-translate-x-1/2 after:-translate-y-1/2 after:rounded after:px-2 after:py-1 after:content-['copied_address']",
+              // overlay transition
+              "after:opacity-0 after:transition-opacity after:duration-1000",
+              // activate overlay transition
+              "active:after:opacity-100 active:after:duration-0",
+            ])}
+            onClick={() => {
+              navigator.clipboard.writeText(balance.address)
+            }}
+          >
             {accounts?.find(({ address }) => address === balance.address)?.meta?.name ??
-              balance.address}
-          </span>
+              `${balance.address.slice(0, 4)}…${balance.address.slice(-4)}`}
+          </button>
         </Fragment>
       ))}
     </div>
