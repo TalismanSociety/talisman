@@ -1,7 +1,7 @@
-import { AccountAddressType, AccountJsonAny, Balances, Token } from "@extension/core"
+import { AccountAddressType, AccountJsonAny } from "@extension/core"
 import { log } from "@extension/shared"
-import { HydrateDb } from "@talismn/balances"
-import { Chain, ChainId, EvmNetwork, EvmNetworkId } from "@talismn/chaindata-provider"
+import { Balances, HydrateDb } from "@talismn/balances"
+import { Chain, ChainId, EvmNetwork, EvmNetworkId, Token } from "@talismn/chaindata-provider"
 import {
   balancesByAccountCategoryAtomFamily,
   balancesHydrateAtom,

@@ -16,14 +16,12 @@ import {
   AuthorizedSite,
   AuthorizedSites,
   BalancesUpdate,
-  ChainId,
   ChangePasswordStatusUpdate,
-  CustomErc20TokenCreate,
+  CustomEvmTokenCreate,
   DecryptRequestId,
   EncryptRequestId,
   EthGasSettings,
   EvmAddress,
-  EvmNetworkId,
   LoggedinType,
   MetadataUpdateStatus,
   ModalOpenRequest,
@@ -42,12 +40,11 @@ import {
   SignerPayloadGenesisHash,
   SignerPayloadJSON,
   SigningRequestID,
-  TokenId,
+  UnsubscribeFn,
+  ValidRequests,
   WalletTransactionTransferInfo,
   WatchAssetRequestId,
 } from "@extension/core"
-import { ValidRequests } from "@extension/core"
-import { UnsubscribeFn } from "@extension/core"
 import {
   RequestAccountsCatalogAction,
   Trees,
@@ -56,6 +53,7 @@ import type { KeyringPair$Json } from "@polkadot/keyring/types"
 import { KeypairType } from "@polkadot/util-crypto/types"
 import type { HexString } from "@polkadot/util/types"
 import { Address, BalanceJson } from "@talismn/balances"
+import { ChainId, EvmNetworkId, TokenId } from "@talismn/chaindata-provider"
 import { NsLookupType } from "@talismn/on-chain-id"
 import { MetadataDef } from "inject/substrate/types"
 import { TransactionRequest } from "viem"
@@ -213,8 +211,8 @@ export default interface MessageTypes {
   tokenRates: (cb: () => void) => UnsubscribeFn
 
   // custom erc20 token management
-  addCustomErc20Token: (token: CustomErc20TokenCreate) => Promise<boolean>
-  removeCustomErc20Token: (id: string) => Promise<boolean>
+  addCustomEvmToken: (token: CustomEvmTokenCreate) => Promise<boolean>
+  removeCustomEvmToken: (id: string) => Promise<boolean>
 
   // asset transfer messages
   assetTransfer: (

@@ -10,7 +10,7 @@ import useTokens from "./useTokens"
 /**
  * NOTE: Works for both `evm-erc20` as well as `evm-uniswapv2` tokens.
  */
-export const useKnownErc20Token = (
+export const useKnownEvmToken = (
   evmNetworkId: string | undefined | null,
   contractAddress: string | undefined | null
 ) => {

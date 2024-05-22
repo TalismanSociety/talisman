@@ -11,7 +11,7 @@ import { TokenTypePill } from "@ui/domains/Asset/TokenTypePill"
 import { NetworkSelect } from "@ui/domains/Ethereum/NetworkSelect"
 import { useAnalyticsPageView } from "@ui/hooks/useAnalyticsPageView"
 import { useEvmNetwork } from "@ui/hooks/useEvmNetwork"
-import { useKnownErc20Token } from "@ui/hooks/useKnownErc20Token"
+import { useKnownEvmToken } from "@ui/hooks/useKnownEvmToken"
 import useToken from "@ui/hooks/useToken"
 import { isCustomErc20Token } from "@ui/util/isCustomErc20Token"
 import { isCustomUniswapV2Token } from "@ui/util/isCustomUniswapV2Token"
@@ -50,7 +50,7 @@ const ConfirmRemove = ({
     try {
       if (!isCustomErc20Token(token) && !isCustomUniswapV2Token(token))
         throw new Error(t("Cannot remove built-in tokens"))
-      await api.removeCustomErc20Token(token.id)
+      await api.removeCustomEvmToken(token.id)
       navigate("/tokens")
     } catch (err) {
       Sentry.captureException(err)
@@ -112,7 +112,7 @@ export const TokenPage = () => {
     ? erc20Token.poolAddress
     : undefined
 
-  const { isActive, setActive, isActiveSetByUser, resetToTalismanDefault } = useKnownErc20Token(
+  const { isActive, setActive, isActiveSetByUser, resetToTalismanDefault } = useKnownEvmToken(
     erc20Token?.evmNetwork?.id,
     contractAddress
   )

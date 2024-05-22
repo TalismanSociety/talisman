@@ -1,13 +1,17 @@
-import { activeEvmNetworksStore, isEvmNetworkActive } from "@extension/core"
-import { activeTokensStore, isTokenActive } from "@extension/core"
-import { TokenId } from "@extension/core"
-import { AssetDiscoveryMode, DiscoveredBalance } from "@extension/core"
-import { AccountJsonAny } from "@extension/core"
+import {
+  AccountJsonAny,
+  AssetDiscoveryMode,
+  DiscoveredBalance,
+  activeEvmNetworksStore,
+  activeTokensStore,
+  isEvmNetworkActive,
+  isTokenActive,
+} from "@extension/core"
 import { HeaderBlock } from "@talisman/components/HeaderBlock"
 import { Spacer } from "@talisman/components/Spacer"
 import { shortenAddress } from "@talisman/util/shortenAddress"
 import { Address, BalanceFormatter } from "@talismn/balances"
-import { EvmNetworkId, Token } from "@talismn/chaindata-provider"
+import { EvmNetworkId, Token, TokenId } from "@talismn/chaindata-provider"
 import {
   ChevronDownIcon,
   DiamondIcon,

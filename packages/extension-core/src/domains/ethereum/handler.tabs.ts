@@ -2,11 +2,10 @@ import keyring from "@polkadot/ui-keyring"
 import { accounts as accountsObservable } from "@polkadot/ui-keyring/observable/accounts"
 import { assert } from "@polkadot/util"
 import { isEthereumAddress } from "@polkadot/util-crypto"
+import { CustomEvmErc20Token, evmErc20TokenId } from "@talismn/balances"
 import { githubUnknownTokenLogoUrl } from "@talismn/chaindata-provider"
-import { throwAfter } from "@talismn/util"
-import { convertAddress } from "@talismn/util"
-import { DEFAULT_ETH_CHAIN_ID } from "extension-shared"
-import { log } from "extension-shared"
+import { convertAddress, throwAfter } from "@talismn/util"
+import { DEFAULT_ETH_CHAIN_ID, log } from "extension-shared"
 import i18next from "i18next"
 import {
   PublicClient,
@@ -39,7 +38,6 @@ import {
   RequestAuthorizeTab,
 } from "../sitesAuthorised/types"
 import { activeTokensStore, isTokenActive } from "../tokens/store.activeTokens"
-import { CustomErc20Token } from "../tokens/types"
 import { getEvmErrorCause } from "./errors"
 import {
   ETH_ERROR_EIP1474_INTERNAL_ERROR,
@@ -54,7 +52,6 @@ import {
   EthProviderRpcError,
 } from "./EthProviderRpcError"
 import {
-  getErc20TokenId,
   isValidAddEthereumRequestParam,
   isValidRequestedPermissions,
   isValidWatchAssetRequestParam,
@@ -501,7 +498,7 @@ export class EthTabsHandler extends TabsHandler {
         if (typeof ethChainId !== "number")
           throw new EthProviderRpcError("Not connected", ETH_ERROR_EIP1993_CHAIN_DISCONNECTED)
 
-        const tokenId = getErc20TokenId(ethChainId.toString(), address)
+        const tokenId = evmErc20TokenId(ethChainId.toString(), address)
         const existing = await chaindataProvider.tokenById(tokenId)
         if (existing && isTokenActive(existing, await activeTokensStore.get()))
           throw new EthProviderRpcError("Asset already exists", ETH_ERROR_EIP1474_INVALID_PARAMS)
@@ -548,7 +545,7 @@ export class EthTabsHandler extends TabsHandler {
             i18next.t(`Another {{symbol}} token already exists on this network`, { symbol })
           )
 
-        const token: CustomErc20Token = {
+        const token: CustomEvmErc20Token = {
           id: tokenId,
           type: "evm-erc20",
           isTestnet: false,

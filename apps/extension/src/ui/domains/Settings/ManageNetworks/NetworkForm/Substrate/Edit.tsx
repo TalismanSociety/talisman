@@ -1,6 +1,5 @@
-import { CustomNativeToken } from "@extension/core"
 import { yupResolver } from "@hookform/resolvers/yup"
-import { SubNativeToken } from "@talismn/balances"
+import { CustomSubNativeToken, SubNativeToken } from "@talismn/balances"
 import { Chain, ChainId, CustomChain, isCustomChain } from "@talismn/chaindata-provider"
 import useChain from "@ui/hooks/useChain"
 import { useIsBuiltInChain } from "@ui/hooks/useIsBuiltInChain"
@@ -25,7 +24,7 @@ export const SubNetworkFormEdit = ({ chainId, onSubmitted }: SubNetworkFormEditP
 
   const chain = useChain(chainId)
   const nativeToken = useToken(chain?.nativeToken?.id) as
-    | CustomNativeToken
+    | CustomSubNativeToken
     | SubNativeToken
     | undefined
 
@@ -80,7 +79,7 @@ export const SubNetworkFormEdit = ({ chainId, onSubmitted }: SubNetworkFormEditP
 
 const chainToFormData = (
   chain?: Chain | CustomChain,
-  nativeToken?: SubNativeToken | CustomNativeToken
+  nativeToken?: SubNativeToken | CustomSubNativeToken
 ): SubNetworkFormData | undefined => {
   if (!chain) return undefined
 
