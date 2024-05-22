@@ -13,6 +13,9 @@ export const upgradeBalancesDataBlob = async (tx: Transaction) => {
   balancesData.forEach((balance) => {
     if (complexBalanceTypes.includes(balance.source)) {
       balance.values = []
+    } else {
+      // @ts-expect-error: Previous BalanceJson format had a free field4
+      balance.value = balance.free
     }
   })
   const output = pako.deflate(JSON.stringify(balancesData))

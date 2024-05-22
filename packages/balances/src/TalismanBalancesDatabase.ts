@@ -1,10 +1,9 @@
 import { Dexie } from "dexie"
 
-import { BalanceJson, MiniMetadata } from "./types"
+import { MiniMetadata } from "./types"
 import { upgradeBalancesDataBlob, upgradeRemoveSymbolFromNativeTokenId } from "./upgrades"
 
 export class TalismanBalancesDatabase extends Dexie {
-  balances!: Dexie.Table<BalanceJson, string>
   balancesBlob!: Dexie.Table<{ data: Uint8Array; id: string }, string>
   miniMetadatas!: Dexie.Table<MiniMetadata, string>
 
