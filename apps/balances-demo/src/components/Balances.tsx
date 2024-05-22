@@ -12,10 +12,16 @@ export const Balances = () => {
     <div className="grid grid-cols-[repeat(6,_auto)] items-center gap-4">
       {balances?.filterNonZero("total").sorted.map((balance) => (
         <Fragment key={balance.id}>
-          <img
-            className="h-20 w-20 max-w-none justify-self-center"
-            alt="token logo"
-            src={balance.token?.logo}
+          <div
+            className={classNames([
+              "h-20 w-20 max-w-none justify-self-center bg-contain",
+              !(
+                /^https:\/\/raw.githubusercontent.com\/TalismanSociety\/chaindata\//i.test(
+                  balance.token?.logo ?? ""
+                ) && !/assets\/tokens\/coingecko/i.test(balance.token?.logo ?? "")
+              ) && "rounded-full",
+            ])}
+            style={{ backgroundImage: `url(${balance.token?.logo})` }}
           />
 
           <span>
