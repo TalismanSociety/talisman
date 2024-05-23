@@ -91,6 +91,7 @@ const TokenRow: FC<TokenRowProps> = ({
   })
 
   const currency = useSelectedCurrency()
+  const isUniswapV2LpToken = token?.type === "evm-uniswapv2"
 
   return (
     <button
@@ -132,7 +133,7 @@ const TokenRow: FC<TokenRowProps> = ({
                 <Tokens
                   amount={tokensTotal}
                   decimals={token.decimals}
-                  symbol={token.symbol}
+                  symbol={isUniswapV2LpToken ? "" : token.symbol}
                   isBalance
                   noCountUp
                 />
