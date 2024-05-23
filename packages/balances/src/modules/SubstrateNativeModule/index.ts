@@ -30,6 +30,7 @@ import {
   concatMap,
   debounceTime,
   distinctUntilChanged,
+  exhaustMap,
   from,
   interval,
   map,
@@ -536,15 +537,18 @@ export const SubNativeModule: NewBalanceModule<
             // Filter out tokens that are not subscribed
             Object.keys(addressesByToken).filter((tokenId) => !subscribedTokenIds.includes(tokenId))
           ),
-          switchMap((tokenIds) => from(arrayChunk(tokenIds, POLLING_WINDOW_SIZE))),
-          concatMap(async (tokenChunk) => {
-            // tokenChunk is a chunk of tokenIds with size POLLING_WINDOW_SIZE
-            const pollingTokenAddresses = Object.fromEntries(
-              tokenChunk.map((tokenId) => [tokenId, addressesByToken[tokenId]])
+          exhaustMap((tokenIds) =>
+            from(arrayChunk(tokenIds, POLLING_WINDOW_SIZE)).pipe(
+              concatMap(async (tokenChunk) => {
+                // tokenChunk is a chunk of tokenIds with size POLLING_WINDOW_SIZE
+                const pollingTokenAddresses = Object.fromEntries(
+                  tokenChunk.map((tokenId) => [tokenId, addressesByToken[tokenId]])
+                )
+                await poll(pollingTokenAddresses)
+                return true
+              })
             )
-            await poll(pollingTokenAddresses)
-            return true
-          })
+          )
         )
         .subscribe()
 
