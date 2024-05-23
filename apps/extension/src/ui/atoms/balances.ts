@@ -20,7 +20,7 @@ import { atomWithSubscription } from "./utils/atomWithSubscription"
 // Reading this atom triggers the balances backend subscription
 // Note : unsubscribing has no effect, the backend subscription will keep polling until the port (window or tab) is closed
 const rawBalancesSubscriptionAtom = atomWithSubscription<BalanceSubscriptionResponse>(
-  (get) => api.balances(get),
+  api.balances,
   "rawBalancesSubscriptionAtom"
 )
 
