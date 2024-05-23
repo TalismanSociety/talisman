@@ -8,14 +8,19 @@ export type StoredBalanceJson = Omit<BalanceJson, "status">
 
 export const configureStore = (dbTable: Table = db.balancesBlob) => ({
   persistData: async (balances: StoredBalanceJson[]) => {
-    const output = pako.deflate(JSON.stringify(balances))
+    const output = compress(balances)
     await dbTable.clear()
     await dbTable.put({ data: output, id: Date.now().toString() })
   },
   retrieveData: async (): Promise<StoredBalanceJson[]> => {
     const compressedData = await dbTable.toCollection().first()
     if (!compressedData) return []
-    const data = pako.inflate(compressedData.data, { to: "string" })
-    return JSON.parse(data)
+    return decompress(compressedData.data)
   },
 })
+
+export const compress = (balances: StoredBalanceJson[]) => pako.deflate(JSON.stringify(balances))
+export const decompress = (data: Uint8Array | ArrayBuffer) => {
+  const decompressed = pako.inflate(data, { to: "string" })
+  return JSON.parse(decompressed)
+}

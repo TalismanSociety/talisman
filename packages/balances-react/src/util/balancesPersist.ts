@@ -1,5 +1,4 @@
-import { StoredBalanceJson, configureStore } from "@talismn/balances"
-import Pako from "pako"
+import { StoredBalanceJson, compress, configureStore, decompress } from "@talismn/balances"
 
 type PersistFn = (balances: StoredBalanceJson[]) => Promise<void>
 type RetrieveFn = () => Promise<StoredBalanceJson[]>
@@ -10,7 +9,7 @@ export type BalancesPersistBackend = {
 }
 
 /** 
-// Persistence backend for indexedDB, used by default
+// Persistence backend for indexedDB
 // Add a new backend by implementing the BalancesPersistBackend interface
 // configureStore can be called with a different indexedDB table
 */
@@ -20,9 +19,11 @@ export const indexedDbBalancesPersistBackend: BalancesPersistBackend = {
   retrieve: retrieveData,
 }
 
+/** 
+// Persistence backend for localStorage
+*/
 const localStoragePersist: PersistFn = async (balances) => {
-  const json = JSON.stringify(balances)
-  const deflated = Pako.deflate(json)
+  const deflated = compress(balances)
   localStorage.setItem("talismanBalances", deflated.toString())
 }
 
@@ -33,16 +34,11 @@ const localStorageRetrieve: RetrieveFn = async () => {
     const deflatedArray = deflated.split(",").map((n) => parseInt(n, 10))
     const deflatedBytes = new Uint8Array(deflatedArray.length)
     deflatedArray.forEach((n, i) => (deflatedBytes[i] = n))
-
-    const json = Pako.inflate(deflatedBytes, { to: "string" })
-    return JSON.parse(json)
+    return decompress(deflatedBytes)
   }
   return []
 }
 
-/** 
-// Persistence backend for localStorage
-*/
 export const localStorageBalancesPersistBackend: BalancesPersistBackend = {
   persist: localStoragePersist,
   retrieve: localStorageRetrieve,
