@@ -3,10 +3,11 @@ import {
   DEFAULT_PORTFOLIO_TOKENS_ETHEREUM,
   DEFAULT_PORTFOLIO_TOKENS_SUBSTRATE,
 } from "@extension/shared"
+import { portfolioAccountAtom, portfolioAtom } from "@ui/atoms"
 import { useSelectedAccount } from "@ui/domains/Portfolio/useSelectedAccount"
-import { useMemo } from "react"
-
-import { usePortfolio } from "./usePortfolio"
+import { atom, useAtomValue } from "jotai"
+import { atomFamily } from "jotai/utils"
+import { useDeferredValue, useMemo } from "react"
 
 // TODO: default tokens should be controlled from chaindata
 const shouldDisplayBalance = (account: AccountJsonAny | undefined, balances: Balances) => {
@@ -37,15 +38,32 @@ const shouldDisplayBalance = (account: AccountJsonAny | undefined, balances: Bal
   }
 }
 
-// TODO atom to prevent recompute when switching route
+export const portfolioDisplayBalancesAtomFamily = atomFamily((filter: "all" | "network") =>
+  atom((get) => {
+    const { networkBalances, allBalances } = get(portfolioAtom)
+    const account = get(portfolioAccountAtom)
+    const balances = filter === "all" ? allBalances : networkBalances
+    return networkBalances.find(shouldDisplayBalance(account, balances))
+  })
+)
+
+/**
+ * @deprecated use atoms
+ */
 export const useDisplayBalances = (balances: Balances) => {
   const { account } = useSelectedAccount()
 
   return useMemo(() => balances.find(shouldDisplayBalance(account, balances)), [account, balances])
 }
 
-// TODO atom
-export const usePortfolioDisplayBalances = () => {
-  const { networkBalances } = usePortfolio()
-  return useDisplayBalances(networkBalances)
+// export const useAllDisplayBalances = () => {
+//   return useDeferredValue(useAtomValue(portfolioDisplayBalancesAtom("all")))
+//   // const { networkBalances } = usePortfolio()
+//   // return useDisplayBalances(networkBalances)
+// }
+
+export const usePortfolioDisplayBalances = (filter: "all" | "network") => {
+  return useDeferredValue(useAtomValue(portfolioDisplayBalancesAtomFamily(filter)))
+  // const { networkBalances } = usePortfolio()
+  // return useDisplayBalances(networkBalances)
 }

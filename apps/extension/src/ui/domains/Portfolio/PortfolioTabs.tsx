@@ -46,10 +46,8 @@ export const PortfolioTabs: FC<{ className?: string }> = ({ className }) => {
       })
     }
 
-    // TODO call this on container resize ?
-    // TODO call this on child dom change instead of location change ?
     updateIndicator()
-  }, [location])
+  }, [location, setIndicatorStyle])
 
   return (
     <div

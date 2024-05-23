@@ -1,17 +1,12 @@
-import { Balances } from "@extension/core"
 import { classNames } from "@talismn/util"
 import { FC } from "react"
 import { useTranslation } from "react-i18next"
 
 import { NetworkPicker } from "../NetworkPicker"
+import { usePortfolio } from "../usePortfolio"
 import { useSelectedAccount } from "../useSelectedAccount"
 import { AssetRow } from "./DashboardAssetRow"
-import { usePortfolioSymbolBalances } from "./usePortfolioSymbolBalances"
-
-type AssetsTableProps = {
-  balances: Balances
-  isInitializing: boolean
-}
+import { usePortfolioSymbolBalancesByFilter } from "./usePortfolioSymbolBalances"
 
 const AssetRowSkeleton: FC<{ className?: string }> = ({ className }) => {
   return (
@@ -42,11 +37,12 @@ const AssetRowSkeleton: FC<{ className?: string }> = ({ className }) => {
   )
 }
 
-export const DashboardAssetsTable = ({ balances, isInitializing }: AssetsTableProps) => {
+export const DashboardAssetsTable = () => {
   const { t } = useTranslation()
-  // group by token (symbol)
+  const { isInitializing } = usePortfolio()
   const { account } = useSelectedAccount()
-  const { symbolBalances } = usePortfolioSymbolBalances(balances)
+  // group by token (symbol)
+  const { symbolBalances } = usePortfolioSymbolBalancesByFilter("network")
 
   if (!symbolBalances.length && !isInitializing) {
     return (

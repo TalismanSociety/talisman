@@ -37,3 +37,15 @@ export const usePortfolioNfts = () => {
 
   return { ...data, collections, nfts } as NftData
 }
+
+export const usePortfolioNftCollection = (collectionId: string | null | undefined) => {
+  const { collections, nfts: allNfts } = usePortfolioNfts()
+
+  return useMemo(
+    () => ({
+      collection: collections.find((c) => c.id === collectionId) ?? null,
+      nfts: allNfts.filter((nft) => nft.collectionId === collectionId) ?? [],
+    }),
+    [collections, allNfts, collectionId]
+  )
+}

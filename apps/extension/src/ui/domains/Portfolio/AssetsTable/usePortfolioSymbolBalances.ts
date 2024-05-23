@@ -1,9 +1,14 @@
 import { Balance, Balances } from "@extension/core"
 import { FiatSumBalancesFormatter } from "@talismn/balances"
 import { TokenRateCurrency } from "@talismn/token-rates"
+import { selectedCurrencyAtom, settingsAtom } from "@ui/atoms"
 import { useSelectedCurrency } from "@ui/hooks/useCurrency"
 import { useSetting } from "@ui/hooks/useSettings"
+import { atom, useAtomValue } from "jotai"
+import { atomFamily } from "jotai/utils"
 import { useMemo } from "react"
+
+import { portfolioDisplayBalancesAtomFamily } from "../useDisplayBalances"
 
 type SymbolBalances = [string, Balances]
 const sortSymbolBalancesBy =
@@ -84,6 +89,71 @@ const sortSymbolBalancesBy =
     // sort alphabetically by token symbol
     return aSymbol.localeCompare(bSymbol)
   }
+
+const portfolioSymbolBalancesAtomFamily = atomFamily((filter: "all" | "network") =>
+  atom(async (get) => {
+    const [currency, hideDust] = await Promise.all([get(selectedCurrencyAtom), get(settingsAtom)])
+    const balances = get(portfolioDisplayBalancesAtomFamily(filter))
+
+    // group balances by token symbol
+    // TODO: Move the association between a token on multiple chains into the backend / subsquid.
+    // We will eventually need to handle the scenario where two tokens with the same symbol are not the same token.
+    const groupedByToken = balances.each.reduce<Record<string, Balance[]>>((acc, b) => {
+      if (!b.token) return acc
+
+      const key = b.token.isTestnet ? `${b.token.symbol}__testnet` : b.token.symbol
+      if (!acc[key]) acc[key] = []
+      acc[key].push(b)
+
+      return acc
+    }, {})
+
+    const symbolBalances = Object.entries(groupedByToken)
+      .map(([key, tokenBalances]): SymbolBalances => [key, new Balances(tokenBalances)])
+      .sort(sortSymbolBalancesBy("total", currency))
+      .filter(
+        hideDust
+          ? ([, balances]) =>
+              balances.each.flatMap((b) => b.token?.coingeckoId ?? []).length === 0 ||
+              balances.sum.fiat("usd").total >= 1
+          : () => true
+      )
+
+    const available = symbolBalances
+      .map(([symbol, balances]): [string, Balances] => [
+        symbol,
+        balances.find((b) => b.transferable.planck > 0n),
+      ])
+      .filter(([, balances]) => balances.count > 0)
+      .sort(sortSymbolBalancesBy("available", currency))
+
+    // only show zero balances in the popup when the selected account(s) have balances
+    const availableSymbolBalances =
+      available.length > 0
+        ? available
+        : symbolBalances
+            .map(([symbol, balances]): [string, Balances] => [
+              symbol,
+              balances.find((b) => b.total.planck === 0n),
+            ])
+            .filter(([, balances]) => balances.count > 0)
+            .sort(sortSymbolBalancesBy("available", currency))
+
+    const lockedSymbolBalances = symbolBalances
+      .map(([symbol, balances]): [string, Balances] => [
+        symbol,
+        balances.find((b) => b.unavailable.planck > 0n),
+      ])
+      .filter(([, balances]) => balances.count > 0)
+      .sort(sortSymbolBalancesBy("locked", currency))
+
+    return { symbolBalances, availableSymbolBalances, lockedSymbolBalances }
+  })
+)
+
+export const usePortfolioSymbolBalancesByFilter = (filter: "all" | "network") => {
+  return useAtomValue(portfolioSymbolBalancesAtomFamily(filter))
+}
 
 export const usePortfolioSymbolBalances = (balances: Balances) => {
   const currency = useSelectedCurrency()

@@ -8,7 +8,10 @@ export const fetchNfts = async (addresses: string[]) => {
   const headers: HeadersInit = { "Content-Type": "application/json" }
   if (NFTS_API_KEY) headers["X-API-KEY"] = NFTS_API_KEY
 
-  const req = await fetch("https://nfts-api.talisman.xyz", {
+  const nftsApiUrl = "https://nfts-api.talisman.xyz"
+  //const nftsApiUrl = "http://localhost:8787"
+
+  const req = await fetch(nftsApiUrl, {
     method: "POST",
     headers,
     body: JSON.stringify(body),

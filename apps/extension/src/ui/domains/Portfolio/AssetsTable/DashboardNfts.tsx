@@ -12,6 +12,7 @@ import { useNavigate } from "react-router-dom"
 import { useIntersection } from "react-use"
 
 import { NetworkPicker } from "../NetworkPicker"
+import { NftImage } from "../NftImage"
 import { NetworksLogoStack } from "./NetworksLogoStack"
 import { usePortfolioNfts } from "./usePortfolioNfts"
 
@@ -95,12 +96,7 @@ const NftCollectionRowInner: FC<{ collection: NftCollection; data: NftData }> = 
       className="bg-grey-900 hover:bg-grey-800 grid h-32 w-full grid-cols-3 items-center gap-4 rounded-sm px-8 text-left"
     >
       <div className="flex items-center gap-6 overflow-hidden">
-        <img
-          className="size-16 shrink-0 rounded-sm"
-          src={imageUrl}
-          loading="lazy"
-          alt={collection.name ?? ""}
-        />
+        <NftImage className="size-16" src={imageUrl} alt={collection.name ?? ""} />
         <div className="flex grow flex-col gap-2 overflow-hidden">
           <div className="truncate text-base font-bold">{collection.name}</div>
           <div>
@@ -164,6 +160,8 @@ const NftCollectionTileInner: FC<{ collection: NftCollection; data: NftData }> =
 
   const navigate = useNavigate()
   const handleClick = useCallback(() => {
+    // if more than one redirect to collection page
+    // otherwise open the modal for the only NFT
     navigate(`/portfolio/nfts/${collection.id}`)
   }, [collection.id, navigate])
 
@@ -174,10 +172,9 @@ const NftCollectionTileInner: FC<{ collection: NftCollection; data: NftData }> =
       className="text-body-secondary hover:text-body flex size-[22.2rem] flex-col items-center gap-4 overflow-hidden text-left"
     >
       <div className="w-full grow overflow-hidden">
-        <img
-          className="h-full w-full rounded-sm object-cover"
+        <NftImage
+          className="h-full w-full object-cover"
           src={imageUrl}
-          loading="lazy"
           alt={collection.name ?? ""}
         />
       </div>

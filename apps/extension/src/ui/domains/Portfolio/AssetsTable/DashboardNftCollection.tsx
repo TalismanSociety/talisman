@@ -4,16 +4,18 @@ import {
   ToolbarSortIcon,
   ToolbarTilesIcon,
 } from "@talismn/icons"
+import { ChainLogo } from "@ui/domains/Asset/ChainLogo"
 import { Fiat } from "@ui/domains/Asset/Fiat"
 import { useSetting } from "@ui/hooks/useSettings"
-import { NftCollection, NftData } from "extension-core"
+import { Nft, NftCollection, NftData } from "extension-core"
 import { FC, SVGProps, Suspense, useCallback, useMemo, useRef } from "react"
-import { useParams } from "react-router-dom"
+import { useNavigate, useParams } from "react-router-dom"
 import { useIntersection } from "react-use"
 
 import { NetworkPicker } from "../NetworkPicker"
+import { NftImage } from "../NftImage"
 import { NetworksLogoStack } from "./NetworksLogoStack"
-import { usePortfolioNfts } from "./usePortfolioNfts"
+import { usePortfolioNftCollection, usePortfolioNfts } from "./usePortfolioNfts"
 
 const ToolbarButton: FC<{ icon: FC<SVGProps<SVGSVGElement>>; onClick?: () => void }> = ({
   icon: Icon,
@@ -29,7 +31,6 @@ const ToolbarButton: FC<{ icon: FC<SVGProps<SVGSVGElement>>; onClick?: () => voi
 )
 
 export const DashboardNftCollection = () => {
-  const { collectionId } = useParams()
   const [viewMode, setViewMode] = useSetting("nftsViewMode")
 
   const handleViewModeClick = useCallback(
@@ -39,7 +40,6 @@ export const DashboardNftCollection = () => {
 
   return (
     <div>
-      <div>{collectionId}</div>
       <div className="flex w-full justify-between">
         <NetworkPicker />
         <div className="flex gap-4">
@@ -53,7 +53,7 @@ export const DashboardNftCollection = () => {
         </div>
       </div>
       <div className="mt-7">
-        <Suspense>{viewMode === "list" ? <NftCollectionsList /> : <NftCollectionsGrid />}</Suspense>
+        <Suspense>{viewMode === "list" ? <NftsList /> : <NftsGrid />}</Suspense>
       </div>
     </div>
   )
@@ -85,18 +85,19 @@ const NftCollectionRowInner: FC<{ collection: NftCollection; data: NftData }> = 
     return floorUsdValues.length ? Math.min(...floorUsdValues) : null
   }, [collection.marketplaces])
 
+  const navigate = useNavigate()
+  const handleClick = useCallback(() => {
+    navigate(`/portfolio/nfts/${collection.id}`)
+  }, [collection.id, navigate])
+
   return (
     <button
       type="button"
+      onClick={handleClick}
       className="bg-grey-900 hover:bg-grey-800 grid h-32 w-full grid-cols-3 items-center gap-4 rounded-sm px-8 text-left"
     >
       <div className="flex items-center gap-6 overflow-hidden">
-        <img
-          className="size-16 shrink-0 rounded-sm"
-          src={imageUrl}
-          loading="lazy"
-          alt={collection.name ?? ""}
-        />
+        <NftImage className="size-16" src={imageUrl} alt={collection.name ?? ""} />
         <div className="flex grow flex-col gap-2 overflow-hidden">
           <div className="truncate text-base font-bold">{collection.name}</div>
           <div>
@@ -126,7 +127,7 @@ const NftCollectionRow: FC<{ collection: NftCollection; data: NftData }> = (prop
   )
 }
 
-const NftCollectionsList: FC = () => {
+const NftsList: FC = () => {
   const data = usePortfolioNfts()
 
   return (
@@ -139,47 +140,40 @@ const NftCollectionsList: FC = () => {
   )
 }
 
-const NftCollectionTileInner: FC<{ collection: NftCollection; data: NftData }> = ({
-  collection,
-  data,
-}) => {
-  const nfts = useMemo(
-    () => data.nfts.filter((nft) => nft.collectionId === collection.id),
-    [collection.id, data.nfts]
-  )
-
+const NftTileInner: FC<{ collection: NftCollection; nft: Nft }> = ({ collection, nft }) => {
   const imageUrl = useMemo(() => {
-    return (
-      collection.imageUrl ??
-      nfts.map((nft) => nft.previews.small ?? nft.imageUrl).find((url) => !!url) ??
-      ""
-    )
-  }, [collection.imageUrl, nfts])
+    return nft.previews.small ?? nft.imageUrl
+  }, [nft.imageUrl, nft.previews.small])
 
-  const networkIds = useMemo(() => [...new Set(nfts.map((nft) => nft.evmNetworkId))], [nfts])
+  //const navigate = useNavigate()
+  const handleClick = useCallback(() => {
+    // // if more than one redirect to collection page
+    // // otherwise open the modal for the only NFT
+    // navigate(`/portfolio/nfts/${collection.id}`)
+  }, [])
 
   return (
     <button
       type="button"
+      onClick={handleClick}
       className="text-body-secondary hover:text-body flex size-[22.2rem] flex-col items-center gap-4 overflow-hidden text-left"
     >
       <div className="w-full grow overflow-hidden">
-        <img
-          className="h-full w-full rounded-sm object-cover"
+        <NftImage
+          className="h-full w-full object-cover"
           src={imageUrl}
-          loading="lazy"
           alt={collection.name ?? ""}
         />
       </div>
       <div className="flex w-full shrink-0 items-center gap-2 overflow-hidden">
-        <div className="grow truncate text-base">{collection.name}</div>
-        <NetworksLogoStack networkIds={networkIds} />
+        <div className="grow truncate text-base">{nft.name || `#TODO_TOKEN_ID`}</div>
+        <ChainLogo id={nft.evmNetworkId} />
       </div>
     </button>
   )
 }
 
-const NftCollectionTile: FC<{ collection: NftCollection; data: NftData }> = (props) => {
+const NftTile: FC<{ collection: NftCollection; nft: Nft }> = (props) => {
   const refContainer = useRef<HTMLDivElement>(null)
   const intersection = useIntersection(refContainer, {
     root: null,
@@ -188,19 +182,21 @@ const NftCollectionTile: FC<{ collection: NftCollection; data: NftData }> = (pro
 
   return (
     <div ref={refContainer} className="size-[22.2rem]">
-      {intersection?.isIntersecting ? <NftCollectionTileInner {...props} /> : null}
+      {intersection?.isIntersecting ? <NftTileInner {...props} /> : null}
     </div>
   )
 }
 
-const NftCollectionsGrid: FC = () => {
-  const data = usePortfolioNfts()
+const NftsGrid: FC = () => {
+  const { collectionId } = useParams()
+  const { collection, nfts } = usePortfolioNftCollection(collectionId)
 
   return (
     <div className="flex flex-wrap justify-between gap-8">
-      {data.collections.map((collection, i) => (
-        <NftCollectionTile key={`${collection.id}-${i}`} collection={collection} data={data} />
-      ))}
+      {!!collection &&
+        nfts.map((nft, i) => (
+          <NftTile key={`${collection.id}-TODO NFT ID-${i}`} collection={collection} nft={nft} />
+        ))}
     </div>
   )
 }

@@ -5,8 +5,8 @@ import { Navigate, Route, Routes, useSearchParams } from "react-router-dom"
 
 import { DashboardLayout } from "../../layout/DashboardLayout"
 import { PortfolioAsset } from "./PortfolioAsset"
-import { PortfolioAssets } from "./PortfolioAssets"
-import { PortfolioNftCollections } from "./PortfolioNftCollections"
+import { PortfolioHome } from "./PortfolioHome"
+import { PortfolioNftCollection } from "./PortfolioNftCollection"
 
 export const PortfolioRoutes = () => {
   const [searchParams, updateSearchParams] = useSearchParams()
@@ -26,13 +26,12 @@ export const PortfolioRoutes = () => {
     <DashboardLayout centered large className="min-w-[auto]">
       <PortfolioContainer>
         <Routes>
-          {/* To match popup structure, in case of expand */}
           <Route path="tokens/:symbol" element={<PortfolioAsset />} />
-          <Route path="tokens" element={<PortfolioAssets />} />
-          <Route path="nfts/:symbol" element={<PortfolioNftCollections />} />
-          <Route path="nfts" element={<PortfolioNftCollections />} />
+          <Route path="nfts/:collectionId" element={<PortfolioNftCollection />} />
+          {/* Sharing a single component for tokens & nfts to prevent stats & tabs to reset when switching tabs */}
+          <Route path="tokens" element={<PortfolioHome />} />
+          <Route path="nfts" element={<PortfolioHome />} />
           <Route path="*" element={<Navigate to="tokens" />} />
-          <Route path="/" element={<Navigate to="tokens" />} />
         </Routes>
       </PortfolioContainer>
     </DashboardLayout>
