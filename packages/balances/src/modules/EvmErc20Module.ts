@@ -9,7 +9,7 @@ import {
 } from "@talismn/chaindata-provider"
 import { hasOwnProperty, isEthereumAddress } from "@talismn/util"
 import { firstValueFrom, map } from "rxjs"
-import { PublicClient } from "viem"
+import { Address, PublicClient } from "viem"
 
 import { DefaultBalanceModule, NewBalanceModule } from "../BalanceModule"
 import log from "../log"
@@ -196,8 +196,20 @@ export const EvmErc20Module: NewBalanceModule<
       let zeroBalanceSubscriptionIntervalCounter = 0
 
       const evmNetworks = await chaindataProvider.evmNetworksById()
+      const ethAddressesByToken = Object.fromEntries(
+        Object.entries(addressesByToken)
+          .map(([tokenId, addresses]) => {
+            const ethAddresses = addresses.filter(isEthereumAddress)
+            if (ethAddresses.length === 0) return null
+            const token = tokens[tokenId]
+            const evmNetworkId = token.evmNetwork?.id
+            if (!evmNetworkId) return null
+            return [tokenId, ethAddresses]
+          })
+          .filter((x): x is [string, Address[]] => Boolean(x))
+      )
 
-      const fetchesPerNetwork = await prepareFetchParameters(addressesByToken, tokens)
+      const fetchesPerNetwork = await prepareFetchParameters(ethAddressesByToken, tokens)
 
       Object.entries(fetchesPerNetwork).forEach(([evmNetworkId, fetches]) => {
         fetches.forEach(({ address, token }) => {

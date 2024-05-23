@@ -120,17 +120,30 @@ export const EvmNativeModule: NewBalanceModule<
       const subscriptionInterval = 6_000 // 6_000ms == 6 seconds
       const initDelay = 500 // 500ms == 0.5 seconds
 
+      const tokens = await this.tokens
+      const ethAddressesByToken = Object.fromEntries(
+        Object.entries(addressesByToken)
+          .map(([tokenId, addresses]) => {
+            const ethAddresses = addresses.filter(isEthereumAddress)
+            if (ethAddresses.length === 0) return null
+            const token = tokens[tokenId]
+            const evmNetworkId = token.evmNetwork?.id
+            if (!evmNetworkId) return null
+            return [tokenId, ethAddresses] as [string, Address[]]
+          })
+          .filter((x): x is [string, Address[]] => Boolean(x))
+      )
+
       // for chains with a zero balance we only call fetchBalances once every 5 subscriptionIntervals
       // if subscriptionInterval is 6 seconds, this means we only poll chains with a zero balance every 30 seconds
       let zeroBalanceSubscriptionIntervalCounter = 0
 
       // setup initialising balances for all active evm networks
-      const activeEvmNetworkIds = Object.keys(addressesByToken).map(getEvmNetworkIdFromTokenId)
+      const activeEvmNetworkIds = Object.keys(ethAddressesByToken).map(getEvmNetworkIdFromTokenId)
       const initialisingBalances = new Set<string>(activeEvmNetworkIds)
       const positiveBalanceNetworks = new Set<string>(
         relevantInitialBalances.map((b) => b.evmNetworkId)
       )
-      const tokens = await this.tokens
 
       const poll = async () => {
         if (!subscriptionActive) return
@@ -139,7 +152,7 @@ export const EvmNativeModule: NewBalanceModule<
 
         try {
           // fetch balance for each network sequentially to prevent creating a big queue of http requests (browser can only handle 2 at a time)
-          for (const [tokenId, addresses] of Object.entries(addressesByToken)) {
+          for (const [tokenId, addresses] of Object.entries(ethAddressesByToken)) {
             const evmNetworkId = getEvmNetworkIdFromTokenId(tokenId)
 
             // a zero balance network is one that has initialised and does not have a positive balance
@@ -156,7 +169,6 @@ export const EvmNativeModule: NewBalanceModule<
             try {
               if (!chainConnectors.evm)
                 throw new Error(`This module requires an evm chain connector`)
-
               const balances = await fetchBalances(
                 chainConnectors.evm,
                 { [tokenId]: addresses },
@@ -243,7 +255,6 @@ const fetchBalances = async (
       const token = tokens[tokenId]
       const evmNetworkId = token.evmNetwork?.id
       if (!evmNetworkId) throw new Error(`Token ${token.id} has no evm network`)
-
       const publicClient = await evmChainConnector.getPublicClientForEvmNetwork(evmNetworkId)
 
       if (!publicClient)
@@ -298,6 +309,8 @@ async function getFreeBalances(
   addresses: Address[]
 ): Promise<(bigint | "error")[]> {
   const ethAddresses = addresses.filter(isEthereumAddress)
+  if (ethAddresses.length === 0) return []
+
   // if multicall is available, use it to save RPC rate limits
   if (publicClient.batch?.multicall && publicClient.chain?.contracts?.multicall3?.address) {
     try {
