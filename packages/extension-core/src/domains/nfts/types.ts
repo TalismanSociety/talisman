@@ -7,6 +7,11 @@ export type NftCollectionMarketplace = {
   name: string
   url: string
   floorUsd: number | null
+  floorTokens: {
+    plancks: number
+    symbol: string
+    decimals: number
+  } | null
 }
 
 export type NftProperty = {
@@ -24,6 +29,7 @@ export type NftCollection = {
   distinctOwners: number
   distinctNfts: number
   totalQuantity: number
+  evmNetworkIds: string[]
 }
 
 export type Nft = {

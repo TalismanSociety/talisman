@@ -1,4 +1,5 @@
 import { ChevronLeftIcon } from "@talismn/icons"
+import { Fiat } from "@ui/domains/Asset/Fiat"
 import { DashboardNftCollection } from "@ui/domains/Portfolio/AssetsTable/DashboardNftCollection"
 import { usePortfolioNfts } from "@ui/domains/Portfolio/AssetsTable/usePortfolioNfts"
 import { NftImage } from "@ui/domains/Portfolio/NftImage"
@@ -21,6 +22,11 @@ const CollectionStats: FC = () => {
     [collections, collectionId]
   )
 
+  const ownedNfts = useMemo(
+    () => nfts.filter((nft) => collection && nft.collectionId === collection.id),
+    [collection, nfts]
+  )
+
   const imageUrl = useMemo(() => {
     return (
       collection?.imageUrl ??
@@ -31,6 +37,14 @@ const CollectionStats: FC = () => {
       null
     )
   }, [collection, nfts])
+
+  const floorPrice = useMemo(() => {
+    const floorPrices = collection?.marketplaces
+      .map((marketplace) => marketplace.floorUsd)
+      .filter((floor): floor is number => typeof floor === "number")
+
+    return floorPrices?.length ? Math.min(...floorPrices) : null
+  }, [collection?.marketplaces])
 
   const handleBackBtnClick = useCallback(() => navigate("/portfolio/nfts"), [navigate])
   const { t } = useTranslation()
@@ -52,14 +66,16 @@ const CollectionStats: FC = () => {
         </div>
       </div>
       <GenericStatistics className="max-w-[40%]" title={t("Owned")}>
-        {/* TODO */}TODO
+        {/* TODO */}
+        {ownedNfts.length}
       </GenericStatistics>
       <GenericStatistics className="max-w-[40%]" title={t("Unique Holders")}>
         {/* TODO */}
         {collection?.distinctOwners ?? t("N/A")}
       </GenericStatistics>
       <GenericStatistics className="max-w-[40%]" title={t("Floor Price")}>
-        {/* TODO */}TODO
+        {/* TODO */}
+        {!!floorPrice && <Fiat amount={floorPrice} forceCurrency="usd" />}
       </GenericStatistics>
     </div>
   )

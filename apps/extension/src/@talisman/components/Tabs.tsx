@@ -1,6 +1,5 @@
 import { classNames } from "@talismn/util"
 import { CSSProperties, FC, useEffect, useRef, useState } from "react"
-import { useLocation } from "react-router-dom"
 
 export type TabDef = {
   value: string
@@ -15,7 +14,6 @@ export const Tabs: FC<{
   className?: string
 }> = ({ tabs, selected, className, onChange }) => {
   const refTabs = useRef<HTMLDivElement>(null)
-  const location = useLocation()
 
   const [indicatorStyle, setIndicatorStyle] = useState<CSSProperties>()
 
@@ -43,13 +41,13 @@ export const Tabs: FC<{
     }
 
     updateIndicator()
-  }, [location, setIndicatorStyle])
+  }, [selected, setIndicatorStyle])
 
   return (
     <div
       ref={refTabs}
       className={classNames(
-        "border-grey-700 relative mb-6 flex w-full gap-12 border-b",
+        "border-grey-700 text-md relative mb-6 flex h-14 w-full gap-12 border-b  font-bold",
         indicatorStyle ? "visible" : "invisible", // wait for indicator's style to be ready, prevents flickering
         className
       )}
@@ -60,7 +58,7 @@ export const Tabs: FC<{
           key={tab.value}
           onClick={() => onChange(tab.value)}
           className={classNames(
-            "text-body-secondary text-md -mb-0.5 flex h-14 select-none flex-col justify-between font-bold",
+            "text-body-secondary -mb-0.5 flex h-full select-none flex-col justify-between",
             tab.value === selected && "text-primary selected",
             tab.disabled && "text-body-disabled pointer-events-none cursor-default"
           )}

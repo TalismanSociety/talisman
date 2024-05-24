@@ -13,6 +13,7 @@ import { useIntersection } from "react-use"
 
 import { NetworkPicker } from "../NetworkPicker"
 import { NftImage } from "../NftImage"
+import { getPortfolioNftCollectionPreviewUrl } from "../Nfts/helpers"
 import { NetworksLogoStack } from "./NetworksLogoStack"
 import { usePortfolioNfts } from "./usePortfolioNfts"
 
@@ -68,12 +69,13 @@ const NftCollectionRowInner: FC<{ collection: NftCollection; data: NftData }> = 
   )
 
   const imageUrl = useMemo(() => {
-    return (
-      collection.imageUrl ??
-      nfts.map((nft) => nft.previews.small ?? nft.imageUrl).find((url) => !!url) ??
-      ""
-    )
-  }, [collection.imageUrl, nfts])
+    return getPortfolioNftCollectionPreviewUrl(collection, nfts)
+    // return (
+    //   collection.imageUrl ??
+    //   nfts.map((nft) => nft.previews.small ?? nft.imageUrl).find((url) => !!url) ??
+    //   ""
+    // )
+  }, [collection, nfts])
 
   const networkIds = useMemo(() => [...new Set(nfts.map((nft) => nft.evmNetworkId))], [nfts])
 
@@ -149,12 +151,13 @@ const NftCollectionTileInner: FC<{ collection: NftCollection; data: NftData }> =
   )
 
   const imageUrl = useMemo(() => {
-    return (
-      collection.imageUrl ??
-      nfts.map((nft) => nft.previews.small ?? nft.imageUrl).find((url) => !!url) ??
-      ""
-    )
-  }, [collection.imageUrl, nfts])
+    return getPortfolioNftCollectionPreviewUrl(collection, nfts)
+    // return (
+    //   collection.imageUrl ??
+    //   nfts.map((nft) => nft.previews.small ?? nft.imageUrl).find((url) => !!url) ??
+    //   ""
+    // )
+  }, [collection, nfts])
 
   const networkIds = useMemo(() => [...new Set(nfts.map((nft) => nft.evmNetworkId))], [nfts])
 
@@ -194,7 +197,7 @@ const NftCollectionTile: FC<{ collection: NftCollection; data: NftData }> = (pro
   })
 
   return (
-    <div ref={refContainer} className="size-[22.2rem]">
+    <div ref={refContainer} className="size-[22rem]">
       {intersection?.isIntersecting ? <NftCollectionTileInner {...props} /> : null}
     </div>
   )
@@ -204,7 +207,7 @@ const NftCollectionsGrid: FC = () => {
   const data = usePortfolioNfts()
 
   return (
-    <div className="flex flex-wrap justify-between gap-8">
+    <div className="flex flex-wrap gap-[2.5rem]">
       {data.collections.map((collection, i) => (
         <NftCollectionTile key={`${collection.id}-${i}`} collection={collection} data={data} />
       ))}

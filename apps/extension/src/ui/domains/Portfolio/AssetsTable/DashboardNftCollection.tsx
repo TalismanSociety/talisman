@@ -5,17 +5,17 @@ import {
   ToolbarTilesIcon,
 } from "@talismn/icons"
 import { ChainLogo } from "@ui/domains/Asset/ChainLogo"
-import { Fiat } from "@ui/domains/Asset/Fiat"
 import { useSetting } from "@ui/hooks/useSettings"
-import { Nft, NftCollection, NftData } from "extension-core"
-import { FC, SVGProps, Suspense, useCallback, useMemo, useRef } from "react"
-import { useNavigate, useParams } from "react-router-dom"
+import format from "date-fns/format"
+import { Nft, NftCollection } from "extension-core"
+import { FC, SVGProps, Suspense, useCallback, useMemo, useRef, useState } from "react"
+import { useParams } from "react-router-dom"
 import { useIntersection } from "react-use"
 
 import { NetworkPicker } from "../NetworkPicker"
+import { NftDialog } from "../NftDialog"
 import { NftImage } from "../NftImage"
-import { NetworksLogoStack } from "./NetworksLogoStack"
-import { usePortfolioNftCollection, usePortfolioNfts } from "./usePortfolioNfts"
+import { usePortfolioNftCollection } from "./usePortfolioNfts"
 
 const ToolbarButton: FC<{ icon: FC<SVGProps<SVGSVGElement>>; onClick?: () => void }> = ({
   icon: Icon,
@@ -59,61 +59,42 @@ export const DashboardNftCollection = () => {
   )
 }
 
-const NftCollectionRowInner: FC<{ collection: NftCollection; data: NftData }> = ({
+const NftRowInner: FC<{ collection: NftCollection; nft: Nft; onClick: () => void }> = ({
   collection,
-  data,
+  nft,
+  onClick,
 }) => {
-  const nfts = useMemo(
-    () => data.nfts.filter((nft) => nft.collectionId === collection.id),
-    [collection.id, data.nfts]
-  )
-
   const imageUrl = useMemo(() => {
-    return (
-      collection.imageUrl ??
-      nfts.map((nft) => nft.previews.small ?? nft.imageUrl).find((url) => !!url) ??
-      ""
-    )
-  }, [collection.imageUrl, nfts])
-
-  const networkIds = useMemo(() => [...new Set(nfts.map((nft) => nft.evmNetworkId))], [nfts])
-
-  const floorUsdValue = useMemo(() => {
-    const floorUsdValues = collection.marketplaces
-      .filter((c) => c.floorUsd !== null)
-      .map((c) => c.floorUsd!)
-    return floorUsdValues.length ? Math.min(...floorUsdValues) : null
-  }, [collection.marketplaces])
-
-  const navigate = useNavigate()
-  const handleClick = useCallback(() => {
-    navigate(`/portfolio/nfts/${collection.id}`)
-  }, [collection.id, navigate])
+    return nft.previews.small ?? nft.imageUrl
+  }, [nft.imageUrl, nft.previews.small])
 
   return (
     <button
       type="button"
-      onClick={handleClick}
+      onClick={onClick}
       className="bg-grey-900 hover:bg-grey-800 grid h-32 w-full grid-cols-3 items-center gap-4 rounded-sm px-8 text-left"
     >
       <div className="flex items-center gap-6 overflow-hidden">
         <NftImage className="size-16" src={imageUrl} alt={collection.name ?? ""} />
         <div className="flex grow flex-col gap-2 overflow-hidden">
-          <div className="truncate text-base font-bold">{collection.name}</div>
-          <div>
-            <NetworksLogoStack networkIds={networkIds} />
-          </div>
+          <div className="truncate text-base font-bold">{nft.name}</div>
+          {/* <div>
+            <ChainLogo id={nft.evmNetworkId} />
+          </div> */}
         </div>
       </div>
       <div className="text-right">
-        {floorUsdValue !== null ? <Fiat amount={floorUsdValue} forceCurrency="usd" /> : null}
+        {nft.name}
+        {/* {floorUsdValue !== null ? <Fiat amount={floorUsdValue} forceCurrency="usd" /> : null} */}
       </div>
-      <div className="text-right">{nfts.length}</div>
+      <div className="text-right">
+        {nft.acquiredAt ? format(new Date(nft.acquiredAt), "P") : null}
+      </div>
     </button>
   )
 }
 
-const NftCollectionRow: FC<{ collection: NftCollection; data: NftData }> = (props) => {
+const NftRow: FC<{ collection: NftCollection; nft: Nft; onClick: () => void }> = (props) => {
   const refContainer = useRef<HTMLDivElement>(null)
   const intersection = useIntersection(refContainer, {
     root: null,
@@ -122,40 +103,52 @@ const NftCollectionRow: FC<{ collection: NftCollection; data: NftData }> = (prop
 
   return (
     <div ref={refContainer} className="h-32">
-      {intersection?.isIntersecting ? <NftCollectionRowInner {...props} /> : null}
+      {intersection?.isIntersecting ? <NftRowInner {...props} /> : null}
     </div>
   )
 }
 
 const NftsList: FC = () => {
-  const data = usePortfolioNfts()
+  const { collectionId } = useParams()
+  const { collection, nfts } = usePortfolioNftCollection(collectionId)
+
+  const [dialogData, setDialogData] = useState<{ nft: Nft; collection: NftCollection }>()
+  const handleClick = useCallback(
+    (nft: Nft) => () => {
+      if (collection) setDialogData({ nft, collection })
+    },
+    [collection]
+  )
 
   return (
     <div className="flex flex-col gap-5">
-      <div className="text-primary-500">{status}</div>
-      {data.collections.map((collection, i) => (
-        <NftCollectionRow key={`${collection.id}-${i}`} collection={collection} data={data} />
-      ))}
+      {!!collection &&
+        nfts.map((nft, i) => (
+          <NftRow
+            key={`${collection.id}-TODO NFT ID-${i}`}
+            collection={collection}
+            nft={nft}
+            onClick={handleClick(nft)}
+          />
+        ))}
+      <NftDialog data={dialogData} />
     </div>
   )
 }
 
-const NftTileInner: FC<{ collection: NftCollection; nft: Nft }> = ({ collection, nft }) => {
+const NftTileInner: FC<{ collection: NftCollection; nft: Nft; onClick: () => void }> = ({
+  collection,
+  nft,
+  onClick,
+}) => {
   const imageUrl = useMemo(() => {
     return nft.previews.small ?? nft.imageUrl
   }, [nft.imageUrl, nft.previews.small])
 
-  //const navigate = useNavigate()
-  const handleClick = useCallback(() => {
-    // // if more than one redirect to collection page
-    // // otherwise open the modal for the only NFT
-    // navigate(`/portfolio/nfts/${collection.id}`)
-  }, [])
-
   return (
     <button
       type="button"
-      onClick={handleClick}
+      onClick={onClick}
       className="text-body-secondary hover:text-body flex size-[22.2rem] flex-col items-center gap-4 overflow-hidden text-left"
     >
       <div className="w-full grow overflow-hidden">
@@ -173,7 +166,7 @@ const NftTileInner: FC<{ collection: NftCollection; nft: Nft }> = ({ collection,
   )
 }
 
-const NftTile: FC<{ collection: NftCollection; nft: Nft }> = (props) => {
+const NftTile: FC<{ collection: NftCollection; nft: Nft; onClick: () => void }> = (props) => {
   const refContainer = useRef<HTMLDivElement>(null)
   const intersection = useIntersection(refContainer, {
     root: null,
@@ -191,12 +184,29 @@ const NftsGrid: FC = () => {
   const { collectionId } = useParams()
   const { collection, nfts } = usePortfolioNftCollection(collectionId)
 
+  const [dialogData, setDialogData] = useState<{ nft: Nft; collection: NftCollection }>()
+  const handleClick = useCallback(
+    (nft: Nft) => () => {
+      //      console.log({ nft, collection })
+      if (collection) setDialogData({ nft, collection })
+    },
+    [collection]
+  )
+
+  // console.log({ dialogData })
+
   return (
-    <div className="flex flex-wrap justify-between gap-8">
+    <div className="flex flex-wrap justify-stretch gap-8">
       {!!collection &&
         nfts.map((nft, i) => (
-          <NftTile key={`${collection.id}-TODO NFT ID-${i}`} collection={collection} nft={nft} />
+          <NftTile
+            key={`${collection.id}-TODO NFT ID-${i}`}
+            collection={collection}
+            nft={nft}
+            onClick={handleClick(nft)}
+          />
         ))}
+      <NftDialog data={dialogData} />
     </div>
   )
 }
