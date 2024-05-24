@@ -138,7 +138,7 @@ const balancesSubscriptionAtomEffect = atomEffect((get) => {
     if (abort.signal.aborted) return
 
     // persist data every thirty seconds
-    balancesObservable.pipe(debounceTime(30000)).subscribe((balancesUpdate) => {
+    balancesObservable.pipe(debounceTime(10000)).subscribe((balancesUpdate) => {
       persistBackend.persist(Object.values(balancesUpdate))
     })
 
@@ -146,7 +146,7 @@ const balancesSubscriptionAtomEffect = atomEffect((get) => {
       if (abort.signal.aborted) return
 
       const updatesWithIds = new Balances(balancesUpdates)
-      const existing = await get(balancesObservableAtom)
+      const existing = balancesObservable.value
 
       // update initialising set here - before filtering out zero balances
       // while this may include stale balances, the important thing is that the balance is no longer "initialising"
