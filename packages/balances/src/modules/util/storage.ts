@@ -20,7 +20,7 @@ export const configureStore = (dbTable: Table = db.balancesBlob) => ({
 })
 
 export const compress = (balances: StoredBalanceJson[]) => pako.deflate(JSON.stringify(balances))
-export const decompress = (data: Uint8Array | ArrayBuffer) => {
+export const decompress = (data: Uint8Array | ArrayBuffer): StoredBalanceJson[] => {
   const decompressed = pako.inflate(data, { to: "string" })
   return JSON.parse(decompressed)
 }

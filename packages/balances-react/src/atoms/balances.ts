@@ -163,7 +163,7 @@ const balancesSubscriptionAtomEffect = atomEffect((get) => {
 
             const hasChanged = !isEqual(existingB, newB.toJSON())
             // Collect balances now confirmed to be zero separately, so they can be filtered out from the main set
-            if (hasChanged && isZero) newlyZeroBalances.push(newB.id)
+            if (existingB && hasChanged && isZero) newlyZeroBalances.push(newB.id)
             // Keep changed balances, which are not known zeros
             return hasChanged && !isZero
           })
@@ -171,24 +171,17 @@ const balancesSubscriptionAtomEffect = atomEffect((get) => {
       )
 
       if (Object.keys(changedBalances).length === 0 && newlyZeroBalances.length === 0) return
-      else {
-        const updateObs = balancesObservable.pipe(
-          map((val) => {
-            // Todo prevent balance modules from sending live 0 balances, for now filter them here
-            const nonZeroBalances =
-              newlyZeroBalances.length > 0
-                ? Object.fromEntries(
-                    Object.entries(val).filter(([id]) => !newlyZeroBalances.includes(id))
-                  )
-                : val
-            return { ...nonZeroBalances, ...changedBalances }
-          })
-        )
 
-        firstValueFrom(updateObs).then((v) => {
-          if (Object.values(v).length) balancesObservable.next(v)
-        })
-      }
+      const nonZeroBalances =
+        newlyZeroBalances.length > 0
+          ? Object.fromEntries(
+              Object.entries(existing).filter(([id]) => !newlyZeroBalances.includes(id))
+            )
+          : existing
+      const newBalancesState = { ...nonZeroBalances, ...changedBalances }
+
+      if (Object.keys(newBalancesState).length === 0) return
+      balancesObservable.next(newBalancesState)
     }
 
     const deleteBalances = async (balancesFilter: (balance: Balance) => boolean) => {
@@ -324,11 +317,12 @@ const balancesSubscriptionAtomEffect = atomEffect((get) => {
               const staleObservable = balancesObservable.pipe(
                 map((val) =>
                   Object.values(val)
-                    .filter(({ tokenId, address, source, chainId, evmNetworkId }) => {
+                    .filter((balance) => {
+                      const { tokenId, address, source } = balance
                       const chainComparison = error.chainId
-                        ? error.chainId === chainId
+                        ? "chainId" in balance && error.chainId === balance.chainId
                         : error.evmNetworkId
-                        ? error.evmNetworkId === evmNetworkId
+                        ? "evmNetworkId" in balance && error.evmNetworkId === balance.evmNetworkId
                         : true
                       return (
                         chainComparison &&
