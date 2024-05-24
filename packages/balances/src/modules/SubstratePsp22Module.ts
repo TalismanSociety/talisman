@@ -188,7 +188,7 @@ export const SubPsp22Module: NewBalanceModule<
     },
 
     // TODO: Don't create empty subscriptions
-    async subscribeBalances(addressesByToken, callback) {
+    async subscribeBalances({ addressesByToken }, callback) {
       let subscriptionActive = true
       const subscriptionInterval = 12_000 // 12_000ms == 12 seconds
       const initDelay = 3_000 // 3000ms == 3 seconds

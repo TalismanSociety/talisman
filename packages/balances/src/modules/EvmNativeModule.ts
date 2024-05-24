@@ -62,9 +62,7 @@ export const EvmNativeModule: NewBalanceModule<
   EvmNativeChainMeta,
   EvmNativeModuleConfig
 > = (hydrate) => {
-  const { chainConnectors, chaindataProvider, initialBalances } = hydrate
-  const relevantInitialBalances: EvmNativeBalance[] =
-    initialBalances?.filter((b): b is EvmNativeBalance => b.source === "evm-native") ?? []
+  const { chainConnectors, chaindataProvider } = hydrate
 
   return {
     ...DefaultBalanceModule("evm-native"),
@@ -115,7 +113,7 @@ export const EvmNativeModule: NewBalanceModule<
       return { [nativeToken.id]: nativeToken }
     },
 
-    async subscribeBalances(addressesByToken, callback) {
+    async subscribeBalances({ addressesByToken, initialBalances }, callback) {
       let subscriptionActive = true
       const subscriptionInterval = 6_000 // 6_000ms == 6 seconds
       const initDelay = 500 // 500ms == 0.5 seconds
@@ -142,7 +140,7 @@ export const EvmNativeModule: NewBalanceModule<
       const activeEvmNetworkIds = Object.keys(ethAddressesByToken).map(getEvmNetworkIdFromTokenId)
       const initialisingBalances = new Set<string>(activeEvmNetworkIds)
       const positiveBalanceNetworks = new Set<string>(
-        relevantInitialBalances.map((b) => b.evmNetworkId)
+        (initialBalances as EvmNativeBalance[])?.map((b) => b.evmNetworkId)
       )
 
       const poll = async () => {

@@ -69,7 +69,7 @@ export async function balances<
 ): Promise<Balances | UnsubscribeFn> {
   // subscription request
   if (callback !== undefined)
-    return await balanceModule.subscribeBalances(addressesByToken, callback)
+    return await balanceModule.subscribeBalances({ addressesByToken }, callback)
 
   // one-off request
   return await balanceModule.fetchBalances(addressesByToken)

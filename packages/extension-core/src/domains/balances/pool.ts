@@ -31,7 +31,7 @@ import { debounceTime, map } from "rxjs/operators"
 import Browser from "webextension-polyfill"
 
 import { unsubscribe } from "../../handlers/subscriptions"
-import { balanceModules, getBalanceModules } from "../../rpcs/balance-modules"
+import { balanceModules } from "../../rpcs/balance-modules"
 import { chaindataProvider } from "../../rpcs/chaindata"
 import { Addresses, AddressesByChain } from "../../types/base"
 import { awaitKeyringLoaded } from "../../util/awaitKeyringLoaded"
@@ -121,10 +121,6 @@ abstract class BalancePool {
   #pool: BehaviorSubject<Record<string, BalanceJson>> = new BehaviorSubject({})
   #initialising: Set<string> = new Set()
 
-  // we initialise this property with the default balance modules which do not know about initial balances
-  // in the constructor, we will replace it with the balance modules which are hydrated with initial balances
-  #balanceModules: ReturnType<typeof getBalanceModules> = balanceModules
-
   /**
    * A map of accounts to query balances for, in the format:
    *
@@ -160,21 +156,31 @@ abstract class BalancePool {
     // if we already have subscriptions - start polling
     if (this.#subscribers.observed) this.openSubscriptions()
 
-    // Hydrate pool from indexedDB if retrieve = true
+    // Hydrate pool from indexedDB if persist = true
     const retrieveFn = persist
       ? retrieveData
       : () => new Promise<StoredBalanceJson[]>((resolve) => resolve([]))
 
-    retrieveFn().then((balances) => {
-      const initialBalances = balances.map((b) => ({ ...b, status: "cache" } as BalanceJson))
-      this.setPool(initialBalances)
-      this.#balanceModules = getBalanceModules(initialBalances)
-    })
+    retrieveFn()
+      .then((balances) => {
+        const initialBalances = balances.map((b) => ({ ...b, status: "cache" } as BalanceJson))
+        this.setPool(initialBalances)
+      })
+      .catch((e) => {
+        log.error("Failed to retrieve balances from indexedDB", e)
+      })
 
     // Persist pool to indexedDB every 1 minute
     setInterval(() => {
       if (this.#subscribers.observed) this.persist()
     }, 60_000)
+    // Persist pool to indexedDB after 10 seconds of no updates
+    this.#pool.pipe(
+      debounceTime(10_000),
+      map(() => {
+        this.persist()
+      })
+    )
   }
 
   /**
@@ -251,8 +257,11 @@ abstract class BalancePool {
         ...omit(b, "status"),
       })
     )
-
-    persistData(balancesToPersist)
+    try {
+      persistData(balancesToPersist)
+    } catch (e) {
+      log.error("Failed to persist balances in pool", e)
+    }
   }
 
   get balances() {
@@ -341,7 +350,7 @@ abstract class BalancePool {
     }
 
     const tokenType = token.type
-    const balanceModule = this.#balanceModules.find(({ type }) => type === token.type)
+    const balanceModule = balanceModules.find(({ type }) => type === token.type)
     if (!balanceModule) {
       const error = new Error(`Failed to fetch balance: no module with type ${tokenType}`)
       Sentry.captureException(error)
@@ -451,7 +460,7 @@ abstract class BalancePool {
       if (!tokenIds.has(balance.tokenId)) return true
 
       // remove balance if module doesn't exist
-      if (!this.#balanceModules.find((module) => module.type === balance.source)) return true
+      if (!balanceModules.find((module) => module.type === balance.source)) return true
 
       // keep balance
       return false
@@ -533,7 +542,7 @@ abstract class BalancePool {
       Object.values(existingBalances).map((b) => `${b.tokenId}:${b.address}`)
     )
 
-    for (const balanceModule of this.#balanceModules) {
+    for (const balanceModule of balanceModules) {
       // some modules returns their initialising status in the subscribeBalances callback
       // so we don't need to check for it here
       // Todo: upgrade all balance modules to this pattern and then remove this logic
@@ -569,9 +578,17 @@ abstract class BalancePool {
       })
     }, 30_000)
 
-    const closeSubscriptionCallbacks = this.#balanceModules.map((balanceModule) =>
-      balanceModule.subscribeBalances(
-        subscriptionParameters[balanceModule.type] ?? {},
+    const currentBalances = Object.values(this.balances)
+    const closeSubscriptionCallbacks = balanceModules.map((balanceModule) => {
+      const initialModuleBalances = currentBalances
+        .filter((b) => b.source === balanceModule.type)
+        .map((b) => ({ ...b, status: "initializing" } as BalanceJson))
+
+      return balanceModule.subscribeBalances(
+        {
+          addressesByToken: subscriptionParameters[balanceModule.type] ?? {},
+          initialBalances: initialModuleBalances,
+        },
         (error, result) => {
           // ignore old subscriptions which have been told to close but aren't closed yet
           if (this.#subscriptionsGeneration !== generation) return
@@ -624,7 +641,7 @@ abstract class BalancePool {
           }
         }
       )
-    )
+    })
 
     this.#closeSubscriptionCallbacks = this.#closeSubscriptionCallbacks.concat(
       closeSubscriptionCallbacks
@@ -706,7 +723,7 @@ class KeyringBalancePool extends BalancePool {
   }
 
   async getSubscriptionParameters() {
-    const addresses = await firstValueFrom(this.addresses)
+    const addressesGenesisHashes = await firstValueFrom(this.addresses)
 
     const addressesByTokenByModule: Record<string, AddressesByToken<Token>> = {}
     this.tokens
@@ -720,20 +737,19 @@ class KeyringBalancePool extends BalancePool {
         if (!addressesByTokenByModule[token.type]) addressesByTokenByModule[token.type] = {}
         const chain = token.chain?.id ? this.chains[token.chain?.id] : undefined
 
-        addressesByTokenByModule[token.type][token.id] = Object.keys(addresses)
+        addressesByTokenByModule[token.type][token.id] = Object.entries(addressesGenesisHashes)
           .filter(
             // filter out substrate addresses which have a genesis hash that doesn't match the genesisHash of the token's chain
-            (address) =>
-              !token.chain ||
-              !addresses[address] ||
-              addresses[address]?.includes(chain?.genesisHash ?? "")
+            ([, genesisHashes]) =>
+              !token.chain || (genesisHashes && genesisHashes.includes(chain?.genesisHash ?? ""))
           )
-          .filter((address) => {
+          .filter(([address]) => {
             // for each address, fetch balances only from compatible chains
             return isEthereumAddress(address)
               ? token.evmNetwork?.id || chain?.account === "secp256k1"
               : token.chain?.id && chain?.account !== "secp256k1"
           })
+          .map(([address]) => address)
       })
     return addressesByTokenByModule
   }

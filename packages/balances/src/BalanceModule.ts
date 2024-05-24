@@ -28,7 +28,6 @@ export type ChainConnectors = { substrate?: ChainConnector; evm?: ChainConnector
 export type Hydrate = {
   chainConnectors: ChainConnectors
   chaindataProvider: ChaindataProvider
-  initialBalances?: BalanceJson[]
 }
 
 export type NewBalanceModule<
@@ -167,7 +166,13 @@ interface BalanceModuleCommon<
    * If subscriptions are not possible, this function should poll at some reasonable interval.
    */
   subscribeBalances(
-    addressesByToken: AddressesByToken<TTokenType>,
+    {
+      addressesByToken,
+      initialBalances,
+    }: {
+      addressesByToken: AddressesByToken<TTokenType>
+      initialBalances?: BalanceJson[]
+    },
     callback: SubscriptionCallback<Balances | SubscriptionResultWithStatus>
   ): Promise<UnsubscribeFn>
 

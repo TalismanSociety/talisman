@@ -186,14 +186,9 @@ export const SubNativeModule: NewBalanceModule<
   SubNativeModuleConfig,
   SubNativeTransferParams
 > = (hydrate) => {
-  const { chainConnectors, chaindataProvider, initialBalances } = hydrate
+  const { chainConnectors, chaindataProvider } = hydrate
   const chainConnector = chainConnectors.substrate
   assert(chainConnector, "This module requires a substrate chain connector")
-  const relevantInitialBalances = Object.fromEntries(
-    initialBalances
-      ?.filter((b): b is SubNativeBalance => b.source === "substrate-native")
-      .map((b) => [getBalanceId(b), b]) ?? []
-  )
 
   const { getOrCreateTypeRegistry } = createTypeRegistryCache()
 
@@ -343,12 +338,14 @@ export const SubNativeModule: NewBalanceModule<
       return { [nativeToken.id]: nativeToken }
     },
 
-    async subscribeBalances(addressesByToken, callback) {
+    async subscribeBalances({ addressesByToken, initialBalances }, callback) {
       assert(chainConnectors.substrate, "This module requires a substrate chain connector")
 
       // full record of balances for this module
       const subNativeBalances = new BehaviorSubject<Record<string, SubNativeBalance>>(
-        relevantInitialBalances
+        Object.fromEntries(
+          (initialBalances as SubNativeBalance[])?.map((b) => [getBalanceId(b), b]) ?? []
+        )
       )
       // tokens which have a known positive balance
       const positiveBalanceTokens = subNativeBalances.pipe(
@@ -356,7 +353,7 @@ export const SubNativeModule: NewBalanceModule<
         share()
       )
 
-      // tokens that will be subscribed to
+      // tokens that will be subscribed to, simply a slice of the positive balance tokens of size MAX_SUBSCRIPTION_SIZE
       const subscriptionTokens = positiveBalanceTokens.pipe(
         map((tokens) => tokens.sort(sortChains).slice(0, MAX_SUBSCRIPTION_SIZE))
       )

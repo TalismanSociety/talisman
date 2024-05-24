@@ -183,7 +183,7 @@ export const EvmErc20Module: NewBalanceModule<
       return chainTokens
     },
 
-    async subscribeBalances(addressesByToken, callback) {
+    async subscribeBalances({ addressesByToken }, callback) {
       let subscriptionActive = true
       const subscriptionInterval = 6_000 // 6_000ms == 6 seconds
       const initDelay = 1_500 // 1_500ms == 1.5 seconds

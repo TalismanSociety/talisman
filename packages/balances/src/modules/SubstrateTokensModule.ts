@@ -182,7 +182,7 @@ export const SubTokensModule: NewBalanceModule<
     },
 
     // TODO: Don't create empty subscriptions
-    async subscribeBalances(addressesByToken, callback) {
+    async subscribeBalances({ addressesByToken }, callback) {
       const queries = await buildQueries(
         chaindataProvider,
         getOrCreateTypeRegistry,
