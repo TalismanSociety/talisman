@@ -266,34 +266,32 @@ export const EvmErc20Module: NewBalanceModule<
                 }
               })
 
-              const positiveBalances = results
-                .map((balance) => {
-                  // update initialising balance state
-                  const token = tokens[balance.tokenId] as EvmErc20Token
-                  const balanceId = getErc20BalanceId({
-                    address: balance.address,
-                    token,
-                    evmNetworkId,
-                  })
-                  if (initialisingBalances.has(balanceId)) {
-                    initialisingBalances.delete(balanceId)
-                  }
-                  return balance
+              const resultBalances = results.map((balance) => {
+                // update initialising balance state
+                const token = tokens[balance.tokenId] as EvmErc20Token
+                const balanceId = getErc20BalanceId({
+                  address: balance.address,
+                  token,
+                  evmNetworkId,
                 })
-                .filter((balance) => {
-                  // remove zero balances from the list of positive balances,
-                  // and record that this network has a positive balance so we poll more often
-                  if (BigInt(balance.value) > 0n) {
-                    positiveBalanceNetworks.add(evmNetworkId)
-                    return balance
-                  }
-                  return false
-                })
+                if (initialisingBalances.has(balanceId)) {
+                  initialisingBalances.delete(balanceId)
+                }
 
-              if (positiveBalances.length > 0) {
+                // record that this network has a positive balance so we poll more often,
+                // and remove zero balances from the list of positive balance networks
+                if (BigInt(balance.value) > 0n) positiveBalanceNetworks.add(evmNetworkId)
+                else positiveBalanceNetworks.delete(evmNetworkId)
+
+                // both positive and zero balances must be returned so that the balance pool
+                // can handle newly zeroed balances
+                return balance
+              })
+
+              if (resultBalances.length > 0) {
                 callback(null, {
                   status: initialisingBalances.size > 0 ? "initialising" : "live",
-                  data: positiveBalances,
+                  data: resultBalances,
                 })
               }
             } catch (err) {

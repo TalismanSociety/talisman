@@ -281,7 +281,8 @@ abstract class BalancePool {
 
           const hasChanged = !isEqual(existingB, newB.toJSON())
           // Collect balances now confirmed to be zero separately, so they can be filtered out from the main set
-          if (hasChanged && isZero) newlyZeroBalances.push(newB.id)
+          if (existingB && hasChanged && isZero) newlyZeroBalances.push(newB.id)
+
           // Keep changed balances, which are not known zeros
           return hasChanged && !isZero
         })
@@ -289,24 +290,17 @@ abstract class BalancePool {
     )
 
     if (Object.keys(changedBalances).length === 0 && newlyZeroBalances.length === 0) return
-    else {
-      const updateObs = this.#pool.pipe(
-        map((val) => {
-          // Todo prevent balance modules from sending live 0 balances, for now filter them here
-          const nonZeroBalances =
-            newlyZeroBalances.length > 0
-              ? Object.fromEntries(
-                  Object.entries(val).filter(([id]) => !newlyZeroBalances.includes(id))
-                )
-              : val
-          return { ...nonZeroBalances, ...changedBalances }
-        })
-      )
 
-      firstValueFrom(updateObs).then((v) => {
-        if (Object.values(v).length) this.#pool.next(v)
-      })
-    }
+    const nonZeroBalances =
+      newlyZeroBalances.length > 0
+        ? Object.fromEntries(
+            Object.entries(existing).filter(([id]) => !newlyZeroBalances.includes(id))
+          )
+        : existing
+    const newBalancesState = { ...nonZeroBalances, ...changedBalances }
+
+    if (Object.keys(newBalancesState).length === 0) return
+    this.#pool.next(newBalancesState)
   }
 
   private setPool(balances: BalanceJson[]) {

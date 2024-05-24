@@ -377,26 +377,24 @@ async function buildQueries(
           if (isEthereumAddress(address) && chain.account !== "secp256k1")
             free = reserved = miscFrozen = feeFrozen = 0n
 
-          if (free > 0n)
-            balanceJson.values.push({ type: "free", label: "free", amount: free.toString() })
-          if (reserved > 0n)
-            balanceJson.values.push({
-              type: "reserved",
-              label: "reserved",
-              amount: reserved.toString(),
-            })
-          if (miscFrozen > 0n)
-            balanceJson.values.push({
-              type: "locked",
-              label: "misc",
-              amount: miscFrozen.toString(),
-            })
-          if (feeFrozen > 0n)
-            balanceJson.values.push({
-              type: "locked",
-              label: "fees",
-              amount: feeFrozen.toString(),
-            })
+          // even if these values are 0, we still need to add them to the balanceJson.values array
+          // so that the balance pool can handle newly zeroed balances
+          balanceJson.values.push({ type: "free", label: "free", amount: free.toString() })
+          balanceJson.values.push({
+            type: "reserved",
+            label: "reserved",
+            amount: reserved.toString(),
+          })
+          balanceJson.values.push({
+            type: "locked",
+            label: "misc",
+            amount: miscFrozen.toString(),
+          })
+          balanceJson.values.push({
+            type: "locked",
+            label: "fees",
+            amount: feeFrozen.toString(),
+          })
 
           return balanceJson
         }
@@ -422,8 +420,6 @@ async function buildQueries(
             storageDecoder && change !== null ? storageDecoder.decode($.decodeHex(change)) : null
           if (decoded) {
             locksQueryLocks = decoded
-              // eslint-disable-next-line @typescript-eslint/no-explicit-any
-              .filter((lock: any) => lock?.amount > 0n)
               // eslint-disable-next-line @typescript-eslint/no-explicit-any
               .map?.((lock: any) => ({
                 type: "locked",
@@ -461,8 +457,6 @@ async function buildQueries(
             storageDecoder && change !== null ? storageDecoder.decode($.decodeHex(change)) : null
           if (decoded) {
             freezesQueryLocks = decoded
-              // eslint-disable-next-line @typescript-eslint/no-explicit-any
-              .filter?.((lock: any) => lock?.amount > 0n)
               // eslint-disable-next-line @typescript-eslint/no-explicit-any
               .map?.((lock: any) => ({
                 type: "locked",

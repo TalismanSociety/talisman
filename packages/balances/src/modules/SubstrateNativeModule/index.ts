@@ -89,12 +89,16 @@ const mergeBalances = (balance1: SubNativeBalance | undefined, balance2: SubNati
     getBalanceId(balance1) === getBalanceId(balance2),
     "Balances with different IDs should not be merged"
   )
-  const valuesMap = Object.fromEntries(balance1.values.map((value) => [getValueId(value), value]))
-  for (const value of balance2.values) {
-    // whether it exists or not, we can update or create it like this
-    valuesMap[getValueId(value)] = value
+  const existingValues = Object.fromEntries(
+    balance1.values.map((value) => [getValueId(value), value])
+  )
+  const newValues = Object.fromEntries(balance2.values.map((value) => [getValueId(value), value]))
+
+  const merged = {
+    ...balance1,
+    status: balance2.status,
+    values: Object.values({ ...existingValues, ...newValues }),
   }
-  const merged = { ...balance1, status: balance2.status, values: Object.values(valuesMap) }
   return merged
 }
 
@@ -406,11 +410,13 @@ export const SubNativeModule: NewBalanceModule<
         if (result) {
           const currentBalances = subNativeBalances.getValue()
           // first merge any balances with the same id within the result
-          const accumulatedBalances = result.reduce<Record<string, SubNativeBalance>>((acc, b) => {
-            const bId = getBalanceId(b)
-            acc[bId] = mergeBalances(acc[bId], b)
-            return acc
-          }, {})
+          const accumulatedBalances = result
+            .filter((b) => b.values.length > 0)
+            .reduce<Record<string, SubNativeBalance>>((acc, b) => {
+              const bId = getBalanceId(b)
+              acc[bId] = mergeBalances(acc[bId], b)
+              return acc
+            }, {})
 
           // then merge these with the current balances
           const mergedBalances: Record<string, SubNativeBalance> = {}
@@ -981,8 +987,6 @@ async function subscribeNompoolStaking(
               0n
             )
 
-            if (amount === 0n && unbondingAmount === 0n) return null
-
             return {
               source: "substrate-native",
               status: "live",
@@ -1302,11 +1306,8 @@ async function subscribeCrowdloans(
 
     const subscription = contributionsByAddress$.subscribe({
       next: (contributionsByAddress) => {
-        const balances: SubNativeBalance[] = Array.from(contributionsByAddress)
-          .filter(([, contributions]) => {
-            Array.from(contributions).filter(({ amount }) => BigInt(amount) > 0n)
-          })
-          .map(([address, contributions]) => {
+        const balances: SubNativeBalance[] = Array.from(contributionsByAddress).map(
+          ([address, contributions]) => {
             return {
               source: "substrate-native",
               status: "live",
@@ -1322,7 +1323,8 @@ async function subscribeCrowdloans(
                 meta: { paraId },
               })),
             }
-          })
+          }
+        )
         if (balances.length > 0) callback(null, balances)
       },
       error: (error) => callback(error),
