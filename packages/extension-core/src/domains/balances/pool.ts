@@ -580,9 +580,7 @@ abstract class BalancePool {
 
     const currentBalances = Object.values(this.balances)
     const closeSubscriptionCallbacks = balanceModules.map((balanceModule) => {
-      const initialModuleBalances = currentBalances
-        .filter((b) => b.source === balanceModule.type)
-        .map((b) => ({ ...b, status: "initializing" } as BalanceJson))
+      const initialModuleBalances = currentBalances.filter((b) => b.source === balanceModule.type)
 
       return balanceModule.subscribeBalances(
         {
@@ -600,29 +598,24 @@ abstract class BalancePool {
           ) {
             const addressesByModuleToken = subscriptionParameters[balanceModule.type] ?? {}
             // set status to stale for balances matching the error
-            const staleObservable = this.#pool.pipe(
-              map((val) =>
-                Object.values(val)
-                  .filter(({ tokenId, address, source, ...rest }) => {
-                    const locationId = "chainId" in rest ? rest.chainId : rest.evmNetworkId
-                    const chainComparison = error.chainId
-                      ? error.chainId === locationId
-                      : error.evmNetworkId
-                      ? error.evmNetworkId === locationId
-                      : true
-                    return (
-                      chainComparison &&
-                      addressesByModuleToken[tokenId]?.includes(address) &&
-                      source === balanceModule.type
-                    )
-                  })
-                  .map((balance) => ({ ...balance, status: "stale" } as BalanceJson))
-              )
-            )
+            const currentBalances = Object.values(this.balances)
+            const staleBalances = Object.values(currentBalances)
+              .filter(({ tokenId, address, source, ...rest }) => {
+                const locationId = "chainId" in rest ? rest.chainId : rest.evmNetworkId
+                const chainComparison = error.chainId
+                  ? error.chainId === locationId
+                  : error.evmNetworkId
+                  ? error.evmNetworkId === locationId
+                  : true
+                return (
+                  chainComparison &&
+                  addressesByModuleToken[tokenId]?.includes(address) &&
+                  source === balanceModule.type
+                )
+              })
+              .map((balance) => ({ ...balance, status: "stale" } as BalanceJson))
 
-            firstValueFrom(staleObservable).then((v) => {
-              if (v.length) this.updatePool(v)
-            })
+            if (staleBalances.length) this.updatePool(staleBalances)
           } else if (error) {
             log.error("Balances Pool unknown error", error)
           }
