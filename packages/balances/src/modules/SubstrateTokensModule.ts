@@ -415,20 +415,21 @@ async function buildQueries(
                 "free" | "reserved" | "frozen",
                 bigint
               >)
-            : null
+            : {
+                free: 0n,
+                reserved: 0n,
+                frozen: 0n,
+              }
 
-        if (balance === null) return null
-        const { free, reserved, frozen } = balance
+        const free = (balance?.free ?? 0n).toString()
+        const reserved = (balance?.reserved ?? 0n).toString()
+        const frozen = (balance?.frozen ?? 0n).toString()
 
-        const balanceValues: Array<AmountWithLabel<string>> = []
-        if (free && free > 0n)
-          balanceValues.push({ type: "free", label: "free", amount: free.toString() })
-        if (reserved && reserved > 0n)
-          balanceValues.push({ type: "reserved", label: "reserved", amount: reserved.toString() })
-        if (frozen && frozen > 0n)
-          balanceValues.push({ type: "locked", label: "frozen", amount: frozen.toString() })
-
-        if (balanceValues.length === 0) return null
+        const balanceValues: Array<AmountWithLabel<string>> = [
+          { type: "free", label: "free", amount: free.toString() },
+          { type: "reserved", label: "reserved", amount: reserved.toString() },
+          { type: "locked", label: "frozen", amount: frozen.toString() },
+        ]
 
         return {
           source: "substrate-tokens",
