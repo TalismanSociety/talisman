@@ -10,7 +10,6 @@ import { Err, Ok, Result } from "ts-results"
 
 import { NotificationType, createNotification } from "../../notifications"
 import { chainConnector } from "../../rpcs/chain-connector"
-import { getTypeRegistry } from "../../util/getTypeRegistry"
 import { settingsStore } from "../app/store.settings"
 import { Chain, ChainId } from "../chains/types"
 import {
@@ -109,15 +108,12 @@ const getExtrinsincResult = async (
 
 const watchExtrinsicStatus = async (
   chainId: ChainId,
+  registry: TypeRegistry,
   extrinsicHash: string,
   cb: ExtrinsicStatusChangeHandler
 ) => {
-  const { registry, metadataRpc } = await getTypeRegistry(chainId)
   let foundInBlockHash: Hash
   let timeout: NodeJS.Timeout | null = null
-
-  if (!metadataRpc)
-    throw new Error(`Missing metadataRpc for ${chainId}, cannot watch extrinsic status`)
 
   // keep track of subscriptions state because it raises errors when calling unsubscribe multiple times
   const subscriptions = {
@@ -267,7 +263,7 @@ export const watchSubstrateTransaction = async (
 
   await addSubstrateTransaction(hash, payload, { siteUrl, ...transferInfo })
 
-  await watchExtrinsicStatus(chain.id, hash, async (result, blockNumber, extIndex) => {
+  await watchExtrinsicStatus(chain.id, registry, hash, async (result, blockNumber, extIndex) => {
     const type: NotificationType = result === "included" ? "submitted" : result
     const url = `${chain.subscanUrl}extrinsic/${blockNumber}-${extIndex}`
 
