@@ -5,14 +5,16 @@ import { blake2Concat, decodeAnyAddress, firstThenDebounce, isEthereumAddress } 
 import { liveQuery } from "dexie"
 import isEqual from "lodash/isEqual"
 import {
-  ReplaySubject,
+  Observable,
   Subscription,
   combineLatestWith,
   distinctUntilChanged,
   filter,
   firstValueFrom,
+  from,
   map,
   pipe,
+  shareReplay,
 } from "rxjs"
 
 import log from "../../log"
@@ -102,7 +104,7 @@ const AccountInfoOverrides: { [key: ChainId]: string } = {
   "nftmart": RegularAccountInfoFallback,
 }
 
-let commonMetadataObservable: ReplaySubject<Map<string, MiniMetadata>> | null = null
+let commonMetadataObservable: Observable<Map<string, MiniMetadata>> | null = null
 
 export class QueryCache {
   private balanceQueryCache = new Map<QueryKey, RpcStateQuery<SubNativeBalance>[]>()
@@ -116,16 +118,17 @@ export class QueryCache {
     this.getOrCreateTypeRegistry = getOrCreateTypeRegistry
 
     if (!commonMetadataObservable) {
-      commonMetadataObservable = new ReplaySubject<Map<string, MiniMetadata>>(1)
-
-      liveQuery(() =>
-        balancesDb.miniMetadatas.where("source").equals("substrate-native").toArray()
-      ).subscribe((miniMetadatas) => {
-        commonMetadataObservable &&
-          commonMetadataObservable.next(
+      commonMetadataObservable = from(
+        liveQuery(() =>
+          balancesDb.miniMetadatas.where("source").equals("substrate-native").toArray()
+        )
+      ).pipe(
+        map(
+          (miniMetadatas) =>
             new Map(miniMetadatas.map((miniMetadata) => [miniMetadata.id, miniMetadata]))
-          )
-      })
+        ),
+        shareReplay({ bufferSize: 1, refCount: true })
+      )
     }
 
     this.metadataSub = commonMetadataObservable
