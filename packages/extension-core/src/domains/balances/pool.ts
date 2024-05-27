@@ -242,6 +242,8 @@ abstract class BalancePool {
           // - user opens popup and opens dashboard from it, which closes the popup
           if (!this.#subscribers.observed) {
             this.closeSubscriptions()
+            // set all balances to cached
+            this.updatePool(Object.values(this.balances).map((b) => ({ ...b, status: "cache" })))
             this.persist()
           }
         }, 5_000)
@@ -565,17 +567,11 @@ abstract class BalancePool {
       if (this.#subscriptionsGeneration !== generation) return
       this.#initialising.clear()
       // set all currently cached balances to stale
-      const staleObservable = this.#pool.pipe(
-        map((val) =>
-          Object.values(val)
-            .filter(({ status }) => status === "cache")
-            .map((balance) => ({ ...balance, status: "stale" } as BalanceJson))
-        )
-      )
+      const staleBalances = Object.values(this.balances)
+        .filter(({ status }) => status === "cache")
+        .map((balance) => ({ ...balance, status: "stale" } as BalanceJson))
 
-      firstValueFrom(staleObservable).then((v) => {
-        if (v.length) this.updatePool(v)
-      })
+      if (staleBalances.length) this.updatePool(staleBalances)
     }, 30_000)
 
     const currentBalances = Object.values(this.balances)
@@ -734,7 +730,7 @@ class KeyringBalancePool extends BalancePool {
           .filter(
             // filter out substrate addresses which have a genesis hash that doesn't match the genesisHash of the token's chain
             ([, genesisHashes]) =>
-              !token.chain || (genesisHashes && genesisHashes.includes(chain?.genesisHash ?? ""))
+              !token.chain || !genesisHashes || genesisHashes.includes(chain?.genesisHash ?? "")
           )
           .filter(([address]) => {
             // for each address, fetch balances only from compatible chains

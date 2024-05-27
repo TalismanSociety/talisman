@@ -377,7 +377,7 @@ export const SubNativeModule: NewBalanceModule<
         })
       }, 30_000)
 
-      const _callbackSub = subNativeBalances.subscribe({
+      const _callbackSub = subNativeBalances.pipe(debounceTime(100)).subscribe({
         next: (balances) => {
           callback(null, {
             status: initialisingBalances.size > 0 ? "initialising" : "live",
@@ -407,7 +407,7 @@ export const SubNativeModule: NewBalanceModule<
         if (result) {
           const currentBalances = subNativeBalances.getValue()
           // first merge any balances with the same id within the result
-          const accumulatedBalances = result
+          const accumulatedUpdates = result
             .filter((b) => b.values.length > 0)
             .reduce<Record<string, SubNativeBalance>>((acc, b) => {
               const bId = getBalanceId(b)
@@ -417,7 +417,7 @@ export const SubNativeModule: NewBalanceModule<
 
           // then merge these with the current balances
           const mergedBalances: Record<string, SubNativeBalance> = {}
-          Object.entries(accumulatedBalances).forEach(([bId, b]) => {
+          Object.entries(accumulatedUpdates).forEach(([bId, b]) => {
             // merge the values from the new balance into the existing balance, if there is one
             mergedBalances[bId] = mergeBalances(currentBalances[bId], b)
 
