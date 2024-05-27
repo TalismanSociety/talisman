@@ -153,8 +153,8 @@ abstract class BalancePool {
     // subscribe this store to all of the inputs it depends on
     this.#cleanupSubs = [this.initializeChaindataSubscription()]
 
-    // if we already have subscriptions - start polling
-    if (this.#subscribers.observed) this.openSubscriptions()
+    // if we already have subscriptions - start polling (after chaindata init)
+    if (this.#subscribers.observed) this.hasInitialised.then(() => this.openSubscriptions())
 
     // Hydrate pool from indexedDB if persist = true
     const retrieveFn = persist
