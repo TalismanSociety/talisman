@@ -112,12 +112,8 @@ const watchExtrinsicStatus = async (
   extrinsicHash: string,
   cb: ExtrinsicStatusChangeHandler
 ) => {
-  //const { registry, metadataRpc } = await getTypeRegistry(chainId)
   let foundInBlockHash: Hash
   let timeout: NodeJS.Timeout | null = null
-
-  // if (!metadataRpc)
-  //   throw new Error(`Missing metadataRpc for ${chainId}, cannot watch extrinsic status`)
 
   // keep track of subscriptions state because it raises errors when calling unsubscribe multiple times
   const subscriptions = {
