@@ -69,10 +69,6 @@ export const DefaultBalanceModule = <
     return type
   },
 
-  get tokens() {
-    return Promise.resolve({})
-  },
-
   async fetchSubstrateChainMeta() {
     return null
   },
@@ -158,8 +154,6 @@ interface BalanceModuleCommon<
 > {
   get type(): TModuleType
 
-  /** Returns tokens of the correct type for each balance module */
-  get tokens(): Promise<Record<string, TTokenType>>
   /**
    * Subscribe to balances for this module with optional filtering.
    *

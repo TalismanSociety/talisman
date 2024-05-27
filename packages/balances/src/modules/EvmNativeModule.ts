@@ -64,6 +64,13 @@ export const EvmNativeModule: NewBalanceModule<
 > = (hydrate) => {
   const { chainConnectors, chaindataProvider } = hydrate
 
+  const getModuleTokens = async () => {
+    return (await chaindataProvider.tokensByIdForType("evm-native")) as Record<
+      string,
+      EvmNativeToken | CustomEvmNativeToken
+    >
+  }
+
   return {
     ...DefaultBalanceModule("evm-native"),
 
@@ -118,7 +125,7 @@ export const EvmNativeModule: NewBalanceModule<
       const subscriptionInterval = 6_000 // 6_000ms == 6 seconds
       const initDelay = 500 // 500ms == 0.5 seconds
 
-      const tokens = await this.tokens
+      const tokens = await getModuleTokens()
       const ethAddressesByToken = Object.fromEntries(
         Object.entries(addressesByToken)
           .map(([tokenId, addresses]) => {
@@ -214,7 +221,7 @@ export const EvmNativeModule: NewBalanceModule<
 
     async fetchBalances(addressesByToken) {
       if (!chainConnectors.evm) throw new Error(`This module requires an evm chain connector`)
-      const tokens = await this.tokens
+      const tokens = await getModuleTokens()
       const balanceResults = await fetchBalances(chainConnectors.evm, addressesByToken, tokens)
 
       const pureBalances = balanceResults

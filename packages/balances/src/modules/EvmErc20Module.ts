@@ -8,7 +8,6 @@ import {
   githubTokenLogoUrl,
 } from "@talismn/chaindata-provider"
 import { hasOwnProperty, isEthereumAddress } from "@talismn/util"
-import { firstValueFrom, map } from "rxjs"
 import { Address, PublicClient } from "viem"
 
 import { DefaultBalanceModule, NewBalanceModule } from "../BalanceModule"
@@ -81,15 +80,6 @@ export const EvmErc20Module: NewBalanceModule<
   const { chainConnectors, chaindataProvider } = hydrate
   const chainConnector = chainConnectors.evm
   assert(chainConnector, "This module requires an evm chain connector")
-  const moduleTokens = chaindataProvider.tokensObservable.pipe(
-    map((tokens) =>
-      Object.fromEntries(
-        tokens
-          .filter((token): token is EvmErc20Token => token.type === moduleType)
-          .map((t) => [t.id, t])
-      )
-    )
-  )
 
   const prepareFetchParameters = async (
     addressesByToken: AddressesByToken<EvmErc20Token>,
@@ -117,11 +107,12 @@ export const EvmErc20Module: NewBalanceModule<
     )
   }
 
+  const getModuleTokens = async () => {
+    return (await chaindataProvider.tokensByIdForType("evm-erc20")) as Record<string, EvmErc20Token>
+  }
+
   return {
     ...DefaultBalanceModule(moduleType),
-    get tokens() {
-      return firstValueFrom(moduleTokens)
-    },
 
     /**
      * This method is currently executed on [a squid](https://github.com/TalismanSociety/chaindata-squid/blob/0ee02818bf5caa7362e3f3664e55ef05ec8df078/src/steps/updateEvmNetworksFromGithub.ts#L280-L284).
@@ -183,13 +174,15 @@ export const EvmErc20Module: NewBalanceModule<
       return chainTokens
     },
 
-    async subscribeBalances({ addressesByToken }, callback) {
+    async subscribeBalances({ addressesByToken, initialBalances }, callback) {
       let subscriptionActive = true
       const subscriptionInterval = 6_000 // 6_000ms == 6 seconds
       const initDelay = 1_500 // 1_500ms == 1.5 seconds
       const initialisingBalances = new Set<string>()
-      const positiveBalanceNetworks = new Set<string>()
-      const tokens = await this.tokens
+      const positiveBalanceNetworks = new Set<string>(
+        (initialBalances as EvmErc20Balance[])?.map((b) => b.evmNetworkId)
+      )
+      const tokens = await getModuleTokens()
 
       // for chains with a zero balance we only call fetchBalances once every 5 subscriptionIntervals
       // if subscriptionInterval is 6 seconds, this means we only poll chains with a zero balance every 30 seconds
@@ -314,7 +307,7 @@ export const EvmErc20Module: NewBalanceModule<
 
     async fetchBalances(addressesByToken) {
       if (!chainConnectors.evm) throw new Error(`This module requires an evm chain connector`)
-      const tokens = await this.tokens
+      const tokens = await getModuleTokens()
       const fetchesPerNetwork = await prepareFetchParameters(addressesByToken, tokens)
       const balances = await fetchBalances(chainConnectors.evm, fetchesPerNetwork)
       return new Balances(balances.results)

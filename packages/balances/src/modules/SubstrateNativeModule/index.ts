@@ -194,6 +194,13 @@ export const SubNativeModule: NewBalanceModule<
 
   const queryCache = new QueryCache(chaindataProvider, getOrCreateTypeRegistry)
 
+  const getModuleTokens = async () => {
+    return (await chaindataProvider.tokensByIdForType("substrate-native")) as Record<
+      string,
+      SubNativeToken
+    >
+  }
+
   return {
     ...DefaultBalanceModule("substrate-native"),
 
@@ -499,7 +506,7 @@ export const SubNativeModule: NewBalanceModule<
           if (error instanceof ChainConnectionError) {
             // coerce ChainConnection errors into SubNativeBalance errors
             const errorChainId = (error as ChainConnectionError).chainId
-            Object.entries(await this.tokens)
+            Object.entries(await getModuleTokens())
               .filter(([, token]) => token.chain?.id === errorChainId)
               .forEach(([tokenId]) => {
                 const wrappedError = new SubNativeBalanceError(
