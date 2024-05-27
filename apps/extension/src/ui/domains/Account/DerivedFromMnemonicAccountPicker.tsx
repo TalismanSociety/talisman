@@ -96,7 +96,7 @@ const useDerivedAccounts = (
         )
 
         const isBalanceLoading =
-          accountBalances.each.some((b) => b.status === "initializing") ||
+          accountBalances.each.some((b) => b.status === "cache") ||
           balances.status === "initialising"
 
         return {

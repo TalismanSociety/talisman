@@ -93,7 +93,7 @@ const useLedgerEthereumAccounts = (
           (b) => convertAddress(b.address, null) === convertAddress(acc.address, null)
         )
         const isBalanceLoading =
-          accountBalances.each.some((b) => b.status === "initializing") ||
+          accountBalances.each.some((b) => b.status === "cache") ||
           balances.status === "initialising"
 
         return {

@@ -72,7 +72,7 @@ const useAccountsBalances = (pairs: KeyringPair[] = []) => {
       const individualBalances = allBalances.balances.find({ address })
       const isLoading =
         !individualBalances.count ||
-        individualBalances.each.some((b) => b.status === "initializing") ||
+        individualBalances.each.some((b) => b.status === "cache") ||
         allBalances.status === "initialising"
       const balances = new Balances(individualBalances)
 

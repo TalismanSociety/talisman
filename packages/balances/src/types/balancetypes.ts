@@ -39,12 +39,11 @@ export type BalanceJsonList = Record<string, BalanceJson>
 export type BalanceStatus =
   // balance is subscribed to the on-chain value and up to date
   | "live"
-  // balance was retrieved from the chain but is no longer subscribed
+  // balance was retrieved from the chain and the stored value is being displayed.
+  // This balance is currently awaiting updates from the chain.
   | "cache"
   // balance was retrieved from the chain but we're unable to create a new subscription
   | "stale"
-  // balance has never been retrieved yet
-  | "initializing"
 
 type IBalanceBase = {
   /** The module that this balance was retrieved by */
