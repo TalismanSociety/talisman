@@ -24,6 +24,7 @@ export const usePortfolioProvisioning = () => {
   // sync atom to maintain
   const [{ isProvisioned }, setGlobalData] = useAtom(portfolioGlobalDataAtom)
 
+  const setSearch = useSetAtom(portfolioSearchAtom)
   const setNetworkFilter = useSetAtom(networkFilterAtom)
   const setAccount = useSetAtom(portfolioAccountAtom)
 
@@ -51,8 +52,9 @@ export const usePortfolioProvisioning = () => {
     // clear filter after unmount
     return () => {
       setNetworkFilter(undefined)
+      setSearch("")
     }
-  }, [setNetworkFilter])
+  }, [setNetworkFilter, setSearch])
 
   return isProvisioned && isProvisioningHookMounted
 }
@@ -69,4 +71,9 @@ export const usePortfolio = () => {
   }, [])
 
   return { ...portfolio, setNetworkFilter, setSearch }
+}
+
+export const usePortfolioSearch = () => {
+  const [search, setSearch] = useAtom(portfolioSearchAtom)
+  return { search, setSearch }
 }

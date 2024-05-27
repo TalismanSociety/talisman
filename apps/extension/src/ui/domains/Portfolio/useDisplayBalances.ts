@@ -7,7 +7,7 @@ import { portfolioAccountAtom, portfolioAtom } from "@ui/atoms"
 import { useSelectedAccount } from "@ui/domains/Portfolio/useSelectedAccount"
 import { atom, useAtomValue } from "jotai"
 import { atomFamily } from "jotai/utils"
-import { useDeferredValue, useMemo } from "react"
+import { useMemo } from "react"
 
 // TODO: default tokens should be controlled from chaindata
 const shouldDisplayBalance = (account: AccountJsonAny | undefined, balances: Balances) => {
@@ -38,13 +38,21 @@ const shouldDisplayBalance = (account: AccountJsonAny | undefined, balances: Bal
   }
 }
 
-export const portfolioDisplayBalancesAtomFamily = atomFamily((filter: "all" | "network") =>
-  atom((get) => {
-    const { networkBalances, allBalances } = get(portfolioAtom)
-    const account = get(portfolioAccountAtom)
-    const balances = filter === "all" ? allBalances : networkBalances
-    return networkBalances.find(shouldDisplayBalance(account, balances))
-  })
+export const portfolioDisplayBalancesAtomFamily = atomFamily(
+  (filter: "all" | "network" | "search") =>
+    atom((get) => {
+      const { networkBalances, allBalances, searchBalances } = get(portfolioAtom)
+      const account = get(portfolioAccountAtom)
+
+      switch (filter) {
+        case "all":
+          return networkBalances.find(shouldDisplayBalance(account, allBalances))
+        case "network":
+          return networkBalances.find(shouldDisplayBalance(account, networkBalances))
+        case "search":
+          return searchBalances.find(shouldDisplayBalance(account, searchBalances))
+      }
+    })
 )
 
 /**
@@ -63,7 +71,7 @@ export const useDisplayBalances = (balances: Balances) => {
 // }
 
 export const usePortfolioDisplayBalances = (filter: "all" | "network") => {
-  return useDeferredValue(useAtomValue(portfolioDisplayBalancesAtomFamily(filter)))
+  return useAtomValue(portfolioDisplayBalancesAtomFamily(filter))
   // const { networkBalances } = usePortfolio()
   // return useDisplayBalances(networkBalances)
 }

@@ -1,60 +1,21 @@
-import {
-  ToolbarFilterIcon,
-  ToolbarListIcon,
-  ToolbarSortIcon,
-  ToolbarTilesIcon,
-} from "@talismn/icons"
 import { ChainLogo } from "@ui/domains/Asset/ChainLogo"
 import { useSetting } from "@ui/hooks/useSettings"
 import format from "date-fns/format"
 import { Nft, NftCollection } from "extension-core"
-import { FC, SVGProps, Suspense, useCallback, useMemo, useRef, useState } from "react"
+import { FC, Suspense, useCallback, useMemo, useRef, useState } from "react"
 import { useParams } from "react-router-dom"
 import { useIntersection } from "react-use"
 
-import { NetworkPicker } from "../NetworkPicker"
 import { NftDialog } from "../NftDialog"
 import { NftImage } from "../NftImage"
 import { usePortfolioNftCollection } from "./usePortfolioNfts"
 
-const ToolbarButton: FC<{ icon: FC<SVGProps<SVGSVGElement>>; onClick?: () => void }> = ({
-  icon: Icon,
-  onClick,
-}) => (
-  <button
-    type="button"
-    onClick={onClick}
-    className="bg-grey-900 hover:bg-grey-800 text-body-secondary flex size-[3.6rem] items-center justify-center rounded-sm"
-  >
-    <Icon />
-  </button>
-)
-
 export const DashboardNftCollection = () => {
-  const [viewMode, setViewMode] = useSetting("nftsViewMode")
-
-  const handleViewModeClick = useCallback(
-    () => setViewMode((prev) => (prev === "list" ? "grid" : "list")),
-    [setViewMode]
-  )
+  const [viewMode] = useSetting("nftsViewMode")
 
   return (
-    <div>
-      <div className="flex w-full justify-between">
-        <NetworkPicker />
-        <div className="flex gap-4">
-          <ToolbarButton icon={ToolbarSortIcon} />
-          <ToolbarButton
-            icon={viewMode === "list" ? ToolbarTilesIcon : ToolbarListIcon}
-            onClick={handleViewModeClick}
-          />
-          <ToolbarButton icon={ToolbarListIcon} />
-          <ToolbarButton icon={ToolbarFilterIcon} />
-        </div>
-      </div>
-      <div className="mt-7">
-        <Suspense>{viewMode === "list" ? <NftsList /> : <NftsGrid />}</Suspense>
-      </div>
+    <div className="mt-7">
+      <Suspense>{viewMode === "list" ? <NftsList /> : <NftsGrid />}</Suspense>
     </div>
   )
 }
@@ -78,15 +39,9 @@ const NftRowInner: FC<{ collection: NftCollection; nft: Nft; onClick: () => void
         <NftImage className="size-16" src={imageUrl} alt={collection.name ?? ""} />
         <div className="flex grow flex-col gap-2 overflow-hidden">
           <div className="truncate text-base font-bold">{nft.name}</div>
-          {/* <div>
-            <ChainLogo id={nft.evmNetworkId} />
-          </div> */}
         </div>
       </div>
-      <div className="text-right">
-        {nft.name}
-        {/* {floorUsdValue !== null ? <Fiat amount={floorUsdValue} forceCurrency="usd" /> : null} */}
-      </div>
+      <div className="text-right">{nft.name}</div>
       <div className="text-right">
         {nft.acquiredAt ? format(new Date(nft.acquiredAt), "P") : null}
       </div>
@@ -187,13 +142,10 @@ const NftsGrid: FC = () => {
   const [dialogData, setDialogData] = useState<{ nft: Nft; collection: NftCollection }>()
   const handleClick = useCallback(
     (nft: Nft) => () => {
-      //      console.log({ nft, collection })
       if (collection) setDialogData({ nft, collection })
     },
     [collection]
   )
-
-  // console.log({ dialogData })
 
   return (
     <div className="flex flex-wrap justify-stretch gap-8">

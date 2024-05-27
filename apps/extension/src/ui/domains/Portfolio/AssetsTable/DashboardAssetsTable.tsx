@@ -2,7 +2,6 @@ import { classNames } from "@talismn/util"
 import { FC } from "react"
 import { useTranslation } from "react-i18next"
 
-import { NetworkPicker } from "../NetworkPicker"
 import { usePortfolio } from "../usePortfolio"
 import { useSelectedAccount } from "../useSelectedAccount"
 import { AssetRow } from "./DashboardAssetRow"
@@ -42,7 +41,7 @@ export const DashboardAssetsTable = () => {
   const { isInitializing } = usePortfolio()
   const { account } = useSelectedAccount()
   // group by token (symbol)
-  const { symbolBalances } = usePortfolioSymbolBalancesByFilter("network")
+  const { symbolBalances } = usePortfolioSymbolBalancesByFilter("search")
 
   if (!symbolBalances.length && !isInitializing) {
     return (
@@ -54,7 +53,7 @@ export const DashboardAssetsTable = () => {
 
   return (
     <div className="text-body-secondary min-w-[45rem] text-left text-base">
-      <NetworkPicker />
+      {/* <NetworkPicker /> */}
 
       <div className="text-body-disabled my-5 mt-7 grid grid-cols-[40%_30%_30%] text-sm font-normal">
         <div className="pl-8">{t("Asset")}</div>

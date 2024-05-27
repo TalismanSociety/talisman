@@ -13,6 +13,7 @@ import {
   tokensArrayAtomFamily,
 } from "./chaindata"
 import { settingsAtomFamily } from "./settings"
+import { atomWithDebounce } from "./utils/atomWithDebounce"
 
 export type NetworkOption = {
   id: string // here we'll merge all ids together
@@ -134,11 +135,11 @@ const getFilteredBalances = ({
   networkFilter?: NetworkOption
   allBalances: Balances
   hydrate: HydrateDb
-  search: string
+  search?: string
 }) => {
   if (!networkFilter && !search) return allBalances
   const { chainId, evmNetworkId } = networkFilter ?? {}
-  const lowerSearch = search.toLowerCase()
+  const lowerSearch = search?.toLowerCase()
   const filtered = allBalances.sorted
     .filter(
       (b) =>
@@ -160,8 +161,6 @@ const getFilteredBalances = ({
 export const portfolioAccountAtom = atom<AccountJsonAny | undefined>(undefined)
 
 export const networkFilterAtom = atom<NetworkOption | undefined>(undefined)
-
-export const portfolioSearchAtom = atom<string>("")
 
 // the async atom, whose value must be copied in the sync atom
 export const portfolioGlobalDataAsyncAtom = atom<Promise<PortfolioGlobalData>>(async (get) => {
@@ -197,7 +196,8 @@ export const portfolioGlobalDataAtom = atom<PortfolioGlobalData>({
   isProvisioned: false,
 })
 
-export const portfolioAtom = atom((get) => {
+// recomputes only if a filter (account, network) is changed
+const portfolioBaseAtom = atom((get) => {
   const {
     hydrate,
     tokens,
@@ -207,14 +207,13 @@ export const portfolioAtom = atom((get) => {
     portfolioBalances,
   } = get(portfolioGlobalDataAtom)
   const networkFilter = get(networkFilterAtom)
-  const search = get(portfolioSearchAtom)
   const account = get(portfolioAccountAtom)
 
   const allBalances = account
     ? allAccountsBalances.find({ address: account.address })
     : portfolioBalances
 
-  const networkBalances = getFilteredBalances({ networkFilter, search, allBalances, hydrate })
+  const networkBalances = getFilteredBalances({ networkFilter, allBalances, hydrate })
   const accountType = getAccountType(account)
   const networks = getNetworkOptions({
     tokens,
@@ -237,5 +236,28 @@ export const portfolioAtom = atom((get) => {
     accountType,
     networks,
     isInitializing,
+  }
+})
+
+export const {
+  //currentValueAtom: portfolioSearchAtom,
+  //clearTimeoutAtom: clearPortfolioSearchTimeoutAtom,
+  debouncedValueAtom: portfolioSearchAtom,
+  //isDebouncingAtom: isPortfolioSearchDebouncingAtom,
+} = atomWithDebounce<string>("")
+
+// recomputes on each search change
+export const portfolioAtom = atom((get) => {
+  const search = get(portfolioSearchAtom)
+  const portfolio = get(portfolioBaseAtom)
+  const searchBalances = getFilteredBalances({
+    allBalances: portfolio.networkBalances,
+    hydrate: portfolio.hydrate,
+    search: (search as string) ?? "",
+  })
+
+  return {
+    ...portfolio,
+    searchBalances,
   }
 })

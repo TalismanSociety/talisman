@@ -1,60 +1,57 @@
-import {
-  ToolbarFilterIcon,
-  ToolbarListIcon,
-  ToolbarSortIcon,
-  ToolbarTilesIcon,
-} from "@talismn/icons"
 import { Fiat } from "@ui/domains/Asset/Fiat"
 import { useSetting } from "@ui/hooks/useSettings"
 import { NftCollection, NftData } from "extension-core"
-import { FC, SVGProps, Suspense, useCallback, useMemo, useRef } from "react"
+import { FC, Suspense, useCallback, useMemo, useRef } from "react"
 import { useNavigate } from "react-router-dom"
 import { useIntersection } from "react-use"
 
-import { NetworkPicker } from "../NetworkPicker"
 import { NftImage } from "../NftImage"
 import { getPortfolioNftCollectionPreviewUrl } from "../Nfts/helpers"
+import { usePortfolioSearch } from "../usePortfolio"
 import { NetworksLogoStack } from "./NetworksLogoStack"
 import { usePortfolioNfts } from "./usePortfolioNfts"
 
-const ToolbarButton: FC<{ icon: FC<SVGProps<SVGSVGElement>>; onClick?: () => void }> = ({
-  icon: Icon,
-  onClick,
-}) => (
-  <button
-    type="button"
-    onClick={onClick}
-    className="bg-grey-900 hover:bg-grey-800 text-body-secondary flex size-[3.6rem] items-center justify-center rounded-sm"
-  >
-    <Icon />
-  </button>
-)
+export const DashboardNfts: FC<{ className?: string }> = () => {
+  const [viewMode] = useSetting("nftsViewMode")
+  const data = usePortfolioNfts()
+  const { search } = usePortfolioSearch()
 
-export const DashboardNfts = () => {
-  const [viewMode, setViewMode] = useSetting("nftsViewMode")
+  const filteredData = useMemo<NftData>(() => {
+    if (!search) return data
 
-  const handleViewModeClick = useCallback(
-    () => setViewMode((prev) => (prev === "list" ? "grid" : "list")),
-    [setViewMode]
-  )
+    const searchLower = search.toLowerCase()
+    const collections = data.collections.filter(
+      (collection) =>
+        collection.name?.toLowerCase().includes(searchLower) ||
+        collection.description?.toLowerCase().includes(searchLower)
+    )
+    const nfts = data.nfts.filter(
+      (nft) =>
+        nft.name?.toLowerCase().includes(searchLower) ||
+        nft.description?.toLowerCase().includes(searchLower)
+    )
+
+    // keep all collections that are matched themselves, or that include a matched NFT
+    const collectionIds = [
+      ...new Set([...collections.map((c) => c.id), nfts.map((n) => n.collectionId)]),
+    ]
+
+    return {
+      ...data,
+      collections: data.collections.filter((c) => collectionIds.includes(c.id)),
+      nfts: data.nfts.filter((nft) => collectionIds.includes(nft.collectionId)),
+    }
+  }, [data, search])
 
   return (
-    <div>
-      <div className="flex w-full justify-between">
-        <NetworkPicker />
-        <div className="flex gap-4">
-          <ToolbarButton icon={ToolbarSortIcon} />
-          <ToolbarButton
-            icon={viewMode === "list" ? ToolbarTilesIcon : ToolbarListIcon}
-            onClick={handleViewModeClick}
-          />
-          <ToolbarButton icon={ToolbarListIcon} />
-          <ToolbarButton icon={ToolbarFilterIcon} />
-        </div>
-      </div>
-      <div className="mt-7">
-        <Suspense>{viewMode === "list" ? <NftCollectionsList /> : <NftCollectionsGrid />}</Suspense>
-      </div>
+    <div className="mt-7">
+      <Suspense>
+        {viewMode === "list" ? (
+          <NftCollectionsList data={filteredData} />
+        ) : (
+          <NftCollectionsGrid data={filteredData} />
+        )}
+      </Suspense>
     </div>
   )
 }
@@ -128,9 +125,7 @@ const NftCollectionRow: FC<{ collection: NftCollection; data: NftData }> = (prop
   )
 }
 
-const NftCollectionsList: FC = () => {
-  const data = usePortfolioNfts()
-
+const NftCollectionsList: FC<{ data: NftData }> = ({ data }) => {
   return (
     <div className="flex flex-col gap-5">
       <div className="text-primary-500">{status}</div>
@@ -203,9 +198,7 @@ const NftCollectionTile: FC<{ collection: NftCollection; data: NftData }> = (pro
   )
 }
 
-const NftCollectionsGrid: FC = () => {
-  const data = usePortfolioNfts()
-
+const NftCollectionsGrid: FC<{ data: NftData }> = ({ data }) => {
   return (
     <div className="flex flex-wrap gap-[2.5rem]">
       {data.collections.map((collection, i) => (

@@ -90,7 +90,7 @@ const sortSymbolBalancesBy =
     return aSymbol.localeCompare(bSymbol)
   }
 
-const portfolioSymbolBalancesAtomFamily = atomFamily((filter: "all" | "network") =>
+const portfolioSymbolBalancesAtomFamily = atomFamily((filter: "all" | "network" | "search") =>
   atom(async (get) => {
     const [currency, hideDust] = await Promise.all([get(selectedCurrencyAtom), get(settingsAtom)])
     const balances = get(portfolioDisplayBalancesAtomFamily(filter))
@@ -151,7 +151,7 @@ const portfolioSymbolBalancesAtomFamily = atomFamily((filter: "all" | "network")
   })
 )
 
-export const usePortfolioSymbolBalancesByFilter = (filter: "all" | "network") => {
+export const usePortfolioSymbolBalancesByFilter = (filter: "all" | "network" | "search") => {
   return useAtomValue(portfolioSymbolBalancesAtomFamily(filter))
 }
 

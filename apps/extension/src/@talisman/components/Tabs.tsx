@@ -9,9 +9,9 @@ export type TabDef = {
 
 export const Tabs: FC<{
   tabs: TabDef[]
-  selected: string
-  onChange: (value: string) => void
+  selected?: string
   className?: string
+  onChange: (value: string) => void
 }> = ({ tabs, selected, className, onChange }) => {
   const refTabs = useRef<HTMLDivElement>(null)
 

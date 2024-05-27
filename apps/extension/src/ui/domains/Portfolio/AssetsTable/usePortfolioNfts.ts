@@ -31,10 +31,6 @@ export const usePortfolioNfts = () => {
     return data.collections.filter((c) => collectionIds.has(c.id))
   }, [nfts, data])
 
-  // TODO filter all/recent/favorites/hidden
-
-  // TODO sort value / Name / Network
-
   return { ...data, collections, nfts } as NftData
 }
 

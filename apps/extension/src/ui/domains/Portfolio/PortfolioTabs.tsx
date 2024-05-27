@@ -20,5 +20,10 @@ export const PortfolioTabs: FC<{ className?: string }> = ({ className }) => {
     ]
   }, [account, accounts])
 
-  return <Tabs tabs={tabs} selected={location.pathname} onChange={navigate} className={className} />
+  const selected = useMemo(
+    () => tabs.find((tab) => location.pathname.startsWith(tab.value)),
+    [location.pathname, tabs]
+  )
+
+  return <Tabs tabs={tabs} selected={selected?.value} onChange={navigate} className={className} />
 }

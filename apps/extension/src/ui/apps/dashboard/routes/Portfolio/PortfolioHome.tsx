@@ -2,6 +2,7 @@ import { SuspenseTracker } from "@talisman/components/SuspenseTracker"
 import { DashboardAssetsTable } from "@ui/domains/Portfolio/AssetsTable"
 import { DashboardNfts } from "@ui/domains/Portfolio/AssetsTable/DashboardNfts"
 import { PortfolioTabs } from "@ui/domains/Portfolio/PortfolioTabs"
+import { PortfolioToolbar } from "@ui/domains/Portfolio/PortfolioToolbar"
 import { Statistics } from "@ui/domains/Portfolio/Statistics"
 import { usePortfolioDisplayBalances } from "@ui/domains/Portfolio/useDisplayBalances"
 import { useAnalytics } from "@ui/hooks/useAnalytics"
@@ -51,6 +52,7 @@ export const PortfolioHome = () => {
     <DashboardPortfolioLayout>
       <PortfolioStats />
       <PortfolioTabs className="mb-6 mt-[3.8rem]" />
+      <PortfolioToolbar />
       {/* can't use the Routes component here because we're already in the component that matches the location */}
       <Suspense fallback={<SuspenseTracker name="PortfolioHome content" />}>
         {!!matchTokens && <DashboardAssetsTable />}
