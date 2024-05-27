@@ -21,6 +21,7 @@ export class TalismanBalancesDatabase extends Dexie {
     this.version(5).stores({
       balancesBlob: "id",
       miniMetadatas: "id, source, chainId, specName, specVersion",
+      balances: null,
     })
 
     this.version(4)
