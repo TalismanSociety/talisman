@@ -102,15 +102,7 @@ const AccountInfoOverrides: { [key: ChainId]: string } = {
   "nftmart": RegularAccountInfoFallback,
 }
 
-const miniMetadatasObservable = new ReplaySubject<Map<string, MiniMetadata>>(1)
-
-liveQuery(() =>
-  balancesDb.miniMetadatas.where("source").equals("substrate-native").toArray()
-).subscribe((miniMetadatas) => {
-  miniMetadatasObservable.next(
-    new Map(miniMetadatas.map((miniMetadata) => [miniMetadata.id, miniMetadata]))
-  )
-})
+let commonMetadataObservable: ReplaySubject<Map<string, MiniMetadata>> | null = null
 
 export class QueryCache {
   private balanceQueryCache = new Map<QueryKey, RpcStateQuery<SubNativeBalance>[]>()
@@ -123,7 +115,20 @@ export class QueryCache {
   ) {
     this.getOrCreateTypeRegistry = getOrCreateTypeRegistry
 
-    this.metadataSub = miniMetadatasObservable
+    if (!commonMetadataObservable) {
+      commonMetadataObservable = new ReplaySubject<Map<string, MiniMetadata>>(1)
+
+      liveQuery(() =>
+        balancesDb.miniMetadatas.where("source").equals("substrate-native").toArray()
+      ).subscribe((miniMetadatas) => {
+        commonMetadataObservable &&
+          commonMetadataObservable.next(
+            new Map(miniMetadatas.map((miniMetadata) => [miniMetadata.id, miniMetadata]))
+          )
+      })
+    }
+
+    this.metadataSub = commonMetadataObservable
       .pipe(
         firstThenDebounce(500),
         detectMiniMetadataChanges(),
@@ -162,6 +167,7 @@ export class QueryCache {
   }
 
   async getQueries(addressesByToken: AddressesByToken<SubNativeToken>) {
+    if (!commonMetadataObservable) throw new Error("commonMetadataObservable is not initialized")
     const chains = await this.chaindataProvider.chainsById()
     const tokens = await this.chaindataProvider.tokensById()
 
@@ -185,7 +191,7 @@ export class QueryCache {
     )
 
     // build queries for token/address pairs which have not been queried before
-    const miniMetadatas = await firstValueFrom(miniMetadatasObservable)
+    const miniMetadatas = await firstValueFrom(commonMetadataObservable)
     const uniqueChainIds = getUniqueChainIds(queryResults.newAddressesByToken, tokens)
     const chainStorageDecoders = this.getBaseStorageDecoders(uniqueChainIds, chains, miniMetadatas)
     const queries = await buildQueries(
