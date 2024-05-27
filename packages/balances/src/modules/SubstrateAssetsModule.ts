@@ -432,13 +432,11 @@ async function buildQueries(
         const free = amount
         const frozen = token.isFrozen || isFrozen ? amount : "0"
 
-        const balanceValues: Array<AmountWithLabel<string>> = []
-        if (free && free > 0n)
-          balanceValues.push({ type: "free", label: "free", amount: free.toString() })
-        if (frozen && frozen > 0n)
-          balanceValues.push({ type: "locked", label: "frozen", amount: frozen.toString() })
-
-        if (balanceValues.length === 0) return null
+        // include balance values even if zero, so that newly-zero values overwrite old values
+        const balanceValues: Array<AmountWithLabel<string>> = [
+          { type: "free", label: "free", amount: free.toString() },
+          { type: "locked", label: "frozen", amount: frozen.toString() },
+        ]
 
         return {
           source: "substrate-assets",
