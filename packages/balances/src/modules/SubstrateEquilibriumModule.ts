@@ -429,7 +429,7 @@ async function buildQueries(
                   ? (balance?.[1]?.value ?? 0n).toString()
                   : balance?.[1]?.type === "Negative"
                   ? ((balance?.[1]?.value ?? 0n) * -1n).toString()
-                  : undefined,
+                  : "0",
             }))
             .map(({ id, free }: { id?: string; free?: string }) => [id, free])
             .filter(
@@ -442,7 +442,6 @@ async function buildQueries(
           .filter((t) => t.chain.id === chainId)
           .map((token) => {
             const value = tokenBalances[token.assetId]
-            if (value === undefined) return undefined
             return {
               source: "substrate-equilibrium",
               status: "live",

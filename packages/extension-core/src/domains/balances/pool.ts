@@ -300,8 +300,6 @@ abstract class BalancePool {
         .map((b) => [b.id, b.toJSON()])
     )
 
-    if (Object.keys(changedBalances).length === 0 && newlyZeroBalances.length === 0) return
-
     const nonZeroBalances =
       newlyZeroBalances.length > 0
         ? Object.fromEntries(
@@ -310,7 +308,6 @@ abstract class BalancePool {
         : existing
     const newBalancesState = { ...nonZeroBalances, ...changedBalances }
 
-    if (Object.keys(newBalancesState).length === 0) return
     this.#pool.next(newBalancesState)
   }
 
@@ -571,7 +568,7 @@ abstract class BalancePool {
         .filter(({ status }) => status === "cache")
         .map((balance) => ({ ...balance, status: "stale" } as BalanceJson))
 
-      if (staleBalances.length) this.updatePool(staleBalances)
+      this.updatePool(staleBalances)
     }, 30_000)
 
     const currentBalances = Object.values(this.balances)
