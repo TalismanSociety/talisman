@@ -23,7 +23,6 @@ import {
 import log from "../../log"
 import {
   AddressesByToken,
-  BalanceJson,
   Balances,
   MiniMetadata,
   SubscriptionCallback,
@@ -225,28 +224,6 @@ export const deleteSubscriptionId = () => {
     "TalismanBalancesSubscriptionIds",
     [...subscriptionIds].filter(Boolean).join(",")
   )
-}
-
-/**
- * You should make sure that the input collection `balances` is mutable, because the statuses
- * will be changed in-place as a performance consideration.
- */
-export const deriveStatuses = (
-  validSubscriptionIds: Set<string>,
-  balances: BalanceJson[]
-): BalanceJson[] => {
-  balances.forEach((balance) => {
-    if (["live", "cache", "stale"].includes(balance.status)) return balance
-
-    if (validSubscriptionIds.size < 1) {
-      balance.status = "cache"
-      return balance
-    }
-
-    balance.status = "live"
-    return balance
-  })
-  return balances
 }
 
 /**

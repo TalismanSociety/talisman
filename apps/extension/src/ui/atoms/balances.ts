@@ -1,5 +1,3 @@
-import {} from "@extension/core"
-
 import { BalanceSubscriptionResponse, isAccountCompatibleWithChain } from "@extension/core"
 import { Address, Balances, HydrateDb } from "@talismn/balances"
 import { TokenId } from "@talismn/chaindata-provider"

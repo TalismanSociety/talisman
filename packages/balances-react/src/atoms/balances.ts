@@ -6,7 +6,6 @@ import {
   HydrateDb,
   balances as balancesFn,
   deleteSubscriptionId,
-  deriveStatuses,
   getBalanceId,
   getValidSubscriptionIds,
 } from "@talismn/balances"
@@ -46,12 +45,13 @@ export const allBalancesAtom = atom(async (get) => {
     get(balancesHydrateDataAtom),
   ])
 
-  return new Balances(
-    deriveStatuses(
-      getValidSubscriptionIds(),
-      Object.values(balances).filter((balance) => !!hydrateData?.tokens?.[balance.tokenId])
-    ),
+  const subscriptionIds = getValidSubscriptionIds()
+  if (subscriptionIds.size < 1) {
+    Object.values(balances).forEach((b) => (b.status = "cache"))
+  }
 
+  return new Balances(
+    Object.values(balances).filter((balance) => !!hydrateData?.tokens?.[balance.tokenId]),
     // hydrate balance chains, evmNetworks, tokens and tokenRates
     hydrateData
   )
