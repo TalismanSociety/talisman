@@ -1,7 +1,7 @@
 import { nftsAtom } from "@ui/atoms/nfts"
 import { useEvmNetworks } from "@ui/hooks/useEvmNetworks"
 import { useSetting } from "@ui/hooks/useSettings"
-import { NftData } from "extension-core"
+import { AccountType, NftData } from "extension-core"
 import { useAtomValue } from "jotai"
 import { useMemo } from "react"
 
@@ -11,7 +11,7 @@ import { useSelectedAccount } from "../useSelectedAccount"
 export const usePortfolioNfts = () => {
   const data = useAtomValue(nftsAtom)
   const { networkFilter } = usePortfolio()
-  const { account } = useSelectedAccount()
+  const { account, accounts } = useSelectedAccount()
   const [includeTestnets] = useSetting("useTestnets")
   const { evmNetworksMap } = useEvmNetworks({ activeOnly: true, includeTestnets })
 
@@ -20,11 +20,15 @@ export const usePortfolioNfts = () => {
     const networkNfts = networkFilter
       ? data.nfts.filter((nft) => networkFilter.evmNetworkId === nft.evmNetworkId)
       : data.nfts.filter((nft) => evmNetworksMap[nft.evmNetworkId])
-    const userNfts = account
-      ? networkNfts.filter((nft) => nft.owner === account.address)
-      : networkNfts
-    return userNfts
-  }, [account, data, evmNetworksMap, networkFilter])
+
+    const addresses = account
+      ? [account.address.toLowerCase()]
+      : accounts
+          .filter((a) => a.origin !== AccountType.Watched || a.isPortfolio)
+          .map((a) => a.address.toLowerCase())
+
+    return networkNfts.filter((nft) => nft.owner && addresses.includes(nft.owner.toLowerCase()))
+  }, [account, accounts, data.nfts, evmNetworksMap, networkFilter])
 
   const collections = useMemo(() => {
     const collectionIds = new Set(nfts.map((nft) => nft.collectionId))

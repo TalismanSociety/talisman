@@ -1,15 +1,30 @@
 import { Fiat } from "@ui/domains/Asset/Fiat"
 import { useSetting } from "@ui/hooks/useSettings"
-import { NftCollection, NftData } from "extension-core"
-import { FC, Suspense, useCallback, useMemo, useRef } from "react"
+import { Nft, NftCollection, NftData } from "extension-core"
+import { FC, useCallback, useMemo, useRef, useState } from "react"
+import { useTranslation } from "react-i18next"
 import { useNavigate } from "react-router-dom"
 import { useIntersection } from "react-use"
 
+import { NftDialog } from "../NftDialog"
 import { NftImage } from "../NftImage"
 import { getPortfolioNftCollectionPreviewUrl } from "../Nfts/helpers"
 import { usePortfolioSearch } from "../usePortfolio"
+import { useSelectedAccount } from "../useSelectedAccount"
 import { NetworksLogoStack } from "./NetworksLogoStack"
 import { usePortfolioNfts } from "./usePortfolioNfts"
+
+const NoNftFound = () => {
+  const { t } = useTranslation()
+  const { account } = useSelectedAccount()
+
+  const msg = useMemo(
+    () => (account ? t("No NFTs found for this account") : t("No NFTs found")),
+    [account, t]
+  )
+
+  return <div className="text-body-secondary bg-field rounded px-8 py-36 text-center">{msg}</div>
+}
 
 export const DashboardNfts: FC<{ className?: string }> = () => {
   const [viewMode] = useSetting("nftsViewMode")
@@ -45,13 +60,13 @@ export const DashboardNfts: FC<{ className?: string }> = () => {
 
   return (
     <div className="mt-7">
-      <Suspense>
-        {viewMode === "list" ? (
-          <NftCollectionsList data={filteredData} />
-        ) : (
-          <NftCollectionsGrid data={filteredData} />
-        )}
-      </Suspense>
+      {!data.collections.length ? (
+        <NoNftFound />
+      ) : viewMode === "list" ? (
+        <NftCollectionsList data={filteredData} />
+      ) : (
+        <NftCollectionsGrid data={filteredData} />
+      )}
     </div>
   )
 }
@@ -60,6 +75,8 @@ const NftCollectionRowInner: FC<{ collection: NftCollection; data: NftData }> = 
   collection,
   data,
 }) => {
+  const [nftDialogInputs, setNftDialogInputs] = useState<{ collection: NftCollection; nft: Nft }>()
+
   const nfts = useMemo(
     () => data.nfts.filter((nft) => nft.collectionId === collection.id),
     [collection.id, data.nfts]
@@ -67,11 +84,6 @@ const NftCollectionRowInner: FC<{ collection: NftCollection; data: NftData }> = 
 
   const imageUrl = useMemo(() => {
     return getPortfolioNftCollectionPreviewUrl(collection, nfts)
-    // return (
-    //   collection.imageUrl ??
-    //   nfts.map((nft) => nft.previews.small ?? nft.imageUrl).find((url) => !!url) ??
-    //   ""
-    // )
   }, [collection, nfts])
 
   const networkIds = useMemo(() => [...new Set(nfts.map((nft) => nft.evmNetworkId))], [nfts])
@@ -85,29 +97,36 @@ const NftCollectionRowInner: FC<{ collection: NftCollection; data: NftData }> = 
 
   const navigate = useNavigate()
   const handleClick = useCallback(() => {
-    navigate(`/portfolio/nfts/${collection.id}`)
-  }, [collection.id, navigate])
+    if (nfts.length === 1) setNftDialogInputs({ collection, nft: nfts[0] })
+    else navigate(`/portfolio/nfts/${collection.id}`)
+  }, [collection, navigate, nfts])
 
   return (
-    <button
-      type="button"
-      onClick={handleClick}
-      className="bg-grey-900 hover:bg-grey-800 grid h-32 w-full grid-cols-3 items-center gap-4 rounded-sm px-8 text-left"
-    >
-      <div className="flex items-center gap-6 overflow-hidden">
-        <NftImage className="size-16" src={imageUrl} alt={collection.name ?? ""} />
-        <div className="flex grow flex-col gap-2 overflow-hidden">
-          <div className="truncate text-base font-bold">{collection.name}</div>
-          <div>
-            <NetworksLogoStack networkIds={networkIds} />
+    <>
+      <button
+        type="button"
+        onClick={handleClick}
+        className="bg-grey-900 hover:bg-grey-800 grid h-32 w-full grid-cols-3 items-center gap-4 rounded-sm px-8 text-left"
+      >
+        <div className="flex items-center gap-6 overflow-hidden">
+          <NftImage className="size-16" src={imageUrl} alt={collection.name ?? ""} />
+          <div className="flex grow flex-col gap-2 overflow-hidden">
+            <div className="truncate text-base font-bold">{collection.name}</div>
+            <div>
+              <NetworksLogoStack networkIds={networkIds} />
+            </div>
           </div>
         </div>
-      </div>
-      <div className="text-right">
-        {floorUsdValue !== null ? <Fiat amount={floorUsdValue} forceCurrency="usd" /> : null}
-      </div>
-      <div className="text-right">{nfts.length}</div>
-    </button>
+        <div className="text-right">
+          {floorUsdValue !== null ? (
+            <Fiat amount={floorUsdValue} forceCurrency="usd" noCountUp />
+          ) : null}
+        </div>
+        <div className="text-right">{nfts.length}</div>
+      </button>
+
+      <NftDialog data={nftDialogInputs} />
+    </>
   )
 }
 
@@ -140,6 +159,8 @@ const NftCollectionTileInner: FC<{ collection: NftCollection; data: NftData }> =
   collection,
   data,
 }) => {
+  const [nftDialogInputs, setNftDialogInputs] = useState<{ collection: NftCollection; nft: Nft }>()
+
   const nfts = useMemo(
     () => data.nfts.filter((nft) => nft.collectionId === collection.id),
     [collection.id, data.nfts]
@@ -158,29 +179,32 @@ const NftCollectionTileInner: FC<{ collection: NftCollection; data: NftData }> =
 
   const navigate = useNavigate()
   const handleClick = useCallback(() => {
-    // if more than one redirect to collection page
-    // otherwise open the modal for the only NFT
-    navigate(`/portfolio/nfts/${collection.id}`)
-  }, [collection.id, navigate])
+    if (nfts.length === 1) setNftDialogInputs({ collection, nft: nfts[0] })
+    else navigate(`/portfolio/nfts/${collection.id}`)
+  }, [collection, navigate, nfts])
 
   return (
-    <button
-      type="button"
-      onClick={handleClick}
-      className="text-body-secondary hover:text-body flex size-[22.2rem] flex-col items-center gap-4 overflow-hidden text-left"
-    >
-      <div className="w-full grow overflow-hidden">
-        <NftImage
-          className="h-full w-full object-cover"
-          src={imageUrl}
-          alt={collection.name ?? ""}
-        />
-      </div>
-      <div className="flex w-full shrink-0 items-center gap-2 overflow-hidden">
-        <div className="grow truncate text-base">{collection.name}</div>
-        <NetworksLogoStack networkIds={networkIds} />
-      </div>
-    </button>
+    <>
+      <button
+        type="button"
+        onClick={handleClick}
+        className="text-body-secondary hover:text-body flex size-[22.2rem] flex-col items-center gap-4 overflow-hidden text-left"
+      >
+        <div className="w-full grow overflow-hidden">
+          <NftImage
+            className="h-full w-full object-cover"
+            src={imageUrl}
+            alt={collection.name ?? ""}
+          />
+        </div>
+        <div className="flex w-full shrink-0 items-center gap-2 overflow-hidden">
+          <div className="grow truncate text-base">{collection.name}</div>
+          <NetworksLogoStack networkIds={networkIds} />
+        </div>
+      </button>
+
+      <NftDialog data={nftDialogInputs} />
+    </>
   )
 }
 

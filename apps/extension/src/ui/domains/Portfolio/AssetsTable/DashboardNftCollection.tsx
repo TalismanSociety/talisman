@@ -3,11 +3,13 @@ import { useSetting } from "@ui/hooks/useSettings"
 import format from "date-fns/format"
 import { Nft, NftCollection } from "extension-core"
 import { FC, Suspense, useCallback, useMemo, useRef, useState } from "react"
+import { useTranslation } from "react-i18next"
 import { useParams } from "react-router-dom"
 import { useIntersection } from "react-use"
 
 import { NftDialog } from "../NftDialog"
 import { NftImage } from "../NftImage"
+import { useSelectedAccount } from "../useSelectedAccount"
 import { usePortfolioNftCollection } from "./usePortfolioNfts"
 
 export const DashboardNftCollection = () => {
@@ -18,6 +20,18 @@ export const DashboardNftCollection = () => {
       <Suspense>{viewMode === "list" ? <NftsList /> : <NftsGrid />}</Suspense>
     </div>
   )
+}
+
+const NoNftFound = () => {
+  const { t } = useTranslation()
+  const { account } = useSelectedAccount()
+
+  const msg = useMemo(
+    () => (account ? t("No NFTs found for this account") : t("No NFTs found")),
+    [account, t]
+  )
+
+  return <div className="text-body-secondary bg-field rounded px-8 py-36 text-center">{msg}</div>
 }
 
 const NftRowInner: FC<{ collection: NftCollection; nft: Nft; onClick: () => void }> = ({
@@ -74,6 +88,8 @@ const NftsList: FC = () => {
     },
     [collection]
   )
+
+  if (!nfts.length) return <NoNftFound />
 
   return (
     <div className="flex flex-col gap-5">
@@ -146,6 +162,8 @@ const NftsGrid: FC = () => {
     },
     [collection]
   )
+
+  if (!nfts.length) return <NoNftFound />
 
   return (
     <div className="flex flex-wrap justify-stretch gap-8">

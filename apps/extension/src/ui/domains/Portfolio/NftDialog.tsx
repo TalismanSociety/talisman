@@ -1,44 +1,57 @@
 import { Tabs } from "@talisman/components/Tabs"
 import { classNames } from "@talismn/util"
-import { Nft, NftCollection } from "extension-core"
+import { useEvmNetwork } from "@ui/hooks/useEvmNetwork"
+import format from "date-fns/format"
+import { Nft, NftCollection, NftCollectionMarketplace } from "extension-core"
 import { debounce } from "lodash"
 import { CSSProperties, FC, PropsWithChildren, useEffect, useMemo, useRef, useState } from "react"
 import { useTranslation } from "react-i18next"
 import { Modal, Tooltip, TooltipContent, TooltipTrigger, useOpenClose } from "talisman-ui"
 
+import { AccountIcon } from "../Account/AccountIcon"
+import { Address } from "../Account/Address"
+import { NetworkAddress } from "../Account/AddressLinkOrCopy"
+import { ChainLogo } from "../Asset/ChainLogo"
+import { Fiat } from "../Asset/Fiat"
 import { NftImage } from "./NftImage"
+
+type MarketPlaceWithFloor = NftCollectionMarketplace & { floorUsd: number }
 
 const TabContentCollection: FC<{
   collection: NftCollection
-  // nft: Nft
-}> = ({
-  collection,
-  //  nft
-}) => {
+  nft: Nft
+}> = ({ collection, nft }) => {
   const { t } = useTranslation()
-  // useEffect(() => {
-  //   console.log("TabContentCollection", collection)
-  // }, [collection])
+  const network = useEvmNetwork(nft.evmNetworkId)
 
-  // const allEvmNetworksMap = useAllEvmNetworksMap()
+  const floorPrice = useMemo(() => {
+    const floorPrices = collection?.marketplaces
+      .filter((mp): mp is MarketPlaceWithFloor => typeof mp.floorUsd === "number")
+      .sort((mp1, mp2) => mp1.floorUsd - mp2.floorUsd)
 
-  // const networks = useMemo(() => {
-  //   //TODO
-  // }, [])
+    return floorPrices.length ? floorPrices[0].floorUsd : null
+  }, [collection?.marketplaces])
 
   return (
     <>
       <div className="leading-paragraph grid grid-cols-2 gap-8">
         <div className="text-body-secondary">{t("Floor Price")}</div>
-        <div className="text-right">0.031ETH</div>
+        <div className="text-right">
+          {floorPrice ? <Fiat amount={floorPrice} forceCurrency="usd" /> : t("Unavailable")}
+        </div>
         <div className="text-body-secondary">{t("Items")}</div>
         <div className="text-right">{collection.totalQuantity}</div>
         <div className="text-body-secondary">{t("Holders")}</div>
         <div className="text-right">{collection.distinctOwners}</div>
-        <div className="text-body-secondary">{t("Networks")}</div>
-        <div className="text-right">TODO</div>
+        <div className="text-body-secondary">{t("Network")}</div>
+        <div className="flex items-center justify-end gap-[0.5em]">
+          <ChainLogo id={nft.evmNetworkId} className="text-md" />
+          <div className="truncate">{network?.name}</div>
+        </div>
         <div className="text-body-secondary">{t("Contract")}</div>
-        <div className="text-right">TODO</div>
+        <div className="text-right">
+          <NetworkAddress address={nft.contractAddress} networkId={nft.evmNetworkId} />
+        </div>
       </div>
       <div className="bg-grey-800 h-0.5"></div>
       {!!collection.description && (
@@ -47,7 +60,6 @@ const TabContentCollection: FC<{
           <div>{collection.description}</div>
         </div>
       )}
-      <div>TODO marketplaces</div>
     </>
   )
 }
@@ -57,11 +69,26 @@ const TabContentNft: FC<{
 }> = ({ nft }) => {
   const { t } = useTranslation()
 
-  // useEffect(() => {
-  //   console.log("TabContentNft", nft)
-  // }, [nft])
   return (
     <>
+      <div className="leading-paragraph grid grid-cols-2 gap-8">
+        {nft.owner && (
+          <>
+            <div className="text-body-secondary">{t("Owner")}</div>
+            <div className="flex items-center justify-end gap-[0.5em]">
+              <AccountIcon address={nft.owner} className="text-md" />
+              <div className="truncate">
+                <Address address={nft.owner} />
+              </div>
+            </div>
+            <div className="text-body-secondary">{t("Acquired on")}</div>
+            <div className="text-right">
+              {nft.acquiredAt ? format(new Date(nft.acquiredAt), "P") : null}
+            </div>
+          </>
+        )}
+      </div>
+      <div className="bg-grey-800 h-0.5"></div>
       {!!nft.description && (
         <div className="space-y-8">
           <div className="text-body-secondary">{t("Description")}</div>
@@ -114,11 +141,6 @@ const ScrollableArea: FC<
   }, [refContainer])
 
   const style = useMemo<CSSProperties>(() => {
-    // console.log("paddingRight", {
-    //   paddingRight,
-    //   scrollbarWidth,
-    //   diff: paddingRight - scrollbarWidth,
-    // })
     return { paddingRight: paddingRight - scrollbarWidth }
   }, [paddingRight, scrollbarWidth])
 
@@ -192,7 +214,7 @@ const DialogContent: FC<{ onDismiss: () => void; collection: NftCollection; nft:
             className="h-full w-full"
             innerClassName="leading-paragraph flex flex-col gap-12 text-base font-light pr-2"
           >
-            {tab === "collection" && <TabContentCollection collection={collection} />}
+            {tab === "collection" && <TabContentCollection collection={collection} nft={nft} />}
             {tab === "nft" && <TabContentNft nft={nft} />}
           </ScrollableArea>
         </div>
