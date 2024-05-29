@@ -1,7 +1,8 @@
-import { AccountJsonAny, Chain, Token } from "@extension/core"
+import { AccountJsonAny } from "@extension/core"
 import { BANXA_URL } from "@extension/shared"
 import { yupResolver } from "@hookform/resolvers/yup"
 import { isEthereumAddress } from "@polkadot/util-crypto"
+import { Chain, Token } from "@talismn/chaindata-provider"
 import { encodeAnyAddress } from "@talismn/util"
 import { AnalyticsPage, sendAnalyticsEvent } from "@ui/api/analytics"
 import { remoteConfigAtom } from "@ui/atoms/remoteConfig"
@@ -60,7 +61,8 @@ const useSupportedTokenIds = (chains?: Chain[], tokens?: Token[], address?: stri
       ethereumTokenIds:
         supportedTokens
           ?.filter((t) => {
-            if (!["substrate-native", "evm-native", "evm-erc20"].includes(t.type)) return false
+            if (!["substrate-native", "evm-native", "evm-erc20", "evm-uniswapv2"].includes(t.type))
+              return false
             const chain = chains?.find((c) => c.id === t.chain?.id)
             return !chain || (chain.account === "secp256k1" && chain.evmNetworks.length > 0)
           })

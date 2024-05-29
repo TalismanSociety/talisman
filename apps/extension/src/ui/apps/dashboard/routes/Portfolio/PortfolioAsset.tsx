@@ -11,6 +11,7 @@ import { useSelectedAccount } from "@ui/domains/Portfolio/useSelectedAccount"
 import { useTokenBalancesSummary } from "@ui/domains/Portfolio/useTokenBalancesSummary"
 import { useAnalytics } from "@ui/hooks/useAnalytics"
 import { useSendFundsPopup } from "@ui/hooks/useSendFundsPopup"
+import { useUniswapV2LpTokenTotalValueLocked } from "@ui/hooks/useUniswapV2LpTokenTotalValueLocked"
 import { useCallback, useEffect, useMemo } from "react"
 import { useTranslation } from "react-i18next"
 import { Navigate, useNavigate, useParams, useSearchParams } from "react-router-dom"
@@ -40,6 +41,9 @@ const PageContent = ({ balances, symbol }: { balances: Balances; symbol: string 
   const handleBackBtnClick = useCallback(() => navigate("/portfolio"), [navigate])
   const { t } = useTranslation()
 
+  const isUniswapV2LpToken = token?.type === "evm-uniswapv2"
+  const tvl = useUniswapV2LpTokenTotalValueLocked(token, rate, balances)
+
   return (
     <div>
       <div className="flex h-48 w-full gap-8">
@@ -58,7 +62,14 @@ const PageContent = ({ balances, symbol }: { balances: Balances; symbol: string 
             </div>
             <div>
               <div className="text-md">{token?.symbol}</div>
-              {rate && <Fiat amount={rate} className="text-body-secondary" />}
+              {isUniswapV2LpToken && typeof tvl === "number" && (
+                <div className="text-body-secondary whitespace-nowrap">
+                  <Fiat amount={tvl} /> <span className="text-tiny">TVL</span>
+                </div>
+              )}
+              {!isUniswapV2LpToken && typeof rate === "number" && (
+                <Fiat amount={rate} className="text-body-secondary" />
+              )}
             </div>
             <div className="flex flex-wrap">
               <Tooltip>

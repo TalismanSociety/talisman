@@ -1,4 +1,4 @@
-import { TokenId } from "@extension/core"
+import { TokenId } from "@talismn/chaindata-provider"
 import { balancesAtomFamily } from "@ui/atoms"
 import { useAtomValue } from "jotai"
 import { useMemo } from "react"

@@ -14,6 +14,7 @@ import {
   tokensMapAtomFamily,
 } from "@ui/atoms"
 import { TokenLogo } from "@ui/domains/Asset/TokenLogo"
+import { TokenTypePill } from "@ui/domains/Asset/TokenTypePill"
 import { NetworkLogo } from "@ui/domains/Ethereum/NetworkLogo"
 import { EnableTestnetPillButton } from "@ui/domains/Settings/EnableTestnetPillButton"
 import { useActiveTokensState } from "@ui/hooks/useActiveTokensState"
@@ -23,7 +24,9 @@ import { useEvmNetworks } from "@ui/hooks/useEvmNetworks"
 import { useSetting } from "@ui/hooks/useSettings"
 import useTokens from "@ui/hooks/useTokens"
 import { isCustomErc20Token } from "@ui/util/isCustomErc20Token"
+import { isCustomUniswapV2Token } from "@ui/util/isCustomUniswapV2Token"
 import { isErc20Token } from "@ui/util/isErc20Token"
+import { isUniswapV2Token } from "@ui/util/isUniswapV2Token"
 import { atom, useAtomValue } from "jotai"
 import sortBy from "lodash/sortBy"
 import { FC, useCallback, useEffect, useMemo, useRef, useState } from "react"
@@ -57,6 +60,8 @@ const useBlockExplorerUrl = (token: Token) => {
   return useMemo(() => {
     if (isErc20Token(token) && evmNetwork?.explorerUrl)
       return urlJoin(evmNetwork.explorerUrl, "token", token.contractAddress)
+    if (isUniswapV2Token(token) && evmNetwork?.explorerUrl)
+      return urlJoin(evmNetwork.explorerUrl, "token", token.poolAddress)
 
     return null
   }, [token, evmNetwork?.explorerUrl])
@@ -85,7 +90,9 @@ const TokenRow: FC<{ token: Token }> = ({ token }) => {
         <div className="text-body flex items-center gap-4 overflow-hidden">
           <TokenLogo tokenId={token.id} className="shrink-0 text-lg" />
           <div className="truncate">{token.symbol}</div>
+          <TokenTypePill type={token.type} />
           {isCustomErc20Token(token) && <CustomPill />}
+          {isCustomUniswapV2Token(token) && <CustomPill />}
         </div>
         <div className="text-body flex items-center gap-4 overflow-hidden">
           <NetworkLogo ethChainId={network?.id} className="shrink-0 text-lg" />
@@ -249,14 +256,11 @@ export const TokensPage = () => {
   const activeTokens = useActiveTokensState()
   const [isActiveOnly, setIsActiveOnly] = useState(false)
   const [isCustomOnly, setIsCustomOnly] = useState(false)
+  const [isHidePools, setIsHidePools] = useState(false)
 
-  const toggleIsActiveOnly = useCallback(() => {
-    setIsActiveOnly((prev) => !prev)
-  }, [])
-
-  const toggleIsCustomOnly = useCallback(() => {
-    setIsCustomOnly((prev) => !prev)
-  }, [])
+  const toggleIsActiveOnly = useCallback(() => setIsActiveOnly((prev) => !prev), [])
+  const toggleIsCustomOnly = useCallback(() => setIsCustomOnly((prev) => !prev), [])
+  const toggleIsHidePools = useCallback(() => setIsHidePools((prev) => !prev), [])
 
   const networkOptions = useMemo(() => {
     return [{ id: "ALL", name: "All networks" } as EvmNetwork, ...sortBy(evmNetworks, "name")]
@@ -272,10 +276,11 @@ export const TokensPage = () => {
 
   const filteredTokens = useMemo(() => {
     const result = tokens
-      .filter(isErc20Token)
+      .filter((t) => isErc20Token(t) || isUniswapV2Token(t))
       .filter((t) => !!t.evmNetwork?.id && evmNetworksMap[t.evmNetwork.id])
       .filter((t) => !isActiveOnly || isTokenActive(t, activeTokens))
-      .filter((t) => !isCustomOnly || isCustomErc20Token(t))
+      .filter((t) => !isCustomOnly || isCustomErc20Token(t) || isCustomUniswapV2Token(t))
+      .filter((t) => !isHidePools || !isUniswapV2Token(t))
       .filter((t) => evmNetworkId === "ALL" || t.evmNetwork?.id === evmNetworkId)
 
     return sortBy(
@@ -283,21 +288,28 @@ export const TokensPage = () => {
       (t) => evmNetworksMap[t.evmNetwork!.id].name,
       (t) => t.symbol
     )
-  }, [activeTokens, evmNetworkId, evmNetworksMap, isActiveOnly, isCustomOnly, tokens])
+  }, [activeTokens, evmNetworkId, evmNetworksMap, isActiveOnly, isCustomOnly, isHidePools, tokens])
 
   const displayTokens = useMemo(() => {
     const lowerSearch = search.trim().toLowerCase()
     const knownTokens = Object.keys(activeTokens) // ids of all tokens that were ever activated
     if (!lowerSearch && evmNetworkId === "ALL")
       return filteredTokens.filter(
-        (t) => t.isDefault || isCustomErc20Token(t) || knownTokens.includes(t.id)
+        (t) =>
+          t.isDefault ||
+          isCustomErc20Token(t) ||
+          isCustomUniswapV2Token(t) ||
+          knownTokens.includes(t.id)
       )
 
     return filteredTokens.filter(
       (t) =>
         !lowerSearch ||
+        (t.type === "evm-erc20" && "erc20".includes(lowerSearch)) ||
+        (t.type === "evm-uniswapv2" && "univ2".includes(lowerSearch)) ||
         t.symbol.toLowerCase().includes(lowerSearch) ||
-        t.contractAddress.toLowerCase().includes(lowerSearch)
+        (isErc20Token(t) && t.contractAddress.toLowerCase().includes(lowerSearch)) ||
+        (isUniswapV2Token(t) && t.poolAddress.toLowerCase().includes(lowerSearch))
     )
   }, [activeTokens, evmNetworkId, filteredTokens, search])
 
@@ -355,6 +367,7 @@ export const TokensPage = () => {
       <div className="flex justify-end gap-4">
         <TogglePill label={t("Active only")} checked={isActiveOnly} onChange={toggleIsActiveOnly} />
         <TogglePill label={t("Custom only")} checked={isCustomOnly} onChange={toggleIsCustomOnly} />
+        <TogglePill label={t("Enable pools")} checked={!isHidePools} onChange={toggleIsHidePools} />
         <EnableTestnetPillButton className="h-16" />
       </div>
       <Spacer />

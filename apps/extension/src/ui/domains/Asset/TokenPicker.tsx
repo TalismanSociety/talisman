@@ -1,7 +1,9 @@
-import { Address, Balances, Token, TokenId } from "@extension/core"
+import { Address } from "@extension/core"
 import { isEthereumAddress } from "@polkadot/util-crypto"
 import { ScrollContainer } from "@talisman/components/ScrollContainer"
 import { SearchInput } from "@talisman/components/SearchInput"
+import { Balances } from "@talismn/balances"
+import { Token, TokenId } from "@talismn/chaindata-provider"
 import { CheckCircleIcon } from "@talismn/icons"
 import { classNames, planckToTokens } from "@talismn/util"
 import { useAccountByAddress } from "@ui/hooks/useAccountByAddress"
@@ -89,6 +91,7 @@ const TokenRow: FC<TokenRowProps> = ({
   })
 
   const currency = useSelectedCurrency()
+  const isUniswapV2LpToken = token?.type === "evm-uniswapv2"
 
   return (
     <button
@@ -130,7 +133,7 @@ const TokenRow: FC<TokenRowProps> = ({
                 <Tokens
                   amount={tokensTotal}
                   decimals={token.decimals}
-                  symbol={token.symbol}
+                  symbol={isUniswapV2LpToken ? "" : token.symbol}
                   isBalance
                   noCountUp
                 />

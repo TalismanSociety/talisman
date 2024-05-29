@@ -1,8 +1,8 @@
-import { EvmErc20Token, EvmNativeToken } from "@talismn/balances"
+import { EvmErc20Token, EvmNativeToken, EvmUniswapV2Token } from "@talismn/balances"
 import { Token } from "@talismn/chaindata-provider"
 
 export const isEvmToken = <T extends Token>(
-  token?: T | null | EvmErc20Token | EvmNativeToken
-): token is EvmErc20Token | EvmNativeToken => {
+  token?: T | null | EvmNativeToken | EvmErc20Token | EvmUniswapV2Token
+): token is EvmNativeToken | EvmErc20Token | EvmUniswapV2Token => {
   return !!token?.evmNetwork
 }

@@ -1,13 +1,17 @@
-import { activeEvmNetworksStore, isEvmNetworkActive } from "@extension/core"
-import { activeTokensStore, isTokenActive } from "@extension/core"
-import { TokenId } from "@extension/core"
-import { AssetDiscoveryMode, DiscoveredBalance } from "@extension/core"
-import { AccountJsonAny } from "@extension/core"
+import {
+  AccountJsonAny,
+  AssetDiscoveryMode,
+  DiscoveredBalance,
+  activeEvmNetworksStore,
+  activeTokensStore,
+  isEvmNetworkActive,
+  isTokenActive,
+} from "@extension/core"
 import { HeaderBlock } from "@talisman/components/HeaderBlock"
 import { Spacer } from "@talisman/components/Spacer"
 import { shortenAddress } from "@talisman/util/shortenAddress"
 import { Address, BalanceFormatter } from "@talismn/balances"
-import { EvmNetworkId, Token } from "@talismn/chaindata-provider"
+import { EvmNetworkId, Token, TokenId } from "@talismn/chaindata-provider"
 import {
   ChevronDownIcon,
   DiamondIcon,
@@ -44,6 +48,7 @@ import { useSetting } from "@ui/hooks/useSettings"
 import useToken from "@ui/hooks/useToken"
 import useTokens from "@ui/hooks/useTokens"
 import { isErc20Token } from "@ui/util/isErc20Token"
+import { isUniswapV2Token } from "@ui/util/isUniswapV2Token"
 import { atom, useAtomValue } from "jotai"
 import { ChangeEventHandler, FC, ReactNode, useCallback, useEffect, useMemo, useRef } from "react"
 import { Trans, useTranslation } from "react-i18next"
@@ -110,6 +115,8 @@ const useBlockExplorerUrl = (token: Token | null) => {
   return useMemo(() => {
     if (isErc20Token(token) && evmNetwork?.explorerUrl)
       return urlJoin(evmNetwork.explorerUrl, "token", token.contractAddress)
+    if (isUniswapV2Token(token) && evmNetwork?.explorerUrl)
+      return urlJoin(evmNetwork.explorerUrl, "token", token.poolAddress)
 
     return null
   }, [token, evmNetwork?.explorerUrl])
@@ -199,9 +206,7 @@ const AssetRowContent: FC<{ tokenId: TokenId; assets: DiscoveredBalance[] }> = (
   return (
     <div className="bg-grey-900 grid h-32 grid-cols-[1fr_1fr_1fr_10rem] items-center gap-x-8 rounded-sm px-8">
       <div className="flex items-center gap-6">
-        <div>
-          <TokenLogo tokenId={tokenId} className="shrink-0 text-xl" />
-        </div>
+        <TokenLogo tokenId={tokenId} className="shrink-0 text-xl" />
         <div className="flex flex-col gap-1">
           <div className="flex items-center gap-2">
             <span>{token.symbol}</span>
@@ -248,13 +253,13 @@ const AssetRowContent: FC<{ tokenId: TokenId; assets: DiscoveredBalance[] }> = (
       </div>
       <div className="flex justify-end gap-8 pl-4 text-right">
         <Toggle checked={isActive} onChange={handleToggleChange} />
-        {isErc20Token(token) || coingeckoUrl ? (
+        {isErc20Token(token) || isUniswapV2Token(token) || coingeckoUrl ? (
           <ContextMenu placement="bottom-end">
             <ContextMenuTrigger className="hover:text-body bg-grey-800 text-body-secondary hover:bg-grey-700 shrink-0 rounded-sm p-4">
               <MoreHorizontalIcon />
             </ContextMenuTrigger>
             <ContextMenuContent>
-              {isErc20Token(token) && (
+              {(isErc20Token(token) || isUniswapV2Token(token)) && (
                 <ContextMenuItem
                   onClick={() => navigate(`/settings/networks-tokens/tokens/${token.id}`)}
                 >

@@ -1,5 +1,5 @@
-import { Token } from "@extension/core"
 import { useOpenClose } from "@talisman/hooks/useOpenClose"
+import { Token } from "@talismn/chaindata-provider"
 import { ChevronRightIcon, XIcon } from "@talismn/icons"
 import { classNames } from "@talismn/util"
 import useToken from "@ui/hooks/useToken"

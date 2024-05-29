@@ -1,5 +1,6 @@
 import { EvmErc20Module } from "./EvmErc20Module"
 import { EvmNativeModule } from "./EvmNativeModule"
+import { EvmUniswapV2Module } from "./EvmUniswapV2Module"
 import { SubAssetsModule } from "./SubstrateAssetsModule"
 import { SubEquilibriumModule } from "./SubstrateEquilibriumModule"
 import { SubNativeModule } from "./SubstrateNativeModule"
@@ -9,6 +10,7 @@ import { SubTokensModule } from "./SubstrateTokensModule"
 export const defaultBalanceModules = [
   EvmErc20Module,
   EvmNativeModule,
+  EvmUniswapV2Module,
   SubAssetsModule,
   SubEquilibriumModule,
   SubNativeModule,
@@ -18,6 +20,7 @@ export const defaultBalanceModules = [
 
 export * from "./EvmErc20Module"
 export * from "./EvmNativeModule"
+export * from "./EvmUniswapV2Module"
 export * from "./SubstrateAssetsModule"
 export * from "./SubstrateEquilibriumModule"
 export * from "./SubstrateNativeModule"

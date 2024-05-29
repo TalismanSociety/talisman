@@ -1,9 +1,9 @@
+import type { CustomEvmErc20Token } from "@talismn/balances"
 import { AddEthereumChainParameter } from "viem"
 
 import { requestStore } from "../../libs/requests/store"
 import type { Port } from "../../types/base"
 import { urlToDomain } from "../../util/urlToDomain"
-import type { CustomErc20Token } from "../tokens/types"
 import {
   ETH_NETWORK_ADD_PREFIX,
   WATCH_ASSET_PREFIX,
@@ -47,7 +47,7 @@ export const ignoreRequest = ({ id }: WatchAssetRequestIdOnly) => {
 export const requestWatchAsset = async (
   url: string,
   request: WatchAssetBase,
-  token: CustomErc20Token,
+  token: CustomEvmErc20Token,
   warnings: string[],
   port: Port
 ) => {

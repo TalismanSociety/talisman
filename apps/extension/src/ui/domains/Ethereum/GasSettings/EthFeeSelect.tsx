@@ -1,11 +1,11 @@
-import { EthGasSettings } from "@extension/core"
 import {
+  EthGasSettings,
   EthPriorityOptionName,
   EthTransactionDetails,
   GasSettingsByPriority,
 } from "@extension/core"
-import { TokenId } from "@extension/core"
 import { useOpenClose } from "@talisman/hooks/useOpenClose"
+import { TokenId } from "@talismn/chaindata-provider"
 import { classNames } from "@talismn/util"
 import { useAnalytics } from "@ui/hooks/useAnalytics"
 import { FC, useCallback, useEffect, useState } from "react"

@@ -1,4 +1,4 @@
-import { TokenId } from "@extension/core"
+import { TokenId } from "@talismn/chaindata-provider"
 import { useMemo } from "react"
 
 import { useAllTokensMap } from "./useTokens"
