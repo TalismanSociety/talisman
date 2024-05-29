@@ -1,6 +1,6 @@
 import { CustomEvmNetwork, EvmNetwork } from "@extension/core"
-import { CustomErc20Token } from "@extension/core"
 import { useOpenClose } from "@talisman/hooks/useOpenClose"
+import { CustomEvmErc20Token } from "@talismn/balances"
 import { useTranslation } from "react-i18next"
 import { Button, Drawer, PillButton } from "talisman-ui"
 
@@ -8,7 +8,7 @@ import { ViewDetailsAddress } from "../Sign/ViewDetails/ViewDetailsAddress"
 import { ViewDetailsField } from "../Sign/ViewDetails/ViewDetailsField"
 
 type CustomErc20TokenViewDetailsProps = {
-  token: CustomErc20Token
+  token: CustomEvmErc20Token
   network: EvmNetwork | CustomEvmNetwork
 }
 

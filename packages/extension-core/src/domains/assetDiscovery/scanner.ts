@@ -187,10 +187,12 @@ class AssetDiscoveryScanner {
                   throw new Error(`No token found for tokenId ${check.tokenId}`)
                 }
 
-                if (token.type === "evm-erc20") {
+                if (token.type === "evm-erc20" || token.type === "evm-uniswapv2") {
+                  const address =
+                    token.type === "evm-erc20" ? token.contractAddress : token.poolAddress
                   const balance = await client.readContract({
                     abi: erc20Abi,
-                    address: token.contractAddress as EvmAddress,
+                    address: address as EvmAddress,
                     functionName: "balanceOf",
                     args: [check.address as EvmAddress],
                   })

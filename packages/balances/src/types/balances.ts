@@ -1,6 +1,7 @@
 import { ChainList, EvmNetworkList, TokenList } from "@talismn/chaindata-provider"
-import { TokenRateCurrency, TokenRates, TokenRatesList } from "@talismn/token-rates"
+import { NewTokenRates, TokenRateCurrency, TokenRates, TokenRatesList } from "@talismn/token-rates"
 import { BigMath, NonFunctionProperties, isArrayOf, isBigInt, planckToTokens } from "@talismn/util"
+import BigNumber from "bignumber.js"
 
 import log from "../log"
 import {
@@ -360,7 +361,7 @@ export class Balance {
     new BalanceFormatter(
       isBigInt(balance) ? balance.toString() : balance,
       this.decimals || undefined,
-      this.#db?.tokenRates && this.#db.tokenRates[this.tokenId]
+      this.rates
     )
 
   //
@@ -409,7 +410,69 @@ export class Balance {
   get decimals() {
     return this.token?.decimals || null
   }
-  get rates() {
+  get rates(): TokenRates | null {
+    // uniswap v2 lp tokens need the rates from the underlying pool assets
+    //
+    // To note: `@talismn/token-rates` knows to fetch the `coingeckoId0` and `coingeckoId1` rates for evm-uniswapv2 tokens.
+    // They are then stored in `this.#db.tokenRates` using the `tokenId0` and `tokenId1` keys.
+    //
+    // This means that those rates are always available for calculating the uniswapv2 rates,
+    // regardless of whether or not the underlying erc20s are actually in chaindata and enabled.
+    if (
+      this.isSource("evm-uniswapv2") &&
+      this.token?.type === "evm-uniswapv2" &&
+      this.evmNetworkId
+    ) {
+      const tokenId0 = evmErc20TokenId(this.evmNetworkId, this.token.tokenAddress0)
+      const tokenId1 = evmErc20TokenId(this.evmNetworkId, this.token.tokenAddress1)
+
+      const decimals = this.token.decimals
+      const decimals0 = this.token.decimals0
+      const decimals1 = this.token.decimals1
+
+      const rates0 = this.#db?.tokenRates && this.#db.tokenRates[tokenId0]
+      const rates1 = this.#db?.tokenRates && this.#db.tokenRates[tokenId1]
+
+      if (rates0 === undefined || rates1 === undefined) return null
+
+      const extra = this.toJSON().extra
+      const extras = Array.isArray(extra) ? extra : extra !== undefined ? [extra] : []
+      const totalSupply = extras.find((extra) => extra.label === "totalSupply")?.amount ?? "0"
+      const reserve0 = extras.find((extra) => extra.label === "reserve0")?.amount ?? "0"
+      const reserve1 = extras.find((extra) => extra.label === "reserve1")?.amount ?? "0"
+
+      const totalSupplyTokens = BigNumber(totalSupply).times(Math.pow(10, -1 * decimals))
+      const reserve0Tokens = BigNumber(reserve0).times(Math.pow(10, -1 * decimals0))
+      const reserve1Tokens = BigNumber(reserve1).times(Math.pow(10, -1 * decimals1))
+
+      const rates0Currencies = new Set(Object.keys(rates0) as TokenRateCurrency[])
+      const rates1Currencies = new Set(Object.keys(rates1) as TokenRateCurrency[])
+      // `Set.prototype.intersection` can eventually replace this
+      // https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Set/intersection
+      const currencies = [...rates0Currencies].filter((c) => rates1Currencies.has(c))
+
+      const totalValueLocked = currencies.map(
+        (currency) =>
+          [
+            currency,
+            // tvl (in a given currency) == reserve0*currencyRate0 + reserve1*currencyRate1
+            BigNumber.sum(
+              reserve0Tokens.times(rates0[currency] ?? 0),
+              reserve1Tokens.times(rates1[currency] ?? 0)
+            ),
+          ] as const
+      )
+
+      const lpTokenRates = NewTokenRates()
+      totalValueLocked.forEach(([currency, tvl]) => {
+        // divide `the value of all lp tokens` by `the number of lp tokens` to get `the value per token`
+        if (!totalSupplyTokens.eq(0)) lpTokenRates[currency] = tvl.div(totalSupplyTokens).toNumber()
+      })
+
+      return lpTokenRates
+    }
+
+    // other tokens can just pick from the tokenRates db using the tokenId
     return (this.#db?.tokenRates && this.#db.tokenRates[this.tokenId]) || null
   }
 
@@ -758,3 +821,8 @@ export const filterMirrorTokens = (balance: Balance, i: number, balances: Balanc
   const mirrorOf = balance.token?.mirrorOf
   return !mirrorOf || !balances.find((b) => b.tokenId === mirrorOf)
 }
+
+// TODO: Move this into a common module which can then be imported both here and into EvmErc20Module
+// We can't import this directly from EvmErc20Module because then we'd have a circular dependency
+const evmErc20TokenId = (chainId: string, tokenContractAddress: string) =>
+  `${chainId}-evm-erc20-${tokenContractAddress}`.toLowerCase()

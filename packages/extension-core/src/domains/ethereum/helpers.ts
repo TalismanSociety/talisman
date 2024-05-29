@@ -1,5 +1,6 @@
 import { assert } from "@polkadot/util"
 import { erc20Abi } from "@talismn/balances"
+import { Token } from "@talismn/chaindata-provider"
 import { isBigInt, isEthereumAddress } from "@talismn/util"
 import {
   Hex,
@@ -18,8 +19,6 @@ import {
 } from "viem"
 import * as yup from "yup"
 
-import { ChainId } from "../chains/types"
-import { Token } from "../tokens/types"
 import {
   EthGasSettings,
   EthGasSettingsEip1559,
@@ -79,11 +78,6 @@ export const getEthTransferTransactionBase = async (
     }
   } else throw new Error(`Invalid token type ${token.type} - token ${token.id}`)
 }
-
-export const getErc20TokenId = (
-  chainOrNetworkId: ChainId | EvmNetworkId,
-  contractAddress: string
-) => `${chainOrNetworkId}-evm-erc20-${contractAddress}`.toLowerCase()
 
 export const serializeTransactionRequest = (
   tx: TransactionRequest<bigint | string>

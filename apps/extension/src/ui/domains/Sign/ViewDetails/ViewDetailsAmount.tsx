@@ -1,4 +1,5 @@
-import { BalanceFormatter, Token } from "@extension/core"
+import { BalanceFormatter } from "@talismn/balances"
+import { Token } from "@talismn/chaindata-provider"
 import { formatDecimals } from "@talismn/util"
 import { Fiat } from "@ui/domains/Asset/Fiat"
 import { useSelectedCurrency } from "@ui/hooks/useCurrency"

@@ -13,7 +13,7 @@ import { useTranslation } from "react-i18next"
 import { useSelectedAccount } from "../useSelectedAccount"
 import { useTokenBalancesSummary } from "../useTokenBalancesSummary"
 
-type DetailRow = {
+export type DetailRow = {
   key: string | BalanceLockType
   title: string
   description?: string

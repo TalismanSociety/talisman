@@ -1,4 +1,4 @@
-import { CustomErc20TokenCreate } from "@extension/core"
+import { CustomEvmErc20TokenCreate } from "@extension/core"
 import { yupResolver } from "@hookform/resolvers/yup"
 import { assert } from "@polkadot/util"
 import { HeaderBlock } from "@talisman/components/HeaderBlock"
@@ -7,11 +7,12 @@ import { LoaderIcon, PlusIcon } from "@talismn/icons"
 import { classNames } from "@talismn/util"
 import { api } from "@ui/api"
 import { AnalyticsPage } from "@ui/api/analytics"
+import { DashboardLayout } from "@ui/apps/dashboard/layout/DashboardLayout"
 import { AssetLogoBase } from "@ui/domains/Asset/AssetLogo"
 import { NetworkSelect } from "@ui/domains/Ethereum/NetworkSelect"
 import { useAnalyticsPageView } from "@ui/hooks/useAnalyticsPageView"
-import { useErc20TokenInfo } from "@ui/hooks/useErc20TokenInfo"
-import { useKnownErc20Token } from "@ui/hooks/useKnownErc20Token"
+import { useEvmTokenInfo } from "@ui/hooks/useEvmTokenInfo"
+import { useKnownEvmToken } from "@ui/hooks/useKnownEvmToken"
 import { useSortedEvmNetworks } from "@ui/hooks/useSortedEvmNetworks"
 import { useCallback, useEffect, useMemo, useState } from "react"
 import { useForm } from "react-hook-form"
@@ -20,10 +21,8 @@ import { useNavigate } from "react-router-dom"
 import { Button, FormFieldContainer, FormFieldInputText } from "talisman-ui"
 import * as yup from "yup"
 
-import { DashboardLayout } from "../../layout/DashboardLayout"
-
 type FormData = Pick<
-  CustomErc20TokenCreate,
+  CustomEvmErc20TokenCreate,
   "evmNetworkId" | "contractAddress" | "symbol" | "decimals"
 >
 
@@ -77,17 +76,13 @@ export const AddCustomTokenPage = () => {
 
   const { contractAddress, evmNetworkId, symbol, decimals } = watch()
 
-  const {
-    token: knownToken,
-    isActive,
-    setActive,
-  } = useKnownErc20Token(evmNetworkId, contractAddress)
+  const { token: knownToken, isActive, setActive } = useKnownEvmToken(evmNetworkId, contractAddress)
 
   const {
     isLoading,
     error: tokenInfoError,
     token: tokenInfo,
-  } = useErc20TokenInfo(evmNetworkId, contractAddress as `0x${string}`)
+  } = useEvmTokenInfo(evmNetworkId, contractAddress as `0x${string}`)
 
   const handleNetworkChange = useCallback(
     (id: EvmNetworkId) => {
@@ -112,13 +107,15 @@ export const AddCustomTokenPage = () => {
     async (token: FormData) => {
       try {
         assert(tokenInfo, "Missing token info")
-        assert(tokenInfo.contractAddress === token.contractAddress, "Token mismatch")
+        const infoContractAddress =
+          tokenInfo.type === "evm-erc20" ? tokenInfo.contractAddress : tokenInfo.poolAddress
+        assert(infoContractAddress === token.contractAddress, "Token mismatch")
         assert(tokenInfo.evmNetworkId === token.evmNetworkId, "Token mismatch")
 
         if (knownToken && !isActive) await setActive(true)
         else {
           // save the object composed with CoinGecko and chain data
-          await api.addCustomErc20Token(tokenInfo)
+          await api.addCustomEvmToken(tokenInfo)
         }
         navigate("/tokens")
       } catch (err) {

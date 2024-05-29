@@ -12,10 +12,16 @@ export const Balances = () => {
     <div className="grid grid-cols-[repeat(6,_auto)] items-center gap-4">
       {balances?.sorted.map((balance) => (
         <Fragment key={balance.id}>
-          <img
-            className="h-20 w-20 max-w-none justify-self-center"
-            alt="token logo"
-            src={balance.token?.logo}
+          <div
+            className={classNames([
+              "h-20 w-20 max-w-none justify-self-center bg-contain",
+              !(
+                /^https:\/\/raw.githubusercontent.com\/TalismanSociety\/chaindata\//i.test(
+                  balance.token?.logo ?? ""
+                ) && !/assets\/tokens\/coingecko/i.test(balance.token?.logo ?? "")
+              ) && "rounded-full",
+            ])}
+            style={{ backgroundImage: `url(${balance.token?.logo})` }}
           />
 
           <span>
@@ -75,10 +81,25 @@ export const Balances = () => {
             </span>
           </span>
 
-          <span className="max-w-md overflow-hidden overflow-ellipsis whitespace-pre">
+          <button
+            type="button"
+            className={classNames([
+              // button
+              "max-w-md overflow-hidden overflow-ellipsis whitespace-pre",
+              // overlay style
+              "after:bg-body-black after:text-tiny relative after:absolute after:left-1/2 after:top-1/2 after:-translate-x-1/2 after:-translate-y-1/2 after:rounded after:px-2 after:py-1 after:content-['copied_address']",
+              // overlay transition
+              "after:opacity-0 after:transition-opacity after:duration-1000",
+              // activate overlay transition
+              "active:after:opacity-100 active:after:duration-0",
+            ])}
+            onClick={() => {
+              navigator.clipboard.writeText(balance.address)
+            }}
+          >
             {accounts?.find(({ address }) => address === balance.address)?.meta?.name ??
-              balance.address}
-          </span>
+              `${balance.address.slice(0, 4)}…${balance.address.slice(-4)}`}
+          </button>
         </Fragment>
       ))}
     </div>

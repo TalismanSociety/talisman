@@ -1,5 +1,6 @@
 import { HexString } from "@polkadot/util/types"
-import { EvmNetworkId } from "@talismn/chaindata-provider"
+import type { CustomEvmErc20Token } from "@talismn/balances"
+import type { EvmNetworkId } from "@talismn/chaindata-provider"
 import type {
   AddEthereumChainParameter,
   EIP1193Parameters,
@@ -11,7 +12,6 @@ import { PublicRpcSchema, RpcSchema, WalletRpcSchema } from "viem"
 
 import { BaseRequest, BaseRequestId, RequestIdOnly } from "../../types/base"
 import type { ETH_SEND, ETH_SIGN, KnownSigningRequestIdOnly } from "../signing/types"
-import type { CustomErc20Token } from "../tokens/types"
 import { WalletTransactionTransferInfo } from "../transactions"
 
 export type { EvmAddress, EvmChain }
@@ -250,7 +250,7 @@ export type WatchAssetRequestIdOnly = { id: WatchAssetRequestId }
 export type WatchAssetRequest = BaseRequest<WATCH_ASSET_PREFIX> & {
   url: string
   request: WatchAssetBase
-  token: CustomErc20Token
+  token: CustomEvmErc20Token
   warnings: string[]
 }
 

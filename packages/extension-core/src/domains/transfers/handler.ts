@@ -76,6 +76,10 @@ export default class AssetTransferHandler extends ExtensionHandler {
         )
       if (tokenType === "evm-erc20")
         throw new Error("Erc20 token transfers are not implemented in this version of Talisman.")
+      if (tokenType === "evm-uniswapv2")
+        throw new Error(
+          "Uniswap V2 token transfers are not implemented in this version of Talisman."
+        )
 
       // force compilation error if any token types don't have a case
       const exhaustiveCheck: never = tokenType
@@ -136,6 +140,8 @@ export default class AssetTransferHandler extends ExtensionHandler {
       throw new Error("Evm native token transfers are not implemented in this version of Talisman.")
     if (tokenType === "evm-erc20")
       throw new Error("Erc20 token transfers are not implemented in this version of Talisman.")
+    if (tokenType === "evm-uniswapv2")
+      throw new Error("Uniswap V2 token transfers are not implemented in this version of Talisman.")
 
     // force compilation error if any token types don't have a case
     const exhaustiveCheck: never = tokenType
