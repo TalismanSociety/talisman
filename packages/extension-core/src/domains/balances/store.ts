@@ -12,8 +12,7 @@ import {
   deleteSubscriptionId,
 } from "@talismn/balances"
 import { Token } from "@talismn/chaindata-provider"
-import { encodeAnyAddress, isEthereumAddress } from "@talismn/util"
-import { firstThenDebounce } from "@talismn/util/src/firstThenDebounce"
+import { encodeAnyAddress, firstThenDebounce, isEthereumAddress } from "@talismn/util"
 import { Dexie, liveQuery } from "dexie"
 import { log } from "extension-shared"
 import isEqual from "lodash/isEqual"

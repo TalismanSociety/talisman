@@ -5,23 +5,35 @@ import { convertAddress } from "@talisman/util/convertAddress"
 import { isValidSubstrateAddress } from "@talismn/util"
 import { AnalyticsPage, sendAnalyticsEvent } from "@ui/api/analytics"
 import { AddressFieldNsBadge } from "@ui/domains/Account/AddressFieldNsBadge"
+import { NetworkDropdown } from "@ui/domains/Portfolio/NetworkPicker"
 import useAccounts from "@ui/hooks/useAccounts"
 import { useAddressBook } from "@ui/hooks/useAddressBook"
 import { useAnalyticsPageView } from "@ui/hooks/useAnalyticsPageView"
+import { useAllChainsMapByGenesisHash } from "@ui/hooks/useChains"
 import { useResolveNsName } from "@ui/hooks/useResolveNsName"
 import { useCallback, useEffect, useMemo } from "react"
 import { useForm } from "react-hook-form"
 import { useTranslation } from "react-i18next"
-import { ModalDialog } from "talisman-ui"
-import { Button, FormFieldContainer, FormFieldInputText, Modal } from "talisman-ui"
+import {
+  Button,
+  Checkbox,
+  FormFieldContainer,
+  FormFieldInputText,
+  Modal,
+  ModalDialog,
+} from "talisman-ui"
 import * as yup from "yup"
 
+import { useChainsFilteredByAddressPrefix, useGenesisHashEffects } from "./hooks"
+import { LimitToNetworkTooltip } from "./LimitToNetworkTooltip"
 import { ContactModalProps } from "./types"
 
 type FormValues = {
   name: string
   searchAddress: string
   address: string
+  genesisHash?: string
+  limitToNetwork?: boolean
 }
 
 interface ValidationContext {
@@ -75,6 +87,8 @@ export const ContactCreateModal = ({ isOpen, close }: ContactModalProps) => {
               return ctx.createError({ message: t("Address already saved in contacts") })
             return true
           }),
+        genesisHash: yup.string(),
+        limitToNetwork: yup.bool(),
       }),
     [t]
   )
@@ -113,7 +127,7 @@ export const ContactCreateModal = ({ isOpen, close }: ContactModalProps) => {
     if (isOpen) reset()
   }, [isOpen, reset])
 
-  const { searchAddress } = watch()
+  const { searchAddress, genesisHash, limitToNetwork } = watch()
 
   const [nsLookup, { nsLookupType, isNsLookup, isNsFetching }] = useResolveNsName(searchAddress)
   useEffect(() => {
@@ -133,14 +147,30 @@ export const ContactCreateModal = ({ isOpen, close }: ContactModalProps) => {
     })
   }, [nsLookup, isNsLookup, searchAddress, setValue])
 
+  const { address } = watch()
+  const chains = useChainsFilteredByAddressPrefix(address)
+  const chainsByGenesisHash = useAllChainsMapByGenesisHash()
+  const setGenesisHash = useCallback(
+    (genesisHash?: string) =>
+      setValue("genesisHash", genesisHash, {
+        shouldDirty: true,
+        shouldTouch: true,
+        shouldValidate: true,
+      }),
+    [setValue]
+  )
+  useGenesisHashEffects(chains, genesisHash, setGenesisHash)
+  const showLimitToNetworkControl = useMemo(() => chains.length !== 0, [chains])
+
   const submit = useCallback(
     async (formData: FormValues) => {
       try {
-        const { name, address } = formData
+        const { name, address, genesisHash, limitToNetwork } = formData
         await add({
           name,
           address,
           addressType: isEthereumAddress(address) ? "ethereum" : "ss58",
+          genesisHash: limitToNetwork ? genesisHash : undefined,
         })
         sendAnalyticsEvent({
           ...ANALYTICS_PAGE,
@@ -194,7 +224,31 @@ export const ContactCreateModal = ({ isOpen, close }: ContactModalProps) => {
               }
             />
           </FormFieldContainer>
-
+          {showLimitToNetworkControl && (
+            <>
+              <Checkbox
+                childProps={{ className: "flex items-center gap-2" }}
+                {...register("limitToNetwork")}
+              >
+                {t("Limit to Network")}
+                <LimitToNetworkTooltip />
+              </Checkbox>
+              {limitToNetwork && (
+                <NetworkDropdown
+                  placeholder={t("Select network")}
+                  networks={chains}
+                  value={chainsByGenesisHash[genesisHash!]}
+                  onChange={(c) =>
+                    setValue("genesisHash", c?.genesisHash ?? undefined, {
+                      shouldDirty: true,
+                      shouldTouch: true,
+                      shouldValidate: true,
+                    })
+                  }
+                />
+              )}
+            </>
+          )}
           <div className="flex items-stretch gap-4 pt-4">
             <Button fullWidth onClick={close}>
               {t("Cancel")}

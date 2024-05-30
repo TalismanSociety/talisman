@@ -2,6 +2,7 @@ import {
   ChainsQueryOptions,
   allChainsAtom,
   allChainsMapAtom,
+  allChainsMapByGenesisHashAtom,
   chainsArrayAtomFamily,
   chainsMapAtomFamily,
 } from "@ui/atoms"
@@ -11,6 +12,7 @@ import isEqual from "lodash/isEqual"
 
 export const useAllChains = () => useAtomValue(allChainsAtom)
 export const useAllChainsMap = () => useAtomValue(allChainsMapAtom)
+export const useAllChainsMapByGenesisHash = () => useAtomValue(allChainsMapByGenesisHashAtom)
 
 const chainsAtomFamily = atomFamily(
   (filter: ChainsQueryOptions) =>
