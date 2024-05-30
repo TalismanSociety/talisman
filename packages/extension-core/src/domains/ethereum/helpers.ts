@@ -64,7 +64,9 @@ export const getEthTransferTransactionBase = async (
       value: planck,
       to: getAddress(to),
     }
-  } else if (token.type === "evm-erc20") {
+  }
+
+  if (token.type === "evm-erc20" || token.type === "evm-uniswapv2") {
     const data = encodeFunctionData({
       abi: erc20Abi,
       functionName: "transfer",
@@ -76,7 +78,9 @@ export const getEthTransferTransactionBase = async (
       to: getAddress(token.contractAddress),
       data,
     }
-  } else throw new Error(`Invalid token type ${token.type} - token ${token.id}`)
+  }
+
+  throw new Error(`Invalid token type ${token.type} - token ${token.id}`)
 }
 
 export const serializeTransactionRequest = (
