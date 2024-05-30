@@ -61,7 +61,7 @@ const useBlockExplorerUrl = (token: Token) => {
     if (isErc20Token(token) && evmNetwork?.explorerUrl)
       return urlJoin(evmNetwork.explorerUrl, "token", token.contractAddress)
     if (isUniswapV2Token(token) && evmNetwork?.explorerUrl)
-      return urlJoin(evmNetwork.explorerUrl, "token", token.poolAddress)
+      return urlJoin(evmNetwork.explorerUrl, "token", token.contractAddress)
 
     return null
   }, [token, evmNetwork?.explorerUrl])
@@ -309,7 +309,7 @@ export const TokensPage = () => {
         (t.type === "evm-uniswapv2" && "univ2".includes(lowerSearch)) ||
         t.symbol.toLowerCase().includes(lowerSearch) ||
         (isErc20Token(t) && t.contractAddress.toLowerCase().includes(lowerSearch)) ||
-        (isUniswapV2Token(t) && t.poolAddress.toLowerCase().includes(lowerSearch))
+        (isUniswapV2Token(t) && t.contractAddress.toLowerCase().includes(lowerSearch))
     )
   }, [activeTokens, evmNetworkId, filteredTokens, search])
 

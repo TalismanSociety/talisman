@@ -28,7 +28,7 @@ export const useKnownEvmToken = (
     const isErc20ByAddress = (t: Token) =>
       isErc20Token(t) && t.contractAddress.toLowerCase() === lowerContractAddress
     const isUniswapV2ByAddress = (t: Token) =>
-      isUniswapV2Token(t) && t.poolAddress.toLowerCase() === lowerContractAddress
+      isUniswapV2Token(t) && t.contractAddress.toLowerCase() === lowerContractAddress
 
     const isToken = (t: Token) => isErc20ByAddress(t) || isUniswapV2ByAddress(t)
 

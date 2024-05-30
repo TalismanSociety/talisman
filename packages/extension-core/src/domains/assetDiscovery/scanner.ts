@@ -188,11 +188,9 @@ class AssetDiscoveryScanner {
                 }
 
                 if (token.type === "evm-erc20" || token.type === "evm-uniswapv2") {
-                  const address =
-                    token.type === "evm-erc20" ? token.contractAddress : token.poolAddress
                   const balance = await client.readContract({
                     abi: erc20Abi,
-                    address: address as EvmAddress,
+                    address: token.contractAddress as EvmAddress,
                     functionName: "balanceOf",
                     args: [check.address as EvmAddress],
                   })

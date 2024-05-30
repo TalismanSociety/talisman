@@ -107,9 +107,7 @@ export const AddCustomTokenPage = () => {
     async (token: FormData) => {
       try {
         assert(tokenInfo, "Missing token info")
-        const infoContractAddress =
-          tokenInfo.type === "evm-erc20" ? tokenInfo.contractAddress : tokenInfo.poolAddress
-        assert(infoContractAddress === token.contractAddress, "Token mismatch")
+        assert(tokenInfo.contractAddress === token.contractAddress, "Token mismatch")
         assert(tokenInfo.evmNetworkId === token.evmNetworkId, "Token mismatch")
 
         if (knownToken && !isActive) await setActive(true)
