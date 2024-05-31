@@ -189,8 +189,8 @@ export const EvmNativeModule: NewBalanceModule<
                     initialisingBalances.delete(balance.evmNetworkId)
                     if (BigInt(balance.value) > 0n) {
                       positiveBalanceNetworks.add(balance.evmNetworkId)
-                      resultBalances.push(balance)
                     }
+                    resultBalances.push(balance)
                   }
                 }
               })
