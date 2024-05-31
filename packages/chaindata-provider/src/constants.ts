@@ -1,7 +1,7 @@
 import { ChainId, EvmNetworkId, TokenId } from "./types"
 
 /** @dev temporarily change branch here when testing changes in chaindata */
-const CHAINDATA_BRANCH = "tmp/poolAddress-univ2-tokens" //  "main"
+const CHAINDATA_BRANCH = "main"
 
 //
 // GitHub repo constants
