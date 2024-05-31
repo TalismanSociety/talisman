@@ -435,7 +435,7 @@ export class Balance {
 
       if (rates0 === undefined || rates1 === undefined) return null
 
-      const extra = this.toJSON().extra
+      const extra = this.#valueGetter.get("extra")
       const extras = Array.isArray(extra) ? extra : extra !== undefined ? [extra] : []
       const totalSupply = extras.find((extra) => extra.label === "totalSupply")?.amount ?? "0"
       const reserve0 = extras.find((extra) => extra.label === "reserve0")?.amount ?? "0"
@@ -477,16 +477,26 @@ export class Balance {
   }
 
   /**
+   * A general method to get formatted values matching a certain type from this balance.
+   * @param valueType - The type of value to get.
+   * @returns An array of the values matching the type with formatted amounts.
+   */
+  private getValue(
+    valueType: BalanceStatusTypes
+  ): Array<FormattedAmount<AmountWithLabel<string>, string>> {
+    return this.getRawValue(valueType).map((value) => ({
+      ...value,
+      amount: this.#format(value.amount),
+    }))
+  }
+
+  /**
    * A general method to get values matching a certain type from this balance.
    * @param valueType - The type of value to get.
    * @returns An array of the values matching the type.
    */
-  private getValue(
-    valueType: BalanceStatusTypes
-  ): Array<Omit<AmountWithLabel<string>, "amount"> & { amount: BalanceFormatter }> {
-    return this.#valueGetter
-      .get(valueType)
-      .map((value) => ({ ...value, amount: this.#format(value.amount) }))
+  private getRawValue(valueType: BalanceStatusTypes): Array<AmountWithLabel<string>> {
+    return this.#valueGetter.get(valueType)
   }
 
   /**
@@ -503,9 +513,8 @@ export class Balance {
    * The balance will be reaped if this goes below the existential deposit.
    */
   get total() {
-    return this.#format(
-      this.free.planck + this.reserved.planck + includeInTotalExtraAmount(this.extra)
-    )
+    const extra = this.getValue("extra") as FormattedAmount<ExtraAmount<string>, string>[]
+    return this.#format(this.free.planck + this.reserved.planck + includeInTotalExtraAmount(extra))
   }
   /** The non-reserved balance of this token. Includes the frozen amount. Is included in the total. */
   get free() {
@@ -542,8 +551,8 @@ export class Balance {
 
   /** The extra balance of this token */
   get extra() {
-    const extra = this.getValue("extra")
-    if (extra.length > 0) return extra
+    const extra = this.getRawValue("extra")
+    if (extra.length > 0) return extra as ExtraAmount<string>[]
     return undefined
   }
 

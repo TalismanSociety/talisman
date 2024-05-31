@@ -144,6 +144,7 @@ export type AmountWithLabel<TLabel extends string> =
 
 /** A labelled extra amount of a balance */
 export type ExtraAmount<TLabel extends string> = BaseAmountWithLabel<TLabel> & {
+  type: "extra"
   /** If set to true, this extra amount will be included in the calculation of the total amount of this balance. */
   includeInTotal?: boolean
 }

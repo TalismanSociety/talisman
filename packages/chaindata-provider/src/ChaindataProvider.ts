@@ -9,8 +9,8 @@ import {
   fetchChains,
   fetchEvmNetwork,
   fetchEvmNetworks,
+  fetchSubstrateTokens,
   fetchToken,
-  fetchTokens,
 } from "./net"
 import { TalismanChaindataDatabase } from "./TalismanChaindataDatabase"
 import { IChaindataProvider, TokenTypes } from "./types"
@@ -442,7 +442,7 @@ export class ChaindataProvider implements IChaindataProvider {
   }: {
     chainsArgs?: Parameters<ChaindataProvider["hydrateChains"]>
     evmNetworksArgs?: Parameters<ChaindataProvider["hydrateEvmNetworks"]>
-    tokensArgs?: Parameters<ChaindataProvider["hydrateTokens"]>
+    tokensArgs?: Parameters<ChaindataProvider["hydrateSubstrateTokens"]>
   } = {}): Promise<boolean> {
     return (
       (
@@ -450,7 +450,7 @@ export class ChaindataProvider implements IChaindataProvider {
           // call inner hydration methods
           this.hydrateChains(),
           this.hydrateEvmNetworks(),
-          this.hydrateTokens(...(tokensArgs ? tokensArgs : [])),
+          this.hydrateSubstrateTokens(...(tokensArgs ? tokensArgs : [])),
         ])
       )
         // return true if any hydration occurred
@@ -645,7 +645,7 @@ export class ChaindataProvider implements IChaindataProvider {
    *
    * @returns A promise which resolves to true if the db has been hydrated, or false if the hydration was skipped.
    */
-  async hydrateTokens(chainIdFilter?: ChainId[]) {
+  async hydrateSubstrateTokens(chainIdFilter?: ChainId[]) {
     const now = Date.now()
     if (now - this.#lastHydratedTokensAt < minimumHydrationInterval) return false
 
@@ -653,7 +653,7 @@ export class ChaindataProvider implements IChaindataProvider {
 
     try {
       try {
-        var tokens = util.parseTokensResponse(await fetchTokens()) // eslint-disable-line no-var
+        var tokens = util.parseTokensResponse(await fetchSubstrateTokens()) // eslint-disable-line no-var
         if (tokens.length <= 0) throw new Error("Ignoring empty chaindata tokens response")
       } catch (error) {
         if (dbHasTokens) throw error

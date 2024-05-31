@@ -38,7 +38,7 @@ export type CustomEvmErc20Token = Omit<EvmErc20Token, "isCustom"> & { isCustom: 
 
 declare module "@talismn/chaindata-provider/plugins" {
   export interface PluginTokenTypes {
-    moduleType: EvmErc20Token
+    [moduleType]: EvmErc20Token
   }
 }
 

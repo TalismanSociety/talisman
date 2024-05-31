@@ -25,9 +25,11 @@ export const useUniswapV2LpTokenTotalValueLocked = (
 }
 
 const extractTvlFromBalance = (balance?: Balance, token?: Token, tokenRate?: number | null) => {
-  const extra = balance?.toJSON?.()?.extra
+  const extra = balance?.extra
   const extras = Array.isArray(extra) ? extra : extra !== undefined ? [extra] : []
-  const totalSupply = extras.find((extra) => extra.label === "totalSupply")?.amount ?? "0"
+  const totalSupply = BigNumber(
+    extras.find((extra) => extra.label === "totalSupply")?.amount ?? "0"
+  )
   const totalSupplyTokens = BigNumber(totalSupply).times(Math.pow(10, -1 * (token?.decimals ?? 0)))
 
   return BigNumber(tokenRate ?? 0).times(totalSupplyTokens)

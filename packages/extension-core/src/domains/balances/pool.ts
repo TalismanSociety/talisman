@@ -435,6 +435,7 @@ abstract class BalancePool {
       chain,
       evmNetwork,
     }))
+
     const existingTokens = this.tokens
     const noTokenChanges = isEqual(newTokens, existingTokens)
 
