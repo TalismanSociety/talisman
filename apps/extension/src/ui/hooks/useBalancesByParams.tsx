@@ -1,4 +1,4 @@
-import { AddressesByChain } from "@extension/core"
+import { AddressesByChain, BalanceSubscriptionResponse } from "@extension/core"
 import {
   AddressesAndTokens,
   Balances,
@@ -13,7 +13,7 @@ import { BehaviorSubject } from "rxjs"
 
 import { useBalancesHydrate } from "./useBalancesHydrate"
 
-const INITIAL_VALUE = new Balances({})
+const INITIAL_VALUE: BalanceSubscriptionResponse = { status: "initialising", data: [] }
 
 const DEFAULT_BY_CHAIN: AddressesByChain = {}
 const DEFAULT_EVM_NETWORKS_AND_ADDRESSES: EvmNetworksAndAddresses = {
@@ -37,34 +37,16 @@ export const useBalancesByParams = ({
   const hydrate = useBalancesHydrate()
 
   const subscribe = useCallback(
-    (subject: BehaviorSubject<Balances>) =>
-      api.balancesByParams(
+    (subject: BehaviorSubject<BalanceSubscriptionResponse>) => {
+      return api.balancesByParams(
         addressesByChain,
         addressesAndEvmNetworks,
         addressesAndTokens,
         async (update) => {
-          switch (update.type) {
-            case "reset": {
-              const newBalances = new Balances(update.balances)
-              return subject.next(newBalances)
-            }
-
-            case "upsert": {
-              const newBalances = new Balances(update.balances)
-              return subject.next(subject.value.add(newBalances))
-            }
-
-            case "delete": {
-              return subject.next(subject.value.remove(update.balances))
-            }
-
-            default: {
-              const exhaustiveCheck: never = update
-              throw new Error(`Unhandled BalancesUpdate type: ${exhaustiveCheck}`)
-            }
-          }
+          return subject.next(update)
         }
-      ),
+      )
+    },
     [addressesByChain, addressesAndEvmNetworks, addressesAndTokens]
   )
 
@@ -77,11 +59,19 @@ export const useBalancesByParams = ({
     [addressesByChain, addressesAndEvmNetworks, addressesAndTokens]
   )
 
-  const balances = useMessageSubscription(subscriptionKey, INITIAL_VALUE, subscribe)
+  const data = useMessageSubscription(subscriptionKey, INITIAL_VALUE, subscribe)
 
   // debounce every 100ms to prevent hammering UI with updates
-  const [debouncedBalances, setDebouncedBalances] = useState<Balances>(() => balances)
-  useDebounce(() => setDebouncedBalances(balances), 100, [balances])
+  const [debouncedBalances, setDebouncedBalances] = useState<BalanceSubscriptionResponse>(
+    () => data
+  )
+  useDebounce(() => setDebouncedBalances(data), 100, [data])
 
-  return useMemo(() => new Balances(debouncedBalances, hydrate), [debouncedBalances, hydrate])
+  return useMemo(
+    () => ({
+      status: debouncedBalances.status,
+      balances: new Balances(debouncedBalances.data, hydrate),
+    }),
+    [debouncedBalances, hydrate]
+  )
 }

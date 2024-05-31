@@ -10,7 +10,7 @@ export const Balances = () => {
 
   return (
     <div className="grid grid-cols-[repeat(6,_auto)] items-center gap-4">
-      {balances?.filterNonZero("total").sorted.map((balance) => (
+      {balances?.sorted.map((balance) => (
         <Fragment key={balance.id}>
           <div
             className={classNames([
@@ -62,11 +62,6 @@ export const Balances = () => {
             {balance.chain?.isTestnet || balance.evmNetwork?.isTestnet ? (
               <span className="text-tiny bg-alert-warn/10 text-alert-warn rounded-sm px-3 py-1 font-light">
                 Testnet
-              </span>
-            ) : null}
-            {balance.subSource !== undefined ? (
-              <span className="text-tiny bg-alert-warn/10 text-alert-warn rounded-sm px-3 py-1 font-light">
-                {balance.subSource}
               </span>
             ) : null}
           </span>

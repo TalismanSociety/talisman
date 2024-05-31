@@ -15,7 +15,7 @@ import {
   AuthorisedSiteUpdate,
   AuthorizedSite,
   AuthorizedSites,
-  BalancesUpdate,
+  BalanceSubscriptionResponse,
   ChangePasswordStatusUpdate,
   CustomEvmTokenCreate,
   DecryptRequestId,
@@ -165,12 +165,12 @@ export default interface MessageTypes {
     tokenId,
     address,
   }: RequestBalance) => Promise<BalanceJson | undefined>
-  balances: (cb: () => void) => UnsubscribeFn
+  balances: (cb: (balances: BalanceSubscriptionResponse) => void) => UnsubscribeFn
   balancesByParams: (
     addressesByChain: AddressesByChain,
     addressesAndEvmNetworks: AddressesAndEvmNetwork,
     addressesAndTokens: AddressesAndTokens,
-    cb: (balances: BalancesUpdate) => void
+    cb: (balances: BalanceSubscriptionResponse) => void
   ) => UnsubscribeFn
 
   // authorized sites message types ------------------------------------------

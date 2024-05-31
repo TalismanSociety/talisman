@@ -47,7 +47,6 @@ export class EvmTokenFetcher {
           for (const [tokenId, token] of Object.entries(tokens)) allEvmTokens[tokenId] = token
         }
       })
-
     await this.#chaindataProvider.updateEvmNetworkTokens(Object.values(allEvmTokens))
   }
 }

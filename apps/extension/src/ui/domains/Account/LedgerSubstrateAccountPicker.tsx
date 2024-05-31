@@ -96,20 +96,22 @@ const useLedgerChainAccounts = (
             acc.genesisHash === wa.genesisHash
         )
 
-        const accountBalances = balances.find(
+        const accountBalances = balances.balances.find(
           (b) =>
             convertAddress(b.address, null) === convertAddress(acc.address, null) &&
             b.chainId === chain?.id
         )
 
+        const isBalanceLoading =
+          accountBalances.each.some((b) => b.status === "cache") ||
+          balances.status === "initialising"
         return {
           ...acc,
           name: existingAccount?.name ?? acc.name,
           connected: !!existingAccount,
           selected: selectedAccounts.some((sa) => sa.address === acc.address),
           balances: accountBalances,
-          isBalanceLoading:
-            !balances.count || accountBalances.each.some((b) => b.status === "initializing"),
+          isBalanceLoading,
         }
       }),
     [balances, chain?.id, ledgerAccounts, selectedAccounts, walletAccounts]

@@ -1,4 +1,4 @@
-import { BalanceJson, BalanceJsonList } from "@talismn/balances"
+import { BalanceJson } from "@talismn/balances"
 import { ChainId, EvmNetwork, EvmNetworkId, TokenId } from "@talismn/chaindata-provider"
 import { TokenRateCurrency } from "@talismn/token-rates"
 
@@ -7,16 +7,16 @@ import { Address, AddressesByChain } from "../../types/base"
 export { Balances, Balance, BalanceFormatter, filterMirrorTokens } from "@talismn/balances"
 export type { BalanceJson, BalanceJsonList } from "@talismn/balances"
 
-export type BalancesUpdate = BalancesUpdateReset | BalancesUpdateUpsert | BalancesUpdateDelete
-export type BalancesUpdateReset = { type: "reset"; balances: BalanceJsonList }
-export type BalancesUpdateUpsert = { type: "upsert"; balances: BalanceJsonList }
-export type BalancesUpdateDelete = { type: "delete"; balances: string[] }
-
 export interface RequestBalance {
   chainId?: ChainId
   evmNetworkId?: EvmNetworkId
   tokenId: TokenId
   address: Address
+}
+
+export type BalanceSubscriptionResponse = {
+  data: BalanceJson[]
+  status: "cached" | "initialising" | "live"
 }
 
 export type AddressesAndEvmNetwork = {
@@ -56,6 +56,10 @@ export type BalanceTotal = {
 export interface BalancesMessages {
   // balance message signatures
   "pri(balances.get)": [RequestBalance, BalanceJson]
-  "pri(balances.subscribe)": [null, boolean, boolean]
-  "pri(balances.byparams.subscribe)": [RequestBalancesByParamsSubscribe, boolean, BalancesUpdate]
+  "pri(balances.subscribe)": [null, boolean, BalanceSubscriptionResponse]
+  "pri(balances.byparams.subscribe)": [
+    RequestBalancesByParamsSubscribe,
+    boolean,
+    BalanceSubscriptionResponse
+  ]
 }

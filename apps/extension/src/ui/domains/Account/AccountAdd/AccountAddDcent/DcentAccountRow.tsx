@@ -115,7 +115,7 @@ export const DcentAccountRow: FC<{ accountInfo: DcentAccountInfo }> = ({ account
               address={addressInfo.address}
               label={label}
               token={token}
-              balances={balances}
+              balances={balances.balances}
             />
           ))}
           <CornerDownRightIcon className="text-body-disabled absolute left-12 top-6 text-lg" />

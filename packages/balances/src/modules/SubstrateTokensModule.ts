@@ -7,7 +7,6 @@ import {
   ChainId,
   ChaindataProvider,
   NewTokenType,
-  SubChainId,
   githubTokenLogoUrl,
 } from "@talismn/chaindata-provider"
 import {
@@ -23,7 +22,7 @@ import { decodeAnyAddress } from "@talismn/util"
 import { DefaultBalanceModule, NewBalanceModule, NewTransferParamsType } from "../BalanceModule"
 import log from "../log"
 import { db as balancesDb } from "../TalismanBalancesDatabase"
-import { AddressesByToken, Amount, Balance, Balances, NewBalanceType } from "../types"
+import { AddressesByToken, AmountWithLabel, Balances, NewBalanceType } from "../types"
 import {
   GetOrCreateTypeRegistry,
   RpcStateQuery,
@@ -39,12 +38,6 @@ type ModuleType = "substrate-tokens"
 
 const subTokensTokenId = (chainId: ChainId, tokenSymbol: string) =>
   `${chainId}-substrate-tokens-${tokenSymbol}`.toLowerCase().replace(/ /g, "-")
-
-const getChainIdFromTokenId = (tokenId: string) => {
-  const match = /^([\d\w-]+)-substrate-tokens/.exec(tokenId)
-  if (!match?.[1]) throw new Error(`Can't detect chainId for token ${tokenId}`)
-  return match?.[1]
-}
 
 export type SubTokensToken = NewTokenType<
   ModuleType,
@@ -78,20 +71,11 @@ export type SubTokensModuleConfig = {
   >
 }
 
-export type SubTokensBalance = NewBalanceType<
-  ModuleType,
-  {
-    multiChainId: SubChainId
-
-    free: Amount
-    reserves: Amount
-    locks: Amount
-  }
->
+export type SubTokensBalance = NewBalanceType<ModuleType, "complex", "substrate">
 
 declare module "@talismn/balances/plugins" {
   export interface PluginBalanceTypes {
-    SubTokensBalance: SubTokensBalance
+    "substrate-tokens": SubTokensBalance
   }
 }
 
@@ -197,31 +181,19 @@ export const SubTokensModule: NewBalanceModule<
       return tokens
     },
 
-    getPlaceholderBalance(tokenId, address): SubTokensBalance {
-      const chainId = getChainIdFromTokenId(tokenId)
-
-      return {
-        source: "substrate-tokens",
-        status: "initializing",
-        address,
-        multiChainId: { subChainId: chainId },
-        chainId,
-        tokenId,
-        free: "0",
-        locks: "0",
-        reserves: "0",
-      }
-    },
-
     // TODO: Don't create empty subscriptions
-    async subscribeBalances(addressesByToken, callback) {
+    async subscribeBalances({ addressesByToken }, callback) {
       const queries = await buildQueries(
         chaindataProvider,
         getOrCreateTypeRegistry,
         addressesByToken
       )
       const unsubscribe = await new RpcStateQueryHelper(chainConnector, queries).subscribe(
-        (error, result) => (error ? callback(error) : callback(null, new Balances(result ?? [])))
+        (error, result) => {
+          if (error) callback(error)
+          const balances = result?.filter((b): b is SubTokensBalance => b !== null) ?? []
+          if (balances.length > 0) callback(null, new Balances(balances))
+        }
       )
 
       return unsubscribe
@@ -236,8 +208,8 @@ export const SubTokensModule: NewBalanceModule<
         addressesByToken
       )
       const result = await new RpcStateQueryHelper(chainConnectors.substrate, queries).fetch()
-
-      return new Balances(result ?? [])
+      const balances = result?.filter((b): b is SubTokensBalance => b !== null) ?? []
+      return new Balances(balances)
     },
 
     async transferToken({
@@ -357,8 +329,8 @@ async function buildQueries(
   chaindataProvider: ChaindataProvider,
   getOrCreateTypeRegistry: GetOrCreateTypeRegistry,
   addressesByToken: AddressesByToken<SubTokensToken>
-): Promise<Array<RpcStateQuery<Balance>>> {
-  const chains = await chaindataProvider.chainsById()
+): Promise<Array<RpcStateQuery<SubTokensBalance | null>>> {
+  const allChains = await chaindataProvider.chainsById()
   const tokens = await chaindataProvider.tokensById()
   const miniMetadatas = new Map(
     (await balancesDb.miniMetadatas.toArray()).map((miniMetadata) => [
@@ -368,8 +340,8 @@ async function buildQueries(
   )
 
   const uniqueChainIds = getUniqueChainIds(addressesByToken, tokens)
+  const chains = Object.fromEntries(uniqueChainIds.map((chainId) => [chainId, allChains[chainId]]))
   const chainStorageDecoders = buildStorageDecoders({
-    chainIds: uniqueChainIds,
     chains,
     miniMetadatas,
     moduleType: "substrate-tokens",
@@ -412,7 +384,7 @@ async function buildQueries(
         ? getOrCreateTypeRegistry(chainId, chainMeta.miniMetadata)
         : new TypeRegistry()
 
-    return addresses.flatMap((address): RpcStateQuery<Balance> | [] => {
+    return addresses.flatMap((address): RpcStateQuery<SubTokensBalance | null> | [] => {
       const storageHelper = new StorageHelper(
         registry,
         "tokens",
@@ -437,33 +409,37 @@ async function buildQueries(
         //   reserved: 0n
         //   frozen: 0n
         // }
-        const balance = ((storageDecoder && change !== null
-          ? storageDecoder.decode($.decodeHex(change))
-          : // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            null) as any) ?? {
-          free: 0n,
-          reserved: 0n,
-          frozen: 0n,
-        }
+        const balance =
+          storageDecoder && change !== null
+            ? (storageDecoder.decode($.decodeHex(change)) as Record<
+                "free" | "reserved" | "frozen",
+                bigint
+              >)
+            : {
+                free: 0n,
+                reserved: 0n,
+                frozen: 0n,
+              }
 
         const free = (balance?.free ?? 0n).toString()
         const reserved = (balance?.reserved ?? 0n).toString()
         const frozen = (balance?.frozen ?? 0n).toString()
 
-        return new Balance({
+        const balanceValues: Array<AmountWithLabel<string>> = [
+          { type: "free", label: "free", amount: free.toString() },
+          { type: "reserved", label: "reserved", amount: reserved.toString() },
+          { type: "locked", label: "frozen", amount: frozen.toString() },
+        ]
+
+        return {
           source: "substrate-tokens",
-
           status: "live",
-
           address,
           multiChainId: { subChainId: chainId },
           chainId,
           tokenId: token.id,
-
-          free,
-          reserves: reserved,
-          locks: frozen,
-        })
+          values: balanceValues,
+        } as SubTokensBalance
       }
 
       return { chainId, stateKey, decodeResult }
