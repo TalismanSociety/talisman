@@ -1,12 +1,16 @@
-import { AccountAddressType, AccountJsonAny, Balances, Token } from "@extension/core"
+import { AccountAddressType, AccountJsonAny, Balances } from "@extension/core"
 import { HydrateDb } from "@talismn/balances"
-import { Chain, ChainId, EvmNetwork, EvmNetworkId } from "@talismn/chaindata-provider"
+import { Chain, ChainId, EvmNetwork, EvmNetworkId, Token } from "@talismn/chaindata-provider"
 import { isEvmToken } from "@ui/util/isEvmToken"
 import { isSubToken } from "@ui/util/isSubToken"
 import { t } from "i18next"
 import { atom } from "jotai"
 
-import { balancesByAccountCategoryAtomFamily, balancesHydrateAtom } from "./balances"
+import {
+  balancesByAccountCategoryAtomFamily,
+  balancesHydrateAtom,
+  balancesInitialisingAtom,
+} from "./balances"
 import {
   chainsArrayAtomFamily,
   evmNetworksArrayAtomFamily,
@@ -32,6 +36,7 @@ type PortfolioGlobalData = {
   allBalances: Balances
   portfolioBalances: Balances
   isProvisioned: boolean
+  isInitialising: boolean
 }
 
 const getNetworkTokenSymbols = ({
@@ -110,7 +115,7 @@ const getNetworkOptions = ({
   // NetworkOptions.
   const chainIdsWithBalances = new Set()
   const evmNetworkIdsWithBalances = new Set()
-  balances?.filterNonZero("total").each.forEach((b) => {
+  balances?.each.forEach((b) => {
     b.chainId && chainIdsWithBalances.add(b.chainId)
     b.evmNetworkId && evmNetworkIdsWithBalances.add(b.evmNetworkId)
   })
@@ -165,14 +170,16 @@ export const networkFilterAtom = atom<NetworkOption | undefined>(undefined)
 // the async atom, whose value must be copied in the sync atom
 export const portfolioGlobalDataAsyncAtom = atom<Promise<PortfolioGlobalData>>(async (get) => {
   const includeTestnets = (await get(settingsAtomFamily("useTestnets"))) as boolean
-  const [chains, tokens, evmNetworks, hydrate, allBalances, portfolioBalances] = await Promise.all([
-    get(chainsArrayAtomFamily({ activeOnly: true, includeTestnets })),
-    get(tokensArrayAtomFamily({ activeOnly: true, includeTestnets })),
-    get(evmNetworksArrayAtomFamily({ activeOnly: true, includeTestnets })),
-    get(balancesHydrateAtom),
-    get(balancesByAccountCategoryAtomFamily("all")),
-    get(balancesByAccountCategoryAtomFamily("portfolio")),
-  ])
+  const [chains, tokens, evmNetworks, hydrate, allBalances, portfolioBalances, isInitialising] =
+    await Promise.all([
+      get(chainsArrayAtomFamily({ activeOnly: true, includeTestnets })),
+      get(tokensArrayAtomFamily({ activeOnly: true, includeTestnets })),
+      get(evmNetworksArrayAtomFamily({ activeOnly: true, includeTestnets })),
+      get(balancesHydrateAtom),
+      get(balancesByAccountCategoryAtomFamily("all")),
+      get(balancesByAccountCategoryAtomFamily("portfolio")),
+      get(balancesInitialisingAtom),
+    ])
 
   return {
     chains,
@@ -181,6 +188,7 @@ export const portfolioGlobalDataAsyncAtom = atom<Promise<PortfolioGlobalData>>(a
     hydrate,
     allBalances,
     portfolioBalances,
+    isInitialising,
     isProvisioned: true,
   }
 })
@@ -194,6 +202,7 @@ export const portfolioGlobalDataAtom = atom<PortfolioGlobalData>({
   allBalances: new Balances([]),
   portfolioBalances: new Balances([]),
   isProvisioned: false,
+  isInitialising: false,
 })
 
 // recomputes only if a filter (account, network) is changed
@@ -205,6 +214,7 @@ const portfolioBaseAtom = atom((get) => {
     evmNetworks,
     allBalances: allAccountsBalances,
     portfolioBalances,
+    isInitialising,
   } = get(portfolioGlobalDataAtom)
   const networkFilter = get(networkFilterAtom)
   const account = get(portfolioAccountAtom)
@@ -222,8 +232,6 @@ const portfolioBaseAtom = atom((get) => {
     balances: allBalances,
     type: accountType,
   })
-  const isInitializing =
-    !allBalances.count || allBalances.each.some((b) => b.status === "initializing")
 
   return {
     allBalances,
@@ -235,7 +243,7 @@ const portfolioBaseAtom = atom((get) => {
     networkBalances,
     accountType,
     networks,
-    isInitializing,
+    isInitialising,
   }
 })
 

@@ -1,9 +1,9 @@
 import { fiatDecimalSeparator, fiatGroupSeparator, formatFiat } from "@talisman/util/formatFiat"
 import { BalanceFormatter } from "@talismn/balances"
+import { TokenRateCurrency } from "@talismn/token-rates"
 import { classNames } from "@talismn/util"
 import { useSelectedCurrency } from "@ui/hooks/useCurrency"
 import { useRevealableBalance } from "@ui/hooks/useRevealableBalance"
-import { TokenRateCurrency } from "extension-core"
 import React, { useCallback, useMemo } from "react"
 import CountUp from "react-countup"
 

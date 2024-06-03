@@ -2,12 +2,13 @@ import { ScrollContainer } from "@talisman/components/ScrollContainer"
 import { SearchInput } from "@talisman/components/SearchInput"
 import { ChevronRightIcon } from "@talismn/icons"
 import { classNames } from "@talismn/util"
+import { NetworkOption } from "@ui/atoms"
 import { FC, useCallback, useDeferredValue, useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
 import { Modal } from "talisman-ui"
 
 import { ChainLogo } from "../Asset/ChainLogo"
-import { NetworkOption, usePortfolio } from "./usePortfolio"
+import { usePortfolio } from "./usePortfolio"
 
 const NetworkRow: FC<{ id: string; name: string; isSelected?: boolean; onClick: () => void }> = ({
   id,
