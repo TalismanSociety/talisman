@@ -87,7 +87,12 @@ export default class AssetTransfersRpc {
     const chain = await chaindataProvider.chainByGenesisHash(genesisHash)
     if (!chain) throw new Error(`Could not find chain for genesisHash ${genesisHash}`)
 
-    const { registry } = await getTypeRegistry(chain.id)
+    const { registry } = await getTypeRegistry(
+      unsigned.genesisHash,
+      unsigned.specVersion,
+      unsigned.blockHash,
+      unsigned.signedExtensions
+    )
 
     // create the unsigned extrinsic
     const tx = registry.createType(

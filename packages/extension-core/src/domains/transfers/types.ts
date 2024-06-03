@@ -1,11 +1,11 @@
 import { HexString } from "@polkadot/util/types"
 import { Address } from "@talismn/balances"
+import { TokenId } from "@talismn/chaindata-provider"
 import { TransactionRequest } from "viem"
 
 import { ChainId } from "../chains/types"
 import { EthGasSettings, EvmNetworkId } from "../ethereum/types"
 import { SignerPayloadJSON } from "../signing/types"
-import { TokenId } from "../tokens/types"
 import { WalletTransactionTransferInfo } from "../transactions"
 
 // Asset Transfer Messages

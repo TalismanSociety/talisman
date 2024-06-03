@@ -69,6 +69,7 @@ const useIsSendingEnough = (
     try {
       if (!token || !recipientBalance || !transfer) return true
       switch (token.type) {
+        case "evm-uniswapv2":
         case "evm-erc20":
         case "evm-native":
           return true

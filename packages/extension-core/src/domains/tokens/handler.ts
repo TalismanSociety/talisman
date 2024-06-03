@@ -1,4 +1,10 @@
 import { assert } from "@polkadot/util"
+import {
+  CustomEvmErc20Token,
+  CustomEvmUniswapV2Token,
+  evmErc20TokenId,
+  evmUniswapV2TokenId,
+} from "@talismn/balances"
 import { githubUnknownTokenLogoUrl } from "@talismn/chaindata-provider"
 
 import { talismanAnalytics } from "../../libs/Analytics"
@@ -8,9 +14,8 @@ import { updateAndWaitForUpdatedChaindata } from "../../rpcs/mini-metadata-updat
 import { MessageTypes, RequestTypes, ResponseType } from "../../types"
 import { Port, RequestIdOnly } from "../../types/base"
 import { assetDiscoveryScanner } from "../assetDiscovery/scanner"
-import { getErc20TokenId } from "../ethereum/helpers"
 import { activeTokensStore } from "./store.activeTokens"
-import { CustomErc20Token, CustomErc20TokenCreate } from "./types"
+import { CustomEvmTokenCreate } from "./types"
 
 export default class TokensHandler extends ExtensionHandler {
   public async handle<TMessageType extends MessageTypes>(
@@ -39,43 +44,102 @@ export default class TokensHandler extends ExtensionHandler {
       // ERC20 token handlers -----------------------------------------------
       // --------------------------------------------------------------------
 
-      case "pri(tokens.erc20.custom.add)": {
-        const token = request as CustomErc20TokenCreate
+      case "pri(tokens.evm.custom.add)": {
+        const token = request as CustomEvmTokenCreate
         const networkId = token.chainId || token.evmNetworkId
         assert(networkId, "A chainId or an evmNetworkId is required")
         const chain = token.chainId ? await chaindataProvider.chainById(token.chainId) : undefined
         const evmNetwork = token.evmNetworkId
           ? await chaindataProvider.evmNetworkById(token.evmNetworkId)
           : undefined
-        assert(typeof token.contractAddress === "string", "A contract address is required")
+        assert(typeof token.type === "string", "A token type is required")
+        if (token.type === "evm-erc20") {
+          assert(typeof token.contractAddress === "string", "A contract address is required")
+        }
+        if (token.type === "evm-uniswapv2") {
+          assert(typeof token.poolAddress === "string", "A contract address is required")
+          assert(typeof token.tokenAddress0 === "string", "A tokenAddress0 is required")
+          assert(typeof token.tokenAddress1 === "string", "A tokenAddress1 is required")
+          assert(typeof token.symbol0 === "string", "A token0 symbol is required")
+          assert(typeof token.symbol1 === "string", "A token1 symbol is required")
+          assert(typeof token.decimals0 === "number", "A number of token0 decimals is required")
+          assert(typeof token.decimals1 === "number", "A number of token1 decimals is required")
+        }
         assert(typeof token.symbol === "string", "A token symbol is required")
         assert(typeof token.decimals === "number", "A number of token decimals is required")
 
-        const tokenId = getErc20TokenId(networkId, token.contractAddress)
+        const tokenId = (() => {
+          if (token.type === "evm-erc20") return evmErc20TokenId(networkId, token.contractAddress)
+          if (token.type === "evm-uniswapv2")
+            return evmUniswapV2TokenId(networkId, token.poolAddress)
+
+          return
+        })()
+        assert(typeof tokenId === "string", "A token id is required")
         const existing = await chaindataProvider.tokenById(tokenId)
         assert(!existing, "This token already exists")
 
-        const { symbol, decimals, coingeckoId, contractAddress, image } = token
+        const newToken: CustomEvmErc20Token | CustomEvmUniswapV2Token | undefined = (() => {
+          if (token.type === "evm-erc20")
+            return {
+              id: tokenId,
+              type: "evm-erc20",
+              isTestnet: (chain || evmNetwork)?.isTestnet || false,
+              symbol: token.symbol,
+              decimals: Number(token.decimals), // some dapps (ie moonriver.moonscan.io) may send a string here, which breaks balances
+              logo: token.image || githubUnknownTokenLogoUrl,
+              coingeckoId: token.coingeckoId,
+              contractAddress: token.contractAddress,
+              evmNetwork: token.evmNetworkId ? { id: token.evmNetworkId } : null,
+              isCustom: true,
+              image: token.image,
+            }
 
-        const newToken: CustomErc20Token = {
-          id: tokenId,
-          type: "evm-erc20",
-          isTestnet: (chain || evmNetwork)?.isTestnet || false,
-          symbol,
-          decimals: Number(decimals), // some dapps (ie moonriver.moonscan.io) may send a string here, which breaks balances
-          logo: image || githubUnknownTokenLogoUrl,
-          coingeckoId,
-          contractAddress,
-          evmNetwork: token.evmNetworkId ? { id: token.evmNetworkId } : null,
-          isCustom: true,
-          image,
-        }
+          if (token.type === "evm-uniswapv2")
+            return {
+              id: tokenId,
+              type: "evm-uniswapv2",
+              isTestnet: (chain || evmNetwork)?.isTestnet || false,
+              symbol: token.symbol,
+              decimals: Number(token.decimals), // some dapps (ie moonriver.moonscan.io) may send a string here, which breaks balances
+              logo: token.image || githubUnknownTokenLogoUrl,
+              symbol0: token.symbol0,
+              decimals0: token.decimals0,
+              symbol1: token.symbol1,
+              decimals1: token.decimals1,
+              poolAddress: token.poolAddress,
+              tokenAddress0: token.tokenAddress0,
+              tokenAddress1: token.tokenAddress1,
+              coingeckoId0: token.coingeckoId0,
+              coingeckoId1: token.coingeckoId1,
+              evmNetwork: token.evmNetworkId ? { id: token.evmNetworkId } : null,
+              isCustom: true,
+              image: token.image,
+            }
 
-        talismanAnalytics.capture(`${existing ? "update" : "add"} custom ERC20 token`, {
-          evmNetworkId: token.evmNetworkId,
-          symbol: token.symbol,
-          contractAddress,
-        })
+          return
+        })()
+        assert(newToken !== undefined, "Invalid token")
+
+        talismanAnalytics.capture(
+          `${existing ? "update" : "add"} custom ${
+            token.type === "evm-uniswapv2"
+              ? "UNIV2"
+              : token.type === "evm-erc20"
+              ? "ERC20"
+              : "unknown"
+          } token`,
+          {
+            evmNetworkId: token.evmNetworkId,
+            symbol: token.symbol,
+            contractAddress:
+              token.type === "evm-erc20"
+                ? token.contractAddress
+                : token.type === "evm-uniswapv2"
+                ? token.poolAddress
+                : undefined,
+          }
+        )
 
         const newTokenId = await chaindataProvider.addCustomToken(newToken)
 
@@ -84,7 +148,7 @@ export default class TokensHandler extends ExtensionHandler {
         return newTokenId
       }
 
-      case "pri(tokens.erc20.custom.remove)": {
+      case "pri(tokens.evm.custom.remove)": {
         const { id } = request as RequestIdOnly
         await activeTokensStore.resetActive(id)
         return chaindataProvider.removeCustomToken(id)

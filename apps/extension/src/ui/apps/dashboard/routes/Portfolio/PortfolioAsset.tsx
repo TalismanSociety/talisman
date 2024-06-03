@@ -11,6 +11,7 @@ import { useSelectedAccount } from "@ui/domains/Portfolio/useSelectedAccount"
 import { useTokenBalancesSummary } from "@ui/domains/Portfolio/useTokenBalancesSummary"
 import { useAnalytics } from "@ui/hooks/useAnalytics"
 import { useSendFundsPopup } from "@ui/hooks/useSendFundsPopup"
+import { useUniswapV2LpTokenTotalValueLocked } from "@ui/hooks/useUniswapV2LpTokenTotalValueLocked"
 import { FC, useCallback, useEffect, useMemo } from "react"
 import { useTranslation } from "react-i18next"
 import { Navigate, useNavigate, useParams, useSearchParams } from "react-router-dom"
@@ -39,40 +40,52 @@ const AssetStats: FC<{ balances: Balances; symbol: string }> = ({ balances, symb
   const handleBackBtnClick = useCallback(() => navigate("/portfolio/tokens"), [navigate])
   const { t } = useTranslation()
 
+  const isUniswapV2LpToken = token?.type === "evm-uniswapv2"
+  const tvl = useUniswapV2LpTokenTotalValueLocked(token, rate, balances)
+
   return (
-    <div className="flex h-48 w-full gap-8">
-      <div className="flex grow flex-col justify-center gap-8">
-        <button
-          className="text-body-secondary hover:text-grey-300 text:text-sm flex cursor-pointer items-center whitespace-nowrap bg-none p-0 text-base"
-          type="button"
-          onClick={handleBackBtnClick}
-        >
-          <ChevronLeftIcon />
-          <span className="text-sm">{t("Asset")}</span>
-        </button>
-        <div className="flex items-center gap-6">
-          <div className="text-3xl">
-            <TokenLogo tokenId={token?.id} className="text-3xl" />
-          </div>
-          <div>
-            <div className="text-md">{token?.symbol}</div>
-            {rate && <Fiat amount={rate} className="text-body-secondary" />}
-          </div>
-          <div className="flex flex-wrap">
-            <Tooltip>
-              <TooltipTrigger
-                onClick={canSendFunds ? handleSendFundsClick : undefined}
-                className={classNames(
-                  "text-body-secondary flex h-12 w-12 flex-col items-center justify-center rounded-full text-sm",
-                  canSendFunds
-                    ? "hover:bg-grey-800 focus-visible:bg-grey-800 hover:text-body"
-                    : "cursor-default opacity-50"
-                )}
-              >
-                <SendIcon />
-              </TooltipTrigger>
-              <TooltipContent>{canSendFunds ? t("Send") : cannotSendFundsReason}</TooltipContent>
-            </Tooltip>
+    <div>
+      <div className="flex h-48 w-full gap-8">
+        <div className="flex grow flex-col justify-center gap-8">
+          <button
+            className="text-body-secondary hover:text-grey-300 text:text-sm flex cursor-pointer items-center whitespace-nowrap bg-none p-0 text-base"
+            type="button"
+            onClick={handleBackBtnClick}
+          >
+            <ChevronLeftIcon />
+            <span className="text-sm">{t("Asset")}</span>
+          </button>
+          <div className="flex items-center gap-6">
+            <div className="text-3xl">
+              <TokenLogo tokenId={token?.id} className="text-3xl" />
+            </div>
+            <div>
+              <div className="text-md">{token?.symbol}</div>
+              {isUniswapV2LpToken && typeof tvl === "number" && (
+                <div className="text-body-secondary whitespace-nowrap">
+                  <Fiat amount={tvl} /> <span className="text-tiny">TVL</span>
+                </div>
+              )}
+              {!isUniswapV2LpToken && typeof rate === "number" && (
+                <Fiat amount={rate} className="text-body-secondary" />
+              )}
+            </div>
+            <div className="flex flex-wrap">
+              <Tooltip>
+                <TooltipTrigger
+                  onClick={canSendFunds ? handleSendFundsClick : undefined}
+                  className={classNames(
+                    "text-body-secondary flex h-12 w-12 flex-col items-center justify-center rounded-full text-sm",
+                    canSendFunds
+                      ? "hover:bg-grey-800 focus-visible:bg-grey-800 hover:text-body"
+                      : "cursor-default opacity-50"
+                  )}
+                >
+                  <SendIcon />
+                </TooltipTrigger>
+                <TooltipContent>{canSendFunds ? t("Send") : cannotSendFundsReason}</TooltipContent>
+              </Tooltip>
+            </div>
           </div>
         </div>
       </div>

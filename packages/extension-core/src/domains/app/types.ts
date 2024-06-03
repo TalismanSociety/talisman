@@ -1,8 +1,8 @@
+import { TokenId } from "@talismn/chaindata-provider"
 import { Properties } from "posthog-js"
 
 import { ValidRequests } from "../../libs/requests/types"
 import { Address } from "../../types/base"
-import { TokenId } from "../tokens/types"
 
 export type RemoteConfigStoreData = {
   featureFlags: FeatureFlags

@@ -12,8 +12,6 @@ import { useEffect } from "react"
 
 import { useSelectedAccount } from "./useSelectedAccount"
 
-export type { NetworkOption } from "@ui/atoms"
-
 let isProvisioningHookMounted = false
 
 // call this only in the root component, this sadly can't be done from an atom

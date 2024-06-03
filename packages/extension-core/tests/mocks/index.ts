@@ -41,4 +41,16 @@ jest.mock("../../src/util/fetchRemoteConfig", () => ({
   ),
 }))
 
+jest.mock("webextension-polyfill", () => {
+  return {
+    ...jest.requireActual("webextension-polyfill"),
+    runtime: {
+      ...jest.requireActual("webextension-polyfill").runtime,
+      getBackgroundPage: jest
+        .fn()
+        .mockImplementation(() => Promise.resolve({ location: window.location })),
+    },
+  }
+})
+
 export {}

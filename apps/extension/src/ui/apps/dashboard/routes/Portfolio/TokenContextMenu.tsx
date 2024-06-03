@@ -1,4 +1,5 @@
-import { Erc20Token, TokenId } from "@extension/core"
+import { EvmErc20Token } from "@talismn/balances"
+import { TokenId } from "@talismn/chaindata-provider"
 import { MoreHorizontalIcon } from "@talismn/icons"
 import { classNames } from "@talismn/util"
 import { useViewOnExplorer } from "@ui/domains/ViewOnExplorer"
@@ -15,7 +16,7 @@ import {
 } from "talisman-ui"
 import urlJoin from "url-join"
 
-const ViewOnExplorerMenuItem: FC<{ token: Erc20Token }> = ({ token }) => {
+const ViewOnExplorerMenuItem: FC<{ token: EvmErc20Token }> = ({ token }) => {
   const { t } = useTranslation()
   const { genericEvent } = useAnalytics()
 

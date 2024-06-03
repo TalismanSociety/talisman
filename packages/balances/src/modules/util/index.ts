@@ -18,11 +18,11 @@ import {
   ExtendableTokenType,
   ExtendableTransferParams,
   NewBalanceModule,
+  SubscriptionResultWithStatus,
 } from "../../BalanceModule"
 import log from "../../log"
 import {
   AddressesByToken,
-  BalanceJson,
   Balances,
   MiniMetadata,
   SubscriptionCallback,
@@ -53,7 +53,7 @@ export async function balances<
 >(
   balanceModule: BalanceModule<TModuleType, TTokenType, TChainMeta, TModuleConfig, TTransferParams>,
   addressesByToken: AddressesByToken<TTokenType>,
-  callback: SubscriptionCallback<Balances>
+  callback: SubscriptionCallback<Balances | SubscriptionResultWithStatus>
 ): Promise<UnsubscribeFn>
 export async function balances<
   TModuleType extends string,
@@ -64,11 +64,11 @@ export async function balances<
 >(
   balanceModule: BalanceModule<TModuleType, TTokenType, TChainMeta, TModuleConfig, TTransferParams>,
   addressesByToken: AddressesByToken<TTokenType>,
-  callback?: SubscriptionCallback<Balances>
+  callback?: SubscriptionCallback<Balances | SubscriptionResultWithStatus>
 ): Promise<Balances | UnsubscribeFn> {
   // subscription request
   if (callback !== undefined)
-    return await balanceModule.subscribeBalances(addressesByToken, callback)
+    return await balanceModule.subscribeBalances({ addressesByToken }, callback)
 
   // one-off request
   return await balanceModule.fetchBalances(addressesByToken)
@@ -227,35 +227,6 @@ export const deleteSubscriptionId = () => {
 }
 
 /**
- * Sets all balance statuses from `live-${string}` to either `live` or `cached`
- *
- * You should make sure that the input collection `balances` is mutable, because the statuses
- * will be changed in-place as a performance consideration.
- */
-export const deriveStatuses = (
-  validSubscriptionIds: Set<string>,
-  balances: BalanceJson[]
-): BalanceJson[] => {
-  balances.forEach((balance) => {
-    if (["live", "cache", "stale", "initializing"].includes(balance.status)) return balance
-
-    if (validSubscriptionIds.size < 1) {
-      balance.status = "cache"
-      return balance
-    }
-
-    if (!validSubscriptionIds.has(balance.status.slice("live-".length))) {
-      balance.status = "cache"
-      return balance
-    }
-
-    balance.status = "live"
-    return balance
-  })
-  return balances
-}
-
-/**
  * Used by a variety of balance modules to help encode and decode substrate state calls.
  */
 export class StorageHelper {
@@ -390,7 +361,6 @@ export class RpcStateQueryHelper<T> {
     unsubscribeMethod = "state_unsubscribeStorage"
   ): Promise<UnsubscribeFn> {
     const queriesByChain = groupBy(this.#queries, "chainId")
-
     const subscriptions = Object.entries(queriesByChain).map(([chainId, queries]) => {
       const params = [queries.map(({ stateKey }) => stateKey)]
 
@@ -499,27 +469,30 @@ export const getUniqueChainIds = (
       .flatMap((chainId) => (chainId ? [chainId] : []))
   ),
 ]
-export const buildStorageDecoders = <
+
+type StorageDecoderParams<
   TBalanceModule extends AnyNewBalanceModule,
   TDecoders extends { [key: string]: [string, string] }
->({
-  chainIds,
-  chains,
-  miniMetadatas,
-  moduleType,
-  decoders,
-}: {
-  chainIds: ChainId[]
+> = {
   chains: ChainList
   miniMetadatas: Map<string, MiniMetadata>
   moduleType: InferModuleType<TBalanceModule>
   decoders: TDecoders
-}) =>
-  new Map(
-    [...chainIds].flatMap((chainId) => {
-      const chain = chains[chainId]
-      if (!chain) return []
+}
 
+export type StorageDecoders = Map<ChainId, Record<string, $.AnyShape | undefined>>
+
+export const buildStorageDecoders = <
+  TBalanceModule extends AnyNewBalanceModule,
+  TDecoders extends { [key: string]: [string, string] }
+>({
+  chains,
+  miniMetadatas,
+  moduleType,
+  decoders,
+}: StorageDecoderParams<TBalanceModule, TDecoders>): StorageDecoders =>
+  new Map(
+    Object.entries(chains).flatMap(([chainId, chain]) => {
       const [, miniMetadata] = findChainMeta<TBalanceModule>(miniMetadatas, moduleType, chain)
       if (!miniMetadata) return []
       if (miniMetadata.version < 14) return []

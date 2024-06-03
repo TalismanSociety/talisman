@@ -11,7 +11,7 @@ import { StaleBalancesIcon } from "./StaleBalancesIcon"
 
 type Props = {
   locked?: boolean
-  tokens: BigNumber
+  tokens: BigNumber | number
   fiat: number | null
   symbol: string
   render?: boolean

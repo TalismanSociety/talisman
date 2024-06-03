@@ -38,12 +38,12 @@ const AssetRowSkeleton: FC<{ className?: string }> = ({ className }) => {
 
 export const DashboardAssetsTable = () => {
   const { t } = useTranslation()
-  const { isInitializing } = usePortfolio()
+  const { isInitialising } = usePortfolio()
   const { account } = useSelectedAccount()
   // group by token (symbol)
   const { symbolBalances } = usePortfolioSymbolBalancesByFilter("search")
 
-  if (!symbolBalances.length && !isInitializing) {
+  if (!symbolBalances.length && !isInitialising) {
     return (
       <div className="text-body-secondary bg-grey-850 mt-12 rounded-sm p-8">
         {account ? t("No assets were found on this account.") : t("No assets were found.")}
@@ -64,7 +64,7 @@ export const DashboardAssetsTable = () => {
       {symbolBalances.map(([symbol, b]) => (
         <AssetRow key={symbol} balances={b} />
       ))}
-      {isInitializing && <AssetRowSkeleton />}
+      {isInitialising && <AssetRowSkeleton />}
     </div>
   )
 }
