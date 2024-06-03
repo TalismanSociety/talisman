@@ -99,7 +99,11 @@ const PortfolioSearch = () => {
 
   return (
     <SearchInput
-      containerClassName="!bg-field ring-grey-700 rounded-sm max-w-[374rem] h-[3.6rem]"
+      containerClassName={classNames(
+        "!bg-field ring-grey-700 rounded-sm h-[3.6rem] max-w-[37.4rem]"
+        //"outline outline-orange"
+        // IS_POPUP ? "max-w-[20rem]" : ""
+      )}
       placeholder={t("Search")}
       onChange={setSearch}
       initialValue={search}
@@ -109,11 +113,11 @@ const PortfolioSearch = () => {
 
 export const PortfolioToolbar = () => {
   return (
-    <div className="flex w-full justify-between">
-      <div>
+    <div className="flex w-full items-center justify-between gap-8 overflow-hidden">
+      <div className="-mx-1 flex grow items-center overflow-clip px-1">
         <PortfolioSearch />
       </div>
-      <div className="flex gap-4">
+      <div className="flex shrink-0 gap-4">
         <ViewModeToggleButton />
         <NetworkFilterButton />
       </div>

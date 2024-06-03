@@ -10,6 +10,8 @@ import { CurrentAccountAvatar } from "@ui/domains/Account/CurrentAccountAvatar"
 import { Fiat } from "@ui/domains/Asset/Fiat"
 import { useCopyAddressModal } from "@ui/domains/CopyAddress"
 import { PopupAssetsTable } from "@ui/domains/Portfolio/AssetsTable"
+import { PortfolioTabs } from "@ui/domains/Portfolio/PortfolioTabs"
+import { PortfolioToolbar } from "@ui/domains/Portfolio/PortfolioToolbar"
 import { useDisplayBalances } from "@ui/domains/Portfolio/useDisplayBalances"
 import { usePortfolio } from "@ui/domains/Portfolio/usePortfolio"
 import { useSelectedAccount } from "@ui/domains/Portfolio/useSelectedAccount"
@@ -32,6 +34,111 @@ import {
   TooltipTrigger,
 } from "talisman-ui"
 
+const PortfolioAssetsHeader = () => {
+  const { t } = useTranslation()
+  const currency = useSelectedCurrency()
+
+  const allBalances = useBalances()
+  const { networkBalances } = usePortfolio()
+  const { account } = useSelectedAccount()
+
+  const { folder } = useSearchParamsSelectedFolder()
+
+  const balancesByAddress = useMemo(() => {
+    // we use this to avoid looping over the balances list n times, where n is the number of accounts in the wallet
+    // instead, we'll only interate over the balances one time
+    const balancesByAddress: Map<string, Balance[]> = new Map()
+    allBalances.each.forEach((balance) => {
+      if (!balancesByAddress.has(balance.address)) balancesByAddress.set(balance.address, [])
+      balancesByAddress.get(balance.address)?.push(balance)
+    })
+    return balancesByAddress
+  }, [allBalances.each])
+
+  const balances = useMemo(
+    () =>
+      account
+        ? new Balances(balancesByAddress.get(account.address) ?? [])
+        : folder
+        ? new Balances(
+            folder.tree.flatMap((account) => balancesByAddress.get(account.address) ?? [])
+          )
+        : // only show networkBalances when no account / folder selected
+          // networkBalances is basically the full portfolio, without any watch-only accounts
+          // i.e. `Total Portfolio`
+          // on the other hand, allBalances includes watch-only accounts
+          networkBalances,
+    [account, balancesByAddress, folder, networkBalances]
+  )
+  //const balancesToDisplay = useDisplayBalances(balances)
+
+  const formattedAddress = useFormattedAddress(account?.address, account?.genesisHash)
+
+  const navigate = useNavigate()
+  const handleBackBtnClick = useCallback(() => {
+    navigate(-1)
+  }, [navigate])
+
+  return (
+    <div className="flex w-full gap-8">
+      <div className="flex w-full items-center gap-4 overflow-hidden">
+        <IconButton onClick={handleBackBtnClick}>
+          <ChevronLeftIcon />
+        </IconButton>
+        <div className="flex flex-col justify-center">
+          <CurrentAccountAvatar className="!text-2xl" />
+        </div>
+        <div className="flex grow flex-col gap-1 overflow-hidden pl-2 text-sm">
+          <div className="flex items-center gap-3">
+            <div className={classNames("truncate", account ? "text-md" : "text-body-secondary")}>
+              {account
+                ? account.name ?? t("Unnamed Account")
+                : folder
+                ? folder.name
+                : t("Total Portfolio")}
+            </div>
+            <AccountTypeIcon
+              className="text-primary"
+              origin={account?.origin}
+              signetUrl={account?.signetUrl as string}
+            />
+          </div>
+          <div className={classNames("truncate", account ? "text-body-secondary" : "text-md")}>
+            {account ? (
+              <Address address={formattedAddress} />
+            ) : (
+              <Fiat amount={balances.sum.fiat(currency).total} isBalance />
+            )}
+          </div>
+        </div>
+      </div>
+      <div className="flex grow items-center justify-end">
+        <Suspense>
+          <CopyAddressButton account={account} />
+          <SendFundsButton account={account} />
+          {account && (
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <AccountContextMenu
+                  analyticsFrom="popup portfolio"
+                  address={account?.address}
+                  hideManageAccounts
+                  trigger={
+                    <ContextMenuTrigger className="hover:bg-grey-800 text-body-secondary hover:text-body text-md flex h-16 w-16 flex-col items-center justify-center rounded-full">
+                      <MoreHorizontalIcon />
+                    </ContextMenuTrigger>
+                  }
+                />
+              </TooltipTrigger>
+              <TooltipContent>{t("More options")}</TooltipContent>
+            </Tooltip>
+          )}
+        </Suspense>
+      </div>
+    </div>
+  )
+}
+
 const EnableNetworkMessage: FC<{ type?: "substrate" | "evm" }> = ({ type }) => {
   const { t } = useTranslation()
   const handleClick = useCallback(() => {
@@ -51,23 +158,6 @@ const EnableNetworkMessage: FC<{ type?: "substrate" | "evm" }> = ({ type }) => {
       </div>
     </div>
   )
-}
-
-const MainContent: FC<{ balances: Balances }> = ({ balances }) => {
-  const { evmNetworks, chains, isInitialising } = usePortfolio()
-  const { account } = useSelectedAccount()
-
-  if (!account?.type && !evmNetworks.length && !chains.length) return <EnableNetworkMessage />
-  if (account?.type === "sr25519" && !chains.length)
-    return <EnableNetworkMessage type="substrate" />
-  if (
-    account?.type === "ethereum" &&
-    !evmNetworks.length &&
-    !chains.filter((c) => c.account === "secp256k1").length
-  )
-    return <EnableNetworkMessage type="evm" />
-
-  return <PopupAssetsTable balances={balances} isInitialising={isInitialising} />
 }
 
 const SendFundsButton: FC<{ account?: AccountJsonAny }> = ({ account }) => {
@@ -125,16 +215,29 @@ const CopyAddressButton: FC<{ account?: AccountJsonAny }> = ({ account }) => {
   )
 }
 
-const PageContent = () => {
-  const { t } = useTranslation()
+const MainContent: FC<{ balances: Balances }> = ({ balances }) => {
+  const { evmNetworks, chains, isInitialising } = usePortfolio()
+  const { account } = useSelectedAccount()
 
+  if (!account?.type && !evmNetworks.length && !chains.length) return <EnableNetworkMessage />
+  if (account?.type === "sr25519" && !chains.length)
+    return <EnableNetworkMessage type="substrate" />
+  if (
+    account?.type === "ethereum" &&
+    !evmNetworks.length &&
+    !chains.filter((c) => c.account === "secp256k1").length
+  )
+    return <EnableNetworkMessage type="evm" />
+
+  return <PopupAssetsTable balances={balances} isInitialising={isInitialising} />
+}
+
+const PageContent = () => {
   const allBalances = useBalances()
   const { networkBalances } = usePortfolio()
   const { account } = useSelectedAccount()
-  const currency = useSelectedCurrency()
-  const { folder } = useSearchParamsSelectedFolder()
 
-  const formattedAddress = useFormattedAddress(account?.address, account?.genesisHash)
+  const { folder } = useSearchParamsSelectedFolder()
 
   const balancesByAddress = useMemo(() => {
     // we use this to avoid looping over the balances list n times, where n is the number of accounts in the wallet
@@ -164,69 +267,11 @@ const PageContent = () => {
   )
   const balancesToDisplay = useDisplayBalances(balances)
 
-  const navigate = useNavigate()
-  const handleBackBtnClick = useCallback(() => {
-    navigate(-1)
-  }, [navigate])
-
   return (
     <>
-      <div className="flex w-full gap-8">
-        <div className="flex w-full items-center gap-4 overflow-hidden">
-          <IconButton onClick={handleBackBtnClick}>
-            <ChevronLeftIcon />
-          </IconButton>
-          <div className="flex flex-col justify-center">
-            <CurrentAccountAvatar className="!text-2xl" />
-          </div>
-          <div className="flex grow flex-col gap-1 overflow-hidden pl-2 text-sm">
-            <div className="flex items-center gap-3">
-              <div className={classNames("truncate", account ? "text-md" : "text-body-secondary")}>
-                {account
-                  ? account.name ?? t("Unnamed Account")
-                  : folder
-                  ? folder.name
-                  : t("Total Portfolio")}
-              </div>
-              <AccountTypeIcon
-                className="text-primary"
-                origin={account?.origin}
-                signetUrl={account?.signetUrl as string}
-              />
-            </div>
-            <div className={classNames("truncate", account ? "text-body-secondary" : "text-md")}>
-              {account ? (
-                <Address address={formattedAddress} />
-              ) : (
-                <Fiat amount={balances.sum.fiat(currency).total} isBalance />
-              )}
-            </div>
-          </div>
-        </div>
-        <div className="flex grow items-center justify-end">
-          <Suspense>
-            <CopyAddressButton account={account} />
-            <SendFundsButton account={account} />
-            {account && (
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <AccountContextMenu
-                    analyticsFrom="popup portfolio"
-                    address={account?.address}
-                    hideManageAccounts
-                    trigger={
-                      <ContextMenuTrigger className="hover:bg-grey-800 text-body-secondary hover:text-body text-md flex h-16 w-16 flex-col items-center justify-center rounded-full">
-                        <MoreHorizontalIcon />
-                      </ContextMenuTrigger>
-                    }
-                  />
-                </TooltipTrigger>
-                <TooltipContent>{t("More options")}</TooltipContent>
-              </Tooltip>
-            )}
-          </Suspense>
-        </div>
-      </div>
+      <PortfolioAssetsHeader />
+      <PortfolioTabs className="mb-6 mt-[3.8rem]" />
+      <PortfolioToolbar />
       <div className="py-12">
         <MainContent balances={balancesToDisplay} />
       </div>
