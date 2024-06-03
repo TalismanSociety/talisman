@@ -10,9 +10,9 @@ import { CurrentAccountAvatar } from "@ui/domains/Account/CurrentAccountAvatar"
 import { Fiat } from "@ui/domains/Asset/Fiat"
 import { useCopyAddressModal } from "@ui/domains/CopyAddress"
 import { PopupAssetsTable } from "@ui/domains/Portfolio/AssetsTable"
+import { PopupNfts } from "@ui/domains/Portfolio/AssetsTable/PopupNfts"
 import { PortfolioTabs } from "@ui/domains/Portfolio/PortfolioTabs"
 import { PortfolioToolbar } from "@ui/domains/Portfolio/PortfolioToolbar"
-import { useDisplayBalances } from "@ui/domains/Portfolio/useDisplayBalances"
 import { usePortfolio } from "@ui/domains/Portfolio/usePortfolio"
 import { useSelectedAccount } from "@ui/domains/Portfolio/useSelectedAccount"
 import { useAnalytics } from "@ui/hooks/useAnalytics"
@@ -24,7 +24,7 @@ import { useSearchParamsSelectedFolder } from "@ui/hooks/useSearchParamsSelected
 import { useSendFundsPopup } from "@ui/hooks/useSendFundsPopup"
 import { FC, Suspense, useCallback, useEffect, useMemo } from "react"
 import { useTranslation } from "react-i18next"
-import { useNavigate } from "react-router-dom"
+import { useMatch, useNavigate } from "react-router-dom"
 import {
   Button,
   ContextMenuTrigger,
@@ -215,9 +215,12 @@ const CopyAddressButton: FC<{ account?: AccountJsonAny }> = ({ account }) => {
   )
 }
 
-const MainContent: FC<{ balances: Balances }> = ({ balances }) => {
-  const { evmNetworks, chains, isInitialising } = usePortfolio()
+const MainContent: FC = () => {
+  const { evmNetworks, chains } = usePortfolio()
   const { account } = useSelectedAccount()
+
+  const matchTokens = useMatch("/portfolio/tokens")
+  const matchNfts = useMatch("/portfolio/nfts")
 
   if (!account?.type && !evmNetworks.length && !chains.length) return <EnableNetworkMessage />
   if (account?.type === "sr25519" && !chains.length)
@@ -229,43 +232,46 @@ const MainContent: FC<{ balances: Balances }> = ({ balances }) => {
   )
     return <EnableNetworkMessage type="evm" />
 
-  return <PopupAssetsTable balances={balances} isInitialising={isInitialising} />
+  if (matchTokens) return <PopupAssetsTable />
+  if (matchNfts) return <PopupNfts />
+
+  return null
 }
 
 const PageContent = () => {
-  const allBalances = useBalances()
-  const { networkBalances } = usePortfolio()
-  const { account } = useSelectedAccount()
+  //const allBalances = useBalances()
+  // const { networkBalances } = usePortfolio()
+  // const { account } = useSelectedAccount()
 
-  const { folder } = useSearchParamsSelectedFolder()
+  // const { folder } = useSearchParamsSelectedFolder()
 
-  const balancesByAddress = useMemo(() => {
-    // we use this to avoid looping over the balances list n times, where n is the number of accounts in the wallet
-    // instead, we'll only interate over the balances one time
-    const balancesByAddress: Map<string, Balance[]> = new Map()
-    allBalances.each.forEach((balance) => {
-      if (!balancesByAddress.has(balance.address)) balancesByAddress.set(balance.address, [])
-      balancesByAddress.get(balance.address)?.push(balance)
-    })
-    return balancesByAddress
-  }, [allBalances.each])
+  // const balancesByAddress = useMemo(() => {
+  //   // we use this to avoid looping over the balances list n times, where n is the number of accounts in the wallet
+  //   // instead, we'll only interate over the balances one time
+  //   const balancesByAddress: Map<string, Balance[]> = new Map()
+  //   allBalances.each.forEach((balance) => {
+  //     if (!balancesByAddress.has(balance.address)) balancesByAddress.set(balance.address, [])
+  //     balancesByAddress.get(balance.address)?.push(balance)
+  //   })
+  //   return balancesByAddress
+  // }, [allBalances.each])
 
-  const balances = useMemo(
-    () =>
-      account
-        ? new Balances(balancesByAddress.get(account.address) ?? [])
-        : folder
-        ? new Balances(
-            folder.tree.flatMap((account) => balancesByAddress.get(account.address) ?? [])
-          )
-        : // only show networkBalances when no account / folder selected
-          // networkBalances is basically the full portfolio, without any watch-only accounts
-          // i.e. `Total Portfolio`
-          // on the other hand, allBalances includes watch-only accounts
-          networkBalances,
-    [account, balancesByAddress, folder, networkBalances]
-  )
-  const balancesToDisplay = useDisplayBalances(balances)
+  // const balances = useMemo(
+  //   () =>
+  //     account
+  //       ? new Balances(balancesByAddress.get(account.address) ?? [])
+  //       : folder
+  //       ? new Balances(
+  //           folder.tree.flatMap((account) => balancesByAddress.get(account.address) ?? [])
+  //         )
+  //       : // only show networkBalances when no account / folder selected
+  //         // networkBalances is basically the full portfolio, without any watch-only accounts
+  //         // i.e. `Total Portfolio`
+  //         // on the other hand, allBalances includes watch-only accounts
+  //         networkBalances,
+  //   [account, balancesByAddress, folder, networkBalances]
+  // )
+  // const balancesToDisplay = useDisplayBalances(balances)
 
   return (
     <>
@@ -273,7 +279,7 @@ const PageContent = () => {
       <PortfolioTabs className="mb-6 mt-[3.8rem]" />
       <PortfolioToolbar />
       <div className="py-12">
-        <MainContent balances={balancesToDisplay} />
+        <MainContent />
       </div>
     </>
   )

@@ -16,11 +16,13 @@ import { useNavigate } from "react-router-dom"
 
 import { TokenLogo } from "../../Asset/TokenLogo"
 import { StaleBalancesIcon } from "../StaleBalancesIcon"
+import { usePortfolioDisplayBalances } from "../useDisplayBalances"
+import { usePortfolio } from "../usePortfolio"
 import { useSelectedAccount } from "../useSelectedAccount"
 import { useTokenBalancesSummary } from "../useTokenBalancesSummary"
 import { NetworksLogoStack } from "./NetworksLogoStack"
 import { usePortfolioNetworkIds } from "./usePortfolioNetworkIds"
-import { usePortfolioSymbolBalances } from "./usePortfolioSymbolBalances"
+import { usePortfolioSymbolBalancesByFilter } from "./usePortfolioSymbolBalances"
 
 type AssetRowProps = {
   balances: Balances
@@ -166,10 +168,10 @@ const AssetRow = ({ balances, locked }: AssetRowProps) => {
   )
 }
 
-type GroupedAssetsTableProps = {
-  balances: Balances
-  isInitialising: boolean
-}
+// type GroupedAssetsTableProps = {
+//   balances: Balances
+//   isInitialising: boolean
+// }
 
 type GroupProps = {
   label: ReactNode
@@ -203,12 +205,16 @@ const BalancesGroup = ({ label, fiatAmount, className, children }: GroupProps) =
   )
 }
 
-export const PopupAssetsTable = ({ balances, isInitialising }: GroupedAssetsTableProps) => {
+const PopupTokensTable = () => {
   const { t } = useTranslation()
   const { account } = useSelectedAccount()
+
+  const { isInitialising } = usePortfolio()
+  const balances = usePortfolioDisplayBalances("network")
+
   // group by status by token (symbol)
   const { availableSymbolBalances: available, lockedSymbolBalances } =
-    usePortfolioSymbolBalances(balances)
+    usePortfolioSymbolBalancesByFilter("network")
 
   const currency = useSelectedCurrency()
 
@@ -274,6 +280,81 @@ export const PopupAssetsTable = ({ balances, isInitialising }: GroupedAssetsTabl
           </BalancesGroup>
         )}
       </div>
+    </FadeIn>
+  )
+}
+
+export const PopupAssetsTable = () => {
+  // const { t } = useTranslation()
+  // const { account } = useSelectedAccount()
+  // // group by status by token (symbol)
+  // const { availableSymbolBalances: available, lockedSymbolBalances } =
+  //   usePortfolioSymbolBalances(balances)
+
+  // const currency = useSelectedCurrency()
+
+  // // calculate totals
+  // const {
+  //   total,
+  //   transferable: totalAvailable,
+  //   unavailable: totalLocked,
+  // } = useMemo(() => balances.sum.fiat(currency), [balances.sum, currency])
+
+  // if (!available.length && !lockedSymbolBalances.length && !isInitialising)
+  //   return (
+  //     <FadeIn>
+  //       <div className="text-body-secondary bg-black-secondary rounded-sm py-10 text-center text-xs">
+  //         {account ? t("No assets to display for this account.") : t("No assets to display.")}
+  //       </div>
+  //     </FadeIn>
+  //   )
+
+  return (
+    <FadeIn>
+      {/* TODO move to header */}
+      {/* {!!account && (
+          <>
+            <div className="text-md flex items-center gap-2">
+              <div className="text-body grow text-left">{t("Total")}</div>
+              <div className="text-body-secondary truncate">
+                <Fiat amount={total} isBalance />
+              </div>
+            </div>
+            <div className="h-8" />
+          </>
+        )} */}
+      <PopupTokensTable />
+      {/* <BalancesGroup label={t("Available")} fiatAmount={totalAvailable}>
+          {available.map(([symbol, b]) => (
+            <AssetRow key={symbol} balances={b} />
+          ))}
+          {isInitialising && <AssetRowSkeleton />}
+          {!isInitialising && !available.length && (
+            <div className="text-body-secondary bg-black-secondary rounded-sm py-10 text-center text-xs">
+              {account
+                ? t("There are no available balances for this account.")
+                : t("There are no available balances.")}
+            </div>
+          )}
+          <div className="h-8" />
+        </BalancesGroup>
+        {lockedSymbolBalances.length > 0 && (
+          <BalancesGroup
+            label={
+              <div className="flex items-center gap-2">
+                <div>{t("Locked")}</div>
+                <div>
+                  <LockIcon className="text-sm" />
+                </div>
+              </div>
+            }
+            fiatAmount={totalLocked}
+          >
+            {lockedSymbolBalances.map(([symbol, b]) => (
+              <AssetRow key={symbol} balances={b} locked />
+            ))}
+          </BalancesGroup>
+        )} */}
     </FadeIn>
   )
 }

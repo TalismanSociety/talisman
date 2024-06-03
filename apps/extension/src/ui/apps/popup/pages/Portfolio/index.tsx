@@ -70,9 +70,10 @@ const HasAccountsPortfolioContent = () => (
       <Route path="whats-new" element={<PortfolioWhatsNew />} />
       <Route path="learn-more" element={<PortfolioLearnMore />} />
       <Route path="try-talisman" element={<PortfolioTryTalisman />} />
-      <Route path="assets" element={<PortfolioAssets />} />
-      <Route path=":symbol" element={<PortfolioAsset />} />
-      <Route path="" element={<PortfolioAccounts />} />
+      <Route path="tokens" element={<PortfolioAssets />} />
+      <Route path="nfts" element={<PortfolioAssets />} />
+      <Route path="tokens/:symbol" element={<PortfolioAsset />} />
+      <Route path="*" element={<PortfolioAccounts />} />
     </Routes>
     <Suspense fallback={null}>
       <BraveWarningPopupBanner />

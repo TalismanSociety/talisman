@@ -92,7 +92,10 @@ const sortSymbolBalancesBy =
 
 const portfolioSymbolBalancesAtomFamily = atomFamily((filter: "all" | "network" | "search") =>
   atom(async (get) => {
-    const [currency, hideDust] = await Promise.all([get(selectedCurrencyAtom), get(settingsAtom)])
+    const [currency, { hideDust }] = await Promise.all([
+      get(selectedCurrencyAtom),
+      get(settingsAtom),
+    ])
     const balances = get(portfolioDisplayBalancesAtomFamily(filter))
 
     // group balances by token symbol
