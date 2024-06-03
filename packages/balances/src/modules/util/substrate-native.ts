@@ -79,14 +79,18 @@ export type BalanceLockType =
   | "nompools-unbonding"
   | "vesting"
   | "dapp-staking"
+  | `other-${string}`
   | "other"
+
+const getOtherType: (input: string) => `other-${string}` = (input) =>
+  `other-${input}` as `other-${string}`
 
 /**
  * For converting the value of `lock?.id?.toUtf8?.()` which is retrieved from
  * the Balances.Locks storage key into a useful classification for our UI
  */
 export const getLockedType = (input?: string): BalanceLockType => {
-  if (typeof input !== "string") return "other"
+  if (typeof input !== "string") return getOtherType("unknown")
 
   if (input.includes("vesting")) return "vesting"
   if (input.includes("calamvst")) return "vesting" // vesting on manta network
@@ -108,17 +112,17 @@ export const getLockedType = (input?: string): BalanceLockType => {
   if (input.includes("councilo")) return "democracy" // Councilor
   if (input.includes("proposal")) return "democracy"
   if (input.includes("boundsta")) return "staking" // Bound Staking Account
-  if (input.includes("invitemb")) return "other" // Invite member
-  if (input.includes("bounty")) return "other"
-  if (input.startsWith("wg-")) return "other"
+  if (input.includes("invitemb")) return getOtherType(input) // Invite member
+  if (input.includes("bounty")) return getOtherType(input)
+  if (input.startsWith("wg-")) return getOtherType(input)
 
   // ignore technical or undocumented lock types
-  if (input.includes("pdexlock")) return "other"
-  if (input.includes("phala/sp")) return "other"
+  if (input.includes("pdexlock")) return getOtherType(input)
+  if (input.includes("phala/sp")) return getOtherType(input)
 
   // eslint-disable-next-line no-console
   console.warn(`unknown locked type: ${input}`)
-  return "other"
+  return getOtherType(input)
 }
 
 const baseLockLabels = ["fees", "misc"]
@@ -159,7 +163,7 @@ export const getLockTitle = (
   if (lock.label === "dapp-staking") return "DApp Staking"
   if (lock.label === "fees") return "Locked (Fees)"
   if (lock.label === "misc") return "Locked"
-  if (lock.label === "other") return "Locked"
+  if (lock.label.startsWith("other")) return "Locked"
 
   return upperFirst(lock.label)
 }

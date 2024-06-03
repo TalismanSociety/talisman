@@ -89,8 +89,14 @@ const mergeBalances = (balance1: SubNativeBalance | undefined, balance2: SubNati
     getBalanceId(balance1) === getBalanceId(balance2),
     "Balances with different IDs should not be merged"
   )
+  // locks and freezes should completely replace the previous rather than merging together
   const existingValues = Object.fromEntries(
-    balance1.values.map((value) => [getValueId(value), value])
+    balance1.values
+      .filter(
+        (v) =>
+          !v.source || ["substrate-native-locks", "substrate-native-freezes"].includes(v.source)
+      )
+      .map((value) => [getValueId(value), value])
   )
   const newValues = Object.fromEntries(balance2.values.map((value) => [getValueId(value), value]))
   const mergedValues = { ...existingValues, ...newValues }

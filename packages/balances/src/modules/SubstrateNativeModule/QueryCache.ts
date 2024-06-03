@@ -434,9 +434,11 @@ async function buildQueries(
                 amount: lock.amount.toString(),
               }))
 
-            if (locksQueryLocks?.length > 0) {
-              balanceJson.values.push(...locksQueryLocks)
-            }
+            // locked values should be replaced entirely, not merged or appended
+            const nonLockValues = balanceJson.values.filter(
+              (v) => v.source !== "substrate-native-locks"
+            )
+            balanceJson.values = nonLockValues.concat(locksQueryLocks)
           }
 
           return balanceJson
@@ -471,9 +473,11 @@ async function buildQueries(
                 amount: lock.amount.toString(),
               }))
 
-            if (freezesQueryLocks.length > 0) {
-              balanceJson.values.push(...freezesQueryLocks)
-            }
+            // freezes values should be replaced entirely, not merged or appended
+            const nonFreezesValues = balanceJson.values.filter(
+              (v) => v.source !== "substrate-native-freezes"
+            )
+            balanceJson.values = nonFreezesValues.concat(freezesQueryLocks)
           }
           return balanceJson
         }
