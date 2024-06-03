@@ -31,8 +31,8 @@ const AmountDisplay = () => {
   if (!amount || !token) return <div className="bg-grey-750 h-12 w-64 animate-pulse rounded-sm" />
 
   return (
-    <div className="w-full text-right">
-      <TokenLogo tokenId={token.id} className="mr-3 mt-[-2px] inline-block text-lg" />
+    <div className="flex w-full items-center justify-end gap-4 text-right">
+      <TokenLogo tokenId={token.id} className="text-lg" />
       <TokensAndFiat tokenId={token.id} planck={amount?.planck} noCountUp />
     </div>
   )
@@ -44,8 +44,8 @@ const NetworkDisplay = () => {
   if (!networkId) return null
 
   return (
-    <div className="w-full text-right">
-      <ChainLogo id={networkId} className="mr-3 mt-[-2px] inline text-lg" />
+    <div className="flex w-full items-center justify-end gap-4 text-right">
+      <ChainLogo id={networkId} className="text-lg" />
       {networkName}
     </div>
   )

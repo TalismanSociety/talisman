@@ -34,7 +34,7 @@ export const AssetLogoBase = ({ id, className, style, url, rounded }: AssetLogoB
   const imgClassName = useMemo(
     () =>
       classNames(
-        "relative block w-[1em] shrink-0 aspect-square",
+        "relative block aspect-square w-[1em] shrink-0",
         rounded && "rounded-full",
         className
       ),
@@ -71,7 +71,7 @@ const LpAssetLogo = ({ className, id }: { className?: string; id?: TokenId }) =>
   const token1 = useToken(tokenId1)
 
   return (
-    <div className={classNames("relative aspect-square w-[1em] shrink-0", className)}>
+    <div className={classNames("relative block aspect-square w-[1em] shrink-0", className)}>
       <AssetLogoBase
         className="absolute h-full w-full"
         url={token0?.logo}
