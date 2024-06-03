@@ -93,11 +93,12 @@ const mergeBalances = (balance1: SubNativeBalance | undefined, balance2: SubNati
     balance1.values.map((value) => [getValueId(value), value])
   )
   const newValues = Object.fromEntries(balance2.values.map((value) => [getValueId(value), value]))
+  const mergedValues = { ...existingValues, ...newValues }
 
   const merged = {
     ...balance1,
-    status: balance2.status,
-    values: Object.values({ ...existingValues, ...newValues }),
+    status: balance2.status, // only the status field should actually be different apart from the values
+    values: Object.values(mergedValues),
   }
   return merged
 }

@@ -19,7 +19,7 @@ import {
 
 import log from "../../log"
 import { db as balancesDb } from "../../TalismanBalancesDatabase"
-import { AddressesByToken, AmountWithLabel, MiniMetadata } from "../../types"
+import { AddressesByToken, AmountWithLabel, MiniMetadata, getValueId } from "../../types"
 import {
   GetOrCreateTypeRegistry,
   RpcStateQuery,
@@ -388,22 +388,19 @@ async function buildQueries(
 
           // even if these values are 0, we still need to add them to the balanceJson.values array
           // so that the balance pool can handle newly zeroed balances
-          balanceJson.values.push({ type: "free", label: "free", amount: free.toString() })
-          balanceJson.values.push({
-            type: "reserved",
-            label: "reserved",
-            amount: reserved.toString(),
-          })
-          balanceJson.values.push({
-            type: "locked",
-            label: "misc",
-            amount: miscFrozen.toString(),
-          })
-          balanceJson.values.push({
-            type: "locked",
-            label: "fees",
-            amount: feeFrozen.toString(),
-          })
+          const existingValues = Object.fromEntries(
+            balanceJson.values.map((v) => [getValueId(v), v])
+          )
+          const newValues: AmountWithLabel<string>[] = [
+            { type: "free", label: "free", amount: free.toString() },
+            { type: "reserved", label: "reserved", amount: reserved.toString() },
+            { type: "locked", label: "misc", amount: miscFrozen.toString() },
+            { type: "locked", label: "fees", amount: feeFrozen.toString() },
+          ]
+
+          const newValuesObj = Object.fromEntries(newValues.map((v) => [getValueId(v), v]))
+
+          balanceJson.values = Object.values({ ...existingValues, ...newValuesObj })
 
           return balanceJson
         }
