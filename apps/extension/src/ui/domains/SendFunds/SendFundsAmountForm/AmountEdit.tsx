@@ -4,6 +4,7 @@ import { AlertCircleIcon, SwapIcon } from "@talismn/icons"
 import { classNames, tokensToPlanck } from "@talismn/util"
 import { useSendFundsWizard } from "@ui/apps/popup/pages/SendFunds/context"
 import { useSelectedCurrency } from "@ui/hooks/useCurrency"
+import BigNumber from "bignumber.js"
 import debounce from "lodash/debounce"
 import {
   ChangeEventHandler,
@@ -26,7 +27,10 @@ import { useSendFunds } from "../useSendFunds"
 const normalizeStringNumber = (value?: string | number | null, decimals = 18) => {
   try {
     // fixes the decimals and remove all leading/trailing zeros
-    return value ? Number(Number(value).toFixed(decimals)).toString() : ""
+    // NOTE: BigNumber is used to correctly format the string for tiny numbers.
+    // `Number(0.000000123).toString()` becomes `1.23e-7`
+    // `BigNumber(0.000000123).toString(10)` becomes `0.000000123`
+    return value ? BigNumber(Number(value).toFixed(decimals)).toString(10) : ""
   } catch (err) {
     log.error("normalizeStringNumber", { value, decimals, err })
     return ""
@@ -93,9 +97,9 @@ const TokenInput = () => {
         type="text"
         inputMode="decimal"
         defaultValue={defaultValue}
-        placeholder={`0 ${token?.symbol}`}
+        placeholder={`0${token?.type !== "evm-uniswapv2" ? ` ${token?.symbol}` : ""}`}
         className={classNames(
-          "text-body peer inline-block min-w-0 bg-transparent text-xl",
+          "text-body peer inline-block min-w-0 text-ellipsis bg-transparent text-xl",
           sendMax && "placeholder:text-white",
           isEstimatingMaxAmount && "hidden" // hide until value is known
         )}
@@ -107,7 +111,7 @@ const TokenInput = () => {
           isEstimatingMaxAmount ? "text-grey-800" : "peer-placeholder-shown:hidden"
         )}
       >
-        {token?.symbol}
+        {token?.type !== "evm-uniswapv2" && token?.symbol}
       </div>
     </div>
   )

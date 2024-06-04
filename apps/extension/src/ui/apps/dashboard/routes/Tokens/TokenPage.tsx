@@ -106,15 +106,10 @@ export const TokenPage = () => {
     [token]
   )
   const network = useEvmNetwork(erc20Token?.evmNetwork?.id)
-  const contractAddress = isErc20Token(erc20Token)
-    ? erc20Token.contractAddress
-    : isUniswapV2Token(erc20Token)
-    ? erc20Token.poolAddress
-    : undefined
 
   const { isActive, setActive, isActiveSetByUser, resetToTalismanDefault } = useKnownEvmToken(
     erc20Token?.evmNetwork?.id,
-    contractAddress
+    erc20Token?.contractAddress
   )
 
   useEffect(() => {
@@ -154,7 +149,7 @@ export const TokenPage = () => {
         <FormFieldContainer label={t("Contract Address")}>
           <FormFieldInputText
             type="text"
-            value={contractAddress}
+            value={erc20Token.contractAddress}
             spellCheck={false}
             data-lpignore
             autoComplete="off"
