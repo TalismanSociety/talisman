@@ -128,15 +128,13 @@ export const MainSidebar = () => {
         isExternalLink
       />
       <SidebarNavItem
+        navItemClassName="hover:bg-primary/10"
         contentClassName="text-primary"
         title={<span className="font-bold">{t("Quests")}</span>}
         onClick={handleQuestsClick}
         icon={
           <div className="bg-primary flex h-[1em] w-[1em] items-center justify-center rounded-full">
-            <QuestStarIcon
-              className="text-xs text-black"
-              style={{ stroke: "url(#stars-icon-gradient)" }}
-            />
+            <QuestStarIcon className="text-xs text-black" />
           </div>
         }
         isExternalLink

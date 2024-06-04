@@ -172,13 +172,10 @@ export const NavigationDrawer: FC = () => {
               </span>
             </NavItem>
             <NavItem
-              className="hover:hover:bg-primary/10"
+              className="hover:bg-primary/10"
               icon={
                 <div className="bg-primary flex h-[1em] w-[1em] items-center justify-center rounded-full">
-                  <QuestStarIcon
-                    className="text-xs text-black"
-                    style={{ stroke: "url(#stars-icon-gradient)" }}
-                  />
+                  <QuestStarIcon className="text-xs text-black" />
                 </div>
               }
               onClick={handleQuestsClick}
