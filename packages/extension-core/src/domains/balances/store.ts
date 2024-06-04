@@ -258,7 +258,7 @@ export class BalanceStore {
       isActiveFn: (item: T, activeMap: Record<string, boolean>) => boolean
     ): T[] =>
       allItems
-        .filter((item) => isActiveFn(item, activeMap))
+        .filter((item) => item && isActiveFn(item, activeMap))
         .filter(settings.useTestnets ? () => true : (item) => !item.isTestnet)
 
     const chains = filterByActive(allChains, activeChainsMap, isChainActive)
