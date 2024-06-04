@@ -19,14 +19,13 @@ const SubAccounts: FC<{ site: AuthorizedSite | null }> = ({ site }) => {
     () => accounts.some((acc) => acc.type === "ethereum" && site?.addresses?.includes(acc.address)),
     [accounts, site?.addresses]
   )
-  const [showEvmAccounts, setShowEvmAccounts] = useState(hasEthereumActiveAccounts)
-
+  const [enableEvmAccounts, setEnableEvmAccounts] = useState(hasEthereumActiveAccounts)
   const activeAccounts = useMemo(
     () =>
       accounts
-        .filter((acc) => showEvmAccounts || acc.type !== "ethereum")
+        .filter((acc) => enableEvmAccounts || acc.type !== "ethereum")
         .map((acc) => [acc, site?.addresses?.includes(acc.address)] as [AccountJsonAny, boolean]),
-    [accounts, site?.addresses, showEvmAccounts]
+    [accounts, site?.addresses, enableEvmAccounts]
   )
 
   const handleAccountClick = useCallback(
@@ -49,17 +48,29 @@ const SubAccounts: FC<{ site: AuthorizedSite | null }> = ({ site }) => {
     if (!site?.id) return
     api.authorizedSiteUpdate(site?.id, {
       addresses: accounts
-        .filter((acc) => showEvmAccounts || acc.type !== "ethereum")
+        .filter((acc) => enableEvmAccounts || acc.type !== "ethereum")
         .map((a) => a.address),
     })
-  }, [accounts, site?.id, showEvmAccounts])
+  }, [accounts, site?.id, enableEvmAccounts])
+
+  const handleToggleEvmAccounts = useCallback(() => {
+    setEnableEvmAccounts((enabled) => {
+      if (enabled && site?.id) {
+        const activeNonEvmAccounts = activeAccounts.filter(([acc]) => acc.type !== "ethereum")
+        api.authorizedSiteUpdate(site.id, {
+          addresses: activeNonEvmAccounts.map(([a]) => a.address),
+        })
+      }
+      return !enabled
+    })
+  }, [activeAccounts, site?.id])
 
   return (
     <>
       <div className="mb-2 mt-6 flex w-full items-center justify-between px-8 text-xs">
         <Checkbox
-          checked={showEvmAccounts}
-          onClick={() => setShowEvmAccounts(!showEvmAccounts)}
+          checked={enableEvmAccounts}
+          onClick={handleToggleEvmAccounts}
           childProps={{ className: "flex items-center gap-2" }}
         >
           {t("EVM accounts")}{" "}
