@@ -47,8 +47,12 @@ const SubAccounts: FC<{ site: AuthorizedSite | null }> = ({ site }) => {
 
   const handleConnectAllClick = useCallback(() => {
     if (!site?.id) return
-    api.authorizedSiteUpdate(site?.id, { addresses: accounts.map((a) => a.address) })
-  }, [accounts, site?.id])
+    api.authorizedSiteUpdate(site?.id, {
+      addresses: accounts
+        .filter((acc) => showEvmAccounts || acc.type !== "ethereum")
+        .map((a) => a.address),
+    })
+  }, [accounts, site?.id, showEvmAccounts])
 
   return (
     <>
