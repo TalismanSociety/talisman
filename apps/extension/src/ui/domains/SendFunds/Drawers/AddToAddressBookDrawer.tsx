@@ -1,5 +1,6 @@
 import { AddressBookContact } from "@extension/core"
 import { yupResolver } from "@hookform/resolvers/yup"
+import { convertAddress } from "@talismn/util"
 import { AnalyticsPage, sendAnalyticsEvent } from "@ui/api/analytics"
 import { Address } from "@ui/domains/Account/Address"
 import { ChainLogo } from "@ui/domains/Asset/ChainLogo"
@@ -7,7 +8,7 @@ import { LimitToNetworkTooltip } from "@ui/domains/Settings/AddressBook/LimitToN
 import { useAddressBook } from "@ui/hooks/useAddressBook"
 import { useAnalyticsPageView } from "@ui/hooks/useAnalyticsPageView"
 import { useChainByGenesisHash } from "@ui/hooks/useChainByGenesisHash"
-import { FC, FormEventHandler, useCallback, useEffect } from "react"
+import { FC, FormEventHandler, useCallback, useEffect, useMemo } from "react"
 import { useForm } from "react-hook-form"
 import { Trans, useTranslation } from "react-i18next"
 import { Button, Checkbox, Drawer, FormFieldContainer, FormFieldInputText } from "talisman-ui"
@@ -40,6 +41,10 @@ const AddToAddressBookDrawerForm: FC<{
 }> = ({ address, addressType, tokenGenesisHash, onClose }) => {
   const { t } = useTranslation("send-funds")
   const { add } = useAddressBook()
+  const isGenericAddress = useMemo(
+    () => addressType === "ss58" && address === convertAddress(address, null),
+    [address, addressType]
+  )
   const {
     register,
     handleSubmit,
@@ -52,6 +57,7 @@ const AddToAddressBookDrawerForm: FC<{
     resolver: yupResolver(schema),
     mode: "all",
     reValidateMode: "onChange",
+    defaultValues: { limitToNetwork: !isGenericAddress },
   })
 
   const { limitToNetwork } = watch()

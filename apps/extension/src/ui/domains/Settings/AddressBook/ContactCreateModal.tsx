@@ -25,7 +25,7 @@ import {
 } from "talisman-ui"
 import * as yup from "yup"
 
-import { useChainsFilteredByAddressPrefix, useGenesisHashEffects } from "./hooks"
+import { useAddressEffects, useChainsFilteredByAddressPrefix, useGenesisHashEffects } from "./hooks"
 import { LimitToNetworkTooltip } from "./LimitToNetworkTooltip"
 import { ContactModalProps } from "./types"
 
@@ -171,6 +171,16 @@ export const ContactCreateModal = ({ isOpen, close }: ContactModalProps) => {
     [setValue]
   )
   useGenesisHashEffects(chains, genesisHash, setGenesisHash)
+  const setLimitToNetwork = useCallback(
+    (limitToNetwork?: boolean) =>
+      setValue("limitToNetwork", limitToNetwork, {
+        shouldDirty: true,
+        shouldTouch: true,
+        shouldValidate: true,
+      }),
+    [setValue]
+  )
+  useAddressEffects(address, setLimitToNetwork)
   const showLimitToNetworkControl = useMemo(() => chains.length !== 0, [chains])
 
   const submit = useCallback(
