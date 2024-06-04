@@ -56,13 +56,17 @@ export const TotalFiatBalance = ({ className, mouseOver, disabled }: Props) => {
       </div>
       <div className="flex items-center gap-2">
         <button
-          className="bg-grey-800 border-grey-750 text-body-secondary hover:bg-grey-700 pointer-events-auto flex h-14 w-14 items-center justify-center rounded-full border text-center transition-colors duration-100 ease-out"
+          className={classNames(
+            "bg-grey-800 border-grey-750 text-body-secondary hover:bg-grey-700 pointer-events-auto flex h-14 w-14 items-center justify-center rounded-full border text-center transition-colors duration-100 ease-out",
+            currencyConfig[currency]?.symbol?.length === 2 && "text-xs",
+            currencyConfig[currency]?.symbol?.length > 2 && "text-[1rem]"
+          )}
           onClick={(event) => {
             event.stopPropagation()
             toggleCurrency()
           }}
         >
-          {currencyConfig[currency]?.unicodeCharacter}
+          {currencyConfig[currency]?.symbol}
         </button>
         <Fiat
           className={classNames("font-surtExpanded text-lg", disabled && "text-body-secondary")}

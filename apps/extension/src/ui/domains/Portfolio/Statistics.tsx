@@ -85,7 +85,7 @@ export const Statistics = ({
               toggleCurrency()
             }}
           >
-            {currencyConfig[currency]?.unicodeCharacter}
+            {currencyConfig[currency]?.symbol}
           </button>
         )}
         {showTokens ? (

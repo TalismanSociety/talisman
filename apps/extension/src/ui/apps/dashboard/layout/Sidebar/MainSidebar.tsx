@@ -1,5 +1,4 @@
 import {
-  TALISMAN_WEB_APP_CROWDLOANS_URL,
   TALISMAN_WEB_APP_NFTS_URL,
   TALISMAN_WEB_APP_STAKING_URL,
   TALISMAN_WEB_APP_TRANSPORT_URL,
@@ -13,7 +12,6 @@ import {
   PlusIcon,
   RepeatIcon,
   SettingsIcon,
-  StarIcon,
   ZapIcon,
 } from "@talismn/icons"
 import { useBuyTokensModal } from "@ui/domains/Asset/Buy/useBuyTokensModal"
@@ -62,11 +60,6 @@ export const MainSidebar = () => {
     genericEvent("open web app transport", { from: "sidebar" })
     window.open(TALISMAN_WEB_APP_TRANSPORT_URL, "_blank")
     return false
-  }, [genericEvent])
-
-  const handleCrowdloansClick = useCallback(() => {
-    genericEvent("open web app crowdloans", { from: "sidebar", target: "crowdloans" })
-    window.open(TALISMAN_WEB_APP_CROWDLOANS_URL, "_blank")
   }, [genericEvent])
 
   const handleSettingsClick = useCallback(() => {
@@ -124,12 +117,6 @@ export const MainSidebar = () => {
         title={t("NFTs")}
         onClick={handleNftsClick}
         icon={<ImageIcon />}
-        isExternalLink
-      />
-      <SidebarNavItem
-        title={t("Crowdloans")}
-        onClick={handleCrowdloansClick}
-        icon={<StarIcon />}
         isExternalLink
       />
       <SidebarNavItem

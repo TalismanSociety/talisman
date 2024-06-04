@@ -189,7 +189,7 @@ const FiatInput = () => {
           isEstimatingMaxAmount ? "text-grey-800" : "peer-placeholder-shown:text-body-disabled"
         )}
       >
-        {currencyConfig[currency]?.unicodeCharacter}
+        {currencyConfig[currency]?.symbol}
       </div>
     </div>
   )
