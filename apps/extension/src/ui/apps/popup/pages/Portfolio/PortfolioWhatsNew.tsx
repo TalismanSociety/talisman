@@ -1,5 +1,5 @@
 import * as Icons from "@talismn/icons"
-import { ChevronLeftIcon, ExternalLinkIcon, QuestStarIcon } from "@talismn/icons"
+import { ChevronLeftIcon, ExternalLinkIcon } from "@talismn/icons"
 import { classNames } from "@talismn/util"
 import { api } from "@ui/api"
 import { AnalyticsPage, sendAnalyticsEvent } from "@ui/api/analytics"
@@ -13,8 +13,8 @@ import { Trans, useTranslation } from "react-i18next"
 import { useNavigate } from "react-router-dom"
 import { rcompare } from "semver"
 
-import { ReactComponent as QuestsSvg } from "./assets/quests.svg"
 import { latestUpdates } from "./assets/whats-new"
+import { QuestsBanner } from "./QuestsBanner"
 
 const ANALYTICS_PAGE: AnalyticsPage = {
   container: "Popup",
@@ -104,9 +104,16 @@ export const PortfolioWhatsNewSection = ({
 
 export const PortfolioWhatsNew = () => {
   const versions = getWhatsNewVersions()
+
+  const openQuests = useCallback(() => {
+    sendAnalyticsEvent({ ...ANALYTICS_PAGE, name: "Goto", action: "Quests" })
+    window.open(QUEST_APP_URL, "_blank")
+    window.close()
+  }, [])
+
   return (
     <div className="flex flex-col gap-16">
-      <QuestsBanner />
+      <QuestsBanner onClick={openQuests} />
       {versions.slice(0, WHATS_NEW_LENGTH).map((version) => {
         const { content, HeroUrl, date } = latestUpdates[version as keyof typeof latestUpdates]
         return (
@@ -167,35 +174,6 @@ export const PortfolioWhatsNewHeader = () => {
         )}
       </div>
     </header>
-  )
-}
-
-const QuestsBg = `linear-gradient(
-  89.9deg,
-  rgb(247, 229, 231) -4.24%,
-  rgb(255, 255, 255) 64.35%,
-  rgb(224, 236, 251) 108.23%
-)`
-const QuestsBanner = () => {
-  const { t } = useTranslation()
-  return (
-    <button
-      type="button"
-      className="font-inter flex flex-col items-center gap-4 rounded px-4 pt-12 text-black"
-      style={{ background: QuestsBg }}
-      onClick={() => window.open(QUEST_APP_URL, "_blank")}
-    >
-      <div className="font-unbounded text-[2rem] font-extrabold">{t("Talisman Quests")}</div>
-      <div className="-mt-2 text-[1.2rem] font-light">
-        {t("Explore a multi-chain world & earn points")}
-      </div>
-      <div className="relative mt-2 rounded-sm bg-black px-16 py-3 text-[1.2rem] font-semibold text-white">
-        <QuestStarIcon className="text-primary absolute right-[9px] top-[6px] text-[8px]" />
-        <QuestStarIcon className="text-primary absolute bottom-[6px] left-[10px] text-[5px]" />
-        {t("Join")}
-      </div>
-      <QuestsSvg className="mt-4 h-auto w-2/3" />
-    </button>
   )
 }
 
