@@ -36,7 +36,7 @@ const AddressPillButton: FC<AddressPillButtonProps> = ({ address, className, onC
 
   const { name, genesisHash } = useMemo(() => {
     if (account) return account
-    if (contact) return { name: contact.name, genesisHash: undefined }
+    if (contact) return { name: contact.name, genesisHash: contact.genesisHash }
     return { name: undefined, genesisHash: undefined }
   }, [account, contact])
 

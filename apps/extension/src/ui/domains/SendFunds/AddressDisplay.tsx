@@ -134,7 +134,7 @@ export const AddressDisplay: FC<AddressDisplayProps> = ({
         <AccountIcon
           className="!text-lg"
           address={resolvedAddress}
-          genesisHash={account?.genesisHash}
+          genesisHash={account?.genesisHash ?? contact?.genesisHash}
         />
         <div className="leading-base grow truncate">{text}</div>
         <AccountTypeIcon

@@ -101,24 +101,26 @@ export const SendFundsRecipientPicker = () => {
   const contacts = useMemo(
     () =>
       allContacts
-        .filter((account) => isEthereumAddress(account.address) === isFromEthereum)
+        .filter((contact) => isEthereumAddress(contact.address) === isFromEthereum)
         .filter(
           (contact) =>
             !search ||
             contact.name?.toLowerCase().includes(search) ||
             (isValidAddressInput && normalizedSearch === normalize(contact.address)) ||
             (isNsLookup && nsLookup && normalizedNsLookup === normalize(contact.address))
-        ),
+        )
+        .filter((contact) => !contact.genesisHash || contact.genesisHash === chain?.genesisHash),
     [
       allContacts,
-      nsLookup,
-      isNsLookup,
       isFromEthereum,
-      isValidAddressInput,
-      normalize,
-      normalizedNsLookup,
-      normalizedSearch,
       search,
+      isValidAddressInput,
+      normalizedSearch,
+      normalize,
+      isNsLookup,
+      nsLookup,
+      normalizedNsLookup,
+      chain?.genesisHash,
     ]
   )
 

@@ -39,7 +39,7 @@ export const AddressPillButton: FC<AddressPillButtonProps> = ({
 
   const { name, genesisHash: accountGenesisHash } = useMemo(() => {
     if (account) return account
-    if (contact) return { name: contact.name, genesisHash: undefined }
+    if (contact) return { name: contact.name, genesisHash: contact.genesisHash }
     return { name: undefined, genesisHash: undefined }
   }, [account, contact])
 

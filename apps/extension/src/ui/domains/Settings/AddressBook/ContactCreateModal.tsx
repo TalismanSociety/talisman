@@ -11,6 +11,7 @@ import { useAddressBook } from "@ui/hooks/useAddressBook"
 import { useAnalyticsPageView } from "@ui/hooks/useAnalyticsPageView"
 import { useAllChainsMapByGenesisHash } from "@ui/hooks/useChains"
 import { useResolveNsName } from "@ui/hooks/useResolveNsName"
+import { AddressBookContact } from "extension-core"
 import { useCallback, useEffect, useMemo } from "react"
 import { useForm } from "react-hook-form"
 import { useTranslation } from "react-i18next"
@@ -38,7 +39,7 @@ type FormValues = {
 
 interface ValidationContext {
   accounts: string[]
-  contacts: string[]
+  contacts: AddressBookContact[]
 }
 
 const ANALYTICS_PAGE: AnalyticsPage = {
@@ -83,8 +84,17 @@ export const ContactCreateModal = ({ isOpen, close }: ContactModalProps) => {
             const { accounts, contacts } = context
             if (accounts.includes(normalised))
               return ctx.createError({ message: t("Cannot save a wallet address as a contact") })
-            if (contacts.includes(normalised))
+            const contact = contacts.find((c) => c.address === normalised)
+            if (contact) {
+              // existing contact is limited to a single network
+              if (contact.genesisHash)
+                return ctx.createError({
+                  message: t("Address already saved as a network-limited contact"),
+                })
+
+              // existing contact is a multichain contact
               return ctx.createError({ message: t("Address already saved in contacts") })
+            }
             return true
           }),
         genesisHash: yup.string(),
@@ -93,11 +103,12 @@ export const ContactCreateModal = ({ isOpen, close }: ContactModalProps) => {
     [t]
   )
 
-  const { existingContactAddresses, existingAccountAddresses } = useMemo(
+  const { existingNormalisedContacts, existingAccountAddresses } = useMemo(
     () => ({
-      existingContactAddresses: contacts.map((c) =>
-        normalise(c.address, c.addressType === "UNKNOWN" ? "ss58" : c.addressType)
-      ),
+      existingNormalisedContacts: contacts.map((c) => ({
+        ...c,
+        address: normalise(c.address, c.addressType === "UNKNOWN" ? "ss58" : c.addressType),
+      })),
       existingAccountAddresses: accounts.map((acc) =>
         normalise(acc.address, acc.type === "ethereum" ? acc.type : "ss58")
       ),
@@ -116,7 +127,7 @@ export const ContactCreateModal = ({ isOpen, close }: ContactModalProps) => {
   } = useForm<FormValues>({
     resolver: yupResolver(schema),
     context: {
-      contacts: existingContactAddresses,
+      contacts: existingNormalisedContacts,
       accounts: existingAccountAddresses,
     },
     mode: "all",

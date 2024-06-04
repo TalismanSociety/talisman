@@ -19,6 +19,7 @@ import { useViewOnExplorer } from "@ui/domains/ViewOnExplorer"
 import { useAddressBook } from "@ui/hooks/useAddressBook"
 import { useAnalytics } from "@ui/hooks/useAnalytics"
 import { useAnalyticsPageView } from "@ui/hooks/useAnalyticsPageView"
+import { useChainByGenesisHash } from "@ui/hooks/useChainByGenesisHash"
 import { useSendFundsPopup } from "@ui/hooks/useSendFundsPopup"
 import { AccountAddressType } from "extension-shared"
 import { useAtomValue } from "jotai"
@@ -86,7 +87,11 @@ const AddressBookContactItem = ({ contact, handleDelete, handleEdit }: ContactIt
     undefined,
     contact.address
   )
-  const { open: viewOnExplorer } = useViewOnExplorer(contact.address)
+  const contactChain = useChainByGenesisHash(contact.genesisHash)
+  const { open: viewOnExplorer, canOpen: canViewOnExplorer } = useViewOnExplorer(
+    contact.address,
+    contact.genesisHash
+  )
 
   const handleViewOnExplorer = useCallback(() => {
     viewOnExplorer()
@@ -95,14 +100,19 @@ const AddressBookContactItem = ({ contact, handleDelete, handleEdit }: ContactIt
 
   const handleCopyClick = useCallback(() => {
     openCopyAddressModal({
+      networkId: contactChain?.id,
       address: contact.address,
     })
     genericEvent("open copy address", { from: "address book" })
-  }, [contact.address, genericEvent, openCopyAddressModal])
+  }, [contact.address, contactChain?.id, genericEvent, openCopyAddressModal])
 
   return (
     <div className="bg-black-secondary group flex h-32 w-full items-center justify-between gap-4 rounded px-8">
-      <AccountIcon address={contact.address} className="text-xl" />
+      <AccountIcon
+        className="text-xl"
+        address={contact.address}
+        genesisHash={contact.genesisHash}
+      />
       <div className="flex grow flex-col justify-between overflow-hidden">
         <div className="truncate">{contact.name}</div>
         <div>
@@ -150,7 +160,11 @@ const AddressBookContactItem = ({ contact, handleDelete, handleEdit }: ContactIt
                 </Tooltip>
               </ContextMenuItem>
               <ContextMenuItem onClick={handleCopyClick}>{t("Copy address")}</ContextMenuItem>
-              <ContextMenuItem onClick={handleViewOnExplorer}>
+              <ContextMenuItem
+                disabled={!canViewOnExplorer}
+                onClick={handleViewOnExplorer}
+                className="disabled:!text-body-disabled disabled:!cursor-not-allowed disabled:!bg-transparent"
+              >
                 {t("View on explorer")}
               </ContextMenuItem>
               <ContextMenuItem onClick={() => handleDelete(contact.address)}>
