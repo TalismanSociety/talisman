@@ -3,6 +3,7 @@ import { SearchInput } from "@talisman/components/SearchInput"
 import { ChevronRightIcon } from "@talismn/icons"
 import { classNames } from "@talismn/util"
 import { NetworkOption } from "@ui/atoms"
+import { IS_POPUP } from "@ui/util/constants"
 import { FC, useCallback, useDeferredValue, useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
 import { Modal } from "talisman-ui"
@@ -117,10 +118,10 @@ export const NetworkFilterModal: FC<{
       isOpen={isOpen}
       onDismiss={onClose}
       className={classNames(
-        "border-grey-800 h-[60rem] w-[40rem] overflow-hidden bg-black shadow",
-        window.location.pathname === "/popup.html" ? "max-h-full max-w-full" : "rounded-lg border"
+        "border-grey-800 h-[60rem] w-[40rem] overflow-hidden bg-black",
+        IS_POPUP ? "max-h-full max-w-full" : "rounded-lg border shadow"
       )}
-      containerId={window.location.pathname === "/popup.html" ? "main" : undefined}
+      containerId={IS_POPUP ? "main" : undefined}
     >
       <NetworkFilterModalContent
         networkIds={networkIds}

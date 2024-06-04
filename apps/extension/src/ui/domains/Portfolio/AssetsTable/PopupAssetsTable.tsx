@@ -205,7 +205,7 @@ const BalancesGroup = ({ label, fiatAmount, className, children }: GroupProps) =
   )
 }
 
-const PopupTokensTable = () => {
+export const PopupAssetsTable = () => {
   const { t } = useTranslation()
   const { account } = useSelectedAccount()
 
@@ -280,81 +280,6 @@ const PopupTokensTable = () => {
           </BalancesGroup>
         )}
       </div>
-    </FadeIn>
-  )
-}
-
-export const PopupAssetsTable = () => {
-  // const { t } = useTranslation()
-  // const { account } = useSelectedAccount()
-  // // group by status by token (symbol)
-  // const { availableSymbolBalances: available, lockedSymbolBalances } =
-  //   usePortfolioSymbolBalances(balances)
-
-  // const currency = useSelectedCurrency()
-
-  // // calculate totals
-  // const {
-  //   total,
-  //   transferable: totalAvailable,
-  //   unavailable: totalLocked,
-  // } = useMemo(() => balances.sum.fiat(currency), [balances.sum, currency])
-
-  // if (!available.length && !lockedSymbolBalances.length && !isInitialising)
-  //   return (
-  //     <FadeIn>
-  //       <div className="text-body-secondary bg-black-secondary rounded-sm py-10 text-center text-xs">
-  //         {account ? t("No assets to display for this account.") : t("No assets to display.")}
-  //       </div>
-  //     </FadeIn>
-  //   )
-
-  return (
-    <FadeIn>
-      {/* TODO move to header */}
-      {/* {!!account && (
-          <>
-            <div className="text-md flex items-center gap-2">
-              <div className="text-body grow text-left">{t("Total")}</div>
-              <div className="text-body-secondary truncate">
-                <Fiat amount={total} isBalance />
-              </div>
-            </div>
-            <div className="h-8" />
-          </>
-        )} */}
-      <PopupTokensTable />
-      {/* <BalancesGroup label={t("Available")} fiatAmount={totalAvailable}>
-          {available.map(([symbol, b]) => (
-            <AssetRow key={symbol} balances={b} />
-          ))}
-          {isInitialising && <AssetRowSkeleton />}
-          {!isInitialising && !available.length && (
-            <div className="text-body-secondary bg-black-secondary rounded-sm py-10 text-center text-xs">
-              {account
-                ? t("There are no available balances for this account.")
-                : t("There are no available balances.")}
-            </div>
-          )}
-          <div className="h-8" />
-        </BalancesGroup>
-        {lockedSymbolBalances.length > 0 && (
-          <BalancesGroup
-            label={
-              <div className="flex items-center gap-2">
-                <div>{t("Locked")}</div>
-                <div>
-                  <LockIcon className="text-sm" />
-                </div>
-              </div>
-            }
-            fiatAmount={totalLocked}
-          >
-            {lockedSymbolBalances.map(([symbol, b]) => (
-              <AssetRow key={symbol} balances={b} locked />
-            ))}
-          </BalancesGroup>
-        )} */}
     </FadeIn>
   )
 }
