@@ -214,7 +214,7 @@ const PopupTokensTable = () => {
 
   // group by status by token (symbol)
   const { availableSymbolBalances: available, lockedSymbolBalances } =
-    usePortfolioSymbolBalancesByFilter("network")
+    usePortfolioSymbolBalancesByFilter("search")
 
   const currency = useSelectedCurrency()
 
