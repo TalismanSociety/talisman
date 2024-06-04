@@ -88,9 +88,9 @@ export const AddressDisplay: FC<AddressDisplayProps> = ({
   evmNetworkId,
   className,
 }) => {
-  const account = useAccountByAddress(address)
-  const contact = useContact(address)
   const chain = useChain(chainId as string)
+  const account = useAccountByAddress(address)
+  const contact = useContact(address, chain?.genesisHash)
   const blockExplorerUrl = useBlockExplorerUrl(
     address,
     chainId,

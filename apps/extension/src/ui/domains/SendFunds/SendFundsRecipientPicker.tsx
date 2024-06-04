@@ -56,48 +56,6 @@ export const SendFundsRecipientPicker = () => {
   const normalizedSearch = useMemo(() => normalize(search), [search, normalize])
   const normalizedNsLookup = useMemo(() => normalize(nsLookup ?? undefined), [nsLookup, normalize])
 
-  const newAddresses = useMemo(() => {
-    const addresses: SendFundsAccount[] = []
-
-    if (
-      to &&
-      allAccounts.every((account) => normalizedTo !== normalize(account.address)) &&
-      allContacts.every((contact) => normalizedTo !== normalize(contact.address))
-    )
-      addresses.push({ address: to })
-
-    if (
-      isValidAddressInput &&
-      (!to || normalizedSearch !== normalizedTo) &&
-      allAccounts.every((account) => normalizedSearch !== normalize(account.address)) &&
-      allContacts.every((contact) => normalizedSearch !== normalize(contact.address))
-    )
-      addresses.push({ address: search })
-
-    if (
-      isNsLookup &&
-      nsLookup &&
-      (!to || normalizedNsLookup !== normalizedTo) &&
-      allAccounts.every((account) => normalizedNsLookup !== normalize(account.address)) &&
-      allContacts.every((contact) => normalizedNsLookup !== normalize(contact.address))
-    )
-      addresses.push({ name: search, address: nsLookup })
-
-    return addresses
-  }, [
-    to,
-    allAccounts,
-    allContacts,
-    isValidAddressInput,
-    normalizedSearch,
-    normalizedTo,
-    search,
-    isNsLookup,
-    nsLookup,
-    normalizedNsLookup,
-    normalize,
-  ])
-
   const contacts = useMemo(
     () =>
       allContacts
@@ -123,6 +81,48 @@ export const SendFundsRecipientPicker = () => {
       chain?.genesisHash,
     ]
   )
+
+  const newAddresses = useMemo(() => {
+    const addresses: SendFundsAccount[] = []
+
+    if (
+      to &&
+      allAccounts.every((account) => normalizedTo !== normalize(account.address)) &&
+      contacts.every((contact) => normalizedTo !== normalize(contact.address))
+    )
+      addresses.push({ address: to })
+
+    if (
+      isValidAddressInput &&
+      (!to || normalizedSearch !== normalizedTo) &&
+      allAccounts.every((account) => normalizedSearch !== normalize(account.address)) &&
+      contacts.every((contact) => normalizedSearch !== normalize(contact.address))
+    )
+      addresses.push({ address: search })
+
+    if (
+      isNsLookup &&
+      nsLookup &&
+      (!to || normalizedNsLookup !== normalizedTo) &&
+      allAccounts.every((account) => normalizedNsLookup !== normalize(account.address)) &&
+      contacts.every((contact) => normalizedNsLookup !== normalize(contact.address))
+    )
+      addresses.push({ name: search, address: nsLookup })
+
+    return addresses
+  }, [
+    to,
+    allAccounts,
+    contacts,
+    isValidAddressInput,
+    normalizedSearch,
+    normalizedTo,
+    search,
+    isNsLookup,
+    nsLookup,
+    normalizedNsLookup,
+    normalize,
+  ])
 
   const accounts = useMemo(
     () =>
