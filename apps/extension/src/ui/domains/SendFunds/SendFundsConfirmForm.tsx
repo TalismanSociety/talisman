@@ -44,14 +44,14 @@ const NetworkDisplay = () => {
   if (!networkId) return null
 
   return (
-    <div className="flex w-full items-center justify-end gap-4 text-right">
-      <ChainLogo id={networkId} className="text-lg" />
+    <div className="text-body flex items-center gap-4">
+      <ChainLogo id={networkId} className="text-md" />
       {networkName}
     </div>
   )
 }
 
-const TotalValueRow = () => {
+const TotalAmountRow = () => {
   const { t } = useTranslation("send-funds")
   const {
     sendMax,
@@ -89,7 +89,7 @@ const TotalValueRow = () => {
 
   return (
     <div className="mt-4 flex h-[1.7rem] justify-between text-xs">
-      <div className="text-body-secondary">{t("Total Value")}</div>
+      <div className="text-body-secondary">{t("Total Amount")}</div>
       <div className="text-body">
         {totalValue ? (
           <Fiat amount={totalValue} />
@@ -115,9 +115,13 @@ export const ExternalRecipientWarning = () => {
   if (!showWarning) return null
 
   return (
-    <div className="text-alert-warn bg-grey-900 flex w-full items-center gap-6 rounded-sm px-8 py-6 text-xs">
-      <AlertCircleIcon className="text-[2rem]" />
-      <div>{t("You are sending funds to an external account")}</div>
+    <div className="text-alert-warn bg-grey-900 flex w-full items-center gap-2 rounded-sm px-2 py-6 text-xs">
+      <AlertCircleIcon className="shrink-0 text-[1.4rem]" />
+      <div>
+        {t(
+          "You are sending to an external account. To prevent loss of funds, make sure you are sending on the right network."
+        )}
+      </div>
     </div>
   )
 }
@@ -187,7 +191,7 @@ const EvmFeeSummary = () => {
 
   return (
     <>
-      <div className="flex h-12 items-center justify-between gap-8 text-xs">
+      <div className="mt-2 flex h-12 items-center justify-between gap-8 text-xs">
         <div className="text-body-secondary">{t("Transaction Priority")}</div>
         <div>
           {evmNetwork?.nativeToken?.id && priority && tx && txDetails && (
@@ -319,15 +323,15 @@ export const SendFundsConfirmForm = () => {
                   evmNetworkId={evmNetwork?.id}
                 />
               </div>
-              <div className="text-body flex h-16 items-center justify-between gap-8">
-                <div className="text-body-secondary whitespace-nowrap">{t("Network")}</div>
-                <NetworkDisplay />
-              </div>
               <div className="py-8">
                 <hr className="text-grey-800" />
               </div>
+              <div className="mt-4 flex items-center justify-between gap-8 text-xs">
+                <div className="text-body-secondary">{t("Network")}</div>
+                <NetworkDisplay />
+              </div>
               <FeeSummary />
-              <TotalValueRow />
+              <TotalAmountRow />
             </div>
           </div>
         </ScrollContainer>
