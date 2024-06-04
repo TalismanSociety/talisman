@@ -64,7 +64,7 @@ const SubAccounts: FC<{ site: AuthorizedSite | null }> = ({ site }) => {
         >
           {t("EVM accounts")}{" "}
           <Tooltip>
-            <TooltipTrigger>
+            <TooltipTrigger asChild>
               <InfoIcon />
             </TooltipTrigger>
             <TooltipContent>
