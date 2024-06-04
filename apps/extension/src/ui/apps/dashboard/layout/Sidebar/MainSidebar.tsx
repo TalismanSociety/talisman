@@ -1,4 +1,5 @@
 import {
+  QUEST_APP_URL,
   TALISMAN_WEB_APP_NFTS_URL,
   TALISMAN_WEB_APP_STAKING_URL,
   TALISMAN_WEB_APP_TRANSPORT_URL,
@@ -10,6 +11,7 @@ import {
   ImageIcon,
   PieChartIcon,
   PlusIcon,
+  QuestStarIcon,
   RepeatIcon,
   SettingsIcon,
   ZapIcon,
@@ -78,6 +80,12 @@ export const MainSidebar = () => {
     navigate("/settings/mnemonics?showBackupModal")
   }, [genericEvent, navigate])
 
+  const handleQuestsClick = useCallback(() => {
+    genericEvent("open quests link", { from: "sidebar", target: "quests" })
+    window.open(QUEST_APP_URL, "_blank")
+    return false
+  }, [genericEvent])
+
   return (
     <Nav className="gap-1 p-4 text-sm lg:px-12 lg:pb-12 lg:pt-6 lg:text-base">
       <SidebarNavItem
@@ -117,6 +125,20 @@ export const MainSidebar = () => {
         title={t("NFTs")}
         onClick={handleNftsClick}
         icon={<ImageIcon />}
+        isExternalLink
+      />
+      <SidebarNavItem
+        contentClassName="text-primary"
+        title={<span className="font-bold">{t("Quests")}</span>}
+        onClick={handleQuestsClick}
+        icon={
+          <div className="bg-primary flex h-[1em] w-[1em] items-center justify-center rounded-full">
+            <QuestStarIcon
+              className="text-xs text-black"
+              style={{ stroke: "url(#stars-icon-gradient)" }}
+            />
+          </div>
+        }
         isExternalLink
       />
       <SidebarNavItem
