@@ -16,7 +16,7 @@ export const formatFiat = (
     ...(currency !== undefined && {
       style: "currency",
       currency,
-      currencyDisplay: currencyDisplay ?? "narrowSymbol",
+      currencyDisplay: currencyDisplay ?? (currency === "usd" ? "narrowSymbol" : "symbol"),
     }),
 
     ...(minimumDecimalPlaces !== undefined && {

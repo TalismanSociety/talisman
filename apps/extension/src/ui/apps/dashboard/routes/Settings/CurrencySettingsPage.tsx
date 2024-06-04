@@ -41,7 +41,7 @@ const CurrencySettingsPage = () => {
             <div className="flex grow flex-col items-start gap-1">
               <div className="text-body uppercase">{currency}</div>
               <div className="text-body-secondary text-xs">
-                {currencyConfig[currency]?.unicodeCharacter ?? ""}{" "}
+                {currencyConfig[currency]?.symbol ?? ""}{" "}
                 {currencyConfig[currency]?.name ?? currency}
               </div>
             </div>

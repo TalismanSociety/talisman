@@ -9,9 +9,9 @@ export const SUPPORTED_CURRENCIES = {
   cny: { name: "Chinese Yuan", symbol: "¥" },
   eur: { name: "Euro", symbol: "€" },
   gbp: { name: "British Pound", symbol: "£" },
-  cad: { name: "Canadian Dollar", symbol: "$" },
-  aud: { name: "Australian Dollar", symbol: "$" },
-  nzd: { name: "New Zealand Dollar", symbol: "$" },
+  cad: { name: "Canadian Dollar", symbol: "C$" },
+  aud: { name: "Australian Dollar", symbol: "A$" },
+  nzd: { name: "New Zealand Dollar", symbol: "NZ$" },
   jpy: { name: "Japanese Yen", symbol: "¥" },
   rub: { name: "Russian Ruble", symbol: "₽" },
   krw: { name: "South Korean Won", symbol: "₩" },
@@ -21,9 +21,9 @@ export const SUPPORTED_CURRENCIES = {
   vnd: { name: "Vietnamese Dong", symbol: "₫" },
   inr: { name: "Indian Rupee", symbol: "₹" },
   try: { name: "Turkish Lira", symbol: "₺" },
-  // hkd: { name: "Hong Kong Dollar", symbol: "$" },
-  sgd: { name: "Singapore Dollar", symbol: "$" },
-  // twd: { name: "Taiwanese Dollar", symbol: "$" },
+  // hkd: { name: "Hong Kong Dollar", symbol: "HK$" },
+  sgd: { name: "Singapore Dollar", symbol: "S$" },
+  // twd: { name: "Taiwanese Dollar", symbol: "NT$" },
 } as const
 
 export type TokenRateCurrency = keyof typeof SUPPORTED_CURRENCIES

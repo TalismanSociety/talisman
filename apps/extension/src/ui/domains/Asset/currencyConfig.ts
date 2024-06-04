@@ -56,7 +56,7 @@ export const currencyConfig = Object.fromEntries(
   currencyOrder.map((id) => [
     id,
     {
-      unicodeCharacter: SUPPORTED_CURRENCIES[id as TokenRateCurrency].symbol,
+      symbol: SUPPORTED_CURRENCIES[id as TokenRateCurrency].symbol,
       name: SUPPORTED_CURRENCIES[id as TokenRateCurrency].name,
       icon: currencyIcons[id as TokenRateCurrency],
     },
