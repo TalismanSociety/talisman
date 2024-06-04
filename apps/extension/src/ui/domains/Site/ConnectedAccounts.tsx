@@ -1,10 +1,12 @@
 import { AccountJsonAny, AuthorizedSite } from "@extension/core"
+import { InfoIcon } from "@talismn/icons"
 import { api } from "@ui/api"
 import { useAccountsForSite } from "@ui/hooks/useAccountsForSite"
 import { useAuthorisedSites } from "@ui/hooks/useAuthorisedSites"
 import { useCurrentSite } from "@ui/hooks/useCurrentSite"
-import { FC, Fragment, useCallback, useMemo } from "react"
+import { FC, Fragment, useCallback, useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
+import { Checkbox, Tooltip, TooltipContent, TooltipTrigger } from "talisman-ui"
 
 import { ConnectAccountsContainer } from "./ConnectAccountsContainer"
 import { ConnectAccountToggleButtonRow } from "./ConnectAccountToggleButtonRow"
@@ -13,12 +15,18 @@ const SubAccounts: FC<{ site: AuthorizedSite | null }> = ({ site }) => {
   const { t } = useTranslation()
   const accounts = useAccountsForSite(site)
 
+  const hasEthereumActiveAccounts = useMemo(
+    () => accounts.some((acc) => acc.type === "ethereum" && site?.addresses?.includes(acc.address)),
+    [accounts, site?.addresses]
+  )
+  const [showEvmAccounts, setShowEvmAccounts] = useState(hasEthereumActiveAccounts)
+
   const activeAccounts = useMemo(
     () =>
-      accounts.map(
-        (acc) => [acc, site?.addresses?.includes(acc.address)] as [AccountJsonAny, boolean]
-      ),
-    [accounts, site?.addresses]
+      accounts
+        .filter((acc) => showEvmAccounts || acc.type !== "ethereum")
+        .map((acc) => [acc, site?.addresses?.includes(acc.address)] as [AccountJsonAny, boolean]),
+    [accounts, site?.addresses, showEvmAccounts]
   )
 
   const handleAccountClick = useCallback(
@@ -44,22 +52,41 @@ const SubAccounts: FC<{ site: AuthorizedSite | null }> = ({ site }) => {
 
   return (
     <>
-      <div className="mb-2 mt-6 flex w-full items-center justify-end gap-4 px-8 text-xs">
-        <button
-          type="button"
-          className="text-body-secondary hover:text-grey-300"
-          onClick={handleDisconnectAllClick}
+      <div className="mb-2 mt-6 flex w-full items-center justify-between px-8 text-xs">
+        <Checkbox
+          checked={showEvmAccounts}
+          onClick={() => setShowEvmAccounts(!showEvmAccounts)}
+          childProps={{ className: "flex items-center gap-2" }}
         >
-          {t("Disconnect All")}
-        </button>
-        <div className="bg-body-disabled h-[1rem] w-0.5 "></div>
-        <button
-          type="button"
-          className="text-body-secondary hover:text-grey-300"
-          onClick={handleConnectAllClick}
-        >
-          {t("Connect All")}
-        </button>
+          {t("EVM accounts")}{" "}
+          <Tooltip>
+            <TooltipTrigger>
+              <InfoIcon />
+            </TooltipTrigger>
+            <TooltipContent>
+              {t(
+                "Some Polkadot apps may not work with Ethereum-type accounts. Using an EVM account via Substrate could break certain dApps."
+              )}
+            </TooltipContent>
+          </Tooltip>
+        </Checkbox>
+        <div className="flex items-center gap-3">
+          <button
+            type="button"
+            className="text-body-secondary hover:text-grey-300"
+            onClick={handleDisconnectAllClick}
+          >
+            {t("Disconnect All")}
+          </button>
+          <div className="bg-body-disabled h-[1rem] w-0.5 "></div>
+          <button
+            type="button"
+            className="text-body-secondary hover:text-grey-300"
+            onClick={handleConnectAllClick}
+          >
+            {t("Connect All")}
+          </button>
+        </div>
       </div>
       {activeAccounts.map(([acc, isConnected], idx) => (
         <Fragment key={acc.address}>
