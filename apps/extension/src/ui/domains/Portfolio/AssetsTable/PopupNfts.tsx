@@ -1,8 +1,9 @@
+import { classNames } from "@talismn/util"
 import { Fiat } from "@ui/domains/Asset/Fiat"
 import { useSetting } from "@ui/hooks/useSettings"
 import { Nft, NftCollection, NftData } from "extension-core"
 import { FC, useCallback, useMemo, useRef, useState } from "react"
-import { useTranslation } from "react-i18next"
+import { Trans, useTranslation } from "react-i18next"
 import { useNavigate } from "react-router-dom"
 import { useIntersection } from "react-use"
 
@@ -95,6 +96,8 @@ const NftCollectionRowInner: FC<{ collection: NftCollection; data: NftData }> = 
     return floorUsdValues.length ? Math.min(...floorUsdValues) : null
   }, [collection.marketplaces])
 
+  const { t } = useTranslation()
+
   const navigate = useNavigate()
   const handleClick = useCallback(() => {
     if (nfts.length === 1) setNftDialogInputs({ collection, nft: nfts[0] })
@@ -106,9 +109,9 @@ const NftCollectionRowInner: FC<{ collection: NftCollection; data: NftData }> = 
       <button
         type="button"
         onClick={handleClick}
-        className="bg-grey-900 hover:bg-grey-800 grid h-32 w-full grid-cols-3 items-center gap-4 rounded-sm px-8 text-left"
+        className="bg-grey-900 hover:bg-grey-800 flex h-32 w-full  items-center gap-8 rounded-sm px-8 text-left"
       >
-        <div className="flex items-center gap-6 overflow-hidden">
+        <div className="flex grow items-center gap-6 overflow-hidden ">
           <NftImage className="size-16" src={imageUrl} alt={collection.name ?? ""} />
           <div className="flex grow flex-col gap-2 overflow-hidden">
             <div className="truncate text-base font-bold">{collection.name}</div>
@@ -117,12 +120,35 @@ const NftCollectionRowInner: FC<{ collection: NftCollection; data: NftData }> = 
             </div>
           </div>
         </div>
-        <div className="text-right">
+        {/* <div className="text-right">
           {floorUsdValue !== null ? (
             <Fiat amount={floorUsdValue} forceCurrency="usd" noCountUp />
           ) : null}
+        </div> */}
+        <div className="flex shrink-0 flex-col items-end gap-2">
+          <div>
+            <Trans
+              t={t}
+              components={{ Bold: <span className="font-bold"></span> }}
+              defaults="<Bold>{{count}}</Bold> NFTs"
+              values={{ count: nfts.length }}
+            >
+              {/* {t("<Bold>{{count}}</Bold> NFTs", { count: nfts.length })} */}
+            </Trans>
+          </div>
+          <div
+            className={classNames(
+              "text-body-secondary ",
+              floorUsdValue === null && "select-none text-transparent"
+            )}
+          >
+            {floorUsdValue !== null ? (
+              <Fiat amount={floorUsdValue} forceCurrency="usd" noCountUp />
+            ) : (
+              "N/A"
+            )}
+          </div>
         </div>
-        <div className="text-right">{nfts.length}</div>
       </button>
 
       <NftDialog data={nftDialogInputs} />
@@ -134,7 +160,7 @@ const NftCollectionRow: FC<{ collection: NftCollection; data: NftData }> = (prop
   const refContainer = useRef<HTMLDivElement>(null)
   const intersection = useIntersection(refContainer, {
     root: null,
-    rootMargin: "1000px",
+    rootMargin: "400px",
   })
 
   return (
@@ -146,8 +172,7 @@ const NftCollectionRow: FC<{ collection: NftCollection; data: NftData }> = (prop
 
 const NftCollectionsList: FC<{ data: NftData }> = ({ data }) => {
   return (
-    <div className="flex flex-col gap-5">
-      <div className="text-primary-500">{status}</div>
+    <div className="flex flex-col gap-5 text-sm">
       {data.collections.map((collection, i) => (
         <NftCollectionRow key={`${collection.id}-${i}`} collection={collection} data={data} />
       ))}
@@ -168,11 +193,6 @@ const NftCollectionTileInner: FC<{ collection: NftCollection; data: NftData }> =
 
   const imageUrl = useMemo(() => {
     return getPortfolioNftCollectionPreviewUrl(collection, nfts)
-    // return (
-    //   collection.imageUrl ??
-    //   nfts.map((nft) => nft.previews.small ?? nft.imageUrl).find((url) => !!url) ??
-    //   ""
-    // )
   }, [collection, nfts])
 
   const networkIds = useMemo(() => [...new Set(nfts.map((nft) => nft.evmNetworkId))], [nfts])

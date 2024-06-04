@@ -47,7 +47,7 @@ export const Tabs: FC<{
     <div
       ref={refTabs}
       className={classNames(
-        "border-grey-700 text-md relative mb-6 flex h-14 w-full gap-12 border-b  font-bold",
+        "border-grey-700 relative mb-5 flex h-12 w-full gap-12 border-b text-sm font-light",
         indicatorStyle ? "visible" : "invisible", // wait for indicator's style to be ready, prevents flickering
         className
       )}
@@ -66,7 +66,10 @@ export const Tabs: FC<{
           {tab.label}
         </button>
       ))}
-      <div className="bg-primary-500 absolute bottom-0 left-0 h-0.5" style={indicatorStyle}></div>
+      <div
+        className="bg-primary-500 absolute bottom-0 left-0 -mb-0.5 h-0.5"
+        style={indicatorStyle}
+      ></div>
     </div>
   )
 }

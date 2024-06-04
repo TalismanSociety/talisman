@@ -200,12 +200,7 @@ const DialogContent: FC<{ onDismiss: () => void; collection: NftCollection; nft:
           <div className="text-body leading-paragraph text-lg">{nft.name}</div>
         </div>
         <div className="pr-12">
-          <Tabs
-            tabs={tabs}
-            selected={tab}
-            onChange={setTab}
-            className="m-0 w-full text-base font-light"
-          />
+          <Tabs tabs={tabs} selected={tab} onChange={setTab} className="m-0 w-full text-base " />
         </div>
         <div className="grow overflow-hidden pr-2">
           <ScrollableArea

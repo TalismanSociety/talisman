@@ -92,7 +92,7 @@ export const PortfolioNftCollection = () => {
   return (
     <DashboardPortfolioLayout>
       <CollectionStats />
-      <PortfolioTabs className="mb-6 mt-[3.8rem]" />
+      <PortfolioTabs className="text-md mb-6 mt-[3.8rem] h-14 font-bold" />
       <PortfolioToolbar />
       <DashboardNftCollection />
     </DashboardPortfolioLayout>

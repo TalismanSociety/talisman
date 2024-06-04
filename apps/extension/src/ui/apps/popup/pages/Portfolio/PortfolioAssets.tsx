@@ -239,40 +239,6 @@ const MainContent: FC = () => {
 }
 
 const PageContent = () => {
-  //const allBalances = useBalances()
-  // const { networkBalances } = usePortfolio()
-  // const { account } = useSelectedAccount()
-
-  // const { folder } = useSearchParamsSelectedFolder()
-
-  // const balancesByAddress = useMemo(() => {
-  //   // we use this to avoid looping over the balances list n times, where n is the number of accounts in the wallet
-  //   // instead, we'll only interate over the balances one time
-  //   const balancesByAddress: Map<string, Balance[]> = new Map()
-  //   allBalances.each.forEach((balance) => {
-  //     if (!balancesByAddress.has(balance.address)) balancesByAddress.set(balance.address, [])
-  //     balancesByAddress.get(balance.address)?.push(balance)
-  //   })
-  //   return balancesByAddress
-  // }, [allBalances.each])
-
-  // const balances = useMemo(
-  //   () =>
-  //     account
-  //       ? new Balances(balancesByAddress.get(account.address) ?? [])
-  //       : folder
-  //       ? new Balances(
-  //           folder.tree.flatMap((account) => balancesByAddress.get(account.address) ?? [])
-  //         )
-  //       : // only show networkBalances when no account / folder selected
-  //         // networkBalances is basically the full portfolio, without any watch-only accounts
-  //         // i.e. `Total Portfolio`
-  //         // on the other hand, allBalances includes watch-only accounts
-  //         networkBalances,
-  //   [account, balancesByAddress, folder, networkBalances]
-  // )
-  // const balancesToDisplay = useDisplayBalances(balances)
-
   return (
     <>
       <PortfolioAssetsHeader />

@@ -1,5 +1,5 @@
 import { Tabs } from "@talisman/components/Tabs"
-import { FC, useMemo } from "react"
+import { FC, useCallback, useMemo } from "react"
 import { useLocation, useNavigate } from "react-router-dom"
 
 import { useSelectedAccount } from "./useSelectedAccount"
@@ -25,5 +25,14 @@ export const PortfolioTabs: FC<{ className?: string }> = ({ className }) => {
     [location.pathname, tabs]
   )
 
-  return <Tabs tabs={tabs} selected={selected?.value} onChange={navigate} className={className} />
+  const handleChange = useCallback(
+    (value: string) => {
+      navigate(`${value}${location.search}`)
+    },
+    [location.search, navigate]
+  )
+
+  return (
+    <Tabs tabs={tabs} selected={selected?.value} onChange={handleChange} className={className} />
+  )
 }

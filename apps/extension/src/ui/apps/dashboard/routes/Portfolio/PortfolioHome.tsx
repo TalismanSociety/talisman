@@ -51,7 +51,7 @@ export const PortfolioHome = () => {
   return (
     <DashboardPortfolioLayout>
       <PortfolioStats />
-      <PortfolioTabs className="mb-6 mt-[3.8rem]" />
+      <PortfolioTabs className="text-md mb-6 mt-[3.8rem] h-14 font-bold" />
       <PortfolioToolbar />
       {/* can't use the Routes component here because we're already in the component that matches the location */}
       <Suspense fallback={<SuspenseTracker name="PortfolioHome content" />}>

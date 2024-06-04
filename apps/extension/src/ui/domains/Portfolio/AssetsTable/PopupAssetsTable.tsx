@@ -69,7 +69,7 @@ const AssetRow = ({ balances, locked }: AssetRowProps) => {
     token.isTestnet && params.set("testnet", "true")
     account && params.set("account", account?.address)
 
-    navigate(`/portfolio/${encodeURIComponent(token.symbol)}?${params.toString()}`)
+    navigate(`/portfolio/tokens/${encodeURIComponent(token.symbol)}?${params.toString()}`)
     genericEvent("goto portfolio asset", { from: "popup", symbol: token.symbol })
   }, [account, genericEvent, navigate, token])
 
