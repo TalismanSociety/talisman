@@ -43,16 +43,12 @@ const useSendFundsWizardProvider = () => {
       goToNextPage = false
     ) => {
       // reset amount if token changes, as decimals may be totally different
+      // also reset from/to, as accounts could be incompatible or network restricted
       if (key === "tokenId" && value !== searchParams.get("tokenId")) {
         searchParams.delete("amount")
         searchParams.delete("sendMax")
-
-        // if token type (substrate or evm) changes, clear both account fields
-        const prevTokenId = searchParams.get("tokenId")
-        if (prevTokenId && prevTokenId.split("-")[0] !== (value as string).split("-")[0]) {
-          searchParams.delete("from")
-          searchParams.delete("to")
-        }
+        searchParams.delete("from")
+        searchParams.delete("to")
       }
 
       if (key === "amount" && value) searchParams.delete("sendMax")
