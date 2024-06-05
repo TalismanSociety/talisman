@@ -5,7 +5,6 @@ import { useEvmNetwork } from "@ui/hooks/useEvmNetwork"
 import { IS_POPUP } from "@ui/util/constants"
 import format from "date-fns/format"
 import { Nft, NftCollection, NftCollectionMarketplace } from "extension-core"
-import { debounce } from "lodash"
 import { CSSProperties, FC, PropsWithChildren, useEffect, useMemo, useRef, useState } from "react"
 import { useTranslation } from "react-i18next"
 import {
@@ -135,12 +134,24 @@ const ScrollableArea: FC<
     const content = refContent.current
     if (!scrollable || !content) return
 
-    const handleDetectScroll = debounce(() => {
-      setScrollbarWidth(Math.round(scrollable.offsetWidth - scrollable.clientWidth))
-    }, 50)
+    const handleDetectScroll = () => {
+      if (scrollable.clientWidth < 400)
+        setScrollbarWidth(paddingRight) // portrait, use dialog's scrollbar
+      else setScrollbarWidth(Math.round(scrollable.offsetWidth - scrollable.clientWidth)) // landscape, custom toolbar
+    }
 
+    const mutationCallback: MutationCallback = (mutationList) => {
+      if (mutationList.some(({ type }) => type === "childList")) handleDetectScroll()
+    }
+
+    // observe content changes
+    const observer = new MutationObserver(mutationCallback)
+    observer.observe(content, { attributes: false, childList: true, subtree: true })
+
+    // listen for resize events
     scrollable.addEventListener("resize", handleDetectScroll)
     content.addEventListener("resize", handleDetectScroll)
+    window.addEventListener("resize", handleDetectScroll)
 
     // init
     handleDetectScroll()
@@ -148,8 +159,10 @@ const ScrollableArea: FC<
     return () => {
       scrollable.removeEventListener("resize", handleDetectScroll)
       content.removeEventListener("resize", handleDetectScroll)
+      window.removeEventListener("resize", handleDetectScroll)
+      observer.disconnect()
     }
-  }, [refContainer])
+  }, [paddingRight, refContainer])
 
   const style = useMemo<CSSProperties>(() => {
     return { paddingRight: paddingRight - scrollbarWidth }
@@ -169,7 +182,7 @@ const ScrollableArea: FC<
 }
 
 const DialogContent: FC<{ onDismiss: () => void; collection: NftCollection; nft: Nft }> = ({
-  // onDismiss,
+  onDismiss,
   collection,
   nft,
 }) => {
@@ -189,14 +202,6 @@ const DialogContent: FC<{ onDismiss: () => void; collection: NftCollection; nft:
   }
 
   return (
-    // <div
-    //   className={
-    //     classNames()
-    //     //  "@container", // tailwind container queries
-    //     //IS_POPUP ? "h-[60rem] max-h-full w-[40rem] max-w-full" : "rounded-lg border shadow"
-    //     //"@lg grid-cols-1" ? "grid-cols-1" : "grid-cols-2"
-    //   }
-    // >
     <div
       className={classNames(
         "h-full w-full",
@@ -222,13 +227,12 @@ const DialogContent: FC<{ onDismiss: () => void; collection: NftCollection; nft:
       <div
         className={classNames(
           "flex h-full grow flex-col overflow-y-auto font-light",
-          "@2xl:overflow-hidden",
+          "@2xl:overflow-hidden"
           //@2xl:py-8 @2xl:pl-12 @2xl:gap-12
-          "bg-red"
         )}
       >
         <div className="@2xl:bg-transparent flex w-full items-center gap-4 bg-black px-8 py-6">
-          <IconButton className="@2xl:hidden">
+          <IconButton className="@2xl:hidden" onClick={onDismiss}>
             <ChevronLeftIcon />
           </IconButton>
           <div>
@@ -248,20 +252,16 @@ const DialogContent: FC<{ onDismiss: () => void; collection: NftCollection; nft:
             {!!nft.imageUrl && <TooltipContent>{t("View in full screen")}</TooltipContent>}
           </Tooltip>
         </div>
-        <div className="flex grow flex-col gap-12 py-8 pl-12 font-light">
-          {/* <div className="pr-12">
-            <div className="text-body-secondary leading-paragraph">{collection.name}</div>
-            <div className="text-body leading-paragraph text-lg">{nft.name}</div>
-          </div> */}
-          <div className="pr-12">
+        <div className="@2xl:overflow-hidden @2xl:pr-0 flex grow flex-col gap-12 px-12 py-8 font-light">
+          <div className="@2xl:pr-12">
             <Tabs tabs={tabs} selected={tab} onChange={setTab} className="m-0 w-full text-base " />
           </div>
-          <div className="grow overflow-hidden pr-2">
+          <div className="@2xl:pr-1 grow overflow-hidden">
             <ScrollableArea
               // scrollbar should be centered into the 24px empty space used as right-padding for the modal
               paddingRight={20}
               className="h-full w-full"
-              innerClassName="leading-paragraph flex flex-col gap-12 text-base font-light pr-2"
+              innerClassName="leading-paragraph flex flex-col gap-12 text-base font-light"
             >
               {tab === "collection" && <TabContentCollection collection={collection} nft={nft} />}
               {tab === "nft" && <TabContentNft nft={nft} />}
@@ -269,39 +269,7 @@ const DialogContent: FC<{ onDismiss: () => void; collection: NftCollection; nft:
           </div>
         </div>
       </div>
-      {/* <Tooltip>
-          <TooltipTrigger onClick={handleFullScreenViewClick} asChild>
-            <div className="shrink-0 cursor-pointer">
-              <NftImage
-                className="h-full w-[50rem] rounded-r-none object-cover"
-                src={nft.imageUrl}
-              />
-            </div>
-          </TooltipTrigger>
-          {!!nft.imageUrl && <TooltipContent>{t("View in full screen")}</TooltipContent>}
-        </Tooltip>
-        <div className="flex grow flex-col gap-12 py-8 pl-12 font-light">
-          <div className="pr-12">
-            <div className="text-body-secondary leading-paragraph">{collection.name}</div>
-            <div className="text-body leading-paragraph text-lg">{nft.name}</div>
-          </div>
-          <div className="pr-12">
-            <Tabs tabs={tabs} selected={tab} onChange={setTab} className="m-0 w-full text-base " />
-          </div>
-          <div className="grow overflow-hidden pr-2">
-            <ScrollableArea
-              // scrollbar should be centered into the 24px empty space used as right-padding for the modal
-              paddingRight={20}
-              className="h-full w-full"
-              innerClassName="leading-paragraph flex flex-col gap-12 text-base font-light pr-2"
-            >
-              {tab === "collection" && <TabContentCollection collection={collection} nft={nft} />}
-              {tab === "nft" && <TabContentNft nft={nft} />}
-            </ScrollableArea>
-          </div>
-        </div> */}
     </div>
-    //  </div>
   )
 }
 
