@@ -1,5 +1,4 @@
 import { Token, TokenId } from "@talismn/chaindata-provider"
-import { sleep } from "@talismn/util"
 import axios from "axios"
 
 import { NewTokenRates, SUPPORTED_CURRENCIES, TokenRateCurrency, TokenRatesList } from "./types"
@@ -107,11 +106,8 @@ export async function fetchTokenRates(
   // }
   const coingeckoPrices = await Promise.all(
     safelyGetCoingeckoUrls(coingeckoIds).map(
-      async (queryUrl): Promise<Record<string, Record<string, number>>> => {
-        // throttle requests to coingecko to avoid rate limiting
-        sleep(200)
-        return await axios.get(queryUrl).then((response) => response.data)
-      }
+      async (queryUrl): Promise<Record<string, Record<string, number>>> =>
+        await axios.get(queryUrl).then((response) => response.data)
     )
   ).then((responses): Record<string, Record<string, number>> => Object.assign({}, ...responses))
 
