@@ -45,6 +45,7 @@
   "peerDependencies": {
     "@floating-ui/react": ">=0.20.1",
     "@headlessui/react": ">=1.7.13",
+    "@tailwindcss/container-queries": ">=0.1.1",
     "@tailwindcss/forms": ">=0.5.3",
     "@talismn/util": "*",
     "autoprefixer": ">=10.4.12",

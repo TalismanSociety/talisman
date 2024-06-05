@@ -1,12 +1,21 @@
 import { Tabs } from "@talisman/components/Tabs"
+import { ChevronLeftIcon } from "@talismn/icons"
 import { classNames } from "@talismn/util"
 import { useEvmNetwork } from "@ui/hooks/useEvmNetwork"
+import { IS_POPUP } from "@ui/util/constants"
 import format from "date-fns/format"
 import { Nft, NftCollection, NftCollectionMarketplace } from "extension-core"
 import { debounce } from "lodash"
 import { CSSProperties, FC, PropsWithChildren, useEffect, useMemo, useRef, useState } from "react"
 import { useTranslation } from "react-i18next"
-import { Modal, Tooltip, TooltipContent, TooltipTrigger, useOpenClose } from "talisman-ui"
+import {
+  IconButton,
+  Modal,
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+  useOpenClose,
+} from "talisman-ui"
 
 import { AccountIcon } from "../Account/AccountIcon"
 import { Address } from "../Account/Address"
@@ -55,8 +64,10 @@ const TabContentCollection: FC<{
       </div>
       <div className="bg-grey-800 h-0.5"></div>
       {!!collection.description && (
-        <div className="space-y-8">
+        <div className="space-y-8 hyphens-auto">
           <div className="text-body-secondary">{t("Description")}</div>
+          <div>{collection.description}</div>
+          <div>{collection.description}</div>
           <div>{collection.description}</div>
         </div>
       )}
@@ -178,43 +189,119 @@ const DialogContent: FC<{ onDismiss: () => void; collection: NftCollection; nft:
   }
 
   return (
+    // <div
+    //   className={
+    //     classNames()
+    //     //  "@container", // tailwind container queries
+    //     //IS_POPUP ? "h-[60rem] max-h-full w-[40rem] max-w-full" : "rounded-lg border shadow"
+    //     //"@lg grid-cols-1" ? "grid-cols-1" : "grid-cols-2"
+    //   }
+    // >
     <div
       className={classNames(
-        "h-[60rem] max-h-[100dvh] w-[40rem] max-w-[100dvw]",
-        "flex flex-col overflow-hidden",
-        "lg:h-[60rem] lg:w-[100rem] lg:flex-row lg:rounded-lg",
-        "bg-grey-900 shadow"
+        "h-full w-full",
+        "@2xl:overflow-hidden",
+        // //"lg:h-[60rem] lg:w-[100rem] lg:flex-row lg:rounded-lg",
+        // "@lg:w-[100rem] @lg:h-[60rem] @lg:rounded-lg",
+        // TODO bg-grey-900
+        "bg-black shadow",
+
+        "@2xl:grid-cols-2 @2xl:grid"
       )}
     >
-      <Tooltip>
-        <TooltipTrigger onClick={handleFullScreenViewClick} asChild>
-          <div className="shrink-0 cursor-pointer">
-            <NftImage className="h-full w-[50rem] rounded-r-none object-cover" src={nft.imageUrl} />
+      <div className="@2xl:block hidden">
+        <Tooltip>
+          <TooltipTrigger onClick={handleFullScreenViewClick} asChild>
+            <div className="shrink-0 cursor-pointer">
+              <NftImage className="h-full w-full object-cover" src={nft.imageUrl} />
+            </div>
+          </TooltipTrigger>
+          {!!nft.imageUrl && <TooltipContent>{t("View in full screen")}</TooltipContent>}
+        </Tooltip>
+      </div>
+      <div
+        className={classNames(
+          "flex h-full grow flex-col overflow-y-auto font-light",
+          "@2xl:overflow-hidden",
+          //@2xl:py-8 @2xl:pl-12 @2xl:gap-12
+          "bg-red"
+        )}
+      >
+        <div className="@2xl:bg-transparent flex w-full items-center gap-4 bg-black px-8 py-6">
+          <IconButton className="@2xl:hidden">
+            <ChevronLeftIcon />
+          </IconButton>
+          <div>
+            <div className="text-body-secondary leading-paragraph">{collection.name}</div>
+            <div className="text-body @2xl:leading-paragraph @2xl:text-lg font-bold">
+              {nft.name}
+            </div>
           </div>
-        </TooltipTrigger>
-        {!!nft.imageUrl && <TooltipContent>{t("View in full screen")}</TooltipContent>}
-      </Tooltip>
-      <div className="flex grow flex-col gap-12 py-8 pl-12 font-light">
-        <div className="pr-12">
-          <div className="text-body-secondary leading-paragraph">{collection.name}</div>
-          <div className="text-body leading-paragraph text-lg">{nft.name}</div>
         </div>
-        <div className="pr-12">
-          <Tabs tabs={tabs} selected={tab} onChange={setTab} className="m-0 w-full text-base " />
+        <div className="@2xl:hidden bg-grey-800 block p-8">
+          <Tooltip>
+            <TooltipTrigger onClick={handleFullScreenViewClick} asChild>
+              <div className="cursor-pointer rounded-lg bg-black">
+                <NftImage className="aspect-auto size-auto w-full rounded" src={nft.imageUrl} />
+              </div>
+            </TooltipTrigger>
+            {!!nft.imageUrl && <TooltipContent>{t("View in full screen")}</TooltipContent>}
+          </Tooltip>
         </div>
-        <div className="grow overflow-hidden pr-2">
-          <ScrollableArea
-            // scrollbar should be centered into the 24px empty space used as right-padding for the modal
-            paddingRight={20}
-            className="h-full w-full"
-            innerClassName="leading-paragraph flex flex-col gap-12 text-base font-light pr-2"
-          >
-            {tab === "collection" && <TabContentCollection collection={collection} nft={nft} />}
-            {tab === "nft" && <TabContentNft nft={nft} />}
-          </ScrollableArea>
+        <div className="flex grow flex-col gap-12 py-8 pl-12 font-light">
+          {/* <div className="pr-12">
+            <div className="text-body-secondary leading-paragraph">{collection.name}</div>
+            <div className="text-body leading-paragraph text-lg">{nft.name}</div>
+          </div> */}
+          <div className="pr-12">
+            <Tabs tabs={tabs} selected={tab} onChange={setTab} className="m-0 w-full text-base " />
+          </div>
+          <div className="grow overflow-hidden pr-2">
+            <ScrollableArea
+              // scrollbar should be centered into the 24px empty space used as right-padding for the modal
+              paddingRight={20}
+              className="h-full w-full"
+              innerClassName="leading-paragraph flex flex-col gap-12 text-base font-light pr-2"
+            >
+              {tab === "collection" && <TabContentCollection collection={collection} nft={nft} />}
+              {tab === "nft" && <TabContentNft nft={nft} />}
+            </ScrollableArea>
+          </div>
         </div>
       </div>
+      {/* <Tooltip>
+          <TooltipTrigger onClick={handleFullScreenViewClick} asChild>
+            <div className="shrink-0 cursor-pointer">
+              <NftImage
+                className="h-full w-[50rem] rounded-r-none object-cover"
+                src={nft.imageUrl}
+              />
+            </div>
+          </TooltipTrigger>
+          {!!nft.imageUrl && <TooltipContent>{t("View in full screen")}</TooltipContent>}
+        </Tooltip>
+        <div className="flex grow flex-col gap-12 py-8 pl-12 font-light">
+          <div className="pr-12">
+            <div className="text-body-secondary leading-paragraph">{collection.name}</div>
+            <div className="text-body leading-paragraph text-lg">{nft.name}</div>
+          </div>
+          <div className="pr-12">
+            <Tabs tabs={tabs} selected={tab} onChange={setTab} className="m-0 w-full text-base " />
+          </div>
+          <div className="grow overflow-hidden pr-2">
+            <ScrollableArea
+              // scrollbar should be centered into the 24px empty space used as right-padding for the modal
+              paddingRight={20}
+              className="h-full w-full"
+              innerClassName="leading-paragraph flex flex-col gap-12 text-base font-light pr-2"
+            >
+              {tab === "collection" && <TabContentCollection collection={collection} nft={nft} />}
+              {tab === "nft" && <TabContentNft nft={nft} />}
+            </ScrollableArea>
+          </div>
+        </div> */}
     </div>
+    //  </div>
   )
 }
 
@@ -232,7 +319,15 @@ export const NftDialog: FC<{
   }, [data, open])
 
   return (
-    <Modal isOpen={isOpen} onDismiss={close}>
+    <Modal
+      isOpen={isOpen}
+      onDismiss={close}
+      className={classNames(
+        "@container h-[60rem] w-[40rem] overflow-hidden bg-black",
+        !IS_POPUP && "lg:w-[100rem] lg:rounded-lg"
+      )}
+      containerId={IS_POPUP ? "main" : undefined}
+    >
       {!!current && <DialogContent {...current} onDismiss={close} />}
     </Modal>
   )

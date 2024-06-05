@@ -36,6 +36,7 @@
     "@spruceid/siwe-parser": "^2.0.2",
     "@substrate/txwrapper-core": "*",
     "@svgr/webpack": "^6.5.1",
+    "@tailwindcss/container-queries": "^0.1.1",
     "@talismn/balances": "workspace:*",
     "@talismn/chaindata-provider": "workspace:*",
     "@talismn/icons": "workspace:*",
