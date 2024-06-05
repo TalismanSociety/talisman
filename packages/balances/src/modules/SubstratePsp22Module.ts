@@ -133,18 +133,12 @@ export const SubPsp22Module: NewBalanceModule<
               contractCall(
                 contractAddress,
                 contractAddress,
-                registry.createType(
-                  "Vec<u8>",
-                  Psp22Abi.findMessage("PSP22Metadata::token_symbol").selector
-                )
+                Psp22Abi.findMessage("PSP22Metadata::token_symbol").toU8a([])
               ),
               contractCall(
                 contractAddress,
                 contractAddress,
-                registry.createType(
-                  "Vec<u8>",
-                  Psp22Abi.findMessage("PSP22Metadata::token_decimals").selector
-                )
+                Psp22Abi.findMessage("PSP22Metadata::token_decimals").toU8a([])
               ),
             ])
 
