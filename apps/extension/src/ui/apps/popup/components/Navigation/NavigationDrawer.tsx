@@ -1,4 +1,8 @@
-import { TALISMAN_WEB_APP_STAKING_URL, TALISMAN_WEB_APP_TRANSPORT_URL } from "@extension/shared"
+import {
+  QUEST_APP_URL,
+  TALISMAN_WEB_APP_STAKING_URL,
+  TALISMAN_WEB_APP_TRANSPORT_URL,
+} from "@extension/shared"
 import { Nav, NavItem } from "@talisman/components/Nav"
 import { ScrollContainer } from "@talisman/components/ScrollContainer"
 import { FullColorSmallLogo } from "@talisman/theme/logos"
@@ -8,10 +12,10 @@ import {
   KeyIcon,
   LockIcon,
   PlusIcon,
+  QuestStarIcon,
   RepeatIcon,
   SendIcon,
   SettingsIcon,
-  StarsIcon,
   UsersIcon,
   XIcon,
   ZapIcon,
@@ -24,7 +28,6 @@ import useMnemonicBackup from "@ui/hooks/useMnemonicBackup"
 import { usePopupNavOpenClose } from "@ui/hooks/usePopupNavOpenClose"
 import { FC, useCallback } from "react"
 import { useTranslation } from "react-i18next"
-import { useNavigate } from "react-router-dom"
 import { Drawer, IconButton } from "talisman-ui"
 
 const ANALYTICS_PAGE: AnalyticsPage = {
@@ -38,7 +41,6 @@ export const NavigationDrawer: FC = () => {
   const { t } = useTranslation()
   const { isOpen, close } = usePopupNavOpenClose()
   const hasAccounts = useHasAccounts()
-  const navigate = useNavigate()
 
   const handleLock = useCallback(async () => {
     sendAnalyticsEvent({
@@ -121,11 +123,11 @@ export const NavigationDrawer: FC = () => {
     window.close()
   }, [])
 
-  const handleLatestFeaturesClick = useCallback(() => {
-    sendAnalyticsEvent({ ...ANALYTICS_PAGE, name: "Goto", action: "What's New" })
-    navigate("/portfolio/whats-new")
-    close()
-  }, [close, navigate])
+  const handleQuestsClick = useCallback(() => {
+    sendAnalyticsEvent({ ...ANALYTICS_PAGE, name: "Goto", action: "Quests" })
+    window.open(QUEST_APP_URL, "_blank")
+    window.close()
+  }, [])
 
   return (
     <Drawer className="h-full" containerId="main" anchor="bottom" isOpen={isOpen} onDismiss={close}>
@@ -169,34 +171,19 @@ export const NavigationDrawer: FC = () => {
                 {!allBackedUp && <AlertCircleIcon className="text-primary ml-2 inline text-sm" />}
               </span>
             </NavItem>
+            <NavItem
+              className="hover:bg-primary/10"
+              icon={
+                <div className="bg-primary flex h-[1em] w-[1em] items-center justify-center rounded-full">
+                  <QuestStarIcon className="text-xs text-black" />
+                </div>
+              }
+              onClick={handleQuestsClick}
+            >
+              <span className="text-primary font-bold">{t("Quests")}</span>
+            </NavItem>
             <NavItem icon={<SettingsIcon />} onClick={handleSettingsClick}>
               {t("Settings")}
-            </NavItem>
-            <NavItem
-              icon={<StarsIcon style={{ stroke: "url(#stars-icon-gradient)" }} />}
-              onClick={handleLatestFeaturesClick}
-            >
-              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" style={{ height: "0" }}>
-                <defs>
-                  <linearGradient
-                    id="stars-icon-gradient"
-                    x1="-2.80769"
-                    y1="12"
-                    x2="24.4038"
-                    y2="12"
-                    gradientUnits="userSpaceOnUse"
-                  >
-                    <stop stopColor="white" />
-                    <stop offset="1" stopColor="#f1c8da" />
-                  </linearGradient>
-                </defs>
-              </svg>
-              <span
-                className="bg-clip-text text-transparent"
-                style={{ backgroundImage: "linear-gradient(90deg, #fff -24.04%, #ff61a6 112.02%)" }}
-              >
-                {t("Latest Features")}
-              </span>
             </NavItem>
           </Nav>
         </ScrollContainer>
