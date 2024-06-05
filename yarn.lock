@@ -15739,6 +15739,8 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "extension-shared@workspace:packages/extension-shared"
   dependencies:
+    "@polkadot/util": 12.6.2
+    "@polkadot/util-crypto": 12.6.2
     "@sentry/browser": 7.92.0
     "@sentry/integrations": 7.92.0
     "@sentry/react": 7.92.0

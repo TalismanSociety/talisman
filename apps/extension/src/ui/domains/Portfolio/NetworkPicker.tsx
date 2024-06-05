@@ -7,19 +7,25 @@ import { FC, useCallback, useEffect, useMemo, useRef, useState } from "react"
 import { useTranslation } from "react-i18next"
 import { IconButton } from "talisman-ui"
 
-const filterItems = (inputValue?: string) => (bc: NetworkOption | undefined) => {
-  try {
-    const test = inputValue?.toLowerCase() ?? ""
-    return (
-      !inputValue ||
-      !!bc?.name.toLowerCase().includes(test) ||
-      !!bc?.symbols?.some((s) => s.toLowerCase().includes(test))
-    )
-  } catch (err) {
-    // ignore
-    return false
-  }
+type NullableKeys<T> = {
+  [P in keyof T]: T[P] | null
 }
+
+const filterItems =
+  <T extends NullableKeys<Pick<NetworkOption, "name" | "symbols">>>(inputValue?: string) =>
+  (bc: T | undefined) => {
+    try {
+      const test = inputValue?.toLowerCase() ?? ""
+      return (
+        !inputValue ||
+        !!bc?.name?.toLowerCase?.().includes?.(test) ||
+        !!bc?.symbols?.some?.((s) => s.toLowerCase().includes(test))
+      )
+    } catch (err) {
+      // ignore
+      return false
+    }
+  }
 
 const ClearSearch: FC<{ open: boolean; setSearch: (val?: string) => void }> = ({
   open,
@@ -34,29 +40,53 @@ const ClearSearch: FC<{ open: boolean; setSearch: (val?: string) => void }> = ({
 export const NetworkPicker = () => {
   const { t } = useTranslation()
   const { networks, networkFilter, setNetworkFilter } = usePortfolio()
-  const [search, setSearch] = useState<string>()
-  const ref = useRef<HTMLInputElement>(null)
+
+  return (
+    <NetworkDropdown
+      placeholder={t("All networks")}
+      networks={networks}
+      onChange={setNetworkFilter}
+      value={networkFilter}
+    />
+  )
+}
+
+export const NetworkDropdown = <
+  T extends Pick<NetworkOption, "id"> & NullableKeys<Pick<NetworkOption, "name" | "symbols">>
+>({
+  placeholder,
+  networks,
+  onChange,
+  value,
+}: {
+  placeholder?: string
+  networks: T[]
+  onChange: (network?: T) => void
+  value?: T
+}) => {
+  const { t } = useTranslation()
 
   // workaround nullable prop
   const handleOnChange = useCallback(
-    (value: NetworkOption | undefined | null) => {
-      setNetworkFilter(value ?? undefined)
-    },
-    [setNetworkFilter]
+    (value: T | undefined | null) => onChange(value ?? undefined),
+    [onChange]
   )
 
+  const ref = useRef<HTMLInputElement>(null)
   useEffect(() => {
-    if (networkFilter)
-      setTimeout(() => {
-        ref.current?.blur()
-      }, 10)
-  }, [networkFilter])
+    if (!ref) return
 
+    setTimeout(() => {
+      ref.current?.blur()
+    }, 10)
+  }, [value])
+
+  const [search, setSearch] = useState<string>()
   const displayNetworks = useMemo(() => networks.filter(filterItems(search)), [networks, search])
 
   return (
     <div className="text-body-secondary group inline-block">
-      <Combobox nullable value={networkFilter} onChange={handleOnChange}>
+      <Combobox nullable value={value} onChange={handleOnChange}>
         {({ open }) => {
           return (
             <div className="relative h-24 overflow-visible">
@@ -68,8 +98,8 @@ export const NetworkPicker = () => {
                 )}
               >
                 <div className="flex w-12 justify-center">
-                  {networkFilter ? (
-                    <ChainLogo id={networkFilter.id} className="text-lg" />
+                  {value ? (
+                    <ChainLogo id={value.id} className="text-lg" />
                   ) : (
                     <SearchIcon className="text-md text-body-disabled" />
                   )}
@@ -78,14 +108,14 @@ export const NetworkPicker = () => {
                   ref={ref}
                   className={classNames(
                     "h-full flex-grow bg-transparent",
-                    networkFilter && "placeholder-body-secondary focus:placeholder-body-disabled"
+                    value && "placeholder-body-secondary focus:placeholder-body-disabled"
                   )}
-                  placeholder={networkFilter ? networkFilter.name : t("All networks")}
+                  placeholder={value ? value.name ?? t("Unknown chain") : placeholder}
                   onChange={(event) => setSearch(event.target.value)}
                 />
                 <div className="flex h-full w-12 flex-col justify-center">
-                  {networkFilter ? (
-                    <IconButton type="button" onClick={() => setNetworkFilter(undefined)}>
+                  {value ? (
+                    <IconButton type="button" onClick={() => handleOnChange(undefined)}>
                       <XIcon />
                     </IconButton>
                   ) : (

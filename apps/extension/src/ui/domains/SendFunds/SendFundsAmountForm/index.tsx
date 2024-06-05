@@ -133,7 +133,7 @@ export const SendFundsAmountForm = () => {
               genesisHash={genesisHash}
               onClick={handleGotoClick("to")}
             />
-            <AddContact />
+            <AddContact tokenGenesisHash={genesisHash ?? undefined} />
           </div>
         </div>
       </Container>

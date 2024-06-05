@@ -2,16 +2,15 @@ import { isEthereumAddress } from "@polkadot/util-crypto"
 import { ScrollContainer } from "@talisman/components/ScrollContainer"
 import { SearchInput } from "@talisman/components/SearchInput"
 import { convertAddress } from "@talisman/util/convertAddress"
-import { isValidAddress } from "@talisman/util/isValidAddress"
 import { EyeIcon, LoaderIcon, TalismanHandIcon, UserIcon } from "@talismn/icons"
-import { isValidSubstrateAddress } from "@talismn/util"
-import { encodeAnyAddress } from "@talismn/util"
+import { encodeAnyAddress, isValidSubstrateAddress } from "@talismn/util"
 import { useSendFundsWizard } from "@ui/apps/popup/pages/SendFunds/context"
 import useAccounts from "@ui/hooks/useAccounts"
 import { useAddressBook } from "@ui/hooks/useAddressBook"
 import useChain from "@ui/hooks/useChain"
 import { useResolveNsName } from "@ui/hooks/useResolveNsName"
 import useToken from "@ui/hooks/useToken"
+import { isValidAddress } from "extension-shared"
 import { useCallback, useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
 
@@ -57,13 +56,39 @@ export const SendFundsRecipientPicker = () => {
   const normalizedSearch = useMemo(() => normalize(search), [search, normalize])
   const normalizedNsLookup = useMemo(() => normalize(nsLookup ?? undefined), [nsLookup, normalize])
 
+  const contacts = useMemo(
+    () =>
+      allContacts
+        .filter((contact) => isEthereumAddress(contact.address) === isFromEthereum)
+        .filter(
+          (contact) =>
+            !search ||
+            contact.name?.toLowerCase().includes(search) ||
+            (isValidAddressInput && normalizedSearch === normalize(contact.address)) ||
+            (isNsLookup && nsLookup && normalizedNsLookup === normalize(contact.address))
+        )
+        .filter((contact) => !contact.genesisHash || contact.genesisHash === chain?.genesisHash),
+    [
+      allContacts,
+      isFromEthereum,
+      search,
+      isValidAddressInput,
+      normalizedSearch,
+      normalize,
+      isNsLookup,
+      nsLookup,
+      normalizedNsLookup,
+      chain?.genesisHash,
+    ]
+  )
+
   const newAddresses = useMemo(() => {
     const addresses: SendFundsAccount[] = []
 
     if (
       to &&
       allAccounts.every((account) => normalizedTo !== normalize(account.address)) &&
-      allContacts.every((contact) => normalizedTo !== normalize(contact.address))
+      contacts.every((contact) => normalizedTo !== normalize(contact.address))
     )
       addresses.push({ address: to })
 
@@ -71,7 +96,7 @@ export const SendFundsRecipientPicker = () => {
       isValidAddressInput &&
       (!to || normalizedSearch !== normalizedTo) &&
       allAccounts.every((account) => normalizedSearch !== normalize(account.address)) &&
-      allContacts.every((contact) => normalizedSearch !== normalize(contact.address))
+      contacts.every((contact) => normalizedSearch !== normalize(contact.address))
     )
       addresses.push({ address: search })
 
@@ -80,7 +105,7 @@ export const SendFundsRecipientPicker = () => {
       nsLookup &&
       (!to || normalizedNsLookup !== normalizedTo) &&
       allAccounts.every((account) => normalizedNsLookup !== normalize(account.address)) &&
-      allContacts.every((contact) => normalizedNsLookup !== normalize(contact.address))
+      contacts.every((contact) => normalizedNsLookup !== normalize(contact.address))
     )
       addresses.push({ name: search, address: nsLookup })
 
@@ -88,7 +113,7 @@ export const SendFundsRecipientPicker = () => {
   }, [
     to,
     allAccounts,
-    allContacts,
+    contacts,
     isValidAddressInput,
     normalizedSearch,
     normalizedTo,
@@ -98,30 +123,6 @@ export const SendFundsRecipientPicker = () => {
     normalizedNsLookup,
     normalize,
   ])
-
-  const contacts = useMemo(
-    () =>
-      allContacts
-        .filter((account) => isEthereumAddress(account.address) === isFromEthereum)
-        .filter(
-          (contact) =>
-            !search ||
-            contact.name?.toLowerCase().includes(search) ||
-            (isValidAddressInput && normalizedSearch === normalize(contact.address)) ||
-            (isNsLookup && nsLookup && normalizedNsLookup === normalize(contact.address))
-        ),
-    [
-      allContacts,
-      nsLookup,
-      isNsLookup,
-      isFromEthereum,
-      isValidAddressInput,
-      normalize,
-      normalizedNsLookup,
-      normalizedSearch,
-      search,
-    ]
-  )
 
   const accounts = useMemo(
     () =>
