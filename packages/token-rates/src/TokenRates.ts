@@ -13,6 +13,10 @@ export type CoingeckoConfig = {
   apiKeyValue?: string
 }
 
+// api returns a 414 error if the url is too long, max length is about 8100 characters
+// so use 8000 to be safe
+const MAX_COINGECKO_URL_LENGTH = 8000
+
 export const DEFAULT_COINGECKO_CONFIG: CoingeckoConfig = {
   apiUrl: "https://api.coingecko.com",
 }
@@ -64,13 +68,13 @@ export async function fetchTokenRates(
     }, {} as Record<string, string[]>)
 
   // create a list of coingeckoIds we want to fetch
-  const coingeckoIds = Object.keys(coingeckoIdToTokenIds)
+  const coingeckoIds = Object.keys(coingeckoIdToTokenIds).sort()
 
   // skip network request if there is nothing for us to fetch
   if (coingeckoIds.length < 1) return {}
 
   // construct a coingecko request, sort args to help proxies with caching
-  const idsSerialized = coingeckoIds.sort().join(",")
+
   const currenciesSerialized = coingeckoCurrencies.sort().join(",")
   // note: coingecko api key cannot be passed as header here as it would be camel cased by axios and ignored by the server
   // need to pass it as a query parameter, and replace all '-' with '_'
@@ -79,7 +83,19 @@ export async function fetchTokenRates(
     config.apiKeyName && config.apiKeyValue
       ? `&${config.apiKeyName?.replaceAll("-", "_")}=${config.apiKeyValue}`
       : ""
-  const queryUrl = `${config.apiUrl}/api/v3/simple/price?ids=${idsSerialized}&vs_currencies=${currenciesSerialized}${apiKeySuffix}`
+
+  const safelyGetCoingeckoUrls = (coingeckoIds: string[]): string[] => {
+    const idsSerialized = coingeckoIds.join(",")
+    const queryUrl = `${config.apiUrl}/api/v3/simple/price?ids=${idsSerialized}&vs_currencies=${currenciesSerialized}${apiKeySuffix}`
+    if (queryUrl.length > MAX_COINGECKO_URL_LENGTH) {
+      const half = Math.floor(coingeckoIds.length / 2)
+      return [
+        ...safelyGetCoingeckoUrls(coingeckoIds.slice(0, half)),
+        ...safelyGetCoingeckoUrls(coingeckoIds.slice(half)),
+      ]
+    }
+    return [queryUrl]
+  }
 
   // fetch the token prices from coingecko
   // the response should be in the format:
@@ -88,9 +104,12 @@ export async function fetchTokenRates(
   //     [currency]: rate
   //   }
   // }
-  const coingeckoPrices: Record<string, Record<string, number>> = await axios
-    .get(queryUrl)
-    .then((response) => response.data)
+  const coingeckoPrices = await Promise.all(
+    safelyGetCoingeckoUrls(coingeckoIds).map(
+      async (queryUrl): Promise<Record<string, Record<string, number>>> =>
+        await axios.get(queryUrl).then((response) => response.data)
+    )
+  ).then((responses): Record<string, Record<string, number>> => Object.assign({}, ...responses))
 
   // build a TokenRatesList from the token prices result
   const ratesList: TokenRatesList = Object.fromEntries(
