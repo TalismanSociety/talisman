@@ -47,9 +47,10 @@ const useSendFundsWizardProvider = () => {
         searchParams.delete("amount")
         searchParams.delete("sendMax")
 
-        // if token type (substrate or evm) changes, clear both account fields
+        // if token id changes, clear both account fields
+        // this is to prevent sending from/to accounts that would be type-incompatible, or chain restricted
         const prevTokenId = searchParams.get("tokenId")
-        if (prevTokenId && prevTokenId.split("-")[0] !== (value as string).split("-")[0]) {
+        if (prevTokenId !== value) {
           searchParams.delete("from")
           searchParams.delete("to")
         }
