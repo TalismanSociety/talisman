@@ -2,7 +2,7 @@ import {
   QUEST_APP_URL,
   TALISMAN_WEB_APP_NFTS_URL,
   TALISMAN_WEB_APP_STAKING_URL,
-  TALISMAN_WEB_APP_TRANSPORT_URL,
+  TALISMAN_WEB_APP_SWAP_URL,
 } from "@extension/shared"
 import { Nav } from "@talisman/components/Nav"
 import {
@@ -58,9 +58,9 @@ export const MainSidebar = () => {
     return false
   }, [genericEvent])
 
-  const handleTransportClick = useCallback(() => {
-    genericEvent("open web app transport", { from: "sidebar" })
-    window.open(TALISMAN_WEB_APP_TRANSPORT_URL, "_blank")
+  const handleSwapClick = useCallback(() => {
+    genericEvent("open web app swap", { from: "sidebar" })
+    window.open(TALISMAN_WEB_APP_SWAP_URL, "_blank")
     return false
   }, [genericEvent])
 
@@ -116,8 +116,8 @@ export const MainSidebar = () => {
         />
       )}
       <SidebarNavItem
-        title={t("Transport")}
-        onClick={handleTransportClick}
+        title={t("Swap")}
+        onClick={handleSwapClick}
         isExternalLink
         icon={<RepeatIcon />}
       />
