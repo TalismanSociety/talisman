@@ -332,6 +332,6 @@ export {
   FiZoomOut as ZoomOutIcon,
 } from "react-icons/fi"
 
-export { IoDiamondOutline as DiamondIcon } from "react-icons/io5"
+export { IoDiamondOutline as DiamondIcon, IoScale as ScaleIcon } from "react-icons/io5"
 
 export { AiOutlineQuestion as QuestionCircleIcon } from "react-icons/ai"
