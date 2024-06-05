@@ -65,6 +65,7 @@ export const getInjectableEvmProvider = (sendRequest: SendRequest) => {
     // Event Emitter (EIP 1993)
     on: eventEmitter.on.bind(eventEmitter),
     off: eventEmitter.off.bind(eventEmitter),
+    addListener: eventEmitter.addListener.bind(eventEmitter), // not standard but breaks https://app.pac.finance/ if missing
     removeListener: eventEmitter.removeListener.bind(eventEmitter),
     removeAllListeners: eventEmitter.removeAllListeners.bind(eventEmitter),
   }
