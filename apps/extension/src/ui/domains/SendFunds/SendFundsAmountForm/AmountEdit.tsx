@@ -23,6 +23,7 @@ import { currencyConfig } from "../../Asset/currencyConfig"
 import { Fiat } from "../../Asset/Fiat"
 import Tokens from "../../Asset/Tokens"
 import { useSendFunds } from "../useSendFunds"
+import { TokenPillButton } from "./TokenPillButton"
 
 const normalizeStringNumber = (value?: string | number | null, decimals = 18) => {
   try {
@@ -37,9 +38,10 @@ const normalizeStringNumber = (value?: string | number | null, decimals = 18) =>
   }
 }
 
-const TokenInput = () => {
+const TokenInput = ({ onTokenClick }: { onTokenClick: () => void }) => {
   const { set, remove } = useSendFundsWizard()
   const {
+    tokenId,
     token,
     transfer,
     maxAmount,
@@ -97,7 +99,7 @@ const TokenInput = () => {
         type="text"
         inputMode="decimal"
         defaultValue={defaultValue}
-        placeholder={`0${token?.type !== "evm-uniswapv2" ? ` ${token?.symbol}` : ""}`}
+        placeholder="0"
         className={classNames(
           "text-body peer inline-block min-w-0 text-ellipsis bg-transparent text-xl",
           sendMax && "placeholder:text-white",
@@ -105,14 +107,7 @@ const TokenInput = () => {
         )}
         onChange={handleChange}
       />
-      <div
-        className={classNames(
-          "block shrink-0 ",
-          isEstimatingMaxAmount ? "text-grey-800" : "peer-placeholder-shown:hidden"
-        )}
-      >
-        {token?.type !== "evm-uniswapv2" && token?.symbol}
-      </div>
+      <TokenPillButton tokenId={tokenId} onClick={onTokenClick} />
     </div>
   )
 }
@@ -246,7 +241,7 @@ const ErrorMessage = () => {
   ) : null
 }
 
-export const AmountEdit = () => {
+export const AmountEdit = ({ onTokenClick }: { onTokenClick: () => void }) => {
   const { t } = useTranslation("send-funds")
   const [isTokenEdit, setIsTokenEdit] = useState(true)
   const { onSendMaxClick, tokenRates, isEstimatingMaxAmount, maxAmount, token } = useSendFunds()
@@ -260,11 +255,11 @@ export const AmountEdit = () => {
       {!!token && (
         <>
           <div className="flex h-[12rem] flex-col justify-end text-xl font-bold">
-            {isTokenEdit ? <TokenInput /> : <FiatInput />}
+            {isTokenEdit ? <TokenInput onTokenClick={onTokenClick} /> : <FiatInput />}
           </div>
           <div
             className={classNames(
-              "mt-4 flex max-w-full items-center justify-center gap-6",
+              "mt-4 flex max-w-full items-center justify-center gap-4",
               isEstimatingMaxAmount && "invisible"
             )}
           >
