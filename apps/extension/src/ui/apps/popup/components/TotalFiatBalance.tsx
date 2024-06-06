@@ -54,10 +54,10 @@ export const TotalFiatBalance = ({ className, mouseOver, disabled }: Props) => {
           {hideBalances ? <EyeIcon /> : <EyeOffIcon />}
         </button>
       </div>
-      <div className="flex items-center gap-2">
+      <div className="flex w-full max-w-full items-center gap-2">
         <button
           className={classNames(
-            "bg-grey-800 border-grey-750 text-body-secondary hover:bg-grey-700 pointer-events-auto flex h-14 w-14 items-center justify-center rounded-full border text-center transition-colors duration-100 ease-out",
+            "bg-grey-800 border-grey-750 text-body-secondary hover:bg-grey-700 pointer-events-auto flex h-14 w-14 shrink-0 items-center justify-center rounded-full border text-center transition-colors duration-100 ease-out",
             currencyConfig[currency]?.symbol?.length === 2 && "text-xs",
             currencyConfig[currency]?.symbol?.length > 2 && "text-[1rem]"
           )}
@@ -69,7 +69,10 @@ export const TotalFiatBalance = ({ className, mouseOver, disabled }: Props) => {
           {currencyConfig[currency]?.symbol}
         </button>
         <Fiat
-          className={classNames("font-surtExpanded text-lg", disabled && "text-body-secondary")}
+          className={classNames(
+            "font-surtExpanded overflow-hidden text-ellipsis whitespace-pre pr-10 text-lg",
+            disabled && "text-body-secondary"
+          )}
           amount={portfolioTotal}
           isBalance
           currencyDisplay="code"
