@@ -1,119 +1,41 @@
 import { AccountJsonAny, AuthorizedSite } from "@extension/core"
-import { InfoIcon } from "@talismn/icons"
 import { api } from "@ui/api"
 import { useAccountsForSite } from "@ui/hooks/useAccountsForSite"
 import { useAuthorisedSites } from "@ui/hooks/useAuthorisedSites"
 import { useCurrentSite } from "@ui/hooks/useCurrentSite"
-import { FC, Fragment, useCallback, useMemo, useState } from "react"
+import { FC, Fragment, useCallback, useMemo } from "react"
 import { useTranslation } from "react-i18next"
-import { Checkbox, Tooltip, TooltipContent, TooltipTrigger } from "talisman-ui"
 
 import { ConnectAccountsContainer } from "./ConnectAccountsContainer"
 import { ConnectAccountToggleButtonRow } from "./ConnectAccountToggleButtonRow"
+import { ConnectedAccountsPolkadot } from "./ConnectedAccountsPolkadot"
 
 const SubAccounts: FC<{ site: AuthorizedSite | null }> = ({ site }) => {
-  const { t } = useTranslation()
   const accounts = useAccountsForSite(site)
 
-  const hasEthereumActiveAccounts = useMemo(
-    () => accounts.some((acc) => acc.type === "ethereum" && site?.addresses?.includes(acc.address)),
-    [accounts, site?.addresses]
-  )
-  const [enableEvmAccounts, setEnableEvmAccounts] = useState(hasEthereumActiveAccounts)
   const activeAccounts = useMemo(
     () =>
-      accounts
-        .filter((acc) => enableEvmAccounts || acc.type !== "ethereum")
-        .map((acc) => [acc, site?.addresses?.includes(acc.address)] as [AccountJsonAny, boolean]),
-    [accounts, site?.addresses, enableEvmAccounts]
+      accounts.map(
+        (acc) => [acc, site?.addresses?.includes(acc.address)] as [AccountJsonAny, boolean]
+      ),
+    [accounts, site?.addresses]
   )
 
-  const handleAccountClick = useCallback(
-    (address: string) => () => {
+  const handleUpdateAccounts = useCallback(
+    (addresses: string[]) => {
       if (!site?.id) return
-      const isConnected = site?.addresses?.includes(address)
-      const current = site?.addresses ?? []
-      const addresses = isConnected ? current?.filter((a) => a !== address) : [...current, address]
-      api.authorizedSiteUpdate(site?.id, { addresses })
+      api.authorizedSiteUpdate(site?.id, {
+        addresses,
+      })
     },
-    [site?.addresses, site?.id]
+    [site?.id]
   )
-
-  const handleDisconnectAllClick = useCallback(() => {
-    if (!site?.id) return
-    api.authorizedSiteUpdate(site?.id, { addresses: [] })
-  }, [site?.id])
-
-  const handleConnectAllClick = useCallback(() => {
-    if (!site?.id) return
-    api.authorizedSiteUpdate(site?.id, {
-      addresses: accounts
-        .filter((acc) => enableEvmAccounts || acc.type !== "ethereum")
-        .map((a) => a.address),
-    })
-  }, [accounts, site?.id, enableEvmAccounts])
-
-  const handleToggleEvmAccounts = useCallback(() => {
-    setEnableEvmAccounts((enabled) => {
-      if (enabled && site?.id) {
-        const activeNonEvmAccounts = activeAccounts.filter(([acc]) => acc.type !== "ethereum")
-        api.authorizedSiteUpdate(site.id, {
-          addresses: activeNonEvmAccounts.map(([a]) => a.address),
-        })
-      }
-      return !enabled
-    })
-  }, [activeAccounts, site?.id])
 
   return (
-    <>
-      <div className="mb-2 mt-6 flex w-full items-center justify-between px-8 text-xs">
-        <Checkbox
-          checked={enableEvmAccounts}
-          onClick={handleToggleEvmAccounts}
-          childProps={{ className: "flex items-center gap-2" }}
-        >
-          {t("EVM accounts")}{" "}
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <InfoIcon />
-            </TooltipTrigger>
-            <TooltipContent>
-              {t(
-                "Some Polkadot apps may not work with Ethereum-type accounts. Using an EVM account via Substrate could break certain dApps."
-              )}
-            </TooltipContent>
-          </Tooltip>
-        </Checkbox>
-        <div className="flex items-center gap-3">
-          <button
-            type="button"
-            className="text-body-secondary hover:text-grey-300"
-            onClick={handleDisconnectAllClick}
-          >
-            {t("Disconnect All")}
-          </button>
-          <div className="bg-body-disabled h-[1rem] w-0.5 "></div>
-          <button
-            type="button"
-            className="text-body-secondary hover:text-grey-300"
-            onClick={handleConnectAllClick}
-          >
-            {t("Connect All")}
-          </button>
-        </div>
-      </div>
-      {activeAccounts.map(([acc, isConnected], idx) => (
-        <Fragment key={acc.address}>
-          {!!idx && <AccountSeparator />}
-          <ConnectAccountToggleButtonRow
-            account={acc}
-            checked={isConnected}
-            onClick={handleAccountClick(acc.address)}
-          />
-        </Fragment>
-      ))}
-    </>
+    <ConnectedAccountsPolkadot
+      activeAccounts={activeAccounts}
+      handleUpdateAccounts={handleUpdateAccounts}
+    />
   )
 }
 
