@@ -31,7 +31,7 @@ export const SettingsSidebar = () => {
       <SidebarNavItem title={t("Accounts")} to="/settings/accounts" icon={<UserIcon />} />
       <SidebarNavItem
         title={
-          <span className="flex gap-2 align-middle">
+          <span className="flex items-center gap-2">
             {t("Recovery Phrases")}
             <Suspense>
               <MnemonicNotification />
