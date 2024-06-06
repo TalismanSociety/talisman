@@ -177,10 +177,12 @@ const SignLedgerSubstrateGeneric: FC<SignHardwareSubstrateProps> = ({
       if (response.error_message !== "No errors")
         throw new LedgerError(response.error_message, "LedgerError", response.return_code)
 
+      // console.log({ response })
+
       // await to keep loader spinning until popup closes
       await onSigned({
         // skip first byte, it's the signature type (00 for ed25519)
-        signature: ("0x" + response.signature.slice(1).toString("hex")) as HexString,
+        signature: ("0x" + response.signature.toString("hex")) as HexString, // ("0x" + response.signature.slice(1).toString("hex")) as HexString,
       })
     } catch (error) {
       log.error("signLedger", { error })
