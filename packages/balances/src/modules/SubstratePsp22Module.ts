@@ -133,18 +133,12 @@ export const SubPsp22Module: NewBalanceModule<
               contractCall(
                 contractAddress,
                 contractAddress,
-                registry.createType(
-                  "Vec<u8>",
-                  Psp22Abi.findMessage("PSP22Metadata::token_symbol").selector
-                )
+                Psp22Abi.findMessage("PSP22Metadata::token_symbol").toU8a([])
               ),
               contractCall(
                 contractAddress,
                 contractAddress,
-                registry.createType(
-                  "Vec<u8>",
-                  Psp22Abi.findMessage("PSP22Metadata::token_decimals").selector
-                )
+                Psp22Abi.findMessage("PSP22Metadata::token_decimals").toU8a([])
               ),
             ])
 
@@ -298,17 +292,15 @@ export const SubPsp22Module: NewBalanceModule<
       // TODO: Use `decodeOutput` from `./util/decodeOutput`
       const contractCall = makeContractCaller({ chainConnector, chainId, registry })
 
-      const data = registry.createType(
-        "Vec<u8>",
-        Psp22Abi.findMessage("PSP22::transfer").toU8a([
-          // TO
-          to,
-          // VALUE
-          amount,
-          // DATA
-          undefined,
-        ])
-      )
+      const data = Psp22Abi.findMessage("PSP22::transfer").toU8a([
+        // TO
+        to,
+        // VALUE
+        amount,
+        // DATA
+        undefined,
+      ])
+      const hexData = registry.createType("Vec<u8>", data).toHex()
 
       const dryRunResult = await contractCall(from, token.contractAddress, data)
 
@@ -321,7 +313,7 @@ export const SubPsp22Module: NewBalanceModule<
         storageDepositLimit: dryRunResult.storageDeposit.isCharge
           ? dryRunResult.storageDeposit.asCharge.toHex()
           : null,
-        data: data.toHex(),
+        data: hexData,
       }
 
       const unsigned = defineMethod(
@@ -387,13 +379,10 @@ const fetchBalances = async (
       const result = await contractCall(
         address,
         token.contractAddress,
-        registry.createType(
-          "Vec<u8>",
-          Psp22Abi.findMessage("PSP22::balance_of").toU8a([
-            // ACCOUNT
-            address,
-          ])
-        )
+        Psp22Abi.findMessage("PSP22::balance_of").toU8a([
+          // ACCOUNT
+          address,
+        ])
       )
 
       const balance = registry
