@@ -1,7 +1,7 @@
 import {
   QUEST_APP_URL,
   TALISMAN_WEB_APP_STAKING_URL,
-  TALISMAN_WEB_APP_TRANSPORT_URL,
+  TALISMAN_WEB_APP_SWAP_URL,
 } from "@extension/shared"
 import { Nav, NavItem } from "@talisman/components/Nav"
 import { ScrollContainer } from "@talisman/components/ScrollContainer"
@@ -82,13 +82,13 @@ export const NavigationDrawer: FC = () => {
     window.close()
   }, [])
 
-  const handleTransportClick = useCallback(() => {
+  const handleSwapClick = useCallback(() => {
     sendAnalyticsEvent({
       ...ANALYTICS_PAGE,
       name: "Goto",
-      action: "Transport button",
+      action: "Swap button",
     })
-    window.open(TALISMAN_WEB_APP_TRANSPORT_URL, "_blank")
+    window.open(TALISMAN_WEB_APP_SWAP_URL, "_blank")
     window.close()
   }, [])
 
@@ -159,9 +159,9 @@ export const NavigationDrawer: FC = () => {
                 <ExternalLinkIcon />
               </span>
             </NavItem>
-            <NavItem icon={<RepeatIcon />} onClick={handleTransportClick}>
+            <NavItem icon={<RepeatIcon />} onClick={handleSwapClick}>
               <span className="flex items-center gap-2">
-                {t("Transport")}
+                {t("Swap")}
                 <ExternalLinkIcon />
               </span>
             </NavItem>
