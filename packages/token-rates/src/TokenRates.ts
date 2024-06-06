@@ -1,4 +1,4 @@
-import { IToken, TokenId } from "@talismn/chaindata-provider"
+import { Token, TokenId } from "@talismn/chaindata-provider"
 import axios from "axios"
 
 import { NewTokenRates, SUPPORTED_CURRENCIES, TokenRateCurrency, TokenRatesList } from "./types"
@@ -19,7 +19,7 @@ export const DEFAULT_COINGECKO_CONFIG: CoingeckoConfig = {
 
 // export function tokenRates(tokens: WithCoingeckoId[]): TokenRatesList {}
 export async function fetchTokenRates(
-  tokens: Record<TokenId, IToken>,
+  tokens: Record<TokenId, Token>,
   config: CoingeckoConfig = DEFAULT_COINGECKO_CONFIG
 ): Promise<TokenRatesList> {
   // create a map from `coingeckoId` -> `tokenId` for each token
@@ -27,8 +27,34 @@ export async function fetchTokenRates(
     // ignore testnet tokens
     .filter(({ isTestnet }) => !isTestnet)
 
-    // ignore tokens which don't have a coingeckoId
-    .filter(hasCoingeckoId)
+    .flatMap((token) => {
+      // BEGIN: LP tokens have a rate which is calculated later on, using the rates of two other tokens.
+      //
+      // This section contains the logic such that: if token is an LP token, then fetch the rates for the two underlying tokens.
+      if (token.type === "evm-uniswapv2") {
+        if (!token.evmNetwork) return []
+
+        const getToken = (evmNetworkId: string, tokenAddress: string, coingeckoId: string) => ({
+          id: evmErc20TokenId(evmNetworkId, tokenAddress),
+          coingeckoId,
+        })
+
+        const token0 = token.coingeckoId0
+          ? [getToken(token.evmNetwork.id, token.tokenAddress0, token.coingeckoId0)]
+          : []
+        const token1 = token.coingeckoId1
+          ? [getToken(token.evmNetwork.id, token.tokenAddress1, token.coingeckoId1)]
+          : []
+
+        return [...token0, ...token1]
+      }
+      // END: LP tokens have a rate which is calculated later on, using the rates of two other tokens.
+
+      // ignore tokens which don't have a coingeckoId
+      if (!token.coingeckoId) return []
+
+      return [{ id: token.id, coingeckoId: token.coingeckoId }]
+    })
 
     // get each token's coingeckoId
     .reduce((coingeckoIdToTokenIds, { id, coingeckoId }) => {
@@ -84,9 +110,7 @@ export async function fetchTokenRates(
   return ratesList
 }
 
-export interface WithCoingeckoId {
-  coingeckoId: string
-}
-export function hasCoingeckoId(token: IToken): token is IToken & WithCoingeckoId {
-  return "coingeckoId" in token && typeof token.coingeckoId === "string"
-}
+// TODO: Move this into a common module which can then be imported both here and into EvmErc20Module
+// We can't import this directly from EvmErc20Module because this package doesn't depend on `@talismn/balances`
+const evmErc20TokenId = (chainId: string, tokenContractAddress: string) =>
+  `${chainId}-evm-erc20-${tokenContractAddress}`.toLowerCase()

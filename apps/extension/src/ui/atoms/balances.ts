@@ -1,20 +1,10 @@
-import { isAccountCompatibleWithChain } from "@extension/core"
-import {
-  Address,
-  Balances,
-  HydrateDb,
-  db as balancesDb,
-  deriveStatuses,
-  getValidSubscriptionIds,
-} from "@talismn/balances"
+import { BalanceSubscriptionResponse, isAccountCompatibleWithChain } from "@extension/core"
+import { Address, Balances, HydrateDb } from "@talismn/balances"
 import { TokenId } from "@talismn/chaindata-provider"
-import { firstThenDebounce } from "@talismn/util"
 import { api } from "@ui/api"
-import { liveQuery } from "dexie"
 import { atom } from "jotai"
-import { atomFamily, atomWithObservable } from "jotai/utils"
+import { atomFamily } from "jotai/utils"
 import isEqual from "lodash/isEqual"
-import { from } from "rxjs"
 
 import { AccountCategory, accountsByCategoryAtomFamily, accountsMapAtom } from "./accounts"
 import {
@@ -24,26 +14,22 @@ import {
 } from "./chaindata"
 import { tokenRatesMapAtom } from "./tokenRates"
 import { atomWithSubscription } from "./utils/atomWithSubscription"
-import { logObservableUpdate } from "./utils/logObservableUpdate"
-
-const NO_OP = () => {}
 
 // Reading this atom triggers the balances backend subscription
 // Note : unsubscribing has no effect, the backend subscription will keep polling until the port (window or tab) is closed
-const rawBalancesSubscriptionAtom = atomWithSubscription<void>(
-  () => api.balances(NO_OP),
+const rawBalancesSubscriptionAtom = atomWithSubscription<BalanceSubscriptionResponse>(
+  api.balances,
   "rawBalancesSubscriptionAtom"
 )
 
-const rawBalancesObservableAtom = atomWithObservable(() =>
-  from(liveQuery(() => balancesDb.balances.toArray()))
-    .pipe(firstThenDebounce(500))
-    .pipe(logObservableUpdate("rawBalancesObservableAtom"))
-)
+export const balancesInitialisingAtom = atom(async (get) => {
+  const balances = await get(rawBalancesSubscriptionAtom)
+  return balances.status === "initialising"
+})
 
-const rawBalancesAtom = atom((get) => {
-  get(rawBalancesSubscriptionAtom)
-  return get(rawBalancesObservableAtom)
+const rawBalancesAtom = atom(async (get) => {
+  const balances = await get(rawBalancesSubscriptionAtom)
+  return balances.data
 })
 
 const filteredRawBalancesAtom = atom(async (get) => {
@@ -63,9 +49,9 @@ const filteredRawBalancesAtom = atom(async (get) => {
     if (!account || !account.type) return false
 
     // for chain specific accounts, exclude balances from other chains
-    if (b.chainId && chains?.[b.chainId])
+    if ("chainId" in b && b.chainId && chains?.[b.chainId])
       return isAccountCompatibleWithChain(chains[b.chainId], account.type, account.genesisHash)
-    if (b.evmNetworkId) return account.type === "ethereum"
+    if ("evmNetworkId" in b && b.evmNetworkId) return account.type === "ethereum"
     return false
   })
 })
@@ -85,7 +71,7 @@ const allBalancesAtom = atom(async (get) => {
     get(filteredRawBalancesAtom),
     get(balancesHydrateAtom),
   ])
-  return new Balances(deriveStatuses(getValidSubscriptionIds(), rawBalances), hydrate)
+  return new Balances(rawBalances, hydrate)
 })
 
 type BalanceQueryParams = { address?: Address; tokenId?: TokenId }

@@ -5,7 +5,7 @@ import { encodeAnyAddress } from "@talismn/util"
 import useChain from "@ui/hooks/useChain"
 import useChains from "@ui/hooks/useChains"
 import { useCoinGeckoTokenRates } from "@ui/hooks/useCoingeckoTokenRates"
-import { useErc20TokenInfo } from "@ui/hooks/useErc20TokenInfo"
+import { useEvmTokenInfo } from "@ui/hooks/useEvmTokenInfo"
 import useToken from "@ui/hooks/useToken"
 import useTokens from "@ui/hooks/useTokens"
 import { FC, useMemo } from "react"
@@ -81,7 +81,7 @@ export const EthSignMoonXTokensTransfer: FC = () => {
     [decodedTx]
   )
 
-  const erc20 = useErc20TokenInfo(network?.id, currencyAddress)
+  const erc20 = useEvmTokenInfo(network?.id, currencyAddress)
   const nativeToken = useToken(network?.nativeToken?.id)
 
   const { decimals, symbol, coingeckoId, image } = useMemo(() => {
@@ -104,8 +104,13 @@ export const EthSignMoonXTokensTransfer: FC = () => {
       return { decimals, symbol, coingeckoId, image: logo }
     }
 
-    const { decimals, symbol, coingeckoId, image } = erc20.token || {}
-    return { decimals, symbol, coingeckoId, image: image }
+    if (erc20.token?.type === "evm-erc20") {
+      const { decimals, symbol, coingeckoId, image } = erc20.token || {}
+      return { decimals, symbol, coingeckoId, image }
+    }
+
+    const { decimals, symbol, image } = erc20.token || {}
+    return { decimals, symbol, image }
   }, [currencyAddress, erc20.token, nativeToken, network?.id, tokens])
 
   const target = useMemo(() => decodeMultilocation(destination), [destination])

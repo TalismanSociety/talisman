@@ -19,8 +19,10 @@ const accountsAtom = atomWithObservable(
 
       const unsubscribePromise = (async () => {
         // connect to the extension
-        await web3Enable("balances-demo")
+        const extensions = await web3Enable("balances-demo")
         if (abort.signal.aborted) return // stop here if our subscriber has disconnected
+
+        if (extensions.length === 0) subscriber.next([])
 
         // subscribe to the list of accounts from the extension
         return await web3AccountsSubscribe((accounts) => {

@@ -1,4 +1,9 @@
-import type { AuthorizedSite, AuthorizedSites, ProviderType } from "@extension/core"
+import type {
+  AuthorizedSite,
+  AuthorizedSites,
+  BalanceSubscriptionResponse,
+  ProviderType,
+} from "@extension/core"
 import { SitesAuthorizedStore } from "@extension/core"
 import { AnalyticsCaptureRequest } from "@extension/core"
 import { Trees } from "@extension/core"
@@ -94,7 +99,14 @@ export const api = {
     authorizedSiteForget: jest
       .fn()
       .mockImplementation((id: string, type: ProviderType) => sitesStore.forgetSite(id, type)),
-    balances: jest.fn().mockImplementation((cb: () => void) => () => undefined),
+    balances: jest
+      .fn()
+      .mockImplementation((cb: (balances: BalanceSubscriptionResponse) => void) => {
+        cb({
+          status: "initialising",
+          data: [],
+        })
+      }),
     chains: jest.fn().mockImplementation((cb: () => void) => () => undefined),
     ethereumNetworks: jest.fn().mockImplementation((cb: () => void) => () => undefined),
     tokens: jest.fn().mockImplementation((cb: () => void) => () => undefined),

@@ -89,9 +89,12 @@ const useLedgerEthereumAccounts = (
           (wa) => convertAddress(wa.address, null) === convertAddress(acc.address, null)
         )
 
-        const accountBalances = balances.find(
+        const accountBalances = balances.balances.find(
           (b) => convertAddress(b.address, null) === convertAddress(acc.address, null)
         )
+        const isBalanceLoading =
+          accountBalances.each.some((b) => b.status === "cache") ||
+          balances.status === "initialising"
 
         return {
           ...acc,
@@ -99,8 +102,7 @@ const useLedgerEthereumAccounts = (
           connected: !!existingAccount,
           selected: selectedAccounts.some((sa) => sa.path === acc.path),
           balances: accountBalances,
-          isBalanceLoading:
-            !balances.count || accountBalances.each.some((b) => b.status === "initializing"),
+          isBalanceLoading,
         }
       }),
     [balances, derivedAccounts, selectedAccounts, walletAccounts]

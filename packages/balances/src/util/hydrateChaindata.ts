@@ -19,7 +19,7 @@ export const hydrateChaindataAndMiniMetadata = async (
   const goodChains = [...statusesByChain.entries()].flatMap(([chainId, status]) =>
     status === "good" ? chainId : []
   )
-  await chaindataProvider.hydrateTokens(goodChains)
+  await chaindataProvider.hydrateSubstrateTokens(goodChains)
 }
 
 /** Builds any missing miniMetadatas (e.g. for the user's custom substrate chains) */

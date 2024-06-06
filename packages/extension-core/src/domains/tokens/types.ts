@@ -1,43 +1,37 @@
-import type { CustomEvmErc20Token as CustomErc20Token } from "@talismn/balances"
-import { CustomEvmErc20Token } from "@talismn/balances"
+import type { CustomEvmErc20Token, CustomEvmUniswapV2Token } from "@talismn/balances"
+import type { ChainId, EvmNetworkId } from "@talismn/chaindata-provider"
 
 import { RequestIdOnly } from "../../types/base"
-import { ChainId } from "../chains/types"
-import { EvmNetworkId } from "../ethereum/types"
-
-export type {
-  EvmErc20Token as Erc20Token,
-  CustomEvmNativeToken,
-  EvmNativeToken,
-  CustomSubNativeToken as CustomNativeToken,
-  SubNativeToken as NativeToken,
-} from "@talismn/balances"
-export type { IToken, Token, TokenId, TokenList } from "@talismn/chaindata-provider"
-export type { TokenRateCurrency, TokenRates } from "@talismn/token-rates"
-export type { CustomErc20Token }
-
-// orml tokens types -----------------------
-
-export type CustomEvmErc20TokenCreate = Pick<
-  CustomEvmErc20Token,
-  "symbol" | "decimals" | "coingeckoId" | "contractAddress" | "image"
-> & { chainId?: ChainId; evmNetworkId?: EvmNetworkId }
-
-/**
- * TODO: Refactor to remove the old types and replace with the new types:
- *   NativeToken -> SubNativeToken
- *   CustomNativeToken -> CustomSubNativeToken
- *   Erc20Token -> EvmErc20Token
- *   CustomErc20Token -> CustomEvmErc20Token
- *   CustomErc20TokenCreate -> CustomEvmErc20TokenCreate
- */
-export type CustomErc20TokenCreate = CustomEvmErc20TokenCreate
 
 export interface TokenMessages {
   // token message signatures
   "pri(tokens.subscribe)": [null, boolean, boolean]
 
-  // custom erc20 token management
-  "pri(tokens.erc20.custom.add)": [CustomEvmErc20TokenCreate, boolean]
-  "pri(tokens.erc20.custom.remove)": [RequestIdOnly, boolean]
+  // custom evm token management
+  "pri(tokens.evm.custom.add)": [CustomEvmTokenCreate, boolean]
+  "pri(tokens.evm.custom.remove)": [RequestIdOnly, boolean]
 }
+
+export type CustomEvmTokenCreate = CustomEvmErc20TokenCreate | CustomEvmUniswapV2TokenCreate
+
+export type CustomEvmErc20TokenCreate = Pick<
+  CustomEvmErc20Token,
+  "type" | "symbol" | "decimals" | "coingeckoId" | "contractAddress" | "image"
+> & { chainId?: ChainId; evmNetworkId?: EvmNetworkId }
+
+export type CustomEvmUniswapV2TokenCreate = Pick<
+  CustomEvmUniswapV2Token,
+  | "type"
+  | "symbol"
+  | "decimals"
+  | "poolAddress"
+  | "symbol0"
+  | "symbol1"
+  | "decimals0"
+  | "decimals1"
+  | "tokenAddress0"
+  | "tokenAddress1"
+  | "coingeckoId0"
+  | "coingeckoId1"
+  | "image"
+> & { chainId?: ChainId; evmNetworkId?: EvmNetworkId }

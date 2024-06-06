@@ -9,6 +9,7 @@ describe("useBalances tests", () => {
     const { result } = renderHook(() => useBalances(), {
       wrapper: TestWrapper,
     })
+
     await waitFor(() => expect(result.current).toBeInstanceOf(Balances))
   })
 })

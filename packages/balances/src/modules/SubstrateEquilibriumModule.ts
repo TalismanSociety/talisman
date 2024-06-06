@@ -8,7 +8,6 @@ import {
   ChainId,
   ChaindataProvider,
   NewTokenType,
-  SubChainId,
   githubTokenLogoUrl,
 } from "@talismn/chaindata-provider"
 import {
@@ -24,7 +23,7 @@ import { decodeAnyAddress, isBigInt } from "@talismn/util"
 import { DefaultBalanceModule, NewBalanceModule, NewTransferParamsType } from "../BalanceModule"
 import log from "../log"
 import { db as balancesDb } from "../TalismanBalancesDatabase"
-import { AddressesByToken, Amount, Balance, Balances, NewBalanceType } from "../types"
+import { AddressesByToken, Balances, NewBalanceType } from "../types"
 import {
   GetOrCreateTypeRegistry,
   RpcStateQuery,
@@ -40,12 +39,6 @@ type ModuleType = "substrate-equilibrium"
 
 const subEquilibriumTokenId = (chainId: ChainId, tokenSymbol: string) =>
   `${chainId}-substrate-equilibrium-${tokenSymbol}`.toLowerCase().replace(/ /g, "-")
-
-const getChainIdFromTokenId = (tokenId: string) => {
-  const match = /^([\d\w-]+)-substrate-equilibrium/.exec(tokenId)
-  if (!match?.[1]) throw new Error(`Can't detect chainId for token ${tokenId}`)
-  return match?.[1]
-}
 
 export type SubEquilibriumToken = NewTokenType<
   ModuleType,
@@ -77,18 +70,11 @@ export type SubEquilibriumModuleConfig = {
   >
 }
 
-export type SubEquilibriumBalance = NewBalanceType<
-  ModuleType,
-  {
-    multiChainId: SubChainId
-
-    free: Amount
-  }
->
+export type SubEquilibriumBalance = NewBalanceType<ModuleType, "simple", "substrate">
 
 declare module "@talismn/balances/plugins" {
   export interface PluginBalanceTypes {
-    SubEquilibriumBalance: SubEquilibriumBalance
+    "substrate-equilibrium": SubEquilibriumBalance
   }
 }
 
@@ -219,22 +205,8 @@ export const SubEquilibriumModule: NewBalanceModule<
       return tokens
     },
 
-    getPlaceholderBalance(tokenId, address): SubEquilibriumBalance {
-      const chainId = getChainIdFromTokenId(tokenId)
-
-      return {
-        source: "substrate-equilibrium",
-        status: "initializing",
-        address,
-        multiChainId: { subChainId: chainId },
-        chainId,
-        tokenId,
-        free: "0",
-      }
-    },
-
     // TODO: Don't create empty subscriptions
-    async subscribeBalances(addressesByToken, callback) {
+    async subscribeBalances({ addressesByToken }, callback) {
       const queries = await buildQueries(
         chaindataProvider,
         getOrCreateTypeRegistry,
@@ -335,8 +307,8 @@ async function buildQueries(
   chaindataProvider: ChaindataProvider,
   getOrCreateTypeRegistry: GetOrCreateTypeRegistry,
   addressesByToken: AddressesByToken<SubEquilibriumToken>
-): Promise<Array<RpcStateQuery<Balance[]>>> {
-  const chains = await chaindataProvider.chainsById()
+): Promise<Array<RpcStateQuery<SubEquilibriumBalance[]>>> {
+  const allChains = await chaindataProvider.chainsById()
   const tokens = await chaindataProvider.tokensById()
   const miniMetadatas = new Map(
     (await balancesDb.miniMetadatas.toArray()).map((miniMetadata) => [
@@ -346,8 +318,8 @@ async function buildQueries(
   )
 
   const uniqueChainIds = getUniqueChainIds(addressesByToken, tokens)
+  const chains = Object.fromEntries(uniqueChainIds.map((chainId) => [chainId, allChains[chainId]]))
   const chainStorageDecoders = buildStorageDecoders({
-    chainIds: uniqueChainIds,
     chains,
     miniMetadatas,
     moduleType: "substrate-equilibrium",
@@ -394,7 +366,7 @@ async function buildQueries(
         ? getOrCreateTypeRegistry(chainId, chainMeta.miniMetadata)
         : new TypeRegistry()
 
-    return Array.from(addresses).flatMap((address): RpcStateQuery<Balance[]> | [] => {
+    return Array.from(addresses).flatMap((address): RpcStateQuery<SubEquilibriumBalance[]> | [] => {
       const storageHelper = new StorageHelper(
         registry,
         "system",
@@ -460,25 +432,29 @@ async function buildQueries(
                   : "0",
             }))
             .map(({ id, free }: { id?: string; free?: string }) => [id, free])
+            .filter(
+              ([id, free]: [string | undefined, string | undefined]) =>
+                id !== undefined && free !== undefined
+            )
         )
 
-        return Array.from(tokensByAddress.get(address) ?? [])
+        const result = Array.from(tokensByAddress.get(address) ?? [])
           .filter((t) => t.chain.id === chainId)
           .map((token) => {
-            const free = tokenBalances[token.assetId] ?? "0"
-            return new Balance({
+            const value = tokenBalances[token.assetId]
+            return {
               source: "substrate-equilibrium",
-
               status: "live",
-
               address,
               multiChainId: { subChainId: chainId },
               chainId,
               tokenId: token.id,
-
-              free,
-            })
+              value,
+            } as SubEquilibriumBalance
           })
+          .filter((b): b is SubEquilibriumBalance => b !== undefined)
+
+        return result
       }
 
       return { chainId, stateKey, decodeResult }

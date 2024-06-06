@@ -14,6 +14,7 @@ export const useFeeToken = (tokenId?: string | null) => {
     if (typeof chain?.feeToken === "string") return chain.feeToken
 
     switch (token.type) {
+      case "evm-uniswapv2":
       case "evm-erc20":
       case "evm-native":
         return evmNetwork?.nativeToken?.id

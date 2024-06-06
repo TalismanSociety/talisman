@@ -1,9 +1,13 @@
-import { CustomNativeToken } from "@extension/core"
-import { CustomEvmNetwork, EvmNetwork, EvmNetworkId } from "@extension/core"
 import { RequestUpsertCustomEvmNetwork } from "@extension/core"
 import { yupResolver } from "@hookform/resolvers/yup"
 import { HeaderBlock } from "@talisman/components/HeaderBlock"
-import { isCustomEvmNetwork } from "@talismn/chaindata-provider"
+import { CustomSubNativeToken } from "@talismn/balances"
+import {
+  CustomEvmNetwork,
+  EvmNetwork,
+  EvmNetworkId,
+  isCustomEvmNetwork,
+} from "@talismn/chaindata-provider"
 import { ArrowRightIcon, InfoIcon, RotateCcwIcon } from "@talismn/icons"
 import { classNames } from "@talismn/util"
 import { useQuery } from "@tanstack/react-query"
@@ -371,7 +375,7 @@ const DEFAULT_VALUES: Partial<RequestUpsertCustomEvmNetwork> = {
 
 const useEditMode = (evmNetworkId?: EvmNetworkId) => {
   const evmNetwork = useEvmNetwork(evmNetworkId)
-  const nativeToken = useToken(evmNetwork?.nativeToken?.id) as CustomNativeToken | undefined
+  const nativeToken = useToken(evmNetwork?.nativeToken?.id) as CustomSubNativeToken | undefined
   const defaultValues = useMemo(() => {
     if (!evmNetworkId) return DEFAULT_VALUES
     return evmNetwork && nativeToken ? evmNetworkToFormData(evmNetwork, nativeToken) : undefined
@@ -384,7 +388,7 @@ const useEditMode = (evmNetworkId?: EvmNetworkId) => {
 
 const evmNetworkToFormData = (
   network?: EvmNetwork | CustomEvmNetwork,
-  nativeToken?: CustomNativeToken
+  nativeToken?: CustomSubNativeToken
 ): RequestUpsertCustomEvmNetwork | undefined => {
   if (!network || !nativeToken) return undefined
 

@@ -4,7 +4,6 @@ import { useMemo } from "react"
 export type BalancesStatus =
   | { status: "live" }
   | { status: "fetching" }
-  | { status: "initializing" }
   | { status: "stale"; staleChains: string[] }
 
 /**
@@ -20,12 +19,8 @@ export const useBalancesStatus = (balances: Balances) =>
     const staleChains = getStaleChains(balances)
     if (staleChains.length > 0) return { status: "stale", staleChains }
 
-    if (balances.each.every((b) => b.status === "initializing")) return { status: "initializing" }
-
     // fetching
-    const hasCachedBalances = balances.each.some(
-      (b) => b.status === "cache" || b.status === "initializing"
-    )
+    const hasCachedBalances = balances.each.some((b) => b.status === "cache")
     if (hasCachedBalances) return { status: "fetching" }
 
     // live
@@ -36,6 +31,6 @@ export const getStaleChains = (balances: Balances): string[] => [
   ...new Set(
     balances.sorted
       .filter((b) => b.status === "stale")
-      .map((b) => b.chain?.name ?? b.chainId ?? "Unknown")
+      .map((b) => (b.chain?.name || b.evmNetwork?.name) ?? b.chainId ?? "Unknown")
   ),
 ]

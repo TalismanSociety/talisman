@@ -1,4 +1,4 @@
-import { TokenId } from "@extension/core"
+import { TokenId } from "@talismn/chaindata-provider"
 import { useSendFundsWizard } from "@ui/apps/popup/pages/SendFunds/context"
 import { useCallback } from "react"
 
