@@ -2,6 +2,7 @@ import { Address } from "@extension/core"
 import { HexString } from "@polkadot/util/types"
 import { provideContext } from "@talisman/util/provideContext"
 import { TokenId } from "@talismn/chaindata-provider"
+import { useAllTokensMap } from "@ui/hooks/useTokens"
 import { useCallback, useMemo } from "react"
 import { useNavigate, useSearchParams } from "react-router-dom"
 
@@ -22,6 +23,7 @@ export type SendFundsWizardPage = "from" | "to" | "token" | "amount" | "confirm"
 const useSendFundsWizardProvider = () => {
   const [searchParams, setSearchParams] = useSearchParams()
   const navigate = useNavigate()
+  const allTokensMap = useAllTokensMap()
 
   const { from, to, tokenId, amount, allowReap, sendMax, tokenSymbol } = useMemo(
     () => ({
@@ -43,12 +45,23 @@ const useSendFundsWizardProvider = () => {
       goToNextPage = false
     ) => {
       // reset amount if token changes, as decimals may be totally different
-      // also reset from/to, as accounts could be incompatible or network restricted
       if (key === "tokenId" && value !== searchParams.get("tokenId")) {
         searchParams.delete("amount")
         searchParams.delete("sendMax")
-        searchParams.delete("from")
-        searchParams.delete("to")
+
+        // check network change only if there is a previous token, to handle the case where send funds is initialized only with a from account (in that case token list is filtered)
+        if (searchParams.get("tokenId")) {
+          // if token's network changes, reset from/to as accounts could be incompatible or network restricted
+          const prevToken = allTokensMap[searchParams.get("tokenId") as TokenId]
+          const nextToken = allTokensMap[value as TokenId]
+          if (
+            prevToken?.evmNetwork?.id !== nextToken?.evmNetwork?.id ||
+            prevToken?.chain?.id !== nextToken?.chain?.id
+          ) {
+            searchParams.delete("from")
+            searchParams.delete("to")
+          }
+        }
       }
 
       if (key === "amount" && value) searchParams.delete("sendMax")
@@ -72,7 +85,7 @@ const useSendFundsWizardProvider = () => {
         navigate(url)
       }
     },
-    [navigate, searchParams, setSearchParams]
+    [allTokensMap, navigate, searchParams, setSearchParams]
   )
 
   const remove = useCallback(
