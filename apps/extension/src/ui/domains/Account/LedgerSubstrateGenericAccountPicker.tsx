@@ -87,7 +87,9 @@ const useLedgerSubstrateGenericAccounts = (
           (wa) => convertAddress(wa.address, null) === address
         )
 
-        const accountBalances = balances.find((b) => convertAddress(b.address, null) === address)
+        const accountBalances = balances.balances.find(
+          (b) => convertAddress(b.address, null) === address
+        )
 
         return {
           ...acc,
@@ -95,8 +97,7 @@ const useLedgerSubstrateGenericAccounts = (
           connected: !!existingAccount,
           selected: selectedAccounts.some((sa) => sa.address === acc.address),
           balances: accountBalances,
-          isBalanceLoading:
-            !balances.count || accountBalances.each.some((b) => b.status === "initializing"),
+          isBalanceLoading: balances.status === "initialising" || balances.status === "cached",
         }
       }),
     [ledgerAccounts, walletAccounts, balances, selectedAccounts]

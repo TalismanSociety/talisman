@@ -52,18 +52,18 @@ const AccountButton: FC<AccountButtonProps> = ({
   selected,
   onClick,
   withBalances,
+  isBalanceLoading,
 }) => {
   const totalFiat = useBalancesFiatTotal(balances)
 
   const [isInitializing, isLoading] = useMemo(
     () => [
       // none are loaded yet
-      balances.count === 0 || balances.each.every((b) => b.status === "initializing"),
+      isBalanceLoading && !balances.each.some((b) => b.status === "live"),
       // some are loaded, some are still loading
-      balances.each.some((b) => b.status === "initializing") &&
-        balances.each.some((b) => b.status === "live"),
+      isBalanceLoading && balances.each.some((b) => b.status === "live"),
     ],
-    [balances]
+    [balances.each, isBalanceLoading]
   )
 
   return (
@@ -115,6 +115,7 @@ export type DerivedAccountBase = AccountJson & {
   balances: Balances
   connected?: boolean
   selected?: boolean
+  isBalanceLoading?: boolean
 }
 
 type AccountButtonProps = DerivedAccountBase & {
@@ -168,6 +169,7 @@ export const DerivedAccountPickerBase: FC<DerivedAccountPickerBaseProps> = ({
             <AccountButton
               key={`${keyPrefix}::${account.address}`}
               withBalances={withBalances}
+              isBalanceLoading={account.isBalanceLoading}
               {...account}
               onClick={handleToggleAccount(account)}
             />
