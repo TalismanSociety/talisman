@@ -68,7 +68,7 @@ export const ConnectedAccountsPolkadot: FC<{
         >
           {t("EVM accounts")}{" "}
           <Tooltip>
-            <TooltipTrigger asChild>
+            <TooltipTrigger>
               <InfoIcon />
             </TooltipTrigger>
             <TooltipContent>
