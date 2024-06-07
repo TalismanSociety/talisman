@@ -1,15 +1,16 @@
 import { HeaderBlock } from "@talisman/components/HeaderBlock"
 import { Spacer } from "@talisman/components/Spacer"
 import { StarIcon } from "@talismn/icons"
-import { selectableCurrenciesAtom } from "@ui/atoms"
-import { currencyConfig, currencyOrder } from "@ui/domains/Asset/currencyConfig"
-import { useAtom } from "jotai"
+import { selectableCurrenciesAtom, selectedCurrencyAtom } from "@ui/atoms"
+import { currencyConfig, currencyOrder, sortCurrencies } from "@ui/domains/Asset/currencyConfig"
+import { useAtom, useSetAtom } from "jotai"
 import { useTranslation } from "react-i18next"
 
 import { DashboardLayout } from "../../layout/DashboardLayout"
 
 const CurrencySettingsPage = () => {
   const [selectableCurrencies, setSelectableCurrencies] = useAtom(selectableCurrenciesAtom)
+  const setSelectedCurrency = useSetAtom(selectedCurrencyAtom)
   const { t } = useTranslation()
 
   return (
@@ -28,13 +29,20 @@ const CurrencySettingsPage = () => {
             key={currency}
             className="bg-grey-850 enabled:hover:bg-grey-800 text-body-disabled enabled:hover:text-body-secondary flex h-28 w-full cursor-pointer items-center gap-8 rounded-sm px-8 disabled:cursor-not-allowed disabled:opacity-50"
             onClick={() =>
-              setSelectableCurrencies((selected) =>
-                selected.includes(currency)
-                  ? selected.filter((x) => x !== currency)
-                  : [...selected, currency].sort(
-                      (a, b) => currencyOrder.indexOf(a) - currencyOrder.indexOf(b)
-                    )
-              )
+              setSelectableCurrencies((selectable) => {
+                const newSelectable = selectable.includes(currency)
+                  ? selectable.filter((x) => x !== currency)
+                  : selectable.concat(currency).sort(sortCurrencies)
+
+                // NOTE: This makes sure that the `selectedCurrency` is always in the list of `selectableCurrencies`
+                setSelectedCurrency((selected) =>
+                  newSelectable.length === 0 || newSelectable.includes(selected)
+                    ? selected
+                    : newSelectable[0]
+                )
+
+                return newSelectable
+              })
             }
           >
             <img className="w-16 max-w-full" alt={currency} src={currencyConfig[currency]?.icon} />
