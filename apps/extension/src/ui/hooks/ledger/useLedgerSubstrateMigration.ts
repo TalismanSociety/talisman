@@ -48,26 +48,14 @@ export const useLedgerSubstrateMigration = (appName?: string, persist = false) =
       try {
         await refTransport.current?.close()
         refTransport.current = await TransportWebUSB.create()
-        // console.log("connectLedger Substrate Migration", {
-        //   app,
-        //   appName,
-        // })
+
         const ledger = newMigrationGenericApp(refTransport.current, app.name, "hello web3")
-        // const appInfo = await ledger.appInfo()
-        // const version = await ledger.getVersion()
-        // console.log("newMigrationGenericApp", {
-        //   ledger,
-        //   version,
-        //   appInfo,
-        // })
 
         // verify that Ledger connection is ready by querying first address
         const response = await Promise.race([
           ledger.getAddress(0, 0, 0, app.prefix, false),
           throwAfter(5_000, "Timeout on Ledger Substrate Migration connection"),
         ])
-
-        // console.log({ response })
 
         if (response.error_message !== "No errors")
           throw new LedgerError(response.error_message, "LedgerError", response.return_code)

@@ -11,36 +11,6 @@ import { log } from "extension-shared"
 
 const trimPrefix = (str: string) => (str.startsWith("0x") ? str.slice(2) : str)
 
-// const getShortMetadataFromApi = async (
-//   zondaxApiUrl: string, // https://api.zondax.ch/polkadot/transaction/metadata
-//   zondaxChainId: string, // dot-hub
-//   hexPayload: HexString
-// ) => {
-//   const req = await fetch(zondaxApiUrl, {
-//     method: "POST",
-//     headers: {
-//       "Content-Type": "application/json",
-//       "accept": "application/json",
-//     },
-//     body: JSON.stringify({
-//       chain: { id: zondaxChainId },
-//       txBlob: hexPayload,
-//     }),
-//   })
-
-//   if (!req.ok) {
-//     // console.error("Failed to fetch shortened metadata", {
-//     //   status: req.status,
-//     //   statusText: req.statusText,
-//     // })
-//     throw new Error("Failed to fetch shortened metadata")
-//   }
-
-//   const { txMetadata } = (await req.json()) as { txMetadata: HexString }
-
-//   return trimPrefix(txMetadata)
-// }
-
 export const useShortenedMetadata = (payload: SignerPayloadJSON | null) => {
   const chain = useChainByGenesisHash(payload?.genesisHash)
   const token = useToken(chain?.nativeToken?.id)
@@ -76,8 +46,6 @@ export const useShortenedMetadata = (payload: SignerPayloadJSON | null) => {
         })
         const hexPayload = u8aToHex(extPayload.toU8a(true))
 
-        // console.log({ signedExtensions: payload.signedExtensions, hexPayload })
-
         const shortened = get_short_metadata_from_tx_blob(
           trimPrefix(hexMetadataRpc),
           trimPrefix(hexPayload),
@@ -87,14 +55,6 @@ export const useShortenedMetadata = (payload: SignerPayloadJSON | null) => {
           specName,
           specVersion
         )
-
-        // const shortened = await getShortMetadataFromApi(
-        //   "https://api.zondax.ch/polkadot/transaction/metadata",
-        //   "roc",
-        //   hexPayload
-        // )
-
-        //console.log({ shortened })
 
         // if returned value is not a hex string, it's an error message
         if (!isHex("0x" + shortened)) throw new Error(shortened)

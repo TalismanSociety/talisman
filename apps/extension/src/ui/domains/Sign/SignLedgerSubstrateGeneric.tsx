@@ -26,11 +26,6 @@ import { LedgerSigningStatus } from "./LedgerSigningStatus"
 import { SignHardwareSubstrateProps } from "./SignHardwareSubstrate"
 import { useShortenedMetadata } from "./useShortenedMetadata"
 
-// const addCheckMetadata = (payload: SignerPayloadJSON): SignerPayloadJSON => ({
-//   ...payload,
-//   signedExtensions: payload.signedExtensions.concat(["CheckMetadata"]),
-// })
-
 const sign = (
   ledger: PolkadotGenericApp,
   payload: SignerPayloadJSON | SignerPayloadRaw,
@@ -43,10 +38,6 @@ const sign = (
 
   if (isJsonPayload(payload)) {
     if (!metadata) throw new Error("Missing metadata")
-
-    // if (!payload.signedExtensions.includes("CheckMetadataHash"))
-    //   payload.signedExtensions.push("CheckMetadataHash")
-    //throw new Error("Missing signed extension: CheckMetadataHash")
 
     const registry = new TypeRegistry()
     registry.setSignedExtensions(payload.signedExtensions)
@@ -67,21 +58,6 @@ const sign = (
   // raw payload
   const unsigned = wrapBytes(payload.data)
   return ledger.signRaw(accountIndex, change, addressIndex, Buffer.from(unsigned))
-
-  //   const registry = new TypeRegistry()
-  //   const unsigned = isJsonPayload(payload) ? registry.createType("ExtrinsicPayload", payload, {
-  //   version: payload.version,
-  // }) : wrapBytes(payload.data)
-
-  //   const response = await (isRaw
-  //     ? ledger.signRaw(accountIndex, change, addressIndex, Buffer.from(unsigned))
-  //     : ledger.signImpl(
-  //         accountIndex,
-  //         change,
-  //         addressIndex,
-  //         2,
-  //         Buffer.from(unsigned),
-  //         Buffer.from(metadata!))
 }
 
 const SignLedgerSubstrateGeneric: FC<SignHardwareSubstrateProps> = ({
@@ -92,16 +68,11 @@ const SignLedgerSubstrateGeneric: FC<SignHardwareSubstrateProps> = ({
   payload,
   containerId,
 }) => {
-  // TODO remove, this is just for testing
-  //if (payload && isJsonPayload(payload)) payload = addCheckMetadata(payload)
-
   const account = useAccountByAddress(payload?.address)
   const { t } = useTranslation("request")
   const [isSigning, setIsSigning] = useState(false)
   const [isSigned, setIsSigned] = useState(false)
   const [error, setError] = useState<string | null>(null)
-  // const [unsigned, setUnsigned] = useState<Uint8Array>()
-  // const [isRaw, setIsRaw] = useState<boolean>()
   const { ledger, refresh, status, message, isReady, requiresManualRetry } =
     useLedgerSubstrateGeneric()
 
@@ -119,25 +90,6 @@ const SignLedgerSubstrateGeneric: FC<SignHardwareSubstrateProps> = ({
     }),
     [refresh, status, message, requiresManualRetry, t]
   )
-
-  // useEffect(() => {
-  //   if (!payload) return
-
-  //   console.log("useEffect payload")
-
-  //   if (isRawPayload(payload)) {
-  //     setUnsigned(wrapBytes(payload.data))
-  //     setIsRaw(true)
-  //     return
-  //   }
-
-  //   if (payload.signedExtensions) registry.setSignedExtensions(payload.signedExtensions)
-  //   const extrinsicPayload = registry.createType("ExtrinsicPayload", payload, {
-  //     version: payload.version,
-  //   })
-  //   setUnsigned(extrinsicPayload.toU8a(true))
-  //   setIsRaw(false)
-  // }, [payload, t])
 
   const {
     data: metadata,
