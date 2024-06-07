@@ -78,7 +78,6 @@ const useDerivedAccounts = (
         : [],
     [itemsPerPage, derivedAccounts]
   )
-
   const balances = useAccountImportBalances(accountImportDefs)
 
   const accounts: (DerivedFromMnemonicAccount | null)[] = useMemo(
@@ -92,9 +91,13 @@ const useDerivedAccounts = (
             acc.genesisHash === wa.genesisHash
         )
 
-        const accountBalances = balances.find(
+        const accountBalances = balances.balances.find(
           (b) => convertAddress(b.address, null) === convertAddress(acc.address, null)
         )
+
+        const isBalanceLoading =
+          accountBalances.each.some((b) => b.status === "cache") ||
+          balances.status === "initialising"
 
         return {
           ...acc,
@@ -102,8 +105,7 @@ const useDerivedAccounts = (
           connected: !!existingAccount,
           selected: selectedAccounts.some((sa) => sa.suri === acc.suri),
           balances: accountBalances,
-          isBalanceLoading:
-            !balances.count || accountBalances.each.some((b) => b.status === "initializing"),
+          isBalanceLoading,
         }
       }),
     [balances, derivedAccounts, selectedAccounts, walletAccounts]

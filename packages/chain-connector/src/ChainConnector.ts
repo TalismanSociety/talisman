@@ -6,6 +6,18 @@ import { Deferred, sleep } from "@talismn/util"
 import log from "./log"
 import { Websocket } from "./Websocket"
 
+export class ChainConnectionError extends Error {
+  type: "CHAIN_CONNECTION_ERROR"
+  chainId: string
+
+  constructor(chainId: string, options?: ErrorOptions) {
+    super(`Unable to connect to chain ${chainId}`, options)
+
+    this.type = "CHAIN_CONNECTION_ERROR"
+    this.chainId = chainId
+  }
+}
+
 export class StaleRpcError extends Error {
   type: "STALE_RPC_ERROR"
   chainId: string
@@ -170,7 +182,7 @@ export class ChainConnector {
       await this.waitForWs(ws, timeout)
     } catch (error) {
       await this.disconnectChainSocket(chainId, socketUserId)
-      throw error
+      throw new ChainConnectionError(chainId, { cause: error })
     }
 
     try {

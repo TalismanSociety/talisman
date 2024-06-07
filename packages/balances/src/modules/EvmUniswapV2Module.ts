@@ -2,7 +2,6 @@ import { assert } from "@polkadot/util"
 import { ChainConnectorEvm } from "@talismn/chain-connector-evm"
 import {
   BalancesConfigTokenParams,
-  EvmChainId,
   EvmNetworkId,
   EvmNetworkList,
   NewTokenType,
@@ -18,12 +17,12 @@ import { DefaultBalanceModule, NewBalanceModule } from "../BalanceModule"
 import log from "../log"
 import {
   AddressesByToken,
-  Amount,
-  Balance,
+  AmountWithLabel,
   BalanceJsonList,
   Balances,
   ExtraAmount,
   NewBalanceType,
+  getBalanceId,
 } from "../types"
 import { uniswapV2PairAbi } from "./abis/uniswapV2Pair"
 
@@ -35,12 +34,6 @@ export const evmUniswapV2TokenId = (
   chainId: EvmNetworkId,
   contractAddress: EvmUniswapV2Token["contractAddress"]
 ) => `${chainId}-evm-uniswapv2-${contractAddress}`.toLowerCase()
-
-const getEvmNetworkIdFromTokenId = (tokenId: string) => {
-  const evmNetworkId = tokenId.split("-")[0] as EvmNetworkId
-  if (!evmNetworkId) throw new Error(`Can't detect chainId for token ${tokenId}`)
-  return evmNetworkId
-}
 
 export type EvmUniswapV2Token = NewTokenType<
   ModuleType,
@@ -57,15 +50,15 @@ export type EvmUniswapV2Token = NewTokenType<
     evmNetwork: { id: EvmNetworkId } | null
   }
 >
-export type CustomEvmUniswapV2Token = EvmUniswapV2Token & {
+
+export type CustomEvmUniswapV2Token = Omit<EvmUniswapV2Token, "isCustom"> & {
   isCustom: true
   image?: string
 }
 
 declare module "@talismn/chaindata-provider/plugins" {
   export interface PluginTokenTypes {
-    EvmUniswapV2Token: EvmUniswapV2Token
-    CustomEvmUniswapV2Token: CustomEvmUniswapV2Token
+    "evm-uniswapv2": EvmUniswapV2Token
   }
 }
 
@@ -90,19 +83,11 @@ export type EvmUniswapV2ModuleConfig = {
   >
 }
 
-export type EvmUniswapV2Balance = NewBalanceType<
-  ModuleType,
-  {
-    multiChainId: EvmChainId
-
-    free: Amount
-    extra: Array<ExtraAmount<string>>
-  }
->
+export type EvmUniswapV2Balance = NewBalanceType<"evm-uniswapv2", "complex", "ethereum">
 
 declare module "@talismn/balances/plugins" {
   export interface PluginBalanceTypes {
-    EvmUniswapV2Balance: EvmUniswapV2Balance
+    "evm-uniswapv2": EvmUniswapV2Balance
   }
 }
 
@@ -189,25 +174,22 @@ export const EvmUniswapV2Module: NewBalanceModule<
       return tokens
     },
 
-    getPlaceholderBalance(tokenId, address): EvmUniswapV2Balance {
-      const evmNetworkId = getEvmNetworkIdFromTokenId(tokenId)
-      return {
-        source: "evm-uniswapv2",
-        status: "initializing",
-        address: address,
-        multiChainId: { evmChainId: evmNetworkId },
-        evmNetworkId,
-        tokenId,
-        free: "0",
-        extra: [],
-      }
-    },
-
-    async subscribeBalances(addressesByToken, callback) {
+    async subscribeBalances({ addressesByToken, initialBalances }, callback) {
       let subscriptionActive = true
       const subscriptionInterval = 6_000 // 6_000ms == 6 seconds
       const initDelay = 1_500 // 1_500ms == 1.5 seconds
-      const cache = new Map<EvmNetworkId, BalanceJsonList>()
+
+      const initialBalancesByNetwork = (initialBalances as EvmUniswapV2Balance[])?.reduce<
+        Record<EvmNetworkId, BalanceJsonList>
+      >((result, b) => {
+        if (!b.evmNetworkId) return result
+        if (!result[b.evmNetworkId]) result[b.evmNetworkId] = {}
+        result[b.evmNetworkId][getBalanceId(b)] = b
+        return result
+      }, {})
+      const cache = new Map<EvmNetworkId, BalanceJsonList>(
+        Object.entries(initialBalancesByNetwork ?? {})
+      )
 
       // for chains with a zero balance we only call fetchBalances once every 5 subscriptionIntervals
       // if subscriptionInterval is 6 seconds, this means we only poll chains with a zero balance every 30 seconds
@@ -220,14 +202,12 @@ export const EvmUniswapV2Module: NewBalanceModule<
         if (!subscriptionActive) return
 
         zeroBalanceSubscriptionIntervalCounter = (zeroBalanceSubscriptionIntervalCounter + 1) % 5
-
         try {
           // regroup tokens by network
           const addressesByTokenByEvmNetwork = groupAddressesByTokenByEvmNetwork(
             addressesByToken,
             tokens
           )
-
           // fetch balance for each network sequentially to prevent creating a big queue of http requests (browser can only handle 2 at a time)
           for (const [evmNetworkId, addressesByToken] of Object.entries(
             addressesByTokenByEvmNetwork
@@ -338,28 +318,21 @@ const fetchBalances = async (
             },
             [] as Array<[EvmUniswapV2Token | CustomEvmUniswapV2Token, string[]]>
           )
-
           // fetch all balances
           const balanceRequests = tokensAndAddresses.flatMap(([token, addresses]) => {
-            return addresses.map(
-              async (address) =>
-                new Balance({
-                  source: "evm-uniswapv2",
-
-                  status: "live",
-
-                  address: address,
-                  multiChainId: { evmChainId: evmNetwork.id },
-                  evmNetworkId,
-                  tokenId: token.id,
-
-                  ...(await getPoolBalance(
-                    publicClient,
-                    token.contractAddress as `0x${string}`,
-                    address as `0x${string}`
-                  )),
-                })
-            )
+            return addresses.map(async (address) => ({
+              source: "evm-uniswapv2",
+              status: "live",
+              address: address,
+              multiChainId: { evmChainId: evmNetwork.id },
+              evmNetworkId,
+              tokenId: token.id,
+              values: await getPoolBalance(
+                publicClient,
+                token.contractAddress as `0x${string}`,
+                address as `0x${string}`
+              ),
+            }))
           })
 
           // wait for balance fetches to complete
@@ -374,7 +347,7 @@ const fetchBalances = async (
               }
               return result.value
             })
-            .filter((balance): balance is Balance => balance !== false)
+            .filter((balance): balance is EvmUniswapV2Balance => balance !== false)
 
           // return to caller
           return new Balances(balances)
@@ -422,8 +395,8 @@ async function getPoolBalance(
   publicClient: PublicClient,
   contractAddress: `0x${string}`,
   accountAddress: `0x${string}`
-): Promise<{ free: Amount; extra: Array<ExtraAmount<string>> }> {
-  if (!isEthereumAddress(accountAddress)) return { free: "0", extra: [] }
+): Promise<Array<AmountWithLabel<string> | ExtraAmount<string>>> {
+  if (!isEthereumAddress(accountAddress)) return [{ type: "free", label: "free", amount: "0" }]
 
   try {
     const [
@@ -452,11 +425,13 @@ async function getPoolBalance(
     const [_reserve0, _reserve1] = reserves ?? []
 
     const extraWithLabel = (label: string, amount: string): ExtraAmount<string> => ({
+      type: "extra",
       label,
       amount,
     })
 
     const balanceOf = String(_balanceOf ?? 0n)
+    const free: AmountWithLabel<string> = { type: "free", label: "free", amount: balanceOf }
     const totalSupply = extraWithLabel("totalSupply", String(_totalSupply ?? 0n))
     const reserve0 = extraWithLabel("reserve0", String(_reserve0 ?? 0n))
     const reserve1 = extraWithLabel("reserve1", String(_reserve1 ?? 0n))
@@ -465,7 +440,7 @@ async function getPoolBalance(
     const holding0 = extraWithLabel("holding0", ratio.times(reserve0.amount).toString(10))
     const holding1 = extraWithLabel("holding1", ratio.times(reserve1.amount).toString(10))
 
-    return { free: balanceOf, extra: [totalSupply, reserve0, reserve1, holding0, holding1] }
+    return [free, totalSupply, reserve0, reserve1, holding0, holding1]
   } catch (error) {
     const errorMessage = hasOwnProperty(error, "shortMessage")
       ? error.shortMessage

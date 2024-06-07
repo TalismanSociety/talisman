@@ -9,11 +9,11 @@ import {
   fetchChains,
   fetchEvmNetwork,
   fetchEvmNetworks,
+  fetchSubstrateTokens,
   fetchToken,
-  fetchTokens,
 } from "./net"
 import { TalismanChaindataDatabase } from "./TalismanChaindataDatabase"
-import { IChaindataProvider } from "./types"
+import { IChaindataProvider, TokenTypes } from "./types"
 import {
   Chain,
   ChainId,
@@ -180,6 +180,15 @@ export class ChaindataProvider implements IChaindataProvider {
       "Failed to get tokens by id",
       this.tokensByIdObservable
     )
+  }
+
+  async tokensByIdForType<TTokenTYpe extends TokenTypes[keyof TokenTypes]["type"]>(
+    tType: TTokenTYpe
+  ) {
+    const filteredTokensObs = this.tokensObservable
+      .pipe(map((tokens) => tokens.filter((token) => token.type === tType)))
+      .pipe(map(util.itemsToMapById))
+    return await util.wrapObservableWithGetter("Failed to get tokenIds", filteredTokensObs)
   }
 
   //
@@ -391,7 +400,7 @@ export class ChaindataProvider implements IChaindataProvider {
     try {
       return await this.#db.tokens
         // only affect custom tokens
-        .filter((token) => "isCustom" in token && token.isCustom)
+        .filter((token) => "isCustom" in token && Boolean(token.isCustom))
         // only affect the provided token
         .filter((token) => token.id === tokenId)
         // delete the token (if exists)
@@ -402,9 +411,10 @@ export class ChaindataProvider implements IChaindataProvider {
   }
 
   async setCustomTokens(tokens: Token[]) {
+    // TODO custom tokens have to go into localstorage
     return await this.#db.transaction("rw", this.#db.tokens, async () => {
       const keys = await this.#db.tokens
-        .filter((token) => "isCustom" in token && token.isCustom)
+        .filter((token) => "isCustom" in token && Boolean(token.isCustom))
         .primaryKeys()
 
       await this.#db.tokens.bulkDelete(keys)
@@ -432,7 +442,7 @@ export class ChaindataProvider implements IChaindataProvider {
   }: {
     chainsArgs?: Parameters<ChaindataProvider["hydrateChains"]>
     evmNetworksArgs?: Parameters<ChaindataProvider["hydrateEvmNetworks"]>
-    tokensArgs?: Parameters<ChaindataProvider["hydrateTokens"]>
+    tokensArgs?: Parameters<ChaindataProvider["hydrateSubstrateTokens"]>
   } = {}): Promise<boolean> {
     return (
       (
@@ -440,7 +450,7 @@ export class ChaindataProvider implements IChaindataProvider {
           // call inner hydration methods
           this.hydrateChains(),
           this.hydrateEvmNetworks(),
-          this.hydrateTokens(...(tokensArgs ? tokensArgs : [])),
+          this.hydrateSubstrateTokens(...(tokensArgs ? tokensArgs : [])),
         ])
       )
         // return true if any hydration occurred
@@ -635,7 +645,7 @@ export class ChaindataProvider implements IChaindataProvider {
    *
    * @returns A promise which resolves to true if the db has been hydrated, or false if the hydration was skipped.
    */
-  async hydrateTokens(chainIdFilter?: ChainId[]) {
+  async hydrateSubstrateTokens(chainIdFilter?: ChainId[]) {
     const now = Date.now()
     if (now - this.#lastHydratedTokensAt < minimumHydrationInterval) return false
 
@@ -643,7 +653,7 @@ export class ChaindataProvider implements IChaindataProvider {
 
     try {
       try {
-        var tokens = util.parseTokensResponse(await fetchTokens()) // eslint-disable-line no-var
+        var tokens = util.parseTokensResponse(await fetchSubstrateTokens()) // eslint-disable-line no-var
         if (tokens.length <= 0) throw new Error("Ignoring empty chaindata tokens response")
       } catch (error) {
         if (dbHasTokens) throw error

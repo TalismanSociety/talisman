@@ -1,28 +1,17 @@
 import { ChainConnectorEvm } from "@talismn/chain-connector-evm"
 import {
   BalancesConfigTokenParams,
-  EvmChainId,
   EvmNetworkId,
-  EvmNetworkList,
   NewTokenType,
   TokenList,
   githubTokenLogoUrl,
 } from "@talismn/chaindata-provider"
 import { hasOwnProperty, isEthereumAddress } from "@talismn/util"
-import isEqual from "lodash/isEqual"
 import { PublicClient, hexToBigInt, isHex } from "viem"
 
 import { DefaultBalanceModule, NewBalanceModule } from "../BalanceModule"
 import log from "../log"
-import {
-  Address,
-  AddressesByToken,
-  Amount,
-  Balance,
-  BalanceJsonList,
-  Balances,
-  NewBalanceType,
-} from "../types"
+import { Address, AddressesByToken, Balances, NewBalanceType } from "../types"
 import { abiMulticall } from "./abis/multicall"
 
 type ModuleType = "evm-native"
@@ -40,16 +29,13 @@ export type EvmNativeToken = NewTokenType<
   ModuleType,
   {
     evmNetwork: { id: EvmNetworkId }
+    isCustom?: true
   }
 >
-export type CustomEvmNativeToken = EvmNativeToken & {
-  isCustom: true
-}
-
+export type CustomEvmNativeToken = EvmNativeToken
 declare module "@talismn/chaindata-provider/plugins" {
   export interface PluginTokenTypes {
-    EvmNativeToken: EvmNativeToken
-    CustomEvmNativeToken: CustomEvmNativeToken
+    "evm-native": EvmNativeToken
   }
 }
 
@@ -62,18 +48,11 @@ export type EvmNativeModuleConfig = {
   decimals?: number
 } & BalancesConfigTokenParams
 
-export type EvmNativeBalance = NewBalanceType<
-  ModuleType,
-  {
-    multiChainId: EvmChainId
-
-    free: Amount
-  }
->
+export type EvmNativeBalance = NewBalanceType<ModuleType, "simple", "ethereum">
 
 declare module "@talismn/balances/plugins" {
   export interface PluginBalanceTypes {
-    EvmNativeBalance: EvmNativeBalance
+    "evm-native": EvmNativeBalance
   }
 }
 
@@ -85,8 +64,21 @@ export const EvmNativeModule: NewBalanceModule<
 > = (hydrate) => {
   const { chainConnectors, chaindataProvider } = hydrate
 
+  const getModuleTokens = async () => {
+    return (await chaindataProvider.tokensByIdForType("evm-native")) as Record<
+      string,
+      EvmNativeToken | CustomEvmNativeToken
+    >
+  }
+
   return {
     ...DefaultBalanceModule("evm-native"),
+
+    get tokens() {
+      return chaindataProvider.tokensByIdForType(this.type) as Promise<
+        Record<string, EvmNativeToken | CustomEvmNativeToken>
+      >
+    },
 
     /**
      * This method is currently executed on [a squid](https://github.com/TalismanSociety/chaindata-squid/blob/0ee02818bf5caa7362e3f3664e55ef05ec8df078/src/steps/updateEvmNetworksFromGithub.ts#L280-L284).
@@ -128,33 +120,35 @@ export const EvmNativeModule: NewBalanceModule<
       return { [nativeToken.id]: nativeToken }
     },
 
-    getPlaceholderBalance(tokenId, address): EvmNativeBalance {
-      const evmNetworkId = getEvmNetworkIdFromTokenId(tokenId)
-      return {
-        source: "evm-native",
-        status: "initializing",
-        address: address,
-        multiChainId: { evmChainId: evmNetworkId },
-        evmNetworkId,
-        tokenId,
-        free: "0",
-      }
-    },
-
-    async subscribeBalances(addressesByToken, callback) {
-      // TODO remove
-      log.debug("subscribeBalances", "evm-native", addressesByToken)
+    async subscribeBalances({ addressesByToken, initialBalances }, callback) {
       let subscriptionActive = true
       const subscriptionInterval = 6_000 // 6_000ms == 6 seconds
       const initDelay = 500 // 500ms == 0.5 seconds
-      const cache = new Map<EvmNetworkId, BalanceJsonList>()
+
+      const tokens = await getModuleTokens()
+      const ethAddressesByToken = Object.fromEntries(
+        Object.entries(addressesByToken)
+          .map(([tokenId, addresses]) => {
+            const ethAddresses = addresses.filter(isEthereumAddress)
+            if (ethAddresses.length === 0) return null
+            const token = tokens[tokenId]
+            const evmNetworkId = token.evmNetwork?.id
+            if (!evmNetworkId) return null
+            return [tokenId, ethAddresses] as [string, Address[]]
+          })
+          .filter((x): x is [string, Address[]] => Boolean(x))
+      )
 
       // for chains with a zero balance we only call fetchBalances once every 5 subscriptionIntervals
       // if subscriptionInterval is 6 seconds, this means we only poll chains with a zero balance every 30 seconds
       let zeroBalanceSubscriptionIntervalCounter = 0
 
-      const evmNetworks = await chaindataProvider.evmNetworksById()
-      const tokens = await chaindataProvider.tokensById()
+      // setup initialising balances for all active evm networks
+      const activeEvmNetworkIds = Object.keys(ethAddressesByToken).map(getEvmNetworkIdFromTokenId)
+      const initialisingBalances = new Set<string>(activeEvmNetworkIds)
+      const positiveBalanceNetworks = new Set<string>(
+        (initialBalances as EvmNativeBalance[])?.map((b) => b.evmNetworkId)
+      )
 
       const poll = async () => {
         if (!subscriptionActive) return
@@ -163,35 +157,49 @@ export const EvmNativeModule: NewBalanceModule<
 
         try {
           // fetch balance for each network sequentially to prevent creating a big queue of http requests (browser can only handle 2 at a time)
-          // since these are native tokens (1 per network), we can iterate on tokens
-          for (const tokenId of Object.keys(addressesByToken)) {
-            const cached = cache.get(tokenId)
-            if (
-              cached &&
-              zeroBalanceSubscriptionIntervalCounter !== 0 &&
-              new Balances(cached).each.reduce((sum, b) => sum + b.total.planck, 0n) === 0n
-            ) {
+          for (const [tokenId, addresses] of Object.entries(ethAddressesByToken)) {
+            const evmNetworkId = getEvmNetworkIdFromTokenId(tokenId)
+
+            // a zero balance network is one that has initialised and does not have a positive balance
+            const isZeroBalanceNetwork =
+              !initialisingBalances.has(evmNetworkId) && !positiveBalanceNetworks.has(evmNetworkId)
+
+            if (isZeroBalanceNetwork && zeroBalanceSubscriptionIntervalCounter !== 0) {
               // only poll empty token balances every 5 subscriptionIntervals
               continue
             }
 
-            try {
-              const tokenAddresses = { [tokenId]: addressesByToken[tokenId] }
+            if (!tokenId) throw new Error(`No native token for evm network ${evmNetworkId}`)
 
+            try {
               if (!chainConnectors.evm)
                 throw new Error(`This module requires an evm chain connector`)
               const balances = await fetchBalances(
                 chainConnectors.evm,
-                evmNetworks,
-                tokens,
-                tokenAddresses
+                { [tokenId]: addresses },
+                tokens
               )
+              const resultBalances: EvmNativeBalance[] = []
+              balances.flat().forEach((balance) => {
+                if (balance instanceof EvmNativeBalanceError) {
+                  log.error(balance.message, balance.networkId)
+                  initialisingBalances.delete(balance.networkId)
+                } else {
+                  if (balance.evmNetworkId) {
+                    initialisingBalances.delete(balance.evmNetworkId)
+                    if (BigInt(balance.value) > 0n) {
+                      positiveBalanceNetworks.add(balance.evmNetworkId)
+                    }
+                    resultBalances.push(balance)
+                  }
+                }
+              })
 
-              // Don't call callback with balances which have not changed since the last poll.
-              const json = balances.toJSON()
-              if (!isEqual(cache.get(tokenId), json)) {
-                cache.set(tokenId, json)
-                callback(null, balances)
+              if (resultBalances.length > 0) {
+                callback(null, {
+                  status: initialisingBalances.size === 0 ? "live" : "initialising",
+                  data: resultBalances,
+                })
               }
             } catch (err) {
               callback(err)
@@ -213,81 +221,71 @@ export const EvmNativeModule: NewBalanceModule<
 
     async fetchBalances(addressesByToken) {
       if (!chainConnectors.evm) throw new Error(`This module requires an evm chain connector`)
+      const tokens = await getModuleTokens()
+      const balanceResults = await fetchBalances(chainConnectors.evm, addressesByToken, tokens)
 
-      const evmNetworks = await chaindataProvider.evmNetworksById()
-      const tokens = await chaindataProvider.tokensById()
+      const pureBalances = balanceResults
+        .flat()
+        .filter(
+          (b): b is EvmNativeBalance =>
+            !(b instanceof EvmNativeBalanceError) && BigInt(b.value) > 0n
+        )
 
-      return fetchBalances(chainConnectors.evm, evmNetworks, tokens, addressesByToken)
+      return new Balances(pureBalances)
     },
+  }
+}
+
+class EvmNativeBalanceError extends Error {
+  networkId: string
+
+  constructor(message: string, networkId: string, cause?: Error) {
+    super(message)
+    this.name = "EvmNativeBalanceError"
+    this.networkId = networkId
+    if (cause) {
+      this.cause = cause
+    }
   }
 }
 
 const fetchBalances = async (
   evmChainConnector: ChainConnectorEvm,
-  evmNetworks: EvmNetworkList,
-  tokens: TokenList,
-  addressesByToken: AddressesByToken<EvmNativeToken | CustomEvmNativeToken>
+  addressesByToken: AddressesByToken<EvmNativeToken | CustomEvmNativeToken>,
+  tokens: TokenList
 ) => {
-  const balances = (
-    await Promise.allSettled(
-      Object.entries(addressesByToken).map(async ([tokenId, addresses]) => {
-        if (!evmChainConnector) throw new Error(`This module requires an evm chain connector`)
+  if (!evmChainConnector) throw new Error(`This module requires an evm chain connector`)
+  return Promise.all(
+    Object.entries(addressesByToken).map(async ([tokenId, addresses]) => {
+      const token = tokens[tokenId]
+      const evmNetworkId = token.evmNetwork?.id
+      if (!evmNetworkId) throw new Error(`Token ${token.id} has no evm network`)
+      const publicClient = await evmChainConnector.getPublicClientForEvmNetwork(evmNetworkId)
 
-        const token = tokens[tokenId]
-        if (!token) throw new Error(`Token ${tokenId} not found`)
+      if (!publicClient)
+        throw new Error(`Could not get rpc provider for evm network ${evmNetworkId}`)
 
-        // TODO: Fix @talismn/balances-react: it shouldn't pass every token to every module
-        if (token.type !== "evm-native")
-          throw new Error(`This module doesn't handle tokens of type ${token.type}`)
+      // fetch all balances
+      const freeBalances = await getFreeBalances(publicClient, addresses)
 
-        const evmNetworkId = token.evmNetwork?.id
-        if (!evmNetworkId) throw new Error(`Token ${tokenId} has no evm network`)
+      const balanceResults = addresses.map((address, i) => {
+        if (freeBalances[i] === "error")
+          return new EvmNativeBalanceError("Could not fetch balance ", evmNetworkId)
 
-        const evmNetwork = evmNetworks[evmNetworkId]
-        if (!evmNetwork) throw new Error(`Evm network ${evmNetworkId} not found`)
-
-        const publicClient = await evmChainConnector.getPublicClientForEvmNetwork(evmNetworkId)
-
-        if (!publicClient)
-          throw new Error(`Could not get rpc provider for evm network ${evmNetworkId}`)
-
-        // fetch all balances
-        const freeBalances = await getFreeBalances(publicClient, addresses)
-
-        const balanceResults = addresses
-          .map((address, i) => {
-            if (freeBalances[i] === "error") return false
-
-            return new Balance({
-              source: "evm-native",
-
-              status: "live",
-
-              address: address,
-              multiChainId: { evmChainId: evmNetwork.id },
-              evmNetworkId,
-              tokenId,
-
-              free: freeBalances[i].toString(),
-            })
-          })
-          .filter((balance): balance is Balance => balance !== false)
-
-        // return to caller
-        return new Balances(balanceResults)
+        return {
+          source: "evm-native",
+          status: "live",
+          address: address,
+          multiChainId: { evmChainId: evmNetworkId },
+          evmNetworkId,
+          tokenId,
+          value: freeBalances[i].toString(),
+        } as EvmNativeBalance
       })
-    )
-  )
-    .map((result) => {
-      if (result.status === "rejected") {
-        log.debug(result.reason)
-        return false
-      }
-      return result.value
-    })
-    .filter((balances): balances is Balances => balances !== false)
 
-  return balances.reduce((allBalances, balances) => allBalances.add(balances), new Balances([]))
+      return balanceResults
+    })
+  )
 }
 
 async function getFreeBalance(
@@ -315,11 +313,12 @@ async function getFreeBalances(
   publicClient: PublicClient,
   addresses: Address[]
 ): Promise<(bigint | "error")[]> {
+  const ethAddresses = addresses.filter(isEthereumAddress)
+  if (ethAddresses.length === 0) return []
+
   // if multicall is available, use it to save RPC rate limits
   if (publicClient.batch?.multicall && publicClient.chain?.contracts?.multicall3?.address) {
     try {
-      const ethAddresses = addresses.filter(isEthereumAddress)
-
       const addressMulticall = publicClient.chain.contracts.multicall3.address
 
       const callResults = await publicClient.multicall({
@@ -349,8 +348,7 @@ async function getFreeBalances(
         })
       )
 
-      // default to 0 for non evm addresses
-      return addresses.map((address) => {
+      return ethAddresses.map((address) => {
         const val = ethBalanceResults[address]
         if (isHex(val)) return hexToBigInt(val)
         return val ?? 0n
@@ -362,11 +360,11 @@ async function getFreeBalances(
         ? err.message
         : err
       log.warn(
-        `Failed to get balance from chain ${publicClient.chain?.id} for ${addresses.length} addresses: ${errorMessage}`
+        `Failed to get balance from chain ${publicClient.chain?.id} for ${ethAddresses.length} addresses: ${errorMessage}`
       )
-      return addresses.map(() => "error")
+      return ethAddresses.map(() => "error")
     }
   }
 
-  return Promise.all(addresses.map((address) => getFreeBalance(publicClient, address)))
+  return Promise.all(ethAddresses.map((address) => getFreeBalance(publicClient, address)))
 }

@@ -20,7 +20,7 @@ export const fetchEvmNetworks = async () => await (await fetch(chaindataEvmNetwo
 export const fetchEvmNetwork = async (evmNetworkId: string) =>
   await (await fetch(chaindataEvmNetworkByIdUrl(evmNetworkId))).json()
 
-export const fetchTokens = async () => await (await fetch(chaindataTokensAllUrl)).json()
+export const fetchSubstrateTokens = async () => await (await fetch(chaindataTokensAllUrl)).json()
 export const fetchToken = async (tokenId: string) =>
   await (await fetch(chaindataTokenByIdUrl(tokenId))).json()
 

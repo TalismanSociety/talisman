@@ -1,14 +1,15 @@
-import { TypeRegistry, createType, i128 } from "@polkadot/types"
+import { TypeRegistry } from "@polkadot/types"
 import { ExtDef } from "@polkadot/types/extrinsic/signedExtensions/types"
-import { assert, u8aToHex, u8aToString } from "@polkadot/util"
+import { arrayChunk, assert, u8aToHex, u8aToString } from "@polkadot/util"
 import { defineMethod } from "@substrate/txwrapper-core"
-import { ChainConnector } from "@talismn/chain-connector"
+import PromisePool from "@supercharge/promise-pool"
+import { ChainConnectionError, ChainConnector } from "@talismn/chain-connector"
 import {
   BalancesConfigTokenParams,
   ChainId,
   ChaindataProvider,
   NewTokenType,
-  SubChainId,
+  TokenId,
   githubTokenLogoUrl,
 } from "@talismn/chaindata-provider"
 import {
@@ -20,23 +21,38 @@ import {
   transformMetadataV14,
 } from "@talismn/scale"
 import * as $ from "@talismn/subshape-fork"
-import { Deferred, blake2Concat, decodeAnyAddress, isEthereumAddress } from "@talismn/util"
+import { Deferred, decodeAnyAddress, isEthereumAddress } from "@talismn/util"
 import isEqual from "lodash/isEqual"
-import { combineLatest, map, scan, share, switchAll } from "rxjs"
+import {
+  BehaviorSubject,
+  Observable,
+  combineLatest,
+  concatMap,
+  debounceTime,
+  distinctUntilChanged,
+  exhaustMap,
+  from,
+  interval,
+  map,
+  scan,
+  share,
+  switchAll,
+  switchMap,
+  takeUntil,
+  withLatestFrom,
+} from "rxjs"
 
-import { DefaultBalanceModule, NewBalanceModule, NewTransferParamsType } from "../BalanceModule"
-import log from "../log"
-import { db as balancesDb } from "../TalismanBalancesDatabase"
+import { DefaultBalanceModule, NewBalanceModule, NewTransferParamsType } from "../../BalanceModule"
+import log from "../../log"
+import { db as balancesDb } from "../../TalismanBalancesDatabase"
 import {
   AddressesByToken,
-  Amount,
-  AmountWithLabel,
-  Balance,
   Balances,
-  LockedAmount,
   NewBalanceType,
   SubscriptionCallback,
-} from "../types"
+  getBalanceId,
+  getValueId,
+} from "../../types"
 import {
   GetOrCreateTypeRegistry,
   RpcStateQuery,
@@ -47,56 +63,43 @@ import {
   detectTransferMethod,
   findChainMeta,
   getUniqueChainIds,
-} from "./util"
+} from "../util"
 import {
   asObservable,
   crowdloanFundContributionsChildKey,
-  getLockedType,
   nompoolStashAccountId,
-} from "./util/substrate-native"
+} from "../util/substrate-native"
+import { QueryCache } from "./QueryCache"
 
 type ModuleType = "substrate-native"
-
-// AccountInfo is the state_storage data format for nativeToken balances
-// Theory: new chains will be at least on metadata v14, and so we won't need to hardcode their AccountInfo type.
-// But for chains we want to support which aren't on metadata v14, hardcode them here:
-// If the chain upgrades to metadata v14, this override will be ignored :)
-//
-// TODO: Move the AccountInfoFallback configs for each chain into the ChainMeta section of chaindata
-const RegularAccountInfoFallback = JSON.stringify({
-  nonce: "u32",
-  consumers: "u32",
-  providers: "u32",
-  sufficients: "u32",
-  data: { free: "u128", reserved: "u128", miscFrozen: "u128", feeFrozen: "u128" },
-})
-const NoSufficientsAccountInfoFallback = JSON.stringify({
-  nonce: "u32",
-  consumers: "u32",
-  providers: "u32",
-  data: { free: "u128", reserved: "u128", miscFrozen: "u128", feeFrozen: "u128" },
-})
-const AccountInfoOverrides: { [key: ChainId]: string } = {
-  // crown-sterlin is not yet on metadata v14
-  "crown-sterling": NoSufficientsAccountInfoFallback,
-
-  // crust is not yet on metadata v14
-  "crust": NoSufficientsAccountInfoFallback,
-
-  // kulupu is not yet on metadata v14
-  "kulupu": RegularAccountInfoFallback,
-
-  // nftmart is not yet on metadata v14
-  "nftmart": RegularAccountInfoFallback,
-}
 
 export const subNativeTokenId = (chainId: ChainId) =>
   `${chainId}-substrate-native`.toLowerCase().replace(/ /g, "-")
 
-const getChainIdFromTokenId = (tokenId: string) => {
-  const match = /^([\d\w-]+)-substrate-native/.exec(tokenId)
-  if (!match?.[1]) throw new Error(`Can't detect chainId for token ${tokenId}`)
-  return match?.[1]
+/**
+ * Function to merge two 'sub sources' of the same balance together, or
+ * two instances of the same balance with different values.
+ * @param balance1 SubNativeBalance
+ * @param balance2 SubNativeBalance
+ * @returns SubNativeBalance
+ */
+const mergeBalances = (balance1: SubNativeBalance | undefined, balance2: SubNativeBalance) => {
+  if (balance1 === undefined) return balance2
+  assert(
+    getBalanceId(balance1) === getBalanceId(balance2),
+    "Balances with different IDs should not be merged"
+  )
+  const existingValues = Object.fromEntries(
+    balance1.values.map((value) => [getValueId(value), value])
+  )
+  const newValues = Object.fromEntries(balance2.values.map((value) => [getValueId(value), value]))
+
+  const merged = {
+    ...balance1,
+    status: balance2.status,
+    values: Object.values({ ...existingValues, ...newValues }),
+  }
+  return merged
 }
 
 export type SubNativeToken = NewTokenType<
@@ -133,20 +136,11 @@ export type SubNativeModuleConfig = {
   disable?: boolean
 } & BalancesConfigTokenParams
 
-export type SubNativeBalance = NewBalanceType<
-  ModuleType,
-  {
-    multiChainId: SubChainId
-
-    free: Amount
-    reserves: [AmountWithLabel<"reserved">, ...Array<AmountWithLabel<string>>]
-    locks: [LockedAmount<"fees">, LockedAmount<"misc">, ...Array<LockedAmount<string>>]
-  }
->
+export type SubNativeBalance = NewBalanceType<ModuleType, "complex", "substrate">
 
 declare module "@talismn/balances/plugins" {
   export interface PluginBalanceTypes {
-    SubNativeBalance: SubNativeBalance
+    "substrate-native": SubNativeBalance
   }
 }
 
@@ -168,6 +162,23 @@ export type SubNativeTransferParams = NewTransferParamsType<{
   userExtensions?: ExtDef
 }>
 
+const POLLING_WINDOW_SIZE = 20
+const MAX_SUBSCRIPTION_SIZE = 40
+
+const RELAY_TOKENS = ["polkadot-substrate-native", "kusama-substrate-native"]
+const PUBLIC_GOODS_TOKENS = [
+  "polkadot-asset-hub-substrate-native",
+  "kusama-asset-hub-substrate-native",
+]
+const sortChains = (a: string, b: string) => {
+  // polkadot and kusama should be checked first
+  if (RELAY_TOKENS.includes(a)) return -1
+  if (RELAY_TOKENS.includes(b)) return 1
+  if (PUBLIC_GOODS_TOKENS.includes(a)) return -1
+  if (PUBLIC_GOODS_TOKENS.includes(b)) return 1
+  return 0
+}
+
 export const SubNativeModule: NewBalanceModule<
   ModuleType,
   SubNativeToken | CustomSubNativeToken,
@@ -180,6 +191,15 @@ export const SubNativeModule: NewBalanceModule<
   assert(chainConnector, "This module requires a substrate chain connector")
 
   const { getOrCreateTypeRegistry } = createTypeRegistryCache()
+
+  const queryCache = new QueryCache(chaindataProvider, getOrCreateTypeRegistry)
+
+  const getModuleTokens = async () => {
+    return (await chaindataProvider.tokensByIdForType("substrate-native")) as Record<
+      string,
+      SubNativeToken
+    >
+  }
 
   return {
     ...DefaultBalanceModule("substrate-native"),
@@ -325,82 +345,236 @@ export const SubNativeModule: NewBalanceModule<
       return { [nativeToken.id]: nativeToken }
     },
 
-    getPlaceholderBalance(tokenId, address): SubNativeBalance {
-      const chainId = getChainIdFromTokenId(tokenId)
-
-      return {
-        source: "substrate-native",
-        status: "initializing",
-        address,
-        multiChainId: { subChainId: chainId },
-        chainId,
-        tokenId,
-        free: "0",
-        reserves: [{ label: "reserved", amount: "0" }],
-        locks: [
-          { label: "fees", amount: "0", includeInTransferable: true, excludeFromFeePayable: true },
-          { label: "misc", amount: "0" },
-        ],
-      }
-    },
-
-    async subscribeBalances(addressesByToken, callback) {
+    async subscribeBalances({ addressesByToken, initialBalances }, callback) {
       assert(chainConnectors.substrate, "This module requires a substrate chain connector")
 
-      // TODO: Create a more elegant system which can handle the following use cases
-      //
-      // For now, we're just going to manually create three separate subscription handlers
-      //
-      // We can't just pass a bunch of queries into a single handler because for crowdloans
-      // and staking we must first make some queries for some data and then create new queries
-      // based on the result of those first queries
-      // This is a usecase which is not yet managed by the RpcStateQueryHelper
-      //
-      // Eventually we should be able to delete the Deferred and just create the one
-      // `subscribeBase` handler which handles everything
+      // full record of balances for this module
+      const subNativeBalances = new BehaviorSubject<Record<string, SubNativeBalance>>(
+        Object.fromEntries(
+          (initialBalances as SubNativeBalance[])?.map((b) => [getBalanceId(b), b]) ?? []
+        )
+      )
+      // tokens which have a known positive balance
+      const positiveBalanceTokens = subNativeBalances.pipe(
+        map((balances) => Array.from(new Set(Object.values(balances).map((b) => b.tokenId)))),
+        share()
+      )
+
+      // tokens that will be subscribed to, simply a slice of the positive balance tokens of size MAX_SUBSCRIPTION_SIZE
+      const subscriptionTokens = positiveBalanceTokens.pipe(
+        map((tokens) => tokens.sort(sortChains).slice(0, MAX_SUBSCRIPTION_SIZE))
+      )
+
+      // an initialised balance is one where we have received a response for any type of 'subsource',
+      // until then they are initialising. We only need to maintain one map of tokens to addresses for this
+      const initialisingBalances = Object.entries(addressesByToken).reduce<
+        Map<TokenId, Set<string>>
+      >((acc, [tokenId, addresses]) => {
+        acc.set(tokenId, new Set(addresses))
+        return acc
+      }, new Map())
+
+      // after thirty seconds, we need to kill the initialising balances
+      const initBalancesTimeout = setTimeout(() => {
+        initialisingBalances.clear()
+        // manually call the callback to ensure the caller gets the correct status
+        callback(null, {
+          status: "live",
+          data: Object.values(subNativeBalances.getValue()),
+        })
+      }, 30_000)
+
+      const _callbackSub = subNativeBalances.pipe(debounceTime(100)).subscribe({
+        next: (balances) => {
+          callback(null, {
+            status: initialisingBalances.size > 0 ? "initialising" : "live",
+            data: Object.values(balances),
+          })
+        },
+        error: (error) => callback(error),
+        complete: () => {
+          initialisingBalances.clear()
+          clearTimeout(initBalancesTimeout)
+        },
+      })
 
       const unsubDeferred = Deferred()
       // we return this to the caller so that they can let us know when they're no longer interested in this subscription
-      const callerUnsubscribe = () => unsubDeferred.reject(new Error(`Caller unsubscribed`))
+      const callerUnsubscribe = () => {
+        subNativeBalances.complete()
+        _callbackSub.unsubscribe()
+        return unsubDeferred.reject(new Error(`Caller unsubscribed`))
+      }
       // we queue up our work to clean up our subscription when this promise rejects
       const callerUnsubscribed = unsubDeferred.promise
 
-      subscribeNompoolStaking(
-        chaindataProvider,
-        chainConnectors.substrate,
-        getOrCreateTypeRegistry,
-        addressesByToken,
-        callback,
-        callerUnsubscribed
-      )
-      subscribeCrowdloans(
-        chaindataProvider,
-        chainConnectors.substrate,
-        getOrCreateTypeRegistry,
-        addressesByToken,
-        callback,
-        callerUnsubscribed
-      )
-      subscribeBase(
-        chaindataProvider,
-        chainConnectors.substrate,
-        getOrCreateTypeRegistry,
-        addressesByToken,
-        callback,
-        callerUnsubscribed
-      )
+      // The update handler is to allow us to merge balances with the same id, and manage initialising and positive balances state for each
+      // balance type and network
+      const handleUpdate: SubscriptionCallback<SubNativeBalance[]> = (error, result) => {
+        if (result) {
+          const currentBalances = subNativeBalances.getValue()
+          // first merge any balances with the same id within the result
+          const accumulatedUpdates = result
+            .filter((b) => b.values.length > 0)
+            .reduce<Record<string, SubNativeBalance>>((acc, b) => {
+              const bId = getBalanceId(b)
+              acc[bId] = mergeBalances(acc[bId], b)
+              return acc
+            }, {})
 
-      return callerUnsubscribe
+          // then merge these with the current balances
+          const mergedBalances: Record<string, SubNativeBalance> = {}
+          Object.entries(accumulatedUpdates).forEach(([bId, b]) => {
+            // merge the values from the new balance into the existing balance, if there is one
+            mergedBalances[bId] = mergeBalances(currentBalances[bId], b)
+
+            // update initialisingBalances to remove balances which have been updated
+            const intialisingForToken = initialisingBalances.get(b.tokenId)
+            if (intialisingForToken) {
+              intialisingForToken.delete(b.address)
+              if (intialisingForToken.size === 0) initialisingBalances.delete(b.tokenId)
+              else initialisingBalances.set(b.tokenId, intialisingForToken)
+            }
+          })
+
+          subNativeBalances.next({
+            ...currentBalances,
+            ...mergedBalances,
+          })
+        }
+        if (error) {
+          if (error instanceof SubNativeBalanceError) {
+            // this type of error doesn't need to be handled by the caller
+            initialisingBalances.delete(error.tokenId)
+          } else return callback(error)
+        }
+      }
+
+      // subscribe to addresses and tokens for which we have a known positive balance
+      const positiveSub = subscriptionTokens
+        .pipe(
+          debounceTime(1000),
+          takeUntil(callerUnsubscribed),
+          map((tokenIds) =>
+            tokenIds.reduce<AddressesByToken<SubNativeToken>>((acc, tokenId) => {
+              acc[tokenId] = addressesByToken[tokenId]
+              return acc
+            }, {})
+          ),
+          distinctUntilChanged(isEqual),
+          switchMap((newAddressesByToken) => {
+            return from(queryCache.getQueries(newAddressesByToken)).pipe(
+              switchMap((baseQueries) => {
+                return new Observable((subscriber) => {
+                  if (!chainConnectors.substrate) return
+
+                  const unsubNompoolStaking = subscribeNompoolStaking(
+                    chaindataProvider,
+                    chainConnectors.substrate,
+                    getOrCreateTypeRegistry,
+                    newAddressesByToken,
+                    handleUpdate
+                  )
+                  const unsubCrowdloans = subscribeCrowdloans(
+                    chaindataProvider,
+                    chainConnectors.substrate,
+                    getOrCreateTypeRegistry,
+                    newAddressesByToken,
+                    handleUpdate
+                  )
+                  const subBase = subscribeBase(
+                    baseQueries,
+                    chainConnectors.substrate,
+                    handleUpdate
+                  )
+                  subscriber.add(async () => (await unsubNompoolStaking)())
+                  subscriber.add(async () => (await unsubCrowdloans)())
+                  subscriber.add(async () => (await subBase)())
+                })
+              })
+            )
+          })
+        )
+        .subscribe()
+
+      // for chains where we don't have a known positive balance, poll rather than subscribe
+      const poll = async (addressesByToken: AddressesByToken<SubNativeToken> = {}) => {
+        try {
+          const balances = await this.fetchBalances(addressesByToken)
+          handleUpdate(null, Object.values(balances.toJSON()) as SubNativeBalance[])
+        } catch (error) {
+          if (error instanceof ChainConnectionError) {
+            // coerce ChainConnection errors into SubNativeBalance errors
+            const errorChainId = (error as ChainConnectionError).chainId
+            Object.entries(await getModuleTokens())
+              .filter(([, token]) => token.chain?.id === errorChainId)
+              .forEach(([tokenId]) => {
+                const wrappedError = new SubNativeBalanceError(
+                  tokenId,
+                  (error as ChainConnectionError).message
+                )
+                handleUpdate(wrappedError)
+              })
+          } else {
+            log.error("unknown substrate native balance error", error)
+            handleUpdate(error)
+          }
+        }
+      }
+      // do one poll to get things started
+      const currentBalances = subNativeBalances.getValue()
+      const currentTokens = new Set(Object.values(currentBalances).map((b) => b.tokenId))
+
+      const nonCurrentTokens = Object.keys(addressesByToken)
+        .filter((tokenId) => !currentTokens.has(tokenId))
+        .sort(sortChains)
+
+      // break nonCurrentTokens into chunks of POLLING_WINDOW_SIZE
+      await PromisePool.withConcurrency(POLLING_WINDOW_SIZE)
+        .for(nonCurrentTokens)
+        .process(
+          async (nonCurrentTokenId) =>
+            await poll({ [nonCurrentTokenId]: addressesByToken[nonCurrentTokenId] })
+        )
+
+      // now poll every 30s on chains which are not subscriptionTokens
+      // we chunk this observable into batches of positive token ids, to prevent eating all the websocket connections
+      const pollingSub = interval(30_000) // emit values every 30 seconds
+        .pipe(
+          takeUntil(callerUnsubscribed),
+          withLatestFrom(subscriptionTokens), // Combine latest value from subscriptionTokens with each interval tick
+          map(([, subscribedTokenIds]) =>
+            // Filter out tokens that are not subscribed
+            Object.keys(addressesByToken).filter((tokenId) => !subscribedTokenIds.includes(tokenId))
+          ),
+          exhaustMap((tokenIds) =>
+            from(arrayChunk(tokenIds, POLLING_WINDOW_SIZE)).pipe(
+              concatMap(async (tokenChunk) => {
+                // tokenChunk is a chunk of tokenIds with size POLLING_WINDOW_SIZE
+                const pollingTokenAddresses = Object.fromEntries(
+                  tokenChunk.map((tokenId) => [tokenId, addressesByToken[tokenId]])
+                )
+                await poll(pollingTokenAddresses)
+                return true
+              })
+            )
+          )
+        )
+        .subscribe()
+
+      return () => {
+        callerUnsubscribe()
+        positiveSub.unsubscribe()
+        pollingSub.unsubscribe()
+      }
     },
 
     async fetchBalances(addressesByToken) {
       assert(chainConnectors.substrate, "This module requires a substrate chain connector")
+      const queries = await queryCache.getQueries(addressesByToken)
 
-      const queries = await buildQueries(
-        chaindataProvider,
-        getOrCreateTypeRegistry,
-        addressesByToken
-      )
+      assert(chainConnectors.substrate, "This module requires a substrate chain connector")
+
       const result = await new RpcStateQueryHelper(chainConnectors.substrate, queries).fetch()
 
       return new Balances(result ?? [])
@@ -480,298 +654,14 @@ export const SubNativeModule: NewBalanceModule<
   }
 }
 
-async function buildQueries(
-  chaindataProvider: ChaindataProvider,
-  getOrCreateTypeRegistry: GetOrCreateTypeRegistry,
-  addressesByToken: AddressesByToken<SubNativeToken | CustomSubNativeToken>
-): Promise<Array<RpcStateQuery<Balance>>> {
-  const chains = await chaindataProvider.chainsById()
-  const tokens = await chaindataProvider.tokensById()
-  const miniMetadatas = new Map(
-    (await balancesDb.miniMetadatas.toArray()).map((miniMetadata) => [
-      miniMetadata.id,
-      miniMetadata,
-    ])
-  )
-
-  const uniqueChainIds = getUniqueChainIds(addressesByToken, tokens)
-  const chainStorageDecoders = buildStorageDecoders({
-    chainIds: uniqueChainIds,
-    chains,
-    miniMetadatas,
-    moduleType: "substrate-native",
-    decoders: {
-      baseDecoder: ["system", "account"],
-      reservesDecoder: ["balances", "reserves"],
-      holdsDecoder: ["balances", "holds"],
-      locksDecoder: ["balances", "locks"],
-      freezesDecoder: ["balances", "freezes"],
-    },
-  })
-
-  return Object.entries(addressesByToken).flatMap(([tokenId, addresses]) => {
-    const token = tokens[tokenId]
-    if (!token) {
-      log.warn(`Token ${tokenId} not found`)
-      return []
-    }
-
-    if (token.type !== "substrate-native") {
-      log.debug(`This module doesn't handle tokens of type ${token.type}`)
-      return []
-    }
-
-    const chainId = token.chain?.id
-    if (!chainId) {
-      log.warn(`Token ${tokenId} has no chain`)
-      return []
-    }
-
-    const chain = chains[chainId]
-    if (!chain) {
-      log.warn(`Chain ${chainId} for token ${tokenId} not found`)
-      return []
-    }
-
-    const [chainMeta] = findChainMeta<typeof SubNativeModule>(
-      miniMetadatas,
-      "substrate-native",
-      chain
-    )
-    const hasMetadataV14 =
-      chainMeta?.miniMetadata !== undefined &&
-      chainMeta?.miniMetadata !== null &&
-      chainMeta?.metadataVersion >= 14
-    const typeRegistry = hasMetadataV14
-      ? getOrCreateTypeRegistry(chainId, chainMeta.miniMetadata ?? undefined)
-      : new TypeRegistry()
-
-    return addresses.flatMap((address) => {
-      // We share thie balanceJson between the base and the lock query for this address
-      //
-      // TODO: Rearchitect the balance type (a tiny bit) so that it doesn't assume that one instance
-      // of `Balance` is unique to one address and tokenId.
-      //
-      // Instead, we should allow for `address-tokenId-base` and `address-tokenId-lock` and `address-tokenId-staked` variations
-      // of the one balance. Then calls to e.g. balances.find({ tokenId, address }).locked should be able to
-      // do the correct locked calculation across the various Balance objects.
-      //
-      // This will allow us to handle caching etc on a Balance variation basis without messing up the locks calculation
-      // (which takes the biggest lock for an address and tokenId, instead of adding the locks together)
-      const balanceJson: SubNativeBalance = {
-        source: "substrate-native",
-        status: "live",
-        address,
-        multiChainId: { subChainId: chainId },
-        chainId,
-        tokenId,
-        free: "0",
-        reserves: [{ label: "reserved", amount: "0" }],
-        locks: [
-          { label: "fees", amount: "0", includeInTransferable: true, excludeFromFeePayable: true },
-          { label: "misc", amount: "0" },
-        ],
-      }
-      if (chainMeta?.useLegacyTransferableCalculation)
-        balanceJson.useLegacyTransferableCalculation = true
-
-      let locksQueryLocks: Array<LockedAmount<string>> = []
-      let freezesQueryLocks: Array<LockedAmount<string>> = []
-
-      const baseQuery: RpcStateQuery<Balance> | undefined = (() => {
-        const storageHelper = new StorageHelper(
-          typeRegistry,
-          "system",
-          "account",
-          decodeAnyAddress(address)
-        )
-        const storageDecoder = chainStorageDecoders.get(chainId)?.baseDecoder
-        const getFallbackStateKey = () => {
-          const addressBytes = decodeAnyAddress(address)
-          const addressHash = blake2Concat(addressBytes).replace(/^0x/, "")
-          const moduleHash = "26aa394eea5630e07c48ae0c9558cef7" // util_crypto.xxhashAsHex("System", 128);
-          const storageHash = "b99d880ec681799c0cf30e8886371da9" // util_crypto.xxhashAsHex("Account", 128);
-          const moduleStorageHash = `${moduleHash}${storageHash}` // System.Account is the state_storage key prefix for nativeToken balances
-          return `0x${moduleStorageHash}${addressHash}`
-        }
-
-        /**
-         * NOTE: For many MetadataV14 chains, it is not valid to encode an ethereum address into this System.Account state call.
-         * However, because we have always made that state call in the past, existing users will have the result (a balance of `0`)
-         * cached in their BalancesDB.
-         *
-         * So, until we refactor the storage of this module in a way which nukes the existing cached balances, we'll need to continue
-         * making these invalid state calls to keep those balances from showing as `cached` or `stale`.
-         *
-         * Current logic:
-         *
-         *     stateKey: string = hasMetadataV14 && storageHelper.stateKey ? storageHelper.stateKey : getFallbackStateKey()
-         *
-         * Future (ideal) logic:
-         *
-         *     stateKey: string | undefined = hasMetadataV14 ? storageHelper.stateKey : getFallbackStateKey()
-         */
-        const stateKey =
-          hasMetadataV14 && storageHelper.stateKey ? storageHelper.stateKey : getFallbackStateKey()
-
-        const decodeResult = (change: string | null) => {
-          // BEGIN: Handle chains which use metadata < v14
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          let oldChainBalance: any = undefined
-          if (!hasMetadataV14) {
-            const accountInfoTypeDef = AccountInfoOverrides[chainId]
-            if (accountInfoTypeDef === undefined) {
-              // chain metadata version is < 14 and we also don't have an override hardcoded in
-              // the best way to handle this case: log a warning and return an empty balance
-              log.debug(
-                `Token ${tokenId} on chain ${chainId} has no balance type for decoding. Defaulting to a balance of 0 (zero).`
-              )
-              return new Balance(balanceJson)
-            }
-
-            try {
-              // eslint-disable-next-line no-var
-              oldChainBalance = createType(typeRegistry, accountInfoTypeDef, change)
-            } catch (error) {
-              log.warn(
-                `Failed to create pre-metadataV14 balance type for token ${tokenId} on chain ${chainId}: ${error?.toString()}`
-              )
-              return new Balance(balanceJson)
-            }
-          }
-          // END: Handle chains which use metadata < v14
-
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          const decoded: any =
-            hasMetadataV14 && storageDecoder
-              ? change === null
-                ? null
-                : storageDecoder.decode($.decodeHex(change))
-              : oldChainBalance
-
-          const bigIntOrCodecToBigInt = (value: bigint | i128): bigint =>
-            typeof value === "bigint" ? value : value?.toBigInt?.()
-
-          let free = (bigIntOrCodecToBigInt(decoded?.data?.free) ?? 0n).toString()
-          let reserved = (bigIntOrCodecToBigInt(decoded?.data?.reserved) ?? 0n).toString()
-          let miscFrozen = (
-            (bigIntOrCodecToBigInt(decoded?.data?.miscFrozen) ?? 0n) +
-            // some chains don't split their `frozen` amount into `feeFrozen` and `miscFrozen`.
-            // for those chains, we'll use the `frozen` amount as `miscFrozen`.
-            (bigIntOrCodecToBigInt(decoded?.data?.frozen) ?? 0n)
-          ).toString()
-          let feeFrozen = (bigIntOrCodecToBigInt(decoded?.data?.feeFrozen) ?? 0n).toString()
-
-          // we use the evm-native module to fetch native token balances for ethereum addresses on ethereum networks
-          // but on moonbeam, moonriver and other chains which use ethereum addresses instead of substrate addresses,
-          // we use both this module and the evm-native module
-          if (isEthereumAddress(address) && chain.account !== "secp256k1")
-            free = reserved = miscFrozen = feeFrozen = "0"
-
-          balanceJson.free = free
-          const otherReserve = balanceJson.reserves.find(({ label }) => label === "reserved")
-          if (otherReserve) otherReserve.amount = reserved
-          const feesLock = balanceJson.locks.find(({ label }) => label === "fees")
-          if (feesLock) feesLock.amount = feeFrozen
-          const miscLock = balanceJson.locks.find(({ label }) => label === "misc")
-          if (miscLock) miscLock.amount = miscFrozen
-
-          return new Balance(balanceJson)
-        }
-
-        return { chainId, stateKey, decodeResult }
-      })()
-
-      const locksQuery: RpcStateQuery<Balance> | undefined = (() => {
-        const storageHelper = new StorageHelper(
-          typeRegistry,
-          "balances",
-          "locks",
-          decodeAnyAddress(address)
-        )
-        const storageDecoder = chainStorageDecoders.get(chainId)?.locksDecoder
-        const stateKey = storageHelper.stateKey
-        if (!stateKey) return
-        const decodeResult = (change: string | null) => {
-          if (change === null) return new Balance(balanceJson)
-
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          const decoded: any =
-            storageDecoder && change !== null ? storageDecoder.decode($.decodeHex(change)) : null
-
-          locksQueryLocks =
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            decoded?.map?.((lock: any) => ({
-              label: getLockedType(lock?.id?.toUtf8?.()),
-              amount: lock?.amount?.toString?.() ?? "0",
-            })) ?? []
-
-          balanceJson.locks = [
-            ...balanceJson.locks.slice(0, 2),
-            ...locksQueryLocks,
-            ...freezesQueryLocks,
-          ] as SubNativeBalance["locks"]
-
-          return new Balance(balanceJson)
-        }
-
-        return { chainId, stateKey, decodeResult }
-      })()
-
-      const freezesQuery: RpcStateQuery<Balance> | undefined = (() => {
-        const storageHelper = new StorageHelper(
-          typeRegistry,
-          "balances",
-          "freezes",
-          decodeAnyAddress(address)
-        )
-        const storageDecoder = chainStorageDecoders.get(chainId)?.freezesDecoder
-        const stateKey = storageHelper.stateKey
-        if (!stateKey) return
-        const decodeResult = (change: string | null) => {
-          if (change === null) return new Balance(balanceJson)
-
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          const decoded: any =
-            storageDecoder && change !== null ? storageDecoder.decode($.decodeHex(change)) : null
-
-          freezesQueryLocks =
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            decoded?.map?.((lock: any) => ({
-              label: getLockedType(lock?.id?.type?.toLowerCase?.()),
-              amount: lock?.amount?.toString?.() ?? "0",
-            })) ?? []
-
-          balanceJson.locks = [
-            ...balanceJson.locks.slice(0, 2),
-            ...locksQueryLocks,
-            ...freezesQueryLocks,
-          ] as SubNativeBalance["locks"]
-
-          return new Balance(balanceJson)
-        }
-
-        return { chainId, stateKey, decodeResult }
-      })()
-
-      const queries: Array<RpcStateQuery<Balance>> = [baseQuery, locksQuery, freezesQuery].filter(
-        (query): query is RpcStateQuery<Balance> => Boolean(query)
-      )
-
-      return queries
-    })
-  })
-}
-
 async function subscribeNompoolStaking(
   chaindataProvider: ChaindataProvider,
   chainConnector: ChainConnector,
   getOrCreateTypeRegistry: GetOrCreateTypeRegistry,
-  addressesByToken: AddressesByToken<SubNativeToken | CustomSubNativeToken>,
-  callback: SubscriptionCallback<Balances>,
-  callerUnsubscribed: Promise<unknown>
+  addressesByToken: AddressesByToken<SubNativeToken>,
+  callback: SubscriptionCallback<SubNativeBalance[]>
 ) {
-  const chains = await chaindataProvider.chainsById()
+  const allChains = await chaindataProvider.chainsById()
   const tokens = await chaindataProvider.tokensById()
   const miniMetadatas = new Map(
     (await balancesDb.miniMetadatas.toArray()).map((miniMetadata) => [
@@ -787,7 +677,7 @@ async function subscribeNompoolStaking(
       const [chainMeta] = findChainMeta<typeof SubNativeModule>(
         miniMetadatas,
         "substrate-native",
-        chains[token.chain.id]
+        allChains[token.chain.id]
       )
       return typeof chainMeta?.nominationPoolsPalletId === "string"
     })
@@ -806,8 +696,10 @@ async function subscribeNompoolStaking(
   )
 
   const uniqueChainIds = getUniqueChainIds(addressesByNomPoolToken, tokens)
+  const chains = Object.fromEntries(
+    Object.entries(allChains).filter(([chainId]) => uniqueChainIds.includes(chainId))
+  )
   const chainStorageDecoders = buildStorageDecoders({
-    chainIds: uniqueChainIds,
     chains,
     miniMetadatas,
     moduleType: "substrate-native",
@@ -819,6 +711,7 @@ async function subscribeNompoolStaking(
     },
   })
 
+  const resultUnsubscribes: Array<() => void> = []
   for (const [tokenId, addresses] of Object.entries(addressesByNomPoolToken)) {
     const token = tokens[tokenId]
     if (!token) {
@@ -1080,8 +973,8 @@ async function subscribeNompoolStaking(
         stakeByPool,
         metadataByPool,
       ]) => {
-        const balances: SubNativeBalance[] = Array.from(poolIdByAddress).map(
-          ([address, poolId]) => {
+        const balances = Array.from(poolIdByAddress)
+          .map(([address, poolId]) => {
             const parsedPoolId = poolId === null ? undefined : parseInt(poolId)
             const points = pointsByAddress.get(address) ?? "0"
             const poolPoints = pointsByPool.get(poolId ?? "") ?? "0"
@@ -1090,60 +983,53 @@ async function subscribeNompoolStaking(
 
             const amount =
               points === "0" || poolPoints === "0" || poolStake === "0"
-                ? "0"
-                : ((BigInt(poolStake) * BigInt(points)) / BigInt(poolPoints)).toString()
+                ? 0n
+                : (BigInt(poolStake) * BigInt(points)) / BigInt(poolPoints)
 
-            const unbondingAmount = (unbondingErasByAddress.get(address) ?? [])
-              .reduce((total, { amount }) => total + BigInt(amount ?? "0"), 0n)
-              .toString()
+            const unbondingAmount = (unbondingErasByAddress.get(address) ?? []).reduce(
+              (total, { amount }) => total + BigInt(amount ?? "0"),
+              0n
+            )
 
             return {
               source: "substrate-native",
-              subSource: "nompools-staking",
               status: "live",
               address,
               multiChainId: { subChainId: chainId },
               chainId,
               tokenId,
-              free: "0",
-              reserves: [
-                { label: "reserved", amount: "0" },
+              values: [
                 {
+                  source: "nompools-staking",
+                  type: "reserved",
                   label: "nompools-staking",
-                  amount,
+                  amount: amount.toString(),
                   meta: { type: "nompool", poolId: parsedPoolId, description: poolMetadata },
                 },
                 {
+                  source: "nompools-staking",
+                  type: "reserved",
                   label: "nompools-unbonding",
-                  amount: unbondingAmount,
+                  amount: unbondingAmount.toString(),
                   meta: {
-                    type: "nompool",
                     poolId: parsedPoolId,
                     description: poolMetadata,
                     unbonding: true,
                   },
                 },
               ],
-              locks: [
-                {
-                  label: "fees",
-                  amount: "0",
-                  includeInTransferable: true,
-                  excludeFromFeePayable: true,
-                },
-                { label: "misc", amount: "0" },
-              ],
-            }
-          }
-        )
+            } as SubNativeBalance
+          })
+          .filter(Boolean) as SubNativeBalance[]
 
-        callback(null, new Balances(balances ?? []))
+        if (balances.length > 0) callback(null, balances)
       },
       error: (error) => callback(error),
     })
 
-    callerUnsubscribed.catch(() => subscription.unsubscribe()).catch((error) => log.warn(error))
+    resultUnsubscribes.push(() => subscription.unsubscribe())
   }
+  return () => resultUnsubscribes.forEach((unsub) => unsub())
 }
 
 async function subscribeCrowdloans(
@@ -1151,11 +1037,11 @@ async function subscribeCrowdloans(
   chainConnector: ChainConnector,
   getOrCreateTypeRegistry: GetOrCreateTypeRegistry,
   addressesByToken: AddressesByToken<SubNativeToken | CustomSubNativeToken>,
-  callback: SubscriptionCallback<Balances>,
-  callerUnsubscribed: Promise<unknown>
+  callback: SubscriptionCallback<SubNativeBalance[]>
 ) {
-  const chains = await chaindataProvider.chainsById()
+  const allChains = await chaindataProvider.chainsById()
   const tokens = await chaindataProvider.tokensById()
+
   const miniMetadatas = new Map(
     (await balancesDb.miniMetadatas.toArray()).map((miniMetadata) => [
       miniMetadata.id,
@@ -1170,7 +1056,7 @@ async function subscribeCrowdloans(
       const [chainMeta] = findChainMeta<typeof SubNativeModule>(
         miniMetadatas,
         "substrate-native",
-        chains[token.chain.id]
+        allChains[token.chain.id]
       )
       return typeof chainMeta?.crowdloanPalletId === "string"
     })
@@ -1189,14 +1075,17 @@ async function subscribeCrowdloans(
   )
 
   const uniqueChainIds = getUniqueChainIds(addressesByCrowdloanToken, tokens)
+  const chains = Object.fromEntries(
+    Object.entries(allChains).filter(([chainId]) => uniqueChainIds.includes(chainId))
+  )
   const chainStorageDecoders = buildStorageDecoders({
-    chainIds: uniqueChainIds,
     chains,
     miniMetadatas,
     moduleType: "substrate-native",
     decoders: { parachainsDecoder: ["paras", "parachains"], fundsDecoder: ["crowdloan", "funds"] },
   })
 
+  const tokenSubscriptions: Array<() => void> = []
   for (const [tokenId, addresses] of Object.entries(addressesByCrowdloanToken)) {
     const token = tokens[tokenId]
     if (!token) {
@@ -1425,54 +1314,57 @@ async function subscribeCrowdloans(
           ([address, contributions]) => {
             return {
               source: "substrate-native",
-              subSource: "crowdloan",
               status: "live",
               address,
               multiChainId: { subChainId: chainId },
               chainId,
               tokenId,
-              free: "0",
-              reserves: [
-                { label: "reserved", amount: "0" },
-                ...Array.from(contributions).map(({ amount, paraId }) => ({
-                  label: "crowdloan",
-                  amount: amount,
-                  meta: { type: "crowdloan", paraId },
-                })),
-              ],
-              locks: [
-                {
-                  label: "fees",
-                  amount: "0",
-                  includeInTransferable: true,
-                  excludeFromFeePayable: true,
-                },
-                { label: "misc", amount: "0" },
-              ],
+              values: Array.from(contributions).map(({ amount, paraId }) => ({
+                type: "reserved",
+                label: "crowdloan",
+                source: "crowdloan",
+                amount: amount,
+                meta: { paraId },
+              })),
             }
           }
         )
-        callback(null, new Balances(balances ?? []))
+        if (balances.length > 0) callback(null, balances)
       },
       error: (error) => callback(error),
     })
 
-    callerUnsubscribed.catch(() => subscription.unsubscribe()).catch((error) => log.warn(error))
+    tokenSubscriptions.push(() => subscription.unsubscribe())
+  }
+
+  return () => tokenSubscriptions.forEach((unsub) => unsub())
+}
+
+class SubNativeBalanceError extends Error {
+  #tokenId: string
+
+  constructor(tokenId: string, message: string) {
+    super(`${tokenId}: ${message}`)
+    this.name = "SubNativeBalanceError"
+    this.#tokenId = tokenId
+  }
+
+  get tokenId() {
+    return this.#tokenId
   }
 }
 
 async function subscribeBase(
-  chaindataProvider: ChaindataProvider,
+  queries: RpcStateQuery<SubNativeBalance>[],
   chainConnector: ChainConnector,
-  getOrCreateTypeRegistry: GetOrCreateTypeRegistry,
-  addressesByToken: AddressesByToken<SubNativeToken | CustomSubNativeToken>,
-  callback: SubscriptionCallback<Balances>,
-  callerUnsubscribed: Promise<unknown>
+  callback: SubscriptionCallback<SubNativeBalance[]>
 ) {
-  const queries = await buildQueries(chaindataProvider, getOrCreateTypeRegistry, addressesByToken)
   const unsubscribe = await new RpcStateQueryHelper(chainConnector, queries).subscribe(
-    (error, result) => (error ? callback(error) : callback(null, new Balances(result ?? [])))
+    (error, result) => {
+      if (error) callback(error)
+      if (result && result.length > 0) callback(null, result)
+    }
   )
 
-  callerUnsubscribed.catch(unsubscribe).catch((error) => log.warn(error))
+  return unsubscribe
 }

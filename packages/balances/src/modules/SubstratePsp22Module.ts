@@ -8,7 +8,6 @@ import {
   BalancesConfigTokenParams,
   ChainId,
   NewTokenType,
-  SubChainId,
   TokenList,
   githubTokenLogoUrl,
 } from "@talismn/chaindata-provider"
@@ -16,7 +15,7 @@ import isEqual from "lodash/isEqual"
 
 import { DefaultBalanceModule, NewBalanceModule, NewTransferParamsType } from "../BalanceModule"
 import log from "../log"
-import { AddressesByToken, Amount, Balance, BalanceJson, Balances, NewBalanceType } from "../types"
+import { AddressesByToken, BalanceJson, Balances, NewBalanceType } from "../types"
 import psp22Abi from "./abis/psp22.json"
 import { makeContractCaller } from "./util/makeContractCaller"
 
@@ -24,12 +23,6 @@ type ModuleType = "substrate-psp22"
 
 const subPsp22TokenId = (chainId: ChainId, tokenSymbol: string) =>
   `${chainId}-substrate-psp22-${tokenSymbol}`.toLowerCase().replace(/ /g, "-")
-
-const getChainIdFromTokenId = (tokenId: string) => {
-  const match = /^([\d\w-]+)-substrate-psp22/.exec(tokenId)
-  if (!match?.[1]) throw new Error(`Can't detect chainId for token ${tokenId}`)
-  return match?.[1]
-}
 
 export type SubPsp22Token = NewTokenType<
   ModuleType,
@@ -61,18 +54,11 @@ export type SubPsp22ModuleConfig = {
   >
 }
 
-export type SubPsp22Balance = NewBalanceType<
-  ModuleType,
-  {
-    multiChainId: SubChainId
-
-    free: Amount
-  }
->
+export type SubPsp22Balance = NewBalanceType<ModuleType, "simple", "substrate">
 
 declare module "@talismn/balances/plugins" {
   export interface PluginBalanceTypes {
-    SubPsp22Balance: SubPsp22Balance
+    "substrate-psp22": SubPsp22Balance
   }
 }
 
@@ -195,22 +181,8 @@ export const SubPsp22Module: NewBalanceModule<
       return tokens
     },
 
-    getPlaceholderBalance(tokenId, address): SubPsp22Balance {
-      const chainId = getChainIdFromTokenId(tokenId)
-
-      return {
-        source: "substrate-psp22",
-        status: "initializing",
-        address,
-        multiChainId: { subChainId: chainId },
-        chainId,
-        tokenId,
-        free: "0",
-      }
-    },
-
     // TODO: Don't create empty subscriptions
-    async subscribeBalances(addressesByToken, callback) {
+    async subscribeBalances({ addressesByToken }, callback) {
       let subscriptionActive = true
       const subscriptionInterval = 12_000 // 12_000ms == 12 seconds
       const initDelay = 3_000 // 3000ms == 3 seconds
@@ -390,7 +362,7 @@ const fetchBalances = async (
         .createType("Balance", hexToU8a((result.toJSON()?.result as any)?.ok?.data).slice(1))
         .toString()
 
-      return new Balance({
+      return {
         source: "substrate-psp22",
 
         status: "live",
@@ -400,8 +372,8 @@ const fetchBalances = async (
         chainId: token.chain.id,
         tokenId,
 
-        free: balance,
-      })
+        value: balance,
+      } as SubPsp22Balance
     })
 
   // wait for balance fetches to complete
@@ -416,7 +388,7 @@ const fetchBalances = async (
       }
       return result.value
     })
-    .filter((balance): balance is Balance => balance !== false)
+    .filter((balance): balance is SubPsp22Balance => balance !== false)
 
   // return to caller
   return new Balances(balances)
