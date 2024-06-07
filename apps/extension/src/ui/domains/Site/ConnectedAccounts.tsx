@@ -34,7 +34,7 @@ const SubAccounts: FC<{ site: AuthorizedSite | null }> = ({ site }) => {
   return (
     <ConnectedAccountsPolkadot
       activeAccounts={activeAccounts}
-      handleUpdateAccounts={handleUpdateAccounts}
+      onUpdateAccounts={handleUpdateAccounts}
     />
   )
 }

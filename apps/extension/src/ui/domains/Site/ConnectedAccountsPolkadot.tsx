@@ -10,8 +10,8 @@ const AccountSeparator = () => <div className="bg-grey-800 mx-6 h-0.5"></div>
 
 export const ConnectedAccountsPolkadot: FC<{
   activeAccounts: Array<[AccountJsonAny, boolean]>
-  handleUpdateAccounts: (addresses: string[]) => void
-}> = ({ activeAccounts, handleUpdateAccounts }) => {
+  onUpdateAccounts: (addresses: string[]) => void
+}> = ({ activeAccounts, onUpdateAccounts }) => {
   const { t } = useTranslation()
 
   const hasEthereumActiveAccounts = useMemo(
@@ -32,23 +32,23 @@ export const ConnectedAccountsPolkadot: FC<{
       const newActive = isActive
         ? otherActive?.filter((a) => a !== address)
         : [...otherActive, address]
-      handleUpdateAccounts(newActive)
+      onUpdateAccounts(newActive)
     },
-    [activeAccounts, handleUpdateAccounts]
+    [activeAccounts, onUpdateAccounts]
   )
 
   const handleDisconnectAllClick = useCallback(() => {
-    handleUpdateAccounts([])
-  }, [handleUpdateAccounts])
+    onUpdateAccounts([])
+  }, [onUpdateAccounts])
 
   const handleConnectAllClick = useCallback(() => {
-    handleUpdateAccounts(displayedAccounts.map(([a]) => a.address))
-  }, [displayedAccounts, handleUpdateAccounts])
+    onUpdateAccounts(displayedAccounts.map(([a]) => a.address))
+  }, [displayedAccounts, onUpdateAccounts])
 
   const handleToggleEvmAccounts = useCallback(() => {
     setEnableEvmAccounts((enabled) => {
       if (enabled) {
-        handleUpdateAccounts(
+        onUpdateAccounts(
           activeAccounts
             .filter(([acc, isConnected]) => acc.type !== "ethereum" && isConnected)
             .map(([a]) => a.address)
@@ -56,7 +56,7 @@ export const ConnectedAccountsPolkadot: FC<{
       }
       return !enabled
     })
-  }, [activeAccounts, handleUpdateAccounts])
+  }, [activeAccounts, onUpdateAccounts])
 
   return (
     <>

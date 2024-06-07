@@ -57,7 +57,7 @@ type ConnectComponent = FC<{
   accounts: AccountJsonAny[]
   connected: string[]
   setConnected: (connected: string[]) => void
-  handleNoAccountClose: (navigateToAddAccount: boolean) => () => void
+  onNoAccountClose: (navigateToAddAccount: boolean) => () => void
 }>
 
 export const Connect: FC<{ className?: string }> = ({ className }) => {
@@ -96,7 +96,7 @@ export const Connect: FC<{ className?: string }> = ({ className }) => {
     popupOpenEvent("connect")
   }, [popupOpenEvent])
 
-  const handleNoAccountClose = useCallback(
+  const onNoAccountClose = useCallback(
     (navigateToAddAccount: boolean) => () => {
       if (navigateToAddAccount) {
         api.dashboardOpen("/accounts/add")
@@ -120,7 +120,7 @@ export const Connect: FC<{ className?: string }> = ({ className }) => {
         accounts={allAccounts}
         connected={connected}
         setConnected={setConnected}
-        handleNoAccountClose={handleNoAccountClose}
+        onNoAccountClose={onNoAccountClose}
       />
 
       <PopupFooter>
@@ -139,7 +139,7 @@ export const ConnectPolkadot: ConnectComponent = ({
   accounts,
   connected,
   setConnected,
-  handleNoAccountClose,
+  onNoAccountClose,
 }) => {
   const { t } = useTranslation("request")
 
@@ -164,14 +164,14 @@ export const ConnectPolkadot: ConnectComponent = ({
         >
           <ConnectedAccountsPolkadot
             activeAccounts={activeAccounts}
-            handleUpdateAccounts={setConnected}
+            onUpdateAccounts={setConnected}
           />
         </ConnectAccountsContainer>
         {!accounts.length && (
           <NoAccountWarning
             type={"polkadot"}
-            onIgnoreClick={handleNoAccountClose(false)}
-            onAddAccountClick={handleNoAccountClose(true)}
+            onIgnoreClick={onNoAccountClose(false)}
+            onAddAccountClick={onNoAccountClose(true)}
           />
         )}
       </section>
@@ -183,7 +183,7 @@ export const ConnectEth: ConnectComponent = ({
   accounts,
   connected,
   setConnected,
-  handleNoAccountClose,
+  onNoAccountClose,
 }) => {
   const { t } = useTranslation("request")
 
@@ -216,8 +216,8 @@ export const ConnectEth: ConnectComponent = ({
         {!ethAccounts.length && (
           <NoAccountWarning
             type={"ethereum"}
-            onIgnoreClick={handleNoAccountClose(false)}
-            onAddAccountClick={handleNoAccountClose(true)}
+            onIgnoreClick={onNoAccountClose(false)}
+            onAddAccountClick={onNoAccountClose(true)}
           />
         )}
       </section>
