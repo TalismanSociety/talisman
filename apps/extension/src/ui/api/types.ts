@@ -122,7 +122,6 @@ export default interface MessageTypes {
   accountCreateFromSuri: (name: string, suri: string, type?: AccountAddressType) => Promise<string>
   accountCreateFromJson: (unlockedPairs: KeyringPair$Json[]) => Promise<string[]>
   accountCreateLedgerSubstrate: (request: RequestAccountCreateLedgerSubstrate) => Promise<string>
-  accountCreateLedgerPolkadot: (name: string, address: string, path: string) => Promise<string>
   accountCreateLedgerEthereum: (name: string, address: string, path: string) => Promise<string>
   accountCreateDcent: (
     name: string,

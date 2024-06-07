@@ -1,7 +1,6 @@
 import {
   AccountAddressType,
   RequestAccountCreateLedgerEthereum,
-  RequestAccountCreateLedgerPolkadot,
   RequestAccountCreateLedgerSubstrate,
   RequestAccountCreateLedgerSubstrateGeneric,
   RequestAccountCreateLedgerSubstrateLegacy,
@@ -21,12 +20,8 @@ export type LedgerAccountDefSubstrateLegacy = RequestAccountCreateLedgerSubstrat
 export type LedgerAccountDefSubstrateMigration = RequestAccountCreateLedgerSubstrateMigration
 
 export type LedgerAccountDefSubstrate = RequestAccountCreateLedgerSubstrate
-export type LedgerAccountDefPolkadot = RequestAccountCreateLedgerPolkadot
 export type LedgerAccountDefEthereum = RequestAccountCreateLedgerEthereum
-export type LedgerAccountDef =
-  | LedgerAccountDefSubstrate
-  | LedgerAccountDefPolkadot
-  | LedgerAccountDefEthereum
+export type LedgerAccountDef = LedgerAccountDefSubstrate | LedgerAccountDefEthereum
 
 type LedgerCreationInputs = {
   type: AccountAddressType
@@ -37,11 +32,7 @@ type LedgerCreationInputs = {
 
 const createAccount = (account: LedgerAccountDef, substrateAppType?: SubstrateLedgerAppType) => {
   if (substrateAppType) {
-    if (substrateAppType === SubstrateLedgerAppType.Polkadot) {
-      // TODO remove
-      const { name, address, path } = account as LedgerAccountDefPolkadot
-      return api.accountCreateLedgerPolkadot(name, address, path)
-    } else return api.accountCreateLedgerSubstrate(account as LedgerAccountDefSubstrate)
+    return api.accountCreateLedgerSubstrate(account as LedgerAccountDefSubstrate)
   } else {
     // assume ethereum
     const { name, address, path } = account as LedgerAccountDefEthereum

@@ -129,7 +129,6 @@ export enum SubstrateLedgerAppType {
   Legacy = "substrate-legacy",
   Generic = "substrate-generic",
   Migration = "substrate-migration",
-  Polkadot = "polkadot",
 }
 
 export interface RequestAccountCreateFromSuri {
@@ -169,12 +168,6 @@ export type RequestAccountCreateLedgerSubstrate =
   | RequestAccountCreateLedgerSubstrateMigration
 
 export interface RequestAccountCreateLedgerEthereum {
-  name: string
-  address: string
-  path: string
-}
-
-export interface RequestAccountCreateLedgerPolkadot {
   name: string
   address: string
   path: string
@@ -274,7 +267,6 @@ export interface AccountsMessages {
   "pri(accounts.create.suri)": [RequestAccountCreateFromSuri, string]
   "pri(accounts.create.json)": [RequestAccountCreateFromJson, string[]]
   "pri(accounts.create.ledger.substrate)": [RequestAccountCreateLedgerSubstrate, string]
-  "pri(accounts.create.ledger.polkadot)": [RequestAccountCreateLedgerPolkadot, string]
   "pri(accounts.create.ledger.ethereum)": [RequestAccountCreateLedgerEthereum, string]
   "pri(accounts.create.dcent)": [RequestAccountCreateDcent, string]
   "pri(accounts.create.qr.substrate)": [RequestAccountCreateExternal, string]

@@ -8,7 +8,6 @@ import { SignDcentSubstrate } from "./SignDcentSubstrate"
 
 const SignLedgerSubstrateGeneric = lazy(() => import("./SignLedgerSubstrateGeneric"))
 const SignLedgerSubstrateLegacy = lazy(() => import("./SignLedgerSubstrateLegacy"))
-const SignLedgerPolkadot = lazy(() => import("./SignLedgerPolkadot"))
 
 export type SignHardwareSubstrateProps = {
   payload: SignerPayloadRaw | SignerPayloadJSON | undefined
@@ -30,8 +29,6 @@ const getSignHardwareComponent = (account: AccountJsonAny | null) => {
       switch (account?.ledgerApp) {
         case SubstrateLedgerAppType.Legacy:
           return SignLedgerSubstrateLegacy
-        case SubstrateLedgerAppType.Polkadot:
-          return SignLedgerPolkadot
         case SubstrateLedgerAppType.Generic:
           return SignLedgerSubstrateGeneric
         case SubstrateLedgerAppType.Migration:

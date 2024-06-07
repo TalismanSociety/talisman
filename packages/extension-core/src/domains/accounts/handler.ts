@@ -4,7 +4,7 @@ import keyring from "@polkadot/ui-keyring"
 import { assert } from "@polkadot/util"
 import { ethereumEncode, isEthereumAddress, mnemonicValidate } from "@polkadot/util-crypto"
 import { HexString } from "@polkadot/util/types"
-import { decodeAnyAddress, encodeAnyAddress, isValidSubstrateAddress, sleep } from "@talismn/util"
+import { decodeAnyAddress, encodeAnyAddress, sleep } from "@talismn/util"
 import { combineLatest } from "rxjs"
 
 import { getPairForAddressSafely } from "../../handlers/helpers"
@@ -33,7 +33,6 @@ import type {
   RequestAccountCreateFromJson,
   RequestAccountCreateFromSuri,
   RequestAccountCreateLedgerEthereum,
-  RequestAccountCreateLedgerPolkadot,
   RequestAccountCreateLedgerSubstrate,
   RequestAccountCreateSignet,
   RequestAccountCreateWatched,
@@ -217,43 +216,6 @@ export default class AccountsHandler extends ExtensionHandler {
     }
 
     return addresses
-  }
-
-  private accountsCreateLedgerPolkadot({
-    name,
-    address,
-    path,
-  }: RequestAccountCreateLedgerPolkadot) {
-    assert(isValidSubstrateAddress(address), "Not an Substrate address")
-
-    // ui-keyring's don't provide a method, yet, to add a ledger account for the new generic polkadot app
-    // => create the pair without helper
-    const pair = createPair(
-      {
-        type: "ed25519",
-        toSS58: encodeAddress,
-      },
-      {
-        publicKey: decodeAnyAddress(address),
-        secretKey: new Uint8Array(),
-      },
-      {
-        name,
-        hardwareType: "ledger",
-        isHardware: true,
-        origin: AccountType.Ledger,
-        path,
-      },
-      null
-    )
-
-    // add to the underlying keyring, allowing not to specify a password
-    keyring.keyring.addPair(pair)
-    keyring.saveAccount(pair)
-
-    this.captureAccountCreateEvent("substrate", "hardware")
-
-    return pair.address
   }
 
   private accountsCreateLedgerEthereum({
@@ -647,8 +609,6 @@ export default class AccountsHandler extends ExtensionHandler {
         return this.accountCreateDcent(request as RequestAccountCreateDcent)
       case "pri(accounts.create.ledger.substrate)":
         return this.accountsCreateLedgerSubstrate(request as RequestAccountCreateLedgerSubstrate)
-      case "pri(accounts.create.ledger.polkadot)":
-        return this.accountsCreateLedgerPolkadot(request as RequestAccountCreateLedgerPolkadot)
       case "pri(accounts.create.ledger.ethereum)":
         return this.accountsCreateLedgerEthereum(request as RequestAccountCreateLedgerEthereum)
       case "pri(accounts.create.qr.substrate)":

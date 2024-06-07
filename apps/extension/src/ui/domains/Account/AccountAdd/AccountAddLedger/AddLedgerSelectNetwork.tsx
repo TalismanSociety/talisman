@@ -23,7 +23,6 @@ import * as yup from "yup"
 
 import { useAddLedgerAccount } from "./context"
 import { ConnectLedgerEthereum } from "./Shared/ConnectLedgerEthereum"
-import { ConnectLedgerPolkadot } from "./Shared/ConnectLedgerPolkadot"
 import { ConnectLedgerSubstrateGeneric } from "./Shared/ConnectLedgerSubstrateGeneric"
 import { ConnectLedgerSubstrateLegacy } from "./Shared/ConnectLedgerSubstrateLegacy"
 import { ConnectLedgerSubstrateMigration } from "./Shared/ConnectLedgerSubstrateMigration"
@@ -322,35 +321,9 @@ export const AddLedgerSelectNetwork = () => {
                 disabled={!enableMigrationApp}
               />
             </div>
-            {/* <div className="mt-8">
-              <button
-                type="button"
-                className={classNames(
-                  substrateAppType === SubstrateLedgerAppType.Polkadot && "text-alert-success"
-                )}
-                onClick={handleSubstrateAppTypeClick(SubstrateLedgerAppType.Polkadot)}
-              >
-                {"@zondax/ledger-polkadot"}
-              </button>
-            </div> */}
+
             {substrateAppType === "substrate-legacy" && (
               <SubstrateLegacyNetworkSelect chain={chain} onChange={handleNetworkChange} />
-              // <>
-              //   <h2 className="text-body-disabled leading-paragraph mb-6 mt-12 text-base">
-              //     {t("2. Choose Network")}
-              //   </h2>
-              //   <Dropdown
-              //     propertyKey="id"
-              //     items={ledgerChains}
-              //     value={chain}
-              //     placeholder={t("Select a network")}
-              //     renderItem={renderOption}
-              //     onChange={handleNetworkChange}
-              //   />
-              //   <p className="text-body-disabled mt-6 text-sm">
-              //     {t("Please note: a legacy Ledger account can only be used on a single network.")}
-              //   </p>
-              // </>
             )}
             {substrateAppType === "substrate-migration" && (
               <SubstrateMigrationNetworkSelect
@@ -379,12 +352,6 @@ export const AddLedgerSelectNetwork = () => {
               )}
               {substrateAppType === SubstrateLedgerAppType.Generic && (
                 <ConnectLedgerSubstrateGeneric
-                  className="min-h-[11rem]"
-                  onReadyChanged={setIsLedgerReady}
-                />
-              )}
-              {substrateAppType === SubstrateLedgerAppType.Polkadot && (
-                <ConnectLedgerPolkadot
                   className="min-h-[11rem]"
                   onReadyChanged={setIsLedgerReady}
                 />

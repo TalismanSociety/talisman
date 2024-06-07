@@ -99,12 +99,7 @@ export const api: MessageTypes = {
     messageService.sendMessage("pri(accounts.create.json)", { unlockedPairs }),
   accountCreateLedgerSubstrate: (account) =>
     messageService.sendMessage("pri(accounts.create.ledger.substrate)", account),
-  accountCreateLedgerPolkadot: (name, address, path) =>
-    messageService.sendMessage("pri(accounts.create.ledger.polkadot)", {
-      name,
-      address,
-      path,
-    }),
+
   accountCreateLedgerEthereum: (name, address, path) =>
     messageService.sendMessage("pri(accounts.create.ledger.ethereum)", {
       name,
