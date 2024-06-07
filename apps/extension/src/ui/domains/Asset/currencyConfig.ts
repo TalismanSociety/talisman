@@ -52,6 +52,10 @@ const currencyIcons: Record<TokenRateCurrency, string | undefined> = {
 export const currencyOrder = Object.keys(SUPPORTED_CURRENCIES) as Array<
   keyof typeof SUPPORTED_CURRENCIES
 >
+export const sortCurrencies = (
+  a: keyof typeof SUPPORTED_CURRENCIES,
+  b: keyof typeof SUPPORTED_CURRENCIES
+) => currencyOrder.indexOf(a) - currencyOrder.indexOf(b)
 export const currencyConfig = Object.fromEntries(
   currencyOrder.map((id) => [
     id,
