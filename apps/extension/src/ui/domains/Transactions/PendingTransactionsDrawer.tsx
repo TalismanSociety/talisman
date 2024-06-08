@@ -189,7 +189,7 @@ const EvmTxActions: FC<{
   )
   const handleBlockExplorerClick = useCallback(() => {
     if (!hrefBlockExplorer) return
-    window.open(hrefBlockExplorer)
+    window.open(hrefBlockExplorer, "_blank")
     window.close()
   }, [hrefBlockExplorer])
 
@@ -482,7 +482,7 @@ const SubTxActions: FC<{
   )
   const handleBlockExplorerClick = useCallback(() => {
     if (!hrefBlockExplorer) return
-    window.open(hrefBlockExplorer)
+    window.open(hrefBlockExplorer, "_blank")
     window.close()
   }, [hrefBlockExplorer])
 

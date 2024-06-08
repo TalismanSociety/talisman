@@ -22,7 +22,7 @@ export const useShowStakingBanner = (balances: Balances) => {
   const colours = getBannerColours({ token })
 
   const handleClickStakingBanner = useCallback(() => {
-    window.open(TALISMAN_WEB_APP_STAKING_URL)
+    window.open(TALISMAN_WEB_APP_STAKING_URL, "_blank")
     genericEvent("open web app staking from banner", { from: "dashboard", symbol: token?.symbol })
   }, [genericEvent, token?.symbol])
 

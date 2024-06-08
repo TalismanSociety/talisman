@@ -17,7 +17,7 @@ export const StakingBannerInner = ({ addresses }: { addresses: string[] }) => {
   )
 
   const handleClickStakingBanner = useCallback(() => {
-    window.open(TALISMAN_WEB_APP_STAKING_URL)
+    window.open(TALISMAN_WEB_APP_STAKING_URL, "_blank")
     genericEvent("open web app staking from banner", { from: "popup" })
   }, [genericEvent])
 

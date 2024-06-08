@@ -9,7 +9,7 @@ export const signet = {
    * @returns
    */
   getVaults: async (signetUrl: string) => {
-    const newTab = window.open(`${addTrailingSlash(signetUrl)}connect`)
+    const newTab = window.open(`${addTrailingSlash(signetUrl)}connect`, "_blank")
 
     return new Promise<SignetVault[]>((resolve, reject) => {
       if (!newTab) return reject("Failed to open new tab")
