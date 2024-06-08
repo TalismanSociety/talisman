@@ -32,6 +32,7 @@ import {
   tokensMapAtomFamily,
 } from "@ui/atoms"
 import { AccountIcon } from "@ui/domains/Account/AccountIcon"
+import { AccountTypeIcon } from "@ui/domains/Account/AccountTypeIcon"
 import { Fiat } from "@ui/domains/Asset/Fiat"
 import { TokenLogo } from "@ui/domains/Asset/TokenLogo"
 import Tokens from "@ui/domains/Asset/Tokens"
@@ -49,8 +50,18 @@ import useToken from "@ui/hooks/useToken"
 import useTokens from "@ui/hooks/useTokens"
 import { isErc20Token } from "@ui/util/isErc20Token"
 import { isUniswapV2Token } from "@ui/util/isUniswapV2Token"
-import { atom, useAtomValue } from "jotai"
-import { ChangeEventHandler, FC, ReactNode, useCallback, useEffect, useMemo, useRef } from "react"
+import { atom, useAtom, useAtomValue } from "jotai"
+import { Dictionary, groupBy, sortBy } from "lodash"
+import {
+  ChangeEventHandler,
+  FC,
+  ReactNode,
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react"
 import { Trans, useTranslation } from "react-i18next"
 import { useNavigate } from "react-router-dom"
 import { useIntersection } from "react-use"
@@ -60,6 +71,7 @@ import {
   ContextMenuContent,
   ContextMenuItem,
   ContextMenuTrigger,
+  Dropdown,
   Toggle,
   Tooltip,
   TooltipContent,
@@ -70,6 +82,7 @@ import urlJoin from "url-join"
 import { DashboardLayout } from "../../../layout/DashboardLayout"
 import { AccountsStack } from "../Accounts/AccountIconsStack"
 import {
+  assetTableEnabledAccountsFilter,
   useAssetDiscoveryFetchTokenRates,
   useAssetDiscoveryTokenRate,
 } from "./useAssetDiscoveryTokenRates"
@@ -305,7 +318,13 @@ const AssetTable: FC = () => {
   // this hook is in charge of fetching the token rates for the tokens that were discovered
   useAssetDiscoveryFetchTokenRates()
 
-  if (!balances.length) return null
+  const { filteredBalances, filteredBalancesByTokenId, filteredTokenIds } = useAssetTableFilter(
+    balances,
+    balancesByTokenId,
+    tokenIds
+  )
+
+  if (!filteredBalances.length) return null
 
   return (
     <div className="text-body flex w-full min-w-[45rem] flex-col gap-4 text-left text-base">
@@ -316,8 +335,8 @@ const AssetTable: FC = () => {
         <div></div>
       </div>
 
-      {tokenIds.map((tokenId) => (
-        <AssetRow key={tokenId} tokenId={tokenId} assets={balancesByTokenId[tokenId]} />
+      {filteredTokenIds.map((tokenId) => (
+        <AssetRow key={tokenId} tokenId={tokenId} assets={filteredBalancesByTokenId[tokenId]} />
       ))}
     </div>
   )
@@ -520,6 +539,92 @@ const ScanInfo: FC = () => {
   )
 }
 
+const FilterAssetTableControls: FC = () => {
+  const { t } = useTranslation("admin")
+
+  const { lastScanAccounts: lastScanAddresses } = useAtomValue(assetDiscoveryScanAtom)
+
+  const accounts = useAccounts()
+  const lastScanAccounts = useMemo(
+    () => accounts.filter((a) => lastScanAddresses.includes(a.address)),
+    [accounts, lastScanAddresses]
+  )
+
+  const [enabledAccounts, setEnabledAccounts] = useAtom(assetTableEnabledAccountsFilter)
+  useEffect(() => {
+    setEnabledAccounts(lastScanAccounts)
+  }, [lastScanAccounts, setEnabledAccounts])
+
+  return (
+    <div className="flex h-16 w-full items-center gap-4">
+      <Dropdown
+        className="w-[32rem]"
+        multiple
+        placeholder={t("Filter accounts")}
+        items={lastScanAccounts}
+        /* TS hack because this is a `multiple` dropdown */
+        value={enabledAccounts as unknown as null}
+        propertyKey="address"
+        renderItem={(account) =>
+          Array.isArray(account) ? (
+            account.length === lastScanAccounts.length ? (
+              t("Filter accounts")
+            ) : (
+              t("{{num}} out of {{total}} accounts selected", {
+                num: account.length,
+                total: lastScanAccounts.length,
+              })
+            )
+          ) : (
+            <div className="text-body flex w-full items-center gap-3 text-base leading-none">
+              <AccountIcon
+                className="shrink-0 text-lg"
+                address={account.address}
+                genesisHash={account?.genesisHash}
+              />
+              <div className="overflow-hidden overflow-ellipsis whitespace-nowrap">
+                {account.name}
+              </div>
+              <AccountTypeIcon
+                className="text-primary"
+                origin={account.origin}
+                signetUrl={account.signetUrl as string | undefined}
+              />
+
+              <div className="flex-grow" />
+
+              <div
+                className={classNames(
+                  "mx-2 h-4 w-4 shrink-0 rounded-full",
+                  enabledAccounts.some((a) => a.address === account.address)
+                    ? "bg-primary"
+                    : "bg-grey-700"
+                )}
+              />
+            </div>
+          )
+        }
+        onChange={(account) => {
+          /* TS hack because this is a `multiple` dropdown */
+          const accounts = account as unknown as AccountJsonAny[]
+          setEnabledAccounts(accounts)
+        }}
+      />
+
+      {enabledAccounts.length !== lastScanAccounts.length && (
+        <Button type="button" small onClick={() => setEnabledAccounts(lastScanAccounts)}>
+          {t("Select all")}
+        </Button>
+      )}
+      {enabledAccounts.length !== lastScanAccounts.length && (
+        <Button type="button" small onClick={() => setEnabledAccounts([])}>
+          {t("Select none")}
+        </Button>
+      )}
+    </div>
+  )
+}
+
 const Notice: FC = () => {
   const { t } = useTranslation("admin")
   return (
@@ -596,7 +701,48 @@ export const AssetDiscoveryPage = () => {
       <Spacer small />
       <ScanInfo />
       <Spacer large />
+      <FilterAssetTableControls />
+      <Spacer large />
       <AssetTable />
     </DashboardLayout>
   )
+}
+
+const useAssetTableFilter = (
+  balances: DiscoveredBalance[],
+  balancesByTokenId: Dictionary<DiscoveredBalance[]>,
+  tokenIds: string[]
+) => {
+  const { lastScanAccounts } = useAtomValue(assetDiscoveryScanAtom)
+  const enabledAccounts = useAtomValue(assetTableEnabledAccountsFilter)
+  const tokensMap = useAtomValue(tokensMapAtomFamily({ activeOnly: false, includeTestnets: true }))
+
+  const [filteredBalances, setFilteredBalances] = useState(balances)
+  const [filteredBalancesByTokenId, setFilteredBalancesByTokenId] = useState(balancesByTokenId)
+  const [filteredTokenIds, setFilteredTokenIds] = useState(tokenIds)
+  useEffect(() => {
+    if (lastScanAccounts.length === enabledAccounts.length) {
+      setFilteredBalances(balances)
+      setFilteredBalancesByTokenId(balancesByTokenId)
+      setFilteredTokenIds(tokenIds)
+      return
+    }
+
+    const balancesByAccount = groupBy(balances, (b) => b.address)
+    const filteredBalances = enabledAccounts.flatMap(
+      (account) => balancesByAccount[account.address]
+    )
+    const filteredBalancesByTokenId = groupBy(filteredBalances, (b) => b.tokenId)
+    const filteredTokenIds = sortBy(
+      Object.keys(filteredBalancesByTokenId).filter((id) => !!tokensMap[id]), // some tokens may have been deleted since the scan finished
+      (tokenId) => Number(tokensMap[tokenId]?.evmNetwork?.id ?? 0),
+      (tokenId) => tokensMap[tokenId]?.symbol
+    )
+
+    setFilteredBalances(filteredBalances)
+    setFilteredBalancesByTokenId(filteredBalancesByTokenId)
+    setFilteredTokenIds(filteredTokenIds)
+  }, [balances, balancesByTokenId, enabledAccounts, lastScanAccounts.length, tokenIds, tokensMap])
+
+  return { filteredBalances, filteredBalancesByTokenId, filteredTokenIds }
 }

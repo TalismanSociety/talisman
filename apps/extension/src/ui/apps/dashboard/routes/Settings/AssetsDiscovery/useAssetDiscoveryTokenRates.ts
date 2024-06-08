@@ -1,4 +1,4 @@
-import { remoteConfigStore } from "@extension/core"
+import { AccountJsonAny, remoteConfigStore } from "@extension/core"
 import { log } from "@extension/shared"
 import { TokenId, TokenList } from "@talismn/chaindata-provider"
 import { TokenRatesList, fetchTokenRates } from "@talismn/token-rates"
@@ -99,3 +99,5 @@ export const useAssetDiscoveryFetchTokenRates = () => {
     }
   }, [canFetch, missingTokenRatesList, setTokenRates])
 }
+
+export const assetTableEnabledAccountsFilter = atom<AccountJsonAny[]>([])

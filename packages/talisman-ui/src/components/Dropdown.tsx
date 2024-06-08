@@ -27,6 +27,7 @@ export type DropdownProps<T extends DropdownOption> = {
   className?: string
   buttonClassName?: string
   optionClassName?: string
+  multiple?: boolean
 }
 
 export const Dropdown = <T extends Record<string, unknown>>({
@@ -42,8 +43,9 @@ export const Dropdown = <T extends Record<string, unknown>>({
   placeholder,
   renderItem = DEFAULT_RENDER,
   onChange,
+  multiple,
 }: DropdownProps<T>) => (
-  <Listbox disabled={disabled} value={value} onChange={onChange}>
+  <Listbox disabled={disabled} value={value} onChange={onChange} multiple={multiple}>
     {({ open }) => (
       <div className={className}>
         {label && <Listbox.Label className="text-body-secondary mb-8 block">{label}</Listbox.Label>}
