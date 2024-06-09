@@ -1,7 +1,7 @@
 import { SignerPayloadJSON, SignerPayloadRaw } from "@extension/core"
 import { log } from "@extension/shared"
 import { TypeRegistry } from "@polkadot/types"
-import { hexToU8a } from "@polkadot/util"
+import { hexToU8a, u8aToHex, u8aWrapBytes } from "@polkadot/util"
 import { classNames } from "@talismn/util"
 import { useLedgerSubstrate } from "@ui/hooks/ledger/useLedgerSubstrate"
 import { useAccountByAddress } from "@ui/hooks/useAccountByAddress"
@@ -55,17 +55,17 @@ const SignLedgerSubstrate: FC<SignHardwareSubstrateProps> = ({
     if (!payload) return
 
     if (isRawPayload(payload)) {
-      setUnsigned(hexToU8a(payload.data))
+      setUnsigned(u8aWrapBytes(payload.data))
       setIsRaw(true)
       return
+    } else {
+      if (payload.signedExtensions) registry.setSignedExtensions(payload.signedExtensions)
+      const extrinsicPayload = registry.createType("ExtrinsicPayload", payload, {
+        version: payload.version,
+      })
+      setUnsigned(extrinsicPayload.toU8a(true))
+      setIsRaw(false)
     }
-
-    if (payload.signedExtensions) registry.setSignedExtensions(payload.signedExtensions)
-    const extrinsicPayload = registry.createType("ExtrinsicPayload", payload, {
-      version: payload.version,
-    })
-    setUnsigned(extrinsicPayload.toU8a(true))
-    setIsRaw(false)
   }, [payload, t])
 
   const onRefresh = useCallback(() => {
@@ -79,9 +79,13 @@ const SignLedgerSubstrate: FC<SignHardwareSubstrateProps> = ({
     setError(null)
 
     try {
-      const { signature } = await (isRaw
+      let { signature } = await (isRaw
         ? ledger.signRaw(unsigned, account.accountIndex, account.addressOffset)
         : ledger.sign(unsigned, account.accountIndex, account.addressOffset))
+
+      if (isRaw)
+        // remove first byte, which contains signature type, which is 0 here (ed25519)
+        signature = u8aToHex(hexToU8a(signature).slice(1))
 
       // await to keep loader spinning until popup closes
       await onSigned({ signature })
