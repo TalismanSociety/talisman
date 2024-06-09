@@ -1,4 +1,5 @@
 import { DEBUG } from "@extension/shared"
+import { supportedApps } from "@zondax/ledger-substrate"
 import { AccountJsonHardwareSubstrate } from "extension-core"
 import { t } from "i18next"
 
@@ -214,10 +215,26 @@ export const getLedgerErrorProps = (err: LedgerError, appName: string): LedgerEr
   }
 }
 
-// 0x162, in hex, 354 in decimal: is the official derivation path for Polkadot, chains not on it presently will need to migrate.
-export const getPolkadotLedgerDerivationPath = (accountIndex = 0, addressIndex = 0) =>
-  `m/44'/354'/${accountIndex}'/0'/${addressIndex}'`
+type SupportedApp = (typeof supportedApps)[number]
+export const getPolkadotLedgerDerivationPath = ({
+  accountIndex = 0,
+  addressOffset = 0,
+  app = supportedApps.find((a) => a.name === "Polkadot"),
+}: {
+  accountIndex?: number
+  addressOffset?: number
+  app?: SupportedApp
+}) => {
+  if (!app) throw new Error("Missing argument: app")
 
+  const HARDENED = 0x80000000
+  const slip = app.slip0044 - HARDENED
+
+  //354 for polkadot
+  return `m/44'/${slip}'/${accountIndex}'/0'/${addressOffset}'`
+}
+
+// TODO delete ?
 export const getLedgerSubstrateAccountIds = (account: AccountJsonHardwareSubstrate) => {
   if (typeof account.accountIndex !== "number" || typeof account.addressOffset !== "number")
     throw new Error("Invalid polkadot ledger account")

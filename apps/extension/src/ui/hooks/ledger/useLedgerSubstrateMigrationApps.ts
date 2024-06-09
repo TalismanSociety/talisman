@@ -27,6 +27,7 @@ const LEDGER_MIRATION_APPS: Record<string, ChainId> = {
   Interlay: "interlay",
   Parallel: "parallel",
   Picasso: "picasso",
+  Polkadot: "polkadot",
   Composable: "composable",
   HydraDX: "hydradx",
   Stafi: "stafi",
@@ -58,12 +59,12 @@ export const useLedgerSubstrateMigrationApps = () => {
   const chainsMap = useAllChainsMap()
 
   return useMemo(() => {
-    const polkadot = supportedApps.find((app) => app.name === "Polkadot")
+    // const polkadot = supportedApps.find((app) => app.name === "Polkadot") // TODO UNCOMMENT
 
     return (
       supportedApps
         // exclude the apps that use same DP & app ID as Polkadot, they don't need migration
-        .filter((app) => app.slip0044 !== polkadot?.slip0044 && app.cla !== polkadot?.cla)
+        // .filter((app) => app.slip0044 !== polkadot?.slip0044 && app.cla !== polkadot?.cla) // TODO UNCOMMENT
         .map<SubstrateMigrationApp>((app) => {
           const chain = chainsMap[LEDGER_MIRATION_APPS[app.name]] ?? null
           const { name, slip0044: slip44, cla, ss58_addr_type: prefix } = app

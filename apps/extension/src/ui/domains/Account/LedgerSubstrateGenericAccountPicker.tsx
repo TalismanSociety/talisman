@@ -1,5 +1,6 @@
 import { convertAddress } from "@talisman/util/convertAddress"
 import { LedgerAccountDefSubstrateGeneric } from "@ui/domains/Account/AccountAdd/AccountAddLedger/context"
+import { getPolkadotLedgerDerivationPath } from "@ui/hooks/ledger/common"
 import { useLedgerSubstrateGeneric } from "@ui/hooks/ledger/useLedgerSubstrateGeneric"
 import { AccountImportDef, useAccountImportBalances } from "@ui/hooks/useAccountImportBalances"
 import useAccounts from "@ui/hooks/useAccounts"
@@ -41,12 +42,13 @@ const useLedgerSubstrateGenericAccounts = (
         const accountIndex = skip + i
         const addressOffset = 0
 
-        const HARDENED = 0x80000000
-        const account = HARDENED + accountIndex
-        const change = HARDENED
-        const addressIndex = HARDENED + addressOffset
+        // const HARDENED = 0x80000000
+        // const account = HARDENED + accountIndex
+        // const change = HARDENED
+        // const addressIndex = HARDENED + addressOffset
+        const path = getPolkadotLedgerDerivationPath({ accountIndex, addressOffset })
 
-        const { address } = await ledger.getAddress(account, change, addressIndex, 42)
+        const { address } = await ledger.getAddress(path, 42, false)
 
         newAccounts[i] = {
           accountIndex,

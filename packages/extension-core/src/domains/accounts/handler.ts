@@ -315,7 +315,7 @@ export default class AccountsHandler extends ExtensionHandler {
       name,
       origin: AccountType.Ledger,
       ledgerApp,
-      type: "ed25519",
+      type: "ecdsa",
     }
 
     if (

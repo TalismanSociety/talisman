@@ -50,7 +50,7 @@
     "turbo": "latest"
   },
   "resolutions": {
-    "@zondax/ledger-substrate": "0.43.0",
+    "@zondax/ledger-substrate": "0.44.2",
     "@polkadot/apps-config": "0.132.1",
     "@polkadot/api-augment": "11.2.1",
     "@polkadot/api-base": "11.2.1",

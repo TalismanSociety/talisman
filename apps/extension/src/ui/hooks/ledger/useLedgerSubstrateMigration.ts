@@ -1,137 +1,144 @@
-import Transport from "@ledgerhq/hw-transport"
-import TransportWebUSB from "@ledgerhq/hw-transport-webusb"
-import { throwAfter } from "@talismn/util"
-import { PolkadotGenericApp, newMigrationGenericApp } from "@zondax/ledger-substrate"
-import { log } from "extension-shared"
-import { useCallback, useEffect, useMemo, useRef, useState } from "react"
-import { useTranslation } from "react-i18next"
+// import Transport from "@ledgerhq/hw-transport"
+// import TransportWebUSB from "@ledgerhq/hw-transport-webusb"
+// import { throwAfter } from "@talismn/util"
+// import { PolkadotGenericApp,   } from "@zondax/ledger-substrate"
+// import { log } from "extension-shared"
+// import { useCallback, useEffect, useMemo, useRef, useState } from "react"
+// import { useTranslation } from "react-i18next"
 
-import { useSetInterval } from "../useSetInterval"
-import { LedgerError, LedgerStatus, getLedgerErrorProps } from "./common"
-import { useLedgerSubstrateMigrationApp } from "./useLedgerSubstrateMigrationApps"
+// import { useSetInterval } from "../useSetInterval"
+// import { LedgerError, LedgerStatus, getLedgerErrorProps } from "./common"
+// import { useLedgerSubstrateMigrationApp } from "./useLedgerSubstrateMigrationApps"
 
-export const useLedgerSubstrateMigration = (appName?: string, persist = false) => {
-  const { t } = useTranslation()
-  const app = useLedgerSubstrateMigrationApp(appName)
-  const [isLoading, setIsLoading] = useState(false)
-  const [refreshCounter, setRefreshCounter] = useState(0)
-  const [error, setError] = useState<Error>()
-  const [isReady, setIsReady] = useState(false)
-  const [ledger, setLedger] = useState<PolkadotGenericApp | null>(null)
+// export const useLedgerSubstrateMigration = (appName?: string, persist = false) => {
+//   const { t } = useTranslation()
+//   const app = useLedgerSubstrateMigrationApp(appName)
+//   const [isLoading, setIsLoading] = useState(false)
+//   const [refreshCounter, setRefreshCounter] = useState(0)
+//   const [error, setError] = useState<Error>()
+//   const [isReady, setIsReady] = useState(false)
+//   const [ledger, setLedger] = useState<PolkadotGenericApp | null>(null)
 
-  const refConnecting = useRef(false)
-  const refTransport = useRef<Transport | null>(null)
+//   const refConnecting = useRef(false)
+//   const refTransport = useRef<Transport | null>(null)
 
-  useEffect(() => {
-    return () => {
-      // ensures the transport is closed on unmount, allowing other tabs to access the ledger
-      // the persist argument can be used to prevent this behaviour, when the hook is used
-      // in two components that need to share the ledger connection
-      if (!persist && ledger?.transport) {
-        ledger.transport.close()
-      }
-    }
-  }, [ledger, persist])
+//   useEffect(() => {
+//     return () => {
+//       // ensures the transport is closed on unmount, allowing other tabs to access the ledger
+//       // the persist argument can be used to prevent this behaviour, when the hook is used
+//       // in two components that need to share the ledger connection
+//       if (!persist && ledger?.transport) {
+//         ledger.transport.close()
+//       }
+//     }
+//   }, [ledger, persist])
 
-  const connectLedger = useCallback(
-    async (resetError?: boolean) => {
-      if (!app) return
-      if (refConnecting.current) return
-      refConnecting.current = true
+//   const connectLedger = useCallback(
+//     async (resetError?: boolean) => {
+//       if (!app) return
+//       if (refConnecting.current) return
+//       refConnecting.current = true
 
-      setIsReady(false)
-      setIsLoading(true)
-      // when displaying an error and polling silently, on the UI we don't want the error to disappear
-      // so error should be cleared explicitly
-      if (resetError) setError(undefined)
+//       setIsReady(false)
+//       setIsLoading(true)
+//       // when displaying an error and polling silently, on the UI we don't want the error to disappear
+//       // so error should be cleared explicitly
+//       if (resetError) setError(undefined)
 
-      try {
-        await refTransport.current?.close()
-        refTransport.current = await TransportWebUSB.create()
+//       try {
+//         await refTransport.current?.close()
+//         refTransport.current = await TransportWebUSB.create()
 
-        const ledger = newMigrationGenericApp(refTransport.current, app.name, "hello web3")
+//         console.log({ app })
 
-        // verify that Ledger connection is ready by querying first address
-        const response = await Promise.race([
-          ledger.getAddress(0, 0, 0, app.prefix, false),
-          throwAfter(5_000, "Timeout on Ledger Substrate Migration connection"),
-        ])
+//         const ledger = new PolkadotGenericApp(refTransport.current, app.name, "")
 
-        if (response.error_message !== "No errors")
-          throw new LedgerError(response.error_message, "LedgerError", response.return_code)
+//         ledger.sign()
 
-        setLedger(ledger)
-        setError(undefined)
-        setIsReady(true)
-      } catch (err) {
-        log.error("connectLedger Substrate Migration : " + (err as LedgerError).message, { err })
+//         //const path = ledger.serializePath()
+//         ledger.signMigration
 
-        try {
-          await refTransport.current?.close()
-          refTransport.current = null
-        } catch (err2) {
-          log.error("Can't close ledger transport", err2)
-          // ignore
-        }
+//         // verify that Ledger connection is ready by querying first address
+//         const response = await Promise.race([
+//           ledger.getAddress(0, 0, 0, app.prefix, false),
+//           throwAfter(5_000, "Timeout on Ledger Substrate Migration connection"),
+//         ])
 
-        setLedger(null)
-        setError(err as Error)
-      }
+//         if (response.error_message !== "No errors")
+//           throw new LedgerError(response.error_message, "LedgerError", response.return_code)
 
-      refConnecting.current = false
-      setIsLoading(false)
-    },
-    [app]
-  )
+//         setLedger(ledger)
+//         setError(undefined)
+//         setIsReady(true)
+//       } catch (err) {
+//         log.error("connectLedger Substrate Migration : " + (err as LedgerError).message, { err })
 
-  const { status, message, requiresManualRetry } = useMemo<{
-    status: LedgerStatus
-    message: string
-    requiresManualRetry: boolean
-  }>(() => {
-    if (error) return getLedgerErrorProps(error, "Polkadot Migration")
+//         try {
+//           await refTransport.current?.close()
+//           refTransport.current = null
+//         } catch (err2) {
+//           log.error("Can't close ledger transport", err2)
+//           // ignore
+//         }
 
-    if (isLoading)
-      return {
-        status: "connecting",
-        message: t(`Connecting to Ledger...`),
-        requiresManualRetry: false,
-      }
+//         setLedger(null)
+//         setError(err as Error)
+//       }
 
-    if (isReady)
-      return {
-        status: "ready",
-        message: t("Successfully connected to Ledger."),
-        requiresManualRetry: false,
-      }
+//       refConnecting.current = false
+//       setIsLoading(false)
+//     },
+//     [app]
+//   )
 
-    return { status: "unknown", message: "", requiresManualRetry: false }
-  }, [isReady, isLoading, error, t])
+//   const { status, message, requiresManualRetry } = useMemo<{
+//     status: LedgerStatus
+//     message: string
+//     requiresManualRetry: boolean
+//   }>(() => {
+//     if (error) return getLedgerErrorProps(error, "Polkadot Migration")
 
-  // automatic connection (startup + polling)
-  useEffect(() => {
-    connectLedger()
-  }, [connectLedger, refreshCounter])
+//     if (isLoading)
+//       return {
+//         status: "connecting",
+//         message: t(`Connecting to Ledger...`),
+//         requiresManualRetry: false,
+//       }
 
-  // if not connected, poll every 2 seconds
-  // this will recreate the ledger instance which triggers automatic connection
-  useSetInterval(() => {
-    if (!isLoading && !requiresManualRetry && ["warning", "error", "unknown"].includes(status))
-      setRefreshCounter((idx) => idx + 1)
-  }, 2000)
+//     if (isReady)
+//       return {
+//         status: "ready",
+//         message: t("Successfully connected to Ledger."),
+//         requiresManualRetry: false,
+//       }
 
-  // manual connection
-  const refresh = useCallback(() => {
-    connectLedger(true)
-  }, [connectLedger])
+//     return { status: "unknown", message: "", requiresManualRetry: false }
+//   }, [isReady, isLoading, error, t])
 
-  return {
-    isLoading,
-    isReady,
-    requiresManualRetry,
-    status,
-    message,
-    ledger,
-    refresh,
-  }
-}
+//   // automatic connection (startup + polling)
+//   useEffect(() => {
+//     connectLedger()
+//   }, [connectLedger, refreshCounter])
+
+//   // if not connected, poll every 2 seconds
+//   // this will recreate the ledger instance which triggers automatic connection
+//   useSetInterval(() => {
+//     if (!isLoading && !requiresManualRetry && ["warning", "error", "unknown"].includes(status))
+//       setRefreshCounter((idx) => idx + 1)
+//   }, 2000)
+
+//   // manual connection
+//   const refresh = useCallback(() => {
+//     connectLedger(true)
+//   }, [connectLedger])
+
+//   return {
+//     isLoading,
+//     isReady,
+//     requiresManualRetry,
+//     status,
+//     message,
+//     ledger,
+//     refresh,
+//   }
+// }

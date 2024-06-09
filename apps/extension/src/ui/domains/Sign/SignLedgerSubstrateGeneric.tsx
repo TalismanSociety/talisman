@@ -9,7 +9,7 @@ import { wrapBytes } from "@polkadot/extension-dapp/wrapBytes"
 import { TypeRegistry } from "@polkadot/types"
 import { hexToU8a } from "@polkadot/util"
 import { classNames } from "@talismn/util"
-import { LedgerError, getLedgerSubstrateAccountIds } from "@ui/hooks/ledger/common"
+import { getPolkadotLedgerDerivationPath } from "@ui/hooks/ledger/common"
 import { useLedgerSubstrateGeneric } from "@ui/hooks/ledger/useLedgerSubstrateGeneric"
 import { useAccountByAddress } from "@ui/hooks/useAccountByAddress"
 import { PolkadotGenericApp } from "@zondax/ledger-substrate"
@@ -26,15 +26,24 @@ import { LedgerSigningStatus } from "./LedgerSigningStatus"
 import { SignHardwareSubstrateProps } from "./SignHardwareSubstrate"
 import { useShortenedMetadata } from "./useShortenedMetadata"
 
-const sign = (
+type RawLedgerError = {
+  errorMessage: string
+  name?: string
+  returnCode: number
+}
+
+// TODO remove async
+const sign = async (
   ledger: PolkadotGenericApp,
   payload: SignerPayloadJSON | SignerPayloadRaw,
   account: AccountJsonHardwareSubstrate,
   metadata?: string | null
 ) => {
-  const { accountIndex, change, addressIndex } = getLedgerSubstrateAccountIds(
-    account as AccountJsonHardwareSubstrate
-  )
+  // const { accountIndex, change, addressIndex } = getLedgerSubstrateAccountIds(
+  //   account as AccountJsonHardwareSubstrate
+  // )
+
+  const path = getPolkadotLedgerDerivationPath(account)
 
   if (isJsonPayload(payload)) {
     if (!metadata) throw new Error("Missing metadata")
@@ -45,19 +54,50 @@ const sign = (
       version: payload.version,
     })
 
-    return ledger.signImpl(
-      accountIndex,
-      change,
-      addressIndex,
-      2,
+    // const buffMetadata = await ledger.getTxMetadata(
+    //   Buffer.from(unsigned.toU8a(true)),
+    //   "roc",
+    //   "https://api.zondax.ch/polkadot/transaction/metadata"
+    // )
+
+    // console.log({ path })
+
+    // try {
+    //   const hexMetadata = u8aToHex(
+    //     await ledger.getTxMetadata(
+    //       Buffer.from(unsigned.toU8a(true)),
+    //       "roc",
+    //       "https://api.zondax.ch/polkadot/transaction/metadata"
+    //     ),
+    //     undefined,
+    //     false
+    //   )
+
+    //   console.log("metada check", metadata === hexMetadata, { metadata, hexMetadata })
+    // } catch (err) {
+    //   console.error("Faield to fetch metadata from zondax", { err })
+    // }
+
+    // return ledger.signImpl(
+    //   accountIndex,
+    //   change,
+    //   addressIndex,
+    //   2,
+    //   Buffer.from(unsigned.toU8a(true)),
+    //   Buffer.from(hexToU8a(metadata))
+    // )
+    return ledger.signWithMetadata(
+      path,
       Buffer.from(unsigned.toU8a(true)),
+      //buffMetadata
       Buffer.from(hexToU8a(metadata))
     )
   }
 
   // raw payload
   const unsigned = wrapBytes(payload.data)
-  return ledger.signRaw(accountIndex, change, addressIndex, Buffer.from(unsigned))
+
+  return ledger.signRaw(path, Buffer.from(unsigned))
 }
 
 const SignLedgerSubstrateGeneric: FC<SignHardwareSubstrateProps> = ({
@@ -125,8 +165,8 @@ const SignLedgerSubstrateGeneric: FC<SignHardwareSubstrateProps> = ({
         metadata
       )
 
-      if (response.error_message !== "No errors")
-        throw new LedgerError(response.error_message, "LedgerError", response.return_code)
+      // if (response.error_message !== "No errors")
+      //   throw new LedgerError(response.error_message, "LedgerError", response.return_code)
 
       // await to keep loader spinning until popup closes
       await onSigned({
@@ -134,7 +174,7 @@ const SignLedgerSubstrateGeneric: FC<SignHardwareSubstrateProps> = ({
       })
     } catch (error) {
       log.error("signLedger", { error })
-      const message = (error as Error)?.message
+      const message = (error as Error)?.message ?? (error as RawLedgerError)?.errorMessage
       switch (message) {
         case "Transaction rejected":
           return

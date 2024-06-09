@@ -25,7 +25,8 @@ import { useAddLedgerAccount } from "./context"
 import { ConnectLedgerEthereum } from "./Shared/ConnectLedgerEthereum"
 import { ConnectLedgerSubstrateGeneric } from "./Shared/ConnectLedgerSubstrateGeneric"
 import { ConnectLedgerSubstrateLegacy } from "./Shared/ConnectLedgerSubstrateLegacy"
-import { ConnectLedgerSubstrateMigration } from "./Shared/ConnectLedgerSubstrateMigration"
+
+//import { ConnectLedgerSubstrateMigration } from "./Shared/ConnectLedgerSubstrateMigration"
 
 type FormData = {
   chainId: string
@@ -343,13 +344,13 @@ export const AddLedgerSelectNetwork = () => {
                   chainId={chainId}
                 />
               )}
-              {substrateAppType === SubstrateLedgerAppType.Migration && (
+              {/* {substrateAppType === SubstrateLedgerAppType.Migration && (
                 <ConnectLedgerSubstrateMigration
                   className="min-h-[11rem]"
                   onReadyChanged={setIsLedgerReady}
                   migrationAppName={migrationAppName}
                 />
-              )}
+              )} */}
               {substrateAppType === SubstrateLedgerAppType.Generic && (
                 <ConnectLedgerSubstrateGeneric
                   className="min-h-[11rem]"

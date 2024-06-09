@@ -1,4 +1,4 @@
-import { LedgerEthDerivationPathType } from "@extension/core"
+import { LedgerEthDerivationPathType, SubstrateLedgerAppType } from "@extension/core"
 import { yupResolver } from "@hookform/resolvers/yup"
 import { notify, notifyUpdate } from "@talisman/components/Notifications"
 import { sleep } from "@talismn/util"
@@ -12,6 +12,7 @@ import { Button, Dropdown } from "talisman-ui"
 import * as yup from "yup"
 
 import { LedgerSubstrateGenericAccountPicker } from "../../LedgerSubstrateGenericAccountPicker"
+//import { LedgerSubstrateMigrationAccountPicker } from "../../LedgerSubstrateMigrationAccountPicker"
 import { LedgerAccountDef, useAddLedgerAccount } from "./context"
 
 const options: Record<LedgerEthDerivationPathType, string> = {
@@ -173,16 +174,21 @@ export const AddLedgerSelectAccount = () => {
         </p>
         {data.type === "sr25519" && (
           <>
-            {data.substrateAppType === "substrate-legacy" && (
+            {data.substrateAppType === SubstrateLedgerAppType.Legacy && (
               <LedgerSubstrateAccountPicker
                 chainId={data.chainId as string}
                 onChange={handleAccountsChange}
               />
             )}
-
-            {data.substrateAppType === "substrate-generic" && (
+            {data.substrateAppType === SubstrateLedgerAppType.Generic && (
               <LedgerSubstrateGenericAccountPicker onChange={handleAccountsChange} />
             )}
+            {/* {data.substrateAppType === SubstrateLedgerAppType.Migration && (
+              <LedgerSubstrateMigrationAccountPicker
+                chainId={data.chainId as string}
+                onChange={handleAccountsChange}
+              />
+            )} */}
           </>
         )}
         {data.type === "ethereum" && (

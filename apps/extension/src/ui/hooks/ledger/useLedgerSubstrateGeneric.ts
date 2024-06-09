@@ -1,13 +1,18 @@
 import Transport from "@ledgerhq/hw-transport"
 import TransportWebUSB from "@ledgerhq/hw-transport-webusb"
 import { throwAfter } from "@talismn/util"
-import { PolkadotGenericApp, newPolkadotGenericApp } from "@zondax/ledger-substrate"
+import { PolkadotGenericApp } from "@zondax/ledger-substrate"
 import { log } from "extension-shared"
 import { useCallback, useEffect, useMemo, useRef, useState } from "react"
 import { useTranslation } from "react-i18next"
 
 import { useSetInterval } from "../useSetInterval"
-import { LedgerError, LedgerStatus, getLedgerErrorProps } from "./common"
+import {
+  LedgerError,
+  LedgerStatus,
+  getLedgerErrorProps,
+  getPolkadotLedgerDerivationPath,
+} from "./common"
 
 export const useLedgerSubstrateGeneric = (persist = false) => {
   const { t } = useTranslation()
@@ -45,16 +50,21 @@ export const useLedgerSubstrateGeneric = (persist = false) => {
       await refTransport.current?.close()
       refTransport.current = await TransportWebUSB.create()
 
-      const ledger = newPolkadotGenericApp(refTransport.current, "hello", "web3")
+      const ledger = new PolkadotGenericApp(refTransport.current, "", "")
+
+      const bip44path = getPolkadotLedgerDerivationPath({})
 
       // verify that Ledger connection is ready by querying first address
-      const response = await Promise.race([
-        ledger.getAddress(0, 0, 0, 42, false),
+      //const response =
+      await Promise.race([
+        ledger.getAddress(bip44path, 42, false),
         throwAfter(5_000, "Timeout on Ledger Substrate Generic connection"),
       ])
 
-      if (response.error_message !== "No errors")
-        throw new LedgerError(response.error_message, "LedgerError", response.return_code)
+      // console.log("connectLedger: Ledger response", response)
+
+      // if (response.error_message !== "No errors")
+      //   throw new LedgerError(response.error_message, "LedgerError", response.return_code)
 
       setLedger(ledger)
       setError(undefined)
