@@ -6,6 +6,7 @@ import { Button } from "talisman-ui"
 import { Section } from "../../shared/Section"
 import { useWallet } from "../shared/useWallet"
 
+/**
 const TEST_MESSAGE = `First line of the message
 
 3rd line
@@ -27,6 +28,9 @@ const TEST_MESSAGE = `First line of the message
 
 20th line and this has a lot of text a lot of text a lot of text a lot of text a lot of text a lot of text.
 `
+ */
+
+const TEST_MESSAGE = `This is a short message that should display on ledger screen.`
 
 export const SignMessage = () => (
   <Section title="Sign message">
@@ -60,11 +64,10 @@ const SignMessageInner = () => {
     setIsProcessing(false)
   }, [account, extension?.signer])
 
-  const isValid = useMemo(() => {
-    return (
-      result &&
-      signatureVerify(TEST_MESSAGE, result.signature as string, account?.address as string)
-    )
+  const verify = useMemo(() => {
+    return result
+      ? signatureVerify(TEST_MESSAGE, result.signature as string, account?.address as string)
+      : null
   }, [account?.address, result])
 
   return (
@@ -78,8 +81,13 @@ const SignMessageInner = () => {
         Sign Message
       </Button>
       {result && <pre className="my-8 ">{JSON.stringify(result, undefined, 2)}</pre>}
+      {verify && (
+        <pre className="my-8 ">
+          {JSON.stringify({ ...verify, publicKey: "[redacted]" }, undefined, 2)}
+        </pre>
+      )}
       {result ? (
-        isValid ? (
+        verify?.isValid ? (
           <div className="text-alert-success my-8 ">Signature is valid</div>
         ) : (
           <div className="text-alert-error my-8 ">Signature is invalid</div>
