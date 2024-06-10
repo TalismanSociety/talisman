@@ -11,6 +11,8 @@
     "clean": "rm -rf dist && rm -rf .turbo rm -rf node_modules"
   },
   "dependencies": {
+    "@polkadot/util": "12.6.2",
+    "@polkadot/util-crypto": "12.6.2",
     "@sentry/browser": "7.92.0",
     "@sentry/integrations": "7.92.0",
     "@sentry/react": "7.92.0",

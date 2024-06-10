@@ -24,7 +24,7 @@ export type CustomEvmUniswapV2TokenCreate = Pick<
   | "type"
   | "symbol"
   | "decimals"
-  | "poolAddress"
+  | "contractAddress"
   | "symbol0"
   | "symbol1"
   | "decimals0"

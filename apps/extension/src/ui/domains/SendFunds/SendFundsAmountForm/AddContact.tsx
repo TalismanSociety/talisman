@@ -1,9 +1,9 @@
 import { isEthereumAddress } from "@polkadot/util-crypto"
 import { convertAddress } from "@talisman/util/convertAddress"
-import { AccountAddressType } from "@talisman/util/getAddressType"
 import { UserPlusIcon } from "@talismn/icons"
 import { useAccountByAddress } from "@ui/hooks/useAccountByAddress"
 import { useAddressBook } from "@ui/hooks/useAddressBook"
+import { AccountAddressType } from "extension-shared"
 import { useMemo } from "react"
 import { useTranslation } from "react-i18next"
 import { PillButton, useOpenClose } from "talisman-ui"
@@ -11,7 +11,7 @@ import { PillButton, useOpenClose } from "talisman-ui"
 import { AddToAddressBookDrawer } from "../Drawers/AddToAddressBookDrawer"
 import { useSendFunds } from "../useSendFunds"
 
-export const AddContact = () => {
+export const AddContact = ({ tokenGenesisHash }: { tokenGenesisHash?: string }) => {
   const { t } = useTranslation("send-funds")
   const { to } = useSendFunds()
   const account = useAccountByAddress(to)
@@ -46,6 +46,7 @@ export const AddContact = () => {
         close={addressBookContactDrawer.close}
         address={to}
         addressType={addressType}
+        tokenGenesisHash={tokenGenesisHash}
         asChild={false}
         containerId="main"
       />

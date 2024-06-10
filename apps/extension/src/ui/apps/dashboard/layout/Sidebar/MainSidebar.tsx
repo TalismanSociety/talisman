@@ -1,8 +1,8 @@
 import {
-  TALISMAN_WEB_APP_CROWDLOANS_URL,
+  QUEST_APP_URL,
   TALISMAN_WEB_APP_NFTS_URL,
   TALISMAN_WEB_APP_STAKING_URL,
-  TALISMAN_WEB_APP_TRANSPORT_URL,
+  TALISMAN_WEB_APP_SWAP_URL,
 } from "@extension/shared"
 import { Nav } from "@talisman/components/Nav"
 import {
@@ -11,9 +11,9 @@ import {
   ImageIcon,
   PieChartIcon,
   PlusIcon,
+  QuestStarIcon,
   RepeatIcon,
   SettingsIcon,
-  StarIcon,
   ZapIcon,
 } from "@talismn/icons"
 import { useBuyTokensModal } from "@ui/domains/Asset/Buy/useBuyTokensModal"
@@ -58,15 +58,10 @@ export const MainSidebar = () => {
     return false
   }, [genericEvent])
 
-  const handleTransportClick = useCallback(() => {
-    genericEvent("open web app transport", { from: "sidebar" })
-    window.open(TALISMAN_WEB_APP_TRANSPORT_URL, "_blank")
+  const handleSwapClick = useCallback(() => {
+    genericEvent("open web app swap", { from: "sidebar" })
+    window.open(TALISMAN_WEB_APP_SWAP_URL, "_blank")
     return false
-  }, [genericEvent])
-
-  const handleCrowdloansClick = useCallback(() => {
-    genericEvent("open web app crowdloans", { from: "sidebar", target: "crowdloans" })
-    window.open(TALISMAN_WEB_APP_CROWDLOANS_URL, "_blank")
   }, [genericEvent])
 
   const handleSettingsClick = useCallback(() => {
@@ -84,6 +79,12 @@ export const MainSidebar = () => {
     genericEvent("goto backup modal", { from: "sidebar" })
     navigate("/settings/mnemonics?showBackupModal")
   }, [genericEvent, navigate])
+
+  const handleQuestsClick = useCallback(() => {
+    genericEvent("open quests link", { from: "sidebar", target: "quests" })
+    window.open(QUEST_APP_URL, "_blank")
+    return false
+  }, [genericEvent])
 
   return (
     <Nav className="gap-1 p-4 text-sm lg:px-12 lg:pb-12 lg:pt-6 lg:text-base">
@@ -115,8 +116,8 @@ export const MainSidebar = () => {
         />
       )}
       <SidebarNavItem
-        title={t("Transport")}
-        onClick={handleTransportClick}
+        title={t("Swap")}
+        onClick={handleSwapClick}
         isExternalLink
         icon={<RepeatIcon />}
       />
@@ -127,9 +128,15 @@ export const MainSidebar = () => {
         isExternalLink
       />
       <SidebarNavItem
-        title={t("Crowdloans")}
-        onClick={handleCrowdloansClick}
-        icon={<StarIcon />}
+        navItemClassName="hover:bg-primary/10"
+        contentClassName="text-primary"
+        title={<span className="font-bold">{t("Quests")}</span>}
+        onClick={handleQuestsClick}
+        icon={
+          <div className="bg-primary flex h-[1em] w-[1em] items-center justify-center rounded-full">
+            <QuestStarIcon className="text-xs text-black" />
+          </div>
+        }
         isExternalLink
       />
       <SidebarNavItem

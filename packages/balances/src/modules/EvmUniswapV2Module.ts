@@ -32,13 +32,13 @@ type ModuleType = "evm-uniswapv2"
 
 export const evmUniswapV2TokenId = (
   chainId: EvmNetworkId,
-  poolAddress: EvmUniswapV2Token["poolAddress"]
-) => `${chainId}-evm-uniswapv2-${poolAddress}`.toLowerCase()
+  contractAddress: EvmUniswapV2Token["contractAddress"]
+) => `${chainId}-evm-uniswapv2-${contractAddress}`.toLowerCase()
 
 export type EvmUniswapV2Token = NewTokenType<
   ModuleType,
   {
-    poolAddress: string
+    contractAddress: string
     symbol0: string
     symbol1: string
     decimals0: number
@@ -69,7 +69,7 @@ export type EvmUniswapV2ChainMeta = {
 export type EvmUniswapV2ModuleConfig = {
   pools?: Array<
     {
-      poolAddress?: string
+      contractAddress?: string
       decimals?: number
       symbol0?: string
       symbol1?: string
@@ -116,7 +116,7 @@ export const EvmUniswapV2Module: NewBalanceModule<
       const tokens: Record<string, EvmUniswapV2Token> = {}
       for (const tokenConfig of moduleConfig?.pools ?? []) {
         const {
-          poolAddress,
+          contractAddress,
           decimals,
           symbol0,
           symbol1,
@@ -129,7 +129,7 @@ export const EvmUniswapV2Module: NewBalanceModule<
         } = tokenConfig
 
         if (
-          !poolAddress ||
+          !contractAddress ||
           decimals === undefined ||
           symbol0 === undefined ||
           decimals0 === undefined ||
@@ -142,7 +142,7 @@ export const EvmUniswapV2Module: NewBalanceModule<
           continue
         }
 
-        const id = evmUniswapV2TokenId(chainId, poolAddress)
+        const id = evmUniswapV2TokenId(chainId, contractAddress)
         const token: EvmUniswapV2Token = {
           id,
           type: "evm-uniswapv2",
@@ -155,7 +155,7 @@ export const EvmUniswapV2Module: NewBalanceModule<
           decimals0,
           symbol1,
           decimals1,
-          poolAddress,
+          contractAddress,
           tokenAddress0,
           tokenAddress1,
           coingeckoId0,
@@ -329,7 +329,7 @@ const fetchBalances = async (
               tokenId: token.id,
               values: await getPoolBalance(
                 publicClient,
-                token.poolAddress as `0x${string}`,
+                token.contractAddress as `0x${string}`,
                 address as `0x${string}`
               ),
             }))

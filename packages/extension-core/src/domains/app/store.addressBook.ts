@@ -1,4 +1,4 @@
-import { AccountAddressType } from "@talisman/util/getAddressType"
+import { AccountAddressType } from "extension-shared"
 
 import { StorageProvider } from "../../libs/Store"
 
@@ -6,6 +6,7 @@ type Address = string
 export type AddressBookContact = {
   addressType: AccountAddressType
   address: Address
+  genesisHash?: string
   name: string
 }
 

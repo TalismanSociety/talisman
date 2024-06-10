@@ -1,13 +1,17 @@
 import { AddressBookContact } from "@extension/core"
 import { yupResolver } from "@hookform/resolvers/yup"
+import { convertAddress } from "@talismn/util"
 import { AnalyticsPage, sendAnalyticsEvent } from "@ui/api/analytics"
 import { Address } from "@ui/domains/Account/Address"
+import { ChainLogo } from "@ui/domains/Asset/ChainLogo"
+import { LimitToNetworkTooltip } from "@ui/domains/Settings/AddressBook/LimitToNetworkTooltip"
 import { useAddressBook } from "@ui/hooks/useAddressBook"
 import { useAnalyticsPageView } from "@ui/hooks/useAnalyticsPageView"
-import { FC, FormEventHandler, useCallback, useEffect } from "react"
+import { useChainByGenesisHash } from "@ui/hooks/useChainByGenesisHash"
+import { FC, FormEventHandler, useCallback, useEffect, useMemo } from "react"
 import { useForm } from "react-hook-form"
-import { useTranslation } from "react-i18next"
-import { Button, Drawer, FormFieldContainer, FormFieldInputText } from "talisman-ui"
+import { Trans, useTranslation } from "react-i18next"
+import { Button, Checkbox, Drawer, FormFieldContainer, FormFieldInputText } from "talisman-ui"
 import * as yup from "yup"
 
 import { AccountIcon } from "../../Account/AccountIcon"
@@ -21,19 +25,26 @@ const ANALYTICS_PAGE: AnalyticsPage = {
 
 type FormValues = {
   name: string
+  limitToNetwork?: boolean
 }
 
 const schema = yup.object({
   name: yup.string().trim().required(""),
+  limitToNetwork: yup.bool(),
 })
 
 const AddToAddressBookDrawerForm: FC<{
   address: string
   addressType: AddressBookContact["addressType"]
+  tokenGenesisHash?: string
   onClose?: () => void
-}> = ({ address, addressType, onClose }) => {
+}> = ({ address, addressType, tokenGenesisHash, onClose }) => {
   const { t } = useTranslation("send-funds")
   const { add } = useAddressBook()
+  const isGenericAddress = useMemo(
+    () => addressType === "ss58" && address === convertAddress(address, null),
+    [address, addressType]
+  )
   const {
     register,
     handleSubmit,
@@ -41,16 +52,26 @@ const AddToAddressBookDrawerForm: FC<{
     setError,
     reset,
     setFocus,
+    watch,
   } = useForm<FormValues>({
     resolver: yupResolver(schema),
     mode: "all",
     reValidateMode: "onChange",
+    defaultValues: { limitToNetwork: !isGenericAddress },
   })
 
+  const { limitToNetwork } = watch()
+  const chain = useChainByGenesisHash(tokenGenesisHash)
+
   const submit = useCallback(
-    async ({ name }: FormValues) => {
+    async ({ name, limitToNetwork }: FormValues) => {
       try {
-        await add({ addressType, address, name })
+        await add({
+          name,
+          address,
+          addressType,
+          genesisHash: limitToNetwork ? tokenGenesisHash : undefined,
+        })
         sendAnalyticsEvent({
           ...ANALYTICS_PAGE,
           name: "Interact",
@@ -64,7 +85,7 @@ const AddToAddressBookDrawerForm: FC<{
         setError("name", err as Error)
       }
     },
-    [add, addressType, address, setError, onClose]
+    [add, address, addressType, tokenGenesisHash, onClose, setError]
   )
 
   // don't bubble up submit event, in case we're in another form (send funds)
@@ -91,7 +112,11 @@ const AddToAddressBookDrawerForm: FC<{
       onSubmit={submitWithoutBubbleUp}
     >
       <header className="flex flex-col items-center justify-center gap-6">
-        <AccountIcon className="text-xl" address={address} />
+        <AccountIcon
+          className="text-xl"
+          address={address}
+          genesisHash={limitToNetwork ? tokenGenesisHash : undefined}
+        />
         <span className="font-bold">
           <Address className="address" address={address} endCharCount={6} startCharCount={6} />
         </span>
@@ -104,6 +129,23 @@ const AddToAddressBookDrawerForm: FC<{
             autoComplete="off"
           />
         </FormFieldContainer>
+        {tokenGenesisHash ? (
+          <Checkbox
+            childProps={{ className: "flex items-center gap-2" }}
+            {...register("limitToNetwork")}
+          >
+            <Trans
+              t={t}
+              defaults="Limit to <Chain><ChainLogo />{{chainName}}</Chain>"
+              components={{
+                Chain: <div className="text-body inline-flex items-baseline gap-1" />,
+                ChainLogo: <ChainLogo className="self-center" id={chain?.id} />,
+              }}
+              values={{ chainName: chain?.name }}
+            />
+            <LimitToNetworkTooltip />
+          </Checkbox>
+        ) : null}
       </section>
       <footer className="grid grid-cols-2 gap-8">
         <Button fullWidth onClick={onClose}>
@@ -129,12 +171,18 @@ export const AddToAddressBookDrawer: FC<{
   close: () => void
   address: string
   addressType: AddressBookContact["addressType"]
+  tokenGenesisHash?: string
   containerId?: string
   asChild?: boolean
-}> = ({ address, addressType, containerId, isOpen, close }) => {
+}> = ({ address, addressType, tokenGenesisHash, containerId, isOpen, close }) => {
   return (
     <Drawer isOpen={isOpen} anchor="bottom" onDismiss={close} containerId={containerId}>
-      <AddToAddressBookDrawerForm address={address} addressType={addressType} onClose={close} />
+      <AddToAddressBookDrawerForm
+        address={address}
+        addressType={addressType}
+        tokenGenesisHash={tokenGenesisHash}
+        onClose={close}
+      />
     </Drawer>
   )
 }

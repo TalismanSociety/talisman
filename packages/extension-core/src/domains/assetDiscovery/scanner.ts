@@ -22,6 +22,13 @@ import { activeTokensStore, isTokenActive } from "../tokens/store.activeTokens"
 import { assetDiscoveryStore } from "./store"
 import { AssetDiscoveryMode, DiscoveredBalance, RequestAssetDiscoveryStartScan } from "./types"
 
+// TODO - flag these tokens as ignored from chaindata
+const IGNORED_COINGECKO_IDS = [
+  "position-token", // BSC - POSI
+  "tangyuan", // BSC - TangYuan
+  "malou", // BSC - NEVER
+]
+
 const MANUAL_SCAN_MAX_CONCURRENT_NETWORK = 4
 const BALANCES_FETCH_CHUNK_SIZE = 100
 
@@ -132,6 +139,7 @@ class AssetDiscoveryScanner {
       const evmNetwork = evmNetworks[token.evmNetwork?.id ?? ""]
       if (!evmNetwork) return false
       if (!settings.useTestnets && (evmNetwork.isTestnet || token.isTestnet)) return false
+      if (token.coingeckoId && IGNORED_COINGECKO_IDS.includes(token.coingeckoId)) return false
       if (mode === AssetDiscoveryMode.ALL_NETWORKS)
         return (
           !isEvmNetworkActive(evmNetwork, activeEvmNetworks) || !isTokenActive(token, activeTokens)
@@ -188,11 +196,9 @@ class AssetDiscoveryScanner {
                 }
 
                 if (token.type === "evm-erc20" || token.type === "evm-uniswapv2") {
-                  const address =
-                    token.type === "evm-erc20" ? token.contractAddress : token.poolAddress
                   const balance = await client.readContract({
                     abi: erc20Abi,
-                    address: address as EvmAddress,
+                    address: token.contractAddress as EvmAddress,
                     functionName: "balanceOf",
                     args: [check.address as EvmAddress],
                   })

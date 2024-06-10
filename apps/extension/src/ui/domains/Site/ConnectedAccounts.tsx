@@ -8,9 +8,9 @@ import { useTranslation } from "react-i18next"
 
 import { ConnectAccountsContainer } from "./ConnectAccountsContainer"
 import { ConnectAccountToggleButtonRow } from "./ConnectAccountToggleButtonRow"
+import { ConnectedAccountsPolkadot } from "./ConnectedAccountsPolkadot"
 
 const SubAccounts: FC<{ site: AuthorizedSite | null }> = ({ site }) => {
-  const { t } = useTranslation()
   const accounts = useAccountsForSite(site)
 
   const activeAccounts = useMemo(
@@ -21,57 +21,21 @@ const SubAccounts: FC<{ site: AuthorizedSite | null }> = ({ site }) => {
     [accounts, site?.addresses]
   )
 
-  const handleAccountClick = useCallback(
-    (address: string) => () => {
+  const handleUpdateAccounts = useCallback(
+    (addresses: string[]) => {
       if (!site?.id) return
-      const isConnected = site?.addresses?.includes(address)
-      const current = site?.addresses ?? []
-      const addresses = isConnected ? current?.filter((a) => a !== address) : [...current, address]
-      api.authorizedSiteUpdate(site?.id, { addresses })
+      api.authorizedSiteUpdate(site?.id, {
+        addresses,
+      })
     },
-    [site?.addresses, site?.id]
+    [site?.id]
   )
 
-  const handleDisconnectAllClick = useCallback(() => {
-    if (!site?.id) return
-    api.authorizedSiteUpdate(site?.id, { addresses: [] })
-  }, [site?.id])
-
-  const handleConnectAllClick = useCallback(() => {
-    if (!site?.id) return
-    api.authorizedSiteUpdate(site?.id, { addresses: accounts.map((a) => a.address) })
-  }, [accounts, site?.id])
-
   return (
-    <>
-      <div className="mb-2 mt-6 flex w-full items-center justify-end gap-4 px-8 text-xs">
-        <button
-          type="button"
-          className="text-body-secondary hover:text-grey-300"
-          onClick={handleDisconnectAllClick}
-        >
-          {t("Disconnect All")}
-        </button>
-        <div className="bg-body-disabled h-[1rem] w-0.5 "></div>
-        <button
-          type="button"
-          className="text-body-secondary hover:text-grey-300"
-          onClick={handleConnectAllClick}
-        >
-          {t("Connect All")}
-        </button>
-      </div>
-      {activeAccounts.map(([acc, isConnected], idx) => (
-        <Fragment key={acc.address}>
-          {!!idx && <AccountSeparator />}
-          <ConnectAccountToggleButtonRow
-            account={acc}
-            checked={isConnected}
-            onClick={handleAccountClick(acc.address)}
-          />
-        </Fragment>
-      ))}
-    </>
+    <ConnectedAccountsPolkadot
+      activeAccounts={activeAccounts}
+      onUpdateAccounts={handleUpdateAccounts}
+    />
   )
 }
 

@@ -27,6 +27,8 @@ export const transferAnalytics = async ({
   network,
   hardware = false,
 }: TransferAnalyticsEvmArgs | TransferAnalyticsSubstrateArgs) => {
+  // NOTE: This does not care if an account or contact is locked to one chain/network, while this transfer is on a different chain/network.
+  // It will still consider isOwnAccount / isContact to be true.
   const isOwnAccount = keyring.getAccount(toAddress) !== undefined
   const isContact = isOwnAccount ? false : (await addressBookStore.get(toAddress)) !== undefined
 
