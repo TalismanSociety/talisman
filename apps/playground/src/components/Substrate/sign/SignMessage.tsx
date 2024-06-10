@@ -6,40 +6,7 @@ import { Button } from "talisman-ui"
 import { Section } from "../../shared/Section"
 import { useWallet } from "../shared/useWallet"
 
-/**
-const TEST_MESSAGE = `First line of the message
-
-3rd line
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-20th line and this has a lot of text a lot of text a lot of text a lot of text a lot of text a lot of text.
-`
- */
-
-const TEST_MESSAGE = `This is a short message that should display on ledger screen.`
-// const TEST_MESSAGE = `localhost:3000 wants you to sign in with your Substrate account:
-// 5EXb7e8Kq9m62XTFKVYmGsHFADU4knyFNg6NKJmLKDCz4Gij
-
-// Link account
-
-// URI: http://localhost:3000
-// Version: 1.0.0
-// Nonce: mIyJBb28r3TWYIrfP5mCqpsW0YnQUYYG
-// Issued At: 2024-06-10T02:10:16.482Z`
+const TEST_MESSAGE = `This message is short enough to display on ledger screen.`
 
 export const SignMessage = () => (
   <Section title="Sign message">
