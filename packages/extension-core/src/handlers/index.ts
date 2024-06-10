@@ -3,7 +3,6 @@ import { PORT_EXTENSION } from "extension-shared"
 import { log } from "extension-shared"
 import { Runtime } from "webextension-polyfill"
 
-import { TalismanNotOnboardedError } from "../domains/app/utils"
 import { cleanupEvmErrorMessage, getEvmErrorCause } from "../domains/ethereum/errors"
 import { MessageTypes, TransportRequestMessage } from "../types"
 import { AnyEthRequest } from "../types/domains"
@@ -109,10 +108,6 @@ const talismanHandler = <TMessageType extends MessageTypes>(
         // this means that the user has done something like close the tab
         port.disconnect()
         return
-      }
-
-      if (error instanceof TalismanNotOnboardedError) {
-        safePostMessage(port, { id, error: error.message })
       }
 
       if (["pub(eth.request)", "pri(eth.request)"].includes(message)) {
