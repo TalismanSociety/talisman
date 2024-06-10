@@ -274,7 +274,13 @@ const Item = forwardRef<HTMLDivElement, ItemProps>(function Item(
       {t("All Accounts")}
     </div>
   ) : (
-    <div className="flex w-full items-center justify-start gap-2">
+    <div
+      className={classNames(
+        "flex w-full items-center gap-2",
+        button && "justify-center lg:justify-start",
+        !button && "justify-start"
+      )}
+    >
       <div className="overflow-hidden text-ellipsis whitespace-nowrap text-sm">{item.name}</div>
       {isAccount && (
         <AccountTypeIcon className="text-primary" origin={item.origin} signetUrl={item.signetUrl} />

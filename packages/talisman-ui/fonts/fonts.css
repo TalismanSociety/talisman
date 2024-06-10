@@ -21,3 +21,16 @@
   font-weight: normal;
   src: url("./fonts/Whyte-Inktrap-Medium.woff2") format("woff2");
 }
+
+@font-face {
+  font-family: "Inter";
+  font-optical-sizing: auto;
+  font-variation-settings: "slnt" 0;
+  src: url("./fonts/Inter.ttf") format("truetype");
+}
+
+@font-face {
+  font-family: "Unbounded";
+  font-optical-sizing: auto;
+  src: url("./fonts/Unbounded.ttf") format("truetype");
+}

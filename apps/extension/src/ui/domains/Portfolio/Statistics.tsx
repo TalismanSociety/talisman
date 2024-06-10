@@ -68,7 +68,7 @@ export const Statistics = ({
   return (
     <div
       className={classNames(
-        "bg-black-secondary flex h-[10rem] w-[23.6rem] flex-col gap-4 rounded p-8 ",
+        "bg-black-secondary flex h-[10rem] w-[23.6rem] flex-col gap-4 rounded p-8",
         className
       )}
     >
@@ -79,13 +79,17 @@ export const Statistics = ({
       <div className="flex items-center gap-2">
         {showCurrencyToggle && (
           <button
-            className="border-grey-750 bg-grey-800 text-body-secondary hover:bg-grey-700 pointer-events-auto flex h-11 w-11 items-center justify-center rounded-full border text-center transition-colors duration-100 ease-out"
+            className={classNames(
+              "border-grey-750 bg-grey-800 text-body-secondary hover:bg-grey-700 pointer-events-auto flex h-11 w-11 items-center justify-center rounded-full border text-center text-sm transition-colors duration-100 ease-out",
+              currencyConfig[currency]?.symbol?.length === 2 && "text-[1rem]",
+              currencyConfig[currency]?.symbol?.length > 2 && "text-[0.8rem]"
+            )}
             onClick={(event) => {
               event.stopPropagation()
               toggleCurrency()
             }}
           >
-            {currencyConfig[currency]?.unicodeCharacter}
+            {currencyConfig[currency]?.symbol}
           </button>
         )}
         {showTokens ? (

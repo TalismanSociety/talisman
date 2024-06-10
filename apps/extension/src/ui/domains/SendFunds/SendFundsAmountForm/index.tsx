@@ -11,9 +11,9 @@ import { useSendFunds } from "../useSendFunds"
 import { AddContact } from "./AddContact"
 import { AddressPillButton } from "./AddressPillButton"
 import { AmountEdit } from "./AmountEdit"
+import { AvailableBalanceRow } from "./AvailableBalanceRow"
 import { Container } from "./Container"
 import { FeesSummary } from "./FeesSummary"
-import { TokenRow } from "./TokenRow"
 
 const ReviewButton = () => {
   const { t } = useTranslation("send-funds")
@@ -133,13 +133,13 @@ export const SendFundsAmountForm = () => {
               genesisHash={genesisHash}
               onClick={handleGotoClick("to")}
             />
-            <AddContact />
+            <AddContact tokenGenesisHash={genesisHash ?? undefined} />
           </div>
         </div>
       </Container>
-      <AmountEdit />
+      <AmountEdit onTokenClick={handleGotoClick("token")} />
       <div className="w-full space-y-4 text-xs leading-[140%]">
-        <TokenRow onEditClick={handleGotoClick("token")} />
+        <AvailableBalanceRow />
         <FeesSummary />
       </div>
       <ReviewButton />

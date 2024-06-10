@@ -28,26 +28,36 @@ const QR_IMAGE_OPTIONS = {
   margin: 5,
 }
 
-type AddressPillButtonProps = { address?: string | null; className?: string; onClick?: () => void }
+type AddressPillButtonProps = {
+  address?: string | null
+  genesisHash?: string | null
+  className?: string
+  onClick?: () => void
+}
 
-const AddressPillButton: FC<AddressPillButtonProps> = ({ address, className, onClick }) => {
+const AddressPillButton: FC<AddressPillButtonProps> = ({
+  address,
+  genesisHash: chainGenesisHash,
+  className,
+  onClick,
+}) => {
   const account = useAccountByAddress(address as string)
-  const contact = useContact(address)
+  const contact = useContact(address, chainGenesisHash)
 
-  const { name, genesisHash } = useMemo(() => {
+  const { name, genesisHash: accountGenesisHash } = useMemo(() => {
     if (account) return account
-    if (contact) return { name: contact.name, genesisHash: undefined }
+    if (contact) return { name: contact.name, genesisHash: contact.genesisHash }
     return { name: undefined, genesisHash: undefined }
   }, [account, contact])
 
-  const formattedAddress = useFormattedAddress(address ?? undefined, genesisHash)
+  const formattedAddress = useFormattedAddress(address ?? undefined, accountGenesisHash)
 
   if (!address) return null
 
   return (
     <PillButton className={classNames("h-16 max-w-[240px] !px-4", className)} onClick={onClick}>
       <div className="text-body flex h-16 max-w-full flex-nowrap items-center gap-4 overflow-x-hidden text-base">
-        <AccountIcon className="!text-lg" address={address} genesisHash={genesisHash} />
+        <AccountIcon className="!text-lg" address={address} genesisHash={accountGenesisHash} />
         <div className="leading-base grow truncate">
           {name ?? <Address address={formattedAddress} startCharCount={6} endCharCount={6} />}
         </div>
@@ -169,6 +179,7 @@ export const CopyAddressCopyForm = () => {
     () => !chain && formattedAddress && isEthereumAddress(formattedAddress),
     [chain, formattedAddress]
   )
+  const genesisHash = chain?.genesisHash
 
   const { t } = useTranslation()
 
@@ -181,7 +192,11 @@ export const CopyAddressCopyForm = () => {
           <div className="text-body-secondary flex h-16 w-full items-center justify-between">
             <div>{t("Account")}</div>
             <div>
-              <AddressPillButton address={formattedAddress} onClick={goToAddressPage} />
+              <AddressPillButton
+                address={formattedAddress}
+                genesisHash={genesisHash}
+                onClick={goToAddressPage}
+              />
             </div>
           </div>
           {networkId !== undefined && (
