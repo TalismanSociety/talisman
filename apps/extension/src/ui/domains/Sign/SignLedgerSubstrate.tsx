@@ -55,9 +55,11 @@ const SignLedgerSubstrate: FC<SignHardwareSubstrateProps> = ({
     if (!payload) return
 
     if (isRawPayload(payload)) {
-      setUnsigned(u8aWrapBytes(payload.data))
+      const tmpUnsigned = u8aWrapBytes(payload.data)
+      if (tmpUnsigned.length > 256) setError(t("The message is too long to signed with Ledger."))
+
+      setUnsigned(tmpUnsigned)
       setIsRaw(true)
-      return
     } else {
       if (payload.signedExtensions) registry.setSignedExtensions(payload.signedExtensions)
       const extrinsicPayload = registry.createType("ExtrinsicPayload", payload, {
@@ -76,6 +78,9 @@ const SignLedgerSubstrate: FC<SignHardwareSubstrateProps> = ({
   const signLedger = useCallback(async () => {
     if (!ledger || !unsigned || !onSigned || !account) return
 
+    if (isRaw && unsigned.length > 256)
+      return setError(t("The message is too long to signed with Ledger."))
+
     setError(null)
 
     try {
@@ -84,7 +89,7 @@ const SignLedgerSubstrate: FC<SignHardwareSubstrateProps> = ({
         : ledger.sign(unsigned, account.accountIndex, account.addressOffset))
 
       if (isRaw)
-        // remove first byte, which contains signature type, which is 0 here (ed25519)
+        // remove first byte which stores the signature type (0 here, as 0 = ed25519)
         signature = u8aToHex(hexToU8a(signature).slice(1))
 
       // await to keep loader spinning until popup closes
