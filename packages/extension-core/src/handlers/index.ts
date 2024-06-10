@@ -3,6 +3,7 @@ import { PORT_EXTENSION } from "extension-shared"
 import { log } from "extension-shared"
 import { Runtime } from "webextension-polyfill"
 
+import { TalismanNotOnboardedError } from "../domains/app/utils"
 import { cleanupEvmErrorMessage, getEvmErrorCause } from "../domains/ethereum/errors"
 import { MessageTypes, TransportRequestMessage } from "../types"
 import { AnyEthRequest } from "../types/domains"
@@ -60,6 +61,22 @@ const talismanHandler = <TMessageType extends MessageTypes>(
   // eslint-disable-next-line no-console
   log.debug(`[${port.name} REQ] ${source}`, { request: shouldLog ? request : OBFUSCATED_PAYLOAD })
 
+  const safePostMessage = (port: Runtime.Port | undefined, message: unknown): void => {
+    // only send message back to port if it's still connected, unfortunately this check is not reliable in all browsers
+    if (!port) return
+
+    try {
+      port.postMessage(message)
+    } catch (e) {
+      if (e instanceof Error && e.message === "Attempting to use a disconnected port object") {
+        // this means that the user has done something like close the tab
+        port.disconnect()
+        return
+      }
+      throw e
+    }
+  }
+
   // handle the request and get a promise as a response
   const promise = isExtension
     ? extension.handle(id, message, request, port)
@@ -77,16 +94,7 @@ const talismanHandler = <TMessageType extends MessageTypes>(
       // the tab, in which case port will be undefined
       assert(port, "Port has been disconnected")
 
-      try {
-        port.postMessage({ id, response })
-      } catch (e) {
-        if (e instanceof Error && e.message === "Attempting to use a disconnected port object") {
-          // this means that the user has done something like close the tab
-          port.disconnect()
-          return
-        }
-        throw e
-      }
+      safePostMessage(port, { id, response })
 
       // heap cleanup
       response = null
@@ -103,30 +111,23 @@ const talismanHandler = <TMessageType extends MessageTypes>(
         return
       }
 
-      // only send message back to port if it's still connected, unfortunately this check is not reliable in all browsers
-      if (port) {
-        try {
-          if (["pub(eth.request)", "pri(eth.request)"].includes(message)) {
-            const evmError = getEvmErrorCause(error)
-            port.postMessage({
-              id,
-              error: cleanupEvmErrorMessage(
-                (message === "pri(eth.request)" && evmError.details) ||
-                  (evmError.shortMessage ?? evmError.message ?? "Unknown error")
-              ),
-              code: error.code,
-              rpcData: evmError.data, // don't use "data" as property name or viem will interpret it differently
-              isEthProviderRpcError: true,
-            })
-          } else port.postMessage({ id, error: error.message })
-        } catch (caughtError) {
-          /**
-           * no-op
-           * caughtError will be `Attempt to postMessage on disconnected port`
-           * The original errors themselves are mostly intentionally thrown as control flow for dapp connections, so logging them creates noise
-           *  */
-        }
+      if (error instanceof TalismanNotOnboardedError) {
+        safePostMessage(port, { id, error: error.message })
       }
+
+      if (["pub(eth.request)", "pri(eth.request)"].includes(message)) {
+        const evmError = getEvmErrorCause(error)
+        safePostMessage(port, {
+          id,
+          error: cleanupEvmErrorMessage(
+            (message === "pri(eth.request)" && evmError.details) ||
+              (evmError.shortMessage ?? evmError.message ?? "Unknown error")
+          ),
+          code: error.code,
+          rpcData: evmError.data, // don't use "data" as property name or viem will interpret it differently
+          isEthProviderRpcError: true,
+        })
+      } else safePostMessage(port, { id, error: error.message })
     })
     .finally(() => {
       // heap cleanup
