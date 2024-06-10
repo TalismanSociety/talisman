@@ -73,7 +73,7 @@ const useLedgerSubstrateGenericAccounts = (
       ledgerAccounts.filter(Boolean).length === itemsPerPage
         ? ledgerAccounts
             .filter((acc): acc is LedgerSubstrateGenericAccount => !!acc)
-            .map((acc) => ({ address: acc.address, type: "ecdsa", genesisHash: acc.genesisHash }))
+            .map((acc) => ({ address: acc.address, type: "ed25519", genesisHash: acc.genesisHash }))
         : [],
     [itemsPerPage, ledgerAccounts]
   )

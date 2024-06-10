@@ -50,7 +50,11 @@ export const useLedgerSubstrateGeneric = (persist = false) => {
       await refTransport.current?.close()
       refTransport.current = await TransportWebUSB.create()
 
-      const ledger = new PolkadotGenericApp(refTransport.current, "", "")
+      const ledger = new PolkadotGenericApp(
+        refTransport.current,
+        "roc", // TODO remove
+        "https://api.zondax.ch/polkadot/transaction/metadata" // TODO remove
+      )
 
       const bip44path = getPolkadotLedgerDerivationPath({})
 

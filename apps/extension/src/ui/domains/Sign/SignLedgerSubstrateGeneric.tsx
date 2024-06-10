@@ -5,9 +5,8 @@ import {
   isJsonPayload,
 } from "@extension/core"
 import { log } from "@extension/shared"
-import { wrapBytes } from "@polkadot/extension-dapp/wrapBytes"
 import { TypeRegistry } from "@polkadot/types"
-import { hexToU8a } from "@polkadot/util"
+import { u8aToHex, u8aWrapBytes } from "@polkadot/util"
 import { classNames } from "@talismn/util"
 import { getPolkadotLedgerDerivationPath } from "@ui/hooks/ledger/common"
 import { useLedgerSubstrateGeneric } from "@ui/hooks/ledger/useLedgerSubstrateGeneric"
@@ -45,6 +44,8 @@ const sign = async (
 
   const path = getPolkadotLedgerDerivationPath(account)
 
+  // console.log("path", path)
+
   if (isJsonPayload(payload)) {
     if (!metadata) throw new Error("Missing metadata")
 
@@ -54,20 +55,20 @@ const sign = async (
       version: payload.version,
     })
 
-    // const buffMetadata = await ledger.getTxMetadata(
-    //   Buffer.from(unsigned.toU8a(true)),
-    //   "roc",
-    //   "https://api.zondax.ch/polkadot/transaction/metadata"
-    // )
+    const buffMetadata = await ledger.getTxMetadata(
+      Buffer.from(unsigned.toU8a(true))
+      // "roc",
+      // "https://api.zondax.ch/polkadot/transaction/metadata"
+    )
 
     // console.log({ path })
 
     // try {
     //   const hexMetadata = u8aToHex(
     //     await ledger.getTxMetadata(
-    //       Buffer.from(unsigned.toU8a(true)),
-    //       "roc",
-    //       "https://api.zondax.ch/polkadot/transaction/metadata"
+    //       Buffer.from(unsigned.toU8a(true))
+    //       // "roc",
+    //       // "https://api.zondax.ch/polkadot/transaction/metadata"
     //     ),
     //     undefined,
     //     false
@@ -75,7 +76,7 @@ const sign = async (
 
     //   console.log("metada check", metadata === hexMetadata, { metadata, hexMetadata })
     // } catch (err) {
-    //   console.error("Faield to fetch metadata from zondax", { err })
+    //   console.error("Failed to fetch metadata from zondax", { err })
     // }
 
     // return ledger.signImpl(
@@ -89,15 +90,48 @@ const sign = async (
     return ledger.signWithMetadata(
       path,
       Buffer.from(unsigned.toU8a(true)),
-      //buffMetadata
-      Buffer.from(hexToU8a(metadata))
+      buffMetadata
+      //Buffer.from(hexToU8a(metadata))
     )
+  } else {
+    // raw payload
+    const unsigned = u8aWrapBytes(payload.data)
+
+    return ledger.signRaw(path, Buffer.from(unsigned))
+
+    // const hex1 = bufferToHex(signature) // signature.toString("hex")
+    // const hex2 = signature.toString("hex")
+    // const hex3 = u8aToHex(hexToU8a(hex1).slice(1), undefined, true)
+    // // console.log("hex1", hex1)
+    // // console.log("hex2", hex2)
+    // // console.log("hex3", hex2)
+    // const verify1 = signatureVerify(payload.data, hex1, account.address)
+    // //console.log("1", JSON.stringify(verify1, null, 2))
+    // // const verify2 = signatureVerify(payload.data, hex2, account.address)
+    // // console.log({ verify2 })
+    // const verify3 = signatureVerify(payload.data, hex3, account.address)
+    // //console.log("3", JSON.stringify(verify3, null, 2))
+
+    // // console.log({
+    // //   hex1,
+    // //   hex2,
+    // //   hex3,
+    // //   verify1: JSON.stringify(verify1, null, 2),
+    // //   //verify2,
+    // //   verify3: JSON.stringify(verify3, null, 2),
+    // //   address: account.address,
+    // //   data: payload.data,
+    // // })
+
+    // // alert("hey")
+
+    // // const hexMinusType = u8aToHex(hexToU8a(hex1).slice(1))
+    // // console.log({ hex: hex1, hexMinusType })
+
+    // // alert(JSON.stringify(signatureVerify(payload.data, hexMinusType, account.address), null, 2))
+
+    // return { signature: hex3 }
   }
-
-  // raw payload
-  const unsigned = wrapBytes(payload.data)
-
-  return ledger.signRaw(path, Buffer.from(unsigned))
 }
 
 const SignLedgerSubstrateGeneric: FC<SignHardwareSubstrateProps> = ({
@@ -170,7 +204,9 @@ const SignLedgerSubstrateGeneric: FC<SignHardwareSubstrateProps> = ({
 
       // await to keep loader spinning until popup closes
       await onSigned({
-        signature: `0x${response.signature.toString("hex")}`,
+        signature: isJsonPayload(payload)
+          ? u8aToHex(response.signature)
+          : u8aToHex(response.signature.slice(1)), // remove first byte (type) or signatureVerify will fail
       })
     } catch (error) {
       log.error("signLedger", { error })
