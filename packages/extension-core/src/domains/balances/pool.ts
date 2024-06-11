@@ -7,7 +7,6 @@ import {
   MiniMetadata,
   StoredBalanceJson,
   db as balancesDb,
-  deleteSubscriptionId,
 } from "@talismn/balances"
 import { configureStore } from "@talismn/balances"
 import { Token } from "@talismn/chaindata-provider"
@@ -653,12 +652,6 @@ abstract class BalancePool {
       // wait 10_000ms in case the user is opening and closing the popup quickly
       // this way the rpcs will remain connected for an extra ten seconds
       .forEach((cb) => cb.then((close) => setTimeout(close, 10_000)))
-
-    try {
-      deleteSubscriptionId()
-    } catch (cause) {
-      log.error(new Error("Failed to delete subscriptionId", { cause }))
-    }
 
     this.setSubscriptionsState("Closed")
     log.log("Closed balance subscriptions")
