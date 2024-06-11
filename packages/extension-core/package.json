@@ -55,7 +55,6 @@
     "nanoid": "3.3.7",
     "posthog-js": "1.139.0",
     "rxjs": "^7.8.1",
-    "scale-codec": "^0.11.2",
     "semver": "^7.5.4",
     "toml": "^3.0.0",
     "ts-results": "3.3.0",

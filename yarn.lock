@@ -15810,7 +15810,6 @@ __metadata:
     nanoid: 3.3.7
     posthog-js: 1.139.0
     rxjs: ^7.8.1
-    scale-codec: ^0.11.2
     semver: ^7.5.4
     sinon-chrome: ^3.0.1
     toml: ^3.0.0
@@ -24095,13 +24094,6 @@ __metadata:
   dependencies:
     xmlchars: ^2.2.0
   checksum: d3fa3e2aaf6c65ed52ee993aff1891fc47d5e47d515164b5449cbf5da2cbdc396137e55590472e64c5c436c14ae64a8a03c29b9e7389fc6f14035cf4e982ef3b
-  languageName: node
-  linkType: hard
-
-"scale-codec@npm:^0.11.2":
-  version: 0.11.2
-  resolution: "scale-codec@npm:0.11.2"
-  checksum: c6c07c045102b523a8138b028308dee8b43ea600a3b25cb633000bb4b8c7a8bf930b1f19ba6cd2c1010135dc0cb243f1d048b10d8e4de66ec9d66c5743f36b7d
   languageName: node
   linkType: hard
 
