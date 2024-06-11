@@ -1,12 +1,12 @@
 import { DEBUG } from "@extension/shared"
 import { ErrorBoundary as SentryErrorBoundary } from "@sentry/react"
 import STATIC from "@talisman/theme/images/hand_open_static_dark.gif"
+import { DexieError } from "dexie"
 import { FC, ReactNode, useCallback } from "react"
 import { Button } from "talisman-ui"
 
-const ErrorMessage: FC<{ error: Error }> = ({ error }) => {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const isDbVersionError = (error as any)?.inner?.name === "VersionError"
+const ErrorMessage: FC<{ error: unknown }> = ({ error }) => {
+  const isDbVersionError = (error as DexieError)?.inner?.name === "VersionError"
 
   const clearDatabases = useCallback(() => {
     indexedDB.deleteDatabase("Talisman")

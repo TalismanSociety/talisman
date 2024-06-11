@@ -1,4 +1,3 @@
-export { initSentry } from "./config/sentry"
 export { initPosthog } from "./config/posthog"
 
 export { chaindataProvider } from "./rpcs/chaindata"
@@ -15,6 +14,8 @@ export {
   ERRORS_STORE_INITIAL_DATA,
   type ErrorsStoreData,
   errorsStore,
+  trackIndexedDbErrorExtras,
+  triggerIndexedDbUnavailablePopup,
 } from "./domains/app/store.errors"
 
 export { balanceTotalsStore } from "./domains/balances/store.BalanceTotals"

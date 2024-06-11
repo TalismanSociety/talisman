@@ -13,7 +13,7 @@ import { IconManager } from "./libs/IconManager"
 import { MigrationRunner, migrations } from "./libs/migrations"
 import { migrateConnectAllSubstrate } from "./libs/migrations/legacyMigrations"
 
-initSentry(Sentry)
+initSentry()
 
 // eslint-disable-next-line no-void
 void chrome.action.setBadgeBackgroundColor({ color: "#d90000" })
@@ -52,7 +52,7 @@ const migrationSub = passwordStore.isLoggedIn.subscribe(async (isLoggedIn) => {
   if (isLoggedIn === "TRUE") {
     const password = await passwordStore.getPassword()
     if (!password) {
-      Sentry.captureMessage("Unabe to run migrations, no password present")
+      Sentry.captureMessage("Unable to run migrations, no password present")
       return
     }
     // instantiate the migrations runner with migrations to run

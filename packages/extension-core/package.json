@@ -30,7 +30,7 @@
     "@polkadot/ui-keyring": "3.6.4",
     "@polkadot/util": "12.6.2",
     "@polkadot/util-crypto": "12.6.2",
-    "@sentry/browser": "7.92.0",
+    "@sentry/browser": "8.8.0",
     "@supercharge/promise-pool": "^3.1.0",
     "@talismn/balances": "workspace:*",
     "@talismn/chain-connector": "workspace:*",
