@@ -1,7 +1,14 @@
 import { Token, TokenId } from "@talismn/chaindata-provider"
-import axios from "axios"
 
 import { NewTokenRates, SUPPORTED_CURRENCIES, TokenRateCurrency, TokenRatesList } from "./types"
+
+export class TokenRatesError extends Error {
+  response?: Response
+  constructor(message: string, response?: Response) {
+    super(message)
+    this.response = response
+  }
+}
 
 // every currency in this list will be fetched from coingecko
 // comment out unused currencies to save some bandwidth!
@@ -76,17 +83,10 @@ export async function fetchTokenRates(
   // construct a coingecko request, sort args to help proxies with caching
 
   const currenciesSerialized = coingeckoCurrencies.sort().join(",")
-  // note: coingecko api key cannot be passed as header here as it would be camel cased by axios and ignored by the server
-  // need to pass it as a query parameter, and replace all '-' with '_'
-  // TODO => migrate to fetch api
-  const apiKeySuffix =
-    config.apiKeyName && config.apiKeyValue
-      ? `&${config.apiKeyName?.replaceAll("-", "_")}=${config.apiKeyValue}`
-      : ""
 
   const safelyGetCoingeckoUrls = (coingeckoIds: string[]): string[] => {
     const idsSerialized = coingeckoIds.join(",")
-    const queryUrl = `${config.apiUrl}/api/v3/simple/price?ids=${idsSerialized}&vs_currencies=${currenciesSerialized}${apiKeySuffix}`
+    const queryUrl = `${config.apiUrl}/api/v3/simple/price?ids=${idsSerialized}&vs_currencies=${currenciesSerialized}`
     if (queryUrl.length > MAX_COINGECKO_URL_LENGTH) {
       const half = Math.floor(coingeckoIds.length / 2)
       return [
@@ -104,10 +104,20 @@ export async function fetchTokenRates(
   //     [currency]: rate
   //   }
   // }
+
+  const coingeckoHeaders = new Headers()
+  if (config.apiKeyName && config.apiKeyValue) {
+    coingeckoHeaders.set(config.apiKeyName, config.apiKeyValue)
+  }
+
   const coingeckoPrices = await Promise.all(
     safelyGetCoingeckoUrls(coingeckoIds).map(
       async (queryUrl): Promise<Record<string, Record<string, number>>> =>
-        await axios.get(queryUrl).then((response) => response.data)
+        await fetch(queryUrl, { headers: coingeckoHeaders }).then((response) => {
+          if (response.status !== 200)
+            throw new TokenRatesError(`Failed to fetch token rates`, response)
+          return response.json()
+        })
     )
   ).then((responses): Record<string, Record<string, number>> => Object.assign({}, ...responses))
 

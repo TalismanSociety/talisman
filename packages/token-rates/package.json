@@ -27,7 +27,6 @@
   },
   "dependencies": {
     "@talismn/chaindata-provider": "workspace:*",
-    "axios": "^0.27.2",
     "dexie": "^3.2.4"
   },
   "devDependencies": {
