@@ -26,6 +26,7 @@ import { Port } from "../../types/base"
 import { getErc20TokenInfo } from "../../util/getErc20TokenInfo"
 import { urlToDomain } from "../../util/urlToDomain"
 import { filterAccountsByAddresses, getPublicAccounts } from "../accounts/helpers"
+import { TalismanNotOnboardedError } from "../app/utils"
 import { signAndSendEth, signEth } from "../signing/requests"
 import {
   ERROR_DUPLICATE_AUTH_REQUEST_MESSAGE,
@@ -802,6 +803,17 @@ export class EthTabsHandler extends TabsHandler {
     port: Port,
     url: string
   ): Promise<ResponseType<TMessageType>> {
+    // Always check for onboarding before doing anything else
+    // Because of chrome extensions can be synchronised on multiple computers,
+    // Talisman may be installed on computers where user do not want to onboard
+    // => Do not trigger onboarding, just throw an error
+    try {
+      await this.stores.app.ensureOnboarded()
+    } catch (err) {
+      if (err instanceof TalismanNotOnboardedError)
+        throw new EthProviderRpcError(err.message, ETH_ERROR_EIP1993_UNAUTHORIZED)
+    }
+
     switch (type) {
       case "pub(eth.subscribe)":
         return this.ethSubscribe(id, url, port)
