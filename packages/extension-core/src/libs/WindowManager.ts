@@ -8,7 +8,7 @@ import { RequestRoute } from "../domains/app/types"
 
 const WINDOW_OPTS: Browser.Windows.CreateCreateDataType & { width: number; height: number } = {
   type: "popup",
-  url: Browser.runtime.getURL("popup.html"),
+  url: chrome.runtime.getURL("popup.html"),
   width: 400,
   height: 600,
 }
@@ -82,7 +82,7 @@ class WindowManager {
   public async openOnboarding(route?: string) {
     if (this.#onboardingTabOpening) return
     this.#onboardingTabOpening = true
-    const baseUrl = Browser.runtime.getURL(`onboarding.html`)
+    const baseUrl = chrome.runtime.getURL(`onboarding.html`)
 
     const onboarded = await appStore.getIsOnboarded()
 
@@ -95,7 +95,7 @@ class WindowManager {
   }
 
   public async openDashboard({ route }: RequestRoute) {
-    const baseUrl = Browser.runtime.getURL("dashboard.html")
+    const baseUrl = chrome.runtime.getURL("dashboard.html")
 
     await this.openTabOnce({ url: `${baseUrl}#${route}`, baseUrl })
 
@@ -125,7 +125,7 @@ class WindowManager {
 
     const popupCreateArgs: Browser.Windows.CreateCreateDataType = {
       ...WINDOW_OPTS,
-      url: Browser.runtime.getURL(`popup.html${argument ?? ""}`),
+      url: chrome.runtime.getURL(`popup.html${argument ?? ""}`),
       top,
       left,
       width: WINDOW_OPTS.width + widthDelta,

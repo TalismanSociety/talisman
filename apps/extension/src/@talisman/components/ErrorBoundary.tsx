@@ -3,7 +3,6 @@ import { ErrorBoundary as SentryErrorBoundary } from "@sentry/react"
 import STATIC from "@talisman/theme/images/hand_open_static_dark.gif"
 import { FC, ReactNode, useCallback } from "react"
 import { Button } from "talisman-ui"
-import Browser from "webextension-polyfill"
 
 const ErrorMessage: FC<{ error: Error }> = ({ error }) => {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -15,7 +14,7 @@ const ErrorMessage: FC<{ error: Error }> = ({ error }) => {
     indexedDB.deleteDatabase("TalismanChaindata")
     indexedDB.deleteDatabase("TalismanConnectionMeta")
     alert("Databases cleared. Please click OK for Talisman to reinitialize.")
-    Browser.runtime.reload()
+    chrome.runtime.reload()
   }, [])
 
   return (

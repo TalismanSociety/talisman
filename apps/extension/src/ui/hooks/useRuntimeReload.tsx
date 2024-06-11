@@ -16,7 +16,7 @@ export const useRuntimeReload = (analyticsPage: AnalyticsPage) => {
     // these 2 dbs do not contain any user data, they will be safely recreated on next startup
     await Promise.allSettled([balancesDb.delete(), connectionMetaDb.delete()])
 
-    Browser.runtime.reload()
+    chrome.runtime.reload()
   }, [analyticsPage])
 
   return [hasRuntimeReloadFn, runtimeReload] as const

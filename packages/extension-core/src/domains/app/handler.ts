@@ -219,7 +219,7 @@ export default class AppHandler extends ExtensionHandler {
   }
 
   private async openModal(request: ModalOpenRequest): Promise<void> {
-    const queryUrl = Browser.runtime.getURL("dashboard.html")
+    const queryUrl = chrome.runtime.getURL("dashboard.html")
     const [tab] = await Browser.tabs.query({ url: queryUrl })
     if (!tab) {
       await windowManager.openDashboard({ route: "/portfolio" })

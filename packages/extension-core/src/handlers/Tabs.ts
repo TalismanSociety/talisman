@@ -281,7 +281,7 @@ export default class Tabs extends TabsHandler {
   private redirectPhishingLanding(phishingWebsite: string): void {
     const nonFragment = phishingWebsite.split("#")[0]
     const encodedWebsite = encodeURIComponent(nonFragment)
-    const url = `${Browser.runtime.getURL(
+    const url = `${chrome.runtime.getURL(
       "dashboard.html"
     )}#${PHISHING_PAGE_REDIRECT}/${encodedWebsite}`
 

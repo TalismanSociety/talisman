@@ -28,7 +28,6 @@ import {
   firstValueFrom,
 } from "rxjs"
 import { debounceTime, map } from "rxjs/operators"
-import Browser from "webextension-polyfill"
 
 import { unsubscribe } from "../../handlers/subscriptions"
 import { balanceModules } from "../../rpcs/balance-modules"
@@ -144,12 +143,12 @@ abstract class BalancePool {
    */
   constructor({ persist }: { persist?: boolean }) {
     this.#persist = Boolean(persist)
-    Browser.runtime.getBackgroundPage().then((b) => {
-      if (window.location.href !== b.location.href)
-        throw new Error(
-          `Balances pool should only be used in the background page - used in: ${window.location.href}`
-        )
-    })
+
+    if (window?.location?.href && !window.location.href.includes("service_worker.js"))
+      throw new Error(
+        `Balances pool should only be used in the background page - used in: ${window.location.href}`
+      )
+
     // subscribe this store to all of the inputs it depends on
     this.#cleanupSubs = [this.initializeChaindataSubscription()]
 

@@ -103,7 +103,7 @@
     "loglevel": "^1.8.1",
     "lottie-react": "2.4.0",
     "marked": "^11.1.0",
-    "posthog-js": "^1.96.1",
+    "posthog-js": "^1.139.0",
     "raptorq": "1.7.24",
     "raw-loader": "^4.0.2",
     "react": "18.2.0",

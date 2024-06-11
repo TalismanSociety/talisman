@@ -51,7 +51,7 @@ describe("App handler when password is not trimmed", () => {
     keyring.getPairs().forEach((pair) => keyring.forgetAccount(pair.address))
 
     extension = await createExtension()
-    const port = Browser.runtime.connect("talismanTest")
+    const port = chrome.runtime.connect("talismanTest")
     messageSender = getMessageSenderFn(extension, port)
 
     await messageSender("pri(app.onboardCreatePassword)", {
@@ -203,7 +203,7 @@ describe("App handler when password is trimmed", () => {
     keyring.getPairs().forEach((pair) => keyring.forgetAccount(pair.address))
 
     extension = await createExtension()
-    const port = Browser.runtime.connect("talismanTest")
+    const port = chrome.runtime.connect("talismanTest")
     messageSender = getMessageSenderFn(extension, port)
 
     await messageSender("pri(app.onboardCreatePassword)", {

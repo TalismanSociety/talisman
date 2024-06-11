@@ -5,10 +5,9 @@
 
 import { PORT_CONTENT } from "@extension/shared"
 import type { Message } from "@polkadot/extension-base/types"
-import Browser from "webextension-polyfill"
 
 // connect to the extension
-const port = Browser.runtime.connect({ name: PORT_CONTENT })
+const port = chrome.runtime.connect({ name: PORT_CONTENT })
 // send any messages from the extension back to the page
 port.onMessage.addListener((data): void => {
   window.postMessage({ ...data, origin: "talisman-content" }, window.location.toString())

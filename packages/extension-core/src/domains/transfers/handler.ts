@@ -226,7 +226,7 @@ export default class AssetTransferHandler extends ExtensionHandler {
       const client = await chainConnectorEvm.getWalletClientForEvmNetwork(evmNetworkId)
       assert(client, "Missing client for chain " + evmNetworkId)
 
-      const password = this.stores.password.getPassword()
+      const password = await this.stores.password.getPassword()
       assert(password, "Unauthorised")
 
       const privateKey = getPrivateKey(pair, password, "hex")

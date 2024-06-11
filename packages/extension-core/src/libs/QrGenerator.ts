@@ -23,7 +23,7 @@ const getEncryptionForChain = (chain: Chain) => {
 }
 
 export const getVerifierMnemonic = async () => {
-  const pw = passwordStore.getPassword()
+  const pw = await passwordStore.getPassword()
   assert(pw, "Unauthorised")
 
   const mnemonicId = await appStore.get("vaultVerifierCertificateMnemonicId")
