@@ -1,5 +1,5 @@
 import { AuthorizedSite } from "@extension/core"
-import { isTalismanUrl } from "@extension/core"
+import { isTalismanUrl } from "@extension/shared"
 
 import useAccounts from "./useAccounts"
 

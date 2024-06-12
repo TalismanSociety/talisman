@@ -1,5 +1,5 @@
 import keyring from "@polkadot/ui-keyring"
-import { log } from "extension-shared"
+import { isTalismanHostname, log } from "extension-shared"
 import Browser from "webextension-polyfill"
 
 import { db } from "../db"
@@ -27,7 +27,6 @@ import { MessageTypes, RequestType, ResponseType } from "../types"
 import { Port, RequestIdOnly } from "../types/base"
 import { awaitKeyringLoaded } from "../util/awaitKeyringLoaded"
 import { fetchHasSpiritKey } from "../util/hasSpiritKey"
-import { isTalismanHostname } from "../util/isTalismanHostname"
 import { ExtensionStore } from "./stores"
 import { unsubscribe } from "./subscriptions"
 
