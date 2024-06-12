@@ -56,7 +56,7 @@ const SignLedgerSubstrate: FC<SignHardwareSubstrateProps> = ({
 
     if (isRawPayload(payload)) {
       const tmpUnsigned = u8aWrapBytes(payload.data)
-      if (tmpUnsigned.length > 256) setError(t("The message is too long to signed with Ledger."))
+      if (tmpUnsigned.length > 256) setError(t("The message is too long to be signed with Ledger."))
 
       setUnsigned(tmpUnsigned)
       setIsRaw(true)
@@ -79,7 +79,7 @@ const SignLedgerSubstrate: FC<SignHardwareSubstrateProps> = ({
     if (!ledger || !unsigned || !onSigned || !account) return
 
     if (isRaw && unsigned.length > 256)
-      return setError(t("The message is too long to signed with Ledger."))
+      return setError(t("The message is too long to be signed with Ledger."))
 
     setError(null)
 
