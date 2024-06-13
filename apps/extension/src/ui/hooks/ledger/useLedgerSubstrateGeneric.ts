@@ -13,8 +13,16 @@ import {
   getLedgerErrorProps,
   getPolkadotLedgerDerivationPath,
 } from "./common"
+import { SubstrateMigrationApp } from "./useLedgerSubstrateMigrationApps"
 
-export const useLedgerSubstrateGeneric = (persist = false) => {
+type UseLedgerSubstrateGenericProps = {
+  persist?: boolean
+  app?: SubstrateMigrationApp | null
+}
+
+const DEFAULT_PROPS: UseLedgerSubstrateGenericProps = {}
+
+export const useLedgerSubstrateGeneric = ({ persist, app } = DEFAULT_PROPS) => {
   const { t } = useTranslation()
   const [isLoading, setIsLoading] = useState(false)
   const [refreshCounter, setRefreshCounter] = useState(0)
@@ -36,61 +44,54 @@ export const useLedgerSubstrateGeneric = (persist = false) => {
     }
   }, [ledger, persist])
 
-  const connectLedger = useCallback(async (resetError?: boolean) => {
-    if (refConnecting.current) return
-    refConnecting.current = true
+  const connectLedger = useCallback(
+    async (resetError?: boolean) => {
+      if (refConnecting.current) return
+      refConnecting.current = true
 
-    setIsReady(false)
-    setIsLoading(true)
-    // when displaying an error and polling silently, on the UI we don't want the error to disappear
-    // so error should be cleared explicitly
-    if (resetError) setError(undefined)
-
-    try {
-      await refTransport.current?.close()
-      refTransport.current = await TransportWebUSB.create()
-
-      const ledger = new PolkadotGenericApp(
-        refTransport.current,
-        "roc", // TODO remove
-        "https://api.zondax.ch/polkadot/transaction/metadata" // TODO remove
-      )
-
-      const bip44path = getPolkadotLedgerDerivationPath({})
-
-      // verify that Ledger connection is ready by querying first address
-      //const response =
-      await Promise.race([
-        ledger.getAddress(bip44path, 42, false),
-        throwAfter(5_000, "Timeout on Ledger Substrate Generic connection"),
-      ])
-
-      // console.log("connectLedger: Ledger response", response)
-
-      // if (response.error_message !== "No errors")
-      //   throw new LedgerError(response.error_message, "LedgerError", response.return_code)
-
-      setLedger(ledger)
-      setError(undefined)
-      setIsReady(true)
-    } catch (err) {
-      log.error("connectLedger Substrate Generic : " + (err as LedgerError).message, { err })
+      setIsReady(false)
+      setIsLoading(true)
+      // when displaying an error and polling silently, on the UI we don't want the error to disappear
+      // so error should be cleared explicitly
+      if (resetError) setError(undefined)
 
       try {
         await refTransport.current?.close()
-        refTransport.current = null
-      } catch (err2) {
-        log.error("Can't close ledger transport", err2)
-        // ignore
+        refTransport.current = await TransportWebUSB.create()
+
+        const ledger = new PolkadotGenericApp(refTransport.current)
+
+        const bip44path = getPolkadotLedgerDerivationPath({ app })
+
+        // verify that Ledger connection is ready by querying first address
+        await Promise.race([
+          ledger.getAddress(bip44path, 42, false),
+          throwAfter(5_000, "Timeout on Ledger Substrate Generic connection"),
+        ])
+
+        setLedger(ledger)
+        setError(undefined)
+        setIsReady(true)
+      } catch (err) {
+        log.error("connectLedger Substrate Generic : " + (err as LedgerError).message, { err })
+
+        try {
+          await refTransport.current?.close()
+          refTransport.current = null
+        } catch (err2) {
+          log.error("Can't close ledger transport", err2)
+          // ignore
+        }
+
+        setLedger(null)
+        setError(err as Error)
       }
 
-      setLedger(null)
-      setError(err as Error)
-    }
-
-    refConnecting.current = false
-    setIsLoading(false)
-  }, [])
+      refConnecting.current = false
+      setIsLoading(false)
+    },
+    [app]
+  )
 
   const { status, message, requiresManualRetry } = useMemo<{
     status: LedgerStatus

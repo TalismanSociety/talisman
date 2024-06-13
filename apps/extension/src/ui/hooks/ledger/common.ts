@@ -1,5 +1,6 @@
 import { DEBUG } from "@extension/shared"
 import { supportedApps } from "@zondax/ledger-substrate"
+import { SubstrateAppParams } from "@zondax/ledger-substrate/dist/common"
 import { AccountJsonHardwareSubstrate } from "extension-core"
 import { t } from "i18next"
 
@@ -215,17 +216,16 @@ export const getLedgerErrorProps = (err: LedgerError, appName: string): LedgerEr
   }
 }
 
-type SupportedApp = (typeof supportedApps)[number]
 export const getPolkadotLedgerDerivationPath = ({
   accountIndex = 0,
   addressOffset = 0,
-  app = supportedApps.find((a) => a.name === "Polkadot"),
+  app,
 }: {
   accountIndex?: number
   addressOffset?: number
-  app?: SupportedApp
+  app?: SubstrateAppParams | null
 }) => {
-  if (!app) throw new Error("Missing argument: app")
+  if (!app) app = supportedApps.find((a) => a.name === "Polkadot")!
 
   const HARDENED = 0x80000000
   const slip = app.slip0044 - HARDENED

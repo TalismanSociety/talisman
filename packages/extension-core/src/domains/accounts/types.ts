@@ -35,6 +35,7 @@ type AccountJsonHardwareSubstrateOwnProperties = {
   accountIndex: number
   addressOffset: number
   ledgerApp?: SubstrateLedgerAppType
+  migrationAppName?: string
 }
 
 export type AccountJsonHardwareSubstrate = AccountJson & AccountJsonHardwareSubstrateOwnProperties
@@ -128,7 +129,6 @@ export type AccountAddressType = KeypairType // keep custom type, might want to 
 export enum SubstrateLedgerAppType {
   Legacy = "substrate-legacy",
   Generic = "substrate-generic",
-  Migration = "substrate-migration",
 }
 
 export interface RequestAccountCreateFromSuri {
@@ -148,24 +148,17 @@ export type RequestAccountCreateLedgerSubstrateLegacy = Omit<
   ledgerApp: SubstrateLedgerAppType.Legacy
 }
 
-export type RequestAccountCreateLedgerSubstrateMigration = Omit<
-  RequestAccountCreateHardware,
-  "hardwareType"
-> & {
-  ledgerApp: SubstrateLedgerAppType.Migration
-}
-
 export type RequestAccountCreateLedgerSubstrateGeneric = Omit<
   RequestAccountCreateHardware,
   "hardwareType" | "genesisHash"
 > & {
   ledgerApp: SubstrateLedgerAppType.Generic
+  migrationAppName?: string
 }
 
 export type RequestAccountCreateLedgerSubstrate =
   | RequestAccountCreateLedgerSubstrateLegacy
   | RequestAccountCreateLedgerSubstrateGeneric
-  | RequestAccountCreateLedgerSubstrateMigration
 
 export interface RequestAccountCreateLedgerEthereum {
   name: string

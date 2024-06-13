@@ -1,4 +1,5 @@
 import { supportedApps } from "@zondax/ledger-substrate"
+import { SubstrateAppParams } from "@zondax/ledger-substrate/dist/common"
 import { Chain, ChainId } from "extension-core"
 import { useMemo } from "react"
 
@@ -47,33 +48,25 @@ const LEDGER_MIRATION_APPS: Record<string, ChainId> = {
   Statemine: "kusama-asset-hub",
 }
 
-export type SubstrateMigrationApp = {
-  name: string
-  slip44: number
-  cla: number
-  prefix: number
+export type SubstrateMigrationApp = SubstrateAppParams & {
   chain?: Chain | null
-}
+} & Record<string, unknown> // unused but fixes the dropdown ts error
 
 export const useLedgerSubstrateMigrationApps = () => {
   const chainsMap = useAllChainsMap()
 
   return useMemo(() => {
-    // const polkadot = supportedApps.find((app) => app.name === "Polkadot") // TODO UNCOMMENT
+    const polkadot = supportedApps.find((app) => app.name === "Polkadot")
 
     return (
       supportedApps
         // exclude the apps that use same DP & app ID as Polkadot, they don't need migration
-        // .filter((app) => app.slip0044 !== polkadot?.slip0044 && app.cla !== polkadot?.cla) // TODO UNCOMMENT
+        .filter((app) => app.slip0044 !== polkadot?.slip0044 && app.cla !== polkadot?.cla)
         .map<SubstrateMigrationApp>((app) => {
           const chain = chainsMap[LEDGER_MIRATION_APPS[app.name]] ?? null
-          const { name, slip0044: slip44, cla, ss58_addr_type: prefix } = app
           return {
-            name,
-            cla,
-            slip44,
+            ...app,
             chain,
-            prefix,
           }
         })
         .sort((a, b) => a.name.localeCompare(b.name))

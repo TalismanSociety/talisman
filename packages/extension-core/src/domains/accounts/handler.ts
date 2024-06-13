@@ -318,11 +318,9 @@ export default class AccountsHandler extends ExtensionHandler {
       type: "ed25519",
     }
 
-    if (
-      account.ledgerApp === SubstrateLedgerAppType.Legacy ||
-      account.ledgerApp === SubstrateLedgerAppType.Migration
-    )
-      meta.genesisHash = account.genesisHash
+    if (account.ledgerApp === SubstrateLedgerAppType.Legacy) meta.genesisHash = account.genesisHash
+    if (account.ledgerApp === SubstrateLedgerAppType.Generic && account.migrationAppName)
+      meta.migrationAppName = account.migrationAppName
 
     const { pair } = keyring.addHardware(address, "ledger", meta)
 

@@ -1,9 +1,10 @@
-import { LedgerEthDerivationPathType, SubstrateLedgerAppType } from "@extension/core"
+import { LedgerEthDerivationPathType } from "@extension/core"
 import { yupResolver } from "@hookform/resolvers/yup"
 import { notify, notifyUpdate } from "@talisman/components/Notifications"
 import { sleep } from "@talismn/util"
 import { LedgerEthereumAccountPicker } from "@ui/domains/Account/LedgerEthereumAccountPicker"
 import { LedgerSubstrateAccountPicker } from "@ui/domains/Account/LedgerSubstrateLegacyAccountPicker"
+import { useLedgerSubstrateMigrationApp } from "@ui/hooks/ledger/useLedgerSubstrateMigrationApps"
 import { FC, useCallback, useMemo, useState } from "react"
 import { useForm } from "react-hook-form"
 import { useTranslation } from "react-i18next"
@@ -12,8 +13,7 @@ import { Button, Dropdown } from "talisman-ui"
 import * as yup from "yup"
 
 import { LedgerSubstrateGenericAccountPicker } from "../../LedgerSubstrateGenericAccountPicker"
-//import { LedgerSubstrateMigrationAccountPicker } from "../../LedgerSubstrateMigrationAccountPicker"
-import { LedgerAccountDef, useAddLedgerAccount } from "./context"
+import { AddSubstrateLedgerAppType, LedgerAccountDef, useAddLedgerAccount } from "./context"
 
 const options: Record<LedgerEthDerivationPathType, string> = {
   LedgerLive: "Ledger Live",
@@ -68,6 +68,8 @@ type FormData = {
 export const AddLedgerSelectAccount = () => {
   const { t } = useTranslation("admin")
   const { data, importAccounts, onSuccess } = useAddLedgerAccount()
+
+  const app = useLedgerSubstrateMigrationApp(data.migrationAppName)
 
   const schema = useMemo(
     () =>
@@ -134,7 +136,11 @@ export const AddLedgerSelectAccount = () => {
   const isInvalidInputs = useMemo(() => {
     if (!data.type) return true
     if (data.type === "sr25519" && !data.substrateAppType) return true
-    if (data.type === "sr25519" && data.substrateAppType === "substrate-legacy" && !data.chainId)
+    if (
+      data.type === "sr25519" &&
+      data.substrateAppType === AddSubstrateLedgerAppType.Legacy &&
+      !data.chainId
+    )
       return true
     return false
   }, [data.chainId, data.substrateAppType, data.type])
@@ -174,21 +180,18 @@ export const AddLedgerSelectAccount = () => {
         </p>
         {data.type === "sr25519" && (
           <>
-            {data.substrateAppType === SubstrateLedgerAppType.Legacy && (
+            {data.substrateAppType === AddSubstrateLedgerAppType.Legacy && (
               <LedgerSubstrateAccountPicker
                 chainId={data.chainId as string}
                 onChange={handleAccountsChange}
               />
             )}
-            {data.substrateAppType === SubstrateLedgerAppType.Generic && (
+            {data.substrateAppType === AddSubstrateLedgerAppType.Generic && (
               <LedgerSubstrateGenericAccountPicker onChange={handleAccountsChange} />
             )}
-            {/* {data.substrateAppType === SubstrateLedgerAppType.Migration && (
-              <LedgerSubstrateMigrationAccountPicker
-                chainId={data.chainId as string}
-                onChange={handleAccountsChange}
-              />
-            )} */}
+            {data.substrateAppType === AddSubstrateLedgerAppType.Migration && !!app && (
+              <LedgerSubstrateGenericAccountPicker onChange={handleAccountsChange} app={app} />
+            )}
           </>
         )}
         {data.type === "ethereum" && (

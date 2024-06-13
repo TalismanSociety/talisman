@@ -44,6 +44,11 @@ export const useLedgerPolkadotPayload = (payload: SignerPayloadJSON | null) => {
         if (metadata15.version !== 15) throw new Error("Invalid metadata version")
         registry.setMetadata(metadata15, payload.signedExtensions)
 
+        // check if runtime supports CheckMetadataHash
+        const hasCheckMetadataHash = metadata15.asV15.extrinsic.signedExtensions.some(
+          (ext) => ext.identifier.toString() === "CheckMetadataHash"
+        )
+
         const metadataHash = get_metadata_digest(
           trimPrefix(hexMetadataRpc),
           token.symbol,
@@ -72,7 +77,13 @@ export const useLedgerPolkadotPayload = (payload: SignerPayloadJSON | null) => {
           specVersion
         )
 
-        return { txMetadata, metadataHash, registry, payloadWithMetadataHash }
+        return {
+          txMetadata,
+          metadataHash,
+          registry,
+          payloadWithMetadataHash,
+          hasCheckMetadataHash,
+        }
       } catch (error) {
         log.error("Failed to get shortened metadata", { error })
         throw error

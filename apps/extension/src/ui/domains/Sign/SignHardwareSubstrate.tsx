@@ -31,7 +31,6 @@ const getSignHardwareComponent = (account: AccountJsonAny | null) => {
           return SignLedgerSubstrateLegacy
         case SubstrateLedgerAppType.Generic:
           return SignLedgerSubstrateGeneric
-        case SubstrateLedgerAppType.Migration:
         default:
           throw new Error("Not implemented")
       }

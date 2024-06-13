@@ -10,6 +10,10 @@ import { hexToU8a, u8aToHex, u8aWrapBytes } from "@polkadot/util"
 import { classNames } from "@talismn/util"
 import { getPolkadotLedgerDerivationPath } from "@ui/hooks/ledger/common"
 import { useLedgerSubstrateGeneric } from "@ui/hooks/ledger/useLedgerSubstrateGeneric"
+import {
+  SubstrateMigrationApp,
+  useLedgerSubstrateMigrationApp,
+} from "@ui/hooks/ledger/useLedgerSubstrateMigrationApps"
 import { useAccountByAddress } from "@ui/hooks/useAccountByAddress"
 import { PolkadotGenericApp } from "@zondax/ledger-substrate"
 import { FC, useCallback, useEffect, useMemo, useState } from "react"
@@ -35,10 +39,11 @@ const sign = async (
   ledger: PolkadotGenericApp,
   payload: SignerPayloadJSON | SignerPayloadRaw,
   account: AccountJsonHardwareSubstrate,
+  app?: SubstrateMigrationApp | null,
   registry?: TypeRegistry | null,
   txMetadata?: string | null
 ) => {
-  const path = getPolkadotLedgerDerivationPath(account)
+  const path = getPolkadotLedgerDerivationPath({ ...account, app })
 
   if (isJsonPayload(payload)) {
     if (!txMetadata) throw new Error("Missing metadata")
@@ -71,12 +76,14 @@ const SignLedgerSubstrateGeneric: FC<SignHardwareSubstrateProps> = ({
   containerId,
 }) => {
   const account = useAccountByAddress(payload?.address)
+  const app = useLedgerSubstrateMigrationApp(account?.migrationAppName as string)
+
   const { t } = useTranslation("request")
   const [isSigning, setIsSigning] = useState(false)
   const [isSigned, setIsSigned] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const { ledger, refresh, status, message, isReady, requiresManualRetry } =
-    useLedgerSubstrateGeneric()
+    useLedgerSubstrateGeneric({ app })
 
   // reset
   useEffect(() => {
@@ -99,16 +106,18 @@ const SignLedgerSubstrateGeneric: FC<SignHardwareSubstrateProps> = ({
     isLoading: isLoadingMetadata,
   } = useLedgerPolkadotPayload(payload && isJsonPayload(payload) ? payload : null)
 
-  const { metadataHash, txMetadata, registry, payloadWithMetadataHash } = useMemo(
-    () =>
-      metadata ?? {
-        txMetadata: undefined,
-        metadataHash: undefined,
-        registry: undefined,
-        payloadWithMetadataHash: undefined,
-      },
-    [metadata]
-  )
+  const { metadataHash, txMetadata, registry, payloadWithMetadataHash, hasCheckMetadataHash } =
+    useMemo(
+      () =>
+        metadata ?? {
+          txMetadata: undefined,
+          metadataHash: undefined,
+          registry: undefined,
+          payloadWithMetadataHash: undefined,
+          hasCheckMetadataHash: undefined,
+        },
+      [metadata]
+    )
 
   useEffect(() => {
     if (errorMetadata)
@@ -124,10 +133,18 @@ const SignLedgerSubstrateGeneric: FC<SignHardwareSubstrateProps> = ({
 
     if (
       isJsonPayload(payload) &&
-      (!txMetadata || !metadataHash || !registry || !payloadWithMetadataHash)
+      (!txMetadata ||
+        !metadataHash ||
+        !registry ||
+        !payloadWithMetadataHash ||
+        !hasCheckMetadataHash)
     ) {
+      if (!hasCheckMetadataHash)
+        return setError(
+          t("This network doesn't support signatures from Ledger Polkadot Generic App.")
+        )
       if (errorMetadata) return setError((errorMetadata as Error).message)
-      if (!isLoadingMetadata) return setError("Metadata unavailable") // shouldn't happen, useShortenedMetadata throws if no metadata
+      if (!isLoadingMetadata) return setError(t("Metadata unavailable")) // shouldn't happen, useShortenedMetadata throws if no metadata
       return setError(null) // wait for metadata
     }
 
@@ -140,6 +157,7 @@ const SignLedgerSubstrateGeneric: FC<SignHardwareSubstrateProps> = ({
         ledger,
         payloadWithMetadataHash ?? payload,
         account as AccountJsonHardwareSubstrate,
+        app,
         registry,
         txMetadata
       )
@@ -175,9 +193,11 @@ const SignLedgerSubstrateGeneric: FC<SignHardwareSubstrateProps> = ({
     metadataHash,
     registry,
     payloadWithMetadataHash,
+    hasCheckMetadataHash,
+    t,
     errorMetadata,
     isLoadingMetadata,
-    t,
+    app,
   ])
 
   const onRefresh = useCallback(() => {

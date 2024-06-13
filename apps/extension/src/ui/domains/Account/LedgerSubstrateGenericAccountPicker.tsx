@@ -2,6 +2,7 @@ import { convertAddress } from "@talisman/util/convertAddress"
 import { LedgerAccountDefSubstrateGeneric } from "@ui/domains/Account/AccountAdd/AccountAddLedger/context"
 import { getPolkadotLedgerDerivationPath } from "@ui/hooks/ledger/common"
 import { useLedgerSubstrateGeneric } from "@ui/hooks/ledger/useLedgerSubstrateGeneric"
+import { SubstrateMigrationApp } from "@ui/hooks/ledger/useLedgerSubstrateMigrationApps"
 import { AccountImportDef, useAccountImportBalances } from "@ui/hooks/useAccountImportBalances"
 import useAccounts from "@ui/hooks/useAccounts"
 import { SubstrateLedgerAppType } from "extension-core"
@@ -14,7 +15,8 @@ import { DerivedAccountBase, DerivedAccountPickerBase } from "./DerivedAccountPi
 const useLedgerSubstrateGenericAccounts = (
   selectedAccounts: LedgerAccountDefSubstrateGeneric[],
   pageIndex: number,
-  itemsPerPage: number
+  itemsPerPage: number,
+  app?: SubstrateMigrationApp | null
 ) => {
   const walletAccounts = useAccounts()
   const { t } = useTranslation()
@@ -25,7 +27,7 @@ const useLedgerSubstrateGenericAccounts = (
   const [isBusy, setIsBusy] = useState(false)
   const [error, setError] = useState<string>()
 
-  const { isReady, ledger, ...connectionStatus } = useLedgerSubstrateGeneric()
+  const { isReady, ledger, ...connectionStatus } = useLedgerSubstrateGeneric({ app })
 
   const loadPage = useCallback(async () => {
     if (!ledger || !isReady) return
@@ -42,19 +44,19 @@ const useLedgerSubstrateGenericAccounts = (
         const accountIndex = skip + i
         const addressOffset = 0
 
-        // const HARDENED = 0x80000000
-        // const account = HARDENED + accountIndex
-        // const change = HARDENED
-        // const addressIndex = HARDENED + addressOffset
-        const path = getPolkadotLedgerDerivationPath({ accountIndex, addressOffset })
+        const path = getPolkadotLedgerDerivationPath({ accountIndex, addressOffset, app })
 
-        const { address } = await ledger.getAddress(path, 42, false)
+        const { address } = await ledger.getAddress(path, app?.ss58_addr_type ?? 42, false)
 
         newAccounts[i] = {
           accountIndex,
           addressOffset,
           address,
-          name: t("Ledger Polkadot {{accountIndex}}", { accountIndex: accountIndex + 1 }),
+          name: t("Ledger {{appName}} {{accountIndex}}", {
+            appName: app?.chain?.name ?? "Polkadot",
+            accountIndex: accountIndex + 1,
+          }),
+          migrationAppName: app?.name,
         } as LedgerSubstrateGenericAccount
 
         setLedgerAccounts([...newAccounts])
@@ -65,7 +67,7 @@ const useLedgerSubstrateGenericAccounts = (
     }
 
     setIsBusy(false)
-  }, [isReady, itemsPerPage, ledger, pageIndex, t])
+  }, [app, isReady, itemsPerPage, ledger, pageIndex, t])
 
   // start fetching balances only once all accounts are loaded to prevent recreating subscription 5 times
   const accountImportDefs = useMemo<AccountImportDef[]>(
@@ -73,7 +75,7 @@ const useLedgerSubstrateGenericAccounts = (
       ledgerAccounts.filter(Boolean).length === itemsPerPage
         ? ledgerAccounts
             .filter((acc): acc is LedgerSubstrateGenericAccount => !!acc)
-            .map((acc) => ({ address: acc.address, type: "ed25519", genesisHash: acc.genesisHash }))
+            .map((acc) => ({ address: acc.address, type: "ed25519" }))
         : [],
     [itemsPerPage, ledgerAccounts]
   )
@@ -121,12 +123,14 @@ const useLedgerSubstrateGenericAccounts = (
 
 type LedgerSubstrateGenericAccountPickerProps = {
   onChange?: (accounts: LedgerAccountDefSubstrateGeneric[]) => void
+  app?: SubstrateMigrationApp | null
 }
 
 type LedgerSubstrateGenericAccount = DerivedAccountBase & LedgerAccountDefSubstrateGeneric
 
 export const LedgerSubstrateGenericAccountPicker: FC<LedgerSubstrateGenericAccountPickerProps> = ({
   onChange,
+  app,
 }) => {
   const { t } = useTranslation()
   const itemsPerPage = 5
@@ -135,23 +139,28 @@ export const LedgerSubstrateGenericAccountPicker: FC<LedgerSubstrateGenericAccou
   const { accounts, error, isBusy } = useLedgerSubstrateGenericAccounts(
     selectedAccounts,
     pageIndex,
-    itemsPerPage
+    itemsPerPage,
+    app
   )
 
-  const handleToggleAccount = useCallback((acc: DerivedAccountBase) => {
-    const { address, name, accountIndex, addressOffset } = acc as LedgerSubstrateGenericAccount
-    setSelectedAccounts((prev) =>
-      prev.some((pa) => pa.address === address)
-        ? prev.filter((pa) => pa.address !== address)
-        : prev.concat({
-            ledgerApp: SubstrateLedgerAppType.Generic,
-            address,
-            name,
-            accountIndex,
-            addressOffset,
-          })
-    )
-  }, [])
+  const handleToggleAccount = useCallback(
+    (acc: DerivedAccountBase) => {
+      const { address, name, accountIndex, addressOffset } = acc as LedgerSubstrateGenericAccount
+      setSelectedAccounts((prev) =>
+        prev.some((pa) => pa.address === address)
+          ? prev.filter((pa) => pa.address !== address)
+          : prev.concat({
+              ledgerApp: SubstrateLedgerAppType.Generic,
+              address,
+              name,
+              accountIndex,
+              addressOffset,
+              migrationAppName: app?.name,
+            })
+      )
+    },
+    [app?.name]
+  )
 
   useEffect(() => {
     if (onChange) onChange(selectedAccounts)

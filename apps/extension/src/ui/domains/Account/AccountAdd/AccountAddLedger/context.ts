@@ -4,7 +4,6 @@ import {
   RequestAccountCreateLedgerSubstrate,
   RequestAccountCreateLedgerSubstrateGeneric,
   RequestAccountCreateLedgerSubstrateLegacy,
-  RequestAccountCreateLedgerSubstrateMigration,
   SubstrateLedgerAppType,
 } from "@extension/core"
 import { AssetDiscoveryMode } from "@extension/core"
@@ -17,17 +16,33 @@ import { useSearchParams } from "react-router-dom"
 
 export type LedgerAccountDefSubstrateGeneric = RequestAccountCreateLedgerSubstrateGeneric
 export type LedgerAccountDefSubstrateLegacy = RequestAccountCreateLedgerSubstrateLegacy
-export type LedgerAccountDefSubstrateMigration = RequestAccountCreateLedgerSubstrateMigration
 
 export type LedgerAccountDefSubstrate = RequestAccountCreateLedgerSubstrate
 export type LedgerAccountDefEthereum = RequestAccountCreateLedgerEthereum
 export type LedgerAccountDef = LedgerAccountDefSubstrate | LedgerAccountDefEthereum
 
+export enum AddSubstrateLedgerAppType {
+  Legacy = "Legacy",
+  Generic = "Generic",
+  Migration = "Migration",
+}
+
+const getSubstrateLedgerAppType = (type: AddSubstrateLedgerAppType) => {
+  switch (type) {
+    case AddSubstrateLedgerAppType.Legacy:
+      return SubstrateLedgerAppType.Legacy
+    case AddSubstrateLedgerAppType.Generic:
+    case AddSubstrateLedgerAppType.Migration:
+      return SubstrateLedgerAppType.Generic
+  }
+}
+
 type LedgerCreationInputs = {
   type: AccountAddressType
-  chainId?: string
-  substrateAppType: SubstrateLedgerAppType
+  substrateAppType: AddSubstrateLedgerAppType
   accounts: LedgerAccountDef[]
+  chainId?: string
+  migrationAppName?: string
 }
 
 const createAccount = (account: LedgerAccountDef, substrateAppType?: SubstrateLedgerAppType) => {
@@ -56,7 +71,9 @@ const useAddLedgerAccountProvider = ({ onSuccess }: { onSuccess: (address: strin
 
   const importAccounts = useCallback(
     async (accounts: LedgerAccountDef[]) => {
-      if (data.substrateAppType === "substrate-legacy")
+      assert(data.substrateAppType, "Substrate app type is required")
+
+      if (data.substrateAppType === AddSubstrateLedgerAppType.Legacy)
         assert(
           accounts.every((acc) => "genesisHash" in acc && acc.genesisHash === chain?.genesisHash),
           "Chain mismatch"
@@ -66,7 +83,9 @@ const useAddLedgerAccountProvider = ({ onSuccess }: { onSuccess: (address: strin
 
       const addresses: string[] = []
       for (const account of accounts)
-        addresses.push(await createAccount(account, data.substrateAppType))
+        addresses.push(
+          await createAccount(account, getSubstrateLedgerAppType(data.substrateAppType))
+        )
 
       api.assetDiscoveryStartScan(AssetDiscoveryMode.ACTIVE_NETWORKS, addresses)
 
