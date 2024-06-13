@@ -1,4 +1,4 @@
-import { AssetTransferMethod } from "@extension/core"
+import { AssetTransferMethod, SignerPayloadJSON } from "@extension/core"
 import { roundToFirstInteger } from "@extension/core"
 import { AccountType } from "@extension/core"
 import {
@@ -603,15 +603,21 @@ const useSendFundsProvider = () => {
   ])
 
   const sendWithSignature = useCallback(
-    async (signature: HexString) => {
+    async (signature: HexString, payload?: SignerPayloadJSON) => {
       try {
         setIsProcessing(true)
         if (subTransaction?.unsigned && token?.id && chain?.genesisHash) {
-          const { hash } = await api.assetTransferApproveSign(subTransaction.unsigned, signature, {
-            tokenId: token.id,
-            value: amount,
-            to,
-          })
+          // if a payload is supplied, it means the transaction was signed by a hardware wallet and payload may have been modified to include metadata hash
+          // otherwise, signature is for the initial payload
+          const { hash } = await api.assetTransferApproveSign(
+            payload || subTransaction.unsigned,
+            signature,
+            {
+              tokenId: token.id,
+              value: amount,
+              to,
+            }
+          )
           await sleep(500) // wait for dexie to pick up change in transactions table, prevents having "unfound transaction" flickering in progress screen
           gotoProgress({ hash, networkIdOrHash: chain.genesisHash })
           return

@@ -1,7 +1,10 @@
-import { Metadata, TypeRegistry } from "@polkadot/types"
-import { hexToNumber, isHex, u8aToHex } from "@polkadot/util"
+import { TypeRegistry } from "@polkadot/types"
+import { hexToNumber, u8aToHex } from "@polkadot/util"
 import { base64Decode } from "@polkadot/util-crypto"
-import { get_short_metadata_from_tx_blob } from "@talismn/metadata-shortener-wasm"
+import {
+  get_metadata_digest,
+  get_short_metadata_from_tx_blob,
+} from "@talismn/metadata-shortener-wasm"
 import { useQuery } from "@tanstack/react-query"
 import { api } from "@ui/api"
 import { useChainByGenesisHash } from "@ui/hooks/useChainByGenesisHash"
@@ -11,12 +14,12 @@ import { log } from "extension-shared"
 
 const trimPrefix = (str: string) => (str.startsWith("0x") ? str.slice(2) : str)
 
-export const useShortenedMetadata = (payload: SignerPayloadJSON | null) => {
+export const useLedgerPolkadotPayload = (payload: SignerPayloadJSON | null) => {
   const chain = useChainByGenesisHash(payload?.genesisHash)
   const token = useToken(chain?.nativeToken?.id)
 
   return useQuery({
-    queryKey: ["useShortenedMetadata", payload, chain?.id, token?.id],
+    queryKey: ["useLedgerPolkadotPayload", payload, chain?.id, token?.id],
     queryFn: async () => {
       if (!payload || !chain || !token) return null
 
@@ -34,19 +37,32 @@ export const useShortenedMetadata = (payload: SignerPayloadJSON | null) => {
         // decompress
         const metadataRpc = base64Decode(metadataDef.metadataRpc)
 
-        // check that it's valid V15
+        // metadata v15 is required by the shortener
         const registry = new TypeRegistry()
-        const metadata = new Metadata(registry, metadataRpc)
-        if (metadata.version !== 15) throw new Error("Invalid metadata version")
         const hexMetadataRpc = u8aToHex(metadataRpc)
+        const metadata15 = registry.createType("Metadata", hexMetadataRpc)
+        if (metadata15.version !== 15) throw new Error("Invalid metadata version")
+        registry.setMetadata(metadata15, payload.signedExtensions)
 
-        registry.setSignedExtensions(payload.signedExtensions)
-        const extPayload = registry.createType("ExtrinsicPayload", payload, {
-          version: payload.version,
-        })
+        const metadataHash = get_metadata_digest(
+          trimPrefix(hexMetadataRpc),
+          token.symbol,
+          token.decimals,
+          chain.prefix ?? 42,
+          specName,
+          specVersion
+        )
+
+        const payloadWithMetadataHash = {
+          ...payload,
+          metadataHash: `0x${metadataHash}`,
+          mode: 1,
+        } as SignerPayloadJSON
+
+        const extPayload = registry.createType("ExtrinsicPayload", payloadWithMetadataHash)
         const hexPayload = u8aToHex(extPayload.toU8a(true))
 
-        const shortened = get_short_metadata_from_tx_blob(
+        const txMetadata = get_short_metadata_from_tx_blob(
           trimPrefix(hexMetadataRpc),
           trimPrefix(hexPayload),
           token.symbol,
@@ -56,10 +72,7 @@ export const useShortenedMetadata = (payload: SignerPayloadJSON | null) => {
           specVersion
         )
 
-        // if returned value is not a hex string, it's an error message
-        if (!isHex("0x" + shortened)) throw new Error(shortened)
-
-        return shortened
+        return { txMetadata, metadataHash, registry, payloadWithMetadataHash }
       } catch (error) {
         log.error("Failed to get shortened metadata", { error })
         throw error

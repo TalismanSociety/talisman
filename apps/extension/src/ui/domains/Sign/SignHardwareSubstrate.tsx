@@ -16,7 +16,7 @@ export type SignHardwareSubstrateProps = {
   className?: string
   onCancel?: () => void
   onSentToDevice?: (sent: boolean) => void
-  onSigned: (result: { signature: HexString }) => Promise<void> | void
+  onSigned: (result: { signature: HexString; payload?: SignerPayloadJSON }) => Promise<void> | void
 }
 
 const getSignHardwareComponent = (account: AccountJsonAny | null) => {

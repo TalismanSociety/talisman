@@ -1,4 +1,4 @@
-import { roundToFirstInteger } from "@extension/core"
+import { SignerPayloadJSON, roundToFirstInteger } from "@extension/core"
 import { log } from "@extension/shared"
 import { HexString } from "@polkadot/util/types"
 import { planckToTokens } from "@talismn/util"
@@ -20,9 +20,9 @@ export const SendFundsHardwareSubstrate = () => {
   const knownAddress = useIsKnownAddress(to)
 
   const handleSigned = useCallback(
-    async ({ signature }: { signature: HexString }) => {
+    async ({ signature, payload }: { signature: HexString; payload?: SignerPayloadJSON }) => {
       try {
-        await sendWithSignature(signature)
+        await sendWithSignature(signature, payload)
 
         // this analytics call is designed to mirror the shape of the other 'asset transfer' calls
         // it needs to be on the fronted because the ledger signing backend handler doesn't have access to all of the details
