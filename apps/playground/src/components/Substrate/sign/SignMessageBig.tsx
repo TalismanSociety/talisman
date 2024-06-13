@@ -39,7 +39,7 @@ const SignMessageInner = () => {
     setIsProcessing(false)
   }, [account, message, extension?.signer])
 
-  const isValid = useMemo(() => {
+  const verify = useMemo(() => {
     return (
       result && signatureVerify(message, result.signature as string, account?.address as string)
     )
@@ -56,8 +56,13 @@ const SignMessageInner = () => {
         Sign Message
       </Button>
       {result && <pre className="my-8 ">{JSON.stringify(result, undefined, 2)}</pre>}
+      {verify && (
+        <pre className="my-8 ">
+          {JSON.stringify({ ...verify, publicKey: "[redacted]" }, undefined, 2)}
+        </pre>
+      )}
       {result ? (
-        isValid ? (
+        verify?.isValid ? (
           <div className="text-alert-success my-8 ">Signature is valid</div>
         ) : (
           <div className="text-alert-error my-8 ">Signature is invalid</div>

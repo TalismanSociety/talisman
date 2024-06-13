@@ -1,7 +1,7 @@
 import { SignerPayloadJSON, SignerPayloadRaw } from "@extension/core"
 import { log } from "@extension/shared"
 import { TypeRegistry } from "@polkadot/types"
-import { hexToU8a } from "@polkadot/util"
+import { hexToU8a, u8aToHex, u8aWrapBytes } from "@polkadot/util"
 import { classNames } from "@talismn/util"
 import { useLedgerSubstrateLegacy } from "@ui/hooks/ledger/useLedgerSubstrateLegacy"
 import { useAccountByAddress } from "@ui/hooks/useAccountByAddress"
@@ -54,17 +54,19 @@ const SignLedgerSubstrateLegacy: FC<SignHardwareSubstrateProps> = ({
     if (!payload) return
 
     if (isRawPayload(payload)) {
-      setUnsigned(hexToU8a(payload.data))
-      setIsRaw(true)
-      return
-    }
+      const tmpUnsigned = u8aWrapBytes(payload.data)
+      if (tmpUnsigned.length > 256) setError(t("The message is too long to be signed with Ledger."))
 
-    if (payload.signedExtensions) registry.setSignedExtensions(payload.signedExtensions)
-    const extrinsicPayload = registry.createType("ExtrinsicPayload", payload, {
-      version: payload.version,
-    })
-    setUnsigned(extrinsicPayload.toU8a(true))
-    setIsRaw(false)
+      setUnsigned(tmpUnsigned)
+      setIsRaw(true)
+    } else {
+      if (payload.signedExtensions) registry.setSignedExtensions(payload.signedExtensions)
+      const extrinsicPayload = registry.createType("ExtrinsicPayload", payload, {
+        version: payload.version,
+      })
+      setUnsigned(extrinsicPayload.toU8a(true))
+      setIsRaw(false)
+    }
   }, [payload, t])
 
   const onRefresh = useCallback(() => {
@@ -75,12 +77,19 @@ const SignLedgerSubstrateLegacy: FC<SignHardwareSubstrateProps> = ({
   const signLedger = useCallback(async () => {
     if (!ledger || !unsigned || !onSigned || !account) return
 
+    if (isRaw && unsigned.length > 256)
+      return setError(t("The message is too long to be signed with Ledger."))
+
     setError(null)
 
     try {
-      const { signature } = await (isRaw
+      let { signature } = await (isRaw
         ? ledger.signRaw(unsigned, account.accountIndex, account.addressOffset)
         : ledger.sign(unsigned, account.accountIndex, account.addressOffset))
+
+      if (isRaw)
+        // remove first byte which stores the signature type (0 here, as 0 = ed25519)
+        signature = u8aToHex(hexToU8a(signature).slice(1))
 
       // await to keep loader spinning until popup closes
       await onSigned({ signature })

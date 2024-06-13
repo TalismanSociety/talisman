@@ -76,6 +76,13 @@ type ModuleType = "substrate-native"
 export const subNativeTokenId = (chainId: ChainId) =>
   `${chainId}-substrate-native`.toLowerCase().replace(/ /g, "-")
 
+// The following 'value sources' should completely replace the previous rather than merging together
+const REPLACE_SOURCES = [
+  "substrate-native-locks",
+  "substrate-native-freezes",
+  "nompools-staking",
+  "crowdloan",
+]
 /**
  * Function to merge two 'sub sources' of the same balance together, or
  * two instances of the same balance with different values.
@@ -89,15 +96,19 @@ const mergeBalances = (balance1: SubNativeBalance | undefined, balance2: SubNati
     getBalanceId(balance1) === getBalanceId(balance2),
     "Balances with different IDs should not be merged"
   )
+  // locks and freezes should completely replace the previous rather than merging together
   const existingValues = Object.fromEntries(
-    balance1.values.map((value) => [getValueId(value), value])
+    balance1.values
+      .filter((v) => !v.source || !REPLACE_SOURCES.includes(v.source))
+      .map((value) => [getValueId(value), value])
   )
   const newValues = Object.fromEntries(balance2.values.map((value) => [getValueId(value), value]))
+  const mergedValues = { ...existingValues, ...newValues }
 
   const merged = {
     ...balance1,
-    status: balance2.status,
-    values: Object.values({ ...existingValues, ...newValues }),
+    status: balance2.status, // only the status field should actually be different apart from the values
+    values: Object.values(mergedValues),
   }
   return merged
 }
@@ -1001,14 +1012,14 @@ async function subscribeNompoolStaking(
               values: [
                 {
                   source: "nompools-staking",
-                  type: "reserved",
+                  type: "nompool",
                   label: "nompools-staking",
                   amount: amount.toString(),
                   meta: { type: "nompool", poolId: parsedPoolId, description: poolMetadata },
                 },
                 {
                   source: "nompools-staking",
-                  type: "reserved",
+                  type: "nompool",
                   label: "nompools-unbonding",
                   amount: unbondingAmount.toString(),
                   meta: {
@@ -1320,7 +1331,7 @@ async function subscribeCrowdloans(
               chainId,
               tokenId,
               values: Array.from(contributions).map(({ amount, paraId }) => ({
-                type: "reserved",
+                type: "crowdloan",
                 label: "crowdloan",
                 source: "crowdloan",
                 amount: amount,
