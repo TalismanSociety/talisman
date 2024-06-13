@@ -6,7 +6,6 @@ import { watCryptoWaitReady } from "@talismn/scale"
 /* eslint-disable @typescript-eslint/no-non-null-assertion */
 // import Extension from "./Extension"
 import { TALISMAN_WEB_APP_DOMAIN } from "extension-shared"
-import Browser from "webextension-polyfill"
 
 import { getMessageSenderFn } from "../../../../tests/util"
 import Extension from "../../../handlers/Extension"
@@ -35,11 +34,11 @@ describe("Sites Authorised Handler", () => {
   }
 
   afterAll(async () => {
-    await Browser.storage.local.clear()
+    await chrome.storage.local.clear()
   })
 
   beforeAll(async () => {
-    await Browser.storage.local.clear()
+    await chrome.storage.local.clear()
 
     handler = await createExtension()
     messageSender = getMessageSenderFn(handler)

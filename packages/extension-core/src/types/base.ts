@@ -1,5 +1,4 @@
-import { Runtime } from "webextension-polyfill"
-export declare type Port = chrome.runtime.Port | Runtime.Port
+export declare type Port = chrome.runtime.Port
 
 export declare type RequestIdOnly = {
   id: string

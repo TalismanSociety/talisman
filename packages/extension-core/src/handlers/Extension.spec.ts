@@ -10,7 +10,6 @@ import { cryptoWaitReady, signatureVerify } from "@polkadot/util-crypto"
 import { watCryptoWaitReady } from "@talismn/scale"
 import { waitFor } from "@testing-library/dom"
 import { TALISMAN_WEB_APP_DOMAIN } from "extension-shared"
-import Browser from "webextension-polyfill"
 
 import { getMessageSenderFn } from "../../tests/util"
 import { db } from "../db"
@@ -70,7 +69,7 @@ describe("Extension", () => {
   }
 
   beforeAll(async () => {
-    await Browser.storage.local.clear()
+    await chrome.storage.local.clear()
     extension = await createExtension()
     messageSender = getMessageSenderFn(extension)
 

@@ -1,17 +1,17 @@
 import { api } from "@ui/api"
 import { useBuyTokensModal } from "@ui/domains/Asset/Buy/useBuyTokensModal"
 import { useEffect } from "react"
-import Browser from "webextension-polyfill"
 
 const focusCurrentTab = async () => {
   // ensure tab is active
-  const tab = await Browser.tabs.getCurrent()
-  if (!tab.active) await Browser.tabs.update(tab.id, { active: true })
+  const tab = await chrome.tabs.getCurrent()
+
+  if (tab?.id && !tab.active) chrome.tabs.update(tab.id, { active: true })
 
   // ensure window is focused
-  const win = await Browser.windows.getCurrent()
+  const win = await chrome.windows.getCurrent()
   if (!win.focused && typeof win.id === "number")
-    await Browser.windows.update(win.id, { focused: true })
+    await chrome.windows.update(win.id, { focused: true })
 }
 
 /**

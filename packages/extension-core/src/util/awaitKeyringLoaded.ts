@@ -1,7 +1,6 @@
 import keyring from "@polkadot/ui-keyring"
 import { cryptoWaitReady } from "@polkadot/util-crypto"
 import { watCryptoWaitReady } from "@talismn/scale"
-import Browser from "webextension-polyfill"
 
 /**
  * @function awaitKeyringLoaded
@@ -19,7 +18,7 @@ export const awaitKeyringLoaded = async () => {
 
   return new Promise((resolve) => {
     const keyringSubscription = keyring.accounts.subject.subscribe(async (addresses) => {
-      const storageKeys = Object.keys(await Browser.storage.local.get(null))
+      const storageKeys = Object.keys(await chrome.storage.local.get(null))
 
       const loadedAccountsCount = Object.keys(addresses).length
       const totalAccountsCount = storageKeys.filter((key) => key.startsWith("account:0x")).length

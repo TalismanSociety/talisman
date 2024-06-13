@@ -1,7 +1,6 @@
 import { assert } from "@polkadot/util"
 import { PORT_EXTENSION } from "extension-shared"
 import { log } from "extension-shared"
-import { Runtime } from "webextension-polyfill"
 
 import { cleanupEvmErrorMessage, getEvmErrorCause } from "../domains/ethereum/errors"
 import { MessageTypes, TransportRequestMessage } from "../types"
@@ -60,7 +59,7 @@ const talismanHandler = <TMessageType extends MessageTypes>(
   // eslint-disable-next-line no-console
   log.debug(`[${port.name} REQ] ${source}`, { request: shouldLog ? request : OBFUSCATED_PAYLOAD })
 
-  const safePostMessage = (port: Runtime.Port | undefined, message: unknown): void => {
+  const safePostMessage = (port: chrome.runtime.Port | undefined, message: unknown): void => {
     // only send message back to port if it's still connected, unfortunately this check is not reliable in all browsers
     if (!port) return
 

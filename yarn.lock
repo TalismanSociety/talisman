@@ -15838,7 +15838,6 @@ __metadata:
     url-join: ^5.0.0
     uuid: ^8.3.2
     viem: ^2.8.18
-    webextension-polyfill: 0.8.0
     yup: 0.32.11
   languageName: unknown
   linkType: soft
@@ -16039,7 +16038,6 @@ __metadata:
     url: ^0.11.3
     url-join: ^5.0.0
     viem: ^2.8.18
-    webextension-polyfill: 0.8.0
     webpack: ^5.89.0
     webpack-bundle-analyzer: ^4.10.1
     webpack-cli: ^4.10.0
@@ -27244,13 +27242,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"webextension-polyfill@npm:0.8.0, webextension-polyfill@npm:^0.8.0":
-  version: 0.8.0
-  resolution: "webextension-polyfill@npm:0.8.0"
-  checksum: 56286e6216e15834fdcdc3dcf611000d96b49c9d925de3d657eb5f1e294074180dd3efe78a0966223eb311ac3a0ac5fdf71d324b836bf05724455ffd6c7c98c3
-  languageName: node
-  linkType: hard
-
 "webextension-polyfill@npm:>=0.10.0 <1.0":
   version: 0.10.0
   resolution: "webextension-polyfill@npm:0.10.0"
@@ -27262,6 +27253,13 @@ __metadata:
   version: 0.7.0
   resolution: "webextension-polyfill@npm:0.7.0"
   checksum: fb738a5de07feb593875e02f25c3ab4276c8736118929556c8d4bdf965bb0f11c96ea263cd397b9b21259e8faf2dce2eaaa42ce08c922d96de7adb5896ec7d10
+  languageName: node
+  linkType: hard
+
+"webextension-polyfill@npm:^0.8.0":
+  version: 0.8.0
+  resolution: "webextension-polyfill@npm:0.8.0"
+  checksum: 56286e6216e15834fdcdc3dcf611000d96b49c9d925de3d657eb5f1e294074180dd3efe78a0966223eb311ac3a0ac5fdf71d324b836bf05724455ffd6c7c98c3
   languageName: node
   linkType: hard
 
