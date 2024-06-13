@@ -148,22 +148,29 @@ module.exports = {
           'SurtExpanded, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji", sans-serif',
         whyteInkTrap:
           'WhyteInktrapMedium, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji", sans-serif',
+        inter:
+          'Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji", sans-serif',
+        unbounded:
+          'Unbounded, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji", sans-serif',
       },
       keyframes: {
         "fade-in": {
-          "0%": {
-            opacity: "0",
-          },
-          "100%": {
-            opacity: "1",
-          },
+          "0%": { opacity: "0" },
+          "100%": { opacity: "1" },
+        },
+        "scale-in-out": {
+          "0%": { transform: "scale(0)" },
+          "50%": { transform: "scale(1)" },
+          "100%": { transform: "scale(0)" },
         },
       },
       animation: {
-        "fade-in-fase": "fade-in 0.1s ease-out",
+        "fade-in-fast": "fade-in 0.1s ease-out",
         "fade-in": "fade-in 0.2s ease-out",
         "fade-in-slow": "fade-in 0.5s ease-out",
         "spin-slow": "spin 2s linear infinite",
+        "spin-once": "spin 4s linear forwards",
+        "scale-in-out-once": "scale-in-out 1.5s forwards",
       },
       gridTemplateColumns: {
         // 2 columns, 2nd grows

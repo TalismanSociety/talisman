@@ -113,10 +113,8 @@ const useBlockExplorerUrl = (token: Token | null) => {
   const evmNetwork = useEvmNetwork(token?.evmNetwork?.id)
 
   return useMemo(() => {
-    if (isErc20Token(token) && evmNetwork?.explorerUrl)
+    if ((isErc20Token(token) || isUniswapV2Token(token)) && evmNetwork?.explorerUrl)
       return urlJoin(evmNetwork.explorerUrl, "token", token.contractAddress)
-    if (isUniswapV2Token(token) && evmNetwork?.explorerUrl)
-      return urlJoin(evmNetwork.explorerUrl, "token", token.poolAddress)
 
     return null
   }, [token, evmNetwork?.explorerUrl])

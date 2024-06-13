@@ -549,6 +549,14 @@ export class Balance {
     return this.getValue("locked")
   }
 
+  get crowdloans() {
+    return this.getValue("crowdloan")
+  }
+
+  get nompools() {
+    return this.getValue("nompool")
+  }
+
   /** The extra balance of this token */
   get extra() {
     const extra = this.getRawValue("extra")
@@ -615,12 +623,17 @@ export class Balance {
    * Now, it is the bigger of the locked amount and the reserved amounts, i.e. `max(locked, reserved)`.
    */
   get unavailable() {
-    const oldCalculation = () => this.#format(this.locked.planck + this.reserved.planck)
-    const newCalculation = () => this.#format(BigMath.max(this.locked.planck, this.reserved.planck))
-
-    if (this.#storage.useLegacyTransferableCalculation) return oldCalculation()
-    return newCalculation()
+    const oldCalculation = () => this.locked.planck + this.reserved.planck
+    const newCalculation = () => BigMath.max(this.locked.planck, this.reserved.planck)
+    const baseUnavailable = this.#storage.useLegacyTransferableCalculation
+      ? oldCalculation()
+      : newCalculation()
+    const otherUnavailable =
+      this.crowdloans.reduce((total, each) => total + each.amount.planck, 0n) +
+      this.nompools.reduce((total, each) => total + each.amount.planck, 0n)
+    return this.#format(baseUnavailable + otherUnavailable)
   }
+
   /** The feePayable balance of this token. Is generally the free amount - the feeFrozen amount. */
   get feePayable() {
     // if no locks exist, feePayable is equal to the free amount
@@ -743,6 +756,7 @@ export class PlanckSumBalancesFormatter {
   get unavailable() {
     return this.#sum("unavailable")
   }
+
   /** The feePayable balance of these tokens. Is generally the free amount - the feeFrozen amount. */
   get feePayable() {
     return this.#sum("feePayable")

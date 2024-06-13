@@ -1,8 +1,7 @@
 import { WithTooltip } from "@talisman/components/Tooltip"
-import { convertAddress } from "@talisman/util/convertAddress"
 import { classNames } from "@talismn/util"
 import { useAccountByAddress } from "@ui/hooks/useAccountByAddress"
-import { useAddressBook } from "@ui/hooks/useAddressBook"
+import { useContact } from "@ui/hooks/useContact"
 import { useFormattedAddress } from "@ui/hooks/useFormattedAddress"
 import { FC, useMemo } from "react"
 import { PillButton } from "talisman-ui"
@@ -10,16 +9,6 @@ import { PillButton } from "talisman-ui"
 import { AccountIcon } from "../../Account/AccountIcon"
 import { AccountTypeIcon } from "../../Account/AccountTypeIcon"
 import { Address } from "../../Account/Address"
-
-const useContact = (address?: string | null) => {
-  const { contacts } = useAddressBook()
-
-  return useMemo(() => {
-    if (!address) return undefined
-    const genericAddress = convertAddress(address, null)
-    return contacts?.find((c) => convertAddress(c.address, null) === genericAddress)
-  }, [address, contacts])
-}
 
 type AddressPillButtonProps = {
   address?: string | null
@@ -30,22 +19,22 @@ type AddressPillButtonProps = {
 
 export const AddressPillButton: FC<AddressPillButtonProps> = ({
   address,
-  genesisHash,
+  genesisHash: tokenGenesisHash,
   className,
   onClick,
 }) => {
   const account = useAccountByAddress(address as string)
-  const contact = useContact(address)
+  const contact = useContact(address, tokenGenesisHash)
 
   const { name, genesisHash: accountGenesisHash } = useMemo(() => {
     if (account) return account
-    if (contact) return { name: contact.name, genesisHash: undefined }
+    if (contact) return { name: contact.name, genesisHash: contact.genesisHash }
     return { name: undefined, genesisHash: undefined }
   }, [account, contact])
 
   const formattedAddress = useFormattedAddress(
     address ?? undefined,
-    genesisHash ?? accountGenesisHash
+    tokenGenesisHash ?? accountGenesisHash
   )
   const displayAddress = useMemo(
     () => (account ? formattedAddress : address) ?? undefined,

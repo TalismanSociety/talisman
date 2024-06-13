@@ -1,4 +1,3 @@
-import { assert } from "@polkadot/util"
 import { DEBUG, IS_FIREFOX } from "extension-shared"
 import { gt } from "semver"
 import Browser from "webextension-polyfill"
@@ -6,6 +5,7 @@ import Browser from "webextension-polyfill"
 import { migratePasswordV2ToV1 } from "../../libs/migrations/legacyMigrations"
 import { StorageProvider } from "../../libs/Store"
 import { StakingSupportedChain } from "../staking/types"
+import { TalismanNotOnboardedError } from "./utils"
 
 type ONBOARDED_TRUE = "TRUE"
 type ONBOARDED_FALSE = "FALSE"
@@ -50,9 +50,6 @@ export const DEFAULT_APP_STATE: AppStoreData = {
 }
 
 export class AppStore extends StorageProvider<AppStoreData> {
-  // keeps track of 'onboarding requests' per session so that each dapp can only cause the onboarding tab to focus once
-  onboardingRequestsByUrl: { [url: string]: boolean } = {}
-
   constructor() {
     super("app", DEFAULT_APP_STATE)
 
@@ -85,10 +82,9 @@ export class AppStore extends StorageProvider<AppStoreData> {
   }
 
   async ensureOnboarded() {
-    assert(
-      await this.getIsOnboarded(),
-      "Talisman extension has not been configured yet. Please continue with onboarding."
-    )
+    const isOnboarded = await this.getIsOnboarded()
+    if (!isOnboarded) throw new TalismanNotOnboardedError()
+
     return true
   }
 

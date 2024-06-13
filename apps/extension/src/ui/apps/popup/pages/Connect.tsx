@@ -1,17 +1,17 @@
-import { ProviderType } from "@extension/core"
+import { AccountJsonAny, ProviderType } from "@extension/core"
 import { KnownRequestIdOnly } from "@extension/core"
 import { AppPill } from "@talisman/components/AppPill"
 import { notify } from "@talisman/components/Notifications"
-import useSet from "@talisman/hooks/useSet"
 import { InfoIcon } from "@talismn/icons"
 import { api } from "@ui/api"
 import { ConnectAccountsContainer } from "@ui/domains/Site/ConnectAccountsContainer"
 import { ConnectAccountToggleButtonRow } from "@ui/domains/Site/ConnectAccountToggleButtonRow"
+import { ConnectedAccountsPolkadot } from "@ui/domains/Site/ConnectedAccountsPolkadot"
 import { useAccountsForSite } from "@ui/hooks/useAccountsForSite"
 import { useAnalytics } from "@ui/hooks/useAnalytics"
 import { useRequest } from "@ui/hooks/useRequest"
 import capitalize from "lodash/capitalize"
-import { FC, useCallback, useEffect, useMemo } from "react"
+import { FC, useCallback, useEffect, useMemo, useState } from "react"
 import { Trans, useTranslation } from "react-i18next"
 import { useParams } from "react-router-dom"
 import { Button, Drawer } from "talisman-ui"
@@ -53,30 +53,22 @@ const NoAccountWarning = ({
   )
 }
 
+type ConnectComponent = FC<{
+  accounts: AccountJsonAny[]
+  connected: string[]
+  setConnected: (connected: string[]) => void
+  onNoAccountClose: (navigateToAddAccount: boolean) => () => void
+}>
+
 export const Connect: FC<{ className?: string }> = ({ className }) => {
   const { t } = useTranslation("request")
   const { id } = useParams<"id">() as KnownRequestIdOnly<"auth">
   const authRequest = useRequest(id)
   const { popupOpenEvent } = useAnalytics()
   const allAccounts = useAccountsForSite(authRequest?.url ?? null)
-  const { items: connected, toggle, set, clear } = useSet<string>()
-  const ethereum = !!authRequest?.request?.ethereum
+  const [connected, setConnected] = useState<string[]>([])
 
-  const accounts = useMemo(() => {
-    if (!authRequest || !allAccounts) return []
-
-    // all accounts if polkadot, only ethereum accounts if ethereum
-    return authRequest.request.ethereum
-      ? allAccounts.filter(({ type }) => type === "ethereum")
-      : allAccounts
-  }, [allAccounts, authRequest])
-
-  const handleToggle = useCallback(
-    (address: string) => () => {
-      ethereum ? set([address]) : toggle(address)
-    },
-    [ethereum, set, toggle]
-  )
+  const ethereum = Boolean(authRequest?.request?.ethereum)
 
   const authorise = useCallback(async () => {
     if (!authRequest) return
@@ -104,7 +96,7 @@ export const Connect: FC<{ className?: string }> = ({ className }) => {
     popupOpenEvent("connect")
   }, [popupOpenEvent])
 
-  const handleNoAccountClose = useCallback(
+  const onNoAccountClose = useCallback(
     (navigateToAddAccount: boolean) => () => {
       if (navigateToAddAccount) {
         api.dashboardOpen("/accounts/add")
@@ -115,70 +107,22 @@ export const Connect: FC<{ className?: string }> = ({ className }) => {
     [ignore, reject]
   )
 
-  const handleConnectAllClick = useCallback(() => {
-    set(accounts.map((account) => account.address))
-  }, [accounts, set])
-
   if (!authRequest) return null
+
+  const ConnectContentComponent: ConnectComponent = ethereum ? ConnectEth : ConnectPolkadot
 
   return (
     <PopupLayout className={className}>
       <PopupHeader>
         <AppPill url={authRequest.url} />
       </PopupHeader>
-      <PopupContent>
-        <h3 className="text-body-secondary mb-6 mt-0 pt-10 text-sm">
-          {ethereum
-            ? t("Choose the account you'd like to connect")
-            : t("Choose the account(s) you'd like to connect")}
-        </h3>
-        <section className="flex flex-col gap-4">
-          <ConnectAccountsContainer
-            status="disabled"
-            connectedAddresses={connected}
-            label={ethereum ? t("Ethereum") : t("Polkadot")}
-            infoText={t(`Accounts will be connected via the {{type}} provider`, {
-              type: ethereum ? "Ethereum" : "Polkadot",
-            })}
-            isSingleProvider
-          >
-            {!ethereum && (
-              <div className="mb-2 mt-6 flex w-full items-center justify-end gap-4 px-8 text-xs">
-                <button
-                  type="button"
-                  className="text-body-secondary hover:text-grey-300"
-                  onClick={clear}
-                >
-                  {t("Disconnect All")}
-                </button>
-                <div className="bg-body-disabled h-[1rem] w-0.5 "></div>
-                <button
-                  type="button"
-                  className="text-body-secondary hover:text-grey-300"
-                  onClick={handleConnectAllClick}
-                >
-                  {t("Connect All")}
-                </button>
-              </div>
-            )}
-            {accounts.map((account) => (
-              <ConnectAccountToggleButtonRow
-                key={account.address}
-                account={account}
-                checked={connected.includes(account?.address)}
-                onClick={handleToggle(account.address)}
-              />
-            ))}
-          </ConnectAccountsContainer>
-          {!accounts.length && (
-            <NoAccountWarning
-              type={ethereum ? "ethereum" : "polkadot"}
-              onIgnoreClick={handleNoAccountClose(false)}
-              onAddAccountClick={handleNoAccountClose(true)}
-            />
-          )}
-        </section>
-      </PopupContent>
+      <ConnectContentComponent
+        accounts={allAccounts}
+        connected={connected}
+        setConnected={setConnected}
+        onNoAccountClose={onNoAccountClose}
+      />
+
       <PopupFooter>
         <div className="grid w-full grid-cols-2 gap-12">
           <Button onClick={reject}>{t("Reject")}</Button>
@@ -188,5 +132,95 @@ export const Connect: FC<{ className?: string }> = ({ className }) => {
         </div>
       </PopupFooter>
     </PopupLayout>
+  )
+}
+
+export const ConnectPolkadot: ConnectComponent = ({
+  accounts,
+  connected,
+  setConnected,
+  onNoAccountClose,
+}) => {
+  const { t } = useTranslation("request")
+
+  const activeAccounts = useMemo(
+    () =>
+      accounts.map((acc) => [acc, connected.includes(acc.address)] as [AccountJsonAny, boolean]),
+    [accounts, connected]
+  )
+
+  return (
+    <PopupContent>
+      <h3 className="text-body-secondary mb-6 mt-0 pt-10 text-sm">
+        {t("Choose the account(s) you'd like to connect")}
+      </h3>
+      <section className="flex flex-col gap-4">
+        <ConnectAccountsContainer
+          status="disabled"
+          connectedAddresses={connected}
+          label={t("Polkadot")}
+          infoText={t(`Accounts will be connected via the Polkadot provider`)}
+          isSingleProvider
+        >
+          <ConnectedAccountsPolkadot
+            activeAccounts={activeAccounts}
+            onUpdateAccounts={setConnected}
+          />
+        </ConnectAccountsContainer>
+        {!accounts.length && (
+          <NoAccountWarning
+            type={"polkadot"}
+            onIgnoreClick={onNoAccountClose(false)}
+            onAddAccountClick={onNoAccountClose(true)}
+          />
+        )}
+      </section>
+    </PopupContent>
+  )
+}
+
+export const ConnectEth: ConnectComponent = ({
+  accounts,
+  connected,
+  setConnected,
+  onNoAccountClose,
+}) => {
+  const { t } = useTranslation("request")
+
+  const ethAccounts = useMemo(() => {
+    return accounts.filter(({ type }) => type === "ethereum")
+  }, [accounts])
+
+  return (
+    <PopupContent>
+      <h3 className="text-body-secondary mb-6 mt-0 pt-10 text-sm">
+        {t("Choose the account you'd like to connect")}
+      </h3>
+      <section className="flex flex-col gap-4">
+        <ConnectAccountsContainer
+          status="disabled"
+          connectedAddresses={connected}
+          label={t("Ethereum")}
+          infoText={t(`Accounts will be connected via the Ethereum provider`)}
+          isSingleProvider
+        >
+          {ethAccounts.map((account) => (
+            <ConnectAccountToggleButtonRow
+              key={account.address}
+              account={account}
+              checked={connected.includes(account?.address)}
+              onClick={() => setConnected([account.address])}
+            />
+          ))}
+        </ConnectAccountsContainer>
+        {!ethAccounts.length && (
+          <NoAccountWarning
+            type={"ethereum"}
+            onIgnoreClick={onNoAccountClose(false)}
+            onAddAccountClick={onNoAccountClose(true)}
+          />
+        )}
+      </section>
+    </PopupContent>
   )
 }

@@ -147,6 +147,13 @@ export const allChainsMapAtom = atom(async (get) => {
   return Object.fromEntries(chains.map((network) => [network.id, network])) as ChainList
 })
 
+export const allChainsMapByGenesisHashAtom = atom(async (get) => {
+  const chains = await get(allChainsAtom)
+  return Object.fromEntries(
+    chains.flatMap((chain) => (chain.genesisHash ? [[chain.genesisHash, chain]] : []))
+  ) as ChainList
+})
+
 const allChainsWithoutTestnetsAtom = atom(async (get) => {
   const chains = await get(allChainsAtom)
   return chains.filter(filterNoTestnet)

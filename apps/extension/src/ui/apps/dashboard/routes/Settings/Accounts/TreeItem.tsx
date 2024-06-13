@@ -220,7 +220,7 @@ const TreeItemWrapper = forwardRef<HTMLLIElement, Props & { children?: ReactNode
 TreeItemWrapper.displayName = "TreeItemWrapper"
 
 const DragButton = ({ className, ...props }: { className?: string } & object) => (
-  <DragIcon className={classNames("text-grey-750 -mx-4 shrink-0 text-lg", className)} {...props} />
+  <DragIcon className={classNames("text-grey-600 -mx-4 shrink-0 text-lg", className)} {...props} />
 )
 
 const EmptyFolderDropzone = ({

@@ -1,3 +1,4 @@
+import { LoaderIcon } from "@talismn/icons"
 import { classNames } from "@talismn/util"
 import { isEvmToken } from "@ui/util/isEvmToken"
 import { useTranslation } from "react-i18next"
@@ -84,6 +85,12 @@ export const FeesSummary = () => {
             isLoading && estimatedFee && "animate-pulse"
           )}
         >
+          {isLoading && !estimatedFee && (
+            <div className="text-body-disabled flex items-center gap-2">
+              <span>{t("Validating Transaction")}</span>
+              <LoaderIcon className="animate-spin-slow" />
+            </div>
+          )}
           {estimatedFee && feeToken && (
             <TokensAndFiat planck={estimatedFee.planck} tokenId={feeToken.id} />
           )}

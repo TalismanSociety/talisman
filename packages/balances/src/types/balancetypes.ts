@@ -100,7 +100,7 @@ export type SubstrateBalance = IBalanceBase &
 /** An unlabelled amount of a balance */
 export type Amount = string
 
-export type BalanceStatusTypes = "free" | "reserved" | "locked" | "extra"
+export type BalanceStatusTypes = "free" | "reserved" | "locked" | "extra" | "crowdloan" | "nompool"
 
 /** A labelled amount of a balance */
 type BaseAmountWithLabel<TLabel extends string> = {

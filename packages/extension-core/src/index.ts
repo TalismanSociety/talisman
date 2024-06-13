@@ -7,6 +7,7 @@ export { db, MIGRATION_ERROR_MSG } from "./db"
 
 export { settingsStore, type SettingsStoreData } from "./domains/app/store.settings"
 export { appStore, DEFAULT_APP_STATE, type AppStoreData } from "./domains/app/store.app"
+export { TalismanNotOnboardedError } from "./domains/app/utils"
 export { passwordStore } from "./domains/app/store.password"
 export { remoteConfigStore } from "./domains/app/store.remoteConfig"
 export { addressBookStore, type AddressBookContact } from "./domains/app/store.addressBook"

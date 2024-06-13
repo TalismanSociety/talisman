@@ -1,9 +1,11 @@
 import * as Icons from "@talismn/icons"
-import { ChevronLeftIcon } from "@talismn/icons"
+import { ChevronLeftIcon, ExternalLinkIcon } from "@talismn/icons"
+import { classNames } from "@talismn/util"
 import { api } from "@ui/api"
 import { AnalyticsPage, sendAnalyticsEvent } from "@ui/api/analytics"
 import { useSetting } from "@ui/hooks/useSettings"
 import DOMPurify from "dompurify"
+import { QUEST_APP_URL } from "extension-shared"
 import { marked } from "marked"
 import { useCallback, useLayoutEffect, useMemo, useRef } from "react"
 import { createRoot } from "react-dom/client"
@@ -12,6 +14,7 @@ import { useNavigate } from "react-router-dom"
 import { rcompare } from "semver"
 
 import { latestUpdates } from "./assets/whats-new"
+import { QuestsBanner } from "./QuestsBanner"
 
 const ANALYTICS_PAGE: AnalyticsPage = {
   container: "Popup",
@@ -34,10 +37,12 @@ export const getWhatsNewVersions = () => {
 export const PortfolioWhatsNewSection = ({
   content,
   heroUrl,
+  date,
   version,
 }: {
   content: string
   heroUrl?: string
+  date?: string
   version: string
 }) => {
   const { t } = useTranslation()
@@ -54,7 +59,13 @@ export const PortfolioWhatsNewSection = ({
   return (
     <div>
       <div className="text-body-secondary flex flex-col gap-12 pb-12 text-sm">
-        <div className={`relative ${heroUrl ? "h-[119px]" : "h-10"}`}>
+        <div
+          className={classNames(
+            "relative",
+            heroUrl && "h-[119px]",
+            !heroUrl && "flex items-center justify-between overflow-hidden rounded-sm p-5"
+          )}
+        >
           {heroUrl && (
             <img
               className="pointer-events-none relative w-full rounded-sm"
@@ -62,11 +73,23 @@ export const PortfolioWhatsNewSection = ({
               alt="a hero banner"
             />
           )}
-          <div className="pointer-events-none absolute left-5 top-5">
-            <div className="text-primary">v{version}</div>
+          {!heroUrl && (
+            <div className="bg-grey-900 pointer-events-none absolute bottom-0 left-0 right-0 top-0">
+              <div className="bg-grey-600/10 absolute right-0 h-full w-full translate-x-2/3 -skew-x-[60deg]" />
+            </div>
+          )}
+          <div className={`pointer-events-none ${heroUrl ? "absolute left-5 top-5" : "relative"}`}>
+            <div className="text-primary font-bold">V{version}</div>
           </div>
+          {date && (
+            <div
+              className={`pointer-events-none ${heroUrl ? "absolute right-5 top-5" : "relative"}`}
+            >
+              <div className="text-grey-200 text-xs">{date}</div>
+            </div>
+          )}
         </div>
-        <div>
+        <div className="px-5">
           <div
             ref={whatsNewHtmlRef}
             className="[&_a]:text-bold [&_a]:text-grey-200 flex flex-col gap-8 [&_a:hover]:text-white [&_strong]:font-normal [&_strong]:text-white"
@@ -81,15 +104,24 @@ export const PortfolioWhatsNewSection = ({
 
 export const PortfolioWhatsNew = () => {
   const versions = getWhatsNewVersions()
+
+  const openQuests = useCallback(() => {
+    sendAnalyticsEvent({ ...ANALYTICS_PAGE, name: "Goto", action: "Quests" })
+    window.open(QUEST_APP_URL, "_blank")
+    window.close()
+  }, [])
+
   return (
     <div className="flex flex-col gap-16">
+      <QuestsBanner onClick={openQuests} />
       {versions.slice(0, WHATS_NEW_LENGTH).map((version) => {
-        const { content, HeroUrl } = latestUpdates[version as keyof typeof latestUpdates]
+        const { content, HeroUrl, date } = latestUpdates[version as keyof typeof latestUpdates]
         return (
           <PortfolioWhatsNewSection
             key={version}
             content={content}
             heroUrl={HeroUrl}
+            date={date}
             version={version}
           />
         )
@@ -202,7 +234,7 @@ const useWhatsNewNodes = (whatsNewHtml: string) => {
       return {
         component: (
           <button className="text-grey-200 text-xs hover:text-white" onClick={goTo}>
-            {innerText} <Icons.ExternalLinkIcon className="inline align-middle" />
+            {innerText} <ExternalLinkIcon className="inline align-middle" />
           </button>
         ),
         ref: buttonRef,

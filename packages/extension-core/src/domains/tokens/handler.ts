@@ -53,11 +53,8 @@ export default class TokensHandler extends ExtensionHandler {
           ? await chaindataProvider.evmNetworkById(token.evmNetworkId)
           : undefined
         assert(typeof token.type === "string", "A token type is required")
-        if (token.type === "evm-erc20") {
-          assert(typeof token.contractAddress === "string", "A contract address is required")
-        }
+        assert(typeof token.contractAddress === "string", "A contract address is required")
         if (token.type === "evm-uniswapv2") {
-          assert(typeof token.poolAddress === "string", "A contract address is required")
           assert(typeof token.tokenAddress0 === "string", "A tokenAddress0 is required")
           assert(typeof token.tokenAddress1 === "string", "A tokenAddress1 is required")
           assert(typeof token.symbol0 === "string", "A token0 symbol is required")
@@ -71,7 +68,7 @@ export default class TokensHandler extends ExtensionHandler {
         const tokenId = (() => {
           if (token.type === "evm-erc20") return evmErc20TokenId(networkId, token.contractAddress)
           if (token.type === "evm-uniswapv2")
-            return evmUniswapV2TokenId(networkId, token.poolAddress)
+            return evmUniswapV2TokenId(networkId, token.contractAddress)
 
           return
         })()
@@ -107,7 +104,7 @@ export default class TokensHandler extends ExtensionHandler {
               decimals0: token.decimals0,
               symbol1: token.symbol1,
               decimals1: token.decimals1,
-              poolAddress: token.poolAddress,
+              contractAddress: token.contractAddress,
               tokenAddress0: token.tokenAddress0,
               tokenAddress1: token.tokenAddress1,
               coingeckoId0: token.coingeckoId0,
@@ -132,12 +129,7 @@ export default class TokensHandler extends ExtensionHandler {
           {
             evmNetworkId: token.evmNetworkId,
             symbol: token.symbol,
-            contractAddress:
-              token.type === "evm-erc20"
-                ? token.contractAddress
-                : token.type === "evm-uniswapv2"
-                ? token.poolAddress
-                : undefined,
+            contractAddress: token.contractAddress,
           }
         )
 
