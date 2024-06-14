@@ -607,7 +607,7 @@ const useSendFundsProvider = () => {
       try {
         setIsProcessing(true)
         if (subTransaction?.unsigned && token?.id && chain?.genesisHash) {
-          // if a payload is supplied, it means the transaction was signed by a hardware wallet and payload may have been modified to include metadata hash
+          // if a payload is supplied, it means the transaction was signed by a hardware wallet and payload had to be modified to include metadata hash
           // otherwise, signature is for the initial payload
           const { hash } = await api.assetTransferApproveSign(
             payload || subTransaction.unsigned,

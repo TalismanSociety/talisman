@@ -1,7 +1,6 @@
 import { DEBUG } from "@extension/shared"
 import { supportedApps } from "@zondax/ledger-substrate"
 import { SubstrateAppParams } from "@zondax/ledger-substrate/dist/common"
-import { AccountJsonHardwareSubstrate } from "extension-core"
 import { t } from "i18next"
 
 export class LedgerError extends Error {
@@ -232,21 +231,4 @@ export const getPolkadotLedgerDerivationPath = ({
 
   //354 for polkadot
   return `m/44'/${slip}'/${accountIndex}'/0'/${addressOffset}'`
-}
-
-// TODO delete ?
-export const getLedgerSubstrateAccountIds = (account: AccountJsonHardwareSubstrate) => {
-  if (typeof account.accountIndex !== "number" || typeof account.addressOffset !== "number")
-    throw new Error("Invalid polkadot ledger account")
-
-  const HARDENED = 0x80000000
-  const accountIndex = HARDENED + account.accountIndex
-  const change = HARDENED
-  const addressIndex = HARDENED + account.addressOffset
-
-  return {
-    accountIndex,
-    change,
-    addressIndex,
-  }
 }
