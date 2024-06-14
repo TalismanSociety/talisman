@@ -4,9 +4,16 @@ const childProcess = require("child_process")
 const path = require("path")
 const sentryWebpackPlugin = require("@sentry/webpack-plugin").sentryWebpackPlugin
 
-const srcDir = path.join(__dirname, "..", "src")
-const distDir = path.join(__dirname, "..", "dist")
-const publicDir = path.join(__dirname, "..", "public")
+const rootDir = path.join(__dirname, "..")
+const srcDir = path.join(rootDir, "src")
+const distDirChrome = path.join(rootDir, "dist", "chrome")
+const distDirFirefox = path.join(rootDir, "dist", "firefox")
+
+// distDirShared is used for the shared files between the two builds.
+// Files from this directory are copied ino the respective build directories for each browser
+// and then deleted
+const distDirShared = path.join(rootDir, "dist", "temp")
+const publicDir = path.join(rootDir, "public")
 
 const getGitShortHash = () => {
   try {
@@ -74,9 +81,9 @@ const getSentryPlugin = (env) => {
     release: getRelease(env),
     cleanArtifacts: true,
     sourcemaps: {
-      assets: [`${distDir}/**`],
-      ignore: [`${distDir}/content_script.js`, `${distDir}/page.js`],
-      deleteFilesAfterUpload: [`${distDir}/**/*.map`],
+      assets: [`${distDirShared}/**`],
+      ignore: [`${distDirShared}/content_script.js`, `${distDirShared}/page.js`],
+      deleteFilesAfterUpload: [`${distDirShared}/**/*.map`],
     },
   })
 }
@@ -84,10 +91,32 @@ const getSentryPlugin = (env) => {
 const dropConsole = (env) =>
   ["production", "canary"].includes(env.build) && process.env.NODE_ENV !== "TEST"
 
+const browserSpecificManifestDetails = {
+  firefox: {
+    background: {
+      scripts: ["./vendor-background.js", "./background.js"],
+    },
+    browser_specific_settings: {
+      gecko: {
+        strict_min_version: "95.0",
+      },
+    },
+  },
+  chrome: {
+    background: {
+      service_worker: "service_worker.js",
+    },
+    minimum_chrome_version: "102",
+  },
+}
+
 module.exports = {
   srcDir,
-  distDir,
+  distDirShared,
+  distDirChrome,
+  distDirFirefox,
   publicDir,
+  browserSpecificManifestDetails,
   getGitShortHash,
   getRelease,
   getManifestVersionName,

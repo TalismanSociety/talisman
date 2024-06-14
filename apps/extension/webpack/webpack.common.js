@@ -11,7 +11,7 @@ const ForkTsCheckerNotifierWebpackPlugin = require("fork-ts-checker-notifier-web
 const EslintWebpackPlugin = require("eslint-webpack-plugin")
 const AssetReplacePlugin = require("./AssetReplacePlugin")
 
-const { srcDir, distDir, getRelease, getGitShortHash, dropConsole } = require("./utils")
+const { srcDir, distDirShared, getRelease, getGitShortHash, dropConsole } = require("./utils")
 
 const config = (env) => ({
   entry: {
@@ -36,7 +36,7 @@ const config = (env) => ({
     "page": path.join(srcDir, "page.ts"),
   },
   output: {
-    path: distDir,
+    path: distDirShared,
     filename: "[name].js",
     chunkFilename: "[name].chunk.js",
     assetModuleFilename: "assets/[hash][ext]", // removes query string if there are any in our import strings (we use ?url for svgs)

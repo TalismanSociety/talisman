@@ -143,10 +143,28 @@ abstract class BalancePool {
   constructor({ persist }: { persist?: boolean }) {
     this.#persist = Boolean(persist)
 
-    if (window?.location?.href && !window.location.href.includes("service_worker.js"))
-      throw new Error(
-        `Balances pool should only be used in the background page - used in: ${window.location.href}`
-      )
+    // Firefox
+    if (chrome.runtime.getBackgroundPage) {
+      chrome.runtime.getBackgroundPage((backgroundPage) => {
+        const backgroundPageUrl = backgroundPage?.location?.href ?? null
+
+        if (
+          window?.location?.href &&
+          backgroundPageUrl &&
+          !(backgroundPageUrl === window.location.href)
+        )
+          throw new Error(
+            `Balances pool should only be used in the background page - used in: ${window.location.href}`
+          )
+      })
+    } else {
+      // Chrome
+      if (window?.location?.href && !window.location.href.includes("service_worker.js")) {
+        throw new Error(
+          `Balances pool should only be used in the background page - used in: ${window.location.href}`
+        )
+      }
+    }
 
     // subscribe this store to all of the inputs it depends on
     this.#cleanupSubs = [this.initializeChaindataSubscription()]
