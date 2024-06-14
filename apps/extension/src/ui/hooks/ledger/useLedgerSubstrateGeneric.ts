@@ -98,7 +98,7 @@ export const useLedgerSubstrateGeneric = ({ persist, app } = DEFAULT_PROPS) => {
     message: string
     requiresManualRetry: boolean
   }>(() => {
-    if (error) return getLedgerErrorProps(error, "Polkadot Generic")
+    if (error) return getLedgerErrorProps(error, app ? "Polkadot Migration" : "Polkadot")
 
     if (isLoading)
       return {
@@ -115,7 +115,7 @@ export const useLedgerSubstrateGeneric = ({ persist, app } = DEFAULT_PROPS) => {
       }
 
     return { status: "unknown", message: "", requiresManualRetry: false }
-  }, [isReady, isLoading, error, t])
+  }, [isReady, isLoading, error, app, t])
 
   // automatic connection (startup + polling)
   useEffect(() => {

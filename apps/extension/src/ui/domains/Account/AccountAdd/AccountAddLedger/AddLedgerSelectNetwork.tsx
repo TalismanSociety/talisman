@@ -285,9 +285,9 @@ export const AddLedgerSelectNetwork = () => {
   const showConnect =
     accountType === "ethereum" ||
     (accountType === "sr25519" &&
-      substrateAppType === AddSubstrateLedgerAppType.Legacy &&
-      !!chainId) ||
-    (substrateAppType === AddSubstrateLedgerAppType.Migration && !!migrationApp)
+      (substrateAppType === AddSubstrateLedgerAppType.Generic ||
+        (substrateAppType === AddSubstrateLedgerAppType.Legacy && !!chainId) ||
+        (substrateAppType === AddSubstrateLedgerAppType.Migration && !!migrationApp)))
 
   return (
     <form className="flex h-full max-h-screen flex-col" onSubmit={handleSubmit(submit)}>

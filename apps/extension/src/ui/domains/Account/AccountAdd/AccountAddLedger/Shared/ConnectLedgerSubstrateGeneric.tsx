@@ -30,7 +30,9 @@ export const ConnectLedgerSubstrateGeneric: FC<ConnectLedgerSubstrateGenericProp
   return (
     <div className={className}>
       <div className="text-body-secondary m-0">
-        {t("Connect and unlock your Ledger, then open the Polkadot app on your Ledger.")}
+        {t("Connect and unlock your Ledger, then open the {{appName}} app on your Ledger.", {
+          appName: app ? "Polkadot Migration" : "Polkadot",
+        })}
       </div>
       <Spacer small />
       <LedgerConnectionStatus {...ledger} />
