@@ -69,6 +69,12 @@ const SubstrateLegacyNetworkSelect: FC<{
   const { t } = useTranslation("admin")
   const ledgerChains = useLedgerChains()
 
+  // ignore the ones that have the CheclMetadataHash extension, as those need the generic (or migration) Ledger app
+  const legacyLedgerChains = useMemo(
+    () => ledgerChains.filter((chain) => !chain.hasCheckMetadataHash),
+    [ledgerChains]
+  )
+
   return (
     <>
       <h2 className="text-body-disabled leading-paragraph mb-6 mt-12 text-base">
@@ -76,7 +82,7 @@ const SubstrateLegacyNetworkSelect: FC<{
       </h2>
       <Dropdown
         propertyKey="id"
-        items={ledgerChains}
+        items={legacyLedgerChains}
         value={chain}
         placeholder={t("Select a network")}
         renderItem={renderSubstrateLegacyOption}
@@ -96,6 +102,9 @@ const SubstrateMigrationNetworkSelect: FC<{
   const { t } = useTranslation("admin")
   const apps = useLedgerSubstrateMigrationApps()
 
+  // These apps are meant for funds recovery on derivation paths which may hold assets on other chains than the originally intended one.
+  // Therefore none of them should be filtered out.
+
   return (
     <>
       <h2 className="text-body-disabled leading-paragraph mb-6 mt-12 text-base">
@@ -109,9 +118,9 @@ const SubstrateMigrationNetworkSelect: FC<{
         renderItem={renderSubstrateMigrationOption}
         onChange={onChange}
       />
-      <p className="text-body-disabled mt-6 text-sm">
+      <p className="text-alert-warn mt-6 text-sm">
         {t(
-          "Please note: you should not be sending any funds to a Ledger Migration app account. It's only meant to help you transfer your assets to Ledger Generic App accounts"
+          "Please note: you should not be sending any assets to a Ledger Migration app account. These accounts are intended to help you recover and transfer your assets to Ledger Generic App accounts."
         )}
       </p>
     </>
@@ -313,7 +322,7 @@ export const AddLedgerSelectNetwork = () => {
                 onClick={handleSubstrateAppTypeClick(AddSubstrateLedgerAppType.Legacy)}
               />
               <AppVersionButton
-                title={t("Recovery App")}
+                title={t("Migration App")}
                 description={t("Recover your assets from deprecated Ledger apps.")}
                 selected={substrateAppType === AddSubstrateLedgerAppType.Migration}
                 onClick={handleSubstrateAppTypeClick(AddSubstrateLedgerAppType.Migration)}
