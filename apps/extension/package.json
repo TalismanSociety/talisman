@@ -39,7 +39,7 @@
     "@talismn/balances": "workspace:*",
     "@talismn/chaindata-provider": "workspace:*",
     "@talismn/icons": "workspace:*",
-    "@talismn/metadata-shortener-wasm": "0.1.2",
+    "@talismn/metadata-shortener-wasm": "0.1.3",
     "@talismn/on-chain-id": "workspace:*",
     "@talismn/orb": "workspace:*",
     "@talismn/scale": "workspace:*",

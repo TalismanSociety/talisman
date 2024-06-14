@@ -8606,10 +8606,10 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@talismn/metadata-shortener-wasm@npm:0.1.2":
-  version: 0.1.2
-  resolution: "@talismn/metadata-shortener-wasm@npm:0.1.2"
-  checksum: 7c24cd603bb8893982f3a42d05439933b67460a8fc7e9795d59885a4d83ad5fa47a459aac5423a261f7427ecebe5b49352ceead41f5b2e6d961d608e8b98799e
+"@talismn/metadata-shortener-wasm@npm:0.1.3":
+  version: 0.1.3
+  resolution: "@talismn/metadata-shortener-wasm@npm:0.1.3"
+  checksum: 3c7ef87241e0663defe5f3b1c1f2b15aafa853c3e1f43a527b432bbaa0ef28bee08f585ca855565f5493810cd43c9ffd874d34e493f13ce703ca624a6272185a
   languageName: node
   linkType: hard
 
@@ -15965,7 +15965,7 @@ __metadata:
     "@talismn/chaindata-provider": "workspace:*"
     "@talismn/eslint-config": "workspace:*"
     "@talismn/icons": "workspace:*"
-    "@talismn/metadata-shortener-wasm": 0.1.2
+    "@talismn/metadata-shortener-wasm": 0.1.3
     "@talismn/on-chain-id": "workspace:*"
     "@talismn/orb": "workspace:*"
     "@talismn/scale": "workspace:*"
