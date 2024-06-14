@@ -67,4 +67,3 @@ export const UNKNOWN_TOKEN_URL = "/images/unknown-token.svg"
 export const UNKNOWN_NETWORK_URL = "/images/unknown-network.svg"
 
 export const LEDGER_ETHEREUM_MIN_VERSION = "1.9.19"
-export const LEDGER_POLKADOT_MIN_VERSION = "1.25.0"

@@ -12,9 +12,6 @@ const availableNetworks = {
   "Kusama": "wss://kusama-rpc.polkadot.io", //"wss://kusama.api.onfinality.io/public-ws",
   "Polkadot": "wss://polkadot.api.onfinality.io/public-ws",
   "Local 9944": "ws://localhost:9944",
-  "Local 42069": "ws://localhost:42069",
-  "Local 42070": "ws://localhost:42070",
-  "Local 33867": "ws://localhost:33867",
 }
 
 const BlockNumber = () => {
@@ -77,8 +74,6 @@ export const Network = () => (
 const NetworkInner = () => {
   const { wsUrl, setWsUrl } = useNetwork()
   const { error, isConnecting } = useApi()
-
-  // console.log({ wsUrl, error, isConnecting })
 
   return (
     <div className="my-8 space-y-4">
