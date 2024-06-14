@@ -3,12 +3,15 @@ import { TypeRegistry } from "@polkadot/types"
 import { Extrinsic } from "@polkadot/types/interfaces"
 import { assert } from "@polkadot/util"
 import { HexString } from "@polkadot/util/types"
+import type { UnsignedTransaction } from "@substrate/txwrapper-core"
+import { SubNativeToken } from "@talismn/balances"
 import { Chain, ChainId, TokenId } from "@talismn/chaindata-provider"
 
 import { balanceModules } from "../../../rpcs/balance-modules"
 import { chainConnector } from "../../../rpcs/chain-connector"
 import { chaindataProvider } from "../../../rpcs/chaindata"
 import { Address } from "../../../types/base"
+import { getCheckMetadataHashPayloadProps } from "../../../util/getCheckMetadataHashPayloadProps"
 import { getExtrinsicDispatchInfo } from "../../../util/getExtrinsicDispatchInfo"
 import { getRuntimeVersion } from "../../../util/getRuntimeVersion"
 import { getTypeRegistry } from "../../../util/getTypeRegistry"
@@ -182,6 +185,9 @@ export default class AssetTransfersRpc {
     const token = await chaindataProvider.tokenById(tokenId)
     assert(token, `Token ${tokenId} not found in store`)
 
+    assert(chain.nativeToken, `Unknown native token for chain ${chainId}`)
+    const nativeToken = (await chaindataProvider.tokenById(chain.nativeToken.id)) as SubNativeToken
+
     const [blockHash, { block }, nonce, runtimeVersion] = await Promise.all([
       chainConnector.send(chainId, "chain_getBlockHash", [], false),
       chainConnector.send(chainId, "chain_getBlock", [], false),
@@ -209,6 +215,15 @@ export default class AssetTransfersRpc {
       throw new Error(
         `${token.symbol} transfers on ${token.chain?.id} are not implemented in this version of Talisman.`
       )
+
+    const checkMetadataHash = getCheckMetadataHashPayloadProps(
+      registry,
+      metadataRpc,
+      chain.prefix,
+      runtimeVersion.specName,
+      runtimeVersion.specVersion,
+      nativeToken
+    )
 
     const transaction = await palletModule.transferToken({
       tokenId,
@@ -268,8 +283,10 @@ export default class AssetTransfersRpc {
     )
 
     if (sign) {
+      const payload = { ...unsigned, ...checkMetadataHash } as UnsignedTransaction
+
       // create signable extrinsic payload
-      const extrinsicPayload = registry.createType("ExtrinsicPayload", unsigned, {
+      const extrinsicPayload = registry.createType("ExtrinsicPayload", payload, {
         version: unsigned.version,
       })
 
@@ -277,9 +294,9 @@ export default class AssetTransfersRpc {
       const { signature } = extrinsicPayload.sign(from)
 
       // apply signature
-      tx.addSignature(unsigned.address, signature, unsigned)
+      tx.addSignature(unsigned.address, signature, payload)
 
-      return { tx, registry, unsigned, chain, signature }
+      return { tx, registry, unsigned: payload, chain, signature }
     } else {
       // tx signed with fake signature for fee calculation
       tx.signFake(unsigned.address, { blockHash, genesisHash, nonce, runtimeVersion })
