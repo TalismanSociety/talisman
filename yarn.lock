@@ -8606,10 +8606,10 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@talismn/metadata-shortener-wasm@npm:0.1.3":
-  version: 0.1.3
-  resolution: "@talismn/metadata-shortener-wasm@npm:0.1.3"
-  checksum: 3c7ef87241e0663defe5f3b1c1f2b15aafa853c3e1f43a527b432bbaa0ef28bee08f585ca855565f5493810cd43c9ffd874d34e493f13ce703ca624a6272185a
+"@talismn/metadata-shortener-wasm@npm:0.1.4":
+  version: 0.1.4
+  resolution: "@talismn/metadata-shortener-wasm@npm:0.1.4"
+  checksum: 4548aea407f3eee9a45cab816d418379c9a1d227cc6469a5f69da5f0cf96c10db9081c14dd0b105774eef05601c0a495b2ceba59a09b71ab07d9ff7ae1f4dce9
   languageName: node
   linkType: hard
 
@@ -15845,7 +15845,7 @@ __metadata:
     "@talismn/chaindata-provider": "workspace:*"
     "@talismn/connection-meta": "workspace:*"
     "@talismn/eslint-config": "workspace:*"
-    "@talismn/metadata-shortener-wasm": 0.1.3
+    "@talismn/metadata-shortener-wasm": 0.1.4
     "@talismn/on-chain-id": "workspace:*"
     "@talismn/scale": "workspace:*"
     "@talismn/token-rates": "workspace:*"
@@ -15966,7 +15966,7 @@ __metadata:
     "@talismn/chaindata-provider": "workspace:*"
     "@talismn/eslint-config": "workspace:*"
     "@talismn/icons": "workspace:*"
-    "@talismn/metadata-shortener-wasm": 0.1.3
+    "@talismn/metadata-shortener-wasm": 0.1.4
     "@talismn/on-chain-id": "workspace:*"
     "@talismn/orb": "workspace:*"
     "@talismn/scale": "workspace:*"
