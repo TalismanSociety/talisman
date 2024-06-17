@@ -42,6 +42,7 @@ const updateData = async () => {
 
 const watchData = async () => {
   let stop = false
+  let errorsStreak = 0
 
   // update every 1 hour
   let promise: Promise<void> | null = null
@@ -67,9 +68,12 @@ const watchData = async () => {
     promise = updateData()
       .then(() => {
         status.next("loaded")
+        errorsStreak = 0
       })
       .catch(() => {
         status.next("stale")
+        errorsStreak++
+        if (errorsStreak >= 3) stop = true
       })
       .finally(() => {
         promise = null
@@ -101,10 +105,6 @@ subscriptions.subscribe(async (subIds) => {
   }
 })
 
-// const obsAccounts = new BehaviorSubject<string[]>([])
-
-// keyring.accounts
-
 const obsNfts = combineLatest([nftsStore, status]).pipe(
   map(([store, status]) => {
     const { collections, nfts, timestamp } = store
@@ -125,10 +125,7 @@ export const subscribeNfts = (callback: (data: NftData) => void) => {
 
   const id = addSubscription()
 
-  //subscriptions.next([...subscriptions.value, id])
-
   return () => {
-    // console.log("subscribeNfts - unsubscribing")
     removeSubscription(id)
     subscription.unsubscribe()
   }
