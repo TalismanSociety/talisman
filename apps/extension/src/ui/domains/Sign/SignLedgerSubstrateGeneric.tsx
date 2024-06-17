@@ -27,7 +27,7 @@ import {
 } from "../Account/LedgerConnectionStatus"
 import { LedgerSigningStatus } from "./LedgerSigningStatus"
 import { SignHardwareSubstrateProps } from "./SignHardwareSubstrate"
-import { useLedgerPolkadotPayload } from "./useLedgerPolkadotPayload"
+import { useLedgerSubstrateGenericPayload } from "./useLedgerSubstrateGenericPayload"
 
 type RawLedgerError = {
   errorMessage: string
@@ -104,7 +104,7 @@ const SignLedgerSubstrateGeneric: FC<SignHardwareSubstrateProps> = ({
     data: metadata,
     error: errorMetadata,
     isLoading: isLoadingMetadata,
-  } = useLedgerPolkadotPayload(payload && isJsonPayload(payload) ? payload : null)
+  } = useLedgerSubstrateGenericPayload(payload && isJsonPayload(payload) ? payload : null)
 
   const { metadataHash, txMetadata, registry, payloadWithMetadataHash, hasCheckMetadataHash } =
     useMemo(

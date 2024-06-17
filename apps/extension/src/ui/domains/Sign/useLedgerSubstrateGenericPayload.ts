@@ -14,12 +14,12 @@ import { log } from "extension-shared"
 
 const trimPrefix = (str: string) => (str.startsWith("0x") ? str.slice(2) : str)
 
-export const useLedgerPolkadotPayload = (payload: SignerPayloadJSON | null) => {
+export const useLedgerSubstrateGenericPayload = (payload: SignerPayloadJSON | null) => {
   const chain = useChainByGenesisHash(payload?.genesisHash)
   const token = useToken(chain?.nativeToken?.id)
 
   return useQuery({
-    queryKey: ["useLedgerPolkadotPayload", payload, chain?.id, token?.id],
+    queryKey: ["useLedgerSubstrateGenericPayload", payload, chain?.id, token?.id],
     queryFn: async () => {
       if (!payload || !chain || !token) return null
 

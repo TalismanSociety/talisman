@@ -299,7 +299,13 @@ export default class AssetTransfersRpc {
       return { tx, registry, unsigned: payload, chain, signature }
     } else {
       // tx signed with fake signature for fee calculation
-      tx.signFake(unsigned.address, { blockHash, genesisHash, nonce, runtimeVersion })
+      tx.signFake(unsigned.address, {
+        blockHash,
+        genesisHash,
+        nonce,
+        runtimeVersion,
+        ...checkMetadataHash,
+      })
 
       return { tx, registry, unsigned, chain, signature: undefined }
     }
