@@ -208,18 +208,18 @@ const NftCollectionTileInner: FC<{ collection: NftCollection; data: NftData }> =
       <button
         type="button"
         onClick={handleClick}
-        className="text-body-secondary hover:text-body flex size-[22.2rem] flex-col items-center gap-4 overflow-hidden text-left"
+        className="text-body-secondary hover:text-grey-300 group flex size-full flex-col gap-4 overflow-hidden text-left"
       >
-        <div className="w-full grow overflow-hidden">
+        <div className="size-[16.7rem] grow overflow-hidden rounded-sm">
           <NftImage
-            className="h-full w-full object-cover"
+            className="size-full object-cover object-center transition-transform duration-300 group-hover:scale-105"
             src={imageUrl}
             alt={collection.name ?? ""}
           />
         </div>
         <div className="flex w-full shrink-0 items-center gap-2 overflow-hidden">
           <div className="grow truncate text-base">{collection.name}</div>
-          <NetworksLogoStack networkIds={networkIds} />
+          <NetworksLogoStack className="shrink-0" networkIds={networkIds} />
         </div>
       </button>
 
@@ -236,7 +236,7 @@ const NftCollectionTile: FC<{ collection: NftCollection; data: NftData }> = (pro
   })
 
   return (
-    <div ref={refContainer} className="size-[22rem]">
+    <div ref={refContainer} className="h-[19.6rem] w-[16.7rem]">
       {intersection?.isIntersecting ? <NftCollectionTileInner {...props} /> : null}
     </div>
   )
@@ -244,7 +244,7 @@ const NftCollectionTile: FC<{ collection: NftCollection; data: NftData }> = (pro
 
 const NftCollectionsGrid: FC<{ data: NftData }> = ({ data }) => {
   return (
-    <div className="flex flex-wrap gap-[2.5rem]">
+    <div className="grid w-full grid-cols-2 gap-8">
       {data.collections.map((collection, i) => (
         <NftCollectionTile key={`${collection.id}-${i}`} collection={collection} data={data} />
       ))}

@@ -188,11 +188,11 @@ const NftCollectionTileInner: FC<{ collection: NftCollection; data: NftData }> =
       <button
         type="button"
         onClick={handleClick}
-        className="text-body-secondary hover:text-body flex size-[22.2rem] flex-col items-center gap-4 overflow-hidden text-left"
+        className="text-body-secondary hover:text-grey-300 group flex size-[22.2rem] flex-col items-center gap-4 overflow-hidden text-left"
       >
-        <div className="w-full grow overflow-hidden">
+        <div className="w-full grow overflow-hidden rounded-sm">
           <NftImage
-            className="h-full w-full object-cover"
+            className="h-full w-full object-cover object-center transition-transform duration-300 group-hover:scale-105"
             src={imageUrl}
             alt={collection.name ?? ""}
           />

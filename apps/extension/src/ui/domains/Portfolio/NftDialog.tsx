@@ -66,8 +66,6 @@ const TabContentCollection: FC<{
         <div className="space-y-8 hyphens-auto">
           <div className="text-body-secondary">{t("Description")}</div>
           <div>{collection.description}</div>
-          <div>{collection.description}</div>
-          <div>{collection.description}</div>
         </div>
       )}
     </>
