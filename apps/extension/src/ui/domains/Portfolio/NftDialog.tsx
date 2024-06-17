@@ -217,7 +217,7 @@ const DialogContent: FC<{ onDismiss: () => void; collection: NftCollection; nft:
       <div className="@2xl:block hidden">
         <Tooltip>
           <TooltipTrigger onClick={handleFullScreenViewClick} asChild>
-            <div className="shrink-0 cursor-pointer">
+            <div className="h-full w-full shrink-0 cursor-pointer ">
               <NftImage className="h-full w-full object-cover" src={nft.imageUrl} />
             </div>
           </TooltipTrigger>
