@@ -1,4 +1,3 @@
-import { ChainLogo } from "@ui/domains/Asset/ChainLogo"
 import { useSetting } from "@ui/hooks/useSettings"
 import format from "date-fns/format"
 import { Nft, NftCollection } from "extension-core"
@@ -9,6 +8,7 @@ import { useIntersection } from "react-use"
 
 import { NftDialog } from "../NftDialog"
 import { NftImage } from "../NftImage"
+import { NftTile } from "../NftTile"
 import { useSelectedAccount } from "../useSelectedAccount"
 import { usePortfolioNftCollection } from "./usePortfolioNfts"
 
@@ -117,27 +117,36 @@ const NftTileInner: FC<{ collection: NftCollection; nft: Nft; onClick: () => voi
   }, [nft.imageUrl, nft.previews.small])
 
   return (
-    <button
-      type="button"
+    <NftTile
+      imageUrl={imageUrl}
       onClick={onClick}
-      className="text-body-secondary hover:text-body flex size-[22.2rem] flex-col items-center gap-4 overflow-hidden text-left"
-    >
-      <div className="w-full grow overflow-hidden">
-        <NftImage
-          className="h-full w-full object-cover"
-          src={imageUrl}
-          alt={collection.name ?? ""}
-        />
-      </div>
-      <div className="flex w-full shrink-0 items-center gap-2 overflow-hidden">
-        <div className="grow truncate text-base">{nft.name || `#TODO_TOKEN_ID`}</div>
-        <ChainLogo id={nft.evmNetworkId} />
-      </div>
-    </button>
+      label={nft.name ?? ""}
+      networkIds={collection.evmNetworkIds}
+    />
   )
+
+  // return (
+  //   <button
+  //     type="button"
+  //     onClick={onClick}
+  //     className="text-body-secondary hover:text-body flex size-[22.2rem] flex-col items-center gap-4 overflow-hidden text-left"
+  //   >
+  //     <div className="w-full grow overflow-hidden">
+  //       <NftImage
+  //         className="h-full w-full object-cover"
+  //         src={imageUrl}
+  //         alt={collection.name ?? ""}
+  //       />
+  //     </div>
+  //     <div className="flex w-full shrink-0 items-center gap-2 overflow-hidden">
+  //       <div className="grow truncate text-base">{nft.name || `#TODO_TOKEN_ID`}</div>
+  //       <ChainLogo id={nft.evmNetworkId} />
+  //     </div>
+  //   </button>
+  // )
 }
 
-const NftTile: FC<{ collection: NftCollection; nft: Nft; onClick: () => void }> = (props) => {
+const NftTileItem: FC<{ collection: NftCollection; nft: Nft; onClick: () => void }> = (props) => {
   const refContainer = useRef<HTMLDivElement>(null)
   const intersection = useIntersection(refContainer, {
     root: null,
@@ -169,7 +178,7 @@ const NftsGrid: FC = () => {
     <div className="flex flex-wrap justify-stretch gap-8">
       {!!collection &&
         nfts.map((nft, i) => (
-          <NftTile
+          <NftTileItem
             key={`${collection.id}-TODO NFT ID-${i}`}
             collection={collection}
             nft={nft}

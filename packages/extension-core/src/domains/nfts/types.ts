@@ -14,6 +14,11 @@ export type NftCollectionMarketplace = {
   } | null
 }
 
+export type NftMarketplaceInfo = {
+  name: string
+  url: string
+}
+
 export type NftProperty = {
   name: string
   value: string
@@ -48,6 +53,7 @@ export type Nft = {
     large: string | null
     color: string | null
   }
+  marketplaces: NftMarketplaceInfo[]
   acquiredAt: string | null
 }
 

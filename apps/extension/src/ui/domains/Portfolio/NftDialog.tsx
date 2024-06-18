@@ -1,13 +1,26 @@
 import { Tabs } from "@talisman/components/Tabs"
-import { ChevronLeftIcon } from "@talismn/icons"
+import { ChevronLeftIcon, MoreHorizontalIcon } from "@talismn/icons"
 import { classNames } from "@talismn/util"
 import { useEvmNetwork } from "@ui/hooks/useEvmNetwork"
 import { IS_POPUP } from "@ui/util/constants"
 import format from "date-fns/format"
 import { Nft, NftCollection, NftCollectionMarketplace } from "extension-core"
-import { CSSProperties, FC, PropsWithChildren, useEffect, useMemo, useRef, useState } from "react"
+import {
+  CSSProperties,
+  FC,
+  PropsWithChildren,
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react"
 import { useTranslation } from "react-i18next"
 import {
+  ContextMenu,
+  ContextMenuContent,
+  ContextMenuItem,
+  ContextMenuTrigger,
   IconButton,
   Modal,
   Tooltip,
@@ -22,6 +35,32 @@ import { NetworkAddress } from "../Account/AddressLinkOrCopy"
 import { ChainLogo } from "../Asset/ChainLogo"
 import { Fiat } from "../Asset/Fiat"
 import { NftImage } from "./NftImage"
+
+const NftContextMenu: FC<{ collection: NftCollection; nft: Nft }> = ({ nft }) => {
+  const { t } = useTranslation()
+
+  const handleOpenUrl = useCallback(
+    (url: string) => () => {
+      window.open(url, "_blank", "")
+    },
+    []
+  )
+
+  return (
+    <ContextMenu>
+      <ContextMenuTrigger className="text-body-secondary hover:text-body">
+        <MoreHorizontalIcon className="size-10" />
+      </ContextMenuTrigger>
+      <ContextMenuContent>
+        {nft.marketplaces.map((mp, i) => (
+          <ContextMenuItem key={i} onClick={handleOpenUrl(mp.url)}>
+            {t("Open in {{marketplace}}", { marketplace: mp.name })}
+          </ContextMenuItem>
+        ))}
+      </ContextMenuContent>
+    </ContextMenu>
+  )
+}
 
 type MarketPlaceWithFloor = NftCollectionMarketplace & { floorUsd: number }
 
@@ -216,7 +255,7 @@ const DialogContent: FC<{ onDismiss: () => void; collection: NftCollection; nft:
         <Tooltip>
           <TooltipTrigger onClick={handleFullScreenViewClick} asChild>
             <div className="h-full w-full shrink-0 cursor-pointer ">
-              <NftImage className="h-full w-full object-cover" src={nft.imageUrl} />
+              <NftImage className="h-full w-full rounded-r-none object-cover" src={nft.imageUrl} />
             </div>
           </TooltipTrigger>
           {!!nft.imageUrl && <TooltipContent>{t("View in full screen")}</TooltipContent>}
@@ -229,15 +268,18 @@ const DialogContent: FC<{ onDismiss: () => void; collection: NftCollection; nft:
           //@2xl:py-8 @2xl:pl-12 @2xl:gap-12
         )}
       >
-        <div className="@2xl:bg-transparent flex w-full items-center gap-4 bg-black px-8 py-6">
+        <div className="@2xl:bg-transparent @2xl:px-12 @2xl:py-8 flex w-full items-center gap-4 bg-black px-8 py-6">
           <IconButton className="@2xl:hidden" onClick={onDismiss}>
             <ChevronLeftIcon />
           </IconButton>
-          <div>
+          <div className="grow">
             <div className="text-body-secondary leading-paragraph">{collection.name}</div>
             <div className="text-body @2xl:leading-paragraph @2xl:text-lg font-bold">
               {nft.name}
             </div>
+          </div>
+          <div className="shrink-0">
+            <NftContextMenu nft={nft} collection={collection} />
           </div>
         </div>
         <div className="@2xl:hidden bg-grey-800 block p-8">

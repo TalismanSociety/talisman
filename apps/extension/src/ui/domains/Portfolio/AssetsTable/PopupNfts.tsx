@@ -10,6 +10,7 @@ import { useIntersection } from "react-use"
 import { NftDialog } from "../NftDialog"
 import { NftImage } from "../NftImage"
 import { getPortfolioNftCollectionPreviewUrl } from "../Nfts/helpers"
+import { NftTile } from "../NftTile"
 import { usePortfolioSearch } from "../usePortfolio"
 import { useSelectedAccount } from "../useSelectedAccount"
 import { NetworksLogoStack } from "./NetworksLogoStack"
@@ -205,7 +206,13 @@ const NftCollectionTileInner: FC<{ collection: NftCollection; data: NftData }> =
 
   return (
     <>
-      <button
+      <NftTile
+        imageUrl={imageUrl}
+        label={collection.name ?? ""}
+        networkIds={networkIds}
+        onClick={handleClick}
+      />
+      {/* <button
         type="button"
         onClick={handleClick}
         className="text-body-secondary hover:text-grey-300 group flex size-full flex-col gap-4 overflow-hidden text-left"
@@ -221,7 +228,7 @@ const NftCollectionTileInner: FC<{ collection: NftCollection; data: NftData }> =
           <div className="grow truncate text-base">{collection.name}</div>
           <NetworksLogoStack className="shrink-0" networkIds={networkIds} />
         </div>
-      </button>
+      </button> */}
 
       <NftDialog data={nftDialogInputs} />
     </>
