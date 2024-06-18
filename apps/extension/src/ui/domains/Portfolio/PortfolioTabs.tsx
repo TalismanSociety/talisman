@@ -1,24 +1,35 @@
 import { Tabs } from "@talisman/components/Tabs"
-import { FC, useCallback, useMemo } from "react"
+import { FC, useCallback, useEffect, useMemo } from "react"
 import { useLocation, useNavigate } from "react-router-dom"
 
 import { useSelectedAccount } from "./useSelectedAccount"
+
+const URL_TAB_TOKENS = "/portfolio/tokens"
+const URL_TAB_NFTS = "/portfolio/nfts"
 
 export const PortfolioTabs: FC<{ className?: string }> = ({ className }) => {
   const { account, accounts } = useSelectedAccount()
   const location = useLocation()
   const navigate = useNavigate()
 
-  const tabs = useMemo(() => {
-    const withNfts = account
+  const withNfts = useMemo(() => {
+    return account
       ? account.type === "ethereum"
       : accounts.some((account) => account.type === "ethereum")
-
-    return [
-      { label: "Tokens", value: "/portfolio/tokens" },
-      { label: "NFTs", value: "/portfolio/nfts", disabled: !withNfts },
-    ]
   }, [account, accounts])
+
+  const tabs = useMemo(() => {
+    const resTabs = [{ label: "Tokens", value: URL_TAB_TOKENS }]
+    if (withNfts) resTabs.push({ label: "NFTs", value: URL_TAB_NFTS }) // , disabled: !withNfts
+
+    return resTabs
+  }, [withNfts])
+
+  // if no NFT tab available, if user is at NFT url, redirect out of it
+  // ex: user browses nfts of an evm account, then switches to a substrate account
+  useEffect(() => {
+    if (location.pathname.startsWith(URL_TAB_NFTS)) navigate(URL_TAB_TOKENS)
+  }, [location.pathname, navigate])
 
   const selected = useMemo(
     () => tabs.find((tab) => location.pathname.startsWith(tab.value)),
