@@ -76,6 +76,7 @@ const NftCollectionRowInner: FC<{ collection: NftCollection; data: NftData }> = 
   collection,
   data,
 }) => {
+  const { t } = useTranslation()
   const [nftDialogInputs, setNftDialogInputs] = useState<{ collection: NftCollection; nft: Nft }>()
 
   const nfts = useMemo(
@@ -123,7 +124,9 @@ const NftCollectionRowInner: FC<{ collection: NftCollection; data: NftData }> = 
             <Fiat amount={floorUsdValue} forceCurrency="usd" noCountUp />
           ) : null}
         </div>
-        <div className="text-right">{nfts.length}</div>
+        <div className="text-right">
+          {nfts.length} {nfts.length > 1 ? t("NFTs") : t("NFT")}
+        </div>
       </button>
 
       <NftDialog data={nftDialogInputs} />
@@ -218,7 +221,7 @@ const NftCollectionTile: FC<{ collection: NftCollection; data: NftData }> = (pro
   })
 
   return (
-    <div ref={refContainer} className="size-[22rem]">
+    <div ref={refContainer} className="h-[24.8rem] w-[22rem]">
       {intersection?.isIntersecting ? <NftCollectionTileInner {...props} /> : null}
     </div>
   )

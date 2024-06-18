@@ -3,7 +3,7 @@ import { Fiat } from "@ui/domains/Asset/Fiat"
 import { useSetting } from "@ui/hooks/useSettings"
 import { Nft, NftCollection, NftData } from "extension-core"
 import { FC, useCallback, useMemo, useRef, useState } from "react"
-import { Trans, useTranslation } from "react-i18next"
+import { useTranslation } from "react-i18next"
 import { useNavigate } from "react-router-dom"
 import { useIntersection } from "react-use"
 
@@ -121,21 +121,10 @@ const NftCollectionRowInner: FC<{ collection: NftCollection; data: NftData }> = 
             </div>
           </div>
         </div>
-        {/* <div className="text-right">
-          {floorUsdValue !== null ? (
-            <Fiat amount={floorUsdValue} forceCurrency="usd" noCountUp />
-          ) : null}
-        </div> */}
         <div className="flex shrink-0 flex-col items-end gap-2">
           <div>
-            <Trans
-              t={t}
-              components={{ Bold: <span className="font-bold"></span> }}
-              defaults="<Bold>{{count}}</Bold> NFTs"
-              values={{ count: nfts.length }}
-            >
-              {/* {t("<Bold>{{count}}</Bold> NFTs", { count: nfts.length })} */}
-            </Trans>
+            <span className="font-bold">{nfts.length}</span>{" "}
+            {nfts.length > 1 ? t("NFTs") : t("NFT")}
           </div>
           <div
             className={classNames(
