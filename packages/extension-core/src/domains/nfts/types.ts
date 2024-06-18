@@ -39,6 +39,7 @@ export type NftCollection = {
 
 export type Nft = {
   id: string
+  tokenId: string
   collectionId: string
   evmNetworkId: string
   contractAddress: string

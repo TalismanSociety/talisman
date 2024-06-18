@@ -120,30 +120,10 @@ const NftTileInner: FC<{ collection: NftCollection; nft: Nft; onClick: () => voi
     <NftTile
       imageUrl={imageUrl}
       onClick={onClick}
-      label={nft.name ?? ""}
+      label={nft.name ?? nft.tokenId ? `#${nft.tokenId}` : ""}
       networkIds={collection.evmNetworkIds}
     />
   )
-
-  // return (
-  //   <button
-  //     type="button"
-  //     onClick={onClick}
-  //     className="text-body-secondary hover:text-body flex size-[22.2rem] flex-col items-center gap-4 overflow-hidden text-left"
-  //   >
-  //     <div className="w-full grow overflow-hidden">
-  //       <NftImage
-  //         className="h-full w-full object-cover"
-  //         src={imageUrl}
-  //         alt={collection.name ?? ""}
-  //       />
-  //     </div>
-  //     <div className="flex w-full shrink-0 items-center gap-2 overflow-hidden">
-  //       <div className="grow truncate text-base">{nft.name || `#TODO_TOKEN_ID`}</div>
-  //       <ChainLogo id={nft.evmNetworkId} />
-  //     </div>
-  //   </button>
-  // )
 }
 
 const NftTileItem: FC<{ collection: NftCollection; nft: Nft; onClick: () => void }> = (props) => {
