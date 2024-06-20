@@ -2,7 +2,8 @@ import { SuspenseTracker } from "@talisman/components/SuspenseTracker"
 import { DashboardAssetsTable } from "@ui/domains/Portfolio/AssetsTable"
 import { DashboardNfts } from "@ui/domains/Portfolio/AssetsTable/DashboardNfts"
 import { PortfolioTabs } from "@ui/domains/Portfolio/PortfolioTabs"
-import { PortfolioToolbar } from "@ui/domains/Portfolio/PortfolioToolbar"
+import { PortfolioToolbarNfts } from "@ui/domains/Portfolio/PortfolioToolbarNfts"
+import { PortfolioToolbarTokens } from "@ui/domains/Portfolio/PortfolioToolbarTokens"
 import { Statistics } from "@ui/domains/Portfolio/Statistics"
 import { usePortfolioDisplayBalances } from "@ui/domains/Portfolio/useDisplayBalances"
 import { useAnalytics } from "@ui/hooks/useAnalytics"
@@ -41,6 +42,8 @@ const PortfolioStats = () => {
 
 export const PortfolioHome = () => {
   const { pageOpenEvent } = useAnalytics()
+
+  // can't use the Routes component here because we're already in the component that matches the location
   const matchTokens = useMatch("/portfolio/tokens")
   const matchNfts = useMatch("/portfolio/nfts")
 
@@ -52,11 +55,19 @@ export const PortfolioHome = () => {
     <DashboardPortfolioLayout>
       <PortfolioStats />
       <PortfolioTabs className="text-md mb-6 mt-[3.8rem] h-14 font-bold" />
-      <PortfolioToolbar />
-      {/* can't use the Routes component here because we're already in the component that matches the location */}
       <Suspense fallback={<SuspenseTracker name="PortfolioHome content" />}>
-        {!!matchTokens && <DashboardAssetsTable />}
-        {!!matchNfts && <DashboardNfts />}
+        {!!matchTokens && (
+          <>
+            <PortfolioToolbarTokens />
+            <DashboardAssetsTable />
+          </>
+        )}
+        {!!matchNfts && (
+          <>
+            <PortfolioToolbarNfts />
+            <DashboardNfts />
+          </>
+        )}
       </Suspense>
     </DashboardPortfolioLayout>
   )

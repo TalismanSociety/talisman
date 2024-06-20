@@ -1,56 +1,15 @@
 import { SearchInput } from "@talisman/components/SearchInput"
-import { GlobeIcon, ToolbarListIcon, ToolbarTilesIcon } from "@talismn/icons"
+import { GlobeIcon } from "@talismn/icons"
 import { classNames } from "@talismn/util"
-import { useSetting } from "@ui/hooks/useSettings"
 import { t } from "i18next"
-import { ButtonHTMLAttributes, DetailedHTMLProps, forwardRef, useCallback, useMemo } from "react"
+import { useCallback, useMemo } from "react"
 import { useTranslation } from "react-i18next"
 import { Tooltip, TooltipContent, TooltipTrigger, useOpenClose } from "talisman-ui"
 
 import { ChainLogo } from "../Asset/ChainLogo"
 import { NetworkFilterModal } from "./NetworkPickerDialog"
+import { PortfolioToolbarButton } from "./PortfolioToolbarButton"
 import { usePortfolio, usePortfolioSearch } from "./usePortfolio"
-
-const ToolbarButton = forwardRef<
-  HTMLButtonElement,
-  DetailedHTMLProps<ButtonHTMLAttributes<HTMLButtonElement>, HTMLButtonElement>
->((props, ref) => {
-  return (
-    <button
-      ref={ref}
-      type="button"
-      {...props}
-      className={classNames(
-        "bg-grey-900 hover:bg-grey-800 text-body-secondary flex size-[3.6rem] items-center justify-center rounded-sm",
-        "ring-body-disabled focus-visible:ring-1",
-        props.className
-      )}
-    />
-  )
-})
-ToolbarButton.displayName = "ToolbarButton"
-
-const ViewModeToggleButton = () => {
-  const [viewMode, setViewMode] = useSetting("nftsViewMode")
-
-  const handleViewModeClick = useCallback(
-    () => setViewMode((prev) => (prev === "list" ? "grid" : "list")),
-    [setViewMode]
-  )
-
-  return (
-    <Tooltip>
-      <TooltipTrigger asChild>
-        <ToolbarButton onClick={handleViewModeClick}>
-          {viewMode === "list" ? <ToolbarListIcon /> : <ToolbarTilesIcon />}
-        </ToolbarButton>
-      </TooltipTrigger>
-      <TooltipContent>
-        {viewMode === "list" ? t("Toggle to grid view") : t("Toggle to list view")}
-      </TooltipContent>
-    </Tooltip>
-  )
-}
 
 const NetworkFilterButton = () => {
   const { networks, networkFilter, setNetworkFilter } = usePortfolio()
@@ -70,13 +29,16 @@ const NetworkFilterButton = () => {
     <>
       <Tooltip>
         <TooltipTrigger asChild>
-          <ToolbarButton onClick={open} className={classNames(networkFilter && "text-primary")}>
+          <PortfolioToolbarButton
+            onClick={open}
+            className={classNames(networkFilter && "text-primary")}
+          >
             {networkFilter ? (
               <ChainLogo className="text-lg" id={networkFilter.id} />
             ) : (
               <GlobeIcon />
             )}
-          </ToolbarButton>
+          </PortfolioToolbarButton>
         </TooltipTrigger>
         <TooltipContent>
           {networkFilter ? networkFilter.name : t("Filter by network")}
@@ -111,14 +73,13 @@ const PortfolioSearch = () => {
   )
 }
 
-export const PortfolioToolbar = () => {
+export const PortfolioToolbarTokens = () => {
   return (
     <div className="flex w-full items-center justify-between gap-8 overflow-hidden">
       <div className="-mx-1 flex grow items-center overflow-clip px-1">
         <PortfolioSearch />
       </div>
       <div className="flex shrink-0 gap-4">
-        <ViewModeToggleButton />
         <NetworkFilterButton />
       </div>
     </div>

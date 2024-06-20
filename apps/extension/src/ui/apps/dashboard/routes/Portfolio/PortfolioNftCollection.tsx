@@ -4,7 +4,7 @@ import { DashboardNftCollection } from "@ui/domains/Portfolio/AssetsTable/Dashbo
 import { usePortfolioNfts } from "@ui/domains/Portfolio/AssetsTable/usePortfolioNfts"
 import { NftImage } from "@ui/domains/Portfolio/NftImage"
 import { PortfolioTabs } from "@ui/domains/Portfolio/PortfolioTabs"
-import { PortfolioToolbar } from "@ui/domains/Portfolio/PortfolioToolbar"
+import { PortfolioToolbarNfts } from "@ui/domains/Portfolio/PortfolioToolbarNfts"
 import { GenericStatistics } from "@ui/domains/Portfolio/Statistics"
 import { useAnalytics } from "@ui/hooks/useAnalytics"
 import { FC, useCallback, useEffect, useMemo } from "react"
@@ -93,7 +93,7 @@ export const PortfolioNftCollection = () => {
     <DashboardPortfolioLayout>
       <CollectionStats />
       <PortfolioTabs className="text-md mb-6 mt-[3.8rem] h-14 font-bold" />
-      <PortfolioToolbar />
+      <PortfolioToolbarNfts />
       <DashboardNftCollection />
     </DashboardPortfolioLayout>
   )

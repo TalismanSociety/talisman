@@ -12,7 +12,8 @@ import { useCopyAddressModal } from "@ui/domains/CopyAddress"
 import { PopupAssetsTable } from "@ui/domains/Portfolio/AssetsTable"
 import { PopupNfts } from "@ui/domains/Portfolio/AssetsTable/PopupNfts"
 import { PortfolioTabs } from "@ui/domains/Portfolio/PortfolioTabs"
-import { PortfolioToolbar } from "@ui/domains/Portfolio/PortfolioToolbar"
+import { PortfolioToolbarNfts } from "@ui/domains/Portfolio/PortfolioToolbarNfts"
+import { PortfolioToolbarTokens } from "@ui/domains/Portfolio/PortfolioToolbarTokens"
 import { usePortfolio } from "@ui/domains/Portfolio/usePortfolio"
 import { useSelectedAccount } from "@ui/domains/Portfolio/useSelectedAccount"
 import { useAnalytics } from "@ui/hooks/useAnalytics"
@@ -239,11 +240,15 @@ const MainContent: FC = () => {
 }
 
 const PageContent = () => {
+  const matchTokens = useMatch("/portfolio/tokens")
+  const matchNfts = useMatch("/portfolio/nfts")
+
   return (
     <>
       <PortfolioAssetsHeader />
       <PortfolioTabs className="mb-6 mt-[3.8rem]" />
-      <PortfolioToolbar />
+      {!!matchTokens && <PortfolioToolbarTokens />}
+      {!!matchNfts && <PortfolioToolbarNfts />}
       <div className="py-12">
         <MainContent />
       </div>

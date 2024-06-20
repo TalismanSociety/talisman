@@ -28,8 +28,8 @@ export const PortfolioTabs: FC<{ className?: string }> = ({ className }) => {
   // if no NFT tab available, if user is at NFT url, redirect out of it
   // ex: user browses nfts of an evm account, then switches to a substrate account
   useEffect(() => {
-    if (location.pathname.startsWith(URL_TAB_NFTS)) navigate(URL_TAB_TOKENS)
-  }, [location.pathname, navigate])
+    if (!withNfts && location.pathname.startsWith(URL_TAB_NFTS)) navigate(URL_TAB_TOKENS)
+  }, [location.pathname, navigate, withNfts])
 
   const selected = useMemo(
     () => tabs.find((tab) => location.pathname.startsWith(tab.value)),
