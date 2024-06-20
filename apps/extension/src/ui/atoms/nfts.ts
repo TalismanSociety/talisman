@@ -2,6 +2,7 @@ import { api } from "@ui/api"
 import { NftData } from "extension-core"
 import { atom } from "jotai"
 
+import { accountsByCategoryAtomFamily } from "./accounts"
 import { evmNetworksArrayAtomFamily } from "./chaindata"
 import { NetworkOption, portfolioAccountAtom } from "./portfolio"
 import { settingsAtomFamily } from "./settings"
@@ -39,13 +40,18 @@ export const { debouncedValueAtom: nftsPortfolioSearchAtom } = atomWithDebounce<
 
 export const nftsAtom = atom(async (get) => {
   const { status, nfts: allNfts, collections: allCollections } = await get(allNftsAtom)
+  const accounts = await get(accountsByCategoryAtomFamily("portfolio"))
   const account = get(portfolioAccountAtom)
   const networkFilter = get(nftsNetworkFilterAtom)
   const lowerSearch = get(nftsPortfolioSearchAtom).toLowerCase()
 
+  const addresses = account
+    ? [account.address.toLowerCase()]
+    : accounts.map((a) => a.address.toLowerCase())
+
   const nfts = allNfts
     // account filter
-    .filter((nft) => !account || nft.owner?.toLowerCase() === account.address.toLowerCase())
+    .filter((nft) => nft.owner && addresses.includes(nft.owner.toLowerCase()))
 
     // network filter
     .filter((nft) => (networkFilter ? nft.evmNetworkId === networkFilter.evmNetworkId : true))
