@@ -4,39 +4,17 @@ const { merge } = require("webpack-merge")
 const common = require("./webpack.common.js")
 const path = require("path")
 const CopyPlugin = require("copy-webpack-plugin")
-const RemovePlugin = require("remove-files-webpack-plugin")
 // const ExtensionReloader = require("@alectalisman/webpack-ext-reloader")
 const CircularDependencyPlugin = require("circular-dependency-plugin")
 const { SourceMapDevToolPlugin } = require("webpack")
 const SimpleLocalizeDownloadPlugin = require("./SimpleLocalizeDownloadPlugin")
-const CopyAfterBuildPlugin = require("./CopyAfterBuildPlugin")
 
-const {
-  getManifestVersionName,
-  browserSpecificManifestDetails,
-  distDirChrome,
-  distDirFirefox,
-  distDirShared,
-} = require("./utils.js")
+const { updateManifestDetails, browser, distDir, manifestDir } = require("./utils.js")
 
-const manifestPath = path.join(__dirname, "..", "public", "manifest.json")
 const faviconsSrcPath = path.join(__dirname, "..", "public", "favicon*.*")
 
-function updateManifestDetails(env, manifest, browser) {
-  // Update the version in the manifest file to match the version in package.json
-  manifest.version = process.env.npm_package_version
+console.log(`building for ${browser} with dev config`)
 
-  // add a version name key to distinguish in list of installed extensions (only for chrome)
-  if (browser === "chrome") manifest.version_name = getManifestVersionName(env)
-
-  // Set the dev title and icon because we're doing a dev build
-  manifest.name = `${manifest.name} - Dev`
-  manifest.action.default_title = `${manifest.action.default_title} - Dev`
-
-  return { ...manifest, ...browserSpecificManifestDetails[browser] }
-}
-
-console.log("building with dev config")
 const config = (env) =>
   merge(common(env), {
     devtool: false,
@@ -57,15 +35,12 @@ const config = (env) =>
       }),
       new CopyPlugin({
         patterns: [
-          // copy to chrome directory
           {
-            from: "manifest.json",
-            to: distDirChrome,
-            context: "public",
-            transform(content) {
-              const manifest = updateManifestDetails(env, JSON.parse(content.toString()), "chrome")
-
-              // Return the modified manifest
+            from: "common.json",
+            to: path.join(distDir, "manifest.json"),
+            context: manifestDir,
+            transform: async (content) => {
+              const manifest = await updateManifestDetails(env, JSON.parse(content.toString()))
               return JSON.stringify(manifest, null, 2)
             },
           },
@@ -73,52 +48,25 @@ const config = (env) =>
             from: "favicon*-dev*",
             to: ({ absoluteFilename }) =>
               path.join(
-                distDirChrome,
+                distDir,
                 path.basename(absoluteFilename).replace(/-(?:prod|canary|dev)/, "")
               ),
             context: "public",
           },
           {
             from: ".",
-            to: distDirChrome,
+            to: distDir,
             context: "public",
             // do not copy the manifest or the favicons, they're handled separately
-            globOptions: { ignore: [manifestPath, faviconsSrcPath] },
-          },
-          // copy to firefox directory
-          {
-            from: "manifest.json",
-            to: distDirFirefox, // FF
-            context: "public",
-            transform(content) {
-              const manifest = updateManifestDetails(env, JSON.parse(content.toString()), "firefox")
-
-              // Return the modified manifest
-              return JSON.stringify(manifest, null, 2)
+            globOptions: {
+              ignore: [manifestDir, faviconsSrcPath].concat(
+                // service worker should be excluded for firefox
+                browser === "firefox" ? ["service_worker.js"] : []
+              ),
             },
-          },
-          {
-            from: "favicon*-dev*",
-            to: ({ absoluteFilename }) =>
-              path.join(
-                distDirFirefox,
-                path.basename(absoluteFilename).replace(/-(?:prod|canary|dev)/, "")
-              ),
-            context: "public",
-          },
-          {
-            from: ".",
-            to: distDirFirefox,
-            context: "public",
-            // do not copy the manifest or the favicons, they're handled separately
-            globOptions: { ignore: [manifestPath, faviconsSrcPath] },
           },
         ],
       }),
-      new CopyAfterBuildPlugin({
-        destinations: [distDirChrome, distDirFirefox],
-      }),
-      new RemovePlugin({ after: { include: [distDirShared] } }),
 
       // new ExtensionReloader({
       //   // avoid reloading every browser tab

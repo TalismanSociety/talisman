@@ -1,0 +1,10 @@
+{
+  "background": {
+    "scripts": ["./vendor-background.js", "./background.js"]
+  },
+  "browser_specific_settings": {
+    "gecko": {
+      "strict_min_version": "95.0"
+    }
+  }
+}

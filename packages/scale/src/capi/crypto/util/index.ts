@@ -66,12 +66,12 @@ export const watCryptoWaitReady = async () => {
       // initialize simd or nosimd, based on wasm feature detection
       if (await detectSimd()) {
         // system supports wasm simd
-        const imported = await require("./simd")
+        const imported = await import("./simd")
         Blake2b = imported.Blake2b
         Xxhash = imported.Xxhash
       } else {
         // system does not support wasm simd
-        const imported = await require("./nosimd")
+        const imported = await import("./nosimd")
         Blake2b = imported.Blake2b
         Xxhash = imported.Xxhash
       }

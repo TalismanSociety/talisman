@@ -11,7 +11,7 @@ const ForkTsCheckerNotifierWebpackPlugin = require("fork-ts-checker-notifier-web
 const EslintWebpackPlugin = require("eslint-webpack-plugin")
 const AssetReplacePlugin = require("./AssetReplacePlugin")
 
-const { srcDir, distDirShared, getRelease, getGitShortHash, dropConsole } = require("./utils")
+const { browser, srcDir, distDir, getRelease, getGitShortHash, dropConsole } = require("./utils")
 
 const config = (env) => ({
   entry: {
@@ -20,7 +20,7 @@ const config = (env) => ({
     "onboarding": { import: path.join(srcDir, "index.onboarding.tsx") },
     "dashboard": { import: path.join(srcDir, "index.dashboard.tsx") },
 
-    // Wallet service workers
+    // Wallet service worker pages
     "background": { import: path.join(srcDir, "background.ts"), dependOn: "vendor-background" },
 
     // Background.js manually-specified code-splits (to keep background.js under 4MB).
@@ -32,17 +32,17 @@ const config = (env) => ({
     },
 
     // Wallet injected scripts
-    "content_script": path.join(srcDir, "content_script.ts"),
-    "page": path.join(srcDir, "page.ts"),
+    "content_script": { import: path.join(srcDir, "content_script.ts") },
+    "page": { import: path.join(srcDir, "page.ts") },
   },
+  target: browser === "firefox" ? "web" : "webworker",
   output: {
-    path: distDirShared,
+    path: distDir,
     filename: "[name].js",
     chunkFilename: "[name].chunk.js",
     assetModuleFilename: "assets/[hash][ext]", // removes query string if there are any in our import strings (we use ?url for svgs)
     globalObject: "self",
   },
-
   module: {
     rules: [
       {
@@ -135,6 +135,8 @@ const config = (env) => ({
       "process.env.SIMPLE_LOCALIZE_API_KEY": JSON.stringify(
         process.env.SIMPLE_LOCALIZE_API_KEY || ""
       ),
+      "process?.env?.TXWRAPPER_METADATA_CACHE_MAX": undefined,
+      "process.env.TXWRAPPER_METADATA_CACHE_MAX_AGE": JSON.stringify(60 * 1000),
 
       // dev stuff, only pass through when env.build is undefined (running a development build)
       "process.env.PASSWORD": JSON.stringify(
@@ -175,6 +177,7 @@ const config = (env) => ({
       "process.env.COMMIT_SHA_SHORT": JSON.stringify(getGitShortHash()),
       "process.env.RELEASE": JSON.stringify(getRelease(env)),
       "process.env.VERSION": JSON.stringify(process.env.npm_package_version),
+      "process.env.BROWSER": JSON.stringify(browser),
     }),
     ...[
       { title: "Talisman", entrypoint: "popup" },

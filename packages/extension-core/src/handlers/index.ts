@@ -66,7 +66,11 @@ const talismanHandler = <TMessageType extends MessageTypes>(
     try {
       port.postMessage(message)
     } catch (e) {
-      if (e instanceof Error && e.message === "Attempting to use a disconnected port object") {
+      if (
+        e instanceof Error &&
+        (e.message === "Attempting to use a disconnected port object" ||
+          e.message === "Attempt to postMessage on disconnected port")
+      ) {
         // this means that the user has done something like close the tab
         port.disconnect()
         return

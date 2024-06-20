@@ -15829,6 +15829,7 @@ __metadata:
     nanoid: 3.3.7
     posthog-js: 1.139.0
     rxjs: ^7.8.1
+    scale-ts: ^1.6.0
     semver: ^7.5.4
     sinon-chrome: ^3.0.1
     toml: ^3.0.0

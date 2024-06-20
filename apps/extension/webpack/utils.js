@@ -1,19 +1,18 @@
 /* eslint-env es2021 */
 
 const childProcess = require("child_process")
+const { readFile } = require("fs/promises")
 const path = require("path")
 const sentryWebpackPlugin = require("@sentry/webpack-plugin").sentryWebpackPlugin
 
 const rootDir = path.join(__dirname, "..")
 const srcDir = path.join(rootDir, "src")
-const distDirChrome = path.join(rootDir, "dist", "chrome")
-const distDirFirefox = path.join(rootDir, "dist", "firefox")
 
-// distDirShared is used for the shared files between the two builds.
-// Files from this directory are copied ino the respective build directories for each browser
-// and then deleted
-const distDirShared = path.join(rootDir, "dist", "temp")
+const browser = process.env.BROWSER || "chrome"
+const distDir = path.join(rootDir, "dist", browser)
+
 const publicDir = path.join(rootDir, "public")
+const manifestDir = path.join(publicDir, "manifest")
 
 const getGitShortHash = () => {
   try {
@@ -37,15 +36,15 @@ const getRelease = (env) => {
 const getArchiveFileName = (env) => {
   switch (env.build) {
     case "ci":
-      return `talisman_extension_ci_${getGitShortHash() ?? Date.now()}.zip`
+      return `talisman_extension_ci_${getGitShortHash() ?? Date.now()}_${browser}.zip`
     case "canary":
       return `talisman_extension_v${
         process.env.npm_package_version
-      }_${getGitShortHash()}_canary.zip`
+      }_${getGitShortHash()}_canary_${browser}.zip`
     case "production":
-      return `talisman_extension_v${process.env.npm_package_version}.zip`
+      return `talisman_extension_v${process.env.npm_package_version}_${browser}.zip`
     default:
-      return `talisman_extension_${getGitShortHash()}.zip`
+      return `talisman_extension_${getGitShortHash()}_${browser}.zip`
   }
 }
 
@@ -81,9 +80,9 @@ const getSentryPlugin = (env) => {
     release: getRelease(env),
     cleanArtifacts: true,
     sourcemaps: {
-      assets: [`${distDirShared}/**`],
-      ignore: [`${distDirShared}/content_script.js`, `${distDirShared}/page.js`],
-      deleteFilesAfterUpload: [`${distDirShared}/**/*.map`],
+      assets: [`${distDir}/**`],
+      ignore: [`${distDir}/content_script.js`, `${distDir}/page.js`],
+      deleteFilesAfterUpload: [`${distDir}/**/*.map`],
     },
   })
 }
@@ -91,32 +90,45 @@ const getSentryPlugin = (env) => {
 const dropConsole = (env) =>
   ["production", "canary"].includes(env.build) && process.env.NODE_ENV !== "TEST"
 
-const browserSpecificManifestDetails = {
-  firefox: {
-    background: {
-      scripts: ["./vendor-background.js", "./background.js"],
-    },
-    browser_specific_settings: {
-      gecko: {
-        strict_min_version: "95.0",
-      },
-    },
-  },
-  chrome: {
-    background: {
-      service_worker: "service_worker.js",
-    },
-    minimum_chrome_version: "102",
-  },
+const updateManifestDetails = async (env, manifest) => {
+  const data = await readFile(path.join(manifestDir, `${browser}.json`), "utf-8")
+  const browserSpecificManifestDetails = JSON.parse(data)
+
+  // Update the version in the manifest file to match the version in package.json
+  manifest.version = process.env.npm_package_version
+
+  // add a version name key to distinguish in list of installed extensions (only for chrome)
+  if (browser === "chrome") manifest.version_name = getManifestVersionName(env)
+
+  // Set the dev title and icon if we're doing a dev build
+  if (env.build === "dev") {
+    manifest.name = `${manifest.name} - Dev`
+    manifest.action.default_title = `${manifest.action.default_title} - Dev`
+  }
+  // Set the canary title and icon if we're doing a canary build
+  else if (env.build === "canary") {
+    manifest.name = `${manifest.name} - Canary`
+    manifest.action.default_title = `${manifest.action.default_title} - Canary`
+
+    for (const key in manifest.icons) {
+      const filename = manifest.icons[key]
+      const name = filename.split(".").slice(0, -1).join()
+      const extension = filename.split(".").slice(-1).join()
+
+      manifest.icons[key] = `${name}-canary.${extension}`
+    }
+  }
+
+  return { ...manifest, ...browserSpecificManifestDetails }
 }
 
 module.exports = {
+  browser,
   srcDir,
-  distDirShared,
-  distDirChrome,
-  distDirFirefox,
+  distDir,
   publicDir,
-  browserSpecificManifestDetails,
+  manifestDir,
+  updateManifestDetails,
   getGitShortHash,
   getRelease,
   getManifestVersionName,

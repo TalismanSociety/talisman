@@ -9,16 +9,17 @@ const BundleAnalyzerPlugin = require("webpack-bundle-analyzer").BundleAnalyzerPl
 
 const common = require("./webpack.common.js")
 const {
+  browser,
   distDir,
+  updateManifestDetails,
   getArchiveFileName,
+  manifestDir,
   getSentryPlugin,
-  getManifestVersionName,
   dropConsole,
 } = require("./utils")
 const { SourceMapDevToolPlugin } = require("webpack")
 const SimpleLocalizeDownloadPlugin = require("./SimpleLocalizeDownloadPlugin")
 
-const manifestPath = path.join(__dirname, "..", "public", "manifest.json")
 const faviconsSrcPath = path.join(__dirname, "..", "public", "favicon*.*")
 
 const config = (env) => {
@@ -42,34 +43,11 @@ const config = (env) => {
       new CopyPlugin({
         patterns: [
           {
-            from: "manifest.json",
-            to: distDir,
-            context: "public",
-            transform(content) {
-              // Parse the manifest
-              const manifest = JSON.parse(content.toString())
-
-              // Update the version in the manifest file to match the version in package.json
-              manifest.version = process.env.npm_package_version
-
-              // add a version name key to distinguish in list of installed extensions
-              manifest.version_name = getManifestVersionName(env)
-
-              // Set the canary title and icon if we're doing a canary build
-              if (env.build === "canary") {
-                manifest.name = `${manifest.name} - Canary`
-                manifest.action.default_title = `${manifest.action.default_title} - Canary`
-
-                for (const key in manifest.icons) {
-                  const filename = manifest.icons[key]
-                  const name = filename.split(".").slice(0, -1).join()
-                  const extension = filename.split(".").slice(-1).join()
-
-                  manifest.icons[key] = `${name}-canary.${extension}`
-                }
-              }
-
-              // Return the modified manifest
+            from: "common.json",
+            to: path.join(distDir, "manifest.json"),
+            context: manifestDir,
+            transform: async (content) => {
+              const manifest = await updateManifestDetails(env, JSON.parse(content.toString()))
               return JSON.stringify(manifest, null, 2)
             },
           },
@@ -87,7 +65,12 @@ const config = (env) => {
             to: distDir,
             context: "public",
             // do not copy the manifest or the favicons, they're handled separately
-            globOptions: { ignore: [manifestPath, faviconsSrcPath] },
+            globOptions: {
+              ignore: [manifestDir, faviconsSrcPath].concat(
+                // service worker should be excluded for firefox
+                browser === "firefox" ? ["service_worker.js"] : []
+              ),
+            },
           },
         ],
       }),

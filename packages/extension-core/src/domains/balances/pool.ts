@@ -33,6 +33,7 @@ import { balanceModules } from "../../rpcs/balance-modules"
 import { chaindataProvider } from "../../rpcs/chaindata"
 import { Addresses, AddressesByChain } from "../../types/base"
 import { awaitKeyringLoaded } from "../../util/awaitKeyringLoaded"
+import { isBackgroundPage } from "../../util/isBackgroundPage"
 import { settingsStore } from "../app/store.settings"
 import { activeChainsStore, isChainActive } from "../chains/store.activeChains"
 import { Chain } from "../chains/types"
@@ -143,28 +144,14 @@ abstract class BalancePool {
   constructor({ persist }: { persist?: boolean }) {
     this.#persist = Boolean(persist)
 
-    // Firefox
-    if (chrome.runtime.getBackgroundPage) {
-      chrome.runtime.getBackgroundPage((backgroundPage) => {
-        const backgroundPageUrl = backgroundPage?.location?.href ?? null
-
-        if (
-          window?.location?.href &&
-          backgroundPageUrl &&
-          !(backgroundPageUrl === window.location.href)
-        )
-          throw new Error(
-            `Balances pool should only be used in the background page - used in: ${window.location.href}`
-          )
-      })
-    } else {
-      // Chrome
-      if (window?.location?.href && !window.location.href.includes("service_worker.js")) {
+    // check for use outside of the background/service worker
+    isBackgroundPage().then((backgroudPage) => {
+      if (!backgroudPage) {
         throw new Error(
           `Balances pool should only be used in the background page - used in: ${window.location.href}`
         )
       }
-    }
+    })
 
     // subscribe this store to all of the inputs it depends on
     this.#cleanupSubs = [this.initializeChaindataSubscription()]

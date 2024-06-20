@@ -8,7 +8,7 @@ export const DEBUG = process.env.DEBUG === "true"
 export const TEST = process.env.NODE_ENV === "test"
 export const DEFAULT_ETH_CHAIN_ID = 1 //Ethereum mainnet
 
-export const IS_FIREFOX = navigator.userAgent.toLowerCase().includes("firefox")
+export const IS_FIREFOX = process.env.BROWSER === "firefox"
 
 /**
  * A list of tokens to show by default for empty substrate accounts
