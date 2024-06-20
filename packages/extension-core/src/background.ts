@@ -15,8 +15,7 @@ import { migrateConnectAllSubstrate } from "./libs/migrations/legacyMigrations"
 
 initSentry()
 
-// eslint-disable-next-line no-void
-void chrome.action.setBadgeBackgroundColor({ color: "#d90000" })
+chrome.action.setBadgeBackgroundColor({ color: "#d90000" })
 
 // Onboarding and migrations
 chrome.runtime.onInstalled.addListener(async ({ reason, previousVersion }) => {

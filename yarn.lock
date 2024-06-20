@@ -9038,13 +9038,13 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/chrome@npm:0.0.208":
-  version: 0.0.208
-  resolution: "@types/chrome@npm:0.0.208"
+"@types/chrome@npm:0.0.268":
+  version: 0.0.268
+  resolution: "@types/chrome@npm:0.0.268"
   dependencies:
     "@types/filesystem": "*"
     "@types/har-format": "*"
-  checksum: c16e41e75997eb0b77ba9835d952f364440d1797879d318e5c37a067611bb50763dccae885a4bd3f64e969ea3879de628209cf5965c7d88f8c14cb4a2944b3de
+  checksum: c7ae2479b225beea673681df0a6022f251e98bdf1c162c84363d52efb32edf5d26cf8007d6ed92d497837212a1c2cfa6ad9c3c1c0d0169e0a5189fa084555ee4
   languageName: node
   linkType: hard
 
@@ -15935,7 +15935,7 @@ __metadata:
     "@testing-library/user-event": ^13.5.0
     "@types/bcryptjs": ^2.4.2
     "@types/blueimp-md5": 2.18.0
-    "@types/chrome": 0.0.208
+    "@types/chrome": 0.0.268
     "@types/color": 3.0.3
     "@types/dompurify": ^3.0.5
     "@types/jest": 27.4.1
