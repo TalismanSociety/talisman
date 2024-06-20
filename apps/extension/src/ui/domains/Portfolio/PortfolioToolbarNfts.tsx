@@ -2,6 +2,7 @@ import { SearchInput } from "@talisman/components/SearchInput"
 import { GlobeIcon, ToolbarListIcon, ToolbarTilesIcon } from "@talismn/icons"
 import { classNames } from "@talismn/util"
 import { useSetting } from "@ui/hooks/useSettings"
+import { IS_POPUP } from "@ui/util/constants"
 import { t } from "i18next"
 import { useCallback, useMemo } from "react"
 import { useTranslation } from "react-i18next"
@@ -85,9 +86,8 @@ const PortfolioSearch = () => {
   return (
     <SearchInput
       containerClassName={classNames(
-        "!bg-field ring-grey-700 rounded-sm h-[3.6rem] max-w-[37.4rem]"
-        //"outline outline-orange"
-        // IS_POPUP ? "max-w-[20rem]" : ""
+        "!bg-field ring-grey-700 rounded-sm h-[3.6rem]",
+        IS_POPUP ? "max-w-[22rem]" : "max-w-[37.4rem]"
       )}
       placeholder={t("Search")}
       onChange={setSearch}
@@ -99,7 +99,7 @@ const PortfolioSearch = () => {
 export const PortfolioToolbarNfts = () => {
   return (
     <div className="flex w-full items-center justify-between gap-8 overflow-hidden">
-      <div className="-mx-1 flex grow items-center overflow-clip px-1">
+      <div className="flex grow items-center overflow-clip px-1">
         <PortfolioSearch />
       </div>
       <div className="flex shrink-0 gap-4">
