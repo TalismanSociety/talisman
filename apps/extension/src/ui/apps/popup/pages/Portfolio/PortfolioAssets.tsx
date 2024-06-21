@@ -270,6 +270,7 @@ export const PortfolioAssets = () => {
   return <PageContent />
 }
 
+// TODO move to its own file ? if yes need to extract PortfolioAssetsHeader
 export const PortfolioNftCollection = () => {
   const { popupOpenEvent } = useAnalytics()
 
