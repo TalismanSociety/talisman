@@ -11,6 +11,7 @@ const messageService = new MessageService({
 port.onMessage.addListener(messageService.handleResponse)
 
 export const api: MessageTypes = {
+  ping: () => messageService.sendMessage("pri(ping)"),
   unsubscribe: (id) => messageService.sendMessage("pri(unsubscribe)", { id }),
   // UNSORTED
   onboardCreatePassword: (pass, passConfirm) =>

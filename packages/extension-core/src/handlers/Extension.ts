@@ -225,7 +225,8 @@ export default class Extension extends ExtensionHandler {
     // Then try remaining which are present in this class
     // --------------------------------------------------------------------
     switch (type) {
-      // NOTE: The remaining message handlers which used to be here have now all been moved into subhandlers :)
+      case "pri(ping)":
+        return true
 
       default:
         throw new Error(`Unable to handle message of type ${type}`)

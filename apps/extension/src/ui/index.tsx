@@ -5,6 +5,7 @@ import { ErrorBoundaryDatabaseMigration } from "@talisman/components/ErrorBounda
 import { NotificationsContainer } from "@talisman/components/Notifications/NotificationsContainer"
 import { SuspenseTracker } from "@talisman/components/SuspenseTracker"
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query"
+import { useKeepBackgroundOpen } from "@ui/hooks/useKeepBackgroundOpen"
 import React, { ReactNode, Suspense } from "react"
 import { createRoot } from "react-dom/client"
 import { HashRouter } from "react-router-dom"
@@ -17,6 +18,11 @@ const FONT_FAMILIES_ONBOARDING: FontFamily[] = ["Surt", "SurtExpanded", "WhyteIn
 const FONT_FAMILIES =
   window.location.pathname === "/onboarding.html" ? FONT_FAMILIES_ONBOARDING : FONT_FAMILIES_DEFAULT
 preloadFonts(FONT_FAMILIES)
+
+const KeepBackgroundOpen = () => {
+  useKeepBackgroundOpen()
+  return null
+}
 
 const queryClient = new QueryClient()
 
@@ -33,6 +39,7 @@ export const renderTalisman = (app: ReactNode) => {
       <ErrorBoundary>
         <ErrorBoundaryDatabaseMigration>
           <Suspense fallback={<SuspenseTracker name="Root" />}>
+            <KeepBackgroundOpen />
             <QueryClientProvider client={queryClient}>
               <HashRouter>{app}</HashRouter>
               <NotificationsContainer />
