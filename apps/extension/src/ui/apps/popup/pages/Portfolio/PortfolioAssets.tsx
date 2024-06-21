@@ -1,5 +1,6 @@
 import { Balance, Balances } from "@extension/core"
 import { AccountJsonAny } from "@extension/core"
+import { SuspenseTracker } from "@talisman/components/SuspenseTracker"
 import { ChevronLeftIcon, CopyIcon, MoreHorizontalIcon, SendIcon } from "@talismn/icons"
 import { classNames } from "@talismn/util"
 import { api } from "@ui/api"
@@ -10,6 +11,7 @@ import { CurrentAccountAvatar } from "@ui/domains/Account/CurrentAccountAvatar"
 import { Fiat } from "@ui/domains/Asset/Fiat"
 import { useCopyAddressModal } from "@ui/domains/CopyAddress"
 import { PopupAssetsTable } from "@ui/domains/Portfolio/AssetsTable"
+import { PopupNftCollection } from "@ui/domains/Portfolio/AssetsTable/PopupNftCollection"
 import { PopupNfts } from "@ui/domains/Portfolio/AssetsTable/PopupNfts"
 import { PortfolioTabs } from "@ui/domains/Portfolio/PortfolioTabs"
 import { PortfolioToolbarNfts } from "@ui/domains/Portfolio/PortfolioToolbarNfts"
@@ -249,8 +251,10 @@ const PageContent = () => {
       <PortfolioTabs className="mb-6 mt-[3.8rem]" />
       {!!matchTokens && <PortfolioToolbarTokens />}
       {!!matchNfts && <PortfolioToolbarNfts />}
-      <div className="py-12">
-        <MainContent />
+      <div className="py-8">
+        <Suspense fallback={<SuspenseTracker name="PortfolioAssets.MainContent" />}>
+          <MainContent />
+        </Suspense>
       </div>
     </>
   )
@@ -264,4 +268,23 @@ export const PortfolioAssets = () => {
   }, [popupOpenEvent])
 
   return <PageContent />
+}
+
+export const PortfolioNftCollection = () => {
+  const { popupOpenEvent } = useAnalytics()
+
+  useEffect(() => {
+    popupOpenEvent("portfolio nft collection")
+  }, [popupOpenEvent])
+
+  return (
+    <>
+      <PortfolioAssetsHeader />
+      <PortfolioTabs className="mb-6 mt-[3.8rem]" />
+      <PortfolioToolbarNfts />
+      <div className="py-8">
+        <PopupNftCollection />
+      </div>
+    </>
+  )
 }

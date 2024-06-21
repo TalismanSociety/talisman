@@ -9,6 +9,8 @@ export type NftStoreData = {
   timestamp: number | null
   collections: NftCollection[]
   nfts: Nft[]
+  hiddenNftCollectionIds: string[]
+  favoriteNftIds: string[]
 }
 
 const DEFAULT_DATA: NftStoreData = {
@@ -17,15 +19,17 @@ const DEFAULT_DATA: NftStoreData = {
   timestamp: null,
   collections: [],
   nfts: [],
+  hiddenNftCollectionIds: [],
+  favoriteNftIds: [],
 }
 
 // this must not be exported at the package level
 // only backend should have access to it
 export const nftsStore = new BehaviorSubject(DEFAULT_DATA)
 
-// load from db on startup
+// load from db and cleanup on startup
 getDbBlob<"nfts", NftStoreData>("nfts").then((nfts) => {
-  if (nfts) nftsStore.next(nfts)
+  if (nfts) nftsStore.next({ ...DEFAULT_DATA, ...nfts })
 })
 
 // persist to db when store is updated

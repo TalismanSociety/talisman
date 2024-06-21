@@ -16,7 +16,7 @@ import { PopupContent, PopupHeader, PopupLayout } from "../../Layout/PopupLayout
 import { NoAccounts } from "../NoAccounts"
 import { PortfolioAccounts } from "./PortfolioAccounts"
 import { PortfolioAsset } from "./PortfolioAsset"
-import { PortfolioAssets } from "./PortfolioAssets"
+import { PortfolioAssets, PortfolioNftCollection } from "./PortfolioAssets"
 import { PortfolioLearnMore, PortfolioLearnMoreHeader } from "./PortfolioLearnMore"
 import { PortfolioTryTalisman, PortfolioTryTalismanHeader } from "./PortfolioTryTalisman"
 import { PortfolioWhatsNew, PortfolioWhatsNewHeader } from "./PortfolioWhatsNew"
@@ -71,6 +71,7 @@ const HasAccountsPortfolioContent = () => (
       <Route path="learn-more" element={<PortfolioLearnMore />} />
       <Route path="try-talisman" element={<PortfolioTryTalisman />} />
       <Route path="tokens" element={<PortfolioAssets />} />
+      <Route path="nfts/:collectionId" element={<PortfolioNftCollection />} />
       <Route path="nfts" element={<PortfolioAssets />} />
       <Route path="tokens/:symbol" element={<PortfolioAsset />} />
       <Route path="*" element={<PortfolioAccounts />} />

@@ -76,6 +76,11 @@ export type NftData = Omit<NftStoreData, "id" | "accountsKey"> & {
   status: NftLoadingStatus
 }
 
+export type SetHiddenNftCollectionRequest = { id: string; isHidden: boolean }
+export type SetFavoriteNftRequest = { id: string; isFavorite: boolean }
+
 export interface NftsMessages {
   "pri(nfts.subscribe)": [null, boolean, NftData]
+  "pri(nfts.collection.setHidden)": [SetHiddenNftCollectionRequest, boolean]
+  "pri(nfts.setFavorite)": [SetFavoriteNftRequest, boolean]
 }

@@ -1,12 +1,23 @@
 import { SearchInput } from "@talisman/components/SearchInput"
-import { GlobeIcon, ToolbarListIcon, ToolbarTilesIcon } from "@talismn/icons"
+import { GlobeIcon, ToolbarFilterIcon, ToolbarListIcon, ToolbarTilesIcon } from "@talismn/icons"
 import { classNames } from "@talismn/util"
+import { NftVisibilityFilter, nftsVisibilityFilterAtom } from "@ui/atoms"
 import { useSetting } from "@ui/hooks/useSettings"
 import { IS_POPUP } from "@ui/util/constants"
 import { t } from "i18next"
+import { useAtom } from "jotai"
 import { useCallback, useMemo } from "react"
 import { useTranslation } from "react-i18next"
-import { Tooltip, TooltipContent, TooltipTrigger, useOpenClose } from "talisman-ui"
+import {
+  ContextMenu,
+  ContextMenuContent,
+  ContextMenuOptionItem,
+  ContextMenuTrigger,
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+  useOpenClose,
+} from "talisman-ui"
 
 import { ChainLogo } from "../Asset/ChainLogo"
 import { usePortfolioNftsNetwork, usePortfolioNftsSearch } from "./AssetsTable/usePortfolioNfts"
@@ -87,12 +98,55 @@ const PortfolioSearch = () => {
     <SearchInput
       containerClassName={classNames(
         "!bg-field ring-grey-700 rounded-sm h-[3.6rem]",
-        IS_POPUP ? "max-w-[22rem]" : "max-w-[37.4rem]"
+        IS_POPUP ? "max-w-[20rem]" : "max-w-[37.4rem]"
       )}
       placeholder={t("Search")}
       onChange={setSearch}
       initialValue={search}
     />
+  )
+}
+
+const VisibilityFilterButton = () => {
+  const { t } = useTranslation()
+  const [visibilityFilter, setVisibilityFilter] = useAtom(nftsVisibilityFilterAtom)
+
+  return (
+    <Tooltip>
+      <TooltipTrigger asChild>
+        <span>
+          <ContextMenu>
+            <ContextMenuTrigger asChild>
+              <PortfolioToolbarButton
+                className={classNames(
+                  visibilityFilter !== NftVisibilityFilter.Default && "text-primary"
+                )}
+              >
+                <ToolbarFilterIcon />
+              </PortfolioToolbarButton>
+            </ContextMenuTrigger>
+            <ContextMenuContent>
+              <ContextMenuOptionItem
+                label={t("Default")}
+                selected={visibilityFilter === NftVisibilityFilter.Default}
+                onClick={() => setVisibilityFilter(NftVisibilityFilter.Default)}
+              />
+              <ContextMenuOptionItem
+                label={t("Favorites")}
+                selected={visibilityFilter === NftVisibilityFilter.Favorites}
+                onClick={() => setVisibilityFilter(NftVisibilityFilter.Favorites)}
+              />
+              <ContextMenuOptionItem
+                label={t("Hidden")}
+                selected={visibilityFilter === NftVisibilityFilter.Hidden}
+                onClick={() => setVisibilityFilter(NftVisibilityFilter.Hidden)}
+              />
+            </ContextMenuContent>
+          </ContextMenu>
+        </span>
+      </TooltipTrigger>
+      <TooltipContent>{t("Filter by property")}</TooltipContent>
+    </Tooltip>
   )
 }
 
@@ -104,6 +158,7 @@ export const PortfolioToolbarNfts = () => {
       </div>
       <div className="flex shrink-0 gap-4">
         <ViewModeToggleButton />
+        <VisibilityFilterButton />
         <NetworkFilterButton />
       </div>
     </div>

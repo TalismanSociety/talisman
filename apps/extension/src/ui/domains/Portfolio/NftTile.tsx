@@ -1,3 +1,4 @@
+import { StarIcon } from "@talismn/icons"
 import { classNames } from "@talismn/util"
 import { FC } from "react"
 
@@ -6,17 +7,19 @@ import { NftImage } from "./NftImage"
 
 export const NftTile: FC<{
   imageUrl: string | null
+
   label: string
   networkIds: string[]
+  isFavorite?: boolean
   className?: string
   onClick: () => void
-}> = ({ imageUrl, label, networkIds, className, onClick }) => {
+}> = ({ imageUrl, label, networkIds, isFavorite, className, onClick }) => {
   return (
     <button
       type="button"
       onClick={onClick}
       className={classNames(
-        "text-body-secondary group flex size-full flex-col gap-4 overflow-hidden text-left",
+        "text-body-secondary group relative flex size-full flex-col gap-4 overflow-hidden text-left",
         className
       )}
     >
@@ -31,6 +34,9 @@ export const NftTile: FC<{
         <div className="grow truncate text-base">{label}</div>
         <NetworksLogoStack className="shrink-0" networkIds={networkIds} />
       </div>
+      {isFavorite && (
+        <StarIcon className="absolute right-[4%] top-[4%] fill-[#D5FF5C] stroke-[#D5FF5C] opacity-80" />
+      )}
     </button>
   )
 }

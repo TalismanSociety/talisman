@@ -1,10 +1,15 @@
 import { createSubscription, unsubscribe } from "../../handlers/subscriptions"
 import { ExtensionHandler } from "../../libs/Handler"
-import { MessageTypes, RequestTypes, ResponseType, SubscriptionHandler } from "../../types"
+import {
+  MessageHandler,
+  MessageTypes,
+  RequestTypes,
+  ResponseType,
+  SubscriptionHandler,
+} from "../../types"
 import { Port } from "../../types/base"
-import { subscribeNfts } from "./service"
+import { setFavoriteNft, setHiddenNftCollection, subscribeNfts } from "./service"
 
-// TODO cooldown: allow handlers to return synchronously (impacts all handlers signatures)
 const handleSubscribeNfts: SubscriptionHandler<"pri(nfts.subscribe)"> = (id, port) => {
   const cb = createSubscription(id, port)
 
@@ -16,6 +21,20 @@ const handleSubscribeNfts: SubscriptionHandler<"pri(nfts.subscribe)"> = (id, por
     unsubscribeNfts()
   })
 
+  return true
+}
+
+const handleSetHiddenNftCollection: MessageHandler<"pri(nfts.collection.setHidden)"> = (
+  request
+) => {
+  const { id, isHidden } = request
+  setHiddenNftCollection(id, isHidden)
+  return true
+}
+
+const handleSetFavoriteNft: MessageHandler<"pri(nfts.setFavorite)"> = (request) => {
+  const { id, isFavorite } = request
+  setFavoriteNft(id, isFavorite)
   return true
 }
 
@@ -33,6 +52,14 @@ export class NftsHandler extends ExtensionHandler {
           port,
           request as RequestTypes["pri(nfts.subscribe)"]
         ) as Response
+
+      case "pri(nfts.collection.setHidden)":
+        return handleSetHiddenNftCollection(
+          request as RequestTypes["pri(nfts.collection.setHidden)"]
+        ) as Response
+
+      case "pri(nfts.setFavorite)":
+        return handleSetFavoriteNft(request as RequestTypes["pri(nfts.setFavorite)"]) as Response
 
       default:
         throw new Error(`Unable to handle message of type ${type}`)

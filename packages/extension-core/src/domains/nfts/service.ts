@@ -107,12 +107,14 @@ subscriptions.subscribe(async (subIds) => {
 
 const obsNfts = combineLatest([nftsStore, status]).pipe(
   map(([store, status]) => {
-    const { collections, nfts, timestamp } = store
+    const { collections, nfts, timestamp, favoriteNftIds, hiddenNftCollectionIds } = store
     const data: NftData = {
       collections,
       nfts,
       timestamp,
       status,
+      favoriteNftIds,
+      hiddenNftCollectionIds,
     }
     return data
   })
@@ -129,4 +131,24 @@ export const subscribeNfts = (callback: (data: NftData) => void) => {
     removeSubscription(id)
     subscription.unsubscribe()
   }
+}
+
+export const setHiddenNftCollection = (id: string, isHidden: boolean) => {
+  const hiddenNftCollectionIds = nftsStore.value.hiddenNftCollectionIds.filter((cid) => cid !== id)
+  if (isHidden) hiddenNftCollectionIds.push(id)
+
+  nftsStore.next({
+    ...nftsStore.value,
+    hiddenNftCollectionIds,
+  })
+}
+
+export const setFavoriteNft = (id: string, isFavorite: boolean) => {
+  const favoriteNftIds = nftsStore.value.favoriteNftIds.filter((nid) => nid !== id)
+  if (isFavorite) favoriteNftIds.push(id)
+
+  nftsStore.next({
+    ...nftsStore.value,
+    favoriteNftIds,
+  })
 }

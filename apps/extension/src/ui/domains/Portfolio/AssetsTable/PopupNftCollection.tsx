@@ -1,6 +1,7 @@
+import { SuspenseTracker } from "@talisman/components/SuspenseTracker"
 import { isFavoriteNftAtomFamily } from "@ui/atoms"
 import { useSetting } from "@ui/hooks/useSettings"
-import format from "date-fns/format"
+import { format } from "date-fns"
 import { Nft, NftCollection } from "extension-core"
 import { useAtomValue } from "jotai"
 import { FC, Suspense, useCallback, useMemo, useRef, useState } from "react"
@@ -14,7 +15,7 @@ import { NftTile } from "../NftTile"
 import { useSelectedAccount } from "../useSelectedAccount"
 import { usePortfolioNftCollection } from "./usePortfolioNfts"
 
-export const DashboardNftCollection = () => {
+export const PopupNftCollection: FC<{ className?: string }> = () => {
   const [viewMode] = useSetting("nftsViewMode")
 
   const [dialogNftId, setDialogNftId] = useState<string | null>(null)
@@ -25,14 +26,14 @@ export const DashboardNftCollection = () => {
 
   return (
     <div className="mt-7">
-      <Suspense>
+      <Suspense fallback={<SuspenseTracker name="PopupNftCollection" />}>
         {viewMode === "list" ? (
           <NftsList onNftClick={handleNftClick} />
         ) : (
           <NftsGrid onNftClick={handleNftClick} />
         )}
+        <NftDialog nftId={dialogNftId} onDismiss={() => setDialogNftId(null)} />
       </Suspense>
-      <NftDialog nftId={dialogNftId} onDismiss={() => setDialogNftId(null)} />
     </div>
   )
 }
@@ -49,11 +50,11 @@ const NoNftFound = () => {
   return <div className="text-body-secondary bg-field rounded px-8 py-36 text-center">{msg}</div>
 }
 
-const NftRowInner: FC<{ collection: NftCollection; nft: Nft; onClick: () => void }> = ({
-  collection,
-  nft,
-  onClick,
-}) => {
+const NftRowInner: FC<{
+  collection: NftCollection
+  nft: Nft
+  onClick: () => void
+}> = ({ collection, nft, onClick }) => {
   const imageUrl = useMemo(() => {
     return nft.previews.small ?? nft.imageUrl
   }, [nft.imageUrl, nft.previews.small])
@@ -62,15 +63,14 @@ const NftRowInner: FC<{ collection: NftCollection; nft: Nft; onClick: () => void
     <button
       type="button"
       onClick={onClick}
-      className="bg-grey-900 hover:bg-grey-800 grid h-32 w-full grid-cols-3 items-center gap-4 rounded-sm px-8 text-left"
+      className="bg-grey-900 hover:bg-grey-800 flex h-32 w-full  items-center gap-8 rounded-sm px-8 text-left"
     >
-      <div className="flex items-center gap-6 overflow-hidden">
+      <div className="flex grow items-center gap-6 overflow-hidden ">
         <NftImage className="size-16" src={imageUrl} alt={collection.name ?? ""} />
         <div className="flex grow flex-col gap-2 overflow-hidden">
           <div className="truncate text-base font-bold">{nft.name}</div>
         </div>
       </div>
-      <div className="text-right">{nft.name}</div>
       <div className="text-right">
         {nft.acquiredAt ? format(new Date(nft.acquiredAt), "P") : null}
       </div>
@@ -78,11 +78,15 @@ const NftRowInner: FC<{ collection: NftCollection; nft: Nft; onClick: () => void
   )
 }
 
-const NftRow: FC<{ collection: NftCollection; nft: Nft; onClick: () => void }> = (props) => {
+const NftRow: FC<{
+  collection: NftCollection
+  nft: Nft
+  onClick: () => void
+}> = (props) => {
   const refContainer = useRef<HTMLDivElement>(null)
   const intersection = useIntersection(refContainer, {
     root: null,
-    rootMargin: "1000px",
+    rootMargin: "400px",
   })
 
   return (
@@ -99,7 +103,7 @@ const NftsList: FC<{ onNftClick: (nft: Nft) => void }> = ({ onNftClick }) => {
   if (!nfts.length) return <NoNftFound />
 
   return (
-    <div className="flex flex-col gap-5">
+    <div className="flex flex-col gap-5 text-sm">
       {!!collection &&
         nfts.map((nft, i) => (
           <NftRow
@@ -136,7 +140,11 @@ const NftTileInner: FC<{ collection: NftCollection; nft: Nft; onClick: () => voi
   )
 }
 
-const NftTileItem: FC<{ collection: NftCollection; nft: Nft; onClick: () => void }> = (props) => {
+const NftTileItem: FC<{
+  collection: NftCollection
+  nft: Nft
+  onClick: () => void
+}> = (props) => {
   const refContainer = useRef<HTMLDivElement>(null)
   const intersection = useIntersection(refContainer, {
     root: null,
@@ -144,7 +152,7 @@ const NftTileItem: FC<{ collection: NftCollection; nft: Nft; onClick: () => void
   })
 
   return (
-    <div ref={refContainer} className="size-[22.2rem]">
+    <div ref={refContainer} className="h-[19.6rem] w-[16.7rem]">
       {intersection?.isIntersecting ? <NftTileInner {...props} /> : null}
     </div>
   )
@@ -157,7 +165,7 @@ const NftsGrid: FC<{ onNftClick: (nft: Nft) => void }> = ({ onNftClick }) => {
   if (!nfts.length) return <NoNftFound />
 
   return (
-    <div className="flex flex-wrap justify-stretch gap-8">
+    <div className="grid w-full grid-cols-2 gap-8">
       {!!collection &&
         nfts.map((nft, i) => (
           <NftTileItem

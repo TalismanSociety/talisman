@@ -1,14 +1,23 @@
+import { SuspenseTracker } from "@talisman/components/SuspenseTracker"
 import { Tabs } from "@talisman/components/Tabs"
-import { ChevronLeftIcon, MoreHorizontalIcon } from "@talismn/icons"
+import { ChevronLeftIcon, MoreHorizontalIcon, StarIcon } from "@talismn/icons"
 import { classNames } from "@talismn/util"
+import { api } from "@ui/api"
+import {
+  isFavoriteNftAtomFamily,
+  isHiddenNftCollectionAtomFamily,
+  nftDataAtomFamily,
+} from "@ui/atoms"
 import { useEvmNetwork } from "@ui/hooks/useEvmNetwork"
 import { IS_POPUP } from "@ui/util/constants"
 import format from "date-fns/format"
 import { Nft, NftCollection, NftCollectionMarketplace } from "extension-core"
+import { useAtomValue } from "jotai"
 import {
   CSSProperties,
   FC,
   PropsWithChildren,
+  Suspense,
   useCallback,
   useEffect,
   useMemo,
@@ -36,7 +45,7 @@ import { ChainLogo } from "../Asset/ChainLogo"
 import { Fiat } from "../Asset/Fiat"
 import { NftImage } from "./NftImage"
 
-const NftContextMenu: FC<{ collection: NftCollection; nft: Nft }> = ({ nft }) => {
+const NftContextMenu: FC<{ nft: Nft }> = ({ nft }) => {
   const { t } = useTranslation()
 
   const handleOpenUrl = useCallback(
@@ -46,10 +55,16 @@ const NftContextMenu: FC<{ collection: NftCollection; nft: Nft }> = ({ nft }) =>
     []
   )
 
+  const isCollectionHidden = useAtomValue(isHiddenNftCollectionAtomFamily(nft.collectionId))
+
+  const handleHideCollectionClick = useCallback(() => {
+    api.nftsSetHidden(nft.collectionId, !isCollectionHidden)
+  }, [isCollectionHidden, nft.collectionId])
+
   return (
     <ContextMenu>
       <ContextMenuTrigger className="text-body-secondary hover:text-body">
-        <MoreHorizontalIcon className="size-10" />
+        <MoreHorizontalIcon className="size-12" />
       </ContextMenuTrigger>
       <ContextMenuContent>
         {nft.marketplaces.map((mp, i) => (
@@ -57,6 +72,9 @@ const NftContextMenu: FC<{ collection: NftCollection; nft: Nft }> = ({ nft }) =>
             {t("Open in {{marketplace}}", { marketplace: mp.name })}
           </ContextMenuItem>
         ))}
+        <ContextMenuItem onClick={handleHideCollectionClick}>
+          {isCollectionHidden ? t("Show collection") : t("Hide collection")}
+        </ContextMenuItem>
       </ContextMenuContent>
     </ContextMenu>
   )
@@ -218,6 +236,20 @@ const ScrollableArea: FC<
   )
 }
 
+const FavoriteButton: FC<{ nftId: string }> = ({ nftId }) => {
+  const isFavorite = useAtomValue(isFavoriteNftAtomFamily(nftId))
+
+  const handleClick = useCallback(() => {
+    api.nftsSetFavorite(nftId, !isFavorite)
+  }, [isFavorite, nftId])
+
+  return (
+    <IconButton onClick={handleClick}>
+      <StarIcon className={classNames(isFavorite && "fill-[#D5FF5C] stroke-[#D5FF5C]")} />
+    </IconButton>
+  )
+}
+
 const DialogContent: FC<{ onDismiss: () => void; collection: NftCollection; nft: Nft }> = ({
   onDismiss,
   collection,
@@ -278,15 +310,16 @@ const DialogContent: FC<{ onDismiss: () => void; collection: NftCollection; nft:
               {nft.name}
             </div>
           </div>
-          <div className="shrink-0">
-            <NftContextMenu nft={nft} collection={collection} />
+          <div className="flex shrink-0 items-center gap-4">
+            <FavoriteButton nftId={nft.id} />
+            <NftContextMenu nft={nft} />
           </div>
         </div>
-        <div className="@2xl:hidden bg-grey-800 block p-8">
+        <div className="@2xl:hidden bg-grey-800 block h-[38.5rem] shrink-0 p-8">
           <Tooltip>
             <TooltipTrigger onClick={handleFullScreenViewClick} asChild>
-              <div className="cursor-pointer rounded-lg bg-black">
-                <NftImage className="aspect-auto size-auto w-full rounded" src={nft.imageUrl} />
+              <div className="size-full cursor-pointer rounded-lg bg-black">
+                <NftImage className="size-full object-cover" src={nft.imageUrl} />
               </div>
             </TooltipTrigger>
             {!!nft.imageUrl && <TooltipContent>{t("View in full screen")}</TooltipContent>}
@@ -313,9 +346,10 @@ const DialogContent: FC<{ onDismiss: () => void; collection: NftCollection; nft:
   )
 }
 
-export const NftDialog: FC<{
-  data?: { nft: Nft; collection: NftCollection }
-}> = ({ data }) => {
+const NftDialogInner: FC<{
+  data: { nft: Nft; collection: NftCollection } | null | undefined
+  onDismiss: () => void
+}> = ({ data, onDismiss }) => {
   const { isOpen, open, close } = useOpenClose()
   const [current, setCurrent] = useState<{ nft: Nft; collection: NftCollection }>()
 
@@ -323,13 +357,18 @@ export const NftDialog: FC<{
     if (data) {
       setCurrent(data)
       open()
-    }
-  }, [data, open])
+    } else close()
+  }, [data, open, close])
+
+  const handleDismiss = useCallback(() => {
+    onDismiss()
+    close()
+  }, [close, onDismiss])
 
   return (
     <Modal
       isOpen={isOpen}
-      onDismiss={close}
+      onDismiss={handleDismiss}
       className={classNames(
         "@container h-[60rem] w-[40rem] overflow-hidden bg-black",
         !IS_POPUP && "lg:w-[100rem] lg:rounded-lg"
@@ -340,3 +379,17 @@ export const NftDialog: FC<{
     </Modal>
   )
 }
+
+const NftDialogWrapper: FC<{ nftId: string | null; onDismiss: () => void }> = ({
+  nftId,
+  onDismiss,
+}) => {
+  const nftData = useAtomValue(nftDataAtomFamily(nftId))
+  return <NftDialogInner data={nftData} onDismiss={onDismiss} />
+}
+
+export const NftDialog: FC<{ nftId: string | null; onDismiss: () => void }> = (props) => (
+  <Suspense fallback={<SuspenseTracker name="NftDialogWrapper" />}>
+    <NftDialogWrapper {...props} />
+  </Suspense>
+)

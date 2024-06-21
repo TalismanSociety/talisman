@@ -350,4 +350,8 @@ export const api: MessageTypes = {
 
   // nfts
   nftsSubscribe: (cb) => messageService.subscribe("pri(nfts.subscribe)", null, cb),
+  nftsSetHidden: (id, isHidden) =>
+    messageService.sendMessage("pri(nfts.collection.setHidden)", { id, isHidden }),
+  nftsSetFavorite: (id, isFavorite) =>
+    messageService.sendMessage("pri(nfts.setFavorite)", { id, isFavorite }),
 }
