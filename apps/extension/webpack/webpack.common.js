@@ -9,7 +9,7 @@ const CaseSensitivePathsPlugin = require("case-sensitive-paths-webpack-plugin")
 const ForkTsCheckerWebpackPlugin = require("fork-ts-checker-webpack-plugin")
 const ForkTsCheckerNotifierWebpackPlugin = require("fork-ts-checker-notifier-webpack-plugin")
 const EslintWebpackPlugin = require("eslint-webpack-plugin")
-const AssetReplacePlugin = require("./AssetReplacePlugin")
+const AssetReplacePlugin = require("./plugins/AssetReplacePlugin")
 
 const { browser, srcDir, distDir, getRelease, getGitShortHash, dropConsole } = require("./utils")
 
@@ -35,7 +35,7 @@ const config = (env) => ({
     "content_script": { import: path.join(srcDir, "content_script.ts") },
     "page": { import: path.join(srcDir, "page.ts") },
   },
-  target: browser === "firefox" ? "web" : "webworker",
+  // target: browser === "firefox" ? "web" : "webworker",
   output: {
     path: distDir,
     filename: "[name].js",

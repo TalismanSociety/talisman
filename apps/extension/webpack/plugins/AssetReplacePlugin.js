@@ -35,6 +35,7 @@ class AssetReplacePlugin {
           })
           .filter(([, assetName]) => assetName)
 
+        if (replaceArr.length === 0) return callback()
         const replaceFn = replaceArr
           .map(([k, assetName]) => {
             // github.com/webpack/webpack-sources/blob/master/lib/ConcatSource.js

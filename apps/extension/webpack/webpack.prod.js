@@ -3,7 +3,7 @@
 const { merge } = require("webpack-merge")
 const path = require("path")
 const CopyPlugin = require("copy-webpack-plugin")
-const ZipPlugin = require("./ZipPlugin")
+const ZipPlugin = require("./plugins/ZipPlugin")
 const TerserPlugin = require("terser-webpack-plugin")
 const BundleAnalyzerPlugin = require("webpack-bundle-analyzer").BundleAnalyzerPlugin
 

@@ -7,7 +7,7 @@ const CopyPlugin = require("copy-webpack-plugin")
 // const ExtensionReloader = require("@alectalisman/webpack-ext-reloader")
 const CircularDependencyPlugin = require("circular-dependency-plugin")
 const { SourceMapDevToolPlugin } = require("webpack")
-const SimpleLocalizeDownloadPlugin = require("./SimpleLocalizeDownloadPlugin")
+const SimpleLocalizeDownloadPlugin = require("./plugins/SimpleLocalizeDownloadPlugin")
 
 const { updateManifestDetails, browser, distDir, manifestDir } = require("./utils.js")
 
