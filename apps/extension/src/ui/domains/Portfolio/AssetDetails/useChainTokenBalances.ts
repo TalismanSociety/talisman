@@ -90,7 +90,23 @@ export const useChainTokenBalances = ({ chainId, balances }: ChainTokenBalancesP
       }))
     )
 
-    return [...available, ...locked, ...reserved]
+    // STAKED (NOM POOLS)
+    const nomPooled = tokenBalances.each.flatMap((b) =>
+      b.nompools.map((nomPool, index) => ({
+        key: `${b.id}-nomPool-${index}`,
+        title: getLockTitle(nomPool, { balance: b }),
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        description: (nomPool.meta as any)?.description ?? undefined,
+        tokens: BigNumber(nomPool.amount.tokens),
+        fiat: nomPool.amount.fiat(currency),
+        locked: true,
+        // only show address when we're viewing balances for all accounts
+        address: account ? undefined : b.address,
+        meta: nomPool.meta,
+      }))
+    )
+
+    return [...available, ...nomPooled, ...locked, ...reserved]
       .filter((row) => row && row.tokens.gt(0))
       .sort(sortBigBy("tokens", true))
   }, [summary, account, t, tokenBalances, currency])
