@@ -116,8 +116,11 @@ type BaseAmountWithLabel<TLabel extends string> = {
   meta?: unknown
 }
 
-export const getValueId = (amount: AmountWithLabel<string>) =>
-  [amount.label, amount.type, amount.source].join("::")
+export const getValueId = (amount: AmountWithLabel<string>) => {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const paraId = (amount.meta as any)?.paraId ?? ""
+  return [amount.label, amount.type, amount.source, paraId].join("::")
+}
 
 /** A labelled locked amount of a balance */
 export type LockedAmount<TLabel extends string> = BaseAmountWithLabel<TLabel> & {
