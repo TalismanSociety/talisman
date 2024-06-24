@@ -91,7 +91,7 @@ export const useChainTokenBalances = ({ chainId, balances }: ChainTokenBalancesP
     )
 
     // STAKED (NOM POOLS)
-    const nomPooled = tokenBalances.each.flatMap((b) =>
+    const staked = tokenBalances.each.flatMap((b) =>
       b.nompools.map((nomPool, index) => ({
         key: `${b.id}-nomPool-${index}`,
         title: getLockTitle(nomPool, { balance: b }),
@@ -122,7 +122,7 @@ export const useChainTokenBalances = ({ chainId, balances }: ChainTokenBalancesP
       }))
     )
 
-    return [...available, ...locked, ...reserved, ...nomPooled, ...crowdloans]
+    return [...available, ...locked, ...reserved, ...staked, ...crowdloans]
       .filter((row) => row && row.tokens.gt(0))
       .sort(sortBigBy("tokens", true))
   }, [summary, account, t, tokenBalances, currency])
