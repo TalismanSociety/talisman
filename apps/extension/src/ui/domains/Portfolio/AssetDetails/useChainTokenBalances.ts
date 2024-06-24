@@ -106,7 +106,23 @@ export const useChainTokenBalances = ({ chainId, balances }: ChainTokenBalancesP
       }))
     )
 
-    return [...available, ...nomPooled, ...locked, ...reserved]
+    // CROWDLOANS
+    const crowdloans = tokenBalances.each.flatMap((b) =>
+      b.crowdloans.map((crowdloan, index) => ({
+        key: `${b.id}-crowdloan-${index}`,
+        title: getLockTitle(crowdloan, { balance: b }),
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        description: (crowdloan.meta as any)?.description ?? undefined,
+        tokens: BigNumber(crowdloan.amount.tokens),
+        fiat: crowdloan.amount.fiat(currency),
+        locked: true,
+        // only show address when we're viewing balances for all accounts
+        address: account ? undefined : b.address,
+        meta: crowdloan.meta,
+      }))
+    )
+
+    return [...available, ...locked, ...reserved, ...nomPooled, ...crowdloans]
       .filter((row) => row && row.tokens.gt(0))
       .sort(sortBigBy("tokens", true))
   }, [summary, account, t, tokenBalances, currency])
