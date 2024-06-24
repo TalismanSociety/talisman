@@ -117,7 +117,7 @@ type BaseAmountWithLabel<TLabel extends string> = {
 }
 
 export const getValueId = (amount: AmountWithLabel<string>) => {
-  const getExtra = () => {
+  const getMetaId = () => {
     const meta = amount.meta as
       | { poolId?: number; paraId?: number; unbounding?: boolean }
       | undefined
@@ -128,7 +128,7 @@ export const getValueId = (amount: AmountWithLabel<string>) => {
     return ""
   }
 
-  return [amount.label, amount.type, amount.source, getExtra()].join("::")
+  return [amount.label, amount.type, amount.source, getMetaId()].join("::")
 }
 
 /** A labelled locked amount of a balance */
