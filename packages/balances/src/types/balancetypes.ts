@@ -123,8 +123,7 @@ export const getValueId = (amount: AmountWithLabel<string>) => {
       | undefined
     if (!meta) return ""
     if (amount.type === "crowdloan") return meta.paraId?.toString() ?? ""
-    if (amount.type === "nompool")
-      return [meta.poolId?.toString() ?? "", meta.unbounding?.toString()].join("::")
+    if (amount.type === "nompool") return meta.poolId?.toString() ?? ""
     return ""
   }
 
