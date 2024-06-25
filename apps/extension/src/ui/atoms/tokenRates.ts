@@ -20,7 +20,7 @@ const tokenRatesSubscriptionAtom = atomWithSubscription<void>(
 )
 
 const tokenRatesObservableAtom = atomWithObservable(() =>
-  from(liveQuery(() => db.tokenRates.toArray())).pipe(
+  from(liveQuery(async () => await db.tokenRates.toArray())).pipe(
     logObservableUpdate("tokenRatesObservableAtom")
   )
 )

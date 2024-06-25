@@ -119,8 +119,9 @@ export class QueryCache {
 
     if (!commonMetadataObservable) {
       commonMetadataObservable = from(
-        liveQuery(() =>
-          balancesDb.miniMetadatas.where("source").equals("substrate-native").toArray()
+        liveQuery(
+          async () =>
+            await balancesDb.miniMetadatas.where("source").equals("substrate-native").toArray()
         )
       ).pipe(
         map(

@@ -29,7 +29,7 @@ export const trackBalanceTotals = async () => {
     chaindataProvider.tokensByIdObservable,
     chaindataProvider.chainsByIdObservable,
     balancePool.observable,
-    liveQuery(() => extensionDb.tokenRates.toArray()),
+    liveQuery(async () => await extensionDb.tokenRates.toArray()),
   ])
     .pipe(throttleTime(MAX_UPDATE_INTERVAL, undefined, { trailing: true }))
     .subscribe(async ([settings, accounts, tokens, chainsById, balances, allTokenRates]) => {

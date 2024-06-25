@@ -376,7 +376,7 @@ abstract class BalancePool {
       activeChainsObservable,
       activeEvmNetworksObservable,
       activeTokensObservable,
-      liveQuery(() => balancesDb.miniMetadatas.toArray()),
+      liveQuery(async () => await balancesDb.miniMetadatas.toArray()),
     ])
       .pipe(firstThenDebounce(DEBOUNCE_TIMEOUT))
       .subscribe({

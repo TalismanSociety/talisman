@@ -50,9 +50,11 @@ export class ChaindataProvider implements IChaindataProvider {
     this.#onfinalityApiKey = options?.onfinalityApiKey ?? undefined
 
     this.#liveQueries = [
-      liveQuery(() => this.#db.chains.toArray()).subscribe(this.chainsObservable),
-      liveQuery(() => this.#db.evmNetworks.toArray()).subscribe(this.evmNetworksObservable),
-      liveQuery(() => this.#db.tokens.toArray()).subscribe(this.tokensObservable),
+      liveQuery(async () => await this.#db.chains.toArray()).subscribe(this.chainsObservable),
+      liveQuery(async () => await this.#db.evmNetworks.toArray()).subscribe(
+        this.evmNetworksObservable
+      ),
+      liveQuery(async () => await this.#db.tokens.toArray()).subscribe(this.tokensObservable),
     ]
   }
 

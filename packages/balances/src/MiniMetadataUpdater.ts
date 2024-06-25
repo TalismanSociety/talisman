@@ -64,12 +64,12 @@ export class MiniMetadataUpdater {
   /** Subscribe to the metadata for a chain */
   subscribe(chainId: ChainId) {
     return from(
-      liveQuery(() =>
-        balancesDb.miniMetadatas
+      liveQuery(async () => {
+        const metadatas = await balancesDb.miniMetadatas
           .filter((m) => m.chainId === chainId)
           .toArray()
-          .then((array) => array[0])
-      )
+        return metadatas[0]
+      })
     )
   }
 

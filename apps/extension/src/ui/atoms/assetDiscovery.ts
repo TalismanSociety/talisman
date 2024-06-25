@@ -13,7 +13,7 @@ import { logObservableUpdate } from "./utils/logObservableUpdate"
 const assetDiscoveryBalancesAtom = atomWithObservable(() =>
   // backend will do a lot of updates
   // debounce to mitigate performance issues
-  from(liveQuery(() => db.assetDiscovery.toArray()))
+  from(liveQuery(async () => await db.assetDiscovery.toArray()))
     .pipe(firstThenDebounce(500))
     .pipe(logObservableUpdate("assetDiscoveryBalancesAtom"))
 )

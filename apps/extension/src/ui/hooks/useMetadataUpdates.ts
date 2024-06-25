@@ -42,7 +42,7 @@ export const useMetadataUpdates = (genesisHash?: HexString, specVersion?: number
   )
 
   const metadata = useLiveQuery(
-    () => (genesisHash ? db.metadata.get(genesisHash) : undefined),
+    async () => (genesisHash ? await db.metadata.get(genesisHash) : undefined),
     [genesisHash]
   )
 

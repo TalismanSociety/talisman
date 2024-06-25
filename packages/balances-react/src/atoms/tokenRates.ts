@@ -22,7 +22,9 @@ const tokenRatesDbAtom = atomWithObservable(() => {
     Object.fromEntries(dbRates.map(({ tokenId, rates }) => [tokenId, rates]))
 
   // retrieve fetched tokenRates from the db
-  return dexieToRxjs(liveQuery(() => tokenRatesDb.tokenRates.toArray())).pipe(map(dbRatesToMap))
+  return dexieToRxjs(liveQuery(async () => await tokenRatesDb.tokenRates.toArray())).pipe(
+    map(dbRatesToMap)
+  )
 })
 
 const tokenRatesFetcherAtomEffect = atomEffect((get) => {

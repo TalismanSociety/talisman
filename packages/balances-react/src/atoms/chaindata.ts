@@ -80,7 +80,9 @@ export const chaindataAtom = atomWithObservable((get) => {
     map(filterMapEnabledTokens),
     distinctUntilIsEqual
   )
-  const miniMetadatasObservable = dexieToRxjs(liveQuery(() => balancesDb.miniMetadatas.toArray()))
+  const miniMetadatasObservable = dexieToRxjs(
+    liveQuery(async () => await balancesDb.miniMetadatas.toArray())
+  )
   const miniMetadatas = combineLatest([
     miniMetadatasObservable.pipe(distinctUntilIsEqual),
     chainsById,
