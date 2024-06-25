@@ -18,7 +18,7 @@ const {
   dropConsole,
 } = require("./utils")
 const { SourceMapDevToolPlugin } = require("webpack")
-const SimpleLocalizeDownloadPlugin = require("./SimpleLocalizeDownloadPlugin")
+const SimpleLocalizeDownloadPlugin = require("./plugins/SimpleLocalizeDownloadPlugin")
 
 const faviconsSrcPath = path.join(__dirname, "..", "public", "favicon*.*")
 

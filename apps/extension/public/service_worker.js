@@ -1,6 +1,9 @@
+/* eslint-env es2021 */
 /* eslint-disable no-undef */
 /* global importScripts */
 
+// eslint-disable-next-line no-global-assign, no-unused-vars
+const document = self
 // needed because of https://github.com/paritytech/txwrapper-core/pull/384
 // TODO delete when txwrapper-core is updated
 self.process = {
