@@ -1,9 +1,7 @@
-export const PORT_EXTENSION = `talisman-extension${
-  process.env.NODE_ENV !== "production" && `-${process.env.NODE_ENV}-${process.env.RELEASE}`
-}`
-export const PORT_CONTENT = `talisman-content${
-  process.env.NODE_ENV !== "production" && `-${process.env.NODE_ENV}-${process.env.RELEASE}`
-}`
+const PORT_SUFFIX =
+  process.env.BUILD !== "production" ? `-${process.env.BUILD}-${process.env.RELEASE}` : ""
+export const PORT_EXTENSION = `talisman-extension${PORT_SUFFIX}`
+export const PORT_CONTENT = `talisman-content${PORT_SUFFIX}`
 export const DEBUG = process.env.DEBUG === "true"
 export const TEST = process.env.NODE_ENV === "test"
 export const DEFAULT_ETH_CHAIN_ID = 1 //Ethereum mainnet
