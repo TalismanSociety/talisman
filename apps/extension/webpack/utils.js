@@ -8,7 +8,10 @@ const sentryWebpackPlugin = require("@sentry/webpack-plugin").sentryWebpackPlugi
 const rootDir = path.join(__dirname, "..")
 const srcDir = path.join(rootDir, "src")
 
-const browser = process.env.BROWSER || "chrome"
+const ValidBrowsers = ["chrome", "firefox"]
+const browser = ValidBrowsers.includes(process.env.BROWSER?.toLowerCase())
+  ? process.env.BROWSER.toLowerCase()
+  : "chrome"
 const distDir = path.join(rootDir, "dist", browser)
 
 const publicDir = path.join(rootDir, "public")
