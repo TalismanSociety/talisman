@@ -1,10 +1,8 @@
-import type { MetadataDef as PjsMetadataDef } from "@polkadot/extension-inject/types"
-import { HexString } from "@polkadot/util/types"
-import { ChainId } from "@talismn/chaindata-provider"
+import type { HexString } from "@polkadot/util/types"
+import type { ChainId } from "@talismn/chaindata-provider"
+import type { TalismanMetadataDef } from "extension-shared"
 
-export interface TalismanMetadataDef extends PjsMetadataDef {
-  metadataRpc?: string
-}
+export type { TalismanMetadataDef } from "extension-shared"
 
 type SubstrateRequestSend = {
   chainId: ChainId

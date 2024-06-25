@@ -1,7 +1,7 @@
 import { Keyring } from "@polkadot/keyring"
 import { assert, hexToU8a, u8aConcat, u8aToU8a } from "@polkadot/util"
 import { Chain } from "@talismn/chaindata-provider"
-import { log } from "extension-shared"
+import { getMetadataRpcFromDef, log } from "extension-shared"
 
 import { appStore } from "../../domains/app/store.app"
 import { passwordStore } from "../../domains/app/store.password"
@@ -9,7 +9,7 @@ import { mnemonicsStore } from "../../domains/mnemonics/store"
 import { SignerPayloadGenesisHash } from "../../domains/signing/types"
 import { chainConnector } from "../../rpcs/chain-connector"
 import { chaindataProvider } from "../../rpcs/chaindata"
-import { getMetadataDef, getMetadataRpcFromDef } from "../../util/getMetadataDef"
+import { getMetadataDef } from "../../util/getMetadataDef"
 import { $addNetworkSpecsPayload, $networkSpecs, $updateNetworkMetadataPayload } from "./codecs"
 
 const getEncryptionForChain = (chain: Chain) => {

@@ -1,26 +1,19 @@
+import { Chain } from "@extension/core"
+import { getUserExtensionsByChainId } from "@extension/core/domains/metadata/userExtensions"
+import { getMetadataFromDef, getMetadataRpcFromDef } from "@extension/shared"
+import { log } from "@extension/shared"
 import { typesBundle } from "@polkadot/apps-config/api"
 import { Metadata, TypeRegistry } from "@polkadot/types"
 import { getSpecAlias, getSpecTypes } from "@polkadot/types-known/util"
 import { hexToNumber, isHex } from "@polkadot/util"
-import { Chain } from "@talismn/chaindata-provider"
-import { getMetadataFromDef, getMetadataRpcFromDef, log } from "extension-shared"
-
-import { getUserExtensionsByChainId } from "../domains/metadata/userExtensions"
-import { chaindataProvider } from "../rpcs/chaindata"
-import { getMetadataDef } from "./getMetadataDef"
-
-// metadata may have been added manually to the store, for a chain that Talisman doesn't know about (not in chaindata)
-// => use either chainId or genesisHash as identifier
+import { HexString } from "@polkadot/util/types"
+import { api } from "@ui/api"
+import { chaindataProvider } from "@ui/domains/Chains/chaindataProvider"
 
 /**
- *
- * @param chainIdOrHash chainId or genesisHash
- * @param specVersion specVersion of the metadata to be loaded (if not defined, will fetch latest)
- * @param blockHash if specVersion isn't specified, this is the blockHash where to fetch the correct metadata from (if not defined, will fetch latest)
- * @param signedExtensions signedExtensions from a transaction payload that has to be decoded or signed
- * @returns substrate type registry
+ * do not reuse getTypeRegistry because we're on frontend, we need to leverage backend's metadata cache
  */
-export const getTypeRegistry = async (
+export const getFrontendTypeRegistry = async (
   chainIdOrHash: string,
   specVersion?: number | string,
   blockHash?: string,
@@ -32,6 +25,8 @@ export const getTypeRegistry = async (
   const chain = (await (isHex(chainIdOrHash)
     ? chaindataProvider.chainByGenesisHash(chainIdOrHash)
     : chaindataProvider.chainById(chainIdOrHash))) as Chain | null
+
+  const genesisHash = (isHex(chainIdOrHash) ? chainIdOrHash : chain?.genesisHash) as HexString
 
   // register typesBundle in registry for legacy (pre metadata v14) chains
   if (typesBundle.spec && chain?.specName && typesBundle.spec[chain.specName]) {
@@ -64,7 +59,14 @@ export const getTypeRegistry = async (
   }
 
   const numSpecVersion = typeof specVersion === "string" ? hexToNumber(specVersion) : specVersion
-  const metadataDef = await getMetadataDef(chainIdOrHash, numSpecVersion, blockHash)
+
+  // metadata must be loaded by backend
+  const metadataDef = await api.subChainMetadata(
+    genesisHash,
+    numSpecVersion,
+    blockHash as HexString
+  )
+
   const metadataRpc = metadataDef ? getMetadataRpcFromDef(metadataDef) : undefined
 
   if (metadataDef) {
@@ -73,7 +75,6 @@ export const getTypeRegistry = async (
       const metadata: Metadata = new Metadata(registry, metadataValue)
       registry.setMetadata(metadata)
     }
-
     registry.setSignedExtensions(signedExtensions, {
       ...metadataDef.userExtensions,
       ...getUserExtensionsByChainId(chain?.id),

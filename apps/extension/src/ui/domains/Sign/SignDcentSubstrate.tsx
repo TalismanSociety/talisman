@@ -1,5 +1,4 @@
 import { isJsonPayload, isRawPayload } from "@extension/core"
-import { getTypeRegistry } from "@extension/core"
 import { SignerPayloadJSON, SignerPayloadRaw } from "@extension/core"
 import { log } from "@extension/shared"
 import { classNames, planckToTokens } from "@talismn/util"
@@ -9,6 +8,7 @@ import { useChainByGenesisHash } from "@ui/hooks/useChainByGenesisHash"
 import useToken from "@ui/hooks/useToken"
 import { DcentError, dcent } from "@ui/util/dcent"
 import { useBringPopupBackInFront } from "@ui/util/dcent/useBringPopupBackInFront"
+import { getFrontendTypeRegistry } from "@ui/util/getFrontendTypeRegistry"
 import DcentWebConnector from "dcent-web-connector"
 import { FC, useCallback, useEffect, useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
@@ -31,7 +31,7 @@ const useTypeRegistry = (chainIdOrHash: string | null) => {
     queryKey: ["useTypeRegistry", chainIdOrHash],
     queryFn: async () => {
       if (!chainIdOrHash) return null
-      return await getTypeRegistry(chainIdOrHash)
+      return await getFrontendTypeRegistry(chainIdOrHash)
     },
     refetchOnReconnect: true,
     refetchInterval: false,
