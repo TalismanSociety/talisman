@@ -76,21 +76,19 @@ type ModuleType = "substrate-native"
 export const subNativeTokenId = (chainId: ChainId) =>
   `${chainId}-substrate-native`.toLowerCase().replace(/ /g, "-")
 
-// The following 'value sources' should completely replace the previous rather than merging together
-const REPLACE_SOURCES = [
-  "substrate-native-locks",
-  "substrate-native-freezes",
-  "nompools-staking",
-  "crowdloan",
-]
 /**
  * Function to merge two 'sub sources' of the same balance together, or
  * two instances of the same balance with different values.
  * @param balance1 SubNativeBalance
  * @param balance2 SubNativeBalance
+ * @param source source that this merge is for (will discard previous values from that source)
  * @returns SubNativeBalance
  */
-const mergeBalances = (balance1: SubNativeBalance | undefined, balance2: SubNativeBalance) => {
+const mergeBalances = (
+  balance1: SubNativeBalance | undefined,
+  balance2: SubNativeBalance,
+  source: string
+) => {
   if (balance1 === undefined) return balance2
   assert(
     getBalanceId(balance1) === getBalanceId(balance2),
@@ -99,7 +97,7 @@ const mergeBalances = (balance1: SubNativeBalance | undefined, balance2: SubNati
   // locks and freezes should completely replace the previous rather than merging together
   const existingValues = Object.fromEntries(
     balance1.values
-      .filter((v) => !v.source || !REPLACE_SOURCES.includes(v.source))
+      .filter((v) => !v.source || v.source !== source)
       .map((value) => [getValueId(value), value])
   )
   const newValues = Object.fromEntries(balance2.values.map((value) => [getValueId(value), value]))
@@ -421,45 +419,47 @@ export const SubNativeModule: NewBalanceModule<
 
       // The update handler is to allow us to merge balances with the same id, and manage initialising and positive balances state for each
       // balance type and network
-      const handleUpdate: SubscriptionCallback<SubNativeBalance[]> = (error, result) => {
-        if (result) {
-          const currentBalances = subNativeBalances.getValue()
-          // first merge any balances with the same id within the result
-          const accumulatedUpdates = result
-            .filter((b) => b.values.length > 0)
-            .reduce<Record<string, SubNativeBalance>>((acc, b) => {
-              const bId = getBalanceId(b)
-              acc[bId] = mergeBalances(acc[bId], b)
-              return acc
-            }, {})
+      const handleUpdateForSource: (source: string) => SubscriptionCallback<SubNativeBalance[]> =
+        (source: string) => (error, result) => {
+          if (result) {
+            const currentBalances = subNativeBalances.getValue()
 
-          // then merge these with the current balances
-          const mergedBalances: Record<string, SubNativeBalance> = {}
-          Object.entries(accumulatedUpdates).forEach(([bId, b]) => {
-            // merge the values from the new balance into the existing balance, if there is one
-            mergedBalances[bId] = mergeBalances(currentBalances[bId], b)
+            // first merge any balances with the same id within the result
+            const accumulatedUpdates = result
+              .filter((b) => b.values.length > 0)
+              .reduce<Record<string, SubNativeBalance>>((acc, b) => {
+                const bId = getBalanceId(b)
+                acc[bId] = mergeBalances(acc[bId], b, source)
+                return acc
+              }, {})
 
-            // update initialisingBalances to remove balances which have been updated
-            const intialisingForToken = initialisingBalances.get(b.tokenId)
-            if (intialisingForToken) {
-              intialisingForToken.delete(b.address)
-              if (intialisingForToken.size === 0) initialisingBalances.delete(b.tokenId)
-              else initialisingBalances.set(b.tokenId, intialisingForToken)
-            }
-          })
+            // then merge these with the current balances
+            const mergedBalances: Record<string, SubNativeBalance> = {}
+            Object.entries(accumulatedUpdates).forEach(([bId, b]) => {
+              // merge the values from the new balance into the existing balance, if there is one
+              mergedBalances[bId] = mergeBalances(currentBalances[bId], b, source)
 
-          subNativeBalances.next({
-            ...currentBalances,
-            ...mergedBalances,
-          })
+              // update initialisingBalances to remove balances which have been updated
+              const intialisingForToken = initialisingBalances.get(b.tokenId)
+              if (intialisingForToken) {
+                intialisingForToken.delete(b.address)
+                if (intialisingForToken.size === 0) initialisingBalances.delete(b.tokenId)
+                else initialisingBalances.set(b.tokenId, intialisingForToken)
+              }
+            })
+
+            subNativeBalances.next({
+              ...currentBalances,
+              ...mergedBalances,
+            })
+          }
+          if (error) {
+            if (error instanceof SubNativeBalanceError) {
+              // this type of error doesn't need to be handled by the caller
+              initialisingBalances.delete(error.tokenId)
+            } else return callback(error)
+          }
         }
-        if (error) {
-          if (error instanceof SubNativeBalanceError) {
-            // this type of error doesn't need to be handled by the caller
-            initialisingBalances.delete(error.tokenId)
-          } else return callback(error)
-        }
-      }
 
       // subscribe to addresses and tokens for which we have a known positive balance
       const positiveSub = subscriptionTokens
@@ -484,19 +484,19 @@ export const SubNativeModule: NewBalanceModule<
                     chainConnectors.substrate,
                     getOrCreateTypeRegistry,
                     newAddressesByToken,
-                    handleUpdate
+                    handleUpdateForSource("nompools-staking")
                   )
                   const unsubCrowdloans = subscribeCrowdloans(
                     chaindataProvider,
                     chainConnectors.substrate,
                     getOrCreateTypeRegistry,
                     newAddressesByToken,
-                    handleUpdate
+                    handleUpdateForSource("crowdloan")
                   )
                   const subBase = subscribeBase(
                     baseQueries,
                     chainConnectors.substrate,
-                    handleUpdate
+                    handleUpdateForSource("base")
                   )
                   subscriber.add(async () => (await unsubNompoolStaking)())
                   subscriber.add(async () => (await unsubCrowdloans)())
@@ -510,6 +510,7 @@ export const SubNativeModule: NewBalanceModule<
 
       // for chains where we don't have a known positive balance, poll rather than subscribe
       const poll = async (addressesByToken: AddressesByToken<SubNativeToken> = {}) => {
+        const handleUpdate = handleUpdateForSource("base")
         try {
           const balances = await this.fetchBalances(addressesByToken)
           handleUpdate(null, Object.values(balances.toJSON()) as SubNativeBalance[])

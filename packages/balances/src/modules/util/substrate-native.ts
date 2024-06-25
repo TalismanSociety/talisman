@@ -148,10 +148,9 @@ export const getLockTitle = (
   if (lock.label === "democracy") return "Governance"
   if (lock.label === "crowdloan") {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    if ((lock.meta as any)?.type !== "crowdloan") return "Crowdloan"
-
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const paraId = (lock.meta as any)?.paraId
+    if (!paraId) return "Crowdloan"
+
     const name = balance?.chain?.parathreads?.find(
       (parathread) => parathread?.paraId === paraId
     )?.name
