@@ -1,7 +1,5 @@
 export { initPosthog } from "./config/posthog"
 
-export { chaindataProvider } from "./rpcs/chaindata"
-
 export { db, MIGRATION_ERROR_MSG } from "./db"
 
 export { settingsStore, type SettingsStoreData } from "./domains/app/store.settings"

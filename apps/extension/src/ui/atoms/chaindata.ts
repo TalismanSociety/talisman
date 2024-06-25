@@ -1,4 +1,4 @@
-import { ActiveChains, activeChainsStore, chaindataProvider, isChainActive } from "@extension/core"
+import { ActiveChains, activeChainsStore, isChainActive } from "@extension/core"
 import { ActiveEvmNetworks, activeEvmNetworksStore, isEvmNetworkActive } from "@extension/core"
 import { ActiveTokens, activeTokensStore, isTokenActive } from "@extension/core"
 import { HexString } from "@polkadot/util/types"
@@ -13,6 +13,7 @@ import {
   TokenList,
 } from "@talismn/chaindata-provider"
 import { api } from "@ui/api"
+import { chaindataProvider } from "@ui/domains/Chains/chaindataProvider"
 import { atom } from "jotai"
 import { atomFamily, atomWithObservable } from "jotai/utils"
 import isEqual from "lodash/isEqual"
