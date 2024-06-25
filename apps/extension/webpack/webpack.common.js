@@ -9,7 +9,6 @@ const CaseSensitivePathsPlugin = require("case-sensitive-paths-webpack-plugin")
 const ForkTsCheckerWebpackPlugin = require("fork-ts-checker-webpack-plugin")
 const ForkTsCheckerNotifierWebpackPlugin = require("fork-ts-checker-notifier-webpack-plugin")
 const EslintWebpackPlugin = require("eslint-webpack-plugin")
-const AssetReplacePlugin = require("./plugins/AssetReplacePlugin")
 
 const { browser, srcDir, distDir, getRelease, getGitShortHash, dropConsole } = require("./utils")
 
@@ -200,10 +199,6 @@ const config = (env) => ({
     new EslintWebpackPlugin({ context: "../", extensions: ["ts", "tsx"] }),
     new webpack.ProvidePlugin({
       Buffer: ["buffer", "Buffer"],
-    }),
-    // inline page.js inside content_script.js
-    new AssetReplacePlugin({
-      "#TALISMAN_PAGE_SCRIPT#": "page",
     }),
   ],
 })

@@ -26,7 +26,7 @@ window.addEventListener("message", ({ data, source }: Message): void => {
 
 // inject script that will run in page context, content inlined for instant execution
 const script = document.createElement("script")
-script.textContent = "#TALISMAN_PAGE_SCRIPT#"
+script.src = chrome.runtime.getURL("page.js")
 
 // inject before head element so that it executes before everything else
 const parent = document?.head || document?.documentElement
