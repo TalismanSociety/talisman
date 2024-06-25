@@ -222,7 +222,7 @@ abstract class BalancePool {
   ) {
     this.hasInitialised.then(() => {
       // create subscription to pool
-      const poolSubscription = this.#pool.pipe(debounceTime(500)).subscribe((balances) => {
+      const poolSubscription = this.#pool.pipe(firstThenDebounce(500)).subscribe((balances) => {
         return cb({ status: this.poolStatus, data: Object.values(balances) })
       })
       // Because this.#pool can be observed directly in the backend, we can't use this.#pool.observed to
