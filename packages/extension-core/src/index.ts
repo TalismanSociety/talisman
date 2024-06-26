@@ -1,7 +1,5 @@
 export { initPosthog } from "./config/posthog"
 
-export { chaindataProvider } from "./rpcs/chaindata"
-
 export { db, MIGRATION_ERROR_MSG } from "./db"
 
 export { settingsStore, type SettingsStoreData } from "./domains/app/store.settings"
@@ -75,7 +73,5 @@ export { isEthereumRequest } from "./types/requests"
 export * from "./libs/requests/types"
 
 export * from "./util/abi"
-export { getTypeRegistry } from "./util/getTypeRegistry"
-export { getMetadataDef, getMetadataRpcFromDef, getMetadataFromDef } from "./util/getMetadataDef"
 export { isJsonPayload, isRawPayload } from "./util/isJsonPayload"
 export { roundToFirstInteger } from "./util/roundToFirstInteger"
