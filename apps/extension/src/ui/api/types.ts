@@ -84,13 +84,24 @@ export default interface MessageTypes {
 
   // signing messages -------------------------------------------------------
   cancelSignRequest: (id: SigningRequestID<"substrate-sign">) => Promise<boolean>
-  approveSign: (id: SigningRequestID<"substrate-sign">) => Promise<boolean>
+  approveSign: (
+    id: SigningRequestID<"substrate-sign">,
+    payload?: SignerPayloadJSON
+  ) => Promise<boolean>
   approveSignHardware: (
     id: SigningRequestID<"substrate-sign">,
-    signature: HexString
+    signature: HexString,
+    payload?: SignerPayloadJSON
   ) => Promise<boolean>
-  approveSignQr: (id: SigningRequestID<"substrate-sign">, signature: HexString) => Promise<boolean>
-  approveSignSignet: (id: SigningRequestID<"substrate-sign">) => Promise<boolean>
+  approveSignQr: (
+    id: SigningRequestID<"substrate-sign">,
+    signature: HexString,
+    payload?: SignerPayloadJSON
+  ) => Promise<boolean>
+  approveSignSignet: (
+    id: SigningRequestID<"substrate-sign">,
+    payload?: SignerPayloadJSON
+  ) => Promise<boolean>
 
   // encrypt messages -------------------------------------------------------
   approveEncrypt: (id: EncryptRequestId) => Promise<boolean>

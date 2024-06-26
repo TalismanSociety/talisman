@@ -1,6 +1,5 @@
 import { SignViewVotingVote } from "@ui/domains/Sign/Views/convictionVoting/SignViewVotingVote"
 import { SignViewIconHeader } from "@ui/domains/Sign/Views/SignViewIconHeader"
-import { useExtrinsic } from "@ui/hooks/useExtrinsic"
 import { useMemo } from "react"
 import { useTranslation } from "react-i18next"
 
@@ -10,8 +9,7 @@ import { getConviction } from "./getConviction"
 
 export const SubSignConvictionVotingVote = () => {
   const { t } = useTranslation("request")
-  const { chain, payload } = usePolkadotSigningRequest()
-  const { data: extrinsic } = useExtrinsic(payload)
+  const { chain, extrinsic } = usePolkadotSigningRequest()
 
   const { title, ...props } = useMemo(() => {
     const vote = extrinsic?.registry.createType(

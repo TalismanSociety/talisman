@@ -27,7 +27,6 @@ import {
 } from "../Account/LedgerConnectionStatus"
 import { LedgerSigningStatus } from "./LedgerSigningStatus"
 import { SignHardwareSubstrateProps } from "./SignHardwareSubstrate"
-import { useLedgerSubstrateGenericPayload } from "./useLedgerSubstrateGenericPayload"
 
 type RawLedgerError = {
   errorMessage: string
@@ -74,6 +73,8 @@ const SignLedgerSubstrateGeneric: FC<SignHardwareSubstrateProps> = ({
   onCancel,
   payload,
   containerId,
+  shortMetadata,
+  registry,
 }) => {
   const account = useAccountByAddress(payload?.address)
   const app = useLedgerSubstrateMigrationApp(account?.migrationAppName as string)
@@ -100,70 +101,33 @@ const SignLedgerSubstrateGeneric: FC<SignHardwareSubstrateProps> = ({
     [refresh, status, message, requiresManualRetry, t]
   )
 
-  const {
-    data: metadata,
-    error: errorMetadata,
-    isLoading: isLoadingMetadata,
-  } = useLedgerSubstrateGenericPayload(payload && isJsonPayload(payload) ? payload : null)
-
-  const { metadataHash, txMetadata, registry, payloadWithMetadataHash, hasCheckMetadataHash } =
-    useMemo(
-      () =>
-        metadata ?? {
-          txMetadata: undefined,
-          metadataHash: undefined,
-          registry: undefined,
-          payloadWithMetadataHash: undefined,
-          hasCheckMetadataHash: undefined,
-        },
-      [metadata]
-    )
-
-  useEffect(() => {
-    if (errorMetadata)
-      setError(errorMetadata instanceof Error ? errorMetadata.message : errorMetadata.toString())
-  }, [errorMetadata])
-
-  const inputsReady = useMemo(() => {
-    return !!account && !!payload && (!isJsonPayload(payload) || !!metadata)
-  }, [account, metadata, payload])
-
   const signLedger = useCallback(async () => {
-    if (!ledger || !payload || !onSigned || !account || !inputsReady) return
+    if (!ledger || !payload || !onSigned || !account) return
 
-    if (
-      isJsonPayload(payload) &&
-      (!txMetadata ||
-        !metadataHash ||
-        !registry ||
-        !payloadWithMetadataHash ||
-        !hasCheckMetadataHash)
-    ) {
+    if (isJsonPayload(payload) && (!shortMetadata || !registry)) {
+      const hasCheckMetadataHash = registry?.metadata.extrinsic.signedExtensions.some(
+        (ext) => ext.identifier.toString() === "CheckMetadataHash"
+      )
       if (!hasCheckMetadataHash)
         return setError(
           t("This network doesn't support signatures from Ledger Polkadot Generic App.")
         )
-      if (errorMetadata) return setError((errorMetadata as Error).message)
-      if (!isLoadingMetadata) return setError(t("Metadata unavailable")) // shouldn't happen, useShortenedMetadata throws if no metadata
-      return setError(null) // wait for metadata
     }
 
     setError(null)
 
     try {
-      if (!payloadWithMetadataHash) throw new Error("Missing payloadWithMetadataHash") // just to please typescript
-
       const signature = await sign(
         ledger,
-        payloadWithMetadataHash ?? payload,
+        payload,
         account as AccountJsonHardwareSubstrate,
         app,
         registry,
-        txMetadata
+        shortMetadata
       )
 
       // await to keep loader spinning until popup closes
-      await onSigned({ signature, payload: payloadWithMetadataHash })
+      await onSigned({ signature })
     } catch (error) {
       log.error("signLedger", { error })
       const message = (error as Error)?.message ?? (error as RawLedgerError)?.errorMessage
@@ -183,22 +147,7 @@ const SignLedgerSubstrateGeneric: FC<SignHardwareSubstrateProps> = ({
           setError(message)
       }
     }
-  }, [
-    ledger,
-    payload,
-    onSigned,
-    account,
-    inputsReady,
-    txMetadata,
-    metadataHash,
-    registry,
-    payloadWithMetadataHash,
-    hasCheckMetadataHash,
-    t,
-    errorMetadata,
-    isLoadingMetadata,
-    app,
-  ])
+  }, [ledger, payload, onSigned, account, shortMetadata, registry, t, app])
 
   const onRefresh = useCallback(() => {
     refresh()
@@ -220,13 +169,7 @@ const SignLedgerSubstrateGeneric: FC<SignHardwareSubstrateProps> = ({
       {!error && (
         <>
           {isReady ? (
-            <Button
-              className="w-full"
-              disabled={!inputsReady}
-              primary
-              processing={isSigning}
-              onClick={handleSendClick}
-            >
+            <Button className="w-full" primary processing={isSigning} onClick={handleSendClick}>
               {t("Approve on Ledger")}
             </Button>
           ) : (

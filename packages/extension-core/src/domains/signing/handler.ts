@@ -1,6 +1,7 @@
 import { TypeRegistry } from "@polkadot/types"
 import keyring from "@polkadot/ui-keyring"
 import { assert } from "@polkadot/util"
+import { HexString } from "@polkadot/util/types"
 import { addTrailingSlash, encodeAnyAddress } from "@talismn/util"
 import { TEST } from "extension-shared"
 import Browser from "webextension-polyfill"
@@ -20,13 +21,17 @@ import { AccountType } from "../accounts/types"
 import { getHostName } from "../app/helpers"
 import { watchSubstrateTransaction } from "../transactions"
 import type {
+  KnownSigningRequestApprove,
   KnownSigningRequestIdOnly,
   RequestSigningApproveSignature,
   SignerPayloadJSON,
 } from "./types"
 
 export default class SigningHandler extends ExtensionHandler {
-  private async signingApprove({ id }: KnownSigningRequestIdOnly<"substrate-sign">) {
+  private async signingApprove({
+    id,
+    payload: modifiedPayload,
+  }: KnownSigningRequestApprove<"substrate-sign">) {
     const queued = requestStore.getRequest(id)
 
     assert(queued, "Unable to find request")
@@ -36,7 +41,8 @@ export default class SigningHandler extends ExtensionHandler {
     const address = encodeAnyAddress(queued.account.address)
 
     const result = await getPairForAddressSafely(address, async (pair) => {
-      const { payload } = request
+      const { payload: originalPayload } = request
+      const payload = modifiedPayload || originalPayload
       const { ok, val: hostName } = getHostName(url)
       const analyticsProperties: { dapp: string; chain?: string; hostName?: string } = {
         dapp: url,
@@ -63,11 +69,26 @@ export default class SigningHandler extends ExtensionHandler {
       }
 
       const { signature } = request.sign(registry, pair)
+      let signedTransaction: HexString | Uint8Array | undefined = undefined
 
       // notify user about transaction progress
       if (isJsonPayload(payload)) {
         const chains = Object.values(await chaindataProvider.chainsById())
         const chain = chains.find((c) => c.genesisHash === payload.genesisHash)
+
+        // if payload was modified, construct the signed transaction
+        if (modifiedPayload) {
+          const tx = registry.createType(
+            "Extrinsic",
+            { method: payload.method },
+            { version: payload.version }
+          )
+
+          // apply signature to the modified payload
+          tx.addSignature(payload.address, signature, modifiedPayload)
+
+          signedTransaction = tx.toHex()
+        }
 
         if (chain) {
           await watchSubstrateTransaction(chain, registry, payload, signature, {
@@ -91,6 +112,7 @@ export default class SigningHandler extends ExtensionHandler {
       resolve({
         id,
         signature,
+        signedTransaction,
       })
     })
     if (!result.ok) {
@@ -104,6 +126,7 @@ export default class SigningHandler extends ExtensionHandler {
   private async signingApproveExternal({
     id,
     signature,
+    payload: modifiedPayload, // supplied only if different from the original
   }: RequestSigningApproveSignature): Promise<boolean> {
     const queued = requestStore.getRequest(id)
     assert(queued, "Unable to find request")
@@ -113,7 +136,8 @@ export default class SigningHandler extends ExtensionHandler {
       url,
       account: { address: accountAddress },
     } = queued
-    const { payload } = request
+    const { payload: originalPayload } = request
+    const payload = modifiedPayload || originalPayload
 
     const { ok, val: hostName } = getHostName(url)
     const analyticsProperties: { dapp: string; chain?: string; hostName?: string } = {
@@ -121,6 +145,7 @@ export default class SigningHandler extends ExtensionHandler {
       hostName: ok ? hostName : undefined,
     }
     const account = keyring.getAccount(accountAddress)
+    let signedTransaction: HexString | Uint8Array | undefined = undefined
 
     if (isJsonPayload(payload)) {
       const genesisHash = validateHexString(payload.genesisHash)
@@ -128,7 +153,29 @@ export default class SigningHandler extends ExtensionHandler {
       analyticsProperties.chain = chain?.chainName ?? undefined
 
       if (chain) {
-        const { registry } = await getTypeRegistry(genesisHash)
+        const { signedExtensions, specVersion, blockHash } = payload
+        const genesisHash = validateHexString(payload.genesisHash)
+        const { registry } = await getTypeRegistry(
+          genesisHash,
+          specVersion,
+          blockHash,
+          signedExtensions
+        )
+
+        // if payload was modified, construct the signed transaction
+        if (modifiedPayload) {
+          const tx = registry.createType(
+            "Extrinsic",
+            { method: payload.method },
+            { version: payload.version }
+          )
+
+          // apply signature to the modified payload
+          tx.addSignature(payload.address, signature, payload)
+
+          signedTransaction = tx.toHex()
+        }
+
         await watchSubstrateTransaction(chain, registry, payload, signature, {
           siteUrl: url,
           notifications: true,
@@ -142,7 +189,7 @@ export default class SigningHandler extends ExtensionHandler {
       }
     }
 
-    queued.resolve({ id, signature })
+    queued.resolve({ id, signature, signedTransaction })
 
     const hardwareType: "ledger" | "qr" | undefined = account?.meta.hardwareType
       ? account.meta.hardwareType

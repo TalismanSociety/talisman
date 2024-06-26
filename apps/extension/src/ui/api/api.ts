@@ -46,21 +46,25 @@ export const api: MessageTypes = {
 
   // signing messages ------------------------------------------------
   cancelSignRequest: (id) => messageService.sendMessage("pri(signing.cancel)", { id }),
-  approveSign: (id) =>
+  approveSign: (id, payload) =>
     messageService.sendMessage("pri(signing.approveSign)", {
       id,
+      payload,
     }),
-  approveSignHardware: (id, signature) =>
+  approveSignHardware: (id, signature, payload) =>
     messageService.sendMessage("pri(signing.approveSign.hardware)", {
       id,
       signature,
+      payload,
     }),
-  approveSignQr: (id, signature) =>
+  approveSignQr: (id, signature, payload) =>
     messageService.sendMessage("pri(signing.approveSign.qr)", {
       id,
       signature,
+      payload,
     }),
-  approveSignSignet: (id) => messageService.sendMessage("pri(signing.approveSign.signet)", { id }),
+  approveSignSignet: (id, payload) =>
+    messageService.sendMessage("pri(signing.approveSign.signet)", { id, payload }),
 
   // encrypt messages -------------------------------------------------------
   approveEncrypt: (id) =>

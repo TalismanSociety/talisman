@@ -53,6 +53,7 @@ export const FooterContent = ({ withFee = false }: { withFee?: boolean }) => {
   const {
     fee,
     request,
+    payload,
     approve,
     reject,
     account,
@@ -61,6 +62,8 @@ export const FooterContent = ({ withFee = false }: { withFee?: boolean }) => {
     approveQr,
     approveSignet,
     status,
+    registry,
+    shortMetadata,
   } = usePolkadotSigningRequest()
 
   const processing = useMemo(() => status === "PROCESSING", [status])
@@ -79,10 +82,12 @@ export const FooterContent = ({ withFee = false }: { withFee?: boolean }) => {
               <Suspense fallback={null}>
                 <SignHardwareSubstrate
                   fee={withFee ? fee?.toString() : undefined}
-                  payload={request.payload}
+                  payload={payload}
                   onSigned={approveHardware}
                   onCancel={reject}
                   containerId="main"
+                  registry={registry}
+                  shortMetadata={shortMetadata}
                 />
               </Suspense>
             )
@@ -90,7 +95,7 @@ export const FooterContent = ({ withFee = false }: { withFee?: boolean }) => {
             return (
               <Suspense fallback={null}>
                 <QrSubstrate
-                  payload={request.payload}
+                  payload={payload}
                   account={account as AccountJsonQr}
                   genesisHash={chain?.genesisHash ?? account?.genesisHash ?? undefined}
                   onSignature={approveQr}
@@ -103,9 +108,9 @@ export const FooterContent = ({ withFee = false }: { withFee?: boolean }) => {
             return (
               <SignSignetSubstrate
                 account={account as AccountJsonSignet}
-                onCancel={reject}
-                payload={request.payload}
+                payload={payload}
                 onApprove={approveSignet}
+                onCancel={reject}
               />
             )
           case AccountType.Talisman:

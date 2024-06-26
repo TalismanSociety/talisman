@@ -38,7 +38,6 @@ import {
 import { EthTabsHandler } from "../domains/ethereum"
 import { requestInjectMetadata } from "../domains/metadata/requests"
 import { signSubstrate } from "../domains/signing/requests"
-import type { ResponseSigning } from "../domains/signing/types"
 import { requestAuthoriseSite } from "../domains/sitesAuthorised/requests"
 import {
   AuthorizedSite,
@@ -51,6 +50,7 @@ import { talismanAnalytics } from "../libs/Analytics"
 import { TabsHandler } from "../libs/Handler"
 import type { MessageTypes, RequestType, ResponseType, SubscriptionMessageTypes } from "../types"
 import type { Port } from "../types/base"
+import { SubstrateSignResponse } from "../types/domains"
 import { isTalismanUrl } from "../util/isTalismanUrl"
 import { urlToDomain } from "../util/urlToDomain"
 import RpcState from "./RpcState"
@@ -146,7 +146,11 @@ export default class Tabs extends TabsHandler {
     return pair
   }
 
-  private bytesSign(url: string, request: SignerPayloadRaw, port: Port): Promise<ResponseSigning> {
+  private bytesSign(
+    url: string,
+    request: SignerPayloadRaw,
+    port: Port
+  ): Promise<SubstrateSignResponse> {
     const address = request.address
     const pair = this.getSigningPair(address)
 
@@ -165,7 +169,7 @@ export default class Tabs extends TabsHandler {
     url: string,
     request: SignerPayloadJSON,
     port: Port
-  ): Promise<ResponseSigning> {
+  ): Promise<SubstrateSignResponse> {
     const address = request.address
     const pair = this.getSigningPair(address)
 

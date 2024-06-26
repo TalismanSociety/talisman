@@ -1,4 +1,5 @@
 import { AccountJsonAny, AccountType, SubstrateLedgerAppType } from "@extension/core"
+import { TypeRegistry } from "@polkadot/types"
 import { SignerPayloadJSON, SignerPayloadRaw } from "@polkadot/types/types"
 import { HexString } from "@polkadot/util/types"
 import { useAccountByAddress } from "@ui/hooks/useAccountByAddress"
@@ -17,6 +18,8 @@ export type SignHardwareSubstrateProps = {
   onCancel?: () => void
   onSentToDevice?: (sent: boolean) => void
   onSigned: (result: { signature: HexString; payload?: SignerPayloadJSON }) => Promise<void> | void
+  shortMetadata?: string
+  registry?: TypeRegistry
 }
 
 const getSignHardwareComponent = (account: AccountJsonAny | null) => {

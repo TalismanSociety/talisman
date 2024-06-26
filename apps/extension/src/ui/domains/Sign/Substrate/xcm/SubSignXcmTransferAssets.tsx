@@ -4,7 +4,6 @@ import { Address } from "@talismn/balances"
 import { Chain, TokenId, TokenList } from "@talismn/chaindata-provider"
 import { encodeAnyAddress } from "@talismn/util"
 import useChains from "@ui/hooks/useChains"
-import { useExtrinsic } from "@ui/hooks/useExtrinsic"
 import { useTokenRatesMap } from "@ui/hooks/useTokenRatesMap"
 import useTokens from "@ui/hooks/useTokens"
 import { useMemo } from "react"
@@ -102,8 +101,7 @@ const getTargetAccount = (
 
 export const SubSignXcmTransferAssets = () => {
   const { t } = useTranslation("request")
-  const { chain, payload, account } = usePolkadotSigningRequest()
-  const { data: extrinsic } = useExtrinsic(payload)
+  const { chain, payload, account, extrinsic } = usePolkadotSigningRequest()
   const { tokensMap } = useTokens({ activeOnly: false, includeTestnets: true })
   const { chains } = useChains({ activeOnly: false, includeTestnets: true })
   const tokenRates = useTokenRatesMap()
