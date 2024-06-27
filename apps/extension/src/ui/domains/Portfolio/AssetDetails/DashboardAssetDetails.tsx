@@ -268,7 +268,7 @@ const ChainTokenBalancesDetailRow = ({
           {
             // Show `Unbonding` next to nompool staked balances which are unbonding
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            (row.meta as any)?.type === "nompool" && !!(row.meta as any)?.unbonding && (
+            !!(row.meta as any)?.unbonding && (
               <div
                 className={classNames(
                   "flex h-[6.6rem] flex-col justify-center gap-2 whitespace-nowrap p-8 text-right",

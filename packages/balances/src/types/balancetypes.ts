@@ -116,8 +116,17 @@ type BaseAmountWithLabel<TLabel extends string> = {
   meta?: unknown
 }
 
-export const getValueId = (amount: AmountWithLabel<string>) =>
-  [amount.label, amount.type, amount.source].join("::")
+export const getValueId = (amount: AmountWithLabel<string>) => {
+  const getMetaId = () => {
+    const meta = amount.meta as { poolId?: number; paraId?: number } | undefined
+    if (!meta) return ""
+    if (amount.type === "crowdloan") return meta.paraId?.toString() ?? ""
+    if (amount.type === "nompool") return meta.poolId?.toString() ?? ""
+    return ""
+  }
+
+  return [amount.label, amount.type, amount.source, getMetaId()].join("::")
+}
 
 /** A labelled locked amount of a balance */
 export type LockedAmount<TLabel extends string> = BaseAmountWithLabel<TLabel> & {

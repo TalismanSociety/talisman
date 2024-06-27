@@ -514,7 +514,14 @@ export class Balance {
    */
   get total() {
     const extra = this.getValue("extra") as FormattedAmount<ExtraAmount<string>, string>[]
-    return this.#format(this.free.planck + this.reserved.planck + includeInTotalExtraAmount(extra))
+
+    return this.#format(
+      this.free.planck +
+        this.reserved.planck +
+        this.nompools.map(({ amount }) => amount.planck).reduce((a, b) => a + b, 0n) +
+        this.crowdloans.map(({ amount }) => amount.planck).reduce((a, b) => a + b, 0n) +
+        includeInTotalExtraAmount(extra)
+    )
   }
   /** The non-reserved balance of this token. Includes the frozen amount. Is included in the total. */
   get free() {
