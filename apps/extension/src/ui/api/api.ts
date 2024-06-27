@@ -10,6 +10,13 @@ const messageService = new MessageService({
 })
 port.onMessage.addListener(messageService.handleResponse)
 
+const handleDisconnect = () => {
+  port.onMessage.removeListener(messageService.handleResponse)
+  port.onDisconnect.removeListener(handleDisconnect)
+}
+
+port.onDisconnect.addListener(handleDisconnect)
+
 export const api: MessageTypes = {
   ping: () => messageService.sendMessage("pri(ping)"),
   unsubscribe: (id) => messageService.sendMessage("pri(unsubscribe)", { id }),

@@ -42,6 +42,11 @@ const formatFrom = (source: string) => {
   }
 }
 
+const PORT_DISCONNECTED_MESSAGES = [
+  "Attempting to use a disconnected port object",
+  "Attempt to postMessage on disconnected port",
+]
+
 const talismanHandler = <TMessageType extends MessageTypes>(
   data: TransportRequestMessage<TMessageType>,
   port: chrome.runtime.Port,
@@ -66,11 +71,7 @@ const talismanHandler = <TMessageType extends MessageTypes>(
     try {
       port.postMessage(message)
     } catch (e) {
-      if (
-        e instanceof Error &&
-        (e.message === "Attempting to use a disconnected port object" ||
-          e.message === "Attempt to postMessage on disconnected port")
-      ) {
+      if (e instanceof Error && PORT_DISCONNECTED_MESSAGES.includes(e.message)) {
         // this means that the user has done something like close the tab
         port.disconnect()
         return
@@ -104,10 +105,7 @@ const talismanHandler = <TMessageType extends MessageTypes>(
     .catch((error) => {
       log.error(`[${port.name} ERR] ${source}:: ${error.message}`, { error })
 
-      if (
-        error instanceof Error &&
-        error.message === "Attempting to use a disconnected port object"
-      ) {
+      if (error instanceof Error && PORT_DISCONNECTED_MESSAGES.includes(error.message)) {
         // this means that the user has done something like close the tab
         port.disconnect()
         return

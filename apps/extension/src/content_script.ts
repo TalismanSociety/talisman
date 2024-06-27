@@ -8,10 +8,22 @@ import type { Message } from "@polkadot/extension-base/types"
 
 // connect to the extension
 const port = chrome.runtime.connect({ name: PORT_CONTENT })
-// send any messages from the extension back to the page
-port.onMessage.addListener((data): void => {
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const messageHandler = (data: any) => {
   window.postMessage({ ...data, origin: "talisman-content" }, window.location.toString())
-})
+}
+
+// send any messages from the extension back to the page
+port.onMessage.addListener(messageHandler)
+
+// handle port disconnection
+const disconnectHandler = () => {
+  port.onMessage.removeListener(messageHandler)
+  port.onDisconnect.removeListener(disconnectHandler)
+}
+
+port.onDisconnect.addListener(disconnectHandler)
 
 // all messages from the page, pass them to the extension
 window.addEventListener("message", ({ data, source }: Message): void => {
