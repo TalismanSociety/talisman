@@ -49,7 +49,6 @@ const SendBalanceInner = () => {
             if (status.isFinalized) {
               unsub()
               setTxProcessing(false)
-              // refresh()
             }
           })
       } catch (err) {
